@@ -57,6 +57,10 @@ TBufferRenderer::TBufferRenderer( TCHAR *pName, LPUNKNOWN pUnk, HRESULT *phr )
 	m_IsBufferOwner[1] = false;
 
 	m_FrontBuffer = 0;
+
+//	if( GetMediaPositionInterface( IID_IMediaSeeking, (void**)&m_MediaSeeking ) != S_OK )
+//		m_MediaSeeking = NULL;
+	m_MediaSeeking = NULL;
 }
 //----------------------------------------------------------------------------
 //! @brief	  	TBufferRenderer destructor
@@ -70,6 +74,10 @@ TBufferRenderer::~TBufferRenderer()
 	// 自分で確保している場合バッファの解放
 	FreeFrontBuffer();
 	FreeBackBuffer();
+
+	if( m_MediaSeeking )
+		m_MediaSeeking->Release();
+	m_MediaSeeking = NULL;
 }
 //----------------------------------------------------------------------------
 //! @brief	  	要求されたインターフェイスを返す
@@ -161,16 +169,54 @@ HRESULT TBufferRenderer::DoRenderSample( IMediaSample * pSample )
 	pSample->GetPointer( reinterpret_cast<BYTE**>(&pBmpBuffer) );
 
 	// Get the texture buffer & pitch
-	pTxtBuffer = reinterpret_cast<DWORD*>(m_Buffer[0]);
+	pTxtBuffer = reinterpret_cast<DWORD*>(GetBackBuffer());
 	pTxtOrgPos = reinterpret_cast<BYTE*>(pTxtBuffer);
+
+	if( m_MediaSeeking == NULL && m_pGraph )
+	{
+		if( m_pGraph->QueryInterface( IID_IMediaSeeking, (void**)&m_MediaSeeking ) != S_OK )
+			m_MediaSeeking = NULL;
+	}
 
 	HRESULT		hr;
 	LONG		EventParam1 = -1;
-	REFERENCE_TIME	TimeStart;
-	REFERENCE_TIME	TimeEnd;
-	if( SUCCEEDED( hr = GetSampleTimes( pSample, &TimeStart, &TimeEnd ) ) )
-	{
-		double	renderTime = TimeStart / 10000000.0;
+
+	bool		bGetTime = false;
+	LONGLONG	Current = 0;
+	if( m_MediaSeeking )
+	{	// IMediaSeekingを使って時間の取得を試みる
+		GUID	Format;
+		if( SUCCEEDED(hr = m_MediaSeeking->GetTimeFormat( &Format ) ) )
+		{
+			if( SUCCEEDED(hr = m_MediaSeeking->GetCurrentPosition( &Current )) )
+			{
+				if( IsEqualGUID( TIME_FORMAT_MEDIA_TIME, Format ) )
+				{
+					bGetTime = true;
+				}
+				else if( IsEqualGUID( TIME_FORMAT_FRAME, Format ) )
+				{
+					EventParam1 = (LONG)Current;
+					bGetTime = true;
+				}
+			}
+		}
+	}
+#if 0
+	if( bGetTime == false )
+	{	// GetSampleTimesを使って時間の取得を試みる
+		REFERENCE_TIME	TimeStart;
+		REFERENCE_TIME	TimeEnd;
+		if( SUCCEEDED( hr = GetSampleTimes( pSample, &TimeStart, &TimeEnd ) ) )
+		{
+			Current = TimeStart;
+			bGetTime = true;
+		}
+	}
+#endif
+	if( bGetTime == true && EventParam1 == -1 )
+	{	// 時間の取得は出来たが、単位が100nsecなので変換する
+		double	renderTime = Current / 10000000.0;
 		REFTIME	AvgTimePerFrame;	// REFTIME :  秒数を示す小数を表す倍精度浮動小数点数。
 		if( SUCCEEDED( hr = get_AvgTimePerFrame( &AvgTimePerFrame ) ) )
 		{
