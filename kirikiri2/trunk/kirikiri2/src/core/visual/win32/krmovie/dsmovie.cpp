@@ -62,10 +62,8 @@ void __stdcall tTVPDSMovie::Release()
 //----------------------------------------------------------------------------
 void __stdcall tTVPDSMovie::ReleaseAll()
 {
-#ifdef _DEBUG
 	if( m_RegisteredROT )	// “o˜^‚ª‚Ü‚¾‰ğœ‚³‚ê‚Ä‚¢‚È‚¢‚Í‚±‚±‚Å‰ğœ
 		RemoveFromROT( m_dwROTReg );
-#endif
 
 	if( m_MediaControl.p != NULL )
 	{
