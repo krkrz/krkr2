@@ -1,3 +1,5 @@
 EXPORTS
 	GetAPIVersion
 	GetVideoOverlayObject
+	V2Link
+	V2Unlink

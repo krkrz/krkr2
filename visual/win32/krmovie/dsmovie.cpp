@@ -17,16 +17,12 @@
 #include "dsmovie.h"
 #include "CIStream.h"
 
-#ifdef _DEBUG
 #include "DShowException.h"
-#endif
 
 tTVPDSMovie::tTVPDSMovie()
 {
-#ifdef _DEBUG
 	m_dwROTReg = 0xfedcba98;
 	m_RegisteredROT = false;
-#endif
 
 	CoInitialize(NULL);
 	OwnerWindow = NULL;
@@ -99,72 +95,56 @@ void __stdcall tTVPDSMovie::ReleaseAll()
 }
 //----------------------------------------------------------------------------
 //! @brief	  	ビデオを再生する
-//! @return		エラーメッセージ。NULLの場合エラーなし
 //----------------------------------------------------------------------------
-const wchar_t* __stdcall tTVPDSMovie::Play()
+void __stdcall tTVPDSMovie::Play()
 {
 	HRESULT	hr;
 	if( FAILED(hr = Controller()->Run()) )
 	{
-#ifdef _DEBUG
-		OutputDebugString( DShowException(hr).what() );
-#endif
-		return L"Failed to call IMediaControl::Run.";
+		ThrowDShowException(L"Failed to call IMediaControl::Run.", hr);
 	}
-	return NULL;
 }
 //----------------------------------------------------------------------------
 //! @brief	  	ビデオを停止する
-//! @return		エラーメッセージ。NULLの場合エラーなし
 //----------------------------------------------------------------------------
-const wchar_t* __stdcall tTVPDSMovie::Stop()
+void __stdcall tTVPDSMovie::Stop()
 {
 	HRESULT	hr;
 	if( FAILED(hr = Controller()->Stop()) )
 	{
-#ifdef _DEBUG
-		OutputDebugString( DShowException(hr).what() );
-#endif
-		return L"Failed to call IMediaControl::Stop.";
+		ThrowDShowException(L"Failed to call IMediaControl::Stop.", hr);
 	}
-	return NULL;
 }
 //----------------------------------------------------------------------------
 //! @brief	  	ビデオを一時停止する
-//! @return		エラーメッセージ。NULLの場合エラーなし
 //----------------------------------------------------------------------------
-const wchar_t* __stdcall tTVPDSMovie::Pause()
+void __stdcall tTVPDSMovie::Pause()
 {
 	HRESULT	hr;
 	if( FAILED(hr = Controller()->Pause()) )
 	{
-#ifdef _DEBUG
-		OutputDebugString( DShowException(hr).what() );
-#endif
-		return L"Failed to call IMediaControl::Pause.";
+		ThrowDShowException(L"Failed to call IMediaControl::Pause.", hr);
 	}
-	return NULL;
 }
 //----------------------------------------------------------------------------
 //! @brief	  	現在のムービー時間を設定する
 //! @param 		tick : 設定する現在の時間
-//! @return		エラーメッセージ。NULLの場合エラーなし
 //----------------------------------------------------------------------------
-const wchar_t* __stdcall tTVPDSMovie::SetPosition( unsigned __int64 tick )
+void __stdcall tTVPDSMovie::SetPosition( unsigned __int64 tick )
 {
 	HRESULT	hr;
-	if(Shutdown) return NULL;
+	if(Shutdown) return;
 	GUID	Format;
 	if( FAILED(hr = MediaSeeking()->GetTimeFormat( &Format ) ) )
 	{
-		return L"Failed to call IMediaSeeking::GetTimeFormat.";
+		ThrowDShowException(L"Failed to call IMediaSeeking::GetTimeFormat (in tTVPDSMovie::SetPosition).", hr);
 	}
 	if( IsEqualGUID( TIME_FORMAT_MEDIA_TIME, Format ) )
 	{
 		LONGLONG	requestTime = (LONGLONG)(tick * 10000);
 		if( FAILED(hr = MediaSeeking()->SetPositions( &requestTime, AM_SEEKING_AbsolutePositioning | AM_SEEKING_SeekToKeyFrame, NULL, AM_SEEKING_NoPositioning )) )
 		{
-			return L"Failed to call IMediaSeeking::SetPositions.";
+			ThrowDShowException(L"Failed to call IMediaSeeking::SetPositions (TIME_FORMAT_MEDIA_TIME, in tTVPDSMovie::SetPosition).", hr);
 		}
 	}
 	else if( IsEqualGUID( TIME_FORMAT_FRAME, Format ) )
@@ -172,39 +152,37 @@ const wchar_t* __stdcall tTVPDSMovie::SetPosition( unsigned __int64 tick )
 		REFTIME	AvgTimePerFrame;
 		if( FAILED(hr = GetAvgTimePerFrame( &AvgTimePerFrame )) )
 		{
-			return L"Failed to call IBasicVideo::get_AvgTimePerFrame.";
+			ThrowDShowException(L"Failed to call IBasicVideo::get_AvgTimePerFrame (in tTVPDSMovie::SetPosition).", hr);
 		}
 		LONGLONG	requestFrame = (LONGLONG)(((tick / 1000.0) / AvgTimePerFrame) + 0.5);
 		if( FAILED(hr = MediaSeeking()->SetPositions( &requestFrame, AM_SEEKING_AbsolutePositioning | AM_SEEKING_SeekToKeyFrame, NULL, AM_SEEKING_NoPositioning )) )
 		{
-			return L"Failed to call IMediaSeeking::SetPositions.";
+			ThrowDShowException(L"Failed to call IMediaSeeking::SetPositions (TIME_FORMAT_FRAME, in tTVPDSMovie::SetPosition).", hr);
 		}
 	}
 	else
 	{
-		return L"Not supported time format.";
+		TVPThrowExceptionMessage(L"Not supported time format.");
 	}
-	return NULL;
 }
 //----------------------------------------------------------------------------
 //! @brief	  	現在のムービー時間を取得する
 //! @param 		tick : 現在の時間を返す変数
-//! @return		エラーメッセージ。NULLの場合エラーなし
 //----------------------------------------------------------------------------
-const wchar_t* __stdcall tTVPDSMovie::GetPosition( unsigned __int64 *tick )
+void __stdcall tTVPDSMovie::GetPosition( unsigned __int64 *tick )
 {
-	if(Shutdown) return NULL;
+	if(Shutdown) return;
 
 	HRESULT		hr;
 	LONGLONG	Current;
 	if( FAILED(hr = MediaSeeking()->GetCurrentPosition( &Current ) ) )
 	{
-		return L"Failed to call IMediaSeeking::GetCurrentPosition.";
+		ThrowDShowException(L"Failed to call IMediaSeeking::GetCurrentPosition (in tTVPDSMovie::GetPosition).", hr);
 	}
 	GUID	Format;
 	if( FAILED(hr = MediaSeeking()->GetTimeFormat( &Format ) ) )
 	{
-		return L"Failed to call IMediaSeeking::GetTimeFormat.";
+		ThrowDShowException(L"Failed to call IMediaSeeking::GetTimeFormat (in tTVPDSMovie::GetPosition).", hr);
 	}
 	if( IsEqualGUID( TIME_FORMAT_MEDIA_TIME, Format ) )
 	{
@@ -216,26 +194,23 @@ const wchar_t* __stdcall tTVPDSMovie::GetPosition( unsigned __int64 *tick )
 		REFTIME	AvgTimePerFrame;
 		if( FAILED(hr = GetAvgTimePerFrame( &AvgTimePerFrame )) )
 		{
-			return L"Failed to call IBasicVideo::get_AvgTimePerFrame.";
+			ThrowDShowException(L"Failed to call IBasicVideo::get_AvgTimePerFrame (in tTVPDSMovie::GetPosition).", hr);
 		}
 		LONGLONG	curTime = (LONGLONG)(Current * AvgTimePerFrame * 1000.0);
 		*tick = (unsigned __int64)( curTime < 0 ? 0 : curTime);
 	}
 	else
 	{
-		return L"Not supported time format.";
+		TVPThrowExceptionMessage(L"Not supported time format.");
 	}
-
-	return NULL;
 }
 //----------------------------------------------------------------------------
 //! @brief	  	現在のムービーの状態を取得する
 //! @param 		status : 現在の状態を返す変数
-//! @return		Always NULL.
 //----------------------------------------------------------------------------
-const wchar_t* __stdcall tTVPDSMovie::GetStatus(tTVPVideoStatus *status)
+void __stdcall tTVPDSMovie::GetStatus(tTVPVideoStatus *status)
 {
-	if(Shutdown) return NULL;
+	if(Shutdown) return;
 	HRESULT hr;
 	OAFilterState state;
 	hr = Controller()->GetState(50, &state);
@@ -247,7 +222,6 @@ const wchar_t* __stdcall tTVPDSMovie::GetStatus(tTVPVideoStatus *status)
 		*status = vsPlaying;
 	else if(state == State_Paused)
 		*status = vsPaused;
-	return NULL;
 }
 //----------------------------------------------------------------------------
 //! @brief	  	A sample has been delivered. Copy it to the texture.
@@ -255,16 +229,15 @@ const wchar_t* __stdcall tTVPDSMovie::GetStatus(tTVPVideoStatus *status)
 //! @param 		param1 : パラメータ1。内容はイベントコードにより異なる。
 //! @param 		param2 : パラメータ2。内容はイベントコードにより異なる。
 //! @param 		got : 取得の正否
-//! @return		Always NULL.
 //----------------------------------------------------------------------------
-const wchar_t* __stdcall tTVPDSMovie::GetEvent( long *evcode, long *param1, long *param2, bool *got )
+void __stdcall tTVPDSMovie::GetEvent( long *evcode, long *param1, long *param2, bool *got )
 {
-	if(Shutdown) return NULL;
+	if(Shutdown) return;
 	HRESULT hr;
 	*got = false;
 	hr = Event()->GetEvent(evcode, param1, param2, 0);
 	if(SUCCEEDED(hr)) *got = true;
-	return NULL;
+	return;
 }
 //----------------------------------------------------------------------------
 //! @brief	  	イベントを解放する
@@ -273,34 +246,29 @@ const wchar_t* __stdcall tTVPDSMovie::GetEvent( long *evcode, long *param1, long
 //! @param 		evcode : 解放するイベントコード
 //! @param 		param1 : 解放するパラメータ1。内容はイベントコードにより異なる。
 //! @param 		param2 : 解放するパラメータ2。内容はイベントコードにより異なる。
-//! @return		Always NULL.
 //----------------------------------------------------------------------------
-const wchar_t* __stdcall tTVPDSMovie::FreeEventParams(long evcode, long param1, long param2)
+void __stdcall tTVPDSMovie::FreeEventParams(long evcode, long param1, long param2)
 {
-	if(Shutdown) return NULL;
+	if(Shutdown) return;
 
 	Event()->FreeEventParams(evcode, param1, param2);
-	return NULL;
+	return;
 }
 //----------------------------------------------------------------------------
 //! @brief	  	ムービーを最初の位置まで巻き戻す
-//! @return		エラーメッセージ
 //! @note		IMediaPositionは非推奨のようだが、サンプルでは使用されていたので、
 //! 			同じままにしておく。
 //----------------------------------------------------------------------------
-const wchar_t* __stdcall tTVPDSMovie::Rewind()
+void __stdcall tTVPDSMovie::Rewind()
 {
-	if(Shutdown) return NULL;
+	if(Shutdown) return;
 
 	HRESULT	hr;
 	if( FAILED(hr = Position()->put_CurrentPosition(0)) )
 	{
-#ifdef _DEBUG
-		OutputDebugString( DShowException(hr).what() );
-#endif
-		return L"Failed to call IMediaPosition::put_CurrentPosition.";
+		ThrowDShowException(L"Failed to call IMediaPosition::put_CurrentPosition(0).", hr);
 	}
-	return NULL;
+	return;
 }
 //----------------------------------------------------------------------------
 //! @brief	  	指定されたフレームへ移動する
@@ -308,29 +276,28 @@ const wchar_t* __stdcall tTVPDSMovie::Rewind()
 //! このメソッドによって設定された位置は、指定したフレームと完全に一致するわけではない。
 //! フレームは、指定したフレームに最も近いキーフレームの位置に設定される。
 //! @param		f : 移動するフレーム
-//! @return		エラーメッセージ
 //----------------------------------------------------------------------------
-const wchar_t* __stdcall tTVPDSMovie::SetFrame( int f )
+void __stdcall tTVPDSMovie::SetFrame( int f )
 {
-	if(Shutdown) return NULL;
+	if(Shutdown) return;
 
 	HRESULT	hr;
 	GUID	Format;
 	if( FAILED(hr = MediaSeeking()->GetTimeFormat( &Format ) ) )
 	{
-		return L"Failed to call IMediaSeeking::GetTimeFormat.";
+		ThrowDShowException(L"Failed to call IMediaSeeking::GetTimeFormat (in tTVPDSMovie::SetFrame).", hr);
 	}
 	if( IsEqualGUID( TIME_FORMAT_MEDIA_TIME, Format ) )
 	{
 		REFTIME	AvgTimePerFrame;
 		if( FAILED(hr = GetAvgTimePerFrame( &AvgTimePerFrame )) )
 		{
-			return L"Failed to call IBasicVideo::get_AvgTimePerFrame.";
+			ThrowDShowException(L"Failed to call IBasicVideo::get_AvgTimePerFrame (in tTVPDSMovie::SetFrame).", hr);
 		}
 		LONGLONG	requestTime = (LONGLONG)(AvgTimePerFrame * 10000000.0 * f);
 		if( FAILED(hr = MediaSeeking()->SetPositions( &requestTime, AM_SEEKING_AbsolutePositioning | AM_SEEKING_SeekToKeyFrame, NULL, AM_SEEKING_NoPositioning )) )
 		{
-			return L"Failed to call IMediaSeeking::SetPositions.";
+			ThrowDShowException(L"Failed to call IMediaSeeking::SetPositions (TIME_FORMAT_MEDIA_TIME, in tTVPDSMovie::SetFrame).", hr);
 		}
 	}
 	else if( IsEqualGUID( TIME_FORMAT_FRAME, Format ) )
@@ -338,42 +305,39 @@ const wchar_t* __stdcall tTVPDSMovie::SetFrame( int f )
 		LONGLONG	requestFrame = f;
 		if( FAILED(hr = MediaSeeking()->SetPositions( &requestFrame, AM_SEEKING_AbsolutePositioning | AM_SEEKING_SeekToKeyFrame, NULL, AM_SEEKING_NoPositioning )) )
 		{
-			return L"Failed to call IMediaSeeking::SetPositions.";
+			ThrowDShowException(L"Failed to call IMediaSeeking::SetPositions (TIME_FORMAT_FRAME, in tTVPDSMovie::SetFrame).", hr);
 		}
 	}
 	else
 	{
-		return L"Not supported time format.";
+		TVPThrowExceptionMessage(L"Not supported time format.");
 	}
-
-	return NULL;
 }
 //----------------------------------------------------------------------------
 //! @brief	  	現在のフレームを取得する
 //! @param		f : 現在のフレームを入れる変数へのポインタ
-//! @return		エラーメッセージ
 //----------------------------------------------------------------------------
-const wchar_t* __stdcall tTVPDSMovie::GetFrame( int *f )
+void __stdcall tTVPDSMovie::GetFrame( int *f )
 {
-	if(Shutdown) return NULL;
+	if(Shutdown) return;
 
 	HRESULT		hr;
 	LONGLONG	Current;
 	if( FAILED(hr = MediaSeeking()->GetCurrentPosition( &Current ) ) )
 	{
-		return L"Failed to call IMediaSeeking::GetCurrentPosition.";
+		ThrowDShowException(L"Failed to call IMediaSeeking::GetCurrentPosition (in tTVPDSMovie::GetFrame).", hr);
 	}
 	GUID	Format;
 	if( FAILED(hr = MediaSeeking()->GetTimeFormat( &Format ) ) )
 	{
-		return L"Failed to call IMediaSeeking::GetTimeFormat.";
+		ThrowDShowException(L"Failed to call IMediaSeeking::GetTimeFormat (in tTVPDSMovie::GetFrame).", hr);
 	}
 	if( IsEqualGUID( TIME_FORMAT_MEDIA_TIME, Format ) )
 	{
 		REFTIME	AvgTimePerFrame;
 		if( FAILED(hr = GetAvgTimePerFrame( &AvgTimePerFrame )) )
 		{
-			return L"Failed to call IBasicVideo::get_AvgTimePerFrame.";
+			ThrowDShowException(L"Failed to call IBasicVideo::get_AvgTimePerFrame (in tTVPDSMovie::GetFrame).", hr);
 		}
 		double	currentTime = Current / 10000000.0;
 		*f = (int)(currentTime / AvgTimePerFrame + 0.5);
@@ -384,55 +348,51 @@ const wchar_t* __stdcall tTVPDSMovie::GetFrame( int *f )
 	}
 	else
 	{
-		return L"Not supported time format.";
+		TVPThrowExceptionMessage(L"Not supported time format.");
 	}
-
-	return NULL;
 }
 //----------------------------------------------------------------------------
 //! @brief	  	FPSを取得する
 //! @param		f : FPSを入れる変数へのポインタ
 //! @return		エラーメッセージ
 //----------------------------------------------------------------------------
-const wchar_t* __stdcall tTVPDSMovie::GetFPS( double *f )
+void __stdcall tTVPDSMovie::GetFPS( double *f )
 {
-	if(Shutdown) return NULL;
+	if(Shutdown) return;
 
 	HRESULT	hr;
 	REFTIME	AvgTimePerFrame;
 	if( FAILED(hr = GetAvgTimePerFrame( &AvgTimePerFrame )) )
 	{
-		return L"Failed to call IBasicVideo::get_AvgTimePerFrame.";
+		ThrowDShowException(L"Failed to call IBasicVideo::get_AvgTimePerFrame (in tTVPDSMovie::GetFPS).", hr);
 	}
 	*f = 1.0 / AvgTimePerFrame;
-	return NULL;
 }
 //----------------------------------------------------------------------------
 //! @brief	  	全フレーム数を取得する
 //! @param		f : 全フレーム数を入れる変数へのポインタ
-//! @return		エラーメッセージ
 //----------------------------------------------------------------------------
-const wchar_t* __stdcall tTVPDSMovie::GetNumberOfFrame( int *f )
+void __stdcall tTVPDSMovie::GetNumberOfFrame( int *f )
 {
-	if(Shutdown) return NULL;
+	if(Shutdown) return;
 
 	HRESULT	hr;
 	LONGLONG	totalTime;
 	if( FAILED(hr = MediaSeeking()->GetDuration( &totalTime )) )
 	{
-		return L"Failed to call IMediaSeeking::GetDuration.";
+		ThrowDShowException(L"Failed to call IMediaSeeking::GetDuration (in tTVPDSMovie::GetNumberOfFrame).", hr);
 	}
 	GUID	Format;
 	if( FAILED(hr = MediaSeeking()->GetTimeFormat( &Format ) ) )
 	{
-		return L"Failed to call IMediaSeeking::GetTimeFormat.";
+		ThrowDShowException(L"Failed to call IMediaSeeking::GetTimeFormat (in tTVPDSMovie::GetNumberOfFrame).", hr);
 	}
 	if( IsEqualGUID( TIME_FORMAT_MEDIA_TIME, Format ) )
 	{
 		REFTIME	AvgTimePerFrame;
 		if( FAILED(hr = GetAvgTimePerFrame( &AvgTimePerFrame )) )
 		{
-			return L"Failed to call IBasicVideo::get_AvgTimePerFrame.";
+			ThrowDShowException(L"Failed to call IBasicVideo::get_AvgTimePerFrame (in tTVPDSMovie::GetNumberOfFrame).", hr);
 		}
 		double	totalSec = totalTime / 10000000.0;
 		*f = (int)(totalSec / AvgTimePerFrame + 0.5);
@@ -443,30 +403,27 @@ const wchar_t* __stdcall tTVPDSMovie::GetNumberOfFrame( int *f )
 	}
 	else
 	{
-		return L"Not supported time format.";
+		TVPThrowExceptionMessage(L"Not supported time format.");
 	}
-
-	return NULL;
 }
 //----------------------------------------------------------------------------
 //! @brief	  	ムービーの長さ(msec)を取得する
 //! @param		f : ムービーの長さを入れる変数へのポインタ
-//! @return		エラーメッセージ
 //----------------------------------------------------------------------------
-const wchar_t* __stdcall tTVPDSMovie::GetTotalTime( __int64 *t )
+void __stdcall tTVPDSMovie::GetTotalTime( __int64 *t )
 {
-	if(Shutdown) return NULL;
+	if(Shutdown) return;
 
 	HRESULT	hr;
 	LONGLONG	totalTime;
 	if( FAILED(hr = MediaSeeking()->GetDuration( &totalTime )) )
 	{
-		return L"Failed to call IMediaSeeking::GetDuration.";
+		ThrowDShowException(L"Failed to call IMediaSeeking::GetDuration (in tTVPDSMovie::GetTotalTime).", hr);
 	}
 	GUID	Format;
 	if( FAILED(hr = MediaSeeking()->GetTimeFormat( &Format ) ) )
 	{
-		return L"Failed to call IMediaSeeking::GetTimeFormat.";
+		ThrowDShowException(L"Failed to call IMediaSeeking::GetTimeFormat (in tTVPDSMovie::GetTotalTime).", hr);
 	}
 	if( IsEqualGUID( TIME_FORMAT_MEDIA_TIME, Format ) )
 	{
@@ -477,84 +434,67 @@ const wchar_t* __stdcall tTVPDSMovie::GetTotalTime( __int64 *t )
 		REFTIME	AvgTimePerFrame;
 		if( FAILED(hr = GetAvgTimePerFrame( &AvgTimePerFrame )) )
 		{
-			return L"Failed to call IBasicVideo::get_AvgTimePerFrame.";
+			ThrowDShowException(L"Failed to call IBasicVideo::get_AvgTimePerFrame (in tTVPDSMovie::GetTotalTime).", hr);
 		}
 		// フレームから秒へ、秒からmsecへ
 		*t = (__int64)((totalTime * AvgTimePerFrame) * 1000.0 );
 	}
 	else
 	{
-		return L"Not supported time format.";
+		TVPThrowExceptionMessage(L"Not supported time format.");
 	}
-
-	return NULL;
 }
 //----------------------------------------------------------------------------
 //! @brief	  	ビデオの画像サイズを取得する
 //! @param		width : 幅
 //! @param		height : 高さ
-//! @return		Always NULL
 //----------------------------------------------------------------------------
-const wchar_t* __stdcall tTVPDSMovie::GetVideoSize( long *width, long *height )
+void __stdcall tTVPDSMovie::GetVideoSize( long *width, long *height )
 {
 	if( width != NULL )
 		Video()->get_SourceWidth( width );
 
 	if( height != NULL )
 		Video()->get_SourceHeight( height );
-
-	return NULL;
 }
 //----------------------------------------------------------------------------
 //! @brief	  	buffにNULLを設定する。
-//! @return		Always NULL.
 //----------------------------------------------------------------------------
-const wchar_t* __stdcall tTVPDSMovie::GetFrontBuffer( BYTE **buff )
+void __stdcall tTVPDSMovie::GetFrontBuffer( BYTE **buff )
 {
 	*buff = NULL;
-	return NULL;
+	return;
 }
 //----------------------------------------------------------------------------
 //! @brief	  	何もしない
-//! @return		Always NULL.
 //----------------------------------------------------------------------------
-const wchar_t* __stdcall tTVPDSMovie::SetVideoBuffer( BYTE *buff1, BYTE *buff2, long size )
+void __stdcall tTVPDSMovie::SetVideoBuffer( BYTE *buff1, BYTE *buff2, long size )
 {
-	return NULL;
 }
 //----------------------------------------------------------------------------
 //! @brief	  	何もしない。
-//! @return		Always NULL.
 //----------------------------------------------------------------------------
-const wchar_t* __stdcall tTVPDSMovie::SetWindow( HWND window )
+void __stdcall tTVPDSMovie::SetWindow( HWND window )
 {
-	return NULL;
 }
 //----------------------------------------------------------------------------
 //! @brief	  	何もしない。
-//! @return		Always NULL.
 //----------------------------------------------------------------------------
-const wchar_t* __stdcall tTVPDSMovie::SetMessageDrainWindow( HWND window )
+void __stdcall tTVPDSMovie::SetMessageDrainWindow( HWND window )
 {
-	return NULL;
 }
 //----------------------------------------------------------------------------
 //! @brief	  	何もしない。
-//! @return		Always NULL.
 //----------------------------------------------------------------------------
-const wchar_t* __stdcall tTVPDSMovie::SetRect( RECT *rect )
+void __stdcall tTVPDSMovie::SetRect( RECT *rect )
 {
-	return NULL;
 }
 //----------------------------------------------------------------------------
 //! @brief	  	何もしない。
-//! @return		Always NULL.
 //----------------------------------------------------------------------------
-const wchar_t* __stdcall tTVPDSMovie::SetVisible( bool b )
+void __stdcall tTVPDSMovie::SetVisible( bool b )
 {
-	return NULL;
 }
-#ifdef _DEBUG
 //----------------------------------------------------------------------------
 //! @brief	  	ROT ( Running Object Table )にグラフを登録する。
 //!
@@ -602,7 +542,6 @@ void __stdcall tTVPDSMovie::RemoveFromROT( DWORD ROTreg )
 		pirot->Release();
 	}
 }
-#endif	// _DEBUG
 //----------------------------------------------------------------------------
 //! @brief	  	1フレームの平均表示時間を取得します
 //! @param		pAvgTimePerFrame : 1フレームの平均表示時間
@@ -616,9 +555,8 @@ HRESULT __stdcall tTVPDSMovie::GetAvgTimePerFrame( REFTIME *pAvgTimePerFrame )
 //! @brief	  	拡張子からムービーのタイプを判別します
 //! @param		mt : メディアタイプを返す変数への参照
 //! @param		type : ムービーファイルの拡張子
-//! @return		エラーコード
 //----------------------------------------------------------------------------
-const wchar_t* tTVPDSMovie::ParseVideoType( CMediaType &mt, const wchar_t *type )
+void tTVPDSMovie::ParseVideoType( CMediaType &mt, const wchar_t *type )
 {
 	// note: audio-less mpeg stream must have an extension of
 	// ".mpv" .
@@ -636,70 +574,68 @@ const wchar_t* tTVPDSMovie::ParseVideoType( CMediaType &mt, const wchar_t *type 
 	else if (wcsicmp(type, L".mov") == 0)
 		mt.subtype = MEDIASUBTYPE_QTMovie;
 	else
-		return L"Unknown video format extension."; // unknown format
-	return NULL;
+		TVPThrowExceptionMessage(L"Unknown video format extension."); // unknown format
 }
 //----------------------------------------------------------------------------
 //! @brief	  	MPEG1 用のグラフを手動で構築する
 //! @param		pRdr : グラフに参加しているレンダーフィルタ
 //! @param		pSrc : グラフに参加しているソースフィルタ
 //! @param		useSound : サウンドが使用されるかどうか
-//! @return		エラー文字列
 //----------------------------------------------------------------------------
-const wchar_t* tTVPDSMovie::BuildMPEGGraph( IBaseFilter *pRdr, IBaseFilter *pSrc )
+void tTVPDSMovie::BuildMPEGGraph( IBaseFilter *pRdr, IBaseFilter *pSrc )
 {
 	HRESULT	hr;
 
 	// Connect to MPEG 1 splitter filter
 	CComPtr<IBaseFilter>	pMPEG1Splitter;	// for MPEG 1 splitter filter
 	if( FAILED(hr = pMPEG1Splitter.CoCreateInstance(CLSID_MPEG1Splitter, NULL, CLSCTX_INPROC_SERVER)) )
-		return L"Failed to create MPEG 1 splitter filter object.";
+		ThrowDShowException(L"Failed to create MPEG 1 splitter filter object.", hr);
 	if( FAILED(hr = GraphBuilder()->AddFilter(pMPEG1Splitter, L"MPEG-I Stream Splitter")) )
-		return L"Failed to call IFilterGraph::AddFilter.";
+		ThrowDShowException(L"Failed to call GraphBuilder()->AddFilter(pMPEG1Splitter, L\"MPEG-I Stream Splitter\").", hr);
 	if( FAILED(hr = ConnectFilters( pSrc, pMPEG1Splitter )) )
-		return L"Failed to call ConnectFilters.";
+		ThrowDShowException(L"Failed to call ConnectFilters( pSrc, pMPEG1Splitter ).", hr);
 
 	// Connect to MPEG 1 video codec filter
 	CComPtr<IBaseFilter>	pMPEGVideoCodec;	// for MPEG 1 video codec filter
 	if( FAILED(hr = pMPEGVideoCodec.CoCreateInstance(CLSID_CMpegVideoCodec, NULL, CLSCTX_INPROC_SERVER)) )
-		return L"Failed to create MPEG 1 video codec filter object.";
+		ThrowDShowException(L"Failed to create MPEG 1 video codec filter object.", hr);
 	if( FAILED(hr = GraphBuilder()->AddFilter(pMPEGVideoCodec, L"MPEG Video Decoder")) )
-		return L"Failed to call IFilterGraph::AddFilter.";
+		ThrowDShowException(L"Failed to call GraphBuilder()->AddFilter(pMPEGVideoCodec, L\"MPEG Video Decoder\").", hr);
 	if( FAILED(hr = ConnectFilters( pMPEG1Splitter, pMPEGVideoCodec )) )
-		return L"Failed to call ConnectFilters.";
+		ThrowDShowException(L"Failed to call ConnectFilters( pMPEG1Splitter, pMPEGVideoCodec ).", hr);
 
 	// Connect to render filter
 	if( FAILED(hr = ConnectFilters( pMPEGVideoCodec, pRdr )) )
-		return L"Failed to call ConnectFilters.";
+		ThrowDShowException(L"Failed to call ConnectFilters( pMPEGVideoCodec, pRdr ).", hr);
 
 	// Connect to MPEG audio codec filter
 	CComPtr<IBaseFilter>	pMPEGAudioCodec;	// for MPEG audio codec filter
 	if( FAILED(hr = pMPEGAudioCodec.CoCreateInstance(CLSID_CMpegAudioCodec, NULL, CLSCTX_INPROC_SERVER)) )
-		return L"Failed to create MPEG audio codec filter object.";
+		ThrowDShowException(L"Failed to create MPEG audio codec filter object.", hr);
 	if( FAILED(hr = GraphBuilder()->AddFilter(pMPEGAudioCodec, L"MPEG Audio Decoder")) )
-		return L"Failed to call IFilterGraph::AddFilter.";
+		ThrowDShowException(L"Failed to call GraphBuilder()->AddFilter(pMPEGAudioCodec, L\"MPEG Audio Decoder\").", hr);
 	if( FAILED(hr = ConnectFilters( pMPEG1Splitter, pMPEGAudioCodec )) )
 	{	// not have Audio.
 		if( FAILED(hr = GraphBuilder()->RemoveFilter( pMPEGAudioCodec)) )
-			return L"Failed to call IFilterGraph::RemoveFilter.";
-		return NULL;
+			ThrowDShowException(L"Failed to call GraphBuilder()->RemoveFilter( pMPEGAudioCodec).", hr);
+		return;
 	}
 
 	// Connect to DDS render filter
 	CComPtr<IBaseFilter>	pDDSRenderer;	// for sound renderer filter
 	if( FAILED(hr = pDDSRenderer.CoCreateInstance(CLSID_DSoundRender, NULL, CLSCTX_INPROC_SERVER)) )
-		return L"Failed to create sound render filter object.";
+		ThrowDShowException(L"Failed to create sound render filter object.", hr);
 	if( FAILED(hr = GraphBuilder()->AddFilter(pDDSRenderer, L"Sound Renderer")) )
-		return L"Failed to call IFilterGraph::AddFilter.";
+		ThrowDShowException(L"Failed to call GraphBuilder()->AddFilter(pDDSRenderer, L\"Sound Renderer\").", hr);
 	if( FAILED(hr = ConnectFilters( pMPEGAudioCodec, pDDSRenderer ) ) )
 	{
 		if( FAILED(hr = GraphBuilder()->RemoveFilter( pMPEGAudioCodec)) )
-			return L"Failed to call IFilterGraph::RemoveFilter.";
+			ThrowDShowException(L"Failed to call GraphBuilder()->RemoveFilter( pMPEGAudioCodec).", hr);
 		if( FAILED(hr = GraphBuilder()->RemoveFilter( pDDSRenderer)) )
-			return L"Failed to call IFilterGraph::RemoveFilter.";
+			ThrowDShowException(L"Failed to call GraphBuilder()->RemoveFilter( pDDSRenderer).", hr);
 	}
 
-	return NULL;
+	return;
 }
 //----------------------------------------------------------------------------
 //! @brief	  	2つのフィルターを接続する
@@ -724,13 +660,13 @@ HRESULT tTVPDSMovie::ConnectFilters( IBaseFilter* pFilterUpstream, IBaseFilter* 
 	// grab upstream filter's enumerator
 	CComPtr<IEnumPins> pIEnumPinsUpstream;
 	if( FAILED(hr = pFilterUpstream->EnumPins(&pIEnumPinsUpstream)) )
-		throw L"Failed to call IBaseFilter::EnumPins.";
+		ThrowDShowException(L"Failed to call pFilterUpstream->EnumPins(&pIEnumPinsUpstream).", hr);
 
 	// iterate through upstream filter's pins
 	while( pIEnumPinsUpstream->Next (1, &pIPinUpstream, 0) == S_OK )
 	{
 		if( FAILED(hr = pIPinUpstream->QueryPinInfo(&PinInfoUpstream)) )
-			throw L"Failed to call IPin::QueryPinInfo.";
+			ThrowDShowException(L"Failed to call pIPinUpstream->QueryPinInfo(&PinInfoUpstream).", hr);
 #if _DEBUG
 		sprintf(debug, "upstream: %ls\n", PinInfoUpstream.achName);
 		OutputDebugString(debug);

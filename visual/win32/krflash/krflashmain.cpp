@@ -18,6 +18,7 @@
 #include "FlashContainerFormUnit.h"
 #include "krflashmain.h"
 #include <evcode.h>
+#include "tp_stub.h"
 
 //---------------------------------------------------------------------------
 #pragma argsused
@@ -71,30 +72,35 @@ void __stdcall tTVPFlashOverlay::Release()
 	}
 }
 //---------------------------------------------------------------------------
-const wchar_t* __stdcall tTVPFlashOverlay::SetMessageDrainWindow(HWND wnd)
+void __stdcall tTVPFlashOverlay::SetMessageDrainWindow(HWND wnd)
 {
 	// nothing to do, because flash support does not drain messages.
-	return NULL;
 }
 //---------------------------------------------------------------------------
-const wchar_t* __stdcall tTVPFlashOverlay::SetWindow(HWND wnd)
+void __stdcall tTVPFlashOverlay::SetWindow(HWND wnd)
 {
-	if(Shutdown) return NULL;
+	if(Shutdown) return;
 	OwnerWindow = wnd;
 	try
 	{
 		ResetForm();
 	}
+	catch(Exception &e)
+	{
+		TVPThrowExceptionMessage(
+			(ttstr(L"Cannot create window instance (Flash player ActiveX is not installed ?) / ") +
+				e.Message.c_str()).c_str());
+	}
 	catch(...)
 	{
-		return L"Cannot create window instance (Flash player ActiveX is not installed ?)";
+		TVPThrowExceptionMessage(L"Cannot create window instance (Flash player ActiveX is not installed ?)");
 	}
-	return NULL;
+	return;
 }
 //---------------------------------------------------------------------------
-const wchar_t* __stdcall tTVPFlashOverlay::SetRect(RECT *rect)
+void __stdcall tTVPFlashOverlay::SetRect(RECT *rect)
 {
-	if(Shutdown) return NULL;
+	if(Shutdown) return;
 	if(Rect.right-Rect.left == rect->right-rect->left &&
 		Rect.bottom-Rect.top == rect->bottom-rect->top)
 	{
@@ -110,68 +116,82 @@ const wchar_t* __stdcall tTVPFlashOverlay::SetRect(RECT *rect)
 		{
 			ResetForm();
 		}
+		catch(Exception &e)
+		{
+			TVPThrowExceptionMessage(
+				(ttstr(L"Cannot create window instance (Flash player ActiveX is not installed ?) / ") +
+					e.Message.c_str()).c_str());
+		}
 		catch(...)
 		{
-			return L"Cannot create window instance (Flash player ActiveX is not installed ?)";
+			TVPThrowExceptionMessage(L"Cannot create window instance (Flash player ActiveX is not installed ?)");
 		}
 	}
-	return NULL;
 }
 //---------------------------------------------------------------------------
-const wchar_t* __stdcall tTVPFlashOverlay::SetVisible(bool b)
+void __stdcall tTVPFlashOverlay::SetVisible(bool b)
 {
- 	if(Shutdown) return NULL;
+ 	if(Shutdown) return;
 	Visible = true;
-	if(Form) Form->SetFlashVisible(b); else return L"Owner window not specified";
-	return NULL;
+	if(Form)
+		Form->SetFlashVisible(b);
+	else
+		TVPThrowExceptionMessage(L"Owner window not specified");
 }
 //---------------------------------------------------------------------------
-const wchar_t* __stdcall tTVPFlashOverlay::Play()
+void __stdcall tTVPFlashOverlay::Play()
 {
-	if(Shutdown) return NULL;
-	if(Form) Form->Play(); else return L"Owner window not specified";
-	return NULL;
+	if(Shutdown) return;
+	if(Form)
+		Form->Play();
+	else
+		TVPThrowExceptionMessage(L"Owner window not specified");
 }
 //---------------------------------------------------------------------------
-const wchar_t* __stdcall tTVPFlashOverlay::Stop()
+void __stdcall tTVPFlashOverlay::Stop()
 {
-	if(Shutdown) return NULL;
-	if(Form) Form->Stop(); else return L"Owner window not specified";
-	return NULL;
+	if(Shutdown) return;
+	if(Form)
+		Form->Stop();
+	else
+		TVPThrowExceptionMessage(L"Owner window not specified");
 }
 //---------------------------------------------------------------------------
-const wchar_t* __stdcall tTVPFlashOverlay::Pause()
+void __stdcall tTVPFlashOverlay::Pause()
 {
-	if(Shutdown) return NULL;
-	if(Form) Form->Pause(); else return L"Owner window not specified";
-	return NULL;
+	if(Shutdown) return;
+	if(Form)
+		Form->Pause();
+	else
+		TVPThrowExceptionMessage(L"Owner window not specified");
 }
 //---------------------------------------------------------------------------
-const wchar_t*  __stdcall  tTVPFlashOverlay::SetPosition(unsigned __int64 tick)
+void __stdcall  tTVPFlashOverlay::SetPosition(unsigned __int64 tick)
 {
-	if(Shutdown) return NULL;
-	return L"Currently not supported";
+	if(Shutdown) return;
+	TVPThrowExceptionMessage(L"SetPosition: Currently not supported");
 }
 //---------------------------------------------------------------------------
-const wchar_t*  __stdcall  tTVPFlashOverlay::GetPosition(unsigned __int64 *tick)
+void __stdcall  tTVPFlashOverlay::GetPosition(unsigned __int64 *tick)
 {
-	if(Shutdown) return NULL;
-	return L"Currently not supported";
+	if(Shutdown) return;
+	TVPThrowExceptionMessage(L"GetPosition: Currently not supported");
 }
 //---------------------------------------------------------------------------
-const wchar_t*  __stdcall  tTVPFlashOverlay::GetStatus(tTVPVideoStatus *status)
+void __stdcall  tTVPFlashOverlay::GetStatus(tTVPVideoStatus *status)
 {
-	if(Shutdown) return NULL;
-	if(Form) *status = Form->GetStatus(); else return L"Owner window not specified";
-	return NULL;
+	if(Shutdown) return;
+	if(Form)
+		*status = Form->GetStatus();
+	else
+		TVPThrowExceptionMessage(L"Owner window not specified");
 }
 //---------------------------------------------------------------------------
-const wchar_t* __stdcall tTVPFlashOverlay::GetEvent(long *evcode, long *param1,
+void __stdcall tTVPFlashOverlay::GetEvent(long *evcode, long *param1,
 			long *param2, bool *got)
 {
-	if(Shutdown) return NULL;
+	if(Shutdown) return;
 	*got = false; // not implemented
-	return NULL;
 }
 //---------------------------------------------------------------------------
 void tTVPFlashOverlay::SendCommand(wchar_t *command, wchar_t *arg)
@@ -189,55 +209,55 @@ void tTVPFlashOverlay::ResetForm()
 }
 //---------------------------------------------------------------------------
 // Start:	Add:	T.Imoto
-const wchar_t* __stdcall tTVPFlashOverlay::FreeEventParams(long evcode, long param1, long param2)
+void __stdcall tTVPFlashOverlay::FreeEventParams(long evcode, long param1, long param2)
 {
-	if(Shutdown) return NULL;
-	return L"Currently not supported";
+	if(Shutdown) return;
+	TVPThrowExceptionMessage(L"FreeEventParams: Currently not supported");
 }
-const wchar_t* __stdcall tTVPFlashOverlay::Rewind()
+void __stdcall tTVPFlashOverlay::Rewind()
 {
-	if(Shutdown) return NULL;
-	return L"Currently not supported";
+	if(Shutdown) return;
+	TVPThrowExceptionMessage(L"Rewind: Currently not supported");
 }
-const wchar_t* __stdcall tTVPFlashOverlay::SetFrame( int f )
+void __stdcall tTVPFlashOverlay::SetFrame( int f )
 {
-	if(Shutdown) return NULL;
-	return L"Currently not supported";
+	if(Shutdown) return;
+	TVPThrowExceptionMessage(L"SetFrame: Currently not supported");
 }
-const wchar_t* __stdcall tTVPFlashOverlay::GetFrame( int *f )
+void __stdcall tTVPFlashOverlay::GetFrame( int *f )
 {
-	if(Shutdown) return NULL;
-	return L"Currently not supported";
+	if(Shutdown) return;
+	TVPThrowExceptionMessage(L"GetFrame: Currently not supported");
 }
-const wchar_t* __stdcall tTVPFlashOverlay::GetFPS( double *f )
+void __stdcall tTVPFlashOverlay::GetFPS( double *f )
 {
-	if(Shutdown) return NULL;
-	return L"Currently not supported";
+	if(Shutdown) return;
+	TVPThrowExceptionMessage(L"GetFPS: Currently not supported");
 }
-const wchar_t* __stdcall tTVPFlashOverlay::GetNumberOfFrame( int *f )
+void __stdcall tTVPFlashOverlay::GetNumberOfFrame( int *f )
 {
-	if(Shutdown) return NULL;
-	return L"Currently not supported";
+	if(Shutdown) return;
+	TVPThrowExceptionMessage(L"GetNumberOfFrame: Currently not supported");
 }
-const wchar_t* __stdcall tTVPFlashOverlay::GetTotalTime( __int64 *t )
+void __stdcall tTVPFlashOverlay::GetTotalTime( __int64 *t )
 {
-	if(Shutdown) return NULL;
-	return L"Currently not supported";
+	if(Shutdown) return;
+	TVPThrowExceptionMessage(L"GetTotalTime: Currently not supported");
 }
-const wchar_t* __stdcall tTVPFlashOverlay::GetVideoSize( long *width, long *height )
+void __stdcall tTVPFlashOverlay::GetVideoSize( long *width, long *height )
 {
-	if(Shutdown) return NULL;
-	return L"Currently not supported";
+	if(Shutdown) return;
+	TVPThrowExceptionMessage(L"GetVideoSize: Currently not supported");
 }
-const wchar_t* __stdcall tTVPFlashOverlay::GetFrontBuffer( BYTE **buff )
+void __stdcall tTVPFlashOverlay::GetFrontBuffer( BYTE **buff )
 {
-	if(Shutdown) return NULL;
-	return L"Currently not supported";
+	if(Shutdown) return;
+	TVPThrowExceptionMessage(L"GetFrontBuffer: Currently not supported");
 }
-const wchar_t* __stdcall tTVPFlashOverlay::SetVideoBuffer( BYTE *buff1, BYTE *buff2, long size )
+void __stdcall tTVPFlashOverlay::SetVideoBuffer( BYTE *buff1, BYTE *buff2, long size )
 {
-	if(Shutdown) return NULL;
-	return L"Currently not supported";
+	if(Shutdown) return;
+	TVPThrowExceptionMessage(L"SetVideoBuffer: Currently not supported");
 }
 // End:	Add:	T.Imoto
 
@@ -246,12 +266,11 @@ const wchar_t* __stdcall tTVPFlashOverlay::SetVideoBuffer( BYTE *buff1, BYTE *bu
 //---------------------------------------------------------------------------
 // GetVideoOverlayObject
 //---------------------------------------------------------------------------
-extern "C" const wchar_t* _export __stdcall GetVideoOverlayObject(
+extern "C" void _export __stdcall GetVideoOverlayObject(
 	HWND callbackwin, IStream *stream, const wchar_t * streamname,
 	const wchar_t *type, unsigned __int64 size, iTVPVideoOverlay **out)
 {
 	*out = new tTVPFlashOverlay(streamname, callbackwin);
-	return NULL;
 }
 //---------------------------------------------------------------------------
 
@@ -266,4 +285,25 @@ extern "C" void _export __stdcall GetAPIVersion(DWORD *ver)
 }
 //---------------------------------------------------------------------------
 
+
+
+//---------------------------------------------------------------------------
+// V2Link : Initialize TVP plugin interface
+//---------------------------------------------------------------------------
+extern "C" HRESULT _stdcall _export V2Link(iTVPFunctionExporter *exporter)
+{
+	TVPInitImportStub(exporter);
+
+	return S_OK;
+}
+//---------------------------------------------------------------------------
+// V2Unlink : Uninitialize TVP plugin interface
+//---------------------------------------------------------------------------
+extern "C" HRESULT _stdcall _export V2Unlink()
+{
+	TVPUninitImportStub();
+
+	return S_OK;
+}
+//---------------------------------------------------------------------------
 

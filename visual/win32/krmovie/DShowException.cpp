@@ -82,3 +82,16 @@ const char *DShowException::what( ) const
 
 
 
+//----------------------------------------------------------------------------
+//! @brief	  	DirectShow 例外を 吉里吉里例外として送出
+//! この関数は戻らない(例外が発生するため)
+//! @param 		comment : コメント
+//! @param		hr : HRESULT
+//----------------------------------------------------------------------------
+void ThrowDShowException(const tjs_char *comment, HRESULT hr)
+{
+	TVPThrowExceptionMessage((ttstr(comment) + TJS_W(" : [0x") +
+		TJSInt32ToHex((tjs_uint32)hr) + TJS_W("] ") +
+		DShowException(hr).what()).c_str());
+}
+

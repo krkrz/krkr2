@@ -17,9 +17,7 @@
 #include "dsoverlay.h"
 #include "CIStream.h"
 
-#ifdef _DEBUG
 #include "DShowException.h"
-#endif
 
 //----------------------------------------------------------------------------
 //! @brief	  	何もしない
@@ -40,12 +38,10 @@ tTVPDSVideoOverlay::~tTVPDSVideoOverlay()
 //! @param 		streamname : ストリームの名前
 //! @param 		type : メディアタイプ(拡張子)
 //! @param 		size : メディアサイズ
-//! @return		エラーメッセージ。NULLの場合エラーなし
 //----------------------------------------------------------------------------
-const wchar_t* __stdcall tTVPDSVideoOverlay::BuildGraph( HWND callbackwin, IStream *stream,
+void __stdcall tTVPDSVideoOverlay::BuildGraph( HWND callbackwin, IStream *stream,
 	const wchar_t * streamname, const wchar_t *type, unsigned __int64 size )
 {
-	const wchar_t	*errmsg = NULL;
 	HRESULT			hr;
 
 	CoInitialize(NULL);
@@ -54,8 +50,7 @@ const wchar_t* __stdcall tTVPDSVideoOverlay::BuildGraph( HWND callbackwin, IStre
 	try {
 		CMediaType mt;
 		mt.majortype = MEDIATYPE_Stream;
-		if( (errmsg = ParseVideoType( mt, type )) != NULL )
-			throw errmsg;
+		ParseVideoType( mt, type ); // may throw an exception
 
 		// create proxy filter
 		m_Proxy = new CIStreamProxy( stream, size );
@@ -63,13 +58,13 @@ const wchar_t* __stdcall tTVPDSVideoOverlay::BuildGraph( HWND callbackwin, IStre
 		m_Reader = new CIStreamReader( m_Proxy, &mt, &hr );
 
 		if( FAILED(hr) || m_Reader == NULL )
-			throw L"Failed to create proxy filter object.";
+			ThrowDShowException(L"Failed to create proxy filter object.", hr);
 
 		m_Reader->AddRef();
 
 		// create IFilterGraph instance
 		if( FAILED(hr = m_GraphBuilder.CoCreateInstance(CLSID_FilterGraph, NULL, CLSCTX_INPROC)) )
-			throw L"Failed to create FilterGraph.";
+			ThrowDShowException(L"Failed to create FilterGraph.", hr);
 
 #ifdef _DEBUG
 		// Register to ROT
@@ -78,52 +73,51 @@ const wchar_t* __stdcall tTVPDSVideoOverlay::BuildGraph( HWND callbackwin, IStre
 
 		// add fliter
 		if( FAILED(hr = GraphBuilder()->AddFilter( m_Reader, NULL)) )
-			throw L"Failed to call IFilterGraph::AddFilter.";
+			ThrowDShowException(L"Failed to call IFilterGraph::AddFilter.", hr);
 
 		if( mt.subtype == MEDIASUBTYPE_Avi || mt.subtype == MEDIASUBTYPE_QTMovie )
 		{
 			// render output pin
 			if( FAILED(hr = GraphBuilder()->Render(m_Reader->GetPin(0))) )
-				throw L"Failed to call IGraphBuilder::Render.";
+				ThrowDShowException(L"Failed to call IGraphBuilder::Render.", hr);
 		}
 		else
 		{
 			CComPtr<IBaseFilter>	pVRender;	// for video renderer filter
 			if( FAILED(hr = pVRender.CoCreateInstance(CLSID_VideoRenderer, NULL, CLSCTX_INPROC_SERVER)) )
-				return L"Failed to create video renderer filter object.";
+				ThrowDShowException(L"Failed to create video renderer filter object.", hr);
 			if( FAILED(hr = GraphBuilder()->AddFilter(pVRender, L"Video Renderer")) )
-				return L"Failed to call IFilterGraph::AddFilter.";
+				ThrowDShowException(L"Failed to call IFilterGraph::AddFilter.", hr);
 
-			if( (errmsg = BuildMPEGGraph( pVRender, m_Reader)) != NULL )
-				throw errmsg;
+			BuildMPEGGraph( pVRender, m_Reader); // may throw an exception
 		}
 
 		// query each interfaces
 		if( FAILED(hr = m_GraphBuilder.QueryInterface( &m_MediaControl )) )
-			throw L"Failed to query IMediaControl";
+			ThrowDShowException(L"Failed to query IMediaControl", hr);
 		if( FAILED(hr = m_GraphBuilder.QueryInterface( &m_MediaPosition )) )
-			throw L"Failed to query IMediaPosition";
+			ThrowDShowException(L"Failed to query IMediaPosition", hr);
 		if( FAILED(hr = m_GraphBuilder.QueryInterface( &m_MediaSeeking )) )
-			throw L"Failed to query IMediaSeeking";
+			ThrowDShowException(L"Failed to query IMediaSeeking", hr);
 		if( FAILED(hr = m_GraphBuilder.QueryInterface( &m_MediaEventEx )) )
-			throw L"Failed to query IMediaEventEx";
+			ThrowDShowException(L"Failed to query IMediaEventEx", hr);
 
 		if( FAILED(hr = m_GraphBuilder.QueryInterface( &m_BasicVideo )) )
-			throw L"Failed to query IBasicVideo";
+			ThrowDShowException(L"Failed to query IBasicVideo", hr);
 
 		if( FAILED(hr = m_GraphBuilder.QueryInterface( &m_VideoWindow )) )
-			throw L"Failed to query IVideoWindow";
+			ThrowDShowException(L"Failed to query IVideoWindow", hr);
 		if( FAILED(hr = m_GraphBuilder.QueryInterface( &m_BasicAudio )) )
-			throw L"Failed to query IBasicAudio";
+			ThrowDShowException(L"Failed to query IBasicAudio", hr);
 
 		// check whether the stream has video 
 		if(!m_VideoWindow || !m_BasicVideo )
-			throw L"The stream has no video components.";
+			TVPThrowExceptionMessage(L"The stream has no video components.");
 
 		{
 			long visible;
-			if(FAILED(VideoWindow()->get_Visible(&visible)))
-				throw L"The stream has no video components or has unsupported video format.";
+			if(FAILED(hr = VideoWindow()->get_Visible(&visible)))
+				ThrowDShowException(L"The stream has no video components or has unsupported video format.", hr);
 		}
 	
 		// disable AutoShow
@@ -132,28 +126,24 @@ const wchar_t* __stdcall tTVPDSVideoOverlay::BuildGraph( HWND callbackwin, IStre
 		// set notify event
 		if(callbackwin)
 		{
-			if(FAILED(Event()->SetNotifyWindow((OAHWND)callbackwin, WM_GRAPHNOTIFY, (long)(this))))
-				throw L"Failed to set IMediaEventEx::SetNotifyWindow.";
+			if(FAILED(hr = Event()->SetNotifyWindow((OAHWND)callbackwin, WM_GRAPHNOTIFY, (long)(this))))
+				ThrowDShowException(L"Failed to set IMediaEventEx::SetNotifyWindow.", hr);
 		}
 	}
-	catch(const wchar_t * msg)
-	{
-		errmsg = msg;
-	}
-	catch(...)
-	{
-		errmsg = L"Unknown error";
-	}
-
-	if(errmsg)
+	catch(const wchar_t *msg)
 	{
 		ReleaseAll();
 		CoUninitialize();
-		return errmsg;
+		TVPThrowExceptionMessage(msg);
+	}
+	catch(...)
+	{
+		ReleaseAll();
+		CoUninitialize();
+		throw;
 	}
 
-	CoUninitialize();
-	return NULL;
+	CoUninitialize();	// ここでこれを呼ぶとまずそうな気がするけど、大丈夫なのかなぁ
 }
 
 //----------------------------------------------------------------------------
@@ -184,11 +174,10 @@ void __stdcall tTVPDSVideoOverlay::ReleaseAll()
 //! 
 //! ビデオ ウィンドウを所有する親ウィンドウを設定し、表示矩形も同時に設定する。
 //! @param 		window : 親ウィンドウ
-//! @return		エラーメッセージ。NULLの場合エラーなし
 //----------------------------------------------------------------------------
-const wchar_t* __stdcall tTVPDSVideoOverlay::SetWindow( HWND window )
+void __stdcall tTVPDSVideoOverlay::SetWindow( HWND window )
 {
-	if(Shutdown) return NULL;
+	if(Shutdown) return;
 
 	HRESULT hr;
 	if(OwnerWindow != window)
@@ -197,142 +186,98 @@ const wchar_t* __stdcall tTVPDSVideoOverlay::SetWindow( HWND window )
 		{
 			if( FAILED(hr = VideoWindow()->put_Visible(OAFALSE)) )
 			{
-#ifdef _DEBUG
-				OutputDebugString( DShowException(hr).what() );
-#endif
-				return L"Failed to call IVideoWindow::put_Visible(OAFALSE).";
+				ThrowDShowException(L"Failed to call IVideoWindow::put_Visible(OAFALSE).", hr);
 			}
 		}
 		if( FAILED(hr = VideoWindow()->put_Owner((OAHWND)window)) )
 		{
-#ifdef _DEBUG
-			OutputDebugString( DShowException(hr).what() );
-#endif
-			return L"Failed to call IVideoWindow::put_Owner.";
+			ThrowDShowException(L"Failed to call IVideoWindow::put_Owner.", hr);
 		}
 		if(window != NULL)
 		{
 			if( FAILED(hr = VideoWindow()->put_WindowStyle(WS_CHILD | WS_CLIPSIBLINGS | WS_CLIPCHILDREN)) )
 			{
-#ifdef _DEBUG
-				OutputDebugString( DShowException(hr).what() );
-#endif
-				return L"Failed to call IVideoWindow::put_WindowStyle.";
+				ThrowDShowException(L"Failed to call IVideoWindow::put_WindowStyle.", hr);
 			}
 			if( FAILED(hr = VideoWindow()->put_Visible(Visible?OATRUE:OAFALSE)) )
 			{
-#ifdef _DEBUG
-				OutputDebugString( DShowException(hr).what() );
-#endif
-				return L"Failed to call IVideoWindow::put_Visible.";
+				ThrowDShowException(L"Failed to call IVideoWindow::put_Visible.", hr);
 			}
 			if( FAILED(hr = VideoWindow()->SetWindowPosition(Rect.left, Rect.top,
 				Rect.right-Rect.left, Rect.bottom-Rect.top)) )
 			{
-#ifdef _DEBUG
-				OutputDebugString( DShowException(hr).what() );
-#endif
-				return L"Failed to call IVideoWindow::SetWindowPosition.";
+				ThrowDShowException(L"Failed to call IVideoWindow::SetWindowPosition.", hr);
 			}
 		}
 		OwnerWindow = window;
 	}
-	
-	return NULL;
 }
 //----------------------------------------------------------------------------
 //! @brief	  	ビデオ ウィンドウのメッセージの送信先ウィンドウを指定する。
 //! @param 		window : 送信先ウィンドウ
-//! @return		エラーメッセージ。NULLの場合エラーなし
 //----------------------------------------------------------------------------
-const wchar_t* __stdcall tTVPDSVideoOverlay::SetMessageDrainWindow( HWND window )
+void __stdcall tTVPDSVideoOverlay::SetMessageDrainWindow( HWND window )
 {
 	HRESULT hr;
 	if( FAILED(hr = VideoWindow()->put_MessageDrain((OAHWND)window)) )
 	{
-#ifdef _DEBUG
-		OutputDebugString( DShowException(hr).what() );
-#endif
-		return L"Failed to call IVideoWindow::put_MessageDrain.";
+		ThrowDShowException(L"Failed to call IVideoWindow::put_MessageDrain.", hr);
 	}
-	return NULL;
 }
 //----------------------------------------------------------------------------
 //! @brief	  	表示矩形を設定する
 //! @param 		rect : 表示矩形
-//! @return		エラーメッセージ。NULLの場合エラーなし
 //----------------------------------------------------------------------------
-const wchar_t* __stdcall tTVPDSVideoOverlay::SetRect( RECT *rect )
+void __stdcall tTVPDSVideoOverlay::SetRect( RECT *rect )
 {
-	if(Shutdown) return NULL;
+	if(Shutdown) return;
 	HRESULT hr;
 	Rect = *rect;
 	if( FAILED(hr = VideoWindow()->SetWindowPosition(Rect.left, Rect.top,
 		Rect.right-Rect.left, Rect.bottom-Rect.top)) )
 	{
-#ifdef _DEBUG
-		OutputDebugString( DShowException(hr).what() );
-#endif
-		return L"Failed to call IVideoWindow::SetWindowPosition.";
+		ThrowDShowException(L"Failed to call IVideoWindow::SetWindowPosition.", hr);
 	}
-	return NULL;
 }
 //----------------------------------------------------------------------------
 //! @brief	  	表示/非表示を設定する
 //! @param 		b : 表示/非表示
-//! @return		エラーメッセージ。NULLの場合エラーなし
 //----------------------------------------------------------------------------
-const wchar_t* __stdcall tTVPDSVideoOverlay::SetVisible( bool b )
+void __stdcall tTVPDSVideoOverlay::SetVisible( bool b )
 {
-	if(Shutdown) return NULL;
+	if(Shutdown) return;
 	HRESULT hr;
 	if (OwnerWindow )
 	{
 		if( FAILED(hr = VideoWindow()->put_Visible(b?OATRUE:OAFALSE)) )
 		{
-#ifdef _DEBUG
-			OutputDebugString( DShowException(hr).what() );
-#endif
-			return L"Failed to call IVideoWindow::put_Visible.";
+			ThrowDShowException(L"Failed to call IVideoWindow::put_Visible.", hr);
 		}
 	}
 	Visible = b;
-	return NULL;
 }
 //----------------------------------------------------------------------------
 //! @brief	  	ビデオを再生する
-//! @return		エラーメッセージ。NULLの場合エラーなし
 //----------------------------------------------------------------------------
-const wchar_t* __stdcall tTVPDSVideoOverlay::Play()
+void __stdcall tTVPDSVideoOverlay::Play()
 {
-	if( Shutdown ) return NULL;
+	if( Shutdown ) return;
 
 	HRESULT hr;
 	if( FAILED(hr = VideoWindow()->SetWindowPosition( Rect.left, Rect.top,
 		Rect.right-Rect.left, Rect.bottom-Rect.top )) )
 	{
-#ifdef _DEBUG
-		OutputDebugString( DShowException(hr).what() );
-#endif
-		return L"Failed to call IVideoWindow::SetWindowPosition.";
+		ThrowDShowException(L"Failed to call IVideoWindow::SetWindowPosition.", hr);
 	}
 
 	if( FAILED(hr = Controller()->Run()) )
 	{
-#ifdef _DEBUG
-		OutputDebugString( DShowException(hr).what() );
-#endif
-		return L"Failed to call IMediaControl::Run.";
+		ThrowDShowException(L"Failed to call IMediaControl::Run.", hr);
 	}
 
 	if( FAILED(hr = VideoWindow()->SetWindowPosition(Rect.left, Rect.top,
 		Rect.right-Rect.left, Rect.bottom-Rect.top)) )
 	{
-#ifdef _DEBUG
-		OutputDebugString( DShowException(hr).what() );
-#endif
-		return L"Failed to call IVideoWindow::SetWindowPosition.";
+		ThrowDShowException(L"Failed to call IVideoWindow::SetWindowPosition.", hr);
 	}
-
-	return NULL;
 }
