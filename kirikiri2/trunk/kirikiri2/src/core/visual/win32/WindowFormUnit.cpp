@@ -1775,9 +1775,11 @@ void __fastcall TTVPWindowForm::DrawLayerImage(const tTVPRect &rect,
 //---------------------------------------------------------------------------
 void __fastcall TTVPWindowForm::InternalSetPaintBoxSize()
 {
+	tjs_int l = MulDiv(LayerLeft,   ZoomNumer, ZoomDenom);
+	tjs_int t = MulDiv(LayerTop,	ZoomNumer, ZoomDenom);
 	tjs_int w = MulDiv(LayerWidth,  ZoomNumer, ZoomDenom);
 	tjs_int h = MulDiv(LayerHeight, ZoomNumer, ZoomDenom);
-	PaintBox->SetBounds(LayerLeft, LayerTop, w, h);
+	PaintBox->SetBounds(l, t, w, h);
 }
 //---------------------------------------------------------------------------
 void __fastcall TTVPWindowForm::SetPaintBoxSize(tjs_int w, tjs_int h)
@@ -1883,7 +1885,7 @@ void __fastcall TTVPWindowForm::SetLayerLeft(tjs_int left)
 	if(LayerLeft != left)
 	{
 		LayerLeft = left;
-		if(PaintBox) PaintBox->Left = left;
+		if(PaintBox) InternalSetPaintBoxSize();
 	}
 }
 //---------------------------------------------------------------------------
@@ -1892,7 +1894,7 @@ void __fastcall TTVPWindowForm::SetLayerTop(tjs_int top)
 	if(LayerTop != top)
 	{
 		LayerTop = top;
-		if(PaintBox) PaintBox->Top = top;
+		if(PaintBox) InternalSetPaintBoxSize();
 	}
 }
 //---------------------------------------------------------------------------
@@ -1902,10 +1904,7 @@ void __fastcall TTVPWindowForm::SetLayerPosition(tjs_int left, tjs_int top)
 	{
 		LayerLeft = left;
 		LayerTop = top;
-		if(PaintBox)
-		{
-			InternalSetPaintBoxSize();
-		}
+		if(PaintBox) InternalSetPaintBoxSize();
 	}
 }
 //---------------------------------------------------------------------------
