@@ -417,6 +417,34 @@ void tTJSNI_VideoOverlay::Stop()
 	}
 }
 //---------------------------------------------------------------------------
+// Start:	Add:	T.Imoto
+//---------------------------------------------------------------------------
+void tTJSNI_VideoOverlay::Pause()
+{
+	// pause playing
+	if(VideoOverlay)
+	{
+		const wchar_t *message;
+		message = VideoOverlay->Pause();
+		if(message) TVPThrowExceptionMessage(TVPErrorInKrMovieDLL, message);
+		ClearWndProcMessages();
+		SetStatus(ssPause);
+	}
+}
+void tTJSNI_VideoOverlay::Rewind()
+{
+	// rewind playing
+	if(VideoOverlay)
+	{
+		const wchar_t *message;
+		message = VideoOverlay->Rewind();
+		if(message) TVPThrowExceptionMessage(TVPErrorInKrMovieDLL, message);
+		ClearWndProcMessages();
+	}
+}
+//---------------------------------------------------------------------------
+// End:		Add:	T.Imoto
+//---------------------------------------------------------------------------
 void tTJSNI_VideoOverlay::SetRectangleToVideoOverlay()
 {
 	// set Rectangle to video overlay
