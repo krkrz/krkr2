@@ -8,10 +8,6 @@
 //---------------------------------------------------------------------------
 // Graphics Loader ( loads graphic format from storage )
 //---------------------------------------------------------------------------
-// 2004/04/03 W.Dee          Separeted TLG related loader routines and added
-//                           Support for TLG6.
-// 2003/11/05 W.Dee          Fixed spelling ( elapesed -> elapsed )
-//---------------------------------------------------------------------------
 
 #include "tjsCommHead.h"
 #pragma hdrstop
