@@ -1263,13 +1263,15 @@
 		<attrib name="mode">
 			<shortinfo> 前景レイヤ透過モード </shortinfo>
 			<required> no </required>
-			<format> "transp"(デフォルト) または "rect" "add" "sub" "mul" "dodge" "darken" "lighten" "screen"のいずれか</format>
+			<format> "alpha"(デフォルト) または "transp" "opaque" "rect" "add" "sub" "mul" "dodge" "darken" "lighten" "screen"のいずれか</format>
 			<info>
 				　前景レイヤの透過モードを指定します。前景レイヤ以外には
 				指定しないでください。<BR>
-				　"transp" を指定するとαチャネルが有効になって画像を
-				透過して表示することができます。<BR>
-				　"rect" を指定すると画像は透過されません (矩形で表示されます)。<BR>
+				　"alpha" または "transp" を指定するとαチャネルが有効になって画像を
+				透過して表示することができます。"alpha" でも "transp" でも同じ意味です。<BR>
+				　"opaque" または "rect" を指定すると画像は透過されません (矩形で表示されます)。"opaque" でも "rect" でも同じ意味です。<BR>
+				　"addalpha" を指定すると、画像を透過して表示することができます。"alpha" はアルファ合成ですが、
+				"addalpha" は加算アルファ合成を表します。この違いについては「吉里吉里２ リファレンス」を参照してください。<BR>
 				　"add" を指定すると加算合成が行われます。<BR>
 				　"sub" を指定すると減算合成が行われます。<BR>
 				　"mul" を指定すると乗算合成が行われます。<BR>
@@ -1277,9 +1279,12 @@
 				　"darken" を指定すると「比較(暗)」合成が行われます。<BR>
 				　"lighten" を指定すると「比較(明)」合成が行われます。<BR>
 				　"screen" を指定すると「スクリーン乗算」合成が行われます。<BR>
-				　省略すると "transp" であるとみなされます。<BR>
-				　透明度情報を持たない画像を指定する場合は "rect" に指定する方が
-				負荷が軽くて済みます。
+				　透明度情報を持たない画像を指定する場合は "opaque" に指定する方が
+				負荷が軽くて済みます。<BR>
+				<BR>
+				　省略すると "alpha" であるとみなされます。例外的に、
+				TLG5/6 画像の場合は、画像中に透過モードを表す情報が埋め込まれています。この場合は、この属性を
+				省略すると、その画像が情報として持っている透過モードに従って表示されます。<BR>
 			</info>
 		</attrib>
 
@@ -5460,13 +5465,16 @@
 		<attrib name="mode">
 			<shortinfo> 重ね合わせモード </shortinfo>
 			<required> no </required>
-			<format> "copy" (デフォルト) または "pile" または "add" または "sub" または "mul" または "dodge" または "darken" または "lighten" または "screen" </format>
+			<format> "copy" (デフォルト) または "opaque" または "pile" または "alpha" または "add" または "sub" または "mul" または "dodge" または "darken" または "lighten" または "screen" </format>
 			<info>
 				　sx sy sw sh の各属性で指定した矩形領域を 重ね合わせるか、あるいは
-				単純にコピーするか、あるいは演算を行うかを指定します。"copy" を指定すると矩形領域は
-				コピーされます。"pile" を指定すると、重ね合わせが行われます。<BR>
+				単純にコピーするか、あるいは演算を行うかを指定します。<BR>
+				　"copy" または "opaque" を指定すると矩形領域は
+				コピーされます。"copy" でも "opaque" でも同じ意味です。<BR>
+				　"pile" または "alpha" を指定すると、アルファ合成による重ね合わせが行われます。"pile" でも "alpha" でも同じ意味です。<BR>
+				　"addalpha" を指定すると、加算アルファ合成による重ね合わせが行われます。<BR>
 				　"add" "sub" "mul" "dodge" "darken" "lighten" "screen" はそれぞれ、加算、減算、乗算、多い焼き、比較(暗)、比較(明)、スクリーン乗算の合成を行います。
-				　省略すると "pile" が指定されたと見なされます。
+				　省略すると "pile" が指定されたと見なされます。例外的に TLG5/6 画像は画像中にどの重ね合わせモードで重ね合わされるかの情報を持っています (この情報は <ref tag="image">image</ref> タグで読み込まれる物と同一です)。この場合は、この属性が省略された場合は、その画像が情報として持っている重ね合わせモードに従います。<BR>
 			</info>
 		</attrib>
 

@@ -356,7 +356,7 @@ class BaseLayer extends GraphicLayer
 		// loadImages オーバーライド
 		if(elm !== void)
 		{
-			elm.mode = "rect"; // レイヤモードを変えられると困るので
+			elm.mode = "opaque"; // レイヤモードを変えられると困るので
 
 			if(elm.visible !== void)
 			{
