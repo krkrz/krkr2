@@ -3,7 +3,7 @@
 <PROJECT>
   <MACROS>
     <VERSION value="BCB.05.03"/>
-    <PROJECT value="&quot;C:\Program Files\Borland\CBuilder5\Projects\tvp2win32\environ\win32\krdevui.dll&quot;"/>
+    <PROJECT value="..\..\..\..\bin\win32\tools\krdevui.dll"/>
     <OBJFILES value="intermediate\FolderSelectorUnit.obj intermediate\ConfSettingsUnit.obj 
       intermediate\ConfMainFrameUnit.obj intermediate\RelFolderSelectorUnit.obj 
       intermediate\RelSettingsUnit.obj intermediate\RelDirSearchUnit.obj 
@@ -34,7 +34,7 @@
     <LIBRARIES value="shlbpk.lib VCLX50.lib shlibbpk.lib Vcl50.lib"/>
     <SPARELIBS value="Vcl50.lib shlibbpk.lib VCLX50.lib shlbpk.lib"/>
     <PACKAGES value="Vcl50.bpi Vclx50.bpi shlbpk.bpi"/>
-    <PATHCPP value=".;tpc;tpc\png;tpc\psd;tpc\tlg5;tpc\tlg6;looptune;..\..\..\sound\win32"/>
+    <PATHCPP value=".;tpc;tpc\png;tpc\psd;tpc\tlg5;tpc\tlg6;looptune;..\..\..\core\sound\win32"/>
     <PATHPAS value=".;"/>
     <PATHRC value=".;"/>
     <PATHASM value=".;"/>
@@ -44,8 +44,8 @@
     <USERDEFINES value="NO_WIN32_LEAN_AND_MEAN"/>
     <SYSDEFINES value="NO_STRICT"/>
     <MAINSOURCE value="krdevui.bpf"/>
-    <INCLUDEPATH value="..\..\..\sound\win32;looptune;tpc\tlg6;tpc\tlg5;tpc\psd;tpc\png;tpc;..\fgconvert\psd;..\fgconvert\png;..\..\..\..\..\Bin;$(BCB)\projects\comps\o\shlib;..\..\..\..;$(BCB)\include;$(BCB)\include\vcl;$(BCB)\include\tomcrypt"/>
-    <LIBPATH value="..\..\..\sound\win32;looptune;tpc\tlg6;tpc\tlg5;tpc\psd;tpc\png;tpc;..\fgconvert\psd;..\fgconvert\png;..\..\..\..\..\Bin;$(BCB)\Projects\Lib;$(BCB)\projects\comps\o\shlib;..\..\..\..;$(BCB)\lib\obj;$(BCB)\lib"/>
+    <INCLUDEPATH value="..\..\..\sound\win32;..\..\..\core\sound\win32;looptune;tpc\tlg6;tpc\tlg5;tpc\psd;tpc\png;tpc;..\fgconvert\psd;..\fgconvert\png;..\..\..\..\..\Bin;$(BCB)\projects\comps\o\shlib;..\..\..\..;$(BCB)\include;$(BCB)\include\vcl;$(BCB)\include\tomcrypt"/>
+    <LIBPATH value="..\..\..\core\sound\win32;..\..\..\sound\win32;looptune;tpc\tlg6;tpc\tlg5;tpc\psd;tpc\png;tpc;..\fgconvert\psd;..\fgconvert\png;..\..\..\..\..\Bin;$(BCB)\Projects\Lib;$(BCB)\projects\comps\o\shlib;..\..\..\..;$(BCB)\lib\obj;$(BCB)\lib"/>
     <WARNINGS value="-w-par"/>
   </MACROS>
   <OPTIONS>
@@ -68,7 +68,7 @@ AutoIncBuild=1
 MajorVer=1
 MinorVer=4
 Release=4
-Build=69
+Build=70
 Debug=0
 PreRelease=0
 Special=0
@@ -80,7 +80,7 @@ CodePage=932
 [Version Info Keys]
 CompanyName=
 FileDescription=TVP Development User Interface DLL
-FileVersion=1.4.4.69
+FileVersion=1.4.4.70
 InternalName=
 LegalCopyright=(C)2001-2004, W.Dee All rights reserved.
 LegalTrademarks=
@@ -107,15 +107,16 @@ $(BCB)\Bin\dclite50.bpl=Borland Integrated Translation Environment
 $(BCB)\Bin\bcb2kaxserver50.bpl=Borland C++Builder COM Server Components Sample Package
 
 [HistoryLists\hlIncludePath]
-Count=8
-Item0=..\..\..\sound\win32;looptune;tpc\tlg6;tpc\tlg5;tpc\psd;tpc\png;tpc;..\fgconvert\psd;..\fgconvert\png;..\..\..\..\..\Bin;$(BCB)\projects\comps\o\shlib;..\..\..\..;$(BCB)\include;$(BCB)\include\vcl;$(BCB)\include\tomcrypt
-Item1=tpc\tlg5;tpc\psd;tpc\png;tpc;..\fgconvert\psd;..\fgconvert\png;..\..\..\..\..\Bin;$(BCB)\projects\comps\o\shlib;..\..\..\..;$(BCB)\include;$(BCB)\include\vcl;$(BCB)\include\tomcrypt
-Item2=tpc\tlg5;tpc\psd;tpc\png;tpc;..\fgconvert\psd;..\fgconvert\png;..\..\..\..\..\Bin;$(BCB)\projects\comps\o\shlib;..\..\..\..;$(BCB)\include;$(BCB)\include\vcl
-Item3=..\fgconvert\psd;..\fgconvert\png;..\..\..\..\..\Bin;$(BCB)\projects\comps\o\shlib;..\..\..\..;$(BCB)\include;$(BCB)\include\vcl
-Item4=..\..\..\..\..\Bin;$(BCB)\projects\comps\o\shlib;..\..\..\..;$(BCB)\include;$(BCB)\include\vcl
-Item5=$(BCB)\projects\comps\o\shlib;..\..\..\..;$(BCB)\include;$(BCB)\include\vcl
-Item6=;;$(BCB)\projects\comps\o\shlib;..\..\..\..;$(BCB)\include;$(BCB)\include\vcl
-Item7=$(BCB)\include;$(BCB)\include\vcl
+Count=9
+Item0=..\..\..\core\sound\win32;looptune;tpc\tlg6;tpc\tlg5;tpc\psd;tpc\png;tpc;..\fgconvert\psd;..\fgconvert\png;..\..\..\..\..\Bin;$(BCB)\projects\comps\o\shlib;..\..\..\..;$(BCB)\include;$(BCB)\include\vcl;$(BCB)\include\tomcrypt
+Item1=..\..\..\sound\win32;looptune;tpc\tlg6;tpc\tlg5;tpc\psd;tpc\png;tpc;..\fgconvert\psd;..\fgconvert\png;..\..\..\..\..\Bin;$(BCB)\projects\comps\o\shlib;..\..\..\..;$(BCB)\include;$(BCB)\include\vcl;$(BCB)\include\tomcrypt
+Item2=tpc\tlg5;tpc\psd;tpc\png;tpc;..\fgconvert\psd;..\fgconvert\png;..\..\..\..\..\Bin;$(BCB)\projects\comps\o\shlib;..\..\..\..;$(BCB)\include;$(BCB)\include\vcl;$(BCB)\include\tomcrypt
+Item3=tpc\tlg5;tpc\psd;tpc\png;tpc;..\fgconvert\psd;..\fgconvert\png;..\..\..\..\..\Bin;$(BCB)\projects\comps\o\shlib;..\..\..\..;$(BCB)\include;$(BCB)\include\vcl
+Item4=..\fgconvert\psd;..\fgconvert\png;..\..\..\..\..\Bin;$(BCB)\projects\comps\o\shlib;..\..\..\..;$(BCB)\include;$(BCB)\include\vcl
+Item5=..\..\..\..\..\Bin;$(BCB)\projects\comps\o\shlib;..\..\..\..;$(BCB)\include;$(BCB)\include\vcl
+Item6=$(BCB)\projects\comps\o\shlib;..\..\..\..;$(BCB)\include;$(BCB)\include\vcl
+Item7=;;$(BCB)\projects\comps\o\shlib;..\..\..\..;$(BCB)\include;$(BCB)\include\vcl
+Item8=$(BCB)\include;$(BCB)\include\vcl
 
 [HistoryLists\hlLibraryPath]
 Count=7
@@ -144,9 +145,11 @@ Item0=intermediate
 Item1=c:\Program Files\Borland\CBuilder5\Projects\tvp2win32\environ\win32\krdevui\intermediate
 
 [HistoryLists\hlFinalOutputDir]
-Count=2
-Item0=c:\Program Files\Borland\CBuilder5\Projects\tvp2win32\environ\win32\
-Item1=c:\Program Files\Borland\CBuilder5\Projects\tvp2win32\environ\win32
+Count=4
+Item0=..\..\..\..\bin\win32\tools\
+Item1=..\..\..\..\bin\win32\tools
+Item2=c:\Program Files\Borland\CBuilder5\Projects\tvp2win32\environ\win32\
+Item3=c:\Program Files\Borland\CBuilder5\Projects\tvp2win32\environ\win32
 
 [Debugging]
 DebugSourceDirs=$(BCB)\source\vcl
