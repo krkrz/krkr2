@@ -5181,32 +5181,49 @@ $content = <<EOF;
 	tjs_int t, d_tmp;
 
 	d = dest[{ofs}];
-	alpha = d >> 24;
-	alpha_adj = alpha + (alpha >> 7);
-	recip = TVPRecipTable256_16[alpha];
 
-	/* B */
-	t = d & 0xff;
-	if(t > alpha)
-		d_tmp = (temp->B[255] * alpha_adj >> 8) + t - alpha;
-	else
-		d_tmp = temp->B[recip * t >> 8] * alpha_adj >> 8;
-	/* G */
-	t = (d>>8) & 0xff; 
-	if(t > alpha)
-		d_tmp |= ((temp->G[255] * alpha_adj >> 8) + t - alpha) << 8;
-	else
-		d_tmp |= (temp->G[recip * t >> 8] * alpha_adj >> 8) << 8;
-	/* R */
-	t = (d>>16) & 0xff; 
-	if(t > alpha)
-		d_tmp |= ((temp->R[255] * alpha_adj >> 8) + t - alpha) << 16;
-	else
-		d_tmp |= (temp->R[recip * t >> 8] * alpha_adj >> 8) << 16;
-	/* A */
-	d_tmp |= d & 0xff000000;
+	if(d >= 0xff000000)
+	{
+		/* completely opaque */
+		t = d & 0xff;
+		d_tmp =   temp->B[t];
+		t = (d>>8) & 0xff;
+		d_tmp |=  temp->G[t] << 8;
+		t = (d>>16) & 0xff; 
+		d_tmp |=  temp->B[t] << 16;
+		d_tmp |= 0xff000000;
+		dest[{ofs}] = d_tmp;
+	}
+	else if(d != 0)
+	{
+		/* not completely transparent */
+		alpha = d >> 24;
+		alpha_adj = alpha + (alpha >> 7);
+		recip = TVPRecipTable256_16[alpha];
 
-	dest[{ofs}] = d_tmp;
+		/* B */
+		t = d & 0xff;
+		if(t > alpha)
+			d_tmp = (temp->B[255] * alpha_adj >> 8) + t - alpha;
+		else
+			d_tmp = temp->B[recip * t >> 8] * alpha_adj >> 8;
+		/* G */
+		t = (d>>8) & 0xff; 
+		if(t > alpha)
+			d_tmp |= ((temp->G[255] * alpha_adj >> 8) + t - alpha) << 8;
+		else
+			d_tmp |= (temp->G[recip * t >> 8] * alpha_adj >> 8) << 8;
+		/* R */
+		t = (d>>16) & 0xff; 
+		if(t > alpha)
+			d_tmp |= ((temp->R[255] * alpha_adj >> 8) + t - alpha) << 16;
+		else
+			d_tmp |= (temp->R[recip * t >> 8] * alpha_adj >> 8) << 16;
+		/* A */
+		d_tmp |= d & 0xff000000;
+
+		dest[{ofs}] = d_tmp;
+	}
 }
 EOF
 
