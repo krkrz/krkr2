@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="Shift_JIS" ?>
+
+<doc>
+<title>BGM を使おう</title>
+
+<para>
+<ptitle>BGM の準備</ptitle>
+　KAG では、BGM として Wave系 ( 無圧縮 Wave と Ogg Vorbis 等 ) と MIDI シーケンスデータと CD-XA の オーディオトラックを再生できます。<r/>
+　<link href="Prepare"/> を読んで、準備してください。<r/>
+<r/>
+　ここでは ( 一応チュートリアルっぽいものなので ) 、CD-DA を使う方法で行きますので、Config.tjs 内で <tt>type</tt> を <tt>"CDDA"</tt> 、<tt>doubleBuffered=false</tt> に設定します。<r/>
+<r/>
+　あれ、<tt>cdVolume</tt> は指定しなくていいの？ CD-XA じゃなくていいの？ということですが、今回は CD-ROM のドライブをこちらで指定していく方法にしますので、<tt>cdVolume</tt> は設定の必要はありませんし、ドライブ検索に必要な情報を持っている CD-XA を使う必要もありません。<r/>
+<r/>
+　さて、適当な音楽 CD を CD-ROM ドライブに挿入してください。<r/>
+</para>
+
+<para>
+<ptitle>とりあえず鳴らしてみよう</ptitle>
+　再生するために playbgm というタグを使います。また、再生停止には stopbgm というタグを使います。すると・・・<r/>
+<bq>
+[wait time=200]<r/>
+*start|スタート<r/>
+[cm]<r/>
+<b>[playbgm storage="e:3"]</b><r/>
+再生中・・・停止するにはクリックしてください。[l]<r/>
+<b>[stopbgm]</b><r/>
+</bq>
+　さて、ここで playbgm の属性 storage に <tt>e:3</tt> と指定されています。<tt>e:</tt> は CD-ROM を再生させる CD-ROM ドライブ文字ですので、あなたの環境にあわせてください。その次の 3 は再生させるトラックです。<r/>
+<r/>
+　ここではチュートリアルなので <tt>e:</tt> をつけていますが、本来は Config.tjs の <tt>cdVolume</tt> で指定したボリュームラベルを持つ CD が再生します。<tt>e:</tt> のように再生するドライブを指定しないで単にトラック番号の数字のみをかくと、KAG は <tt>cdVolume</tt> で指定されたボリュームラベルを持つ CD-ROM ドライブを探しに行きます。<r/>
+<r/>
+　また、CD-DA でない形式、たとえば MIDI シーケンスデータを再生させたい場合は、storage 属性に再生させたいファイル名を指定するだけで OK です。<r/>
+</para>
+
+<para>
+<ptitle>フェードイン・フェードアウト</ptitle>
+　フェードイン・フェードアウトを行うには、fadeinbgm タグと fadeoutbgm タグを使います。<r/>
+　このとき、time 属性がありますが、これはフェードイン・フェードアウトを行っている間の時間を指定します。<r/>
+<bq>
+[wait time=200]<r/>
+*start|スタート<r/>
+[cm]<r/>
+<b>[fadeinbgm storage="e:3" time=5000]</b><r/>
+再生中・・・停止するにはクリックしてください。[l]<r/>
+<b>[fadeoutbgm time=5000]</b><r/>
+</bq>
+　なお、これらのタグはフェードイン・フェードアウトの終了を待たないので、終了を待つには [wb] タグを使う必要があります。<r/>
+</para>
+
+<para>
+<ptitle>そのほかの BGM に関するタグ</ptitle>
+　BGM を入れ替える xchgbgm というタグがあります。Wave 系や MIDI 系では、クロスフェードも可能です (Config.tjs 内を参照してください)。<r/>
+<r/>
+　Wave 系で OggVorbis や TCWF 、 Micsoroft ADPCM を利用する場合はプラグインを指定する必要があるので注意してください ( <link href="Prepare"/> を参照してください )。これは 効果音も同じです。<r/>
+<r/>
+<note>
+　MIDI 系でクロスフェードを行うには「クロスフェードされることを意図して作られた」データが必要になります ( たとえば同時に再生する２つの曲では同じチャネルを使わない、など )。しかし、あまり現実的ではありません。<r/>
+</note>
+</para>
+
+</doc>
+
