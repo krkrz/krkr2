@@ -66,6 +66,7 @@ TJS_N("const\
  /* tTVPClipboardFormat */ cbfText = 1,\
  /* TVP_COMPACT_LEVEL_???? */ clIdle = 5, clDeactivate = 10, clMinimize = 15, clAll = 100,\
  /* tTVPVideoOverlayMode Add: T.Imoto */ vomOverlay=0, vomLayer=1,\
+ /* tTVPPeriodEventReason */ perLoop = 0, perPeriod = 1, perPrepare = 2,\
 \
 /* file attributes */\
  faReadOnly=0x01, faHidden=0x02, faSysFile=0x04, faVolumeID=0x08, faDirectory=0x10, faArchive=0x20, faAnyFile=0x3f,\
