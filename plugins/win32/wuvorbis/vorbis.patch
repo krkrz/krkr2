@@ -3284,7 +3284,7 @@ Index: vorbis/lib/mdct.c
  	      w0[2]  = r0     + r2;
  	      w1[0]  = r0     - r2;
  	      w0[3]  = r1     + r3;
-@@ -394,7 +1747,664 @@
+@@ -394,7 +1747,660 @@
    }while(w0<w1);
  }
  
@@ -3444,7 +3444,6 @@ Index: vorbis/lib/mdct.c
 +	mov			edx,	oX1
 +	mov			esi,	iX
 +	mov			ebx,	T
-+	movaps		xmm7,	neg_0_1_2_3
 +
 +loop3:
 +	sub			edx,	4*4
@@ -3456,55 +3455,52 @@ Index: vorbis/lib/mdct.c
 +
 +
 +	movaps		xmm4,	xmm1							// xmm4 =	T7	T6	T5	T4
++	movaps		xmm6,	xmm1							// xmm6 =	T7	T6	T5	T4
 +//	prefetcht0	[ebx + 64]
 +	shufps		xmm4,	xmm0,	1*64+3*16+1*4+3			// xmm4 =	T1	T3	T5	T7
++	shufps		xmm6,	xmm0,	0*64+2*16+0*4+2			// xmm6 =	T0	T2	T4	T6
 +
 +	movaps		xmm5,	xmm3							// xmm5 =	iX7	iX6	iX5	iX4
++	movaps		xmm7,	xmm3							// xmm7 =	iX7	iX6	iX5	iX4
 +	shufps		xmm5,	xmm2,	0*64+2*16+0*4+2			// xmm5 =	iX0	iX2	iX4	iX6
++	shufps		xmm7,	xmm2,	1*64+3*16+1*4+3			// xmm7 =	iX1	iX3	iX5	iX7
 +
 +//	prefetcht0	[esi + 64]
 +	mulps		xmm4,	xmm5							// xmm4 = tmp0
 +
-+	movaps		xmm5,	xmm1							// xmm5 =	T7	T6	T5	T4
-+	shufps		xmm5,	xmm0,	0*64+2*16+0*4+2			// xmm5 =	T0	T2	T4	T6
 +
++	mulps		xmm6,	xmm7							// xmm6 = tmp1
 +	add			edi,	4*4
++	movaps		xmm7,	xmm0							// xmm7 =	T3	T2	T1	T0
 +
-+	movaps		xmm6,	xmm3							// xmm6 =	iX7	iX6	iX5	iX4
-+	shufps		xmm6,	xmm2,	1*64+3*16+1*4+3			// xmm6 =	iX1	iX3	iX5	iX7
++	subps		xmm4,	xmm6							// xmm4 = tmp0 - tmp1
 +
-+	mulps		xmm5,	xmm6							// xmm5 = tmp1
-+
-+	subps		xmm4,	xmm5							// xmm4 = tmp0 - tmp1
-+
-+	movaps		[edx],	xmm4
-+
-+	movaps		xmm4,	xmm0							// xmm4 =	T3	T2	T1	T0
-+	shufps		xmm4,	xmm1,	2*64+0*16+2*4+0			// xmm4 =	T6	T4	T2	T0
++	shufps		xmm7,	xmm1,	2*64+0*16+2*4+0			// xmm7 =	T6	T4	T2	T0
 +
 +	movaps		xmm5,	xmm2							// xmm5 =	iX3	iX2	iX1	iX0
++	movaps		[edx],	xmm4
++
 +	shufps		xmm5,	xmm3,	2*64+0*16+2*4+0			// xmm5 =	iX0	iX2	iX4	iX6
 +
-+	mulps		xmm4,	xmm5							// xmm4 = tmp2
++	mulps		xmm7,	xmm5							// xmm7 = tmp2
 +	add			esi,	8*4
 +
 +	movaps		xmm5,	xmm0							// xmm5 =	T3	T2	T1	T0
++	movaps		xmm6,	xmm2							// xmm6 =	iX3	iX2	iX1	iX0
 +	shufps		xmm5,	xmm1,	3*64+1*16+3*4+1			// xmm5 =	T0	T2	T4	T6
 +
 +	add			ebx,	8*4
-+	movaps		xmm6,	xmm2							// xmm6 =	iX3	iX2	iX1	iX0
 +	shufps		xmm6,	xmm3,	3*64+1*16+3*4+1			// xmm6 =	iX1	iX3	iX5	iX7
-+
-+	mulps		xmm5,	xmm6							// xmm5 = tmp3
 +
 +	cmp			esi,	edx
 +
-+	addps		xmm4,	xmm5							// xmm4 = tmp2 + tmp3
++	mulps		xmm5,	xmm6							// xmm5 = tmp3
 +
-+	xorps		xmm4,	xmm7							// negate xmm4
++	addps		xmm7,	xmm5							// xmm7 = tmp2 + tmp3
 +
-+	movaps		[edi - 4*4],	xmm4
++	xorps		xmm7,	neg_0_1_2_3						// negate xmm7
 +
++	movaps		[edi - 4*4],	xmm7
 +
 +	jb			loop3
 +	pop			ebx
@@ -3949,7 +3945,7 @@ Index: vorbis/lib/mdct.c
    int n=init->n;
    int n2=n>>1;
    int n4=n>>2;
-@@ -439,7 +2449,7 @@
+@@ -439,7 +2445,7 @@
      DATA_TYPE *oX2=out+n2+n4;
      DATA_TYPE *iX =out;
      T             =init->trig+n2;
@@ -3958,7 +3954,7 @@ Index: vorbis/lib/mdct.c
      do{
        oX1-=4;
  
-@@ -459,7 +2469,45 @@
+@@ -459,7 +2465,45 @@
        iX    +=   8;
        T     +=   8;
      }while(iX<oX1);
@@ -4005,7 +4001,7 @@ Index: vorbis/lib/mdct.c
      iX=out+n2+n4;
      oX1=out+n4;
      oX2=oX1;
-@@ -475,7 +2523,7 @@
+@@ -475,7 +2519,7 @@
  
        oX2+=4;
      }while(oX2<iX);
@@ -4014,7 +4010,7 @@ Index: vorbis/lib/mdct.c
      iX=out+n2+n4;
      oX1=out+n2+n4;
      oX2=out+n2;
-@@ -488,8 +2536,11 @@
+@@ -488,8 +2532,11 @@
        iX+=4;
      }while(oX1>oX2);
    }
@@ -4026,7 +4022,7 @@ Index: vorbis/lib/mdct.c
  void mdct_forward(mdct_lookup *init, DATA_TYPE *in, DATA_TYPE *out){
    int n=init->n;
    int n2=n>>1;
-@@ -501,44 +2552,44 @@
+@@ -501,44 +2548,44 @@
    /* rotate */
  
    /* window + rotate + step 1 */
