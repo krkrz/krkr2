@@ -134,6 +134,9 @@ tTJS::tTJS()
 		// create the GLOBAL object
 		Global = new tTJSCustomObject(TJS_GLOBAL_HASH_BITS);
 
+		if(TJSObjectHashMapEnabled())
+			TJSObjectHashSetType(Global, TJS_W("the global object"));
+
 		// register some default classes to the GLOBAL
 		iTJSDispatch2 *dsp;
 		tTJSVariant val;
