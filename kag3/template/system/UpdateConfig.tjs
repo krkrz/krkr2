@@ -1,5 +1,5 @@
 // UpdateConfig.tjs - Config.tjs を引き継ぐためのスクリプト
-// Copyright (C)2001-2005, W.Dee  改変・配布は自由です
+// Copyright (C)2001-2005, W.Dee and contributors  改変・配布は自由です
 
 // Config.~new ファイルは新しい Config.tjs ファイル。
 // Config.tjs ファイル中のバージョン情報と KAG のバージョン情報が
