@@ -263,6 +263,7 @@ const tTVPBaseBitmap & TVPGetInitialBitmap()
 // global options
 //---------------------------------------------------------------------------
 tTVPGraphicSplitOperationType TVPGraphicSplitOperationType = gsotSimple;
+bool TVPDefaultHoldAlpha = false;
 //---------------------------------------------------------------------------
 
 
@@ -356,7 +357,7 @@ tTJSNI_BaseLayer::tTJSNI_BaseLayer()
 	Face = dfAuto;
 	UpdateDrawFace();
 	ImageModified = false;
-	HoldAlpha = false;
+	HoldAlpha = TVPDefaultHoldAlpha;
 	ClipRect.left = 0;
 	ClipRect.right = 0;
 	ClipRect.top = 0;
