@@ -3,7 +3,7 @@
 <PROJECT>
   <MACROS>
     <VERSION value="BCB.05.03"/>
-    <PROJECT value="&quot;c:\Program Files\Borland\CBuilder5\Projects\tvp2win32\environ\win32\plugin\dirlist.dll&quot;"/>
+    <PROJECT value="..\..\..\..\bin\win32\plugin\dirlist.dll"/>
     <OBJFILES value="intermediate\Main.obj intermediate\tp_stub.obj"/>
     <RESFILES value=""/>
     <DEFFILE value="dirlist.def"/>
@@ -16,7 +16,7 @@
       TeeUI50.bpi TeeDB50.bpi Tee50.bpi TeeQR50.bpi VCLIB50.bpi bcbie50.bpi 
       vclie50.bpi Inetdb50.bpi Inet50.bpi NMFast50.bpi dclocx50.bpi 
       bcb2kaxserver50.bpi"/>
-    <PATHCPP value=".;..\..\..\base\win32\plugin_kit"/>
+    <PATHCPP value=".;.."/>
     <PATHPAS value=".;"/>
     <PATHRC value=".;"/>
     <PATHASM value=".;"/>
@@ -26,8 +26,8 @@
     <USERDEFINES value="_DEBUG"/>
     <SYSDEFINES value="NO_STRICT;_NO_VCL"/>
     <MAINSOURCE value="dirlist.bpf"/>
-    <INCLUDEPATH value="$(BCB)\include;$(BCB)\include\vcl;..\..\..\base\win32\plugin_kit"/>
-    <LIBPATH value="..\..\..\base\win32\plugin_kit;$(BCB)\lib\obj;$(BCB)\lib"/>
+    <INCLUDEPATH value="..\..\..\base\win32\plugin_kit;$(BCB)\include;$(BCB)\include\vcl;.."/>
+    <LIBPATH value="..\;..\..\..\base\win32\plugin_kit;$(BCB)\lib\obj;$(BCB)\lib"/>
     <WARNINGS value="-w-par"/>
   </MACROS>
   <OPTIONS>
@@ -72,9 +72,10 @@ ProductVersion=1.0.0.0
 Comments=
 
 [HistoryLists\hlIncludePath]
-Count=2
-Item0=$(BCB)\include;$(BCB)\include\vcl;..\..\..\base\win32\plugin_kit
-Item1=$(BCB)\include;$(BCB)\include\vcl
+Count=3
+Item0=$(BCB)\include;$(BCB)\include\vcl;..\
+Item1=$(BCB)\include;$(BCB)\include\vcl;..\..\..\base\win32\plugin_kit
+Item2=$(BCB)\include;$(BCB)\include\vcl
 
 [HistoryLists\hlLibraryPath]
 Count=2
@@ -95,9 +96,10 @@ Item0=intermediate
 Item1=c:\Program Files\Borland\CBuilder5\Projects\tvp2win32\environ\win32\dirlist\intermediate
 
 [HistoryLists\hlFinalOutputDir]
-Count=2
-Item0=c:\Program Files\Borland\CBuilder5\Projects\tvp2win32\environ\win32\plugin\
-Item1=c:\Program Files\Borland\CBuilder5\Projects\tvp2win32\environ\win32\plugin
+Count=3
+Item0=..\..\..\..\bin\win32\plugin\
+Item1=c:\Program Files\Borland\CBuilder5\Projects\tvp2win32\environ\win32\plugin\
+Item2=c:\Program Files\Borland\CBuilder5\Projects\tvp2win32\environ\win32\plugin
 
 [Debugging]
 DebugSourceDirs=$(BCB)\source\vcl
