@@ -1794,7 +1794,7 @@ tTJSCustomObject::ClassInstanceInfo(tjs_uint32 flag, tjs_uint num, tTJSVariant *
 	if(flag == TJS_CII_ADD)
 	{
 		// add value
-		ClassNames.push_back(value->GetString());
+		ClassNames.push_back(value->AsStringNoAddRef());
 		return TJS_S_OK;
 	}
 

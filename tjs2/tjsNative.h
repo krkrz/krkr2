@@ -110,14 +110,14 @@ class tTJSNativeClass : public tTJSCustomObject
 	typedef tTJSCustomObject inherited;
 
 public:
-	tTJSNativeClass(const tjs_char *name);
+	tTJSNativeClass(const ttstr &name);
 	~tTJSNativeClass();
 
 	void RegisterNCM(const tjs_char *name, iTJSDispatch2 *dsp, tjs_uint32 flags = 0);
 
 protected:
 	tjs_int32 _ClassID;
-	tjs_char *ClassName;
+	ttstr ClassName;
 	void Finalize(void);
 
 	virtual iTJSNativeInstance *CreateNativeInstance()  {return NULL;}
