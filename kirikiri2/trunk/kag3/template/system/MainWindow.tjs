@@ -245,7 +245,8 @@ class KAGWindow extends Window
 	var leftClickHook = []; // 右クリックされたときに呼び出される物
 	var rightClickHook = []; // 左クリックされたときに呼び出される物
 
-	var padKeyMap; // パッドボタン -> ハンドラ。コンストラクタ内で設定
+	var padKeyMap; // パッドボタン -> ハンドラ(キーコード)。コンストラクタ内で設定
+	var padKeyMapReverse; // キーコード -> パッドボタン。コンストラクタ内で設定
 
 
 	//------------------------------------------------------ コンストラクタ --
@@ -428,7 +429,7 @@ class KAGWindow extends Window
 			top = ((System.desktopHeight - this.height) >>1) + System.desktopTop;
 
 		// パッドボタンハンドラの作成
-		padKeyMap = createPadKeyMap();
+		createPadKeyMap();
 
 
 		// ウィンドウを表示
@@ -588,45 +589,48 @@ class KAGWindow extends Window
 		// 標準では十字キーはキーボードのカーソルキーにマッピング、
 		// ボタン1 は Return、ボタン2 は ESC、ボタン3 は メッセージ履歴の表示
 		// にマッピングされる。
-		// postInputEvent を用いる場合は、onKeyDown (押した)あとに
-		// onKeyUp (離された) も 発行するようにする
+		// 関数を指定した場合はボタンを押したときにはその関数が呼ばれる。
 
-		return %[
-			VK_PADLEFT =>
-				function(ev) {
-					postInputEvent('onKeyDown', %[key: VK_LEFT]);
-					postInputEvent('onKeyUp', %[key: VK_LEFT]);
-				},
-			VK_PADRIGHT =>
-				function(ev) {
-					postInputEvent('onKeyDown', %[key: VK_RIGHT]);
-					postInputEvent('onKeyUp', %[key: VK_RIGHT]);
-				},
-			VK_PADUP =>
-				function(ev) {
-					postInputEvent('onKeyDown', %[key: VK_UP]);
-					postInputEvent('onKeyUp', %[key: VK_UP]);
-				},
-			VK_PADDOWN =>
-				function(ev) {
-					postInputEvent('onKeyDown', %[key: VK_DOWN]);
-					postInputEvent('onKeyUp', %[key: VK_DOWN]);
-				},
-			VK_PAD1 =>
-				function(ev) {
-					postInputEvent('onKeyDown', %[key: VK_RETURN]);
-					postInputEvent('onKeyUp', %[key: VK_RETURN]);
-				},
-			VK_PAD2 =>
-				function(ev) {
-					postInputEvent('onKeyDown', %[key: VK_ESCAPE]);
-					postInputEvent('onKeyUp', %[key: VK_ESCAPE]);
-				},
+		padKeyMap = %[
+			VK_PADLEFT =>		VK_LEFT,
+			VK_PADRIGHT =>		VK_RIGHT,
+			VK_PADUP =>			VK_UP,
+			VK_PADDOWN =>		VK_DOWN,
+			VK_PAD1 =>			VK_RETURN,
+			VK_PAD2 =>			VK_ESCAPE,
 			VK_PAD3 =>
 				function(ev) {
 					showHistoryByKey(this);
 				},
 			];
+
+		// padKeyMapReverse を作成
+		padKeyMapReverse = %[];
+		var ar = [];
+		ar.assign(padKeyMap);
+		for(var i = 0; i < ar.count; i += 2)
+		{
+			if(typeof(ar[i+1]) != "Object")
+			{
+				padKeyMapReverse[ar[i+1]] = ar[i];
+			}
+		}
+	}
+
+	function getKeyState(key)
+	{
+		// System.getKeyState 関数と同等だが、パッドのキーに関しても
+		// 反応を返す
+		var sg = System.getKeyState;
+		var state = sg(key);
+		if(state) return true;
+		var pad_key = padKeyMapReverse[key];
+		if(pad_key !== void)
+		{
+			// キーコード -> パッドのキーコードの変換が見つかった
+			return sg(pad_key);
+		}
+		return false;
 	}
 
 	//-------------------------------------------------------------- action --
@@ -637,9 +641,22 @@ class KAGWindow extends Window
 		{
 			// パッド入力に対応する処理
 			var handler = padKeyMap[ev.key];
-			if(handler !== void) (handler incontextof this)(ev);
+			if(handler !== void)
+			{
+				// ハンドラが見つかった
+				if(typeof(handler) == "Object")
+				{
+					// ハンドラは関数
+					(handler incontextof this)(ev);
+				}
+				else
+				{
+					// ハンドラはキーコード
+					postInputEvent('onKeyDown', %[key: handler]);
+					postInputEvent('onKeyUp', %[key: handler]);
+				}
+			}
 		}
-
 	}
 
 	//------------------------------------------------------ tempLayer 関連 --
@@ -2689,7 +2706,7 @@ class KAGWindow extends Window
 		// プライマリレイヤで右クリックされたときに呼ばれる
 		if(!callHook(rightClickHook))
 		{
-			if(System.getKeyState(VK_LBUTTON))
+			if(getKeyState(VK_LBUTTON))
 			{
 				enterAutoMode();
 				return;
@@ -3767,8 +3784,8 @@ class KAGWindow extends Window
 		{
 			// キーがメッセージキューに溜まってる場合があるので
 			// 実際にそのキーが押されているのかどうかを
-			// System.getKeyState を用いて調べる
-			var sg = System.getKeyState;
+			// getKeyState を用いて調べる
+			var sg = getKeyState;
 			if(sg(VK_RETURN) || sg(VK_SPACE))
 			{
 				// キーが押されてた
@@ -3796,15 +3813,15 @@ class KAGWindow extends Window
 
 	function skipCancelKeyPressing()
 	{
-		// キャンセルを解除する要因となるキーあるいはマウスボタンが押されているか
-		var sg = System.getKeyState;
+		// スキップを解除する要因となるキーあるいはマウスボタンが押されているか
+		var sg = getKeyState;
 		return sg(VK_RETURN) || sg(VK_SPACE) || sg(VK_LBUTTON);
 	}
 
 	function skipKeyPressing()
 	{
 		// VK_RETURN あるいは VK_SPACE が押されているかどうか
-		var sg = System.getKeyState;
+		var sg = getKeyState;
 		return sg(VK_RETURN) || sg(VK_SPACE);
 	}
 
