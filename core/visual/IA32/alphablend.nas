@@ -110,7 +110,7 @@ TVPAlphaBlend_name:
 		mov			ebp,	[esp + 32]		; src
 		pxor		mm0,	mm0				; mm0 = 0
 		lea			esi,	[edi + ecx*4]	; limit
-		sub			esi,	byte 16			; 3*4
+		sub			esi,	byte 16			; 4*4
 		cmp			edi,	esi
 		jae			near .pfraction			; jump if edi >= esi
 
