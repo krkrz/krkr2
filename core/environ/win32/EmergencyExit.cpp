@@ -175,7 +175,7 @@ void tTVPEmergencyExitThread::Execute(void)
 		if(TVPMainFormAlive && Application != NULL && Application->Handle != NULL)
 		{
 			PostMessage(Application->Handle, WM_USER+0x35/*WM_KEEPALIVE*/, 0, 0);
-			// Send wakeup message to the mail window.
+			// Send wakeup message to the main window.
 			// VCL sometimes waits message that never come (so hangs up).
 			// This message will wake the VCL up.
 		}
