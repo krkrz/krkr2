@@ -8,8 +8,6 @@
 //---------------------------------------------------------------------------
 // Definition of Messages and Message Related Utilities
 //---------------------------------------------------------------------------
-// 2003/11/13 W.Dee          Changed TVPGetVersion to use TVPGetFileVersionOf.
-//---------------------------------------------------------------------------
 #include "tjsCommHead.h"
 #pragma hdrstop
 
