@@ -18,6 +18,7 @@
 #include "CIStream.h"
 
 #include "DShowException.h"
+#include "OptionInfo.h"
 
 //----------------------------------------------------------------------------
 //! @brief	  	‰½‚à‚µ‚È‚¢
@@ -66,10 +67,11 @@ void __stdcall tTVPDSVideoOverlay::BuildGraph( HWND callbackwin, IStream *stream
 		if( FAILED(hr = m_GraphBuilder.CoCreateInstance(CLSID_FilterGraph, NULL, CLSCTX_INPROC)) )
 			ThrowDShowException(L"Failed to create FilterGraph.", hr);
 
-#ifdef _DEBUG
 		// Register to ROT
-		AddToROT(m_dwROTReg);
-#endif
+		if(GetShouldRegisterToROT())
+		{
+			AddToROT(m_dwROTReg);
+		}
 
 		// add fliter
 		if( FAILED(hr = GraphBuilder()->AddFilter( m_Reader, NULL)) )

@@ -19,6 +19,9 @@
 
 #include "tp_stub.h"
 
+#include "OptionInfo.h"
+
+
 //----------------------------------------------------------------------------
 //! @brief	  	DLL のエントリーポイント
 //! @param		hModule : 
@@ -76,5 +79,14 @@ HRESULT __stdcall V2Unlink()
 	TVPUninitImportStub();
 
 	return S_OK;
+}
+//---------------------------------------------------------------------------
+
+//---------------------------------------------------------------------------
+// GetOptionDesc : Give option information to kirikiri configurator
+//---------------------------------------------------------------------------
+extern "C" const wchar_t * _stdcall GetOptionDesc()
+{
+	return GetOptionInfoString();
 }
 //---------------------------------------------------------------------------

@@ -17,6 +17,7 @@
 
 #include "DShowException.h"
 #include "BufferRenderer.h"
+#include "OptionInfo.h"
 
 //----------------------------------------------------------------------------
 //! @brief	  	m_BmpBitsÇ…NULLÇê›íËÇ∑ÇÈ
@@ -70,10 +71,11 @@ void __stdcall tTVPDSLayerVideo::BuildGraph( HWND callbackwin, IStream *stream,
 		if( FAILED(hr = m_GraphBuilder.CoCreateInstance(CLSID_FilterGraph, NULL, CLSCTX_INPROC)) )
 			ThrowDShowException(L"Failed to create FilterGraph.", hr);
 
-#ifdef _DEBUG
 		// Register to ROT
-		AddToROT(m_dwROTReg);
-#endif
+		if(GetShouldRegisterToROT())
+		{
+			AddToROT(m_dwROTReg);
+		}
 
 		// Create the Buffer Renderer object
 		CComPtr<IBaseFilter>	pBRender;	// for buffer renderer filter
