@@ -6,8 +6,6 @@
 	See details of license at "license.txt"
 */
 //---------------------------------------------------------------------------
-// 2004/ 5/2 W.Dee          Added support for external TVP Option File (.tof)
-//---------------------------------------------------------------------------
 
 #ifndef TVP_ENVIRON
 	#include <vcl.h>
