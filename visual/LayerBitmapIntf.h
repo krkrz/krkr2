@@ -116,7 +116,19 @@ public:
 
 	bool FillColor(tTVPRect rect, tjs_uint32 color, tjs_int opa);
 
-	bool FillColorOnAlpha(tTVPRect rect, tjs_uint32 color, tjs_int opa);
+private:
+	bool BlendColor(tTVPRect rect, tjs_uint32 color, tjs_int opa, bool additive);
+
+public:
+	bool FillColorOnAlpha(tTVPRect rect, tjs_uint32 color, tjs_int opa)
+	{
+		return BlendColor(rect, color, opa, false);
+	}
+
+	bool FillColorOnAddAlpha(tTVPRect rect, tjs_uint32 color, tjs_int opa)
+	{
+		return BlendColor(rect, color, opa, true);
+	}
 
 	bool RemoveConstOpacity(tTVPRect rect, tjs_int level);
 
