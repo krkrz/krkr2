@@ -355,6 +355,7 @@ tTJSNI_BaseLayer::tTJSNI_BaseLayer()
 	// drawing function stuff
 	DrawFace = dfAlpha;
 	ImageModified = false;
+	HoldAlpha = true;
 	ClipRect.left = 0;
 	ClipRect.right = 0;
 	ClipRect.top = 0;
@@ -3726,7 +3727,7 @@ void tTJSNI_BaseLayer::AffineCopy(const tTVPPoint *points, tTJSNI_BaseLayer *src
 }
 //---------------------------------------------------------------------------
 void tTJSNI_BaseLayer::PileRect(tjs_int dx, tjs_int dy, tTJSNI_BaseLayer *src,
-	const tTVPRect &srcrect, tjs_int opacity, bool hda)
+	const tTVPRect &srcrect, tjs_int opacity)
 {
 	// obsoleted (use OperateRect)
 
@@ -3737,7 +3738,7 @@ void tTJSNI_BaseLayer::PileRect(tjs_int dx, tjs_int dy, tTJSNI_BaseLayer *src,
 	// dfOpaque: destination alpha is ignored ( treated as full opaque )
 	// dfMask or dfProvince : causes an error
 	// this method ignores soruce layer's LayerType or DrawFace.
-	// the destination alpha is held on dfAlpha if 'hda' is true, otherwide the
+	// the destination alpha is held on dfAlpha if 'HoldAlpha' is true, otherwide the
 	// alpha information is destroyed.
 
 	if(DrawFace != dfAlpha && DrawFace != dfOpaque)
@@ -3754,14 +3755,14 @@ void tTJSNI_BaseLayer::PileRect(tjs_int dx, tjs_int dy, tTJSNI_BaseLayer *src,
 		if(!MainImage) TVPThrowExceptionMessage(TVPNotDrawableLayerType);
 		if(!src->MainImage) TVPThrowExceptionMessage(TVPSourceLayerHasNoImage);
 		ImageModified =
-			MainImage->Blt(dx, dy, src->MainImage, rect, bmAlphaOnAlpha, opacity, hda) || ImageModified;
+			MainImage->Blt(dx, dy, src->MainImage, rect, bmAlphaOnAlpha, opacity, HoldAlpha) || ImageModified;
 		break;
 
 	case dfOpaque:
 		if(!MainImage) TVPThrowExceptionMessage(TVPNotDrawableLayerType);
 		if(!src->MainImage) TVPThrowExceptionMessage(TVPSourceLayerHasNoImage);
 		ImageModified =
-			MainImage->Blt(dx, dy, src->MainImage, rect, bmAlpha, opacity, hda) || ImageModified;
+			MainImage->Blt(dx, dy, src->MainImage, rect, bmAlpha, opacity, HoldAlpha) || ImageModified;
 		break;
 	}
 
@@ -3779,7 +3780,7 @@ void tTJSNI_BaseLayer::PileRect(tjs_int dx, tjs_int dy, tTJSNI_BaseLayer *src,
 }
 //---------------------------------------------------------------------------
 void tTJSNI_BaseLayer::BlendRect(tjs_int dx, tjs_int dy, tTJSNI_BaseLayer *src,
-	const tTVPRect &srcrect, tjs_int opacity, bool hda)
+	const tTVPRect &srcrect, tjs_int opacity)
 {
 	// obsoleted (use OperateRect)
 
@@ -3802,14 +3803,14 @@ void tTJSNI_BaseLayer::BlendRect(tjs_int dx, tjs_int dy, tTJSNI_BaseLayer *src,
 		if(!MainImage) TVPThrowExceptionMessage(TVPNotDrawableLayerType);
 		if(!src->MainImage) TVPThrowExceptionMessage(TVPSourceLayerHasNoImage);
 		ImageModified =
-			MainImage->Blt(dx, dy, src->MainImage, rect, bmCopyOnAlpha, opacity, hda) || ImageModified;
+			MainImage->Blt(dx, dy, src->MainImage, rect, bmCopyOnAlpha, opacity, HoldAlpha) || ImageModified;
 		break;
 
 	case dfOpaque:
 		if(!MainImage) TVPThrowExceptionMessage(TVPNotDrawableLayerType);
 		if(!src->MainImage) TVPThrowExceptionMessage(TVPSourceLayerHasNoImage);
 		ImageModified =
-			MainImage->Blt(dx, dy, src->MainImage, rect, bmCopy, opacity, hda) || ImageModified;
+			MainImage->Blt(dx, dy, src->MainImage, rect, bmCopy, opacity, HoldAlpha) || ImageModified;
 		break;
 	}
 
@@ -3828,7 +3829,7 @@ void tTJSNI_BaseLayer::BlendRect(tjs_int dx, tjs_int dy, tTJSNI_BaseLayer *src,
 //---------------------------------------------------------------------------
 void tTJSNI_BaseLayer::OperateRect(tjs_int dx, tjs_int dy, tTJSNI_BaseLayer *src,
 		const tTVPRect &srcrect, tTVPBlendOperationMode mode,
-			tjs_int opacity, bool hda)
+			tjs_int opacity)
 {
 	// operate on rectangle ( add/sub/mul/div and others )
 	tTVPRect rect;
@@ -3849,7 +3850,7 @@ void tTJSNI_BaseLayer::OperateRect(tjs_int dx, tjs_int dy, tTJSNI_BaseLayer *src
 	if(!src->MainImage) TVPThrowExceptionMessage(TVPSourceLayerHasNoImage);
 
 	ImageModified =
-		MainImage->Blt(dx, dy, src->MainImage, rect, met, opacity, hda) || ImageModified;
+		MainImage->Blt(dx, dy, src->MainImage, rect, met, opacity, HoldAlpha) || ImageModified;
 
 	tTVPRect ur = rect;
 	ur.set_offsets(dx, dy);
@@ -3865,7 +3866,7 @@ void tTJSNI_BaseLayer::OperateRect(tjs_int dx, tjs_int dy, tTJSNI_BaseLayer *src
 }
 //---------------------------------------------------------------------------
 void tTJSNI_BaseLayer::StretchPile(const tTVPRect &destrect, tTJSNI_BaseLayer *src,
-		const tTVPRect &srcrect, tjs_int opacity, tTVPBBStretchType type, bool hda)
+		const tTVPRect &srcrect, tjs_int opacity, tTVPBBStretchType type)
 {
 	// obsoleted (use OperateStretch)
 
@@ -3887,14 +3888,14 @@ void tTJSNI_BaseLayer::StretchPile(const tTVPRect &destrect, tTJSNI_BaseLayer *s
 		if(!MainImage) TVPThrowExceptionMessage(TVPNotDrawableLayerType);
 		if(!src->MainImage) TVPThrowExceptionMessage(TVPSourceLayerHasNoImage);
 		ImageModified = MainImage->StretchBlt(ClipRect, destrect, src->MainImage, srcrect, bmAlphaOnAlpha,
-			opacity, hda, type) || ImageModified;
+			opacity, HoldAlpha, type) || ImageModified;
 		break;
 
 	case dfOpaque:
 		if(!MainImage) TVPThrowExceptionMessage(TVPNotDrawableLayerType);
 		if(!src->MainImage) TVPThrowExceptionMessage(TVPSourceLayerHasNoImage);
 		ImageModified = MainImage->StretchBlt(ClipRect, destrect, src->MainImage, srcrect, bmAlpha,
-			opacity, hda, type) || ImageModified;
+			opacity, HoldAlpha, type) || ImageModified;
 		break;
 	}
 
@@ -3911,7 +3912,7 @@ void tTJSNI_BaseLayer::StretchPile(const tTVPRect &destrect, tTJSNI_BaseLayer *s
 }
 //---------------------------------------------------------------------------
 void tTJSNI_BaseLayer::StretchBlend(const tTVPRect &destrect, tTJSNI_BaseLayer *src,
-		const tTVPRect &srcrect, tjs_int opacity, tTVPBBStretchType type, bool hda)
+		const tTVPRect &srcrect, tjs_int opacity, tTVPBBStretchType type)
 {
 	// obsoleted (use OperateStretch)
 
@@ -3933,14 +3934,14 @@ void tTJSNI_BaseLayer::StretchBlend(const tTVPRect &destrect, tTJSNI_BaseLayer *
 		if(!MainImage) TVPThrowExceptionMessage(TVPNotDrawableLayerType);
 		if(!src->MainImage) TVPThrowExceptionMessage(TVPSourceLayerHasNoImage);
 		ImageModified = MainImage->StretchBlt(ClipRect, destrect, src->MainImage, srcrect, bmCopyOnAlpha,
-			opacity, hda, type) || ImageModified;
+			opacity, HoldAlpha, type) || ImageModified;
 		break;
 
 	case dfOpaque:
 		if(!MainImage) TVPThrowExceptionMessage(TVPNotDrawableLayerType);
 		if(!src->MainImage) TVPThrowExceptionMessage(TVPSourceLayerHasNoImage);
 		ImageModified = MainImage->StretchBlt(ClipRect, destrect, src->MainImage, srcrect, bmCopy,
-			opacity, hda, type) || ImageModified;
+			opacity, HoldAlpha, type) || ImageModified;
 		break;
 	}
 
@@ -3957,7 +3958,7 @@ void tTJSNI_BaseLayer::StretchBlend(const tTVPRect &destrect, tTJSNI_BaseLayer *
 //---------------------------------------------------------------------------
 void tTJSNI_BaseLayer::OperateStretch(const tTVPRect &destrect,
 	tTJSNI_BaseLayer *src, const tTVPRect &srcrect, tTVPBlendOperationMode mode, tjs_int opacity,
-			tTVPBBStretchType type, bool hda)
+			tTVPBBStretchType type)
 {
 	// stretching operation (add/mul/sub etc.)
 
@@ -3980,7 +3981,7 @@ void tTJSNI_BaseLayer::OperateStretch(const tTVPRect &destrect,
 	if(!MainImage) TVPThrowExceptionMessage(TVPNotDrawableLayerType);
 	if(!src->MainImage) TVPThrowExceptionMessage(TVPSourceLayerHasNoImage);
 	ImageModified = MainImage->StretchBlt(ClipRect, destrect, src->MainImage, srcrect, met,
-		opacity, hda, type) || ImageModified;
+		opacity, HoldAlpha, type) || ImageModified;
 
 	if(ImageLeft != 0 || ImageTop != 0)
 	{
@@ -3995,7 +3996,7 @@ void tTJSNI_BaseLayer::OperateStretch(const tTVPRect &destrect,
 //---------------------------------------------------------------------------
 void tTJSNI_BaseLayer::AffinePile(const t2DAffineMatrix &matrix, tTJSNI_BaseLayer *src,
 	const tTVPRect &srcrect, tjs_int opacity,
-	tTVPBBStretchType type, bool hda)
+	tTVPBBStretchType type)
 {
 	// obsoleted (use OperateAffine)
 
@@ -4016,7 +4017,7 @@ void tTJSNI_BaseLayer::AffinePile(const t2DAffineMatrix &matrix, tTJSNI_BaseLaye
 		if(!MainImage) TVPThrowExceptionMessage(TVPNotDrawableLayerType);
 		if(!src->MainImage) TVPThrowExceptionMessage(TVPSourceLayerHasNoImage);
 		updated = MainImage->AffineBlt(ClipRect, src->MainImage, srcrect, matrix,
-			bmAlphaOnAlpha, opacity, &updaterect, hda, type);
+			bmAlphaOnAlpha, opacity, &updaterect, HoldAlpha, type);
 		break;
 	  }
 
@@ -4025,7 +4026,7 @@ void tTJSNI_BaseLayer::AffinePile(const t2DAffineMatrix &matrix, tTJSNI_BaseLaye
 		if(!MainImage) TVPThrowExceptionMessage(TVPNotDrawableLayerType);
 		if(!src->MainImage) TVPThrowExceptionMessage(TVPSourceLayerHasNoImage);
 		updated = MainImage->AffineBlt(ClipRect, src->MainImage, srcrect, matrix,
-			bmAlpha, opacity, &updaterect, hda, type);
+			bmAlpha, opacity, &updaterect, HoldAlpha, type);
 		break;
 	  }
 	}
@@ -4041,7 +4042,7 @@ void tTJSNI_BaseLayer::AffinePile(const t2DAffineMatrix &matrix, tTJSNI_BaseLaye
 //---------------------------------------------------------------------------
 void tTJSNI_BaseLayer::AffinePile(const tTVPPoint *points, tTJSNI_BaseLayer *src,
 	const tTVPRect &srcrect, tjs_int opacity,
-	tTVPBBStretchType type, bool hda)
+	tTVPBBStretchType type)
 {
 	// obsoleted (use OperateAffine)
 
@@ -4062,7 +4063,7 @@ void tTJSNI_BaseLayer::AffinePile(const tTVPPoint *points, tTJSNI_BaseLayer *src
 		if(!MainImage) TVPThrowExceptionMessage(TVPNotDrawableLayerType);
 		if(!src->MainImage) TVPThrowExceptionMessage(TVPSourceLayerHasNoImage);
 		updated = MainImage->AffineBlt(ClipRect, src->MainImage, srcrect, points,
-			bmAlphaOnAlpha, opacity, &updaterect, hda, type);
+			bmAlphaOnAlpha, opacity, &updaterect, HoldAlpha, type);
 		break;
 	  }
 
@@ -4071,7 +4072,7 @@ void tTJSNI_BaseLayer::AffinePile(const tTVPPoint *points, tTJSNI_BaseLayer *src
 		if(!MainImage) TVPThrowExceptionMessage(TVPNotDrawableLayerType);
 		if(!src->MainImage) TVPThrowExceptionMessage(TVPSourceLayerHasNoImage);
 		updated = MainImage->AffineBlt(ClipRect, src->MainImage, srcrect, points,
-			bmAlpha, opacity, &updaterect, hda, type);
+			bmAlpha, opacity, &updaterect, HoldAlpha, type);
 		break;
 	  }
 	}
@@ -4087,7 +4088,7 @@ void tTJSNI_BaseLayer::AffinePile(const tTVPPoint *points, tTJSNI_BaseLayer *src
 //---------------------------------------------------------------------------
 void tTJSNI_BaseLayer::AffineBlend(const t2DAffineMatrix &matrix, tTJSNI_BaseLayer *src,
 	const tTVPRect &srcrect, tjs_int opacity,
-	tTVPBBStretchType type, bool hda)
+	tTVPBBStretchType type)
 {
 	// obsoleted (use OperateAffine)
 
@@ -4108,7 +4109,7 @@ void tTJSNI_BaseLayer::AffineBlend(const t2DAffineMatrix &matrix, tTJSNI_BaseLay
 		if(!MainImage) TVPThrowExceptionMessage(TVPNotDrawableLayerType);
 		if(!src->MainImage) TVPThrowExceptionMessage(TVPSourceLayerHasNoImage);
 		updated = MainImage->AffineBlt(ClipRect, src->MainImage, srcrect, matrix,
-			bmCopyOnAlpha, opacity, &updaterect, hda, type);
+			bmCopyOnAlpha, opacity, &updaterect, HoldAlpha, type);
 		break;
 	  }
 
@@ -4117,7 +4118,7 @@ void tTJSNI_BaseLayer::AffineBlend(const t2DAffineMatrix &matrix, tTJSNI_BaseLay
 		if(!MainImage) TVPThrowExceptionMessage(TVPNotDrawableLayerType);
 		if(!src->MainImage) TVPThrowExceptionMessage(TVPSourceLayerHasNoImage);
 		updated = MainImage->AffineBlt(ClipRect, src->MainImage, srcrect, matrix,
-			bmCopy, opacity, &updaterect, hda, type);
+			bmCopy, opacity, &updaterect, HoldAlpha, type);
 		break;
 	  }
 	}
@@ -4133,7 +4134,7 @@ void tTJSNI_BaseLayer::AffineBlend(const t2DAffineMatrix &matrix, tTJSNI_BaseLay
 //---------------------------------------------------------------------------
 void tTJSNI_BaseLayer::AffineBlend(const tTVPPoint *points, tTJSNI_BaseLayer *src,
 	const tTVPRect &srcrect, tjs_int opacity,
-	tTVPBBStretchType type, bool hda)
+	tTVPBBStretchType type)
 {
 	// obsoleted (use OperateAffine)
 
@@ -4154,7 +4155,7 @@ void tTJSNI_BaseLayer::AffineBlend(const tTVPPoint *points, tTJSNI_BaseLayer *sr
 		if(!MainImage) TVPThrowExceptionMessage(TVPNotDrawableLayerType);
 		if(!src->MainImage) TVPThrowExceptionMessage(TVPSourceLayerHasNoImage);
 		updated = MainImage->AffineBlt(ClipRect, src->MainImage, srcrect, points,
-			bmCopyOnAlpha, opacity, &updaterect, hda, type);
+			bmCopyOnAlpha, opacity, &updaterect, HoldAlpha, type);
 		break;
 	  }
 
@@ -4163,7 +4164,7 @@ void tTJSNI_BaseLayer::AffineBlend(const tTVPPoint *points, tTJSNI_BaseLayer *sr
 		if(!MainImage) TVPThrowExceptionMessage(TVPNotDrawableLayerType);
 		if(!src->MainImage) TVPThrowExceptionMessage(TVPSourceLayerHasNoImage);
 		updated = MainImage->AffineBlt(ClipRect, src->MainImage, srcrect, points,
-			bmCopy, opacity, &updaterect, hda, type);
+			bmCopy, opacity, &updaterect, HoldAlpha, type);
 		break;
 	  }
 	}
@@ -4180,7 +4181,7 @@ void tTJSNI_BaseLayer::AffineBlend(const tTVPPoint *points, tTJSNI_BaseLayer *sr
 void tTJSNI_BaseLayer::OperateAffine(const t2DAffineMatrix &matrix,
 	tTJSNI_BaseLayer *src,
 		const tTVPRect &srcrect, tTVPBlendOperationMode mode, tjs_int opacity,
-		tTVPBBStretchType type, bool hda)
+		tTVPBBStretchType type)
 {
 	// affine operation
 	tTVPRect updaterect;
@@ -4200,7 +4201,7 @@ void tTJSNI_BaseLayer::OperateAffine(const t2DAffineMatrix &matrix,
 	if(!MainImage) TVPThrowExceptionMessage(TVPNotDrawableLayerType);
 	if(!src->MainImage) TVPThrowExceptionMessage(TVPSourceLayerHasNoImage);
 	updated = MainImage->AffineBlt(ClipRect, src->MainImage, srcrect, matrix,
-		met, opacity, &updaterect, hda, type);
+		met, opacity, &updaterect, HoldAlpha, type);
 
 	ImageModified = updated || ImageModified;
 
@@ -4214,7 +4215,7 @@ void tTJSNI_BaseLayer::OperateAffine(const t2DAffineMatrix &matrix,
 //---------------------------------------------------------------------------
 void tTJSNI_BaseLayer::OperateAffine(const tTVPPoint *points, tTJSNI_BaseLayer *src,
 		const tTVPRect &srcrect, tTVPBlendOperationMode mode, tjs_int opacity,
-		tTVPBBStretchType type, bool hda)
+		tTVPBBStretchType type)
 {
 	// affine operation
 	tTVPRect updaterect;
@@ -4234,7 +4235,7 @@ void tTJSNI_BaseLayer::OperateAffine(const tTVPPoint *points, tTJSNI_BaseLayer *
 	if(!MainImage) TVPThrowExceptionMessage(TVPNotDrawableLayerType);
 	if(!src->MainImage) TVPThrowExceptionMessage(TVPSourceLayerHasNoImage);
 	updated = MainImage->AffineBlt(ClipRect, src->MainImage, srcrect, points,
-		met, opacity, &updaterect, hda, type);
+		met, opacity, &updaterect, HoldAlpha, type);
 
 	ImageModified = updated || ImageModified;
 
@@ -7153,9 +7154,14 @@ TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/pileRect)
 	rect.right += rect.left;
 	rect.bottom += rect.top;
 
+	if(numparams >= 9 && param[9]->Type() != tvtVoid)
+	{
+		TVPAddLog(TVPFormatMessage(TVPHoldDestinationAlphaParameterIsNowDeprecated,
+			TJS_W("Layer.pileRect"), TJS_W("10")));
+	}
+
 	_this->PileRect(*param[0], *param[1], src, rect,
-		(numparams>=8 && param[7]->Type() != tvtVoid)?(tjs_int)*param[7]:255,
-		(numparams>=9 && param[8]->Type() != tvtVoid)?param[8]->operator bool():true);
+		(numparams>=8 && param[7]->Type() != tvtVoid)?(tjs_int)*param[7]:255);
 
 	return TJS_S_OK;
 }
@@ -7180,9 +7186,14 @@ TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/blendRect)
 	rect.right += rect.left;
 	rect.bottom += rect.top;
 
+	if(numparams >= 9 && param[9]->Type() != tvtVoid)
+	{
+		TVPAddLog(TVPFormatMessage(TVPHoldDestinationAlphaParameterIsNowDeprecated,
+			TJS_W("Layer.blendRect"), TJS_W("10")));
+	}
+
 	_this->BlendRect(*param[0], *param[1], src, rect,
-		(numparams>=8 && param[7]->Type() != tvtVoid)?(tjs_int)*param[7]:255,
-		(numparams>=9 && param[8]->Type() != tvtVoid)?param[8]->operator bool():true);
+		(numparams>=8 && param[7]->Type() != tvtVoid)?(tjs_int)*param[7]:255);
 
 	return TJS_S_OK;
 }
@@ -7213,9 +7224,15 @@ TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/operateRect)
 	else
 		mode = omAuto;
 
+	if(numparams >= 10 && param[9]->Type() != tvtVoid)
+	{
+		TVPAddLog(TVPFormatMessage(TVPHoldDestinationAlphaParameterIsNowDeprecated,
+			TJS_W("Layer.operateRect"), TJS_W("10")));
+	}
+
+
 	_this->OperateRect(*param[0], *param[1], src, rect, mode,
-		(numparams>=9 && param[8]->Type() != tvtVoid)?(tjs_int)*param[8]:255,
-		(numparams>=10 && param[9]->Type() != tvtVoid)?param[9]->operator bool():true);
+		(numparams>=9 && param[8]->Type() != tvtVoid)?(tjs_int)*param[8]:255);
 
 	return TJS_S_OK;
 }
@@ -7257,7 +7274,7 @@ TJS_END_NATIVE_METHOD_DECL(/*func. name*/stretchCopy)
 //----------------------------------------------------------------------
 TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/stretchPile)
 {
-	// dx, dy, dw, dh, src, sx, sy, sw, sh, opa=255, type=0, hda=true
+	// dx, dy, dw, dh, src, sx, sy, sw, sh, opa=255, type=0
 	TJS_GET_NATIVE_INSTANCE(/*var. name*/_this, /*var. type*/tTJSNI_Layer);
 	if(numparams < 9) return TJS_E_BADPARAMCOUNT;
 
@@ -7285,13 +7302,16 @@ TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/stretchPile)
 		opa = *param[9];
 
 	tTVPBBStretchType type = stNearest;
-	bool hda = true;
 	if(numparams >= 11 && param[10]->Type() != tvtVoid)
 		type = (tTVPBBStretchType)(tjs_int)*param[10];
-	if(numparams >= 12 && param[11]->Type() != tvtVoid)
-		hda = param[11]->operator bool();
 
-	_this->StretchPile(destrect, src, srcrect, opa, type, hda);
+	if(numparams >= 12 && param[11]->Type() != tvtVoid)
+	{
+		TVPAddLog(TVPFormatMessage(TVPHoldDestinationAlphaParameterIsNowDeprecated,
+			TJS_W("Layer.stretchPile"), TJS_W("12")));
+	}
+
+	_this->StretchPile(destrect, src, srcrect, opa, type);
 
 	return TJS_S_OK;
 }
@@ -7299,7 +7319,7 @@ TJS_END_NATIVE_METHOD_DECL(/*func. name*/stretchPile)
 //----------------------------------------------------------------------
 TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/stretchBlend)
 {
-	// dx, dy, dw, dh, src, sx, sy, sw, sh, opa=255, type=0, hda=true
+	// dx, dy, dw, dh, src, sx, sy, sw, sh, opa=255, type=0
 	TJS_GET_NATIVE_INSTANCE(/*var. name*/_this, /*var. type*/tTJSNI_Layer);
 	if(numparams < 9) return TJS_E_BADPARAMCOUNT;
 
@@ -7327,13 +7347,15 @@ TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/stretchBlend)
 		opa = *param[9];
 
 	tTVPBBStretchType type = stNearest;
-	bool hda = true;
 	if(numparams >= 11 && param[10]->Type() != tvtVoid)
 		type = (tTVPBBStretchType)(tjs_int)*param[10];
 	if(numparams >= 12 && param[11]->Type() != tvtVoid)
-		hda = param[11]->operator bool();
+	{
+		TVPAddLog(TVPFormatMessage(TVPHoldDestinationAlphaParameterIsNowDeprecated,
+			TJS_W("Layer.stretchBlend"), TJS_W("12")));
+	}
 
-	_this->StretchBlend(destrect, src, srcrect, opa, type, hda);
+	_this->StretchBlend(destrect, src, srcrect, opa, type);
 
 	return TJS_S_OK;
 }
@@ -7375,13 +7397,10 @@ TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/operateStretch)
 		opa = *param[10];
 
 	tTVPBBStretchType type = stNearest;
-	bool hda = true;
 	if(numparams >= 12 && param[11]->Type() != tvtVoid)
 		type = (tTVPBBStretchType)(tjs_int)*param[11];
-	if(numparams >= 13 && param[12]->Type() != tvtVoid)
-		hda = param[12]->operator bool();
 
-	_this->OperateStretch(destrect, src, srcrect, mode, opa, type, hda);
+	_this->OperateStretch(destrect, src, srcrect, mode, opa, type);
 
 	return TJS_S_OK;
 }
@@ -7443,7 +7462,7 @@ TJS_END_NATIVE_METHOD_DECL(/*func. name*/affineCopy)
 //----------------------------------------------------------------------
 TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/affinePile)
 {
-	// src, sx, sy, sw, sh, affine, x0/a, y0/b, x1/c, y1/d, x2/tx, y2/ty, opa=255, type=0, hda=true
+	// src, sx, sy, sw, sh, affine, x0/a, y0/b, x1/c, y1/d, x2/tx, y2/ty, opa=255, type=0
 	TJS_GET_NATIVE_INSTANCE(/*var. name*/_this, /*var. type*/tTJSNI_Layer);
 	if(numparams < 12) return TJS_E_BADPARAMCOUNT;
 
@@ -7463,14 +7482,16 @@ TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/affinePile)
 
 	tjs_int opa = 255;
 	tTVPBBStretchType type = stNearest;
-	bool hda = true;
 
 	if(numparams >= 13 && param[12]->Type() != tvtVoid)
 		opa = (tjs_int)*param[12];
 	if(numparams >= 14 && param[13]->Type() != tvtVoid)
 		type = (tTVPBBStretchType)(tjs_int)*param[13];
 	if(numparams >= 15 && param[14]->Type() != tvtVoid)
-		hda = param[14]->operator bool();
+	{
+		TVPAddLog(TVPFormatMessage(TVPHoldDestinationAlphaParameterIsNowDeprecated,
+			TJS_W("Layer.affinePile"), TJS_W("15")));
+	}
 
 	if(param[5]->operator bool())
 	{
@@ -7482,7 +7503,7 @@ TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/affinePile)
 		mat.d = *param[9];
 		mat.tx = *param[10];
 		mat.ty = *param[11];
-		_this->AffinePile(mat, src, srcrect, opa, type, hda);
+		_this->AffinePile(mat, src, srcrect, opa, type);
 	}
 	else
 	{
@@ -7494,7 +7515,7 @@ TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/affinePile)
 		points[1].y = *param[9];
 		points[2].x = *param[10];
 		points[2].y = *param[11];
-		_this->AffinePile(points, src, srcrect, opa, type, hda);
+		_this->AffinePile(points, src, srcrect, opa, type);
 	}
 
 	return TJS_S_OK;
@@ -7503,7 +7524,7 @@ TJS_END_NATIVE_METHOD_DECL(/*func. name*/affinePile)
 //----------------------------------------------------------------------
 TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/affineBlend)
 {
-	// src, sx, sy, sw, sh, affine, x0/a, y0/b, x1/c, y1/d, x2/tx, y2/ty, opa=255, type=0, hda=true
+	// src, sx, sy, sw, sh, affine, x0/a, y0/b, x1/c, y1/d, x2/tx, y2/ty, opa=255, type=0
 	TJS_GET_NATIVE_INSTANCE(/*var. name*/_this, /*var. type*/tTJSNI_Layer);
 	if(numparams < 12) return TJS_E_BADPARAMCOUNT;
 
@@ -7523,14 +7544,16 @@ TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/affineBlend)
 
 	tjs_int opa = 255;
 	tTVPBBStretchType type = stNearest;
-	bool hda = true;
 
 	if(numparams >= 13 && param[12]->Type() != tvtVoid)
 		opa = (tjs_int)*param[12];
 	if(numparams >= 14 && param[13]->Type() != tvtVoid)
 		type = (tTVPBBStretchType)(tjs_int)*param[13];
 	if(numparams >= 15 && param[14]->Type() != tvtVoid)
-		hda = param[14]->operator bool();
+	{
+		TVPAddLog(TVPFormatMessage(TVPHoldDestinationAlphaParameterIsNowDeprecated,
+			TJS_W("Layer.affineBlend"), TJS_W("15")));
+	}
 
 	if(param[5]->operator bool())
 	{
@@ -7542,7 +7565,7 @@ TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/affineBlend)
 		mat.d = *param[9];
 		mat.tx = *param[10];
 		mat.ty = *param[11];
-		_this->AffineBlend(mat, src, srcrect, opa, type, hda);
+		_this->AffineBlend(mat, src, srcrect, opa, type);
 	}
 	else
 	{
@@ -7554,7 +7577,7 @@ TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/affineBlend)
 		points[1].y = *param[9];
 		points[2].x = *param[10];
 		points[2].y = *param[11];
-		_this->AffineBlend(points, src, srcrect, opa, type, hda);
+		_this->AffineBlend(points, src, srcrect, opa, type);
 	}
 
 	return TJS_S_OK;
@@ -7564,7 +7587,7 @@ TJS_END_NATIVE_METHOD_DECL(/*func. name*/affineBlend)
 TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/operateAffine)
 {
 	// src, sx, sy, sw, sh, affine, x0/a, y0/b, x1/c, y1/d, x2/tx, y2/ty,
-	// mode=omAuto, opa=255, type=0, hda=true
+	// mode=omAuto, opa=255, type=0
 	TJS_GET_NATIVE_INSTANCE(/*var. name*/_this, /*var. type*/tTJSNI_Layer);
 	if(numparams < 12) return TJS_E_BADPARAMCOUNT;
 
@@ -7584,14 +7607,16 @@ TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/operateAffine)
 
 	tjs_int opa = 255;
 	tTVPBBStretchType type = stNearest;
-	bool hda = true;
 
 	if(numparams >= 14 && param[13]->Type() != tvtVoid)
 		opa = (tjs_int)*param[13];
 	if(numparams >= 15 && param[14]->Type() != tvtVoid)
 		type = (tTVPBBStretchType)(tjs_int)*param[14];
 	if(numparams >= 16 && param[15]->Type() != tvtVoid)
-		hda = param[15]->operator bool();
+	{
+		TVPAddLog(TVPFormatMessage(TVPHoldDestinationAlphaParameterIsNowDeprecated,
+			TJS_W("Layer.operateAffine"), TJS_W("16")));
+	}
 
 	tTVPBlendOperationMode mode;
 	if(numparams >= 13 && param[12]->Type() != tvtVoid)
@@ -7610,7 +7635,7 @@ TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/operateAffine)
 		mat.d = *param[9];
 		mat.tx = *param[10];
 		mat.ty = *param[11];
-		_this->OperateAffine(mat, src, srcrect, mode, opa, type, hda);
+		_this->OperateAffine(mat, src, srcrect, mode, opa, type);
 	}
 	else
 	{
@@ -7622,7 +7647,7 @@ TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/operateAffine)
 		points[1].y = *param[9];
 		points[2].x = *param[10];
 		points[2].y = *param[11];
-		_this->OperateAffine(points, src, srcrect, mode, opa, type, hda);
+		_this->OperateAffine(points, src, srcrect, mode, opa, type);
 	}
 
 	return TJS_S_OK;
@@ -8783,6 +8808,26 @@ TJS_BEGIN_NATIVE_PROP_DECL(face)
 	TJS_END_NATIVE_PROP_SETTER
 }
 TJS_END_NATIVE_PROP_DECL(face)
+//----------------------------------------------------------------------
+TJS_BEGIN_NATIVE_PROP_DECL(holdAlpha)
+{
+	TJS_BEGIN_NATIVE_PROP_GETTER
+	{
+		TJS_GET_NATIVE_INSTANCE(/*var. name*/_this, /*var. type*/tTJSNI_Layer);
+		*result = (tjs_int)_this->GetHoldAlpha();
+		return TJS_S_OK;
+	}
+	TJS_END_NATIVE_PROP_GETTER
+
+	TJS_BEGIN_NATIVE_PROP_SETTER
+	{
+		TJS_GET_NATIVE_INSTANCE(/*var. name*/_this, /*var. type*/tTJSNI_Layer);
+		_this->SetHoldAlpha((bool)(tjs_int)*param);
+		return TJS_S_OK;
+	}
+	TJS_END_NATIVE_PROP_SETTER
+}
+TJS_END_NATIVE_PROP_DECL(holdAlpha)
 //----------------------------------------------------------------------
 TJS_BEGIN_NATIVE_PROP_DECL(clipLeft)
 {

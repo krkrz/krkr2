@@ -619,11 +619,15 @@ private:
 	tTVPDrawFace DrawFace; // (actual) current drawing layer face
 	tTVPDrawFace Face; // (outward) current drawing layer face
 
+	bool HoldAlpha; // whether the layer alpha channel is to be kept
+		// when the layer type is ltOpaque
 
 public:
 	void SetFace(tTVPDrawFace f) { Face = f; UpdateDrawFace(); }
 	tTVPDrawFace GetFace() const { return Face; }
 
+	void SetHoldAlpha(bool b)  { HoldAlpha = b; }
+	bool GetHoldAlpha() const  { return HoldAlpha; }
 
 private:
 	bool ImageModified; // flag to know modification of layer image
@@ -674,50 +678,50 @@ public:
 		const tTVPRect &srcrect, tTVPBBStretchType mode = stNearest);
 
 	void PileRect(tjs_int dx, tjs_int dy, tTJSNI_BaseLayer *src,
-		const tTVPRect &rect, tjs_int opacity = 255, bool hda = true);
+		const tTVPRect &rect, tjs_int opacity = 255);
 
 	void BlendRect(tjs_int dx, tjs_int dy, tTJSNI_BaseLayer *src,
-		const tTVPRect &rect, tjs_int opacity = 255, bool hda = true);
+		const tTVPRect &rect, tjs_int opacity = 255);
 
 	void OperateRect(tjs_int dx, tjs_int dy, tTJSNI_BaseLayer *src,
 		const tTVPRect &rect, tTVPBlendOperationMode mode = omAuto,
-			tjs_int opacity = 255, bool hda = true);
+			tjs_int opacity = 255);
 
 	void StretchPile(const tTVPRect &destrect, tTJSNI_BaseLayer *src,
 		const tTVPRect &srcrect, tjs_int opacity = 255,
-			tTVPBBStretchType type = stNearest, bool hda = true);
+			tTVPBBStretchType type = stNearest);
 
 	void StretchBlend(const tTVPRect &destrect, tTJSNI_BaseLayer *src,
 		const tTVPRect &srcrect, tjs_int opacity = 255,
-			tTVPBBStretchType type = stNearest, bool hda = true);
+			tTVPBBStretchType type = stNearest);
 
 	void OperateStretch(const tTVPRect &destrect, tTJSNI_BaseLayer *src,
 		const tTVPRect &srcrect, tTVPBlendOperationMode mode = omAuto, tjs_int opacity = 255,
-			tTVPBBStretchType type = stNearest, bool hda = true);
+			tTVPBBStretchType type = stNearest);
 
 	void AffinePile(const t2DAffineMatrix &matrix, tTJSNI_BaseLayer *src,
 		const tTVPRect &srcrect, tjs_int opacity = 255,
-		tTVPBBStretchType type = stNearest, bool hda = true);
+		tTVPBBStretchType type = stNearest);
 
 	void AffinePile(const tTVPPoint *points, tTJSNI_BaseLayer *src,
 		const tTVPRect &srcrect, tjs_int opacity = 255,
-		tTVPBBStretchType type = stNearest, bool hda = true);
+		tTVPBBStretchType type = stNearest);
 
 	void AffineBlend(const t2DAffineMatrix &matrix, tTJSNI_BaseLayer *src,
 		const tTVPRect &srcrect, tjs_int opacity = 255,
-		tTVPBBStretchType type = stNearest, bool hda = true);
+		tTVPBBStretchType type = stNearest);
 
 	void AffineBlend(const tTVPPoint *points, tTJSNI_BaseLayer *src,
 		const tTVPRect &srcrect, tjs_int opacity = 255,
-		tTVPBBStretchType type = stNearest, bool hda = true);
+		tTVPBBStretchType type = stNearest);
 
 	void OperateAffine(const t2DAffineMatrix &matrix, tTJSNI_BaseLayer *src,
 		const tTVPRect &srcrect, tTVPBlendOperationMode mode = omAuto, tjs_int opacity = 255,
-		tTVPBBStretchType type = stNearest, bool hda = true);
+		tTVPBBStretchType type = stNearest);
 
 	void OperateAffine(const tTVPPoint *points, tTJSNI_BaseLayer *src,
 		const tTVPRect &srcrect, tTVPBlendOperationMode mode = omAuto, tjs_int opacity = 255,
-		tTVPBBStretchType type = stNearest, bool hda = true);
+		tTVPBBStretchType type = stNearest);
 
 	void AdjustGamma(const tTVPGLGammaAdjustData & data);
 	void DoGrayScale();
