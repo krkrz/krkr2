@@ -2231,6 +2231,42 @@ void tTVPBaseBitmap::AdjustGamma(tTVPRect rect, const tTVPGLGammaAdjustData & da
 	TVPUninitGammaAdjustTempData(&temp);
 }
 //---------------------------------------------------------------------------
+void tTVPBaseBitmap::ConvertAddAlphaToAlpha()
+{
+	// convert additive alpha representation to alpha representation
+
+	if(!Is32BPP()) TVPThrowExceptionMessage(TVPInvalidOperationFor8BPP);
+
+	tjs_int w = GetWidth();
+	tjs_int h = GetHeight();
+	tjs_int pitch = GetPitchBytes();
+	tjs_uint8 * line = (tjs_uint8*)GetScanLineForWrite(0);
+
+	while(h--)
+	{
+		TVPConvertAdditiveAlphaToAlpha((tjs_uint32*)line, w);
+		line += pitch;
+	}
+}
+//---------------------------------------------------------------------------
+void tTVPBaseBitmap::ConvertAlphaToAddAlpha()
+{
+	// convert additive alpha representation to alpha representation
+
+	if(!Is32BPP()) TVPThrowExceptionMessage(TVPInvalidOperationFor8BPP);
+
+	tjs_int w = GetWidth();
+	tjs_int h = GetHeight();
+	tjs_int pitch = GetPitchBytes();
+	tjs_uint8 * line = (tjs_uint8*)GetScanLineForWrite(0);
+
+	while(h--)
+	{
+		TVPConvertAlphaToAdditiveAlpha((tjs_uint32*)line, w);
+		line += pitch;
+	}
+}
+//---------------------------------------------------------------------------
 
 
 

@@ -280,6 +280,8 @@ public:
 
 	bool GetDestHasAlpha() const { return IsTypeUsingAlpha(DrawType); }
 
+	void ConvertLayerType(tTVPLayerType fromtype);
+
 	//-------------------------------------------- geographical management --
 private:
 	tTVPRect Rect;
