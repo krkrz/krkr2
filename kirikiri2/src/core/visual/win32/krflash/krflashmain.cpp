@@ -15,7 +15,6 @@
 #pragma hdrstop
 
 
-#include "..\krmovie.h"
 #include "FlashContainerFormUnit.h"
 #include "krflashmain.h"
 #include <evcode.h>
@@ -189,7 +188,64 @@ void tTVPFlashOverlay::ResetForm()
 	Form->Visible = Visible;
 }
 //---------------------------------------------------------------------------
-
+// Start:	Add:	T.Imoto
+const wchar_t* __stdcall tTVPFlashOverlay::BuildGraph( HWND callbackwin, IStream *stream,
+	const wchar_t * streamname, const wchar_t *type, unsigned __int64 size )
+{
+	if(Shutdown) return NULL;
+	return L"Currently not supported";
+}
+const wchar_t* __stdcall tTVPFlashOverlay::FreeEventParams(long evcode, long param1, long param2)
+{
+	if(Shutdown) return NULL;
+	return L"Currently not supported";
+}
+const wchar_t* __stdcall tTVPFlashOverlay::Rewind()
+{
+	if(Shutdown) return NULL;
+	return L"Currently not supported";
+}
+const wchar_t* __stdcall tTVPFlashOverlay::SetFrame( int f )
+{
+	if(Shutdown) return NULL;
+	return L"Currently not supported";
+}
+const wchar_t* __stdcall tTVPFlashOverlay::GetFrame( int *f )
+{
+	if(Shutdown) return NULL;
+	return L"Currently not supported";
+}
+const wchar_t* __stdcall tTVPFlashOverlay::GetFPS( double *f )
+{
+	if(Shutdown) return NULL;
+	return L"Currently not supported";
+}
+const wchar_t* __stdcall tTVPFlashOverlay::GetNumberOfFrame( int *f )
+{
+	if(Shutdown) return NULL;
+	return L"Currently not supported";
+}
+const wchar_t* __stdcall tTVPFlashOverlay::GetTotalTime( __int64 *t )
+{
+	if(Shutdown) return NULL;
+	return L"Currently not supported";
+}
+const wchar_t* __stdcall tTVPFlashOverlay::GetVideoSize( long *width, long *height )
+{
+	if(Shutdown) return NULL;
+	return L"Currently not supported";
+}
+const wchar_t* __stdcall tTVPFlashOverlay::GetFrontBuffer( BYTE **buff )
+{
+	if(Shutdown) return NULL;
+	return L"Currently not supported";
+}
+const wchar_t* __stdcall tTVPFlashOverlay::SetVideoBuffer( BYTE *buff1, BYTE *buff2, long size )
+{
+	if(Shutdown) return NULL;
+	return L"Currently not supported";
+}
+// End:	Add:	T.Imoto
 
 
 
@@ -204,7 +260,16 @@ extern "C" const wchar_t* _export __stdcall GetVideoOverlayObject(
 	return NULL;
 }
 //---------------------------------------------------------------------------
+// Start:	Add:	T.Imoto
+extern "C" const wchar_t* _export __stdcall GetVideoOverlayObjectByParam( struct tTVPGetVideoOverlayObjectParam *param )
+{
+	if( param == NULL )
+		return L"Parameter is NULL.";
 
+	*(param->out) = new tTVPFlashOverlay(param->streamname, param->callbackwin);
+	return NULL;
+}
+// End:	Add:	T.Imoto
 
 
 
