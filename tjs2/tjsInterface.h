@@ -208,7 +208,7 @@ public:
 		) = 0;
 
 	virtual tjs_error TJS_INTF_METHOD
-	IsValid( // get validation
+	IsValid( // get validation, returns TJS_S_TRUE (valid) or TJS_S_FALSE (invalid)
 		tjs_uint32 flag,			// calling flag
 		const tjs_char *membername,	// member name ( NULL for a default member )
 		tjs_uint32 *hint,			// hint for the member name (in/out)
@@ -216,7 +216,7 @@ public:
 		) = 0;
 
 	virtual tjs_error TJS_INTF_METHOD
-	IsValidByNum( // get validation by index number
+	IsValidByNum( // get validation by index number, returns TJS_S_TRUE (valid) or TJS_S_FALSE (invalid)
 		tjs_uint32 flag,			// calling flag
 		tjs_int num,				// index number
 		iTJSDispatch2 *objthis		// object as "this"
