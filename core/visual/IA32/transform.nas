@@ -8,6 +8,7 @@
 
 globaldef		TVPStretchCopy_mmx_a
 globaldef		TVPStretchAlphaBlend_mmx_a
+globaldef		TVPStretchAdditiveAlphaBlend_mmx_a
 globaldef		TVPStretchConstAlphaBlend_mmx_a
 globaldef		TVPFastLinearInterpV2_mmx_a
 globaldef		TVPFastLinearInterpH2F_mmx_a
@@ -15,6 +16,7 @@ globaldef		TVPFastLinearInterpH2B_mmx_a
 globaldef		TVPLinTransCopy_mmx_a
 globaldef		TVPLinTransConstAlphaBlend_mmx_a
 
+;--------------------------------------------------------------------
 		segment_code
 ;--------------------------------------------------------------------
 
@@ -354,6 +356,149 @@ TVPStretchAlphaBlend_mmx_a:					; stretch copy with pixel alpha blending
 		psrlw		mm3,	8
 		packuswb	mm3,	mm7
 		movd		[edi],	mm3
+
+		add			ebx,	edx						; srcp += srcstep
+		add			edi,	byte 4					; dest ++
+
+		cmp			edi,	ebp
+		jb			.ploop2							; jump if edi < ebp
+
+.pexit:
+		pop			ebp
+.pexit2:
+		pop			edx
+		pop			ecx
+		pop			ebx
+		pop			esi
+		pop			edi
+		emms
+		ret
+
+
+;--------------------------------------------------------------------
+
+;;[function_replace_by TVPCPUType & TVP_CPU_HAS_MMX] TVPStretchAdditiveAlphaBlend
+;;void, TVPStretchAdditiveAlphaBlend_mmx_a, (tjs_uint32 *dest, tjs_int len, const tjs_uint32 *src, tjs_int srcstart, tjs_int srcstep)
+
+		function_align
+TVPStretchAdditiveAlphaBlend_mmx_a:					; stretch copy with pixel additive alpha blending
+		push		edi
+		push		esi
+		push		ebx
+		push		ecx
+		push		edx
+		pxor		mm0,	mm0
+		mov			ecx,	[esp + 28]				; len
+		cmp			ecx,	byte 0
+		jle			near	.pexit2
+		mov			edi,	[esp + 24]				; dest
+		mov			esi,	[esp + 32]				; src
+		mov			ebx,	[esp + 36]				; srcstart (srcp)
+		mov			edx,	[esp + 40]				; srcstep
+		push		ebp
+		lea			ebp,	[edi+ecx*4]				; limit
+		sub			ebp,	byte 4*3
+		cmp			edi,	ebp
+		jae			near	.pfraction				; jump if edi >= ebp
+
+		loop_align
+.ploop:
+		mov			eax,	ebx						; 0 0 tmp = srcp
+		lea			ecx,	[ebx + edx]				; 0 1 tmp = srcp
+		shr			eax,	16						; 0 0 tmp >>= 16
+		shr			ecx,	16						; 0 1 tmp >>= 16
+
+		movd		mm4,		[eax*4 + esi]		; 1 src
+		movd		mm5,		[ecx*4 + esi]		; 2 src
+		movq		mm2,		mm4					; 1
+		movq		mm6,		mm5					; 2
+		psrlq		mm2,		24					; 1
+		movd		mm1,		[edi]				; 1 dest
+		punpcklwd	mm2,		mm2					; 1
+		psrlq		mm6,		24					; 2
+		punpcklwd	mm2,		mm2					; 1
+		punpcklbw	mm1,		mm0					; 1 mm1 = 00dd00dd00dd00dd
+		movd		mm7,		[edi+4]				; 2 dest
+		movq		mm3,		mm1					; 1
+		punpcklwd	mm6,		mm6					; 2
+		pmullw		mm1,		mm2					; 1
+		punpcklwd	mm6,		mm6					; 2
+		psrlw		mm1,		8					; 1
+		punpcklbw	mm7,		mm0					; 2 mm7 = 00dd00dd00dd00dd
+		psubw		mm3,		mm1					; 1
+		movq		mm2,		mm7					; 2
+		packuswb	mm3,		mm0					; 1
+		pmullw		mm7,		mm6					; 2
+		paddusb		mm3,		mm4					; 1 add src
+		psrlw		mm7,		8					; 2
+		movd		[edi],		mm3					; 1 store
+		psubw		mm2,		mm7					; 2
+		lea			eax,	[ebx + edx*2]			; tmp = srcp
+		packuswb	mm2,		mm0					; 2
+		lea			ecx,	[ebx + edx*4]			; tmp = srcp
+		paddusb		mm2,		mm5					; 2 add src
+		sub			ecx,	edx						;
+		movd		[edi+4],	mm2					; 2 store
+		shr			eax,	16						; tmp >>= 16
+		shr			ecx,	16						; tmp >>= 16
+		movd		mm4,		[eax*4 + esi]		; 1 src
+		movd		mm5,		[ecx*4 + esi]		; 2 src
+		movq		mm2,		mm4					; 1
+		movq		mm6,		mm5					; 2
+		psrlq		mm2,		24					; 1
+		movd		mm1,		[edi+8]				; 1 dest
+		punpcklwd	mm2,		mm2					; 1
+		psrlq		mm6,		24					; 2
+		punpcklwd	mm2,		mm2					; 1
+		punpcklbw	mm1,		mm0					; 1 mm1 = 00dd00dd00dd00dd
+		movd		mm7,		[edi+12]				; 2 dest
+		movq		mm3,		mm1					; 1
+		punpcklwd	mm6,		mm6					; 2
+		pmullw		mm1,		mm2					; 1
+		punpcklwd	mm6,		mm6					; 2
+		psrlw		mm1,		8					; 1
+		punpcklbw	mm7,		mm0					; 2 mm7 = 00dd00dd00dd00dd
+		psubw		mm3,		mm1					; 1
+		movq		mm2,		mm7					; 2
+		packuswb	mm3,		mm0					; 1
+		pmullw		mm7,		mm6					; 2
+		paddusb		mm3,		mm4					; 1 add src
+		psrlw		mm7,		8					; 2
+		movd		[edi+8],	mm3					; 1 store
+		psubw		mm2,		mm7					; 2
+		add			edi,	byte 16					; dest ++
+		packuswb	mm2,		mm0					; 2
+		lea			ebx,	[ebx + edx*4]			; srcp += srcstep
+		paddusb		mm2,		mm5					; 2 add src
+		cmp			edi,	ebp
+		movd		[edi+12-16],	mm2				; 2 store
+
+		jb			near .ploop						; jump if edi < ebp
+
+
+.pfraction:
+		add			ebp,	byte 4*3
+		cmp			edi,	ebp
+		jae			.pexit							; jump if edi >= ebp
+
+.ploop2:
+		mov			eax,		ebx					; tmp = srcp
+		shr			eax,		16					; tmp >>= 16
+
+		movd		mm4,		[eax*4 + esi]		; src
+		movq		mm2,		mm4
+		psrlq		mm2,		24
+		movd		mm1,		[edi]				; dest
+		punpcklwd	mm2,		mm2
+		punpcklwd	mm2,		mm2
+		punpcklbw	mm1,		mm0					; mm1 = 00dd00dd00dd00dd
+		movq		mm3,		mm1
+		pmullw		mm1,		mm2
+		psrlw		mm1,		8
+		psubw		mm3,		mm1
+		packuswb	mm3,		mm0
+		paddusb		mm3,		mm4					; add src
+		movd		[edi],		mm3					; store
 
 		add			ebx,	edx						; srcp += srcstep
 		add			edi,	byte 4					; dest ++
