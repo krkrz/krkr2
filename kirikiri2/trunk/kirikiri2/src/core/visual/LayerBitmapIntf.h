@@ -153,10 +153,67 @@ public:
 		tTVPRect refrect, tTVPBBBltMethod method, tjs_int opa,
 			bool hda = true);
 
+private:
+	template <typename tFunc>
+	static void TVPDoStretchLoop(tFunc func,
+		tjs_int x_ref_start,
+		tjs_int y_ref_start,
+		tjs_int x_len, tjs_int y_len,
+		tjs_uint8 * destp, tjs_int destpitch,
+		tjs_int x_step, tjs_int y_step,
+		const tjs_uint8 * refp, tjs_int refpitch);
+
+	template <typename tStretchFunc>
+	static void TVPDoBiLinearStretchLoop(
+			tStretchFunc stretch,
+			tjs_int rw, tjs_int rh,
+			tjs_int dw, tjs_int dh,
+			tjs_int refw, tjs_int refh,
+			tjs_int x_ref_start,
+			tjs_int y_ref_start,
+			tjs_int x_len, tjs_int y_len,
+			tjs_uint8 * destp, tjs_int destpitch,
+			tjs_int x_step, tjs_int y_step,
+			const tjs_uint8 * refp, tjs_int refpitch);
+
+public:
 	bool StretchBlt(tTVPRect cliprect, tTVPRect destrect, const tTVPBaseBitmap *ref,
 		tTVPRect refrect, tTVPBBBltMethod method, tjs_int opa,
 			bool hda = true, tTVPBBStretchType type = stNearest);
 
+private:
+	template <typename tFuncStretch, typename tFuncAffine>
+	void TVPDoAffineLoop(
+			tFuncStretch stretch,
+			tFuncAffine affine,
+			tjs_int sxs,
+			tjs_int sys,
+			tjs_uint8 *dest,
+			tjs_int l,
+			tjs_int len,
+			const tjs_uint8 *src,
+			tjs_int srcpitch,
+			tjs_int sxl,
+			tjs_int syl,
+			const tTVPRect & srcrect);
+
+	template <typename tFuncStretch, typename tFuncAffine>
+	void TVPDoBilinearAffineLoop(
+			tFuncStretch stretch,
+			tFuncAffine affine,
+			tjs_int sxs,
+			tjs_int sys,
+			tjs_uint8 *dest,
+			tjs_int l,
+			tjs_int len,
+			const tjs_uint8 *src,
+			tjs_int srcpitch,
+			tjs_int sxl,
+			tjs_int syl,
+			tjs_int ref_right_limit,
+			tjs_int ref_bottom_limit);
+
+public:
 	bool AffineBlt(tTVPRect destrect, const tTVPBaseBitmap *ref,
 		tTVPRect refrect, const tTVPPointD * points,
 			tTVPBBBltMethod method, tjs_int opa,
