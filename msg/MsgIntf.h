@@ -95,6 +95,9 @@ TVP_MSG_DECL(TVPInternalError,
 TVP_MSG_DECL(TVPInvalidParam,
 	"不正なパラメータです");
 
+TVP_MSG_DECL(TVPWarnDebugOptionEnabled,
+	"-debug オプションが指定されているため、現在 吉里吉里はデバッグモードで動作しています。デバッグモードでは十分な実行速度が出ない場合があるので注意してください");
+
 TVP_MSG_DECL(TVPCommandLineParamIgnoredAndDefaultUsed,
 	"コマンドラインパラメータ %1 に指定された値 %2 は無効のためデフォルトの設定を用います");
 

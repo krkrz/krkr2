@@ -20,6 +20,7 @@
 #include "tjsUtils.h"
 #include "tjsNative.h"
 #include "tjsArray.h"
+#include "tjsDebug.h"
 
 
 namespace TJS
@@ -741,53 +742,6 @@ void TJSVariantArrayStackCompactNow()
 //---------------------------------------------------------------------------
 // tTJSInterCodeContext ( class definitions are in tjsInterCodeGen.h )
 //---------------------------------------------------------------------------
-/*
-void tTJSInterCodeContext::ExecuteAsGlobal(tTJSVariant *result)
-{
-	tjs_int num_alloc = MaxVariableCount + VariableReserveCount + 1 + MaxFrameCount;
-	TJSVariantArrayStackAddRef();
-//	AddRef();
-	try
-	{
-		tTJSVariant *regs =
-			TJSVariantArrayStack->Allocate(num_alloc);
-		tTJSVariant *ra = regs + MaxVariableCount + VariableReserveCount;
-
-		iTJSDispatch2 *global = Block->GetTJS()->GetGlobalNoAddRef();
-		ra[-1] = tTJSVariant(global, global);
-		ra[0].Clear();
-
-		try
-		{
-			ExecuteCode(ra, 0, NULL, 0, result);
-		}
-		catch(...)
-		{
-#if 0
-			for(tjs_int i=0; i<num_alloc; i++)
-				regs[i].Clear();
-#endif
-			TJSVariantArrayStack->Deallocate(num_alloc, regs);
-			throw;
-		}
-
-#if 0
-		for(tjs_int i=0; i<MaxVariableCount + VariableReserveCount; i++)
-			regs[i].Clear();
-#endif
-		TJSVariantArrayStack->Deallocate(num_alloc, regs);
-	}
-	catch(...)
-	{
-//		Release();
-		TJSVariantArrayStackRelease();
-		throw;
-	}
-//	Release();
-	TJSVariantArrayStackRelease();
-}
-*/
-//---------------------------------------------------------------------------
 void tTJSInterCodeContext::ExecuteAsFunction(iTJSDispatch2 *objthis,
 	tTJSVariant **args, tjs_int numargs, tTJSVariant *result, tjs_int start_ip)
 {
@@ -838,6 +792,7 @@ void tTJSInterCodeContext::ExecuteAsFunction(iTJSDispatch2 *objthis,
 			ra[-2].SetObject(global, global);
 		}
 */
+		if(TJSStackTracerEnabled()) TJSStackTracerPush(this, false);
 		try
 		{
 			ra[-1].SetObject(objthis, objthis);
@@ -881,6 +836,7 @@ void tTJSInterCodeContext::ExecuteAsFunction(iTJSDispatch2 *objthis,
 #endif
 			ra[-2].Clear(); // at least we must clear the object placed at local stack
 			TJSVariantArrayStack->Deallocate(num_alloc, regs);
+			if(TJSStackTracerEnabled()) TJSStackTracerPop();
 			throw;
 		}
 
@@ -891,6 +847,8 @@ void tTJSInterCodeContext::ExecuteAsFunction(iTJSDispatch2 *objthis,
 		ra[-2].Clear(); // at least we must clear the object placed at local stack
 
 		TJSVariantArrayStack->Deallocate(num_alloc, regs);
+
+		if(TJSStackTracerEnabled()) TJSStackTracerPop();
 	}
 	catch(...)
 	{
@@ -989,6 +947,9 @@ tjs_int tTJSInterCodeContext::ExecuteCode(tTJSVariant *ra_org, tjs_int startip,
 	try
 	{
 		tjs_int32 *code = codesave = CodeArea + startip;
+
+		if(TJSStackTracerEnabled()) TJSStackTracerSetCodePointer(CodeArea, &codesave);
+
 		tTJSVariant *ra = ra_org;
 		tTJSVariant *da = DataArea;
 
@@ -1438,9 +1399,31 @@ tjs_int tTJSInterCodeContext::ExecuteCodeInTryBlock(tTJSVariant *ra, tjs_int sta
 
 	try
 	{
-		return ExecuteCode(ra, startip, args, numargs, result);
+		if(TJSStackTracerEnabled()) TJSStackTracerPush(this, true);
+		tjs_int ret;
+		try
+		{
+			ret = ExecuteCode(ra, startip, args, numargs, result);
+		}
+		catch(...)
+		{
+			if(TJSStackTracerEnabled()) TJSStackTracerPop();
+			throw;
+		}
+		if(TJSStackTracerEnabled()) TJSStackTracerPop();
+		return ret;
 	}
-	TJS_CONVERT_TO_TJS_EXCEPTION_OBJECT(Block->GetTJS(), exobjreg, ra + exobjreg, {;}, { return catchip; })
+	TJS_CONVERT_TO_TJS_EXCEPTION_OBJECT(
+			Block->GetTJS(),
+			exobjreg,
+			ra + exobjreg,
+			{
+				;
+			},
+			{
+				return catchip;
+			}
+		)
 }
 //---------------------------------------------------------------------------
 void tTJSInterCodeContext::ContinuousClear(

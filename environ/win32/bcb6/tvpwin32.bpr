@@ -59,7 +59,7 @@
       intermediate\OptionsDesc.obj intermediate\ConfSettingsUnit.obj 
       intermediate\ConfMainFrameUnit.obj intermediate\tjsGlobalStringMap.obj 
       intermediate\ClipboardIntf.obj intermediate\ClipboardImpl.obj 
-      intermediate\tjsDisassemble.obj"/>
+      intermediate\tjsDisassemble.obj intermediate\tjsDebug.obj"/>
     <RESFILES value="tvpwin32.res ..\HBeamCur.res"/>
     <DEFFILE value="..\tvpwin32.def"/>
     <RESDEPEN value="$(RESFILES) ..\HaltWarnFormUnit.dfm 
@@ -232,6 +232,7 @@
       <FILE FILENAME="..\..\..\utils\ClipboardIntf.cpp" FORMNAME="" UNITNAME="ClipboardIntf" CONTAINERID="C/C++ コンパイラ" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\utils\win32\ClipboardImpl.cpp" FORMNAME="" UNITNAME="ClipboardImpl" CONTAINERID="C/C++ コンパイラ" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\tjs2\tjsDisassemble.cpp" FORMNAME="" UNITNAME="tjsDisassemble" CONTAINERID="C/C++ コンパイラ" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\..\tjs2\tjsDebug.cpp" FORMNAME="" UNITNAME="tjsDebug" CONTAINERID="C/C++ コンパイラ" DESIGNCLASS="" LOCALCOMMAND=""/>
   </FILELIST>
   <BUILDTOOLS>
   </BUILDTOOLS>

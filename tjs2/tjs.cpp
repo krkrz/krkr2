@@ -26,6 +26,7 @@
 #include "tjsHashSearch.h"
 #include "tjsRandomGenerator.h"
 #include "tjsGlobalStringMap.h"
+#include "tjsDebug.h"
 
 
 
@@ -41,7 +42,7 @@ extern iTJSDispatch2 * TJSCreateRegExpClass();
 //---------------------------------------------------------------------------
 const tjs_int TJSVersionMajor   = 2;
 const tjs_int TJSVersionMinor   = 4;
-const tjs_int TJSVersionRelease = 10;
+const tjs_int TJSVersionRelease = 11;
 const tjs_int TJSVersionHex =
 	TJSVersionMajor * 0x1000000 + TJSVersionMinor * 0x10000 + TJSVersionRelease;
 
@@ -60,6 +61,10 @@ bool TJSEvalOperatorIsOnGlobal = false;
 	// since TJS2 version 2.4.1
 bool TJSWarnOnNonGlobalEvalOperator = false;
 	// Output warning against non-local post-! operator.
+bool TJSEnableDebugMode = false;
+	// Enable TJS2 Debugging support. Enabling this may make the
+	// program somewhat slower and using more memory.
+	// Do not use this mode unless you want to debug the program.
 //---------------------------------------------------------------------------
 
 
@@ -96,11 +101,18 @@ tTJS::tTJS()
 	// ensure hash table for reserved words
 	TJSReservedWordsHashAddRef();
 
+	// AddRef create global string map object
+	TJSAddRefGlobalStringMap();
+
+	// Create debugging-related objects
+	if(TJSEnableDebugMode)
+	{
+		TJSAddRefStackTracer();
+	}
+
 	// create script cache object
 	Cache = new tTJSScriptCache(this);
 
-	// AddRef create global string map object
-	TJSAddRefGlobalStringMap();
 
 	try
 	{
@@ -165,9 +177,8 @@ tTJS::tTJS()
 	}
 	catch(...)
 	{
-		TJSVariantArrayStackRelease();
-		Global->Release();
-		if(PPValues) delete PPValues;
+		Cleanup();
+
 		throw;
 	}
 }
@@ -175,18 +186,27 @@ tTJS::tTJS()
 tTJS::~tTJS()
 {
 	// tTJS destructor
+	Cleanup();
+}
+//---------------------------------------------------------------------------
+void tTJS::Cleanup()
+{
 	TJSVariantArrayStackCompactNow();
 	TJSVariantArrayStackRelease();
 
-	Global->Release();
-	Global = NULL;
+	if(Global) Global->Release(), Global = NULL;
 
-	delete PPValues;
+	if(PPValues) delete PPValues;
 	if(Cache) delete Cache;
 
 	TJSReservedWordsHashRelease();
 
 	TJSReleaseGlobalStringMap();
+
+	if(TJSEnableDebugMode)
+	{
+		TJSReleaseStackTracer();
+	}
 }
 //---------------------------------------------------------------------------
 void tTJS::AddRef()
