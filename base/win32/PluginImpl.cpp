@@ -6,8 +6,11 @@
 	See details of license at "license.txt"
 */
 //---------------------------------------------------------------------------
-// "Plugins" class implementation
+// "Plugins" class implementation / Service for plug-ins
 //---------------------------------------------------------------------------
+// 2003/ 6/23 W.Dee 
+//    Added TVPGetAutoLoadPluginCount service function.
+//
 // 2003/12/15 W.Dee          Added TVPProcessApplicationMessages/
 //                           TVPHandleApplicationMessage service functions.
 // 2003/11/13 W.Dee          Added TVPGetFileVersionOf function.
