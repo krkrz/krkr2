@@ -260,10 +260,11 @@ bool tTVPBaseBitmap::FillColor(tTVPRect rect, tjs_uint32 color, tjs_int opa)
 	return true;
 }
 //---------------------------------------------------------------------------
-bool tTVPBaseBitmap::FillColorOnAlpha(tTVPRect rect, tjs_uint32 color, tjs_int opa)
+bool tTVPBaseBitmap::BlendColor(tTVPRect rect, tjs_uint32 color, tjs_int opa,
+	bool additive)
 {
 	// fill rectangle with specified color.
-	// this considers destination alpha.
+	// this considers destination alpha (additive or simple)
 
 	BOUND_CHECK(false);
 
@@ -306,11 +307,23 @@ bool tTVPBaseBitmap::FillColorOnAlpha(tTVPRect rect, tjs_uint32 color, tjs_int o
 		tjs_uint8 *sc = (tjs_uint8*)GetScanLineForWrite(rect.top);
 		tjs_int width = rect.right - rect.left;
 
-		for(;rect.top < rect.bottom; rect.top++)
+		if(!additive)
 		{
-			tjs_uint32 * p = (tjs_uint32*)sc + rect.left;
-			TVPConstColorAlphaBlend_d(p, width, color, opa);
-			sc += pitch;
+			for(;rect.top < rect.bottom; rect.top++)
+			{
+				tjs_uint32 * p = (tjs_uint32*)sc + rect.left;
+				TVPConstColorAlphaBlend_d(p, width, color, opa);
+				sc += pitch;
+			}
+		}
+		else
+		{
+			for(;rect.top < rect.bottom; rect.top++)
+			{
+				tjs_uint32 * p = (tjs_uint32*)sc + rect.left;
+				TVPConstColorAlphaBlend_a(p, width, color, opa);
+				sc += pitch;
+			}
 		}
 	}
 
