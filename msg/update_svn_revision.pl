@@ -49,11 +49,11 @@ sub process_dir
 	return 0;
 }
 
-process_dir('..');
+process_dir('../../..');
 
 $newest_rev = "unknown revision" if($newest_rev == 0);
 
-open FH, "../.svn/entries";
+open FH, "../../../.svn/entries";
 
 $revision = "<unknown svn revision>";
 
