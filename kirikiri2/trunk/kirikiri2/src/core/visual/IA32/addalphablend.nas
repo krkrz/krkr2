@@ -17,12 +17,12 @@ globaldef		TVPAdditiveAlphaBlend_emmx_a
 ;--------------------------------------------------------------------
 %define GEN_CODE
 ;;[function_replace_by TVPCPUType & TVP_CPU_HAS_MMX] TVPAdditiveAlphaBlend
-;;tjs_int, TVPAdditiveAlphaBlend_mmx_a, (tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len)
+;;void, TVPAdditiveAlphaBlend_mmx_a, (tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len)
 %define FUNCTION_LABEL TVPAdditiveAlphaBlend_mmx_a
 	%include "addalphablend.nas"
 
 ;;[function_replace_by TVPCPUType & TVP_CPU_HAS_MMX && TVPCPUType & TVP_CPU_HAS_EMMX] TVPAdditiveAlphaBlend
-;;tjs_int, TVPAdditiveAlphaBlend_emmx_a, (tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len)
+;;void, TVPAdditiveAlphaBlend_emmx_a, (tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len)
 %define			USE_EMMX
 %define FUNCTION_LABEL TVPAdditiveAlphaBlend_emmx_a
 	%include "addalphablend.nas"

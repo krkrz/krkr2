@@ -32,26 +32,26 @@ if(TVPCPUType & TVP_CPU_HAS_MMX)
 	 TVPAddBlend_HDA_o =  TVPAddBlend_HDA_o_mmx_a;
 if(TVPCPUType & TVP_CPU_HAS_MMX)
 	 TVPAlphaBlend =  TVPAlphaBlend_mmx_a;
-if(TVPCPUType & TVP_CPU_HAS_EMMX && TVPCPUType & TVP_CPU_HAS_MMX)
-	 TVPAlphaBlend =  TVPAlphaBlend_emmx_a;
 if(TVPCPUType & TVP_CPU_HAS_MMX)
 	 TVPAlphaBlend_o =  TVPAlphaBlend_o_mmx_a;
-if(TVPCPUType & TVP_CPU_HAS_EMMX && TVPCPUType & TVP_CPU_HAS_MMX)
-	 TVPAlphaBlend_o =  TVPAlphaBlend_o_emmx_a;
 if(TVPCPUType & TVP_CPU_HAS_MMX)
 	 TVPAlphaBlend_HDA =  TVPAlphaBlend_HDA_mmx_a;
-if(TVPCPUType & TVP_CPU_HAS_EMMX && TVPCPUType & TVP_CPU_HAS_MMX)
-	 TVPAlphaBlend_HDA =  TVPAlphaBlend_HDA_emmx_a;
 if(TVPCPUType & TVP_CPU_HAS_MMX)
 	 TVPAlphaBlend_d =  TVPAlphaBlend_d_mmx_a;
-if(TVPCPUType & TVP_CPU_HAS_EMMX && TVPCPUType & TVP_CPU_HAS_MMX)
-	 TVPAlphaBlend_d =  TVPAlphaBlend_d_emmx_a;
 if(TVPCPUType & TVP_CPU_HAS_MMX)
 	 TVPConstAlphaBlend =  TVPConstAlphaBlend_mmx_a;
-if(TVPCPUType & TVP_CPU_HAS_EMMX && TVPCPUType & TVP_CPU_HAS_MMX)
-	 TVPConstAlphaBlend =  TVPConstAlphaBlend_emmx_a;
 if(TVPCPUType & TVP_CPU_HAS_MMX)
 	 TVPConstAlphaBlend_SD =  TVPConstAlphaBlend_SD_mmx_a;
+if(TVPCPUType & TVP_CPU_HAS_EMMX && TVPCPUType & TVP_CPU_HAS_MMX)
+	 TVPAlphaBlend =  TVPAlphaBlend_emmx_a;
+if(TVPCPUType & TVP_CPU_HAS_EMMX && TVPCPUType & TVP_CPU_HAS_MMX)
+	 TVPAlphaBlend_o =  TVPAlphaBlend_o_emmx_a;
+if(TVPCPUType & TVP_CPU_HAS_EMMX && TVPCPUType & TVP_CPU_HAS_MMX)
+	 TVPAlphaBlend_HDA =  TVPAlphaBlend_HDA_emmx_a;
+if(TVPCPUType & TVP_CPU_HAS_EMMX && TVPCPUType & TVP_CPU_HAS_MMX)
+	 TVPAlphaBlend_d =  TVPAlphaBlend_d_emmx_a;
+if(TVPCPUType & TVP_CPU_HAS_EMMX && TVPCPUType & TVP_CPU_HAS_MMX)
+	 TVPConstAlphaBlend =  TVPConstAlphaBlend_emmx_a;
 if(TVPCPUType & TVP_CPU_HAS_EMMX && TVPCPUType & TVP_CPU_HAS_MMX)
 	 TVPConstAlphaBlend_SD =  TVPConstAlphaBlend_SD_emmx_a;
 if(TVPCPUType & TVP_CPU_HAS_MMX)
