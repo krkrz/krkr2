@@ -80,7 +80,9 @@ enum tTVPBlendOperationMode
 	omScreen = ltScreen,
 	omAlpha = ltTransparent,
 	omAddAlpha = ltAddAlpha,
-	omOpaque = ltCoverRect
+	omOpaque = ltCoverRect,
+
+	omAuto = 128   // operation mode is guessed from the source layer type
 };
 //---------------------------------------------------------------------------
 /*]*/
@@ -295,6 +297,9 @@ private:
 	void NotifyLayerTypeChange();
 
 	void UpdateDrawFace(); // set DrawFace from Face and Type
+
+	tTVPBlendOperationMode GetOperationModeFromType() const;
+		// returns corresponding blend operation mode from layer type
 
 public:
 	tTVPLayerType GetType() const { return Type; }
@@ -675,7 +680,7 @@ public:
 		const tTVPRect &rect, tjs_int opacity = 255, bool hda = true);
 
 	void OperateRect(tjs_int dx, tjs_int dy, tTJSNI_BaseLayer *src,
-		const tTVPRect &rect, tTVPBlendOperationMode mode,
+		const tTVPRect &rect, tTVPBlendOperationMode mode = omAuto,
 			tjs_int opacity = 255, bool hda = true);
 
 	void StretchPile(const tTVPRect &destrect, tTJSNI_BaseLayer *src,
@@ -687,7 +692,7 @@ public:
 			tTVPBBStretchType type = stNearest, bool hda = true);
 
 	void OperateStretch(const tTVPRect &destrect, tTJSNI_BaseLayer *src,
-		const tTVPRect &srcrect, tTVPBlendOperationMode mode, tjs_int opacity = 255,
+		const tTVPRect &srcrect, tTVPBlendOperationMode mode = omAuto, tjs_int opacity = 255,
 			tTVPBBStretchType type = stNearest, bool hda = true);
 
 	void AffinePile(const t2DAffineMatrix &matrix, tTJSNI_BaseLayer *src,
@@ -707,11 +712,11 @@ public:
 		tTVPBBStretchType type = stNearest, bool hda = true);
 
 	void OperateAffine(const t2DAffineMatrix &matrix, tTJSNI_BaseLayer *src,
-		const tTVPRect &srcrect, tTVPBlendOperationMode mode, tjs_int opacity = 255,
+		const tTVPRect &srcrect, tTVPBlendOperationMode mode = omAuto, tjs_int opacity = 255,
 		tTVPBBStretchType type = stNearest, bool hda = true);
 
 	void OperateAffine(const tTVPPoint *points, tTJSNI_BaseLayer *src,
-		const tTVPRect &srcrect, tTVPBlendOperationMode mode, tjs_int opacity = 255,
+		const tTVPRect &srcrect, tTVPBlendOperationMode mode = omAuto, tjs_int opacity = 255,
 		tTVPBBStretchType type = stNearest, bool hda = true);
 
 	void AdjustGamma(const tTVPGLGammaAdjustData & data);
