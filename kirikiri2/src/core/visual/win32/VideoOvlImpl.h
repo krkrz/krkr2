@@ -19,10 +19,7 @@
 #include "UtilStreams.h"
 
 // Start:	Add:	T.Imoto
-enum tTVPVideoOverlayMode {
-	vomOverlay,		// Overlay
-	vomLayerDraw,	// Draw Layer
-};
+#include "voMode.h"
 // End:		Add:	T.Imoto
 //---------------------------------------------------------------------------
 // tTJSNI_VideoOverlay : VideoOverlay Native Instance
@@ -47,6 +44,19 @@ class tTJSNI_VideoOverlay : public tTJSNI_BaseVideoOverlay
 	class tTJSNI_BaseLayer	*Layer2;
 	tTVPVideoOverlayMode	Mode;	//!< Modeの動的な変更は出来ない。open前にセットしておくこと
 	bool	Loop;
+
+	class tTVPBaseBitmap	*Bitmap[2];	//!< Layer描画用バッファ用Bitmap
+	BYTE			*BmpBits[2];
+
+	bool	IsPrepare;			//!< 準備モードかどうか
+
+	int		SegLoopStartFrame;	//!< セグメントループ開始フレーム
+	int		SegLoopEndFrame;	//!< セグメントループ終了フレーム
+
+	//! イベントが設定された時、現在フレームの方が進んでいたかどうか。
+	//! イベントが設定されているフレームより前に現在フレームが移動した時、このフラグは解除される。
+	bool	IsEventPast;
+	int		EventFrame;		//!< イベントを発生させるフレーム
 // End:		Add:	T.Imoto
 
 public:
@@ -67,7 +77,10 @@ public:
 // Start:	Add:	T.Imoto
 	void Pause();
 	void Rewind();
-//	void PlaySequence();	初めは追加しない
+	void Prepare();
+
+	void SetSegmentLoop( int comeFrame, int goFrame );
+	void SetPeriodEvent( int eventFrame );
 // End:		Add:	T.Imoto
 
 public:
@@ -90,12 +103,8 @@ public:
 	bool GetVisible() const { return Visible; }
 
 // Start:	Add:	T.Imoto
-#if 0
-	void SetTimePosition( tjs_int64 p );
-	tjs_int64 GetTimePosition();
-
-	void SetLoop( bool b );
-	bool GetLoop() const { return Loop; }
+	void SetTimePosition( tjs_uint64 p );
+	tjs_uint64 GetTimePosition();
 
 	void SetFrame( tjs_int f );
 	tjs_int GetFrame();
@@ -104,6 +113,9 @@ public:
 	tjs_int GetNumberOfFrame();
 	tjs_int64 GetTotalTime();
 
+	void SetLoop( bool b );
+	bool GetLoop() const { return Loop; }
+
 	void SetLayer1( tTJSNI_BaseLayer *l );
 	tTJSNI_BaseLayer *GetLayer1() { return Layer1; }
 	void SetLayer2( tTJSNI_BaseLayer *l );
@@ -111,6 +123,11 @@ public:
 
 	void SetMode( tTVPVideoOverlayMode m );
 	tTVPVideoOverlayMode GetMode() { return Mode; }
+#if 0
+	SetSegmentLoop( int backFrame, int jumpFrame );
+	CancelSegmentLoop();
+	SetPeriodEvent(指定フレームでのイベント);
+	CancelPeriodEvent(指定フレームでのイベント解除);
 #endif
 // End:		Add:	T.Imoto
 
