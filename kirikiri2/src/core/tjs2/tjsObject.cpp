@@ -699,7 +699,7 @@ bool tTJSCustomObject::DeleteByName(const tjs_char * name, tjs_uint32 *hint)
 	if(!(lv1->SymFlags & TJS_SYMBOL_USING) && lv1->Next== NULL)
 		return false; // not found
 
-	if((lv1->SymFlags & TJS_SYMBOL_USING) && !TJS_strcmp(lv1->GetName(), name))
+	if((lv1->SymFlags & TJS_SYMBOL_USING) && lv1->NameMatch(name))
 	{
 		// mark the element place as "unused"
 		CheckObjectClosureRemove(*(tTJSVariant*)(&(lv1->Value)));
@@ -715,7 +715,7 @@ bool tTJSCustomObject::DeleteByName(const tjs_char * name, tjs_uint32 *hint)
 	{
 		if((d->SymFlags & TJS_SYMBOL_USING) && d->Hash == hash)
 		{
-			if(!TJS_strcmp(d->GetName(), name))
+			if(d->NameMatch(name))
 			{
 				// sever from the chain
 				prevd->Next = d->Next;
@@ -949,7 +949,7 @@ tTJSCustomObject::tTJSSymbolData * tTJSCustomObject::Find(const tjs_char * name,
 		{
 			if(d->Hash == hash && (d->SymFlags & TJS_SYMBOL_USING))
 			{
-				if(!TJS_strcmp(d->GetName(), name))
+				if(d->NameMatch(name))
 				{
 					if(cnt>2)
 					{
@@ -965,7 +965,7 @@ tTJSCustomObject::tTJSSymbolData * tTJSCustomObject::Find(const tjs_char * name,
 
 		if(lv1->Hash == hash && (lv1->SymFlags & TJS_SYMBOL_USING))
 		{
-			if(!TJS_strcmp(lv1->GetName(), name))
+			if(lv1->NameMatch(name))
 			{
 				return lv1;
 			}
@@ -995,7 +995,7 @@ tTJSCustomObject::tTJSSymbolData * tTJSCustomObject::Find(const tjs_char * name,
 	{
 		if(d->Hash == hash && (d->SymFlags & TJS_SYMBOL_USING))
 		{
-			if(!TJS_strcmp(d->GetName(), name))
+			if(d->NameMatch(name))
 			{
 				if(cnt>2)
 				{
@@ -1011,7 +1011,7 @@ tTJSCustomObject::tTJSSymbolData * tTJSCustomObject::Find(const tjs_char * name,
 
 	if(lv1->Hash == hash && (lv1->SymFlags & TJS_SYMBOL_USING))
 	{
-		if(!TJS_strcmp(lv1->GetName(), name))
+		if(lv1->NameMatch(name))
 		{
 			return lv1;
 		}
@@ -1269,13 +1269,11 @@ tTJSCustomObject::PropSet(tjs_uint32 flag, const tjs_char *membername, tjs_uint3
 		return TJS_E_INVALIDTYPE;
 	}
 
-	tTJSSymbolData * data = Find(membername, hint);
-
-	if(!data && flag & TJS_MEMBERENSURE)
-	{
-		// create a member when TJS_MEMBERENSURE is specified
-		data = Add(membername, hint);
-	}
+	tTJSSymbolData * data;
+	if(flag & TJS_MEMBERENSURE)
+		data = Add(membername, hint); // create a member when TJS_MEMBERENSURE is specified
+	else
+		data = Find(membername, hint);
 
 	if(!data) return TJS_E_MEMBERNOTFOUND; // not found
 
@@ -1347,13 +1345,11 @@ tTJSCustomObject::PropSetByVS(tjs_uint32 flag, tTJSVariantString *membername,
 		return TJS_E_INVALIDTYPE;
 	}
 
-	tTJSSymbolData * data = Find((const tjs_char *)(*membername), membername->GetHint());
-
-	if(!data && flag & TJS_MEMBERENSURE)
-	{
-		// create a member when TJS_MEMBERENSURE is specified
-		data = Add(membername);
-	}
+	tTJSSymbolData * data;
+	if(flag & TJS_MEMBERENSURE)
+		data = Add(membername); // create a member when TJS_MEMBERENSURE is specified
+	else
+		data = Find((const tjs_char *)(*membername), membername->GetHint());
 
 	if(!data) return TJS_E_MEMBERNOTFOUND; // not found
 

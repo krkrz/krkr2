@@ -460,6 +460,13 @@ public:
 			((tTJSVariant*)(&Value))->~tTJSVariant();
 		}
 
+		bool NameMatch(const tjs_char * name)
+		{
+			const tjs_char * this_name = GetName();
+			if(this_name == name) return true;
+			return !TJS_strcmp(name, this_name);
+		}
+
 		void ReShare();
 	};
 
