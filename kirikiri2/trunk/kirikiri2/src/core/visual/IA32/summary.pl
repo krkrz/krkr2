@@ -5,8 +5,8 @@
 
 ;# make tvpgl_ia32.c and tvpgl_ia32.h from *.nah, *.nas.
 
-open FH, ">tvpgl_ia32_intf.h";
-open FC, ">tvpgl_ia32_intf.c";
+open FH, ">tvpgl_ia32_intf_.h";
+open FC, ">tvpgl_ia32_intf_.c";
 
 $c_emits = '';
 
