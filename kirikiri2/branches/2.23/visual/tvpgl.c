@@ -345,6 +345,19 @@ static tjs_uint32 TVP_INLINE_FUNC TVPAdditiveBlend_a_d_o(tjs_uint32 dest, tjs_ui
 
 /* TVPAdditiveBlend_d_a is not yet implemented because the expression may loose precision. */
 
+
+static tjs_uint32 TVP_INLINE_FUNC TVPBlendARGB(tjs_uint32 a, tjs_uint32 b, tjs_int ratio)
+{
+	/* returns a * ratio + b * (1 - ratio) */
+	unsigned tjs_uint32 b2;
+	unsigned tjs_uint32 t;
+	b2 = b & 0x00ff00ff;
+	t = (b2 + ((a & 0x00ff00ff) - b2) * ratio >> 8) & 0x00ff00ff;
+	b2 = (b & 0xff00ff00) >> 8;
+	return t + 
+		((b2 + (((a & 0xff00ff00)>>8) - b2) * ratio) & 0xff00ff00);
+}
+
 /*export*/
 TVP_GL_FUNC_DECL(void, TVPAlphaBlend_c, (tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len))
 {
