@@ -1323,7 +1323,7 @@
 				　この値は、<ref>Layer.face</ref> プロパティの値によって意味が変わります。<r/>
 				<tt><kw>dfAlpha</kw> (または<kw>dfBoth</kw>)  </tt> : 0xAARRGGBB 形式で不透明度と色を指定してください。メインとマスクの両方が塗りつぶされます。<r/>
 				<tt><kw>dfAddAlpha</kw>              </tt> : 0xAARRGGBB 形式で不透明度と色を指定してください。メインとマスクの両方が塗りつぶされます。<r/>
-				<tt><kw>dfOpaque</kw> (または<kw>dfMain</kw>) </tt> : 0xRRGGBB 形式で色を指定してください。メインのみが塗りつぶされ、マスクはそのままになります。<r/>
+				<tt><kw>dfOpaque</kw> (または<kw>dfMain</kw>) </tt> : 0xRRGGBB 形式で色を指定してください。<ref>Layer.holdAlpha</ref> プロパティが真の時は、メインのみが塗りつぶされ、マスクはそのままになります。偽の時は dfAlpha や dfAddAlpha の時と同じく、0xAARRGGBB 形式での不透明度と色の指定を受け付け、メインとマスクの両方が塗りつぶされます。<r/>
 				<tt><kw>dfMask</kw>                  </tt> : マスク(不透明度)の値 ( 0 ～ 255 ) を指定してください。マスクのみが塗りつぶされ、メインはそのままになります。<r/>
 				<tt><kw>dfProvince</kw>              </tt> : 領域の値 ( 0 ～ 255 ) を指定してください。領域のみが塗りつぶされます。<r/>
 			</desc>
@@ -1379,7 +1379,7 @@
 				<tt><kw>dfOpaque</kw> (または<kw>dfMain</kw>)  </tt> : 0xRRGGBB 形式で色を指定してください<r/>
 				<tt><kw>dfMask</kw>                       </tt> : マスク(不透明度)の値 ( 0 ～ 255 ) を指定してください<r/>
 				<tt><kw>dfProvince</kw>                   </tt> : 領域の値 ( 0 ～ 255 ) を指定してください<r/>
-				　dfOpaque を指定した場合は、マスク情報は無視されます。また、dfMask を指定した場合は、色の情報はそのままになります。<r/>
+				　dfOpaque を指定した場合は、マスク情報は無視されます(マスク情報が保持されるか破壊されるかは <ref>Layer.holdAlpha</ref> プロパティによります)。また、dfMask を指定した場合は、色の情報はそのままになります。<r/>
 				　dfAlpha の場合でかつ opa が負の場合はこの引数は無視されます。<r/>
 			</desc>
 		</argitem>
@@ -1496,6 +1496,7 @@
 	<desc>
 		　レイヤに文字を描画します。<ref>Layer.face</ref> が dfAlpha (または dfBoth) か dfAddAlpha か dfOpaque (または dfMain)
 		の場合のみ描画することができます。<r/>
+		　dfOpaque (またはdfMain) を指定した場合、描画先のマスクが破壊されるか保護されるかは <ref>Layer.holdAlpha</ref> プロパティによります。<r/>
 		　フォントは <ref>Layer.font</ref> で指定したものが用いられます。<r/>
 	</desc>
 </member>
@@ -1562,7 +1563,7 @@
 		<ref>Layer.face</ref> プロパティの値によって変わります。<r/>
 		<tt><kw>dfAlpha</kw> (または dfBoth)    </tt> : メイン画像とマスク画像がコピーされます<r/>
 		<tt><kw>dfAddAlpha</kw>             </tt> : メイン画像とマスク画像がコピーされます<r/>
-		<tt><kw>dfOpaque</kw> (または dfMain)   </tt> : メイン画像のみがコピーされます ( マスク画像はコピーされません )<r/>
+		<tt><kw>dfOpaque</kw> (または dfMain)   </tt> : <ref>Layer.holdAlpha</ref> プロパティが真の場合は、メイン画像のみがコピーされます ( マスク画像はコピーされません )。偽の場合はメイン画像とマスク画像がコピーされます<r/>
 		<tt><kw>dfMask</kw>                 </tt> : マスク画像のみがコピーされます ( メイン画像はコピーされません )<r/>
 		<tt><kw>dfProvince</kw>             </tt> : 領域画像のみがコピーされます ( マスク画像やメイン画像はコピーされません )<r/>
 		　コピー元のレイヤの Layer.face プロパティは無視されます。<r/>
@@ -1971,8 +1972,9 @@
 		　どちらか、あるいは両方がコピー元レイヤのそれぞれの２倍である場合のみです。<r/>
 		　また、現バージョンでは stLinear あるいは stCubic の指定が有効なのは、左右／上下反転を
 		伴わず、コピー先矩形がレイヤをはみ出さない場合のみです。<r/>
-		　現バージョンでは重ね合わせ先の ( メソッドを実行する ) レイヤの <ref>Layer.face</ref> プロパティが
-		dfAlpha (または dfBoth) でも dfAddAlpha でもない場合は例外が発生します。<r/>
+		　重ね合わせ先の ( メソッドを実行する ) レイヤの <ref>Layer.face</ref> プロパティが
+		dfAlpha (または dfBoth) または dfAddAlpha の場合は、メイン画像とマスク画像の両方がコピーされます。<r/>
+		　dfOpaque (または dfMain) の場合は、<ref>Layer.holdAlpha</ref> プロパティが真の時はメイン画像のみがコピーされ、偽の時はメイン画像とマスク画像の両方がコピーされます。<r/>
 	</desc>
 </member>
 
@@ -2438,7 +2440,9 @@
 		あるいは変換後の点を直接指定するかを選ぶことができます。<r/>
 		　現バージョンでは mode には stNearest のみ指定できます。<r/>
 		　重ね合わせ先の ( メソッドを実行する ) レイヤの <ref>Layer.face</ref> プロパティが
-		dfAlpha (または dfBoth) でも dfAddAlpha でもない場合は例外が発生します。<r/>
+		dfAlpha (または dfBoth) または dfAddAlpha の場合は、メイン画像とマスク画像の両方がコピーされます。<r/>
+		　重ね合わせ先の ( メソッドを実行する ) レイヤの Layer.face プロパティが
+		dfOpaque (または dfMain) の場合は、<ref>Layer.holdAlpha</ref> プロパティが真の時はメイン画像のみがコピーされ、偽の時はメイン画像とマスク画像の両方がコピーされます。<r/>
 		<r/>
 		　二次元アフィン変換行列による変換は、コピー元矩形の左上を原点 (0, 0) とし、
 		以下のように定義されます。<r/>
@@ -3706,13 +3710,7 @@
 		<ref>Layer.setMainPixel</ref><r/>
 		<ref>Layer.setMaskPixel</ref><r/>
 		<ref>Layer.setProvincePixel</ref><r/>
-		<ref>Layer.fillRect</ref>(dfOpaqueの場合はアルファチャンネルが保護されます)<r/>
-		<ref>Layer.colorRect</ref>(現バージョンでは常にアルファチャンネルが破壊されます)<r/>
-		<ref>Layer.drawText</ref>(現バージョンでは常にアルファチャンネルが破壊されます)<r/>
 		<ref>Layer.piledCopy</ref><r/>
-		<ref>Layer.copyRect</ref><r/>
-		<ref>Layer.stretchCopy</ref><r/>
-		<ref>Layer.affineCopy</ref><r/>
 		<ref>Layer.adjustGamma</ref>(常にアルファチャンネルは保護されます)<r/>
 		<ref>Layer.doGrayScale</ref>(常にアルファチャンネルは保護されます)<r/>
 		<ref>Layer.flipLR</ref><r/>
@@ -3720,6 +3718,12 @@
 		<ref>Layer.assignImages</ref><r/>
 		<r/>
 		　以下のメソッドはこのプロパティの影響を受けます。
+		<ref>Layer.copyRect</ref><r/>
+		<ref>Layer.stretchCopy</ref><r/>
+		<ref>Layer.affineCopy</ref><r/>
+		<ref>Layer.fillRect</ref><r/>
+		<ref>Layer.colorRect</ref><r/>
+		<ref>Layer.drawText</ref><r/>
 		<ref>Layer.pileRect</ref><r/>
 		<ref>Layer.blendRect</ref><r/>
 		<ref>Layer.operateRect</ref><r/>

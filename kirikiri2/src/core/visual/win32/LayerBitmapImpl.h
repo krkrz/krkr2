@@ -181,7 +181,8 @@ private:
 
 public:
 	void DrawText(const tTVPRect &destrect, tjs_int x, tjs_int y, const ttstr &text,
-		tjs_uint32 color, tTVPBBBltMethod bltmode, tjs_int opa, bool aa, tjs_int shlevel = 0,
+		tjs_uint32 color, tTVPBBBltMethod bltmode, tjs_int opa = 255,
+			bool holdalpha = true, bool aa = true, tjs_int shlevel = 0,
 			tjs_uint32 shadowcolor = 0,
 			tjs_int shwidth = 0, tjs_int shofsx = 0, tjs_int shofsy = 0,
 			tTVPComplexRect *updaterects = NULL);
