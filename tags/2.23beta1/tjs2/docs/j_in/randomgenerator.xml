@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="Shift_JIS" ?>
+<doc>
+<title>Math.RandomGenerator クラス</title>
+
+<para>
+<ptitle>Math.RandomGenerator クラス</ptitle>
+　Math.RandomGenerator は、<at href="http://www.math.keio.ac.jp/~matumoto/emt.html" target="_blank">Mersenne Twister 法</at> による乱数を発生するためのクラスです。<r /><r/>
+　コンストラクタの構文は以下の通りです。
+<bq>
+new Math.RandomGenerator([&lt;乱数種>]);<r/>
+</bq>
+<r/>
+　コンストラクタに数値を指定すると、その数値で乱数発生器が初期化されます。<r />
+　コンストラクタに serialize メソッドで状態を保存した辞書配列オブジェクトを指定すると、その状態で乱数発生器を作成できます。<r />
+　コンストラクタを省略すると、現在時刻を元にした乱数値で乱数発生器が初期化されます (吉里吉里2の場合は現在時刻ではなく、環境ノイズを元にした乱数発生器からの乱数で初期化されます)。<r />
+</para>
+
+<para>
+<ptitle>randomize</ptitle>
+　randomize メソッドは、乱数発生器を初期化します。引数はコンストラクタに指定する物と同じです。<r/>
+</para>
+
+<para>
+<ptitle>random</ptitle>
+　random メソッドは、0以上1.0未満の実数の乱数値を返します。<r/>
+</para>
+
+<para>
+<ptitle>random32</ptitle>
+　random32 メソッドは、0以上4,294,967,295以下 (0xffffffff 以下) の整数の乱数値を返します。<r/>
+</para>
+
+<para>
+<ptitle>random63</ptitle>
+　random63 メソッドは、0以上9,223,372,036,854,775,807以下(0x7fffffffffffffff 以下) の整数の乱数値を返します。<r/>
+</para>
+
+
+<para>
+<ptitle>random64</ptitle>
+　random64 メソッドは、-9,223,372,036,854,775,808以上9,223,372,036,854,775,807以下の整数の乱数値を返します。<r/>
+</para>
+
+<para>
+<ptitle>serialize</ptitle>
+　serialize メソッドは、現在の状態を記録した辞書配列オブジェクトを返します。この辞書配列オブジェクトは、コンストラクタや randomize メソッドに渡すことで、再び現在の状態を再現できる物です。<r />
+</para>
+
+<para>
+<ptitle>Copyright notice</ptitle>
+　Mersenne Twister法の実装には<r/>
+<r/>
+   A C-program for MT19937, with initialization improved 2002/2/10.
+   Coded by Takuji Nishimura and Makoto Matsumoto.<r/>
+<r/>
+　を改変した物を用いています。有用なプログラムソースを公開なさっている両氏に感謝します。<r />
+<r />
+   Copyright (C) 1997 - 2002, Makoto Matsumoto and Takuji Nishimura,<r/>
+   All rights reserved.<r/>
+<r/>
+   Redistribution and use in source and binary forms, with or without<r/>
+   modification, are permitted provided that the following conditions<r/>
+   are met:<r/>
+<r/>
+	 1. Redistributions of source code must retain the above copyright<r/>
+		notice, this list of conditions and the following disclaimer.<r/>
+<r/>
+	 2. Redistributions in binary form must reproduce the above copyright<r/>
+		notice, this list of conditions and the following disclaimer in the<r/>
+		documentation and/or other materials provided with the distribution.<r/>
+<r/>
+	 3. The names of its contributors may not be used to endorse or promote <r/>
+		products derived from this software without specific prior written <r/>
+		permission.<r/>
+<r/>
+   THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS<r/>
+   "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT<r/>
+   LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR<r/>
+   A PARTICULAR PURPOSE ARE DISCLAIMED.	 IN NO EVENT SHALL THE COPYRIGHT OWNER OR<r/>
+   CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,<r/>
+   EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,<r/>
+   PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR<r/>
+   PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF<r/>
+   LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING<r/>
+   NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS<r/>
+   SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.<r/>
+<r/>
+</para>
+
+
+</doc>
+

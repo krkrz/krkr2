@@ -1,0 +1,332 @@
+<?xml version="1.0" encoding="Shift_JIS" ?>
+<doc>
+<title>クラス</title>
+
+<para>
+<ptitle>クラス</ptitle>
+　クラスは、オブジェクトを作成するときの雛形となるものです。クラスに属する変数をメンバ変数、クラスに属する関数をメンバ関数、あるいはメソッドと呼び、クラスに属するプロパティはメンバプロパティと呼びます。<r/>
+<r/>
+　クラスは基本的には以下のようにして宣言します。<r/>
+<bq>
+<kw>class</kw> classname<r/>
+{<r/>
+	// メンバやメンバメソッドやメンバプロパティを記述<r/>
+<r/>
+	function classname() // コンストラクタ<r/>
+	{<r/>
+	}<r/>
+<r/>
+	function <kw>finalize</kw>()<r/>
+	{<r/>
+	}<r/>
+}<r/>
+<r/>
+</bq>
+<r/>
+　クラス名には識別子を指定します。<r/>
+<r/>
+　クラス内には、そのクラスが作成されたときにメンバとなる変数やメソッド、プロパティを記述します。<r/>
+<r/>
+　クラス内には、クラスと同名のメソッドが必ず一つあり、<kw>コンストラクタ</kw>と呼ばれます。これは、 <kw>new</kw> 演算子を使用してオブジェクトを作成するとき、この関数が new 演算子の引数を伴って呼び出されます。<r/>
+<r/>
+　クラス内には同様に、finalize という特殊なメソッドがあります。これは、オブジェクトが消滅するときに呼ばれるメソッドで、省略可能です。書かなくてもかまいません。<r/>
+<r/>
+<example>
+	class test<r/>
+	{<r/>
+		function test()<r/>
+		{<r/>
+			// コンストラクタ<r/>
+			// ここに、オブジェクトが作成されるときに処理する内容を書く<r/>
+			variable = 0;<r/>
+		}<r/>
+<r/>
+		function finalize()<r/>
+		{<r/>
+			// finalize メソッド<r/>
+			// ここに、オブジェクトが破棄されるときに処理する内容を書く<r/>
+		}<r/>
+<r/>
+		function method1()<r/>
+		{<r/>
+			// メソッド<r/>
+			System.inform(variable);<r/>
+		}<r/>
+<r/>
+		var variable; // メンバ変数<r/>
+<r/>
+		property prop // メンバプロパティ<r/>
+		{<r/>
+			getter() { return variable; } <r/>
+		}<r/>
+	}<r/>
+</example>
+</para>
+
+<para>
+<ptitle>オブジェクトの作成</ptitle>
+　宣言したクラスのオブジェクトを作成するには new 演算子を使います。<r/>
+　new 演算子の後には、関数呼び出しと同様に、クラス名と、コンストラクタに渡す引数を指定します。<r/>
+<example>
+	class Test<r/>
+	{<r/>
+		var variable1 = getValue(); // メンバ変数の初期化<r/>
+<r/>
+		function Test(arg1, arg2) // コンストラクタ<r/>
+		{<r/>
+			// ここでは new 演算子で指定した引数が arg1 と arg2 にわたっている<r/>
+		}<r/>
+	}<r/>
+<r/>
+	var newobject = new Test(1, 2); // 引数に 1, 2 を渡して test クラスのオブジェクトを作成<r/>
+</example>
+<r/>
+　クラスが作成されるときの処理の順番は以下の通りです。<r/>
+<r/>
+<ol>
+<li>まず空のオブジェクトが作成される</li>
+<li>メソッド、プロパティが登録される</li>
+<li>メンバ変数が作成される ( このとき初期化が必要な変数は初期化される )</li>
+<li>コンストラクタが実行される</li>
+</ol>
+
+<note>
+　コンストラクタへの引数がない場合であっても、new 演算子の  ( ) を省略することはできません。 JavaScript のように new Test と書くことはできません。new Test( ) と書く必要があります。<r/>
+</note>
+
+<r/>
+　特に、クラスのメソッドやプロパティ内でそのクラスのオブジェクトを作成する場合、あるいはそのクラスのスーパークラスのオブジェクトを作成する場合、以下のようにするとエラーになります。<r/>
+<example>
+	class Test<r/>
+	{<r/>
+		function Test() // コンストラクタ<r/>
+		{<r/>
+		}<r/>
+<r/>
+		function func()<r/>
+		{<r/>
+			return new Test(); // エラー<r/>
+		}<r/>
+	}<r/>
+</example>
+<r/>
+　なぜならば、クラスのメソッドやプロパティ内で Test と単に書くと、クラスである Test よりもそのコンストラクタの Test の方がスコープ的に近いため、コンストラクタの Test 参照されてしまうからです。この場合はこれを避けるために、以下のように明示的に global. を使用する必要があります ( クラスは global に登録されるからです )。<r/>
+<r/>
+<example>
+	class Test<r/>
+	{<r/>
+		function Test() // コンストラクタ<r/>
+		{<r/>
+		}<r/>
+<r/>
+		function func()<r/>
+		{<r/>
+			return new global.Test(); // これならば OK<r/>
+		}<r/>
+	}<r/>
+</example>
+</para>
+
+<para>
+<ptitle>オブジェクトの無効化</ptitle>
+　TJS2 では、オブジェクトが削除される際、オブジェクトの<kw>無効化</kw>とオブジェクトの削除、という２つの段階を踏みます。<r/>
+　オブジェクトが無効化されるとき、 finalize メソッドが呼ばれ、そのオブジェクトは無効であるというマークがつけられます。以降のそのオブジェクトへのアクセスはすべて失敗し、例外が発生するようになります。オブジェクトが無効化されているかどうかは <kw>isvalid</kw> 演算子で調べることができます。<r/>
+<r/>
+　オブジェクトは <kw>invalidate</kw> 演算子で無効化することができます。<r/>
+<r/>
+<example>
+	class Test<r/>
+	{<r/>
+		var variable;<r/>
+<r/>
+		function Test()<r/>
+		{<r/>
+			// コンストラクタ<r/>
+			variable = new AnotherClass();<r/>
+		}<r/>
+<r/>
+		function finalize()<r/>
+		{<r/>
+			// finalize メソッドは無効化された時に呼ばれる<r/>
+			invalidate variable;<r/>
+		}<r/>
+	}<r/>
+<r/>
+	var object = new Test(); // オブジェクトを作成<r/>
+<r/>
+	(略)<r/>
+<r/>
+	invalidate object; // オブジェクトを無効化<r/>
+</example>
+<r/>
+　invalidate 演算子を用いなくても、オブジェクトは必要とされなくなった時点で削除されます。このとき、無効化されていなければ、その時点で無効化されます。<r/>
+　TJS2 ではいつオブジェクトが削除されるかの明確な規定が無く、削除や無効化は「いつでもおこりうる」ことになります。したがって、無効化されてないオブジェクトは削除時に無効化されるため、思わぬ時点で finalize メソッドが呼ばれてしまう可能性があります。これを避けるためにも、オブジェクトを使い終わったら invalidate 演算子で無効化することをおすすめします。<r/>
+<r/>
+<note>
+　invalidate 演算子は C++ の delete 演算子に近い働きをします。<r/>
+　TJS2 の delete 演算子は C++ の delete 演算子と違い、メンバやローカル変数を削除するための演算子です。オブジェクト自体を無効化したり削除したりはしませんが、メンバやローカル変数を削除したことにより結果的にオブジェクトの無効化や削除を引き起こすことはあります。<r/>
+</note>
+</para>
+
+<para>
+<ptitle>オブジェクトへのアクセス</ptitle>
+　作成したオブジェクトのメンバ変数、メソッド、メンバプロパティには、<kw>.</kw> (メンバ選択) 演算子 または <kw>[ ]</kw> (間接メンバ選択演算子) を用いてアクセスします。<r/>
+<example>
+	var obj=new MyLayer(window,window.prmaryLayer)<r/>
+	obj.method1(); // メソッドの呼び出し  obj['method1']() でも同じ<r/>
+	obj.num = 3; // メンバ変数へ代入  obj['num']=3 でも同じ<r/>
+	obj.prop1++; // メンバプロパティにアクセス  obj['prop1']++ でも同じ<r/>
+</example>
+</para>
+
+<para>
+<ptitle>クロージャ</ptitle>
+　作成したオブジェクトのメソッドやメンバプロパティは、そのメンバがどのオブジェクトのメンバであるかの情報を持った状態でオブジェクトに登録されています。<r/>
+　そのため、メソッドやメンバプロパティをオブジェクト外に持ち出して、それを使用しても、元のオブジェクトに対するアクセスを行うことになります。この機能をクロージャと呼びます。また、アクセス先のオブジェクトを<kw>コンテキスト</kw>と呼びます。<r/>
+<example>
+	var obj = new FooBarClass(); // オブジェクトを作成<r/>
+	obj.method(); // オブジェクトのメソッドを普通に呼び出す<r/>
+	var objmethod = obj.method; // オブジェクトのメソッドへの参照を objmethod に代入<r/>
+	objmethod(); // objmethod を呼び出すが、obj.method() と同じく、obj に対するアクセスとなる<r/>
+</example>
+<r/>
+　<kw>incontextof</kw> 演算子は、どのオブジェクトのメンバであるか、の情報を変更し、任意のコンテキスト上でメソッドを実行するための方法を提供します。<r/>
+<example>
+	(objmethod incontextof obj2)(); // obj2 に対する操作になる<r/>
+	(objmethod incontextof this)(); // this に対する操作になる
+</example>
+
+</para>
+
+
+<para>
+<ptitle>継承</ptitle>
+　キーワード <kw>extends</kw> を用いると、クラスを別のクラスから継承させることができます。継承とは、継承元のクラスのメンバを引き継ぐことです。<r/>
+　継承する元となるクラスのことを<kw>スーパークラス</kw>、継承したクラスのことを<kw>サブクラス</kw>と呼びます。<r/>
+　以下のようにしてクラスを宣言します。<r/>
+<example>
+	class Class1 // スーパークラス<r/>
+	{<r/>
+		function Class1() // Class1 コンストラクタ<r/>
+		{<r/>
+		}<r/>
+<r/>
+		function finalize() // Class1 finalize<r/>
+		{<r/>
+		}<r/>
+<r/>
+		function method1() // method1<r/>
+		{<r/>
+		}<r/>
+	}<r/>
+<r/>
+<r/>
+	class Class2 extends Class1<r/>
+	{<r/>
+		function Class2() // Class2 コンストラクタ<r/>
+		{<r/>
+			super.Class1(); // Class1 コンストラクタを呼ぶ<r/>
+		}<r/>
+<r/>
+		function finalize() // Class2 finalize<r/>
+		{<r/>
+			super.finalize();<r/>
+		}<r/>
+	}<r/>
+<r/>
+	var obj = new Class2(); // Class2 オブジェクトを作成<r/>
+	obj.method1(); // Class2 は Class1 の method1 を継承しているので使用することができる<r/>
+</example>
+　上記の例では、Class2 が Class1 を継承しています。Class2 は Class1 から<kw>派生</kw>している、とも言います。<r/>
+　Class2 のコンストラクタ内では Class1 のコンストラクタを、Class2 の finalize では Class1 の finalize を呼んでいます。<b>サブクラスが、これらのメソッド内でスーパークラスの該当する同メソッドを呼び出さなかった場合の動作は未定義</b> ( というか現バージョンでは呼んだかどうかチェックしていない ) ですので、必ず記述するようにしてください。<r/>
+<r/>
+　サブクラスからスーパークラスを参照するためには、上記の例のようにキーワード <kw>super</kw> を使用することができます。このキーワードはサブクラス内でのみ使用可能で、スーパークラスを表すものです。<r/>
+<r/>
+　継承が行われている場合の、new 演算子でのオブジェクトの初期化の順序は以下の通りです。<r/>
+<r/>
+<ol>
+<li>まず空のオブジェクトが作成される</li>
+<li>メソッド、プロパティが登録される ( スーパークラスから先に、サブクラスに向かって )</li>
+<li>メンバ変数が作成される ( スーパークラスから先に、サブクラスに向かって )</li>
+<li>サブクラスのコンストラクタが呼ばれる</li>
+<li>( サブクラスのコンストラクタ内から ) スーパークラスのコンストラクタが呼ばれる</li>
+</ol>
+</para>
+
+<para>
+<ptitle>多重継承</ptitle>
+　extends の後に、スーパークラス名を複数記述すると、多重継承を行わせることができます。<r/>
+<example>
+	class SubClass extends ClassA, ClassB<r/>
+	{<r/>
+		function SubClass() // SubClass コンストラクタ<r/>
+		{<r/>
+			ClassA(); // ClassA コンストラクタを呼ぶ<r/>
+			ClassB(); // ClassB コンストラクタを呼ぶ<r/>
+		}<r/>
+<r/>
+		function finalize() // Class2 finalize<r/>
+		{<r/>
+			global.ClassA.finalize();<r/>
+			global.ClassB.finalize();<r/>
+		}<r/>
+	}<r/>
+<r/>
+</example>
+　super キーワードが使えないため、明示的にクラスを指定しなければなりません。例のように スーパークラスのメソッドを呼ぶときに global. をわざわざつけてクラスにアクセスするのは、サブクラス内で単に ClassA と記述すると ClassA のコンストラクタのことを指すからです。クラスそのものは global に登録されるため、global. を用いてクラスにアクセスします。<r/>
+<r/>
+　多重継承が行われている場合の、new 演算子でのオブジェクトの初期化の順序は多重継承を行っていないときのそれと同じすが、スーパークラスのメソッド、プロパティの登録の順番は、extends キーワードの後に書いた順に行われます。継承元のクラス間で同名のメソッドやプロパティがあった場合は、後に書いたほうが優先されます。隠れてしまったメソッドやプロパティには、global.ClassA.hiddenMethod() のように明示的にクラス名を書いてアクセスする事ができます。<r/>
+</para>
+
+<para>
+<ptitle>オーバーライド</ptitle>
+　サブクラスでスーパークラスのメソッドやメンバプロパティと同名のものを宣言すると、スーパークラスのメソッドを隠すことができます。これをオーバーライドと呼びます。<r/>
+　上記の説明の中にでてきた finalize メソッドは、スーパークラスの finalize メソッドをオーバーライドしています。<r/>
+<example>
+	class Class1 // スーパークラス<r/>
+	{<r/>
+		function Class1() // Class1 コンストラクタ<r/>
+		{<r/>
+		}<r/>
+<r/>
+		function finalize() // Class1 finalize<r/>
+		{<r/>
+		}<r/>
+<r/>
+		function method1() // method1<r/>
+		{<r/>
+			(略)<r/>
+		}<r/>
+	}<r/>
+<r/>
+<r/>
+	class Class2 extends Class1<r/>
+	{<r/>
+		function Class2() // Class2 コンストラクタ<r/>
+		{<r/>
+			super.Class1(); // Class1 コンストラクタを呼ぶ<r/>
+		}<r/>
+<r/>
+		function finalize() // Class2 finalize<r/>
+		{<r/>
+			super.finalize();<r/>
+		}<r/>
+<r/>
+		function method1() // Class1.method1 をオーバーライド<r/>
+		{<r/>
+			(略)<r/>
+			if(略) return super.method1();<r/>
+			(略)<r/>
+		}<r/>
+	}<r/>
+<r/>
+	var obj = new Class2(); // Class2 オブジェクトを作成<r/>
+	obj.method1(); // Class2 の method1 が呼ばれる<r/>
+</example>
+　サブクラスのメソッドやプロパティでは super キーワードを用いてスーパークラスのメソッドやプロパティにアクセスすることができます。<r/>
+<r/>
+　メンバ変数をオーバーライドすることはできません。メンバ変数は一つのオブジェクトに対して登録されるため、サブクラスとスーパークラスで同名のメンバ関数があると
+サブクラスの変数がスーパークラスの変数を上書きしてしまいます。<r/>
+</para>
+
+</doc>

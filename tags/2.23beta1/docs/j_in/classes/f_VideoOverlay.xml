@@ -1,0 +1,312 @@
+<?xml version="1.0" encoding="Shift_JIS" ?>
+<doc>
+<title>VideoOverlay</title>
+<desc>
+　VideoOverlay クラスは、AVI や MPEG や SWF (Macromedia Flash) などを表示するため表示領域を作成するクラスです。<r/>
+　AVI や MPEG を再生するときは、吉里吉里実行可能ファイルと同じ場所に krmovie.dll が必要になります。<r/>
+　SWF を再生する場合は、吉里吉里実行可能ファイルと同じ場所に krflash.dll が必要になります。<r/>
+<r/>
+　VideoOverlay クラスの表示領域は、すべてのレイヤよりも手前に表示され、透過することはできません。<r/>
+</desc>
+
+<member>
+	<name>VideoOverlay</name>
+	<type>constructor</type>
+	<shortdesc>VideoOverlay オブジェクトの構築</shortdesc>
+	<arg>
+		<argitem>
+			<name>window</name>
+			<default></default>
+			<desc>
+				　このレイヤを保有することになるウィンドウ ( <ref>Window</ref> クラスの
+				オブジェクト ) を指定します。<r/>
+			</desc>
+		</argitem>
+	</arg>
+	<result></result>
+	<desc>
+		　VideoOverlay クラスのオブジェクトを構築します。<r/>
+		　このクラスのオブジェクトは、一つのウィンドウにたいして二つ以上作成することはできません。<r/>
+	</desc>
+</member>
+
+
+<member>
+	<name>onStatusChanged</name>
+	<type>event</type>
+	<shortdesc>ステータスが変更された</shortdesc>
+	<arg>
+		<argitem>
+			<name>status</name>
+			<default></default>
+			<desc>
+				　ステータス文字列を表します。<r/>
+				　以下のいずれかです。<r/>
+				<tt>"<kw>unload</kw>"   : </tt> メディアが開かれてない<r/>
+				<tt>"<kw>play</kw>"     : </tt> メディアは再生中である<r/>
+				<tt>"<kw>stop</kw>"     : </tt> メディアは停止中である<r/>
+			</desc>
+		</argitem>
+	</arg>
+	<result></result>
+	<desc>
+		　このオブジェクトのステータスが変更されたときに発生します。<r/>
+	</desc>
+</member>
+
+<member>
+	<name>onCallbackCommand</name>
+	<type>event</type>
+	<shortdesc>コールバックコマンドが発生した</shortdesc>
+	<arg>
+		<argitem>
+			<name>command</name>
+			<default></default>
+			<desc>
+				　コマンド名を表す文字列です。<r/>
+			</desc>
+		</argitem>
+		<argitem>
+			<name>arg</name>
+			<default></default>
+			<desc>
+				　コマンドに対する引数を表す文字列です。<r/>
+			</desc>
+		</argitem>
+	</arg>
+	<result></result>
+	<desc>
+		　SWF 再生中に、Get URL アクション (指定 URL を開くアクション) が実行されたときに発生します。<r/>
+		　SWF コンテンツ上で、このアクションの URL として 「<tt>FSCommand:</tt>(コマンド名)」 を指定し、
+		ターゲットウィンドウに引数を指定するとこのイベントを発生させることができます。<r/>
+	</desc>
+</member>
+
+
+<member>
+	<name>open</name>
+	<type>method</type>
+	<shortdesc>メディアを開く</shortdesc>
+	<arg>
+		<argitem>
+			<name>storage</name>
+			<default></default>
+			<desc>
+				　指定されたメディアを開きます。<r/>
+			</desc>
+		</argitem>
+	</arg>
+	<result></result>
+	<desc>
+		　指定されたメディアを開きます。<r/>
+		　現バージョンで再生可能なのは AVI (拡張子 .avi)、MPEG (拡張子 .mpeg または .mpg または .mpv)、Macromedia Flash (拡張子 .swf) です。<r/>
+		　ビデオのみの (オーディオとマルチプレクシングされていない) MPEG ストリームの拡張子は .mpv にしてください。<r/>
+	</desc>
+</member>
+
+<member>
+	<name>play</name>
+	<type>method</type>
+	<shortdesc>再生開始</shortdesc>
+	<arg>
+	</arg>
+	<result></result>
+	<desc>
+		　メディアの再生を開始します。<r/>
+	</desc>
+</member>
+
+<member>
+	<name>stop</name>
+	<type>method</type>
+	<shortdesc>再生停止</shortdesc>
+	<arg>
+	</arg>
+	<result></result>
+	<desc>
+		　メディアの再生を停止します。<r/>
+	</desc>
+</member>
+
+<member>
+	<name>close</name>
+	<type>method</type>
+	<shortdesc>メディアを閉じる</shortdesc>
+	<arg>
+	</arg>
+	<result></result>
+	<desc>
+		　メディアを閉じます。<r/>
+		　メディアを再生するために確保されていたリソースなどもすべて解放します。<r/>
+	</desc>
+</member>
+
+<member>
+	<name>setPos</name>
+	<type>method</type>
+	<shortdesc>再生矩形の左上位置を指定</shortdesc>
+	<arg>
+		<argitem>
+			<name>left</name>
+			<default></default>
+			<desc>
+				　メディアを再生するための矩形領域の左端位置を指定します。<r/>
+			</desc>
+		</argitem>
+		<argitem>
+			<name>top</name>
+			<default></default>
+			<desc>
+				　メディアを再生するための矩形領域の上端位置を指定します。<r/>
+			</desc>
+		</argitem>
+	</arg>
+	<result></result>
+	<desc>
+		　メディアを再生するための矩形領域の左上位置を指定します。<r/>
+		　座標は、ウィンドウのクライアント ( レイヤを表示可能な領域 ) 内での座標で、ピクセル単位で
+		指定します。<r/>
+	</desc>
+</member>
+
+<member>
+	<name>setSize</name>
+	<type>method</type>
+	<shortdesc>再生矩形のサイズを指定</shortdesc>
+	<arg>
+		<argitem>
+			<name>width</name>
+			<default></default>
+			<desc>
+				　メディアを再生するための矩形領域の横幅を指定します。<r/>
+			</desc>
+		</argitem>
+		<argitem>
+			<name>height</name>
+			<default></default>
+			<desc>
+				　メディアを再生するための矩形領域の縦幅を指定します。<r/>
+			</desc>
+		</argitem>
+	</arg>
+	<result></result>
+	<desc>
+		　メディアを再生するための矩形領域のサイズをピクセル単位で指定します。<r/>
+	</desc>
+</member>
+
+<member>
+	<name>setBounds</name>
+	<type>method</type>
+	<shortdesc>再生矩形の位置とサイズを指定</shortdesc>
+	<arg>
+		<argitem>
+			<name>left</name>
+			<default></default>
+			<desc>
+				　メディアを再生するための矩形領域の左端位置を指定します。<r/>
+			</desc>
+		</argitem>
+		<argitem>
+			<name>top</name>
+			<default></default>
+			<desc>
+				　メディアを再生するための矩形領域の上端位置を指定します。<r/>
+			</desc>
+		</argitem>
+		<argitem>
+			<name>width</name>
+			<default></default>
+			<desc>
+				　メディアを再生するための矩形領域の横幅を指定します。<r/>
+			</desc>
+		</argitem>
+		<argitem>
+			<name>height</name>
+			<default></default>
+			<desc>
+				　メディアを再生するための矩形領域の縦幅を指定します。<r/>
+			</desc>
+		</argitem>
+	</arg>
+	<result></result>
+	<desc>
+		　メディアを再生するための矩形領域の位置とサイズを指定します。<r/>
+		　座標は、ウィンドウのクライアント ( レイヤを表示可能な領域 ) 内での座標で、ピクセル単位で
+		指定します。<r/>
+	</desc>
+</member>
+
+<member>
+	<name>position</name>
+	<type>property</type>
+	<shortdesc>再生位置</shortdesc>
+	<access>r/w</access>
+	<desc>
+		　メディアの再生位置を ms 単位で表します。値を設定することもできます。<r/>
+		　現バージョンでは実装されていません。<r/>
+	</desc>
+</member>
+
+<member>
+	<name>width</name>
+	<type>property</type>
+	<shortdesc>再生矩形の横幅</shortdesc>
+	<access>r/w</access>
+	<desc>
+		　再生矩形の横幅を表します。値を設定することもできます。<r/>
+	</desc>
+	<ref>VideoOverlay.height</ref>
+	<ref>VideoOverlay.setSize</ref>
+</member>
+
+<member>
+	<name>height</name>
+	<type>property</type>
+	<shortdesc>再生矩形の縦幅</shortdesc>
+	<access>r/w</access>
+	<desc>
+		　再生矩形の縦幅を表します。値を設定することもできます。<r/>
+	</desc>
+	<ref>VideoOverlay.width</ref>
+	<ref>VideoOverlay.setSize</ref>
+</member>
+
+<member>
+	<name>left</name>
+	<type>property</type>
+	<shortdesc>再生矩形の左端位置</shortdesc>
+	<access>r/w</access>
+	<desc>
+		　再生矩形の左端位置を表します。値を設定することもできます。<r/>
+	</desc>
+	<ref>VideoOverlay.top</ref>
+	<ref>VideoOverlay.setPos</ref>
+</member>
+
+<member>
+	<name>top</name>
+	<type>property</type>
+	<shortdesc>再生矩形の上端位置</shortdesc>
+	<access>r/w</access>
+	<desc>
+		　再生矩形の上端位置を表します。値を設定することもできます。<r/>
+	</desc>
+	<ref>VideoOverlay.left</ref>
+	<ref>VideoOverlay.setPos</ref>
+</member>
+
+<member>
+	<name>visible</name>
+	<type>property</type>
+	<shortdesc>可視かどうか</shortdesc>
+	<access>r/w</access>
+	<desc>
+		　再生領域が可視かどうかを指定します。値を設定することもできます。<r/>
+		　真ならば可視、偽ならば不可視です。<r/>
+	</desc>
+</member>
+
+
+
+</doc>
