@@ -1307,11 +1307,11 @@ bool tTVPBaseBitmap::StretchBlt(tTVPRect cliprect,
 					if(x_step >= 0)
 						x_ref_start += (((rw-1)<<16) - (dw-1)*x_step)/2;
 					else
-						x_ref_start -= (((rw-1)<<16) + (dw-1)*x_step)/2 + x_step;
+						x_ref_start -= (((rw-1)<<16) + (dw-1)*x_step)/2 - x_step;
 					if(y_step >= 0)
 						y_ref_start += (((rh-1)<<16) - (dh-1)*y_step)/2;
 					else
-						y_ref_start -= (((rh-1)<<16) + (dh-1)*y_step)/2 + y_step;
+						y_ref_start -= (((rh-1)<<16) + (dh-1)*y_step)/2 - y_step;
 
 					// horizontal destination line is splitted into three parts;
 					// 1. left fraction (x_ref < 0               (lf)
@@ -1349,7 +1349,7 @@ bool tTVPBaseBitmap::StretchBlt(tTVPRect cliprect,
 							x_ref = x_ref_start + (x_len - 1) * x_step;
 							if(x_ref < 0 && x_remain)
 							{
- 								tjs_uint color =
+								tjs_uint color =
  									TVPBlendARGB(*l1, *l2, y_blend);
 								do
 									*(dp --) = color, x_ref -= x_step, x_remain --;
@@ -1359,7 +1359,7 @@ bool tTVPBaseBitmap::StretchBlt(tTVPRect cliprect,
 							{
  								tjs_uint color =
  									TVPBlendARGB(
- 										*(l1 + refw-1),
+										*(l1 + refw-1),
  										*(l2 + refw-2), y_blend);
 								do
 									*(dp --) = color, x_ref -= x_step, x_remain --;
@@ -1374,7 +1374,7 @@ bool tTVPBaseBitmap::StretchBlt(tTVPRect cliprect,
 							x_ref = x_ref_start;
 							if(x_ref < 0)
 							{
- 								tjs_uint color =
+								tjs_uint color =
  									TVPBlendARGB(*l1, *l2, y_blend);
 								do
 									*(dp ++) = color, x_ref += x_step, x_remain --;
@@ -1384,7 +1384,7 @@ bool tTVPBaseBitmap::StretchBlt(tTVPRect cliprect,
 							{
  								tjs_uint color =
  									TVPBlendARGB(
- 										*(l1 + refw-1),
+										*(l1 + refw-1),
  										*(l2 + refw-2), y_blend);
 								do
 									*(dp ++) = color, x_ref += x_step, x_remain --;
@@ -1423,10 +1423,128 @@ bool tTVPBaseBitmap::StretchBlt(tTVPRect cliprect,
 		else
 		{
 			// stretching constant ratio alpha blendng
-			if(!hda)
-				STRETCH_LOOP_OPA(TVPStretchConstAlphaBlend)
+			if(mode >= stFastLinear)
+			{
+				// bilinear interpolation
+				if(!hda)
+				{
+					// adjust start point
+					if(x_step >= 0)
+						x_ref_start += (((rw-1)<<16) - (dw-1)*x_step)/2;
+					else
+						x_ref_start -= (((rw-1)<<16) + (dw-1)*x_step)/2 - x_step;
+					if(y_step >= 0)
+						y_ref_start += (((rh-1)<<16) - (dh-1)*y_step)/2;
+					else
+						y_ref_start -= (((rh-1)<<16) + (dh-1)*y_step)/2 - y_step;
+
+					// horizontal destination line is splitted into three parts;
+					// 1. left fraction (x_ref < 0               (lf)
+					//                or x_ref >= refw - 1)
+					// 2. center                                 (c)
+					// 3. right fraction (x_ref >= refw - 1      (rf)
+					//                or x_ref < 0)
+
+					tjs_int ref_right_limit = (refw-1)<<16;
+
+					tjs_int y_ref = y_ref_start;
+					while(y_len--)
+					{
+						tjs_int y1 = y_ref >> 16;
+						tjs_int y2 = y1+1;
+						tjs_int y_blend = (y_ref & 0xffff) >> 8;
+						if(y1 < 0) y1 = 0; else if(y1 >= refh) y1 = refh-1;
+						if(y2 < 0) y2 = 0; else if(y2 >= refh) y2 = refh-1;
+
+						const tjs_uint32 * l1 =
+							(const tjs_uint32*)(refp + refpitch * y1);
+						const tjs_uint32 * l2 =
+							(const tjs_uint32*)(refp + refpitch * y2);
+
+
+						// perform left and right fractions
+						tjs_int x_remain = x_len;
+						tjs_uint32 * dp;
+						tjs_int x_ref;
+
+						// from last point
+						if(x_remain)
+						{
+							dp = (tjs_uint32*)destp + (x_len - 1);
+							x_ref = x_ref_start + (x_len - 1) * x_step;
+							if(x_ref < 0 && x_remain)
+							{
+								tjs_uint color =
+ 									TVPBlendARGB(*l1, *l2, y_blend);
+								do
+									*dp = TVPBlendARGB(*dp, color, opa), dp--, x_ref -= x_step, x_remain --;
+								while(x_ref < 0 && x_remain);
+							}
+							else if(x_ref >= ref_right_limit)
+							{
+ 								tjs_uint color =
+ 									TVPBlendARGB(
+										*(l1 + refw-1),
+ 										*(l2 + refw-2), y_blend);
+								do
+									*dp = TVPBlendARGB(*dp, color, opa), dp--, x_ref -= x_step, x_remain --;
+								while(x_ref >= ref_right_limit && x_remain);
+							}
+						}
+
+						// from first point
+						if(x_remain)
+						{
+							dp = (tjs_uint32*)destp;
+							x_ref = x_ref_start;
+							if(x_ref < 0)
+							{
+								tjs_uint color =
+ 									TVPBlendARGB(*l1, *l2, y_blend);
+								do
+									*dp = TVPBlendARGB(*dp, color, opa), dp++, x_ref += x_step, x_remain --;
+								while(x_ref < 0 && x_remain);
+							}
+							else if(x_ref >= ref_right_limit)
+							{
+ 								tjs_uint color =
+ 									TVPBlendARGB(
+										*(l1 + refw-1),
+ 										*(l2 + refw-2), y_blend);
+								do
+									*dp = TVPBlendARGB(*dp, color, opa), dp++, x_ref += x_step, x_remain --;
+								while(x_ref >= ref_right_limit && x_remain);
+							}
+						}
+
+						// perform center part
+						// (this may take most time of this function)
+						if(x_remain)
+						{
+							TVPInterpStretchConstAlphaBlend(
+								dp,
+								x_remain,
+								l1, l2, y_blend,
+								x_ref,
+								x_step,
+								opa);
+						}
+
+						// step to the next line
+						y_ref += y_step;
+						destp += destpitch;
+					}
+				}
+				else
+					STRETCH_LOOP_OPA(TVPStretchConstAlphaBlend_HDA)
+			}
 			else
-				STRETCH_LOOP_OPA(TVPStretchConstAlphaBlend_HDA)
+			{
+				if(!hda)
+					STRETCH_LOOP_OPA(TVPStretchConstAlphaBlend)
+				else
+					STRETCH_LOOP_OPA(TVPStretchConstAlphaBlend_HDA)
+			}
 		}
 		break;
 
