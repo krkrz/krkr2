@@ -1078,6 +1078,293 @@ bool tTVPBaseBitmap::Blt(tjs_int x, tjs_int y, const tTVPBaseBitmap *ref,
 	return true;
 }
 //---------------------------------------------------------------------------
+
+
+//---------------------------------------------------------------------------
+// template function for strech loop
+//---------------------------------------------------------------------------
+
+// define function pointer types for stretching line
+typedef TVP_GL_FUNC_PTR_DECL(void, tTVPStretchFunction,
+	(tjs_uint32 *dest, tjs_int len, const tjs_uint32 *src,
+	tjs_int srcstart, tjs_int srcstep));
+typedef TVP_GL_FUNC_PTR_DECL(void, tTVPStretchWithOpacityFunction,
+	(tjs_uint32 *dest, tjs_int len, const tjs_uint32 *src,
+	tjs_int srcstart, tjs_int srcstep, tjs_int opa));
+typedef TVP_GL_FUNC_PTR_DECL(void, tTVPBilinearStretchFunction,
+	(tjs_uint32 *dest, tjs_int destlen, const tjs_uint32 *src1, const tjs_uint32 *src2,
+	tjs_int blend_y, tjs_int srcstart, tjs_int srcstep));
+typedef TVP_GL_FUNC_PTR_DECL(void, tTVPBilinearStretchWithOpacityFunction,
+	(tjs_uint32 *dest, tjs_int destlen, const tjs_uint32 *src1, const tjs_uint32 *src2,
+	tjs_int blend_y, tjs_int srcstart, tjs_int srcstep, tjs_int opa));
+
+
+//---------------------------------------------------------------------------
+
+// declare stretching function object class
+class tTVPStretchFunctionObject
+{
+	tTVPStretchFunction Func;
+public:
+	tTVPStretchFunctionObject(tTVPStretchFunction func) : Func(func) {;}
+	void operator () (tjs_uint32 *dest, tjs_int len, const tjs_uint32 *src,
+	tjs_int srcstart, tjs_int srcstep)
+	{
+		Func(dest, len, src, srcstart, srcstep);
+	}
+};
+
+class tTVPStretchWithOpacityFunctionObject
+{
+	tTVPStretchWithOpacityFunction Func;
+	tjs_int Opacity;
+public:
+	tTVPStretchWithOpacityFunctionObject(tTVPStretchWithOpacityFunction func, tjs_int opa) :
+		Func(func), Opacity(opa) {;}
+	void operator () (tjs_uint32 *dest, tjs_int len, const tjs_uint32 *src,
+	tjs_int srcstart, tjs_int srcstep)
+	{
+		Func(dest, len, src, srcstart, srcstep, Opacity);
+	}
+};
+
+class tTVPBilinearStretchFunctionObject
+{
+protected:
+	tTVPBilinearStretchFunction Func;
+public:
+	tTVPBilinearStretchFunctionObject(tTVPBilinearStretchFunction func) : Func(func) {;}
+	void operator () (tjs_uint32 *dest, tjs_int destlen, const tjs_uint32 *src1, const tjs_uint32 *src2,
+	tjs_int blend_y, tjs_int srcstart, tjs_int srcstep)
+	{
+		Func(dest, destlen, src1, src2, blend_y, srcstart, srcstep);
+	}
+};
+
+#define TVP_DEFINE_BILINEAR_STRETCH_FUNCTION(func, one) class \
+t##func##FunctionObject : \
+	public tTVPBilinearStretchFunctionObject \
+{ \
+public: \
+	t##func##FunctionObject() : \
+		tTVPBilinearStretchFunctionObject(func) {;} \
+	void DoOnePixel(tjs_uint32 *dest, tjs_uint32 color) \
+	{ one; } \
+};
+
+
+class tTVPBilinearStretchWithOpacityFunctionObject
+{
+protected:
+	tTVPBilinearStretchWithOpacityFunction Func;
+	tjs_int Opacity;
+public:
+	tTVPBilinearStretchWithOpacityFunctionObject(tTVPBilinearStretchWithOpacityFunction func, tjs_int opa) :
+		Func(func), Opacity(opa) {;}
+	void operator () (tjs_uint32 *dest, tjs_int destlen, const tjs_uint32 *src1, const tjs_uint32 *src2,
+	tjs_int blend_y, tjs_int srcstart, tjs_int srcstep)
+	{
+		Func(dest, destlen, src1, src2, blend_y, srcstart, srcstep, Opacity);
+	}
+};
+
+#define TVP_DEFINE_BILINEAR_STRETCH_WITH_OPACITY_FUNCTION(func, one) class \
+t##func##FunctionObject : \
+	public tTVPBilinearStretchWithOpacityFunctionObject \
+{ \
+public: \
+	t##func##FunctionObject(tjs_int opa) : \
+		tTVPBilinearStretchWithOpacityFunctionObject(func, opa) {;} \
+	void DoOnePixel(tjs_uint32 *dest, tjs_uint32 color) \
+	{ one; } \
+};
+
+//---------------------------------------------------------------------------
+
+// declare streting function object for bilinear interpolation
+TVP_DEFINE_BILINEAR_STRETCH_FUNCTION(
+	TVPInterpStretchCopy,
+	*dest = color);
+
+TVP_DEFINE_BILINEAR_STRETCH_WITH_OPACITY_FUNCTION(
+	TVPInterpStretchConstAlphaBlend,
+	*dest = TVPBlendARGB(*dest, color, Opacity));
+
+//---------------------------------------------------------------------------
+
+// declare stretching loop function
+#define TVP_DoStretchLoop_ARGS  x_ref_start, y_ref_start, x_len, y_len, \
+						destp, destpitch, x_step, \
+						y_step, refp, refpitch
+template <typename tFunc>
+void TVPDoStretchLoop(
+		tFunc func,
+		tjs_int x_ref_start,
+		tjs_int y_ref_start,
+		tjs_int x_len, tjs_int y_len,
+		tjs_uint8 * destp, tjs_int destpitch,
+		tjs_int x_step, tjs_int y_step,
+		const tjs_uint8 * refp, tjs_int refpitch)
+{
+	tjs_int y_ref = y_ref_start;
+	while(y_len--)
+	{
+		func(
+			(tjs_uint32*)destp,
+			x_len,
+			(const tjs_uint32*)(refp + (y_ref>>16)*refpitch),
+			x_ref_start,
+			x_step);
+		y_ref += y_step;
+		destp += destpitch;
+	}
+}
+//---------------------------------------------------------------------------
+
+
+// declare stretching loop function for bilinear interpolation
+
+#define TVP_DoBilinearStretchLoop_ARGS  rw, rh, dw, dh, \
+						refw, refh, x_ref_start, y_ref_start, x_len, y_len, \
+						destp, destpitch, x_step, \
+						y_step, refp, refpitch
+template <typename tStretchFunc>
+void TVPDoBiLinearStretchLoop(
+		tStretchFunc stretch,
+		tjs_int rw, tjs_int rh,
+		tjs_int dw, tjs_int dh,
+		tjs_int refw, tjs_int refh,
+		tjs_int x_ref_start,
+		tjs_int y_ref_start,
+		tjs_int x_len, tjs_int y_len,
+		tjs_uint8 * destp, tjs_int destpitch,
+		tjs_int x_step, tjs_int y_step,
+		const tjs_uint8 * refp, tjs_int refpitch)
+{
+/*
+	memo
+          0         1         2         3         4
+          .         .         .         .                  center = 1.5 = (4-1) / 2
+          ------------------------------                 reference area
+     ----------++++++++++----------++++++++++
+                         ^                                 4 / 1  step 4   ofs =  1.5   = ((4-1) - (1-1)*4) / 2
+               ^                   ^                       4 / 2  step 2   ofs =  0.5   = ((4-1) - (2-1)*2) / 2
+          ^         ^         ^         *                  4 / 4  step 1   ofs =  0     = ((4-1) - (4-1)*1) / 2
+         *       ^       ^       ^       *                 4 / 5  steo 0.8 ofs = -0.1   = ((4-1) - (5-1)*0.8) / 2
+        *    ^    ^    ^    ^    ^    ^    *               4 / 8  step 0.5 ofs = -0.25
+
+*/
+
+
+
+	// adjust start point
+	if(x_step >= 0)
+		x_ref_start += (((rw-1)<<16) - (dw-1)*x_step)/2;
+	else
+		x_ref_start -= (((rw-1)<<16) + (dw-1)*x_step)/2 - x_step;
+	if(y_step >= 0)
+		y_ref_start += (((rh-1)<<16) - (dh-1)*y_step)/2;
+	else
+		y_ref_start -= (((rh-1)<<16) + (dh-1)*y_step)/2 - y_step;
+
+	// horizontal destination line is splitted into three parts;
+	// 1. left fraction (x_ref < 0               (lf)
+	//                or x_ref >= refw - 1)
+	// 2. center                                 (c)
+	// 3. right fraction (x_ref >= refw - 1      (rf)
+	//                or x_ref < 0)
+
+	tjs_int ref_right_limit = (refw-1)<<16;
+
+	tjs_int y_ref = y_ref_start;
+	while(y_len--)
+	{
+		tjs_int y1 = y_ref >> 16;
+		tjs_int y2 = y1+1;
+		tjs_int y_blend = (y_ref & 0xffff) >> 8;
+		if(y1 < 0) y1 = 0; else if(y1 >= refh) y1 = refh-1;
+		if(y2 < 0) y2 = 0; else if(y2 >= refh) y2 = refh-1;
+
+		const tjs_uint32 * l1 =
+			(const tjs_uint32*)(refp + refpitch * y1);
+		const tjs_uint32 * l2 =
+			(const tjs_uint32*)(refp + refpitch * y2);
+
+
+		// perform left and right fractions
+		tjs_int x_remain = x_len;
+		tjs_uint32 * dp;
+		tjs_int x_ref;
+
+		// from last point
+		if(x_remain)
+		{
+			dp = (tjs_uint32*)destp + (x_len - 1);
+			x_ref = x_ref_start + (x_len - 1) * x_step;
+			if(x_ref < 0 && x_remain)
+			{
+				tjs_uint color =
+					TVPBlendARGB(*l1, *l2, y_blend);
+				do
+					stretch.DoOnePixel(dp, color), dp-- , x_ref -= x_step, x_remain --;
+				while(x_ref < 0 && x_remain);
+			}
+			else if(x_ref >= ref_right_limit)
+			{
+				tjs_uint color =
+					TVPBlendARGB(
+						*(l1 + refw-1),
+						*(l2 + refw-2), y_blend);
+				do
+					stretch.DoOnePixel(dp, color), dp-- , x_ref -= x_step, x_remain --;
+				while(x_ref >= ref_right_limit && x_remain);
+			}
+		}
+
+		// from first point
+		if(x_remain)
+		{
+			dp = (tjs_uint32*)destp;
+			x_ref = x_ref_start;
+			if(x_ref < 0)
+			{
+				tjs_uint color =
+					TVPBlendARGB(*l1, *l2, y_blend);
+				do
+					stretch.DoOnePixel(dp, color), dp++ , x_ref += x_step, x_remain --;
+				while(x_ref < 0 && x_remain);
+			}
+			else if(x_ref >= ref_right_limit)
+			{
+				tjs_uint color =
+					TVPBlendARGB(
+						*(l1 + refw-1),
+						*(l2 + refw-2), y_blend);
+				do
+					stretch.DoOnePixel(dp, color), dp++ , x_ref += x_step, x_remain --;
+				while(x_ref >= ref_right_limit && x_remain);
+			}
+		}
+
+		// perform center part
+		// (this may take most time of this function)
+		if(x_remain)
+		{
+			stretch(
+				dp,
+				x_remain,
+				l1, l2, y_blend,
+				x_ref,
+				x_step);
+		}
+
+		// step to the next line
+		y_ref += y_step;
+		destp += destpitch;
+	}
+}
+
+//---------------------------------------------------------------------------
 bool tTVPBaseBitmap::StretchBlt(tTVPRect cliprect,
 		tTVPRect destrect, const tTVPBaseBitmap *ref,
 		tTVPRect refrect, tTVPBBBltMethod method, tjs_int opa,
@@ -1248,51 +1535,6 @@ bool tTVPBaseBitmap::StretchBlt(tTVPRect cliprect,
 	tjs_int destpitch = GetPitchBytes();
 
 
-#define STRETCH_LOOP(func) { \
-			tjs_int y_ref = y_ref_start; \
-			while(y_len--) \
-			{ \
-				func( \
-					(tjs_uint32*)destp, \
-					x_len, \
-					(const tjs_uint32*)(refp + (y_ref>>16)*refpitch), \
-					x_ref_start, \
-					x_step); \
-				y_ref += y_step; \
-				destp += destpitch; \
-			} \
-		}
-
-#define STRETCH_LOOP_OPA(func) { \
-			tjs_int y_ref = y_ref_start; \
-			while(y_len--) \
-			{ \
-				func( \
-					(tjs_uint32*)destp, \
-					x_len, \
-					(const tjs_uint32*)(refp + (y_ref>>16)*refpitch), \
-					x_ref_start, \
-					x_step, opa); \
-				y_ref += y_step; \
-				destp += destpitch; \
-			} \
-		}
-
-/*
-	memo
-          0         1         2         3         4
-          .         .         .         .                  center = 1.5 = (4-1) / 2
-          ------------------------------                 reference area
-     ----------++++++++++----------++++++++++
-                         ^                                 4 / 1  step 4   ofs =  1.5   = ((4-1) - (1-1)*4) / 2
-               ^                   ^                       4 / 2  step 2   ofs =  0.5   = ((4-1) - (2-1)*2) / 2
-          ^         ^         ^         *                  4 / 4  step 1   ofs =  0     = ((4-1) - (4-1)*1) / 2
-         *       ^       ^       ^       *                 4 / 5  steo 0.8 ofs = -0.1   = ((4-1) - (5-1)*0.8) / 2
-        *    ^    ^    ^    ^    ^    ^    *               4 / 8  step 0.5 ofs = -0.25
-
-*/
-
-
 	// transfer
 	switch(method)
 	{
@@ -1302,124 +1544,26 @@ bool tTVPBaseBitmap::StretchBlt(tTVPRect cliprect,
 			// stretching copy
 			if(mode >= stFastLinear)
 			{
-				// bilinear interpolation
 				if(!hda)
 				{
-					// adjust start point
-					if(x_step >= 0)
-						x_ref_start += (((rw-1)<<16) - (dw-1)*x_step)/2;
-					else
-						x_ref_start -= (((rw-1)<<16) + (dw-1)*x_step)/2 - x_step;
-					if(y_step >= 0)
-						y_ref_start += (((rh-1)<<16) - (dh-1)*y_step)/2;
-					else
-						y_ref_start -= (((rh-1)<<16) + (dh-1)*y_step)/2 - y_step;
-
-					// horizontal destination line is splitted into three parts;
-					// 1. left fraction (x_ref < 0               (lf)
-					//                or x_ref >= refw - 1)
-					// 2. center                                 (c)
-					// 3. right fraction (x_ref >= refw - 1      (rf)
-					//                or x_ref < 0)
-
-					tjs_int ref_right_limit = (refw-1)<<16;
-
-					tjs_int y_ref = y_ref_start;
-					while(y_len--)
-					{
-						tjs_int y1 = y_ref >> 16;
-						tjs_int y2 = y1+1;
-						tjs_int y_blend = (y_ref & 0xffff) >> 8;
-						if(y1 < 0) y1 = 0; else if(y1 >= refh) y1 = refh-1;
-						if(y2 < 0) y2 = 0; else if(y2 >= refh) y2 = refh-1;
-
-						const tjs_uint32 * l1 =
-							(const tjs_uint32*)(refp + refpitch * y1);
-						const tjs_uint32 * l2 =
-							(const tjs_uint32*)(refp + refpitch * y2);
-
-
-						// perform left and right fractions
-						tjs_int x_remain = x_len;
-						tjs_uint32 * dp;
-						tjs_int x_ref;
-
-						// from last point
-						if(x_remain)
-						{
-							dp = (tjs_uint32*)destp + (x_len - 1);
-							x_ref = x_ref_start + (x_len - 1) * x_step;
-							if(x_ref < 0 && x_remain)
-							{
-								tjs_uint color =
- 									TVPBlendARGB(*l1, *l2, y_blend);
-								do
-									*(dp --) = color, x_ref -= x_step, x_remain --;
-								while(x_ref < 0 && x_remain);
-							}
-							else if(x_ref >= ref_right_limit)
-							{
- 								tjs_uint color =
- 									TVPBlendARGB(
-										*(l1 + refw-1),
- 										*(l2 + refw-2), y_blend);
-								do
-									*(dp --) = color, x_ref -= x_step, x_remain --;
-								while(x_ref >= ref_right_limit && x_remain);
-							}
-						}
-
-						// from first point
-						if(x_remain)
-						{
-							dp = (tjs_uint32*)destp;
-							x_ref = x_ref_start;
-							if(x_ref < 0)
-							{
-								tjs_uint color =
- 									TVPBlendARGB(*l1, *l2, y_blend);
-								do
-									*(dp ++) = color, x_ref += x_step, x_remain --;
-								while(x_ref < 0 && x_remain);
-							}
-							else if(x_ref >= ref_right_limit)
-							{
- 								tjs_uint color =
- 									TVPBlendARGB(
-										*(l1 + refw-1),
- 										*(l2 + refw-2), y_blend);
-								do
-									*(dp ++) = color, x_ref += x_step, x_remain --;
-								while(x_ref >= ref_right_limit && x_remain);
-							}
-						}
-
-						// perform center part
-						// (this may take most time of this function)
-						if(x_remain)
-						{
-							TVPInterpStretchCopy(
-								dp,
-								x_remain,
-								l1, l2, y_blend,
-								x_ref,
-								x_step);
-						}
-
-						// step to the next line
-						y_ref += y_step;
-						destp += destpitch;
-					}
+					TVPDoBiLinearStretchLoop( // bilinear interpolation
+						tTVPInterpStretchCopyFunctionObject(),
+						TVP_DoBilinearStretchLoop_ARGS);
 				}
 				else
-					STRETCH_LOOP(TVPStretchColorCopy)
+				{
+					TVPDoStretchLoop(tTVPStretchFunctionObject(TVPStretchColorCopy),
+						TVP_DoStretchLoop_ARGS);
+				}
 			}
 			else
 			{
 				if(!hda)
-					STRETCH_LOOP(TVPStretchCopy)
+					TVPDoStretchLoop(tTVPStretchFunctionObject(TVPStretchCopy),
+						TVP_DoStretchLoop_ARGS);
 				else
-					STRETCH_LOOP(TVPStretchColorCopy)
+					TVPDoStretchLoop(tTVPStretchFunctionObject(TVPStretchColorCopy),
+						TVP_DoStretchLoop_ARGS);
 			}
 		}
 		else
@@ -1431,121 +1575,27 @@ bool tTVPBaseBitmap::StretchBlt(tTVPRect cliprect,
 				if(!hda)
 				{
 					// adjust start point
-					if(x_step >= 0)
-						x_ref_start += (((rw-1)<<16) - (dw-1)*x_step)/2;
-					else
-						x_ref_start -= (((rw-1)<<16) + (dw-1)*x_step)/2 - x_step;
-					if(y_step >= 0)
-						y_ref_start += (((rh-1)<<16) - (dh-1)*y_step)/2;
-					else
-						y_ref_start -= (((rh-1)<<16) + (dh-1)*y_step)/2 - y_step;
-
-					// horizontal destination line is splitted into three parts;
-					// 1. left fraction (x_ref < 0               (lf)
-					//                or x_ref >= refw - 1)
-					// 2. center                                 (c)
-					// 3. right fraction (x_ref >= refw - 1      (rf)
-					//                or x_ref < 0)
-
-					tjs_int ref_right_limit = (refw-1)<<16;
-
-					tjs_int y_ref = y_ref_start;
-					while(y_len--)
-					{
-						tjs_int y1 = y_ref >> 16;
-						tjs_int y2 = y1+1;
-						tjs_int y_blend = (y_ref & 0xffff) >> 8;
-						if(y1 < 0) y1 = 0; else if(y1 >= refh) y1 = refh-1;
-						if(y2 < 0) y2 = 0; else if(y2 >= refh) y2 = refh-1;
-
-						const tjs_uint32 * l1 =
-							(const tjs_uint32*)(refp + refpitch * y1);
-						const tjs_uint32 * l2 =
-							(const tjs_uint32*)(refp + refpitch * y2);
-
-
-						// perform left and right fractions
-						tjs_int x_remain = x_len;
-						tjs_uint32 * dp;
-						tjs_int x_ref;
-
-						// from last point
-						if(x_remain)
-						{
-							dp = (tjs_uint32*)destp + (x_len - 1);
-							x_ref = x_ref_start + (x_len - 1) * x_step;
-							if(x_ref < 0 && x_remain)
-							{
-								tjs_uint color =
- 									TVPBlendARGB(*l1, *l2, y_blend);
-								do
-									*dp = TVPBlendARGB(*dp, color, opa), dp--, x_ref -= x_step, x_remain --;
-								while(x_ref < 0 && x_remain);
-							}
-							else if(x_ref >= ref_right_limit)
-							{
- 								tjs_uint color =
- 									TVPBlendARGB(
-										*(l1 + refw-1),
- 										*(l2 + refw-2), y_blend);
-								do
-									*dp = TVPBlendARGB(*dp, color, opa), dp--, x_ref -= x_step, x_remain --;
-								while(x_ref >= ref_right_limit && x_remain);
-							}
-						}
-
-						// from first point
-						if(x_remain)
-						{
-							dp = (tjs_uint32*)destp;
-							x_ref = x_ref_start;
-							if(x_ref < 0)
-							{
-								tjs_uint color =
- 									TVPBlendARGB(*l1, *l2, y_blend);
-								do
-									*dp = TVPBlendARGB(*dp, color, opa), dp++, x_ref += x_step, x_remain --;
-								while(x_ref < 0 && x_remain);
-							}
-							else if(x_ref >= ref_right_limit)
-							{
- 								tjs_uint color =
- 									TVPBlendARGB(
-										*(l1 + refw-1),
- 										*(l2 + refw-2), y_blend);
-								do
-									*dp = TVPBlendARGB(*dp, color, opa), dp++, x_ref += x_step, x_remain --;
-								while(x_ref >= ref_right_limit && x_remain);
-							}
-						}
-
-						// perform center part
-						// (this may take most time of this function)
-						if(x_remain)
-						{
-							TVPInterpStretchConstAlphaBlend(
-								dp,
-								x_remain,
-								l1, l2, y_blend,
-								x_ref,
-								x_step,
-								opa);
-						}
-
-						// step to the next line
-						y_ref += y_step;
-						destp += destpitch;
-					}
+					TVPDoBiLinearStretchLoop( // bilinear interpolation
+						tTVPInterpStretchConstAlphaBlendFunctionObject(opa),
+						TVP_DoBilinearStretchLoop_ARGS);
 				}
 				else
-					STRETCH_LOOP_OPA(TVPStretchConstAlphaBlend_HDA)
+				{
+					TVPDoStretchLoop(
+						tTVPStretchWithOpacityFunctionObject(TVPStretchConstAlphaBlend_HDA, opa),
+						TVP_DoStretchLoop_ARGS);
+				}
 			}
 			else
 			{
 				if(!hda)
-					STRETCH_LOOP_OPA(TVPStretchConstAlphaBlend)
+					TVPDoStretchLoop(
+						tTVPStretchWithOpacityFunctionObject(TVPStretchConstAlphaBlend, opa),
+						TVP_DoStretchLoop_ARGS);
 				else
-					STRETCH_LOOP_OPA(TVPStretchConstAlphaBlend_HDA)
+					TVPDoStretchLoop(
+						tTVPStretchWithOpacityFunctionObject(TVPStretchConstAlphaBlend_HDA, opa),
+						TVP_DoStretchLoop_ARGS);
 			}
 		}
 		break;
@@ -1555,12 +1605,16 @@ bool tTVPBaseBitmap::StretchBlt(tTVPRect cliprect,
 		if(opa == 255)
 		{
 			// full opaque stretching copy
-			STRETCH_LOOP(TVPStretchCopyOpaqueImage)
+			TVPDoStretchLoop(
+				tTVPStretchFunctionObject(TVPStretchCopyOpaqueImage),
+				TVP_DoStretchLoop_ARGS);
 		}
 		else
 		{
 			// stretching constant ratio alpha blending
-			STRETCH_LOOP_OPA(TVPStretchConstAlphaBlend)
+			TVPDoStretchLoop(
+				tTVPStretchWithOpacityFunctionObject(TVPStretchConstAlphaBlend_d, opa),
+				TVP_DoStretchLoop_ARGS);
 		}
 		break;
 
@@ -1569,25 +1623,37 @@ bool tTVPBaseBitmap::StretchBlt(tTVPRect cliprect,
 		if(opa == 255)
 		{
 			if(!hda)
-				STRETCH_LOOP(TVPStretchAlphaBlend)
+				TVPDoStretchLoop(
+					tTVPStretchFunctionObject(TVPStretchAlphaBlend),
+					TVP_DoStretchLoop_ARGS);
 			else
-				STRETCH_LOOP(TVPStretchAlphaBlend_HDA)
+				TVPDoStretchLoop(
+					tTVPStretchFunctionObject(TVPStretchAlphaBlend_HDA),
+					TVP_DoStretchLoop_ARGS);
 		}
 		else
 		{
 			if(!hda)
-				STRETCH_LOOP_OPA(TVPStretchAlphaBlend_o)
+				TVPDoStretchLoop(
+					tTVPStretchWithOpacityFunctionObject(TVPStretchAlphaBlend_o, opa),
+					TVP_DoStretchLoop_ARGS);
 			else
-				STRETCH_LOOP_OPA(TVPStretchAlphaBlend_HDA_o)
+				TVPDoStretchLoop(
+					tTVPStretchWithOpacityFunctionObject(TVPStretchAlphaBlend_HDA_o, opa),
+					TVP_DoStretchLoop_ARGS);
 		}
 		break;
 
 	case bmAlphaOnAlpha:
 		// stretching alpha blending, with consideration of destination alpha
 		if(opa == 255)
-			STRETCH_LOOP(TVPStretchAlphaBlend_d)
+			TVPDoStretchLoop(
+				tTVPStretchFunctionObject(TVPStretchAlphaBlend_d),
+				TVP_DoStretchLoop_ARGS);
 		else
-			STRETCH_LOOP_OPA(TVPStretchAlphaBlend_do)
+			TVPDoStretchLoop(
+				tTVPStretchWithOpacityFunctionObject(TVPStretchAlphaBlend_do, opa),
+				TVP_DoStretchLoop_ARGS);
 		break;
 
 	case bmAddAlpha:
@@ -1595,47 +1661,67 @@ bool tTVPBaseBitmap::StretchBlt(tTVPRect cliprect,
 		if(opa == 255)
 		{
 			if(!hda)
-				STRETCH_LOOP(TVPStretchAdditiveAlphaBlend)
+				TVPDoStretchLoop(
+					tTVPStretchFunctionObject(TVPStretchAdditiveAlphaBlend),
+					TVP_DoStretchLoop_ARGS);
 			else
-				STRETCH_LOOP(TVPStretchAdditiveAlphaBlend_HDA)
+				TVPDoStretchLoop(
+					tTVPStretchFunctionObject(TVPStretchAdditiveAlphaBlend_HDA),
+					TVP_DoStretchLoop_ARGS);
 		}
 		else
 		{
 			if(!hda)
-				STRETCH_LOOP_OPA(TVPStretchAdditiveAlphaBlend_o)
+				TVPDoStretchLoop(
+					tTVPStretchWithOpacityFunctionObject(TVPStretchAdditiveAlphaBlend_o, opa),
+					TVP_DoStretchLoop_ARGS);
 			else
-				STRETCH_LOOP_OPA(TVPStretchAdditiveAlphaBlend_HDA_o)
+				TVPDoStretchLoop(
+					tTVPStretchWithOpacityFunctionObject(TVPStretchAdditiveAlphaBlend_HDA_o, opa),
+					TVP_DoStretchLoop_ARGS);
 		}
 		break;
 
 	case bmAddAlphaOnAddAlpha:
 		// additive alpha on additive alpha
 		if(opa == 255)
-			STRETCH_LOOP(TVPStretchAdditiveAlphaBlend_a)
+			TVPDoStretchLoop(
+				tTVPStretchFunctionObject(TVPStretchAdditiveAlphaBlend_a),
+				TVP_DoStretchLoop_ARGS);
 		else
-			STRETCH_LOOP_OPA(TVPStretchAdditiveAlphaBlend_ao)
+			TVPDoStretchLoop(
+				tTVPStretchWithOpacityFunctionObject(TVPStretchAdditiveAlphaBlend_ao, opa),
+				TVP_DoStretchLoop_ARGS);
 		break;
 
 	case bmAddAlphaOnAlpha:
 		// additive alpha on simple alpha
 		; // yet not implemented
 		break;
-	
+
 	case bmAlphaOnAddAlpha:
 		// simple alpha on additive alpha
 		if(opa == 255)
-			STRETCH_LOOP(TVPStretchAlphaBlend_a)
+			TVPDoStretchLoop(
+				tTVPStretchFunctionObject(TVPStretchAlphaBlend_a),
+				TVP_DoStretchLoop_ARGS);
 		else
-			STRETCH_LOOP_OPA(TVPStretchAlphaBlend_ao)
+			TVPDoStretchLoop(
+				tTVPStretchWithOpacityFunctionObject(TVPStretchAlphaBlend_ao, opa),
+				TVP_DoStretchLoop_ARGS);
 		break;
 
 	case bmCopyOnAddAlpha:
 		// constant ratio alpha blending (assuming source is opaque)
 		// with consideration of destination additive alpha
 		if(opa == 255)
-			STRETCH_LOOP(TVPStretchCopyOpaqueImage)
+			TVPDoStretchLoop(
+				tTVPStretchFunctionObject(TVPStretchCopyOpaqueImage),
+				TVP_DoStretchLoop_ARGS);
 		else
-			STRETCH_LOOP_OPA(TVPStretchConstAlphaBlend_a)
+			TVPDoStretchLoop(
+				tTVPStretchWithOpacityFunctionObject(TVPStretchConstAlphaBlend_a, opa),
+				TVP_DoStretchLoop_ARGS);
 		break;
 
 
