@@ -39,7 +39,7 @@ class TestWindow extends Window
 		visible = true;
 
 		fore.face = dfOpaque;
-//		fore.setClip(200, 100, 200, 200);
+		fore.setClip(320-200, 240-200, 400, 400);
 //		fore.colorRect(200, 100, 200, 200, 0xff0000, 128);
 
 		fore.face = dfBoth;
@@ -146,15 +146,15 @@ class TestWindow extends Window
 		var rad = System.getTickCount() / 4000;
 		var rad2 = rad + Math.PI / 2;
 		var rad3 = rad - Math.PI / 2;
-		var xz = Math.cos(rad*0.45)*500+530+200;
-		var yz = Math.sin(rad*0.56)*500+530+200;
+		var xz = Math.cos(rad*0.45)*100+130+100;
+		var yz = Math.sin(rad*0.56)*100+130+100;
 		fore.face = dfBoth;
 		fore.holdAlpha = false;
-		fore.affineCopy(src, 0, 0, 640, 480, false,
+		fore.affineCopy(src, 20, 0, 400, 400, false,
 				real(Math.cos(rad) * xz + 320),			real(Math.sin(rad) * yz + 240),
 				real(Math.cos(rad2) * xz + 320),		real(Math.sin(rad2) * yz + 240),
 				real(Math.cos(rad3) * xz + 320),		real(Math.sin(rad3) * yz + 240),
-				/*stNearest*/stFastLinear);
+				/*stNearest*/stFastLinear, true);
 	}
 
 	function process0o()
@@ -162,8 +162,8 @@ class TestWindow extends Window
 		var rad = System.getTickCount() / 4000;
 		var rad2 = rad + Math.PI / 2;
 		var rad3 = rad - Math.PI / 2;
-		var xz = Math.cos(rad*0.45)*500+530+200;
-		var yz = Math.sin(rad*0.56)*500+530+200;
+		var xz = Math.cos(rad*0.45)*300+330+200;
+		var yz = Math.sin(rad*0.56)*300+330+200;
 		fore.face = dfOpaque;
 		fore.holdAlpha = false;
 		fore.operateAffine(src, 0, 0, 640, 480, false,
@@ -300,12 +300,12 @@ class TestWindow extends Window
 				real(x),			real(y),
 				real(x+200),		real(y),
 				real(x),			real(y+200),
-				stFastLinear);
+				stFastLinear, true);
 	}
 
 	function process()
 	{
-		process6o();
+		processp();
 //		this['process' +intrandom(0, 4)]();
 	}
 
