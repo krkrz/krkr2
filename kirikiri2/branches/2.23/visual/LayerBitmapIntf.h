@@ -33,7 +33,12 @@ enum tTVPBBBltMethod
 	bmDodge,
 	bmDarken,
 	bmLighten,
-	bmScreen
+	bmScreen,
+	bmAddAlpha,
+	bmAddAlphaOnAddAlpha,
+	bmAddAlphaOnAlpha,
+	bmAlphaOnAddAlpha,
+	bmCopyOnAddAlpha
 };
 enum tTVPBBStretchType
 {

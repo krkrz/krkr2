@@ -52,10 +52,12 @@ extern tTVPGraphicSplitOperationType TVPGraphicSplitOperationType;
 //---------------------------------------------------------------------------
 enum tTVPDrawFace
 {
-	dfBoth,
-	dfMain,
-	dfMask,
-	dfProvince
+	dfBoth  = 0,
+	dfAlpha = 0,
+	dfAddAlpha = 4,
+	dfMain = 1,
+	dfMask = 2,
+	dfProvince = 3
 };
 //---------------------------------------------------------------------------
 /*]*/
@@ -600,6 +602,12 @@ public:
 	void SetDrawFace(tTVPDrawFace f) { DrawFace = f; }
 	tTVPDrawFace GetDrawFace() const { return DrawFace; }
 
+
+private:
+	tTVPBBBltMethod GetBltMethodFromOperationModeAndDrawFace(
+		tTVPBlendOperationMode mode);	
+
+public:
 	void FillRect(const tTVPRect &rect, tjs_uint32 color);
 	void ColorRect(const tTVPRect &rect, tjs_uint32 color, tjs_int opa);
 
