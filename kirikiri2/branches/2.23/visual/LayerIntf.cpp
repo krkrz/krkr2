@@ -1403,20 +1403,25 @@ void tTJSNI_BaseLayer::SetType(tTVPLayerType type)
 	}
 }
 //---------------------------------------------------------------------------
-void tTJSNI_BaseLayer::ConvertLayerType(tTVPLayerType fromtype)
+void tTJSNI_BaseLayer::ConvertLayerType(tTVPDrawFace fromtype)
 {
 	// convert layer pixel representation method
 
-	if(DrawType == ltAddAlpha && fromtype == ltAlpha)
+	if(DrawFace == dfAddAlpha && fromtype == dfAlpha)
 	{
 		// alpha -> additive alpha
 		if(MainImage) MainImage->ConvertAlphaToAddAlpha();
 	}
-	else if(DrawType == ltAlpha && fromtype == ltAddAlpha)
+	else if(DrawFace == dfAlpha && fromtype == dfAddAlpha)
 	{
 		// additive alpha -> alpha
 		// this may loose additive stuff
 		if(MainImage) MainImage->ConvertAddAlphaToAlpha();
+	}
+	else
+	{
+		// throw an error
+		TVPThrowExceptionMessage(TVPCannotConvertLayerTypeUsingGivenDirection);
 	}
 
 	ImageModified = true;
@@ -7509,7 +7514,7 @@ TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/convertType)
 
 	if(numparams < 1) return TJS_E_BADPARAMCOUNT;
 
-	tTVPLayerType fromtype = (tTVPLayerType)(tjs_int)*param[0];
+	tTVPDrawFace fromtype = (tTVPDrawFace)(tjs_int)*param[0];
 
 	_this->ConvertLayerType(fromtype);
 
