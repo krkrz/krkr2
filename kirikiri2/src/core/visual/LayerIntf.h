@@ -1062,6 +1062,8 @@ public:
 	void LeaveMouseFromTree(tTJSNI_BaseLayer *root); // force to leave mouse
 
 	void ReleaseCapture();
+	void ReleaseCaptureFromTree(tTJSNI_BaseLayer * layer);
+
 	bool BlurTree(tTJSNI_BaseLayer *root); // remove focus from "root"
 	tTJSNI_BaseLayer *SearchFirstFocusable(); // search first focusable layer
 
