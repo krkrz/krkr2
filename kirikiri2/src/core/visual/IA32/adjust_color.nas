@@ -42,9 +42,43 @@ proc_start	TVPAdjustGamma_a_mmx_a
 
 	pxor		mm0,		mm0							; mm0 = 00 00 00 00 00 00 00 00
 
+	jmp			.ploop
+
+.popaque: ; completely opaque pixel
+	movzx		ebx,		al
+	movzx		edx,	byte[ebx + ecx]					; look table B up  (BB')
+
+	movzx		ebx,		ah
+	movzx		ebx,	byte[ebx + ecx + 256]			; look table R up  (RR')
+
+	shl			ebx,		8
+	or			edx,		ebx
+
+	shr			eax,		16
+	and			eax,		0xff
+
+	movzx		ebx,	byte[eax + ecx + 512]			; look table G up  (GG')
+
+	shl			ebx,		16
+	or			edx,		ebx
+	or			edx,		0xff000000
+
+	mov			[edi],		edx							; store
+
+.ptransp: ; completely tranaparent pixel
+	add			edi,		4
+	cmp			edi,		esi
+	jae			near .pexit
+
 .ploop:													; main loop
 
 	mov			eax,		[edi]						; load
+
+	cmp			eax,		0xff000000
+	jae			.popaque								; completely opaque
+	or			eax,		eax
+	jz			.ptransp								; completely transparent
+
 	movd		mm2,		eax							; mm2 = dest
 	mov			ebx,		eax
 
