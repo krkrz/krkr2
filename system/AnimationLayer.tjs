@@ -528,25 +528,23 @@ class AnimationLayer extends KAGLayer
 
 		// レイヤモード
 		{
-			var mode = ltTransparent;
+			var mode = ltAlpha;
+
 			if(elm.mode !== void)
 			{
-				if(elm.mode == "rect")
-					mode = ltCoverRect;
-				else if(elm.mode == "add")
-					mode = ltAdditive;
-				else if(elm.mode == "sub")
-					mode = ltSubtractive;
-				else if(elm.mode == "mul")
-					mode = ltMultiplicative;
-				else if(elm.mode == "dodge")
-					mode = ltDodge;
-				else if(elm.mode == "darken")
-					mode = ltDarken;
-				else if(elm.mode == "lighten")
-					mode = ltLighten;
-				else if(elm.mode == "screen")
-					mode = ltScreen;
+				switch(elm.mode)
+				{
+				case "opaque":
+				case "rect":		mode = ltOpaque;			break;
+				case "addalpha":	mode = ltAddAlpha;			break;
+				case "add":			mode = ltAdditive;			break;
+				case "sub":			mode = ltSubtractive;		break;
+				case "mul":			mode = ltMultiplicative;	break;
+				case "dodge":		mode = ltDodge;				break;
+				case "darken":		mode = ltDarken;			break;
+				case "lighten":		mode = ltLighten;			break;
+				case "screen":		mode = ltScreen;			break;
+				}
 			}
 
 			type = mode;
@@ -657,7 +655,7 @@ class AnimationLayer extends KAGLayer
 			sx = temp.imageWidth - sx - sw;
 		}
 
-		if(elm.mode !== void && elm.mode == "copy")
+		if(elm.mode !== void && (elm.mode == 'copy' || elm.mode == 'opaque'))
 		{
 			// コピー
 			face = dfAlpha;
@@ -705,10 +703,14 @@ class AnimationLayer extends KAGLayer
 				holdAlpha = true;
 				operateRect(dx, dy, temp, sx, sy, sw, sh, omScreen, opa);
 				break;
+			case 'addalpha':
+				face = dfAddAlpha;
+				operateRect(dx, dy, temp, sx, sy, sw, sh, omAddAlpha, opa);
+				break;
 			case 'pile':
+			case 'alpha':
 			default:
 				face = dfAuto;
-				holdAlpha = true;
 				pileRect(dx, dy, temp, sx, sy, sw, sh, opa);
 				break;
 			}
