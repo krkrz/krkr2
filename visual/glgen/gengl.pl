@@ -2553,21 +2553,20 @@ print FC <<EOF;
 /*export*/
 TVP_GL_FUNC_DECL(void, TVPInitUnivTransBlendTable_d_c, (tjs_uint32 *table, tjs_int phase, tjs_int vague))
 {
-	tjs_int i;
-	tjs_int phasemax = phase;
-	phase -= vague;
-	for(i = 0; i<256; i++)
-	{
-		if(i<phase) table[i] = 255;
-		else if(i>=phasemax) table[i] = 0;
-		else
-		{
-			int tmp = (255-(( i - phase )*255 / vague));
-			if(tmp<0) tmp = 0;
-			if(tmp>255) tmp = 255;
-			table[i] = tmp;
-		}
-	}
+	/* alias to TVPInitUnivTransBlendTable_c */
+	TVPInitUnivTransBlendTable_c(table, phase, vague);
+}
+
+EOF
+
+;#-----------------------------------------------------------------
+
+print FC <<EOF;
+/*export*/
+TVP_GL_FUNC_DECL(void, TVPInitUnivTransBlendTable_a_c, (tjs_uint32 *table, tjs_int phase, tjs_int vague))
+{
+	/* alias to TVPInitUnivTransBlendTable_c */
+	TVPInitUnivTransBlendTable_c(table, phase, vague);
 }
 
 EOF
@@ -2749,6 +2748,54 @@ $content = <<EOF;
 EOF
 
 &loop_unroll_c($content, 'len', 4);
+
+print FC <<EOF;
+}
+
+EOF
+
+
+;#-----------------------------------------------------------------
+
+print FC <<EOF;
+/*export*/
+TVP_GL_FUNC_DECL(void, TVPUnivTransBlend_a_c, (tjs_uint32 *dest, const tjs_uint32 *src1, const tjs_uint32 *src2, const tjs_uint8 *rule, const tjs_uint32 *table, tjs_int len))
+{
+EOF
+
+$content = <<EOF;
+	dest[{ofs}] = TVPBlendARGB(src1[{ofs}], src2[{ofs}], table[*rule[{ofs}]]);
+EOF
+
+
+&loop_unroll_c_2($content, 'len', 4);
+
+print FC <<EOF;
+}
+
+EOF
+
+;#-----------------------------------------------------------------
+
+
+print FC <<EOF;
+/*export*/
+TVP_GL_FUNC_DECL(void, TVPUnivTransBlend_switch_a_c, (tjs_uint32 *dest, const tjs_uint32 *src1, const tjs_uint32 *src2, const tjs_uint8 *rule, const tjs_uint32 *table, tjs_int len, tjs_int src1lv, tjs_int src2lv))
+{
+	tjs_int opa;
+EOF
+
+$content = <<EOF;
+	opa = *rule;
+	if(opa >= src1lv)
+		dest[{ofs}] = src1[{ofs}];
+	else if(opa < src2lv)
+		dest[{ofs}] = src2[{ofs}];
+	else
+		dest[{ofs}] = TVPBlendARGB(src1[{ofs}], src2[{ofs}], table[opa]);
+EOF
+
+&loop_unroll_c_2($content, 'len', 4);
 
 print FC <<EOF;
 }
