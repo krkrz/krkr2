@@ -78,6 +78,8 @@ public:
 	tjs_int SrcPosToLine(tjs_int pos) const;
 	tjs_int LineToSrcPos(tjs_int line) const;
 
+	ttstr GetLineDescriptionString(tjs_int pos) const;
+
 	const tjs_char *GetScript() const { return Script; }
 
 	void PushContextStack(const tjs_char *name, tTJSContextType type);

@@ -860,13 +860,13 @@ void tTJSInterCodeContext::Commit()
 	RE_CREATE(NonLocalFunctionDeclVector, std::vector<tNonLocalFunctionDecl>, vector);
 }
 //---------------------------------------------------------------------------
-tjs_int tTJSInterCodeContext::CodePosToSrcPos(tjs_int codepos)
+tjs_int tTJSInterCodeContext::CodePosToSrcPos(tjs_int codepos) const
 {
 	// converts from
 	// CodeArea oriented position to source oriented position
 	if(!SourcePosArray) return 0;
 
-	SortSourcePos();
+	const_cast<tTJSInterCodeContext*>(this)->SortSourcePos();
 
 	tjs_uint s = 0;
 	tjs_uint e = SourcePosArraySize;
@@ -882,7 +882,7 @@ tjs_int tTJSInterCodeContext::CodePosToSrcPos(tjs_int codepos)
 	}
 }
 //---------------------------------------------------------------------------
-tjs_int tTJSInterCodeContext::FindSrcLineStartCodePos(tjs_int codepos)
+tjs_int tTJSInterCodeContext::FindSrcLineStartCodePos(tjs_int codepos) const
 {
 	// find code address which is the first instruction of the source line
 	if(!SourcePosArray) return 0;
@@ -902,6 +902,12 @@ tjs_int tTJSInterCodeContext::FindSrcLineStartCodePos(tjs_int codepos)
 	}
 	if(codeposmin < 0) codeposmin = 0;
 	return codeposmin;
+}
+//---------------------------------------------------------------------------
+ttstr tTJSInterCodeContext::GetPositionDescriptionString(tjs_int codepos) const
+{
+	return Block->GetLineDescriptionString(CodePosToSrcPos(codepos)) +
+		TJS_W("[") + GetShortDescription() + TJS_W("]");
 }
 //---------------------------------------------------------------------------
 static bool inline TJSIsModifySubType(tTJSSubType type)
