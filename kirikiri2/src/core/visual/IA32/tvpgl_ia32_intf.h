@@ -94,6 +94,7 @@ TVP_GL_IA32_FUNC_EXTERN_DECL(void,  TVPFillARGB_NC_sse_a,  (tjs_uint32 *dest, tj
 TVP_GL_IA32_FUNC_EXTERN_DECL(void,  TVPFillColor_mmx_a,  (tjs_uint32 *dest, tjs_int len, tjs_uint32 color));
 TVP_GL_IA32_FUNC_EXTERN_DECL(void,  TVPConstColorAlphaBlend_mmx_a,   (tjs_uint32 *dest, tjs_int len, tjs_uint32 color, tjs_int opa));
 TVP_GL_IA32_FUNC_EXTERN_DECL(void,  TVPConstColorAlphaBlend_d_mmx_a,   (tjs_uint32 *dest, tjs_int len, tjs_uint32 color, tjs_int opa));
+TVP_GL_IA32_FUNC_EXTERN_DECL(void,  TVPConstColorAlphaBlend_a_mmx_a,   (tjs_uint32 *dest, tjs_int len, tjs_uint32 color, tjs_int opa));
 /*[*/
 /*]*/
 TVP_GL_IA32_FUNC_EXTERN_DECL(void,  TVPApplyColorMap65_mmx_a,  (tjs_uint32 *dest, const tjs_uint8 *src, tjs_int len, tjs_uint32 color));
