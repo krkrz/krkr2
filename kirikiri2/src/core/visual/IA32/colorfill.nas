@@ -374,9 +374,28 @@ TVPConstColorAlphaBlend_mmx_a:				; constant ratio constant color alpha blender
 		punpcklwd	mm2,	mm2				; unpack
 		punpcklwd	mm2,	mm2				; unpack
 		lea			ebp,	[edi + ecx*4]	; limit
-		sub			ebp,	byte 4			; 1*4
+		sub			ebp,	byte 8			; 2*4
 		cmp			edi,	ebp
 		jae			near .pfraction			; jump if edi >= ebp
+
+		test		edi,	4
+		IF			nz
+			movd		mm3,	[edi]			; src
+			movq		mm5,	mm3
+			pand		mm5,	mm6				; mm5 = dest opa
+			punpcklbw	mm3,	mm0				; unpack
+			pmullw		mm3,	mm2				; mm3 *= mm2
+			paddusw		mm3,	mm1				; mm3 += mm1
+			psrlw		mm3,	8				; mm3 >>= 8
+			packuswb	mm3,	mm0				; pack
+			pand		mm3,	mm7				; mask
+			por			mm3,	mm5				; bind dest opa
+			movd		[edi],	mm3				; store
+			add			edi,	byte 4
+
+			cmp			edi,	ebp
+			jae			.pfraction				; jump if edi >= ebp
+		ENDIF
 
 		loop_align
 .ploop:
@@ -403,7 +422,7 @@ TVPConstColorAlphaBlend_mmx_a:				; constant ratio constant color alpha blender
 		jb			near .ploop
 
 .pfraction:
-		add			ebp,	byte 4
+		add			ebp,	byte 8
 		cmp			edi,	ebp
 		jae			.pexit					; jump if edi >= ebp
 

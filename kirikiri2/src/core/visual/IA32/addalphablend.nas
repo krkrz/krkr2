@@ -104,10 +104,41 @@ TVPAdditiveAlphaBlend_name:					; additive alpha blend
 		mov			edi,	[esp + 28]		; dest
 		mov			ebp,	[esp + 32]		; src
 		lea			esi,	[edi + ecx*4]	; limit
-		sub			esi,	byte 4			; 1*4
+		sub			esi,	byte 8			; 2*4
 		cmp			edi,	esi
 		pxor		mm0,	mm0				; mm0 = 0
 		jae			near .pfraction			; jump if edi >= esi
+
+		test		edi, 	4
+
+		IF nz
+
+			; align destination pointer to QWORD
+
+			mov			eax,	[ebp]			; src
+			movd		mm4,	eax				; src
+			shr			eax,	24				; eax = opa
+			movd		mm2,	eax
+			movd		mm1,	[edi]			; dest
+			punpcklwd	mm2,	mm2
+			punpcklwd	mm2,	mm2
+			punpcklbw	mm1,	mm0				; mm1 = 00dd00dd00dd00dd
+			movq		mm3,	mm1
+			pmullw		mm1,	mm2
+			psrlw		mm1,	8
+			psubw		mm3,	mm1
+			packuswb	mm3,	mm0
+			paddusb		mm3,	mm4				; add src
+			movd		[edi],	mm3				; store
+
+			add			ebp,	byte 4
+			add			edi,	byte 4
+
+			cmp			edi,	esi
+
+			jae			near	.pfraction
+
+		ENDIF
 
 		jmp			near	.ploop
 
@@ -117,7 +148,7 @@ TVPAdditiveAlphaBlend_name:					; additive alpha blend
 		cmp			edi,	esi
 		jae			near	.pfraction
 
-		loop_align
+		loop_align							; main loop
 .ploop:
 ;	 full transparent checking will make the routine faster in usual usage.
 		mov			eax,	[ebp]			; 1 src
@@ -165,7 +196,7 @@ TVPAdditiveAlphaBlend_name:					; additive alpha blend
 		jb			short .ploop
 
 .pfraction:
-		add			esi,	byte 4
+		add			esi,	byte 8
 		cmp			edi,	esi
 		jae			.pexit					; jump if edi >= esi
 
@@ -233,10 +264,50 @@ TVPAdditiveAlphaBlend_o_name:	; additive alpha blend with opacity
 		punpcklwd	mm7,	mm7
 		punpcklwd	mm7,	mm7				; mm7 = op00op00op00op00
 		lea			esi,	[edi + ecx*4]	; limit
-		sub			esi,	byte 4			; 1*4
+		sub			esi,	byte 8			; 2*4
 		cmp			edi,	esi
 		pxor		mm0,	mm0				; mm0 = 0
 		jae			near .pfraction			; jump if edi >= esi
+
+
+		test		edi,	4
+		IF			nz
+
+			; align destination pointer to QWORD
+
+			movd		mm4,	[ebp]			; src                  (ss)
+
+			movd		mm2,	[edi]			; dest                 (dd)
+			punpcklbw	mm4,	mm0				; mm4 = 00ss00ss00ss00ss
+			punpcklbw	mm2,	mm0				; mm2 = 00dd00dd00dd00dd
+			pmullw		mm4,	mm7				; mm4 = 00Sf00Sf00Sf00Sf
+			movq		mm3,	mm2
+
+			psrlw		mm4,	8
+
+			movq		mm1,	mm4
+			psrlq		mm1,	48
+			punpcklwd	mm1,	mm1
+			punpcklwd	mm1,	mm1				; mm1 = Df00Df00Df00Df00
+
+			pmullw		mm2,	mm1				; mm2 = 00Ds00Ds00Ds00Ds
+			psrlw		mm2,	8
+			psubw		mm3,	mm2				; mm1 = 00Dq00Dq00Dq00Dq
+
+			paddw		mm3,	mm4
+			packuswb	mm3,	mm0
+
+			movd		[edi],	mm3				; store
+
+			add			ebp,	byte 4
+			add			edi,	byte 4
+
+			cmp			edi,	esi
+
+			jae			near	.pfraction
+
+		ENDIF
+
 
 		loop_align
 .ploop:
@@ -283,7 +354,7 @@ TVPAdditiveAlphaBlend_o_name:	; additive alpha blend with opacity
 		jb			.ploop
 
 .pfraction:
-		add			esi,	byte 4
+		add			esi,	byte 8
 		cmp			edi,	esi
 		jae			.pexit					; jump if edi >= esi
 
