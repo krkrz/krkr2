@@ -957,7 +957,7 @@ TVP_GL_FUNC_DECL(void, TVPConvertAdditiveAlphaToAlpha_c, (tjs_uint32 *buf, tjs_i
 	{
 	case 0: do { {
 	tmp = *buf;
-	t = (tmp >> 24) + TVPDivTable;
+	t = ((tmp >> 16) & 0xff00) + TVPDivTable;
 	*buf = (tmp & 0xff000000) +
 		(t[(tmp >> 16) & 0xff] << 16) +
 		(t[(tmp >>  8) & 0xff] <<  8) +
@@ -967,7 +967,7 @@ TVP_GL_FUNC_DECL(void, TVPConvertAdditiveAlphaToAlpha_c, (tjs_uint32 *buf, tjs_i
 ;
 	case 3: {
 	tmp = *buf;
-	t = (tmp >> 24) + TVPDivTable;
+	t = ((tmp >> 16) & 0xff00) + TVPDivTable;
 	*buf = (tmp & 0xff000000) +
 		(t[(tmp >> 16) & 0xff] << 16) +
 		(t[(tmp >>  8) & 0xff] <<  8) +
@@ -977,7 +977,7 @@ TVP_GL_FUNC_DECL(void, TVPConvertAdditiveAlphaToAlpha_c, (tjs_uint32 *buf, tjs_i
 ;
 	case 2: {
 	tmp = *buf;
-	t = (tmp >> 24) + TVPDivTable;
+	t = ((tmp >> 16) & 0xff00) + TVPDivTable;
 	*buf = (tmp & 0xff000000) +
 		(t[(tmp >> 16) & 0xff] << 16) +
 		(t[(tmp >>  8) & 0xff] <<  8) +
@@ -987,7 +987,7 @@ TVP_GL_FUNC_DECL(void, TVPConvertAdditiveAlphaToAlpha_c, (tjs_uint32 *buf, tjs_i
 ;
 	case 1: {
 	tmp = *buf;
-	t = (tmp >> 24) + TVPDivTable;
+	t = ((tmp >> 16) & 0xff00) + TVPDivTable;
 	*buf = (tmp & 0xff000000) +
 		(t[(tmp >> 16) & 0xff] << 16) +
 		(t[(tmp >>  8) & 0xff] <<  8) +
