@@ -21,6 +21,7 @@
 
 #include "MsgImpl.h"
 
+#include "svn_revision.h"
 
 //---------------------------------------------------------------------------
 // Message Strings ( these should be localized )
@@ -30,6 +31,7 @@ TVP_MSG_DECL_CONST(TVPAboutString,
 	
 "吉里吉里[きりきり] 2 実行コア version %1 ( TJS version %2 )\n"
 "Compiled on " __DATE__ " " __TIME__ "\n"
+TVP_SVN_REVISION "\n"
 "Copyright (C) 1997-2004 W.Dee All rights reserved.\n"
 "吉里吉里実行コアの使用/配布/改変は、\n"
 "SDK 付属の license.txt に書かれているライセンスに従って行うことができます.\n"
@@ -77,7 +79,8 @@ TVP_MSG_DECL_CONST(TVPAboutString,
 
 TVP_MSG_DECL_CONST(TVPVersionInformation,
 	
-"吉里吉里[きりきり] 2 実行コア version %1 [" __DATE__ " " __TIME__ "] ( TJS version %2 ) "
+"吉里吉里[きりきり] 2 実行コア/%1 "
+"(SVN revision:" TVP_SVN_REVISION_NUMBER "; Compiled on " __DATE__ " " __TIME__ ") TJS2/%2 "
 "Copyright (C) 1997-2004 W.Dee All rights reserved.");
 
 TVP_MSG_DECL_CONST(TVPVersionInformation2,
