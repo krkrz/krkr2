@@ -1663,6 +1663,45 @@ iTJSDispatch2 * TJSCreateArrayObject(iTJSDispatch2 **classout)
 
 
 
+//---------------------------------------------------------------------------
+// Utility functions
+//---------------------------------------------------------------------------
+tjs_int TJSGetArrayElementCount(iTJSDispatch2 * dsp)
+{
+	// returns array element count
+	tTJSArrayNI *ni;
+	if(TJS_FAILED(dsp->NativeInstanceSupport(TJS_NIS_GETINSTANCE,
+		ClassID_Array, (iTJSNativeInstance**)&ni)))
+			TJS_eTJSError(TJSSpecifyArray);
+	return ni->Items.size();
+}
+//---------------------------------------------------------------------------
+tjs_int TJSCopyArrayElementTo(iTJSDispatch2 * dsp,
+	tTJSVariant *dest, tjs_uint start, tjs_int count)
+{
+	// copy array elements to specified variant array.
+	// returns copied element count.
+	tTJSArrayNI *ni;
+	if(TJS_FAILED(dsp->NativeInstanceSupport(TJS_NIS_GETINSTANCE,
+		ClassID_Array, (iTJSNativeInstance**)&ni)))
+			TJS_eTJSError(TJSSpecifyArray);
+
+	if(count < 0) count = ni->Items.size();
+
+	if(start >= ni->Items.size()) return 0;
+
+	tjs_uint limit = start + count;
+
+	for(tjs_uint i = start; i < limit; i++)
+		*(dest++) = ni->Items[i];
+
+	return limit - start;
+}
+//---------------------------------------------------------------------------
+
+
+
+
 
 } // namespace TJS
 

@@ -27,6 +27,7 @@ TJS_MSG_DECL(TJSInvalidParam, "不正な引数です")
 TJS_MSG_DECL(TJSBadParamCount, "引数の数が不正です")
 TJS_MSG_DECL(TJSInvalidType, "関数ではないかプロパティの種類が違います")
 TJS_MSG_DECL(TJSSpecifyDicOrArray, "Dictionary または Array クラスのオブジェクトを指定してください");
+TJS_MSG_DECL(TJSSpecifyArray, "Array クラスのオブジェクトを指定してください");
 TJS_MSG_DECL(TJSStringDeallocError, "文字列メモリブロックを解放できません")
 TJS_MSG_DECL(TJSStringAllocError, "文字列メモリブロックを確保できません")
 TJS_MSG_DECL(TJSMisplacedBreakContinue, "\"break\" または \"continue\" はここに書くことはできません")

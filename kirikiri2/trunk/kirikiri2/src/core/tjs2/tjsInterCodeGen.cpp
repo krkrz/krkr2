@@ -199,9 +199,10 @@ tTJSInterCodeContext::tTJSInterCodeContext(tTJSInterCodeContext *parent,
 
 	MaxFrameCount = 0;
 	MaxVariableCount = 0;
-	MaxFuncArgCount = 0;
 
 	FuncDeclArgCount = 0;
+	FuncDeclUnnamedArgArrayBase = 0;
+	FuncDeclCollapseBase = -1;
 
 	FunctionRegisterCodePoint = 0;
 
@@ -1618,10 +1619,12 @@ tjs_int tTJSInterCodeContext::GenNodeCode(tjs_int & frame, tTJSExprNode *node,
 		{
 			hasnonlocalsymbol = false;
 		}
-//	  	hasnonlocalsymbol = false;
+
+		// flag which indicates whether to do direct or indirect call access
+		bool do_direct_access = haspropnode || hasnonlocalsymbol;
 
 		// reserve frame
-		if(!haspropnode && !hasnonlocalsymbol && (restype & TJS_RT_NEEDED) )
+		if(!do_direct_access && (restype & TJS_RT_NEEDED) )
 			frame++; // reserve the frame for a result value
 
 		// generate function call codes
@@ -1645,7 +1648,7 @@ tjs_int tTJSInterCodeContext::GenNodeCode(tjs_int & frame, tTJSExprNode *node,
 			tSubParam param2;
 
 
-			if(haspropnode || hasnonlocalsymbol)
+			if(do_direct_access)
 			{
 				param2.SubType = stFuncCall; // creates code with stFuncCall
 				res = _GenNodeCode(frame, (*node)[0], restype, reqresaddr, param2);
@@ -1662,22 +1665,11 @@ tjs_int tTJSInterCodeContext::GenNodeCode(tjs_int & frame, tTJSExprNode *node,
 					node_pos); // result target
 				PutCode(TJS_TO_VM_REG_ADDR(resaddr),
 					node_pos); // iTJSDispatch2 that points the function
-				if(FuncArgStack.top().IsOmit)
-				{
-					PutCode(-1, node_pos);
-				}
-				else
-				{
-					std::vector<tjs_int32> & vec = FuncArgStack.top().ArgVector;
-					PutCode(vec.size(), node_pos); // count of arguments
-					tjs_uint i;
-					for(i=0; i<vec.size(); i++)
-						PutCode(TJS_TO_VM_REG_ADDR(vec[i]), node_pos);
 
-				}
+				// generate argument code
+				GenerateFuncCallArgCode();
 
 				// clears the frame
-
 				ClearFrame(frame, framestart);
 
 			}
@@ -1700,9 +1692,27 @@ tjs_int tTJSInterCodeContext::GenNodeCode(tjs_int & frame, tTJSExprNode *node,
 			if((*node)[1]) _GenNodeCode(frame, (*node)[1], TJS_RT_NEEDED, 0, tSubParam());
 		}
 		if((*node)[0])
-			AddFuncArg(_GenNodeCode(frame, (*node)[0], TJS_RT_NEEDED, 0, tSubParam()));
+		{
+			tTJSExprNode *n = (*node)[0];
+			if(n->GetOpecode() == T_EXPANDARG)
+			{
+				// expanding argument
+				if((*n)[0])
+					AddFuncArg(_GenNodeCode(
+						frame, (*n)[0], TJS_RT_NEEDED, 0, tSubParam()), fatExpand);
+				else
+					AddFuncArg(0, fatUnnamedExpand);
+			}
+			else
+			{
+				AddFuncArg(_GenNodeCode(
+					frame, (*node)[0], TJS_RT_NEEDED, 0, tSubParam()), fatNormal);
+			}
+		}
 		else
-			AddFuncArg(0);
+		{
+			AddFuncArg(0, fatNormal);
+		}
 		return 0;
 
 	case T_OMIT:
@@ -1841,17 +1851,11 @@ tjs_int tTJSInterCodeContext::GenNodeCode(tjs_int & frame, tTJSExprNode *node,
 				node_pos); // result target
 			PutCode(TJS_TO_VM_REG_ADDR(resaddr), node_pos); // the object
 			PutCode(TJS_TO_VM_REG_ADDR(dp), node_pos); // function name
-			if(FuncArgStack.top().IsOmit)
-			{
-				PutCode(-1, node_pos);
-			}
-			else
-			{
-				std::vector<tjs_int32> & vec = FuncArgStack.top().ArgVector;
-				PutCode(vec.size(), node_pos); // count of arguments
-				for(tjs_uint i =0; i<vec.size(); i++)
-					PutCode(TJS_TO_VM_REG_ADDR(vec[i]), node_pos);
-			}
+
+			// generate argument code
+			GenerateFuncCallArgCode();
+
+			// extend frame and return
 			if(restype & TJS_RT_NEEDED) frame++;
 			return (restype & TJS_RT_NEEDED)?frame-1:0;
 		  }
@@ -2305,17 +2309,16 @@ void tTJSInterCodeContext::StartFuncArg()
 	// notify the start of function arguments
 	// create a stack for function arguments
 	tFuncArg arg;
-	arg.IsOmit = false;
 	FuncArgStack.push(arg);
 }
 //---------------------------------------------------------------------------
-void tTJSInterCodeContext::AddFuncArg(const tjs_int addr)
+void tTJSInterCodeContext::AddFuncArg(const tjs_int addr, tTJSFuncArgType type)
 {
 	// add a function argument
 	// addr = register address to add
-	FuncArgStack.top().ArgVector.push_back(addr);
-	tjs_int n = FuncArgStack.top().ArgVector.size();
-	if(MaxFuncArgCount < n) MaxFuncArgCount = n;
+	FuncArgStack.top().ArgVector.push_back(tFuncArgItem(addr, type));
+	if(type == fatExpand || type == fatUnnamedExpand)
+		FuncArgStack.top().HasExpand = true; // has expanding node
 }
 //---------------------------------------------------------------------------
 void tTJSInterCodeContext::EndFuncArg()
@@ -3299,6 +3302,34 @@ void tTJSInterCodeContext::ExitBlock()
 	ClearLocalVariable(prevcount, curcount);
 }
 //---------------------------------------------------------------------------
+void tTJSInterCodeContext::GenerateFuncCallArgCode()
+{
+	if(FuncArgStack.top().IsOmit)
+	{
+		PutCode(-1, LEX_POS); // omit (...) is specified
+	}
+	else if(FuncArgStack.top().HasExpand)
+	{
+		PutCode(-2, LEX_POS); // arguments have argument expanding node
+		std::vector<tFuncArgItem> & vec = FuncArgStack.top().ArgVector;
+		PutCode(vec.size(), LEX_POS); // count of the arguments
+		tjs_uint i;
+		for(i=0; i<vec.size(); i++)
+		{
+			PutCode((tjs_int32)vec[i].Type, LEX_POS);
+			PutCode(TJS_TO_VM_REG_ADDR(vec[i].Register), LEX_POS);
+		}
+	}
+	else
+	{
+		std::vector<tFuncArgItem> & vec = FuncArgStack.top().ArgVector;
+		PutCode(vec.size(), LEX_POS); // count of arguments
+		tjs_uint i;
+		for(i=0; i<vec.size(); i++)
+			PutCode(TJS_TO_VM_REG_ADDR(vec[i].Register), LEX_POS);
+	}
+}
+//---------------------------------------------------------------------------
 void tTJSInterCodeContext::AddFunctionDeclArg(const tjs_char *varname, tTJSExprNode *node)
 {
 	// process the function argument of declaration
@@ -3329,6 +3360,24 @@ void tTJSInterCodeContext::AddFunctionDeclArg(const tjs_char *varname, tTJSExprN
 
 	}
 	FuncDeclArgCount++;
+}
+//---------------------------------------------------------------------------
+void tTJSInterCodeContext::AddFunctionDeclArgCollapse(const tjs_char *varname)
+{
+	// process the function "collapse" argument of declaration.
+	// collapse argument is available to receive arguments in array object form.
+
+	if(varname == NULL)
+	{
+		// receive arguments in unnamed array
+		FuncDeclUnnamedArgArrayBase = FuncDeclArgCount;
+	}
+	else
+	{
+		// receive arguments in named array
+		FuncDeclCollapseBase = FuncDeclArgCount;
+		Namespace.Add(varname);		
+	}
 }
 //---------------------------------------------------------------------------
 void tTJSInterCodeContext::SetPropertyDeclArg(const tjs_char *varname)
