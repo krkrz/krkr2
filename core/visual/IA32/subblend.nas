@@ -35,9 +35,25 @@ TVPSubBlend_mmx_a:			; pixel subtractive blender
 		mov			edi,	[esp + 28]		; dest
 		mov			ebp,	[esp + 32]		; src
 		lea			esi,	[edi + ecx*4]	; limit
-		sub			esi,	byte 12			; 3*4
+		sub			esi,	byte 16			; 4*4
 		cmp			edi,	esi
 		jae			near .pfraction			; jump if edi >= esi
+
+
+		test		edi,	4
+		IF			nz
+			;	align destination pointer to QWORD
+
+			movd		mm0,	[edi]			; dest
+			movd		mm1,	[ebp]			; src
+			pxor		mm1,	mm7				; not
+			psubusb		mm0,	mm1				; dest += src
+			movd		[edi],	mm0				; store
+			add			edi,	byte 4
+			add			ebp,	byte 4
+			cmp			edi,	esi
+			jae			short .pfraction		; jump if edi >= esi
+		ENDIF
 
 		loop_align
 .ploop:
@@ -58,7 +74,7 @@ TVPSubBlend_mmx_a:			; pixel subtractive blender
 		jb			short .ploop
 
 .pfraction:
-		add			esi,	byte 12
+		add			esi,	byte 16
 		cmp			edi,	esi
 		jae			.pexit					; jump if edi >= esi
 
@@ -109,9 +125,25 @@ TVPSubBlend_HDA_mmx_a:			; pixel subtractive blender (holding desitination alpha
 		mov			edi,	[esp + 28]		; dest
 		mov			ebp,	[esp + 32]		; src
 		lea			esi,	[edi + ecx*4]	; limit
-		sub			esi,	byte 12			; 3*4
+		sub			esi,	byte 16			; 4*4
 		cmp			edi,	esi
 		jae			near .pfraction			; jump if edi >= esi
+
+		test		edi,	4
+		IF			nz
+			;	align destination pointer to QWORD
+			movd		mm0,	[edi]			; dest
+			movd		mm1,	[ebp]			; src
+			pxor		mm1,	mm7				; not
+			pand		mm1,	mm6				; mask
+			psubusb		mm0,	mm1				; dest -= src
+			movd		[edi],	mm0				; store
+			add			edi,	byte 4
+			add			ebp,	byte 4
+			cmp			edi,	esi
+
+			jae			short .pfraction		; jump if edi >= esi
+		ENDIF
 
 		loop_align
 .ploop:
@@ -134,7 +166,7 @@ TVPSubBlend_HDA_mmx_a:			; pixel subtractive blender (holding desitination alpha
 		jb			short .ploop
 
 .pfraction:
-		add			esi,	byte 12
+		add			esi,	byte 16
 		cmp			edi,	esi
 		jae			.pexit					; jump if edi >= esi
 
@@ -207,9 +239,30 @@ TVPSubBlend_HDA_o_mmx_a:		; pixel subtractive blender
 		mov			edi,	[esp + 28]		; dest
 		mov			ebp,	[esp + 32]		; src
 		lea			esi,	[edi + ecx*4]	; limit
-		sub			esi,	byte 12			; 3*4
+		sub			esi,	byte 16			; 4*4
 		cmp			edi,	esi
 		jae			near .pfraction			; jump if edi >= esi
+
+
+		test		edi,	4
+		IF			nz
+			;	align destination pointer to QWORD
+			movd		mm1,	[edi]			; dest
+			punpcklbw	mm1,	mm0				; mm1 = 00dd00dd00dd00dd
+			movd		mm2,	[ebp]			; src
+			pxor		mm2,	[edx]			; not
+			punpcklbw	mm2,	mm0				; unpack mm2 = 00ss00ss00ss00ss
+			pmullw		mm2,	mm7				; mm2 *= opa
+			psrlw		mm2,	8				; mm2 >>=8
+			psubw		mm1,	mm2				; mm1 += mm2
+			packuswb	mm1,	mm0				; pack
+			movd		[edi],	mm1				; store
+			add			edi,	byte 4
+			add			ebp,	byte 4
+			cmp			edi,	esi
+
+			jae			short .pfraction		; jump if edi >= esi
+		ENDIF
 
 		loop_align
 .ploop:
@@ -254,7 +307,7 @@ TVPSubBlend_HDA_o_mmx_a:		; pixel subtractive blender
 		jb			short .ploop
 
 .pfraction:
-		add			esi,	byte 12
+		add			esi,	byte 16
 		cmp			edi,	esi
 		jae			.pexit					; jump if edi >= esi
 

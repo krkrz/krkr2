@@ -40,9 +40,26 @@ TVPDarkenBlend_mmx_a:			; pixel darken blender
 		mov			edi,	[esp + 28]		; dest
 		mov			ebp,	[esp + 32]		; src
 		lea			esi,	[edi + ecx*4]	; limit
-		sub			esi,	byte 12			; 3*4
+		sub			esi,	byte 16			; 4*4
 		cmp			edi,	esi
 		jae			near .pfraction			; jump if edi >= esi
+
+		test		edi,	4
+		IF			nz
+			; align destination pointer to QWORD
+			movd		mm1,	[edi]			; dest
+			movq		mm2,	mm1
+			movd		mm3,	[ebp]
+			psubusb		mm2,	mm3
+			psubb		mm1,	mm2
+			movd		[edi],	mm1
+
+			add			edi,	byte 4
+			add			ebp,	byte 4
+			cmp			edi,	esi
+
+			jae			short .pfraction			; jump if edi >= esi
+		ENDIF
 
 		loop_align
 .ploop:
@@ -63,7 +80,7 @@ TVPDarkenBlend_mmx_a:			; pixel darken blender
 		jb			short .ploop
 
 .pfraction:
-		add			esi,	byte 12
+		add			esi,	byte 16
 		cmp			edi,	esi
 		jae			.pexit					; jump if edi >= esi
 
@@ -114,9 +131,29 @@ TVPDarkenBlend_HDA_mmx_a:			; pixel darken blender (holding desitination alpha)
 		mov			edi,	[esp + 28]		; dest
 		mov			ebp,	[esp + 32]		; src
 		lea			esi,	[edi + ecx*4]	; limit
-		sub			esi,	byte 12			; 3*4
+		sub			esi,	byte 16			; 4*4
 		cmp			edi,	esi
 		jae			near .pfraction			; jump if edi >= esi
+
+
+		test		edi,	4
+		IF			nz
+			; align destination pointer to QWORD
+			movd		mm1,	[edi]			; dest
+			por			mm1,	mm7
+			movq		mm2,	mm1
+			movd		mm3,	[ebp]
+			psubusb		mm2,	mm3
+			pand		mm2,	mm7
+			psubb		mm1,	mm2
+			movd		[edi],	mm1
+
+			add			edi,	byte 4
+			add			ebp,	byte 4
+			cmp			edi,	esi
+
+			jae			short .pfraction			; jump if edi >= esi
+		ENDIF
 
 		loop_align
 .ploop:
@@ -139,7 +176,7 @@ TVPDarkenBlend_HDA_mmx_a:			; pixel darken blender (holding desitination alpha)
 		jb			short .ploop
 
 .pfraction:
-		add			esi,	byte 12
+		add			esi,	byte 16
 		cmp			edi,	esi
 		jae			.pexit					; jump if edi >= esi
 

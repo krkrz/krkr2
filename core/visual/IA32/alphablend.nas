@@ -110,9 +110,41 @@ TVPAlphaBlend_name:
 		mov			ebp,	[esp + 32]		; src
 		pxor		mm0,	mm0				; mm0 = 0
 		lea			esi,	[edi + ecx*4]	; limit
-		sub			esi,	byte 12			; 3*4
+		sub			esi,	byte 16			; 3*4
 		cmp			edi,	esi
 		jae			near .pfraction			; jump if edi >= esi
+
+
+
+		test		edi,	4
+		IF			nz
+			; align destination pointer to QWORD
+
+			mov			eax,	[ebp]			; src
+
+			movd		mm2,	eax
+			shr			eax,	24				; eax >>= 24
+			movd		mm1,	[edi]			; dest
+			movd		mm4,	eax
+			punpcklbw	mm2,	mm0				; unpack
+			punpcklwd	mm4,	mm4				; unpack
+			punpcklbw	mm1,	mm0				; unpack
+			punpcklwd	mm4,	mm4				; unpack
+			psubw		mm2,	mm1				; mm2 -= mm1
+			add			edi,	byte 4
+			pmullw		mm2,	mm4				; mm2 *= mm4
+			psllw		mm1,	8				; mm1 <<= 8
+			paddw		mm1,	mm2				; mm1 += mm2
+			psrlw		mm1,	8				; mm1 >>= 8
+			add			ebp,	byte 4
+			packuswb	mm1,	mm0				; pack
+			cmp			edi,	esi
+			movd		[edi-4], mm1			; store
+
+			jae			near .pfraction			; jump if edi >= esi
+
+		ENDIF
+
 
 		mov			eax,	[ebp]			; (for next loop) 1 src
 		mov			edx,	[ebp+4]			; (for next loop) 2 src
@@ -187,7 +219,7 @@ TVPAlphaBlend_name:
 		jb			near .ploop
 
 .pfraction:
-		add			esi,	byte 12
+		add			esi,	byte 16
 		cmp			edi,	esi
 		jae			.pexit					; jump if edi >= esi
 
@@ -245,11 +277,39 @@ TVPAlphaBlend_o_name:
 		punpckldq	mm6,	mm6				; mm6 |= (mm6 << 32)
 		pxor		mm0,	mm0				; mm0 = 0
 		lea			esi,	[edi + ecx*4]	; limit
-		sub			esi,	byte 4			; 1*4
+		sub			esi,	byte 8			; 2*4
 		cmp			edi,	esi
 		jae			near .pfraction			; jump if edi >= esi
 
-		jmp			near	.ploop
+		test		edi,	4
+		IF			nz
+			; align destination pointer to QWORD
+			mov			ebx,	[esp + 40]		; opa
+
+			mov			eax,	[ebp]			; src
+			movd		mm2,	eax
+			mul			ebx						; edx:eax = eax * ebx
+			movd		mm1,	[edi]			; dest
+			movd		mm4,	edx
+			punpcklbw	mm2,	mm0				; unpack
+			punpcklwd	mm4,	mm4				; unpack
+			punpcklbw	mm1,	mm0				; unpack
+			punpcklwd	mm4,	mm4				; unpack
+			psubw		mm2,	mm1				; mm2 -= mm1
+			pmullw		mm2,	mm4				; mm2 *= mm4
+			psllw		mm1,	8
+			paddw		mm1,	mm2				; mm1 += mm2
+			psrlw		mm1,	8
+			packuswb	mm1,	mm0				; pack
+			movd		[edi],	mm1				; store
+			add			edi,	byte 4
+			add			ebp,	byte 4
+			cmp			edi,	esi
+
+			jae			near .pfraction
+		ENDIF
+
+		jmp			short	.ploop
 
 .ptransp
 		add			edi,	byte 8
@@ -306,7 +366,7 @@ TVPAlphaBlend_o_name:
 		jb			near .ploop
 
 .pfraction:
-		add			esi,	byte 4
+		add			esi,	byte 8
 		cmp			edi,	esi
 		jae			.pexit					; jump if edi >= esi
 
@@ -596,11 +656,31 @@ TVPConstAlphaBlend_name:
 		pxor		mm0,	mm0				; mm0 = 0
 		lea			ebp,	[ecx*4]			; limit
 		punpcklwd	mm4,	mm4				; unpack
-		sub			ebp,	byte 4			; 1*4
+		sub			ebp,	byte 8			; 2*4
 		punpcklwd	mm4,	mm4				; unpack
 		movq		mm3,	mm4
 		cmp			ebx,	ebp
 		jge			near .pfraction			; jump if ebx >= ebp
+
+		test		edi,	4
+		IF			nz
+			; align destination pointer to QWORD
+			movd		mm2,	[esi+ebx]		; src
+			movd		mm1,	[edi+ebx]		; dest
+			punpcklbw	mm2,	mm0				; unpack
+			punpcklbw	mm1,	mm0				; unpack
+			psubw		mm2,	mm1				; mm2 -= mm1
+			add			ebx,	byte 4
+			pmullw		mm2,	mm4				; mm2 *= mm4
+			psllw		mm1,	8
+			paddw		mm1,	mm2				; mm1 += mm2
+			cmp			ebx,	ebp
+			psrlw		mm1,	8
+			packuswb	mm1,	mm0				; pack
+			movd		[edi-4+ebx], mm1		; store
+			jge			.pfraction
+		ENDIF
+
 
 		loop_align
 .ploop:
@@ -633,7 +713,7 @@ TVPConstAlphaBlend_name:
 		jl			near .ploop
 
 .pfraction:
-		add			ebp,	byte 4
+		add			ebp,	byte 8
 		cmp			ebx,	ebp
 		jge			.pexit					; jump if ebx >= ebp
 
@@ -685,10 +765,30 @@ TVPConstAlphaBlend_SD_name:
 		xor			ebx,	ebx				; counter
 		lea			ebp,	[ecx*4]			; limit
 		punpcklwd	mm4,	mm4				; unpack
-		sub			ebp,	byte 12			; 3*4
+		sub			ebp,	byte 16			; 4*4
 		punpcklwd	mm4,	mm4				; unpack
 		cmp			ebx,	ebp
 		jge			near .pfraction			; jump if ebx >= ebp
+
+		test		edi,	4
+		IF			nz
+			; align destination pointer to QWORD
+			movd		mm2,	[esi+ebx]		; src1
+			movd		mm1,	[eax+ebx]		; src2
+			punpcklbw	mm2,	mm0				; unpack
+			punpcklbw	mm1,	mm0				; unpack
+			psubw		mm2,	mm1				; mm2 -= mm1
+			pmullw		mm2,	mm4				; mm2 *= mm4
+			psllw		mm1,	8
+			paddw		mm1,	mm2				; mm1 += mm2
+			psrlw		mm1,	8
+			add			ebx,	byte 4
+			packuswb	mm1,	mm0				; pack
+			cmp			ebx,	ebp
+			movd		[edi-4+ebx], mm1		; store
+
+			jge			near .pfraction			; jump if ebx >= ebp
+		ENDIF
 
 		loop_align
 .ploop:
@@ -744,7 +844,7 @@ TVPConstAlphaBlend_SD_name:
 		jl			near .ploop
 
 .pfraction:
-		add			ebp,	byte 12
+		add			ebp,	byte 16
 		cmp			ebx,	ebp
 		jge			.pexit					; jump if ebx >= ebp
 
