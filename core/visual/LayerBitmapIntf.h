@@ -183,7 +183,7 @@ public:
 
 private:
 	template <typename tFuncStretch, typename tFuncAffine>
-	void TVPDoAffineLoop(
+	static void TVPDoAffineLoop(
 			tFuncStretch stretch,
 			tFuncAffine affine,
 			tjs_int sxs,
@@ -198,7 +198,7 @@ private:
 			const tTVPRect & srcrect);
 
 	template <typename tFuncStretch, typename tFuncAffine>
-	void TVPDoBilinearAffineLoop(
+	static void TVPDoBilinearAffineLoop(
 			tFuncStretch stretch,
 			tFuncAffine affine,
 			tjs_int sxs,
