@@ -1670,7 +1670,7 @@ class KAGWindow extends Window
 			if(snapshotLayer === void)
 				snapshotLayer = new Layer(this, primaryLayer);
 			snapshotLayer.setImageSize(scWidth, scHeight);
-			snapshotLayer.face = dfBoth;
+			snapshotLayer.face = dfAlpha;
 			snapshotLayer.piledCopy(0, 0, kag.fore.base, 0, 0, scWidth, scHeight);
 		}
 		snapshotLockCount ++;
@@ -1741,7 +1741,7 @@ class KAGWindow extends Window
 				try
 				{
 					tmp.setImageSize(size.width, size.height);
-					tmp.face = dfBoth;
+					tmp.face = dfAlpha;
 					tmp.stretchCopy(0, 0, size.width, size.height, snapshotLayer,
 						0, 0, snapshotLayer.imageWidth, snapshotLayer.imageHeight, stLinear);
 					/*
