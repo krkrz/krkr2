@@ -56,6 +56,7 @@ enum tTVPDrawFace
 	dfAlpha = 0,
 	dfAddAlpha = 4,
 	dfMain = 1,
+	dfOpaque = 1,
 	dfMask = 2,
 	dfProvince = 3
 };
