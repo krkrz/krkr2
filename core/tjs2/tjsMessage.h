@@ -26,6 +26,7 @@ extern void TJSRegisterMessageMap(const tjs_char *name, tTJSMessageHolder *holde
 extern void TJSUnregisterMessageMap(const tjs_char *name);
 extern bool TJSAssignMessage(const tjs_char *name, const tjs_char *newmsg);
 extern ttstr TJSCreateMessageMapString();
+TJS_EXP_FUNC_DEF(ttstr, TJSGetMessageMapMessage, (const tjs_char *name));
 //---------------------------------------------------------------------------
 
 

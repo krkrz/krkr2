@@ -2578,6 +2578,7 @@ extern void * TVPImportFuncPtr525;
 extern void * TVPImportFuncPtr526;
 extern void * TVPImportFuncPtr527;
 extern void * TVPImportFuncPtr528;
+extern void * TVPImportFuncPtr529;
 
 
 //---------------------------------------------------------------------------
@@ -5923,2195 +5924,2205 @@ inline iTJSDispatch2 * TJSCreateDictionaryObject(iTJSDispatch2 * * classout = NU
 	typedef iTJSDispatch2 * (__stdcall * __functype)(iTJSDispatch2 * *);
 	return ((__functype)(TVPImportFuncPtr309))(classout);
 }
-inline void TJSDoVariantOperation(tjs_int op , tTJSVariant & target , const tTJSVariant * param)
+inline ttstr TJSGetMessageMapMessage(const tjs_char * name)
 {
 	if(!TVPImportFuncPtr310)
 	{
-		static char funcname[] = "void ::TJSDoVariantOperation(tjs_int,tTJSVariant &,const tTJSVariant *)";
+		static char funcname[] = "ttstr ::TJSGetMessageMapMessage(const tjs_char *)";
 		TVPImportFuncPtr310 = TVPGetImportFuncPtr(funcname);
 	}
-	typedef void (__stdcall * __functype)(tjs_int , tTJSVariant &, const tTJSVariant *);
-	((__functype)(TVPImportFuncPtr310))(op, target, param);
+	typedef ttstr (__stdcall * __functype)(const tjs_char *);
+	return ((__functype)(TVPImportFuncPtr310))(name);
 }
-inline void TJSDoRehash()
+inline void TJSDoVariantOperation(tjs_int op , tTJSVariant & target , const tTJSVariant * param)
 {
 	if(!TVPImportFuncPtr311)
 	{
-		static char funcname[] = "void ::TJSDoRehash()";
+		static char funcname[] = "void ::TJSDoVariantOperation(tjs_int,tTJSVariant &,const tTJSVariant *)";
 		TVPImportFuncPtr311 = TVPGetImportFuncPtr(funcname);
 	}
-	typedef void (__stdcall * __functype)();
-	((__functype)(TVPImportFuncPtr311))();
+	typedef void (__stdcall * __functype)(tjs_int , tTJSVariant &, const tTJSVariant *);
+	((__functype)(TVPImportFuncPtr311))(op, target, param);
 }
-inline void TVPAddLog(const ttstr & line)
+inline void TJSDoRehash()
 {
 	if(!TVPImportFuncPtr312)
 	{
-		static char funcname[] = "void ::TVPAddLog(const ttstr &)";
+		static char funcname[] = "void ::TJSDoRehash()";
 		TVPImportFuncPtr312 = TVPGetImportFuncPtr(funcname);
 	}
-	typedef void (__stdcall * __functype)(const ttstr &);
-	((__functype)(TVPImportFuncPtr312))(line);
+	typedef void (__stdcall * __functype)();
+	((__functype)(TVPImportFuncPtr312))();
 }
-inline void TVPAddImportantLog(const ttstr & line)
+inline void TVPAddLog(const ttstr & line)
 {
 	if(!TVPImportFuncPtr313)
 	{
-		static char funcname[] = "void ::TVPAddImportantLog(const ttstr &)";
+		static char funcname[] = "void ::TVPAddLog(const ttstr &)";
 		TVPImportFuncPtr313 = TVPGetImportFuncPtr(funcname);
 	}
 	typedef void (__stdcall * __functype)(const ttstr &);
 	((__functype)(TVPImportFuncPtr313))(line);
 }
-inline void TVPPushEnvironNoise(const void * buf , tjs_int bufsize)
+inline void TVPAddImportantLog(const ttstr & line)
 {
 	if(!TVPImportFuncPtr314)
 	{
-		static char funcname[] = "void ::TVPPushEnvironNoise(const void *,tjs_int)";
+		static char funcname[] = "void ::TVPAddImportantLog(const ttstr &)";
 		TVPImportFuncPtr314 = TVPGetImportFuncPtr(funcname);
 	}
-	typedef void (__stdcall * __functype)(const void *, tjs_int);
-	((__functype)(TVPImportFuncPtr314))(buf, bufsize);
+	typedef void (__stdcall * __functype)(const ttstr &);
+	((__functype)(TVPImportFuncPtr314))(line);
 }
-inline void TVPGetRandomBits128(void * dest)
+inline void TVPPushEnvironNoise(const void * buf , tjs_int bufsize)
 {
 	if(!TVPImportFuncPtr315)
 	{
-		static char funcname[] = "void ::TVPGetRandomBits128(void *)";
+		static char funcname[] = "void ::TVPPushEnvironNoise(const void *,tjs_int)";
 		TVPImportFuncPtr315 = TVPGetImportFuncPtr(funcname);
 	}
-	typedef void (__stdcall * __functype)(void *);
-	((__functype)(TVPImportFuncPtr315))(dest);
+	typedef void (__stdcall * __functype)(const void *, tjs_int);
+	((__functype)(TVPImportFuncPtr315))(buf, bufsize);
 }
-inline tjs_uint64 TVPGetTickCount()
+inline void TVPGetRandomBits128(void * dest)
 {
 	if(!TVPImportFuncPtr316)
 	{
-		static char funcname[] = "tjs_uint64 ::TVPGetTickCount()";
+		static char funcname[] = "void ::TVPGetRandomBits128(void *)";
 		TVPImportFuncPtr316 = TVPGetImportFuncPtr(funcname);
 	}
-	typedef tjs_uint64 (__stdcall * __functype)();
-	return ((__functype)(TVPImportFuncPtr316))();
+	typedef void (__stdcall * __functype)(void *);
+	((__functype)(TVPImportFuncPtr316))(dest);
 }
-inline ttstr TVPFormatMessage(const tjs_char * msg , const ttstr & p1)
+inline tjs_uint64 TVPGetTickCount()
 {
 	if(!TVPImportFuncPtr317)
 	{
-		static char funcname[] = "ttstr ::TVPFormatMessage(const tjs_char *,const ttstr &)";
+		static char funcname[] = "tjs_uint64 ::TVPGetTickCount()";
 		TVPImportFuncPtr317 = TVPGetImportFuncPtr(funcname);
 	}
-	typedef ttstr (__stdcall * __functype)(const tjs_char *, const ttstr &);
-	return ((__functype)(TVPImportFuncPtr317))(msg, p1);
+	typedef tjs_uint64 (__stdcall * __functype)();
+	return ((__functype)(TVPImportFuncPtr317))();
 }
-inline ttstr TVPFormatMessage(const tjs_char * msg , const ttstr & p1 , const ttstr & p2)
+inline ttstr TVPFormatMessage(const tjs_char * msg , const ttstr & p1)
 {
 	if(!TVPImportFuncPtr318)
 	{
-		static char funcname[] = "ttstr ::TVPFormatMessage(const tjs_char *,const ttstr &,const ttstr &)";
+		static char funcname[] = "ttstr ::TVPFormatMessage(const tjs_char *,const ttstr &)";
 		TVPImportFuncPtr318 = TVPGetImportFuncPtr(funcname);
 	}
-	typedef ttstr (__stdcall * __functype)(const tjs_char *, const ttstr &, const ttstr &);
-	return ((__functype)(TVPImportFuncPtr318))(msg, p1, p2);
+	typedef ttstr (__stdcall * __functype)(const tjs_char *, const ttstr &);
+	return ((__functype)(TVPImportFuncPtr318))(msg, p1);
 }
-inline void TVPThrowExceptionMessage(const tjs_char * msg)
+inline ttstr TVPFormatMessage(const tjs_char * msg , const ttstr & p1 , const ttstr & p2)
 {
 	if(!TVPImportFuncPtr319)
 	{
-		static char funcname[] = "void ::TVPThrowExceptionMessage(const tjs_char *)";
+		static char funcname[] = "ttstr ::TVPFormatMessage(const tjs_char *,const ttstr &,const ttstr &)";
 		TVPImportFuncPtr319 = TVPGetImportFuncPtr(funcname);
 	}
-	typedef void (__stdcall * __functype)(const tjs_char *);
-	((__functype)(TVPImportFuncPtr319))(msg);
+	typedef ttstr (__stdcall * __functype)(const tjs_char *, const ttstr &, const ttstr &);
+	return ((__functype)(TVPImportFuncPtr319))(msg, p1, p2);
 }
-inline void TVPThrowExceptionMessage(const tjs_char * msg , const ttstr & p1 , tjs_int num)
+inline void TVPThrowExceptionMessage(const tjs_char * msg)
 {
 	if(!TVPImportFuncPtr320)
 	{
-		static char funcname[] = "void ::TVPThrowExceptionMessage(const tjs_char *,const ttstr &,tjs_int)";
+		static char funcname[] = "void ::TVPThrowExceptionMessage(const tjs_char *)";
 		TVPImportFuncPtr320 = TVPGetImportFuncPtr(funcname);
 	}
-	typedef void (__stdcall * __functype)(const tjs_char *, const ttstr &, tjs_int);
-	((__functype)(TVPImportFuncPtr320))(msg, p1, num);
+	typedef void (__stdcall * __functype)(const tjs_char *);
+	((__functype)(TVPImportFuncPtr320))(msg);
 }
-inline void TVPThrowExceptionMessage(const tjs_char * msg , const ttstr & p1)
+inline void TVPThrowExceptionMessage(const tjs_char * msg , const ttstr & p1 , tjs_int num)
 {
 	if(!TVPImportFuncPtr321)
 	{
-		static char funcname[] = "void ::TVPThrowExceptionMessage(const tjs_char *,const ttstr &)";
+		static char funcname[] = "void ::TVPThrowExceptionMessage(const tjs_char *,const ttstr &,tjs_int)";
 		TVPImportFuncPtr321 = TVPGetImportFuncPtr(funcname);
 	}
-	typedef void (__stdcall * __functype)(const tjs_char *, const ttstr &);
-	((__functype)(TVPImportFuncPtr321))(msg, p1);
+	typedef void (__stdcall * __functype)(const tjs_char *, const ttstr &, tjs_int);
+	((__functype)(TVPImportFuncPtr321))(msg, p1, num);
 }
-inline void TVPThrowExceptionMessage(const tjs_char * msg , const ttstr & p1 , const ttstr & p2)
+inline void TVPThrowExceptionMessage(const tjs_char * msg , const ttstr & p1)
 {
 	if(!TVPImportFuncPtr322)
 	{
-		static char funcname[] = "void ::TVPThrowExceptionMessage(const tjs_char *,const ttstr &,const ttstr &)";
+		static char funcname[] = "void ::TVPThrowExceptionMessage(const tjs_char *,const ttstr &)";
 		TVPImportFuncPtr322 = TVPGetImportFuncPtr(funcname);
 	}
-	typedef void (__stdcall * __functype)(const tjs_char *, const ttstr &, const ttstr &);
-	((__functype)(TVPImportFuncPtr322))(msg, p1, p2);
+	typedef void (__stdcall * __functype)(const tjs_char *, const ttstr &);
+	((__functype)(TVPImportFuncPtr322))(msg, p1);
 }
-inline ttstr TVPGetAboutString()
+inline void TVPThrowExceptionMessage(const tjs_char * msg , const ttstr & p1 , const ttstr & p2)
 {
 	if(!TVPImportFuncPtr323)
 	{
-		static char funcname[] = "ttstr ::TVPGetAboutString()";
+		static char funcname[] = "void ::TVPThrowExceptionMessage(const tjs_char *,const ttstr &,const ttstr &)";
 		TVPImportFuncPtr323 = TVPGetImportFuncPtr(funcname);
 	}
-	typedef ttstr (__stdcall * __functype)();
-	return ((__functype)(TVPImportFuncPtr323))();
+	typedef void (__stdcall * __functype)(const tjs_char *, const ttstr &, const ttstr &);
+	((__functype)(TVPImportFuncPtr323))(msg, p1, p2);
 }
-inline ttstr TVPGetVersionInformation()
+inline ttstr TVPGetAboutString()
 {
 	if(!TVPImportFuncPtr324)
 	{
-		static char funcname[] = "ttstr ::TVPGetVersionInformation()";
+		static char funcname[] = "ttstr ::TVPGetAboutString()";
 		TVPImportFuncPtr324 = TVPGetImportFuncPtr(funcname);
 	}
 	typedef ttstr (__stdcall * __functype)();
 	return ((__functype)(TVPImportFuncPtr324))();
 }
-inline ttstr TVPGetVersionString()
+inline ttstr TVPGetVersionInformation()
 {
 	if(!TVPImportFuncPtr325)
 	{
-		static char funcname[] = "ttstr ::TVPGetVersionString()";
+		static char funcname[] = "ttstr ::TVPGetVersionInformation()";
 		TVPImportFuncPtr325 = TVPGetImportFuncPtr(funcname);
 	}
 	typedef ttstr (__stdcall * __functype)();
 	return ((__functype)(TVPImportFuncPtr325))();
 }
-inline void TVPGetSystemVersion(tjs_int & major , tjs_int & minor , tjs_int & release , tjs_int & build)
+inline ttstr TVPGetVersionString()
 {
 	if(!TVPImportFuncPtr326)
 	{
-		static char funcname[] = "void ::TVPGetSystemVersion(tjs_int &,tjs_int &,tjs_int &,tjs_int &)";
+		static char funcname[] = "ttstr ::TVPGetVersionString()";
 		TVPImportFuncPtr326 = TVPGetImportFuncPtr(funcname);
 	}
-	typedef void (__stdcall * __functype)(tjs_int &, tjs_int &, tjs_int &, tjs_int &);
-	((__functype)(TVPImportFuncPtr326))(major, minor, release, build);
+	typedef ttstr (__stdcall * __functype)();
+	return ((__functype)(TVPImportFuncPtr326))();
 }
-inline void TVPGetTJSVersion(tjs_int & major , tjs_int & minor , tjs_int & release)
+inline void TVPGetSystemVersion(tjs_int & major , tjs_int & minor , tjs_int & release , tjs_int & build)
 {
 	if(!TVPImportFuncPtr327)
 	{
-		static char funcname[] = "void ::TVPGetTJSVersion(tjs_int &,tjs_int &,tjs_int &)";
+		static char funcname[] = "void ::TVPGetSystemVersion(tjs_int &,tjs_int &,tjs_int &,tjs_int &)";
 		TVPImportFuncPtr327 = TVPGetImportFuncPtr(funcname);
 	}
-	typedef void (__stdcall * __functype)(tjs_int &, tjs_int &, tjs_int &);
-	((__functype)(TVPImportFuncPtr327))(major, minor, release);
+	typedef void (__stdcall * __functype)(tjs_int &, tjs_int &, tjs_int &, tjs_int &);
+	((__functype)(TVPImportFuncPtr327))(major, minor, release, build);
 }
-inline void TVPReleaseDirectSound()
+inline void TVPGetTJSVersion(tjs_int & major , tjs_int & minor , tjs_int & release)
 {
 	if(!TVPImportFuncPtr328)
 	{
-		static char funcname[] = "void ::TVPReleaseDirectSound()";
+		static char funcname[] = "void ::TVPGetTJSVersion(tjs_int &,tjs_int &,tjs_int &)";
 		TVPImportFuncPtr328 = TVPGetImportFuncPtr(funcname);
 	}
-	typedef void (__stdcall * __functype)();
-	((__functype)(TVPImportFuncPtr328))();
+	typedef void (__stdcall * __functype)(tjs_int &, tjs_int &, tjs_int &);
+	((__functype)(TVPImportFuncPtr328))(major, minor, release);
 }
-inline IDirectSound * TVPGetDirectSound()
+inline void TVPReleaseDirectSound()
 {
 	if(!TVPImportFuncPtr329)
 	{
-		static char funcname[] = "IDirectSound * ::TVPGetDirectSound()";
+		static char funcname[] = "void ::TVPReleaseDirectSound()";
 		TVPImportFuncPtr329 = TVPGetImportFuncPtr(funcname);
 	}
-	typedef IDirectSound * (__stdcall * __functype)();
-	return ((__functype)(TVPImportFuncPtr329))();
+	typedef void (__stdcall * __functype)();
+	((__functype)(TVPImportFuncPtr329))();
 }
-inline void TVPMIDIOutData(const tjs_uint8 * data , int len)
+inline IDirectSound * TVPGetDirectSound()
 {
 	if(!TVPImportFuncPtr330)
 	{
-		static char funcname[] = "void ::TVPMIDIOutData(const tjs_uint8 *,int)";
+		static char funcname[] = "IDirectSound * ::TVPGetDirectSound()";
 		TVPImportFuncPtr330 = TVPGetImportFuncPtr(funcname);
 	}
-	typedef void (__stdcall * __functype)(const tjs_uint8 *, int);
-	((__functype)(TVPImportFuncPtr330))(data, len);
+	typedef IDirectSound * (__stdcall * __functype)();
+	return ((__functype)(TVPImportFuncPtr330))();
 }
-inline void TVPClearGraphicCache()
+inline void TVPMIDIOutData(const tjs_uint8 * data , int len)
 {
 	if(!TVPImportFuncPtr331)
 	{
-		static char funcname[] = "void ::TVPClearGraphicCache()";
+		static char funcname[] = "void ::TVPMIDIOutData(const tjs_uint8 *,int)";
 		TVPImportFuncPtr331 = TVPGetImportFuncPtr(funcname);
 	}
-	typedef void (__stdcall * __functype)();
-	((__functype)(TVPImportFuncPtr331))();
+	typedef void (__stdcall * __functype)(const tjs_uint8 *, int);
+	((__functype)(TVPImportFuncPtr331))(data, len);
 }
-inline tjs_uint32 TVPToActualColor(tjs_uint32 col)
+inline void TVPClearGraphicCache()
 {
 	if(!TVPImportFuncPtr332)
 	{
-		static char funcname[] = "tjs_uint32 ::TVPToActualColor(tjs_uint32)";
+		static char funcname[] = "void ::TVPClearGraphicCache()";
 		TVPImportFuncPtr332 = TVPGetImportFuncPtr(funcname);
 	}
-	typedef tjs_uint32 (__stdcall * __functype)(tjs_uint32);
-	return ((__functype)(TVPImportFuncPtr332))(col);
+	typedef void (__stdcall * __functype)();
+	((__functype)(TVPImportFuncPtr332))();
 }
-inline tjs_uint32 TVPFromActualColor(tjs_uint32 col)
+inline tjs_uint32 TVPToActualColor(tjs_uint32 col)
 {
 	if(!TVPImportFuncPtr333)
 	{
-		static char funcname[] = "tjs_uint32 ::TVPFromActualColor(tjs_uint32)";
+		static char funcname[] = "tjs_uint32 ::TVPToActualColor(tjs_uint32)";
 		TVPImportFuncPtr333 = TVPGetImportFuncPtr(funcname);
 	}
 	typedef tjs_uint32 (__stdcall * __functype)(tjs_uint32);
 	return ((__functype)(TVPImportFuncPtr333))(col);
 }
-inline iTVPScanLineProvider * TVPSLPLoadImage(const ttstr & name , tjs_int bpp , tjs_uint32 key , tjs_uint w , tjs_uint h)
+inline tjs_uint32 TVPFromActualColor(tjs_uint32 col)
 {
 	if(!TVPImportFuncPtr334)
 	{
-		static char funcname[] = "iTVPScanLineProvider * ::TVPSLPLoadImage(const ttstr &,tjs_int,tjs_uint32,tjs_uint,tjs_uint)";
+		static char funcname[] = "tjs_uint32 ::TVPFromActualColor(tjs_uint32)";
 		TVPImportFuncPtr334 = TVPGetImportFuncPtr(funcname);
 	}
-	typedef iTVPScanLineProvider * (__stdcall * __functype)(const ttstr &, tjs_int , tjs_uint32 , tjs_uint , tjs_uint);
-	return ((__functype)(TVPImportFuncPtr334))(name, bpp, key, w, h);
+	typedef tjs_uint32 (__stdcall * __functype)(tjs_uint32);
+	return ((__functype)(TVPImportFuncPtr334))(col);
 }
-inline void TVPAddTransHandlerProvider(iTVPTransHandlerProvider * pro)
+inline iTVPScanLineProvider * TVPSLPLoadImage(const ttstr & name , tjs_int bpp , tjs_uint32 key , tjs_uint w , tjs_uint h)
 {
 	if(!TVPImportFuncPtr335)
 	{
-		static char funcname[] = "void ::TVPAddTransHandlerProvider(iTVPTransHandlerProvider *)";
+		static char funcname[] = "iTVPScanLineProvider * ::TVPSLPLoadImage(const ttstr &,tjs_int,tjs_uint32,tjs_uint,tjs_uint)";
 		TVPImportFuncPtr335 = TVPGetImportFuncPtr(funcname);
 	}
-	typedef void (__stdcall * __functype)(iTVPTransHandlerProvider *);
-	((__functype)(TVPImportFuncPtr335))(pro);
+	typedef iTVPScanLineProvider * (__stdcall * __functype)(const ttstr &, tjs_int , tjs_uint32 , tjs_uint , tjs_uint);
+	return ((__functype)(TVPImportFuncPtr335))(name, bpp, key, w, h);
 }
-inline void TVPRemoveTransHandlerProvider(iTVPTransHandlerProvider * pro)
+inline void TVPAddTransHandlerProvider(iTVPTransHandlerProvider * pro)
 {
 	if(!TVPImportFuncPtr336)
 	{
-		static char funcname[] = "void ::TVPRemoveTransHandlerProvider(iTVPTransHandlerProvider *)";
+		static char funcname[] = "void ::TVPAddTransHandlerProvider(iTVPTransHandlerProvider *)";
 		TVPImportFuncPtr336 = TVPGetImportFuncPtr(funcname);
 	}
 	typedef void (__stdcall * __functype)(iTVPTransHandlerProvider *);
 	((__functype)(TVPImportFuncPtr336))(pro);
 }
-inline void TVPAlphaBlend(tjs_uint32 * dest , const tjs_uint32 * src , tjs_int len)
+inline void TVPRemoveTransHandlerProvider(iTVPTransHandlerProvider * pro)
 {
 	if(!TVPImportFuncPtr337)
 	{
-		static char funcname[] = "void ::TVPAlphaBlend(tjs_uint32 *,const tjs_uint32 *,tjs_int)";
+		static char funcname[] = "void ::TVPRemoveTransHandlerProvider(iTVPTransHandlerProvider *)";
 		TVPImportFuncPtr337 = TVPGetImportFuncPtr(funcname);
 	}
-	typedef void (__stdcall * __functype)(tjs_uint32 *, const tjs_uint32 *, tjs_int);
-	((__functype)(TVPImportFuncPtr337))(dest, src, len);
+	typedef void (__stdcall * __functype)(iTVPTransHandlerProvider *);
+	((__functype)(TVPImportFuncPtr337))(pro);
 }
-inline void TVPAlphaBlend_HDA(tjs_uint32 * dest , const tjs_uint32 * src , tjs_int len)
+inline void TVPAlphaBlend(tjs_uint32 * dest , const tjs_uint32 * src , tjs_int len)
 {
 	if(!TVPImportFuncPtr338)
 	{
-		static char funcname[] = "void ::TVPAlphaBlend_HDA(tjs_uint32 *,const tjs_uint32 *,tjs_int)";
+		static char funcname[] = "void ::TVPAlphaBlend(tjs_uint32 *,const tjs_uint32 *,tjs_int)";
 		TVPImportFuncPtr338 = TVPGetImportFuncPtr(funcname);
 	}
 	typedef void (__stdcall * __functype)(tjs_uint32 *, const tjs_uint32 *, tjs_int);
 	((__functype)(TVPImportFuncPtr338))(dest, src, len);
 }
-inline void TVPAlphaBlend_o(tjs_uint32 * dest , const tjs_uint32 * src , tjs_int len , tjs_int opa)
+inline void TVPAlphaBlend_HDA(tjs_uint32 * dest , const tjs_uint32 * src , tjs_int len)
 {
 	if(!TVPImportFuncPtr339)
 	{
-		static char funcname[] = "void ::TVPAlphaBlend_o(tjs_uint32 *,const tjs_uint32 *,tjs_int,tjs_int)";
+		static char funcname[] = "void ::TVPAlphaBlend_HDA(tjs_uint32 *,const tjs_uint32 *,tjs_int)";
 		TVPImportFuncPtr339 = TVPGetImportFuncPtr(funcname);
 	}
-	typedef void (__stdcall * __functype)(tjs_uint32 *, const tjs_uint32 *, tjs_int , tjs_int);
-	((__functype)(TVPImportFuncPtr339))(dest, src, len, opa);
+	typedef void (__stdcall * __functype)(tjs_uint32 *, const tjs_uint32 *, tjs_int);
+	((__functype)(TVPImportFuncPtr339))(dest, src, len);
 }
-inline void TVPAlphaBlend_HDA_o(tjs_uint32 * dest , const tjs_uint32 * src , tjs_int len , tjs_int opa)
+inline void TVPAlphaBlend_o(tjs_uint32 * dest , const tjs_uint32 * src , tjs_int len , tjs_int opa)
 {
 	if(!TVPImportFuncPtr340)
 	{
-		static char funcname[] = "void ::TVPAlphaBlend_HDA_o(tjs_uint32 *,const tjs_uint32 *,tjs_int,tjs_int)";
+		static char funcname[] = "void ::TVPAlphaBlend_o(tjs_uint32 *,const tjs_uint32 *,tjs_int,tjs_int)";
 		TVPImportFuncPtr340 = TVPGetImportFuncPtr(funcname);
 	}
 	typedef void (__stdcall * __functype)(tjs_uint32 *, const tjs_uint32 *, tjs_int , tjs_int);
 	((__functype)(TVPImportFuncPtr340))(dest, src, len, opa);
 }
-inline void TVPAlphaBlend_d(tjs_uint32 * dest , const tjs_uint32 * src , tjs_int len)
+inline void TVPAlphaBlend_HDA_o(tjs_uint32 * dest , const tjs_uint32 * src , tjs_int len , tjs_int opa)
 {
 	if(!TVPImportFuncPtr341)
 	{
-		static char funcname[] = "void ::TVPAlphaBlend_d(tjs_uint32 *,const tjs_uint32 *,tjs_int)";
+		static char funcname[] = "void ::TVPAlphaBlend_HDA_o(tjs_uint32 *,const tjs_uint32 *,tjs_int,tjs_int)";
 		TVPImportFuncPtr341 = TVPGetImportFuncPtr(funcname);
 	}
-	typedef void (__stdcall * __functype)(tjs_uint32 *, const tjs_uint32 *, tjs_int);
-	((__functype)(TVPImportFuncPtr341))(dest, src, len);
+	typedef void (__stdcall * __functype)(tjs_uint32 *, const tjs_uint32 *, tjs_int , tjs_int);
+	((__functype)(TVPImportFuncPtr341))(dest, src, len, opa);
 }
-inline void TVPAlphaBlend_a(tjs_uint32 * dest , const tjs_uint32 * src , tjs_int len)
+inline void TVPAlphaBlend_d(tjs_uint32 * dest , const tjs_uint32 * src , tjs_int len)
 {
 	if(!TVPImportFuncPtr342)
 	{
-		static char funcname[] = "void ::TVPAlphaBlend_a(tjs_uint32 *,const tjs_uint32 *,tjs_int)";
+		static char funcname[] = "void ::TVPAlphaBlend_d(tjs_uint32 *,const tjs_uint32 *,tjs_int)";
 		TVPImportFuncPtr342 = TVPGetImportFuncPtr(funcname);
 	}
 	typedef void (__stdcall * __functype)(tjs_uint32 *, const tjs_uint32 *, tjs_int);
 	((__functype)(TVPImportFuncPtr342))(dest, src, len);
 }
-inline void TVPAlphaBlend_do(tjs_uint32 * dest , const tjs_uint32 * src , tjs_int len , tjs_int opa)
+inline void TVPAlphaBlend_a(tjs_uint32 * dest , const tjs_uint32 * src , tjs_int len)
 {
 	if(!TVPImportFuncPtr343)
 	{
-		static char funcname[] = "void ::TVPAlphaBlend_do(tjs_uint32 *,const tjs_uint32 *,tjs_int,tjs_int)";
+		static char funcname[] = "void ::TVPAlphaBlend_a(tjs_uint32 *,const tjs_uint32 *,tjs_int)";
 		TVPImportFuncPtr343 = TVPGetImportFuncPtr(funcname);
 	}
-	typedef void (__stdcall * __functype)(tjs_uint32 *, const tjs_uint32 *, tjs_int , tjs_int);
-	((__functype)(TVPImportFuncPtr343))(dest, src, len, opa);
+	typedef void (__stdcall * __functype)(tjs_uint32 *, const tjs_uint32 *, tjs_int);
+	((__functype)(TVPImportFuncPtr343))(dest, src, len);
 }
-inline void TVPAlphaBlend_ao(tjs_uint32 * dest , const tjs_uint32 * src , tjs_int len , tjs_int opa)
+inline void TVPAlphaBlend_do(tjs_uint32 * dest , const tjs_uint32 * src , tjs_int len , tjs_int opa)
 {
 	if(!TVPImportFuncPtr344)
 	{
-		static char funcname[] = "void ::TVPAlphaBlend_ao(tjs_uint32 *,const tjs_uint32 *,tjs_int,tjs_int)";
+		static char funcname[] = "void ::TVPAlphaBlend_do(tjs_uint32 *,const tjs_uint32 *,tjs_int,tjs_int)";
 		TVPImportFuncPtr344 = TVPGetImportFuncPtr(funcname);
 	}
 	typedef void (__stdcall * __functype)(tjs_uint32 *, const tjs_uint32 *, tjs_int , tjs_int);
 	((__functype)(TVPImportFuncPtr344))(dest, src, len, opa);
 }
-inline void TVPAdditiveAlphaBlend(tjs_uint32 * dest , const tjs_uint32 * src , tjs_int len)
+inline void TVPAlphaBlend_ao(tjs_uint32 * dest , const tjs_uint32 * src , tjs_int len , tjs_int opa)
 {
 	if(!TVPImportFuncPtr345)
 	{
-		static char funcname[] = "void ::TVPAdditiveAlphaBlend(tjs_uint32 *,const tjs_uint32 *,tjs_int)";
+		static char funcname[] = "void ::TVPAlphaBlend_ao(tjs_uint32 *,const tjs_uint32 *,tjs_int,tjs_int)";
 		TVPImportFuncPtr345 = TVPGetImportFuncPtr(funcname);
 	}
-	typedef void (__stdcall * __functype)(tjs_uint32 *, const tjs_uint32 *, tjs_int);
-	((__functype)(TVPImportFuncPtr345))(dest, src, len);
+	typedef void (__stdcall * __functype)(tjs_uint32 *, const tjs_uint32 *, tjs_int , tjs_int);
+	((__functype)(TVPImportFuncPtr345))(dest, src, len, opa);
 }
-inline void TVPAdditiveAlphaBlend_HDA(tjs_uint32 * dest , const tjs_uint32 * src , tjs_int len)
+inline void TVPAdditiveAlphaBlend(tjs_uint32 * dest , const tjs_uint32 * src , tjs_int len)
 {
 	if(!TVPImportFuncPtr346)
 	{
-		static char funcname[] = "void ::TVPAdditiveAlphaBlend_HDA(tjs_uint32 *,const tjs_uint32 *,tjs_int)";
+		static char funcname[] = "void ::TVPAdditiveAlphaBlend(tjs_uint32 *,const tjs_uint32 *,tjs_int)";
 		TVPImportFuncPtr346 = TVPGetImportFuncPtr(funcname);
 	}
 	typedef void (__stdcall * __functype)(tjs_uint32 *, const tjs_uint32 *, tjs_int);
 	((__functype)(TVPImportFuncPtr346))(dest, src, len);
 }
-inline void TVPAdditiveAlphaBlend_o(tjs_uint32 * dest , const tjs_uint32 * src , tjs_int len , tjs_int opa)
+inline void TVPAdditiveAlphaBlend_HDA(tjs_uint32 * dest , const tjs_uint32 * src , tjs_int len)
 {
 	if(!TVPImportFuncPtr347)
 	{
-		static char funcname[] = "void ::TVPAdditiveAlphaBlend_o(tjs_uint32 *,const tjs_uint32 *,tjs_int,tjs_int)";
+		static char funcname[] = "void ::TVPAdditiveAlphaBlend_HDA(tjs_uint32 *,const tjs_uint32 *,tjs_int)";
 		TVPImportFuncPtr347 = TVPGetImportFuncPtr(funcname);
 	}
-	typedef void (__stdcall * __functype)(tjs_uint32 *, const tjs_uint32 *, tjs_int , tjs_int);
-	((__functype)(TVPImportFuncPtr347))(dest, src, len, opa);
+	typedef void (__stdcall * __functype)(tjs_uint32 *, const tjs_uint32 *, tjs_int);
+	((__functype)(TVPImportFuncPtr347))(dest, src, len);
 }
-inline void TVPAdditiveAlphaBlend_HDA_o(tjs_uint32 * dest , const tjs_uint32 * src , tjs_int len , tjs_int opa)
+inline void TVPAdditiveAlphaBlend_o(tjs_uint32 * dest , const tjs_uint32 * src , tjs_int len , tjs_int opa)
 {
 	if(!TVPImportFuncPtr348)
 	{
-		static char funcname[] = "void ::TVPAdditiveAlphaBlend_HDA_o(tjs_uint32 *,const tjs_uint32 *,tjs_int,tjs_int)";
+		static char funcname[] = "void ::TVPAdditiveAlphaBlend_o(tjs_uint32 *,const tjs_uint32 *,tjs_int,tjs_int)";
 		TVPImportFuncPtr348 = TVPGetImportFuncPtr(funcname);
 	}
 	typedef void (__stdcall * __functype)(tjs_uint32 *, const tjs_uint32 *, tjs_int , tjs_int);
 	((__functype)(TVPImportFuncPtr348))(dest, src, len, opa);
 }
-inline void TVPAdditiveAlphaBlend_a(tjs_uint32 * dest , const tjs_uint32 * src , tjs_int len)
+inline void TVPAdditiveAlphaBlend_HDA_o(tjs_uint32 * dest , const tjs_uint32 * src , tjs_int len , tjs_int opa)
 {
 	if(!TVPImportFuncPtr349)
 	{
-		static char funcname[] = "void ::TVPAdditiveAlphaBlend_a(tjs_uint32 *,const tjs_uint32 *,tjs_int)";
+		static char funcname[] = "void ::TVPAdditiveAlphaBlend_HDA_o(tjs_uint32 *,const tjs_uint32 *,tjs_int,tjs_int)";
 		TVPImportFuncPtr349 = TVPGetImportFuncPtr(funcname);
 	}
-	typedef void (__stdcall * __functype)(tjs_uint32 *, const tjs_uint32 *, tjs_int);
-	((__functype)(TVPImportFuncPtr349))(dest, src, len);
+	typedef void (__stdcall * __functype)(tjs_uint32 *, const tjs_uint32 *, tjs_int , tjs_int);
+	((__functype)(TVPImportFuncPtr349))(dest, src, len, opa);
 }
-inline void TVPAdditiveAlphaBlend_ao(tjs_uint32 * dest , const tjs_uint32 * src , tjs_int len , tjs_int opa)
+inline void TVPAdditiveAlphaBlend_a(tjs_uint32 * dest , const tjs_uint32 * src , tjs_int len)
 {
 	if(!TVPImportFuncPtr350)
 	{
-		static char funcname[] = "void ::TVPAdditiveAlphaBlend_ao(tjs_uint32 *,const tjs_uint32 *,tjs_int,tjs_int)";
+		static char funcname[] = "void ::TVPAdditiveAlphaBlend_a(tjs_uint32 *,const tjs_uint32 *,tjs_int)";
 		TVPImportFuncPtr350 = TVPGetImportFuncPtr(funcname);
 	}
-	typedef void (__stdcall * __functype)(tjs_uint32 *, const tjs_uint32 *, tjs_int , tjs_int);
-	((__functype)(TVPImportFuncPtr350))(dest, src, len, opa);
+	typedef void (__stdcall * __functype)(tjs_uint32 *, const tjs_uint32 *, tjs_int);
+	((__functype)(TVPImportFuncPtr350))(dest, src, len);
 }
-inline void TVPConvertAdditiveAlphaToAlpha(tjs_uint32 * buf , tjs_int len)
+inline void TVPAdditiveAlphaBlend_ao(tjs_uint32 * dest , const tjs_uint32 * src , tjs_int len , tjs_int opa)
 {
 	if(!TVPImportFuncPtr351)
 	{
-		static char funcname[] = "void ::TVPConvertAdditiveAlphaToAlpha(tjs_uint32 *,tjs_int)";
+		static char funcname[] = "void ::TVPAdditiveAlphaBlend_ao(tjs_uint32 *,const tjs_uint32 *,tjs_int,tjs_int)";
 		TVPImportFuncPtr351 = TVPGetImportFuncPtr(funcname);
 	}
-	typedef void (__stdcall * __functype)(tjs_uint32 *, tjs_int);
-	((__functype)(TVPImportFuncPtr351))(buf, len);
+	typedef void (__stdcall * __functype)(tjs_uint32 *, const tjs_uint32 *, tjs_int , tjs_int);
+	((__functype)(TVPImportFuncPtr351))(dest, src, len, opa);
 }
-inline void TVPConvertAlphaToAdditiveAlpha(tjs_uint32 * buf , tjs_int len)
+inline void TVPConvertAdditiveAlphaToAlpha(tjs_uint32 * buf , tjs_int len)
 {
 	if(!TVPImportFuncPtr352)
 	{
-		static char funcname[] = "void ::TVPConvertAlphaToAdditiveAlpha(tjs_uint32 *,tjs_int)";
+		static char funcname[] = "void ::TVPConvertAdditiveAlphaToAlpha(tjs_uint32 *,tjs_int)";
 		TVPImportFuncPtr352 = TVPGetImportFuncPtr(funcname);
 	}
 	typedef void (__stdcall * __functype)(tjs_uint32 *, tjs_int);
 	((__functype)(TVPImportFuncPtr352))(buf, len);
 }
-inline void TVPStretchAlphaBlend(tjs_uint32 * dest , tjs_int len , const tjs_uint32 * src , tjs_int srcstart , tjs_int srcstep)
+inline void TVPConvertAlphaToAdditiveAlpha(tjs_uint32 * buf , tjs_int len)
 {
 	if(!TVPImportFuncPtr353)
 	{
-		static char funcname[] = "void ::TVPStretchAlphaBlend(tjs_uint32 *,tjs_int,const tjs_uint32 *,tjs_int,tjs_int)";
+		static char funcname[] = "void ::TVPConvertAlphaToAdditiveAlpha(tjs_uint32 *,tjs_int)";
 		TVPImportFuncPtr353 = TVPGetImportFuncPtr(funcname);
 	}
-	typedef void (__stdcall * __functype)(tjs_uint32 *, tjs_int , const tjs_uint32 *, tjs_int , tjs_int);
-	((__functype)(TVPImportFuncPtr353))(dest, len, src, srcstart, srcstep);
+	typedef void (__stdcall * __functype)(tjs_uint32 *, tjs_int);
+	((__functype)(TVPImportFuncPtr353))(buf, len);
 }
-inline void TVPStretchAlphaBlend_HDA(tjs_uint32 * dest , tjs_int len , const tjs_uint32 * src , tjs_int srcstart , tjs_int srcstep)
+inline void TVPStretchAlphaBlend(tjs_uint32 * dest , tjs_int len , const tjs_uint32 * src , tjs_int srcstart , tjs_int srcstep)
 {
 	if(!TVPImportFuncPtr354)
 	{
-		static char funcname[] = "void ::TVPStretchAlphaBlend_HDA(tjs_uint32 *,tjs_int,const tjs_uint32 *,tjs_int,tjs_int)";
+		static char funcname[] = "void ::TVPStretchAlphaBlend(tjs_uint32 *,tjs_int,const tjs_uint32 *,tjs_int,tjs_int)";
 		TVPImportFuncPtr354 = TVPGetImportFuncPtr(funcname);
 	}
 	typedef void (__stdcall * __functype)(tjs_uint32 *, tjs_int , const tjs_uint32 *, tjs_int , tjs_int);
 	((__functype)(TVPImportFuncPtr354))(dest, len, src, srcstart, srcstep);
 }
-inline void TVPStretchAlphaBlend_o(tjs_uint32 * dest , tjs_int len , const tjs_uint32 * src , tjs_int srcstart , tjs_int srcstep , tjs_int opa)
+inline void TVPStretchAlphaBlend_HDA(tjs_uint32 * dest , tjs_int len , const tjs_uint32 * src , tjs_int srcstart , tjs_int srcstep)
 {
 	if(!TVPImportFuncPtr355)
 	{
-		static char funcname[] = "void ::TVPStretchAlphaBlend_o(tjs_uint32 *,tjs_int,const tjs_uint32 *,tjs_int,tjs_int,tjs_int)";
+		static char funcname[] = "void ::TVPStretchAlphaBlend_HDA(tjs_uint32 *,tjs_int,const tjs_uint32 *,tjs_int,tjs_int)";
 		TVPImportFuncPtr355 = TVPGetImportFuncPtr(funcname);
 	}
-	typedef void (__stdcall * __functype)(tjs_uint32 *, tjs_int , const tjs_uint32 *, tjs_int , tjs_int , tjs_int);
-	((__functype)(TVPImportFuncPtr355))(dest, len, src, srcstart, srcstep, opa);
+	typedef void (__stdcall * __functype)(tjs_uint32 *, tjs_int , const tjs_uint32 *, tjs_int , tjs_int);
+	((__functype)(TVPImportFuncPtr355))(dest, len, src, srcstart, srcstep);
 }
-inline void TVPStretchAlphaBlend_HDA_o(tjs_uint32 * dest , tjs_int len , const tjs_uint32 * src , tjs_int srcstart , tjs_int srcstep , tjs_int opa)
+inline void TVPStretchAlphaBlend_o(tjs_uint32 * dest , tjs_int len , const tjs_uint32 * src , tjs_int srcstart , tjs_int srcstep , tjs_int opa)
 {
 	if(!TVPImportFuncPtr356)
 	{
-		static char funcname[] = "void ::TVPStretchAlphaBlend_HDA_o(tjs_uint32 *,tjs_int,const tjs_uint32 *,tjs_int,tjs_int,tjs_int)";
+		static char funcname[] = "void ::TVPStretchAlphaBlend_o(tjs_uint32 *,tjs_int,const tjs_uint32 *,tjs_int,tjs_int,tjs_int)";
 		TVPImportFuncPtr356 = TVPGetImportFuncPtr(funcname);
 	}
 	typedef void (__stdcall * __functype)(tjs_uint32 *, tjs_int , const tjs_uint32 *, tjs_int , tjs_int , tjs_int);
 	((__functype)(TVPImportFuncPtr356))(dest, len, src, srcstart, srcstep, opa);
 }
-inline void TVPStretchAlphaBlend_d(tjs_uint32 * dest , tjs_int len , const tjs_uint32 * src , tjs_int srcstart , tjs_int srcstep)
+inline void TVPStretchAlphaBlend_HDA_o(tjs_uint32 * dest , tjs_int len , const tjs_uint32 * src , tjs_int srcstart , tjs_int srcstep , tjs_int opa)
 {
 	if(!TVPImportFuncPtr357)
 	{
-		static char funcname[] = "void ::TVPStretchAlphaBlend_d(tjs_uint32 *,tjs_int,const tjs_uint32 *,tjs_int,tjs_int)";
+		static char funcname[] = "void ::TVPStretchAlphaBlend_HDA_o(tjs_uint32 *,tjs_int,const tjs_uint32 *,tjs_int,tjs_int,tjs_int)";
 		TVPImportFuncPtr357 = TVPGetImportFuncPtr(funcname);
 	}
-	typedef void (__stdcall * __functype)(tjs_uint32 *, tjs_int , const tjs_uint32 *, tjs_int , tjs_int);
-	((__functype)(TVPImportFuncPtr357))(dest, len, src, srcstart, srcstep);
+	typedef void (__stdcall * __functype)(tjs_uint32 *, tjs_int , const tjs_uint32 *, tjs_int , tjs_int , tjs_int);
+	((__functype)(TVPImportFuncPtr357))(dest, len, src, srcstart, srcstep, opa);
 }
-inline void TVPStretchAlphaBlend_a(tjs_uint32 * dest , tjs_int len , const tjs_uint32 * src , tjs_int srcstart , tjs_int srcstep)
+inline void TVPStretchAlphaBlend_d(tjs_uint32 * dest , tjs_int len , const tjs_uint32 * src , tjs_int srcstart , tjs_int srcstep)
 {
 	if(!TVPImportFuncPtr358)
 	{
-		static char funcname[] = "void ::TVPStretchAlphaBlend_a(tjs_uint32 *,tjs_int,const tjs_uint32 *,tjs_int,tjs_int)";
+		static char funcname[] = "void ::TVPStretchAlphaBlend_d(tjs_uint32 *,tjs_int,const tjs_uint32 *,tjs_int,tjs_int)";
 		TVPImportFuncPtr358 = TVPGetImportFuncPtr(funcname);
 	}
 	typedef void (__stdcall * __functype)(tjs_uint32 *, tjs_int , const tjs_uint32 *, tjs_int , tjs_int);
 	((__functype)(TVPImportFuncPtr358))(dest, len, src, srcstart, srcstep);
 }
-inline void TVPStretchAlphaBlend_do(tjs_uint32 * dest , tjs_int len , const tjs_uint32 * src , tjs_int srcstart , tjs_int srcstep , tjs_int opa)
+inline void TVPStretchAlphaBlend_a(tjs_uint32 * dest , tjs_int len , const tjs_uint32 * src , tjs_int srcstart , tjs_int srcstep)
 {
 	if(!TVPImportFuncPtr359)
 	{
-		static char funcname[] = "void ::TVPStretchAlphaBlend_do(tjs_uint32 *,tjs_int,const tjs_uint32 *,tjs_int,tjs_int,tjs_int)";
+		static char funcname[] = "void ::TVPStretchAlphaBlend_a(tjs_uint32 *,tjs_int,const tjs_uint32 *,tjs_int,tjs_int)";
 		TVPImportFuncPtr359 = TVPGetImportFuncPtr(funcname);
 	}
-	typedef void (__stdcall * __functype)(tjs_uint32 *, tjs_int , const tjs_uint32 *, tjs_int , tjs_int , tjs_int);
-	((__functype)(TVPImportFuncPtr359))(dest, len, src, srcstart, srcstep, opa);
+	typedef void (__stdcall * __functype)(tjs_uint32 *, tjs_int , const tjs_uint32 *, tjs_int , tjs_int);
+	((__functype)(TVPImportFuncPtr359))(dest, len, src, srcstart, srcstep);
 }
-inline void TVPStretchAlphaBlend_ao(tjs_uint32 * dest , tjs_int len , const tjs_uint32 * src , tjs_int srcstart , tjs_int srcstep , tjs_int opa)
+inline void TVPStretchAlphaBlend_do(tjs_uint32 * dest , tjs_int len , const tjs_uint32 * src , tjs_int srcstart , tjs_int srcstep , tjs_int opa)
 {
 	if(!TVPImportFuncPtr360)
 	{
-		static char funcname[] = "void ::TVPStretchAlphaBlend_ao(tjs_uint32 *,tjs_int,const tjs_uint32 *,tjs_int,tjs_int,tjs_int)";
+		static char funcname[] = "void ::TVPStretchAlphaBlend_do(tjs_uint32 *,tjs_int,const tjs_uint32 *,tjs_int,tjs_int,tjs_int)";
 		TVPImportFuncPtr360 = TVPGetImportFuncPtr(funcname);
 	}
 	typedef void (__stdcall * __functype)(tjs_uint32 *, tjs_int , const tjs_uint32 *, tjs_int , tjs_int , tjs_int);
 	((__functype)(TVPImportFuncPtr360))(dest, len, src, srcstart, srcstep, opa);
 }
-inline void TVPStretchAdditiveAlphaBlend(tjs_uint32 * dest , tjs_int len , const tjs_uint32 * src , tjs_int srcstart , tjs_int srcstep)
+inline void TVPStretchAlphaBlend_ao(tjs_uint32 * dest , tjs_int len , const tjs_uint32 * src , tjs_int srcstart , tjs_int srcstep , tjs_int opa)
 {
 	if(!TVPImportFuncPtr361)
 	{
-		static char funcname[] = "void ::TVPStretchAdditiveAlphaBlend(tjs_uint32 *,tjs_int,const tjs_uint32 *,tjs_int,tjs_int)";
+		static char funcname[] = "void ::TVPStretchAlphaBlend_ao(tjs_uint32 *,tjs_int,const tjs_uint32 *,tjs_int,tjs_int,tjs_int)";
 		TVPImportFuncPtr361 = TVPGetImportFuncPtr(funcname);
 	}
-	typedef void (__stdcall * __functype)(tjs_uint32 *, tjs_int , const tjs_uint32 *, tjs_int , tjs_int);
-	((__functype)(TVPImportFuncPtr361))(dest, len, src, srcstart, srcstep);
+	typedef void (__stdcall * __functype)(tjs_uint32 *, tjs_int , const tjs_uint32 *, tjs_int , tjs_int , tjs_int);
+	((__functype)(TVPImportFuncPtr361))(dest, len, src, srcstart, srcstep, opa);
 }
-inline void TVPInterpStretchAdditiveAlphaBlend(tjs_uint32 * dest , tjs_int destlen , const tjs_uint32 * src1 , const tjs_uint32 * src2 , tjs_int blend_y , tjs_int srcstart , tjs_int srcstep)
+inline void TVPStretchAdditiveAlphaBlend(tjs_uint32 * dest , tjs_int len , const tjs_uint32 * src , tjs_int srcstart , tjs_int srcstep)
 {
 	if(!TVPImportFuncPtr362)
 	{
-		static char funcname[] = "void ::TVPInterpStretchAdditiveAlphaBlend(tjs_uint32 *,tjs_int,const tjs_uint32 *,const tjs_uint32 *,tjs_int,tjs_int,tjs_int)";
+		static char funcname[] = "void ::TVPStretchAdditiveAlphaBlend(tjs_uint32 *,tjs_int,const tjs_uint32 *,tjs_int,tjs_int)";
 		TVPImportFuncPtr362 = TVPGetImportFuncPtr(funcname);
 	}
-	typedef void (__stdcall * __functype)(tjs_uint32 *, tjs_int , const tjs_uint32 *, const tjs_uint32 *, tjs_int , tjs_int , tjs_int);
-	((__functype)(TVPImportFuncPtr362))(dest, destlen, src1, src2, blend_y, srcstart, srcstep);
+	typedef void (__stdcall * __functype)(tjs_uint32 *, tjs_int , const tjs_uint32 *, tjs_int , tjs_int);
+	((__functype)(TVPImportFuncPtr362))(dest, len, src, srcstart, srcstep);
 }
-inline void TVPStretchAdditiveAlphaBlend_HDA(tjs_uint32 * dest , tjs_int len , const tjs_uint32 * src , tjs_int srcstart , tjs_int srcstep)
+inline void TVPInterpStretchAdditiveAlphaBlend(tjs_uint32 * dest , tjs_int destlen , const tjs_uint32 * src1 , const tjs_uint32 * src2 , tjs_int blend_y , tjs_int srcstart , tjs_int srcstep)
 {
 	if(!TVPImportFuncPtr363)
 	{
-		static char funcname[] = "void ::TVPStretchAdditiveAlphaBlend_HDA(tjs_uint32 *,tjs_int,const tjs_uint32 *,tjs_int,tjs_int)";
+		static char funcname[] = "void ::TVPInterpStretchAdditiveAlphaBlend(tjs_uint32 *,tjs_int,const tjs_uint32 *,const tjs_uint32 *,tjs_int,tjs_int,tjs_int)";
 		TVPImportFuncPtr363 = TVPGetImportFuncPtr(funcname);
 	}
-	typedef void (__stdcall * __functype)(tjs_uint32 *, tjs_int , const tjs_uint32 *, tjs_int , tjs_int);
-	((__functype)(TVPImportFuncPtr363))(dest, len, src, srcstart, srcstep);
+	typedef void (__stdcall * __functype)(tjs_uint32 *, tjs_int , const tjs_uint32 *, const tjs_uint32 *, tjs_int , tjs_int , tjs_int);
+	((__functype)(TVPImportFuncPtr363))(dest, destlen, src1, src2, blend_y, srcstart, srcstep);
 }
-inline void TVPStretchAdditiveAlphaBlend_o(tjs_uint32 * dest , tjs_int len , const tjs_uint32 * src , tjs_int srcstart , tjs_int srcstep , tjs_int opa)
+inline void TVPStretchAdditiveAlphaBlend_HDA(tjs_uint32 * dest , tjs_int len , const tjs_uint32 * src , tjs_int srcstart , tjs_int srcstep)
 {
 	if(!TVPImportFuncPtr364)
 	{
-		static char funcname[] = "void ::TVPStretchAdditiveAlphaBlend_o(tjs_uint32 *,tjs_int,const tjs_uint32 *,tjs_int,tjs_int,tjs_int)";
+		static char funcname[] = "void ::TVPStretchAdditiveAlphaBlend_HDA(tjs_uint32 *,tjs_int,const tjs_uint32 *,tjs_int,tjs_int)";
 		TVPImportFuncPtr364 = TVPGetImportFuncPtr(funcname);
 	}
-	typedef void (__stdcall * __functype)(tjs_uint32 *, tjs_int , const tjs_uint32 *, tjs_int , tjs_int , tjs_int);
-	((__functype)(TVPImportFuncPtr364))(dest, len, src, srcstart, srcstep, opa);
+	typedef void (__stdcall * __functype)(tjs_uint32 *, tjs_int , const tjs_uint32 *, tjs_int , tjs_int);
+	((__functype)(TVPImportFuncPtr364))(dest, len, src, srcstart, srcstep);
 }
-inline void TVPInterpStretchAdditiveAlphaBlend_o(tjs_uint32 * dest , tjs_int destlen , const tjs_uint32 * src1 , const tjs_uint32 * src2 , tjs_int blend_y , tjs_int srcstart , tjs_int srcstep , tjs_int opa)
+inline void TVPStretchAdditiveAlphaBlend_o(tjs_uint32 * dest , tjs_int len , const tjs_uint32 * src , tjs_int srcstart , tjs_int srcstep , tjs_int opa)
 {
 	if(!TVPImportFuncPtr365)
 	{
-		static char funcname[] = "void ::TVPInterpStretchAdditiveAlphaBlend_o(tjs_uint32 *,tjs_int,const tjs_uint32 *,const tjs_uint32 *,tjs_int,tjs_int,tjs_int,tjs_int)";
+		static char funcname[] = "void ::TVPStretchAdditiveAlphaBlend_o(tjs_uint32 *,tjs_int,const tjs_uint32 *,tjs_int,tjs_int,tjs_int)";
 		TVPImportFuncPtr365 = TVPGetImportFuncPtr(funcname);
 	}
-	typedef void (__stdcall * __functype)(tjs_uint32 *, tjs_int , const tjs_uint32 *, const tjs_uint32 *, tjs_int , tjs_int , tjs_int , tjs_int);
-	((__functype)(TVPImportFuncPtr365))(dest, destlen, src1, src2, blend_y, srcstart, srcstep, opa);
+	typedef void (__stdcall * __functype)(tjs_uint32 *, tjs_int , const tjs_uint32 *, tjs_int , tjs_int , tjs_int);
+	((__functype)(TVPImportFuncPtr365))(dest, len, src, srcstart, srcstep, opa);
 }
-inline void TVPStretchAdditiveAlphaBlend_HDA_o(tjs_uint32 * dest , tjs_int len , const tjs_uint32 * src , tjs_int srcstart , tjs_int srcstep , tjs_int opa)
+inline void TVPInterpStretchAdditiveAlphaBlend_o(tjs_uint32 * dest , tjs_int destlen , const tjs_uint32 * src1 , const tjs_uint32 * src2 , tjs_int blend_y , tjs_int srcstart , tjs_int srcstep , tjs_int opa)
 {
 	if(!TVPImportFuncPtr366)
 	{
-		static char funcname[] = "void ::TVPStretchAdditiveAlphaBlend_HDA_o(tjs_uint32 *,tjs_int,const tjs_uint32 *,tjs_int,tjs_int,tjs_int)";
+		static char funcname[] = "void ::TVPInterpStretchAdditiveAlphaBlend_o(tjs_uint32 *,tjs_int,const tjs_uint32 *,const tjs_uint32 *,tjs_int,tjs_int,tjs_int,tjs_int)";
 		TVPImportFuncPtr366 = TVPGetImportFuncPtr(funcname);
 	}
-	typedef void (__stdcall * __functype)(tjs_uint32 *, tjs_int , const tjs_uint32 *, tjs_int , tjs_int , tjs_int);
-	((__functype)(TVPImportFuncPtr366))(dest, len, src, srcstart, srcstep, opa);
+	typedef void (__stdcall * __functype)(tjs_uint32 *, tjs_int , const tjs_uint32 *, const tjs_uint32 *, tjs_int , tjs_int , tjs_int , tjs_int);
+	((__functype)(TVPImportFuncPtr366))(dest, destlen, src1, src2, blend_y, srcstart, srcstep, opa);
 }
-inline void TVPStretchAdditiveAlphaBlend_a(tjs_uint32 * dest , tjs_int len , const tjs_uint32 * src , tjs_int srcstart , tjs_int srcstep)
+inline void TVPStretchAdditiveAlphaBlend_HDA_o(tjs_uint32 * dest , tjs_int len , const tjs_uint32 * src , tjs_int srcstart , tjs_int srcstep , tjs_int opa)
 {
 	if(!TVPImportFuncPtr367)
 	{
-		static char funcname[] = "void ::TVPStretchAdditiveAlphaBlend_a(tjs_uint32 *,tjs_int,const tjs_uint32 *,tjs_int,tjs_int)";
+		static char funcname[] = "void ::TVPStretchAdditiveAlphaBlend_HDA_o(tjs_uint32 *,tjs_int,const tjs_uint32 *,tjs_int,tjs_int,tjs_int)";
 		TVPImportFuncPtr367 = TVPGetImportFuncPtr(funcname);
 	}
-	typedef void (__stdcall * __functype)(tjs_uint32 *, tjs_int , const tjs_uint32 *, tjs_int , tjs_int);
-	((__functype)(TVPImportFuncPtr367))(dest, len, src, srcstart, srcstep);
+	typedef void (__stdcall * __functype)(tjs_uint32 *, tjs_int , const tjs_uint32 *, tjs_int , tjs_int , tjs_int);
+	((__functype)(TVPImportFuncPtr367))(dest, len, src, srcstart, srcstep, opa);
 }
-inline void TVPStretchAdditiveAlphaBlend_ao(tjs_uint32 * dest , tjs_int len , const tjs_uint32 * src , tjs_int srcstart , tjs_int srcstep , tjs_int opa)
+inline void TVPStretchAdditiveAlphaBlend_a(tjs_uint32 * dest , tjs_int len , const tjs_uint32 * src , tjs_int srcstart , tjs_int srcstep)
 {
 	if(!TVPImportFuncPtr368)
 	{
-		static char funcname[] = "void ::TVPStretchAdditiveAlphaBlend_ao(tjs_uint32 *,tjs_int,const tjs_uint32 *,tjs_int,tjs_int,tjs_int)";
+		static char funcname[] = "void ::TVPStretchAdditiveAlphaBlend_a(tjs_uint32 *,tjs_int,const tjs_uint32 *,tjs_int,tjs_int)";
 		TVPImportFuncPtr368 = TVPGetImportFuncPtr(funcname);
 	}
-	typedef void (__stdcall * __functype)(tjs_uint32 *, tjs_int , const tjs_uint32 *, tjs_int , tjs_int , tjs_int);
-	((__functype)(TVPImportFuncPtr368))(dest, len, src, srcstart, srcstep, opa);
+	typedef void (__stdcall * __functype)(tjs_uint32 *, tjs_int , const tjs_uint32 *, tjs_int , tjs_int);
+	((__functype)(TVPImportFuncPtr368))(dest, len, src, srcstart, srcstep);
 }
-inline void TVPLinTransAlphaBlend(tjs_uint32 * dest , tjs_int len , const tjs_uint32 * src , tjs_int sx , tjs_int sy , tjs_int stepx , tjs_int stepy , tjs_int srcpitch)
+inline void TVPStretchAdditiveAlphaBlend_ao(tjs_uint32 * dest , tjs_int len , const tjs_uint32 * src , tjs_int srcstart , tjs_int srcstep , tjs_int opa)
 {
 	if(!TVPImportFuncPtr369)
 	{
-		static char funcname[] = "void ::TVPLinTransAlphaBlend(tjs_uint32 *,tjs_int,const tjs_uint32 *,tjs_int,tjs_int,tjs_int,tjs_int,tjs_int)";
+		static char funcname[] = "void ::TVPStretchAdditiveAlphaBlend_ao(tjs_uint32 *,tjs_int,const tjs_uint32 *,tjs_int,tjs_int,tjs_int)";
 		TVPImportFuncPtr369 = TVPGetImportFuncPtr(funcname);
 	}
-	typedef void (__stdcall * __functype)(tjs_uint32 *, tjs_int , const tjs_uint32 *, tjs_int , tjs_int , tjs_int , tjs_int , tjs_int);
-	((__functype)(TVPImportFuncPtr369))(dest, len, src, sx, sy, stepx, stepy, srcpitch);
+	typedef void (__stdcall * __functype)(tjs_uint32 *, tjs_int , const tjs_uint32 *, tjs_int , tjs_int , tjs_int);
+	((__functype)(TVPImportFuncPtr369))(dest, len, src, srcstart, srcstep, opa);
 }
-inline void TVPLinTransAlphaBlend_HDA(tjs_uint32 * dest , tjs_int len , const tjs_uint32 * src , tjs_int sx , tjs_int sy , tjs_int stepx , tjs_int stepy , tjs_int srcpitch)
+inline void TVPLinTransAlphaBlend(tjs_uint32 * dest , tjs_int len , const tjs_uint32 * src , tjs_int sx , tjs_int sy , tjs_int stepx , tjs_int stepy , tjs_int srcpitch)
 {
 	if(!TVPImportFuncPtr370)
 	{
-		static char funcname[] = "void ::TVPLinTransAlphaBlend_HDA(tjs_uint32 *,tjs_int,const tjs_uint32 *,tjs_int,tjs_int,tjs_int,tjs_int,tjs_int)";
+		static char funcname[] = "void ::TVPLinTransAlphaBlend(tjs_uint32 *,tjs_int,const tjs_uint32 *,tjs_int,tjs_int,tjs_int,tjs_int,tjs_int)";
 		TVPImportFuncPtr370 = TVPGetImportFuncPtr(funcname);
 	}
 	typedef void (__stdcall * __functype)(tjs_uint32 *, tjs_int , const tjs_uint32 *, tjs_int , tjs_int , tjs_int , tjs_int , tjs_int);
 	((__functype)(TVPImportFuncPtr370))(dest, len, src, sx, sy, stepx, stepy, srcpitch);
 }
-inline void TVPLinTransAlphaBlend_o(tjs_uint32 * dest , tjs_int len , const tjs_uint32 * src , tjs_int sx , tjs_int sy , tjs_int stepx , tjs_int stepy , tjs_int srcpitch , tjs_int opa)
+inline void TVPLinTransAlphaBlend_HDA(tjs_uint32 * dest , tjs_int len , const tjs_uint32 * src , tjs_int sx , tjs_int sy , tjs_int stepx , tjs_int stepy , tjs_int srcpitch)
 {
 	if(!TVPImportFuncPtr371)
 	{
-		static char funcname[] = "void ::TVPLinTransAlphaBlend_o(tjs_uint32 *,tjs_int,const tjs_uint32 *,tjs_int,tjs_int,tjs_int,tjs_int,tjs_int,tjs_int)";
+		static char funcname[] = "void ::TVPLinTransAlphaBlend_HDA(tjs_uint32 *,tjs_int,const tjs_uint32 *,tjs_int,tjs_int,tjs_int,tjs_int,tjs_int)";
 		TVPImportFuncPtr371 = TVPGetImportFuncPtr(funcname);
 	}
-	typedef void (__stdcall * __functype)(tjs_uint32 *, tjs_int , const tjs_uint32 *, tjs_int , tjs_int , tjs_int , tjs_int , tjs_int , tjs_int);
-	((__functype)(TVPImportFuncPtr371))(dest, len, src, sx, sy, stepx, stepy, srcpitch, opa);
+	typedef void (__stdcall * __functype)(tjs_uint32 *, tjs_int , const tjs_uint32 *, tjs_int , tjs_int , tjs_int , tjs_int , tjs_int);
+	((__functype)(TVPImportFuncPtr371))(dest, len, src, sx, sy, stepx, stepy, srcpitch);
 }
-inline void TVPLinTransAlphaBlend_HDA_o(tjs_uint32 * dest , tjs_int len , const tjs_uint32 * src , tjs_int sx , tjs_int sy , tjs_int stepx , tjs_int stepy , tjs_int srcpitch , tjs_int opa)
+inline void TVPLinTransAlphaBlend_o(tjs_uint32 * dest , tjs_int len , const tjs_uint32 * src , tjs_int sx , tjs_int sy , tjs_int stepx , tjs_int stepy , tjs_int srcpitch , tjs_int opa)
 {
 	if(!TVPImportFuncPtr372)
 	{
-		static char funcname[] = "void ::TVPLinTransAlphaBlend_HDA_o(tjs_uint32 *,tjs_int,const tjs_uint32 *,tjs_int,tjs_int,tjs_int,tjs_int,tjs_int,tjs_int)";
+		static char funcname[] = "void ::TVPLinTransAlphaBlend_o(tjs_uint32 *,tjs_int,const tjs_uint32 *,tjs_int,tjs_int,tjs_int,tjs_int,tjs_int,tjs_int)";
 		TVPImportFuncPtr372 = TVPGetImportFuncPtr(funcname);
 	}
 	typedef void (__stdcall * __functype)(tjs_uint32 *, tjs_int , const tjs_uint32 *, tjs_int , tjs_int , tjs_int , tjs_int , tjs_int , tjs_int);
 	((__functype)(TVPImportFuncPtr372))(dest, len, src, sx, sy, stepx, stepy, srcpitch, opa);
 }
-inline void TVPLinTransAlphaBlend_d(tjs_uint32 * dest , tjs_int len , const tjs_uint32 * src , tjs_int sx , tjs_int sy , tjs_int stepx , tjs_int stepy , tjs_int srcpitch)
+inline void TVPLinTransAlphaBlend_HDA_o(tjs_uint32 * dest , tjs_int len , const tjs_uint32 * src , tjs_int sx , tjs_int sy , tjs_int stepx , tjs_int stepy , tjs_int srcpitch , tjs_int opa)
 {
 	if(!TVPImportFuncPtr373)
 	{
-		static char funcname[] = "void ::TVPLinTransAlphaBlend_d(tjs_uint32 *,tjs_int,const tjs_uint32 *,tjs_int,tjs_int,tjs_int,tjs_int,tjs_int)";
+		static char funcname[] = "void ::TVPLinTransAlphaBlend_HDA_o(tjs_uint32 *,tjs_int,const tjs_uint32 *,tjs_int,tjs_int,tjs_int,tjs_int,tjs_int,tjs_int)";
 		TVPImportFuncPtr373 = TVPGetImportFuncPtr(funcname);
 	}
-	typedef void (__stdcall * __functype)(tjs_uint32 *, tjs_int , const tjs_uint32 *, tjs_int , tjs_int , tjs_int , tjs_int , tjs_int);
-	((__functype)(TVPImportFuncPtr373))(dest, len, src, sx, sy, stepx, stepy, srcpitch);
+	typedef void (__stdcall * __functype)(tjs_uint32 *, tjs_int , const tjs_uint32 *, tjs_int , tjs_int , tjs_int , tjs_int , tjs_int , tjs_int);
+	((__functype)(TVPImportFuncPtr373))(dest, len, src, sx, sy, stepx, stepy, srcpitch, opa);
 }
-inline void TVPLinTransAlphaBlend_a(tjs_uint32 * dest , tjs_int len , const tjs_uint32 * src , tjs_int sx , tjs_int sy , tjs_int stepx , tjs_int stepy , tjs_int srcpitch)
+inline void TVPLinTransAlphaBlend_d(tjs_uint32 * dest , tjs_int len , const tjs_uint32 * src , tjs_int sx , tjs_int sy , tjs_int stepx , tjs_int stepy , tjs_int srcpitch)
 {
 	if(!TVPImportFuncPtr374)
 	{
-		static char funcname[] = "void ::TVPLinTransAlphaBlend_a(tjs_uint32 *,tjs_int,const tjs_uint32 *,tjs_int,tjs_int,tjs_int,tjs_int,tjs_int)";
+		static char funcname[] = "void ::TVPLinTransAlphaBlend_d(tjs_uint32 *,tjs_int,const tjs_uint32 *,tjs_int,tjs_int,tjs_int,tjs_int,tjs_int)";
 		TVPImportFuncPtr374 = TVPGetImportFuncPtr(funcname);
 	}
 	typedef void (__stdcall * __functype)(tjs_uint32 *, tjs_int , const tjs_uint32 *, tjs_int , tjs_int , tjs_int , tjs_int , tjs_int);
 	((__functype)(TVPImportFuncPtr374))(dest, len, src, sx, sy, stepx, stepy, srcpitch);
 }
-inline void TVPLinTransAlphaBlend_do(tjs_uint32 * dest , tjs_int len , const tjs_uint32 * src , tjs_int sx , tjs_int sy , tjs_int stepx , tjs_int stepy , tjs_int srcpitch , tjs_int opa)
+inline void TVPLinTransAlphaBlend_a(tjs_uint32 * dest , tjs_int len , const tjs_uint32 * src , tjs_int sx , tjs_int sy , tjs_int stepx , tjs_int stepy , tjs_int srcpitch)
 {
 	if(!TVPImportFuncPtr375)
 	{
-		static char funcname[] = "void ::TVPLinTransAlphaBlend_do(tjs_uint32 *,tjs_int,const tjs_uint32 *,tjs_int,tjs_int,tjs_int,tjs_int,tjs_int,tjs_int)";
+		static char funcname[] = "void ::TVPLinTransAlphaBlend_a(tjs_uint32 *,tjs_int,const tjs_uint32 *,tjs_int,tjs_int,tjs_int,tjs_int,tjs_int)";
 		TVPImportFuncPtr375 = TVPGetImportFuncPtr(funcname);
 	}
-	typedef void (__stdcall * __functype)(tjs_uint32 *, tjs_int , const tjs_uint32 *, tjs_int , tjs_int , tjs_int , tjs_int , tjs_int , tjs_int);
-	((__functype)(TVPImportFuncPtr375))(dest, len, src, sx, sy, stepx, stepy, srcpitch, opa);
+	typedef void (__stdcall * __functype)(tjs_uint32 *, tjs_int , const tjs_uint32 *, tjs_int , tjs_int , tjs_int , tjs_int , tjs_int);
+	((__functype)(TVPImportFuncPtr375))(dest, len, src, sx, sy, stepx, stepy, srcpitch);
 }
-inline void TVPLinTransAlphaBlend_ao(tjs_uint32 * dest , tjs_int len , const tjs_uint32 * src , tjs_int sx , tjs_int sy , tjs_int stepx , tjs_int stepy , tjs_int srcpitch , tjs_int opa)
+inline void TVPLinTransAlphaBlend_do(tjs_uint32 * dest , tjs_int len , const tjs_uint32 * src , tjs_int sx , tjs_int sy , tjs_int stepx , tjs_int stepy , tjs_int srcpitch , tjs_int opa)
 {
 	if(!TVPImportFuncPtr376)
 	{
-		static char funcname[] = "void ::TVPLinTransAlphaBlend_ao(tjs_uint32 *,tjs_int,const tjs_uint32 *,tjs_int,tjs_int,tjs_int,tjs_int,tjs_int,tjs_int)";
+		static char funcname[] = "void ::TVPLinTransAlphaBlend_do(tjs_uint32 *,tjs_int,const tjs_uint32 *,tjs_int,tjs_int,tjs_int,tjs_int,tjs_int,tjs_int)";
 		TVPImportFuncPtr376 = TVPGetImportFuncPtr(funcname);
 	}
 	typedef void (__stdcall * __functype)(tjs_uint32 *, tjs_int , const tjs_uint32 *, tjs_int , tjs_int , tjs_int , tjs_int , tjs_int , tjs_int);
 	((__functype)(TVPImportFuncPtr376))(dest, len, src, sx, sy, stepx, stepy, srcpitch, opa);
 }
-inline void TVPLinTransAdditiveAlphaBlend(tjs_uint32 * dest , tjs_int len , const tjs_uint32 * src , tjs_int sx , tjs_int sy , tjs_int stepx , tjs_int stepy , tjs_int srcpitch)
+inline void TVPLinTransAlphaBlend_ao(tjs_uint32 * dest , tjs_int len , const tjs_uint32 * src , tjs_int sx , tjs_int sy , tjs_int stepx , tjs_int stepy , tjs_int srcpitch , tjs_int opa)
 {
 	if(!TVPImportFuncPtr377)
 	{
-		static char funcname[] = "void ::TVPLinTransAdditiveAlphaBlend(tjs_uint32 *,tjs_int,const tjs_uint32 *,tjs_int,tjs_int,tjs_int,tjs_int,tjs_int)";
+		static char funcname[] = "void ::TVPLinTransAlphaBlend_ao(tjs_uint32 *,tjs_int,const tjs_uint32 *,tjs_int,tjs_int,tjs_int,tjs_int,tjs_int,tjs_int)";
 		TVPImportFuncPtr377 = TVPGetImportFuncPtr(funcname);
 	}
-	typedef void (__stdcall * __functype)(tjs_uint32 *, tjs_int , const tjs_uint32 *, tjs_int , tjs_int , tjs_int , tjs_int , tjs_int);
-	((__functype)(TVPImportFuncPtr377))(dest, len, src, sx, sy, stepx, stepy, srcpitch);
+	typedef void (__stdcall * __functype)(tjs_uint32 *, tjs_int , const tjs_uint32 *, tjs_int , tjs_int , tjs_int , tjs_int , tjs_int , tjs_int);
+	((__functype)(TVPImportFuncPtr377))(dest, len, src, sx, sy, stepx, stepy, srcpitch, opa);
 }
-inline void TVPInterpLinTransAdditiveAlphaBlend(tjs_uint32 * dest , tjs_int destlen , const tjs_uint32 * src , tjs_int sx , tjs_int sy , tjs_int stepx , tjs_int stepy , tjs_int srcpitch)
+inline void TVPLinTransAdditiveAlphaBlend(tjs_uint32 * dest , tjs_int len , const tjs_uint32 * src , tjs_int sx , tjs_int sy , tjs_int stepx , tjs_int stepy , tjs_int srcpitch)
 {
 	if(!TVPImportFuncPtr378)
 	{
-		static char funcname[] = "void ::TVPInterpLinTransAdditiveAlphaBlend(tjs_uint32 *,tjs_int,const tjs_uint32 *,tjs_int,tjs_int,tjs_int,tjs_int,tjs_int)";
+		static char funcname[] = "void ::TVPLinTransAdditiveAlphaBlend(tjs_uint32 *,tjs_int,const tjs_uint32 *,tjs_int,tjs_int,tjs_int,tjs_int,tjs_int)";
 		TVPImportFuncPtr378 = TVPGetImportFuncPtr(funcname);
 	}
 	typedef void (__stdcall * __functype)(tjs_uint32 *, tjs_int , const tjs_uint32 *, tjs_int , tjs_int , tjs_int , tjs_int , tjs_int);
-	((__functype)(TVPImportFuncPtr378))(dest, destlen, src, sx, sy, stepx, stepy, srcpitch);
+	((__functype)(TVPImportFuncPtr378))(dest, len, src, sx, sy, stepx, stepy, srcpitch);
 }
-inline void TVPLinTransAdditiveAlphaBlend_HDA(tjs_uint32 * dest , tjs_int len , const tjs_uint32 * src , tjs_int sx , tjs_int sy , tjs_int stepx , tjs_int stepy , tjs_int srcpitch)
+inline void TVPInterpLinTransAdditiveAlphaBlend(tjs_uint32 * dest , tjs_int destlen , const tjs_uint32 * src , tjs_int sx , tjs_int sy , tjs_int stepx , tjs_int stepy , tjs_int srcpitch)
 {
 	if(!TVPImportFuncPtr379)
 	{
-		static char funcname[] = "void ::TVPLinTransAdditiveAlphaBlend_HDA(tjs_uint32 *,tjs_int,const tjs_uint32 *,tjs_int,tjs_int,tjs_int,tjs_int,tjs_int)";
+		static char funcname[] = "void ::TVPInterpLinTransAdditiveAlphaBlend(tjs_uint32 *,tjs_int,const tjs_uint32 *,tjs_int,tjs_int,tjs_int,tjs_int,tjs_int)";
 		TVPImportFuncPtr379 = TVPGetImportFuncPtr(funcname);
 	}
 	typedef void (__stdcall * __functype)(tjs_uint32 *, tjs_int , const tjs_uint32 *, tjs_int , tjs_int , tjs_int , tjs_int , tjs_int);
-	((__functype)(TVPImportFuncPtr379))(dest, len, src, sx, sy, stepx, stepy, srcpitch);
+	((__functype)(TVPImportFuncPtr379))(dest, destlen, src, sx, sy, stepx, stepy, srcpitch);
 }
-inline void TVPLinTransAdditiveAlphaBlend_o(tjs_uint32 * dest , tjs_int len , const tjs_uint32 * src , tjs_int sx , tjs_int sy , tjs_int stepx , tjs_int stepy , tjs_int srcpitch , tjs_int opa)
+inline void TVPLinTransAdditiveAlphaBlend_HDA(tjs_uint32 * dest , tjs_int len , const tjs_uint32 * src , tjs_int sx , tjs_int sy , tjs_int stepx , tjs_int stepy , tjs_int srcpitch)
 {
 	if(!TVPImportFuncPtr380)
 	{
-		static char funcname[] = "void ::TVPLinTransAdditiveAlphaBlend_o(tjs_uint32 *,tjs_int,const tjs_uint32 *,tjs_int,tjs_int,tjs_int,tjs_int,tjs_int,tjs_int)";
+		static char funcname[] = "void ::TVPLinTransAdditiveAlphaBlend_HDA(tjs_uint32 *,tjs_int,const tjs_uint32 *,tjs_int,tjs_int,tjs_int,tjs_int,tjs_int)";
 		TVPImportFuncPtr380 = TVPGetImportFuncPtr(funcname);
 	}
-	typedef void (__stdcall * __functype)(tjs_uint32 *, tjs_int , const tjs_uint32 *, tjs_int , tjs_int , tjs_int , tjs_int , tjs_int , tjs_int);
-	((__functype)(TVPImportFuncPtr380))(dest, len, src, sx, sy, stepx, stepy, srcpitch, opa);
+	typedef void (__stdcall * __functype)(tjs_uint32 *, tjs_int , const tjs_uint32 *, tjs_int , tjs_int , tjs_int , tjs_int , tjs_int);
+	((__functype)(TVPImportFuncPtr380))(dest, len, src, sx, sy, stepx, stepy, srcpitch);
 }
-inline void TVPInterpLinTransAdditiveAlphaBlend_o(tjs_uint32 * dest , tjs_int destlen , const tjs_uint32 * src , tjs_int sx , tjs_int sy , tjs_int stepx , tjs_int stepy , tjs_int srcpitch , tjs_int opa)
+inline void TVPLinTransAdditiveAlphaBlend_o(tjs_uint32 * dest , tjs_int len , const tjs_uint32 * src , tjs_int sx , tjs_int sy , tjs_int stepx , tjs_int stepy , tjs_int srcpitch , tjs_int opa)
 {
 	if(!TVPImportFuncPtr381)
 	{
-		static char funcname[] = "void ::TVPInterpLinTransAdditiveAlphaBlend_o(tjs_uint32 *,tjs_int,const tjs_uint32 *,tjs_int,tjs_int,tjs_int,tjs_int,tjs_int,tjs_int)";
+		static char funcname[] = "void ::TVPLinTransAdditiveAlphaBlend_o(tjs_uint32 *,tjs_int,const tjs_uint32 *,tjs_int,tjs_int,tjs_int,tjs_int,tjs_int,tjs_int)";
 		TVPImportFuncPtr381 = TVPGetImportFuncPtr(funcname);
 	}
 	typedef void (__stdcall * __functype)(tjs_uint32 *, tjs_int , const tjs_uint32 *, tjs_int , tjs_int , tjs_int , tjs_int , tjs_int , tjs_int);
-	((__functype)(TVPImportFuncPtr381))(dest, destlen, src, sx, sy, stepx, stepy, srcpitch, opa);
+	((__functype)(TVPImportFuncPtr381))(dest, len, src, sx, sy, stepx, stepy, srcpitch, opa);
 }
-inline void TVPLinTransAdditiveAlphaBlend_HDA_o(tjs_uint32 * dest , tjs_int len , const tjs_uint32 * src , tjs_int sx , tjs_int sy , tjs_int stepx , tjs_int stepy , tjs_int srcpitch , tjs_int opa)
+inline void TVPInterpLinTransAdditiveAlphaBlend_o(tjs_uint32 * dest , tjs_int destlen , const tjs_uint32 * src , tjs_int sx , tjs_int sy , tjs_int stepx , tjs_int stepy , tjs_int srcpitch , tjs_int opa)
 {
 	if(!TVPImportFuncPtr382)
 	{
-		static char funcname[] = "void ::TVPLinTransAdditiveAlphaBlend_HDA_o(tjs_uint32 *,tjs_int,const tjs_uint32 *,tjs_int,tjs_int,tjs_int,tjs_int,tjs_int,tjs_int)";
+		static char funcname[] = "void ::TVPInterpLinTransAdditiveAlphaBlend_o(tjs_uint32 *,tjs_int,const tjs_uint32 *,tjs_int,tjs_int,tjs_int,tjs_int,tjs_int,tjs_int)";
 		TVPImportFuncPtr382 = TVPGetImportFuncPtr(funcname);
 	}
 	typedef void (__stdcall * __functype)(tjs_uint32 *, tjs_int , const tjs_uint32 *, tjs_int , tjs_int , tjs_int , tjs_int , tjs_int , tjs_int);
-	((__functype)(TVPImportFuncPtr382))(dest, len, src, sx, sy, stepx, stepy, srcpitch, opa);
+	((__functype)(TVPImportFuncPtr382))(dest, destlen, src, sx, sy, stepx, stepy, srcpitch, opa);
 }
-inline void TVPLinTransAdditiveAlphaBlend_a(tjs_uint32 * dest , tjs_int len , const tjs_uint32 * src , tjs_int sx , tjs_int sy , tjs_int stepx , tjs_int stepy , tjs_int srcpitch)
+inline void TVPLinTransAdditiveAlphaBlend_HDA_o(tjs_uint32 * dest , tjs_int len , const tjs_uint32 * src , tjs_int sx , tjs_int sy , tjs_int stepx , tjs_int stepy , tjs_int srcpitch , tjs_int opa)
 {
 	if(!TVPImportFuncPtr383)
 	{
-		static char funcname[] = "void ::TVPLinTransAdditiveAlphaBlend_a(tjs_uint32 *,tjs_int,const tjs_uint32 *,tjs_int,tjs_int,tjs_int,tjs_int,tjs_int)";
+		static char funcname[] = "void ::TVPLinTransAdditiveAlphaBlend_HDA_o(tjs_uint32 *,tjs_int,const tjs_uint32 *,tjs_int,tjs_int,tjs_int,tjs_int,tjs_int,tjs_int)";
 		TVPImportFuncPtr383 = TVPGetImportFuncPtr(funcname);
 	}
-	typedef void (__stdcall * __functype)(tjs_uint32 *, tjs_int , const tjs_uint32 *, tjs_int , tjs_int , tjs_int , tjs_int , tjs_int);
-	((__functype)(TVPImportFuncPtr383))(dest, len, src, sx, sy, stepx, stepy, srcpitch);
+	typedef void (__stdcall * __functype)(tjs_uint32 *, tjs_int , const tjs_uint32 *, tjs_int , tjs_int , tjs_int , tjs_int , tjs_int , tjs_int);
+	((__functype)(TVPImportFuncPtr383))(dest, len, src, sx, sy, stepx, stepy, srcpitch, opa);
 }
-inline void TVPLinTransAdditiveAlphaBlend_ao(tjs_uint32 * dest , tjs_int len , const tjs_uint32 * src , tjs_int sx , tjs_int sy , tjs_int stepx , tjs_int stepy , tjs_int srcpitch , tjs_int opa)
+inline void TVPLinTransAdditiveAlphaBlend_a(tjs_uint32 * dest , tjs_int len , const tjs_uint32 * src , tjs_int sx , tjs_int sy , tjs_int stepx , tjs_int stepy , tjs_int srcpitch)
 {
 	if(!TVPImportFuncPtr384)
 	{
-		static char funcname[] = "void ::TVPLinTransAdditiveAlphaBlend_ao(tjs_uint32 *,tjs_int,const tjs_uint32 *,tjs_int,tjs_int,tjs_int,tjs_int,tjs_int,tjs_int)";
+		static char funcname[] = "void ::TVPLinTransAdditiveAlphaBlend_a(tjs_uint32 *,tjs_int,const tjs_uint32 *,tjs_int,tjs_int,tjs_int,tjs_int,tjs_int)";
 		TVPImportFuncPtr384 = TVPGetImportFuncPtr(funcname);
 	}
-	typedef void (__stdcall * __functype)(tjs_uint32 *, tjs_int , const tjs_uint32 *, tjs_int , tjs_int , tjs_int , tjs_int , tjs_int , tjs_int);
-	((__functype)(TVPImportFuncPtr384))(dest, len, src, sx, sy, stepx, stepy, srcpitch, opa);
+	typedef void (__stdcall * __functype)(tjs_uint32 *, tjs_int , const tjs_uint32 *, tjs_int , tjs_int , tjs_int , tjs_int , tjs_int);
+	((__functype)(TVPImportFuncPtr384))(dest, len, src, sx, sy, stepx, stepy, srcpitch);
 }
-inline void TVPCopyOpaqueImage(tjs_uint32 * dest , const tjs_uint32 * src , tjs_int len)
+inline void TVPLinTransAdditiveAlphaBlend_ao(tjs_uint32 * dest , tjs_int len , const tjs_uint32 * src , tjs_int sx , tjs_int sy , tjs_int stepx , tjs_int stepy , tjs_int srcpitch , tjs_int opa)
 {
 	if(!TVPImportFuncPtr385)
 	{
-		static char funcname[] = "void ::TVPCopyOpaqueImage(tjs_uint32 *,const tjs_uint32 *,tjs_int)";
+		static char funcname[] = "void ::TVPLinTransAdditiveAlphaBlend_ao(tjs_uint32 *,tjs_int,const tjs_uint32 *,tjs_int,tjs_int,tjs_int,tjs_int,tjs_int,tjs_int)";
 		TVPImportFuncPtr385 = TVPGetImportFuncPtr(funcname);
 	}
-	typedef void (__stdcall * __functype)(tjs_uint32 *, const tjs_uint32 *, tjs_int);
-	((__functype)(TVPImportFuncPtr385))(dest, src, len);
+	typedef void (__stdcall * __functype)(tjs_uint32 *, tjs_int , const tjs_uint32 *, tjs_int , tjs_int , tjs_int , tjs_int , tjs_int , tjs_int);
+	((__functype)(TVPImportFuncPtr385))(dest, len, src, sx, sy, stepx, stepy, srcpitch, opa);
 }
-inline void TVPConstAlphaBlend(tjs_uint32 * dest , const tjs_uint32 * src , tjs_int len , tjs_int opa)
+inline void TVPCopyOpaqueImage(tjs_uint32 * dest , const tjs_uint32 * src , tjs_int len)
 {
 	if(!TVPImportFuncPtr386)
 	{
-		static char funcname[] = "void ::TVPConstAlphaBlend(tjs_uint32 *,const tjs_uint32 *,tjs_int,tjs_int)";
+		static char funcname[] = "void ::TVPCopyOpaqueImage(tjs_uint32 *,const tjs_uint32 *,tjs_int)";
 		TVPImportFuncPtr386 = TVPGetImportFuncPtr(funcname);
 	}
-	typedef void (__stdcall * __functype)(tjs_uint32 *, const tjs_uint32 *, tjs_int , tjs_int);
-	((__functype)(TVPImportFuncPtr386))(dest, src, len, opa);
+	typedef void (__stdcall * __functype)(tjs_uint32 *, const tjs_uint32 *, tjs_int);
+	((__functype)(TVPImportFuncPtr386))(dest, src, len);
 }
-inline void TVPConstAlphaBlend_HDA(tjs_uint32 * dest , const tjs_uint32 * src , tjs_int len , tjs_int opa)
+inline void TVPConstAlphaBlend(tjs_uint32 * dest , const tjs_uint32 * src , tjs_int len , tjs_int opa)
 {
 	if(!TVPImportFuncPtr387)
 	{
-		static char funcname[] = "void ::TVPConstAlphaBlend_HDA(tjs_uint32 *,const tjs_uint32 *,tjs_int,tjs_int)";
+		static char funcname[] = "void ::TVPConstAlphaBlend(tjs_uint32 *,const tjs_uint32 *,tjs_int,tjs_int)";
 		TVPImportFuncPtr387 = TVPGetImportFuncPtr(funcname);
 	}
 	typedef void (__stdcall * __functype)(tjs_uint32 *, const tjs_uint32 *, tjs_int , tjs_int);
 	((__functype)(TVPImportFuncPtr387))(dest, src, len, opa);
 }
-inline void TVPConstAlphaBlend_d(tjs_uint32 * dest , const tjs_uint32 * src , tjs_int len , tjs_int opa)
+inline void TVPConstAlphaBlend_HDA(tjs_uint32 * dest , const tjs_uint32 * src , tjs_int len , tjs_int opa)
 {
 	if(!TVPImportFuncPtr388)
 	{
-		static char funcname[] = "void ::TVPConstAlphaBlend_d(tjs_uint32 *,const tjs_uint32 *,tjs_int,tjs_int)";
+		static char funcname[] = "void ::TVPConstAlphaBlend_HDA(tjs_uint32 *,const tjs_uint32 *,tjs_int,tjs_int)";
 		TVPImportFuncPtr388 = TVPGetImportFuncPtr(funcname);
 	}
 	typedef void (__stdcall * __functype)(tjs_uint32 *, const tjs_uint32 *, tjs_int , tjs_int);
 	((__functype)(TVPImportFuncPtr388))(dest, src, len, opa);
 }
-inline void TVPConstAlphaBlend_a(tjs_uint32 * dest , const tjs_uint32 * src , tjs_int len , tjs_int opa)
+inline void TVPConstAlphaBlend_d(tjs_uint32 * dest , const tjs_uint32 * src , tjs_int len , tjs_int opa)
 {
 	if(!TVPImportFuncPtr389)
 	{
-		static char funcname[] = "void ::TVPConstAlphaBlend_a(tjs_uint32 *,const tjs_uint32 *,tjs_int,tjs_int)";
+		static char funcname[] = "void ::TVPConstAlphaBlend_d(tjs_uint32 *,const tjs_uint32 *,tjs_int,tjs_int)";
 		TVPImportFuncPtr389 = TVPGetImportFuncPtr(funcname);
 	}
 	typedef void (__stdcall * __functype)(tjs_uint32 *, const tjs_uint32 *, tjs_int , tjs_int);
 	((__functype)(TVPImportFuncPtr389))(dest, src, len, opa);
 }
-inline void TVPStretchCopyOpaqueImage(tjs_uint32 * dest , tjs_int destlen , const tjs_uint32 * src , tjs_int srcstart , tjs_int srcstep)
+inline void TVPConstAlphaBlend_a(tjs_uint32 * dest , const tjs_uint32 * src , tjs_int len , tjs_int opa)
 {
 	if(!TVPImportFuncPtr390)
 	{
-		static char funcname[] = "void ::TVPStretchCopyOpaqueImage(tjs_uint32 *,tjs_int,const tjs_uint32 *,tjs_int,tjs_int)";
+		static char funcname[] = "void ::TVPConstAlphaBlend_a(tjs_uint32 *,const tjs_uint32 *,tjs_int,tjs_int)";
 		TVPImportFuncPtr390 = TVPGetImportFuncPtr(funcname);
 	}
-	typedef void (__stdcall * __functype)(tjs_uint32 *, tjs_int , const tjs_uint32 *, tjs_int , tjs_int);
-	((__functype)(TVPImportFuncPtr390))(dest, destlen, src, srcstart, srcstep);
+	typedef void (__stdcall * __functype)(tjs_uint32 *, const tjs_uint32 *, tjs_int , tjs_int);
+	((__functype)(TVPImportFuncPtr390))(dest, src, len, opa);
 }
-inline void TVPStretchConstAlphaBlend(tjs_uint32 * dest , tjs_int len , const tjs_uint32 * src , tjs_int srcstart , tjs_int srcstep , tjs_int opa)
+inline void TVPStretchCopyOpaqueImage(tjs_uint32 * dest , tjs_int destlen , const tjs_uint32 * src , tjs_int srcstart , tjs_int srcstep)
 {
 	if(!TVPImportFuncPtr391)
 	{
-		static char funcname[] = "void ::TVPStretchConstAlphaBlend(tjs_uint32 *,tjs_int,const tjs_uint32 *,tjs_int,tjs_int,tjs_int)";
+		static char funcname[] = "void ::TVPStretchCopyOpaqueImage(tjs_uint32 *,tjs_int,const tjs_uint32 *,tjs_int,tjs_int)";
 		TVPImportFuncPtr391 = TVPGetImportFuncPtr(funcname);
 	}
-	typedef void (__stdcall * __functype)(tjs_uint32 *, tjs_int , const tjs_uint32 *, tjs_int , tjs_int , tjs_int);
-	((__functype)(TVPImportFuncPtr391))(dest, len, src, srcstart, srcstep, opa);
+	typedef void (__stdcall * __functype)(tjs_uint32 *, tjs_int , const tjs_uint32 *, tjs_int , tjs_int);
+	((__functype)(TVPImportFuncPtr391))(dest, destlen, src, srcstart, srcstep);
 }
-inline void TVPInterpStretchConstAlphaBlend(tjs_uint32 * dest , tjs_int destlen , const tjs_uint32 * src1 , const tjs_uint32 * src2 , tjs_int blend_y , tjs_int srcstart , tjs_int srcstep , tjs_int opa)
+inline void TVPStretchConstAlphaBlend(tjs_uint32 * dest , tjs_int len , const tjs_uint32 * src , tjs_int srcstart , tjs_int srcstep , tjs_int opa)
 {
 	if(!TVPImportFuncPtr392)
 	{
-		static char funcname[] = "void ::TVPInterpStretchConstAlphaBlend(tjs_uint32 *,tjs_int,const tjs_uint32 *,const tjs_uint32 *,tjs_int,tjs_int,tjs_int,tjs_int)";
+		static char funcname[] = "void ::TVPStretchConstAlphaBlend(tjs_uint32 *,tjs_int,const tjs_uint32 *,tjs_int,tjs_int,tjs_int)";
 		TVPImportFuncPtr392 = TVPGetImportFuncPtr(funcname);
 	}
-	typedef void (__stdcall * __functype)(tjs_uint32 *, tjs_int , const tjs_uint32 *, const tjs_uint32 *, tjs_int , tjs_int , tjs_int , tjs_int);
-	((__functype)(TVPImportFuncPtr392))(dest, destlen, src1, src2, blend_y, srcstart, srcstep, opa);
+	typedef void (__stdcall * __functype)(tjs_uint32 *, tjs_int , const tjs_uint32 *, tjs_int , tjs_int , tjs_int);
+	((__functype)(TVPImportFuncPtr392))(dest, len, src, srcstart, srcstep, opa);
 }
-inline void TVPStretchConstAlphaBlend_HDA(tjs_uint32 * dest , tjs_int len , const tjs_uint32 * src , tjs_int srcstart , tjs_int srcstep , tjs_int opa)
+inline void TVPInterpStretchConstAlphaBlend(tjs_uint32 * dest , tjs_int destlen , const tjs_uint32 * src1 , const tjs_uint32 * src2 , tjs_int blend_y , tjs_int srcstart , tjs_int srcstep , tjs_int opa)
 {
 	if(!TVPImportFuncPtr393)
 	{
-		static char funcname[] = "void ::TVPStretchConstAlphaBlend_HDA(tjs_uint32 *,tjs_int,const tjs_uint32 *,tjs_int,tjs_int,tjs_int)";
+		static char funcname[] = "void ::TVPInterpStretchConstAlphaBlend(tjs_uint32 *,tjs_int,const tjs_uint32 *,const tjs_uint32 *,tjs_int,tjs_int,tjs_int,tjs_int)";
 		TVPImportFuncPtr393 = TVPGetImportFuncPtr(funcname);
 	}
-	typedef void (__stdcall * __functype)(tjs_uint32 *, tjs_int , const tjs_uint32 *, tjs_int , tjs_int , tjs_int);
-	((__functype)(TVPImportFuncPtr393))(dest, len, src, srcstart, srcstep, opa);
+	typedef void (__stdcall * __functype)(tjs_uint32 *, tjs_int , const tjs_uint32 *, const tjs_uint32 *, tjs_int , tjs_int , tjs_int , tjs_int);
+	((__functype)(TVPImportFuncPtr393))(dest, destlen, src1, src2, blend_y, srcstart, srcstep, opa);
 }
-inline void TVPStretchConstAlphaBlend_d(tjs_uint32 * dest , tjs_int len , const tjs_uint32 * src , tjs_int srcstart , tjs_int srcstep , tjs_int opa)
+inline void TVPStretchConstAlphaBlend_HDA(tjs_uint32 * dest , tjs_int len , const tjs_uint32 * src , tjs_int srcstart , tjs_int srcstep , tjs_int opa)
 {
 	if(!TVPImportFuncPtr394)
 	{
-		static char funcname[] = "void ::TVPStretchConstAlphaBlend_d(tjs_uint32 *,tjs_int,const tjs_uint32 *,tjs_int,tjs_int,tjs_int)";
+		static char funcname[] = "void ::TVPStretchConstAlphaBlend_HDA(tjs_uint32 *,tjs_int,const tjs_uint32 *,tjs_int,tjs_int,tjs_int)";
 		TVPImportFuncPtr394 = TVPGetImportFuncPtr(funcname);
 	}
 	typedef void (__stdcall * __functype)(tjs_uint32 *, tjs_int , const tjs_uint32 *, tjs_int , tjs_int , tjs_int);
 	((__functype)(TVPImportFuncPtr394))(dest, len, src, srcstart, srcstep, opa);
 }
-inline void TVPStretchConstAlphaBlend_a(tjs_uint32 * dest , tjs_int len , const tjs_uint32 * src , tjs_int srcstart , tjs_int srcstep , tjs_int opa)
+inline void TVPStretchConstAlphaBlend_d(tjs_uint32 * dest , tjs_int len , const tjs_uint32 * src , tjs_int srcstart , tjs_int srcstep , tjs_int opa)
 {
 	if(!TVPImportFuncPtr395)
 	{
-		static char funcname[] = "void ::TVPStretchConstAlphaBlend_a(tjs_uint32 *,tjs_int,const tjs_uint32 *,tjs_int,tjs_int,tjs_int)";
+		static char funcname[] = "void ::TVPStretchConstAlphaBlend_d(tjs_uint32 *,tjs_int,const tjs_uint32 *,tjs_int,tjs_int,tjs_int)";
 		TVPImportFuncPtr395 = TVPGetImportFuncPtr(funcname);
 	}
 	typedef void (__stdcall * __functype)(tjs_uint32 *, tjs_int , const tjs_uint32 *, tjs_int , tjs_int , tjs_int);
 	((__functype)(TVPImportFuncPtr395))(dest, len, src, srcstart, srcstep, opa);
 }
-inline void TVPLinTransCopyOpaqueImage(tjs_uint32 * dest , tjs_int destlen , const tjs_uint32 * src , tjs_int sx , tjs_int sy , tjs_int stepx , tjs_int stepy , tjs_int srcpitch)
+inline void TVPStretchConstAlphaBlend_a(tjs_uint32 * dest , tjs_int len , const tjs_uint32 * src , tjs_int srcstart , tjs_int srcstep , tjs_int opa)
 {
 	if(!TVPImportFuncPtr396)
 	{
-		static char funcname[] = "void ::TVPLinTransCopyOpaqueImage(tjs_uint32 *,tjs_int,const tjs_uint32 *,tjs_int,tjs_int,tjs_int,tjs_int,tjs_int)";
+		static char funcname[] = "void ::TVPStretchConstAlphaBlend_a(tjs_uint32 *,tjs_int,const tjs_uint32 *,tjs_int,tjs_int,tjs_int)";
 		TVPImportFuncPtr396 = TVPGetImportFuncPtr(funcname);
 	}
-	typedef void (__stdcall * __functype)(tjs_uint32 *, tjs_int , const tjs_uint32 *, tjs_int , tjs_int , tjs_int , tjs_int , tjs_int);
-	((__functype)(TVPImportFuncPtr396))(dest, destlen, src, sx, sy, stepx, stepy, srcpitch);
+	typedef void (__stdcall * __functype)(tjs_uint32 *, tjs_int , const tjs_uint32 *, tjs_int , tjs_int , tjs_int);
+	((__functype)(TVPImportFuncPtr396))(dest, len, src, srcstart, srcstep, opa);
 }
-inline void TVPLinTransConstAlphaBlend(tjs_uint32 * dest , tjs_int len , const tjs_uint32 * src , tjs_int sx , tjs_int sy , tjs_int stepx , tjs_int stepy , tjs_int srcpitch , tjs_int opa)
+inline void TVPLinTransCopyOpaqueImage(tjs_uint32 * dest , tjs_int destlen , const tjs_uint32 * src , tjs_int sx , tjs_int sy , tjs_int stepx , tjs_int stepy , tjs_int srcpitch)
 {
 	if(!TVPImportFuncPtr397)
 	{
-		static char funcname[] = "void ::TVPLinTransConstAlphaBlend(tjs_uint32 *,tjs_int,const tjs_uint32 *,tjs_int,tjs_int,tjs_int,tjs_int,tjs_int,tjs_int)";
+		static char funcname[] = "void ::TVPLinTransCopyOpaqueImage(tjs_uint32 *,tjs_int,const tjs_uint32 *,tjs_int,tjs_int,tjs_int,tjs_int,tjs_int)";
 		TVPImportFuncPtr397 = TVPGetImportFuncPtr(funcname);
 	}
-	typedef void (__stdcall * __functype)(tjs_uint32 *, tjs_int , const tjs_uint32 *, tjs_int , tjs_int , tjs_int , tjs_int , tjs_int , tjs_int);
-	((__functype)(TVPImportFuncPtr397))(dest, len, src, sx, sy, stepx, stepy, srcpitch, opa);
+	typedef void (__stdcall * __functype)(tjs_uint32 *, tjs_int , const tjs_uint32 *, tjs_int , tjs_int , tjs_int , tjs_int , tjs_int);
+	((__functype)(TVPImportFuncPtr397))(dest, destlen, src, sx, sy, stepx, stepy, srcpitch);
 }
-inline void TVPInterpLinTransConstAlphaBlend(tjs_uint32 * dest , tjs_int destlen , const tjs_uint32 * src , tjs_int sx , tjs_int sy , tjs_int stepx , tjs_int stepy , tjs_int srcpitch , tjs_int opa)
+inline void TVPLinTransConstAlphaBlend(tjs_uint32 * dest , tjs_int len , const tjs_uint32 * src , tjs_int sx , tjs_int sy , tjs_int stepx , tjs_int stepy , tjs_int srcpitch , tjs_int opa)
 {
 	if(!TVPImportFuncPtr398)
 	{
-		static char funcname[] = "void ::TVPInterpLinTransConstAlphaBlend(tjs_uint32 *,tjs_int,const tjs_uint32 *,tjs_int,tjs_int,tjs_int,tjs_int,tjs_int,tjs_int)";
+		static char funcname[] = "void ::TVPLinTransConstAlphaBlend(tjs_uint32 *,tjs_int,const tjs_uint32 *,tjs_int,tjs_int,tjs_int,tjs_int,tjs_int,tjs_int)";
 		TVPImportFuncPtr398 = TVPGetImportFuncPtr(funcname);
 	}
 	typedef void (__stdcall * __functype)(tjs_uint32 *, tjs_int , const tjs_uint32 *, tjs_int , tjs_int , tjs_int , tjs_int , tjs_int , tjs_int);
-	((__functype)(TVPImportFuncPtr398))(dest, destlen, src, sx, sy, stepx, stepy, srcpitch, opa);
+	((__functype)(TVPImportFuncPtr398))(dest, len, src, sx, sy, stepx, stepy, srcpitch, opa);
 }
-inline void TVPLinTransConstAlphaBlend_HDA(tjs_uint32 * dest , tjs_int len , const tjs_uint32 * src , tjs_int sx , tjs_int sy , tjs_int stepx , tjs_int stepy , tjs_int srcpitch , tjs_int opa)
+inline void TVPInterpLinTransConstAlphaBlend(tjs_uint32 * dest , tjs_int destlen , const tjs_uint32 * src , tjs_int sx , tjs_int sy , tjs_int stepx , tjs_int stepy , tjs_int srcpitch , tjs_int opa)
 {
 	if(!TVPImportFuncPtr399)
 	{
-		static char funcname[] = "void ::TVPLinTransConstAlphaBlend_HDA(tjs_uint32 *,tjs_int,const tjs_uint32 *,tjs_int,tjs_int,tjs_int,tjs_int,tjs_int,tjs_int)";
+		static char funcname[] = "void ::TVPInterpLinTransConstAlphaBlend(tjs_uint32 *,tjs_int,const tjs_uint32 *,tjs_int,tjs_int,tjs_int,tjs_int,tjs_int,tjs_int)";
 		TVPImportFuncPtr399 = TVPGetImportFuncPtr(funcname);
 	}
 	typedef void (__stdcall * __functype)(tjs_uint32 *, tjs_int , const tjs_uint32 *, tjs_int , tjs_int , tjs_int , tjs_int , tjs_int , tjs_int);
-	((__functype)(TVPImportFuncPtr399))(dest, len, src, sx, sy, stepx, stepy, srcpitch, opa);
+	((__functype)(TVPImportFuncPtr399))(dest, destlen, src, sx, sy, stepx, stepy, srcpitch, opa);
 }
-inline void TVPLinTransConstAlphaBlend_d(tjs_uint32 * dest , tjs_int len , const tjs_uint32 * src , tjs_int sx , tjs_int sy , tjs_int stepx , tjs_int stepy , tjs_int srcpitch , tjs_int opa)
+inline void TVPLinTransConstAlphaBlend_HDA(tjs_uint32 * dest , tjs_int len , const tjs_uint32 * src , tjs_int sx , tjs_int sy , tjs_int stepx , tjs_int stepy , tjs_int srcpitch , tjs_int opa)
 {
 	if(!TVPImportFuncPtr400)
 	{
-		static char funcname[] = "void ::TVPLinTransConstAlphaBlend_d(tjs_uint32 *,tjs_int,const tjs_uint32 *,tjs_int,tjs_int,tjs_int,tjs_int,tjs_int,tjs_int)";
+		static char funcname[] = "void ::TVPLinTransConstAlphaBlend_HDA(tjs_uint32 *,tjs_int,const tjs_uint32 *,tjs_int,tjs_int,tjs_int,tjs_int,tjs_int,tjs_int)";
 		TVPImportFuncPtr400 = TVPGetImportFuncPtr(funcname);
 	}
 	typedef void (__stdcall * __functype)(tjs_uint32 *, tjs_int , const tjs_uint32 *, tjs_int , tjs_int , tjs_int , tjs_int , tjs_int , tjs_int);
 	((__functype)(TVPImportFuncPtr400))(dest, len, src, sx, sy, stepx, stepy, srcpitch, opa);
 }
-inline void TVPLinTransConstAlphaBlend_a(tjs_uint32 * dest , tjs_int len , const tjs_uint32 * src , tjs_int sx , tjs_int sy , tjs_int stepx , tjs_int stepy , tjs_int srcpitch , tjs_int opa)
+inline void TVPLinTransConstAlphaBlend_d(tjs_uint32 * dest , tjs_int len , const tjs_uint32 * src , tjs_int sx , tjs_int sy , tjs_int stepx , tjs_int stepy , tjs_int srcpitch , tjs_int opa)
 {
 	if(!TVPImportFuncPtr401)
 	{
-		static char funcname[] = "void ::TVPLinTransConstAlphaBlend_a(tjs_uint32 *,tjs_int,const tjs_uint32 *,tjs_int,tjs_int,tjs_int,tjs_int,tjs_int,tjs_int)";
+		static char funcname[] = "void ::TVPLinTransConstAlphaBlend_d(tjs_uint32 *,tjs_int,const tjs_uint32 *,tjs_int,tjs_int,tjs_int,tjs_int,tjs_int,tjs_int)";
 		TVPImportFuncPtr401 = TVPGetImportFuncPtr(funcname);
 	}
 	typedef void (__stdcall * __functype)(tjs_uint32 *, tjs_int , const tjs_uint32 *, tjs_int , tjs_int , tjs_int , tjs_int , tjs_int , tjs_int);
 	((__functype)(TVPImportFuncPtr401))(dest, len, src, sx, sy, stepx, stepy, srcpitch, opa);
 }
-inline void TVPConstAlphaBlend_SD(tjs_uint32 * dest , const tjs_uint32 * src1 , const tjs_uint32 * src2 , tjs_int len , tjs_int opa)
+inline void TVPLinTransConstAlphaBlend_a(tjs_uint32 * dest , tjs_int len , const tjs_uint32 * src , tjs_int sx , tjs_int sy , tjs_int stepx , tjs_int stepy , tjs_int srcpitch , tjs_int opa)
 {
 	if(!TVPImportFuncPtr402)
 	{
-		static char funcname[] = "void ::TVPConstAlphaBlend_SD(tjs_uint32 *,const tjs_uint32 *,const tjs_uint32 *,tjs_int,tjs_int)";
+		static char funcname[] = "void ::TVPLinTransConstAlphaBlend_a(tjs_uint32 *,tjs_int,const tjs_uint32 *,tjs_int,tjs_int,tjs_int,tjs_int,tjs_int,tjs_int)";
 		TVPImportFuncPtr402 = TVPGetImportFuncPtr(funcname);
 	}
-	typedef void (__stdcall * __functype)(tjs_uint32 *, const tjs_uint32 *, const tjs_uint32 *, tjs_int , tjs_int);
-	((__functype)(TVPImportFuncPtr402))(dest, src1, src2, len, opa);
+	typedef void (__stdcall * __functype)(tjs_uint32 *, tjs_int , const tjs_uint32 *, tjs_int , tjs_int , tjs_int , tjs_int , tjs_int , tjs_int);
+	((__functype)(TVPImportFuncPtr402))(dest, len, src, sx, sy, stepx, stepy, srcpitch, opa);
 }
-inline void TVPConstAlphaBlend_SD_a(tjs_uint32 * dest , const tjs_uint32 * src1 , const tjs_uint32 * src2 , tjs_int len , tjs_int opa)
+inline void TVPConstAlphaBlend_SD(tjs_uint32 * dest , const tjs_uint32 * src1 , const tjs_uint32 * src2 , tjs_int len , tjs_int opa)
 {
 	if(!TVPImportFuncPtr403)
 	{
-		static char funcname[] = "void ::TVPConstAlphaBlend_SD_a(tjs_uint32 *,const tjs_uint32 *,const tjs_uint32 *,tjs_int,tjs_int)";
+		static char funcname[] = "void ::TVPConstAlphaBlend_SD(tjs_uint32 *,const tjs_uint32 *,const tjs_uint32 *,tjs_int,tjs_int)";
 		TVPImportFuncPtr403 = TVPGetImportFuncPtr(funcname);
 	}
 	typedef void (__stdcall * __functype)(tjs_uint32 *, const tjs_uint32 *, const tjs_uint32 *, tjs_int , tjs_int);
 	((__functype)(TVPImportFuncPtr403))(dest, src1, src2, len, opa);
 }
-inline void TVPConstAlphaBlend_SD_d(tjs_uint32 * dest , const tjs_uint32 * src1 , const tjs_uint32 * src2 , tjs_int len , tjs_int opa)
+inline void TVPConstAlphaBlend_SD_a(tjs_uint32 * dest , const tjs_uint32 * src1 , const tjs_uint32 * src2 , tjs_int len , tjs_int opa)
 {
 	if(!TVPImportFuncPtr404)
 	{
-		static char funcname[] = "void ::TVPConstAlphaBlend_SD_d(tjs_uint32 *,const tjs_uint32 *,const tjs_uint32 *,tjs_int,tjs_int)";
+		static char funcname[] = "void ::TVPConstAlphaBlend_SD_a(tjs_uint32 *,const tjs_uint32 *,const tjs_uint32 *,tjs_int,tjs_int)";
 		TVPImportFuncPtr404 = TVPGetImportFuncPtr(funcname);
 	}
 	typedef void (__stdcall * __functype)(tjs_uint32 *, const tjs_uint32 *, const tjs_uint32 *, tjs_int , tjs_int);
 	((__functype)(TVPImportFuncPtr404))(dest, src1, src2, len, opa);
 }
-inline void TVPInitUnivTransBlendTable(tjs_uint32 * table , tjs_int phase , tjs_int vague)
+inline void TVPConstAlphaBlend_SD_d(tjs_uint32 * dest , const tjs_uint32 * src1 , const tjs_uint32 * src2 , tjs_int len , tjs_int opa)
 {
 	if(!TVPImportFuncPtr405)
 	{
-		static char funcname[] = "void ::TVPInitUnivTransBlendTable(tjs_uint32 *,tjs_int,tjs_int)";
+		static char funcname[] = "void ::TVPConstAlphaBlend_SD_d(tjs_uint32 *,const tjs_uint32 *,const tjs_uint32 *,tjs_int,tjs_int)";
 		TVPImportFuncPtr405 = TVPGetImportFuncPtr(funcname);
 	}
-	typedef void (__stdcall * __functype)(tjs_uint32 *, tjs_int , tjs_int);
-	((__functype)(TVPImportFuncPtr405))(table, phase, vague);
+	typedef void (__stdcall * __functype)(tjs_uint32 *, const tjs_uint32 *, const tjs_uint32 *, tjs_int , tjs_int);
+	((__functype)(TVPImportFuncPtr405))(dest, src1, src2, len, opa);
 }
-inline void TVPInitUnivTransBlendTable_d(tjs_uint32 * table , tjs_int phase , tjs_int vague)
+inline void TVPInitUnivTransBlendTable(tjs_uint32 * table , tjs_int phase , tjs_int vague)
 {
 	if(!TVPImportFuncPtr406)
 	{
-		static char funcname[] = "void ::TVPInitUnivTransBlendTable_d(tjs_uint32 *,tjs_int,tjs_int)";
+		static char funcname[] = "void ::TVPInitUnivTransBlendTable(tjs_uint32 *,tjs_int,tjs_int)";
 		TVPImportFuncPtr406 = TVPGetImportFuncPtr(funcname);
 	}
 	typedef void (__stdcall * __functype)(tjs_uint32 *, tjs_int , tjs_int);
 	((__functype)(TVPImportFuncPtr406))(table, phase, vague);
 }
-inline void TVPInitUnivTransBlendTable_a(tjs_uint32 * table , tjs_int phase , tjs_int vague)
+inline void TVPInitUnivTransBlendTable_d(tjs_uint32 * table , tjs_int phase , tjs_int vague)
 {
 	if(!TVPImportFuncPtr407)
 	{
-		static char funcname[] = "void ::TVPInitUnivTransBlendTable_a(tjs_uint32 *,tjs_int,tjs_int)";
+		static char funcname[] = "void ::TVPInitUnivTransBlendTable_d(tjs_uint32 *,tjs_int,tjs_int)";
 		TVPImportFuncPtr407 = TVPGetImportFuncPtr(funcname);
 	}
 	typedef void (__stdcall * __functype)(tjs_uint32 *, tjs_int , tjs_int);
 	((__functype)(TVPImportFuncPtr407))(table, phase, vague);
 }
-inline void TVPUnivTransBlend(tjs_uint32 * dest , const tjs_uint32 * src1 , const tjs_uint32 * src2 , const tjs_uint8 * rule , const tjs_uint32 * table , tjs_int len)
+inline void TVPInitUnivTransBlendTable_a(tjs_uint32 * table , tjs_int phase , tjs_int vague)
 {
 	if(!TVPImportFuncPtr408)
 	{
-		static char funcname[] = "void ::TVPUnivTransBlend(tjs_uint32 *,const tjs_uint32 *,const tjs_uint32 *,const tjs_uint8 *,const tjs_uint32 *,tjs_int)";
+		static char funcname[] = "void ::TVPInitUnivTransBlendTable_a(tjs_uint32 *,tjs_int,tjs_int)";
 		TVPImportFuncPtr408 = TVPGetImportFuncPtr(funcname);
 	}
-	typedef void (__stdcall * __functype)(tjs_uint32 *, const tjs_uint32 *, const tjs_uint32 *, const tjs_uint8 *, const tjs_uint32 *, tjs_int);
-	((__functype)(TVPImportFuncPtr408))(dest, src1, src2, rule, table, len);
+	typedef void (__stdcall * __functype)(tjs_uint32 *, tjs_int , tjs_int);
+	((__functype)(TVPImportFuncPtr408))(table, phase, vague);
 }
-inline void TVPUnivTransBlend_switch(tjs_uint32 * dest , const tjs_uint32 * src1 , const tjs_uint32 * src2 , const tjs_uint8 * rule , const tjs_uint32 * table , tjs_int len , tjs_int src1lv , tjs_int src2lv)
+inline void TVPUnivTransBlend(tjs_uint32 * dest , const tjs_uint32 * src1 , const tjs_uint32 * src2 , const tjs_uint8 * rule , const tjs_uint32 * table , tjs_int len)
 {
 	if(!TVPImportFuncPtr409)
 	{
-		static char funcname[] = "void ::TVPUnivTransBlend_switch(tjs_uint32 *,const tjs_uint32 *,const tjs_uint32 *,const tjs_uint8 *,const tjs_uint32 *,tjs_int,tjs_int,tjs_int)";
+		static char funcname[] = "void ::TVPUnivTransBlend(tjs_uint32 *,const tjs_uint32 *,const tjs_uint32 *,const tjs_uint8 *,const tjs_uint32 *,tjs_int)";
 		TVPImportFuncPtr409 = TVPGetImportFuncPtr(funcname);
 	}
-	typedef void (__stdcall * __functype)(tjs_uint32 *, const tjs_uint32 *, const tjs_uint32 *, const tjs_uint8 *, const tjs_uint32 *, tjs_int , tjs_int , tjs_int);
-	((__functype)(TVPImportFuncPtr409))(dest, src1, src2, rule, table, len, src1lv, src2lv);
+	typedef void (__stdcall * __functype)(tjs_uint32 *, const tjs_uint32 *, const tjs_uint32 *, const tjs_uint8 *, const tjs_uint32 *, tjs_int);
+	((__functype)(TVPImportFuncPtr409))(dest, src1, src2, rule, table, len);
 }
-inline void TVPUnivTransBlend_d(tjs_uint32 * dest , const tjs_uint32 * src1 , const tjs_uint32 * src2 , const tjs_uint8 * rule , const tjs_uint32 * table , tjs_int len)
+inline void TVPUnivTransBlend_switch(tjs_uint32 * dest , const tjs_uint32 * src1 , const tjs_uint32 * src2 , const tjs_uint8 * rule , const tjs_uint32 * table , tjs_int len , tjs_int src1lv , tjs_int src2lv)
 {
 	if(!TVPImportFuncPtr410)
 	{
-		static char funcname[] = "void ::TVPUnivTransBlend_d(tjs_uint32 *,const tjs_uint32 *,const tjs_uint32 *,const tjs_uint8 *,const tjs_uint32 *,tjs_int)";
+		static char funcname[] = "void ::TVPUnivTransBlend_switch(tjs_uint32 *,const tjs_uint32 *,const tjs_uint32 *,const tjs_uint8 *,const tjs_uint32 *,tjs_int,tjs_int,tjs_int)";
 		TVPImportFuncPtr410 = TVPGetImportFuncPtr(funcname);
 	}
-	typedef void (__stdcall * __functype)(tjs_uint32 *, const tjs_uint32 *, const tjs_uint32 *, const tjs_uint8 *, const tjs_uint32 *, tjs_int);
-	((__functype)(TVPImportFuncPtr410))(dest, src1, src2, rule, table, len);
+	typedef void (__stdcall * __functype)(tjs_uint32 *, const tjs_uint32 *, const tjs_uint32 *, const tjs_uint8 *, const tjs_uint32 *, tjs_int , tjs_int , tjs_int);
+	((__functype)(TVPImportFuncPtr410))(dest, src1, src2, rule, table, len, src1lv, src2lv);
 }
-inline void TVPUnivTransBlend_switch_d(tjs_uint32 * dest , const tjs_uint32 * src1 , const tjs_uint32 * src2 , const tjs_uint8 * rule , const tjs_uint32 * table , tjs_int len , tjs_int src1lv , tjs_int src2lv)
+inline void TVPUnivTransBlend_d(tjs_uint32 * dest , const tjs_uint32 * src1 , const tjs_uint32 * src2 , const tjs_uint8 * rule , const tjs_uint32 * table , tjs_int len)
 {
 	if(!TVPImportFuncPtr411)
 	{
-		static char funcname[] = "void ::TVPUnivTransBlend_switch_d(tjs_uint32 *,const tjs_uint32 *,const tjs_uint32 *,const tjs_uint8 *,const tjs_uint32 *,tjs_int,tjs_int,tjs_int)";
+		static char funcname[] = "void ::TVPUnivTransBlend_d(tjs_uint32 *,const tjs_uint32 *,const tjs_uint32 *,const tjs_uint8 *,const tjs_uint32 *,tjs_int)";
 		TVPImportFuncPtr411 = TVPGetImportFuncPtr(funcname);
 	}
-	typedef void (__stdcall * __functype)(tjs_uint32 *, const tjs_uint32 *, const tjs_uint32 *, const tjs_uint8 *, const tjs_uint32 *, tjs_int , tjs_int , tjs_int);
-	((__functype)(TVPImportFuncPtr411))(dest, src1, src2, rule, table, len, src1lv, src2lv);
+	typedef void (__stdcall * __functype)(tjs_uint32 *, const tjs_uint32 *, const tjs_uint32 *, const tjs_uint8 *, const tjs_uint32 *, tjs_int);
+	((__functype)(TVPImportFuncPtr411))(dest, src1, src2, rule, table, len);
 }
-inline void TVPUnivTransBlend_a(tjs_uint32 * dest , const tjs_uint32 * src1 , const tjs_uint32 * src2 , const tjs_uint8 * rule , const tjs_uint32 * table , tjs_int len)
+inline void TVPUnivTransBlend_switch_d(tjs_uint32 * dest , const tjs_uint32 * src1 , const tjs_uint32 * src2 , const tjs_uint8 * rule , const tjs_uint32 * table , tjs_int len , tjs_int src1lv , tjs_int src2lv)
 {
 	if(!TVPImportFuncPtr412)
 	{
-		static char funcname[] = "void ::TVPUnivTransBlend_a(tjs_uint32 *,const tjs_uint32 *,const tjs_uint32 *,const tjs_uint8 *,const tjs_uint32 *,tjs_int)";
+		static char funcname[] = "void ::TVPUnivTransBlend_switch_d(tjs_uint32 *,const tjs_uint32 *,const tjs_uint32 *,const tjs_uint8 *,const tjs_uint32 *,tjs_int,tjs_int,tjs_int)";
 		TVPImportFuncPtr412 = TVPGetImportFuncPtr(funcname);
 	}
-	typedef void (__stdcall * __functype)(tjs_uint32 *, const tjs_uint32 *, const tjs_uint32 *, const tjs_uint8 *, const tjs_uint32 *, tjs_int);
-	((__functype)(TVPImportFuncPtr412))(dest, src1, src2, rule, table, len);
+	typedef void (__stdcall * __functype)(tjs_uint32 *, const tjs_uint32 *, const tjs_uint32 *, const tjs_uint8 *, const tjs_uint32 *, tjs_int , tjs_int , tjs_int);
+	((__functype)(TVPImportFuncPtr412))(dest, src1, src2, rule, table, len, src1lv, src2lv);
 }
-inline void TVPUnivTransBlend_switch_a(tjs_uint32 * dest , const tjs_uint32 * src1 , const tjs_uint32 * src2 , const tjs_uint8 * rule , const tjs_uint32 * table , tjs_int len , tjs_int src1lv , tjs_int src2lv)
+inline void TVPUnivTransBlend_a(tjs_uint32 * dest , const tjs_uint32 * src1 , const tjs_uint32 * src2 , const tjs_uint8 * rule , const tjs_uint32 * table , tjs_int len)
 {
 	if(!TVPImportFuncPtr413)
 	{
-		static char funcname[] = "void ::TVPUnivTransBlend_switch_a(tjs_uint32 *,const tjs_uint32 *,const tjs_uint32 *,const tjs_uint8 *,const tjs_uint32 *,tjs_int,tjs_int,tjs_int)";
+		static char funcname[] = "void ::TVPUnivTransBlend_a(tjs_uint32 *,const tjs_uint32 *,const tjs_uint32 *,const tjs_uint8 *,const tjs_uint32 *,tjs_int)";
 		TVPImportFuncPtr413 = TVPGetImportFuncPtr(funcname);
 	}
-	typedef void (__stdcall * __functype)(tjs_uint32 *, const tjs_uint32 *, const tjs_uint32 *, const tjs_uint8 *, const tjs_uint32 *, tjs_int , tjs_int , tjs_int);
-	((__functype)(TVPImportFuncPtr413))(dest, src1, src2, rule, table, len, src1lv, src2lv);
+	typedef void (__stdcall * __functype)(tjs_uint32 *, const tjs_uint32 *, const tjs_uint32 *, const tjs_uint8 *, const tjs_uint32 *, tjs_int);
+	((__functype)(TVPImportFuncPtr413))(dest, src1, src2, rule, table, len);
 }
-inline void TVPApplyColorMap(tjs_uint32 * dest , const tjs_uint8 * src , tjs_int len , tjs_uint32 color)
+inline void TVPUnivTransBlend_switch_a(tjs_uint32 * dest , const tjs_uint32 * src1 , const tjs_uint32 * src2 , const tjs_uint8 * rule , const tjs_uint32 * table , tjs_int len , tjs_int src1lv , tjs_int src2lv)
 {
 	if(!TVPImportFuncPtr414)
 	{
-		static char funcname[] = "void ::TVPApplyColorMap(tjs_uint32 *,const tjs_uint8 *,tjs_int,tjs_uint32)";
+		static char funcname[] = "void ::TVPUnivTransBlend_switch_a(tjs_uint32 *,const tjs_uint32 *,const tjs_uint32 *,const tjs_uint8 *,const tjs_uint32 *,tjs_int,tjs_int,tjs_int)";
 		TVPImportFuncPtr414 = TVPGetImportFuncPtr(funcname);
 	}
-	typedef void (__stdcall * __functype)(tjs_uint32 *, const tjs_uint8 *, tjs_int , tjs_uint32);
-	((__functype)(TVPImportFuncPtr414))(dest, src, len, color);
+	typedef void (__stdcall * __functype)(tjs_uint32 *, const tjs_uint32 *, const tjs_uint32 *, const tjs_uint8 *, const tjs_uint32 *, tjs_int , tjs_int , tjs_int);
+	((__functype)(TVPImportFuncPtr414))(dest, src1, src2, rule, table, len, src1lv, src2lv);
 }
-inline void TVPApplyColorMap_o(tjs_uint32 * dest , const tjs_uint8 * src , tjs_int len , tjs_uint32 color , tjs_int opa)
+inline void TVPApplyColorMap(tjs_uint32 * dest , const tjs_uint8 * src , tjs_int len , tjs_uint32 color)
 {
 	if(!TVPImportFuncPtr415)
 	{
-		static char funcname[] = "void ::TVPApplyColorMap_o(tjs_uint32 *,const tjs_uint8 *,tjs_int,tjs_uint32,tjs_int)";
+		static char funcname[] = "void ::TVPApplyColorMap(tjs_uint32 *,const tjs_uint8 *,tjs_int,tjs_uint32)";
 		TVPImportFuncPtr415 = TVPGetImportFuncPtr(funcname);
 	}
-	typedef void (__stdcall * __functype)(tjs_uint32 *, const tjs_uint8 *, tjs_int , tjs_uint32 , tjs_int);
-	((__functype)(TVPImportFuncPtr415))(dest, src, len, color, opa);
+	typedef void (__stdcall * __functype)(tjs_uint32 *, const tjs_uint8 *, tjs_int , tjs_uint32);
+	((__functype)(TVPImportFuncPtr415))(dest, src, len, color);
 }
-inline void TVPApplyColorMap65(tjs_uint32 * dest , const tjs_uint8 * src , tjs_int len , tjs_uint32 color)
+inline void TVPApplyColorMap_o(tjs_uint32 * dest , const tjs_uint8 * src , tjs_int len , tjs_uint32 color , tjs_int opa)
 {
 	if(!TVPImportFuncPtr416)
 	{
-		static char funcname[] = "void ::TVPApplyColorMap65(tjs_uint32 *,const tjs_uint8 *,tjs_int,tjs_uint32)";
+		static char funcname[] = "void ::TVPApplyColorMap_o(tjs_uint32 *,const tjs_uint8 *,tjs_int,tjs_uint32,tjs_int)";
 		TVPImportFuncPtr416 = TVPGetImportFuncPtr(funcname);
 	}
-	typedef void (__stdcall * __functype)(tjs_uint32 *, const tjs_uint8 *, tjs_int , tjs_uint32);
-	((__functype)(TVPImportFuncPtr416))(dest, src, len, color);
+	typedef void (__stdcall * __functype)(tjs_uint32 *, const tjs_uint8 *, tjs_int , tjs_uint32 , tjs_int);
+	((__functype)(TVPImportFuncPtr416))(dest, src, len, color, opa);
 }
-inline void TVPApplyColorMap65_o(tjs_uint32 * dest , const tjs_uint8 * src , tjs_int len , tjs_uint32 color , tjs_int opa)
+inline void TVPApplyColorMap65(tjs_uint32 * dest , const tjs_uint8 * src , tjs_int len , tjs_uint32 color)
 {
 	if(!TVPImportFuncPtr417)
 	{
-		static char funcname[] = "void ::TVPApplyColorMap65_o(tjs_uint32 *,const tjs_uint8 *,tjs_int,tjs_uint32,tjs_int)";
+		static char funcname[] = "void ::TVPApplyColorMap65(tjs_uint32 *,const tjs_uint8 *,tjs_int,tjs_uint32)";
 		TVPImportFuncPtr417 = TVPGetImportFuncPtr(funcname);
 	}
-	typedef void (__stdcall * __functype)(tjs_uint32 *, const tjs_uint8 *, tjs_int , tjs_uint32 , tjs_int);
-	((__functype)(TVPImportFuncPtr417))(dest, src, len, color, opa);
+	typedef void (__stdcall * __functype)(tjs_uint32 *, const tjs_uint8 *, tjs_int , tjs_uint32);
+	((__functype)(TVPImportFuncPtr417))(dest, src, len, color);
 }
-inline void TVPApplyColorMap_HDA(tjs_uint32 * dest , const tjs_uint8 * src , tjs_int len , tjs_uint32 color)
+inline void TVPApplyColorMap65_o(tjs_uint32 * dest , const tjs_uint8 * src , tjs_int len , tjs_uint32 color , tjs_int opa)
 {
 	if(!TVPImportFuncPtr418)
 	{
-		static char funcname[] = "void ::TVPApplyColorMap_HDA(tjs_uint32 *,const tjs_uint8 *,tjs_int,tjs_uint32)";
+		static char funcname[] = "void ::TVPApplyColorMap65_o(tjs_uint32 *,const tjs_uint8 *,tjs_int,tjs_uint32,tjs_int)";
 		TVPImportFuncPtr418 = TVPGetImportFuncPtr(funcname);
 	}
-	typedef void (__stdcall * __functype)(tjs_uint32 *, const tjs_uint8 *, tjs_int , tjs_uint32);
-	((__functype)(TVPImportFuncPtr418))(dest, src, len, color);
+	typedef void (__stdcall * __functype)(tjs_uint32 *, const tjs_uint8 *, tjs_int , tjs_uint32 , tjs_int);
+	((__functype)(TVPImportFuncPtr418))(dest, src, len, color, opa);
 }
-inline void TVPApplyColorMap_HDA_o(tjs_uint32 * dest , const tjs_uint8 * src , tjs_int len , tjs_uint32 color , tjs_int opa)
+inline void TVPApplyColorMap_HDA(tjs_uint32 * dest , const tjs_uint8 * src , tjs_int len , tjs_uint32 color)
 {
 	if(!TVPImportFuncPtr419)
 	{
-		static char funcname[] = "void ::TVPApplyColorMap_HDA_o(tjs_uint32 *,const tjs_uint8 *,tjs_int,tjs_uint32,tjs_int)";
+		static char funcname[] = "void ::TVPApplyColorMap_HDA(tjs_uint32 *,const tjs_uint8 *,tjs_int,tjs_uint32)";
 		TVPImportFuncPtr419 = TVPGetImportFuncPtr(funcname);
 	}
-	typedef void (__stdcall * __functype)(tjs_uint32 *, const tjs_uint8 *, tjs_int , tjs_uint32 , tjs_int);
-	((__functype)(TVPImportFuncPtr419))(dest, src, len, color, opa);
+	typedef void (__stdcall * __functype)(tjs_uint32 *, const tjs_uint8 *, tjs_int , tjs_uint32);
+	((__functype)(TVPImportFuncPtr419))(dest, src, len, color);
 }
-inline void TVPApplyColorMap65_HDA(tjs_uint32 * dest , const tjs_uint8 * src , tjs_int len , tjs_uint32 color)
+inline void TVPApplyColorMap_HDA_o(tjs_uint32 * dest , const tjs_uint8 * src , tjs_int len , tjs_uint32 color , tjs_int opa)
 {
 	if(!TVPImportFuncPtr420)
 	{
-		static char funcname[] = "void ::TVPApplyColorMap65_HDA(tjs_uint32 *,const tjs_uint8 *,tjs_int,tjs_uint32)";
+		static char funcname[] = "void ::TVPApplyColorMap_HDA_o(tjs_uint32 *,const tjs_uint8 *,tjs_int,tjs_uint32,tjs_int)";
 		TVPImportFuncPtr420 = TVPGetImportFuncPtr(funcname);
 	}
-	typedef void (__stdcall * __functype)(tjs_uint32 *, const tjs_uint8 *, tjs_int , tjs_uint32);
-	((__functype)(TVPImportFuncPtr420))(dest, src, len, color);
+	typedef void (__stdcall * __functype)(tjs_uint32 *, const tjs_uint8 *, tjs_int , tjs_uint32 , tjs_int);
+	((__functype)(TVPImportFuncPtr420))(dest, src, len, color, opa);
 }
-inline void TVPApplyColorMap65_HDA_o(tjs_uint32 * dest , const tjs_uint8 * src , tjs_int len , tjs_uint32 color , tjs_int opa)
+inline void TVPApplyColorMap65_HDA(tjs_uint32 * dest , const tjs_uint8 * src , tjs_int len , tjs_uint32 color)
 {
 	if(!TVPImportFuncPtr421)
 	{
-		static char funcname[] = "void ::TVPApplyColorMap65_HDA_o(tjs_uint32 *,const tjs_uint8 *,tjs_int,tjs_uint32,tjs_int)";
+		static char funcname[] = "void ::TVPApplyColorMap65_HDA(tjs_uint32 *,const tjs_uint8 *,tjs_int,tjs_uint32)";
 		TVPImportFuncPtr421 = TVPGetImportFuncPtr(funcname);
 	}
-	typedef void (__stdcall * __functype)(tjs_uint32 *, const tjs_uint8 *, tjs_int , tjs_uint32 , tjs_int);
-	((__functype)(TVPImportFuncPtr421))(dest, src, len, color, opa);
+	typedef void (__stdcall * __functype)(tjs_uint32 *, const tjs_uint8 *, tjs_int , tjs_uint32);
+	((__functype)(TVPImportFuncPtr421))(dest, src, len, color);
 }
-inline void TVPApplyColorMap_d(tjs_uint32 * dest , const tjs_uint8 * src , tjs_int len , tjs_uint32 color)
+inline void TVPApplyColorMap65_HDA_o(tjs_uint32 * dest , const tjs_uint8 * src , tjs_int len , tjs_uint32 color , tjs_int opa)
 {
 	if(!TVPImportFuncPtr422)
 	{
-		static char funcname[] = "void ::TVPApplyColorMap_d(tjs_uint32 *,const tjs_uint8 *,tjs_int,tjs_uint32)";
+		static char funcname[] = "void ::TVPApplyColorMap65_HDA_o(tjs_uint32 *,const tjs_uint8 *,tjs_int,tjs_uint32,tjs_int)";
 		TVPImportFuncPtr422 = TVPGetImportFuncPtr(funcname);
 	}
-	typedef void (__stdcall * __functype)(tjs_uint32 *, const tjs_uint8 *, tjs_int , tjs_uint32);
-	((__functype)(TVPImportFuncPtr422))(dest, src, len, color);
+	typedef void (__stdcall * __functype)(tjs_uint32 *, const tjs_uint8 *, tjs_int , tjs_uint32 , tjs_int);
+	((__functype)(TVPImportFuncPtr422))(dest, src, len, color, opa);
 }
-inline void TVPApplyColorMap65_d(tjs_uint32 * dest , const tjs_uint8 * src , tjs_int len , tjs_uint32 color)
+inline void TVPApplyColorMap_d(tjs_uint32 * dest , const tjs_uint8 * src , tjs_int len , tjs_uint32 color)
 {
 	if(!TVPImportFuncPtr423)
 	{
-		static char funcname[] = "void ::TVPApplyColorMap65_d(tjs_uint32 *,const tjs_uint8 *,tjs_int,tjs_uint32)";
+		static char funcname[] = "void ::TVPApplyColorMap_d(tjs_uint32 *,const tjs_uint8 *,tjs_int,tjs_uint32)";
 		TVPImportFuncPtr423 = TVPGetImportFuncPtr(funcname);
 	}
 	typedef void (__stdcall * __functype)(tjs_uint32 *, const tjs_uint8 *, tjs_int , tjs_uint32);
 	((__functype)(TVPImportFuncPtr423))(dest, src, len, color);
 }
-inline void TVPApplyColorMap_a(tjs_uint32 * dest , const tjs_uint8 * src , tjs_int len , tjs_uint32 color)
+inline void TVPApplyColorMap65_d(tjs_uint32 * dest , const tjs_uint8 * src , tjs_int len , tjs_uint32 color)
 {
 	if(!TVPImportFuncPtr424)
 	{
-		static char funcname[] = "void ::TVPApplyColorMap_a(tjs_uint32 *,const tjs_uint8 *,tjs_int,tjs_uint32)";
+		static char funcname[] = "void ::TVPApplyColorMap65_d(tjs_uint32 *,const tjs_uint8 *,tjs_int,tjs_uint32)";
 		TVPImportFuncPtr424 = TVPGetImportFuncPtr(funcname);
 	}
 	typedef void (__stdcall * __functype)(tjs_uint32 *, const tjs_uint8 *, tjs_int , tjs_uint32);
 	((__functype)(TVPImportFuncPtr424))(dest, src, len, color);
 }
-inline void TVPApplyColorMap65_a(tjs_uint32 * dest , const tjs_uint8 * src , tjs_int len , tjs_uint32 color)
+inline void TVPApplyColorMap_a(tjs_uint32 * dest , const tjs_uint8 * src , tjs_int len , tjs_uint32 color)
 {
 	if(!TVPImportFuncPtr425)
 	{
-		static char funcname[] = "void ::TVPApplyColorMap65_a(tjs_uint32 *,const tjs_uint8 *,tjs_int,tjs_uint32)";
+		static char funcname[] = "void ::TVPApplyColorMap_a(tjs_uint32 *,const tjs_uint8 *,tjs_int,tjs_uint32)";
 		TVPImportFuncPtr425 = TVPGetImportFuncPtr(funcname);
 	}
 	typedef void (__stdcall * __functype)(tjs_uint32 *, const tjs_uint8 *, tjs_int , tjs_uint32);
 	((__functype)(TVPImportFuncPtr425))(dest, src, len, color);
 }
-inline void TVPApplyColorMap_do(tjs_uint32 * dest , const tjs_uint8 * src , tjs_int len , tjs_uint32 color , tjs_int opa)
+inline void TVPApplyColorMap65_a(tjs_uint32 * dest , const tjs_uint8 * src , tjs_int len , tjs_uint32 color)
 {
 	if(!TVPImportFuncPtr426)
 	{
-		static char funcname[] = "void ::TVPApplyColorMap_do(tjs_uint32 *,const tjs_uint8 *,tjs_int,tjs_uint32,tjs_int)";
+		static char funcname[] = "void ::TVPApplyColorMap65_a(tjs_uint32 *,const tjs_uint8 *,tjs_int,tjs_uint32)";
 		TVPImportFuncPtr426 = TVPGetImportFuncPtr(funcname);
 	}
-	typedef void (__stdcall * __functype)(tjs_uint32 *, const tjs_uint8 *, tjs_int , tjs_uint32 , tjs_int);
-	((__functype)(TVPImportFuncPtr426))(dest, src, len, color, opa);
+	typedef void (__stdcall * __functype)(tjs_uint32 *, const tjs_uint8 *, tjs_int , tjs_uint32);
+	((__functype)(TVPImportFuncPtr426))(dest, src, len, color);
 }
-inline void TVPApplyColorMap65_do(tjs_uint32 * dest , const tjs_uint8 * src , tjs_int len , tjs_uint32 color , tjs_int opa)
+inline void TVPApplyColorMap_do(tjs_uint32 * dest , const tjs_uint8 * src , tjs_int len , tjs_uint32 color , tjs_int opa)
 {
 	if(!TVPImportFuncPtr427)
 	{
-		static char funcname[] = "void ::TVPApplyColorMap65_do(tjs_uint32 *,const tjs_uint8 *,tjs_int,tjs_uint32,tjs_int)";
+		static char funcname[] = "void ::TVPApplyColorMap_do(tjs_uint32 *,const tjs_uint8 *,tjs_int,tjs_uint32,tjs_int)";
 		TVPImportFuncPtr427 = TVPGetImportFuncPtr(funcname);
 	}
 	typedef void (__stdcall * __functype)(tjs_uint32 *, const tjs_uint8 *, tjs_int , tjs_uint32 , tjs_int);
 	((__functype)(TVPImportFuncPtr427))(dest, src, len, color, opa);
 }
-inline void TVPApplyColorMap_ao(tjs_uint32 * dest , const tjs_uint8 * src , tjs_int len , tjs_uint32 color , tjs_int opa)
+inline void TVPApplyColorMap65_do(tjs_uint32 * dest , const tjs_uint8 * src , tjs_int len , tjs_uint32 color , tjs_int opa)
 {
 	if(!TVPImportFuncPtr428)
 	{
-		static char funcname[] = "void ::TVPApplyColorMap_ao(tjs_uint32 *,const tjs_uint8 *,tjs_int,tjs_uint32,tjs_int)";
+		static char funcname[] = "void ::TVPApplyColorMap65_do(tjs_uint32 *,const tjs_uint8 *,tjs_int,tjs_uint32,tjs_int)";
 		TVPImportFuncPtr428 = TVPGetImportFuncPtr(funcname);
 	}
 	typedef void (__stdcall * __functype)(tjs_uint32 *, const tjs_uint8 *, tjs_int , tjs_uint32 , tjs_int);
 	((__functype)(TVPImportFuncPtr428))(dest, src, len, color, opa);
 }
-inline void TVPApplyColorMap65_ao(tjs_uint32 * dest , const tjs_uint8 * src , tjs_int len , tjs_uint32 color , tjs_int opa)
+inline void TVPApplyColorMap_ao(tjs_uint32 * dest , const tjs_uint8 * src , tjs_int len , tjs_uint32 color , tjs_int opa)
 {
 	if(!TVPImportFuncPtr429)
 	{
-		static char funcname[] = "void ::TVPApplyColorMap65_ao(tjs_uint32 *,const tjs_uint8 *,tjs_int,tjs_uint32,tjs_int)";
+		static char funcname[] = "void ::TVPApplyColorMap_ao(tjs_uint32 *,const tjs_uint8 *,tjs_int,tjs_uint32,tjs_int)";
 		TVPImportFuncPtr429 = TVPGetImportFuncPtr(funcname);
 	}
 	typedef void (__stdcall * __functype)(tjs_uint32 *, const tjs_uint8 *, tjs_int , tjs_uint32 , tjs_int);
 	((__functype)(TVPImportFuncPtr429))(dest, src, len, color, opa);
 }
-inline void TVPConstColorAlphaBlend(tjs_uint32 * dest , tjs_int len , tjs_uint32 color , tjs_int opa)
+inline void TVPApplyColorMap65_ao(tjs_uint32 * dest , const tjs_uint8 * src , tjs_int len , tjs_uint32 color , tjs_int opa)
 {
 	if(!TVPImportFuncPtr430)
 	{
-		static char funcname[] = "void ::TVPConstColorAlphaBlend(tjs_uint32 *,tjs_int,tjs_uint32,tjs_int)";
+		static char funcname[] = "void ::TVPApplyColorMap65_ao(tjs_uint32 *,const tjs_uint8 *,tjs_int,tjs_uint32,tjs_int)";
 		TVPImportFuncPtr430 = TVPGetImportFuncPtr(funcname);
 	}
-	typedef void (__stdcall * __functype)(tjs_uint32 *, tjs_int , tjs_uint32 , tjs_int);
-	((__functype)(TVPImportFuncPtr430))(dest, len, color, opa);
+	typedef void (__stdcall * __functype)(tjs_uint32 *, const tjs_uint8 *, tjs_int , tjs_uint32 , tjs_int);
+	((__functype)(TVPImportFuncPtr430))(dest, src, len, color, opa);
 }
-inline void TVPConstColorAlphaBlend_d(tjs_uint32 * dest , tjs_int len , tjs_uint32 color , tjs_int opa)
+inline void TVPConstColorAlphaBlend(tjs_uint32 * dest , tjs_int len , tjs_uint32 color , tjs_int opa)
 {
 	if(!TVPImportFuncPtr431)
 	{
-		static char funcname[] = "void ::TVPConstColorAlphaBlend_d(tjs_uint32 *,tjs_int,tjs_uint32,tjs_int)";
+		static char funcname[] = "void ::TVPConstColorAlphaBlend(tjs_uint32 *,tjs_int,tjs_uint32,tjs_int)";
 		TVPImportFuncPtr431 = TVPGetImportFuncPtr(funcname);
 	}
 	typedef void (__stdcall * __functype)(tjs_uint32 *, tjs_int , tjs_uint32 , tjs_int);
 	((__functype)(TVPImportFuncPtr431))(dest, len, color, opa);
 }
-inline void TVPConstColorAlphaBlend_a(tjs_uint32 * dest , tjs_int len , tjs_uint32 color , tjs_int opa)
+inline void TVPConstColorAlphaBlend_d(tjs_uint32 * dest , tjs_int len , tjs_uint32 color , tjs_int opa)
 {
 	if(!TVPImportFuncPtr432)
 	{
-		static char funcname[] = "void ::TVPConstColorAlphaBlend_a(tjs_uint32 *,tjs_int,tjs_uint32,tjs_int)";
+		static char funcname[] = "void ::TVPConstColorAlphaBlend_d(tjs_uint32 *,tjs_int,tjs_uint32,tjs_int)";
 		TVPImportFuncPtr432 = TVPGetImportFuncPtr(funcname);
 	}
 	typedef void (__stdcall * __functype)(tjs_uint32 *, tjs_int , tjs_uint32 , tjs_int);
 	((__functype)(TVPImportFuncPtr432))(dest, len, color, opa);
 }
-inline void TVPRemoveConstOpacity(tjs_uint32 * dest , tjs_int len , tjs_int strength)
+inline void TVPConstColorAlphaBlend_a(tjs_uint32 * dest , tjs_int len , tjs_uint32 color , tjs_int opa)
 {
 	if(!TVPImportFuncPtr433)
 	{
-		static char funcname[] = "void ::TVPRemoveConstOpacity(tjs_uint32 *,tjs_int,tjs_int)";
+		static char funcname[] = "void ::TVPConstColorAlphaBlend_a(tjs_uint32 *,tjs_int,tjs_uint32,tjs_int)";
 		TVPImportFuncPtr433 = TVPGetImportFuncPtr(funcname);
 	}
-	typedef void (__stdcall * __functype)(tjs_uint32 *, tjs_int , tjs_int);
-	((__functype)(TVPImportFuncPtr433))(dest, len, strength);
+	typedef void (__stdcall * __functype)(tjs_uint32 *, tjs_int , tjs_uint32 , tjs_int);
+	((__functype)(TVPImportFuncPtr433))(dest, len, color, opa);
 }
-inline void TVPRemoveOpacity(tjs_uint32 * dest , const tjs_uint8 * src , tjs_int len)
+inline void TVPRemoveConstOpacity(tjs_uint32 * dest , tjs_int len , tjs_int strength)
 {
 	if(!TVPImportFuncPtr434)
 	{
-		static char funcname[] = "void ::TVPRemoveOpacity(tjs_uint32 *,const tjs_uint8 *,tjs_int)";
+		static char funcname[] = "void ::TVPRemoveConstOpacity(tjs_uint32 *,tjs_int,tjs_int)";
 		TVPImportFuncPtr434 = TVPGetImportFuncPtr(funcname);
 	}
-	typedef void (__stdcall * __functype)(tjs_uint32 *, const tjs_uint8 *, tjs_int);
-	((__functype)(TVPImportFuncPtr434))(dest, src, len);
+	typedef void (__stdcall * __functype)(tjs_uint32 *, tjs_int , tjs_int);
+	((__functype)(TVPImportFuncPtr434))(dest, len, strength);
 }
-inline void TVPRemoveOpacity_o(tjs_uint32 * dest , const tjs_uint8 * src , tjs_int len , tjs_int strength)
+inline void TVPRemoveOpacity(tjs_uint32 * dest , const tjs_uint8 * src , tjs_int len)
 {
 	if(!TVPImportFuncPtr435)
 	{
-		static char funcname[] = "void ::TVPRemoveOpacity_o(tjs_uint32 *,const tjs_uint8 *,tjs_int,tjs_int)";
+		static char funcname[] = "void ::TVPRemoveOpacity(tjs_uint32 *,const tjs_uint8 *,tjs_int)";
 		TVPImportFuncPtr435 = TVPGetImportFuncPtr(funcname);
 	}
-	typedef void (__stdcall * __functype)(tjs_uint32 *, const tjs_uint8 *, tjs_int , tjs_int);
-	((__functype)(TVPImportFuncPtr435))(dest, src, len, strength);
+	typedef void (__stdcall * __functype)(tjs_uint32 *, const tjs_uint8 *, tjs_int);
+	((__functype)(TVPImportFuncPtr435))(dest, src, len);
 }
-inline void TVPRemoveOpacity65(tjs_uint32 * dest , const tjs_uint8 * src , tjs_int len)
+inline void TVPRemoveOpacity_o(tjs_uint32 * dest , const tjs_uint8 * src , tjs_int len , tjs_int strength)
 {
 	if(!TVPImportFuncPtr436)
 	{
-		static char funcname[] = "void ::TVPRemoveOpacity65(tjs_uint32 *,const tjs_uint8 *,tjs_int)";
+		static char funcname[] = "void ::TVPRemoveOpacity_o(tjs_uint32 *,const tjs_uint8 *,tjs_int,tjs_int)";
 		TVPImportFuncPtr436 = TVPGetImportFuncPtr(funcname);
 	}
-	typedef void (__stdcall * __functype)(tjs_uint32 *, const tjs_uint8 *, tjs_int);
-	((__functype)(TVPImportFuncPtr436))(dest, src, len);
+	typedef void (__stdcall * __functype)(tjs_uint32 *, const tjs_uint8 *, tjs_int , tjs_int);
+	((__functype)(TVPImportFuncPtr436))(dest, src, len, strength);
 }
-inline void TVPRemoveOpacity65_o(tjs_uint32 * dest , const tjs_uint8 * src , tjs_int len , tjs_int strength)
+inline void TVPRemoveOpacity65(tjs_uint32 * dest , const tjs_uint8 * src , tjs_int len)
 {
 	if(!TVPImportFuncPtr437)
 	{
-		static char funcname[] = "void ::TVPRemoveOpacity65_o(tjs_uint32 *,const tjs_uint8 *,tjs_int,tjs_int)";
+		static char funcname[] = "void ::TVPRemoveOpacity65(tjs_uint32 *,const tjs_uint8 *,tjs_int)";
 		TVPImportFuncPtr437 = TVPGetImportFuncPtr(funcname);
 	}
-	typedef void (__stdcall * __functype)(tjs_uint32 *, const tjs_uint8 *, tjs_int , tjs_int);
-	((__functype)(TVPImportFuncPtr437))(dest, src, len, strength);
+	typedef void (__stdcall * __functype)(tjs_uint32 *, const tjs_uint8 *, tjs_int);
+	((__functype)(TVPImportFuncPtr437))(dest, src, len);
 }
-inline void TVPAddBlend(tjs_uint32 * dest , const tjs_uint32 * src , tjs_int len)
+inline void TVPRemoveOpacity65_o(tjs_uint32 * dest , const tjs_uint8 * src , tjs_int len , tjs_int strength)
 {
 	if(!TVPImportFuncPtr438)
 	{
-		static char funcname[] = "void ::TVPAddBlend(tjs_uint32 *,const tjs_uint32 *,tjs_int)";
+		static char funcname[] = "void ::TVPRemoveOpacity65_o(tjs_uint32 *,const tjs_uint8 *,tjs_int,tjs_int)";
 		TVPImportFuncPtr438 = TVPGetImportFuncPtr(funcname);
 	}
-	typedef void (__stdcall * __functype)(tjs_uint32 *, const tjs_uint32 *, tjs_int);
-	((__functype)(TVPImportFuncPtr438))(dest, src, len);
+	typedef void (__stdcall * __functype)(tjs_uint32 *, const tjs_uint8 *, tjs_int , tjs_int);
+	((__functype)(TVPImportFuncPtr438))(dest, src, len, strength);
 }
-inline void TVPAddBlend_HDA(tjs_uint32 * dest , const tjs_uint32 * src , tjs_int len)
+inline void TVPAddBlend(tjs_uint32 * dest , const tjs_uint32 * src , tjs_int len)
 {
 	if(!TVPImportFuncPtr439)
 	{
-		static char funcname[] = "void ::TVPAddBlend_HDA(tjs_uint32 *,const tjs_uint32 *,tjs_int)";
+		static char funcname[] = "void ::TVPAddBlend(tjs_uint32 *,const tjs_uint32 *,tjs_int)";
 		TVPImportFuncPtr439 = TVPGetImportFuncPtr(funcname);
 	}
 	typedef void (__stdcall * __functype)(tjs_uint32 *, const tjs_uint32 *, tjs_int);
 	((__functype)(TVPImportFuncPtr439))(dest, src, len);
 }
-inline void TVPAddBlend_o(tjs_uint32 * dest , const tjs_uint32 * src , tjs_int len , tjs_int opa)
+inline void TVPAddBlend_HDA(tjs_uint32 * dest , const tjs_uint32 * src , tjs_int len)
 {
 	if(!TVPImportFuncPtr440)
 	{
-		static char funcname[] = "void ::TVPAddBlend_o(tjs_uint32 *,const tjs_uint32 *,tjs_int,tjs_int)";
+		static char funcname[] = "void ::TVPAddBlend_HDA(tjs_uint32 *,const tjs_uint32 *,tjs_int)";
 		TVPImportFuncPtr440 = TVPGetImportFuncPtr(funcname);
 	}
-	typedef void (__stdcall * __functype)(tjs_uint32 *, const tjs_uint32 *, tjs_int , tjs_int);
-	((__functype)(TVPImportFuncPtr440))(dest, src, len, opa);
+	typedef void (__stdcall * __functype)(tjs_uint32 *, const tjs_uint32 *, tjs_int);
+	((__functype)(TVPImportFuncPtr440))(dest, src, len);
 }
-inline void TVPAddBlend_HDA_o(tjs_uint32 * dest , const tjs_uint32 * src , tjs_int len , tjs_int opa)
+inline void TVPAddBlend_o(tjs_uint32 * dest , const tjs_uint32 * src , tjs_int len , tjs_int opa)
 {
 	if(!TVPImportFuncPtr441)
 	{
-		static char funcname[] = "void ::TVPAddBlend_HDA_o(tjs_uint32 *,const tjs_uint32 *,tjs_int,tjs_int)";
+		static char funcname[] = "void ::TVPAddBlend_o(tjs_uint32 *,const tjs_uint32 *,tjs_int,tjs_int)";
 		TVPImportFuncPtr441 = TVPGetImportFuncPtr(funcname);
 	}
 	typedef void (__stdcall * __functype)(tjs_uint32 *, const tjs_uint32 *, tjs_int , tjs_int);
 	((__functype)(TVPImportFuncPtr441))(dest, src, len, opa);
 }
-inline void TVPSubBlend(tjs_uint32 * dest , const tjs_uint32 * src , tjs_int len)
+inline void TVPAddBlend_HDA_o(tjs_uint32 * dest , const tjs_uint32 * src , tjs_int len , tjs_int opa)
 {
 	if(!TVPImportFuncPtr442)
 	{
-		static char funcname[] = "void ::TVPSubBlend(tjs_uint32 *,const tjs_uint32 *,tjs_int)";
+		static char funcname[] = "void ::TVPAddBlend_HDA_o(tjs_uint32 *,const tjs_uint32 *,tjs_int,tjs_int)";
 		TVPImportFuncPtr442 = TVPGetImportFuncPtr(funcname);
 	}
-	typedef void (__stdcall * __functype)(tjs_uint32 *, const tjs_uint32 *, tjs_int);
-	((__functype)(TVPImportFuncPtr442))(dest, src, len);
+	typedef void (__stdcall * __functype)(tjs_uint32 *, const tjs_uint32 *, tjs_int , tjs_int);
+	((__functype)(TVPImportFuncPtr442))(dest, src, len, opa);
 }
-inline void TVPSubBlend_HDA(tjs_uint32 * dest , const tjs_uint32 * src , tjs_int len)
+inline void TVPSubBlend(tjs_uint32 * dest , const tjs_uint32 * src , tjs_int len)
 {
 	if(!TVPImportFuncPtr443)
 	{
-		static char funcname[] = "void ::TVPSubBlend_HDA(tjs_uint32 *,const tjs_uint32 *,tjs_int)";
+		static char funcname[] = "void ::TVPSubBlend(tjs_uint32 *,const tjs_uint32 *,tjs_int)";
 		TVPImportFuncPtr443 = TVPGetImportFuncPtr(funcname);
 	}
 	typedef void (__stdcall * __functype)(tjs_uint32 *, const tjs_uint32 *, tjs_int);
 	((__functype)(TVPImportFuncPtr443))(dest, src, len);
 }
-inline void TVPSubBlend_o(tjs_uint32 * dest , const tjs_uint32 * src , tjs_int len , tjs_int opa)
+inline void TVPSubBlend_HDA(tjs_uint32 * dest , const tjs_uint32 * src , tjs_int len)
 {
 	if(!TVPImportFuncPtr444)
 	{
-		static char funcname[] = "void ::TVPSubBlend_o(tjs_uint32 *,const tjs_uint32 *,tjs_int,tjs_int)";
+		static char funcname[] = "void ::TVPSubBlend_HDA(tjs_uint32 *,const tjs_uint32 *,tjs_int)";
 		TVPImportFuncPtr444 = TVPGetImportFuncPtr(funcname);
 	}
-	typedef void (__stdcall * __functype)(tjs_uint32 *, const tjs_uint32 *, tjs_int , tjs_int);
-	((__functype)(TVPImportFuncPtr444))(dest, src, len, opa);
+	typedef void (__stdcall * __functype)(tjs_uint32 *, const tjs_uint32 *, tjs_int);
+	((__functype)(TVPImportFuncPtr444))(dest, src, len);
 }
-inline void TVPSubBlend_HDA_o(tjs_uint32 * dest , const tjs_uint32 * src , tjs_int len , tjs_int opa)
+inline void TVPSubBlend_o(tjs_uint32 * dest , const tjs_uint32 * src , tjs_int len , tjs_int opa)
 {
 	if(!TVPImportFuncPtr445)
 	{
-		static char funcname[] = "void ::TVPSubBlend_HDA_o(tjs_uint32 *,const tjs_uint32 *,tjs_int,tjs_int)";
+		static char funcname[] = "void ::TVPSubBlend_o(tjs_uint32 *,const tjs_uint32 *,tjs_int,tjs_int)";
 		TVPImportFuncPtr445 = TVPGetImportFuncPtr(funcname);
 	}
 	typedef void (__stdcall * __functype)(tjs_uint32 *, const tjs_uint32 *, tjs_int , tjs_int);
 	((__functype)(TVPImportFuncPtr445))(dest, src, len, opa);
 }
-inline void TVPMulBlend(tjs_uint32 * dest , const tjs_uint32 * src , tjs_int len)
+inline void TVPSubBlend_HDA_o(tjs_uint32 * dest , const tjs_uint32 * src , tjs_int len , tjs_int opa)
 {
 	if(!TVPImportFuncPtr446)
 	{
-		static char funcname[] = "void ::TVPMulBlend(tjs_uint32 *,const tjs_uint32 *,tjs_int)";
+		static char funcname[] = "void ::TVPSubBlend_HDA_o(tjs_uint32 *,const tjs_uint32 *,tjs_int,tjs_int)";
 		TVPImportFuncPtr446 = TVPGetImportFuncPtr(funcname);
 	}
-	typedef void (__stdcall * __functype)(tjs_uint32 *, const tjs_uint32 *, tjs_int);
-	((__functype)(TVPImportFuncPtr446))(dest, src, len);
+	typedef void (__stdcall * __functype)(tjs_uint32 *, const tjs_uint32 *, tjs_int , tjs_int);
+	((__functype)(TVPImportFuncPtr446))(dest, src, len, opa);
 }
-inline void TVPMulBlend_HDA(tjs_uint32 * dest , const tjs_uint32 * src , tjs_int len)
+inline void TVPMulBlend(tjs_uint32 * dest , const tjs_uint32 * src , tjs_int len)
 {
 	if(!TVPImportFuncPtr447)
 	{
-		static char funcname[] = "void ::TVPMulBlend_HDA(tjs_uint32 *,const tjs_uint32 *,tjs_int)";
+		static char funcname[] = "void ::TVPMulBlend(tjs_uint32 *,const tjs_uint32 *,tjs_int)";
 		TVPImportFuncPtr447 = TVPGetImportFuncPtr(funcname);
 	}
 	typedef void (__stdcall * __functype)(tjs_uint32 *, const tjs_uint32 *, tjs_int);
 	((__functype)(TVPImportFuncPtr447))(dest, src, len);
 }
-inline void TVPMulBlend_o(tjs_uint32 * dest , const tjs_uint32 * src , tjs_int len , tjs_int opa)
+inline void TVPMulBlend_HDA(tjs_uint32 * dest , const tjs_uint32 * src , tjs_int len)
 {
 	if(!TVPImportFuncPtr448)
 	{
-		static char funcname[] = "void ::TVPMulBlend_o(tjs_uint32 *,const tjs_uint32 *,tjs_int,tjs_int)";
+		static char funcname[] = "void ::TVPMulBlend_HDA(tjs_uint32 *,const tjs_uint32 *,tjs_int)";
 		TVPImportFuncPtr448 = TVPGetImportFuncPtr(funcname);
 	}
-	typedef void (__stdcall * __functype)(tjs_uint32 *, const tjs_uint32 *, tjs_int , tjs_int);
-	((__functype)(TVPImportFuncPtr448))(dest, src, len, opa);
+	typedef void (__stdcall * __functype)(tjs_uint32 *, const tjs_uint32 *, tjs_int);
+	((__functype)(TVPImportFuncPtr448))(dest, src, len);
 }
-inline void TVPMulBlend_HDA_o(tjs_uint32 * dest , const tjs_uint32 * src , tjs_int len , tjs_int opa)
+inline void TVPMulBlend_o(tjs_uint32 * dest , const tjs_uint32 * src , tjs_int len , tjs_int opa)
 {
 	if(!TVPImportFuncPtr449)
 	{
-		static char funcname[] = "void ::TVPMulBlend_HDA_o(tjs_uint32 *,const tjs_uint32 *,tjs_int,tjs_int)";
+		static char funcname[] = "void ::TVPMulBlend_o(tjs_uint32 *,const tjs_uint32 *,tjs_int,tjs_int)";
 		TVPImportFuncPtr449 = TVPGetImportFuncPtr(funcname);
 	}
 	typedef void (__stdcall * __functype)(tjs_uint32 *, const tjs_uint32 *, tjs_int , tjs_int);
 	((__functype)(TVPImportFuncPtr449))(dest, src, len, opa);
 }
-inline void TVPColorDodgeBlend(tjs_uint32 * dest , const tjs_uint32 * src , tjs_int len)
+inline void TVPMulBlend_HDA_o(tjs_uint32 * dest , const tjs_uint32 * src , tjs_int len , tjs_int opa)
 {
 	if(!TVPImportFuncPtr450)
 	{
-		static char funcname[] = "void ::TVPColorDodgeBlend(tjs_uint32 *,const tjs_uint32 *,tjs_int)";
+		static char funcname[] = "void ::TVPMulBlend_HDA_o(tjs_uint32 *,const tjs_uint32 *,tjs_int,tjs_int)";
 		TVPImportFuncPtr450 = TVPGetImportFuncPtr(funcname);
 	}
-	typedef void (__stdcall * __functype)(tjs_uint32 *, const tjs_uint32 *, tjs_int);
-	((__functype)(TVPImportFuncPtr450))(dest, src, len);
+	typedef void (__stdcall * __functype)(tjs_uint32 *, const tjs_uint32 *, tjs_int , tjs_int);
+	((__functype)(TVPImportFuncPtr450))(dest, src, len, opa);
 }
-inline void TVPColorDodgeBlend_HDA(tjs_uint32 * dest , const tjs_uint32 * src , tjs_int len)
+inline void TVPColorDodgeBlend(tjs_uint32 * dest , const tjs_uint32 * src , tjs_int len)
 {
 	if(!TVPImportFuncPtr451)
 	{
-		static char funcname[] = "void ::TVPColorDodgeBlend_HDA(tjs_uint32 *,const tjs_uint32 *,tjs_int)";
+		static char funcname[] = "void ::TVPColorDodgeBlend(tjs_uint32 *,const tjs_uint32 *,tjs_int)";
 		TVPImportFuncPtr451 = TVPGetImportFuncPtr(funcname);
 	}
 	typedef void (__stdcall * __functype)(tjs_uint32 *, const tjs_uint32 *, tjs_int);
 	((__functype)(TVPImportFuncPtr451))(dest, src, len);
 }
-inline void TVPColorDodgeBlend_o(tjs_uint32 * dest , const tjs_uint32 * src , tjs_int len , tjs_int opa)
+inline void TVPColorDodgeBlend_HDA(tjs_uint32 * dest , const tjs_uint32 * src , tjs_int len)
 {
 	if(!TVPImportFuncPtr452)
 	{
-		static char funcname[] = "void ::TVPColorDodgeBlend_o(tjs_uint32 *,const tjs_uint32 *,tjs_int,tjs_int)";
+		static char funcname[] = "void ::TVPColorDodgeBlend_HDA(tjs_uint32 *,const tjs_uint32 *,tjs_int)";
 		TVPImportFuncPtr452 = TVPGetImportFuncPtr(funcname);
 	}
-	typedef void (__stdcall * __functype)(tjs_uint32 *, const tjs_uint32 *, tjs_int , tjs_int);
-	((__functype)(TVPImportFuncPtr452))(dest, src, len, opa);
+	typedef void (__stdcall * __functype)(tjs_uint32 *, const tjs_uint32 *, tjs_int);
+	((__functype)(TVPImportFuncPtr452))(dest, src, len);
 }
-inline void TVPColorDodgeBlend_HDA_o(tjs_uint32 * dest , const tjs_uint32 * src , tjs_int len , tjs_int opa)
+inline void TVPColorDodgeBlend_o(tjs_uint32 * dest , const tjs_uint32 * src , tjs_int len , tjs_int opa)
 {
 	if(!TVPImportFuncPtr453)
 	{
-		static char funcname[] = "void ::TVPColorDodgeBlend_HDA_o(tjs_uint32 *,const tjs_uint32 *,tjs_int,tjs_int)";
+		static char funcname[] = "void ::TVPColorDodgeBlend_o(tjs_uint32 *,const tjs_uint32 *,tjs_int,tjs_int)";
 		TVPImportFuncPtr453 = TVPGetImportFuncPtr(funcname);
 	}
 	typedef void (__stdcall * __functype)(tjs_uint32 *, const tjs_uint32 *, tjs_int , tjs_int);
 	((__functype)(TVPImportFuncPtr453))(dest, src, len, opa);
 }
-inline void TVPDarkenBlend(tjs_uint32 * dest , const tjs_uint32 * src , tjs_int len)
+inline void TVPColorDodgeBlend_HDA_o(tjs_uint32 * dest , const tjs_uint32 * src , tjs_int len , tjs_int opa)
 {
 	if(!TVPImportFuncPtr454)
 	{
-		static char funcname[] = "void ::TVPDarkenBlend(tjs_uint32 *,const tjs_uint32 *,tjs_int)";
+		static char funcname[] = "void ::TVPColorDodgeBlend_HDA_o(tjs_uint32 *,const tjs_uint32 *,tjs_int,tjs_int)";
 		TVPImportFuncPtr454 = TVPGetImportFuncPtr(funcname);
 	}
-	typedef void (__stdcall * __functype)(tjs_uint32 *, const tjs_uint32 *, tjs_int);
-	((__functype)(TVPImportFuncPtr454))(dest, src, len);
+	typedef void (__stdcall * __functype)(tjs_uint32 *, const tjs_uint32 *, tjs_int , tjs_int);
+	((__functype)(TVPImportFuncPtr454))(dest, src, len, opa);
 }
-inline void TVPDarkenBlend_HDA(tjs_uint32 * dest , const tjs_uint32 * src , tjs_int len)
+inline void TVPDarkenBlend(tjs_uint32 * dest , const tjs_uint32 * src , tjs_int len)
 {
 	if(!TVPImportFuncPtr455)
 	{
-		static char funcname[] = "void ::TVPDarkenBlend_HDA(tjs_uint32 *,const tjs_uint32 *,tjs_int)";
+		static char funcname[] = "void ::TVPDarkenBlend(tjs_uint32 *,const tjs_uint32 *,tjs_int)";
 		TVPImportFuncPtr455 = TVPGetImportFuncPtr(funcname);
 	}
 	typedef void (__stdcall * __functype)(tjs_uint32 *, const tjs_uint32 *, tjs_int);
 	((__functype)(TVPImportFuncPtr455))(dest, src, len);
 }
-inline void TVPDarkenBlend_o(tjs_uint32 * dest , const tjs_uint32 * src , tjs_int len , tjs_int opa)
+inline void TVPDarkenBlend_HDA(tjs_uint32 * dest , const tjs_uint32 * src , tjs_int len)
 {
 	if(!TVPImportFuncPtr456)
 	{
-		static char funcname[] = "void ::TVPDarkenBlend_o(tjs_uint32 *,const tjs_uint32 *,tjs_int,tjs_int)";
+		static char funcname[] = "void ::TVPDarkenBlend_HDA(tjs_uint32 *,const tjs_uint32 *,tjs_int)";
 		TVPImportFuncPtr456 = TVPGetImportFuncPtr(funcname);
 	}
-	typedef void (__stdcall * __functype)(tjs_uint32 *, const tjs_uint32 *, tjs_int , tjs_int);
-	((__functype)(TVPImportFuncPtr456))(dest, src, len, opa);
+	typedef void (__stdcall * __functype)(tjs_uint32 *, const tjs_uint32 *, tjs_int);
+	((__functype)(TVPImportFuncPtr456))(dest, src, len);
 }
-inline void TVPDarkenBlend_HDA_o(tjs_uint32 * dest , const tjs_uint32 * src , tjs_int len , tjs_int opa)
+inline void TVPDarkenBlend_o(tjs_uint32 * dest , const tjs_uint32 * src , tjs_int len , tjs_int opa)
 {
 	if(!TVPImportFuncPtr457)
 	{
-		static char funcname[] = "void ::TVPDarkenBlend_HDA_o(tjs_uint32 *,const tjs_uint32 *,tjs_int,tjs_int)";
+		static char funcname[] = "void ::TVPDarkenBlend_o(tjs_uint32 *,const tjs_uint32 *,tjs_int,tjs_int)";
 		TVPImportFuncPtr457 = TVPGetImportFuncPtr(funcname);
 	}
 	typedef void (__stdcall * __functype)(tjs_uint32 *, const tjs_uint32 *, tjs_int , tjs_int);
 	((__functype)(TVPImportFuncPtr457))(dest, src, len, opa);
 }
-inline void TVPLightenBlend(tjs_uint32 * dest , const tjs_uint32 * src , tjs_int len)
+inline void TVPDarkenBlend_HDA_o(tjs_uint32 * dest , const tjs_uint32 * src , tjs_int len , tjs_int opa)
 {
 	if(!TVPImportFuncPtr458)
 	{
-		static char funcname[] = "void ::TVPLightenBlend(tjs_uint32 *,const tjs_uint32 *,tjs_int)";
+		static char funcname[] = "void ::TVPDarkenBlend_HDA_o(tjs_uint32 *,const tjs_uint32 *,tjs_int,tjs_int)";
 		TVPImportFuncPtr458 = TVPGetImportFuncPtr(funcname);
 	}
-	typedef void (__stdcall * __functype)(tjs_uint32 *, const tjs_uint32 *, tjs_int);
-	((__functype)(TVPImportFuncPtr458))(dest, src, len);
+	typedef void (__stdcall * __functype)(tjs_uint32 *, const tjs_uint32 *, tjs_int , tjs_int);
+	((__functype)(TVPImportFuncPtr458))(dest, src, len, opa);
 }
-inline void TVPLightenBlend_HDA(tjs_uint32 * dest , const tjs_uint32 * src , tjs_int len)
+inline void TVPLightenBlend(tjs_uint32 * dest , const tjs_uint32 * src , tjs_int len)
 {
 	if(!TVPImportFuncPtr459)
 	{
-		static char funcname[] = "void ::TVPLightenBlend_HDA(tjs_uint32 *,const tjs_uint32 *,tjs_int)";
+		static char funcname[] = "void ::TVPLightenBlend(tjs_uint32 *,const tjs_uint32 *,tjs_int)";
 		TVPImportFuncPtr459 = TVPGetImportFuncPtr(funcname);
 	}
 	typedef void (__stdcall * __functype)(tjs_uint32 *, const tjs_uint32 *, tjs_int);
 	((__functype)(TVPImportFuncPtr459))(dest, src, len);
 }
-inline void TVPLightenBlend_o(tjs_uint32 * dest , const tjs_uint32 * src , tjs_int len , tjs_int opa)
+inline void TVPLightenBlend_HDA(tjs_uint32 * dest , const tjs_uint32 * src , tjs_int len)
 {
 	if(!TVPImportFuncPtr460)
 	{
-		static char funcname[] = "void ::TVPLightenBlend_o(tjs_uint32 *,const tjs_uint32 *,tjs_int,tjs_int)";
+		static char funcname[] = "void ::TVPLightenBlend_HDA(tjs_uint32 *,const tjs_uint32 *,tjs_int)";
 		TVPImportFuncPtr460 = TVPGetImportFuncPtr(funcname);
 	}
-	typedef void (__stdcall * __functype)(tjs_uint32 *, const tjs_uint32 *, tjs_int , tjs_int);
-	((__functype)(TVPImportFuncPtr460))(dest, src, len, opa);
+	typedef void (__stdcall * __functype)(tjs_uint32 *, const tjs_uint32 *, tjs_int);
+	((__functype)(TVPImportFuncPtr460))(dest, src, len);
 }
-inline void TVPLightenBlend_HDA_o(tjs_uint32 * dest , const tjs_uint32 * src , tjs_int len , tjs_int opa)
+inline void TVPLightenBlend_o(tjs_uint32 * dest , const tjs_uint32 * src , tjs_int len , tjs_int opa)
 {
 	if(!TVPImportFuncPtr461)
 	{
-		static char funcname[] = "void ::TVPLightenBlend_HDA_o(tjs_uint32 *,const tjs_uint32 *,tjs_int,tjs_int)";
+		static char funcname[] = "void ::TVPLightenBlend_o(tjs_uint32 *,const tjs_uint32 *,tjs_int,tjs_int)";
 		TVPImportFuncPtr461 = TVPGetImportFuncPtr(funcname);
 	}
 	typedef void (__stdcall * __functype)(tjs_uint32 *, const tjs_uint32 *, tjs_int , tjs_int);
 	((__functype)(TVPImportFuncPtr461))(dest, src, len, opa);
 }
-inline void TVPScreenBlend(tjs_uint32 * dest , const tjs_uint32 * src , tjs_int len)
+inline void TVPLightenBlend_HDA_o(tjs_uint32 * dest , const tjs_uint32 * src , tjs_int len , tjs_int opa)
 {
 	if(!TVPImportFuncPtr462)
 	{
-		static char funcname[] = "void ::TVPScreenBlend(tjs_uint32 *,const tjs_uint32 *,tjs_int)";
+		static char funcname[] = "void ::TVPLightenBlend_HDA_o(tjs_uint32 *,const tjs_uint32 *,tjs_int,tjs_int)";
 		TVPImportFuncPtr462 = TVPGetImportFuncPtr(funcname);
 	}
-	typedef void (__stdcall * __functype)(tjs_uint32 *, const tjs_uint32 *, tjs_int);
-	((__functype)(TVPImportFuncPtr462))(dest, src, len);
+	typedef void (__stdcall * __functype)(tjs_uint32 *, const tjs_uint32 *, tjs_int , tjs_int);
+	((__functype)(TVPImportFuncPtr462))(dest, src, len, opa);
 }
-inline void TVPScreenBlend_HDA(tjs_uint32 * dest , const tjs_uint32 * src , tjs_int len)
+inline void TVPScreenBlend(tjs_uint32 * dest , const tjs_uint32 * src , tjs_int len)
 {
 	if(!TVPImportFuncPtr463)
 	{
-		static char funcname[] = "void ::TVPScreenBlend_HDA(tjs_uint32 *,const tjs_uint32 *,tjs_int)";
+		static char funcname[] = "void ::TVPScreenBlend(tjs_uint32 *,const tjs_uint32 *,tjs_int)";
 		TVPImportFuncPtr463 = TVPGetImportFuncPtr(funcname);
 	}
 	typedef void (__stdcall * __functype)(tjs_uint32 *, const tjs_uint32 *, tjs_int);
 	((__functype)(TVPImportFuncPtr463))(dest, src, len);
 }
-inline void TVPScreenBlend_o(tjs_uint32 * dest , const tjs_uint32 * src , tjs_int len , tjs_int opa)
+inline void TVPScreenBlend_HDA(tjs_uint32 * dest , const tjs_uint32 * src , tjs_int len)
 {
 	if(!TVPImportFuncPtr464)
 	{
-		static char funcname[] = "void ::TVPScreenBlend_o(tjs_uint32 *,const tjs_uint32 *,tjs_int,tjs_int)";
+		static char funcname[] = "void ::TVPScreenBlend_HDA(tjs_uint32 *,const tjs_uint32 *,tjs_int)";
 		TVPImportFuncPtr464 = TVPGetImportFuncPtr(funcname);
 	}
-	typedef void (__stdcall * __functype)(tjs_uint32 *, const tjs_uint32 *, tjs_int , tjs_int);
-	((__functype)(TVPImportFuncPtr464))(dest, src, len, opa);
+	typedef void (__stdcall * __functype)(tjs_uint32 *, const tjs_uint32 *, tjs_int);
+	((__functype)(TVPImportFuncPtr464))(dest, src, len);
 }
-inline void TVPScreenBlend_HDA_o(tjs_uint32 * dest , const tjs_uint32 * src , tjs_int len , tjs_int opa)
+inline void TVPScreenBlend_o(tjs_uint32 * dest , const tjs_uint32 * src , tjs_int len , tjs_int opa)
 {
 	if(!TVPImportFuncPtr465)
 	{
-		static char funcname[] = "void ::TVPScreenBlend_HDA_o(tjs_uint32 *,const tjs_uint32 *,tjs_int,tjs_int)";
+		static char funcname[] = "void ::TVPScreenBlend_o(tjs_uint32 *,const tjs_uint32 *,tjs_int,tjs_int)";
 		TVPImportFuncPtr465 = TVPGetImportFuncPtr(funcname);
 	}
 	typedef void (__stdcall * __functype)(tjs_uint32 *, const tjs_uint32 *, tjs_int , tjs_int);
 	((__functype)(TVPImportFuncPtr465))(dest, src, len, opa);
 }
-inline void TVPStretchCopy(tjs_uint32 * dest , tjs_int destlen , const tjs_uint32 * src , tjs_int srcstart , tjs_int srcstep)
+inline void TVPScreenBlend_HDA_o(tjs_uint32 * dest , const tjs_uint32 * src , tjs_int len , tjs_int opa)
 {
 	if(!TVPImportFuncPtr466)
 	{
-		static char funcname[] = "void ::TVPStretchCopy(tjs_uint32 *,tjs_int,const tjs_uint32 *,tjs_int,tjs_int)";
+		static char funcname[] = "void ::TVPScreenBlend_HDA_o(tjs_uint32 *,const tjs_uint32 *,tjs_int,tjs_int)";
 		TVPImportFuncPtr466 = TVPGetImportFuncPtr(funcname);
 	}
-	typedef void (__stdcall * __functype)(tjs_uint32 *, tjs_int , const tjs_uint32 *, tjs_int , tjs_int);
-	((__functype)(TVPImportFuncPtr466))(dest, destlen, src, srcstart, srcstep);
+	typedef void (__stdcall * __functype)(tjs_uint32 *, const tjs_uint32 *, tjs_int , tjs_int);
+	((__functype)(TVPImportFuncPtr466))(dest, src, len, opa);
 }
-inline void TVPInterpStretchCopy(tjs_uint32 * dest , tjs_int destlen , const tjs_uint32 * src1 , const tjs_uint32 * src2 , tjs_int blend_y , tjs_int srcstart , tjs_int srcstep)
+inline void TVPStretchCopy(tjs_uint32 * dest , tjs_int destlen , const tjs_uint32 * src , tjs_int srcstart , tjs_int srcstep)
 {
 	if(!TVPImportFuncPtr467)
 	{
-		static char funcname[] = "void ::TVPInterpStretchCopy(tjs_uint32 *,tjs_int,const tjs_uint32 *,const tjs_uint32 *,tjs_int,tjs_int,tjs_int)";
+		static char funcname[] = "void ::TVPStretchCopy(tjs_uint32 *,tjs_int,const tjs_uint32 *,tjs_int,tjs_int)";
 		TVPImportFuncPtr467 = TVPGetImportFuncPtr(funcname);
 	}
-	typedef void (__stdcall * __functype)(tjs_uint32 *, tjs_int , const tjs_uint32 *, const tjs_uint32 *, tjs_int , tjs_int , tjs_int);
-	((__functype)(TVPImportFuncPtr467))(dest, destlen, src1, src2, blend_y, srcstart, srcstep);
+	typedef void (__stdcall * __functype)(tjs_uint32 *, tjs_int , const tjs_uint32 *, tjs_int , tjs_int);
+	((__functype)(TVPImportFuncPtr467))(dest, destlen, src, srcstart, srcstep);
 }
-inline void TVPFastLinearInterpH2F(tjs_uint32 * dest , tjs_int destlen , const tjs_uint32 * src)
+inline void TVPInterpStretchCopy(tjs_uint32 * dest , tjs_int destlen , const tjs_uint32 * src1 , const tjs_uint32 * src2 , tjs_int blend_y , tjs_int srcstart , tjs_int srcstep)
 {
 	if(!TVPImportFuncPtr468)
 	{
-		static char funcname[] = "void ::TVPFastLinearInterpH2F(tjs_uint32 *,tjs_int,const tjs_uint32 *)";
+		static char funcname[] = "void ::TVPInterpStretchCopy(tjs_uint32 *,tjs_int,const tjs_uint32 *,const tjs_uint32 *,tjs_int,tjs_int,tjs_int)";
 		TVPImportFuncPtr468 = TVPGetImportFuncPtr(funcname);
 	}
-	typedef void (__stdcall * __functype)(tjs_uint32 *, tjs_int , const tjs_uint32 *);
-	((__functype)(TVPImportFuncPtr468))(dest, destlen, src);
+	typedef void (__stdcall * __functype)(tjs_uint32 *, tjs_int , const tjs_uint32 *, const tjs_uint32 *, tjs_int , tjs_int , tjs_int);
+	((__functype)(TVPImportFuncPtr468))(dest, destlen, src1, src2, blend_y, srcstart, srcstep);
 }
-inline void TVPFastLinearInterpH2B(tjs_uint32 * dest , tjs_int destlen , const tjs_uint32 * src)
+inline void TVPFastLinearInterpH2F(tjs_uint32 * dest , tjs_int destlen , const tjs_uint32 * src)
 {
 	if(!TVPImportFuncPtr469)
 	{
-		static char funcname[] = "void ::TVPFastLinearInterpH2B(tjs_uint32 *,tjs_int,const tjs_uint32 *)";
+		static char funcname[] = "void ::TVPFastLinearInterpH2F(tjs_uint32 *,tjs_int,const tjs_uint32 *)";
 		TVPImportFuncPtr469 = TVPGetImportFuncPtr(funcname);
 	}
 	typedef void (__stdcall * __functype)(tjs_uint32 *, tjs_int , const tjs_uint32 *);
 	((__functype)(TVPImportFuncPtr469))(dest, destlen, src);
 }
-inline void TVPFastLinearInterpV2(tjs_uint32 * dest , tjs_int destlen , const tjs_uint32 * src0 , const tjs_uint32 * src1)
+inline void TVPFastLinearInterpH2B(tjs_uint32 * dest , tjs_int destlen , const tjs_uint32 * src)
 {
 	if(!TVPImportFuncPtr470)
 	{
-		static char funcname[] = "void ::TVPFastLinearInterpV2(tjs_uint32 *,tjs_int,const tjs_uint32 *,const tjs_uint32 *)";
+		static char funcname[] = "void ::TVPFastLinearInterpH2B(tjs_uint32 *,tjs_int,const tjs_uint32 *)";
 		TVPImportFuncPtr470 = TVPGetImportFuncPtr(funcname);
 	}
-	typedef void (__stdcall * __functype)(tjs_uint32 *, tjs_int , const tjs_uint32 *, const tjs_uint32 *);
-	((__functype)(TVPImportFuncPtr470))(dest, destlen, src0, src1);
+	typedef void (__stdcall * __functype)(tjs_uint32 *, tjs_int , const tjs_uint32 *);
+	((__functype)(TVPImportFuncPtr470))(dest, destlen, src);
 }
-inline void TVPStretchColorCopy(tjs_uint32 * dest , tjs_int destlen , const tjs_uint32 * src , tjs_int srcstart , tjs_int srcstep)
+inline void TVPFastLinearInterpV2(tjs_uint32 * dest , tjs_int destlen , const tjs_uint32 * src0 , const tjs_uint32 * src1)
 {
 	if(!TVPImportFuncPtr471)
 	{
-		static char funcname[] = "void ::TVPStretchColorCopy(tjs_uint32 *,tjs_int,const tjs_uint32 *,tjs_int,tjs_int)";
+		static char funcname[] = "void ::TVPFastLinearInterpV2(tjs_uint32 *,tjs_int,const tjs_uint32 *,const tjs_uint32 *)";
 		TVPImportFuncPtr471 = TVPGetImportFuncPtr(funcname);
 	}
-	typedef void (__stdcall * __functype)(tjs_uint32 *, tjs_int , const tjs_uint32 *, tjs_int , tjs_int);
-	((__functype)(TVPImportFuncPtr471))(dest, destlen, src, srcstart, srcstep);
+	typedef void (__stdcall * __functype)(tjs_uint32 *, tjs_int , const tjs_uint32 *, const tjs_uint32 *);
+	((__functype)(TVPImportFuncPtr471))(dest, destlen, src0, src1);
 }
-inline void TVPLinTransCopy(tjs_uint32 * dest , tjs_int destlen , const tjs_uint32 * src , tjs_int sx , tjs_int sy , tjs_int stepx , tjs_int stepy , tjs_int srcpitch)
+inline void TVPStretchColorCopy(tjs_uint32 * dest , tjs_int destlen , const tjs_uint32 * src , tjs_int srcstart , tjs_int srcstep)
 {
 	if(!TVPImportFuncPtr472)
 	{
-		static char funcname[] = "void ::TVPLinTransCopy(tjs_uint32 *,tjs_int,const tjs_uint32 *,tjs_int,tjs_int,tjs_int,tjs_int,tjs_int)";
+		static char funcname[] = "void ::TVPStretchColorCopy(tjs_uint32 *,tjs_int,const tjs_uint32 *,tjs_int,tjs_int)";
 		TVPImportFuncPtr472 = TVPGetImportFuncPtr(funcname);
 	}
-	typedef void (__stdcall * __functype)(tjs_uint32 *, tjs_int , const tjs_uint32 *, tjs_int , tjs_int , tjs_int , tjs_int , tjs_int);
-	((__functype)(TVPImportFuncPtr472))(dest, destlen, src, sx, sy, stepx, stepy, srcpitch);
+	typedef void (__stdcall * __functype)(tjs_uint32 *, tjs_int , const tjs_uint32 *, tjs_int , tjs_int);
+	((__functype)(TVPImportFuncPtr472))(dest, destlen, src, srcstart, srcstep);
 }
-inline void TVPInterpLinTransCopy(tjs_uint32 * dest , tjs_int destlen , const tjs_uint32 * src , tjs_int sx , tjs_int sy , tjs_int stepx , tjs_int stepy , tjs_int srcpitch)
+inline void TVPLinTransCopy(tjs_uint32 * dest , tjs_int destlen , const tjs_uint32 * src , tjs_int sx , tjs_int sy , tjs_int stepx , tjs_int stepy , tjs_int srcpitch)
 {
 	if(!TVPImportFuncPtr473)
 	{
-		static char funcname[] = "void ::TVPInterpLinTransCopy(tjs_uint32 *,tjs_int,const tjs_uint32 *,tjs_int,tjs_int,tjs_int,tjs_int,tjs_int)";
+		static char funcname[] = "void ::TVPLinTransCopy(tjs_uint32 *,tjs_int,const tjs_uint32 *,tjs_int,tjs_int,tjs_int,tjs_int,tjs_int)";
 		TVPImportFuncPtr473 = TVPGetImportFuncPtr(funcname);
 	}
 	typedef void (__stdcall * __functype)(tjs_uint32 *, tjs_int , const tjs_uint32 *, tjs_int , tjs_int , tjs_int , tjs_int , tjs_int);
 	((__functype)(TVPImportFuncPtr473))(dest, destlen, src, sx, sy, stepx, stepy, srcpitch);
 }
-inline void TVPLinTransColorCopy(tjs_uint32 * dest , tjs_int destlen , const tjs_uint32 * src , tjs_int sx , tjs_int sy , tjs_int stepx , tjs_int stepy , tjs_int srcpitch)
+inline void TVPInterpLinTransCopy(tjs_uint32 * dest , tjs_int destlen , const tjs_uint32 * src , tjs_int sx , tjs_int sy , tjs_int stepx , tjs_int stepy , tjs_int srcpitch)
 {
 	if(!TVPImportFuncPtr474)
 	{
-		static char funcname[] = "void ::TVPLinTransColorCopy(tjs_uint32 *,tjs_int,const tjs_uint32 *,tjs_int,tjs_int,tjs_int,tjs_int,tjs_int)";
+		static char funcname[] = "void ::TVPInterpLinTransCopy(tjs_uint32 *,tjs_int,const tjs_uint32 *,tjs_int,tjs_int,tjs_int,tjs_int,tjs_int)";
 		TVPImportFuncPtr474 = TVPGetImportFuncPtr(funcname);
 	}
 	typedef void (__stdcall * __functype)(tjs_uint32 *, tjs_int , const tjs_uint32 *, tjs_int , tjs_int , tjs_int , tjs_int , tjs_int);
 	((__functype)(TVPImportFuncPtr474))(dest, destlen, src, sx, sy, stepx, stepy, srcpitch);
 }
-inline void TVPMakeAlphaFromKey(tjs_uint32 * dest , tjs_int len , tjs_uint32 key)
+inline void TVPLinTransColorCopy(tjs_uint32 * dest , tjs_int destlen , const tjs_uint32 * src , tjs_int sx , tjs_int sy , tjs_int stepx , tjs_int stepy , tjs_int srcpitch)
 {
 	if(!TVPImportFuncPtr475)
 	{
-		static char funcname[] = "void ::TVPMakeAlphaFromKey(tjs_uint32 *,tjs_int,tjs_uint32)";
+		static char funcname[] = "void ::TVPLinTransColorCopy(tjs_uint32 *,tjs_int,const tjs_uint32 *,tjs_int,tjs_int,tjs_int,tjs_int,tjs_int)";
 		TVPImportFuncPtr475 = TVPGetImportFuncPtr(funcname);
 	}
-	typedef void (__stdcall * __functype)(tjs_uint32 *, tjs_int , tjs_uint32);
-	((__functype)(TVPImportFuncPtr475))(dest, len, key);
+	typedef void (__stdcall * __functype)(tjs_uint32 *, tjs_int , const tjs_uint32 *, tjs_int , tjs_int , tjs_int , tjs_int , tjs_int);
+	((__functype)(TVPImportFuncPtr475))(dest, destlen, src, sx, sy, stepx, stepy, srcpitch);
 }
-inline void TVPCopyMask(tjs_uint32 * dest , const tjs_uint32 * src , tjs_int len)
+inline void TVPMakeAlphaFromKey(tjs_uint32 * dest , tjs_int len , tjs_uint32 key)
 {
 	if(!TVPImportFuncPtr476)
 	{
-		static char funcname[] = "void ::TVPCopyMask(tjs_uint32 *,const tjs_uint32 *,tjs_int)";
+		static char funcname[] = "void ::TVPMakeAlphaFromKey(tjs_uint32 *,tjs_int,tjs_uint32)";
 		TVPImportFuncPtr476 = TVPGetImportFuncPtr(funcname);
 	}
-	typedef void (__stdcall * __functype)(tjs_uint32 *, const tjs_uint32 *, tjs_int);
-	((__functype)(TVPImportFuncPtr476))(dest, src, len);
+	typedef void (__stdcall * __functype)(tjs_uint32 *, tjs_int , tjs_uint32);
+	((__functype)(TVPImportFuncPtr476))(dest, len, key);
 }
-inline void TVPCopyColor(tjs_uint32 * dest , const tjs_uint32 * src , tjs_int len)
+inline void TVPCopyMask(tjs_uint32 * dest , const tjs_uint32 * src , tjs_int len)
 {
 	if(!TVPImportFuncPtr477)
 	{
-		static char funcname[] = "void ::TVPCopyColor(tjs_uint32 *,const tjs_uint32 *,tjs_int)";
+		static char funcname[] = "void ::TVPCopyMask(tjs_uint32 *,const tjs_uint32 *,tjs_int)";
 		TVPImportFuncPtr477 = TVPGetImportFuncPtr(funcname);
 	}
 	typedef void (__stdcall * __functype)(tjs_uint32 *, const tjs_uint32 *, tjs_int);
 	((__functype)(TVPImportFuncPtr477))(dest, src, len);
 }
-inline void TVPBindMaskToMain(tjs_uint32 * main , const tjs_uint8 * mask , tjs_int len)
+inline void TVPCopyColor(tjs_uint32 * dest , const tjs_uint32 * src , tjs_int len)
 {
 	if(!TVPImportFuncPtr478)
 	{
-		static char funcname[] = "void ::TVPBindMaskToMain(tjs_uint32 *,const tjs_uint8 *,tjs_int)";
+		static char funcname[] = "void ::TVPCopyColor(tjs_uint32 *,const tjs_uint32 *,tjs_int)";
 		TVPImportFuncPtr478 = TVPGetImportFuncPtr(funcname);
 	}
-	typedef void (__stdcall * __functype)(tjs_uint32 *, const tjs_uint8 *, tjs_int);
-	((__functype)(TVPImportFuncPtr478))(main, mask, len);
+	typedef void (__stdcall * __functype)(tjs_uint32 *, const tjs_uint32 *, tjs_int);
+	((__functype)(TVPImportFuncPtr478))(dest, src, len);
 }
-inline void TVPFillARGB(tjs_uint32 * dest , tjs_int len , tjs_uint32 value)
+inline void TVPBindMaskToMain(tjs_uint32 * main , const tjs_uint8 * mask , tjs_int len)
 {
 	if(!TVPImportFuncPtr479)
 	{
-		static char funcname[] = "void ::TVPFillARGB(tjs_uint32 *,tjs_int,tjs_uint32)";
+		static char funcname[] = "void ::TVPBindMaskToMain(tjs_uint32 *,const tjs_uint8 *,tjs_int)";
 		TVPImportFuncPtr479 = TVPGetImportFuncPtr(funcname);
 	}
-	typedef void (__stdcall * __functype)(tjs_uint32 *, tjs_int , tjs_uint32);
-	((__functype)(TVPImportFuncPtr479))(dest, len, value);
+	typedef void (__stdcall * __functype)(tjs_uint32 *, const tjs_uint8 *, tjs_int);
+	((__functype)(TVPImportFuncPtr479))(main, mask, len);
 }
-inline void TVPFillARGB_NC(tjs_uint32 * dest , tjs_int len , tjs_uint32 value)
+inline void TVPFillARGB(tjs_uint32 * dest , tjs_int len , tjs_uint32 value)
 {
 	if(!TVPImportFuncPtr480)
 	{
-		static char funcname[] = "void ::TVPFillARGB_NC(tjs_uint32 *,tjs_int,tjs_uint32)";
+		static char funcname[] = "void ::TVPFillARGB(tjs_uint32 *,tjs_int,tjs_uint32)";
 		TVPImportFuncPtr480 = TVPGetImportFuncPtr(funcname);
 	}
 	typedef void (__stdcall * __functype)(tjs_uint32 *, tjs_int , tjs_uint32);
 	((__functype)(TVPImportFuncPtr480))(dest, len, value);
 }
-inline void TVPFillColor(tjs_uint32 * dest , tjs_int len , tjs_uint32 color)
+inline void TVPFillARGB_NC(tjs_uint32 * dest , tjs_int len , tjs_uint32 value)
 {
 	if(!TVPImportFuncPtr481)
 	{
-		static char funcname[] = "void ::TVPFillColor(tjs_uint32 *,tjs_int,tjs_uint32)";
+		static char funcname[] = "void ::TVPFillARGB_NC(tjs_uint32 *,tjs_int,tjs_uint32)";
 		TVPImportFuncPtr481 = TVPGetImportFuncPtr(funcname);
 	}
 	typedef void (__stdcall * __functype)(tjs_uint32 *, tjs_int , tjs_uint32);
-	((__functype)(TVPImportFuncPtr481))(dest, len, color);
+	((__functype)(TVPImportFuncPtr481))(dest, len, value);
 }
-inline void TVPFillMask(tjs_uint32 * dest , tjs_int len , tjs_uint32 mask)
+inline void TVPFillColor(tjs_uint32 * dest , tjs_int len , tjs_uint32 color)
 {
 	if(!TVPImportFuncPtr482)
 	{
-		static char funcname[] = "void ::TVPFillMask(tjs_uint32 *,tjs_int,tjs_uint32)";
+		static char funcname[] = "void ::TVPFillColor(tjs_uint32 *,tjs_int,tjs_uint32)";
 		TVPImportFuncPtr482 = TVPGetImportFuncPtr(funcname);
 	}
 	typedef void (__stdcall * __functype)(tjs_uint32 *, tjs_int , tjs_uint32);
-	((__functype)(TVPImportFuncPtr482))(dest, len, mask);
+	((__functype)(TVPImportFuncPtr482))(dest, len, color);
 }
-inline void TVPAddSubVertSum16(tjs_uint16 * dest , const tjs_uint32 * addline , const tjs_uint32 * subline , tjs_int len)
+inline void TVPFillMask(tjs_uint32 * dest , tjs_int len , tjs_uint32 mask)
 {
 	if(!TVPImportFuncPtr483)
 	{
-		static char funcname[] = "void ::TVPAddSubVertSum16(tjs_uint16 *,const tjs_uint32 *,const tjs_uint32 *,tjs_int)";
+		static char funcname[] = "void ::TVPFillMask(tjs_uint32 *,tjs_int,tjs_uint32)";
 		TVPImportFuncPtr483 = TVPGetImportFuncPtr(funcname);
 	}
-	typedef void (__stdcall * __functype)(tjs_uint16 *, const tjs_uint32 *, const tjs_uint32 *, tjs_int);
-	((__functype)(TVPImportFuncPtr483))(dest, addline, subline, len);
+	typedef void (__stdcall * __functype)(tjs_uint32 *, tjs_int , tjs_uint32);
+	((__functype)(TVPImportFuncPtr483))(dest, len, mask);
 }
-inline void TVPAddSubVertSum16_d(tjs_uint16 * dest , const tjs_uint32 * addline , const tjs_uint32 * subline , tjs_int len)
+inline void TVPAddSubVertSum16(tjs_uint16 * dest , const tjs_uint32 * addline , const tjs_uint32 * subline , tjs_int len)
 {
 	if(!TVPImportFuncPtr484)
 	{
-		static char funcname[] = "void ::TVPAddSubVertSum16_d(tjs_uint16 *,const tjs_uint32 *,const tjs_uint32 *,tjs_int)";
+		static char funcname[] = "void ::TVPAddSubVertSum16(tjs_uint16 *,const tjs_uint32 *,const tjs_uint32 *,tjs_int)";
 		TVPImportFuncPtr484 = TVPGetImportFuncPtr(funcname);
 	}
 	typedef void (__stdcall * __functype)(tjs_uint16 *, const tjs_uint32 *, const tjs_uint32 *, tjs_int);
 	((__functype)(TVPImportFuncPtr484))(dest, addline, subline, len);
 }
-inline void TVPAddSubVertSum32(tjs_uint32 * dest , const tjs_uint32 * addline , const tjs_uint32 * subline , tjs_int len)
+inline void TVPAddSubVertSum16_d(tjs_uint16 * dest , const tjs_uint32 * addline , const tjs_uint32 * subline , tjs_int len)
 {
 	if(!TVPImportFuncPtr485)
 	{
-		static char funcname[] = "void ::TVPAddSubVertSum32(tjs_uint32 *,const tjs_uint32 *,const tjs_uint32 *,tjs_int)";
+		static char funcname[] = "void ::TVPAddSubVertSum16_d(tjs_uint16 *,const tjs_uint32 *,const tjs_uint32 *,tjs_int)";
 		TVPImportFuncPtr485 = TVPGetImportFuncPtr(funcname);
 	}
-	typedef void (__stdcall * __functype)(tjs_uint32 *, const tjs_uint32 *, const tjs_uint32 *, tjs_int);
+	typedef void (__stdcall * __functype)(tjs_uint16 *, const tjs_uint32 *, const tjs_uint32 *, tjs_int);
 	((__functype)(TVPImportFuncPtr485))(dest, addline, subline, len);
 }
-inline void TVPAddSubVertSum32_d(tjs_uint32 * dest , const tjs_uint32 * addline , const tjs_uint32 * subline , tjs_int len)
+inline void TVPAddSubVertSum32(tjs_uint32 * dest , const tjs_uint32 * addline , const tjs_uint32 * subline , tjs_int len)
 {
 	if(!TVPImportFuncPtr486)
 	{
-		static char funcname[] = "void ::TVPAddSubVertSum32_d(tjs_uint32 *,const tjs_uint32 *,const tjs_uint32 *,tjs_int)";
+		static char funcname[] = "void ::TVPAddSubVertSum32(tjs_uint32 *,const tjs_uint32 *,const tjs_uint32 *,tjs_int)";
 		TVPImportFuncPtr486 = TVPGetImportFuncPtr(funcname);
 	}
 	typedef void (__stdcall * __functype)(tjs_uint32 *, const tjs_uint32 *, const tjs_uint32 *, tjs_int);
 	((__functype)(TVPImportFuncPtr486))(dest, addline, subline, len);
 }
-inline void TVPDoBoxBlurAvg16(tjs_uint32 * dest , tjs_uint16 * sum , const tjs_uint16 * add , const tjs_uint16 * sub , tjs_int n , tjs_int len)
+inline void TVPAddSubVertSum32_d(tjs_uint32 * dest , const tjs_uint32 * addline , const tjs_uint32 * subline , tjs_int len)
 {
 	if(!TVPImportFuncPtr487)
 	{
-		static char funcname[] = "void ::TVPDoBoxBlurAvg16(tjs_uint32 *,tjs_uint16 *,const tjs_uint16 *,const tjs_uint16 *,tjs_int,tjs_int)";
+		static char funcname[] = "void ::TVPAddSubVertSum32_d(tjs_uint32 *,const tjs_uint32 *,const tjs_uint32 *,tjs_int)";
 		TVPImportFuncPtr487 = TVPGetImportFuncPtr(funcname);
 	}
-	typedef void (__stdcall * __functype)(tjs_uint32 *, tjs_uint16 *, const tjs_uint16 *, const tjs_uint16 *, tjs_int , tjs_int);
-	((__functype)(TVPImportFuncPtr487))(dest, sum, add, sub, n, len);
+	typedef void (__stdcall * __functype)(tjs_uint32 *, const tjs_uint32 *, const tjs_uint32 *, tjs_int);
+	((__functype)(TVPImportFuncPtr487))(dest, addline, subline, len);
 }
-inline void TVPDoBoxBlurAvg16_d(tjs_uint32 * dest , tjs_uint16 * sum , const tjs_uint16 * add , const tjs_uint16 * sub , tjs_int n , tjs_int len)
+inline void TVPDoBoxBlurAvg16(tjs_uint32 * dest , tjs_uint16 * sum , const tjs_uint16 * add , const tjs_uint16 * sub , tjs_int n , tjs_int len)
 {
 	if(!TVPImportFuncPtr488)
 	{
-		static char funcname[] = "void ::TVPDoBoxBlurAvg16_d(tjs_uint32 *,tjs_uint16 *,const tjs_uint16 *,const tjs_uint16 *,tjs_int,tjs_int)";
+		static char funcname[] = "void ::TVPDoBoxBlurAvg16(tjs_uint32 *,tjs_uint16 *,const tjs_uint16 *,const tjs_uint16 *,tjs_int,tjs_int)";
 		TVPImportFuncPtr488 = TVPGetImportFuncPtr(funcname);
 	}
 	typedef void (__stdcall * __functype)(tjs_uint32 *, tjs_uint16 *, const tjs_uint16 *, const tjs_uint16 *, tjs_int , tjs_int);
 	((__functype)(TVPImportFuncPtr488))(dest, sum, add, sub, n, len);
 }
-inline void TVPDoBoxBlurAvg32(tjs_uint32 * dest , tjs_uint32 * sum , const tjs_uint32 * add , const tjs_uint32 * sub , tjs_int n , tjs_int len)
+inline void TVPDoBoxBlurAvg16_d(tjs_uint32 * dest , tjs_uint16 * sum , const tjs_uint16 * add , const tjs_uint16 * sub , tjs_int n , tjs_int len)
 {
 	if(!TVPImportFuncPtr489)
 	{
-		static char funcname[] = "void ::TVPDoBoxBlurAvg32(tjs_uint32 *,tjs_uint32 *,const tjs_uint32 *,const tjs_uint32 *,tjs_int,tjs_int)";
+		static char funcname[] = "void ::TVPDoBoxBlurAvg16_d(tjs_uint32 *,tjs_uint16 *,const tjs_uint16 *,const tjs_uint16 *,tjs_int,tjs_int)";
 		TVPImportFuncPtr489 = TVPGetImportFuncPtr(funcname);
 	}
-	typedef void (__stdcall * __functype)(tjs_uint32 *, tjs_uint32 *, const tjs_uint32 *, const tjs_uint32 *, tjs_int , tjs_int);
+	typedef void (__stdcall * __functype)(tjs_uint32 *, tjs_uint16 *, const tjs_uint16 *, const tjs_uint16 *, tjs_int , tjs_int);
 	((__functype)(TVPImportFuncPtr489))(dest, sum, add, sub, n, len);
 }
-inline void TVPDoBoxBlurAvg32_d(tjs_uint32 * dest , tjs_uint32 * sum , const tjs_uint32 * add , const tjs_uint32 * sub , tjs_int n , tjs_int len)
+inline void TVPDoBoxBlurAvg32(tjs_uint32 * dest , tjs_uint32 * sum , const tjs_uint32 * add , const tjs_uint32 * sub , tjs_int n , tjs_int len)
 {
 	if(!TVPImportFuncPtr490)
 	{
-		static char funcname[] = "void ::TVPDoBoxBlurAvg32_d(tjs_uint32 *,tjs_uint32 *,const tjs_uint32 *,const tjs_uint32 *,tjs_int,tjs_int)";
+		static char funcname[] = "void ::TVPDoBoxBlurAvg32(tjs_uint32 *,tjs_uint32 *,const tjs_uint32 *,const tjs_uint32 *,tjs_int,tjs_int)";
 		TVPImportFuncPtr490 = TVPGetImportFuncPtr(funcname);
 	}
 	typedef void (__stdcall * __functype)(tjs_uint32 *, tjs_uint32 *, const tjs_uint32 *, const tjs_uint32 *, tjs_int , tjs_int);
 	((__functype)(TVPImportFuncPtr490))(dest, sum, add, sub, n, len);
 }
-inline void TVPSwapLine8(tjs_uint8 * line1 , tjs_uint8 * line2 , tjs_int len)
+inline void TVPDoBoxBlurAvg32_d(tjs_uint32 * dest , tjs_uint32 * sum , const tjs_uint32 * add , const tjs_uint32 * sub , tjs_int n , tjs_int len)
 {
 	if(!TVPImportFuncPtr491)
 	{
-		static char funcname[] = "void ::TVPSwapLine8(tjs_uint8 *,tjs_uint8 *,tjs_int)";
+		static char funcname[] = "void ::TVPDoBoxBlurAvg32_d(tjs_uint32 *,tjs_uint32 *,const tjs_uint32 *,const tjs_uint32 *,tjs_int,tjs_int)";
 		TVPImportFuncPtr491 = TVPGetImportFuncPtr(funcname);
 	}
-	typedef void (__stdcall * __functype)(tjs_uint8 *, tjs_uint8 *, tjs_int);
-	((__functype)(TVPImportFuncPtr491))(line1, line2, len);
+	typedef void (__stdcall * __functype)(tjs_uint32 *, tjs_uint32 *, const tjs_uint32 *, const tjs_uint32 *, tjs_int , tjs_int);
+	((__functype)(TVPImportFuncPtr491))(dest, sum, add, sub, n, len);
 }
-inline void TVPSwapLine32(tjs_uint32 * line1 , tjs_uint32 * line2 , tjs_int len)
+inline void TVPSwapLine8(tjs_uint8 * line1 , tjs_uint8 * line2 , tjs_int len)
 {
 	if(!TVPImportFuncPtr492)
 	{
-		static char funcname[] = "void ::TVPSwapLine32(tjs_uint32 *,tjs_uint32 *,tjs_int)";
+		static char funcname[] = "void ::TVPSwapLine8(tjs_uint8 *,tjs_uint8 *,tjs_int)";
 		TVPImportFuncPtr492 = TVPGetImportFuncPtr(funcname);
 	}
-	typedef void (__stdcall * __functype)(tjs_uint32 *, tjs_uint32 *, tjs_int);
+	typedef void (__stdcall * __functype)(tjs_uint8 *, tjs_uint8 *, tjs_int);
 	((__functype)(TVPImportFuncPtr492))(line1, line2, len);
 }
-inline void TVPReverse8(tjs_uint8 * pixels , tjs_int len)
+inline void TVPSwapLine32(tjs_uint32 * line1 , tjs_uint32 * line2 , tjs_int len)
 {
 	if(!TVPImportFuncPtr493)
 	{
-		static char funcname[] = "void ::TVPReverse8(tjs_uint8 *,tjs_int)";
+		static char funcname[] = "void ::TVPSwapLine32(tjs_uint32 *,tjs_uint32 *,tjs_int)";
 		TVPImportFuncPtr493 = TVPGetImportFuncPtr(funcname);
 	}
-	typedef void (__stdcall * __functype)(tjs_uint8 *, tjs_int);
-	((__functype)(TVPImportFuncPtr493))(pixels, len);
+	typedef void (__stdcall * __functype)(tjs_uint32 *, tjs_uint32 *, tjs_int);
+	((__functype)(TVPImportFuncPtr493))(line1, line2, len);
 }
-inline void TVPReverse32(tjs_uint32 * pixels , tjs_int len)
+inline void TVPReverse8(tjs_uint8 * pixels , tjs_int len)
 {
 	if(!TVPImportFuncPtr494)
 	{
-		static char funcname[] = "void ::TVPReverse32(tjs_uint32 *,tjs_int)";
+		static char funcname[] = "void ::TVPReverse8(tjs_uint8 *,tjs_int)";
 		TVPImportFuncPtr494 = TVPGetImportFuncPtr(funcname);
 	}
-	typedef void (__stdcall * __functype)(tjs_uint32 *, tjs_int);
+	typedef void (__stdcall * __functype)(tjs_uint8 *, tjs_int);
 	((__functype)(TVPImportFuncPtr494))(pixels, len);
 }
-inline void TVPDoGrayScale(tjs_uint32 * dest , tjs_int len)
+inline void TVPReverse32(tjs_uint32 * pixels , tjs_int len)
 {
 	if(!TVPImportFuncPtr495)
 	{
-		static char funcname[] = "void ::TVPDoGrayScale(tjs_uint32 *,tjs_int)";
+		static char funcname[] = "void ::TVPReverse32(tjs_uint32 *,tjs_int)";
 		TVPImportFuncPtr495 = TVPGetImportFuncPtr(funcname);
 	}
 	typedef void (__stdcall * __functype)(tjs_uint32 *, tjs_int);
-	((__functype)(TVPImportFuncPtr495))(dest, len);
+	((__functype)(TVPImportFuncPtr495))(pixels, len);
 }
-inline void TVPInitGammaAdjustTempData(tTVPGLGammaAdjustTempData * temp , const tTVPGLGammaAdjustData * data)
+inline void TVPDoGrayScale(tjs_uint32 * dest , tjs_int len)
 {
 	if(!TVPImportFuncPtr496)
 	{
-		static char funcname[] = "void ::TVPInitGammaAdjustTempData(tTVPGLGammaAdjustTempData *,const tTVPGLGammaAdjustData *)";
+		static char funcname[] = "void ::TVPDoGrayScale(tjs_uint32 *,tjs_int)";
 		TVPImportFuncPtr496 = TVPGetImportFuncPtr(funcname);
 	}
-	typedef void (__stdcall * __functype)(tTVPGLGammaAdjustTempData *, const tTVPGLGammaAdjustData *);
-	((__functype)(TVPImportFuncPtr496))(temp, data);
+	typedef void (__stdcall * __functype)(tjs_uint32 *, tjs_int);
+	((__functype)(TVPImportFuncPtr496))(dest, len);
 }
-inline void TVPUninitGammaAdjustTempData(tTVPGLGammaAdjustTempData * temp)
+inline void TVPInitGammaAdjustTempData(tTVPGLGammaAdjustTempData * temp , const tTVPGLGammaAdjustData * data)
 {
 	if(!TVPImportFuncPtr497)
 	{
-		static char funcname[] = "void ::TVPUninitGammaAdjustTempData(tTVPGLGammaAdjustTempData *)";
+		static char funcname[] = "void ::TVPInitGammaAdjustTempData(tTVPGLGammaAdjustTempData *,const tTVPGLGammaAdjustData *)";
 		TVPImportFuncPtr497 = TVPGetImportFuncPtr(funcname);
 	}
-	typedef void (__stdcall * __functype)(tTVPGLGammaAdjustTempData *);
-	((__functype)(TVPImportFuncPtr497))(temp);
+	typedef void (__stdcall * __functype)(tTVPGLGammaAdjustTempData *, const tTVPGLGammaAdjustData *);
+	((__functype)(TVPImportFuncPtr497))(temp, data);
 }
-inline void TVPAdjustGamma(tjs_uint32 * dest , tjs_int len , tTVPGLGammaAdjustTempData * temp)
+inline void TVPUninitGammaAdjustTempData(tTVPGLGammaAdjustTempData * temp)
 {
 	if(!TVPImportFuncPtr498)
 	{
-		static char funcname[] = "void ::TVPAdjustGamma(tjs_uint32 *,tjs_int,tTVPGLGammaAdjustTempData *)";
+		static char funcname[] = "void ::TVPUninitGammaAdjustTempData(tTVPGLGammaAdjustTempData *)";
 		TVPImportFuncPtr498 = TVPGetImportFuncPtr(funcname);
 	}
-	typedef void (__stdcall * __functype)(tjs_uint32 *, tjs_int , tTVPGLGammaAdjustTempData *);
-	((__functype)(TVPImportFuncPtr498))(dest, len, temp);
+	typedef void (__stdcall * __functype)(tTVPGLGammaAdjustTempData *);
+	((__functype)(TVPImportFuncPtr498))(temp);
 }
-inline void TVPAdjustGamma_a(tjs_uint32 * dest , tjs_int len , tTVPGLGammaAdjustTempData * temp)
+inline void TVPAdjustGamma(tjs_uint32 * dest , tjs_int len , tTVPGLGammaAdjustTempData * temp)
 {
 	if(!TVPImportFuncPtr499)
 	{
-		static char funcname[] = "void ::TVPAdjustGamma_a(tjs_uint32 *,tjs_int,tTVPGLGammaAdjustTempData *)";
+		static char funcname[] = "void ::TVPAdjustGamma(tjs_uint32 *,tjs_int,tTVPGLGammaAdjustTempData *)";
 		TVPImportFuncPtr499 = TVPGetImportFuncPtr(funcname);
 	}
 	typedef void (__stdcall * __functype)(tjs_uint32 *, tjs_int , tTVPGLGammaAdjustTempData *);
 	((__functype)(TVPImportFuncPtr499))(dest, len, temp);
 }
-inline void TVPChBlurMulCopy65(tjs_uint8 * dest , const tjs_uint8 * src , tjs_int len , tjs_int level)
+inline void TVPAdjustGamma_a(tjs_uint32 * dest , tjs_int len , tTVPGLGammaAdjustTempData * temp)
 {
 	if(!TVPImportFuncPtr500)
 	{
-		static char funcname[] = "void ::TVPChBlurMulCopy65(tjs_uint8 *,const tjs_uint8 *,tjs_int,tjs_int)";
+		static char funcname[] = "void ::TVPAdjustGamma_a(tjs_uint32 *,tjs_int,tTVPGLGammaAdjustTempData *)";
 		TVPImportFuncPtr500 = TVPGetImportFuncPtr(funcname);
 	}
-	typedef void (__stdcall * __functype)(tjs_uint8 *, const tjs_uint8 *, tjs_int , tjs_int);
-	((__functype)(TVPImportFuncPtr500))(dest, src, len, level);
+	typedef void (__stdcall * __functype)(tjs_uint32 *, tjs_int , tTVPGLGammaAdjustTempData *);
+	((__functype)(TVPImportFuncPtr500))(dest, len, temp);
 }
-inline void TVPChBlurAddMulCopy65(tjs_uint8 * dest , const tjs_uint8 * src , tjs_int len , tjs_int level)
+inline void TVPChBlurMulCopy65(tjs_uint8 * dest , const tjs_uint8 * src , tjs_int len , tjs_int level)
 {
 	if(!TVPImportFuncPtr501)
 	{
-		static char funcname[] = "void ::TVPChBlurAddMulCopy65(tjs_uint8 *,const tjs_uint8 *,tjs_int,tjs_int)";
+		static char funcname[] = "void ::TVPChBlurMulCopy65(tjs_uint8 *,const tjs_uint8 *,tjs_int,tjs_int)";
 		TVPImportFuncPtr501 = TVPGetImportFuncPtr(funcname);
 	}
 	typedef void (__stdcall * __functype)(tjs_uint8 *, const tjs_uint8 *, tjs_int , tjs_int);
 	((__functype)(TVPImportFuncPtr501))(dest, src, len, level);
 }
-inline void TVPChBlurCopy65(tjs_uint8 * dest , tjs_int destpitch , tjs_int destwidth , tjs_int destheight , const tjs_uint8 * src , tjs_int srcpitch , tjs_int srcwidth , tjs_int srcheight , tjs_int blurwidth , tjs_int blurlevel)
+inline void TVPChBlurAddMulCopy65(tjs_uint8 * dest , const tjs_uint8 * src , tjs_int len , tjs_int level)
 {
 	if(!TVPImportFuncPtr502)
 	{
-		static char funcname[] = "void ::TVPChBlurCopy65(tjs_uint8 *,tjs_int,tjs_int,tjs_int,const tjs_uint8 *,tjs_int,tjs_int,tjs_int,tjs_int,tjs_int)";
+		static char funcname[] = "void ::TVPChBlurAddMulCopy65(tjs_uint8 *,const tjs_uint8 *,tjs_int,tjs_int)";
 		TVPImportFuncPtr502 = TVPGetImportFuncPtr(funcname);
 	}
-	typedef void (__stdcall * __functype)(tjs_uint8 *, tjs_int , tjs_int , tjs_int , const tjs_uint8 *, tjs_int , tjs_int , tjs_int , tjs_int , tjs_int);
-	((__functype)(TVPImportFuncPtr502))(dest, destpitch, destwidth, destheight, src, srcpitch, srcwidth, srcheight, blurwidth, blurlevel);
+	typedef void (__stdcall * __functype)(tjs_uint8 *, const tjs_uint8 *, tjs_int , tjs_int);
+	((__functype)(TVPImportFuncPtr502))(dest, src, len, level);
 }
-inline void TVPBLExpand1BitTo8BitPal(tjs_uint8 * dest , const tjs_uint8 * buf , tjs_int len , const tjs_uint32 * pal)
+inline void TVPChBlurCopy65(tjs_uint8 * dest , tjs_int destpitch , tjs_int destwidth , tjs_int destheight , const tjs_uint8 * src , tjs_int srcpitch , tjs_int srcwidth , tjs_int srcheight , tjs_int blurwidth , tjs_int blurlevel)
 {
 	if(!TVPImportFuncPtr503)
 	{
-		static char funcname[] = "void ::TVPBLExpand1BitTo8BitPal(tjs_uint8 *,const tjs_uint8 *,tjs_int,const tjs_uint32 *)";
+		static char funcname[] = "void ::TVPChBlurCopy65(tjs_uint8 *,tjs_int,tjs_int,tjs_int,const tjs_uint8 *,tjs_int,tjs_int,tjs_int,tjs_int,tjs_int)";
 		TVPImportFuncPtr503 = TVPGetImportFuncPtr(funcname);
 	}
-	typedef void (__stdcall * __functype)(tjs_uint8 *, const tjs_uint8 *, tjs_int , const tjs_uint32 *);
-	((__functype)(TVPImportFuncPtr503))(dest, buf, len, pal);
+	typedef void (__stdcall * __functype)(tjs_uint8 *, tjs_int , tjs_int , tjs_int , const tjs_uint8 *, tjs_int , tjs_int , tjs_int , tjs_int , tjs_int);
+	((__functype)(TVPImportFuncPtr503))(dest, destpitch, destwidth, destheight, src, srcpitch, srcwidth, srcheight, blurwidth, blurlevel);
 }
-inline void TVPBLExpand1BitTo32BitPal(tjs_uint32 * dest , const tjs_uint8 * buf , tjs_int len , const tjs_uint32 * pal)
+inline void TVPBLExpand1BitTo8BitPal(tjs_uint8 * dest , const tjs_uint8 * buf , tjs_int len , const tjs_uint32 * pal)
 {
 	if(!TVPImportFuncPtr504)
 	{
-		static char funcname[] = "void ::TVPBLExpand1BitTo32BitPal(tjs_uint32 *,const tjs_uint8 *,tjs_int,const tjs_uint32 *)";
+		static char funcname[] = "void ::TVPBLExpand1BitTo8BitPal(tjs_uint8 *,const tjs_uint8 *,tjs_int,const tjs_uint32 *)";
 		TVPImportFuncPtr504 = TVPGetImportFuncPtr(funcname);
 	}
-	typedef void (__stdcall * __functype)(tjs_uint32 *, const tjs_uint8 *, tjs_int , const tjs_uint32 *);
+	typedef void (__stdcall * __functype)(tjs_uint8 *, const tjs_uint8 *, tjs_int , const tjs_uint32 *);
 	((__functype)(TVPImportFuncPtr504))(dest, buf, len, pal);
 }
-inline void TVPBLExpand4BitTo8BitPal(tjs_uint8 * dest , const tjs_uint8 * buf , tjs_int len , const tjs_uint32 * pal)
+inline void TVPBLExpand1BitTo32BitPal(tjs_uint32 * dest , const tjs_uint8 * buf , tjs_int len , const tjs_uint32 * pal)
 {
 	if(!TVPImportFuncPtr505)
 	{
-		static char funcname[] = "void ::TVPBLExpand4BitTo8BitPal(tjs_uint8 *,const tjs_uint8 *,tjs_int,const tjs_uint32 *)";
+		static char funcname[] = "void ::TVPBLExpand1BitTo32BitPal(tjs_uint32 *,const tjs_uint8 *,tjs_int,const tjs_uint32 *)";
 		TVPImportFuncPtr505 = TVPGetImportFuncPtr(funcname);
 	}
-	typedef void (__stdcall * __functype)(tjs_uint8 *, const tjs_uint8 *, tjs_int , const tjs_uint32 *);
+	typedef void (__stdcall * __functype)(tjs_uint32 *, const tjs_uint8 *, tjs_int , const tjs_uint32 *);
 	((__functype)(TVPImportFuncPtr505))(dest, buf, len, pal);
 }
-inline void TVPBLExpand4BitTo32BitPal(tjs_uint32 * dest , const tjs_uint8 * buf , tjs_int len , const tjs_uint32 * pal)
+inline void TVPBLExpand4BitTo8BitPal(tjs_uint8 * dest , const tjs_uint8 * buf , tjs_int len , const tjs_uint32 * pal)
 {
 	if(!TVPImportFuncPtr506)
 	{
-		static char funcname[] = "void ::TVPBLExpand4BitTo32BitPal(tjs_uint32 *,const tjs_uint8 *,tjs_int,const tjs_uint32 *)";
+		static char funcname[] = "void ::TVPBLExpand4BitTo8BitPal(tjs_uint8 *,const tjs_uint8 *,tjs_int,const tjs_uint32 *)";
 		TVPImportFuncPtr506 = TVPGetImportFuncPtr(funcname);
 	}
-	typedef void (__stdcall * __functype)(tjs_uint32 *, const tjs_uint8 *, tjs_int , const tjs_uint32 *);
+	typedef void (__stdcall * __functype)(tjs_uint8 *, const tjs_uint8 *, tjs_int , const tjs_uint32 *);
 	((__functype)(TVPImportFuncPtr506))(dest, buf, len, pal);
 }
-inline void TVPBLExpand8BitTo8BitPal(tjs_uint8 * dest , const tjs_uint8 * buf , tjs_int len , const tjs_uint32 * pal)
+inline void TVPBLExpand4BitTo32BitPal(tjs_uint32 * dest , const tjs_uint8 * buf , tjs_int len , const tjs_uint32 * pal)
 {
 	if(!TVPImportFuncPtr507)
 	{
-		static char funcname[] = "void ::TVPBLExpand8BitTo8BitPal(tjs_uint8 *,const tjs_uint8 *,tjs_int,const tjs_uint32 *)";
+		static char funcname[] = "void ::TVPBLExpand4BitTo32BitPal(tjs_uint32 *,const tjs_uint8 *,tjs_int,const tjs_uint32 *)";
 		TVPImportFuncPtr507 = TVPGetImportFuncPtr(funcname);
 	}
-	typedef void (__stdcall * __functype)(tjs_uint8 *, const tjs_uint8 *, tjs_int , const tjs_uint32 *);
+	typedef void (__stdcall * __functype)(tjs_uint32 *, const tjs_uint8 *, tjs_int , const tjs_uint32 *);
 	((__functype)(TVPImportFuncPtr507))(dest, buf, len, pal);
 }
-inline void TVPBLExpand8BitTo32BitPal(tjs_uint32 * dest , const tjs_uint8 * buf , tjs_int len , const tjs_uint32 * pal)
+inline void TVPBLExpand8BitTo8BitPal(tjs_uint8 * dest , const tjs_uint8 * buf , tjs_int len , const tjs_uint32 * pal)
 {
 	if(!TVPImportFuncPtr508)
 	{
-		static char funcname[] = "void ::TVPBLExpand8BitTo32BitPal(tjs_uint32 *,const tjs_uint8 *,tjs_int,const tjs_uint32 *)";
+		static char funcname[] = "void ::TVPBLExpand8BitTo8BitPal(tjs_uint8 *,const tjs_uint8 *,tjs_int,const tjs_uint32 *)";
 		TVPImportFuncPtr508 = TVPGetImportFuncPtr(funcname);
 	}
-	typedef void (__stdcall * __functype)(tjs_uint32 *, const tjs_uint8 *, tjs_int , const tjs_uint32 *);
+	typedef void (__stdcall * __functype)(tjs_uint8 *, const tjs_uint8 *, tjs_int , const tjs_uint32 *);
 	((__functype)(TVPImportFuncPtr508))(dest, buf, len, pal);
 }
-inline void TVPExpand8BitTo32BitGray(tjs_uint32 * dest , const tjs_uint8 * buf , tjs_int len)
+inline void TVPBLExpand8BitTo32BitPal(tjs_uint32 * dest , const tjs_uint8 * buf , tjs_int len , const tjs_uint32 * pal)
 {
 	if(!TVPImportFuncPtr509)
 	{
-		static char funcname[] = "void ::TVPExpand8BitTo32BitGray(tjs_uint32 *,const tjs_uint8 *,tjs_int)";
+		static char funcname[] = "void ::TVPBLExpand8BitTo32BitPal(tjs_uint32 *,const tjs_uint8 *,tjs_int,const tjs_uint32 *)";
 		TVPImportFuncPtr509 = TVPGetImportFuncPtr(funcname);
 	}
-	typedef void (__stdcall * __functype)(tjs_uint32 *, const tjs_uint8 *, tjs_int);
-	((__functype)(TVPImportFuncPtr509))(dest, buf, len);
+	typedef void (__stdcall * __functype)(tjs_uint32 *, const tjs_uint8 *, tjs_int , const tjs_uint32 *);
+	((__functype)(TVPImportFuncPtr509))(dest, buf, len, pal);
 }
-inline void TVPBLConvert15BitTo8Bit(tjs_uint8 * dest , const tjs_uint16 * buf , tjs_int len)
+inline void TVPExpand8BitTo32BitGray(tjs_uint32 * dest , const tjs_uint8 * buf , tjs_int len)
 {
 	if(!TVPImportFuncPtr510)
 	{
-		static char funcname[] = "void ::TVPBLConvert15BitTo8Bit(tjs_uint8 *,const tjs_uint16 *,tjs_int)";
+		static char funcname[] = "void ::TVPExpand8BitTo32BitGray(tjs_uint32 *,const tjs_uint8 *,tjs_int)";
 		TVPImportFuncPtr510 = TVPGetImportFuncPtr(funcname);
 	}
-	typedef void (__stdcall * __functype)(tjs_uint8 *, const tjs_uint16 *, tjs_int);
+	typedef void (__stdcall * __functype)(tjs_uint32 *, const tjs_uint8 *, tjs_int);
 	((__functype)(TVPImportFuncPtr510))(dest, buf, len);
 }
-inline void TVPBLConvert15BitTo32Bit(tjs_uint32 * dest , const tjs_uint16 * buf , tjs_int len)
+inline void TVPBLConvert15BitTo8Bit(tjs_uint8 * dest , const tjs_uint16 * buf , tjs_int len)
 {
 	if(!TVPImportFuncPtr511)
 	{
-		static char funcname[] = "void ::TVPBLConvert15BitTo32Bit(tjs_uint32 *,const tjs_uint16 *,tjs_int)";
+		static char funcname[] = "void ::TVPBLConvert15BitTo8Bit(tjs_uint8 *,const tjs_uint16 *,tjs_int)";
 		TVPImportFuncPtr511 = TVPGetImportFuncPtr(funcname);
 	}
-	typedef void (__stdcall * __functype)(tjs_uint32 *, const tjs_uint16 *, tjs_int);
+	typedef void (__stdcall * __functype)(tjs_uint8 *, const tjs_uint16 *, tjs_int);
 	((__functype)(TVPImportFuncPtr511))(dest, buf, len);
 }
-inline void TVPBLConvert24BitTo8Bit(tjs_uint8 * dest , const tjs_uint8 * buf , tjs_int len)
+inline void TVPBLConvert15BitTo32Bit(tjs_uint32 * dest , const tjs_uint16 * buf , tjs_int len)
 {
 	if(!TVPImportFuncPtr512)
 	{
-		static char funcname[] = "void ::TVPBLConvert24BitTo8Bit(tjs_uint8 *,const tjs_uint8 *,tjs_int)";
+		static char funcname[] = "void ::TVPBLConvert15BitTo32Bit(tjs_uint32 *,const tjs_uint16 *,tjs_int)";
 		TVPImportFuncPtr512 = TVPGetImportFuncPtr(funcname);
 	}
-	typedef void (__stdcall * __functype)(tjs_uint8 *, const tjs_uint8 *, tjs_int);
+	typedef void (__stdcall * __functype)(tjs_uint32 *, const tjs_uint16 *, tjs_int);
 	((__functype)(TVPImportFuncPtr512))(dest, buf, len);
 }
-inline void TVPBLConvert24BitTo32Bit(tjs_uint32 * dest , const tjs_uint8 * buf , tjs_int len)
+inline void TVPBLConvert24BitTo8Bit(tjs_uint8 * dest , const tjs_uint8 * buf , tjs_int len)
 {
 	if(!TVPImportFuncPtr513)
 	{
-		static char funcname[] = "void ::TVPBLConvert24BitTo32Bit(tjs_uint32 *,const tjs_uint8 *,tjs_int)";
+		static char funcname[] = "void ::TVPBLConvert24BitTo8Bit(tjs_uint8 *,const tjs_uint8 *,tjs_int)";
 		TVPImportFuncPtr513 = TVPGetImportFuncPtr(funcname);
 	}
-	typedef void (__stdcall * __functype)(tjs_uint32 *, const tjs_uint8 *, tjs_int);
+	typedef void (__stdcall * __functype)(tjs_uint8 *, const tjs_uint8 *, tjs_int);
 	((__functype)(TVPImportFuncPtr513))(dest, buf, len);
 }
-inline void TVPConvert24BitTo32Bit(tjs_uint32 * dest , const tjs_uint8 * buf , tjs_int len)
+inline void TVPBLConvert24BitTo32Bit(tjs_uint32 * dest , const tjs_uint8 * buf , tjs_int len)
 {
 	if(!TVPImportFuncPtr514)
 	{
-		static char funcname[] = "void ::TVPConvert24BitTo32Bit(tjs_uint32 *,const tjs_uint8 *,tjs_int)";
+		static char funcname[] = "void ::TVPBLConvert24BitTo32Bit(tjs_uint32 *,const tjs_uint8 *,tjs_int)";
 		TVPImportFuncPtr514 = TVPGetImportFuncPtr(funcname);
 	}
 	typedef void (__stdcall * __functype)(tjs_uint32 *, const tjs_uint8 *, tjs_int);
 	((__functype)(TVPImportFuncPtr514))(dest, buf, len);
 }
-inline void TVPBLConvert32BitTo8Bit(tjs_uint8 * dest , const tjs_uint32 * buf , tjs_int len)
+inline void TVPConvert24BitTo32Bit(tjs_uint32 * dest , const tjs_uint8 * buf , tjs_int len)
 {
 	if(!TVPImportFuncPtr515)
 	{
-		static char funcname[] = "void ::TVPBLConvert32BitTo8Bit(tjs_uint8 *,const tjs_uint32 *,tjs_int)";
+		static char funcname[] = "void ::TVPConvert24BitTo32Bit(tjs_uint32 *,const tjs_uint8 *,tjs_int)";
 		TVPImportFuncPtr515 = TVPGetImportFuncPtr(funcname);
 	}
-	typedef void (__stdcall * __functype)(tjs_uint8 *, const tjs_uint32 *, tjs_int);
+	typedef void (__stdcall * __functype)(tjs_uint32 *, const tjs_uint8 *, tjs_int);
 	((__functype)(TVPImportFuncPtr515))(dest, buf, len);
 }
-inline void TVPBLConvert32BitTo32Bit_NoneAlpha(tjs_uint32 * dest , const tjs_uint32 * buf , tjs_int len)
+inline void TVPBLConvert32BitTo8Bit(tjs_uint8 * dest , const tjs_uint32 * buf , tjs_int len)
 {
 	if(!TVPImportFuncPtr516)
 	{
-		static char funcname[] = "void ::TVPBLConvert32BitTo32Bit_NoneAlpha(tjs_uint32 *,const tjs_uint32 *,tjs_int)";
+		static char funcname[] = "void ::TVPBLConvert32BitTo8Bit(tjs_uint8 *,const tjs_uint32 *,tjs_int)";
 		TVPImportFuncPtr516 = TVPGetImportFuncPtr(funcname);
 	}
-	typedef void (__stdcall * __functype)(tjs_uint32 *, const tjs_uint32 *, tjs_int);
+	typedef void (__stdcall * __functype)(tjs_uint8 *, const tjs_uint32 *, tjs_int);
 	((__functype)(TVPImportFuncPtr516))(dest, buf, len);
 }
-inline void TVPBLConvert32BitTo32Bit_MulAddAlpha(tjs_uint32 * dest , const tjs_uint32 * buf , tjs_int len)
+inline void TVPBLConvert32BitTo32Bit_NoneAlpha(tjs_uint32 * dest , const tjs_uint32 * buf , tjs_int len)
 {
 	if(!TVPImportFuncPtr517)
 	{
-		static char funcname[] = "void ::TVPBLConvert32BitTo32Bit_MulAddAlpha(tjs_uint32 *,const tjs_uint32 *,tjs_int)";
+		static char funcname[] = "void ::TVPBLConvert32BitTo32Bit_NoneAlpha(tjs_uint32 *,const tjs_uint32 *,tjs_int)";
 		TVPImportFuncPtr517 = TVPGetImportFuncPtr(funcname);
 	}
 	typedef void (__stdcall * __functype)(tjs_uint32 *, const tjs_uint32 *, tjs_int);
 	((__functype)(TVPImportFuncPtr517))(dest, buf, len);
 }
-inline void TVPBLConvert32BitTo32Bit_AddAlpha(tjs_uint32 * dest , const tjs_uint32 * buf , tjs_int len)
+inline void TVPBLConvert32BitTo32Bit_MulAddAlpha(tjs_uint32 * dest , const tjs_uint32 * buf , tjs_int len)
 {
 	if(!TVPImportFuncPtr518)
 	{
-		static char funcname[] = "void ::TVPBLConvert32BitTo32Bit_AddAlpha(tjs_uint32 *,const tjs_uint32 *,tjs_int)";
+		static char funcname[] = "void ::TVPBLConvert32BitTo32Bit_MulAddAlpha(tjs_uint32 *,const tjs_uint32 *,tjs_int)";
 		TVPImportFuncPtr518 = TVPGetImportFuncPtr(funcname);
 	}
 	typedef void (__stdcall * __functype)(tjs_uint32 *, const tjs_uint32 *, tjs_int);
 	((__functype)(TVPImportFuncPtr518))(dest, buf, len);
 }
-inline void TVPDither32BitTo16Bit565(tjs_uint16 * dest , const tjs_uint32 * src , tjs_int len , tjs_int xofs , tjs_int yofs)
+inline void TVPBLConvert32BitTo32Bit_AddAlpha(tjs_uint32 * dest , const tjs_uint32 * buf , tjs_int len)
 {
 	if(!TVPImportFuncPtr519)
 	{
-		static char funcname[] = "void ::TVPDither32BitTo16Bit565(tjs_uint16 *,const tjs_uint32 *,tjs_int,tjs_int,tjs_int)";
+		static char funcname[] = "void ::TVPBLConvert32BitTo32Bit_AddAlpha(tjs_uint32 *,const tjs_uint32 *,tjs_int)";
 		TVPImportFuncPtr519 = TVPGetImportFuncPtr(funcname);
 	}
-	typedef void (__stdcall * __functype)(tjs_uint16 *, const tjs_uint32 *, tjs_int , tjs_int , tjs_int);
-	((__functype)(TVPImportFuncPtr519))(dest, src, len, xofs, yofs);
+	typedef void (__stdcall * __functype)(tjs_uint32 *, const tjs_uint32 *, tjs_int);
+	((__functype)(TVPImportFuncPtr519))(dest, buf, len);
 }
-inline void TVPDither32BitTo16Bit555(tjs_uint16 * dest , const tjs_uint32 * src , tjs_int len , tjs_int xofs , tjs_int yofs)
+inline void TVPDither32BitTo16Bit565(tjs_uint16 * dest , const tjs_uint32 * src , tjs_int len , tjs_int xofs , tjs_int yofs)
 {
 	if(!TVPImportFuncPtr520)
 	{
-		static char funcname[] = "void ::TVPDither32BitTo16Bit555(tjs_uint16 *,const tjs_uint32 *,tjs_int,tjs_int,tjs_int)";
+		static char funcname[] = "void ::TVPDither32BitTo16Bit565(tjs_uint16 *,const tjs_uint32 *,tjs_int,tjs_int,tjs_int)";
 		TVPImportFuncPtr520 = TVPGetImportFuncPtr(funcname);
 	}
 	typedef void (__stdcall * __functype)(tjs_uint16 *, const tjs_uint32 *, tjs_int , tjs_int , tjs_int);
 	((__functype)(TVPImportFuncPtr520))(dest, src, len, xofs, yofs);
 }
-inline void TVPDither32BitTo8Bit(tjs_uint8 * dest , const tjs_uint32 * src , tjs_int len , tjs_int xofs , tjs_int yofs)
+inline void TVPDither32BitTo16Bit555(tjs_uint16 * dest , const tjs_uint32 * src , tjs_int len , tjs_int xofs , tjs_int yofs)
 {
 	if(!TVPImportFuncPtr521)
 	{
-		static char funcname[] = "void ::TVPDither32BitTo8Bit(tjs_uint8 *,const tjs_uint32 *,tjs_int,tjs_int,tjs_int)";
+		static char funcname[] = "void ::TVPDither32BitTo16Bit555(tjs_uint16 *,const tjs_uint32 *,tjs_int,tjs_int,tjs_int)";
 		TVPImportFuncPtr521 = TVPGetImportFuncPtr(funcname);
 	}
-	typedef void (__stdcall * __functype)(tjs_uint8 *, const tjs_uint32 *, tjs_int , tjs_int , tjs_int);
+	typedef void (__stdcall * __functype)(tjs_uint16 *, const tjs_uint32 *, tjs_int , tjs_int , tjs_int);
 	((__functype)(TVPImportFuncPtr521))(dest, src, len, xofs, yofs);
 }
-inline void TVPTLG5ComposeColors3To4(tjs_uint8 * outp , const tjs_uint8 * upper , tjs_uint8 * const * buf , tjs_int width)
+inline void TVPDither32BitTo8Bit(tjs_uint8 * dest , const tjs_uint32 * src , tjs_int len , tjs_int xofs , tjs_int yofs)
 {
 	if(!TVPImportFuncPtr522)
 	{
-		static char funcname[] = "void ::TVPTLG5ComposeColors3To4(tjs_uint8 *,const tjs_uint8 *,tjs_uint8 * const *,tjs_int)";
+		static char funcname[] = "void ::TVPDither32BitTo8Bit(tjs_uint8 *,const tjs_uint32 *,tjs_int,tjs_int,tjs_int)";
 		TVPImportFuncPtr522 = TVPGetImportFuncPtr(funcname);
 	}
-	typedef void (__stdcall * __functype)(tjs_uint8 *, const tjs_uint8 *, tjs_uint8 * const *, tjs_int);
-	((__functype)(TVPImportFuncPtr522))(outp, upper, buf, width);
+	typedef void (__stdcall * __functype)(tjs_uint8 *, const tjs_uint32 *, tjs_int , tjs_int , tjs_int);
+	((__functype)(TVPImportFuncPtr522))(dest, src, len, xofs, yofs);
 }
-inline void TVPTLG5ComposeColors4To4(tjs_uint8 * outp , const tjs_uint8 * upper , tjs_uint8 * const * buf , tjs_int width)
+inline void TVPTLG5ComposeColors3To4(tjs_uint8 * outp , const tjs_uint8 * upper , tjs_uint8 * const * buf , tjs_int width)
 {
 	if(!TVPImportFuncPtr523)
 	{
-		static char funcname[] = "void ::TVPTLG5ComposeColors4To4(tjs_uint8 *,const tjs_uint8 *,tjs_uint8 * const *,tjs_int)";
+		static char funcname[] = "void ::TVPTLG5ComposeColors3To4(tjs_uint8 *,const tjs_uint8 *,tjs_uint8 * const *,tjs_int)";
 		TVPImportFuncPtr523 = TVPGetImportFuncPtr(funcname);
 	}
 	typedef void (__stdcall * __functype)(tjs_uint8 *, const tjs_uint8 *, tjs_uint8 * const *, tjs_int);
 	((__functype)(TVPImportFuncPtr523))(outp, upper, buf, width);
 }
-inline tjs_int TVPTLG5DecompressSlide(tjs_uint8 * out , const tjs_uint8 * in , tjs_int insize , tjs_uint8 * text , tjs_int initialr)
+inline void TVPTLG5ComposeColors4To4(tjs_uint8 * outp , const tjs_uint8 * upper , tjs_uint8 * const * buf , tjs_int width)
 {
 	if(!TVPImportFuncPtr524)
 	{
-		static char funcname[] = "tjs_int ::TVPTLG5DecompressSlide(tjs_uint8 *,const tjs_uint8 *,tjs_int,tjs_uint8 *,tjs_int)";
+		static char funcname[] = "void ::TVPTLG5ComposeColors4To4(tjs_uint8 *,const tjs_uint8 *,tjs_uint8 * const *,tjs_int)";
 		TVPImportFuncPtr524 = TVPGetImportFuncPtr(funcname);
 	}
-	typedef tjs_int (__stdcall * __functype)(tjs_uint8 *, const tjs_uint8 *, tjs_int , tjs_uint8 *, tjs_int);
-	return ((__functype)(TVPImportFuncPtr524))(out, in, insize, text, initialr);
+	typedef void (__stdcall * __functype)(tjs_uint8 *, const tjs_uint8 *, tjs_uint8 * const *, tjs_int);
+	((__functype)(TVPImportFuncPtr524))(outp, upper, buf, width);
 }
-inline void TVPTLG6DecodeGolombValuesForFirst(tjs_int8 * pixelbuf , tjs_int pixel_count , tjs_uint8 * bit_pool)
+inline tjs_int TVPTLG5DecompressSlide(tjs_uint8 * out , const tjs_uint8 * in , tjs_int insize , tjs_uint8 * text , tjs_int initialr)
 {
 	if(!TVPImportFuncPtr525)
 	{
-		static char funcname[] = "void ::TVPTLG6DecodeGolombValuesForFirst(tjs_int8 *,tjs_int,tjs_uint8 *)";
+		static char funcname[] = "tjs_int ::TVPTLG5DecompressSlide(tjs_uint8 *,const tjs_uint8 *,tjs_int,tjs_uint8 *,tjs_int)";
 		TVPImportFuncPtr525 = TVPGetImportFuncPtr(funcname);
 	}
-	typedef void (__stdcall * __functype)(tjs_int8 *, tjs_int , tjs_uint8 *);
-	((__functype)(TVPImportFuncPtr525))(pixelbuf, pixel_count, bit_pool);
+	typedef tjs_int (__stdcall * __functype)(tjs_uint8 *, const tjs_uint8 *, tjs_int , tjs_uint8 *, tjs_int);
+	return ((__functype)(TVPImportFuncPtr525))(out, in, insize, text, initialr);
 }
-inline void TVPTLG6DecodeGolombValues(tjs_int8 * pixelbuf , tjs_int pixel_count , tjs_uint8 * bit_pool)
+inline void TVPTLG6DecodeGolombValuesForFirst(tjs_int8 * pixelbuf , tjs_int pixel_count , tjs_uint8 * bit_pool)
 {
 	if(!TVPImportFuncPtr526)
 	{
-		static char funcname[] = "void ::TVPTLG6DecodeGolombValues(tjs_int8 *,tjs_int,tjs_uint8 *)";
+		static char funcname[] = "void ::TVPTLG6DecodeGolombValuesForFirst(tjs_int8 *,tjs_int,tjs_uint8 *)";
 		TVPImportFuncPtr526 = TVPGetImportFuncPtr(funcname);
 	}
 	typedef void (__stdcall * __functype)(tjs_int8 *, tjs_int , tjs_uint8 *);
 	((__functype)(TVPImportFuncPtr526))(pixelbuf, pixel_count, bit_pool);
 }
-inline void TVPTLG6DecodeLineGeneric(tjs_uint32 * prevline , tjs_uint32 * curline , tjs_int width , tjs_int start_block , tjs_int block_limit , tjs_uint8 * filtertypes , tjs_int skipblockbytes , tjs_uint32 * in , tjs_uint32 initialp , tjs_int oddskip , tjs_int dir)
+inline void TVPTLG6DecodeGolombValues(tjs_int8 * pixelbuf , tjs_int pixel_count , tjs_uint8 * bit_pool)
 {
 	if(!TVPImportFuncPtr527)
 	{
-		static char funcname[] = "void ::TVPTLG6DecodeLineGeneric(tjs_uint32 *,tjs_uint32 *,tjs_int,tjs_int,tjs_int,tjs_uint8 *,tjs_int,tjs_uint32 *,tjs_uint32,tjs_int,tjs_int)";
+		static char funcname[] = "void ::TVPTLG6DecodeGolombValues(tjs_int8 *,tjs_int,tjs_uint8 *)";
 		TVPImportFuncPtr527 = TVPGetImportFuncPtr(funcname);
 	}
-	typedef void (__stdcall * __functype)(tjs_uint32 *, tjs_uint32 *, tjs_int , tjs_int , tjs_int , tjs_uint8 *, tjs_int , tjs_uint32 *, tjs_uint32 , tjs_int , tjs_int);
-	((__functype)(TVPImportFuncPtr527))(prevline, curline, width, start_block, block_limit, filtertypes, skipblockbytes, in, initialp, oddskip, dir);
+	typedef void (__stdcall * __functype)(tjs_int8 *, tjs_int , tjs_uint8 *);
+	((__functype)(TVPImportFuncPtr527))(pixelbuf, pixel_count, bit_pool);
 }
-inline void TVPTLG6DecodeLine(tjs_uint32 * prevline , tjs_uint32 * curline , tjs_int width , tjs_int block_count , tjs_uint8 * filtertypes , tjs_int skipblockbytes , tjs_uint32 * in , tjs_uint32 initialp , tjs_int oddskip , tjs_int dir)
+inline void TVPTLG6DecodeLineGeneric(tjs_uint32 * prevline , tjs_uint32 * curline , tjs_int width , tjs_int start_block , tjs_int block_limit , tjs_uint8 * filtertypes , tjs_int skipblockbytes , tjs_uint32 * in , tjs_uint32 initialp , tjs_int oddskip , tjs_int dir)
 {
 	if(!TVPImportFuncPtr528)
 	{
-		static char funcname[] = "void ::TVPTLG6DecodeLine(tjs_uint32 *,tjs_uint32 *,tjs_int,tjs_int,tjs_uint8 *,tjs_int,tjs_uint32 *,tjs_uint32,tjs_int,tjs_int)";
+		static char funcname[] = "void ::TVPTLG6DecodeLineGeneric(tjs_uint32 *,tjs_uint32 *,tjs_int,tjs_int,tjs_int,tjs_uint8 *,tjs_int,tjs_uint32 *,tjs_uint32,tjs_int,tjs_int)";
 		TVPImportFuncPtr528 = TVPGetImportFuncPtr(funcname);
 	}
+	typedef void (__stdcall * __functype)(tjs_uint32 *, tjs_uint32 *, tjs_int , tjs_int , tjs_int , tjs_uint8 *, tjs_int , tjs_uint32 *, tjs_uint32 , tjs_int , tjs_int);
+	((__functype)(TVPImportFuncPtr528))(prevline, curline, width, start_block, block_limit, filtertypes, skipblockbytes, in, initialp, oddskip, dir);
+}
+inline void TVPTLG6DecodeLine(tjs_uint32 * prevline , tjs_uint32 * curline , tjs_int width , tjs_int block_count , tjs_uint8 * filtertypes , tjs_int skipblockbytes , tjs_uint32 * in , tjs_uint32 initialp , tjs_int oddskip , tjs_int dir)
+{
+	if(!TVPImportFuncPtr529)
+	{
+		static char funcname[] = "void ::TVPTLG6DecodeLine(tjs_uint32 *,tjs_uint32 *,tjs_int,tjs_int,tjs_uint8 *,tjs_int,tjs_uint32 *,tjs_uint32,tjs_int,tjs_int)";
+		TVPImportFuncPtr529 = TVPGetImportFuncPtr(funcname);
+	}
 	typedef void (__stdcall * __functype)(tjs_uint32 *, tjs_uint32 *, tjs_int , tjs_int , tjs_uint8 *, tjs_int , tjs_uint32 *, tjs_uint32 , tjs_int , tjs_int);
-	((__functype)(TVPImportFuncPtr528))(prevline, curline, width, block_count, filtertypes, skipblockbytes, in, initialp, oddskip, dir);
+	((__functype)(TVPImportFuncPtr529))(prevline, curline, width, block_count, filtertypes, skipblockbytes, in, initialp, oddskip, dir);
 }
 
 #ifdef __BORLANDC__
