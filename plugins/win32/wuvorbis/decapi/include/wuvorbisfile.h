@@ -131,6 +131,8 @@ extern wu_vorbis_comment * (_cdecl *wu_ov_comment)(wu_OggVorbis_File *vf,int lin
 extern long  (_cdecl *wu_ov_read_float)(wu_OggVorbis_File *vf,float ***pcm_channels,int samples,			  int *bitstream);
 extern long  (_cdecl *wu_ov_read)(wu_OggVorbis_File *vf,char *buffer,int length,		    int bigendianp,int word,int sgned,int *bitstream);
 extern int  (_cdecl *wu_ov_crosslap)(wu_OggVorbis_File *vf1,wu_OggVorbis_File *vf2);
+extern int  (_cdecl *wu_ov_halfrate)(wu_OggVorbis_File *vf,int flag);
+extern int  (_cdecl *wu_ov_halfrate_p)(wu_OggVorbis_File *vf);
 extern void  (_cdecl *wu_SetCPUType)(unsigned __int32 type);
 extern unsigned __int32  (_cdecl *wu_DetectCPU)(void);
 extern void  (_cdecl *wu_ScaleOutput)(float scale);

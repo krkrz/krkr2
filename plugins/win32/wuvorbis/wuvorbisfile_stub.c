@@ -88,6 +88,12 @@ extern long  _cdecl wu_ov_read (wu_OggVorbis_File *vf,char *buffer,int length,		
 extern int  _cdecl wu_ov_crosslap (wu_OggVorbis_File *vf1,wu_OggVorbis_File *vf2){
 	return (int) ov_crosslap((OggVorbis_File *)vf1,(OggVorbis_File *)vf2);
 }
+extern int  _cdecl wu_ov_halfrate (wu_OggVorbis_File *vf,int flag){
+	return (int) ov_halfrate((OggVorbis_File *)vf,(int)flag);
+}
+extern int  _cdecl wu_ov_halfrate_p (wu_OggVorbis_File *vf){
+	return (int) ov_halfrate_p((OggVorbis_File *)vf);
+}
 extern void  _cdecl wu_SetCPUType (unsigned __int32 type){
 	SetCPUType((unsigned __int32)type);
 }

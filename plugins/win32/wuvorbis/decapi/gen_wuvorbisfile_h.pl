@@ -4,8 +4,8 @@
 
 $file = "../vorbis/include/vorbis/vorbisfile.h";
 $codec_h = "../vorbis/include/vorbis/codec.h";
-$cpulib = "../../../../visual/IA32/tvpgl_ia32_intf.h";
-$dll = "..\\binary\\wuvorbis.dll";
+$cpulib = "../../../../core/visual/IA32/tvpgl_ia32_intf.h";
+$dll = "../../../../../bin/win32/plugin/wuvorbis.dll";
 $def = "..\\wuvorbis.def";
 
 open FH, $file or die;
