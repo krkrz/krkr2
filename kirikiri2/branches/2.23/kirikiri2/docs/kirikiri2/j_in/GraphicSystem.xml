@@ -65,18 +65,34 @@
 
 <dl>
 
-<dt><kw>ltCoverRect</kw></dt>
+<dt><kw>ltOpaque</kw> (<kw>ltCoverRect</kw>)</dt>
 <dd>
-　ltCoverRect は透過を伴わない表示です。常にレイヤの矩形全体が完全不透明な表示になります ( このレイヤタイプに限りませんが、<at href="f_Layer_opacity.html">Layer.opacity</at> で不透明度を下げている場合はそれに従います )。<r/>
+　ltOpaque は透過を伴わない表示です。常にレイヤの矩形全体が完全不透明な表示になります ( このレイヤタイプに限りませんが、<at href="f_Layer_opacity.html">Layer.opacity</at> で不透明度を下げている場合はそれに従います )。<r/>
 <r/>
 式 : <i>result</i> = <i>src</i>
+<note>
+ltCoverRect でも同じ意味になりますが、2.23 beta 2 未満における古い名称です。
+</note>
 </dd>
 
-<dt><kw>ltTransparent</kw></dt>
+<dt><kw>ltAlpha</kw> (<kw>ltTransparent</kw>)</dt>
 <dd>
-　ltTransparent はα合成を行います。透過を行う際のもっとも基本的なタイプです。BMP や Susie plug-in からのαチャネルの入力においても下記の式が使われます。<r/>
+　ltAlpha はα合成を行います。透過を行う際のもっとも基本的なタイプです。BMP や Susie plug-in からのαチャネルの入力においても下記の式が使われます。<r/>
 <r/>
 式 : <i>result</i> = <i>dest</i> × ( 1.0 - <i>α</i> ) + <i>src</i> × <i>α</i>
+<note>
+ltTransparent でも同じ意味になりますが、2.23 beta 2 未満における古い名称です。
+</note>
+</dd>
+
+<dt><kw>ltAddAlpha</kw></dt>
+<dd>
+　ltAddAlpha は加算α合成を行います。<r/>
+　<link href="TPC" />でこの形式に適した画像を出力できます。また、<at href="f_Layer_convertType.html">Layer.convertType</at> メソッドで ltAlpha からこの形式に変換することができます。<r/>
+　ltAlpha よりも高速に演算でき、αブレンドとともに加算合成も行えるという特徴があります。<r/>
+　ltAddAlphaのレイヤは、ltAlpha のレイヤの直接の子になると正常に表示できません。<r/>
+<r/>
+式 : <i>result</i> = <i>dest</i> × ( 1.0 - <i>α</i> ) + <i>src</i>
 </dd>
 
 <dt><kw>ltAdditive</kw></dt>
@@ -144,5 +160,29 @@
 </dl>
 
 </para>
+
+<para>
+<ptitle>レイヤタイプと描画方式と演算モード</ptitle>
+　吉里吉里にはレイヤタイプ (ltで始まる定数で指定)と、描画方式 (dfで始まる定数で指定) と、演算モード (omで始まる定数で指定)があります。<r/>
+　それぞれ似たような名称を持っていますが、用途は以下のように分かれています。<r/>
+<dl>
+
+<dt>レイヤタイプ</dt>
+<dd>
+　レイヤタイプは <at href="f_Layer_type.html">Layer.type</at> プロパティで指定する値で、レイヤがどのように表示されるかを指定します。
+</dd>
+
+<dt>描画方式</dt>
+<dd>
+　描画方式は <at href="f_Layer_face.html">Layer.face</at> プロパティで指定する値で、レイヤにどのように描画するかを指定します。dfAutoを指定すると、レイヤタイプに従って適切な描画方式が決定されます。レイヤタイプと異なる描画方式で描画することもできます。<r/>
+</dd>
+
+<dt>演算モード</dt>
+<dd>
+　演算モードは <at href="f_Layer.operateRect.html">Layer.operateRect</at> メソッドなどの引数で指定する値で、演算元(重ね合わせるレイヤ) をどのように扱うかを指定する値です。omAuto を指定すると、演算元のレイヤタイプに従って適切なモードが決定されます。
+</dd>
+
+</para>
+
 
 </doc>

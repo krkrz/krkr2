@@ -104,8 +104,8 @@ with(Plugins)
 {
 	.link("wutcwf.dll");
 	.link("wumsadp.dll");
-//	.link("wuvorbis.dll");
-	.link("../wuvorbis/binary/wuvorbis.dll");
+	.link("wuvorbis.dll");
+//	.link("../wuvorbis/binary/wuvorbis.dll");
 	.link("fftgraph.dll");
 
 //	.link("c:\\pwork\\wuvorbis_tremor.dll");
