@@ -992,7 +992,7 @@ tjs_int tTJSInterCodeContext::GenNodeCode(tjs_int & frame, tTJSExprNode *node,
 
 	switch(node->GetOpecode())
 	{
-	case T_CONSTVAL:
+	case T_CONSTVAL: // constant value
 	  {
 		// a code that refers the constant value
 		if(TJSIsModifySubType(param.SubType)) _yyerror(TJSCannotModifyLHS, Block);
@@ -1004,7 +1004,7 @@ tjs_int tTJSInterCodeContext::GenNodeCode(tjs_int & frame, tTJSExprNode *node,
 		return frame++;
 	  }
 
-	case T_IF:
+	case T_IF: // 'if' operator
 	  {
 		// "if" operator
 		// evaluate right node. then evaluate left node if the right results true.
@@ -1031,7 +1031,7 @@ tjs_int tTJSInterCodeContext::GenNodeCode(tjs_int & frame, tTJSExprNode *node,
 		return 0;
 	  }
 
-	case T_INCONTEXTOF:
+	case T_INCONTEXTOF: // 'incontextof' operator
 	  {
 		// "incontextof" operator
 		// a special operator that changes objeect closure's context
@@ -1054,13 +1054,13 @@ tjs_int tTJSInterCodeContext::GenNodeCode(tjs_int & frame, tTJSExprNode *node,
 		return resaddr1;
 	  }
 
-	case T_COMMA:
+	case T_COMMA: // ',' operator
 		// comma operator
 		_GenNodeCode(frame, (*node)[0], 0, 0, tSubParam());
 		return _GenNodeCode(frame, (*node)[1], restype, reqresaddr, param);
 
 
-	case T_SWAP:
+	case T_SWAP: // '<->' operator
 	  {
 		// swap operator
 		if(restype & TJS_RT_NEEDED) _yyerror(TJSCannotGetResult, Block);
@@ -1094,7 +1094,7 @@ tjs_int tTJSInterCodeContext::GenNodeCode(tjs_int & frame, tTJSExprNode *node,
 		return 0;
 	  }
 
-	case T_EQUAL:
+	case T_EQUAL: // '=' operator
 	  {
 		// simple substitution
 		if(param.SubType) _yyerror(TJSCannotModifyLHS, Block);
@@ -1107,20 +1107,20 @@ tjs_int tTJSInterCodeContext::GenNodeCode(tjs_int & frame, tTJSExprNode *node,
 		return resaddr;
 	  }
 
-	case T_AMPERSANDEQUAL:
-	case T_VERTLINEEQUAL:
-	case T_CHEVRONEQUAL:
-	case T_MINUSEQUAL:
-	case T_PLUSEQUAL:
-	case T_PERCENTEQUAL:
-	case T_SLASHEQUAL:
-	case T_BACKSLASHEQUAL:
-	case T_ASTERISKEQUAL:
-	case T_LOGICALOREQUAL:
-	case T_LOGICALANDEQUAL:
-	case T_RARITHSHIFTEQUAL:
-	case T_LARITHSHIFTEQUAL:
-	case T_RBITSHIFTEQUAL:
+	case T_AMPERSANDEQUAL:		// '&=' operator
+	case T_VERTLINEEQUAL:		// '|=' operator
+	case T_CHEVRONEQUAL:		// '^=' operator
+	case T_MINUSEQUAL:			// ^-=' operator
+	case T_PLUSEQUAL:			// '+=' operator
+	case T_PERCENTEQUAL:		// '%=' operator
+	case T_SLASHEQUAL:			// '/=' operator
+	case T_BACKSLASHEQUAL:		// '\=' operator
+	case T_ASTERISKEQUAL:		// '*=' operator
+	case T_LOGICALOREQUAL:		// '||=' operator
+	case T_LOGICALANDEQUAL:		// '&&=' operator
+	case T_RARITHSHIFTEQUAL:	// '>>=' operator
+	case T_LARITHSHIFTEQUAL:	// '<<=' operator
+	case T_RBITSHIFTEQUAL:		// '>>>=' operator
 	  {
 		// operation and substitution operators like "&="
 		if(param.SubType) _yyerror(TJSCannotModifyLHS, Block);
@@ -1148,7 +1148,7 @@ tjs_int tTJSInterCodeContext::GenNodeCode(tjs_int & frame, tTJSExprNode *node,
 		return _GenNodeCode(frame, (*node)[0], restype, reqresaddr, param2);
 	  }
 
-	case T_QUESTION:
+	case T_QUESTION: // '?' ':' operator
 	  {
 		// three-term operator ( ?  :  )
 		tjs_int resaddr1, resaddr2;
@@ -1241,8 +1241,8 @@ tjs_int tTJSInterCodeContext::GenNodeCode(tjs_int & frame, tTJSExprNode *node,
 		return (restype & TJS_RT_CFLAG)?TJS_GNC_CFLAG: resaddr1;
 	  }
 
-	case T_LOGICALOR:
-	case T_LOGICALAND:
+	case T_LOGICALOR: // '||' operator
+	case T_LOGICALAND: // '&&' operator
 	  {
 		// "logical or" and "logical and"
 		// these process with the "shortcut" :
@@ -1297,7 +1297,7 @@ tjs_int tTJSInterCodeContext::GenNodeCode(tjs_int & frame, tTJSExprNode *node,
 			(inv?TJS_GNC_CFLAG_I:TJS_GNC_CFLAG) : resaddr1;
 	  }
 
-	case T_INSTANCEOF:
+	case T_INSTANCEOF: // 'instanceof' operator
 	  {
 		// instanceof operator
 		tjs_int resaddr1, resaddr2;
@@ -1317,18 +1317,18 @@ tjs_int tTJSInterCodeContext::GenNodeCode(tjs_int & frame, tTJSExprNode *node,
         return resaddr1;
 	  }
 
-	case T_VERTLINE:
-	case T_CHEVRON:
-	case T_AMPERSAND:
-	case T_RARITHSHIFT:
-	case T_LARITHSHIFT:
-	case T_RBITSHIFT:
-	case T_PLUS:
-	case T_MINUS:
-	case T_PERCENT:
-	case T_SLASH:
-	case T_BACKSLASH:
-	case T_ASTERISK:
+	case T_VERTLINE:	// '|' operator
+	case T_CHEVRON:		// '^' operator
+	case T_AMPERSAND:	// binary '&' operator
+	case T_RARITHSHIFT:	// '>>' operator
+	case T_LARITHSHIFT:	// '<<' operator
+	case T_RBITSHIFT:	// '>>>' operator
+	case T_PLUS:		// binary '+' operator
+	case T_MINUS:		// '-' operator
+	case T_PERCENT:		// '%' operator
+	case T_SLASH:		// '/' operator
+	case T_BACKSLASH:	// '\' operator
+	case T_ASTERISK:	// binary '*' operator
 	  {
 		// general two-term operators
 		tjs_int resaddr1, resaddr2;
@@ -1366,14 +1366,14 @@ tjs_int tTJSInterCodeContext::GenNodeCode(tjs_int & frame, tTJSExprNode *node,
 		return resaddr1;
 	  }
 
-	case T_NOTEQUAL:
-	case T_EQUALEQUAL:
-	case T_DISCNOTEQUAL:
-	case T_DISCEQUAL:
-	case T_LT:
-	case T_GT:
-	case T_LTOREQUAL:
-	case T_GTOREQUAL:
+	case T_NOTEQUAL:		// '!=' operator
+	case T_EQUALEQUAL:		// '==' operator
+	case T_DISCNOTEQUAL:	// '!==' operator
+	case T_DISCEQUAL:		// '===' operator
+	case T_LT:				// '<' operator
+	case T_GT:				// '>' operator
+	case T_LTOREQUAL:		// '<=' operator
+	case T_GTOREQUAL:		// '>=' operator
 	  {
 		// comparison operators
 		tjs_int resaddr1, resaddr2;
@@ -1418,7 +1418,7 @@ tjs_int tTJSInterCodeContext::GenNodeCode(tjs_int & frame, tTJSExprNode *node,
 			(code2 == VM_SETNF?TJS_GNC_CFLAG_I:TJS_GNC_CFLAG):resaddr1;
 	  }
 
-	case T_EXCRAMATION:
+	case T_EXCRAMATION: // pre-positioned '!' operator
 	  {
 		// logical not
 		if(TJSIsModifySubType(param.SubType)) _yyerror(TJSCannotModifyLHS, Block);
@@ -1454,19 +1454,18 @@ tjs_int tTJSInterCodeContext::GenNodeCode(tjs_int & frame, tTJSExprNode *node,
 
 	  }
 
-//	case T_EXCRAMATION:
-	case T_TILDE:
-	case T_SHARP:
-	case T_DOLLAR:
-	case T_UPLUS:
-	case T_UMINUS:
-	case T_INVALIDATE:
-	case T_ISVALID:
-	case T_EVAL:
-	case T_INT:
-	case T_REAL:
-	case T_STRING:
-	case T_OCTET:
+	case T_TILDE:		// '~' operator
+	case T_SHARP:		// '#' operator
+	case T_DOLLAR:		// '$' operator
+	case T_UPLUS:		// unary '+' operator
+	case T_UMINUS:		// unary '-' operator
+	case T_INVALIDATE:	// 'invalidate' operator
+	case T_ISVALID:		// 'isvalid' operator
+	case T_EVAL:		// post-positioned '!' operator
+	case T_INT:			// 'int' operator
+	case T_REAL:		// 'real' operator
+	case T_STRING:		// 'string' operator
+	case T_OCTET:		// 'octet' operator
 	  {
 		// general unary operators
 		if(TJSIsModifySubType(param.SubType)) _yyerror(TJSCannotModifyLHS, Block);
@@ -1513,7 +1512,7 @@ tjs_int tTJSInterCodeContext::GenNodeCode(tjs_int & frame, tTJSExprNode *node,
 	  }
 
 
-	case T_TYPEOF:
+	case T_TYPEOF:  // 'typeof' operator
 	  {
 		// typeof
 		if(TJSIsModifySubType(param.SubType)) _yyerror(TJSCannotModifyLHS, Block);
@@ -1552,11 +1551,11 @@ tjs_int tTJSInterCodeContext::GenNodeCode(tjs_int & frame, tTJSExprNode *node,
 		}
 	  }
 
-	case T_DELETE:
-	case T_INCREMENT:
-	case T_DECREMENT:
-	case T_POSTINCREMENT:
-	case T_POSTDECREMENT:
+	case T_DELETE:			// 'delete' operator
+	case T_INCREMENT:		// pre-positioned '++' operator
+	case T_DECREMENT:		// pre-positioned '--' operator
+	case T_POSTINCREMENT:	// post-positioned '++' operator
+	case T_POSTDECREMENT:	// post-positioned '--' operator
 	  {
 		// delete, typeof, increment and decrement
 		if(TJSIsModifySubType(param.SubType)) _yyerror(TJSCannotModifyLHS, Block);
@@ -1574,8 +1573,8 @@ tjs_int tTJSInterCodeContext::GenNodeCode(tjs_int & frame, tTJSExprNode *node,
 		return _GenNodeCode(frame, (*node)[0], restype, reqresaddr, param2);
 	  }
 
-	case T_LPARENTHESIS:
-	case T_NEW:
+	case T_LPARENTHESIS:	// '( )' operator
+	case T_NEW:				// 'new' operator
 	  {
 		// function call or create-new object
 
@@ -1710,8 +1709,8 @@ tjs_int tTJSInterCodeContext::GenNodeCode(tjs_int & frame, tTJSExprNode *node,
 		AddOmitArg();
         return 0;
 
-	case T_DOT:
-	case T_LBRACKET:
+	case T_DOT:			// '.' operator
+	case T_LBRACKET:	// '[ ]' operator
 	  {
 		// member access ( direct or indirect )
 		bool direct = node->GetOpecode() == T_DOT;
@@ -1857,7 +1856,7 @@ tjs_int tTJSInterCodeContext::GenNodeCode(tjs_int & frame, tTJSExprNode *node,
 	  }
 
 
-	case T_SYMBOL:
+	case T_SYMBOL:	// symbol
 	  {
 		// accessing to a variable
 		tjs_int n;
@@ -2001,7 +2000,7 @@ tjs_int tTJSInterCodeContext::GenNodeCode(tjs_int & frame, tTJSExprNode *node,
 	  }
 
 
-	case T_SUPER:
+	case T_SUPER: // 'super'
 	  {
 		// refer super class
 
@@ -2053,7 +2052,7 @@ tjs_int tTJSInterCodeContext::GenNodeCode(tjs_int & frame, tTJSExprNode *node,
 		// refers "global".
 		return -VariableReserveCount;
 
-	case T_WITHDOT:
+	case T_WITHDOT: // unary '.' operator
 	  {
 		// dot operator omitting object name
 		tTJSExprNode nodep;
