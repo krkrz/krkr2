@@ -24,7 +24,6 @@ enum tTVPSoundStatus
 	ssPlay, // play
 // Start:	Add:	T.Imoto
 	ssPause, // pause
-	ssPeriod, // period
 // End:		Add:	T.Imoto
 };
 //---------------------------------------------------------------------------

@@ -1419,6 +1419,7 @@ static tjs_uint32 __stdcall TVP_Stub_9e0df54e4c24ee28d5517c1743faa3a3(tjs_uint32
 #include "WindowIntf.h"
 #include "WindowImpl.h"
 #include "voMode.h"
+#include "VideoOvlIntf.h"
 #include "TransIntf.h"
 static iTVPScanLineProvider * __stdcall TVP_Stub_9982ebedc12d343cb098e2a7b25bdef1(const ttstr & name , tjs_int bpp , tjs_uint32 key , tjs_uint w , tjs_uint h)
 {

@@ -530,6 +530,9 @@ process_exp_stub("../../visual/win32/WindowImpl.h");
 print OFH "#include \"voMode.h\"\n";
 process_exp_stub("../../visual/voMode.h");
 
+print OFH "#include \"VideoOvlIntf.h\"\n";
+process_exp_stub("../../visual/VideoOvlIntf.h");
+
 print OFH "#include \"TransIntf.h\"\n";
 process_exp_stub("../../visual/TransIntf.h");
 

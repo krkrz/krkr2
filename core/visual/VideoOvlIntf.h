@@ -14,6 +14,21 @@
 #include "tjsNative.h"
 #include "SoundBufferBaseIntf.h"
 
+/*[*/
+//---------------------------------------------------------------------------
+// tTVPPeriodEventType : event type in onPeriod event
+//---------------------------------------------------------------------------
+enum tTVPPeriodEventReason
+{
+	perLoop, // the event is by loop rewind
+	perPeriod, // the event is by period point specified by the user
+	perPrepare // the event is by prepare() method
+};
+
+
+
+/*]*/
+
 //---------------------------------------------------------------------------
 // tTJSNI_BaseVideoOverlay
 //---------------------------------------------------------------------------
@@ -40,6 +55,7 @@ protected:
 	void SetStatus(tTVPSoundStatus s);
 	void SetStatusAsync(tTVPSoundStatus s);
 	void FireCallbackCommand(const ttstr & command, const ttstr & argument);
+	void FirePeriodEvent(tTVPPeriodEventReason reason);
 
 
 public:
