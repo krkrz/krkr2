@@ -15,7 +15,7 @@
 #include "tjsUtils.h"
 #include "tjsNative.h"
 #include "tjsHashSearch.h"
-#include "tjsInterCodeGen.h"
+#include "tjsGlobalStringMap.h"
 
 
 namespace TJS

@@ -130,12 +130,6 @@ public:
 	unsigned int GetSize() const { if(Nodes) return Nodes->size(); else return 0;}
 };
 //---------------------------------------------------------------------------
-// tTJSGlobalStringMap - hash map to keep constant strings shared
-//---------------------------------------------------------------------------
-extern void TJSAddRefGlobalStringMap();
-extern void TJSReleaseGlobalStringMap();
-TJS_EXP_FUNC_DEF(ttstr, TJSMapGlobalStringMap, (const ttstr & string));
-//---------------------------------------------------------------------------
 // tTJSInterCodeContext - Intermediate Code Context
 //---------------------------------------------------------------------------
 /*
