@@ -342,6 +342,7 @@ TJS_MSG_DECL(TJSInvalidParam, "Invalid argument")
 TJS_MSG_DECL(TJSBadParamCount, "Invalid argument count")
 TJS_MSG_DECL(TJSInvalidType, "Not a function or invalid method/property type")
 TJS_MSG_DECL(TJSSpecifyDicOrArray, "Specify a Dictionary object or an Array object");
+TJS_MSG_DECL(TJSSpecifyArray, "Specify an Array object");
 TJS_MSG_DECL(TJSStringDeallocError, "Cannot free the string memory block")
 TJS_MSG_DECL(TJSStringAllocError, "Cannot allocate the string memory block")
 TJS_MSG_DECL(TJSMisplacedBreakContinue, "Cannot place \"break\" or \"continue\" here")
