@@ -175,6 +175,13 @@ void tTJSInterCodeContext::Disassemble(
 			TJS_FROM_VM_REG_ADDR(CodeArea[i+3]), \
 			TJS_FROM_VM_REG_ADDR(CodeArea[i+4])); \
 		size = 5; \
+		break; \
+	case c+3: \
+		msg.printf(TJS_W(x "p" " %%%d, %%%d, %%%d"), \
+			TJS_FROM_VM_REG_ADDR(CodeArea[i+1]), \
+			TJS_FROM_VM_REG_ADDR(CodeArea[i+2]), \
+			TJS_FROM_VM_REG_ADDR(CodeArea[i+3])); \
+		size = 4; \
 		break
 		// instructions that
 		// 1. have two operands that represent registers.
@@ -252,6 +259,12 @@ void tTJSInterCodeContext::Disassemble(
 			TJS_FROM_VM_REG_ADDR(CodeArea[i+2]), \
 			TJS_FROM_VM_REG_ADDR(CodeArea[i+3])); \
 		size = 4; \
+		break; \
+	case c+3: \
+		msg.printf(TJS_W(x "p" " %%%d, %%%d"), \
+			TJS_FROM_VM_REG_ADDR(CodeArea[i+1]), \
+			TJS_FROM_VM_REG_ADDR(CodeArea[i+2])); \
+		size = 3; \
 		break
 
 		// inc and dec
@@ -418,6 +431,25 @@ void tTJSInterCodeContext::Disassemble(
 				TJS_FROM_VM_REG_ADDR(CodeArea[i+2]),
 				TJS_FROM_VM_REG_ADDR(CodeArea[i+3]));
 			size = 4;
+			break;
+
+
+		case VM_SETP:
+			// property set
+			msg.printf(
+				TJS_W("setp %%%d, %%%d"),
+					TJS_FROM_VM_REG_ADDR(CodeArea[i+1]),
+					TJS_FROM_VM_REG_ADDR(CodeArea[i+2]));
+			size = 3;
+			break;
+
+		case VM_GETP:
+			// property get
+			msg.printf(
+				TJS_W("getp %%%d, %%%d"),
+					TJS_FROM_VM_REG_ADDR(CodeArea[i+1]),
+					TJS_FROM_VM_REG_ADDR(CodeArea[i+2]));
+			size = 3;
 			break;
 
 
