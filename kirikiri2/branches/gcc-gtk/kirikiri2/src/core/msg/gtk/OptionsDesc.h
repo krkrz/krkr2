@@ -6,14 +6,10 @@
 	See details of license at "license.txt"
 */
 //---------------------------------------------------------------------------
-// Thread base class
+#ifndef OptionsDescH
+#define OptionsDescH
+
+extern ttstr TVPGetCommandDesc();
+
+#endif
 //---------------------------------------------------------------------------
-#include "tjsCommHead.h"
-
-#include "ThreadIntf.h"
-#include "gtk/ThreadImpl.h"
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-

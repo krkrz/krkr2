@@ -19,7 +19,11 @@
 	#define TVP_MSG_DECL_CONST(name, msg) extern tTJSMessageHolder name;
 #endif
 
-#include "MsgImpl.h"
+#ifdef __GNUC__
+#  include "gtk/MsgImpl.h"
+#else
+#  include "win32/MsgImpl.h"
+#endif
 
 #include "svn_revision.h"
 
@@ -29,12 +33,12 @@
 // Japanese localized messages
 TVP_MSG_DECL_CONST(TVPAboutString,
 	
-"媑棦媑棦[偒傝偒傝] 2 幚峴僐傾 version %1 ( TJS version %2 )\n"
+"等韦等韦[きりきり] 2 悸乖コア version %1 ( TJS version %2 )\n"
 "Compiled on " __DATE__ " " __TIME__ "\n"
 TVP_SVN_REVISION "\n"
 "Copyright (C) 1997-2005 W.Dee All rights reserved.\n"
-"媑棦媑棦幚峴僐傾偺巊梡/攝晍/夵曄偼丄\n"
-"SDK 晅懏偺 license.txt 偵彂偐傟偰偄傞儔僀僙儞僗偵廬偭偰峴偆偙偲偑偱偒傑偡.\n"
+"等韦等韦悸乖コアの蝗脱/芹邵/猖恃は、\n"
+"SDK 烧掳の license.txt に今かれているライセンスに骄って乖うことができます.\n"
 "------------------------------------------------------------------------------\n"
 "Thanks for many libraries, contributers and supporters not listible here.\n"
 "This software is based in part on the work of Independent JPEG Group.\n"
@@ -73,292 +77,292 @@ TVP_SVN_REVISION "\n"
 "   NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS\n"
 "   SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.\n"
 "------------------------------------------------------------------------------\n"
-"娐嫬忣曬\n"
+"茨董攫鼠\n"
   // important log (environment information, Debug.notice etc.) comes here
 );
 
 TVP_MSG_DECL_CONST(TVPVersionInformation,
 	
-"媑棦媑棦[偒傝偒傝] 2 幚峴僐傾/%1 "
+"等韦等韦[きりきり] 2 悸乖コア/%1 "
 "(SVN revision:" TVP_SVN_REVISION_NUMBER "; Compiled on " __DATE__ " " __TIME__ ") TJS2/%2 "
 "Copyright (C) 1997-2005 W.Dee All rights reserved.");
 
 TVP_MSG_DECL_CONST(TVPVersionInformation2,
-	"僶乕僕儑儞忣曬偺徻嵶偼 Ctrl + F12 偱墈棗偱偒傑偡");
+	"バ〖ジョン攫鼠の拒嘿は Ctrl + F12 で避枉できます");
 
 TVP_MSG_DECL_CONST(TVPDownloadPageURL,
 	"http://kikyou.info/tvp/");
 
 TVP_MSG_DECL(TVPInternalError,
-	"撪晹僄儔乕偑敪惗偟傑偟偨: at %1 line %2");
+	"柒婶エラ〖が券栏しました: at %1 line %2");
 
 TVP_MSG_DECL(TVPInvalidParam,
-	"晄惓側僷儔儊乕僞偱偡");
+	"稍赖なパラメ〖タです");
 
 TVP_MSG_DECL(TVPWarnDebugOptionEnabled,
-	"-debug 僆僾僔儑儞偑巜掕偝傟偰偄傞偨傔丄尰嵼 媑棦媑棦偼僨僶僢僌儌乕僪偱摦嶌偟偰偄傑偡丅僨僶僢僌儌乕僪偱偼廫暘側幚峴懍搙偑弌側偄応崌偑偁傞偺偱拲堄偟偰偔偩偝偄");
+	"-debug オプションが回年されているため、附哼 等韦等韦はデバッグモ〖ドで瓢侯しています。デバッグモ〖ドでは浇尸な悸乖庐刨が叫ない眷圭があるので庙罢してください");
 
 TVP_MSG_DECL(TVPCommandLineParamIgnoredAndDefaultUsed,
-	"僐儅儞僪儔僀儞僷儔儊乕僞 %1 偵巜掕偝傟偨抣 %2 偼柍岠偺偨傔僨僼僅儖僩偺愝掕傪梡偄傑偡");
+	"コマンドラインパラメ〖タ %1 に回年された猛 %2 は痰跟のためデフォルトの肋年を脱います");
 
 TVP_MSG_DECL(TVPInvalidCommandLineParam,
-	"僐儅儞僪儔僀儞僷儔儊乕僞 %1 偵巜掕偝傟偨抣 %2 偼柍岠偱偡");
+	"コマンドラインパラメ〖タ %1 に回年された猛 %2 は痰跟です");
 
 TVP_MSG_DECL(TVPNotImplemented,
-	"枹幚憰偺婡擻傪屇傃弌偦偆偲偟傑偟偨");
+	"踏悸刘の怠墙を钙び叫そうとしました");
 
 TVP_MSG_DECL(TVPCannotOpenStorage,
-	"僗僩儗乕僕 %1 傪奐偔偙偲偑偱偒傑偣傫");
+	"ストレ〖ジ %1 を倡くことができません");
 
 TVP_MSG_DECL(TVPCannotFindStorage,
-	"僗僩儗乕僕 %1 偑尒偮偐傝傑偣傫");
+	"ストレ〖ジ %1 が斧つかりません");
 
 TVP_MSG_DECL(TVPCannotOpenStorageForWrite,
-	"僗僩儗乕僕 %1 傪彂偒崬傒梡偵奐偔偙偲偑偱偒傑偣傫丅僼傽僀儖偑彂偒崬傒嬛巭偵側偭偰偄側偄偐丄偁傞偄偼僼傽僀儖偵彂偒崬傒尃尷偑偁傞偐偳偆偐丄偁傞偄偼偦傕偦傕偦傟偑彂偒崬傒壜擻側儊僨傿傾傗僼傽僀儖側偺偐傪妋擣偟偰偔偩偝偄");
+	"ストレ〖ジ %1 を今き哈み脱に倡くことができません。ファイルが今き哈み敦贿になっていないか、あるいはファイルに今き哈み涪嘎があるかどうか、あるいはそもそもそれが今き哈み材墙なメディアやファイルなのかを澄千してください");
 
 TVP_MSG_DECL(TVPStorageInArchiveNotFound,
-	"僗僩儗乕僕 %1 偑傾乕僇僀僽 %2 偺拞偵尒偮偐傝傑偣傫");
+	"ストレ〖ジ %1 がア〖カイブ %2 の面に斧つかりません");
 
 TVP_MSG_DECL(TVPInvalidPathName,
-	"僷僗柤 %1 偼柍岠側宍幃偱偡丅宍幃偑惓偟偄偐偳偆偐傪妋擣偟偰偔偩偝偄");
+	"パス叹 %1 は痰跟な妨及です。妨及が赖しいかどうかを澄千してください");
 
 TVP_MSG_DECL(TVPUnsupportedMediaName,
-	"\"%1\" 偼懳墳偟偰偄側偄儊僨傿傾僞僀僾偱偡");
+	"\"%1\" は滦炳していないメディアタイプです");
 
 TVP_MSG_DECL(TVPCannotUnbindXP3EXE,
-	"%1 偼幚峴壜擻僼傽僀儖偵尒偊傑偡偑丄偙傟偵寢崌偝傟偨傾乕僇僀僽傪敪尒偱偒傑偣傫偱偟偨");
+	"%1 は悸乖材墙ファイルに斧えますが、これに冯圭されたア〖カイブを券斧できませんでした");
 
 TVP_MSG_DECL(TVPCannotFindXP3Mark,
-	"%1 偼 XP3 傾乕僇僀僽偱偼側偄偐丄懳墳偱偒側偄宍幃偱偡丅傾乕僇僀僽僼傽僀儖傪巜掕偡傋偒応柺偱捠忢偺僼傽僀儖傪巜掕偟偨応崌丄偁傞偄偼懳墳偱偒側偄傾乕僇僀僽僼傽僀儖傪巜掕偟偨応崌側偳偵偙偺僄儔乕偑敪惗偟傑偡偺偱丄妋擣偟偰偔偩偝偄");
+	"%1 は XP3 ア〖カイブではないか、滦炳できない妨及です。ア〖カイブファイルを回年すべき眷烫で奶撅のファイルを回年した眷圭、あるいは滦炳できないア〖カイブファイルを回年した眷圭などにこのエラ〖が券栏しますので、澄千してください");
 
 TVP_MSG_DECL(TVPMissingPathDelimiterAtLast,
-	"僷僗柤偺嵟屻偵偼 '>' 傑偨偼 '/' 傪巜掕偟偰偔偩偝偄 (媑棦媑棦俀 2.19 beta 14 傛傝傾乕僇僀僽偺嬫愗傝婰崋偑 '#' 偐傜 '>' 偵曄傢傝傑偟偨)");
+	"パス叹の呵稿には '>' または '/' を回年してください (等韦等韦２ 2.19 beta 14 よりア〖カイブの惰磊り淡规が '#' から '>' に恃わりました)");
 
 TVP_MSG_DECL(TVPFilenameContainsSharpWarn,
-	"(拲堄) '#' 偑僼傽僀儖柤 \"%1\" 偵娷傑傟偰偄傑偡丅傾乕僇僀僽偺嬫愗傝暥帤偼媑棦媑棦俀 2.19 beta 14 傛傝'#' 偐傜 '>' 偵曄傢傝傑偟偨丅"
-	"傕偟傾乕僇僀僽偺嬫愗傝暥帤偺偮傕傝偱 '#' 傪巊梡偟偨応崌偼丄偍庤悢偱偡偑 '>' 偵曄偊偰偔偩偝偄");
+	"(庙罢) '#' がファイル叹 \"%1\" に崔まれています。ア〖カイブの惰磊り矢机は等韦等韦２ 2.19 beta 14 より'#' から '>' に恃わりました。"
+	"もしア〖カイブの惰磊り矢机のつもりで '#' を蝗脱した眷圭は、お缄眶ですが '>' に恃えてください");
 
 TVP_MSG_DECL(TVPCannotGetLocalName,
-	"僗僩儗乕僕柤 %1 傪儘乕僇儖僼傽僀儖柤偵曄姺偱偒傑偣傫丅傾乕僇僀僽僼傽僀儖撪偺僼傽僀儖傗丄儘乕僇儖僼傽僀儖偱側偄僼傽僀儖偼儘乕僇儖僼傽僀儖柤偵曄姺偱偒傑偣傫丅");
+	"ストレ〖ジ叹 %1 をロ〖カルファイル叹に恃垂できません。ア〖カイブファイル柒のファイルや、ロ〖カルファイルでないファイルはロ〖カルファイル叹に恃垂できません。");
 
 TVP_MSG_DECL(TVPReadError,
-	"撉傒崬傒僄儔乕偱偡丅僼傽僀儖偑攋懝偟偰偄傞壜擻惈傗丄僨僶僀僗偐傜偺撉傒崬傒偵幐攕偟偨壜擻惈偑偁傝傑偡");
+	"粕み哈みエラ〖です。ファイルが撬禄している材墙拉や、デバイスからの粕み哈みに己窃した材墙拉があります");
 
 TVP_MSG_DECL(TVPWriteError,
-	"彂偒崬傒僄儔乕偱偡");
+	"今き哈みエラ〖です");
 
 TVP_MSG_DECL(TVPSeekError,
-	"僔乕僋偵幐攕偟傑偟偨丅僼傽僀儖偑攋懝偟偰偄傞壜擻惈傗丄僨僶僀僗偐傜偺撉傒崬傒偵幐攕偟偨壜擻惈偑偁傝傑偡");
+	"シ〖クに己窃しました。ファイルが撬禄している材墙拉や、デバイスからの粕み哈みに己窃した材墙拉があります");
 
 TVP_MSG_DECL(TVPTruncateError,
-	"僼傽僀儖偺挿偝傪愗傝媗傔傞偺偵幐攕偟傑偟偨");
+	"ファイルの墓さを磊り低めるのに己窃しました");
 
 TVP_MSG_DECL(TVPInsufficientMemory,
-	"儊儌儕妋曐偵幐攕偟傑偟偨丅");
+	"メモリ澄瘦に己窃しました。");
 
 TVP_MSG_DECL(TVPUncompressionFailed,
-	"僼傽僀儖偺揥奐偵幐攕偟傑偟偨丅枹懳墳偺埑弅宍幃偑巜掕偝傟偨偐丄偁傞偄偼僼傽僀儖偑攋懝偟偰偄傞壜擻惈偑偁傝傑偡");
+	"ファイルの鸥倡に己窃しました。踏滦炳の暗教妨及が回年されたか、あるいはファイルが撬禄している材墙拉があります");
 
 TVP_MSG_DECL(TVPCompressionFailed,
-	"僼傽僀儖偺埑弅偵幐攕偟傑偟偨");
+	"ファイルの暗教に己窃しました");
 
 TVP_MSG_DECL(TVPCannotWriteToArchive,
-	"傾乕僇僀僽偵僨乕僞傪彂偒崬傓偙偲偼偱偒傑偣傫");
+	"ア〖カイブにデ〖タを今き哈むことはできません");
 
 TVP_MSG_DECL(TVPUnsupportedCipherMode,
-	"%1 偼枹懳墳偺埫崋壔宍幃偐丄僨乕僞偑攋懝偟偰偄傑偡");
+	"%1 は踏滦炳の芭规步妨及か、デ〖タが撬禄しています");
 
 TVP_MSG_DECL(TVPUnsupportedModeString,
-	"擣幆偱偒側偄儌乕僪暥帤楍偺巜掕偱偡(%1)");
+	"千急できないモ〖ド矢机误の回年です(%1)");
 
 TVP_MSG_DECL(TVPUnknownGraphicFormat,
-	"%1 偼枹抦偺夋憸宍幃偱偡");
+	"%1 は踏梦の茶咙妨及です");
 
 TVP_MSG_DECL(TVPCannotSuggestGraphicExtension,
-	"%1 偵偮偄偰揔愗側奼挘巕傪帩偭偨僼傽僀儖傪尒偮偗傜傟傑偣傫偱偟偨");
+	"%1 について努磊な橙磨灰を积ったファイルを斧つけられませんでした");
 
 TVP_MSG_DECL(TVPMaskSizeMismatch,
-	"儅僗僋夋憸偺僒僀僘偑儊僀儞夋憸偺僒僀僘偲堘偄傑偡");
+	"マスク茶咙のサイズがメイン茶咙のサイズと般います");
 
 TVP_MSG_DECL(TVPProvinceSizeMismatch,
-	"椞堟夋憸 %1 偼儊僀儞夋憸偲僒僀僘偑堘偄傑偡");
+	"挝拌茶咙 %1 はメイン茶咙とサイズが般います");
 
 TVP_MSG_DECL(TVPImageLoadError,
-	"夋憸撉傒崬傒拞偵僄儔乕偑敪惗偟傑偟偨/%1");
+	"茶咙粕み哈み面にエラ〖が券栏しました/%1");
 
 TVP_MSG_DECL(TVPJPEGLoadError,
-	"JPEG 撉傒崬傒拞偵僄儔乕偑敪惗偟傑偟偨/僄儔乕僐乕僪 %1");
+	"JPEG 粕み哈み面にエラ〖が券栏しました/エラ〖コ〖ド %1");
 
 TVP_MSG_DECL(TVPPNGLoadError,
-	"PNG 撉傒崬傒拞偵僄儔乕偑敪惗偟傑偟偨/%1");
+	"PNG 粕み哈み面にエラ〖が券栏しました/%1");
 
 TVP_MSG_DECL(TVPERILoadError,
-	"ERI 撉傒崬傒拞偵僄儔乕偑敪惗偟傑偟偨/%1");
+	"ERI 粕み哈み面にエラ〖が券栏しました/%1");
 
 TVP_MSG_DECL(TVPTLGLoadError,
-	"TLG 撉傒崬傒拞偵僄儔乕偑敪惗偟傑偟偨/%1");
+	"TLG 粕み哈み面にエラ〖が券栏しました/%1");
 
 TVP_MSG_DECL(TVPInvalidImageSaveType,
-	"柍岠側曐懚夋憸宍幃偱偡(%1)");
+	"痰跟な瘦赂茶咙妨及です(%1)");
 
 TVP_MSG_DECL(TVPInvalidOperationFor8BPP,
-	"8bpp 夋憸偵懳偟偰偼峴偊側偄憖嶌傪峴偍偆偲偟傑偟偨");
+	"8bpp 茶咙に滦しては乖えない拎侯を乖おうとしました");
 
 TVP_MSG_DECL(TVPSpecifyWindow,
-	"Window 僋儔僗偺僆僽僕僃僋僩傪巜掕偟偰偔偩偝偄");
+	"Window クラスのオブジェクトを回年してください");
 
 TVP_MSG_DECL(TVPSpecifyLayer,
-	"Layer 僋儔僗偺僆僽僕僃僋僩傪巜掕偟偰偔偩偝偄");
+	"Layer クラスのオブジェクトを回年してください");
 
 TVP_MSG_DECL(TVPCannotCreateEmptyLayerImage,
-	"夋憸僒僀僘偺墶暆偁傞偄偼廲暆傪 0 埲壓偺悢偵愝掕偡傞偙偲偼偱偒傑偣傫");
+	"茶咙サイズの玻升あるいは侥升を 0 笆布の眶に肋年することはできません");
 
 TVP_MSG_DECL(TVPCannotSetPrimaryInvisible,
-	"僾儔僀儅儕儗僀儎偼晄壜帇偵偱偒傑偣傫");
+	"プライマリレイヤは稍材浑にできません");
 
 TVP_MSG_DECL(TVPCannotMovePrimary,
-	"僾儔僀儅儕儗僀儎偼堏摦偱偒傑偣傫");
+	"プライマリレイヤは败瓢できません");
 
 TVP_MSG_DECL(TVPCannotSetParentSelf,
-	"帺暘帺恎傪恊偲偡傞偙偲偼偱偒傑偣傫");
+	"极尸极咳を科とすることはできません");
 
 TVP_MSG_DECL(TVPCannotMoveNextToSelfOrNotSiblings,
-	"帺暘帺恎偺慜屻傗恊偺堎側傞儗僀儎偺慜屻偵堏摦偡傞偙偲偼偱偒傑偣傫");
+	"极尸极咳の涟稿や科の佰なるレイヤの涟稿に败瓢することはできません");
 
 TVP_MSG_DECL(TVPCannotMovePrimaryOrSiblingless,
-	"僾儔僀儅儕儗僀儎傗孼掜偺柍偄儗僀儎偼慜屻偵堏摦偡傞偙偲偼偱偒傑偣傫");
+	"プライマリレイヤや坊娘の痰いレイヤは涟稿に败瓢することはできません");
 
 TVP_MSG_DECL(TVPInvalidImagePosition,
-	"儗僀儎椞堟偵夋憸偺柍偄椞堟偑敪惗偟傑偟偨");
+	"レイヤ挝拌に茶咙の痰い挝拌が券栏しました");
 
 TVP_MSG_DECL(TVPCannotSetModeToDisabledOrModal,
-	"偡偱偵儌乕僟儖側儗僀儎偺恊儗僀儎丄偁傞偄偼晄壜帇/柍岠側儗僀儎傪儌乕僟儖偵偡傞偙偲偼偱偒傑偣傫");
+	"すでにモ〖ダルなレイヤの科レイヤ、あるいは稍材浑/痰跟なレイヤをモ〖ダルにすることはできません");
 
 TVP_MSG_DECL(TVPNotDrawableLayerType,
-	"偙偺 type 偺儗僀儎偱偼昤夋傗夋憸撉傒崬傒傗夋憸僒僀僘/埵抲偺曄峏/庢摼偼偱偒傑偣傫");
+	"この type のレイヤでは闪茶や茶咙粕み哈みや茶咙サイズ/疤弥の恃构/艰评はできません");
 
 TVP_MSG_DECL(TVPSourceLayerHasNoImage,
-	"揮憲尦儗僀儎偼夋憸傪帩偭偰偄傑偣傫");
+	"啪流傅レイヤは茶咙を积っていません");
 
 TVP_MSG_DECL(TVPUnsupportedLayerType,
-	"%1 偼偙偺 type 偺儗僀儎偱偼巊梡偱偒傑偣傫");
+	"%1 はこの type のレイヤでは蝗脱できません");
 
 TVP_MSG_DECL(TVPNotDrawableFaceType,
-	"%1 偱偼偙偺 face 偵昤夋偱偒傑偣傫");
+	"%1 ではこの face に闪茶できません");
 
 TVP_MSG_DECL(TVPCannotConvertLayerTypeUsingGivenDirection,
-	"巜掕偝傟偨儗僀儎僞僀僾曄姺偼偱偒傑偣傫");
+	"回年されたレイヤタイプ恃垂はできません");
 
 TVP_MSG_DECL(TVPNegativeOpacityNotSupportedOnThisFace,
-	"晧偺晄摟柧搙偼偙偺 face 偱偼巜掕偱偒傑偣傫");
+	"砷の稍譬汤刨はこの face では回年できません");
 
 TVP_MSG_DECL(TVPSrcRectOutOfBitmap,
-	"揮憲尦偑價僢僩儅僢僾奜偺椞堟傪娷傫偱偄傑偡丅惓偟偄斖埻偵廂傑傞傛偆偵揮憲尦傪巜掕偟偰偔偩偝偄");
+	"啪流傅がビットマップ嘲の挝拌を崔んでいます。赖しい认跋に箭まるように啪流傅を回年してください");
 
 TVP_MSG_DECL(TVPBoxBlurAreaMustContainCenterPixel,
-	"嬮宍僽儔乕偺斖埻偼昁偢(0,0)傪偦偺拞偵娷傓昁梫偑偁傝傑偡丅left偲right偑椉曽偲傕惓偺悢抣丄偁傞偄偼椉曽偲傕晧偺悢抣偲偄偆巜掕偼偱偒傑偣傫(top偲bottom偵懳偟偰傕摨條)");
+	"峨妨ブラ〖の认跋は涩ず(0,0)をその面に崔む涩妥があります。leftとrightが尉数とも赖の眶猛、あるいは尉数とも砷の眶猛という回年はできません(topとbottomに滦しても票屯)");
 
 TVP_MSG_DECL(TVPBoxBlurAreaMustBeSmallerThan16Million,
-	"嬮宍僽儔乕偺斖埻偑戝偒偡偓傑偡丅嬮宍僽儔乕偺斖埻偼1677枩埲壓偱偁傞昁梫偑偁傝傑偡");
+	"峨妨ブラ〖の认跋が络きすぎます。峨妨ブラ〖の认跋は1677它笆布である涩妥があります");
 
 TVP_MSG_DECL(TVPCannotChangeFocusInProcessingFocus,
-	"僼僅乕僇僗曄峏張棟拞偼僼僅乕僇僗傪怴偨偵曄峏偡傞偙偲偼偱偒傑偣傫");
+	"フォ〖カス恃构借妄面はフォ〖カスを糠たに恃构することはできません");
 
 TVP_MSG_DECL(TVPWindowHasNoLayer,
-	"僂傿儞僪僂偵儗僀儎偑偁傝傑偣傫");
+	"ウィンドウにレイヤがありません");
 
 TVP_MSG_DECL(TVPWindowHasAlreadyPrimaryLayer,
-	"僂傿儞僪僂偵偼偡偱偵僾儔僀儅儕儗僀儎偑偁傝傑偡");
+	"ウィンドウにはすでにプライマリレイヤがあります");
 
 TVP_MSG_DECL(TVPSpecifiedEventNeedsParameter,
-	"僀儀儞僩 %1 偵偼僷儔儊乕僞偑昁梫偱偡");
+	"イベント %1 にはパラメ〖タが涩妥です");
 
 TVP_MSG_DECL(TVPSpecifiedEventNeedsParameter2,
-	"僀儀儞僩 %1 偵偼僷儔儊乕僞 %2 偑昁梫偱偡");
+	"イベント %1 にはパラメ〖タ %2 が涩妥です");
 
 TVP_MSG_DECL(TVPSpecifiedEventNameIsUnknown,
-	"僀儀儞僩柤 %1 偼枹抦偺僀儀儞僩柤偱偡");
+	"イベント叹 %1 は踏梦のイベント叹です");
 
 TVP_MSG_DECL(TVPOutOfRectangle,
-	"嬮宍奜傪巜掕偝傟傑偟偨");
+	"峨妨嘲を回年されました");
 
 TVP_MSG_DECL(TVPInvalidMethodInUpdating,
-	"夋柺峏怴拞偼偙偺婡擻傪幚峴偱偒傑偣傫");
+	"茶烫构糠面はこの怠墙を悸乖できません");
 
 TVP_MSG_DECL(TVPCannotCreateInstance,
-	"偙偺僋儔僗偼僀儞僗僞儞僗傪嶌惉偱偒傑偣傫");
+	"このクラスはインスタンスを侯喇できません");
 
 TVP_MSG_DECL(TVPUnknownWaveFormat,
-	"%1 偼懳墳偱偒側偄 Wave 宍幃偱偡");
+	"%1 は滦炳できない Wave 妨及です");
 
 TVP_MSG_DECL(TVPSpecifyMenuItem,
-	"MenuItem 僋儔僗偺僆僽僕僃僋僩傪巜掕偟偰偔偩偝偄");
+	"MenuItem クラスのオブジェクトを回年してください");
 
 TVP_MSG_DECL(TVPCurrentTransitionMustBeStopping,
-	"尰嵼偺僩儔儞僕僔儑儞傪掆巭偝偣偰偐傜怴偟偄僩儔儞僕僔儑儞傪奐巒偟偰偔偩偝偄丅摨偠儗僀儎偵懳偟偰暋悢偺僩儔儞僕僔儑儞傪摨帪偵幚峴偟傛偆偲偡傞偲偙偺僄儔乕偑敪惗偟傑偡");
+	"附哼のトランジションを匿贿させてから糠しいトランジションを倡幌してください。票じレイヤに滦して剩眶のトランジションを票箕に悸乖しようとするとこのエラ〖が券栏します");
 
 TVP_MSG_DECL(TVPTransHandlerError,
-	"僩儔儞僕僔儑儞僴儞僪儔偱僄儔乕偑敪惗偟傑偟偨 : %1");
+	"トランジションハンドラでエラ〖が券栏しました : %1");
 
 TVP_MSG_DECL(TVPTransAlreadyRegistered,
-	"僩儔儞僕僔儑儞 %1 偼婛偵搊榐偝傟偰偄傑偡");
+	"トランジション %1 は贷に判峡されています");
 
 TVP_MSG_DECL(TVPCannotFindTransHander,
-	"僩儔儞僕僔儑儞僴儞僪儔 %1 偑尒偮偐傝傑偣傫");
+	"トランジションハンドラ %1 が斧つかりません");
 
 TVP_MSG_DECL(TVPSpecifyTransitionSource,
-	"僩儔儞僕僔儑儞尦傪巜掕偟偰偔偩偝偄");
+	"トランジション傅を回年してください");
 
 TVP_MSG_DECL(TVPCannotLoadRuleGraphic,
-	"儖乕儖夋憸 %1 傪撉傒崬傓偙偲偑偱偒傑偣傫");
+	"ル〖ル茶咙 %1 を粕み哈むことができません");
 
 TVP_MSG_DECL(TVPSpecifyOption,
-	"僆僾僔儑儞 %1 傪巜掕偟偰偔偩偝偄");
+	"オプション %1 を回年してください");
 
 TVP_MSG_DECL(TVPTransitionLayerSizeMismatch,
-	"僩儔儞僕僔儑儞尦(%1)偲僩儔儞僕僔儑儞愭(%2)偺儗僀儎偺僒僀僘偑堦抳偟傑偣傫");
+	"トランジション傅(%1)とトランジション黎(%2)のレイヤのサイズが办米しません");
 
 TVP_MSG_DECL(TVPTransitionMutualSource,
-	"僩儔儞僕僔儑儞尦偺僩儔儞僕僔儑儞尦偑帺暘帺恎偱偡");
+	"トランジション傅のトランジション傅が极尸极咳です");
 
 TVP_MSG_DECL(TVPHoldDestinationAlphaParameterIsNowDeprecated,
-	"寈崘 : 儊僜僢僪 %1 偺 %2 斣栚偵搉偝傟偨 hda 僷儔儊乕僞偼丄媑棦媑棦俀 2.23 beta 2 傛傝柍帇偝傟傞傛偆偵側傝傑偟偨丅戙傢傝偵 Layer.holdAlpha 僾儘僷僥傿傪梡偄偰偔偩偝偄丅");
+	"焚桂 : メソッド %1 の %2 戎誊に畔された hda パラメ〖タは、等韦等韦２ 2.23 beta 2 より痰浑されるようになりました。洛わりに Layer.holdAlpha プロパティを脱いてください。");
 
 TVP_MSG_DECL(TVPKAGNoLine,
-	"撉傒崬傕偆偲偟偨僔僫儕僆僼傽僀儖 %1 偼嬻偱偡");
+	"粕み哈もうとしたシナリオファイル %1 は鄂です");
 
 TVP_MSG_DECL(TVPKAGCannotOmmitFirstLabelName,
-	"僔僫儕僆僼傽僀儖偺嵟弶偺儔儀儖柤偼徣棯偱偒傑偣傫");
+	"シナリオファイルの呵介のラベル叹は臼维できません");
 
 TVP_MSG_DECL(TVPKAGLabelNotFound,
-	"僔僫儕僆僼傽僀儖 %1 撪偵儔儀儖 %2 偑尒偮偐傝傑偣傫");
+	"シナリオファイル %1 柒にラベル %2 が斧つかりません");
 
 TVP_MSG_DECL(TVPKAGInlineScriptNotEnd,
-	"[endscript] 傑偨偼 @endscript 偑尒偮偐傝傑偣傫");
+	"[endscript] または @endscript が斧つかりません");
 
 TVP_MSG_DECL(TVPKAGSyntaxError,
-	"僞僌偺暥朄僄儔乕偱偡丅'[' 傗 ']' 偺懳墳丄\" 偲 \" 偺懳墳丄僗儁乕僗偺擖傟朰傟丄梋暘側夵峴側偳傪妋擣偟偰偔偩偝偄");
+	"タグの矢恕エラ〖です。'[' や ']' の滦炳、\" と \" の滦炳、スペ〖スの掐れ撕れ、途尸な猖乖などを澄千してください");
 
 TVP_MSG_DECL(TVPKAGMacroEntityNotAvailable,
-	"儅僋儘僄儞僥傿僥傿偼儅僋儘奜偱偼巊梡偱偒傑偣傫");
+	"マクロエンティティはマクロ嘲では蝗脱できません");
 
 TVP_MSG_DECL(TVPKAGCallStackUnderflow,
-	"return 僞僌偑 call 僞僌偲懳墳偟偰偄傑偣傫 ( return 僞僌偑懡偄 )");
+	"return タグが call タグと滦炳していません ( return タグが驴い )");
 
 TVP_MSG_DECL(TVPKAGReturnLostSync,
-	"僔僫儕僆僼傽僀儖偵曄峏偑偁偭偨偨傔 return 偺栠傝愭埵抲傪摿掕偱偒傑偣傫");
+	"シナリオファイルに恃构があったため return の提り黎疤弥を泼年できません");
 
 TVP_MSG_DECL(TVPKAGSpecifyKAGParser,
-	"KAGParser 僋儔僗偺僆僽僕僃僋僩傪巜掕偟偰偔偩偝偄");
+	"KAGParser クラスのオブジェクトを回年してください");
 
 TVP_MSG_DECL(TVPKAGMalformedSaveData,
-	"瀤僨乕僞偑堎忢偱偡丅僨乕僞偑攋懝偟偰偄傞壜擻惈偑偁傝傑偡");
+	"圪デ〖タが佰撅です。デ〖タが撬禄している材墙拉があります");
 
 TVP_MSG_DECL(TVPLabelOrScriptInMacro,
-	"儔儀儖傗 iscript 偼儅僋儘拞偵婰弎偱偒傑偣傫");
+	"ラベルや iscript はマクロ面に淡揭できません");
 
 TVP_MSG_DECL(TVPUnknownMacroName,
-	"儅僋儘 \"%1\" 偼搊榐偝傟偰偄傑偣傫");
+	"マクロ \"%1\" は判峡されていません");
 
 //---------------------------------------------------------------------------
 // Utility Functions
