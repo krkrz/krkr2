@@ -1,4 +1,5 @@
 /*-----------------------------------------------------------------*/
+unsigned char TVPDivTable[256*256];
 unsigned char TVPOpacityOnOpacityTable[256*256];
 unsigned char TVPNegativeMulTable[256*256];
 /* following two are for 65-level anti-aliased letter drawing */
@@ -213,6 +214,19 @@ static void TVPCreateTable(void)
 				( 255 - (255-a)*(255-bb)/ 255 ); 
 		}
 	}
+
+	for(b=0; b<256; b++)
+	{
+		TVPDivTable[(0<<8)+b] = 0;
+		for(a=1; a<256; a++)
+		{
+			tjs_int tmp = (tjs_int)(b*255/a);
+			if(tmp > 255) tmp = 255;
+			TVPDivTable[(a<<8)+b] = (tjs_uint8)(tmp);
+		}
+	}
+	init = 0;
+
 
 	TVPInitDitherTable();
 	TVPTLG6InitLeadingZeroTable();
