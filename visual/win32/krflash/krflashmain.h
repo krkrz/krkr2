@@ -5,6 +5,8 @@
 #ifndef krflashmainh
 #define krflashmainh
 
+#include "..\krmovie.h"
+
 //---------------------------------------------------------------------------
 // tTVPFlashOverlay
 //---------------------------------------------------------------------------
@@ -42,6 +44,21 @@ public:
 	const wchar_t* __stdcall GetStatus(tTVPVideoStatus *status);
 	const wchar_t* __stdcall GetEvent(long *evcode, long *param1,
 			long *param2, bool *got);
+// Start:	Add:	T.Imoto
+	const wchar_t* __stdcall FreeEventParams(long evcode, long param1, long param2);
+
+	const wchar_t* __stdcall Rewind();
+	const wchar_t* __stdcall SetFrame( int f );
+	const wchar_t* __stdcall GetFrame( int *f );
+	const wchar_t* __stdcall GetFPS( double *f );
+	const wchar_t* __stdcall GetNumberOfFrame( int *f );
+	const wchar_t* __stdcall GetTotalTime( __int64 *t );
+
+	const wchar_t* __stdcall GetVideoSize( long *width, long *height );
+	const wchar_t* __stdcall GetFrontBuffer( BYTE **buff );
+	const wchar_t* __stdcall SetVideoBuffer( BYTE *buff1, BYTE *buff2, long size );
+// End:	Add:	T.Imoto
+
 
 	void SendCommand(wchar_t *command, wchar_t *arg);
 private:
