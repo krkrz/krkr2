@@ -15,7 +15,7 @@
 	'波紋' トランジション
 	置換マップによる、波紋が広がっていくような感じのトランジション
 	このトランジションは転送先がαを持っていると(要するにトランジションを行う
-	レイヤの type が ltCoverRect 以外の場合)、正常に透過情報を処理できないので
+	レイヤの type が ltOpaque 以外の場合)、正常に透過情報を処理できないので
 	注意
 */
 //---------------------------------------------------------------------------
@@ -1016,7 +1016,7 @@ class tTVPRippleTransHandler : public iTVPDivisibleTransHandler
 protected:
 	tjs_uint64 StartTick; // トランジションを開始した tick count
 	tjs_uint64 Time; // トランジションに要する時間
-	bool DestHasAlpha; // 転送先画像がα値を持っているか
+	tTVPLayerType LayerType; // レイヤのタイプ
 	tjs_int Width; // 処理する画像の幅
 	tjs_int Height; // 処理する画像の高さ
 	tjs_int64 CurTime; // 現在の tick count
@@ -1043,7 +1043,7 @@ protected:
 #endif
 
 public:
-	tTVPRippleTransHandler(tjs_uint64 time, bool desthasalpha,
+	tTVPRippleTransHandler(tjs_uint64 time, tTVPLayerType layertype,
 		tjs_int width, tjs_int height,
 		tjs_int centerx, tjs_int centery,
 		tjs_int ripplewidth,
@@ -1051,7 +1051,7 @@ public:
 	{
 		RefCount = 1;
 
-		DestHasAlpha = desthasalpha;
+		LayerType = layertype;
 		Width = width;
 		Height = height;
 		Time = time;
@@ -1453,7 +1453,7 @@ public:
 	tjs_error TJS_INTF_METHOD StartTransition(
 			/*in*/iTVPSimpleOptionProvider *options, // option provider
 			/*in*/iTVPSimpleImageProvider *imagepro, // image provider
-			/*in*/bool hasalpha, // destination has alpha
+			/*in*/tTVPLayerType layertype, // destination layer type
 			/*in*/tjs_uint src1w, tjs_uint src1h, // source 1 size
 			/*in*/tjs_uint src2w, tjs_uint src2h, // source 2 size
 			/*out*/tTVPTransType *type, // transition type
@@ -1525,7 +1525,7 @@ public:
 			TVPThrowExceptionMessage(TJS_W("maxdrift must be lesser than both image width and height"));
 
 		// オブジェクトを作成
-		*handler = new tTVPRippleTransHandler(time, hasalpha,
+		*handler = new tTVPRippleTransHandler(time, layertype,
 			src1w, src1h, centerx, centery,
 			ripplewidth, roundness, speed, maxdrift);
 

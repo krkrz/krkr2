@@ -24,7 +24,7 @@ protected:
 	tjs_uint64 StartTick; // トランジションを開始した tick count
 	tjs_uint64 HalfTime; // トランジションに要する時間 / 2
 	tjs_uint64 Time; // トランジションに要する時間
-	bool DestHasAlpha; // 転送先画像がα値を持っているか
+	tTVPLayerType LayerType; // レイヤタイプ
 	tjs_int Width; // 処理する画像の幅
 	tjs_int Height; // 処理する画像の高さ
 	tjs_int MaxH; // 最大振幅
@@ -41,14 +41,14 @@ protected:
 	bool First; // 一番最初の呼び出しかどうか
 
 public:
-	tTVPWaveTransHandler(tjs_uint64 time, bool desthasalpha,
+	tTVPWaveTransHandler(tjs_uint64 time, tTVPLayerType layertype,
 		tjs_int width, tjs_int height,
 		tjs_int maxh, double maxomega,
 		tjs_uint32 bgcolor1, tjs_uint32 bgcolor2, tjs_int wavetype)
 	{
 		RefCount = 1;
 
-		DestHasAlpha = desthasalpha;
+		LayerType = layertype;
 		Width = width;
 		Height = height;
 		Time = time;
@@ -235,19 +235,23 @@ tjs_error TJS_INTF_METHOD tTVPWaveTransHandler::Process(
 		r = Width + d;
 		if(Clip(l, r, data->Left, data->Left + data->Width))
 		{
-			if(!DestHasAlpha)
-				TVPConstAlphaBlend_SD(dest + l + data->DestLeft - data->Left,
+			if(LayerType == ltAlpha)
+				TVPConstAlphaBlend_SD_d(dest + l + data->DestLeft - data->Left,
+					src1 + l - d, src2 + l - d, r - l, BlendRatio);
+			else if(LayerType == ltAddAlpha)
+				TVPConstAlphaBlend_SD_a(dest + l + data->DestLeft - data->Left,
 					src1 + l - d, src2 + l - d, r - l, BlendRatio);
 			else
-				TVPConstAlphaBlend_SD_d(dest + l + data->DestLeft - data->Left,
+				TVPConstAlphaBlend_SD(dest + l + data->DestLeft - data->Left,
 					src1 + l - d, src2 + l - d, r - l, BlendRatio);
 				/*
 					転送先がαを持っている場合はブレンドアルゴリズムが違うので
 					注意する必要がある。
-					_d のサフィックスを持つブレンド関数はすべてα値を考慮した
-					ブレンドを行うが、_d サフィックスを持たないブレンド関数に
-					比べて低速。_d サフィックスを持たないブレンド関数はα値は
-					扱わない ( 常に完全に不透明であると扱われる )。
+					_d のサフィックスを持つブレンド関数はすべて通常のαブレンドで、
+					α値を考慮したブレンドを行う。同様に _a のサフィックスを持つ
+					ブレンド関数は加算αブレンドである。_a や _d サフィックスを持
+					たないブレンド関数に比べて低速。_d や _a サフィックスを持たな
+					いブレンド関数はα値は扱わない ( 常に完全に不透明であると扱われる )。
 				*/
 		}
 	}
@@ -298,7 +302,7 @@ public:
 	tjs_error TJS_INTF_METHOD StartTransition(
 			/*in*/iTVPSimpleOptionProvider *options, // option provider
 			/*in*/iTVPSimpleImageProvider *imagepro, // image provider
-			/*in*/bool hasalpha, // destination has alpha
+			/*in*/tTVPLayerType layertype, // destination layer type
 			/*in*/tjs_uint src1w, tjs_uint src1h, // source 1 size
 			/*in*/tjs_uint src2w, tjs_uint src2h, // source 2 size
 			/*out*/tTVPTransType *type, // transition type
@@ -347,7 +351,7 @@ public:
 
 
 		// オブジェクトを作成
-		*handler = new tTVPWaveTransHandler(time, hasalpha,
+		*handler = new tTVPWaveTransHandler(time, layertype,
 			src1w, src1h, maxh, maxomega,
 			bgcolor1, bgcolor2, wavetype);
 
