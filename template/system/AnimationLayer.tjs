@@ -630,7 +630,9 @@ class AnimationLayer extends KAGLayer
 		if(Anim_loadParams !== void)
 		{
 			// àÍéûÉåÉCÉÑÇ…ëŒÇµÇƒêFí≤ï‚ê≥
-			if(elm.mode === void || elm.mode == 'pile' || elm.mode == 'copy')
+			if(elm.mode === void || elm.mode == 'pile' ||
+				elm.mode == 'copy' || elm.mode == 'opaque' ||
+				elm.mode == 'addalpha' || elm.mode == 'alpha')
 			{
 				applyColorCorrection(temp, Anim_loadParams);
 			}
