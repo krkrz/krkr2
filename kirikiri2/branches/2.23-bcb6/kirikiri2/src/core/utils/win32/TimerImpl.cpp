@@ -75,7 +75,7 @@ tTVPTimerThread::tTVPTimerThread() : tTVPThread(true)
 	Resume();
 }
 //---------------------------------------------------------------------------
-__fastcall tTVPTimerThread::~tTVPTimerThread()
+tTVPTimerThread::~tTVPTimerThread()
 {
 	Terminate();
 	Resume();
@@ -83,7 +83,7 @@ __fastcall tTVPTimerThread::~tTVPTimerThread()
 	WaitFor();
 }
 //---------------------------------------------------------------------------
-void __fastcall tTVPTimerThread::Execute()
+void tTVPTimerThread::Execute()
 {
 	while(!GetTerminated())
 	{

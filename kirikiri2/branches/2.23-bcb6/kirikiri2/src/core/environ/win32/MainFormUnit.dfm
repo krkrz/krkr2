@@ -1,12 +1,12 @@
 object TVPMainForm: TTVPMainForm
-  Left = 606
+  Left = 248
   Top = 9
   HorzScrollBar.Visible = False
   VertScrollBar.Style = ssFlat
   VertScrollBar.Visible = False
   AutoSize = True
   BorderStyle = bsToolWindow
-  Caption = '吉里吉里 Control'
+  Caption = #21513#37324#21513#37324' Control'
   ClientHeight = 22
   ClientWidth = 131
   Color = clBtnFace
@@ -14,7 +14,7 @@ object TVPMainForm: TTVPMainForm
   Font.Charset = SHIFTJIS_CHARSET
   Font.Color = clWindowText
   Font.Height = -12
-  Font.Name = 'ＭＳ Ｐゴシック'
+  Font.Name = #65325#65331' '#65328#12468#12471#12483#12463
   Font.Style = []
   OldCreateOrder = False
   PopupMenu = PopupMenu
@@ -39,8 +39,8 @@ object TVPMainForm: TTVPMainForm
     object ShowScriptEditorButton: TToolButton
       Left = 0
       Top = 0
-      Hint = 'スクリプトエディタ を表示'
-      Caption = 'スクリプトエディタ'
+      Hint = #12473#12463#12522#12503#12488#12456#12487#12451#12479' '#12434#34920#31034
+      Caption = #12473#12463#12522#12503#12488#12456#12487#12451#12479
       ImageIndex = 2
       ParentShowHint = False
       ShowHint = True
@@ -49,8 +49,8 @@ object TVPMainForm: TTVPMainForm
     object ShowWatchButton: TToolButton
       Left = 23
       Top = 0
-      Hint = '監視式を表示'
-      Caption = '監視式'
+      Hint = #30435#35222#24335#12434#34920#31034
+      Caption = #30435#35222#24335
       ImageIndex = 14
       ParentShowHint = False
       ShowHint = True
@@ -59,8 +59,8 @@ object TVPMainForm: TTVPMainForm
     object ShowConsoleButton: TToolButton
       Left = 46
       Top = 0
-      Hint = 'コンソールを表示'
-      Caption = 'コンソール'
+      Hint = #12467#12531#12477#12540#12523#12434#34920#31034
+      Caption = #12467#12531#12477#12540#12523
       ImageIndex = 13
       ParentShowHint = False
       ShowHint = True
@@ -77,9 +77,9 @@ object TVPMainForm: TTVPMainForm
     object EventButton: TToolButton
       Left = 77
       Top = 0
-      Hint = 'イベント発生'
+      Hint = #12452#12505#12531#12488#30330#29983
       AllowAllUp = True
-      Caption = 'イベント発生'
+      Caption = #12452#12505#12531#12488#30330#29983
       Down = True
       ImageIndex = 23
       ParentShowHint = False
@@ -98,8 +98,8 @@ object TVPMainForm: TTVPMainForm
     object ExitButton: TToolButton
       Left = 108
       Top = 0
-      Hint = '終了'
-      Caption = '終了'
+      Hint = #32066#20102
+      Caption = #32066#20102
       ImageIndex = 21
       ParentShowHint = False
       ShowHint = True
@@ -1548,29 +1548,29 @@ object TVPMainForm: TTVPMainForm
     Left = 64
     Top = 8
     object ShowControllerMenuItem: TMenuItem
-      Caption = 'コントローラ(&Z)'
+      Caption = #12467#12531#12488#12525#12540#12521'(&Z)'
       ShortCut = 8304
       Visible = False
       OnClick = ShowControllerMenuItemClick
     end
     object ShowScriptEditorMenuItem: TMenuItem
-      Caption = 'スクリプトエディタ(&E)'
-      Hint = 'スクリプトエディタを表示'
+      Caption = #12473#12463#12522#12503#12488#12456#12487#12451#12479'(&E)'
+      Hint = #12473#12463#12522#12503#12488#12456#12487#12451#12479#12434#34920#31034
       ImageIndex = 2
       RadioItem = True
       ShortCut = 8305
       OnClick = ShowScriptEditorButtonClick
     end
     object ShowWatchMenuItem: TMenuItem
-      Caption = '監視式(&W)'
-      Hint = '監視式を表示'
+      Caption = #30435#35222#24335'(&W)'
+      Hint = #30435#35222#24335#12434#34920#31034
       ImageIndex = 14
       ShortCut = 8306
       OnClick = ShowWatchButtonClick
     end
     object ShowConsoleMenuItem: TMenuItem
-      Caption = 'コンソール(&D)'
-      Hint = 'コンソールを表示'
+      Caption = #12467#12531#12477#12540#12523'(&D)'
+      Hint = #12467#12531#12477#12540#12523#12434#34920#31034
       ImageIndex = 13
       ShortCut = 8307
       OnClick = ShowConsoleButtonClick
@@ -1579,8 +1579,8 @@ object TVPMainForm: TTVPMainForm
       Caption = '-'
     end
     object ShowOnTopMenuItem: TMenuItem
-      Caption = '常に手前に表示(&F)'
-      Hint = '常に手前に表示(&F)'
+      Caption = #24120#12395#25163#21069#12395#34920#31034'(&F)'
+      Hint = #24120#12395#25163#21069#12395#34920#31034'(&F)'
       ImageIndex = 10
       OnClick = ShowOnTopMenuItemClick
     end
@@ -1588,9 +1588,9 @@ object TVPMainForm: TTVPMainForm
       Caption = '-'
     end
     object EnableEventMenuItem: TMenuItem
-      Caption = 'イベントの発生(&I)'
+      Caption = #12452#12505#12531#12488#12398#30330#29983'(&I)'
       Checked = True
-      Hint = 'イベントの発生'
+      Hint = #12452#12505#12531#12488#12398#30330#29983
       ImageIndex = 23
       OnClick = EnableEventMenuItemClick
     end
@@ -1598,21 +1598,21 @@ object TVPMainForm: TTVPMainForm
       Caption = '-'
     end
     object DumpMenuItem: TMenuItem
-      Caption = 'TJS ダンプ(&L)'
-      Hint = 'TJS のダンプ'
+      Caption = 'TJS '#12480#12531#12503'(&L)'
+      Hint = 'TJS '#12398#12480#12531#12503
       OnClick = DumpMenuItemClick
     end
     object CreateMessageMapFileMenuItem: TMenuItem
-      Caption = 'メッセージマップファイルの作成(&M)'
-      Hint = 'メッセージマップファイルを作成'
+      Caption = #12513#12483#12475#12540#12472#12510#12483#12503#12501#12449#12452#12523#12398#20316#25104'(&M)'
+      Hint = #12513#12483#12475#12540#12472#12510#12483#12503#12501#12449#12452#12523#12434#20316#25104
       OnClick = CreateMessageMapFileMenuItemClick
     end
     object N2: TMenuItem
       Caption = '-'
     end
     object ExitMenuItem: TMenuItem
-      Caption = '終了(&X)'
-      Hint = '終了'
+      Caption = #32066#20102'(&X)'
+      Hint = #32066#20102
       ImageIndex = 21
       OnClick = ExitButtonClick
     end
@@ -1637,9 +1637,9 @@ object TVPMainForm: TTVPMainForm
   end
   object MessageMapFileSaveDialog: TSaveDialog
     DefaultExt = 'tjs'
-    Filter = 'tjsスクリプト(*.tjs)|*.tjs|すべてのファイル(*.*)|*.*'
+    Filter = 'tjs'#12473#12463#12522#12503#12488'(*.tjs)|*.tjs|'#12377#12409#12390#12398#12501#12449#12452#12523'(*.*)|*.*'
     Options = [ofOverwritePrompt, ofNoChangeDir, ofPathMustExist, ofNoReadOnlyReturn, ofEnableSizing]
-    Title = 'メッセージマップファイルの作成'
+    Title = #12513#12483#12475#12540#12472#12510#12483#12503#12501#12449#12452#12523#12398#20316#25104
     Left = 112
   end
 end

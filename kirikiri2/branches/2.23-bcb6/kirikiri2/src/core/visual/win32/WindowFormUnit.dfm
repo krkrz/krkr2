@@ -12,7 +12,7 @@ object TVPWindowForm: TTVPWindowForm
   Font.Charset = SHIFTJIS_CHARSET
   Font.Color = clWindowText
   Font.Height = -12
-  Font.Name = 'ＭＳ Ｐゴシック'
+  Font.Name = #65325#65331' '#65328#12468#12471#12483#12463
   Font.Style = []
   Menu = MainMenu
   OldCreateOrder = False
@@ -53,23 +53,23 @@ object TVPWindowForm: TTVPWindowForm
     Left = 218
     Top = 10
     object ShowControllerMenuItem: TMenuItem
-      Caption = 'コントローラ(&Z)'
+      Caption = #12467#12531#12488#12525#12540#12521'(&Z)'
       ShortCut = 8304
       Visible = False
       OnClick = ShowControllerMenuItemClick
     end
     object ShowScriptEditorMenuItem: TMenuItem
-      Caption = 'スクリプトエディタ(&E)'
+      Caption = #12473#12463#12522#12503#12488#12456#12487#12451#12479'(&E)'
       ShortCut = 8305
       OnClick = ShowScriptEditorMenuItemClick
     end
     object ShowWatchMenuItem: TMenuItem
-      Caption = '監視式(&W)'
+      Caption = #30435#35222#24335'(&W)'
       ShortCut = 8306
       OnClick = ShowWatchMenuItemClick
     end
     object ShowConsoleMenuItem: TMenuItem
-      Caption = 'コンソール(&S)'
+      Caption = #12467#12531#12477#12540#12523'(&S)'
       ShortCut = 8307
       OnClick = ShowConsoleMenuItemClick
     end
