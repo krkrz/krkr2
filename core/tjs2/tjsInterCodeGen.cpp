@@ -2996,7 +2996,7 @@ void tTJSInterCodeContext::DoContinue(void)
 void tTJSInterCodeContext::DoDebugger()
 {
 	// process "debugger" statement.
-	PutCode(VM_DEBUGGER);
+	PutCode(VM_DEBUGGER, LEX_POS);
 }
 //---------------------------------------------------------------------------
 void tTJSInterCodeContext::ReturnFromFunc(tTJSExprNode *node)
