@@ -45,7 +45,7 @@ bool TVPClipboardGetText(ttstr & text)
 	try
 	{
 		// select CF_UNICODETEXT or CF_TEXT
-		static UINT formats[2] = { CF_UNICODETEXT, CF_TEXT};
+		UINT formats[2] = { CF_UNICODETEXT, CF_TEXT};
 		int format = GetPriorityClipboardFormat(formats, 2);
 
 		if(format == CF_UNICODETEXT)
