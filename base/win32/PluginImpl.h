@@ -6,7 +6,7 @@
 	See details of license at "license.txt"
 */
 //---------------------------------------------------------------------------
-// "Plugins" class implementation
+// "Plugins" class implementation / Service for plug-ins
 //---------------------------------------------------------------------------
 #ifndef PluginImplH
 #define PluginImplH
