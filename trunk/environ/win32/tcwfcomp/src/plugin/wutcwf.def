@@ -1,0 +1,4 @@
+EXPORTS
+	Link
+	Unlink
+	CreateWaveUnpacker
