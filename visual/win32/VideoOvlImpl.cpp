@@ -8,11 +8,6 @@
 //---------------------------------------------------------------------------
 // Video Overlay support implementation
 //---------------------------------------------------------------------------
-// 2004/ 6/19 W.Dee
-//     Fixed missing DefWindowProc in tTJSNI_VideoOverlay::WndProc.
-//     Fixed bug (main window occasionally does not have focus after the Flash
-//      overlay ends)
-//---------------------------------------------------------------------------
 
 
 #include "tjsCommHead.h"
