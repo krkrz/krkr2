@@ -9,7 +9,6 @@
 // Text Editor
 //---------------------------------------------------------------------------
 #include "tjsCommHead.h"
-#pragma hdrstop
 
 #include "PadIntf.h"
 #include "PadImpl.h"

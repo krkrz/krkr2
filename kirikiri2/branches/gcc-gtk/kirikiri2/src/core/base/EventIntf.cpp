@@ -9,8 +9,6 @@
 // Script/Window Event Handling and Dispatching / System Idle Event Delivering
 //---------------------------------------------------------------------------
 #include "tjsCommHead.h"
-#pragma hdrstop
-
 
 #include "SysInitIntf.h"
 #include "EventIntf.h"

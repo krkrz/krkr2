@@ -9,7 +9,6 @@
 // "Plugins" class interface
 //---------------------------------------------------------------------------
 #include "tjsCommHead.h"
-#pragma hdrstop
 
 
 #include "PluginIntf.h"

@@ -14,7 +14,6 @@
 */
 //---------------------------------------------------------------------------
 #include "tjsCommHead.h"
-#pragma hdrstop
 
 #include <math.h>
 #include "LayerBitmapIntf.h"

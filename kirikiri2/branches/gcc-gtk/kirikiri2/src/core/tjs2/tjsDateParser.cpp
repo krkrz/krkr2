@@ -9,9 +9,6 @@
 // Date/time string parser
 //---------------------------------------------------------------------------
 #include "tjsCommHead.h"
-#ifdef __BORLANDC__
-#pragma hdrstop
-#endif
 
 #include <time.h>
 

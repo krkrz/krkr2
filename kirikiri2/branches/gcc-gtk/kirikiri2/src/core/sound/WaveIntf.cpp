@@ -9,8 +9,6 @@
 // Wave Player interface
 //---------------------------------------------------------------------------
 #include "tjsCommHead.h"
-#pragma hdrstop
-
 
 #include "WaveIntf.h"
 #include "EventIntf.h"

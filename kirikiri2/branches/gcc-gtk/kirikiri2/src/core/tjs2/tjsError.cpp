@@ -9,9 +9,6 @@
 // TJS2's C++ exception class and exception message
 //---------------------------------------------------------------------------
 #include "tjsCommHead.h"
-#ifdef __BORLANDC__
-#pragma hdrstop
-#endif
 
 
 #include "tjsScriptBlock.h"
