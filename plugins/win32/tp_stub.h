@@ -549,10 +549,24 @@ public:
 #define TJS_S_OK                    (0)
 #define TJS_E_FAIL					(-1)
 
-#define TJS_FAILED(x)				((x)<0)
-#define TJS_SUCCEEDED(x)			((x)>=0)
+#define TJS_S_MAX (2)
+	// maximum possible number of success status.
+	// numbers over this may be regarded as a failure in
+	// strict-checking mode.
 
-inline bool TJSIsObjectValid(tjs_error hr)
+#ifdef TJS_STRICT_ERROR_CODE_CHECK
+	static inline bool TJS_FAILED(tjs_error hr)
+	{
+		if(hr < 0) return true;
+		if(hr > TJS_S_MAX) return true;
+		return false;
+	}
+#else
+	#define TJS_FAILED(x)				((x)<0)
+#endif
+#define TJS_SUCCEEDED(x)			(!TJS_FAILED(x))
+
+static inline bool TJSIsObjectValid(tjs_error hr)
 {
 	// checks object validity by returning value of iTJSDispatch2::IsValid
 
