@@ -619,8 +619,8 @@ EOF
 
 ;# stub library for plugin
 
-open(OHFH, ">plugin_kit/tp_stub.h") or die;
-open(OCFH, ">plugin_kit/tp_stub.cpp") or die;
+open(OHFH, ">../../../plugins/win32/tp_stub.h") or die;
+open(OCFH, ">../../../plugins/win32/tp_stub.cpp") or die;
 
 print OHFH $copyright;
 print OCFH $copyright;
