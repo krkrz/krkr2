@@ -6095,7 +6095,7 @@ void tTVPLayerManager::NotifyPart(tTJSNI_BaseLayer *lay)
 	// notifies layer parting from its parent
 	InvalidateOverallIndex();
 	BlurTree(lay);
-	ReleaseCapture();	
+	ReleaseCaptureFromTree(lay);
 }
 //---------------------------------------------------------------------------
 void tTVPLayerManager::InvalidateOverallIndex()
@@ -6433,6 +6433,19 @@ void tTVPLayerManager::ReleaseCapture()
 		CaptureOwner = NULL;
 		if(lay->Owner) lay->Owner->Release();
 			// release TJS object
+	}
+}
+//---------------------------------------------------------------------------
+void tTVPLayerManager::ReleaseCaptureFromTree(tTJSNI_BaseLayer * layer)
+{
+	// Release capture state, if the capture object is descendant of
+	// 'layer' or 'layer' itself.
+	if(CaptureOwner)
+	{
+		if(CaptureOwner->IsAncestorOrSelf(layer))
+		{
+			ReleaseCapture();
+		}
 	}
 }
 //---------------------------------------------------------------------------
