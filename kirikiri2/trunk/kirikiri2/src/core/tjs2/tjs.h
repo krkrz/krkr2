@@ -26,9 +26,9 @@ namespace TJS
 //---------------------------------------------------------------------------
 // TJS version
 //---------------------------------------------------------------------------
-extern tjs_int TJSVersionMajor;
-extern tjs_int TJSVersionMinor;
-extern tjs_int TJSVersionRelease;
+extern const tjs_int TJSVersionMajor;
+extern const tjs_int TJSVersionMinor;
+extern const tjs_int TJSVersionRelease;
 
 extern tjs_char TJSCompiledDate[];
 //---------------------------------------------------------------------------
