@@ -866,7 +866,19 @@ void __fastcall TConfMainFrame::ParseOptionsData(TStrings *options)
 					if(OptionsTreeView->Items->Item[i]->Text == category)
 					{
 						// parent found
-						node = OptionsTreeView->Items->AddChild(OptionsTreeView->Items->Item[i], "");
+						for(int j = 0; j < OptionsTreeView->Items->Item[i]->Count; j++)
+							if(OptionsTreeView->Items->Item[i]->Item[j]->Data)
+							{
+								TOptionData* olddata = (TOptionData*)
+									OptionsTreeView->Items->Item[i]->Item[j]->Data;
+								if(olddata->Caption == caption)
+								{
+									node = OptionsTreeView->Items->Item[i]->Item[j];
+									delete olddata;
+								}
+							}
+						if(!node)
+							node = OptionsTreeView->Items->AddChild(OptionsTreeView->Items->Item[i], "");
 						found = true;
 						break;
 					}
