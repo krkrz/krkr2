@@ -163,6 +163,8 @@ if(TVPCPUType & TVP_CPU_HAS_MMX)
 if(TVPCPUType & TVP_CPU_HAS_MMX)
 	 TVPStretchAlphaBlend =  TVPStretchAlphaBlend_mmx_a;
 if(TVPCPUType & TVP_CPU_HAS_MMX)
+	 TVPStretchAdditiveAlphaBlend =  TVPStretchAdditiveAlphaBlend_mmx_a;
+if(TVPCPUType & TVP_CPU_HAS_MMX)
 	 TVPFastLinearInterpV2 =  TVPFastLinearInterpV2_mmx_a;
 if(TVPCPUType & TVP_CPU_HAS_MMX)
 	 TVPFastLinearInterpH2F =  TVPFastLinearInterpH2F_mmx_a;
