@@ -180,7 +180,7 @@ public:
 	//------------------------------------------------------------ compare --
 	TJS_CONST_METHOD_DEF(bool, operator ==, (const tTJSString & ref))
 	{
-		if(!Ptr && !ref.Ptr) return true; // both empty string
+		if(Ptr == ref.Ptr) return true; // both empty or the same pointer
 		if(!Ptr && ref.Ptr) return false;
 		if(Ptr && !ref.Ptr) return false;
 		if(Ptr->Length != ref.Ptr->Length) return false;
