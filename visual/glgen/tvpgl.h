@@ -137,13 +137,8 @@ TVP_GL_FUNC_PTR_EXTERN_DECL(void, TVPLinTransConstAlphaBlend_HDA,  (tjs_uint32 *
 TVP_GL_FUNC_PTR_EXTERN_DECL(void, TVPLinTransConstAlphaBlend_d,  (tjs_uint32 *dest, tjs_int len, const tjs_uint32 *src, tjs_int sx, tjs_int sy, tjs_int stepx, tjs_int stepy, tjs_int srcpitch, tjs_int opa));
 TVP_GL_FUNC_PTR_EXTERN_DECL(void, TVPLinTransConstAlphaBlend_a,  (tjs_uint32 *dest, tjs_int len, const tjs_uint32 *src, tjs_int sx, tjs_int sy, tjs_int stepx, tjs_int stepy, tjs_int srcpitch, tjs_int opa));
 TVP_GL_FUNC_PTR_EXTERN_DECL(void, TVPConstAlphaBlend_SD,  (tjs_uint32 *dest, const tjs_uint32 *src1, const tjs_uint32 *src2, tjs_int len, tjs_int opa));
+TVP_GL_FUNC_PTR_EXTERN_DECL(void, TVPConstAlphaBlend_SD_a,  (tjs_uint32 *dest, const tjs_uint32 *src1, const tjs_uint32 *src2, tjs_int len, tjs_int opa));
 TVP_GL_FUNC_PTR_EXTERN_DECL(void, TVPConstAlphaBlend_SD_d,  (tjs_uint32 *dest, const tjs_uint32 *src1, const tjs_uint32 *src2, tjs_int len, tjs_int opa));
-TVP_GL_FUNC_PTR_EXTERN_DECL(void, TVPConstAlphaBlend_SDd_dd,  (tjs_uint32 *dest, const tjs_uint32 *src1, const tjs_uint32 *src2, tjs_int len, tjs_int opa));
-TVP_GL_FUNC_PTR_EXTERN_DECL(void, TVPConstAlphaBlend_SDa_dd,  (tjs_uint32 *dest, const tjs_uint32 *src1, const tjs_uint32 *src2, tjs_int len, tjs_int opa));
-TVP_GL_FUNC_PTR_EXTERN_DECL(void, TVPConstAlphaBlend_SDa_ad,  (tjs_uint32 *dest, const tjs_uint32 *src1, const tjs_uint32 *src2, tjs_int len, tjs_int opa));
-TVP_GL_FUNC_PTR_EXTERN_DECL(void, TVPConstAlphaBlend_SDd_ad,  (tjs_uint32 *dest, const tjs_uint32 *src1, const tjs_uint32 *src2, tjs_int len, tjs_int opa));
-TVP_GL_FUNC_PTR_EXTERN_DECL(void, TVPConstAlphaBlend_SDa_aa,  (tjs_uint32 *dest, const tjs_uint32 *src1, const tjs_uint32 *src2, tjs_int len, tjs_int opa));
-TVP_GL_FUNC_PTR_EXTERN_DECL(void, TVPConstAlphaBlend_SDd_aa,  (tjs_uint32 *dest, const tjs_uint32 *src1, const tjs_uint32 *src2, tjs_int len, tjs_int opa));
 TVP_GL_FUNC_PTR_EXTERN_DECL(void, TVPInitUnivTransBlendTable,  (tjs_uint32 *table, tjs_int phase, tjs_int vague));
 TVP_GL_FUNC_PTR_EXTERN_DECL(void, TVPInitUnivTransBlendTable_d,  (tjs_uint32 *table, tjs_int phase, tjs_int vague));
 TVP_GL_FUNC_PTR_EXTERN_DECL(void, TVPUnivTransBlend,  (tjs_uint32 *dest, const tjs_uint32 *src1, const tjs_uint32 *src2, const tjs_uint8 *rule, const tjs_uint32 *table, tjs_int len));
