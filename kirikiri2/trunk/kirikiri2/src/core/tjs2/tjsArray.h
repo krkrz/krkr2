@@ -80,7 +80,6 @@ protected:
 // tTJSArrayNI : TJS Array native C++ instance
 //---------------------------------------------------------------------------
 class tTJSArrayNI : public tTJSNativeInstance,
-					public tTJSEnumMemberCallbackIntf,
 					public tTJSSaveStructuredDataCallback
 {
 	typedef tTJSNativeInstance inherited;
@@ -95,9 +94,17 @@ public:
 	void Assign(iTJSDispatch2 *dsp);
 
 private:
-	bool EnumMemberCallback(tTJSVariantString *name,
-		const tTJSVariant & value);
-		// method from tTJSEnumMemberCallbackIntf
+	struct tDictionaryEnumCallback : public tTJSDispatch
+	{
+		std::vector<tTJSVariant> * Items;
+		
+		tjs_error TJS_INTF_METHOD
+		FuncCall(tjs_uint32 flag, const tjs_char * membername,
+			tjs_uint32 *hint, tTJSVariant *result, tjs_int numparams,
+			tTJSVariant **param, iTJSDispatch2 *objthis);
+	};
+	friend class tDictionaryEnumCallback;
+
 public:
 	void SaveStructuredData(std::vector<iTJSDispatch2 *> &stack,
 		tTJSStringAppender & string, const ttstr&indentstr);
@@ -185,16 +192,17 @@ public:
 	GetCount
 	GetCountByNum
 */
+
 	tjs_error TJS_INTF_METHOD
 	PropSetByVS(tjs_uint32 flag, tTJSVariantString *membername,
 		const tTJSVariant *param, iTJSDispatch2 *objthis);
-/*
-	tjs_error
-	Reserved2() // reserved; must return TJS_E_NOTIMPL
+
+	tjs_error TJS_INTF_METHOD
+	EnumMembers(tjs_uint32 flag, tTJSVariantClosure *callback, iTJSDispatch2 *objthis)
 	{
-		return TJS_E_NOTIMPL;
+		return TJS_E_NOTIMPL; // currently not implemented
 	}
-*/
+
 	tjs_error TJS_INTF_METHOD
 	DeleteMember(tjs_uint32 flag, const tjs_char *membername, tjs_uint32 *hint,
 		iTJSDispatch2 *objthis);

@@ -1021,10 +1021,43 @@ tTJSCustomObject::tTJSSymbolData * tTJSCustomObject::Find(const tjs_char * name,
 
 }
 //---------------------------------------------------------------------------
-void tTJSCustomObject::EnumMembers(tTJSEnumMemberCallbackIntf * intf)
+bool tTJSCustomObject::CallEnumCallbackForData(
+	tjs_uint32 flags, tTJSVariant ** params,
+	tTJSVariantClosure & callback, iTJSDispatch2 * objthis,
+	const tTJSCustomObject::tTJSSymbolData * data)
 {
-	// enumlate members by calling "intf->EnumMemberCallback"
-	tjs_int i;
+	tjs_uint32 newflags = 0;
+	if(data->SymFlags & TJS_SYMBOL_HIDDEN) newflags |= TJS_HIDDENMEMBER;
+	if(data->SymFlags & TJS_SYMBOL_STATIC) newflags |= TJS_STATICMEMBER;
+
+	*params[0] = data->Name;
+	*params[1] = (tjs_int)newflags;
+
+	if(!(flags & TJS_ENUM_NO_VALUE))
+	{
+		// get value
+		if(TJS_FAILED(TJSDefaultPropGet(flags, *(tTJSVariant*)(&(data->Value)),
+			params[2], objthis))) return false;
+	}
+
+	tTJSVariant res;
+	if(TJS_FAILED(callback.FuncCall(NULL, NULL, NULL, &res,
+		(flags & TJS_ENUM_NO_VALUE) ? 2 : 3, params, NULL))) return false;
+	return (bool)(tjs_int)(res);
+}
+//---------------------------------------------------------------------------
+void tTJSCustomObject::InternalEnumMembers(tjs_uint32 flags,
+	tTJSVariantClosure *callback, iTJSDispatch2 *objthis)
+{
+	// enumlate members by calling callback.
+	// not that member changes(delete or insert) through this function is not guaranteed.
+	if(!callback) return;
+
+	tTJSVariant name;
+	tTJSVariant newflags;
+	tTJSVariant value;
+	tTJSVariant * params[3] = { &name, &newflags, &value };
+
 	const tTJSSymbolData * lv1 = Symbols;
 	const tTJSSymbolData * lv1lim = lv1 + HashSize;
 	for(; lv1 < lv1lim; lv1++)
@@ -1033,18 +1066,17 @@ void tTJSCustomObject::EnumMembers(tTJSEnumMemberCallbackIntf * intf)
 		while(d)
 		{
 			const tTJSSymbolData * nextd = d->Next;
-			if(d->SymFlags & TJS_SYMBOL_USING && !(d->SymFlags & TJS_SYMBOL_HIDDEN))
+
+			if(d->SymFlags & TJS_SYMBOL_USING)
 			{
-				if(!intf->EnumMemberCallback(d->Name,
-					*(tTJSVariant*)(&(d->Value)) )) return ;
+				if(!CallEnumCallbackForData(flags, params, *callback, objthis, d)) return ;
 			}
 			d = nextd;
 		}
 
 		if(lv1->SymFlags & TJS_SYMBOL_USING && !(lv1->SymFlags & TJS_SYMBOL_HIDDEN))
 		{
-			if(!intf->EnumMemberCallback(lv1->Name,
-				*(tTJSVariant*)(&(lv1->Value)) )) return ;
+			if(!CallEnumCallbackForData(flags, params, *callback, objthis, lv1)) return ;
 		}
 	}
 }
@@ -1286,6 +1318,11 @@ tTJSCustomObject::PropSet(tjs_uint32 flag, const tjs_char *membername, tjs_uint3
 	else
 		data->SymFlags &= ~TJS_SYMBOL_HIDDEN;
 
+	if(flag & TJS_STATICMEMBER)
+		data->SymFlags |= TJS_SYMBOL_STATIC;
+	else
+		data->SymFlags &= ~TJS_SYMBOL_STATIC;
+
 	//-- below is mainly the same as TJSDefaultPropSet
 
 	if(!(flag & TJS_IGNOREPROP))
@@ -1365,6 +1402,11 @@ tTJSCustomObject::PropSetByVS(tjs_uint32 flag, tTJSVariantString *membername,
 	else
 		data->SymFlags &= ~TJS_SYMBOL_HIDDEN;
 
+	if(flag & TJS_STATICMEMBER)
+		data->SymFlags |= TJS_SYMBOL_STATIC;
+	else
+		data->SymFlags &= ~TJS_SYMBOL_STATIC;
+
 	//-- below is mainly the same as TJSDefaultPropSet
 
 	if(!(flag & TJS_IGNOREPROP))
@@ -1404,7 +1446,16 @@ tTJSCustomObject::PropSetByVS(tjs_uint32 flag, tTJSVariantString *membername,
 	return TJS_S_OK;
 }
 //---------------------------------------------------------------------------
+tjs_error TJS_INTF_METHOD
+tTJSCustomObject::EnumMembers(tjs_uint32 flag, tTJSVariantClosure *callback, iTJSDispatch2 *objthis)
+{
+	if(!GetValidity()) return TJS_E_INVALIDOBJECT;
 
+	InternalEnumMembers(flag, callback, objthis);
+
+	return TJS_S_OK;
+}
+//---------------------------------------------------------------------------
 tjs_error TJS_INTF_METHOD
 tTJSCustomObject::DeleteMember(tjs_uint32 flag, const tjs_char *membername, tjs_uint32 *hint,
 	iTJSDispatch2 *objthis)

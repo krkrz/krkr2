@@ -234,10 +234,12 @@ typedef tTJSString ttstr;
 #define TJS_MEMBERENSURE		0x00000200 // create a member if not exists
 #define TJS_MEMBERMUSTEXIST     0x00000400 // member *must* exist ( for Dictionary/Array )
 #define TJS_IGNOREPROP			0x00000800 // ignore property invoking
-#define TJS_HIDDENMEMBER		0x00001000 // member cannot be enumerated in
-										   // tTJSCustomObject::EnumMembers
+#define TJS_HIDDENMEMBER		0x00001000 // member is hidden
 #define TJS_STATICMEMBER		0x00010000 // member is not registered to the
 										   // object (internal use)
+
+#define TJS_ENUM_NO_VALUE		0x00100000 // values are not retrieved
+										   // (for EnumMembers)
 
 #define TJS_NIS_REGISTER		0x00000001 // set native pointer
 #define TJS_NIS_GETINSTANCE		0x00000002 // get native pointer
@@ -287,6 +289,7 @@ typedef tTJSString ttstr;
 	iTJSDispatch interface
 */
 class tTJSVariant;
+class tTJSVariantClosure;
 class tTJSVariantString;
 class iTJSNativeInstance;
 class iTJSDispatch2
@@ -384,7 +387,11 @@ public:
 		) = 0;
 
 	virtual tjs_error TJS_INTF_METHOD
-	Reserved2() = 0; // reserved ( may become member enumeration method... )
+	EnumMembers( // enumerate members
+		tjs_uint32 flag,			// enumeration flag
+		tTJSVariantClosure *callback,	// callback function interface ( called on each member )
+		iTJSDispatch2 *objthis		// object as "this"
+		) = 0;
 
 	virtual tjs_error TJS_INTF_METHOD
 	DeleteMember( // delete member
@@ -417,7 +424,7 @@ public:
 		) = 0;
 
 	virtual tjs_error TJS_INTF_METHOD
-	IsValid( // get validation
+	IsValid( // get validation, returns TJS_S_TRUE (valid) or TJS_S_FALSE (invalid)
 		tjs_uint32 flag,			// calling flag
 		const tjs_char *membername,	// member name ( NULL for a default member )
 		tjs_uint32 *hint,			// hint for the member name (in/out)
@@ -425,7 +432,7 @@ public:
 		) = 0;
 
 	virtual tjs_error TJS_INTF_METHOD
-	IsValidByNum( // get validation by index number
+	IsValidByNum( // get validation by index number, returns TJS_S_TRUE (valid) or TJS_S_FALSE (invalid)
 		tjs_uint32 flag,			// calling flag
 		tjs_int num,				// index number
 		iTJSDispatch2 *objthis		// object as "this"
@@ -545,8 +552,15 @@ public:
 #define TJS_FAILED(x)				((x)<0)
 #define TJS_SUCCEEDED(x)			((x)>=0)
 
+inline bool TJSIsObjectValid(tjs_error hr)
+{
+	// checks object validity by returning value of iTJSDispatch2::IsValid
 
+	if(hr == TJS_S_TRUE) return true;  // mostly expected value for valid object
+	if(hr == TJS_E_NOTIMPL) return true; // also valid for object which does not implement IsValid
 
+	return false; // otherwise the object is not valid
+}
 
 
 
@@ -750,8 +764,14 @@ public:
 			ObjThis?ObjThis:(objthis?objthis:Object));
 	}
 
-//	HRESUT
-//	Reserved2()
+	tjs_error
+	EnumMembers(tjs_uint32 flag, tTJSVariantClosure *callback,
+		iTJSDispatch2 *objthis) const
+	{
+		if(!Object) TJSThrowNullAccess();
+		return Object->EnumMembers(flag, callback,
+			ObjThis?ObjThis:(objthis?objthis:Object));
+	}
 
 	tjs_error
 	DeleteMember(tjs_uint32 flag, const tjs_char *membername, tjs_uint32 *hint,
@@ -1182,7 +1202,7 @@ public:
 	}
 
 	tjs_error TJS_INTF_METHOD
-	Reserved2()
+	EnumMembers(tjs_uint32 flag, tTJSVariantClosure *callback, iTJSDispatch2 *objthis)
 	{
 		return TJS_E_NOTIMPL;
 	}

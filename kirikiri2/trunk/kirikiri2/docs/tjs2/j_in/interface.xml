@@ -280,6 +280,22 @@ tjs_error iTJSDispatch2::PropSet(<r/>
 </para>
 
 
+<para>
+<ptitle>PropSetByVS</ptitle>
+tjs_error iTJSDispatch2::PropSetByVS(<r/>
+	tjs_uint32 flag,<r/>
+	tTJSVariantString *membername,<r/>
+	const tTJSVariant *param,<r/>
+	iTJSDispatch2 *objthis<r/>
+	)<r/>
+<r/>
+　プロパティやメンバ変数の値の設定を行います。PropSetByVS と異なるのは、メンバ名が tTJSVariantString により参照される点です。内部的に用いられます。tTJSVariantString は同じ文字列用メモリ領域を、複数の文字列オブジェクトが共有して使う機構を持っているため、このメソッドを介してプロパティの設定 (オブジェクト内へのメンバの作成) を行うと、メンバ名に使用される文字列メモリ領域用メモリの増加を防ぐことができます。<r/>
+　このメソッドを実装しない場合は TJS_E_NOTIMPL を返してください。代わりに PropSet が使用されます。また、このメソッドを呼び出して TJS_E_NOTIMPL が返された場合は、PropSet を代わりに使うように実装してください。<r/>
+<r/>
+</para>
+
+
+
 
 
 
@@ -419,6 +435,67 @@ tjs_error iTJSDispatch2::DeleteMemberByNum(<r/>
 　序数によりメンバの削除を行います。<r/>
 </para>
 
+
+
+<para>
+<ptitle>EnumMembers</ptitle>
+tjs_error iTJSDispatch2::EnumMembers(<r/>
+		tjs_uint32 flag,<r/>
+		tTJSVariantClosure *callback,<r/>
+		iTJSDispatch2 *objthis<r/>
+		)<r/>
+<r/>
+　オブジェクト内のメンバを列挙します。<r/>
+　callback にはコールバック関数を指定できますが、現バージョンではコールバック関数内でこのオブジェクトのメンバの作成や削除を行った場合の動作は保証されません。<r/>
+<r/>
+　引数は以下の通りです。<r/>
+　<r/>
+<dl>
+
+<dt>tjs_uint32 flag</dt>
+<dd>
+　呼び出しフラグです。呼び出しフラグは、下記のフラグのビット論理和あるいは 0(ゼロ) を指定してください。<r/>
+
+<dl>
+
+<dt>TJS_IGNOREPROP</dt>
+<dd>
+　プロパティアクセスを無効化します。メンバを列挙し、かつ値を取得する場合、このフラグが指定されていると、メンバがプロパティの場合はプロパティオブジェクトそのものが得られます。このフラグを指定しなかった場合は、プロパティオブジェクトを通して得られた値が得られます。<r/>
+</dd>
+
+<dt>TJS_ENUM_NO_VALUE</dt>
+<dd>
+　値を取得しません。このフラグが指定されていると、コールバック関数に渡される引数は 2 つになります。指定されていると 3 つになります。<r/>
+</dd>
+
+</dl>
+</dd>
+
+<dt>tTJSVariantClosure *callback</dt>
+<dd>
+　コールバック関数を指定します。<r/>
+　このコールバック関数は、メンバ一つにつき一回ずつ、callback->FuncCall が呼び出されます。<r/>
+　関数には２つ(TJS_ENUM_NO_VALUEを指定した場合)あるいは３つ(TJS_ENUM_NO_VALUEを指定しなかった場合)の引数が渡されます。<r/>
+<ul>
+<li>第１引数は文字列型になり、メンバ名です</li>
+<li>第２引数は整数型になり、そのメンバのフラグです。TJS_HIDDENMEMBER あるいは TJS_STATICMEMBER のビット論理和の組み合わせ、あるいは 0 が指定されます</li>
+<li>第３引数はTJS_ENUM_NO_VALUEを指定しなかった場合にのみ存在し、そのメンバの値を表します</li>
+</ul>
+</dd>
+
+
+<dt>iTJSDispatch2 *objthis</dt>
+<dd>
+　このメソッドが実行されるコンテキスト (this オブジェクト) を指定します。<r/>
+　この引数は、TJS_IGNOREPROP フラグが指定されない場合、プロパティオブジェクトが実行されるデフォルトのコンテキストとなります。<r/>
+</dd>
+
+</dl>
+
+
+
+
+</para>
 
 
 
@@ -1074,8 +1151,15 @@ tjs_error iTJSDispatch2::ClassInstanceInfo(<r/>
 
 <dt>TJS_HIDDENMEMBER</dt>
 <dd>
-　このフラグを指定してメンバを作成すると、EnumMembers でそのオブジェクトが列挙されなくなります。オブジェクトによってはサポートされていないこともあり得ます。EnumMembers は iTJSDispatch2 に将来的に追加される予定のメソッドです。
+　このフラグを指定してメンバを作成すると、メンバは不可視になります。オブジェクトによってはサポートされていないこともあり得ます。
 </dd>
+
+<dt>TJS_STATICMEMBER</dt>
+<dd>
+　このフラグを指定してメンバを作成すると、メンバはスタティック (実行コンテキストに依存しない) となります。オブジェクトによってはサポートされていないこともあり得ます。
+</dd>
+
+
 </dl>
 </para>
 
