@@ -81,6 +81,10 @@ public:
 
 	void SetSegmentLoop( int comeFrame, int goFrame );
 	void SetPeriodEvent( int eventFrame );
+
+	void SetStopFrame( tjs_int f );
+	void SetDefaultStopFrame();
+	tjs_int GetStopFrame();
 // End:		Add:	T.Imoto
 
 public:
