@@ -84,10 +84,14 @@ if(TVPCPUType & TVP_CPU_HAS_MMX)
 	 TVPApplyColorMap65 =  TVPApplyColorMap65_mmx_a;
 if(TVPCPUType & TVP_CPU_HAS_MMX)
 	 TVPApplyColorMap65_d =  TVPApplyColorMap65_d_mmx_a;
+if(TVPCPUType & TVP_CPU_HAS_MMX)
+	 TVPApplyColorMap65_a =  TVPApplyColorMap65_a_mmx_a;
 if(TVPCPUType & TVP_CPU_HAS_EMMX && TVPCPUType & TVP_CPU_HAS_MMX)
 	 TVPApplyColorMap65 =  TVPApplyColorMap65_emmx_a;
 if(TVPCPUType & TVP_CPU_HAS_EMMX && TVPCPUType & TVP_CPU_HAS_MMX)
 	 TVPApplyColorMap65_d =  TVPApplyColorMap65_d_emmx_a;
+if(TVPCPUType & TVP_CPU_HAS_EMMX && TVPCPUType & TVP_CPU_HAS_MMX)
+	 TVPApplyColorMap65_a =  TVPApplyColorMap65_a_emmx_a;
 if(TVPCPUType & TVP_CPU_HAS_MMX)
 	 TVPDarkenBlend =  TVPDarkenBlend_mmx_a;
 if(TVPCPUType & TVP_CPU_HAS_MMX)
