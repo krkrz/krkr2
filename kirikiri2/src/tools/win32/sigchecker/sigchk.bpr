@@ -3,7 +3,7 @@
 <PROJECT>
   <MACROS>
     <VERSION value="BCB.05.03"/>
-    <PROJECT value="sigchk.exe"/>
+    <PROJECT value="..\..\..\..\bin\win32\enduser-tools\sigchk.exe"/>
     <OBJFILES value="sigchk.obj MainUnit.obj krkrsiglib\KrkrExecutableUnit.obj 
       krkrsiglib\KrkrSignatureUnit.obj"/>
     <RESFILES value="sigchk.res"/>
@@ -50,7 +50,7 @@ AutoIncBuild=1
 MajorVer=1
 MinorVer=0
 Release=2
-Build=4
+Build=5
 Debug=0
 PreRelease=0
 Special=0
@@ -62,7 +62,7 @@ CodePage=932
 [Version Info Keys]
 CompanyName=kikyou.info
 FileDescription=Digital signature/file integrity check tool
-FileVersion=1.0.2.4
+FileVersion=1.0.2.5
 InternalName=sigchk
 LegalCopyright=(C) 2004, W.Dee All rights reserved.
 LegalTrademarks=
@@ -87,6 +87,10 @@ Item0=$(BCB)\source\vcl
 [HistoryLists\hlConditionals]
 Count=1
 Item0=_DEBUG
+
+[HistoryLists\hlFinalOutputDir]
+Count=1
+Item0=..\..\..\..\bin\win32\enduser-tools
 
 [Debugging]
 DebugSourceDirs=$(BCB)\source\vcl
