@@ -488,6 +488,9 @@ process_exp_stub("../../utils/KAGParser.h");
 print OFH "#include \"Random.h\"\n";
 process_exp_stub("../../utils/Random.h");
 
+print OFH "#include \"ClipboardIntf.h\"\n";
+process_exp_stub("../../utils/ClipboardIntf.h");
+
 print OFH "#include \"TickCount.h\"\n";
 process_exp_stub("../../utils/win32/TickCount.h");
 

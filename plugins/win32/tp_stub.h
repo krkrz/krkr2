@@ -1352,6 +1352,15 @@ enum tTVPKAGDebugLevel
 
 
 //---------------------------------------------------------------------------
+// tTVPClipboardFormat
+//---------------------------------------------------------------------------
+enum tTVPClipboardFormat
+{
+	cbfText = 1
+};
+
+
+//---------------------------------------------------------------------------
 // IDirectSound former declaration
 //---------------------------------------------------------------------------
 class IDirectSound;
@@ -2382,6 +2391,9 @@ extern void * TVPImportFuncPtrcdefadd0c3bf15b4639b2f0338a40585;
 extern void * TVPImportFuncPtr4bf80e9bac16b9e3f9bf385b2fbce657;
 extern void * TVPImportFuncPtr51aeacf2b6ef9deb01c3b3db201d6bf9;
 extern void * TVPImportFuncPtr9ed5432d73448da47991df9577ee97bc;
+extern void * TVPImportFuncPtrcf1d02d1cc1aff0aae6c038c95dac80f;
+extern void * TVPImportFuncPtrddb0e05c72c0692e78af885ac7ec82dc;
+extern void * TVPImportFuncPtra3029db6292616cd16c228b91dc4af13;
 extern void * TVPImportFuncPtr2d90871c6bc15a9e8d97d24c29e78e3b;
 extern void * TVPImportFuncPtr0af6744e35e38276d6a98c1f382b1519;
 extern void * TVPImportFuncPtrad40567a051208757642e5e087f3e741;
@@ -6019,6 +6031,36 @@ inline void TVPGetRandomBits128(void * dest)
 	}
 	typedef void (__stdcall * __functype)(void *);
 	((__functype)(TVPImportFuncPtr9ed5432d73448da47991df9577ee97bc))(dest);
+}
+inline bool TVPClipboardHasFormat(tTVPClipboardFormat format)
+{
+	if(!TVPImportFuncPtrcf1d02d1cc1aff0aae6c038c95dac80f)
+	{
+		static char funcname[] = "bool ::TVPClipboardHasFormat(tTVPClipboardFormat)";
+		TVPImportFuncPtrcf1d02d1cc1aff0aae6c038c95dac80f = TVPGetImportFuncPtr(funcname);
+	}
+	typedef bool (__stdcall * __functype)(tTVPClipboardFormat);
+	return ((__functype)(TVPImportFuncPtrcf1d02d1cc1aff0aae6c038c95dac80f))(format);
+}
+inline void TVPClipboardSetText(const ttstr & text)
+{
+	if(!TVPImportFuncPtrddb0e05c72c0692e78af885ac7ec82dc)
+	{
+		static char funcname[] = "void ::TVPClipboardSetText(const ttstr &)";
+		TVPImportFuncPtrddb0e05c72c0692e78af885ac7ec82dc = TVPGetImportFuncPtr(funcname);
+	}
+	typedef void (__stdcall * __functype)(const ttstr &);
+	((__functype)(TVPImportFuncPtrddb0e05c72c0692e78af885ac7ec82dc))(text);
+}
+inline bool TVPClipboardGetText(ttstr & text)
+{
+	if(!TVPImportFuncPtra3029db6292616cd16c228b91dc4af13)
+	{
+		static char funcname[] = "bool ::TVPClipboardGetText(ttstr &)";
+		TVPImportFuncPtra3029db6292616cd16c228b91dc4af13 = TVPGetImportFuncPtr(funcname);
+	}
+	typedef bool (__stdcall * __functype)(ttstr &);
+	return ((__functype)(TVPImportFuncPtra3029db6292616cd16c228b91dc4af13))(text);
 }
 inline tjs_uint64 TVPGetTickCount()
 {

@@ -57,7 +57,8 @@
       intermediate\MsgIntf.obj intermediate\MsgImpl.obj 
       intermediate\ScriptMgnIntf.obj intermediate\FuncStubs.obj 
       intermediate\OptionsDesc.obj intermediate\ConfSettingsUnit.obj 
-      intermediate\ConfMainFrameUnit.obj intermediate\tjsGlobalStringMap.obj"/>
+      intermediate\ConfMainFrameUnit.obj intermediate\tjsGlobalStringMap.obj 
+      intermediate\ClipboardIntf.obj intermediate\ClipboardImpl.obj"/>
     <RESFILES value="tvpwin32.res ..\HBeamCur.res"/>
     <DEFFILE value="..\tvpwin32.def"/>
     <RESDEPEN value="$(RESFILES) ..\HaltWarnFormUnit.dfm 
@@ -227,6 +228,8 @@
       <FILE FILENAME="..\..\..\..\tools\win32\krdevui\ConfSettingsUnit.cpp" FORMNAME="" UNITNAME="ConfSettingsUnit" CONTAINERID="C/C++ コンパイラ" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\..\tools\win32\krdevui\ConfMainFrameUnit.cpp" FORMNAME="ConfMainFrame" UNITNAME="ConfMainFrameUnit" CONTAINERID="C/C++ コンパイラ" DESIGNCLASS="TFrame" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\tjs2\tjsGlobalStringMap.cpp" FORMNAME="" UNITNAME="tjsGlobalStringMap" CONTAINERID="C/C++ コンパイラ" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\..\utils\ClipboardIntf.cpp" FORMNAME="" UNITNAME="ClipboardIntf" CONTAINERID="C/C++ コンパイラ" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\..\utils\win32\ClipboardImpl.cpp" FORMNAME="" UNITNAME="ClipboardImpl" CONTAINERID="C/C++ コンパイラ" DESIGNCLASS="" LOCALCOMMAND=""/>
   </FILELIST>
   <BUILDTOOLS>
   </BUILDTOOLS>
