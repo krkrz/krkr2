@@ -525,9 +525,40 @@ TVPAdditiveAlphaBlend_a_name:					; additive alpha blend on additive alpha
 		mov			edi,	[esp + 28]		; dest
 		mov			ebp,	[esp + 32]		; src
 		lea			esi,	[edi + ecx*4]	; limit
-		sub			esi,	byte 4			; 1*4
+		sub			esi,	byte 8			; 2*4
 		cmp			edi,	esi
 		jae			near .pfraction			; jump if edi >= esi
+
+		test		edi,	4
+		IF			nz
+
+			; align destination pointer to QWORD
+
+			movd		mm3,		[ebp]		; src      (SaSiSiSi)
+			movq		mm4,		mm3
+			psrlq		mm4,		24			; mm4 = Sa
+			punpcklbw	mm3,		mm0			; mm3 = 00 Sa 00 Si 00 Si 00 Si
+			punpcklwd	mm4,		mm4
+			movd		mm1,		[edi]		; dest     (DaDiDiDi)
+			punpcklwd	mm4,		mm4			; mm4 = 00 Sa 00 Sa 00 Sa 00 Sa
+			punpcklbw	mm1,		mm0			; mm1 = 00 Da 00 Di 00 Di 00 Di
+			movq		mm2,		mm1
+			pmullw		mm2,		mm4
+			psrlw		mm2,		8			; mm2 = 00 SaDa 00 SaDi 00 SaDi 00 SaDi
+			psubw		mm1,		mm2
+			paddw		mm1,		mm3
+			packuswb	mm1,		mm0
+			movd		[edi],		mm1			; store
+
+			add			ebp,	byte 4
+			add			edi,	byte 4
+
+			cmp			edi,	esi
+
+			jae			near	.pfraction
+
+		ENDIF
+
 
 		loop_align
 .ploop:
@@ -554,9 +585,9 @@ TVPAdditiveAlphaBlend_a_name:					; additive alpha blend on additive alpha
 		movd		mm4,		[edi+4]		; 2 dest     (DaDiDiDi)
 		paddw		mm1,		mm3			; 1
 		punpcklwd	mm6,		mm6			; 2 mm6 = 00 Sa 00 Sa 00 Sa 00 Sa
-		packuswb	mm1,		mm0			; 1
+;		packuswb	mm1,		mm0			; 1
 		punpcklbw	mm4,		mm0			; 2 mm4 = 00 Da 00 Di 00 Di 00 Di
-		movd		[edi],		mm1			; 1 store
+;		movd		[edi],		mm1			; 1 store
 		movq		mm2,		mm4			; 2
 		pmullw		mm2,		mm6			; 2
 		psrlw		mm2,		8			; 2 mm2 = 00 SaDa 00 SaDi 00 SaDi 00 SaDi
@@ -565,13 +596,13 @@ TVPAdditiveAlphaBlend_a_name:					; additive alpha blend on additive alpha
 		add			ebp,	byte 8
 		paddw		mm4,		mm5			; 2
 		cmp			edi,	esi
-		packuswb	mm4,		mm0			; 2
-		movd		[edi+4-8],	mm4			; 2 store
+		packuswb	mm1,		mm4			; 1, 2
+		movq		[edi-8],	mm1			; 1, 2 store
 
 		jb			near .ploop
 
 .pfraction:
-		add			esi,	byte 4
+		add			esi,	byte 8
 		cmp			edi,	esi
 		jae			.pexit					; jump if edi >= esi
 
