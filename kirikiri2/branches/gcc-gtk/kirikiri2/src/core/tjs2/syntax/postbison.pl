@@ -18,7 +18,9 @@ $all =~ s/\#line (\d+) \"tjspp.yy.c\"/\#line $1 \"syntax\/tjspp.yy.cpp\"/g;
 
 open(FH,">".$ARGV[0]);
 print FH "#include \"tjsCommHead.h\"\n";
+print FH "#ifdef __BORLANDC__\n";
 print FH "#pragma hdrstop\n";
+print FH "#endif\n";
 print FH $all;
 print FH "\n}\n";
 
