@@ -1383,7 +1383,10 @@ enum tTVPClipboardFormat
 //---------------------------------------------------------------------------
 // IDirectSound former declaration
 //---------------------------------------------------------------------------
-class IDirectSound;
+#ifndef __DSOUND_INCLUDED__
+struct IDirectSound;
+#endif
+
 
 
 
