@@ -1,8 +1,22 @@
 
+
 /* this ALWAYS GENERATED file contains the IIDs and CLSIDs */
 
 /* link this file in with the server and any clients */
 
+
+ /* File created by MIDL compiler version 6.00.0361 */
+/* at Thu Sep 23 21:46:17 2004
+ */
+/* Compiler settings for IRendererBufferVideo.idl:
+    Oicf, W1, Zp8, env=Win32 (32b run)
+    protocol : dce , ms_ext, c_ext, robust
+    error checks: allocation ref bounds_check enum stub_data 
+    VC __declspec() decoration level: 
+         __declspec(uuid()), __declspec(selectany), __declspec(novtable)
+         DECLSPEC_UUID(), MIDL_INTERFACE()
+*/
+//@@MIDL_FILE_HEADING(  )
 
 #if !defined(_M_IA64) && !defined(_M_AMD64)
 
@@ -56,7 +70,7 @@ typedef IID CLSID;
 
 #endif !_MIDL_USE_GUIDDEF_
 
-MIDL_DEFINE_GUID(IID, CLSID_BufferRenderer,0xc633562d, 0x248d, 0x4558, 0x95, 0xd6, 0x79, 0x49, 0x1d, 0x30, 0x8f, 0xf1);
+MIDL_DEFINE_GUID(IID, IID_IRendererBufferVideo,0x8B6D85F9,0xECD5,0x4acd,0x87,0x2D,0x0B,0xA7,0x49,0x32,0x04,0xBA);
 
 #undef MIDL_DEFINE_GUID
 
@@ -76,9 +90,9 @@ MIDL_DEFINE_GUID(IID, CLSID_BufferRenderer,0xc633562d, 0x248d, 0x4558, 0x95, 0xd
 
 
  /* File created by MIDL compiler version 6.00.0361 */
-/* at Wed Sep 01 22:45:46 2004
+/* at Thu Sep 23 21:46:17 2004
  */
-/* Compiler settings for IRendererBufferAccess.idl:
+/* Compiler settings for IRendererBufferVideo.idl:
     Oicf, W1, Zp8, env=Win64 (32b run,appending)
     protocol : dce , ms_ext, c_ext, robust
     error checks: allocation ref bounds_check enum stub_data 
@@ -140,7 +154,7 @@ typedef IID CLSID;
 
 #endif !_MIDL_USE_GUIDDEF_
 
-MIDL_DEFINE_GUID(IID, CLSID_BufferRenderer,0xc633562d, 0x248d, 0x4558, 0x95, 0xd6, 0x79, 0x49, 0x1d, 0x30, 0x8f, 0xf1);
+MIDL_DEFINE_GUID(IID, IID_IRendererBufferVideo,0x8B6D85F9,0xECD5,0x4acd,0x87,0x2D,0x0B,0xA7,0x49,0x32,0x04,0xBA);
 
 #undef MIDL_DEFINE_GUID
 
