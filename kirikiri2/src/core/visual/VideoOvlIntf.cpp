@@ -70,7 +70,6 @@ ttstr tTJSNI_BaseVideoOverlay::GetStatusString() const
 	static ttstr unknown(TJS_W("unknown"));
 // Start:	Add:	T.Imoto
 	static ttstr pause(TJS_W("pause"));
-	static ttstr period(TJS_W("period"));
 // End	:	Add:	T.Imoto
 
 	switch(Status)
@@ -80,7 +79,6 @@ ttstr tTJSNI_BaseVideoOverlay::GetStatusString() const
 	case ssStop:	return stop;
 // Start:	Add:	T.Imoto
 	case ssPause:	return pause;
-	case ssPeriod:	return period;
 // End	:	Add:	T.Imoto
 	default:		return unknown;
 	}
@@ -142,7 +140,7 @@ void tTJSNI_BaseVideoOverlay::FireCallbackCommand(const ttstr & command,
 	const ttstr & argument)
 {
 	// fire call back command event.
-	// this is always synchrinized event.
+	// this is always synchronized event.
 	if(Owner)
 	{
 		// fire
@@ -153,6 +151,25 @@ void tTJSNI_BaseVideoOverlay::FireCallbackCommand(const ttstr & command,
 			static ttstr eventname(TJS_W("onCallbackCommand"));
 			TVPPostEvent(Owner, Owner, eventname, 0, TVP_EPT_IMMEDIATE,
 				2, param);
+		}
+	}
+}
+//---------------------------------------------------------------------------
+void tTJSNI_BaseVideoOverlay::FirePeriodEvent(tTVPPeriodEventReason reason)
+{
+	// fire onPeriod event
+	// this is always synchronized event.
+	
+	if(Owner)
+	{
+		// fire
+		if(CanDeliverEvents)
+		{
+			// fire onPeriod event
+			tTJSVariant param[1] = {(tjs_int)reason};
+			static ttstr eventname(TJS_W("onPeriod"));
+			TVPPostEvent(Owner, Owner, eventname, 0, TVP_EPT_IMMEDIATE,
+				1, param);
 		}
 	}
 }
@@ -397,6 +414,23 @@ TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/onCallbackCommand)
 	return TJS_S_OK;
 }
 TJS_END_NATIVE_METHOD_DECL(/*func. name*/onCallbackCommand)
+//----------------------------------------------------------------------
+TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/onPeriod)
+{
+	TJS_GET_NATIVE_INSTANCE(/*var. name*/_this,
+		/*var. type*/tTJSNI_VideoOverlay);
+
+	tTJSVariantClosure obj = _this->GetActionOwnerNoAddRef();
+	if(obj.Object)
+	{
+		TVP_ACTION_INVOKE_BEGIN(1, "onPeriod", objthis);
+		TVP_ACTION_INVOKE_MEMBER("reason");
+		TVP_ACTION_INVOKE_END(obj);
+	}
+
+	return TJS_S_OK;
+}
+TJS_END_NATIVE_METHOD_DECL(/*func. name*/onPeriod)
 //----------------------------------------------------------------------
 
 //-- properties
