@@ -317,7 +317,7 @@ tTJSNI_BaseLayer::tTJSNI_BaseLayer()
 	AbsoluteOrderIndex = 0;
 
 	// layer type management
-	DrawType = Type = ltTransparent;
+	DisplayType = Type = ltTransparent;
 		// later reset this if the layer becomes a primary layer
 	NeutralColor = TVP_RGBA2COLOR(255, 255, 255, 0);
 
@@ -435,7 +435,7 @@ tTJSNI_BaseLayer::Construct(tjs_int numparams, tTJSVariant **param,
 			TVPThrowExceptionMessage(TVPWindowHasAlreadyPrimaryLayer);
 //		SetWindow(win);
 		Manager->AttachPrimary(this);
-		Type = DrawType = ltCoverRect; // initially ltCoverRect
+		Type = DisplayType = ltCoverRect; // initially ltCoverRect
 		DrawFace = dfMain; // initially dfMain
 		HitThreshold = 0;
 	}
@@ -1322,79 +1322,79 @@ void tTJSNI_BaseLayer::SetType(tTVPLayerType type)
 		{
 		case ltBinder:
 			NeutralColor = TVP_RGBA2COLOR(255, 255, 255, 0);
-			DrawType = Type;
+			DisplayType = Type;
 			DeallocateImage();
 			break;
 
 		case ltCoverRect:
 			NeutralColor = TVP_RGBA2COLOR(255, 255, 255, 0);
-			DrawType = Type;
+			DisplayType = Type;
 			AllocateImage();
 			break;
 
 		case ltTransparent:
 			NeutralColor = TVP_RGBA2COLOR(255, 255, 255, 0);
-			DrawType = Type;
+			DisplayType = Type;
 			AllocateImage();
 			break;
 
 		case ltAdditive:
 			NeutralColor = TVP_RGBA2COLOR(0, 0, 0, 0);
-			DrawType = Type;
+			DisplayType = Type;
 			AllocateImage();
 			break;
 
 		case ltSubtractive:
 			NeutralColor = TVP_RGBA2COLOR(255, 255, 255, 0);
-			DrawType = Type;
+			DisplayType = Type;
 			AllocateImage();
 			break;
 
 		case ltMultiplicative:
 			NeutralColor = TVP_RGBA2COLOR(255, 255, 255, 0);
-			DrawType = Type;
+			DisplayType = Type;
 			AllocateImage();
 			break;
 
 		case ltEffect:
 			NeutralColor = TVP_RGBA2COLOR(255, 255, 255, 0);
-			DrawType = ltBinder;  // TODO: retrieve actual DrawType
+			DisplayType = ltBinder;  // TODO: retrieve actual DrawType
 			DeallocateImage();
 			break;
 
 		case ltFilter:
 			NeutralColor = TVP_RGBA2COLOR(255, 255, 255, 0);
-			DrawType = ltBinder;  // TODO: retrieve actual DrawType
+			DisplayType = ltBinder;  // TODO: retrieve actual DisplayType
 			DeallocateImage();
 			break;
 
 		case ltDodge:
 			NeutralColor = TVP_RGBA2COLOR(0, 0, 0, 0);
-			DrawType = Type;
+			DisplayType = Type;
 			AllocateImage();
 			break;
 
 		case ltDarken:
 			NeutralColor = TVP_RGBA2COLOR(255, 255, 255, 0);
-			DrawType = Type;
+			DisplayType = Type;
 			AllocateImage();
 			break;
 
 		case ltLighten:
 			NeutralColor = TVP_RGBA2COLOR(0, 0, 0, 0);
-			DrawType = Type;
+			DisplayType = Type;
 			AllocateImage();
 			break;
 
 		case ltScreen:
 			NeutralColor = TVP_RGBA2COLOR(0, 0, 0, 0);
-			DrawType = Type;
+			DisplayType = Type;
 			AllocateImage();
 			break;
 
 		case ltAddAlpha:
 			NeutralColor = TVP_RGBA2COLOR(0, 0, 0, 0);
-			DrawType = Type;
+			DisplayType = Type;
 			AllocateImage();
 			break;
 		}
@@ -4691,7 +4691,7 @@ void tTJSNI_BaseLayer::QueryUpdateExcludeRect(tTVPRect &rect, bool parentvisible
 
 	// recur to children
 	parentvisible = parentvisible && Visible &&
-		(DrawType == ltCoverRect || DrawType == ltTransparent || DrawType == ltAddAlpha) &&
+		(DisplayType == ltCoverRect || DisplayType == ltTransparent || DisplayType == ltAddAlpha) &&
 		Opacity == 255; // fixed 2004/01/09 W.Dee
 	TVP_LAYER_FOR_EACH_CHILD_NOLOCK_BACKWARD_BEGIN(child)
 
@@ -4709,7 +4709,7 @@ void tTJSNI_BaseLayer::QueryUpdateExcludeRect(tTVPRect &rect, bool parentvisible
 	rect.bottom += Rect.top;
 
 	// check visibility & opacity
-	if(parentvisible && DrawType == ltCoverRect && Opacity == 255)
+	if(parentvisible && DisplayType == ltCoverRect && Opacity == 255)
 	{
 		if(rect.is_empty())
 		{
@@ -4851,7 +4851,7 @@ void tTJSNI_BaseLayer::DrawSelf(tTVPDrawable *target, tTVPRect &pr,
 			DoDivisibleTransition(temp, 0, 0, cr);
 
 			// send completion message
-			target->DrawCompleted(pr, temp, bitmaprect, DrawType, Opacity);
+			target->DrawCompleted(pr, temp, bitmaprect, DisplayType, Opacity);
 		}
 		catch(...)
 		{
@@ -4862,7 +4862,7 @@ void tTJSNI_BaseLayer::DrawSelf(tTVPDrawable *target, tTVPRect &pr,
 	}
 	else
 	{
-		target->DrawCompleted(pr, MainImage, cr, DrawType, Opacity);
+		target->DrawCompleted(pr, MainImage, cr, DisplayType, Opacity);
 	}
 }
 //---------------------------------------------------------------------------
@@ -4975,7 +4975,7 @@ void tTJSNI_BaseLayer::Draw(tTVPDrawable *target, const tTVPRect &r, bool visibl
 	}
 
 	// process drawing
-	bool totalopaque = (DrawType == ltCoverRect && Opacity == 255);
+	bool totalopaque = (DisplayType == ltCoverRect && Opacity == 255);
 
 	if(GetCacheEnabled() &&
 		!(InTransition && !TransWithChildren && DivisibleTransHandler))
@@ -5029,7 +5029,7 @@ void tTJSNI_BaseLayer::Draw(tTVPDrawable *target, const tTVPRect &r, bool visibl
 		// send completion message to the target
 		tTVPRect pr = rect;
 		pr.add_offsets(Rect.left, Rect.top);
-		target->DrawCompleted(pr, CacheBitmap, rect, DrawType, Opacity);
+		target->DrawCompleted(pr, CacheBitmap, rect, DisplayType, Opacity);
 	}
 	else
 	{
@@ -5150,7 +5150,7 @@ void tTJSNI_BaseLayer::Draw(tTVPDrawable *target, const tTVPRect &r, bool visibl
 				tTVPRect pr = cr;
 				pr.add_offsets(Rect.left, Rect.top);
 				target->DrawCompleted(pr, UpdateBitmapForChild, updaterectforchild,
-					DrawType, Opacity);
+					DisplayType, Opacity);
 
 				// release temporary bitmap
 				if(tempalloc) tTVPTempBitmapHolder::FreeTemp();
@@ -5177,7 +5177,7 @@ tTVPBaseBitmap * tTJSNI_BaseLayer::GetDrawTargetBitmap(const tTVPRect &rect,
 //---------------------------------------------------------------------------
 tTVPLayerType tTJSNI_BaseLayer::GetTargetLayerType()
 {
-	return DrawType;
+	return DisplayType;
 }
 //---------------------------------------------------------------------------
 void tTJSNI_BaseLayer::DrawCompleted(const tTVPRect &destrect,
@@ -5189,7 +5189,7 @@ void tTJSNI_BaseLayer::DrawCompleted(const tTVPRect &destrect,
 	// blend the image to the target unless bmp is the same as UpdateBitmapForChild.
 	if(bmp != UpdateBitmapForChild)
 	{
-		BltImage(UpdateBitmapForChild, DrawType,
+		BltImage(UpdateBitmapForChild, DisplayType,
 			destrect.left - UpdateOfsX,
 			destrect.top - UpdateOfsY,
 			bmp, cliprect, type, opacity);
@@ -5393,7 +5393,7 @@ tTVPBaseBitmap * tTJSNI_BaseLayer::Complete(const tTVPRect & rect)
 	}
 
 	// create drawable object
-	tCompleteDrawable drawable(CacheBitmap, DrawType);
+	tCompleteDrawable drawable(CacheBitmap, DisplayType);
 
 	// complete
 	tTVPComplexRect ur;
@@ -5455,7 +5455,7 @@ void tTJSNI_BaseLayer::StartTransition(const ttstr &name, bool withchildren,
 
 		// notify starting of the transition to the provider
 		tjs_error er = pro->StartTransition(sop, &TVPSimpleImageProvider,
-			DrawType,
+			DisplayType,
 			withchildren ? GetWidth()  : MainImage->GetWidth(),
 			withchildren ? GetHeight() : MainImage->GetHeight(),
 			transsource?
