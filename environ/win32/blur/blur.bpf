@@ -1,7 +1,0 @@
-USEUNIT("Main.cpp");
-USEUNIT("..\..\..\base\win32\plugin_kit\tp_stub.cpp");
-USE("..\..\..\base\win32\plugin_kit\tp_stub.h", File);
-//---------------------------------------------------------------------------
-This file is used by the project manager only and should be treated like the project file
-
-DllEntryPoint

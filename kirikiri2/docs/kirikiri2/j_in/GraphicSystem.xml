@@ -1,0 +1,189 @@
+<?xml version="1.0" encoding="Shift_JIS" ?>
+<doc>
+<title>グラフィックシステム</title>
+
+<para>
+<ptitle>グラフィックシステムについて</ptitle>
+　吉里吉里は、レイヤによるグラフィックの表示機構を持っています。<r/>
+　各レイヤはアルファブレンドによる透過重ね合わせや階層構造管理機能を持っています。また、レイヤを GUI 部品 (ウィジット) として動作させることができるように、ユーザからの入力を受け取るための機構 ( フォーカス ) を持っています。<r/>
+</para>
+
+<para>
+<ptitle>読み込み可能な画像形式</ptitle>
+　標準状態の吉里吉里で、<at href="f_Layer_loadImages.html">Layer.loadImages</at> でレイヤに読み込むことのできる形式は以下の通りです。<r/>
+<r/>
+<dl>
+<dt>BMP</dt>
+<dd>
+　Windows 標準のビットマップ形式です。32 bpp の BMP はαチャネル付きビットマップと見なされます。<r/>
+　RLE圧縮されたビットマップは読み込むことができません。
+</dd>
+
+<dt>PNG</dt>
+<dd>
+　Portable Network Graphic 形式を読み込むことができます。αチャネル付きビットマップ PNG も読み込むことができます。
+</dd>
+
+<dt>JPEG</dt>
+<dd>
+　JPEG 形式を読み込むことができます。算術圧縮されたものや可逆圧縮のものは読み込むことができませんが、そもそも滅多に見かけないのでかまわないかと思います。
+</dd>
+
+<dt>ERI</dt>
+<dd>
+　L.Entis 氏の提唱する可逆圧縮フォーマットです。αチャネル付きのものも読み込むことができます。
+</dd>
+
+<dt>TLG5</dt>
+<dd>
+　吉里吉里独自の可逆圧縮フォーマットです。拡張子は .tlg です。αチャネル付きのものも読み込むことができます。圧縮率はさほど高くありませんが、高速に展開できるのが特徴です。この形式は<b>マスク画像(_m) あるいは領域画像 (_p) に使用することはできません</b>。αチャンネル無しのフルカラー画像、あるいはαチャンネル付きのフルカラー画像のみを扱うことができます。
+</dd>
+
+<dt>TLG6</dt>
+<dd>
+　吉里吉里独自の可逆圧縮フォーマットです。拡張子はTLG5と同じく .tlg です。TLG6は高い圧縮率が特徴です。展開速度はTLG5の２倍弱かかりますが、それでもPNGの２倍以上高速に展開でき、サイズもPNGより2～4割小さくなります。
+</dd>
+
+<dt>メイン/マスク分離形式</dt>
+<dd>
+　メイン/マスク分離形式は、色情報の画像(メイン) とαチャネル(マスク) の画像が分離している形式で、マスク画像は、メイン画像のファイル名に _m が付加されたものとなります ( たとえば、abc.jpeg に対して abc_m.jpeg )。<r/>
+　メイン/マスク画像の形式が異なっていてもかまいません。
+</dd>
+</dl>
+<r/>
+　その他、Susie Plug-in を使って読み込み可能な画像形式を増やすことができます。Susie plug-in は <at href="f_Plugins_link.html">Plugins.link</at> メソッドで読み込むことができます。<r/>
+　Susie Plug-in から 32bpp のビットマップが渡された場合は、αチャネル付きビットマップと見なされます。<r/>
+<r/>
+</para>
+
+<para>
+<ptitle>レイヤタイプ</ptitle>
+　吉里吉里のレイヤは様々な合成モード(レイヤタイプ)で表示することができます。<r/>
+　以下の合成モードがあり、lt で始まるレイヤタイプ定数を <at href="f_Layer_type.html">Layer.type</at> プロパティに指定することができます。<r/>
+　なお、式中の <i>result</i> は結果、<i>dest</i> は重ね合わせ先の画像の輝度、<i>src</i> は重ね合わせる画像の輝度、<i>α</i>は重ね合わせる画像のピクセルごとのα値で、すべて値の範囲は 0.0 ～ 1.0 とします。<r/>
+<r/>
+
+<dl>
+
+<dt><kw>ltOpaque</kw> (<kw>ltCoverRect</kw>)</dt>
+<dd>
+　ltOpaque は透過を伴わない表示です。常にレイヤの矩形全体が完全不透明な表示になります ( このレイヤタイプに限りませんが、<at href="f_Layer_opacity.html">Layer.opacity</at> で不透明度を下げている場合はそれに従います )。<r/>
+<r/>
+式 : <i>result</i> = <i>src</i>
+<note>
+ltCoverRect でも同じ意味になりますが、2.23 beta 2 未満における古い名称です。
+</note>
+</dd>
+
+<dt><kw>ltAlpha</kw> (<kw>ltTransparent</kw>)</dt>
+<dd>
+　ltAlpha はα合成を行います。透過を行う際のもっとも基本的なタイプです。BMP や Susie plug-in からのαチャネルの入力においても下記の式が使われます。<r/>
+<r/>
+式 : <i>result</i> = <i>dest</i> × ( 1.0 - <i>α</i> ) + <i>src</i> × <i>α</i>
+<note>
+ltTransparent でも同じ意味になりますが、2.23 beta 2 未満における古い名称です。
+</note>
+</dd>
+
+<dt><kw>ltAddAlpha</kw></dt>
+<dd>
+　ltAddAlpha は加算α合成を行います。<r/>
+　<link href="TPC" />でこの形式に適した画像を出力できます。また、<at href="f_Layer_convertType.html">Layer.convertType</at> メソッドで ltAlpha からこの形式に変換することができます。<r/>
+　ltAlpha よりも高速に演算でき、αブレンドとともに加算合成も行えるという特徴があります。<r/>
+　ltAddAlphaのレイヤは、ltAlpha のレイヤの直接の子になると正常に表示できません。<r/>
+<r/>
+式 : <i>result</i> = <i>dest</i> × ( 1.0 - <i>α</i> ) + <i>src</i>
+</dd>
+
+<dt><kw>ltAdditive</kw></dt>
+<dd>
+　ltAdditive は加算合成を行います。光彩の表現に適しています。<i>α</i>は無視されます。<r/>
+　中性色 (重ね合わせても変化のない色) は黒です。<r/>
+<r/>
+式 : <i>result</i> = <i>dest</i> + <i>src</i><r/>
+　<i>result</i> が 1.0 を越える場合は <i>result</i> = 1.0
+</dd>
+
+<dt><kw>ltSubtractive</kw></dt>
+<dd>
+　ltSubtractive は減算合成を行います。<i>α</i>は無視されます。<r/>
+　中性色は白です。<r/>
+<r/>
+式 : <i>result</i> = <i>dest</i> + <i>src</i> - 1.0<r/>
+　<i>result</i> が 0.0 を下回る場合は <i>result</i> = 0.0<r/>
+<note>
+　<i>result</i> = <i>dest</i> - <i>src</i> と違うのは src が反転しないかするかの違いだけです。
+</note>
+</dd>
+
+<dt><kw>ltMultiplicative</kw></dt>
+<dd>
+　ltMultiplicative は乗算合成を行います。<i>α</i>は無視されます。<r/>
+　中性色は白です。<r/>
+<r/>
+式 : <i>result</i> = <i>dest</i> × <i>src</i>
+</dd>
+
+<dt><kw>ltDodge</kw></dt>
+<dd>
+　ltDodge は「覆い焼き」合成を行います。光に照らされたものの表現に適しています。<i>α</i>は無視されます。<r/>
+　中性色は黒です。<r/>
+<r/>
+式 : <i>result</i> = <i>dest</i> ÷ ( 1.0 -  <i>src</i> )<r/>
+　<i>result</i> が 1.0 を越える場合は <i>result</i> = 1.0
+</dd>
+
+<dt><kw>ltDarken</kw></dt>
+<dd>
+　ltDarken は「比較(暗)」合成を行います。<i>α</i>は無視されます。<r/>
+　中性色は白です。<r/>
+<r/>
+式 : <i>result</i> = <i>dest</i> と <i>src</i> のどちらか小さい方<r/>
+</dd>
+
+<dt><kw>ltLighten</kw></dt>
+<dd>
+　ltLighten は「比較(明)」合成を行います。<i>α</i>は無視されます。<r/>
+　中性色は黒です。<r/>
+<r/>
+式 : <i>result</i> = <i>dest</i> と <i>src</i> のどちらか大きい方<r/>
+</dd>
+
+<dt><kw>ltScreen</kw></dt>
+<dd>
+　ltLighten は「スクリーン乗算」合成を行います。<i>α</i>は無視されます。<r/>
+　中性色は黒です。<r/>
+<r/>
+式 : <i>result</i> = 1.0 - ( 1.0 - <i>dest</i> ) × ( 1.0 - <i>src</i> )<r/>
+</dd>
+
+</dl>
+
+</para>
+
+<para>
+<ptitle>レイヤタイプと描画方式と演算モード</ptitle>
+　吉里吉里にはレイヤタイプ (ltで始まる定数で指定)と、描画方式 (dfで始まる定数で指定) と、演算モード (omで始まる定数で指定)があります。<r/>
+　それぞれ似たような名称を持っていますが、用途は以下のように分かれています。<r/>
+<dl>
+
+<dt>レイヤタイプ</dt>
+<dd>
+　レイヤタイプは <at href="f_Layer_type.html">Layer.type</at> プロパティで指定する値で、レイヤがどのように表示されるかを指定します。
+</dd>
+
+<dt>描画方式</dt>
+<dd>
+　描画方式は <at href="f_Layer_face.html">Layer.face</at> プロパティで指定する値で、レイヤにどのように描画するかを指定します。dfAutoを指定すると、レイヤタイプに従って適切な描画方式が決定されます。レイヤタイプと異なる描画方式で描画することもできます。<r/>
+</dd>
+
+<dt>演算モード</dt>
+<dd>
+　演算モードは <at href="f_Layer.operateRect.html">Layer.operateRect</at> メソッドなどの引数で指定する値で、演算元(重ね合わせるレイヤ) をどのように扱うかを指定する値です。omAuto を指定すると、演算元のレイヤタイプに従って適切なモードが決定されます。
+</dd>
+
+</dl>
+</para>
+
+
+</doc>
