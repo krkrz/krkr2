@@ -94,9 +94,6 @@ public:
 
 
 public:
-	virtual void PostInputEvent(const ttstr &name, iTJSDispatch2 * params) = 0;
-
-public:
 
 	void OnClose();
 	void OnClick(tjs_int x, tjs_int y);
