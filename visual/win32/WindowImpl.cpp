@@ -1155,22 +1155,15 @@ void tTJSNI_Window::ReadjustVideoRect()
 	// re-adjust video rectangle.
 	// this reconnects owner window and video offsets.
 
-	tjs_int ofsx, ofsy;
 	tObjectListSafeLockHolder<tTJSNI_BaseVideoOverlay> holder(VideoOverlay);
 	tjs_int count = VideoOverlay.GetSafeLockedObjectCount();
-
-	if(count > 0)
-	{
-		/*HWND wnd = */Form->GetWindowHandle(ofsx, ofsy);
-	}
 
 	for(tjs_int i = 0; i < count; i++)
 	{
 		tTJSNI_VideoOverlay * item = (tTJSNI_VideoOverlay*)
 			VideoOverlay.GetSafeLockedObjectAt(i);
 		if(!item) continue;
-		item->SetRectOffset(ofsx, ofsy);
-		item->SetMessageDrainWindow(Form->GetSurfaceWindowHandle());
+		item->ResetOverlayParams();
 	}
 }
 //---------------------------------------------------------------------------
@@ -1189,6 +1182,21 @@ void tTJSNI_Window::WindowMoved()
 			VideoOverlay.GetSafeLockedObjectAt(i);
 		if(!item) continue;
 		item->SetRectangleToVideoOverlay();
+	}
+}
+//---------------------------------------------------------------------------
+void tTJSNI_Window::DetachVideoOverlay()
+{
+	// detach video overlay window
+	// this is done before the window is being fullscreened or un-fullscreened.
+	tObjectListSafeLockHolder<tTJSNI_BaseVideoOverlay> holder(VideoOverlay);
+	tjs_int count = VideoOverlay.GetSafeLockedObjectCount();
+	for(tjs_int i = 0; i < count; i++)
+	{
+		tTJSNI_VideoOverlay * item = (tTJSNI_VideoOverlay*)
+			VideoOverlay.GetSafeLockedObjectAt(i);
+		if(!item) continue;
+		item->DetachVideoOverlay();
 	}
 }
 //---------------------------------------------------------------------------

@@ -134,9 +134,9 @@ public:
 	tjs_int GetOriginalWidth();
 	tjs_int GetOriginalHeight();
 
-	void SetWindowHandle(HWND wnd);
-	void SetMessageDrainWindow(HWND wnd);
+	void ResetOverlayParams();
 	void SetRectOffset(tjs_int ofsx, tjs_int ofsy);
+	void DetachVideoOverlay();
 
 private:
 	void __fastcall WndProc(Messages::TMessage &Msg);
