@@ -122,6 +122,7 @@ TVP_GL_FUNC_PTR_EXTERN_DECL(void, TVPConstAlphaBlend_d,  (tjs_uint32 *dest, cons
 TVP_GL_FUNC_PTR_EXTERN_DECL(void, TVPConstAlphaBlend_a,  (tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len, tjs_int opa));
 TVP_GL_FUNC_PTR_EXTERN_DECL(void, TVPStretchCopyOpaqueImage,  (tjs_uint32 *dest, tjs_int destlen, const tjs_uint32 *src, tjs_int srcstart, tjs_int srcstep));
 TVP_GL_FUNC_PTR_EXTERN_DECL(void, TVPStretchConstAlphaBlend,  (tjs_uint32 *dest, tjs_int len, const tjs_uint32 *src, tjs_int srcstart, tjs_int srcstep, tjs_int opa));
+TVP_GL_FUNC_PTR_EXTERN_DECL(void, TVPInterpStretchConstAlphaBlend,  (tjs_uint32 *dest, tjs_int destlen, const tjs_uint32 *src1, const tjs_uint32 *src2, tjs_int blend_y, tjs_int srcstart, tjs_int srcstep, tjs_int opa));
 TVP_GL_FUNC_PTR_EXTERN_DECL(void, TVPStretchConstAlphaBlend_HDA,  (tjs_uint32 *dest, tjs_int len, const tjs_uint32 *src, tjs_int srcstart, tjs_int srcstep, tjs_int opa));
 TVP_GL_FUNC_PTR_EXTERN_DECL(void, TVPStretchConstAlphaBlend_d,  (tjs_uint32 *dest, tjs_int len, const tjs_uint32 *src, tjs_int srcstart, tjs_int srcstep, tjs_int opa));
 TVP_GL_FUNC_PTR_EXTERN_DECL(void, TVPStretchConstAlphaBlend_a,  (tjs_uint32 *dest, tjs_int len, const tjs_uint32 *src, tjs_int srcstart, tjs_int srcstep, tjs_int opa));

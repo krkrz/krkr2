@@ -2152,6 +2152,58 @@ print FC <<EOF;
 EOF
 
 ;#-----------------------------------------------------------------
+print FC <<EOF;
+/*export*/
+TVP_GL_FUNC_DECL(void, TVPInterpStretchConstAlphaBlend_c, (tjs_uint32 *dest, tjs_int destlen, const tjs_uint32 *src1, const tjs_uint32 *src2, tjs_int blend_y, tjs_int srcstart, tjs_int srcstep, tjs_int opa))
+{
+	/* stretch copy with bilinear interpolation */
+	tjs_int blend_x;
+	tjs_int sp;
+
+	blend_y += blend_y >> 7; /* adjust blend ratio */
+	opa += opa > 7; /* adjust opa */
+
+	destlen -= 1;
+	while(destlen > 0)
+	{
+		blend_x = (srcstart & 0xffff) >> 8;
+		sp = srcstart >> 16;
+		dest[0] = TVPBlendARGB(dest[0], TVPBlendARGB(
+			TVPBlendARGB(src1[sp], src1[sp+1], blend_x),
+			TVPBlendARGB(src2[sp], src2[sp+1], blend_x),
+				blend_y), opa);
+		srcstart += srcstep;
+
+		blend_x = (srcstart & 0xffff) >> 8;
+		sp = srcstart >> 16;
+		dest[1] = TVPBlendARGB(dest[1], TVPBlendARGB(
+			TVPBlendARGB(src1[sp], src1[sp+1], blend_x),
+			TVPBlendARGB(src2[sp], src2[sp+1], blend_x),
+				blend_y), opa);
+		srcstart += srcstep;
+
+		dest += 2;
+		destlen -= 2;
+	}
+
+	destlen += 1;
+
+	while(destlen > 0)
+	{
+		blend_x = (srcstart & 0xffff) >> 8;
+		sp = srcstart >> 16;
+		dest[0] = TVPBlendARGB(dest[0], TVPBlendARGB(
+			TVPBlendARGB(src1[sp], src1[sp+1], blend_x),
+			TVPBlendARGB(src2[sp], src2[sp+1], blend_x),
+				blend_y), opa);
+		srcstart += srcstep;
+		dest ++;
+		destlen --;
+	}
+}
+
+EOF
+;#-----------------------------------------------------------------
 
 
 print FC <<EOF;
@@ -4295,7 +4347,7 @@ TVP_GL_FUNC_DECL(void, TVPInterpStretchCopy, (tjs_uint32 *dest, tjs_int destlen,
 	tjs_int blend_x;
 	tjs_int sp;
 
-	blend_y += blend_y >> 15; /* adjust blend ratio */
+	blend_y += blend_y >> 7; /* adjust blend ratio */
 
 	destlen -= 1;
 	while(destlen > 0)
