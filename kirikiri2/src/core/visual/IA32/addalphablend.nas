@@ -585,9 +585,7 @@ TVPAdditiveAlphaBlend_a_name:					; additive alpha blend on additive alpha
 		movd		mm4,		[edi+4]		; 2 dest     (DaDiDiDi)
 		paddw		mm1,		mm3			; 1
 		punpcklwd	mm6,		mm6			; 2 mm6 = 00 Sa 00 Sa 00 Sa 00 Sa
-;		packuswb	mm1,		mm0			; 1
 		punpcklbw	mm4,		mm0			; 2 mm4 = 00 Da 00 Di 00 Di 00 Di
-;		movd		[edi],		mm1			; 1 store
 		movq		mm2,		mm4			; 2
 		pmullw		mm2,		mm6			; 2
 		psrlw		mm2,		8			; 2 mm2 = 00 SaDa 00 SaDi 00 SaDi 00 SaDi
