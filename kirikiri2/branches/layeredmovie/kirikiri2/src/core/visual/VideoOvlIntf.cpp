@@ -14,6 +14,7 @@
 #include "MsgIntf.h"
 #include "WindowIntf.h"
 #include "VideoOvlIntf.h"
+#include "LayerIntf.h"
 
 //---------------------------------------------------------------------------
 // tTJSNI_BaseVideoOverlay
@@ -293,16 +294,68 @@ TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/rewind)
 }
 TJS_END_NATIVE_METHOD_DECL(/*func. name*/rewind)
 //----------------------------------------------------------------------
-TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/playSequence)
+TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/prepare)
 {
 	TJS_GET_NATIVE_INSTANCE(/*var. name*/_this,
 		/*var. type*/tTJSNI_VideoOverlay);
 
-//	_this->Rewind();
+	_this->Prepare();
 
 	return TJS_S_OK;
 }
-TJS_END_NATIVE_METHOD_DECL(/*func. name*/playSequence)
+TJS_END_NATIVE_METHOD_DECL(/*func. name*/prepare)
+//----------------------------------------------------------------------
+TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/setSegmentLoop)
+{
+	TJS_GET_NATIVE_INSTANCE(/*var. name*/_this,
+		/*var. type*/tTJSNI_VideoOverlay);
+
+	if( numparams < 1 )
+		_this->SetSegmentLoop(-1,-1);
+	else if( numparams < 2 )
+		_this->SetSegmentLoop(0,*param[0]);
+	else if( numparams < 3 )
+		_this->SetSegmentLoop(*param[1],*param[0]);
+
+	return TJS_S_OK;
+}
+TJS_END_NATIVE_METHOD_DECL(/*func. name*/setSegmentLoop)
+//----------------------------------------------------------------------
+TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/cancelSegmentLoop)
+{
+	TJS_GET_NATIVE_INSTANCE(/*var. name*/_this,
+		/*var. type*/tTJSNI_VideoOverlay);
+
+	_this->SetSegmentLoop(-1,-1);
+
+	return TJS_S_OK;
+}
+TJS_END_NATIVE_METHOD_DECL(/*func. name*/cancelSegmentLoop)
+//----------------------------------------------------------------------
+TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/setPeriodEvent)
+{
+	TJS_GET_NATIVE_INSTANCE(/*var. name*/_this,
+		/*var. type*/tTJSNI_VideoOverlay);
+
+	if( numparams < 1 )
+		_this->SetPeriodEvent( -1 );
+	else if( numparams < 2 )
+		_this->SetPeriodEvent( *param[0] );
+
+	return TJS_S_OK;
+}
+TJS_END_NATIVE_METHOD_DECL(/*func. name*/setPeriodEvent)
+//----------------------------------------------------------------------
+TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/cancelPeriodEvent)
+{
+	TJS_GET_NATIVE_INSTANCE(/*var. name*/_this,
+		/*var. type*/tTJSNI_VideoOverlay);
+
+	_this->SetPeriodEvent( -1 );
+
+	return TJS_S_OK;
+}
+TJS_END_NATIVE_METHOD_DECL(/*func. name*/cancelPeriodEvent)
 //----------------------------------------------------------------------
 // End: Add:	2004/08/23	T.Imoto
 //----------------------------------------------------------------------
@@ -351,11 +404,12 @@ TJS_END_NATIVE_METHOD_DECL(/*func. name*/onCallbackCommand)
 //----------------------------------------------------------------------
 TJS_BEGIN_NATIVE_PROP_DECL(position)
 {
+// Start: Add:	T.Imoto
 	TJS_BEGIN_NATIVE_PROP_GETTER
 	{
 		TJS_GET_NATIVE_INSTANCE(/*var. name*/_this, /*var. type*/tTJSNI_VideoOverlay);
 
-		// not yet implemented
+		*result = (tjs_int64)_this->GetTimePosition();
 
 		return TJS_S_OK;
 	}
@@ -365,11 +419,12 @@ TJS_BEGIN_NATIVE_PROP_DECL(position)
 	{
 		TJS_GET_NATIVE_INSTANCE(/*var. name*/_this, /*var. type*/tTJSNI_VideoOverlay);
 
-		// not yet implemented
+		_this->SetTimePosition((tjs_int64)*param);
 
 		return TJS_S_OK;
 	}
 	TJS_END_NATIVE_PROP_SETTER
+// End: Add:	T.Imoto
 }
 TJS_END_NATIVE_PROP_DECL(position)
 //----------------------------------------------------------------------
@@ -501,7 +556,7 @@ TJS_BEGIN_NATIVE_PROP_DECL(loop)
 	{
 		TJS_GET_NATIVE_INSTANCE(/*var. name*/_this, /*var. type*/tTJSNI_VideoOverlay);
 
-//		*result = _this->GetLoop();
+		*result = _this->GetLoop();
 
 		return TJS_S_OK;
 	}
@@ -511,7 +566,7 @@ TJS_BEGIN_NATIVE_PROP_DECL(loop)
 	{
 		TJS_GET_NATIVE_INSTANCE(/*var. name*/_this, /*var. type*/tTJSNI_VideoOverlay);
 
-//		_this->SetLoop(param->operator bool());
+		_this->SetLoop(param->operator bool());
 
 		return TJS_S_OK;
 	}
@@ -525,7 +580,7 @@ TJS_BEGIN_NATIVE_PROP_DECL(frame)
 	{
 		TJS_GET_NATIVE_INSTANCE(/*var. name*/_this, /*var. type*/tTJSNI_VideoOverlay);
 
-//		*result = _this->Get();
+		*result = _this->GetFrame();
 
 		return TJS_S_OK;
 	}
@@ -535,7 +590,7 @@ TJS_BEGIN_NATIVE_PROP_DECL(frame)
 	{
 		TJS_GET_NATIVE_INSTANCE(/*var. name*/_this, /*var. type*/tTJSNI_VideoOverlay);
 
-//		_this->Set(param->operator bool());
+		_this->SetFrame(*param);
 
 		return TJS_S_OK;
 	}
@@ -549,21 +604,13 @@ TJS_BEGIN_NATIVE_PROP_DECL(fps)
 	{
 		TJS_GET_NATIVE_INSTANCE(/*var. name*/_this, /*var. type*/tTJSNI_VideoOverlay);
 
-//		*result = _this->Get();
+		*result = _this->GetFPS();
 
 		return TJS_S_OK;
 	}
 	TJS_END_NATIVE_PROP_GETTER
 
-	TJS_BEGIN_NATIVE_PROP_SETTER
-	{
-		TJS_GET_NATIVE_INSTANCE(/*var. name*/_this, /*var. type*/tTJSNI_VideoOverlay);
-
-//		_this->Set(param->operator bool());
-
-		return TJS_S_OK;
-	}
-	TJS_END_NATIVE_PROP_SETTER
+	TJS_DENY_NATIVE_PROP_SETTER
 }
 TJS_END_NATIVE_PROP_DECL(fps)
 //----------------------------------------------------------------------
@@ -573,21 +620,13 @@ TJS_BEGIN_NATIVE_PROP_DECL(numberOfFrame)
 	{
 		TJS_GET_NATIVE_INSTANCE(/*var. name*/_this, /*var. type*/tTJSNI_VideoOverlay);
 
-//		*result = _this->Get();
+		*result = _this->GetNumberOfFrame();
 
 		return TJS_S_OK;
 	}
 	TJS_END_NATIVE_PROP_GETTER
 
-	TJS_BEGIN_NATIVE_PROP_SETTER
-	{
-		TJS_GET_NATIVE_INSTANCE(/*var. name*/_this, /*var. type*/tTJSNI_VideoOverlay);
-
-//		_this->Set(param->operator bool());
-
-		return TJS_S_OK;
-	}
-	TJS_END_NATIVE_PROP_SETTER
+	TJS_DENY_NATIVE_PROP_SETTER
 }
 TJS_END_NATIVE_PROP_DECL(numberOfFrame)
 //----------------------------------------------------------------------
@@ -597,21 +636,13 @@ TJS_BEGIN_NATIVE_PROP_DECL(totalTime)
 	{
 		TJS_GET_NATIVE_INSTANCE(/*var. name*/_this, /*var. type*/tTJSNI_VideoOverlay);
 
-//		*result = _this->Get();
+		*result = _this->GetTotalTime();
 
 		return TJS_S_OK;
 	}
 	TJS_END_NATIVE_PROP_GETTER
 
-	TJS_BEGIN_NATIVE_PROP_SETTER
-	{
-		TJS_GET_NATIVE_INSTANCE(/*var. name*/_this, /*var. type*/tTJSNI_VideoOverlay);
-
-//		_this->Set(param->operator bool());
-
-		return TJS_S_OK;
-	}
-	TJS_END_NATIVE_PROP_SETTER
+	TJS_DENY_NATIVE_PROP_SETTER
 }
 TJS_END_NATIVE_PROP_DECL(totalTime)
 //----------------------------------------------------------------------
@@ -621,7 +652,16 @@ TJS_BEGIN_NATIVE_PROP_DECL(layer1)
 	{
 		TJS_GET_NATIVE_INSTANCE(/*var. name*/_this, /*var. type*/tTJSNI_VideoOverlay);
 
-//		*result = _this->Get();
+		tTJSNI_BaseLayer *layer1 = _this->GetLayer1();
+		if(layer1)
+		{
+			iTJSDispatch2 *dsp = layer1->GetOwnerNoAddRef();
+			*result = tTJSVariant(dsp, dsp);
+		}
+		else
+		{
+			*result = tTJSVariant((iTJSDispatch2 *) NULL);
+		}
 
 		return TJS_S_OK;
 	}
@@ -631,7 +671,18 @@ TJS_BEGIN_NATIVE_PROP_DECL(layer1)
 	{
 		TJS_GET_NATIVE_INSTANCE(/*var. name*/_this, /*var. type*/tTJSNI_VideoOverlay);
 
-//		_this->Set(param->operator bool());
+		tTJSNI_BaseLayer *src = NULL;
+		tTJSVariantClosure clo = param->AsObjectClosureNoAddRef();
+		if(clo.Object)
+		{
+			if(TJS_FAILED(clo.Object->NativeInstanceSupport(TJS_NIS_GETINSTANCE,
+				tTJSNC_Layer::ClassID, (iTJSNativeInstance**)&src)))
+				TVPThrowExceptionMessage(TVPSpecifyLayer);
+
+			if(!src) TVPThrowExceptionMessage(TVPSpecifyLayer);
+		}
+
+		_this->SetLayer1(src);
 
 		return TJS_S_OK;
 	}
@@ -645,7 +696,16 @@ TJS_BEGIN_NATIVE_PROP_DECL(layer2)
 	{
 		TJS_GET_NATIVE_INSTANCE(/*var. name*/_this, /*var. type*/tTJSNI_VideoOverlay);
 
-//		*result = _this->Get();
+		tTJSNI_BaseLayer *layer2 = _this->GetLayer2();
+		if(layer2)
+		{
+			iTJSDispatch2 *dsp = layer2->GetOwnerNoAddRef();
+			*result = tTJSVariant(dsp, dsp);
+		}
+		else
+		{
+			*result = tTJSVariant((iTJSDispatch2 *) NULL);
+		}
 
 		return TJS_S_OK;
 	}
@@ -655,7 +715,18 @@ TJS_BEGIN_NATIVE_PROP_DECL(layer2)
 	{
 		TJS_GET_NATIVE_INSTANCE(/*var. name*/_this, /*var. type*/tTJSNI_VideoOverlay);
 
-//		_this->Set(param->operator bool());
+		tTJSNI_BaseLayer *src = NULL;
+		tTJSVariantClosure clo = param->AsObjectClosureNoAddRef();
+		if(clo.Object)
+		{
+			if(TJS_FAILED(clo.Object->NativeInstanceSupport(TJS_NIS_GETINSTANCE,
+				tTJSNC_Layer::ClassID, (iTJSNativeInstance**)&src)))
+				TVPThrowExceptionMessage(TVPSpecifyLayer);
+
+			if(!src) TVPThrowExceptionMessage(TVPSpecifyLayer);
+		}
+
+		_this->SetLayer2(src);
 
 		return TJS_S_OK;
 	}
@@ -668,9 +739,7 @@ TJS_BEGIN_NATIVE_PROP_DECL(mode)
 	TJS_BEGIN_NATIVE_PROP_GETTER
 	{
 		TJS_GET_NATIVE_INSTANCE(/*var. name*/_this, /*var. type*/tTJSNI_VideoOverlay);
-
-//		*result = _this->Get();
-
+		*result = (tjs_int)_this->GetMode();
 		return TJS_S_OK;
 	}
 	TJS_END_NATIVE_PROP_GETTER
@@ -679,8 +748,7 @@ TJS_BEGIN_NATIVE_PROP_DECL(mode)
 	{
 		TJS_GET_NATIVE_INSTANCE(/*var. name*/_this, /*var. type*/tTJSNI_VideoOverlay);
 
-//		_this->Set(param->operator bool());
-
+		_this->SetMode((tTVPVideoOverlayMode) (tjs_int)*param);
 		return TJS_S_OK;
 	}
 	TJS_END_NATIVE_PROP_SETTER
