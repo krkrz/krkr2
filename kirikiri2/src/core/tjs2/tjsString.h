@@ -14,7 +14,7 @@
 
 #include "tjsConfig.h"
 #ifdef TJS_SUPPORT_VCL
-	#include <vcl.h>
+#  include <vcl.h>
 #endif
 #include "tjsVariantString.h"
 

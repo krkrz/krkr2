@@ -6,24 +6,33 @@
 	See details of license at "license.txt"
 */
 //---------------------------------------------------------------------------
-// Thread base class
+// Definition of Messages and Message Related Utilities
 //---------------------------------------------------------------------------
-#ifndef ThreadIntfH
-#define ThreadIntfH
-#include "tjsNative.h"
+#include "tjsCommHead.h"
 
-
+#include "MsgIntf.h"
+#include "MsgImpl.h"
+#include "PluginImpl.h"
 
 //---------------------------------------------------------------------------
-// tTVPThreadPriority
+// version retrieving
 //---------------------------------------------------------------------------
-enum tTVPThreadPriority
+void TVPGetVersion(void)
 {
-	ttpIdle, ttpLowest, ttpLower, ttpNormal, ttpHigher, ttpHighest, ttpTimeCritical
-};
+	static bool DoGet=true;
+	if(DoGet)
+	{
+		DoGet = false;
+
+		TVPVersionMajor = 0;
+		TVPVersionMinor = 0;
+		TVPVersionRelease = 0;
+		TVPVersionBuild = 0;
+
+		TVPGetFileVersionOf(_argv[0], TVPVersionMajor, TVPVersionMinor,
+			TVPVersionRelease, TVPVersionBuild);
+	}
+}
 //---------------------------------------------------------------------------
 
-#include "gtk/ThreadImpl.h"
 
-
-#endif

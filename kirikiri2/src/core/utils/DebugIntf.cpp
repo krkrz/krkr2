@@ -11,7 +11,11 @@
 #include "tjsCommHead.h"
 
 #include <deque>
-#include <time>
+#ifdef WIN32
+# include <time>
+#else
+# include <time.h>
+#endif
 #include "DebugIntf.h"
 #include "MsgIntf.h"
 #include "StorageIntf.h"
@@ -112,8 +116,8 @@ void tTVPLogStreamHolder::Open(const tjs_nchar *mode)
 
 	try
 	{
-		tjs_nchar filename[MAX_PATH];
-		TJS_nstrcpy(filename, _argv[0]);
+		tjs_nchar filename[FILENAME_MAX];
+		TJS_nstrcpy(filename, "");
 		TJS_nstrcat(filename, TJS_N(".console.log"));
 		Stream = fopen(filename, mode);
 		if(!Stream) OpenFailed = true;
@@ -603,8 +607,8 @@ class tTVPTJS2DumpOutputGateway : public iTJSConsoleOutput
 //---------------------------------------------------------------------------
 void TVPTJS2StartDump()
 {
-	tjs_nchar filename[MAX_PATH];
-	TJS_nstrcpy(filename, _argv[0]);
+	tjs_nchar filename[FILENAME_MAX];
+	TJS_nstrcpy(filename, "");
 	TJS_nstrcat(filename, TJS_N(".dump.txt"));
 	TVPDumpOutFileName = filename;
 	TVPDumpOutFile = fopen(filename, TJS_N("wb+"));
