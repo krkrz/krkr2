@@ -236,69 +236,69 @@ void tTJSScriptBlock::SetText(tTJSVariant *result, const tjs_char *text,
 		LineLengthVector.push_back(int(p - ls));
 	}
 
-
-	// parse and execute
-#ifdef TJS_DEBUG_PROFILE_TIME
+	try
 	{
-	tTJSTimeProfiler p(parsetime);
+
+		// parse and execute
+#ifdef TJS_DEBUG_PROFILE_TIME
+		{
+		tTJSTimeProfiler p(parsetime);
 #endif
 
-	Parse(text, isexpression, result != NULL);
+		Parse(text, isexpression, result != NULL);
 
 #ifdef TJS_DEBUG_PROFILE_TIME
-	}
-
-	{
-		char buf[256];
-		sprintf(buf, "parsing : %d", parsetime);
-		OutputDebugString(buf);
-		if(parsetime)
-		{
-		sprintf(buf, "Commit : %d (%d%%)", time_Commit, time_Commit*100/parsetime);
-		OutputDebugString(buf);
-		sprintf(buf, "yylex : %d (%d%%)", time_yylex, time_yylex*100/parsetime);
-		OutputDebugString(buf);
-		sprintf(buf, "MakeNP : %d (%d%%)", time_make_np, time_make_np*100/parsetime);
-		OutputDebugString(buf);
-		sprintf(buf, "GenNodeCode : %d (%d%%)", time_GenNodeCode, time_GenNodeCode*100/parsetime);
-		OutputDebugString(buf);
-		sprintf(buf, "  PutCode : %d (%d%%)", time_PutCode, time_PutCode*100/parsetime);
-		OutputDebugString(buf);
-		sprintf(buf, "  PutData : %d (%d%%)", time_PutData, time_PutData*100/parsetime);
-		OutputDebugString(buf);
-		sprintf(buf, "  this_proxy : %d (%d%%)", time_this_proxy, time_this_proxy*100/parsetime);
-		OutputDebugString(buf);
-
-		sprintf(buf, "ns::Push : %d (%d%%)", time_ns_Push, time_ns_Push*100/parsetime);
-		OutputDebugString(buf);
-		sprintf(buf, "ns::Pop : %d (%d%%)", time_ns_Pop, time_ns_Pop*100/parsetime);
-		OutputDebugString(buf);
-		sprintf(buf, "ns::Find : %d (%d%%)", time_ns_Find, time_ns_Find*100/parsetime);
-		OutputDebugString(buf);
-		sprintf(buf, "ns::Remove : %d (%d%%)", time_ns_Remove, time_ns_Remove*100/parsetime);
-		OutputDebugString(buf);
-		sprintf(buf, "ns::Commit : %d (%d%%)", time_ns_Commit, time_ns_Commit*100/parsetime);
-		OutputDebugString(buf);
-
 		}
-	}
+
+		{
+			char buf[256];
+			sprintf(buf, "parsing : %d", parsetime);
+			OutputDebugString(buf);
+			if(parsetime)
+			{
+			sprintf(buf, "Commit : %d (%d%%)", time_Commit, time_Commit*100/parsetime);
+			OutputDebugString(buf);
+			sprintf(buf, "yylex : %d (%d%%)", time_yylex, time_yylex*100/parsetime);
+			OutputDebugString(buf);
+			sprintf(buf, "MakeNP : %d (%d%%)", time_make_np, time_make_np*100/parsetime);
+			OutputDebugString(buf);
+			sprintf(buf, "GenNodeCode : %d (%d%%)", time_GenNodeCode, time_GenNodeCode*100/parsetime);
+			OutputDebugString(buf);
+			sprintf(buf, "  PutCode : %d (%d%%)", time_PutCode, time_PutCode*100/parsetime);
+			OutputDebugString(buf);
+			sprintf(buf, "  PutData : %d (%d%%)", time_PutData, time_PutData*100/parsetime);
+			OutputDebugString(buf);
+			sprintf(buf, "  this_proxy : %d (%d%%)", time_this_proxy, time_this_proxy*100/parsetime);
+			OutputDebugString(buf);
+
+			sprintf(buf, "ns::Push : %d (%d%%)", time_ns_Push, time_ns_Push*100/parsetime);
+			OutputDebugString(buf);
+			sprintf(buf, "ns::Pop : %d (%d%%)", time_ns_Pop, time_ns_Pop*100/parsetime);
+			OutputDebugString(buf);
+			sprintf(buf, "ns::Find : %d (%d%%)", time_ns_Find, time_ns_Find*100/parsetime);
+			OutputDebugString(buf);
+			sprintf(buf, "ns::Remove : %d (%d%%)", time_ns_Remove, time_ns_Remove*100/parsetime);
+			OutputDebugString(buf);
+			sprintf(buf, "ns::Commit : %d (%d%%)", time_ns_Commit, time_ns_Commit*100/parsetime);
+			OutputDebugString(buf);
+
+			}
+		}
 #endif
 
 #ifdef TJS_DEBUG_DISASM
-	std::list<tTJSInterCodeContext *>::iterator i =
-		InterCodeContextList.begin();
-	while(i != InterCodeContextList.end())
-	{
-		ConsoleOutput(TJS_W(""), (void*)this);
-		ConsoleOutput((*i)->GetName(), (void*)this);
-		(*i)->Disassemble(ConsoleOutput, (void*)this);
-		i++;
-	}
+		std::list<tTJSInterCodeContext *>::iterator i =
+			InterCodeContextList.begin();
+		while(i != InterCodeContextList.end())
+		{
+			ConsoleOutput(TJS_W(""), (void*)this);
+			ConsoleOutput((*i)->GetName(), (void*)this);
+			(*i)->Disassemble(ConsoleOutput, (void*)this);
+			i++;
+		}
 #endif
 
-	// execute global level script
-	try
-	{
+		// execute global level script
 		ExecuteTopLevelScript(result, context);
 	}
 	catch(...)
