@@ -1859,9 +1859,9 @@
 				<tt><kw>omDarken</kw></tt> が指定された場合は比較(暗)合成が行われます。<r/>
 				<tt><kw>omLighten</kw></tt> が指定された場合は比較(明)合成が行われます。<r/>
 				<tt><kw>omScreen</kw></tt> が指定された場合はスクリーン乗算合成が行われます。<r/>
-				<tt><kw>omAlpha</kw></tt> が指定された場合はα合成が行われます。<r/>
-				<tt><kw>omAddAlpha</kw></tt> が指定された場合は加算α合成が行われます。<r/>
-				<tt><kw>omOpaque</kw></tt> が指定された場合は src のα情報は無視され、src は常に完全不透明であると見なされます。<r/>
+				<tt><kw>omAlpha</kw></tt> が指定された場合はアルファ合成が行われます。<r/>
+				<tt><kw>omAddAlpha</kw></tt> が指定された場合は加算アルファ合成が行われます。<r/>
+				<tt><kw>omOpaque</kw></tt> が指定された場合は src のアルファ情報は無視され、src は常に完全不透明であると見なされます。<r/>
 			</desc>
 		</argitem>
 		<argitem>
@@ -2271,9 +2271,9 @@
 				<tt><kw>omDarken</kw></tt> が指定された場合は比較(暗)合成が行われます(現バージョンでは未実装です)。<r/>
 				<tt><kw>omLighten</kw></tt> が指定された場合は比較(明)合成が行われます(現バージョンでは未実装です)。<r/>
 				<tt><kw>omScreen</kw></tt> が指定された場合はスクリーン乗算合成が行われます(現バージョンでは未実装です)。<r/>
-				<tt><kw>omAlpha</kw></tt> が指定された場合はα合成が行われます。<r/>
-				<tt><kw>omAddAlpha</kw></tt> が指定された場合は加算α合成が行われます。<r/>
-				<tt><kw>omOpaque</kw></tt> が指定された場合は src のα情報は無視され、src は常に完全不透明であると見なされます。<r/>
+				<tt><kw>omAlpha</kw></tt> が指定された場合はアルファ合成が行われます。<r/>
+				<tt><kw>omAddAlpha</kw></tt> が指定された場合は加算アルファ合成が行われます。<r/>
+				<tt><kw>omOpaque</kw></tt> が指定された場合は src のアルファ情報は無視され、src は常に完全不透明であると見なされます。<r/>
 			</desc>
 		</argitem>
 		<argitem>
@@ -2875,9 +2875,9 @@
 				<tt><kw>omDarken</kw></tt> が指定された場合は比較(暗)合成が行われます(現バージョンでは未実装です)。<r/>
 				<tt><kw>omLighten</kw></tt> が指定された場合は比較(明)合成が行われます(現バージョンでは未実装です)。<r/>
 				<tt><kw>omScreen</kw></tt> が指定された場合はスクリーン乗算合成が行われます(現バージョンでは未実装です)。<r/>
-				<tt><kw>omAlpha</kw></tt> が指定された場合はα合成が行われます。<r/>
-				<tt><kw>omAddAlpha</kw></tt> が指定された場合は加算α合成が行われます。<r/>
-				<tt><kw>omOpaque</kw></tt> が指定された場合は src のα情報は無視され、src は常に完全不透明であると見なされます。<r/>
+				<tt><kw>omAlpha</kw></tt> が指定された場合はアルファ合成が行われます。<r/>
+				<tt><kw>omAddAlpha</kw></tt> が指定された場合は加算アルファ合成が行われます。<r/>
+				<tt><kw>omOpaque</kw></tt> が指定された場合は src のアルファ情報は無視され、src は常に完全不透明であると見なされます。<r/>
 			</desc>
 		</argitem>
 		<argitem>
@@ -3341,17 +3341,17 @@
 				<dl>
 				<dt>"<kw>bmp</kw>" または "<kw>bmp32</kw>"</dt>
 				<dd>
-					　32bpp の BMP です。αチャンネル(マスク)も保存します。<r/>
+					　32bpp の BMP です。アルファチャンネル(マスク)も保存します。<r/>
 				</dd>
 				<r/>
 				<dt>"<kw>bmp24</kw>"</dt>
 				<dd>
-					　24bpp の BMP です。αチャンネル(マスク)は保存されません。<r/>
+					　24bpp の BMP です。アルファチャンネル(マスク)は保存されません。<r/>
 				</dd>
 				<r/>
 				<dt>"<kw>bmp8</kw>"</dt>
 				<dd>
-					　8bpp の BMP です。αチャンネル(マスク)は保存されません。画像は
+					　8bpp の BMP です。アルファチャンネル(マスク)は保存されません。画像は
 					252色の固定パレットによる4×4組織化ディザリングを用いて減色されます。<r/>
 				</dd>
 				</dl>
@@ -3694,7 +3694,7 @@
 <member>
 	<name>holdAlpha</name>
 	<type>property</type>
-	<shortdesc>αチャンネルを保護するか</shortdesc>
+	<shortdesc>アルファチャンネルを保護するか</shortdesc>
 	<access>r/w</access>
 	<desc>
 		　描画においてアルファチャンネルを保護するかどうかを指定します。値を設定することもできます。<r/>

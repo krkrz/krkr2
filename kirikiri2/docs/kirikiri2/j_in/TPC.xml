@@ -8,7 +8,7 @@
 @—lX‚È‰æ‘œ‚Ì—pˆÓ‚ÉŽg‚¦‚Ü‚·B<r/>
 <r/>
 @“ü—Íƒtƒ@ƒCƒ‹ƒtƒH[ƒ}ƒbƒg‚Æ‚µ‚Ä‚Í BMP, PNG, JPEG, PSDAo—Íƒtƒ@ƒCƒ‹ƒtƒH[ƒ}ƒbƒg‚Æ‚µ‚Ä‚Í BMP, PNG, TLG5, TLG6, JPEG ‚Ì‚¢‚¸‚ê‚©‚ð‘I‘ð‚Å‚«‚Ü‚·B<r/>
-@‹g—¢‹g—¢‚ª—p‚¢‚é‚æ‚¤‚ÈƒƒCƒ“/ƒ}ƒXƒN•ª—£Œ`Ž®‚Ì“§‰ß‰æ‘œ‚ð“Ç‚Ýž‚ñ‚¾‚èAo—Í‚·‚éŽ–‚à‚Å‚«‚Ü‚·B‚±‚±‚Å—p‚¢‚Ä‚¢‚éuƒ}ƒXƒNv‚Æ‚¢‚¤—pŒê‚Íƒ¿ƒ`ƒƒƒlƒ‹‚Æ“¯‹`‚Å‚·B<r/>
+@‹g—¢‹g—¢‚ª—p‚¢‚é‚æ‚¤‚ÈƒƒCƒ“/ƒ}ƒXƒN•ª—£Œ`Ž®‚Ì“§‰ß‰æ‘œ‚ð“Ç‚Ýž‚ñ‚¾‚èAo—Í‚·‚éŽ–‚à‚Å‚«‚Ü‚·B‚±‚±‚Å—p‚¢‚Ä‚¢‚éuƒ}ƒXƒNv‚Æ‚¢‚¤—pŒê‚ÍƒAƒ‹ƒtƒ@ƒ`ƒƒƒlƒ‹‚Æ“¯‹`‚Å‚·B<r/>
 <r/>
 @Šî–{“I‚É‚Í‰æ‘œƒtƒH[ƒ}ƒbƒg‚ð•ÏŠ·‚·‚é‚¾‚¯‚È‚Ì‚ÅA‚±‚ê‚Åo—Í‚µ‚½‰æ‘œ‚ÍA‘¼‚Ìƒ\ƒtƒg‚âƒc[ƒ‹‚É‚àŽg‚¦‚é‚ÆŽv‚¢‚Ü‚·B<r/>
 <r/>
@@ -22,13 +22,13 @@
 <dl>
 <dt>BMP</dt>
 <dd>
-@Windows •W€ƒrƒbƒgƒ}ƒbƒvŒ`Ž®‚Å‚·B32 bit (bpp) Œ`Ž®‚Ì BMP ‚Íƒ¿ƒ`ƒƒƒ“ƒlƒ‹•t‚« BMP ‚Å‚ ‚é‚ÆŒ©‚È‚³‚ê‚Ü‚·B<r/>
+@Windows •W€ƒrƒbƒgƒ}ƒbƒvŒ`Ž®‚Å‚·B32 bit (bpp) Œ`Ž®‚Ì BMP ‚ÍƒAƒ‹ƒtƒ@ƒ`ƒƒƒ“ƒlƒ‹•t‚« BMP ‚Å‚ ‚é‚ÆŒ©‚È‚³‚ê‚Ü‚·B<r/>
 @‚»‚Ì‘¼‚ÌŒ`Ž®‚Ì BMP ‚ÍA•s“§–¾‚È‰æ‘œ(“§‰ßî•ñ‚ðŽ‚½‚È‚¢‰æ‘œ)‚Å‚ ‚é‚ÆŒ©‚È‚³‚ê‚Ü‚· (Œãq‚ÌƒƒCƒ“/ƒ}ƒXƒN•ª—£Œ`Ž®‚É—p‚¢‚½ê‡‚ðœ‚­)B
 </dd>
 
 <dt>PNG</dt>
 <dd>
-@Portable Network Graphic Œ`Ž®‚Å‚·B“§–¾•”•ª‚Ì‚ ‚é(ƒ¿ƒ`ƒƒƒlƒ‹‚â“§‰ßî•ñ‚ðŽ‚Á‚½) PNG ‚à“Ç‚Ýž‚Þ‚±‚Æ‚ª‚Å‚«‚Ü‚·B
+@Portable Network Graphic Œ`Ž®‚Å‚·B“§–¾•”•ª‚Ì‚ ‚é(ƒAƒ‹ƒtƒ@ƒ`ƒƒƒlƒ‹‚â“§‰ßî•ñ‚ðŽ‚Á‚½) PNG ‚à“Ç‚Ýž‚Þ‚±‚Æ‚ª‚Å‚«‚Ü‚·B
 </dd>
 
 <dt>PSD</dt>
@@ -67,7 +67,7 @@
     </ul>
 </dd>
 </dl>
-Photoshop‚Ìu’Êív‚Í‹g—¢‹g—¢‚ÌƒAƒ‹ƒtƒ@‡¬Au•¢‚¢Ä‚«(ƒŠƒjƒA)v‚Í‹g—¢‹g—¢‚Ì‰ÁŽZ‡¬‚É‘Š“–‚µ‚Ü‚·BltAdditiveAlpha(‰ÁŽZƒAƒ‹ƒtƒ@‡¬)‚Å‚Íƒ¿‡¬‚Æ‰ÁŽZ‡¬‚Ì—¼•û‚ð“¯Žž‚É•\Œ»‚Å‚«‚é‚½‚ßA‚±‚Ì‚æ‚¤‚ÈƒŒƒCƒ„[\¬‚ÌPhotoshopƒf[ƒ^‚ð“Ç‚Ýž‚Þ‚±‚Æ‚ª‚Å‚«‚Ü‚·B<r/>
+Photoshop‚Ìu’Êív‚Í‹g—¢‹g—¢‚ÌƒAƒ‹ƒtƒ@‡¬Au•¢‚¢Ä‚«(ƒŠƒjƒA)v‚Í‹g—¢‹g—¢‚Ì‰ÁŽZ‡¬‚É‘Š“–‚µ‚Ü‚·BltAdditiveAlpha(‰ÁŽZƒAƒ‹ƒtƒ@‡¬)‚Å‚ÍƒAƒ‹ƒtƒ@‡¬‚Æ‰ÁŽZ‡¬‚Ì—¼•û‚ð“¯Žž‚É•\Œ»‚Å‚«‚é‚½‚ßA‚±‚Ì‚æ‚¤‚ÈƒŒƒCƒ„[\¬‚ÌPhotoshopƒf[ƒ^‚ð“Ç‚Ýž‚Þ‚±‚Æ‚ª‚Å‚«‚Ü‚·B<r/>
 </dd>
 
 <dt>JPEG</dt>
@@ -93,18 +93,18 @@ Photoshop‚Ìu’Êív‚Í‹g—¢‹g—¢‚ÌƒAƒ‹ƒtƒ@‡¬Au•¢‚¢Ä‚«(ƒŠƒjƒA)v‚Í‹g—¢‹g—¢‚Ì‰ÁŽ
 <dl>
 <dt>24bit/32bit BMP</dt>
 <dd>
-@24bit BMP ‚Íƒ¿ƒ`ƒƒƒ“ƒlƒ‹‚ðŽ‚½‚È‚¢ BMP ‚Å‚·B<r/>
-@32bit BMP ‚Íƒ¿ƒ`ƒƒƒlƒ‹‚ðŽ‚Á‚½ BMP ‚ÅAˆê‚Â‚Ìƒtƒ@ƒCƒ‹“à‚É ƒƒCƒ“‚Æƒ}ƒXƒN‚ðŽ‚Á‚Ä‚¢‚é BMP ‚Å‚·B
+@24bit BMP ‚ÍƒAƒ‹ƒtƒ@ƒ`ƒƒƒ“ƒlƒ‹‚ðŽ‚½‚È‚¢ BMP ‚Å‚·B<r/>
+@32bit BMP ‚ÍƒAƒ‹ƒtƒ@ƒ`ƒƒƒlƒ‹‚ðŽ‚Á‚½ BMP ‚ÅAˆê‚Â‚Ìƒtƒ@ƒCƒ‹“à‚É ƒƒCƒ“‚Æƒ}ƒXƒN‚ðŽ‚Á‚Ä‚¢‚é BMP ‚Å‚·B
 </dd>
 
 <dt>PNG</dt>
 <dd>
-@ƒtƒ‹ƒJƒ‰[‚Ì PNGA‚ ‚é‚¢‚Íƒ¿ƒ`ƒƒƒ“ƒlƒ‹•t‚«‚Ì PNG ‚Å‚·B
+@ƒtƒ‹ƒJƒ‰[‚Ì PNGA‚ ‚é‚¢‚ÍƒAƒ‹ƒtƒ@ƒ`ƒƒƒ“ƒlƒ‹•t‚«‚Ì PNG ‚Å‚·B
 </dd>
 
 <dt>TLG5</dt>
 <dd>
-@ƒtƒ‹ƒJƒ‰[‚Ì TLG5A‚ ‚é‚¢‚Íƒ¿ƒ`ƒƒƒ“ƒlƒ‹•t‚«‚Ì TLG5 ‚Å‚·B<r/>
+@ƒtƒ‹ƒJƒ‰[‚Ì TLG5A‚ ‚é‚¢‚ÍƒAƒ‹ƒtƒ@ƒ`ƒƒƒ“ƒlƒ‹•t‚«‚Ì TLG5 ‚Å‚·B<r/>
 <note>
 @TLG5 Œ`Ž®‚Íˆ³k‚ÉŒ‹\ŽžŠÔ‚ª‚©‚©‚è‚Ü‚·BƒvƒƒOƒ‰ƒ€‚ªŽ~‚Ü‚Á‚Ä‚µ‚Ü‚Á‚½‚æ‚¤‚ÉŒ©‚¦‚é‚©‚à’m‚ê‚Ü‚¹‚ñB
 </note>
@@ -114,7 +114,7 @@ Photoshop‚Ìu’Êív‚Í‹g—¢‹g—¢‚ÌƒAƒ‹ƒtƒ@‡¬Au•¢‚¢Ä‚«(ƒŠƒjƒA)v‚Í‹g—¢‹g—¢‚Ì‰ÁŽ
 
 <dt>TLG6</dt>
 <dd>
-@ƒtƒ‹ƒJƒ‰[‚Ì TLG6A‚ ‚é‚¢‚Íƒ¿ƒ`ƒƒƒ“ƒlƒ‹•t‚«‚Ì TLG6 ‚Å‚·B<r/>
+@ƒtƒ‹ƒJƒ‰[‚Ì TLG6A‚ ‚é‚¢‚ÍƒAƒ‹ƒtƒ@ƒ`ƒƒƒ“ƒlƒ‹•t‚«‚Ì TLG6 ‚Å‚·B<r/>
 <note>
 @TLG6 Œ`Ž®‚Í TLG5 Œ`Ž®‚Æ“¯‚¶‚­Aˆ³k‚ÉŒ‹\ŽžŠÔ‚ª‚©‚©‚è‚Ü‚·BƒvƒƒOƒ‰ƒ€‚ªŽ~‚Ü‚Á‚Ä‚µ‚Ü‚Á‚½‚æ‚¤‚ÉŒ©‚¦‚é‚©‚à’m‚ê‚Ü‚¹‚ñB
 </note>
@@ -125,7 +125,7 @@ TLG6‰æ‘œ‚É‚Â‚¢‚Ä‚ÍTLG5‰æ‘œ‚Æ“¯‚¶‚­Aƒ^ƒOî•ñ‚ð‘‚«o‚µ‚Ü‚·B<r/>
 <dd>
 @“§–¾•”•ª‚Ì‚ ‚é‰æ‘œ‚É‚¨‚¢‚ÄAƒƒCƒ“/ƒ}ƒXƒN‚ð•ÊX‚Ìƒtƒ@ƒCƒ‹‚É‹L˜^‚·‚é•ûŽ®‚Å‚·B‚»‚ê‚¼‚êABMP, JPEG, PNG ‚ð‘I‘ð‚Å‚«‚Ü‚·B<r/>
 @ƒ}ƒXƒN‰æ‘œ‚ÍAƒƒCƒ“‰æ‘œ‚Ìƒtƒ@ƒCƒ‹–¼‚ÌÅŒã‚É _m ‚Ì‚Â‚¢‚½ƒtƒ@ƒCƒ‹–¼‚É‚È‚è‚Ü‚· ( ‚½‚Æ‚¦‚Î test.jpg ‚É‘Î‚µ‚Ä test_m.jpg )B<r/>
-@ƒƒCƒ“‚Æƒ}ƒXƒN‚ð•ÊX‚Ì‰æ‘œŒ`Ž®‚É‚·‚é‚±‚Æ‚ª‚Å‚«‚Ü‚·‚ªABMP ‚Æ BMP APNG ‚Æ PNG ‚Ì‘g‚Ý‡‚í‚¹‚Í‚Ù‚Æ‚ñ‚ÇˆÓ–¡‚ª‚È‚¢‚Ì‚ÅAã‹L‚Ì 32bit BMP ‚© ƒ¿ƒ`ƒƒƒlƒ‹•t‚« PNG ‚ð‘I‘ð‚µ‚½•û‚ª—Ç‚¢‚Å‚µ‚å‚¤B<r/>
+@ƒƒCƒ“‚Æƒ}ƒXƒN‚ð•ÊX‚Ì‰æ‘œŒ`Ž®‚É‚·‚é‚±‚Æ‚ª‚Å‚«‚Ü‚·‚ªABMP ‚Æ BMP APNG ‚Æ PNG ‚Ì‘g‚Ý‡‚í‚¹‚Í‚Ù‚Æ‚ñ‚ÇˆÓ–¡‚ª‚È‚¢‚Ì‚ÅAã‹L‚Ì 32bit BMP ‚© ƒAƒ‹ƒtƒ@ƒ`ƒƒƒlƒ‹•t‚« PNG ‚ð‘I‘ð‚µ‚½•û‚ª—Ç‚¢‚Å‚µ‚å‚¤B<r/>
 @‚Ç‚¿‚ç‚©A‚ ‚é‚¢‚Í—¼•û‚É JPEG ‚ð—p‚¢‚ê‚Îƒtƒ@ƒCƒ‹ƒTƒCƒY‚Íß–ñ‚Å‚«‚Ü‚·‚ªA‰æŽ¿‚Íˆ«‚­‚È‚è‚Ü‚·B<r/>
 @ƒƒCƒ“/ƒ}ƒXƒN•ª—£Œ`Ž®‚É TLG5 ‚â TLG6 Œ`Ž®‚ðŽw’è‚·‚é‚±‚Æ‚Í‚Å‚«‚Ü‚¹‚ñB
 </dd>
@@ -193,17 +193,17 @@ TLG6‰æ‘œ‚É‚Â‚¢‚Ä‚ÍTLG5‰æ‘œ‚Æ“¯‚¶‚­Aƒ^ƒOî•ñ‚ð‘‚«o‚µ‚Ü‚·B<r/>
 
 <dt>u“§–¾•”•ª‚Ì‚ ‚é‰æ‘œ - ƒ¿ƒ`ƒƒƒlƒ‹•t‚« PNG (ƒƒCƒ“+ƒ}ƒXƒN)v</dt>
 <dd>
-@“§‰ßî•ñ‚ðŽ‚Á‚½‰æ‘œ‚Ìo—ÍŒ`Ž®‚Æ‚µ‚Ä ƒ¿ƒ`ƒƒƒlƒ‹•t‚« PNG ‚ð‘I‘ð‚µ‚Ü‚·B
+@“§‰ßî•ñ‚ðŽ‚Á‚½‰æ‘œ‚Ìo—ÍŒ`Ž®‚Æ‚µ‚Ä ƒAƒ‹ƒtƒ@ƒ`ƒƒƒlƒ‹•t‚« PNG ‚ð‘I‘ð‚µ‚Ü‚·B
 </dd>
 
 <dt>u“§–¾•”•ª‚Ì‚ ‚é‰æ‘œ - ƒ¿ƒ`ƒƒƒlƒ‹•t‚« TLG5 (ƒƒCƒ“+ƒ}ƒXƒN)v</dt>
 <dd>
-@“§‰ßî•ñ‚ðŽ‚Á‚½‰æ‘œ‚Ìo—ÍŒ`Ž®‚Æ‚µ‚Ä ƒ¿ƒ`ƒƒƒlƒ‹•t‚« TLG5 ‚ð‘I‘ð‚µ‚Ü‚·B
+@“§‰ßî•ñ‚ðŽ‚Á‚½‰æ‘œ‚Ìo—ÍŒ`Ž®‚Æ‚µ‚Ä ƒAƒ‹ƒtƒ@ƒ`ƒƒƒlƒ‹•t‚« TLG5 ‚ð‘I‘ð‚µ‚Ü‚·B
 </dd>
 
 <dt>u“§–¾•”•ª‚Ì‚ ‚é‰æ‘œ - ƒ¿ƒ`ƒƒƒlƒ‹•t‚« TLG6 (ƒƒCƒ“+ƒ}ƒXƒN)v</dt>
 <dd>
-@“§‰ßî•ñ‚ðŽ‚Á‚½‰æ‘œ‚Ìo—ÍŒ`Ž®‚Æ‚µ‚Ä ƒ¿ƒ`ƒƒƒlƒ‹•t‚« TLG6 ‚ð‘I‘ð‚µ‚Ü‚·B
+@“§‰ßî•ñ‚ðŽ‚Á‚½‰æ‘œ‚Ìo—ÍŒ`Ž®‚Æ‚µ‚Ä ƒAƒ‹ƒtƒ@ƒ`ƒƒƒlƒ‹•t‚« TLG6 ‚ð‘I‘ð‚µ‚Ü‚·B
 </dd>
 
 <dt>u“§–¾•”•ª‚Ì‚ ‚é‰æ‘œ - ƒƒCƒ“/ƒ}ƒXƒN•ª—£Œ`Ž®v</dt>
@@ -232,7 +232,7 @@ TLG6‰æ‘œ‚É‚Â‚¢‚Ä‚ÍTLG5‰æ‘œ‚Æ“¯‚¶‚­Aƒ^ƒOî•ñ‚ð‘‚«o‚µ‚Ü‚·B<r/>
 <dt>u“§–¾•”•ª‚Ì‚ ‚é‰æ‘œ - Š®‘S“§–¾•”•ª‚ÌFî•ñv</dt>
 <dd>
 @‰æ‘œ‚ÌŠ®‘S‚É“§–¾‚È•”•ª‚Ìˆ—‚ðŽw’è‚µ‚Ü‚·B<r/>
-@’ÊíA“§‰ß“x(ƒ¿ƒ`ƒƒƒ“ƒlƒ‹)•t‚«‚Ì‰æ‘œ‚Ìê‡AŠ®‘S‚É“§–¾‚È•”•ª‚Å‚àF‚Ìî•ñ‚ðŽ‚Á‚Ä‚¢‚Ü‚·B‚»‚Ì•”•ª‚ÍŠ®‘S‚É“§–¾‚È‚Ì‚Å•\Ž¦‚·‚é‚Æ‚«‚Í’P‚É–³Ž‹‚³‚ê‚é‚Ì‚Å‚·‚ªA‰æ‘œ‚Ì‰ÁH ( JPEG“™‚É‚æ‚éˆ³k‚àŠÜ‚Þ ) ‚ðs‚¤‚Æ‚«‚Í–³Ž‹‚³‚ê‚Ü‚¹‚ñB<r/>
+@’ÊíA“§‰ß“x(ƒAƒ‹ƒtƒ@ƒ`ƒƒƒ“ƒlƒ‹)•t‚«‚Ì‰æ‘œ‚Ìê‡AŠ®‘S‚É“§–¾‚È•”•ª‚Å‚àF‚Ìî•ñ‚ðŽ‚Á‚Ä‚¢‚Ü‚·B‚»‚Ì•”•ª‚ÍŠ®‘S‚É“§–¾‚È‚Ì‚Å•\Ž¦‚·‚é‚Æ‚«‚Í’P‚É–³Ž‹‚³‚ê‚é‚Ì‚Å‚·‚ªA‰æ‘œ‚Ì‰ÁH ( JPEG“™‚É‚æ‚éˆ³k‚àŠÜ‚Þ ) ‚ðs‚¤‚Æ‚«‚Í–³Ž‹‚³‚ê‚Ü‚¹‚ñB<r/>
 @‚±‚ÌŠ®‘S‚É“§–¾‚È•”•ª‚Ìˆ—‚Ì•ûŽ®‚ðŽw’è‚µ‚Ü‚·B<r/>
 <r/>
 <dl>
