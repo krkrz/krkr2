@@ -1321,13 +1321,11 @@
 			<desc>
 				　塗りつぶす色や値を指定します。<r/>
 				　この値は、<ref>Layer.face</ref> プロパティの値によって意味が変わります。<r/>
-				<tt><kw>dfAlpha</kw> (または<kw>dfBoth</kw>)  </tt> : 0xAARRGGBB 形式で不透明度と色を指定してください<r/>
-				<tt><kw>dfAddAlpha</kw>              </tt> : 0xAARRGGBB 形式で不透明度と色を指定してください<r/>
-				<tt><kw>dfOpaque</kw> (または<kw>dfMain</kw>) </tt> : 0xRRGGBB 形式で色を指定してください<r/>
-				<tt><kw>dfMask</kw>                  </tt> : マスク(不透明度)の値 ( 0 ～ 255 ) を指定してください<r/>
-				<tt><kw>dfProvince</kw>              </tt> : 領域の値 ( 0 ～ 255 ) を指定してください<r/>
-				　dfOpaque を指定した場合は、不透明度の情報はそのままになります。また、dfMask を
-				指定した場合は、色の情報はそのままになります。<r/>
+				<tt><kw>dfAlpha</kw> (または<kw>dfBoth</kw>)  </tt> : 0xAARRGGBB 形式で不透明度と色を指定してください。メインとマスクの両方が塗りつぶされます。<r/>
+				<tt><kw>dfAddAlpha</kw>              </tt> : 0xAARRGGBB 形式で不透明度と色を指定してください。メインとマスクの両方が塗りつぶされます。<r/>
+				<tt><kw>dfOpaque</kw> (または<kw>dfMain</kw>) </tt> : 0xRRGGBB 形式で色を指定してください。メインのみが塗りつぶされ、マスクはそのままになります。<r/>
+				<tt><kw>dfMask</kw>                  </tt> : マスク(不透明度)の値 ( 0 ～ 255 ) を指定してください。マスクのみが塗りつぶされ、メインはそのままになります。<r/>
+				<tt><kw>dfProvince</kw>              </tt> : 領域の値 ( 0 ～ 255 ) を指定してください。領域のみが塗りつぶされます。<r/>
 			</desc>
 		</argitem>
 	</arg>

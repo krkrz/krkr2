@@ -211,7 +211,9 @@ ltAddAlphaと同じ合成モードに対応しているグラフィックソフトはそうはないと思います
 
 <dt>描画方式</dt>
 <dd>
-　描画方式は <at href="f_Layer_face.html">Layer.face</at> プロパティで指定する値で、レイヤにどのように描画するかを指定します。dfAutoを指定すると、レイヤタイプに従って適切な描画方式が決定されます。レイヤタイプと異なる描画方式で描画することもできます。<r/>
+　描画方式は <at href="f_Layer_face.html">Layer.face</at> プロパティで指定する値で、レイヤにどのように描画するかを指定します。dfAutoを指定すると、レイヤタイプに従って適切な描画方式が決定されます。レイヤタイプに最適な描画方法とは異なる描画方式で描画することもできます。<r/>
+　<at href="f_Layer_copyRect.html">Layer.copyRect</at> メソッドのようなレイヤ間のコピーを行うメソッドでは、どの情報をコピーするかの選択にも用いられます。dfBoth (あるいは dfAlpha あるいは dfAddAlpha の場合) は、メインとマスクの両方がコピーされます。dfMain (あるいは dfOpaque) の場合はメインのみがコピーされます。dfMask の場合はマスクのみ、dfProvince の場合は領域画像のみがコピーされます。<r/>
+　同様に、<at href="f_Layer_fillRect.html">Layer.fillRect</at> メソッドでは、どの情報を塗りつぶすかの選択に用いられます。dfBoth (あるいは dfAlpha あるいは dfAddAlpha の場合) は、メインとマスクの両方が塗りつぶされます。dfMain (あるいは dfOpaque) の場合はメインのみがコピー塗りつぶされます。dfMask の場合はマスクのみ、dfProvince の場合は領域画像のみが塗りつぶされます。<r/>
 </dd>
 
 <dt>演算モード</dt>
