@@ -59,6 +59,8 @@ TBufferRenderer::TBufferRenderer( TCHAR *pName, LPUNKNOWN pUnk, HRESULT *phr )
 	m_FrontBuffer = 0;
 
 	m_MediaSeeking = NULL;
+
+	m_StartFrame = 0;
 }
 //----------------------------------------------------------------------------
 //! @brief	  	TBufferRenderer destructor
@@ -74,7 +76,9 @@ TBufferRenderer::~TBufferRenderer()
 	FreeBackBuffer();
 
 	if( m_MediaSeeking )
+	{
 		m_MediaSeeking->Release();
+	}
 	m_MediaSeeking = NULL;
 }
 //----------------------------------------------------------------------------
@@ -170,56 +174,14 @@ HRESULT TBufferRenderer::DoRenderSample( IMediaSample * pSample )
 	pTxtBuffer = reinterpret_cast<DWORD*>(GetBackBuffer());
 	pTxtOrgPos = reinterpret_cast<BYTE*>(pTxtBuffer);
 
-	if( m_MediaSeeking == NULL && m_pGraph )
-	{
-		if( m_pGraph->QueryInterface( IID_IMediaSeeking, (void**)&m_MediaSeeking ) != S_OK )
-			m_MediaSeeking = NULL;
-	}
-
 	HRESULT		hr;
 	LONG		EventParam1 = -1;
+	LONGLONG	TimeStart = 0;
+	LONGLONG	TimeEnd = 0;
 
-	bool		bGetTime = false;
-	LONGLONG	Current = 0;
-	if( m_MediaSeeking )
-	{	// IMediaSeekingを使って時間の取得を試みる
-		GUID	Format;
-		if( SUCCEEDED(hr = m_MediaSeeking->GetTimeFormat( &Format ) ) )
-		{
-			if( SUCCEEDED(hr = m_MediaSeeking->GetCurrentPosition( &Current )) )
-			{
-				if( IsEqualGUID( TIME_FORMAT_MEDIA_TIME, Format ) )
-				{
-					bGetTime = true;
-				}
-				else if( IsEqualGUID( TIME_FORMAT_FRAME, Format ) )
-				{
-					EventParam1 = (LONG)Current;
-					bGetTime = true;
-				}
-			}
-		}
-	}
-#if 0	// この方法で得た時間はフレーム番号とは一致しない
-	if( bGetTime == false )
-	{	// GetSampleTimesを使って時間の取得を試みる
-		REFERENCE_TIME	TimeStart;
-		REFERENCE_TIME	TimeEnd;
-		if( SUCCEEDED( hr = GetSampleTimes( pSample, &TimeStart, &TimeEnd ) ) )
-		{
-			Current = TimeStart;
-			bGetTime = true;
-		}
-	}
-#endif
-	if( bGetTime == true && EventParam1 == -1 )
-	{	// 時間の取得は出来たが、単位が100nsecなので変換する
-		double	renderTime = Current / 10000000.0;
-		REFTIME	AvgTimePerFrame;	// REFTIME :  秒数を示す小数を表す倍精度浮動小数点数。
-		if( SUCCEEDED( hr = get_AvgTimePerFrame( &AvgTimePerFrame ) ) )
-		{
-			EventParam1 = (LONG)(renderTime / AvgTimePerFrame + 0.5);
-		}
+	if( SUCCEEDED(hr = pSample->GetMediaTime( &TimeStart, &TimeEnd )) )
+	{
+		EventParam1 = (LONG)TimeStart;
 	}
 
 	if( pTxtBuffer == pBmpBuffer )	// 自前のアロケーターが使われている
@@ -561,6 +523,111 @@ HRESULT TBufferRenderer::get_VideoHeight( long *pVideoHeight )
 	}
 	else
 		return E_POINTER;
+}
+//----------------------------------------------------------------------------
+//! @brief	  	ストリーミングが開始された時にコールされる
+//!
+//! 開始フレームを記録する。
+//! @return		エラーコード
+//----------------------------------------------------------------------------
+HRESULT TBufferRenderer::OnStartStreaming(void)
+{
+	HRESULT		hr;
+	if( m_MediaSeeking == NULL && m_pGraph )
+	{
+		if( m_pGraph->QueryInterface( IID_IMediaSeeking, (void**)&m_MediaSeeking ) != S_OK )
+			m_MediaSeeking = NULL;
+	}
+
+	bool		bGetTime = false;
+	LONGLONG	Current = 0;
+	if( m_MediaSeeking )
+	{	// IMediaSeekingを使って時間の取得を試みる
+		GUID	Format;
+		if( SUCCEEDED(hr = m_MediaSeeking->GetTimeFormat( &Format ) ) )
+		{
+			if( SUCCEEDED(hr = m_MediaSeeking->GetCurrentPosition( &Current )) )
+			{
+				if( IsEqualGUID( TIME_FORMAT_MEDIA_TIME, Format ) )
+				{
+					double	renderTime = Current / 10000000.0;
+					REFTIME	AvgTimePerFrame;	// REFTIME :  秒数を示す小数を表す倍精度浮動小数点数。
+					if( SUCCEEDED( hr = get_AvgTimePerFrame( &AvgTimePerFrame ) ) )
+					{
+						m_StartFrame = (LONG)(renderTime / AvgTimePerFrame + 0.5);
+						bGetTime = true;
+					}
+				}
+				else if( IsEqualGUID( TIME_FORMAT_FRAME, Format ) )
+				{
+					m_StartFrame = (LONG)Current;
+					bGetTime = true;
+				}
+			}
+		}
+	}
+	if( bGetTime == false )
+		m_StartFrame = 0;
+	return CBaseVideoRenderer::OnStartStreaming();
+}
+//----------------------------------------------------------------------------
+//! @brief	  	レンダリング前にコールされる
+//!
+//! メディアサンプルにメディアタイムを記録する。
+//! メディアタイムは開始フレームに現在のストリーム時間を加算したものになる。
+//! もし、フィルタのIMediaSeekingインターフェイスが利用できない場合は、
+//! このレンダーフィルタが描画したフレーム数とドロップしたフレーム数を加算する。
+//! この場合、より上位のフィルタでドロップしたフレーム数はわからないので、
+//! 若干精度が落ちる。
+//! @param		pMediaSample : メディアサンプル
+//----------------------------------------------------------------------------
+void TBufferRenderer::OnRenderStart( IMediaSample *pMediaSample )
+{
+	CBaseVideoRenderer::OnRenderStart(pMediaSample);
+
+	HRESULT		hr;
+	bool		bGetTime = false;
+	LONGLONG	Current = 0;
+	IMediaSeeking	*mediaSeeking = NULL;
+	if( GetMediaPositionInterface( IID_IMediaSeeking, (void**)&mediaSeeking) == S_OK )
+	{
+		GUID	Format;
+		if( SUCCEEDED(hr = mediaSeeking->GetTimeFormat( &Format ) ) )
+		{
+			if( SUCCEEDED(hr = mediaSeeking->GetCurrentPosition( &Current )) )
+			{
+				if( IsEqualGUID( TIME_FORMAT_MEDIA_TIME, Format ) )
+				{
+					double	renderTime = Current / 10000000.0;
+					REFTIME	AvgTimePerFrame;	// REFTIME :  秒数を示す小数を表す倍精度浮動小数点数。
+					if( SUCCEEDED( hr = get_AvgTimePerFrame( &AvgTimePerFrame ) ) )
+					{
+						Current = (LONGLONG)(renderTime / AvgTimePerFrame + 0.5);
+						bGetTime = true;
+					}
+				}
+				else if( IsEqualGUID( TIME_FORMAT_FRAME, Format ) )
+				{
+					bGetTime = true;
+				}
+			}
+		}
+		mediaSeeking->Release();
+		mediaSeeking = NULL;
+	}
+	LONGLONG	TimeStart = m_StartFrame + m_cFramesDrawn + m_cFramesDropped;;
+	LONGLONG	TimeEnd = m_StartFrame + m_cFramesDrawn + m_cFramesDropped;;
+	if( bGetTime == true )
+	{
+		TimeStart = m_StartFrame + Current;
+		TimeEnd = m_StartFrame + Current;
+	}
+	else
+	{
+		TimeStart = m_StartFrame + m_cFramesDrawn + m_cFramesDropped;;
+		TimeEnd = m_StartFrame + m_cFramesDrawn + m_cFramesDropped;;
+	}
+	pMediaSample->SetMediaTime( &TimeStart, &TimeEnd );
 }
 //----------------------------------------------------------------------------
 //##	TBufferRendererInputPin
