@@ -157,10 +157,10 @@ USEUNIT("..\..\msg\win32\MsgImpl.cpp");
 USEUNIT("..\..\base\ScriptMgnIntf.cpp");
 USEUNIT("..\..\base\win32\FuncStubs.cpp");
 USEUNIT("..\..\msg\win32\OptionsDesc.cpp");
-USEFORM("krdevui\ConfMainFrameUnit.cpp", ConfMainFrame); /* TFrame: File Type */
-USEFORM("krdevui\ConfSettingsUnit.cpp", ConfSettingsForm);
 USE("..\..\base\common.h", File);
 USE("..\..\utils\ObjectList.h", File);
+USEUNIT("..\..\..\tools\win32\krdevui\ConfSettingsUnit.cpp");
+USEFORM("..\..\..\tools\win32\krdevui\ConfMainFrameUnit.cpp", ConfMainFrame); /* TFrame: File Type */
 //---------------------------------------------------------------------------
 #ifdef TVP_SUPPORT_ERI
 #	pragma link "../../../../Lib/liberina.lib"
