@@ -1,4 +1,9 @@
+@l
+[edit]
+[input name="tf.test"][input name="tf.test"]
+@s
 @jump storage=maptest.ks
+
 [link]‚Ù‚°‚Ù‚°[endlink][r]
 [link]‚Ù‚°‚Ù‚°[endlink][r]
 [link]‚Ù‚°‚Ù‚°[endlink][r]
