@@ -149,17 +149,17 @@ class Movie extends VideoOverlay
 				layer2 = layer;
 		}
 	}
-	function setSegmentLoop(elm)
+	function setSegment(elm)
 	{
-		var start = 0;
-		start = +elm.start if elm.start !== void;
+		var startFrame = 0;
+		startFrame = +elm.start if elm.start !== void;
 		if( elm.end !== void )
-			setSegmentLoop( start, elm.end );
+			super.setSegmentLoop( startFrame, +elm.end );
 	}
-	function setPeriodEvent(elm)
+	function setPeriod(elm)
 	{
 		if( elm.frame !== void )
-			setPeriodEvent( elm.frame );
+			super.setPeriodEvent( +elm.frame );
 	}
 }
 

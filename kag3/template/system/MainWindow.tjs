@@ -5272,7 +5272,7 @@ class KAGWindow extends Window
 
 	videosegloop : function(elm)
 	{
-		movie.setSegmentLoop(elm);
+		movie.setSegment(elm);
 		return 0;
 	} incontextof this,
 
@@ -5284,7 +5284,7 @@ class KAGWindow extends Window
 
 	videoevent : function(elm)
 	{
-		movie.setPeriodEvent(elm);
+		movie.setPeriod(elm);
 		return 0;
 	} incontextof this,
 
