@@ -24,6 +24,9 @@ tTVPDSMovie::tTVPDSMovie()
 	m_dwROTReg = 0xfedcba98;
 	m_RegisteredROT = false;
 
+	m_Proxy = NULL;
+	m_Reader = NULL;
+
 	CoInitialize(NULL);
 	OwnerWindow = NULL;
 	Visible = false;
