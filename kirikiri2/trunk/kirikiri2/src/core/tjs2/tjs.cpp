@@ -42,7 +42,7 @@ extern iTJSDispatch2 * TJSCreateRegExpClass();
 //---------------------------------------------------------------------------
 const tjs_int TJSVersionMajor   = 2;
 const tjs_int TJSVersionMinor   = 4;
-const tjs_int TJSVersionRelease = 14;
+const tjs_int TJSVersionRelease = 15;
 const tjs_int TJSVersionHex =
 	TJSVersionMajor * 0x1000000 + TJSVersionMinor * 0x10000 + TJSVersionRelease;
 
@@ -69,6 +69,11 @@ bool TJSWarnOnExecutionOnDeletingObject = false;
 	// Output warning against running code on context of
 	// deleting-in-progress object. This is available only the Debug mode is
 	// enabled.
+bool TJSUnaryAsteriskIgnoresPropAccess = false;
+	// Unary '*' operator means accessing property object directly without
+	// normal property access, if this options is set true.
+	// This is replaced with '&' operator since TJS2 2.4.15. Turn true for
+	// gaining old compatibility.
 //---------------------------------------------------------------------------
 
 

@@ -39,6 +39,7 @@
 　オペランドに <tt>%obj.*name</tt> の形式を持つものは直接参照を行うもので、レジスタ <tt>%obj</tt> で表されたオブジェクトから <tt>*name</tt> で表された名前をもったメンバを参照します。<r/>
 　オペランドに <tt>%obj.%name</tt> の形式を持つものは間接参照を行うもので、レジスタ <tt>%obj</tt> で表されたオブジェクトから <tt>%name</tt> で表された名前をもったメンバを参照します。<r/>
 　このような命令のニーモニックは d または pd (direct / property direct) や i または pi (indirect / property indirect) のサフィックスをもちます。<r/>
+　サフィックスに p を持つ物は、対象レジスタのプロパティハンドラを動作させます (単項 '*' 演算子の動作をします)。<r/>
 <r/>
 <r/>
 <dl>
@@ -161,177 +162,223 @@
 </dd>
 
 
-<dt><kw>inc</kw>, <kw>incpd</kw>, <kw>incpi</kw><r/>(increment)</dt>
+<dt><kw>inc</kw>, <kw>incpd</kw>, <kw>incpi</kw>, <kw>incp</kw><r/>(increment)</dt>
 <dd>
 書式: <tt>inc %reg</tt><r/>
-書式: <tt>incpd %obj.*name</tt><r/>
-書式: <tt>incpi %obj.%name</tt><r/>
+書式: <tt>incpd %res, %obj.*name</tt><r/>
+書式: <tt>incpi %res, %obj.%name</tt><r/>
+書式: <tt>incp %res, %propobj</tt><r/>
 <r/>
-　%reg または %obj.*name または %obj.%name をインクリメントします。
+　%reg または %obj.*name または %obj.%name または %propobj をインクリメントします。<r/>
+　上記の命令の中で、%res をパラメータに持つ物は、res が 0 で無ければ結果を %res にも格納します。<r/>
 </dd>
 
 
-<dt><kw>dec</kw>, <kw>decpd</kw>, <kw>decpi</kw><r/>(decrement)</dt>
+<dt><kw>dec</kw>, <kw>decpd</kw>, <kw>decpi</kw>, <kw>decp</kw><r/>(decrement)</dt>
 <dd>
 書式: <tt>dec %reg</tt><r/>
-書式: <tt>decpd %obj.*name</tt><r/>
-書式: <tt>decpi %obj.%name</tt><r/>
+書式: <tt>decpd %res, %obj.*name</tt><r/>
+書式: <tt>decpi %res, %obj.%name</tt><r/>
+書式: <tt>decp %res, %propobj</tt><r/>
 <r/>
-　%reg または %obj.*name または %obj.%name をデクリメントします。
+　%reg または %obj.*name または %obj.%name または %propobj をデクリメントします。<r/>
+　上記の命令の中で、%res をパラメータに持つ物は、res が 0 で無ければ結果を %res にも格納します。<r/>
 </dd>
 
 
-<dt><kw>lor</kw>, <kw>lorpd</kw>, <kw>lorpi</kw><r/>(logical or)</dt>
+<dt><kw>lor</kw>, <kw>lorpd</kw>, <kw>lorpi</kw>, <kw>lorp</kw><r/>(logical or)</dt>
 <dd>
 書式: <tt>lor %dest, %src</tt><r/><r/>
 　%dest と %src の論理和をとり、結果を %dest に格納します。<r/><r/>
-書式: <tt>lorpd %obj.*name, %src</tt><r/><r/>
+書式: <tt>lorpd %res, %obj.*name, %src</tt><r/><r/>
 　%obj.*name と %src の論理和をとり、結果を %obj.*name に格納します。<r/><r/>
-書式: <tt>lorpi %obj.%name, %src</tt><r/><r/>
-　%obj.%name と %src の論理和をとり、結果を %obj.%name に格納します。
+書式: <tt>lorpi %res, %obj.%name, %src</tt><r/><r/>
+　%obj.%name と %src の論理和をとり、結果を %obj.%name に格納します。<r/><r/>
+書式: <tt>lorp %res, %propobj, %src</tt><r/><r/>
+　%propobj と %src の論理和をとり、結果を %propobj に格納します。<r/><r/>
+　上記の命令の中で、%res をパラメータに持つ物は、res が 0 で無ければ結果を %res にも格納します。<r/>
 </dd>
 
 
-<dt><kw>land</kw>, <kw>landpd</kw>, <kw>landpi</kw><r/>(logical and)</dt>
+<dt><kw>land</kw>, <kw>landpd</kw>, <kw>landpi</kw>, <kw>landp</kw><r/>(logical and)</dt>
 <dd>
 書式: <tt>land %dest, %src</tt><r/><r/>
 　%dest と %src の論理積をとり、結果を %dest に格納します。<r/><r/>
-書式: <tt>landpd %obj.*name, %src</tt><r/><r/>
+書式: <tt>landpd %res, %obj.*name, %src</tt><r/><r/>
 　%obj.*name と %src の論理積をとり、結果を %obj.*name に格納します。<r/><r/>
-書式: <tt>landpi %obj.%name, %src</tt><r/><r/>
-　%obj.%name と %src の論理積をとり、結果を %obj.%name に格納します。
+書式: <tt>landpi %res, %obj.%name, %src</tt><r/><r/>
+　%obj.%name と %src の論理積をとり、結果を %obj.%name に格納します。<r/><r/>
+書式: <tt>landp %res, %propobj, %src</tt><r/><r/>
+　%propobj と %src の論理積をとり、結果を %propobj に格納します。<r/><r/>
+　上記の命令の中で、%res をパラメータに持つ物は、res が 0 で無ければ結果を %res にも格納します。<r/>
 </dd>
 
 
-<dt><kw>bor</kw>, <kw>borpd</kw>, <kw>borpi</kw><r/>(bitwise or)</dt>
+<dt><kw>bor</kw>, <kw>borpd</kw>, <kw>borpi</kw>, <kw>borp</kw><r/>(bitwise or)</dt>
 <dd>
 書式: <tt>bor %dest, %src</tt><r/><r/>
 　%dest と %src のビットごとの論理和をとり、結果を %dest に格納します。<r/><r/>
-書式: <tt>borpd %obj.*name, %src</tt><r/><r/>
+書式: <tt>borpd %res, %obj.*name, %src</tt><r/><r/>
 　%obj.*name と %src のビットごとの論理和をとり、結果を %obj.*name に格納します。<r/><r/>
-書式: <tt>borpi %obj.%name, %src</tt><r/><r/>
-　%obj.%name と %src のビットごとの論理和をとり、結果を %obj.%name に格納します。
+書式: <tt>borpi %res, %obj.%name, %src</tt><r/><r/>
+　%obj.%name と %src のビットごとの論理和をとり、結果を %obj.%name に格納します。<r/><r/>
+書式: <tt>borp %res, %propobj, %src</tt><r/><r/>
+　%propobj と %src のビットごとの論理和をとり、結果を %propobj に格納します。<r/><r/>
+　上記の命令の中で、%res をパラメータに持つ物は、res が 0 で無ければ結果を %res にも格納します。<r/>
 </dd>
 
 
-<dt><kw>bxor</kw>, <kw>bxorpd</kw>, <kw>bxorpi</kw><r/>(bitwise xor)</dt>
+<dt><kw>bxor</kw>, <kw>bxorpd</kw>, <kw>bxorpi</kw>, <kw>bxorp</kw><r/>(bitwise xor)</dt>
 <dd>
 書式: <tt>bxor %dest, %src</tt><r/><r/>
 　%dest と %src のビットごとの排他的論理和をとり、結果を %dest に格納します。<r/><r/>
-書式: <tt>bxorpd %obj.*name, %src</tt><r/><r/>
+書式: <tt>bxorpd %res, %obj.*name, %src</tt><r/><r/>
 　%obj.*name と %src のビットごとの排他的論理和をとり、結果を %obj.*name に格納します。<r/><r/>
-書式: <tt>bxorpi %obj.%name, %src</tt><r/><r/>
-　%obj.%name と %src のビットごとの排他的論理和をとり、結果を %obj.%name に格納します。
+書式: <tt>bxorpi %res, %obj.%name, %src</tt><r/><r/>
+　%obj.%name と %src のビットごとの排他的論理和をとり、結果を %obj.%name に格納します。<r/><r/>
+書式: <tt>bxorp %res, %propobj, %src</tt><r/><r/>
+　%propobj と %src のビットごとの排他的論理和をとり、結果を %propobj に格納します。<r/><r/>
+　上記の命令の中で、%res をパラメータに持つ物は、res が 0 で無ければ結果を %res にも格納します。<r/>
 </dd>
 
 
-<dt><kw>band</kw>, <kw>bandpd</kw>, <kw>bandpi</kw><r/>(bitwise and)</dt>
+<dt><kw>band</kw>, <kw>bandpd</kw>, <kw>bandpi</kw>, <kw>bandp</kw><r/>(bitwise and)</dt>
 <dd>
 書式: <tt>band %dest, %src</tt><r/><r/>
 　%dest と %src のビットごとの論理積をとり、結果を %dest に格納します。<r/><r/>
-書式: <tt>bandpd %obj.*name, %src</tt><r/><r/>
+書式: <tt>bandpd %res, %obj.*name, %src</tt><r/><r/>
 　%obj.*name と %src のビットごとの論理積をとり、結果を %obj.*name に格納します。<r/><r/>
-書式: <tt>bandpi %obj.%name, %src</tt><r/><r/>
-　%obj.%name と %src のビットごとの論理積をとり、結果を %obj.%name に格納します。
+書式: <tt>bandpi %res, %obj.%name, %src</tt><r/><r/>
+　%obj.%name と %src のビットごとの論理積をとり、結果を %obj.%name に格納します。<r/><r/>
+書式: <tt>bandp %res, %propobj, %src</tt><r/><r/>
+　%propobj と %src のビットごとの論理積をとり、結果を %propobj に格納します。<r/><r/>
+　上記の命令の中で、%res をパラメータに持つ物は、res が 0 で無ければ結果を %res にも格納します。<r/>
 </dd>
 
 
-<dt><kw>sar</kw>, <kw>sarpd</kw>, <kw>sarpi</kw><r/>(shift arithmetic right)</dt>
+<dt><kw>sar</kw>, <kw>sarpd</kw>, <kw>sarpi</kw>, <kw>sarp</kw><r/>(shift arithmetic right)</dt>
 <dd>
 書式: <tt>sar %dest, %src</tt><r/><r/>
 　%dest を %src で表された回数分算術右シフトを行った結果を %dest に格納します。<r/><r/>
-書式: <tt>sarpd %obj.*name, %src</tt><r/><r/>
+書式: <tt>sarpd %res, %obj.*name, %src</tt><r/><r/>
 　%obj.*name を %src で表された回数分算術右シフトを行った結果を %obj.*name に格納します。<r/><r/>
-書式: <tt>sarpi %obj.%name, %src</tt><r/><r/>
-　%obj.%name を %src で表された回数分算術右シフトを行った結果を %obj.%name に格納します。
+書式: <tt>sarpi %res, %obj.%name, %src</tt><r/><r/>
+　%obj.%name を %src で表された回数分算術右シフトを行った結果を %obj.%name に格納します。<r/><r/>
+書式: <tt>sarp %res, %propobj, %src</tt><r/><r/>
+　%propobj を %src で表された回数分算術右シフトを行った結果を %propobj に格納します。<r/><r/>
+　上記の命令の中で、%res をパラメータに持つ物は、res が 0 で無ければ結果を %res にも格納します。<r/>
 </dd>
 
 
-<dt><kw>sal</kw>, <kw>salpd</kw>, <kw>salpi</kw><r/>(shift arithmetic left)</dt>
+<dt><kw>sal</kw>, <kw>salpd</kw>, <kw>salpi</kw>, <kw>salp</kw><r/>(shift arithmetic left)</dt>
 <dd>
 書式: <tt>sal %dest, %src</tt><r/><r/>
 　%dest を %src で表された回数分算術左シフトを行った結果を %dest に格納します。<r/><r/>
-書式: <tt>salpd %obj.*name, %src</tt><r/><r/>
+書式: <tt>salpd %res, %obj.*name, %src</tt><r/><r/>
 　%obj.*name を %src で表された回数分算術左シフトを行った結果を %obj.*name に格納します。<r/><r/>
-書式: <tt>salpi %obj.%name, %src</tt><r/><r/>
-　%obj.%name を %src で表された回数分算術左シフトを行った結果を %obj.%name に格納します。
+書式: <tt>salpi %res, %obj.%name, %src</tt><r/><r/>
+　%obj.%name を %src で表された回数分算術左シフトを行った結果を %obj.%name に格納します。<r/><r/>
+書式: <tt>salp %res, %propobj, %src</tt><r/><r/>
+　%propobj を %src で表された回数分算術左シフトを行った結果を %propobj に格納します。<r/><r/>
+　上記の命令の中で、%res をパラメータに持つ物は、res が 0 で無ければ結果を %res にも格納します。<r/>
 </dd>
 
 
-<dt><kw>sr</kw>, <kw>srpd</kw>, <kw>srpi</kw><r/>(shift bitwise right)</dt>
+<dt><kw>sr</kw>, <kw>srpd</kw>, <kw>srpi</kw>, <kw>srp</kw><r/>(shift bitwise right)</dt>
 <dd>
 書式: <tt>sr %dest, %src</tt><r/><r/>
 　%dest を %src で表された回数分ビット右シフトを行った結果を %dest に格納します。<r/><r/>
-書式: <tt>srpd %obj.*name, %src</tt><r/><r/>
+書式: <tt>srpd %res, %obj.*name, %src</tt><r/><r/>
 　%obj.*name を %src で表された回数分ビット右シフトを行った結果を %obj.*name に格納します。<r/><r/>
-書式: <tt>srpi %obj.%name, %src</tt><r/><r/>
-　%obj.%name を %src で表された回数分ビット右シフトを行った結果を %obj.%name に格納します。
+書式: <tt>srpi %res, %obj.%name, %src</tt><r/><r/>
+　%obj.%name を %src で表された回数分ビット右シフトを行った結果を %obj.%name に格納します。<r/><r/>
+書式: <tt>srp %res, %propobj, %src</tt><r/><r/>
+　%propobj を %src で表された回数分ビット右シフトを行った結果を %propobj に格納します。<r/><r/>
+　上記の命令の中で、%res をパラメータに持つ物は、res が 0 で無ければ結果を %res にも格納します。<r/>
 </dd>
 
 
-<dt><kw>add</kw>, <kw>addpd</kw>, <kw>addpi</kw><r/>(add)</dt>
+<dt><kw>add</kw>, <kw>addpd</kw>, <kw>addpi</kw>, <kw>addp</kw><r/>(add)</dt>
 <dd>
 書式: <tt>add %dest, %src</tt><r/><r/>
 　%dest に %src を加算し、結果を %dest に格納します。<r/><r/>
-書式: <tt>addpd %obj.*name, %src</tt><r/><r/>
+書式: <tt>addpd %res, %obj.*name, %src</tt><r/><r/>
 　%obj.*name に %src を加算し、結果を %obj.*name に格納します。<r/><r/>
-書式: <tt>addpi %obj.%name, %src</tt><r/><r/>
-　%obj.%name に %src を加算し、結果を %obj.%name に格納します。
+書式: <tt>addpi %res, %obj.%name, %src</tt><r/><r/>
+　%obj.%name に %src を加算し、結果を %obj.%name に格納します。<r/><r/>
+書式: <tt>addp %res, %propobj, %src</tt><r/><r/>
+　%propobj に %src を加算し、結果を %propobj に格納します。<r/><r/>
+　上記の命令の中で、%res をパラメータに持つ物は、res が 0 で無ければ結果を %res にも格納します。<r/>
 </dd>
 
 
-<dt><kw>sub</kw>, <kw>subpd</kw>, <kw>subpi</kw><r/>(subtract)</dt>
+<dt><kw>sub</kw>, <kw>subpd</kw>, <kw>subpi</kw>, <kw>subp</kw><r/>(subtract)</dt>
 <dd>
 書式: <tt>sub %dest, %src</tt><r/><r/>
 　%dest から %src を減算し、結果を %dest に格納します。<r/><r/>
-書式: <tt>subpd %obj.*name, %src</tt><r/><r/>
+書式: <tt>subpd %res, %obj.*name, %src</tt><r/><r/>
 　%obj.*name から %src を減算し、結果を %obj.*name に格納します。<r/><r/>
-書式: <tt>subpi %obj.%name, %src</tt><r/><r/>
-　%obj.%name から %src を減算し、結果を %obj.%name に格納します。
+書式: <tt>subpi %res, %obj.%name, %src</tt><r/><r/>
+　%obj.%name から %src を減算し、結果を %obj.%name に格納します。<r/><r/>
+書式: <tt>subp %res, %propobj, %src</tt><r/><r/>
+　%propobj から %src を減算し、結果を %propobj に格納します。<r/><r/>
+　上記の命令の中で、%res をパラメータに持つ物は、res が 0 で無ければ結果を %res にも格納します。<r/>
 </dd>
 
 
-<dt><kw>mod</kw>, <kw>modpd</kw>, <kw>modpi</kw><r/>(modulo)</dt>
+<dt><kw>mod</kw>, <kw>modpd</kw>, <kw>modpi</kw>, <kw>modp</kw><r/>(modulo)</dt>
 <dd>
 書式: <tt>mod %dest, %src</tt><r/><r/>
 　%dest を %src で割ったあまりを %dest に格納します。<r/><r/>
-書式: <tt>modpd %obj.*name, %src</tt><r/><r/>
+書式: <tt>modpd %res, %obj.*name, %src</tt><r/><r/>
 　%obj.*name を %src で割ったあまりを %obj.*name に格納します。<r/><r/>
-書式: <tt>modpi %obj.%name, %src</tt><r/><r/>
-　%obj.%name を %src で割ったあまりを %obj.%name に格納します。
+書式: <tt>modpi %res, %obj.%name, %src</tt><r/><r/>
+　%obj.%name を %src で割ったあまりを %obj.%name に格納します。<r/><r/>
+書式: <tt>modp %res, %propobj, %src</tt><r/><r/>
+　%propobj を %src で割ったあまりを %propobj に格納します。<r/><r/>
+　上記の命令の中で、%res をパラメータに持つ物は、res が 0 で無ければ結果を %res にも格納します。<r/>
 </dd>
 
 
-<dt><kw>div</kw>, <kw>divpd</kw>, <kw>divpi</kw><r/>(real divide)</dt>
+<dt><kw>div</kw>, <kw>divpd</kw>, <kw>divpi</kw>, <kw>divp</kw><r/>(real divide)</dt>
 <dd>
 書式: <tt>div %dest, %src</tt><r/><r/>
 　%dest を %src で実数除算し、結果を %dest に格納します。<r/><r/>
-書式: <tt>divpd %obj.*name, %src</tt><r/><r/>
+書式: <tt>divpd %res, %obj.*name, %src</tt><r/><r/>
 　%obj.*name を %src で実数除算し、結果を %obj.*name に格納します。<r/><r/>
-書式: <tt>divpi %obj.%name, %src</tt><r/><r/>
-　%obj.%name を %src で実数除算し、結果を %obj.%name に格納します。
+書式: <tt>divpi %res, %obj.%name, %src</tt><r/><r/>
+　%obj.%name を %src で実数除算し、結果を %obj.%name に格納します。<r/><r/>
+書式: <tt>divp %res, %propobj, %src</tt><r/><r/>
+　%propobj を %src で実数除算し、結果を %propobj に格納します。<r/><r/>
+　上記の命令の中で、%res をパラメータに持つ物は、res が 0 で無ければ結果を %res にも格納します。<r/>
 </dd>
 
 
-<dt><kw>idiv</kw>, <kw>idivpd</kw>, <kw>idivpi</kw><r/>(integer divide)</dt>
+<dt><kw>idiv</kw>, <kw>idivpd</kw>, <kw>idivpi</kw>, <kw>idivp</kw><r/>(integer divide)</dt>
 <dd>
 書式: <tt>idiv %dest, %src</tt><r/><r/>
 　%dest を %src で整数除算し、結果を %dest に格納します。<r/><r/>
-書式: <tt>idivpd %obj.*name, %src</tt><r/><r/>
+書式: <tt>idivpd %res, %obj.*name, %src</tt><r/><r/>
 　%obj.*name を %src で整数除算し、結果を %obj.*name に格納します。<r/><r/>
-書式: <tt>idivpi %obj.%name, %src</tt><r/><r/>
-　%obj.%name を %src で整数除算し、結果を %obj.%name に格納します。
+書式: <tt>idivpi %res, %obj.%name, %src</tt><r/><r/>
+　%obj.%name を %src で整数除算し、結果を %obj.%name に格納します。<r/><r/>
+書式: <tt>divp %res, %propobj, %src</tt><r/><r/>
+　%propobj を %src で整数除算し、結果を %propobj に格納します。<r/><r/>
+　上記の命令の中で、%res をパラメータに持つ物は、res が 0 で無ければ結果を %res にも格納します。<r/>
 </dd>
 
 
-<dt><kw>mul</kw>, <kw>mulpd</kw>, <kw>mulpi</kw><r/>(multiply)</dt>
+<dt><kw>mul</kw>, <kw>mulpd</kw>, <kw>mulpi</kw>, <kw>mulp</kw><r/>(multiply)</dt>
 <dd>
 書式: <tt>mul %dest, %src</tt><r/><r/>
 　%dest に %src を乗算し、結果を %dest に格納します。<r/><r/>
-書式: <tt>mulpd %obj.*name, %src</tt><r/><r/>
+書式: <tt>mulpd %res, %obj.*name, %src</tt><r/><r/>
 　%obj.*name に %src を乗算し、結果を %obj.*name に格納します。<r/><r/>
-書式: <tt>mulpi %obj.%name, %src</tt><r/><r/>
-　%obj.%name に %src を乗算し、結果を %obj.%name に格納します。
+書式: <tt>mulpi %res, %obj.%name, %src</tt><r/><r/>
+　%obj.%name に %src を乗算し、結果を %obj.%name に格納します。<r/><r/>
+書式: <tt>mulp %res, %propobj, %src</tt><r/><r/>
+　%propobj に %src を乗算し、結果を %propobj に格納します。<r/><r/>
+　上記の命令の中で、%res をパラメータに持つ物は、res が 0 で無ければ結果を %res にも格納します。<r/>
 </dd>
 
 
@@ -507,6 +554,20 @@
 　spis はプロパティハンドラを呼び出さず、プロパティオブジェクト自体を置き換えます。
 </dd>
 
+
+<dt><kw>getp</kw></dt>
+<dd>
+書式: <tt>getp %reg, %propobj</tt><r/>
+<r/>
+　%propobj で表されたプロパティオブジェクトの getter を動作させ、プロパティの値を得て、%reg に代入します。単項 '*' 演算子の動作を行います。<r/>
+</dd>
+
+<dt><kw>setp</kw></dt>
+<dd>
+書式: <tt>setp %propobj, %reg</tt><r/>
+<r/>
+　%propobj で表されたプロパティオブジェクトの setter を動作させ、%reg の値を設定します。単項 '*' 演算子の動作を行います。<r/>
+</dd>
 
 <dt><kw>deld</kw>, <kw>deli</kw><r/>(delete member)</dt>
 <dd>

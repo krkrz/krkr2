@@ -74,6 +74,11 @@ extern bool TJSWarnOnExecutionOnDeletingObject;
 	// Output warning against running code on context of
 	// deleting-in-progress object. This is available only the Debug mode is
 	// enabled.
+extern bool TJSUnaryAsteriskIgnoresPropAccess;
+	// Unary '*' operator means accessing property object directly without
+	// normal property access, if this options is set true.
+	// This is replaced with '&' operator since TJS2 2.4.15. Turn true for
+	// gaining old compatibility.
 
 
 //---------------------------------------------------------------------------

@@ -1102,6 +1102,11 @@ tjs_int tTJSInterCodeContext::ExecuteCode(tTJSVariant *ra_org, tjs_int startip,
 				code += 4;
 				break;
 
+			case VM_INCP:
+				OperateProperty0(ra, code, TJS_OP_INC);
+				code += 3;
+				break;
+
 			case VM_DEC:
 				TJS_GET_VM_REG(ra, code[1]).decrement();
 				code += 2;
@@ -1117,34 +1122,43 @@ tjs_int tTJSInterCodeContext::ExecuteCode(tTJSVariant *ra_org, tjs_int startip,
 				code += 4;
 				break;
 
-#define TJS_DEF_VM_P(vmcode, rope) \
-		case VM_##vmcode: \
-			TJS_GET_VM_REG(ra, code[1]).rope(TJS_GET_VM_REG(ra, code[2])); \
-			code += 3; \
-			break; \
-		case VM_##vmcode##PD: \
-			OperatePropertyDirect(ra, code, TJS_OP_##vmcode); \
-			code += 5; \
-			break; \
-		case VM_##vmcode##PI: \
-			OperatePropertyIndirect(ra, code, TJS_OP_##vmcode); \
-			code += 5; \
-			break
+			case VM_DECP:
+				OperateProperty0(ra, code, TJS_OP_DEC);
+				code += 3;
+				break;
 
-			TJS_DEF_VM_P(LOR, logicalorequal);
-			TJS_DEF_VM_P(LAND, logicalandequal);
-			TJS_DEF_VM_P(BOR, operator |=);
-			TJS_DEF_VM_P(BXOR, operator ^=);
-			TJS_DEF_VM_P(BAND, operator &=);
-			TJS_DEF_VM_P(SAR, operator >>=);
-			TJS_DEF_VM_P(SAL, operator <<=);
-			TJS_DEF_VM_P(SR, rbitshiftequal);
-			TJS_DEF_VM_P(ADD, operator +=);
-			TJS_DEF_VM_P(SUB, operator -=);
-			TJS_DEF_VM_P(MOD, operator %=);
-			TJS_DEF_VM_P(DIV, operator /=);
-			TJS_DEF_VM_P(IDIV, idivequal);
-			TJS_DEF_VM_P(MUL, operator *=);
+#define TJS_DEF_VM_P(vmcode, rope) \
+			case VM_##vmcode: \
+				TJS_GET_VM_REG(ra, code[1]).rope(TJS_GET_VM_REG(ra, code[2])); \
+				code += 3; \
+				break; \
+			case VM_##vmcode##PD: \
+				OperatePropertyDirect(ra, code, TJS_OP_##vmcode); \
+				code += 5; \
+				break; \
+			case VM_##vmcode##PI: \
+				OperatePropertyIndirect(ra, code, TJS_OP_##vmcode); \
+				code += 5; \
+				break; \
+			case VM_##vmcode##P: \
+				OperateProperty(ra, code, TJS_OP_##vmcode); \
+				code += 4; \
+				break
+
+				TJS_DEF_VM_P(LOR, logicalorequal);
+				TJS_DEF_VM_P(LAND, logicalandequal);
+				TJS_DEF_VM_P(BOR, operator |=);
+				TJS_DEF_VM_P(BXOR, operator ^=);
+				TJS_DEF_VM_P(BAND, operator &=);
+				TJS_DEF_VM_P(SAR, operator >>=);
+				TJS_DEF_VM_P(SAL, operator <<=);
+				TJS_DEF_VM_P(SR, rbitshiftequal);
+				TJS_DEF_VM_P(ADD, operator +=);
+				TJS_DEF_VM_P(SUB, operator -=);
+				TJS_DEF_VM_P(MOD, operator %=);
+				TJS_DEF_VM_P(DIV, operator /=);
+				TJS_DEF_VM_P(IDIV, idivequal);
+				TJS_DEF_VM_P(MUL, operator *=);
 
 #undef TJS_DEF_VM_P
 
@@ -1308,6 +1322,16 @@ tjs_int tTJSInterCodeContext::ExecuteCode(tTJSVariant *ra_org, tjs_int startip,
 			case VM_SPIS:
 				SetPropertyIndirect(ra, code, TJS_MEMBERENSURE|TJS_IGNOREPROP);
 				code += 4;
+				break;
+
+			case VM_GETP:
+				GetProperty(ra, code);
+				code += 3;
+				break;
+
+			case VM_SETP:
+				SetProperty(ra, code);
+				code += 3;
 				break;
 
 			case VM_DELD:
@@ -1532,6 +1556,30 @@ void tTJSInterCodeContext::SetPropertyDirect(tTJSVariant *ra,
 		TJSThrowFrom_tjs_error(hr, TJS_GET_VM_REG(DataArea, code[2]).GetString());
 }
 //---------------------------------------------------------------------------
+void tTJSInterCodeContext::GetProperty(tTJSVariant *ra, const tjs_int32 *code)
+{
+	// ra[code[1]] = * ra[code[2]]
+	tTJSVariantClosure clo =
+		TJS_GET_VM_REG_ADDR(ra, code[2])->AsObjectClosureNoAddRef();
+	tjs_error hr;
+	hr = clo.PropGet(0, NULL, NULL, TJS_GET_VM_REG_ADDR(ra, code[1]),
+		clo.ObjThis?clo.ObjThis:ra[-1].AsObjectNoAddRef());
+	if(TJS_FAILED(hr))
+		TJSThrowFrom_tjs_error(hr, NULL);
+}
+//---------------------------------------------------------------------------
+void tTJSInterCodeContext::SetProperty(tTJSVariant *ra, const tjs_int32 *code)
+{
+	// * ra[code[1]] = ra[code[2]]
+	tTJSVariantClosure clo =
+		TJS_GET_VM_REG_ADDR(ra, code[1])->AsObjectClosureNoAddRef();
+	tjs_error hr;
+	hr = clo.PropSet(0, NULL, NULL, TJS_GET_VM_REG_ADDR(ra, code[2]),
+		clo.ObjThis?clo.ObjThis:ra[-1].AsObjectNoAddRef());
+	if(TJS_FAILED(hr))
+		TJSThrowFrom_tjs_error(hr, NULL);
+}
+//---------------------------------------------------------------------------
 void tTJSInterCodeContext::GetPropertyIndirect(tTJSVariant *ra,
 	const tjs_int32 *code, tjs_uint32 flags)
 {
@@ -1747,6 +1795,30 @@ void tTJSInterCodeContext::OperatePropertyIndirect(tTJSVariant *ra,
 	}
 }
 //---------------------------------------------------------------------------
+void tTJSInterCodeContext::OperateProperty(tTJSVariant *ra,
+	const tjs_int32 *code, tjs_uint32 ope)
+{
+	// ra[code[1]] = ope(ra[code[2]], /*param=*/ra[code[3]]);
+	tTJSVariantClosure clo =  TJS_GET_VM_REG(ra, code[2]).AsObjectClosure();
+	tjs_error hr;
+	try
+	{
+		hr = clo.Operation(ope,
+			NULL, NULL,
+			code[1]?TJS_GET_VM_REG_ADDR(ra, code[1]):NULL,
+			TJS_GET_VM_REG_ADDR(ra, code[3]),
+			clo.ObjThis?clo.ObjThis:ra[-1].AsObjectNoAddRef());
+	}
+	catch(...)
+	{
+		clo.Release();
+		throw;
+	}
+	clo.Release();
+	if(TJS_FAILED(hr))
+		TJSThrowFrom_tjs_error(hr, NULL);
+}
+//---------------------------------------------------------------------------
 void tTJSInterCodeContext::OperatePropertyDirect0(tTJSVariant *ra,
 	const tjs_int32 *code, tjs_uint32 ope)
 {
@@ -1827,6 +1899,29 @@ void tTJSInterCodeContext::OperatePropertyIndirect0(tTJSVariant *ra,
 		}
 		clo.Release();
 	}
+}
+//---------------------------------------------------------------------------
+void tTJSInterCodeContext::OperateProperty0(tTJSVariant *ra,
+	const tjs_int32 *code, tjs_uint32 ope)
+{
+	// ra[code[1]] = ope(ra[code[2]]);
+	tTJSVariantClosure clo =  TJS_GET_VM_REG(ra, code[2]).AsObjectClosure();
+	tjs_error hr;
+	try
+	{
+		hr = clo.Operation(ope,
+			NULL, NULL,
+			code[1]?TJS_GET_VM_REG_ADDR(ra, code[1]):NULL, NULL,
+			clo.ObjThis?clo.ObjThis:ra[-1].AsObjectNoAddRef());
+	}
+	catch(...)
+	{
+		clo.Release();
+		throw;
+	}
+	clo.Release();
+	if(TJS_FAILED(hr))
+		TJSThrowFrom_tjs_error(hr, NULL);
 }
 //---------------------------------------------------------------------------
 void tTJSInterCodeContext::DeleteMemberDirect(tTJSVariant *ra,
@@ -3064,8 +3159,17 @@ tjs_error TJS_INTF_METHOD
 {
 	if(membername == NULL)
 	{
-		return inherited::Operation(flag, membername, hint, result, param,
-			objthis);
+		if(ContextType == ctProperty)
+		{
+			// operation for property object
+			return tTJSDispatch::Operation(flag, membername, hint, result, param,
+				objthis);
+		}
+		else
+		{
+			return inherited::Operation(flag, membername, hint, result, param,
+				objthis);
+		}
 	}
 
 	tjs_error hr;
