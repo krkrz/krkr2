@@ -52,6 +52,15 @@ static void _UIExecReleaser()
 
 	if(projfolder != "")
 	{
+		if(projfolder.c_str()[0] == '\\' &&
+			projfolder.c_str()[1] == '\\')
+		{
+			projfolder = ExpandUNCFileName(projfolder);
+		}
+		else
+		{
+			projfolder = ExpandFileName(projfolder);
+		}
 		projfolder = ExcludeTrailingBackslash(projfolder);
 
 		if(!DirectoryExists(projfolder))

@@ -1,8 +1,8 @@
 object RelSettingsForm: TRelSettingsForm
-  Left = 212
-  Top = 154
-  Width = 576
-  Height = 359
+  Left = 32
+  Top = 33
+  Width = 579
+  Height = 367
   HorzScrollBar.Tracking = True
   HorzScrollBar.Visible = False
   VertScrollBar.Tracking = True
@@ -173,8 +173,8 @@ object RelSettingsForm: TRelSettingsForm
   PixelsPerInch = 96
   TextHeight = 12
   object NoExtNameLabel: TLabel
-    Left = 152
-    Top = 303
+    Left = 155
+    Top = 311
     Width = 64
     Height = 12
     Anchors = [akRight, akBottom]
@@ -182,8 +182,8 @@ object RelSettingsForm: TRelSettingsForm
     Visible = False
   end
   object InterruptNameLabel: TLabel
-    Left = 152
-    Top = 319
+    Left = 155
+    Top = 327
     Width = 24
     Height = 12
     Anchors = [akRight, akBottom]
@@ -191,8 +191,8 @@ object RelSettingsForm: TRelSettingsForm
     Visible = False
   end
   object ExitNameLabel: TLabel
-    Left = 184
-    Top = 319
+    Left = 187
+    Top = 327
     Width = 24
     Height = 12
     Anchors = [akRight, akBottom]
@@ -200,8 +200,8 @@ object RelSettingsForm: TRelSettingsForm
     Visible = False
   end
   object ArchiveCreatedNameLabel: TLabel
-    Left = 224
-    Top = 303
+    Left = 227
+    Top = 311
     Width = 128
     Height = 12
     Anchors = [akRight, akBottom]
@@ -209,8 +209,8 @@ object RelSettingsForm: TRelSettingsForm
     Visible = False
   end
   object InterruptedNameLabel: TLabel
-    Left = 216
-    Top = 319
+    Left = 219
+    Top = 327
     Width = 64
     Height = 12
     Anchors = [akRight, akBottom]
@@ -219,8 +219,8 @@ object RelSettingsForm: TRelSettingsForm
   end
   object ProgressLabel: TLabel
     Left = 8
-    Top = 311
-    Width = 369
+    Top = 319
+    Width = 372
     Height = 12
     Alignment = taRightJustify
     Anchors = [akLeft, akRight, akBottom]
@@ -235,8 +235,8 @@ object RelSettingsForm: TRelSettingsForm
     Visible = False
   end
   object OKButton: TButton
-    Left = 389
-    Top = 302
+    Left = 392
+    Top = 310
     Width = 75
     Height = 25
     Anchors = [akRight, akBottom]
@@ -246,8 +246,8 @@ object RelSettingsForm: TRelSettingsForm
     OnClick = OKButtonClick
   end
   object CancelButton: TButton
-    Left = 477
-    Top = 302
+    Left = 480
+    Top = 310
     Width = 75
     Height = 25
     Anchors = [akRight, akBottom]
@@ -258,7 +258,7 @@ object RelSettingsForm: TRelSettingsForm
   end
   object SelectFolderButton: TButton
     Left = 8
-    Top = 302
+    Top = 310
     Width = 137
     Height = 25
     Anchors = [akLeft, akBottom]
@@ -269,8 +269,8 @@ object RelSettingsForm: TRelSettingsForm
   object PageControl: TPageControl
     Left = 8
     Top = 8
-    Width = 550
-    Height = 288
+    Width = 553
+    Height = 296
     ActivePage = OutputSheel
     Anchors = [akLeft, akTop, akRight, akBottom]
     TabOrder = 3
@@ -285,8 +285,8 @@ object RelSettingsForm: TRelSettingsForm
         Visible = False
       end
       object ConfirmOverwriteLabel: TLabel
-        Left = 8
-        Top = 152
+        Left = 192
+        Top = 136
         Width = 197
         Height = 12
         Caption = ' は既に存在します。 上書きしますか？'
@@ -294,7 +294,7 @@ object RelSettingsForm: TRelSettingsForm
       end
       object ProtectWarnLabel: TLabel
         Left = 0
-        Top = 168
+        Top = 152
         Width = 815
         Height = 12
         Caption = 
@@ -305,8 +305,8 @@ object RelSettingsForm: TRelSettingsForm
       end
       object ProtectWarnFileNameLabel1: TLabel
         Left = 0
-        Top = 200
-        Width = 654
+        Top = 168
+        Width = 656
         Height = 12
         Caption = 
           '$$$ This is a protected archive. $$$ 著作者はこのアーカイブが正' +
@@ -315,7 +315,7 @@ object RelSettingsForm: TRelSettingsForm
       end
       object ProtectWarnFileNameLabel2: TLabel
         Left = 0
-        Top = 216
+        Top = 184
         Width = 854
         Height = 12
         Caption = 
@@ -324,10 +324,18 @@ object RelSettingsForm: TRelSettingsForm
           '権利を侵害するおそれがあります。.txt'
         Visible = False
       end
+      object Label6: TLabel
+        Left = 8
+        Top = 208
+        Width = 87
+        Height = 12
+        Anchors = [akLeft, akBottom]
+        Caption = '入力ディレクトリ :'
+      end
       object OutputFileGroup: TGroupBox
         Left = 8
         Top = 72
-        Width = 526
+        Width = 529
         Height = 57
         Anchors = [akLeft, akTop, akRight]
         Caption = '出力ファイル(&F)'
@@ -335,13 +343,13 @@ object RelSettingsForm: TRelSettingsForm
         object OutputFileNameEdit: TEdit
           Left = 8
           Top = 24
-          Width = 446
+          Width = 449
           Height = 20
           Anchors = [akLeft, akTop, akRight]
           TabOrder = 0
         end
         object SetFileNameButton: TButton
-          Left = 461
+          Left = 464
           Top = 24
           Width = 57
           Height = 20
@@ -354,7 +362,7 @@ object RelSettingsForm: TRelSettingsForm
       object OutputFormatGroup: TGroupBox
         Left = 8
         Top = 8
-        Width = 526
+        Width = 529
         Height = 57
         Anchors = [akLeft, akTop, akRight]
         Caption = '出力形式(&T)'
@@ -389,6 +397,18 @@ object RelSettingsForm: TRelSettingsForm
           TabOrder = 1
           OnClick = ExecutableRadioClick
         end
+      end
+      object InputDirectoryMemo: TMemo
+        Left = 8
+        Top = 224
+        Width = 529
+        Height = 33
+        Anchors = [akLeft, akRight, akBottom]
+        BorderStyle = bsNone
+        Color = clBtnFace
+        ReadOnly = True
+        TabOrder = 2
+        WantReturns = False
       end
     end
     object FileTypeSheet: TTabSheet
@@ -433,24 +453,24 @@ object RelSettingsForm: TRelSettingsForm
         FocusControl = DiscardExtList
       end
       object Label7: TLabel
-        Left = 416
-        Top = 199
+        Left = 419
+        Top = 207
         Width = 111
         Height = 12
         Anchors = [akRight, akBottom]
         Caption = '※ドラッグ＆ドロップで'
       end
       object Label8: TLabel
-        Left = 424
-        Top = 215
+        Left = 427
+        Top = 223
         Width = 104
         Height = 12
         Anchors = [akRight, akBottom]
         Caption = '各項目間を移動する'
       end
       object Label9: TLabel
-        Left = 424
-        Top = 231
+        Left = 427
+        Top = 239
         Width = 73
         Height = 12
         Anchors = [akRight, akBottom]
@@ -460,7 +480,7 @@ object RelSettingsForm: TRelSettingsForm
         Left = 8
         Top = 40
         Width = 105
-        Height = 208
+        Height = 216
         Anchors = [akLeft, akTop, akBottom]
         DragMode = dmAutomatic
         ItemHeight = 12
@@ -474,7 +494,7 @@ object RelSettingsForm: TRelSettingsForm
         Left = 152
         Top = 40
         Width = 105
-        Height = 208
+        Height = 216
         Anchors = [akLeft, akTop, akBottom]
         DragMode = dmAutomatic
         ItemHeight = 12
@@ -488,7 +508,7 @@ object RelSettingsForm: TRelSettingsForm
         Left = 296
         Top = 40
         Width = 105
-        Height = 208
+        Height = 216
         Anchors = [akLeft, akTop, akBottom]
         DragMode = dmAutomatic
         ItemHeight = 12
@@ -617,51 +637,51 @@ object RelSettingsForm: TRelSettingsForm
       inline ConfMainFrame: TConfMainFrame
         Left = 8
         Top = 8
-        Width = 529
-        Height = 248
+        Width = 532
+        Height = 256
         Anchors = [akLeft, akTop, akRight, akBottom]
         inherited IconGroupBox: TGroupBox
-          Top = 185
-          Width = 529
+          Top = 193
+          Width = 532
         end
         inherited OptionsGroupBox: TGroupBox
-          Width = 529
-          Height = 177
+          Width = 532
+          Height = 185
           inherited Label2: TLabel
-            Left = 304
+            Left = 307
           end
           inherited Label3: TLabel
-            Left = 304
+            Left = 307
           end
           inherited OptionsTreeView: TTreeView
-            Width = 289
-            Height = 128
+            Width = 292
+            Height = 136
           end
           inherited OptionValueComboBox: TComboBox
-            Left = 304
+            Left = 307
             Width = 217
           end
           inherited OptionDescMemo: TMemo
-            Left = 304
+            Left = 307
             Width = 217
-            Height = 56
+            Height = 64
           end
           inherited RestoreDefaultButton: TButton
-            Left = 304
+            Left = 307
           end
           inherited InvisibleCheckBox: TCheckBox
-            Left = 457
+            Left = 460
           end
         end
         inherited Panel1: TPanel
-          Top = 177
-          Width = 529
+          Top = 185
+          Width = 532
         end
       end
     end
   end
   object SaveProfileButton: TButton
-    Left = 400
+    Left = 403
     Top = 7
     Width = 76
     Height = 18
@@ -671,7 +691,7 @@ object RelSettingsForm: TRelSettingsForm
     OnClick = SaveProfileButtonClick
   end
   object LoadProfileButton: TButton
-    Left = 480
+    Left = 483
     Top = 7
     Width = 76
     Height = 18
@@ -681,7 +701,7 @@ object RelSettingsForm: TRelSettingsForm
     OnClick = LoadProfileButtonClick
   end
   object StaticText1: TStaticText
-    Left = 320
+    Left = 323
     Top = 9
     Width = 72
     Height = 16

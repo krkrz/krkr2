@@ -79,6 +79,8 @@ __published:	// IDE 管理のコンポーネント
 	TLabel *ProtectWarnFileNameLabel1;
 	TLabel *ProtectWarnFileNameLabel2;
 	TCheckBox *UseXP3EncDLLCheck;
+	TMemo *InputDirectoryMemo;
+	TLabel *Label6;
 	void __fastcall FormDestroy(TObject *Sender);
 	void __fastcall CompressExtListStartDrag(TObject *Sender,
           TDragObject *&DragObject);

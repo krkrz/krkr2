@@ -47,12 +47,12 @@ __fastcall TRelSettingsForm::TRelSettingsForm(TComponent* Owner)
 	PageControl->Top = SPACER;
 	PageControl->Width = ClientWidth - SPACER*2;
 	PageControl->Height = OKButton->Top - PageControl->Top- SPACER;
-	LoadProfileButton->Top = SPACER - 2;
+	LoadProfileButton->Top = PageControl->Top - 2;
 	LoadProfileButton->Left = ClientWidth - LoadProfileButton->Width - SPACER;
-	SaveProfileButton->Top = SPACER - 2;
+	SaveProfileButton->Top = PageControl->Top - 2;
 	SaveProfileButton->Left = LoadProfileButton->Left - SaveProfileButton->Width
 		- SPACER;
-	StaticText1->Top = SPACER;
+	StaticText1->Top = PageControl->Top;
 	StaticText1->Left = SaveProfileButton->Left - StaticText1->Width - SPACER;
 
 	ConfMainFrame->SourceExe = GetKrKrFileName();
@@ -81,6 +81,7 @@ AnsiString __fastcall TRelSettingsForm::GetKrKrFileName()
 void __fastcall TRelSettingsForm::SetProjFolder(AnsiString folder)
 {
 	ProjFolder = folder;
+	InputDirectoryMemo->Text = ProjFolder;
 }
 //---------------------------------------------------------------------------
 void __fastcall TRelSettingsForm::SetFileList(TStringList *list)
