@@ -84,6 +84,8 @@ enum tTJSSubType{ stNone=VM_NOP, stEqual=VM_CP, stBitAND=VM_BAND, stBitOR=VM_BOR
 	stPreInc = __VM_LAST, stPreDec, stPostInc, stPostDec, stDelete, stFuncCall,
 		stSubstGet, stSubstSet, stTypeOf} ;
 //---------------------------------------------------------------------------
+enum tTJSFuncArgType { fatNormal, fatExpand, fatUnnamedExpand };
+//---------------------------------------------------------------------------
 enum tTJSContextType
 {
 	ctTopLevel,
@@ -236,10 +238,23 @@ private:
 			{ DataPos = datapos, NameDataPos = namedatapos; ChangeThis = changethis; }
 	};
 
+	struct tFuncArgItem
+	{
+		tjs_int Register;
+		tTJSFuncArgType Type;
+		tFuncArgItem(tjs_int reg, tTJSFuncArgType type = fatNormal)
+		{
+			Register = reg;
+			Type = type;
+		}
+	};
+
 	struct tFuncArg
 	{
 		bool IsOmit;
-		std::vector <tjs_int32> ArgVector;
+		bool HasExpand;
+		std::vector <tFuncArgItem> ArgVector;
+		tFuncArg() { IsOmit = HasExpand = false; }
 	};
 
 	struct tArrayArg
@@ -296,9 +311,10 @@ private:
 
 	tjs_int MaxFrameCount;
 	tjs_int MaxVariableCount;
-	tjs_int MaxFuncArgCount;
 
 	tjs_int FuncDeclArgCount;
+	tjs_int FuncDeclUnnamedArgArrayBase;
+	tjs_int FuncDeclCollapseBase;
 
 	std::vector<tjs_int> SuperClassGetterPointer;
 
@@ -347,7 +363,7 @@ private:
 
 
 	void StartFuncArg();
-	void AddFuncArg(tjs_int addr);
+	void AddFuncArg(tjs_int addr, tTJSFuncArgType type = fatNormal);
 	void EndFuncArg();
 	void AddOmitArg();
 
@@ -362,8 +378,6 @@ private:
 		tjs_int addr, const tjs_int32 *codestart, tjs_int size, void *data);
 	static void _output_func_src(const tjs_char *msg, const tjs_char *name,
 		tjs_int line, void *data);
-
-	static tTJSString GetValueComment(const tTJSVariant &val);
 
 public:
 	void Commit();
@@ -423,19 +437,12 @@ public:
 	void EnterBlock();
 	void ExitBlock();
 
+	void GenerateFuncCallArgCode();
+
 	void AddFunctionDeclArg(const tjs_char *varname, tTJSExprNode *init);
+	void AddFunctionDeclArgCollapse(const tjs_char *varname);
 
 	void SetPropertyDeclArg(const tjs_char *varname);
-
-	void Disassemble(
-		void (*output_func)(const tjs_char *msg, const tjs_char *comment,
-		tjs_int addr, const tjs_int32 *codestart, tjs_int size, void *data),
-		void (*output_func_src)(const tjs_char *msg, const tjs_char *name,
-			tjs_int line, void *data), void *data, tjs_int start = 0, tjs_int end = 0);
-	void Disassemble(void (*output_func)(const tjs_char *msg, void* data), void *data,
-		tjs_int start = 0, tjs_int end = 0);
-	void Disassemble(tjs_int start = 0, tjs_int end = 0);
-	void DisassenbleSrcLine(tjs_int codepos);
 
 	const tjs_char * GetName() const ;
 
@@ -450,6 +457,21 @@ public:
 	tTJSExprNode * MakeNP2(tjs_int opecode, tTJSExprNode * node1, tTJSExprNode * node2);
 	tTJSExprNode * MakeNP3(tjs_int opecode, tTJSExprNode * node1, tTJSExprNode * node2,
 		tTJSExprNode * node3);
+
+	//---------------------------------------------------------- disassembler
+	// implemented in tjsDisassemble.cpp
+
+	static tTJSString GetValueComment(const tTJSVariant &val);
+
+	void Disassemble(
+		void (*output_func)(const tjs_char *msg, const tjs_char *comment,
+		tjs_int addr, const tjs_int32 *codestart, tjs_int size, void *data),
+		void (*output_func_src)(const tjs_char *msg, const tjs_char *name,
+			tjs_int line, void *data), void *data, tjs_int start = 0, tjs_int end = 0);
+	void Disassemble(void (*output_func)(const tjs_char *msg, void* data), void *data,
+		tjs_int start = 0, tjs_int end = 0);
+	void Disassemble(tjs_int start = 0, tjs_int end = 0);
+	void DisassenbleSrcLine(tjs_int codepos);
 
 
 	//--------------------------------------------------------- execute stuff
@@ -491,18 +513,18 @@ private:
 		tjs_uint32 flags);
 	static void TypeOfMemberIndirect(tTJSVariant *ra, const tjs_int32 *code,
 		tjs_uint32 flags);
-	static void CallFunction(tTJSVariant *ra, const tjs_int32 *code,
+	tjs_int CallFunction(tTJSVariant *ra, const tjs_int32 *code,
 		tTJSVariant **args,
 		tjs_int numargs);
-	void CallFunctionDirect(tTJSVariant *ra, const tjs_int32 *code,
+	tjs_int CallFunctionDirect(tTJSVariant *ra, const tjs_int32 *code,
 		tTJSVariant **args, tjs_int numargs);
-	void CallFunctionIndirect(tTJSVariant *ra, const tjs_int32 *code,
+	tjs_int CallFunctionIndirect(tTJSVariant *ra, const tjs_int32 *code,
 		tTJSVariant **args, tjs_int numargs);
 	static void AddClassInstanceInfo(tTJSVariant *ra, const tjs_int32 *code);
-	void ProcessStringFunction(tTJSVariant *ra, const tjs_int32 *code,
-		tTJSVariant *result);
-	void ProcessOctetFunction(tTJSVariant *ra, const tjs_int32 *code,
-		tTJSVariant *result);
+	void ProcessStringFunction(const tjs_char *member, const ttstr & target,
+		tTJSVariant **args, tjs_int numargs, tTJSVariant *result);
+	void ProcessOctetFunction(const tjs_char *member, const ttstr & target,
+		tTJSVariant **args, tjs_int numargs, tTJSVariant *result);
 	static void TypeOf(tTJSVariant &val);
 	void Eval(tTJSVariant &val, iTJSDispatch2 * objthis, bool resneed);
 	static void CharacterCodeOf(tTJSVariant &val);
