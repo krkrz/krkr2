@@ -101,7 +101,7 @@ private:
 	これは NI_Test のオブジェクトを作成して返すだけの関数です。
 	後述の TJSCreateNativeClassForPlugin の引数として渡します。
 */
-static iTJSNativeInstance * Create_NI_Test()
+static iTJSNativeInstance * TJS_INTF_METHOD Create_NI_Test()
 {
 	return new NI_Test();
 }
