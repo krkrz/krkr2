@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="Shift_JIS" ?>
+<doc>
+<title>Clipboard</title>
+<desc>
+　Clipboard クラスは OSの<kw>クリップボード</kw>にアクセスする機能を提供するクラスです。このクラスからオブジェクトを作成することはできません。<r/>
+</desc>
+
+<member>
+	<name>hasFormat</name>
+	<type>method</type>
+	<shortdesc>指定されたフォーマットがクリップボード内に存在するか</shortdesc>
+	<arg>
+		<argitem>
+			<name>format</name>
+			<default></default>
+			<desc>
+				　存在を確認したいフォーマットを指定します。<r/>
+				　現バージョンでは cbfText のみが指定可能で、これを指定すると、クリップボード内にテキスト形式のデータが存在するかどうかを調べることができます。<r/>
+			</desc>
+		</argitem>
+	</arg>
+	<result></result>
+	<desc>
+		　指定された<kw>フォーマット</kw>がクリップボード内に存在するかどうかを調べることができます。<r/>
+		　OS の提供するクリップボードは、同時に複数のフォーマットを持つことができるため、その中に特定のフォーマットがあるかどうかをこのメソッドで調べることができます。<r/>
+	</desc>
+</member>
+
+
+<member>
+	<name>asText</name>
+	<type>property</type>
+	<shortdesc>テキスト形式</shortdesc>
+	<access>r/w</access>
+	<desc>
+		　クリップボードに現在あるテキスト形式のデータを表します。値を書き込むこともできます。<r/>
+		　値を読み出すと、現在クリップボードにあるテキスト形式のデータを得ることができます。クリップボードにテキスト形式のデータがない場合は、void が得られます。<r/>
+		　値を書き込むと、クリップボードにテキスト形式のデータを格納することができます。<r/>
+	</desc>
+</member>
+
+
+
+</doc>

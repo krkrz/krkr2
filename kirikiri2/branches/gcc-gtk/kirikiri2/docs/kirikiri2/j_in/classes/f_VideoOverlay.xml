@@ -1,0 +1,558 @@
+<?xml version="1.0" encoding="Shift_JIS" ?>
+<doc>
+<title>VideoOverlay</title>
+<desc>
+　VideoOverlay クラスは、MPEG I や SWF (Macromedia Flash) などを表示するため表示領域を作成するクラスです。また、MPEG I 再生時は、吉里吉里のレイヤに表示を行うことができます。<r/>
+　MPEG I を再生するときは、吉里吉里実行可能ファイルと同じ場所に、krmovie.dll が必要になります。<r/>
+　SWF を再生する場合は、吉里吉里実行可能ファイルと同じ場所に krflash.dll が必要になります。<r/>
+　SWF では、いくつかのメソッドやプロパティが使用できない可能性があります。<r/>
+<r/>
+　レイヤでの再生を除き、MPEG I のオーバーレイによる再生や Flash の再生では、VideoOverlay クラスの表示領域は、すべてのレイヤよりも手前に表示され、透過することはできません。<r/>
+　レイヤでの再生は、オーバーレイでの再生に比べ、再生時のプロセッサの負荷は高くなる傾向にあります。<r/>
+</desc>
+
+<member>
+	<name>VideoOverlay</name>
+	<type>constructor</type>
+	<shortdesc>VideoOverlay オブジェクトの構築</shortdesc>
+	<arg>
+		<argitem>
+			<name>window</name>
+			<default></default>
+			<desc>
+				　このレイヤを保有することになるウィンドウ ( <ref>Window</ref> クラスの
+				オブジェクト ) を指定します。<r/>
+			</desc>
+		</argitem>
+	</arg>
+	<result></result>
+	<desc>
+		　VideoOverlay クラスのオブジェクトを構築します。<r/>
+	</desc>
+</member>
+
+
+<member>
+	<name>onStatusChanged</name>
+	<type>event</type>
+	<shortdesc>ステータスが変更された</shortdesc>
+	<arg>
+		<argitem>
+			<name>status</name>
+			<default></default>
+			<desc>
+				　ステータス文字列を表します。<r/>
+				　以下のいずれかです。<r/>
+				<tt>"<kw>unload</kw>"   : </tt> メディアが開かれてない<r/>
+				<tt>"<kw>play</kw>"     : </tt> メディアは再生中である<r/>
+				<tt>"<kw>stop</kw>"     : </tt> メディアは停止中である<r/>
+				<tt>"<kw>pause</kw>"    : </tt> メディアは一時停止中である<r/>
+			</desc>
+		</argitem>
+	</arg>
+	<result></result>
+	<desc>
+		　このオブジェクトのステータスが変更されたときに発生します。<r/>
+	</desc>
+</member>
+
+<member>
+	<name>onPeriod</name>
+	<type>event</type>
+	<shortdesc>Periodイベントが発生した</shortdesc>
+	<arg>
+		<argitem>
+			<name>type</name>
+			<default></default>
+			<desc>
+				　Periodイベントのタイプを表します。<r/>
+				　以下のいずれかです。<r/>
+				<tt><kw>perLoop</kw>    : </tt> (通常の)ループの終端に達した<r/>
+				<tt><kw>perSegLoop</kw> : </tt> セグメントループの終端に達した<r/>
+				<tt><kw>perPeriod</kw>  : </tt> setPeriodEvent メソッドで指定されたフレームに達した<r/>
+				<tt><kw>perPrepare</kw> : </tt> prepare メソッドによる再生準備が完了した<r/>
+			</desc>
+		</argitem>
+	</arg>
+	<result></result>
+	<desc>
+		　ループの終端や、 setPeriodEventによって指定されたフレームに達した場合、または prepare メソッドにより再生準備が完了した場合に呼び出されるメソッドです。<r/>
+		　ループの終端や、 setPeriodEvent によって指定されたフレームに達した場合にこのイベントが呼ばれる時点では、再生状況によっては、すでに再生位置が指定された位置を超えている場合があります。現在の実際の再生位置を取得するには frame プロパティを参照してください。<r/>
+	</desc>
+	<ref>VideoOverlay.setPeriodEvent</ref>
+	<ref>VideoOverlay.prepare</ref>
+	<ref>VideoOverlay.frame</ref>
+</member>
+
+<member>
+	<name>onCallbackCommand</name>
+	<type>event</type>
+	<shortdesc>コールバックコマンドが発生した</shortdesc>
+	<arg>
+		<argitem>
+			<name>command</name>
+			<default></default>
+			<desc>
+				　コマンド名を表す文字列です。<r/>
+			</desc>
+		</argitem>
+		<argitem>
+			<name>arg</name>
+			<default></default>
+			<desc>
+				　コマンドに対する引数を表す文字列です。<r/>
+			</desc>
+		</argitem>
+	</arg>
+	<result></result>
+	<desc>
+		　SWF 再生中に、Get URL アクション (指定 URL を開くアクション) が実行されたときに発生します。<r/>
+		　SWF コンテンツ上で、このアクションの URL として 「<tt>FSCommand:</tt>(コマンド名)」 を指定し、
+		ターゲットウィンドウに引数を指定するとこのイベントを発生させることができます。<r/>
+	</desc>
+</member>
+
+
+<member>
+	<name>open</name>
+	<type>method</type>
+	<shortdesc>メディアを開く</shortdesc>
+	<arg>
+		<argitem>
+			<name>storage</name>
+			<default></default>
+			<desc>
+				　指定されたメディアを開きます。<r/>
+			</desc>
+		</argitem>
+	</arg>
+	<result></result>
+	<desc>
+		　指定されたメディアを開きます。<r/>
+		　現バージョンで再生可能なのは MPEG I (拡張子 .mpeg または .mpg または .mpv)、Macromedia Flash (拡張子 .swf) です。<r/>
+		　ビデオのみの (オーディオとマルチプレクシングされていない) MPEG I ストリームの拡張子は .mpv にしてください。<r/>
+	</desc>
+</member>
+
+<member>
+	<name>play</name>
+	<type>method</type>
+	<shortdesc>再生開始</shortdesc>
+	<arg>
+	</arg>
+	<result></result>
+	<desc>
+		　メディアの再生を開始します。<r/>
+	</desc>
+</member>
+
+<member>
+	<name>stop</name>
+	<type>method</type>
+	<shortdesc>再生停止</shortdesc>
+	<arg>
+	</arg>
+	<result></result>
+	<desc>
+		　メディアの再生を停止します。<r/>
+	</desc>
+</member>
+
+<member>
+	<name>pause</name>
+	<type>method</type>
+	<shortdesc>一時停止</shortdesc>
+	<arg>
+	</arg>
+	<result></result>
+	<desc>
+		　メディアの再生を一時停止します。<r/>
+	</desc>
+</member>
+
+<member>
+	<name>rewind</name>
+	<type>method</type>
+	<shortdesc>巻き戻し</shortdesc>
+	<arg>
+	</arg>
+	<result></result>
+	<desc>
+		　メディアの再生位置を先頭に移動します。<r/>
+	</desc>
+</member>
+
+<member>
+	<name>prepare</name>
+	<type>method</type>
+	<shortdesc>再生準備</shortdesc>
+	<arg>
+	</arg>
+	<result></result>
+	<desc>
+	　メディアの1フレーム目を指定されているレイヤーに描画し、描画終了時にonPeriodイベントを発生させます。
+prepareメソッド コール後の再生は、onPeriodイベントを待機してから行ってください。<r/>
+	　このメソッドは、現バージョンでは MPEG でレイヤによる再生時にのみ使用可能です。<r/>
+	</desc>
+	<ref>VideoOverlay.onPeriod</ref>
+</member>
+
+<member>
+	<name>setSegmentLoop</name>
+	<type>method</type>
+	<shortdesc>フレーム間ループの設定</shortdesc>
+	<arg>
+		<argitem>
+			<name>comeFrame</name>
+			<default></default>
+			<desc>
+				　ループ移動先フレーム。再生がgoFrameに達したとき、再生ヘッドはこのフレームに移動します。<r/>
+			</desc>
+		</argitem>
+		<argitem>
+			<name>goFrame</name>
+			<default></default>
+			<desc>
+				　ループ終点。このフレームの1つ前のフレームの表示が終了した時、再生ヘッドはcomeFrameへ移動します。<r/>
+			</desc>
+		</argitem>
+	</arg>
+	<result></result>
+	<desc>
+		　指定されたフレーム間でループ処理を行います。<r/>
+		　ループ終端(goFrame)では、onPeriodイベントが発生します。<r/>
+		　comeFrameのフレームにはムービーファイルにキーフレームを設定しておく必要があります。<r/>
+		　設定されていない場合は、
+		ループ終点から始点へ移動時に指定されたフレームに最も近いキーフレームへ再生位置が移動することになります。<r/>
+	　このメソッドは、現バージョンでは MPEG でレイヤによる再生時にのみ使用可能です。<r/>
+	</desc>
+	<ref>VideoOverlay.cancelSegmentLoop</ref>
+	<ref>VideoOverlay.onPeriod</ref>
+</member>
+
+<member>
+	<name>cancelSegmentLoop</name>
+	<type>method</type>
+	<shortdesc>フレーム間ループの解除</shortdesc>
+	<arg>
+	</arg>
+	<result></result>
+	<desc>
+		　setSegmentLoopメソッドで指定したセグメント間ループを解除します。<r/>
+		　このメソッドは、現バージョンでは MPEG でレイヤによる再生時にのみ使用可能です。<r/>
+	</desc>
+</member>
+
+<member>
+	<name>close</name>
+	<type>method</type>
+	<shortdesc>メディアを閉じる</shortdesc>
+	<arg>
+	</arg>
+	<result></result>
+	<desc>
+		　メディアを閉じます。<r/>
+		　メディアを再生するために確保されていたリソースなどもすべて解放します。<r/>
+	</desc>
+	<ref>VideoOverlay.setSegmentLoop</ref>
+</member>
+
+<member>
+	<name>setPeriodEvent</name>
+	<type>method</type>
+	<shortdesc>指定フレームでのイベント発生の指定</shortdesc>
+	<arg>
+		<argitem>
+			<name>eventFrame</name>
+			<default></default>
+			<desc>
+				　onPeriodイベントを発生させるフレームを指定します。<r/>
+			</desc>
+		</argitem>
+	</arg>
+	<result></result>
+	<desc>
+		　指定したフレームでonPeriodイベントを発生させます。<r/>
+		　onPeriodイベントは、一度発生すると解除されます。再び発生させたい場合は再度このメソッドで設定してください。
+		　このメソッドは、現バージョンでは MPEG でレイヤによる再生時にのみ使用可能です。<r/>
+	</desc>
+	<ref>VideoOverlay.cancelPeriodEvent</ref>
+	<ref>VideoOverlay.onPeriod</ref>
+</member>
+
+<member>
+	<name>cancelPeriodEvent</name>
+	<type>method</type>
+	<shortdesc>指定フレームでのイベント発生の解除</shortdesc>
+	<arg>
+	</arg>
+	<result></result>
+	<desc>
+		　setPeriodEventメソッドで設定したイベント発生を解除します。<r/>
+		　このメソッドは、現バージョンでは MPEG でレイヤによる再生時にのみ使用可能です。<r/>
+	</desc>
+	<ref>VideoOverlay.setPeriodEvent</ref>
+</member>
+
+<member>
+	<name>setPos</name>
+	<type>method</type>
+	<shortdesc>再生矩形の左上位置を指定</shortdesc>
+	<arg>
+		<argitem>
+			<name>left</name>
+			<default></default>
+			<desc>
+				　メディアを再生するための矩形領域の左端位置を指定します。<r/>
+			</desc>
+		</argitem>
+		<argitem>
+			<name>top</name>
+			<default></default>
+			<desc>
+				　メディアを再生するための矩形領域の上端位置を指定します。<r/>
+			</desc>
+		</argitem>
+	</arg>
+	<result></result>
+	<desc>
+		　メディアを再生するための矩形領域の左上位置を指定します。<r/>
+		　座標は、ウィンドウのクライアント ( レイヤを表示可能な領域 ) 内での座標で、ピクセル単位で
+		指定します。<r/>
+	</desc>
+</member>
+
+<member>
+	<name>setSize</name>
+	<type>method</type>
+	<shortdesc>再生矩形のサイズを指定</shortdesc>
+	<arg>
+		<argitem>
+			<name>width</name>
+			<default></default>
+			<desc>
+				　メディアを再生するための矩形領域の横幅を指定します。<r/>
+			</desc>
+		</argitem>
+		<argitem>
+			<name>height</name>
+			<default></default>
+			<desc>
+				　メディアを再生するための矩形領域の縦幅を指定します。<r/>
+			</desc>
+		</argitem>
+	</arg>
+	<result></result>
+	<desc>
+		　メディアを再生するための矩形領域のサイズをピクセル単位で指定します。<r/>
+		　現バージョンでは、レイヤ再生時にはこのメソッドを使用することはできません。<r/>
+	</desc>
+</member>
+
+<member>
+	<name>setBounds</name>
+	<type>method</type>
+	<shortdesc>再生矩形の位置とサイズを指定</shortdesc>
+	<arg>
+		<argitem>
+			<name>left</name>
+			<default></default>
+			<desc>
+				　メディアを再生するための矩形領域の左端位置を指定します。<r/>
+			</desc>
+		</argitem>
+		<argitem>
+			<name>top</name>
+			<default></default>
+			<desc>
+				　メディアを再生するための矩形領域の上端位置を指定します。<r/>
+			</desc>
+		</argitem>
+		<argitem>
+			<name>width</name>
+			<default></default>
+			<desc>
+				　メディアを再生するための矩形領域の横幅を指定します。<r/>
+			</desc>
+		</argitem>
+		<argitem>
+			<name>height</name>
+			<default></default>
+			<desc>
+				　メディアを再生するための矩形領域の縦幅を指定します。<r/>
+			</desc>
+		</argitem>
+	</arg>
+	<result></result>
+	<desc>
+		　メディアを再生するための矩形領域の位置とサイズを指定します。<r/>
+		　座標は、ウィンドウのクライアント ( レイヤを表示可能な領域 ) 内での座標で、ピクセル単位で
+		指定します。<r/>
+		　現バージョンでは、レイヤ再生時にはこのメソッドで指定できるのは位置だけで、サイズは無視されます。<r/>
+	</desc>
+</member>
+
+<member>
+	<name>position</name>
+	<type>property</type>
+	<shortdesc>再生位置</shortdesc>
+	<access>r/w</access>
+	<desc>
+		　メディアの再生位置を ms 単位で表します。値を設定することもできます。<r/>
+	</desc>
+	<ref>VideoOverlay.frame</ref>
+	<ref>VideoOverlay.totalTime</ref>
+</member>
+
+<member>
+	<name>frame</name>
+	<type>property</type>
+	<shortdesc>現在のフレーム</shortdesc>
+	<access>r/w</access>
+	<desc>
+		　メディアの再生位置をフレーム単位で表します。値を設定することもできます。<r/>
+	</desc>
+	<ref>VideoOverlay.position</ref>
+	<ref>VideoOverlay.numberOfFrame</ref>
+</member>
+
+<member>
+	<name>loop</name>
+	<type>property</type>
+	<shortdesc>ループ再生をするかどうか</shortdesc>
+	<access>r/w</access>
+	<desc>
+		　ループ再生の有効無効を表します。値を設定することもできます。<r/>
+		　真ならばループ、偽ならば非ループです。<r/>
+	</desc>
+</member>
+
+<member>
+	<name>width</name>
+	<type>property</type>
+	<shortdesc>再生矩形の横幅</shortdesc>
+	<access>r/w</access>
+	<desc>
+		　再生矩形の横幅を表します。値を設定することもできます。<r/>
+		　このメソッドは、現バージョンではレイヤ再生時は使用できません(常にサイズはビデオのサイズと同じになります)。<r/>
+	</desc>
+	<ref>VideoOverlay.height</ref>
+	<ref>VideoOverlay.setSize</ref>
+</member>
+
+<member>
+	<name>height</name>
+	<type>property</type>
+	<shortdesc>再生矩形の縦幅</shortdesc>
+	<access>r/w</access>
+	<desc>
+		　再生矩形の縦幅を表します。値を設定することもできます。<r/>
+		　このメソッドは、現バージョンではレイヤ再生時は使用できません(常にサイズはビデオのサイズと同じになります)。<r/>
+
+	</desc>
+	<ref>VideoOverlay.width</ref>
+	<ref>VideoOverlay.setSize</ref>
+</member>
+
+<member>
+	<name>left</name>
+	<type>property</type>
+	<shortdesc>再生矩形の左端位置</shortdesc>
+	<access>r/w</access>
+	<desc>
+		　再生矩形の左端位置を表します。値を設定することもできます。<r/>
+	</desc>
+	<ref>VideoOverlay.top</ref>
+	<ref>VideoOverlay.setPos</ref>
+</member>
+
+<member>
+	<name>top</name>
+	<type>property</type>
+	<shortdesc>再生矩形の上端位置</shortdesc>
+	<access>r/w</access>
+	<desc>
+		　再生矩形の上端位置を表します。値を設定することもできます。<r/>
+	</desc>
+	<ref>VideoOverlay.left</ref>
+	<ref>VideoOverlay.setPos</ref>
+</member>
+
+<member>
+	<name>visible</name>
+	<type>property</type>
+	<shortdesc>可視かどうか</shortdesc>
+	<access>r/w</access>
+	<desc>
+		　再生領域が可視かどうかを指定します。値を設定することもできます。<r/>
+		　真ならば可視、偽ならば不可視です。<r/>
+	</desc>
+</member>
+
+<member>
+	<name>fps</name>
+	<type>property</type>
+	<shortdesc>フレームレート</shortdesc>
+	<access>r</access>
+	<desc>
+		　フレームレート(フレーム/秒)を表します。<r/>
+	</desc>
+</member>
+
+<member>
+	<name>numberOfFrame</name>
+	<type>property</type>
+	<shortdesc>全フレーム数</shortdesc>
+	<access>r</access>
+	<desc>
+		　全フレーム数を表します。<r/>
+	</desc>
+</member>
+
+<member>
+	<name>totalTime</name>
+	<type>property</type>
+	<shortdesc>合計時間</shortdesc>
+	<access>r</access>
+	<desc>
+		　合計時間をms単位で表します。<r/>
+	</desc>
+</member>
+
+
+<member>
+	<name>layer1</name>
+	<type>property</type>
+	<shortdesc>描画レイヤ指定1</shortdesc>
+	<access>r/w</access>
+	<desc>
+		　レイヤ描画モード時、描画するレイヤを表します。値を設定することもできます。<r/>
+		　layer1 プロパティと layer2 プロパティを異なるレイヤに設定することにより、同時に２つのレイヤに同じ動画を表示させることができます。<r/>
+	</desc>
+</member>
+
+
+<member>
+	<name>layer2</name>
+	<type>property</type>
+	<shortdesc>描画レイヤ指定2</shortdesc>
+	<access>r/w</access>
+	<desc>
+		　レイヤ描画モード時、描画するレイヤを表します。値を設定することもできます。<r/>
+	</desc>
+</member>
+
+<member>
+	<name>mode</name>
+	<type>property</type>
+	<shortdesc>オーバーレイorレイヤ描画の指定</shortdesc>
+	<access>r/w</access>
+	<desc>
+		　オーバーレイモードであるか、レイヤ描画モードであるかを表します。値を設定することもできます。<r/>
+		　オーバーレイモードの場合は <kw>vomOverlay</kw>、レイヤ描画モードの場合は <kw>vomLayer</kw> となります。<r/>
+	</desc>
+</member>
+
+
+
+</doc>
