@@ -267,7 +267,7 @@ public:
 	//--------------------------------------------- layer type management --
 private:
 	tTVPLayerType Type;
-	tTVPLayerType DrawType;
+	tTVPLayerType DisplayType;
 
 	void NotifyLayerTypeChange();
 
@@ -278,7 +278,7 @@ public:
 	static bool IsTypeUsingAlpha(tTVPLayerType type)
 		{ return type == ltTransparent || type == ltAddAlpha; }
 
-	bool GetDestHasAlpha() const { return IsTypeUsingAlpha(DrawType); }
+	bool GetDestHasAlpha() const { return IsTypeUsingAlpha(DisplayType); }
 
 	void ConvertLayerType(tTVPDrawFace fromtype);
 
