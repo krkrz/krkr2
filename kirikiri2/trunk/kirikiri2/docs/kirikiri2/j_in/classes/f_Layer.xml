@@ -3717,7 +3717,7 @@
 		<ref>Layer.flipUD</ref><r/>
 		<ref>Layer.assignImages</ref><r/>
 		<r/>
-		　以下のメソッドはこのプロパティの影響を受けます。
+		　以下のメソッドはこのプロパティの影響を受けます。<r/>
 		<ref>Layer.copyRect</ref><r/>
 		<ref>Layer.stretchCopy</ref><r/>
 		<ref>Layer.affineCopy</ref><r/>
