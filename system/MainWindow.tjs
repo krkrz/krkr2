@@ -492,12 +492,6 @@ class KAGWindow extends Window
 		// ウィンドウを閉じる
 		saveSystemVariables();
 		super.close(...);
-		if(!this isvalid)
-		{
-			// 無効化されている ; (ウィンドウが閉じられた)
-			// この時点ですべてのオブジェクトは無効化されているので
-			global.System.exit();
-		}
 	}
 
 	function shutdown()
@@ -506,7 +500,7 @@ class KAGWindow extends Window
 		var askOnClose_save = askOnClose;
 		askOnClose = false;
 		close();
-		askOnClose = askOnClose_save;
+		if(this isvalid) askOnClose = askOnClose_save;
 	}
 
 	//------------------------------------------------------ プラグイン処理 --
