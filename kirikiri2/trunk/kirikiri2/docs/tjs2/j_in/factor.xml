@@ -39,7 +39,7 @@
 
 <para>
 <ptitle>Infinity</ptitle>
-　<tt>Infinity</tt> は、無限大を表します。無限小を表す場合は <tt>-Infinity</tt> です。<r/>
+　<tt>Infinity</tt> は、無限大を表します。負の無限大を表す場合は <tt>-Infinity</tt> です。<r/>
 </para>
 
 <para>
