@@ -334,6 +334,7 @@ TVP_GL_FUNC_PTR_EXTERN_DECL(void, TVPFastLinearInterpH2B,  (tjs_uint32 *dest, tj
 TVP_GL_FUNC_PTR_EXTERN_DECL(void, TVPFastLinearInterpV2,  (tjs_uint32 *dest, tjs_int destlen, const tjs_uint32 *src0, const tjs_uint32 *src1));
 TVP_GL_FUNC_PTR_EXTERN_DECL(void, TVPStretchColorCopy,  (tjs_uint32 *dest, tjs_int destlen, const tjs_uint32 *src, tjs_int srcstart, tjs_int srcstep));
 TVP_GL_FUNC_PTR_EXTERN_DECL(void, TVPLinTransCopy,  (tjs_uint32 *dest, tjs_int destlen, const tjs_uint32 *src, tjs_int sx, tjs_int sy, tjs_int stepx, tjs_int stepy, tjs_int srcpitch));
+TVP_GL_FUNC_PTR_EXTERN_DECL(void, TVPInterpLinTransCopy,  (tjs_uint32 *dest, tjs_int destlen, const tjs_uint32 *src, tjs_int sx, tjs_int sy, tjs_int stepx, tjs_int stepy, tjs_int srcpitch));
 TVP_GL_FUNC_PTR_EXTERN_DECL(void, TVPLinTransColorCopy,  (tjs_uint32 *dest, tjs_int destlen, const tjs_uint32 *src, tjs_int sx, tjs_int sy, tjs_int stepx, tjs_int stepy, tjs_int srcpitch));
 TVP_GL_FUNC_PTR_EXTERN_DECL(void, TVPMakeAlphaFromKey,  (tjs_uint32 *dest, tjs_int len, tjs_uint32 key));
 TVP_GL_FUNC_PTR_EXTERN_DECL(void, TVPCopyMask,  (tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len));
