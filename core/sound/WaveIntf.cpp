@@ -795,6 +795,24 @@ TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/stopFade)
 }
 TJS_END_NATIVE_METHOD_DECL(/*func. name*/stopFade)
 //----------------------------------------------------------------------
+TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/setPos) // not setPosition
+{
+	TJS_GET_NATIVE_INSTANCE(/*var. name*/_this,
+		/*var. type*/tTJSNI_WaveSoundBuffer);
+
+	if(numparams < 3) return TJS_E_BADPARAMCOUNT;
+
+	tTVReal x, y, z;
+	x = (*param[0]);
+	y = (*param[1]);
+	z = (*param[2]);
+
+	_this->SetPos(x, y, z);
+
+	return TJS_S_OK;
+}
+TJS_END_NATIVE_METHOD_DECL(/*func. name*/setPos)
+//----------------------------------------------------------------------
 
 //-- events
 
@@ -1003,6 +1021,78 @@ TJS_BEGIN_NATIVE_PROP_DECL(pan)
 	TJS_END_NATIVE_PROP_SETTER
 }
 TJS_END_NATIVE_PROP_DECL(pan)
+//----------------------------------------------------------------------
+TJS_BEGIN_NATIVE_PROP_DECL(posX)
+{
+	TJS_BEGIN_NATIVE_PROP_GETTER
+	{
+		TJS_GET_NATIVE_INSTANCE(/*var. name*/_this, /*var. type*/tTJSNI_WaveSoundBuffer);
+
+		*result = (tTVReal)_this->GetPosX();
+
+		return TJS_S_OK;
+	}
+	TJS_END_NATIVE_PROP_GETTER
+
+	TJS_BEGIN_NATIVE_PROP_SETTER
+	{
+		TJS_GET_NATIVE_INSTANCE(/*var. name*/_this, /*var. type*/tTJSNI_WaveSoundBuffer);
+
+		_this->SetPosX((tTVReal)*param);
+
+		return TJS_S_OK;
+	}
+	TJS_END_NATIVE_PROP_SETTER
+}
+TJS_END_NATIVE_PROP_DECL(posX)
+//----------------------------------------------------------------------
+TJS_BEGIN_NATIVE_PROP_DECL(posY)
+{
+	TJS_BEGIN_NATIVE_PROP_GETTER
+	{
+		TJS_GET_NATIVE_INSTANCE(/*var. name*/_this, /*var. type*/tTJSNI_WaveSoundBuffer);
+
+		*result = (tTVReal)_this->GetPosY();
+
+		return TJS_S_OK;
+	}
+	TJS_END_NATIVE_PROP_GETTER
+
+	TJS_BEGIN_NATIVE_PROP_SETTER
+	{
+		TJS_GET_NATIVE_INSTANCE(/*var. name*/_this, /*var. type*/tTJSNI_WaveSoundBuffer);
+
+		_this->SetPosY((tTVReal)*param);
+
+		return TJS_S_OK;
+	}
+	TJS_END_NATIVE_PROP_SETTER
+}
+TJS_END_NATIVE_PROP_DECL(posY)
+//----------------------------------------------------------------------
+TJS_BEGIN_NATIVE_PROP_DECL(posZ)
+{
+	TJS_BEGIN_NATIVE_PROP_GETTER
+	{
+		TJS_GET_NATIVE_INSTANCE(/*var. name*/_this, /*var. type*/tTJSNI_WaveSoundBuffer);
+
+		*result = (tTVReal)_this->GetPosZ();
+
+		return TJS_S_OK;
+	}
+	TJS_END_NATIVE_PROP_GETTER
+
+	TJS_BEGIN_NATIVE_PROP_SETTER
+	{
+		TJS_GET_NATIVE_INSTANCE(/*var. name*/_this, /*var. type*/tTJSNI_WaveSoundBuffer);
+
+		_this->SetPosZ((tTVReal)*param);
+
+		return TJS_S_OK;
+	}
+	TJS_END_NATIVE_PROP_SETTER
+}
+TJS_END_NATIVE_PROP_DECL(posZ)
 //----------------------------------------------------------------------
 TJS_BEGIN_NATIVE_PROP_DECL(status)
 {
