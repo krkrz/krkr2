@@ -13,6 +13,8 @@
 
 globaldef		TVPAdditiveAlphaBlend_mmx_a
 globaldef		TVPAdditiveAlphaBlend_emmx_a
+globaldef		TVPAdditiveAlphaBlend_o_mmx_a
+globaldef		TVPAdditiveAlphaBlend_o_emmx_a
 globaldef		TVPAdditiveAlphaBlend_HDA_mmx_a
 globaldef		TVPAdditiveAlphaBlend_HDA_emmx_a
 globaldef		TVPAdditiveAlphaBlend_a_mmx_a
@@ -40,6 +42,10 @@ mask00ffffff00ffffff	dd	0x00ffffff, 0x00ffffff
 ;;void, TVPAdditiveAlphaBlend_mmx_a, (tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len)
 %define TVPAdditiveAlphaBlend_name TVPAdditiveAlphaBlend_mmx_a
 
+;;[function_replace_by TVPCPUType & TVP_CPU_HAS_MMX] TVPAdditiveAlphaBlend_o
+;;void, TVPAdditiveAlphaBlend_o_mmx_a, (tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len, tjs_int opa)
+%define TVPAdditiveAlphaBlend_o_name TVPAdditiveAlphaBlend_o_mmx_a
+
 ;;[function_replace_by TVPCPUType & TVP_CPU_HAS_MMX] TVPAdditiveAlphaBlend_HDA
 ;;void, TVPAdditiveAlphaBlend_HDA_mmx_a, (tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len)
 %define TVPAdditiveAlphaBlend_HDA_name TVPAdditiveAlphaBlend_HDA_mmx_a
@@ -62,6 +68,10 @@ mask00ffffff00ffffff	dd	0x00ffffff, 0x00ffffff
 ;;[function_replace_by TVPCPUType & TVP_CPU_HAS_MMX && TVPCPUType & TVP_CPU_HAS_EMMX] TVPAdditiveAlphaBlend
 ;;void, TVPAdditiveAlphaBlend_emmx_a, (tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len)
 %define TVPAdditiveAlphaBlend_name TVPAdditiveAlphaBlend_emmx_a
+
+;;[function_replace_by TVPCPUType & TVP_CPU_HAS_MMX && TVPCPUType & TVP_CPU_HAS_EMMX] TVPAdditiveAlphaBlend_o
+;;void, TVPAdditiveAlphaBlend_o_emmx_a, (tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len, tjs_int opa)
+%define TVPAdditiveAlphaBlend_o_name TVPAdditiveAlphaBlend_o_emmx_a
 
 ;;[function_replace_by TVPCPUType & TVP_CPU_HAS_MMX && TVPCPUType & TVP_CPU_HAS_EMMX] TVPAdditiveAlphaBlend_HDA
 ;;void, TVPAdditiveAlphaBlend_HDA_emmx_a, (tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len)
@@ -127,10 +137,10 @@ TVPAdditiveAlphaBlend_name:					; additive alpha blend
 		movd		mm1,	[edi]			; 1 dest
 		punpcklwd	mm5,	mm5				; 2
 		punpcklwd	mm2,	mm2				; 1
-		punpcklbw	mm6,	mm0				; 2 mm1 = 00ss00ss00ss00ss
+		punpcklbw	mm6,	mm0				; 2 mm1 = 00dd00dd00dd00dd
 		punpcklwd	mm2,	mm2				; 1
 		movq		mm7,	mm6				; 2
-		punpcklbw	mm1,	mm0				; 1 mm1 = 00ss00ss00ss00ss
+		punpcklbw	mm1,	mm0				; 1 mm1 = 00dd00dd00dd00dd
 		pmullw		mm6,	mm5				; 2
 %ifdef	USE_EMMX
 		prefetcht0	[ebp + 16]
@@ -167,13 +177,141 @@ TVPAdditiveAlphaBlend_name:					; additive alpha blend
 		movd		mm1,	[edi]			; dest
 		punpcklwd	mm2,	mm2
 		punpcklwd	mm2,	mm2
-		punpcklbw	mm1,	mm0				; mm1 = 00ss00ss00ss00ss
+		punpcklbw	mm1,	mm0				; mm1 = 00dd00dd00dd00dd
 		movq		mm3,	mm1
 		pmullw		mm1,	mm2
 		psrlw		mm1,	8
 		psubw		mm3,	mm1
 		packuswb	mm3,	mm0
 		paddusb		mm3,	mm4				; add src
+		movd		[edi],	mm3				; store
+
+		add			ebp,	byte 4
+		add			edi,	byte 4
+
+		cmp			edi,	esi
+
+		jb			short .ploop2			; jump if edi < esi
+
+.pexit:
+		pop			ebp
+		pop			edx
+		pop			ecx
+		pop			ebx
+		pop			esi
+		pop			edi
+		emms
+		ret
+;--------------------------------------------------------------------
+
+; di = di - di*a*opa + si*opa
+;              ~~~~~Df ~~~~~~ Sf
+;           ~~~~~~~~Ds
+;      ~~~~~~~~~~~~~Dq
+;
+;
+
+
+		function_align
+TVPAdditiveAlphaBlend_o_name:	; additive alpha blend with opacity
+		push		edi
+		push		esi
+		push		ebx
+		push		ecx
+		push		edx
+		push		ebp
+		mov			ecx,	[esp + 36]		; len
+		cmp			ecx,	byte 0
+		jle			near .pexit
+		mov			edi,	[esp + 28]		; dest
+		mov			ebp,	[esp + 32]		; src
+		mov			eax,	[esp + 40]		; eax = opa (op)
+		mov			ebx,	eax
+		shr			ebx,	7
+		add			eax,	ebx				; adjust
+		movd		mm7,	eax
+		punpcklwd	mm7,	mm7
+		punpcklwd	mm7,	mm7				; mm7 = op00op00op00op00
+		lea			esi,	[edi + ecx*4]	; limit
+		sub			esi,	byte 4			; 1*4
+		cmp			edi,	esi
+		pxor		mm0,	mm0				; mm0 = 0
+		jae			near .pfraction			; jump if edi >= esi
+
+		loop_align
+.ploop:
+
+		movd		mm4,	[ebp]			; 1 src                  (ss)
+		movd		mm2,	[edi]			; 1 dest                 (dd)
+		punpcklbw	mm4,	mm0				; 1 mm4 = 00ss00ss00ss00ss
+		punpcklbw	mm2,	mm0				; 1 mm2 = 00dd00dd00dd00dd
+		pmullw		mm4,	mm7				; 1 mm4 = 00Sf00Sf00Sf00Sf
+		movq		mm3,	mm2				; 1
+		psrlw		mm4,	8				; 1
+		movd		mm6,	[ebp+4]			; 2 src                  (ss)
+		punpcklbw	mm6,	mm0				; 2 mm6 = 00ss00ss00ss00ss
+		movq		mm1,	mm4				; 1
+		pmullw		mm6,	mm7				; 2 mm6 = 00Sf00Sf00Sf00Sf
+%ifdef	USE_EMMX
+		prefetcht0	[ebp + 16]
+%endif
+		psrlq		mm1,	48				; 1
+		punpcklwd	mm1,	mm1				; 1
+		punpcklwd	mm1,	mm1				; 1 mm1 = Df00Df00Df00Df00
+		psrlw		mm6,	8				; 2
+		pmullw		mm2,	mm1				; 1 mm2 = 00Ds00Ds00Ds00Ds
+		psrlw		mm2,	8				; 1
+		movq		mm1,	mm6				; 2
+		psubw		mm3,	mm2				; 1 mm1 = 00Dq00Dq00Dq00Dq
+		paddw		mm3,	mm4				; 1
+		movd		mm2,	[edi+4]			; 2 dest                 (dd)
+		packuswb	mm3,	mm0				; 1
+		psrlq		mm1,	48				; 2
+		movd		[edi],	mm3				; 1 store
+		punpcklbw	mm2,	mm0				; 2 mm2 = 00dd00dd00dd00dd
+		punpcklwd	mm1,	mm1				; 2
+		movq		mm3,	mm2				; 2
+		punpcklwd	mm1,	mm1				; 2 mm1 = Df00Df00Df00Df00
+		pmullw		mm2,	mm1				; 2 mm2 = 00Ds00Ds00Ds00Ds
+		add			edi,	byte 8
+		psrlw		mm2,	8				; 2
+		psubw		mm3,	mm2				; 2 mm1 = 00Dq00Dq00Dq00Dq
+		add			ebp,	byte 8
+		paddw		mm3,	mm6				; 2
+		cmp			edi,	esi
+		packuswb	mm3,	mm0				; 2
+		movd		[edi+4-8],	mm3			; 2 store
+
+		jb			.ploop
+
+.pfraction:
+		add			esi,	byte 4
+		cmp			edi,	esi
+		jae			.pexit					; jump if edi >= esi
+
+.ploop2:	; fractions
+		movd		mm4,	[ebp]			; src                  (ss)
+
+		movd		mm2,	[edi]			; dest                 (dd)
+		punpcklbw	mm4,	mm0				; mm4 = 00ss00ss00ss00ss
+		punpcklbw	mm2,	mm0				; mm2 = 00dd00dd00dd00dd
+		pmullw		mm4,	mm7				; mm4 = 00Sf00Sf00Sf00Sf
+		movq		mm3,	mm2
+
+		psrlw		mm4,	8
+
+		movq		mm1,	mm4
+		psrlq		mm1,	48
+		punpcklwd	mm1,	mm1
+		punpcklwd	mm1,	mm1				; mm1 = Df00Df00Df00Df00
+
+		pmullw		mm2,	mm1				; mm2 = 00Ds00Ds00Ds00Ds
+		psrlw		mm2,	8
+		psubw		mm3,	mm2				; mm1 = 00Dq00Dq00Dq00Dq
+
+		paddw		mm3,	mm4
+		packuswb	mm3,	mm0
+
 		movd		[edi],	mm3				; store
 
 		add			ebp,	byte 4
@@ -227,10 +365,10 @@ TVPAdditiveAlphaBlend_HDA_name:		; additive alpha blend holding destination alph
 		movd		mm1,	[edi]			; 1 dest
 		punpcklwd	mm5,	mm5				; 2
 		punpcklwd	mm2,	mm2				; 1
-		punpcklbw	mm6,	mm0				; 2 mm1 = 00ss00ss00ss00ss
+		punpcklbw	mm6,	mm0				; 2 mm1 = 00dd00dd00dd00dd
 		punpcklwd	mm2,	mm2				; 1
 		movq		mm7,	mm6				; 2
-		punpcklbw	mm1,	mm0				; 1 mm1 = 00ss00ss00ss00ss
+		punpcklbw	mm1,	mm0				; 1 mm1 = 00dd00dd00dd00dd
 		pmullw		mm6,	mm5				; 2
 %ifdef	USE_EMMX
 		prefetcht0	[ebp + 16]
@@ -272,7 +410,7 @@ TVPAdditiveAlphaBlend_HDA_name:		; additive alpha blend holding destination alph
 		punpcklwd	mm2,	mm2
 		pand		mm4,	[mask00ffffff00ffffff]
 		punpcklwd	mm2,	mm2
-		punpcklbw	mm1,	mm0				; mm1 = 00ss00ss00ss00ss
+		punpcklbw	mm1,	mm0				; mm1 = 00dd00dd00dd00dd
 		movq		mm3,	mm1
 		pmullw		mm1,	mm2
 		psrlw		mm1,	8
@@ -335,7 +473,7 @@ TVPAdditiveAlphaBlend_a_name:					; additive alpha blend on additive alpha
 		pand		mm1,	mm7				; 1
 		shr			ecx,	24				; 1 ecx = dest opa
 		mov			ebx,	eax				; 1
-		punpcklbw	mm1,	mm0				; 1 mm1 = 00ss00ss00ss00ss
+		punpcklbw	mm1,	mm0				; 1 mm1 = 00dd00dd00dd00dd
 		imul		ebx,	ecx				; 1
 %ifdef	USE_EMMX
 		prefetcht0	[ebp + 16]
@@ -368,7 +506,7 @@ TVPAdditiveAlphaBlend_a_name:					; additive alpha blend on additive alpha
 		pand		mm1,	mm7				; 2
 		shr			ecx,	24				; 2 ecx = dest opa
 		mov			ebx,	eax				; 2
-		punpcklbw	mm1,	mm0				; 2 mm1 = 00ss00ss00ss00ss
+		punpcklbw	mm1,	mm0				; 2 mm1 = 00dd00dd00dd00dd
 		imul		ebx,	ecx				; 2
 		movq		mm3,	mm1				; 2
 		shr			ebx,	8				; 2
@@ -411,7 +549,7 @@ TVPAdditiveAlphaBlend_a_name:					; additive alpha blend on additive alpha
 		pand		mm1,	mm7
 		shr			ecx,	24				; ecx = dest opa
 		mov			ebx,	eax
-		punpcklbw	mm1,	mm0				; mm1 = 00ss00ss00ss00ss
+		punpcklbw	mm1,	mm0				; mm1 = 00dd00dd00dd00dd
 		imul		ebx,	ecx
 		movq		mm3,	mm1
 		shr			ebx,	8
