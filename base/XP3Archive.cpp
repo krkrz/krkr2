@@ -8,12 +8,6 @@
 //---------------------------------------------------------------------------
 // XP3 virtual file system support
 //---------------------------------------------------------------------------
-// 2004/6/24  W.Dee
-//    Added support for segmented (multiple) XP3 index structure.
-//
-// 2004/5/29  W.Dee
-//    Added support for tTVPXP3ExtranctionFilterInfo v2 member (FileHash)
-//---------------------------------------------------------------------------
 
 #include "tjsCommHead.h"
 #pragma hdrstop
