@@ -935,9 +935,9 @@ void __fastcall TTVPWindowForm::OnCloseQueryCalled(bool b)
 				{
 					// this is the main window
 					iTJSDispatch2 * obj = TJSNativeInstance->GetOwnerNoAddRef();
-					TJSNativeInstance->NotifyWindowClose();
 					obj->Invalidate(0, NULL, NULL, obj);
- 					TJSNativeInstance = NULL;
+//					TJSNativeInstance->NotifyWindowClose();
+					TJSNativeInstance = NULL;
 				}
 			}
 			else
