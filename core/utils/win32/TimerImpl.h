@@ -25,9 +25,8 @@ class tTJSNI_Timer : public tTJSNI_BaseTimer
 
 	tjs_uint64 Interval;
 	tjs_uint64 NextTick;
+	tjs_int PendingCount;
 	bool Enabled;
-
-	HWND UtilWindow; // a dummy window for receiving trigger from playing thread
 
 public:
 	tTJSNI_Timer();
@@ -40,6 +39,8 @@ public:
 	tjs_uint64 GetInterval() const;
 		// { return Interval; }
 
+	void ZeroPendingCount() { PendingCount = 0; }
+
 	void SetNextTick(tjs_uint64 n) { NextTick = n; }
 	tjs_uint64 GetNextTick() const;
 		// { return NextTick; }
@@ -50,13 +51,10 @@ public:
 	bool GetEnabled() const { return Enabled; }
 
 	void Trigger(tjs_uint n);
+	void FirePendingEventsAndClear();
 
 private:
 	void CancelTrigger();
-	void __fastcall WndProc(Messages::TMessage &Msg);
-		// UtilWindow's window procedure
 };
-//---------------------------------------------------------------------------
-
 //---------------------------------------------------------------------------
 #endif
