@@ -9,7 +9,6 @@
 // File Selecter dialog box
 //---------------------------------------------------------------------------
 #include "tjsCommHead.h"
-#pragma hdrstop
 
 #include <cderr.h>
 

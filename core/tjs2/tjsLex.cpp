@@ -9,7 +9,6 @@
 // TJS2 lexical analyzer
 //---------------------------------------------------------------------------
 #include "tjsCommHead.h"
-#pragma hdrstop
 
 #include <math.h>
 #include "tjsInterCodeGen.h"

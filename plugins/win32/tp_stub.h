@@ -843,7 +843,7 @@ struct tTJSVariantOctet_S
 // tTJSVariant_S
 //---------------------------------------------------------------------------
 #ifdef __BORLANDC__
-	#pragma option push -b
+#pragma option push -b
 #endif
 enum tTJSVariantType
 {
@@ -855,7 +855,7 @@ enum tTJSVariantType
 	tvtReal
 };
 #ifdef __BORLANDC__
-	#pragma option pop
+#pragma option pop
 #endif
 
 

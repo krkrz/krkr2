@@ -104,7 +104,7 @@ TJS_EXP_FUNC_DEF(tTJSVariantString *, TJSOctetToListString, (const tTJSVariantOc
 // tTJSVariant_S
 //---------------------------------------------------------------------------
 #ifdef __BORLANDC__
-	#pragma option push -b
+#pragma option push -b
 #endif
 enum tTJSVariantType
 {
@@ -116,11 +116,13 @@ enum tTJSVariantType
 	tvtReal
 };
 #ifdef __BORLANDC__
-	#pragma option pop
+#pragma option pop
 #endif
 /*]*/
 //---------------------------------------------------------------------------
+#ifdef __BORLANDC__
 #pragma option push -b -a4
+#endif
 
 /*[*/
 #pragma pack(push, 4)
@@ -156,7 +158,9 @@ struct tTJSVariant_S
 #pragma pack(pop)
 /*]*/
 
+#ifdef __BORLANDC__
 #pragma option pop
+#endif
 //---------------------------------------------------------------------------
 // tTJSVariantClosure
 //---------------------------------------------------------------------------

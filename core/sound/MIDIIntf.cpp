@@ -9,8 +9,6 @@
 // MIDI sequencer interface
 //---------------------------------------------------------------------------
 #include "tjsCommHead.h"
-#pragma hdrstop
-
 
 #include "MIDIIntf.h"
 #include "EventIntf.h"

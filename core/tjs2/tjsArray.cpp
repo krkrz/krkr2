@@ -11,7 +11,6 @@
 
 
 #include "tjsCommHead.h"
-#pragma hdrstop
 
 #include <algorithm>
 #include <functional>

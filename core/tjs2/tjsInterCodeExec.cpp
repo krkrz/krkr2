@@ -10,7 +10,6 @@
 //---------------------------------------------------------------------------
 
 #include "tjsCommHead.h"
-#pragma hdrstop
 
 #include "tjsInterCodeExec.h"
 #include "tjsInterCodeGen.h"

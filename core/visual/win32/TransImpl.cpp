@@ -9,7 +9,6 @@
 // Transition handler mamagement & transition plug-in support
 //---------------------------------------------------------------------------
 #include "tjsCommHead.h"
-#pragma hdrstop
 
 #include "TransImpl.h"
 //---------------------------------------------------------------------------

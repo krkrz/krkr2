@@ -9,7 +9,6 @@
 // Support for C++ native class/method/property definitions
 //---------------------------------------------------------------------------
 #include "tjsCommHead.h"
-#pragma hdrstop
 
 
 #include "tjsNative.h"

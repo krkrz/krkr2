@@ -9,7 +9,6 @@
 // VM code disassembler
 //---------------------------------------------------------------------------
 #include "tjsCommHead.h"
-#pragma hdrstop
 
 #include "tjsInterCodeGen.h"
 #include "tjsScriptBlock.h"

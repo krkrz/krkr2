@@ -9,8 +9,6 @@
 // Sound Buffer Base implementation
 //---------------------------------------------------------------------------
 #include "tjsCommHead.h"
-#pragma hdrstop
-
 
 #include "SoundBufferBaseImpl.h"
 

@@ -48,7 +48,6 @@
 */
 
 #include "tjsCommHead.h"
-#pragma hdrstop
 
 
 #include <stdio.h>

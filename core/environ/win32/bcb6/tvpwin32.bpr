@@ -90,7 +90,7 @@
     <OTHERFILES value=""/>
   </MACROS>
   <OPTIONS>
-    <CFLAG1 value="-O2 -H=c:\PROGRA~1\borland\CBUILD~2\lib\tvp32.csm -Vx -Ve -xf -X- -pr -a4 
+    <CFLAG1 value="-O2 -H=$(BCB)\lib\tvp32.csm -Hh=tjsCommHead.h -Hc -Vx -Ve -xf -X- -pr -a4 
       -6 -b- -d -k- -y -v -vi -c -tW -tWM"/>
     <PFLAGS value="-N2intermediate -N0intermediate -$Y- -$L- -$D- -$A8 -v -JPHNE -M"/>
     <RFLAGS value=""/>
@@ -238,6 +238,12 @@
   </BUILDTOOLS>
 
   <FILES>
+    <FILE type="override" value="..\..\..\visual\tvpgl.c" translator="Auto">
+      <CFLAG1 value=" -O2 -r -k- -y -v -vi"/>
+    </FILE>
+    <FILE type="override" value="..\..\..\visual\GraphicsLoaderIntf.cpp" translator="Auto">
+      <WARNOPTSTR value=" -w-par"/>
+    </FILE>
     <FILE type="override" value="..\..\..\tjs2\tjspp.tab.cpp" translator="Auto">
       <CFLAG1 value=" -vGc-"/>
     </FILE>
@@ -246,12 +252,6 @@
     </FILE>
     <FILE type="override" value="..\..\..\tjs2\tjs.tab.cpp" translator="Auto">
       <CFLAG1 value=" -vGc-"/>
-    </FILE>
-    <FILE type="override" value="..\..\..\visual\tvpgl.c" translator="Auto">
-      <CFLAG1 value=" -O2 -r -k- -y -v -vi"/>
-    </FILE>
-    <FILE type="override" value="..\..\..\visual\GraphicsLoaderIntf.cpp" translator="Auto">
-      <WARNOPTSTR value=" -w-par"/>
     </FILE>
   </FILES>
 

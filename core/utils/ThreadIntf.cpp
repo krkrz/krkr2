@@ -9,7 +9,6 @@
 // Thread base class
 //---------------------------------------------------------------------------
 #include "tjsCommHead.h"
-#pragma hdrstop
 
 #include "ThreadIntf.h"
 #include "ThreadImpl.h"

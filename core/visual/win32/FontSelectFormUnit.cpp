@@ -9,7 +9,6 @@
 // Font Selector Form
 //---------------------------------------------------------------------------
 #include "tjsCommHead.h"
-#pragma hdrstop
 
 #include "FontSelectFormUnit.h"
 #include "tvpfontstruc.h"

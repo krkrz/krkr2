@@ -9,7 +9,6 @@
 // Intermediate Code Context
 //---------------------------------------------------------------------------
 #include "tjsCommHead.h"
-#pragma hdrstop
 
 #include <algorithm>
 

@@ -9,7 +9,6 @@
 // tTJSVariant friendly string class implementation
 //---------------------------------------------------------------------------
 #include "tjsCommHead.h"
-#pragma hdrstop
 
 #include <stdarg.h>
 #include <stdio.h>

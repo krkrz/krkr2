@@ -9,7 +9,6 @@
 // Math.RandomGenerator implementation
 //---------------------------------------------------------------------------
 #include "tjsCommHead.h"
-#pragma hdrstop
 
 
 #include <time.h>

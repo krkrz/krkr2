@@ -9,7 +9,6 @@
 /* Modification by hand will be lost. */
 
 #include "tjsCommHead.h"
-#pragma hdrstop
 
 #include "MsgIntf.h"
 #include <zlib/zlib.h>

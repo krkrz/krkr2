@@ -9,7 +9,6 @@
 // Console
 //---------------------------------------------------------------------------
 #include "tjsCommHead.h"
-#pragma hdrstop
 
 #include "ConsoleFormUnit.h"
 

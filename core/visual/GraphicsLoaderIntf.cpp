@@ -10,7 +10,6 @@
 //---------------------------------------------------------------------------
 
 #include "tjsCommHead.h"
-#pragma hdrstop
 
 #include <stdlib.h>
 #include "GraphicsLoaderIntf.h"
