@@ -161,7 +161,7 @@ Item1=..\..\..\..\bin\win32
 DebugSourceDirs=C:\Program Files\Borland\CBuilder5\Projects\tvp2win32\visual\IA32\;C:\Program Files\Borland\CBuilder5\Projects\comps\o\erinalib\library\common\
 
 [Parameters]
-RunParams=-logerror=yes -wheel=message
+RunParams=-logerror=yes -wheel=message  -sel
 HostApplication=
 RemoteHost=
 RemotePath=
