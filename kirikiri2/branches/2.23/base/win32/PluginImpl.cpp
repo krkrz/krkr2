@@ -8,19 +8,6 @@
 //---------------------------------------------------------------------------
 // "Plugins" class implementation / Service for plug-ins
 //---------------------------------------------------------------------------
-// 2003/ 7/ 2 W.Dee
-//    Linking plugin while other plugin is linking, is prohibited by data
-//    security reason.
-//
-// 2003/ 6/23 W.Dee 
-//    Added TVPGetAutoLoadPluginCount service function.
-//
-// 2003/12/15 W.Dee          Added TVPProcessApplicationMessages/
-//                           TVPHandleApplicationMessage service functions.
-// 2003/11/13 W.Dee          Added TVPGetFileVersionOf function.
-// 2003/11/10 W.Dee          Added compress, compress2 service functions for
-//                           plug-ins from ZLIB.
-//---------------------------------------------------------------------------
 #include "tjsCommHead.h"
 #pragma hdrstop
 
