@@ -1,3 +1,4 @@
+@jump storage="tlgtagtest.ks"
 @l
 [edit]
 [input name="tf.test"][input name="tf.test"]
