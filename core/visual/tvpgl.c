@@ -617,10 +617,10 @@ TVP_GL_FUNC_DECL(void, TVPAlphaBlend_a_c, (tjs_uint32 *dest, const tjs_uint32 *s
 
 		while(___index < len)
 		{
-	dest[(___index+0)] = TVPAdditiveBlend_a_d(dest[(___index+0)], src[(___index+0)]);
-	dest[(___index+1)] = TVPAdditiveBlend_a_d(dest[(___index+1)], src[(___index+1)]);
-	dest[(___index+2)] = TVPAdditiveBlend_a_d(dest[(___index+2)], src[(___index+2)]);
-	dest[(___index+3)] = TVPAdditiveBlend_a_d(dest[(___index+3)], src[(___index+3)]);
+	dest[(___index+0)] = TVPAddAlphaBlend_a_d(dest[(___index+0)], src[(___index+0)]);
+	dest[(___index+1)] = TVPAddAlphaBlend_a_d(dest[(___index+1)], src[(___index+1)]);
+	dest[(___index+2)] = TVPAddAlphaBlend_a_d(dest[(___index+2)], src[(___index+2)]);
+	dest[(___index+3)] = TVPAddAlphaBlend_a_d(dest[(___index+3)], src[(___index+3)]);
 			___index += 4;
 		}
 
@@ -628,7 +628,7 @@ TVP_GL_FUNC_DECL(void, TVPAlphaBlend_a_c, (tjs_uint32 *dest, const tjs_uint32 *s
 
 		while(___index < len)
 		{
-	dest[___index] = TVPAdditiveBlend_a_d(dest[___index], src[___index]);
+	dest[___index] = TVPAddAlphaBlend_a_d(dest[___index], src[___index]);
 			___index ++;
 		}
 	}
@@ -717,10 +717,10 @@ TVP_GL_FUNC_DECL(void, TVPAlphaBlend_ao_c, (tjs_uint32 *dest, const tjs_uint32 *
 
 		while(___index < len)
 		{
-	dest[(___index+0)] = TVPAdditiveBlend_a_d_o(dest[(___index+0)], src[(___index+0)], opa);
-	dest[(___index+1)] = TVPAdditiveBlend_a_d_o(dest[(___index+1)], src[(___index+1)], opa);
-	dest[(___index+2)] = TVPAdditiveBlend_a_d_o(dest[(___index+2)], src[(___index+2)], opa);
-	dest[(___index+3)] = TVPAdditiveBlend_a_d_o(dest[(___index+3)], src[(___index+3)], opa);
+	dest[(___index+0)] = TVPAddAlphaBlend_a_d_o(dest[(___index+0)], src[(___index+0)], opa);
+	dest[(___index+1)] = TVPAddAlphaBlend_a_d_o(dest[(___index+1)], src[(___index+1)], opa);
+	dest[(___index+2)] = TVPAddAlphaBlend_a_d_o(dest[(___index+2)], src[(___index+2)], opa);
+	dest[(___index+3)] = TVPAddAlphaBlend_a_d_o(dest[(___index+3)], src[(___index+3)], opa);
 			___index += 4;
 		}
 
@@ -728,7 +728,7 @@ TVP_GL_FUNC_DECL(void, TVPAlphaBlend_ao_c, (tjs_uint32 *dest, const tjs_uint32 *
 
 		while(___index < len)
 		{
-	dest[___index] = TVPAdditiveBlend_a_d_o(dest[___index], src[___index], opa);
+	dest[___index] = TVPAddAlphaBlend_a_d_o(dest[___index], src[___index], opa);
 			___index ++;
 		}
 	}
@@ -743,10 +743,10 @@ TVP_GL_FUNC_DECL(void, TVPAdditiveAlphaBlend_c, (tjs_uint32 *dest, const tjs_uin
 
 		while(___index < len)
 		{
-	dest[(___index+0)] = TVPAdditiveBlend_n_a(dest[(___index+0)], src[(___index+0)]);
-	dest[(___index+1)] = TVPAdditiveBlend_n_a(dest[(___index+1)], src[(___index+1)]);
-	dest[(___index+2)] = TVPAdditiveBlend_n_a(dest[(___index+2)], src[(___index+2)]);
-	dest[(___index+3)] = TVPAdditiveBlend_n_a(dest[(___index+3)], src[(___index+3)]);
+	dest[(___index+0)] = TVPAddAlphaBlend_n_a(dest[(___index+0)], src[(___index+0)]);
+	dest[(___index+1)] = TVPAddAlphaBlend_n_a(dest[(___index+1)], src[(___index+1)]);
+	dest[(___index+2)] = TVPAddAlphaBlend_n_a(dest[(___index+2)], src[(___index+2)]);
+	dest[(___index+3)] = TVPAddAlphaBlend_n_a(dest[(___index+3)], src[(___index+3)]);
 			___index += 4;
 		}
 
@@ -754,7 +754,7 @@ TVP_GL_FUNC_DECL(void, TVPAdditiveAlphaBlend_c, (tjs_uint32 *dest, const tjs_uin
 
 		while(___index < len)
 		{
-	dest[___index] = TVPAdditiveBlend_n_a(dest[___index], src[___index]);
+	dest[___index] = TVPAddAlphaBlend_n_a(dest[___index], src[___index]);
 			___index ++;
 		}
 	}
@@ -771,10 +771,10 @@ TVP_GL_FUNC_DECL(void, TVPAdditiveAlphaBlend_HDA_c, (tjs_uint32 *dest, const tjs
 
 		while(___index < len)
 		{
-	dest[(___index+0)] = TVPAdditiveBlend_HDA_n_a(dest[(___index+0)], src[(___index+0)]);
-	dest[(___index+1)] = TVPAdditiveBlend_HDA_n_a(dest[(___index+1)], src[(___index+1)]);
-	dest[(___index+2)] = TVPAdditiveBlend_HDA_n_a(dest[(___index+2)], src[(___index+2)]);
-	dest[(___index+3)] = TVPAdditiveBlend_HDA_n_a(dest[(___index+3)], src[(___index+3)]);
+	dest[(___index+0)] = TVPAddAlphaBlend_HDA_n_a(dest[(___index+0)], src[(___index+0)]);
+	dest[(___index+1)] = TVPAddAlphaBlend_HDA_n_a(dest[(___index+1)], src[(___index+1)]);
+	dest[(___index+2)] = TVPAddAlphaBlend_HDA_n_a(dest[(___index+2)], src[(___index+2)]);
+	dest[(___index+3)] = TVPAddAlphaBlend_HDA_n_a(dest[(___index+3)], src[(___index+3)]);
 			___index += 4;
 		}
 
@@ -782,7 +782,7 @@ TVP_GL_FUNC_DECL(void, TVPAdditiveAlphaBlend_HDA_c, (tjs_uint32 *dest, const tjs
 
 		while(___index < len)
 		{
-	dest[___index] = TVPAdditiveBlend_HDA_n_a(dest[___index], src[___index]);
+	dest[___index] = TVPAddAlphaBlend_HDA_n_a(dest[___index], src[___index]);
 			___index ++;
 		}
 	}
@@ -797,10 +797,10 @@ TVP_GL_FUNC_DECL(void, TVPAdditiveAlphaBlend_o_c, (tjs_uint32 *dest, const tjs_u
 
 		while(___index < len)
 		{
-	dest[(___index+0)] = TVPAdditiveBlend_n_a_o(dest[(___index+0)], src[(___index+0)], opa);
-	dest[(___index+1)] = TVPAdditiveBlend_n_a_o(dest[(___index+1)], src[(___index+1)], opa);
-	dest[(___index+2)] = TVPAdditiveBlend_n_a_o(dest[(___index+2)], src[(___index+2)], opa);
-	dest[(___index+3)] = TVPAdditiveBlend_n_a_o(dest[(___index+3)], src[(___index+3)], opa);
+	dest[(___index+0)] = TVPAddAlphaBlend_n_a_o(dest[(___index+0)], src[(___index+0)], opa);
+	dest[(___index+1)] = TVPAddAlphaBlend_n_a_o(dest[(___index+1)], src[(___index+1)], opa);
+	dest[(___index+2)] = TVPAddAlphaBlend_n_a_o(dest[(___index+2)], src[(___index+2)], opa);
+	dest[(___index+3)] = TVPAddAlphaBlend_n_a_o(dest[(___index+3)], src[(___index+3)], opa);
 			___index += 4;
 		}
 
@@ -808,7 +808,7 @@ TVP_GL_FUNC_DECL(void, TVPAdditiveAlphaBlend_o_c, (tjs_uint32 *dest, const tjs_u
 
 		while(___index < len)
 		{
-	dest[___index] = TVPAdditiveBlend_n_a_o(dest[___index], src[___index], opa);
+	dest[___index] = TVPAddAlphaBlend_n_a_o(dest[___index], src[___index], opa);
 			___index ++;
 		}
 	}
@@ -824,10 +824,10 @@ TVP_GL_FUNC_DECL(void, TVPAdditiveAlphaBlend_HDA_o_c, (tjs_uint32 *dest, const t
 
 		while(___index < len)
 		{
-	dest[(___index+0)] = TVPAdditiveBlend_HDA_n_a_o(dest[(___index+0)], src[(___index+0)], opa);
-	dest[(___index+1)] = TVPAdditiveBlend_HDA_n_a_o(dest[(___index+1)], src[(___index+1)], opa);
-	dest[(___index+2)] = TVPAdditiveBlend_HDA_n_a_o(dest[(___index+2)], src[(___index+2)], opa);
-	dest[(___index+3)] = TVPAdditiveBlend_HDA_n_a_o(dest[(___index+3)], src[(___index+3)], opa);
+	dest[(___index+0)] = TVPAddAlphaBlend_HDA_n_a_o(dest[(___index+0)], src[(___index+0)], opa);
+	dest[(___index+1)] = TVPAddAlphaBlend_HDA_n_a_o(dest[(___index+1)], src[(___index+1)], opa);
+	dest[(___index+2)] = TVPAddAlphaBlend_HDA_n_a_o(dest[(___index+2)], src[(___index+2)], opa);
+	dest[(___index+3)] = TVPAddAlphaBlend_HDA_n_a_o(dest[(___index+3)], src[(___index+3)], opa);
 			___index += 4;
 		}
 
@@ -835,7 +835,7 @@ TVP_GL_FUNC_DECL(void, TVPAdditiveAlphaBlend_HDA_o_c, (tjs_uint32 *dest, const t
 
 		while(___index < len)
 		{
-	dest[___index] = TVPAdditiveBlend_HDA_n_a_o(dest[___index], src[___index], opa);
+	dest[___index] = TVPAddAlphaBlend_HDA_n_a_o(dest[___index], src[___index], opa);
 			___index ++;
 		}
 	}
@@ -876,10 +876,10 @@ TVP_GL_FUNC_DECL(void, TVPAdditiveAlphaBlend_a_c, (tjs_uint32 *dest, const tjs_u
 
 		while(___index < len)
 		{
-	dest[(___index+0)] = TVPAdditiveBlend_a_a(dest[(___index+0)], src[(___index+0)]);
-	dest[(___index+1)] = TVPAdditiveBlend_a_a(dest[(___index+1)], src[(___index+1)]);
-	dest[(___index+2)] = TVPAdditiveBlend_a_a(dest[(___index+2)], src[(___index+2)]);
-	dest[(___index+3)] = TVPAdditiveBlend_a_a(dest[(___index+3)], src[(___index+3)]);
+	dest[(___index+0)] = TVPAddAlphaBlend_a_a(dest[(___index+0)], src[(___index+0)]);
+	dest[(___index+1)] = TVPAddAlphaBlend_a_a(dest[(___index+1)], src[(___index+1)]);
+	dest[(___index+2)] = TVPAddAlphaBlend_a_a(dest[(___index+2)], src[(___index+2)]);
+	dest[(___index+3)] = TVPAddAlphaBlend_a_a(dest[(___index+3)], src[(___index+3)]);
 			___index += 4;
 		}
 
@@ -887,7 +887,7 @@ TVP_GL_FUNC_DECL(void, TVPAdditiveAlphaBlend_a_c, (tjs_uint32 *dest, const tjs_u
 
 		while(___index < len)
 		{
-	dest[___index] = TVPAdditiveBlend_a_a(dest[___index], src[___index]);
+	dest[___index] = TVPAddAlphaBlend_a_a(dest[___index], src[___index]);
 			___index ++;
 		}
 	}
@@ -928,10 +928,10 @@ TVP_GL_FUNC_DECL(void, TVPAdditiveAlphaBlend_ao_c, (tjs_uint32 *dest, const tjs_
 
 		while(___index < len)
 		{
-	dest[(___index+0)] = TVPAdditiveBlend_a_a_o(dest[(___index+0)], src[(___index+0)], opa);
-	dest[(___index+1)] = TVPAdditiveBlend_a_a_o(dest[(___index+1)], src[(___index+1)], opa);
-	dest[(___index+2)] = TVPAdditiveBlend_a_a_o(dest[(___index+2)], src[(___index+2)], opa);
-	dest[(___index+3)] = TVPAdditiveBlend_a_a_o(dest[(___index+3)], src[(___index+3)], opa);
+	dest[(___index+0)] = TVPAddAlphaBlend_a_a_o(dest[(___index+0)], src[(___index+0)], opa);
+	dest[(___index+1)] = TVPAddAlphaBlend_a_a_o(dest[(___index+1)], src[(___index+1)], opa);
+	dest[(___index+2)] = TVPAddAlphaBlend_a_a_o(dest[(___index+2)], src[(___index+2)], opa);
+	dest[(___index+3)] = TVPAddAlphaBlend_a_a_o(dest[(___index+3)], src[(___index+3)], opa);
 			___index += 4;
 		}
 
@@ -939,7 +939,7 @@ TVP_GL_FUNC_DECL(void, TVPAdditiveAlphaBlend_ao_c, (tjs_uint32 *dest, const tjs_
 
 		while(___index < len)
 		{
-	dest[___index] = TVPAdditiveBlend_a_a_o(dest[___index], src[___index], opa);
+	dest[___index] = TVPAddAlphaBlend_a_a_o(dest[___index], src[___index], opa);
 			___index ++;
 		}
 	}
@@ -1377,25 +1377,25 @@ TVP_GL_FUNC_DECL(void, TVPStretchAlphaBlend_a_c, (tjs_uint32 *dest, tjs_int len,
 	switch(len % 4)
 	{
 	case 0: do { {
-	*dest = TVPAdditiveBlend_a_d(*dest, src[srcstart >> 16]);
+	*dest = TVPAddAlphaBlend_a_d(*dest, src[srcstart >> 16]);
 	srcstart += srcstep;
 	dest++;
 }
 ;
 	case 3: {
-	*dest = TVPAdditiveBlend_a_d(*dest, src[srcstart >> 16]);
+	*dest = TVPAddAlphaBlend_a_d(*dest, src[srcstart >> 16]);
 	srcstart += srcstep;
 	dest++;
 }
 ;
 	case 2: {
-	*dest = TVPAdditiveBlend_a_d(*dest, src[srcstart >> 16]);
+	*dest = TVPAddAlphaBlend_a_d(*dest, src[srcstart >> 16]);
 	srcstart += srcstep;
 	dest++;
 }
 ;
 	case 1: {
-	*dest = TVPAdditiveBlend_a_d(*dest, src[srcstart >> 16]);
+	*dest = TVPAddAlphaBlend_a_d(*dest, src[srcstart >> 16]);
 	srcstart += srcstep;
 	dest++;
 }
@@ -1488,25 +1488,25 @@ TVP_GL_FUNC_DECL(void, TVPStretchAlphaBlend_ao_c, (tjs_uint32 *dest, tjs_int len
 	switch(len % 4)
 	{
 	case 0: do { {
-	*dest = TVPAdditiveBlend_a_d_o(*dest, src[srcstart >> 16], opa);
+	*dest = TVPAddAlphaBlend_a_d_o(*dest, src[srcstart >> 16], opa);
 	srcstart += srcstep;
 	dest++;
 }
 ;
 	case 3: {
-	*dest = TVPAdditiveBlend_a_d_o(*dest, src[srcstart >> 16], opa);
+	*dest = TVPAddAlphaBlend_a_d_o(*dest, src[srcstart >> 16], opa);
 	srcstart += srcstep;
 	dest++;
 }
 ;
 	case 2: {
-	*dest = TVPAdditiveBlend_a_d_o(*dest, src[srcstart >> 16], opa);
+	*dest = TVPAddAlphaBlend_a_d_o(*dest, src[srcstart >> 16], opa);
 	srcstart += srcstep;
 	dest++;
 }
 ;
 	case 1: {
-	*dest = TVPAdditiveBlend_a_d_o(*dest, src[srcstart >> 16], opa);
+	*dest = TVPAddAlphaBlend_a_d_o(*dest, src[srcstart >> 16], opa);
 	srcstart += srcstep;
 	dest++;
 }
@@ -1525,25 +1525,25 @@ TVP_GL_FUNC_DECL(void, TVPStretchAdditiveAlphaBlend_c, (tjs_uint32 *dest, tjs_in
 	switch(len % 4)
 	{
 	case 0: do { {
-	*dest = TVPAdditiveBlend_n_a(*dest, src[srcstart >> 16]);
+	*dest = TVPAddAlphaBlend_n_a(*dest, src[srcstart >> 16]);
 	srcstart += srcstep;
 	dest++;
 }
 ;
 	case 3: {
-	*dest = TVPAdditiveBlend_n_a(*dest, src[srcstart >> 16]);
+	*dest = TVPAddAlphaBlend_n_a(*dest, src[srcstart >> 16]);
 	srcstart += srcstep;
 	dest++;
 }
 ;
 	case 2: {
-	*dest = TVPAdditiveBlend_n_a(*dest, src[srcstart >> 16]);
+	*dest = TVPAddAlphaBlend_n_a(*dest, src[srcstart >> 16]);
 	srcstart += srcstep;
 	dest++;
 }
 ;
 	case 1: {
-	*dest = TVPAdditiveBlend_n_a(*dest, src[srcstart >> 16]);
+	*dest = TVPAddAlphaBlend_n_a(*dest, src[srcstart >> 16]);
 	srcstart += srcstep;
 	dest++;
 }
@@ -1567,7 +1567,7 @@ TVP_GL_FUNC_DECL(void, TVPInterpStretchAdditiveAlphaBlend_c, (tjs_uint32 *dest, 
 	{
 		blend_x = (srcstart & 0xffff) >> 8;
 		sp = srcstart >> 16;
-		dest[0] = TVPAdditiveBlend_n_a(dest[0], TVPBlendARGB(
+		dest[0] = TVPAddAlphaBlend_n_a(dest[0], TVPBlendARGB(
 			TVPBlendARGB(src1[sp], src1[sp+1], blend_x),
 			TVPBlendARGB(src2[sp], src2[sp+1], blend_x),
 				blend_y));
@@ -1575,7 +1575,7 @@ TVP_GL_FUNC_DECL(void, TVPInterpStretchAdditiveAlphaBlend_c, (tjs_uint32 *dest, 
 
 		blend_x = (srcstart & 0xffff) >> 8;
 		sp = srcstart >> 16;
-		dest[1] = TVPAdditiveBlend_n_a(dest[1], TVPBlendARGB(
+		dest[1] = TVPAddAlphaBlend_n_a(dest[1], TVPBlendARGB(
 			TVPBlendARGB(src1[sp], src1[sp+1], blend_x),
 			TVPBlendARGB(src2[sp], src2[sp+1], blend_x),
 				blend_y));
@@ -1591,7 +1591,7 @@ TVP_GL_FUNC_DECL(void, TVPInterpStretchAdditiveAlphaBlend_c, (tjs_uint32 *dest, 
 	{
 		blend_x = (srcstart & 0xffff) >> 8;
 		sp = srcstart >> 16;
-		dest[0] = TVPAdditiveBlend_n_a(dest[0], TVPBlendARGB(
+		dest[0] = TVPAddAlphaBlend_n_a(dest[0], TVPBlendARGB(
 			TVPBlendARGB(src1[sp], src1[sp+1], blend_x),
 			TVPBlendARGB(src2[sp], src2[sp+1], blend_x),
 				blend_y));
@@ -1612,25 +1612,25 @@ TVP_GL_FUNC_DECL(void, TVPStretchAdditiveAlphaBlend_HDA_c, (tjs_uint32 *dest, tj
 	switch(len % 4)
 	{
 	case 0: do { {
-	*dest = TVPAdditiveBlend_HDA_n_a(*dest, src[srcstart >> 16]);
+	*dest = TVPAddAlphaBlend_HDA_n_a(*dest, src[srcstart >> 16]);
 	srcstart += srcstep;
 	dest++;
 }
 ;
 	case 3: {
-	*dest = TVPAdditiveBlend_HDA_n_a(*dest, src[srcstart >> 16]);
+	*dest = TVPAddAlphaBlend_HDA_n_a(*dest, src[srcstart >> 16]);
 	srcstart += srcstep;
 	dest++;
 }
 ;
 	case 2: {
-	*dest = TVPAdditiveBlend_HDA_n_a(*dest, src[srcstart >> 16]);
+	*dest = TVPAddAlphaBlend_HDA_n_a(*dest, src[srcstart >> 16]);
 	srcstart += srcstep;
 	dest++;
 }
 ;
 	case 1: {
-	*dest = TVPAdditiveBlend_HDA_n_a(*dest, src[srcstart >> 16]);
+	*dest = TVPAddAlphaBlend_HDA_n_a(*dest, src[srcstart >> 16]);
 	srcstart += srcstep;
 	dest++;
 }
@@ -1649,25 +1649,25 @@ TVP_GL_FUNC_DECL(void, TVPStretchAdditiveAlphaBlend_o_c, (tjs_uint32 *dest, tjs_
 	switch(len % 4)
 	{
 	case 0: do { {
-	*dest = TVPAdditiveBlend_n_a_o(*dest, src[srcstart >> 16], opa);
+	*dest = TVPAddAlphaBlend_n_a_o(*dest, src[srcstart >> 16], opa);
 	srcstart += srcstep;
 	dest++;
 }
 ;
 	case 3: {
-	*dest = TVPAdditiveBlend_n_a_o(*dest, src[srcstart >> 16], opa);
+	*dest = TVPAddAlphaBlend_n_a_o(*dest, src[srcstart >> 16], opa);
 	srcstart += srcstep;
 	dest++;
 }
 ;
 	case 2: {
-	*dest = TVPAdditiveBlend_n_a_o(*dest, src[srcstart >> 16], opa);
+	*dest = TVPAddAlphaBlend_n_a_o(*dest, src[srcstart >> 16], opa);
 	srcstart += srcstep;
 	dest++;
 }
 ;
 	case 1: {
-	*dest = TVPAdditiveBlend_n_a_o(*dest, src[srcstart >> 16], opa);
+	*dest = TVPAddAlphaBlend_n_a_o(*dest, src[srcstart >> 16], opa);
 	srcstart += srcstep;
 	dest++;
 }
@@ -1691,7 +1691,7 @@ TVP_GL_FUNC_DECL(void, TVPInterpStretchAdditiveAlphaBlend_o_c, (tjs_uint32 *dest
 	{
 		blend_x = (srcstart & 0xffff) >> 8;
 		sp = srcstart >> 16;
-		dest[0] = TVPAdditiveBlend_n_a_o(dest[0], TVPBlendARGB(
+		dest[0] = TVPAddAlphaBlend_n_a_o(dest[0], TVPBlendARGB(
 			TVPBlendARGB(src1[sp], src1[sp+1], blend_x),
 			TVPBlendARGB(src2[sp], src2[sp+1], blend_x),
 				blend_y), opa);
@@ -1699,7 +1699,7 @@ TVP_GL_FUNC_DECL(void, TVPInterpStretchAdditiveAlphaBlend_o_c, (tjs_uint32 *dest
 
 		blend_x = (srcstart & 0xffff) >> 8;
 		sp = srcstart >> 16;
-		dest[1] = TVPAdditiveBlend_n_a_o(dest[1], TVPBlendARGB(
+		dest[1] = TVPAddAlphaBlend_n_a_o(dest[1], TVPBlendARGB(
 			TVPBlendARGB(src1[sp], src1[sp+1], blend_x),
 			TVPBlendARGB(src2[sp], src2[sp+1], blend_x),
 				blend_y), opa);
@@ -1715,7 +1715,7 @@ TVP_GL_FUNC_DECL(void, TVPInterpStretchAdditiveAlphaBlend_o_c, (tjs_uint32 *dest
 	{
 		blend_x = (srcstart & 0xffff) >> 8;
 		sp = srcstart >> 16;
-		dest[0] = TVPAdditiveBlend_n_a_o(dest[0], TVPBlendARGB(
+		dest[0] = TVPAddAlphaBlend_n_a_o(dest[0], TVPBlendARGB(
 			TVPBlendARGB(src1[sp], src1[sp+1], blend_x),
 			TVPBlendARGB(src2[sp], src2[sp+1], blend_x),
 				blend_y), opa);
@@ -1735,25 +1735,25 @@ TVP_GL_FUNC_DECL(void, TVPStretchAdditiveAlphaBlend_HDA_o_c, (tjs_uint32 *dest, 
 	switch(len % 4)
 	{
 	case 0: do { {
-	*dest = TVPAdditiveBlend_HDA_n_a_o(*dest, src[srcstart >> 16], opa);
+	*dest = TVPAddAlphaBlend_HDA_n_a_o(*dest, src[srcstart >> 16], opa);
 	srcstart += srcstep;
 	dest++;
 }
 ;
 	case 3: {
-	*dest = TVPAdditiveBlend_HDA_n_a_o(*dest, src[srcstart >> 16], opa);
+	*dest = TVPAddAlphaBlend_HDA_n_a_o(*dest, src[srcstart >> 16], opa);
 	srcstart += srcstep;
 	dest++;
 }
 ;
 	case 2: {
-	*dest = TVPAdditiveBlend_HDA_n_a_o(*dest, src[srcstart >> 16], opa);
+	*dest = TVPAddAlphaBlend_HDA_n_a_o(*dest, src[srcstart >> 16], opa);
 	srcstart += srcstep;
 	dest++;
 }
 ;
 	case 1: {
-	*dest = TVPAdditiveBlend_HDA_n_a_o(*dest, src[srcstart >> 16], opa);
+	*dest = TVPAddAlphaBlend_HDA_n_a_o(*dest, src[srcstart >> 16], opa);
 	srcstart += srcstep;
 	dest++;
 }
@@ -1809,25 +1809,25 @@ TVP_GL_FUNC_DECL(void, TVPStretchAdditiveAlphaBlend_a_c, (tjs_uint32 *dest, tjs_
 	switch(len % 4)
 	{
 	case 0: do { {
-	*dest = TVPAdditiveBlend_a_a(*dest, src[srcstart >> 16]);
+	*dest = TVPAddAlphaBlend_a_a(*dest, src[srcstart >> 16]);
 	srcstart += srcstep;
 	dest++;
 }
 ;
 	case 3: {
-	*dest = TVPAdditiveBlend_a_a(*dest, src[srcstart >> 16]);
+	*dest = TVPAddAlphaBlend_a_a(*dest, src[srcstart >> 16]);
 	srcstart += srcstep;
 	dest++;
 }
 ;
 	case 2: {
-	*dest = TVPAdditiveBlend_a_a(*dest, src[srcstart >> 16]);
+	*dest = TVPAddAlphaBlend_a_a(*dest, src[srcstart >> 16]);
 	srcstart += srcstep;
 	dest++;
 }
 ;
 	case 1: {
-	*dest = TVPAdditiveBlend_a_a(*dest, src[srcstart >> 16]);
+	*dest = TVPAddAlphaBlend_a_a(*dest, src[srcstart >> 16]);
 	srcstart += srcstep;
 	dest++;
 }
@@ -1883,25 +1883,25 @@ TVP_GL_FUNC_DECL(void, TVPStretchAdditiveAlphaBlend_ao_c, (tjs_uint32 *dest, tjs
 	switch(len % 4)
 	{
 	case 0: do { {
-	*dest = TVPAdditiveBlend_a_a_o(*dest, src[srcstart >> 16], opa);
+	*dest = TVPAddAlphaBlend_a_a_o(*dest, src[srcstart >> 16], opa);
 	srcstart += srcstep;
 	dest++;
 }
 ;
 	case 3: {
-	*dest = TVPAdditiveBlend_a_a_o(*dest, src[srcstart >> 16], opa);
+	*dest = TVPAddAlphaBlend_a_a_o(*dest, src[srcstart >> 16], opa);
 	srcstart += srcstep;
 	dest++;
 }
 ;
 	case 2: {
-	*dest = TVPAdditiveBlend_a_a_o(*dest, src[srcstart >> 16], opa);
+	*dest = TVPAddAlphaBlend_a_a_o(*dest, src[srcstart >> 16], opa);
 	srcstart += srcstep;
 	dest++;
 }
 ;
 	case 1: {
-	*dest = TVPAdditiveBlend_a_a_o(*dest, src[srcstart >> 16], opa);
+	*dest = TVPAddAlphaBlend_a_a_o(*dest, src[srcstart >> 16], opa);
 	srcstart += srcstep;
 	dest++;
 }
@@ -2281,7 +2281,7 @@ TVP_GL_FUNC_DECL(void, TVPLinTransAlphaBlend_a_c, (tjs_uint32 *dest, tjs_int len
 	switch(len % 4)
 	{
 	case 0: do { {
-	*dest = TVPAdditiveBlend_a_d(*dest, 
+	*dest = TVPAddAlphaBlend_a_d(*dest, 
 		*( (const tjs_uint32*)((const tjs_uint8*)src + (sy>>16)*srcpitch) + (sx>>16)));
 	sx += stepx;
 	sy += stepy;
@@ -2289,7 +2289,7 @@ TVP_GL_FUNC_DECL(void, TVPLinTransAlphaBlend_a_c, (tjs_uint32 *dest, tjs_int len
 }
 ;
 	case 3: {
-	*dest = TVPAdditiveBlend_a_d(*dest, 
+	*dest = TVPAddAlphaBlend_a_d(*dest, 
 		*( (const tjs_uint32*)((const tjs_uint8*)src + (sy>>16)*srcpitch) + (sx>>16)));
 	sx += stepx;
 	sy += stepy;
@@ -2297,7 +2297,7 @@ TVP_GL_FUNC_DECL(void, TVPLinTransAlphaBlend_a_c, (tjs_uint32 *dest, tjs_int len
 }
 ;
 	case 2: {
-	*dest = TVPAdditiveBlend_a_d(*dest, 
+	*dest = TVPAddAlphaBlend_a_d(*dest, 
 		*( (const tjs_uint32*)((const tjs_uint8*)src + (sy>>16)*srcpitch) + (sx>>16)));
 	sx += stepx;
 	sy += stepy;
@@ -2305,7 +2305,7 @@ TVP_GL_FUNC_DECL(void, TVPLinTransAlphaBlend_a_c, (tjs_uint32 *dest, tjs_int len
 }
 ;
 	case 1: {
-	*dest = TVPAdditiveBlend_a_d(*dest, 
+	*dest = TVPAddAlphaBlend_a_d(*dest, 
 		*( (const tjs_uint32*)((const tjs_uint8*)src + (sy>>16)*srcpitch) + (sx>>16)));
 	sx += stepx;
 	sy += stepy;
@@ -2404,7 +2404,7 @@ TVP_GL_FUNC_DECL(void, TVPLinTransAlphaBlend_ao_c, (tjs_uint32 *dest, tjs_int le
 	switch(len % 4)
 	{
 	case 0: do { {
-	*dest = TVPAdditiveBlend_a_d_o(*dest, 
+	*dest = TVPAddAlphaBlend_a_d_o(*dest, 
 		*( (const tjs_uint32*)((const tjs_uint8*)src + (sy>>16)*srcpitch) + (sx>>16)), opa);
 	sx += stepx;
 	sy += stepy;
@@ -2412,7 +2412,7 @@ TVP_GL_FUNC_DECL(void, TVPLinTransAlphaBlend_ao_c, (tjs_uint32 *dest, tjs_int le
 }
 ;
 	case 3: {
-	*dest = TVPAdditiveBlend_a_d_o(*dest, 
+	*dest = TVPAddAlphaBlend_a_d_o(*dest, 
 		*( (const tjs_uint32*)((const tjs_uint8*)src + (sy>>16)*srcpitch) + (sx>>16)), opa);
 	sx += stepx;
 	sy += stepy;
@@ -2420,7 +2420,7 @@ TVP_GL_FUNC_DECL(void, TVPLinTransAlphaBlend_ao_c, (tjs_uint32 *dest, tjs_int le
 }
 ;
 	case 2: {
-	*dest = TVPAdditiveBlend_a_d_o(*dest, 
+	*dest = TVPAddAlphaBlend_a_d_o(*dest, 
 		*( (const tjs_uint32*)((const tjs_uint8*)src + (sy>>16)*srcpitch) + (sx>>16)), opa);
 	sx += stepx;
 	sy += stepy;
@@ -2428,7 +2428,7 @@ TVP_GL_FUNC_DECL(void, TVPLinTransAlphaBlend_ao_c, (tjs_uint32 *dest, tjs_int le
 }
 ;
 	case 1: {
-	*dest = TVPAdditiveBlend_a_d_o(*dest, 
+	*dest = TVPAddAlphaBlend_a_d_o(*dest, 
 		*( (const tjs_uint32*)((const tjs_uint8*)src + (sy>>16)*srcpitch) + (sx>>16)), opa);
 	sx += stepx;
 	sy += stepy;
@@ -2449,7 +2449,7 @@ TVP_GL_FUNC_DECL(void, TVPLinTransAdditiveAlphaBlend_c, (tjs_uint32 *dest, tjs_i
 	switch(len % 4)
 	{
 	case 0: do { {
-	*dest = TVPAdditiveBlend_n_a(*dest, 
+	*dest = TVPAddAlphaBlend_n_a(*dest, 
 		*( (const tjs_uint32*)((const tjs_uint8*)src + (sy>>16)*srcpitch) + (sx>>16)));
 	sx += stepx;
 	sy += stepy;
@@ -2457,7 +2457,7 @@ TVP_GL_FUNC_DECL(void, TVPLinTransAdditiveAlphaBlend_c, (tjs_uint32 *dest, tjs_i
 }
 ;
 	case 3: {
-	*dest = TVPAdditiveBlend_n_a(*dest, 
+	*dest = TVPAddAlphaBlend_n_a(*dest, 
 		*( (const tjs_uint32*)((const tjs_uint8*)src + (sy>>16)*srcpitch) + (sx>>16)));
 	sx += stepx;
 	sy += stepy;
@@ -2465,7 +2465,7 @@ TVP_GL_FUNC_DECL(void, TVPLinTransAdditiveAlphaBlend_c, (tjs_uint32 *dest, tjs_i
 }
 ;
 	case 2: {
-	*dest = TVPAdditiveBlend_n_a(*dest, 
+	*dest = TVPAddAlphaBlend_n_a(*dest, 
 		*( (const tjs_uint32*)((const tjs_uint8*)src + (sy>>16)*srcpitch) + (sx>>16)));
 	sx += stepx;
 	sy += stepy;
@@ -2473,7 +2473,7 @@ TVP_GL_FUNC_DECL(void, TVPLinTransAdditiveAlphaBlend_c, (tjs_uint32 *dest, tjs_i
 }
 ;
 	case 1: {
-	*dest = TVPAdditiveBlend_n_a(*dest, 
+	*dest = TVPAddAlphaBlend_n_a(*dest, 
 		*( (const tjs_uint32*)((const tjs_uint8*)src + (sy>>16)*srcpitch) + (sx>>16)));
 	sx += stepx;
 	sy += stepy;
@@ -2502,7 +2502,7 @@ TVP_GL_FUNC_DECL(void, TVPInterpLinTransAdditiveAlphaBlend_c, (tjs_uint32 *dest,
 		blend_y += blend_y >> 7;
 		p0 = (const tjs_uint32*)((const tjs_uint8*)src + ((sy>>16)  )*srcpitch) + (sx>>16);
 		p1 = (const tjs_uint32*)((const tjs_uint8*)p0 + srcpitch);
-		dest[0] = TVPAdditiveBlend_n_a(dest[0], TVPBlendARGB(
+		dest[0] = TVPAddAlphaBlend_n_a(dest[0], TVPBlendARGB(
 			TVPBlendARGB(p0[0], p0[1], blend_x),
 			TVPBlendARGB(p1[0], p1[1], blend_x),
 				blend_y));
@@ -2514,7 +2514,7 @@ TVP_GL_FUNC_DECL(void, TVPInterpLinTransAdditiveAlphaBlend_c, (tjs_uint32 *dest,
 		blend_y += blend_y >> 7;
 		p0 = (const tjs_uint32*)((const tjs_uint8*)src + ((sy>>16)  )*srcpitch) + (sx>>16);
 		p1 = (const tjs_uint32*)((const tjs_uint8*)p0 + srcpitch);
-		dest[1] = TVPAdditiveBlend_n_a(dest[1], TVPBlendARGB(
+		dest[1] = TVPAddAlphaBlend_n_a(dest[1], TVPBlendARGB(
 			TVPBlendARGB(p0[0], p0[1], blend_x),
 			TVPBlendARGB(p1[0], p1[1], blend_x),
 				blend_y));
@@ -2537,7 +2537,7 @@ TVP_GL_FUNC_DECL(void, TVPInterpLinTransAdditiveAlphaBlend_c, (tjs_uint32 *dest,
 		blend_y += blend_y >> 7;
 		p0 = (const tjs_uint32*)((const tjs_uint8*)src + ((sy>>16)  )*srcpitch) + (sx>>16);
 		p1 = (const tjs_uint32*)((const tjs_uint8*)p0 + srcpitch);
-		dest[0] = TVPAdditiveBlend_n_a(dest[0], TVPBlendARGB(
+		dest[0] = TVPAddAlphaBlend_n_a(dest[0], TVPBlendARGB(
 			TVPBlendARGB(p0[0], p0[1], blend_x),
 			TVPBlendARGB(p1[0], p1[1], blend_x),
 				blend_y));
@@ -2559,7 +2559,7 @@ TVP_GL_FUNC_DECL(void, TVPLinTransAdditiveAlphaBlend_HDA_c, (tjs_uint32 *dest, t
 	switch(len % 4)
 	{
 	case 0: do { {
-	*dest = TVPAdditiveBlend_HDA_n_a(*dest, 
+	*dest = TVPAddAlphaBlend_HDA_n_a(*dest, 
 		*( (const tjs_uint32*)((const tjs_uint8*)src + (sy>>16)*srcpitch) + (sx>>16)));
 	sx += stepx;
 	sy += stepy;
@@ -2567,7 +2567,7 @@ TVP_GL_FUNC_DECL(void, TVPLinTransAdditiveAlphaBlend_HDA_c, (tjs_uint32 *dest, t
 }
 ;
 	case 3: {
-	*dest = TVPAdditiveBlend_HDA_n_a(*dest, 
+	*dest = TVPAddAlphaBlend_HDA_n_a(*dest, 
 		*( (const tjs_uint32*)((const tjs_uint8*)src + (sy>>16)*srcpitch) + (sx>>16)));
 	sx += stepx;
 	sy += stepy;
@@ -2575,7 +2575,7 @@ TVP_GL_FUNC_DECL(void, TVPLinTransAdditiveAlphaBlend_HDA_c, (tjs_uint32 *dest, t
 }
 ;
 	case 2: {
-	*dest = TVPAdditiveBlend_HDA_n_a(*dest, 
+	*dest = TVPAddAlphaBlend_HDA_n_a(*dest, 
 		*( (const tjs_uint32*)((const tjs_uint8*)src + (sy>>16)*srcpitch) + (sx>>16)));
 	sx += stepx;
 	sy += stepy;
@@ -2583,7 +2583,7 @@ TVP_GL_FUNC_DECL(void, TVPLinTransAdditiveAlphaBlend_HDA_c, (tjs_uint32 *dest, t
 }
 ;
 	case 1: {
-	*dest = TVPAdditiveBlend_HDA_n_a(*dest, 
+	*dest = TVPAddAlphaBlend_HDA_n_a(*dest, 
 		*( (const tjs_uint32*)((const tjs_uint8*)src + (sy>>16)*srcpitch) + (sx>>16)));
 	sx += stepx;
 	sy += stepy;
@@ -2604,7 +2604,7 @@ TVP_GL_FUNC_DECL(void, TVPLinTransAdditiveAlphaBlend_o_c, (tjs_uint32 *dest, tjs
 	switch(len % 4)
 	{
 	case 0: do { {
-	*dest = TVPAdditiveBlend_n_a_o(*dest, 
+	*dest = TVPAddAlphaBlend_n_a_o(*dest, 
 		*( (const tjs_uint32*)((const tjs_uint8*)src + (sy>>16)*srcpitch) + (sx>>16)), opa);
 	sx += stepx;
 	sy += stepy;
@@ -2612,7 +2612,7 @@ TVP_GL_FUNC_DECL(void, TVPLinTransAdditiveAlphaBlend_o_c, (tjs_uint32 *dest, tjs
 }
 ;
 	case 3: {
-	*dest = TVPAdditiveBlend_n_a_o(*dest, 
+	*dest = TVPAddAlphaBlend_n_a_o(*dest, 
 		*( (const tjs_uint32*)((const tjs_uint8*)src + (sy>>16)*srcpitch) + (sx>>16)), opa);
 	sx += stepx;
 	sy += stepy;
@@ -2620,7 +2620,7 @@ TVP_GL_FUNC_DECL(void, TVPLinTransAdditiveAlphaBlend_o_c, (tjs_uint32 *dest, tjs
 }
 ;
 	case 2: {
-	*dest = TVPAdditiveBlend_n_a_o(*dest, 
+	*dest = TVPAddAlphaBlend_n_a_o(*dest, 
 		*( (const tjs_uint32*)((const tjs_uint8*)src + (sy>>16)*srcpitch) + (sx>>16)), opa);
 	sx += stepx;
 	sy += stepy;
@@ -2628,7 +2628,7 @@ TVP_GL_FUNC_DECL(void, TVPLinTransAdditiveAlphaBlend_o_c, (tjs_uint32 *dest, tjs
 }
 ;
 	case 1: {
-	*dest = TVPAdditiveBlend_n_a_o(*dest, 
+	*dest = TVPAddAlphaBlend_n_a_o(*dest, 
 		*( (const tjs_uint32*)((const tjs_uint8*)src + (sy>>16)*srcpitch) + (sx>>16)), opa);
 	sx += stepx;
 	sy += stepy;
@@ -2659,7 +2659,7 @@ TVP_GL_FUNC_DECL(void, TVPInterpLinTransAdditiveAlphaBlend_o_c, (tjs_uint32 *des
 		blend_y += blend_y >> 7;
 		p0 = (const tjs_uint32*)((const tjs_uint8*)src + ((sy>>16)  )*srcpitch) + (sx>>16);
 		p1 = (const tjs_uint32*)((const tjs_uint8*)p0 + srcpitch);
-		dest[0] = TVPAdditiveBlend_n_a_o(dest[0], TVPBlendARGB(
+		dest[0] = TVPAddAlphaBlend_n_a_o(dest[0], TVPBlendARGB(
 			TVPBlendARGB(p0[0], p0[1], blend_x),
 			TVPBlendARGB(p1[0], p1[1], blend_x),
 				blend_y), opa);
@@ -2671,7 +2671,7 @@ TVP_GL_FUNC_DECL(void, TVPInterpLinTransAdditiveAlphaBlend_o_c, (tjs_uint32 *des
 		blend_y += blend_y >> 7;
 		p0 = (const tjs_uint32*)((const tjs_uint8*)src + ((sy>>16)  )*srcpitch) + (sx>>16);
 		p1 = (const tjs_uint32*)((const tjs_uint8*)p0 + srcpitch);
-		dest[1] = TVPAdditiveBlend_n_a_o(dest[1], TVPBlendARGB(
+		dest[1] = TVPAddAlphaBlend_n_a_o(dest[1], TVPBlendARGB(
 			TVPBlendARGB(p0[0], p0[1], blend_x),
 			TVPBlendARGB(p1[0], p1[1], blend_x),
 				blend_y), opa);
@@ -2694,7 +2694,7 @@ TVP_GL_FUNC_DECL(void, TVPInterpLinTransAdditiveAlphaBlend_o_c, (tjs_uint32 *des
 		blend_y += blend_y >> 7;
 		p0 = (const tjs_uint32*)((const tjs_uint8*)src + ((sy>>16)  )*srcpitch) + (sx>>16);
 		p1 = (const tjs_uint32*)((const tjs_uint8*)p0 + srcpitch);
-		dest[0] = TVPAdditiveBlend_n_a_o(dest[0], TVPBlendARGB(
+		dest[0] = TVPAddAlphaBlend_n_a_o(dest[0], TVPBlendARGB(
 			TVPBlendARGB(p0[0], p0[1], blend_x),
 			TVPBlendARGB(p1[0], p1[1], blend_x),
 				blend_y), opa);
@@ -2715,7 +2715,7 @@ TVP_GL_FUNC_DECL(void, TVPLinTransAdditiveAlphaBlend_HDA_o_c, (tjs_uint32 *dest,
 	switch(len % 4)
 	{
 	case 0: do { {
-	*dest = TVPAdditiveBlend_HDA_n_a_o(*dest, 
+	*dest = TVPAddAlphaBlend_HDA_n_a_o(*dest, 
 		*( (const tjs_uint32*)((const tjs_uint8*)src + (sy>>16)*srcpitch) + (sx>>16)), opa);
 	sx += stepx;
 	sy += stepy;
@@ -2723,7 +2723,7 @@ TVP_GL_FUNC_DECL(void, TVPLinTransAdditiveAlphaBlend_HDA_o_c, (tjs_uint32 *dest,
 }
 ;
 	case 3: {
-	*dest = TVPAdditiveBlend_HDA_n_a_o(*dest, 
+	*dest = TVPAddAlphaBlend_HDA_n_a_o(*dest, 
 		*( (const tjs_uint32*)((const tjs_uint8*)src + (sy>>16)*srcpitch) + (sx>>16)), opa);
 	sx += stepx;
 	sy += stepy;
@@ -2731,7 +2731,7 @@ TVP_GL_FUNC_DECL(void, TVPLinTransAdditiveAlphaBlend_HDA_o_c, (tjs_uint32 *dest,
 }
 ;
 	case 2: {
-	*dest = TVPAdditiveBlend_HDA_n_a_o(*dest, 
+	*dest = TVPAddAlphaBlend_HDA_n_a_o(*dest, 
 		*( (const tjs_uint32*)((const tjs_uint8*)src + (sy>>16)*srcpitch) + (sx>>16)), opa);
 	sx += stepx;
 	sy += stepy;
@@ -2739,7 +2739,7 @@ TVP_GL_FUNC_DECL(void, TVPLinTransAdditiveAlphaBlend_HDA_o_c, (tjs_uint32 *dest,
 }
 ;
 	case 1: {
-	*dest = TVPAdditiveBlend_HDA_n_a_o(*dest, 
+	*dest = TVPAddAlphaBlend_HDA_n_a_o(*dest, 
 		*( (const tjs_uint32*)((const tjs_uint8*)src + (sy>>16)*srcpitch) + (sx>>16)), opa);
 	sx += stepx;
 	sy += stepy;
@@ -2801,7 +2801,7 @@ TVP_GL_FUNC_DECL(void, TVPLinTransAdditiveAlphaBlend_a_c, (tjs_uint32 *dest, tjs
 	switch(len % 4)
 	{
 	case 0: do { {
-	*dest = TVPAdditiveBlend_a_a(*dest, 
+	*dest = TVPAddAlphaBlend_a_a(*dest, 
 		*( (const tjs_uint32*)((const tjs_uint8*)src + (sy>>16)*srcpitch) + (sx>>16)));
 	sx += stepx;
 	sy += stepy;
@@ -2809,7 +2809,7 @@ TVP_GL_FUNC_DECL(void, TVPLinTransAdditiveAlphaBlend_a_c, (tjs_uint32 *dest, tjs
 }
 ;
 	case 3: {
-	*dest = TVPAdditiveBlend_a_a(*dest, 
+	*dest = TVPAddAlphaBlend_a_a(*dest, 
 		*( (const tjs_uint32*)((const tjs_uint8*)src + (sy>>16)*srcpitch) + (sx>>16)));
 	sx += stepx;
 	sy += stepy;
@@ -2817,7 +2817,7 @@ TVP_GL_FUNC_DECL(void, TVPLinTransAdditiveAlphaBlend_a_c, (tjs_uint32 *dest, tjs
 }
 ;
 	case 2: {
-	*dest = TVPAdditiveBlend_a_a(*dest, 
+	*dest = TVPAddAlphaBlend_a_a(*dest, 
 		*( (const tjs_uint32*)((const tjs_uint8*)src + (sy>>16)*srcpitch) + (sx>>16)));
 	sx += stepx;
 	sy += stepy;
@@ -2825,7 +2825,7 @@ TVP_GL_FUNC_DECL(void, TVPLinTransAdditiveAlphaBlend_a_c, (tjs_uint32 *dest, tjs
 }
 ;
 	case 1: {
-	*dest = TVPAdditiveBlend_a_a(*dest, 
+	*dest = TVPAddAlphaBlend_a_a(*dest, 
 		*( (const tjs_uint32*)((const tjs_uint8*)src + (sy>>16)*srcpitch) + (sx>>16)));
 	sx += stepx;
 	sy += stepy;
@@ -2887,7 +2887,7 @@ TVP_GL_FUNC_DECL(void, TVPLinTransAdditiveAlphaBlend_ao_c, (tjs_uint32 *dest, tj
 	switch(len % 4)
 	{
 	case 0: do { {
-	*dest = TVPAdditiveBlend_a_a_o(*dest, 
+	*dest = TVPAddAlphaBlend_a_a_o(*dest, 
 		*( (const tjs_uint32*)((const tjs_uint8*)src + (sy>>16)*srcpitch) + (sx>>16)), opa);
 	sx += stepx;
 	sy += stepy;
@@ -2895,7 +2895,7 @@ TVP_GL_FUNC_DECL(void, TVPLinTransAdditiveAlphaBlend_ao_c, (tjs_uint32 *dest, tj
 }
 ;
 	case 3: {
-	*dest = TVPAdditiveBlend_a_a_o(*dest, 
+	*dest = TVPAddAlphaBlend_a_a_o(*dest, 
 		*( (const tjs_uint32*)((const tjs_uint8*)src + (sy>>16)*srcpitch) + (sx>>16)), opa);
 	sx += stepx;
 	sy += stepy;
@@ -2903,7 +2903,7 @@ TVP_GL_FUNC_DECL(void, TVPLinTransAdditiveAlphaBlend_ao_c, (tjs_uint32 *dest, tj
 }
 ;
 	case 2: {
-	*dest = TVPAdditiveBlend_a_a_o(*dest, 
+	*dest = TVPAddAlphaBlend_a_a_o(*dest, 
 		*( (const tjs_uint32*)((const tjs_uint8*)src + (sy>>16)*srcpitch) + (sx>>16)), opa);
 	sx += stepx;
 	sy += stepy;
@@ -2911,7 +2911,7 @@ TVP_GL_FUNC_DECL(void, TVPLinTransAdditiveAlphaBlend_ao_c, (tjs_uint32 *dest, tj
 }
 ;
 	case 1: {
-	*dest = TVPAdditiveBlend_a_a_o(*dest, 
+	*dest = TVPAddAlphaBlend_a_a_o(*dest, 
 		*( (const tjs_uint32*)((const tjs_uint8*)src + (sy>>16)*srcpitch) + (sx>>16)), opa);
 	sx += stepx;
 	sy += stepy;
@@ -3182,10 +3182,10 @@ TVP_GL_FUNC_DECL(void, TVPConstAlphaBlend_a_c, (tjs_uint32 *dest, const tjs_uint
 
 		while(___index < len)
 		{
-	dest[(___index+0)] = TVPAdditiveBlend_a_a(dest[(___index+0)], (src[(___index+0)] & 0xffffff) | opa);
-	dest[(___index+1)] = TVPAdditiveBlend_a_a(dest[(___index+1)], (src[(___index+1)] & 0xffffff) | opa);
-	dest[(___index+2)] = TVPAdditiveBlend_a_a(dest[(___index+2)], (src[(___index+2)] & 0xffffff) | opa);
-	dest[(___index+3)] = TVPAdditiveBlend_a_a(dest[(___index+3)], (src[(___index+3)] & 0xffffff) | opa);
+	dest[(___index+0)] = TVPAddAlphaBlend_a_a(dest[(___index+0)], (src[(___index+0)] & 0xffffff) | opa);
+	dest[(___index+1)] = TVPAddAlphaBlend_a_a(dest[(___index+1)], (src[(___index+1)] & 0xffffff) | opa);
+	dest[(___index+2)] = TVPAddAlphaBlend_a_a(dest[(___index+2)], (src[(___index+2)] & 0xffffff) | opa);
+	dest[(___index+3)] = TVPAddAlphaBlend_a_a(dest[(___index+3)], (src[(___index+3)] & 0xffffff) | opa);
 			___index += 4;
 		}
 
@@ -3193,7 +3193,7 @@ TVP_GL_FUNC_DECL(void, TVPConstAlphaBlend_a_c, (tjs_uint32 *dest, const tjs_uint
 
 		while(___index < len)
 		{
-	dest[___index] = TVPAdditiveBlend_a_a(dest[___index], (src[___index] & 0xffffff) | opa);
+	dest[___index] = TVPAddAlphaBlend_a_a(dest[___index], (src[___index] & 0xffffff) | opa);
 			___index ++;
 		}
 	}
@@ -3488,25 +3488,25 @@ TVP_GL_FUNC_DECL(void, TVPStretchConstAlphaBlend_a_c, (tjs_uint32 *dest, tjs_int
 	switch(len % 4)
 	{
 	case 0: do { {
-	*dest = TVPAdditiveBlend_a_a(*dest, (src[srcstart >> 16] & 0xffffff) | opa);
+	*dest = TVPAddAlphaBlend_a_a(*dest, (src[srcstart >> 16] & 0xffffff) | opa);
 	srcstart += srcstep;
 	dest++;
 }
 ;
 	case 3: {
-	*dest = TVPAdditiveBlend_a_a(*dest, (src[srcstart >> 16] & 0xffffff) | opa);
+	*dest = TVPAddAlphaBlend_a_a(*dest, (src[srcstart >> 16] & 0xffffff) | opa);
 	srcstart += srcstep;
 	dest++;
 }
 ;
 	case 2: {
-	*dest = TVPAdditiveBlend_a_a(*dest, (src[srcstart >> 16] & 0xffffff) | opa);
+	*dest = TVPAddAlphaBlend_a_a(*dest, (src[srcstart >> 16] & 0xffffff) | opa);
 	srcstart += srcstep;
 	dest++;
 }
 ;
 	case 1: {
-	*dest = TVPAdditiveBlend_a_a(*dest, (src[srcstart >> 16] & 0xffffff) | opa);
+	*dest = TVPAddAlphaBlend_a_a(*dest, (src[srcstart >> 16] & 0xffffff) | opa);
 	srcstart += srcstep;
 	dest++;
 }
@@ -3838,7 +3838,7 @@ TVP_GL_FUNC_DECL(void, TVPLinTransConstAlphaBlend_a_c, (tjs_uint32 *dest, tjs_in
 	switch(len % 4)
 	{
 	case 0: do { {
-	*dest = TVPAdditiveBlend_a_a(*dest, 
+	*dest = TVPAddAlphaBlend_a_a(*dest, 
 		((*( (const tjs_uint32*)((const tjs_uint8*)src + (sy>>16)*srcpitch) + (sx>>16))) & 0xffffff) | opa);
 	sx += stepx;
 	sy += stepy;
@@ -3846,7 +3846,7 @@ TVP_GL_FUNC_DECL(void, TVPLinTransConstAlphaBlend_a_c, (tjs_uint32 *dest, tjs_in
 }
 ;
 	case 3: {
-	*dest = TVPAdditiveBlend_a_a(*dest, 
+	*dest = TVPAddAlphaBlend_a_a(*dest, 
 		((*( (const tjs_uint32*)((const tjs_uint8*)src + (sy>>16)*srcpitch) + (sx>>16))) & 0xffffff) | opa);
 	sx += stepx;
 	sy += stepy;
@@ -3854,7 +3854,7 @@ TVP_GL_FUNC_DECL(void, TVPLinTransConstAlphaBlend_a_c, (tjs_uint32 *dest, tjs_in
 }
 ;
 	case 2: {
-	*dest = TVPAdditiveBlend_a_a(*dest, 
+	*dest = TVPAddAlphaBlend_a_a(*dest, 
 		((*( (const tjs_uint32*)((const tjs_uint8*)src + (sy>>16)*srcpitch) + (sx>>16))) & 0xffffff) | opa);
 	sx += stepx;
 	sy += stepy;
@@ -3862,7 +3862,7 @@ TVP_GL_FUNC_DECL(void, TVPLinTransConstAlphaBlend_a_c, (tjs_uint32 *dest, tjs_in
 }
 ;
 	case 1: {
-	*dest = TVPAdditiveBlend_a_a(*dest, 
+	*dest = TVPAddAlphaBlend_a_a(*dest, 
 		((*( (const tjs_uint32*)((const tjs_uint8*)src + (sy>>16)*srcpitch) + (sx>>16))) & 0xffffff) | opa);
 	sx += stepx;
 	sy += stepy;
@@ -5268,7 +5268,7 @@ TVP_GL_FUNC_DECL(void, TVPApplyColorMap_a_c, (tjs_uint32 *dest, const tjs_uint8 
 		((s_tmp * (color & 0x00ff00) >> 8) & 0x00ff00);
 	s_tmp <<= (8 - 8);
 	s_tmp -= (s_tmp >> 8); /* adjust alpha */
-	*dest = TVPAdditiveBlend_a_ca(*dest, s_tmp, s_tmp ^ 0xff, tmp);
+	*dest = TVPAddAlphaBlend_a_ca(*dest, s_tmp, s_tmp ^ 0xff, tmp);
 	src++;
 	dest++;
 }
@@ -5280,7 +5280,7 @@ TVP_GL_FUNC_DECL(void, TVPApplyColorMap_a_c, (tjs_uint32 *dest, const tjs_uint8 
 		((s_tmp * (color & 0x00ff00) >> 8) & 0x00ff00);
 	s_tmp <<= (8 - 8);
 	s_tmp -= (s_tmp >> 8); /* adjust alpha */
-	*dest = TVPAdditiveBlend_a_ca(*dest, s_tmp, s_tmp ^ 0xff, tmp);
+	*dest = TVPAddAlphaBlend_a_ca(*dest, s_tmp, s_tmp ^ 0xff, tmp);
 	src++;
 	dest++;
 }
@@ -5292,7 +5292,7 @@ TVP_GL_FUNC_DECL(void, TVPApplyColorMap_a_c, (tjs_uint32 *dest, const tjs_uint8 
 		((s_tmp * (color & 0x00ff00) >> 8) & 0x00ff00);
 	s_tmp <<= (8 - 8);
 	s_tmp -= (s_tmp >> 8); /* adjust alpha */
-	*dest = TVPAdditiveBlend_a_ca(*dest, s_tmp, s_tmp ^ 0xff, tmp);
+	*dest = TVPAddAlphaBlend_a_ca(*dest, s_tmp, s_tmp ^ 0xff, tmp);
 	src++;
 	dest++;
 }
@@ -5304,7 +5304,7 @@ TVP_GL_FUNC_DECL(void, TVPApplyColorMap_a_c, (tjs_uint32 *dest, const tjs_uint8 
 		((s_tmp * (color & 0x00ff00) >> 8) & 0x00ff00);
 	s_tmp <<= (8 - 8);
 	s_tmp -= (s_tmp >> 8); /* adjust alpha */
-	*dest = TVPAdditiveBlend_a_ca(*dest, s_tmp, s_tmp ^ 0xff, tmp);
+	*dest = TVPAddAlphaBlend_a_ca(*dest, s_tmp, s_tmp ^ 0xff, tmp);
 	src++;
 	dest++;
 }
@@ -5331,7 +5331,7 @@ TVP_GL_FUNC_DECL(void, TVPApplyColorMap65_a_c, (tjs_uint32 *dest, const tjs_uint
 		((s_tmp * (color & 0x00ff00) >> 6) & 0x00ff00);
 	s_tmp <<= (8 - 6);
 	s_tmp -= (s_tmp >> 8); /* adjust alpha */
-	*dest = TVPAdditiveBlend_a_ca(*dest, s_tmp, s_tmp ^ 0xff, tmp);
+	*dest = TVPAddAlphaBlend_a_ca(*dest, s_tmp, s_tmp ^ 0xff, tmp);
 	src++;
 	dest++;
 }
@@ -5343,7 +5343,7 @@ TVP_GL_FUNC_DECL(void, TVPApplyColorMap65_a_c, (tjs_uint32 *dest, const tjs_uint
 		((s_tmp * (color & 0x00ff00) >> 6) & 0x00ff00);
 	s_tmp <<= (8 - 6);
 	s_tmp -= (s_tmp >> 8); /* adjust alpha */
-	*dest = TVPAdditiveBlend_a_ca(*dest, s_tmp, s_tmp ^ 0xff, tmp);
+	*dest = TVPAddAlphaBlend_a_ca(*dest, s_tmp, s_tmp ^ 0xff, tmp);
 	src++;
 	dest++;
 }
@@ -5355,7 +5355,7 @@ TVP_GL_FUNC_DECL(void, TVPApplyColorMap65_a_c, (tjs_uint32 *dest, const tjs_uint
 		((s_tmp * (color & 0x00ff00) >> 6) & 0x00ff00);
 	s_tmp <<= (8 - 6);
 	s_tmp -= (s_tmp >> 8); /* adjust alpha */
-	*dest = TVPAdditiveBlend_a_ca(*dest, s_tmp, s_tmp ^ 0xff, tmp);
+	*dest = TVPAddAlphaBlend_a_ca(*dest, s_tmp, s_tmp ^ 0xff, tmp);
 	src++;
 	dest++;
 }
@@ -5367,7 +5367,7 @@ TVP_GL_FUNC_DECL(void, TVPApplyColorMap65_a_c, (tjs_uint32 *dest, const tjs_uint
 		((s_tmp * (color & 0x00ff00) >> 6) & 0x00ff00);
 	s_tmp <<= (8 - 6);
 	s_tmp -= (s_tmp >> 8); /* adjust alpha */
-	*dest = TVPAdditiveBlend_a_ca(*dest, s_tmp, s_tmp ^ 0xff, tmp);
+	*dest = TVPAddAlphaBlend_a_ca(*dest, s_tmp, s_tmp ^ 0xff, tmp);
 	src++;
 	dest++;
 }
@@ -5530,7 +5530,7 @@ TVP_GL_FUNC_DECL(void, TVPApplyColorMap_ao_c, (tjs_uint32 *dest, const tjs_uint8
 		((s_tmp * (color & 0x00ff00) >> 8) & 0x00ff00);
 	s_tmp <<= (8 - 8);
 	s_tmp -= (s_tmp >> 8); /* adjust alpha */
-	*dest = TVPAdditiveBlend_a_ca(*dest, s_tmp, s_tmp ^ 0xff, tmp);
+	*dest = TVPAddAlphaBlend_a_ca(*dest, s_tmp, s_tmp ^ 0xff, tmp);
 	src++;
 	dest++;
 }
@@ -5542,7 +5542,7 @@ TVP_GL_FUNC_DECL(void, TVPApplyColorMap_ao_c, (tjs_uint32 *dest, const tjs_uint8
 		((s_tmp * (color & 0x00ff00) >> 8) & 0x00ff00);
 	s_tmp <<= (8 - 8);
 	s_tmp -= (s_tmp >> 8); /* adjust alpha */
-	*dest = TVPAdditiveBlend_a_ca(*dest, s_tmp, s_tmp ^ 0xff, tmp);
+	*dest = TVPAddAlphaBlend_a_ca(*dest, s_tmp, s_tmp ^ 0xff, tmp);
 	src++;
 	dest++;
 }
@@ -5554,7 +5554,7 @@ TVP_GL_FUNC_DECL(void, TVPApplyColorMap_ao_c, (tjs_uint32 *dest, const tjs_uint8
 		((s_tmp * (color & 0x00ff00) >> 8) & 0x00ff00);
 	s_tmp <<= (8 - 8);
 	s_tmp -= (s_tmp >> 8); /* adjust alpha */
-	*dest = TVPAdditiveBlend_a_ca(*dest, s_tmp, s_tmp ^ 0xff, tmp);
+	*dest = TVPAddAlphaBlend_a_ca(*dest, s_tmp, s_tmp ^ 0xff, tmp);
 	src++;
 	dest++;
 }
@@ -5566,7 +5566,7 @@ TVP_GL_FUNC_DECL(void, TVPApplyColorMap_ao_c, (tjs_uint32 *dest, const tjs_uint8
 		((s_tmp * (color & 0x00ff00) >> 8) & 0x00ff00);
 	s_tmp <<= (8 - 8);
 	s_tmp -= (s_tmp >> 8); /* adjust alpha */
-	*dest = TVPAdditiveBlend_a_ca(*dest, s_tmp, s_tmp ^ 0xff, tmp);
+	*dest = TVPAddAlphaBlend_a_ca(*dest, s_tmp, s_tmp ^ 0xff, tmp);
 	src++;
 	dest++;
 }
@@ -5593,7 +5593,7 @@ TVP_GL_FUNC_DECL(void, TVPApplyColorMap65_ao_c, (tjs_uint32 *dest, const tjs_uin
 		((s_tmp * (color & 0x00ff00) >> 6) & 0x00ff00);
 	s_tmp <<= (8 - 6);
 	s_tmp -= (s_tmp >> 8); /* adjust alpha */
-	*dest = TVPAdditiveBlend_a_ca(*dest, s_tmp, s_tmp ^ 0xff, tmp);
+	*dest = TVPAddAlphaBlend_a_ca(*dest, s_tmp, s_tmp ^ 0xff, tmp);
 	src++;
 	dest++;
 }
@@ -5605,7 +5605,7 @@ TVP_GL_FUNC_DECL(void, TVPApplyColorMap65_ao_c, (tjs_uint32 *dest, const tjs_uin
 		((s_tmp * (color & 0x00ff00) >> 6) & 0x00ff00);
 	s_tmp <<= (8 - 6);
 	s_tmp -= (s_tmp >> 8); /* adjust alpha */
-	*dest = TVPAdditiveBlend_a_ca(*dest, s_tmp, s_tmp ^ 0xff, tmp);
+	*dest = TVPAddAlphaBlend_a_ca(*dest, s_tmp, s_tmp ^ 0xff, tmp);
 	src++;
 	dest++;
 }
@@ -5617,7 +5617,7 @@ TVP_GL_FUNC_DECL(void, TVPApplyColorMap65_ao_c, (tjs_uint32 *dest, const tjs_uin
 		((s_tmp * (color & 0x00ff00) >> 6) & 0x00ff00);
 	s_tmp <<= (8 - 6);
 	s_tmp -= (s_tmp >> 8); /* adjust alpha */
-	*dest = TVPAdditiveBlend_a_ca(*dest, s_tmp, s_tmp ^ 0xff, tmp);
+	*dest = TVPAddAlphaBlend_a_ca(*dest, s_tmp, s_tmp ^ 0xff, tmp);
 	src++;
 	dest++;
 }
@@ -5629,7 +5629,7 @@ TVP_GL_FUNC_DECL(void, TVPApplyColorMap65_ao_c, (tjs_uint32 *dest, const tjs_uin
 		((s_tmp * (color & 0x00ff00) >> 6) & 0x00ff00);
 	s_tmp <<= (8 - 6);
 	s_tmp -= (s_tmp >> 8); /* adjust alpha */
-	*dest = TVPAdditiveBlend_a_ca(*dest, s_tmp, s_tmp ^ 0xff, tmp);
+	*dest = TVPAddAlphaBlend_a_ca(*dest, s_tmp, s_tmp ^ 0xff, tmp);
 	src++;
 	dest++;
 }
@@ -5761,10 +5761,10 @@ TVP_GL_FUNC_DECL(void, TVPConstColorAlphaBlend_a_c, (tjs_uint32 *dest, tjs_int l
 
 		while(___index < len)
 		{
-	dest[(___index+0)] = TVPAdditiveBlend_a_ca(dest[(___index+0)], opa, opa_inv, src);
-	dest[(___index+1)] = TVPAdditiveBlend_a_ca(dest[(___index+1)], opa, opa_inv, src);
-	dest[(___index+2)] = TVPAdditiveBlend_a_ca(dest[(___index+2)], opa, opa_inv, src);
-	dest[(___index+3)] = TVPAdditiveBlend_a_ca(dest[(___index+3)], opa, opa_inv, src);
+	dest[(___index+0)] = TVPAddAlphaBlend_a_ca(dest[(___index+0)], opa, opa_inv, src);
+	dest[(___index+1)] = TVPAddAlphaBlend_a_ca(dest[(___index+1)], opa, opa_inv, src);
+	dest[(___index+2)] = TVPAddAlphaBlend_a_ca(dest[(___index+2)], opa, opa_inv, src);
+	dest[(___index+3)] = TVPAddAlphaBlend_a_ca(dest[(___index+3)], opa, opa_inv, src);
 			___index += 4;
 		}
 
@@ -5772,7 +5772,7 @@ TVP_GL_FUNC_DECL(void, TVPConstColorAlphaBlend_a_c, (tjs_uint32 *dest, tjs_int l
 
 		while(___index < len)
 		{
-	dest[___index] = TVPAdditiveBlend_a_ca(dest[___index], opa, opa_inv, src);
+	dest[___index] = TVPAddAlphaBlend_a_ca(dest[___index], opa, opa_inv, src);
 			___index ++;
 		}
 	}

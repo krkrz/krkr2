@@ -1192,11 +1192,11 @@ TVP_DEFINE_BILINEAR_STRETCH_WITH_OPACITY_FUNCTION(
 
 TVP_DEFINE_BILINEAR_STRETCH_FUNCTION(
 	TVPInterpStretchAdditiveAlphaBlend,
-	*dest = TVPAdditiveBlend_n_a(*dest, color));
+	*dest = TVPAddAlphaBlend_n_a(*dest, color));
 
 TVP_DEFINE_BILINEAR_STRETCH_WITH_OPACITY_FUNCTION(
 	TVPInterpStretchAdditiveAlphaBlend_o,
-	*dest = TVPAdditiveBlend_n_a_o(*dest, color, Opacity));
+	*dest = TVPAddAlphaBlend_n_a_o(*dest, color, Opacity));
 
 //---------------------------------------------------------------------------
 
@@ -1877,11 +1877,11 @@ TVP_DEFINE_BILINEAR_AFFINE_WITH_OPACITY_FUNCTION(
 
 TVP_DEFINE_BILINEAR_AFFINE_FUNCTION(
 	TVPInterpLinTransAdditiveAlphaBlend,
-	*dest = TVPAdditiveBlend_n_a(*dest, color));
+	*dest = TVPAddAlphaBlend_n_a(*dest, color));
 
 TVP_DEFINE_BILINEAR_AFFINE_WITH_OPACITY_FUNCTION(
 	TVPInterpLinTransAdditiveAlphaBlend_o,
-	*dest = TVPAdditiveBlend_n_a_o(*dest, color, Opacity));
+	*dest = TVPAddAlphaBlend_n_a_o(*dest, color, Opacity));
 
 //---------------------------------------------------------------------------
 
