@@ -30,7 +30,7 @@ tjs_int32 TJSRegisterNativeClass(const tjs_char *name)
 		if(NativeClassNames[i] == name) return i;
 	}
 
-	NativeClassNames.push_back(name);
+	NativeClassNames.push_back(TJSMapGlobalStringMap(name));
 
 	return NativeClassNames.size() -1;
 }
@@ -220,23 +220,22 @@ tjs_error tTJSNativeClassProperty::DenySet(tjs_uint32 flag,
 //---------------------------------------------------------------------------
 // tTJSNativeClass
 //---------------------------------------------------------------------------
-tTJSNativeClass::tTJSNativeClass(const tjs_char *name)
+tTJSNativeClass::tTJSNativeClass(const ttstr &name)
 {
 	CallFinalize = false;
-	ClassName = new tjs_char[TJS_strlen(name)+1];
-	TJS_strcpy(ClassName, name);
+	ClassName = TJSMapGlobalStringMap(name);
 }
 //---------------------------------------------------------------------------
 tTJSNativeClass::~tTJSNativeClass()
 {
-	delete [] ClassName;
 }
 //---------------------------------------------------------------------------
 void tTJSNativeClass::RegisterNCM(const tjs_char *name, iTJSDispatch2 *dsp,
 	tjs_uint32 flags)
 {
 	// add to Items and ItemsNames
-	ItemNames.push_back(TJSMapGlobalStringMap(ttstr(name)));
+	ttstr tname = TJSMapGlobalStringMap(ttstr(name));
+	ItemNames.push_back(tname);
 	Items.push_back(dsp); // do not AddRef "dsp"
 	ItemFlags.push_back(flags);
 
@@ -244,7 +243,9 @@ void tTJSNativeClass::RegisterNCM(const tjs_char *name, iTJSDispatch2 *dsp,
 	// add to this
 	tTJSVariant val;
 	val = dsp;
-	PropSet((TJS_MEMBERENSURE | TJS_IGNOREPROP) | flags, name, NULL, &val, this);
+	if(PropSetByVS((TJS_MEMBERENSURE | TJS_IGNOREPROP) | flags, tname.AsVariantStringNoAddRef(), &val, this)
+		== TJS_E_NOTIMPL)
+		PropSet((TJS_MEMBERENSURE | TJS_IGNOREPROP) | flags, tname.c_str(), NULL, &val, this);
 }
 //---------------------------------------------------------------------------
 void tTJSNativeClass::Finalize(void)
@@ -323,9 +324,8 @@ tTJSNativeClass::CreateNew(tjs_uint32 flag, const tjs_char * membername,
 
 		if(TJS_FAILED(hr)) return hr;
 
-		hr = FuncCall(0, ClassName, NULL, NULL, numparams, param, dsp);
+		hr = FuncCall(0, ClassName.c_str(), ClassName.GetHint(), NULL, numparams, param, dsp);
 			// call the constructor
-			// TODO: hint should be held
 		if(hr == TJS_E_MEMBERNOTFOUND) hr = TJS_S_OK;
 			// missing constructor is OK ( is this ugly ? )
 	}
@@ -347,7 +347,7 @@ tTJSNativeClass::IsInstanceOf(tjs_uint32 flag,
 	if(membername == NULL)
 	{
 		if(!TJS_strcmp(classname, TJS_W("Class"))) return TJS_S_TRUE;
-		if(!TJS_strcmp(classname, ClassName)) return TJS_S_TRUE;
+		if(!TJS_strcmp(classname, ClassName.c_str())) return TJS_S_TRUE;
 	}
 
 	return inherited::IsInstanceOf(flag, membername, hint, classname, objthis);
