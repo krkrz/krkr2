@@ -457,6 +457,14 @@ void tTJSNI_VideoOverlay::SetSegmentLoop( int comeFrame, int goFrame )
 {
 	SegLoopStartFrame = comeFrame;
 	SegLoopEndFrame = goFrame;
+	if( SegLoopEndFrame >= 0 )
+	{
+		SetStopFrame( SegLoopEndFrame );
+	}
+	else
+	{
+		SetDefaultStopFrame();
+	}
 }
 void tTJSNI_VideoOverlay::SetPeriodEvent( int eventFrame )
 {
@@ -634,7 +642,12 @@ void __fastcall tTJSNI_VideoOverlay::WndProc(Messages::TMessage &Msg)
 					case EC_COMPLETE:
 						if( Status == ssPlay )
 						{
-							if( Loop )
+							if( SegLoopEndFrame >= 0 )
+							{
+								SetFrame( SegLoopStartFrame );
+								FirePeriodEvent(perSegLoop); // fire period event by segment loop rewind
+							}
+							else if( Loop )
 							{
 								Rewind();
 								FirePeriodEvent(perLoop); // fire period event by loop rewind
@@ -699,11 +712,13 @@ void __fastcall tTJSNI_VideoOverlay::WndProc(Messages::TMessage &Msg)
 							// ! Prepare mode ?
 							if( !IsPrepare )
 							{
+#if 0
 								// Segment Loop ?
 								if( SegLoopEndFrame >= 0 && curFrame >= SegLoopEndFrame )
 								{
 									SetFrame( SegLoopStartFrame );
 								}
+#endif
 								// Send period event ?
 								if( EventFrame >= 0 && !IsEventPast && curFrame >= EventFrame )
 								{
@@ -770,6 +785,29 @@ tjs_int tTJSNI_VideoOverlay::GetFrame()
 	if(VideoOverlay)
 	{
 		VideoOverlay->GetFrame( &result );
+	}
+	return result;
+}
+void tTJSNI_VideoOverlay::SetStopFrame( tjs_int f )
+{
+	if(VideoOverlay)
+	{
+		VideoOverlay->SetStopFrame( f );
+	}
+}
+void tTJSNI_VideoOverlay::SetDefaultStopFrame()
+{
+	if(VideoOverlay)
+	{
+		VideoOverlay->SetDefaultStopFrame();
+	}
+}
+tjs_int tTJSNI_VideoOverlay::GetStopFrame()
+{
+	tjs_int	result = 0;
+	if(VideoOverlay)
+	{
+		VideoOverlay->GetStopFrame( &result );
 	}
 	return result;
 }
