@@ -736,6 +736,16 @@ public:
 		return NULL;
 	}
 
+	TJS_CONST_METHOD_DEF(iTJSDispatch2 *, AsObjectThisNoAddRef, ())
+	{
+		if(vt==tvtObject)
+		{
+			return Object.ObjThis;
+		}
+		TJSThrowVariantConvertError(*this, tvtObject);
+		return NULL;
+	}
+
 	TJS_METHOD_DEF(tTJSVariantClosure &, AsObjectClosure, ())
 	{
 		if(vt==tvtObject)

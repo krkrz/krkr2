@@ -573,6 +573,14 @@
 　%dest で表されるオブジェクトのクラスインスタンス情報に %info を追加します。
 </dd>
 
+<dt><kw>regmember</kw><r/>(register members)</dt>
+<dd>
+書式: <tt>regmember</tt><r/><r/>
+　クラスのメンバを "this" オブジェクトに登録します。内部的に用いられます。
+</dd>
+
+
+
 <dt><kw>debugger</kw><r/>(call debugger)</dt>
 <dd>
 書式: <tt>debugger</tt><r/><r/>
