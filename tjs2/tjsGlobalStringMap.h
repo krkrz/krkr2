@@ -6,7 +6,7 @@
 	See details of license at "license.txt"
 */
 //---------------------------------------------------------------------------
-// TJS Exception Class
+// TJS Global String Map
 //---------------------------------------------------------------------------
 #ifndef tjsGlobalStringMapH
 #define tjsGlobalStringMapH
