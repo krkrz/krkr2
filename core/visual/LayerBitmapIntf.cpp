@@ -1309,11 +1309,11 @@ bool tTVPBaseBitmap::StretchBlt(tTVPRect cliprect,
 					if(x_step >= 0)
 						x_ref_start += (((rw-1)<<16) - (dw-1)*x_step)/2;
 					else
-						x_ref_start -= (((rw-1)<<16) + (dw-1)*x_step)/2; - x_step;
+						x_ref_start -= (((rw-1)<<16) + (dw-1)*x_step)/2 - x_step;
 					if(y_step >= 0)
 						y_ref_start += (((rh-1)<<16) - (dh-1)*y_step)/2;
 					else
-						y_ref_start -= (((rh-1)<<16) + (dh-1)*y_step)/2; - y_step;
+						y_ref_start -= (((rh-1)<<16) + (dh-1)*y_step)/2 - y_step;
 
 					// horizontal destination line is splitted into three parts;
 					// 1. left fraction (x_ref < 0               (lf)
