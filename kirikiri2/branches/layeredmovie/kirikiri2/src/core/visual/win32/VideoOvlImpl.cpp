@@ -36,7 +36,6 @@ class tTVPVideoModule
 	HMODULE Handle;
 	tGetAPIVersion procGetAPIVersion;
 	tGetVideoOverlayObject procGetVideoOverlayObject;
-	tGetVideoOverlayObjectByParam procGetVideoOverlayObjectByParam;
 
 public:
 	tTVPVideoModule(const ttstr & name);
@@ -49,14 +48,9 @@ public:
 	{
 		return procGetVideoOverlayObject(callbackwin, stream, streamname, type, size, out);
 	}
-// Start: Add: T.Imoto
-	const wchar_t* GetVideoOverlayObjectByParam( struct tTVPGetVideoOverlayObjectParam *param )
-	{
-		return procGetVideoOverlayObjectByParam( param );
-	}
-// End: Add: T.Imoto
 };
 static tTVPVideoModule *TVPMovieVideoModule = NULL;
+static tTVPVideoModule *TVPLayerMovieVideoModule = NULL;	// T.Imoto
 static tTVPVideoModule *TVPFlashVideoModule = NULL;
 static void TVPUnloadKrMovie();
 //---------------------------------------------------------------------------
@@ -76,14 +70,8 @@ tTVPVideoModule::tTVPVideoModule(const ttstr &name)
 			GetProcAddress(Handle, "GetVideoOverlayObject");
 		procGetAPIVersion = (tGetAPIVersion)
 			GetProcAddress(Handle, "GetAPIVersion");
-// Start: Add: T.Imoto
-		procGetVideoOverlayObjectByParam = (tGetVideoOverlayObjectByParam)
-			GetProcAddress(Handle, "GetVideoOverlayObjectByParam");
-// End: Add: T.Imoto
-// Start: Update: T.Imoto
-		if(!procGetVideoOverlayObject || !procGetAPIVersion || !procGetVideoOverlayObjectByParam)
+		if(!procGetVideoOverlayObject || !procGetAPIVersion)
 			TVPThrowExceptionMessage(TVPInvalidKrMovieDLL);
-// End: Update: T.Imoto
 		DWORD version;
 		procGetAPIVersion(&version);
 		if(version != TVP_KRMOVIE_VER)
@@ -110,6 +98,16 @@ static tTVPVideoModule * TVPGetMovieVideoModule()
 
 	return TVPMovieVideoModule;
 }
+//---------------------------------------------------------------------------
+// Start: Add: T.Imoto
+static tTVPVideoModule * TVPGetLayerMovieVideoModule()
+{
+	if(TVPLayerMovieVideoModule == NULL)
+		TVPLayerMovieVideoModule = new tTVPVideoModule("krlmovie.dll");
+
+	return TVPLayerMovieVideoModule;
+}
+// End: Add: T.Imoto
 //---------------------------------------------------------------------------
 static tTVPVideoModule * TVPGetFlashVideoModule()
 {
@@ -195,6 +193,7 @@ static void TVPShutdownVideoOverlay()
 	}
 
 	if(TVPMovieVideoModule) delete TVPMovieVideoModule, TVPMovieVideoModule = NULL;
+	if(TVPLayerMovieVideoModule) delete TVPLayerMovieVideoModule, TVPLayerMovieVideoModule = NULL;	// T.Imoto
 	if(TVPFlashVideoModule) delete TVPFlashVideoModule, TVPFlashVideoModule = NULL;
 }
 static tTVPAtExit TVPShutdownVideoOverlayAtExit
@@ -309,8 +308,14 @@ void tTJSNI_VideoOverlay::Open(const ttstr &_name)
 	{
 		flash = false;
 
-		// load krmovie.dll
-		mod = TVPGetMovieVideoModule();
+		if( Mode == vomOverlay )
+		{	// load krmovie.dll
+			mod = TVPGetMovieVideoModule();
+		}
+		else
+		{	// load krlmovie.dll
+			mod = TVPGetLayerMovieVideoModule();
+		}
 
 		// prepate IStream
 		tTJSBinaryStream *stream0 = NULL;
@@ -342,21 +347,9 @@ void tTJSNI_VideoOverlay::Open(const ttstr &_name)
 		}
 		else
 		{
-			tTVPGetVideoOverlayObjectParam	vooparam;
-			vooparam.callbackwin = UtilWindow;
-			vooparam.stream = istream;
-			vooparam.streamname = name.c_str();
-			vooparam.type = ext.c_str();
-			vooparam.size = size;
-			vooparam.out = &VideoOverlay;
-			vooparam.mode = Mode;
-#if 0
 			message = mod->GetVideoOverlayObject(UtilWindow,
 				istream, name.c_str(), ext.c_str(),
 				size, &VideoOverlay);
-#else
-			message = mod->GetVideoOverlayObjectByParam( &vooparam );
-#endif
 		}
 		if(message) TVPThrowExceptionMessage(TVPErrorInKrMovieDLL, message);
 
@@ -557,36 +550,6 @@ void tTJSNI_VideoOverlay::SetRectangleToVideoOverlay()
 		RECT r = {Rect.left, Rect.top, Rect.right, Rect.bottom};
 		message = VideoOverlay->SetRect(&r);
 		if(message) TVPThrowExceptionMessage(TVPErrorInKrMovieDLL, message);
-
-#if 0
-		// ‚±‚ê‚Í‚±‚±‚É‚Í‚È‚¢•û‚ª‚æ‚¢‚æ‚¤‚È
-		if( Mode == vomLayer )
-		{
-			// get video image size
-			long	width, height;
-			message = VideoOverlay->GetVideoSize( &width, &height );
-			if(message) TVPThrowExceptionMessage(TVPErrorInKrMovieDLL, message);
-			if( width == 0 || height == 0 )
-				return;
-
-			tTJSNI_BaseLayer	*l1 = Layer1;
-			tTJSNI_BaseLayer	*l2 = Layer2;
-
-			// Check layer image size
-			if( l1 != NULL )
-			{
-				if( l1->GetImageWidth() != width || l1->GetImageHeight() != height )
-					l1->SetImageSize( width, height );
-			}
-			if( l2 != NULL )
-			{
-				if( l2->GetImageWidth() != width || l2->GetImageHeight() != height )
-					l2->SetImageSize( width, height );
-			}
-			if( l1 ) l1->AssignMainImage( Bitmap[0] );
-			if( l2 ) l2->AssignMainImage( Bitmap[0] );
-		}
-#endif
 	}
 }
 //---------------------------------------------------------------------------
@@ -773,6 +736,8 @@ void __fastcall tTJSNI_VideoOverlay::WndProc(Messages::TMessage &Msg)
 #endif
 								if( l1->GetImageWidth() != width || l1->GetImageHeight() != height )
 									l1->SetImageSize( width, height );
+								if( l1->GetWidth() != width || l1->GetHeight() != height )
+									l1->SetSize( width, height );
 							}
 							if( l2 != NULL )
 							{
@@ -785,6 +750,8 @@ void __fastcall tTJSNI_VideoOverlay::WndProc(Messages::TMessage &Msg)
 #endif
 								if( l2->GetImageWidth() != width || l2->GetImageHeight() != height )
 									l2->SetImageSize( width, height );
+								if( l2->GetWidth() != width || l2->GetHeight() != height )
+									l2->SetSize( width, height );
 							}
 							BYTE *buff;
 							VideoOverlay->GetFrontBuffer( &buff );
@@ -813,9 +780,9 @@ void __fastcall tTJSNI_VideoOverlay::WndProc(Messages::TMessage &Msg)
 							// Prepare mode ?
 							if( IsPrepare )
 							{
+								SetStatus(ssPeriod);
 								Pause();
 //                                SetStatus(ssStop);
-                                SetStatus(ssPeriod);
 								Rewind();
 								IsPrepare = false;
 							}
