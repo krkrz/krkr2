@@ -11,9 +11,10 @@
 #include "tjsCommHead.h"
 
 #include "SoundBufferBaseImpl.h"
+#include "WaveImpl.h"
 
 //---------------------------------------------------------------------------
-// Sound Buffer Timer Dispatcher ( for fading )
+// Sound Buffer Timer Dispatcher ( for fading or commiting defered settings )
 //---------------------------------------------------------------------------
 static TTimer * TVPSoundBufferTimer = NULL; // VCL TTimer
 static std::vector<tTJSNI_SoundBuffer *> TVPSoundBufferVector;
@@ -29,6 +30,7 @@ public:
 		{
 			(*i)->TimerBeatHandler();
 		}
+		TVPWaveSoundBufferCommitSettings();
 	}
 } static TVPSoundBufferTimerDispatcher;
 //---------------------------------------------------------------------------

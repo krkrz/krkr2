@@ -54,9 +54,10 @@ static tjs_int TVPSoundGlobalFocusMuteVolume = 0;
 static enum tTVPForceConvertMode { fcmNone, fcm16bit, fcm16bitMono }
 	TVPForceConvertMode = fcmNone;
 static tjs_int TVPPrimarySBCreateTryLevel = -1;
-static bool TVPExpandToQuad = false;
+static bool TVPExpandToQuad = true;
 static tjs_int TVPL1BufferLength = 1000; // in ms
 static tjs_int TVPL2BufferLength = 4000; // in ms
+static bool TVPDirectSoundUse3D = false;
 //---------------------------------------------------------------------------
 static void TVPInitSoundOptions()
 {
@@ -137,6 +138,15 @@ static void TVPInitSoundOptions()
 			TVPPrimarySBCreateTryLevel = val;
 	}
 
+	if(TVPGetCommandLine(TJS_W("-wsuse3d"), &val))
+	{
+		ttstr sval(val);
+		if(sval == TJS_W("no"))
+			TVPDirectSoundUse3D = false;
+		else
+			TVPDirectSoundUse3D = true;
+	}
+
 	if(TVPGetCommandLine(TJS_W("-wsforcecnv"), &val))
 	{
 		ttstr sval(val);
@@ -155,6 +165,8 @@ static void TVPInitSoundOptions()
 		else
 			TVPExpandToQuad = false;
 	}
+	if(TVPDirectSoundUse3D) TVPExpandToQuad = false;
+		// quad expansion is disabled when using 3D sounds
 
 	if(TVPGetCommandLine(TJS_W("-wsmute"), &val))
 	{
@@ -522,10 +534,12 @@ static void TVPInitLogTable()
 //---------------------------------------------------------------------------
 static LPDIRECTSOUND TVPDirectSound = NULL;
 static LPDIRECTSOUNDBUFFER TVPPrimaryBuffer = NULL;
+static LPDIRECTSOUND3DLISTENER TVPDirectSound3DListener = NULL;
 static bool TVPPrimaryBufferPlayingByProgram = false;
 static HMODULE TVPDirectSoundDLL = NULL;
 static TTimer *TVPPrimaryDelayedStopperTimer = NULL;
 static bool TVPDirectSoundShutdown = false;
+static bool TVPDeferedSettingAvailable = false;
 //---------------------------------------------------------------------------
 static void TVPEnsurePrimaryBufferPlay()
 {
@@ -775,10 +789,23 @@ static void TVPInitDirectSound()
 		dsbd.dwFlags = DSBCAPS_PRIMARYBUFFER;
 		if(TVPUseSoftwareBuffer)
 			dsbd.dwFlags |= DSBCAPS_LOCSOFTWARE;
+		if(TVPDirectSoundUse3D)
+			dsbd.dwFlags |= DSBCAPS_CTRL3D;
 
 		hr = TVPDirectSound->CreateSoundBuffer(&dsbd, &TVPPrimaryBuffer, NULL);
 
 		bool pri_normal = false;
+		if((FAILED(hr) || TVPPrimaryBuffer == NULL) && TVPDirectSoundUse3D)
+		{
+			// cannot create DirectSound primary buffer.
+			// try to not set 3D mode
+			TVPAddLog(TJS_W("Warning: Cannot create DirectSound primary buffer with 3D sound mode. "
+				"Force not to use it."));
+			dsbd.dwFlags &= ~DSBCAPS_CTRL3D;
+			hr = TVPDirectSound->CreateSoundBuffer(&dsbd, &TVPPrimaryBuffer, NULL);
+			if(SUCCEEDED(hr)) TVPDirectSoundUse3D = false;
+		}
+
 		if(FAILED(hr) || TVPPrimaryBuffer == NULL)
 		{
 			// cannot create DirectSound primary buffer.
@@ -797,6 +824,22 @@ static void TVPInitDirectSound()
 			TVPAddLog(TJS_W("Warning: Cannot create DirectSound primary buffer. "
 				"Force not to use it."));
 			pri_normal = true;
+		}
+
+		if(TVPDirectSoundUse3D)
+		{
+			if(!TVPPrimaryBuffer)
+				TVPThrowExceptionMessage(TVPCannotInitDirectSound,
+					TJS_W("Cannot use 3D sounds because the primary buffer is not available."));
+
+			hr = TVPPrimaryBuffer->QueryInterface(IID_IDirectSound3DListener,
+                                          (void **)&TVPDirectSound3DListener);
+			if(FAILED(hr))
+			{
+				TVPThrowExceptionMessage(TVPCannotInitDirectSound,
+					ttstr(TJS_W("Querying interface IDirectSound3DListener failed./HR=") +
+						TJSInt32ToHex((tjs_uint32)hr)));
+			}
 		}
 
 		// set primary buffer 's sound format
@@ -933,6 +976,7 @@ static void TVPInitDirectSound()
 	catch(...)
 	{
 		if(TVPPrimaryBuffer) TVPPrimaryBuffer->Release(), TVPPrimaryBuffer = NULL;
+		if(TVPDirectSound3DListener) TVPDirectSound3DListener->Release(), TVPDirectSound3DListener = NULL;
 		if(TVPDirectSound) TVPDirectSound->Release(), TVPDirectSound = NULL;
 		if(TVPDirectSoundDLL) FreeLibrary(TVPDirectSoundDLL), TVPDirectSoundDLL = NULL;
 		throw;
@@ -943,6 +987,7 @@ static void TVPUninitDirectSound()
 {
 	// release all objects except for secondary buffers.
 	if(TVPPrimaryBuffer) TVPPrimaryBuffer->Release(), TVPPrimaryBuffer = NULL;
+	if(TVPDirectSound3DListener) TVPDirectSound3DListener->Release(), TVPDirectSound3DListener = NULL;
 	if(TVPDirectSound) TVPDirectSound->Release(), TVPDirectSound = NULL;
 	if(TVPDirectSoundDLL) FreeLibrary(TVPDirectSoundDLL), TVPDirectSoundDLL = NULL;
 }
@@ -966,6 +1011,17 @@ IDirectSound * TVPGetDirectSound()
 	}
 	if(TVPDirectSound) TVPDirectSound->AddRef();
 	return TVPDirectSound; // note that returned TVPDirectSound is AddRefed
+}
+//---------------------------------------------------------------------------
+void TVPWaveSoundBufferCommitSettings()
+{
+	// commit all defered sound buffer settings
+	if(TVPDeferedSettingAvailable)
+	{
+		if(TVPDirectSound3DListener)
+			TVPDirectSound3DListener->CommitDeferredSettings();
+		TVPDeferedSettingAvailable = false;
+	}
 }
 //---------------------------------------------------------------------------
 
@@ -1430,7 +1486,7 @@ void tTVPWaveSoundBufferThread::CheckBufferSleep()
 //---------------------------------------------------------------------------
 static void TVPReleaseSoundBuffers(bool disableevent = true)
 {
-	// release all secondary buffers and DierctSound.
+	// release all secondary buffers.
 	tTJSCriticalSectionHolder holder(TVPWaveSoundBufferVectorCS);
 	std::vector<tTJSNI_WaveSoundBuffer *>::iterator i;
 	for(i = TVPWaveSoundBufferVector.begin();
@@ -1509,7 +1565,21 @@ void TVPReleaseDirectSound()
 	TVPUninitDirectSound();
 }
 //---------------------------------------------------------------------------
-
+void TVPSetWaveSoundBufferUse3DMode(bool b)
+{
+	// changing the 3D mode will stop all the buffers.
+	if(b != TVPDirectSoundUse3D)
+	{
+		TVPReleaseDirectSound();
+		TVPDirectSoundUse3D = b;
+	}
+}
+//---------------------------------------------------------------------------
+bool TVPGetWaveSoundBufferUse3DMode()
+{
+	return TVPDirectSoundUse3D;
+}
+//---------------------------------------------------------------------------
 
 
 
@@ -1610,10 +1680,11 @@ tTJSNI_WaveSoundBuffer::tTJSNI_WaveSoundBuffer()
 	Level2BufferSize = 0;
 	Volume =  100000;
 	Volume2 = 100000;
-	Use3D = false;
 	BufferCanControlPan = false;
 	Pan = 0;
+	PosX = PosY = PosZ = (D3DVALUE)0.0;
 	SoundBuffer = NULL;
+	Sound3DBuffer = NULL;
 	L2BufferDecodedSamplesInUnit = NULL;
 	L2BufferSamplePositions = NULL;
 	L1BufferSamplePositions = NULL;
@@ -1654,7 +1725,7 @@ void tTJSNI_WaveSoundBuffer::ThrowSoundBufferException(const ttstr &reason)
 		InputFormat.BitsPerSample));
 }
 //---------------------------------------------------------------------------
-void tTJSNI_WaveSoundBuffer::TryCreateSoundBuffer()
+void tTJSNI_WaveSoundBuffer::TryCreateSoundBuffer(bool use3d)
 {
 	// release previous sound buffer
 	if(SoundBuffer) SoundBuffer->Release(), SoundBuffer = NULL;
@@ -1696,10 +1767,10 @@ void tTJSNI_WaveSoundBuffer::TryCreateSoundBuffer()
 	dsbd.dwSize = sizeof(dsbd);
 	dsbd.dwFlags = 	DSBCAPS_GETCURRENTPOSITION2 |
 		DSBCAPS_CTRLVOLUME;
-	if(!Use3D)
+	if(!(TVPDirectSoundUse3D && use3d))
 		dsbd.dwFlags |= DSBCAPS_CTRLPAN, BufferCanControlPan = true;
 	else
-		BufferCanControlPan = false;
+		dsbd.dwFlags |= DSBCAPS_CTRL3D, BufferCanControlPan = false;
 	if(!(TVPSoundGlobalFocusMuteVolume == 0 &&
 		TVPSoundGlobalFocusModeByOption >= sgfmMuteOnDeactivate))
 		dsbd.dwFlags |= DSBCAPS_GLOBALFOCUS;
@@ -1713,15 +1784,30 @@ void tTJSNI_WaveSoundBuffer::TryCreateSoundBuffer()
 	// create sound buffer
 	HRESULT hr;
 	hr = TVPDirectSound->CreateSoundBuffer(&dsbd, &SoundBuffer, NULL);
-	if(FAILED(hr) && BufferCanControlPan)
-	{
-		dsbd.dwFlags &= ~ DSBCAPS_CTRLPAN;
-		BufferCanControlPan = false;
-		hr = TVPDirectSound->CreateSoundBuffer(&dsbd, &SoundBuffer, NULL);
-	}
-
 	if(FAILED(hr))
 	{
+		if(BufferCanControlPan)
+		{
+			dsbd.dwFlags &= ~ DSBCAPS_CTRLPAN;
+			BufferCanControlPan = false;
+			hr = TVPDirectSound->CreateSoundBuffer(&dsbd, &SoundBuffer, NULL);
+		}
+	}
+
+	if(FAILED(hr)) SoundBuffer = NULL;
+
+	if((TVPDirectSoundUse3D && use3d) && SUCCEEDED(hr))
+	{
+		// retrieve DirectSound3DBuffer interface
+		hr = SoundBuffer->QueryInterface(IID_IDirectSound3DBuffer,
+			(void**)&Sound3DBuffer);
+		if(FAILED(hr)) Sound3DBuffer = NULL;
+	}
+
+	// report failure
+	if(FAILED(hr))
+	{
+		if(SoundBuffer) SoundBuffer->Release();
 		SoundBuffer = NULL;
 		delete [] Level2Buffer;
 		Level2Buffer = NULL;
@@ -1754,16 +1840,20 @@ void tTJSNI_WaveSoundBuffer::CreateSoundBuffer()
 			bool failed;
 			bool firstfailed = false;
 			ttstr firstformat;
+			bool use3d = (InputFormat.Channels >= 3 || InputFormat.SpeakerConfig != 0) ?
+				false : TVPDirectSoundUse3D;
+				// currently DirectSound3D cannot handle multiple speaker configuration
+				// other than stereo.
 			int forcemode = 0;
 
 			if(TVPForceConvertMode == fcm16bit) goto try16bits;
 			if(TVPForceConvertMode == fcm16bitMono) goto try16bits_mono;
 
 			failed = false;
-			TVPWaveFormatToWAVEFORMATEXTENSIBLE(&InputFormat, &Format, false);
+			TVPWaveFormatToWAVEFORMATEXTENSIBLE(&InputFormat, &Format, use3d);
 			try
 			{
-				TryCreateSoundBuffer();
+				TryCreateSoundBuffer(use3d);
 			}
 			catch(eTJSError &e)
 			{
@@ -1775,10 +1865,10 @@ void tTJSNI_WaveSoundBuffer::CreateSoundBuffer()
 			if(failed)
 			{
 				failed = false;
-				TVPWaveFormatToWAVEFORMATEXTENSIBLE2(&InputFormat, &Format, false);
+				TVPWaveFormatToWAVEFORMATEXTENSIBLE2(&InputFormat, &Format, use3d);
 				try
 				{
-					TryCreateSoundBuffer();
+					TryCreateSoundBuffer(use3d);
 				}
 				catch(eTJSError &e)
 				{
@@ -1793,10 +1883,10 @@ void tTJSNI_WaveSoundBuffer::CreateSoundBuffer()
 			{
 		try16bits:
 				failed = false;
-				TVPWaveFormatToWAVEFORMATEXTENSIBLE16bits(&InputFormat, &Format, false);
+				TVPWaveFormatToWAVEFORMATEXTENSIBLE16bits(&InputFormat, &Format, use3d);
 				try
 				{
-					TryCreateSoundBuffer();
+					TryCreateSoundBuffer(use3d);
 				}
 				catch(eTJSError &e)
 				{
@@ -1810,10 +1900,10 @@ void tTJSNI_WaveSoundBuffer::CreateSoundBuffer()
 			{
 		try16bits_mono:
 				failed = false;
-				TVPWaveFormatToWAVEFORMATEXTENSIBLE16bitsMono(&InputFormat, &Format, false);
+				TVPWaveFormatToWAVEFORMATEXTENSIBLE16bitsMono(&InputFormat, &Format, use3d);
 				try
 				{
-					TryCreateSoundBuffer();
+					TryCreateSoundBuffer(use3d);
 				}
 				catch(eTJSError &e)
 				{
@@ -1837,7 +1927,11 @@ void tTJSNI_WaveSoundBuffer::CreateSoundBuffer()
 					hr = SoundBuffer->GetFormat(
 						(WAVEFORMATEX*)&wfx, sizeof(WAVEFORMATEXTENSIBLE), NULL);
 
-				ttstr log(TJS_W("(info) Accepted DirectSound secondary buffer format : "));
+				ttstr log;
+				if(!use3d)
+					log = TJS_W("(info) Accepted DirectSound secondary buffer format : ");
+				else
+					log = TJS_W("(info) Accepted DirectSound3D secondary buffer format : ");
 				if(SUCCEEDED(hr))
 					log += TVPGetSoundBufferFormatString(wfx);
 				else
@@ -1870,8 +1964,9 @@ void tTJSNI_WaveSoundBuffer::CreateSoundBuffer()
 
 	}
 
-	// reset volume
+	// reset volume and sound position
 	SetVolumeToSoundBuffer();
+	Set3DPositionToBuffer();
 
 	// reset sound buffer
 	ResetSoundBuffer();
@@ -1881,6 +1976,12 @@ void tTJSNI_WaveSoundBuffer::CreateSoundBuffer()
 //---------------------------------------------------------------------------
 void tTJSNI_WaveSoundBuffer::DestroySoundBuffer()
 {
+	if(Sound3DBuffer)
+	{
+		Sound3DBuffer->Release();
+		Sound3DBuffer = NULL;
+	}
+
 	if(SoundBuffer)
 	{
 		SoundBuffer->Stop();
@@ -2658,6 +2759,7 @@ void tTJSNI_WaveSoundBuffer::SetVolumeToSoundBuffer()
 
 		if(BufferCanControlPan)
 		{
+			// set pan
 			tjs_int v = Pan / 1000;
 			LONG pan;
 			if(v < -100) v = -100;
@@ -2703,7 +2805,25 @@ void tTJSNI_WaveSoundBuffer::SetPan(tjs_int v)
 	if(Pan != v)
 	{
 		Pan = v;
-		SetVolumeToSoundBuffer();
+		if(BufferCanControlPan)
+		{
+			// set pan with SetPan
+			SetVolumeToSoundBuffer();
+		}
+		else
+		{
+			// set pan with 3D sound facility
+			// note that setting pan can reset 3D position.
+			PosZ = (D3DVALUE)0.0;
+			PosY = (D3DVALUE)0.001;
+			// PosX = -0.003 .. -0.0001 = 0 = +0.0001 ... +0.003
+			float t;
+			t = ((float)v / 100000.0);
+			t *= t * 0.003;
+			if(v < 0) t = - t;
+			PosX = t;
+			Set3DPositionToBuffer();
+		}
 	}
 }
 //---------------------------------------------------------------------------
@@ -2726,6 +2846,42 @@ void tTJSNI_WaveSoundBuffer::SetGlobalFocusMode(tTVPSoundGlobalFocusMode b)
 		GlobalFocusMode = b;
 		TVPResetVolumeToAllSoundBuffer();
 	}
+}
+//---------------------------------------------------------------------------
+void tTJSNI_WaveSoundBuffer::Set3DPositionToBuffer()
+{
+	if(Sound3DBuffer)
+	{
+		Sound3DBuffer->SetPosition(PosX, PosY, PosZ, DS3D_DEFERRED);
+		// defered settings are to be commited at next tickbeat event.
+		TVPDeferedSettingAvailable = true;
+	}
+}
+//---------------------------------------------------------------------------
+void tTJSNI_WaveSoundBuffer::SetPos(D3DVALUE x, D3DVALUE y, D3DVALUE z)
+{
+	PosX = x;
+	PosY = y;
+	PosZ = z;
+	Set3DPositionToBuffer();
+}
+//---------------------------------------------------------------------------
+void tTJSNI_WaveSoundBuffer::SetPosX(D3DVALUE v)
+{
+	PosX = v;
+	Set3DPositionToBuffer();
+}
+//---------------------------------------------------------------------------
+void tTJSNI_WaveSoundBuffer::SetPosY(D3DVALUE v)
+{
+	PosY = v;
+	Set3DPositionToBuffer();
+}
+//---------------------------------------------------------------------------
+void tTJSNI_WaveSoundBuffer::SetPosZ(D3DVALUE v)
+{
+	PosZ = v;
+	Set3DPositionToBuffer();
 }
 //---------------------------------------------------------------------------
 void tTJSNI_WaveSoundBuffer::SetUseVisBuffer(bool b)
