@@ -100,6 +100,26 @@ TVP_GL_IA32_FUNC_EXTERN_DECL(void,  TVPConstAlphaBlend_emmx_a,  (tjs_uint32 *des
 TVP_GL_IA32_FUNC_EXTERN_DECL(void,  TVPConstAlphaBlend_SD_emmx_a,  (tjs_uint32 *dest, const tjs_uint32 *src1, const tjs_uint32 *src2, tjs_int len, tjs_int opa));
 /*[*/
 /*]*/
+TVP_GL_IA32_FUNC_EXTERN_DECL(void,  TVPAddSubVertSum16_mmx_a,  (tjs_uint16 *dest, const tjs_uint32 *addline, const tjs_uint32 *subline, tjs_int len));
+TVP_GL_IA32_FUNC_EXTERN_DECL(void,  TVPAddSubVertSum16_d_mmx_a,  (tjs_uint16 *dest, const tjs_uint32 *addline, const tjs_uint32 *subline, tjs_int len));
+TVP_GL_IA32_FUNC_EXTERN_DECL(void,  TVPAddSubVertSum32_mmx_a,  (tjs_uint32 *dest, const tjs_uint32 *addline, const tjs_uint32 *subline, tjs_int len));
+TVP_GL_IA32_FUNC_EXTERN_DECL(void,  TVPAddSubVertSum32_d_mmx_a,  (tjs_uint32 *dest, const tjs_uint32 *addline, const tjs_uint32 *subline, tjs_int len));
+TVP_GL_IA32_FUNC_EXTERN_DECL(void,  TVPDoBoxBlurAvg16_mmx_a,  (tjs_uint32 *dest, tjs_uint16 *sum, const tjs_uint16 * add, const tjs_uint16 * sub, tjs_int n, tjs_int len));
+TVP_GL_IA32_FUNC_EXTERN_DECL(void,  TVPDoBoxBlurAvg16_d_mmx_a,  (tjs_uint32 *dest, tjs_uint16 *sum, const tjs_uint16 * add, const tjs_uint16 * sub, tjs_int n, tjs_int len));
+TVP_GL_IA32_FUNC_EXTERN_DECL(void,  TVPDoBoxBlurAvg32_mmx_a,  (tjs_uint32 *dest, tjs_uint32 *sum, const tjs_uint32 * add, const tjs_uint32 * sub, tjs_int n, tjs_int len));
+TVP_GL_IA32_FUNC_EXTERN_DECL(void,  TVPDoBoxBlurAvg32_d_mmx_a,  (tjs_uint32 *dest, tjs_uint32 *sum, const tjs_uint32 * add, const tjs_uint32 * sub, tjs_int n, tjs_int len));
+TVP_GL_IA32_FUNC_EXTERN_DECL(void,  TVPAddSubVertSum16_emmx_a,  (tjs_uint16 *dest, const tjs_uint32 *addline, const tjs_uint32 *subline, tjs_int len));
+TVP_GL_IA32_FUNC_EXTERN_DECL(void,  TVPAddSubVertSum16_d_emmx_a,  (tjs_uint16 *dest, const tjs_uint32 *addline, const tjs_uint32 *subline, tjs_int len));
+TVP_GL_IA32_FUNC_EXTERN_DECL(void,  TVPAddSubVertSum32_emmx_a,  (tjs_uint32 *dest, const tjs_uint32 *addline, const tjs_uint32 *subline, tjs_int len));
+TVP_GL_IA32_FUNC_EXTERN_DECL(void,  TVPAddSubVertSum32_d_emmx_a,  (tjs_uint32 *dest, const tjs_uint32 *addline, const tjs_uint32 *subline, tjs_int len));
+TVP_GL_IA32_FUNC_EXTERN_DECL(void,  TVPDoBoxBlurAvg16_emmx_a,  (tjs_uint32 *dest, tjs_uint16 *sum, const tjs_uint16 * add, const tjs_uint16 * sub, tjs_int n, tjs_int len));
+TVP_GL_IA32_FUNC_EXTERN_DECL(void,  TVPDoBoxBlurAvg16_d_emmx_a,  (tjs_uint32 *dest, tjs_uint16 *sum, const tjs_uint16 * add, const tjs_uint16 * sub, tjs_int n, tjs_int len));
+TVP_GL_IA32_FUNC_EXTERN_DECL(void,  TVPDoBoxBlurAvg32_emmx_a,  (tjs_uint32 *dest, tjs_uint32 *sum, const tjs_uint32 * add, const tjs_uint32 * sub, tjs_int n, tjs_int len));
+TVP_GL_IA32_FUNC_EXTERN_DECL(void,  TVPDoBoxBlurAvg32_d_emmx_a,  (tjs_uint32 *dest, tjs_uint32 *sum, const tjs_uint32 * add, const tjs_uint32 * sub, tjs_int n, tjs_int len));
+TVP_GL_IA32_FUNC_EXTERN_DECL(void,  TVPDoBoxBlurAvg16_sse_a,  (tjs_uint32 *dest, tjs_uint16 *sum, const tjs_uint16 * add, const tjs_uint16 * sub, tjs_int n, tjs_int len));
+TVP_GL_IA32_FUNC_EXTERN_DECL(void,  TVPDoBoxBlurAvg16_d_sse_a,  (tjs_uint32 *dest, tjs_uint16 *sum, const tjs_uint16 * add, const tjs_uint16 * sub, tjs_int n, tjs_int len));
+/*[*/
+/*]*/
 TVP_GL_IA32_FUNC_EXTERN_DECL(void,  TVPFillARGB_mmx_a,  (tjs_uint32 *dest, tjs_int len, tjs_uint32 value));
 TVP_GL_IA32_FUNC_EXTERN_DECL(void,  TVPFillARGB_sse_a,  (tjs_uint32 *dest, tjs_int len, tjs_uint32 value));
 TVP_GL_IA32_FUNC_EXTERN_DECL(void,  TVPFillARGB_NC_sse_a,  (tjs_uint32 *dest, tjs_int len, tjs_uint32 value));

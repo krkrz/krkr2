@@ -1,0 +1,74 @@
+// pad テスト
+
+
+Debug.console.visible = true;
+
+class MainWindow extends Window // メインウィンドウクラス
+{
+	var layer;
+	var chr;
+
+	function MainWindow()
+	{
+		// MainWindow コンストラクタ
+		super.Window();
+
+		borderStyle = bsSingle;
+		setInnerSize(640, 480);
+
+		caption = System.title = "blurテスト";
+
+		// プライマリレイヤを作成
+		add(layer = new Layer(this, null));
+		layer.setSize(innerWidth, innerHeight);
+
+		// 前景レイヤを作成
+		add(chr = new Layer(this, layer));
+
+		// プライマリレイヤに画像を読み込む
+		layer.loadImages("../../../kag3/syoukai/bgimage/_24");
+		layer.fillRect(0, 0, 50, 50, 0xffffffff);
+
+		// 前景レイヤに画像を読み込む
+		chr.loadImages("../../../kag3/syoukai/fgimage/uni");
+		chr.visible = true;
+//		chr.face = dfAddAlpha;
+//		chr.type = ltAddAlpha;
+//		chr.convertType(dfAlpha);
+		chr.setSizeToImageSize();
+
+		// 表示状態に
+		visible = true;
+
+	}
+
+	function finalize()
+	{
+		super.finalize(...);
+	}
+
+	function onMouseDown(x, y, button)
+	{
+		super.onMouseDown(...);
+		if(button == mbLeft)
+		{
+	//		layer.setClip(100, 100, 100, 100);
+	//		layer.doBoxBlur(1, 1);
+//			layer.setClip(3, 3, 639-6, 479-6);
+			var start = System.getTickCount();
+			for(var i = 0; i < 200; i++)
+			chr.doBoxBlur(7, 7);
+			var end = System.getTickCount();
+			System.inform(end - start);
+		}
+		else
+		{
+			chr.doBoxBlur(7, 7);
+//			chr.doBoxBlur(7, 7);
+		}
+	}
+
+
+}
+
+var win = new MainWindow();

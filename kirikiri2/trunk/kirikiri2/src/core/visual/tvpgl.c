@@ -8506,6 +8506,652 @@ TVP_GL_FUNC_DECL(void, TVPFillMask_c, (tjs_uint32 *dest, tjs_int len, tjs_uint32
 }
 
 /*export*/
+TVP_GL_FUNC_DECL(void, TVPAddSubVertSum16_c, (tjs_uint16 *dest, const tjs_uint32 *addline, const tjs_uint32 *subline, tjs_int len))
+{
+	{
+		int ___index = 0;
+		len -= (4-1);
+
+		while(___index < len)
+		{
+{
+	tjs_uint32 add, sub;
+	add = addline[(___index+0)];
+	sub = subline[(___index+0)];
+	dest[(___index+0)*4+0] += ((add    ) & 0xff) - ((sub    ) & 0xff);
+	dest[(___index+0)*4+1] += ((add>>8 ) & 0xff) - ((sub>>8 ) & 0xff);
+	dest[(___index+0)*4+2] += ((add>>16) & 0xff) - ((sub>>16) & 0xff);
+	dest[(___index+0)*4+3] += ((add>>24)       ) - ((sub>>24)       );
+}
+{
+	tjs_uint32 add, sub;
+	add = addline[(___index+1)];
+	sub = subline[(___index+1)];
+	dest[(___index+1)*4+0] += ((add    ) & 0xff) - ((sub    ) & 0xff);
+	dest[(___index+1)*4+1] += ((add>>8 ) & 0xff) - ((sub>>8 ) & 0xff);
+	dest[(___index+1)*4+2] += ((add>>16) & 0xff) - ((sub>>16) & 0xff);
+	dest[(___index+1)*4+3] += ((add>>24)       ) - ((sub>>24)       );
+}
+{
+	tjs_uint32 add, sub;
+	add = addline[(___index+2)];
+	sub = subline[(___index+2)];
+	dest[(___index+2)*4+0] += ((add    ) & 0xff) - ((sub    ) & 0xff);
+	dest[(___index+2)*4+1] += ((add>>8 ) & 0xff) - ((sub>>8 ) & 0xff);
+	dest[(___index+2)*4+2] += ((add>>16) & 0xff) - ((sub>>16) & 0xff);
+	dest[(___index+2)*4+3] += ((add>>24)       ) - ((sub>>24)       );
+}
+{
+	tjs_uint32 add, sub;
+	add = addline[(___index+3)];
+	sub = subline[(___index+3)];
+	dest[(___index+3)*4+0] += ((add    ) & 0xff) - ((sub    ) & 0xff);
+	dest[(___index+3)*4+1] += ((add>>8 ) & 0xff) - ((sub>>8 ) & 0xff);
+	dest[(___index+3)*4+2] += ((add>>16) & 0xff) - ((sub>>16) & 0xff);
+	dest[(___index+3)*4+3] += ((add>>24)       ) - ((sub>>24)       );
+}
+			___index += 4;
+		}
+
+		len += (4-1);
+
+		while(___index < len)
+		{
+{
+	tjs_uint32 add, sub;
+	add = addline[___index];
+	sub = subline[___index];
+	dest[___index*4+0] += ((add    ) & 0xff) - ((sub    ) & 0xff);
+	dest[___index*4+1] += ((add>>8 ) & 0xff) - ((sub>>8 ) & 0xff);
+	dest[___index*4+2] += ((add>>16) & 0xff) - ((sub>>16) & 0xff);
+	dest[___index*4+3] += ((add>>24)       ) - ((sub>>24)       );
+}
+			___index ++;
+		}
+	}
+}
+
+/*export*/
+TVP_GL_FUNC_DECL(void, TVPAddSubVertSum16_d_c, (tjs_uint16 *dest, const tjs_uint32 *addline, const tjs_uint32 *subline, tjs_int len))
+{
+	{
+		int ___index = 0;
+		len -= (4-1);
+
+		while(___index < len)
+		{
+{
+	tjs_uint32 add, sub;
+	tjs_int add_a, sub_a;
+	add = addline[(___index+0)];
+	sub = subline[(___index+0)];
+	dest[(___index+0)*4+3] += (add_a = (add>>24)       ) - (sub_a = (sub>>24)       );
+	add_a += add_a >> 7;
+	sub_a += sub_a >> 7;
+	dest[(___index+0)*4+0] += (((add    ) & 0xff) * add_a >> 8) - (((sub    ) & 0xff) * sub_a >> 8);
+	dest[(___index+0)*4+1] += (((add>>8 ) & 0xff) * add_a >> 8) - (((sub>>8 ) & 0xff) * sub_a >> 8);
+	dest[(___index+0)*4+2] += (((add>>16) & 0xff) * add_a >> 8) - (((sub>>16) & 0xff) * sub_a >> 8);
+}
+{
+	tjs_uint32 add, sub;
+	tjs_int add_a, sub_a;
+	add = addline[(___index+1)];
+	sub = subline[(___index+1)];
+	dest[(___index+1)*4+3] += (add_a = (add>>24)       ) - (sub_a = (sub>>24)       );
+	add_a += add_a >> 7;
+	sub_a += sub_a >> 7;
+	dest[(___index+1)*4+0] += (((add    ) & 0xff) * add_a >> 8) - (((sub    ) & 0xff) * sub_a >> 8);
+	dest[(___index+1)*4+1] += (((add>>8 ) & 0xff) * add_a >> 8) - (((sub>>8 ) & 0xff) * sub_a >> 8);
+	dest[(___index+1)*4+2] += (((add>>16) & 0xff) * add_a >> 8) - (((sub>>16) & 0xff) * sub_a >> 8);
+}
+{
+	tjs_uint32 add, sub;
+	tjs_int add_a, sub_a;
+	add = addline[(___index+2)];
+	sub = subline[(___index+2)];
+	dest[(___index+2)*4+3] += (add_a = (add>>24)       ) - (sub_a = (sub>>24)       );
+	add_a += add_a >> 7;
+	sub_a += sub_a >> 7;
+	dest[(___index+2)*4+0] += (((add    ) & 0xff) * add_a >> 8) - (((sub    ) & 0xff) * sub_a >> 8);
+	dest[(___index+2)*4+1] += (((add>>8 ) & 0xff) * add_a >> 8) - (((sub>>8 ) & 0xff) * sub_a >> 8);
+	dest[(___index+2)*4+2] += (((add>>16) & 0xff) * add_a >> 8) - (((sub>>16) & 0xff) * sub_a >> 8);
+}
+{
+	tjs_uint32 add, sub;
+	tjs_int add_a, sub_a;
+	add = addline[(___index+3)];
+	sub = subline[(___index+3)];
+	dest[(___index+3)*4+3] += (add_a = (add>>24)       ) - (sub_a = (sub>>24)       );
+	add_a += add_a >> 7;
+	sub_a += sub_a >> 7;
+	dest[(___index+3)*4+0] += (((add    ) & 0xff) * add_a >> 8) - (((sub    ) & 0xff) * sub_a >> 8);
+	dest[(___index+3)*4+1] += (((add>>8 ) & 0xff) * add_a >> 8) - (((sub>>8 ) & 0xff) * sub_a >> 8);
+	dest[(___index+3)*4+2] += (((add>>16) & 0xff) * add_a >> 8) - (((sub>>16) & 0xff) * sub_a >> 8);
+}
+			___index += 4;
+		}
+
+		len += (4-1);
+
+		while(___index < len)
+		{
+{
+	tjs_uint32 add, sub;
+	tjs_int add_a, sub_a;
+	add = addline[___index];
+	sub = subline[___index];
+	dest[___index*4+3] += (add_a = (add>>24)       ) - (sub_a = (sub>>24)       );
+	add_a += add_a >> 7;
+	sub_a += sub_a >> 7;
+	dest[___index*4+0] += (((add    ) & 0xff) * add_a >> 8) - (((sub    ) & 0xff) * sub_a >> 8);
+	dest[___index*4+1] += (((add>>8 ) & 0xff) * add_a >> 8) - (((sub>>8 ) & 0xff) * sub_a >> 8);
+	dest[___index*4+2] += (((add>>16) & 0xff) * add_a >> 8) - (((sub>>16) & 0xff) * sub_a >> 8);
+}
+			___index ++;
+		}
+	}
+}
+
+/*export*/
+TVP_GL_FUNC_DECL(void, TVPAddSubVertSum32_c, (tjs_uint32 *dest, const tjs_uint32 *addline, const tjs_uint32 *subline, tjs_int len))
+{
+	{
+		int ___index = 0;
+		len -= (4-1);
+
+		while(___index < len)
+		{
+{
+	tjs_uint32 add, sub;
+	add = addline[(___index+0)];
+	sub = subline[(___index+0)];
+	dest[(___index+0)*4+0] += ((add    ) & 0xff) - ((sub    ) & 0xff);
+	dest[(___index+0)*4+1] += ((add>>8 ) & 0xff) - ((sub>>8 ) & 0xff);
+	dest[(___index+0)*4+2] += ((add>>16) & 0xff) - ((sub>>16) & 0xff);
+	dest[(___index+0)*4+3] += ((add>>24)       ) - ((sub>>24)       );
+}
+{
+	tjs_uint32 add, sub;
+	add = addline[(___index+1)];
+	sub = subline[(___index+1)];
+	dest[(___index+1)*4+0] += ((add    ) & 0xff) - ((sub    ) & 0xff);
+	dest[(___index+1)*4+1] += ((add>>8 ) & 0xff) - ((sub>>8 ) & 0xff);
+	dest[(___index+1)*4+2] += ((add>>16) & 0xff) - ((sub>>16) & 0xff);
+	dest[(___index+1)*4+3] += ((add>>24)       ) - ((sub>>24)       );
+}
+{
+	tjs_uint32 add, sub;
+	add = addline[(___index+2)];
+	sub = subline[(___index+2)];
+	dest[(___index+2)*4+0] += ((add    ) & 0xff) - ((sub    ) & 0xff);
+	dest[(___index+2)*4+1] += ((add>>8 ) & 0xff) - ((sub>>8 ) & 0xff);
+	dest[(___index+2)*4+2] += ((add>>16) & 0xff) - ((sub>>16) & 0xff);
+	dest[(___index+2)*4+3] += ((add>>24)       ) - ((sub>>24)       );
+}
+{
+	tjs_uint32 add, sub;
+	add = addline[(___index+3)];
+	sub = subline[(___index+3)];
+	dest[(___index+3)*4+0] += ((add    ) & 0xff) - ((sub    ) & 0xff);
+	dest[(___index+3)*4+1] += ((add>>8 ) & 0xff) - ((sub>>8 ) & 0xff);
+	dest[(___index+3)*4+2] += ((add>>16) & 0xff) - ((sub>>16) & 0xff);
+	dest[(___index+3)*4+3] += ((add>>24)       ) - ((sub>>24)       );
+}
+			___index += 4;
+		}
+
+		len += (4-1);
+
+		while(___index < len)
+		{
+{
+	tjs_uint32 add, sub;
+	add = addline[___index];
+	sub = subline[___index];
+	dest[___index*4+0] += ((add    ) & 0xff) - ((sub    ) & 0xff);
+	dest[___index*4+1] += ((add>>8 ) & 0xff) - ((sub>>8 ) & 0xff);
+	dest[___index*4+2] += ((add>>16) & 0xff) - ((sub>>16) & 0xff);
+	dest[___index*4+3] += ((add>>24)       ) - ((sub>>24)       );
+}
+			___index ++;
+		}
+	}
+}
+
+/*export*/
+TVP_GL_FUNC_DECL(void, TVPAddSubVertSum32_d_c, (tjs_uint32 *dest, const tjs_uint32 *addline, const tjs_uint32 *subline, tjs_int len))
+{
+	{
+		int ___index = 0;
+		len -= (4-1);
+
+		while(___index < len)
+		{
+{
+	tjs_uint32 add, sub;
+	tjs_int add_a, sub_a;
+	add = addline[(___index+0)];
+	sub = subline[(___index+0)];
+	dest[(___index+0)*4+3] += (add_a = (add>>24)       ) - (sub_a = (sub>>24)       );
+	add_a += add_a >> 7;
+	sub_a += sub_a >> 7;
+	dest[(___index+0)*4+0] += (((add    ) & 0xff) * add_a >> 8) - (((sub    ) & 0xff) * sub_a >> 8);
+	dest[(___index+0)*4+1] += (((add>>8 ) & 0xff) * add_a >> 8) - (((sub>>8 ) & 0xff) * sub_a >> 8);
+	dest[(___index+0)*4+2] += (((add>>16) & 0xff) * add_a >> 8) - (((sub>>16) & 0xff) * sub_a >> 8);
+}
+{
+	tjs_uint32 add, sub;
+	tjs_int add_a, sub_a;
+	add = addline[(___index+1)];
+	sub = subline[(___index+1)];
+	dest[(___index+1)*4+3] += (add_a = (add>>24)       ) - (sub_a = (sub>>24)       );
+	add_a += add_a >> 7;
+	sub_a += sub_a >> 7;
+	dest[(___index+1)*4+0] += (((add    ) & 0xff) * add_a >> 8) - (((sub    ) & 0xff) * sub_a >> 8);
+	dest[(___index+1)*4+1] += (((add>>8 ) & 0xff) * add_a >> 8) - (((sub>>8 ) & 0xff) * sub_a >> 8);
+	dest[(___index+1)*4+2] += (((add>>16) & 0xff) * add_a >> 8) - (((sub>>16) & 0xff) * sub_a >> 8);
+}
+{
+	tjs_uint32 add, sub;
+	tjs_int add_a, sub_a;
+	add = addline[(___index+2)];
+	sub = subline[(___index+2)];
+	dest[(___index+2)*4+3] += (add_a = (add>>24)       ) - (sub_a = (sub>>24)       );
+	add_a += add_a >> 7;
+	sub_a += sub_a >> 7;
+	dest[(___index+2)*4+0] += (((add    ) & 0xff) * add_a >> 8) - (((sub    ) & 0xff) * sub_a >> 8);
+	dest[(___index+2)*4+1] += (((add>>8 ) & 0xff) * add_a >> 8) - (((sub>>8 ) & 0xff) * sub_a >> 8);
+	dest[(___index+2)*4+2] += (((add>>16) & 0xff) * add_a >> 8) - (((sub>>16) & 0xff) * sub_a >> 8);
+}
+{
+	tjs_uint32 add, sub;
+	tjs_int add_a, sub_a;
+	add = addline[(___index+3)];
+	sub = subline[(___index+3)];
+	dest[(___index+3)*4+3] += (add_a = (add>>24)       ) - (sub_a = (sub>>24)       );
+	add_a += add_a >> 7;
+	sub_a += sub_a >> 7;
+	dest[(___index+3)*4+0] += (((add    ) & 0xff) * add_a >> 8) - (((sub    ) & 0xff) * sub_a >> 8);
+	dest[(___index+3)*4+1] += (((add>>8 ) & 0xff) * add_a >> 8) - (((sub>>8 ) & 0xff) * sub_a >> 8);
+	dest[(___index+3)*4+2] += (((add>>16) & 0xff) * add_a >> 8) - (((sub>>16) & 0xff) * sub_a >> 8);
+}
+			___index += 4;
+		}
+
+		len += (4-1);
+
+		while(___index < len)
+		{
+{
+	tjs_uint32 add, sub;
+	tjs_int add_a, sub_a;
+	add = addline[___index];
+	sub = subline[___index];
+	dest[___index*4+3] += (add_a = (add>>24)       ) - (sub_a = (sub>>24)       );
+	add_a += add_a >> 7;
+	sub_a += sub_a >> 7;
+	dest[___index*4+0] += (((add    ) & 0xff) * add_a >> 8) - (((sub    ) & 0xff) * sub_a >> 8);
+	dest[___index*4+1] += (((add>>8 ) & 0xff) * add_a >> 8) - (((sub>>8 ) & 0xff) * sub_a >> 8);
+	dest[___index*4+2] += (((add>>16) & 0xff) * add_a >> 8) - (((sub>>16) & 0xff) * sub_a >> 8);
+}
+			___index ++;
+		}
+	}
+}
+
+/*export*/
+TVP_GL_FUNC_DECL(void, TVPDoBoxBlurAvg16_c, (tjs_uint32 *dest, tjs_uint16 *sum, const tjs_uint16 * add, const tjs_uint16 * sub, tjs_int n, tjs_int len))
+{
+	tjs_int rcp = (1<<16) / n;
+	tjs_int half_n = n >> 1;
+	{
+		int ___index = 0;
+		len -= (4-1);
+
+		while(___index < len)
+		{
+{
+	dest[(___index+0)] =
+		(((sum[0] + half_n) * rcp >> 16)       )+
+		(((sum[1] + half_n) * rcp >> 16) << 8  )+
+		(((sum[2] + half_n) * rcp >> 16) << 16 )+
+		(((sum[3] + half_n) * rcp >> 16) << 24 );
+
+	sum[0] += add[(___index+0)*4+0] - sub[(___index+0)*4+0];
+	sum[1] += add[(___index+0)*4+1] - sub[(___index+0)*4+1];
+	sum[2] += add[(___index+0)*4+2] - sub[(___index+0)*4+2];
+	sum[3] += add[(___index+0)*4+3] - sub[(___index+0)*4+3];
+}
+{
+	dest[(___index+1)] =
+		(((sum[0] + half_n) * rcp >> 16)       )+
+		(((sum[1] + half_n) * rcp >> 16) << 8  )+
+		(((sum[2] + half_n) * rcp >> 16) << 16 )+
+		(((sum[3] + half_n) * rcp >> 16) << 24 );
+
+	sum[0] += add[(___index+1)*4+0] - sub[(___index+1)*4+0];
+	sum[1] += add[(___index+1)*4+1] - sub[(___index+1)*4+1];
+	sum[2] += add[(___index+1)*4+2] - sub[(___index+1)*4+2];
+	sum[3] += add[(___index+1)*4+3] - sub[(___index+1)*4+3];
+}
+{
+	dest[(___index+2)] =
+		(((sum[0] + half_n) * rcp >> 16)       )+
+		(((sum[1] + half_n) * rcp >> 16) << 8  )+
+		(((sum[2] + half_n) * rcp >> 16) << 16 )+
+		(((sum[3] + half_n) * rcp >> 16) << 24 );
+
+	sum[0] += add[(___index+2)*4+0] - sub[(___index+2)*4+0];
+	sum[1] += add[(___index+2)*4+1] - sub[(___index+2)*4+1];
+	sum[2] += add[(___index+2)*4+2] - sub[(___index+2)*4+2];
+	sum[3] += add[(___index+2)*4+3] - sub[(___index+2)*4+3];
+}
+{
+	dest[(___index+3)] =
+		(((sum[0] + half_n) * rcp >> 16)       )+
+		(((sum[1] + half_n) * rcp >> 16) << 8  )+
+		(((sum[2] + half_n) * rcp >> 16) << 16 )+
+		(((sum[3] + half_n) * rcp >> 16) << 24 );
+
+	sum[0] += add[(___index+3)*4+0] - sub[(___index+3)*4+0];
+	sum[1] += add[(___index+3)*4+1] - sub[(___index+3)*4+1];
+	sum[2] += add[(___index+3)*4+2] - sub[(___index+3)*4+2];
+	sum[3] += add[(___index+3)*4+3] - sub[(___index+3)*4+3];
+}
+			___index += 4;
+		}
+
+		len += (4-1);
+
+		while(___index < len)
+		{
+{
+	dest[___index] =
+		(((sum[0] + half_n) * rcp >> 16)       )+
+		(((sum[1] + half_n) * rcp >> 16) << 8  )+
+		(((sum[2] + half_n) * rcp >> 16) << 16 )+
+		(((sum[3] + half_n) * rcp >> 16) << 24 );
+
+	sum[0] += add[___index*4+0] - sub[___index*4+0];
+	sum[1] += add[___index*4+1] - sub[___index*4+1];
+	sum[2] += add[___index*4+2] - sub[___index*4+2];
+	sum[3] += add[___index*4+3] - sub[___index*4+3];
+}
+			___index ++;
+		}
+	}
+}
+
+/*export*/
+TVP_GL_FUNC_DECL(void, TVPDoBoxBlurAvg16_d_c, (tjs_uint32 *dest, tjs_uint16 *sum, const tjs_uint16 * add, const tjs_uint16 * sub, tjs_int n, tjs_int len))
+{
+	tjs_int rcp = (1<<16) / n;
+	tjs_int half_n = n >> 1;
+	{
+		int ___index = 0;
+		len -= (4-1);
+
+		while(___index < len)
+		{
+{
+	tjs_int a = ((sum[3] + half_n) * rcp >> 16);
+	tjs_uint8 * t = TVPDivTable + (a << 8);
+	dest[(___index+0)] =
+		(t[(sum[0] + half_n) * rcp >> 16]       )+
+		(t[(sum[1] + half_n) * rcp >> 16] << 8  )+
+		(t[(sum[2] + half_n) * rcp >> 16] << 16 )+
+		(a << 24 );
+
+	sum[0] += add[(___index+0)*4+0] - sub[(___index+0)*4+0];
+	sum[1] += add[(___index+0)*4+1] - sub[(___index+0)*4+1];
+	sum[2] += add[(___index+0)*4+2] - sub[(___index+0)*4+2];
+	sum[3] += add[(___index+0)*4+3] - sub[(___index+0)*4+3];
+}
+{
+	tjs_int a = ((sum[3] + half_n) * rcp >> 16);
+	tjs_uint8 * t = TVPDivTable + (a << 8);
+	dest[(___index+1)] =
+		(t[(sum[0] + half_n) * rcp >> 16]       )+
+		(t[(sum[1] + half_n) * rcp >> 16] << 8  )+
+		(t[(sum[2] + half_n) * rcp >> 16] << 16 )+
+		(a << 24 );
+
+	sum[0] += add[(___index+1)*4+0] - sub[(___index+1)*4+0];
+	sum[1] += add[(___index+1)*4+1] - sub[(___index+1)*4+1];
+	sum[2] += add[(___index+1)*4+2] - sub[(___index+1)*4+2];
+	sum[3] += add[(___index+1)*4+3] - sub[(___index+1)*4+3];
+}
+{
+	tjs_int a = ((sum[3] + half_n) * rcp >> 16);
+	tjs_uint8 * t = TVPDivTable + (a << 8);
+	dest[(___index+2)] =
+		(t[(sum[0] + half_n) * rcp >> 16]       )+
+		(t[(sum[1] + half_n) * rcp >> 16] << 8  )+
+		(t[(sum[2] + half_n) * rcp >> 16] << 16 )+
+		(a << 24 );
+
+	sum[0] += add[(___index+2)*4+0] - sub[(___index+2)*4+0];
+	sum[1] += add[(___index+2)*4+1] - sub[(___index+2)*4+1];
+	sum[2] += add[(___index+2)*4+2] - sub[(___index+2)*4+2];
+	sum[3] += add[(___index+2)*4+3] - sub[(___index+2)*4+3];
+}
+{
+	tjs_int a = ((sum[3] + half_n) * rcp >> 16);
+	tjs_uint8 * t = TVPDivTable + (a << 8);
+	dest[(___index+3)] =
+		(t[(sum[0] + half_n) * rcp >> 16]       )+
+		(t[(sum[1] + half_n) * rcp >> 16] << 8  )+
+		(t[(sum[2] + half_n) * rcp >> 16] << 16 )+
+		(a << 24 );
+
+	sum[0] += add[(___index+3)*4+0] - sub[(___index+3)*4+0];
+	sum[1] += add[(___index+3)*4+1] - sub[(___index+3)*4+1];
+	sum[2] += add[(___index+3)*4+2] - sub[(___index+3)*4+2];
+	sum[3] += add[(___index+3)*4+3] - sub[(___index+3)*4+3];
+}
+			___index += 4;
+		}
+
+		len += (4-1);
+
+		while(___index < len)
+		{
+{
+	tjs_int a = ((sum[3] + half_n) * rcp >> 16);
+	tjs_uint8 * t = TVPDivTable + (a << 8);
+	dest[___index] =
+		(t[(sum[0] + half_n) * rcp >> 16]       )+
+		(t[(sum[1] + half_n) * rcp >> 16] << 8  )+
+		(t[(sum[2] + half_n) * rcp >> 16] << 16 )+
+		(a << 24 );
+
+	sum[0] += add[___index*4+0] - sub[___index*4+0];
+	sum[1] += add[___index*4+1] - sub[___index*4+1];
+	sum[2] += add[___index*4+2] - sub[___index*4+2];
+	sum[3] += add[___index*4+3] - sub[___index*4+3];
+}
+			___index ++;
+		}
+	}
+}
+
+/*export*/
+TVP_GL_FUNC_DECL(void, TVPDoBoxBlurAvg32_c, (tjs_uint32 *dest, tjs_uint32 *sum, const tjs_uint32 * add, const tjs_uint32 * sub, tjs_int n, tjs_int len))
+{
+	/* This function is very slow since using divisiion in loop. Function written in assembly should be used. */
+	tjs_int half_n = n >> 1;
+	{
+		int ___index = 0;
+		len -= (4-1);
+
+		while(___index < len)
+		{
+{
+	dest[(___index+0)] =
+		(((sum[0] + half_n) / n)       )+
+		(((sum[1] + half_n) / n) << 8  )+
+		(((sum[2] + half_n) / n) << 16 )+
+		(((sum[3] + half_n) / n) << 24 );
+
+	sum[0] += add[(___index+0)*4+0] - sub[(___index+0)*4+0];
+	sum[1] += add[(___index+0)*4+1] - sub[(___index+0)*4+1];
+	sum[2] += add[(___index+0)*4+2] - sub[(___index+0)*4+2];
+	sum[3] += add[(___index+0)*4+3] - sub[(___index+0)*4+3];
+}
+{
+	dest[(___index+1)] =
+		(((sum[0] + half_n) / n)       )+
+		(((sum[1] + half_n) / n) << 8  )+
+		(((sum[2] + half_n) / n) << 16 )+
+		(((sum[3] + half_n) / n) << 24 );
+
+	sum[0] += add[(___index+1)*4+0] - sub[(___index+1)*4+0];
+	sum[1] += add[(___index+1)*4+1] - sub[(___index+1)*4+1];
+	sum[2] += add[(___index+1)*4+2] - sub[(___index+1)*4+2];
+	sum[3] += add[(___index+1)*4+3] - sub[(___index+1)*4+3];
+}
+{
+	dest[(___index+2)] =
+		(((sum[0] + half_n) / n)       )+
+		(((sum[1] + half_n) / n) << 8  )+
+		(((sum[2] + half_n) / n) << 16 )+
+		(((sum[3] + half_n) / n) << 24 );
+
+	sum[0] += add[(___index+2)*4+0] - sub[(___index+2)*4+0];
+	sum[1] += add[(___index+2)*4+1] - sub[(___index+2)*4+1];
+	sum[2] += add[(___index+2)*4+2] - sub[(___index+2)*4+2];
+	sum[3] += add[(___index+2)*4+3] - sub[(___index+2)*4+3];
+}
+{
+	dest[(___index+3)] =
+		(((sum[0] + half_n) / n)       )+
+		(((sum[1] + half_n) / n) << 8  )+
+		(((sum[2] + half_n) / n) << 16 )+
+		(((sum[3] + half_n) / n) << 24 );
+
+	sum[0] += add[(___index+3)*4+0] - sub[(___index+3)*4+0];
+	sum[1] += add[(___index+3)*4+1] - sub[(___index+3)*4+1];
+	sum[2] += add[(___index+3)*4+2] - sub[(___index+3)*4+2];
+	sum[3] += add[(___index+3)*4+3] - sub[(___index+3)*4+3];
+}
+			___index += 4;
+		}
+
+		len += (4-1);
+
+		while(___index < len)
+		{
+{
+	dest[___index] =
+		(((sum[0] + half_n) / n)       )+
+		(((sum[1] + half_n) / n) << 8  )+
+		(((sum[2] + half_n) / n) << 16 )+
+		(((sum[3] + half_n) / n) << 24 );
+
+	sum[0] += add[___index*4+0] - sub[___index*4+0];
+	sum[1] += add[___index*4+1] - sub[___index*4+1];
+	sum[2] += add[___index*4+2] - sub[___index*4+2];
+	sum[3] += add[___index*4+3] - sub[___index*4+3];
+}
+			___index ++;
+		}
+	}
+}
+
+/*export*/
+TVP_GL_FUNC_DECL(void, TVPDoBoxBlurAvg32_d_c, (tjs_uint32 *dest, tjs_uint32 *sum, const tjs_uint32 * add, const tjs_uint32 * sub, tjs_int n, tjs_int len))
+{
+	/* This function is very slow since using divisiion in loop. Function written in assembly should be used. */
+	tjs_int half_n = n >> 1;
+	{
+		int ___index = 0;
+		len -= (4-1);
+
+		while(___index < len)
+		{
+{
+	tjs_int a = ((sum[3] + half_n) / n);
+	tjs_uint8 * t = TVPDivTable + (a << 8);
+	dest[(___index+0)] =
+		(t[(sum[0] + half_n) / n]       )+
+		(t[(sum[1] + half_n) / n] << 8  )+
+		(t[(sum[2] + half_n) / n] << 16 )+
+		(a << 24 );
+
+	sum[0] += add[(___index+0)*4+0] - sub[(___index+0)*4+0];
+	sum[1] += add[(___index+0)*4+1] - sub[(___index+0)*4+1];
+	sum[2] += add[(___index+0)*4+2] - sub[(___index+0)*4+2];
+	sum[3] += add[(___index+0)*4+3] - sub[(___index+0)*4+3];
+}
+{
+	tjs_int a = ((sum[3] + half_n) / n);
+	tjs_uint8 * t = TVPDivTable + (a << 8);
+	dest[(___index+1)] =
+		(t[(sum[0] + half_n) / n]       )+
+		(t[(sum[1] + half_n) / n] << 8  )+
+		(t[(sum[2] + half_n) / n] << 16 )+
+		(a << 24 );
+
+	sum[0] += add[(___index+1)*4+0] - sub[(___index+1)*4+0];
+	sum[1] += add[(___index+1)*4+1] - sub[(___index+1)*4+1];
+	sum[2] += add[(___index+1)*4+2] - sub[(___index+1)*4+2];
+	sum[3] += add[(___index+1)*4+3] - sub[(___index+1)*4+3];
+}
+{
+	tjs_int a = ((sum[3] + half_n) / n);
+	tjs_uint8 * t = TVPDivTable + (a << 8);
+	dest[(___index+2)] =
+		(t[(sum[0] + half_n) / n]       )+
+		(t[(sum[1] + half_n) / n] << 8  )+
+		(t[(sum[2] + half_n) / n] << 16 )+
+		(a << 24 );
+
+	sum[0] += add[(___index+2)*4+0] - sub[(___index+2)*4+0];
+	sum[1] += add[(___index+2)*4+1] - sub[(___index+2)*4+1];
+	sum[2] += add[(___index+2)*4+2] - sub[(___index+2)*4+2];
+	sum[3] += add[(___index+2)*4+3] - sub[(___index+2)*4+3];
+}
+{
+	tjs_int a = ((sum[3] + half_n) / n);
+	tjs_uint8 * t = TVPDivTable + (a << 8);
+	dest[(___index+3)] =
+		(t[(sum[0] + half_n) / n]       )+
+		(t[(sum[1] + half_n) / n] << 8  )+
+		(t[(sum[2] + half_n) / n] << 16 )+
+		(a << 24 );
+
+	sum[0] += add[(___index+3)*4+0] - sub[(___index+3)*4+0];
+	sum[1] += add[(___index+3)*4+1] - sub[(___index+3)*4+1];
+	sum[2] += add[(___index+3)*4+2] - sub[(___index+3)*4+2];
+	sum[3] += add[(___index+3)*4+3] - sub[(___index+3)*4+3];
+}
+			___index += 4;
+		}
+
+		len += (4-1);
+
+		while(___index < len)
+		{
+{
+	tjs_int a = ((sum[3] + half_n) / n);
+	tjs_uint8 * t = TVPDivTable + (a << 8);
+	dest[___index] =
+		(t[(sum[0] + half_n) / n]       )+
+		(t[(sum[1] + half_n) / n] << 8  )+
+		(t[(sum[2] + half_n) / n] << 16 )+
+		(a << 24 );
+
+	sum[0] += add[___index*4+0] - sub[___index*4+0];
+	sum[1] += add[___index*4+1] - sub[___index*4+1];
+	sum[2] += add[___index*4+2] - sub[___index*4+2];
+	sum[3] += add[___index*4+3] - sub[___index*4+3];
+}
+			___index ++;
+		}
+	}
+}
+
+/*export*/
 TVP_GL_FUNC_DECL(void, TVPSwapLine8_c, (tjs_uint8 *line1, tjs_uint8 *line2, tjs_int len))
 {
 	#define swap_tmp_buf_size 256
@@ -10786,6 +11432,14 @@ TVP_GL_FUNC_PTR_DECL(void, TVPFillARGB,  (tjs_uint32 *dest, tjs_int len, tjs_uin
 TVP_GL_FUNC_PTR_DECL(void, TVPFillARGB_NC,  (tjs_uint32 *dest, tjs_int len, tjs_uint32 value));
 TVP_GL_FUNC_PTR_DECL(void, TVPFillColor,  (tjs_uint32 *dest, tjs_int len, tjs_uint32 color));
 TVP_GL_FUNC_PTR_DECL(void, TVPFillMask,  (tjs_uint32 *dest, tjs_int len, tjs_uint32 mask));
+TVP_GL_FUNC_PTR_DECL(void, TVPAddSubVertSum16,  (tjs_uint16 *dest, const tjs_uint32 *addline, const tjs_uint32 *subline, tjs_int len));
+TVP_GL_FUNC_PTR_DECL(void, TVPAddSubVertSum16_d,  (tjs_uint16 *dest, const tjs_uint32 *addline, const tjs_uint32 *subline, tjs_int len));
+TVP_GL_FUNC_PTR_DECL(void, TVPAddSubVertSum32,  (tjs_uint32 *dest, const tjs_uint32 *addline, const tjs_uint32 *subline, tjs_int len));
+TVP_GL_FUNC_PTR_DECL(void, TVPAddSubVertSum32_d,  (tjs_uint32 *dest, const tjs_uint32 *addline, const tjs_uint32 *subline, tjs_int len));
+TVP_GL_FUNC_PTR_DECL(void, TVPDoBoxBlurAvg16,  (tjs_uint32 *dest, tjs_uint16 *sum, const tjs_uint16 * add, const tjs_uint16 * sub, tjs_int n, tjs_int len));
+TVP_GL_FUNC_PTR_DECL(void, TVPDoBoxBlurAvg16_d,  (tjs_uint32 *dest, tjs_uint16 *sum, const tjs_uint16 * add, const tjs_uint16 * sub, tjs_int n, tjs_int len));
+TVP_GL_FUNC_PTR_DECL(void, TVPDoBoxBlurAvg32,  (tjs_uint32 *dest, tjs_uint32 *sum, const tjs_uint32 * add, const tjs_uint32 * sub, tjs_int n, tjs_int len));
+TVP_GL_FUNC_PTR_DECL(void, TVPDoBoxBlurAvg32_d,  (tjs_uint32 *dest, tjs_uint32 *sum, const tjs_uint32 * add, const tjs_uint32 * sub, tjs_int n, tjs_int len));
 TVP_GL_FUNC_PTR_DECL(void, TVPSwapLine8,  (tjs_uint8 *line1, tjs_uint8 *line2, tjs_int len));
 TVP_GL_FUNC_PTR_DECL(void, TVPSwapLine32,  (tjs_uint32 *line1, tjs_uint32 *line2, tjs_int len));
 TVP_GL_FUNC_PTR_DECL(void, TVPReverse8,  (tjs_uint8 *pixels, tjs_int len));
@@ -10976,6 +11630,14 @@ TVP_GL_FUNC_DECL(void, TVPInitTVPGL, ())
 	TVPFillARGB_NC = TVPFillARGB_NC_c;
 	TVPFillColor = TVPFillColor_c;
 	TVPFillMask = TVPFillMask_c;
+	TVPAddSubVertSum16 = TVPAddSubVertSum16_c;
+	TVPAddSubVertSum16_d = TVPAddSubVertSum16_d_c;
+	TVPAddSubVertSum32 = TVPAddSubVertSum32_c;
+	TVPAddSubVertSum32_d = TVPAddSubVertSum32_d_c;
+	TVPDoBoxBlurAvg16 = TVPDoBoxBlurAvg16_c;
+	TVPDoBoxBlurAvg16_d = TVPDoBoxBlurAvg16_d_c;
+	TVPDoBoxBlurAvg32 = TVPDoBoxBlurAvg32_c;
+	TVPDoBoxBlurAvg32_d = TVPDoBoxBlurAvg32_d_c;
 	TVPSwapLine8 = TVPSwapLine8_c;
 	TVPSwapLine32 = TVPSwapLine32_c;
 	TVPReverse8 = TVPReverse8_c;
