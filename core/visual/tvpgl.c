@@ -7224,6 +7224,54 @@ TVP_GL_FUNC_DECL(void, TVPStretchCopy_c, (tjs_uint32 *dest, tjs_int destlen, con
 	}
 }
 
+/*export*/
+TVP_GL_FUNC_DECL(void, TVPInterpStretchCopy, (tjs_uint32 *dest, tjs_int destlen, const tjs_uint32 *src1, const tjs_uint32 *src2, tjs_int blend_y, tjs_int srcstart, tjs_int srcstep))
+{
+	/* stretch copy with bilinear interpolation */
+	tjs_int blend_x;
+	tjs_int sp;
+
+	blend_y += blend_y >> 15; /* adjust blend ratio */
+
+	destlen -= 1;
+	while(destlen > 0)
+	{
+		blend_x = (srcstart & 0xffff) >> 8;
+		sp = srcstart >> 16;
+		dest[0] = TVPBlendARGB(
+			TVPBlendARGB(src1[sp], src1[sp+1], blend_x),
+			TVPBlendARGB(src2[sp], src2[sp+1], blend_x),
+				blend_y);
+		srcstart += srcstep;
+
+		blend_x = (srcstart & 0xffff) >> 8;
+		sp = srcstart >> 16;
+		dest[1] = TVPBlendARGB(
+			TVPBlendARGB(src1[sp], src1[sp+1], blend_x),
+			TVPBlendARGB(src2[sp], src2[sp+1], blend_x),
+				blend_y);
+		srcstart += srcstep;
+
+		dest += 2;
+		destlen -= 2;
+	}
+
+	destlen += 1;
+
+	while(destlen > 0)
+	{
+		blend_x = (srcstart & 0xffff) >> 8;
+		sp = srcstart >> 16;
+		dest[0] = TVPBlendARGB(
+			TVPBlendARGB(src1[sp], src1[sp+1], blend_x),
+			TVPBlendARGB(src2[sp], src2[sp+1], blend_x),
+				blend_y);
+		srcstart += srcstep;
+		dest ++;
+		destlen --;
+	}
+}
+
 #define AVG_PACKED(x, y) (((x) & (y)) + ((((x) ^ (y)) & 0xfefefefe) >> 1))
 
 /*export*/
@@ -9990,6 +10038,7 @@ TVP_GL_FUNC_PTR_DECL(void, TVPScreenBlend_HDA,  (tjs_uint32 *dest, const tjs_uin
 TVP_GL_FUNC_PTR_DECL(void, TVPScreenBlend_o,  (tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len, tjs_int opa));
 TVP_GL_FUNC_PTR_DECL(void, TVPScreenBlend_HDA_o,  (tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len, tjs_int opa));
 TVP_GL_FUNC_PTR_DECL(void, TVPStretchCopy,  (tjs_uint32 *dest, tjs_int destlen, const tjs_uint32 *src, tjs_int srcstart, tjs_int srcstep));
+TVP_GL_FUNC_DECL(void, TVPInterpStretchCopy, (tjs_uint32 *dest, tjs_int destlen, const tjs_uint32 *src1, const tjs_uint32 *src2, tjs_int blend_y, tjs_int srcstart, tjs_int srcstep));
 TVP_GL_FUNC_PTR_DECL(void, TVPFastLinearInterpH2F,  (tjs_uint32 *dest, tjs_int destlen, const tjs_uint32 *src));
 TVP_GL_FUNC_PTR_DECL(void, TVPFastLinearInterpH2B,  (tjs_uint32 *dest, tjs_int destlen, const tjs_uint32 *src));
 TVP_GL_FUNC_PTR_DECL(void, TVPFastLinearInterpV2,  (tjs_uint32 *dest, tjs_int destlen, const tjs_uint32 *src0, const tjs_uint32 *src1));
@@ -10166,6 +10215,7 @@ TVP_GL_FUNC_DECL(void, TVPInitTVPGL, ())
 	TVPScreenBlend_HDA = TVPScreenBlend_HDA_c;
 	TVPScreenBlend_o = TVPScreenBlend_o_c;
 	TVPScreenBlend_HDA_o = TVPScreenBlend_HDA_o_c;
+	TVPStretchCopy = TVPStretchCopy_c;
 	TVPStretchCopy = TVPStretchCopy_c;
 	TVPFastLinearInterpH2F = TVPFastLinearInterpH2F_c;
 	TVPFastLinearInterpH2B = TVPFastLinearInterpH2B_c;

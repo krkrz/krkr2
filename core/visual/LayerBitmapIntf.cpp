@@ -1084,11 +1084,10 @@ bool tTVPBaseBitmap::StretchBlt(tTVPRect cliprect,
 			bool hda, tTVPBBStretchType mode)
 {
 	// do stretch blt
-	// 'mode':stCubic is not implemented.
-	// currently mode:stFastLinear is only valid for
-	// 2x2 magnification, opa:255, method:bmCopy, hda:false
-	// and
-	// mode:stLinear, mode:stCubic for only:
+	// stFastLinear is enabled only in following condition:
+	// 
+
+	// stLinear and stCubic mode are enabled only in following condition:
 	// any magnification, opa:255, method:bmCopy, hda:false
 	// no reverse, destination rectangle is within the image.
 
@@ -1153,8 +1152,8 @@ bool tTVPBaseBitmap::StretchBlt(tTVPRect cliprect,
 	tjs_int x_step = (rw << 16) / dw;
 	tjs_int y_step = (rh << 16) / dh;
 
-	bool x_2x = x_step == 32768;
-	bool y_2x = y_step == 32768;
+//	bool x_2x = x_step == 32768;
+//	bool y_2x = y_step == 32768;
 
 	tjs_int x_ref_start, y_ref_start;
 	tjs_int x_dest_start, y_dest_start;
@@ -1277,132 +1276,148 @@ bool tTVPBaseBitmap::StretchBlt(tTVPRect cliprect,
 			} \
 		}
 
+/*
+	memo
+          0         1         2         3         4
+          .         .         .         .                  center = 1.5 = (4-1) / 2
+          ------------------------------                 reference area
+     ----------++++++++++----------++++++++++
+                         ^                                 4 / 1  step 4   ofs =  1.5   = ((4-1) - (1-1)*4) / 2
+               ^                   ^                       4 / 2  step 2   ofs =  0.5   = ((4-1) - (2-1)*2) / 2
+          ^         ^         ^         *                  4 / 4  step 1   ofs =  0     = ((4-1) - (4-1)*1) / 2
+         *       ^       ^       ^       *                 4 / 5  steo 0.8 ofs = -0.1   = ((4-1) - (5-1)*0.8) / 2
+        *    ^    ^    ^    ^    ^    ^    *               4 / 8  step 0.5 ofs = -0.25
+
+*/
 
 
 	// transfer
 	switch(method)
-	{              
+	{
 	case bmCopy:
 		if(opa == 255)
 		{
-			// full opaque stretching copy
-			if(!hda)
+			// stretching copy
+			if(mode >= stFastLinear)
 			{
-				if(y_2x && (int)mode >= (int)stFastLinear && y_len >= 2)
+				// bilinear interpolation
+				if(!hda)
 				{
-					// dy == sy * 2
-					// fast 2x linear interpolation enabled
-			
-					// process each lines
+					// adjust start point
+					if(x_step >= 0)
+						x_ref_start += (((rw-1)<<16) - (dw-1)*x_step)/2;
+					else
+						x_ref_start -= (((rw-1)<<16) + (dw-1)*x_step)/2 + x_step;
+					if(y_step >= 0)
+						y_ref_start += (((rh-1)<<16) - (dh-1)*y_step)/2;
+					else
+						y_ref_start -= (((rh-1)<<16) + (dh-1)*y_step)/2 + y_step;
+
+					// horizontal destination line is splitted into three parts;
+					// 1. left fraction (x_ref < 0               (lf)
+					//                or x_ref >= refw - 1)
+					// 2. center                                 (c)
+					// 3. right fraction (x_ref >= refw - 1      (rf)
+					//                or x_ref < 0)
+
+					tjs_int ref_right_limit = (refw-1)<<16;
+
 					tjs_int y_ref = y_ref_start;
-					tjs_uint8 *dp = destp;
-					for(tjs_int yy = 0; yy < y_len;)
+					while(y_len--)
 					{
-						// strech copy
-						if(x_2x && (int)mode >= (int)stFastLinear)
+						tjs_int y1 = y_ref >> 16;
+						tjs_int y2 = y1+1;
+						tjs_int y_blend = (y_ref & 0xffff) >> 8;
+						if(y1 < 0) y1 = 0; else if(y1 >= refh) y1 = refh-1;
+						if(y2 < 0) y2 = 0; else if(y2 >= refh) y2 = refh-1;
+
+						const tjs_uint32 * l1 =
+							(const tjs_uint32*)(refp + refpitch * y1);
+						const tjs_uint32 * l2 =
+							(const tjs_uint32*)(refp + refpitch * y2);
+
+
+						// perform left and right fractions
+						tjs_int x_remain = x_len;
+						tjs_uint32 * dp;
+						tjs_int x_ref;
+
+						// from last point
+						if(x_remain)
 						{
-							if(x_dir)
-								TVPFastLinearInterpH2F(
-									(tjs_uint32*)dp,
-									x_len,
-									(const tjs_uint32*)
-										(refp + (y_ref>>16)*refpitch) + (x_ref_start >> 16)
-										);
-							else
-								TVPFastLinearInterpH2B(
-									(tjs_uint32*)dp,
-									x_len,
-									(const tjs_uint32*)
-										(refp + (y_ref>>16)*refpitch) + (x_ref_start >> 16)
-										);
+							dp = (tjs_uint32*)destp + (x_len - 1);
+							x_ref = x_ref_start + (x_len - 1) * x_step;
+							if(x_ref < 0 && x_remain)
+							{
+ 								tjs_uint color =
+ 									TVPBlendARGB(*l1, *l2, y_blend);
+								do
+									*(dp --) = color, x_ref -= x_step, x_remain --;
+								while(x_ref < 0 && x_remain);
+							}
+							else if(x_ref >= ref_right_limit)
+							{
+ 								tjs_uint color =
+ 									TVPBlendARGB(
+ 										*(l1 + refw-1),
+ 										*(l2 + refw-2), y_blend);
+								do
+									*(dp --) = color, x_ref -= x_step, x_remain --;
+								while(x_ref >= ref_right_limit && x_remain);
+							}
 						}
-						else  
+
+						// from first point
+						if(x_remain)
 						{
-							TVPStretchCopy(  
-								(tjs_uint32*)dp,
-								x_len,
-								(const tjs_uint32*)(refp + (y_ref>>16)*refpitch),
-								x_ref_start,
+							dp = (tjs_uint32*)destp;
+							x_ref = x_ref_start;
+							if(x_ref < 0)
+							{
+ 								tjs_uint color =
+ 									TVPBlendARGB(*l1, *l2, y_blend);
+								do
+									*(dp ++) = color, x_ref += x_step, x_remain --;
+								while(x_ref < 0 && x_remain);
+							}
+							else if(x_ref >= ref_right_limit)
+							{
+ 								tjs_uint color =
+ 									TVPBlendARGB(
+ 										*(l1 + refw-1),
+ 										*(l2 + refw-2), y_blend);
+								do
+									*(dp ++) = color, x_ref += x_step, x_remain --;
+								while(x_ref >= ref_right_limit && x_remain);
+							}
+						}
+
+						// perform center part
+						// (this may take most time of this function)
+						if(x_remain)
+						{
+							TVPInterpStretchCopy(
+								dp,
+								x_remain,
+								l1, l2, y_blend,
+								x_ref,
 								x_step);
 						}
 
-						// process odd lines
-						if(yy >= 2 && !(yy & 1))
-						{
-							// process (yy-1) line
-							TVPFastLinearInterpV2(
-								(tjs_uint32*)(dp - destpitch),
-								x_len,
-								(const tjs_uint32*)(dp - destpitch*2),
-								(const tjs_uint32*)dp);
-						}
-
-						// to next
-						if(yy == y_len - 2)
-						{
-							yy++;
-							y_ref += y_step;
-							dp += destpitch;
-						}
-						else
-						{	yy += 2;
-							y_ref += y_step * 2;
-							dp += destpitch * 2;
-						}
-
-					}
-				}
-				else
-				{
-					tjs_int y_ref = y_ref_start;
-					tjs_int last_y = -1;
-					for(tjs_int yy = 0; yy < y_len; yy++)
-					{
-						tjs_int y = y_ref >> 16;
-						if(y == last_y)
-						{
-							// copy previous result
-							memcpy(destp, destp - destpitch, sizeof(tjs_uint32)*x_len);
-						}
-						else
-						{
-							// strech copy
-							if(x_2x && (int)mode >= (int)stFastLinear)
-							{
-								if(x_dir)
-									TVPFastLinearInterpH2F(
-										(tjs_uint32*)destp,
-										x_len,
-										(const tjs_uint32*)
-											(refp + y*refpitch) + (x_ref_start >> 16)
-											);
-								else
-									TVPFastLinearInterpH2B(
-										(tjs_uint32*)destp,
-										x_len,
-										(const tjs_uint32*)
-											(refp + y*refpitch) + (x_ref_start >> 16)
-											);
-							}
-							else
-							{
-								TVPStretchCopy(
-									(tjs_uint32*)destp,
-									x_len,
-									(const tjs_uint32*)(refp + y*refpitch),
-									x_ref_start,
-									x_step);
-							}
-						}
-						last_y = y;
+						// step to the next line
 						y_ref += y_step;
 						destp += destpitch;
 					}
 				}
+				else
+					STRETCH_LOOP(TVPStretchColorCopy)
 			}
 			else
 			{
-				STRETCH_LOOP(TVPStretchColorCopy)
+				if(!hda)
+					STRETCH_LOOP(TVPStretchCopy)
+				else
+					STRETCH_LOOP(TVPStretchColorCopy)
 			}
 		}
 		else
