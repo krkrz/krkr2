@@ -50,7 +50,7 @@ AutoIncBuild=1
 MajorVer=1
 MinorVer=4
 Release=0
-Build=4
+Build=5
 Debug=0
 PreRelease=0
 Special=0
@@ -62,7 +62,7 @@ CodePage=932
 [Version Info Keys]
 CompanyName=
 FileDescription=TVP Macromedia Shockwave Flash Playback Support DLL
-FileVersion=1.4.0.4
+FileVersion=1.4.0.5
 InternalName=krflash
 LegalCopyright=Copyright (C) 2001-2005 W.Dee All rights reserved.
 LegalTrademarks=
@@ -108,7 +108,7 @@ DebugSourceDirs=$(BCB)\source\vcl
 
 [Parameters]
 RunParams=
-HostApplication=c:\Program Files\Borland\CBuilder5\Projects\tvp2win32\environ\win32\tvpwin32.exe
+HostApplication=C:\Program Files\Borland\CBuilder5\Projects\tvp2win32\kirikiri2\bin\win32\tvpwin32.exe
 RemoteHost=
 RemotePath=
 RemoteDebug=0
