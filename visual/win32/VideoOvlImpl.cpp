@@ -72,7 +72,7 @@ tTVPVideoModule::tTVPVideoModule(const ttstr &name)
 		procGetVideoOverlayObject = (tGetVideoOverlayObject)
 			GetProcAddress(Handle, "GetVideoOverlayObject");
 
-		procGetVideoOverlayObject = (tGetVideoOverlayObject)
+		procGetVideoLayerObject = (tGetVideoOverlayObject)
 			GetProcAddress(Handle, "GetVideoLayerObject");
 
 		procGetAPIVersion = (tGetAPIVersion)
@@ -296,9 +296,14 @@ void tTJSNI_VideoOverlay::Open(const ttstr &_name)
 		}
 		else
 		{
-			mod->GetVideoOverlayObject(UtilWindow,
-				istream, name.c_str(), ext.c_str(),
-				size, &VideoOverlay);
+			if(Mode == vomLayer)
+				mod->GetVideoLayerObject(UtilWindow,
+					istream, name.c_str(), ext.c_str(),
+					size, &VideoOverlay);
+			else
+				mod->GetVideoOverlayObject(UtilWindow,
+					istream, name.c_str(), ext.c_str(),
+					size, &VideoOverlay);
 		}
 
 		if( flash || (Mode == vomOverlay) )
