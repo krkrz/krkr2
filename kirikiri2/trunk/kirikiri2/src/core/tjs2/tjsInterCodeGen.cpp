@@ -2320,7 +2320,7 @@ void tTJSInterCodeContext::AddFuncArg(const tjs_int addr)
 //---------------------------------------------------------------------------
 void tTJSInterCodeContext::EndFuncArg()
 {
-	// notifie the end of function arguments
+	// notify the end of function arguments
 	FuncArgStack.pop();
 }
 //---------------------------------------------------------------------------
