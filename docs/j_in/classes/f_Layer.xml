@@ -1318,10 +1318,11 @@
 			<desc>
 				　塗りつぶす色や値を指定します。<r/>
 				　この値は、<ref>Layer.face</ref> プロパティの値によって意味が変わります。<r/>
-				<tt><kw>dfBoth</kw>    </tt> : 0xAARRGGBB 形式で不透明度と色を指定してください<r/>
-				<tt><kw>dfMain</kw>    </tt> : 0xRRGGBB 形式で色を指定してください<r/>
-				<tt><kw>dfMask</kw>    </tt> : マスク(不透明度)の値 ( 0 ～ 255 ) を指定してください<r/>
-				<tt><kw>dfProvince</kw></tt> : 領域の値 ( 0 ～ 255 ) を指定してください<r/>
+				<tt><kw>dfAlpha</kw> (または<kw>dfBoth</kw>)  </tt> : 0xAARRGGBB 形式で不透明度と色を指定してください<r/>
+				<tt><kw>dfAddAlpha</kw>              </tt> : 0xAARRGGBB 形式で不透明度と色を指定してください<r/>
+				<tt><kw>dfOpaque</kw> (または<kw>dfMain</kw>) </tt> : 0xRRGGBB 形式で色を指定してください<r/>
+				<tt><kw>dfMask</kw>                  </tt> : マスク(不透明度)の値 ( 0 ～ 255 ) を指定してください<r/>
+				<tt><kw>dfProvince</kw>              </tt> : 領域の値 ( 0 ～ 255 ) を指定してください<r/>
 				　dfMain を指定した場合は、不透明度の情報はそのままになります。また、dfMask を
 				指定した場合は、色の情報はそのままになります。<r/>
 			</desc>
@@ -1372,13 +1373,13 @@
 			<desc>
 				　塗りつぶす色や値を指定します。<r/>
 				　この値は、<ref>Layer.face</ref> プロパティの値によって意味が変わります。<r/>
-				<tt><kw>dfBoth</kw>    </tt> : 0xRRGGBB 形式で不透明度と色を指定してください<r/>
-				<tt><kw>dfMain</kw>    </tt> : 0xRRGGBB 形式で色を指定してください<r/>
-				<tt><kw>dfMask</kw>    </tt> : マスク(不透明度)の値 ( 0 ～ 255 ) を指定してください<r/>
-				<tt><kw>dfProvince</kw></tt> : 領域の値 ( 0 ～ 255 ) を指定してください<r/>
-				　dfMain を指定した場合は、マスク情報は無視されます。また、dfMask を
-				指定した場合は、色の情報はそのままになります。<r/>
-				　dfBoth の場合でかつ opa が負の場合はこの引数は無視されます。<r/>
+				<tt><kw>dfAlpha</kw> (または<kw>dfBoth</kw>)   </tt> : 0xRRGGBB 形式で色を指定してください<r/>
+				<tt><kw>dfAddAlpha</kw>                   </tt> : 0xRRGGBB 形式で色を指定してください<r/>
+				<tt><kw>dfOpaque</kw> (または<kw>dfMain</kw>)  </tt> : 0xRRGGBB 形式で色を指定してください<r/>
+				<tt><kw>dfMask</kw>                       </tt> : マスク(不透明度)の値 ( 0 ～ 255 ) を指定してください<r/>
+				<tt><kw>dfProvince</kw>                   </tt> : 領域の値 ( 0 ～ 255 ) を指定してください<r/>
+				　dfOpaque を指定した場合は、マスク情報は無視されます。また、dfMask を指定した場合は、色の情報はそのままになります。<r/>
+				　dfAlpha の場合でかつ opa が負の場合はこの引数は無視されます。<r/>
 			</desc>
 		</argitem>
 		<argitem>
@@ -1388,7 +1389,7 @@
 				　塗りつぶす不透明度 ( -255 ～ 0 ～ 255 ) を指定します。<r/>
 				　この引数は、<ref>Layer.face</ref> プロパティの値が dfMask や
 				dfProvince の場合は無視されます ( 常に完全不透明 )。<r/>
-				　負の数の指定は <ref>Layer.face</ref> が dfBoth の場合のみに有効で、
+				　負の数の指定は <ref>Layer.face</ref> が dfAlpha の場合のみに有効で、
 				この場合は value 引数は無視され、画像から不透明度が取り除かれます (
 				-255 を指定すると矩形は完全に透明になります )。
 			</desc>
@@ -1439,7 +1440,7 @@
 			<default>255</default>
 			<desc>
 				　描画する文字の不透明度 ( -255 ～ 0 ～ 255 ) を指定します。<r/>
-				　負の数の指定は <ref>Layer.face</ref> が dfBoth の場合のみに有効で、
+				　負の数の指定は <ref>Layer.face</ref> が dfAlpha の場合のみに有効で、
 				この場合は文字の形に不透明度が取り除かれる事になります ( 値が小さいほど
 				効果が大きくなります )。<r/>
 			</desc>
@@ -1492,8 +1493,8 @@
 	</arg>
 	<result></result>
 	<desc>
-		　レイヤに文字を描画します。<ref>Layer.face</ref> が dfBoth か dfMain の場合のみ描画することが
-		できます。<r/>
+		　レイヤに文字を描画します。<ref>Layer.face</ref> が dfAlpha (または dfBoth) か dfAddAlpha か dfOpaque (または dfMain)
+		の場合のみ描画することができます。<r/>
 		　フォントは <ref>Layer.font</ref> で指定したものが用いられます。<r/>
 	</desc>
 </member>
@@ -1558,11 +1559,13 @@
 		　指定されたコピー元レイヤの矩形部分を自分のレイヤの指定位置にコピーします。<r/>
 		　コピーされる画像は、コピー先レイヤ ( メソッドを実行するレイヤ  ) の
 		<ref>Layer.face</ref> プロパティの値によって変わります。<r/>
-		<tt><kw>dfBoth</kw>    </tt> : メイン画像とマスク画像がコピーされます<r/>
-		<tt><kw>dfMain</kw>    </tt> : メイン画像のみがコピーされます ( マスク画像はコピーされません )<r/>
-		<tt><kw>dfMask</kw>    </tt> : マスク画像のみがコピーされます ( メイン画像はコピーされません )<r/>
-		<tt><kw>dfProvince</kw></tt> : 領域画像のみがコピーされます ( マスク画像やメイン画像はコピーされません )<r/>
+		<tt><kw>dfAlpha</kw> (または dfBoth)    </tt> : メイン画像とマスク画像がコピーされます<r/>
+		<tt><kw>dfAddAlpha</kw>             </tt> : メイン画像とマスク画像がコピーされます<r/>
+		<tt><kw>dfOpaque</kw> (または dfMain)   </tt> : メイン画像のみがコピーされます ( マスク画像はコピーされません )<r/>
+		<tt><kw>dfMask</kw>                 </tt> : マスク画像のみがコピーされます ( メイン画像はコピーされません )<r/>
+		<tt><kw>dfProvince</kw>             </tt> : 領域画像のみがコピーされます ( マスク画像やメイン画像はコピーされません )<r/>
 		　コピー元のレイヤの Layer.face プロパティは無視されます。<r/>
+		　このメソッドは、<ref>Layer.holdAlpha</ref> の影響は受けません (dfAlpha や dfAddAlpha の場合は holdAlpha に関わらずマスク画像もコピーされます)<r/>
 	</desc>
 </member>
 
@@ -1691,31 +1694,20 @@
 				　重ね合わせの不透明度 ( 0 ～ 255 ) を指定します。<r/>
 			</desc>
 		</argitem>
-		<argitem>
-			<name>hda</name>
-			<default>true</default>
-			<desc>
-				　重ね合わせ先が dfMain の時に、重ね合わせ先の透明度を保存するかどうかを指定します。<r/>
-				　真を指定すると 重ね合わせ先の透明度は保護されます。<r/>
-				　偽を指定すると、重ね合わせ先の透明度は破壊されますが、真を指定したときよりも高速な
-				アルゴリズムが選択されます。<r/>
-				　とくにレイヤタイプが ltCoverRect のレイヤが重ね合わせ先の場合は透明度は関係ないので
-				偽を指定するとよいでしょう。<r/>
-			</desc>
-		</argitem>
 	</arg>
 	<result></result>
 	<desc>
 		　指定された重ね合わせ元レイヤの矩形部分を自分のレイヤの指定位置に重ね合わせます。<r/>
 		　ピクセルごとの不透明度 ( ピクセルアルファ ) を用いた重ね合わせを行うことができます。<r/>
-		　重ね合わされる画像は、重ね合わせ先の ( メソッドを実行する ) レイ
-		ヤの <ref>Layer.face</ref> プロパティの値によって変わります。<r/>
-		<tt><kw>dfBoth</kw>    </tt> : 重ね合わせ先の不透明度を考慮した重ね合わせが行われます<r/>
-		<tt><kw>dfMain</kw>    </tt> : 重ね合わせ先の不透明度を無視した重ね合わせが行われます<r/>
-		<tt><kw>dfMask</kw>    </tt> : できません ( 例外が発生します )<r/>
-		<tt><kw>dfProvince</kw></tt> : できません ( 例外が発生します )<r/>
+		　重ね合わされる画像は、重ね合わせ先の ( メソッドを実行する ) レイヤの <ref>Layer.face</ref>
+		プロパティの値によって変わります。<r/>
+		<tt><kw>dfAlpha</kw> (または<kw>dfBoth</kw>)    </tt> : 重ね合わせ先の不透明度を考慮した重ね合わせが行われます<r/>
+		<tt><kw>dfOpaque</kw> (または<kw>dfMain</kw>)   </tt> : 重ね合わせ先の不透明度を無視した重ね合わせが行われます(重ね合わせ先は全面完全不透明として扱われます)<r/>
+		<tt><kw>それ以外</kw>  </tt>                 : できません ( 例外が発生します )<r/>
 		　重ね合わせ元のレイヤの Layer.face プロパティは無視されます ( 常にメイン画像とマスク画像を
 		用いてアルファブレンドが行われます )。<r/>
+		<r/>
+		　このメソッドは旧式になりました。代わりに <ref>Layer.operateRect</ref> を使用してください。演算のモードに omAlpha か omAddAlpha を指定すると同じ効果になります(omAlphaを指定するのかomAddAlphaを指定するのかはsrcのアルファタイプによって異なります。omAutoを指定すればsrcのレイヤタイプに従って自動的に決定されます)。<r/>
 	</desc>
 </member>
 
@@ -1780,30 +1772,19 @@
 				　重ね合わせの不透明度 ( 0 ～ 255 ) を指定します。<r/>
 			</desc>
 		</argitem>
-		<argitem>
-			<name>hda</name>
-			<default>true</default>
-			<desc>
-				　重ね合わせ先が dfMain の時に、重ね合わせ先の透明度を保存するかどうかを指定します。<r/>
-				　真を指定すると 重ね合わせ先の透明度は保護されます。<r/>
-				　偽を指定すると、重ね合わせ先の透明度は破壊されますが、真を指定したときよりも高速な
-				アルゴリズムが選択されます。<r/>
-				　とくにレイヤタイプが ltCoverRect のレイヤが重ね合わせ先の場合は、透明度を保存しても
-				意味がないので偽を指定するとよいでしょう。<r/>
-			</desc>
-		</argitem>
 	</arg>
 	<result></result>
 	<desc>
 		　指定された重ね合わせ元レイヤの矩形部分を自分のレイヤの指定位置に重ね合わせます。<r/>
 		　重ね合わせ元のレイヤの Layer.face プロパティは無視されますが、<ref>Layer.pileRect</ref> と異な
-		り、重ね合わせ元のレイヤの不透明度は無視されます ( 常に完全に不透明であると見なされます )。
-		　重ね合わされる画像は、重ね合わせ先の ( メソッドを実行する ) レイ
-		ヤの <ref>Layer.face</ref> プロパティの値によって変わります。<r/>
-		<tt><kw>dfBoth</kw>    </tt> : 重ね合わせ先の不透明度を考慮した重ね合わせが行われます<r/>
-		<tt><kw>dfMain</kw>    </tt> : 重ね合わせ先の不透明度を無視した重ね合わせが行われます<r/>
-		<tt><kw>dfMask</kw>    </tt> : できません ( 例外が発生します )<r/>
-		<tt><kw>dfProvince</kw></tt> : できません ( 例外が発生します )<r/>
+		り、重ね合わせ元のレイヤの不透明度は無視されます ( 常に完全に不透明であると見なされます )。<r/>
+		　重ね合わされる画像は、重ね合わせ先の ( メソッドを実行する ) レイヤの <ref>Layer.face</ref>
+		　プロパティの値によって変わります。<r/>
+		<tt><kw>dfAlpha</kw> (または<kw>dfBoth</kw>)    </tt> : 重ね合わせ先の不透明度を考慮した重ね合わせが行われます<r/>
+		<tt><kw>dfOpaque</kw> (または<kw>dfMain</kw>)   </tt> : 重ね合わせ先の不透明度を無視した重ね合わせが行われます(重ね合わせ先は全面完全不透明として扱われます)<r/>
+		<tt><kw>それ以外</kw>  </tt>                 : できません ( 例外が発生します )<r/>
+		<r/>
+		　このメソッドは旧式になりました。代わりに <ref>Layer.operateRect</ref> を使用してください。演算のモードに omOpaque を指定すると同じ効果になります。<r/>
 	</desc>
 </member>
 
@@ -1866,7 +1847,7 @@
 			<name>mode</name>
 			<default>omAuto</default>
 			<desc>
-				　演算の種類を指定します。<r/>
+				　演算のモードを指定します。<r/>
 				<tt><kw>omAuto</kw></tt> が指定された場合は演算元レイヤの<ref>Layer.type</ref>プロパティに従って演算の種類が自動的に決定されます。<r/>
 				<tt><kw>omAdditive</kw></tt> が指定された場合は加算合成が行われます。<r/>
 				<tt><kw>omSubtractive</kw></tt> が指定された場合は減算合成が行われます。<r/>
@@ -1875,6 +1856,9 @@
 				<tt><kw>omDarken</kw></tt> が指定された場合は比較(暗)合成が行われます。<r/>
 				<tt><kw>omLighten</kw></tt> が指定された場合は比較(明)合成が行われます。<r/>
 				<tt><kw>omScreen</kw></tt> が指定された場合はスクリーン乗算合成が行われます。<r/>
+				<tt><kw>omAlpha</kw></tt> が指定された場合はα合成が行われます。<r/>
+				<tt><kw>omAddAlpha</kw></tt> が指定された場合は加算α合成が行われます。<r/>
+				<tt><kw>omOpaque</kw></tt> が指定された場合は src のα情報は無視され、src は常に完全不透明であると見なされます。<r/>
 			</desc>
 		</argitem>
 		<argitem>
@@ -1884,23 +1868,13 @@
 				　演算の強度 ( 0 ～ 255 ) を指定します。<r/>
 			</desc>
 		</argitem>
-		<argitem>
-			<name>hda</name>
-			<default>true</default>
-			<desc>
-				　真を指定すると 演算先の透明度は保護されます。<r/>
-				　偽を指定すると、演算先の透明度は破壊されますが、真を指定したときよりも高速な
-				アルゴリズムが選択されます。<r/>
-				　とくにレイヤタイプが ltCoverRect のレイヤが演算先の場合は、透明度を保存しても
-				意味がないので偽を指定するとよいでしょう。<r/>
-			</desc>
-		</argitem>
 	</arg>
 	<result></result>
 	<desc>
-		　指定された演算元レイヤの矩形部分を自分のレイヤの指定位置に指定の方法で演算合成します。<r/>
+		　指定された演算元レイヤの矩形部分を自分のレイヤの指定位置に指定のモードで演算合成します。<r/>
 		　演算先の ( メソッドを実行する ) レイヤや演算元のレイヤの <ref>Layer.face</ref> プロパティの値
 		は無視されます。<r/>
+		　mode に omAuto を指定した場合は、演算元レイヤの<ref>Layer.type</ref>プロパティに従って演算の種類が自動的に決定されます。<r/>
 	</desc>
 </member>
 
@@ -1974,16 +1948,16 @@
 			</desc>
 		</argitem>
 		<argitem>
-			<name>mode</name>
+			<name>type</name>
 			<default>stNearest</default>
 			<desc>
-				　拡大縮小のモードを指定します。<r/>
+				　拡大縮小のタイプを指定します。<r/>
 				<tt><kw>stNearest</kw>    </tt> : 最近傍点法が用いられます<r/>
 				<tt><kw>stFastLinear</kw> </tt> : 低精度の線形補間が用いられます(一部実装)<r/>
 				<tt><kw>stLinear</kw>     </tt> : 線形補間が用いられます(一部実装)<r/>
 				<tt><kw>stCubic</kw>      </tt> : ３次元補間が用いられます(一部実装)<r/>
-				　速度は ntNearest > stFastLinear > stLinear > stCubis の順に高速ですが、画質は速度が
-				早ければ早いモードほど低画質になります。<r/>
+				　速度は stNearest > stFastLinear > stLinear > stCubic の順に高速ですが、画質は速度が
+				速ければ速いタイプほど低画質になります。<r/>
 			</desc>
 		</argitem>
 	</arg>
@@ -1996,8 +1970,8 @@
 		　どちらか、あるいは両方がコピー元レイヤのそれぞれの２倍である場合のみです。<r/>
 		　また、現バージョンでは stLinear あるいは stCubic の指定が有効なのは、左右／上下反転を
 		伴わず、コピー先矩形がレイヤをはみ出さない場合のみです。<r/>
-		　重ね合わせ先の ( メソッドを実行する ) レイヤの <ref>Layer.face</ref> プロパティが
-		dfBoth 以外の場合は例外が発生します。<r/>
+		　現バージョンでは重ね合わせ先の ( メソッドを実行する ) レイヤの <ref>Layer.face</ref> プロパティが
+		dfAlpha (または dfBoth) でも dfAddAlpha でもない場合は例外が発生します。<r/>
 	</desc>
 </member>
 
@@ -2077,28 +2051,16 @@
 			</desc>
 		</argitem>
 		<argitem>
-			<name>mode</name>
+			<name>type</name>
 			<default>stNearest</default>
 			<desc>
-				　拡大縮小のモードを指定します。<r/>
+				　拡大縮小のタイプを指定します。<r/>
 				<tt><kw>stNearest</kw>    </tt> : 最近傍点法が用いられます<r/>
 				<tt><kw>stFastLinear</kw> </tt> : 低精度の線形補間が用いられます(未実装)<r/>
 				<tt><kw>stLinear</kw>     </tt> : 線形補間が用いられます(未実装)<r/>
 				<tt><kw>stCubic</kw>      </tt> : ３次元補間が用いられます(未実装)<r/>
-				　速度は ntNearest > stFastLinear > stLinear > stCubis の順に高速ですが、画質は速度が
-				早ければ早いモードほど低画質になります。<r/>
-			</desc>
-		</argitem>
-		<argitem>
-			<name>hda</name>
-			<default>true</default>
-			<desc>
-				　重ね合わせ先が dfMain の時に、重ね合わせ先の透明度を保存するかどうかを指定します。<r/>
-				　真を指定すると 重ね合わせ先の透明度は保護されます。<r/>
-				　偽を指定すると、重ね合わせ先の透明度は破壊されますが、真を指定したときよりも高速な
-				アルゴリズムが選択されます。<r/>
-				　とくにレイヤタイプが ltCoverRect のレイヤが重ね合わせ先の場合は透明度は関係ないので
-				偽を指定するとよいでしょう。<r/>
+				　速度は stNearest > stFastLinear > stLinear > stCubic の順に高速ですが、画質は速度が
+				速ければ速いタイプほど低画質になります。<r/>
 			</desc>
 		</argitem>
 	</arg>
@@ -2111,10 +2073,11 @@
 		　現バージョンでは mode には stNearest のみ指定できます。<r/>
 		　重ね合わされる画像は、重ね合わせ先の ( メソッドを実行する ) レイ
 		ヤの <ref>Layer.face</ref> プロパティの値によって変わります。<r/>
-		<tt><kw>dfBoth</kw>    </tt> : 重ね合わせ先の不透明度を考慮した重ね合わせが行われます<r/>
-		<tt><kw>dfMain</kw>    </tt> : 重ね合わせ先の不透明度を無視した重ね合わせが行われます<r/>
-		<tt><kw>dfMask</kw>    </tt> : できません ( 例外が発生します )<r/>
-		<tt><kw>dfProvince</kw></tt> : できません ( 例外が発生します )<r/>
+		<tt><kw>dfAlpha</kw> (または<kw>dfBoth</kw>)    </tt> : 重ね合わせ先の不透明度を考慮した重ね合わせが行われます<r/>
+		<tt><kw>dfOpaque</kw> (または<kw>dfMain</kw>)   </tt> : 重ね合わせ先の不透明度を無視した重ね合わせが行われます(重ね合わせ先は全面完全不透明として扱われます)<r/>
+		<tt><kw>それ以外</kw>  </tt>                 : できません ( 例外が発生します )<r/>
+		<r/>
+		　このメソッドは旧式になりました。代わりに <ref>Layer.operateStretch</ref> を使用してください。演算のモードに omAlpha か omAddAlpha を指定すると同じ効果になります(omAlphaを指定するのかomAddAlphaを指定するのかはsrcのアルファタイプによって異なります。omAutoを指定すればsrcのレイヤタイプに従って自動的に決定されます)。<r/>
 	</desc>
 </member>
 
@@ -2194,28 +2157,16 @@
 			</desc>
 		</argitem>
 		<argitem>
-			<name>mode</name>
+			<name>type</name>
 			<default>stNearest</default>
 			<desc>
-				　拡大縮小のモードを指定します。<r/>
+				　拡大縮小のタイプを指定します。<r/>
 				<tt><kw>stNearest</kw>    </tt> : 最近傍点法が用いられます<r/>
 				<tt><kw>stFastLinear</kw> </tt> : 低精度の線形補間が用いられます(未実装)<r/>
 				<tt><kw>stLinear</kw>     </tt> : 線形補間が用いられます(未実装)<r/>
 				<tt><kw>stCubic</kw>      </tt> : ３次元補間が用いられます(未実装)<r/>
-				　速度は ntNearest > stFastLinear > stLinear > stCubis の順に高速ですが、画質は速度が
-				早ければ早いモードほど低画質になります。<r/>
-			</desc>
-		</argitem>
-		<argitem>
-			<name>hda</name>
-			<default>true</default>
-			<desc>
-				　重ね合わせ先が dfMain の時に、重ね合わせ先の透明度を保存するかどうかを指定します。<r/>
-				　真を指定すると 重ね合わせ先の透明度は保護されます。<r/>
-				　偽を指定すると、重ね合わせ先の透明度は破壊されますが、真を指定したときよりも高速な
-				アルゴリズムが選択されます。<r/>
-				　とくにレイヤタイプが ltCoverRect のレイヤが重ね合わせ先の場合は透明度は関係ないので
-				偽を指定するとよいでしょう。<r/>
+				　速度は stNearest > stFastLinear > stLinear > stCubic の順に高速ですが、画質は速度が
+				速ければ速いタイプほど低画質になります。<r/>
 			</desc>
 		</argitem>
 	</arg>
@@ -2226,15 +2177,133 @@
 		行われます。<r/>
 		　現バージョンでは mode には stNearest のみ指定できます。<r/>
 		　重ね合わせ元のレイヤの Layer.face プロパティは無視されますが、<ref>Layer.stretchPile</ref> と異な
-		り、重ね合わせ元のレイヤの不透明度は無視されます ( 常に完全に不透明であると見なされます )。
-		　重ね合わされる画像は、重ね合わせ先の ( メソッドを実行する ) レイ
-		ヤの <ref>Layer.face</ref> プロパティの値によって変わります。<r/>
-		<tt><kw>dfBoth</kw>    </tt> : 重ね合わせ先の不透明度を考慮した重ね合わせが行われます<r/>
-		<tt><kw>dfMain</kw>    </tt> : 重ね合わせ先の不透明度を無視した重ね合わせが行われます<r/>
-		<tt><kw>dfMask</kw>    </tt> : できません ( 例外が発生します )<r/>
-		<tt><kw>dfProvince</kw></tt> : できません ( 例外が発生します )<r/>
+		り、重ね合わせ元のレイヤの不透明度は無視されます ( 常に完全に不透明であると見なされます )。<r/>
+		　重ね合わされる画像は、重ね合わせ先の ( メソッドを実行する ) レイヤの <ref>Layer.face</ref> プロパティの値によって変わります。<r/>
+		<tt><kw>dfAlpha</kw> (または<kw>dfBoth</kw>)    </tt> : 重ね合わせ先の不透明度を考慮した重ね合わせが行われます<r/>
+		<tt><kw>dfOpaque</kw> (または<kw>dfMain</kw>)   </tt> : 重ね合わせ先の不透明度を無視した重ね合わせが行われます(重ね合わせ先は全面完全不透明として扱われます)<r/>
+		<tt><kw>それ以外</kw>  </tt>                 : できません ( 例外が発生します )<r/>
+		<r/>
+		　このメソッドは旧式になりました。代わりに <ref>Layer.operateStretch</ref> を使用してください。演算のモードに omOpaque を指定すると同じ効果になります。<r/>
 	</desc>
 </member>
+
+<member>
+	<name>operateStretch</name>
+	<type>method</type>
+	<shortdesc>拡大縮小演算合成</shortdesc>
+	<arg>
+		<argitem>
+			<name>dleft</name>
+			<default></default>
+			<desc>
+				　重ね合わせ先の矩形の左端位置を ( 重ね合わせ先レイヤの画像位置における ) ピクセル単位で指定します。<r/>
+			</desc>
+		</argitem>
+		<argitem>
+			<name>dtop</name>
+			<default></default>
+			<desc>
+				　重ね合わせ先の矩形の上端位置を ( 重ね合わせ先レイヤの画像位置における ) ピクセル単位で指定します。<r/>
+			</desc>
+		</argitem>
+		<argitem>
+			<name>dwidth</name>
+			<default></default>
+			<desc>
+				　重ね合わせ先の矩形の横幅を ( 重ね合わせ先レイヤの画像位置における ) ピクセル単位で指定します。<r/>
+			</desc>
+		</argitem>
+		<argitem>
+			<name>dheight</name>
+			<default></default>
+			<desc>
+				　重ね合わせ先の矩形の縦幅を ( 重ね合わせ先レイヤの画像位置における ) ピクセル単位で指定します。<r/>
+			</desc>
+		</argitem>
+		<argitem>
+			<name>src</name>
+			<default></default>
+			<desc>
+				　重ね合わせ元のレイヤオブジェクトを指定します。<r/>
+			</desc>
+		</argitem>
+		<argitem>
+			<name>sleft</name>
+			<default></default>
+			<desc>
+				　重ね合わせる矩形の左端位置を ( 重ね合わせ元レイヤの画像位置における ) ピクセル単位で指定します。<r/>
+			</desc>
+		</argitem>
+		<argitem>
+			<name>stop</name>
+			<default></default>
+			<desc>
+				　重ね合わせる矩形の上端位置を ( 重ね合わせ元レイヤの画像位置における ) ピクセル単位で指定します。<r/>
+			</desc>
+		</argitem>
+		<argitem>
+			<name>swidth</name>
+			<default></default>
+			<desc>
+				　重ね合わせる矩形の横幅を ( 重ね合わせ元レイヤの画像位置における ) ピクセル単位で指定します。<r/>
+			</desc>
+		</argitem>
+		<argitem>
+			<name>sheight</name>
+			<default></default>
+			<desc>
+				　重ね合わせる矩形の縦幅を ( 重ね合わせ元レイヤの画像位置における ) ピクセル単位で指定します。<r/>
+			</desc>
+		</argitem>
+		<argitem>
+			<name>mode</name>
+			<default>omAuto</default>
+			<desc>
+				　演算のモードを指定します。<r/>
+				<tt><kw>omAuto</kw></tt> が指定された場合は演算元レイヤの<ref>Layer.type</ref>プロパティに従って演算の種類が自動的に決定されます。<r/>
+				<tt><kw>omAdditive</kw></tt> が指定された場合は加算合成が行われます(現バージョンでは未実装です)。<r/>
+				<tt><kw>omSubtractive</kw></tt> が指定された場合は減算合成が行われます(現バージョンでは未実装です)。<r/>
+				<tt><kw>omMultiplicative</kw></tt> が指定された場合は乗算合成が行われます(現バージョンでは未実装です)。<r/>
+				<tt><kw>omDodge</kw></tt> が指定された場合は覆い焼き合成が行われます(現バージョンでは未実装です)。<r/>
+				<tt><kw>omDarken</kw></tt> が指定された場合は比較(暗)合成が行われます(現バージョンでは未実装です)。<r/>
+				<tt><kw>omLighten</kw></tt> が指定された場合は比較(明)合成が行われます(現バージョンでは未実装です)。<r/>
+				<tt><kw>omScreen</kw></tt> が指定された場合はスクリーン乗算合成が行われます(現バージョンでは未実装です)。<r/>
+				<tt><kw>omAlpha</kw></tt> が指定された場合はα合成が行われます。<r/>
+				<tt><kw>omAddAlpha</kw></tt> が指定された場合は加算α合成が行われます。<r/>
+				<tt><kw>omOpaque</kw></tt> が指定された場合は src のα情報は無視され、src は常に完全不透明であると見なされます。<r/>
+			</desc>
+		</argitem>
+		<argitem>
+			<name>opa</name>
+			<default>255</default>
+			<desc>
+				　演算の強度 ( 0 ～ 255 ) を指定します。<r/>
+			</desc>
+		</argitem>
+		<argitem>
+			<name>type</name>
+			<default>stNearest</default>
+			<desc>
+				　拡大縮小のタイプを指定します。<r/>
+				<tt><kw>stNearest</kw>    </tt> : 最近傍点法が用いられます<r/>
+				<tt><kw>stFastLinear</kw> </tt> : 低精度の線形補間が用いられます(未実装)<r/>
+				<tt><kw>stLinear</kw>     </tt> : 線形補間が用いられます(未実装)<r/>
+				<tt><kw>stCubic</kw>      </tt> : ３次元補間が用いられます(未実装)<r/>
+				　速度は stNearest > stFastLinear > stLinear > stCubic の順に高速ですが、画質は速度が
+				速ければ速いタイプほど低画質になります。<r/>
+			</desc>
+		</argitem>
+	</arg>
+	<result></result>
+	<desc>
+		　指定された重ね合わせ元レイヤの矩形を、重ね合わせ先 ( メソッドを実行するレイヤ ) の矩形に
+		演算合成します。重ね合わせ元矩形と重ね合わせ先矩形のサイズが異なる場合は拡大または縮小が行われます。<r/>
+		　mode に omAuto を指定した場合は、演算元レイヤの<ref>Layer.type</ref>プロパティに従って演算の種類が自動的に決定されます。<r/>
+	</desc>
+</member>
+
+
+
 
 <member>
 	<name>affineCopy</name>
@@ -2349,10 +2418,10 @@
 			</desc>
 		</argitem>
 		<argitem>
-			<name>mode</name>
+			<name>type</name>
 			<default>stNearest</default>
 			<desc>
-				　アフィン変換のモードを指定します。<r/>
+				　アフィン変換のタイプを指定します。<r/>
 				<tt><kw>stNearest</kw>    </tt> : 最近傍点法が用いられます<r/>
 				<tt><kw>stFastLinear</kw> </tt> : 低精度の線形補間が用いられます(未実装)<r/>
 				<tt><kw>stLinear</kw>     </tt> : 線形補間が用いられます(未実装)<r/>
@@ -2368,7 +2437,7 @@
 		あるいは変換後の点を直接指定するかを選ぶことができます。<r/>
 		　現バージョンでは mode には stNearest のみ指定できます。<r/>
 		　重ね合わせ先の ( メソッドを実行する ) レイヤの <ref>Layer.face</ref> プロパティが
-		dfBoth 以外の場合は例外が発生します。<r/>
+		dfAlpha (または dfBoth) でも dfAddAlpha でもない場合は例外が発生します。<r/>
 		<r/>
 		　二次元アフィン変換行列による変換は、コピー元矩形の左上を原点 (0, 0) とし、
 		以下のように定義されます。<r/>
@@ -2498,26 +2567,14 @@
 			</desc>
 		</argitem>
 		<argitem>
-			<name>mode</name>
+			<name>type</name>
 			<default>stNearest</default>
 			<desc>
-				　アフィン変換のモードを指定します。<r/>
+				　アフィン変換のタイプを指定します。<r/>
 				<tt><kw>stNearest</kw>    </tt> : 最近傍点法が用いられます<r/>
 				<tt><kw>stFastLinear</kw> </tt> : 低精度の線形補間が用いられます(未実装)<r/>
 				<tt><kw>stLinear</kw>     </tt> : 線形補間が用いられます(未実装)<r/>
 				<tt><kw>stCubic</kw>      </tt> : ３次元補間が用いられます(未実装)<r/>
-			</desc>
-		</argitem>
-		<argitem>
-			<name>hda</name>
-			<default>true</default>
-			<desc>
-				　重ね合わせ先が dfMain の時に、重ね合わせ先の透明度を保存するかどうかを指定します。<r/>
-				　真を指定すると 重ね合わせ先の透明度は保護されます。<r/>
-				　偽を指定すると、重ね合わせ先の透明度は破壊されますが、真を指定したときよりも高速な
-				アルゴリズムが選択されます。<r/>
-				　とくにレイヤタイプが ltCoverRect のレイヤが重ね合わせ先の場合は透明度は関係ないので
-				偽を指定するとよいでしょう。<r/>
 			</desc>
 		</argitem>
 	</arg>
@@ -2530,10 +2587,11 @@
 		　現バージョンでは mode には stNearest のみ指定できます。<r/>
 		　重ね合わされる画像は、重ね合わせ先の ( メソッドを実行する ) レイ
 		ヤの <ref>Layer.face</ref> プロパティの値によって変わります。<r/>
-		<tt><kw>dfBoth</kw>    </tt> : 重ね合わせ先の不透明度を考慮した重ね合わせが行われます<r/>
-		<tt><kw>dfMain</kw>    </tt> : 重ね合わせ先の不透明度を無視した重ね合わせが行われます<r/>
-		<tt><kw>dfMask</kw>    </tt> : できません ( 例外が発生します )<r/>
-		<tt><kw>dfProvince</kw></tt> : できません ( 例外が発生します )<r/>
+		<tt><kw>dfAlpha</kw> (または<kw>dfBoth</kw>)    </tt> : 重ね合わせ先の不透明度を考慮した重ね合わせが行われます<r/>
+		<tt><kw>dfOpaque</kw> (または<kw>dfMain</kw>)   </tt> : 重ね合わせ先の不透明度を無視した重ね合わせが行われます(重ね合わせ先は全面完全不透明として扱われます)<r/>
+		<tt><kw>それ以外</kw>  </tt>                 : できません ( 例外が発生します )<r/>
+		<r/>
+		　このメソッドは旧式になりました。代わりに <ref>Layer.operateAffine</ref> を使用してください。演算のモードに omAlpha か omAddAlpha を指定すると同じ効果になります(omAlphaを指定するのかomAddAlphaを指定するのかはsrcのアルファタイプによって異なります。omAutoを指定すればsrcのレイヤタイプに従って自動的に決定されます)。<r/>
 	</desc>
 </member>
 
@@ -2657,28 +2715,16 @@
 			</desc>
 		</argitem>
 		<argitem>
-			<name>mode</name>
+			<name>type</name>
 			<default>stNearest</default>
 			<desc>
-				　アフィン変換のモードを指定します。<r/>
+				　アフィン変換のタイプを指定します。<r/>
 				<tt><kw>stNearest</kw>    </tt> : 最近傍点法が用いられます<r/>
 				<tt><kw>stFastLinear</kw> </tt> : 低精度の線形補間が用いられます(未実装)<r/>
 				<tt><kw>stLinear</kw>     </tt> : 線形補間が用いられます(未実装)<r/>
 				<tt><kw>stCubic</kw>      </tt> : ３次元補間が用いられます(未実装)<r/>
-				　速度は ntNearest > stFastLinear > stLinear > stCubis の順に高速ですが、画質は速度が
-				早ければ早いモードほど低画質になります。<r/>
-			</desc>
-		</argitem>
-		<argitem>
-			<name>hda</name>
-			<default>true</default>
-			<desc>
-				　重ね合わせ先が dfMain の時に、重ね合わせ先の透明度を保存するかどうかを指定します。<r/>
-				　真を指定すると 重ね合わせ先の透明度は保護されます。<r/>
-				　偽を指定すると、重ね合わせ先の透明度は破壊されますが、真を指定したときよりも高速な
-				アルゴリズムが選択されます。<r/>
-				　とくにレイヤタイプが ltCoverRect のレイヤが重ね合わせ先の場合は透明度は関係ないので
-				偽を指定するとよいでしょう。<r/>
+				　速度は stNearest > stFastLinear > stLinear > stCubic の順に高速ですが、画質は速度が
+				速ければ速いモードほど低画質になります。<r/>
 			</desc>
 		</argitem>
 	</arg>
@@ -2689,13 +2735,176 @@
 		　アフィン変換については <ref>Layer.affineCopy</ref> も参照してください。<r/>
 		　現バージョンでは mode には stNearest のみ指定できます。<r/>
 		　重ね合わせ元のレイヤの Layer.face プロパティは無視されますが、<ref>Layer.affinePile</ref> と異な
-		り、重ね合わせ元のレイヤの不透明度は無視されます ( 常に完全に不透明であると見なされます )。
+		り、重ね合わせ元のレイヤの不透明度は無視されます ( 常に完全に不透明であると見なされます )。<r/>
 		　重ね合わされる画像は、重ね合わせ先の ( メソッドを実行する ) レイ
 		ヤの <ref>Layer.face</ref> プロパティの値によって変わります。<r/>
-		<tt><kw>dfBoth</kw>    </tt> : 重ね合わせ先の不透明度を考慮した重ね合わせが行われます<r/>
-		<tt><kw>dfMain</kw>    </tt> : 重ね合わせ先の不透明度を無視した重ね合わせが行われます<r/>
-		<tt><kw>dfMask</kw>    </tt> : できません ( 例外が発生します )<r/>
-		<tt><kw>dfProvince</kw></tt> : できません ( 例外が発生します )<r/>
+		<tt><kw>dfAlpha</kw> (または<kw>dfBoth</kw>)    </tt> : 重ね合わせ先の不透明度を考慮した重ね合わせが行われます<r/>
+		<tt><kw>dfOpaque</kw> (または<kw>dfMain</kw>)   </tt> : 重ね合わせ先の不透明度を無視した重ね合わせが行われます(重ね合わせ先は全面完全不透明として扱われます)<r/>
+		<tt><kw>それ以外</kw>  </tt>                 : できません ( 例外が発生します )<r/>
+		<r/>
+		　このメソッドは旧式になりました。代わりに <ref>Layer.operateAffine</ref> を使用してください。演算のモードに omOpaque を指定すると同じ効果になります。<r/>
+	</desc>
+</member>
+
+
+<member>
+	<name>operateAffine</name>
+	<type>method</type>
+	<shortdesc>アフィン変換演算合成</shortdesc>
+	<arg>
+		<argitem>
+			<name>src</name>
+			<default></default>
+			<desc>
+				　重ね合わせ元のレイヤオブジェクトを指定します。<r/>
+			</desc>
+		</argitem>
+		<argitem>
+			<name>sleft</name>
+			<default></default>
+			<desc>
+				　重ね合わせる矩形の左端位置を ( 重ね合わせ元レイヤの画像位置における ) ピクセル単位で指定します。<r/>
+			</desc>
+		</argitem>
+		<argitem>
+			<name>stop</name>
+			<default></default>
+			<desc>
+				　重ね合わせる矩形の上端位置を ( 重ね合わせ元レイヤの画像位置における ) ピクセル単位で指定します。<r/>
+			</desc>
+		</argitem>
+		<argitem>
+			<name>swidth</name>
+			<default></default>
+			<desc>
+				　重ね合わせる矩形の横幅を ( 重ね合わせ元レイヤの画像位置における ) ピクセル単位で指定します。<r/>
+			</desc>
+		</argitem>
+		<argitem>
+			<name>sheight</name>
+			<default></default>
+			<desc>
+				　重ね合わせる矩形の縦幅を ( 重ね合わせ元レイヤの画像位置における ) ピクセル単位で指定します。<r/>
+			</desc>
+		</argitem>
+		<argitem>
+			<name>affine</name>
+			<default></default>
+			<desc>
+				　続く６つの引数 (A ～ F パラメータ)をどのように扱うかを指定します。<r/>
+				　真を指定すると、６つのパラメータはそれぞれ以下のように解釈されます。<r/>
+				<tt>A   : 2Dアフィン変換行列の a</tt><r/>
+				<tt>B   : 2Dアフィン変換行列の b</tt><r/>
+				<tt>C   : 2Dアフィン変換行列の c</tt><r/>
+				<tt>D   : 2Dアフィン変換行列の d</tt><r/>
+				<tt>E   : 2Dアフィン変換行列の tx</tt><r/>
+				<tt>F   : 2Dアフィン変換行列の ty</tt><r/>
+				<r/>
+				　アフィン変換により、重ね合わせ元の画像位置 (x, y) ( ただし、重ね合わせ元矩形の左上隅を (0, 0) とする ) は以下の式により、重ね合わせ先の画像位置 (x', y')に変換されます。<r/>
+				x' =  a*x + c*y + tx<r/>
+				y' =  b*x + d*y + ty<r/>
+				<r/>
+				　偽を指定すると、６つのパラメータはそれぞれ以下のように解釈されます。<r/>
+				<tt>A   : コピー元矩形の左上隅の点の、コピー先での画像位置における X 座標位置(x0)</tt><r/>
+				<tt>B   : コピー元矩形の左上隅の点の、コピー先での画像位置における Y 座標位置(y0)</tt><r/>
+				<tt>C   : コピー元矩形の右上隅の点の、コピー先での画像位置における X 座標位置(x1)</tt><r/>
+				<tt>D   : コピー元矩形の右上隅の点の、コピー先での画像位置における Y 座標位置(y1)</tt><r/>
+				<tt>E   : コピー元矩形の左下隅の点の、コピー先での画像位置における X 座標位置(x2)</tt><r/>
+				<tt>F   : コピー元矩形の左下隅の点の、コピー先での画像位置における Y 座標位置(y2)</tt><r/>
+				<r/>
+				　偽を指定した場合、重ね合わせ元の右下隅に対応する、重ね合わせ先位置(x3, y3)は自動的に以下の式によって計算されます。<r/>
+				x3 = x1 - x0 + x2<r/>
+				y3 = y1 - y0 + y2<r/>
+			</desc>
+		</argitem>
+		<argitem>
+			<name>A</name>
+			<default></default>
+			<desc>
+				　A パラメータです。affine 引数によって解釈が変わります。<r/>
+			</desc>
+		</argitem>
+		<argitem>
+			<name>B</name>
+			<default></default>
+			<desc>
+				　B パラメータです。affine 引数によって解釈が変わります。<r/>
+			</desc>
+		</argitem>
+		<argitem>
+			<name>C</name>
+			<default></default>
+			<desc>
+				　C パラメータです。affine 引数によって解釈が変わります。<r/>
+			</desc>
+		</argitem>
+		<argitem>
+			<name>D</name>
+			<default></default>
+			<desc>
+				　D パラメータです。affine 引数によって解釈が変わります。<r/>
+			</desc>
+		</argitem>
+		<argitem>
+			<name>E</name>
+			<default></default>
+			<desc>
+				　E パラメータです。affine 引数によって解釈が変わります。<r/>
+			</desc>
+		</argitem>
+		<argitem>
+			<name>F</name>
+			<default></default>
+			<desc>
+				　F パラメータです。affine 引数によって解釈が変わります。<r/>
+			</desc>
+		</argitem>
+		<argitem>
+			<name>mode</name>
+			<default>omAuto</default>
+			<desc>
+				　演算のモードを指定します。<r/>
+				<tt><kw>omAuto</kw></tt> が指定された場合は演算元レイヤの<ref>Layer.type</ref>プロパティに従って演算の種類が自動的に決定されます。<r/>
+				<tt><kw>omAdditive</kw></tt> が指定された場合は加算合成が行われます(現バージョンでは未実装です)。<r/>
+				<tt><kw>omSubtractive</kw></tt> が指定された場合は減算合成が行われます(現バージョンでは未実装です)。<r/>
+				<tt><kw>omMultiplicative</kw></tt> が指定された場合は乗算合成が行われます(現バージョンでは未実装です)。<r/>
+				<tt><kw>omDodge</kw></tt> が指定された場合は覆い焼き合成が行われます(現バージョンでは未実装です)。<r/>
+				<tt><kw>omDarken</kw></tt> が指定された場合は比較(暗)合成が行われます(現バージョンでは未実装です)。<r/>
+				<tt><kw>omLighten</kw></tt> が指定された場合は比較(明)合成が行われます(現バージョンでは未実装です)。<r/>
+				<tt><kw>omScreen</kw></tt> が指定された場合はスクリーン乗算合成が行われます(現バージョンでは未実装です)。<r/>
+				<tt><kw>omAlpha</kw></tt> が指定された場合はα合成が行われます。<r/>
+				<tt><kw>omAddAlpha</kw></tt> が指定された場合は加算α合成が行われます。<r/>
+				<tt><kw>omOpaque</kw></tt> が指定された場合は src のα情報は無視され、src は常に完全不透明であると見なされます。<r/>
+			</desc>
+		</argitem>
+		<argitem>
+			<name>opa</name>
+			<default>255</default>
+			<desc>
+				　重ね合わせの不透明度 ( 0 ～ 255 ) を指定します。<r/>
+			</desc>
+		</argitem>
+		<argitem>
+			<name>type</name>
+			<default>stNearest</default>
+			<desc>
+				　アフィン変換のタイプを指定します。<r/>
+				<tt><kw>stNearest</kw>    </tt> : 最近傍点法が用いられます<r/>
+				<tt><kw>stFastLinear</kw> </tt> : 低精度の線形補間が用いられます(未実装)<r/>
+				<tt><kw>stLinear</kw>     </tt> : 線形補間が用いられます(未実装)<r/>
+				<tt><kw>stCubic</kw>      </tt> : ３次元補間が用いられます(未実装)<r/>
+				　速度は stNearest > stFastLinear > stLinear > stCubic の順に高速ですが、画質は速度が
+				速ければ速いモードほど低画質になります。<r/>
+			</desc>
+		</argitem>
+	</arg>
+	<result></result>
+	<desc>
+		　指定された重ね合わせ元レイヤの矩形を、重ね合わせ先 ( メソッドを実行するレイヤ ) に
+		アフィン変換を行いながら演算合成します。<r/>
+		　アフィン変換については <ref>Layer.affineCopy</ref> も参照してください。<r/>
+		　現バージョンでは mode には stNearest のみ指定できます。<r/>
+		　mode に omAuto を指定した場合は、演算元レイヤの<ref>Layer.type</ref>プロパティに従って演算の種類が自動的に決定されます。<r/>
 	</desc>
 </member>
 
@@ -2801,7 +3010,8 @@
 	<result></result>
 	<desc>
 		　画像の左右反転を行います。<r/>
-		　このメソッドは、描画クリップ矩形の影響を受けません ( 常にレイヤ画像全体が反転します )。<r/>
+		　このメソッドは、<ref>Layer.setClip</ref> メソッドなどによる描画クリップ矩形の影響を受けません ( 常にレイヤ画像全体が反転します )。<r/>
+		　また、<ref>Layer.face</ref> プロパティや<ref>Layer.holdAlpha</ref> プロパティの影響も受けません。<r/>
 	</desc>
 </member>
 
@@ -2814,7 +3024,8 @@
 	<result></result>
 	<desc>
 		　画像の上下反転を行います。<r/>
-		　このメソッドは、描画クリップ矩形の影響を受けません ( 常にレイヤ画像全体が反転します )。<r/>
+		　このメソッドは、<ref>Layer.setClip</ref> メソッドなどによる描画クリップ矩形の影響を受けません ( 常にレイヤ画像全体が反転します )。<r/>
+		　また、<ref>Layer.face</ref> プロパティや<ref>Layer.holdAlpha</ref> プロパティの影響も受けません。<r/>
 	</desc>
 </member>
 
@@ -3463,17 +3674,61 @@
 	<access>r/w</access>
 	<desc>
 		　レイヤへの描画方式を表します。値を設定することもできます。<r/>
-		　吉里吉里 2.23 beta 2 以前では「描画面」と呼ばれていました。<r/>
+		　吉里吉里 2.23 beta 1 以前では「描画面」と呼ばれていました。<r/>
 		<ul>
 		<li><tt><kw>dfAlpha</kw></tt> または <tt><kw>dfBoth</kw></tt> を指定すると、画像はアルファチャンネルつき画像と見なされ、描画されます。<tt>dfBoth</tt> でも <tt>dfAlpha</tt> でも同じになります。この描画方法に対応するレイヤタイプは <tt>ltTransparent</tt> または <tt>ltAlpha</tt> です。</li>
 		<li><tt><kw>dfAddAlpha</kw></tt> を指定すると、画像は加算アルファチャンネルつき画像として見なされ、描画されます。この描画方法に対応するレイヤタイプは <tt>ltAddAlpha</tt> です。</li>
 		<li> <tt><kw>dfOpaque</kw></tt> または <tt><kw>dfMain</kw></tt> を指定すると、マスクは常に完全不透明であると見なされ、描画されます。この描画方法に対応するレイヤタイプは <tt>ltOpaque</tt> または <tt>ltCoverRect</tt>、または <tt>ltAdditive</tt> のような算術/論理演算を行うレイヤタイプです。</li>
 		<li><tt><kw>dfMask</kw></tt> を指定すると、マスク画像(アルファチャンネル)を描画の対象にします。</li>
 		<li><tt><kw>dfProvince</kw></tt> を指定すると、領域画像を描画の対象にします。</li>
+		<li><tt><kw>dfAuto</kw></tt> を指定すると、現在の <ref>Layer.type</ref> プロパティに従って描画方式が自動的に決定されます。</li>
 		</ul>
 		　このプロパティの値によっては操作できないメソッドがあります。<r/>
 	</desc>
 	<ref>Layer.type</ref>
+</member>
+
+<member>
+	<name>holdAlpha</name>
+	<type>property</type>
+	<shortdesc>αチャンネルを保護するか</shortdesc>
+	<access>r/w</access>
+	<desc>
+		　描画においてアルファチャンネルを保護するかどうかを指定します。値を設定することもできます。<r/>
+		　デフォルトでは真です。<r/>
+		　吉里吉里 2.23 beta 1 以前では、各描画メソッドに hda というパラメータがあり、それがこのプロパティと同じ動作をしていましたが、2.23 beta 2 よりプロパティとして分離されました。<r/>
+		　いくつかの描画演算では、<ref>Layer.face</ref> プロパティが <kw>dfOpaque</kw> のとき、画像のアルファチャンネル(マスク画像)を保持するかどうかをこのプロパティで指定できます。多くのメソッドでは、このプロパティを偽にした方が高速な描画が可能です。<ref>Layer.type</ref> が <kw>ltOpaque</kw> の場合は、画像のアルファチャンネルは使用されないので、このプロパティを偽に設定しても問題有りません。ただし、このプロパティが偽だとアルファチャンネルは破壊されます。<r/>
+		<r/>
+		　以下のメソッドはこのプロパティの影響を受けません。<r/>
+		<ref>Layer.loadImages</ref><r/>
+		<ref>Layer.loadProvinceImage</ref><r/>
+		<ref>Layer.setMainPixel</ref><r/>
+		<ref>Layer.setMaskPixel</ref><r/>
+		<ref>Layer.setProvincePixel</ref><r/>
+		<ref>Layer.fillRect</ref><r/>
+		<ref>Layer.colorRect</ref>(現バージョンでは常にアルファチャンネルが破壊されます)<r/>
+		<ref>Layer.drawText</ref>(現バージョンでは常にアルファチャンネルが破壊されます)<r/>
+		<ref>Layer.piledCopy</ref><r/>
+		<ref>Layer.copyRect</ref><r/>
+		<ref>Layer.stretchCopy</ref><r/>
+		<ref>Layer.affineCopy</ref><r/>
+		<ref>Layer.adjustGamma</ref>(常にアルファチャンネルは保護されます)<r/>
+		<ref>Layer.doGrayScale</ref>(常にアルファチャンネルは保護されます)<r/>
+		<ref>Layer.flipLR</ref><r/>
+		<ref>Layer.flipUD</ref><r/>
+		<ref>Layer.assignImages</ref><r/>
+		<r/>
+		　以下のメソッドはこのプロパティの影響を受けます。
+		<ref>Layer.pileRect</ref><r/>
+		<ref>Layer.blendRect</ref><r/>
+		<ref>Layer.operateRect</ref><r/>
+		<ref>Layer.stretchPile</ref><r/>
+		<ref>Layer.stretchBlend</ref><r/>
+		<ref>Layer.operateStretch</ref><r/>
+		<ref>Layer.affinePile</ref><r/>
+		<ref>Layer.affineBlend</ref><r/>
+		<ref>Layer.operateAffine</ref><r/>
+	</desc>
 </member>
 
 <member>
