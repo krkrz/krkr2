@@ -1864,9 +1864,10 @@
 		</argitem>
 		<argitem>
 			<name>mode</name>
-			<default></default>
+			<default>omAuto</default>
 			<desc>
 				　演算の種類を指定します。<r/>
+				<tt><kw>omAuto</kw></tt> が指定された場合は演算元レイヤの<ref>Layer.type</ref>プロパティに従って演算の種類が自動的に決定されます。<r/>
 				<tt><kw>omAdditive</kw></tt> が指定された場合は加算合成が行われます。<r/>
 				<tt><kw>omSubtractive</kw></tt> が指定された場合は減算合成が行われます。<r/>
 				<tt><kw>omMultiplicative</kw></tt> が指定された場合は乗算合成が行われます。<r/>
