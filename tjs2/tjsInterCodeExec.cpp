@@ -2215,12 +2215,14 @@ tjs_int tTJSInterCodeContext::CallFunctionDirect(tTJSVariant *ra,
 			ProcessStringFunction(name->GetString(),
 				TJS_GET_VM_REG(ra, code[2]),
 				pass_args, pass_args_count, code[1]?TJS_GET_VM_REG_ADDR(ra, code[1]):NULL);
+			hr = TJS_S_OK;
 		}
 		else if(type == tvtOctet)
 		{
 			ProcessOctetFunction(name->GetString(),
 				TJS_GET_VM_REG(ra, code[2]),
 				pass_args, pass_args_count, code[1]?TJS_GET_VM_REG_ADDR(ra, code[1]):NULL);
+			hr = TJS_S_OK;
 		}
 		else
 		{
@@ -2265,12 +2267,14 @@ tjs_int tTJSInterCodeContext::CallFunctionIndirect(tTJSVariant *ra,
 			ProcessStringFunction(name.c_str(),
 				TJS_GET_VM_REG(ra, code[2]),
 				pass_args, pass_args_count, code[1]?TJS_GET_VM_REG_ADDR(ra, code[1]):NULL);
+			hr = TJS_S_OK;
 		}
 		else if(type == tvtOctet)
 		{
 			ProcessOctetFunction(name.c_str(),
 				TJS_GET_VM_REG(ra, code[2]),
 				pass_args, pass_args_count, code[1]?TJS_GET_VM_REG_ADDR(ra, code[1]):NULL);
+			hr = TJS_S_OK;
 		}
 		else
 		{
