@@ -78,7 +78,7 @@
     <DEBUGLIBPATH value="$(BCB)\lib\debug"/>
     <RELEASELIBPATH value="$(BCB)\lib\release"/>
     <LINKER value="tlink32"/>
-    <USERDEFINES value="TJS_SUPPORT_VCL;TJS_TEXT_OUT_CRLF;TJS_JP_LOCALIZED;TJS_NO_DEBUG_PROFILE_TIME;TVP_NO_CHECK_WIDE_CHAR_SIZE;TVP_REPORT_HW_EXCEPTION;TVP_SUPPORT_ERI;TVP_SUPPORT_KPI;TVP_SUPPORT_OLD_WAVEUNPACKER;TVP_ENVIRON"/>
+    <USERDEFINES value="TJS_SUPPORT_VCL;TJS_TEXT_OUT_CRLF;TJS_JP_LOCALIZED;TJS_NO_DEBUG_PROFILE_TIME;TVP_NO_CHECK_WIDE_CHAR_SIZE;TVP_REPORT_HW_EXCEPTION;TVP_SUPPORT_ERI;TVP_SUPPORT_KPI;TVP_SUPPORT_OLD_WAVEUNPACKER;TVP_ENVIRON;_DEBUG"/>
     <SYSDEFINES value="NO_STRICT"/>
     <MAINSOURCE value="tvpwin32.cpp"/>
     <INCLUDEPATH value="krdevui;..\..\..\..\Bin;..\..\sound;..\..\sound\win32;..\..\msg\win32;..\..\visual\win32;..\..\visual;..\..\base\win32;..\..\base;..\..\msg;..\..\utils\win32;..\..\utils;..\..\base\storage;..\..\tjs2;..\..\visual\window;..\..\..;..\..\visual\IA32;$(BCB)\include;$(BCB)\include\vcl;$(BCB)\include\libjpeg2;$(BCB)\include\libpng;$(BCB)\include\erina"/>
@@ -86,14 +86,13 @@
     <WARNINGS value="-wprc -wucp -w-par -w-8027 -w-8026 -wcln -wamp -wamb"/>
   </MACROS>
   <OPTIONS>
-    <CFLAG1 value="-O2 -H=$(BCB)\lib\tvp32.csm -Vx -Ve -xf -X- -pr -a4 -6 -b- -d -k- -y -v 
-      -vi -c -tW -tWM"/>
-    <PFLAGS value="-N2intermediate -N0intermediate -$Y- -$L- -$D- -v -JPHNE -M"/>
+    <CFLAG1 value="-Od -H=$(BCB)\lib\tvp32.csm -Vx -Ve -xf -X- -r- -pr -a4 -6 -b- -d -k -y -v 
+      -vi- -c -tW -tWM"/>
+    <PFLAGS value="-N2intermediate -N0intermediate -$Y+ -$W -$O- -v -JPHNE -M"/>
     <RFLAGS value=""/>
-    <AFLAGS value="/mx /mv64 /m5 /w2 /zn /l /z"/>
-    <LFLAGS value="-B:0x400000 -Iintermediate -dWINSPOOL.DRV -dWINMM.DLL -dMSVFW32.DLL 
-      -dCOMDLG32.DLL -D&quot;&quot; -GC&quot;TVP(kirikiri) for win32&quot; -Rr -H:0x10000 -aa -Tpe 
-      -GD -x -Gn -v"/>
+    <AFLAGS value="/mx /mv64 /m5 /w2 /zi /l /z"/>
+    <LFLAGS value="-Iintermediate -dWINSPOOL.DRV -dWINMM.DLL -dMSVFW32.DLL -dCOMDLG32.DLL 
+      -D&quot;&quot; -GC&quot;TVP(kirikiri) for win32&quot; -Rr -H:0x10000 -aa -Tpe -GD -x -Gn -v"/>
   </OPTIONS>
   <LINKER>
     <ALLOBJ value="c0w32.obj sysinit.obj $(OBJFILES)"/>
@@ -107,7 +106,7 @@ AutoIncBuild=1
 MajorVer=2
 MinorVer=23
 Release=1
-Build=861
+Build=862
 Debug=0
 PreRelease=0
 Special=0
@@ -119,7 +118,7 @@ CodePage=932
 [Version Info Keys]
 CompanyName=
 FileDescription=TVP(KIRIKIRI) 2 core / Scripting Platform for Win32
-FileVersion=2.23.1.861
+FileVersion=2.23.1.862
 InternalName=tvp2/win32
 LegalCopyright=(KIRIKIRI core) (C) '97-'04 W.Dee All Rights Reserved. This software is based in part on the work of Independent JPEG Group. For details: Run this program with '-about' option.
 LegalTrademarks=
@@ -141,8 +140,8 @@ Item0=C:\Program Files\Borland\CBuilder5\Projects\tvp2win32\visual\IA32\;C:\Prog
 
 [HistoryLists\hlConditionals]
 Count=2
-Item0=TJS_SUPPORT_VCL;TJS_TEXT_OUT_CRLF;TJS_JP_LOCALIZED;TJS_NO_DEBUG_PROFILE_TIME;TVP_NO_CHECK_WIDE_CHAR_SIZE;TVP_REPORT_HW_EXCEPTION;TVP_SUPPORT_ERI;TVP_SUPPORT_KPI;TVP_SUPPORT_OLD_WAVEUNPACKER;TVP_ENVIRON
-Item1=TJS_SUPPORT_VCL;TJS_TEXT_OUT_CRLF;TJS_JP_LOCALIZED;TJS_NO_DEBUG_PROFILE_TIME;TVP_NO_CHECK_WIDE_CHAR_SIZE;TVP_REPORT_HW_EXCEPTION;TVP_SUPPORT_ERI;TVP_SUPPORT_KPI;TVP_SUPPORT_OLD_WAVEUNPACKER;TVP_ENVIRON;_DEBUG
+Item0=TJS_SUPPORT_VCL;TJS_TEXT_OUT_CRLF;TJS_JP_LOCALIZED;TJS_NO_DEBUG_PROFILE_TIME;TVP_NO_CHECK_WIDE_CHAR_SIZE;TVP_REPORT_HW_EXCEPTION;TVP_SUPPORT_ERI;TVP_SUPPORT_KPI;TVP_SUPPORT_OLD_WAVEUNPACKER;TVP_ENVIRON;_DEBUG
+Item1=TJS_SUPPORT_VCL;TJS_TEXT_OUT_CRLF;TJS_JP_LOCALIZED;TJS_NO_DEBUG_PROFILE_TIME;TVP_NO_CHECK_WIDE_CHAR_SIZE;TVP_REPORT_HW_EXCEPTION;TVP_SUPPORT_ERI;TVP_SUPPORT_KPI;TVP_SUPPORT_OLD_WAVEUNPACKER;TVP_ENVIRON
 
 [HistoryLists\hlIntOutputDir]
 Count=1
