@@ -8,12 +8,16 @@ ogg.patch     - some trivial optimization patch
 vorbis.patch  - SSE/3DNow! optimization patch
 
 
-These can be applied on libogg/libvorbis 1.0 (OggVorbis 1.0) by
+These can be applied on libogg 1.1.2 and libvorbis 1.1.0 by
 patch (available from cygwin distribution):
 
-> patch -p1 < ogg.patch
-> patch -p1 < vorbis.patch
+> cd ogg-source-directory-which-includes-COPYING-file]
+> patch -p1 < path-to-ogg.patch
+> cd vorbis-source-directory-which-includes-COPYING-file]
+> patch -p1 < path-to-vorbis.patch
 
+All files may be rejected because the $Id$ cannot be replaced, but
+you can ignore them.
 
 
 You must declare following variables which indicate whether SSE/3DNow!/MMX
