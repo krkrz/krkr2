@@ -16,6 +16,7 @@ globaldef		TVPFastLinearInterpH2F_mmx_a
 globaldef		TVPFastLinearInterpH2B_mmx_a
 globaldef		TVPLinTransCopy_mmx_a
 globaldef		TVPLinTransConstAlphaBlend_mmx_a
+globaldef		TVPInterpStretchCopy_mmx_a
 
 ;--------------------------------------------------------------------
 	segment_code
@@ -1086,6 +1087,222 @@ TVPLinTransConstAlphaBlend_mmx_a:			; linear transforming copy with constant-rat
 
 	cmp	edi,	ebp
 	jb	.ploop2		; jump if edi < ebp
+
+.pexit:
+	pop	ebp
+.pexit2:
+	pop	edx
+	pop	ecx
+	pop	ebx
+	pop	esi
+	pop	edi
+	emms
+	ret
+
+
+
+;--------------------------------------------------------------------
+	segment_code
+;--------------------------------------------------------------------
+; memo
+;          s0p0   s0p1
+;          s1p0   s1p1
+;
+;	dst = (s0p0 * (1-bx) + s0p1 * bx ) * (1-by) +
+;	      (s1p0 * (1-bx) + s1p1 * bx ) * by
+
+;	dst = (s0p0 - s0p0 * bx + s0p1 * bx ) * (1-by) +
+;	      (s1p0 - s1p0 * bx + s1p1 * bx ) * by
+
+;	dst = (s0p0 + s0p1 * bx - s0p0 * bx ) * (1-by) +
+;	      (s1p0 + s1p1 * bx - s1p0 * bx ) * by
+
+;	dst = (s0p0 + (s0p1 - s0p0) * bx ) * (1-by) +
+;	      (s1p0 + (s1p1 - s1p0) * bx ) * by
+
+;	dst = S0 * (1-by) +
+;	      S1 * by
+
+;	dst = S0 - S0 * by + S1 * by
+
+;	dst = S0 + (S1 - S0) * by
+
+
+
+;;[function_replace_by TVPCPUType & TVP_CPU_HAS_MMX] TVPInterpStretchCopy
+;;void, TVPInterpStretchCopy_mmx_a, (tjs_uint32 *dest, tjs_int destlen, const tjs_uint32 *src1, const tjs_uint32 *src2, tjs_int blend_y, tjs_int srcstart, tjs_int srcstep)
+
+	function_align
+TVPInterpStretchCopy_mmx_a:			; bilinear stretch copy
+	push	edi
+	push	esi
+	push	ebx
+	push	ecx
+	push	edx
+	mov	ecx,	[esp + 28]		; len
+	cmp	ecx,	byte 0
+	jle	near	.pexit2
+
+	mov	eax,	[esp + 40]		; blend_y (0..255)
+	mov	ebx,	eax
+	shr	ebx,	7
+	add	eax,	ebx		; adjust by
+	movd	mm7,	eax
+	punpcklwd	mm7,	mm7
+	punpcklwd	mm7,	mm7		; mm7 = bx
+
+	mov	edi,	[esp + 24]		; dest
+	mov	esi,	[esp + 32]		; src1
+	mov	ebx,	[esp + 44]		; srcstart (srcp)
+	mov	edx,	[esp + 48]		; srcstep
+	mov	eax,	[esp + 36]		; src2
+
+	pxor	mm0,	mm0		; mm0 = 0
+
+	push	ebp
+	lea	ebp,	[edi+ecx*4]		; limit
+	mov	ecx,	eax		; src2
+	sub	ebp,	byte 4*1
+	cmp	edi,	ebp
+	jae	near	.pfraction		; jump if edi >= ebp
+
+	loop_align
+.ploop:
+	mov	eax,	ebx		; 1 tmp = srcp
+	shr	eax,	16		; 1 tmp >>= 16
+
+	movd	mm6,	[eax*4+esi]		; 1 load: load s0p0
+	movd	mm2,	[eax*4+esi+4]	; 1 load: load s0p1
+	movd	mm3,	[eax*4+ecx]		; 1 load: load s1p0
+	movd	mm4,	[eax*4+ecx+4]	; 1 load: load s1p1
+
+	mov	eax,	ebx		; 1 bx:
+	shr	eax,	8		; 1 bx:
+	punpcklbw	mm6,	mm0		; 1 load: unpack s0p0
+	and	eax,	0xff		; 1 bx: eax = bx
+	punpcklbw	mm2,	mm0		; 1 load: unpack s0p1
+	movd	mm5,	eax		; 1 bx:
+	punpcklbw	mm3,	mm0		; 1 load: unpack s1p0
+	punpcklwd	mm5,	mm5		; 1 bx:
+	punpcklbw	mm4,	mm0		; 1 load: unpack s1p1
+	punpcklwd	mm5,	mm5		; 1 bx: mm5 = bx
+
+	psubw	mm2,	mm6		; 1 s0: mm2 = s0p1 - s0p0
+	psubw	mm4,	mm3		; 1 s1: mm4 = s1p1 - s1p0
+	pmullw	mm2,	mm5		; 1 s0:
+	pmullw	mm4,	mm5		; 1 s1:
+	psllw	mm6,	8		; 1 s0:
+	psllw	mm3,	8		; 1 s1:
+	paddw	mm6,	mm2		; 1 s0:
+	paddw	mm3,	mm4		; 1 s1:
+	psrlw	mm6,	8		; 1 s0: mm6 = s0p0 + (s0p1 - s0p0) * bx = S0
+	psrlw	mm3,	8		; 1 s1: mm3 = s1p0 + (s1p1 - s1p0) * bx = S1
+
+	add	ebx,	edx		; 1 srcp += srcstep
+	psubw	mm3,	mm6		; 1 s0/s1: mm3 = S1 - S0
+	mov	eax,	ebx		; 2 tmp = srcp
+	pmullw	mm3,	mm7		; 1 s0/s1:
+	shr	eax,	16		; 2 tmp >>= 16
+
+	psllw	mm6,	8		; 1 s0/s1:
+	movd	mm1,	[eax*4+esi]		; 2 load: load s0p0
+	paddw	mm6,	mm3		; 1 s0/s1:
+	movd	mm2,	[eax*4+esi+4]	; 2 load: load s0p1
+	movd	mm3,	[eax*4+ecx]		; 2 load: load s1p0
+	psrlw	mm6,	8		; 1 s0/s1: mm6 = S0 + (S1 - S0) * by = dst
+	movd	mm4,	[eax*4+ecx+4]	; 2 load: load s1p1
+	packuswb	mm6,	mm0		; 1 pack
+
+	mov	eax,	ebx		; 2 bx:
+	movd	[edi],	mm6		; 1 store to dest
+	shr	eax,	8		; 2 bx:
+	punpcklbw	mm1,	mm0		; 2 load: unpack s0p0
+	and	eax,	0xff		; 2 bx: eax = bx
+	punpcklbw	mm2,	mm0		; 2 load: unpack s0p1
+	movd	mm5,	eax		; 2 bx:
+	punpcklbw	mm3,	mm0		; 2 load: unpack s1p0
+	punpcklwd	mm5,	mm5		; 2 bx:
+	punpcklbw	mm4,	mm0		; 2 load: unpack s1p1
+	punpcklwd	mm5,	mm5		; 2 bx: mm5 = bx
+
+	psubw	mm2,	mm1		; 2 s0: mm2 = s0p1 - s0p0
+	psubw	mm4,	mm3		; 2 s1: mm4 = s1p1 - s1p0
+	pmullw	mm2,	mm5		; 2 s0:
+	pmullw	mm4,	mm5		; 2 s1:
+	psllw	mm1,	8		; 2 s0:
+	psllw	mm3,	8		; 2 s1:
+	paddw	mm1,	mm2		; 2 s0:
+	paddw	mm3,	mm4		; 2 s1:
+	psrlw	mm1,	8		; 2 s0: mm1 = s0p0 + (s0p1 - s0p0) * bx = S0
+	psrlw	mm3,	8		; 2 s1: mm3 = s1p0 + (s1p1 - s1p0) * bx = S1
+
+	add	ebx,	edx		; 2 srcp += srcstep
+	psubw	mm3,	mm1		; 2 s0/s1: mm3 = S1 - S0
+	add	edi,	byte 8		; 2 dest ++
+	pmullw	mm3,	mm7		; 2 s0/s1:
+	psllw	mm1,	8		; 2 s0/s1:
+	cmp	edi,	ebp
+	paddw	mm1,	mm3		; 2 s0/s1:
+	psrlw	mm1,	8		; 2 s0/s1: mm1 = S0 + (S1 - S0) * by = dst
+
+	packuswb	mm1,	mm0		; 2 pack
+
+	movd	[edi+4-8],	mm1		; 2 store to dest
+
+	jb	.ploop			; jump if edi < ebp
+
+.pfraction:
+	add	ebp,	byte 4*1
+	cmp	edi,	ebp
+	jae	near .pexit			; jump if edi >= ebp
+
+.ploop2:
+
+	mov	eax,	ebx		; tmp = srcp
+	shr	eax,	16		; tmp >>= 16
+
+	movd	mm1,	[eax*4+esi]		; load: load s0p0
+	movd	mm2,	[eax*4+esi+4]	; load: load s0p1
+	movd	mm3,	[eax*4+ecx]		; load: load s1p0
+	movd	mm4,	[eax*4+ecx+4]	; load: load s1p1
+
+	mov	eax,	ebx		; bx:
+	shr	eax,	8		; bx:
+	punpcklbw	mm1,	mm0		; load: unpack s0p0
+	and	eax,	0xff		; bx: eax = bx
+	punpcklbw	mm2,	mm0		; load: unpack s0p1
+	movd	mm5,	eax		; bx:
+	punpcklbw	mm3,	mm0		; load: unpack s1p0
+	punpcklwd	mm5,	mm5		; bx:
+	punpcklbw	mm4,	mm0		; load: unpack s1p1
+	punpcklwd	mm5,	mm5		; bx: mm5 = bx
+
+	psubw	mm2,	mm1		; s0: mm2 = s0p1 - s0p0
+	psubw	mm4,	mm3		; s1: mm4 = s1p1 - s1p0
+	pmullw	mm2,	mm5		; s0:
+	pmullw	mm4,	mm5		; s1:
+	psllw	mm1,	8		; s0:
+	psllw	mm3,	8		; s1:
+	paddw	mm1,	mm2		; s0:
+	paddw	mm3,	mm4		; s1:
+	psrlw	mm1,	8		; s0: mm1 = s0p0 + (s0p1 - s0p0) * bx = S0
+	psrlw	mm3,	8		; s1: mm3 = s1p0 + (s1p1 - s1p0) * bx = S1
+
+	psubw	mm3,	mm1		; s0/s1: mm3 = S1 - S0
+	pmullw	mm3,	mm7		; s0/s1:
+	psllw	mm1,	8		; s0/s1:
+	paddw	mm1,	mm3		; s0/s1:
+	psrlw	mm1,	8		; s0/s1: mm1 = S0 + (S1 - S0) * by = dst
+
+	packuswb	mm1,	mm0		; pack
+
+	movd	[edi],	mm1		; store to dest
+
+	add	ebx,	edx		; srcp += srcstep
+	add	edi,	byte 4		; dest ++
+
+	cmp	edi,	ebp
+	jb	.ploop2			; jump if edi < ebp
 
 .pexit:
 	pop	ebp
