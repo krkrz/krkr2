@@ -6,3 +6,5 @@ for %%d in (*.obj) do tlib tvpgl_ia32.lib + %%d
 perl summary.pl
 del *.bak
 pause
+cd ..\..\base\win32
+call makestub.bat
