@@ -71,6 +71,11 @@ const wchar_t* __stdcall tTVPDSVideoOverlay::BuildGraph( HWND callbackwin, IStre
 		if( FAILED(hr = m_GraphBuilder.CoCreateInstance(CLSID_FilterGraph, NULL, CLSCTX_INPROC)) )
 			throw L"Failed to create FilterGraph.";
 
+#ifdef _DEBUG
+		// Register to ROT
+		AddToROT(m_dwROTReg);
+#endif
+
 		// add fliter
 		if( FAILED(hr = GraphBuilder()->AddFilter( m_Reader, NULL)) )
 			throw L"Failed to call IFilterGraph::AddFilter.";
