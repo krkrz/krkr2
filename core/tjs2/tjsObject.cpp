@@ -639,8 +639,8 @@ void tTJSCustomObject::RebuildHash()
 					if(data)
 					{
 						GetValue(data).CopyRef(*(tTJSVariant*)(&(d->Value)));
-						data->SymFlags &= ~ TJS_SYMBOL_HIDDEN;
-						data->SymFlags |= d->SymFlags & TJS_SYMBOL_HIDDEN;
+						data->SymFlags &= ~ (TJS_SYMBOL_HIDDEN | TJS_SYMBOL_STATIC);
+						data->SymFlags |= d->SymFlags & (TJS_SYMBOL_HIDDEN | TJS_SYMBOL_STATIC);
 						CheckObjectClosureAdd(GetValue(data));
 					}
 				}
@@ -654,8 +654,8 @@ void tTJSCustomObject::RebuildHash()
 				if(data)
 				{
 					GetValue(data).CopyRef(*(tTJSVariant*)(&(lv1->Value)));
-					data->SymFlags &= ~ TJS_SYMBOL_HIDDEN;
-					data->SymFlags |= lv1->SymFlags & TJS_SYMBOL_HIDDEN;
+					data->SymFlags &= ~ (TJS_SYMBOL_HIDDEN | TJS_SYMBOL_STATIC);
+					data->SymFlags |= lv1->SymFlags & (TJS_SYMBOL_HIDDEN | TJS_SYMBOL_STATIC);
 					CheckObjectClosureAdd(GetValue(data));
 				}
 			}
