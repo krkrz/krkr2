@@ -81,6 +81,42 @@ if(TVPCPUType & TVP_CPU_HAS_EMMX && TVPCPUType & TVP_CPU_HAS_MMX)
 if(TVPCPUType & TVP_CPU_HAS_EMMX && TVPCPUType & TVP_CPU_HAS_MMX)
 	 TVPConstAlphaBlend_SD =  TVPConstAlphaBlend_SD_emmx_a;
 if(TVPCPUType & TVP_CPU_HAS_MMX)
+	 TVPAddSubVertSum16 =  TVPAddSubVertSum16_mmx_a;
+if(TVPCPUType & TVP_CPU_HAS_MMX)
+	 TVPAddSubVertSum16_d =  TVPAddSubVertSum16_d_mmx_a;
+if(TVPCPUType & TVP_CPU_HAS_MMX)
+	 TVPAddSubVertSum32 =  TVPAddSubVertSum32_mmx_a;
+if(TVPCPUType & TVP_CPU_HAS_MMX)
+	 TVPAddSubVertSum32_d =  TVPAddSubVertSum32_d_mmx_a;
+if(TVPCPUType & TVP_CPU_HAS_MMX)
+	 TVPDoBoxBlurAvg16 =  TVPDoBoxBlurAvg16_mmx_a;
+if(TVPCPUType & TVP_CPU_HAS_MMX)
+	 TVPDoBoxBlurAvg16_d =  TVPDoBoxBlurAvg16_d_mmx_a;
+if(TVPCPUType & TVP_CPU_HAS_MMX)
+	 TVPDoBoxBlurAvg32 =  TVPDoBoxBlurAvg32_mmx_a;
+if(TVPCPUType & TVP_CPU_HAS_MMX)
+	 TVPDoBoxBlurAvg32_d =  TVPDoBoxBlurAvg32_d_mmx_a;
+if(TVPCPUType & TVP_CPU_HAS_EMMX && TVPCPUType & TVP_CPU_HAS_MMX)
+	 TVPAddSubVertSum16 =  TVPAddSubVertSum16_emmx_a;
+if(TVPCPUType & TVP_CPU_HAS_EMMX && TVPCPUType & TVP_CPU_HAS_MMX)
+	 TVPAddSubVertSum16_d =  TVPAddSubVertSum16_d_emmx_a;
+if(TVPCPUType & TVP_CPU_HAS_EMMX && TVPCPUType & TVP_CPU_HAS_MMX)
+	 TVPAddSubVertSum32 =  TVPAddSubVertSum32_emmx_a;
+if(TVPCPUType & TVP_CPU_HAS_EMMX && TVPCPUType & TVP_CPU_HAS_MMX)
+	 TVPAddSubVertSum32_d =  TVPAddSubVertSum32_d_emmx_a;
+if(TVPCPUType & TVP_CPU_HAS_EMMX && TVPCPUType & TVP_CPU_HAS_MMX)
+	 TVPDoBoxBlurAvg16 =  TVPDoBoxBlurAvg16_emmx_a;
+if(TVPCPUType & TVP_CPU_HAS_EMMX && TVPCPUType & TVP_CPU_HAS_MMX)
+	 TVPDoBoxBlurAvg16_d =  TVPDoBoxBlurAvg16_d_emmx_a;
+if(TVPCPUType & TVP_CPU_HAS_EMMX && TVPCPUType & TVP_CPU_HAS_MMX)
+	 TVPDoBoxBlurAvg32 =  TVPDoBoxBlurAvg32_emmx_a;
+if(TVPCPUType & TVP_CPU_HAS_EMMX && TVPCPUType & TVP_CPU_HAS_MMX)
+	 TVPDoBoxBlurAvg32_d =  TVPDoBoxBlurAvg32_d_emmx_a;
+if(TVPCPUType & TVP_CPU_HAS_SSE && TVPCPUType & TVP_CPU_HAS_EMMX && TVPCPUType & TVP_CPU_HAS_MMX)
+	 TVPDoBoxBlurAvg16 =  TVPDoBoxBlurAvg16_sse_a;
+if(TVPCPUType & TVP_CPU_HAS_SSE && TVPCPUType & TVP_CPU_HAS_EMMX && TVPCPUType & TVP_CPU_HAS_MMX)
+	 TVPDoBoxBlurAvg16_d =  TVPDoBoxBlurAvg16_d_sse_a;
+if(TVPCPUType & TVP_CPU_HAS_MMX)
 	 TVPFillARGB =  TVPFillARGB_mmx_a;
 if(TVPCPUType & TVP_CPU_HAS_SSE)
 	 TVPFillARGB =  TVPFillARGB_sse_a;

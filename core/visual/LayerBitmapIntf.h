@@ -14,7 +14,7 @@
 
 #include "ComplexRect.h"
 #include "tvpgl.h"
-
+#include "argb.h"
 
 /*[*/
 //---------------------------------------------------------------------------
@@ -228,6 +228,15 @@ public:
 			bool hda = true, tTVPBBStretchType type = stNearest, bool clear = false,
 				tjs_uint32 clearcolor = 0);
 
+private:
+	template <typename tARGB>
+	void DoBoxBlurLoop(const tTVPRect &rect, const tTVPRect & area);
+
+	bool InternalDoBoxBlur(tTVPRect rect, tTVPRect area, bool hasalpha);
+
+public:
+	bool DoBoxBlur(const tTVPRect & rect, const tTVPRect & area);
+	bool DoBoxBlurForAlpha(const tTVPRect & rect, const tTVPRect & area);
 
 	void UDFlip(const tTVPRect &rect);
 	void LRFlip(const tTVPRect &rect);

@@ -356,6 +356,7 @@ typedef struct
 #define TVP_GL_FUNC_PTR_EXTERN_DECL TVP_GL_FUNC_PTR_EXTERN_DECL_
 #endif
 
+extern unsigned char TVPDivTable[256*256];
 extern unsigned char TVP252DitherPalette[3][256];
 
 #define TVP_TLG6_H_BLOCK_SIZE 8
@@ -5302,6 +5303,254 @@ print FC <<EOF;
 
 EOF
 
+;#-----------------------------------------------------------------
+;# functions for blur operation
+;#-----------------------------------------------------------------
+
+
+print FC <<EOF;
+/*export*/
+TVP_GL_FUNC_DECL(void, TVPAddSubVertSum16_c, (tjs_uint16 *dest, const tjs_uint32 *addline, const tjs_uint32 *subline, tjs_int len))
+{
+EOF
+
+$content = <<EOF;
+{
+	tjs_uint32 add, sub;
+	add = addline[{ofs}];
+	sub = subline[{ofs}];
+	dest[{ofs}*4+0] += ((add    ) & 0xff) - ((sub    ) & 0xff);
+	dest[{ofs}*4+1] += ((add>>8 ) & 0xff) - ((sub>>8 ) & 0xff);
+	dest[{ofs}*4+2] += ((add>>16) & 0xff) - ((sub>>16) & 0xff);
+	dest[{ofs}*4+3] += ((add>>24)       ) - ((sub>>24)       );
+}
+EOF
+
+&loop_unroll_c_2($content, 'len', 4);
+
+print FC <<EOF;
+}
+
+EOF
+
+;#-----------------------------------------------------------------
+
+print FC <<EOF;
+/*export*/
+TVP_GL_FUNC_DECL(void, TVPAddSubVertSum16_d_c, (tjs_uint16 *dest, const tjs_uint32 *addline, const tjs_uint32 *subline, tjs_int len))
+{
+EOF
+
+$content = <<EOF;
+{
+	tjs_uint32 add, sub;
+	tjs_int add_a, sub_a;
+	add = addline[{ofs}];
+	sub = subline[{ofs}];
+	dest[{ofs}*4+3] += (add_a = (add>>24)       ) - (sub_a = (sub>>24)       );
+	add_a += add_a >> 7;
+	sub_a += sub_a >> 7;
+	dest[{ofs}*4+0] += (((add    ) & 0xff) * add_a >> 8) - (((sub    ) & 0xff) * sub_a >> 8);
+	dest[{ofs}*4+1] += (((add>>8 ) & 0xff) * add_a >> 8) - (((sub>>8 ) & 0xff) * sub_a >> 8);
+	dest[{ofs}*4+2] += (((add>>16) & 0xff) * add_a >> 8) - (((sub>>16) & 0xff) * sub_a >> 8);
+}
+EOF
+
+&loop_unroll_c_2($content, 'len', 4);
+
+print FC <<EOF;
+}
+
+EOF
+
+;#-----------------------------------------------------------------
+
+print FC <<EOF;
+/*export*/
+TVP_GL_FUNC_DECL(void, TVPAddSubVertSum32_c, (tjs_uint32 *dest, const tjs_uint32 *addline, const tjs_uint32 *subline, tjs_int len))
+{
+EOF
+
+$content = <<EOF;
+{
+	tjs_uint32 add, sub;
+	add = addline[{ofs}];
+	sub = subline[{ofs}];
+	dest[{ofs}*4+0] += ((add    ) & 0xff) - ((sub    ) & 0xff);
+	dest[{ofs}*4+1] += ((add>>8 ) & 0xff) - ((sub>>8 ) & 0xff);
+	dest[{ofs}*4+2] += ((add>>16) & 0xff) - ((sub>>16) & 0xff);
+	dest[{ofs}*4+3] += ((add>>24)       ) - ((sub>>24)       );
+}
+EOF
+
+&loop_unroll_c_2($content, 'len', 4);
+
+print FC <<EOF;
+}
+
+EOF
+
+;#-----------------------------------------------------------------
+
+print FC <<EOF;
+/*export*/
+TVP_GL_FUNC_DECL(void, TVPAddSubVertSum32_d_c, (tjs_uint32 *dest, const tjs_uint32 *addline, const tjs_uint32 *subline, tjs_int len))
+{
+EOF
+
+$content = <<EOF;
+{
+	tjs_uint32 add, sub;
+	tjs_int add_a, sub_a;
+	add = addline[{ofs}];
+	sub = subline[{ofs}];
+	dest[{ofs}*4+3] += (add_a = (add>>24)       ) - (sub_a = (sub>>24)       );
+	add_a += add_a >> 7;
+	sub_a += sub_a >> 7;
+	dest[{ofs}*4+0] += (((add    ) & 0xff) * add_a >> 8) - (((sub    ) & 0xff) * sub_a >> 8);
+	dest[{ofs}*4+1] += (((add>>8 ) & 0xff) * add_a >> 8) - (((sub>>8 ) & 0xff) * sub_a >> 8);
+	dest[{ofs}*4+2] += (((add>>16) & 0xff) * add_a >> 8) - (((sub>>16) & 0xff) * sub_a >> 8);
+}
+EOF
+
+&loop_unroll_c_2($content, 'len', 4);
+
+print FC <<EOF;
+}
+
+EOF
+
+;#-----------------------------------------------------------------
+
+print FC <<EOF;
+/*export*/
+TVP_GL_FUNC_DECL(void, TVPDoBoxBlurAvg16_c, (tjs_uint32 *dest, tjs_uint16 *sum, const tjs_uint16 * add, const tjs_uint16 * sub, tjs_int n, tjs_int len))
+{
+	tjs_int rcp = (1<<16) / n;
+	tjs_int half_n = n >> 1;
+EOF
+
+$content = <<EOF;
+{
+	dest[{ofs}] =
+		(((sum[0] + half_n) * rcp >> 16)       )+
+		(((sum[1] + half_n) * rcp >> 16) << 8  )+
+		(((sum[2] + half_n) * rcp >> 16) << 16 )+
+		(((sum[3] + half_n) * rcp >> 16) << 24 );
+
+	sum[0] += add[{ofs}*4+0] - sub[{ofs}*4+0];
+	sum[1] += add[{ofs}*4+1] - sub[{ofs}*4+1];
+	sum[2] += add[{ofs}*4+2] - sub[{ofs}*4+2];
+	sum[3] += add[{ofs}*4+3] - sub[{ofs}*4+3];
+}
+EOF
+
+&loop_unroll_c_2($content, 'len', 4);
+
+print FC <<EOF;
+}
+
+EOF
+
+;#-----------------------------------------------------------------
+
+print FC <<EOF;
+/*export*/
+TVP_GL_FUNC_DECL(void, TVPDoBoxBlurAvg16_d_c, (tjs_uint32 *dest, tjs_uint16 *sum, const tjs_uint16 * add, const tjs_uint16 * sub, tjs_int n, tjs_int len))
+{
+	tjs_int rcp = (1<<16) / n;
+	tjs_int half_n = n >> 1;
+EOF
+
+$content = <<EOF;
+{
+	tjs_int a = ((sum[3] + half_n) * rcp >> 16);
+	tjs_uint8 * t = TVPDivTable + (a << 8);
+	dest[{ofs}] =
+		(t[(sum[0] + half_n) * rcp >> 16]       )+
+		(t[(sum[1] + half_n) * rcp >> 16] << 8  )+
+		(t[(sum[2] + half_n) * rcp >> 16] << 16 )+
+		(a << 24 );
+
+	sum[0] += add[{ofs}*4+0] - sub[{ofs}*4+0];
+	sum[1] += add[{ofs}*4+1] - sub[{ofs}*4+1];
+	sum[2] += add[{ofs}*4+2] - sub[{ofs}*4+2];
+	sum[3] += add[{ofs}*4+3] - sub[{ofs}*4+3];
+}
+EOF
+
+&loop_unroll_c_2($content, 'len', 4);
+
+print FC <<EOF;
+}
+
+EOF
+
+;#-----------------------------------------------------------------
+
+print FC <<EOF;
+/*export*/
+TVP_GL_FUNC_DECL(void, TVPDoBoxBlurAvg32_c, (tjs_uint32 *dest, tjs_uint32 *sum, const tjs_uint32 * add, const tjs_uint32 * sub, tjs_int n, tjs_int len))
+{
+	/* This function is very slow since using divisiion in loop. Function written in assembly should be used. */
+	tjs_int half_n = n >> 1;
+EOF
+
+$content = <<EOF;
+{
+	dest[{ofs}] =
+		(((sum[0] + half_n) / n)       )+
+		(((sum[1] + half_n) / n) << 8  )+
+		(((sum[2] + half_n) / n) << 16 )+
+		(((sum[3] + half_n) / n) << 24 );
+
+	sum[0] += add[{ofs}*4+0] - sub[{ofs}*4+0];
+	sum[1] += add[{ofs}*4+1] - sub[{ofs}*4+1];
+	sum[2] += add[{ofs}*4+2] - sub[{ofs}*4+2];
+	sum[3] += add[{ofs}*4+3] - sub[{ofs}*4+3];
+}
+EOF
+
+&loop_unroll_c_2($content, 'len', 4);
+
+print FC <<EOF;
+}
+
+EOF
+
+;#-----------------------------------------------------------------
+
+print FC <<EOF;
+/*export*/
+TVP_GL_FUNC_DECL(void, TVPDoBoxBlurAvg32_d_c, (tjs_uint32 *dest, tjs_uint32 *sum, const tjs_uint32 * add, const tjs_uint32 * sub, tjs_int n, tjs_int len))
+{
+	/* This function is very slow since using divisiion in loop. Function written in assembly should be used. */
+	tjs_int half_n = n >> 1;
+EOF
+
+$content = <<EOF;
+{
+	tjs_int a = ((sum[3] + half_n) / n);
+	tjs_uint8 * t = TVPDivTable + (a << 8);
+	dest[{ofs}] =
+		(t[(sum[0] + half_n) / n]       )+
+		(t[(sum[1] + half_n) / n] << 8  )+
+		(t[(sum[2] + half_n) / n] << 16 )+
+		(a << 24 );
+
+	sum[0] += add[{ofs}*4+0] - sub[{ofs}*4+0];
+	sum[1] += add[{ofs}*4+1] - sub[{ofs}*4+1];
+	sum[2] += add[{ofs}*4+2] - sub[{ofs}*4+2];
+	sum[3] += add[{ofs}*4+3] - sub[{ofs}*4+3];
+}
+EOF
+
+&loop_unroll_c_2($content, 'len', 4);
+
+print FC <<EOF;
+}
+
+EOF
 
 
 ;#-----------------------------------------------------------------
