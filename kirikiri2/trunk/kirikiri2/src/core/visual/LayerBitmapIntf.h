@@ -158,7 +158,7 @@ public:
 			bool hda = true, tTVPBBStretchType type = stNearest);
 
 	bool AffineBlt(tTVPRect destrect, const tTVPBaseBitmap *ref,
-		tTVPRect refrect, const tTVPPoint * points,
+		tTVPRect refrect, const tTVPPointD * points,
 			tTVPBBBltMethod method, tjs_int opa,
 			tTVPRect * updaterect = NULL,
 			bool hda = true, tTVPBBStretchType type = stNearest);
