@@ -772,7 +772,7 @@ static bool TJSParseOctet(tTJSVariant &val, const tjs_char **ptr)
 	tjs_uint buflen = 0;
 
 	bool leading = true;
-	tjs_uint8 cur;
+	tjs_uint8 cur = 0;
 
 	for(;*(*ptr);)
 	{
