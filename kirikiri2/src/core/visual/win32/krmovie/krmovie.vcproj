@@ -190,19 +190,10 @@
 				RelativePath=".\DShowException.cpp">
 			</File>
 			<File
-				RelativePath=".\dslayerd.cpp">
-			</File>
-			<File
 				RelativePath=".\dsmovie.cpp">
 			</File>
 			<File
 				RelativePath=".\dsoverlay.cpp">
-			</File>
-			<File
-				RelativePath=".\IBufferRenderer_i.c">
-			</File>
-			<File
-				RelativePath=".\IRendererBufferAccess_i.c">
 			</File>
 			<File
 				RelativePath="krmovie.cpp">
@@ -245,19 +236,10 @@
 				RelativePath=".\DShowException.h">
 			</File>
 			<File
-				RelativePath=".\dslayerd.h">
-			</File>
-			<File
 				RelativePath=".\dsmovie.h">
 			</File>
 			<File
 				RelativePath=".\dsoverlay.h">
-			</File>
-			<File
-				RelativePath=".\IBufferRenderer.h">
-			</File>
-			<File
-				RelativePath=".\IRendererBufferAccess.h">
 			</File>
 		</Filter>
 		<Filter
