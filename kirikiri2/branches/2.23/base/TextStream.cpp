@@ -8,12 +8,6 @@
 //---------------------------------------------------------------------------
 // Text read/write stream
 //---------------------------------------------------------------------------
-// 2004/ 6/ 8 W.Dee
-//    Illegal narrow -> wide character conversion (when reading a file) now
-//    raises TJSNarrowToWideConversionError.
-// 2004/ 2/ 6 W.Dee          Fixed problem around reading compressed stream
-//                           when size != 0
-//---------------------------------------------------------------------------
 #include "tjsCommHead.h"
 #pragma hdrstop
 
