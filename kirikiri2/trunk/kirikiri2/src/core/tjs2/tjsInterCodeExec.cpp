@@ -1337,6 +1337,11 @@ tjs_int tTJSInterCodeContext::ExecuteCode(tTJSVariant *ra_org, tjs_int startip,
 				code+=3;
 				break;
 
+			case VM_REGMEMBER:
+				RegisterObjectMember(ra[-1].AsObjectNoAddRef());
+				code ++;
+				break;
+
 			case VM_DEBUGGER:
 				TJSNativeDebuggerBreak();
 				code ++;
@@ -2661,6 +2666,51 @@ void tTJSInterCodeContext::InstanceOf(const tTJSVariant &name, tTJSVariant &targ
 	targ = false;
 }
 //---------------------------------------------------------------------------
+void tTJSInterCodeContext::RegisterObjectMember(iTJSDispatch2 * dest)
+{
+	// register this object member to 'dest' (destination object).
+	// called when new object is to be created.
+	// a class to receive member callback from class
+
+	class tCallback : public tTJSDispatch
+	{
+	public:
+		iTJSDispatch2 * Dest; // destination object
+		tjs_error TJS_INTF_METHOD FuncCall(
+			tjs_uint32 flag, const tjs_char * membername, tjs_uint32 *hint,
+			tTJSVariant *result, tjs_int numparams, tTJSVariant **param,
+			iTJSDispatch2 *objthis)
+		{
+			// *param[0] = name   *param[1] = flags   *param[2] = value
+			tjs_uint32 flags = (tjs_int)*param[1];
+			if(!(flags & TJS_STATICMEMBER))
+			{
+				tTJSVariant val = *param[2];
+				if(val.Type() == tvtObject)
+				{
+					// change object's objthis if the object's objthis is null
+//					if(val.AsObjectThisNoAddRef() == NULL)
+						val.ChangeClosureObjThis(Dest);
+				}
+
+				if(Dest->PropSetByVS(TJS_MEMBERENSURE|TJS_IGNOREPROP|flags,
+					param[0]->AsStringNoAddRef(), &val, Dest) == TJS_E_NOTIMPL)
+					Dest->PropSet(TJS_MEMBERENSURE|TJS_IGNOREPROP|flags,
+					param[0]->GetString(), NULL, &val, Dest);
+			}
+			if(result) *result = (tjs_int)(1); // returns true
+			return TJS_S_OK;
+		}
+	};
+
+	tCallback callback;
+	callback.Dest = dest;
+
+	// enumerate members
+	EnumMembers(TJS_IGNOREPROP,
+		&tTJSVariantClosure(&callback, (iTJSDispatch2*)NULL), this);
+}
+//---------------------------------------------------------------------------
 #define TJS_DO_SUPERCLASS_PROXY_BEGIN \
 		std::vector<tjs_int> &pointer = SuperClassGetter->SuperClassGetterPointer; \
 		if(pointer.size() != 0) \
@@ -2699,9 +2749,12 @@ tjs_error TJS_INTF_METHOD  tTJSInterCodeContext::FuncCall(
 
 		case ctFunction:
 		case ctExprFunction:
-		case ctClass: // on super class' initialization
 		case ctPropertyGetter:
 		case ctPropertySetter:
+			ExecuteAsFunction(objthis, param, numparams, result, 0);
+			break;
+
+		case ctClass: // on super class' initialization
 			ExecuteAsFunction(objthis, param, numparams, result, 0);
 			break;
 

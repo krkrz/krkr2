@@ -262,11 +262,8 @@ tTJSNativeClass::~tTJSNativeClass()
 void tTJSNativeClass::RegisterNCM(const tjs_char *name, iTJSDispatch2 *dsp,
 	const tjs_char *classname, tTJSNativeInstanceType type, tjs_uint32 flags)
 {
-	// add to Items and ItemsNames
+	// map name via Global String Map
 	ttstr tname = TJSMapGlobalStringMap(ttstr(name));
-	ItemNames.push_back(tname);
-	Items.push_back(dsp); // do not AddRef "dsp"
-	ItemFlags.push_back(flags);
 
 	// set object type for debugging
 	if(TJSObjectHashMapEnabled())
@@ -292,28 +289,23 @@ void tTJSNativeClass::RegisterNCM(const tjs_char *name, iTJSDispatch2 *dsp,
 	// add to this
 	tTJSVariant val;
 	val = dsp;
-	if(PropSetByVS((TJS_MEMBERENSURE | TJS_IGNOREPROP) | flags, tname.AsVariantStringNoAddRef(), &val, this)
-		== TJS_E_NOTIMPL)
-		PropSet((TJS_MEMBERENSURE | TJS_IGNOREPROP) | flags, tname.c_str(), NULL, &val, this);
+	if(PropSetByVS((TJS_MEMBERENSURE | TJS_IGNOREPROP) | flags,
+		tname.AsVariantStringNoAddRef(), &val, this) == TJS_E_NOTIMPL)
+		PropSet((TJS_MEMBERENSURE | TJS_IGNOREPROP) | flags,
+			tname.c_str(), NULL, &val, this);
+
+	// release dsp
+	dsp->Release();
 }
 //---------------------------------------------------------------------------
 void tTJSNativeClass::Finalize(void)
 {
-	ClearItems();
 	tTJSCustomObject::Finalize();
 }
 //---------------------------------------------------------------------------
 iTJSDispatch2 * tTJSNativeClass::CreateBaseTJSObject()
 {
 	return new tTJSCustomObject;
-}
-//---------------------------------------------------------------------------
-void tTJSNativeClass::ClearItems()
-{
-	tjs_uint i;
-	for(i=0; i<Items.size(); i++) Items[i]->Release();
-	Items.clear();
-	ItemNames.clear();
 }
 //---------------------------------------------------------------------------
 tjs_error TJS_INTF_METHOD
@@ -338,19 +330,46 @@ tTJSNativeClass::FuncCall(tjs_uint32 flag, const tjs_char * membername,
 	// even if "nativeptr" is null
 	objthis->NativeInstanceSupport(TJS_NIS_REGISTER, _ClassID, &nativeptr);
 
-	// register members to "objthis" when this object is called by "FuncCall"
-	tjs_uint i;
-	for(i=0; i<Items.size(); i++)
+	// register members to "objthis"
+
+	// a class to receive member callback from class
+	class tCallback : public tTJSDispatch
 	{
-		if(!(ItemFlags[i] & TJS_STATICMEMBER))
+	public:
+		iTJSDispatch2 * Dest; // destination object
+		tjs_error TJS_INTF_METHOD FuncCall(
+			tjs_uint32 flag, const tjs_char * membername, tjs_uint32 *hint,
+			tTJSVariant *result, tjs_int numparams, tTJSVariant **param,
+			iTJSDispatch2 *objthis)
 		{
-			tTJSVariant val(Items[i], objthis);
-			if(objthis->PropSetByVS(TJS_MEMBERENSURE|TJS_IGNOREPROP|ItemFlags[i],
-				ItemNames[i].AsVariantStringNoAddRef(), &val, objthis) == TJS_E_NOTIMPL)
-				objthis->PropSet(TJS_MEMBERENSURE|TJS_IGNOREPROP|ItemFlags[i],
-				ItemNames[i].c_str(), NULL, &val, objthis);
+			// *param[0] = name   *param[1] = flags   *param[2] = value
+			tjs_uint32 flags = (tjs_int)*param[1];
+			if(!(flags & TJS_STATICMEMBER))
+			{
+				tTJSVariant val = *param[2];
+				if(val.Type() == tvtObject)
+				{
+					// change object's objthis if the object's objthis is null
+					if(val.AsObjectThisNoAddRef() == NULL)
+						val.ChangeClosureObjThis(Dest);
+				}
+
+				if(Dest->PropSetByVS(TJS_MEMBERENSURE|TJS_IGNOREPROP|flags,
+					param[0]->AsStringNoAddRef(), &val, Dest) == TJS_E_NOTIMPL)
+					Dest->PropSet(TJS_MEMBERENSURE|TJS_IGNOREPROP|flags,
+					param[0]->GetString(), NULL, &val, Dest);
+			}
+			if(result) *result = (tjs_int)(1); // returns true
+			return TJS_S_OK;
 		}
-	}
+	};
+
+	tCallback callback;
+	callback.Dest = objthis;
+
+	// enumerate members
+	EnumMembers(TJS_IGNOREPROP,
+		&tTJSVariantClosure(&callback, (iTJSDispatch2*)NULL), this);
 
 	return TJS_S_OK;
 }

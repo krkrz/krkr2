@@ -472,6 +472,11 @@ void tTJSInterCodeContext::Disassemble(
 			size = 3;
 			break;
 
+		case VM_REGMEMBER:
+			msg.printf(TJS_W("regmember"));
+			size = 1;
+			break;
+
 		case VM_DEBUGGER:
 			msg.printf(TJS_W("debugger"));
 			size = 1;
