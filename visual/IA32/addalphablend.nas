@@ -462,73 +462,42 @@ TVPAdditiveAlphaBlend_a_name:					; additive alpha blend on additive alpha
 
 		loop_align
 .ploop:
-		mov			eax,	[ebp]			; 1 src
-		mov			edx,	eax				; 1
-		shr			eax,	24				; 1 eax = source opa
-		movd		mm2,	eax				; 1
-		mov			ecx,	[edi]			; 1 dest
-		punpcklwd	mm2,	mm2				; 1
-		movd		mm1,	ecx				; 1 dest
-		punpcklwd	mm2,	mm2				; 1
-		pand		mm1,	mm7				; 1
-		shr			ecx,	24				; 1 ecx = dest opa
-		mov			ebx,	eax				; 1
-		punpcklbw	mm1,	mm0				; 1 mm1 = 00dd00dd00dd00dd
-		imul		ebx,	ecx				; 1
+		movd		mm3,		[ebp]		; 1 src      (SaSiSiSi)
+		movd		mm5,		[ebp+4]		; 2 src      (SaSiSiSi)
+		movq		mm4,		mm3			; 1
+		movq		mm6,		mm5			; 2
+		psrlq		mm4,		24			; 1 mm4 = Sa
+		punpcklbw	mm3,		mm0			; 1 mm3 = 00 Sa 00 Si 00 Si 00 Si
+		punpcklwd	mm4,		mm4			; 1
+		movd		mm1,		[edi]		; 1 dest     (DaDiDiDi)
+		punpcklwd	mm4,		mm4			; 1 mm4 = 00 Sa 00 Sa 00 Sa 00 Sa
+		punpcklbw	mm1,		mm0			; 1 mm1 = 00 Da 00 Di 00 Di 00 Di
 %ifdef	USE_EMMX
 		prefetcht0	[ebp + 16]
 %endif
-		movq		mm3,	mm1				; 1
-		shr			ebx,	8				; 1
-		add			eax,	ecx				; 1
-		pmullw		mm1,	mm2				; 1
-		sub			eax,	ebx				; 1
-		psrlw		mm1,	8				; 1
-		mov			ecx,	eax				; 1
-		psubw		mm3,	mm1				; 1
-		shr			ecx,	8				; 1
-		packuswb	mm3,	mm0				; 1
-		sub			eax,	ecx				; 1
-		shl			eax,	24				; 1
-		and			edx,	0xffffff		; 1
-		or			edx,	eax				; 1
-		movd		mm4,	edx				; 1 src
-		mov			eax,	[ebp+4]			; 2 src
-		paddusb		mm3,	mm4				; 1 add src
-		mov			edx,	eax				; 2
-		movd		[edi],	mm3				; 1 store
-		shr			eax,	24				; 2 eax = source opa
-		movd		mm2,	eax				; 2
-		mov			ecx,	[edi+4]			; 2 dest
-		punpcklwd	mm2,	mm2				; 2
-		movd		mm1,	ecx				; 2 dest
-		punpcklwd	mm2,	mm2				; 2
-		pand		mm1,	mm7				; 2
-		shr			ecx,	24				; 2 ecx = dest opa
-		mov			ebx,	eax				; 2
-		punpcklbw	mm1,	mm0				; 2 mm1 = 00dd00dd00dd00dd
-		imul		ebx,	ecx				; 2
-		movq		mm3,	mm1				; 2
-		shr			ebx,	8				; 2
-		add			eax,	ecx				; 2
-		pmullw		mm1,	mm2				; 2
-		sub			eax,	ebx				; 2
-		psrlw		mm1,	8				; 2
-		mov			ecx,	eax				; 2
-		psubw		mm3,	mm1				; 2
-		shr			ecx,	8				; 2
-		packuswb	mm3,	mm0				; 2
-		sub			eax,	ecx				; 2
-		shl			eax,	24				; 2
-		and			edx,	0xffffff		; 2
+		psrlq		mm6,		24			; 2 mm6 = Sa
+		movq		mm2,		mm1			; 1
+		punpcklbw	mm5,		mm0			; 2 mm5 = 00 Sa 00 Si 00 Si 00 Si
+		pmullw		mm2,		mm4			; 1
+		punpcklwd	mm6,		mm6			; 2
+		psrlw		mm2,		8			; 1 mm2 = 00 SaDa 00 SaDi 00 SaDi 00 SaDi
+		psubw		mm1,		mm2			; 1
+		movd		mm4,		[edi+4]		; 2 dest     (DaDiDiDi)
+		paddw		mm1,		mm3			; 1
+		punpcklwd	mm6,		mm6			; 2 mm6 = 00 Sa 00 Sa 00 Sa 00 Sa
+		packuswb	mm1,		mm0			; 1
+		punpcklbw	mm4,		mm0			; 2 mm4 = 00 Da 00 Di 00 Di 00 Di
+		movd		[edi],		mm1			; 1 store
+		movq		mm2,		mm4			; 2
+		pmullw		mm2,		mm6			; 2
+		psrlw		mm2,		8			; 2 mm2 = 00 SaDa 00 SaDi 00 SaDi 00 SaDi
 		add			edi,	byte 8
-		or			edx,	eax				; 2
-		movd		mm4,	edx				; 2 src
+		psubw		mm4,		mm2			; 2
 		add			ebp,	byte 8
-		paddusb		mm3,	mm4				; 2 add src
+		paddw		mm4,		mm5			; 2
 		cmp			edi,	esi
-		movd		[edi+4-8],	mm3			; 2 store
-
+		packuswb	mm4,		mm0			; 2
+		movd		[edi+4-8],	mm4			; 2 store
 
 		jb			near .ploop
 
@@ -538,39 +507,22 @@ TVPAdditiveAlphaBlend_a_name:					; additive alpha blend on additive alpha
 		jae			.pexit					; jump if edi >= esi
 
 .ploop2:	; fractions
-		mov			eax,	[ebp]			; src
-		mov			edx,	eax
-		shr			eax,	24				; eax = source opa
-		movd		mm2,	eax
-		mov			ecx,	[edi]			; dest
-		punpcklwd	mm2,	mm2
-		movd		mm1,	ecx				; dest
-		punpcklwd	mm2,	mm2
-		pand		mm1,	mm7
-		shr			ecx,	24				; ecx = dest opa
-		mov			ebx,	eax
-		punpcklbw	mm1,	mm0				; mm1 = 00dd00dd00dd00dd
-		imul		ebx,	ecx
-		movq		mm3,	mm1
-		shr			ebx,	8
-		add			eax,	ecx
-		pmullw		mm1,	mm2
-		sub			eax,	ebx
 
-		psrlw		mm1,	8
-		mov			ecx,	eax
-		psubw		mm3,	mm1
-		shr			ecx,	8
-		packuswb	mm3,	mm0
-		sub			eax,	ecx
-
-		shl			eax,	24
-		and			edx,	0xffffff
-		or			edx,	eax
-
-		movd		mm4,	edx				; src
-		paddusb		mm3,	mm4				; add src
-		movd		[edi],	mm3				; store
+		movd		mm3,		[ebp]		; src      (SaSiSiSi)
+		movq		mm4,		mm3
+		psrlq		mm4,		24			; mm4 = Sa
+		punpcklbw	mm3,		mm0			; mm3 = 00 Sa 00 Si 00 Si 00 Si
+		punpcklwd	mm4,		mm4
+		movd		mm1,		[edi]		; dest     (DaDiDiDi)
+		punpcklwd	mm4,		mm4			; mm4 = 00 Sa 00 Sa 00 Sa 00 Sa
+		punpcklbw	mm1,		mm0			; mm1 = 00 Da 00 Di 00 Di 00 Di
+		movq		mm2,		mm1
+		pmullw		mm2,		mm4
+		psrlw		mm2,		8			; mm2 = 00 SaDa 00 SaDi 00 SaDi 00 SaDi
+		psubw		mm1,		mm2
+		paddw		mm1,		mm3
+		packuswb	mm1,		mm0
+		movd		[edi],		mm1			; store
 
 		add			ebp,	byte 4
 		add			edi,	byte 4
