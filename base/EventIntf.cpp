@@ -156,8 +156,14 @@ public:
 
     tTJSNI_BaseWindow * GetWindow() const { return Window; }
 
+	void MarkEmpty() { Window = NULL; }
+
+	bool IsEmpty() const { return Window == NULL; }
 };
 //---------------------------------------------------------------------------
+
+
+
 
 
 
@@ -664,6 +670,8 @@ void TVPDeliverAllEvents()
 
 
 
+
+
 //---------------------------------------------------------------------------
 // TVPPostWindowUpdate
 //---------------------------------------------------------------------------
@@ -680,7 +688,7 @@ void TVPPostWindowUpdate(tTJSNI_BaseWindow *window)
 			for(i = TVPWinUpdateEventQueue.begin();
 				i !=TVPWinUpdateEventQueue.end(); i++)
 			{
-				if(window == i->GetWindow()) return;
+				if(!i->IsEmpty() && window == i->GetWindow()) return;
 			}
 		}
 	}
@@ -694,7 +702,7 @@ void TVPPostWindowUpdate(tTJSNI_BaseWindow *window)
 			for(i = TVPWinUpdateEventQueue.begin();
 				i !=TVPWinUpdateEventQueue.end(); i++)
 			{
-				if(window == i->GetWindow())
+				if(!i->IsEmpty() && window == i->GetWindow())
 				{
 					count++;
 					if(count == 2) return;
@@ -724,12 +732,10 @@ void TVPRemoveWindowUpdate(tTJSNI_BaseWindow *window)
 	{
 		std::vector<tTVPWinUpdateEvent>::iterator i;
 		for(i = TVPWinUpdateEventQueue.begin();
-			i !=TVPWinUpdateEventQueue.end();)
+			i !=TVPWinUpdateEventQueue.end(); i++)
 		{
-			if(window == i->GetWindow())
-				i = TVPWinUpdateEventQueue.erase(i);
-			else
-				i++;
+			if(!i->IsEmpty() && window == i->GetWindow())
+				i->MarkEmpty();
 		}
 	}
 }
@@ -746,14 +752,12 @@ void TVPDeliverWindowUpdateEvents()
 	if(TVPWindowUpdateEventsDelivering) return; // does not allow re-entering
 	TVPWindowUpdateEventsDelivering = true;
 
-	std::vector<tTVPWinUpdateEvent>::const_iterator i;
-	i = TVPWinUpdateEventQueue.begin();
 	try
 	{
-		while(i != TVPWinUpdateEventQueue.end())
+		for(tjs_uint i = 0; i < TVPWinUpdateEventQueue.size(); i++)
 		{
-			i->Deliver();
-			i++;
+			if(!TVPWinUpdateEventQueue[i].IsEmpty())
+				TVPWinUpdateEventQueue[i].Deliver();
 		}
 	}
 	catch(...)
@@ -922,17 +926,14 @@ static void _TVPDeliverContinuousEvent() // internal
 
 	if(TVPContinuousEventVector.size())
 	{
-		std::vector<tTVPContinuousEventCallbackIntf *>::iterator i;
 		bool emptyflag = false;
-		i = TVPContinuousEventVector.begin();
-		while(i != TVPContinuousEventVector.end())
+		for(tjs_uint32 i = 0; i < TVPContinuousEventVector.size(); i++)
 		{
 			// note that the handler can remove itself while the event
-			if(*i)
-				(*i)->OnContinuousCallback(tick);
+			if(TVPContinuousEventVector[i])
+				TVPContinuousEventVector[i]->OnContinuousCallback(tick);
 			else
 				emptyflag = true;
-			i++;
 
 			if(TVPExclusiveEventPosted) return;  // check exclusive events
 		}
@@ -942,6 +943,7 @@ static void _TVPDeliverContinuousEvent() // internal
 			// the array has empty cell
 
 			// eliminate empty
+            std::vector<tTVPContinuousEventCallbackIntf *>::iterator i;
 			for(i = TVPContinuousEventVector.begin();
 				i !=TVPContinuousEventVector.end();)
 			{
@@ -955,33 +957,33 @@ static void _TVPDeliverContinuousEvent() // internal
 
 	if(!TVPEventDisabled && TVPContinuousHandlerVector.size())
 	{
-		std::vector<tTJSVariantClosure>::iterator i;
 		bool emptyflag = false;
-		i = TVPContinuousHandlerVector.begin();
 		tTJSVariant vtick((tjs_int64)tick);
 		tTJSVariant *pvtick = &vtick;
-		while(i != TVPContinuousHandlerVector.end())
+		for(tjs_uint i = 0; i < TVPContinuousHandlerVector.size(); i++)
 		{
-			if(i->Object)
+			if(TVPContinuousHandlerVector[i].Object)
 			{
 				tjs_error er;
 				try
 				{
 					er =
-						i->FuncCall(0, NULL, NULL, NULL, 1, &pvtick, NULL);
+						TVPContinuousHandlerVector[i].FuncCall(0, NULL, NULL, NULL, 1, &pvtick, NULL);
 				}
 				catch(...)
 				{
 					// failed
-					i->Release();
-					i->Object = i->ObjThis = NULL;
+					TVPContinuousHandlerVector[i].Release();
+					TVPContinuousHandlerVector[i].Object =
+					TVPContinuousHandlerVector[i].ObjThis = NULL;
 					throw;
 				}
 				if(TJS_FAILED(er))
 				{
 					// failed
-					i->Release();
-					i->Object = i->ObjThis = NULL;
+					TVPContinuousHandlerVector[i].Release();
+					TVPContinuousHandlerVector[i].Object =
+					TVPContinuousHandlerVector[i].ObjThis = NULL;
 					emptyflag = true;
 				}
 				if(TVPExclusiveEventPosted) return;  // check exclusive events
@@ -991,7 +993,6 @@ static void _TVPDeliverContinuousEvent() // internal
 				emptyflag = true;
 			}
 
-			i ++;
 		}
 
 		if(emptyflag)
@@ -999,6 +1000,7 @@ static void _TVPDeliverContinuousEvent() // internal
 			// the array has empty cell
 
 			// eliminate empty
+            std::vector<tTJSVariantClosure>::iterator i;
 			for(i = TVPContinuousHandlerVector.begin();
 				i !=TVPContinuousHandlerVector.end();)
 			{
@@ -1111,12 +1113,11 @@ void TVPDeliverCompactEvent(tjs_int level)
 	if(TVPCompactEventVector.size())
 	{
 		bool emptyflag = false;
-		i = TVPCompactEventVector.begin();
-		while(i != TVPCompactEventVector.end())
+		for(tjs_uint i = 0; i < TVPCompactEventVector.size(); i ++)
 		{
 			// note that the handler can remove itself while the event
-			if(*i) (*i)->OnCompact(level); else emptyflag = true;
-			i++;
+			if(TVPCompactEventVector[i])
+				TVPCompactEventVector[i]->OnCompact(level); else emptyflag = true;
 		}
 
 		if(emptyflag)
@@ -1147,7 +1148,7 @@ void TVPDeliverCompactEvent(tjs_int level)
 
 
 //---------------------------------------------------------------------------
-// tTJSNI_BaseTimer
+// tTJSNI_AsyncTrigger
 //---------------------------------------------------------------------------
 tTJSNI_AsyncTrigger::tTJSNI_AsyncTrigger()
 {
