@@ -20,6 +20,7 @@
 
 
 #include "..\krmovie.h"
+#include "dsoverlay.h"
 
 //---------------------------------------------------------------------------
 // DllMain
@@ -31,6 +32,7 @@ BOOL APIENTRY DllMain( HANDLE hModule,
 {
     return TRUE;
 }
+#if 0
 //---------------------------------------------------------------------------
 
 //---------------------------------------------------------------------------
@@ -513,10 +515,7 @@ const wchar_t*  CreateVideoOverlay(HWND callbackwin, IStream *stream,
 	return NULL;
 }
 //---------------------------------------------------------------------------
-
-
-
-
+#endif
 
 
 //---------------------------------------------------------------------------
@@ -526,8 +525,13 @@ const wchar_t* __stdcall GetVideoOverlayObject(
 	HWND callbackwin, IStream *stream, const wchar_t * streamname,
 	const wchar_t *type, unsigned __int64 size, iTVPVideoOverlay **out)
 {
-	return CreateVideoOverlay(callbackwin, stream, streamname, type,
-			size, out);
+	tTVPDSVideoOverlay	*vid;
+	vid = new tTVPDSVideoOverlay;
+	*out = vid;
+	if( vid )
+		return vid->BuildGraph( callbackwin, stream, streamname, type, size );
+	else
+		return NULL;
 }
 //---------------------------------------------------------------------------
 
