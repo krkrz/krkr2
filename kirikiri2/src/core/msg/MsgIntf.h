@@ -339,7 +339,7 @@ TVP_MSG_DECL(TVPKAGInlineScriptNotEnd,
 	"[endscript] または @endscript が見つかりません");
 
 TVP_MSG_DECL(TVPKAGSyntaxError,
-	"タグの文法エラーです。'[' や ']' の対応、\" と \" の対応、スペースの入れ忘れ、余分な改行などを確認してください");
+	"タグの文法エラーです。'[' や ']' の対応、\" と \" の対応、スペースの入れ忘れ、余分な改行、macro ～ endmacro の対応、必要な属性の不足などを確認してください");
 
 TVP_MSG_DECL(TVPKAGMacroEntityNotAvailable,
 	"マクロエンティティはマクロ外では使用できません");
