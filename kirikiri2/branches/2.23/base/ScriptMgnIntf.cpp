@@ -55,7 +55,7 @@ TJS_N("const\
 	fsfTrueTypeOnly=8, fsfUseFontFace=0x100, \
  /* tTVPLayerType */ ltBinder=0, ltCoverRect=1, ltTransparent=2, ltAdditive=3, ltSubtractive=4, ltMultiplicative=5, ltEffect=6, ltFilter=7, ltDodge=8, ltDarken=9, ltLighten=10, ltScreen=11, ltAddAlpha = 12,\
  /* tTVPBlendOperationMode */ omAdditive=ltAdditive, omSubtractive=ltSubtractive, omMultiplicative=ltMultiplicative, omDodge=ltDodge, omDarken=ltDarken, omLighten=ltLighten, omScreen=ltScreen, 	omAddAlpha = ltAddAlpha, omOpaque = ltCoverRect, \
- /* tTVPDrawFace */ dfBoth=0, dfAlpha = dfBoth, dfAddAlpha = 4, dfMain=1 , dfMask=2,dfProvince=3,\
+ /* tTVPDrawFace */ dfBoth=0, dfAlpha = dfBoth, dfAddAlpha = 4, dfMain=1, dfOpaque = dfMain, dfMask=2,dfProvince=3,\
  /* tTVPHitType */ htMask=0, htProvince=1,\
  /* tTVPScrollTransFrom */ sttLeft=0, sttTop=1, sttRight=2, sttBottom=3,\
  /* tTVPScrollTransStay */ ststNoStay=0, ststStayDest=1, ststStaySrc=2, \
