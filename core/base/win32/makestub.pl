@@ -527,6 +527,9 @@ process_exp_stub("../../visual/WindowIntf.h");
 print OFH "#include \"WindowImpl.h\"\n";
 process_exp_stub("../../visual/win32/WindowImpl.h");
 
+print OFH "#include \"voMode.h\"\n";
+process_exp_stub("../../visual/voMode.h");
+
 print OFH "#include \"TransIntf.h\"\n";
 process_exp_stub("../../visual/TransIntf.h");
 
