@@ -8,14 +8,6 @@
 //---------------------------------------------------------------------------
 // KAG Parser Utility Class
 //---------------------------------------------------------------------------
-// 2004/4/14  W.Dee          Fixed a bug in oprator =().
-// 2004/4/11  W.Dee          (The issue below is fixed)
-// 2004/2/22  W.Dee          Internal scenario buffer length becomes to be
-//                           adjusted. (FIXME: The multi-line buffer (each
-//                           line ends with a null terminator) is currently
-//                           using one ttstr, but this essentially cannot hold
-//                           multiple null characters in one buffer)
-//---------------------------------------------------------------------------
 #include "tjsCommHead.h"
 #pragma hdrstop
 
