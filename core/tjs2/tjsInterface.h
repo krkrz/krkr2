@@ -78,6 +78,7 @@ namespace TJS
 	iTJSDispatch interface
 */
 class tTJSVariant;
+class tTJSVariantString;
 class iTJSNativeInstance;
 class iTJSDispatch2
 {
@@ -166,7 +167,12 @@ public:
 		) = 0;
 
 	virtual tjs_error TJS_INTF_METHOD
-	Reserved1() = 0; // reserved.
+	PropSetByVS( // property set by tTJSVariantString, for internal use
+		tjs_uint32 flag,			// calling flag
+		tTJSVariantString *membername, // member name ( NULL for a default member )
+		const tTJSVariant *param,	// parameters
+		iTJSDispatch2 *objthis		// object as "this"
+		) = 0;
 
 	virtual tjs_error TJS_INTF_METHOD
 	Reserved2() = 0; // reserved ( may become member enumeration method... )

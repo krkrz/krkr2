@@ -130,6 +130,12 @@ public:
 	unsigned int GetSize() const { if(Nodes) return Nodes->size(); else return 0;}
 };
 //---------------------------------------------------------------------------
+// tTJSGlobalStringMap - hash map to keep constant strings shared
+//---------------------------------------------------------------------------
+extern void TJSAddRefGlobalStringMap();
+extern void TJSReleaseGlobalStringMap();
+TJS_EXP_FUNC_DEF(ttstr, TJSMapGlobalStringMap, (const ttstr & string));
+//---------------------------------------------------------------------------
 // tTJSInterCodeContext - Intermediate Code Context
 //---------------------------------------------------------------------------
 /*
@@ -536,6 +542,14 @@ public:
 	tjs_error TJS_INTF_METHOD
 		GetCount(tjs_int *result, const tjs_char *membername, tjs_uint32 *hint,
 		 iTJSDispatch2 *objthis);
+
+	tjs_error TJS_INTF_METHOD
+	PropSetByVS(tjs_uint32 flag, tTJSVariantString *mambername,
+		const tTJSVariant *param,
+		iTJSDispatch2 *objthis)
+	{
+		return TJS_E_NOTIMPL;
+	}
 
 	tjs_error TJS_INTF_METHOD
 		DeleteMember(tjs_uint32 flag, const tjs_char *membername, tjs_uint32 *hint,

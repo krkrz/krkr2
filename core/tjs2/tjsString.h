@@ -95,7 +95,7 @@ public:
 	//--------------------------------------------------------- destructor --
 	TJS_METHOD_DEF(TJS_METHOD_RET_EMPTY, ~tTJSString, ()) { if(Ptr) Ptr->Release(); }
 
-	//--------------------------------------------------------- convertion --
+	//--------------------------------------------------------- conversion --
 	TJS_CONST_METHOD_DEF(const tjs_char *, c_str, ())
 		{ return Ptr?Ptr->operator const tjs_char *():TJSNullStrPtr; }
 

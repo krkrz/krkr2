@@ -300,6 +300,13 @@ public:
 		return (ValueT*)elm->Value;
 	}
 
+	bool Find(const KeyT &key, const KeyT *& keyout, ValueT *& value) const
+	{
+		// find key
+		// return   false  if not found
+		return FindWithHash(key, HashFuncT::Make(key), keyout, value);
+	}
+
 	ValueT * FindWithHash(const KeyT &key, tjs_uint32 hash) const
 	{
 		// find key ( hash )
@@ -312,6 +319,23 @@ public:
 		return (ValueT*)elm->Value;
 	}
 
+	bool FindWithHash(const KeyT &key, tjs_uint32 hash, const KeyT *& keyout, ValueT *& value) const
+	{
+		// find key
+		// return   false  if not found
+#ifdef TJS_HS_DEBUG_CHAIN
+		hash = 0;
+#endif
+		const element * elm = InternalFindWithHash(key, hash);
+		if(elm)
+		{
+			value = (ValueT*)elm->Value;
+			keyout = (const KeyT*)elm->Key;
+			return true;
+		}
+		return false;
+	}
+
 	ValueT * FindAndTouch(const KeyT &key)
 	{
 		// find key and move it first if found
@@ -319,6 +343,13 @@ public:
 		if(!elm) return NULL;
 		CheckUpdateElementOrder((element *)elm);
 		return (ValueT*)elm->Value;
+	}
+
+	bool FindAndTouch(const KeyT &key, const KeyT *& keyout, ValueT *& value)
+	{
+		// find key ( hash )
+		// return   false  if not found
+		return FindAndTouchWithHash(key, HashFuncT::Make(key), keyout, value);
 	}
 
 
@@ -332,6 +363,21 @@ public:
 		if(!elm) return NULL;
 		CheckUpdateElementOrder((element *)elm); // force casting
 		return (ValueT*)elm->Value;
+	}
+
+	bool FindAndTouchWithHash(const KeyT &key, tjs_uint32 hash, const KeyT *& keyout, ValueT *& value)
+	{
+		// find key
+		// return   false  if not found
+		const element * elm = InternalFindWithHash(key, hash);
+		if(elm)
+		{
+			CheckUpdateElementOrder((element *)elm);
+			value = (ValueT*)elm->Value;
+			keyout = (const KeyT*)elm->Key;
+			return true;
+		}
+		return false;
 	}
 
 	bool Delete(const KeyT &key)

@@ -930,6 +930,17 @@ TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/dump)
 }
 TJS_END_NATIVE_METHOD_DECL(/*func. name*/dump)
 //----------------------------------------------------------------------
+#ifdef TJS_DEBUG_DUMP_STRING
+TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/dumpStringHeap)
+{
+	// dump all strings held by TJS2 framework
+	TJSDumpStringHeap();
+
+	return TJS_S_OK;
+}
+TJS_END_NATIVE_METHOD_DECL(/*func. name*/dumpStringHeap)
+#endif
+//----------------------------------------------------------------------
 
 	TJS_END_NATIVE_MEMBERS
 }
