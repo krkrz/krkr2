@@ -1861,6 +1861,30 @@ void tTJSNI_BaseLayer::AssignImages(tTJSNI_BaseLayer *src)
 	if(main_changed) Update(false); // update
 }
 //---------------------------------------------------------------------------
+void tTJSNI_BaseLayer::AssignMainImage(tTVPBaseBitmap *bmp)
+{
+	// assign single main bitmap image. the image size assigned must be
+	// identical to the destination layer bitmap.
+	// destination bitmap must have a layer bitmap
+
+	if(!MainImage ||
+		bmp->GetWidth() != MainImage->GetWidth() ||
+		bmp->GetHeight() != MainImage->GetHeight() )
+	{
+		// destination layer does not have a main image or
+		// the size is not identical to the source layer bitmap
+		TVPThrowInternalError;
+	}
+
+	bool main_changed = MainImage->Assign(*bmp);
+
+	if(main_changed)
+	{
+		ImageModified = true;
+		Update(false); // update
+	}
+}
+//---------------------------------------------------------------------------
 void tTJSNI_BaseLayer::SetImageLeft(tjs_int left)
 {
 	if(!MainImage) TVPThrowExceptionMessage(TVPNotDrawableLayerType);
