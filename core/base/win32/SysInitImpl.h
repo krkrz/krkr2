@@ -26,6 +26,7 @@ extern bool TVPExecuteUserConfig1();
 extern bool TVPExecuteUserConfig2();
 extern bool TVPExecuteUserConfig3();
 
+extern bool TVPTerminated;
 
 //---------------------------------------------------------------------------
 

@@ -669,6 +669,15 @@ void __fastcall TTVPMainForm::ApplicationRestore(TObject *Sender)
 //---------------------------------------------------------------------------
 void __fastcall TTVPMainForm::SystemWatchTimerTimer(TObject *Sender)
 {
+	if(TVPTerminated)
+	{
+		// this will ensure terminating the application.
+		// the WM_QUIT message disappears in some unknown situations...
+		::PostMessage(TVPMainForm->Handle, WM_USER+0x31/*dummy msg*/, 0, 0);
+		Application->Terminate();
+		::PostMessage(TVPMainForm->Handle, WM_USER+0x31/*dummy msg*/, 0, 0);
+	}
+
 	// call events
 	DWORD tick = GetTickCount();
 
