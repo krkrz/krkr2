@@ -2966,7 +2966,7 @@ $content = <<EOF;
 		((s_tmp * (color & 0x00ff00) >> $shift) & 0x00ff00);
 	s_tmp <<= (8 - $shift);
 	s_tmp -= (s_tmp >> 8); /* adjust alpha */
-	*dest = TVPAdditiveBlend_a_ca(*dest, s_tmp, s_tmp & 0xff, tmp);
+	*dest = TVPAdditiveBlend_a_ca(*dest, s_tmp, s_tmp ^ 0xff, tmp);
 	src++;
 	dest++;
 }
@@ -3058,7 +3058,7 @@ $content = <<EOF;
 		((s_tmp * (color & 0x00ff00) >> $shift) & 0x00ff00);
 	s_tmp <<= (8 - $shift);
 	s_tmp -= (s_tmp >> 8); /* adjust alpha */
-	*dest = TVPAdditiveBlend_a_ca(*dest, s_tmp, s_tmp & 0xff, tmp);
+	*dest = TVPAdditiveBlend_a_ca(*dest, s_tmp, s_tmp ^ 0xff, tmp);
 	src++;
 	dest++;
 }

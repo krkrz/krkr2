@@ -4809,7 +4809,7 @@ TVP_GL_FUNC_DECL(void, TVPApplyColorMap_a_c, (tjs_uint32 *dest, const tjs_uint8 
 		((s_tmp * (color & 0x00ff00) >> 8) & 0x00ff00);
 	s_tmp <<= (8 - 8);
 	s_tmp -= (s_tmp >> 8); /* adjust alpha */
-	*dest = TVPAdditiveBlend_a_ca(*dest, s_tmp, s_tmp & 0xff, tmp);
+	*dest = TVPAdditiveBlend_a_ca(*dest, s_tmp, s_tmp ^ 0xff, tmp);
 	src++;
 	dest++;
 }
@@ -4821,7 +4821,7 @@ TVP_GL_FUNC_DECL(void, TVPApplyColorMap_a_c, (tjs_uint32 *dest, const tjs_uint8 
 		((s_tmp * (color & 0x00ff00) >> 8) & 0x00ff00);
 	s_tmp <<= (8 - 8);
 	s_tmp -= (s_tmp >> 8); /* adjust alpha */
-	*dest = TVPAdditiveBlend_a_ca(*dest, s_tmp, s_tmp & 0xff, tmp);
+	*dest = TVPAdditiveBlend_a_ca(*dest, s_tmp, s_tmp ^ 0xff, tmp);
 	src++;
 	dest++;
 }
@@ -4833,7 +4833,7 @@ TVP_GL_FUNC_DECL(void, TVPApplyColorMap_a_c, (tjs_uint32 *dest, const tjs_uint8 
 		((s_tmp * (color & 0x00ff00) >> 8) & 0x00ff00);
 	s_tmp <<= (8 - 8);
 	s_tmp -= (s_tmp >> 8); /* adjust alpha */
-	*dest = TVPAdditiveBlend_a_ca(*dest, s_tmp, s_tmp & 0xff, tmp);
+	*dest = TVPAdditiveBlend_a_ca(*dest, s_tmp, s_tmp ^ 0xff, tmp);
 	src++;
 	dest++;
 }
@@ -4845,7 +4845,7 @@ TVP_GL_FUNC_DECL(void, TVPApplyColorMap_a_c, (tjs_uint32 *dest, const tjs_uint8 
 		((s_tmp * (color & 0x00ff00) >> 8) & 0x00ff00);
 	s_tmp <<= (8 - 8);
 	s_tmp -= (s_tmp >> 8); /* adjust alpha */
-	*dest = TVPAdditiveBlend_a_ca(*dest, s_tmp, s_tmp & 0xff, tmp);
+	*dest = TVPAdditiveBlend_a_ca(*dest, s_tmp, s_tmp ^ 0xff, tmp);
 	src++;
 	dest++;
 }
@@ -4872,7 +4872,7 @@ TVP_GL_FUNC_DECL(void, TVPApplyColorMap65_a_c, (tjs_uint32 *dest, const tjs_uint
 		((s_tmp * (color & 0x00ff00) >> 6) & 0x00ff00);
 	s_tmp <<= (8 - 6);
 	s_tmp -= (s_tmp >> 8); /* adjust alpha */
-	*dest = TVPAdditiveBlend_a_ca(*dest, s_tmp, s_tmp & 0xff, tmp);
+	*dest = TVPAdditiveBlend_a_ca(*dest, s_tmp, s_tmp ^ 0xff, tmp);
 	src++;
 	dest++;
 }
@@ -4884,7 +4884,7 @@ TVP_GL_FUNC_DECL(void, TVPApplyColorMap65_a_c, (tjs_uint32 *dest, const tjs_uint
 		((s_tmp * (color & 0x00ff00) >> 6) & 0x00ff00);
 	s_tmp <<= (8 - 6);
 	s_tmp -= (s_tmp >> 8); /* adjust alpha */
-	*dest = TVPAdditiveBlend_a_ca(*dest, s_tmp, s_tmp & 0xff, tmp);
+	*dest = TVPAdditiveBlend_a_ca(*dest, s_tmp, s_tmp ^ 0xff, tmp);
 	src++;
 	dest++;
 }
@@ -4896,7 +4896,7 @@ TVP_GL_FUNC_DECL(void, TVPApplyColorMap65_a_c, (tjs_uint32 *dest, const tjs_uint
 		((s_tmp * (color & 0x00ff00) >> 6) & 0x00ff00);
 	s_tmp <<= (8 - 6);
 	s_tmp -= (s_tmp >> 8); /* adjust alpha */
-	*dest = TVPAdditiveBlend_a_ca(*dest, s_tmp, s_tmp & 0xff, tmp);
+	*dest = TVPAdditiveBlend_a_ca(*dest, s_tmp, s_tmp ^ 0xff, tmp);
 	src++;
 	dest++;
 }
@@ -4908,7 +4908,7 @@ TVP_GL_FUNC_DECL(void, TVPApplyColorMap65_a_c, (tjs_uint32 *dest, const tjs_uint
 		((s_tmp * (color & 0x00ff00) >> 6) & 0x00ff00);
 	s_tmp <<= (8 - 6);
 	s_tmp -= (s_tmp >> 8); /* adjust alpha */
-	*dest = TVPAdditiveBlend_a_ca(*dest, s_tmp, s_tmp & 0xff, tmp);
+	*dest = TVPAdditiveBlend_a_ca(*dest, s_tmp, s_tmp ^ 0xff, tmp);
 	src++;
 	dest++;
 }
@@ -5071,7 +5071,7 @@ TVP_GL_FUNC_DECL(void, TVPApplyColorMap_ao_c, (tjs_uint32 *dest, const tjs_uint8
 		((s_tmp * (color & 0x00ff00) >> 8) & 0x00ff00);
 	s_tmp <<= (8 - 8);
 	s_tmp -= (s_tmp >> 8); /* adjust alpha */
-	*dest = TVPAdditiveBlend_a_ca(*dest, s_tmp, s_tmp & 0xff, tmp);
+	*dest = TVPAdditiveBlend_a_ca(*dest, s_tmp, s_tmp ^ 0xff, tmp);
 	src++;
 	dest++;
 }
@@ -5083,7 +5083,7 @@ TVP_GL_FUNC_DECL(void, TVPApplyColorMap_ao_c, (tjs_uint32 *dest, const tjs_uint8
 		((s_tmp * (color & 0x00ff00) >> 8) & 0x00ff00);
 	s_tmp <<= (8 - 8);
 	s_tmp -= (s_tmp >> 8); /* adjust alpha */
-	*dest = TVPAdditiveBlend_a_ca(*dest, s_tmp, s_tmp & 0xff, tmp);
+	*dest = TVPAdditiveBlend_a_ca(*dest, s_tmp, s_tmp ^ 0xff, tmp);
 	src++;
 	dest++;
 }
@@ -5095,7 +5095,7 @@ TVP_GL_FUNC_DECL(void, TVPApplyColorMap_ao_c, (tjs_uint32 *dest, const tjs_uint8
 		((s_tmp * (color & 0x00ff00) >> 8) & 0x00ff00);
 	s_tmp <<= (8 - 8);
 	s_tmp -= (s_tmp >> 8); /* adjust alpha */
-	*dest = TVPAdditiveBlend_a_ca(*dest, s_tmp, s_tmp & 0xff, tmp);
+	*dest = TVPAdditiveBlend_a_ca(*dest, s_tmp, s_tmp ^ 0xff, tmp);
 	src++;
 	dest++;
 }
@@ -5107,7 +5107,7 @@ TVP_GL_FUNC_DECL(void, TVPApplyColorMap_ao_c, (tjs_uint32 *dest, const tjs_uint8
 		((s_tmp * (color & 0x00ff00) >> 8) & 0x00ff00);
 	s_tmp <<= (8 - 8);
 	s_tmp -= (s_tmp >> 8); /* adjust alpha */
-	*dest = TVPAdditiveBlend_a_ca(*dest, s_tmp, s_tmp & 0xff, tmp);
+	*dest = TVPAdditiveBlend_a_ca(*dest, s_tmp, s_tmp ^ 0xff, tmp);
 	src++;
 	dest++;
 }
@@ -5134,7 +5134,7 @@ TVP_GL_FUNC_DECL(void, TVPApplyColorMap65_ao_c, (tjs_uint32 *dest, const tjs_uin
 		((s_tmp * (color & 0x00ff00) >> 6) & 0x00ff00);
 	s_tmp <<= (8 - 6);
 	s_tmp -= (s_tmp >> 8); /* adjust alpha */
-	*dest = TVPAdditiveBlend_a_ca(*dest, s_tmp, s_tmp & 0xff, tmp);
+	*dest = TVPAdditiveBlend_a_ca(*dest, s_tmp, s_tmp ^ 0xff, tmp);
 	src++;
 	dest++;
 }
@@ -5146,7 +5146,7 @@ TVP_GL_FUNC_DECL(void, TVPApplyColorMap65_ao_c, (tjs_uint32 *dest, const tjs_uin
 		((s_tmp * (color & 0x00ff00) >> 6) & 0x00ff00);
 	s_tmp <<= (8 - 6);
 	s_tmp -= (s_tmp >> 8); /* adjust alpha */
-	*dest = TVPAdditiveBlend_a_ca(*dest, s_tmp, s_tmp & 0xff, tmp);
+	*dest = TVPAdditiveBlend_a_ca(*dest, s_tmp, s_tmp ^ 0xff, tmp);
 	src++;
 	dest++;
 }
@@ -5158,7 +5158,7 @@ TVP_GL_FUNC_DECL(void, TVPApplyColorMap65_ao_c, (tjs_uint32 *dest, const tjs_uin
 		((s_tmp * (color & 0x00ff00) >> 6) & 0x00ff00);
 	s_tmp <<= (8 - 6);
 	s_tmp -= (s_tmp >> 8); /* adjust alpha */
-	*dest = TVPAdditiveBlend_a_ca(*dest, s_tmp, s_tmp & 0xff, tmp);
+	*dest = TVPAdditiveBlend_a_ca(*dest, s_tmp, s_tmp ^ 0xff, tmp);
 	src++;
 	dest++;
 }
@@ -5170,7 +5170,7 @@ TVP_GL_FUNC_DECL(void, TVPApplyColorMap65_ao_c, (tjs_uint32 *dest, const tjs_uin
 		((s_tmp * (color & 0x00ff00) >> 6) & 0x00ff00);
 	s_tmp <<= (8 - 6);
 	s_tmp -= (s_tmp >> 8); /* adjust alpha */
-	*dest = TVPAdditiveBlend_a_ca(*dest, s_tmp, s_tmp & 0xff, tmp);
+	*dest = TVPAdditiveBlend_a_ca(*dest, s_tmp, s_tmp ^ 0xff, tmp);
 	src++;
 	dest++;
 }
