@@ -3338,27 +3338,29 @@ void tTJSNI_BaseLayer::FillRect(const tTVPRect &rect, tjs_uint32 color)
 	tTVPRect destrect;
 	if(!TVPIntersectRect(&destrect, rect, ClipRect)) return; // out of the clipping rectangle
 
-	switch(DrawFace)
+	if(DrawFace == dfAlpha || DrawFace == dfAddAlpha || (DrawFace == dfOpaque && !HoldAlpha))
 	{
-	case dfAlpha: // main and mask
-	case dfAddAlpha: // main and mask
+		// main and mask
 		if(!MainImage) TVPThrowExceptionMessage(TVPNotDrawableLayerType);
 		color = (color & 0xff000000) + (TVPToActualColor(color&0xffffff)&0xffffff);
 		ImageModified = MainImage->Fill(destrect, color) || ImageModified;
-		break;
-
-	case dfOpaque: // main only
+	}
+	else if(DrawFace == dfOpaque)
+	{
+		// main only
 		if(!MainImage) TVPThrowExceptionMessage(TVPNotDrawableLayerType);
 		color = TVPToActualColor(color);
 		ImageModified = MainImage->FillColor(destrect, color, 255) || ImageModified;
-		break;
-
-	case dfMask: // mask only
+	}
+	else if(DrawFace == dfMask)
+	{
+		// mask only
 		if(!MainImage) TVPThrowExceptionMessage(TVPNotDrawableLayerType);
 		ImageModified = MainImage->FillMask(destrect, color&0xff) || ImageModified;
-		break;
-
-	case dfProvince: // province
+	}
+	else if(DrawFace == dfProvince)
+	{
+		// province
 		color = color & 0xff;
 		if(color)
 		{
@@ -3384,7 +3386,6 @@ void tTJSNI_BaseLayer::FillRect(const tTVPRect &rect, tjs_uint32 color)
 				}
 			}
 		}
-		break;
 	}
 
 	if(ImageLeft != 0 || ImageTop != 0)
@@ -3439,6 +3440,7 @@ void tTJSNI_BaseLayer::ColorRect(const tTVPRect &rect, tjs_uint32 color, tjs_int
 		if(!MainImage) TVPThrowExceptionMessage(TVPNotDrawableLayerType);
 		color = TVPToActualColor(color);
 		ImageModified = MainImage->FillColor(destrect, color, opa) || ImageModified;
+			// note that tTVPBaseBitmap::FillColor always holds destination alpha
 		break;
 
 	case dfMask: // mask ( opacity will be ignored )
@@ -3519,8 +3521,9 @@ void tTJSNI_BaseLayer::DrawText(tjs_int x, tjs_int y, const ttstr &text,
 
 	color = TVPToActualColor(color);
 
-	MainImage->DrawText(ClipRect, x, y, text, color, met, opa, aa, shadowlevel,
-			shadowcolor, shadowwidth, shadowofsx, shadowofsy, &r);
+	MainImage->DrawText(ClipRect, x, y, text, color, met,
+		opa, HoldAlpha, aa, shadowlevel, shadowcolor, shadowwidth,
+		shadowofsx, shadowofsy, &r);
 
 	if(r.GetCount()) ImageModified = true;
 
@@ -3598,7 +3601,7 @@ void tTJSNI_BaseLayer::CopyRect(tjs_int dx, tjs_int dy, tTJSNI_BaseLayer *src,
 		if(!MainImage) TVPThrowExceptionMessage(TVPNotDrawableLayerType);
 		if(!src->MainImage) TVPThrowExceptionMessage(TVPSourceLayerHasNoImage);
 		ImageModified = MainImage->CopyRect(dx, dy, src->MainImage, rect,
-			TVP_BB_COPY_MAIN) || ImageModified;
+			HoldAlpha?TVP_BB_COPY_MAIN:(TVP_BB_COPY_MAIN|TVP_BB_COPY_MASK)) || ImageModified;
 		break;
 
 	case dfMask:
@@ -3661,6 +3664,14 @@ void tTJSNI_BaseLayer::StretchCopy(const tTVPRect &destrect, tTJSNI_BaseLayer *s
 				type) || ImageModified;
 		break;
 
+	case dfOpaque:
+		if(!MainImage) TVPThrowExceptionMessage(TVPNotDrawableLayerType);
+		if(!src->MainImage) TVPThrowExceptionMessage(TVPSourceLayerHasNoImage);
+		ImageModified =
+			MainImage->StretchBlt(ClipRect, destrect, src->MainImage, srcrect,
+				bmCopy, 255, HoldAlpha, type) || ImageModified;
+		break;
+
 	default:
 		TVPThrowExceptionMessage(TVPNotDrawableFaceType, TJS_W("stretchCopy"));
 	}
@@ -3695,6 +3706,15 @@ void tTJSNI_BaseLayer::AffineCopy(const t2DAffineMatrix &matrix, tTJSNI_BaseLaye
 		break;
 	  }
 
+	case dfOpaque:
+	  {
+		if(!MainImage) TVPThrowExceptionMessage(TVPNotDrawableLayerType);
+		if(!src->MainImage) TVPThrowExceptionMessage(TVPSourceLayerHasNoImage);
+		updated = MainImage->AffineBlt(ClipRect, src->MainImage, srcrect, matrix,
+			bmCopy, 255, &updaterect, HoldAlpha, type);
+		break;
+	  }
+
 	default:
 		TVPThrowExceptionMessage(TVPNotDrawableFaceType, TJS_W("affineCopy"));
 	}
@@ -3724,6 +3744,15 @@ void tTJSNI_BaseLayer::AffineCopy(const tTVPPoint *points, tTJSNI_BaseLayer *src
 		if(!src->MainImage) TVPThrowExceptionMessage(TVPSourceLayerHasNoImage);
 		updated = MainImage->AffineBlt(ClipRect, src->MainImage, srcrect, points,
 			bmCopy, 255, &updaterect, false, type);
+		break;
+	  }
+
+	case dfOpaque:
+	  {
+		if(!MainImage) TVPThrowExceptionMessage(TVPNotDrawableLayerType);
+		if(!src->MainImage) TVPThrowExceptionMessage(TVPSourceLayerHasNoImage);
+		updated = MainImage->AffineBlt(ClipRect, src->MainImage, srcrect, points,
+			bmCopy, 255, &updaterect, HoldAlpha, type);
 		break;
 	  }
 

@@ -341,6 +341,8 @@ TVPFillColor_mmx_a:						; fill destination's color ( opacity will be still inta
 ;;[function_replace_by TVPCPUType & TVP_CPU_HAS_MMX] TVPConstColorAlphaBlend
 ;;void, TVPConstColorAlphaBlend_mmx_a,  (tjs_uint32 *dest, tjs_int len, tjs_uint32 color, tjs_int opa)
 
+; /* this function always holds desitination alpha channel */
+
 		function_align
 TVPConstColorAlphaBlend_mmx_a:				; constant ratio constant color alpha blender
 		push		edi
