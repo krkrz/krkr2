@@ -1,0 +1,80 @@
+/*
+	超簡易ムービープレーヤのコントロール用レイヤ
+*/
+
+class ControlLayer extends Layer
+{
+	var openButton;
+	var playButton;
+	var pauseButton;
+	var stopButton;
+
+	function ControlLayer(win, par)
+	{
+		super.Layer(win, par);
+
+		// プロパティを設定
+		setImageSize(200, 20);
+		setSizeToImageSize();
+		name = "コントロール用レイヤ";
+		visible = true;
+
+		// 各ボタンを作成
+		with(openButton = new ButtonLayer(win, this))
+		{
+			.width = 30;
+			.height = 16;
+			.left = 10;
+			.top = 2;
+			.caption = .name = "開";
+			.onClickHandler = window.openFile;
+			.visible = true;
+		}
+
+		with(playButton = new ButtonLayer(win, this))
+		{
+			.width = 30;
+			.height = 16;
+			.left = 50;
+			.top = 2;
+			.caption = .name = "再";
+			.onClickHandler = window.play;
+			.visible = true;
+		}
+
+		with(pauseButton = new ButtonLayer(win, this))
+		{
+			.width = 30;
+			.height = 16;
+			.left = 90;
+			.top = 2;
+			.caption = .name = "停";
+			.onClickHandler = window.pause;
+			.visible = true;
+		}
+
+		with(stopButton = new ButtonLayer(win, this))
+		{
+			.width = 30;
+			.height = 16;
+			.left = 130;
+			.top = 2;
+			.caption = .name = "止";
+			.onClickHandler = window.stop;
+			.visible = true;
+		}
+
+
+	}
+
+	function finalize()
+	{
+		invalidate openButton;
+		invalidate playButton;
+		invalidate pauseButton;
+		invalidate stopButton;
+		super.finalize(...);
+	}
+
+}
+

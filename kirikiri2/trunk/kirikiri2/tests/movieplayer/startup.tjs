@@ -1,0 +1,11 @@
+/*
+	簡易ムービープレーヤ
+*/
+
+Scripts.execStorage("CommandMenuItem.tjs");
+Scripts.execStorage("ButtonLayer.tjs");
+Scripts.execStorage("ControlLayer.tjs");
+Scripts.execStorage("MoviePlayerWindow.tjs");
+
+var window = new MoviePlayerWindow();
+
