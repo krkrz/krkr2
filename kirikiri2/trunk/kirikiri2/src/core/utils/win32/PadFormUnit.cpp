@@ -128,6 +128,13 @@ void __fastcall TTVPPadForm::DefaultCDPExecute(TObject *Sender, const ttstr &con
 //---------------------------------------------------------------------------
 void __fastcall TTVPPadForm::ExecuteButtonClick(TObject *Sender)
 {
+	if(FIsMainCDP)
+	{
+		// write profile to disk
+		WriteProfile();
+		TVPWriteEnvironProfile();
+	}
+
 	ttstr content(Memo->Text.c_str());
 	if(FOnExecute) FOnExecute(this, content);
 }
