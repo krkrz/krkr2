@@ -589,6 +589,243 @@ static inline bool TJSIsObjectValid(tjs_error hr)
 
 
 //---------------------------------------------------------------------------
+// tTJSNativeInstanceType
+//---------------------------------------------------------------------------
+enum tTJSNativeInstanceType
+{
+	nitClass,
+	nitMethod,
+	nitProperty
+};
+//---------------------------------------------------------------------------
+
+
+
+
+
+//---------------------------------------------------------------------------
+// tTJSNativeInstance
+//---------------------------------------------------------------------------
+class tTJSNativeInstance : public iTJSNativeInstance
+{
+public:
+	virtual tjs_error TJS_INTF_METHOD Construct(tjs_int numparams,
+		tTJSVariant **param, iTJSDispatch2 *tjs_obj) {return TJS_S_OK;}
+	virtual void TJS_INTF_METHOD Invalidate() {;}
+	virtual void TJS_INTF_METHOD Destruct() { delete this; }
+	virtual ~tTJSNativeInstance() {;};
+};
+//---------------------------------------------------------------------------
+
+
+
+
+
+//---------------------------------------------------------------------------
+// tTJSNativeClassMethod
+//---------------------------------------------------------------------------
+typedef tjs_error (TJS_INTF_METHOD *tTJSNativeClassMethodCallback)
+	(tTJSVariant *result,tjs_int numparams, tTJSVariant **param,
+	iTJSDispatch2 *objthis);
+
+
+class tTJSNativeClassMethod : public iTJSDispatch2 { };
+
+
+
+
+
+
+//---------------------------------------------------------------------------
+// tTJSNativeClassProperty
+//---------------------------------------------------------------------------
+typedef tjs_error (TJS_INTF_METHOD *tTJSNativeClassPropertyGetCallback)
+	(tTJSVariant *result, iTJSDispatch2 *objthis);
+typedef tjs_error (TJS_INTF_METHOD *tTJSNativeClassPropertySetCallback)
+	(const tTJSVariant *param, iTJSDispatch2 *objthis);
+
+
+class tTJSNativeClassProperty : public iTJSDispatch2 { };
+
+
+
+
+
+//---------------------------------------------------------------------------
+// tTJSNativeClassForPlugin : service class for plugins
+//---------------------------------------------------------------------------
+typedef iTJSNativeInstance * (TJS_INTF_METHOD *tTJSCreateNativeInstance)();
+
+
+class tTJSNativeClass : public iTJSDispatch2 { };
+class tTJSNativeClassForPlugin : public tTJSNativeClass { };
+
+
+
+
+
+//---------------------------------------------------------------------------
+// following macros are to be written in the constructor of child class
+// to define native methods/properties.
+
+
+#define TJS_NCM_REG_THIS classobj
+#define TJS_NATIVE_SET_ClassID TJS_NATIVE_CLASSID_NAME = TJS_NCM_CLASSID;
+
+
+
+#define TJS_GET_NATIVE_INSTANCE(varname, typename) \
+		if(!objthis) return TJS_E_NATIVECLASSCRASH; \
+		typename *varname; \
+		{ \
+			tjs_error hr; \
+			hr = objthis->NativeInstanceSupport(TJS_NIS_GETINSTANCE, \
+					TJS_NATIVE_CLASSID_NAME, (iTJSNativeInstance**)&varname); \
+			if(TJS_FAILED(hr)) return TJS_E_NATIVECLASSCRASH; \
+		}
+
+#define TJS_GET_NATIVE_INSTANCE_OUTER(classname, varname, typename) \
+		if(!objthis) return TJS_E_NATIVECLASSCRASH; \
+		typename *varname; \
+		{ \
+			tjs_error hr; \
+			hr = objthis->NativeInstanceSupport(TJS_NIS_GETINSTANCE, \
+					classname::ClassID, (iTJSNativeInstance**)&varname); \
+			if(TJS_FAILED(hr)) return TJS_E_NATIVECLASSCRASH; \
+		}
+
+#define TJS_BEGIN_NATIVE_MEMBERS(classname) \
+	{ \
+		static const tjs_char *__classname = TJS_W(#classname); \
+		static tjs_int32 TJS_NCM_CLASSID = \
+			TJSRegisterNativeClass(__classname); \
+		TJSNativeClassSetClassID(TJS_NCM_REG_THIS, TJS_NCM_CLASSID); \
+		TJS_NATIVE_SET_ClassID
+
+#define TJS_BEGIN_NATIVE_METHOD_DECL(name) \
+		struct NCM_##name { \
+			static tjs_error TJS_INTF_METHOD \
+			Process( tTJSVariant *result, \
+				tjs_int numparams, tTJSVariant **param,	iTJSDispatch2 *objthis) {
+
+#define TJS_END_NATIVE_METHOD_DECL_INT \
+			} \
+		};
+
+#define TJS_END_NATIVE_METHOD_DECL(name) \
+		TJS_END_NATIVE_METHOD_DECL_INT \
+		TJSNativeClassRegisterNCM(TJS_NCM_REG_THIS, TJS_W(#name), \
+		TJSCreateNativeClassMethod(NCM_##name::Process), __classname, nitMethod);
+
+#define TJS_END_NATIVE_HIDDEN_METHOD_DECL(name) \
+		TJS_END_NATIVE_METHOD_DECL_INT \
+		TJSNativeClassRegisterNCM(TJS_NCM_REG_THIS, TJS_W(#name), \
+		TJSCreateNativeClassMethod(NCM_##name::Process), __classname, nitMethod, \
+		TJS_HIDDENMEMBER);
+
+#define TJS_END_NATIVE_STATIC_METHOD_DECL(name) \
+		TJS_END_NATIVE_METHOD_DECL_INT \
+		TJSNativeClassRegisterNCM(TJS_NCM_REG_THIS, TJS_W(#name), \
+		TJSCreateNativeClassMethod(NCM_##name::Process), __classname, nitMethod, \
+		TJS_STATICMEMBER);
+
+#define TJS_END_NATIVE_METHOD_DECL_OUTER(object, name) \
+		TJS_END_NATIVE_METHOD_DECL_INT \
+		TJSNativeClassRegisterNCM((object), TJS_W(#name), \
+		TJSCreateNativeClassMethod(NCM_##name::Process), \
+		(object)->GetClassName().c_str(), nitMethod);
+
+#define TJS_DECL_EMPTY_FINALIZE_METHOD \
+	TJS_BEGIN_NATIVE_METHOD_DECL(finalize) \
+	{ return TJS_S_OK; } \
+	TJS_END_NATIVE_METHOD_DECL(finalize)
+
+#define TJS_NATIVE_CONSTRUCTOR_CALL_NATIVE_CONSTRUCTOR(varname, typename) \
+				typename *varname; \
+				{ \
+					tjs_error hr; \
+					hr = objthis->NativeInstanceSupport(TJS_NIS_GETINSTANCE, \
+						TJS_NATIVE_CLASSID_NAME, \
+						(iTJSNativeInstance**)&varname); \
+					if(TJS_FAILED(hr)) return TJS_E_NATIVECLASSCRASH; \
+					if(!varname) return TJS_E_NATIVECLASSCRASH; \
+					hr = varname->Construct(numparams, param, objthis); \
+					if(TJS_FAILED(hr)) return hr; \
+				}
+
+#define TJS_BEGIN_NATIVE_CONSTRUCTOR_DECL_NO_INSTANCE(classname) \
+		struct NCM_##classname { \
+			static tjs_error TJS_INTF_METHOD \
+			Process(tTJSVariant *result, \
+			tjs_int numparams, tTJSVariant **param,	iTJSDispatch2 *objthis) {
+
+#define TJS_BEGIN_NATIVE_CONSTRUCTOR_DECL(varname, typename, classname) \
+		TJS_BEGIN_NATIVE_CONSTRUCTOR_DECL_NO_INSTANCE(classname) \
+		TJS_NATIVE_CONSTRUCTOR_CALL_NATIVE_CONSTRUCTOR(varname, typename)
+
+#define TJS_END_NATIVE_CONSTRUCTOR_DECL(name) \
+		TJS_END_NATIVE_METHOD_DECL_INT \
+		TJSNativeClassRegisterNCM(TJS_NCM_REG_THIS, TJS_W(#name), \
+		TJSCreateNativeClassConstructor(NCM_##name::Process), __classname, \
+		nitMethod);
+
+#define TJS_END_NATIVE_STATIC_CONSTRUCTOR_DECL(name) \
+		TJS_END_NATIVE_METHOD_DECL_INT \
+		TJSNativeClassRegisterNCM(TJS_NCM_REG_THIS, TJS_W(#name), \
+		TJSCreateNativeClassConstructor(NCM_##name::Process), __classname, \
+		nitMethod, TJS_STATICMEMBER);
+
+#define TJS_BEGIN_NATIVE_PROP_DECL(name) \
+		struct NCM_##name
+
+#define TJS_END_NATIVE_PROP_DECL(name) \
+		;TJSNativeClassRegisterNCM(TJS_NCM_REG_THIS, TJS_W(#name), \
+		TJSCreateNativeClassProperty(NCM_##name::Get, NCM_##name::Set), \
+		__classname, nitProperty);
+
+#define TJS_END_NATIVE_PROP_DECL_OUTER(object, name) \
+		;TJSNativeClassRegisterNCM((object), TJS_W(#name), \
+		TJSCreateNativeClassProperty(NCM_##name::Get, NCM_##name::Set), \
+		(object)->GetClassName().c_str(), nitProperty);
+
+#define TJS_END_NATIVE_STATIC_PROP_DECL(name) \
+		;TJSNativeClassRegisterNCM(TJS_NCM_REG_THIS, TJS_W(#name), \
+		TJSCreateNativeClassProperty(NCM_##name::Get, NCM_##name::Set), \
+		__classname, nitProperty, TJS_STATICMEMBER);
+
+#define TJS_BEGIN_NATIVE_PROP_GETTER \
+		static tjs_error TJS_INTF_METHOD Get(tTJSVariant *result, \
+		iTJSDispatch2 *objthis) { \
+
+#define TJS_END_NATIVE_PROP_GETTER \
+		}
+
+#define TJS_DENY_NATIVE_PROP_GETTER \
+		static tjs_error TJS_INTF_METHOD Get(tTJSVariant *result, \
+		iTJSDispatch2 *objthis) \
+		{ return TJS_E_ACCESSDENYED; }
+
+#define TJS_BEGIN_NATIVE_PROP_SETTER \
+		static tjs_error TJS_INTF_METHOD Set(const tTJSVariant *param, \
+		iTJSDispatch2 *objthis) { \
+
+#define TJS_END_NATIVE_PROP_SETTER \
+		}
+
+#define TJS_DENY_NATIVE_PROP_SETTER \
+		static tjs_error TJS_INTF_METHOD Set(const tTJSVariant *param, \
+		iTJSDispatch2 *objthis) \
+		{ return TJS_E_ACCESSDENYED; }
+
+#define TJS_END_NATIVE_MEMBERS \
+	}
+
+#define TJS_PARAM_EXIST(num) (numparams>(num) ? param[num]->Type()!=tvtVoid : false)
+
+
+
+
+//---------------------------------------------------------------------------
 // tTJSVariantOctet
 //---------------------------------------------------------------------------
 
@@ -2395,6 +2632,12 @@ extern void * TVPImportFuncPtr70849965060a6402f41b0b11ec2bb3a7;
 extern void * TVPImportFuncPtrc72efa6b4efaa6664ae637a03e98e866;
 extern void * TVPImportFuncPtra250e46575d0df1166e1542613218a5c;
 extern void * TVPImportFuncPtra7bcff67b8d380c225b9d0d83921b3ae;
+extern void * TVPImportFuncPtrfb68a3aa16bd2eb7d7550283170321bf;
+extern void * TVPImportFuncPtr35b4299ede11f511b331b713ba9f38a8;
+extern void * TVPImportFuncPtrefe52691cff20b2dfaa16e8e16caac0a;
+extern void * TVPImportFuncPtr38eed43ef69251c34dc45695b8cf35c0;
+extern void * TVPImportFuncPtr2058b65abdfb7598910f0d584d40a19d;
+extern void * TVPImportFuncPtr1ebecaefe2ffdc811fccbac42e67e544;
 extern void * TVPImportFuncPtr09e0f0912f8d758d3736ece9478c2686;
 extern void * TVPImportFuncPtr23d61eda3959b087b618e348471e2c36;
 extern void * TVPImportFuncPtre99b22c79b5bf04f3382f959c7bb69ca;
@@ -5227,6 +5470,66 @@ inline const tjs_char * TJSFindNativeClassName(tjs_int32 id)
 	}
 	typedef const tjs_char * (__stdcall * __functype)(tjs_int32);
 	return ((__functype)(TVPImportFuncPtra7bcff67b8d380c225b9d0d83921b3ae))(id);
+}
+inline tTJSNativeClassMethod * TJSCreateNativeClassMethod(tTJSNativeClassMethodCallback callback)
+{
+	if(!TVPImportFuncPtrfb68a3aa16bd2eb7d7550283170321bf)
+	{
+		static char funcname[] = "tTJSNativeClassMethod * ::TJSCreateNativeClassMethod(tTJSNativeClassMethodCallback)";
+		TVPImportFuncPtrfb68a3aa16bd2eb7d7550283170321bf = TVPGetImportFuncPtr(funcname);
+	}
+	typedef tTJSNativeClassMethod * (__stdcall * __functype)(tTJSNativeClassMethodCallback);
+	return ((__functype)(TVPImportFuncPtrfb68a3aa16bd2eb7d7550283170321bf))(callback);
+}
+inline tTJSNativeClassMethod * TJSCreateNativeClassConstructor(tTJSNativeClassMethodCallback callback)
+{
+	if(!TVPImportFuncPtr35b4299ede11f511b331b713ba9f38a8)
+	{
+		static char funcname[] = "tTJSNativeClassMethod * ::TJSCreateNativeClassConstructor(tTJSNativeClassMethodCallback)";
+		TVPImportFuncPtr35b4299ede11f511b331b713ba9f38a8 = TVPGetImportFuncPtr(funcname);
+	}
+	typedef tTJSNativeClassMethod * (__stdcall * __functype)(tTJSNativeClassMethodCallback);
+	return ((__functype)(TVPImportFuncPtr35b4299ede11f511b331b713ba9f38a8))(callback);
+}
+inline tTJSNativeClassProperty * TJSCreateNativeClassProperty(tTJSNativeClassPropertyGetCallback get , tTJSNativeClassPropertySetCallback set)
+{
+	if(!TVPImportFuncPtrefe52691cff20b2dfaa16e8e16caac0a)
+	{
+		static char funcname[] = "tTJSNativeClassProperty * ::TJSCreateNativeClassProperty(tTJSNativeClassPropertyGetCallback,tTJSNativeClassPropertySetCallback)";
+		TVPImportFuncPtrefe52691cff20b2dfaa16e8e16caac0a = TVPGetImportFuncPtr(funcname);
+	}
+	typedef tTJSNativeClassProperty * (__stdcall * __functype)(tTJSNativeClassPropertyGetCallback , tTJSNativeClassPropertySetCallback);
+	return ((__functype)(TVPImportFuncPtrefe52691cff20b2dfaa16e8e16caac0a))(get, set);
+}
+inline void TJSNativeClassRegisterNCM(tTJSNativeClass * cls , const tjs_char * name , iTJSDispatch2 * dsp , const tjs_char * classname , tTJSNativeInstanceType type , tjs_uint32 flags = 0)
+{
+	if(!TVPImportFuncPtr38eed43ef69251c34dc45695b8cf35c0)
+	{
+		static char funcname[] = "void ::TJSNativeClassRegisterNCM(tTJSNativeClass *,const tjs_char *,iTJSDispatch2 *,const tjs_char *,tTJSNativeInstanceType,tjs_uint32)";
+		TVPImportFuncPtr38eed43ef69251c34dc45695b8cf35c0 = TVPGetImportFuncPtr(funcname);
+	}
+	typedef void (__stdcall * __functype)(tTJSNativeClass *, const tjs_char *, iTJSDispatch2 *, const tjs_char *, tTJSNativeInstanceType , tjs_uint32);
+	((__functype)(TVPImportFuncPtr38eed43ef69251c34dc45695b8cf35c0))(cls, name, dsp, classname, type, flags);
+}
+inline void TJSNativeClassSetClassID(tTJSNativeClass * cls , tjs_int32 classid)
+{
+	if(!TVPImportFuncPtr2058b65abdfb7598910f0d584d40a19d)
+	{
+		static char funcname[] = "void ::TJSNativeClassSetClassID(tTJSNativeClass *,tjs_int32)";
+		TVPImportFuncPtr2058b65abdfb7598910f0d584d40a19d = TVPGetImportFuncPtr(funcname);
+	}
+	typedef void (__stdcall * __functype)(tTJSNativeClass *, tjs_int32);
+	((__functype)(TVPImportFuncPtr2058b65abdfb7598910f0d584d40a19d))(cls, classid);
+}
+inline tTJSNativeClassForPlugin * TJSCreateNativeClassForPlugin(const ttstr & name , tTJSCreateNativeInstance createinstance)
+{
+	if(!TVPImportFuncPtr1ebecaefe2ffdc811fccbac42e67e544)
+	{
+		static char funcname[] = "tTJSNativeClassForPlugin * ::TJSCreateNativeClassForPlugin(const ttstr &,tTJSCreateNativeInstance)";
+		TVPImportFuncPtr1ebecaefe2ffdc811fccbac42e67e544 = TVPGetImportFuncPtr(funcname);
+	}
+	typedef tTJSNativeClassForPlugin * (__stdcall * __functype)(const ttstr &, tTJSCreateNativeInstance);
+	return ((__functype)(TVPImportFuncPtr1ebecaefe2ffdc811fccbac42e67e544))(name, createinstance);
 }
 inline void TJSThrowNullAccess()
 {

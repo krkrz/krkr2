@@ -59,7 +59,7 @@ const tjs_char * TJSFindNativeClassName(tjs_int32 id)
 //---------------------------------------------------------------------------
 // tTJSNativeClassMethod
 //---------------------------------------------------------------------------
-tTJSNativeClassMethod::tTJSNativeClassMethod(tCallback processfunc)
+tTJSNativeClassMethod::tTJSNativeClassMethod(tTJSNativeClassMethodCallback processfunc)
 {
 	Process = processfunc;
 	if(TJSObjectHashMapEnabled()) TJSAddObjectHashRecord(this);
@@ -105,6 +105,12 @@ tjs_error TJS_INTF_METHOD
 	return er;
 }
 //---------------------------------------------------------------------------
+tTJSNativeClassMethod * TJSCreateNativeClassMethod
+	(tTJSNativeClassMethodCallback callback)
+{
+	return new tTJSNativeClassMethod(callback);
+}
+//---------------------------------------------------------------------------
 
 
 
@@ -132,13 +138,21 @@ tjs_error  TJS_INTF_METHOD
 	return er;
 }
 //---------------------------------------------------------------------------
+tTJSNativeClassMethod * TJSCreateNativeClassConstructor
+	(tTJSNativeClassMethodCallback callback)
+{
+	return new tTJSNativeClassConstructor(callback);
+}
+//---------------------------------------------------------------------------
 
 
 
 //---------------------------------------------------------------------------
 // tTJSNativeClassProperty
 //---------------------------------------------------------------------------
-tTJSNativeClassProperty::tTJSNativeClassProperty(tGetCallback get, tSetCallback set)
+tTJSNativeClassProperty::tTJSNativeClassProperty(
+	tTJSNativeClassPropertyGetCallback get,
+	tTJSNativeClassPropertySetCallback set)
 {
 	Get = get;
 	Set = set;
@@ -207,6 +221,13 @@ tTJSNativeClassProperty::PropSet(tjs_uint32 flag, const tjs_char *membername,
 	}
 
 	return er;
+}
+//---------------------------------------------------------------------------
+tTJSNativeClassProperty * TJSCreateNativeClassProperty(
+	tTJSNativeClassPropertyGetCallback get,
+	tTJSNativeClassPropertySetCallback set)
+{
+	return new tTJSNativeClassProperty(get, set);
 }
 //---------------------------------------------------------------------------
 
