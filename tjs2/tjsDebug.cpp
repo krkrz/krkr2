@@ -11,6 +11,7 @@
 #include "tjsCommHead.h"
 #pragma hdrstop
 
+#include <algorithm>
 #include "tjsDebug.h"
 #include "tjsHashSearch.h"
 #include "tjsInterCodeGen.h"
