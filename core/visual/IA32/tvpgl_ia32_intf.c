@@ -45,6 +45,10 @@ if(TVPCPUType & TVP_CPU_HAS_MMX)
 if(TVPCPUType & TVP_CPU_HAS_MMX)
 	 TVPAdjustGamma_a =  TVPAdjustGamma_a_mmx_a;
 if(TVPCPUType & TVP_CPU_HAS_MMX)
+	 TVPLinTransCopy =  TVPLinTransCopy_mmx_a;
+if(TVPCPUType & TVP_CPU_HAS_MMX)
+	 TVPLinTransConstAlphaBlend =  TVPLinTransConstAlphaBlend_mmx_a;
+if(TVPCPUType & TVP_CPU_HAS_MMX)
 	 TVPAlphaBlend =  TVPAlphaBlend_mmx_a;
 if(TVPCPUType & TVP_CPU_HAS_MMX)
 	 TVPAlphaBlend_o =  TVPAlphaBlend_o_mmx_a;
@@ -129,6 +133,28 @@ if(TVPCPUType & TVP_CPU_HAS_MMX)
 if(TVPCPUType & TVP_CPU_HAS_MMX)
 	 TVPScreenBlend_HDA_o =  TVPScreenBlend_HDA_o_mmx_a;
 if(TVPCPUType & TVP_CPU_HAS_MMX)
+	 TVPStretchCopy =  TVPStretchCopy_mmx_a;
+if(TVPCPUType & TVP_CPU_HAS_MMX)
+	 TVPStretchConstAlphaBlend =  TVPStretchConstAlphaBlend_mmx_a;
+if(TVPCPUType & TVP_CPU_HAS_MMX)
+	 TVPStretchAlphaBlend =  TVPStretchAlphaBlend_mmx_a;
+if(TVPCPUType & TVP_CPU_HAS_MMX)
+	 TVPStretchAdditiveAlphaBlend =  TVPStretchAdditiveAlphaBlend_mmx_a;
+if(TVPCPUType & TVP_CPU_HAS_MMX)
+	 TVPFastLinearInterpV2 =  TVPFastLinearInterpV2_mmx_a;
+if(TVPCPUType & TVP_CPU_HAS_MMX)
+	 TVPFastLinearInterpH2F =  TVPFastLinearInterpH2F_mmx_a;
+if(TVPCPUType & TVP_CPU_HAS_MMX)
+	 TVPFastLinearInterpH2B =  TVPFastLinearInterpH2B_mmx_a;
+if(TVPCPUType & TVP_CPU_HAS_MMX)
+	 TVPInterpStretchCopy =  TVPInterpStretchCopy_mmx_a;
+if(TVPCPUType & TVP_CPU_HAS_MMX)
+	 TVPInterpStretchConstAlphaBlend =  TVPInterpStretchConstAlphaBlend_mmx_a;
+if(TVPCPUType & TVP_CPU_HAS_MMX)
+	 TVPInterpStretchAdditiveAlphaBlend =  TVPInterpStretchAdditiveAlphaBlend_mmx_a;
+if(TVPCPUType & TVP_CPU_HAS_MMX)
+	 TVPInterpStretchAdditiveAlphaBlend_o =  TVPInterpStretchAdditiveAlphaBlend_o_mmx_a;
+if(TVPCPUType & TVP_CPU_HAS_MMX)
 	 TVPSubBlend =  TVPSubBlend_mmx_a;
 if(TVPCPUType & TVP_CPU_HAS_MMX)
 	 TVPSubBlend_HDA =  TVPSubBlend_HDA_mmx_a;
@@ -158,32 +184,6 @@ if(TVPCPUType & TVP_CPU_HAS_EMMX && TVPCPUType & TVP_CPU_HAS_MMX)
 	 TVPTLG6DecodeGolombValuesForFirst =  TVPTLG6DecodeGolombValuesForFirst_emmx_a;
 if(TVPCPUType & TVP_CPU_HAS_EMMX && TVPCPUType & TVP_CPU_HAS_MMX)
 	 TVPTLG6DecodeGolombValues =  TVPTLG6DecodeGolombValues_emmx_a;
-if(TVPCPUType & TVP_CPU_HAS_MMX)
-	 TVPStretchCopy =  TVPStretchCopy_mmx_a;
-if(TVPCPUType & TVP_CPU_HAS_MMX)
-	 TVPStretchConstAlphaBlend =  TVPStretchConstAlphaBlend_mmx_a;
-if(TVPCPUType & TVP_CPU_HAS_MMX)
-	 TVPStretchAlphaBlend =  TVPStretchAlphaBlend_mmx_a;
-if(TVPCPUType & TVP_CPU_HAS_MMX)
-	 TVPStretchAdditiveAlphaBlend =  TVPStretchAdditiveAlphaBlend_mmx_a;
-if(TVPCPUType & TVP_CPU_HAS_MMX)
-	 TVPFastLinearInterpV2 =  TVPFastLinearInterpV2_mmx_a;
-if(TVPCPUType & TVP_CPU_HAS_MMX)
-	 TVPFastLinearInterpH2F =  TVPFastLinearInterpH2F_mmx_a;
-if(TVPCPUType & TVP_CPU_HAS_MMX)
-	 TVPFastLinearInterpH2B =  TVPFastLinearInterpH2B_mmx_a;
-if(TVPCPUType & TVP_CPU_HAS_MMX)
-	 TVPLinTransCopy =  TVPLinTransCopy_mmx_a;
-if(TVPCPUType & TVP_CPU_HAS_MMX)
-	 TVPLinTransConstAlphaBlend =  TVPLinTransConstAlphaBlend_mmx_a;
-if(TVPCPUType & TVP_CPU_HAS_MMX)
-	 TVPInterpStretchCopy =  TVPInterpStretchCopy_mmx_a;
-if(TVPCPUType & TVP_CPU_HAS_MMX)
-	 TVPInterpStretchConstAlphaBlend =  TVPInterpStretchConstAlphaBlend_mmx_a;
-if(TVPCPUType & TVP_CPU_HAS_MMX)
-	 TVPInterpStretchAdditiveAlphaBlend =  TVPInterpStretchAdditiveAlphaBlend_mmx_a;
-if(TVPCPUType & TVP_CPU_HAS_MMX)
-	 TVPInterpStretchAdditiveAlphaBlend_o =  TVPInterpStretchAdditiveAlphaBlend_o_mmx_a;
 if(TVPCPUType & TVP_CPU_HAS_MMX)
 	 TVPInitUnivTransBlendTable =  TVPInitUnivTransBlendTable_mmx_c;
 if(TVPCPUType & TVP_CPU_HAS_MMX)
