@@ -673,10 +673,10 @@ public:
 		const tTVPRect &rect, tTVPBBStretchType mode = stNearest);
 
 	void AffineCopy(const t2DAffineMatrix &matrix, tTJSNI_BaseLayer *src,
-		const tTVPRect &srcrect, tTVPBBStretchType mode = stNearest);
+		const tTVPRect &srcrect, tTVPBBStretchType mode = stNearest, bool clear = false);
 
 	void AffineCopy(const tTVPPointD *points, tTJSNI_BaseLayer *src,
-		const tTVPRect &srcrect, tTVPBBStretchType mode = stNearest);
+		const tTVPRect &srcrect, tTVPBBStretchType mode = stNearest, bool clear = false);
 
 	void PileRect(tjs_int dx, tjs_int dy, tTJSNI_BaseLayer *src,
 		const tTVPRect &rect, tjs_int opacity = 255);
