@@ -66,14 +66,14 @@ tTJSString TJSVariantToReadableString(const tTJSVariant &val,
 	case tvtInteger:
 	  {
 		tTJSString str(TJS_W("(int)"));
-		str += (const TJS::tTJSString&)val;
+		str += (tTJSString)val;
 		TJSTrimStringLength(str, maxlen);
 		return str;
 	  }
 	case tvtReal:
 	  {
 		tTJSString str(TJS_W("(real)"));
-		str += (const TJS::tTJSString&)val;
+		str += (tTJSString)val;
 		TJSTrimStringLength(str, maxlen);
 		return str;
 	  }
