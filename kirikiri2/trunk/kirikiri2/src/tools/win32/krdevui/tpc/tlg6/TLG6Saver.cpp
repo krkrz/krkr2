@@ -238,7 +238,7 @@
 
 	参考 :
 		Golomb codes
-		http://www.matsusaka-u.ac.jp/~okumura/compression/golomb/
+		http://oku.edu.mie-u.ac.jp/~okumura/compression/golomb/
 		松阪大学教授 奥村晴彦氏によるゴロム符号の簡単な解説
 */
 
