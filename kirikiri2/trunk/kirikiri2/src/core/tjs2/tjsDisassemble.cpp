@@ -472,6 +472,11 @@ void tTJSInterCodeContext::Disassemble(
 			size = 3;
 			break;
 
+		case VM_DEBUGGER:
+			msg.printf(TJS_W("debugger"));
+			size = 1;
+			break;
+
 		default:
 			msg.printf(TJS_W("unknown instruction %d"), CodeArea[i]);
 			size = 1;

@@ -572,6 +572,14 @@
 書式: <tt>addci %dest, %info</tt><r/><r/>
 　%dest で表されるオブジェクトのクラスインスタンス情報に %info を追加します。
 </dd>
+
+<dt><kw>debugger</kw><r/>(call debugger)</dt>
+<dd>
+書式: <tt>debugger</tt><r/><r/>
+　実行を中断し、デバッガを呼び出します。現バージョンの実装では、TJS2デバッガではなく、ネイティブなデバッガを呼び出します。
+</dd>
+
+
 </dl>
 
 </para>
