@@ -497,6 +497,26 @@ class KAGWindow extends Window
 	function shutdown()
 	{
 		// ウィンドウを閉じるが、終了確認を行わない
+		// このメソッド内で close をすると、様々な
+		// オブジェクトが無効化されてしまい、この
+		// 関数から戻った先でエラーが発生する。
+		// そのため、いったん AsyncTrigger を介して、
+		// 全てのメソッドから帰ったあとにシャットダウン
+		// 処理を行う。
+		global.shutdownTrigger =
+			new AsyncTrigger(handleShutdown, '');
+		global.shutdownTrigger.cached = true;
+		global.shutdownTrigger.trigger();
+		if(conductor.status == conductor.mRun)
+			conductor.interrupt();
+			// コンダクタが走行中の時は
+			// コンダクタに中断を伝える
+	}
+
+	function handleShutdown()
+	{
+		// shutdown() からのシャットダウン要求を
+		// 実際に処理するメソッド
 		var askOnClose_save = askOnClose;
 		askOnClose = false;
 		close();
