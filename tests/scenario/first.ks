@@ -1,3 +1,7 @@
+@call storage="../kag3plugin/windowzoom/scenario/windowzoom.ks"
+@jump storage="buttontest.ks"
+@s
+
 @jump storage=lmovietest.ks
 ;@jump storage=movietest.ks
 
