@@ -49,7 +49,8 @@ __fastcall TFolderSelectorForm::TFolderSelectorForm(TComponent* Owner)
 	PageScroller->Top = Label2->Top;
 	PageScroller->Left = Label2->Left + Label2->Width;
 	PageScroller->Width = ClientWidth - (SPACER*2+Label2->Width);
-
+	StatusBar1->Left = ClientWidth - StatusBar1->Width;
+	StatusBar1->Top = ClientHeight - StatusBar1->Height;
 }
 //---------------------------------------------------------------------------
 
