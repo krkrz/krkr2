@@ -3,9 +3,8 @@
 <PROJECT>
   <MACROS>
     <VERSION value="BCB.05.03"/>
-    <PROJECT value="..\..\..\..\environ\win32\plugin\basetest.dll"/>
-    <OBJFILES value="..\..\..\..\environ\win32\intermediate\Main.obj 
-      ..\..\..\..\environ\win32\intermediate\tp_stub.obj"/>
+    <PROJECT value="..\..\..\..\bin\win32\plugin\basetest.dll"/>
+    <OBJFILES value="Main.obj ..\tp_stub.obj"/>
     <RESFILES value=""/>
     <DEFFILE value=""/>
     <RESDEPEN value="$(RESFILES)"/>
@@ -30,12 +29,10 @@
   <OPTIONS>
     <CFLAG1 value="-WD -O2 -H=$(BCB)\lib\vcl50.csm -Hc -Vx -Ve -ff -X- -a4 -6 -b- -k- -y -v 
       -vi -tWD -tWM -c"/>
-    <PFLAGS value="-N2..\..\..\..\environ\win32\intermediate 
-      -N0..\..\..\..\environ\win32\intermediate -$Y- -$L- -$D- -v -JPHNE -M"/>
+    <PFLAGS value="-$Y- -$L- -$D- -v -JPHNE -M"/>
     <RFLAGS value=""/>
     <AFLAGS value="/mx /w2 /zn"/>
-    <LFLAGS value="-I..\..\..\..\environ\win32\intermediate -D&quot;&quot; -GC&quot;(--has-option--)&quot; -aa 
-      -Tpd -x -Gn -Gi -v"/>
+    <LFLAGS value="-D&quot;&quot; -GC&quot;(--has-option--)&quot; -aa -Tpd -x -Gn -Gi -v"/>
   </OPTIONS>
   <LINKER>
     <ALLOBJ value="c0d32.obj $(OBJFILES)"/>
@@ -98,11 +95,12 @@ Item0=..\..\..\..\environ\win32\intermediate
 Item1=c:\Program Files\Borland\CBuilder5\Projects\tvp2win32\environ\win32\intermediate
 
 [HistoryLists\hlFinalOutputDir]
-Count=4
-Item0=..\..\..\..\environ\win32\plugin\
-Item1=..\..\..\..\environ\win32\plugin
-Item2=c:\Program Files\Borland\CBuilder5\Projects\tvp2win32\environ\win32\plugin\
-Item3=c:\Program Files\Borland\CBuilder5\Projects\tvp2win32\environ\win32\plugin
+Count=5
+Item0=..\..\..\..\bin\win32\plugin\
+Item1=..\..\..\..\environ\win32\plugin\
+Item2=..\..\..\..\environ\win32\plugin
+Item3=c:\Program Files\Borland\CBuilder5\Projects\tvp2win32\environ\win32\plugin\
+Item4=c:\Program Files\Borland\CBuilder5\Projects\tvp2win32\environ\win32\plugin
 
 [Debugging]
 DebugSourceDirs=$(BCB)\source\vcl
