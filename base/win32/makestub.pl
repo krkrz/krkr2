@@ -335,7 +335,7 @@ sub process_exp_stub
 undef($/);
 @func_list = ();
 
-open(OFH, ">FuncStubs.h") or die;
+open(OFH, ">FuncStubs.~h") or die;
 
 print OFH $copyright;
 
@@ -345,7 +345,7 @@ extern void TVPExportFunctions();
 
 EOF
 
-open(OFH, ">FuncStubs.cpp") or die;
+open(OFH, ">FuncStubs.~cpp") or die;
 
 print OFH $copyright;
 
