@@ -43,6 +43,10 @@ public:
 			long *param2, bool *got) = 0;
 
 // Start:	Add:	T.Imoto
+	virtual const wchar_t* __stdcall FreeEventParams(long evcode, long param1, long param2) = 0;
+	virtual const wchar_t* __stdcall BuildGraph( HWND callbackwin, IStream *stream,
+	const wchar_t * streamname, const wchar_t *type, unsigned __int64 size ) = 0;
+
 	virtual const wchar_t* __stdcall Rewind() = 0;
 	virtual const wchar_t* __stdcall SetFrame( int f ) = 0;
 	virtual const wchar_t* __stdcall GetFrame( int *f ) = 0;
@@ -50,21 +54,47 @@ public:
 	virtual const wchar_t* __stdcall GetNumberOfFrame( int *f ) = 0;
 	virtual const wchar_t* __stdcall GetTotalTime( __int64 *t ) = 0;
 
-	virtual const wchar_t* __stdcall Update( class tTJSNI_BaseLayer *l1, class tTJSNI_BaseLayer *l2 ) = 0;
+//	virtual const wchar_t* __stdcall Update( class tTJSNI_BaseLayer *l1, class tTJSNI_BaseLayer *l2 ) = 0;
+	
+	virtual const wchar_t* __stdcall GetVideoSize( long *width, long *height ) = 0;
+	virtual const wchar_t* __stdcall GetFrontBuffer( BYTE **buff ) = 0;
+	virtual const wchar_t* __stdcall SetVideoBuffer( BYTE *buff1, BYTE *buff2, long size ) = 0;
 // End:	Add:	T.Imoto
 };
 //---------------------------------------------------------------------------
 
+// Start:	Add:	T.Imoto
+//---------------------------------------------------------------------------
+// tTVPGetVideoOverlayObjectParam
+//---------------------------------------------------------------------------
+struct tTVPGetVideoOverlayObjectParam
+{
+	HWND		callbackwin;
+	IStream		*stream;
+	const wchar_t	*streamname;
+	const wchar_t	*type;
+	unsigned __int64	size;
+	iTVPVideoOverlay	**out;
+	enum tTVPVideoOverlayMode	mode;
+};
+//---------------------------------------------------------------------------
+// End:		Add:	T.Imoto
 //---------------------------------------------------------------------------
 typedef void (__stdcall *tGetAPIVersion)(DWORD *version);
 typedef const wchar_t*  (__stdcall *tGetVideoOverlayObject)(
 	HWND callbackwin, IStream *stream, const wchar_t * streamname,
 	const wchar_t *type, unsigned __int64 size, iTVPVideoOverlay **out);
+// Start:	Add:	T.Imoto
+typedef const wchar_t*  (__stdcall *tGetVideoOverlayObjectByParam)( struct tTVPGetVideoOverlayObjectParam *param );
+// End:		Add:	T.Imoto
 //---------------------------------------------------------------------------
 
 //---------------------------------------------------------------------------
 #define WM_GRAPHNOTIFY  (WM_USER+15)
 #define WM_CALLBACKCMD  (WM_USER+16)
+// Start:	Add:	T.Imoto
+#define EC_UPDATE		(EC_USER+1)
+// End:		Add:	T.Imoto
 //---------------------------------------------------------------------------
 
 
