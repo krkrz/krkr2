@@ -3,7 +3,7 @@
 <PROJECT>
   <MACROS>
     <VERSION value="BCB.05.03"/>
-    <PROJECT value="tvpwin32.exe"/>
+    <PROJECT value="..\..\..\..\bin\win32\tvpwin32.exe"/>
     <OBJFILES value="intermediate\tvpwin32.obj intermediate\WideNativeFuncs.obj 
       intermediate\DetectCPU.obj intermediate\tjsInterface.obj 
       intermediate\tjsVariant.obj intermediate\tjsVariantString.obj 
@@ -56,8 +56,8 @@
       intermediate\FontSelectFormUnit.obj intermediate\VersionFormUnit.obj 
       intermediate\MsgIntf.obj intermediate\MsgImpl.obj 
       intermediate\ScriptMgnIntf.obj intermediate\FuncStubs.obj 
-      intermediate\OptionsDesc.obj intermediate\ConfMainFrameUnit.obj 
-      intermediate\ConfSettingsUnit.obj"/>
+      intermediate\OptionsDesc.obj intermediate\ConfSettingsUnit.obj 
+      intermediate\ConfMainFrameUnit.obj"/>
     <RESFILES value="tvpwin32.res HBeamCur.res"/>
     <DEFFILE value="tvpwin32.def"/>
     <RESDEPEN value="$(RESFILES) HaltWarnFormUnit.dfm ..\..\utils\win32\ConsoleFormUnit.dfm 
@@ -65,13 +65,13 @@
       ..\..\visual\win32\WindowFormUnit.dfm 
       ..\..\visual\win32\MenuContainerFormUnit.dfm 
       ..\..\visual\win32\FontSelectFormUnit.dfm VersionFormUnit.dfm 
-      krdevui\ConfMainFrameUnit.dfm krdevui\ConfSettingsUnit.dfm"/>
+      ..\..\..\tools\win32\krdevui\ConfMainFrameUnit.dfm"/>
     <LIBFILES value="..\..\..\..\Lib\zlib.lib ..\..\..\..\Lib\deelibpng.lib 
       ..\..\..\..\Lib\libjpeg2.lib ..\..\visual\IA32\tvpgl_ia32.lib"/>
     <LIBRARIES value="VCLX50.lib Vcl50.lib"/>
     <SPARELIBS value="Vcl50.lib VCLX50.lib"/>
     <PACKAGES value="Vcl50.bpi Vclx50.bpi"/>
-    <PATHCPP value=".;..\..\tjs2;..\..\visual;..\..\visual\win32;..\..\visual\IA32;..\..\utils;..\..\utils\win32;..\..\base;..\..\base\win32;..\..\sound;..\..\sound\win32;..\..\msg;..\..\msg\win32;krdevui"/>
+    <PATHCPP value=".;..\..\tjs2;..\..\visual;..\..\visual\win32;..\..\visual\IA32;..\..\utils;..\..\utils\win32;..\..\base;..\..\base\win32;..\..\sound;..\..\sound\win32;..\..\msg;..\..\msg\win32;..\..\..\tools\win32\krdevui"/>
     <PATHPAS value=".;"/>
     <PATHRC value=".;"/>
     <PATHASM value=".;"/>
@@ -81,8 +81,8 @@
     <USERDEFINES value="TJS_SUPPORT_VCL;TJS_TEXT_OUT_CRLF;TJS_JP_LOCALIZED;TJS_NO_DEBUG_PROFILE_TIME;TVP_NO_CHECK_WIDE_CHAR_SIZE;TVP_REPORT_HW_EXCEPTION;TVP_SUPPORT_ERI;TVP_SUPPORT_KPI;TVP_SUPPORT_OLD_WAVEUNPACKER;TVP_ENVIRON;_DEBUG"/>
     <SYSDEFINES value="NO_STRICT"/>
     <MAINSOURCE value="tvpwin32.cpp"/>
-    <INCLUDEPATH value="krdevui;..\..\..\..\Bin;..\..\sound;..\..\sound\win32;..\..\msg\win32;..\..\visual\win32;..\..\visual;..\..\base\win32;..\..\base;..\..\msg;..\..\utils\win32;..\..\utils;..\..\base\storage;..\..\tjs2;..\..\visual\window;..\..\..;..\..\visual\IA32;$(BCB)\include;$(BCB)\include\vcl;$(BCB)\include\libjpeg2;$(BCB)\include\libpng;$(BCB)\include\erina"/>
-    <LIBPATH value="krdevui;..\..\visual\IA32;..\..\..\..\Bin;..\..\sound;..\..\sound\win32;..\..\msg\win32;..\..\visual\win32;$(BCB)\Projects\Lib;..\..\visual;..\..\base\win32;..\..\base;..\..\base\storage\win32;..\..\msg;..\..\utils\win32;..\..\utils;..\..\base\storage;..\..\tjs2;..\..\visual\window;..\..\..;$(BCB)\lib\obj;$(BCB)\lib"/>
+    <INCLUDEPATH value="..\..\..\tools\win32\krdevui;krdevui;..\..\..\..\Bin;..\..\sound;..\..\sound\win32;..\..\msg\win32;..\..\visual\win32;..\..\visual;..\..\base\win32;..\..\base;..\..\msg;..\..\utils\win32;..\..\utils;..\..\base\storage;..\..\tjs2;..\..\visual\window;..\..\..;..\..\visual\IA32;$(BCB)\include;$(BCB)\include\vcl;$(BCB)\include\libjpeg2;$(BCB)\include\libpng;$(BCB)\include\erina"/>
+    <LIBPATH value="..\..\..\tools\win32\krdevui;krdevui;..\..\visual\IA32;..\..\..\..\Bin;..\..\sound;..\..\sound\win32;..\..\msg\win32;..\..\visual\win32;$(BCB)\Projects\Lib;..\..\visual;..\..\base\win32;..\..\base;..\..\base\storage\win32;..\..\msg;..\..\utils\win32;..\..\utils;..\..\base\storage;..\..\tjs2;..\..\visual\window;..\..\..;$(BCB)\lib\obj;$(BCB)\lib"/>
     <WARNINGS value="-wprc -wucp -w-par -w-8027 -w-8026 -wcln -wamp -wamb"/>
   </MACROS>
   <OPTIONS>
@@ -91,7 +91,7 @@
     <PFLAGS value="-N2intermediate -N0intermediate -$Y+ -$W -$O- -v -JPHNE -M"/>
     <RFLAGS value=""/>
     <AFLAGS value="/mx /mv64 /m5 /w2 /zi /l /z"/>
-    <LFLAGS value="-B:0x400000 -dWINSPOOL.DRV -dWINMM.DLL -dMSVFW32.DLL -dCOMDLG32.DLL -Iintermediate 
+    <LFLAGS value="-Iintermediate -dWINSPOOL.DRV -dWINMM.DLL -dMSVFW32.DLL -dCOMDLG32.DLL 
       -D&quot;&quot; -GC&quot;TVP(kirikiri) for win32&quot; -Rr -H:0x10000 -aa -Tpe -GD -x -Gn -v"/>
   </OPTIONS>
   <LINKER>
@@ -106,7 +106,7 @@ AutoIncBuild=1
 MajorVer=2
 MinorVer=23
 Release=1
-Build=862
+Build=863
 Debug=0
 PreRelease=0
 Special=0
@@ -118,13 +118,16 @@ CodePage=932
 [Version Info Keys]
 CompanyName=
 FileDescription=TVP(KIRIKIRI) 2 core / Scripting Platform for Win32
-FileVersion=2.23.1.862
+FileVersion=2.23.1.863
 InternalName=tvp2/win32
 LegalCopyright=(KIRIKIRI core) (C) '97-'04 W.Dee All Rights Reserved. This software is based in part on the work of Independent JPEG Group. For details: Run this program with '-about' option.
 LegalTrademarks=
 OriginalFilename=
 ProductName=
 ProductVersion=1.0.0.0
+
+[Excluded Packages]
+$(BCB)\Projects\Bpl\shlbpk.bpl=d:\program files\borland\cbuilder5\Projects\Bpl\shlbpk
 
 [HistoryLists\hlIncludePath]
 Count=1
@@ -146,6 +149,10 @@ Item1=TJS_SUPPORT_VCL;TJS_TEXT_OUT_CRLF;TJS_JP_LOCALIZED;TJS_NO_DEBUG_PROFILE_TI
 [HistoryLists\hlIntOutputDir]
 Count=1
 Item0=intermediate
+
+[HistoryLists\hlFinalOutputDir]
+Count=1
+Item0=..\..\..\..\bin\win32
 
 [Debugging]
 DebugSourceDirs=C:\Program Files\Borland\CBuilder5\Projects\tvp2win32\visual\IA32\;C:\Program Files\Borland\CBuilder5\Projects\comps\o\erinalib\library\common\
@@ -169,9 +176,6 @@ RootDir=
   </IDEOPTIONS>
 
   <FILES>
-    <FILE type="override" value="..\..\visual\GraphicsLoaderIntf.cpp" translator="Auto">
-      <WARNOPTSTR value=" -w-par"/>
-    </FILE>
     <FILE type="override" value="..\..\tjs2\tjspp.tab.cpp" translator="Auto">
       <CFLAG1 value=" -vGc-"/>
     </FILE>
@@ -183,6 +187,9 @@ RootDir=
     </FILE>
     <FILE type="override" value="..\..\visual\tvpgl.c" translator="Auto">
       <CFLAG1 value=" -O2 -r -k- -y -v -vi"/>
+    </FILE>
+    <FILE type="override" value="..\..\visual\GraphicsLoaderIntf.cpp" translator="Auto">
+      <WARNOPTSTR value=" -w-par"/>
     </FILE>
   </FILES>
 </PROJECT>
