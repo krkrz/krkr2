@@ -104,7 +104,15 @@ SOURCE=.\asyncrdr.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\BufferRenderer.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\DShowException.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\dslayerd.cpp
 # End Source File
 # Begin Source File
 
@@ -113,6 +121,22 @@ SOURCE=.\dsmovie.cpp
 # Begin Source File
 
 SOURCE=.\dsoverlay.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\IBufferRenderer_i.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\IRendererBufferAccess_i.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\IRendererBufferVideo_i.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\krlmovie.cpp
 # End Source File
 # Begin Source File
 
@@ -144,6 +168,10 @@ SOURCE=.\asyncrdr.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\BufferRenderer.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\CIStream.h
 # End Source File
 # Begin Source File
@@ -152,11 +180,27 @@ SOURCE=.\DShowException.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\dslayerd.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\dsmovie.h
 # End Source File
 # Begin Source File
 
 SOURCE=.\dsoverlay.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\IBufferRenderer.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\IRendererBufferAccess.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\IRendererBufferVideo.h
 # End Source File
 # Begin Source File
 
