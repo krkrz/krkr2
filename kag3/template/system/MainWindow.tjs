@@ -524,17 +524,36 @@ class KAGWindow extends Window
 		if(this isvalid) askOnClose = askOnClose_save;
 	}
 
-	function closeByScript()
+	function closeByScript(elm)
 	{
 		// ウィンドウを閉じる
 		// ちょっと面倒くさいとをやっているのは
 		// shutdown と同じ理由
 		// 「いいえ」が選択されてウィンドウが閉じなかった場合は
 		// 'not_closed' トリガが発行され、実行は再開する。
+		var askOnClose_save = askOnClose;
+		if(elm.ask !== void && !(+elm.ask)) askOnClose = false;
 		global.shutdownTrigger =
 			new AsyncTrigger(handleCloseByScript, '');
 		global.shutdownTrigger.cached = true;
 		global.shutdownTrigger.trigger();
+
+		// closeByScript は、このハンドラが終わった直後に
+		// 「終了しますか？」のダイアログを表示する。
+		// 終了する場合はそのまま終了する。
+		// 終了しない場合は 'not_closed' トリガが発行され、
+		// 実行は継続する。
+		conductor.wait(%[
+			not_closed : askOnClose_save
+			? (function
+			{
+				// 実際にこれが呼ばれることはないが、一応
+				askOnClose = true;
+			} incontextof this)
+			: (function
+			{
+			} incontextof this)
+			]);
 	}
 
 	function handleCloseByScript()
@@ -4845,17 +4864,7 @@ class KAGWindow extends Window
 	close : function(elm)
 	{
 		// ウィンドウを閉じる
-		closeByScript();
-		// closeByScript は、このハンドラが終わった直後に
-		// 「終了しますか？」のダイアログを表示する。
-		// 終了する場合はそのまま終了する。
-		// 終了しない場合は 'not_closed' トリガが発行され、
-		// 実行は継続する。
-		conductor.wait(%[
-			not_closed : function
-			{
-			} incontextof this
-			]);
+		closeByScript(elm);
 		return -2;
 	} incontextof this,
 
