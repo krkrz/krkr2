@@ -726,7 +726,7 @@ class AnimationLayer extends KAGLayer
 			case 'alpha':
 			default:
 				face = dfAuto;
-				pileRect(dx, dy, temp, sx, sy, sw, sh, opa);
+				operateRect(dx, dy, temp, sx, sy, sw, sh, omAlpha, opa);
 				break;
 			}
 
