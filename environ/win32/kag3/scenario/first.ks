@@ -1,5 +1,3 @@
-@jump storage=buttontest.ks
-
 @jump storage=maptest.ks
 [link]‚Ù‚°‚Ù‚°[endlink][r]
 [link]‚Ù‚°‚Ù‚°[endlink][r]
