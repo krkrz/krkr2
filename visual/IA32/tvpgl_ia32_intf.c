@@ -177,6 +177,8 @@ if(TVPCPUType & TVP_CPU_HAS_MMX)
 if(TVPCPUType & TVP_CPU_HAS_MMX)
 	 TVPLinTransConstAlphaBlend =  TVPLinTransConstAlphaBlend_mmx_a;
 if(TVPCPUType & TVP_CPU_HAS_MMX)
+	 TVPInterpStretchCopy =  TVPInterpStretchCopy_mmx_a;
+if(TVPCPUType & TVP_CPU_HAS_MMX)
 	 TVPInitUnivTransBlendTable =  TVPInitUnivTransBlendTable_mmx_c;
 if(TVPCPUType & TVP_CPU_HAS_MMX)
 	 TVPUnivTransBlend =  TVPUnivTransBlend_mmx_a;
