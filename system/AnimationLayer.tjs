@@ -829,6 +829,9 @@ class AnimationLayer extends KAGLayer
 	function applyColorCorrection(layer, param)
 	{
 		// layer に対して色補正を行う
+		var orgface = layer.face;
+		var orgholdlpha = layer.holdAlpha;
+		layer.face = dfAuto;
 		if(param.grayscale !== void && +param.grayscale) layer.doGrayScale();
 		layer.adjustGamma(
 			param.rgamma, param.rfloor, param.rceil,
@@ -837,15 +840,13 @@ class AnimationLayer extends KAGLayer
 		if(param.mcolor !== void)
 		{
 			// 色重ね合わせ
-			var orgface = layer.face;
-			var orgholdlpha = layer.holdAlpha;
 			layer.face = dfOpaque;
 			layer.holdAlpha = true;
 			layer.colorRect(0, 0, layer.imageWidth, layer.imageHeight, +param.mcolor,
 				+param.mopacity);
-			layer.face = orgface;
-			layer.holdAlpha = orgholdlpha;
 		}
+		layer.face = orgface;
+		layer.holdAlpha = orgholdlpha;
 	}
 
 	property interrupted
