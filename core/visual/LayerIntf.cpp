@@ -352,6 +352,7 @@ tTJSNI_BaseLayer::tTJSNI_BaseLayer()
 	// cache management
 	CacheEnabledCount = 0;
 	CacheBitmap = NULL;
+	Cached = false;
 
 	// drawing function stuff
 	Face = dfAuto;
@@ -3202,7 +3203,18 @@ tjs_uint tTJSNI_BaseLayer::DecCacheEnabledCount()
 	return CacheEnabledCount;
 }
 //---------------------------------------------------------------------------
-
+void tTJSNI_BaseLayer::SetCached(bool b)
+{
+	if(b != Cached)
+	{
+		Cached = b;
+		if(b)
+			IncCacheEnabledCount();
+		else
+			DecCacheEnabledCount();
+	}
+}
+//---------------------------------------------------------------------------
 
 
 
@@ -8642,6 +8654,26 @@ TJS_BEGIN_NATIVE_PROP_DECL(visible)
 	TJS_END_NATIVE_PROP_SETTER
 }
 TJS_END_NATIVE_PROP_DECL(visible)
+//----------------------------------------------------------------------
+TJS_BEGIN_NATIVE_PROP_DECL(cached)
+{
+	TJS_BEGIN_NATIVE_PROP_GETTER
+	{
+		TJS_GET_NATIVE_INSTANCE(/*var. name*/_this, /*var. type*/tTJSNI_Layer);
+		*result = _this->GetCached();
+		return TJS_S_OK;
+	}
+	TJS_END_NATIVE_PROP_GETTER
+
+	TJS_BEGIN_NATIVE_PROP_SETTER
+	{
+		TJS_GET_NATIVE_INSTANCE(/*var. name*/_this, /*var. type*/tTJSNI_Layer);
+		_this->SetCached(*param);
+		return TJS_S_OK;
+	}
+	TJS_END_NATIVE_PROP_SETTER
+}
+TJS_END_NATIVE_PROP_DECL(cached)
 //----------------------------------------------------------------------
 TJS_BEGIN_NATIVE_PROP_DECL(nodeVisible)
 {
