@@ -28,7 +28,14 @@ class Movie extends VideoOverlay
 			owner.onMovieStop(); // í‚é~
 			super.close();
 		}
-		lastStatus = status;
+		if(lastStatus == "play" && status == "period")
+		{
+			owner.onMovieStop(); // í‚é~
+		}
+		else
+		{
+			lastStatus = status;
+		}
 	}
 
 	function onCallbackCommand(cmd, arg)
