@@ -431,7 +431,7 @@ System.exePath は、吉里吉里実行可能ファイルのあるフォルダです。<r/>
 <dt><tt><kw>kag.callExtraConductor</kw></tt></dt>
 <dd>
 　kag.callExtraConductor は、TJS の制御によって KAG のシナリオをサブルーチンとして呼び出すために用います。このメソッドでシナリオを呼び出すときは、シナリオがクリック待ちや s タグで停止中である必要があります ( kag.inStable や KAG プラグインの onStableStateChanged で知ることができます )。<r/>
-　kag.casllExtraConductor には引数が３つあります。<r/>
+　kag.callExtraConductor には引数が３つあります。<r/>
 　最初の引数は呼び出すシナリオファイルです。次の引数は呼び出すラベルです。<r/>
 　３番目の引数は省略可能ですが、KAG のシナリオから戻ったときに実行する関数/メソッドを指定します。必要ない場合は指定しなくてかまいません。<r/>
 <r/>
