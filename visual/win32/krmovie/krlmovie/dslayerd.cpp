@@ -191,17 +191,20 @@ void __stdcall tTVPDSLayerVideo::BuildGraph( HWND callbackwin, IStream *stream,
 	}
 	catch(const wchar_t *msg)
 	{
+		MakeAPause(true);
 		ReleaseAll();
 		CoUninitialize();
 		TVPThrowExceptionMessage(msg);
 	}
 	catch(...)
 	{
+		MakeAPause(true);
 		ReleaseAll();
 		CoUninitialize();
 		throw;
 	}
 
+	MakeAPause(false);
 	CoUninitialize();	// ‚±‚±‚Å‚±‚ê‚ğŒÄ‚Ô‚Æ‚Ü‚¸‚»‚¤‚È‹C‚ª‚·‚é‚¯‚ÇA‘åä•v‚È‚Ì‚©‚È‚Ÿ
 }
 
