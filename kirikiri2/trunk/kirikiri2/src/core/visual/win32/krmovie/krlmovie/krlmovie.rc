@@ -72,14 +72,14 @@ BEGIN
         BEGIN
             VALUE "Comments", "TVP(kirikiri) needs this dll for playing movie storages.\0"
             VALUE "CompanyName", " \0"
-            VALUE "FileDescription", "TVP Movie Playback Support DLL\0"
+            VALUE "FileDescription", "TVP Movie Playback Support DLL (layered playback)\0"
             VALUE "FileVersion", "1, 4, 0, 3\0"
-            VALUE "InternalName", "krmovie\0"
+            VALUE "InternalName", "krlmovie\0"
             VALUE "LegalCopyright", "Copyright (C)2001-2004 W.Dee / T.Imoto All rights reserved.\0"
             VALUE "LegalTrademarks", "\0"
-            VALUE "OriginalFilename", "krmovie.dll\0"
+            VALUE "OriginalFilename", "krlmovie.dll\0"
             VALUE "PrivateBuild", "\0"
-            VALUE "ProductName", "  krmovie\0"
+            VALUE "ProductName", "  krlmovie\0"
             VALUE "ProductVersion", "1, 4, 0, 3\0"
             VALUE "SpecialBuild", "\0"
         END
