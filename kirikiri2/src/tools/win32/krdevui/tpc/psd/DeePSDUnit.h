@@ -13,10 +13,12 @@
 
 //---------------------------------------------------------------------------
 extern void __fastcall SetGrayscalePalette(Graphics::TBitmap *dib, int bit);
+extern void ConvertAlphaToAddAlpha(Graphics::TBitmap *in);
 //---------------------------------------------------------------------------
 // 例外クラス
 class EDeePSD : public Exception
 {
+
 public:
 	__fastcall EDeePSD(const System::AnsiString Msg) : Sysutils::Exception(
 		Msg) { }
@@ -46,6 +48,7 @@ class TDeePSD : public Graphics::TBitmap
 {
 private:
 protected:
+	bool FOutputAddAlpha;
 
 public:
 	// コンストラクタとデストラクタ
@@ -58,6 +61,8 @@ public:
 	void __fastcall SaveToStream(Classes::TStream * Stream);
 
 public:
+	__property bool OutputAddAlpha = {read=FOutputAddAlpha, write=FOutputAddAlpha};
+
 };
 //---------------------------------------------------------------------------
 #endif
