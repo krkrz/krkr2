@@ -19,6 +19,10 @@ void TVPGL_IA32_Init()
 
 
 if(TVPCPUType & TVP_CPU_HAS_MMX)
+	 TVPAdditiveAlphaBlend =  TVPAdditiveAlphaBlend_mmx_a;
+if(TVPCPUType & TVP_CPU_HAS_MMX && TVPCPUType & TVP_CPU_HAS_EMMX)
+	 TVPAdditiveAlphaBlend =  TVPAdditiveAlphaBlend_emmx_a;
+if(TVPCPUType & TVP_CPU_HAS_MMX)
 	 TVPAddBlend =  TVPAddBlend_mmx_a;
 if(TVPCPUType & TVP_CPU_HAS_MMX)
 	 TVPAddBlend_HDA =  TVPAddBlend_HDA_mmx_a;
