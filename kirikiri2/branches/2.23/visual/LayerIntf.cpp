@@ -1307,9 +1307,40 @@ void tTJSNI_BaseLayer::DumpStructure(int level)
 //---------------------------------------------------------------------------
 void tTJSNI_BaseLayer::NotifyLayerTypeChange()
 {
-	// TODO: implement NotifyLayerTypeChange
+	UpdateDrawFace();
 
 	if(Parent) Parent->NotifyLayerTypeChange();
+}
+//---------------------------------------------------------------------------
+void tTJSNI_BaseLayer::UpdateDrawFace()
+{
+	// set DrawFace from Face and Type
+	if(Face == dfAuto)
+	{
+		// DrawFace is chosen automatically from the layer type
+		switch(DisplayType)
+		{
+	//	case ltBinder:
+		case ltOpaque:			DrawFace = dfOpaque;			break;
+		case ltAlpha:			DrawFace = dfAlpha;				break;
+		case ltAdditive:		DrawFace = dfOpaque;			break;
+		case ltSubtractive:		DrawFace = dfOpaque;			break;
+		case ltMultiplicative:	DrawFace = dfOpaque;			break;
+	//	case ltEffect:
+	//	case ltFilter:
+		case ltDodge:			DrawFace = dfOpaque;			break;
+		case ltDarken:			DrawFace = dfOpaque;			break;
+		case ltLighten:			DrawFace = dfOpaque;			break;
+		case ltScreen:			DrawFace = dfOpaque;			break;
+		case ltAddAlpha:		DrawFace = dfAddAlpha;			break;
+		default:
+							DrawFace = dfOpaque;			break;
+		}
+	}
+	else
+	{
+		DrawFace = Face;
+	}
 }
 //---------------------------------------------------------------------------
 void tTJSNI_BaseLayer::SetType(tTVPLayerType type)
@@ -8684,12 +8715,12 @@ TJS_BEGIN_NATIVE_PROP_DECL(type)
 }
 TJS_END_NATIVE_PROP_DECL(type)
 //----------------------------------------------------------------------
-TJS_BEGIN_NATIVE_PROP_DECL(face)   // not drawFace
+TJS_BEGIN_NATIVE_PROP_DECL(face)
 {
 	TJS_BEGIN_NATIVE_PROP_GETTER
 	{
 		TJS_GET_NATIVE_INSTANCE(/*var. name*/_this, /*var. type*/tTJSNI_Layer);
-		*result = (tjs_int)_this->GetDrawFace();
+		*result = (tjs_int)_this->GetFace();
 		return TJS_S_OK;
 	}
 	TJS_END_NATIVE_PROP_GETTER
@@ -8697,7 +8728,7 @@ TJS_BEGIN_NATIVE_PROP_DECL(face)   // not drawFace
 	TJS_BEGIN_NATIVE_PROP_SETTER
 	{
 		TJS_GET_NATIVE_INSTANCE(/*var. name*/_this, /*var. type*/tTJSNI_Layer);
-		_this->SetDrawFace((tTVPDrawFace)(tjs_int)*param);
+		_this->SetFace((tTVPDrawFace)(tjs_int)*param);
 		return TJS_S_OK;
 	}
 	TJS_END_NATIVE_PROP_SETTER

@@ -58,7 +58,8 @@ enum tTVPDrawFace
 	dfMain = 1,
 	dfOpaque = 1,
 	dfMask = 2,
-	dfProvince = 3
+	dfProvince = 3,
+	dfAuto = 128 // face is chosen automatically from the layer type
 };
 //---------------------------------------------------------------------------
 /*]*/
@@ -270,6 +271,8 @@ private:
 	tTVPLayerType DisplayType;
 
 	void NotifyLayerTypeChange();
+
+	void UpdateDrawFace(); // set DrawFace from Face and Type
 
 public:
 	tTVPLayerType GetType() const { return Type; }
@@ -586,7 +589,16 @@ public:
 
 	//--------------------------------------------- drawing function stuff --
 private:
-	tTVPDrawFace DrawFace; // current drawing layer face
+	tTVPDrawFace DrawFace; // (actual) current drawing layer face
+	tTVPDrawFace Face; // (outward) current drawing layer face
+
+
+public:
+	void SetFace(tTVPDrawFace f) { Face = f; UpdateDrawFace(); }
+	tTVPDrawFace GetFace() const { return Face; }
+
+
+private:
 	bool ImageModified; // flag to know modification of layer image
 	tTVPRect ClipRect; // clipping rectangle
 public:
@@ -603,10 +615,6 @@ public:
 private:
 	bool ClipDestPointAndSrcRect(tjs_int &dx, tjs_int &dy,
 		tTVPRect &srcrectout, const tTVPRect &srcrect) const;
-
-public:
-	void SetDrawFace(tTVPDrawFace f) { DrawFace = f; }
-	tTVPDrawFace GetDrawFace() const { return DrawFace; }
 
 
 private:
