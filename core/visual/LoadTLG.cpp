@@ -15,6 +15,8 @@
 #include "tjsUtils.h"
 #include "tvpgl.h"
 
+#include <stdlib.h>
+
 /*
 	TLG5:
 		Lossless graphics compression method designed for very fast decoding
@@ -418,20 +420,22 @@ void TVPLoadTLG6(void* formatdata, void *callbackdata,
 	if(LZSS_text) TJSAlignedDealloc(LZSS_text);
 }
 
+
+
+
+
 //---------------------------------------------------------------------------
 // TLG loading handler
 //---------------------------------------------------------------------------
-void TVPLoadTLG(void* formatdata, void *callbackdata,
-	tTVPGraphicSizeCallback sizecallback,
-	tTVPGraphicScanLineCallback scanlinecallback,
-	tTJSBinaryStream *src,
-	tjs_int keyidx,
-	bool grayscale)
+static void TVPInternalLoadTLG(void* formatdata, void *callbackdata, tTVPGraphicSizeCallback sizecallback,
+	tTVPGraphicScanLineCallback scanlinecallback, tTVPMetaInfoPushCallback metainfopushcallback,
+	tTJSBinaryStream *src, tjs_int keyidx,  bool grayscale)
 {
 	// read header
 	unsigned char mark[12];
 	src->ReadBuffer(mark, 11);
 
+	// check for TLG raw data
 	if(!memcmp("TLG5.0\x00raw\x1a\x00", mark, 11))
 	{
 		TVPLoadTLG5(formatdata, callbackdata, sizecallback,
@@ -447,6 +451,127 @@ void TVPLoadTLG(void* formatdata, void *callbackdata,
 		TVPThrowExceptionMessage(TVPTLGLoadError,
 			TJS_W("Invalid TLG header or unsupported TLG version."));
 	}
+}
+//---------------------------------------------------------------------------
+
+void TVPLoadTLG(void* formatdata, void *callbackdata, tTVPGraphicSizeCallback sizecallback,
+	tTVPGraphicScanLineCallback scanlinecallback, tTVPMetaInfoPushCallback metainfopushcallback,
+	tTJSBinaryStream *src, tjs_int keyidx,  bool grayscale)
+{
+	// read header
+	unsigned char mark[12];
+	src->ReadBuffer(mark, 11);
+
+	// check for TLG0.0 sds
+	if(!memcmp("TLG0.0\x00sds\x1a\x00", mark, 11))
+	{
+		// read TLG0.0 Structured Data Stream
+
+		// TLG0.0 SDS tagged data is simple "NAME=VALUE," string;
+		// Each NAME and VALUE have length:content expression.
+		// eg: 4:LEFT=2:20,3:TOP=3:120,4:TYPE=1:3,
+		// The last ',' cannot be ommited.
+		// Each string (name and value) must be encoded in utf-8.
+
+		// read raw data size
+		tjs_uint rawlen = src->ReadI32LE();
+
+		// try to load TLG raw data
+		TVPInternalLoadTLG(formatdata, callbackdata, sizecallback,
+			scanlinecallback, metainfopushcallback, src, keyidx, grayscale);
+
+		// seek to meta info data point
+		src->Seek(rawlen + 11 + 4, TJS_BS_SEEK_SET);
+
+		// read tag data
+		while(true)
+		{
+			char chunkname[4];
+			if(4 != src->Read(chunkname, 4)) break;
+				// cannot read more
+			tjs_uint chunksize = src->ReadI32LE();
+			if(!memcmp(chunkname, "tags", 4))
+			{
+				// tag information
+				char *tag = NULL;
+				char *name = NULL;
+				char *value = NULL;
+				try
+				{
+					tag = new char [chunksize + 1];
+					src->ReadBuffer(tag, chunksize);
+					tag[chunksize] = 0;
+					if(metainfopushcallback)
+					{
+						const char *tagp = tag;
+						const char *tagp_lim = tag + chunksize;
+						while(tagp < tagp_lim)
+						{
+							tjs_uint namelen = 0;
+							while(*tagp >= '0' && *tagp <= '9')
+								namelen = namelen * 10 + *tagp - '0', tagp++;
+							if(*tagp != ':') TVPThrowExceptionMessage(TVPTLGLoadError,
+								TJS_W("Malformed TLG SDS tag structure, missing colon after name length"));
+							tagp ++;
+							name = new char [namelen + 1];
+							memcpy(name, tagp, namelen);
+							name[namelen] = '\0';
+							tagp += namelen;
+							if(*tagp != '=') TVPThrowExceptionMessage(TVPTLGLoadError,
+								TJS_W("Malformed TLG SDS tag tag structure, missing equals after name"));
+							tagp++;
+							tjs_uint valuelen = 0;
+							while(*tagp >= '0' && *tagp <= '9')
+								valuelen = valuelen * 10 + *tagp - '0', tagp++;
+							if(*tagp != ':') TVPThrowExceptionMessage(TVPTLGLoadError,
+								TJS_W("Malformed TLG SDS tag structure, missing colon after value length"));
+							tagp++;
+							value = new char [valuelen + 1];
+							memcpy(value, tagp, valuelen);
+							value[valuelen] = '\0';
+							tagp += valuelen;
+							if(*tagp != ',') TVPThrowExceptionMessage(TVPTLGLoadError,
+								TJS_W("Malformed TLG SDS tag structure, missing comma after a tag"));
+							tagp++;
+
+							// insert into name-value pairs ... TODO: utf-8 decode
+							metainfopushcallback(callbackdata, ttstr(name), ttstr(value));
+
+							delete [] name, name = NULL;
+							delete [] value, value = NULL;
+						}
+					}
+				}
+				catch(...)
+				{
+					if(tag) delete [] tag;
+					if(name) delete [] name;
+					if(value) delete [] value;
+					throw;
+				}
+
+				if(tag) delete [] tag;
+				if(name) delete [] name;
+				if(value) delete [] value;
+			}
+			else
+			{
+				// skip the chunk
+				src->SetPosition(src->GetPosition() + chunksize);
+			}
+		} // while
+
+	}
+	else
+	{
+		src->Seek(0, TJS_BS_SEEK_SET); // rewind
+
+		// try to load TLG raw data
+		TVPInternalLoadTLG(formatdata, callbackdata, sizecallback,
+			scanlinecallback, metainfopushcallback, src, keyidx, grayscale);
+	}
+
+
 }
 //---------------------------------------------------------------------------
 

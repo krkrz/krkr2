@@ -13,6 +13,8 @@
 #define GraphicsLoaderIntfH
 
 
+#include "drawable.h"
+
 class tTVPBaseBitmap;
 class TJS::tTJSBinaryStream;
 
@@ -37,14 +39,21 @@ typedef void * (*tTVPGraphicScanLineCallback)
 	was given by previous calling of TVPGraphicScanLineCallback. in this time,
 	this callback function must return NULL.
 */
+typedef void (*tTVPMetaInfoPushCallback)
+	(void *callbackdata, const ttstr & name, const ttstr & value);
+/*
+	callback type to push meta-information of the image.
+	this can be null.
+*/
 
 typedef void (*tTVPGraphicLoadingHandler)(void* formatdata,
 	void *callbackdata,
 	tTVPGraphicSizeCallback sizecallback,
 	tTVPGraphicScanLineCallback scanlinecallback,
+	tTVPMetaInfoPushCallback metainfopushcallback,
 	tTJSBinaryStream *src,
 	tjs_int32 keyidx,
-	bool GrayScale);
+	bool grayscale);
 /*
 	format = format specific data given at TVPRegisterGraphicLoadingHandler
 	dest = destination callback function
@@ -78,20 +87,20 @@ void TVPUnregisterGraphicLoadingHandler(const ttstr & name,
 // default handlers
 //---------------------------------------------------------------------------
 extern void TVPLoadBMP(void* formatdata, void *callbackdata, tTVPGraphicSizeCallback sizecallback,
-	tTVPGraphicScanLineCallback scanlinecallback, tTJSBinaryStream *src,
-	tjs_int keyidx,  bool GrayScale);
+	tTVPGraphicScanLineCallback scanlinecallback, tTVPMetaInfoPushCallback metainfopushcallback,
+	tTJSBinaryStream *src, tjs_int keyidx,  bool grayscale);
 
 extern void TVPLoadJPEG(void* formatdata, void *callbackdata, tTVPGraphicSizeCallback sizecallback,
-	tTVPGraphicScanLineCallback scanlinecallback, tTJSBinaryStream *src,
-	tjs_int keyidx,  bool GrayScale);
+	tTVPGraphicScanLineCallback scanlinecallback, tTVPMetaInfoPushCallback metainfopushcallback,
+	tTJSBinaryStream *src, tjs_int keyidx,  bool grayscale);
 
 extern void TVPLoadPNG(void* formatdata, void *callbackdata, tTVPGraphicSizeCallback sizecallback,
-	tTVPGraphicScanLineCallback scanlinecallback, tTJSBinaryStream *src,
-	tjs_int keyidx,  bool GrayScale);
+	tTVPGraphicScanLineCallback scanlinecallback, tTVPMetaInfoPushCallback metainfopushcallback,
+	tTJSBinaryStream *src, tjs_int keyidx,  bool grayscale);
 
 extern void TVPLoadERI(void* formatdata, void *callbackdata, tTVPGraphicSizeCallback sizecallback,
-	tTVPGraphicScanLineCallback scanlinecallback, tTJSBinaryStream *src,
-	tjs_int keyidx,  bool GrayScale);
+	tTVPGraphicScanLineCallback scanlinecallback, tTVPMetaInfoPushCallback metainfopushcallback,
+	tTJSBinaryStream *src, tjs_int keyidx,  bool grayscale);
 
 //---------------------------------------------------------------------------
 
@@ -147,11 +156,11 @@ extern void TVPTouchImages(const std::vector<ttstr> & storages, tjs_int limit,
 
 
 //---------------------------------------------------------------------------
-// implementation in each platforms
+// TVPLoadGraphic
 //---------------------------------------------------------------------------
 extern void TVPLoadGraphic(tTVPBaseBitmap *dest, const ttstr &name, tjs_int keyidx,
 	tjs_uint desw, tjs_uint desh,
-	bool province, ttstr *provincename = NULL);
+	bool province, ttstr *provincename = NULL, iTJSDispatch2 ** metainfo = NULL);
 	// throws exception when this function can not handle the file
 //---------------------------------------------------------------------------
 
