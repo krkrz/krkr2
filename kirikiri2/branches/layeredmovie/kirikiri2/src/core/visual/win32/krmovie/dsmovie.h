@@ -108,15 +108,10 @@ protected:
 		return m_BasicVideo;
 	}
 
+#ifdef _DEBUG
 	HRESULT __stdcall AddToROT( DWORD ROTreg );
 	void __stdcall RemoveFromROT( DWORD ROTreg );
-
-#if 0
-// LayerDrawÇ≈ÇÃÇ›ïKóvÅH
-	CComPtr<IPin>			m_SourceOutPin;
-	CComPtr<IPin>			m_SpliterInPin;
-#endif
-
+#endif	// _DEBUG
 
 public:
 	tTVPDSMovie();
@@ -152,9 +147,11 @@ public:
 	virtual const wchar_t* __stdcall GetNumberOfFrame( int *f );
 	virtual const wchar_t* __stdcall GetTotalTime( __int64 *t );
 
-	virtual const wchar_t* __stdcall GetVideoSize( long *width, long *height );
 	virtual const wchar_t* __stdcall GetFrontBuffer( BYTE **buff );
 	virtual const wchar_t* __stdcall SetVideoBuffer( BYTE *buff1, BYTE *buff2, long size );
+
+	virtual const wchar_t* __stdcall GetVideoSize( long *width, long *height );
+	virtual HRESULT __stdcall GetAvgTimePerFrame( REFTIME *pAvgTimePerFrame );
 };
 
 #endif
