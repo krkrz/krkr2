@@ -384,6 +384,10 @@ void tTJSNI_VideoOverlay::Open(const ttstr &_name)
 				TVPThrowExceptionMessage(TVPErrorInKrMovieDLL, L"Invalidate video size");
 
 			size = width * height * 4;
+			if( Bitmap[0] != NULL )
+				delete Bitmap[0];
+			if( Bitmap[1] != NULL )
+				delete Bitmap[1];
 			Bitmap[0] = new tTVPBaseBitmap( width, height, 32 );
 			Bitmap[1] = new tTVPBaseBitmap( width, height, 32 );
 
@@ -508,6 +512,9 @@ void tTJSNI_VideoOverlay::Rewind()
 		message = VideoOverlay->Rewind();
 		if(message) TVPThrowExceptionMessage(TVPErrorInKrMovieDLL, message);
 		ClearWndProcMessages();
+
+		if( EventFrame >= 0 && IsEventPast )
+			IsEventPast = false;
 	}
 }
 void tTJSNI_VideoOverlay::Prepare()
@@ -515,12 +522,8 @@ void tTJSNI_VideoOverlay::Prepare()
 	if( VideoOverlay && (Mode == vomLayer) )
 	{
 		Pause();
-		const wchar_t *message;
-		message = VideoOverlay->Rewind();
-		if(message) TVPThrowExceptionMessage(TVPErrorInKrMovieDLL, message);
-		ClearWndProcMessages();
+		Rewind();
 		IsPrepare = true;
-
 		Play();
 	}
 }
@@ -727,13 +730,6 @@ void __fastcall tTJSNI_VideoOverlay::WndProc(Messages::TMessage &Msg)
 							// Check layer image size
 							if( l1 != NULL )
 							{
-#if 0
-								if( l1->GetMainImage() == NULL )
-								{
-									l1->SetSize( width, height );
-									l1->AllocateImage();
-								}
-#endif
 								if( l1->GetImageWidth() != width || l1->GetImageHeight() != height )
 									l1->SetImageSize( width, height );
 								if( l1->GetWidth() != width || l1->GetHeight() != height )
@@ -741,13 +737,6 @@ void __fastcall tTJSNI_VideoOverlay::WndProc(Messages::TMessage &Msg)
 							}
 							if( l2 != NULL )
 							{
-#if 0
-								if( l2->GetMainImage() == NULL )
-								{
-									l2->SetSize( width, height );
-									l2->AllocateImage();
-								}
-#endif
 								if( l2->GetImageWidth() != width || l2->GetImageHeight() != height )
 									l2->SetImageSize( width, height );
 								if( l2->GetWidth() != width || l2->GetHeight() != height )
@@ -765,37 +754,31 @@ void __fastcall tTJSNI_VideoOverlay::WndProc(Messages::TMessage &Msg)
 								if( l1 ) l1->AssignMainImage( Bitmap[1] );
 								if( l2 ) l2->AssignMainImage( Bitmap[1] );
 							}
-							if( l1 )
+							if( l1 ) l1->Update();
+							if( l2 ) l2->Update();
+
+							// ! Prepare mode ?
+							if( !IsPrepare )
 							{
-//								if( l1->GetVisible() == false )
-//									l1->SetVisible( true );
-								l1->Update();
+								// Segment Loop ?
+								if( SegLoopEndFrame >= 0 && curFrame >= SegLoopEndFrame )
+								{
+									SetFrame( SegLoopStartFrame );
+								}
+								// Send period event ?
+								if( EventFrame >= 0 && !IsEventPast && curFrame >= EventFrame )
+								{
+									EventFrame = -1;
+									SetStatus(ssPeriod);
+									SetStatus(ssPlay);
+								}
 							}
-							if( l2 )
-							{
-//								if( l2->GetVisible() == false )
-//									l2->SetVisible( true );
-								l2->Update();
-							}
-							// Prepare mode ?
-							if( IsPrepare )
-							{
+							else
+							{	// Prepare mode
 								SetStatus(ssPeriod);
 								Pause();
-//                                SetStatus(ssStop);
 								Rewind();
 								IsPrepare = false;
-							}
-							// Segment Loop ?
-							if( SegLoopEndFrame >= 0 && curFrame >= SegLoopEndFrame )
-							{
-								SetFrame( SegLoopStartFrame );
-							}
-							// Send period event ?
-							if( EventFrame >= 0 && !IsEventPast && curFrame >= EventFrame )
-							{
-								SetStatus(ssPeriod);
-								SetStatus(ssPlay);
 							}
                         }
 						break;
@@ -844,6 +827,9 @@ void tTJSNI_VideoOverlay::SetFrame( tjs_int f )
 		const wchar_t *message;
 		message = VideoOverlay->SetFrame( f );
 		if(message) TVPThrowExceptionMessage(TVPErrorInKrMovieDLL, message);
+
+		if( EventFrame >= f && IsEventPast )
+			IsEventPast = false;
 	}
 }
 tjs_int tTJSNI_VideoOverlay::GetFrame()
