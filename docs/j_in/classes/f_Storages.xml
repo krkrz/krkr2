@@ -1,0 +1,350 @@
+<?xml version="1.0" encoding="Shift_JIS" ?>
+<doc>
+<title>Storages</title>
+<desc>
+　Storages クラスは 吉里吉里本体の<kw>ストレージシステム</kw>に関するメソッドやプロパティを持ったクラスです。このクラスからオブジェクトを作成することはできません。<r/>
+</desc>
+
+<member>
+	<name>addAutoPath</name>
+	<type>method</type>
+	<shortdesc>自動検索パスへの追加</shortdesc>
+	<arg>
+		<argitem>
+			<name>path</name>
+			<default></default>
+			<desc>
+				　自動検索パスに追加するパスを指定します。<r/>
+				　パスの最後は、アーカイブ内のルートフォルダを指定するときは '&gt;'、通常のフォルダを
+				指定するときは '/' で終わる必要があります
+				( 例 : <tt>"Archive/arc.xp3&gt;"</tt> や <tt>"System/"</tt> ) 。<r/>
+				　2.19 beta 14 よりアーカイブの区切り文字が '#' から '&gt;' に変わりました。<r/>
+			</desc>
+		</argitem>
+	</arg>
+	<result></result>
+	<desc>
+		　<kw>自動検索パス</kw>に、指定したパスを追加します。吉里吉里は、利用可能なストレージを
+		検索するとき、この自動検索パスに登録されたパスを探します。<r/>
+		　自動検索パスは、後に指定したものがより優先されて検索されます。<r/>
+		　また、プロジェクトフォルダはもっとも優先されて検索されます。<r/>
+	</desc>
+	<ref>Storages.removeAutoPath</ref>
+</member>
+
+<member>
+	<name>removeAutoPath</name>
+	<type>method</type>
+	<shortdesc>自動検索パスの削除</shortdesc>
+	<arg>
+		<argitem>
+			<name>path</name>
+			<default></default>
+			<desc>
+				　自動検索から削除するパスを指定します。<r/>
+			</desc>
+		</argitem>
+	</arg>
+	<result></result>
+	<desc>
+		　自動検索パスから、指定したパスを削除します。<r/>
+	</desc>
+	<ref>Storages.addAutoPath</ref>
+</member>
+
+<member>
+	<name>getFullPath</name>
+	<type>method</type>
+	<shortdesc>完全な統一ストレージ名の取得</shortdesc>
+	<arg>
+		<argitem>
+			<name>path</name>
+			<default></default>
+			<desc>
+				　完全な統一ストレージ名にしたいストレージ名を指定します。<r/>
+			</desc>
+		</argitem>
+	</arg>
+	<result>完全な統一ストレージ名</result>
+	<desc>
+		　path で指定されたストレージ名を完全な<kw>統一ストレージ名</kw>に変換します。<r/>
+		　冗長なパスアクセス ( たとえば <tt>system/flags/../data/</tt> など ) はすべて圧縮されます。<r/>
+		　カレントメディア、カレントフォルダが指定されていなければ、補完します。<r/>
+	</desc>
+	<ref>Storages.getPlacedPath</ref>
+</member>
+
+<member>
+	<name>getPlacedPath</name>
+	<type>method</type>
+	<shortdesc>ストレージの検索</shortdesc>
+	<arg>
+		<argitem>
+			<name>storage</name>
+			<default></default>
+			<desc>
+				　検索したいストレージ名を指定します。<r/>
+			</desc>
+		</argitem>
+	</arg>
+	<result>発見された場所を統一ストレージ名で返ります。見つからなかった場合は空文字列が返ります。</result>
+	<desc>
+		　storage で指定されたストレージを<kw>自動検索パス</kw>から検索します。<r/>
+	</desc>
+	<ref>Storages.getFullPath</ref>
+	<ref>Storaegs.isExistentStorage</ref>
+</member>
+
+<member>
+	<name>isExistentStorage</name>
+	<type>method</type>
+	<shortdesc>ストレージの存在確認</shortdesc>
+	<arg>
+		<argitem>
+			<name>storage</name>
+			<default></default>
+			<desc>
+				　存在を確認したいストレージ名を指定します。<r/>
+			</desc>
+		</argitem>
+	</arg>
+	<result>存在を確認できれば真、なければ偽が返ります。</result>
+	<desc>
+		　storage で指定したストレージが存在するかどうかを確認します。getPlacedPath を用いるよりは高速
+		です。<r/>
+	</desc>
+	<ref>Storages.getPlacedPath</ref>
+</member>
+
+<member>
+	<name>extractStorageExt</name>
+	<type>method</type>
+	<shortdesc>ストレージ名の拡張子の抽出</shortdesc>
+	<arg>
+		<argitem>
+			<name>storage</name>
+			<default></default>
+			<desc>
+				　拡張子部分を抽出したいストレージ名を指定します。<r/>
+			</desc>
+		</argitem>
+	</arg>
+	<result>拡張子部分が返ります。拡張子部分は <tt>.</tt> (ドット)も含みます。拡張子が
+		なかった場合は空文字列が返ります。</result>
+	<desc>
+		　指定されたストレージ名から拡張子の部分を抽出して返します。<r/>
+	</desc>
+	<ref>Storages.extractStorageName</ref>
+	<ref>Storages.extractStoragePath</ref>
+	<ref>Storages.chopStorageExt</ref>
+</member>
+
+<member>
+	<name>extractStorageName</name>
+	<type>method</type>
+	<shortdesc>ストレージ名の抽出</shortdesc>
+	<arg>
+		<argitem>
+			<name>storage</name>
+			<default></default>
+			<desc>
+				　ストレージ名を抽出したいストレージ名を指定します。<r/>
+			</desc>
+		</argitem>
+	</arg>
+	<result>ストレージ名が返ります。ストレージ名がなかった場合は空文字列が返ります。</result>
+	<desc>
+		　指定されたストレージ名から、ストレージ名の部分 ( パスを除く ) を抽出して返します。<r/>
+		　たとえば <tt>"System/hoge.txt"</tt> を渡した場合、<tt>"hoge.txt"</tt> が返ります。<r/>
+	</desc>
+	<ref>Storages.extractStorageExt</ref>
+	<ref>Storages.extractStoragePath</ref>
+</member>
+
+<member>
+	<name>extractStoragePath</name>
+	<type>method</type>
+	<shortdesc>ストレージ名のパスの抽出</shortdesc>
+	<arg>
+		<argitem>
+			<name>storage</name>
+			<default></default>
+			<desc>
+				　パスを抽出したいストレージ名を指定します。<r/>
+			</desc>
+		</argitem>
+	</arg>
+	<result>パスが返ります。パスがなかった場合は空文字列が返ります。</result>
+	<desc>
+		　指定されたストレージ名から、パスの部分を抽出して返します。<r/>
+		　たとえば <tt>"file://home/dee/hoge.txt"</tt> を渡した場合、<tt>"file://home/dee/"</tt> が
+		返ります。<r/>
+	</desc>
+	<ref>Storages.extractStorageExt</ref>
+	<ref>Storages.extractStorageName</ref>
+</member>
+
+<member>
+	<name>chopStorageExt</name>
+	<type>method</type>
+	<shortdesc>ストレージ名の拡張子の切り落とし</shortdesc>
+	<arg>
+		<argitem>
+			<name>storage</name>
+			<default></default>
+			<desc>
+				　拡張子部分を切り落としたいストレージ名を指定します。<r/>
+			</desc>
+		</argitem>
+	</arg>
+	<result>拡張子部分が切り落とされたストレージ名が返ります。</result>
+	<desc>
+		　指定されたストレージ名から拡張子の部分を切り落として返します。<r/>
+		　たとえば <tt>"file://home/dee/hoge.txt"</tt> を渡した場合、<tt>"file://home/dee/hoge"</tt> が返
+		ります。
+	</desc>
+	<ref>Storages.extractStorageExt</ref>
+</member>
+
+
+<member>
+	<name>searchCD</name>
+	<type>method</type>
+	<shortdesc>CD の検索</shortdesc>
+	<arg>
+		<argitem>
+			<name>volume</name>
+			<default></default>
+			<desc>
+				　検索するCDのボリュームラベルを指定します。<r/>
+			</desc>
+		</argitem>
+	</arg>
+	<result>見つかった CD-ROM ドライブのドライブ文字が返ります。</result>
+	<desc>
+		　指定されたボリュームラベルを持つ CD ドライブを探して、そのドライブ文字 ( 'H' など ) を返し
+		ます。<r/>
+		　もちろん、ドライブには該当する CD-ROM が挿入されていなければなりません。<r/>
+	</desc>
+</member>
+
+<member>
+	<name>getLocalName</name>
+	<type>method</type>
+	<shortdesc>ローカルファイル名の取得</shortdesc>
+	<arg>
+		<argitem>
+			<name>path</name>
+			<default></default>
+			<desc>
+				　<kw>ローカルファイル名</kw> に変換したい統一ストレージ名を指定します。<r/>
+			</desc>
+		</argitem>
+	</arg>
+	<result>ローカルファイル名が返ります。ローカルファイル名に変換できなかった場合は空文字が返るか、
+		例外が発生します。</result>
+	<desc>
+		　指定された統一ストレージ名を、OS ネイティブの形式 ( ローカルファイル名 ) に変換して返します。<r/>
+	</desc>
+</member>
+
+<member>
+	<name>selectFile</name>
+	<type>method</type>
+	<shortdesc>ファイル選択ダイアログボックスを表示</shortdesc>
+	<arg>
+		<argitem>
+			<name>params</name>
+			<default></default>
+			<desc>
+				　データの受け渡しに用いる辞書配列を指定します。<r/>
+				　このメソッドに渡すとき、以下のメンバを指定することができます。また、
+				いくつかのメンバはこのメソッドが終わると値が変更されます。<r/>
+				<r/>
+				<dl>
+				<dt><kw>filter</kw></dt>
+				<dd>
+					　フィルタ文字列を配列で渡します。<r/>
+					　フィルタ文字列は、フィルタの説明と フィルタを | (半角縦棒) で区切って指定
+					するもので、フィルタにはワイルドカードを指定します。一つのフィルタに複数の
+					拡張子が対応する場合は ; (半角セミコロン) で区切ります。<r/>
+					　複数のフィルタを指定するには配列で指定します。<r/>
+					　省略するとフィルタは用いません。<r/>
+					<r/>
+					例 :<r/>
+					<tt><nobr>["画像ファイル(*.bmp;*.png;*.jpg;*.jpeg;*.eri;*.tlg)|*.bmp;*.png;*.jpg;*.jpeg;*.eri;*.tlg", </nobr></tt><r/>
+					<tt><nobr> "スクリプトファイル(*.tjs;*.ks)|*.tjs;*.ks"]</nobr></tt><r/>
+				</dd>
+				<r/>
+				<dt><kw>filterIndex</kw></dt>
+				<dd>
+					　選択されているフィルタの番号 ( filter で指定したもの ) を指定します。<r/>
+					　1 を指定すると、filter で指定された最初のフィルタが初期状態において
+					選択されています。2 を指定すると2番目のフィルタが選択さている状態に
+					なります ( 0 から始まるインデックス番号ではないことに注意してください;
+					先頭は 1 です )。<r/>
+					　省略すると先頭のフィルタが選択されます。<r/>
+					　また、ユーザが OK ボタンを押した場合、最後にダイアログボックス上で
+					選ばれていたフィルタのインデックスがこのメンバに設定されます。<r/>
+				</dd>
+				<r/>
+				<dt><kw>name</kw></dt>
+				<dd>
+					　ファイル名を指定します。省略したり、空文字列を指定すると初期状態ではなにもファイルを選択
+					されていない状態にすることができます。<r/>
+					　また、ユーザが OK ボタンを押した場合、選択されたファイルがこのメンバに
+					設定されます。<r/>
+				</dd>
+				<r/>
+				<dt><kw>initialDir</kw></dt>
+				<dd>
+					　初期状態で表示するフォルダを指定します。<r/>
+					　省略するとカレントディレクトリが使用されます。<r/>
+				</dd>
+				<r/>
+				<dt><kw>title</kw></dt>
+				<dd>
+					　ダイアログボックスのタイトルを表示します。<r/>
+					　省略されるとデフォルトの「開く」や「名前を付けて保存」になります
+					( save メンバの設定によります )。
+				</dd>
+				<r/>
+				<dt><kw>save</kw></dt>
+				<dd>
+					　ダイアログボックスの種類を指定します。<r/>
+					　false(デフォルト) の場合、「開く」のダイアログボックスが使われます。<r/>
+					　true の場合、「名前を付けて保存」のダイアログボックスが使われます。<r/>
+				</dd>
+				<r/>
+				<dt><kw>defaultExt</kw></dt>
+				<dd>
+					　デフォルトの拡張子を指定します。ユーザが拡張子を指定しなかった場合に
+					自動的にこの拡張子を付加します。ここで指定する拡張子には . (ピリオド)を
+					指定しないでください。<r/>
+					　省略すると、拡張子が付加されることはありません。<r/>
+				</dd>
+				</dl>
+			</desc>
+		</argitem>
+	</arg>
+	<result>ユーザがファイルを選択して OK ボタンを押せば真、キャンセルボタンを押せば偽が戻ります。</result>
+	<desc>
+		　ファイル選択ダイアログボックスを開きます。<r/>
+		<example>
+var params = %[<r/>
+filter : [ "テキストファイル(*.txt)|*.txt", "バイナリファイル(*.bin)|*.bin" ],<r/>
+filterIndex : 1,<r/>
+name : "",<r/>
+initialDir : System.exePath,<r/>
+title : "ファイルを開く",<r/>
+save : false,<r/>
+];<r/>
+if(Storages.selectFile(params))<r/>
+System.inform("選択したファイルは : " + params.name);<r/>
+		</example>
+	</desc>
+</member>
+
+
+
+</doc>

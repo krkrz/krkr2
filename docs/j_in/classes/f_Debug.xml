@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="Shift_JIS" ?>
+<doc>
+<title>Debug</title>
+<desc>
+　Debug クラスは 吉里吉里のデバッグに関する機能を提供するクラスです。このクラスからオブジェクトを作成することはできません。<r/>
+</desc>
+
+<member>
+	<name>message</name>
+	<type>method</type>
+	<shortdesc>コンソールへメッセージを出力</shortdesc>
+	<arg>
+		<argitem>
+			<name>message</name>
+			<default></default>
+			<desc>
+				　出力するメッセージを指定します。<r/>
+			</desc>
+		</argitem>
+	</arg>
+	<result></result>
+	<desc>
+		　<kw>コンソール</kw>へメッセージを出力します。<r/>
+	</desc>
+</member>
+
+<member>
+	<name>notice</name>
+	<type>method</type>
+	<shortdesc>コンソールへ重要なメッセージを出力</shortdesc>
+	<arg>
+		<argitem>
+			<name>message</name>
+			<default></default>
+			<desc>
+				　出力するメッセージを指定します。<r/>
+			</desc>
+		</argitem>
+	</arg>
+	<result></result>
+	<desc>
+		　<kw>コンソール</kw>へメッセージを出力します。<r/>
+		<ref>Debug.message</ref> と違い、ここで出力したメッセージは ログファイルへの書き出しを途中から開始したとしても、
+		必ずログファイルに書き出されます ( Debug.message で出力したメッセージは、ある程度さかのぼってまでしか
+		書き込まれません )。ログファイルを回収したときに有用になるような重要な情報を出力するために使います。<r/>
+	</desc>
+</member>
+
+<member>
+	<name>startLogToFile</name>
+	<type>method</type>
+	<shortdesc>コンソールのログの出力開始</shortdesc>
+	<arg>
+		<argitem>
+			<name>clear</name>
+			<default>false</default>
+			<desc>
+				　真を指定するとログファイルはクリアされます。<r/>
+				　偽を指定すると既存のファイルに追加されます。<r/>
+			</desc>
+		</argitem>
+	</arg>
+	<result></result>
+	<desc>
+		　コンソールのログのファイルへの出力を開始します。<r/>
+	</desc>
+	<ref>Debug.logToFileOnError</ref>
+	<ref>Debug.clearLogFileOnError</ref>
+</member>
+
+<member>
+	<name>logAsError</name>
+	<type>method</type>
+	<shortdesc>エラー時と同じようにログをファイルに出力開始する</shortdesc>
+	<arg>
+	</arg>
+	<result></result>
+	<desc>
+		　エラーログファイルに関し、吉里吉里がエラーが発生したときと同じ動作をさせます。
+		つまり、
+		<ref>Debug.logToFileOnError</ref> が真ならばファイルにコンソールのログの出力を
+		開始します。その際、<ref>Debug.clearLogFileOnError</ref> が真ならばファイルを
+		クリアします。<r/>
+		　これに対し、<ref>Debug.startLogToFile</ref> は無条件でコンソールのログの
+		ファイルへの出力を開始します。<r/>
+	</desc>
+	<ref>Debug.startLogToFile</ref>
+	<ref>Debug.logToFileOnError</ref>
+	<ref>Debug.clearLogFileOnError</ref>
+</member>
+
+
+<member>
+	<name>logToFileOnError</name>
+	<type>property</type>
+	<shortdesc>エラー発生時にコンソールのログをファイルに出力するか</shortdesc>
+	<access>r/w</access>
+	<desc>
+		　真の場合、エラーが発生したときにコンソールのログのファイルへの出力を開始するように
+		なります。<r/>
+		　偽の場合はエラーが発生してもログのファイルへの出力は開始されません。<r/>
+	</desc>
+	<ref>Debug.startLogToFile</ref>
+	<ref>Debug.clearLogFileOnError</ref>
+</member>
+
+<member>
+	<name>clearLogFileOnError</name>
+	<type>property</type>
+	<shortdesc>エラー発生時にコンソールのログファイルをクリアするかどうか</shortdesc>
+	<access>r/w</access>
+	<desc>
+		　真の場合、エラーが発生したときにコンソールのログを自動的にクリアするようになります。<r/>
+		　偽の場合はクリアはされず、既存のログファイルに追加されます。<r/>
+	</desc>
+	<ref>Debug.startLogToFile</ref>
+	<ref>Debug.logToFileOnError</ref>
+</member>
+
+<member>
+	<name>controller</name>
+	<type>property</type>
+	<shortdesc>コントローラオブジェクト</shortdesc>
+	<access>r</access>
+	<desc>
+		　コントローラオブジェクトを表す読み出し専用のプロパティです。
+	</desc>
+	<ref>Controller</ref>
+</member>
+
+<member>
+	<name>console</name>
+	<type>property</type>
+	<shortdesc>コンソールオブジェクト</shortdesc>
+	<access>r</access>
+	<desc>
+		　コンソールオブジェクトを表す読み出し専用のプロパティです。
+	</desc>
+	<ref>Console</ref>
+</member>
+
+
+</doc>

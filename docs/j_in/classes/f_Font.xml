@@ -1,0 +1,321 @@
+<?xml version="1.0" encoding="Shift_JIS" ?>
+<doc>
+<title>Font</title>
+<desc>
+　Font クラスは、<kw>フォント</kw>を管理するためのクラスです。<r/>
+　<ref>Layer</ref> クラスの <ref>Layer.font</ref> プロパティで得られるのがこのクラスのオブジェクトですが、
+ユーザがこのクラスからオブジェクトを作成することはできません ( <tt>Font</tt> というメンバ自体、ユーザが
+アクセスすることができません )。<r/>
+</desc>
+
+
+
+<member>
+	<name>getTextWidth</name>
+	<type>method</type>
+	<shortdesc>文字列の横幅を得る</shortdesc>
+	<arg>
+		<argitem>
+			<name>text</name>
+			<default></default>
+			<desc>
+				　横幅を得たい文字列を指定します。<r/>
+			</desc>
+		</argitem>
+	</arg>
+	<result>指定された文字列の横幅がピクセル単位で戻ります</result>
+	<desc>
+		　このメソッドでは、現在のフォントの設定で指定の文字列を描画したときに必要な
+		横幅を得ることができます。<r/>
+	</desc>
+	<ref>Font.getTextHeight</ref>
+</member>
+
+<member>
+	<name>getTextHeight</name>
+	<type>method</type>
+	<shortdesc>文字列の縦幅を得る</shortdesc>
+	<arg>
+		<argitem>
+			<name>text</name>
+			<default></default>
+			<desc>
+				　縦幅を得たい文字列を指定します。<r/>
+			</desc>
+		</argitem>
+	</arg>
+	<result>指定された文字列の縦幅がピクセル単位で戻ります</result>
+	<desc>
+		　このメソッドでは、このフォントで指定の文字列を描画したときに必要な縦幅を得ることができます。<r/>
+	</desc>
+	<ref>Font.getTextWidth</ref>
+</member>
+
+<member>
+	<name>getEscWidthX</name>
+	<type>method</type>
+	<shortdesc>文字の横方向への X 座標の移動量</shortdesc>
+	<arg>
+		<argitem>
+			<name>text</name>
+			<default></default>
+			<desc>
+				　文字の横方向への X 座標の移動量を得たい文字列を指定します。<r/>
+			</desc>
+		</argitem>
+	</arg>
+	<result>文字の横方向への X 座標の移動量がピクセル単位で戻ります</result>
+	<desc>
+		　現在のフォントの設定で指定された文字を描画したときに必要な文字描画位置の移動量を
+		得ることができます。<r/>
+		　このメソッドでは、文字の描画方向に対して横 ( 左 ) に進んだときの X 座標上での移動量を
+		得ることができます。<r/>
+	</desc>
+	<ref>Font.getEscWidthY</ref>
+	<ref>Font.getEscHeightX</ref>
+	<ref>Font.getEscHeightY</ref>
+</member>
+
+<member>
+	<name>getEscWidthY</name>
+	<type>method</type>
+	<shortdesc>文字の横方向への Y 座標の移動量</shortdesc>
+	<arg>
+		<argitem>
+			<name>text</name>
+			<default></default>
+			<desc>
+				　文字の横方向への Y 座標の移動量を得たい文字列を指定します。<r/>
+			</desc>
+		</argitem>
+	</arg>
+	<result>文字の横方向への Y 座標の移動量がピクセル単位で戻ります</result>
+	<desc>
+		　現在のフォントの設定で指定された文字を描画したときに必要な文字描画位置の移動量を
+		得ることができます。<r/>
+		　このメソッドでは、文字の描画方向に対して横 ( 左 ) に進んだときの Y 座標上での移動量を
+		得ることができます。<r/>
+	</desc>
+	<ref>Font.getEscWidthX</ref>
+	<ref>Font.getEscHeightX</ref>
+	<ref>Font.getEscHeightY</ref>
+</member>
+
+<member>
+	<name>getEscHeightX</name>
+	<type>method</type>
+	<shortdesc>文字の縦方向への X 座標の移動量</shortdesc>
+	<arg>
+		<argitem>
+			<name>text</name>
+			<default></default>
+			<desc>
+				　文字の縦方向への X 座標の移動量を得たい文字列を指定します。<r/>
+			</desc>
+		</argitem>
+	</arg>
+	<result>文字の縦方向への X 座標の移動量がピクセル単位で戻ります</result>
+	<desc>
+		　現在のフォントの設定で指定された文字を描画したときに必要な文字描画位置の移動量を
+		得ることができます。<r/>
+		　このメソッドでは、文字の描画方向に対して縦 ( 下 ) に進んだときの X 座標上での移動量を
+		得ることができます。<r/>
+	</desc>
+	<ref>Font.getEscWidthX</ref>
+	<ref>Font.getEscWidthY</ref>
+	<ref>Font.getEscHeightY</ref>
+</member>
+
+<member>
+	<name>getEscHeightY</name>
+	<type>method</type>
+	<shortdesc>文字の縦方向への Y 座標の移動量</shortdesc>
+	<arg>
+		<argitem>
+			<name>text</name>
+			<default></default>
+			<desc>
+				　文字の縦方向への Y 座標の移動量を得たい文字列を指定します。<r/>
+			</desc>
+		</argitem>
+	</arg>
+	<result>文字の縦方向への Y 座標の移動量がピクセル単位で戻ります</result>
+	<desc>
+		　現在のフォントの設定で指定された文字を描画したときに必要な文字描画位置の移動量を
+		得ることができます。<r/>
+		　このメソッドでは、文字の描画方向に対して縦 ( 下 ) に進んだときの Y 座標上での移動量を
+		得ることができます。<r/>
+	</desc>
+	<ref>Font.getEscWidthX</ref>
+	<ref>Font.getEscWidthY</ref>
+	<ref>Font.getEscHeightX</ref>
+</member>
+
+
+<member>
+	<name>doUserSelect</name>
+	<type>method</type>
+	<shortdesc>フォント選択ダイアログボックスの表示</shortdesc>
+	<arg>
+		<argitem>
+			<name>flags</name>
+			<default></default>
+			<desc>
+				　フォント選択ダイアログボックスのオプションを指定します。<r/>
+				　次の値のビット論理和による組み合わせ指定します。<r/>
+				<tt><kw>fsfFixedPitch</kw>    </tt> : 固定ピッチフォントのみ表示します<r/>
+				<tt><kw>fsfSameCharSet</kw>   </tt> : 同じキャラクタセットのフォントのみ表示します<r/>
+				<tt><kw>fsfNoVertical</kw>    </tt> : 縦書き用フォントを表示しません<r/>
+				<tt><kw>fsfTrueTypeOnly</kw>  </tt> : TrueType フォントのみ表示します<r/>
+				<tt><kw>fsfUseFontFace</kw>   </tt> : 選択リストボックスをそれぞれのフォントで表示します<r/>
+				　fsfSameCharSet を指定した場合は、現在選択されているフォントと同じキャラクタセットの
+				フォントが表示されます。<r/>
+			</desc>
+		</argitem>
+		<argitem>
+			<name>caption</name>
+			<default></default>
+			<desc>
+				　ダイアログボックスのキャプション ( タイトルバー ) に表示する
+				文字列を指定します。<r/>
+			</desc>
+		</argitem>
+		<argitem>
+			<name>prompt</name>
+			<default></default>
+			<desc>
+				　ダイアログボックス内に表示する文字列を指定します。<r/>
+				　通常はユーザに入力を促すためのメッセージを指定します。<r/>
+			</desc>
+		</argitem>
+		<argitem>
+			<name>sample</name>
+			<default></default>
+			<desc>
+				　ダイアログボックス内の「サンプル」の部分に表示する文字列を指定します。<r/>
+				　ユーザは、ここに表示されるサンプルで実際のフォントを確かめることができます。<r/>
+			</desc>
+		</argitem>
+	</arg>
+	<result>ユーザが OK ボタンを選択した場合は true、それ以外の場合は false が戻ります</result>
+	<desc>
+		　ユーザにフォントを選択させるためのダイアログボックスを開きます。<r/>
+	</desc>
+</member>
+
+<member>
+	<name>mapPrerenderedFont</name>
+	<type>method</type>
+	<shortdesc>レンダリング済みフォントの割り当て</shortdesc>
+	<arg>
+		<argitem>
+			<name>fontstorage</name>
+			<default></default>
+			<desc>
+				　レンダリング済みフォントストレージを指定します。<r/>
+			</desc>
+		</argitem>
+	</arg>
+	<result></result>
+	<desc>
+		　現在選択されているフォント名に対して<kw>レンダリング済みフォント</kw>の割り当てを行います。<r/>
+		　以降、同じ設定のフォントに対しては指定されたレンダリング済みフォントが代わりに使われます。<r/>
+		　すべてのレイヤに対して設定が有効になります。<r/>
+	</desc>
+	<ref>Font.unmapPrerenderedFont</ref>
+</member>
+
+<member>
+	<name>unmapPrerenderedFont</name>
+	<type>method</type>
+	<shortdesc>レンダリング済みフォントの割り当て解除</shortdesc>
+	<arg>
+	</arg>
+	<result></result>
+	<desc>
+		　現在選択されているフォント名に対する<kw>レンダリング済みフォント</kw>の割り当てを解除します。<r/>
+	</desc>
+	<ref>Font.mapPrerenderedFont</ref>
+</member>
+
+
+<member>
+	<name>face</name>
+	<type>property</type>
+	<shortdesc>フォント名</shortdesc>
+	<access>r/w</access>
+	<desc>
+		　フォント名を表します。値を設定することもできます。<r/>
+	</desc>
+</member>
+
+<member>
+	<name>height</name>
+	<type>property</type>
+	<shortdesc>フォント高さ</shortdesc>
+	<access>r/w</access>
+	<desc>
+		　描画される文字の高さをピクセル単位で表します。値を設定することもできます。<r/>
+	</desc>
+</member>
+
+<member>
+	<name>bold</name>
+	<type>property</type>
+	<shortdesc>ボールド</shortdesc>
+	<access>r/w</access>
+	<desc>
+		　ボールド ( 太字 ) であるかどうかを表します。値を設定することもできます。<r/>
+		　真を指定するとボールドになります。<r/>
+	</desc>
+</member>
+
+<member>
+	<name>italic</name>
+	<type>property</type>
+	<shortdesc>イタリック</shortdesc>
+	<access>r/w</access>
+	<desc>
+		　イタリック ( 斜体 ) であるかどうかを表します。値を設定することもできます。<r/>
+		　真を指定するとイタリックになります。<r/>
+	</desc>
+</member>
+
+<member>
+	<name>strikeout</name>
+	<type>property</type>
+	<shortdesc>取消線</shortdesc>
+	<access>r/w</access>
+	<desc>
+		　取消線を描画するかどうか表します。値を設定することもできます。<r/>
+		　真を指定すると文字の上に取消線を描画します。<r/>
+		　現バージョンの吉里吉里ではこのプロパティは意味を持ちません。<r/>
+	</desc>
+</member>
+
+<member>
+	<name>underline</name>
+	<type>property</type>
+	<shortdesc>アンダーライン</shortdesc>
+	<access>r/w</access>
+	<desc>
+		　アンダーライン ( 下線または傍線 ) を描画するかどうか表します。値を設定することもできます。<r/>
+		　真を指定するとアンダーラインを描画します。<r/>
+		　現バージョンの吉里吉里ではこのプロパティは意味を持ちません。<r/>
+	</desc>
+</member>
+
+<member>
+	<name>angle</name>
+	<type>property</type>
+	<shortdesc>文字描画角度</shortdesc>
+	<access>r/w</access>
+	<desc>
+		　文字描画角度を表します。値を設定することもできます。<r/>
+		　単位は角度 ( degree ) の 10 倍の値です。0 ～ 3600 の値をとります。<r/>
+		　縦書きを行う場合はフォント名に縦書き用のフォント名を指定した上で、このプロパティ
+		に 2700 を指定します。<r/>
+	</desc>
+</member>
+
+</doc>

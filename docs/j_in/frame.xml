@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="Shift_JIS" ?>
+<doc>
+<anchor target="main"/>
+<keywords/>
+<title>吉里吉里２ 目次</title>
+<para>
+<ptitle>概要と各機能</ptitle>
+<link href="about"/><r/>
+<link href="Copyrights"/><r/>
+<r/>
+<link href="Startup"/><r/>
+<link href="CommandLine"/><r/>
+<r/>
+<link href="Controller"/><r/>
+<link href="ScriptEditor"/><r/>
+<link href="ExprWatch"/><r/>
+<link href="Console"/><r/>
+<r/>
+<link href="StorageSystem"/><r/>
+<link href="EventSystem"/><r/>
+<link href="GraphicSystem"/><r/>
+<link href="SoundSystem"/><r/>
+<link href="Transition"/><r/>
+<link href="Plugins"/><r/>
+<r/>
+<link href="HotKeys"/><r/>
+<r/>
+<link href="ComputerDependentProblems"/><r/>
+</para>
+<para>
+<ptitle>クラスリファレンス</ptitle>
+<at href="f_System.html">System クラス</at><r/>
+<at href="f_Storages.html">Storages クラス</at><r/>
+<at href="f_Debug.html">Debug クラス</at><r/>
+<at href="f_Console.html">Console クラス</at><r/>
+<at href="f_Controller.html">Controller クラス</at><r/>
+<at href="f_Scripts.html">Scripts クラス</at><r/>
+<at href="f_Plugins.html">Plugins クラス</at><r/>
+<at href="f_Timer.html">Timer クラス</at><r/>
+<at href="f_AsyncTrigger.html">AsyncTrigger クラス</at><r/>
+<at href="f_Window.html">Window クラス</at><r/>
+<at href="f_MenuItem.html">MenuItem クラス</at><r/>
+<at href="f_Layer.html">Layer クラス</at><r/>
+<at href="f_Font.html">Font クラス</at><r/>
+<at href="f_WaveSoundBuffer.html">WaveSoundBuffer クラス</at><r/>
+<at href="f_MIDISoundBuffer.html">MIDISoundBuffer クラス</at><r/>
+<at href="f_CDDASoundBuffer.html">CDDASoundBuffer クラス</at><r/>
+<at href="f_VideoOverlay.html">VideoOverlay クラス</at><r/>
+</para>
+
+<para>
+<ptitle>付属ツールの使い方</ptitle>
+<link href="Releaser"/><r/>
+<link href="FontMaker"/><r/>
+<link href="Configure"/><r/>
+<link href="TPC"/><r/>
+<link href="SignTool"/><r/>
+<link href="FileChkTool"/><r/>
+<at href="../../tools/help/index.html">Loop Tuner</at><r/>
+</para>
+
+<para>
+<ptitle>付録</ptitle>
+<link href="KeyCodes"/><r/>
+<link href="ColorCodes"/><r/>
+<link href="MouseCursors"/><r/>
+</para>
+
+</doc>

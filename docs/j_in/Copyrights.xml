@@ -1,0 +1,188 @@
+<?xml version="1.0" encoding="Shift_JIS" ?>
+<doc>
+<title>著作権など</title>
+
+<para>
+<ptitle>著作権/ライセンス</ptitle>
+　SDK 付属の license.txt をご覧ください。<r/>
+　以下は著作権やライセンスに関する FAQ あるいは多くの方が疑問に思うであろう事です。<r/>
+　原則は license.txt に書かれている通りですので、必ず license.txt に目を通してください。<r/>
+　ここに書かれている事と license.txt に書かれていることがもし食い違っていた場合、license.txt に書かれていることのほうが優先されます。<r/>
+　画像形式に ERI を使用する場合は <a  target="_top"  href="http://www.entis.jp/eri/">恵理ちゃんclub</a> にある著作権関係のドキュメントに目を通してください。<r/>
+<r/>
+<dl>
+<dt>吉里吉里の作者にお金を払わないとならないのでしょうか・・・</dt>
+<dd>
+　その必要はありません。
+</dd>
+
+<dt>商用 ( シェアウェア含む ) で利用したいのですが・・・</dt>
+<dd>
+　商用でも利用できます。<r/>
+　商用でも、利用に関しライセンス料等は必要ありません。無償で利用できます。
+</dd>
+
+<dt>作品中にお名前をお借りしたいのですが・・・</dt>
+<dd>
+　特に吉里吉里を使用したということをドキュメントなどに書く必要はありません。<r/>
+　もちろん、書いてくださっても結構です(^^;
+</dd>
+
+<dt>作品が完成したら吉里吉里の作者に知らせなければならないのでしょうか・・・</dt>
+<dd>
+　吉里吉里を使用したことを通知する義務はありません。商用の場合でも通知の義務はありません。<r/>
+　ただ、一言声をかけてくださるときっと喜びます、はい。
+</dd>
+
+<dt>吉里吉里のソースを流用したいのですが・・・</dt>
+<dd>
+　吉里吉里２は GNU GPL と独自のライセンスのデュアルライセンスです。GNU GPL に従ってソースを流用することもできます。独自のライセンスの方 ( license.txt に書いてあります ) にて流用する場合は、吉里吉里のソースを流用したことをそのソフトウェアなどのドキュメントに記述するか、あるいは、吉里吉里の作者にソースを流用したことを通知しなければなりません。
+</dd>
+</dl>
+</para>
+
+<para>
+<ptitle>謝辞</ptitle>
+　吉里吉里２は多くの方の協力があって成り立っています。みなさまのご厚意に感謝いたします。<r/>
+　特に吉里吉里/KAGに関してＰＩＡ少尉様には多くの助言をいただきました。有り難うございます。<r/>
+<r/>
+　以下は吉里吉里が使用しているプログラミングライブラリ/支援ソフトウェアのリストです (順不同, 敬称略)。有用なライブラリを公開されている方々に感謝いたします。<r/>
+<r/>
+<dl>
+<dt>IJG JPEG Library (Independent JPEG Group)</dt>
+<dd>
+    <at target="_top"  href="http://www.ijg.org/">http://www.ijg.org/</at><r/>
+    This software is based in part on the work of the Independent JPEG Group.
+</dd>
+
+<dt>libpng (Guy Eric Schalnat, Andreas Dilger, Glenn Randers-Pehrson,  and others)</dt>
+<dd>
+    <at target="_top"  href="http://www.libpng.org/pub/png/libpng.html">http://www.libpng.org/pub/png/libpng.html</at>
+</dd>
+
+<dt>zlib (Jean-loup Gailly, Mark Adler)</dt>
+<dd>
+    <at target="_top"  href="http://www.gzip.org/zlib/">http://www.gzip.org/zlib/</at>
+</dd>
+
+<dt>ERINA-Library (L.Entis)</dt>
+<dd>
+    <at target="_top"  href="http://www.entis.jp/eri/">http://www.entis.jp/eri/</at><r/>
+    ERINA-Library Copyright (C) 2001 Leshade Entis, Entis-soft.
+</dd>
+
+<dt>Regex++ (Dr John Maddock)</dt>
+<dd>
+    <at target="_top"  href="http://ourworld.compuserve.com/homepages/John_Maddock/regexpp.htm">http://ourworld.compuserve.com/homepages/John_Maddock/regexpp.htm</at><r/>
+    Regex++ Copyright (c) 1998-2000 Dr John Maddock
+</dd>
+
+<dt>UPX (Markus F.X.J. Oberhumer &amp; Laszlo Molnar)</dt>
+<dd>
+    <at target="_top"  href="http://upx.sourceforge.net/">http://upx.sourceforge.net/</at>
+</dd>
+
+<dt>Shell Component Library (伊藤 隆志)</dt>
+<dd>
+    <at target="_top"  href="http://www.bekkoame.ne.jp/~itotaka/">http://www.bekkoame.ne.jp/~itotaka/</at>
+</dd>
+
+<dt>NASM, The Netwide Assembler (Simon Tatham, Julian Hall and others)</dt>
+<dd>
+    <at target="_top"  href="http://nasm.sourceforge.net/">http://nasm.sourceforge.net/</at>
+</dd>
+
+<dt>alink (Anthony A.J. Williams)</dt>
+<dd>
+    <at target="_top"  href="http://alink.home.dhs.org/">http://alink.home.dhs.org/</at>
+</dd>
+
+<dt>md5.c (L. Peter Deutsch)</dt>
+<dd>
+    Copyright (C) 1999, 2000, 2002 Aladdin Enterprises.  All rights reserved.
+</dd>
+
+<dt>libogg/libvorbis (Xiph.Org Foundation)</dt>
+<dd>
+    <at target="_top"  href="http://www.xiph.org/">http://www.xiph.org/</at><r/>
+    <r/>
+Copyright (c) 2002, Xiph.org Foundation<r/>
+<r/>
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions
+are met:<r/>
+<r/>
+- Redistributions of source code must retain the above copyright
+notice, this list of conditions and the following disclaimer.<r/>
+<r/>
+- Redistributions in binary form must reproduce the above copyright
+notice, this list of conditions and the following disclaimer in the
+documentation and/or other materials provided with the distribution.<r/>
+<r/>
+- Neither the name of the Xiph.org Foundation nor the names of its
+contributors may be used to endorse or promote products derived from
+this software without specific prior written permission.<r/>
+<r/>
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+A PARTICULAR PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR
+CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+</dd>
+
+
+<dt>A C-program for MT19937 (Makoto Matsumoto and Takuji Nishimura)</dt>
+<dd>
+    <at target="_top"  href="http://www.math.keio.ac.jp/matumoto/emt.html">http://www.math.keio.ac.jp/matumoto/emt.html</at><r/>
+    <r/>
+Copyright (C) 1997 - 2002, Makoto Matsumoto and Takuji Nishimura,
+   All rights reserved.     <r/>
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions
+are met:<r/>
+<ol>
+<li> Redistributions of source code must retain the above copyright
+notice, this list of conditions and the following disclaimer.</li>
+
+<li> Redistributions in binary form must reproduce the above copyright
+notice, this list of conditions and the following disclaimer in the
+documentation and/or other materials provided with the distribution.</li>
+
+<li> The names of its contributors may not be used to endorse or promote 
+products derived from this software without specific prior written 
+permission.</li>
+</ol>
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+"AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR
+CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.<r/>
+
+</dd>
+
+
+<dt>LibTomCrypt (Tom St Denis)</dt>
+<dd>
+    <at target="_top"  href="http://libtomcrypt.org/">http://libtomcrypt.org/</at><r/>
+</dd>
+</dl>
+
+</para>
+
+</doc>
+
+
