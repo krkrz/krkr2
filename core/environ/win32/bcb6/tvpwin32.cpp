@@ -45,9 +45,14 @@ USEFORM("..\..\..\..\tools\win32\krdevui\ConfMainFrameUnit.cpp", ConfMainFrame);
 WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 {
 	// try starting the program!
+	bool engine_init = false;
 	try
 	{
+		if(TVPCheckProcessLog()) return 0; // sub-process for processing object hash map log
+
+
 		TVPInitScriptEngine();
+		engine_init = true;
 
 		// banner
 		TVPAddImportantLog(TJS_W("Program started on ") + TVPGetOSName() +
@@ -103,7 +108,7 @@ WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 		Application->ShowException(&Exception("Unknown error!"));
 	}
 
-	TVPUninitScriptEngine();
+	if(engine_init) TVPUninitScriptEngine();
 	return 0;
 }
 //---------------------------------------------------------------------------
