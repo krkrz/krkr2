@@ -1,0 +1,283 @@
+<?xml version="1.0" encoding="Shift_JIS" ?>
+<doc>
+<title>MIDISoundBuffer</title>
+<desc>
+　MIDISoundBuffer クラスは、<midi>MIDIの再生</midi>を管理するクラスです。<r/>
+</desc>
+
+<member>
+	<name>MIDISoundBuffer</name>
+	<type>constructor</type>
+	<shortdesc>MIDISoundBuffer オブジェクトの構築</shortdesc>
+	<arg>
+		<argitem>
+			<name>owner</name>
+			<default></default>
+			<desc>
+				　イベントの発生先を指定します。<r/>
+			</desc>
+		</argitem>
+	</arg>
+	<result></result>
+	<desc>
+		　MIDISoundBuffer クラスのオブジェクトを構築します。<r/>
+		　イベントが発生すると owner で指定したオブジェクトの action メソッドを呼び出します。owner に null を指定すると action メソッドは呼ばれません。通常は <ref>Window</ref> クラスのオブジェクトを owner に指定します。<r/>
+	</desc>
+</member>
+
+
+<member>
+	<name>onStatusChanged</name>
+	<type>event</type>
+	<shortdesc>ステータスが変更された</shortdesc>
+	<arg>
+		<argitem>
+			<name>status</name>
+			<default></default>
+			<desc>
+				　新しいステータスです。<r/>
+				　<ref>MIDISoundBuffer.status</ref> プロパティを参照してください。<r/>
+			</desc>
+		</argitem>
+	</arg>
+	<result></result>
+	<desc>
+		　再生のステータス ( 状態 ) が変わった時に発生します。<r/>
+	</desc>
+</member>
+
+<member>
+	<name>onFadeCompleted</name>
+	<type>event</type>
+	<shortdesc>フェードが終了した</shortdesc>
+	<arg>
+	</arg>
+	<result></result>
+	<desc>
+		　<ref>MIDISoundBuffer.fade</ref> メソッドで開始したフェードが終了したときに発生します。<r/>
+	</desc>
+</member>
+
+
+<member>
+	<name>open</name>
+	<type>method</type>
+	<shortdesc>メディアを開く</shortdesc>
+	<arg>
+		<argitem>
+			<name>storage</name>
+			<default></default>
+			<desc>
+				<midi>　再生したいストレージを指定します。<r/></midi>
+				
+				
+			</desc>
+		</argitem>
+	</arg>
+	<result></result>
+	<desc>
+		　指定されたメディアを開きます。このメソッドは再生を開始しません。<r/>
+	</desc>
+</member>
+
+<member>
+	<name>play</name>
+	<type>method</type>
+	<shortdesc>メディアを再生する</shortdesc>
+	<arg>
+	</arg>
+	<result></result>
+	<desc>
+		　メディアの再生を開始します。<r/>
+	</desc>
+</member>
+
+<member>
+	<name>stop</name>
+	<type>method</type>
+	<shortdesc>メディアを停止する</shortdesc>
+	<arg>
+	</arg>
+	<result></result>
+	<desc>
+		　メディアを停止します。<r/>
+	</desc>
+</member>
+
+<member>
+	<name>fade</name>
+	<type>method</type>
+	<shortdesc>フェードを開始する</shortdesc>
+	<arg>
+		<argitem>
+			<name>to</name>
+			<default></default>
+			<desc>
+				　到達させる音量を指定します。<r/>
+				　音量の指定については <ref>MIDISoundBuffer.volume</ref> プロパティを参照して
+				ください。<r/>
+			</desc>
+		</argitem>
+		<argitem>
+			<name>time</name>
+			<default></default>
+			<desc>
+				　フェードにかける時間を ms 単位で指定します。<r/>
+			</desc>
+		</argitem>
+		<argitem>
+			<name>delay</name>
+			<default>0</default>
+			<desc>
+				　フェード開始までの待ち時間を ms 単位で指定します。<r/>
+			</desc>
+		</argitem>
+	</arg>
+	<result></result>
+	<desc>
+		　フェード ( 連続的な音量の変化 ) を開始します。<r/>
+	</desc>
+</member>
+
+<member>
+	<name>stopFade</name>
+	<type>method</type>
+	<shortdesc>フェードを停止する</shortdesc>
+	<arg>
+	</arg>
+	<result></result>
+	<desc>
+		　<ref>MIDISoundBuffer.fade</ref> メソッドで開始したフェードを強制的に停止します。<r/>
+		　音量は停止させた時点のままになります。<r/>
+	</desc>
+</member>
+
+
+
+<midi>
+<member>
+	<name>midiOut</name>
+	<type>method</type>
+	<shortdesc>任意の MIDI データの出力</shortdesc>
+	<arg>
+		<argitem>
+			<name>data</name>
+			<default></default>
+			<desc>
+				　出力する MIDI データをオクテット形式で指定します。<r/>
+			</desc>
+		</argitem>
+	</arg>
+	<result></result>
+	<desc>
+		　任意の MIDI データを出力します。<r/>
+		　データ中に ff 00 が入っていると、その時点で 50ms のウェイトが入ります。<r/>
+	</desc>
+</member>
+</midi>
+
+
+
+<member>
+	<name>position</name>
+	<type>property</type>
+	<shortdesc>再生位置</shortdesc>
+	<access>r/w</access>
+	<desc>
+		　再生位置を ms 単位で表します。値を設定するとその位置に移動します。<r/>
+		<midi>　現バージョンでは実装されていません。<r/></midi>
+		
+	</desc>
+</member>
+
+<member>
+	<name>paused</name>
+	<type>property</type>
+	<shortdesc>一時停止状態かどうか</shortdesc>
+	<access>r/w</access>
+	<desc>
+		　一時停止状態かどうかを表します。値を設定することもできます。<r/>
+		　真の場合は一時停止状態です。<r/>
+		<midi>　現バージョンでは実装されていません。<r/></midi>
+		
+	</desc>
+</member>
+
+<member>
+	<name>totalTime</name>
+	<type>property</type>
+	<shortdesc>メディアの再生時間</shortdesc>
+	<access>r</access>
+	<desc>
+		　メディアの総再生時間を ms 単位で表します。<r/>
+		<midi>　現バージョンでは実装されていません。<r/></midi>
+		
+	</desc>
+</member>
+
+<member>
+	<name>looping</name>
+	<type>property</type>
+	<shortdesc>ループ再生を行うかどうか</shortdesc>
+	<access>r/w</access>
+	<desc>
+		　ループ再生を行うかどうかを表します。値を設定することもできます。<r/>
+		　真を指定するとループ再生がされます。<r/>
+		
+	</desc>
+</member>
+
+<member>
+	<name>volume</name>
+	<type>property</type>
+	<shortdesc>音量</shortdesc>
+	<access>r/w</access>
+	<desc>
+		　再生する音量を表します。値を設定することもできます。<r/>
+		0 ～ 100000 の数値で指定し、 0 が完全ミュート、100000 が 100% の音量となります。<r/>
+	</desc>
+</member>
+
+<member>
+	<name>volume2</name>
+	<type>property</type>
+	<shortdesc>第２音量</shortdesc>
+	<access>r/w</access>
+	<desc>
+		　再生する音量を表します。値を設定することができます。<r/>
+		　<ref>MIDISoundBuffer.volume</ref> プロパティと違うのは、このプロパティは
+		<ref>MIDISoundBuffer.fade</ref> メソッドでも変化しないということです。<r/>
+		　最終的な音量は、volume プロパティとこのプロパティの積で決定されます。volume プロパティが
+		100000 ( 100% ) で volume2 プロパティも 100000 ( 100% ) ならば 100% × 100% = 100% で
+		100% の音量で再生されます。volume プロパティが 50000 ( 50% ) で volume2 プロパティが 75000 ( 75% ) ならば
+		50% × 75% = 37.5% で 37.5 % の音量で再生されます。<r/>
+	</desc>
+</member>
+
+<member>
+	<name>status</name>
+	<type>property</type>
+	<shortdesc>ステータス</shortdesc>
+	<access>r</access>
+	<desc>
+		　現在の状態を表します。<r/>
+		　状態は文字列で表され、以下の値をとります。<r/>
+		<tt>"<kw>unload</kw>"   : </tt> メディアが開かれてない<r/>
+		<tt>"<kw>play</kw>"     : </tt> メディアは再生中である<r/>
+		<tt>"<kw>stop</kw>"     : </tt> メディアは停止中である<r/>
+	</desc>
+</member>
+
+
+
+
+
+
+
+
+
+
+
+
+
+</doc>
