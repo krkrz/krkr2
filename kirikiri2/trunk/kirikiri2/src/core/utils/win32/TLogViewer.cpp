@@ -159,8 +159,8 @@ void __fastcall TLogViewer::Paint()
 				char *pp = buf2;
 				for(int i = 0; i < data_len; i++)
 				{
-					wctomb(pp, 0);
-					int narrowlen = wctomb(pp, p[i]);
+					TJS_wctomb(pp, 0);
+					int narrowlen = TJS_wctomb(pp, p[i]);
 					if(narrowlen != -1) pp += narrowlen;
 				}
 				*pp = 0;
@@ -239,10 +239,10 @@ int __fastcall TLogViewer::GetTextWidth(const tjs_char *txt, int len)
 			if(!procGetTextExtentPoint32W)
 			{
 				char narrow[10 + 1];
-				wctomb(narrow, 0);
+				TJS_wctomb(narrow, 0);
 				tjs_char wc = *txt;
 				if(wc == TJS_W('\t')) wc = TJS_W(' ');
-				int narrowlen = wctomb(narrow, wc);
+				int narrowlen = TJS_wctomb(narrow, wc);
 				if(narrowlen == -1)
 				{
 					CharWidthMap[*txt] = 0;

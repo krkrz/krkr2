@@ -2511,7 +2511,7 @@ void __fastcall TTVPWindowForm::FormKeyPress(TObject *Sender, char &Key)
 			// pending keycode
 			PendingKeyCodes += Key;
 			wchar_t dest;
-			int res = mbtowc(&dest, PendingKeyCodes.c_str(), PendingKeyCodes.Length());
+			int res = TJS_mbtowc(&dest, PendingKeyCodes.c_str(), PendingKeyCodes.Length());
 			if(res > 0)
 			{
 				// convertion succeeded
@@ -2526,7 +2526,7 @@ void __fastcall TTVPWindowForm::FormKeyPress(TObject *Sender, char &Key)
 			key[0] = Key;
 			key[1] = 0;
 			wchar_t dest;
-			int res = mbtowc(&dest, key, 1);
+			int res = TJS_mbtowc(&dest, key, 1);
 			if(res > 0)
 			{
 				// convertion succeeded
