@@ -131,6 +131,9 @@ public:
 #endif
 // End:		Add:	T.Imoto
 
+	tjs_int GetOriginalWidth();
+	tjs_int GetOriginalHeight();
+
 	void SetWindowHandle(HWND wnd);
 	void SetMessageDrainWindow(HWND wnd);
 	void SetRectOffset(tjs_int ofsx, tjs_int ofsy);
