@@ -433,6 +433,8 @@ void tTJSNI_KAGParser::operator = (const tTJSNI_KAGParser & ref)
 	{
 		if(Scenario) Scenario->Release(), Scenario = NULL, Lines = NULL;
 		Scenario = ref.Scenario;
+		Lines = ref.Lines;
+		LineCount = ref.LineCount;
 		if(Scenario) Scenario->AddRef();
 	}
 
