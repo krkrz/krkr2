@@ -18,6 +18,12 @@
 #include "StorageIntf.h"
 #include "UtilStreams.h"
 
+// Start:	Add:	T.Imoto
+enum tTVPVideoOverlayMode {
+	vomOverlay,		// Overlay
+	vomLayerDraw,	// Draw Layer
+};
+// End:		Add:	T.Imoto
 //---------------------------------------------------------------------------
 // tTJSNI_VideoOverlay : VideoOverlay Native Instance
 //---------------------------------------------------------------------------
@@ -36,6 +42,12 @@ class tTJSNI_VideoOverlay : public tTJSNI_BaseVideoOverlay
 	HWND UtilWindow; // window which receives messages from video overlay object
 
 	tTVPLocalTempStorageHolder *LocalTempStorageHolder;
+// Start:	Add:	T.Imoto
+	class tTJSNI_BaseLayer	*Layer1;
+	class tTJSNI_BaseLayer	*Layer2;
+	tTVPVideoOverlayMode	Mode;	//!< Modeの動的な変更は出来ない。open前にセットしておくこと
+	bool	Loop;
+// End:		Add:	T.Imoto
 
 public:
 	tTJSNI_VideoOverlay();
@@ -52,6 +64,11 @@ public:
 
 	void Play();
 	void Stop();
+// Start:	Add:	T.Imoto
+	void Pause();
+	void Rewind();
+//	void PlaySequence();	初めは追加しない
+// End:		Add:	T.Imoto
 
 public:
 	void SetRectangleToVideoOverlay();
@@ -71,6 +88,31 @@ public:
 
 	void SetVisible(bool b);
 	bool GetVisible() const { return Visible; }
+
+// Start:	Add:	T.Imoto
+#if 0
+	void SetTimePosition( tjs_int64 p );
+	tjs_int64 GetTimePosition();
+
+	void SetLoop( bool b );
+	bool GetLoop() const { return Loop; }
+
+	void SetFrame( tjs_int f );
+	tjs_int GetFrame();
+
+	tjs_real GetFPS();
+	tjs_int GetNumberOfFrame();
+	tjs_int64 GetTotalTime();
+
+	void SetLayer1( tTJSNI_BaseLayer *l );
+	tTJSNI_BaseLayer *GetLayer1() { return Layer1; }
+	void SetLayer2( tTJSNI_BaseLayer *l );
+	tTJSNI_BaseLayer *GetLayer2() { return Layer2; }
+
+	void SetMode( tTVPVideoOverlayMode m );
+	tTVPVideoOverlayMode GetMode() { return Mode; }
+#endif
+// End:		Add:	T.Imoto
 
 	void SetWindowHandle(HWND wnd);
 	void SetMessageDrainWindow(HWND wnd);

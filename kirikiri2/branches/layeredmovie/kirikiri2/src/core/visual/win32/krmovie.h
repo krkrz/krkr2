@@ -41,6 +41,17 @@ public:
 	virtual const wchar_t* __stdcall GetStatus(tTVPVideoStatus *status) = 0;
 	virtual const wchar_t* __stdcall GetEvent(long *evcode, long *param1,
 			long *param2, bool *got) = 0;
+
+// Start:	Add:	T.Imoto
+	virtual const wchar_t* __stdcall Rewind() = 0;
+	virtual const wchar_t* __stdcall SetFrame( int f ) = 0;
+	virtual const wchar_t* __stdcall GetFrame( int *f ) = 0;
+	virtual const wchar_t* __stdcall GetFPS( double *f ) = 0;
+	virtual const wchar_t* __stdcall GetNumberOfFrame( int *f ) = 0;
+	virtual const wchar_t* __stdcall GetTotalTime( __int64 *t ) = 0;
+
+	virtual const wchar_t* __stdcall Update( class tTJSNI_BaseLayer *l1, class tTJSNI_BaseLayer *l2 ) = 0;
+// End:	Add:	T.Imoto
 };
 //---------------------------------------------------------------------------
 
