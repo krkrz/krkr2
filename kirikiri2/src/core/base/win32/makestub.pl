@@ -501,6 +501,9 @@ process_exp_stub("../../visual/tvpinputdefs.h");
 print OFH "#include \"LayerBitmapIntf.h\"\n";
 process_exp_stub("../../visual/LayerBitmapIntf.h");
 
+print OFH "#include \"drawable.h\"\n";
+process_exp_stub("../../visual/drawable.h");
+
 print OFH "#include \"LayerIntf.h\"\n";
 process_exp_stub("../../visual/LayerIntf.h");
 
@@ -512,9 +515,6 @@ process_exp_stub("../../visual/win32/WindowImpl.h");
 
 print OFH "#include \"TransIntf.h\"\n";
 process_exp_stub("../../visual/TransIntf.h");
-
-print OFH "#include \"drawable.h\"\n";
-process_exp_stub("../../visual/drawable.h");
 
 print OFH "#include \"transhandler.h\"\n";
 process_exp_stub("../../visual/transhandler.h");
