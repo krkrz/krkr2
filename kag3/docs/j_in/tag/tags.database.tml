@@ -5308,7 +5308,7 @@
 			<required> no </required>
 			<format> true(デフォルト) または false </format>
 			<info>
-				　true を指定するとクリックでトランジションの終了待ちをスキップできます。<BR>
+				　true を指定するとクリックで自動移動の終了待ちをスキップできます。<BR>
 				　false を指定するとスキップできません。<BR>
 				　ただし <ref tag="clickskip">clipskip</ref> タグでクリックスキップが
 				禁止されているとこのスキップもできないので注意してください。<BR>
