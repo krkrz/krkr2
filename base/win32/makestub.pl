@@ -13,6 +13,7 @@ EOF
 
 
 use Compress::Zlib;
+use Digest::MD5  qw(md5 md5_hex md5_base64);
 
 ;# This perl script is VERY VERY complicated so I do never want to see again.
 
@@ -100,7 +101,7 @@ sub get_ret_type
 sub make_func_stub
 {
 	local($rettype, $name, $arg, $type, $prefix, $isconst, $isstatic,
-		$str, $mangled, $noreturn, $h, $argnames, $functype, $func_exp_name);
+		$str, $mangled, $noreturn, $h, $argnames, $functype, $func_exp_name, $md5);
 	$rettype = $_[0];
 	$name = $_[1];
 	$arg = $_[2];
@@ -116,18 +117,20 @@ sub make_func_stub
 	$arg =~ s/\n/ /gs;
 	$arg =~ s/\t/ /gs;
 
-	$func_exp_name = "";
-
-	$mangled = "TVP_Stub_$num\t";
-	$mangled .= ($func_exp_name = 
+	$func_exp_name = 
 		($rettype =~ /^${prefix}_METHOD_RET/ ? '' : normalize_string($rettype).' ').
-		$type.'::'.normalize_string($name).'('.except_arg_names($arg).')'.($isconst ? ' const':''));
+		$type.'::'.normalize_string($name).'('.except_arg_names($arg).')'.($isconst ? ' const':'');
+
+	$md5 = md5_hex($func_exp_name);
+
+	$mangled = "TVP_Stub_$md5\t";
+	$mangled .= $func_exp_name;
 	$mangled .= "\t".get_ret_type($rettype, $prefix).
-		"(__stdcall *  __TVP_Stub_$num)($type *_this".($arg ne '' ? ', ' : '').normalize_string($arg).")";
+		"(__stdcall *  __TVP_Stub_$md5)($type *_this".($arg ne '' ? ', ' : '').normalize_string($arg).")";
 	$mangled .= "\t".($rettype =~ /^${prefix}_METHOD_RET/ ? '' : normalize_string($rettype)) .
 		" ".normalize_string($type)."::".normalize_string($name). "(".normalize_string($arg).")";
-	$mangled .= "\tTVP_Stub_$num";
-	$mangled .= "\t$num";
+	$mangled .= "\tTVP_Stub_$md5";
+	$mangled .= "\t$md5";
 	$mangled .= "\t".get_arg_names($arg);
 	$functype = get_ret_type($rettype, $prefix).
 		"(__stdcall * __functype)(".($isconst ? "const ": "").
@@ -150,7 +153,7 @@ sub make_func_stub
 	print OFH "static ";
 	print OFH normalize_string($rettype);
 	print OFH " __stdcall ";
-	print OFH "TVP_Stub_$num";
+	print OFH "TVP_Stub_$md5";
 	if($isstatic)
 	{
 		print OFH "(";
@@ -174,13 +177,13 @@ sub make_func_stub
 		print OFH "\t::new (_this) $name(".$argnames.");\n";
 		$h = "\t".normalize_string($name)."(".normalize_string($arg).")\n".
 			"\t{\n".
-			"\t\tif(!TVPImportFuncPtr$num)\n".
+			"\t\tif(!TVPImportFuncPtr$md5)\n".
 			"\t\t{\n".
 			"\t\t\tstatic char funcname[] = \"$func_exp_name\";\n".
-			"\t\t\tTVPImportFuncPtr$num = TVPGetImportFuncPtr(funcname);\n".
+			"\t\t\tTVPImportFuncPtr$md5 = TVPGetImportFuncPtr(funcname);\n".
 			"\t\t}\n".
 			"\t\ttypedef $functype;\n".
-			"\t\t((__functype)(TVPImportFuncPtr$num))(".($isstatic ? '' : ("this".($argnames ne '' ? ', ' : ''))).$argnames.");\n".
+			"\t\t((__functype)(TVPImportFuncPtr$md5))(".($isstatic ? '' : ("this".($argnames ne '' ? ', ' : ''))).$argnames.");\n".
 			"\t}\n";
 	}
 	elsif($name eq "~$type")
@@ -189,13 +192,13 @@ sub make_func_stub
 		print OFH "\t_this->$name(".$argnames.");\n";
 		$h = "\t".normalize_string($name)."(".normalize_string($arg).")\n".
 			"\t{\n".
-			"\t\tif(!TVPImportFuncPtr$num)\n".
+			"\t\tif(!TVPImportFuncPtr$md5)\n".
 			"\t\t{\n".
 			"\t\t\tstatic char funcname[] = \"$func_exp_name\";\n".
-			"\t\t\tTVPImportFuncPtr$num = TVPGetImportFuncPtr(funcname);\n".
+			"\t\t\tTVPImportFuncPtr$md5 = TVPGetImportFuncPtr(funcname);\n".
 			"\t\t}\n".
 			"\t\ttypedef $functype;\n".
-			"\t\t((__functype)(TVPImportFuncPtr$num))(".($isstatic ? '' : ("this".($argnames ne '' ? ', ' : ''))).$argnames.");\n".
+			"\t\t((__functype)(TVPImportFuncPtr$md5))(".($isstatic ? '' : ("this".($argnames ne '' ? ', ' : ''))).$argnames.");\n".
 			"\t}\n";
 	}
 	else
@@ -213,14 +216,14 @@ sub make_func_stub
 		$h = "\t".($isstatic ? 'static ' : '').($noreturn ? '' : $rettype.' ') . normalize_string($name). "(" . normalize_string($arg) .
 			")".($isconst ? ' const' : '')."\n".
 			"\t{\n".
-			"\t\tif(!TVPImportFuncPtr$num)\n".
+			"\t\tif(!TVPImportFuncPtr$md5)\n".
 			"\t\t{\n".
 			"\t\t\tstatic char funcname[] = \"$func_exp_name\";\n".
-			"\t\t\tTVPImportFuncPtr$num = TVPGetImportFuncPtr(funcname);\n".
+			"\t\t\tTVPImportFuncPtr$md5 = TVPGetImportFuncPtr(funcname);\n".
 			"\t\t}\n".
 			"\t\ttypedef $functype;\n".
 			"\t\t".(($rettype eq 'void') ? '' : 'return ').
-			"((__functype)(TVPImportFuncPtr$num))(".($isstatic ? '' : ("this".($argnames ne '' ? ', ' : ''))).$argnames.");\n".
+			"((__functype)(TVPImportFuncPtr$md5))(".($isstatic ? '' : ("this".($argnames ne '' ? ', ' : ''))).$argnames.");\n".
 			"\t}\n";
 	}
 	print OFH "}\n";
@@ -270,16 +273,18 @@ sub make_exp_stub
 	$arg =~ s/\n/ /gs;
 	$arg =~ s/\t/ /gs;
 
-
-	$mangled = "TVP_Stub_$num\t".
-		normalize_string($rettype).' '.
+	$func_exp_name = normalize_string($rettype).' '.
 		'::'.normalize_string($name).'('.except_arg_names($arg).')';
+
+	$md5 = md5_hex($func_exp_name);
+
+	$mangled = "TVP_Stub_$md5\t".$func_exp_name;
 	$mangled .= "\t".normalize_string($rettype).
 		" (__stdcall *".normalize_string($name).")(".normalize_string($arg).")";
 	$mangled .= "\t".normalize_string($rettype) . " ".normalize_string($name)."(".
 		normalize_string($arg).")";
 	$mangled .= "\t$name";
-	$mangled .= "\t$num";
+	$mangled .= "\t$md5";
 	$mangled .= "\t".get_arg_names($arg);
 	$mangled .= "\t".normalize_string($rettype).
 		" (__stdcall * __functype)(".normalize_string(except_arg_names($arg)).")";
@@ -288,7 +293,7 @@ sub make_exp_stub
 	print OFH "static ";
 	print OFH normalize_string($rettype);
 	print OFH " __stdcall ";
-	print OFH "TVP_Stub_$num(";
+	print OFH "TVP_Stub_$md5(";
 	print OFH normalize_string($arg);
 	print OFH ")\n";
 	print OFH "{\n";
@@ -680,11 +685,13 @@ extern void * TVPGetImportFuncPtr(const char *name);
 
 EOF
 
-
-for($i = 0; $i < $func_count; $i++)
+foreach $each (@all_list)
 {
-	print OHFH "extern void * TVPImportFuncPtr$i;\n";
+	@pair = split(/\t/, $each);
+
+	print OHFH "extern void * TVPImportFuncPtr".$pair[5].";\n";
 }
+
 
 
 print OHFH <<EOF;
@@ -908,9 +915,11 @@ void TVPUninitImportStub()
 EOF
 
 
-for($i = 0; $i < $func_count; $i++)
+foreach $each (@all_list)
 {
-	print OCFH "void * TVPImportFuncPtr$i = NULL;\n";
+	@pair = split(/\t/, $each);
+
+	print OCFH "void * TVPImportFuncPtr".$pair[5]." = NULL;\n";
 }
 
 
