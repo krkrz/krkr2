@@ -91,7 +91,6 @@ tTJSNI_BaseWindow::tTJSNI_BaseWindow()
 	ObjectVectorLocked = false;
 	DrawBuffer = NULL;
 	MenuItemObject = NULL;
-	VideoOverlay = NULL;
 	LayerManager = new tTVPLayerManager(this);
 	WindowExposedRegion.clear();
 	WindowUpdating = false;
@@ -131,8 +130,18 @@ tTJSNI_BaseWindow::Invalidate()
 	// free DrawBuffer
 	if(DrawBuffer) delete DrawBuffer;
 
-	// disconnect VideoOverlay
-	if(VideoOverlay) VideoOverlay->Disconnect();
+	// disconnect all VideoOverlay objects
+	{
+		tObjectListSafeLockHolder<tTJSNI_BaseVideoOverlay> holder(VideoOverlay);
+		tjs_int count = VideoOverlay.GetSafeLockedObjectCount();
+		for(tjs_int i = 0; i < count; i++)
+		{
+			tTJSNI_BaseVideoOverlay * item = VideoOverlay.GetSafeLockedObjectAt(i);
+			if(!item) continue;
+			
+			item->Disconnect();
+		}
+	}
 
 	// invalidate all registered objects
 	ObjectVectorLocked = true;
@@ -458,14 +467,12 @@ iTJSDispatch2 * tTJSNI_BaseWindow::GetMenuItemObjectNoAddRef()
 //---------------------------------------------------------------------------
 void tTJSNI_BaseWindow::RegisterVideoOverlayObject(tTJSNI_BaseVideoOverlay * ovl)
 {
-	if(VideoOverlay) TVPThrowExceptionMessage(TVPWindowHasAlreadyVideoOverlayObject);
-
-	VideoOverlay = ovl;
+	VideoOverlay.Add(ovl);
 }
 //---------------------------------------------------------------------------
 void tTJSNI_BaseWindow::UnregisterVideoOverlayObject(tTJSNI_BaseVideoOverlay * ovl)
 {
-	VideoOverlay = NULL;
+	VideoOverlay.Remove(ovl);
 }
 //---------------------------------------------------------------------------
 
