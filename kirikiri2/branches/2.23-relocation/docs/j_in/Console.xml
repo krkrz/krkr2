@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="Shift_JIS" ?>
+<doc>
+<title>コンソール</title>
+
+<para>
+<ptitle>コンソールについて</ptitle>
+　コンソールは、実行中に Shift + F4 を押すことにより表示することができます。<r/>
+　コンソールでは、吉里吉里のシステムや、ユーザスクリプトが <at href="f_Debug_message.html">Debug.message</at> メソッドで出力する様々なデバッグ用メッセージを表示することができます。また、TJS2 式を入力してその場で実行し、式の結果を表示させる事もできます。<r/>
+</para>
+
+<para>
+<ptitle>画面の説明</ptitle>
+<img src="Console.png"/><r/><r/>
+右下にある <img src="ExecIcon.png"/> はクリックすることにより、その右にある入力欄に入力されたものを TJS2 式として実行することができます。<r/>
+<r/>
+右クリックメニューの説明です。<r/>
+<dl>
+<dt><img src="CopyIcon.png"/> コピー</dt>
+<dd>
+　コンソールの選択部分をクリップボードにコピーします。
+</dd>
+
+<dt><img src="ControllerIcon.png"/> コントローラ</dt>
+<dd>
+　<link href="Controller"/> を表示します。
+</dd>
+
+<dt><img src="ScriptEditorIcon.png"/> スクリプトエディタ</dt>
+<dd>
+　<link href="ScriptEditor"/> を表示します。
+</dd>
+
+<dt><img src="ExprWatchIcon.png"/> 監視式</dt>
+<dd>
+　<link href="ExprWatch"/> を表示します。
+</dd>
+
+<dt>エラー時に自動的に表示する</dt>
+<dd>
+　エラーが発生したときに自動的にコンソールを表示するようにします。
+</dd>
+</dl>
+<r/>
+
+</para>
+
+</doc>

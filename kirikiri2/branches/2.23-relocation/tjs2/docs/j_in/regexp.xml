@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="Shift_JIS" ?>
+<doc>
+
+<title>RegExp クラス</title>
+
+<para>
+<ptitle>RegExp クラス</ptitle>
+　RegExp クラスは<kw>正規表現パターン</kw>を扱うクラスです。<r/>
+　正規表現パターンには perl 互換のパターンを指定することができます。<r/>
+　JavaScript の RegExp クラスににていますが、互換性は低いです。<r/>
+<r/>
+コンストラクタの構文は以下の通りです。
+<bq>
+new RegExp(&lt;パターン文字列>, &lt;フラグ文字列=''>);<r/>
+</bq>
+　パターン文字列は正規表現パターンです。パターン中に指定する \ は、文字列即値中で書くときは \\ と書くことに注意してください。<r/>
+　フラグ文字列は g i l の文字の組み合わせです。<r/>
+　g はグローバルサーチフラグです。このフラグをつけると、match、exec、replace の各メソッドで、パターンにマッチした文字列の部分すべてに対して処理が行われます。<r/>
+　i フラグは英字の大文字/小文字の区別を行いません。<r/>
+　l フラグはローカライズされたコレーションを行うようにするフラグです。<r/>
+<r/>
+<example>
+	var re = new RegExp("[a-z]+[0-9]*", "gi");<r/>
+	var re = new RegExp("\\.\\.\\."); // /\.\.\./ ( ... にマッチさせたい )<r/>
+</example>
+</para>
+
+
+<para>
+<ptitle>正規表現パターン</ptitle>
+　/ と / で囲まれた部分に正規表現パターンを指定することができます。<r/>
+　<link href="token"/> を参照してください。<r/>
+</para>
+
+<para>
+<ptitle>compile</ptitle>
+　compile メソッドは、正規表現オブジェクトに新しい正規表現パターンを設定します。<r/>
+　引数は RegExp クラスのコンストラクタに指定するものと同一です。<r/>
+</para>
+
+<para>
+<ptitle>test</ptitle>
+　test メソッドは、引数に指定した文字列がパターンにマッチするかどうかを返します。<r/>
+<bq>
+構文 : test(&lt;文字列>)<r/>
+</bq>
+　パターンにマッチすれば真、マッチしなければ偽が返ります。<r/>
+</para>
+
+<para>
+<ptitle>exec</ptitle>
+　exec メソッドは、引数に指定した文字列に正規表現パターンマッチングを行い、マッチした結果を含む配列を返します。<r/>
+<bq>
+構文 : exec(&lt;文字列>)<r/>
+</bq>
+　パターンにマッチしない場合、配列の要素数は 0 になります。<r/>
+　マッチした場合、要素 0 (最初の要素) はマッチした部分全体、それ以降の要素は各マッチ部分 ( 正規表現パターン中の (  ) で指定した部分 ) が入っています。<r/>
+　このメソッドはこのオブジェクトの各プロパティの値を更新します。<r/>
+</para>
+
+<para>
+<ptitle>match</ptitle>
+　match メソッドは、このオブジェクトのプロパティの値を更新しない以外は、exec メソッドと同一です。<r/>
+<bq>
+構文 : match(&lt;文字列>)<r/>
+</bq>
+</para>
+
+
+<para>
+<ptitle>replace</ptitle>
+　replace メソッドは、文字列の置き換えを行い、置き換えが行われた後の文字列を返します。<r/>
+<bq>
+構文 : replace(&lt;対象文字列>, &lt;置き換え文字列>)<r/>
+</bq>
+　対象文字列に対してマッチングを行い、マッチした部分を置き換え文字列で置き換え、置き換えが行われた後の文字列を返します。<r/>
+　置き換え文字列として、文字列ではなく関数を渡すと、置き換え動作のためにその関数が呼ばれるようになります。関数は引数をひとつとり、対象文字列の中のマッチした部分をあらわす配列オブジェクトが渡されます ( この配列については exec メソッドを参照してください )。対象文字列中のマッチした部分は、関数の戻した文字列に置き換わります。<r/>
+　このメソッドは start プロパティを無視します。<r/>
+</para>
+
+<para>
+<ptitle>split</ptitle>
+　split メソッドは、文字列を分割します。<r/>
+<bq>
+構文 : split(&lt;対象文字列>, &lt;(予約)>, &lt;空の要素を無視するか=false>)<r/>
+</bq>
+　文字列を分割した結果が格納された配列オブジェクトを返します。<r/>
+　<link href="array"/> の split メソッドも参照してください。<r/>
+</para>
+
+<para>
+<ptitle>matches</ptitle>
+　matches プロパティは、マッチした各部分を含む配列を表す読み出し専用のプロパティです。<r/>
+　パターンにマッチしない場合、配列の要素数は 0 になります。<r/>
+　マッチした場合、要素 0 (最初の要素) はマッチした部分全体、それ以降の要素は各マッチ部分 ( 正規表現パターン中の (  ) で指定した部分 ) が入っています。<r/>
+</para>
+
+<para>
+<ptitle>start</ptitle>
+　文字列の検索開始位置を表すプロパティです。値を設定することもできます。<r/>
+</para>
+
+<para>
+<ptitle>index</ptitle>
+　マッチした部分の先頭文字の位置を表す、読み出し専用のプロパティです。0 が先頭を表すので、それがマッチング対象文字列の先頭の文字ならば 0 になります。<r/>
+</para>
+
+<para>
+<ptitle>lastIndex</ptitle>
+　マッチした部分の最終文字の次の文字の位置を表す、読み出し専用のプロパティです。0 が先頭を表します。<r/>
+</para>
+
+<para>
+<ptitle>input</ptitle>
+　マッチング対象の文字列をあらわす、読み出し専用のプロパティです。<r/>
+</para>
+
+<para>
+<ptitle>leftContext</ptitle>
+　マッチング対象文字列のうち、マッチした部分よりも左側の文字列をあらわす、読み出し専用のプロパティです。<r/>
+</para>
+
+<para>
+<ptitle>rightContext</ptitle>
+　マッチング対象文字列のうち、マッチした部分よりも右側の文字列をあらわす、読み出し専用のプロパティです。<r/>
+</para>
+
+<para>
+<ptitle>Copyright notice</ptitle>
+　正規表現機能の実装には John Maddock 氏の <at target="_blank" href="http://ourworld.compuserve.com/homepages/John_Maddock/regexpp.htm">Regex++</at> を用いています。有用なライブラリを公開なさっている氏に感謝します。<r />
+<r />
+Copyright (c) 1998-2001<r />
+<r />
+Dr John Maddock<r />
+<r />
+Permission to use, copy, modify, distribute and sell this software and its documentation for any purpose is hereby granted without fee, provided that the above copyright notice appear in all copies and that both that copyright notice and this permission notice appear in supporting documentation. Dr John Maddock makes no representations about the suitability of this software for any purpose. It is provided "as is" without express or implied warranty.<r/>
+</para>
+
+</doc>
