@@ -141,13 +141,24 @@ tTJSVariantClosure_S TJSNullVariantClosure={NULL,NULL};
 //---------------------------------------------------------------------------
 void TJSThrowVariantConvertError(const tTJSVariant & from, tTJSVariantType to)
 {
-	ttstr msg(TJSVariantConvertError);
+	if(to == tvtObject)
+	{
+		ttstr msg(TJSVariantConvertErrorToObject);
 
-	msg.Replace(TJS_W("%1"), TJSVariantToReadableString(from));
+		msg.Replace(TJS_W("%1"), TJSVariantToReadableString(from));
 
-	msg.Replace(TJS_W("%2"), TJSVariantTypeToTypeString(to));
+		TJS_eTJSVariantError(msg);
+	}
+	else
+	{
+		ttstr msg(TJSVariantConvertError);
 
-	TJS_eTJSVariantError(msg);
+		msg.Replace(TJS_W("%1"), TJSVariantToReadableString(from));
+
+		msg.Replace(TJS_W("%2"), TJSVariantTypeToTypeString(to));
+
+		TJS_eTJSVariantError(msg);
+	}
 }
 //---------------------------------------------------------------------------
 void TJSThrowVariantConvertError(const tTJSVariant & from, tTJSVariantType to1,

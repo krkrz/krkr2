@@ -12,8 +12,9 @@
 TJS_MSG_DECL(TJSInternalError, "内部エラーが発生しました")
 TJS_MSG_DECL(TJSWarning, "警告: ")
 TJS_MSG_DECL(TJSWarnEvalOperator, "グローバルでない場所で後置 ! 演算子が使われています(この演算子の挙動はTJS2 version 2.4.1 で変わりましたのでご注意ください)")
-TJS_MSG_DECL(TJSNarrowToWideConversionError, "ANSI 文字列を UNICODE 文字列に変換できません");
+TJS_MSG_DECL(TJSNarrowToWideConversionError, "ANSI 文字列を UNICODE 文字列に変換できません。現在のコードページで解釈できない文字が含まれてます。正しいデータが指定されているかを確認してください。データが破損している可能性もあります");
 TJS_MSG_DECL(TJSVariantConvertError, "%1 から %2 へ型を変換できません")
+TJS_MSG_DECL(TJSVariantConvertErrorToObject, "%1 から Object へ型を変換できません。Object 型が要求される文脈で Object 型以外の値が渡されるとこのエラーが発生します")
 TJS_MSG_DECL(TJSIDExpected, "識別子を指定してください")
 TJS_MSG_DECL(TJSCannotModifyLHS, "不正な代入か不正な式の操作です")
 TJS_MSG_DECL(TJSInsufficientMem, "メモリが足りません")
@@ -54,6 +55,6 @@ TJS_MSG_DECL(TJSDivideByZero, "0 で除算をしようとしました")
 TJS_MSG_DECL(TJSNotReconstructiveRandomizeData, "乱数系列を初期化できません(おそらく不正なデータが渡されました)")
 TJS_MSG_DECL(TJSSymbol, "識別子")
 TJS_MSG_DECL(TJSWriteError, "書き込みエラーが発生しました")
-TJS_MSG_DECL(TJSReadError, "読み込みエラーが発生しました")
-TJS_MSG_DECL(TJSSeekError, "シークエラーが発生しました")
+TJS_MSG_DECL(TJSReadError, "読み込みエラーが発生しました。ファイルが破損している可能性や、デバイスからの読み込みに失敗した可能性があります")
+TJS_MSG_DECL(TJSSeekError, "シークエラーが発生しました。ファイルが破損している可能性や、デバイスからの読み込みに失敗した可能性があります")
 //---------------------------------------------------------------------------
