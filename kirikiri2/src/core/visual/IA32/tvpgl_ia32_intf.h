@@ -169,6 +169,7 @@ TVP_GL_IA32_FUNC_EXTERN_DECL(void,  TVPTLG6DecodeGolombValues_emmx_a,  (tjs_int8
 TVP_GL_IA32_FUNC_EXTERN_DECL(void,  TVPStretchCopy_mmx_a,  (tjs_uint32 *dest, tjs_int len, const tjs_uint32 *src, tjs_int srcstart, tjs_int srcstep));
 TVP_GL_IA32_FUNC_EXTERN_DECL(void,  TVPStretchConstAlphaBlend_mmx_a,  (tjs_uint32 *dest, tjs_int len, const tjs_uint32 *src, tjs_int srcstart, tjs_int srcstep, tjs_int opa));
 TVP_GL_IA32_FUNC_EXTERN_DECL(void,  TVPStretchAlphaBlend_mmx_a,  (tjs_uint32 *dest, tjs_int len, const tjs_uint32 *src, tjs_int srcstart, tjs_int srcstep));
+TVP_GL_IA32_FUNC_EXTERN_DECL(void,  TVPStretchAdditiveAlphaBlend_mmx_a,  (tjs_uint32 *dest, tjs_int len, const tjs_uint32 *src, tjs_int srcstart, tjs_int srcstep));
 TVP_GL_IA32_FUNC_EXTERN_DECL(void,  TVPFastLinearInterpV2_mmx_a,  (tjs_uint32 *dest, tjs_int len, const tjs_uint32 *src0, const tjs_uint32 *src1));
 TVP_GL_IA32_FUNC_EXTERN_DECL(void,  TVPFastLinearInterpH2F_mmx_a,  (tjs_uint32 *dest, tjs_int destlen, const tjs_uint32 *src));
 TVP_GL_IA32_FUNC_EXTERN_DECL(void,  TVPFastLinearInterpH2B_mmx_a,  (tjs_uint32 *dest, tjs_int destlen, const tjs_uint32 *src));
