@@ -4479,7 +4479,7 @@ TVP_GL_FUNC_DECL(void, TVPApplyColorMap_c, (tjs_uint32 *dest, const tjs_uint8 *s
 	d = *dest;
 	sopa = *src;
 	d1 = d & 0xff00ff;
-	d1 = ((d1 + ((c1 - d1) * sopa >> 8)) & 0xff00ff) + (d & 0xff000000);
+	d1 = ((d1 + ((c1 - d1) * sopa >> 8)) & 0xff00ff);
 	d &= 0xff00;
 	*dest = d1 | ((d + ((color - d) * sopa >> 8)) & 0x00ff00);
 	src++;
@@ -4490,7 +4490,7 @@ TVP_GL_FUNC_DECL(void, TVPApplyColorMap_c, (tjs_uint32 *dest, const tjs_uint8 *s
 	d = *dest;
 	sopa = *src;
 	d1 = d & 0xff00ff;
-	d1 = ((d1 + ((c1 - d1) * sopa >> 8)) & 0xff00ff) + (d & 0xff000000);
+	d1 = ((d1 + ((c1 - d1) * sopa >> 8)) & 0xff00ff);
 	d &= 0xff00;
 	*dest = d1 | ((d + ((color - d) * sopa >> 8)) & 0x00ff00);
 	src++;
@@ -4501,7 +4501,7 @@ TVP_GL_FUNC_DECL(void, TVPApplyColorMap_c, (tjs_uint32 *dest, const tjs_uint8 *s
 	d = *dest;
 	sopa = *src;
 	d1 = d & 0xff00ff;
-	d1 = ((d1 + ((c1 - d1) * sopa >> 8)) & 0xff00ff) + (d & 0xff000000);
+	d1 = ((d1 + ((c1 - d1) * sopa >> 8)) & 0xff00ff);
 	d &= 0xff00;
 	*dest = d1 | ((d + ((color - d) * sopa >> 8)) & 0x00ff00);
 	src++;
@@ -4512,7 +4512,7 @@ TVP_GL_FUNC_DECL(void, TVPApplyColorMap_c, (tjs_uint32 *dest, const tjs_uint8 *s
 	d = *dest;
 	sopa = *src;
 	d1 = d & 0xff00ff;
-	d1 = ((d1 + ((c1 - d1) * sopa >> 8)) & 0xff00ff) + (d & 0xff000000);
+	d1 = ((d1 + ((c1 - d1) * sopa >> 8)) & 0xff00ff);
 	d &= 0xff00;
 	*dest = d1 | ((d + ((color - d) * sopa >> 8)) & 0x00ff00);
 	src++;
@@ -4539,7 +4539,7 @@ TVP_GL_FUNC_DECL(void, TVPApplyColorMap_o_c, (tjs_uint32 *dest, const tjs_uint8 
 	d = *dest;
 	sopa = (*src * opa) >> 8;
 	d1 = d & 0xff00ff;
-	d1 = ((d1 + ((c1 - d1) * sopa >> 8)) & 0xff00ff) + (d & 0xff000000);
+	d1 = ((d1 + ((c1 - d1) * sopa >> 8)) & 0xff00ff);
 	d &= 0x00ff00;
 	*dest = d1 | ((d + ((color - d) * sopa >> 8)) & 0x00ff00);
 	src++;
@@ -4550,7 +4550,7 @@ TVP_GL_FUNC_DECL(void, TVPApplyColorMap_o_c, (tjs_uint32 *dest, const tjs_uint8 
 	d = *dest;
 	sopa = (*src * opa) >> 8;
 	d1 = d & 0xff00ff;
-	d1 = ((d1 + ((c1 - d1) * sopa >> 8)) & 0xff00ff) + (d & 0xff000000);
+	d1 = ((d1 + ((c1 - d1) * sopa >> 8)) & 0xff00ff);
 	d &= 0x00ff00;
 	*dest = d1 | ((d + ((color - d) * sopa >> 8)) & 0x00ff00);
 	src++;
@@ -4561,7 +4561,7 @@ TVP_GL_FUNC_DECL(void, TVPApplyColorMap_o_c, (tjs_uint32 *dest, const tjs_uint8 
 	d = *dest;
 	sopa = (*src * opa) >> 8;
 	d1 = d & 0xff00ff;
-	d1 = ((d1 + ((c1 - d1) * sopa >> 8)) & 0xff00ff) + (d & 0xff000000);
+	d1 = ((d1 + ((c1 - d1) * sopa >> 8)) & 0xff00ff);
 	d &= 0x00ff00;
 	*dest = d1 | ((d + ((color - d) * sopa >> 8)) & 0x00ff00);
 	src++;
@@ -4572,7 +4572,7 @@ TVP_GL_FUNC_DECL(void, TVPApplyColorMap_o_c, (tjs_uint32 *dest, const tjs_uint8 
 	d = *dest;
 	sopa = (*src * opa) >> 8;
 	d1 = d & 0xff00ff;
-	d1 = ((d1 + ((c1 - d1) * sopa >> 8)) & 0xff00ff) + (d & 0xff000000);
+	d1 = ((d1 + ((c1 - d1) * sopa >> 8)) & 0xff00ff);
 	d &= 0x00ff00;
 	*dest = d1 | ((d + ((color - d) * sopa >> 8)) & 0x00ff00);
 	src++;
@@ -4600,6 +4600,248 @@ TVP_GL_FUNC_DECL(void, TVPApplyColorMap65_c, (tjs_uint32 *dest, const tjs_uint8 
 	d = *dest;
 	sopa = *src;
 	d1 = d & 0xff00ff;
+	d1 = ((d1 + ((c1 - d1) * sopa >> 6)) & 0xff00ff);
+	d &= 0xff00;
+	*dest = d1 | ((d + ((color - d) * sopa >> 6)) & 0x00ff00);
+	src++;
+	dest++;
+}
+;
+	case 3: {
+	d = *dest;
+	sopa = *src;
+	d1 = d & 0xff00ff;
+	d1 = ((d1 + ((c1 - d1) * sopa >> 6)) & 0xff00ff);
+	d &= 0xff00;
+	*dest = d1 | ((d + ((color - d) * sopa >> 6)) & 0x00ff00);
+	src++;
+	dest++;
+}
+;
+	case 2: {
+	d = *dest;
+	sopa = *src;
+	d1 = d & 0xff00ff;
+	d1 = ((d1 + ((c1 - d1) * sopa >> 6)) & 0xff00ff);
+	d &= 0xff00;
+	*dest = d1 | ((d + ((color - d) * sopa >> 6)) & 0x00ff00);
+	src++;
+	dest++;
+}
+;
+	case 1: {
+	d = *dest;
+	sopa = *src;
+	d1 = d & 0xff00ff;
+	d1 = ((d1 + ((c1 - d1) * sopa >> 6)) & 0xff00ff);
+	d &= 0xff00;
+	*dest = d1 | ((d + ((color - d) * sopa >> 6)) & 0x00ff00);
+	src++;
+	dest++;
+}
+;
+	   } while(-- lu_n);
+	}
+  }
+}
+
+/*export*/
+TVP_GL_FUNC_DECL(void, TVPApplyColorMap65_o_c, (tjs_uint32 *dest, const tjs_uint8 *src, tjs_int len, tjs_uint32 color, tjs_int opa))
+{
+	tjs_uint32 d1, d, sopa;
+	tjs_uint32 c1 = color & 0xff00ff;
+	color = color & 0x00ff00;
+  if(len > 0)
+  {
+	int lu_n = (len + (4-1)) / 4;
+	switch(len % 4)
+	{
+	case 0: do { {
+	d = *dest;
+	sopa = (*src * opa) >> 8;
+	d1 = d & 0xff00ff;
+	d1 = ((d1 + ((c1 - d1) * sopa >> 6)) & 0xff00ff);
+	d &= 0x00ff00;
+	*dest = d1 | ((d + ((color - d) * sopa >> 6)) & 0x00ff00);
+	src++;
+	dest++;
+}
+;
+	case 3: {
+	d = *dest;
+	sopa = (*src * opa) >> 8;
+	d1 = d & 0xff00ff;
+	d1 = ((d1 + ((c1 - d1) * sopa >> 6)) & 0xff00ff);
+	d &= 0x00ff00;
+	*dest = d1 | ((d + ((color - d) * sopa >> 6)) & 0x00ff00);
+	src++;
+	dest++;
+}
+;
+	case 2: {
+	d = *dest;
+	sopa = (*src * opa) >> 8;
+	d1 = d & 0xff00ff;
+	d1 = ((d1 + ((c1 - d1) * sopa >> 6)) & 0xff00ff);
+	d &= 0x00ff00;
+	*dest = d1 | ((d + ((color - d) * sopa >> 6)) & 0x00ff00);
+	src++;
+	dest++;
+}
+;
+	case 1: {
+	d = *dest;
+	sopa = (*src * opa) >> 8;
+	d1 = d & 0xff00ff;
+	d1 = ((d1 + ((c1 - d1) * sopa >> 6)) & 0xff00ff);
+	d &= 0x00ff00;
+	*dest = d1 | ((d + ((color - d) * sopa >> 6)) & 0x00ff00);
+	src++;
+	dest++;
+}
+;
+	   } while(-- lu_n);
+	}
+  }
+}
+
+
+/*export*/
+TVP_GL_FUNC_DECL(void, TVPApplyColorMap_HDA_c, (tjs_uint32 *dest, const tjs_uint8 *src, tjs_int len, tjs_uint32 color))
+{
+	tjs_uint32 d1, d, sopa;
+	tjs_uint32 c1 = color & 0xff00ff;
+	color = color & 0x00ff00;
+  if(len > 0)
+  {
+	int lu_n = (len + (4-1)) / 4;
+	switch(len % 4)
+	{
+	case 0: do { {
+	d = *dest;
+	sopa = *src;
+	d1 = d & 0xff00ff;
+	d1 = ((d1 + ((c1 - d1) * sopa >> 8)) & 0xff00ff) + (d & 0xff000000);
+	d &= 0xff00;
+	*dest = d1 | ((d + ((color - d) * sopa >> 8)) & 0x00ff00);
+	src++;
+	dest++;
+}
+;
+	case 3: {
+	d = *dest;
+	sopa = *src;
+	d1 = d & 0xff00ff;
+	d1 = ((d1 + ((c1 - d1) * sopa >> 8)) & 0xff00ff) + (d & 0xff000000);
+	d &= 0xff00;
+	*dest = d1 | ((d + ((color - d) * sopa >> 8)) & 0x00ff00);
+	src++;
+	dest++;
+}
+;
+	case 2: {
+	d = *dest;
+	sopa = *src;
+	d1 = d & 0xff00ff;
+	d1 = ((d1 + ((c1 - d1) * sopa >> 8)) & 0xff00ff) + (d & 0xff000000);
+	d &= 0xff00;
+	*dest = d1 | ((d + ((color - d) * sopa >> 8)) & 0x00ff00);
+	src++;
+	dest++;
+}
+;
+	case 1: {
+	d = *dest;
+	sopa = *src;
+	d1 = d & 0xff00ff;
+	d1 = ((d1 + ((c1 - d1) * sopa >> 8)) & 0xff00ff) + (d & 0xff000000);
+	d &= 0xff00;
+	*dest = d1 | ((d + ((color - d) * sopa >> 8)) & 0x00ff00);
+	src++;
+	dest++;
+}
+;
+	   } while(-- lu_n);
+	}
+  }
+}
+
+/*export*/
+TVP_GL_FUNC_DECL(void, TVPApplyColorMap_HDA_o_c, (tjs_uint32 *dest, const tjs_uint8 *src, tjs_int len, tjs_uint32 color, tjs_int opa))
+{
+	tjs_uint32 d1, d, sopa;
+	tjs_uint32 c1 = color & 0xff00ff;
+	color = color & 0x00ff00;
+  if(len > 0)
+  {
+	int lu_n = (len + (4-1)) / 4;
+	switch(len % 4)
+	{
+	case 0: do { {
+	d = *dest;
+	sopa = (*src * opa) >> 8;
+	d1 = d & 0xff00ff;
+	d1 = ((d1 + ((c1 - d1) * sopa >> 8)) & 0xff00ff) + (d & 0xff000000);
+	d &= 0x00ff00;
+	*dest = d1 | ((d + ((color - d) * sopa >> 8)) & 0x00ff00);
+	src++;
+	dest++;
+}
+;
+	case 3: {
+	d = *dest;
+	sopa = (*src * opa) >> 8;
+	d1 = d & 0xff00ff;
+	d1 = ((d1 + ((c1 - d1) * sopa >> 8)) & 0xff00ff) + (d & 0xff000000);
+	d &= 0x00ff00;
+	*dest = d1 | ((d + ((color - d) * sopa >> 8)) & 0x00ff00);
+	src++;
+	dest++;
+}
+;
+	case 2: {
+	d = *dest;
+	sopa = (*src * opa) >> 8;
+	d1 = d & 0xff00ff;
+	d1 = ((d1 + ((c1 - d1) * sopa >> 8)) & 0xff00ff) + (d & 0xff000000);
+	d &= 0x00ff00;
+	*dest = d1 | ((d + ((color - d) * sopa >> 8)) & 0x00ff00);
+	src++;
+	dest++;
+}
+;
+	case 1: {
+	d = *dest;
+	sopa = (*src * opa) >> 8;
+	d1 = d & 0xff00ff;
+	d1 = ((d1 + ((c1 - d1) * sopa >> 8)) & 0xff00ff) + (d & 0xff000000);
+	d &= 0x00ff00;
+	*dest = d1 | ((d + ((color - d) * sopa >> 8)) & 0x00ff00);
+	src++;
+	dest++;
+}
+;
+	   } while(-- lu_n);
+	}
+  }
+}
+
+
+/*export*/
+TVP_GL_FUNC_DECL(void, TVPApplyColorMap65_HDA_c, (tjs_uint32 *dest, const tjs_uint8 *src, tjs_int len, tjs_uint32 color))
+{
+	tjs_uint32 d1, d, sopa;
+	tjs_uint32 c1 = color & 0xff00ff;
+	color = color & 0x00ff00;
+  if(len > 0)
+  {
+	int lu_n = (len + (4-1)) / 4;
+	switch(len % 4)
+	{
+	case 0: do { {
+	d = *dest;
+	sopa = *src;
+	d1 = d & 0xff00ff;
 	d1 = ((d1 + ((c1 - d1) * sopa >> 6)) & 0xff00ff) + (d & 0xff000000);
 	d &= 0xff00;
 	*dest = d1 | ((d + ((color - d) * sopa >> 6)) & 0x00ff00);
@@ -4646,7 +4888,7 @@ TVP_GL_FUNC_DECL(void, TVPApplyColorMap65_c, (tjs_uint32 *dest, const tjs_uint8 
 }
 
 /*export*/
-TVP_GL_FUNC_DECL(void, TVPApplyColorMap65_o_c, (tjs_uint32 *dest, const tjs_uint8 *src, tjs_int len, tjs_uint32 color, tjs_int opa))
+TVP_GL_FUNC_DECL(void, TVPApplyColorMap65_HDA_o_c, (tjs_uint32 *dest, const tjs_uint8 *src, tjs_int len, tjs_uint32 color, tjs_int opa))
 {
 	tjs_uint32 d1, d, sopa;
 	tjs_uint32 c1 = color & 0xff00ff;
@@ -5232,6 +5474,7 @@ TVP_GL_FUNC_DECL(void, TVPApplyColorMap65_ao_c, (tjs_uint32 *dest, const tjs_uin
 /*export*/
 TVP_GL_FUNC_DECL(void, TVPConstColorAlphaBlend_c, (tjs_uint32 *dest, tjs_int len, tjs_uint32 color, tjs_int opa))
 {
+	/* this function always holds desitination alpha channel */
 	tjs_uint32 s1, d;
 	s1 = (color & 0xff00ff)*opa ;
 	color = (color & 0xff00)*opa ;
@@ -10043,6 +10286,10 @@ TVP_GL_FUNC_PTR_DECL(void, TVPApplyColorMap,  (tjs_uint32 *dest, const tjs_uint8
 TVP_GL_FUNC_PTR_DECL(void, TVPApplyColorMap_o,  (tjs_uint32 *dest, const tjs_uint8 *src, tjs_int len, tjs_uint32 color, tjs_int opa));
 TVP_GL_FUNC_PTR_DECL(void, TVPApplyColorMap65,  (tjs_uint32 *dest, const tjs_uint8 *src, tjs_int len, tjs_uint32 color));
 TVP_GL_FUNC_PTR_DECL(void, TVPApplyColorMap65_o,  (tjs_uint32 *dest, const tjs_uint8 *src, tjs_int len, tjs_uint32 color, tjs_int opa));
+TVP_GL_FUNC_PTR_DECL(void, TVPApplyColorMap_HDA,  (tjs_uint32 *dest, const tjs_uint8 *src, tjs_int len, tjs_uint32 color));
+TVP_GL_FUNC_PTR_DECL(void, TVPApplyColorMap_HDA_o,  (tjs_uint32 *dest, const tjs_uint8 *src, tjs_int len, tjs_uint32 color, tjs_int opa));
+TVP_GL_FUNC_PTR_DECL(void, TVPApplyColorMap65_HDA,  (tjs_uint32 *dest, const tjs_uint8 *src, tjs_int len, tjs_uint32 color));
+TVP_GL_FUNC_PTR_DECL(void, TVPApplyColorMap65_HDA_o,  (tjs_uint32 *dest, const tjs_uint8 *src, tjs_int len, tjs_uint32 color, tjs_int opa));
 TVP_GL_FUNC_PTR_DECL(void, TVPApplyColorMap_d,  (tjs_uint32 *dest, const tjs_uint8 *src, tjs_int len, tjs_uint32 color));
 TVP_GL_FUNC_PTR_DECL(void, TVPApplyColorMap65_d,  (tjs_uint32 *dest, const tjs_uint8 *src, tjs_int len, tjs_uint32 color));
 TVP_GL_FUNC_PTR_DECL(void, TVPApplyColorMap_a,  (tjs_uint32 *dest, const tjs_uint8 *src, tjs_int len, tjs_uint32 color));
@@ -10222,6 +10469,10 @@ TVP_GL_FUNC_DECL(void, TVPInitTVPGL, ())
 	TVPApplyColorMap_o = TVPApplyColorMap_o_c;
 	TVPApplyColorMap65 = TVPApplyColorMap65_c;
 	TVPApplyColorMap65_o = TVPApplyColorMap65_o_c;
+	TVPApplyColorMap_HDA = TVPApplyColorMap_HDA_c;
+	TVPApplyColorMap_HDA_o = TVPApplyColorMap_HDA_o_c;
+	TVPApplyColorMap65_HDA = TVPApplyColorMap65_HDA_c;
+	TVPApplyColorMap65_HDA_o = TVPApplyColorMap65_HDA_o_c;
 	TVPApplyColorMap_d = TVPApplyColorMap_d_c;
 	TVPApplyColorMap65_d = TVPApplyColorMap65_d_c;
 	TVPApplyColorMap_a = TVPApplyColorMap_a_c;

@@ -147,6 +147,10 @@ TVP_GL_FUNC_PTR_EXTERN_DECL(void, TVPApplyColorMap,  (tjs_uint32 *dest, const tj
 TVP_GL_FUNC_PTR_EXTERN_DECL(void, TVPApplyColorMap_o,  (tjs_uint32 *dest, const tjs_uint8 *src, tjs_int len, tjs_uint32 color, tjs_int opa));
 TVP_GL_FUNC_PTR_EXTERN_DECL(void, TVPApplyColorMap65,  (tjs_uint32 *dest, const tjs_uint8 *src, tjs_int len, tjs_uint32 color));
 TVP_GL_FUNC_PTR_EXTERN_DECL(void, TVPApplyColorMap65_o,  (tjs_uint32 *dest, const tjs_uint8 *src, tjs_int len, tjs_uint32 color, tjs_int opa));
+TVP_GL_FUNC_PTR_EXTERN_DECL(void, TVPApplyColorMap_HDA,  (tjs_uint32 *dest, const tjs_uint8 *src, tjs_int len, tjs_uint32 color));
+TVP_GL_FUNC_PTR_EXTERN_DECL(void, TVPApplyColorMap_HDA_o,  (tjs_uint32 *dest, const tjs_uint8 *src, tjs_int len, tjs_uint32 color, tjs_int opa));
+TVP_GL_FUNC_PTR_EXTERN_DECL(void, TVPApplyColorMap65_HDA,  (tjs_uint32 *dest, const tjs_uint8 *src, tjs_int len, tjs_uint32 color));
+TVP_GL_FUNC_PTR_EXTERN_DECL(void, TVPApplyColorMap65_HDA_o,  (tjs_uint32 *dest, const tjs_uint8 *src, tjs_int len, tjs_uint32 color, tjs_int opa));
 TVP_GL_FUNC_PTR_EXTERN_DECL(void, TVPApplyColorMap_d,  (tjs_uint32 *dest, const tjs_uint8 *src, tjs_int len, tjs_uint32 color));
 TVP_GL_FUNC_PTR_EXTERN_DECL(void, TVPApplyColorMap65_d,  (tjs_uint32 *dest, const tjs_uint8 *src, tjs_int len, tjs_uint32 color));
 TVP_GL_FUNC_PTR_EXTERN_DECL(void, TVPApplyColorMap_a,  (tjs_uint32 *dest, const tjs_uint8 *src, tjs_int len, tjs_uint32 color));
