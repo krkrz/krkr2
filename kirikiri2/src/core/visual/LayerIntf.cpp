@@ -356,7 +356,7 @@ tTJSNI_BaseLayer::tTJSNI_BaseLayer()
 	Face = dfAuto;
 	UpdateDrawFace();
 	ImageModified = false;
-	HoldAlpha = true;
+	HoldAlpha = false;
 	ClipRect.left = 0;
 	ClipRect.right = 0;
 	ClipRect.top = 0;
