@@ -3382,7 +3382,7 @@ class KAGWindow extends Window
 				showPageBreak();
 			}
 			else if(t == 'l'){
-				showLineBreak();
+				showLineBreak(%[canskip: false]);
 			}
 		}
 	}
