@@ -352,6 +352,97 @@ void __stdcall tTVPDSMovie::GetFrame( int *f )
 		TVPThrowExceptionMessage(L"Not supported time format.");
 	}
 }
+
+//----------------------------------------------------------------------------
+//! @brief	  	指定されたフレームで再生を停止させる
+//! 
+//! このメソッドによって設定された位置は、指定したフレームと完全に一致するわけではない。
+//! フレームは、指定したフレームに最も近いキーフレームの位置に設定される。
+//! @param		f : 再生を停止させるフレーム
+//----------------------------------------------------------------------------
+void __stdcall tTVPDSMovie::SetStopFrame( int f )
+{
+	if(Shutdown) return;
+
+	HRESULT	hr;
+	GUID	Format;
+	if( FAILED(hr = MediaSeeking()->GetTimeFormat( &Format ) ) )
+	{
+		ThrowDShowException(L"Failed to call IMediaSeeking::GetTimeFormat (in tTVPDSMovie::SetStopFrame).", hr);
+	}
+	if( IsEqualGUID( TIME_FORMAT_MEDIA_TIME, Format ) )
+	{
+		REFTIME	AvgTimePerFrame;
+		if( FAILED(hr = GetAvgTimePerFrame( &AvgTimePerFrame )) )
+		{
+			ThrowDShowException(L"Failed to call IBasicVideo::get_AvgTimePerFrame (in tTVPDSMovie::SetStopFrame).", hr);
+		}
+		LONGLONG	requestTime = (LONGLONG)(AvgTimePerFrame * 10000000.0 * f);
+		if( FAILED(hr = MediaSeeking()->SetPositions( NULL, AM_SEEKING_NoPositioning, &requestTime, AM_SEEKING_AbsolutePositioning )) )
+		{
+			ThrowDShowException(L"Failed to call IMediaSeeking::SetPositions (TIME_FORMAT_MEDIA_TIME, in tTVPDSMovie::SetStopFrame).", hr);
+		}
+	}
+	else if( IsEqualGUID( TIME_FORMAT_FRAME, Format ) )
+	{
+		LONGLONG	requestFrame = f;
+		if( FAILED(hr = MediaSeeking()->SetPositions( NULL, AM_SEEKING_NoPositioning, &requestFrame, AM_SEEKING_AbsolutePositioning )) )
+		{
+			ThrowDShowException(L"Failed to call IMediaSeeking::SetPositions (TIME_FORMAT_FRAME, in tTVPDSMovie::SetStopFrame).", hr);
+		}
+	}
+	else
+	{
+		TVPThrowExceptionMessage(L"Not supported time format.");
+	}
+}
+//----------------------------------------------------------------------------
+//! @brief	  	現在の再生が停止するフレームを取得する
+//! @param		f : 現在の再生が停止するフレームを入れる変数へのポインタ
+//----------------------------------------------------------------------------
+void __stdcall tTVPDSMovie::GetStopFrame( int *f )
+{
+	if(Shutdown) return;
+
+	HRESULT		hr;
+	LONGLONG	Stop;
+	if( FAILED(hr = MediaSeeking()->GetStopPosition( &Stop ) ) )
+	{
+		ThrowDShowException(L"Failed to call IMediaSeeking::GetStopPosition (in tTVPDSMovie::GetStopFrame).", hr);
+	}
+	GUID	Format;
+	if( FAILED(hr = MediaSeeking()->GetTimeFormat( &Format ) ) )
+	{
+		ThrowDShowException(L"Failed to call IMediaSeeking::GetTimeFormat (in tTVPDSMovie::GetStopFrame).", hr);
+	}
+	if( IsEqualGUID( TIME_FORMAT_MEDIA_TIME, Format ) )
+	{
+		REFTIME	AvgTimePerFrame;
+		if( FAILED(hr = GetAvgTimePerFrame( &AvgTimePerFrame )) )
+		{
+			ThrowDShowException(L"Failed to call IBasicVideo::get_AvgTimePerFrame (in tTVPDSMovie::GetStopFrame).", hr);
+		}
+		double	stopTime = Stop / 10000000.0;
+		*f = (int)(stopTime / AvgTimePerFrame + 0.5);
+	}
+	else if( IsEqualGUID( TIME_FORMAT_FRAME, Format ) )
+	{
+		*f = (int)Stop;
+	}
+	else
+	{
+		TVPThrowExceptionMessage(L"Not supported time format.");
+	}
+}
+//----------------------------------------------------------------------------
+//! @brief	  	再生を停止するフレームを初期状態に戻す。
+//----------------------------------------------------------------------------
+void __stdcall tTVPDSMovie::SetDefaultStopFrame()
+{
+	int		numOfFrame;
+	GetNumberOfFrame( &numOfFrame );
+	SetStopFrame( numOfFrame );
+}
 //----------------------------------------------------------------------------
 //! @brief	  	FPSを取得する
 //! @param		f : FPSを入れる変数へのポインタ
@@ -574,8 +665,105 @@ void tTVPDSMovie::ParseVideoType( CMediaType &mt, const wchar_t *type )
 		mt.subtype = MEDIASUBTYPE_Avi;
 	else if (wcsicmp(type, L".mov") == 0)
 		mt.subtype = MEDIASUBTYPE_QTMovie;
+	else if (wcsicmp(type, L".mp4") == 0)
+		mt.subtype = MEDIASUBTYPE_QTMovie;
 	else
 		TVPThrowExceptionMessage(L"Unknown video format extension."); // unknown format
+}
+
+//----------------------------------------------------------------------------
+//! @brief	  	メディアタイプの開放
+//!				IEnumMediaTypesで取得したAM_MEDIA_TYPEは、このメソッドで削除すること
+//! @param		pmt : IEnumMediaTypesで取得したAM_MEDIA_TYPE
+//----------------------------------------------------------------------------
+void tTVPDSMovie::UtilDeleteMediaType( AM_MEDIA_TYPE *pmt )
+{
+	// Allow NULL pointers for coding simplicity
+	if( pmt == NULL )
+		return;
+
+	// Free media type's format data
+	if (pmt->cbFormat != 0) 
+	{
+		CoTaskMemFree((PVOID)pmt->pbFormat);
+
+		// Strictly unnecessary but tidier
+		pmt->cbFormat = 0;
+		pmt->pbFormat = NULL;
+	}
+
+	// Release interface
+	if (pmt->pUnk != NULL) 
+	{
+		pmt->pUnk->Release();
+		pmt->pUnk = NULL;
+	}
+
+	// Free media type
+	CoTaskMemFree((PVOID)pmt);
+}
+//----------------------------------------------------------------------------
+//! @brief	  	ピンに接続可能なメディアタイプをデバッグ出力に吐く
+//! @param		pPin : 出力対象となるピン
+//----------------------------------------------------------------------------
+void tTVPDSMovie::DebugOutputPinMediaType( IPin *pPin )
+{
+	if( pPin == NULL ) return;
+	CComPtr< IEnumMediaTypes > pMediaEnum;
+	pPin->EnumMediaTypes(&pMediaEnum);
+	if( pMediaEnum )
+	{
+		ULONG Fetched = 0;
+		AM_MEDIA_TYPE *pMediaType;
+		while( pMediaEnum->Next(1, &pMediaType, &Fetched) == S_OK )
+		{
+			if(Fetched)
+			{
+				if( pMediaType->majortype == MEDIATYPE_Stream )
+					OutputDebugString("  MEDIATYPE_Stream : ");
+				else if( pMediaType->majortype == MEDIATYPE_Audio )
+					OutputDebugString("  MEDIATYPE_Audio : ");
+				else if( pMediaType->majortype == MEDIATYPE_Video )
+					OutputDebugString("  MEDIATYPE_Video : ");
+				else
+					OutputDebugString("  unknown MEDIATYPE : ");
+
+				if( pMediaType->subtype == MEDIASUBTYPE_MPEG1System )
+					OutputDebugString("  MEDIASUBTYPE_MPEG1System : ");
+				else if( pMediaType->subtype == MEDIASUBTYPE_MPEG1VideoCD )
+					OutputDebugString("  MEDIASUBTYPE_MPEG1VideoCD : ");
+				else if( pMediaType->subtype == MEDIASUBTYPE_MPEG1Packet )
+					OutputDebugString("  MEDIASUBTYPE_MPEG1Packet : ");
+				else if( pMediaType->subtype == MEDIASUBTYPE_MPEG1Payload )
+					OutputDebugString("  MEDIASUBTYPE_MPEG1Payload : ");
+				else if( pMediaType->subtype == MEDIASUBTYPE_MPEG1Video )
+					OutputDebugString("  MEDIASUBTYPE_MPEG1Video : ");
+				else if( pMediaType->subtype == MEDIASUBTYPE_MPEG1Audio )
+					OutputDebugString("  MEDIASUBTYPE_MPEG1Audio : ");
+				else
+					OutputDebugString("  unknown MEDIASUBTYPE\n");
+
+				if( pMediaType->formattype == FORMAT_DvInfo )
+					OutputDebugString("  FORMAT_DvInfo\n");
+				else if( pMediaType->formattype == FORMAT_MPEGVideo )
+					OutputDebugString("  FORMAT_MPEGVideo\n");
+				else if( pMediaType->formattype == FORMAT_MPEG2Video )
+					OutputDebugString("  FORMAT_MPEG2Video\n");
+				else if( pMediaType->formattype == FORMAT_VideoInfo )
+					OutputDebugString("  FORMAT_VideoInfo\n");
+				else if( pMediaType->formattype == FORMAT_VideoInfo2 )
+					OutputDebugString("  FORMAT_VideoInfo2\n");
+				else if( pMediaType->formattype == FORMAT_WaveFormatEx )
+					OutputDebugString("  FORMAT_WaveFormatEx\n");
+				else if( pMediaType->formattype == GUID_NULL )
+					OutputDebugString("  GUID_NULL\n");
+				else
+					OutputDebugString("  unknown FORMAT\n");
+
+				UtilDeleteMediaType(pMediaType);
+			}
+		}
+	}
 }
 //----------------------------------------------------------------------------
 //! @brief	  	MPEG1 用のグラフを手動で構築する
@@ -589,6 +777,7 @@ void tTVPDSMovie::BuildMPEGGraph( IBaseFilter *pRdr, IBaseFilter *pSrc )
 
 	// Connect to MPEG 1 splitter filter
 	CComPtr<IBaseFilter>	pMPEG1Splitter;	// for MPEG 1 splitter filter
+
 	if( FAILED(hr = pMPEG1Splitter.CoCreateInstance(CLSID_MPEG1Splitter, NULL, CLSCTX_INPROC_SERVER)) )
 		ThrowDShowException(L"Failed to create MPEG 1 splitter filter object.", hr);
 	if( FAILED(hr = GraphBuilder()->AddFilter(pMPEG1Splitter, L"MPEG-I Stream Splitter")) )
@@ -671,6 +860,8 @@ HRESULT tTVPDSMovie::ConnectFilters( IBaseFilter* pFilterUpstream, IBaseFilter* 
 #if _DEBUG
 		sprintf(debug, "upstream: %ls\n", PinInfoUpstream.achName);
 		OutputDebugString(debug);
+
+		DebugOutputPinMediaType(pIPinUpstream);
 #endif
 
 		CComPtr<IPin>	 pPinDown;
@@ -694,6 +885,8 @@ HRESULT tTVPDSMovie::ConnectFilters( IBaseFilter* pFilterUpstream, IBaseFilter* 
 #if _DEBUG
 					sprintf(debug, "    downstream: %ls\n", PinInfoDownstream.achName);
 					OutputDebugString(debug);
+
+					DebugOutputPinMediaType(pIPinDownstream);
 #endif
 					CComPtr<IPin>	 pPinUp;
 					pIPinDownstream->ConnectedTo( &pPinUp );
