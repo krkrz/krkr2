@@ -32,8 +32,8 @@
 
 
 //---------------------------------------------------------------------------
-void TJS_INTF_METHOD TVPXP3ArchiveExtractionFilter(
-	tTVPXP3ExtractionFilterInfo *info)
+void TVP_tTVPXP3ArchiveExtractionFilter_CONVENTION
+	TVPXP3ArchiveExtractionFilter(tTVPXP3ExtractionFilterInfo *info)
 {
 	// TVPXP3ArchiveExtractionFilter 関数は本体側から呼び出される
 	// コールバック関数である。
