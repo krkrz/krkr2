@@ -179,8 +179,8 @@ void process(void)
 
 
 
-/* UIExecUserConfig is called immediately after entry point */
-void UIExecUserConfig(void)
+/* callermain is called immediately after entry point */
+void callermain(void)
 {
 	process();
 }
