@@ -320,6 +320,7 @@ tTJSNI_KAGParser::tTJSNI_KAGParser()
 	Owner = NULL;
 	Scenario = NULL;
 	Lines = NULL;
+	CurLineStr = NULL;
 	IgnoreCR = false;
 	DicClear = NULL;
 	DicAssign = NULL;
@@ -430,7 +431,7 @@ void tTJSNI_KAGParser::operator = (const tTJSNI_KAGParser & ref)
 	// copy Scenario
 	if(Scenario != ref.Scenario)
 	{
-		if(Scenario) Scenario->Release(), Scenario = NULL, Lines = NULL;
+		if(Scenario) Scenario->Release(), Scenario = NULL, Lines = NULL, CurLineStr = NULL;
 		Scenario = ref.Scenario;
 		Lines = ref.Lines;
 		LineCount = ref.LineCount;
@@ -840,7 +841,7 @@ void tTJSNI_KAGParser::Clear()
 void tTJSNI_KAGParser::ClearBuffer()
 {
 	// clear internal buffer
-	if(Scenario) Scenario->Release(), Scenario = NULL, Lines = NULL;
+	if(Scenario) Scenario->Release(), Scenario = NULL, Lines = NULL, CurLineStr = NULL;
 	StorageName.Clear();
 	StorageShortName.Clear();
 	BreakConditionAndMacro();
@@ -935,10 +936,11 @@ bool tTJSNI_KAGParser::SkipCommentOrLabel()
 	Scenario->EnsureLabelCache();
 
 	CurPos = 0;
-	if(!Lines) return false;
 	if(CurLine >= LineCount) return false;
 	for(; CurLine < LineCount; CurLine++)
 	{
+		if(!Lines) return false; // in this loop, Lines can be NULL when onScript does so.
+
 		const tjs_char * p = Lines[CurLine].Start;
 
 		if(p[0] == TJS_W(';'))
@@ -1250,7 +1252,6 @@ parse_start:
 
 	while(true)
 	{
-
 		DicClear->FuncCall(0, NULL, NULL, NULL, 0, NULL, DicObj);
 			// clear dictionary object
 
