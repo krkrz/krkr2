@@ -1211,10 +1211,21 @@ void TVPAfterSystemUninit()
 
 
 //---------------------------------------------------------------------------
+bool TVPTerminated = false;
+//---------------------------------------------------------------------------
 void TVPTerminateAsync()
 {
 	// do "A"synchronous temination of application
+	TVPTerminated = true;
+
+	// posting dummy message will prevent "missing WM_QUIT bug" in DirectDraw framework.
+	if(TVPMainForm)
+		::PostMessage(TVPMainForm->Handle, WM_USER+0x31/*dummy msg*/, 0, 0);
+
 	Application->Terminate();
+
+	if(TVPMainForm)
+		::PostMessage(TVPMainForm->Handle, WM_USER+0x31/*dummy msg*/, 0, 0);
 }
 //---------------------------------------------------------------------------
 void TVPTerminateSync()
