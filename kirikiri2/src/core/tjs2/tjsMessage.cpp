@@ -50,6 +50,17 @@ public:
 		return false;
 	}
 
+	bool Get(const tjs_char *name, ttstr &str)
+	{
+		tTJSMessageHolder **holder = Hash.Find(ttstr(name));
+		if(holder)
+		{
+			str = (const tjs_char *)(**holder);
+			return true;
+		}
+		return false;
+	}
+
 	ttstr CreateMessageMapString();
 
 } static * TJSMessageMapper = NULL;
@@ -125,6 +136,17 @@ ttstr TJSCreateMessageMapString()
 {
 	if(TJSMessageMapper) return TJSMessageMapper->CreateMessageMapString();
 	return TJS_W("");
+}
+//---------------------------------------------------------------------------
+ttstr TJSGetMessageMapMessage(const tjs_char *name)
+{
+	if(TJSMessageMapper)
+	{
+		ttstr ret;
+		if(TJSMessageMapper->Get(name, ret)) return ret;
+		return ttstr();
+	}
+	return ttstr();
 }
 //---------------------------------------------------------------------------
 }
