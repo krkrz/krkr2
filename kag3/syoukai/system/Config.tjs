@@ -1,6 +1,6 @@
 // Config.tjs - KAG 設定
 // Copyright (C) 2001-2003 W.Dee  改変・配布は自由です
-;global.config_version = "3.23 beta 5"; // この行を消さないでください
+;global.config_version = "3.23 beta 6"; // この行を消さないでください
 
 // このファイル内で設定できる項目は、すべて
 // ;設定名 = 値;
@@ -475,7 +475,7 @@ function MessageLayer_config()
 {
 // ◆ メッセージレイヤの表示モード
 // メッセージレイヤをどのモードで表示するかを指定します。
-// ltAddAlpha は KAG3 3.25 beta 5 から指定可能なモードで、
+// ltAddAlpha は KAG3 3.23 beta 5 から指定可能なモードで、
 // ltAlpha よりも処理が若干高速です。
 // ltAlpha はそれ以前の KAG と互換性のあるモードです。
 // ltAddAlpha を指定した場合は、frameGraphic で指定する
