@@ -106,7 +106,7 @@ AutoIncBuild=1
 MajorVer=2
 MinorVer=23
 Release=4
-Build=867
+Build=868
 Debug=0
 PreRelease=0
 Special=0
@@ -118,7 +118,7 @@ CodePage=932
 [Version Info Keys]
 CompanyName=
 FileDescription=TVP(KIRIKIRI) 2 core / Scripting Platform for Win32
-FileVersion=2.23.4.867
+FileVersion=2.23.4.868
 InternalName=tvp2/win32
 LegalCopyright=(KIRIKIRI core) (C) '97-'04 W.Dee All Rights Reserved. This software is based in part on the work of Independent JPEG Group. For details: Run this program with '-about' option.
 LegalTrademarks=
