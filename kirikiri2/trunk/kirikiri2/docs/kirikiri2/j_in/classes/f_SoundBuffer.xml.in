@@ -167,6 +167,7 @@
 		なります。<r/>
 		　DirectSound と WaveMapper ( MCI 等 ) による再生を同時に行えない環境などで DirectSound を
 		解放するためにこのメソッドを使います。<r/>
+		　このメソッドは WaveSoundBuffer クラス上にしか存在しません (WaveSoundBufferから作られたオブジェクト上にこのメソッドはありません)。使用する際は WaveSoundBuffer.freeDirectSound(); としてください。<r/>
 	</desc>
 </member>
 </wave>
@@ -412,6 +413,39 @@
 		　パン (音像位置) を表します。値を設定することもできます。<r/>
 		　音の聞こえる左右の位置を指定することができます。<r/>
 		　-100000 ～ 0 ～ 100000 の数値で指定し、 -100000 が 完全に左、0 が中央、100000 が完全に右になります。<r/>
+	</desc>
+</member>
+</wave>
+
+<wave>
+<member>
+	<name>globalVolume</name>
+	<type>property</type>
+	<shortdesc>大域音量</shortdesc>
+	<access>r/w</access>
+	<desc>
+		　大域音量 (マスターボリューム)を表します。値を設定することもできます。<r/>
+		　この音量は、すべての WaveSoundBuffer に影響します。<r/>
+		　0 ～ 100000 の数値で指定し、 0 が完全ミュート、100000 が 100% の音量となります。デフォルトの値は 100000 です。<r/>
+		　このプロパティは WaveSoundBuffer クラス上にしか存在しません (WaveSoundBufferから作られたオブジェクト上にこのプロパティはありません)。使用する際は WaveSoundBuffer.globalVolume としてください。<r/>
+	</desc>
+</member>
+</wave>
+
+<wave>
+<member>
+	<name>globalFocusMode</name>
+	<type>property</type>
+	<shortdesc>フォーカスモード</shortdesc>
+	<access>r/w</access>
+	<desc>
+		　フォーカスモードを表します。値を設定することもできます。<r/>
+		　フォーカスモードは、アプリケーションが最小化したときや非アクティブになったときにミュートするモードです。<r/>
+		　<tt><kw>sgfmNeverMute</kw></tt>を指定すると、アプリケーションがどのような状態でもミュートはしません。<r/>
+		　<tt><kw>sgfmMuteOnMinimize</kw></tt>を指定すると、アプリケーションが最小化時にミュートします。<r/>
+		　<tt><kw>sgfmMuteOnDeactivate</kw></tt>を指定すると、アプリケーションが非アクティブ化したときにミュートします。<r/>
+		　このプロパティは WaveSoundBuffer クラス上にしか存在しません (WaveSoundBufferから作られたオブジェクト上にこのプロパティはありません)。使用する際は WaveSoundBuffer.globalFocusMode としてください。<r/>
+		　このプロパティの設定よりも、コマンドラインオプションで指定した '-wsmute' (DirectSound ミュート) の設定が優先されます。<r/>
 	</desc>
 </member>
 </wave>

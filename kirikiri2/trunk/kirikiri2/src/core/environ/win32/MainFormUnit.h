@@ -76,6 +76,8 @@ private:	// ユーザー宣言
 	bool ContinuousEventCalling;
 	bool AutoShowConsoleOnError;
 	bool ApplicationStayOnTop;
+	bool ApplicationActivating;
+	bool ApplicationNotMinimizing;
 
 public:		// ユーザー宣言
 	__fastcall TTVPMainForm(TComponent* Owner);
@@ -113,6 +115,9 @@ public:		// ユーザー宣言
 
 	void SetApplicationStayOnTop(bool b);
 	bool GetApplicationStayOnTop() const { return ApplicationStayOnTop; }
+
+	bool GetApplicationActivating() const { return ApplicationActivating; }
+	bool GetApplicationNotMinimizing() const { return ApplicationNotMinimizing; }
 
 protected:
 BEGIN_MESSAGE_MAP
