@@ -198,17 +198,15 @@ TVPAlphaBlend_name:
 	punpcklwd	mm4,	mm4		; 2 unpack
 	pmullw	mm2,	mm3		; 1 mm2 *= mm3
 	mov	eax,	[ebp+8]		; (for next loop) 1 src
-	psllw	mm1,	8		; 1 mm1 <<= 8
-	psllw	mm5,	8		; 2 mm5 <<= 8
 	pmullw	mm6,	mm4		; 2 mm6 *= mm4
+	psrlw	mm2,	8		; 1 mm2 >>= 8
+	psrlw	mm6,	8		; 2 mm6 >>= 8
 	mov	edx,	[ebp+12]		; (for next loop) 2 src
 %ifdef USE_EMMX
 	prefetcht0	[ebp + 16]
 %endif
-	paddw	mm1,	mm2		; 1 mm1 += mm2
-	paddw	mm5,	mm6		; 2 mm5 += mm2
-	psrlw	mm1,	8		; 1 mm1 >>= 8
-	psrlw	mm5,	8		; 2 mm5 >>= 8
+	paddb	mm1,	mm2		; 1 mm1 += mm2
+	paddb	mm5,	mm6		; 2 mm5 += mm2
 	add	edi,	byte 8
 	packuswb	mm1,	mm5		; pack
 	add	ebp,	byte 8
@@ -238,9 +236,8 @@ TVPAlphaBlend_name:
 	psubw	mm2,	mm1		; mm2 -= mm1
 	add	edi,	byte 4
 	pmullw	mm2,	mm4		; mm2 *= mm4
-	psllw	mm1,	8		; mm1 <<= 8
-	paddw	mm1,	mm2		; mm1 += mm2
-	psrlw	mm1,	8		; mm1 >>= 8
+	psrlw	mm2,	8		; mm2 >>= 8
+	paddb	mm1,	mm2		; mm1 += mm2
 	add	ebp,	byte 4
 	packuswb	mm1,	mm0		; pack
 	cmp	edi,	esi
@@ -352,14 +349,12 @@ TVPAlphaBlend_o_name:
 	punpcklwd	mm2,	mm2		; 2 unpack
 	pmullw	mm5,	mm4		; 1 mm5 *= mm4
 	add	edi,	byte 8
-	psllw	mm7,	8
 	pmullw	mm3,	mm2		; 2 mm3 *= mm2
-	psllw	mm1,	8
+	psrlw	mm5,	8
+	psrlw	mm3,	8
 	add	ebp,	byte 8
-	paddw	mm7,	mm5		; 1 mm7 += mm5
-	paddw	mm1,	mm3		; 2 mm1 += mm3
-	psrlw	mm7,	8
-	psrlw	mm1,	8
+	paddb	mm7,	mm5		; 1 mm7 += mm5
+	paddb	mm1,	mm3		; 2 mm1 += mm3
 	cmp	edi,	esi
 	packuswb	mm7,	mm1		; pack
 	movq	[edi-8],mm7		; store
