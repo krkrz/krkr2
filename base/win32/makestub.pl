@@ -497,6 +497,9 @@ process_exp_stub("../../utils/win32/TickCount.h");
 print OFH "#include \"MsgIntf.h\"\n";
 process_exp_stub("../../msg/MsgIntf.h");
 
+print OFH "#include \"WaveIntf.h\"\n";
+process_exp_stub("../../sound/WaveIntf.h");
+
 print OFH "#include \"WaveImpl.h\"\n";
 process_exp_stub("../../sound/win32/WaveImpl.h");
 

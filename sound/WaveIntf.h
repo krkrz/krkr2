@@ -15,6 +15,21 @@
 #include "SoundBufferBaseIntf.h"
 
 
+/*[*/
+//---------------------------------------------------------------------------
+// Sound Global Focus Mode
+//---------------------------------------------------------------------------
+enum tTVPSoundGlobalFocusMode
+{
+	/*0*/ sgfmNeverMute,			// never mutes
+	/*1*/ sgfmMuteOnMinimize,		// will mute on the application minimize
+	/*2*/ sgfmMuteOnDeactivate		// will mute on the application deactivation
+};
+//---------------------------------------------------------------------------
+
+
+
+/*]*/
 //---------------------------------------------------------------------------
 // GUID identifying WAVEFORMATEXTENSIBLE sub format
 //---------------------------------------------------------------------------
