@@ -77,35 +77,35 @@ static tjs_uint32 TVP_INLINE_FUNC TVPSaturatedAdd(tjs_uint32 a, tjs_uint32 b)
 }
 
 /*
-	TVPAdditiveBlend_dest_src[_o]
+	TVPAddAlphaBlend_dest_src[_o]
 	dest/src    :    a(additive-alpha)  d(alpha)  n(none alpha)
 	_o          :    with opacity
 */
 
-static tjs_uint32 TVP_INLINE_FUNC TVPAdditiveBlend_n_a(tjs_uint32 dest, tjs_uint32 src)
+static tjs_uint32 TVP_INLINE_FUNC TVPAddAlphaBlend_n_a(tjs_uint32 dest, tjs_uint32 src)
 {
 	tjs_uint32 sopa = (~src) >> 24;
 	return TVPSaturatedAdd((((dest & 0xff00ff)*sopa >> 8) & 0xff00ff) + 
 		(((dest & 0xff00)*sopa >> 8) & 0xff00), src);
 }
 
-static tjs_uint32 TVP_INLINE_FUNC TVPAdditiveBlend_HDA_n_a(tjs_uint32 dest, tjs_uint32 src)
+static tjs_uint32 TVP_INLINE_FUNC TVPAddAlphaBlend_HDA_n_a(tjs_uint32 dest, tjs_uint32 src)
 {
-	return (dest & 0xff000000) + (TVPAdditiveBlend_n_a(dest, src) & 0xffffff);
+	return (dest & 0xff000000) + (TVPAddAlphaBlend_n_a(dest, src) & 0xffffff);
 }
 
-static tjs_uint32 TVP_INLINE_FUNC TVPAdditiveBlend_n_a_o(tjs_uint32 dest, tjs_uint32 src, tjs_int opa)
+static tjs_uint32 TVP_INLINE_FUNC TVPAddAlphaBlend_n_a_o(tjs_uint32 dest, tjs_uint32 src, tjs_int opa)
 {
 	src = (((src & 0xff00ff)*opa >> 8) & 0xff00ff) + (((src >> 8) & 0xff00ff)*opa & 0xff00ff00);
-	return TVPAdditiveBlend_n_a(dest, src);
+	return TVPAddAlphaBlend_n_a(dest, src);
 }
 
-static tjs_uint32 TVP_INLINE_FUNC TVPAdditiveBlend_HDA_n_a_o(tjs_uint32 dest, tjs_uint32 src, tjs_int opa)
+static tjs_uint32 TVP_INLINE_FUNC TVPAddAlphaBlend_HDA_n_a_o(tjs_uint32 dest, tjs_uint32 src, tjs_int opa)
 {
-	return (dest & 0xff000000) + (TVPAdditiveBlend_n_a_o(dest, src, opa) & 0xffffff);
+	return (dest & 0xff000000) + (TVPAddAlphaBlend_n_a_o(dest, src, opa) & 0xffffff);
 }
 
-static tjs_uint32 TVP_INLINE_FUNC TVPAdditiveBlend_a_a(tjs_uint32 dest, tjs_uint32 src)
+static tjs_uint32 TVP_INLINE_FUNC TVPAddAlphaBlend_a_a(tjs_uint32 dest, tjs_uint32 src)
 {
 	/*
 		Di = sat(Si, (1-Sa)*Di)
@@ -123,7 +123,7 @@ static tjs_uint32 TVP_INLINE_FUNC TVPAdditiveBlend_a_a(tjs_uint32 dest, tjs_uint
 			(((dest & 0xff00)*sopa >> 8) & 0xff00), src);
 }
 
-static tjs_uint32 TVP_INLINE_FUNC TVPAdditiveBlend_a_ca(tjs_uint32 dest, tjs_uint32 sopa, tjs_uint32 sopa_inv, tjs_uint32 src)
+static tjs_uint32 TVP_INLINE_FUNC TVPAddAlphaBlend_a_ca(tjs_uint32 dest, tjs_uint32 sopa, tjs_uint32 sopa_inv, tjs_uint32 src)
 {
 	/*
 		Di = sat(Si, (1-Sa)*Di)
@@ -138,10 +138,10 @@ static tjs_uint32 TVP_INLINE_FUNC TVPAdditiveBlend_a_ca(tjs_uint32 dest, tjs_uin
 			(((dest & 0xff00)*sopa_inv >> 8) & 0xff00), src);
 }
 
-static tjs_uint32 TVP_INLINE_FUNC TVPAdditiveBlend_a_a_o(tjs_uint32 dest, tjs_uint32 src, tjs_int opa)
+static tjs_uint32 TVP_INLINE_FUNC TVPAddAlphaBlend_a_a_o(tjs_uint32 dest, tjs_uint32 src, tjs_int opa)
 {
 	src = (((src & 0xff00ff)*opa >> 8) & 0xff00ff) + (((src >> 8) & 0xff00ff)*opa & 0xff00ff00);
-	return TVPAdditiveBlend_a_a(dest, src);
+	return TVPAddAlphaBlend_a_a(dest, src);
 }
 
 static tjs_uint32 TVP_INLINE_FUNC TVPMulColor(tjs_uint32 color, tjs_uint32 fac)
@@ -161,18 +161,18 @@ static tjs_uint32 TVP_INLINE_FUNC TVPAlphaToAdditiveAlpha(tjs_uint32 a)
 	return TVPAlphaAndColorToAdditiveAlpha(a >> 24, a);
 }
 
-static tjs_uint32 TVP_INLINE_FUNC TVPAdditiveBlend_a_d(tjs_uint32 dest, tjs_uint32 src)
+static tjs_uint32 TVP_INLINE_FUNC TVPAddAlphaBlend_a_d(tjs_uint32 dest, tjs_uint32 src)
 {
-	return TVPAdditiveBlend_a_a(dest, TVPAlphaToAdditiveAlpha(src));
+	return TVPAddAlphaBlend_a_a(dest, TVPAlphaToAdditiveAlpha(src));
 }
 
-static tjs_uint32 TVP_INLINE_FUNC TVPAdditiveBlend_a_d_o(tjs_uint32 dest, tjs_uint32 src, tjs_int opa)
+static tjs_uint32 TVP_INLINE_FUNC TVPAddAlphaBlend_a_d_o(tjs_uint32 dest, tjs_uint32 src, tjs_int opa)
 {
 	src = (src & 0xffffff) + ((((src >> 24) * opa) >> 8) << 24);
-	return TVPAdditiveBlend_a_d(dest, src);
+	return TVPAddAlphaBlend_a_d(dest, src);
 }
 
-/* TVPAdditiveBlend_d_a is not yet implemented because the expression may loose precision. */
+/* TVPAddAlphaBlend_d_a is not yet implemented because the expression may loose precision. */
 
 
 static tjs_uint32 TVP_INLINE_FUNC TVPBlendARGB(tjs_uint32 b, tjs_uint32 a, tjs_int ratio)
