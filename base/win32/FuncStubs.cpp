@@ -1284,7 +1284,7 @@ static ttstr __stdcall TVP_Stub_075d42cff8dc0c1fbd99c7459a63e526(const tjs_char 
 {
 	return TJSGetMessageMapMessage(name);
 }
-#include "tjsInterCodeGen.h"
+#include "tjsGlobalStringMap.h"
 static ttstr __stdcall TVP_Stub_b6bc45b28e194c7ac98bfdea88edee36(const ttstr & string)
 {
 	return TJSMapGlobalStringMap(string);

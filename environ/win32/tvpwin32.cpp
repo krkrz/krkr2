@@ -53,6 +53,7 @@ USEUNIT("..\..\tjs2\tjsConfig.cpp");
 USEUNIT("..\..\tjs2\tjsRegExp.cpp");
 USEUNIT("..\..\tjs2\tjsScriptBlock.cpp");
 USEUNIT("..\..\tjs2\tjsInterCodeGen.cpp");
+USEUNIT("..\..\TJS2\tjsGlobalStringMap.cpp");
 USEUNIT("..\..\tjs2\tjs.tab.cpp");
 USEUNIT("..\..\tjs2\tjsLex.cpp");
 USEUNIT("..\..\tjs2\tjsCompileControl.cpp");

@@ -12,52 +12,52 @@
       intermediate\tjsArray.obj intermediate\tjsNative.obj intermediate\tjs.obj 
       intermediate\tjsScriptCache.obj intermediate\tjsConfig.obj 
       intermediate\tjsRegExp.obj intermediate\tjsScriptBlock.obj 
-      intermediate\tjsInterCodeGen.obj intermediate\tjs.tab.obj 
-      intermediate\tjsLex.obj intermediate\tjsCompileControl.obj 
-      intermediate\tjspp.tab.obj intermediate\tjsNamespace.obj 
-      intermediate\tjsError.obj intermediate\tjsUtils.obj 
-      intermediate\tjsMath.obj intermediate\tjsRandomGenerator.obj 
-      intermediate\tjsMT19937ar-cok.obj intermediate\tjsDate.obj 
-      intermediate\tjsDateParser.obj intermediate\tjsdate.tab.obj 
-      intermediate\tjsException.obj intermediate\tjsMessage.obj 
-      intermediate\LayerBitmapIntf.obj intermediate\LayerBitmapImpl.obj 
-      intermediate\LayerIntf.obj intermediate\LayerImpl.obj 
-      intermediate\DInputMgn.obj intermediate\WindowIntf.obj 
-      intermediate\WindowImpl.obj intermediate\GraphicsLoaderIntf.obj 
-      intermediate\LoadTLG.obj intermediate\GraphicsLoaderImpl.obj 
-      intermediate\MenuItemIntf.obj intermediate\MenuItemImpl.obj 
-      intermediate\ComplexRect.obj intermediate\TransIntf.obj 
-      intermediate\TransImpl.obj intermediate\VideoOvlIntf.obj 
-      intermediate\VideoOvlImpl.obj intermediate\Resampler.obj 
-      intermediate\tvpgl.obj intermediate\tvpgl_ia32_intf.obj 
-      intermediate\DebugIntf.obj intermediate\DebugImpl.obj 
-      intermediate\PadIntf.obj intermediate\PadImpl.obj 
-      intermediate\TimerIntf.obj intermediate\TimerImpl.obj 
-      intermediate\TickCount.obj intermediate\KAGParser.obj 
-      intermediate\Random.obj intermediate\md5.obj intermediate\ThreadIntf.obj 
-      intermediate\ThreadImpl.obj intermediate\XP3Archive.obj 
-      intermediate\TextStream.obj intermediate\UtilStreams.obj 
-      intermediate\FileSelecter.obj intermediate\SusieArchive.obj 
-      intermediate\StorageIntf.obj intermediate\StorageImpl.obj 
-      intermediate\ScriptMgnImpl.obj intermediate\EventIntf.obj 
-      intermediate\EventImpl.obj intermediate\SysInitIntf.obj 
-      intermediate\SysInitImpl.obj intermediate\SystemIntf.obj 
-      intermediate\SystemImpl.obj intermediate\PluginIntf.obj 
-      intermediate\PluginImpl.obj intermediate\SoundBufferBaseIntf.obj 
-      intermediate\SoundBufferBaseImpl.obj intermediate\CDDAIntf.obj 
-      intermediate\CDDAImpl.obj intermediate\MIDIIntf.obj 
-      intermediate\MIDIImpl.obj intermediate\WaveIntf.obj 
-      intermediate\WaveImpl.obj intermediate\tvpsnd.obj 
-      intermediate\EmergencyExit.obj intermediate\HintWindow.obj 
-      intermediate\TLogViewer.obj intermediate\HaltWarnFormUnit.obj 
-      intermediate\ConsoleFormUnit.obj intermediate\PadFormUnit.obj 
-      intermediate\MainFormUnit.obj intermediate\WatchFormUnit.obj 
-      intermediate\WindowFormUnit.obj intermediate\MenuContainerFormUnit.obj 
-      intermediate\FontSelectFormUnit.obj intermediate\VersionFormUnit.obj 
-      intermediate\MsgIntf.obj intermediate\MsgImpl.obj 
-      intermediate\ScriptMgnIntf.obj intermediate\FuncStubs.obj 
-      intermediate\OptionsDesc.obj intermediate\ConfSettingsUnit.obj 
-      intermediate\ConfMainFrameUnit.obj"/>
+      intermediate\tjsInterCodeGen.obj intermediate\tjsGlobalStringMap.obj 
+      intermediate\tjs.tab.obj intermediate\tjsLex.obj 
+      intermediate\tjsCompileControl.obj intermediate\tjspp.tab.obj 
+      intermediate\tjsNamespace.obj intermediate\tjsError.obj 
+      intermediate\tjsUtils.obj intermediate\tjsMath.obj 
+      intermediate\tjsRandomGenerator.obj intermediate\tjsMT19937ar-cok.obj 
+      intermediate\tjsDate.obj intermediate\tjsDateParser.obj 
+      intermediate\tjsdate.tab.obj intermediate\tjsException.obj 
+      intermediate\tjsMessage.obj intermediate\LayerBitmapIntf.obj 
+      intermediate\LayerBitmapImpl.obj intermediate\LayerIntf.obj 
+      intermediate\LayerImpl.obj intermediate\DInputMgn.obj 
+      intermediate\WindowIntf.obj intermediate\WindowImpl.obj 
+      intermediate\GraphicsLoaderIntf.obj intermediate\LoadTLG.obj 
+      intermediate\GraphicsLoaderImpl.obj intermediate\MenuItemIntf.obj 
+      intermediate\MenuItemImpl.obj intermediate\ComplexRect.obj 
+      intermediate\TransIntf.obj intermediate\TransImpl.obj 
+      intermediate\VideoOvlIntf.obj intermediate\VideoOvlImpl.obj 
+      intermediate\Resampler.obj intermediate\tvpgl.obj 
+      intermediate\tvpgl_ia32_intf.obj intermediate\DebugIntf.obj 
+      intermediate\DebugImpl.obj intermediate\PadIntf.obj 
+      intermediate\PadImpl.obj intermediate\TimerIntf.obj 
+      intermediate\TimerImpl.obj intermediate\TickCount.obj 
+      intermediate\KAGParser.obj intermediate\Random.obj intermediate\md5.obj 
+      intermediate\ThreadIntf.obj intermediate\ThreadImpl.obj 
+      intermediate\XP3Archive.obj intermediate\TextStream.obj 
+      intermediate\UtilStreams.obj intermediate\FileSelecter.obj 
+      intermediate\SusieArchive.obj intermediate\StorageIntf.obj 
+      intermediate\StorageImpl.obj intermediate\ScriptMgnImpl.obj 
+      intermediate\EventIntf.obj intermediate\EventImpl.obj 
+      intermediate\SysInitIntf.obj intermediate\SysInitImpl.obj 
+      intermediate\SystemIntf.obj intermediate\SystemImpl.obj 
+      intermediate\PluginIntf.obj intermediate\PluginImpl.obj 
+      intermediate\SoundBufferBaseIntf.obj intermediate\SoundBufferBaseImpl.obj 
+      intermediate\CDDAIntf.obj intermediate\CDDAImpl.obj 
+      intermediate\MIDIIntf.obj intermediate\MIDIImpl.obj 
+      intermediate\WaveIntf.obj intermediate\WaveImpl.obj 
+      intermediate\tvpsnd.obj intermediate\EmergencyExit.obj 
+      intermediate\HintWindow.obj intermediate\TLogViewer.obj 
+      intermediate\HaltWarnFormUnit.obj intermediate\ConsoleFormUnit.obj 
+      intermediate\PadFormUnit.obj intermediate\MainFormUnit.obj 
+      intermediate\WatchFormUnit.obj intermediate\WindowFormUnit.obj 
+      intermediate\MenuContainerFormUnit.obj intermediate\FontSelectFormUnit.obj 
+      intermediate\VersionFormUnit.obj intermediate\MsgIntf.obj 
+      intermediate\MsgImpl.obj intermediate\ScriptMgnIntf.obj 
+      intermediate\FuncStubs.obj intermediate\OptionsDesc.obj 
+      intermediate\ConfSettingsUnit.obj intermediate\ConfMainFrameUnit.obj"/>
     <RESFILES value="tvpwin32.res HBeamCur.res"/>
     <DEFFILE value="tvpwin32.def"/>
     <RESDEPEN value="$(RESFILES) HaltWarnFormUnit.dfm ..\..\utils\win32\ConsoleFormUnit.dfm 
@@ -78,7 +78,7 @@
     <DEBUGLIBPATH value="$(BCB)\lib\debug"/>
     <RELEASELIBPATH value="$(BCB)\lib\release"/>
     <LINKER value="tlink32"/>
-    <USERDEFINES value="TJS_SUPPORT_VCL;TJS_TEXT_OUT_CRLF;TJS_JP_LOCALIZED;TJS_NO_DEBUG_PROFILE_TIME;TVP_NO_CHECK_WIDE_CHAR_SIZE;TVP_REPORT_HW_EXCEPTION;TVP_SUPPORT_ERI;TVP_SUPPORT_KPI;TVP_SUPPORT_OLD_WAVEUNPACKER;TVP_ENVIRON;_DEBUG"/>
+    <USERDEFINES value="TJS_SUPPORT_VCL;TJS_TEXT_OUT_CRLF;TJS_JP_LOCALIZED;TJS_NO_DEBUG_PROFILE_TIME;TVP_NO_CHECK_WIDE_CHAR_SIZE;TVP_REPORT_HW_EXCEPTION;TVP_SUPPORT_ERI;TVP_SUPPORT_KPI;TVP_SUPPORT_OLD_WAVEUNPACKER;TVP_ENVIRON;_DEBUG;TJS_DEBUG_DUMP_STRING"/>
     <SYSDEFINES value="NO_STRICT"/>
     <MAINSOURCE value="tvpwin32.cpp"/>
     <INCLUDEPATH value="..\..\..\tools\win32\krdevui;krdevui;..\..\..\..\Bin;..\..\sound;..\..\sound\win32;..\..\msg\win32;..\..\visual\win32;..\..\visual;..\..\base\win32;..\..\base;..\..\msg;..\..\utils\win32;..\..\utils;..\..\base\storage;..\..\tjs2;..\..\visual\window;..\..\..;..\..\visual\IA32;$(BCB)\include;$(BCB)\include\vcl;$(BCB)\include\libjpeg2;$(BCB)\include\libpng;$(BCB)\include\erina"/>
@@ -91,7 +91,7 @@
     <PFLAGS value="-N2intermediate -N0intermediate -$Y+ -$W -$O- -v -JPHNE -M"/>
     <RFLAGS value=""/>
     <AFLAGS value="/mx /mv64 /m5 /w2 /zi /l /z"/>
-    <LFLAGS value="-Iintermediate -dWINSPOOL.DRV -dWINMM.DLL -dMSVFW32.DLL -dCOMDLG32.DLL 
+    <LFLAGS value="-dWINSPOOL.DRV -dWINMM.DLL -dMSVFW32.DLL -dCOMDLG32.DLL -Iintermediate 
       -D&quot;&quot; -GC&quot;TVP(kirikiri) for win32&quot; -Rr -H:0x10000 -aa -Tpe -GD -x -Gn -v"/>
   </OPTIONS>
   <LINKER>
@@ -106,7 +106,7 @@ AutoIncBuild=1
 MajorVer=2
 MinorVer=23
 Release=8
-Build=874
+Build=881
 Debug=0
 PreRelease=0
 Special=0
@@ -118,7 +118,7 @@ CodePage=932
 [Version Info Keys]
 CompanyName=
 FileDescription=TVP(KIRIKIRI) 2 core / Scripting Platform for Win32
-FileVersion=2.23.8.874
+FileVersion=2.23.8.881
 InternalName=tvp2/win32
 LegalCopyright=(KIRIKIRI core) (C) '97-'04 W.Dee All Rights Reserved. This software is based in part on the work of Independent JPEG Group. For details: Run this program with '-about' option.
 LegalTrademarks=
@@ -145,9 +145,10 @@ Item0=C:\Program Files\Borland\CBuilder5\Projects\tvp2win32\visual\IA32\;C:\Prog
 Item1=C:\Program Files\Borland\CBuilder5\Projects\tvp2win32\visual\IA32\;C:\Program Files\Borland\CBuilder5\Projects\comps\o\erinalib\library\common\
 
 [HistoryLists\hlConditionals]
-Count=2
-Item0=TJS_SUPPORT_VCL;TJS_TEXT_OUT_CRLF;TJS_JP_LOCALIZED;TJS_NO_DEBUG_PROFILE_TIME;TVP_NO_CHECK_WIDE_CHAR_SIZE;TVP_REPORT_HW_EXCEPTION;TVP_SUPPORT_ERI;TVP_SUPPORT_KPI;TVP_SUPPORT_OLD_WAVEUNPACKER;TVP_ENVIRON;_DEBUG
-Item1=TJS_SUPPORT_VCL;TJS_TEXT_OUT_CRLF;TJS_JP_LOCALIZED;TJS_NO_DEBUG_PROFILE_TIME;TVP_NO_CHECK_WIDE_CHAR_SIZE;TVP_REPORT_HW_EXCEPTION;TVP_SUPPORT_ERI;TVP_SUPPORT_KPI;TVP_SUPPORT_OLD_WAVEUNPACKER;TVP_ENVIRON
+Count=3
+Item0=TJS_SUPPORT_VCL;TJS_TEXT_OUT_CRLF;TJS_JP_LOCALIZED;TJS_NO_DEBUG_PROFILE_TIME;TVP_NO_CHECK_WIDE_CHAR_SIZE;TVP_REPORT_HW_EXCEPTION;TVP_SUPPORT_ERI;TVP_SUPPORT_KPI;TVP_SUPPORT_OLD_WAVEUNPACKER;TVP_ENVIRON;_DEBUG;TJS_DEBUG_DUMP_STRING
+Item1=TJS_SUPPORT_VCL;TJS_TEXT_OUT_CRLF;TJS_JP_LOCALIZED;TJS_NO_DEBUG_PROFILE_TIME;TVP_NO_CHECK_WIDE_CHAR_SIZE;TVP_REPORT_HW_EXCEPTION;TVP_SUPPORT_ERI;TVP_SUPPORT_KPI;TVP_SUPPORT_OLD_WAVEUNPACKER;TVP_ENVIRON;_DEBUG
+Item2=TJS_SUPPORT_VCL;TJS_TEXT_OUT_CRLF;TJS_JP_LOCALIZED;TJS_NO_DEBUG_PROFILE_TIME;TVP_NO_CHECK_WIDE_CHAR_SIZE;TVP_REPORT_HW_EXCEPTION;TVP_SUPPORT_ERI;TVP_SUPPORT_KPI;TVP_SUPPORT_OLD_WAVEUNPACKER;TVP_ENVIRON
 
 [HistoryLists\hlIntOutputDir]
 Count=1

@@ -472,8 +472,8 @@ process_exp_stub("../../tjs2/tjs.h");
 print OFH "#include \"tjsMessage.h\"\n";
 process_exp_stub("../../tjs2/tjsMessage.h");
 
-print OFH "#include \"tjsInterCodeGen.h\"\n";
-process_exp_stub("../../tjs2/tjsInterCodeGen.h");
+print OFH "#include \"tjsGlobalStringMap.h\"\n";
+process_exp_stub("../../tjs2/tjsGlobalStringMap.h");
 
 print OFH "#include \"tjsObject.h\"\n";
 process_exp_stub("../../tjs2/tjsObject.h");
