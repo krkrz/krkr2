@@ -67,9 +67,10 @@
 			<desc>
 				　Periodイベントのタイプを表します。<r/>
 				　以下のいずれかです。<r/>
-				<tt><kw>petLoop</kw>    : </tt> ループの終端に達した<r/>
-				<tt><kw>petPeriod</kw>  : </tt> setPeriodEvent メソッドで指定されたフレームに達した<r/>
-				<tt><kw>petPrepare</kw> : </tt> prepare メソッドによる再生準備が完了した<r/>
+				<tt><kw>perLoop</kw>    : </tt> (通常の)ループの終端に達した<r/>
+				<tt><kw>perSegLoop</kw> : </tt> セグメントループの終端に達した<r/>
+				<tt><kw>perPeriod</kw>  : </tt> setPeriodEvent メソッドで指定されたフレームに達した<r/>
+				<tt><kw>perPrepare</kw> : </tt> prepare メソッドによる再生準備が完了した<r/>
 			</desc>
 		</argitem>
 	</arg>
@@ -212,7 +213,7 @@ prepareメソッド コール後の再生は、onPeriodイベントを待機してから行ってください。
 			<name>goFrame</name>
 			<default></default>
 			<desc>
-				　ループ終点。このフレームに達したとき、再生ヘッドはcomeFrameへ移動します。<r/>
+				　ループ終点。このフレームの1つ前のフレームの表示が終了した時、再生ヘッドはcomeFrameへ移動します。<r/>
 			</desc>
 		</argitem>
 	</arg>
