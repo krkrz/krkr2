@@ -1070,6 +1070,47 @@ TJS_BEGIN_NATIVE_PROP_DECL(channels)
 }
 TJS_END_NATIVE_PROP_DECL(channels)
 //----------------------------------------------------------------------
+TJS_BEGIN_NATIVE_PROP_DECL(globalVolume)
+{
+	TJS_BEGIN_NATIVE_PROP_GETTER
+	{
+		*result = tTJSNI_WaveSoundBuffer::GetGlobalVolume();
+
+		return TJS_S_OK;
+	}
+	TJS_END_NATIVE_PROP_GETTER
+
+	TJS_BEGIN_NATIVE_PROP_SETTER
+	{
+		tTJSNI_WaveSoundBuffer::SetGlobalVolume(*param);
+
+		return TJS_S_OK;
+	}
+	TJS_END_NATIVE_PROP_SETTER
+}
+TJS_END_NATIVE_STATIC_PROP_DECL(globalVolume)
+//----------------------------------------------------------------------
+TJS_BEGIN_NATIVE_PROP_DECL(globalFocusMode)
+{
+	TJS_BEGIN_NATIVE_PROP_GETTER
+	{
+		*result = (tjs_int)tTJSNI_WaveSoundBuffer::GetGlobalFocusMode();
+
+		return TJS_S_OK;
+	}
+	TJS_END_NATIVE_PROP_GETTER
+
+	TJS_BEGIN_NATIVE_PROP_SETTER
+	{
+		tTJSNI_WaveSoundBuffer::SetGlobalFocusMode(
+			(tTVPSoundGlobalFocusMode)(tjs_int)*param);
+
+		return TJS_S_OK;
+	}
+	TJS_END_NATIVE_PROP_SETTER
+}
+TJS_END_NATIVE_STATIC_PROP_DECL(globalFocusMode)
+//----------------------------------------------------------------------
 
 	TJS_END_NATIVE_MEMBERS
 

@@ -1408,6 +1408,7 @@ static void __stdcall TVP_Stub_3a0f858bdf86199dc2d00b583a3b915f(tjs_int & major 
 {
 	return TVPGetTJSVersion(major, minor, release);
 }
+#include "WaveIntf.h"
 #include "WaveImpl.h"
 static void __stdcall TVP_Stub_5da29a19bbe279a89be00e16c59d7641()
 {
