@@ -2834,7 +2834,7 @@
 	<desc>
 		　レイヤ画像の形式を変換します。<r/>
 		　このメソッドは、ltAlpha (dfAlpha) と ltAddAlpha (dfAddAlpha) のように、「レイヤの画像表現形式が異なるが同様の表現が可能なタイプ」間での画像表現形式の変換を行います。<r/>
-		　たとえば、ltTransparent で表示しているレイヤのタイプをそのまま ltAddAlpha に変更しただけでは、アルファチャンネルと色情報の扱いが異なるので正常に表示されません。そのため、このメソッドを用い、dfAlpha から dfAddAlpha に変換を行う必要があります。<r/>
+		　たとえば、ltAlpha で表示しているレイヤのタイプをそのまま ltAddAlpha に変更しただけでは、アルファチャンネルと色情報の扱いが異なるので正常に表示されません。そのため、このメソッドを用い、dfAlpha から dfAddAlpha に変換を行う必要があります。<r/>
 		　このメソッドでは、変換先の画像表現形式は <ref>Layer.face</ref> プロパティで指定した描画面に対応した形式になります (<ref>Layer.type</ref>で指定するレイヤタイプではなくて、描画面であることに注意してください )。<r/>
 		　from 引数には、変換元の画像表現形式に対応する描画面(dfで始まる定数; <ref>Layer.face</ref>参照)を指定します。<r/>
 		　現在サポートされている変換は、dfAlpha→dfAddAlpha と dfAddAlpha→dfAlpha の変換です。dfAddAlpha→dfAlphaでは、変換により色情報が失われる場合があります。<r/>
@@ -3436,34 +3436,40 @@
 	<access>r/w</access>
 	<desc>
 		　レイヤの表示タイプを表します。値を設定することもできます。<r/>
-		<tt><kw>ltCoverRect</kw></tt> または <tt><kw>ltOpaque</kw></tt> を指定すると、ピクセルごとのアルファブレンドが無効になります。<tt>ltCoverRect</tt>も<tt>ltOpaque</tt>も同じ意味です。
+		<ul>
+		<li><tt><kw>ltOpaque</kw></tt> または <tt><kw>ltCoverRect</kw></tt> を指定すると、ピクセルごとのアルファブレンドが無効になります。<tt>ltCoverRect</tt>も<tt>ltOpaque</tt>も同じ意味です。
 		<ref>Layer.opacity</ref> プロパティが 255 の場合は、完全に不透明の矩形として表示される
-		事になります。マスク画像は無視されます。<r/>
-		<tt><kw>ltTransparent</kw></tt> または <tt><kw>ltAlpha</kw></tt> を指定すると、ピクセルごとのアルファブレンドが有効になります。<tt>ltTransparent</tt>も<tt>ltAlpha</tt>も同じ意味です。
-		マスク画像が透過に用いられます。<r/>
-		<tt><kw>ltAddAlpha</kw></tt> を指定すると、ピクセルごとの加算アルファブレンドが有効になります。<r/>
-		<tt><kw>ltAdditive</kw></tt> を指定すると、加算合成が行われます。マスク画像は無視されます。<r/>
-		<tt><kw>ltSubtractive</kw></tt> を指定すると、減算合成が行われます。マスク画像は無視されます。<r/>
-		<tt><kw>ltMultiplicative</kw></tt> を指定すると、乗算合成が行われます。マスク画像は無視されます。<r/>
-		<tt><kw>ltDodge</kw></tt> を指定すると、覆い焼き合成が行われます。マスク画像は無視されます。<r/>
-		<tt><kw>ltDarken</kw></tt> を指定すると、比較(暗)合成が行われます。マスク画像は無視されます。<r/>
-		<tt><kw>ltLighten</kw></tt> を指定すると、比較(明)合成が行われます。マスク画像は無視されます。<r/>
-		<tt><kw>ltScreen</kw></tt> を指定すると、スクリーン乗算合成が行われます。マスク画像は無視されます。<r/>
+		事になります。マスク画像は無視されます。このタイプに適した描画方式(<ref>Layer.face</ref>で指定)は<tt><kw>dfOpaque</kw></tt>です。</li>
+		<li><tt><kw>ltAlpha</kw></tt> または <tt><kw>ltTransparent</kw></tt> を指定すると、ピクセルごとのアルファブレンドが有効になります。<tt>ltTransparent</tt>も<tt>ltAlpha</tt>も同じ意味です。
+		マスク画像が透過に用いられます。このタイプに適した描画方式は<tt><kw>dfAlpha</kw></tt>です。</li>
+		<li><tt><kw>ltAddAlpha</kw></tt> を指定すると、ピクセルごとの加算アルファブレンドが有効になります。このタイプに適した描画方式は <tt><kw>dfAddAlpha</kw></tt> です。</li>
+		<li><tt><kw>ltAdditive</kw></tt> を指定すると、加算合成が行われます。マスク画像は無視されます。このタイプに適した描画方式は <tt><kw>dfOpaque</kw></tt> です。</li>
+		<li><tt><kw>ltSubtractive</kw></tt> を指定すると、減算合成が行われます。マスク画像は無視されます。このタイプに適した描画方式は <tt><kw>dfOpaque</kw></tt> です。</li>
+		<li><tt><kw>ltMultiplicative</kw></tt> を指定すると、乗算合成が行われます。マスク画像は無視されます。このタイプに適した描画方式は <tt><kw>dfOpaque</kw></tt> です。</li>
+		<li><tt><kw>ltDodge</kw></tt> を指定すると、覆い焼き合成が行われます。マスク画像は無視されます。このタイプに適した描画方式は <tt><kw>dfOpaque</kw></tt> です。</li>
+		<li><tt><kw>ltDarken</kw></tt> を指定すると、比較(暗)合成が行われます。マスク画像は無視されます。このタイプに適した描画方式は <tt><kw>dfOpaque</kw></tt> です。</li>
+		<li><tt><kw>ltLighten</kw></tt> を指定すると、比較(明)合成が行われます。マスク画像は無視されます。このタイプに適した描画方式は <tt><kw>dfOpaque</kw></tt> です。</li>
+		<li><tt><kw>ltScreen</kw></tt> を指定すると、スクリーン乗算合成が行われます。マスク画像は無視されます。このタイプに適した描画方式は <tt><kw>dfOpaque</kw></tt> です。</li>
+		</ul>
 	</desc>
+	<ref>Layer.face</ref>
 </member>
 
 <member>
 	<name>face</name>
 	<type>property</type>
-	<shortdesc>描画面</shortdesc>
+	<shortdesc>描画方式</shortdesc>
 	<access>r/w</access>
 	<desc>
-		　レイヤへの描画方法(描画面)を表します。値を設定することもできます。<r/>
-		<tt><kw>dfBoth</kw></tt> または <tt><kw>dfAlpha</kw></tt> を指定すると、画像はアルファチャンネルつき画像と見なされ、描画されます。<tt>dfBoth</tt> でも <tt>dfAlpha</tt> でも同じになります。この描画方法に対応するレイヤタイプは <tt>ltTransparent</tt> または <tt>ltAlpha</tt> です。<r/>
-		<tt><kw>dfAddAlpha</kw></tt> を指定すると、画像は加算アルファチャンネルつき画像として見なされ、描画されます。この描画方法に対応するレイヤタイプは <tt>ltAddAlpha</tt> です。<r/>
-		<tt><kw>dfMain</kw></tt> または <tt><kw>dfOpaque</kw></tt> を指定すると、マスクは常に完全不透明であると見なされ、描画されます。この描画方法に対応するレイヤタイプは <tt>ltCoverRect</tt> または <tt>ltOpaque</tt>、または <tt>ltAdditive</tt> のような算術/論理演算を行うレイヤタイプです。<r/>
-		<tt><kw>dfMask</kw></tt> を指定すると、マスク画像(アルファチャンネル)を描画の対象にします。<r/>
-		<tt><kw>dfProvince</kw></tt> を指定すると、領域画像を描画の対象にします。<r/>
+		　レイヤへの描画方式を表します。値を設定することもできます。<r/>
+		　吉里吉里 2.23 beta 2 以前では「描画面」と呼ばれていました。<r/>
+		<ul>
+		<li><tt><kw>dfAlpha</kw></tt> または <tt><kw>dfBoth</kw></tt> を指定すると、画像はアルファチャンネルつき画像と見なされ、描画されます。<tt>dfBoth</tt> でも <tt>dfAlpha</tt> でも同じになります。この描画方法に対応するレイヤタイプは <tt>ltTransparent</tt> または <tt>ltAlpha</tt> です。</li>
+		<li><tt><kw>dfAddAlpha</kw></tt> を指定すると、画像は加算アルファチャンネルつき画像として見なされ、描画されます。この描画方法に対応するレイヤタイプは <tt>ltAddAlpha</tt> です。</li>
+		<li> <tt><kw>dfOpaque</kw></tt> または <tt><kw>dfMain</kw></tt> を指定すると、マスクは常に完全不透明であると見なされ、描画されます。この描画方法に対応するレイヤタイプは <tt>ltOpaque</tt> または <tt>ltCoverRect</tt>、または <tt>ltAdditive</tt> のような算術/論理演算を行うレイヤタイプです。</li>
+		<li><tt><kw>dfMask</kw></tt> を指定すると、マスク画像(アルファチャンネル)を描画の対象にします。</li>
+		<li><tt><kw>dfProvince</kw></tt> を指定すると、領域画像を描画の対象にします。</li>
+		</ul>
 		　このプロパティの値によっては操作できないメソッドがあります。<r/>
 	</desc>
 	<ref>Layer.type</ref>
