@@ -40,8 +40,8 @@ extern iTJSDispatch2 * TJSCreateRegExpClass();
 //---------------------------------------------------------------------------
 tjs_int TJSVersionMajor = 2;
 tjs_int TJSVersionMinor = 4;
-tjs_int TJSVersionRelease = 7;
-tjs_int TJSVersionHex = 0x247;
+tjs_int TJSVersionRelease = 8;
+tjs_int TJSVersionHex = 0x248;
 
 tjs_char TJSCompiledDate[] = TJS_W("" __DATE__ " " __TIME__);
 	// first empty literal string is to avoid a compile error with bcc which can not
@@ -96,6 +96,9 @@ tTJS::tTJS()
 
 	// create script cache object
 	Cache = new tTJSScriptCache(this);
+
+	// AddRef create global string map object
+	TJSAddRefGlobalStringMap();
 
 	try
 	{
@@ -180,6 +183,8 @@ tTJS::~tTJS()
 	if(Cache) delete Cache;
 
 	TJSReservedWordsHashRelease();
+
+	TJSReleaseGlobalStringMap();
 }
 //---------------------------------------------------------------------------
 void tTJS::AddRef()

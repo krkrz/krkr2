@@ -16,9 +16,6 @@
 #include "tjsUtils.h"
 #include "tjsLex.h"
 
-// #define TJS_DEBUG_UNRELEASED_STRING
-// #define TJS_DEBUG_CHECK_STRING_HEAP_INTEGRITY
-
 
 namespace TJS
 {
@@ -112,7 +109,7 @@ tjs_int TJSGetShorterStrLen(const tjs_char *str, tjs_int max)
 
 #define HEAP_FLAG_USING 0x01
 #define HEAP_FLAG_DELETE 0x02
-#define HEAP_CAPACITY_INC 0x100
+#define HEAP_CAPACITY_INC 4096
 static tTJSCriticalSection *TJSStringHeapCS = NULL;
 static std::vector<tTJSVariantString*> *TJSStringHeapList = NULL;
 static tTJSVariantString ** TJSStringHeapFreeCellList = NULL;
@@ -211,6 +208,35 @@ static void TJSUninitStringHeap(void)
 }
 #pragma exit TJSReportUnreleasedStringHeap 1
 
+#endif
+
+//---------------------------------------------------------------------------
+#ifdef TJS_DEBUG_DUMP_STRING
+void TJSDumpStringHeap(void)
+{
+	if(!TJSStringHeapList) return;
+	if(!TJSStringHeapList->empty())
+	{
+		FILE *f = fopen("string.txt", "wt");
+		if(!f) return;
+		std::vector<tTJSVariantString*>::iterator c;
+		for(c = TJSStringHeapList->end()-1; c >= TJSStringHeapList->begin(); c--)
+		{
+			tTJSVariantString *h = *c;
+			for(tjs_int i = 0; i < HEAP_CAPACITY_INC; i++)
+			{
+				if(h[i].HeapFlag & HEAP_FLAG_USING)
+				{
+					// using cell
+					tTJSNarrowStringHolder narrow(h[i].LongString?h[i].LongString:h[i].ShortString);
+
+					fprintf(f, "%s\n", (const char*)narrow);
+				}
+			}
+		}
+		fclose(f);
+	}
+}
 #endif
 //---------------------------------------------------------------------------
 static int TJS_USERENTRY TJSStringHeapSortFunction(const void *a, const void *b)
@@ -984,3 +1010,4 @@ error:
 //---------------------------------------------------------------------------
 
 } // namespcae TJS
+

@@ -472,6 +472,9 @@ process_exp_stub("../../tjs2/tjs.h");
 print OFH "#include \"tjsMessage.h\"\n";
 process_exp_stub("../../tjs2/tjsMessage.h");
 
+print OFH "#include \"tjsInterCodeGen.h\"\n";
+process_exp_stub("../../tjs2/tjsInterCodeGen.h");
+
 print OFH "#include \"tjsObject.h\"\n";
 process_exp_stub("../../tjs2/tjsObject.h");
 process_exp_stub("../../tjs2/tjsObject.cpp");
@@ -572,10 +575,10 @@ EOF
 $i = 0;
 foreach $each (@all_list)
 {
-	if($i % 4 == 0) { print OFH "\t"; }
+	print OFH "\t";
 	@pair = split(/\t/, $each);
-	print OFH $pair[0]. ", ";
-	if($i % 4 == 3) { print OFH "\n"; }
+	print OFH $pair[0]. ",";
+	print OFH "\n";
 	$i ++;
 }
 

@@ -287,6 +287,7 @@ typedef tTJSString ttstr;
 	iTJSDispatch interface
 */
 class tTJSVariant;
+class tTJSVariantString;
 class iTJSNativeInstance;
 class iTJSDispatch2
 {
@@ -375,7 +376,12 @@ public:
 		) = 0;
 
 	virtual tjs_error TJS_INTF_METHOD
-	Reserved1() = 0; // reserved.
+	PropSetByVS( // property set by tTJSVariantString, for internal use
+		tjs_uint32 flag,			// calling flag
+		tTJSVariantString *membername, // member name ( NULL for a default member )
+		const tTJSVariant *param,	// parameters
+		iTJSDispatch2 *objthis		// object as "this"
+		) = 0;
 
 	virtual tjs_error TJS_INTF_METHOD
 	Reserved2() = 0; // reserved ( may become member enumeration method... )
@@ -735,8 +741,15 @@ public:
 			ObjThis?ObjThis:(objthis?objthis:Object));
 	}
 
-//	HRESUT
-//	Reserved1()
+	tjs_error
+	PropSetByVS(tjs_uint32 flag, tTJSVariantString *membername,
+		const tTJSVariant *param, iTJSDispatch2 *objthis) const
+	{
+		if(!Object) TJSThrowNullAccess();
+		return Object->PropSetByVS(flag, membername, param,
+			ObjThis?ObjThis:(objthis?objthis:Object));
+	}
+
 //	HRESUT
 //	Reserved2()
 
@@ -1160,8 +1173,10 @@ public:
 		iTJSDispatch2 *objthis
 		);
 
+
 	tjs_error TJS_INTF_METHOD
-	Reserved1()
+	PropSetByVS(tjs_uint32 flag, tTJSVariantString *membername,
+		const tTJSVariant *param, iTJSDispatch2 *objthis)
 	{
 		return TJS_E_NOTIMPL;
 	}
@@ -2360,6 +2375,7 @@ extern void * TVPImportFuncPtrba40ffbca76695b54a02aa8c1f1e047b;
 extern void * TVPImportFuncPtr8323d57f26876d87271dbfa257b7f7e2;
 extern void * TVPImportFuncPtr4add3926c72ba9df9259be58b680de0d;
 extern void * TVPImportFuncPtr075d42cff8dc0c1fbd99c7459a63e526;
+extern void * TVPImportFuncPtrb6bc45b28e194c7ac98bfdea88edee36;
 extern void * TVPImportFuncPtr6dff6abb075da1a304520e60c011ef7b;
 extern void * TVPImportFuncPtr892ffbdb8375851fc557e4abe9589b77;
 extern void * TVPImportFuncPtrcdefadd0c3bf15b4639b2f0338a40585;
@@ -5933,6 +5949,16 @@ inline ttstr TJSGetMessageMapMessage(const tjs_char * name)
 	}
 	typedef ttstr (__stdcall * __functype)(const tjs_char *);
 	return ((__functype)(TVPImportFuncPtr075d42cff8dc0c1fbd99c7459a63e526))(name);
+}
+inline ttstr TJSMapGlobalStringMap(const ttstr & string)
+{
+	if(!TVPImportFuncPtrb6bc45b28e194c7ac98bfdea88edee36)
+	{
+		static char funcname[] = "ttstr ::TJSMapGlobalStringMap(const ttstr &)";
+		TVPImportFuncPtrb6bc45b28e194c7ac98bfdea88edee36 = TVPGetImportFuncPtr(funcname);
+	}
+	typedef ttstr (__stdcall * __functype)(const ttstr &);
+	return ((__functype)(TVPImportFuncPtrb6bc45b28e194c7ac98bfdea88edee36))(string);
 }
 inline void TJSDoVariantOperation(tjs_int op , tTJSVariant & target , const tTJSVariant * param)
 {

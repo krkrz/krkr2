@@ -15,6 +15,7 @@
 #include "tjsUtils.h"
 #include "tjsNative.h"
 #include "tjsHashSearch.h"
+#include "tjsInterCodeGen.h"
 
 
 namespace TJS
@@ -306,98 +307,6 @@ tjs_error TJS_INTF_METHOD
 
 
 
-//---------------------------------------------------------------------------
-// Symbol heap management
-//---------------------------------------------------------------------------
-#define TJS_SYMBOL_USE_SYSTEM_NEW
-
-
-#ifndef  TJS_SYMBOL_USE_SYSTEM_NEW
-#define TJS_SYMBOL_HEAP_ALLOC_INC 0x1000
-std::vector<tTJSCustomObject::tTJSSymbolData*> * tTJSCustomObject::tTJSSymbolData::SymbolHeap;
-tTJSCustomObject::tTJSSymbolData ** tTJSCustomObject::tTJSSymbolData::SymbolFreeBlocks = NULL;
-tjs_uint tTJSCustomObject::tTJSSymbolData::SymbolAllocatableBlockCount = 0;
-tjs_uint tTJSCustomObject::tTJSSymbolData::SymbolFreeCount = 0;
-tjs_uint tTJSCustomObject::tTJSSymbolData::SymbolFreeReadPoint = 0;
-tjs_uint tTJSCustomObject::tTJSSymbolData::SymbolFreeWritePoint = 0;
-//---------------------------------------------------------------------------
-void tTJSCustomObject::tTJSSymbolData::AddSymbolHeap()
-{
-	// allocate new symbol heap
-
-	if(!SymbolHeap)
-		SymbolHeap = new std::vector<tTJSSymbolData*>();
-
-	tTJSSymbolData * data =
-		new tTJSSymbolData[TJS_SYMBOL_HEAP_ALLOC_INC];
-	SymbolHeap->push_back(data);
-
-	if(SymbolFreeBlocks) delete [] SymbolFreeBlocks;
-	SymbolFreeBlocks =
-		new tTJSSymbolData * [SymbolAllocatableBlockCount =
-			SymbolHeap->size() * TJS_SYMBOL_HEAP_ALLOC_INC];
-
-	for(tjs_int i = 0; i < TJS_SYMBOL_HEAP_ALLOC_INC; i++)
-		SymbolFreeBlocks[i] = data + i;
-	SymbolFreeCount = TJS_SYMBOL_HEAP_ALLOC_INC;
-
-	SymbolFreeReadPoint = 0;
-	SymbolFreeWritePoint = TJS_SYMBOL_HEAP_ALLOC_INC;
-	if(SymbolFreeWritePoint >= SymbolAllocatableBlockCount)
-		SymbolFreeWritePoint -= SymbolAllocatableBlockCount;
-}
-//---------------------------------------------------------------------------
-void tTJSCustomObject::tTJSSymbolData::UninitSymbolHeaps()
-{
-	// deallocate all symbol blocks
-	if(!SymbolHeap) return;
-
-	std::vector<tTJSSymbolData*>::iterator i;
-	for(i = SymbolHeap->begin(); i != SymbolHeap->end(); i++)
-	{
-		tTJSSymbolData * data = *i;
-		delete [] data;
-	}
-
-	delete SymbolHeap;
-	SymbolHeap = NULL;
-
-	if(SymbolFreeBlocks) delete [] SymbolFreeBlocks;
-	SymbolFreeBlocks = NULL;
-
-	SymbolFreeCount = 0;
-}
-//---------------------------------------------------------------------------
-tTJSCustomObject::tTJSSymbolData *
-	tTJSCustomObject::tTJSSymbolData::AllocateSymbol()
-{
-	if(SymbolFreeCount == 0) AddSymbolHeap();
-
-	tTJSSymbolData * data = SymbolFreeBlocks[SymbolFreeReadPoint];
-	SymbolFreeReadPoint ++;
-	if(SymbolFreeReadPoint >= SymbolAllocatableBlockCount)
-		SymbolFreeReadPoint -= SymbolAllocatableBlockCount;
-
-	SymbolFreeCount--;
-
-	return data;
-}
-//---------------------------------------------------------------------------
-void tTJSCustomObject::tTJSSymbolData::DeallocateSymbol(
-	tTJSCustomObject::tTJSSymbolData *data)
-{
-	SymbolFreeBlocks[SymbolFreeWritePoint] = data;
-	SymbolFreeWritePoint ++;
-	if(SymbolFreeWritePoint >= SymbolAllocatableBlockCount)
-		SymbolFreeWritePoint -= SymbolAllocatableBlockCount;
-
-	SymbolFreeCount++;
-
-	if(SymbolFreeCount == SymbolAllocatableBlockCount)
-		UninitSymbolHeaps();
-}
-//---------------------------------------------------------------------------
-#endif
 
 
 
@@ -414,6 +323,22 @@ void TJSDoRehash() { TJSGlobalRebuildHashMagic ++; }
 // tTJSCustomObject
 //---------------------------------------------------------------------------
 tjs_int TJSObjectHashBitsLimit = 32;
+//---------------------------------------------------------------------------
+void tTJSCustomObject::tTJSSymbolData::ReShare()
+{
+	// search shared string map using TJSMapGlobalStringMap,
+	// and share the name string (if it can)
+	if(Name)
+	{
+		ttstr name(Name);
+		Name->Release(), Name = NULL;
+		name = TJSMapGlobalStringMap(name);
+		Name = name.AsVariantStringNoAddRef();
+		Name->AddRef();
+	}
+}
+//---------------------------------------------------------------------------
+
 //---------------------------------------------------------------------------
 tTJSCustomObject::tTJSCustomObject(tjs_int hashbits)
 {
@@ -521,11 +446,8 @@ tTJSCustomObject::tTJSSymbolData * tTJSCustomObject::Add(const tjs_char * name,
 		// lv1 is using
 		// make a chain and insert it after lv1
 
-#ifdef TJS_SYMBOL_USE_SYSTEM_NEW
 		data = new tTJSSymbolData;
-#else
-		data = tTJSSymbolData::AllocateSymbol();
-#endif
+
 		data->SelfClear();
 
 		data->Next = lv1->Next;
@@ -554,7 +476,66 @@ tTJSCustomObject::tTJSSymbolData * tTJSCustomObject::Add(const tjs_char * name,
 
 }
 //---------------------------------------------------------------------------
-tTJSCustomObject::tTJSSymbolData * tTJSCustomObject::AddTo(const tjs_char * name,
+tTJSCustomObject::tTJSSymbolData * tTJSCustomObject::Add(tTJSVariantString * name)
+{
+	// tTJSVariantString version of above
+
+	if(name == NULL)
+	{
+		return NULL;
+	}
+
+	tTJSSymbolData *data;
+	data = Find((const tjs_char *)(*name), name->GetHint());
+	if(data)
+	{
+		// the element is already alive
+		return data;
+	}
+
+	tjs_uint32 hash;
+	if(*(name->GetHint()))
+		hash = *(name->GetHint());  // hint must be hash because of previous calling of "Find"
+	else
+		hash = tTJSHashFunc<tjs_char *>::Make((const tjs_char *)(*name));
+
+	tTJSSymbolData *lv1 = Symbols + (hash & HashMask);
+
+	if((lv1->SymFlags & TJS_SYMBOL_USING))
+	{
+		// lv1 is using
+		// make a chain and insert it after lv1
+
+		data = new tTJSSymbolData;
+
+		data->SelfClear();
+
+		data->Next = lv1->Next;
+		lv1->Next = data;
+
+		data->SetName(name, hash);
+		data->SymFlags |= TJS_SYMBOL_USING;
+	}
+	else
+	{
+		// lv1 is unused
+		if(!(lv1->SymFlags & TJS_SYMBOL_INIT))
+		{
+			lv1->SelfClear();
+		}
+
+		lv1->SetName(name, hash);
+		lv1->SymFlags |= TJS_SYMBOL_USING;
+		data = lv1;
+	}
+
+	Count++;
+
+
+	return data;
+}
+//---------------------------------------------------------------------------
+tTJSCustomObject::tTJSSymbolData * tTJSCustomObject::AddTo(tTJSVariantString *name,
 		tTJSSymbolData *newdata, tjs_int newhashmask)
 {
 	// similar to Add, except for adding member to new hash space.
@@ -566,7 +547,7 @@ tTJSCustomObject::tTJSSymbolData * tTJSCustomObject::AddTo(const tjs_char * name
 	// at this point, the member must not exist in destination hash space
 
 	tjs_uint32 hash;
-	hash = tTJSHashFunc<tjs_char *>::Make(name);
+	hash = tTJSHashFunc<tjs_char *>::Make((const tjs_char *)(*name));
 
 	tTJSSymbolData *lv1 = newdata + (hash & newhashmask);
 	tTJSSymbolData *data;
@@ -576,11 +557,7 @@ tTJSCustomObject::tTJSSymbolData * tTJSCustomObject::AddTo(const tjs_char * name
 		// lv1 is using
 		// make a chain and insert it after lv1
 
-#ifdef TJS_SYMBOL_USE_SYSTEM_NEW
 		data = new tTJSSymbolData;
-#else
-		data = tTJSSymbolData::AllocateSymbol();
-#endif
 
 		data->SelfClear();
 
@@ -642,17 +619,18 @@ void tTJSCustomObject::RebuildHash()
 	{
 		memset(newsymbols, 0, sizeof(tTJSSymbolData) * newhashsize);
 		tjs_int i;
-		const tTJSSymbolData * lv1 = Symbols;
-		const tTJSSymbolData * lv1lim = lv1 + HashSize;
+		tTJSSymbolData * lv1 = Symbols;
+		tTJSSymbolData * lv1lim = lv1 + HashSize;
 		for(; lv1 < lv1lim; lv1++)
 		{
-			const tTJSSymbolData * d = lv1->Next;
+			tTJSSymbolData * d = lv1->Next;
 			while(d)
 			{
-				const tTJSSymbolData * nextd = d->Next;
+				tTJSSymbolData * nextd = d->Next;
 				if(d->SymFlags & TJS_SYMBOL_USING)
 				{
-					tTJSSymbolData *data = AddTo(d->GetName(), newsymbols, newhashmask);
+//					d->ReShare();
+					tTJSSymbolData *data = AddTo(d->Name, newsymbols, newhashmask);
 					if(data)
 					{
 						GetValue(data).CopyRef(*(tTJSVariant*)(&(d->Value)));
@@ -666,7 +644,8 @@ void tTJSCustomObject::RebuildHash()
 
 			if(lv1->SymFlags & TJS_SYMBOL_USING)
 			{
-				tTJSSymbolData *data = AddTo(lv1->GetName(), newsymbols, newhashmask);
+//				lv1->ReShare();
+				tTJSSymbolData *data = AddTo(lv1->Name, newsymbols, newhashmask);
 				if(data)
 				{
 					GetValue(data).CopyRef(*(tTJSVariant*)(&(lv1->Value)));
@@ -742,11 +721,9 @@ bool tTJSCustomObject::DeleteByName(const tjs_char * name, tjs_uint32 *hint)
 				prevd->Next = d->Next;
 				CheckObjectClosureRemove(*(tTJSVariant*)(&(d->Value)));
 				d->Destory();
-#ifdef TJS_SYMBOL_USE_SYSTEM_NEW
+
 				delete d;
-#else
-				tTJSSymbolData::DeallocateSymbol(d);
-#endif
+
 				Count--;
 				return true;
 			}
@@ -821,11 +798,9 @@ void tTJSCustomObject::DeleteAllMembers(void)
 				{
 					d->Destory();
 				}
-#ifdef TJS_SYMBOL_USE_SYSTEM_NEW
+
 				delete d;
-#else
-				tTJSSymbolData::DeallocateSymbol(d);
-#endif
+
 				d = nextd;
 			}
 
@@ -920,11 +895,9 @@ void tTJSCustomObject::_DeleteAllMembers(void)
 				{
 					d->Destory();
 				}
-#ifdef TJS_SYMBOL_USE_SYSTEM_NEW
+
 				delete d;
-#else
-				tTJSSymbolData::DeallocateSymbol(d);
-#endif
+
 				d = nextd;
 			}
 
@@ -1062,7 +1035,7 @@ void tTJSCustomObject::EnumMembers(tTJSEnumMemberCallbackIntf * intf)
 			const tTJSSymbolData * nextd = d->Next;
 			if(d->SymFlags & TJS_SYMBOL_USING && !(d->SymFlags & TJS_SYMBOL_HIDDEN))
 			{
-				if(!intf->EnumMemberCallback(d->GetName(), d->Hash,
+				if(!intf->EnumMemberCallback(d->Name,
 					*(tTJSVariant*)(&(d->Value)) )) return ;
 			}
 			d = nextd;
@@ -1070,7 +1043,7 @@ void tTJSCustomObject::EnumMembers(tTJSEnumMemberCallbackIntf * intf)
 
 		if(lv1->SymFlags & TJS_SYMBOL_USING && !(lv1->SymFlags & TJS_SYMBOL_HIDDEN))
 		{
-			if(!intf->EnumMemberCallback(lv1->GetName(), lv1->Hash,
+			if(!intf->EnumMemberCallback(lv1->Name,
 				*(tTJSVariant*)(&(lv1->Value)) )) return ;
 		}
 	}
@@ -1362,6 +1335,72 @@ tTJSCustomObject::GetCount(tjs_int *result, const tjs_char *membername, tjs_uint
 	return TJS_S_OK;
 }
 //---------------------------------------------------------------------------
+tjs_error TJS_INTF_METHOD
+tTJSCustomObject::PropSetByVS(tjs_uint32 flag, tTJSVariantString *membername,
+	const tTJSVariant *param, iTJSDispatch2 *objthis)
+{
+	if(!GetValidity()) return TJS_E_INVALIDOBJECT;
+
+	if(membername == NULL)
+	{
+		// no action is defined with the default member
+		return TJS_E_INVALIDTYPE;
+	}
+
+	tTJSSymbolData * data = Find((const tjs_char *)(*membername), membername->GetHint());
+
+	if(!data && flag & TJS_MEMBERENSURE)
+	{
+		// create a member when TJS_MEMBERENSURE is specified
+		data = Add(membername);
+	}
+
+	if(!data) return TJS_E_MEMBERNOTFOUND; // not found
+
+	if(flag & TJS_HIDDENMEMBER)
+		data->SymFlags |= TJS_SYMBOL_HIDDEN;
+	else
+		data->SymFlags &= ~TJS_SYMBOL_HIDDEN;
+
+	//-- below is mainly the same as TJSDefaultPropSet
+
+	if(!(flag & TJS_IGNOREPROP))
+	{
+		if(GetValue(data).Type() == tvtObject)
+		{
+			tTJSVariantClosure tvclosure =
+				GetValue(data).AsObjectClosureNoAddRef();
+			if(tvclosure.Object)
+			{
+				tjs_error hr = tvclosure.Object->PropSet(0, NULL, NULL, param,
+					TJS_SELECT_OBJTHIS(tvclosure, objthis));
+				if(TJS_SUCCEEDED(hr)) return hr;
+				if(hr != TJS_E_NOTIMPL && hr != TJS_E_INVALIDTYPE &&
+					hr != TJS_E_INVALIDOBJECT) return hr;
+			}
+			data = Find((const tjs_char *)(*membername), membername->GetHint());
+		}
+	}
+
+
+	if(!param) return TJS_E_INVALIDPARAM;
+
+	CheckObjectClosureRemove(GetValue(data));
+	try
+	{
+		GetValue(data).CopyRef(*param);
+	}
+	catch(...)
+	{
+		CheckObjectClosureAdd(GetValue(data));
+		throw;
+	}
+	CheckObjectClosureAdd(GetValue(data));
+
+	return TJS_S_OK;
+}
+//---------------------------------------------------------------------------
+
 tjs_error TJS_INTF_METHOD
 tTJSCustomObject::DeleteMember(tjs_uint32 flag, const tjs_char *membername, tjs_uint32 *hint,
 	iTJSDispatch2 *objthis)

@@ -290,8 +290,15 @@ public:
 			ObjThis?ObjThis:(objthis?objthis:Object));
 	}
 
-//	HRESUT
-//	Reserved1()
+	tjs_error
+	PropSetByVS(tjs_uint32 flag, tTJSVariantString *membername,
+		const tTJSVariant *param, iTJSDispatch2 *objthis) const
+	{
+		if(!Object) TJSThrowNullAccess();
+		return Object->PropSetByVS(flag, membername, param,
+			ObjThis?ObjThis:(objthis?objthis:Object));
+	}
+
 //	HRESUT
 //	Reserved2()
 
