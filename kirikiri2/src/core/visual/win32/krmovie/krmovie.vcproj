@@ -23,7 +23,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="2"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="C:\DXSDK\samples\Multimedia\DirectShow\BaseClasses;C:\DXSDK\include;"
+				AdditionalIncludeDirectories="C:\DXSDK\samples\Multimedia\DirectShow\BaseClasses;C:\DXSDK\include;..\;..\..\..\..\plugins\win32;"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;KRMOVIE_EXPORTS"
 				StringPooling="TRUE"
 				RuntimeLibrary="0"
@@ -39,6 +39,7 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
+				AdditionalOptions="/COMMENT:&quot;(--has-option--)&quot;"
 				AdditionalDependencies="C:\DXSDK\samples\Multimedia\DirectShow\BaseClasses\release\strmbase.lib odbc32.lib odbccp32.lib version.lib winmm.lib strmiids.lib quartz.lib"
 				OutputFile=".\..\..\..\..\..\bin\win32/krmovie.dll"
 				LinkIncremental="1"
@@ -88,7 +89,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="C:\DXSDK\samples\Multimedia\DirectShow\BaseClasses;C:\DXSDK\include;"
+				AdditionalIncludeDirectories="C:\DXSDK\samples\Multimedia\DirectShow\BaseClasses;C:\DXSDK\include;..\..\..\..\plugins\win32;"
 				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;KRMOVIE_EXPORTS;DEBUG"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
@@ -104,6 +105,7 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
+				AdditionalOptions="/COMMENT:&quot;(--has-option--)&quot;"
 				AdditionalDependencies="C:\DXSDK\samples\Multimedia\DirectShow\BaseClasses\debug\strmbasd.lib odbc32.lib odbccp32.lib version.lib winmm.lib strmiids.lib quartz.lib"
 				OutputFile=".\..\..\..\..\..\bin\win32/krmovie.dll"
 				LinkIncremental="1"
@@ -219,6 +221,9 @@
 			<File
 				RelativePath="krmovie.rc">
 			</File>
+			<File
+				RelativePath="..\..\..\..\plugins\win32\tp_stub.cpp">
+			</File>
 		</Filter>
 		<Filter
 			Name="Header Files"
@@ -240,6 +245,9 @@
 			</File>
 			<File
 				RelativePath=".\dsoverlay.h">
+			</File>
+			<File
+				RelativePath="..\..\..\..\plugins\win32\tp_stub.h">
 			</File>
 		</Filter>
 		<Filter
