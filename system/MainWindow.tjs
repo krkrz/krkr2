@@ -3765,22 +3765,30 @@ class KAGWindow extends Window
 		// キーを処理し、true を返す。そうでなければ false を返す
 		if(key == VK_RETURN || key == VK_SPACE)
 		{
-			if((shift & ssRepeat) && clickSkipEnabled && 
-				conductor.status == conductor.mRun)
+			// キーがメッセージキューに溜まってる場合があるので
+			// 実際にそのキーが押されているのかどうかを
+			// System.getKeyState を用いて調べる
+			var sg = System.getKeyState;
+			if(sg(VK_RETURN) || sg(VK_SPACE))
 			{
-				// キーリピート
-				if(skipMode != 4 && skipKeyRepressed)
-					skipToStop2(); // まだskipMode 4に入っていない場合は早送りモードに入る
-				// skipKeyRepressed をチェックするのは
-				// 連続してキーリピートが発生しているときに
-				// cancelSkip 後にスキップに突入するのを防ぐため
+				// キーが押されてた
+				if((shift & ssRepeat) && clickSkipEnabled && 
+					conductor.status == conductor.mRun)
+				{
+					// キーリピート
+					if(skipMode != 4 && skipKeyRepressed)
+						skipToStop2(); // まだskipMode 4に入っていない場合は早送りモードに入る
+					// skipKeyRepressed をチェックするのは
+					// 連続してキーリピートが発生しているときに
+					// cancelSkip 後にスキップに突入するのを防ぐため
+				}
+				else
+				{
+					skipKeyRepressed = true;
+					onPrimaryClickByKey();
+				}
+				return true;
 			}
-			else
-			{
-				skipKeyRepressed = true;
-				onPrimaryClickByKey();
-			}
-			return true;
 		}
 
 		return false;
