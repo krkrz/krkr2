@@ -726,7 +726,10 @@ void __fastcall TTVPMainForm::SystemWatchTimerTimer(TObject *Sender)
 	// ensure modal window visible
 	if(tick > LastShowModalWindowSentTick + 4100)
 	{
-		::PostMessage(Handle, WM_USER+0x32, 0, 0);
+		//	::PostMessage(Handle, WM_USER+0x32, 0, 0);
+		// This is currently disabled because IME composition window
+		// hides behind the window which is bringed top by the
+		// window-rearrangement.
 		LastShowModalWindowSentTick = tick;
 	}
 
