@@ -55,8 +55,15 @@ class MyWindow extends Window
 		try
 		{
 			var start = System.getTickCount();
-			graphlayer.loadImages(file);
+			var dic = graphlayer.loadImages(file);
 			Debug.message((System.getTickCount() - start) + " ms");
+			if(dic)
+			{
+				var ar = [];
+				ar.assign(dic);
+				for(var i = 0; i < ar.count; i+= 2)
+					Debug.message(ar[i] + '=' + ar[i+1]);
+			}
 		}
 		catch(e)
 		{
