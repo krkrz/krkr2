@@ -5133,32 +5133,25 @@ print FC <<EOF;
 /*export*/
 TVP_GL_FUNC_DECL(void, TVPAdjustGamma_c, (tjs_uint32 *dest, tjs_int len, tTVPGLGammaAdjustTempData *temp))
 {
-	tjs_uint32 d1, d2, t1, t2;
+	tjs_uint32 d1, t1;
 EOF
 
 $content = <<EOF;
 	d1 = dest[{ofs}];;
-	t1 = temp->B[d1 & 0xff];;
-	d1 >>= 8;;
-	t1 += (temp->G[d1 & 0xff]<<8);;
-	d1 >>= 8;;
-	t1 += (temp->R[d1 & 0xff]<<16);;
-	t1 += ((d1 & 0xff00) << 16);;
-	dest[{ofs}] = t1;;
+	if(d1 > 0x00ffffff)
+	{
+		/* process only non-fully-transparent pixel */
+		t1 = temp->B[d1 & 0xff];;
+		d1 >>= 8;;
+		t1 += (temp->G[d1 & 0xff]<<8);;
+		d1 >>= 8;;
+		t1 += (temp->R[d1 & 0xff]<<16);;
+		t1 += ((d1 & 0xff00) << 16);;
+		dest[{ofs}] = t1;;
+	}
 EOF
 
-$content2 = <<EOF;
-	d2 = dest[{ofs}];;
-	t2 = temp->B[d2 & 0xff];;
-	d2 >>= 8;;
-	t2 += (temp->G[d2 & 0xff]<<8);;
-	d2 >>= 8;;
-	t2 += (temp->R[d2 & 0xff]<<16);;
-	t2 += ((d2 & 0xff00) << 16);;
-	dest[{ofs}] = t2;;
-EOF
-
-&loop_unroll_c_int_2($content, $content2, 'len', 4);
+&loop_unroll_c_2($content, 'len', 4);
 
 print FC <<EOF;
 }
