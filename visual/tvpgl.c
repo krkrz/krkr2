@@ -8535,45 +8535,61 @@ TVP_GL_FUNC_DECL(void, TVPUninitGammaAdjustTempData_c, (tTVPGLGammaAdjustTempDat
 /*export*/
 TVP_GL_FUNC_DECL(void, TVPAdjustGamma_c, (tjs_uint32 *dest, tjs_int len, tTVPGLGammaAdjustTempData *temp))
 {
-	tjs_uint32 d1, d2, t1, t2;
+	tjs_uint32 d1, t1;
 	{
 		int ___index = 0;
 		len -= (4-1);
 
 		while(___index < len)
 		{
-	d1 = dest[(___index+(0*2))];
-	d2 = dest[(___index+(0*2+1))];
-	t1 = temp->B[d1 & 0xff];
-	t2 = temp->B[d2 & 0xff];
-	d1 >>= 8;
-	d2 >>= 8;
-	t1 += (temp->G[d1 & 0xff]<<8);
-	t2 += (temp->G[d2 & 0xff]<<8);
-	d1 >>= 8;
-	d2 >>= 8;
-	t1 += (temp->R[d1 & 0xff]<<16);
-	t2 += (temp->R[d2 & 0xff]<<16);
-	t1 += ((d1 & 0xff00) << 16);
-	t2 += ((d2 & 0xff00) << 16);
-	dest[(___index+(0*2))] = t1;
-	dest[(___index+(0*2+1))] = t2;
-	d1 = dest[(___index+(1*2))];
-	d2 = dest[(___index+(1*2+1))];
-	t1 = temp->B[d1 & 0xff];
-	t2 = temp->B[d2 & 0xff];
-	d1 >>= 8;
-	d2 >>= 8;
-	t1 += (temp->G[d1 & 0xff]<<8);
-	t2 += (temp->G[d2 & 0xff]<<8);
-	d1 >>= 8;
-	d2 >>= 8;
-	t1 += (temp->R[d1 & 0xff]<<16);
-	t2 += (temp->R[d2 & 0xff]<<16);
-	t1 += ((d1 & 0xff00) << 16);
-	t2 += ((d2 & 0xff00) << 16);
-	dest[(___index+(1*2))] = t1;
-	dest[(___index+(1*2+1))] = t2;
+	d1 = dest[(___index+0)];;
+	if(d1 > 0x00ffffff)
+	{
+		/* process only non-fully-transparent pixel */
+		t1 = temp->B[d1 & 0xff];;
+		d1 >>= 8;;
+		t1 += (temp->G[d1 & 0xff]<<8);;
+		d1 >>= 8;;
+		t1 += (temp->R[d1 & 0xff]<<16);;
+		t1 += ((d1 & 0xff00) << 16);;
+		dest[(___index+0)] = t1;;
+	}
+	d1 = dest[(___index+1)];;
+	if(d1 > 0x00ffffff)
+	{
+		/* process only non-fully-transparent pixel */
+		t1 = temp->B[d1 & 0xff];;
+		d1 >>= 8;;
+		t1 += (temp->G[d1 & 0xff]<<8);;
+		d1 >>= 8;;
+		t1 += (temp->R[d1 & 0xff]<<16);;
+		t1 += ((d1 & 0xff00) << 16);;
+		dest[(___index+1)] = t1;;
+	}
+	d1 = dest[(___index+2)];;
+	if(d1 > 0x00ffffff)
+	{
+		/* process only non-fully-transparent pixel */
+		t1 = temp->B[d1 & 0xff];;
+		d1 >>= 8;;
+		t1 += (temp->G[d1 & 0xff]<<8);;
+		d1 >>= 8;;
+		t1 += (temp->R[d1 & 0xff]<<16);;
+		t1 += ((d1 & 0xff00) << 16);;
+		dest[(___index+2)] = t1;;
+	}
+	d1 = dest[(___index+3)];;
+	if(d1 > 0x00ffffff)
+	{
+		/* process only non-fully-transparent pixel */
+		t1 = temp->B[d1 & 0xff];;
+		d1 >>= 8;;
+		t1 += (temp->G[d1 & 0xff]<<8);;
+		d1 >>= 8;;
+		t1 += (temp->R[d1 & 0xff]<<16);;
+		t1 += ((d1 & 0xff00) << 16);;
+		dest[(___index+3)] = t1;;
+	}
 			___index += 4;
 		}
 
@@ -8582,13 +8598,17 @@ TVP_GL_FUNC_DECL(void, TVPAdjustGamma_c, (tjs_uint32 *dest, tjs_int len, tTVPGLG
 		while(___index < len)
 		{
 	d1 = dest[___index];;
-	t1 = temp->B[d1 & 0xff];;
-	d1 >>= 8;;
-	t1 += (temp->G[d1 & 0xff]<<8);;
-	d1 >>= 8;;
-	t1 += (temp->R[d1 & 0xff]<<16);;
-	t1 += ((d1 & 0xff00) << 16);;
-	dest[___index] = t1;;
+	if(d1 > 0x00ffffff)
+	{
+		/* process only non-fully-transparent pixel */
+		t1 = temp->B[d1 & 0xff];;
+		d1 >>= 8;;
+		t1 += (temp->G[d1 & 0xff]<<8);;
+		d1 >>= 8;;
+		t1 += (temp->R[d1 & 0xff]<<16);;
+		t1 += ((d1 & 0xff00) << 16);;
+		dest[___index] = t1;;
+	}
 			___index ++;
 		}
 	}
