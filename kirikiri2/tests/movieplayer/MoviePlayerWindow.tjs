@@ -145,6 +145,7 @@ class MoviePlayerWindow extends Window
 		}
 		catch(e)
 		{
+			Debug.message("ファイル       : %s".sprintf(fn));
 			Debug.startLogToFile();
 			Debug.message(e.message);
 			System.inform("エラーが発生しました。\n"
@@ -160,6 +161,21 @@ class MoviePlayerWindow extends Window
 			// 指定
 			video.setSize(video.originalWidth, video.originalHeight);
 		}
+
+		// 各種情報を コンソールに一応出力
+		Debug.message("ファイル       : %s".sprintf(fn));
+		Debug.message("ビデオサイズ   : %d x %d".sprintf(
+			video.originalWidth, video.originalHeight));
+		Debug.message("フレームレート : %f fps".sprintf(
+			video.fps));
+		Debug.message("総フレーム数   : %d".sprintf(
+			video.numberOfFrame));
+		Debug.message("総時間         : %d:%02d.%03d (%d ms)".sprintf(
+			video.totalTime \ 1000 \ 60,
+			video.totalTime \ 1000 % 60, video.totalTime % 1000,
+			video.totalTime));
+
+		// 再生開始
 		video.play();
 	}
 
