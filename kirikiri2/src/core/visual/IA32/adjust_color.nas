@@ -48,7 +48,7 @@ proc_start	TVPAdjustGamma_a_mmx_a
 	movzx	edx,	byte[ebx + ecx]		; look table B up  (BB')
 
 	movzx	ebx,	ah
-	movzx	ebx,	byte[ebx + ecx + 256]		; look table R up  (RR')
+	movzx	ebx,	byte[ebx + ecx + 256]		; look table G up  (GG')
 
 	shl	ebx,	8
 	or	edx,	ebx
@@ -56,7 +56,7 @@ proc_start	TVPAdjustGamma_a_mmx_a
 	shr	eax,	16
 	and	eax,	0xff
 
-	movzx	ebx,	byte[eax + ecx + 512]		; look table G up  (GG')
+	movzx	ebx,	byte[eax + ecx + 512]		; look table R up  (RR')
 
 	shl	ebx,	16
 	or	edx,	ebx
@@ -115,7 +115,7 @@ proc_start	TVPAdjustGamma_a_mmx_a
 	movzx	edx,	byte[ebx + ecx]		; look table B up  (BB')
 
 	movzx	ebx,	ah
-	movzx	ebx,	byte[ebx + ecx + 256]		; look table R up  (RR')
+	movzx	ebx,	byte[ebx + ecx + 256]		; look table G up  (GG')
 
 	shl	ebx,	8
 	or	edx,	ebx
@@ -123,7 +123,7 @@ proc_start	TVPAdjustGamma_a_mmx_a
 	shr	eax,	16
 	and	eax,	0xff
 
-	movzx	ebx,	byte[eax + ecx + 512]		; look table G up  (GG')
+	movzx	ebx,	byte[eax + ecx + 512]		; look table R up  (RR')
 
 	movq	mm5,	mm3
 

@@ -1949,9 +1949,9 @@ typedef struct
 #pragma pack(push, 4)
 typedef struct
 {
-	tjs_uint8 R[256];
-	tjs_uint8 G[256];
 	tjs_uint8 B[256];
+	tjs_uint8 G[256];
+	tjs_uint8 R[256];
 } tTVPGLGammaAdjustTempData;
 #pragma pack(pop)
 

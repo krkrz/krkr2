@@ -5714,9 +5714,9 @@ print FH <<EOF;
 #pragma pack(push, 4)
 typedef struct
 {
-	tjs_uint8 R[256];
-	tjs_uint8 G[256];
 	tjs_uint8 B[256];
+	tjs_uint8 G[256];
+	tjs_uint8 R[256];
 } tTVPGLGammaAdjustTempData;
 #pragma pack(pop)
 /*]*/
@@ -5818,7 +5818,7 @@ $content = <<EOF;
 		t = (d>>8) & 0xff;
 		d_tmp |=  temp->G[t] << 8;
 		t = (d>>16) & 0xff; 
-		d_tmp |=  temp->B[t] << 16;
+		d_tmp |=  temp->R[t] << 16;
 		d_tmp |= 0xff000000;
 		dest[{ofs}] = d_tmp;
 	}
