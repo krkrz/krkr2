@@ -107,7 +107,7 @@ class iTJSDispatch2;
 extern iTJSDispatch2 * TJSObjectTraceTarget;
 
 #define TJS_DEBUG_REFERENCE_BREAK \
-	if(TJSObjectTraceTarget == (iTJSDispatch2*)this) TJS_debugbreak
+	if(TJSObjectTraceTarget == (iTJSDispatch2*)this) TJSNativeDebuggerBreak()
 #define TJS_SET_REFERENCE_BREAK(x) TJSObjectTraceTarget=(x)
 //---------------------------------------------------------------------------
 TJS_EXP_FUNC_DEF(const tjs_char *, TJSVariantTypeToTypeString, (tTJSVariantType type));
