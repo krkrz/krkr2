@@ -126,7 +126,7 @@ class KAGLayer extends Layer
 	{
 		// loadImages オーバーライド
 		key = adjustColorKey(key);
-		super.loadImages(storage, key);
+		return super.loadImages(storage, key);
 	}
 
 	function adjustColorKey(key)
