@@ -1,0 +1,27 @@
+[C++ 警告] tjsInterCodeExec.cpp(2548): W8004 's' に代入した値は使われていない
+[C++ 警告] tjsInterCodeExec.cpp(2548): W8004 'argnum' に代入した値は使われていない
+[C++ 警告] tjsInterCodeGen.cpp(559): W8004 'codep' に代入した値は使われていない
+[C++ 警告] tjs.tab.c(2873): W8004 'yynerrs' に代入した値は使われていない
+[C++ 警告] tjs.tab.c(1746): W8004 'yyptr' に代入した値は使われていない
+[C++ 警告] tjspp.y(30): W8057 パラメータ 'msg' は一度も使用されない
+[C++ 警告] tjspp.y(30): W8057 パラメータ 'pm' は一度も使用されない
+[C++ 警告] tjspp.tab.c(1288): W8004 'ppnerrs' に代入した値は使われていない
+[C++ 警告] tjspp.tab.c(1000): W8004 'yyptr' に代入した値は使われていない
+[C++ 警告] tjsdate.tab.c(1250): W8004 'dpnerrs' に代入した値は使われていない
+[C++ 警告] tjsdate.tab.c(962): W8004 'yyptr' に代入した値は使われていない
+[C++ 警告] jmorecfg.h(217): W8017 マクロ 'FAR' の重複定義
+[C++ 警告] tvpgl.c(6360): W8057 パラメータ 'temp' は一度も使用されない
+[C++ 警告] tvpgl.c(6579): W8057 パラメータ 'destwidth' は一度も使用されない
+[C++ 警告] tvpgl_ia32_intf.c(115): W8008 条件が常に真
+[C++ 警告] tvpgl_ia32_intf.c(125): W8008 条件が常に真
+[C++ 警告] tvpgl_ia32_intf.c(127): W8008 条件が常に真
+[C++ 警告] TextStream.cpp(194): W8008 条件が常に真
+[C++ 警告] TextStream.cpp(240): W8066 実行されないコード
+[C++ 警告] TextStream.cpp(470): W8068 比較において定数が範囲外
+[C++ 警告] FileSelecter.cpp(170): W8004 'p' に代入した値は使われていない
+[C++ 警告] StorageIntf.cpp(61): W8008 条件が常に真
+[C++ 警告] StorageIntf.cpp(69): W8008 条件が常に真
+[C++ 警告] StorageIntf.cpp(75): W8066 実行されないコード
+[C++ 警告] ConfMainFrameUnit.cpp(919): W8004 'data' に代入した値は使われていない
+[C++ 警告] ConfMainFrameUnit.cpp(808): W8004 'node' に代入した値は使われていない
+[C++ 警告] ConfMainFrameUnit.cpp(1248): W8004 'stream' に代入した値は使われていない

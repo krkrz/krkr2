@@ -1,0 +1,1196 @@
+<?xml version="1.0" encoding="Shift_JIS" ?>
+<doc>
+<title>iTJSDispatch2 インターフェース</title>
+
+<para>
+<ptitle>iTJSDispatch2 とは</ptitle>
+　iTJSDispatch2 は、TJS2 における「オブジェクト」に対するインターフェースを提供する抽象基本クラスです。<r/>
+　TJS2 の「オブジェクト」には関数オブジェクト、クラス、プロパティオブジェクト、配列(辞書配列) などが含まれます。<r/>
+　TJS2 に対するほとんどの操作はこのインターフェースを通じて行うことができます。<r/>
+<r/>
+　以下、このインターフェースを利用する側として説明をします。<r/>
+</para>
+
+
+
+
+<para>
+<ptitle>序数による呼び出し</ptitle>
+<r/>
+　iTJSDispatch2 のメソッドには、メソッド名の末尾が ByNum で終わる物があります。これは、序数による呼び出しを行うものであり、たとえば メンバ名に "23" を指定して FuncCall を呼ぶのと、序数に 23 を指定して FuncCallByNum を呼ぶのは等価です。<r/>
+　配列オブジェクトにアクセスする時に便利でしょう。<r/>
+<r/>
+　ByNum が末尾につくメソッドは、末尾に ByNum のつかない同名のメソッドの membername 引数と hint 引数がなく、代わりに tjs_int num があります。引数 num には序数を指定します。<r/>
+<r/>
+　以下、序数による呼び出しを行うメソッドについては詳細な説明を省略します (末尾に ByNum のつかない同名のメソッドの説明を参照してください)。<r/>
+</para>
+
+
+
+
+
+
+
+
+
+<para>
+<ptitle>AddRef</ptitle>
+tjs_uint iTJSDispatch2::AddRef(void)<r/>
+<r/>
+　オブジェクトの参照カウンタをインクリメントします。<r/>
+　TJS2 の各オブジェクトは参照カウンタで管理されています。<r/>
+　戻り値はインクリメント後の参照カウンタの値ですが、この値を信用することは推奨されません。<r/>
+</para>
+
+
+
+
+
+
+
+
+
+<para>
+<ptitle>Release</ptitle>
+tjs_uint iTJSDispatch2::Release(void)<r/>
+<r/>
+　オブジェクトの参照カウンタをデクリメントします。<r/>
+　戻り値はデクリメント後の参照カウンタの値で、0 が戻ったときはオブジェクトが解放されたことを表します。しかし、この値を信用することは推奨されません。<r/>
+</para>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<para>
+<ptitle>FuncCall</ptitle>
+tjs_error iTJSDispatch2::FuncCall(<r/>
+	tjs_uint32 flag,<r/>
+	const tjs_char * membername,<r/>
+	tjs_uint32 *hint,<r/>
+	tTJSVariant *result,<r/>
+	tjs_int numparams,<r/>
+	tTJSVariant **param,<r/>
+	iTJSDispatch2 *objthis<r/>
+	)<r/>
+<r/>
+　関数呼び出しを行います。<r/>
+<r/>
+　引数は以下の通りです。<r/>
+<r/>
+
+<dl>
+
+<dt>tjs_uint32 flag</dt>
+<dd>
+　呼び出しフラグです(下記参照)。
+</dd>
+
+
+<dt>const tjs_char * membername</dt>
+<dd>
+　操作対象とするメンバ名です。<r/>
+　NULL の場合は、このオブジェクト自身に対する操作になります。この場合は、このオブジェクトは関数の機能を持っている必要があります。
+</dd>
+
+
+<dt>tjs_uint32 *hint</dt>
+<dd>
+　「<kw>ヒント</kw>」を格納するための変数の領域を指定します。NULLでもかまいません。<r/>
+　ヒントは、２回目以降の同じメンバ名に対する検索を高速に行えるようにするためのものです。hint に tjs_uint32 型の変数へのポインタを指定すると、そこにヒントとなる数値が書き込まれます。２回目以降はその数値を参考にしてメンバを検索します。参考にする程度ですので、ヒントの初期値はどのような値であってもかまいません ( 0 が推奨されます )。また、このような仕組みのため、ヒントとそれに対するメンバ名は１対１で対応しているとより効率的です (tTJSString 型はこのヒントのための機構を持っています)。<r/>
+　オブジェクトによっては、ヒントを利用する機構を持っていないかも知れません。
+</dd>
+
+
+<dt>tTJSVariant *result</dt>
+<dd>
+　関数を呼び出した結果を格納するための tTJSVariant 型へのポインタを指定します。<r/>
+　結果が必要ない場合は NULL を指定してかまいません。
+</dd>
+
+
+<dt>tjs_int numparams</dt>
+<dd>
+　関数に渡す引数の数を指定します。
+</dd>
+
+
+<dt>tTJSVariant **param</dt>
+<dd>
+　関数に渡す引数のポインタの配列を渡します。引数がない場合は NULL でかまいません。
+</dd>
+
+
+<dt>iTJSDispatch2 *objthis</dt>
+<dd>
+　関数が実行されるコンテキスト (this オブジェクト) を指定します。
+</dd>
+</dl>
+</para>
+
+
+
+
+
+<para>
+<ptitle>FuncCallByNum</ptitle>
+tjs_error iTJSDispatch2::FuncCall(<r/>
+	tjs_uint32 flag,<r/>
+	tjs_int num,<r/>
+	tTJSVariant *result,<r/>
+	tjs_int numparams,<r/>
+	tTJSVariant **param,<r/>
+	iTJSDispatch2 *objthis<r/>
+	)<r/>
+<r/>
+　序数による関数呼び出しを行います。<r/>
+</para>
+
+
+
+
+<para>
+<ptitle>PropGet</ptitle>
+tjs_error iTJSDispatch2::PropGet(<r/>
+	tjs_uint32 flag,<r/>
+	const tjs_char * membername,<r/>
+	tjs_uint32 *hint,<r/>
+	tTJSVariant *result,<r/>
+	iTJSDispatch2 *objthis<r/>
+	)<r/>
+<r/>
+　プロパティやメンバ変数の値の取得を行います。<r/>
+<r/>
+　引数は以下の通りです。<r/>
+<r/>
+<dl>
+
+<dt>tjs_uint32 flag</dt>
+<dd>
+　呼び出しフラグです(下記参照)。
+</dd>
+
+
+<dt>const tjs_char * membername</dt>
+<dd>
+　操作対象とするメンバ名です。<r/>
+<r/>
+　NULL の場合は、このオブジェクト自身に対する操作になります。この場合は、このオブジェクトはプロパティ取得の機能を持っている必要があります。<r/>
+　この引数が NULL でも成功するオブジェクトは、プロパティオブジェクトと見なされます。通常、このようなプロパティオブジェクトが他のオブジェクトのメンバになった場合は、このプロパティオブジェクト自体ではなく、そのプロパティオブジェクトに対して PropGet を行った結果が用いられます。この動作は呼び出しフラグに TJS_IGNOREPROP を指定することでバイパスすることができます。
+</dd>
+
+
+<dt>tjs_uint32 *hint</dt>
+<dd>
+　ヒントを格納するための変数の領域を指定します。NULLでもかまいません。<r/>
+　ヒントの説明については FuncCall の説明を参照してください。
+</dd>
+
+
+<dt>tTJSVariant *result</dt>
+<dd>
+　結果を格納するための tTJSVariant 型へのポインタを指定します。NULL は許されません。
+</dd>
+
+
+<dt>iTJSDispatch2 *objthis</dt>
+<dd>
+　このメソッドが実行されるコンテキスト (this オブジェクト) を指定します。
+</dd>
+</dl>
+</para>
+
+
+
+<para>
+<ptitle>PropGetByNum</ptitle>
+tjs_error iTJSDispatch2::PropGetByNum(<r/>
+	tjs_uint32 flag,<r/>
+	tjs_int num,<r/>
+	tTJSVariant *result,<r/>
+	iTJSDispatch2 *objthis<r/>
+	)<r/>
+<r/>
+　序数による、プロパティやメンバ変数の値の取得を行います。<r/>
+</para>
+
+
+
+
+
+
+
+<para>
+<ptitle>PropSet</ptitle>
+tjs_error iTJSDispatch2::PropSet(<r/>
+	tjs_uint32 flag,<r/>
+	const tjs_char *membername,<r/>
+	tjs_uint32 *hint,<r/>
+	const tTJSVariant *param,<r/>
+	iTJSDispatch2 *objthis<r/>
+	)<r/>
+<r/>
+　プロパティやメンバ変数の値の設定を行います。<r/>
+<r/>
+　引数は以下の通りです。<r/>
+<r/>
+<dl>
+
+<dt>tjs_uint32 flag</dt>
+<dd>
+　呼び出しフラグです(下記参照)。
+</dd>
+
+
+<dt>const tjs_char * membername</dt>
+<dd>
+　操作対象とするメンバ名です。<r/>
+<r/>
+　NULL の場合は、このオブジェクト自身に対する操作になります。この場合は、このオブジェクトはプロパティ設定の機能を持っている必要があります。<r/>
+　この引数が NULL でも成功するオブジェクトは、プロパティオブジェクトと見なされます。通常、このようなプロパティオブジェクトが他のオブジェクトのメンバになった場合は、このプロパティオブジェクト自体ではなく、そのプロパティオブジェクトに対して PropSet が呼ばれます。この動作は呼び出しフラグに TJS_IGNOREPROP を指定することでバイパスすることができます。
+</dd>
+
+
+<dt>tjs_uint32 *hint</dt>
+<dd>
+　ヒントを格納するための変数の領域を指定します。NULLでもかまいません。<r/>
+　ヒントの説明については FuncCall の説明を参照してください。
+</dd>
+
+
+<dt>const tTJSVariant *param</dt>
+<dd>
+　設定する値を表す tTJSVariant 型の変数へのポインタを指定します。NULL は許されません。
+</dd>
+
+
+<dt>iTJSDispatch2 *objthis</dt>
+<dd>
+　このメソッドが実行されるコンテキスト (this オブジェクト) を指定します。
+</dd>
+</dl>
+</para>
+
+
+
+
+
+<para>
+<ptitle>PropSetByNum</ptitle>
+tjs_error iTJSDispatch2::PropSetByNum(<r/>
+	tjs_uint32 flag,<r/>
+	tjs_int num,<r/>
+	const tTJSVariant *param,<r/>
+	iTJSDispatch2 *objthis<r/>
+	)<r/>
+<r/>
+　序数による、プロパティやメンバ変数の値の設定を行います。<r/>
+</para>
+
+
+
+
+
+
+
+<para>
+<ptitle>GetCount</ptitle>
+tjs_error iTJSDispatch2::GetCount(<r/>
+	tjs_int *result,<r/>
+	const tjs_char *membername,<r/>
+	tjs_uint32 *hint,<r/>
+	iTJSDispatch2 *objthis<r/>
+	)<r/>
+<r/>
+　オブジェクトが保持しているメンバの数を返します。<r/>
+<r/>
+　引数は以下の通りです。<r/>
+<r/>
+<dl>
+
+<dt>tjs_int *result</dt>
+<dd>
+　結果を格納するための変数へのポインタを指定します。NULL は許されません。
+</dd>
+
+
+<dt>const tjs_char * membername</dt>
+<dd>
+　対象とするメンバの名前を指定します。<r/>
+　NULL の場合、このオブジェクト自身の保持しているメンバの数が帰ります。<r/>
+　メンバ名が指定された場合、もし、そのメンバがオブジェクトならば、そのオブジェクトの保持しているメンバの数を返します。指定されたメンバがオブジェクト型でなかった場合は失敗します。
+</dd>
+
+
+<dt>tjs_uint32 *hint</dt>
+<dd>
+　ヒントを格納するための変数の領域を指定します。NULLでもかまいません。<r/>
+　ヒントの説明については FuncCall の説明を参照してください。
+</dd>
+
+
+<dt>iTJSDispatch2 *objthis</dt>
+<dd>
+　このメソッドが実行されるコンテキスト (this オブジェクト) を指定します。<r/>
+　この引数は、通常、意味を持ちません(無視されます)。
+</dd>
+</dl>
+</para>
+
+
+
+
+<para>
+<ptitle>GetCountByNum</ptitle>
+tjs_error iTJSDispatch2::GetCount(<r/>
+	tjs_int *result,<r/>
+	tjs_int num,<r/>
+	iTJSDispatch2 *objthis<r/>
+	)<r/>
+<r/>
+　GetCount の序数バージョンです。<r/>
+</para>
+
+
+
+<para>
+<ptitle>DeleteMember</ptitle>
+tjs_error iTJSDispatch2::DeleteMember(<r/>
+	tjs_uint32 flag,<r/>
+	const tjs_char *membername,<r/>
+	tjs_uint32 *hint,<r/>
+	iTJSDispatch2 *objthis<r/>
+	)<r/>
+<r/>
+　メンバの削除を行います。<r/>
+<r/>
+　引数は以下の通りです。<r/>
+<r/>
+<dl>
+
+<dt>tjs_uint32 flag</dt>
+<dd>
+　呼び出しフラグです(下記参照)。
+</dd>
+
+
+<dt>const tjs_char * membername</dt>
+<dd>
+　対象とするメンバの名前を指定します。NULL は許されません。
+</dd>
+
+
+<dt>tjs_uint32 *hint</dt>
+<dd>
+　ヒントを格納するための変数の領域を指定します。NULLでもかまいません。<r/>
+　ヒントの説明については FuncCall の説明を参照してください。
+</dd>
+
+
+<dt>iTJSDispatch2 *objthis</dt>
+<dd>
+　このメソッドが実行されるコンテキスト (this オブジェクト) を指定します。<r/>
+　この引数は、通常、意味を持ちません(無視されます)。
+</dd>
+</dl>
+</para>
+
+
+
+
+
+
+<para>
+<ptitle>DeleteMemberByNum</ptitle>
+tjs_error iTJSDispatch2::DeleteMemberByNum(<r/>
+	tjs_uint32 flag,<r/>
+	tjs_int num,<r/>
+	iTJSDispatch2 *objthis<r/>
+	)<r/>
+<r/>
+　序数によりメンバの削除を行います。<r/>
+</para>
+
+
+
+
+
+
+
+
+
+<para>
+<ptitle>Invalidate</ptitle>
+tjs_error iTJSDispatch2::Invalidate(<r/>
+	tjs_uint32 flag,<r/>
+	const tjs_char *membername,<r/>
+	tjs_uint32 *hint,<r/>
+	iTJSDispatch2 *objthis<r/>
+	)<r/>
+<r/>
+　無効化を行います。<r/>
+<r/>
+　引数は以下の通りです。<r/>
+<r/>
+<dl>
+
+<dt>tjs_uint32 flag</dt>
+<dd>
+　呼び出しフラグです(下記参照)。
+</dd>
+
+
+<dt>const tjs_char * membername</dt>
+<dd>
+　対象とするメンバの名前を指定します。<r/>
+　NULL の場合、このオブジェクト自身が無効化されます。<r/>
+　メンバ名が指定された場合、もし、そのメンバがオブジェクトならば、そのオブジェクトが無効化されます。指定されたメンバがオブジェクト型でなかった場合は失敗します。
+</dd>
+
+
+<dt>tjs_uint32 *hint</dt>
+<dd>
+　ヒントを格納するための変数の領域を指定します。NULLでもかまいません。<r/>
+　ヒントの説明については FuncCall の説明を参照してください。
+</dd>
+
+
+<dt>iTJSDispatch2 *objthis</dt>
+<dd>
+　このメソッドが実行されるコンテキスト (this オブジェクト) を指定します。<r/>
+　この引数は、通常、意味を持ちません(無視されます)。
+</dd>
+</dl>
+</para>
+
+
+
+<para>
+<ptitle>InvalidateByNum</ptitle>
+tjs_error iTJSDispatch2::InvalidateByNum(<r/>
+	tjs_uint32 flag,<r/>
+	tjs_int num,<r/>
+	iTJSDispatch2 *objthis<r/>
+	)<r/>
+<r/>
+序数により無効化を行います。<r/>
+</para>
+
+
+
+
+
+<para>
+<ptitle>IsValid</ptitle>
+tjs_error iTJSDispatch2::IsValid(<r/>
+	tjs_uint32 flag,<r/>
+	const tjs_char *membername,<r/>
+	tjs_uint32 *hint,<r/>
+	iTJSDispatch2 *objthis<r/>
+	)<r/>
+<r/>
+　オブジェクトが有効かどうかを調べます。<r/>
+　有効の場合は TJS_S_TRUE が、向こうの場合は TJS_S_FALSE が戻ります。<r/>
+<r/>
+　引数は以下の通りです。<r/>
+<r/>
+<dl>
+
+<dt>tjs_uint32 flag</dt>
+<dd>
+　呼び出しフラグです(下記参照)。
+</dd>
+
+
+<dt>const tjs_char * membername</dt>
+<dd>
+　対象とするメンバの名前を指定します。<r/>
+　NULL の場合、このオブジェクト自身の有効性を調べることができます。<r/>
+　メンバ名が指定された場合、もし、そのメンバがオブジェクトならば、そのオブジェクトの有効性を調べることができます。指定されたメンバがオブジェクト型でなかった場合は失敗します。
+
+</dd>
+
+
+<dt>tjs_uint32 *hint</dt>
+<dd>
+　ヒントを格納するための変数の領域を指定します。NULLでもかまいません。<r/>
+　ヒントの説明については FuncCall の説明を参照してください。
+</dd>
+
+
+<dt>iTJSDispatch2 *objthis</dt>
+<dd>
+　このメソッドが実行されるコンテキスト (this オブジェクト) を指定します。<r/>
+　この引数は、通常、意味を持ちません(無視されます)。
+</dd>
+</dl>
+</para>
+
+
+
+
+
+
+
+<para>
+<ptitle>IsValidByNum</ptitle>
+tjs_error iTJSDispatch2::IsValidByNum(<r/>
+	tjs_uint32 flag,<r/>
+	tjs_int num,<r/>
+	iTJSDispatch2 *objthis<r/>
+	)<r/>
+<r/>
+　序数により、オブジェクトが有効かどうかを調べます。<r/>
+</para>
+
+
+
+
+
+
+<para>
+<ptitle>CreateNew</ptitle>
+tjs_error iTJSDispatch2::CreateNew(<r/>
+	tjs_uint32 flag,<r/>
+	const tjs_char * membername,<r/>
+	tjs_uint32 *hint,<r/>
+	iTJSDispatch2 **result,<r/>
+	tjs_int numparams,<r/>
+	tTJSVariant **param,<r/>
+	iTJSDispatch2 *objthis<r/>
+	)<r/>
+<r/>
+　新規オブジェクトを作成します。<r/>
+　このメソッドは FuncCall メソッドに似て、オブジェクトを新規作成するために引数を渡すことができます。<r/>
+　オブジェクトの雛形となる、いわゆる「クラスオブジェクト」はこのメソッドを実装している必要があります。<r/>
+<r/>
+　引数は以下の通りです。<r/>
+<r/>
+<dl>
+
+<dt>tjs_uint32 flag</dt>
+<dd>
+　呼び出しフラグです(下記参照)。
+</dd>
+
+
+<dt>const tjs_char * membername</dt>
+<dd>
+　操作対象とするメンバ名です。<r/>
+　NULL の場合は、このオブジェクト自身に対する操作になります。この場合は、このオブジェクトは、新にオブジェクトを新規作成する機能を持っている必要があります。
+</dd>
+
+
+<dt>tjs_uint32 *hint</dt>
+<dd>
+　ヒントを格納するための変数の領域を指定します。NULLでもかまいません。<r/>
+　ヒントの説明については FuncCall の説明を参照してください。
+</dd>
+
+
+<dt>iTJSDispatch2 **result</dt>
+<dd>
+　新しく作成したオブジェクトを格納するための iTJSDispatch * 型へのポインタを指定します。NULL は許されません。
+</dd>
+
+
+<dt>tjs_int numparams</dt>
+<dd>
+　オブジェクトを新規作成する際に渡す引数の数を指定します。
+</dd>
+
+
+<dt>tTJSVariant **param</dt>
+<dd>
+　オブジェクトを新規作成する際に渡す引数のポインタの配列を渡します。引数がない場合は NULL でかまいません。
+</dd>
+
+
+<dt>iTJSDispatch2 *objthis</dt>
+<dd>
+　オブジェクトを新規作成する際に実行されるコンテキスト (this オブジェクト) を指定します。
+</dd>
+</dl>
+</para>
+
+
+
+
+
+<para>
+<ptitle>CreateNewByNum</ptitle>
+tjs_error iTJSDispatch2::CreateNew(<r/>
+	tjs_uint32 flag,<r/>
+	tjs_int num,<r/>
+	iTJSDispatch2 **result,<r/>
+	tjs_int numparams,<r/>
+	tTJSVariant **param,<r/>
+	iTJSDispatch2 *objthis<r/>
+	)<r/>
+<r/>
+　序数により新規オブジェクトを作成します。<r/>
+</para>
+
+
+
+
+
+
+
+<para>
+<ptitle>GetSuperClass</ptitle>
+　iTJSDispatch2::GetSuperClass の仮想関数は将来の為に予約されています。このメソッドを使用しないでください ( 実装する場合は常に TJS_E_NOTIMPL を返してください)。<r/>
+</para>
+
+
+
+
+
+
+
+<para>
+<ptitle>IsInstanceOf</ptitle>
+tjs_error iTJSDispatch2::IsInstanceOf(<r/>
+	tjs_uint32 flag,<r/>
+	const tjs_char * membername,<r/>
+	tjs_uint32 *hint,<r/>
+	const tjs_char * classname,<r/>
+	iTJSDispatch2 *objthis<r/>
+	)<r/>
+<r/>
+　オブジェクトが、特定のクラスのインスタンスであるかどうかを調べます。<r/>
+　クラス名は classnamme 引数に文字列で渡されます。<r/>
+　TJS2 の instanceof 演算子により参照されます。<r/>
+　成功した場合、指定されたクラスのインスタンスである場合は TJS_S_TRUE が、そうでない場合は TJS_S_FALSE が帰ります。<r/>
+<r/>
+　引数は以下の通りです。<r/>
+<r/>
+<dl>
+
+<dt>tjs_uint32 flag</dt>
+<dd>
+　呼び出しフラグです(下記参照)。
+</dd>
+
+
+<dt>const tjs_char * membername</dt>
+<dd>
+　操作対象とするメンバ名です。<r/>
+　NULL の場合は、このオブジェクト自身に対する操作になります。この場合は、このオブジェクトは、新にオブジェクトを新規作成する機能を持っている必要があります。
+</dd>
+
+
+<dt>tjs_uint32 *hint</dt>
+<dd>
+　ヒントを格納するための変数の領域を指定します。NULLでもかまいません。<r/>
+　ヒントの説明については FuncCall の説明を参照してください。
+</dd>
+
+
+<dt>const tjs_char *classname</dt>
+<dd>
+　クラス名を文字列で指定します。
+</dd>
+
+
+<dt>iTJSDispatch2 *objthis</dt>
+<dd>
+　オブジェクトを新規作成する際に実行されるコンテキスト (this オブジェクト) を指定します。
+</dd>
+</dl>
+</para>
+
+
+
+
+<para>
+<ptitle>IsInstanceOfByNum</ptitle>
+tjs_error iTJSDispatch2::IsInstanceOfByNum(<r/>
+	tjs_uint32 flag,<r/>
+	tjs_int num,<r/>
+	const tjs_char * classname,<r/>
+	iTJSDispatch2 *objthis<r/>
+	)<r/>
+<r/>
+　序数により、オブジェクトが、特定のクラスのインスタンスであるかどうかを調べます。<r/>
+</para>
+
+
+
+
+<para>
+<ptitle>Operation</ptitle>
+tjs_error iTJSDispatch2::Operation(<r/>
+	tjs_uint32 flag,<r/>
+	const tjs_char *membername,<r/>
+	tjs_uint32 *hint,<r/>
+	tTJSVariant *result,<r/>
+	const tTJSVariant *param,<r/>
+	iTJSDispatch2 *objthis<r/>
+	)<r/>
+<r/>
+　メンバに対して演算を行います。演算の種類は flag で指定します。<r/>
+<r/>
+　引数は以下の通りです。<r/>
+<r/>
+<dl>
+
+<dt>tjs_uint32 flag</dt>
+<dd>
+　呼び出しフラグです。下記の通常の呼び出しフラグの他、演算の種類を指定するために以下のフラグのいずれかをビットORで付加する必要があります。<r/>
+<r/>
+　なお、この説明中で v はメンバの値、p は param 引数で渡すパラメータを表します。<r/>
+<r/>
+<dl>
+
+<dt>TJS_OP_BAND</dt>
+<dd>
+ビット AND 演算<r/>
+v &amp;= p
+</dd>
+
+
+<dt>TJS_OP_BOR</dt>
+<dd>
+ビット OR 演算<r/>
+v |= p
+</dd>
+
+
+<dt>TJS_OP_BXOR</dt>
+<dd>
+ビット XOR 演算<r/>
+v ^= p
+</dd>
+
+
+<dt>TJS_OP_SUB</dt>
+<dd>
+減算<r/>
+v -= p
+</dd>
+
+
+<dt>TJS_OP_ADD</dt>
+<dd>
+加算<r/>
+v += p
+</dd>
+
+
+<dt>TJS_OP_MOD</dt>
+<dd>
+モジュラ<r/>
+v %= p
+</dd>
+
+
+<dt>TJS_OP_DIV</dt>
+<dd>
+実数除算<r/>
+v /= p
+</dd>
+
+
+<dt>TJS_OP_IDIV</dt>
+<dd>
+整数除算<r/>
+v \= p
+</dd>
+
+
+<dt>TJS_OP_MUL</dt>
+<dd>
+乗算<r/>
+v *= p
+</dd>
+
+
+<dt>TJS_OP_LOR</dt>
+<dd>
+論理 OR<r/>
+v = v || p
+</dd>
+
+
+<dt>TJS_OP_LAND</dt>
+<dd>
+論理 AND<r/>
+v = v &amp;&amp; p
+</dd>
+
+
+<dt>TJS_OP_SAR</dt>
+<dd>
+算術右シフト<r/>
+v >>= p
+</dd>
+
+
+<dt>TJS_OP_SAL</dt>
+<dd>
+算術左シフト<r/>
+v &lt;&lt;= p
+</dd>
+
+
+<dt>TJS_OP_SR</dt>
+<dd>
+ビット左シフト<r/>
+v >>>= p
+</dd>
+
+
+<dt>TJS_OP_INC</dt>
+<dd>
+インクリメント<r/>
+v++<r/>
+param 引数は無視されます
+</dd>
+
+
+<dt>TJS_OP_DEC</dt>
+<dd>
+デクリメント<r/>
+v--<r/>
+param 引数は無視されます
+</dd>
+</dl>
+
+
+</dd>
+
+
+<dt>const tjs_char * membername</dt>
+<dd>
+　操作対象とするメンバ名です。NULL は許されません。
+</dd>
+
+
+<dt>tjs_uint32 *hint</dt>
+<dd>
+　ヒントを格納するための変数の領域を指定します。NULLでもかまいません。<r/>
+　ヒントの説明については FuncCall の説明を参照してください。
+</dd>
+
+
+<dt>tTJSVariant *result</dt>
+<dd>
+　演算の結果を格納するための tTJSVariant 型の変数へのポインタを指定します。NULL でかまいません。
+</dd>
+
+
+<dt>tTJSVariant *param</dt>
+<dd>
+　演算のパラメータを指定します。演算の種類に TJS_OP_INC または TJS_OP_DEC を指定した場合は NULL でかまいません。
+</dd>
+
+
+<dt>iTJSDispatch2 *objthis</dt>
+<dd>
+　演算が実行されるコンテキストを指定しますが、通常無視されます。
+</dd>
+</dl>
+</para>
+
+
+
+
+
+<para>
+<ptitle>OperationByNum</ptitle>
+tjs_error iTJSDispatch2::OperationByNum(<r/>
+	tjs_uint32 flag,<r/>
+	tjs_int num,<r/>
+	tTJSVariant *result,<r/>
+	const tTJSVariant *param,<r/>
+	iTJSDispatch2 *objthis<r/>
+	)<r/>
+<r/>
+　序数を用いて、メンバに対して演算を行います。<r/>
+</para>
+
+
+
+
+<para>
+<ptitle>NativeInstanceSupport</ptitle>
+tjs_error iTJSDispatch2::NativeInstanceSupport(<r/>
+	tjs_uint32 flag,<r/>
+	tjs_int32 classid,<r/>
+	iTJSNativeInstance **pointer<r/>
+	)<r/>
+<r/>
+　オブジェクトにネイティブコードのインスタンスを関連づけたり、オブジェクトからネイティブコードのインスタンスを取得したりします。<r/>
+<r/>
+　引数は以下の通りです。<r/>
+<r/>
+
+<dl>
+
+<dt>tjs_uint32 flag</dt>
+<dd>
+　呼び出しフラグを指定します。<r/>
+　以下のいずれかの値を指定する必要があります。<r/>
+<r/>
+<dl>
+
+<dt><kw>TJS_NIS_REGISTER</kw></dt>
+<dd>
+　*pointer で示したネイティブコードのインスタンスを登録します。ネイティブコードのクラスの識別には classid を用います。
+</dd>
+
+
+
+<dt><kw>TJS_NIS_GETINSTANCE</kw></dt>
+<dd>
+　classid で指定した クラスID を持つネイティブコードのインスタンスを *pointer に書き込みます。
+</dd>
+</dl>
+
+</dd>
+
+
+
+<dt>tjs_int32 classid</dt>
+<dd>
+　ネイティブコードのクラス ID を指定します。<r/>
+　ネイティブコードのクラス ID の管理には TJSRegisterNativeClass
+TJSFindNativeClassID
+TJSFindNativeClassName を使用することができますが、通常は これらの処理はネイティブコードを記述するための
+支援コード群 ( tjsNative.cpp/tjsNative.h に記述 ) で自動的に処理されます。
+</dd>
+
+
+
+<dt>iTJSNativeInstance **pointer</dt>
+<dd>
+　ネイティブコードのインスタンスを渡したり、受け取ったりするために、iTJSNativeInstance *型の変数へのポインタを指定します。
+</dd>
+</dl>
+
+</para>
+
+
+
+<para>
+<ptitle>ClassInstanceInfo</ptitle>
+tjs_error iTJSDispatch2::ClassInstanceInfo(<r/>
+	tjs_uint32 flag,<r/>
+	tjs_uint num,<r/>
+	tTJSVariant *value<r/>
+	)<r/>
+<r/>
+　IsInstanceOf メソッドで使用する、クラスのインスタンス情報を操作するメソッドです。<r/>
+　オブジェクトがどのクラスのインスタンスかを識別するためにクラス名を追加したり、オブジェクトがどのクラスのインスタンスかを調べるためにクラスを列挙することができます。<r/>
+<r/>
+　引数は以下の通りです。<r/>
+<r/>
+<dl>
+
+<dt>tjs_uint32 flag</dt>
+<dd>
+　呼び出しフラグです。以下のフラグのいずれかを指定します。<r/>
+<r/>
+<dl>
+
+<dt><kw>TJS_CII_ADD</kw></dt>
+<dd>
+　インスタンス情報を追加します。<r/>
+　value にはクラス名 (文字列) の格納された tTJSVariant 型の変数へのポインタを渡します。<r/>
+　num 引数は無視されます。
+</dd>
+
+
+<dt><kw>TJS_CII_GET</kw></dt>
+<dd>
+　インスタンス情報を取得します。<r/>
+　num 引数には 0 から始まる 整数を指定します。設定されているインスタンス情報の数を超えて num を指定すると TJS_E_FAIL が戻ります。<r/>
+　value にはクラス名を受け取るための、tTJSVariant 型の変数へのポインタを渡します。
+</dd>
+</dl>
+</dd>
+
+
+
+<dt>tjs_uint num</dt>
+<dd>
+　flag に TJS_CII_GET を指定した場合の序数を指定します。
+</dd>
+
+
+
+<dt>tTJSVariant *value</dt>
+<dd>
+　flag に TJS_CII_ADD を指定した場合は、クラス名が格納された tTJSVariant 型の変数へのポインタを渡します。<r/>
+　flag に TJS_CII_GET を指定した場合は、クラス名を受け取るための tTJSVariant 型の変数へのポインタを渡します。
+</dd>
+</dl>
+
+
+</para>
+
+
+
+<para>
+<ptitle>呼び出しフラグ</ptitle>
+
+　呼び出しフラグです。<r/>
+　以下の値のビットORによる組み合わせを指定することができます。<r/>
+<r/>
+<dl>
+
+<dt>TJS_MEMBERENSURE</dt>
+<dd>
+　指定されたメンバ名が見つからなかった場合、強制的にメンバを作成します。PropSet に対する呼び出しフラグとして有効です。
+ )
+</dd>
+
+
+<dt>TJS_MEMBERMUSTEXIST</dt>
+<dd>
+　指定されたメンバ名が見つからなかった場合、エラーにします。これは、Dictionary や Array のような、メンバが見つからない場合にデフォルトで void を返すようなオブジェクトに対して有効です (そのようなオブジェクトでない場合は、メンバが見つからない場合はデフォルトでエラーになります)。
+</dd>
+
+
+
+
+
+<dt>TJS_IGNOREPROP</dt>
+<dd>
+　プロパティ操作をバイパスします。<r/>
+　TJS2 のオブジェクトは通常、指定されたメンバがオブジェクトで、かつ、そのオブジェクトに対して PropSet や PropGet が成功する場合 (プロパティオブジェクトの場合)、そのメンバに対する PropSet や PropGet の結果を、そのメンバの代わりと見なして使います。<r/>
+　このフラグを指定すると、このような処理をバイパスするため、指定されたメンバがプロパティオブジェクトであっても、プロパティオブジェクトそのものに対する操作になります。
+</dd>
+
+
+<dt>TJS_HIDDENMEMBER</dt>
+<dd>
+　このフラグを指定してメンバを作成すると、EnumMembers でそのオブジェクトが列挙されなくなります。オブジェクトによってはサポートされていないこともあり得ます。EnumMembers は iTJSDispatch2 に将来的に追加される予定のメソッドです。
+</dd>
+</dl>
+</para>
+
+
+<para>
+<ptitle>tjs_error</ptitle>
+　tjs_error は、iTJSDispatch2 の各メソッド ( AddRef と Release を除く ) が返すエラー型です。<r/>
+　以下の値を採ります。また、ここに載ってない値でも、値が負の場合はエラーと見なす必要があります。これらを判断するために TJS_SUCCEEDED および TJS_FAILED マクロを使用することができます。<r/>
+<r/>
+<dl>
+
+<dt><kw>TJS_E_MEMBERNOTFOUND</kw></dt>
+<dd>
+　指定されたメンバが見つかりません。
+</dd>
+
+
+
+<dt><kw>TJS_E_NOTIMPL</kw></dt>
+<dd>
+　呼び出そうとした機能は未実装です。
+</dd>
+
+
+
+<dt><kw>TJS_E_INVALIDPARAM</kw></dt>
+<dd>
+　不正な引数です。
+</dd>
+
+
+
+<dt><kw>TJS_E_BADPARAMCOUNT</kw></dt>
+<dd>
+　引数の数が不正です。
+</dd>
+
+
+
+<dt><kw>TJS_E_INVALIDTYPE</kw></dt>
+<dd>
+　関数ではないかプロパティの種類が違います。<r/>
+　関数でない物を呼び出そうとした場合や、プロパティでない物をプロパティとして扱おうとしたときにこの値が帰ります。
+</dd>
+
+
+
+<dt><kw>TJS_E_INVALIDOBJECT</kw></dt>
+<dd>
+　オブジェクトはすでに無効化されています。
+</dd>
+
+
+
+<dt><kw>TJS_E_ACCESSDENYED</kw></dt>
+<dd>
+　読み込みあるいは書き込み専用プロパティに対して行えない操作をしようとしました。
+</dd>
+
+
+
+<dt><kw>TJS_E_NATIVECLASSCRASH</kw></dt>
+<dd>
+　実行コンテキストが違います。<r/>
+　ネイティブコードで実装されたメソッドを、そのネイティブコードで扱えないコンテキスト (違うクラスのオブジェクト上など) で実行しようとしたときにこの値が帰ります。
+</dd>
+
+
+
+<dt><kw>TJS_S_TRUE</kw></dt>
+<dd>
+　エラーではありませんが、結果が「真」であることを示します。
+</dd>
+
+
+
+<dt><kw>TJS_S_FALSE</kw></dt>
+<dd>
+　エラーではありませんが、結果が「偽」であることを示します。
+</dd>
+
+
+
+<dt><kw>TJS_S_OK</kw></dt>
+<dd>
+　エラーが発生しなかった場合に、通常、この値が帰ります。
+</dd>
+
+
+
+<dt><kw>TJS_E_FAIL</kw></dt>
+<dd>
+　未定義のエラーが発生した場合、この値が帰ります。
+</dd>
+
+
+
+<dt><kw>TJS_FAILED</kw>(x)</dt>
+<dd>
+　x がエラーの値の場合に真になるマクロです。
+</dd>
+
+
+<dt><kw>TJS_SUCCEEDED</kw>(x)</dt>
+<dd>
+　x がエラーでない値の場合に真になるマクロです。
+</dd>
+</dl>
+<r/>
+
+
+<r/>
+　エラー定義、および関連するマクロは tjsErrorDef.h に記述されています。<r/>
+　また、エラーではなく (C++における) 実行時例外が投げられる場合があります。プログラミングに関しては、実行時例外を十分に考慮する必要があります。<r/>
+</para>
+
+
+</doc>
