@@ -1008,8 +1008,14 @@ void tTJSNI_KAGParser::PushCallStack()
 	FindNearestLabel(CurLine, labelline, labelname);
 	if(labelline < 0) labelline = 0;
 
+	const wchar_t *curline_content;
+	if(Lines && CurLine < LineCount)
+		curline_content = Lines[CurLine].Start;
+	else
+		curline_content = TJS_W("");
+
 	CallStack.push_back(tCallStackData(StorageName, labelname, CurLine - labelline,
-		Lines?Lines[CurLine].Start:TJS_W(""),
+		curline_content,
 		LineBuffer, CurPos, LineBufferUsing, MacroArgStackBase, MacroArgStackDepth));
 	MacroArgStackBase = MacroArgStackDepth;
 }
@@ -1037,10 +1043,12 @@ void tTJSNI_KAGParser::PopCallStack(const ttstr &storage, const ttstr &label)
 		LoadScenario(data.Storage);
 		if(!data.Label.IsEmpty()) GoToLabel(data.Label);
 		CurLine += data.Offset;
-		if(CurLine >= LineCount)
+		if(CurLine > LineCount)
 			TVPThrowExceptionMessage(TVPKAGReturnLostSync);
-		if(data.OrgLineStr != Lines[CurLine].Start) // check original line information
-			TVPThrowExceptionMessage(TVPKAGReturnLostSync);
+				/* CurLine == LineCount is OK (at end of file) */
+		if(CurLine < LineCount)
+			if(data.OrgLineStr != Lines[CurLine].Start) // check original line information
+				TVPThrowExceptionMessage(TVPKAGReturnLostSync);
 		if(data.LineBufferUsing)
 		{
 			LineBuffer = data.LineBuffer;
@@ -1049,8 +1057,11 @@ void tTJSNI_KAGParser::PopCallStack(const ttstr &storage, const ttstr &label)
 		}
 		else
 		{
-			CurLineStr = Lines[CurLine].Start;
-			LineBufferUsing = false;
+			if(CurLine < LineCount)
+			{
+				CurLineStr = Lines[CurLine].Start;
+				LineBufferUsing = false;
+			}
 		}
 		CurPos = data.Pos;
 
