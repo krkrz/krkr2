@@ -1213,7 +1213,7 @@ long VersionNumber;
 	}
 
 	MessageDlg("Loop Tuner   version " + VersionString +
-		"  (C) 2000-2004 W.Dee All rights reserved.\n"
+		"  (C) 2000-2005 W.Dee All rights reserved.\n"
 		"各プラグインのバージョン情報は plugin フォルダの中の"
 		"各 DLL のプロパティを参照してください",
 			mtInformation, TMsgDlgButtons() << mbOK, 0);
