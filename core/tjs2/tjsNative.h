@@ -147,10 +147,6 @@ protected:
 	virtual iTJSDispatch2 *CreateBaseTJSObject();
 
 private:
-	std::vector<iTJSDispatch2 *> Items;
-	std::vector<ttstr> ItemNames;
-	std::vector<tjs_uint32> ItemFlags;
-	void ClearItems();
 
 public:
 	tjs_error TJS_INTF_METHOD
