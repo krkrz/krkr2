@@ -756,21 +756,11 @@ void tTJSInterCodeContext::RegisterFunction()
 
 	if(ContextType == ctPropertySetter)
 	{
-		if(Parent->PropSetter)
-		{
-			_yyerror(TJSDuplicatedPropHandler, Block);
-			return;
-		}
 		Parent->PropSetter = this; AddRef();
 		return;
 	}
 	if(ContextType == ctPropertyGetter)
 	{
-		if(Parent->PropGetter)
-		{
-			_yyerror(TJSDuplicatedPropHandler, Block);
-			return;
-		}
 		Parent->PropGetter = this; AddRef();
 		return;
 	}
