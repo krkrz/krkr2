@@ -645,17 +645,17 @@ class AnimationLayer extends KAGLayer
 			// àÍéûÉåÉCÉÑÇ…ëŒÇµÇƒêFí≤ï‚ê≥
 			if(elm.mode === void || elm.mode == 'pile' || elm.mode == 'alpha')
 			{
-				temp.face = dfAlpha;
+				temp.type = ltAlpha;
 				applyColorCorrection(temp, Anim_loadParams);
 			}
 			else if(elm.mode == 'addalpha')
 			{
-				temp.face = dfAddAlpha;
+				temp.type = ltAddAlpha;
 				applyColorCorrection(temp, Anim_loadParams);
 			}
 			else if(elm.mode == 'copy' || elm.mode == 'opaque')
 			{
-				temp.face = dfOpaque;
+				temp.type = ltOpaque;
 				applyColorCorrection(temp, Anim_loadParams);
 			}
 
