@@ -672,14 +672,29 @@ const wchar_t* tTVPDSMovie::BuildMPEGGraph( IBaseFilter *pRdr, IBaseFilter *pSrc
 	if( FAILED(hr = ConnectFilters( pMPEGVideoCodec, pRdr )) )
 		return L"Failed to call ConnectFilters.";
 
+	// Connect to MPEG audio codec filter
+	CComPtr<IBaseFilter>	pMPEGAudioCodec;	// for MPEG audio codec filter
+	if( FAILED(hr = pMPEGAudioCodec.CoCreateInstance(CLSID_CMpegAudioCodec, NULL, CLSCTX_INPROC_SERVER)) )
+		return L"Failed to create MPEG audio codec filter object.";
+	if( FAILED(hr = GraphBuilder()->AddFilter(pMPEGAudioCodec, L"MPEG Audio Decoder")) )
+		return L"Failed to call IFilterGraph::AddFilter.";
+	if( FAILED(hr = ConnectFilters( pMPEG1Splitter, pMPEGAudioCodec )) )
+	{	// not have Audio.
+		if( FAILED(hr = GraphBuilder()->RemoveFilter( pMPEGAudioCodec)) )
+			return L"Failed to call IFilterGraph::RemoveFilter.";
+		return NULL;
+	}
+
 	// Connect to DDS render filter
 	CComPtr<IBaseFilter>	pDDSRenderer;	// for sound renderer filter
 	if( FAILED(hr = pDDSRenderer.CoCreateInstance(CLSID_DSoundRender, NULL, CLSCTX_INPROC_SERVER)) )
 		return L"Failed to create sound render filter object.";
 	if( FAILED(hr = GraphBuilder()->AddFilter(pDDSRenderer, L"Sound Renderer")) )
 		return L"Failed to call IFilterGraph::AddFilter.";
-	if( FAILED(hr = ConnectFilters( pMPEG1Splitter, pDDSRenderer ) ) )
+	if( FAILED(hr = ConnectFilters( pMPEGAudioCodec, pDDSRenderer ) ) )
 	{
+		if( FAILED(hr = GraphBuilder()->RemoveFilter( pMPEGAudioCodec)) )
+			return L"Failed to call IFilterGraph::RemoveFilter.";
 		if( FAILED(hr = GraphBuilder()->RemoveFilter( pDDSRenderer)) )
 			return L"Failed to call IFilterGraph::RemoveFilter.";
 	}
@@ -736,7 +751,7 @@ HRESULT tTVPDSMovie::ConnectFilters( IBaseFilter* pFilterUpstream, IBaseFilter* 
 					pIPinDownstream->ConnectedTo( &pPinUp );
 					if( (PINDIR_INPUT == PinInfoDownstream.dir) && (pPinUp == NULL) )
 					{
-						if( SUCCEEDED(hr = m_GraphBuilder->Connect( pIPinUpstream, pIPinDownstream)) )
+						if( SUCCEEDED(hr = m_GraphBuilder->ConnectDirect( pIPinUpstream, pIPinDownstream, NULL)) )
 						{
 							PinInfoDownstream.pFilter->Release();
 							PinInfoUpstream.pFilter->Release();
