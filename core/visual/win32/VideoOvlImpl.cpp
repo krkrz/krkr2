@@ -363,19 +363,7 @@ void tTJSNI_VideoOverlay::Open(const ttstr &_name)
 
 		if( flash || (Mode == vomOverlay) )
 		{
-			// set Window handle
-			tjs_int ofsx, ofsy;
-			VideoOverlay->SetWindow(Window->GetWindowHandle(ofsx, ofsy));
-	
-			VideoOverlay->SetMessageDrainWindow(Window->GetSurfaceWindowHandle());
-	
-			// set Rectangle
-			RECT r = {Rect.left + ofsx, Rect.top + ofsy,
-				Rect.right + ofsx, Rect.bottom + ofsy};
-			VideoOverlay->SetRect(&r);
-	
-			// set Visible
-			VideoOverlay->SetVisible(Visible);
+			ResetOverlayParams();
 		}
 		else
 		{	// set font and back buffer to layerVideo
@@ -543,7 +531,10 @@ void tTJSNI_VideoOverlay::SetRectangleToVideoOverlay()
 	// set Rectangle to video overlay
 	if(VideoOverlay && OwnerWindow)
 	{
-		RECT r = {Rect.left, Rect.top, Rect.right, Rect.bottom};
+		tjs_int ofsx, ofsy;
+		Window->GetWindowHandle(ofsx, ofsy);
+		RECT r = {Rect.left + ofsx, Rect.top + ofsy,
+			Rect.right + ofsx, Rect.bottom + ofsy};
 		VideoOverlay->SetRect(&r);
 	}
 }
@@ -639,20 +630,34 @@ void tTJSNI_VideoOverlay::SetVisible(bool b)
 	}
 }
 //---------------------------------------------------------------------------
-void tTJSNI_VideoOverlay::SetWindowHandle(HWND wnd)
+void tTJSNI_VideoOverlay::ResetOverlayParams()
 {
-	OwnerWindow = wnd;
-	if(VideoOverlay)
+	// retrieve new window information from owner window and
+	// set video owner window / message drain window.
+	// also sets rectangle and visible state.
+	if(VideoOverlay && Window && Mode == vomOverlay)
 	{
-		VideoOverlay->SetWindow(wnd);
+		tjs_int ofsx, ofsy;
+		OwnerWindow = Window->GetWindowHandle(ofsx, ofsy);
+		VideoOverlay->SetWindow(OwnerWindow);
+
+		VideoOverlay->SetMessageDrainWindow(Window->GetSurfaceWindowHandle());
+
+		// set Rectangle
+		SetRectangleToVideoOverlay();
+
+		// set Visible
+		VideoOverlay->SetVisible(Visible);
 	}
 }
 //---------------------------------------------------------------------------
-void tTJSNI_VideoOverlay::SetMessageDrainWindow(HWND wnd)
+void tTJSNI_VideoOverlay::DetachVideoOverlay()
 {
-	if(VideoOverlay)
+	if(VideoOverlay && Window && Mode == vomOverlay)
 	{
-		VideoOverlay->SetMessageDrainWindow(wnd);
+		VideoOverlay->SetWindow(NULL);
+		VideoOverlay->SetMessageDrainWindow(UtilWindow);
+			// once set to util window
 	}
 }
 //---------------------------------------------------------------------------

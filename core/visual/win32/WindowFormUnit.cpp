@@ -1942,7 +1942,7 @@ void __fastcall TTVPWindowForm::SetFullScreenMode(bool b)
 	CallWindowDetach(false); // notify to plugin
 	try
 	{
-
+		if(TJSNativeInstance) TJSNativeInstance->DetachVideoOverlay();
 		FreeDirectInputDevice();
 			// due to re-create window (but current implementation may not re-create the window)
 		DeleteDoubleBuffer();

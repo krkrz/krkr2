@@ -163,8 +163,8 @@ public:
 	HWND GetWindowHandle(tjs_int &ofsx, tjs_int &ofsy);
 
 	void ReadjustVideoRect();
-
 	void WindowMoved();
+	void DetachVideoOverlay();
 
 //-- interface to plugin
 	HWND GetWindowHandleForPlugin();
