@@ -251,6 +251,7 @@ static bool TVPWaitVSync = false;
 static bool TVPWindowOptionsInit = false;
 static bool TVPUseDither = false;
 static tTVPDoubleBufferStyle TVPDoubleBufferStyle = tdbsNone;
+static tTVPDoubleBufferStyle TVPSelectedDoubleBufferStyle = tdbsNone;
 int TVPFullScreenBPP = 0; // 0 for no-change
 static bool TVPControlImeState = true;
 //---------------------------------------------------------------------------
@@ -372,6 +373,7 @@ void TVPInitWindowOptions()
 		else if(str == TJS_W("ddraw"))
 			TVPDoubleBufferStyle = tdbsDirectDraw,
 			initddraw = true;
+		TVPSelectedDoubleBufferStyle = TVPDoubleBufferStyle;
 	}
 
 	if(TVPGetCommandLine(TJS_W("-controlime"), &val) )
@@ -447,9 +449,11 @@ tTVPDirectDrawDoubleBuffer::tTVPDirectDrawDoubleBuffer(tjs_int w, tjs_int h,
 	Clipper = NULL;
 
 	IDirectDraw2 *object = TVPGetDirectDrawObjectNoAddRef();
-	if(!object) TVPThrowExceptionMessage(TJS_W("DirectDraw not avilable"));
+	if(!object) TVPThrowExceptionMessage(TJS_W("DirectDraw not available"));
 
 	// allocate secondary off-screen buffer
+	BitmapWidth = w;
+	BitmapHeight = h;
 	DDSURFACEDESC ddsd;
 	ZeroMemory(&ddsd, sizeof(ddsd));
 	ddsd.dwSize = sizeof(ddsd);
@@ -566,46 +570,83 @@ void tTVPDirectDrawDoubleBuffer::Finish()
 	origin = Target->ClientToScreen(origin);
 
 	// for each rectangle
-	tTVPRect rect;
-
-	for(std::vector<tTVPRect>::iterator i = Rects.begin();
-		i != Rects.end(); i++)
+	if(BitmapWidth != Target->Width || BitmapHeight != Target->Height)
 	{
-		tjs_int w = i->get_width();
-		tjs_int h = i->get_height();
+		// zooming enabled
+		// entire of the bitmap is to be transfered (this is not optimal. FIX ME!)
+		RECT drect;
+		drect.left = 0 + origin.x;
+		drect.top = 0 + origin.y;
+		drect.right = drect.left + Target->Width;
+		drect.bottom = drect.top + Target->Height;
 
-		if(w && h)
+		RECT srect;
+		srect.left = 0;
+		srect.top = 0;
+		srect.right = BitmapWidth;
+		srect.bottom = BitmapHeight;
+
+		HRESULT hr = pri->Blt(&drect, Surface, &srect, DDBLT_WAIT, NULL);
+		if(hr == DDERR_SURFACELOST)
 		{
+			pri->Restore();
+			Surface->Restore();
+			Target->Invalidate(); // causes reconstruction of off-screen image
+		}
+		else if(hr == DDERR_INVALIDRECT)
+		{
+			// ignore this error
+		}
+		else if(hr != DD_OK)
+		{
+			TVPThrowExceptionMessage(TJS_W("Primary surface, IDirectDrawSurface::Blt failed/HR=%1"),
+				TJSInt32ToHex(hr, 8));
+		}
 
-			RECT drect;
-			drect.left = i->left + origin.x;
-			drect.top = i->top + origin.y;
-			drect.right = drect.left + w;
-			drect.bottom = drect.top + h;
+	}
+	else
+	{
+		tTVPRect rect;
 
-			RECT srect;
-			srect.left = i->left;
-			srect.top = i->top;
-			srect.right = i->right;
-			srect.bottom = i->bottom;
+		for(std::vector<tTVPRect>::iterator i = Rects.begin();
+			i != Rects.end(); i++)
+		{
+			tjs_int w = i->get_width();
+			tjs_int h = i->get_height();
 
-			HRESULT hr = pri->Blt(&drect, Surface, &srect, DDBLT_WAIT, NULL);
-			if(hr == DDERR_SURFACELOST)
+			if(w && h)
 			{
-				pri->Restore();
-				Surface->Restore();
-				Target->Invalidate(); // causes reconstruction of off-screen image
-				break;
-			}
 
-			if(hr == DDERR_INVALIDRECT)
-			{
-				// ignore this error
-			}
-			else if(hr != DD_OK)
-			{
-				TVPThrowExceptionMessage(TJS_W("Primary surface, IDirectDrawSurface::Blt failed/HR=%1"),
-					TJSInt32ToHex(hr, 8));
+				RECT drect;
+				drect.left = i->left + origin.x;
+				drect.top = i->top + origin.y;
+				drect.right = drect.left + w;
+				drect.bottom = drect.top + h;
+
+				RECT srect;
+				srect.left = i->left;
+				srect.top = i->top;
+				srect.right = i->right;
+				srect.bottom = i->bottom;
+
+				HRESULT hr = pri->Blt(&drect, Surface, &srect, DDBLT_WAIT, NULL);
+				if(hr == DDERR_SURFACELOST)
+				{
+					pri->Restore();
+					Surface->Restore();
+					Target->Invalidate(); // causes reconstruction of off-screen image
+					break;
+				}
+
+				if(hr == DDERR_INVALIDRECT)
+				{
+					// ignore this error
+				}
+				else if(hr != DD_OK)
+				{
+					TVPThrowExceptionMessage(TJS_W("Primary surface, IDirectDrawSurface::Blt failed/HR=%1"),
+						TJSInt32ToHex(hr, 8));
+				}
 			}
 		}
 	}
@@ -658,25 +699,47 @@ void tTVPGDIDoubleBuffer::ReleaseDC(HDC dc)
 //---------------------------------------------------------------------------
 void tTVPGDIDoubleBuffer::Finish()
 {
-	tTVPRect rect;
-
-	for(std::vector<tTVPRect>::iterator i = Rects.begin();
-		i != Rects.end(); i++)
+	if(Bitmap->Width != Target->Width || Bitmap->Height != Target->Height)
 	{
-		tjs_int w, h;
-		w = i->get_width();
-		h = i->get_height();
-		if(w && h)
+		// zooming enabled
+		// entire of the bitmap is to be transfered (this is not optimal. FIX ME!)
+		SetStretchBltMode(Target->Canvas->Handle, HALFTONE);
+		SetBrushOrgEx(Target->Canvas->Handle, 0, 0, NULL);
+
+		StretchBlt(Target->Canvas->Handle,
+			0,
+			0,
+			Target->Width,
+			Target->Height,
+			Bitmap->Canvas->Handle,
+			0,
+			0,
+			Bitmap->Width,
+			Bitmap->Height,
+			SRCCOPY);
+	}
+	else
+	{
+		tTVPRect rect;
+
+		for(std::vector<tTVPRect>::iterator i = Rects.begin();
+			i != Rects.end(); i++)
 		{
-			BitBlt(Target->Canvas->Handle,
-				i->left,
-				i->top,
-				w,
-				h,
-				Bitmap->Canvas->Handle,
-				i->left,
-				i->top,
-				SRCCOPY);
+			tjs_int w, h;
+			w = i->get_width();
+			h = i->get_height();
+			if(w && h)
+			{
+				BitBlt(Target->Canvas->Handle,
+					i->left,
+					i->top,
+					w,
+					h,
+					Bitmap->Canvas->Handle,
+					i->left,
+					i->top,
+					SRCCOPY);
+			}
 		}
 	}
 
@@ -731,6 +794,9 @@ __fastcall TTVPWindowForm::TTVPWindowForm(TComponent* Owner, tTJSNI_Window *ni)
 	AttentionFont = new TFont();
 
 	PaintBox = NULL;
+
+	ZoomDenom = 1;
+	ZoomNumer = 1;
 
 	DefaultImeMode = ::imDisable;
 	LastSetImeMode = Controls::imDontCare;
@@ -1204,7 +1270,7 @@ void TTVPWindowForm::ShutdownDoubleBuffer()
 				TVPAddImportantLog( \
 					TJS_W("(info) Double-buffering failed ... falling back to the basic function.")); \
 				TVPAddImportantLog(ttstr(TJS_W("(info) ")) + e.Message); \
-				DoubleBufferStyle = TVPDoubleBufferStyle = tdbsNone; \
+				DoubleBufferStyle = TVPDoubleBufferStyle = TVPSelectedDoubleBufferStyle = tdbsNone; \
 				if(PaintBox) PaintBox->Invalidate(); \
 				DeleteDoubleBuffer(); \
 			} \
@@ -1213,7 +1279,7 @@ void TTVPWindowForm::ShutdownDoubleBuffer()
 				TVPAddImportantLog( \
 					TJS_W("(info) Double-buffering failed ... falling back to the basic function.")); \
 				TVPAddImportantLog(TJS_W("(info) ") + e.GetMessage()); \
-				DoubleBufferStyle = TVPDoubleBufferStyle = tdbsNone; \
+				DoubleBufferStyle = TVPDoubleBufferStyle = TVPSelectedDoubleBufferStyle = tdbsNone; \
 				if(PaintBox) PaintBox->Invalidate(); \
 				DeleteDoubleBuffer(); \
 			} \
@@ -1221,14 +1287,21 @@ void TTVPWindowForm::ShutdownDoubleBuffer()
 			{ \
 				TVPAddImportantLog( \
 					TJS_W("(info) Double-buffering failed ... falling back to the basic function.")); \
-				DoubleBufferStyle = TVPDoubleBufferStyle = tdbsNone; \
+				DoubleBufferStyle = TVPDoubleBufferStyle = TVPSelectedDoubleBufferStyle = tdbsNone; \
 				if(PaintBox) PaintBox->Invalidate(); \
 				DeleteDoubleBuffer(); \
 			}
 void TTVPWindowForm::DetectDoubleBufferingSpeed()
 {
 	// do the benchmark to detect that which is faster, DirectDraw or GDI.
-	TVPAddImportantLog(TJS_W("(info) Detecting image transfer speed ..."));
+	{
+		tjs_char msg[128];
+		TJS_sprintf(msg, TJS_W("(info) Detecting image transfer speed %dx%d -> %dx%d..."),
+			LayerWidth, LayerHeight, PaintBox->Width, PaintBox->Height);
+		TVPAddImportantLog(msg);
+	}
+
+	TVPEnsureDirectDrawObject();
 
 	Sleep(TVP_DB_PRE_SLEEP);
 
@@ -1240,7 +1313,7 @@ void TTVPWindowForm::DetectDoubleBufferingSpeed()
 	{
 		// allocate test bitmap
 		tTVPRect rect(0, 0, PaintBox->Width, PaintBox->Height);
-		tTVPBaseBitmap test(PaintBox->Width, PaintBox->Height);
+		tTVPBaseBitmap test(LayerWidth, LayerHeight);
 		test.Fill(rect, 0);
 
 
@@ -1253,7 +1326,7 @@ void TTVPWindowForm::DetectDoubleBufferingSpeed()
 		{
 			// DirectDraw
 			buf = new tTVPDirectDrawDoubleBuffer(
-					PaintBox->Width, PaintBox->Height, PaintBox);
+					LayerWidth, LayerHeight, PaintBox);
 
 
 
@@ -1309,7 +1382,7 @@ void TTVPWindowForm::DetectDoubleBufferingSpeed()
 		{
 			// GDI
 			buf = new tTVPGDIDoubleBuffer(
-					PaintBox->Width, PaintBox->Height, PaintBox);
+					LayerWidth, LayerHeight, PaintBox);
 
 
 			starttime = timeGetTime();
@@ -1372,19 +1445,19 @@ void TTVPWindowForm::DetectDoubleBufferingSpeed()
 		if(ddspeed < 0 && gdispeed < 0)
 		{
 			// no test succeeded
-			DoubleBufferStyle = tdbsNone;
+			TVPSelectedDoubleBufferStyle = tdbsNone;
 			TVPAddImportantLog(TJS_W("(info) Test failed. Falling back to the basic function."));
 		}
 		else
 		{
 			if(ddspeed  > gdispeed * TVP_DB_DETECT_GDI_WEIGHT )
 			{
-				DoubleBufferStyle = tdbsDirectDraw;
+				TVPSelectedDoubleBufferStyle = tdbsDirectDraw;
 				TVPAddImportantLog(TJS_W("(info) ") + resmsg + TJS_W(" DirectDraw selected."));
 			}
 			else
 			{
-				DoubleBufferStyle = tdbsGDI;
+				TVPSelectedDoubleBufferStyle = tdbsGDI;
 				TVPAddImportantLog(TJS_W("(info) ") + resmsg + TJS_W(" GDI selected."));
 			}
 		}
@@ -1396,7 +1469,65 @@ void __fastcall TTVPWindowForm::BeginDrawLayerImage(const tTVPComplexRect & rect
 {
 	if(!PaintBox) return;
 
-retry:
+	if(TVPSelectedDoubleBufferStyle == tdbsAuto &&
+		TVPDoubleBufferStyle == tdbsAuto)
+	{
+		// do speed test
+		DetectDoubleBufferingSpeed(); // do the benchmark
+	}
+	else if(TVPSelectedDoubleBufferStyle == tdbsAuto &&
+		TVPDoubleBufferStyle != tdbsNone)
+	{
+		TVPSelectedDoubleBufferStyle = TVPDoubleBufferStyle;
+	}
+
+	if(!DoubleBuffer)
+	{
+		try
+		{
+			bool force_db = ZoomNumer != 1 || ZoomDenom != 1;
+				// zooming needs double-buffering
+			bool is_main = TJSNativeInstance->IsMainWindow();
+
+			if(force_db)
+			{
+				DoubleBufferStyle = TVPSelectedDoubleBufferStyle;
+				if(DoubleBufferStyle == tdbsNone)
+					DoubleBufferStyle = tdbsDirectDraw;
+				if(!is_main && DoubleBufferStyle == tdbsDirectDraw)
+				{
+					// never select directdraw except for the main window
+					DoubleBufferStyle = tdbsGDI;
+				}
+			}
+			else
+			{
+				if(is_main)
+					DoubleBufferStyle = TVPSelectedDoubleBufferStyle;
+				else
+					DoubleBufferStyle = tdbsNone;
+			}
+
+			if(DoubleBufferStyle == tdbsGDI)
+			{
+				// create new GDI double-buffering object
+				DoubleBuffer =
+					new tTVPGDIDoubleBuffer(
+						LayerWidth, LayerHeight, PaintBox);
+			}
+			else if(DoubleBufferStyle == tdbsDirectDraw)
+			{
+				// create new DirectDraw double-buffering object
+				TVPEnsureDirectDrawObject();
+
+				DoubleBuffer =
+					new tTVPDirectDrawDoubleBuffer(
+						LayerWidth, LayerHeight, PaintBox);
+			}
+		}
+		TVP_REPORT_DD_ERROR
+	}
+
 	if(DoubleBufferStyle == tdbsNone)
 	{
 		if(TVPWaitVSync)
@@ -1405,7 +1536,7 @@ retry:
 			{
 				const tTVPRect &rect(rects.GetBound());
 				if(rect.left == 0 && rect.top == 0 &&
-					rect.right == PaintBox->Width && rect.bottom == PaintBox->Height)
+					rect.right == LayerWidth && rect.bottom == LayerHeight)
 				{
 					// when the entire area of the client is to be updated
 					IDirectDraw2 *object = TVPGetDirectDrawObjectNoAddRef();
@@ -1418,47 +1549,6 @@ retry:
 	{
 		try
 		{
-			if(!DoubleBuffer)
-			{
-				if(!TJSNativeInstance)
-				{
-					DoubleBufferStyle = tdbsNone;
-				}
-				else
-				{
-					if(!TJSNativeInstance->IsMainWindow()) DoubleBufferStyle = tdbsNone;
-						// double-buffering is only enabled in the main window
-				}
-
-				if(DoubleBufferStyle != tdbsNone && TVPDoubleBufferStyle == tdbsAuto)
-				{
-					// auto-detection enabled
-					DetectDoubleBufferingSpeed(); // do the benchmark
-				}
-
-
-				if(DoubleBufferStyle == tdbsNone)
-				{
-					goto retry; // ^  if DetectDoubleBufferingSpeed failed or so
-				}
-
-				if(DoubleBufferStyle == tdbsGDI)
-				{
-					// create new GDI double-buffering object
-					DoubleBuffer =
-						new tTVPGDIDoubleBuffer(
-							PaintBox->Width, PaintBox->Height, PaintBox);
-				}
-				else if(DoubleBufferStyle == tdbsDirectDraw)
-				{
-					// create new DirectDraw double-buffering object
-					DoubleBuffer =
-						new tTVPDirectDrawDoubleBuffer(
-							PaintBox->Width, PaintBox->Height, PaintBox);
-				}
-			}
-
-
 			DoubleBuffer->Start();
 			DoubleBuffer->AddRect(rects);
 		}
@@ -1683,12 +1773,21 @@ void __fastcall TTVPWindowForm::DrawLayerImage(const tTVPRect &rect,
 	}
 }
 //---------------------------------------------------------------------------
+void __fastcall TTVPWindowForm::InternalSetPaintBoxSize()
+{
+	tjs_int w = MulDiv(LayerWidth,  ZoomNumer, ZoomDenom);
+	tjs_int h = MulDiv(LayerHeight, ZoomNumer, ZoomDenom);
+	PaintBox->SetBounds(LayerLeft, LayerTop, w, h);
+}
+//---------------------------------------------------------------------------
 void __fastcall TTVPWindowForm::SetPaintBoxSize(tjs_int w, tjs_int h)
 {
 	ScrollBox->HorzScrollBar->Position = 0;
 	ScrollBox->VertScrollBar->Position = 0;
-	if(PaintBox->Width != w || PaintBox->Height != h) DeleteDoubleBuffer();
-	PaintBox->SetBounds(LayerLeft, LayerTop, w, h);
+	if(LayerWidth != w || LayerHeight != h) DeleteDoubleBuffer();
+	LayerWidth  = w;
+	LayerHeight = h;
+	InternalSetPaintBoxSize();
 }
 //---------------------------------------------------------------------------
 void __fastcall TTVPWindowForm::SetDefaultMouseCursor()
@@ -1732,8 +1831,8 @@ void __fastcall TTVPWindowForm::GetCursorPos(tjs_int &x, tjs_int &y)
 		POINT mp = {0, 0};
 		::GetCursorPos(&mp);
 
-		x = mp.x - origin.x;
-		y = mp.y - origin.y;
+		x = MulDiv(mp.x - origin.x, ZoomDenom, ZoomNumer);
+		y = MulDiv(mp.y - origin.y, ZoomDenom, ZoomNumer);
 	}
 	else
 	{
@@ -1748,7 +1847,10 @@ void __fastcall TTVPWindowForm::SetCursorPos(tjs_int x, tjs_int y)
 	if(PaintBox)
 	{
 		TPoint pt;
-		pt = PaintBox->ClientToScreen(TPoint(x, y));
+		pt = PaintBox->ClientToScreen(
+			TPoint(
+					MulDiv(x, ZoomNumer, ZoomDenom),
+					MulDiv(y, ZoomNumer, ZoomDenom)));
 		::SetCursorPos(pt.x, pt.y);
 
 		LastMouseScreenX = LastMouseScreenY = -1; // force to display mouse cursor
@@ -1802,10 +1904,30 @@ void __fastcall TTVPWindowForm::SetLayerPosition(tjs_int left, tjs_int top)
 		LayerTop = top;
 		if(PaintBox)
 		{
-			PaintBox->SetBounds(LayerLeft, LayerTop,
-				PaintBox->Width, PaintBox->Height);
+			InternalSetPaintBoxSize();
 		}
 	}
+}
+//---------------------------------------------------------------------------
+void __fastcall TTVPWindowForm::SetZoom(tjs_int numer, tjs_int denom)
+{
+	// set layer zooming factor;
+	// the zooming factor is passed in numerator/denoiminator style.
+	// we must find GCM to optimize numer/denium via Euclidean algorithm.
+	tjs_int a = numer;
+	tjs_int b = denom;
+	while(b)
+	{
+		tjs_int t = b;
+		b = a % b;
+		a = t;
+	}
+	ZoomNumer = numer / a;
+	ZoomDenom = denom / a;
+	if(TVPDoubleBufferStyle == tdbsAuto)
+		TVPSelectedDoubleBufferStyle = TVPDoubleBufferStyle; // due to recalc speed
+	DeleteDoubleBuffer();
+	InternalSetPaintBoxSize();
 }
 //---------------------------------------------------------------------------
 void __fastcall TTVPWindowForm::SetImeMode(tTVPImeMode mode)
@@ -1927,6 +2049,9 @@ bool TTVPWindowForm::ProcessTrappedKeyMessage(LRESULT &result, UINT msg, WPARAM 
 void __fastcall TTVPWindowForm::SetAttentionPoint(tjs_int left, tjs_int top,
 	TFont *font)
 {
+	left = MulDiv(left, ZoomNumer, ZoomDenom);
+	top = MulDiv(top, ZoomNumer, ZoomDenom);
+
 	if(ScrollBox->BorderStyle == Forms::bsSingle)
 	{
 		// sunken style
@@ -2215,8 +2340,8 @@ void __fastcall TTVPWindowForm::UpdateWindow(tTVPUpdateType)
 		tTVPRect r;
 		r.left = 0;
 		r.top = 0;
-		r.right = PaintBox->Width;
-		r.bottom = PaintBox->Height;
+		r.right = LayerWidth;
+		r.bottom = LayerHeight;
 		TJSNativeInstance->NotifyWindowExposureToLayer(r);
 
 		TVPDeliverWindowUpdateEvents();
@@ -2475,7 +2600,8 @@ void __fastcall TTVPWindowForm::CreatePaintBox(TWinControl *owner)
 	PaintBox->OnMouseMove = PaintBoxMouseMove;
 	PaintBox->OnMouseUp = PaintBoxMouseUp;
 
-	SetStretchBltMode(PaintBox->Canvas->Handle, COLORONCOLOR);
+	SetStretchBltMode(PaintBox->Canvas->Handle, HALFTONE);
+	SetBrushOrgEx(PaintBox->Canvas->Handle, 0, 0, NULL);
 	SetMapMode(PaintBox->Canvas->Handle, MM_TEXT);
 
 	AcquireImeControl();
@@ -2507,6 +2633,9 @@ void __fastcall TTVPWindowForm::PaintBoxDblClick(TObject *Sender)
 void __fastcall TTVPWindowForm::PaintBoxMouseMove(TObject *Sender,
 	  TShiftState Shift, int X, int Y)
 {
+	X = MulDiv(X, ZoomDenom, ZoomNumer);
+	Y = MulDiv(Y, ZoomDenom, ZoomNumer);
+
 	if(TJSNativeInstance)
 	{
 		tjs_uint32 shift = TVP_TShiftState_To_uint32(Shift);
@@ -2531,6 +2660,9 @@ void __fastcall TTVPWindowForm::PaintBoxMouseDown(TObject *Sender,
 {
 	if(!CanSendPopupHide()) DeliverPopupHide();
 
+	X = MulDiv(X, ZoomDenom, ZoomNumer);
+	Y = MulDiv(Y, ZoomDenom, ZoomNumer);
+
 	LastMouseDownX = X;
 	LastMouseDownY = Y;
 
@@ -2548,6 +2680,9 @@ void __fastcall TTVPWindowForm::PaintBoxMouseDown(TObject *Sender,
 void __fastcall TTVPWindowForm::PaintBoxMouseUp(TObject *Sender,
 	  TMouseButton Button, TShiftState Shift, int X, int Y)
 {
+	X = MulDiv(X, ZoomDenom, ZoomNumer);
+	Y = MulDiv(Y, ZoomDenom, ZoomNumer);
+
 	if(TJSNativeInstance)
 	{
 		tjs_uint32 shift = TVP_TShiftState_To_uint32(Shift);
@@ -2577,6 +2712,7 @@ void TTVPWindowForm::InternalKeyDown(WORD key, tjs_uint32 shift)
 				TPoint tp;
 				tp.x = p.x; tp.y = p.y;
 				tp = ScrollBox->ScreenToClient(tp);
+
 				if(tp.x >= 0 && tp.y >= 0 &&
 					tp.x < ScrollBox->Width && tp.y < ScrollBox->Height)
 				{
@@ -2804,10 +2940,12 @@ void __fastcall TTVPWindowForm::PaintBoxPaint(TObject *Sender)
 	{
 		tTVPRect r;
 		TRect tr = PaintBox->Canvas->ClipRect;
-		r.left = tr.left;
-		r.top = tr.top;
-		r.right = tr.right;
-		r.bottom = tr.bottom;
+
+		r.left = MulDiv(tr.left, ZoomDenom, ZoomNumer);
+		r.top = MulDiv(tr.top, ZoomDenom, ZoomNumer);
+		r.right = MulDiv(tr.right, ZoomDenom, ZoomNumer);
+		r.bottom = MulDiv(tr.bottom, ZoomDenom, ZoomNumer);
+
 		TJSNativeInstance->NotifyWindowExposureToLayer(r);
 
 //		TVPDeliverWindowUpdateEvents();
@@ -3200,13 +3338,17 @@ void __fastcall TTVPWindowForm::TickBeat()
 			tjs_int delta = DIWheelDevice->GetWheelDelta();
 			if(delta)
 			{
-				TPoint pt;
-				POINT ppt;
-				::GetCursorPos(&ppt);
-				pt.x = ppt.x, pt.y = ppt.y;
-				pt = PaintBox->ScreenToClient(pt);
+				TPoint origin;
+				origin = PaintBox->ClientToScreen(TPoint(0, 0));
+
+				POINT mp = {0, 0};
+				::GetCursorPos(&mp);
+
+				tjs_int x = MulDiv(mp.x - origin.x, ZoomDenom, ZoomNumer);
+				tjs_int y = MulDiv(mp.y - origin.y, ZoomDenom, ZoomNumer);
+
 				TVPPostInputEvent(new tTVPOnMouseWheelInputEvent(TJSNativeInstance,
-						shift, delta, pt.x, pt.y));
+						shift, delta, x, y));
 			}
 		}
 	}
