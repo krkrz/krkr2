@@ -75,6 +75,11 @@ const wchar_t* __stdcall tTVPDSLayerVideo::BuildGraph( HWND callbackwin, IStream
 		if( FAILED(hr = m_GraphBuilder.CoCreateInstance(CLSID_FilterGraph, NULL, CLSCTX_INPROC)) )
 			throw L"Failed to create FilterGraph.";
 
+#ifdef _DEBUG
+		// Register to ROT
+		AddToROT(m_dwROTReg);
+#endif
+
 		// Create the Buffer Renderer object
 		CComPtr<IBaseFilter>	pBRender;	// for buffer renderer filter
 		TBufferRenderer			*pCBR;
