@@ -380,6 +380,7 @@ TVPConstColorAlphaBlend_mmx_a:				; constant ratio constant color alpha blender
 
 		test		edi,	4
 		IF			nz
+			; align destination pointer to QWORD
 			movd		mm3,	[edi]			; src
 			movq		mm5,	mm3
 			pand		mm5,	mm6				; mm5 = dest opa
@@ -625,9 +626,30 @@ TVPConstColorAlphaBlend_a_mmx_a:	; constant ratio constant color alpha blender w
 		psrlw		mm6,	8
 		por			mm6,	mm1				; mm6 = 00 Sa 00 Si 00 Si 00 Si
 
-		sub			ebp,	byte 4			; 1*4
+		sub			ebp,	byte 8			; 2*4
 		cmp			edi,	ebp
 		jae			near .pfraction			; jump if edi >= ebp
+
+
+		test		edi,	4
+		IF			nz
+			; align destination pointer to QWORD
+			movd		mm1,		[edi]		; dest     (DaDiDiDi)
+			punpcklbw	mm1,		mm0			; mm1 = 00 Da 00 Di 00 Di 00 Di
+			movq		mm2,		mm1
+			pmullw		mm2,		mm7
+			psrlw		mm2,		8			; mm2 = 00 SaDa 00 SaDi 00 SaDi 00 SaDi
+			psubw		mm1,		mm2
+			paddw		mm1,		mm6
+			packuswb	mm1,		mm0
+			movd		[edi],		mm1			; store
+
+			add			edi,	byte 4
+
+			cmp			edi,	ebp
+			jae			.pfraction				; jump if edi >= ebp
+		ENDIF
+
 
 		loop_align
 .ploop:
@@ -648,15 +670,13 @@ TVPConstColorAlphaBlend_a_mmx_a:	; constant ratio constant color alpha blender w
 		cmp			edi,	ebp
 		paddw		mm1,		mm6			; 1
 		paddw		mm3,		mm6			; 2
-		packuswb	mm1,		mm0			; 1
-		packuswb	mm3,		mm0			; 2
-		movd		[edi-8],	mm1			; 1 store
-		movd		[edi+4-8],	mm3			; 2 store
+		packuswb	mm1,		mm3			; 1, 2
+		movq		[edi-8],	mm1			; 1 store
 
 		jb			near .ploop
 
 .pfraction:
-		add			ebp,	byte 4
+		add			ebp,	byte 8
 		cmp			edi,	ebp
 		jae			.pexit					; jump if edi >= ebp
 
