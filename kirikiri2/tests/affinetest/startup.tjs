@@ -30,9 +30,11 @@ class TestWindow extends Window
 		src.type = ltCoverRect;
 		src2.loadImages("../../../kag3/tests/fgimage/uni");
 		src2.setSizeToImageSize();
-		src2.type = ltTransparent;
+		src2.type = ltAddAlpha;
+		src2.face = dfAddAlpha;
+		src2.convertType(dfAlpha);
 
-		System.addContinuousHandler(process);
+//		System.addContinuousHandler(process);
 
 		visible = true;
 
@@ -57,7 +59,7 @@ class TestWindow extends Window
 
 
 		blt(7.3);
-
+		process6();
 	}
 
 	function finalize()
@@ -71,13 +73,17 @@ class TestWindow extends Window
 	{
 		var rad2 = rad + Math.PI / 2;
 		var rad3 = rad - Math.PI / 2;
-		fore.face = dfBoth;
+		var xz = 200; //Math.cos(rad*0.45)*500+530;
+		var yz = 200; //Math.sin(rad*0.56)*500+530;
+		fore.face = dfOpaque;
 		fore.holdAlpha = false;
-		fore.affineCopy(src, 0, 430, 2, 2, false,
-				Math.cos(rad) * 200 + 320,		Math.sin(rad) * 200 + 240,
-				Math.cos(rad2) * 200 + 320,		Math.sin(rad2) * 200 + 240,
-				Math.cos(rad3) * 200 + 320,		Math.sin(rad3) * 200 + 240,
-				/*stNearest */stFastLinear);
+		fore.operateAffine(src, 100, 200, 200, 200, false,
+				real(Math.cos(rad) * xz + 320),			real(Math.sin(rad) * yz + 240),
+				real(Math.cos(rad2) * xz + 320),		real(Math.sin(rad2) * yz + 240),
+				real(Math.cos(rad3) * xz + 320),		real(Math.sin(rad3) * yz + 240),
+				omOpaque,
+				254,
+				/*stNearest*/stFastLinear);
 	}
 
 	function process0()
@@ -93,6 +99,24 @@ class TestWindow extends Window
 				real(Math.cos(rad) * xz + 320),			real(Math.sin(rad) * yz + 240),
 				real(Math.cos(rad2) * xz + 320),		real(Math.sin(rad2) * yz + 240),
 				real(Math.cos(rad3) * xz + 320),		real(Math.sin(rad3) * yz + 240),
+				/*stNearest*/stFastLinear);
+	}
+
+	function process0o()
+	{
+		var rad = System.getTickCount() / 4000;
+		var rad2 = rad + Math.PI / 2;
+		var rad3 = rad - Math.PI / 2;
+		var xz = 200; //Math.cos(rad*0.45)*500+530;
+		var yz = 200; //Math.sin(rad*0.56)*500+530;
+		fore.face = dfOpaque;
+		fore.holdAlpha = false;
+		fore.operateAffine(src, 100, 200, 200, 200, false,
+				real(Math.cos(rad) * xz + 320),			real(Math.sin(rad) * yz + 240),
+				real(Math.cos(rad2) * xz + 320),		real(Math.sin(rad2) * yz + 240),
+				real(Math.cos(rad3) * xz + 320),		real(Math.sin(rad3) * yz + 240),
+				omOpaque,
+				8,
 				/*stNearest*/stFastLinear);
 	}
 
@@ -174,10 +198,27 @@ class TestWindow extends Window
 				12,, false);
 	}
 
+	function process6()
+	{
+		var rad = System.getTickCount() / 4000;
+		var rad2 = rad + Math.PI / 2;
+		var rad3 = rad - Math.PI / 2;
+		var xz = 800; //Math.cos(rad*0.45)*500+530;
+		var yz = 800; //Math.sin(rad*0.56)*500+530;
+		fore.face = dfOpaque;
+		fore.holdAlpha = false;
+		fore.operateAffine(src2, 0, 0, src2.imageWidth, src2.imageHeight, false,
+				real(Math.cos(rad) * xz + 320),			real(Math.sin(rad) * yz + 240),
+				real(Math.cos(rad2) * xz + 320),		real(Math.sin(rad2) * yz + 240),
+				real(Math.cos(rad3) * xz + 320),		real(Math.sin(rad3) * yz + 240),
+				omAddAlpha,
+				128,
+				/*stNearest*/stFastLinear);
+	}
 
 	function process()
 	{
-		process0();
+		process6();
 //		this['process' +intrandom(0, 4)]();
 	}
 }

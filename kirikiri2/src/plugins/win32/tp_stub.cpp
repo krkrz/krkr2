@@ -578,6 +578,9 @@ void * TVPImportFuncPtr514 = NULL;
 void * TVPImportFuncPtr515 = NULL;
 void * TVPImportFuncPtr516 = NULL;
 void * TVPImportFuncPtr517 = NULL;
+void * TVPImportFuncPtr518 = NULL;
+void * TVPImportFuncPtr519 = NULL;
+void * TVPImportFuncPtr520 = NULL;
 
 //---------------------------------------------------------------------------
 // tTJSDispatch
