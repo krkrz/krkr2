@@ -8,9 +8,6 @@
 //---------------------------------------------------------------------------
 // Complex Rectangle Class
 //---------------------------------------------------------------------------
-// 2004/01/08 W.Dee          new ComplexRect.cpp, performance improved version
-//                           of one.
-//---------------------------------------------------------------------------
 
 #ifndef ComplexRectUnitH
 #define ComplexRectUnitH
