@@ -454,14 +454,9 @@ public:
 	}
 
 	tjs_error TJS_INTF_METHOD
-	GetSuperClass(tjs_uint32 flag, iTJSDispatch2 **result,
-		iTJSDispatch2 *objthis)
+	Reserved1()
 	{
-		tjs_error hr =
-			Dispatch1->GetSuperClass(flag, result, OBJ1);
-		if(hr == TJS_E_MEMBERNOTFOUND && Dispatch1 != Dispatch2)
-			return Dispatch2->GetSuperClass(flag, result, OBJ2);
-		return hr;
+		return TJS_E_NOTIMPL;
 	}
 
 	tjs_error TJS_INTF_METHOD
@@ -517,6 +512,20 @@ public:
 	tjs_error TJS_INTF_METHOD
 	ClassInstanceInfo(tjs_uint32 flag, tjs_uint num, tTJSVariant *value)
 		{ return TJS_E_NOTIMPL;	}
+
+	tjs_error TJS_INTF_METHOD
+	Reserved2()
+	{
+		return TJS_E_NOTIMPL;
+	}
+
+
+	tjs_error TJS_INTF_METHOD
+	Reserved3()
+	{
+		return TJS_E_NOTIMPL;
+	}
+
 };
 #undef OBJ1
 #undef OBJ2
