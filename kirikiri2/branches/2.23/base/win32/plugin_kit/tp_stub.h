@@ -1500,7 +1500,9 @@ enum tTVPBlendOperationMode
 	omScreen = ltScreen,
 	omAlpha = ltTransparent,
 	omAddAlpha = ltAddAlpha,
-	omOpaque = ltCoverRect
+	omOpaque = ltCoverRect,
+
+	omAuto = 128   // operation mode is guessed from the source layer type
 };
 //---------------------------------------------------------------------------
 

@@ -1343,6 +1343,30 @@ void tTJSNI_BaseLayer::UpdateDrawFace()
 	}
 }
 //---------------------------------------------------------------------------
+tTVPBlendOperationMode tTJSNI_BaseLayer::GetOperationModeFromType() const
+{
+	// returns corresponding blend operation mode from layer type
+
+	switch(DisplayType)
+	{
+//	case ltBinder:
+	case ltOpaque:			return omOpaque;			 
+	case ltAlpha:			return omAlpha;				 
+	case ltAdditive:		return omAdditive;			 
+	case ltSubtractive:		return omSubtractive;		 
+	case ltMultiplicative:	return omMultiplicative;	 
+//	case ltEffect:
+//	case ltFilter:
+	case ltDodge:			return omDodge;				 
+	case ltDarken:			return omDarken;			 
+	case ltLighten:			return omLighten;			 
+	case ltScreen:			return omScreen;			 
+	case ltAddAlpha:		return omAddAlpha;			 
+	default:
+							return omOpaque;
+	}
+}
+//---------------------------------------------------------------------------
 void tTJSNI_BaseLayer::SetType(tTVPLayerType type)
 {
 	// set layer type to "type"
@@ -3807,9 +3831,11 @@ void tTJSNI_BaseLayer::OperateRect(tjs_int dx, tjs_int dy, tTJSNI_BaseLayer *src
 			tjs_int opacity, bool hda)
 {
 	// operate on rectangle ( add/sub/mul/div and others )
-
 	tTVPRect rect;
 	if(!ClipDestPointAndSrcRect(dx, dy, rect, srcrect)) return; // out of the clipping rect
+
+	// get correct blend mode if the mode is omAuto
+	if(mode == omAuto) mode = src->GetOperationModeFromType();
 
 	// convert tTVPBlendOperationMode to tTVPBBBltMethod
 	tTVPBBBltMethod met;
@@ -3939,6 +3965,9 @@ void tTJSNI_BaseLayer::OperateStretch(const tTVPRect &destrect,
 	if(ur.right < ur.left) std::swap(ur.right, ur.left);
 	if(ur.bottom < ur.top) std::swap(ur.bottom, ur.top);
 	if(!TVPIntersectRect(&ur, ur, ClipRect)) return; // out of the clipping rectangle
+
+	// get correct blend mode if the mode is omAuto
+	if(mode == omAuto) mode = src->GetOperationModeFromType();
 
 	// convert tTVPBlendOperationMode to tTVPBBBltMethod
 	tTVPBBBltMethod met;
@@ -4157,6 +4186,9 @@ void tTJSNI_BaseLayer::OperateAffine(const t2DAffineMatrix &matrix,
 	tTVPRect updaterect;
 	bool updated;
 
+	// get correct blend mode if the mode is omAuto
+	if(mode == omAuto) mode = src->GetOperationModeFromType();
+
 	// convert tTVPBlendOperationMode to tTVPBBBltMethod
 	tTVPBBBltMethod met;
 	if(!GetBltMethodFromOperationModeAndDrawFace(met, mode))
@@ -4187,6 +4219,9 @@ void tTJSNI_BaseLayer::OperateAffine(const tTVPPoint *points, tTJSNI_BaseLayer *
 	// affine operation
 	tTVPRect updaterect;
 	bool updated;
+
+	// get correct blend mode if the mode is omAuto
+	if(mode == omAuto) mode = src->GetOperationModeFromType();
 
 	// convert tTVPBlendOperationMode to tTVPBBBltMethod
 	tTVPBBBltMethod met;
@@ -7156,7 +7191,7 @@ TJS_END_NATIVE_METHOD_DECL(/*func. name*/blendRect)
 TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/operateRect)
 {
 	TJS_GET_NATIVE_INSTANCE(/*var. name*/_this, /*var. type*/tTJSNI_Layer);
-	if(numparams < 8) return TJS_E_BADPARAMCOUNT;
+	if(numparams < 7) return TJS_E_BADPARAMCOUNT;
 
 	tTJSNI_BaseLayer * src = NULL;
 	tTJSVariantClosure clo = param[2]->AsObjectClosureNoAddRef();
@@ -7172,7 +7207,11 @@ TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/operateRect)
 	rect.right += rect.left;
 	rect.bottom += rect.top;
 
-	tTVPBlendOperationMode mode = (tTVPBlendOperationMode)(tjs_int)(*param[7]);
+	tTVPBlendOperationMode mode;
+	if(numparams >= 8 && param[7]->Type() != tvtVoid)
+		mode = (tTVPBlendOperationMode)(tjs_int)(*param[7]);
+	else
+		mode = omAuto;
 
 	_this->OperateRect(*param[0], *param[1], src, rect, mode,
 		(numparams>=9 && param[8]->Type() != tvtVoid)?(tjs_int)*param[8]:255,
@@ -7302,9 +7341,9 @@ TJS_END_NATIVE_METHOD_DECL(/*func. name*/stretchBlend)
 //----------------------------------------------------------------------
 TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/operateStretch)
 {
-	// dx, dy, dw, dh, src, sx, sy, sw, sh, mode, opa=255, type=0
+	// dx, dy, dw, dh, src, sx, sy, sw, sh, mode=omAuto, opa=255, type=0
 	TJS_GET_NATIVE_INSTANCE(/*var. name*/_this, /*var. type*/tTJSNI_Layer);
-	if(numparams < 10) return TJS_E_BADPARAMCOUNT;
+	if(numparams < 9) return TJS_E_BADPARAMCOUNT;
 
 	tTJSNI_BaseLayer * src = NULL;
 	tTJSVariantClosure clo = param[4]->AsObjectClosureNoAddRef();
@@ -7324,7 +7363,11 @@ TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/operateStretch)
 	srcrect.right += srcrect.left;
 	srcrect.bottom += srcrect.top;
 
-	tTVPBlendOperationMode mode = (tTVPBlendOperationMode)(tjs_int)(*param[9]);
+	tTVPBlendOperationMode mode;
+	if(numparams >= 10 && param[9]->Type() != tvtVoid)
+		mode = (tTVPBlendOperationMode)(tjs_int)(*param[9]);
+	else
+		mode = omAuto;
 
 	tjs_int opa = 255;
 
@@ -7520,9 +7563,10 @@ TJS_END_NATIVE_METHOD_DECL(/*func. name*/affineBlend)
 //----------------------------------------------------------------------
 TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/operateAffine)
 {
-	// src, sx, sy, sw, sh, affine, x0/a, y0/b, x1/c, y1/d, x2/tx, y2/ty, mode, opa=255, type=0, hda=true
+	// src, sx, sy, sw, sh, affine, x0/a, y0/b, x1/c, y1/d, x2/tx, y2/ty,
+	// mode=omAuto, opa=255, type=0, hda=true
 	TJS_GET_NATIVE_INSTANCE(/*var. name*/_this, /*var. type*/tTJSNI_Layer);
-	if(numparams < 13) return TJS_E_BADPARAMCOUNT;
+	if(numparams < 12) return TJS_E_BADPARAMCOUNT;
 
 	tTJSNI_BaseLayer * src = NULL;
 	tTJSVariantClosure clo = param[0]->AsObjectClosureNoAddRef();
@@ -7549,7 +7593,12 @@ TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/operateAffine)
 	if(numparams >= 16 && param[15]->Type() != tvtVoid)
 		hda = param[15]->operator bool();
 
-	tTVPBlendOperationMode mode = (tTVPBlendOperationMode)(tjs_int)(*param[12]);
+	tTVPBlendOperationMode mode;
+	if(numparams >= 13 && param[12]->Type() != tvtVoid)
+		mode = (tTVPBlendOperationMode)(tjs_int)(*param[12]);
+	else
+		mode = omAuto;
+
 
 	if(param[5]->operator bool())
 	{
