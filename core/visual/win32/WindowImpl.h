@@ -233,11 +233,17 @@ public:
 	void SetUseMouseKey(bool b);
 	bool GetUseMouseKey() const;
 
+	void SetTrapKey(bool b);
+	bool GetTrapKey() const;
+
 	void SetMaskRegion(tjs_int threshold);
 	void RemoveMaskRegion();
 
 	void SetMouseCursorState(tTVPMouseCursorState mcs);
     tTVPMouseCursorState GetMouseCursorState() const;
+
+	void SetFocusable(bool b);
+	bool GetFocusable();
 
 protected:
 };
