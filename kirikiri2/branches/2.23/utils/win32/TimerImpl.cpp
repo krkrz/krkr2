@@ -8,12 +8,6 @@
 //---------------------------------------------------------------------------
 // Timer Object Implementation
 //---------------------------------------------------------------------------
-// 2004/ 6/17 W.Dee
-//     Fixed missing DefWindowProc in tTJSNI_Timer::WndProc
-// 2004/05/ 6 W.Dee          To set timer thread priority "normal" rather than
-//                           "highest" when -laxtimer option is specified.
-// 2004/04/30 W.Dee          The timer precision is improved.
-//---------------------------------------------------------------------------
 #include "tjsCommHead.h"
 #pragma hdrstop
 
