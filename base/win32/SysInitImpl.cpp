@@ -836,6 +836,7 @@ void TVPBeforeSystemInit()
 	char buf[MAX_PATH];
 	bool bufset = false;
 	bool nosel = false;
+	bool forcesel = false;
 
 	if(TVPGetCommandLine(TJS_W("-nosel")) || TVPGetCommandLine(TJS_W("-about")))
 	{
@@ -854,6 +855,23 @@ void TVPBeforeSystemInit()
 			bufset = true;
 			nosel = true;
 		}
+	}
+
+	// check "-sel" option, to force show folder selection window
+	if(TVPGetCommandLine(TJS_W("-sel")))
+	{
+		// sel option was set
+		if(bufset)
+		{
+			char path[MAX_PATH];
+			char *dum = 0;
+			GetFullPathName(buf, MAX_PATH-1, path, &dum);
+			strcpy(buf, path);
+			TVPProjectDirSelected = false;
+			bufset = true;
+		}
+		nosel = true;
+		forcesel = true;
 	}
 
 	// check "content-data" directory
@@ -931,7 +949,7 @@ void TVPBeforeSystemInit()
 		}
 	}
 
-	// ask where directory to execute is...
+	// decide a directory to execute or to show folder selection
 	if(!bufset)
 	{
 		strcpy(buf, ExtractFileDir(ParamStr(0)).c_str());
@@ -939,7 +957,7 @@ void TVPBeforeSystemInit()
 		if(buf[curdirlen-1] != '\\') buf[curdirlen] = '\\', buf[curdirlen+1] = 0;
 	}
 
-	if(!nosel)
+	if(!nosel || forcesel)
 	{
 		// load krdevui.dll ( TVP[KiRikiri] Development User Interface )
 		HMODULE krdevui = LoadLibrary("krdevui.dll");
