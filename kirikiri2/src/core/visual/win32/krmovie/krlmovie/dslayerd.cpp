@@ -210,11 +210,6 @@ void __stdcall tTVPDSLayerVideo::BuildGraph( HWND callbackwin, IStream *stream,
 //----------------------------------------------------------------------------
 void __stdcall tTVPDSLayerVideo::ReleaseAll()
 {
-#ifdef _DEBUG
-	if( m_RegisteredROT )
-		RemoveFromROT( m_dwROTReg );
-#endif
-
 	if( m_MediaControl.p != NULL )
 	{
 		m_MediaControl->Stop();
