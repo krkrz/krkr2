@@ -212,7 +212,7 @@ public:
 
 		tjs_error hr;
 		tTJSVariant *param[] = {
-			const_cast<tTJSVariant *>(&lhs), // not that doing cast to non-const pointer
+			const_cast<tTJSVariant *>(&lhs), // note that doing cast to non-const pointer
 			const_cast<tTJSVariant *>(&rhs) };
 
 		hr = Closure.FuncCall(0, NULL, NULL, &result, 2, param, NULL);
