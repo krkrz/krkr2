@@ -640,6 +640,7 @@ private:
 	bool ImageModified; // flag to know modification of layer image
 	tTVPRect ClipRect; // clipping rectangle
 public:
+	void ResetClip();
 	void SetClip(tjs_int left, tjs_int top, tjs_int width, tjs_int height);
 	tjs_int GetClipLeft() const { return ClipRect.left; }
 	void SetClipLeft(tjs_int left);

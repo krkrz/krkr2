@@ -1743,9 +1743,7 @@ void tTJSNI_BaseLayer::ChangeImageSize(tjs_uint width, tjs_uint height)
 	if(MainImage) MainImage->SetSizeWithFill(width, height, NeutralColor);
 	if(ProvinceImage) ProvinceImage->SetSizeWithFill(width, height, 0);
 
-	ClipRect.left = ClipRect.top = 0;
-	ClipRect.right = MainImage->GetWidth();
-	ClipRect.bottom = MainImage->GetHeight(); // cliprect is reset
+	ResetClip();  // cliprect is reset
 
 	ImageModified = true;
 
@@ -1763,9 +1761,7 @@ void tTJSNI_BaseLayer::AllocateImage()
 		MainImage->SetFont(Font); // set font
 	}
 
-	ClipRect.left = ClipRect.top = 0;
-	ClipRect.right = MainImage->GetWidth();
-	ClipRect.bottom = MainImage->GetHeight(); // cliprect is reset
+	ResetClip();  // cliprect is reset
 
 	if(ProvinceImage)
 	{
@@ -1817,9 +1813,7 @@ void tTJSNI_BaseLayer::AllocateDefaultImage()
 		MainImage->Assign(TVPTempBitmapHolder->Get());
 
 	FontChanged = true; // invalidate font assignment cache
-	ClipRect.left = ClipRect.top = 0;
-	ClipRect.right = MainImage->GetWidth();
-	ClipRect.bottom = MainImage->GetHeight(); // cliprect is reset
+	ResetClip();  // cliprect is reset
 
 	ImageModified = true;
 }
@@ -1862,9 +1856,7 @@ void tTJSNI_BaseLayer::AssignImages(tTJSNI_BaseLayer *src)
 
 	ImageModified = true;
 
-	ClipRect.left = ClipRect.top = 0;
-	ClipRect.right = MainImage->GetWidth();
-	ClipRect.bottom = MainImage->GetHeight(); // cliprect is reset
+	ResetClip();  // cliprect is reset
 
 	if(main_changed) Update(false); // update
 }
@@ -2122,9 +2114,7 @@ iTJSDispatch2 * tTJSNI_BaseLayer::LoadImages(const ttstr &name, tjs_uint32 color
 
 		ImageModified = true;
 
-		ClipRect.left = ClipRect.top = 0;
-		ClipRect.right = MainImage->GetWidth();
-		ClipRect.bottom = MainImage->GetHeight(); // cliprect is reset
+		ResetClip();  // cliprect is reset
 
 		Update(false);
 	}
@@ -3221,6 +3211,13 @@ void tTJSNI_BaseLayer::SetCached(bool b)
 
 //---------------------------------------------------------------------------
 // drawing function stuff
+//---------------------------------------------------------------------------
+void tTJSNI_BaseLayer::ResetClip()
+{
+	ClipRect.left = ClipRect.top = 0;
+	ClipRect.right = MainImage->GetWidth();
+	ClipRect.bottom = MainImage->GetHeight();
+}
 //---------------------------------------------------------------------------
 void tTJSNI_BaseLayer::SetClip(tjs_int left, tjs_int top, tjs_int width, tjs_int height)
 {
@@ -7117,13 +7114,24 @@ TJS_END_NATIVE_METHOD_DECL(/*func. name*/independProvinceImage)
 TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/setClip) // not setClipRect
 {
 	TJS_GET_NATIVE_INSTANCE(/*var. name*/_this, /*var. type*/tTJSNI_Layer);
-	if(numparams < 4) return TJS_E_BADPARAMCOUNT;
 
-	_this->SetClip(
-		(tjs_int)*param[0],
-		(tjs_int)*param[1],
-		(tjs_int)*param[2],
-		(tjs_int)*param[3]);
+	if(numparams == 0)
+	{
+		// reset clip rectangle
+		_this->ResetClip();
+
+	}
+	else
+	{
+
+		if(numparams < 4) return TJS_E_BADPARAMCOUNT;
+
+		_this->SetClip(
+			(tjs_int)*param[0],
+			(tjs_int)*param[1],
+			(tjs_int)*param[2],
+			(tjs_int)*param[3]);
+	}
 
 	return TJS_S_OK;
 }
