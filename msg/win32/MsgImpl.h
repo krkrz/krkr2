@@ -8,9 +8,6 @@
 //---------------------------------------------------------------------------
 // Definition of Messages and Message Related Utilities
 //---------------------------------------------------------------------------
-// 2006/7/2
-//     TVPCannnotLinkPluginWhilePluginLinking added.
-//---------------------------------------------------------------------------
 #ifndef MsgImplH
 #define MsgImplH
 
