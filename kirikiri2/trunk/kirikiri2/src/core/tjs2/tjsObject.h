@@ -277,10 +277,7 @@ public:
 		);
 
 	tjs_error TJS_INTF_METHOD
-	GetSuperClass(
-		tjs_uint32 flag,
-		iTJSDispatch2 **result,
-		iTJSDispatch2 *objthis
+	Reserved1(
 		)
 	{
 		return TJS_E_NOTIMPL;
@@ -338,7 +335,7 @@ public:
 	}
 
 	tjs_error TJS_INTF_METHOD
-	ClassInstanceInfo( 
+	ClassInstanceInfo(
 		tjs_uint32 flag,
 		tjs_uint num,
 		tTJSVariant *value
@@ -346,6 +343,21 @@ public:
 	{
 		return TJS_E_NOTIMPL;
 	}
+
+	tjs_error TJS_INTF_METHOD
+	Reserved2(
+		)
+	{
+		return TJS_E_NOTIMPL;
+	}
+
+	tjs_error TJS_INTF_METHOD
+	Reserved3(
+		)
+	{
+		return TJS_E_NOTIMPL;
+	}
+
 
 };
 //---------------------------------------------------------------------------

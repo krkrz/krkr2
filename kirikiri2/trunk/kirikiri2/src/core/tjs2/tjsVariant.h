@@ -378,14 +378,10 @@ public:
 			ObjThis?ObjThis:(objthis?objthis:Object));
 	}
 
+/*
 	tjs_error
-	GetSuperClass(tjs_uint32 flag, iTJSDispatch2 **result,
-		iTJSDispatch2 *objthis) const
-	{
-		if(!Object) TJSThrowNullAccess();
-		return Object->GetSuperClass(flag, result,
-			ObjThis?ObjThis:(objthis?objthis:Object));
-	}
+	Reserved1() { }
+*/
 
 	tjs_error
 	IsInstanceOf(tjs_uint32 flag, const tjs_char *membername, tjs_uint32 *hint,
@@ -422,6 +418,17 @@ public:
 		return Object->OperationByNum(flag, num, result, param,
 			ObjThis?ObjThis:(objthis?objthis:Object));
 	}
+
+/*
+	tjs_error
+	Reserved2() { }
+*/
+
+/*
+	tjs_error
+	Reserved3() { }
+*/
+
 };
 
 

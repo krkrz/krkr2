@@ -71,7 +71,11 @@ typedef double tjs_real;
 #define TJS_HOST_IS_BIG_ENDIAN 0
 #define TJS_HOST_IS_LITTLE_ENDIAN 1
 
-#define TJS_INTF_METHOD __stdcall
+#ifndef TJS_INTF_METHOD
+#define TJS_INTF_METHOD __cdecl
+	/* TJS_INTF_METHOD is "cdecl" (by default)
+		since TJS2 2.4.14 (kirikir2 2.25 beta 1) */
+#endif
 
 #define TJS_USERENTRY __cdecl
 

@@ -251,10 +251,7 @@ public:
 		) = 0;
 
 	virtual tjs_error TJS_INTF_METHOD
-	GetSuperClass( // get super class : useless !!!!
-		tjs_uint32 flag,			// calling flag
-		iTJSDispatch2 **result,		// result
-		iTJSDispatch2 *objthis		// object as "this"
+	Reserved1(
 		) = 0;
 
 	virtual tjs_error TJS_INTF_METHOD
@@ -306,6 +303,15 @@ public:
 		tjs_uint num,				// index number
 		tTJSVariant *value			// the name
 		) = 0;
+
+	virtual tjs_error TJS_INTF_METHOD
+	Reserved2(
+		) = 0;
+
+	virtual tjs_error TJS_INTF_METHOD
+	Reserved3(
+		) = 0;
+
 
 };
 //---------------------------------------------------------------------------
