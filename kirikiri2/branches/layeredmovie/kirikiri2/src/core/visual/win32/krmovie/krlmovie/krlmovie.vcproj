@@ -143,6 +143,9 @@
 				RelativePath="..\asyncrdr.cpp">
 			</File>
 			<File
+				RelativePath=".\BufferRenderer.cpp">
+			</File>
+			<File
 				RelativePath="..\DShowException.cpp">
 			</File>
 			<File
@@ -156,6 +159,9 @@
 			</File>
 			<File
 				RelativePath=".\IRendererBufferAccess_i.c">
+			</File>
+			<File
+				RelativePath=".\IRendererBufferVideo_i.c">
 			</File>
 			<File
 				RelativePath=".\krlmovie.cpp">
@@ -175,6 +181,9 @@
 				RelativePath="..\asyncrdr.h">
 			</File>
 			<File
+				RelativePath=".\BufferRenderer.h">
+			</File>
+			<File
 				RelativePath="..\CIStream.h">
 			</File>
 			<File
@@ -191,6 +200,9 @@
 			</File>
 			<File
 				RelativePath=".\IRendererBufferAccess.h">
+			</File>
+			<File
+				RelativePath=".\IRendererBufferVideo.h">
 			</File>
 		</Filter>
 		<Filter
