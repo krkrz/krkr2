@@ -78,7 +78,7 @@ class ButtonLayer extends KAGLayer
 
 			// 枠とキャプションを描画
 			// クリア
-			face = dfBoth;
+			face = dfAlpha;
 			colorRect(0, 0, width, height, 0, -255);
 			// 下地を塗る
 			if(Butt_color != clNone)

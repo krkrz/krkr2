@@ -426,7 +426,7 @@ class MessageLayer extends KAGLayer
 			if(frameGraphic == "")
 			{
 				// フレーム画像が指定されていない場合
-				face = dfBoth;
+				face = dfAuto;
 				fillRect(0, 0, imageWidth, imageHeight, (frameOpacity << 24) + frameColor);
 			}
 			else
@@ -437,7 +437,7 @@ class MessageLayer extends KAGLayer
 
 			face = dfProvince;
 			colorRect(0, 0, imageWidth, imageHeight, 0); // 領域もクリア
-			face = dfBoth;
+			face = dfAuto;
 		}
 
 		imageModified = false;
@@ -815,14 +815,14 @@ class MessageLayer extends KAGLayer
 		lineLayerLength = 0;
 		lineLayerPos = 4;
 		ll.visible = false;
-		ll.face = dfBoth;
+		ll.face = dfAuto;
 		var lliw = ll.imageWidth;
 		var llih = ll.imageHeight;
 		ll.fillRect(0, 0, lliw, llih, 0);
 			// 完全透明に
 		ll.face = dfProvince;
 		ll.fillRect(0, 0, lliw, llih, 0);
-		ll.face = dfBoth;
+		ll.face = dfAuto;
 			// 領域をクリア
 	}
 
@@ -835,7 +835,7 @@ class MessageLayer extends KAGLayer
 		var llox = lineLayerOriginX + getLineLayerLeftOffset();
 		var lloy = lineLayerOriginY + getLineLayerTopOffset();
 
-		face = dfBoth;
+		face = dfAuto;
 		pileRect(
 			llox,
 			lloy,
@@ -897,7 +897,7 @@ class MessageLayer extends KAGLayer
 				if(!forceresize)
 				{
 					var d = lineLayer.imageHeight - oldsize;
-					lineLayer.face = dfBoth;
+					lineLayer.face = dfAuto;
 					lineLayer.copyRect(0, d, lineLayer,
 						0, 0, lineLayer.imageWidth, oldsize);
 					lineLayer.colorRect(0, 0, lineLayer.imageWidth, d, 0, -255);
@@ -906,7 +906,7 @@ class MessageLayer extends KAGLayer
 					lineLayer.copyRect(0, d, lineLayer,
 						0, 0, lineLayer.imageWidth, oldsize);
 					lineLayer.colorRect(0, 0, lineLayer.imageWidth, d, 0);
-					lineLayer.face = dfBoth;
+					lineLayer.face = dfAuto;
 				}
 				var i;
 				for(i = 0; i<lineLayerLinks.count; i++)
@@ -935,7 +935,7 @@ class MessageLayer extends KAGLayer
 				// 内容移動
 				if(!forceresize)
 				{
-					lineLayer.face = dfBoth;
+					lineLayer.face = dfAuto;
 					// oldbaseline , lineLayerBase を使って
 					// 表示内容を移動
 					lineLayer.copyRect(
@@ -961,7 +961,7 @@ class MessageLayer extends KAGLayer
 						lineLayerBase - oldbase+oldsize, 0,
 						lineLayer.imageWidth - (lineLayerBase - oldbase + oldsize),
 						lineLayer.imageHeight, 0);
-					lineLayer.face = dfBoth;
+					lineLayer.face = dfAuto;
 				}
 				var i;
 				for(i = 0; i < lineLayerLinks.count; i++)
@@ -1179,7 +1179,7 @@ class MessageLayer extends KAGLayer
 					fontSize, cw, numLinks + 1);
 
 			// 領域画像も塗りつぶしてやる
-			ll.face = dfBoth;
+			ll.face = dfAuto;
 			linkFilled = true;
 		}
 
@@ -1205,7 +1205,7 @@ class MessageLayer extends KAGLayer
 		var lay = window.temporaryLayer;
 
 		lay.type = ltTransparent;
-		lay.face = dfBoth;
+		lay.face = dfAlpha;
 		lay.loadImages(storage, key); // 画像読み込み
 		var lw, lh;
 		lw = lay.imageWidth;
@@ -1256,7 +1256,7 @@ class MessageLayer extends KAGLayer
 
 		if(ischar && (shadow || edge) )
 		{
-			lay.face = dfMain;
+			lay.face = dfOpaque;
 				// 影/袋文字の色でメインを塗りつぶす
 
 			if(edge)
@@ -1279,7 +1279,7 @@ class MessageLayer extends KAGLayer
 
 		if(ischar)
 		{
-			lay.face = dfMain;
+			lay.face = dfOpaque;
 			lay.fillRect(0, 0, lw, lh, chColor);
 				// メインを文字色で塗りつぶす
 		}
@@ -1299,7 +1299,7 @@ class MessageLayer extends KAGLayer
 			else
 				lineLayer.fillRect(lineLayerPos, lineLayerBase - fontSize,
 					cw, fontSize, numLinks+1);
-			face = dfBoth;
+			face = dfAuto;
 			lineLayer.face = dfBoth;
 			// 領域画像も塗りつぶしてやる
 			linkFilled=true;
@@ -1384,8 +1384,8 @@ class MessageLayer extends KAGLayer
 			ll.face = dfProvince;
 			ll.fillRect(lineLayerBase - (fontSize>>1), lineLayerPos,
 				fontSize, cw, numLinks+1);
-			face = dfBoth;
-			ll.face = dfBoth;
+			face = dfAuto;
+			ll.face = dfAuto;
 			linkFilled=true;
 		}
 
@@ -1785,7 +1785,7 @@ class MessageLayer extends KAGLayer
 			highlightLayer.colorRect(0, 0,
 				highlightLayer.imageWidth,
 				highlightLayer.imageHeight, 0, 255);
-			highlightLayer.face = dfBoth;
+			highlightLayer.face = dfAuto;
 
 			var i;
 			for(i = 0; i < linkn.lineCount; i++)
