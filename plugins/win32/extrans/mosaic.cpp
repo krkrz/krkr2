@@ -12,7 +12,7 @@
 	'モザイク' トランジション
 	矩形モザイクによるトランジション
 	このトランジションは転送先がαを持っていると(要するにトランジションを行う
-	レイヤの type が ltCoverRect 以外の場合)、正常に透過情報を処理できないので
+	レイヤの type が ltOpaque 以外の場合)、正常に透過情報を処理できないので
 	注意
 */
 //---------------------------------------------------------------------------
@@ -413,7 +413,7 @@ public:
 	tjs_error TJS_INTF_METHOD StartTransition(
 			/*in*/iTVPSimpleOptionProvider *options, // option provider
 			/*in*/iTVPSimpleImageProvider *imagepro, // image provider
-			/*in*/bool hasalpha, // destination has alpha
+			/*in*/tTVPLayerType layertype, // destination layer type
 			/*in*/tjs_uint src1w, tjs_uint src1h, // source 1 size
 			/*in*/tjs_uint src2w, tjs_uint src2h, // source 2 size
 			/*out*/tTVPTransType *type, // transition type
