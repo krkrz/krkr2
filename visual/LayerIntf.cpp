@@ -4290,6 +4290,28 @@ void tTJSNI_BaseLayer::OperateAffine(const tTVPPointD *points, tTJSNI_BaseLayer 
 	}
 }
 //---------------------------------------------------------------------------
+void tTJSNI_BaseLayer::DoBoxBlur(tjs_int xblur, tjs_int yblur)
+{
+	// blur with box blur method
+	if(!MainImage) TVPThrowExceptionMessage(TVPNotDrawableLayerType);
+
+	bool updated;
+
+	if(DrawFace != dfAlpha)
+		updated = MainImage->DoBoxBlur(ClipRect, tTVPRect(-xblur, -yblur, xblur, yblur));
+	else
+		updated = MainImage->DoBoxBlurForAlpha(ClipRect, tTVPRect(-xblur, -yblur, xblur, yblur));
+
+	ImageModified = updated || ImageModified;
+
+	if(updated)
+	{
+		tTVPRect updaterect(ClipRect);
+		updaterect.add_offsets(ImageLeft, ImageTop);
+		Update(updaterect);
+	}
+}
+//---------------------------------------------------------------------------
 void tTJSNI_BaseLayer::AdjustGamma(const tTVPGLGammaAdjustData & data)
 {
 	// this is not affected by DrawFace
@@ -7717,6 +7739,25 @@ TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/operateAffine)
 	return TJS_S_OK;
 }
 TJS_END_NATIVE_METHOD_DECL(/*func. name*/operateAffine)
+//----------------------------------------------------------------------
+TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/doBoxBlur)
+{
+	TJS_GET_NATIVE_INSTANCE(/*var. name*/_this, /*var. type*/tTJSNI_Layer);
+
+	tjs_int xblur = 1;
+	tjs_int yblur = 1;
+
+	if(numparams >= 1 && param[0]->Type() != tvtVoid)
+		xblur = (tjs_int)*param[0];
+	
+	if(numparams >= 2 && param[1]->Type() != tvtVoid)
+		yblur = (tjs_int)*param[1];
+	
+	_this->DoBoxBlur(xblur, yblur);
+
+	return TJS_S_OK;
+}
+TJS_END_NATIVE_METHOD_DECL(/*func. name*/doBoxBlur)
 //----------------------------------------------------------------------
 TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/adjustGamma)
 {
