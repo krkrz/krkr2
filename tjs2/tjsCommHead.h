@@ -17,16 +17,18 @@
 #define tjsCommHeadH
 
 #ifdef TJS_SUPPORT_VCL
-	#include <vcl.h>
+#include <vcl.h>
 #endif
 
 #ifdef __WIN32__
-	#include <windows.h>
+#include <windows.h>
 #endif
 
 
 #include <string.h>
+#ifndef __USE_UNIX98
 #define __USE_UNIX98
+#endif
 #include <wchar.h>
 #include <stdlib.h>
 #include <stdio.h>

@@ -9,8 +9,6 @@
 // "Plugins" class implementation / Service for plug-ins
 //---------------------------------------------------------------------------
 #include "tjsCommHead.h"
-#pragma hdrstop
-
 
 #include <algorithm>
 #include <functional>

@@ -9,7 +9,6 @@
 // Universal Storage System
 //---------------------------------------------------------------------------
 #include "tjsCommHead.h"
-#pragma hdrstop
 
 #include <stdexcept>
 #include <memory>

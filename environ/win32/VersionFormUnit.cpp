@@ -9,7 +9,6 @@
 // Version information dialog box
 //---------------------------------------------------------------------------
 #include "tjsCommHead.h"
-#pragma hdrstop
 
 #include "MsgIntf.h"
 #include "VersionFormUnit.h"

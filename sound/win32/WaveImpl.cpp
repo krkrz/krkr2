@@ -9,7 +9,6 @@
 // Wave Player implementation
 //---------------------------------------------------------------------------
 #include "tjsCommHead.h"
-#pragma hdrstop
 
 #include <mmsystem.h>
 #include <mmreg.h>

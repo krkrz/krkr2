@@ -9,7 +9,6 @@
 // DirectInput management
 //---------------------------------------------------------------------------
 #include "tjsCommHead.h"
-#pragma hdrstop
 
 
 #include "WindowFormUnit.h"

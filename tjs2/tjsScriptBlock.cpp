@@ -9,7 +9,6 @@
 // Script Block Management
 //---------------------------------------------------------------------------
 #include "tjsCommHead.h"
-#pragma hdrstop
 
 #include "tjsScriptBlock.h"
 #include "tjsInterCodeGen.h"

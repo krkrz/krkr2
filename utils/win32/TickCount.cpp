@@ -9,7 +9,6 @@
 // safe 64bit System Tick Count
 //---------------------------------------------------------------------------
 #include "tjsCommHead.h"
-#pragma hdrstop
 
 #include <mmsystem.h>
 #include <syncobjs.hpp>

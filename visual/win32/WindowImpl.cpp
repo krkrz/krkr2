@@ -9,7 +9,6 @@
 // "Window" TJS Class implementation
 //---------------------------------------------------------------------------
 #include "tjsCommHead.h"
-#pragma hdrstop
 
 #define DIRECTDRAW_VERSION 0x0300
 #include <ddraw.h>

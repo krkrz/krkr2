@@ -9,9 +9,6 @@
 // Script Event Handling and Dispatching
 //---------------------------------------------------------------------------
 #include "tjsCommHead.h"
-#pragma hdrstop
-
-
 
 #include "EventImpl.h"
 #include "MainFormUnit.h"

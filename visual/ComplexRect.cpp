@@ -8,6 +8,8 @@
 //---------------------------------------------------------------------------
 // Complex Rectangle Class
 //---------------------------------------------------------------------------
+#include "tjsCommHead.h"
+
 #include "ComplexRect.h"
 #include <vector>
 #include <algorithm>

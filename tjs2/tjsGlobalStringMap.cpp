@@ -9,7 +9,6 @@
 // TJS Global String Map
 //---------------------------------------------------------------------------
 #include "tjsCommHead.h"
-#pragma hdrstop
 
 #include "tjsGlobalStringMap.h"
 #include "tjsHashSearch.h"

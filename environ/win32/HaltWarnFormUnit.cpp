@@ -9,8 +9,6 @@
 // Force Suicide User Confirmation Form
 //---------------------------------------------------------------------------
 #include "tjsCommHead.h"
-#pragma hdrstop
-
 
 #include "HaltWarnFormUnit.h"
 #include "MainFormUnit.h"

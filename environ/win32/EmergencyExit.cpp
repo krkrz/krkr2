@@ -9,7 +9,6 @@
 // Emergency Exit Hotkey Handler
 //---------------------------------------------------------------------------
 #include "tjsCommHead.h"
-#pragma hdrstop
 
 #include "ThreadIntf.h"
 

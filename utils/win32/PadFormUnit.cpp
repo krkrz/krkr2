@@ -9,7 +9,6 @@
 // Context Debugger Pad
 //---------------------------------------------------------------------------
 #include "tjsCommHead.h"
-#pragma hdrstop
 
 #include "PadFormUnit.h"
 #include "MainFormUnit.h"

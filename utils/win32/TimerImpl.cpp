@@ -9,7 +9,6 @@
 // Timer Object Implementation
 //---------------------------------------------------------------------------
 #include "tjsCommHead.h"
-#pragma hdrstop
 
 #include <syncobjs.hpp>
 #include <mmsystem.h>

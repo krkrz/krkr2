@@ -9,7 +9,6 @@
 // System Initialization and Uninitialization
 //---------------------------------------------------------------------------
 #include "tjsCommHead.h"
-#pragma hdrstop
 
 #include <dir.h>
 #include <FileCtrl.hpp>
