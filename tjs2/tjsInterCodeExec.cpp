@@ -8,9 +8,6 @@
 //---------------------------------------------------------------------------
 // Intermediate Code Execution
 //---------------------------------------------------------------------------
-// 2004/ 5/13 W.Dee
-//   Added code for context-dependent post-positioned ! operator behavior.
-//---------------------------------------------------------------------------
 
 #include "tjsCommHead.h"
 #pragma hdrstop
