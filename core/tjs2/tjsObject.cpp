@@ -16,6 +16,7 @@
 #include "tjsNative.h"
 #include "tjsHashSearch.h"
 #include "tjsGlobalStringMap.h"
+#include "tjsDebug.h"
 
 
 namespace TJS
@@ -342,6 +343,7 @@ void tTJSCustomObject::tTJSSymbolData::ReShare()
 //---------------------------------------------------------------------------
 tTJSCustomObject::tTJSCustomObject(tjs_int hashbits)
 {
+	if(TJSObjectHashMapEnabled()) TJSAddObjectHashRecord(this);
 	Count = 0;
 	RebuildHashMagic = TJSGlobalRebuildHashMagic;
 	if(hashbits > TJSObjectHashBitsLimit) hashbits = TJSObjectHashBitsLimit;
@@ -366,6 +368,7 @@ tTJSCustomObject::~tTJSCustomObject()
 		}
 	}
 	delete [] Symbols;
+	if(TJSObjectHashMapEnabled()) TJSRemoveObjectHashRecord(this);
 }
 //---------------------------------------------------------------------------
 void tTJSCustomObject::_Finalize(void)
@@ -411,6 +414,8 @@ void tTJSCustomObject::Finalize(void)
 //---------------------------------------------------------------------------
 void tTJSCustomObject::BeforeDestruction(void)
 {
+	if(TJSObjectHashMapEnabled())
+		TJSSetObjectHashFlag(this, TJS_OHMF_DELETING, TJS_OHMF_SET);
 	_Finalize();
 }
 //---------------------------------------------------------------------------
@@ -1855,7 +1860,13 @@ tTJSCustomObject::ClassInstanceInfo(tjs_uint32 flag, tjs_uint num, tTJSVariant *
 	if(flag == TJS_CII_ADD)
 	{
 		// add value
-		ClassNames.push_back(value->AsStringNoAddRef());
+		ttstr name = value->AsStringNoAddRef();
+		if(TJSObjectHashMapEnabled() && ClassNames.size() == 0)
+			TJSObjectHashSetType(this, TJS_W("instance of class ") + name);
+				// First class name is used for the object classname
+				// because the order of the class name
+				// registration is from descendant to ancestor.
+		ClassNames.push_back(name);
 		return TJS_S_OK;
 	}
 

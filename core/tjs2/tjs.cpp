@@ -65,6 +65,10 @@ bool TJSEnableDebugMode = false;
 	// Enable TJS2 Debugging support. Enabling this may make the
 	// program somewhat slower and using more memory.
 	// Do not use this mode unless you want to debug the program.
+bool TJSWarnOnExecutionOnDeletingObject = false;
+	// Output warning against running code on context of
+	// deleting-in-progress object. This is available only the Debug mode is
+	// enabled.
 //---------------------------------------------------------------------------
 
 
@@ -107,6 +111,7 @@ tTJS::tTJS()
 	// Create debugging-related objects
 	if(TJSEnableDebugMode)
 	{
+		TJSAddRefObjectHashMap();
 		TJSAddRefStackTracer();
 	}
 
@@ -206,6 +211,7 @@ void tTJS::Cleanup()
 	if(TJSEnableDebugMode)
 	{
 		TJSReleaseStackTracer();
+		TJSReleaseObjectHashMap();
 	}
 }
 //---------------------------------------------------------------------------
@@ -230,8 +236,8 @@ void tTJS::Shutdown()
 {
 	TJSVariantArrayStackCompactNow();
 	Global->Clear();
-	delete Cache;
-	Cache = NULL;
+	if(Global) Global->Release(), Global = NULL;
+	if(Cache) delete Cache, Cache = NULL;
 }
 //---------------------------------------------------------------------------
 iTJSDispatch2 * tTJS::GetGlobal()
