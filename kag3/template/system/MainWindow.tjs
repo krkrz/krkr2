@@ -5239,6 +5239,62 @@ class KAGWindow extends Window
 		return waitMovieStop(elm);
 	} incontextof this,
 
+// Start: Add: T.Imoto
+	pausevideo : function(elm)
+	{
+		movie.pause();
+		return 0;
+	} incontextof this,
+
+	preparevideo : function(elm)
+	{
+		movie.prepare();
+		return 0;
+	} incontextof this,
+
+	rewindvideo : function(elm)
+	{
+		movie.rewind();
+		return 0;
+	} incontextof this,
+
+	videolayer : function(elm)
+	{
+		movie.setVideoLayer(getLayerFromElm(elm),elm);
+		return 0;
+	} incontextof this,
+
+	clearvideolayer : function(elm)
+	{
+		movie.setVideoLayer(null,elm);
+		return 0;
+	} incontextof this,
+
+	videosegloop : function(elm)
+	{
+		movie.setSegmentLoop(elm);
+		return 0;
+	} incontextof this,
+
+	cancelvideosegloop : function(elm)
+	{
+		movie.cancelSegmentLoop();
+		return 0;
+	} incontextof this,
+
+	videoevent : function(elm)
+	{
+		movie.setPeriodEvent(elm);
+		return 0;
+	} incontextof this,
+
+	cancelvideoevent : function(elm)
+	{
+		movie.cancelPeriodEvent();
+		return 0;
+	} incontextof this,
+// End: Add: T.Imoto
+
 	//--------------------------------------- タグハンドラ群(変数・TJS 操作) --
 
 	eval : function(elm)
