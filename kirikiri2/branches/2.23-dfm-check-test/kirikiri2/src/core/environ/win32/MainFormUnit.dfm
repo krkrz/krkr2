@@ -6,7 +6,7 @@ object TVPMainForm: TTVPMainForm
   VertScrollBar.Visible = False
   AutoSize = True
   BorderStyle = bsToolWindow
-  Caption = #21513#37324#21513#37324' Control'
+  Caption =  dsfag#21513#37324#21513#37324' Control'
   ClientHeight = 22
   ClientWidth = 131
   Color = clBtnFace
