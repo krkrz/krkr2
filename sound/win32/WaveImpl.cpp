@@ -8,9 +8,6 @@
 //---------------------------------------------------------------------------
 // Wave Player implementation
 //---------------------------------------------------------------------------
-// 2003/11/13 W.Dee          Added code for retrieving DirectSound driver/device
-//                           information display.
-//---------------------------------------------------------------------------
 #include "tjsCommHead.h"
 #pragma hdrstop
 
