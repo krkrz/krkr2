@@ -2162,6 +2162,7 @@ extern void * TVPImportFuncPtrce1dcb05e5e7c4cafbc4ed37f63b256e;
 extern void * TVPImportFuncPtr841ce4492b37321eea0c1b500de9b352;
 extern void * TVPImportFuncPtr61785de870894968cd9d95e17e88eafc;
 extern void * TVPImportFuncPtrad3236e727398311c3b8e1ddd5f4b293;
+extern void * TVPImportFuncPtr80e0b7be488545ff9b8bc52c9ab5fba5;
 extern void * TVPImportFuncPtr4eaa3e4efb319707db6ef81db1c6f147;
 extern void * TVPImportFuncPtr693a0152f098caee7fc77f545dd3e954;
 extern void * TVPImportFuncPtr42840710f5fba9bb32b95290b1796a55;
@@ -3689,6 +3690,17 @@ public:
 		}
 		typedef iTJSDispatch2 *(__stdcall * __functype)(const tTJSVariant *);
 		return ((__functype)(TVPImportFuncPtrad3236e727398311c3b8e1ddd5f4b293))(this);
+	}
+
+	iTJSDispatch2 * AsObjectThisNoAddRef() const
+	{
+		if(!TVPImportFuncPtr80e0b7be488545ff9b8bc52c9ab5fba5)
+		{
+			static char funcname[] = "iTJSDispatch2 * tTJSVariant::AsObjectThisNoAddRef() const";
+			TVPImportFuncPtr80e0b7be488545ff9b8bc52c9ab5fba5 = TVPGetImportFuncPtr(funcname);
+		}
+		typedef iTJSDispatch2 *(__stdcall * __functype)(const tTJSVariant *);
+		return ((__functype)(TVPImportFuncPtr80e0b7be488545ff9b8bc52c9ab5fba5))(this);
 	}
 
 	tTJSVariantClosure & AsObjectClosureNoAddRef() const
