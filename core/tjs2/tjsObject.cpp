@@ -1079,7 +1079,7 @@ void tTJSCustomObject::InternalEnumMembers(tjs_uint32 flags,
 			d = nextd;
 		}
 
-		if(lv1->SymFlags & TJS_SYMBOL_USING && !(lv1->SymFlags & TJS_SYMBOL_HIDDEN))
+		if(lv1->SymFlags & TJS_SYMBOL_USING)
 		{
 			if(!CallEnumCallbackForData(flags, params, *callback, objthis, lv1)) return ;
 		}
