@@ -464,14 +464,11 @@ const wchar_t* __stdcall tTVPDSMovie::GetTotalTime( __int64 *t )
 	return NULL;
 }
 //----------------------------------------------------------------------------
-//! @brief	  	何もしない。
-//! @return		Always NULL.
+//! @brief	  	ビデオの画像サイズを取得する
+//! @param		width : 幅
+//! @param		height : 高さ
+//! @return		Always NULL
 //----------------------------------------------------------------------------
-//const wchar_t* __stdcall tTVPDSMovie::Update( class tTJSNI_BaseLayer *l1, class tTJSNI_BaseLayer *l2 )
-//{
-//	return NULL;
-//}
-
 const wchar_t* __stdcall tTVPDSMovie::GetVideoSize( long *width, long *height )
 {
 	if( width != NULL )
@@ -579,52 +576,145 @@ void __stdcall tTVPDSMovie::RemoveFromROT( DWORD ROTreg )
 //----------------------------------------------------------------------------
 //! @brief	  	1フレームの平均表示時間を取得します
 //! @param		pAvgTimePerFrame : 1フレームの平均表示時間
-//! @return		エラー文字列
+//! @return		エラーコード
 //----------------------------------------------------------------------------
 HRESULT __stdcall tTVPDSMovie::GetAvgTimePerFrame( REFTIME *pAvgTimePerFrame )
 {
 	return Video()->get_AvgTimePerFrame( pAvgTimePerFrame );
 }
-
-#if 0
-
-	buildMPEGGraph( IPin *pRdrPinIn, IPin *pSrcPinOut, bool useSound )
+const wchar_t* tTVPDSMovie::ParseVideoType( CMediaType &mt, const wchar_t *type )
 {
-	{	// Connect to MPEG 1 splitter filter
-		CComPtr<IBaseFilter>	pDDSRenderer;	// for sound renderer filter
-		if( FAILED(hr = pDDSRenderer.CoCreateInstance(CLSID_DSoundRender, NULL, CLSCTX_INPROC_SERVER)) )
-			 throw L"Failed to create sound render filter object.";
-		if( FAILED(hr = GraphBuilder()->AddFilter(pDDSRenderer, L"Sound Renderer")) )
-			throw L"Failed to call IFilterGraph::AddFilter.";
+	// note: audio-less mpeg stream must have an extension of
+	// ".mpv" .
+	if      (wcsicmp(type, L".mpg") == 0)
+		mt.subtype = MEDIASUBTYPE_MPEG1System;
+	else if (wcsicmp(type, L".mpeg") == 0)
+		mt.subtype = MEDIASUBTYPE_MPEG1System;
+	else if (wcsicmp(type, L".mpv") == 0) 
+		mt.subtype = MEDIASUBTYPE_MPEG1Video;
+	else if (wcsicmp(type, L".dat") == 0)
+		mt.subtype = MEDIASUBTYPE_MPEG1VideoCD;
+	else if (wcsicmp(type, L".avi") == 0)
+		mt.subtype = MEDIASUBTYPE_Avi;
+	else if (wcsicmp(type, L".mov") == 0)
+		mt.subtype = MEDIASUBTYPE_QTMovie;
+	else
+		return L"Unknown video format extension."; // unknown format
+	return NULL;
+}
+//----------------------------------------------------------------------------
+//! @brief	  	MPEG1 用のグラフを手動で構築する
+//! @param		pRdr : グラフに参加しているレンダーフィルタ
+//! @param		pSrc : グラフに参加しているソースフィルタ
+//! @param		useSound : サウンドが使用されるかどうか
+//! @return		エラー文字列
+//----------------------------------------------------------------------------
+const wchar_t* tTVPDSMovie::BuildMPEGGraph( IBaseFilter *pRdr, IBaseFilter *pSrc, bool useSound )
+{
+	HRESULT	hr;
+	// Connect to MPEG 1 splitter filter
+	CComPtr<IBaseFilter>	pMPEG1Splitter;	// for MPEG 1 splitter filter
+	if( FAILED(hr = pMPEG1Splitter.CoCreateInstance(CLSID_MPEG1Splitter, NULL, CLSCTX_INPROC_SERVER)) )
+		return L"Failed to create MPEG 1 splitter filter object.";
+	if( FAILED(hr = GraphBuilder()->AddFilter(pMPEG1Splitter, L"MPEG-I Stream Splitter")) )
+		return L"Failed to call IFilterGraph::AddFilter.";
+	if( FAILED(hr = ConnectFilters( pSrc, pMPEG1Splitter )) )
+		return L"Failed to call ConnectFilters.";
 
-		CComPtr<IBaseFilter>	pSpliter;
-		PIN_INFO	pinInfo;
-		if( FAILED(hr = pSpliterPinIn->QueryPinInfo( &pinInfo )) )
-			throw L"Failed to call IPin::QueryPinInfo.";
-		pSpliter = pinInfo.pFilter;
-		pinInfo.pFilter->Release();
-		if( FAILED(hr = ConnectFilters( pSpliter, pDDSRenderer ) ) )
-			throw L"Failed to call ConnectFilters.";
-	}
-	CLSID_MPEG1Splitter
-	CLSID_CMPEGVideoCodec
-	CLSID_CMpegAudioCodec
+	// Connect to MPEG 1 video codec filter
+	CComPtr<IBaseFilter>	pMPEGVideoCodec;	// for MPEG 1 video codec filter
+	if( FAILED(hr = pMPEGVideoCodec.CoCreateInstance(CLSID_CMpegVideoCodec, NULL, CLSCTX_INPROC_SERVER)) )
+		return L"Failed to create MPEG 1 video codec filter object.";
+	if( FAILED(hr = GraphBuilder()->AddFilter(pMPEGVideoCodec, L"MPEG Video Decoder")) )
+		return L"Failed to call IFilterGraph::AddFilter.";
+	if( FAILED(hr = ConnectFilters( pMPEG1Splitter, pMPEGVideoCodec )) )
+		return L"Failed to call ConnectFilters.";
 
+	// Connect to render filter
+	if( FAILED(hr = ConnectFilters( pMPEGVideoCodec, pRdr )) )
+		return L"Failed to call ConnectFilters.";
+
+	if( useSound )
 	{	// Connect to DDS render filter
 		CComPtr<IBaseFilter>	pDDSRenderer;	// for sound renderer filter
 		if( FAILED(hr = pDDSRenderer.CoCreateInstance(CLSID_DSoundRender, NULL, CLSCTX_INPROC_SERVER)) )
-			 throw L"Failed to create sound render filter object.";
+			return L"Failed to create sound render filter object.";
 		if( FAILED(hr = GraphBuilder()->AddFilter(pDDSRenderer, L"Sound Renderer")) )
-			throw L"Failed to call IFilterGraph::AddFilter.";
-
-		CComPtr<IBaseFilter>	pSpliter;
-		PIN_INFO	pinInfo;
-		if( FAILED(hr = pSpliterPinIn->QueryPinInfo( &pinInfo )) )
-			throw L"Failed to call IPin::QueryPinInfo.";
-		pSpliter = pinInfo.pFilter;
-		pinInfo.pFilter->Release();
-		if( FAILED(hr = ConnectFilters( pSpliter, pDDSRenderer ) ) )
-			throw L"Failed to call ConnectFilters.";
+			return L"Failed to call IFilterGraph::AddFilter.";
+		if( FAILED(hr = ConnectFilters( pMPEG1Splitter, pDDSRenderer ) ) )
+			return L"Failed to call ConnectFilters.";
 	}
+	return NULL;
 }
-#endif
+//----------------------------------------------------------------------------
+//! @brief	  	2つのフィルターを接続する
+//! @param		pFilterUpstream : アップストリームフィルタ
+//! @param		pFilterDownstream : ダウンストリームフィルタ
+//! @return		エラーコード
+//----------------------------------------------------------------------------
+HRESULT tTVPDSMovie::ConnectFilters( IBaseFilter* pFilterUpstream, IBaseFilter* pFilterDownstream )
+{
+	HRESULT			hr = E_FAIL;
+	CComPtr<IPin>	pIPinUpstream;
+	PIN_INFO		PinInfoUpstream;
+	PIN_INFO		PinInfoDownstream;
+
+	// validate passed in filters
+	ASSERT(pFilterUpstream);
+	ASSERT(pFilterDownstream);
+
+	// grab upstream filter's enumerator
+	CComPtr<IEnumPins> pIEnumPinsUpstream;
+	if( FAILED(hr = pFilterUpstream->EnumPins(&pIEnumPinsUpstream)) )
+		throw L"Failed to call IBaseFilter::EnumPins.";
+
+	// iterate through upstream filter's pins
+	while( pIEnumPinsUpstream->Next (1, &pIPinUpstream, 0) == S_OK )
+	{
+		if( FAILED(hr = pIPinUpstream->QueryPinInfo(&PinInfoUpstream)) )
+			throw L"Failed to call IPin::QueryPinInfo.";
+
+		CComPtr<IPin>	 pPinDown;
+		pIPinUpstream->ConnectedTo( &pPinDown );
+
+		// bail if pins are connected
+		// otherwise check direction and connect
+		if( (PINDIR_OUTPUT == PinInfoUpstream.dir) && (pPinDown == NULL) )
+		{
+			// grab downstream filter's enumerator
+			CComPtr<IEnumPins>	pIEnumPinsDownstream;
+			hr = pFilterDownstream->EnumPins (&pIEnumPinsDownstream);
+
+			// iterate through downstream filter's pins
+			CComPtr<IPin>	pIPinDownstream;
+			while( pIEnumPinsDownstream->Next (1, &pIPinDownstream, 0) == S_OK )
+			{
+				// make sure it is an input pin
+				if( SUCCEEDED(hr = pIPinDownstream->QueryPinInfo(&PinInfoDownstream)) )
+				{
+					CComPtr<IPin>	 pPinUp;
+					pIPinDownstream->ConnectedTo( &pPinUp );
+					if( (PINDIR_INPUT == PinInfoDownstream.dir) && (pPinUp == NULL) )
+					{
+						if( SUCCEEDED(m_GraphBuilder->Connect( pIPinUpstream, pIPinDownstream)) )
+						{
+							PinInfoDownstream.pFilter->Release();
+							PinInfoUpstream.pFilter->Release();
+							return S_OK;
+						}
+					}
+				}
+
+				PinInfoDownstream.pFilter->Release();
+				pIPinDownstream = NULL;
+			} // while next downstream filter pin
+
+			//We are now back into the upstream pin loop
+		} // if output pin
+
+		pIPinUpstream = NULL;
+		PinInfoUpstream.pFilter->Release();
+	} // while next upstream filter pin
+
+	return E_FAIL;
+}

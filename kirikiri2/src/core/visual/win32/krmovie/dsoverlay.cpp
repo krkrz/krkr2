@@ -21,13 +21,16 @@
 #include "DShowException.h"
 #endif
 
+//----------------------------------------------------------------------------
+//! @brief	  	何もしない
+//----------------------------------------------------------------------------
 tTVPDSVideoOverlay::tTVPDSVideoOverlay()
-{
-}
+{}
+//----------------------------------------------------------------------------
+//! @brief	  	何もしない
+//----------------------------------------------------------------------------
 tTVPDSVideoOverlay::~tTVPDSVideoOverlay()
-{
-}
-
+{}
 //----------------------------------------------------------------------------
 //! @brief	  	フィルタグラフの構築
 //! @param 		callbackwin : メッセージを送信するウィンドウ
@@ -49,24 +52,8 @@ const wchar_t* __stdcall tTVPDSVideoOverlay::BuildGraph( HWND callbackwin, IStre
 	try {
 		CMediaType mt;
 		mt.majortype = MEDIATYPE_Stream;
-
-		// note: audio-less mpeg stream must have an extension of
-		// ".mpv" .
-		if      (wcsicmp(type, L".mpg") == 0)
-			mt.subtype = MEDIASUBTYPE_MPEG1System;
-		else if (wcsicmp(type, L".mpeg") == 0)
-			mt.subtype = MEDIASUBTYPE_MPEG1System;
-		else if (wcsicmp(type, L".mpv") == 0) 
-			mt.subtype = MEDIASUBTYPE_MPEG1Video;
-		else if (wcsicmp(type, L".dat") == 0)
-			mt.subtype = MEDIASUBTYPE_MPEG1VideoCD;
-		else if (wcsicmp(type, L".avi") == 0)
-			mt.subtype = MEDIASUBTYPE_Avi;
-		else if (wcsicmp(type, L".mov") == 0)
-			mt.subtype = MEDIASUBTYPE_QTMovie;
-		else
-			throw L"Unknown video format extension."; // unknown format
-
+		if( (errmsg = ParseVideoType( mt, type )) != NULL )
+			throw errmsg;
 
 		// create proxy filter
 		m_Proxy = new CIStreamProxy( stream, size );
@@ -86,9 +73,31 @@ const wchar_t* __stdcall tTVPDSVideoOverlay::BuildGraph( HWND callbackwin, IStre
 		if( FAILED(hr = GraphBuilder()->AddFilter( m_Reader, NULL)) )
 			throw L"Failed to call IFilterGraph::AddFilter.";
 
-		// render output pin
-		if( FAILED(hr = GraphBuilder()->Render(m_Reader->GetPin(0))) )
-			throw L"Failed to call IGraphBuilder::Render.";
+		if( mt.subtype == MEDIASUBTYPE_Avi || mt.subtype == MEDIASUBTYPE_QTMovie )
+		{
+			// render output pin
+			if( FAILED(hr = GraphBuilder()->Render(m_Reader->GetPin(0))) )
+				throw L"Failed to call IGraphBuilder::Render.";
+		}
+		else
+		{
+			CComPtr<IBaseFilter>	pVRender;	// for video renderer filter
+			if( FAILED(hr = pVRender.CoCreateInstance(CLSID_VideoRenderer, NULL, CLSCTX_INPROC_SERVER)) )
+				return L"Failed to create video renderer filter object.";
+			if( FAILED(hr = GraphBuilder()->AddFilter(pVRender, L"Video Renderer")) )
+				return L"Failed to call IFilterGraph::AddFilter.";
+
+			if( mt.subtype == MEDIASUBTYPE_MPEG1Video )
+			{	// Not use audio
+				if( (errmsg = BuildMPEGGraph( pVRender, m_Reader, false )) != NULL )
+					throw errmsg;
+			}
+			else
+			{
+				if( (errmsg = BuildMPEGGraph( pVRender, m_Reader, true )) != NULL )
+					throw errmsg;
+			}
+		}
 
 		// query each interfaces
 		if( FAILED(hr = m_GraphBuilder.QueryInterface( &m_MediaControl )) )

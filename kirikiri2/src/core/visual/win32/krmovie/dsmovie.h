@@ -108,6 +108,10 @@ protected:
 		return m_BasicVideo;
 	}
 
+	HRESULT ConnectFilters( IBaseFilter* pFilterUpstream, IBaseFilter* pFilterDownstream );
+	const wchar_t* BuildMPEGGraph( IBaseFilter *pRdr, IBaseFilter *pSrc, bool useSound );
+	const wchar_t* ParseVideoType( CMediaType &mt, const wchar_t *type );
+
 #ifdef _DEBUG
 	HRESULT __stdcall AddToROT( DWORD ROTreg );
 	void __stdcall RemoveFromROT( DWORD ROTreg );
