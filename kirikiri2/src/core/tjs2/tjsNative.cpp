@@ -59,8 +59,9 @@ const tjs_char * TJSFindNativeClassName(tjs_int32 id)
 //---------------------------------------------------------------------------
 // tTJSNativeClassMethod
 //---------------------------------------------------------------------------
-tTJSNativeClassMethod::tTJSNativeClassMethod()
+tTJSNativeClassMethod::tTJSNativeClassMethod(tCallback processfunc)
 {
+	Process = processfunc;
 	if(TJSObjectHashMapEnabled()) TJSAddObjectHashRecord(this);
 }
 //---------------------------------------------------------------------------
@@ -137,8 +138,10 @@ tjs_error  TJS_INTF_METHOD
 //---------------------------------------------------------------------------
 // tTJSNativeClassProperty
 //---------------------------------------------------------------------------
-tTJSNativeClassProperty::tTJSNativeClassProperty()
+tTJSNativeClassProperty::tTJSNativeClassProperty(tGetCallback get, tSetCallback set)
 {
+	Get = get;
+	Set = set;
 	if(TJSObjectHashMapEnabled()) TJSAddObjectHashRecord(this);
 }
 //---------------------------------------------------------------------------
@@ -204,26 +207,6 @@ tTJSNativeClassProperty::PropSet(tjs_uint32 flag, const tjs_char *membername,
 	}
 
 	return er;
-}
-//---------------------------------------------------------------------------
-tjs_error tTJSNativeClassProperty::DenyGet(tjs_uint32 flag,
-	const tjs_char * membername, tjs_uint32 *hint, tTJSVariant *result,
-	iTJSDispatch2 *objthis)
-{
-	if(membername) return inherited::PropGet(flag, membername, hint,
-		result, objthis);
-
-	return TJS_E_ACCESSDENYED;
-}
-//---------------------------------------------------------------------------
-tjs_error tTJSNativeClassProperty::DenySet(tjs_uint32 flag,
-	const tjs_char *membername, tjs_uint32 *hint, const tTJSVariant *param,
-	iTJSDispatch2 *objthis)
-{
-	if(membername) return inherited::PropSet(flag, membername, hint,
-		param, objthis);
-
-	return TJS_E_ACCESSDENYED; 
 }
 //---------------------------------------------------------------------------
 
