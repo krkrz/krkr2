@@ -21,11 +21,15 @@ void TVPGL_IA32_Init()
 if(TVPCPUType & TVP_CPU_HAS_MMX)
 	 TVPAdditiveAlphaBlend =  TVPAdditiveAlphaBlend_mmx_a;
 if(TVPCPUType & TVP_CPU_HAS_MMX)
+	 TVPAdditiveAlphaBlend_o =  TVPAdditiveAlphaBlend_o_mmx_a;
+if(TVPCPUType & TVP_CPU_HAS_MMX)
 	 TVPAdditiveAlphaBlend_HDA =  TVPAdditiveAlphaBlend_HDA_mmx_a;
 if(TVPCPUType & TVP_CPU_HAS_MMX)
 	 TVPAdditiveAlphaBlend_a =  TVPAdditiveAlphaBlend_a_mmx_a;
 if(TVPCPUType & TVP_CPU_HAS_MMX && TVPCPUType & TVP_CPU_HAS_EMMX)
 	 TVPAdditiveAlphaBlend =  TVPAdditiveAlphaBlend_emmx_a;
+if(TVPCPUType & TVP_CPU_HAS_MMX && TVPCPUType & TVP_CPU_HAS_EMMX)
+	 TVPAdditiveAlphaBlend_o =  TVPAdditiveAlphaBlend_o_emmx_a;
 if(TVPCPUType & TVP_CPU_HAS_MMX && TVPCPUType & TVP_CPU_HAS_EMMX)
 	 TVPAdditiveAlphaBlend_HDA =  TVPAdditiveAlphaBlend_HDA_emmx_a;
 if(TVPCPUType & TVP_CPU_HAS_MMX && TVPCPUType & TVP_CPU_HAS_EMMX)
