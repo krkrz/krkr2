@@ -416,6 +416,21 @@
 	</desc>
 </member>
 
+<member>
+	<name>onPopupHide</name>
+	<type>event</type>
+	<shortdesc>ポップアップウィンドウを閉じる</shortdesc>
+	<arg>
+	</arg>
+	<result></result>
+	<desc>
+		　ポップアップウィンドウが閉じるべき時に発生するイベントです。このイベントは、<ref>Window.stayOnTop</ref> プロパティが真で、かつ、<ref>Window.focusable</ref> プロパティが偽の場合、「他のウィンドウがクリックされた」あるいは「他のアプリケーションがアクティブになった」時に発生します。<r/>
+		　通常は、ここでウィンドウを閉じたり、非表示にする処理を行ってください。<r/>
+	</desc>
+	<ref>Window.focusable</ref>
+	<ref>Window.stayOnTop</ref>
+</member>
+
 
 
 <member>
@@ -897,6 +912,35 @@ postInputEvent('onKeyUp',   %[key: VK_UP, shift: ssShift]);<r/>
 </member>
 
 <member>
+	<name>focusable</name>
+	<type>property</type>
+	<shortdesc>フォーカスを取得可能か</shortdesc>
+	<access>r/w</access>
+	<desc>
+		　フォーカスを取得可能かどうかを表します。値を設定することもできます。<r/>
+		　偽に設定すると、フォーカスを取得できなくなる、つまり、ウィンドウがアクティブにならなくなります。副作用として、タイトルバーをつかんでのウィンドウの移動やウィンドウのリサイズ、「×」ボタンを押してウィンドウを閉じる操作もできなくなります。<r/>
+		　キーボード入力を得たいときは <ref>Window.trapKey</ref> プロパティを使用することができます。<r/>
+		　通常、これは、ポップアップメニューのように、もっとも手前に表示されるが、それ自身はフォーカスを得ないウィンドウの実装に用います。<r/>
+		　現バージョンでは、ウィンドウがフルスクリーン化するとき、あるいはフルスクリーンから復帰するときに、このプロパティの設定内容が失われる可能性があります。<r/>
+	</desc>
+	<ref>Window.trapKey</ref>
+	<ref>Window.onPopupHide</ref>
+</member>
+
+<member>
+	<name>trapKey</name>
+	<type>property</type>
+	<shortdesc>キー入力をトラップするか</shortdesc>
+	<access>r/w</access>
+	<desc>
+		　キー入力をトラップするかどうかを表します。値を設定することもできます。<r/>
+		　真に設定すると、他のウィンドウで発生したキー入力イベントを横取りし、このウィンドウ上で発生させることができます。<r/>
+		　複数のウィンドウのこのプロパティが真に設定されている場合は、もっとも最後に作成したウィンドウに対してキー入力イベントが発生します。<r/>
+	</desc>
+	<ref>Window.focusable</ref>
+</member>
+
+<member>
 	<name>layerLeft</name>
 	<type>property</type>
 	<shortdesc>レイヤの表示オフセットの左端位置</shortdesc>
@@ -988,6 +1032,7 @@ postInputEvent('onKeyUp',   %[key: VK_UP, shift: ssShift]);<r/>
 	<desc>
 		　ウィンドウを常に最上位 ( 一番手前 ) に表示するかどうかを表します。値を設定することもできます。<r/>
 		　真ならばウィンドウは常に最上位に表示されます。<r/>
+		　現バージョンでは、ウィンドウがフルスクリーン化するとき、あるいはフルスクリーンから復帰するときに、このプロパティの設定内容が失われる可能性があります。<r/>
 	</desc>
 </member>
 

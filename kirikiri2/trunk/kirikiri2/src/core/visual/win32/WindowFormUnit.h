@@ -208,6 +208,7 @@ public:		// ユーザー宣言
 	__fastcall TTVPWindowForm(TComponent* Owner, tTJSNI_Window *ni);
 private:	// ユーザー宣言
 	bool InMode;
+	bool Focusable;
 
 	//-- double-buffering related
 	tTVPBaseDoubleBuffer *DoubleBuffer;
@@ -242,11 +243,15 @@ private:	// ユーザー宣言
 	int OrgWidth;
 	int OrgHeight;
 	TTVPMenuContainerForm * MenuContainer;
+	DWORD ResetStayOnTopStateTick;
 
 	//-- keyboard input
 	AnsiString PendingKeyCodes;
 
 	TImeMode LastSetImeMode;
+	bool TrapKeys;
+	bool CanReceiveTrappedKeys;
+	bool InReceivingTrappedKeys;
 	bool InMenuLoop;
 	bool IsRepeatMessage;
 	bool UseMouseKey; // whether using mouse key emulation
@@ -268,7 +273,10 @@ public:
 private:
 	void UnacquireImeControl();
 	void AcquireImeControl();
-
+	static bool FindKeyTrapper(LRESULT &result, UINT msg, WPARAM wparam,
+		LPARAM lparam);
+	bool ProcessTrappedKeyMessage(LRESULT &result, UINT msg, WPARAM wparam,
+		LPARAM lparam);
 
 	//-- mouse cursor
 	tTVPMouseCursorState MouseCursorState;
@@ -315,7 +323,14 @@ public:
 	void __fastcall OnCloseQueryCalled(bool b);
 	void __fastcall SendCloseMessage();
 
+	static void __fastcall DeliverPopupHide();
+private:
+	void __fastcall FirePopupHide();
+	bool __fastcall CanSendPopupHide() const
+		{ return !Focusable && GetVisible() && GetStayOnTop(); }
+
 	//-- form mode
+public:
 	bool __fastcall GetFormEnabled();
 
 	//-- double-buffering management
@@ -372,6 +387,9 @@ public:
 	void __fastcall SetMouseCursorState(tTVPMouseCursorState mcs);
 	tTVPMouseCursorState __fastcall GetMouseCursorState() const { return MouseCursorState; }
 
+	void __fastcall SetFocusable(bool b);
+	bool __fastcall GetFocusable() const { return Focusable; }
+
 private:
 	void __fastcall RestoreMouseCursor();
 	void __fastcall SetMouseCursorVisibleState(bool b);
@@ -395,6 +413,8 @@ public:
 	void __fastcall UpdateWindow(tTVPUpdateType type = utNormal);
 	void __fastcall ShowWindowAsModal();
 
+	void __fastcall SetVisible(bool b);
+	bool __fastcall GetVisible() const { return Visible; }
 
 	void __fastcall SetInnerSunken(bool b);
 	bool __fastcall GetInnerSunken() const;
@@ -420,6 +440,9 @@ public:
 
 	void __fastcall SetUseMouseKey(bool b);
 	bool __fastcall GetUseMouseKey() const;
+
+	void __fastcall SetTrapKey(bool b);
+	bool __fastcall GetTrapKey() const;
 
 protected:
 	//-- paint box management
@@ -447,6 +470,7 @@ BEGIN_MESSAGE_MAP
 	VCL_MESSAGE_HANDLER( WM_DROPFILES,  TMessage, WMDropFiles);
 	VCL_MESSAGE_HANDLER( CM_MOUSEENTER, TMessage, CMMouseEnter)
 	VCL_MESSAGE_HANDLER( CM_MOUSELEAVE, TMessage, CMMouseLeave)
+	VCL_MESSAGE_HANDLER( WM_MOUSEACTIVATE, TWMMouseActivate, WMMouseActivate);
 	VCL_MESSAGE_HANDLER( TVP_WM_SHOWVISIBLE, TMessage, WMShowVisible)
 	VCL_MESSAGE_HANDLER( TVP_WM_SHOWTOP, TMessage, WMShowTop)
 	VCL_MESSAGE_HANDLER( TVP_WM_RETRIEVEFOCUS, TMessage, WMRetrieveFocus);
@@ -458,9 +482,12 @@ BEGIN_MESSAGE_MAP
 	VCL_MESSAGE_HANDLER( WM_EXITMENULOOP, TWMExitMenuLoop, WMExitMenuLoop);
 	VCL_MESSAGE_HANDLER( WM_KEYDOWN, TWMKeyDown, WMKeyDown);
 	VCL_MESSAGE_HANDLER( WM_DEVICECHANGE, TMessage, WMDeviceChange);
+	VCL_MESSAGE_HANDLER( WM_NCLBUTTONDOWN, TWMNCLButtonDown , WMNCLButtonDown)
+	VCL_MESSAGE_HANDLER( WM_NCRBUTTONDOWN, TWMNCRButtonDown , WMNCRButtonDown)
 END_MESSAGE_MAP(TForm)
 	void __fastcall CMMouseEnter(TMessage &Msg);
 	void __fastcall CMMouseLeave(TMessage &Msg);
+	void __fastcall WMMouseActivate(TWMMouseActivate &msg);
 	void __fastcall WMMove(TWMMove &Msg);
 	void __fastcall WMDropFiles(TMessage &Msg);
 	void __fastcall WMShowVisible(TMessage &Msg);
@@ -478,9 +505,12 @@ END_MESSAGE_MAP(TForm)
 
 	void __fastcall WMDeviceChange(TMessage &Msg);
 
+	void __fastcall WMNCLButtonDown(TWMNCLButtonDown &msg);
+	void __fastcall WMNCRButtonDown(TWMNCRButtonDown &msg);
+
 public:
 	void __fastcall InvokeShowVisible();
-	void __fastcall InvokeShowTop();
+	void __fastcall InvokeShowTop(bool activate = true);
 	HDWP __fastcall ShowTop(HDWP hdwp);
 
 protected:
