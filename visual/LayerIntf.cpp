@@ -3788,7 +3788,6 @@ void tTJSNI_BaseLayer::OperateRect(tjs_int dx, tjs_int dy, tTJSNI_BaseLayer *src
 		TVPThrowExceptionMessage(TVPNotDrawableFaceType, TJS_W("operateRect"));
 	}
 
-	// this method ignores destinaion drawface
 	if(!MainImage) TVPThrowExceptionMessage(TVPNotDrawableLayerType);
 	if(!src->MainImage) TVPThrowExceptionMessage(TVPSourceLayerHasNoImage);
 
