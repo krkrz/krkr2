@@ -8,13 +8,6 @@
 //---------------------------------------------------------------------------
 // "Window" TJS Class implementation
 //---------------------------------------------------------------------------
-// 2004/ 4/30 W.Dee          Added support for Window.mouseCursorState
-// 2004/ 4/26 W.Dee          Added support for IME control properties.
-// 2004/ 4/ 9 W.Dee          Added Window.postInputEvent support.
-// 2003/ 2/18 W.Dee          Not to release DirectDraw DLL at exit.
-// 2003/11/13 W.Dee          Added code for retrieving DirectDraw driver/device
-//                           information display.
-//---------------------------------------------------------------------------
 #include "tjsCommHead.h"
 #pragma hdrstop
 
