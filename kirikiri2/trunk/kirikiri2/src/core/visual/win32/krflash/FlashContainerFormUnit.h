@@ -25,6 +25,8 @@ __published:	// IDE 管理のコンポーネント
 private:	// ユーザー宣言
 	RECT Rect;
 	tTVPFlashOverlay * Overlay;
+	bool Invisible;
+	bool VisibleState;
 	HWND OwnerWindow;
 public:		// ユーザー宣言
 	__fastcall TFlashContainerForm(TComponent* Owner, tTVPFlashOverlay *overlay,
@@ -33,6 +35,7 @@ public:		// ユーザー宣言
 protected:
 	void __fastcall CreateParams(Controls::TCreateParams &Params);
 public:
+	void __fastcall SetFormParent(HWND parent);
 	void __fastcall SetMovie(wchar_t *filename);
 	void __fastcall Play();
 	void __fastcall Stop();

@@ -75,6 +75,8 @@ __fastcall TFlashContainerForm::TFlashContainerForm(TComponent* Owner,
 	const RECT &rect)
 	:  TForm((Overlay = overlay, OwnerWindow = ownerwin, Rect = rect, Owner))
 {
+	Invisible = false;
+	VisibleState = true;
 }
 //---------------------------------------------------------------------------
 void __fastcall TFlashContainerForm::CreateParams(Controls::TCreateParams &Params)
@@ -88,6 +90,23 @@ void __fastcall TFlashContainerForm::CreateParams(Controls::TCreateParams &Param
 	Params.Y = Rect.top;
 	Params.Width = Rect.right - Rect.left;
 	Params.Height = Rect.bottom - Rect.top;
+}
+//---------------------------------------------------------------------------
+void __fastcall TFlashContainerForm::SetFormParent(HWND parent)
+{
+	OwnerWindow = parent;
+	if(!OwnerWindow)
+	{
+		Invisible = true;
+		Visible = false;
+		::SetParent(Handle, NULL);
+	}
+	else
+	{
+		::SetParent(Handle, parent);
+		Invisible = false;
+		if(VisibleState) SetFlashVisible(true);
+	}
 }
 //---------------------------------------------------------------------------
 void __fastcall TFlashContainerForm::SetMovie(wchar_t *filename)
@@ -112,6 +131,8 @@ void __fastcall TFlashContainerForm::Pause()
 //---------------------------------------------------------------------------
 void __fastcall TFlashContainerForm::SetFlashVisible(bool b)
 {
+	VisibleState= b;
+	if(Invisible) b = false;
 	Visible = b;
 	if(b)
 	{
