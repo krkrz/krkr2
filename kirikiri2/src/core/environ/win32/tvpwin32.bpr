@@ -21,45 +21,45 @@
       intermediate\tjsDate.obj intermediate\tjsDateParser.obj 
       intermediate\tjsdate.tab.obj intermediate\tjsException.obj 
       intermediate\tjsMessage.obj intermediate\tjsDisassemble.obj 
-      intermediate\LayerBitmapIntf.obj intermediate\LayerBitmapImpl.obj 
-      intermediate\LayerIntf.obj intermediate\LayerImpl.obj 
-      intermediate\DInputMgn.obj intermediate\WindowIntf.obj 
-      intermediate\WindowImpl.obj intermediate\GraphicsLoaderIntf.obj 
-      intermediate\LoadTLG.obj intermediate\GraphicsLoaderImpl.obj 
-      intermediate\MenuItemIntf.obj intermediate\MenuItemImpl.obj 
-      intermediate\ComplexRect.obj intermediate\TransIntf.obj 
-      intermediate\TransImpl.obj intermediate\VideoOvlIntf.obj 
-      intermediate\VideoOvlImpl.obj intermediate\Resampler.obj 
-      intermediate\tvpgl.obj intermediate\tvpgl_ia32_intf.obj 
-      intermediate\DebugIntf.obj intermediate\DebugImpl.obj 
-      intermediate\PadIntf.obj intermediate\PadImpl.obj 
-      intermediate\TimerIntf.obj intermediate\TimerImpl.obj 
-      intermediate\TickCount.obj intermediate\KAGParser.obj 
-      intermediate\Random.obj intermediate\md5.obj intermediate\ThreadIntf.obj 
-      intermediate\ThreadImpl.obj intermediate\ClipboardIntf.obj 
-      intermediate\ClipboardImpl.obj intermediate\XP3Archive.obj 
-      intermediate\TextStream.obj intermediate\UtilStreams.obj 
-      intermediate\FileSelecter.obj intermediate\SusieArchive.obj 
-      intermediate\StorageIntf.obj intermediate\StorageImpl.obj 
-      intermediate\ScriptMgnImpl.obj intermediate\EventIntf.obj 
-      intermediate\EventImpl.obj intermediate\SysInitIntf.obj 
-      intermediate\SysInitImpl.obj intermediate\SystemIntf.obj 
-      intermediate\SystemImpl.obj intermediate\PluginIntf.obj 
-      intermediate\PluginImpl.obj intermediate\SoundBufferBaseIntf.obj 
-      intermediate\SoundBufferBaseImpl.obj intermediate\CDDAIntf.obj 
-      intermediate\CDDAImpl.obj intermediate\MIDIIntf.obj 
-      intermediate\MIDIImpl.obj intermediate\WaveIntf.obj 
-      intermediate\WaveImpl.obj intermediate\tvpsnd.obj 
-      intermediate\EmergencyExit.obj intermediate\HintWindow.obj 
-      intermediate\TLogViewer.obj intermediate\HaltWarnFormUnit.obj 
-      intermediate\ConsoleFormUnit.obj intermediate\PadFormUnit.obj 
-      intermediate\MainFormUnit.obj intermediate\WatchFormUnit.obj 
-      intermediate\WindowFormUnit.obj intermediate\MenuContainerFormUnit.obj 
-      intermediate\FontSelectFormUnit.obj intermediate\VersionFormUnit.obj 
-      intermediate\MsgIntf.obj intermediate\MsgImpl.obj 
-      intermediate\ScriptMgnIntf.obj intermediate\FuncStubs.obj 
-      intermediate\OptionsDesc.obj intermediate\ConfSettingsUnit.obj 
-      intermediate\ConfMainFrameUnit.obj"/>
+      intermediate\tjsDebug.obj intermediate\LayerBitmapIntf.obj 
+      intermediate\LayerBitmapImpl.obj intermediate\LayerIntf.obj 
+      intermediate\LayerImpl.obj intermediate\DInputMgn.obj 
+      intermediate\WindowIntf.obj intermediate\WindowImpl.obj 
+      intermediate\GraphicsLoaderIntf.obj intermediate\LoadTLG.obj 
+      intermediate\GraphicsLoaderImpl.obj intermediate\MenuItemIntf.obj 
+      intermediate\MenuItemImpl.obj intermediate\ComplexRect.obj 
+      intermediate\TransIntf.obj intermediate\TransImpl.obj 
+      intermediate\VideoOvlIntf.obj intermediate\VideoOvlImpl.obj 
+      intermediate\Resampler.obj intermediate\tvpgl.obj 
+      intermediate\tvpgl_ia32_intf.obj intermediate\DebugIntf.obj 
+      intermediate\DebugImpl.obj intermediate\PadIntf.obj 
+      intermediate\PadImpl.obj intermediate\TimerIntf.obj 
+      intermediate\TimerImpl.obj intermediate\TickCount.obj 
+      intermediate\KAGParser.obj intermediate\Random.obj intermediate\md5.obj 
+      intermediate\ThreadIntf.obj intermediate\ThreadImpl.obj 
+      intermediate\ClipboardIntf.obj intermediate\ClipboardImpl.obj 
+      intermediate\XP3Archive.obj intermediate\TextStream.obj 
+      intermediate\UtilStreams.obj intermediate\FileSelecter.obj 
+      intermediate\SusieArchive.obj intermediate\StorageIntf.obj 
+      intermediate\StorageImpl.obj intermediate\ScriptMgnImpl.obj 
+      intermediate\EventIntf.obj intermediate\EventImpl.obj 
+      intermediate\SysInitIntf.obj intermediate\SysInitImpl.obj 
+      intermediate\SystemIntf.obj intermediate\SystemImpl.obj 
+      intermediate\PluginIntf.obj intermediate\PluginImpl.obj 
+      intermediate\SoundBufferBaseIntf.obj intermediate\SoundBufferBaseImpl.obj 
+      intermediate\CDDAIntf.obj intermediate\CDDAImpl.obj 
+      intermediate\MIDIIntf.obj intermediate\MIDIImpl.obj 
+      intermediate\WaveIntf.obj intermediate\WaveImpl.obj 
+      intermediate\tvpsnd.obj intermediate\EmergencyExit.obj 
+      intermediate\HintWindow.obj intermediate\TLogViewer.obj 
+      intermediate\HaltWarnFormUnit.obj intermediate\ConsoleFormUnit.obj 
+      intermediate\PadFormUnit.obj intermediate\MainFormUnit.obj 
+      intermediate\WatchFormUnit.obj intermediate\WindowFormUnit.obj 
+      intermediate\MenuContainerFormUnit.obj intermediate\FontSelectFormUnit.obj 
+      intermediate\VersionFormUnit.obj intermediate\MsgIntf.obj 
+      intermediate\MsgImpl.obj intermediate\ScriptMgnIntf.obj 
+      intermediate\FuncStubs.obj intermediate\OptionsDesc.obj 
+      intermediate\ConfSettingsUnit.obj intermediate\ConfMainFrameUnit.obj"/>
     <RESFILES value="tvpwin32.res HBeamCur.res"/>
     <DEFFILE value="tvpwin32.def"/>
     <RESDEPEN value="$(RESFILES) HaltWarnFormUnit.dfm ..\..\utils\win32\ConsoleFormUnit.dfm 
@@ -93,7 +93,7 @@
     <PFLAGS value="-N2intermediate -N0intermediate -$Y+ -$W -$O- -v -JPHNE -M"/>
     <RFLAGS value=""/>
     <AFLAGS value="/mx /mv64 /m5 /w2 /zi /l /z"/>
-    <LFLAGS value="-Iintermediate -dWINSPOOL.DRV -dWINMM.DLL -dMSVFW32.DLL -dCOMDLG32.DLL 
+    <LFLAGS value="-dWINSPOOL.DRV -dWINMM.DLL -dMSVFW32.DLL -dCOMDLG32.DLL -Iintermediate 
       -D&quot;&quot; -GC&quot;TVP(kirikiri) for win32&quot; -Rr -H:0x10000 -aa -Tpe -GD -x -Gn -v"/>
   </OPTIONS>
   <LINKER>
@@ -167,7 +167,7 @@ Item1=..\..\..\..\bin\win32
 DebugSourceDirs=C:\Program Files\Borland\CBuilder5\Projects\tvp2win32\visual\IA32\;C:\Program Files\Borland\CBuilder5\Projects\comps\o\erinalib\library\common\;C:\Program Files\Borland\CBuilder5\Projects\tvp2win32\kirikiri2\src\core\visual\IA32\
 
 [Parameters]
-RunParams=-logerror=yes -wheel=message ..\..\tests -sel
+RunParams=-logerror=yes -wheel=message ..\..\tests -sel -debug
 HostApplication=
 RemoteHost=
 RemotePath=
