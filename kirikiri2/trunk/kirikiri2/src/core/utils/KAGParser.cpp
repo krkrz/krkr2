@@ -20,6 +20,7 @@
 #include "ScriptMgnIntf.h"
 #include "tjsHashSearch.h"
 #include "TextStream.h"
+#include "tjsInterCodeGen.h"
 
 //---------------------------------------------------------------------------
 /*
@@ -1124,8 +1125,8 @@ parse_start:
 			// interrupt current parsing
 			// return as "interrupted" tag
 			static tTJSVariant r_val(TJS_W("interrupt"));
-			DicObj->PropSet(TJS_MEMBERENSURE, __tag_name.c_str(),
-					__tag_name.GetHint(), &r_val, DicObj);
+			DicObj->PropSetByVS(TJS_MEMBERENSURE,
+				__tag_name.AsVariantStringNoAddRef(), &r_val, DicObj);
 			Interrupted = false;
 			DicObj->AddRef();
 			return DicObj;
@@ -1159,8 +1160,8 @@ parse_start:
 				// line ended ...
 				TagLine = CurLine;
 				static tTJSVariant r_val(TJS_W("r"));
-				DicObj->PropSet(TJS_MEMBERENSURE, __tag_name.c_str(),
-					__tag_name.GetHint(), &r_val, DicObj);
+				DicObj->PropSetByVS(TJS_MEMBERENSURE,
+					__tag_name.AsVariantStringNoAddRef(), &r_val, DicObj);
 				if(RecordingMacro) RecordingMacroStr += TJS_W("[r]");
 				CurLine++;
 				CurPos = 0;
@@ -1207,12 +1208,12 @@ parse_start:
 				else if(ch != TJS_W('\n'))
 				{
 					static tTJSVariant tag_val(TJS_W("ch"));
-					DicObj->PropSet(TJS_MEMBERENSURE, __tag_name.c_str(),
-						__tag_name.GetHint(), &tag_val, DicObj);
+					DicObj->PropSetByVS(TJS_MEMBERENSURE,
+						__tag_name.AsVariantStringNoAddRef(), &tag_val, DicObj);
 					tTJSVariant ch_val(ttstr(CurLineStr + CurPos, 1));
 					static ttstr text_name(TJS_W("text"));
-					DicObj->PropSet(TJS_MEMBERENSURE, text_name.c_str(),
-						text_name.GetHint(), &ch_val, DicObj);
+					DicObj->PropSetByVS(TJS_MEMBERENSURE,
+						text_name.AsVariantStringNoAddRef(), &ch_val, DicObj);
 
 					if(RecordingMacro)
 					{
@@ -1226,8 +1227,8 @@ parse_start:
 				{
 					// \n  ( reline )
 					static tTJSVariant r_val(TJS_W("r"));
-					DicObj->PropSet(TJS_MEMBERENSURE, __tag_name.c_str(),
-						__tag_name.GetHint(), &r_val, DicObj);
+					DicObj->PropSetByVS(TJS_MEMBERENSURE,
+						__tag_name.AsVariantStringNoAddRef(), &r_val, DicObj);
 					if(RecordingMacro) RecordingMacroStr += TJS_W("[r]");
 				}
 
@@ -1269,8 +1270,8 @@ parse_start:
 		{
 
 			tTJSVariant tag_val(tagname);
-			DicObj->PropSet(TJS_MEMBERENSURE, __tag_name.c_str(),
-				__tag_name.GetHint(), &tag_val, DicObj);
+			DicObj->PropSetByVS(TJS_MEMBERENSURE,
+				__tag_name.AsVariantStringNoAddRef(), &tag_val, DicObj);
 		}
 
 		// check special control tags
@@ -1713,8 +1714,8 @@ parse_start:
 						DicAssign->FuncCall(0, NULL, NULL, NULL, 1, &psrc, DicObj);
 					}
 					tTJSVariant tag_val(tagname);
-					DicObj->PropSet(TJS_MEMBERENSURE, __tag_name.c_str(),
-						__tag_name.GetHint(), &tag_val, DicObj);
+					DicObj->PropSetByVS(TJS_MEMBERENSURE,
+						__tag_name.AsVariantStringNoAddRef(), &tag_val, DicObj);
 							// reset tag_name
 				}
 
@@ -1868,8 +1869,8 @@ parse_start:
 
 			// store value into the dictionary object
 			if(store)
-				DicObj->PropSet(TJS_MEMBERENSURE, attribname.c_str(), NULL,
-					&ValueVariant, DicObj);
+				DicObj->PropSetByVS(TJS_MEMBERENSURE,
+					attribname.AsVariantStringNoAddRef(), &ValueVariant, DicObj);
 		}
 	}
 
