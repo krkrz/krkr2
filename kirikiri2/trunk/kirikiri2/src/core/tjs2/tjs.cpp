@@ -41,8 +41,8 @@ extern iTJSDispatch2 * TJSCreateRegExpClass();
 //---------------------------------------------------------------------------
 tjs_int TJSVersionMajor = 2;
 tjs_int TJSVersionMinor = 4;
-tjs_int TJSVersionRelease = 8;
-tjs_int TJSVersionHex = 0x248;
+tjs_int TJSVersionRelease = 9;
+tjs_int TJSVersionHex = 0x249;
 
 tjs_char TJSCompiledDate[] = TJS_W("" __DATE__ " " __TIME__);
 	// first empty literal string is to avoid a compile error with bcc which can not
