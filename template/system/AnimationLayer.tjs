@@ -479,7 +479,14 @@ class AnimationLayer extends KAGLayer
 		Anim_partialImageInfo = void;
 
 		// 画像を読み込む
-		super.loadImages(elm.storage, elm.key);
+		var taginfo = super.loadImages(elm.storage, elm.key);
+
+		// 画像のタグ情報をデフォルト値として採用
+		if(taginfo)
+		{
+			(Dictionary.assign incontextof taginfo)(elm, false);
+			elm = taginfo;
+		}
 
 		// 色補正
 		applyColorCorrection(this, elm);
@@ -609,8 +616,16 @@ class AnimationLayer extends KAGLayer
 		var temp = window.temporaryLayer;
 
 		// 一時レイヤに画像を読み込む
-		temp.loadImages(elm.storage, key);
+		var taginfo = temp.loadImages(elm.storage, key);
 
+		// 画像のタグ情報をデフォルト値として採用
+		if(taginfo)
+		{
+			(Dictionary.assign incontextof taginfo)(elm, false);
+			elm = taginfo;
+		}
+
+		// 画像補整
 		var lr = false, ud = false;
 		if(Anim_loadParams !== void)
 		{
