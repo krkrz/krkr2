@@ -5020,7 +5020,7 @@
 			<required> yes </required>
 			<format> フレーム番号 </format>
 			<info>
-				　ループの指定を指定します。
+				　ループの始点を指定します。
 			</info>
 		</attrib>
 		<attrib name="end">
@@ -5050,6 +5050,7 @@
 	</remarks>
 </tag>
 
+
 <tag name="videoevent">
 	<shortinfo> ピリオドイベントの発生 </shortinfo>
 	<group> 効果音・BGM・ビデオ操作 </group>
@@ -5069,6 +5070,18 @@
 	　ピリオドイベントは、<ref tag="wv">wv</ref>タグで待つことができます。<BR>
 	</remarks>
 </tag>
+
+<tag name="cancelvideoevent">
+	<shortinfo> ピリオドイベントの解除 </shortinfo>
+	<group> 効果音・BGM・ビデオ操作 </group>
+	<attribs>
+	</attribs>
+
+	<remarks>
+	<ref tag="videoevent">videoevent</ref>タグで設定したピリオドイベントを解除します。<BR>
+	</remarks>
+</tag>
+
 
 <tag name="pausevideo">
 	<shortinfo> ビデオの一時停止 </shortinfo>
