@@ -7153,7 +7153,7 @@ TJS_END_NATIVE_METHOD_DECL(/*func. name*/operateRect)
 //----------------------------------------------------------------------
 TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/stretchCopy)
 {
-	// dx, dy, dw, dh, src, sx, sy, sw, sh, mode=0
+	// dx, dy, dw, dh, src, sx, sy, sw, sh, type=0
 	TJS_GET_NATIVE_INSTANCE(/*var. name*/_this, /*var. type*/tTJSNI_Layer);
 	if(numparams < 9) return TJS_E_BADPARAMCOUNT;
 
@@ -7187,7 +7187,7 @@ TJS_END_NATIVE_METHOD_DECL(/*func. name*/stretchCopy)
 //----------------------------------------------------------------------
 TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/stretchPile)
 {
-	// dx, dy, dw, dh, src, sx, sy, sw, sh, opa=255, mode=0, hda=true
+	// dx, dy, dw, dh, src, sx, sy, sw, sh, opa=255, type=0, hda=true
 	TJS_GET_NATIVE_INSTANCE(/*var. name*/_this, /*var. type*/tTJSNI_Layer);
 	if(numparams < 9) return TJS_E_BADPARAMCOUNT;
 
@@ -7229,7 +7229,7 @@ TJS_END_NATIVE_METHOD_DECL(/*func. name*/stretchPile)
 //----------------------------------------------------------------------
 TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/stretchBlend)
 {
-	// dx, dy, dw, dh, src, sx, sy, sw, sh, opa=255, mode=0, hda=true
+	// dx, dy, dw, dh, src, sx, sy, sw, sh, opa=255, type=0, hda=true
 	TJS_GET_NATIVE_INSTANCE(/*var. name*/_this, /*var. type*/tTJSNI_Layer);
 	if(numparams < 9) return TJS_E_BADPARAMCOUNT;
 
@@ -7269,9 +7269,53 @@ TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/stretchBlend)
 }
 TJS_END_NATIVE_METHOD_DECL(/*func. name*/stretchBlend)
 //----------------------------------------------------------------------
+TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/operateStretch)
+{
+	// dx, dy, dw, dh, src, sx, sy, sw, sh, mode, opa=255, type=0
+	TJS_GET_NATIVE_INSTANCE(/*var. name*/_this, /*var. type*/tTJSNI_Layer);
+	if(numparams < 10) return TJS_E_BADPARAMCOUNT;
+
+	tTJSNI_BaseLayer * src = NULL;
+	tTJSVariantClosure clo = param[4]->AsObjectClosureNoAddRef();
+	if(clo.Object)
+	{
+		if(TJS_FAILED(clo.Object->NativeInstanceSupport(TJS_NIS_GETINSTANCE,
+			tTJSNC_Layer::ClassID, (iTJSNativeInstance**)&src)))
+			TVPThrowExceptionMessage(TVPSpecifyLayer);
+	}
+	if(!src) TVPThrowExceptionMessage(TVPSpecifyLayer);
+
+	tTVPRect destrect(*param[0], *param[1], *param[2], *param[3]);
+	destrect.right += destrect.left;
+	destrect.bottom += destrect.top;
+
+	tTVPRect srcrect(*param[5], *param[6], *param[7], *param[8]);
+	srcrect.right += srcrect.left;
+	srcrect.bottom += srcrect.top;
+
+	tTVPBlendOperationMode mode = (tTVPBlendOperationMode)(tjs_int)(*param[10]);
+
+	tjs_int opa = 255;
+
+	if(numparams >= 11 && param[10]->Type() != tvtVoid)
+		opa = *param[10];
+
+	tTVPBBStretchType type = stNearest;
+	bool hda = true;
+	if(numparams >= 12 && param[11]->Type() != tvtVoid)
+		type = (tTVPBBStretchType)(tjs_int)*param[11];
+	if(numparams >= 13 && param[12]->Type() != tvtVoid)
+		hda = param[12]->operator bool();
+
+	_this->OperateStretch(destrect, src, srcrect, mode, opa, type, hda);
+
+	return TJS_S_OK;
+}
+TJS_END_NATIVE_METHOD_DECL(/*func. name*/operateStretch)
+//----------------------------------------------------------------------
 TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/affineCopy)
 {
-	// src, sx, sy, sw, sh, affine, x0/a, y0/b, x1/c, y1/d, x2/tx, y2/ty, mode=0
+	// src, sx, sy, sw, sh, affine, x0/a, y0/b, x1/c, y1/d, x2/tx, y2/ty, type=0
 	TJS_GET_NATIVE_INSTANCE(/*var. name*/_this, /*var. type*/tTJSNI_Layer);
 	if(numparams < 12) return TJS_E_BADPARAMCOUNT;
 
@@ -7325,7 +7369,7 @@ TJS_END_NATIVE_METHOD_DECL(/*func. name*/affineCopy)
 //----------------------------------------------------------------------
 TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/affinePile)
 {
-	// src, sx, sy, sw, sh, affine, x0/a, y0/b, x1/c, y1/d, x2/tx, y2/ty, opa=255, mode=0, hda=true
+	// src, sx, sy, sw, sh, affine, x0/a, y0/b, x1/c, y1/d, x2/tx, y2/ty, opa=255, type=0, hda=true
 	TJS_GET_NATIVE_INSTANCE(/*var. name*/_this, /*var. type*/tTJSNI_Layer);
 	if(numparams < 12) return TJS_E_BADPARAMCOUNT;
 
@@ -7385,7 +7429,7 @@ TJS_END_NATIVE_METHOD_DECL(/*func. name*/affinePile)
 //----------------------------------------------------------------------
 TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/affineBlend)
 {
-	// src, sx, sy, sw, sh, affine, x0/a, y0/b, x1/c, y1/d, x2/tx, y2/ty, opa=255, mode=0, hda=true
+	// src, sx, sy, sw, sh, affine, x0/a, y0/b, x1/c, y1/d, x2/tx, y2/ty, opa=255, type=0, hda=true
 	TJS_GET_NATIVE_INSTANCE(/*var. name*/_this, /*var. type*/tTJSNI_Layer);
 	if(numparams < 12) return TJS_E_BADPARAMCOUNT;
 
@@ -7442,6 +7486,68 @@ TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/affineBlend)
 	return TJS_S_OK;
 }
 TJS_END_NATIVE_METHOD_DECL(/*func. name*/affineBlend)
+//----------------------------------------------------------------------
+TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/operateAffine)
+{
+	// src, sx, sy, sw, sh, affine, x0/a, y0/b, x1/c, y1/d, x2/tx, y2/ty, mode, opa=255, type=0, hda=true
+	TJS_GET_NATIVE_INSTANCE(/*var. name*/_this, /*var. type*/tTJSNI_Layer);
+	if(numparams < 13) return TJS_E_BADPARAMCOUNT;
+
+	tTJSNI_BaseLayer * src = NULL;
+	tTJSVariantClosure clo = param[0]->AsObjectClosureNoAddRef();
+	if(clo.Object)
+	{
+		if(TJS_FAILED(clo.Object->NativeInstanceSupport(TJS_NIS_GETINSTANCE,
+			tTJSNC_Layer::ClassID, (iTJSNativeInstance**)&src)))
+			TVPThrowExceptionMessage(TVPSpecifyLayer);
+	}
+	if(!src) TVPThrowExceptionMessage(TVPSpecifyLayer);
+
+	tTVPRect srcrect(*param[1], *param[2], *param[3], *param[4]);
+	srcrect.right += srcrect.left;
+	srcrect.bottom += srcrect.top;
+
+	tjs_int opa = 255;
+	tTVPBBStretchType type = stNearest;
+	bool hda = true;
+
+	if(numparams >= 14 && param[13]->Type() != tvtVoid)
+		opa = (tjs_int)*param[13];
+	if(numparams >= 15 && param[14]->Type() != tvtVoid)
+		type = (tTVPBBStretchType)(tjs_int)*param[14];
+	if(numparams >= 16 && param[15]->Type() != tvtVoid)
+		hda = param[15]->operator bool();
+
+	tTVPBlendOperationMode mode = (tTVPBlendOperationMode)(tjs_int)(*param[12]);
+
+	if(param[5]->operator bool())
+	{
+		// affine matrix mode
+		t2DAffineMatrix mat;
+		mat.a = *param[6];
+		mat.b = *param[7];
+		mat.c = *param[8];
+		mat.d = *param[9];
+		mat.tx = *param[10];
+		mat.ty = *param[11];
+		_this->OperateAffine(mat, src, srcrect, mode, opa, type, hda);
+	}
+	else
+	{
+		// points mode
+		tTVPPoint points[3];
+		points[0].x = *param[6];
+		points[0].y = *param[7];
+		points[1].x = *param[8];
+		points[1].y = *param[9];
+		points[2].x = *param[10];
+		points[2].y = *param[11];
+		_this->OperateAffine(points, src, srcrect, mode, opa, type, hda);
+	}
+
+	return TJS_S_OK;
+}
+TJS_END_NATIVE_METHOD_DECL(/*func. name*/operateAffine)
 //----------------------------------------------------------------------
 TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/adjustGamma)
 {
