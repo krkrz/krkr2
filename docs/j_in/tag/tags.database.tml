@@ -2128,9 +2128,24 @@
 <tag name="close">
 	<shortinfo> ウィンドウを閉じる </shortinfo>
 	<group> システム操作 </group>
+	<attribs>
+		<attrib name="ask">
+			<shortinfo> 確認をするか </shortinfo>
+			<required> no </required>
+			<format> true(デフォルト) または false </format>
+			<info>
+				　true を指定すると、終了するかどうかの確認をします。false を
+				指定するとこの確認はありません。この属性を省略
+				すると false を指定したとみなされます。<BR>
+				　この確認でユーザが「いいえ」を選んだ場合、実行は
+				そのまま継続します。
+			</info>
+		</attrib>
+	</attribs>
 
 	<remarks>
-		　ウィンドウを閉じます。終了確認があります ( バージョン情報ダイアログでは終了確認は出ません )。<BR>
+		　ウィンドウを閉じます。ask 属性に false を指定しない限り、終了確認があります
+		( バージョン情報ダイアログでは終了確認は出ません )。<BR>
 	</remarks>
 </tag>
 
