@@ -1,6 +1,6 @@
 ;# this is a part of TVP (KIRIKIRI) software source.
 ;# see other sources for license.
-;# (C)2001-2004 W.Dee <dee@kikyou.info>
+;# (C)2001-2005 W.Dee <dee@kikyou.info>
 
 
 ;# make tvpgl_ia32.c and tvpgl_ia32.h from *.nah, *.nas.
@@ -71,7 +71,7 @@ print FH <<EOF;
 /*
 	this is a part of TVP (KIRIKIRI) software source.
 	see other sources for license.
-	(C)2001-2004 W.Dee <dee\@kikyou.info>
+	(C)2001-2005 W.Dee <dee\@kikyou.info>
 */
 
 /* C-language interface to tvpgl_ia32.lib */
@@ -103,7 +103,7 @@ print FC <<EOF;
 /*
 	this is a part of TVP (KIRIKIRI) software source.
 	see other sources for license.
-	(C)2001-2004 W.Dee <dee\@kikyou.info>
+	(C)2001-2005 W.Dee <dee\@kikyou.info>
 */
 
 /* C-language interface to tvpgl_ia32.lib */

@@ -75,7 +75,7 @@ BEGIN
             VALUE "FileDescription", "TVP Movie Playback Support DLL\0"
             VALUE "FileVersion", "1, 4, 0, 3\0"
             VALUE "InternalName", "krmovie\0"
-            VALUE "LegalCopyright", "Copyright (C)2001-2004 W.Dee / T.Imoto All rights reserved.\0"
+            VALUE "LegalCopyright", "Copyright (C)2001-2005 W.Dee / T.Imoto All rights reserved.\0"
             VALUE "LegalTrademarks", "\0"
             VALUE "OriginalFilename", "krmovie.dll\0"
             VALUE "PrivateBuild", "\0"

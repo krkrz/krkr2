@@ -1,6 +1,6 @@
 ;# this is a part of TVP (KIRIKIRI) software source.
 ;# see other sources for license.
-;# (C)2001-2004 W.Dee <dee@kikyou.info>
+;# (C)2001-2005 W.Dee <dee@kikyou.info>
 
 ;# copy $ARGV[0] to $ARGV[1] if the content differs
 use Digest::MD5  qw(md5 md5_hex md5_base64);

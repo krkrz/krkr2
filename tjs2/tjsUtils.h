@@ -1,14 +1,12 @@
 //---------------------------------------------------------------------------
 /*
 	TJS2 Script Engine
-	Copyright (C) 2000-2004  W.Dee <dee@kikyou.info>
+	Copyright (C) 2000-2005  W.Dee <dee@kikyou.info>
 
 	See details of license at "license.txt"
 */
 //---------------------------------------------------------------------------
 // utility functions
-//---------------------------------------------------------------------------
-// 2004/ 2/ 6 W.Dee          Added missing tTJSRefHolder::operator =
 //---------------------------------------------------------------------------
 #ifndef tjsUtilsH
 #define tjsUtilsH
