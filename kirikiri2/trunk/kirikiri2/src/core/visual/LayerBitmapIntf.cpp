@@ -1764,6 +1764,300 @@ bool tTVPBaseBitmap::StretchBlt(tTVPRect cliprect,
 
 	return true;
 }
+
+//---------------------------------------------------------------------------
+// template function for affine loop
+//---------------------------------------------------------------------------
+
+// define function pointer types for transforming line
+typedef TVP_GL_FUNC_PTR_DECL(void, tTVPAffineFunction,
+	(tjs_uint32 *dest, tjs_int len, const tjs_uint32 *src,
+	tjs_int sx, tjs_int sy, tjs_int stepx, tjs_int stepy, tjs_int srcpitch));
+typedef TVP_GL_FUNC_PTR_DECL(void, tTVPAffineWithOpacityFunction,
+	(tjs_uint32 *dest, tjs_int len, const tjs_uint32 *src,
+	tjs_int sx, tjs_int sy, tjs_int stepx, tjs_int stepy, tjs_int srcpitch, tjs_int opa));
+/*
+typedef TVP_GL_FUNC_PTR_DECL(void, tTVPBilinearAffineFunction,
+	(tjs_uint32 *dest, tjs_int destlen, const tjs_uint32 *src1, const tjs_uint32 *src2,
+	tjs_int blend_y, tjs_int srcstart, tjs_int srcstep));
+typedef TVP_GL_FUNC_PTR_DECL(void, tTVPBilinearAffineWithOpacityFunction,
+	(tjs_uint32 *dest, tjs_int destlen, const tjs_uint32 *src1, const tjs_uint32 *src2,
+	tjs_int blend_y, tjs_int srcstart, tjs_int srcstep, tjs_int opa));
+*/
+
+//---------------------------------------------------------------------------
+
+// declare affine function object class
+class tTVPAffineFunctionObject
+{
+	tTVPAffineFunction Func;
+public:
+	tTVPAffineFunctionObject(tTVPAffineFunction func) : Func(func) {;}
+	void operator () (tjs_uint32 *dest, tjs_int len, const tjs_uint32 *src,
+	tjs_int sx, tjs_int sy, tjs_int stepx, tjs_int stepy, tjs_int srcpitch)
+	{
+		Func(dest, len, src, sx, sy, stepx, stepy, srcpitch);
+	}
+};
+
+class tTVPAffineWithOpacityFunctionObject
+{
+	tTVPAffineWithOpacityFunction Func;
+	tjs_int Opacity;
+public:
+	tTVPAffineWithOpacityFunctionObject(tTVPAffineWithOpacityFunction func, tjs_int opa) :
+		Func(func), Opacity(opa) {;}
+	void operator () (tjs_uint32 *dest, tjs_int len, const tjs_uint32 *src,
+	tjs_int sx, tjs_int sy, tjs_int stepx, tjs_int stepy, tjs_int srcpitch)
+	{
+		Func(dest, len, src, sx, sy, stepx, stepy, srcpitch, Opacity);
+	}
+};
+
+/*
+class tTVPBilinearAffineFunctionObject
+{
+protected:
+	tTVPBilineaAffineFunction Func;
+public:
+	tTVPBilinearAffineFunctionObject(tTVPBilinearAffineFunction func) : Func(func) {;}
+	void operator () (tjs_uint32 *dest, tjs_int destlen, const tjs_uint32 *src1, const tjs_uint32 *src2,
+	tjs_int blend_y, tjs_int srcstart, tjs_int srcstep)
+	{
+		Func(dest, destlen, src1, src2, blend_y, srcstart, srcstep);
+	}
+};
+
+#define TVP_DEFINE_BILINEAR_AFFINE_FUNCTION(func, one) class \
+t##func##FunctionObject : \
+	public tTVPBilinearAffineFunctionObject \
+{ \
+public: \
+	t##func##FunctionObject() : \
+		tTVPBilinearAffineFunctionObject(func) {;} \
+	void DoOnePixel(tjs_uint32 *dest, tjs_uint32 color) \
+	{ one; } \
+};
+
+
+class tTVPBilinearAffineWithOpacityFunctionObject
+{
+protected:
+	tTVPBilinearAffineWithOpacityFunction Func;
+	tjs_int Opacity;
+public:
+	tTVPBilinearAffineWithOpacityFunctionObject(tTVPBilinearAffineWithOpacityFunction func, tjs_int opa) :
+		Func(func), Opacity(opa) {;}
+	void operator () (tjs_uint32 *dest, tjs_int destlen, const tjs_uint32 *src1, const tjs_uint32 *src2,
+	tjs_int blend_y, tjs_int srcstart, tjs_int srcstep)
+	{
+		Func(dest, destlen, src1, src2, blend_y, srcstart, srcstep, Opacity);
+	}
+};
+
+#define TVP_DEFINE_BILINEAR_AFFINE_WITH_OPACITY_FUNCTION(func, one) class \
+t##func##FunctionObject : \
+	public tTVPBilinearAffineWithOpacityFunctionObject \
+{ \
+public: \
+	t##func##FunctionObject(tjs_int opa) : \
+		tTVPBilinearAffineWithOpacityFunctionObject(func, opa) {;} \
+	void DoOnePixel(tjs_uint32 *dest, tjs_uint32 color) \
+	{ one; } \
+};
+*/
+
+//---------------------------------------------------------------------------
+
+// declare streting function object for bilinear interpolation
+/*
+TVP_DEFINE_BILINEAR_AFFINE_FUNCTION(
+	TVPInterpAffineCopy,
+	*dest = color);
+
+TVP_DEFINE_BILINEAR_AFFINE_WITH_OPACITY_FUNCTION(
+	TVPInterpAffineConstAlphaBlend,
+	*dest = TVPBlendARGB(*dest, color, Opacity));
+
+TVP_DEFINE_BILINEAR_AFFINE_FUNCTION(
+	TVPInterpAffineAdditiveAlphaBlend,
+	*dest = TVPAdditiveBlend_n_a(*dest, color));
+
+TVP_DEFINE_BILINEAR_AFFINE_WITH_OPACITY_FUNCTION(
+	TVPInterpAffineAdditiveAlphaBlend_o,
+	*dest = TVPAdditiveBlend_n_a_o(*dest, color, Opacity));
+*/
+//---------------------------------------------------------------------------
+
+// declare affine loop function
+#define TVP_DoAffineLoop_ARGS  sxstep, systep, \
+		dest, l, len, src, srcpitch, dx, dy
+template <typename tFuncStretch, typename tFuncAffine>
+void TVPDoAffineLoop(
+		tFuncStretch stretch,
+		tFuncAffine affine,
+		tjs_int sxstep,
+		tjs_int systep,
+		tjs_uint8 *dest,
+		tjs_int l,
+		tjs_int len,
+		const tjs_uint8 *src,
+		tjs_int srcpitch,
+		tjs_int dx,
+		tjs_int dy)
+{
+	if(systep == 0)
+		stretch((tjs_uint32*)dest + l, len,
+			(tjs_uint32*)(src + (dy>>16) * srcpitch), dx, sxstep);
+	else
+		affine((tjs_uint32*)dest + l, len,
+			(tjs_uint32*)src, dx, dy, sxstep, systep, srcpitch);
+}
+//---------------------------------------------------------------------------
+
+#if 0
+// declare affine loop function for bilinear interpolation
+
+#define TVP_DoBilinearAffineLoop_ARGS  rw, rh, dw, dh, \
+						refw, refh, x_ref_start, y_ref_start, x_len, y_len, \
+						destp, destpitch, x_step, \
+						y_step, refp, refpitch
+template <typename tAffineFunc>
+void TVPDoBiLinearAffineLoop(
+		tAffineFunc affine,
+		tjs_int rw, tjs_int rh,
+		tjs_int dw, tjs_int dh,
+		tjs_int refw, tjs_int refh,
+		tjs_int x_ref_start,
+		tjs_int y_ref_start,
+		tjs_int x_len, tjs_int y_len,
+		tjs_uint8 * destp, tjs_int destpitch,
+		tjs_int x_step, tjs_int y_step,
+		const tjs_uint8 * refp, tjs_int refpitch)
+{
+/*
+	memo
+          0         1         2         3         4
+          .         .         .         .                  center = 1.5 = (4-1) / 2
+          ------------------------------                 reference area
+     ----------++++++++++----------++++++++++
+                         ^                                 4 / 1  step 4   ofs =  1.5   = ((4-1) - (1-1)*4) / 2
+               ^                   ^                       4 / 2  step 2   ofs =  0.5   = ((4-1) - (2-1)*2) / 2
+          ^         ^         ^         *                  4 / 4  step 1   ofs =  0     = ((4-1) - (4-1)*1) / 2
+         *       ^       ^       ^       *                 4 / 5  steo 0.8 ofs = -0.1   = ((4-1) - (5-1)*0.8) / 2
+        *    ^    ^    ^    ^    ^    ^    *               4 / 8  step 0.5 ofs = -0.25
+
+*/
+
+
+
+	// adjust start point
+	if(x_step >= 0)
+		x_ref_start += (((rw-1)<<16) - (dw-1)*x_step)/2;
+	else
+		x_ref_start -= (((rw-1)<<16) + (dw-1)*x_step)/2 - x_step;
+	if(y_step >= 0)
+		y_ref_start += (((rh-1)<<16) - (dh-1)*y_step)/2;
+	else
+		y_ref_start -= (((rh-1)<<16) + (dh-1)*y_step)/2 - y_step;
+
+	// horizontal destination line is splitted into three parts;
+	// 1. left fraction (x_ref < 0               (lf)
+	//                or x_ref >= refw - 1)
+	// 2. center                                 (c)
+	// 3. right fraction (x_ref >= refw - 1      (rf)
+	//                or x_ref < 0)
+
+	tjs_int ref_right_limit = (refw-1)<<16;
+
+	tjs_int y_ref = y_ref_start;
+	while(y_len--)
+	{
+		tjs_int y1 = y_ref >> 16;
+		tjs_int y2 = y1+1;
+		tjs_int y_blend = (y_ref & 0xffff) >> 8;
+		if(y1 < 0) y1 = 0; else if(y1 >= refh) y1 = refh-1;
+		if(y2 < 0) y2 = 0; else if(y2 >= refh) y2 = refh-1;
+
+		const tjs_uint32 * l1 =
+			(const tjs_uint32*)(refp + refpitch * y1);
+		const tjs_uint32 * l2 =
+			(const tjs_uint32*)(refp + refpitch * y2);
+
+
+		// perform left and right fractions
+		tjs_int x_remain = x_len;
+		tjs_uint32 * dp;
+		tjs_int x_ref;
+
+		// from last point
+		if(x_remain)
+		{
+			dp = (tjs_uint32*)destp + (x_len - 1);
+			x_ref = x_ref_start + (x_len - 1) * x_step;
+			if(x_ref < 0 && x_remain)
+			{
+				tjs_uint color =
+					TVPBlendARGB(*l1, *l2, y_blend);
+				do
+					stretch.DoOnePixel(dp, color), dp-- , x_ref -= x_step, x_remain --;
+				while(x_ref < 0 && x_remain);
+			}
+			else if(x_ref >= ref_right_limit)
+			{
+				tjs_uint color =
+					TVPBlendARGB(
+						*(l1 + refw-1),
+						*(l2 + refw-2), y_blend);
+				do
+					stretch.DoOnePixel(dp, color), dp-- , x_ref -= x_step, x_remain --;
+				while(x_ref >= ref_right_limit && x_remain);
+			}
+		}
+
+		// from first point
+		if(x_remain)
+		{
+			dp = (tjs_uint32*)destp;
+			x_ref = x_ref_start;
+			if(x_ref < 0)
+			{
+				tjs_uint color =
+					TVPBlendARGB(*l1, *l2, y_blend);
+				do
+					stretch.DoOnePixel(dp, color), dp++ , x_ref += x_step, x_remain --;
+				while(x_ref < 0 && x_remain);
+			}
+			else if(x_ref >= ref_right_limit)
+			{
+				tjs_uint color =
+					TVPBlendARGB(
+						*(l1 + refw-1),
+						*(l2 + refw-2), y_blend);
+				do
+					stretch.DoOnePixel(dp, color), dp++ , x_ref += x_step, x_remain --;
+				while(x_ref >= ref_right_limit && x_remain);
+			}
+		}
+
+		// perform center part
+		// (this may take most time of this function)
+		if(x_remain)
+		{
+			stretch(
+				dp,
+				x_remain,
+				l1, l2, y_blend,
+				x_ref,
+				x_step);
+		}
+
+		// step to the next line
+		y_ref += y_step;
+		destp += destpitch;
+	}
+}
+#endif
 //---------------------------------------------------------------------------
 static inline tjs_int round_to_int(double x)
 {
@@ -2097,32 +2391,60 @@ bool tTVPBaseBitmap::AffineBlt(tTVPRect destrect, const tTVPBaseBitmap *ref,
 			switch(method)
 			{
 			case bmCopy:
-				if(opa == 255 && !hda)
+				if(opa == 255)
 				{
-					if(sxstep == 65536 && systep == 0)
+					if(!hda)
 					{
-						// intact copy
-						memcpy((tjs_uint32*)dest + l,
-							(tjs_uint32*)(src + (dy>>16) * srcpitch) + (dx>>16),
-							len * sizeof(tjs_int32));
+						if(sxstep == 65536 && systep == 0)
+						{
+							// intact copy
+							memcpy((tjs_uint32*)dest + l,
+								(tjs_uint32*)(src + (dy>>16) * srcpitch) + (dx>>16),
+								len * sizeof(tjs_int32));
+						}
+						else
+						{
+							TVPDoAffineLoop(
+								tTVPStretchFunctionObject(TVPStretchCopy),
+								tTVPAffineFunctionObject(TVPLinTransCopy),
+								TVP_DoAffineLoop_ARGS);
+						}
 					}
 					else
 					{
-						LINTRANS_LINE(TVPLinTransCopy, TVPStretchCopy)
+						TVPDoAffineLoop(
+							tTVPStretchFunctionObject(TVPStretchColorCopy),
+							tTVPAffineFunctionObject(TVPLinTransColorCopy),
+							TVP_DoAffineLoop_ARGS);
 					}
 				}
-				else if(!hda)
-					LINTRANS_LINE_OPA(TVPLinTransConstAlphaBlend, TVPStretchConstAlphaBlend)
 				else
-					LINTRANS_LINE_OPA(TVPLinTransConstAlphaBlend_HDA, TVPStretchConstAlphaBlend_HDA)
+				{
+					if(!hda)
+						TVPDoAffineLoop(
+							tTVPStretchWithOpacityFunctionObject(TVPStretchConstAlphaBlend, opa),
+							tTVPAffineWithOpacityFunctionObject(TVPLinTransConstAlphaBlend, opa),
+							TVP_DoAffineLoop_ARGS);
+					else
+						TVPDoAffineLoop(
+							tTVPStretchWithOpacityFunctionObject(TVPStretchConstAlphaBlend_HDA, opa),
+							tTVPAffineWithOpacityFunctionObject(TVPLinTransConstAlphaBlend_HDA, opa),
+							TVP_DoAffineLoop_ARGS);
+				}
 				break;
 
 			case bmCopyOnAlpha:
 				// constant ratio alpha blending, with consideration of destination alpha
 				if(opa == 255)
-					LINTRANS_LINE(TVPLinTransCopyOpaqueImage, TVPStretchCopyOpaqueImage)
+					TVPDoAffineLoop(
+						tTVPStretchFunctionObject(TVPStretchCopyOpaqueImage),
+						tTVPAffineFunctionObject(TVPLinTransCopyOpaqueImage),
+						TVP_DoAffineLoop_ARGS);
 				else
-					LINTRANS_LINE_OPA(TVPLinTransConstAlphaBlend_d, TVPStretchConstAlphaBlend_d)
+					TVPDoAffineLoop(
+						tTVPStretchWithOpacityFunctionObject(TVPStretchConstAlphaBlend_d, opa),
+						tTVPAffineWithOpacityFunctionObject(TVPLinTransConstAlphaBlend_d, opa),
+						TVP_DoAffineLoop_ARGS);
 				break;
 
 			case bmAlpha:
@@ -2130,25 +2452,43 @@ bool tTVPBaseBitmap::AffineBlt(tTVPRect destrect, const tTVPBaseBitmap *ref,
 				if(opa == 255)
 				{
 					if(!hda)
-						LINTRANS_LINE(TVPLinTransAlphaBlend, TVPStretchAlphaBlend)
+						TVPDoAffineLoop(
+							tTVPStretchFunctionObject(TVPStretchAlphaBlend),
+							tTVPAffineFunctionObject(TVPLinTransAlphaBlend),
+							TVP_DoAffineLoop_ARGS);
 					else
-						LINTRANS_LINE(TVPLinTransAlphaBlend_HDA, TVPStretchAlphaBlend_HDA)
+						TVPDoAffineLoop(
+							tTVPStretchFunctionObject(TVPStretchAlphaBlend_HDA),
+							tTVPAffineFunctionObject(TVPLinTransAlphaBlend_HDA),
+							TVP_DoAffineLoop_ARGS);
 				}
 				else
 				{
 					if(!hda)
-						LINTRANS_LINE_OPA(TVPLinTransAlphaBlend_o, TVPStretchAlphaBlend_o)
+						TVPDoAffineLoop(
+							tTVPStretchWithOpacityFunctionObject(TVPStretchAlphaBlend_o, opa),
+							tTVPAffineWithOpacityFunctionObject(TVPLinTransAlphaBlend_o, opa),
+							TVP_DoAffineLoop_ARGS);
 					else
-						LINTRANS_LINE_OPA(TVPLinTransAlphaBlend_HDA_o, TVPStretchAlphaBlend_HDA_o)
+						TVPDoAffineLoop(
+							tTVPStretchWithOpacityFunctionObject(TVPStretchAlphaBlend_HDA_o, opa),
+							tTVPAffineWithOpacityFunctionObject(TVPLinTransAlphaBlend_HDA_o, opa),
+							TVP_DoAffineLoop_ARGS);
 				}
 				break;
 
 			case bmAlphaOnAlpha:
 				// alpha blending, with consideration of destination alpha
 				if(opa == 255)
-					LINTRANS_LINE(TVPLinTransAlphaBlend_d, TVPStretchAlphaBlend_d)
+					TVPDoAffineLoop(
+						tTVPStretchFunctionObject(TVPStretchAlphaBlend_d),
+						tTVPAffineFunctionObject(TVPLinTransAlphaBlend_d),
+						TVP_DoAffineLoop_ARGS);
 				else
-					LINTRANS_LINE_OPA(TVPLinTransAlphaBlend_do, TVPStretchAlphaBlend_do)
+					TVPDoAffineLoop(
+						tTVPStretchWithOpacityFunctionObject(TVPStretchAlphaBlend_do, opa),
+						tTVPAffineWithOpacityFunctionObject(TVPLinTransAlphaBlend_do, opa),
+						TVP_DoAffineLoop_ARGS);
 				break;
 
 			case bmAddAlpha:
@@ -2156,25 +2496,43 @@ bool tTVPBaseBitmap::AffineBlt(tTVPRect destrect, const tTVPBaseBitmap *ref,
 				if(opa == 255)
 				{
 					if(!hda)
-						LINTRANS_LINE(TVPLinTransAdditiveAlphaBlend, TVPStretchAdditiveAlphaBlend)
+						TVPDoAffineLoop(
+							tTVPStretchFunctionObject(TVPStretchAdditiveAlphaBlend),
+							tTVPAffineFunctionObject(TVPLinTransAdditiveAlphaBlend),
+							TVP_DoAffineLoop_ARGS);
 					else
-						LINTRANS_LINE(TVPLinTransAdditiveAlphaBlend_HDA, TVPStretchAdditiveAlphaBlend_HDA)
+						TVPDoAffineLoop(
+							tTVPStretchFunctionObject(TVPStretchAdditiveAlphaBlend_HDA),
+							tTVPAffineFunctionObject(TVPLinTransAdditiveAlphaBlend_HDA),
+							TVP_DoAffineLoop_ARGS);
 				}
 				else
 				{
 					if(!hda)
-						LINTRANS_LINE_OPA(TVPLinTransAdditiveAlphaBlend_o, TVPStretchAlphaBlend_o)
+						TVPDoAffineLoop(
+							tTVPStretchWithOpacityFunctionObject(TVPStretchAlphaBlend_o, opa),
+							tTVPAffineWithOpacityFunctionObject(TVPLinTransAdditiveAlphaBlend_o, opa),
+							TVP_DoAffineLoop_ARGS);
 					else
-						LINTRANS_LINE_OPA(TVPLinTransAdditiveAlphaBlend_HDA_o, TVPStretchAdditiveAlphaBlend_HDA_o)
+						TVPDoAffineLoop(
+							tTVPStretchWithOpacityFunctionObject(TVPStretchAdditiveAlphaBlend_HDA_o, opa),
+							tTVPAffineWithOpacityFunctionObject(TVPLinTransAdditiveAlphaBlend_HDA_o, opa),
+							TVP_DoAffineLoop_ARGS);
 				}
 				break;
 
 			case bmAddAlphaOnAddAlpha:
 				// additive alpha blending, with consideration of destination additive alpha
 				if(opa == 255)
-					LINTRANS_LINE(TVPLinTransAdditiveAlphaBlend_a, TVPStretchAlphaBlend_a)
+					TVPDoAffineLoop(
+						tTVPStretchFunctionObject(TVPStretchAlphaBlend_a),
+						tTVPAffineFunctionObject(TVPLinTransAdditiveAlphaBlend_a),
+						TVP_DoAffineLoop_ARGS);
 				else
-					LINTRANS_LINE_OPA(TVPLinTransAdditiveAlphaBlend_ao, TVPStretchAlphaBlend_ao)
+					TVPDoAffineLoop(
+						tTVPStretchWithOpacityFunctionObject(TVPStretchAlphaBlend_ao, opa),
+						tTVPAffineWithOpacityFunctionObject(TVPLinTransAdditiveAlphaBlend_ao, opa),
+						TVP_DoAffineLoop_ARGS);
 				break;
 
 			case bmAddAlphaOnAlpha:
@@ -2185,18 +2543,30 @@ bool tTVPBaseBitmap::AffineBlt(tTVPRect destrect, const tTVPBaseBitmap *ref,
 			case bmAlphaOnAddAlpha:
 				// simple alpha on additive alpha
 				if(opa == 255)
-					LINTRANS_LINE(TVPLinTransAlphaBlend_a, TVPStretchAlphaBlend_a)
+					TVPDoAffineLoop(
+						tTVPStretchFunctionObject(TVPStretchAlphaBlend_a),
+						tTVPAffineFunctionObject(TVPLinTransAlphaBlend_a),
+						TVP_DoAffineLoop_ARGS);
 				else
-					LINTRANS_LINE_OPA(TVPLinTransAlphaBlend_ao, TVPStretchAlphaBlend_ao)
+					TVPDoAffineLoop(
+						tTVPStretchWithOpacityFunctionObject(TVPStretchAlphaBlend_ao, opa),
+						tTVPAffineWithOpacityFunctionObject(TVPLinTransAlphaBlend_ao, opa),
+						TVP_DoAffineLoop_ARGS);
 				break;
 
 			case bmCopyOnAddAlpha:
 				// constant ratio alpha blending (assuming source is opaque)
 				// with consideration of destination additive alpha
 				if(opa == 255)
-					LINTRANS_LINE(TVPLinTransCopyOpaqueImage, TVPStretchCopyOpaqueImage)
+					TVPDoAffineLoop(
+						tTVPStretchFunctionObject(TVPStretchCopyOpaqueImage),
+						tTVPAffineFunctionObject(TVPLinTransCopyOpaqueImage),
+						TVP_DoAffineLoop_ARGS);
 				else
-					LINTRANS_LINE_OPA(TVPLinTransConstAlphaBlend_a, TVPStretchConstAlphaBlend_a)
+					TVPDoAffineLoop(
+						tTVPStretchWithOpacityFunctionObject(TVPStretchConstAlphaBlend_a, opa),
+						tTVPAffineWithOpacityFunctionObject(TVPLinTransConstAlphaBlend_a, opa),
+						TVP_DoAffineLoop_ARGS);
 				break;
 
 			default:
