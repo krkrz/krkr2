@@ -334,6 +334,8 @@ bool tTVPBaseBitmap::RemoveConstOpacity(tTVPRect rect, tjs_int level)
 {
 	// remove constant opacity from bitmap. ( similar to PhotoShop's eraser tool )
 	// level is a strength of removing ( 0 thru 255 )
+	// this cannot work with additive alpha mode.
+
 	BOUND_CHECK(false);
 
 	if(!Is32BPP()) TVPThrowExceptionMessage(TVPInvalidOperationFor8BPP);
