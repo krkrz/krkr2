@@ -1864,7 +1864,7 @@ class MessageLayer extends KAGLayer
 		if(ln.storage != '' || ln.target != '')
 		{
 			window.lockMessageLayerSelProcess(); // 選択をロック
-			if(System.getKeyState(VK_RETURN) || System.getKeyState(VK_SPACE))
+			if(window.getKeyState(VK_RETURN) || window.getKeyState(VK_SPACE))
 				window.hideMouseCursor();
 					// キーボードによる操作の場合はマウスカーソルを隠す
 			window.process(ln.storage, ln.target, ln.countPage);
@@ -2137,10 +2137,9 @@ class MessageLayer extends KAGLayer
 
 		// キーボードで操作が行われた場合にのみカーソルを
 		// 移動させるため、該当するキーが押されているかチェックを行う
-		var sgks = System.getKeyState;
+		var sgks = window.getKeyState;
 		var process = force || sgks(VK_LEFT) || sgks(VK_UP) || sgks(VK_RIGHT) ||
-			sgks(VK_DOWN) || sgks(VK_TAB) || sgks(VK_PADLEFT) || sgks(VK_PADRIGHT) ||
-			sgks(VK_PADUP) || sgks(VK_PADDOWN);
+			sgks(VK_DOWN) || sgks(VK_TAB);
 		if(process)
 		{
 			selClickLock = false;
@@ -2243,10 +2242,9 @@ class MessageLayer extends KAGLayer
 		{
 			// キーボードで操作が行われた場合にのみカーソルを
 			// 移動させるため、該当するキーが押されているかチェックを行う
-			var sgks = System.getKeyState;
+			var sgks = window.getKeyState;
 			var process = sgks(VK_LEFT) || sgks(VK_UP) || sgks(VK_RIGHT) ||
-				sgks(VK_DOWN) || sgks(VK_TAB) || sgks(VK_PADLEFT) || sgks(VK_PADRIGHT) ||
-				sgks(VK_PADUP) || sgks(VK_PADDOWN);
+				sgks(VK_DOWN) || sgks(VK_TAB);
 
 			if(process && (blured == null || blured.parent != this))
 			{
