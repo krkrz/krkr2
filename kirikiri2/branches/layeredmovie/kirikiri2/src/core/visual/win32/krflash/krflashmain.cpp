@@ -189,12 +189,6 @@ void tTVPFlashOverlay::ResetForm()
 }
 //---------------------------------------------------------------------------
 // Start:	Add:	T.Imoto
-const wchar_t* __stdcall tTVPFlashOverlay::BuildGraph( HWND callbackwin, IStream *stream,
-	const wchar_t * streamname, const wchar_t *type, unsigned __int64 size )
-{
-	if(Shutdown) return NULL;
-	return L"Currently not supported";
-}
 const wchar_t* __stdcall tTVPFlashOverlay::FreeEventParams(long evcode, long param1, long param2)
 {
 	if(Shutdown) return NULL;
@@ -260,17 +254,6 @@ extern "C" const wchar_t* _export __stdcall GetVideoOverlayObject(
 	return NULL;
 }
 //---------------------------------------------------------------------------
-// Start:	Add:	T.Imoto
-extern "C" const wchar_t* _export __stdcall GetVideoOverlayObjectByParam( struct tTVPGetVideoOverlayObjectParam *param )
-{
-	if( param == NULL )
-		return L"Parameter is NULL.";
-
-	*(param->out) = new tTVPFlashOverlay(param->streamname, param->callbackwin);
-	return NULL;
-}
-// End:	Add:	T.Imoto
-
 
 
 

@@ -5,7 +5,6 @@
 #ifndef krflashmainh
 #define krflashmainh
 
-#include "..\voMode.h"
 #include "..\krmovie.h"
 
 //---------------------------------------------------------------------------
@@ -47,8 +46,6 @@ public:
 			long *param2, bool *got);
 // Start:	Add:	T.Imoto
 	const wchar_t* __stdcall FreeEventParams(long evcode, long param1, long param2);
-	const wchar_t* __stdcall BuildGraph( HWND callbackwin, IStream *stream,
-	const wchar_t * streamname, const wchar_t *type, unsigned __int64 size );
 
 	const wchar_t* __stdcall Rewind();
 	const wchar_t* __stdcall SetFrame( int f );
