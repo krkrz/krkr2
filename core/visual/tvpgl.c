@@ -8586,6 +8586,133 @@ TVP_GL_FUNC_DECL(void, TVPAdjustGamma_c, (tjs_uint32 *dest, tjs_int len, tTVPGLG
 	}
 }
 
+/*export*/
+TVP_GL_FUNC_DECL(void, TVPAdjustGamma_a_c, (tjs_uint32 *dest, tjs_int len, tTVPGLGammaAdjustTempData *temp))
+{
+	/* gamma adjustment for additive alpha */
+	{
+		int ___index = 0;
+		len -= (2-1);
+
+		while(___index < len)
+		{
+{
+	tjs_uint32 d;
+	tjs_int alpha;
+	tjs_int alpha_adj;
+	tjs_int recip;
+	tjs_int t, d_tmp;
+
+	d = dest[(___index+0)];
+	alpha = d >> 24;
+	alpha_adj = alpha + (alpha >> 7);
+	recip = TVPRecipTable256[alpha];
+
+	/* B */
+	t = d & 0xff;
+	if(t > alpha)
+		d_tmp = (temp->B[255] * alpha_adj >> 8) + t - alpha;
+	else
+		d_tmp = temp->B[recip * t >> 8] * alpha_adj >> 8;
+	/* G */
+	t = (d>>8) & 0xff; 
+	if(t > alpha)
+		d_tmp |= ((temp->G[255] * alpha_adj >> 8) + t - alpha) << 8;
+	else
+		d_tmp |= (temp->G[recip * t >> 8] * alpha_adj >> 8) << 8;
+	/* R */
+	t = (d>>16) & 0xff; 
+	if(t > alpha)
+		d_tmp |= ((temp->R[255] * alpha_adj >> 8) + t - alpha) << 16;
+	else
+		d_tmp |= (temp->R[recip * t >> 8] * alpha_adj >> 8) << 16;
+	/* A */
+	d_tmp |= d & 0xff000000;
+
+	dest[(___index+0)] = d_tmp;
+}
+{
+	tjs_uint32 d;
+	tjs_int alpha;
+	tjs_int alpha_adj;
+	tjs_int recip;
+	tjs_int t, d_tmp;
+
+	d = dest[(___index+1)];
+	alpha = d >> 24;
+	alpha_adj = alpha + (alpha >> 7);
+	recip = TVPRecipTable256[alpha];
+
+	/* B */
+	t = d & 0xff;
+	if(t > alpha)
+		d_tmp = (temp->B[255] * alpha_adj >> 8) + t - alpha;
+	else
+		d_tmp = temp->B[recip * t >> 8] * alpha_adj >> 8;
+	/* G */
+	t = (d>>8) & 0xff; 
+	if(t > alpha)
+		d_tmp |= ((temp->G[255] * alpha_adj >> 8) + t - alpha) << 8;
+	else
+		d_tmp |= (temp->G[recip * t >> 8] * alpha_adj >> 8) << 8;
+	/* R */
+	t = (d>>16) & 0xff; 
+	if(t > alpha)
+		d_tmp |= ((temp->R[255] * alpha_adj >> 8) + t - alpha) << 16;
+	else
+		d_tmp |= (temp->R[recip * t >> 8] * alpha_adj >> 8) << 16;
+	/* A */
+	d_tmp |= d & 0xff000000;
+
+	dest[(___index+1)] = d_tmp;
+}
+			___index += 2;
+		}
+
+		len += (2-1);
+
+		while(___index < len)
+		{
+{
+	tjs_uint32 d;
+	tjs_int alpha;
+	tjs_int alpha_adj;
+	tjs_int recip;
+	tjs_int t, d_tmp;
+
+	d = dest[___index];
+	alpha = d >> 24;
+	alpha_adj = alpha + (alpha >> 7);
+	recip = TVPRecipTable256[alpha];
+
+	/* B */
+	t = d & 0xff;
+	if(t > alpha)
+		d_tmp = (temp->B[255] * alpha_adj >> 8) + t - alpha;
+	else
+		d_tmp = temp->B[recip * t >> 8] * alpha_adj >> 8;
+	/* G */
+	t = (d>>8) & 0xff; 
+	if(t > alpha)
+		d_tmp |= ((temp->G[255] * alpha_adj >> 8) + t - alpha) << 8;
+	else
+		d_tmp |= (temp->G[recip * t >> 8] * alpha_adj >> 8) << 8;
+	/* R */
+	t = (d>>16) & 0xff; 
+	if(t > alpha)
+		d_tmp |= ((temp->R[255] * alpha_adj >> 8) + t - alpha) << 16;
+	else
+		d_tmp |= (temp->R[recip * t >> 8] * alpha_adj >> 8) << 16;
+	/* A */
+	d_tmp |= d & 0xff000000;
+
+	dest[___index] = d_tmp;
+}
+			___index ++;
+		}
+	}
+}
+
 
 /*export*/
 TVP_GL_FUNC_DECL(void, TVPChBlurMulCopy65_c, (tjs_uint8 *dest, const tjs_uint8 *src, tjs_int len, tjs_int level))
@@ -10359,6 +10486,7 @@ TVP_GL_FUNC_PTR_DECL(void, TVPDoGrayScale,  (tjs_uint32 *dest, tjs_int len));
 TVP_GL_FUNC_PTR_DECL(void, TVPInitGammaAdjustTempData,  (tTVPGLGammaAdjustTempData *temp, const tTVPGLGammaAdjustData *data));
 TVP_GL_FUNC_PTR_DECL(void, TVPUninitGammaAdjustTempData,  (tTVPGLGammaAdjustTempData *temp));
 TVP_GL_FUNC_PTR_DECL(void, TVPAdjustGamma,  (tjs_uint32 *dest, tjs_int len, tTVPGLGammaAdjustTempData *temp));
+TVP_GL_FUNC_PTR_DECL(void, TVPAdjustGamma_a,  (tjs_uint32 *dest, tjs_int len, tTVPGLGammaAdjustTempData *temp));
 TVP_GL_FUNC_PTR_DECL(void, TVPChBlurMulCopy65,  (tjs_uint8 *dest, const tjs_uint8 *src, tjs_int len, tjs_int level));
 TVP_GL_FUNC_PTR_DECL(void, TVPChBlurAddMulCopy65,  (tjs_uint8 *dest, const tjs_uint8 *src, tjs_int len, tjs_int level));
 TVP_GL_FUNC_PTR_DECL(void, TVPChBlurCopy65,  (tjs_uint8 *dest, tjs_int destpitch, tjs_int destwidth, tjs_int destheight, const tjs_uint8 * src, tjs_int srcpitch, tjs_int srcwidth, tjs_int srcheight, tjs_int blurwidth, tjs_int blurlevel));
@@ -10542,6 +10670,7 @@ TVP_GL_FUNC_DECL(void, TVPInitTVPGL, ())
 	TVPInitGammaAdjustTempData = TVPInitGammaAdjustTempData_c;
 	TVPUninitGammaAdjustTempData = TVPUninitGammaAdjustTempData_c;
 	TVPAdjustGamma = TVPAdjustGamma_c;
+	TVPAdjustGamma_a = TVPAdjustGamma_a_c;
 	TVPChBlurMulCopy65 = TVPChBlurMulCopy65_c;
 	TVPChBlurAddMulCopy65 = TVPChBlurAddMulCopy65_c;
 	TVPChBlurCopy65 = TVPChBlurCopy65_c;
