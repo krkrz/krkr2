@@ -246,28 +246,26 @@ TVPAdditiveAlphaBlend_o_name:	; additive alpha blend with opacity
 		punpcklbw	mm4,	mm0				; 1 mm4 = 00ss00ss00ss00ss
 		punpcklbw	mm2,	mm0				; 1 mm2 = 00dd00dd00dd00dd
 		pmullw		mm4,	mm7				; 1 mm4 = 00Sf00Sf00Sf00Sf
-		movq		mm3,	mm2				; 1
-		psrlw		mm4,	8				; 1
+		movq		mm5,	mm2				; 1
 		movd		mm6,	[ebp+4]			; 2 src                  (ss)
+		psrlw		mm4,	8				; 1
 		punpcklbw	mm6,	mm0				; 2 mm6 = 00ss00ss00ss00ss
 		movq		mm1,	mm4				; 1
 		pmullw		mm6,	mm7				; 2 mm6 = 00Sf00Sf00Sf00Sf
+		psrlq		mm1,	48				; 1
 %ifdef	USE_EMMX
 		prefetcht0	[ebp + 16]
 %endif
-		psrlq		mm1,	48				; 1
 		punpcklwd	mm1,	mm1				; 1
 		punpcklwd	mm1,	mm1				; 1 mm1 = Df00Df00Df00Df00
 		psrlw		mm6,	8				; 2
 		pmullw		mm2,	mm1				; 1 mm2 = 00Ds00Ds00Ds00Ds
 		psrlw		mm2,	8				; 1
 		movq		mm1,	mm6				; 2
-		psubw		mm3,	mm2				; 1 mm1 = 00Dq00Dq00Dq00Dq
-		paddw		mm3,	mm4				; 1
+		psubw		mm5,	mm2				; 1 mm1 = 00Dq00Dq00Dq00Dq
+		paddw		mm5,	mm4				; 1
 		movd		mm2,	[edi+4]			; 2 dest                 (dd)
-		packuswb	mm3,	mm0				; 1
 		psrlq		mm1,	48				; 2
-		movd		[edi],	mm3				; 1 store
 		punpcklbw	mm2,	mm0				; 2 mm2 = 00dd00dd00dd00dd
 		punpcklwd	mm1,	mm1				; 2
 		movq		mm3,	mm2				; 2
@@ -279,8 +277,8 @@ TVPAdditiveAlphaBlend_o_name:	; additive alpha blend with opacity
 		add			ebp,	byte 8
 		paddw		mm3,	mm6				; 2
 		cmp			edi,	esi
-		packuswb	mm3,	mm0				; 2
-		movd		[edi+4-8],	mm3			; 2 store
+		packuswb	mm5,	mm3				; 2
+		movq		[edi-8],	mm5			; 2 store
 
 		jb			.ploop
 
