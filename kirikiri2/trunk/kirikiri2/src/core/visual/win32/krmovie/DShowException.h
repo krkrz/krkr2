@@ -14,7 +14,6 @@
 #ifndef __DSHOW_EXCEPTION_H__
 #define __DSHOW_EXCEPTION_H__
 
-#include <exception>
 #include <dshow.h>
 
 //----------------------------------------------------------------------------
@@ -23,7 +22,7 @@
 //! 文字列の初期化をこまめに行うので、使用時はエラー時のみに限り、
 //! エラー処理のif文の中でインスタンス化するようにした方がよい。
 //----------------------------------------------------------------------------
-class DShowException : public std::exception
+class DShowException
 {
 	TCHAR	m_ErrorMes[MAX_ERROR_TEXT_LEN];
 	HRESULT	m_Hr;
