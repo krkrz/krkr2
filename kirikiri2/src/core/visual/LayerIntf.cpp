@@ -6395,6 +6395,7 @@ void tTVPLayerManager::PrimaryMouseUp(tjs_int x, tjs_int y, tTVPMouseButton mb,
 //---------------------------------------------------------------------------
 void tTVPLayerManager::PrimaryMouseMove(tjs_int x, tjs_int y, tjs_uint32 flags)
 {
+	bool poschanged = (LastMouseMoveX != x || LastMouseMoveY != y);
 	LastMouseMoveX = x;
 	LastMouseMoveY = y;
 
@@ -6452,8 +6453,11 @@ void tTVPLayerManager::PrimaryMouseMove(tjs_int x, tjs_int y, tjs_uint32 flags)
 
 	if(l)
 	{
-		l->FromPrimaryCoordinates(x, y);
-		l->FireMouseMove(x, y, flags);
+		if(poschanged)
+		{
+			l->FromPrimaryCoordinates(x, y);
+			l->FireMouseMove(x, y, flags);
+		}
 	}
 	else
 	{
@@ -6905,7 +6909,14 @@ void tTVPLayerManager::NotifyInvalidationFromWindow(const tTVPRect &r)
 		AddUpdateRegion(ur);
 	}
 }
-
+//---------------------------------------------------------------------------
+void tTVPLayerManager::TimerBeat()
+{
+	// To re-check current layer under current mouse position
+	// and update hint, cursor type and process layer enter/leave.
+	// This can be reasonably slow, about 1 sec interval.
+	PrimaryMouseMove(LastMouseMoveX, LastMouseMoveY, 0);
+}
 //---------------------------------------------------------------------------
 void tTVPLayerManager::DumpPrimaryStructure()
 {
