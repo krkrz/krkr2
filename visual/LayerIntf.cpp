@@ -5596,9 +5596,11 @@ tTVPBaseBitmap * tTJSNI_BaseLayer::Complete(const tTVPRect & rect)
 	if(!GetCacheEnabled()) return NULL;
 		// caller must ensure that the caching is enabled
 
-	if(GetVisibleChildrenCount() == 0)
+	if(GetVisibleChildrenCount() == 0 && ImageLeft == 0 && ImageTop == 0 &&
+		MainImage->GetWidth() == GetWidth() && MainImage->GetHeight() == GetHeight())
 	{
 		// the layer has no visible children
+		// and entire of the bitmap is the visible area.
 		// simply returns main image
 		return MainImage;
 	}
