@@ -246,7 +246,7 @@ void TVPLoadTLG6(void* formatdata, void *callbackdata,
 
 	max_bit_length = src->ReadI32LE();
 
-	// set distionation size
+	// set destination size
 	sizecallback(callbackdata, width, height);
 
 	// compute some values
