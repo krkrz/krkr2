@@ -5146,7 +5146,7 @@
 
 <tag name="wq">
 	<shortinfo> 画面揺らしの終了待ち </shortinfo>
-	<group> メッセージ操作 </group>
+	<group> システム操作 </group>
  	<attribs>
 		<attrib name="canskip">
 			<shortinfo> スキップできるかどうか </shortinfo>
