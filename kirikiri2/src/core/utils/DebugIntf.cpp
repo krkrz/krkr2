@@ -9,7 +9,6 @@
 // Utilities for Debugging
 //---------------------------------------------------------------------------
 #include "tjsCommHead.h"
-#pragma hdrstop
 
 #include <deque>
 #include <time>

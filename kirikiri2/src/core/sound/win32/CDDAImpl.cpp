@@ -9,8 +9,6 @@
 // CD-DA access implementation
 //---------------------------------------------------------------------------
 #include "tjsCommHead.h"
-#pragma hdrstop
-
 
 #include <mmsystem.h>
 #include <registry.hpp> // VCL

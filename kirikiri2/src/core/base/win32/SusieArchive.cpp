@@ -9,7 +9,6 @@
 // Archive eXtractor Susie plug-in support
 //---------------------------------------------------------------------------
 #include "tjsCommHead.h"
-#pragma hdrstop
 
 #include <time.h>
 #include "StorageImpl.h"

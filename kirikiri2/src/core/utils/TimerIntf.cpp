@@ -9,7 +9,6 @@
 // Timer Object Interface
 //---------------------------------------------------------------------------
 #include "tjsCommHead.h"
-#pragma hdrstop
 
 #include "TimerIntf.h"
 #include "EventIntf.h"

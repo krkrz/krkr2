@@ -9,7 +9,6 @@
 // Definition of Messages and Message Related Utilities
 //---------------------------------------------------------------------------
 #include "tjsCommHead.h"
-#pragma hdrstop
 
 #include "MsgIntf.h"
 #include "MsgImpl.h"

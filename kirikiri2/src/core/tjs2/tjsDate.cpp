@@ -10,7 +10,6 @@
 //---------------------------------------------------------------------------
 
 #include "tjsCommHead.h"
-#pragma hdrstop
 
 #include "tjsError.h"
 #include "tjsDate.h"

@@ -9,7 +9,6 @@
 // Text read/write stream
 //---------------------------------------------------------------------------
 #include "tjsCommHead.h"
-#pragma hdrstop
 
 #include <zlib/zlib.h>
 #include "TextStream.h"

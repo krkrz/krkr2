@@ -9,8 +9,6 @@
 // TJS2 Script Managing
 //---------------------------------------------------------------------------
 #include "tjsCommHead.h"
-#pragma hdrstop
-
 
 #include "MainFormUnit.h"
 #include "WindowIntf.h"

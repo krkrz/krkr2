@@ -9,7 +9,6 @@
 // KAG Parser Utility Class
 //---------------------------------------------------------------------------
 #include "tjsCommHead.h"
-#pragma hdrstop
 
 
 #include "KAGParser.h"

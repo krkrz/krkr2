@@ -9,7 +9,6 @@
 // CPU idetification / features detection routine
 //---------------------------------------------------------------------------
 #include "tjsCommHead.h"
-#pragma hdrstop
 
 #include <Windows.h>
 #include "tvpgl_ia32_intf.h"

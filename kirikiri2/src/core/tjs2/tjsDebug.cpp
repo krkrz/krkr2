@@ -9,7 +9,6 @@
 // TJS Debugging support
 //---------------------------------------------------------------------------
 #include "tjsCommHead.h"
-#pragma hdrstop
 
 #include <algorithm>
 #include "tjsDebug.h"

@@ -9,8 +9,6 @@
 // CD-DA access interface
 //---------------------------------------------------------------------------
 #include "tjsCommHead.h"
-#pragma hdrstop
-
 
 #include "CDDAIntf.h"
 #include "EventIntf.h"
