@@ -374,6 +374,19 @@
 </member>
 
 <member>
+	<name>onResize</name>
+	<type>event</type>
+	<shortdesc>ウィンドウのサイズが変化した</shortdesc>
+	<arg>
+	</arg>
+	<result></result>
+	<desc>
+		　ウィンドウのサイズが変化した時に発生します。<r/>
+		　実際のサイズは <ref>Window.width</ref> プロパティや <ref>Window.height</ref> プロパティなどで取得してください。<r/>
+	</desc>
+</member>
+
+<member>
 	<name>onFileDrop</name>
 	<type>event</type>
 	<shortdesc>ファイルがドロップされた</shortdesc>
