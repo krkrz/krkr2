@@ -29,6 +29,7 @@ object TVPWindowForm: TTVPWindowForm
   OnKeyUp = FormKeyUp
   OnMouseMove = FormMouseMove
   OnMouseWheel = FormMouseWheel
+  OnResize = FormResize
   OnShow = FormShow
   PixelsPerInch = 96
   TextHeight = 12
