@@ -20,7 +20,6 @@ class tTVPFlashOverlay : public iTVPVideoOverlay
 	bool Visible;
 	bool Shutdown;
 	RECT Rect;
-	bool RectSet;
 	TFlashContainerForm *Form;
 
 	bool CompleteSent;

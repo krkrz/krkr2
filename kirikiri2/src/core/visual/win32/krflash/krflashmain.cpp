@@ -44,7 +44,6 @@ tTVPFlashOverlay::tTVPFlashOverlay(const wchar_t *flashfile, HWND callbackwindow
 	Shutdown = false;
 	CompleteSent = false;
 	Rect.left = 0; Rect.top = 0; Rect.right = 0; Rect.bottom = 0;
-	RectSet = false;
 	Form = NULL;
 }
 //---------------------------------------------------------------------------
@@ -83,13 +82,14 @@ void __stdcall tTVPFlashOverlay::SetWindow(HWND wnd)
 	OwnerWindow = wnd;
 	try
 	{
-		ResetForm();
+		if(Form)
+			Form->SetFormParent(wnd);
+		else
+			ResetForm();
 	}
 	catch(Exception &e)
 	{
-		TVPThrowExceptionMessage(
-			(ttstr(L"Cannot create window instance (Flash player ActiveX is not installed ?) / ") +
-				e.Message.c_str()).c_str());
+		TVPThrowExceptionMessage(ttstr(("Cannot create Flash ActiveX control : " + e.Message).c_str()).c_str());
 	}
 	catch(...)
 	{
@@ -101,32 +101,9 @@ void __stdcall tTVPFlashOverlay::SetWindow(HWND wnd)
 void __stdcall tTVPFlashOverlay::SetRect(RECT *rect)
 {
 	if(Shutdown) return;
-	if(Rect.right-Rect.left == rect->right-rect->left &&
-		Rect.bottom-Rect.top == rect->bottom-rect->top)
-	{
-		Rect = *rect;
-		if(Form) Form->SetBounds(Rect.left, Rect.top, Rect.right - Rect.left,
-					Rect.bottom - Rect.top);
-	}
-	else
-	{
-		Rect = *rect;
-		RectSet = true;
-		try
-		{
-			ResetForm();
-		}
-		catch(Exception &e)
-		{
-			TVPThrowExceptionMessage(
-				(ttstr(L"Cannot create window instance (Flash player ActiveX is not installed ?) / ") +
-					e.Message.c_str()).c_str());
-		}
-		catch(...)
-		{
-			TVPThrowExceptionMessage(L"Cannot create window instance (Flash player ActiveX is not installed ?)");
-		}
-	}
+	Rect = *rect;
+	if(Form) Form->SetBounds(Rect.left, Rect.top, Rect.right - Rect.left,
+				Rect.bottom - Rect.top);
 }
 //---------------------------------------------------------------------------
 void __stdcall tTVPFlashOverlay::SetVisible(bool b)
@@ -202,7 +179,6 @@ void tTVPFlashOverlay::SendCommand(wchar_t *command, wchar_t *arg)
 void tTVPFlashOverlay::ResetForm()
 {
 	if(Form) delete Form;
-	if(!(OwnerWindow && RectSet)) return;
 	Form = new TFlashContainerForm(Application, this, OwnerWindow, Rect);
 	Form->SetMovie(FileName);
 	Form->Visible = Visible;
