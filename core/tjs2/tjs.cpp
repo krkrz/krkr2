@@ -25,6 +25,7 @@
 #include "tjsLex.h"
 #include "tjsHashSearch.h"
 #include "tjsRandomGenerator.h"
+#include "tjsGlobalStringMap.h"
 
 
 

@@ -14,7 +14,7 @@
 
 #include "tjsNative.h"
 #include "tjsError.h"
-#include "tjsInterCodeGen.h"
+#include "tjsGlobalStringMap.h"
 
 namespace TJS
 {

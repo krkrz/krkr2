@@ -20,7 +20,7 @@
 #include "ScriptMgnIntf.h"
 #include "tjsHashSearch.h"
 #include "TextStream.h"
-#include "tjsInterCodeGen.h"
+#include "tjsGlobalStringMap.h"
 
 //---------------------------------------------------------------------------
 /*
