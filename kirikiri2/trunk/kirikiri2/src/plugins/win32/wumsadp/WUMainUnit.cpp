@@ -156,7 +156,7 @@ ULONG __stdcall MSADPCMModule::Release()
 //---------------------------------------------------------------------------
 HRESULT __stdcall MSADPCMModule::GetModuleCopyright(LPWSTR buffer, unsigned long buflen)
 {
-	strcpy_limit(buffer, L"Microsft ADPCM decoder for TVP Sound System (C) 2000 W.Dee <dee@kikyou.info>",
+	strcpy_limit(buffer, L"Microsft ADPCM decoder for TVP Sound System (C) 2000 W.Dee <dee@kikyou.info> and contributors",
 			buflen);
 	return S_OK;
 }

@@ -442,7 +442,7 @@
 	<desc>
 		　吉里吉里本体のバージョン文字列を得ることができます。<r/>
 		　バージョン文字列は以下のような形式です。<r/>
-		<tt>2.0.0.353</tt><r/>
+		<tt>2.25.3.889</tt><r/>
 	</desc>
 </member>
 
@@ -455,7 +455,7 @@
 		　吉里吉里本体のバージョン情報文字列を得ることができます。<r/>
 		　バージョン情報文字列は <ref>System.versionString</ref> よりも長い形式で、<r/>
 		以下のようになります。<r/>
-		<tt>吉里吉里[きりきり] 2 実行コア version 2.1.3.623 [Sep 23 2002 22:15:22] ( TJS version 2.1.7 ) Copyright (C) 1997-2002 W.Dee All rights reserved.</tt><r/>
+		<tt>吉里吉里[きりきり] 2 実行コア/2.25.3.889 (SVN revision:764; Compiled on Mar 26 2005 23:54:10) TJS2/2.4.15 Copyright (C) 1997-2005 W.Dee and contributors All rights reserved.</tt><r/>
 	</desc>
 </member>
 

@@ -1,6 +1,6 @@
 ; this is a part of TVP (KIRIKIRI) software source.
 ; see other sources for license.
-; (C)2001-2003 W.Dee <dee@kikyou.info>
+; (C)2001-2003 W.Dee <dee@kikyou.info> and contributors
 
 ;;[emit_c_h]/*[*/
 ;;[emit_c_h]//---------------------------------------------------------------------------
