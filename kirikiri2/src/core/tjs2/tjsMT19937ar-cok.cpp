@@ -48,7 +48,9 @@
 */
 
 #include "tjsCommHead.h"
+#ifdef __BORLANDC__
 #pragma hdrstop
+#endif
 
 
 #include <stdio.h>

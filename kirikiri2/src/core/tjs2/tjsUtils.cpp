@@ -9,7 +9,9 @@
 // utility functions
 //---------------------------------------------------------------------------
 #include "tjsCommHead.h"
+#ifdef __BORLANDC__
 #pragma hdrstop
+#endif
 
 #include "tjsUtils.h"
 
@@ -67,14 +69,14 @@ tTJSString TJSVariantToReadableString(const tTJSVariant &val,
 	case tvtInteger:
 	  {
 		tTJSString str(TJS_W("(int)"));
-		str += val;
+		str += (const TJS::tTJSString&)val;
 		TJSTrimStringLength(str, maxlen);
 		return str;
 	  }
 	case tvtReal:
 	  {
 		tTJSString str(TJS_W("(real)"));
-		str += val;
+		str += (const TJS::tTJSString&)val;
 		TJSTrimStringLength(str, maxlen);
 		return str;
 	  }

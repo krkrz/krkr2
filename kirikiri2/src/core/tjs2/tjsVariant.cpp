@@ -9,7 +9,9 @@
 // implementation of tTJSVariant
 //---------------------------------------------------------------------------
 #include "tjsCommHead.h"
+#ifdef __BORLANDC__
 #pragma hdrstop
+#endif
 
 #include "tjsVariant.h"
 #include "tjsError.h"
