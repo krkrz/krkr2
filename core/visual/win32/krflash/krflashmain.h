@@ -1,6 +1,6 @@
 //---------------------------------------------------------------------------
 // krflashmain.h ( part of KRFLASH.DLL )
-// (c)2001-2004, W.Dee <dee@kikyou.info>
+// (c)2001-2005, W.Dee <dee@kikyou.info>
 //---------------------------------------------------------------------------
 #ifndef krflashmainh
 #define krflashmainh

@@ -163,7 +163,7 @@ ULONG __stdcall VorbisModule::Release()
 HRESULT __stdcall VorbisModule::GetModuleCopyright(LPWSTR buffer, unsigned long buflen)
 {
 	// return module copyright information
-	strcpy_limit(buffer, L"OggVorbis Plug-in for TVP Sound System (C) 2000-2004 W.Dee <dee@kikyou.info>",
+	strcpy_limit(buffer, L"OggVorbis Plug-in for TVP Sound System (C) 2000-2005 W.Dee <dee@kikyou.info>",
 			buflen);
 	return S_OK;
 }
