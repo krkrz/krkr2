@@ -64,6 +64,7 @@ TJS_N("const\
  /* tTVPAsyncTriggerMode */	atmNormal=0, atmExclusive=1, atmAtIdle=2, \
  /* tTVPBBStretchType */ stNearest=0, stFastLinear=1, stLinear=2, stCubic=3,\
  /* tTVPClipboardFormat */ cbfText = 1,\
+ /* TVP_COMPACT_LEVEL_???? */ clIdle = 5, clDeactivate = 10, clMinimize = 15, clAll = 100,\
 \
 /* file attributes */\
  faReadOnly=0x01, faHidden=0x02, faSysFile=0x04, faVolumeID=0x08, faDirectory=0x10, faArchive=0x20, faAnyFile=0x3f,\

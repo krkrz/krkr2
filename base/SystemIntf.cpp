@@ -210,6 +210,21 @@ TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/assignMessage)
 	return TJS_S_OK;
 }
 TJS_END_NATIVE_METHOD_DECL(/*func. name*/assignMessage)
+//---------------------------------------------------------------------------
+TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/doCompact)
+{
+	// compact memory usage
+
+	tjs_int level = TVP_COMPACT_LEVEL_MAX;
+
+	if(numparams >= 1 && param[0]->Type() != tvtVoid)
+		level = (tjs_int)*param[0];
+
+	TVPDeliverCompactEvent(level);
+
+	return TJS_S_OK;
+}
+TJS_END_NATIVE_METHOD_DECL(/*func. name*/doCompact)
 //----------------------------------------------------------------------
 
 //--properties
