@@ -41,7 +41,8 @@ void dee_ogg_free(void *ptr)
 void * dee_ogg_realloc(void *block, size_t bytes)
 
 These are implemented in WuVorbisUnit.cpp (you may refer or copy them),
-to allocate paragraph-aligned memory blocks for faster SSE operation.
+to allocate paragraph-aligned memory blocks and margin to prevent
+buffer-overrun in optimized code for faster SSE operation.
 
 
 "fastcall" calling convension must be used, or else the program will
