@@ -728,6 +728,26 @@ Index: vorbis/lib/mapping0.c
    }
  
    /* compute and apply spectral envelope */
+@@ -835,10 +1140,18 @@
+ 
+ /* export hooks */
+ vorbis_func_mapping mapping0_exportbundle={
+-  &mapping0_pack,
++#ifdef DECODE_ONLY
++	NULL,
++#else
++  &mapping0_pack,
++#endif
+   &mapping0_unpack,
+   &mapping0_free_info,
++#ifdef DECODE_ONLY
++	NULL,
++#else
+   &mapping0_forward,
++#endif
+   &mapping0_inverse
+ };
+ 
 Index: vorbis/lib/codebook.c
 ===================================================================
 --- vorbis/lib/codebook.c	(revision 7879)
@@ -892,6 +912,32 @@ Index: vorbis/lib/codebook.c
 +}
    return(0);
  }
+ 
+Index: vorbis/lib/info.c
+===================================================================
+--- vorbis/lib/info.c	(revision 7879)
++++ vorbis/lib/info.c	(working copy)
+@@ -11,7 +11,7 @@
+  ********************************************************************
+ 
+  function: maintain the info structure, info <-> header packets
+- last mod: $Id: info.c,v 1.63 2003/12/30 11:02:22 xiphmont Exp $
++ last mod: $Id$
+ 
+  ********************************************************************/
+ 
+@@ -180,10 +180,10 @@
+     }
+     if(ci->fullbooks)
+ 	_ogg_free(ci->fullbooks);
+-    
++#ifndef DECODE_ONLY    
+     for(i=0;i<ci->psys;i++)
+       _vi_psy_free(ci->psy_param[i]);
+-
++#endif
+     _ogg_free(ci);
+   }
  
 Index: vorbis/lib/vorbisfile.c
 ===================================================================
@@ -4097,7 +4143,100 @@ Index: vorbis/lib/block.c
  #endif
  
  int vorbis_block_init(vorbis_dsp_state *v, vorbis_block *vb){
-@@ -674,6 +674,151 @@
+@@ -207,6 +207,7 @@
+   b->window[0]=ilog2(ci->blocksizes[0])-6;
+   b->window[1]=ilog2(ci->blocksizes[1])-6;
+ 
++#ifndef DECODE_ONLY
+   if(encp){ /* encode/decode differ here */
+ 
+     /* analysis always needs an fft */
+@@ -230,7 +231,9 @@
+     }
+ 
+     v->analysisp=1;
+-  }else{
++  }else
++#endif
++  {
+     /* finish the codebooks */
+     if(!ci->fullbooks){
+       ci->fullbooks=_ogg_calloc(ci->books,sizeof(*ci->fullbooks));
+@@ -278,7 +281,8 @@
+ 
+   return 0;
+ }
+-
++
++#ifndef DECODE_ONLY
+ /* arbitrary settings and spec-mandated numbers get filled in here */
+ int vorbis_analysis_init(vorbis_dsp_state *v,vorbis_info *vi){
+   private_state *b=NULL;
+@@ -294,7 +298,8 @@
+   vorbis_bitrate_init(vi,&b->bms);
+ 
+   return(0);
+-}
++}
++#endif
+ 
+ void vorbis_dsp_clear(vorbis_dsp_state *v){
+   int i;
+@@ -305,10 +310,12 @@
+ 
+     if(b){
+ 	
++#ifndef DECODE_ONLY
+       if(b->ve){
+ 	_ve_envelope_clear(b->ve);
+ 	_ogg_free(b->ve);
+       }
++#endif
+ 
+       if(b->transform[0]){
+ 	mdct_clear(b->transform[0][0]);
+@@ -333,18 +340,18 @@
+ 	    free_look(b->residue[i]);
+ 	_ogg_free(b->residue);
+       }
++#ifndef DECODE_ONLY
+       if(b->psy){
+ 	for(i=0;i<ci->psys;i++)
+ 	  _vp_psy_clear(b->psy+i);
+ 	_ogg_free(b->psy);
+       }
+-
+       if(b->psy_g_look)_vp_global_free(b->psy_g_look);
+       vorbis_bitrate_clear(&b->bms);
+ 
+       drft_clear(&b->fft_look[0]);
+       drft_clear(&b->fft_look[1]);
+-
++#endif
+     }
+     
+     if(v->pcm){
+@@ -487,7 +494,8 @@
+   }
+   return(0);
+ }
+-
++
++#ifndef DECODE_ONLY
+ /* do the deltas, envelope shaping, pre-echo and determine the size of
+    the next block on which to continue analysis */
+ int vorbis_analysis_blockout(vorbis_dsp_state *v,vorbis_block *vb){
+@@ -649,7 +657,8 @@
+ 
+   /* done */
+   return(1);
+-}
++}
++#endif
+ 
+ int vorbis_synthesis_restart(vorbis_dsp_state *v){
+   vorbis_info *vi=v->vi;
+@@ -674,6 +683,151 @@
    return(0);
  }
  
@@ -4249,7 +4388,7 @@ Index: vorbis/lib/block.c
  int vorbis_synthesis_init(vorbis_dsp_state *v,vorbis_info *vi){
    if(_vds_shared_init(v,vi,0)) return 1;
    vorbis_synthesis_restart(v);
-@@ -741,15 +886,63 @@
+@@ -741,15 +895,63 @@
  	  float *w=_vorbis_window_get(b->window[1]-hs);
  	  float *pcm=v->pcm[j]+prevCenter;
  	  float *p=vb->pcm[j];
@@ -4317,7 +4456,7 @@ Index: vorbis/lib/block.c
  	}
        }else{
  	if(v->W){
-@@ -757,8 +950,34 @@
+@@ -757,8 +959,34 @@
  	  float *w=_vorbis_window_get(b->window[0]-hs);
  	  float *pcm=v->pcm[j]+prevCenter;
  	  float *p=vb->pcm[j]+n1/2-n0/2;
@@ -4354,7 +4493,7 @@ Index: vorbis/lib/block.c
  	  for(;i<n1/2+n0/2;i++)
  	    pcm[i]=p[i];
  	}else{
-@@ -766,8 +985,32 @@
+@@ -766,8 +994,32 @@
  	  float *w=_vorbis_window_get(b->window[0]-hs);
  	  float *pcm=v->pcm[j]+prevCenter;
  	  float *p=vb->pcm[j];
@@ -4389,7 +4528,7 @@ Index: vorbis/lib/block.c
  	}
        }
        
-@@ -775,8 +1018,7 @@
+@@ -775,8 +1027,7 @@
        {
  	float *pcm=v->pcm[j]+thisCenter;
  	float *p=vb->pcm[j]+n;
