@@ -71,6 +71,7 @@ TJS_EXP_FUNC_DEF(bool, TVPGetSystemEventDisabledState, ());
 #define TVP_EPT_REMOVE_POST		0x01
 		// remove event in pending queue that has same target, source, tag and
 		// name before post
+		// (for input events, only the source and the tag are to be checked)
 #define TVP_EPT_IMMEDIATE		0x02
 		// the event will be delivered immediately
 
@@ -138,15 +139,28 @@ extern void TVPDeliverWindowUpdateEvents();
 class tTVPBaseInputEvent // base user input event class
 {
 	void * Source;
+	tjs_int Tag;
 public:
-	tTVPBaseInputEvent(void *source) { Source = source; }
+	tTVPBaseInputEvent(void *source, tjs_int tag) { Source = source; Tag = tag; }
 	virtual ~tTVPBaseInputEvent() {};
 	virtual void Deliver() const = 0;
 	void * GetSource() const { return Source; }
+	tjs_int GetTag() const { return Tag; }
+};
+//---------------------------------------------------------------------------
+extern tjs_int TVPInputEventTagMax;
+class tTVPUniqueTagForInputEvent // a class for getting unique tag per a event class
+{
+public:
+	tjs_int Tag;
+	tTVPUniqueTagForInputEvent() : Tag(++TVPInputEventTagMax) {;}
+
+	operator tjs_int() const { return Tag; }
 };
 //---------------------------------------------------------------------------
 extern void TVPPostInputEvent(tTVPBaseInputEvent *ev, tjs_uint32 flags = 0);
 extern void TVPCancelInputEvents(void * source);
+extern void TVPCancelInputEvents(void * source, tjs_int tag);
 extern tjs_int TVPGetInputEventCount();
 //---------------------------------------------------------------------------
 
