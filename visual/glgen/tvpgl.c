@@ -346,9 +346,9 @@ static tjs_uint32 TVP_INLINE_FUNC TVPAdditiveBlend_a_d(tjs_uint32 dest, tjs_uint
 {
 	tjs_uint32 sopa = src >> 24;
 	return TVPAdditiveBlend_a_a(dest, 
-		((src & 0xff000000) + 
-			((src & 0xff00ff)*sopa >> 8) & 0xff00ff) + 
-			(((src & 0xff00)*sopa >> 8) & 0xff00) );
+		(src & 0xff000000) + 
+		((	(((src & 0xff00ff)*sopa) & 0xff00ff00) + 
+			(((src & 0x00ff00)*sopa) & 0x00ff0000)    )  >>8  )   );
 }
 
 static tjs_uint32 TVP_INLINE_FUNC TVPAdditiveBlend_a_d_o(tjs_uint32 dest, tjs_uint32 src, tjs_int opa)
