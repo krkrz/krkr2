@@ -572,7 +572,7 @@ TVPScreenBlend_HDA_o_mmx_a:			; pixel screen multiplicative blender with opacity
 		jb			near .ploop
 
 .pfraction:
-		add			esi,	byte 12
+		add			esi,	byte 16
 		cmp			edi,	esi
 		jae			.pexit					; jump if edi >= esi
 
