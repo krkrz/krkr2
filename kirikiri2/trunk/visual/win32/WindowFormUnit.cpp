@@ -1823,7 +1823,7 @@ void TTVPWindowForm::UnacquireImeControl()
 //---------------------------------------------------------------------------
 void TTVPWindowForm::AcquireImeControl()
 {
-	if(PaintBox)
+	if(PaintBox && Focused())
 	{
 		// force to access protected some methods.
 		// much nasty way ...
@@ -2830,6 +2830,7 @@ void __fastcall TTVPWindowForm::WMEnable(TMessage &Msg)
 void __fastcall TTVPWindowForm::WMSetFocus(TWMSetFocus &Msg)
 {
 	::PostMessage(Handle, TVP_WM_ACQUIREIMECONTROL, 0, 0);
+
 	if(PaintBox)
 		CreateCaret(PaintBox->Parent->Handle, NULL, 1, 1);
 
