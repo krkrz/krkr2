@@ -59,13 +59,14 @@ class MoviePlayerWindow extends Window
 		with(layeredIndicatorLayer)
 		{
 			var text = "レイヤでムービーを再生中";
-			var bw = 12;
-			var bl = 7500;
+			var bw = 4;
+			var bl = 9012;
 			.font.height = 20;
 			var tw = .font.getTextWidth(text);
 			var th = .font.getTextHeight(text);
 			.setImageSize(tw + bw*2, th + bw*2);
-			.drawText(bw, bw, text, 0, 255, true, bl, 0xffffff, bw, 0, 0);
+			.drawText(bw, bw, text, 0, 256, true, bl, 0xffffff, bw, 0, 0);
+			.colorRect(0, 0, .imageWidth, .imageHeight, 0, -128); // 全体を半透明にする
 			.setSizeToImageSize();
 			.visible = true;
 		}
@@ -179,11 +180,14 @@ class MoviePlayerWindow extends Window
 	function play()
 	{
 		// 再生を開始する
-		if(video.mode == vomLayer)
-			videoLayer.visible = true;
-		else
-			video.visible = true;
-		video.play();
+		if(videoStatus != 'unload')
+		{
+			if(video.mode == vomLayer)
+				videoLayer.visible = true;
+			else
+				video.visible = true;
+			video.play();
+		}
 	}
 
 	function pause()
@@ -239,6 +243,7 @@ class MoviePlayerWindow extends Window
 					video.rewind(); // 巻き戻す
 				}
 				videoStatus = ev.status;
+				controlLayer.displayStatus(videoStatus);
 			}
 			break;
 		}
