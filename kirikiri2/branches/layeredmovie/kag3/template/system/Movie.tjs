@@ -125,6 +125,41 @@ class Movie extends VideoOverlay
 		(set = true, w = +elm.width) if elm.width !== void;
 		(set = true, h = +elm.height) if elm.height !== void;
 		if(set) setBounds(l, t, w, h);
+		
+		//
+		position = +elm.position if elm.position !== void;
+		loop = +elm.loop if elm.loop !== void;
+		frame = +elm.frame if elm.frame !== void;
+		if( elm.mode !== void )
+		{
+			if( elm.mode == "layer" )
+				mode = vomLayer;
+			else
+				mode = vomOverlay;
+		}
+	}
+
+	function setVideoLayer(layer,elm)
+	{
+		if( elm.channel !== void )
+		{
+			if( elm.channel == 1 )
+				layer1 = layer;
+			else
+				layer2 = layer;
+		}
+	}
+	function setSegmentLoop(elm)
+	{
+		var start = 0;
+		start = +elm.start if elm.start !== void;
+		if( elm.end !== void )
+			setSegmentLoop( start, elm.end );
+	}
+	function setPeriodEvent(elm)
+	{
+		if( elm.frame !== void )
+			setPeriodEvent( elm.frame );
 	}
 }
 
