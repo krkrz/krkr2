@@ -1,0 +1,126 @@
+diff -Naur vorbis_nightly_cvs/ogg/include/ogg/os_types.h ogg/include/ogg/os_types.h
+--- vorbis_nightly_cvs/ogg/include/ogg/os_types.h	2003-09-02 01:09:14.000000000 +0900
++++ ogg/include/ogg/os_types.h	2003-12-06 18:02:51.316196900 +0900
+@@ -19,10 +19,10 @@
+ 
+ /* make it easy on the folks that want to compile the libs with a
+    different malloc than stdlib */
+-#define _ogg_malloc  malloc
+-#define _ogg_calloc  calloc
+-#define _ogg_realloc realloc
+-#define _ogg_free    free
++#define _ogg_malloc  dee_ogg_malloc
++#define _ogg_calloc  dee_ogg_calloc
++#define _ogg_realloc dee_ogg_realloc
++#define _ogg_free    dee_ogg_free
+ 
+ #ifdef _WIN32 
+ 
+diff -Naur vorbis_nightly_cvs/ogg/src/bitwise.c ogg/src/bitwise.c
+--- vorbis_nightly_cvs/ogg/src/bitwise.c	2003-11-10 08:06:08.000000000 +0900
++++ ogg/src/bitwise.c	2003-12-06 18:02:51.331823500 +0900
+@@ -224,7 +224,7 @@
+ /* Read in bits without advancing the bitptr; bits <= 32 */
+ long oggpack_look(oggpack_buffer *b,int bits){
+   unsigned long ret;
+-  unsigned long m=mask[bits];
++  unsigned long m= (bits==32)?-1:((1<<bits)-1); /*mask[bits]*/
+ 
+   bits+=b->endbit;
+ 
+@@ -285,10 +285,10 @@
+   return((b->ptr[0]>>(7-b->endbit))&1);
+ }
+ 
+-void oggpack_adv(oggpack_buffer *b,int bits){
++void __inline oggpack_adv(oggpack_buffer *b,int bits){
+   bits+=b->endbit;
+-  b->ptr+=bits/8;
+-  b->endbyte+=bits/8;
++  b->ptr+=bits>>3;
++  b->endbyte+=bits>>3;
+   b->endbit=bits&7;
+ }
+ 
+@@ -296,7 +296,7 @@
+   oggpack_adv(b,bits);
+ }
+ 
+-void oggpack_adv1(oggpack_buffer *b){
++void __inline oggpack_adv1(oggpack_buffer *b){
+   if(++(b->endbit)>7){
+     b->endbit=0;
+     b->ptr++;
+@@ -338,8 +338,8 @@
+   
+  overflow:
+ 
+-  b->ptr+=bits/8;
+-  b->endbyte+=bits/8;
++  b->ptr+=bits>>3;
++  b->endbyte+=bits>>3;
+   b->endbit=bits&7;
+   return(ret);
+ }
+diff -Naur vorbis_nightly_cvs/ogg/src/framing.c ogg/src/framing.c
+--- vorbis_nightly_cvs/ogg/src/framing.c	2002-09-29 03:10:38.000000000 +0900
++++ ogg/src/framing.c	2003-12-06 18:02:51.331823500 +0900
+@@ -42,8 +42,10 @@
+   return((int)(og->header[5]&0x04));
+ }
+ 
+-ogg_int64_t ogg_page_granulepos(ogg_page *og){
+-  unsigned char *page=og->header;
++ogg_int64_t ogg_page_granulepos(ogg_page *og){
++ ogg_int64_t *page= (ogg_int64_t *)(og->header + 6);
++ return *page;
++/*
+   ogg_int64_t granulepos=page[13]&(0xff);
+   granulepos= (granulepos<<8)|(page[12]&0xff);
+   granulepos= (granulepos<<8)|(page[11]&0xff);
+@@ -52,7 +54,8 @@
+   granulepos= (granulepos<<8)|(page[8]&0xff);
+   granulepos= (granulepos<<8)|(page[7]&0xff);
+   granulepos= (granulepos<<8)|(page[6]&0xff);
+-  return(granulepos);
++  return(granulepos);
++*/
+ }
+ 
+ int ogg_page_serialno(ogg_page *og){
+@@ -62,11 +65,14 @@
+ 	 (og->header[17]<<24));
+ }
+  
+-long ogg_page_pageno(ogg_page *og){
++long ogg_page_pageno(ogg_page *og){
++	return *(long*)(og->header + 18);
++/*
+   return(og->header[18] |
+ 	 (og->header[19]<<8) |
+ 	 (og->header[20]<<16) |
+-	 (og->header[21]<<24));
++	 (og->header[21]<<24));
++*/
+ }
+ 
+ 
+@@ -567,7 +573,8 @@
+   
+   if(oy->bodybytes+oy->headerbytes>bytes)return(0);
+   
+-  /* The whole test page is buffered.  Verify the checksum */
++  /* The whole test page is buffered.  Verify the checksum */
++  
+   {
+     /* Grab the checksum bytes, set the header field to zero */
+     char chksum[4];
+@@ -593,7 +600,7 @@
+       /* Bad checksum. Lose sync */
+       goto sync_fail;
+     }
+-  }
++  }
+   
+   /* yes, have a whole page all ready to go */
+   {

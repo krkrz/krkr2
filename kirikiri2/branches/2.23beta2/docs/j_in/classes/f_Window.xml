@@ -1,0 +1,1120 @@
+<?xml version="1.0" encoding="Shift_JIS" ?>
+<doc>
+<title>Window</title>
+<desc>
+　Window クラスは、<kw>ウィンドウ</kw>を管理するためのクラスです。<r/>
+</desc>
+
+<member>
+	<name>Window</name>
+	<type>constructor</type>
+	<shortdesc>Window オブジェクトの構築</shortdesc>
+	<arg>
+	</arg>
+	<result></result>
+	<desc>
+		　Window クラスのオブジェクトを構築します。<r/>
+		　ウィンドウは非表示の状態で作成され、位置やサイズは未定義 ( どこかにの位置に適当なサイズ ) です。<r/>
+	</desc>
+</member>
+
+<member>
+	<name>onMouseEnter</name>
+	<type>event</type>
+	<shortdesc>マウスが入ってきた</shortdesc>
+	<arg>
+	</arg>
+	<result></result>
+	<desc>
+		　マウスがウィンドウのクライアント領域内に入ってきたときに発生します。<r/>
+	</desc>
+	<ref>Window.onMouseLeave</ref>
+</member>
+
+<member>
+	<name>onMouseLeave</name>
+	<type>event</type>
+	<shortdesc>マウスが出ていった</shortdesc>
+	<arg>
+	</arg>
+	<result></result>
+	<desc>
+		　マウスがウィンドウのクライアント領域内から出ていったときに発生します。<r/>
+	</desc>
+	<ref>Window.onMouseEnter</ref>
+</member>
+
+<member>
+	<name>onClick</name>
+	<type>event</type>
+	<shortdesc>ウィンドウがクリックされた</shortdesc>
+	<arg>
+		<argitem>
+			<name>x</name>
+			<default></default>
+			<desc>
+				　ウィンドウがクリックされた位置の x 座標 ( クライアント座標での ) の値です。<r/>
+			</desc>
+		</argitem>
+		<argitem>
+			<name>y</name>
+			<default></default>
+			<desc>
+				　ウィンドウがクリックされた位置の y 座標 ( クライアント座標での ) の値です。<r/>
+			</desc>
+		</argitem>
+	</arg>
+	<result></result>
+	<desc>
+		　ウィンドウがクリックされた時に発生します。<r/>
+	</desc>
+	<ref>Window.onMouseDown</ref>
+	<ref>Window.onDoubleClick</ref>
+</member>
+
+<member>
+	<name>onDoubleClick</name>
+	<type>event</type>
+	<shortdesc>ウィンドウがダブルクリックされた</shortdesc>
+	<arg>
+		<argitem>
+			<name>x</name>
+			<default></default>
+			<desc>
+				　ウィンドウがダブルクリックされた位置の x 座標 ( クライアント座標での ) の値です。<r/>
+			</desc>
+		</argitem>
+		<argitem>
+			<name>y</name>
+			<default></default>
+			<desc>
+				　ウィンドウがダブルクリックされた位置の y 座標 ( クライアント座標での ) の値です。<r/>
+			</desc>
+		</argitem>
+	</arg>
+	<result></result>
+	<desc>
+		　ウィンドウがダブルクリックされた時に発生します。<r/>
+	</desc>
+	<ref>Window.onClick</ref>
+</member>
+
+<member>
+	<name>onMouseDown</name>
+	<type>event</type>
+	<shortdesc>マウスのボタンが押された</shortdesc>
+	<arg>
+		<argitem>
+			<name>x</name>
+			<default></default>
+			<desc>
+				　マウスのボタンが押された位置の x 座標 ( クライアント座標での ) の値です。<r/>
+			</desc>
+		</argitem>
+		<argitem>
+			<name>y</name>
+			<default></default>
+			<desc>
+				　マウスのボタンが押された位置の y 座標 ( クライアント座標での ) の値です。<r/>
+			</desc>
+		</argitem>
+		<argitem>
+			<name>button</name>
+			<default></default>
+			<desc>
+				　押されたマウスボタンです。以下のいずれかの値になります。<r/>
+				<tt><kw>mbLeft</kw>    : </tt>マウスの左ボタンが押された<r/>
+				<tt><kw>mbMiddle</kw>  : </tt>マウスの中ボタンが押された<r/>
+				<tt><kw>mbRight</kw>   : </tt>マウスの右ボタンが押された<r/>
+			</desc>
+		</argitem>
+		<argitem>
+			<name>shift</name>
+			<default></default>
+			<desc>
+				　マウスボタンが押されたときに同時に押されていたシフト系のキーの状態です。
+				以下の値のビット OR による組み合わせになります。<r/>
+				<tt><kw>ssAlt</kw>     : </tt>ALT キーが押されていた<r/>
+				<tt><kw>ssShift</kw>   : </tt>SHIFT キーが押されていた<r/>
+				<tt><kw>ssCtrl</kw>    : </tt>CTRL キーが押されていた<r/>
+			</desc>
+		</argitem>
+	</arg>
+	<result></result>
+	<desc>
+		　マウスボタンが押された時に発生します。<r/>
+	</desc>
+	<ref>Window.onClick</ref>
+</member>
+
+<member>
+	<name>onMouseUp</name>
+	<type>event</type>
+	<shortdesc>マウスのボタンが離された</shortdesc>
+	<arg>
+		<argitem>
+			<name>x</name>
+			<default></default>
+			<desc>
+				　マウスのボタンが離された位置の x 座標 ( クライアント座標での ) の値です。<r/>
+			</desc>
+		</argitem>
+		<argitem>
+			<name>y</name>
+			<default></default>
+			<desc>
+				　マウスのボタンが離された位置の y 座標 ( クライアント座標での ) の値です。<r/>
+			</desc>
+		</argitem>
+		<argitem>
+			<name>button</name>
+			<default></default>
+			<desc>
+				　離されたマウスボタンです。以下のいずれかの値になります。<r/>
+				<tt><kw>mbLeft</kw>    : </tt>マウスの左ボタンが離された<r/>
+				<tt><kw>mbMiddle</kw>  : </tt>マウスの中ボタンが離された<r/>
+				<tt><kw>mbRight</kw>   : </tt>マウスの右ボタンが離された<r/>
+			</desc>
+		</argitem>
+		<argitem>
+			<name>shift</name>
+			<default></default>
+			<desc>
+				　マウスボタンが離された時に同時に押されていたシフト系のキーの状態です。
+				以下の値のビット OR による組み合わせになります。<r/>
+				<tt><kw>ssAlt</kw>     : </tt>ALT キーが押されていた<r/>
+				<tt><kw>ssShift</kw>   : </tt>SHIFT キーが押されていた<r/>
+				<tt><kw>ssCtrl</kw>    : </tt>CTRL キーが押されていた<r/>
+			</desc>
+		</argitem>
+	</arg>
+	<result></result>
+	<desc>
+		　マウスボタンが離された時に発生します。<r/>
+	</desc>
+</member>
+
+<member>
+	<name>onMouseMove</name>
+	<type>event</type>
+	<shortdesc>マウスが移動した</shortdesc>
+	<arg>
+		<argitem>
+			<name>x</name>
+			<default></default>
+			<desc>
+				　マウスが移動した位置の x 座標 ( クライアント座標での ) の値です。<r/>
+			</desc>
+		</argitem>
+		<argitem>
+			<name>y</name>
+			<default></default>
+			<desc>
+				　マウスが移動した位置の y 座標 ( クライアント座標での ) の値です。<r/>
+			</desc>
+		</argitem>
+		<argitem>
+			<name>shift</name>
+			<default></default>
+			<desc>
+				　マウスが移動していた時に同時に押されていたシフト系のキーやマウスのボタンの状態です。
+				以下の値のビット OR による組み合わせになります。<r/>
+				<tt><kw>ssAlt</kw>     : </tt>ALT キーが押されていた<r/>
+				<tt><kw>ssShift</kw>   : </tt>SHIFT キーが押されていた<r/>
+				<tt><kw>ssCtrl</kw>    : </tt>CTRL キーが押されていた<r/>
+				<tt><kw>ssLeft</kw>    : </tt>マウスの左ボタンが押されていた<r/>
+				<tt><kw>ssMiddle</kw>  : </tt>マウスの中ボタンが押されていた<r/>
+				<tt><kw>ssRight</kw>   : </tt>マウスの右ボタンが押されていた<r/>
+			</desc>
+		</argitem>
+	</arg>
+	<result></result>
+	<desc>
+		　マウスが移動した時に発生します。<r/>
+	</desc>
+</member>
+
+<member>
+	<name>onMouseWheel</name>
+	<type>event</type>
+	<shortdesc>マウスホイールが回転した</shortdesc>
+	<arg>
+		<argitem>
+			<name>shift</name>
+			<default></default>
+			<desc>
+				　マウスが移動していた時に同時に押されていたシフト系のキーやマウスのボタンの状態です。
+				以下の値のビット OR による組み合わせになります。<r/>
+				<tt><kw>ssAlt</kw>     : </tt>ALT キーが押されていた<r/>
+				<tt><kw>ssShift</kw>   : </tt>SHIFT キーが押されていた<r/>
+				<tt><kw>ssCtrl</kw>    : </tt>CTRL キーが押されていた<r/>
+				<tt><kw>ssLeft</kw>    : </tt>マウスの左ボタンが押されていた<r/>
+				<tt><kw>ssMiddle</kw>  : </tt>マウスの中ボタンが押されていた<r/>
+				<tt><kw>ssRight</kw>   : </tt>マウスの右ボタンが押されていた<r/>
+			</desc>
+		</argitem>
+		<argitem>
+			<name>delta</name>
+			<default></default>
+			<desc>
+				　ホイールの回転角です。上方向(ユーザの反対側の方向)に回された場合は正、
+				下方向(ユーザ側の方向)に回された場合は負の値になります。通常、最小量は 120
+				となります。<r/>
+			</desc>
+		</argitem>
+		<argitem>
+			<name>x</name>
+			<default></default>
+			<desc>
+				　ホイールが回転した位置の x 座標 ( クライアント座標での ) の値です。<r/>
+			</desc>
+		</argitem>
+		<argitem>
+			<name>y</name>
+			<default></default>
+			<desc>
+				　ホイールが回転した位置の y 座標 ( クライアント座標での ) の値です。<r/>
+			</desc>
+		</argitem>
+	</arg>
+	<result></result>
+	<desc>
+		　マウスホイールが回転した時に発生します。<r/>
+	</desc>
+</member>
+
+<member>
+	<name>onKeyDown</name>
+	<type>event</type>
+	<shortdesc>キーが押された</shortdesc>
+	<arg>
+		<argitem>
+			<name>key</name>
+			<default></default>
+			<desc>
+				　押されたキーの<kw>仮想キーコード</kw>の値です。<r/>
+			</desc>
+		</argitem>
+		<argitem>
+			<name>shift</name>
+			<default></default>
+			<desc>
+				　キーが押された時に同時に押されていたシフト系のキーやマウスのボタンの状態です。
+				以下の値のビット OR による組み合わせになります。<r/>
+				<tt><kw>ssAlt</kw>     : </tt>ALT キーが押されていた<r/>
+				<tt><kw>ssShift</kw>   : </tt>SHIFT キーが押されていた<r/>
+				<tt><kw>ssCtrl</kw>    : </tt>CTRL キーが押されていた<r/>
+				<tt><kw>ssLeft</kw>    : </tt>マウスの左ボタンが押されていた<r/>
+				<tt><kw>ssMiddle</kw>  : </tt>マウスの中ボタンが押されていた<r/>
+				<tt><kw>ssRight</kw>   : </tt>マウスの右ボタンが押されていた<r/>
+				　また、キーボードが長時間押され、キーリピートが発生している場合は
+				以下の値も組み合わされます。<r/>
+				<tt><kw>ssRepeat</kw>  : </tt>キーリピートが発生した<r/>
+			</desc>
+		</argitem>
+	</arg>
+	<result></result>
+	<desc>
+		　キーが押された時に発生します。<r/>
+	</desc>
+</member>
+
+<member>
+	<name>onKeyUp</name>
+	<type>event</type>
+	<shortdesc>キーが離された</shortdesc>
+	<arg>
+		<argitem>
+			<name>key</name>
+			<default></default>
+			<desc>
+				　離されたキーの<kw>仮想キーコード</kw>の値です。<r/>
+			</desc>
+		</argitem>
+		<argitem>
+			<name>shift</name>
+			<default></default>
+			<desc>
+				　キーが離された時に同時に押されていたシフト系のキーやマウスのボタンの状態です。
+				以下の値のビット OR による組み合わせになります。<r/>
+				<tt><kw>ssAlt</kw>     : </tt>ALT キーが押されていた<r/>
+				<tt><kw>ssShift</kw>   : </tt>SHIFT キーが押されていた<r/>
+				<tt><kw>ssCtrl</kw>    : </tt>CTRL キーが押されていた<r/>
+				<tt><kw>ssLeft</kw>    : </tt>マウスの左ボタンが押されていた<r/>
+				<tt><kw>ssMiddle</kw>  : </tt>マウスの中ボタンが押されていた<r/>
+				<tt><kw>ssRight</kw>   : </tt>マウスの右ボタンが押されていた<r/>
+			</desc>
+		</argitem>
+	</arg>
+	<result></result>
+	<desc>
+		　キーが離された時に発生します。<r/>
+	</desc>
+</member>
+
+<member>
+	<name>onKeyPress</name>
+	<type>event</type>
+	<shortdesc>文字が入力された</shortdesc>
+	<arg>
+		<argitem>
+			<name>key</name>
+			<default></default>
+			<desc>
+				　入力された文字です。<r/>
+			</desc>
+		</argitem>
+	</arg>
+	<result></result>
+	<desc>
+		　文字が入力されたときに発生します。<ref>Window.onKeyDown</ref> と異なるのは、onKeyDown が
+		仮想キーコードを扱うのに対し、このイベントは文字そのものを扱います。押されたキーが
+		文字とは関係のないキー (ファンクションキーなど) の場合はこのイベントは発生しません。<r/>
+	</desc>
+</member>
+
+<member>
+	<name>onFileDrop</name>
+	<type>event</type>
+	<shortdesc>ファイルがドロップされた</shortdesc>
+	<arg>
+		<argitem>
+			<name>files</name>
+			<default></default>
+			<desc>
+				　ドロップされたファイル名が格納された配列(Array)オブジェクトです。<r/>
+			</desc>
+		</argitem>
+	</arg>
+	<result></result>
+	<desc>
+		　ファイルがエクスプローラなどからウィンドウにドロップされたときに発生します。<r/>
+		　単一のファイルがドロップされた場合でも引数には配列オブジェクトが渡されます (最初の要素が
+		そのファイルになります )。<r/>
+	</desc>
+</member>
+
+<member>
+	<name>onCloseQuery</name>
+	<type>event</type>
+	<shortdesc>ウィンドウを閉じる確認</shortdesc>
+	<arg>
+		<argitem>
+			<name>canclose</name>
+			<default></default>
+			<desc>
+				　ウィンドウを閉じることができるかどうかが渡されます。下位クラスから上位クラスのイベントハンドラが
+				呼ばれる課程で、下位クラスが決定した「ウィンドウを閉じることができるか」が渡されます。<r/>
+				
+			</desc>
+		</argitem>
+	</arg>
+	<result></result>
+	<desc>
+		　ウィンドウを閉じることができるかどうかを確認するためのイベントです。ウィンドウを閉じることが
+		できない場合、上位クラスの同メソッドに引数として false を渡してください。<r/>
+	</desc>
+</member>
+
+
+
+<member>
+	<name>close</name>
+	<type>method</type>
+	<shortdesc>ウィンドウを閉じる</shortdesc>
+	<arg>
+	</arg>
+	<result></result>
+	<desc>
+		　<ref>Window.showModal</ref> メソッドで表示されたウィンドウを閉じます。ウィンドウを閉じる前に <ref>Window.onCloseQuery</ref> イベントが発生し、ウィンドウを閉じることができるかどうかを確認することができます。<r/>
+	</desc>
+	<ref>Window.showModal</ref>
+	<ref>Window.onCloseQuery</ref>
+</member>
+
+<member>
+	<name>beginMove</name>
+	<type>method</type>
+	<shortdesc>ウィンドウ移動の開始</shortdesc>
+	<arg>
+	</arg>
+	<result></result>
+	<desc>
+		　ウィンドウのマウスでの移動を開始します。通常、ウィンドウのタイトルバーをドラッグすると
+		ウィンドウを移動することができますが、このメソッドはその動作をシミュレートします。<r/>
+		　<ref>Window.onMouseDown</ref> イベントハンドラ内でこのメソッドを呼ぶと、任意の箇所で
+		ウィンドウをドラッグして移動可能にすることができます。<r/>
+	</desc>
+	<ref>Window.onMouseDown</ref>
+</member>
+
+<member>
+	<name>bringToFront</name>
+	<type>method</type>
+	<shortdesc>ウィンドウを最前面に移動</shortdesc>
+	<arg>
+	</arg>
+	<result></result>
+	<desc>
+		　ウィンドウを最前面に移動します。アプリケーションが非アクティブの場合はアプリケーション
+		自体もアクティブにします。<r/>
+	</desc>
+</member>
+
+<member>
+	<name>update</name>
+	<type>method</type>
+	<shortdesc>ウィンドウ内容の強制的な描画</shortdesc>
+	<arg>
+		<argitem>
+			<name>type</name>
+			<default>tutNormal</default>
+			<desc>
+				　ウィンドウ描画のタイプを指定します。<r/>
+				　<tt><kw>tutNormal</kw></tt> を指定すると通常の描画 ( 差分描画 )、
+				<tt><kw>tutEntire</kw></tt> を指定するとウィンドウ内容全体を描画します。<r/>
+			</desc>
+		</argitem>
+	</arg>
+	<result></result>
+	<desc>
+		　現バージョンでは実装されていません。
+	</desc>
+</member>
+
+<member>
+	<name>showModal</name>
+	<type>method</type>
+	<shortdesc>モーダルでウィンドウを表示</shortdesc>
+	<arg>
+	</arg>
+	<result></result>
+	<desc>
+		　ウィンドウを<kw>モーダル</kw> ( <kw>モード付き</kw> ) で表示します。
+		このメソッドはウィンドウを表示状態に
+		し、かつ、他のウィンドウを一時的に無効にします。そのためユーザはこのウィンドウのみに
+		アクセスできる状態になります ( これをモード付きの状態と呼びます )。ウィンドウが閉じられると
+		モード付きの状態は解除されます。<r/>
+		　このメソッドを呼び出す時点ではウィンドウは非表示でなくてはなりません。<r/>
+	</desc>
+</member>
+
+<member>
+	<name>setMaskRegion</name>
+	<type>method</type>
+	<shortdesc>ウィンドウリージョンをマスクに従って設定</shortdesc>
+	<arg>
+		<argitem>
+			<name>threshold</name>
+			<default>1</default>
+			<desc>
+				　マスクのスレッショルド ( 敷居値 ) を指定します。<r/>
+				　プライマリレイヤのマスク ( レイヤの不透明度の情報 ) のうち、この値よりも大きい部分の形に
+				ウィンドウが切り取られて表示されます。<r/>
+			</desc>
+		</argitem>
+	</arg>
+	<result></result>
+	<desc>
+		　ウィンドウリージョンをプライマリレイヤのマスク ( レイヤの不透明度の情報 ) に従って設定します。<r/>
+		　ウィンドウを不定形にする事ができます。<r/>
+		　表示されるプライマリレイヤと、ウィンドウの大きさ、位置がずれないようにするには
+		以下のことを行う必要があります。<r/>
+		<ul>
+		<li><ref>Window.borderStyle</ref> は bsNone に設定します。</li>
+		<li><ref>Window.innerSunken</ref> は false に設定します。</li>
+		<li><ref>Window.layerLeft</ref> および <ref>Window.layerTop</ref> は 0 に設定します。</li>
+		<li><ref>Layer.imageLeft</ref> および <ref>Layer.imageTop</ref> は 0 に設定します。</li>
+		</ul>
+	</desc>
+	<ref>Window.removeMaskRegion</ref>
+</member>
+
+<member>
+	<name>removeMaskRegion</name>
+	<type>method</type>
+	<shortdesc>ウィンドウリージョンの解除</shortdesc>
+	<arg>
+	</arg>
+	<result></result>
+	<desc>
+		　<ref>Window.setMaskRegion</ref>で設定したウィンドウリージョンを解除し、ウィンドウを矩形に戻します。<r/>
+	</desc>
+	<ref>Window.setMaskRegion</ref>
+</member>
+
+<member>
+	<name>add</name>
+	<type>method</type>
+	<shortdesc>管理オブジェクトの追加</shortdesc>
+	<arg>
+		<argitem>
+			<name>object</name>
+			<default></default>
+			<desc>
+				　管理されるオブジェクトを指定します。<r/>
+			</desc>
+		</argitem>
+	</arg>
+	<result></result>
+	<desc>
+		　管理オブジェクトを追加します。ここで指定されたオブジェクトは、ウィンドウが無効化
+		されるときに自動的に無効化されるようになります。<r/>
+	</desc>
+	<ref>Window.remove</ref>
+</member>
+
+<member>
+	<name>remove</name>
+	<type>method</type>
+	<shortdesc>管理オブジェクトの削除</shortdesc>
+	<arg>
+		<argitem>
+			<name>object</name>
+			<default></default>
+			<desc>
+				　管理オブジェクトのリストから削除するオブジェクトを指定します。<r/>
+			</desc>
+		</argitem>
+	</arg>
+	<result></result>
+	<desc>
+		　管理オブジェクトのリストから指定されたオブジェクトを削除します。<r/>
+	</desc>
+	<ref>Window.add</ref>
+</member>
+
+<member>
+	<name>setSize</name>
+	<type>method</type>
+	<shortdesc>ウィンドウサイズの設定</shortdesc>
+	<arg>
+		<argitem>
+			<name>width</name>
+			<default></default>
+			<desc>
+				　ウィンドウの横幅を指定します。<r/>
+			</desc>
+		</argitem>
+		<argitem>
+			<name>height</name>
+			<default></default>
+			<desc>
+				　ウィンドウの縦幅を指定します。<r/>
+			</desc>
+		</argitem>
+	</arg>
+	<result></result>
+	<desc>
+		　ウィンドウのサイズを指定します。<r/>
+		　ウィンドウのサイズを指定するときには、<ref>Window.width</ref> や
+		<ref>Window.height</ref> プロパティを個々に設定するよりも
+		このメソッドで一気に指定した方が効率的です。<r/>
+	</desc>
+	<ref>Window.width</ref>
+	<ref>Window.height</ref>
+	<ref>Window.setPos</ref>
+	<ref>Window.setInnerSize</ref>
+</member>
+
+<member>
+	<name>setPos</name>
+	<type>method</type>
+	<shortdesc>ウィンドウ位置の設定</shortdesc>
+	<arg>
+		<argitem>
+			<name>left</name>
+			<default></default>
+			<desc>
+				　ウィンドウの左端位置を指定します。<r/>
+			</desc>
+		</argitem>
+		<argitem>
+			<name>top</name>
+			<default></default>
+			<desc>
+				　ウィンドウの上端位置を指定します。<r/>
+			</desc>
+		</argitem>
+	</arg>
+	<result></result>
+	<desc>
+		　ウィンドウの位置を指定します。<r/>
+		　ウィンドウの位置を指定するときには、<ref>Window.left</ref> や
+		<ref>Window.top</ref> プロパティを個々に設定するよりも
+		このメソッドで一気に指定した方が効率的です。<r/>
+	</desc>
+	<ref>Window.left</ref>
+	<ref>Window.top</ref>
+	<ref>Window.setSize</ref>
+</member>
+
+<member>
+	<name>setLayerPos</name>
+	<type>method</type>
+	<shortdesc>レイヤの表示オフセットの設定</shortdesc>
+	<arg>
+		<argitem>
+			<name>left</name>
+			<default></default>
+			<desc>
+				　クライアント領域内でのレイヤの左端位置を指定します。<r/>
+			</desc>
+		</argitem>
+		<argitem>
+			<name>top</name>
+			<default></default>
+			<desc>
+				　クライアント領域内でのレイヤの上端位置を指定します。<r/>
+			</desc>
+		</argitem>
+	</arg>
+	<result></result>
+	<desc>
+		　レイヤの表示オフセットを指定します。<r/>
+		　レイヤの表示オフセットはデフォルトで 0, 0 です。<r/>
+		　これ以外の値を指定するとそれだけずれた位置にレイヤが表示されます。<r/>
+	</desc>
+	<ref>Window.layerLeft</ref>
+	<ref>Window.layerTop</ref>
+</member>
+
+<member>
+	<name>setInnerSize</name>
+	<type>method</type>
+	<shortdesc>クライアントサイズの設定</shortdesc>
+	<arg>
+		<argitem>
+			<name>width</name>
+			<default></default>
+			<desc>
+				　クライアントの横幅を指定します。<r/>
+			</desc>
+		</argitem>
+		<argitem>
+			<name>height</name>
+			<default></default>
+			<desc>
+				　クライアントの縦幅を指定します。<r/>
+			</desc>
+		</argitem>
+	</arg>
+	<result></result>
+	<desc>
+		　ウィンドウのクライアントサイズを指定します。<r/>
+		　クライアントは、レイヤを表示可能なウィンドウ内の領域です。<r/>
+		　このサイズを設定するとウィンドウのサイズもそれに応じて変化します。<r/>
+		　クライアントのサイズを指定するときには、<ref>Window.innerWidth</ref> や
+		<ref>Window.innerHeight</ref> プロパティを個々に設定するよりも
+		このメソッドで一気に指定した方が効率的です。<r/>
+	</desc>
+	<ref>Window.innerWidth</ref>
+	<ref>Window.innerHeight</ref>
+</member>
+
+<member>
+	<name>postInputEvent</name>
+	<type>method</type>
+	<shortdesc>入力イベントの生成</shortdesc>
+	<arg>
+		<argitem>
+			<name>eventname</name>
+			<default></default>
+			<desc>
+				　イベント名称を指定します。以下の文字列で指定します。<r/>
+				<ul>
+				<li>"<kw>onKeyDown</kw>" は <ref>Window.onKeyDown</ref> イベントを生成します。</li>
+				<li>"<kw>onKeyPress</kw>" は <ref>Window.onKeyPress</ref> イベントを生成します。</li>
+				<li>"<kw>onKeyUp</kw>" は <ref>Window.onKeyUp</ref> イベントを生成します。onKeyDownとonKeyUpは対になるので、onKeyDownを生成したら対応するonKeyUpも生成することを推奨します。</li>
+				</ul>
+			</desc>
+		</argitem>
+		<argitem>
+			<name>params</name>
+			<default>null</default>
+			<desc>
+				　イベントのパラメータが格納された辞書配列を指定します。<r/>
+				<ul>
+				<li>"onKeyDown" イベントや "onKeyUp" イベントでは、"key" に仮想キーコード、"shift" にシフト状態を格納します。"shift" を省略すると 0 であると見なされます。</li>
+				<li>"onKeyPress" イベントでは "key" に文字を指定します。</li>
+				</ul>
+			</desc>
+		</argitem>
+	</arg>
+	<result></result>
+	<desc>
+		　入力イベントを生成します。現バージョンではキー入力に関する３つのイベントを生成できます。<r/>
+		　このメソッドは、イベントを非同期イベントとして生成します。つまり、このメソッドは、対応するイベントハンドラの終了を待たずに帰ります。実際にイベントハンドラが呼ばれて処理が行われるのは、いったん吉里吉里に制御が戻った後となります。<r/>
+		　入力イベントは、Windowクラスのほか、通常の入力イベントと同じく、Layerクラスの該当するイベントとしても発生します。<r/>
+		<example>
+postInputEvent('onKeyDown', %[key: VK_UP, shift: ssShift]);<r/>
+postInputEvent('onKeyUp',   %[key: VK_UP, shift: ssShift]);<r/>
+	// 左カーソルキーを押す<r/></example>
+	</desc>
+
+</member>
+
+
+<member>
+	<name>hideMouseCursor</name>
+	<type>method</type>
+	<shortdesc>マウスカーソルを一時的に隠す</shortdesc>
+	<arg>
+	</arg>
+	<result></result>
+	<desc>
+		　マウスカーソルを一時的に隠します。マウスを少しでも動かすと
+		マウスカーソルは再び表示されるようになります。<r/>
+		　このメソッドは、<ref>Window.mouseCursorState</ref>を<tt><kw>mcsTempHidden</kw></tt>に設定するのと同じ効果を持ちます。<r/>
+	</desc>
+</member>
+
+
+<member>
+	<name>registerMessageReceiver</name>
+	<type>method</type>
+	<shortdesc>メッセージ受信関数の登録/登録削除</shortdesc>
+	<arg>
+		<argitem>
+			<name>mode</name>
+			<default></default>
+			<desc>
+				　登録するか、登録削除するかどうかを指定します。<r/>
+				　<kw>wrmRegister</kw> を指定すると登録になります。<kw>wrmUnregister</kw> を
+				指定すると登録削除になります。<r/>
+				　wrm で始まる定数は tp_stub.h に定義されています。<r/>
+			</desc>
+		</argitem>
+		<argitem>
+			<name>func</name>
+			<default></default>
+			<desc>
+				　メッセージ受信関数を指定します。<r/>
+				　メッセージ受信関数は bool __stdcall func(void *userdata, tTVPWindowMessage *Message)
+				の形式である必要があり、このメソッドに渡す際にその関数ポインタを整数型にキャストして渡す
+				必要があります。<r/>
+				　構造体 tTVPWindowMessage は tp_stub.h に定義されています。<r/>
+				　この関数が false を返すと吉里吉里本体側はそのウィンドウメッセージに関知しなくなります。<r/>
+			</desc>
+		</argitem>
+		<argitem>
+			<name>userdata</name>
+			<default></default>
+			<desc>
+				　func 引数で指定された受信関数の userdata 引数に渡すためのデータポインタを指定します。<r/>
+				　このメソッドに渡す際にはそのポインタを整数型にキャストして渡す必要があります。<r/>
+				　この引数は mode 引数が wrmRegister でないときは無視されます。<r/>
+			</desc>
+		</argitem>
+	</arg>
+	<result></result>
+	<desc>
+		　このメソッドは C++ 等で記述されたプラグインから利用されることを想定しているメソッドです。TJS2
+		からは正常に利用できません。<r/>
+		　このメソッドでは、このウィンドウを通過するメッセージをトラップするためのメッセージ受信関数を
+		登録することができます。メッセージ受信関数では通常のウィンドウメッセージの他、
+		TVP_WM_DETACH と TVP_WM_ATTACH という２つの重要なメッセージもトラップすることができ、
+		ウィンドウが再構築や破棄されるタイミングにおいて、子ウィンドウを取り外すというような
+		用途に使用できます。<r/>
+		　吉里吉里ソース配布パッケージ中の base/win32/plugin_kit/wmrdump に簡単な使用法の説明があります。<r/>
+	</desc>
+	<ref>Window.HWND</ref>
+</member>
+
+
+
+
+<member>
+	<name>visible</name>
+	<type>property</type>
+	<shortdesc>ウィンドウが表示されているかどうか</shortdesc>
+	<access>r/w</access>
+	<desc>
+		　ウィンドウが表示されているかどうかを表します。値を設定することもできます。<r/>
+		　真ならばウィンドウが表示されていて、偽ならばウィンドウは非表示の状態です。<r/>
+	</desc>
+</member>
+
+<member>
+	<name>caption</name>
+	<type>property</type>
+	<shortdesc>ウィンドウのキャプション</shortdesc>
+	<access>r/w</access>
+	<desc>
+		　ウィンドウの<kw>キャプション</kw> ( タイトルバーのタイトル ) を表します。
+		値を設定することもできます。<r/>
+	</desc>
+</member>
+
+<member>
+	<name>width</name>
+	<type>property</type>
+	<shortdesc>ウィンドウの横幅</shortdesc>
+	<access>r/w</access>
+	<desc>
+		　ウィンドウの横幅を表します。値を設定することもできます。<r/>
+	</desc>
+	<ref>Window.height</ref>
+	<ref>Window.setSize</ref>
+</member>
+
+<member>
+	<name>height</name>
+	<type>property</type>
+	<shortdesc>ウィンドウの縦幅</shortdesc>
+	<access>r/w</access>
+	<desc>
+		　ウィンドウの縦幅を表します。値を設定することもできます。<r/>
+	</desc>
+	<ref>Window.width</ref>
+	<ref>Window.setSize</ref>
+</member>
+
+<member>
+	<name>left</name>
+	<type>property</type>
+	<shortdesc>ウィンドウの左端位置</shortdesc>
+	<access>r/w</access>
+	<desc>
+		　ウィンドウの左端位置を表します。値を設定することもできます。<r/>
+		　左端位置はスクリーンの原点 ( 左上隅 ) からの x 座標です。<r/>
+	</desc>
+	<ref>Window.top</ref>
+	<ref>Window.setPos</ref>
+</member>
+
+<member>
+	<name>top</name>
+	<type>property</type>
+	<shortdesc>ウィンドウの上端位置</shortdesc>
+	<access>r/w</access>
+	<desc>
+		　ウィンドウの上端位置を表します。値を設定することもできます。<r/>
+		　上端位置はスクリーンの原点 ( 左上隅 ) からの y 座標です。<r/>
+	</desc>
+	<ref>Window.left</ref>
+	<ref>Window.setPos</ref>
+</member>
+
+<member>
+	<name>layerLeft</name>
+	<type>property</type>
+	<shortdesc>レイヤの表示オフセットの左端位置</shortdesc>
+	<access>r/w</access>
+	<desc>
+		　レイヤの表示オフセットの左端位置を表します。値を設定することもできます。<r/>
+	</desc>
+	<ref>Window.layerTop</ref>
+	<ref>Window.setLayerPos</ref>
+</member>
+
+<member>
+	<name>layerTop</name>
+	<type>property</type>
+	<shortdesc>レイヤの表示オフセットの上端位置</shortdesc>
+	<access>r/w</access>
+	<desc>
+		　レイヤの表示オフセットの上端位置を表します。値を設定することもできます。<r/>
+	</desc>
+	<ref>Window.layerLeft</ref>
+	<ref>Window.setLayerPos</ref>
+</member>
+
+<member>
+	<name>innerSunken</name>
+	<type>property</type>
+	<shortdesc>クライアント領域が凹んだような外見を持つかどうか</shortdesc>
+	<access>r/w</access>
+	<desc>
+		　ウィンドウのクライアント領域が凹んだような外見を持つかどうかを表します。
+		値を設定することもできます。<r/>
+		　真を指定すると凹んだような外見をもち、偽を指定するとフラットな外見を持つようになります。<r/>
+		　この凹んだような外見のための枠 ( 凹んだような視覚効果を持つ部分 ) はクライアント領域
+		には含まれません。<r/>
+	</desc>
+	<ref>Window.innerWidth</ref>
+	<ref>Window.innerHeight</ref>
+	<ref>Window.setInnerSize</ref>
+</member>
+
+<member>
+	<name>innerWidth</name>
+	<type>property</type>
+	<shortdesc>クライアント領域の横幅</shortdesc>
+	<access>r/w</access>
+	<desc>
+		　クライアント領域の横幅を表します。
+		値を設定することもできます。<r/>
+	</desc>
+	<ref>Window.innerHeight</ref>
+	<ref>Window.setInnerSize</ref>
+</member>
+
+<member>
+	<name>innerHeight</name>
+	<type>property</type>
+	<shortdesc>クライアント領域の縦幅</shortdesc>
+	<access>r/w</access>
+	<desc>
+		　クライアント領域の縦幅を表します。
+		値を設定することもできます。<r/>
+	</desc>
+	<ref>Window.innerWidth</ref>
+	<ref>Window.setInnerSize</ref>
+</member>
+
+<member>
+	<name>borderStyle</name>
+	<type>property</type>
+	<shortdesc>ウィンドウ外見</shortdesc>
+	<access>r/w</access>
+	<desc>
+		　ウィンドウの外見を表します。値を設定することもできます。<r/>
+		　以下の値を設定することができます。<r/>
+<tt><kw>bsDialog</kw>      :</tt> サイズ変更不可の、ダイアログボックスと同様の外見を持ちます。<r/>
+<tt><kw>bsSingle</kw>      :</tt> サイズ変更不可のウィンドウです。<r/>
+<tt><kw>bsNone</kw>        :</tt> ボーダーのないウィンドウです。<r/>
+<tt><kw>bsSizeable</kw>    :</tt> サイズ変更可の一般的なウィンドウです。デフォルトです。<r/>
+<tt><kw>bsToolWindow</kw>  :</tt> サイズ変更不可のツールウィンドウ(キャプションの小さいウィンドウ) です。<r/>
+<tt><kw>bsSizeToolWin</kw> :</tt> bsToolWindow と似ていますが、サイズ変更が可能です。<r/>
+	</desc>
+</member>
+
+<member>
+	<name>stayOnTop</name>
+	<type>property</type>
+	<shortdesc>常に最上位に表示するかどうか</shortdesc>
+	<access>r/w</access>
+	<desc>
+		　ウィンドウを常に最上位 ( 一番手前 ) に表示するかどうかを表します。値を設定することもできます。<r/>
+		　真ならばウィンドウは常に最上位に表示されます。<r/>
+	</desc>
+</member>
+
+<member>
+	<name>showScrollBars</name>
+	<type>property</type>
+	<shortdesc>スクロールバーを表示するかどうか</shortdesc>
+	<access>r/w</access>
+	<desc>
+		　スクロールバーを表示するかどうかを表します。値を設定することもできます。<r/>
+		　真ならばスクロールバーは表示され、偽ならば表示されません。<r/>
+	</desc>
+</member>
+
+
+<member>
+	<name>imeMode</name>
+	<type>property</type>
+	<shortdesc>デフォルトのIMEモード</shortdesc>
+	<access>r/w</access>
+	<desc>
+		　デフォルトのIMEモードを表します。値を設定することもできます。<r/>
+		　ここで指定したモードは、どのレイヤにもフォーカスが無い状態に設定されるモードです。<r/>
+		　未指定の場合は <kw>imDisable</kw>で、これはどのレイヤにもフォーカスが無い状態では IME は無効状態であるということになります。<r/>
+		　指定可能な値については <ref>Layer.imeMode</ref> を参照してください。<r/>
+	</desc>
+</member>
+
+<member>
+	<name>mouseCursorState</name>
+	<type>property</type>
+	<shortdesc>マウスカーソル表示状態</shortdesc>
+	<access>r/w</access>
+	<desc>
+		　マウスカーソルの表示状態を表します。値を設定することもできます。<r/>
+		　<tt><kw>mcsVisible</kw></tt>を指定すると、マウスカーソルは表示状態になります。これはデフォルトの状態です。<r/>
+		　<tt><kw>mcsTempHidden</kw></tt>を指定すると、マウスカーソルは非表示状態になりますが、少しでもマウスを動かすと<tt>mcsVisible</tt>に変わり、表示状態になります。<ref>Window.hideMouseCursor</ref>メソッドを呼び出すとこの状態になります。<r/>
+		　<tt><kw>mcsHidden</kw></tt>を指定すると、マウスカーソルは非表示状態になります。マウスを動かしても表示状態にはなりません。<r/>
+	</desc>
+</member>
+
+
+<member>
+	<name>useMouseKey</name>
+	<type>property</type>
+	<shortdesc>マウスキーを使用するかどうか</shortdesc>
+	<access>r/w</access>
+	<desc>
+		　マウスキーを使用するかどうかを表します。値を設定することもできます。<r/>
+		　真ならばマウスキーを使用することができます。<r/>
+		　マウスキーが有効になると、カーソルキーを使ってマウスカーソルを移動させることが
+		できますが、キー入力系のイベントはいっさい発生しなくなります。<r/>
+	</desc>
+</member>
+
+<member>
+	<name>menu</name>
+	<type>property</type>
+	<shortdesc>ルートメニューオブジェクト</shortdesc>
+	<access>r</access>
+	<desc>
+		　ルート<kw>メニュー</kw>オブジェクト ( Menu クラスのオブジェクト ) を表します。<r/>
+		　このルートメニューオブジェクトの子として登録されたメニューはメニューバーに並ぶことになります。<r/>
+	</desc>
+</member>
+
+<member>
+	<name>fullScreen</name>
+	<type>property</type>
+	<shortdesc>フルスクリーンかどうか</shortdesc>
+	<access>r/w</access>
+	<desc>
+		　<kw>フルスクリーン</kw>かどうかを表します。値を設定することもできます。<r/>
+		　真を指定すると現在のウィンドウのクライアント領域がフルスクリーンになります。フルスクリーン
+		時の画面解像度はクライアント領域のサイズになります。<r/>
+		　偽を指定するとウィンドウ表示になります。<r/>
+	</desc>
+</member>
+
+<member>
+	<name>mainWindow</name>
+	<type>property</type>
+	<shortdesc>メインウィンドウ</shortdesc>
+	<access>r</access>
+	<desc>
+		　メインウィンドウ ( 最初に作成されたウィンドウ ) を表します。<r/>
+	</desc>
+</member>
+
+<member>
+	<name>focusedLayer</name>
+	<type>property</type>
+	<shortdesc>フォーカスを持っているレイヤオブジェクト</shortdesc>
+	<access>r/w</access>
+	<desc>
+		　現在 <kw>フォーカス</kw> を持っているレイヤオブジェクトを表します。
+		値を設定することもできます。<r/>
+		　null の場合はどのレイヤもフォーカスを持っていません。レイヤオブジェクトを
+		設定するとそのレイヤにフォーカスが移ります。<r/>
+	</desc>
+</member>
+
+<member>
+	<name>primaryLayer</name>
+	<type>property</type>
+	<shortdesc>プライマリレイヤオブジェクト</shortdesc>
+	<access>r</access>
+	<desc>
+		　<kw>プライマリレイヤ</kw>オブジェクトを表します。<r/>
+	</desc>
+</member>
+
+<member>
+	<name>HWND</name>
+	<type>property</type>
+	<shortdesc>ウィンドウハンドル</shortdesc>
+	<access>r</access>
+	<desc>
+		　ウィンドウハンドルを表します。<r/>
+		　ここで得られるのは整数ですが、プラグインなどでこの数値を使う場合は HWND 型に
+		キャストして使ってください。<r/>
+		　<ref>Window.borderStyle</ref> など、一部のプロパティは値が変更されるときに
+		ウィンドウをいったん破棄し、作り替えますので注意してください。<r/>
+	</desc>
+	<ref>Window.registerMessageReceiver</ref>
+</member>
+
+
+
+</doc>

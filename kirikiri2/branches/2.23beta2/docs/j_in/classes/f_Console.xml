@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="Shift_JIS" ?>
+<doc>
+<title>Console</title>
+<desc>
+　Console クラスは、<kw>コンソール</kw>に関する管理を行うクラスです。このクラスからオブジェクトを作成することはできません ( このクラスにはアクセスできません )。このクラスのオブジェクトには <ref>Debug.console</ref> でアクセスできます。<r/>
+</desc>
+
+
+<member>
+	<name>visible</name>
+	<type>property</type>
+	<shortdesc>表示されているかどうか</shortdesc>
+	<access>r/w</access>
+	<desc>
+		　コンソールが表示されているかどうかを表します。値を設定することもできます。<r/>
+		　真を指定すると表示されます。<r/>
+	</desc>
+</member>
+
+</doc>
