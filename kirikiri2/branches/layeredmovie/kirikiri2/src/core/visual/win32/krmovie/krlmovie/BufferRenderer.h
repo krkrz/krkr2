@@ -88,6 +88,7 @@ private:
 	BYTE	*m_Buffer[2];		//!< レンダリングするバッファへのポインタ
 	bool	m_IsBufferOwner[2];	//!< バッファがこのクラスに割り当てられたものかどうかを保持
 	int		m_FrontBuffer;		//!< 現在のフロントバッファがどちらかを保持
+	LONG	m_StartFrame;
 
 	IMediaSeeking	*m_MediaSeeking;	//! DoRenderSample時にフレーム番号を得るためのIMediaSeekingインターフェイスへのポインタ
 
@@ -109,6 +110,9 @@ public:
 	STDMETHOD( SetBackBuffer ) ( BYTE *buff, long *size);
 	STDMETHOD( GetFrontBuffer )( BYTE **buff, long *size);
 	STDMETHOD( GetBackBuffer ) ( BYTE **buff, long *size);
+	HRESULT OnStartStreaming(void);
+	void OnRenderStart( IMediaSample *pMediaSample );
+
 
 // IRendererBufferVideo
 	virtual /* [propget] */ HRESULT STDMETHODCALLTYPE get_AvgTimePerFrame( 
