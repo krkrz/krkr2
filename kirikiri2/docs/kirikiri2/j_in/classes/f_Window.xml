@@ -741,6 +741,37 @@
 </member>
 
 <member>
+	<name>setZoom</name>
+	<type>method</type>
+	<shortdesc>レイヤ拡大倍率の設定</shortdesc>
+	<arg>
+		<argitem>
+			<name>numer</name>
+			<default></default>
+			<desc>
+				　倍率の分子を整数で指定します。<r/>
+			</desc>
+		</argitem>
+		<argitem>
+			<name>denom</name>
+			<default></default>
+			<desc>
+				　倍率の分母を整数で指定します。<r/>
+			</desc>
+		</argitem>
+	</arg>
+	<result></result>
+	<desc>
+		　レイヤの拡大倍率を指定します。分子/分母で指定したサイズで画像が拡大、あるいは縮小されて表示されます。<r/>
+		　分子・分母が公約数を持つ場合は自動的に約分されるため、<ref>Window.zoomNumer</ref> プロパティや <ref>Window.zoomDenom</ref> プロパティで読み出される値は、このメソッドで指定した値とは異なる場合があります。<r/>
+		　現バージョンの吉里吉里では、拡大・縮小時に補間がかかるかどうかはグラフィックカードのハードウェアやドライバに影響されます。補間がかからないハードウェアやドライバの場合は、画質が荒くなります。<r/>
+		　オプションによっては、吉里吉里は拡大・縮小に使用可能なハードウェアを、倍率が変更されるたびに調査するため、このメソッドは拡大率を連続的に変化させて演出を行うような用途には適していません。<r/>
+	</desc>
+	<ref>Window.zoomNumer</ref>
+	<ref>Window.zoomDenom</ref>
+</member>
+
+<member>
 	<name>postInputEvent</name>
 	<type>method</type>
 	<shortdesc>入力イベントの生成</shortdesc>
@@ -1018,6 +1049,36 @@ postInputEvent('onKeyUp',   %[key: VK_UP, shift: ssShift]);<r/>
 	</desc>
 	<ref>Window.innerWidth</ref>
 	<ref>Window.setInnerSize</ref>
+</member>
+
+<member>
+	<name>zoomNumer</name>
+	<type>property</type>
+	<shortdesc>レイヤ拡大倍率(分子)</shortdesc>
+	<access>r/w</access>
+	<desc>
+		　レイヤの拡大倍率の分子を表します。
+		一応、値を設定することもできますが、値を設定する場合は <ref>Window.setZoom</ref> メソッドを使用してください。<r/>
+		　分母は <ref>Window.zoomDenom</ref> プロパティが表します。<r/>
+		　詳しくは <ref>Window.setZoom</ref> メソッドを参照してください。<r/>
+	</desc>
+	<ref>Window.setZoom</ref>
+	<ref>Window.zoomDenom</ref>
+</member>
+
+<member>
+	<name>zoomDenom</name>
+	<type>property</type>
+	<shortdesc>レイヤ拡大倍率(分母)</shortdesc>
+	<access>r/w</access>
+	<desc>
+		　レイヤの拡大倍率の分母を表します。
+		一応、値を設定することもできますが、値を設定する場合は <ref>Window.setZoom</ref> メソッドを使用してください。<r/>
+		　分子は <ref>Window.zoomNumer</ref> プロパティが表します。<r/>
+		　詳しくは <ref>Window.setZoom</ref> メソッドを参照してください。<r/>
+	</desc>
+	<ref>Window.setZoom</ref>
+	<ref>Window.zoomNumer</ref>
 </member>
 
 <member>
