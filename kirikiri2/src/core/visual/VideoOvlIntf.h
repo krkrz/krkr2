@@ -22,7 +22,8 @@ enum tTVPPeriodEventReason
 {
 	perLoop, // the event is by loop rewind
 	perPeriod, // the event is by period point specified by the user
-	perPrepare // the event is by prepare() method
+	perPrepare, // the event is by prepare() method
+	perSegLoop, // the event is by segment loop rewind
 };
 
 
