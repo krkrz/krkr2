@@ -1,24 +1,24 @@
-# Microsoft Developer Studio Project File - Name="krmovie" - Package Owner=<4>
+# Microsoft Developer Studio Project File - Name="krlmovie" - Package Owner=<4>
 # Microsoft Developer Studio Generated Build File, Format Version 6.00
 # ** 編集しないでください **
 
 # TARGTYPE "Win32 (x86) Dynamic-Link Library" 0x0102
 
-CFG=krmovie - Win32 Debug
+CFG=krlmovie - Win32 Debug
 !MESSAGE これは有効なﾒｲｸﾌｧｲﾙではありません。 このﾌﾟﾛｼﾞｪｸﾄをﾋﾞﾙﾄﾞするためには NMAKE を使用してください。
 !MESSAGE [ﾒｲｸﾌｧｲﾙのｴｸｽﾎﾟｰﾄ] ｺﾏﾝﾄﾞを使用して実行してください
 !MESSAGE 
-!MESSAGE NMAKE /f "krmovie.mak".
+!MESSAGE NMAKE /f "krlmovie.mak".
 !MESSAGE 
 !MESSAGE NMAKE の実行時に構成を指定できます
 !MESSAGE ｺﾏﾝﾄﾞ ﾗｲﾝ上でﾏｸﾛの設定を定義します。例:
 !MESSAGE 
-!MESSAGE NMAKE /f "krmovie.mak" CFG="krmovie - Win32 Debug"
+!MESSAGE NMAKE /f "krlmovie.mak" CFG="krlmovie - Win32 Debug"
 !MESSAGE 
 !MESSAGE 選択可能なﾋﾞﾙﾄﾞ ﾓｰﾄﾞ:
 !MESSAGE 
-!MESSAGE "krmovie - Win32 Release" ("Win32 (x86) Dynamic-Link Library" 用)
-!MESSAGE "krmovie - Win32 Debug" ("Win32 (x86) Dynamic-Link Library" 用)
+!MESSAGE "krlmovie - Win32 Release" ("Win32 (x86) Dynamic-Link Library" 用)
+!MESSAGE "krlmovie - Win32 Debug" ("Win32 (x86) Dynamic-Link Library" 用)
 !MESSAGE 
 
 # Begin Project
@@ -29,7 +29,7 @@ CPP=cl.exe
 MTL=midl.exe
 RSC=rc.exe
 
-!IF  "$(CFG)" == "krmovie - Win32 Release"
+!IF  "$(CFG)" == "krlmovie - Win32 Release"
 
 # PROP BASE Use_MFC 0
 # PROP BASE Use_Debug_Libraries 0
@@ -38,12 +38,12 @@ RSC=rc.exe
 # PROP BASE Target_Dir ""
 # PROP Use_MFC 0
 # PROP Use_Debug_Libraries 0
-# PROP Output_Dir "..\..\..\..\..\bin\win32"
+# PROP Output_Dir "..\..\..\..\..\..\bin\win32\"
 # PROP Intermediate_Dir "Release"
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
-# ADD BASE CPP /nologo /MT /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "KRMOVIE_EXPORTS" /Yu"stdafx.h" /FD /c
-# ADD CPP /nologo /Gz /MT /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "KRMOVIE_EXPORTS" /FD /c
+# ADD BASE CPP /nologo /MT /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "KRLMOVIE_EXPORTS" /Yu"stdafx.h" /FD /c
+# ADD CPP /nologo /Gz /MT /W3 /GX /O2 /I "../" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "KRLMOVIE_EXPORTS" /FD /c
 # SUBTRACT CPP /YX /Yc /Yu
 # ADD BASE MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "NDEBUG" /mktyplib203 /win32
@@ -56,7 +56,7 @@ LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /dll /machine:I386
 # ADD LINK32 strmbase.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib version.lib winmm.lib quartz.lib /nologo /base:"0x62000000" /dll /machine:I386
 
-!ELSEIF  "$(CFG)" == "krmovie - Win32 Debug"
+!ELSEIF  "$(CFG)" == "krlmovie - Win32 Debug"
 
 # PROP BASE Use_MFC 0
 # PROP BASE Use_Debug_Libraries 1
@@ -65,12 +65,12 @@ LINK32=link.exe
 # PROP BASE Target_Dir ""
 # PROP Use_MFC 0
 # PROP Use_Debug_Libraries 1
-# PROP Output_Dir "..\..\..\..\..\bin\win32"
+# PROP Output_Dir "..\..\..\..\..\..\bin\win32\"
 # PROP Intermediate_Dir "Debug"
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
-# ADD BASE CPP /nologo /MTd /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "KRMOVIE_EXPORTS" /Yu"stdafx.h" /FD /GZ /c
-# ADD CPP /nologo /Gz /MTd /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "KRMOVIE_EXPORTS" /D "DEBUG" /FR /FD /GZ /c
+# ADD BASE CPP /nologo /MTd /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "KRLMOVIE_EXPORTS" /Yu"stdafx.h" /FD /GZ /c
+# ADD CPP /nologo /Gz /MTd /W3 /Gm /GX /ZI /Od /I "../" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "KRLMOVIE_EXPORTS" /D "DEBUG" /FR /FD /GZ /c
 # SUBTRACT CPP /YX /Yc /Yu
 # ADD BASE MTL /nologo /D "_DEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "_DEBUG" /mktyplib203 /win32
@@ -87,42 +87,54 @@ LINK32=link.exe
 
 # Begin Target
 
-# Name "krmovie - Win32 Release"
-# Name "krmovie - Win32 Debug"
+# Name "krlmovie - Win32 Release"
+# Name "krlmovie - Win32 Debug"
 # Begin Group "Source Files"
 
 # PROP Default_Filter "cpp;c;cxx;rc;def;r;odl;idl;hpj;bat"
 # Begin Source File
 
-SOURCE=.\asyncio.cpp
+SOURCE=..\asyncio.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\asyncrdr.cpp
+SOURCE=..\asyncrdr.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\DShowException.cpp
+SOURCE=.\BufferRenderer.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\dsmovie.cpp
+SOURCE=..\DShowException.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\dsoverlay.cpp
+SOURCE=.\dslayerd.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\krmovie.cpp
+SOURCE=..\dsmovie.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\krmovie.def
+SOURCE=.\IBufferRenderer_i.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\krmovie.rc
+SOURCE=.\IRendererBufferAccess_i.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\IRendererBufferVideo_i.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\krlmovie.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\krlmovie.def
 # End Source File
 # End Group
 # Begin Group "Header Files"
@@ -130,27 +142,39 @@ SOURCE=.\krmovie.rc
 # PROP Default_Filter "h;hpp;hxx;hm;inl"
 # Begin Source File
 
-SOURCE=.\asyncio.h
+SOURCE=..\asyncio.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\asyncrdr.h
+SOURCE=..\asyncrdr.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\CIStream.h
+SOURCE=.\BufferRenderer.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\DShowException.h
+SOURCE=..\DShowException.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\dsmovie.h
+SOURCE=.\dslayerd.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\dsoverlay.h
+SOURCE=..\dsmovie.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\IBufferRenderer.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\IRendererBufferAccess.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\IRendererBufferVideo.h
 # End Source File
 # End Group
 # Begin Group "Resource Files"
