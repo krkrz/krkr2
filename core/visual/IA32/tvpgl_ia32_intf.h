@@ -58,6 +58,10 @@ extern void TVPGL_IA32_Init();
 /*]*/
 /*[*/
 /*]*/
+TVP_GL_IA32_FUNC_EXTERN_DECL(tjs_int,  TVPAdditiveAlphaBlend_mmx_a,  (tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len));
+TVP_GL_IA32_FUNC_EXTERN_DECL(tjs_int,  TVPAdditiveAlphaBlend_emmx_a,  (tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len));
+/*[*/
+/*]*/
 TVP_GL_IA32_FUNC_EXTERN_DECL(void,  TVPAddBlend_mmx_a,  (tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len));
 TVP_GL_IA32_FUNC_EXTERN_DECL(void,  TVPAddBlend_HDA_mmx_a,  (tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len));
 TVP_GL_IA32_FUNC_EXTERN_DECL(void,  TVPAddBlend_o_mmx_a,  (tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len, tjs_int opa));
