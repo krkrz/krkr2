@@ -392,6 +392,16 @@ void tTJSNI_BaseWindow::OnMouseWheel(tjs_uint32 shift, tjs_int delta,
 	if(LayerManager) LayerManager->NotifyMouseWheel(shift, delta, x, y);
 }
 //---------------------------------------------------------------------------
+void tTJSNI_BaseWindow::OnPopupHide()
+{
+	if(!CanDeliverEvents()) return;
+	if(Owner)
+	{
+		static ttstr eventname(TJS_W("onPopupHide"));
+		TVPPostEvent(Owner, Owner, eventname, 0, TVP_EPT_IMMEDIATE, 0, NULL);
+	}
+}
+//---------------------------------------------------------------------------
 void tTJSNI_BaseWindow::ClearInputEvents()
 {
 	TVPCancelInputEvents(this);
@@ -850,6 +860,17 @@ TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/onCloseQuery)
 }
 TJS_END_NATIVE_METHOD_DECL(/*func. name*/onCloseQuery)
 //----------------------------------------------------------------------
+TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/onPopupHide)
+{
+	TJS_GET_NATIVE_INSTANCE(/*var. name*/_this, /*var. type*/tTJSNI_Window);
+
+	TVP_ACTION_INVOKE_BEGIN(0, "onPopupHide", objthis);
+	TVP_ACTION_INVOKE_END(tTJSVariantClosure(objthis, objthis));
+
+	return TJS_S_OK;
+}
+TJS_END_NATIVE_METHOD_DECL(/*func. name*/onPopupHide)
+//----------------------------------------------------------------------
 
 
 //----------------------------------------------------------------------
@@ -974,6 +995,26 @@ TJS_BEGIN_NATIVE_PROP_DECL(top)
 	TJS_END_NATIVE_PROP_SETTER
 }
 TJS_END_NATIVE_PROP_DECL(top)
+//----------------------------------------------------------------------
+TJS_BEGIN_NATIVE_PROP_DECL(focusable)
+{
+	TJS_BEGIN_NATIVE_PROP_GETTER
+	{
+		TJS_GET_NATIVE_INSTANCE(/*var. name*/_this, /*var. type*/tTJSNI_Window);
+		*result = (tjs_int) _this->GetFocusable();
+		return TJS_S_OK;
+	}
+	TJS_END_NATIVE_PROP_GETTER
+
+	TJS_BEGIN_NATIVE_PROP_SETTER
+	{
+		TJS_GET_NATIVE_INSTANCE(/*var. name*/_this, /*var. type*/tTJSNI_Window);
+		_this->SetFocusable((bool)(tjs_int)*param);
+		return TJS_S_OK;
+	}
+	TJS_END_NATIVE_PROP_SETTER
+}
+TJS_END_NATIVE_PROP_DECL(focusable)
 //----------------------------------------------------------------------
 TJS_BEGIN_NATIVE_PROP_DECL(layerLeft)
 {
@@ -1154,6 +1195,26 @@ TJS_BEGIN_NATIVE_PROP_DECL(useMouseKey)
 	TJS_END_NATIVE_PROP_SETTER
 }
 TJS_END_NATIVE_PROP_DECL(useMouseKey)
+//----------------------------------------------------------------------
+TJS_BEGIN_NATIVE_PROP_DECL(trapKey)
+{
+	TJS_BEGIN_NATIVE_PROP_GETTER
+	{
+		TJS_GET_NATIVE_INSTANCE(/*var. name*/_this, /*var. type*/tTJSNI_Window);
+		*result = _this->GetTrapKey();
+		return TJS_S_OK;
+	}
+	TJS_END_NATIVE_PROP_GETTER
+
+	TJS_BEGIN_NATIVE_PROP_SETTER
+	{
+		TJS_GET_NATIVE_INSTANCE(/*var. name*/_this, /*var. type*/tTJSNI_Window);
+		_this->SetTrapKey(param->operator bool());
+		return TJS_S_OK;
+	}
+	TJS_END_NATIVE_PROP_SETTER
+}
+TJS_END_NATIVE_PROP_DECL(trapKey)
 //----------------------------------------------------------------------
 TJS_BEGIN_NATIVE_PROP_DECL(imeMode) // not defaultImeMode
 {

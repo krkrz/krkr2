@@ -231,6 +231,9 @@ void TVPHideModalAtAppDeactivate()
 		for(i = TVPModalWindowList.begin(); i != TVPModalWindowList.end(); i++)
 			(*i)->Visible = false;
 	}
+
+	// hide also popups
+	TTVPWindowForm::DeliverPopupHide();
 }
 //---------------------------------------------------------------------------
 
@@ -715,6 +718,8 @@ __fastcall TTVPWindowForm::TTVPWindowForm(TComponent* Owner, tTJSNI_Window *ni)
 	TJSNativeInstance = ni;
 
 	InMode = false;
+	ResetStayOnTopStateTick = 0;
+	Focusable = true;
 	Closing = false;
 	ProgramClosing = false;
 	ModalResult = 0;
@@ -742,6 +747,9 @@ __fastcall TTVPWindowForm::TTVPWindowForm(TComponent* Owner, tTJSNI_Window *ni)
 
 	UseMouseKey = false;
 	InMenuLoop = false;
+	TrapKeys = false;
+	CanReceiveTrappedKeys = false;
+	InReceivingTrappedKeys = false;
 	MouseKeyXAccel = 0;
 	MouseKeyYAccel = 0;
 	LastMouseMoved = false;
@@ -962,6 +970,35 @@ void __fastcall TTVPWindowForm::SendCloseMessage()
 	::PostMessage(Handle, WM_CLOSE, 0, 0);
 }
 //---------------------------------------------------------------------------
+void __fastcall TTVPWindowForm::DeliverPopupHide()
+{
+	// deliver onPopupHide event to unfocusable windows
+
+	tjs_int count = TVPGetWindowCount();
+	for(tjs_int i = count - 1; i >= 0; i--)
+	{
+		tTJSNI_Window * win = TVPGetWindowListAt(i);
+		if(win)
+		{
+			TTVPWindowForm * form = win->GetForm();
+			if(form)
+			{
+				form->FirePopupHide();
+			}
+		}
+	}
+}
+//---------------------------------------------------------------------------
+void __fastcall TTVPWindowForm::FirePopupHide()
+{
+	// fire "onPopupHide" event
+	if(!CanSendPopupHide()) return;
+	if(!GetVisible()) return;
+
+	TVPPostInputEvent(
+		new tTVPOnPopupHideInputEvent(TJSNativeInstance));
+}
+//---------------------------------------------------------------------------
 void TTVPWindowForm::CallWindowDetach(bool close)
 {
 	tTVPWindowMessage msg;
@@ -1137,7 +1174,6 @@ void __fastcall TTVPWindowForm::ScrollBoxMouseMove(TObject *Sender,
 	CheckMenuBarDrop();
 }
 //---------------------------------------------------------------------------
-
 void __fastcall TTVPWindowForm::FormMouseMove(TObject *Sender,
 	  TShiftState Shift, int X, int Y)
 {
@@ -1837,6 +1873,57 @@ void TTVPWindowForm::AcquireImeControl()
 	}
 }
 //---------------------------------------------------------------------------
+bool TTVPWindowForm::FindKeyTrapper(LRESULT &result, UINT msg,
+	WPARAM wparam, LPARAM lparam)
+{
+	// find most recent "trapKeys = true" window.
+	tjs_int count = TVPGetWindowCount();
+	for(tjs_int i = count - 1; i >= 0; i--)
+	{
+		tTJSNI_Window * win = TVPGetWindowListAt(i);
+		if(win)
+		{
+			TTVPWindowForm * form = win->GetForm();
+			if(form)
+			{
+				if(form->TrapKeys && form->GetVisible())
+				{
+					// found
+					return form->ProcessTrappedKeyMessage(result, msg, wparam, lparam);
+				}
+			}
+		}
+	}
+
+	// not found
+	return false;
+}
+//---------------------------------------------------------------------------
+bool TTVPWindowForm::ProcessTrappedKeyMessage(LRESULT &result, UINT msg, WPARAM wparam,
+		LPARAM lparam)
+{
+	// perform key message
+	if(msg == WM_KEYDOWN)
+	{
+		CanReceiveTrappedKeys = true;
+			// to prevent receiving a key, which is pushed when the window is just created
+	}
+
+	if(CanReceiveTrappedKeys)
+	{
+		InReceivingTrappedKeys = true;
+		result = Perform(msg, wparam, lparam);
+		InReceivingTrappedKeys = false;
+	}
+
+	if(msg == WM_KEYUP)
+	{
+		CanReceiveTrappedKeys = true;
+	}
+
+	return true;
+}
+//---------------------------------------------------------------------------
 void __fastcall TTVPWindowForm::SetAttentionPoint(tjs_int left, tjs_int top,
 	TFont *font)
 {
@@ -1932,6 +2019,14 @@ void __fastcall TTVPWindowForm::SetMouseCursorVisibleState(bool b)
 		if(PaintBox) PaintBox->Cursor = crNone;
 		Screen->Cursor = bk;
 	}
+}
+//---------------------------------------------------------------------------
+void __fastcall TTVPWindowForm::SetFocusable(bool b)
+{
+	// set focusable state to 'b'.
+	// note that currently focused window does not automatically unfocus by
+	// setting false to this flag.
+	Focusable = b;
 }
 //---------------------------------------------------------------------------
 void __fastcall TTVPWindowForm::SetFullScreenMode(bool b)
@@ -2134,9 +2229,40 @@ void __fastcall TTVPWindowForm::ShowWindowAsModal()
 	ModalResult = 0;
 	InMode = true;
 	TVPAddModalWindow(this); // add to modal window list
-	TForm::ShowModal();
+	try
+	{
+		TForm::ShowModal();
+	}
+	catch(...)
+	{
+		TVPRemoveModalWindow(this);
+		InMode = false;
+		throw;
+	}
 	TVPRemoveModalWindow(this);
 	InMode = false;
+}
+//---------------------------------------------------------------------------
+void __fastcall TTVPWindowForm::SetVisible(bool b)
+{
+	if(Focusable)
+	{
+		Visible = true;
+	}
+	else
+	{
+		if(!Visible)
+		{
+			// just show window, not activate
+			SetWindowPos(Handle, GetStayOnTop()?HWND_TOPMOST:HWND_TOP, 0, 0, 0, 0,
+				SWP_NOACTIVATE|SWP_NOMOVE|SWP_NOSIZE|SWP_SHOWWINDOW);
+			Visible = true;
+		}
+		else
+		{
+			Visible = false;
+		}
+	}
 }
 //---------------------------------------------------------------------------
 void __fastcall TTVPWindowForm::SetInnerSunken(bool b)
@@ -2310,6 +2436,24 @@ bool __fastcall TTVPWindowForm::GetUseMouseKey() const
 	return UseMouseKey;
 }
 //---------------------------------------------------------------------------
+void __fastcall TTVPWindowForm::SetTrapKey(bool b)
+{
+	TrapKeys = b;
+	if(TrapKeys)
+	{
+		// reset CanReceiveTrappedKeys and InReceivingTrappedKeys
+		CanReceiveTrappedKeys = false;
+		InReceivingTrappedKeys = false;
+		// note that SetTrapKey can be called while the key trapping is
+		// processing.
+	}
+}
+//---------------------------------------------------------------------------
+bool __fastcall TTVPWindowForm::GetTrapKey() const
+{
+	return TrapKeys;
+}
+//---------------------------------------------------------------------------
 void __fastcall TTVPWindowForm::CreatePaintBox(TWinControl *owner)
 {
 	DeleteDoubleBuffer();
@@ -2385,6 +2529,8 @@ void __fastcall TTVPWindowForm::PaintBoxMouseMove(TObject *Sender,
 void __fastcall TTVPWindowForm::PaintBoxMouseDown(TObject *Sender,
 	  TMouseButton Button, TShiftState Shift, int X, int Y)
 {
+	if(!CanSendPopupHide()) DeliverPopupHide();
+
 	LastMouseDownX = X;
 	LastMouseDownY = Y;
 
@@ -2685,6 +2831,23 @@ void __fastcall TTVPWindowForm::CMMouseLeave(TMessage &Msg)
 	}
 }
 //---------------------------------------------------------------------------
+void __fastcall TTVPWindowForm::WMMouseActivate(TWMMouseActivate &msg)
+{
+	if(!Focusable)
+	{
+		// override default action (which activates the window)
+		if(msg.HitTestCode == HTCLIENT)
+			msg.Result = MA_NOACTIVATE;
+		else
+			msg.Result = MA_NOACTIVATEANDEAT;
+	}
+	else
+	{
+		// do default action
+    	TForm::Dispatch((void*)&msg);
+	}
+}
+//---------------------------------------------------------------------------
 void __fastcall TTVPWindowForm::WMMove(TWMMove &Msg)
 {
 	if(TJSNativeInstance)
@@ -2695,7 +2858,8 @@ void __fastcall TTVPWindowForm::WMMove(TWMMove &Msg)
 //---------------------------------------------------------------------------
 void __fastcall TTVPWindowForm::FormActivate(TObject *Sender)
 {
-	//
+	if(TVPFullScreenedWindow == this)
+		TVPShowModalAtAppActivate();
 }
 //---------------------------------------------------------------------------
 void __fastcall TTVPWindowForm::FormDeactivate(TObject *Sender)
@@ -2767,7 +2931,7 @@ void __fastcall TTVPWindowForm::WMShowTop(TMessage &Msg)
 {
 	if(Visible)
 	{
-		SetZOrder(true);
+		if(Msg.WParam) SetZOrder(true);
 		SetWindowPos(Handle, HWND_TOPMOST, 0, 0, 0, 0,
 			SWP_NOACTIVATE|SWP_NOMOVE|SWP_NOREPOSITION|SWP_NOSIZE|SWP_SHOWWINDOW);
 	}
@@ -2850,16 +3014,36 @@ void __fastcall TTVPWindowForm::WMDeviceChange(TMessage &Msg)
 	TForm::Dispatch(&Msg);
 }
 //---------------------------------------------------------------------------
+void __fastcall TTVPWindowForm::WMNCLButtonDown(TWMNCLButtonDown &msg)
+{
+	if(!CanSendPopupHide())
+	{
+		DeliverPopupHide();
+	}
+
+	TForm::Dispatch((void*)&msg);
+}
+//---------------------------------------------------------------------------
+void __fastcall TTVPWindowForm::WMNCRButtonDown(TWMNCRButtonDown &msg)
+{
+	if(!CanSendPopupHide())
+	{
+		DeliverPopupHide();
+	}
+
+	TForm::Dispatch((void*)&msg);
+}
+//---------------------------------------------------------------------------
 void __fastcall TTVPWindowForm::InvokeShowVisible()
 {
 	// this posts window message which invokes WMShowVisible
 	::PostMessage(Handle, TVP_WM_SHOWVISIBLE, 0, 0);
 }
 //---------------------------------------------------------------------------
-void __fastcall TTVPWindowForm::InvokeShowTop()
+void __fastcall TTVPWindowForm::InvokeShowTop(bool activate)
 {
 	// this posts window message which invokes WMShowTop
-	::PostMessage(Handle, TVP_WM_SHOWTOP, 0, 0);
+	::PostMessage(Handle, TVP_WM_SHOWTOP, activate ? 1:0, 0);
 }
 //---------------------------------------------------------------------------
 HDWP __fastcall TTVPWindowForm::ShowTop(HDWP hdwp)
@@ -2902,6 +3086,21 @@ void __fastcall TTVPWindowForm::WndProc(TMessage &Message)
 		if(subcom == SC_KEYMENU && MenuContainer && MenuBarVisible)
 		{
 			MenuContainer->DropByKey();
+		}
+	}
+	else 	if(!InReceivingTrappedKeys // to prevent infinite recursive call
+		&& Message.Msg >= WM_KEYFIRST && Message.Msg <= WM_KEYLAST)
+	{
+		// hide popups when alt key is pressed
+		if(Message.Msg == WM_SYSKEYDOWN && !CanSendPopupHide())
+			DeliverPopupHide();
+
+		// drain message to key trapping window
+		LRESULT res;
+		if(FindKeyTrapper(res, Message.Msg, Message.WParam, Message.LParam))
+		{
+			Message.Result = res;
+			return;
 		}
 	}
 

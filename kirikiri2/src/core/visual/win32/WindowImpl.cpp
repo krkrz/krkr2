@@ -1260,14 +1260,14 @@ void tTJSNI_Window::HideMouseCursor()
 bool tTJSNI_Window::GetVisible() const
 {
 	if(!Form) return false;
-	return Form->Visible;
+	return Form->GetVisible();
 }
 //---------------------------------------------------------------------------
 void tTJSNI_Window::SetVisible(bool s)
 {
 	if(Form->GetFullScreenMode())
 		TVPThrowExceptionMessage(TVPInvalidPropertyInFullScreen);
-	if(Form) Form->Visible = s;
+	if(Form) Form->SetVisible(s);
 }
 //---------------------------------------------------------------------------
 void tTJSNI_Window::GetCaption(ttstr & v) const
@@ -1479,6 +1479,18 @@ bool tTJSNI_Window::GetUseMouseKey() const
 	return Form->GetUseMouseKey();
 }
 //---------------------------------------------------------------------------
+void tTJSNI_Window::SetTrapKey(bool b)
+{
+	if(!Form) return;
+	Form->SetTrapKey(b);
+}
+//---------------------------------------------------------------------------
+bool tTJSNI_Window::GetTrapKey() const
+{
+	if(!Form) return false;
+	return Form->GetTrapKey();
+}
+//---------------------------------------------------------------------------
 void tTJSNI_Window::SetMaskRegion(tjs_int threshold)
 {
 	if(!Form) return;
@@ -1506,6 +1518,19 @@ tTVPMouseCursorState tTJSNI_Window::GetMouseCursorState() const
 	return Form->GetMouseCursorState();
 }
 //---------------------------------------------------------------------------
+void tTJSNI_Window::SetFocusable(bool b)
+{
+	if(!Form) return;
+	Form->SetFocusable(b);
+}
+//---------------------------------------------------------------------------
+bool tTJSNI_Window::GetFocusable()
+{
+	if(!Form) return true;
+	return Form->GetFocusable();
+}
+//---------------------------------------------------------------------------
+
 
 
 
