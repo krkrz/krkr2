@@ -8,24 +8,6 @@
 //---------------------------------------------------------------------------
 // Layer Management
 //---------------------------------------------------------------------------
-// 2004/ 5/13 W.Dee
-//   Fixed transition related problem: Transition does not produce any logical
-//   error (but produces EAccessViolation) when following condition:
-//     (this.imageWidth == src.imageWidth && this.imageHeight == src.imageHeight)
-//		&&
-//     (this.width != src.width || this.height != src.height) &&
-//       withchildren=true
-//
-// 2004/ 4/26 W.Dee          Added support for IME control properties.
-// 2004/ 4/16 W.Dee          Added mousekey support for pad input.
-// 2004/ 1/9  W.Dee          Fixed layer display bug. This occurs on following
-//                           conditions:
-//                           Layer B is descendant of A,
-//                           A.opacity != 255 || A.type != ltCoverRect &&
-//                           A.type != ltTransparent,
-//                           B.opacity == 255 && B.type == ltCoverRect
-// 2004/ 1/8  W.Dee          Modified code for new tTVPComplexRect
-//---------------------------------------------------------------------------
 
 #include "tjsCommHead.h"
 #pragma hdrstop
