@@ -57,23 +57,23 @@ public:
 		/*
 			TJS2 の new 演算子で TJS2 オブジェクトが作成されるときに呼ばれます。
 			numparams と param 引数は new 演算子に渡された引数を表しています。
-　			tjs_obj 引数は、作成される TJS オブジェクトです。
-　			この例では、引数があれば (さらにそれが void で無ければ)、それを Value
+			tjs_obj 引数は、作成される TJS オブジェクトです。
+			この例では、引数があれば (さらにそれが void で無ければ)、それを Value
 			の初期値として設定しています。
 		*/
 
 		// 引数があればそれを初期値として Value に入れる
 		if(numparams >= 1 && param[0]->Type() != tvtVoid)
-            Value = (tjs_int)*param[0];
+			Value = (tjs_int)*param[0];
 
-        return S_OK;
-    }
+		return S_OK;
+	}
 
-    void TJS_INTF_METHOD Invalidate()
-    {
-        // オブジェクトが無効化されるときに呼ばれる
+	void TJS_INTF_METHOD Invalidate()
+	{
+		// オブジェクトが無効化されるときに呼ばれる
 		/*
-　			オブジェクトが無効化されるときに呼ばれるメソッドです。ここに終了処理
+			オブジェクトが無効化されるときに呼ばれるメソッドです。ここに終了処理
 			を書くと良いでしょう。この例では何もしません。
 		*/
 	}
@@ -83,18 +83,18 @@ public:
 		内で、これらを利用するコードを書きます。
 	*/
 	void SetValue(tjs_int n) { Value = n; }
-    tjs_int GetValue() const { return Value; }
+	tjs_int GetValue() const { return Value; }
 
-    tjs_int GetSquare() const { return Value*Value; }
-    void Add(tjs_int n) { Value += n; }
-    void Print() const { TVPAddLog(ttstr(Value)); }
+	tjs_int GetSquare() const { return Value*Value; }
+	void Add(tjs_int n) { Value += n; }
+	void Print() const { TVPAddLog(ttstr(Value)); }
 
 private:
 	/*
 		データメンバです。ネイティブインスタンスには、必要なデータメンバを自由に
 		書くことができます。
 	*/
-    tjs_int Value; // 値
+	tjs_int Value; // 値
 };
 //---------------------------------------------------------------------------
 /*
@@ -135,7 +135,7 @@ static iTJSDispatch2 * Create_NC_Test()
 	/*
 		TJS_BEGIN_NATIVE_MEMBERS マクロです。引数には TJS2 内で使用するクラス名
 		を指定します。
-　		このマクロと TJS_END_NATIVE_MEMBERS マクロで挟まれた場所に、クラスの
+		このマクロと TJS_END_NATIVE_MEMBERS マクロで挟まれた場所に、クラスの
 		メンバとなるべきメソッドやプロパティの記述をします。
 	*/
 	TJS_BEGIN_NATIVE_MEMBERS(/*TJS class name*/Test)
@@ -164,12 +164,12 @@ static iTJSDispatch2 * Create_NC_Test()
 		TJS_BEGIN_NATIVE_CONSTRUCTOR_DECL(
 			/*var.name*/_this,
 			/*var.type*/NI_Test,
-            /*TJS class name*/Test)
-        {
-            // NI_Test::Construct にも内容を記述できるので
-            // ここでは何もしない
-            return TJS_S_OK;
-        }
+			/*TJS class name*/Test)
+		{
+			// NI_Test::Construct にも内容を記述できるので
+			// ここでは何もしない
+			return TJS_S_OK;
+		}
 		TJS_END_NATIVE_CONSTRUCTOR_DECL(/*TJS class name*/Test)
 
 		/*
@@ -185,31 +185,31 @@ static iTJSDispatch2 * Create_NC_Test()
 			ネイティブインスタンスの Print メソッドを呼び出しています。
 		*/
 		TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/print) // print メソッド
-        {
-            TJS_GET_NATIVE_INSTANCE(/*var. name*/_this,
-                /*var. type*/NI_Test);
+		{
+			TJS_GET_NATIVE_INSTANCE(/*var. name*/_this,
+				/*var. type*/NI_Test);
 
 			_this->Print();
 
-            return TJS_S_OK;
-        }
-        TJS_END_NATIVE_METHOD_DECL(/*func. name*/print)
+			return TJS_S_OK;
+		}
+		TJS_END_NATIVE_METHOD_DECL(/*func. name*/print)
 
 
 		/*
 			add メソッドを宣言します。ここでは numparams と param を使用しています。
 		*/
-        TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/add) // add メソッド
-        {
-            TJS_GET_NATIVE_INSTANCE(/*var. name*/_this,
-                /*var. type*/NI_Test);
+		TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/add) // add メソッド
+		{
+			TJS_GET_NATIVE_INSTANCE(/*var. name*/_this,
+				/*var. type*/NI_Test);
 
-            if(numparams < 1) return TJS_E_BADPARAMCOUNT;
+			if(numparams < 1) return TJS_E_BADPARAMCOUNT;
 
-            _this->Add((tjs_int)*param[0]);
+			_this->Add((tjs_int)*param[0]);
 
-            return TJS_S_OK;
-        }
+			return TJS_S_OK;
+		}
 		TJS_END_NATIVE_METHOD_DECL(/*func. name*/add)
 
 		/*
@@ -220,32 +220,32 @@ static iTJSDispatch2 * Create_NC_Test()
 			TJS_BEGIN_NATIVE_PROP_GETTER と TJS_END_NATIVE_PROP_GETTER マクロで
 			囲まれた場所には、ゲッターを記述することができます。ゲッター内では
 			tTJSVariant 型である *result に値を設定するように記述します。
-　			同様に、TJS_BEGIN_NATIVE_PROP_SETTER と TJS_END_NATIVE_PROP_SETTER
+			同様に、TJS_BEGIN_NATIVE_PROP_SETTER と TJS_END_NATIVE_PROP_SETTER
 			マクロで囲まれた場所にはセッターを記述することができます。
 			セッター内では tTJSVariant 型である *param に設定されるべき値が格納
 			されているので、それを使って処理をします。
 		*/
 		TJS_BEGIN_NATIVE_PROP_DECL(value) // value プロパティ
-        {
-            TJS_BEGIN_NATIVE_PROP_GETTER
-            {
-                TJS_GET_NATIVE_INSTANCE(/*var. name*/_this,
-                    /*var. type*/NI_Test);
-                *result = (tTVInteger)_this->GetValue();
-                return TJS_S_OK;
-            }
-            TJS_END_NATIVE_PROP_GETTER
+		{
+			TJS_BEGIN_NATIVE_PROP_GETTER
+			{
+				TJS_GET_NATIVE_INSTANCE(/*var. name*/_this,
+					/*var. type*/NI_Test);
+				*result = (tTVInteger)_this->GetValue();
+				return TJS_S_OK;
+			}
+			TJS_END_NATIVE_PROP_GETTER
 
-            TJS_BEGIN_NATIVE_PROP_SETTER
-            {
-                TJS_GET_NATIVE_INSTANCE(/*var. name*/_this,
-                    /*var. type*/NI_Test);
-                _this->SetValue((tjs_int)*param);
-                return TJS_S_OK;
-            }
-            TJS_END_NATIVE_PROP_SETTER
-        }
-        TJS_END_NATIVE_PROP_DECL(value)
+			TJS_BEGIN_NATIVE_PROP_SETTER
+			{
+				TJS_GET_NATIVE_INSTANCE(/*var. name*/_this,
+					/*var. type*/NI_Test);
+				_this->SetValue((tjs_int)*param);
+				return TJS_S_OK;
+			}
+			TJS_END_NATIVE_PROP_SETTER
+		}
+		TJS_END_NATIVE_PROP_DECL(value)
 
 		/*
 			ここでは読み出し専用プロパティを宣言しています。セッターの代わりに
@@ -253,21 +253,21 @@ static iTJSDispatch2 * Create_NC_Test()
 			を作ることができます。
 		*/
 		TJS_BEGIN_NATIVE_PROP_DECL(square) // square 読み出し専用プロパティ
-        {
-            TJS_BEGIN_NATIVE_PROP_GETTER
-            {
-                TJS_GET_NATIVE_INSTANCE(/*var. name*/_this,
-                    /*var. type*/NI_Test);
+		{
+			TJS_BEGIN_NATIVE_PROP_GETTER
+			{
+				TJS_GET_NATIVE_INSTANCE(/*var. name*/_this,
+					/*var. type*/NI_Test);
 
-                *result = (tTVInteger)_this->GetSquare();
+				*result = (tTVInteger)_this->GetSquare();
 
-                return TJS_S_OK;
-            }
-            TJS_END_NATIVE_PROP_GETTER
+				return TJS_S_OK;
+			}
+			TJS_END_NATIVE_PROP_GETTER
 
-            TJS_DENY_NATIVE_PROP_SETTER
-        }
-        TJS_END_NATIVE_PROP_DECL(square)
+			TJS_DENY_NATIVE_PROP_SETTER
+		}
+		TJS_END_NATIVE_PROP_DECL(square)
 
 	TJS_END_NATIVE_MEMBERS
 
