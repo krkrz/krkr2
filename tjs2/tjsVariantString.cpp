@@ -8,8 +8,6 @@
 //---------------------------------------------------------------------------
 // string heap management used by tTJSVariant and tTJSString
 //---------------------------------------------------------------------------
-// 2004/ 2/13 W.Dee          Fixed trivial problem around the coding.
-//---------------------------------------------------------------------------
 #include "tjsCommHead.h"
 #pragma hdrstop
 
