@@ -3,11 +3,11 @@
 <PROJECT>
   <MACROS>
     <VERSION value="BCB.05.03"/>
-    <PROJECT value="&quot;c:\Program Files\Borland\CBuilder5\Projects\tvp2win32\environ\win32\plugin\extrans.dll&quot;"/>
-    <OBJFILES value="intermediate\tp_stub.obj intermediate\Main.obj intermediate\wave.obj 
-      intermediate\mosaic.obj intermediate\turn.obj 
-      intermediate\turntrans_table.obj intermediate\rotatebase.obj 
-      intermediate\rotatetrans.obj intermediate\ripple.obj"/>
+    <PROJECT value="..\..\..\..\bin\win32\plugin\extrans.dll"/>
+    <OBJFILES value="intermediate\Main.obj intermediate\wave.obj intermediate\mosaic.obj 
+      intermediate\turn.obj intermediate\turntrans_table.obj 
+      intermediate\rotatebase.obj intermediate\rotatetrans.obj 
+      intermediate\ripple.obj intermediate\tp_stub.obj"/>
     <RESFILES value=""/>
     <DEFFILE value="extrans.def"/>
     <RESDEPEN value="$(RESFILES)"/>
@@ -19,7 +19,7 @@
       TeeUI50.bpi TeeDB50.bpi Tee50.bpi TeeQR50.bpi VCLIB50.bpi bcbie50.bpi 
       vclie50.bpi Inetdb50.bpi Inet50.bpi NMFast50.bpi dclocx50.bpi 
       bcb2kaxserver50.bpi"/>
-    <PATHCPP value=".;..\..\..\base\win32\plugin_kit"/>
+    <PATHCPP value=".;.."/>
     <PATHPAS value=".;"/>
     <PATHRC value=".;"/>
     <PATHASM value=".;"/>
@@ -29,8 +29,8 @@
     <USERDEFINES value="_DEBUG"/>
     <SYSDEFINES value="NO_STRICT;_NO_VCL"/>
     <MAINSOURCE value="extrans.bpf"/>
-    <INCLUDEPATH value="..\..\..\..\..\Bin;..\..\..\base\win32\plugin_kit;$(BCB)\include;$(BCB)\include\vcl"/>
-    <LIBPATH value="..\..\..\..\..\Bin;..\..\..\base\win32\plugin_kit;$(BCB)\lib\obj;$(BCB)\lib"/>
+    <INCLUDEPATH value="..;..\..\..\..\..\Bin;..\..\..\base\win32\plugin_kit;$(BCB)\include;$(BCB)\include\vcl"/>
+    <LIBPATH value="..;..\..\..\..\..\Bin;..\..\..\base\win32\plugin_kit;$(BCB)\lib\obj;$(BCB)\lib"/>
     <WARNINGS value="-w-par"/>
   </MACROS>
   <OPTIONS>
@@ -74,16 +74,15 @@ ProductName=
 ProductVersion=1.0.0.0
 Comments=
 
-[Excluded Packages]
-$(BCB)\Bin\bcbcxp50.bpl=Borland C++ Builder Code Explorer
-
 [HistoryLists\hlIncludePath]
-Count=1
-Item0=..\..\..\..\..\Bin;..\..\..\base\win32\plugin_kit;$(BCB)\include;$(BCB)\include\vcl
+Count=2
+Item0=..\;..\..\..\..\..\Bin;..\..\..\base\win32\plugin_kit;$(BCB)\include;$(BCB)\include\vcl
+Item1=..\..\..\..\..\Bin;..\..\..\base\win32\plugin_kit;$(BCB)\include;$(BCB)\include\vcl
 
 [HistoryLists\hlLibraryPath]
-Count=1
-Item0=..\..\..\..\..\Bin;..\..\..\base\win32\plugin_kit;$(BCB)\lib\obj;$(BCB)\lib
+Count=2
+Item0=..\;..\..\..\..\..\Bin;..\..\..\base\win32\plugin_kit;$(BCB)\lib\obj;$(BCB)\lib
+Item1=..\..\..\..\..\Bin;..\..\..\base\win32\plugin_kit;$(BCB)\lib\obj;$(BCB)\lib
 
 [HistoryLists\hlDebugSourcePath]
 Count=2
@@ -100,9 +99,10 @@ Item0=intermediate
 Item1=c:\Program Files\Borland\CBuilder5\Projects\tvp2win32\environ\win32\extrans\intermediate
 
 [HistoryLists\hlFinalOutputDir]
-Count=2
-Item0=c:\Program Files\Borland\CBuilder5\Projects\tvp2win32\environ\win32\plugin\
-Item1=c:\Program Files\Borland\CBuilder5\Projects\tvp2win32\environ\win32\plugin
+Count=3
+Item0=..\..\..\..\bin\win32\plugin\
+Item1=c:\Program Files\Borland\CBuilder5\Projects\tvp2win32\environ\win32\plugin\
+Item2=c:\Program Files\Borland\CBuilder5\Projects\tvp2win32\environ\win32\plugin
 
 [Debugging]
 DebugSourceDirs=c:\program files\borland\cbuilder5\source\vcl;c:\Program Files\Borland\CBuilder5\Projects\tvp2win32\visual\IA32\
