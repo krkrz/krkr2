@@ -60,7 +60,7 @@ private:
 	void TJS_INTF_METHOD Invalidate(); // Invalidate override
 
 public:
-	void Assign(iTJSDispatch2 *dsp);
+	void Assign(iTJSDispatch2 *dsp, bool clear = true);
 
 	void Clear();
 

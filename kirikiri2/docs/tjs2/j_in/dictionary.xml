@@ -21,7 +21,7 @@
 	d.continue = 4; // continue は識別子ではないのでエラー<r/>
 <r/>
 	var sat = d["sat"]; // 1 が代入される<r/>
-	var none = d["none"]; // "void が代入される<r/>
+	var none = d["none"]; // void が代入される<r/>
 <r/>
 	delete d.sat; // sat を削除<r/>
 	delete d["continue"]; // continue を削除<r/>
@@ -63,9 +63,10 @@
 <ptitle>assign</ptitle>
 　assign メソッドは、辞書配列をコピーします。<r/>
 <bq>
-構文 : assign(&lt;コピー元辞書配列>)<r/>
+構文 : assign(&lt;コピー元辞書配列>, &lt;内容をクリアするか=true>)<r/>
 </bq>
 　引数で指定された他の辞書配列の内容を、そっくりコピーします。<r/>
+　「内容をクリアするか」が偽の場合は、コピー先 (メソッドを実行するオブジェクト) の内容をクリアせず、コピー元辞書配列の内容を上書きします。コピー元辞書配列と同じ名前のメンバがコピー先辞書配列にあった場合は、コピー元の内容でコピー先が上書きされます。<r/>
 </para>
 
 <para>
