@@ -18,27 +18,15 @@
 #ifdef _DEBUG
 #include "DShowException.h"
 #endif
-#include "IBufferRenderer.h"
+#include "BufferRenderer.h"
 
 tTVPDSLayerVideo::tTVPDSLayerVideo()
 {
-//	m_Bitmap[0] = NULL;
-//	m_Bitmap[1] = NULL;
-
 	m_BmpBits[0] = NULL;
 	m_BmpBits[1] = NULL;
-
-	m_VideoWidth = 0;
-	m_VideoHeight = 0;
 }
 tTVPDSLayerVideo::~tTVPDSLayerVideo()
 {
-//	if( m_Bitmap[0] != NULL )
-//		delete m_Bitmap[0];
-
-//	if( m_Bitmap[1] != NULL )
-//		delete m_Bitmap[1];
-
 	m_BmpBits[0] = NULL;
 	m_BmpBits[1] = NULL;
 }
@@ -90,8 +78,11 @@ const wchar_t* __stdcall tTVPDSLayerVideo::BuildGraph( HWND callbackwin, IStream
 
 		// Create the Buffer Renderer object
 		CComPtr<IBaseFilter>	pBRender;	// for buffer renderer filter
-		if( FAILED(hr = pBRender.CoCreateInstance(CLSID_BufferRenderer, NULL, CLSCTX_INPROC_SERVER)) )
-			 throw L"Failed to create buffer render filter object.";
+		TBufferRenderer			*pCBR;
+		pCBR = new TBufferRenderer( NAME("Buffer Renderer"), NULL, &hr );
+		if( FAILED(hr) )
+			throw L"Failed to create buffer renderer object.";
+		pBRender = pCBR;
 
 		// add fliter
 		if( FAILED(hr = GraphBuilder()->AddFilter( pBRender, NULL)) )
@@ -173,12 +164,8 @@ const wchar_t* __stdcall tTVPDSLayerVideo::BuildGraph( HWND callbackwin, IStream
 
 		if( FAILED(hr = pBRender->QueryInterface( &m_BuffAccess )) )
 			 throw L"Failed to query IRendererBufferAccess.";
-	
-		if( FAILED(hr = Video()->get_SourceHeight( &m_VideoHeight )) )
-			throw L"Failed to call IBasicVideo::get_SourceHeight.";
-		if( FAILED(hr = Video()->get_SourceWidth( &m_VideoWidth )) )
-			throw L"Failed to call IBasicVideo::get_SourceWidth.";
-//		AllocateVideoBuffer( m_VideoWidth, m_VideoHeight );
+		if( FAILED(hr = pBRender->QueryInterface( &m_BuffVideo )) )
+			 throw L"Failed to query IRendererBufferVideo.";
 
 		// set notify event
 		if(callbackwin)
@@ -288,22 +275,14 @@ void __stdcall tTVPDSLayerVideo::ReleaseAll()
 	if( m_BuffAccess.p )
 		m_BuffAccess.Release();
 
+	if( m_BuffVideo.p )
+		m_BuffVideo.Release();
+
 	tTVPDSMovie::ReleaseAll();
 }
 
 const wchar_t* __stdcall tTVPDSLayerVideo::SetVideoBuffer( BYTE *buff1, BYTE *buff2, long size )
 {
-#if 0
-	long width, height;
-	long			size;
-	size = width * height * 4;
-	m_Bitmap[0] = new tTVPBaseBitmap( width, height, 32 );
-	m_Bitmap[1] = new tTVPBaseBitmap( width, height, 32 );
-
-	m_BmpBits[0] = m_Bitmap[0]->GetBitmap()->GetScanLine( m_Bitmap[0]->GetBitmap()->GetHeight()-1 );	// 先頭のポインタを得る この値は別に保持していた方がよいかも。
-	m_BmpBits[1] = m_Bitmap[1]->GetBitmap()->GetScanLine( m_Bitmap[1]->GetBitmap()->GetHeight()-1 );
-#endif
-
 	if( buff1 == NULL || buff2 == NULL )
 		return L"SetVideoBuffer Parameter Error";
 
@@ -325,47 +304,15 @@ const wchar_t* __stdcall tTVPDSLayerVideo::GetFrontBuffer( BYTE **buff )
 }
 const wchar_t* __stdcall tTVPDSLayerVideo::GetVideoSize( long *width, long *height )
 {
-	if( width )
-		*width = m_VideoWidth;
-	if( height )
-		*height = m_VideoHeight;
+	if( width != NULL )
+		BufferVideo()->get_VideoWidth( width );
+
+	if( height != NULL )
+		BufferVideo()->get_VideoHeight( height );
+
 	return NULL;
 }
-#if 0
-const wchar_t* __stdcall tTVPDSLayerVideo::Update( class tTJSNI_BaseLayer *l1, class tTJSNI_BaseLayer *l2 )
+HRESULT __stdcall tTVPDSLayerVideo::GetAvgTimePerFrame( REFTIME *pAvgTimePerFrame )
 {
-	long		size;
-	BYTE		*buff;
-
-	if( l1 == NULL && l2 == NULL )	// nothing to do.
-		return NULL;
-
-	if( l1 != NULL )
-	{
-		if( l1->GetImageWidth() != m_VideoWidth || l1->GetImageHeight() != m_VideoHeight )
-			l1->SetImageSize( m_VideoWidth, m_VideoHeight );
-	}
-	if( l2 != NULL )
-	{
-		if( l2->GetImageWidth() != m_VideoWidth || l2->GetImageHeight() != m_VideoHeight )
-			l2->SetImageSize( m_VideoWidth, m_VideoHeight );
-	}
-
-	BufferAccess()->GetFrontBuffer( &buff, &size )
-	if( buff == m_BmpBits[0] )
-	{
-		if( l1 )
-			l1->AssignMainImage( Bitmap[0] );
-		if( l2 )
-			l2->AssignMainImage( Bitmap[0] );
-	}
-	else	// 0じゃなかったら、1とみなす。
-	{
-		if( l1 )
-			l1->AssignMainImage( Bitmap[1] );
-		if( l2 )
-			l2->AssignMainImage( Bitmap[1] );
-	}
-	return NULL;
+	return BufferVideo()->get_AvgTimePerFrame( pAvgTimePerFrame );
 }
-#endif
