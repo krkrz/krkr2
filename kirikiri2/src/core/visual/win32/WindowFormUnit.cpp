@@ -1936,7 +1936,8 @@ void __fastcall TTVPWindowForm::SetMouseCursorVisibleState(bool b)
 //---------------------------------------------------------------------------
 void __fastcall TTVPWindowForm::SetFullScreenMode(bool b)
 {
-	// note that we should not change the display mode when showing videos.
+	// note that we should not change the display mode when showing overlay
+	// videos.
 
 	CallWindowDetach(false); // notify to plugin
 	try

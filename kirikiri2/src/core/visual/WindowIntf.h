@@ -16,7 +16,7 @@
 #include "ComplexRect.h"
 #include "tvpinputdefs.h"
 #include "EventIntf.h"
-
+#include "ObjectList.h"
 
 
 
@@ -172,7 +172,7 @@ public:
 
 	//----- interface to video overlay object
 protected:
-	tTJSNI_BaseVideoOverlay * VideoOverlay;
+	tObjectList<tTJSNI_BaseVideoOverlay> VideoOverlay;
 
 public:
 	void RegisterVideoOverlayObject(tTJSNI_BaseVideoOverlay *ovl);
