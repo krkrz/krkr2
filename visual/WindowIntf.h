@@ -110,6 +110,7 @@ public:
 	void OnKeyPress(tjs_char key);
 	void OnFileDrop(const tTJSVariant &array);
 	void OnMouseWheel(tjs_uint32 shift, tjs_int delta, tjs_int x, tjs_int y);
+	void OnPopupHide();
 
 	void ClearInputEvents();
 
@@ -391,6 +392,15 @@ public:
 		X(x), Y(y) {};
 	void Deliver() const
 	{ ((tTJSNI_BaseWindow*)GetSource())->OnMouseWheel(Shift, WheelDelta, X, Y); }
+};
+//---------------------------------------------------------------------------
+class tTVPOnPopupHideInputEvent : public tTVPBaseInputEvent
+{
+public:
+	tTVPOnPopupHideInputEvent(tTJSNI_BaseWindow *win) :
+		tTVPBaseInputEvent(win) {};
+	void Deliver() const
+	{ ((tTJSNI_BaseWindow*)GetSource())->OnPopupHide(); }
 };
 //---------------------------------------------------------------------------
 
