@@ -14,9 +14,18 @@
 #ifndef __VOMODE_H__
 #define __VOMODE_H__
 
+/*[*/
+//---------------------------------------------------------------------------
+// tTVPVideoOverlayMode
+//---------------------------------------------------------------------------
 enum tTVPVideoOverlayMode {
 	vomOverlay,		// Overlay
 	vomLayer,		// Draw Layer
 };
+
+
+
+
+/*]*/
 
 #endif	// __VOMODE_H__
