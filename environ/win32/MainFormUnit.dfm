@@ -1,6 +1,6 @@
 object TVPMainForm: TTVPMainForm
-  Left = 494
-  Top = 9
+  Left = 508
+  Top = 13
   HorzScrollBar.Visible = False
   VertScrollBar.Style = ssFlat
   VertScrollBar.Visible = False
