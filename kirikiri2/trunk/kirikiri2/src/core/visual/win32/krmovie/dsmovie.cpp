@@ -713,6 +713,9 @@ HRESULT tTVPDSMovie::ConnectFilters( IBaseFilter* pFilterUpstream, IBaseFilter* 
 	CComPtr<IPin>	pIPinUpstream;
 	PIN_INFO		PinInfoUpstream;
 	PIN_INFO		PinInfoDownstream;
+#if _DEBUG
+	char debug[256];
+#endif
 
 	// validate passed in filters
 	ASSERT(pFilterUpstream);
@@ -728,6 +731,10 @@ HRESULT tTVPDSMovie::ConnectFilters( IBaseFilter* pFilterUpstream, IBaseFilter* 
 	{
 		if( FAILED(hr = pIPinUpstream->QueryPinInfo(&PinInfoUpstream)) )
 			throw L"Failed to call IPin::QueryPinInfo.";
+#if _DEBUG
+		sprintf(debug, "upstream: %ls\n", PinInfoUpstream.achName);
+		OutputDebugString(debug);
+#endif
 
 		CComPtr<IPin>	 pPinDown;
 		pIPinUpstream->ConnectedTo( &pPinDown );
@@ -747,6 +754,10 @@ HRESULT tTVPDSMovie::ConnectFilters( IBaseFilter* pFilterUpstream, IBaseFilter* 
 				// make sure it is an input pin
 				if( SUCCEEDED(hr = pIPinDownstream->QueryPinInfo(&PinInfoDownstream)) )
 				{
+#if _DEBUG
+					sprintf(debug, "    downstream: %ls\n", PinInfoDownstream.achName);
+					OutputDebugString(debug);
+#endif
 					CComPtr<IPin>	 pPinUp;
 					pIPinDownstream->ConnectedTo( &pPinUp );
 					if( (PINDIR_INPUT == PinInfoDownstream.dir) && (pPinUp == NULL) )
