@@ -15,6 +15,7 @@
 #include "tjsNative.h"
 #include "tjsError.h"
 #include "tjsGlobalStringMap.h"
+#include "tjsDebug.h"
 
 namespace TJS
 {
@@ -57,6 +58,16 @@ const tjs_char * TJSFindNativeClassName(tjs_int32 id)
 
 //---------------------------------------------------------------------------
 // tTJSNativeClassMethod
+//---------------------------------------------------------------------------
+tTJSNativeClassMethod::tTJSNativeClassMethod()
+{
+	if(TJSObjectHashMapEnabled()) TJSAddObjectHashRecord(this);
+}
+//---------------------------------------------------------------------------
+tTJSNativeClassMethod::~tTJSNativeClassMethod()
+{
+	if(TJSObjectHashMapEnabled()) TJSRemoveObjectHashRecord(this);
+}
 //---------------------------------------------------------------------------
 tjs_error TJS_INTF_METHOD
 tTJSNativeClassMethod::IsInstanceOf(tjs_uint32 flag,
@@ -126,6 +137,16 @@ tjs_error  TJS_INTF_METHOD
 
 //---------------------------------------------------------------------------
 // tTJSNativeClassProperty
+//---------------------------------------------------------------------------
+tTJSNativeClassProperty::tTJSNativeClassProperty()
+{
+	if(TJSObjectHashMapEnabled()) TJSAddObjectHashRecord(this);
+}
+//---------------------------------------------------------------------------
+tTJSNativeClassProperty::~tTJSNativeClassProperty()
+{
+	if(TJSObjectHashMapEnabled()) TJSRemoveObjectHashRecord(this);
+}
 //---------------------------------------------------------------------------
 tjs_error TJS_INTF_METHOD
 tTJSNativeClassProperty::IsInstanceOf(tjs_uint32 flag,
@@ -229,6 +250,9 @@ tTJSNativeClass::tTJSNativeClass(const ttstr &name)
 {
 	CallFinalize = false;
 	ClassName = TJSMapGlobalStringMap(name);
+
+	if(TJSObjectHashMapEnabled())
+		TJSObjectHashSetType(this, ttstr(TJS_W("(native class) ")) + ClassName);
 }
 //---------------------------------------------------------------------------
 tTJSNativeClass::~tTJSNativeClass()
@@ -236,7 +260,7 @@ tTJSNativeClass::~tTJSNativeClass()
 }
 //---------------------------------------------------------------------------
 void tTJSNativeClass::RegisterNCM(const tjs_char *name, iTJSDispatch2 *dsp,
-	tjs_uint32 flags)
+	const tjs_char *classname, tTJSNativeInstanceType type, tjs_uint32 flags)
 {
 	// add to Items and ItemsNames
 	ttstr tname = TJSMapGlobalStringMap(ttstr(name));
@@ -244,6 +268,26 @@ void tTJSNativeClass::RegisterNCM(const tjs_char *name, iTJSDispatch2 *dsp,
 	Items.push_back(dsp); // do not AddRef "dsp"
 	ItemFlags.push_back(flags);
 
+	// set object type for debugging
+	if(TJSObjectHashMapEnabled())
+	{
+		switch(type)
+		{
+		case nitMethod:
+			TJSObjectHashSetType(dsp, ttstr(TJS_W("(native function) ")) +
+										classname + TJS_W(".") + name);
+			break;
+		case nitProperty:
+			TJSObjectHashSetType(dsp, ttstr(TJS_W("(native property) ")) +
+										classname + TJS_W(".") + name);
+			break;
+		/*
+		case nitClass:
+			The information is not set here
+			(is to be set in tTJSNativeClass::tTJSNativeClass)
+		*/
+		}
+	}
 
 	// add to this
 	tTJSVariant val;
@@ -319,13 +363,16 @@ tTJSNativeClass::CreateNew(tjs_uint32 flag, const tjs_char * membername,
 {
 	// CreateNew
 
-
 	iTJSDispatch2 *dsp = CreateBaseTJSObject();
 
 	tjs_error hr;
 	try
 	{
+		// set object type for debugging
+		if(TJSObjectHashMapEnabled())
+			TJSObjectHashSetType(dsp, TJS_W("instance of class ") + ClassName);
 
+		// instance initialization
 		hr = FuncCall(0, NULL, NULL, NULL, 0, NULL, dsp); // add member to dsp
 
 		if(TJS_FAILED(hr)) return hr;
@@ -363,6 +410,21 @@ tTJSNativeClass::IsInstanceOf(tjs_uint32 flag,
 
 //---------------------------------------------------------------------------
 // tTJSNativeFunction
+//---------------------------------------------------------------------------
+tTJSNativeFunction::tTJSNativeFunction(const tjs_char *name)
+{
+	if(TJSObjectHashMapEnabled())
+	{
+		TJSAddObjectHashRecord(this);
+		if(name)
+			TJSObjectHashSetType(this, ttstr(TJS_W("(native function) ")) + name);
+	}
+}
+//---------------------------------------------------------------------------
+tTJSNativeFunction::~tTJSNativeFunction()
+{
+	if(TJSObjectHashMapEnabled()) TJSRemoveObjectHashRecord(this);
+}
 //---------------------------------------------------------------------------
 tjs_error TJS_INTF_METHOD tTJSNativeFunction::FuncCall(
 	tjs_uint32 flag, const tjs_char * membername, tjs_uint32 *hint, tTJSVariant *result,

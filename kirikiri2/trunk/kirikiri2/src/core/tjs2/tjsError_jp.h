@@ -54,6 +54,35 @@ TJS_MSG_DECL(TJSInvalidFormatString, "不正な書式文字列です")
 TJS_MSG_DECL(TJSDivideByZero, "0 で除算をしようとしました")
 TJS_MSG_DECL(TJSNotReconstructiveRandomizeData, "乱数系列を初期化できません(おそらく不正なデータが渡されました)")
 TJS_MSG_DECL(TJSSymbol, "識別子")
+TJS_MSG_DECL(TJSCallHistoryIsFromOutOfTJS2Script, "[TJSスクリプト管理外]")
+TJS_MSG_DECL(TJSNObjectsWasNotFreed, "合計 %1 個のオブジェクトが解放されていません")
+#ifdef TJS_TEXT_OUT_CRLF
+TJS_MSG_DECL(TJSObjectCreationHistoryDelimiter, "\r\n                     ");
+#else
+TJS_MSG_DECL(TJSObjectCreationHistoryDelimiter, "\n                     ");
+#endif
+#ifdef TJS_TEXT_OUT_CRLF
+TJS_MSG_DECL(TJSObjectWasNotFreed,
+				 "オブジェクト %1 [%2] が解放されていません。オブジェクト作成時の呼び出し履歴は以下の通りです:\r\n                     %3")
+#else
+TJS_MSG_DECL(TJSObjectWasNotFreed,
+				 "オブジェクト %1 [%2] が解放されていません。オブジェクト作成時の呼び出し履歴は以下の通りです:\n                     %3")
+#endif
+TJS_MSG_DECL(TJSGroupByObjectTypeAndHistory, "オブジェクトのタイプとオブジェクト作成時の履歴による分類")
+TJS_MSG_DECL(TJSGroupByObjectType, "オブジェクトのタイプによる分類")
+#ifdef TJS_TEXT_OUT_CRLF
+TJS_MSG_DECL(TJSObjectCountingMessageGroupByObjectTypeAndHistory,
+				 "%1 個 : [%2]\r\n                     %3")
+#else
+TJS_MSG_DECL(TJSObjectCountingMessageGroupByObjectTypeAndHistory,
+				 "%1 個 : [%2]\n                     %3")
+#endif
+TJS_MSG_DECL(TJSObjectCountingMessageTJSGroupByObjectType, "%1 個 : [%2]")
+#ifdef TJS_TEXT_OUT_CRLF
+TJS_MSG_DECL(TJSWarnRunningCodeOnDeletingObject, "%4: 削除中のオブジェクト %1[%2] 上でコードが実行されています。このオブジェクトの作成時の呼び出し履歴は以下の通りです:\r\n                     %3")
+#else
+TJS_MSG_DECL(TJSWarnRunningCodeOnDeletingObject, "%4: 削除中のオブジェクト %1[%2] 上でコードが実行されています。このオブジェクトの作成時の呼び出し履歴は以下の通りです:\n                     %3")
+#endif
 TJS_MSG_DECL(TJSWriteError, "書き込みエラーが発生しました")
 TJS_MSG_DECL(TJSReadError, "読み込みエラーが発生しました。ファイルが破損している可能性や、デバイスからの読み込みに失敗した可能性があります")
 TJS_MSG_DECL(TJSSeekError, "シークエラーが発生しました。ファイルが破損している可能性や、デバイスからの読み込みに失敗した可能性があります")

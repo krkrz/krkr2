@@ -20,6 +20,7 @@
 #include "tjs.tab.h"
 #include "tjsError.h"
 #include "tjsUtils.h"
+#include "tjsDebug.h"
 
 #define LEX_POS (Block->GetLexicalAnalyzer() -> GetCurrentPosition())
 #define NODE_POS (node?node->GetPosition():-1)
@@ -356,6 +357,47 @@ ttstr tTJSInterCodeContext::GetShortDescription() const
 	}
 
 	if(name) ret += TJS_W(" ") + ttstr(name);
+
+	return ret;
+}
+//---------------------------------------------------------------------------
+ttstr tTJSInterCodeContext::GetShortDescriptionWithClassName() const
+{
+	ttstr ret(TJS_W("(") + ttstr(GetContextTypeName()) + TJS_W(")"));
+
+	tTJSInterCodeContext * parent;
+
+	const tjs_char *classname;
+	const tjs_char *name;
+
+	if(ContextType == ctPropertySetter || ContextType == ctPropertyGetter)
+		parent = Parent ? Parent->Parent : NULL;
+	else
+		parent = Parent;
+
+	if(parent)
+		classname = parent->Name;
+	else
+		classname = NULL;
+
+	if(ContextType == ctPropertySetter || ContextType == ctPropertyGetter)
+	{
+		if(Parent)
+			name = Parent->Name;
+		else
+			name = NULL;
+	}
+	else
+	{
+		name = Name;
+	}
+
+	if(name)
+	{
+		ret += TJS_W(" ");
+		if(classname) ret += ttstr(classname) + TJS_W(".");
+		ret += ttstr(name);
+	}
 
 	return ret;
 }
@@ -844,6 +886,12 @@ void tTJSInterCodeContext::Commit()
 		if(!CodeArea) TJS_eTJSScriptError(TJSInsufficientMem, Block, 0);
 		CodeAreaCapa = CodeAreaSize;
 	}
+
+
+	// set object type info for debugging
+	if(TJSObjectHashMapEnabled())
+		TJSObjectHashSetType(this, GetShortDescriptionWithClassName());
+
 
 	// we do thus nasty thing because the std::vector does not free its storage
 	// even we call 'clear' method...
