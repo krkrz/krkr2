@@ -174,7 +174,7 @@ void __fastcall TTVPHintWindow::ActivateHintData(const TRect &Rect,
 	ActivateHint(Rect,AHint);
 }
 //---------------------------------------------------------------------------
-Windows::TRect __fastcall TTVPHintWindow::CalcHintRect(int MaxWidth,
+TRect __fastcall TTVPHintWindow::CalcHintRect(int MaxWidth,
 	const AnsiString AHint, void *AData)
 {
 	RECT result;
@@ -337,6 +337,10 @@ void __fastcall TTVPHintWindow::Paint(void)
 void __fastcall TTVPHintWindow::WMNCPaint(TMessage &message)
 {
 	// nothing to do
+}
+//---------------------------------------------------------------------------
+void __fastcall TTVPHintWindow::NCPaint(HDC dc)
+{
 }
 //---------------------------------------------------------------------------
 HDWP __fastcall TTVPHintWindow::ShowTop(HDWP hdwp)

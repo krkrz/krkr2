@@ -88,7 +88,7 @@ public:
 
 
 //---------------------------------------------------------------------------
-void __fastcall tTVPEmergencyExitThread::Execute(void)
+void tTVPEmergencyExitThread::Execute(void)
 {
 	DWORD pushstarttime;
 

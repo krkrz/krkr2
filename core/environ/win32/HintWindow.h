@@ -22,6 +22,7 @@ class TTVPHintWindow : public THintWindow
 protected:
 
 	void __fastcall virtual WMNCPaint(TMessage &Message);
+	void __fastcall NCPaint(HDC dc);
 
 BEGIN_MESSAGE_MAP
 	VCL_MESSAGE_HANDLER(WM_NCPAINT, TMessage, WMNCPaint)
@@ -39,7 +40,7 @@ public:
 		AHint);
 	virtual void __fastcall ActivateHintData(const TRect &Rect,const AnsiString
 		AHint,void *AData);
-	virtual Windows::TRect __fastcall CalcHintRect(int MaxWidth,const AnsiString AHint,
+	virtual TRect __fastcall CalcHintRect(int MaxWidth,const AnsiString AHint,
 		void *AData);
 	virtual bool __fastcall IsHintMsg(tagMSG &Msg);
 
