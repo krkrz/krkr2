@@ -13,6 +13,7 @@ globaldef		TVPFillARGB_NC_sse_a
 globaldef		TVPFillColor_mmx_a
 globaldef		TVPConstColorAlphaBlend_mmx_a
 globaldef		TVPConstColorAlphaBlend_d_mmx_a
+globaldef		TVPConstColorAlphaBlend_a_mmx_a
 externdef		TVPOpacityOnOpacityTable
 externdef		TVPNegativeMulTable
 
@@ -541,6 +542,117 @@ TVPConstColorAlphaBlend_d_mmx_a:	; constant ratio constant color alpha blender w
 		movd		eax,	mm2				; store
 		or			eax,	ecx				; dest opacity
 		mov			[edi],	eax				; store
+		add			edi,	byte 4
+
+		cmp			edi,	ebp
+		jb			.ploop2					; jump if edi < ebp
+
+.pexit:
+		pop			ebp
+		pop			edx
+		pop			ecx
+		pop			ebx
+		pop			esi
+		pop			edi
+		emms
+		ret
+
+;--------------------------------------------------------------------
+
+;;[function_replace_by TVPCPUType & TVP_CPU_HAS_MMX] TVPConstColorAlphaBlend_a
+;;void, TVPConstColorAlphaBlend_a_mmx_a,  (tjs_uint32 *dest, tjs_int len, tjs_uint32 color, tjs_int opa)
+
+;		Di = Di - SaDi + Si
+;		Da = Da - SaDa + Sa
+
+
+		function_align
+TVPConstColorAlphaBlend_a_mmx_a:	; constant ratio constant color alpha blender with destination additive alpha
+		push		edi
+		push		esi
+		push		ebx
+		push		ecx
+		push		edx
+		push		ebp
+		mov			ecx,	[esp + 32]		; len
+		cmp			ecx,	byte 0
+		jle			near .pexit
+		mov			edi,	[esp + 28]		; dest
+		lea			ebp,	[edi + ecx*4]	; limit
+
+		mov			eax,	[esp + 36]		; color    (Si)
+		mov			esi,	[esp + 40]		; opacity  (Sa)
+
+		mov			ebx,	esi
+		shr			ebx,	7
+		add			esi,	ebx				; adjust opacity
+
+		pxor		mm0,	mm0				; mm0 = 0
+
+		movd		mm7,	esi
+		punpcklwd	mm7,	mm7
+		punpcklwd	mm7,	mm7				; mm7 = 00 Sa 00 Sa 00 Sa 00 Sa
+
+		shl			esi,	24
+
+		movd		mm1,	esi
+		punpcklbw	mm1,	mm0				; mm1 = 00 Sa 00 00 00 00 00 00
+
+		and			eax,	0xffffff
+
+		movd		mm6,	eax
+		punpcklbw	mm6,	mm0				; mm6 = 00 00 00 Si 00 Si 00 Si
+		pmullw		mm6,	mm7
+		psrlw		mm6,	8
+		por			mm6,	mm1				; mm6 = 00 Sa 00 Si 00 Si 00 Si
+
+		sub			ebp,	byte 4			; 1*4
+		cmp			edi,	ebp
+		jae			near .pfraction			; jump if edi >= ebp
+
+		loop_align
+.ploop:
+
+		movd		mm1,		[edi]		; 1 dest     (DaDiDiDi)
+		movd		mm3,		[edi+4]		; 2 dest     (DaDiDiDi)
+		punpcklbw	mm1,		mm0			; 1 mm1 = 00 Da 00 Di 00 Di 00 Di
+		punpcklbw	mm3,		mm0			; 2 mm3 = 00 Da 00 Di 00 Di 00 Di
+		movq		mm2,		mm1			; 1
+		movq		mm4,		mm3			; 2
+		pmullw		mm2,		mm7			; 1
+		add			edi,	byte 8
+		pmullw		mm4,		mm7			; 2
+		psrlw		mm2,		8			; 1 mm2 = 00 SaDa 00 SaDi 00 SaDi 00 SaDi
+		psrlw		mm4,		8			; 2 mm4 = 00 SaDa 00 SaDi 00 SaDi 00 SaDi
+		psubw		mm1,		mm2			; 1
+		psubw		mm3,		mm4			; 2
+		cmp			edi,	ebp
+		paddw		mm1,		mm6			; 1
+		paddw		mm3,		mm6			; 2
+		packuswb	mm1,		mm0			; 1
+		packuswb	mm3,		mm0			; 2
+		movd		[edi-8],	mm1			; 1 store
+		movd		[edi+4-8],	mm3			; 2 store
+
+		jb			near .ploop
+
+.pfraction:
+		add			ebp,	byte 4
+		cmp			edi,	ebp
+		jae			.pexit					; jump if edi >= ebp
+
+.ploop2:	; fractions
+
+		movd		mm1,		[edi]		; dest     (DaDiDiDi)
+		punpcklbw	mm1,		mm0			; mm1 = 00 Da 00 Di 00 Di 00 Di
+		movq		mm2,		mm1
+		pmullw		mm2,		mm7
+		psrlw		mm2,		8			; mm2 = 00 SaDa 00 SaDi 00 SaDi 00 SaDi
+		psubw		mm1,		mm2
+		paddw		mm1,		mm6
+		packuswb	mm1,		mm0
+		movd		[edi],		mm1			; store
+
 		add			edi,	byte 4
 
 		cmp			edi,	ebp
