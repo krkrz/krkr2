@@ -238,12 +238,6 @@
   </BUILDTOOLS>
 
   <FILES>
-    <FILE type="override" value="..\..\..\visual\tvpgl.c" translator="Auto">
-      <CFLAG1 value=" -O2 -r -k- -y -v -vi"/>
-    </FILE>
-    <FILE type="override" value="..\..\..\visual\GraphicsLoaderIntf.cpp" translator="Auto">
-      <WARNOPTSTR value=" -w-par"/>
-    </FILE>
     <FILE type="override" value="..\..\..\tjs2\tjspp.tab.cpp" translator="Auto">
       <CFLAG1 value=" -vGc-"/>
     </FILE>
@@ -253,6 +247,12 @@
     <FILE type="override" value="..\..\..\tjs2\tjs.tab.cpp" translator="Auto">
       <CFLAG1 value=" -vGc-"/>
     </FILE>
+    <FILE type="override" value="..\..\..\visual\tvpgl.c" translator="Auto">
+      <CFLAG1 value=" -O2 -r -k- -y -v -vi"/>
+    </FILE>
+    <FILE type="override" value="..\..\..\visual\GraphicsLoaderIntf.cpp" translator="Auto">
+      <WARNOPTSTR value=" -w-par"/>
+    </FILE>
   </FILES>
 
   <IDEOPTIONS>
@@ -261,7 +261,7 @@ IncludeVerInfo=1
 AutoIncBuild=1
 MajorVer=2
 MinorVer=25
-Release=3
+Release=4
 Build=1867
 Debug=0
 PreRelease=0
@@ -274,7 +274,7 @@ CodePage=932
 [Version Info Keys]
 CompanyName=
 FileDescription=TVP(KIRIKIRI) 2 core / Scripting Platform for Win32
-FileVersion=2.25.3.1867
+FileVersion=2.25.4.1867
 InternalName=tvp2/win32
 LegalCopyright=(KIRIKIRI core) (C) '97-'05 W.Dee and contributors All Rights Reserved. This software is based in part on the work of Independent JPEG Group. For details: Run this program with '-about' option.
 LegalTrademarks=
