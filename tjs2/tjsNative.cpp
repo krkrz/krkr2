@@ -14,6 +14,7 @@
 
 #include "tjsNative.h"
 #include "tjsError.h"
+#include "tjsInterCodeGen.h"
 
 namespace TJS
 {
@@ -235,7 +236,7 @@ void tTJSNativeClass::RegisterNCM(const tjs_char *name, iTJSDispatch2 *dsp,
 	tjs_uint32 flags)
 {
 	// add to Items and ItemsNames
-	ItemNames.push_back(ttstr(name));
+	ItemNames.push_back(TJSMapGlobalStringMap(ttstr(name)));
 	Items.push_back(dsp); // do not AddRef "dsp"
 	ItemFlags.push_back(flags);
 
@@ -293,9 +294,10 @@ tTJSNativeClass::FuncCall(tjs_uint32 flag, const tjs_char * membername,
 		if(!(ItemFlags[i] & TJS_STATICMEMBER))
 		{
 			tTJSVariant val(Items[i], objthis);
-			objthis->PropSet(TJS_MEMBERENSURE|TJS_IGNOREPROP|ItemFlags[i],
-				(tjs_char*)ItemNames[i].c_str(), NULL, &val, objthis);
-				 // TODO:hint should be held
+			if(objthis->PropSetByVS(TJS_MEMBERENSURE|TJS_IGNOREPROP|ItemFlags[i],
+				ItemNames[i].AsVariantStringNoAddRef(), &val, objthis) == TJS_E_NOTIMPL)
+				objthis->PropSet(TJS_MEMBERENSURE|TJS_IGNOREPROP|ItemFlags[i],
+				ItemNames[i].c_str(), NULL, &val, objthis);
 		}
 	}
 

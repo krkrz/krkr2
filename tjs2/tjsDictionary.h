@@ -65,7 +65,7 @@ public:
 	void Clear();
 
 private:
-	bool EnumMemberCallback(const tjs_char *name, tjs_uint32 hint,
+	bool EnumMemberCallback(tTJSVariantString *name,
 		const tTJSVariant & value);
 		// method from tTJSEnumMemberCallbackIntf
 
@@ -81,7 +81,7 @@ private:
 		const ttstr * IndentStr;
 		bool First;
 
-		bool EnumMemberCallback(const tjs_char *name, tjs_uint32 hint,
+		bool EnumMemberCallback(tTJSVariantString *name,
 			const tTJSVariant & value);
 	};
 	friend class tSaveStructCallback;
@@ -94,7 +94,7 @@ public:
 		std::vector<iTJSDispatch2 *> * Stack;
 		iTJSDispatch2 * Dest;
 
-		bool EnumMemberCallback(const tjs_char *name, tjs_uint32 hint,
+		bool EnumMemberCallback(tTJSVariantString *name,
 			const tTJSVariant & value);
 	};
 	friend class tAssignStructCallback;

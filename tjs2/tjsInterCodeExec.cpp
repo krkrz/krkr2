@@ -350,7 +350,16 @@ public:
 	}
 
 	tjs_error TJS_INTF_METHOD
-	Reserved1() {return TJS_E_NOTIMPL;} // reserved
+	PropSetByVS(tjs_uint32 flag, tTJSVariantString *membername,
+		const tTJSVariant *param, iTJSDispatch2 *objthis)
+	{
+		tjs_error hr =
+			Dispatch1->PropSetByVS(flag, membername, param, OBJ1);
+		if(hr == TJS_E_MEMBERNOTFOUND && Dispatch1 != Dispatch2)
+			return Dispatch2->PropSetByVS(flag, membername, param, OBJ2);
+		return hr;
+	}
+
 	tjs_error TJS_INTF_METHOD
 	Reserved2() {return TJS_E_NOTIMPL;} // reserved
 
@@ -1493,9 +1502,13 @@ void tTJSInterCodeContext::SetPropertyDirect(tTJSVariant *ra,
 	tjs_error hr;
 	tTJSVariantClosure clo = ra_code1->AsObjectClosureNoAddRef();
 	tTJSVariant *name = TJS_GET_VM_REG_ADDR(DataArea, code[2]);
-	hr = clo.PropSet(flags,
-		name->GetString(), name->GetHint(), TJS_GET_VM_REG_ADDR(ra, code[3]),
+	hr = clo.PropSetByVS(flags,
+		name->AsStringNoAddRef(), TJS_GET_VM_REG_ADDR(ra, code[3]),
 			clo.ObjThis?clo.ObjThis:ra[-1].AsObjectNoAddRef());
+	if(hr == TJS_E_NOTIMPL)
+		hr = clo.PropSet(flags,
+			name->GetString(), name->GetHint(), TJS_GET_VM_REG_ADDR(ra, code[3]),
+				clo.ObjThis?clo.ObjThis:ra[-1].AsObjectNoAddRef());
 	if(TJS_FAILED(hr))
 		TJSThrowFrom_tjs_error(hr, TJS_GET_VM_REG(DataArea, code[2]).GetString());
 }
@@ -1589,9 +1602,13 @@ void tTJSInterCodeContext::SetPropertyIndirect(tTJSVariant *ra,
 
 		try
 		{
-			hr = clo.PropSet(flags,
-				*str, NULL, TJS_GET_VM_REG_ADDR(ra, code[3]),
+			hr = clo.PropSetByVS(flags,
+				str, TJS_GET_VM_REG_ADDR(ra, code[3]),
 					clo.ObjThis?clo.ObjThis:ra[-1].AsObjectNoAddRef());
+			if(hr == TJS_E_NOTIMPL)
+				hr = clo.PropSet(flags,
+					*str, NULL, TJS_GET_VM_REG_ADDR(ra, code[3]),
+						clo.ObjThis?clo.ObjThis:ra[-1].AsObjectNoAddRef());
 			if(TJS_FAILED(hr)) TJSThrowFrom_tjs_error(hr, *str);
 		}
 		catch(...)
