@@ -113,6 +113,9 @@ protected:
 	HRESULT __stdcall AddToROT( DWORD ROTreg );
 	void __stdcall RemoveFromROT( DWORD ROTreg );
 
+	void UtilDeleteMediaType( AM_MEDIA_TYPE *pmt );
+	void DebugOutputPinMediaType( IPin *pPin );
+
 public:
 	tTVPDSMovie();
 	virtual ~tTVPDSMovie();
@@ -149,6 +152,10 @@ public:
 
 	virtual void __stdcall GetFrontBuffer( BYTE **buff );
 	virtual void __stdcall SetVideoBuffer( BYTE *buff1, BYTE *buff2, long size );
+
+	virtual void __stdcall SetStopFrame( int frame );
+	virtual void __stdcall GetStopFrame( int *frame );
+	virtual void __stdcall SetDefaultStopFrame();
 
 	virtual void __stdcall GetVideoSize( long *width, long *height );
 	virtual HRESULT __stdcall GetAvgTimePerFrame( REFTIME *pAvgTimePerFrame );
