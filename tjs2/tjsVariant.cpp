@@ -664,7 +664,7 @@ bool tTJSVariant::NormalCompare(const tTJSVariant &val2) const
 				tTJSVariantString *s1, *s2;
 				s1 = String;
 				s2 = val2.String;
-				if(!s1 && !s2) return true; // both empty string
+				if(s1 == s2) return true; // both empty string or the same pointer
 				if(!s1 && s2) return false;
 				if(s1 && !s2) return false;
 				if(s1->Length != s2->Length) return false;
@@ -673,7 +673,7 @@ bool tTJSVariant::NormalCompare(const tTJSVariant &val2) const
 
 			if(vt == tvtOctet)
 			{
-				if(!Octet && !val2.Octet) return true; // both empty octet
+				if(Octet == val2.Octet) return true; // both empty octet or the same pointer
 				if(!Octet && val2.Octet) return false;
 				if(Octet && !val2.Octet) return false;
 				if(Octet->GetLength() != val2.Octet->GetLength()) return false;
