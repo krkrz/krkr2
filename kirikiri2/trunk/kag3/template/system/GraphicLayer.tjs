@@ -357,6 +357,7 @@ class BaseLayer extends GraphicLayer
 		if(elm !== void)
 		{
 			elm.mode = "opaque"; // レイヤモードを変えられると困るので
+			delete elm.index; // インデックスを変えられると困るので
 
 			if(elm.visible !== void)
 			{
