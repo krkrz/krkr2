@@ -91,7 +91,7 @@
     <PFLAGS value="-N2intermediate -N0intermediate -$Y+ -$W -$O- -v -JPHNE -M"/>
     <RFLAGS value=""/>
     <AFLAGS value="/mx /mv64 /m5 /w2 /zi /l /z"/>
-    <LFLAGS value="-dWINSPOOL.DRV -dWINMM.DLL -dMSVFW32.DLL -dCOMDLG32.DLL -Iintermediate 
+    <LFLAGS value="-Iintermediate -dWINSPOOL.DRV -dWINMM.DLL -dMSVFW32.DLL -dCOMDLG32.DLL 
       -D&quot;&quot; -GC&quot;TVP(kirikiri) for win32&quot; -Rr -H:0x10000 -aa -Tpe -GD -x -Gn -v"/>
   </OPTIONS>
   <LINKER>
@@ -106,7 +106,7 @@ AutoIncBuild=1
 MajorVer=2
 MinorVer=23
 Release=1
-Build=863
+Build=864
 Debug=0
 PreRelease=0
 Special=0
@@ -118,7 +118,7 @@ CodePage=932
 [Version Info Keys]
 CompanyName=
 FileDescription=TVP(KIRIKIRI) 2 core / Scripting Platform for Win32
-FileVersion=2.23.1.863
+FileVersion=2.23.1.864
 InternalName=tvp2/win32
 LegalCopyright=(KIRIKIRI core) (C) '97-'04 W.Dee All Rights Reserved. This software is based in part on the work of Independent JPEG Group. For details: Run this program with '-about' option.
 LegalTrademarks=
@@ -161,7 +161,7 @@ Item1=..\..\..\..\bin\win32
 DebugSourceDirs=C:\Program Files\Borland\CBuilder5\Projects\tvp2win32\visual\IA32\;C:\Program Files\Borland\CBuilder5\Projects\comps\o\erinalib\library\common\
 
 [Parameters]
-RunParams=-logerror=yes -wheel=message  -sel
+RunParams=-logerror=yes -wheel=message ..\..\tests -sel
 HostApplication=
 RemoteHost=
 RemotePath=
