@@ -388,7 +388,7 @@
 	</arg>
 	<result></result>
 	<desc>
-		　文字が入力されたときに発生します。<ref>Window.onKeyDown</ref> と異なるのは、onKeyDown が
+		　文字が入力されたときに発生します。<ref>Layer.onKeyDown</ref> と異なるのは、onKeyDown が
 		仮想キーコードを扱うのに対し、このイベントは文字そのものを扱います。押されたキーが
 		文字とは関係のないキー (ファンクションキーなど) の場合はこのイベントは発生しません。<r/>
 	</desc>
