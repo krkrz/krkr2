@@ -14,6 +14,7 @@
 
 #include "tjsTypes.h"
 #include "tjsErrorDefs.h"
+#include "drawable.h"
 
 /*[*/
 //---------------------------------------------------------------------------
@@ -315,7 +316,7 @@ public:
 	virtual tjs_error TJS_INTF_METHOD StartTransition(
 			/*in*/iTVPSimpleOptionProvider *options, // option provider
 			/*in*/iTVPSimpleImageProvider *imagepro, // image provider
-			/*in*/bool hasalpha, // destination has alpha
+			/*in*/tTVPLayerType layertype, // destination layer type
 			/*in*/tjs_uint src1w, tjs_uint src1h, // source 1 size
 			/*in*/tjs_uint src2w, tjs_uint src2h, // source 2 size
 			/*out*/tTVPTransType *type, // transition type
@@ -327,7 +328,7 @@ public:
 		// updatetype is tutDivisibleFade or tutDivisible.
 		// Otherwise is an object of iTVPGiveUpdateTransHandler ( cast to
 		// each class to use it )
-		// hasalpha is whether the destination must consider alpha channel.
+		// layertype is the destination layer type.
 };
 //---------------------------------------------------------------------------
 /*]*/

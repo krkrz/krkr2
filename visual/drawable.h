@@ -72,8 +72,8 @@ public:
 		// (rect.get_width() * rect.get_height()).
 		// put actually to be drawn rectangle to "cliprect"
 
-	virtual bool GetDrawTargetHasAlpha() = 0;
-		// returns whether the bitmap has alpha information
+	virtual tTVPLayerType GetTargetLayerType() = 0;
+		// returns target layer type
 
 	virtual void DrawCompleted(const tTVPRect &destrect,
 		tTVPBaseBitmap *bmp, const tTVPRect &cliprect,

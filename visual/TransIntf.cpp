@@ -383,7 +383,7 @@ class tTVPCrossFadeTransHandler : public iTVPDivisibleTransHandler
 	tjs_int RefCount;
 protected:
 	iTVPSimpleOptionProvider *Options;
-	bool DestHasAlpha;
+	tTVPLayerType DestLayerType;
 	tjs_uint64 StartTick;
 	tjs_uint64 Time; // time during transition
 	bool First;
@@ -401,10 +401,10 @@ protected:
 
 public:
 	tTVPCrossFadeTransHandler(iTVPSimpleOptionProvider *options,
-		bool desthasalpha, tjs_uint64 time, tjs_int phasemax = 255)
+		tTVPLayerType layertype, tjs_uint64 time, tjs_int phasemax = 255)
 	{
 		RefCount = 1;
-		DestHasAlpha = desthasalpha;
+		DestLayerType = layertype;
 		Options = options;
 		if(Options) Options->AddRef();
 		Time = time;
@@ -492,7 +492,7 @@ public:
 	tjs_error TJS_INTF_METHOD StartTransition(
 			/*in*/iTVPSimpleOptionProvider *options, // option provider
 			/*in*/iTVPSimpleImageProvider *imagepro, // image provider
-			/*in*/bool hasalpha, // destination has alpha
+			/*in*/tTVPLayerType layertype, // destination layer type
 			/*in*/tjs_uint src1w, tjs_uint src1h, // source 1 size
 			/*in*/tjs_uint src2w, tjs_uint src2h, // source 2 size
 			/*out*/tTVPTransType *type, // transition type
@@ -511,7 +511,7 @@ public:
 				ttstr((tjs_int)src2w) + TJS_W("x") + ttstr((tjs_int)src2h),
 				ttstr((tjs_int)src1w) + TJS_W("x") + ttstr((tjs_int)src1h) );
 
-		*handler = GetTransitionObject(options, imagepro, hasalpha, src1w, src1h,
+		*handler = GetTransitionObject(options, imagepro, layertype, src1w, src1h,
 			src2w, src2h);
 
 		return TJS_S_OK;
@@ -521,7 +521,7 @@ public:
 	virtual iTVPBaseTransHandler * GetTransitionObject(
 			/*in*/iTVPSimpleOptionProvider *options, // option provider
 			/*in*/iTVPSimpleImageProvider *imagepro, // image provider
-			/*in*/bool hasalpha,
+			/*in*/tTVPLayerType layertype,
 			/*in*/tjs_uint src1w, tjs_uint src1h, // source 1 size
 			/*in*/tjs_uint src2w, tjs_uint src2h) // source 2 size
 	{
@@ -530,7 +530,7 @@ public:
 		if(TJS_FAILED(er)) TVPThrowExceptionMessage(TVPSpecifyOption, TJS_W("time"));
 
 		return  (iTVPBaseTransHandler *)
-			(new tTVPCrossFadeTransHandler(options, hasalpha, time));
+			(new tTVPCrossFadeTransHandler(options, layertype, time));
 	}
 };
 //---------------------------------------------------------------------------
@@ -654,11 +654,21 @@ void tTVPCrossFadeTransHandler::Blend(tTVPDivisibleData *data)
 	src2 += data->Src2Left * sizeof(tjs_uint32);
 
 	tjs_int h = data->Height;
-	if(!DestHasAlpha)
+
+	if(DestLayerType == ltTransparent)
 	{
 		while(h--)
 		{
-			TVPConstAlphaBlend_SD((tjs_uint32*)dest, (const tjs_uint32*)src1,
+			TVPConstAlphaBlend_SD_d((tjs_uint32*)dest, (const tjs_uint32*)src1,
+				(const tjs_uint32*)src2, data->Width, Phase);
+			dest += destpitch, src1 += src1pitch, src2 += src2pitch;
+		}
+	}
+	else if(DestLayerType == ltAddAlpha)
+	{
+		while(h--)
+		{
+			TVPConstAlphaBlend_SD_a((tjs_uint32*)dest, (const tjs_uint32*)src1,
 				(const tjs_uint32*)src2, data->Width, Phase);
 			dest += destpitch, src1 += src1pitch, src2 += src2pitch;
 		}
@@ -667,7 +677,7 @@ void tTVPCrossFadeTransHandler::Blend(tTVPDivisibleData *data)
 	{
 		while(h--)
 		{
-			TVPConstAlphaBlend_SD_d((tjs_uint32*)dest, (const tjs_uint32*)src1,
+			TVPConstAlphaBlend_SD((tjs_uint32*)dest, (const tjs_uint32*)src1,
 				(const tjs_uint32*)src2, data->Width, Phase);
 			dest += destpitch, src1 += src1pitch, src2 += src2pitch;
 		}
@@ -705,9 +715,9 @@ class tTVPUniversalTransHandler : public tTVPCrossFadeTransHandler
 public:
 	tTVPUniversalTransHandler(
 		iTVPSimpleOptionProvider *options,
-		bool desthasalpha, tjs_uint64 time, tjs_int vague,
+		tTVPLayerType destlayertype, tjs_uint64 time, tjs_int vague,
 		iTVPScanLineProvider *rule) :
-			tTVPCrossFadeTransHandler(options, desthasalpha, time, 255+vague)
+			tTVPCrossFadeTransHandler(options, destlayertype, time, 255+vague)
 	{
 		Vague = vague;
 		Rule = rule;
@@ -745,7 +755,7 @@ public:
 	virtual iTVPBaseTransHandler * GetTransitionObject(
 			/*in*/iTVPSimpleOptionProvider *options, // option provider
 			/*in*/iTVPSimpleImageProvider *imagepro, // image provider
-			/*in*/bool hasalpha,
+			/*in*/tTVPLayerType layertype,
 			/*in*/tjs_uint src1w, tjs_uint src1h, // source 1 size
 			/*in*/tjs_uint src2w, tjs_uint src2h) // source 2 size
 	{
@@ -777,7 +787,7 @@ public:
 		try
 		{
 			ret =  (iTVPBaseTransHandler *)
-				(new tTVPUniversalTransHandler(options, hasalpha, time, vague,
+				(new tTVPUniversalTransHandler(options, layertype, time, vague,
 					scpro));
 		}
 		catch(...)
@@ -801,10 +811,12 @@ tjs_error TJS_INTF_METHOD tTVPUniversalTransHandler::StartProcess(
 	// start one frame of the transition
 
 	// create blend table
-	if(!DestHasAlpha)
-		TVPInitUnivTransBlendTable(BlendTable, Phase, Vague);
-	else
+	if(DestLayerType == ltTransparent)
 		TVPInitUnivTransBlendTable_d(BlendTable, Phase, Vague);
+	else if(DestLayerType == ltAddAlpha)
+		TVPInitUnivTransBlendTable_a(BlendTable, Phase, Vague);
+	else
+		TVPInitUnivTransBlendTable(BlendTable, Phase, Vague);
 
 	return er;
 }
@@ -840,11 +852,21 @@ void tTVPUniversalTransHandler::Blend(tTVPDivisibleData *data)
 	tjs_int h = data->Height;
 	if(Vague >= 512)
 	{
-		if(!DestHasAlpha)
+		if(DestLayerType == ltTransparent)
 		{
 			while(h--)
 			{
-				TVPUnivTransBlend((tjs_uint32*)dest, (const tjs_uint32*)src1,
+				TVPUnivTransBlend_d((tjs_uint32*)dest, (const tjs_uint32*)src1,
+					(const tjs_uint32*)src2, rule, BlendTable, data->Width);
+				dest += destpitch, src1 += src1pitch, src2 += src2pitch;
+				rule += rulepitch;
+			}
+		}
+		else if(DestLayerType == ltAddAlpha)
+		{
+			while(h--)
+			{
+				TVPUnivTransBlend_a((tjs_uint32*)dest, (const tjs_uint32*)src1,
 					(const tjs_uint32*)src2, rule, BlendTable, data->Width);
 				dest += destpitch, src1 += src1pitch, src2 += src2pitch;
 				rule += rulepitch;
@@ -854,7 +876,7 @@ void tTVPUniversalTransHandler::Blend(tTVPDivisibleData *data)
 		{
 			while(h--)
 			{
-				TVPUnivTransBlend_d((tjs_uint32*)dest, (const tjs_uint32*)src1,
+				TVPUnivTransBlend((tjs_uint32*)dest, (const tjs_uint32*)src1,
 					(const tjs_uint32*)src2, rule, BlendTable, data->Width);
 				dest += destpitch, src1 += src1pitch, src2 += src2pitch;
 				rule += rulepitch;
@@ -866,11 +888,22 @@ void tTVPUniversalTransHandler::Blend(tTVPDivisibleData *data)
 		tjs_int src1lv = Phase;
 		tjs_int src2lv = Phase - Vague;
 
-		if(!DestHasAlpha)
+		if(DestLayerType == ltTransparent)
 		{
 			while(h--)
 			{
-				TVPUnivTransBlend_switch((tjs_uint32*)dest, (const tjs_uint32*)src1,
+				TVPUnivTransBlend_switch_d((tjs_uint32*)dest, (const tjs_uint32*)src1,
+					(const tjs_uint32*)src2, rule, BlendTable, data->Width,
+						src1lv, src2lv);
+				dest += destpitch, src1 += src1pitch, src2 += src2pitch;
+				rule += rulepitch;
+			}
+		}
+		else if(DestLayerType == ltAddAlpha)
+		{
+			while(h--)
+			{
+				TVPUnivTransBlend_switch_a((tjs_uint32*)dest, (const tjs_uint32*)src1,
 					(const tjs_uint32*)src2, rule, BlendTable, data->Width,
 						src1lv, src2lv);
 				dest += destpitch, src1 += src1pitch, src2 += src2pitch;
@@ -881,7 +914,7 @@ void tTVPUniversalTransHandler::Blend(tTVPDivisibleData *data)
 		{
 			while(h--)
 			{
-				TVPUnivTransBlend_switch_d((tjs_uint32*)dest, (const tjs_uint32*)src1,
+				TVPUnivTransBlend_switch((tjs_uint32*)dest, (const tjs_uint32*)src1,
 					(const tjs_uint32*)src2, rule, BlendTable, data->Width,
 						src1lv, src2lv);
 				dest += destpitch, src1 += src1pitch, src2 += src2pitch;
@@ -939,9 +972,9 @@ class tTVPScrollTransHandler : public tTVPCrossFadeTransHandler
 public:
 	tTVPScrollTransHandler(
 		iTVPSimpleOptionProvider *options,
-		bool desthasalpha, tjs_uint64 time, tTVPScrollTransFrom from,
+		tTVPLayerType layertype, tjs_uint64 time, tTVPScrollTransFrom from,
 			tTVPScrollTransStay stay, tjs_int maxphase) :
-			tTVPCrossFadeTransHandler(options, desthasalpha, time, maxphase)
+			tTVPCrossFadeTransHandler(options, layertype, time, maxphase)
 	{
 		From = from;
 		Stay = stay;
@@ -975,7 +1008,7 @@ public:
 	tjs_error TJS_INTF_METHOD StartTransition(
 			/*in*/iTVPSimpleOptionProvider *options, // option provider
 			/*in*/iTVPSimpleImageProvider *imagepro, // image provider
-			/*in*/bool hasalpha, // destination has alpha
+			/*in*/tTVPLayerType layertype, // destination layer type
 			/*in*/tjs_uint src1w, tjs_uint src1h, // source 1 size
 			/*in*/tjs_uint src2w, tjs_uint src2h, // source 2 size
 			/*out*/tTVPTransType *type, // transition type
@@ -984,7 +1017,7 @@ public:
 			)
 	{
 		tjs_error er = tTVPCrossFadeTransHandlerProvider::StartTransition
-			(options, imagepro, hasalpha, src1w, src1h, src2w, src2h,
+			(options, imagepro, layertype, src1w, src1h, src2w, src2h,
 			type, updatetype, handler);
 
 		if(TJS_SUCCEEDED(er)) *updatetype = tutDivisible;
@@ -996,7 +1029,7 @@ public:
 	virtual iTVPBaseTransHandler * GetTransitionObject(
 			/*in*/iTVPSimpleOptionProvider *options, // option provider
 			/*in*/iTVPSimpleImageProvider *imagepro, // image provider
-			/*in*/bool hasalpha,
+			/*in*/tTVPLayerType layertype,
 			/*in*/tjs_uint src1w, tjs_uint src1h, // source 1 size
 			/*in*/tjs_uint src2w, tjs_uint src2h) // source 2 size
 	{
@@ -1024,7 +1057,7 @@ public:
 		// create a transition object
 		iTVPBaseTransHandler *ret;
 		ret =  (iTVPBaseTransHandler *)
-			(new tTVPScrollTransHandler(options, hasalpha, time, from,
+			(new tTVPScrollTransHandler(options, layertype, time, from,
 				stay, maxphase));
 		return ret;
 	}

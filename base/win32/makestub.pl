@@ -513,14 +513,14 @@ process_exp_stub("../../visual/win32/WindowImpl.h");
 print OFH "#include \"TransIntf.h\"\n";
 process_exp_stub("../../visual/TransIntf.h");
 
+print OFH "#include \"drawable.h\"\n";
+process_exp_stub("../../visual/drawable.h");
+
 print OFH "#include \"transhandler.h\"\n";
 process_exp_stub("../../visual/transhandler.h");
 
 print OFH "#include \"tvpgl.h\"\n";
 process_exp_stub("../../visual/tvpgl.h");
-
-print OFH "#include \"drawable.h\"\n";
-process_exp_stub("../../visual/drawable.h");
 
 print OFH "#include \"tvpgl_ia32_intf.h\"\n";
 process_exp_stub("../../visual/IA32/tvpgl_ia32_intf.h");
