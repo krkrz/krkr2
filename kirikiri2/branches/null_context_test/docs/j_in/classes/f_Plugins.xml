@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="Shift_JIS" ?>
+<doc>
+<title>Plugins</title>
+<desc>
+　Plugins クラスは <kw>プラグイン</kw>に関する管理を行うクラスです。このクラスからオブジェクトを作成することはできません。<r/>
+</desc>
+
+<member>
+	<name>link</name>
+	<type>method</type>
+	<shortdesc>プラグインの接続</shortdesc>
+	<arg>
+		<argitem>
+			<name>name</name>
+			<default></default>
+			<desc>
+				　接続するプラグインを指定します。<r/>
+			</desc>
+		</argitem>
+	</arg>
+	<result></result>
+	<desc>
+		　指定されたプラグインを吉里吉里本体に接続します ( 読み込みます )。<r/>
+	</desc>
+</member>
+
+<member>
+	<name>unlink</name>
+	<type>method</type>
+	<shortdesc>プラグインの切り離し</shortdesc>
+	<arg>
+		<argitem>
+			<name>name</name>
+			<default></default>
+			<desc>
+				　切り離すプラグインを指定します。<r/>
+			</desc>
+		</argitem>
+	</arg>
+	<result>　切り離しに成功すれば真、失敗すれば偽</result>
+	<desc>
+		　指定されたプラグインを切り離します。<r/>
+		　プラグインの中には、解放に応じない物もあります ( オブジェクトが使用中の時など )。解放に応じず、失敗すれば偽が返ります。<r/>
+	</desc>
+</member>
+
+
+</doc>
