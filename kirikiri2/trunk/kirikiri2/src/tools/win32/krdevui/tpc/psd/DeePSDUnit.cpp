@@ -8,8 +8,9 @@
 //---------------------------------------------------------------------------
 /*
 	This is very limited loader for PSD (Photoshop native data format).
-	This can only load PSD data of RGB, and the layer is 'normal' blend mode,
-	transparent, 8bit for each color/alpha component.
+	This can only load PSD data of RGB, and the layer is 'normal' blend mode
+	('linear dodge' blend mode can also be loaded in additive alpha mode),
+	8bit for each color/alpha component.
 	Otherwise the loading will fail.
 */
 //---------------------------------------------------------------------------
