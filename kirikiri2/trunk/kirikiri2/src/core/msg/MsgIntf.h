@@ -360,9 +360,6 @@ TVP_MSG_DECL(TVPLabelOrScriptInMacro,
 TVP_MSG_DECL(TVPUnknownMacroName,
 	"マクロ \"%1\" は登録されていません");
 
-TVP_MSG_DECL(TVPWindowHasAlreadyVideoOverlayObject,
-	"ウィンドウはすでにビデオオブジェクトを持っています");
-
 //---------------------------------------------------------------------------
 // Utility Functions
 //---------------------------------------------------------------------------
