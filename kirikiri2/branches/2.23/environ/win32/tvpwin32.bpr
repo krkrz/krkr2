@@ -151,7 +151,7 @@ Item0=intermediate
 DebugSourceDirs=C:\Program Files\Borland\CBuilder5\Projects\tvp2win32\visual\IA32\;C:\Program Files\Borland\CBuilder5\Projects\comps\o\erinalib\library\common\
 
 [Parameters]
-RunParams=-logerror=yes -nosel
+RunParams=-logerror=yes kag3
 HostApplication=
 RemoteHost=
 RemotePath=
