@@ -2454,6 +2454,44 @@ void tTVPBaseBitmap::AdjustGamma(tTVPRect rect, const tTVPGLGammaAdjustData & da
 	TVPUninitGammaAdjustTempData(&temp);
 }
 //---------------------------------------------------------------------------
+void tTVPBaseBitmap::AdjustGammaForAdditiveAlpha(tTVPRect rect, const tTVPGLGammaAdjustData & data)
+{
+	if(!Is32BPP()) TVPThrowExceptionMessage(TVPInvalidOperationFor8BPP);
+
+	BOUND_CHECK(RET_VOID);
+
+	if(!memcmp(&data, &TVPIntactGammaAdjustData, sizeof(tTVPGLGammaAdjustData)))
+		return;
+
+	tTVPGLGammaAdjustTempData temp;
+	TVPInitGammaAdjustTempData(&temp, &data);
+
+	try
+	{
+		tjs_int h = rect.bottom - rect.top;
+		tjs_int w = rect.right - rect.left;
+
+		tjs_int pitch = GetPitchBytes();
+		tjs_uint8 * line = (tjs_uint8*)GetScanLineForWrite(rect.top);
+
+
+		line += rect.left * sizeof(tjs_uint32);
+		while(h--)
+		{
+			TVPAdjustGamma_a((tjs_uint32*)line, w, &temp);
+			line += pitch;
+		}
+
+	}
+	catch(...)
+	{
+		TVPUninitGammaAdjustTempData(&temp);
+		throw;
+	}
+
+	TVPUninitGammaAdjustTempData(&temp);
+}
+//---------------------------------------------------------------------------
 void tTVPBaseBitmap::ConvertAddAlphaToAlpha()
 {
 	// convert additive alpha representation to alpha representation
