@@ -239,7 +239,7 @@
 	参考 :
 		Golomb codes
 		http://oku.edu.mie-u.ac.jp/~okumura/compression/golomb/
-		松阪大学教授 奥村晴彦氏によるゴロム符号の簡単な解説
+		三重大学教授 奥村晴彦氏によるゴロム符号の簡単な解説
 */
 
 //---------------------------------------------------------------------------
@@ -249,7 +249,7 @@ FILE *vstxt = fopen("vs.txt", "wt");
 #define GOLOMB_GIVE_UP_BYTES 4
 void CompressValuesGolomb(TLG6BitStream &bs, char *buf, int size)
 {
-	// golomb encoding, -- http://www.matsusaka-u.ac.jp/~okumura/compression/golomb/
+	// golomb encoding, -- http://oku.edu.mie-u.ac.jp/~okumura/compression/golomb/
 
 	// run-length golomb method
 	bs.PutValue(buf[0]?1:0, 1); // initial value state
