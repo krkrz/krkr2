@@ -4624,21 +4624,56 @@ iTJSDispatch2 * tTJSNI_BaseLayer::GetFontObjectNoAddRef()
 //---------------------------------------------------------------------------
 // updating management
 //---------------------------------------------------------------------------
+void tTJSNI_BaseLayer::UpdateTransDestinationOnSelfUpdate(const tTVPComplexRect &region)
+{
+	if(TransDest && TransDest->InTransition && TransDest->TransSelfUpdate )
+	{
+		// transition, its update is performed by user code, is processing on
+		// transition destination.
+		// update the transition destination as transition source does.
+		switch(TransDest->TransUpdateType)
+		{
+		case tutDivisibleFade:
+		  {
+			tTVPComplexRect cp(region);
+			TransDest->Update(cp, true);
+			break;
+		  }
+		default:
+			TransDest->Update(true);
+				// update entire area of the transition destination
+				// because we cannot determine where the update affects.
+			break;
+		}
+	}
+}
+//---------------------------------------------------------------------------
+void tTJSNI_BaseLayer::UpdateTransDestinationOnSelfUpdate(const tTVPRect &rect)
+{
+	// essentially the same as UpdateTransDestinationOnSelfUpdate(const tTVPComplexRect &region)
+	if(TransDest && TransDest->InTransition && TransDest->TransSelfUpdate )
+	{
+		switch(TransDest->TransUpdateType)
+		{
+		case tutDivisibleFade:
+			TransDest->Update(rect, true);
+			break;
+		default:
+			TransDest->Update(true);
+			break;
+		}
+	}
+}
+//---------------------------------------------------------------------------
 void tTJSNI_BaseLayer::UpdateChildRegion(tTJSNI_BaseLayer *child,
 	const tTVPComplexRect &region,
 	bool tempupdate, bool targvisible, bool addtoprimary)
 {
 	// called by child.  add update rect subscribed in "rect"
-/*
-	tTVPComplexRect converted(region);
-	converted.AddOffsets(child->Rect.left, child->Rect.top);
-*/
+
 	tTVPRect cr;
 	cr.left = cr.top = 0;
 	cr.right = Rect.get_width(); cr.bottom = Rect.get_height();
-/*
-	converted.And(cr);
-*/
 
 	tTVPComplexRect converted;
 	converted.CopyWithOffsets(region, cr, child->Rect.left, child->Rect.top);
@@ -4666,6 +4701,8 @@ void tTJSNI_BaseLayer::UpdateChildRegion(tTJSNI_BaseLayer *child,
 	{
 		if(addtoprimary) if(Manager) Manager->AddUpdateRegion(converted);
 	}
+
+	UpdateTransDestinationOnSelfUpdate(converted);
 }
 //---------------------------------------------------------------------------
 void tTJSNI_BaseLayer::InternalUpdate(const tTVPRect &rect, bool tempupdate)
@@ -4697,6 +4734,8 @@ void tTJSNI_BaseLayer::InternalUpdate(const tTVPRect &rect, bool tempupdate)
 	{
 		if(Manager) Manager->AddUpdateRegion(cr);
 	}
+
+	UpdateTransDestinationOnSelfUpdate(cr);
 }
 //---------------------------------------------------------------------------
 void tTJSNI_BaseLayer::Update(tTVPComplexRect &rects, bool tempupdate)
@@ -4728,6 +4767,8 @@ void tTJSNI_BaseLayer::Update(tTVPComplexRect &rects, bool tempupdate)
 	{
 		if(Manager) Manager->AddUpdateRegion(rects);
 	}
+
+	UpdateTransDestinationOnSelfUpdate(rects);
 }
 //---------------------------------------------------------------------------
 void tTJSNI_BaseLayer::Update(const tTVPRect &rect, bool tempupdate)
@@ -4792,6 +4833,13 @@ void tTJSNI_BaseLayer::BeforeCompletion()
 		{
 			// notify start of processing unit
 			tjs_error er;
+			if(TransSelfUpdate)
+			{
+				// set TransTick here if the transition is performed by user code;
+				// otherwise the TransTick is to be set at
+				// tTJSNI_BaseLayer::InvokeTransition
+				TransTick = TVPGetTickCount();
+			}
 			er = DivisibleTransHandler->StartProcess(TransTick);
 			if(er != TJS_S_TRUE) StopTransitionByHandler();
 		}
@@ -5620,6 +5668,21 @@ void tTJSNI_BaseLayer::StartTransition(const ttstr &name, bool withchildren,
 		pro = TVPFindTransHandlerProvider(name);
 			// this may raise an exception
 
+		// check selfupdate member of 'options'
+		tTJSVariant var;
+		static ttstr selfupdate_name(TJS_W("selfupdate"));
+		if(TJS_SUCCEEDED(options.PropGet(0, selfupdate_name.c_str(),
+			selfupdate_name.GetHint(), &var, NULL)))
+		{
+			// selfupdate member found
+			TransSelfUpdate = (bool)(tjs_int)var;
+		}
+		else
+		{
+			TransSelfUpdate = false;
+		}
+
+
 		// create option provider
 		sop = new tTVPSimpleOptionProvider(options);
 
@@ -5684,7 +5747,7 @@ void tTJSNI_BaseLayer::StartTransition(const ttstr &name, bool withchildren,
 
 		// register to idle event handler
 		TransIdleCallback.Owner = this;
-		TVPAddContinuousEventHook(&TransIdleCallback);
+		if(!TransSelfUpdate) TVPAddContinuousEventHook(&TransIdleCallback);
 
 		// initial tick count
 		TVPStartTickCount();
@@ -5717,7 +5780,7 @@ void tTJSNI_BaseLayer::InternalStopTransition()
 		TransCompEventPrevented = false;
 
 		// unregister idle event handler
-		TVPRemoveContinuousEventHook(&TransIdleCallback);
+		if(!TransSelfUpdate) TVPRemoveContinuousEventHook(&TransIdleCallback);
 
 		// disable cache
 		if(TransWithChildren)

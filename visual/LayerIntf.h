@@ -800,6 +800,9 @@ private:
 
 	bool CallOnPaint; // call onPaint event when flaged
 
+	void UpdateTransDestinationOnSelfUpdate(const tTVPComplexRect &region);
+	void UpdateTransDestinationOnSelfUpdate(const tTVPRect &rect);
+
 	void UpdateChildRegion(tTJSNI_BaseLayer *child, const tTVPComplexRect &region,
 		bool tempupdate, bool targnodevisible, bool addtoprimary);
 
@@ -870,6 +873,7 @@ private:
 
 	bool InTransition; // is transition processing?
 	bool TransWithChildren; // is transition with children?
+	bool TransSelfUpdate; // is transition update performed by user code ?
 
 	tjs_uint64 TransTick; // current tick count
 
