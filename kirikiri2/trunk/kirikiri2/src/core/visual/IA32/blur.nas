@@ -732,17 +732,27 @@ TVPDoBoxBlurAvg16_name:			; do blur using box-blur algorithm, 16bit precision
 	push	ecx
 	push	edx
 	push	ebp
+
+	mov	eax,	[esp + 44]		; n
+	cmp	eax,	3
+	IF	ge
+	  cmp	eax,	128
+	  IF	l
+	    ; if n>=3 && n < 128
+	    jmp near  .TVPDoBoxBlurAvg15		; do 15bit precition routine
+	  ENDIF
+	ENDIF
+
 	mov	ecx,	[esp + 48]		; len
 	cmp	ecx,	byte 0
 	jle	near .pexit2
 
-	pxor	mm0,	mm0		; mm0 = 0
-
-	mov	eax,	[esp + 44]		; n
 	shr	eax,	1		; eax = n / 2
 	movd	mm7,	eax
 	punpcklwd	mm7,	mm7		; mm7 = 0000|0000|half_n|half_n
 	punpcklwd	mm7,	mm7		; mm7 = half_n|half_n|half_n|half_n
+
+	pxor	mm0,	mm0		; mm0 = 0
 
 	mov	ebx,	[esp + 44]		; n
 	mov	eax,	(1<<16)
@@ -899,6 +909,115 @@ TVPDoBoxBlurAvg16_name:			; do blur using box-blur algorithm, 16bit precision
 	emms
 	ret
 
+.TVPDoBoxBlurAvg15:				; 15bit precision routine
+	mov	ecx,	[esp + 48]		; len
+	cmp	ecx,	byte 0
+	jle	near .epexit2
+
+	pxor	mm0,	mm0		; mm0 = 0
+
+	mov	eax,	[esp + 44]		; n
+	shr	eax,	1		; eax = n / 2
+	movd	mm7,	eax
+	punpcklwd	mm7,	mm7		; mm7 = 0000|0000|half_n|half_n
+	punpcklwd	mm7,	mm7		; mm7 = half_n|half_n|half_n|half_n
+
+	mov	ebx,	[esp + 44]		; n
+	mov	eax,	(1<<16)
+	xor	edx,	edx
+	idiv	ebx			; eax = rcp = (1<<16) / n
+	movd	mm6,	eax
+	punpcklwd	mm6,	mm6		; mm6 = 0000|0000|rcp|rcp
+	punpcklwd	mm6,	mm6		; mm6 = rcp|rcp|rcp|rcp
+
+	mov	edi,	[esp + 28]		; dest
+
+	mov	ebp,	[esp + 32]		; sum
+	movq	mm5,	[ebp]		; mm5 = As|Rs|Gs|Bs
+
+	mov	ebx,	[esp + 36]		; addptr
+	mov	ebp,	[esp + 40]		; subptr
+
+	lea	eax,	[edi + ecx*4]	; limit
+	mov	esi,	eax		; esi = limit
+
+	sub	esi,	byte 12	; 3*4
+	cmp	edi,	esi
+
+	jae	near .epfraction		; jump if edi >= limit
+
+	loop_align
+.eploop:
+	movq	mm1,	mm5		; 1 mm1 = As|Rs|Gs|Bs
+	add	ebp,	byte 32
+	add	edi,	byte 16
+	paddw	mm1,	mm7		; 1 mm1 = As+HalfN|Rs+HalfN|Gs+HalfN|Bs+HalfN
+	paddw	mm5,	[ebx]		; 1 sum += *addptr
+	pmulhw	mm1,	mm6		; 1 mm1 = Aavg|Ravg|Gavg|Bavg
+	psubw	mm5,	[ebp-32]		; 1 sum -= *subptr
+	packuswb	mm1,	mm1		; 1 pack mm1
+	movq	mm2,	mm5		; 2 mm2 = As|Rs|Gs|Bs
+	movd	[edi-16],	mm1
+	paddw	mm2,	mm7		; 2 mm2 = As+HalfN|Rs+HalfN|Gs+HalfN|Bs+HalfN
+	paddw	mm5,	[ebx+8]		; 2 sum += *addptr
+	pmulhw	mm2,	mm6		; 2 mm2 = Aavg|Ravg|Gavg|Bavg
+	psubw	mm5,	[ebp+8-32]		; 2 sum -= *subptr
+	packuswb	mm2,	mm2		; 2 pack mm2
+	movq	mm3,	mm5		; 3 mm3 = As|Rs|Gs|Bs
+	movd	[edi+4-16],	mm2
+	paddw	mm3,	mm7		; 3 mm3 = As+HalfN|Rs+HalfN|Gs+HalfN|Bs+HalfN
+	paddw	mm5,	[ebx+16]		; 3 sum += *addptr
+	pmulhw	mm3,	mm6		; 3 mm3 = Aavg|Ravg|Gavg|Bavg
+	psubw	mm5,	[ebp+16-32]		; 3 sum -= *subptr
+	packuswb	mm3,	mm3		; 3 pack mm3
+	add	ebx,	byte 32
+	movq	mm4,	mm5		; 4 mm4 = As|Rs|Gs|Bs
+	movd	[edi+8-16],	mm3
+	paddw	mm4,	mm7		; 4 mm4 = As+HalfN|Rs+HalfN|Gs+HalfN|Bs+HalfN
+	paddw	mm5,	[ebx+24-32]		; 4 sum += *addptr
+	pmulhw	mm4,	mm6		; 4 mm4 = Aavg|Ravg|Gavg|Bavg
+	psubw	mm5,	[ebp+24-32]		; 4 sum -= *subptr
+	packuswb	mm4,	mm4		; 4 pack mm4
+	cmp	edi,	esi
+	movd	[edi+12-16],	mm4
+	jb	near .eploop
+
+.epfraction:
+	add	esi,	byte 12
+	cmp	edi,	esi
+	jae	.epexit			; jump if edi >= limit
+
+.eploop2:	; fractions
+	movq	mm1,	mm5		; mm1 = As|Rs|Gs|Bs
+	paddw	mm1,	mm7		; mm1 = As+HalfN|Rs+HalfN|Gs+HalfN|Bs+HalfN
+	pmulhw	mm1,	mm6		; mm1 = Aavg|Ravg|Gavg|Bavg
+	packuswb	mm1,	mm1		; pack mm1
+	movd	[edi],	mm1
+
+	paddw	mm5,	[ebx]		; sum += *addptr
+	psubw	mm5,	[ebp]		; sum -= *subptr
+
+	add	ebx,	byte 8
+	add	ebp,	byte 8
+	add	edi,	byte 4
+
+	cmp	edi,	esi
+	jb	short .eploop2		; jump if edi < limit
+
+.epexit:
+	mov	ebp,	[esp + 32]		; sum
+	movq	[ebp],	mm5		; store sum
+
+.epexit2:
+	pop	ebp
+	pop	edx
+	pop	ecx
+	pop	ebx
+	pop	esi
+	pop	edi
+	emms
+	ret
+
 ;--------------------------------------------------------------------
 
 	function_align
@@ -909,6 +1028,17 @@ TVPDoBoxBlurAvg16_d_name:			; do blur using box-blur algorithm with alpha, 16bit
 	push	ecx
 	push	edx
 	push	ebp
+
+	mov	eax,	[esp + 44]		; n
+	cmp	eax,	3
+	IF	ge
+	  cmp	eax,	128
+	  IF	l
+	    ; if n>=3 && n < 128
+	    jmp near  .TVPDoBoxBlurAvg15_d		; do 15bit precition routine
+	  ENDIF
+	ENDIF
+
 	mov	ecx,	[esp + 48]		; len
 	cmp	ecx,	byte 0
 	jle	near .pexit2
@@ -1096,6 +1226,172 @@ TVPDoBoxBlurAvg16_d_name:			; do blur using box-blur algorithm with alpha, 16bit
 	movq	[ebp],	mm5		; store sum
 
 .pexit2:
+	pop	ebp
+	pop	edx
+	pop	ecx
+	pop	ebx
+	pop	esi
+	pop	edi
+	emms
+	ret
+
+.TVPDoBoxBlurAvg15_d:				; do 15bit precision
+	mov	ecx,	[esp + 48]		; len
+	cmp	ecx,	byte 0
+	jle	near .epexit2
+
+	pxor	mm0,	mm0		; mm0 = 0
+
+	mov	eax,	[esp + 44]		; n
+	shr	eax,	1		; eax = n / 2
+	movd	mm7,	eax
+	punpcklwd	mm7,	mm7		; mm7 = 0000|0000|half_n|half_n
+	punpcklwd	mm7,	mm7		; mm7 = half_n|half_n|half_n|half_n
+
+	mov	ebx,	[esp + 44]		; n
+	mov	eax,	(1<<16)
+	xor	edx,	edx
+	idiv	ebx			; eax = rcp = (1<<16) / n
+	movd	mm6,	eax
+	punpcklwd	mm6,	mm6		; mm6 = 0000|0000|rcp|rcp
+	punpcklwd	mm6,	mm6		; mm6 = rcp|rcp|rcp|rcp
+
+	mov	edi,	[esp + 28]		; dest
+
+	mov	ebp,	[esp + 32]		; sum
+	movq	mm5,	[ebp]		; mm5 = As|Rs|Gs|Bs
+
+	mov	ebx,	[esp + 36]		; addptr
+	mov	ebp,	[esp + 40]		; subptr
+
+	lea	eax,	[edi + ecx*4]	; limit
+	mov	esi,	eax		; esi = limit
+
+	sub	esi,	byte 12	; 3*4
+	cmp	edi,	esi
+
+	jae	near .epfraction		; jump if edi >= limit
+
+	loop_align
+.eploop:
+	movq	mm1,	mm5		; mm1 = As|Rs|Gs|Bs
+	paddw	mm1,	mm7		; mm1 = As+HalfN|Rs+HalfN|Gs+HalfN|Bs+HalfN
+	pmulhw	mm1,	mm6		; mm1 = Aavg|Ravg|Gavg|Bavg
+	packuswb	mm1,	mm0
+	movd	ecx,	mm1
+	shr	ecx,	16
+	and	ecx,	0xff00
+	paddw	mm5,	[ebx]		; sum += *addptr
+	add	ecx,	TVPDivTable		; ecx = TVPDivTable[Alpha][]
+	movd	edx,	mm1
+	and	edx,	0xff000000
+	movd	eax,	mm1
+	psubw	mm5,	[ebp]		; sum -= *subptr
+	and	eax,	0xff		; eax = 00|00|00|B
+	movzx	eax,byte	[ecx+eax]		; look up the table
+	add	edx,	eax		; edx = alpha|00|00|[B]
+	movd	eax,	mm1
+	movq	mm4,	mm5		; mm4 = As|Rs|Gs|Bs
+	shr	eax,	8
+	and	eax,	0xff		; eax = Gavg
+	paddw	mm4,	mm7		; mm4 = As+HalfN|Rs+HalfN|Gs+HalfN|Bs+HalfN
+	movzx	eax,byte	[ecx+eax]		; look up the table
+	shl	eax,	8		; eax = 00|00|[G]|00
+	pmulhw	mm4,	mm6		; mm4 = Aavg|Ravg|Gavg|Bavg
+	add	edx,	eax		; edx = alpha|00|[G]|[B]
+	movd	eax,	mm1
+	packuswb	mm4,	mm0
+	shr	eax,	16
+	and	eax,	0xff		; eax = Ravg
+	movzx	eax,byte	[ecx+eax]		; look up the table
+	shl	eax,	16		; eax = 00|[R]|00|00
+	movd	ecx,	mm4
+	add	edx,	eax		; edx = alpha|[R]|[G]|[B]
+	shr	ecx,	16
+	mov	[edi],	edx
+	and	ecx,	0xff00
+	paddw	mm5,	[ebx+8]		; sum += *addptr
+	add	ecx,	TVPDivTable		; ecx = TVPDivTable[Alpha][]
+	movd	edx,	mm4
+	and	edx,	0xff000000
+	movd	eax,	mm4
+	psubw	mm5,	[ebp+8]		; sum -= *subptr
+	and	eax,	0xff		; eax = 00|00|00|B
+	movzx	eax,byte	[ecx+eax]		; look up the table
+	add	edx,	eax		; edx = alpha|00|00|[B]
+	movd	eax,	mm4
+	add	ebx,	byte 16
+	shr	eax,	8
+	and	eax,	0xff		; eax = Gavg
+	movzx	eax,byte	[ecx+eax]		; look up the table
+	add	ebp,	byte 16
+	shl	eax,	8		; eax = 00|00|[G]|00
+	add	edx,	eax		; edx = alpha|00|[G]|[B]
+	movd	eax,	mm4
+	add	edi,	byte 8
+	shr	eax,	16
+	and	eax,	0xff		; eax = Ravg
+	movzx	eax,byte	[ecx+eax]		; look up the table
+	shl	eax,	16		; eax = 00|[R]|00|00
+	add	edx,	eax		; edx = alpha|[R]|[G]|[B]
+	cmp	edi,	esi
+	mov	[edi+4-8],	edx
+	jb	near .eploop
+
+.epfraction:
+	add	esi,	byte 12
+	cmp	edi,	esi
+	jae	.epexit			; jump if edi >= limit
+
+.eploop2:	; fractions
+	movq	mm1,	mm5		; mm1 = As|Rs|Gs|Bs
+	paddw	mm1,	mm7		; mm1 = As+HalfN|Rs+HalfN|Gs+HalfN|Bs+HalfN
+	pmulhw	mm1,	mm6		; mm1 = Aavg|Ravg|Gavg|Bavg
+	packuswb	mm1,	mm0
+
+	movd	ecx,	mm1
+	shr	ecx,	16
+	and	ecx,	0xff00
+	add	ecx,	TVPDivTable		; ecx = TVPDivTable[Alpha][]
+	movd	edx,	mm1
+	and	edx,	0xff000000
+
+	movd	eax,	mm1
+	and	eax,	0xff		; eax = 00|00|00|B
+	movzx	eax,byte	[ecx+eax]		; look up the table
+	add	edx,	eax		; edx = alpha|00|00|[B]
+
+	movd	eax,	mm1
+	shr	eax,	8
+	and	eax,	0xff		; eax = Gavg
+	movzx	eax,byte	[ecx+eax]		; look up the table
+	shl	eax,	8		; eax = 00|00|[G]|00
+	add	edx,	eax		; edx = alpha|00|[G]|[B]
+
+	movd	eax,	mm1
+	shr	eax,	16
+	and	eax,	0xff		; eax = Ravg
+	movzx	eax,byte	[ecx+eax]		; look up the table
+	shl	eax,	16		; eax = 00|[R]|00|00
+	add	edx,	eax		; edx = alpha|[R]|[G]|[B]
+
+	mov	[edi],	edx
+
+	paddw	mm5,	[ebx]		; sum += *addptr
+	psubw	mm5,	[ebp]		; sum -= *subptr
+
+	add	ebx,	byte 8
+	add	ebp,	byte 8
+	add	edi,	byte 4
+
+	cmp	edi,	esi
+	jb	short .eploop2		; jump if edi < limit
+
+.epexit:
+	mov	ebp,	[esp + 32]		; sum
+	movq	[ebp],	mm5		; store sum
+
+.epexit2:
 	pop	ebp
 	pop	edx
 	pop	ecx
@@ -1482,7 +1778,7 @@ TVPDoBoxBlurAvg32_d_name:			; do blur using box-blur algorithm with alpha, 32bit
 ;--------------------------------------------------------------------
 ; SSE stuff
 ;--------------------------------------------------------------------
-;;[function_replace_by TVPCPUType & TVP_CPU_HAS_SSE && TVPCPUType & TVP_CPU_HAS_EMMX && TVPCPUType & TVP_CPU_HAS_MMX] TVPDoBoxBlurAvg16
+;;[function_replace_by 0 && TVPCPUType & TVP_CPU_HAS_SSE && TVPCPUType & TVP_CPU_HAS_EMMX && TVPCPUType & TVP_CPU_HAS_MMX] TVPDoBoxBlurAvg16
 ;;void, TVPDoBoxBlurAvg16_sse_a, (tjs_uint32 *dest, tjs_uint16 *sum, const tjs_uint16 * add, const tjs_uint16 * sub, tjs_int n, tjs_int len)
 ;--------------------------------------------------------------------
 
@@ -1604,7 +1900,7 @@ TVPDoBoxBlurAvg16_sse_a:			; do blur using box-blur algorithm, 16bit precision
 ;--------------------------------------------------------------------
 
 ;--------------------------------------------------------------------
-;;[function_replace_by TVPCPUType & TVP_CPU_HAS_SSE && TVPCPUType & TVP_CPU_HAS_EMMX && TVPCPUType & TVP_CPU_HAS_MMX] TVPDoBoxBlurAvg16_d
+;;[function_replace_by 0 && TVPCPUType & TVP_CPU_HAS_SSE && TVPCPUType & TVP_CPU_HAS_EMMX && TVPCPUType & TVP_CPU_HAS_MMX] TVPDoBoxBlurAvg16_d
 ;;void, TVPDoBoxBlurAvg16_d_sse_a, (tjs_uint32 *dest, tjs_uint16 *sum, const tjs_uint16 * add, const tjs_uint16 * sub, tjs_int n, tjs_int len)
 ;--------------------------------------------------------------------
 
