@@ -972,14 +972,14 @@ class HistoryLayer extends Layer
 				else if(key == VK_LEFT || key == VK_PRIOR)
 				{
 					if(everypage)
-						prevPage();
+						nextPage();
 					else
 						scrollUp();
 				}
 				else if(key == VK_RIGHT || key == VK_NEXT)
 				{
 					if(everypage)
-						nextPage();
+						prevPage();
 					else
 						scrollDown();
 				}
