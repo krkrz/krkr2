@@ -663,7 +663,8 @@ bool tTVPBaseBitmap::Blt(tjs_int x, tjs_int y, const tTVPBaseBitmap *ref,
 		break;
 
 	case bmCopyOnAlpha:
-		// constant ratio alpha blending, with consideration of destination alpha
+		// constant ratio alpha blending (assuming source is opaque)
+		// with consideration of destination alpha
 		if(opa == 255)
 			while(h--)
 				TVPCopyOpaqueImage((tjs_uint32*)dest, (tjs_uint32*)src, w),
@@ -965,6 +966,97 @@ bool tTVPBaseBitmap::Blt(tjs_int x, tjs_int y, const tTVPBaseBitmap *ref,
 		break;
 
 
+	case bmAddAlpha:
+		// Additive Alpha
+		if(opa == 255)
+		{
+			if(!hda)
+			{
+				while(h--)
+					TVPAdditiveAlphaBlend((tjs_uint32*)dest, (tjs_uint32*)src, w),
+					dest+=dpitch, src+=spitch;
+			}
+			else
+			{
+				while(h--)
+					TVPAdditiveAlphaBlend_HDA((tjs_uint32*)dest, (tjs_uint32*)src, w),
+					dest+=dpitch, src+=spitch;
+			}
+		}
+		else
+		{
+			if(!hda)
+			{
+				while(h--)
+					TVPAdditiveAlphaBlend_o((tjs_uint32*)dest, (tjs_uint32*)src, w, opa),
+					dest+=dpitch, src+=spitch;
+			}
+			else
+			{
+				while(h--)
+					TVPAdditiveAlphaBlend_HDA_o((tjs_uint32*)dest, (tjs_uint32*)src, w, opa),
+					dest+=dpitch, src+=spitch;
+			}
+		}
+		break;
+
+
+	case bmAddAlphaOnAddAlpha:
+		// Additive Alpha on Additive Alpha
+		if(opa == 255)
+		{
+			while(h--)
+				TVPAdditiveAlphaBlend_a((tjs_uint32*)dest, (tjs_uint32*)src, w),
+				dest+=dpitch, src+=spitch;
+		}
+		else
+		{
+			while(h--)
+				TVPAdditiveAlphaBlend_ao((tjs_uint32*)dest, (tjs_uint32*)src, w, opa),
+				dest+=dpitch, src+=spitch;
+		}
+		break;
+
+
+	case bmAddAlphaOnAlpha:
+		// additive alpha on simple alpha
+		// Not yet implemented
+		break;
+
+	case bmAlphaOnAddAlpha:
+		// simple alpha on additive alpha
+		if(opa == 255)
+		{
+			while(h--)
+				TVPAlphaBlend_a((tjs_uint32*)dest, (tjs_uint32*)src, w),
+				dest+=dpitch, src+=spitch;
+		}
+		else
+		{
+			while(h--)
+				TVPAlphaBlend_ao((tjs_uint32*)dest, (tjs_uint32*)src, w, opa),
+				dest+=dpitch, src+=spitch;
+		}
+		break;
+
+	case bmCopyOnAddAlpha:
+		// constant ratio alpha blending (assuming source is opaque)
+		// with consideration of destination additive alpha
+		if(opa == 255)
+			while(h--)
+				TVPCopyOpaqueImage((tjs_uint32*)dest, (tjs_uint32*)src, w),
+				dest+=dpitch, src+=spitch;
+		else
+			while(h--)
+				TVPConstAlphaBlend_a((tjs_uint32*)dest, (tjs_uint32*)src, w, opa),
+				dest+=dpitch, src+=spitch;
+		break;
+
+
+
+
+
+	default:
 				 ;
 	}
 
@@ -1309,6 +1401,7 @@ bool tTVPBaseBitmap::StretchBlt(tTVPRect cliprect,
 		break;
 
 	case bmCopyOnAlpha:
+		// constant ratio alpha blending, with consideration of destination alpha
 		if(opa == 255)
 		{
 			// full opaque stretching copy
@@ -1346,6 +1439,55 @@ bool tTVPBaseBitmap::StretchBlt(tTVPRect cliprect,
 		else
 			STRETCH_LOOP_OPA(TVPStretchAlphaBlend_do)
 		break;
+
+	case bmAddAlpha:
+		// additive alpha blending
+		if(opa == 255)
+		{
+			if(!hda)
+				STRETCH_LOOP(TVPStretchAdditiveAlphaBlend)
+			else
+				STRETCH_LOOP(TVPStretchAdditiveAlphaBlend_HDA)
+		}
+		else
+		{
+			if(!hda)
+				STRETCH_LOOP_OPA(TVPStretchAdditiveAlphaBlend_o)
+			else
+				STRETCH_LOOP_OPA(TVPStretchAdditiveAlphaBlend_HDA_o)
+		}
+		break;
+
+	case bmAddAlphaOnAddAlpha:
+		// additive alpha on additive alpha
+		if(opa == 255)
+			STRETCH_LOOP(TVPStretchAdditiveAlphaBlend_a)
+		else
+			STRETCH_LOOP_OPA(TVPStretchAdditiveAlphaBlend_ao)
+		break;
+
+	case bmAddAlphaOnAlpha:
+		// additive alpha on simple alpha
+		; // yet not implemented
+		break;
+	
+	case bmAlphaOnAddAlpha:
+		// simple alpha on additive alpha
+		if(opa == 255)
+			STRETCH_LOOP(TVPStretchAlphaBlend_a)
+		else
+			STRETCH_LOOP_OPA(TVPStretchAlphaBlend_ao)
+		break;
+
+	case bmCopyOnAddAlpha:
+		// constant ratio alpha blending (assuming source is opaque)
+		// with consideration of destination additive alpha
+		if(opa == 255)
+			STRETCH_LOOP(TVPStretchCopyOpaqueImage)
+		else
+			STRETCH_LOOP_OPA(TVPStretchConstAlphaBlend_a)
+		break;
+
 
 	default:
 		; // yet not implemented
@@ -1707,10 +1849,11 @@ bool tTVPBaseBitmap::AffineBlt(tTVPRect destrect, const tTVPBaseBitmap *ref,
 				break;
 
 			case bmCopyOnAlpha:
+				// constant ratio alpha blending, with consideration of destination alpha
 				if(opa == 255)
 					LINTRANS_LINE(TVPLinTransCopyOpaqueImage, TVPStretchCopyOpaqueImage)
 				else
-					LINTRANS_LINE_OPA(TVPLinTransConstAlphaBlend, TVPStretchConstAlphaBlend)
+					LINTRANS_LINE_OPA(TVPLinTransConstAlphaBlend_d, TVPStretchConstAlphaBlend_d)
 				break;
 
 			case bmAlpha:
@@ -1732,11 +1875,59 @@ bool tTVPBaseBitmap::AffineBlt(tTVPRect destrect, const tTVPBaseBitmap *ref,
 				break;
 
 			case bmAlphaOnAlpha:
-				// stretching alpha blending, with consideration of destination alpha
-				if(opa == 255)                           
+				// alpha blending, with consideration of destination alpha
+				if(opa == 255)
 					LINTRANS_LINE(TVPLinTransAlphaBlend_d, TVPStretchAlphaBlend_d)
 				else
 					LINTRANS_LINE_OPA(TVPLinTransAlphaBlend_do, TVPStretchAlphaBlend_do)
+				break;
+
+			case bmAddAlpha:
+				// additive alpha blending, ignoring destination alpha
+				if(opa == 255)
+				{
+					if(!hda)
+						LINTRANS_LINE(TVPLinTransAdditiveAlphaBlend, TVPStretchAdditiveAlphaBlend)
+					else
+						LINTRANS_LINE(TVPLinTransAdditiveAlphaBlend_HDA, TVPStretchAdditiveAlphaBlend_HDA)
+				}
+				else
+				{
+					if(!hda)
+						LINTRANS_LINE_OPA(TVPLinTransAdditiveAlphaBlend_o, TVPStretchAlphaBlend_o)
+					else
+						LINTRANS_LINE_OPA(TVPLinTransAdditiveAlphaBlend_HDA_o, TVPStretchAdditiveAlphaBlend_HDA_o)
+				}
+				break;
+
+			case bmAddAlphaOnAddAlpha:
+				// additive alpha blending, with consideration of destination additive alpha
+				if(opa == 255)
+					LINTRANS_LINE(TVPLinTransAdditiveAlphaBlend_a, TVPStretchAlphaBlend_a)
+				else
+					LINTRANS_LINE_OPA(TVPLinTransAdditiveAlphaBlend_ao, TVPStretchAlphaBlend_ao)
+				break;
+
+			case bmAddAlphaOnAlpha:
+				// additive alpha on simple alpha
+				; // yet not implemented
+				break;
+
+			case bmAlphaOnAddAlpha:
+				// simple alpha on additive alpha
+				if(opa == 255)
+					LINTRANS_LINE(TVPLinTransAlphaBlend_a, TVPStretchAlphaBlend_a)
+				else
+					LINTRANS_LINE_OPA(TVPLinTransAlphaBlend_ao, TVPStretchAlphaBlend_ao)
+				break;
+
+			case bmCopyOnAddAlpha:
+				// constant ratio alpha blending (assuming source is opaque)
+				// with consideration of destination additive alpha
+				if(opa == 255)
+					LINTRANS_LINE(TVPLinTransCopyOpaqueImage, TVPStretchCopyOpaqueImage)
+				else
+					LINTRANS_LINE_OPA(TVPLinTransConstAlphaBlend_a, TVPStretchConstAlphaBlend_a)
 				break;
 
 			default:
