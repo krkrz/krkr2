@@ -1131,6 +1131,16 @@ void TVPAfterSystemInit()
 
 	}
 
+	// check TVPDefaultHoldAlpha option
+	if(TVPGetCommandLine(TJS_W("-holdalpha"), &opt))
+	{
+		ttstr str(opt);
+		if(str == TJS_W("yes") || str == TJS_W("true"))
+			TVPDefaultHoldAlpha = true;
+		else
+			TVPDefaultHoldAlpha = false;
+	}
+
 	// check TVPJPEGFastLoad option
 	if(TVPGetCommandLine(TJS_W("-jpegdec"), &opt)) // this specifies precision for JPEG decoding
 	{
