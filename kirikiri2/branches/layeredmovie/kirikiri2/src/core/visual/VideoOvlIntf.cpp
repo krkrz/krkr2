@@ -315,7 +315,7 @@ TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/setSegmentLoop)
 	else if( numparams < 2 )
 		_this->SetSegmentLoop(0,*param[0]);
 	else if( numparams < 3 )
-		_this->SetSegmentLoop(*param[1],*param[0]);
+		_this->SetSegmentLoop(*param[0],*param[1]);
 
 	return TJS_S_OK;
 }
