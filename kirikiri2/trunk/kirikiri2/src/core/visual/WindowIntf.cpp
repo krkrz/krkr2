@@ -486,6 +486,12 @@ void tTJSNI_BaseWindow::DumpPrimaryLayerStructure()
 	if(LayerManager) LayerManager->DumpPrimaryStructure();
 }
 //---------------------------------------------------------------------------
+void tTJSNI_BaseWindow::TimerBeat()
+{
+	// slow timer tick (about 1 sec interval, inaccurate)
+	if(LayerManager) LayerManager->TimerBeat();
+}
+//---------------------------------------------------------------------------
 void tTJSNI_BaseWindow::NotifyWindowInvalidation()
 {
 	// is called from primary layer

@@ -32,6 +32,10 @@ class MainWindow extends Window // メインウィンドウクラス
 			.setPos(320 - 5, 240 - 5);
 			.type = ltCoverRect;
 			.opacity = 128;
+			.hint = "パッドのキーを押すとこれが移動します";
+			.hitType = htMask;
+			.hitThreshold = 0;
+			.cursor = crCross;
 			.visible = true;
 		}
 

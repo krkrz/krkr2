@@ -350,6 +350,8 @@ private:
 	void DetectDoubleBufferingSpeed();
 
 	//-- interface to layer
+private:
+	DWORD LastLayerTickBeatSent;
 public:
 	void __fastcall BeginDrawLayerImage(const tTVPComplexRect & rects);
 	void __fastcall EndDrawLayerImage();
