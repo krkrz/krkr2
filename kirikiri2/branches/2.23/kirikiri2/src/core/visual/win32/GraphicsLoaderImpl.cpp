@@ -270,6 +270,7 @@ static tTVPAtExit TVPDestroySusiePluginListAtExit
 static void TVPLoadViaSusiePlugin(void* formatdata, void *callbackdata,
 	tTVPGraphicSizeCallback sizecallback,
 	tTVPGraphicScanLineCallback scanlinecallback,
+	tTVPMetaInfoPushCallback metainfopushcallback,
 	tTJSBinaryStream *src,
 	tjs_int keyidx,
 	bool grayscale)

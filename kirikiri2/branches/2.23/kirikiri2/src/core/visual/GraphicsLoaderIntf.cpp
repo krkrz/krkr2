@@ -27,6 +27,7 @@
 #include "DetectCPU.h"
 #include "UtilStreams.h"
 #include "LoadTLG.h"
+#include "tjsDictionary.h"
 
 //---------------------------------------------------------------------------
 
@@ -441,12 +442,9 @@ void TVPInternalLoadBMP(void *callbackdata,
 	TJSAlignedDealloc(readbuf);
 }
 //---------------------------------------------------------------------------
-void TVPLoadBMP(void* formatdata, void *callbackdata,
-	tTVPGraphicSizeCallback sizecallback,
-	tTVPGraphicScanLineCallback scanlinecallback,
-	tTJSBinaryStream *src,
-	tjs_int keyidx,
-	bool grayscale)
+void TVPLoadBMP(void* formatdata, void *callbackdata, tTVPGraphicSizeCallback sizecallback,
+	tTVPGraphicScanLineCallback scanlinecallback, tTVPMetaInfoPushCallback metainfopushcallback,
+	tTJSBinaryStream *src, tjs_int keyidx,  bool grayscale)
 {
 	// Windows BMP Loader
 	// mostly taken ( but totally re-written ) from SDL,
@@ -811,12 +809,9 @@ jpeg_TStream_src (j_decompress_ptr cinfo, tTJSBinaryStream * infile)
 }
 #pragma option pop
 //---------------------------------------------------------------------------
-void TVPLoadJPEG(void* formatdata, void *callbackdata,
-	tTVPGraphicSizeCallback sizecallback,
-	tTVPGraphicScanLineCallback scanlinecallback,
-	tTJSBinaryStream *src,
-	tjs_int keyidx,
-	bool grayscale)
+void TVPLoadJPEG(void* formatdata, void *callbackdata, tTVPGraphicSizeCallback sizecallback,
+	tTVPGraphicScanLineCallback scanlinecallback, tTVPMetaInfoPushCallback metainfopushcallback,
+	tTJSBinaryStream *src, tjs_int keyidx,  bool grayscale)
 {
 	jpeg_decompress_struct cinfo;
 	my_error_mgr jerr;
@@ -963,12 +958,9 @@ static void __fastcall PNG_read_row_callback(png_structp png_ptr,png_uint_32 row
 
 }
 //---------------------------------------------------------------------------
-void TVPLoadPNG(void* formatdata, void *callbackdata,
-	tTVPGraphicSizeCallback sizecallback,
-	tTVPGraphicScanLineCallback scanlinecallback,
-	tTJSBinaryStream *src,
-	tjs_int keyidx,
-	bool grayscale)
+void TVPLoadPNG(void* formatdata, void *callbackdata, tTVPGraphicSizeCallback sizecallback,
+	tTVPGraphicScanLineCallback scanlinecallback, tTVPMetaInfoPushCallback metainfopushcallback,
+	tTJSBinaryStream *src, tjs_int keyidx,  bool grayscale)
 {
 	png_structp png_ptr=NULL;
 	png_infop info_ptr=NULL;
@@ -1357,12 +1349,9 @@ static tTVPAtExit TVPUninitERINAAtExit
 
 
 //---------------------------------------------------------------------------
-void TVPLoadERI(void* formatdata, void *callbackdata,
-	tTVPGraphicSizeCallback sizecallback,
-	tTVPGraphicScanLineCallback scanlinecallback,
-	tTJSBinaryStream *src,
-	tjs_int keyidx,
-	bool grayscale)
+void TVPLoadERI(void* formatdata, void *callbackdata, tTVPGraphicSizeCallback sizecallback,
+	tTVPGraphicScanLineCallback scanlinecallback, tTVPMetaInfoPushCallback metainfopushcallback,
+	tTJSBinaryStream *src, tjs_int keyidx,  bool grayscale)
 {
 	// ERI loading handler
 	TVPInitERINA();
@@ -1553,12 +1542,9 @@ void TVPLoadERI(void* formatdata, void *callbackdata,
 }
 //---------------------------------------------------------------------------
 #else // #ifdef TVP_SUPPORT_ERI
-void TVPLoadERI(void* formatdata, void *callbackdata,
-	tTVPGraphicSizeCallback sizecallback,
-	tTVPGraphicScanLineCallback scanlinecallback,
-	tTJSBinaryStream *src,
-	tjs_int keyidx,
-	bool grayscale)
+void TVPLoadERI(void* formatdata, void *callbackdata, tTVPGraphicSizeCallback sizecallback,
+	tTVPGraphicScanLineCallback scanlinecallback, tTVPMetaInfoPushCallback metainfopushcallback,
+	tTJSBinaryStream *src, tjs_int keyidx,  bool grayscale)
 {
 	TVPThrowExceptionMessage(TVPNotImplemented);
 }
@@ -1594,6 +1580,13 @@ enum tTVPLoadGraphicType
 {
 	lgtFullColor, lgtProvince, lgtMask
 };
+struct tTVPGraphicMetaInfoPair
+{
+	ttstr Name;
+	ttstr Value;
+	tTVPGraphicMetaInfoPair(const ttstr &name, const ttstr &value) :
+		Name(name), Value(value) {;}
+};
 struct tTVPLoadGraphicData
 {
 	ttstr Name;
@@ -1608,6 +1601,8 @@ struct tTVPLoadGraphicData
 	tjs_uint OrgH;
 	tjs_uint BufW;
 	tjs_uint BufH;
+	bool NeedMetaInfo;
+	std::vector<tTVPGraphicMetaInfoPair> * MetaInfo;
 };
 //---------------------------------------------------------------------------
 static void TVPLoadGraphic_SizeCallback(void *callbackdata, tjs_uint w,
@@ -1753,6 +1748,18 @@ static void * TVPLoadGraphic_ScanLineCallback(void *callbackdata, tjs_int y)
 	}
 }
 //---------------------------------------------------------------------------
+static void TVPLoadGraphic_MetaInfoPushCallback(void *callbackdata,
+	const ttstr & name, const ttstr & value)
+{
+	tTVPLoadGraphicData * data = (tTVPLoadGraphicData *)callbackdata;
+
+	if(data->NeedMetaInfo)
+	{
+		if(!data->MetaInfo) data->MetaInfo = new std::vector<tTVPGraphicMetaInfoPair>();
+		data->MetaInfo->push_back(tTVPGraphicMetaInfoPair(name, value));
+	}
+}
+//---------------------------------------------------------------------------
 static int _USERENTRY TVPColorCompareFunc(const void *_a, const void *_b)
 {
 	tjs_uint32 a = *(const tjs_uint32*)_a;
@@ -1836,6 +1843,31 @@ static void TVPMakeAlphaFromAdaptiveColor(tTVPBaseBitmap *dest)
 }
 //---------------------------------------------------------------------------
 
+//---------------------------------------------------------------------------
+static iTJSDispatch2 * TVPMetaInfoPairsToDictionary(
+	std::vector<tTVPGraphicMetaInfoPair> *vec)
+{
+	if(!vec) return NULL;
+	std::vector<tTVPGraphicMetaInfoPair>::iterator i;
+	iTJSDispatch2 *dic = TJSCreateDictionaryObject();
+	try
+	{
+		for(i = vec->begin(); i != vec->end(); i++)
+		{
+			tTJSVariant val(i->Value);
+			dic->PropSet(TJS_MEMBERENSURE, i->Name.c_str(), 0,
+				&val, dic);
+		}
+	}
+	catch(...)
+	{
+		dic->Release();
+		throw;
+	}
+	return dic;
+}
+//---------------------------------------------------------------------------
+
 
 
 
@@ -1890,13 +1922,24 @@ private:
 public:
 	ttstr ProvinceName;
 
+	std::vector<tTVPGraphicMetaInfoPair> * MetaInfo;
+
 private:
 	tjs_int RefCount;
 	tjs_uint Size;
 
 public:
-	tTVPGraphicImageData() { RefCount = 1; Size = 0; Bitmap = NULL; RawData = NULL; }
-	~tTVPGraphicImageData() { if(Bitmap) delete Bitmap; if(RawData) delete [] RawData; }
+	tTVPGraphicImageData()
+	{
+		RefCount = 1; Size = 0; Bitmap = NULL; RawData = NULL;
+		MetaInfo = NULL;
+	}
+	~tTVPGraphicImageData()
+	{
+		if(Bitmap) delete Bitmap;
+		if(RawData) delete [] RawData;
+		if(MetaInfo) delete MetaInfo;
+	}
 
 	void AssignBitmap(const tTVPBaseBitmap *bmp)
 	{
@@ -2025,8 +2068,8 @@ static bool TVPClearGraphicCacheCallbackInit = false;
 
 //---------------------------------------------------------------------------
 static bool TVPInternalLoadGraphic(tTVPBaseBitmap *dest, const ttstr &_name,
-	tjs_uint32 keyidx, tjs_uint desw, tjs_int desh, bool province,
-		ttstr *provincename)
+	tjs_uint32 keyidx, tjs_uint desw, tjs_int desh, std::vector<tTVPGraphicMetaInfoPair> * * MetaInfo,
+		bool province, ttstr *provincename)
 {
 	// name must be normalized.
 	// "province" parameter is to be used for province image loading.
@@ -2097,6 +2140,8 @@ static bool TVPInternalLoadGraphic(tTVPBaseBitmap *dest, const ttstr &_name,
 	data.Name = name;
 	data.DesW = desw;
 	data.DesH = desh;
+	data.NeedMetaInfo = true;
+	data.MetaInfo = NULL;
 
 	bool keyadapt = keyidx == 0x1ffffff;
 
@@ -2112,7 +2157,10 @@ static bool TVPInternalLoadGraphic(tTVPBaseBitmap *dest, const ttstr &_name,
 	}
 
 	(handler->Handler)(handler->FormatData, (void*)&data, TVPLoadGraphic_SizeCallback,
-		TVPLoadGraphic_ScanLineCallback, holder.Get(), keyidx, province);
+		TVPLoadGraphic_ScanLineCallback, TVPLoadGraphic_MetaInfoPushCallback,
+		holder.Get(), keyidx, province);
+
+	*MetaInfo = data.MetaInfo;
 
 	if(keyadapt && !province)
 	{
@@ -2203,12 +2251,14 @@ static bool TVPInternalLoadGraphic(tTVPBaseBitmap *dest, const ttstr &_name,
 	data.Buffer = NULL;
 	data.DesW = desw;
 	data.DesH = desh;
+	data.NeedMetaInfo = false;
 
     try
     {
 		// load image via handler
 		(handler->Handler)(handler->FormatData, (void*)&data,
 			TVPLoadGraphic_SizeCallback, TVPLoadGraphic_ScanLineCallback,
+			NULL,
 			holder.Get(), -1, true);
     }
 	catch(...)
@@ -2232,7 +2282,7 @@ static bool TVPInternalLoadGraphic(tTVPBaseBitmap *dest, const ttstr &_name,
 //---------------------------------------------------------------------------
 void TVPLoadGraphic(tTVPBaseBitmap *dest, const ttstr &name, tjs_int32 keyidx,
 	tjs_uint desw, tjs_uint desh,
-	bool province, ttstr *provincename)
+	bool province, ttstr *provincename, iTJSDispatch2 ** metainfo)
 {
 	// loading with cache management
 	ttstr nname = TVPNormalizeStorageName(name);
@@ -2256,6 +2306,8 @@ void TVPLoadGraphic(tTVPBaseBitmap *dest, const ttstr &name, tjs_int32 keyidx,
 			// found in cache
 			ptr->GetObjectNoAddRef()->AssignToBitmap(dest);
 			if(provincename) *provincename = ptr->GetObjectNoAddRef()->ProvinceName;
+			if(metainfo)
+				*metainfo = TVPMetaInfoPairsToDictionary(ptr->GetObjectNoAddRef()->MetaInfo);
 			return;
 		}
 	}
@@ -2265,18 +2317,23 @@ void TVPLoadGraphic(tTVPBaseBitmap *dest, const ttstr &name, tjs_int32 keyidx,
 	// load into dest
 	tTVPGraphicImageData * data = NULL;
 
+	ttstr pn;
+	std::vector<tTVPGraphicMetaInfoPair> * mi = NULL;
 	try
 	{
-		ttstr pn;
-		TVPInternalLoadGraphic(dest, nname, keyidx, desw, desh, province, &pn);
+		TVPInternalLoadGraphic(dest, nname, keyidx, desw, desh, &mi, province, &pn);
 
 		if(provincename) *provincename = pn;
+		if(metainfo)
+			*metainfo = TVPMetaInfoPairsToDictionary(mi);
 
 		if(TVPGraphicCacheEnabled)
 		{
 			data = new tTVPGraphicImageData();
 			data->AssignBitmap(dest);
 			data->ProvinceName = pn;
+			data->MetaInfo = mi; // now mi is managed under tTVPGraphicImageData
+			mi = NULL;
 
 			// check size limit
 			TVPCheckGraphicCacheLimit();
@@ -2293,12 +2350,13 @@ void TVPLoadGraphic(tTVPBaseBitmap *dest, const ttstr &name, tjs_int32 keyidx,
 	}
 	catch(...)
 	{
+		if(mi) delete mi;
 		if(data) data->Release();
 		throw;
 	}
 
+	if(mi) delete mi;
 	if(data) data->Release();
-
 }
 //---------------------------------------------------------------------------
 
