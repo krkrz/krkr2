@@ -381,8 +381,9 @@ print FC &get_file_content('maketab.c');
 ;# some common inline functions.
 ;# mainly for additive-alpha blending mode, by historical reason.
 
-print FC <<EOF;
+$cnt =  <<EOF;
 
+/* add here compiler specific inline directives */
 #ifdef __BORLANDC__
 	#define TVP_INLINE_FUNC __inline
 #else
@@ -512,7 +513,7 @@ static tjs_uint32 TVP_INLINE_FUNC TVPBlendARGB(tjs_uint32 b, tjs_uint32 a, tjs_i
 
 
 EOF
-
+print FH $cnt;
 
 
 ;#-----------------------------------------------------------------
@@ -1274,6 +1275,59 @@ EOF
 ;#-----------------------------------------------------------------
 
 print FC <<EOF;
+/*export*/
+TVP_GL_FUNC_DECL(void, TVPInterpStretchAdditiveAlphaBlend_c, (tjs_uint32 *dest, tjs_int destlen, const tjs_uint32 *src1, const tjs_uint32 *src2, tjs_int blend_y, tjs_int srcstart, tjs_int srcstep))
+{
+	/* stretching additive alpha blend with bilinear interpolation */
+	tjs_int blend_x;
+	tjs_int sp;
+
+	blend_y += blend_y >> 7; /* adjust blend ratio */
+
+	destlen -= 1;
+	while(destlen > 0)
+	{
+		blend_x = (srcstart & 0xffff) >> 8;
+		sp = srcstart >> 16;
+		dest[0] = TVPAdditiveBlend_n_a(dest[0], TVPBlendARGB(
+			TVPBlendARGB(src1[sp], src1[sp+1], blend_x),
+			TVPBlendARGB(src2[sp], src2[sp+1], blend_x),
+				blend_y));
+		srcstart += srcstep;
+
+		blend_x = (srcstart & 0xffff) >> 8;
+		sp = srcstart >> 16;
+		dest[1] = TVPAdditiveBlend_n_a(dest[1], TVPBlendARGB(
+			TVPBlendARGB(src1[sp], src1[sp+1], blend_x),
+			TVPBlendARGB(src2[sp], src2[sp+1], blend_x),
+				blend_y));
+		srcstart += srcstep;
+
+		dest += 2;
+		destlen -= 2;
+	}
+
+	destlen += 1;
+
+	while(destlen > 0)
+	{
+		blend_x = (srcstart & 0xffff) >> 8;
+		sp = srcstart >> 16;
+		dest[0] = TVPAdditiveBlend_n_a(dest[0], TVPBlendARGB(
+			TVPBlendARGB(src1[sp], src1[sp+1], blend_x),
+			TVPBlendARGB(src2[sp], src2[sp+1], blend_x),
+				blend_y));
+		srcstart += srcstep;
+		dest ++;
+		destlen --;
+	}
+}
+
+EOF
+
+;#-----------------------------------------------------------------
+
+print FC <<EOF;
 /* HDA : hold destination alpha */
 
 /*export*/
@@ -1316,6 +1370,60 @@ EOF
 &loop_unroll_c($content, 'len', 4);
 
 print FC <<EOF;
+}
+
+EOF
+
+
+;#-----------------------------------------------------------------
+
+print FC <<EOF;
+/*export*/
+TVP_GL_FUNC_DECL(void, TVPInterpStretchAdditiveAlphaBlend_o_c, (tjs_uint32 *dest, tjs_int destlen, const tjs_uint32 *src1, const tjs_uint32 *src2, tjs_int blend_y, tjs_int srcstart, tjs_int srcstep, tjs_int opa))
+{
+	/* stretching additive alpha blend with bilinear interpolation */
+	tjs_int blend_x;
+	tjs_int sp;
+
+	blend_y += blend_y >> 7; /* adjust blend ratio */
+
+	destlen -= 1;
+	while(destlen > 0)
+	{
+		blend_x = (srcstart & 0xffff) >> 8;
+		sp = srcstart >> 16;
+		dest[0] = TVPAdditiveBlend_n_a_o(dest[0], TVPBlendARGB(
+			TVPBlendARGB(src1[sp], src1[sp+1], blend_x),
+			TVPBlendARGB(src2[sp], src2[sp+1], blend_x),
+				blend_y), opa);
+		srcstart += srcstep;
+
+		blend_x = (srcstart & 0xffff) >> 8;
+		sp = srcstart >> 16;
+		dest[1] = TVPAdditiveBlend_n_a_o(dest[1], TVPBlendARGB(
+			TVPBlendARGB(src1[sp], src1[sp+1], blend_x),
+			TVPBlendARGB(src2[sp], src2[sp+1], blend_x),
+				blend_y), opa);
+		srcstart += srcstep;
+
+		dest += 2;
+		destlen -= 2;
+	}
+
+	destlen += 1;
+
+	while(destlen > 0)
+	{
+		blend_x = (srcstart & 0xffff) >> 8;
+		sp = srcstart >> 16;
+		dest[0] = TVPAdditiveBlend_n_a_o(dest[0], TVPBlendARGB(
+			TVPBlendARGB(src1[sp], src1[sp+1], blend_x),
+			TVPBlendARGB(src2[sp], src2[sp+1], blend_x),
+				blend_y), opa);
+		srcstart += srcstep;
+		dest ++;
+		destlen --;
+	}
 }
 
 EOF
