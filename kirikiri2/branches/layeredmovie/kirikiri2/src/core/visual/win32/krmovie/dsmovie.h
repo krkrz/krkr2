@@ -109,7 +109,7 @@ protected:
 	}
 
 	HRESULT ConnectFilters( IBaseFilter* pFilterUpstream, IBaseFilter* pFilterDownstream );
-	const wchar_t* BuildMPEGGraph( IBaseFilter *pRdr, IBaseFilter *pSrc, bool useSound );
+	const wchar_t* BuildMPEGGraph( IBaseFilter *pRdr, IBaseFilter *pSrc );
 	const wchar_t* ParseVideoType( CMediaType &mt, const wchar_t *type );
 
 #ifdef _DEBUG

@@ -27,7 +27,7 @@
 tTVPDSVideoOverlay::tTVPDSVideoOverlay()
 {}
 //----------------------------------------------------------------------------
-//! @brief	  	何もしない
+//! @brief	  	インターフェイスを解放する
 //----------------------------------------------------------------------------
 tTVPDSVideoOverlay::~tTVPDSVideoOverlay()
 {
@@ -89,16 +89,8 @@ const wchar_t* __stdcall tTVPDSVideoOverlay::BuildGraph( HWND callbackwin, IStre
 			if( FAILED(hr = GraphBuilder()->AddFilter(pVRender, L"Video Renderer")) )
 				return L"Failed to call IFilterGraph::AddFilter.";
 
-			if( mt.subtype == MEDIASUBTYPE_MPEG1Video )
-			{	// Not use audio
-				if( (errmsg = BuildMPEGGraph( pVRender, m_Reader, false )) != NULL )
-					throw errmsg;
-			}
-			else
-			{
-				if( (errmsg = BuildMPEGGraph( pVRender, m_Reader, true )) != NULL )
-					throw errmsg;
-			}
+			if( (errmsg = BuildMPEGGraph( pVRender, m_Reader)) != NULL )
+				throw errmsg;
 		}
 
 		// query each interfaces
@@ -186,7 +178,7 @@ void __stdcall tTVPDSVideoOverlay::ReleaseAll()
 //! @brief	  	ビデオ ウィンドウを所有する親ウィンドウを設定する。 
 //! 
 //! ビデオ ウィンドウを所有する親ウィンドウを設定し、表示矩形も同時に設定する。
-//! @param 		window	親ウィンドウ
+//! @param 		window : 親ウィンドウ
 //! @return		エラーメッセージ。NULLの場合エラーなし
 //----------------------------------------------------------------------------
 const wchar_t* __stdcall tTVPDSVideoOverlay::SetWindow( HWND window )
@@ -245,7 +237,7 @@ const wchar_t* __stdcall tTVPDSVideoOverlay::SetWindow( HWND window )
 }
 //----------------------------------------------------------------------------
 //! @brief	  	ビデオ ウィンドウのメッセージの送信先ウィンドウを指定する。
-//! @param 		window	送信先ウィンドウ
+//! @param 		window : 送信先ウィンドウ
 //! @return		エラーメッセージ。NULLの場合エラーなし
 //----------------------------------------------------------------------------
 const wchar_t* __stdcall tTVPDSVideoOverlay::SetMessageDrainWindow( HWND window )
@@ -262,7 +254,7 @@ const wchar_t* __stdcall tTVPDSVideoOverlay::SetMessageDrainWindow( HWND window 
 }
 //----------------------------------------------------------------------------
 //! @brief	  	表示矩形を設定する
-//! @param 		rect	表示矩形
+//! @param 		rect : 表示矩形
 //! @return		エラーメッセージ。NULLの場合エラーなし
 //----------------------------------------------------------------------------
 const wchar_t* __stdcall tTVPDSVideoOverlay::SetRect( RECT *rect )
@@ -282,7 +274,7 @@ const wchar_t* __stdcall tTVPDSVideoOverlay::SetRect( RECT *rect )
 }
 //----------------------------------------------------------------------------
 //! @brief	  	表示/非表示を設定する
-//! @param 		b	表示/非表示
+//! @param 		b : 表示/非表示
 //! @return		エラーメッセージ。NULLの場合エラーなし
 //----------------------------------------------------------------------------
 const wchar_t* __stdcall tTVPDSVideoOverlay::SetVisible( bool b )

@@ -49,7 +49,7 @@ void __stdcall tTVPDSMovie::AddRef()
 	RefCount++;
 }
 //----------------------------------------------------------------------------
-//! @brief	  	参照カウンタのデクリメント。1ならdelet。
+//! @brief	  	参照カウンタのデクリメント。1ならdelete。
 //----------------------------------------------------------------------------
 void __stdcall tTVPDSMovie::Release()
 {
@@ -147,7 +147,7 @@ const wchar_t* __stdcall tTVPDSMovie::Pause()
 }
 //----------------------------------------------------------------------------
 //! @brief	  	現在のムービー時間を設定する
-//! @param 		tick	設定する現在の時間
+//! @param 		tick : 設定する現在の時間
 //! @return		エラーメッセージ。NULLの場合エラーなし
 //----------------------------------------------------------------------------
 const wchar_t* __stdcall tTVPDSMovie::SetPosition( unsigned __int64 tick )
@@ -188,7 +188,7 @@ const wchar_t* __stdcall tTVPDSMovie::SetPosition( unsigned __int64 tick )
 }
 //----------------------------------------------------------------------------
 //! @brief	  	現在のムービー時間を取得する
-//! @param 		tick	現在の時間を返す変数
+//! @param 		tick : 現在の時間を返す変数
 //! @return		エラーメッセージ。NULLの場合エラーなし
 //----------------------------------------------------------------------------
 const wchar_t* __stdcall tTVPDSMovie::GetPosition( unsigned __int64 *tick )
@@ -230,7 +230,7 @@ const wchar_t* __stdcall tTVPDSMovie::GetPosition( unsigned __int64 *tick )
 }
 //----------------------------------------------------------------------------
 //! @brief	  	現在のムービーの状態を取得する
-//! @param 		status	現在の状態を返す変数
+//! @param 		status : 現在の状態を返す変数
 //! @return		Always NULL.
 //----------------------------------------------------------------------------
 const wchar_t* __stdcall tTVPDSMovie::GetStatus(tTVPVideoStatus *status)
@@ -251,10 +251,10 @@ const wchar_t* __stdcall tTVPDSMovie::GetStatus(tTVPVideoStatus *status)
 }
 //----------------------------------------------------------------------------
 //! @brief	  	A sample has been delivered. Copy it to the texture.
-//! @param 		evcode	イベントコード
-//! @param 		param1	パラメータ1。内容はイベントコードにより異なる。
-//! @param 		param2	パラメータ2。内容はイベントコードにより異なる。
-//! @param 		got		取得の正否
+//! @param 		evcode : イベントコード
+//! @param 		param1 : パラメータ1。内容はイベントコードにより異なる。
+//! @param 		param2 : パラメータ2。内容はイベントコードにより異なる。
+//! @param 		got : 取得の正否
 //! @return		Always NULL.
 //----------------------------------------------------------------------------
 const wchar_t* __stdcall tTVPDSMovie::GetEvent( long *evcode, long *param1, long *param2, bool *got )
@@ -270,9 +270,9 @@ const wchar_t* __stdcall tTVPDSMovie::GetEvent( long *evcode, long *param1, long
 //! @brief	  	イベントを解放する
 //! 
 //! GetEventでイベントを得て、処理した後、このメソッドによってイベントを解放すること
-//! @param 		evcode	解放するイベントコード
-//! @param 		param1	解放するパラメータ1。内容はイベントコードにより異なる。
-//! @param 		param2	解放するパラメータ2。内容はイベントコードにより異なる。
+//! @param 		evcode : 解放するイベントコード
+//! @param 		param1 : 解放するパラメータ1。内容はイベントコードにより異なる。
+//! @param 		param2 : 解放するパラメータ2。内容はイベントコードにより異なる。
 //! @return		Always NULL.
 //----------------------------------------------------------------------------
 const wchar_t* __stdcall tTVPDSMovie::FreeEventParams(long evcode, long param1, long param2)
@@ -302,8 +302,14 @@ const wchar_t* __stdcall tTVPDSMovie::Rewind()
 	}
 	return NULL;
 }
+//----------------------------------------------------------------------------
+//! @brief	  	指定されたフレームへ移動する
+//! 
 //! このメソッドによって設定された位置は、指定したフレームと完全に一致するわけではない。
 //! フレームは、指定したフレームに最も近いキーフレームの位置に設定される。
+//! @param		f : 移動するフレーム
+//! @return		エラーメッセージ
+//----------------------------------------------------------------------------
 const wchar_t* __stdcall tTVPDSMovie::SetFrame( int f )
 {
 	if(Shutdown) return NULL;
@@ -342,6 +348,11 @@ const wchar_t* __stdcall tTVPDSMovie::SetFrame( int f )
 
 	return NULL;
 }
+//----------------------------------------------------------------------------
+//! @brief	  	現在のフレームを取得する
+//! @param		f : 現在のフレームを入れる変数へのポインタ
+//! @return		エラーメッセージ
+//----------------------------------------------------------------------------
 const wchar_t* __stdcall tTVPDSMovie::GetFrame( int *f )
 {
 	if(Shutdown) return NULL;
@@ -378,6 +389,11 @@ const wchar_t* __stdcall tTVPDSMovie::GetFrame( int *f )
 
 	return NULL;
 }
+//----------------------------------------------------------------------------
+//! @brief	  	FPSを取得する
+//! @param		f : FPSを入れる変数へのポインタ
+//! @return		エラーメッセージ
+//----------------------------------------------------------------------------
 const wchar_t* __stdcall tTVPDSMovie::GetFPS( double *f )
 {
 	if(Shutdown) return NULL;
@@ -391,6 +407,11 @@ const wchar_t* __stdcall tTVPDSMovie::GetFPS( double *f )
 	*f = 1.0 / AvgTimePerFrame;
 	return NULL;
 }
+//----------------------------------------------------------------------------
+//! @brief	  	全フレーム数を取得する
+//! @param		f : 全フレーム数を入れる変数へのポインタ
+//! @return		エラーメッセージ
+//----------------------------------------------------------------------------
 const wchar_t* __stdcall tTVPDSMovie::GetNumberOfFrame( int *f )
 {
 	if(Shutdown) return NULL;
@@ -427,7 +448,11 @@ const wchar_t* __stdcall tTVPDSMovie::GetNumberOfFrame( int *f )
 
 	return NULL;
 }
-// milli-secondにしておく？
+//----------------------------------------------------------------------------
+//! @brief	  	ムービーの長さ(msec)を取得する
+//! @param		f : ムービーの長さを入れる変数へのポインタ
+//! @return		エラーメッセージ
+//----------------------------------------------------------------------------
 const wchar_t* __stdcall tTVPDSMovie::GetTotalTime( __int64 *t )
 {
 	if(Shutdown) return NULL;
@@ -489,6 +514,10 @@ const wchar_t* __stdcall tTVPDSMovie::GetFrontBuffer( BYTE **buff )
 	*buff = NULL;
 	return NULL;
 }
+//----------------------------------------------------------------------------
+//! @brief	  	何もしない
+//! @return		Always NULL.
+//----------------------------------------------------------------------------
 const wchar_t* __stdcall tTVPDSMovie::SetVideoBuffer( BYTE *buff1, BYTE *buff2, long size )
 {
 	return NULL;
@@ -583,6 +612,12 @@ HRESULT __stdcall tTVPDSMovie::GetAvgTimePerFrame( REFTIME *pAvgTimePerFrame )
 {
 	return Video()->get_AvgTimePerFrame( pAvgTimePerFrame );
 }
+//----------------------------------------------------------------------------
+//! @brief	  	拡張子からムービーのタイプを判別します
+//! @param		mt : メディアタイプを返す変数への参照
+//! @param		type : ムービーファイルの拡張子
+//! @return		エラーコード
+//----------------------------------------------------------------------------
 const wchar_t* tTVPDSMovie::ParseVideoType( CMediaType &mt, const wchar_t *type )
 {
 	// note: audio-less mpeg stream must have an extension of
@@ -592,7 +627,8 @@ const wchar_t* tTVPDSMovie::ParseVideoType( CMediaType &mt, const wchar_t *type 
 	else if (wcsicmp(type, L".mpeg") == 0)
 		mt.subtype = MEDIASUBTYPE_MPEG1System;
 	else if (wcsicmp(type, L".mpv") == 0) 
-		mt.subtype = MEDIASUBTYPE_MPEG1Video;
+//		mt.subtype = MEDIASUBTYPE_MPEG1Video;
+		mt.subtype = MEDIASUBTYPE_MPEG1System;
 	else if (wcsicmp(type, L".dat") == 0)
 		mt.subtype = MEDIASUBTYPE_MPEG1VideoCD;
 	else if (wcsicmp(type, L".avi") == 0)
@@ -610,9 +646,10 @@ const wchar_t* tTVPDSMovie::ParseVideoType( CMediaType &mt, const wchar_t *type 
 //! @param		useSound : サウンドが使用されるかどうか
 //! @return		エラー文字列
 //----------------------------------------------------------------------------
-const wchar_t* tTVPDSMovie::BuildMPEGGraph( IBaseFilter *pRdr, IBaseFilter *pSrc, bool useSound )
+const wchar_t* tTVPDSMovie::BuildMPEGGraph( IBaseFilter *pRdr, IBaseFilter *pSrc )
 {
 	HRESULT	hr;
+
 	// Connect to MPEG 1 splitter filter
 	CComPtr<IBaseFilter>	pMPEG1Splitter;	// for MPEG 1 splitter filter
 	if( FAILED(hr = pMPEG1Splitter.CoCreateInstance(CLSID_MPEG1Splitter, NULL, CLSCTX_INPROC_SERVER)) )
@@ -635,16 +672,18 @@ const wchar_t* tTVPDSMovie::BuildMPEGGraph( IBaseFilter *pRdr, IBaseFilter *pSrc
 	if( FAILED(hr = ConnectFilters( pMPEGVideoCodec, pRdr )) )
 		return L"Failed to call ConnectFilters.";
 
-	if( useSound )
-	{	// Connect to DDS render filter
-		CComPtr<IBaseFilter>	pDDSRenderer;	// for sound renderer filter
-		if( FAILED(hr = pDDSRenderer.CoCreateInstance(CLSID_DSoundRender, NULL, CLSCTX_INPROC_SERVER)) )
-			return L"Failed to create sound render filter object.";
-		if( FAILED(hr = GraphBuilder()->AddFilter(pDDSRenderer, L"Sound Renderer")) )
-			return L"Failed to call IFilterGraph::AddFilter.";
-		if( FAILED(hr = ConnectFilters( pMPEG1Splitter, pDDSRenderer ) ) )
-			return L"Failed to call ConnectFilters.";
+	// Connect to DDS render filter
+	CComPtr<IBaseFilter>	pDDSRenderer;	// for sound renderer filter
+	if( FAILED(hr = pDDSRenderer.CoCreateInstance(CLSID_DSoundRender, NULL, CLSCTX_INPROC_SERVER)) )
+		return L"Failed to create sound render filter object.";
+	if( FAILED(hr = GraphBuilder()->AddFilter(pDDSRenderer, L"Sound Renderer")) )
+		return L"Failed to call IFilterGraph::AddFilter.";
+	if( FAILED(hr = ConnectFilters( pMPEG1Splitter, pDDSRenderer ) ) )
+	{
+		if( FAILED(hr = GraphBuilder()->RemoveFilter( pDDSRenderer)) )
+			return L"Failed to call IFilterGraph::RemoveFilter.";
 	}
+
 	return NULL;
 }
 //----------------------------------------------------------------------------
@@ -697,12 +736,16 @@ HRESULT tTVPDSMovie::ConnectFilters( IBaseFilter* pFilterUpstream, IBaseFilter* 
 					pIPinDownstream->ConnectedTo( &pPinUp );
 					if( (PINDIR_INPUT == PinInfoDownstream.dir) && (pPinUp == NULL) )
 					{
-						if( SUCCEEDED(m_GraphBuilder->Connect( pIPinUpstream, pIPinDownstream)) )
+						if( SUCCEEDED(hr = m_GraphBuilder->Connect( pIPinUpstream, pIPinDownstream)) )
 						{
 							PinInfoDownstream.pFilter->Release();
 							PinInfoUpstream.pFilter->Release();
 							return S_OK;
 						}
+#if _DEBUG
+						else
+							OutputDebugString( DShowException(hr).what() );
+#endif
 					}
 				}
 
