@@ -102,6 +102,8 @@ USEUNIT("..\..\utils\Random.cpp");
 USEUNIT("..\..\utils\md5.c");
 USEUNIT("..\..\utils\ThreadIntf.cpp");
 USEUNIT("..\..\utils\win32\ThreadImpl.cpp");
+USEUNIT("..\..\utils\ClipboardIntf.cpp");
+USEUNIT("..\..\utils\win32\ClipboardImpl.cpp");
 USEUNIT("..\..\base\XP3Archive.cpp");
 USEUNIT("..\..\base\TextStream.cpp");
 USEUNIT("..\..\base\UtilStreams.cpp");
