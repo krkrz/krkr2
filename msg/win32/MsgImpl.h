@@ -8,6 +8,9 @@
 //---------------------------------------------------------------------------
 // Definition of Messages and Message Related Utilities
 //---------------------------------------------------------------------------
+// 2006/7/2
+//     TVPCannnotLinkPluginWhilePluginLinking added.
+//---------------------------------------------------------------------------
 #ifndef MsgImplH
 #define MsgImplH
 
@@ -52,6 +55,9 @@ TVP_MSG_DECL(TVPNotValidPlugin,
 
 TVP_MSG_DECL(TVPPluginUninitFailed,
 	"プラグインの解放に失敗しました");
+
+TVP_MSG_DECL(TVPCannnotLinkPluginWhilePluginLinking,
+	"プラグインの接続中に他のプラグインを接続することはできまません");
 
 TVP_MSG_DECL(TVPNotSusiePlugin,
 	"異常な Susie プラグインです");
