@@ -36,6 +36,28 @@
 　コミットなどにはユーザ名とパスワードが必要です。どうしても俺はコミットしたい
 んじゃ！という方はご連絡ください。
 
+■ STL のバグ ----------------------------------------------------------------
+
+Rogue Wave の memory.stl にはバグを持っている物があります。
+
+このパッチを当ててください。さもないと TJS2 の Array.sort で安定ソートを行おうと
+したときにメモリリークが発生します。
+
+diff -Naur old/memory.stl new/memory.stl
+--- old/memory.stl	2004-11-01 16:35:43.764744500 +0900
++++ new/memory.stl	2004-11-01 16:35:50.733672900 +0900
+@@ -196,8 +196,8 @@
+   template <class ForwardIterator> 
+   _RWSTD_TRICKY_INLINE void __destroy (ForwardIterator first, ForwardIterator last)
+   {
+-    while (first != last)
+-      ++first;
++     for ( ; first != last; ++first)
++        __destroy(&*first);
+   }
+ #if defined(_RWSTD_NO_DESTROY_BUILTIN) || defined(_RWSTD_NO_DESTROY_NONBUILTIN)
+ //
+
 
 ■ ライセンスについて --------------------------------------------------------
 
