@@ -1480,7 +1480,27 @@ enum tTVPDrawFace
 	dfMain = 1,
 	dfOpaque = 1,
 	dfMask = 2,
-	dfProvince = 3
+	dfProvince = 3,
+	dfAuto = 128 // face is chosen automatically from the layer type
+};
+//---------------------------------------------------------------------------
+
+
+//---------------------------------------------------------------------------
+// alias to blending types
+//---------------------------------------------------------------------------
+enum tTVPBlendOperationMode
+{
+	omAdditive = ltAdditive,
+	omSubtractive = ltSubtractive,
+	omMultiplicative = ltMultiplicative,
+	omDodge = ltDodge,
+	omDarken = ltDarken,
+	omLighten = ltLighten,
+	omScreen = ltScreen,
+	omAlpha = ltTransparent,
+	omAddAlpha = ltAddAlpha,
+	omOpaque = ltCoverRect
 };
 //---------------------------------------------------------------------------
 
@@ -1581,25 +1601,6 @@ enum tTVPLayerType
 	ltLighten = 10,
 	ltScreen = 11,
 	ltAddAlpha = 12 // additive alpha blend
-};
-//---------------------------------------------------------------------------
-
-
-//---------------------------------------------------------------------------
-// alias to blending types
-//---------------------------------------------------------------------------
-enum tTVPBlendOperationMode
-{
-	omAdditive = ltAdditive,
-	omSubtractive = ltSubtractive,
-	omMultiplicative = ltMultiplicative,
-	omDodge = ltDodge,
-	omDarken = ltDarken,
-	omLighten = ltLighten,
-	omScreen = ltScreen,
-	omAlpha = ltTransparent,
-	omAddAlpha = ltAddAlpha,
-	omOpaque = ltCoverRect
 };
 //---------------------------------------------------------------------------
 
