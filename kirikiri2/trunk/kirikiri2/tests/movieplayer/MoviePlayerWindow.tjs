@@ -261,6 +261,18 @@ class MoviePlayerWindow extends Window
 				videoStatus = ev.status;
 				controlLayer.displayStatus(videoStatus);
 			}
+			else if(type == 'onPeriod')
+			{
+				// period ƒCƒxƒ“ƒg‚ª”­¶‚µ‚½
+				var txt = "onPeriod: ";
+				switch(ev.reason)
+				{
+				case perLoop:   txt  += "loop";    break;
+				case perPeriod: txt  += "period";  break;
+				case perPrepare: txt += "prepare"; break;
+				}
+				Debug.message(txt);
+			}
 			break;
 		}
 	}

@@ -1669,6 +1669,20 @@ enum tTVPVideoOverlayMode {
 
 
 //---------------------------------------------------------------------------
+// tTVPPeriodEventType : event type in onPeriod event
+//---------------------------------------------------------------------------
+enum tTVPPeriodEventReason
+{
+	perLoop, // the event is by loop rewind
+	perPeriod, // the event is by period point specified by the user
+	perPrepare // the event is by prepare() method
+};
+
+
+
+
+
+//---------------------------------------------------------------------------
 // scroll transition handler
 //---------------------------------------------------------------------------
 enum tTVPScrollTransFrom

@@ -693,8 +693,7 @@ void __fastcall tTJSNI_VideoOverlay::WndProc(Messages::TMessage &Msg)
 							if( Loop )
 							{
 								Rewind();
-								SetStatus(ssPeriod); // All data has been rendered
-								SetStatus(ssPlay); // All data has been rendered
+								FirePeriodEvent(perLoop); // fire period event by loop rewind
 							}
 							else
 							{
@@ -765,13 +764,12 @@ void __fastcall tTJSNI_VideoOverlay::WndProc(Messages::TMessage &Msg)
 								if( EventFrame >= 0 && !IsEventPast && curFrame >= EventFrame )
 								{
 									EventFrame = -1;
-									SetStatus(ssPeriod);
-									SetStatus(ssPlay);
+									FirePeriodEvent(perPeriod); // fire period event by setPeriodEvent()
 								}
 							}
 							else
 							{	// Prepare mode
-								SetStatus(ssPeriod);
+								FirePeriodEvent(perPrepare); // fire period event by prepare()
 								Pause();
 								Rewind();
 								IsPrepare = false;
