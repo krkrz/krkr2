@@ -33,7 +33,7 @@ USEFORM("looptune\LoopTuneMainUnit.cpp", TSSLoopTunerMainWindow);
 USEUNIT("looptune\WaveDispUnit.cpp");
 USEUNIT("looptune\WaveReaderUnit.cpp");
 USEFORM("looptune\WaveWriterUnit.cpp", WaveWriterForm);
-USEUNIT("..\..\..\sound\win32\tvpsnd.c");
+USEUNIT("..\..\..\core\sound\win32\tvpsnd.c");
 //---------------------------------------------------------------------------
 This file is used by the project manager only and should be treated like the project file
 
