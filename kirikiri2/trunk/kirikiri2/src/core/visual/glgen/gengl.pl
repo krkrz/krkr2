@@ -5165,6 +5165,58 @@ print FC <<EOF;
 
 EOF
 
+print FC <<EOF;
+/*export*/
+TVP_GL_FUNC_DECL(void, TVPAdjustGamma_a_c, (tjs_uint32 *dest, tjs_int len, tTVPGLGammaAdjustTempData *temp))
+{
+	/* gamma adjustment for additive alpha */
+EOF
+
+$content = <<EOF;
+{
+	tjs_uint32 d;
+	tjs_int alpha;
+	tjs_int alpha_adj;
+	tjs_int recip;
+	tjs_int t, d_tmp;
+
+	d = dest[{ofs}];
+	alpha = d >> 24;
+	alpha_adj = alpha + (alpha >> 7);
+	recip = TVPRecipTable256[alpha];
+
+	/* B */
+	t = d & 0xff;
+	if(t > alpha)
+		d_tmp = (temp->B[255] * alpha_adj >> 8) + t - alpha;
+	else
+		d_tmp = temp->B[recip * t >> 8] * alpha_adj >> 8;
+	/* G */
+	t = (d>>8) & 0xff; 
+	if(t > alpha)
+		d_tmp |= ((temp->G[255] * alpha_adj >> 8) + t - alpha) << 8;
+	else
+		d_tmp |= (temp->G[recip * t >> 8] * alpha_adj >> 8) << 8;
+	/* R */
+	t = (d>>16) & 0xff; 
+	if(t > alpha)
+		d_tmp |= ((temp->R[255] * alpha_adj >> 8) + t - alpha) << 16;
+	else
+		d_tmp |= (temp->R[recip * t >> 8] * alpha_adj >> 8) << 16;
+	/* A */
+	d_tmp |= d & 0xff000000;
+
+	dest[{ofs}] = d_tmp;
+}
+EOF
+
+&loop_unroll_c_2($content, 'len', 2);
+
+print FC <<EOF;
+}
+
+EOF
+
 
 ;#-----------------------------------------------------------------
 ;# simple blur for character data
