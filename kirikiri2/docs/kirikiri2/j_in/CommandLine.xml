@@ -412,6 +412,15 @@ TJS2‚ÌŒã’u!‰‰ŽZŽq‚ÍŽ®‚ðglobalƒRƒ“ƒeƒLƒXƒgã‚ÅŽÀs‚µ‚Ä‚¢‚Ü‚µ‚½‚ªA2.21 beta 9 ‚æ‚
 </dd>
 
 
+<dt>-<kw>holdalpha</kw> (Layer.holdAlpha ƒvƒƒpƒeƒB‚ÌƒfƒtƒHƒ‹ƒg‚Ì’l)</dt>
+<dd>
+@<at href="f_Layer_holdAlpha.html">Layer.holdAlpha</at> ƒvƒƒpƒeƒB‚ÌƒfƒtƒHƒ‹ƒg’l‚ðŽw’è‚µ‚Ü‚·B<r/>
+@Ý’è‰Â”\‚È’l‚Í <b>'false' (‹U)</b>, <b>'true' (^)</b> ‚Ì‚¢‚¸‚ê‚©‚ÅA‚±‚ÌƒIƒvƒVƒ‡ƒ“‚ðŽw’è‚µ‚È‚¢‚Æ 'false' ‚ªŽw’è‚³‚ê‚½‚à‚Ì‚ÆŒ©‚È‚³‚ê‚Ü‚·B<r/>
+@‹g—¢‹g—¢‚Q 2.23 beta 4 ‚ÅAŠeŽí‰‰ŽZŠÖ”‚ÉŽw’è‚µ‚Ä‚¢‚½ hda (ƒAƒ‹ƒtƒ@ƒ`ƒƒƒ“ƒlƒ‹‚ð•ÛŒì‚·‚é‚©) ƒIƒvƒVƒ‡ƒ“‚ª‚È‚­‚È‚èA‘ã‚í‚è‚É Layer.holdAlpha ƒvƒƒpƒeƒB‚ªì‚ç‚ê‚Ü‚µ‚½B‚±‚ÌŽž“_‚Å‚Í Layer.holdAlpha ‚ÌƒfƒtƒHƒ‹ƒg’l‚Í^‚Å‚µ‚½BLayer.holdAlpha ‚ª^‚Ìê‡‚Í‰ß‹Ž‚ÌƒAƒvƒŠƒP[ƒVƒ‡ƒ“‚Ì“®ì‚É‰e‹¿‚ð—^‚¦‚Ü‚¹‚ñB<r/>
+@‹g—¢‹g—¢‚Q 2.23 beta 5 ‚ÅA‚±‚ÌƒfƒtƒHƒ‹ƒg’l‚ª‹U‚É‚È‚è‚Ü‚µ‚½B‹g—¢‹g—¢‚Q 2.23 beta 5 –¢–ž‚ð‘z’è‚µ‚Ä‚¢‚éƒAƒvƒŠƒP[ƒVƒ‡ƒ“‚ð“®ì‚³‚¹‚½‚¢ê‡‚ÍA‚±‚ÌƒIƒvƒVƒ‡ƒ“‚É '^' ‚ðŽw’è‚µ‚È‚¢‚Æ³í‚É“®ì‚µ‚È‚¢‰Â”\«‚ª‚ ‚è‚Ü‚·B
+</dd>
+
+
 </dl>
 </para>
 
