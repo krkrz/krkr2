@@ -489,6 +489,7 @@ void TVPLoadPlugin(const ttstr & name)
 	catch(...)
 	{
 		TVPPluginLoading = false;
+		throw;
 	}
 
 	TVPPluginVector.Vector.push_back(p);
