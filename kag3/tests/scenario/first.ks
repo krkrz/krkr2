@@ -1,3 +1,6 @@
+@jump storage=lmovietest.ks
+;@jump storage=movietest.ks
+
 @jump storage="tlgtagtest.ks"
 @l
 [edit]
@@ -109,7 +112,6 @@ yh
 @jump storage=cursortest.ks
 @jump storage=rclicktest3.ks
 @jump storage=setest.ks
-@jump storage=movietest.ks
 @jump storage=clocktest.ks
 @jump storage=unicodetest.ks
 @jump storage=clipanimtest.ks
