@@ -435,7 +435,7 @@ tTJSNI_BaseLayer::Construct(tjs_int numparams, tTJSVariant **param,
 			TVPThrowExceptionMessage(TVPWindowHasAlreadyPrimaryLayer);
 //		SetWindow(win);
 		Manager->AttachPrimary(this);
-		Type = DisplayType = ltCoverRect; // initially ltCoverRect
+		Type = DisplayType = ltOpaque; // initially ltOpaque
 		DrawFace = dfMain; // initially dfMain
 		HitThreshold = 0;
 	}
@@ -1326,7 +1326,7 @@ void tTJSNI_BaseLayer::SetType(tTVPLayerType type)
 			DeallocateImage();
 			break;
 
-		case ltCoverRect:
+		case ltOpaque: // formerly ltCoverRect
 			NeutralColor = TVP_RGBA2COLOR(255, 255, 255, 0);
 			DisplayType = Type;
 			AllocateImage();
@@ -4691,7 +4691,7 @@ void tTJSNI_BaseLayer::QueryUpdateExcludeRect(tTVPRect &rect, bool parentvisible
 
 	// recur to children
 	parentvisible = parentvisible && Visible &&
-		(DisplayType == ltCoverRect || DisplayType == ltAlpha || DisplayType == ltAddAlpha) &&
+		(DisplayType == ltOpaque || DisplayType == ltAlpha || DisplayType == ltAddAlpha) &&
 		Opacity == 255; // fixed 2004/01/09 W.Dee
 	TVP_LAYER_FOR_EACH_CHILD_NOLOCK_BACKWARD_BEGIN(child)
 
@@ -4709,7 +4709,7 @@ void tTJSNI_BaseLayer::QueryUpdateExcludeRect(tTVPRect &rect, bool parentvisible
 	rect.bottom += Rect.top;
 
 	// check visibility & opacity
-	if(parentvisible && DisplayType == ltCoverRect && Opacity == 255)
+	if(parentvisible && DisplayType == ltOpaque && Opacity == 255)
 	{
 		if(rect.is_empty())
 		{
@@ -4748,7 +4748,7 @@ void tTJSNI_BaseLayer::BltImage(tTVPBaseBitmap *dest, tTVPLayerType destlayertyp
 		// no action
 		return;
 
-	case ltCoverRect:
+	case ltOpaque: // formerly ltCoverRect
 		// copy
 		if(destlayertype == ltAlpha)
 			met = bmCopyOnAlpha;
@@ -4975,7 +4975,7 @@ void tTJSNI_BaseLayer::Draw(tTVPDrawable *target, const tTVPRect &r, bool visibl
 	}
 
 	// process drawing
-	bool totalopaque = (DisplayType == ltCoverRect && Opacity == 255);
+	bool totalopaque = (DisplayType == ltOpaque && Opacity == 255);
 
 	if(GetCacheEnabled() &&
 		!(InTransition && !TransWithChildren && DivisibleTransHandler))
@@ -5201,7 +5201,7 @@ void tTJSNI_BaseLayer::InternalComplete2(tTVPComplexRect & updateregion,
 {
 //--- querying phase
 
-	// search ltCoverRect, not to draw region behind them.
+	// search ltOpaque, not to draw region behind them.
 	if(Manager) Manager->QueryUpdateExcludeRect();
 
 //--- drawing phase
