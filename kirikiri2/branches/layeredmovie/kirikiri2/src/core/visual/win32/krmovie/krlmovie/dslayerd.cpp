@@ -35,6 +35,7 @@ tTVPDSLayerVideo::~tTVPDSLayerVideo()
 {
 	m_BmpBits[0] = NULL;
 	m_BmpBits[1] = NULL;
+	ReleaseAll();
 }
 //----------------------------------------------------------------------------
 //! @brief	  	フィルタグラフの構築
@@ -182,6 +183,9 @@ const wchar_t* __stdcall tTVPDSLayerVideo::BuildGraph( HWND callbackwin, IStream
 			 throw L"Failed to query IRendererBufferAccess.";
 		if( FAILED(hr = pBRender->QueryInterface( &m_BuffVideo )) )
 			 throw L"Failed to query IRendererBufferVideo.";
+
+//		if( FAILED(hr = MediaSeeking()->SetTimeFormat( &TIME_FORMAT_FRAME )) )
+//			throw L"Failed to call IMediaSeeking::SetTimeFormat.";
 
 		// set notify event
 		if(callbackwin)

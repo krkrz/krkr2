@@ -90,6 +90,8 @@ private:
 	bool	m_IsBufferOwner[2];	//!< バッファがこのクラスに割り当てられたものかどうかを保持
 	int		m_FrontBuffer;		//!< 現在のフロントバッファがどちらかを保持
 
+	IMediaSeeking	*m_MediaSeeking;
+
 	TBufferRendererInputPin		m_InputPin;		//!< 入力ピン
 	TBufferRendererAllocator	m_Allocator;	//!< メモリの割り当て
 
