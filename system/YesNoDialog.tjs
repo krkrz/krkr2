@@ -1,5 +1,5 @@
 // YesNoDialog.tjs - はい/いいえを選択するダイアログボックス
-// Copyright (C)2001-2003, W.Dee  改変・配布は自由です
+// Copyright (C)2001-2004, W.Dee  改変・配布は自由です
 
 class YesNoDialogWindow extends Window
 {
