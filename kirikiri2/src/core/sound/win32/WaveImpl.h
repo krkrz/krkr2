@@ -42,6 +42,7 @@ struct IDirectSound;
 
 TJS_EXP_FUNC_DEF(void, TVPReleaseDirectSound, ());
 TJS_EXP_FUNC_DEF(IDirectSound *, TVPGetDirectSound, ());
+extern void TVPResetVolumeToAllSoundBuffer();
 //---------------------------------------------------------------------------
 
 
@@ -197,11 +198,14 @@ public:
 private:
 	tjs_int Volume;
 	tjs_int Volume2;
+	static tjs_int GlobalVolume;
+	static tTVPSoundGlobalFocusMode GlobalFocusMode;
 
 	bool Use3D;
 	bool BufferCanControlPan;
 	tjs_int Pan; // -100000 .. 0 .. 100000
 
+public:
 	void SetVolumeToSoundBuffer();
 
 public:
@@ -211,6 +215,11 @@ public:
 	tjs_int GetVolume2() const { return Volume2; }
 	void SetPan(tjs_int v);
 	tjs_int GetPan() const { return Pan; }
+	static void SetGlobalVolume(tjs_int v);
+	static tjs_int GetGlobalVolume() { return GlobalVolume; }
+	static void SetGlobalFocusMode(tTVPSoundGlobalFocusMode b);
+	static tTVPSoundGlobalFocusMode GetGlobalFocusMode()
+		{ return GlobalFocusMode; }
 
 	//-- visualization stuff ----------------------------------------------
 public:

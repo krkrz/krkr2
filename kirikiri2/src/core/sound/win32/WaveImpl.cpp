@@ -15,6 +15,7 @@
 #include <mmreg.h>
 #include <syncobjs.hpp>
 #include <math.h>
+#include "MainFormUnit.h"
 #include "DebugIntf.h"
 #include "MsgIntf.h"
 #include "StorageIntf.h"
@@ -49,7 +50,8 @@ static bool TVPAlwaysRecreateSoundBuffer = false;
 static bool TVPPrimaryFloat = false;
 static tjs_int TVPPriamrySBFrequency = 44100;
 static tjs_int TVPPrimarySBBits = 16;
-static bool TVPSoundHasGlobalFocus = true;
+static tTVPSoundGlobalFocusMode TVPSoundGlobalFocusModeByOption = sgfmNeverMute;
+static tjs_int TVPSoundGlobalFocusMuteVolume = 0;
 static enum tTVPForceConvertMode { fcmNone, fcm16bit, fcm16bitMono }
 	TVPForceConvertMode = fcmNone;
 static tjs_int TVPPrimarySBCreateTryLevel = -1;
@@ -155,12 +157,21 @@ static void TVPInitSoundOptions()
 			TVPExpandToQuad = false;
 	}
 
-	if(TVPGetCommandLine(TJS_W("-wsglobal"), &val))
+	if(TVPGetCommandLine(TJS_W("-wsmute"), &val))
 	{
-		if(ttstr(val) == TJS_W("yes"))
-			TVPSoundHasGlobalFocus = true;
-		else
-			TVPSoundHasGlobalFocus = false;
+		ttstr str(val);
+		if(str == TJS_W("no") || str == TJS_W("never"))
+			TVPSoundGlobalFocusModeByOption = sgfmNeverMute;
+		else if(str == TJS_W("minimize"))
+			TVPSoundGlobalFocusModeByOption = sgfmMuteOnMinimize;
+		else if(str == TJS_W("yes") || str == TJS_W("deactive"))
+			TVPSoundGlobalFocusModeByOption = sgfmMuteOnDeactivate;
+	}
+
+	if(TVPGetCommandLine(TJS_W("-wsmutevol"), &val))
+	{
+		tjs_int n = (tjs_int)val;
+		if(n >= 0 && n <= 100) TVPSoundGlobalFocusMuteVolume = n * 1000;
 	}
 
 	if(TVPGetCommandLine(TJS_W("-wsl1len"), &val))
@@ -1481,6 +1492,18 @@ static void TVPRemoveWaveSoundBuffer(tTJSNI_WaveSoundBuffer * buffer)
 	}
 }
 //---------------------------------------------------------------------------
+void TVPResetVolumeToAllSoundBuffer()
+{
+	// call each SoundBuffer's SetVolumeToSoundBuffer
+	tTJSCriticalSectionHolder holder(TVPWaveSoundBufferVectorCS);
+	std::vector<tTJSNI_WaveSoundBuffer *>::iterator i;
+	for(i = TVPWaveSoundBufferVector.begin();
+		i != TVPWaveSoundBufferVector.end(); i++)
+	{
+		(*i)->SetVolumeToSoundBuffer();
+	}
+}
+//---------------------------------------------------------------------------
 void TVPReleaseDirectSound()
 {
 	TVPReleaseSoundBuffers(false);
@@ -1564,6 +1587,9 @@ void tTVPWaveSoundBufferDecodeThread::Execute(void)
 
 //---------------------------------------------------------------------------
 // tTJSNI_WaveSoundBuffer
+//---------------------------------------------------------------------------
+tjs_int tTJSNI_WaveSoundBuffer::GlobalVolume = 100000;
+tTVPSoundGlobalFocusMode tTJSNI_WaveSoundBuffer::GlobalFocusMode = sgfmNeverMute;
 //---------------------------------------------------------------------------
 tTJSNI_WaveSoundBuffer::tTJSNI_WaveSoundBuffer()
 {
@@ -1675,7 +1701,8 @@ void tTJSNI_WaveSoundBuffer::TryCreateSoundBuffer()
 		dsbd.dwFlags |= DSBCAPS_CTRLPAN, BufferCanControlPan = true;
 	else
 		BufferCanControlPan = false;
-	if(TVPSoundHasGlobalFocus)
+	if(!(TVPSoundGlobalFocusMuteVolume == 0 &&
+		TVPSoundGlobalFocusModeByOption >= sgfmMuteOnDeactivate))
 		dsbd.dwFlags |= DSBCAPS_GLOBALFOCUS;
 	if(TVPUseSoftwareBuffer)
 		dsbd.dwFlags |= DSBCAPS_LOCSOFTWARE;
@@ -2587,7 +2614,44 @@ void tTJSNI_WaveSoundBuffer::SetVolumeToSoundBuffer()
 	// set current volume/pan to DirectSound buffer
 	if(SoundBuffer)
 	{
-		tjs_int v = (Volume / 10) * (Volume2 / 10) / 1000;
+		tjs_int v;
+		tjs_int mutevol = 100000;
+		if(TVPSoundGlobalFocusModeByOption >= sgfmMuteOnDeactivate &&
+			TVPSoundGlobalFocusMuteVolume == 0)
+		{
+			// no mute needed here;
+			// muting will be processed in DirectSound framework.
+			;
+		}
+		else
+		{
+			// mute mode is choosen from GlobalFocusMode or
+			// TVPSoundGlobalFocusModeByOption which is more restrictive.
+			tTVPSoundGlobalFocusMode mode =
+				GlobalFocusMode > TVPSoundGlobalFocusModeByOption ?
+					GlobalFocusMode : TVPSoundGlobalFocusModeByOption;
+			switch(mode)
+			{
+			case sgfmNeverMute:
+				;
+				break;
+			case sgfmMuteOnMinimize:
+				if(!  TVPMainForm->GetApplicationNotMinimizing())
+					mutevol = TVPSoundGlobalFocusMuteVolume;
+				break;
+			case sgfmMuteOnDeactivate:
+				if(!
+					(  TVPMainForm->GetApplicationActivating() &&
+					   TVPMainForm->GetApplicationNotMinimizing()))
+					mutevol = TVPSoundGlobalFocusMuteVolume;
+				break;
+			}
+		}
+
+		// compute volume for each buffer
+		v = (Volume / 10) * (Volume2 / 10) / 1000;
+		v = (v / 10) * (GlobalVolume / 10) / 1000;
+		v = (v / 10) * (mutevol / 10) / 1000;
 		v = v / 1000;
 		if(v > 100) v = 100;
 		if(v < 0 ) v = 0;
@@ -2641,6 +2705,27 @@ void tTJSNI_WaveSoundBuffer::SetPan(tjs_int v)
 	{
 		Pan = v;
 		SetVolumeToSoundBuffer();
+	}
+}
+//---------------------------------------------------------------------------
+void tTJSNI_WaveSoundBuffer::SetGlobalVolume(tjs_int v)
+{
+	if(v < 0) v = 0;
+	if(v > 100000) v = 100000;
+
+	if(GlobalVolume != v)
+	{
+		GlobalVolume = v;
+		TVPResetVolumeToAllSoundBuffer();
+	}
+}
+//---------------------------------------------------------------------------
+void tTJSNI_WaveSoundBuffer::SetGlobalFocusMode(tTVPSoundGlobalFocusMode b)
+{
+	if(GlobalFocusMode != b)
+	{
+		GlobalFocusMode = b;
+		TVPResetVolumeToAllSoundBuffer();
 	}
 }
 //---------------------------------------------------------------------------

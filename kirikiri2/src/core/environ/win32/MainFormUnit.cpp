@@ -36,6 +36,7 @@
 #include "FontSelectFormUnit.h"
 #include "HintWindow.h"
 #include "VersionFormUnit.h"
+#include "WaveImpl.h"
 
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
@@ -174,6 +175,8 @@ __fastcall TTVPMainForm::TTVPMainForm(TComponent* Owner)
 	ContinuousEventCalling = false;
 	AutoShowConsoleOnError = false;
 	ApplicationStayOnTop = false;
+	ApplicationActivating = true;
+	ApplicationNotMinimizing = true;
 	LastCloseClickedTick = 0;
 	LastShowModalWindowSentTick = 0;
 	LastRehashedTick = 0;
@@ -615,13 +618,18 @@ void __fastcall TTVPMainForm::ApplicationIdle(TObject *Sender, bool &Done)
 //---------------------------------------------------------------------------
 void __fastcall TTVPMainForm::ApplicationActivate(TObject *Sender)
 {
+	ApplicationActivating = true;
+
 	TVPRestoreFullScreenWindowAtActivation();
 	TVPShowModalAtAppActivate();
 	TVPShowFontSelectFormAtAppActivate();
+	TVPResetVolumeToAllSoundBuffer();
 }
 //---------------------------------------------------------------------------
 void __fastcall TTVPMainForm::ApplicationDeactivate(TObject *Sender)
 {
+	ApplicationActivating = false;
+
 	TVPHideModalAtAppDeactivate();
 	TVPHideFontSelectFormAtAppDeactivate();
 
@@ -636,16 +644,28 @@ void __fastcall TTVPMainForm::ApplicationDeactivate(TObject *Sender)
 		SetWindowPos(Application->Handle,HWND_TOPMOST ,0,0,0,0, SWP_NOACTIVATE | SWP_NOSIZE | SWP_NOMOVE);
 	else
 		SetWindowPos(Application->Handle,HWND_NOTOPMOST ,0,0,0,0, SWP_NOACTIVATE | SWP_NOSIZE | SWP_NOMOVE);
+
+	// set sound volume
+	TVPResetVolumeToAllSoundBuffer();
 }
 //---------------------------------------------------------------------------
 void __fastcall TTVPMainForm::ApplicationMinimize(TObject *Sender)
 {
 	// fire compact event
+	ApplicationNotMinimizing = false;
+
 	TVPDeliverCompactEvent(TVP_COMPACT_LEVEL_MINIMIZE);
+
+	// set sound volume
+	TVPResetVolumeToAllSoundBuffer();
 }
 //---------------------------------------------------------------------------
 void __fastcall TTVPMainForm::ApplicationRestore(TObject *Sender)
 {
+	ApplicationNotMinimizing = true;
+
+	// set sound volume
+	TVPResetVolumeToAllSoundBuffer();
 }
 //---------------------------------------------------------------------------
 void __fastcall TTVPMainForm::SystemWatchTimerTimer(TObject *Sender)
