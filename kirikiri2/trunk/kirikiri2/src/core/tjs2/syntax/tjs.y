@@ -424,11 +424,13 @@ property_def
 ;
 
 property_handler_def_list
-	: property_handler_def
-	| property_handler_def_list property_handler_def
+	: property_handler_setter
+	| property_handler_getter
+	| property_handler_setter property_handler_getter
+	| property_handler_getter property_handler_setter
 ;
 
-property_handler_def
+property_handler_setter
 	: "setter" "(" T_SYMBOL ")"				{ sb->PushContextStack(
 												TJS_W("(setter)"),
 												ctPropertySetter);
@@ -436,13 +438,16 @@ property_handler_def
 											  cc->SetPropertyDeclArg(
 												lx->GetString($3)); }
 	  block									{ cc->ExitBlock();
-	  										  sb->PopContextStack(); }
-	| property_getter_handler_head			{ sb->PushContextStack(
+											  sb->PopContextStack(); }
+;
+
+property_handler_getter
+	: property_getter_handler_head			{ sb->PushContextStack(
 												TJS_W("(getter)"),
 												ctPropertyGetter);
 											  cc->EnterBlock(); }
 	  block									{ cc->ExitBlock();
-	  										  sb->PopContextStack(); }
+											  sb->PopContextStack(); }
 ;
 
 property_getter_handler_head
