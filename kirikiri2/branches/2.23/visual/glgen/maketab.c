@@ -142,7 +142,7 @@ static void TVPInitDitherTable(void)
 		TVP252DitherPalette[2][c] = 0;
 	}
 
-	// create TVPRecipTable256
+	/* create TVPRecipTable256 */
 	TVPRecipTable256[0] = 65536;
 	for(i = 1; i < 256; i++) TVPRecipTable256[i] = 65536/i;
 }
@@ -225,7 +225,6 @@ static void TVPCreateTable(void)
 			TVPDivTable[(a<<8)+b] = (tjs_uint8)(tmp);
 		}
 	}
-	init = 0;
 
 
 	TVPInitDitherTable();
