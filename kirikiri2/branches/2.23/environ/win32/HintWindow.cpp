@@ -8,12 +8,6 @@
 //---------------------------------------------------------------------------
 // Half-transparent Hint Window Support
 //---------------------------------------------------------------------------
-// 2003/11/02 W.Dee          Fixed dual-displayed system problem (Hint window
-//                           had been crashed when the window is out of the
-//                           screen. This might happen in dual-displayed
-//                           system which have the display coordinates being
-//                           negative or out of the main screen)
-//---------------------------------------------------------------------------
 
 
 #include "tjsCommHead.h"
