@@ -95,6 +95,8 @@ public:
 
 	void Deliver()
 	{
+		if(Target->IsValid(0, NULL, NULL, Target) != TJS_S_TRUE)
+			return; // The target had been invalidated
 		tTJSVariant **ArgsPtr = new tTJSVariant*[NumArgs];
 		for(tjs_uint i=0; i<NumArgs; i++)
 			ArgsPtr[i] = Args + i;
