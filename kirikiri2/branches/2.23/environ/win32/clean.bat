@@ -54,9 +54,9 @@ del environ\win32\scr_shot\*.bmp
 del environ\win32\snapshot\*.bmp
 del environ\win32\callerexe\bin\*.lib
 del environ\win32\callerexe\*.lib
-copy environ\win32\kag3docs\j\contents\index.html %temp%
-del environ\win32\kag3docs\j\contents\*.html
-copy %temp%\index.html environ\win32\kag3docs\j\contents\
+copy environ\win32\kag3docs\contents\index.html %temp%
+del environ\win32\kag3docs\contents\*.html
+copy %temp%\index.html environ\win32\kag3docs\contents\
 del environ\win32\kag3docs_in\*.html
 del environ\win32\kag3docs_in\tag\*.html
 del environ\win32\plugin\*.lib
