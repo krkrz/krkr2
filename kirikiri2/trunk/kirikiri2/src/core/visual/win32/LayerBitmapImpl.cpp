@@ -2149,7 +2149,7 @@ bool tTVPNativeBaseBitmap::InternalDrawText(tTVPCharacterData *data, tjs_int x,
 	return true;
 }
 //---------------------------------------------------------------------------
-void tTVPNativeBaseBitmap::DrawText(const tTVPRect &destrect,
+void tTVPNativeBaseBitmap::DrawTextSingle(const tTVPRect &destrect,
 	tjs_int x, tjs_int y, const ttstr &text,
 		tjs_uint32 color, tTVPBBBltMethod bltmode, tjs_int opa,
 			bool holdalpha, bool aa, tjs_int shlevel,
@@ -2157,7 +2157,188 @@ void tTVPNativeBaseBitmap::DrawText(const tTVPRect &destrect,
 			tjs_int shwidth, tjs_int shofsx, tjs_int shofsy,
 			tTVPComplexRect *updaterects)
 {
-	// text drawing function
+	// text drawing function for single character
+
+	if(!Is32BPP()) TVPThrowExceptionMessage(TVPInvalidOperationFor8BPP);
+
+	if(bltmode == bmAlphaOnAlpha)
+	{
+		if(opa < -255) opa = -255;
+		if(opa > 255) opa = 255;
+	}
+	else
+	{
+		if(opa < 0) opa = 0;
+		if(opa > 255 ) opa = 255;
+	}
+
+	if(opa == 0) return; // nothing to do
+
+	Independ();
+
+	ApplyFont();
+
+	const tjs_char *p = text.c_str();
+	tTVPDrawTextData dtdata;
+	dtdata.rect = destrect;
+	dtdata.bmppitch = GetPitchBytes();
+	dtdata.bltmode = bltmode;
+	dtdata.opa = opa;
+	dtdata.holdalpha = holdalpha;
+
+	tTVPFontAndCharacterData font;
+	font.Font = Font;
+	font.Antialiased = aa;
+	font.BlurLevel = shlevel;
+	font.BlurWidth = shwidth;
+	font.FontHash = FontHash;
+
+	font.Character = *p;
+
+	font.Blured = false;
+	tTVPCharacterData * shadow = NULL;
+	tTVPCharacterData * data = NULL;
+
+	try
+	{
+		data = TVPGetCharacter(font, this, PrerenderedFont, AscentOfsX, AscentOfsY);
+
+		if(shlevel != 0)
+		{
+			if(shlevel == 255 && shwidth == 0)
+			{
+				// normal shadow
+				shadow = data;
+				shadow->AddRef();
+			}
+			else
+			{
+				// blured shadow
+				font.Blured = true;
+				shadow =
+					TVPGetCharacter(font, this, PrerenderedFont, AscentOfsX, AscentOfsY);
+			}
+		}
+
+
+		if(data)
+		{
+
+			if(data->BlackBoxX != 0 && data->BlackBoxY != 0)
+			{
+				tTVPRect drect;
+				tTVPRect shadowdrect;
+
+				bool shadowdrawn = false;
+
+				if(shadow)
+				{
+					shadowdrawn = InternalDrawText(shadow, x + shofsx, y + shofsy,
+						shadowcolor, &dtdata, shadowdrect);
+				}
+
+				bool drawn = InternalDrawText(data, x, y, color, &dtdata, drect);
+				if(updaterects)
+				{
+					if(!shadowdrawn)
+					{
+						if(drawn) updaterects->Or(drect);
+					}
+					else
+					{
+						if(drawn)
+						{
+							tTVPRect d;
+							TVPUnionRect(&d, drect, shadowdrect);
+							updaterects->Or(d);
+						}
+						else
+						{
+							updaterects->Or(shadowdrect);
+						}
+					}
+				}
+			}
+		}
+	}
+	catch(...)
+	{
+		if(data) data->Release();
+		if(shadow) shadow->Release();
+		throw;
+	}
+
+	if(data) data->Release();
+	if(shadow) shadow->Release();
+}
+//---------------------------------------------------------------------------
+// structure for holding data for a character
+struct tTVPCharacterDrawData
+{
+	tTVPCharacterData * Data; // main character data
+	tTVPCharacterData * Shadow; // shadow character data
+	tjs_int X, Y;
+	tTVPRect ShadowRect;
+	bool ShadowDrawn;
+
+	tTVPCharacterDrawData(
+		tTVPCharacterData * data,
+		tTVPCharacterData * shadow,
+		tjs_int x, tjs_int y)
+	{
+		Data = data;
+		Shadow = shadow;
+		X = x;
+		Y = y;
+		ShadowDrawn = false;
+
+		if(Data) Data->AddRef();
+		if(Shadow) Shadow->AddRef();
+	}
+
+	~tTVPCharacterDrawData()
+	{
+		if(Data) Data->Release();
+		if(Shadow) Shadow->Release();
+	}
+
+	tTVPCharacterDrawData(const tTVPCharacterDrawData & rhs)
+	{
+		Data = Shadow = NULL;
+		*this = rhs;
+	}
+
+	void operator = (const tTVPCharacterDrawData & rhs)
+	{
+		X = rhs.X;
+		Y = rhs.Y;
+		ShadowRect = rhs.ShadowRect;
+		ShadowDrawn = rhs.ShadowDrawn;
+
+		if(Data != rhs.Data)
+		{
+			if(Data) Data->Release();
+			Data = rhs.Data;
+			if(Data) Data->AddRef();
+		}
+		if(Shadow != rhs.Shadow)
+		{
+			if(Shadow) Shadow->Release();
+			Shadow = rhs.Shadow;
+			if(Shadow) Shadow->AddRef();
+		}
+	}
+};
+//---------------------------------------------------------------------------
+void tTVPNativeBaseBitmap::DrawTextMultiple(const tTVPRect &destrect,
+	tjs_int x, tjs_int y, const ttstr &text,
+		tjs_uint32 color, tTVPBBBltMethod bltmode, tjs_int opa,
+			bool holdalpha, bool aa, tjs_int shlevel,
+			tjs_uint32 shadowcolor,
+			tjs_int shwidth, tjs_int shofsx, tjs_int shofsy,
+			tTVPComplexRect *updaterects)
+{
+	// text drawing function for multiple characters
 
 	if(!Is32BPP()) TVPThrowExceptionMessage(TVPInvalidOperationFor8BPP);
 
@@ -2194,103 +2375,125 @@ void tTVPNativeBaseBitmap::DrawText(const tTVPRect &destrect,
 	font.FontHash = FontHash;
 
 
+	std::vector<tTVPCharacterDrawData> drawdata;
+	drawdata.reserve(text.GetLen());
+
+	// prepare all drawn characters
 	while(*p) // while input string is remaining
 	{
 		font.Character = *p;
 
 		font.Blured = false;
-		tTVPCharacterData * data =
-			TVPGetCharacter(font, this, PrerenderedFont, AscentOfsX, AscentOfsY);
-
+		tTVPCharacterData * data = NULL;
 		tTVPCharacterData * shadow = NULL;
-		bool shadowrelease = true;
-		if(shlevel != 0)
-		{
-			if(shlevel == 255 && shwidth == 0)
-			{
-				// normal shadow
-				shadow = data;
-				shadowrelease = false;
-			}
-			else
-			{
-				// blured shadow
-				font.Blured = true;
-				shadow =
-					TVPGetCharacter(font, this, PrerenderedFont, AscentOfsX, AscentOfsY);
-			}
-		}
-
-
-		p++;
-
-		if(!data) continue; // not drawable
-
 		try
 		{
-			if(data->BlackBoxX != 0 && data->BlackBoxY != 0)
+			data =
+				TVPGetCharacter(font, this, PrerenderedFont, AscentOfsX, AscentOfsY);
+
+			if(data)
 			{
-				tTVPRect drect;
-				tTVPRect shadowdrect;
-
-				bool shadowdrawn = false;
-
-				if(shadow)
+				if(shlevel != 0)
 				{
-					shadowdrawn = InternalDrawText(shadow, x + shofsx, y + shofsy,
-						shadowcolor, &dtdata, shadowdrect);
-				}
-
-				bool drawn = InternalDrawText(data, x, y, color, &dtdata, drect);
-				if(updaterects)
-				{
-					if(!shadowdrawn)
+					if(shlevel == 255 && shwidth == 0)
 					{
-						if(drawn) updaterects->Or(drect);
+						// normal shadow
+						// shadow is the same as main character data
+						shadow = data;
+						shadow->AddRef();
 					}
 					else
 					{
-						if(drawn)
-						{
-							tTVPRect d;
-							TVPUnionRect(&d, drect, shadowdrect);
-							updaterects->Or(d);
-						}
-						else
-						{
-							updaterects->Or(shadowdrect);
-						}
+						// blured shadow
+						font.Blured = true;
+						shadow =
+							TVPGetCharacter(font, this, PrerenderedFont, AscentOfsX, AscentOfsY);
 					}
 				}
-			}
 
-			x += data->CellIncX;
-			if(data->CellIncY != 0)
-			{
-				// Windows 9x returns negative CellIncY.
-				// so we must verify whether CellIncY is proper.
-				if(Font.Angle < 1800)
+
+				if(data->BlackBoxX != 0 && data->BlackBoxY != 0)
 				{
-					if(data->CellIncY > 0) data->CellIncY = - data->CellIncY;
+					// append to array
+					drawdata.push_back(tTVPCharacterDrawData(data, shadow, x, y));
 				}
-				else
+
+				// step to the next character position
+				x += data->CellIncX;
+				if(data->CellIncY != 0)
 				{
-					if(data->CellIncY < 0) data->CellIncY = - data->CellIncY;
+					// Windows 9x returns negative CellIncY.
+					// so we must verify whether CellIncY is proper.
+					if(Font.Angle < 1800)
+					{
+						if(data->CellIncY > 0) data->CellIncY = - data->CellIncY;
+					}
+					else
+					{
+						if(data->CellIncY < 0) data->CellIncY = - data->CellIncY;
+					}
+					y += data->CellIncY;
 				}
-				y += data->CellIncY;
 			}
 		}
 		catch(...)
 		{
-			data->Release();
-			if(shadow && shadowrelease) shadow->Release();
-			throw;
+			 if(data) data->Release();
+			 if(shadow) shadow->Release();
+			 throw;
 		}
+		if(data) data->Release();
+		if(shadow) shadow->Release();
 
-		data->Release();
-		if(shadow && shadowrelease) shadow->Release();
+		p++;
 	}
 
+	// draw shadows first
+	if(shlevel != 0)
+	{
+		for(std::vector<tTVPCharacterDrawData>::iterator i = drawdata.begin();
+			i != drawdata.end(); i++)
+		{
+			tTVPCharacterData * shadow = i->Shadow;
+
+			if(shadow)
+			{
+				i->ShadowDrawn = InternalDrawText(shadow, i->X + shofsx, i->Y + shofsy,
+					shadowcolor, &dtdata, i->ShadowRect);
+			}
+		}
+	}
+
+	// then draw main characters
+	// and compute returning update rectangle
+	for(std::vector<tTVPCharacterDrawData>::iterator i = drawdata.begin();
+		i != drawdata.end(); i++)
+	{
+		tTVPCharacterData * data = i->Data;
+		tTVPRect drect;
+
+		bool drawn = InternalDrawText(data, i->X, i->Y, color, &dtdata, drect);
+		if(updaterects)
+		{
+			if(!i->ShadowDrawn)
+			{
+				if(drawn) updaterects->Or(drect);
+			}
+			else
+			{
+				if(drawn)
+				{
+					tTVPRect d;
+					TVPUnionRect(&d, drect, i->ShadowRect);
+					updaterects->Or(d);
+				}
+				else
+				{
+					updaterects->Or(i->ShadowRect);
+				}
+			}
+		}
+	}
 }
 //---------------------------------------------------------------------------
 void tTVPNativeBaseBitmap::GetTextSize(const ttstr & text)
