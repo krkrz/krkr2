@@ -1117,7 +1117,13 @@ public:
 	void UpdateToWindow();
 	void NotifyUpdateRegionFixed();
 
+public:
+	void TimerBeat();
+		// To re-check current layer under current mouse position
+		// and update hint, cursor type and process layer enter/leave.
+		// This can be reasonably slow, about 1 sec interval.
 
+public:
 	void DumpPrimaryStructure();
 };
 //---------------------------------------------------------------------------

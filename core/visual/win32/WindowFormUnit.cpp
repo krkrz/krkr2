@@ -836,6 +836,8 @@ __fastcall TTVPWindowForm::TTVPWindowForm(TComponent* Owner, tTJSNI_Window *ni)
 
 	if(TVPUseDrawDib) DrawDibHandle = DrawDibOpen();
 
+	LastLayerTickBeatSent = 0;
+
 	NextInvalidate = false;
 }
 //---------------------------------------------------------------------------
@@ -3300,6 +3302,7 @@ HWND __fastcall TTVPWindowForm::GetWindowHandleForPlugin()
 void __fastcall TTVPWindowForm::TickBeat()
 {
 	// called every 50ms intervally
+	DWORD tickcount = GetTickCount();
 	bool focused = Focused();
 	bool showingmenu = InMenuLoop;
 	if(MenuContainer)
@@ -3318,7 +3321,7 @@ void __fastcall TTVPWindowForm::TickBeat()
 	}
 
 	// device reload
-	if(ReloadDevice && (int)(GetTickCount() - ReloadDeviceTick) > 0)
+	if(ReloadDevice && (int)(tickcount - ReloadDeviceTick) > 0)
 	{
 		ReloadDevice = false;
 		FreeDirectInputDevice();
@@ -3391,6 +3394,14 @@ void __fastcall TTVPWindowForm::TickBeat()
 		if(PaintBox) PaintBox->Invalidate();
 		NextInvalidate = false;
 	}
+
+	// check LastLayerTickBeatSent
+	if(tickcount - LastLayerTickBeatSent > 1000)
+	{
+		LastLayerTickBeatSent = tickcount;
+		if(TJSNativeInstance) TJSNativeInstance->TimerBeat();
+	}
+
 }
 //---------------------------------------------------------------------------
 #define TVP_MOUSE_MAX_ACCEL 30
