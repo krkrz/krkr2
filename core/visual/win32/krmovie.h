@@ -13,7 +13,7 @@
 #ifndef __KRMOVIE_H__
 #define __KRMOVIE_H__
 
-#define TVP_KRMOVIE_VER   0x00010005
+#define TVP_KRMOVIE_VER   0x00010006
 
 
 //---------------------------------------------------------------------------
@@ -29,39 +29,39 @@ public:
 	virtual void __stdcall AddRef() = 0;
 	virtual void __stdcall Release() = 0;
 
-	virtual const wchar_t* __stdcall SetWindow(HWND window) = 0;
-	virtual const wchar_t* __stdcall SetMessageDrainWindow(HWND window) = 0;
-	virtual const wchar_t* __stdcall SetRect(RECT *rect) = 0;
-	virtual const wchar_t* __stdcall SetVisible(bool b) = 0;
-	virtual const wchar_t* __stdcall Play() = 0;
-	virtual const wchar_t* __stdcall Stop() = 0;
-	virtual const wchar_t* __stdcall Pause() = 0;
-	virtual const wchar_t* __stdcall SetPosition(unsigned __int64 tick) = 0;
-	virtual const wchar_t* __stdcall GetPosition(unsigned __int64 *tick) = 0;
-	virtual const wchar_t* __stdcall GetStatus(tTVPVideoStatus *status) = 0;
-	virtual const wchar_t* __stdcall GetEvent(long *evcode, long *param1,
+	virtual void __stdcall SetWindow(HWND window) = 0;
+	virtual void __stdcall SetMessageDrainWindow(HWND window) = 0;
+	virtual void __stdcall SetRect(RECT *rect) = 0;
+	virtual void __stdcall SetVisible(bool b) = 0;
+	virtual void __stdcall Play() = 0;
+	virtual void __stdcall Stop() = 0;
+	virtual void __stdcall Pause() = 0;
+	virtual void __stdcall SetPosition(unsigned __int64 tick) = 0;
+	virtual void __stdcall GetPosition(unsigned __int64 *tick) = 0;
+	virtual void __stdcall GetStatus(tTVPVideoStatus *status) = 0;
+	virtual void __stdcall GetEvent(long *evcode, long *param1,
 			long *param2, bool *got) = 0;
 
 // Start:	Add:	T.Imoto
-	virtual const wchar_t* __stdcall FreeEventParams(long evcode, long param1, long param2) = 0;
+	virtual void __stdcall FreeEventParams(long evcode, long param1, long param2) = 0;
 
-	virtual const wchar_t* __stdcall Rewind() = 0;
-	virtual const wchar_t* __stdcall SetFrame( int f ) = 0;
-	virtual const wchar_t* __stdcall GetFrame( int *f ) = 0;
-	virtual const wchar_t* __stdcall GetFPS( double *f ) = 0;
-	virtual const wchar_t* __stdcall GetNumberOfFrame( int *f ) = 0;
-	virtual const wchar_t* __stdcall GetTotalTime( __int64 *t ) = 0;
+	virtual void __stdcall Rewind() = 0;
+	virtual void __stdcall SetFrame( int f ) = 0;
+	virtual void __stdcall GetFrame( int *f ) = 0;
+	virtual void __stdcall GetFPS( double *f ) = 0;
+	virtual void __stdcall GetNumberOfFrame( int *f ) = 0;
+	virtual void __stdcall GetTotalTime( __int64 *t ) = 0;
 	
-	virtual const wchar_t* __stdcall GetVideoSize( long *width, long *height ) = 0;
-	virtual const wchar_t* __stdcall GetFrontBuffer( BYTE **buff ) = 0;
-	virtual const wchar_t* __stdcall SetVideoBuffer( BYTE *buff1, BYTE *buff2, long size ) = 0;
+	virtual void __stdcall GetVideoSize( long *width, long *height ) = 0;
+	virtual void __stdcall GetFrontBuffer( BYTE **buff ) = 0;
+	virtual void __stdcall SetVideoBuffer( BYTE *buff1, BYTE *buff2, long size ) = 0;
 // End:	Add:	T.Imoto
 };
 //---------------------------------------------------------------------------
 
 //---------------------------------------------------------------------------
 typedef void (__stdcall *tGetAPIVersion)(DWORD *version);
-typedef const wchar_t*  (__stdcall *tGetVideoOverlayObject)(
+typedef void  (__stdcall *tGetVideoOverlayObject)(
 	HWND callbackwin, IStream *stream, const wchar_t * streamname,
 	const wchar_t *type, unsigned __int64 size, iTVPVideoOverlay **out);
 //---------------------------------------------------------------------------

@@ -52,15 +52,15 @@ public:
 	tTVPDSLayerVideo();
 	virtual ~tTVPDSLayerVideo();
 
-	virtual const wchar_t* __stdcall BuildGraph( HWND callbackwin, IStream *stream,
+	virtual void __stdcall BuildGraph( HWND callbackwin, IStream *stream,
 		const wchar_t * streamname, const wchar_t *type, unsigned __int64 size );
 
 	virtual void __stdcall ReleaseAll();
 
-	virtual const wchar_t* __stdcall GetFrontBuffer( BYTE **buff );
-	virtual const wchar_t* __stdcall SetVideoBuffer( BYTE *buff1, BYTE *buff2, long size );
+	virtual void __stdcall GetFrontBuffer( BYTE **buff );
+	virtual void __stdcall SetVideoBuffer( BYTE *buff1, BYTE *buff2, long size );
 
-	virtual const wchar_t* __stdcall GetVideoSize( long *width, long *height );
+	virtual void __stdcall GetVideoSize( long *width, long *height );
 	virtual HRESULT __stdcall GetAvgTimePerFrame( REFTIME *pAvgTimePerFrame );
 };
 
