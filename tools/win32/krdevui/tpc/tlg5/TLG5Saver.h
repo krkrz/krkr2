@@ -2,7 +2,7 @@
 #ifndef TLG5Saver_H
 #define TLG5Saver_H
 //---------------------------------------------------------------------------
-void SaveTLG5(Graphics::TBitmap *in, AnsiString outfn);
+void SaveTLG5(Graphics::TBitmap *in, TStream *out);
 //---------------------------------------------------------------------------
 #endif
 //---------------------------------------------------------------------------

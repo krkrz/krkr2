@@ -1,11 +1,11 @@
 object TPCMainForm: TTPCMainForm
-  Left = 23
-  Top = 21
+  Left = 186
+  Top = 6
   ActiveControl = CloseButton
   BorderStyle = bsDialog
   Caption = '画像フォーマットコンバータ'
-  ClientHeight = 382
-  ClientWidth = 547
+  ClientHeight = 390
+  ClientWidth = 546
   Color = clBtnFace
   Font.Charset = SHIFTJIS_CHARSET
   Font.Color = clWindowText
@@ -26,23 +26,23 @@ object TPCMainForm: TTPCMainForm
     Caption = '変換したいファイルをこのウィンドウにドロップしてください'
   end
   object TranspOuputFormatGroupBox: TGroupBox
-    Left = 248
+    Left = 144
     Top = 32
-    Width = 289
-    Height = 201
-    Caption = '透過情報を持った画像の出力形式(&F)'
-    TabOrder = 1
+    Width = 393
+    Height = 209
+    Caption = '透明部分のある画像(&F)'
+    TabOrder = 2
     object TranspMainFormatLabel: TLabel
-      Left = 24
-      Top = 116
+      Left = 232
+      Top = 28
       Width = 75
       Height = 12
       Caption = 'メイン形式(&C) :'
       FocusControl = TranspMainFormatComboBox
     end
     object TranspMaskFormatLabel: TLabel
-      Left = 24
-      Top = 139
+      Left = 232
+      Top = 75
       Width = 79
       Height = 12
       Caption = 'マスク形式(&M) :'
@@ -50,7 +50,7 @@ object TPCMainForm: TTPCMainForm
     end
     object TranspFullTranspColorMethodLabel: TLabel
       Left = 16
-      Top = 168
+      Top = 176
       Width = 146
       Height = 12
       Caption = '完全透明部分の色情報(&U) : '
@@ -59,18 +59,18 @@ object TPCMainForm: TTPCMainForm
     object TranspBMPFormatRadioButton: TRadioButton
       Left = 16
       Top = 24
-      Width = 257
+      Width = 193
       Height = 17
-      Caption = '32bit B&MP (メイン+マスク)'
+      Caption = 'αチャンネル付き 32bit B&MP'
       TabOrder = 0
       OnClick = TranspBMPFormatRadioButtonClick
     end
     object TranspPNGFormatRadioButton: TRadioButton
       Left = 16
       Top = 40
-      Width = 257
+      Width = 161
       Height = 17
-      Caption = 'αチャネル付き P&NG (メイン+マスク)'
+      Caption = 'αチャネル付き P&NG'
       Checked = True
       TabOrder = 1
       TabStop = True
@@ -79,15 +79,15 @@ object TPCMainForm: TTPCMainForm
     object TranspSeparatedFormatRadioButton: TRadioButton
       Left = 16
       Top = 88
-      Width = 257
+      Width = 153
       Height = 17
       Caption = 'メイン/マスク分離形式(&S)'
       TabOrder = 4
       OnClick = TranspSeparatedFormatRadioButtonClick
     end
     object TranspMainFormatComboBox: TComboBox
-      Left = 112
-      Top = 112
+      Left = 320
+      Top = 24
       Width = 57
       Height = 20
       Style = csDropDownList
@@ -100,8 +100,8 @@ object TPCMainForm: TTPCMainForm
         'PNG')
     end
     object TranspMaskFormatComboBox: TComboBox
-      Left = 112
-      Top = 135
+      Left = 320
+      Top = 71
       Width = 57
       Height = 20
       Style = csDropDownList
@@ -114,31 +114,31 @@ object TPCMainForm: TTPCMainForm
         'PNG')
     end
     object TranspMainJPEGOptionButton: TButton
-      Left = 176
-      Top = 112
-      Width = 97
+      Left = 304
+      Top = 48
+      Width = 73
       Height = 20
-      Caption = 'JPEGオプション ...'
+      Caption = 'JPEG設定 ...'
       TabOrder = 6
       OnClick = TranspMainJPEGOptionButtonClick
     end
     object TranspMaskJPEGOptionButton: TButton
-      Left = 176
-      Top = 135
-      Width = 97
+      Left = 304
+      Top = 95
+      Width = 73
       Height = 20
-      Caption = 'JPEGオプション ...'
+      Caption = 'JPEG設定 ...'
       TabOrder = 8
       OnClick = TranspMaskJPEGOptionButtonClick
     end
     object TranspFullTranspColorMethodComboBox: TComboBox
       Left = 176
-      Top = 164
+      Top = 172
       Width = 97
       Height = 20
       Style = csDropDownList
       ItemHeight = 12
-      TabOrder = 9
+      TabOrder = 11
       Items.Strings = (
         '除去'
         'そのまま'
@@ -151,29 +151,55 @@ object TPCMainForm: TTPCMainForm
     object TranspTLG5FormatRadioButton: TRadioButton
       Left = 16
       Top = 56
-      Width = 257
+      Width = 153
       Height = 17
-      Caption = 'αチャネル付き T&LG5 (メイン+マスク)'
+      Caption = 'αチャネル付き T&LG5'
       TabOrder = 2
       OnClick = TranspTLG5FormatRadioButtonClick
     end
     object TranspTLG6FormatRadioButton: TRadioButton
       Left = 16
       Top = 72
-      Width = 257
+      Width = 145
       Height = 17
-      Caption = 'αチャネル付き TL&G6 (メイン+マスク)'
+      Caption = 'αチャネル付き TLG&6'
       TabOrder = 3
       OnClick = TranspTLG6FormatRadioButtonClick
+    end
+    object TranspOutputAddAlphaFormatCheckBox: TCheckBox
+      Left = 16
+      Top = 152
+      Width = 353
+      Height = 17
+      Caption = 'ltAddAlpha形式で出力する(&A)'
+      TabOrder = 10
+      OnClick = TranspOutputAddAlphaFormatCheckBoxClick
+    end
+    object Bar1: TPanel
+      Left = 8
+      Top = 128
+      Width = 372
+      Height = 2
+      BevelOuter = bvLowered
+      TabOrder = 12
+    end
+    object TranspAssumeInputIsAddAlphaCheckBox: TCheckBox
+      Left = 16
+      Top = 136
+      Width = 353
+      Height = 17
+      Caption = '入力画像をltAddAlpha形式であるとみなす(&D)'
+      TabOrder = 9
+      OnClick = TranspAssumeInputIsAddAlphaCheckBoxClick
     end
   end
   object OutputFolderGroup: TGroupBox
     Left = 8
-    Top = 240
+    Top = 248
     Width = 529
     Height = 105
     Caption = '出力フォルダ(&O)'
-    TabOrder = 2
+    TabOrder = 3
     object SameFolderRadioButton: TRadioButton
       Left = 16
       Top = 24
@@ -197,7 +223,7 @@ object TPCMainForm: TTPCMainForm
     object OutputFolderEdit: TEdit
       Left = 160
       Top = 46
-      Width = 289
+      Width = 297
       Height = 20
       Font.Charset = SHIFTJIS_CHARSET
       Font.Color = clWindowText
@@ -209,7 +235,7 @@ object TPCMainForm: TTPCMainForm
       TabOrder = 2
     end
     object OutputFolderRefButton: TButton
-      Left = 456
+      Left = 464
       Top = 46
       Width = 49
       Height = 20
@@ -228,25 +254,25 @@ object TPCMainForm: TTPCMainForm
   end
   object CloseButton: TButton
     Left = 460
-    Top = 352
+    Top = 360
     Width = 75
     Height = 21
     Cancel = True
     Caption = '閉じる(&X)'
-    TabOrder = 3
+    TabOrder = 5
     OnClick = CloseButtonClick
   end
   object OpaqueOutputFormatGroupBox: TGroupBox
     Left = 8
     Top = 32
-    Width = 233
-    Height = 201
-    Caption = '透過情報を持たない画像の出力形式(&Q)'
-    TabOrder = 0
+    Width = 129
+    Height = 209
+    Caption = '不透明な画像(&Q)'
+    TabOrder = 1
     object OpaqueBMPFormatRadioButton: TRadioButton
       Left = 16
       Top = 24
-      Width = 113
+      Width = 97
       Height = 17
       Caption = '24bit &BMP'
       TabOrder = 0
@@ -255,7 +281,7 @@ object TPCMainForm: TTPCMainForm
     object OpaquePNGFormatRadioButton: TRadioButton
       Left = 16
       Top = 40
-      Width = 113
+      Width = 97
       Height = 17
       Caption = '&PNG'
       Checked = True
@@ -266,7 +292,7 @@ object TPCMainForm: TTPCMainForm
     object OpaqueTLG5FormatRadioButton: TRadioButton
       Left = 16
       Top = 56
-      Width = 113
+      Width = 97
       Height = 17
       Caption = '&TLG5'
       TabOrder = 2
@@ -281,15 +307,6 @@ object TPCMainForm: TTPCMainForm
       TabOrder = 4
       OnClick = OpaqueJPEGFormatRadioButtonClick
     end
-    object OpaqueJPEGOptionButton: TButton
-      Left = 120
-      Top = 88
-      Width = 97
-      Height = 20
-      Caption = 'JPEGオプション ...'
-      TabOrder = 5
-      OnClick = OpaqueJPEGOptionButtonClick
-    end
     object OpaqueTLG6FormatRadioButton: TRadioButton
       Left = 16
       Top = 72
@@ -299,10 +316,19 @@ object TPCMainForm: TTPCMainForm
       TabOrder = 3
       OnClick = OpaqueTLG6FormatRadioButtonClick
     end
+    object OpaqueJPEGOptionButton: TButton
+      Left = 32
+      Top = 109
+      Width = 73
+      Height = 20
+      Caption = 'JPEG設定 ...'
+      TabOrder = 5
+      OnClick = OpaqueJPEGOptionButtonClick
+    end
   end
   object DoNotShowLogWhenNoErrorCheckBox: TCheckBox
     Left = 8
-    Top = 353
+    Top = 361
     Width = 361
     Height = 17
     Caption = 'エラーが発生しなかった場合はログを表示しない(&K)'
@@ -314,7 +340,7 @@ object TPCMainForm: TTPCMainForm
     Width = 129
     Height = 17
     Caption = 'オプションを表示(&V)'
-    TabOrder = 5
+    TabOrder = 0
     OnClick = ExpandButtonClick
   end
 end

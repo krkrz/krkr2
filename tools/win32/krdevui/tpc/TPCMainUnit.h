@@ -13,6 +13,7 @@
 #include <Controls.hpp>
 #include <StdCtrls.hpp>
 #include <Forms.hpp>
+#include <ExtCtrls.hpp>
 //---------------------------------------------------------------------------
 class TTPCMainForm : public TForm
 {
@@ -43,11 +44,14 @@ __published:	// IDE 管理のコンポーネント
 	TRadioButton *OpaquePNGFormatRadioButton;
 	TRadioButton *OpaqueTLG5FormatRadioButton;
 	TRadioButton *OpaqueJPEGFormatRadioButton;
-	TButton *OpaqueJPEGOptionButton;
 	TCheckBox *DoNotShowLogWhenNoErrorCheckBox;
 	TRadioButton *OpaqueTLG6FormatRadioButton;
 	TRadioButton *TranspTLG6FormatRadioButton;
 	TCheckBox *ExpandButton;
+	TButton *OpaqueJPEGOptionButton;
+	TCheckBox *TranspOutputAddAlphaFormatCheckBox;
+	TPanel *Bar1;
+	TCheckBox *TranspAssumeInputIsAddAlphaCheckBox;
 	void __fastcall TranspBMPFormatRadioButtonClick(TObject *Sender);
 	void __fastcall TranspPNGFormatRadioButtonClick(TObject *Sender);
 	void __fastcall TranspSeparatedFormatRadioButtonClick(TObject *Sender);
@@ -70,6 +74,8 @@ __published:	// IDE 管理のコンポーネント
 	void __fastcall OpaqueTLG6FormatRadioButtonClick(TObject *Sender);
 	void __fastcall TranspTLG6FormatRadioButtonClick(TObject *Sender);
 	void __fastcall ExpandButtonClick(TObject *Sender);
+	void __fastcall TranspOutputAddAlphaFormatCheckBoxClick(TObject *Sender);
+	void __fastcall TranspAssumeInputIsAddAlphaCheckBoxClick(TObject *Sender);
 private:	// ユーザー宣言
 	int TranspMainJPEGQuality;
 	int TranspMaskJPEGQuality;
