@@ -321,6 +321,21 @@ static tjs_uint32 TVP_INLINE_FUNC TVPAdditiveBlend_a_a(tjs_uint32 dest, tjs_uint
 			(((dest & 0xff00)*sopa >> 8) & 0xff00), src);
 }
 
+static tjs_uint32 TVP_INLINE_FUNC TVPAdditiveBlend_a_ca(tjs_uint32 dest, tjs_uint32 sopa, tjs_uint32 sopa_inv, tjs_uint32 src)
+{
+	/*
+		Di = sat(Si, (1-Sa)*Di)
+		Da = Sa + Da - SaDa
+	*/
+
+	tjs_uint32 dopa = dest >> 24;
+	tjs_uint32 dopa = dopa + sopa - (dopa*sopa >> 8);
+	dopa -= (dopa >> 8); // adjust alpha
+	return (dopa << 24) + 
+		TVPSaturatedAdd((((dest & 0xff00ff)*sopa_inv >> 8) & 0xff00ff) +
+			(((dest & 0xff00)*sopa_inv >> 8) & 0xff00), src);
+}
+
 static tjs_uint32 TVP_INLINE_FUNC TVPAdditiveBlend_a_a_o(tjs_uint32 dest, tjs_uint32 src, tjs_int opa)
 {
 	src = (((src & 0xff00ff)*opa >> 8) & 0xff00ff) + (((src >> 8) & 0xff00ff)*opa & 0xff00ff00);
@@ -357,6 +372,17 @@ static tjs_uint32 TVP_INLINE_FUNC TVPBlendARGB(tjs_uint32 a, tjs_uint32 b, tjs_i
 	return t + 
 		((b2 + (((a & 0xff00ff00)>>8) - b2) * ratio) & 0xff00ff00);
 }
+
+
+
+static tjs_uint32 TVP_INLINE_FUNC TVPAlphaToAdditiveAlpha(tjs_uint32 a)
+{
+	tjs_int opa = a >> 24;
+	return (((((a & 0x00ff00) * opa) & 0x00ff0000) +
+			(((a & 0xff00ff) * opa) & 0xff00ff00) ) >> 8) + (a & 0xff000000);
+
+}
+
 
 /*export*/
 TVP_GL_FUNC_DECL(void, TVPAlphaBlend_c, (tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len))
@@ -1108,14 +1134,6 @@ TVP_GL_FUNC_DECL(void, TVPConvertAdditiveAlphaToAlpha_c, (const tjs_uint32 *buf,
   }
 }
 
-
-static tjs_uint32 TVP_INLINE_FUNC TVPAlphaToAdditiveAlpha(tjs_uint32 a)
-{
-	tjs_int opa = a >> 24;
-	return (((((a & 0x00ff00) * opa) & 0x00ff0000) +
-			(((a & 0xff00ff) * opa) & 0xff00ff00) ) >> 8) + (a & 0xff000000);
-
-}
 
 /*export*/
 TVP_GL_FUNC_DECL(void, TVPConvertAlphaToAdditiveAlpha_c, (const tjs_uint32 *buf, tjs_int len))
@@ -5398,67 +5416,30 @@ TVP_GL_FUNC_DECL(void, TVPConstColorAlphaBlend_d_c, (tjs_uint32 *dest, tjs_int l
 
 /*export*/
 TVP_GL_FUNC_DECL(void, TVPConstColorAlphaBlend_a_c, (tjs_uint32 *dest, tjs_int len, tjs_uint32 color, tjs_int opa))
-{/*YET NOT IMPLEMENTED*/
-	tjs_uint32 d1, s1, d, dopa;
-	tjs_int alpha;
-	s1 = color & 0xff00ff;
-	color = color & 0xff00;
-  if(len > 0)
-  {
-	int lu_n = (len + (4-1)) / 4;
-	switch(len % 4)
+{
+	tjs_uint32 src = TVPAlphaToAdditiveAlpha((opa << 24) + (color&0xffffff));
+	tjs_uint32 opa_inv = ~opa;
 	{
-	case 0: do { {
-	d = *dest;
-	dopa = d>>24;
-	alpha = TVPOpacityOnOpacityTable[dopa + (opa<<8)];
-	d1 = d & 0xff00ff;
-	d1 = ((d1 + ((s1 - d1) * alpha >> 8)) & 0xff00ff) |
-		((255-((255-dopa)*(255-opa)>>8)) << 24);
-	d &= 0xff00;
-	*dest = d1 | ((d + ((color - d) * alpha >> 8)) & 0xff00);
-	dest ++;
-}
-;
-	case 3: {
-	d = *dest;
-	dopa = d>>24;
-	alpha = TVPOpacityOnOpacityTable[dopa + (opa<<8)];
-	d1 = d & 0xff00ff;
-	d1 = ((d1 + ((s1 - d1) * alpha >> 8)) & 0xff00ff) |
-		((255-((255-dopa)*(255-opa)>>8)) << 24);
-	d &= 0xff00;
-	*dest = d1 | ((d + ((color - d) * alpha >> 8)) & 0xff00);
-	dest ++;
-}
-;
-	case 2: {
-	d = *dest;
-	dopa = d>>24;
-	alpha = TVPOpacityOnOpacityTable[dopa + (opa<<8)];
-	d1 = d & 0xff00ff;
-	d1 = ((d1 + ((s1 - d1) * alpha >> 8)) & 0xff00ff) |
-		((255-((255-dopa)*(255-opa)>>8)) << 24);
-	d &= 0xff00;
-	*dest = d1 | ((d + ((color - d) * alpha >> 8)) & 0xff00);
-	dest ++;
-}
-;
-	case 1: {
-	d = *dest;
-	dopa = d>>24;
-	alpha = TVPOpacityOnOpacityTable[dopa + (opa<<8)];
-	d1 = d & 0xff00ff;
-	d1 = ((d1 + ((s1 - d1) * alpha >> 8)) & 0xff00ff) |
-		((255-((255-dopa)*(255-opa)>>8)) << 24);
-	d &= 0xff00;
-	*dest = d1 | ((d + ((color - d) * alpha >> 8)) & 0xff00);
-	dest ++;
-}
-;
-	   } while(-- lu_n);
+		int ___index = 0;
+		len -= (4-1);
+
+		while(___index < len)
+		{
+	dest[(___index+0)] = TVPAdditiveBlend_a_ca(dest[(___index+0)], opa, opa_inv, src);
+	dest[(___index+1)] = TVPAdditiveBlend_a_ca(dest[(___index+1)], opa, opa_inv, src);
+	dest[(___index+2)] = TVPAdditiveBlend_a_ca(dest[(___index+2)], opa, opa_inv, src);
+	dest[(___index+3)] = TVPAdditiveBlend_a_ca(dest[(___index+3)], opa, opa_inv, src);
+			___index += 4;
+		}
+
+		len += (4-1);
+
+		while(___index < len)
+		{
+	dest[___index] = TVPAdditiveBlend_a_ca(dest[___index], opa, opa_inv, src);
+			___index ++;
+		}
 	}
-  }
 }
 
 /*export*/
