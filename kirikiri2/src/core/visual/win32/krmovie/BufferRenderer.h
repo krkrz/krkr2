@@ -89,6 +89,7 @@ private:
 	bool	m_IsBufferOwner[2];	//!< バッファがこのクラスに割り当てられたものかどうかを保持
 	int		m_FrontBuffer;		//!< 現在のフロントバッファがどちらかを保持
 	LONG	m_StartFrame;
+	LONG	m_StopFrame;
 
 	IMediaSeeking	*m_MediaSeeking;	//! DoRenderSample時にフレーム番号を得るためのIMediaSeekingインターフェイスへのポインタ
 

@@ -165,6 +165,8 @@ HRESULT TBufferRenderer::DoRenderSample( IMediaSample * pSample )
 	DWORD	*pBmpBuffer, *pTxtBuffer;	// Bitmap buffer, texture buffer
 	BYTE	*pTxtOrgPos;
 
+//	if( m_bEOS ) return S_OK;
+
 	CAutoLock cAutoLock(&m_BufferLock);	// クリティカルセクション
 
 	// Get the video bitmap buffer
@@ -183,6 +185,8 @@ HRESULT TBufferRenderer::DoRenderSample( IMediaSample * pSample )
 	{
 		EventParam1 = (LONG)TimeStart;
 	}
+	if( m_StopFrame && EventParam1 >= m_StopFrame )
+		return S_OK;	// 再生しないフレーム
 
 	if( pTxtBuffer == pBmpBuffer )	// 自前のアロケーターが使われている
 	{
@@ -587,22 +591,25 @@ void TBufferRenderer::OnRenderStart( IMediaSample *pMediaSample )
 
 	HRESULT		hr;
 	bool		bGetTime = false;
-	LONGLONG	Current = 0;
+	LONGLONG	Current = 0, Stop = 0;
 	IMediaSeeking	*mediaSeeking = NULL;
 	if( GetMediaPositionInterface( IID_IMediaSeeking, (void**)&mediaSeeking) == S_OK )
 	{
 		GUID	Format;
 		if( SUCCEEDED(hr = mediaSeeking->GetTimeFormat( &Format ) ) )
 		{
-			if( SUCCEEDED(hr = mediaSeeking->GetCurrentPosition( &Current )) )
+			if( SUCCEEDED(hr = mediaSeeking->GetCurrentPosition( &Current )) &&
+				SUCCEEDED(hr = mediaSeeking->GetStopPosition( &Stop )) )
 			{
 				if( IsEqualGUID( TIME_FORMAT_MEDIA_TIME, Format ) )
 				{
 					double	renderTime = Current / 10000000.0;
+					double	stopTime = Stop / 10000000.0;
 					REFTIME	AvgTimePerFrame;	// REFTIME :  秒数を示す小数を表す倍精度浮動小数点数。
 					if( SUCCEEDED( hr = get_AvgTimePerFrame( &AvgTimePerFrame ) ) )
 					{
 						Current = (LONGLONG)(renderTime / AvgTimePerFrame + 0.5);
+						Stop = (LONGLONG)(stopTime / AvgTimePerFrame + 0.5);
 						bGetTime = true;
 					}
 				}
@@ -621,11 +628,13 @@ void TBufferRenderer::OnRenderStart( IMediaSample *pMediaSample )
 	{
 		TimeStart = m_StartFrame + Current;
 		TimeEnd = m_StartFrame + Current;
+		m_StopFrame = m_StartFrame + Stop;
 	}
 	else
 	{
 		TimeStart = m_StartFrame + m_cFramesDrawn + m_cFramesDropped;;
 		TimeEnd = m_StartFrame + m_cFramesDrawn + m_cFramesDropped;;
+		m_StopFrame = 0;
 	}
 	pMediaSample->SetMediaTime( &TimeStart, &TimeEnd );
 }
