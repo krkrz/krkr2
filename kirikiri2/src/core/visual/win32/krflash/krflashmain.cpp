@@ -259,6 +259,21 @@ void __stdcall tTVPFlashOverlay::SetVideoBuffer( BYTE *buff1, BYTE *buff2, long 
 	if(Shutdown) return;
 	TVPThrowExceptionMessage(L"SetVideoBuffer: Currently not supported");
 }
+void __stdcall tTVPFlashOverlay::SetStopFrame( int frame )
+{
+	if(Shutdown) return;
+	TVPThrowExceptionMessage(L"SetStopFrame: Currently not supported");
+}
+void __stdcall tTVPFlashOverlay::GetStopFrame( int *frame )
+{
+	if(Shutdown) return;
+	TVPThrowExceptionMessage(L"GetStopFrame: Currently not supported");
+}
+void __stdcall tTVPFlashOverlay::SetDefaultStopFrame()
+{
+	if(Shutdown) return;
+	TVPThrowExceptionMessage(L"SetDefaultStopFrame: Currently not supported");
+}
 // End:	Add:	T.Imoto
 
 
