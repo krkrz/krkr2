@@ -9659,7 +9659,7 @@ void TJS_INTF_METHOD tTJSNI_Font::Invalidate()
 tjs_uint32 tTJSNC_Font::ClassID = -1;
 tTJSNC_Font::tTJSNC_Font() : tTJSNativeClass(TJS_W("Font"))
 {
-	TJS_BEGIN_NATIVE_MEMBERS(Layer) // constructor
+	TJS_BEGIN_NATIVE_MEMBERS(Font) // constructor
 	TJS_DECL_EMPTY_FINALIZE_METHOD
 //----------------------------------------------------------------------
 TJS_BEGIN_NATIVE_CONSTRUCTOR_DECL(/*var.name*/_this, /*var.type*/tTJSNI_Font,
