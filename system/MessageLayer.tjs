@@ -230,6 +230,7 @@ class MessageLayer extends KAGLayer
 	// perl スクリプトとしてこのスクリプトを実行する必要があります。
 	// ( 末端の perl スクリプトで処理 )
 
+	var layerType = ltAddAlpha; // レイヤタイプ
 	/*CS*/var frameGraphic = ""; // フレーム画像ファイル名
 	/*CS*/var frameKey = clNone; // フレーム画像キー
 	/*CS*/var frameColor = 0x000000; // フレームの色
@@ -356,7 +357,6 @@ class MessageLayer extends KAGLayer
 		// do_config : コンフィギュレーションを行うか
 		super.KAGLayer(...);
 
-		type = ltAddAlpha;
 
 		this.id = id;
 		this.name = name;
@@ -387,6 +387,9 @@ class MessageLayer extends KAGLayer
 		// config 用一時変数の消去
 		delete ml; delete mt; delete mw; delete mh;
 
+		// レイヤタイプの設定
+		type = layerType;
+
 		// 当たり判定初期化
 		hitType = htMask;
 		hitThreshold = 0; // マウスメッセージは全域不透過
@@ -396,12 +399,12 @@ class MessageLayer extends KAGLayer
 		lineLayer.hitType = htMask;
 		lineLayer.hitThreshold = 256; // マウスメッセージは全域透過
 		lineLayer.face = dfAuto;
-		lineLayer.type = ltAddAlpha;
+		lineLayer.type = layerType;
 		lineLayer.name = "行描画用浮遊メッセージレイヤ";
 
 		// リンクをハイライト表示するためのレイヤ
 		highlightLayer = new global.KAGLayer(window, this);
-		highlightLayer.type = ltAddAlpha;
+		highlightLayer.type = layerType;
 		highlightLayer.face = dfAuto;
 		highlightLayer.hitType = htProvince;
 			// 領域画像で当たり判定を行う
