@@ -87,11 +87,10 @@ tjs_error TJS_INTF_METHOD
 		tjs_uint32 *hint, tTJSVariant *result,
 		tjs_int numparams, tTJSVariant **param,	iTJSDispatch2 *objthis)
 {
-	if(membername) return tTJSDispatch::FuncCall(flag, membername, hint,
+	if(membername) return inherited::FuncCall(flag, membername, hint,
 		result, numparams, param, objthis);
 	if(!objthis) return TJS_E_NATIVECLASSCRASH;
-//	if(!TJSIsObjectValid(IsValid(0, NULL, NULL, objthis)))
-//		return TJS_E_INVALIDOBJECT;
+
 	if(result) result->Clear();
 	tjs_error er;
 	try
@@ -165,14 +164,12 @@ tjs_error TJS_INTF_METHOD
 tTJSNativeClassProperty::PropGet(tjs_uint32 flag, const tjs_char * membername,
 	tjs_uint32 *hint, tTJSVariant *result, iTJSDispatch2 *objthis)
 {
-	if(membername) return tTJSDispatch::PropGet(flag, membername, hint,
+	if(membername) return inherited::PropGet(flag, membername, hint,
 		result, objthis);
 	if(!objthis) return TJS_E_NATIVECLASSCRASH;
-//	if(!TJSIsObjectValid(IsValid(0, NULL, NULL, objthis)))
-//		return TJS_E_INVALIDOBJECT;
+
 	if(!result) return TJS_E_FAIL;
-// 	AddRef();
-//	objthis->AddRef();
+
 	tjs_error er;
 	try
 	{
@@ -180,12 +177,9 @@ tTJSNativeClassProperty::PropGet(tjs_uint32 flag, const tjs_char * membername,
 	}
 	catch(...)
 	{
-//		Release();
-//		objthis->Release();
 		throw;
 	}
-//	Release();
-//	objthis->Release();
+
 	return er;
 }
 //---------------------------------------------------------------------------
@@ -193,14 +187,12 @@ tjs_error TJS_INTF_METHOD
 tTJSNativeClassProperty::PropSet(tjs_uint32 flag, const tjs_char *membername,
 	tjs_uint32 *hint, const tTJSVariant *param, iTJSDispatch2 *objthis)
 {
-	if(membername) return tTJSDispatch::PropSet(flag, membername, hint,
+	if(membername) return inherited::PropSet(flag, membername, hint,
 		param, objthis);
 	if(!objthis) return TJS_E_NATIVECLASSCRASH;
-//	if(!TJSIsObjectValid(IsValid(0, NULL, NULL, objthis)))
-//		return TJS_E_INVALIDOBJECT;
+
 	if(!param) return TJS_E_FAIL;
-//	AddRef();
-//	objthis->AddRef();
+
 	tjs_error er;
 	try
 	{
@@ -208,12 +200,9 @@ tTJSNativeClassProperty::PropSet(tjs_uint32 flag, const tjs_char *membername,
 	}
 	catch(...)
 	{
-//		Release();
-//		objthis->Release();
 		throw;
 	}
-//	Release();
-//	objthis->Release();
+
 	return er;
 }
 //---------------------------------------------------------------------------
@@ -221,10 +210,9 @@ tjs_error tTJSNativeClassProperty::DenyGet(tjs_uint32 flag,
 	const tjs_char * membername, tjs_uint32 *hint, tTJSVariant *result,
 	iTJSDispatch2 *objthis)
 {
-	if(membername) return tTJSDispatch::PropGet(flag, membername, hint,
+	if(membername) return inherited::PropGet(flag, membername, hint,
 		result, objthis);
-//	if(!TJSIsObjectValid(IsValid(0, NULL, NULL, objthis)))
-//		return TJS_E_INVALIDOBJECT;
+
 	return TJS_E_ACCESSDENYED;
 }
 //---------------------------------------------------------------------------
@@ -232,10 +220,9 @@ tjs_error tTJSNativeClassProperty::DenySet(tjs_uint32 flag,
 	const tjs_char *membername, tjs_uint32 *hint, const tTJSVariant *param,
 	iTJSDispatch2 *objthis)
 {
-	if(membername) return tTJSDispatch::PropSet(flag, membername, hint,
+	if(membername) return inherited::PropSet(flag, membername, hint,
 		param, objthis);
-//	if(!TJSIsObjectValid(IsValid(0, NULL, NULL, objthis)))
-//		return TJS_E_INVALIDOBJECT;
+
 	return TJS_E_ACCESSDENYED; 
 }
 //---------------------------------------------------------------------------
