@@ -4751,6 +4751,74 @@ EOF
 
 print FC <<EOF;
 /*export*/
+TVP_GL_FUNC_DECL(void, TVPInterpLinTransCopy_c, (tjs_uint32 *dest, tjs_int destlen, const tjs_uint32 *src, tjs_int sx, tjs_int sy, tjs_int stepx, tjs_int stepy, tjs_int srcpitch))
+{
+	/* bilinear interpolation version */
+	/* note that srcpitch unit is in byte */
+	destlen -= 1;
+	while(destlen > 0)
+	{
+		int blend_x, blend_y;
+		const tjs_uint32 *p0, *p1;
+
+		blend_x = (sx & 0xffff) >> 8;
+		blend_x += blend_x >> 7;
+		blend_y = (sy & 0xffff) >> 8;
+		blend_y += blend_y >> 7;
+		p0 = (const tjs_uint32*)((const tjs_uint8*)src + ((sy>>16)  )*srcpitch) + (sx>>16);
+		p1 = (const tjs_uint32*)((const tjs_uint8*)p0 + srcpitch);
+		dest[0] = TVPBlendARGB(
+			TVPBlendARGB(p0[0], p0[1], blend_x),
+			TVPBlendARGB(p1[0], p1[1], blend_x),
+				blend_y);
+		sx += stepx, sy += stepy;
+
+		blend_x = (sx & 0xffff) >> 8;
+		blend_x += blend_x >> 7;
+		blend_y = (sy & 0xffff) >> 8;
+		blend_y += blend_y >> 7;
+		p0 = (const tjs_uint32*)((const tjs_uint8*)src + ((sy>>16)  )*srcpitch) + (sx>>16);
+		p1 = (const tjs_uint32*)((const tjs_uint8*)p0 + srcpitch);
+		dest[1] = TVPBlendARGB(
+			TVPBlendARGB(p0[0], p0[1], blend_x),
+			TVPBlendARGB(p1[0], p1[1], blend_x),
+				blend_y);
+		sx += stepx, sy += stepy;
+
+		dest += 2;
+		destlen -= 2;
+	}
+
+	destlen += 1;
+
+	while(destlen > 0)
+	{
+		int blend_x, blend_y;
+		const tjs_uint32 *p0, *p1;
+
+		blend_x = (sx & 0xffff) >> 8;
+		blend_x += blend_x >> 7;
+		blend_y = (sy & 0xffff) >> 8;
+		blend_y += blend_y >> 7;
+		p0 = (const tjs_uint32*)((const tjs_uint8*)src + ((sy>>16)  )*srcpitch) + (sx>>16);
+		p1 = (const tjs_uint32*)((const tjs_uint8*)p0 + srcpitch);
+		dest[0] = TVPBlendARGB(
+			TVPBlendARGB(p0[0], p0[1], blend_x),
+			TVPBlendARGB(p1[0], p1[1], blend_x),
+				blend_y);
+		sx += stepx, sy += stepy;
+
+		dest ++;
+		destlen --;
+	}
+}
+
+EOF
+
+;#-----------------------------------------------------------------
+
+print FC <<EOF;
+/*export*/
 TVP_GL_FUNC_DECL(void, TVPLinTransColorCopy_c, (tjs_uint32 *dest, tjs_int destlen, const tjs_uint32 *src, tjs_int sx, tjs_int sy, tjs_int stepx, tjs_int stepy, tjs_int srcpitch))
 {
 	/* note that srcpitch unit is in byte */
