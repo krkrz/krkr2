@@ -722,16 +722,6 @@ tjs_error iTJSDispatch2::CreateNew(<r/>
 
 
 
-<para>
-<ptitle>GetSuperClass</ptitle>
-　iTJSDispatch2::GetSuperClass の仮想関数は将来の為に予約されています。このメソッドを使用しないでください ( 実装する場合は常に TJS_E_NOTIMPL を返してください)。<r/>
-</para>
-
-
-
-
-
-
 
 <para>
 <ptitle>IsInstanceOf</ptitle>
