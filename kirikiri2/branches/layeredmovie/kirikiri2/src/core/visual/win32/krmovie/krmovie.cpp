@@ -13,14 +13,17 @@
 
 //---------------------------------------------------------------------------
 
-#include <objidl.h>
-#include <streams.h>
+//#include <objidl.h>
+//#include <streams.h>
+
+#include "dsoverlay.h"
+#include "dslayerd.h"
+#include "..\krmovie.h"
+
 #include "asyncio.h"
 #include "asyncrdr.h"
 
 
-#include "..\krmovie.h"
-#include "dsoverlay.h"
 
 //---------------------------------------------------------------------------
 // DllMain
@@ -517,7 +520,7 @@ const wchar_t*  CreateVideoOverlay(HWND callbackwin, IStream *stream,
 //---------------------------------------------------------------------------
 #endif
 
-
+#include "..\voMode.h"
 //---------------------------------------------------------------------------
 // GetVideoOverlayObject
 //---------------------------------------------------------------------------
@@ -525,11 +528,29 @@ const wchar_t* __stdcall GetVideoOverlayObject(
 	HWND callbackwin, IStream *stream, const wchar_t * streamname,
 	const wchar_t *type, unsigned __int64 size, iTVPVideoOverlay **out)
 {
-	tTVPDSVideoOverlay	*vid;
-	vid = new tTVPDSVideoOverlay;
-	*out = vid;
-	if( vid )
-		return vid->BuildGraph( callbackwin, stream, streamname, type, size );
+	*out = new tTVPDSVideoOverlay;
+
+	if( *out )
+		return (*out)->BuildGraph( callbackwin, stream, streamname, type, size );
+	else
+		return NULL;
+}
+const wchar_t* __stdcall GetVideoOverlayObjectByParam( struct tTVPGetVideoOverlayObjectParam *param )
+{
+	if( param == NULL )
+		return L"Parameter is NULL.";
+
+	if( param->mode == vomOverlay )
+	{
+		*(param->out) = new tTVPDSVideoOverlay;
+	}
+	else
+	{
+		*(param->out)= new tTVPDSLayerVideo;
+	}
+
+	if( *(param->out))
+		return (*(param->out))->BuildGraph( param->callbackwin, param->stream, param->streamname, param->type, param->size );
 	else
 		return NULL;
 }

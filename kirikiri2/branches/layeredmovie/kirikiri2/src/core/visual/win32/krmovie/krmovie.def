@@ -1,3 +1,4 @@
 EXPORTS
 	GetAPIVersion
 	GetVideoOverlayObject
+	GetVideoOverlayObjectByParam
