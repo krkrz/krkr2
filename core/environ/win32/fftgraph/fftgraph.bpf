@@ -1,0 +1,9 @@
+USEDEF("fftgraph.def");
+USEUNIT("..\..\..\base\win32\plugin_kit\tp_stub.cpp");
+USERES("fftgraph.res");
+USEUNIT("Main.cpp");
+USEUNIT("fftsg.c");
+//---------------------------------------------------------------------------
+This file is used by the project manager only and should be treated like the project file
+
+DllEntryPoint

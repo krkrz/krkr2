@@ -1,0 +1,14 @@
+var start = System.getTickCount();
+for(var i = 0; i<20; i++)
+{
+	Scripts.execStorage("../kag3/system/MainWindow.tjs");
+}
+System.inform("elapsed : " + (System.getTickCount() - start) );
+
+Scripts.dump();
+
+// 9/25 start (debug) 3314
+//(d) 3174
+//(d) 3064
+//(d) 3024
+// 9/25 end (release) 2093
