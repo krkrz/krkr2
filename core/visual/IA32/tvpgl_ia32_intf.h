@@ -58,8 +58,8 @@ extern void TVPGL_IA32_Init();
 /*]*/
 /*[*/
 /*]*/
-TVP_GL_IA32_FUNC_EXTERN_DECL(tjs_int,  TVPAdditiveAlphaBlend_mmx_a,  (tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len));
-TVP_GL_IA32_FUNC_EXTERN_DECL(tjs_int,  TVPAdditiveAlphaBlend_emmx_a,  (tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len));
+TVP_GL_IA32_FUNC_EXTERN_DECL(void,  TVPAdditiveAlphaBlend_mmx_a,  (tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len));
+TVP_GL_IA32_FUNC_EXTERN_DECL(void,  TVPAdditiveAlphaBlend_emmx_a,  (tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len));
 /*[*/
 /*]*/
 TVP_GL_IA32_FUNC_EXTERN_DECL(void,  TVPAddBlend_mmx_a,  (tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len));
@@ -69,16 +69,16 @@ TVP_GL_IA32_FUNC_EXTERN_DECL(void,  TVPAddBlend_HDA_o_mmx_a,  (tjs_uint32 *dest,
 /*[*/
 /*]*/
 TVP_GL_IA32_FUNC_EXTERN_DECL(void,  TVPAlphaBlend_mmx_a,  (tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len));
-TVP_GL_IA32_FUNC_EXTERN_DECL(void,  TVPAlphaBlend_emmx_a,  (tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len));
 TVP_GL_IA32_FUNC_EXTERN_DECL(void,  TVPAlphaBlend_o_mmx_a,  (tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len, tjs_int opa));
-TVP_GL_IA32_FUNC_EXTERN_DECL(void,  TVPAlphaBlend_o_emmx_a,  (tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len, tjs_int opa));
 TVP_GL_IA32_FUNC_EXTERN_DECL(void,  TVPAlphaBlend_HDA_mmx_a,  (tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len));
-TVP_GL_IA32_FUNC_EXTERN_DECL(void,  TVPAlphaBlend_HDA_emmx_a,  (tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len));
 TVP_GL_IA32_FUNC_EXTERN_DECL(void,  TVPAlphaBlend_d_mmx_a,  (tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len));
-TVP_GL_IA32_FUNC_EXTERN_DECL(void,  TVPAlphaBlend_d_emmx_a,  (tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len));
 TVP_GL_IA32_FUNC_EXTERN_DECL(void,  TVPConstAlphaBlend_mmx_a,  (tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len, tjs_int opa));
-TVP_GL_IA32_FUNC_EXTERN_DECL(void,  TVPConstAlphaBlend_emmx_a,  (tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len, tjs_int opa));
 TVP_GL_IA32_FUNC_EXTERN_DECL(void,  TVPConstAlphaBlend_SD_mmx_a,  (tjs_uint32 *dest, const tjs_uint32 *src1, const tjs_uint32 *src2, tjs_int len, tjs_int opa));
+TVP_GL_IA32_FUNC_EXTERN_DECL(void,  TVPAlphaBlend_emmx_a,  (tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len));
+TVP_GL_IA32_FUNC_EXTERN_DECL(void,  TVPAlphaBlend_o_emmx_a,  (tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len, tjs_int opa));
+TVP_GL_IA32_FUNC_EXTERN_DECL(void,  TVPAlphaBlend_HDA_emmx_a,  (tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len));
+TVP_GL_IA32_FUNC_EXTERN_DECL(void,  TVPAlphaBlend_d_emmx_a,  (tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len));
+TVP_GL_IA32_FUNC_EXTERN_DECL(void,  TVPConstAlphaBlend_emmx_a,  (tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len, tjs_int opa));
 TVP_GL_IA32_FUNC_EXTERN_DECL(void,  TVPConstAlphaBlend_SD_emmx_a,  (tjs_uint32 *dest, const tjs_uint32 *src1, const tjs_uint32 *src2, tjs_int len, tjs_int opa));
 /*[*/
 /*]*/

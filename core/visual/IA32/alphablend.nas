@@ -4,8 +4,9 @@
 
 ; pixel alpha blender
 
-%include		"nasm.nah"
+%ifndef GEN_CODE
 
+%include		"nasm.nah"
 
 globaldef		TVPAlphaBlend_mmx_a
 globaldef		TVPAlphaBlend_emmx_a
@@ -22,9 +23,80 @@ globaldef		TVPConstAlphaBlend_SD_emmx_a
 externdef		TVPOpacityOnOpacityTable
 externdef		TVPNegativeMulTable
 
+
+%define GEN_CODE
+
+;--------------------------------------------------------------------
+; MMX stuff
+;--------------------------------------------------------------------
+;;[function_replace_by TVPCPUType & TVP_CPU_HAS_MMX] TVPAlphaBlend
+;;void, TVPAlphaBlend_mmx_a, (tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len)
+%define TVPAlphaBlend_name TVPAlphaBlend_mmx_a
+;--------------------------------------------------------------------
+;;[function_replace_by TVPCPUType & TVP_CPU_HAS_MMX] TVPAlphaBlend_o
+;;void, TVPAlphaBlend_o_mmx_a, (tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len, tjs_int opa)
+%define TVPAlphaBlend_o_name TVPAlphaBlend_o_mmx_a
+;--------------------------------------------------------------------
+;;[function_replace_by TVPCPUType & TVP_CPU_HAS_MMX] TVPAlphaBlend_HDA
+;;void, TVPAlphaBlend_HDA_mmx_a, (tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len)
+%define TVPAlphaBlend_HDA_name TVPAlphaBlend_HDA_mmx_a
+;--------------------------------------------------------------------
+;;[function_replace_by TVPCPUType & TVP_CPU_HAS_MMX] TVPAlphaBlend_d
+;;void, TVPAlphaBlend_d_mmx_a, (tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len)
+%define TVPAlphaBlend_d_name TVPAlphaBlend_d_mmx_a
+;--------------------------------------------------------------------
+;;[function_replace_by TVPCPUType & TVP_CPU_HAS_MMX] TVPConstAlphaBlend
+;;void, TVPConstAlphaBlend_mmx_a, (tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len, tjs_int opa)
+%define TVPConstAlphaBlend_name TVPConstAlphaBlend_mmx_a
+;--------------------------------------------------------------------
+;;[function_replace_by TVPCPUType & TVP_CPU_HAS_MMX] TVPConstAlphaBlend_SD
+;;void, TVPConstAlphaBlend_SD_mmx_a, (tjs_uint32 *dest, const tjs_uint32 *src1, const tjs_uint32 *src2, tjs_int len, tjs_int opa)
+%define TVPConstAlphaBlend_SD_name TVPConstAlphaBlend_SD_mmx_a
+;--------------------------------------------------------------------
+	%include "alphablend.nas"
+;--------------------------------------------------------------------
+
+
+;--------------------------------------------------------------------
+; EMMX stuff
+;--------------------------------------------------------------------
+%define USE_EMMX
+;--------------------------------------------------------------------
+;;[function_replace_by TVPCPUType & TVP_CPU_HAS_EMMX && TVPCPUType & TVP_CPU_HAS_MMX] TVPAlphaBlend
+;;void, TVPAlphaBlend_emmx_a, (tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len)
+%define TVPAlphaBlend_name TVPAlphaBlend_emmx_a
+;--------------------------------------------------------------------
+;;[function_replace_by TVPCPUType & TVP_CPU_HAS_EMMX && TVPCPUType & TVP_CPU_HAS_MMX] TVPAlphaBlend_o
+;;void, TVPAlphaBlend_o_emmx_a, (tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len, tjs_int opa)
+%define TVPAlphaBlend_o_name TVPAlphaBlend_o_emmx_a
+;--------------------------------------------------------------------
+;;[function_replace_by TVPCPUType & TVP_CPU_HAS_EMMX && TVPCPUType & TVP_CPU_HAS_MMX] TVPAlphaBlend_HDA
+;;void, TVPAlphaBlend_HDA_emmx_a, (tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len)
+%define TVPAlphaBlend_HDA_name TVPAlphaBlend_HDA_emmx_a
+;--------------------------------------------------------------------
+;;[function_replace_by TVPCPUType & TVP_CPU_HAS_EMMX && TVPCPUType & TVP_CPU_HAS_MMX] TVPAlphaBlend_d
+;;void, TVPAlphaBlend_d_emmx_a, (tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len)
+%define TVPAlphaBlend_d_name TVPAlphaBlend_d_emmx_a
+;--------------------------------------------------------------------
+;;[function_replace_by TVPCPUType & TVP_CPU_HAS_EMMX && TVPCPUType & TVP_CPU_HAS_MMX] TVPConstAlphaBlend
+;;void, TVPConstAlphaBlend_emmx_a, (tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len, tjs_int opa)
+%define TVPConstAlphaBlend_name TVPConstAlphaBlend_emmx_a
+;--------------------------------------------------------------------
+;;[function_replace_by TVPCPUType & TVP_CPU_HAS_EMMX && TVPCPUType & TVP_CPU_HAS_MMX] TVPConstAlphaBlend_SD
+;;void, TVPConstAlphaBlend_SD_emmx_a, (tjs_uint32 *dest, const tjs_uint32 *src1, const tjs_uint32 *src2, tjs_int len, tjs_int opa)
+%define TVPConstAlphaBlend_SD_name TVPConstAlphaBlend_SD_emmx_a
+;--------------------------------------------------------------------
+	%include "alphablend.nas"
+;--------------------------------------------------------------------
+
+
+%else
+
+;--------------------------------------------------------------------
 		segment_code
 ;--------------------------------------------------------------------
-%imacro TVPAlphaBlend_proto 1
+		function_align
+TVPAlphaBlend_name:
 		push		edi
 		push		esi
 		push		ebx
@@ -97,7 +169,9 @@ externdef		TVPNegativeMulTable
 		psllw		mm5,	8				; 2 mm5 <<= 8
 		pmullw		mm6,	mm4				; 2 mm6 *= mm4
 		mov			edx,	[ebp+12]		; (for next loop) 2 src
-		%1
+%ifdef USE_EMMX
+		prefetcht0	[ebp + 16]
+%endif
 		paddw		mm1,	mm2				; 1 mm1 += mm2
 		paddw		mm5,	mm6				; 2 mm5 += mm2
 		psrlw		mm1,	8				; 1 mm1 >>= 8
@@ -150,26 +224,12 @@ externdef		TVPNegativeMulTable
 		pop			edi
 		emms
 		ret
-%endmacro
 
-
-
-;;[function_replace_by TVPCPUType & TVP_CPU_HAS_MMX] TVPAlphaBlend
-;;void, TVPAlphaBlend_mmx_a, (tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len)
-		function_align
-TVPAlphaBlend_mmx_a:					; pixel alpha blender
-		TVPAlphaBlend_proto				.dummy:
-
-;;[function_replace_by TVPCPUType & TVP_CPU_HAS_EMMX && TVPCPUType & TVP_CPU_HAS_MMX] TVPAlphaBlend
-;;void, TVPAlphaBlend_emmx_a, (tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len)
-		function_align
-TVPAlphaBlend_emmx_a:					; pixel alpha blender (EMMX)
-		TVPAlphaBlend_proto				prefetcht0	[ebp + 16]
 
 
 ;--------------------------------------------------------------------
-
-%imacro		TVPAlphaBlend_o_proto 1
+		function_align
+TVPAlphaBlend_o_name:
 		push		edi
 		push		esi
 		push		ebx
@@ -209,7 +269,9 @@ TVPAlphaBlend_emmx_a:					; pixel alpha blender (EMMX)
 		movq		mm2,	[ebp]			; src
 		punpcklbw	mm7,	mm0				; 1 unpack
 		movq		mm3,	[ebp]			; src
-		%1
+%ifdef	USE_EMMX
+		prefetcht0	[ebp+16]
+%endif
 		psrld		mm2,	24
 		movd		mm1,	[edi+4]			; 2 dest
 		pmullw		mm2,	mm6				; multiply by opacity
@@ -282,24 +344,11 @@ TVPAlphaBlend_emmx_a:					; pixel alpha blender (EMMX)
 		pop			edi
 		emms
 		ret
-%endmacro
-
-;;[function_replace_by TVPCPUType & TVP_CPU_HAS_MMX] TVPAlphaBlend_o
-;;void, TVPAlphaBlend_o_mmx_a, (tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len, tjs_int opa)
-		function_align
-TVPAlphaBlend_o_mmx_a:					; pixel alpha blender with opacity
-		TVPAlphaBlend_o_proto		.dummy:
-
-;;[function_replace_by TVPCPUType & TVP_CPU_HAS_EMMX && TVPCPUType & TVP_CPU_HAS_MMX] TVPAlphaBlend_o
-;;void, TVPAlphaBlend_o_emmx_a, (tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len, tjs_int opa)
-		function_align
-TVPAlphaBlend_o_emmx_a:					; pixel alpha blender with opacity
-		TVPAlphaBlend_o_proto	prefetcht0	[ebp+16]
 
 
 ;--------------------------------------------------------------------
-
-%imacro		TVPAlphaBlend_HDA_proto 1
+		function_align
+TVPAlphaBlend_HDA_name:
 		push		edi
 		push		esi
 		push		ebx
@@ -316,7 +365,9 @@ TVPAlphaBlend_o_emmx_a:					; pixel alpha blender with opacity
 		loop_align
 .ploop:
 		mov			eax,	[esi + ecx]		; src
-		%1
+%ifdef	USE_EMMX
+		prefetcht0	[esi + ecx - 8]
+%endif
 		mov			edx,	eax
 		shr			eax,	24				; eax >>= 24
 		movd		mm4,	eax
@@ -350,23 +401,11 @@ TVPAlphaBlend_o_emmx_a:					; pixel alpha blender with opacity
 		pop			edi
 		emms
 		ret
-%endmacro
 
-;;[function_replace_by TVPCPUType & TVP_CPU_HAS_MMX] TVPAlphaBlend_HDA
-;;void, TVPAlphaBlend_HDA_mmx_a, (tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len)
-		function_align
-TVPAlphaBlend_HDA_mmx_a:			; pixel alpha blender (holding destination alpha)
-		TVPAlphaBlend_HDA_proto		.dummy:
-
-;;[function_replace_by TVPCPUType & TVP_CPU_HAS_EMMX && TVPCPUType & TVP_CPU_HAS_MMX] TVPAlphaBlend_HDA
-;;void, TVPAlphaBlend_HDA_emmx_a, (tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len)
-		function_align
-TVPAlphaBlend_HDA_emmx_a:			; pixel alpha blender (holding destination alpha)
-		TVPAlphaBlend_HDA_proto		prefetcht0	[esi + ecx - 8]
 
 ;--------------------------------------------------------------------
-
-%imacro	TVPAlphaBlend_d_proto	2
+		function_align
+TVPAlphaBlend_d_name:
 		push		edi
 		push		esi
 		push		ebx
@@ -402,8 +441,9 @@ TVPAlphaBlend_HDA_emmx_a:			; pixel alpha blender (holding destination alpha)
 ;	 full transparent/opaque checking will make the routine faster in usual usage.
 		mov			eax,	[ebp]			; 1 src
 		mov			ecx,	[ebp+4]			; 2 src
-		%1
-
+%ifdef	USE_EMMX
+		prefetcht0	[ebp + 16]
+%endif
 		mov			ebx,	eax
 		mov			edx,	eax
 		and			ebx,	ecx
@@ -416,7 +456,9 @@ TVPAlphaBlend_HDA_emmx_a:			; pixel alpha blender (holding destination alpha)
 		mov			ebx,	[edi]			; 1 dest
 		movd		mm2,	eax				; 1 src
 		mov			edx,	[edi+4]			; 2 dest
-		%2
+%ifdef	USE_EMMX
+		prefetcht0	[edi + 16]
+%endif
 		movd		mm5,	ecx				; 2 src
 		pand		mm2,	mm7				; 1 mask
 		pand		mm5,	mm7				; 2 mask
@@ -532,24 +574,12 @@ TVPAlphaBlend_HDA_emmx_a:			; pixel alpha blender (holding destination alpha)
 		pop			edi
 		emms
 		ret
-%endmacro
 
-;;[function_replace_by TVPCPUType & TVP_CPU_HAS_MMX] TVPAlphaBlend_d
-;;void, TVPAlphaBlend_d_mmx_a, (tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len)
-		function_align
-TVPAlphaBlend_d_mmx_a:			; pixel alpha blender with destination alpha
-		TVPAlphaBlend_d_proto	.dummy:, .dummy2:
-
-;;[function_replace_by TVPCPUType & TVP_CPU_HAS_EMMX && TVPCPUType & TVP_CPU_HAS_MMX] TVPAlphaBlend_d
-;;void, TVPAlphaBlend_d_emmx_a, (tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len)
-		function_align
-TVPAlphaBlend_d_emmx_a:			; pixel alpha blender with destination alpha
-		TVPAlphaBlend_d_proto	prefetcht0	[ebp + 16], prefetcht0	[edi + 16]
 
 
 ;--------------------------------------------------------------------
-
-%imacro		TVPConstAlphaBlend_proto 1
+		function_align
+TVPConstAlphaBlend_name:
 		push		edi
 		push		esi
 		push		ebx
@@ -575,7 +605,9 @@ TVPAlphaBlend_d_emmx_a:			; pixel alpha blender with destination alpha
 		loop_align
 .ploop:
 		movq		mm2,	[esi+ebx]		; src
-		%1
+%ifdef	USE_EMMX
+		prefetcht0	[esi + ebx + 16]
+%endif
 		movq		mm1,	[edi+ebx]		; dest
 		movq		mm6,	mm2
 		movq		mm5,	mm1
@@ -631,23 +663,11 @@ TVPAlphaBlend_d_emmx_a:			; pixel alpha blender with destination alpha
 		pop			edi
 		emms
 		ret
-%endmacro
 
-;;[function_replace_by TVPCPUType & TVP_CPU_HAS_MMX] TVPConstAlphaBlend
-;;void, TVPConstAlphaBlend_mmx_a, (tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len, tjs_int opa)
-		function_align
-TVPConstAlphaBlend_mmx_a:					; constant ratio alpha blender ( pixel alpha value is not used )
-		TVPConstAlphaBlend_proto			.dummy:
-
-;;[function_replace_by TVPCPUType & TVP_CPU_HAS_EMMX && TVPCPUType & TVP_CPU_HAS_MMX] TVPConstAlphaBlend
-;;void, TVPConstAlphaBlend_emmx_a, (tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len, tjs_int opa)
-		function_align
-TVPConstAlphaBlend_emmx_a:					; constant ratio alpha blender ( pixel alpha value is not used )
-		TVPConstAlphaBlend_proto			prefetcht0	[esi + ebx + 16]
 
 ;--------------------------------------------------------------------
-
-%imacro		TVPConstAlphaBlend_SD_proto 2
+		function_align
+TVPConstAlphaBlend_SD_name:
 		push		edi
 		push		esi
 		push		ebx
@@ -676,8 +696,12 @@ TVPConstAlphaBlend_emmx_a:					; constant ratio alpha blender ( pixel alpha valu
 		movq		mm3,	[esi+ebx+8]		; 1 src2
 		movq		mm1,	[eax+ebx]		; 0 src1
 		movq		mm7,	[eax+ebx+8]		; 1 src1
-		%1
-		%2
+%ifdef	USE_EMMX
+		prefetcht0	[esi+ebx+32]
+%endif
+%ifdef	USE_EMMX
+		prefetcht0	[eax+ebx+32]
+%endif
 		movq		mm6,	mm2				; 0
 		movq		mm5,	mm1				; 0
 		punpcklbw	mm2,	mm0				; 0 1 unpack
@@ -750,16 +774,5 @@ TVPConstAlphaBlend_emmx_a:					; constant ratio alpha blender ( pixel alpha valu
 		pop			edi
 		emms
 		ret
-%endmacro
-
-;;[function_replace_by TVPCPUType & TVP_CPU_HAS_MMX] TVPConstAlphaBlend_SD
-;;void, TVPConstAlphaBlend_SD_mmx_a, (tjs_uint32 *dest, const tjs_uint32 *src1, const tjs_uint32 *src2, tjs_int len, tjs_int opa)
-		function_align
-TVPConstAlphaBlend_SD_mmx_a:		; separated destination constant ratio alpha blender ( pixel alpha value is not used )
-		TVPConstAlphaBlend_SD_proto		.dummy1:, .dummy2:
-
-;;[function_replace_by TVPCPUType & TVP_CPU_HAS_EMMX && TVPCPUType & TVP_CPU_HAS_MMX] TVPConstAlphaBlend_SD
-;;void, TVPConstAlphaBlend_SD_emmx_a, (tjs_uint32 *dest, const tjs_uint32 *src1, const tjs_uint32 *src2, tjs_int len, tjs_int opa)
-		function_align
-TVPConstAlphaBlend_SD_emmx_a:		; separated destination constant ratio alpha blender ( pixel alpha value is not used )
-		TVPConstAlphaBlend_SD_proto		prefetcht0	[esi+ebx+32], prefetcht0	[eax+ebx+32]
+;--------------------------------------------------------------------
+%endif
