@@ -22,6 +22,7 @@
 #include "SysInitIntf.h"
 #include "StorageImpl.h"
 #include "krmovie.h"
+#include "PluginImpl.h"
 #include <evcode.h>
 #if 0
 typedef void (__stdcall *tGetAPIVersion)(DWORD *version);
@@ -36,17 +37,19 @@ class tTVPVideoModule
 	HMODULE Handle;
 	tGetAPIVersion procGetAPIVersion;
 	tGetVideoOverlayObject procGetVideoOverlayObject;
+	tTVPV2LinkProc procV2Link;
+	tTVPV2UnlinkProc procV2Unlink;
 
 public:
 	tTVPVideoModule(const ttstr & name);
 	~tTVPVideoModule();
 
 	void GetAPIVersion(DWORD *version) { procGetAPIVersion(version); }
-	const wchar_t * GetVideoOverlayObject(HWND callbackwin, IStream *stream,
+	void GetVideoOverlayObject(HWND callbackwin, IStream *stream,
 		const wchar_t * streamname, const wchar_t *type, unsigned __int64 size,
 		iTVPVideoOverlay **out)
 	{
-		return procGetVideoOverlayObject(callbackwin, stream, streamname, type, size, out);
+		procGetVideoOverlayObject(callbackwin, stream, streamname, type, size, out);
 	}
 };
 static tTVPVideoModule *TVPMovieVideoModule = NULL;
@@ -70,12 +73,18 @@ tTVPVideoModule::tTVPVideoModule(const ttstr &name)
 			GetProcAddress(Handle, "GetVideoOverlayObject");
 		procGetAPIVersion = (tGetAPIVersion)
 			GetProcAddress(Handle, "GetAPIVersion");
-		if(!procGetVideoOverlayObject || !procGetAPIVersion)
+		procV2Link = (tTVPV2LinkProc)
+			GetProcAddress(Handle, "V2Link");
+		procV2Unlink = (tTVPV2UnlinkProc)
+			GetProcAddress(Handle, "V2Unlink");
+		if(!procGetVideoOverlayObject || !procGetAPIVersion ||
+			!procV2Link || !procV2Unlink)
 			TVPThrowExceptionMessage(TVPInvalidKrMovieDLL);
 		DWORD version;
 		procGetAPIVersion(&version);
 		if(version != TVP_KRMOVIE_VER)
 			TVPThrowExceptionMessage(TVPInvalidKrMovieDLL);
+		procV2Link(TVPGetFunctionExporter()); // link functions used by tp_stub
 	}
 	catch(...)
 	{
@@ -87,6 +96,7 @@ tTVPVideoModule::tTVPVideoModule(const ttstr &name)
 //---------------------------------------------------------------------------
 tTVPVideoModule::~tTVPVideoModule()
 {
+	procV2Unlink();
 	FreeLibrary(Handle);
 	delete Holder;
 }
@@ -338,50 +348,43 @@ void tTJSNI_VideoOverlay::Open(const ttstr &_name)
 	// create video overlay object
 	try
 	{
-		const wchar_t *message;
 		if(flash)
 		{
-			message = mod->GetVideoOverlayObject(UtilWindow,
+			mod->GetVideoOverlayObject(UtilWindow,
 				NULL, (LocalTempStorageHolder->GetLocalName() + param).c_str(),
 				ext.c_str(), 0, &VideoOverlay);
 		}
 		else
 		{
-			message = mod->GetVideoOverlayObject(UtilWindow,
+			mod->GetVideoOverlayObject(UtilWindow,
 				istream, name.c_str(), ext.c_str(),
 				size, &VideoOverlay);
 		}
-		if(message) TVPThrowExceptionMessage(TVPErrorInKrMovieDLL, message);
 
 		if( flash || (Mode == vomOverlay) )
 		{
 			// set Window handle
 			tjs_int ofsx, ofsy;
-			message = VideoOverlay->SetWindow(Window->GetWindowHandle(ofsx, ofsy));
-			if(message) TVPThrowExceptionMessage(TVPErrorInKrMovieDLL, message);
+			VideoOverlay->SetWindow(Window->GetWindowHandle(ofsx, ofsy));
 	
 			VideoOverlay->SetMessageDrainWindow(Window->GetSurfaceWindowHandle());
-			if(message) TVPThrowExceptionMessage(TVPErrorInKrMovieDLL, message);
 	
 			// set Rectangle
 			RECT r = {Rect.left + ofsx, Rect.top + ofsy,
 				Rect.right + ofsx, Rect.bottom + ofsy};
-			message = VideoOverlay->SetRect(&r);
-			if(message) TVPThrowExceptionMessage(TVPErrorInKrMovieDLL, message);
+			VideoOverlay->SetRect(&r);
 	
 			// set Visible
-			message = VideoOverlay->SetVisible(Visible);
-			if(message) TVPThrowExceptionMessage(TVPErrorInKrMovieDLL, message);
+			VideoOverlay->SetVisible(Visible);
 		}
 		else
 		{	// set font and back buffer to layerVideo
 			long	width, height;
 			long			size;
-			message = VideoOverlay->GetVideoSize( &width, &height );
-			if(message) TVPThrowExceptionMessage(TVPErrorInKrMovieDLL, message);
+			VideoOverlay->GetVideoSize( &width, &height );
 			
 			if( width <= 0 || height <= 0 )
-				TVPThrowExceptionMessage(TVPErrorInKrMovieDLL, L"Invalidate video size");
+				TVPThrowExceptionMessage(TVPErrorInKrMovieDLL, L"Invalid video size");
 
 			size = width * height * 4;
 			if( Bitmap[0] != NULL )
@@ -394,8 +397,7 @@ void tTJSNI_VideoOverlay::Open(const ttstr &_name)
 			BmpBits[0] = static_cast<BYTE*>(Bitmap[0]->GetBitmap()->GetScanLine( Bitmap[0]->GetBitmap()->GetHeight()-1 ));
 			BmpBits[1] = static_cast<BYTE*>(Bitmap[1]->GetBitmap()->GetScanLine( Bitmap[1]->GetBitmap()->GetHeight()-1 ));
 
-			message = VideoOverlay->SetVideoBuffer( BmpBits[0], BmpBits[1], size );
-			if(message) TVPThrowExceptionMessage(TVPErrorInKrMovieDLL, message);
+			VideoOverlay->SetVideoBuffer( BmpBits[0], BmpBits[1], size );
 		}
 	}
 	catch(...)
@@ -468,9 +470,7 @@ void tTJSNI_VideoOverlay::Play()
 	// start playing
 	if(VideoOverlay)
 	{
-		const wchar_t *message;
-		message = VideoOverlay->Play();
-		if(message) TVPThrowExceptionMessage(TVPErrorInKrMovieDLL, message);
+		VideoOverlay->Play();
 		ClearWndProcMessages();
 		SetStatus(ssPlay);
 	}
@@ -481,9 +481,7 @@ void tTJSNI_VideoOverlay::Stop()
 	// stop playing
 	if(VideoOverlay)
 	{
-		const wchar_t *message;
-		message = VideoOverlay->Stop();
-		if(message) TVPThrowExceptionMessage(TVPErrorInKrMovieDLL, message);
+		VideoOverlay->Stop();
 		ClearWndProcMessages();
 		SetStatus(ssStop);
 	}
@@ -496,9 +494,7 @@ void tTJSNI_VideoOverlay::Pause()
 	// pause playing
 	if(VideoOverlay)
 	{
-		const wchar_t *message;
-		message = VideoOverlay->Pause();
-		if(message) TVPThrowExceptionMessage(TVPErrorInKrMovieDLL, message);
+		VideoOverlay->Pause();
 //		ClearWndProcMessages();
 		SetStatus(ssPause);
 	}
@@ -508,9 +504,7 @@ void tTJSNI_VideoOverlay::Rewind()
 	// rewind playing
 	if(VideoOverlay)
 	{
-		const wchar_t *message;
-		message = VideoOverlay->Rewind();
-		if(message) TVPThrowExceptionMessage(TVPErrorInKrMovieDLL, message);
+		VideoOverlay->Rewind();
 		ClearWndProcMessages();
 
 		if( EventFrame >= 0 && IsEventPast )
@@ -549,10 +543,8 @@ void tTJSNI_VideoOverlay::SetRectangleToVideoOverlay()
 	// set Rectangle to video overlay
 	if(VideoOverlay && OwnerWindow)
 	{
-		const wchar_t *message;
 		RECT r = {Rect.left, Rect.top, Rect.right, Rect.bottom};
-		message = VideoOverlay->SetRect(&r);
-		if(message) TVPThrowExceptionMessage(TVPErrorInKrMovieDLL, message);
+		VideoOverlay->SetRect(&r);
 	}
 }
 //---------------------------------------------------------------------------
@@ -642,9 +634,7 @@ void tTJSNI_VideoOverlay::SetVisible(bool b)
 		}
 		else
 		{
-			const wchar_t *message;
-			message = VideoOverlay->SetVisible(Visible);
-			if(message) TVPThrowExceptionMessage(TVPErrorInKrMovieDLL, message);
+			VideoOverlay->SetVisible(Visible);
 		}
 	}
 }
@@ -654,9 +644,7 @@ void tTJSNI_VideoOverlay::SetWindowHandle(HWND wnd)
 	OwnerWindow = wnd;
 	if(VideoOverlay)
 	{
-		const wchar_t *message;
-		message = VideoOverlay->SetWindow(wnd);
-		if(message) TVPThrowExceptionMessage(TVPErrorInKrMovieDLL, message);
+		VideoOverlay->SetWindow(wnd);
 	}
 }
 //---------------------------------------------------------------------------
@@ -664,9 +652,7 @@ void tTJSNI_VideoOverlay::SetMessageDrainWindow(HWND wnd)
 {
 	if(VideoOverlay)
 	{
-		const wchar_t *message;
-		message = VideoOverlay->SetMessageDrainWindow(wnd);
-		if(message) TVPThrowExceptionMessage(TVPErrorInKrMovieDLL, message);
+		VideoOverlay->SetMessageDrainWindow(wnd);
 	}
 }
 //---------------------------------------------------------------------------
@@ -674,11 +660,9 @@ void tTJSNI_VideoOverlay::SetRectOffset(tjs_int ofsx, tjs_int ofsy)
 {
 	if(VideoOverlay)
 	{
-		const wchar_t *message;
 		RECT r = {Rect.left + ofsx, Rect.top + ofsy,
 			Rect.right + ofsx, Rect.bottom + ofsy};
-		message = VideoOverlay->SetRect(&r);
-		if(message) TVPThrowExceptionMessage(TVPErrorInKrMovieDLL, message);
+		VideoOverlay->SetRect(&r);
 	}
 }
 //---------------------------------------------------------------------------
@@ -714,15 +698,13 @@ void __fastcall tTJSNI_VideoOverlay::WndProc(Messages::TMessage &Msg)
 					case EC_UPDATE:
 						if( Mode == vomLayer && Status == ssPlay )
 						{
-                    		const wchar_t *message;
-                    		int		curFrame = p1;
+							int		curFrame = p1;
 							if( Layer1 == NULL && Layer2 == NULL )	// nothing to do.
 								return;
 
 							// get video image size
 							long	width, height;
-							message = VideoOverlay->GetVideoSize( &width, &height );
-							if(message) TVPThrowExceptionMessage(TVPErrorInKrMovieDLL, message);
+							VideoOverlay->GetVideoSize( &width, &height );
 
 							tTJSNI_BaseLayer	*l1 = Layer1;
 							tTJSNI_BaseLayer	*l2 = Layer2;
@@ -804,9 +786,7 @@ void tTJSNI_VideoOverlay::SetTimePosition( tjs_uint64 p )
 {
 	if(VideoOverlay)
 	{
-		const wchar_t *message;
-		message = VideoOverlay->SetPosition( p );
-		if(message) TVPThrowExceptionMessage(TVPErrorInKrMovieDLL, message);
+		VideoOverlay->SetPosition( p );
 	}
 }
 tjs_uint64 tTJSNI_VideoOverlay::GetTimePosition()
@@ -814,9 +794,7 @@ tjs_uint64 tTJSNI_VideoOverlay::GetTimePosition()
 	tjs_uint64	result = 0;
 	if(VideoOverlay)
 	{
-		const wchar_t *message;
-		message = VideoOverlay->GetPosition( &result );
-		if(message) TVPThrowExceptionMessage(TVPErrorInKrMovieDLL, message);
+		VideoOverlay->GetPosition( &result );
 	}
 	return result;
 }
@@ -824,9 +802,7 @@ void tTJSNI_VideoOverlay::SetFrame( tjs_int f )
 {
 	if(VideoOverlay)
 	{
-		const wchar_t *message;
-		message = VideoOverlay->SetFrame( f );
-		if(message) TVPThrowExceptionMessage(TVPErrorInKrMovieDLL, message);
+		VideoOverlay->SetFrame( f );
 
 		if( EventFrame >= f && IsEventPast )
 			IsEventPast = false;
@@ -837,9 +813,7 @@ tjs_int tTJSNI_VideoOverlay::GetFrame()
 	tjs_int	result = 0;
 	if(VideoOverlay)
 	{
-		const wchar_t *message;
-		message = VideoOverlay->GetFrame( &result );
-		if(message) TVPThrowExceptionMessage(TVPErrorInKrMovieDLL, message);
+		VideoOverlay->GetFrame( &result );
 	}
 	return result;
 }
@@ -848,9 +822,7 @@ tjs_real tTJSNI_VideoOverlay::GetFPS()
 	tjs_real	result = 0.0;
 	if(VideoOverlay)
 	{
-		const wchar_t *message;
-		message = VideoOverlay->GetFPS( &result );
-		if(message) TVPThrowExceptionMessage(TVPErrorInKrMovieDLL, message);
+		VideoOverlay->GetFPS( &result );
 	}
 	return result;
 }
@@ -859,9 +831,7 @@ tjs_int tTJSNI_VideoOverlay::GetNumberOfFrame()
 	tjs_int	result = 0;
 	if(VideoOverlay)
 	{
-		const wchar_t *message;
-		message = VideoOverlay->GetNumberOfFrame( &result );
-		if(message) TVPThrowExceptionMessage(TVPErrorInKrMovieDLL, message);
+		VideoOverlay->GetNumberOfFrame( &result );
 	}
 	return result;
 }
@@ -870,9 +840,7 @@ tjs_int64 tTJSNI_VideoOverlay::GetTotalTime()
 	tjs_int64	result = 0;
 	if(VideoOverlay)
 	{
-		const wchar_t *message;
-		message = VideoOverlay->GetTotalTime( &result );
-		if(message) TVPThrowExceptionMessage(TVPErrorInKrMovieDLL, message);
+		VideoOverlay->GetTotalTime( &result );
 	}
 	return result;
 }

@@ -17,6 +17,8 @@
 #include "asyncio.h"
 #include "asyncrdr.h"
 
+#include "tp_stub.h"
+
 //----------------------------------------------------------------------------
 //! @brief	  	DLL のエントリーポイント
 //! @param		hModule : 
@@ -38,16 +40,14 @@ BOOL APIENTRY DllMain( HANDLE hModule, DWORD  ul_reason_for_call, LPVOID lpReser
 //! @param		out : VideoOverlay Object
 //! @return		エラー文字列
 //----------------------------------------------------------------------------
-const wchar_t* __stdcall GetVideoOverlayObject(
+void __stdcall GetVideoOverlayObject(
 	HWND callbackwin, IStream *stream, const wchar_t * streamname,
 	const wchar_t *type, unsigned __int64 size, iTVPVideoOverlay **out)
 {
 	*out = new tTVPDSLayerVideo;
 
 	if( *out )
-		return static_cast<tTVPDSLayerVideo*>(*out)->BuildGraph( callbackwin, stream, streamname, type, size );
-	else
-		return NULL;
+		static_cast<tTVPDSLayerVideo*>(*out)->BuildGraph( callbackwin, stream, streamname, type, size );
 }
 //----------------------------------------------------------------------------
 //! @brief	  	API のバージョンを取得
@@ -57,3 +57,24 @@ void __stdcall GetAPIVersion(DWORD *ver)
 {
 	*ver = TVP_KRMOVIE_VER;
 }
+
+
+//---------------------------------------------------------------------------
+// V2Link : Initialize TVP plugin interface
+//---------------------------------------------------------------------------
+HRESULT __stdcall V2Link(iTVPFunctionExporter *exporter)
+{
+	TVPInitImportStub(exporter);
+
+	return S_OK;
+}
+//---------------------------------------------------------------------------
+// V2Unlink : Uninitialize TVP plugin interface
+//---------------------------------------------------------------------------
+HRESULT __stdcall V2Unlink()
+{
+	TVPUninitImportStub();
+
+	return S_OK;
+}
+//---------------------------------------------------------------------------
