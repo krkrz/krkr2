@@ -1656,6 +1656,19 @@ typedef bool (__stdcall * tTVPWindowMessageReceiver)
 
 
 //---------------------------------------------------------------------------
+// tTVPVideoOverlayMode
+//---------------------------------------------------------------------------
+enum tTVPVideoOverlayMode {
+	vomOverlay,		// Overlay
+	vomLayer,		// Draw Layer
+};
+
+
+
+
+
+
+//---------------------------------------------------------------------------
 // scroll transition handler
 //---------------------------------------------------------------------------
 enum tTVPScrollTransFrom
