@@ -1151,21 +1151,44 @@ HWND tTJSNI_Window::GetWindowHandle(tjs_int &ofsx, tjs_int &ofsy)
 void tTJSNI_Window::ReadjustVideoRect()
 {
 	if(!Form) return;
-	if(VideoOverlay)
+
+	// re-adjust video rectangle.
+	// this reconnects owner window and video offsets.
+
+	tjs_int ofsx, ofsy;
+	tObjectListSafeLockHolder<tTJSNI_BaseVideoOverlay> holder(VideoOverlay);
+	tjs_int count = VideoOverlay.GetSafeLockedObjectCount();
+
+	if(count > 0)
 	{
-		tjs_int ofsx, ofsy;
 		/*HWND wnd = */Form->GetWindowHandle(ofsx, ofsy);
-		((tTJSNI_VideoOverlay*)VideoOverlay)->SetRectOffset(ofsx, ofsy);
-		((tTJSNI_VideoOverlay*)VideoOverlay)->
-			SetMessageDrainWindow(Form->GetSurfaceWindowHandle());
+	}
+
+	for(tjs_int i = 0; i < count; i++)
+	{
+		tTJSNI_VideoOverlay * item = (tTJSNI_VideoOverlay*)
+			VideoOverlay.GetSafeLockedObjectAt(i);
+		if(!item) continue;
+		item->SetRectOffset(ofsx, ofsy);
+		item->SetMessageDrainWindow(Form->GetSurfaceWindowHandle());
 	}
 }
 //---------------------------------------------------------------------------
 void tTJSNI_Window::WindowMoved()
 {
-	if(VideoOverlay)
+	// inform video overlays that the window has moved.
+	// video overlays typically owns DirectDraw surface which is not a part of
+	// normal window systems and does not matter where the owner window is.
+	// so we must inform window moving to overlay window.
+
+	tObjectListSafeLockHolder<tTJSNI_BaseVideoOverlay> holder(VideoOverlay);
+	tjs_int count = VideoOverlay.GetSafeLockedObjectCount();
+	for(tjs_int i = 0; i < count; i++)
 	{
-		((tTJSNI_VideoOverlay*)VideoOverlay)->SetRectangleToVideoOverlay();
+		tTJSNI_VideoOverlay * item = (tTJSNI_VideoOverlay*)
+			VideoOverlay.GetSafeLockedObjectAt(i);
+		if(!item) continue;
+		item->SetRectangleToVideoOverlay();
 	}
 }
 //---------------------------------------------------------------------------
