@@ -161,14 +161,14 @@ public:
 		if(Hash.FindAndTouchWithHash(string, hash, key, v))
 		{
 			ttstr ret(*key);
-			*(ret.GetHint()) = hash;
+			if(ret.GetHint()) *(ret.GetHint()) = hash;
 			return ret;
 		}
 		else
 		{
 			Hash.AddWithHash(string, hash, tTJSEmptyClass());
 			ttstr ret(string);
-			*(ret.GetHint()) = hash;
+			if(ret.GetHint()) *(ret.GetHint()) = hash;
 			return ret;
 		}
 	}
