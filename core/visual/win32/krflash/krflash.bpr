@@ -3,7 +3,7 @@
 <PROJECT>
   <MACROS>
     <VERSION value="BCB.05.03"/>
-    <PROJECT value="&quot;c:\Program Files\Borland\CBuilder5\Projects\tvp2win32\environ\win32\krflash.dll&quot;"/>
+    <PROJECT value="..\..\..\..\..\bin\win32\krflash.dll"/>
     <OBJFILES value="intermediate\FlashContainerFormUnit.obj intermediate\krflashmain.obj"/>
     <RESFILES value="krflash.res"/>
     <DEFFILE value=""/>
@@ -49,7 +49,7 @@ AutoIncBuild=1
 MajorVer=1
 MinorVer=3
 Release=0
-Build=3
+Build=4
 Debug=0
 PreRelease=0
 Special=0
@@ -61,7 +61,7 @@ CodePage=932
 [Version Info Keys]
 CompanyName=
 FileDescription=TVP Macromedia Shockwave Flash Playback Support DLL
-FileVersion=1.3.0.3
+FileVersion=1.3.0.4
 InternalName=krflash
 LegalCopyright=Copyright (C) 2001 W.Dee All rights reserved.
 LegalTrademarks=
@@ -94,9 +94,10 @@ Item0=intermediate
 Item1=c:\Program Files\Borland\CBuilder5\Projects\tvp2win32\visual\win32\krflash\intermediate
 
 [HistoryLists\hlFinalOutputDir]
-Count=2
-Item0=c:\Program Files\Borland\CBuilder5\Projects\tvp2win32\environ\win32\
-Item1=c:\Program Files\Borland\CBuilder5\Projects\tvp2win32\environ\win32
+Count=3
+Item0=..\..\..\..\..\bin\win32
+Item1=c:\Program Files\Borland\CBuilder5\Projects\tvp2win32\environ\win32\
+Item2=c:\Program Files\Borland\CBuilder5\Projects\tvp2win32\environ\win32
 
 [Debugging]
 DebugSourceDirs=$(BCB)\source\vcl
