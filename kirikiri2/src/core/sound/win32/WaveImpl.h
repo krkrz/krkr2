@@ -43,6 +43,9 @@ struct IDirectSound;
 TJS_EXP_FUNC_DEF(void, TVPReleaseDirectSound, ());
 TJS_EXP_FUNC_DEF(IDirectSound *, TVPGetDirectSound, ());
 extern void TVPResetVolumeToAllSoundBuffer();
+extern void TVPSetWaveSoundBufferUse3DMode(bool b);
+extern bool TVPGetWaveSoundBufferUse3DMode();
+extern void TVPWaveSoundBufferCommitSettings();
 //---------------------------------------------------------------------------
 
 
@@ -64,9 +67,10 @@ public:
 	//-- buffer management ------------------------------------------------
 private:
 	LPDIRECTSOUNDBUFFER SoundBuffer;
+	LPDIRECTSOUND3DBUFFER Sound3DBuffer;
 
 	void ThrowSoundBufferException(const ttstr &reason);
-	void TryCreateSoundBuffer();
+	void TryCreateSoundBuffer(bool use3d);
 	void CreateSoundBuffer();
 	void DestroySoundBuffer();
 	void ResetSoundBuffer();
@@ -201,9 +205,9 @@ private:
 	static tjs_int GlobalVolume;
 	static tTVPSoundGlobalFocusMode GlobalFocusMode;
 
-	bool Use3D;
 	bool BufferCanControlPan;
 	tjs_int Pan; // -100000 .. 0 .. 100000
+	D3DVALUE PosX, PosY, PosZ; // 3D position
 
 public:
 	void SetVolumeToSoundBuffer();
@@ -220,6 +224,18 @@ public:
 	static void SetGlobalFocusMode(tTVPSoundGlobalFocusMode b);
 	static tTVPSoundGlobalFocusMode GetGlobalFocusMode()
 		{ return GlobalFocusMode; }
+
+private:
+	void Set3DPositionToBuffer();
+public:
+	void SetPos(D3DVALUE x, D3DVALUE y, D3DVALUE z);
+	void SetPosX(D3DVALUE v);
+	D3DVALUE GetPosX() const {return PosX;}
+	void SetPosY(D3DVALUE v);
+	D3DVALUE GetPosY() const {return PosY;}
+	void SetPosZ(D3DVALUE v);
+	D3DVALUE GetPosZ() const {return PosZ;}
+
 
 	//-- visualization stuff ----------------------------------------------
 public:

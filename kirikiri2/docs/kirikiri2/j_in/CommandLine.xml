@@ -188,6 +188,17 @@ Releaser や krkrconf.exe ( エンジン設定.exe ) では、吉里吉里の実行可能ファイルや
 　設定を変更すると再生時の障害が改善する場合があります。'i16m' を選択すると -wsexpandquad オプション ( DirectSound 強制4ch再生 ) の設定は無視されます。
 </dd>
 
+<dt>-<kw>wsuse3d</kw> (DirectSound 3D制御)</dt>
+<dd>
+　DirectSoundで3D制御を行うかどうかの設定です。<r/>
+　設定可能な値は <b>'no' (しない)</b>, <b>'yes' (する)</b> のいずれかで、このオプションを指定しないと 'no' が指定されたものと見なされます。<r/>
+　'yes' を選択すると、サウンドの 3D制御が有効になり、WaveSoundBuffer.posX, WaveSoundBuffer.posY, WaveSoundBuffer.posZ プロパティが有効になります (これらのプロパティは現バージョンでは既に実装されていますが、サポート外です)。<r/>
+　また、多くの環境では、'yes' を選択すると、DirectSound3D により、ステレオやモノラルのサウンドが、サラウンドスピーカーに拡張されて再生されるようになります (たとえば、フロントのスピーカーでしか再生されなかったサウンドが、5.1ch環境の全てのスピーカーで再生されるようになります)。<r/>
+　'yes' を選択すると -wsexpandquad オプション ( DirectSound 強制4ch再生 ) の設定は無視されます。
+</dd>
+
+
+
 <dt>-<kw>wsexpandquad</kw> (DirectSound 強制4ch再生)</dt>
 <dd>
 　DirectSoundでステレオやモノラルのサウンドを再生する場合に、強制的にリアスピーカーを含む4chで再生させるかどうかの設定です。<r/>
