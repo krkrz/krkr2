@@ -20,17 +20,31 @@
 #endif
 #include "BufferRenderer.h"
 
+//----------------------------------------------------------------------------
+//! @brief	  	m_BmpBitsにNULLを設定する
+//----------------------------------------------------------------------------
 tTVPDSLayerVideo::tTVPDSLayerVideo()
 {
 	m_BmpBits[0] = NULL;
 	m_BmpBits[1] = NULL;
 }
+//----------------------------------------------------------------------------
+//! @brief	  	m_BmpBitsにNULLを設定する
+//----------------------------------------------------------------------------
 tTVPDSLayerVideo::~tTVPDSLayerVideo()
 {
 	m_BmpBits[0] = NULL;
 	m_BmpBits[1] = NULL;
 }
-
+//----------------------------------------------------------------------------
+//! @brief	  	フィルタグラフの構築
+//! @param 		callbackwin : メッセージを送信するウィンドウ
+//! @param 		stream : 読み込み元ストリーム
+//! @param 		streamname : ストリームの名前
+//! @param 		type : メディアタイプ(拡張子)
+//! @param 		size : メディアサイズ
+//! @return		エラーメッセージ。NULLの場合エラーなし
+//----------------------------------------------------------------------------
 const wchar_t* __stdcall tTVPDSLayerVideo::BuildGraph( HWND callbackwin, IStream *stream,
 	const wchar_t * streamname, const wchar_t *type, unsigned __int64 size )
 {
@@ -43,24 +57,8 @@ const wchar_t* __stdcall tTVPDSLayerVideo::BuildGraph( HWND callbackwin, IStream
 	try {
 		CMediaType mt;
 		mt.majortype = MEDIATYPE_Stream;
-
-		// note: audio-less mpeg stream must have an extension of
-		// ".mpv" .
-		if      (wcsicmp(type, L".mpg") == 0)
-			mt.subtype = MEDIASUBTYPE_MPEG1System;
-		else if (wcsicmp(type, L".mpeg") == 0)
-			mt.subtype = MEDIASUBTYPE_MPEG1System;
-		else if (wcsicmp(type, L".mpv") == 0) 
-			mt.subtype = MEDIASUBTYPE_MPEG1Video;
-		else if (wcsicmp(type, L".dat") == 0)
-			mt.subtype = MEDIASUBTYPE_MPEG1VideoCD;
-		else if (wcsicmp(type, L".avi") == 0)
-			mt.subtype = MEDIASUBTYPE_Avi;
-		else if (wcsicmp(type, L".mov") == 0)
-			mt.subtype = MEDIASUBTYPE_QTMovie;
-		else
-			throw L"Unknown video format extension."; // unknown format
-
+		if( (errmsg = ParseVideoType( mt, type )) != NULL )
+			throw errmsg;
 
 		// create proxy filter
 		m_Proxy = new CIStreamProxy( stream, size );
@@ -85,39 +83,57 @@ const wchar_t* __stdcall tTVPDSLayerVideo::BuildGraph( HWND callbackwin, IStream
 		pBRender = pCBR;
 
 		// add fliter
-		if( FAILED(hr = GraphBuilder()->AddFilter( pBRender, NULL)) )
+		if( FAILED(hr = GraphBuilder()->AddFilter( pBRender, L"Buffer Renderer")) )
 			throw L"Failed to call IFilterGraph::AddFilter.";
-		if( FAILED(hr = GraphBuilder()->AddFilter( m_Reader, NULL)) )
+		if( FAILED(hr = GraphBuilder()->AddFilter( m_Reader, L"Stream Reader")) )
 			throw L"Failed to call IFilterGraph::AddFilter.";
 
-		CComPtr<IPin>			pRdrPinIn;
-		CComPtr<IPin>			pSrcPinOut;
-		if( FAILED(hr = pBRender->FindPin( L"In", &pRdrPinIn )) )
-			throw L"Failed to call IBaseFilter::FindPin.";
-		pSrcPinOut = m_Reader->GetPin(0);
-		if( FAILED(hr = GraphBuilder()->Connect( pSrcPinOut, pRdrPinIn )) )
-			throw L"Failed to call IGraphBuilder::Connect.";
-
-		CComPtr<IPin>			pSpliterPinIn;
-		if( FAILED(hr = pSrcPinOut->ConnectedTo( &pSpliterPinIn )) )
-			throw L"Failed to call IPin::ConnectedTo.";
-
-		{	// Connect to DDS render filter
-			CComPtr<IBaseFilter>	pDDSRenderer;	// for sound renderer filter
-			if( FAILED(hr = pDDSRenderer.CoCreateInstance(CLSID_DSoundRender, NULL, CLSCTX_INPROC_SERVER)) )
-				 throw L"Failed to create sound render filter object.";
-			if( FAILED(hr = GraphBuilder()->AddFilter(pDDSRenderer, L"Sound Renderer")) )
-				throw L"Failed to call IFilterGraph::AddFilter.";
-
-			CComPtr<IBaseFilter>	pSpliter;
-			PIN_INFO	pinInfo;
-			if( FAILED(hr = pSpliterPinIn->QueryPinInfo( &pinInfo )) )
-				throw L"Failed to call IPin::QueryPinInfo.";
-			pSpliter = pinInfo.pFilter;
-			pinInfo.pFilter->Release();
-			if( FAILED(hr = ConnectFilters( pSpliter, pDDSRenderer ) ) )
-				throw L"Failed to call ConnectFilters.";
+		if( mt.subtype == MEDIASUBTYPE_Avi || mt.subtype == MEDIASUBTYPE_QTMovie )
+		{
+			CComPtr<IPin>			pRdrPinIn;
+			CComPtr<IPin>			pSrcPinOut;
+			if( FAILED(hr = pBRender->FindPin( L"In", &pRdrPinIn )) )
+				throw L"Failed to call IBaseFilter::FindPin.";
+			pSrcPinOut = m_Reader->GetPin(0);
+			if( FAILED(hr = GraphBuilder()->Connect( pSrcPinOut, pRdrPinIn )) )
+				throw L"Failed to call IGraphBuilder::Connect.";
+	
+			CComPtr<IPin>			pSpliterPinIn;
+			if( FAILED(hr = pSrcPinOut->ConnectedTo( &pSpliterPinIn )) )
+				throw L"Failed to call IPin::ConnectedTo.";
+	
+			{	// Connect to DDS render filter
+				CComPtr<IBaseFilter>	pDDSRenderer;	// for sound renderer filter
+				if( FAILED(hr = pDDSRenderer.CoCreateInstance(CLSID_DSoundRender, NULL, CLSCTX_INPROC_SERVER)) )
+					 throw L"Failed to create sound render filter object.";
+				if( FAILED(hr = GraphBuilder()->AddFilter(pDDSRenderer, L"Sound Renderer")) )
+					throw L"Failed to call IFilterGraph::AddFilter.";
+	
+				CComPtr<IBaseFilter>	pSpliter;
+				PIN_INFO	pinInfo;
+				if( FAILED(hr = pSpliterPinIn->QueryPinInfo( &pinInfo )) )
+					throw L"Failed to call IPin::QueryPinInfo.";
+				pSpliter = pinInfo.pFilter;
+				pinInfo.pFilter->Release();
+				// AVI, QTにAudioが含まれていない場合、次の接続は失敗すると思われる。
+				if( FAILED(hr = ConnectFilters( pSpliter, pDDSRenderer ) ) )
+					throw L"Failed to call ConnectFilters.";
+			}
 		}
+		else
+		{
+			if( mt.subtype == MEDIASUBTYPE_MPEG1Video )
+			{	// Not use audio
+				if( (errmsg = BuildMPEGGraph( pBRender, m_Reader, false )) != NULL )
+					throw errmsg;
+			}
+			else
+			{
+				if( (errmsg = BuildMPEGGraph( pBRender, m_Reader, true )) != NULL )
+					throw errmsg;
+			}
+		}
+
 #if 0	// 吉里吉里のBitmapは上下逆の形式らしいので、再接続は必要ない
 		{	// Reconnect buffer render filter
 			// get decoder output pin
@@ -194,72 +210,9 @@ const wchar_t* __stdcall tTVPDSLayerVideo::BuildGraph( HWND callbackwin, IStream
 	return NULL;
 }
 
-HRESULT tTVPDSLayerVideo::ConnectFilters( IBaseFilter* pFilterUpstream, IBaseFilter* pFilterDownstream )
-{
-	HRESULT			hr = E_FAIL;
-	CComPtr<IPin>	pIPinUpstream;
-	PIN_INFO		PinInfoUpstream;
-	PIN_INFO		PinInfoDownstream;
-
-	// validate passed in filters
-	ASSERT(pFilterUpstream);
-	ASSERT(pFilterDownstream);
-
-	// grab upstream filter's enumerator
-	CComPtr<IEnumPins> pIEnumPinsUpstream;
-	if( FAILED(hr = pFilterUpstream->EnumPins(&pIEnumPinsUpstream)) )
-		throw L"Failed to call IBaseFilter::EnumPins.";
-
-	// iterate through upstream filter's pins
-	while( pIEnumPinsUpstream->Next (1, &pIPinUpstream, 0) == S_OK )
-	{
-		if( FAILED(hr = pIPinUpstream->QueryPinInfo(&PinInfoUpstream)) )
-			throw L"Failed to call IPin::QueryPinInfo.";
-
-		CComPtr<IPin>	 pPinDown;
-		pIPinUpstream->ConnectedTo( &pPinDown );
-
-		// bail if pins are connected
-		// otherwise check direction and connect
-		if( (PINDIR_OUTPUT == PinInfoUpstream.dir) && (pPinDown == NULL) )
-		{
-			// grab downstream filter's enumerator
-			CComPtr<IEnumPins>	pIEnumPinsDownstream;
-			hr = pFilterDownstream->EnumPins (&pIEnumPinsDownstream);
-
-			// iterate through downstream filter's pins
-			CComPtr<IPin>	pIPinDownstream;
-			while( pIEnumPinsDownstream->Next (1, &pIPinDownstream, 0) == S_OK )
-			{
-				// make sure it is an input pin
-				if( SUCCEEDED(hr = pIPinDownstream->QueryPinInfo(&PinInfoDownstream)) )
-				{
-					CComPtr<IPin>	 pPinUp;
-					pIPinDownstream->ConnectedTo( &pPinUp );
-					if( (PINDIR_INPUT == PinInfoDownstream.dir) && (pPinUp == NULL) )
-					{
-						if( SUCCEEDED(m_GraphBuilder->Connect( pIPinUpstream, pIPinDownstream)) )
-						{
-							PinInfoDownstream.pFilter->Release();
-							PinInfoUpstream.pFilter->Release();
-							return S_OK;
-						}
-					}
-				}
-
-				PinInfoDownstream.pFilter->Release();
-				pIPinDownstream = NULL;
-			} // while next downstream filter pin
-
-			//We are now back into the upstream pin loop
-		} // if output pin
-
-		pIPinUpstream = NULL;
-		PinInfoUpstream.pFilter->Release();
-	} // while next upstream filter pin
-
-	return E_FAIL;
-}
+//----------------------------------------------------------------------------
+//! @brief	  	インターフェイスを解放する
+//----------------------------------------------------------------------------
 void __stdcall tTVPDSLayerVideo::ReleaseAll()
 {
 #ifdef _DEBUG
@@ -280,7 +233,13 @@ void __stdcall tTVPDSLayerVideo::ReleaseAll()
 
 	tTVPDSMovie::ReleaseAll();
 }
-
+//----------------------------------------------------------------------------
+//! @brief	  	描画するバッファを設定する
+//! @param		buff1 : バッファ1
+//! @param		buff2 : バッファ2
+//! @param		size : バッファのサイズ
+//! @return		エラー文字列
+//----------------------------------------------------------------------------
 const wchar_t* __stdcall tTVPDSLayerVideo::SetVideoBuffer( BYTE *buff1, BYTE *buff2, long size )
 {
 	if( buff1 == NULL || buff2 == NULL )
@@ -294,7 +253,11 @@ const wchar_t* __stdcall tTVPDSLayerVideo::SetVideoBuffer( BYTE *buff1, BYTE *bu
 		return L"Failed to call IBufferAccess::SetBackBuffer.";
 	return NULL;
 }
-
+//----------------------------------------------------------------------------
+//! @brief	  	フロントバッファを取得する
+//! @param		buff : バッファ
+//! @return		エラー文字列
+//----------------------------------------------------------------------------
 const wchar_t* __stdcall tTVPDSLayerVideo::GetFrontBuffer( BYTE **buff )
 {
 	long		size;
@@ -302,6 +265,12 @@ const wchar_t* __stdcall tTVPDSLayerVideo::GetFrontBuffer( BYTE **buff )
 		return L"Failed to call IBufferAccess::GetFrontBuffer.";
 	return NULL;
 }
+//----------------------------------------------------------------------------
+//! @brief	  	ビデオの画像サイズを取得する
+//! @param		width : 幅
+//! @param		height : 高さ
+//! @return		Always NULL
+//----------------------------------------------------------------------------
 const wchar_t* __stdcall tTVPDSLayerVideo::GetVideoSize( long *width, long *height )
 {
 	if( width != NULL )
@@ -312,6 +281,11 @@ const wchar_t* __stdcall tTVPDSLayerVideo::GetVideoSize( long *width, long *heig
 
 	return NULL;
 }
+//----------------------------------------------------------------------------
+//! @brief	  	1フレームの平均表示時間を取得します
+//! @param		pAvgTimePerFrame : 1フレームの平均表示時間
+//! @return		エラーコード
+//----------------------------------------------------------------------------
 HRESULT __stdcall tTVPDSLayerVideo::GetAvgTimePerFrame( REFTIME *pAvgTimePerFrame )
 {
 	return BufferVideo()->get_AvgTimePerFrame( pAvgTimePerFrame );

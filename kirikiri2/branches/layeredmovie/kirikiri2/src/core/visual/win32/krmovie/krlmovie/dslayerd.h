@@ -47,8 +47,6 @@ private:
 		assert( m_BuffVideo.p );
 		return m_BuffVideo;
 	}
-	
-	HRESULT tTVPDSLayerVideo::ConnectFilters( IBaseFilter* pFilterUpstream, IBaseFilter* pFilterDownstream );
 
 public:
 	tTVPDSLayerVideo();
