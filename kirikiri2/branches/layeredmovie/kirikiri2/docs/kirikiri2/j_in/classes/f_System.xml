@@ -1,0 +1,688 @@
+<?xml version="1.0" encoding="Shift_JIS" ?>
+<doc>
+<title>System</title>
+<desc>
+　System クラスは 吉里吉里本体や、吉里吉里が実行されている環境に関する情報を取得したり、設定したりするためのクラスです。このクラスからオブジェクトを作成することはできません。<r/>
+</desc>
+
+<member>
+	<name>terminate</name>
+	<type>method</type>
+	<shortdesc>吉里吉里の非同期終了</shortdesc>
+	<arg></arg>
+	<result></result>
+	<desc>
+		　吉里吉里を<kw>終了</kw>させます。<r/>
+		　このメソッドを呼び出してもすぐには吉里吉里は終了しません。<r/>
+		　すべてのイベントハンドラから吉里吉里に制御が戻った際に終了します。<r/>
+	</desc>
+</member>
+
+<member>
+	<name>exit</name>
+	<type>method</type>
+	<shortdesc>吉里吉里の同期終了</shortdesc>
+	<arg></arg>
+	<result></result>
+	<desc>
+		　吉里吉里を<kw>終了</kw>させます。<r/>
+		　このメソッドは <ref>System.terminate</ref> と異なり、呼び出した時点で終了します。そのため、
+		このメソッドは戻ることはありません。<r/>
+	</desc>
+</member>
+
+<member>
+	<name>inputString</name>
+	<type>method</type>
+	<shortdesc>文字列の入力</shortdesc>
+	<arg>
+		<argitem>
+			<name>caption</name>
+			<default></default>
+			<desc>
+				　ウィンドウのキャプションとして表示する文字列を指定します。<r/>
+			</desc>
+		</argitem>
+		<argitem>
+			<name>prompt</name>
+			<default></default>
+			<desc>
+				　ウィンドウのプロンプト ( 入力を催促するためにユーザに表示する文字列 )
+				を指定します。<r/>
+			</desc>
+		</argitem>
+		<argitem>
+			<name>initialString</name>
+			<default></default>
+			<desc>
+				　入力ウィンドウにあらかじめ表示しておく文字列を指定します。<r/>
+			</desc>
+		</argitem>
+	</arg>
+	<result>入力された文字列が戻ります。キャンセルされた場合は void が戻ります。</result>
+	<desc>
+		　文字列を入力するためのウィンドウを開き、ユーザに<kw>文字列の入力</kw>を求めます。<r/>
+		　ウィンドウはモーダルで表示されます ( つまり、表示中は他のウィンドウは操作できない )。<r/>
+	</desc>
+</member>
+
+<member>
+	<name>addContinuousHandler</name>
+	<type>method</type>
+	<shortdesc>Continuous ハンドラの追加</shortdesc>
+	<arg>
+		<argitem>
+			<name>callback</name>
+			<default></default>
+			<desc>
+				　ハンドラとなる関数を指定します。<r/>
+			</desc>
+		</argitem>
+	</arg>
+	<result></result>
+	<desc>
+		　<kw>Continuous ハンドラ</kw>を登録します。<r/>
+		　Continuous ハンドラは、「できる限り頻繁に」呼び出されるイベントハンドラです。<r/>
+		　他にする処理がない場合、吉里吉里は Continuous ハンドラを呼び出し続けます。ただし、
+		他にイベントなどが起きた場合はそちらが優先されます。<r/>
+	</desc>
+</member>
+
+<member>
+	<name>removeContinuousHandler</name>
+	<type>method</type>
+	<shortdesc>Continuous ハンドラの削除</shortdesc>
+	<arg>
+		<argitem>
+			<name>callback</name>
+			<default></default>
+			<desc>
+				　ハンド関数を指定します。<r/>
+			</desc>
+		</argitem>
+	</arg>
+	<result></result>
+	<desc>
+		　<kw>Continuous ハンドラ</kw>を削除します。<r/>
+	</desc>
+</member>
+
+<member>
+	<name>inform</name>
+	<type>method</type>
+	<shortdesc>メッセージの表示</shortdesc>
+	<arg>
+		<argitem>
+			<name>text</name>
+			<default></default>
+			<desc>
+				　表示するメッセージを指定します。<r/>
+			</desc>
+		</argitem>
+		<argitem>
+			<name>caption</name>
+			<default>""</default>
+			<desc>
+				　ウィンドウのキャプションとなる文字列を指定します。<r/>
+			</desc>
+		</argitem>
+	</arg>
+	<result></result>
+	<desc>
+		　ユーザにメッセージを示すためのウィンドウを表示します。<r/>
+		　ウィンドウはモーダルで表示されます ( つまり、表示中は他のウィンドウは操作できない )。<r/>
+	</desc>
+</member>
+
+<member>
+	<name>getTickCount</name>
+	<type>method</type>
+	<shortdesc>ティックカウントの取得</shortdesc>
+	<arg>
+	</arg>
+	<result>ティックカウント(64bitの整数)が戻ります。</result>
+	<desc>
+		　<kw>ティックカウント</kw>は 1/1000 秒ごとにカウントアップする数値です。二つの時点でこのメソッドを
+		用いてティックカウントを取得し、その差をとれば、二つの時点の時間差を知ることができます。<r/>
+	</desc>
+</member>
+
+<member>
+	<name>getKeyState</name>
+	<type>method</type>
+	<shortdesc>キー状態の取得</shortdesc>
+	<arg>
+		<argitem>
+			<name>code</name>
+			<default></default>
+			<desc>
+				　状態を取得する<kw>仮想キーコード</kw> <comlink href="vkeys"/> を指定します。<r/>
+			</desc>
+		</argitem>
+	</arg>
+	<result>キーが押されていれば真、押されていなければ偽になります。</result>
+	<desc>
+		　code で指定したキーコードに対応するキーが、このメソッドを呼んだ時点で押されているかどうかを
+		取得します。<r/>
+	</desc>
+</member>
+
+<member>
+	<name>shellExecute</name>
+	<type>method</type>
+	<shortdesc>ファイル/プログラムの実行</shortdesc>
+	<arg>
+		<argitem>
+			<name>target</name>
+			<default></default>
+			<desc>
+				　実行するファイルやソフトウェアを指定します。<r/>
+				　ファイルを指定された場合は、それに関連づけられたプログラムが起動します。<r/>
+			</desc>
+		</argitem>
+		<argitem>
+			<name>param</name>
+			<default>""</default>
+			<desc>
+				　実行するソフトウェアに渡すパラメータを指定します。<r/>
+				　target 引数にファイルを指定した場合はこの引数を省略するか、あるいは空文字列を
+				指定してください。<r/>
+			</desc>
+		</argitem>
+	</arg>
+	<result>実行に成功すれば真、失敗すれば偽が返ります。</result>
+	<desc>
+		　target で指定したファイルやソフトウェアを<kw>実行</kw>します。<r/>
+	</desc>
+</member>
+
+<member>
+	<name>readRegValue</name>
+	<type>method</type>
+	<shortdesc>レジストリの読み込み</shortdesc>
+	<arg>
+		<argitem>
+			<name>key</name>
+			<default></default>
+			<desc>
+				　読み込むレジストリキーを指定します。<r/>
+			</desc>
+		</argitem>
+	</arg>
+	<result>実行に成功すればレジストリの値、失敗すれば void が返ります。</result>
+	<desc>
+		　key で指定した Windows レジストリを読み込みます。<r/>
+		　レジストリキーは、以下のルートキー名で始めることができます。<r/>
+		<tt>HKEY_CLASSES_ROOT<r/>HKEY_CURRENT_CONFIG<r/>HKEY_CURRENT_USER<r/>
+		HKEY_LOCAL_MACHINE<r/>HKEY_USERS<r/>HKEY_PERFORMANCE_DATA<r/>
+		HKEY_DYN_DATA<r/></tt>
+		　たとえば、以下のような文字列を key に指定することができます。<r/>
+		<tt>HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\hoeg\installdir</tt><r/>
+		<r/>
+		　数値、単一文字列のみを読み込むことができます。数値の場合は整数型、文字列の場合は文字列型
+		の結果が返ります。<r/>
+	</desc>
+</member>
+
+<member>
+	<name>getArgument</name>
+	<type>method</type>
+	<shortdesc>コマンドラインオプションの取得</shortdesc>
+	<arg>
+		<argitem>
+			<name>name</name>
+			<default></default>
+			<desc>
+				　取得するコマンドラインオプション名を指定します。最初に '-'
+				( ハイフン ) をつけてください ( 例 : <tt>'-nosplash'</tt> )。<r/>
+			</desc>
+		</argitem>
+	</arg>
+	<result>コマンドラインオプションが指定されていればその値、指定されていなければ
+		void が返ります。</result>
+	<desc>
+		　<kw>コマンドラインオプション</kw>は、<r/>
+		<tt>-name=value</tt><r/>
+		または<r/>
+		<tt>-name</tt><r/>
+		　の形式で吉里吉里に渡されている必要があります。前者の場合は値として <tt>value</tt> が
+		返り、前者の場合は値として <tt>'yes'</tt> が返ります。<r/>
+	</desc>
+</member>
+
+
+<member>
+	<name>toActualColor</name>
+	<type>method</type>
+	<shortdesc>色定数の実際の色の取得</shortdesc>
+	<arg>
+		<argitem>
+			<name>color</name>
+			<default></default>
+			<desc>
+				　色定数を指定します ( <link href="ColorCodes"/> を参照 )。<r/>
+				　通常の 0xRRGGBB 形式の色を指定した場合はそのままの値が返ります。<r/>
+			</desc>
+		</argitem>
+	</arg>
+	<result>指定された色定数が表す実際の色が 0xRRGGBB 形式で返ります。</result>
+	<desc>
+		　色定数を実際の色に変換し、0xRRGGBB 形式で返します。<r/>
+	</desc>
+</member>
+
+
+<member>
+	<name>createAppLock</name>
+	<type>method</type>
+	<shortdesc>二重起動のチェック</shortdesc>
+	<arg>
+		<argitem>
+			<name>key</name>
+			<default></default>
+			<desc>
+				　チェックを行うためのキー文字列を指定します。同じキー文字列をほかの
+				実行中の吉里吉里がこのメソッドに指定していた場合、false が戻ります。<r/>
+				　キー文字列には基本的には TJS の変数の命名規則と同じ文字のみが使えると
+				考えてください。<r/>
+				　キー文字列は十分にユニークな物である必要があります。<r/>
+			</desc>
+		</argitem>
+	</arg>
+	<result>すでに同じキー文字列が指定された吉里吉里が実行中の場合は false、そうでなければ true が戻ります。</result>
+	<desc>
+		　他に同じキー文字列を指定された吉里吉里が実行中ならば false、そうでなければ true が戻ります。<r/>
+		　二重起動の防止に用います。<r/>
+	</desc>
+</member>
+
+<member>
+	<name>createUUID</name>
+	<type>method</type>
+	<shortdesc>UUID 文字列の生成</shortdesc>
+	<arg>
+	</arg>
+	<result>生成された UUID 文字列が "e8b2a2b5-5ceb-4f75-a08b-1f1bdfdca4f1" の形式
+	(ハイフンを除く各英数字は16進数の数字) で戻ります。</result>
+	<desc>
+		　UUID 文字列を生成して返します。このメソッドはランダムビット列を元に生成された
+		128bitの UUID (universal unique identifier) を生成します。<r/>
+		　吉里吉里に実装されている UUID 生成アルゴリズムは、
+		ある程度、環境ノイズを拾ってランダムビット列を生成しますが、
+		高度なセキュリティが要求されるような用途に使用することはおすすめしません。しかし、
+		他の UUID とは「非常に非常に高い確率で重ならない」と考えられます。<r/>
+	</desc>
+</member>
+
+<member>
+	<name>assignMessage</name>
+	<type>method</type>
+	<shortdesc>メッセージ割り当ての変更</shortdesc>
+	<arg>
+		<argitem>
+			<name>id</name>
+			<default></default>
+			<desc>
+				　割り当てるメッセージ ID を指定します。<r/>
+			</desc>
+		</argitem>
+		<argitem>
+			<name>msg</name>
+			<default></default>
+			<desc>
+				　id で指定された ID に割り当てるメッセージを指定します。<r/>
+			</desc>
+		</argitem>
+	</arg>
+	<result>ID が存在し、メッセージの割り当てが成功すれば真、そうでなければ偽が戻ります。</result>
+	<desc>
+		　メッセージ割り当てを変更します。<r/>
+		　吉里吉里が内蔵しているメッセージをこのメソッドで別のメッセージに変更することができます。<r/>
+		　通常、メッセージマップファイル内に記述します ( <link href="Startup"/> 参照 )。<r/>
+		　設定可能な ID と、それに現在割り当てられているメッセージの一覧を取得するには <link href="Controller"/> から
+		「メッセージマップファイルの作成」を実行してください。
+	</desc>
+</member>
+
+<member>
+	<name>touchImages</name>
+	<type>method</type>
+	<shortdesc>画像のキャッシュへの読み込み</shortdesc>
+	<arg>
+		<argitem>
+			<name>storages</name>
+			<default></default>
+			<desc>
+				　キャッシュに入れたい画像ストレージ名を配列(Arrayクラスのオブジェクト)で渡します。<r/>
+				　先に書いた物ほど優先されます。<r/>
+				　吉里吉里は、<ref>Layer.loadImages</ref> の第１引数に指定された
+				文字列をそのままキーにしてキャッシュを管理するため、
+				キャッシュを意味のある物にするには、
+				ここで指定する画像ストレージ名は Layer.loadImages の第１引数に指定するものと
+				同一である必要があります。<r/>
+			</desc>
+		</argitem>
+		<argitem>
+			<name>limitbytes</name>
+			<default>0</default>
+			<desc>
+				　このメソッドの呼び出しで使用するキャッシュ容量の制限値をバイト単位で指定します。<r/>
+				　0 を指定すると、キャッシュをすべて使用します。<r/>
+				　正の数を指定すると、そのバイト数までキャッシュを使用しようとします。<r/>
+				　負の数を指定すると、現在のキャッシュの
+				制限値 ( <ref>System.graphicCacheLimit</ref> ) からその数値が加算された数 ( ただし
+				「負の数」を加算するので実際は減算 ) が制限値として使用されます。その結果制限値が
+				0 または負になってしまった場合は、このメソッドは何もせずに終了します。たとえば、
+				-2*1024*1024 を指定すれば、現在のキャッシュ制限値から 2MB が引かれた数値が指定さ
+				れたとみなされます。これは、キャッシュの残り容量に余裕を残したい場合に便利です。<r/>
+			</desc>
+		</argitem>
+		<argitem>
+			<name>timeout</name>
+			<default>0</default>
+			<desc>
+				　タイムアウト ( 時間制限 ) を ms 単位で指定します。0 を指定すると無制限と
+				なります。<r/>
+				　このメソッドはこの引数で指定された時間が経過すると、以降の画像の読み込みを中止し、
+				戻ります。ただし、ある画像の読み込み中にタイムアウトになっても、その画像の読み
+				込みが終了するまでは戻りません。<r/>
+			</desc>
+		</argitem>
+	</arg>
+	<result></result>
+	<desc>
+		　このメソッドは、指定された画像をキャッシュに入れようと試行します。ただし、このメソッドは
+		キャッシュに画像を入れようと努力はしますが、実際に画像がキャッシュにはいる保証
+		はありません。画像キャッシュの制限値をすぎたり、タイムアウトすると画像読み込みを中断します。
+		画像は、storages引数に指定した物のうち、最初に書いた物ほどキャッシュに入る可能性が大きくなり
+		ます ( 優先されます )。すでに指定された画像がキャッシュに入っていた場合は、キャッシュ中での
+		生存の順位を引き上げるだけの動作をします。<r/>
+		　このメソッドは、画像読み込み中のエラーはすべて無視します。<r/>
+		　現バージョンでは、このメソッドでキャッシュに入れることのできる画像は、通常
+		<ref>Layer.loadImages</ref> で読み込み可能な画像で、かつカラーキーを指定しない画像
+		です ( アルファチャンネル付き画像は問題ありません )。ユニバーサルトランジションのルール画像や、
+		領域画像は読み込む動作はしますが、キャッシュとして有効なデータにはなりません ( 読み込んだ
+		データは無駄になります ) ので、指定しないようにしてください。<r/>
+		　画像がキャッシュで使用するバイト数については <ref>System.graphicCacheLimit</ref> を参照
+		してください。<r/>
+	</desc>
+</member>
+
+<member>
+	<name>versionString</name>
+	<type>property</type>
+	<shortdesc>バージョン文字列</shortdesc>
+	<access>r</access>
+	<desc>
+		　吉里吉里本体のバージョン文字列を得ることができます。<r/>
+		　バージョン文字列は以下のような形式です。<r/>
+		<tt>2.0.0.353</tt><r/>
+	</desc>
+</member>
+
+<member>
+	<name>versionInformation</name>
+	<type>property</type>
+	<shortdesc>バージョン情報文字列</shortdesc>
+	<access>r</access>
+	<desc>
+		　吉里吉里本体のバージョン情報文字列を得ることができます。<r/>
+		　バージョン情報文字列は <ref>System.versionString</ref> よりも長い形式で、<r/>
+		以下のようになります。<r/>
+		<tt>吉里吉里[きりきり] 2 実行コア version 2.1.3.623 [Sep 23 2002 22:15:22] ( TJS version 2.1.7 ) Copyright (C) 1997-2002 W.Dee All rights reserved.</tt><r/>
+	</desc>
+</member>
+
+<member>
+	<name>eventDisabled</name>
+	<type>property</type>
+	<shortdesc>イベント配信が停止されているかどうか</shortdesc>
+	<access>r/w</access>
+	<desc>
+		　吉里吉里の<kw>イベント配信</kw>が停止されている場合に true になります。値を設定することもで
+		きます。<r/>
+		　イベント配信が停止されると、吉里吉里上のイベントは発生しなくなるか、発生が延期されま
+		す ( イベントの種類によって挙動は異なります )。<r/>
+	</desc>
+</member>
+
+<member>
+	<name>graphicCacheLimit</name>
+	<type>property</type>
+	<shortdesc>画像キャッシュ制限</shortdesc>
+	<access>r/w</access>
+	<desc>
+		　吉里吉里の<kw>画像キャッシュ制限</kw>をバイト単位で表します。値を設定することもできます。<r/>
+		　<tt><kw>gcsAuto</kw></tt> を指定すると、マシンに搭載されているメモリ量に応じて自動的に
+		値が設定されます。<r/>
+		　ルール画像や領域画像は、幅×高さ で表されるバイト数を消費します。それ以外の画像は
+		幅×高さ×４ で表されるバイト数を消費します。<r/>
+	</desc>
+</member>
+
+<member>
+	<name>platformName</name>
+	<type>property</type>
+	<shortdesc>プラットフォーム名</shortdesc>
+	<access>r</access>
+	<desc>
+		　吉里吉里が動作しているプラットフォーム名を表します。Windows の場合は 'Win32' となります。<r/>
+	</desc>
+</member>
+
+<member>
+	<name>osName</name>
+	<type>property</type>
+	<shortdesc>OS 名</shortdesc>
+	<access>r</access>
+	<desc>
+		　吉里吉里が動作している OS の名前を表します。<r/>
+	</desc>
+</member>
+
+<member>
+	<name>exePath</name>
+	<type>property</type>
+	<shortdesc>吉里吉里本体のあるフォルダのパス</shortdesc>
+	<access>r</access>
+	<desc>
+		　吉里吉里本体が設置してあるパスを表します。パス名は統一ストレージ名で表現されます。<r/>
+	</desc>
+	<ref>System.appDataPath</ref>
+	<ref>System.personalPath</ref>
+</member>
+
+<member>
+	<name>personalPath</name>
+	<type>property</type>
+	<shortdesc>ユーザのホームディレクトリのパス</shortdesc>
+	<access>r</access>
+	<desc>
+		　ユーザのホームディレクトリのパスを表します。Windows の場合、レジストリの
+		HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Explorer\Shell Folders の
+		Personal で表されるフォルダが返されます。通常これは「マイドキュメント」フォルダを指します。<r/>
+		このフォルダがない場合は <ref>System.exePath</ref> と同じ
+		フォルダを返します。<r/>
+	</desc>
+	<ref>System.appDataPath</ref>
+	<ref>System.exePath</ref>
+</member>
+
+<member>
+	<name>appDataPath</name>
+	<type>property</type>
+	<shortdesc>ユーザのホームディレクトリのパス</shortdesc>
+	<access>r</access>
+	<desc>
+		　ユーザのホームディレクトリのパスを表します。Windows の場合、レジストリの
+		HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Explorer\Shell Folders の
+		AppData で表されるフォルダが返されます。このフォルダがない場合は <ref>exePath</ref> と同じ
+		フォルダを返します。<r/>
+	</desc>
+	<ref>System.exePath</ref>
+	<ref>System.personalPath</ref>
+</member>
+
+<member>
+	<name>exeName</name>
+	<type>property</type>
+	<shortdesc>吉里吉里本体のパス</shortdesc>
+	<access>r</access>
+	<desc>
+		　吉里吉里本体へのパス名を表します。パス名は統一ストレージ名で表現されます。<r/>
+	</desc>
+</member>
+
+<member>
+	<name>title</name>
+	<type>property</type>
+	<shortdesc>タイトル</shortdesc>
+	<access>r/w</access>
+	<desc>
+		　タイトルを文字列で表します。値を設定することもできます。<r/>
+		　タイトルは Windows の場合、タスクバーに表示されます。<r/>
+	</desc>
+	<ref>Window.caption</ref>
+</member>
+
+<member>
+	<name>screenWidth</name>
+	<type>property</type>
+	<shortdesc>画面幅</shortdesc>
+	<access>r</access>
+	<desc>
+		　画面サイズ ( 画面解像度 ) の横サイズをピクセル単位で表します。<r/>
+	</desc>
+	<ref>System.screenHeight</ref>
+	<ref>System.desktopLeft</ref>
+	<ref>System.desktopTop</ref>
+	<ref>System.desktopWidth</ref>
+	<ref>System.desktopHeight</ref>
+</member>
+
+<member>
+	<name>screenHeight</name>
+	<type>property</type>
+	<shortdesc>画面高さ</shortdesc>
+	<access>r</access>
+	<desc>
+		　画面サイズ ( 画面解像度 ) の縦サイズをピクセル単位で表します。<r/>
+	</desc>
+	<ref>System.screenWidth</ref>
+	<ref>System.desktopLeft</ref>
+	<ref>System.desktopTop</ref>
+	<ref>System.desktopWidth</ref>
+	<ref>System.desktopHeight</ref>
+</member>
+
+<member>
+	<name>desktopLeft</name>
+	<type>property</type>
+	<shortdesc>デスクトップ左端位置</shortdesc>
+	<access>r</access>
+	<desc>
+		　デスクトップ ( ウィンドウを表示可能な領域 ) の左端位置をピクセル単位で表します。<r/>
+	</desc>
+	<ref>System.screenWidth</ref>
+	<ref>System.screenHeight</ref>
+	<ref>System.desktopTop</ref>
+	<ref>System.desktopWidth</ref>
+	<ref>System.desktopHeight</ref>
+</member>
+
+<member>
+	<name>desktopTop</name>
+	<type>property</type>
+	<shortdesc>デスクトップ上端位置</shortdesc>
+	<access>r</access>
+	<desc>
+		　デスクトップ ( ウィンドウを表示可能な領域 ) の上端位置をピクセル単位で表します。<r/>
+	</desc>
+	<ref>System.screenWidth</ref>
+	<ref>System.screenHeight</ref>
+	<ref>System.desktopLeft</ref>
+	<ref>System.desktopWidth</ref>
+	<ref>System.desktopHeight</ref>
+</member>
+
+<member>
+	<name>desktopWidth</name>
+	<type>property</type>
+	<shortdesc>デスクトップ幅</shortdesc>
+	<access>r</access>
+	<desc>
+		　デスクトップ ( ウィンドウを表示可能な領域 ) の幅をピクセル単位で表します。<r/>
+	</desc>
+	<ref>System.screenWidth</ref>
+	<ref>System.screenHeight</ref>
+	<ref>System.desktopLeft</ref>
+	<ref>System.desktopTop</ref>
+	<ref>System.desktopHeight</ref>
+</member>
+
+<member>
+	<name>desktopHeight</name>
+	<type>property</type>
+	<shortdesc>デスクトップ高さ</shortdesc>
+	<access>r</access>
+	<desc>
+		　デスクトップ ( ウィンドウを表示可能な領域 ) の高さをピクセル単位で表します。<r/>
+	</desc>
+	<ref>System.screenWidth</ref>
+	<ref>System.screenHeight</ref>
+	<ref>System.desktopLeft</ref>
+	<ref>System.desktopTop</ref>
+	<ref>System.desktopWidth</ref>
+</member>
+
+<member>
+	<name>exceptionHandler</name>
+	<type>property</type>
+	<shortdesc>捕捉されなかった例外のためのハンドラ関数</shortdesc>
+	<access>r/w</access>
+	<desc>
+		　捕捉されなかった例外 (どこにも捕捉されずに吉里吉里本体に渡された例外) を処理する関数を表します。<r/>
+		　null を指定すると、デフォルトの動作になります。<r/>
+		　デフォルトの動作とは、
+		<ol>
+			<li>非同期イベントの配信を停止する (<ref>System.eventDisabled</ref> を 真 に設定)</li>
+			<li>ログをファイルに出力開始する (<ref>Debug.logAsError</ref> を呼ぶ)</li>
+			<li>エラーを通知するダイアログボックスを表示し、スクリプトエディタでその箇所を示す</li>
+		</ol>
+		　です。<r/>
+		　ハンドラ関数は引数を一つ取り、それが例外オブジェクトになります。<r/>
+		　ハンドラ関数が指定されないか、あるいはハンドラ関数が null であるか、あるいはハンドラ関数が偽を返すと、デフォルトの動作が行われます。<r/>
+		　ハンドラ関数が真を返すと上記のデフォルトの動作は行われません。<r/>
+		　ハンドラ関数を実行中に非同期イベントが発生する可能性を考慮してください。吉里吉里本体が非同期イベントを処理できてしまうと、例外ハンドラを実行中に再び予期せぬ例外が発生する可能性があります。これを避けるため、通常、ハンドラ関数内でなにかを待つような処理をする場合 (吉里吉里が非同期イベントを処理する機会がある場合 )、非同期イベントの発生を停止させます。<r/>
+		<example>
+System.exceptionHandler = function (e)<r/>
+{<r/>
+	// どこにも捕捉されない例外がシステム側で捕捉された場合、この関数が<r/>
+	// 呼ばれる。e は例外オブジェクト。<r/>
+	if(e instanceof "ConductorException")<r/>
+	{<r/>
+		// コンダクタの投げた例外の場合<r/>
+		Debug.logAsError(); // ログのファイルへの書き出し動作の開始など<r/>
+		var event_disabled = System.eventDisabled;<r/>
+		System.eventDisabled = true;<r/>
+			// エラーの理由を表示させている間にイベントが発生すると<r/>
+			// やっかいなのでいったんイベント発生を停止させる<r/>
+		System.inform(e.message);<r/>
+		System.eventDisabled = event_disabled;<r/>
+			// イベントを発生するかどうかを元の状態に<r/>
+		return true; // true を返すと本体側で例外の処理は行わなくなる<r/>
+	}<r/>
+	else<r/>
+	{<r/>
+		return false; // false を返すと通常の例外処理<r/>
+	}<r/>
+};<r/>
+		</example>
+	</desc>
+	<ref>System.eventDisabled</ref>
+	<ref>Debug.logAsError</ref>
+
+</member>
+
+
+</doc>

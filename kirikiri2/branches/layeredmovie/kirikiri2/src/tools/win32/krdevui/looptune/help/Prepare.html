@@ -1,0 +1,80 @@
+<HTML>
+<HEAD>
+<!--MadeByWZ-->
+<TITLE>Loop Tuner リファレンス - 準備</TITLE>
+</HEAD>
+<BODY BGCOLOR="white" TEXT="black" LINK="black" VLINK="#414141" ALINK="#E80005">
+<IMG SRC="hline.png" width=100% height=1><BR>
+<CENTER>■ 利用可能な形式 ■</CENTER>
+<IMG SRC="hline.png" width=100% height=1><BR>
+<BR>
+　ループチューナは、現時点で以下の PCM の形式のファイルを扱うことができます。<BR>
+<BR>
+・無圧縮 Wave ( 拡張子は .wav ) ただし <B>いくつか制限あり</B><BR>
+・MS-ADPCM ( 拡張子は .wav )<BR>
+・TCWF ( 拡張子は .tcw )<BR>
+・Ogg Vorbis ( 拡張子は .ogg )<BR>
+<BR>
+<BR>
+　ループ部分が 4 秒未満の小さなものでは、各圧縮形式を用いるよりは無圧縮 Wave を使うことを強く推奨します ( 圧縮形式では再生位置の変更に掛かるオーバーヘッドが大きいので、頻繁に再生位置の変更が発生するのは好ましくない )。<BR>
+<BR>
+<BR>
+<IMG SRC="hline.png" width=100% height=1><BR>
+<CENTER>■ 読み込み可能な無圧縮 Wave 形式について ■</CENTER>
+<IMG SRC="hline.png" width=100% height=1><BR>
+<BR>
+　以下の形式を読み込むことができます。<BR>
+<BR>
+・8bit, 16bit, 24bit, 32bit の 普通の整数リニア PCM ( wFormatTag = WAVE_FORMAT_PCM のもの )<BR>
+・32bit の浮動小数点数 PCM ( wFormatTag = WAVE_FORMAT_IEEE_FLOAT のもの )<BR>
+・wFormatTag = WAVE_FORMAT_EXTENSIBLE の 8 ～ 32bit 整数リニア PCM と 32bit 浮動小数点数 PCM<BR>
+<BR>
+　いずれも、総チャンネル数が 8 チャンネル以下のものに限られます。また、特殊な形式では正常に読み込めない場合もあります。<BR>
+<BR>
+　ループチューナは、16bit 精度以外のデータを受け取った場合、内部処理の簡略化のため、ファイルの読み込み時に強制的に 16bit に変換してしまいますので注意してください。[ファイル - 全体を wav 出力] でも 16bit 整数リニア PCM が出力されます。<BR>
+<BR>
+<BR>
+<IMG SRC="hline.png" width=100% height=1><BR>
+<CENTER>■ マルチチャンネルファイルについて ■</CENTER>
+<IMG SRC="hline.png" width=100% height=1><BR>
+<BR>
+　スピーカー位置を指定できる wFormatTag = WAVE_FORMAT_EXTENSIBLE の形式のファイルを読み込んだ場合を除き、ループチューナは ファイルに格納されているチャンネル数に応じて以下のように解釈します (OggVorbis も含む)。<BR>
+<BR>
+・1チャンネルの場合 : モノラル<BR>
+・2チャンネルの場合 : ステレオ<BR>
+・4チャンネルの場合 : 4チャンネルサラウンド (チャンネルの先頭から順に 前左、前右、後左、後右)<BR>
+・6チャンネルの場合 : 5.1チャンネルサラウンド (チャンネルの先頭から順に 前左、前中央、前右、後左、後右、低周波)<BR>
+<BR>
+　これ以外のチャンネル数の物を読み込んだ場合の動作は不定です。<BR>
+<BR>
+　Windows 95/98/NT4.0 では、モノラルやステレオ以外のファイル、WAVE_FORMAT_EXTENSIBLE 形式のファイルの再生はサポート外です。<BR>
+<BR>
+<IMG SRC="hline.png" width=100% height=1><BR>
+<CENTER>■ プラグイン DLL について ■</CENTER>
+<IMG SRC="hline.png" width=100% height=1><BR>
+<BR>
+　Loop Tuner は、Loop Tuner 実行可能ファイル (krkrlt.exe) の置いてあるフォルダの親のフォルダの下にある plugin フォルダ (つまり Loop Tuner の置いてあるフォルダから見れば兄弟の位置にある plugin フォルダ ) からプラグインを探します。これは、(配布時のファイル構成そのままならば) 吉里吉里用のプラグインを参照することになります。実際、Loop Tuner が用いるプラグインは吉里吉里用のPCMデコード系プラグインです。<BR>
+　Loop Tuner の置いてあるフォルダ下に plugin というディレクトリを作成し、そこにプラグインを置いても使用することができます。<BR>
+<BR>
+<BR>
+<IMG SRC="hline.png" width=100% height=1><BR>
+<CENTER>■ 録音する ■</CENTER>
+<IMG SRC="hline.png" width=100% height=1><BR>
+<BR>
+　ループチューナでそのサウンドを扱う限り、形式は PCM で無ければなりません。まずは無圧縮 Wave としてサウンドを保存してください。<BR>
+　このときに作成する Wave は、繰り返すのに十分な時間分が記録されている必要があります。「再生されない余分な部分」となるべき部分もすこし余裕をもって作成したほうがいいです。<BR>
+　サウンドの頭の無音部分の除去、音質の調整などはこの時点で行ってください。<BR>
+<BR>
+　その後に、もし圧縮形式を用いる場合は、各圧縮形式にエンコードしてください。ただし、このときにはエンコード前の無圧縮 Wave は消さずに取っておくことをお勧めします ( 再生されない余分な部分を後で切り落としたくなるかもしれないからです )。<BR>
+<BR>
+<BR>
+<IMG SRC="hline.png" width=100% height=1><BR>
+<BR>
+<CENTER>▲ <A HREF="index.html">目次に戻る</A> ▲</CENTER>
+<BR>
+<IMG SRC="hline.png" width=100% height=1><BR>
+
+
+
+</BODY>
+</HTML>
