@@ -308,7 +308,7 @@ unsigned int tTVPLocalFileStream::Read(void *buffer, unsigned int read_size)
 
 	if(ret && XP3ArchiveAttractFilter_v2 && UseEncryption)
 	{
-		// v1 read filter
+		// v2 read filter
 		XP3ArchiveAttractFilter_v2(Salt, current, buffer, ret);
 	}
 
