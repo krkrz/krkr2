@@ -89,6 +89,67 @@ public:
 
 
 //---------------------------------------------------------------------------
+// tTVPScenarioCacheItem : Scenario Cache Item
+//---------------------------------------------------------------------------
+class tTVPScenarioCacheItem
+{
+public:
+	struct tLine
+	{
+		const tjs_char *Start;
+		tjs_int Length;
+	};
+
+private:
+	tTVPCharHolder Buffer;
+	tLine *Lines;
+	tjs_int LineCount;
+
+public:
+	struct tLabelCacheData
+	{
+		tjs_int Line;
+		tjs_int Count;
+		tLabelCacheData(tjs_int line, tjs_int count)
+		{
+			Line = line;
+			Count = count;
+		}
+	};
+
+public:
+	typedef tTJSHashTable<ttstr, tLabelCacheData> tLabelCacheHash;
+private:
+	tLabelCacheHash LabelCache; // Label cache
+	std::vector<ttstr> LabelAliases;
+	bool LabelCached; // whether the label is cached
+
+	tjs_int RefCount;
+
+public:
+	tTVPScenarioCacheItem(const ttstr & name, bool istring);
+protected:
+	~tTVPScenarioCacheItem();
+public:
+	void AddRef();
+	void Release();
+private:
+	void LoadScenario(const ttstr & name, bool isstring);
+		// load file or string to buffer
+public:
+	const ttstr & GetLabelAliasFromLine(tjs_int line) const
+		{ return LabelAliases[line]; }
+	void EnsureLabelCache();
+
+	tLine * GetLines() const { return Lines; }
+	tjs_int GetLineCount() const { return LineCount; }
+	const tLabelCacheHash & GetLabelCache() const { return LabelCache; }
+};
+//---------------------------------------------------------------------------
+
+
+
+//---------------------------------------------------------------------------
 // tTJSNI_KAGParser
 //---------------------------------------------------------------------------
 class tTJSNI_KAGParser : public tTJSNativeInstance
@@ -115,21 +176,6 @@ private:
 	tjs_uint MacroArgStackDepth;
 	tjs_uint MacroArgStackBase;
 
-	struct tLabelCacheData
-	{
-		tjs_int Line;
-		tjs_int Count;
-		tLabelCacheData(tjs_int line, tjs_int count)
-		{
-			Line = line;
-			Count = count;
-		}
-	};
-
-	tTJSHashTable<ttstr, tLabelCacheData> LabelCache; // Label cache
-	std::vector<ttstr> LabelAliases;
-	bool LabelCached; // wether the label is cached
-
 	struct tCallStackData
 	{
 		ttstr Storage; // caller storage
@@ -153,16 +199,12 @@ private:
 	};
 	std::vector<tCallStackData> CallStack;
 
+	tTVPScenarioCacheItem * Scenario;
+	tTVPScenarioCacheItem::tLine * Lines; // is copied from Scenario
+	tjs_int LineCount; // is copied from Scenario
+
 	ttstr StorageName;
 	ttstr StorageShortName;
-	tTVPCharHolder Buffer;
-	struct tLine
-	{
-		const tjs_char *Start;
-		tjs_int Length;
-	} * Lines;
-	tjs_int LineCount;
-//	ttstr CurStorage;
 
 	tjs_int CurLine; // current processing line
 	tjs_int CurPos; // current processing position ( column )
@@ -190,7 +232,6 @@ public:
 	void operator = (const tTJSNI_KAGParser & ref);
 	iTJSDispatch2 *Store();
 	void Restore(iTJSDispatch2 *dic);
-	void LoadScenario(const ttstr & name); // load to buffer
 
 	void Clear(); // clear all states
 
@@ -201,10 +242,9 @@ private:
 
 	void BreakConditionAndMacro(); // break condition state and macro expansion
 
-	const ttstr & GetLabelAliasFromLine(tjs_int line) const;
-	void EnsureLabelCache();
-
 public:
+	void LoadScenario(const ttstr & name);
+	const ttstr & GetStorageName() const { return StorageName; }
 	void GoToLabel(const ttstr &name); // search label and set current position
 	void GoToStorageAndLabel(const ttstr &storage, const ttstr &label);
 	void CallLabel(const ttstr &name);
@@ -233,7 +273,6 @@ private:
 public:
 	iTJSDispatch2 * GetNextTag();
 
-	const ttstr & GetStorageName() const { return StorageName; }
 	const ttstr & GetCurLabel() const { return CurLabel; }
 	tjs_int GetCurLine() const { return CurLine; }
 	tjs_int GetCurPos() const { return CurPos; }
