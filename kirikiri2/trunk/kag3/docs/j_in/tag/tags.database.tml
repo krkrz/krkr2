@@ -3442,12 +3442,7 @@
 		　ビデオまたはSWF(Shockwave Flash)を再生します。<ref tag="video">video</ref> タグで指定した表示領域にて再
 		生します。ビデオ表示領域はデフォルトでは非表示なので、video タグで表示状態にしないと
 		表示されません。<BR>
-		　このタグはビデオの再生の終了を待ちません。待つには <ref tag="wv">wv</ref> を使
-		用してください。<BR>
-		　DirectSound と WaveMapper を同時に再生できない環境で、かつ、ビデオやSWFが WaveMapper を使用する場合には
-		ビデオや SWF の音声が再生できない事があります。この場合は、ビデオの再生 ( または再生準備 ) の前に
-		<TT>[eval exp="WaveSoundBuffer.freeDirectSound()"]</TT> で DirectSound を解放することにより
-		再生できるようになります。<BR>
+		　このタグはビデオの再生の終了を待ちません。待つには <ref tag="wv">wv</ref> を使用してください。<BR>
 	</remarks>
 </tag>
 
@@ -4893,7 +4888,7 @@
 			<required> no </required>
 			<format> 幅 ( pixel 単位 ) </format>
 			<info>
-				　表示領域の幅を指定します。
+				　表示領域の幅を指定します。現バージョンではレイヤ描画モードでは指定は無視されます。
 			</info>
 		</attrib>
 
@@ -4902,17 +4897,215 @@
 			<required> no </required>
 			<format> 高さ ( pixel 単位 ) </format>
 			<info>
-				　表示領域の高さを指定します。
+				　表示領域の高さを指定します。現バージョンではレイヤ描画モードでは指定は無視されます。
 			</info>
 		</attrib>
+
+		<attrib name="loop">
+			<shortinfo> ループするかどうか </shortinfo>
+			<required> no </required>
+			<format> true または false </format>
+			<info>
+				　ループを行いたい場合は true を指定します。
+			</info>
+		</attrib>
+
+
+		<attrib name="position">
+			<shortinfo> 移動先時間 </shortinfo>
+			<required> no </required>
+			<format> 時間 ( ms 単位 ) </format>
+			<info>
+				　指定した時間までビデオの再生位置を移動したい場合に指定します。
+			</info>
+		</attrib>
+
+		<attrib name="frame">
+			<shortinfo> 移動先フレーム </shortinfo>
+			<required> no </required>
+			<format> フレーム番号 </format>
+			<info>
+				　指定した位置までビデオの再生位置を移動したい場合に指定します。<BR>
+				　position属性と違い、この属性ではフレーム単位で指定することができます。<BR>
+			</info>
+		</attrib>
+
+		<attrib name="mode">
+			<shortinfo> 描画モード </shortinfo>
+			<required> no </required>
+			<format> "overlay" または "layer" </format>
+			<info>
+				　ムービーの描画モードを指定します。<BR>
+				　"overlay" を指定するとオーバーレイモードで再生できます。オーバーレイモードではビデオは他のレイヤより奥になることはできませんが、再生負荷を軽くすることができます。<BR>
+				　"layer" を指定すると、レイヤ描画モードで再生できます。レイヤ描画モードでは、ビデオの画像をレイヤに表示できますが、再生負荷は "overlay" よりも高くなります。表示するレイヤは <ref tag="videolayer">videolayer</ref> タグで設定します。<BR>
+			</info>
+		</attrib>
+
 	</attribs>
 
 	<remarks>
 	　ビデオ/SWF表示領域の属性を指定します。<BR>
 	　ビデオ/SWF表示領域はデフォルトで非表示なので、このタグで表示状態にしないと表示されません。<BR>
-	　ビデオ/SWF表示領域はレイヤではありません。すべてのレイヤよりも手前に表示されます。
+	　オーバーレイモードで表示される領域はレイヤではありません。すべてのレイヤよりも手前に表示されます。<BR>
+	　現バージョンではSWFはレイヤ描画モードによる再生はできません。<BR>
 	</remarks>
 </tag>
+
+
+<tag name="videolayer">
+	<shortinfo> ビデオレイヤ設定 </shortinfo>
+	<group> 効果音・BGM・ビデオ操作 </group>
+	<attribs>
+		<attrib name="channel">
+			<shortinfo> チャンネル </shortinfo>
+			<required> yes </required>
+			<format> 1 または 2 </format>
+			<info>
+				　レイヤ描画モードでは、同時に二つのチャンネルでビデオを再生できます。<BR>
+				　この属性では、そのどちらのチャンネルに対してのレイヤを設定するかを指定します。<BR>
+			</info>
+		</attrib>
+
+		<attrib name="page">
+			<shortinfo> ページ </shortinfo>
+			<required> yes </required>
+			<format> "fore" または "back" </format>
+			<info>
+				　表ページ("fore")か、裏ページ("back")かを指定します。<BR>
+			</info>
+		</attrib>
+
+		<attrib name="layer">
+			<shortinfo> レイヤ </shortinfo>
+			<required> yes </required>
+			<format> レイヤ番号(0～) </format>
+			<info>
+				　表示したいレイヤ番号を指定します。
+			</info>
+		</attrib>
+
+	</attribs>
+
+	<remarks>
+	　レイヤー描画モード時に、ビデオの画像を表示させたいレイヤを指定します。レイヤサイズは、ビデオのサイズに自動的に変更されます。<BR>
+	　この設定を解除するには<ref tag="clearvideolayer">clearvideolayer</ref>タグを使います。<br>
+	</remarks>
+</tag>
+
+<tag name="clearvideolayer">
+	<shortinfo> ビデオレイヤ解除 </shortinfo>
+	<group> 効果音・BGM・ビデオ操作 </group>
+	<attribs>
+		<attrib name="channel">
+			<shortinfo> チャンネル </shortinfo>
+			<required> yes </required>
+			<format> 1 または 2 </format>
+			<info>
+				　レイヤ描画モードによる描画を解除したいチャンネルを指定します。<BR>
+			</info>
+		</attrib>
+	</attribs>
+
+	<remarks>
+	　<ref tag="videolayer">videolayer</ref>タグで設定したレイヤを解除します。<br>
+	</remarks>
+</tag>
+
+<tag name="videosegloop">
+	<shortinfo> ビデオのセグメントループ再生 </shortinfo>
+	<group> 効果音・BGM・ビデオ操作 </group>
+	<attribs>
+		<attrib name="start">
+			<shortinfo> 開始フレーム番号 </shortinfo>
+			<required> yes </required>
+			<format> フレーム番号 </format>
+			<info>
+				　ループの指定を指定します。
+			</info>
+		</attrib>
+		<attrib name="end">
+			<shortinfo> 終了フレーム番号 </shortinfo>
+			<required> yes </required>
+			<format> フレーム番号 </format>
+			<info>
+				　ループの終点を指定します。
+			</info>
+		</attrib>
+	</attribs>
+
+	<remarks>
+	　start 属性と end 属性で示した区間内でループ再生を行います。<BR>
+	このタグはレイヤー描画モード時のみ有効です。<BR>
+	</remarks>
+</tag>
+
+<tag name="cancelvideosegloop">
+	<shortinfo> ビデオのセグメントループ再生の解除 </shortinfo>
+	<group> 効果音・BGM・ビデオ操作 </group>
+	<attribs>
+	</attribs>
+
+	<remarks>
+	<ref tag="videosegloop">videosegloop</ref>タグで設定したセグメントループを解除します。<BR>
+	</remarks>
+</tag>
+
+<tag name="videoevent">
+	<shortinfo> ピリオドイベントの発生 </shortinfo>
+	<group> 効果音・BGM・ビデオ操作 </group>
+	<attribs>
+		<attrib name="frame">
+			<shortinfo> フレーム番号 </shortinfo>
+			<required> yes </required>
+			<format> フレーム番号 </format>
+			<info>
+				　ピリオドイベントを発生させるフレーム番号を指定します。
+			</info>
+		</attrib>
+	</attribs>
+
+	<remarks>
+	　指定したフレームでピリオドイベントを発生させることができます。<BR>
+	　ピリオドイベントは、<ref tag="wv">wv</ref>タグで待つことができます。<BR>
+	</remarks>
+</tag>
+
+<tag name="pausevideo">
+	<shortinfo> ビデオの一時停止 </shortinfo>
+	<group> 効果音・BGM・ビデオ操作 </group>
+	<attribs>
+	</attribs>
+
+	<remarks>
+	　ビデオの再生を一時停止します。
+	</remarks>
+</tag>
+
+<tag name="rewindvideo">
+	<shortinfo> ビデオの巻き戻し </shortinfo>
+	<group> 効果音・BGM・ビデオ操作 </group>
+	<attribs>
+	</attribs>
+
+	<remarks>
+	　ビデオを先頭まで巻き戻します。
+	</remarks>
+</tag>
+
+<tag name="preparevideo">
+	<shortinfo> ビデオの再生準備 </shortinfo>
+	<group> 効果音・BGM・ビデオ操作 </group>
+	<attribs>
+	</attribs>
+
+	<remarks>
+	　ビデオの再生準備を行います。<BR>
+	レイヤー描画モード時に未描画画像が表示されてしまうのを防ぐためにこの機能を使用してください。<BR>
+	このタグの直後にかならず[wv]タグを置いて準備完了を待ってください。<BR>
+	このタグはレイヤー描画モード時のみ有効です。<BR>
+	</remarks>
+</tag>
+
 
 <tag name="resetwait">
 	<shortinfo> ウェイトの初期化 </shortinfo>
@@ -4928,6 +5121,7 @@
 		; ↑ resetwait を通過した時間から 3 秒経過するまで待つ
 	</example>
 </tag>
+
 
 <tag name="wait">
 	<shortinfo> ウェイトを入れる </shortinfo>
@@ -5138,7 +5332,7 @@
 
 
 	<remarks>
-		　ビデオ再生の終了を待ちます。<BR>
+		　ビデオ再生の終了や、<ref tag="preparevideo">preparevideo<ref> タグによる再生準備の完了、<ref tag="videoevent">videoevent</ref> タグによるピリオドイベントを待ちます。<BR>
 		　SWF(Sockwave Flash) の再生の終了を待つことはできません。<ref tag="wait">wait</ref> タ
 		グ等で必要な時間を待つなどをして対処してください。<BR>
 	</remarks>
