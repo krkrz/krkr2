@@ -21,6 +21,16 @@ TJS_EXP_FUNC_DEF(tjs_int32, TJSFindNativeClassID, (const tjs_char *name));
 TJS_EXP_FUNC_DEF(const tjs_char *, TJSFindNativeClassName, (tjs_int32 id));
 //---------------------------------------------------------------------------
 
+//---------------------------------------------------------------------------
+// tTJSNativeInstanceType
+//---------------------------------------------------------------------------
+enum tTJSNativeInstanceType
+{
+	nitClass,
+	nitMethod,
+	nitProperty
+};
+//---------------------------------------------------------------------------
 
 
 
@@ -47,6 +57,10 @@ class tTJSNativeClassMethod : public tTJSDispatch
 {
 	typedef tTJSDispatch inherited;
 public:
+
+	tTJSNativeClassMethod();
+	~tTJSNativeClassMethod();
+
 	tjs_error TJS_INTF_METHOD
 	IsInstanceOf(tjs_uint32 flag, const tjs_char *membername, tjs_uint32 *hint,
 		const tjs_char *classname,
@@ -77,6 +91,10 @@ class tTJSNativeClassProperty : public tTJSDispatch
 {
 	typedef tTJSDispatch inherited;
 public:
+
+	tTJSNativeClassProperty();
+	~tTJSNativeClassProperty();
+
 	tjs_error TJS_INTF_METHOD
 	IsInstanceOf(tjs_uint32 flag, const tjs_char *membername, tjs_uint32 *hint,
 		const tjs_char *classname,
@@ -113,7 +131,11 @@ public:
 	tTJSNativeClass(const ttstr &name);
 	~tTJSNativeClass();
 
-	void RegisterNCM(const tjs_char *name, iTJSDispatch2 *dsp, tjs_uint32 flags = 0);
+	void RegisterNCM(const tjs_char *name,
+		iTJSDispatch2 *dsp,
+		const tjs_char *classname,
+		tTJSNativeInstanceType type,
+		tjs_uint32 flags = 0);
 
 protected:
 	tjs_int32 _ClassID;
@@ -144,6 +166,8 @@ public:
 		 const tjs_char *classname,
 		iTJSDispatch2 *objthis);
 
+
+	const ttstr & GetClassName() const { return ClassName; }
 };
 //---------------------------------------------------------------------------
 // following macros are to be written in the constructor of child class
@@ -172,8 +196,9 @@ public:
 
 #define TJS_BEGIN_NATIVE_MEMBERS(classname) \
 	{ \
+		static const tjs_char *__classname = TJS_W(#classname); \
 		static tjs_int32 TJS_NCM_CLASSID = \
-			TJSRegisterNativeClass(TJS_W(#classname)); \
+			TJSRegisterNativeClass(__classname); \
 		_ClassID = ClassID = TJS_NCM_CLASSID;
 
 #define TJS_BEGIN_NATIVE_METHOD_DECL(name) \
@@ -188,19 +213,19 @@ public:
 
 #define TJS_END_NATIVE_METHOD_DECL(name) \
 		TJS_END_NATIVE_METHOD_DECL_INT \
-		RegisterNCM(TJS_W(#name), new NCM_##name());
+		RegisterNCM(TJS_W(#name), new NCM_##name(), __classname, nitMethod);
 
 #define TJS_END_NATIVE_HIDDEN_METHOD_DECL(name) \
 		TJS_END_NATIVE_METHOD_DECL_INT \
-		RegisterNCM(TJS_W(#name), new NCM_##name(), TJS_HIDDENMEMBER);
+		RegisterNCM(TJS_W(#name), new NCM_##name(), __classname, nitMethod, TJS_HIDDENMEMBER);
 
 #define TJS_END_NATIVE_STATIC_METHOD_DECL(name) \
 		TJS_END_NATIVE_METHOD_DECL_INT \
-		RegisterNCM(TJS_W(#name), new NCM_##name(), TJS_STATICMEMBER);
+		RegisterNCM(TJS_W(#name), new NCM_##name(), __classname, nitMethod, TJS_STATICMEMBER);
 
 #define TJS_END_NATIVE_METHOD_DECL_OUTER(object, name) \
 		TJS_END_NATIVE_METHOD_DECL_INT \
-		(object)->RegisterNCM(TJS_W(#name), new NCM_##name());
+		(object)->RegisterNCM(TJS_W(#name), new NCM_##name(), (object)->GetClassName().c_str(), nitMethod);
 
 #define TJS_DECL_EMPTY_FINALIZE_METHOD \
 	TJS_BEGIN_NATIVE_METHOD_DECL(finalize) \
@@ -240,13 +265,13 @@ public:
 		class NCM_##name : public tTJSNativeClassProperty
 
 #define TJS_END_NATIVE_PROP_DECL(name) \
-		;RegisterNCM(TJS_W(#name), new NCM_##name());
+		;RegisterNCM(TJS_W(#name), new NCM_##name(), __classname, nitProperty);
 
 #define TJS_END_NATIVE_PROP_DECL_OUTER(object, name) \
-		;(object)->RegisterNCM(TJS_W(#name), new NCM_##name());
+		;(object)->RegisterNCM(TJS_W(#name), new NCM_##name(), (object)->GetClassName().c_str(), nitProperty);
 
 #define TJS_END_NATIVE_STATIC_PROP_DECL(name) \
-		;RegisterNCM(TJS_W(#name), new NCM_##name(), TJS_STATICMEMBER);
+		;RegisterNCM(TJS_W(#name), new NCM_##name(), __classname, nitProperty, TJS_STATICMEMBER);
 
 #define TJS_BEGIN_NATIVE_PROP_GETTER \
 		tjs_error Get(tTJSVariant *result, iTJSDispatch2 *objthis) { \
@@ -293,6 +318,10 @@ class tTJSNativeFunction : public tTJSDispatch
 {
 	typedef tTJSDispatch inherited;
 public:
+	tTJSNativeFunction(const tjs_char *name = NULL);
+		// 'name' is just to be used as a label for debugging
+	~tTJSNativeFunction();
+
 	tjs_error TJS_INTF_METHOD FuncCall(
 		tjs_uint32 flag, const tjs_char * membername, tjs_uint32 *hint, tTJSVariant *result,
 		tjs_int numparams, tTJSVariant **param, iTJSDispatch2 *objthis);

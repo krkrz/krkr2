@@ -315,6 +315,7 @@ public:
 	const tjs_char *GetContextTypeName() const;
 
 	ttstr GetShortDescription() const;
+	ttstr GetShortDescriptionWithClassName() const;
 
 	tTJSScriptBlock * GetBlock() const { return Block; }
 

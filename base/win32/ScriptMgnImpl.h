@@ -21,6 +21,7 @@
 // TVPInitializeStartupScript
 //---------------------------------------------------------------------------
 extern void TVPInitializeStartupScript();
+extern bool TVPCheckProcessLog();
 
 //---------------------------------------------------------------------------
 #endif
