@@ -193,7 +193,7 @@ class KAGLayer extends Layer
 		// src にはトランジションの相手を指定
 //		stopTransition(); // 現在のトランジションは停止
 
-		if(elm.exchange !== void) transExchange = +elm.exchnge; else transExchange = false;
+		if(elm.exchange !== void) transExchange = +elm.exchange; else transExchange = false;
 		var method = elm.method;
 		if(elm.time !== void)
 		{
