@@ -82,6 +82,7 @@ print FH <<EOF;
 
 
 #include "tjsTypes.h"
+#include "tvpgl.h"
 
 #ifdef _WIN32
 #define TVP_GL_IA32_FUNC_DECL(rettype, funcname, arg)  rettype __cdecl funcname arg
