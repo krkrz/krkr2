@@ -412,12 +412,12 @@ Releaser ‚â krkrconf.exe ( ƒGƒ“ƒWƒ“Ý’è.exe ) ‚Å‚ÍA‹g—¢‹g—¢‚ÌŽÀs‰Â”\ƒtƒ@ƒCƒ‹‚â
 </dd>
 
 
-<dt>-<kw>evalcontext</kw> (Œã’u!‰‰ŽZŽq‚Ì“®ì)</dt>
+<dt>-<kw>evalcontext</kw> (Œã’u'!'‰‰ŽZŽq‚Ì“®ì)</dt>
 <dd>
-@TJS2‚ÌŒã’u!‰‰ŽZŽq‚Ì“®ì‚ðŽw’è‚µ‚Ü‚·B<r/>
+@TJS2‚ÌŒã’u'!'‰‰ŽZŽq‚Ì“®ì‚ðŽw’è‚µ‚Ü‚·B<r/>
 @Ý’è‰Â”\‚È’l‚Í <b>'this' (thisã‚ÅŽ®‚ð•]‰¿)</b>, <b>'global' (globalã‚ÅŽ®‚ð•]‰¿)</b> ‚Ì‚¢‚¸‚ê‚©‚ÅA‚±‚ÌƒIƒvƒVƒ‡ƒ“‚ðŽw’è‚µ‚È‚¢‚Æ 'this' ‚ªŽw’è‚³‚ê‚½‚à‚Ì‚ÆŒ©‚È‚³‚ê‚Ü‚·B<r/>
-TJS2‚ÌŒã’u!‰‰ŽZŽq‚ÍŽ®‚ðglobalƒRƒ“ƒeƒLƒXƒgã‚ÅŽÀs‚µ‚Ä‚¢‚Ü‚µ‚½‚ªA2.21 beta 9 ‚æ‚èAthis ƒRƒ“ƒeƒLƒXƒgã‚ÅŽÀs‚·‚é‚æ‚¤‚É‚È‚è‚Ü‚µ‚½B<r/>
-2.21 beta 9 –¢–ž‚ð‘z’è‚µ‚Ä‚¢‚éƒAƒvƒŠƒP[ƒVƒ‡ƒ“‚Å‚ÍA‚±‚ÌÝ’è‚ð 'globalã‚ÅŽ®‚ð•]‰¿' ‚É‚µ‚È‚¢‚Æ“®ì‚µ‚È‚¢‰Â”\«‚ª‚ ‚è‚Ü‚·B
+@TJS2‚ÌŒã’u'!'‰‰ŽZŽq‚ÍŽ®‚ðglobalƒRƒ“ƒeƒLƒXƒgã‚ÅŽÀs‚µ‚Ä‚¢‚Ü‚µ‚½‚ªA2.21 beta 9 ‚æ‚èAthis ƒRƒ“ƒeƒLƒXƒgã‚ÅŽÀs‚·‚é‚æ‚¤‚É‚È‚è‚Ü‚µ‚½B<r/>
+2.21 beta 9 –¢–ž‚ð‘z’è‚µ‚Ä‚¢‚éƒAƒvƒŠƒP[ƒVƒ‡ƒ“‚Å‚ÍA‚±‚ÌÝ’è‚ðuglobalã‚ÅŽ®‚ð•]‰¿v‚É‚µ‚È‚¢‚Æ“®ì‚µ‚È‚¢‰Â”\«‚ª‚ ‚è‚Ü‚·B
 </dd>
 
 
@@ -426,8 +426,18 @@ TJS2‚ÌŒã’u!‰‰ŽZŽq‚ÍŽ®‚ðglobalƒRƒ“ƒeƒLƒXƒgã‚ÅŽÀs‚µ‚Ä‚¢‚Ü‚µ‚½‚ªA2.21 beta 9 ‚æ‚
 @<at href="f_Layer_holdAlpha.html">Layer.holdAlpha</at> ƒvƒƒpƒeƒB‚ÌƒfƒtƒHƒ‹ƒg’l‚ðŽw’è‚µ‚Ü‚·B<r/>
 @Ý’è‰Â”\‚È’l‚Í <b>'false' (‹U)</b>, <b>'true' (^)</b> ‚Ì‚¢‚¸‚ê‚©‚ÅA‚±‚ÌƒIƒvƒVƒ‡ƒ“‚ðŽw’è‚µ‚È‚¢‚Æ 'false' ‚ªŽw’è‚³‚ê‚½‚à‚Ì‚ÆŒ©‚È‚³‚ê‚Ü‚·B<r/>
 @‹g—¢‹g—¢‚Q 2.23 beta 4 ‚ÅAŠeŽí‰‰ŽZŠÖ”‚ÉŽw’è‚µ‚Ä‚¢‚½ hda (ƒAƒ‹ƒtƒ@ƒ`ƒƒƒ“ƒlƒ‹‚ð•ÛŒì‚·‚é‚©) ƒIƒvƒVƒ‡ƒ“‚ª‚È‚­‚È‚èA‘ã‚í‚è‚É Layer.holdAlpha ƒvƒƒpƒeƒB‚ªì‚ç‚ê‚Ü‚µ‚½B‚±‚ÌŽž“_‚Å‚Í Layer.holdAlpha ‚ÌƒfƒtƒHƒ‹ƒg’l‚Í^‚Å‚µ‚½BLayer.holdAlpha ‚ª^‚Ìê‡‚Í‰ß‹Ž‚ÌƒAƒvƒŠƒP[ƒVƒ‡ƒ“‚Ì“®ì‚É‰e‹¿‚ð—^‚¦‚Ü‚¹‚ñB<r/>
-@‹g—¢‹g—¢‚Q 2.23 beta 5 ‚ÅA‚±‚ÌƒfƒtƒHƒ‹ƒg’l‚ª‹U‚É‚È‚è‚Ü‚µ‚½B‹g—¢‹g—¢‚Q 2.23 beta 5 –¢–ž‚ð‘z’è‚µ‚Ä‚¢‚éƒAƒvƒŠƒP[ƒVƒ‡ƒ“‚ð“®ì‚³‚¹‚½‚¢ê‡‚ÍA‚±‚ÌƒIƒvƒVƒ‡ƒ“‚É '^' ‚ðŽw’è‚µ‚È‚¢‚Æ³í‚É“®ì‚µ‚È‚¢‰Â”\«‚ª‚ ‚è‚Ü‚·B
+@‹g—¢‹g—¢‚Q 2.23 beta 5 ‚ÅA‚±‚ÌƒfƒtƒHƒ‹ƒg’l‚ª‹U‚É‚È‚è‚Ü‚µ‚½B‹g—¢‹g—¢‚Q 2.23 beta 5 –¢–ž‚ð‘z’è‚µ‚Ä‚¢‚éƒAƒvƒŠƒP[ƒVƒ‡ƒ“‚ð“®ì‚³‚¹‚½‚¢ê‡‚ÍA‚±‚ÌƒIƒvƒVƒ‡ƒ“‚Éu^v‚ðŽw’è‚µ‚È‚¢‚Æ³í‚É“®ì‚µ‚È‚¢‰Â”\«‚ª‚ ‚è‚Ü‚·B
 </dd>
+
+
+<dt>-<kw>unaryaster</kw> (‘O’u'*'‰‰ŽZŽq‚Ì“®ì)</dt>
+<dd>
+@TJS2‚Ì‘O’u'*'‰‰ŽZŽq‚Ì“®ì‚ðŽw’è‚µ‚Ü‚·B<r/>
+@Ý’è‰Â”\‚È’l‚Í <b>'default' (2.25ˆÈ~‚Ì“®ì)</b>, <b>'compat' (2.25–¢–ž‚Ì“®ì)</b> ‚Ì‚¢‚¸‚ê‚©‚ÅA‚±‚ÌƒIƒvƒVƒ‡ƒ“‚ðŽw’è‚µ‚È‚¢‚Æ 'default' ‚ªŽw’è‚³‚ê‚½‚à‚Ì‚ÆŒ©‚È‚³‚ê‚Ü‚·B<r/>
+@TJS2‚Ì‘O’u'*'‰‰ŽZŽq‚ÍAƒvƒƒpƒeƒBƒIƒuƒWƒFƒNƒg‚»‚Ì‚à‚Ì‚ðAƒvƒƒpƒeƒBƒnƒ“ƒhƒ‰‚ð‰î‚³‚¸‚ÉŽæ‚èo‚·‰‰ŽZŽq‚Å‚µ‚½‚ªA2.25 beta 1 ‚æ‚èA‚±‚Ì‹@”\‚ðŽ‚Â‰‰ŽZŽq‚Í‘O’u‚Ì'&amp;'‚Æ‚È‚èA‘O’u'*'‰‰ŽZŽq‚ÍƒvƒƒpƒeƒBƒIƒuƒWƒFƒNƒg‚ÌƒvƒƒpƒeƒBƒnƒ“ƒhƒ‰‚ð“®ì‚³‚¹‚é‚½‚ß‚Ì‰‰ŽZŽq‚Æ‚È‚è‚Ü‚µ‚½B2.25 beta 1 –¢–ž‚ð‘z’è‚µ‚Ä‚¢‚éƒAƒvƒŠƒP[ƒVƒ‡ƒ“‚Å‚ÍA‚±‚ÌÝ’è‚ðu2.25–¢–ž‚ÆŒÝŠ·v‚É‚µ‚È‚¢‚Æ³í‚É“®ì‚µ‚È‚¢‰Â”\«‚ª‚ ‚è‚Ü‚·B
+</dd>
+
+
 
 
 </dl>

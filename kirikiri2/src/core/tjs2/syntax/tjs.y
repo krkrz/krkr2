@@ -179,7 +179,8 @@ int __yyerror(char * msg, void *pm);
 	T_SYMBOL
 	T_POSTDECREMENT
 	T_POSTINCREMENT
-	T_SUBSTANCE
+	T_IGNOREPROP
+	T_PROPACCESS
 	T_ARG
 	T_EXPANDARG
 	T_INLINEARRAY
@@ -659,7 +660,8 @@ unary_expr
 	| "$" unary_expr							{ $$ = cc->MakeNP1(T_DOLLAR, $2); }
 	| "+" unary_expr							{ $$ = cc->MakeNP1(T_UPLUS, $2); }
 	| "-" unary_expr							{ $$ = cc->MakeNP1(T_UMINUS, $2); }
-	| "*" unary_expr							{ $$ = cc->MakeNP1(T_SUBSTANCE, $2); }
+	| "&" unary_expr							{ $$ = cc->MakeNP1(T_IGNOREPROP, $2); }
+	| "*" unary_expr							{ $$ = cc->MakeNP1(T_PROPACCESS, $2); }
 	| incontextof_expr "instanceof" unary_expr	{ $$ = cc->MakeNP2(T_INSTANCEOF, $1, $3); }
 	| "(" "int" ")" unary_expr					{ $$ = cc->MakeNP1(T_INT, $4); }
 	| "int" unary_expr							{ $$ = cc->MakeNP1(T_INT, $2); }
