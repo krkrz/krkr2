@@ -276,7 +276,7 @@ public:
 	void SetType(tTVPLayerType type);
 
 	static bool IsTypeUsingAlpha(tTVPLayerType type)
-		{ return type == ltTransparent || type == ltAddAlpha; }
+		{ return type == ltAlpha || type == ltAddAlpha; }
 
 	bool GetDestHasAlpha() const { return IsTypeUsingAlpha(DisplayType); }
 

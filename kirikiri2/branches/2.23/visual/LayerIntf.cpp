@@ -317,7 +317,7 @@ tTJSNI_BaseLayer::tTJSNI_BaseLayer()
 	AbsoluteOrderIndex = 0;
 
 	// layer type management
-	DisplayType = Type = ltTransparent;
+	DisplayType = Type = ltAlpha;
 		// later reset this if the layer becomes a primary layer
 	NeutralColor = TVP_RGBA2COLOR(255, 255, 255, 0);
 
@@ -1332,7 +1332,7 @@ void tTJSNI_BaseLayer::SetType(tTVPLayerType type)
 			AllocateImage();
 			break;
 
-		case ltTransparent:
+		case ltAlpha: // formerly ltTransparent
 			NeutralColor = TVP_RGBA2COLOR(255, 255, 255, 0);
 			DisplayType = Type;
 			AllocateImage();
@@ -4691,7 +4691,7 @@ void tTJSNI_BaseLayer::QueryUpdateExcludeRect(tTVPRect &rect, bool parentvisible
 
 	// recur to children
 	parentvisible = parentvisible && Visible &&
-		(DisplayType == ltCoverRect || DisplayType == ltTransparent || DisplayType == ltAddAlpha) &&
+		(DisplayType == ltCoverRect || DisplayType == ltAlpha || DisplayType == ltAddAlpha) &&
 		Opacity == 255; // fixed 2004/01/09 W.Dee
 	TVP_LAYER_FOR_EACH_CHILD_NOLOCK_BACKWARD_BEGIN(child)
 
@@ -4750,7 +4750,7 @@ void tTJSNI_BaseLayer::BltImage(tTVPBaseBitmap *dest, tTVPLayerType destlayertyp
 
 	case ltCoverRect:
 		// copy
-		if(destlayertype == ltTransparent)
+		if(destlayertype == ltAlpha)
 			met = bmCopyOnAlpha;
 		else if(destlayertype == ltAddAlpha)
 			met = bmCopyOnAddAlpha;
@@ -4758,9 +4758,9 @@ void tTJSNI_BaseLayer::BltImage(tTVPBaseBitmap *dest, tTVPLayerType destlayertyp
 			met = bmCopy;
 		break;
 
-	case ltTransparent:
+	case ltAlpha: // formerly ltTransparent
 		// alpha blend
-		if(destlayertype == ltTransparent)
+		if(destlayertype == ltAlpha)
 			met = bmAlphaOnAlpha;
 		else if(destlayertype == ltAddAlpha)
 			met = bmAlphaOnAddAlpha;
@@ -4814,7 +4814,7 @@ void tTJSNI_BaseLayer::BltImage(tTVPBaseBitmap *dest, tTVPLayerType destlayertyp
 
 	case ltAddAlpha:
 		// alpha blend
-		if(destlayertype == ltTransparent)
+		if(destlayertype == ltAlpha)
 			met = bmAddAlphaOnAlpha;
 		else if(destlayertype == ltAddAlpha)
 			met = bmAddAlphaOnAddAlpha;
