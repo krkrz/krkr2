@@ -195,9 +195,9 @@ static tjs_uint32 TVP_INLINE_FUNC TVPBlendARGB(tjs_uint32 b, tjs_uint32 a, tjs_i
 #pragma pack(push, 4)
 typedef struct
 {
-	tjs_uint8 R[256];
-	tjs_uint8 G[256];
 	tjs_uint8 B[256];
+	tjs_uint8 G[256];
+	tjs_uint8 R[256];
 } tTVPGLGammaAdjustTempData;
 #pragma pack(pop)
 /*]*/
