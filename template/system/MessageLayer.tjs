@@ -1263,6 +1263,7 @@ class MessageLayer extends KAGLayer
 		if(ischar && (shadow || edge) )
 		{
 			lay.face = dfOpaque;
+			lay.holdAlpha = true;
 				// 影/袋文字の色でメインを塗りつぶす
 
 			if(edge)
@@ -1286,6 +1287,7 @@ class MessageLayer extends KAGLayer
 		if(ischar)
 		{
 			lay.face = dfOpaque;
+			lay.holdAlpha = true;
 			lay.fillRect(0, 0, lw, lh, chColor);
 				// メインを文字色で塗りつぶす
 		}
