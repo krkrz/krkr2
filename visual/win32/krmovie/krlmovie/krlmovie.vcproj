@@ -19,7 +19,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="C:\DXSDK\samples\Multimedia\DirectShow\BaseClasses;C:\DXSDK\include;..\;"
+				AdditionalIncludeDirectories="C:\DXSDK\samples\Multimedia\DirectShow\BaseClasses;C:\DXSDK\include;..\;..\..\..\..\..\plugins\win32;"
 				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;KRMOVIE_EXPORTS;DEBUG"
 				MinimalRebuild="TRUE"
 				BasicRuntimeChecks="3"
@@ -36,6 +36,7 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
+				AdditionalOptions="/COMMENT:&quot;(--has-option--)&quot;"
 				AdditionalDependencies="C:\DXSDK\samples\Multimedia\DirectShow\BaseClasses\debug\strmbasd.lib odbc32.lib odbccp32.lib version.lib winmm.lib strmiids.lib quartz.lib"
 				OutputFile=".\..\..\..\..\..\..\bin\win32/krlmovie.dll"
 				LinkIncremental="1"
@@ -94,6 +95,7 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
+				AdditionalOptions="/COMMENT:&quot;(--has-option--)&quot;"
 				AdditionalDependencies="C:\DXSDK\samples\Multimedia\DirectShow\BaseClasses\release\strmbase.lib odbc32.lib odbccp32.lib version.lib winmm.lib strmiids.lib quartz.lib"
 				OutputFile=".\..\..\..\..\..\..\bin\win32/krlmovie.dll"
 				LinkIncremental="1"
@@ -169,6 +171,9 @@
 			<File
 				RelativePath=".\krlmovie.def">
 			</File>
+			<File
+				RelativePath="..\..\..\..\..\plugins\win32\tp_stub.cpp">
+			</File>
 		</Filter>
 		<Filter
 			Name="ヘッダー ファイル"
@@ -204,11 +209,17 @@
 			<File
 				RelativePath=".\IRendererBufferVideo.h">
 			</File>
+			<File
+				RelativePath="..\..\..\..\..\plugins\win32\tp_stub.h">
+			</File>
 		</Filter>
 		<Filter
 			Name="リソース ファイル"
 			Filter="rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx"
 			UniqueIdentifier="{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}">
+			<File
+				RelativePath=".\krlmovie.rc">
+			</File>
 		</Filter>
 	</Files>
 	<Globals>
