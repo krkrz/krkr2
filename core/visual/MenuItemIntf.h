@@ -115,9 +115,10 @@ extern iTJSDispatch2 * TVPCreateMenuItemObject(iTJSDispatch2 * window);
 //---------------------------------------------------------------------------
 class tTVPOnMenuItemClickInputEvent : public tTVPBaseInputEvent
 {
+	static tTVPUniqueTagForInputEvent Tag;
 public:
 	tTVPOnMenuItemClickInputEvent(tTJSNI_BaseMenuItem *menu) :
-		tTVPBaseInputEvent(menu) {};
+		tTVPBaseInputEvent(menu, Tag) {};
 	void Deliver() const
 	{ ((tTJSNI_BaseMenuItem*)GetSource())->OnClick(); }
 };

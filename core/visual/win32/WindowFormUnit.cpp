@@ -2784,6 +2784,18 @@ void __fastcall TTVPWindowForm::AltEnterMenuItemClick(TObject *Sender)
 	FormKeyUp(this, key, TShiftState()<<ssAlt);
 }
 //---------------------------------------------------------------------------
+void __fastcall TTVPWindowForm::FormResize(TObject *Sender)
+{
+	// on resize
+	if(TJSNativeInstance)
+	{
+		// here specifies TVP_EPT_REMOVE_POST, to remove redundant onResize
+		// events.
+		TVPPostInputEvent(
+			new tTVPOnResizeInputEvent(TJSNativeInstance), TVP_EPT_REMOVE_POST);
+	}
+}
+//---------------------------------------------------------------------------
 void __fastcall TTVPWindowForm::PaintBoxPaint(TObject *Sender)
 {
 	// a painting event
@@ -3351,6 +3363,7 @@ void __fastcall TTVPWindowForm::GenerateMouseEvent(bool fl, bool fr, bool fu, bo
 	LastMouseKeyTick = GetTickCount();
 }
 //---------------------------------------------------------------------------
+
 
 
 

@@ -83,6 +83,35 @@ void TVPClearAllWindowInputEvents()
 
 
 
+
+
+//---------------------------------------------------------------------------
+// Input Events
+//---------------------------------------------------------------------------
+// For each input event tag
+tTVPUniqueTagForInputEvent tTVPOnCloseInputEvent              ::Tag;
+tTVPUniqueTagForInputEvent tTVPOnResizeInputEvent             ::Tag;
+tTVPUniqueTagForInputEvent tTVPOnClickInputEvent              ::Tag;
+tTVPUniqueTagForInputEvent tTVPOnDoubleClickInputEvent        ::Tag;
+tTVPUniqueTagForInputEvent tTVPOnMouseDownInputEvent          ::Tag;
+tTVPUniqueTagForInputEvent tTVPOnMouseUpInputEvent            ::Tag;
+tTVPUniqueTagForInputEvent tTVPOnMouseMoveInputEvent          ::Tag;
+tTVPUniqueTagForInputEvent tTVPOnReleaseCaptureInputEvent     ::Tag;
+tTVPUniqueTagForInputEvent tTVPOnMouseForceLeaveInputEvent    ::Tag;
+tTVPUniqueTagForInputEvent tTVPOnMouseEnterInputEvent         ::Tag;
+tTVPUniqueTagForInputEvent tTVPOnMouseLeaveInputEvent         ::Tag;
+tTVPUniqueTagForInputEvent tTVPOnKeyDownInputEvent            ::Tag;
+tTVPUniqueTagForInputEvent tTVPOnKeyUpInputEvent              ::Tag;
+tTVPUniqueTagForInputEvent tTVPOnKeyPressInputEvent           ::Tag;
+tTVPUniqueTagForInputEvent tTVPOnFileDropInputEvent           ::Tag;
+tTVPUniqueTagForInputEvent tTVPOnMouseWheelInputEvent         ::Tag;
+tTVPUniqueTagForInputEvent tTVPOnPopupHideInputEvent          ::Tag;
+//---------------------------------------------------------------------------
+
+
+
+
+
 //---------------------------------------------------------------------------
 // tTJSNI_BaseWindow
 //---------------------------------------------------------------------------
@@ -229,6 +258,16 @@ void tTJSNI_BaseWindow::OnClose()
 		tTJSVariant arg[1] = {true};
 		static ttstr eventname(TJS_W("onCloseQuery"));
 		TVPPostEvent(Owner, Owner, eventname, 0, TVP_EPT_IMMEDIATE, 1, arg);
+	}
+}
+//---------------------------------------------------------------------------
+void tTJSNI_BaseWindow::OnResize()
+{
+	if(!CanDeliverEvents()) return;
+	if(Owner)
+	{
+		static ttstr eventname(TJS_W("onResize"));
+		TVPPostEvent(Owner, Owner, eventname, 0, TVP_EPT_IMMEDIATE, 0, NULL);
 	}
 }
 //---------------------------------------------------------------------------
@@ -687,6 +726,17 @@ TJS_END_NATIVE_METHOD_DECL(/*func. name*/postInputEvent)
 
 
 
+//----------------------------------------------------------------------
+TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/onResize)
+{
+	TJS_GET_NATIVE_INSTANCE(/*var. name*/_this, /*var. type*/tTJSNI_Window);
+
+	TVP_ACTION_INVOKE_BEGIN(0, "onResize", objthis);
+	TVP_ACTION_INVOKE_END(tTJSVariantClosure(objthis, objthis));
+
+	return TJS_S_OK;
+}
+TJS_END_NATIVE_METHOD_DECL(/*func. name*/onResize)
 //----------------------------------------------------------------------
 TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/onMouseEnter)
 {

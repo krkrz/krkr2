@@ -778,7 +778,17 @@ void TVPDeliverWindowUpdateEvents()
 
 
 //---------------------------------------------------------------------------
-// TVPPostInputEvents
+// Input Event related
+//---------------------------------------------------------------------------
+tjs_int TVPInputEventTagMax = 0;
+//---------------------------------------------------------------------------
+
+
+
+
+
+//---------------------------------------------------------------------------
+// TVPPostInputEvent
 //---------------------------------------------------------------------------
 void TVPPostInputEvent(tTVPBaseInputEvent *ev, tjs_uint32 flags)
 {
@@ -789,6 +799,13 @@ void TVPPostInputEvent(tTVPBaseInputEvent *ev, tjs_uint32 flags)
 		delete ev;
 		return;
 	}
+
+	if(flags & TVP_EPT_REMOVE_POST)
+	{
+		// cancel previously posted events
+		TVPCancelInputEvents(ev->GetSource(), ev->GetTag());
+	}
+
 
 	// push into the event queue
 	TVPInputEventQueue.push_back(ev);
@@ -828,6 +845,31 @@ void TVPCancelInputEvents(void * source)
 	}
 }
 //---------------------------------------------------------------------------
+void TVPCancelInputEvents(void * source, tjs_int tag)
+{
+	// removes all evens which have the same source and the same tag
+	if(TVPInputEventQueue.size())
+	{
+		std::vector<tTVPBaseInputEvent *>::iterator i;
+		for(i = TVPInputEventQueue.begin();
+			i !=TVPInputEventQueue.end();)
+		{
+			if(source == (*i)->GetSource() && tag == (*i)->GetTag())
+			{
+				tTVPBaseInputEvent *ev = *i;
+				i = TVPInputEventQueue.erase(i);
+				delete ev;
+			}
+			else
+			{
+				i++;
+			}
+		}
+	}
+}
+//---------------------------------------------------------------------------
+
+
 
 
 //---------------------------------------------------------------------------

@@ -203,6 +203,7 @@ __published:	// IDE 管理のコンポーネント
 	void __fastcall CopyImportantLogMenuItemClick(TObject *Sender);
 	void __fastcall AltEnterMenuItemClick(TObject *Sender);
 	void __fastcall FormActivate(TObject *Sender);
+	void __fastcall FormResize(TObject *Sender);
 
 public:		// ユーザー宣言
 	__fastcall TTVPWindowForm(TComponent* Owner, tTJSNI_Window *ni);
