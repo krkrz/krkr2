@@ -13,7 +13,6 @@
 
 
 #include "ComplexRect.h"
-#include "LayerBitmapImpl.h"
 #include "tvpgl.h"
 
 
@@ -52,6 +51,14 @@ enum tTVPBBStretchType
 
 
 //---------------------------------------------------------------------------
+// FIXME: for including order problem
+//---------------------------------------------------------------------------
+#include "LayerBitmapImpl.h"
+//---------------------------------------------------------------------------
+
+
+
+//---------------------------------------------------------------------------
 // t2DAffineMatrix
 //---------------------------------------------------------------------------
 struct t2DAffineMatrix
@@ -82,6 +89,10 @@ struct t2DAffineMatrix
 #define TVP_BB_COPY_MAIN 1
 #define TVP_BB_COPY_MASK 2
 //---------------------------------------------------------------------------
+
+
+
+//---------------------------------------------------------------------------
 extern tTVPGLGammaAdjustData TVPIntactGammaAdjustData;
 //---------------------------------------------------------------------------
 
@@ -90,6 +101,7 @@ extern tTVPGLGammaAdjustData TVPIntactGammaAdjustData;
 //---------------------------------------------------------------------------
 // tTVPBaseBitmap
 //---------------------------------------------------------------------------
+class tTVPNativeBaseBitmap;
 class tTVPBaseBitmap : public tTVPNativeBaseBitmap
 {
 public:

@@ -274,7 +274,10 @@ public:
 	tTVPLayerType GetType() const { return Type; }
 	void SetType(tTVPLayerType type);
 
-	bool GetHasAlpha() const { return DrawType == ltTransparent; }
+	static bool IsTypeUsingAlpha(tTVPLayerType type)
+		{ return type == ltTransparent || type == ltAddAlpha; }
+
+	bool GetDestHasAlpha() const { return IsTypeUsingAlpha(DrawType); }
 
 	//-------------------------------------------- geographical management --
 private:
@@ -768,7 +771,7 @@ private:
 	void QueryUpdateExcludeRect(tTVPRect &rect, bool parentvisible);
 		// query update exclude rect ( checks completely opaque area )
 
-	static void BltImage(tTVPBaseBitmap *dest, bool destalpha, tjs_int destx,
+	static void BltImage(tTVPBaseBitmap *dest, tTVPLayerType targettype, tjs_int destx,
 		tjs_int desty, tTVPBaseBitmap *src, const tTVPRect &srcrect,
 		tTVPLayerType drawtype, tjs_int opacity);
 
@@ -785,7 +788,7 @@ private:
 	// these 3 below are methods from tTVPDrawable
 	tTVPBaseBitmap * GetDrawTargetBitmap(const tTVPRect &rect,
 		tTVPRect &cliprect);
-	bool GetDrawTargetHasAlpha();
+	tTVPLayerType GetTargetLayerType();
 	void DrawCompleted(const tTVPRect&destrect, tTVPBaseBitmap *bmp,
 		const tTVPRect &cliprect,
 		tTVPLayerType type, tjs_int opacity);
@@ -860,7 +863,7 @@ private:
 
 		tTVPBaseBitmap * GetDrawTargetBitmap(const tTVPRect &rect,
 			tTVPRect &cliprect);
-		bool GetDrawTargetHasAlpha();
+		tTVPLayerType GetTargetLayerType();
 		void DrawCompleted(const tTVPRect&destrect, tTVPBaseBitmap *bmp,
 			const tTVPRect &cliprect,
 			tTVPLayerType type, tjs_int opacity);

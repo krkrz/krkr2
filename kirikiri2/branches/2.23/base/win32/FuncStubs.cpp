@@ -1403,6 +1403,7 @@ static void __stdcall TVP_Stub_336(iTVPTransHandlerProvider * pro)
 {
 	return TVPRemoveTransHandlerProvider(pro);
 }
+#include "drawable.h"
 #include "transhandler.h"
 #include "tvpgl.h"
 static void __stdcall TVP_Stub_337(tjs_uint32 * dest , const tjs_uint32 * src , tjs_int len)
@@ -2089,7 +2090,6 @@ static void __stdcall TVP_Stub_507(tjs_uint32 * prevline , tjs_uint32 * curline 
 {
 	return TVPTLG6DecodeLine(prevline, curline, width, block_count, filtertypes, skipblockbytes, in, initialp, oddskip, dir);
 }
-#include "drawable.h"
 #include "tvpgl_ia32_intf.h"
 
 #include <zlib/zlib.h>

@@ -125,7 +125,7 @@ protected:
 	// methods from tTVPDrawable
 	tTVPBaseBitmap * GetDrawTargetBitmap(const tTVPRect &rect,
 		tTVPRect &cliprect);
-	bool GetDrawTargetHasAlpha() { return false; }
+	tTVPLayerType GetTargetLayerType() { return ltCoverRect; }
 //	void DrawCompleted();
 		// DrawCompleted is implemented in each platform to
 		// transfer the image to the display

@@ -1391,6 +1391,12 @@ void tTJSNI_BaseLayer::SetType(tTVPLayerType type)
 			DrawType = Type;
 			AllocateImage();
 			break;
+
+		case ltAddAlpha:
+			NeutralColor = TVP_RGBA2COLOR(0, 0, 0, 0);
+			DrawType = Type;
+			AllocateImage();
+			break;
 		}
 		NotifyLayerTypeChange();
 		Update();
@@ -4659,7 +4665,7 @@ void tTJSNI_BaseLayer::QueryUpdateExcludeRect(tTVPRect &rect, bool parentvisible
 
 	// recur to children
 	parentvisible = parentvisible && Visible &&
-		(DrawType == ltCoverRect || DrawType == ltTransparent) &&
+		(DrawType == ltCoverRect || DrawType == ltTransparent || DrawType == ltAddAlpha) &&
 		Opacity == 255; // fixed 2004/01/09 W.Dee
 	TVP_LAYER_FOR_EACH_CHILD_NOLOCK_BACKWARD_BEGIN(child)
 
@@ -4691,7 +4697,7 @@ void tTJSNI_BaseLayer::QueryUpdateExcludeRect(tTVPRect &rect, bool parentvisible
 	}
 }
 //---------------------------------------------------------------------------
-void tTJSNI_BaseLayer::BltImage(tTVPBaseBitmap *dest, bool destalpha,
+void tTJSNI_BaseLayer::BltImage(tTVPBaseBitmap *dest, tTVPLayerType destlayertype,
 	tjs_int destx,
 	tjs_int desty, tTVPBaseBitmap *src, const tTVPRect &srcrect,
 	tTVPLayerType drawtype, tjs_int opacity)
@@ -4718,17 +4724,27 @@ void tTJSNI_BaseLayer::BltImage(tTVPBaseBitmap *dest, bool destalpha,
 
 	case ltCoverRect:
 		// copy
-		met = destalpha ? bmCopyOnAlpha : bmCopy;
+		if(destlayertype == ltTransparent)
+			met = bmCopyOnAlpha;
+		else if(destlayertype == ltAddAlpha)
+			met = bmCopyOnAddAlpha;
+		else
+			met = bmCopy;
 		break;
 
 	case ltTransparent:
 		// alpha blend
-		met = destalpha ? bmAlphaOnAlpha : bmAlpha;
+		if(destlayertype == ltTransparent)
+			met = bmAlphaOnAlpha;
+		else if(destlayertype == ltAddAlpha)
+			met = bmAlphaOnAddAlpha;
+		else
+			met = bmAlpha;
 		break;
 
 	case ltAdditive:
 		// additive blend
-		hda = destalpha;
+		hda = IsTypeUsingAlpha(drawtype);
 			// hda = true if destination has alpha
 			// ( preserving mask )
 		met = bmAdd;
@@ -4736,38 +4752,48 @@ void tTJSNI_BaseLayer::BltImage(tTVPBaseBitmap *dest, bool destalpha,
 
 	case ltSubtractive:
 		// subtractive blend
-		hda = destalpha;
+		hda = IsTypeUsingAlpha(drawtype);
 		met = bmSub;
 		break;
 
 	case ltMultiplicative:
 		// multiplicative blend
-		hda = destalpha;
+		hda = IsTypeUsingAlpha(drawtype);
 		met = bmMul;
 		break;
 
 	case ltDodge:
 		// color dodge ( "Ooi yaki" in Japanese )
-		hda = destalpha;
+		hda = IsTypeUsingAlpha(drawtype);
 		met = bmDodge;
 		break;
 
 	case ltDarken:
 		// darken blend (select lower luminosity)
-		hda = destalpha;
+		hda = IsTypeUsingAlpha(drawtype);
 		met = bmDarken;
 		break;
 
 	case ltLighten:
 		// lighten blend (select higher luminosity)
-		hda = destalpha;
+		hda = IsTypeUsingAlpha(drawtype);
 		met = bmLighten;
 		break;
 
 	case ltScreen:
 		// screen multiplicative blend
-		hda = destalpha;
+		hda = IsTypeUsingAlpha(drawtype);
 		met = bmScreen;
+		break;
+
+	case ltAddAlpha:
+		// alpha blend
+		if(destlayertype == ltTransparent)
+			met = bmAddAlphaOnAlpha;
+		else if(destlayertype == ltAddAlpha)
+			met = bmAddAlphaOnAddAlpha;
+		else
+			met = bmAddAlpha;
 		break;
 
 	default:
@@ -5123,9 +5149,9 @@ tTVPBaseBitmap * tTJSNI_BaseLayer::GetDrawTargetBitmap(const tTVPRect &rect,
 	return UpdateBitmapForChild;
 }
 //---------------------------------------------------------------------------
-bool tTJSNI_BaseLayer::GetDrawTargetHasAlpha()
+tTVPLayerType tTJSNI_BaseLayer::GetTargetLayerType()
 {
-	return GetHasAlpha();
+	return DrawType;
 }
 //---------------------------------------------------------------------------
 void tTJSNI_BaseLayer::DrawCompleted(const tTVPRect &destrect,
@@ -5137,7 +5163,7 @@ void tTJSNI_BaseLayer::DrawCompleted(const tTVPRect &destrect,
 	// blend the image to the target unless bmp is the same as UpdateBitmapForChild.
 	if(bmp != UpdateBitmapForChild)
 	{
-		BltImage(UpdateBitmapForChild, GetHasAlpha(),
+		BltImage(UpdateBitmapForChild, DrawType,
 			destrect.left - UpdateOfsX,
 			destrect.top - UpdateOfsY,
 			bmp, cliprect, type, opacity);
@@ -5301,15 +5327,15 @@ tTVPBaseBitmap * tTJSNI_BaseLayer::Complete(const tTVPRect & rect)
 	{
 		tTVPBaseBitmap * Bitmap;
 		tTVPRect BitmapRect;
-		bool HasAlpha;
+		tTVPLayerType LayerType;
 	public:
-		tCompleteDrawable(tTVPBaseBitmap *bmp, bool hasalpha)
-			: Bitmap(bmp), HasAlpha(hasalpha) {};
+		tCompleteDrawable(tTVPBaseBitmap *bmp, tTVPLayerType layertype)
+			: Bitmap(bmp), LayerType(layertype) {};
 
 		tTVPBaseBitmap * GetDrawTargetBitmap(const tTVPRect &rect,
 			tTVPRect &cliprect)
 			{ cliprect = rect; return Bitmap; }
-		bool GetDrawTargetHasAlpha() { return HasAlpha; }
+		tTVPLayerType GetTargetLayerType() { return LayerType; }
 		void DrawCompleted(const tTVPRect &destrect,
 			tTVPBaseBitmap *bmp, const tTVPRect &cliprect,
 			tTVPLayerType type, tjs_int opacity)
@@ -5341,7 +5367,7 @@ tTVPBaseBitmap * tTJSNI_BaseLayer::Complete(const tTVPRect & rect)
 	}
 
 	// create drawable object
-	tCompleteDrawable drawable(CacheBitmap, GetHasAlpha());
+	tCompleteDrawable drawable(CacheBitmap, DrawType);
 
 	// complete
 	tTVPComplexRect ur;
@@ -5403,7 +5429,7 @@ void tTJSNI_BaseLayer::StartTransition(const ttstr &name, bool withchildren,
 
 		// notify starting of the transition to the provider
 		tjs_error er = pro->StartTransition(sop, &TVPSimpleImageProvider,
-			GetHasAlpha(),
+			DrawType,
 			withchildren ? GetWidth()  : MainImage->GetWidth(),
 			withchildren ? GetHeight() : MainImage->GetHeight(),
 			transsource?
@@ -5690,9 +5716,9 @@ tTVPBaseBitmap * tTJSNI_BaseLayer::tTransDrawable::
 	return Target;
 }
 //---------------------------------------------------------------------------
-bool tTJSNI_BaseLayer::tTransDrawable::GetDrawTargetHasAlpha()
+tTVPLayerType tTJSNI_BaseLayer::tTransDrawable::GetTargetLayerType()
 {
-	return OrgDrawable->GetDrawTargetHasAlpha();
+	return OrgDrawable->GetTargetLayerType();
 }
 //---------------------------------------------------------------------------
 void tTJSNI_BaseLayer::tTransDrawable::DrawCompleted(const tTVPRect &destrect,

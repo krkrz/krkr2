@@ -15,6 +15,7 @@
 #include <stdlib.h>
 #include <math.h>
 
+#include "LayerBitmapIntf.h"
 #include "LayerBitmapImpl.h"
 #include "MsgIntf.h"
 #include "ComplexRect.h"
@@ -2000,7 +2001,7 @@ struct tTVPDrawTextData
 	tTVPRect rect;
 	tjs_int bmppitch;
 	tjs_int opa;
-	bool destalpha;
+	tTVPBBBltMethod bltmode;
 };
 bool tTVPNativeBaseBitmap::InternalDrawText(tTVPCharacterData *data, tjs_int x,
 	tjs_int y, tjs_uint32 color, tTVPDrawTextData *dtdata, tTVPRect &drect)
@@ -2059,24 +2060,7 @@ bool tTVPNativeBaseBitmap::InternalDrawText(tTVPCharacterData *data, tjs_int x,
 	w = drect.right - drect.left;
 	bp = data->GetData() + pitch * srect.top;
 
-	if(!dtdata->destalpha)
-	{
-		if(dtdata->opa == 255)
-		{
-			while(h--)
-				TVPApplyColorMap65((tjs_uint32*)sl + drect.left,
-					bp + srect.left, w, color), sl += dtdata->bmppitch,
-					bp += pitch;
-		}
-		else
-		{
-			while(h--)
-				TVPApplyColorMap65_o((tjs_uint32*)sl + drect.left,
-					bp + srect.left, w, color, dtdata->opa), sl += dtdata->bmppitch,
-					bp += pitch;
-		}
-	}
-	else
+	if(dtdata->bltmode == bmAlphaOnAlpha)
 	{
 		if(dtdata->opa > 0)
 		{
@@ -2114,13 +2098,47 @@ bool tTVPNativeBaseBitmap::InternalDrawText(tTVPCharacterData *data, tjs_int x,
 			}
 		}
 	}
+	else if(dtdata->bltmode == bmAlphaOnAddAlpha)
+	{
+		if(dtdata->opa == 255)
+		{
+			while(h--)
+				TVPApplyColorMap65_a((tjs_uint32*)sl + drect.left,
+					bp + srect.left, w, color), sl += dtdata->bmppitch,
+					bp += pitch;
+		}
+		else
+		{
+			while(h--)
+				TVPApplyColorMap65_ao((tjs_uint32*)sl + drect.left,
+					bp + srect.left, w, color, dtdata->opa), sl += dtdata->bmppitch,
+					bp += pitch;
+		}
+	}
+	else
+	{
+		if(dtdata->opa == 255)
+		{
+			while(h--)
+				TVPApplyColorMap65((tjs_uint32*)sl + drect.left,
+					bp + srect.left, w, color), sl += dtdata->bmppitch,
+					bp += pitch;
+		}
+		else
+		{
+			while(h--)
+				TVPApplyColorMap65_o((tjs_uint32*)sl + drect.left,
+					bp + srect.left, w, color, dtdata->opa), sl += dtdata->bmppitch,
+					bp += pitch;
+		}
+	}
 
 	return true;
 }
 //---------------------------------------------------------------------------
 void tTVPNativeBaseBitmap::DrawText(const tTVPRect &destrect,
 	tjs_int x, tjs_int y, const ttstr &text,
-		tjs_uint32 color, bool destalpha, tjs_int opa, bool aa, tjs_int shlevel,
+		tjs_uint32 color, tTVPBBBltMethod bltmode, tjs_int opa, bool aa, tjs_int shlevel,
 			tjs_uint32 shadowcolor,
 			tjs_int shwidth, tjs_int shofsx, tjs_int shofsy,
 			tTVPComplexRect *updaterects)
@@ -2129,7 +2147,7 @@ void tTVPNativeBaseBitmap::DrawText(const tTVPRect &destrect,
 
 	if(!Is32BPP()) TVPThrowExceptionMessage(TVPInvalidOperationFor8BPP);
 
-	if(destalpha)
+	if(bltmode == bmAlphaOnAlpha)
 	{
 		if(opa < -255) opa = -255;
 		if(opa > 255) opa = 255;
@@ -2150,7 +2168,7 @@ void tTVPNativeBaseBitmap::DrawText(const tTVPRect &destrect,
 	tTVPDrawTextData dtdata;
 	dtdata.rect = destrect;
 	dtdata.bmppitch = GetPitchBytes();
-	dtdata.destalpha = destalpha;
+	dtdata.bltmode = bltmode;
 	dtdata.opa = opa;
 
 	tTVPFontAndCharacterData font;
