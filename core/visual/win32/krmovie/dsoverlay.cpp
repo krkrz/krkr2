@@ -153,11 +153,6 @@ void __stdcall tTVPDSVideoOverlay::BuildGraph( HWND callbackwin, IStream *stream
 //----------------------------------------------------------------------------
 void __stdcall tTVPDSVideoOverlay::ReleaseAll()
 {
-#ifdef _DEBUG
-	if( m_RegisteredROT )
-		RemoveFromROT( m_dwROTReg );
-#endif
-
 	if( m_MediaControl.p != NULL )
 	{
 		m_MediaControl->Stop();
