@@ -312,6 +312,9 @@ TVP_MSG_DECL(TVPTransitionLayerSizeMismatch,
 TVP_MSG_DECL(TVPTransitionMutualSource,
 	"トランジション元のトランジション元が自分自身です");
 
+TVP_MSG_DECL(TVPHoldDestinationAlphaParameterIsNowDeprecated,
+	"警告 : メソッド %1 の %2 番目に渡された hda パラメータは、吉里吉里２ 2.23 beta 2 より無視されるようになりました。代わりに Layer.holdAlpha プロパティを用いてください。");
+
 TVP_MSG_DECL(TVPKAGNoLine,
 	"読み込もうとしたシナリオファイル %1 は空です");
 
