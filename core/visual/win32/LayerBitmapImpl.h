@@ -180,12 +180,41 @@ private:
 		tjs_int y, tjs_uint32 shadowcolor,tTVPDrawTextData *dtdata, tTVPRect &drect);
 
 public:
-	void DrawText(const tTVPRect &destrect, tjs_int x, tjs_int y, const ttstr &text,
+	void DrawTextSingle(const tTVPRect &destrect, tjs_int x, tjs_int y, const ttstr &text,
 		tjs_uint32 color, tTVPBBBltMethod bltmode, tjs_int opa = 255,
 			bool holdalpha = true, bool aa = true, tjs_int shlevel = 0,
 			tjs_uint32 shadowcolor = 0,
 			tjs_int shwidth = 0, tjs_int shofsx = 0, tjs_int shofsy = 0,
 			tTVPComplexRect *updaterects = NULL);
+	void DrawTextMultiple(const tTVPRect &destrect, tjs_int x, tjs_int y, const ttstr &text,
+		tjs_uint32 color, tTVPBBBltMethod bltmode, tjs_int opa = 255,
+			bool holdalpha = true, bool aa = true, tjs_int shlevel = 0,
+			tjs_uint32 shadowcolor = 0,
+			tjs_int shwidth = 0, tjs_int shofsx = 0, tjs_int shofsy = 0,
+			tTVPComplexRect *updaterects = NULL);
+	void DrawText(const tTVPRect &destrect, tjs_int x, tjs_int y, const ttstr &text,
+		tjs_uint32 color, tTVPBBBltMethod bltmode, tjs_int opa = 255,
+			bool holdalpha = true, bool aa = true, tjs_int shlevel = 0,
+			tjs_uint32 shadowcolor = 0,
+			tjs_int shwidth = 0, tjs_int shofsx = 0, tjs_int shofsy = 0,
+			tTVPComplexRect *updaterects = NULL)
+	{
+		if(text.GetLen() >= 2)
+			DrawTextMultiple(
+				destrect, x, y, text,
+				color, bltmode, opa,
+				holdalpha, aa, shlevel,
+				shadowcolor, shwidth, shofsx, shofsy,
+				updaterects);
+		else
+			DrawTextSingle(
+				destrect, x, y, text,
+				color, bltmode, opa,
+				holdalpha, aa, shlevel,
+				shadowcolor, shwidth, shofsx, shofsy,
+				updaterects);
+	}
+
 
 private:
 	tjs_int TextWidth;
