@@ -369,9 +369,42 @@ TVPApplyColorMap65_a_name:
 		psllq		mm1,	48
 		punpcklbw	mm7,	mm0
 		por			mm7,	mm1				; mm7 = 01 00 00 co 00 co 00 co
-		sub			esi,	byte 4			; 1*4
+		sub			esi,	byte 8			; 2*4
 		cmp			edi,	esi
 		jae			near .pfraction			; jump if edi >= esi
+
+
+		test		edi,	4
+		IF			nz
+
+			; align destination pointer to QWORD
+
+			movzx		eax,		byte [ebp]	; opacity   (Sa)
+			movd		mm3,		eax
+			punpcklwd	mm3,		mm3
+			punpcklwd	mm3,		mm3			; mm3 = 00 Sa 00 Sa 00 Sa 00 Sa
+			movq		mm4,		mm3
+			pmullw		mm4,		mm7
+			psrlw		mm4,		6			; mm4 = 00 Sa 00 Si 00 Si 00 Si
+			movd		mm1,		[edi]		; dest     (DaDiDiDi)
+			punpcklbw	mm1,		mm0			; mm1 = 00 Da 00 Di 00 Di 00 Di
+			movq		mm2,		mm1
+			pmullw		mm2,		mm3
+			psrlw		mm2,		6			; mm2 = 00 SaDa 00 SaDi 00 SaDi 00 SaDi
+			psubw		mm1,		mm2
+			paddw		mm1,		mm4
+			packuswb	mm1,		mm0
+			movd		[edi],		mm1			; store
+
+			add			ebp,	byte 1
+			add			edi,	byte 4
+
+			cmp			edi,	esi
+			jae			near	.pfraction
+
+		ENDIF
+
+
 		jmp .ploop
 
 .pcopa:
@@ -425,9 +458,9 @@ TVPApplyColorMap65_a_name:
 		psrlw		mm2,		6			; 1 mm2 = 00 SaDa 00 SaDi 00 SaDi 00 SaDi
 		psubw		mm1,		mm2			; 1
 		movd		mm3,		[edi+4]		; 2 dest     (DaDiDiDi)
-		packuswb	mm1,		mm0			; 1
+;		packuswb	mm1,		mm0			; 1
 		punpcklbw	mm3,		mm0			; 2 mm3 = 00 Da 00 Di 00 Di 00 Di
-		movd		[edi],		mm1			; 1 store
+;		movd		[edi],		mm1			; 1 store
 		movq		mm2,		mm3			; 2
 		pmullw		mm2,		mm5			; 2
 		add			edi,	byte 8
@@ -436,13 +469,13 @@ TVPApplyColorMap65_a_name:
 		psubw		mm3,		mm2			; 2
 		paddw		mm3,		mm6			; 2
 		cmp			edi,	esi
-		packuswb	mm3,		mm0			; 2
-		movd		[edi+4-8],	mm3			; 2 store
+		packuswb	mm1,		mm3			; 2
+		movq		[edi-8],	mm1			; 2 store
 
 		jb			near .ploop				; jump if edi < esi
 
 .pfraction:
-		add			esi,	byte 4
+		add			esi,	byte 8
 		cmp			edi,	esi
 		jae			.pexit					; jump if edi >= esi
 
