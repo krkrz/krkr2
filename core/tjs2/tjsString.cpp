@@ -39,13 +39,13 @@ tjs_int tTJSString::GetNarrowStrLen() const
 {
 	// note that this function will return -1 when there are invalid chars in string.
 	if(!Ptr) return 0;
-	return wcstombs(NULL, c_str(), 0);
+	return TJS_wcstombs(NULL, c_str(), 0);
 }
 //---------------------------------------------------------------------------
 void tTJSString::ToNarrowStr(tjs_nchar *dest, tjs_int destmaxlen) const
 {
 	// dest must be an array of char, its size must be at least destmaxlen+1
-	dest[wcstombs(dest, c_str(), destmaxlen)] = 0;
+	dest[TJS_wcstombs(dest, c_str(), destmaxlen)] = 0;
 }
 //---------------------------------------------------------------------------
 tjs_char * tTJSString::InternalIndepend()

@@ -1033,7 +1033,7 @@ static tTVPCharacterData * TVPGetCharacter(const tTVPFontAndCharacterData & font
 		if(!procGetGlyphOutlineW)
 		{
 			// system supports ANSI
-			pbuflen = wctomb((char*)pbuf, font.Character);
+			pbuflen = TJS_wctomb((char*)pbuf, font.Character);
 			if(pbuflen == -1) return NULL; // not drawable character
 
 			pbuf[pbuflen] = 0;
@@ -1686,7 +1686,7 @@ static void TVPGetTextExtent(tjs_char ch, tjs_int &w, tjs_int &h)
 	if(!procGetTextExtentPoint32W)
 	{
 		unsigned char pbuf[10+1];
-		tjs_int pbuflen = wctomb((char*)pbuf, ch);
+		tjs_int pbuflen = TJS_wctomb((char*)pbuf, ch);
 		if(pbuflen != -1)
 		{
 			pbuf[pbuflen] = 0;

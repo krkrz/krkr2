@@ -21,20 +21,6 @@
 #include "PluginImpl.h"
 #include "SystemIntf.h"
 
-#define TVP_LOCALE_FIX
-
-#ifdef TVP_LOCALE_FIX
-extern "C"
-{
-struct tagLocale {
-	long            codepage;     // Code page of the locale
-	LCID            handle;       // LCID of the locale
-	BOOL            isCLocale;    // is that locale "C" locale ?
-};
-extern __cdecl tagLocale *__locale; // locale structure in RTL
-}
-#endif
-
 //---------------------------------------------------------------------------
 bool TVPCheckCmdDescription(void);
 bool TVPCheckAbout(void);
@@ -168,16 +154,6 @@ USEFORM("..\..\..\tools\win32\krdevui\ConfMainFrameUnit.cpp", ConfMainFrame); /*
 //---------------------------------------------------------------------------
 WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 {
-	// setup locale information
-#ifdef TVP_LOCALE_FIX
-	/* This avoids RTL locale code page bug which occurs in WinME. */
-	/* Here is the code that rewrites RTL's management area directly, yes, of cource,
-	   we must be aware of thus nasty thing. */
-	__locale->codepage  = GetACP();
-	__locale->isCLocale = FALSE;
-#else
-	setlocale(LC_ALL, "");
-#endif
 	// try starting the program!
 	try
 	{

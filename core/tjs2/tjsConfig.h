@@ -78,6 +78,10 @@ TJS_EXP_FUNC_DEF(size_t, TJS_strlen, (const tjs_char *d));
 	#define TJS_timezone timezone
 	#define TJS_rand rand
 	#define TJS_RAND_MAX RAND_MAX
+	#define TJS_mbstowcs mbstowcs
+	#define TJS_wcstombs wcstombs
+	#define TJS_mbtowc   mbtowc
+	#define TJS_wctomb   wctomb
 #elif __WIN32__
 	#define TJS_cdecl __cdecl
 	#define TJS_vsnprintf		vsnwprintf
@@ -85,12 +89,15 @@ TJS_EXP_FUNC_DEF(size_t, TJS_strlen, (const tjs_char *d));
 	#define TJS_timezone _timezone
 	#define TJS_rand _lrand
 	#define TJS_RAND_MAX LRAND_MAX
+	extern size_t TJS_mbstowcs(tjs_char *pwcs, const tjs_nchar *s, size_t n);
+	extern size_t TJS_wcstombs(tjs_nchar *s, const tjs_char *pwcs, size_t n);
+	extern int TJS_mbtowc(tjs_char *pwc, const tjs_nchar *s, size_t n);
+	extern int TJS_wctomb(tjs_nchar *s, tjs_char wc);
 #endif
 
-#define TJS_narrowtowidelen(X) mbstowcs(NULL, (X),0)
-	// narrow->wide (if) converted length
 
-#define TJS_narrowtowide mbstowcs
+#define TJS_narrowtowidelen(X) TJS_mbstowcs(NULL, (X),0) // narrow->wide (if) converted length
+#define TJS_narrowtowide TJS_mbstowcs
 
 void TJS_debug_out(const tjs_char *format, ...);
 
