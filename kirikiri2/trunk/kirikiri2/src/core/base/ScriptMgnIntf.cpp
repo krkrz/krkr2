@@ -14,7 +14,7 @@
 
 
 #include "tjs.h"
-
+#include "tjsDebug.h"
 #include "ScriptMgnIntf.h"
 #include "StorageIntf.h"
 #include "DebugIntf.h"
@@ -321,6 +321,31 @@ void TVPInitScriptEngine()
 	if(TVPScriptEngineInit) return;
 	TVPScriptEngineInit = true;
 
+	tTJSVariant val;
+
+	// Set eval expression mode
+	if(TVPGetCommandLine(TJS_W("-evalcontext"), &val) )
+	{
+		ttstr str(val);
+		if(str == TJS_W("global"))
+		{
+			TJSEvalOperatorIsOnGlobal = true;
+			TJSWarnOnNonGlobalEvalOperator = true;
+		}
+	}
+
+	// Set debug mode
+	if(TVPGetCommandLine(TJS_W("-debug"), &val) )
+	{
+		ttstr str(val);
+		if(str == TJS_W("yes"))
+		{
+			TJSEnableDebugMode = true;
+			TVPAddImportantLog((const tjs_char *)TVPWarnDebugOptionEnabled);
+		}
+	}
+
+	// create script engine object
 	TVPScriptEngine = new tTJS();
 
 	// set TJSGetRandomBits128
@@ -339,7 +364,6 @@ void TVPInitScriptEngine()
 
 	// register some TVP classes/objects/functions/propeties
 	iTJSDispatch2 *dsp;
-	tTJSVariant val;
 	iTJSDispatch2 *global = TVPScriptEngine->GetGlobalNoAddRef();
 
 
@@ -374,16 +398,6 @@ void TVPInitScriptEngine()
 	// Garbage Collection Hook
 	TVPAddCompactEventHook(&TVPTJSGCCallback);
 
-	// Set eval expression mode
-	if(TVPGetCommandLine(TJS_W("-evalcontext"), &val) )
-	{
-		ttstr str(val);
-		if(str == TJS_W("global"))
-		{
-			TJSEvalOperatorIsOnGlobal = true;
-			TJSWarnOnNonGlobalEvalOperator = true;
-		}
-	}
 
 }
 //---------------------------------------------------------------------------
@@ -933,6 +947,23 @@ TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/dump)
 	return TJS_S_OK;
 }
 TJS_END_NATIVE_METHOD_DECL(/*func. name*/dump)
+//----------------------------------------------------------------------
+TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/getTraceString)
+{
+	// get current stack trace as string
+	tjs_int limit = 0;
+
+	if(numparams >= 1 && param[0]->Type() != tvtVoid)
+		limit = *param[0];
+
+	if(result)
+	{
+		*result = TJSGetStackTraceString(limit);
+	}
+
+	return TJS_S_OK;
+}
+TJS_END_NATIVE_METHOD_DECL(/*func. name*/getTraceString)
 //----------------------------------------------------------------------
 #ifdef TJS_DEBUG_DUMP_STRING
 TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/dumpStringHeap)

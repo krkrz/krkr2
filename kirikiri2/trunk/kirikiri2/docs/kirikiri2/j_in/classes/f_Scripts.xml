@@ -109,5 +109,26 @@
 	</desc>
 </member>
 
+<member>
+	<name>getTraceString</name>
+	<type>method</type>
+	<shortdesc>呼び出し履歴の取得</shortdesc>
+	<arg>
+		<argitem>
+			<name>limit</name>
+			<default>0</default>
+			<desc>
+				　履歴を取得する最大呼び出し深さを指定します。この引数を省略するか 0 を指定すると、取得できる限りの履歴を取得します。<r/>
+			</desc>
+		</argitem>
+	</arg>
+	<result>呼び出し履歴を文字列化した物</result>
+	<desc>
+		　メソッドの呼び出し履歴を文字列として取得します。このメソッドが呼ばれた時点での履歴を取得することができます。<r/>
+		　このメソッドを使用するには、コマンドラインオプションで -debug (デバッグモード) が有効になっていなければなりません。デバッグモードが無効の場合はこのメソッドは空文字列を返します。<r/>
+		　返される文字列はたとえば 'messagelayer.tjs(1561)[(function) addButton] &lt;-- mainwindow.tjs(4463)[(function expression) (anonymous)] &lt;-- conductor.tjs(427)[(function) onTag] &lt;-- conductor.tjs(95)[(function) timerCallback]' のような物です。
+	</desc>
+</member>
+
 
 </doc>
