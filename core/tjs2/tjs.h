@@ -65,6 +65,10 @@ extern bool TJSEvalOperatorIsOnGlobal;
 extern bool TJSWarnOnNonGlobalEvalOperator;
 	// Output warning against non-local post-! operator.
 	// (For checking where the post-! operators are used)
+extern bool TJSEnableDebugMode;
+	// Enable TJS2 Debugging support. Enabling this may make the
+	// program somewhat slower and using more memory.
+	// Do not use this mode unless you want to debug the program.
 
 
 //---------------------------------------------------------------------------
@@ -87,6 +91,8 @@ protected:
 	virtual ~tTJS();
 
 public:
+	void Cleanup();
+
 	void AddRef();
 	void Release();
 

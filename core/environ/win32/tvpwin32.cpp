@@ -70,6 +70,7 @@ USEUNIT("..\..\tjs2\tjsdate.tab.cpp");
 USEUNIT("..\..\tjs2\tjsException.cpp");
 USEUNIT("..\..\tjs2\tjsMessage.cpp");
 USEUNIT("..\..\tjs2\tjsDisassemble.cpp");
+USEUNIT("..\..\tjs2\tjsDebug.cpp");
 USELIB("..\..\visual\IA32\tvpgl_ia32.lib");
 USEUNIT("..\..\visual\LayerBitmapIntf.cpp");
 USEUNIT("..\..\visual\win32\LayerBitmapImpl.cpp");
