@@ -174,7 +174,7 @@ extern ttstr TVPActionName;
 		iTJSDispatch2 *evobj = TVPCreateEventObject(TJS_W(name), (object), \
 			(object)); \
 		tTJSVariant evval(evobj, evobj); \
-		evobj->Release(); \
+		evobj->Release();
 
 #define TVP_ACTION_INVOKE_MEMBER(name) \
 	{\
