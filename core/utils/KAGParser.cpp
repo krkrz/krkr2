@@ -1483,6 +1483,8 @@ parse_start:
 					{
 						// macro recording ended
 						// endmacro
+						if(!RecordingMacro)
+							TVPThrowExceptionMessage(TVPKAGSyntaxError);
 						RecordingMacro = false;
 						if(DebugLevel >= tkdlVerbose)
 						{
