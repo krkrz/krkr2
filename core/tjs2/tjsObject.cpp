@@ -1171,8 +1171,7 @@ tjs_error TJSDefaultPropGet(tjs_uint32 flag, tTJSVariant &targ, tTJSVariant *res
 			}
 			tvclosure.Release();
 			if(TJS_SUCCEEDED(hr)) return hr;
-			if(hr != TJS_E_NOTIMPL && hr != TJS_E_INVALIDTYPE &&
-				hr != TJS_E_INVALIDOBJECT)
+			if(hr != TJS_E_NOTIMPL && hr != TJS_E_INVALIDTYPE)
 				return hr;
 		}
 	}
@@ -1243,8 +1242,7 @@ tjs_error TJSDefaultPropSet(tjs_uint32 flag, tTJSVariant &targ, const tTJSVarian
 			}
 			tvclosure.Release();
 			if(TJS_SUCCEEDED(hr)) return hr;
-			if(hr != TJS_E_NOTIMPL && hr != TJS_E_INVALIDTYPE &&
-				hr != TJS_E_INVALIDOBJECT) return hr;
+			if(hr != TJS_E_NOTIMPL && hr != TJS_E_INVALIDTYPE) return hr;
 		}
 	}
 
@@ -1295,8 +1293,7 @@ tTJSCustomObject::PropSet(tjs_uint32 flag, const tjs_char *membername, tjs_uint3
 				tjs_error hr = tvclosure.Object->PropSet(0, NULL, NULL, param,
 					TJS_SELECT_OBJTHIS(tvclosure, objthis));
 				if(TJS_SUCCEEDED(hr)) return hr;
-				if(hr != TJS_E_NOTIMPL && hr != TJS_E_INVALIDTYPE &&
-					hr != TJS_E_INVALIDOBJECT) return hr;
+				if(hr != TJS_E_NOTIMPL && hr != TJS_E_INVALIDTYPE) return hr;
 			}
 			data = Find(membername, hint);
 		}
@@ -1371,8 +1368,7 @@ tTJSCustomObject::PropSetByVS(tjs_uint32 flag, tTJSVariantString *membername,
 				tjs_error hr = tvclosure.Object->PropSet(0, NULL, NULL, param,
 					TJS_SELECT_OBJTHIS(tvclosure, objthis));
 				if(TJS_SUCCEEDED(hr)) return hr;
-				if(hr != TJS_E_NOTIMPL && hr != TJS_E_INVALIDTYPE &&
-					hr != TJS_E_INVALIDOBJECT) return hr;
+				if(hr != TJS_E_NOTIMPL && hr != TJS_E_INVALIDTYPE) return hr;
 			}
 			data = Find((const tjs_char *)(*membername), membername->GetHint());
 		}
@@ -1652,8 +1648,7 @@ tjs_error TJSDefaultOperation(tjs_uint32 flag, tTJSVariant &targ,
 
 				return TJS_S_OK;
 			}
-			else if(hr != TJS_E_NOTIMPL && hr != TJS_E_INVALIDTYPE &&
-					hr != TJS_E_INVALIDOBJECT)
+			else if(hr != TJS_E_NOTIMPL && hr != TJS_E_INVALIDTYPE)
 			{
 				return hr;
 			}
@@ -1718,8 +1713,7 @@ tTJSCustomObject::Operation(tjs_uint32 flag, const tjs_char *membername, tjs_uin
 
 				return TJS_S_OK;
 			}
-			else if(hr != TJS_E_NOTIMPL && hr != TJS_E_INVALIDTYPE &&
-					hr != TJS_E_INVALIDOBJECT)
+			else if(hr != TJS_E_NOTIMPL && hr != TJS_E_INVALIDTYPE)
 			{
 				return hr;
 			}

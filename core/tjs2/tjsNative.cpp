@@ -79,7 +79,8 @@ tjs_error TJS_INTF_METHOD
 	if(membername) return tTJSDispatch::FuncCall(flag, membername, hint,
 		result, numparams, param, objthis);
 	if(!objthis) return TJS_E_NATIVECLASSCRASH;
-	if(!objthis->IsValid(0, NULL, NULL, objthis)) return TJS_E_INVALIDOBJECT;
+	if(objthis->IsValid(0, NULL, NULL, objthis) != TJS_S_TRUE)
+		return TJS_E_INVALIDOBJECT;
 	if(result) result->Clear();
 	tjs_error er;
 	try
@@ -146,7 +147,8 @@ tTJSNativeClassProperty::PropGet(tjs_uint32 flag, const tjs_char * membername,
 	if(membername) return tTJSDispatch::PropGet(flag, membername, hint,
 		result, objthis);
 	if(!objthis) return TJS_E_NATIVECLASSCRASH;
-	if(!objthis->IsValid(0, NULL, NULL, objthis)) return TJS_E_INVALIDOBJECT;
+	if(objthis->IsValid(0, NULL, NULL, objthis) != TJS_S_TRUE)
+		return TJS_E_INVALIDOBJECT;
 	if(!result) return TJS_E_FAIL;
 // 	AddRef();
 //	objthis->AddRef();
@@ -173,7 +175,8 @@ tTJSNativeClassProperty::PropSet(tjs_uint32 flag, const tjs_char *membername,
 	if(membername) return tTJSDispatch::PropSet(flag, membername, hint,
 		param, objthis);
 	if(!objthis) return TJS_E_NATIVECLASSCRASH;
-	if(!objthis->IsValid(0, NULL, NULL, objthis)) return TJS_E_INVALIDOBJECT;
+	if(objthis->IsValid(0, NULL, NULL, objthis) != TJS_S_TRUE)
+		return TJS_E_INVALIDOBJECT;
 	if(!param) return TJS_E_FAIL;
 //	AddRef();
 //	objthis->AddRef();
@@ -199,7 +202,8 @@ tjs_error tTJSNativeClassProperty::DenyGet(tjs_uint32 flag,
 {
 	if(membername) return tTJSDispatch::PropGet(flag, membername, hint,
 		result, objthis);
-	if(!objthis->IsValid(0, NULL, NULL, objthis)) return TJS_E_INVALIDOBJECT;
+	if(objthis->IsValid(0, NULL, NULL, objthis) != TJS_S_TRUE)
+		return TJS_E_INVALIDOBJECT;
 	return TJS_E_ACCESSDENYED;
 }
 //---------------------------------------------------------------------------
@@ -209,7 +213,8 @@ tjs_error tTJSNativeClassProperty::DenySet(tjs_uint32 flag,
 {
 	if(membername) return tTJSDispatch::PropSet(flag, membername, hint,
 		param, objthis);
-	if(!objthis->IsValid(0, NULL, NULL, objthis)) return TJS_E_INVALIDOBJECT;
+	if(objthis->IsValid(0, NULL, NULL, objthis) != TJS_S_TRUE)
+		return TJS_E_INVALIDOBJECT;
 	return TJS_E_ACCESSDENYED; 
 }
 //---------------------------------------------------------------------------
