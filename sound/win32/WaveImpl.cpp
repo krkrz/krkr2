@@ -1344,14 +1344,14 @@ public:
 
 } static *TVPWaveSoundBufferThread = NULL;
 //---------------------------------------------------------------------------
-__fastcall tTVPWaveSoundBufferThread::tTVPWaveSoundBufferThread()
+tTVPWaveSoundBufferThread::tTVPWaveSoundBufferThread()
 	: tTVPThread(true)
 {
 	SetPriority(ttpHighest);
 	Resume();
 }
 //---------------------------------------------------------------------------
-__fastcall tTVPWaveSoundBufferThread::~tTVPWaveSoundBufferThread()
+tTVPWaveSoundBufferThread::~tTVPWaveSoundBufferThread()
 {
 	SetPriority(ttpNormal);
 	Terminate();
@@ -1361,7 +1361,7 @@ __fastcall tTVPWaveSoundBufferThread::~tTVPWaveSoundBufferThread()
 }
 //---------------------------------------------------------------------------
 #define TVP_WSB_THREAD_SLEEP_TIME 60
-void __fastcall tTVPWaveSoundBufferThread::Execute(void)
+void tTVPWaveSoundBufferThread::Execute(void)
 {
 	while(!GetTerminated())
 	{
@@ -1502,13 +1502,13 @@ class tTVPWaveSoundBufferDecodeThread : public tTVPThread
 	tTVPThreadEvent Event;
 
 public:
-	__fastcall tTVPWaveSoundBufferDecodeThread(tTJSNI_WaveSoundBuffer * owner);
-	__fastcall ~tTVPWaveSoundBufferDecodeThread();
+	tTVPWaveSoundBufferDecodeThread(tTJSNI_WaveSoundBuffer * owner);
+	~tTVPWaveSoundBufferDecodeThread();
 
-	void __fastcall Execute(void);
+	void Execute(void);
 };
 //---------------------------------------------------------------------------
-__fastcall tTVPWaveSoundBufferDecodeThread::tTVPWaveSoundBufferDecodeThread(
+tTVPWaveSoundBufferDecodeThread::tTVPWaveSoundBufferDecodeThread(
 	tTJSNI_WaveSoundBuffer * owner)
 	: tTVPThread(true)
 {
@@ -1519,7 +1519,7 @@ __fastcall tTVPWaveSoundBufferDecodeThread::tTVPWaveSoundBufferDecodeThread(
 	Resume();
 }
 //---------------------------------------------------------------------------
-__fastcall tTVPWaveSoundBufferDecodeThread::~tTVPWaveSoundBufferDecodeThread()
+tTVPWaveSoundBufferDecodeThread::~tTVPWaveSoundBufferDecodeThread()
 {
 	SetPriority(TVPDecodeThreadHighPriority);
 	Terminate();
@@ -1529,7 +1529,7 @@ __fastcall tTVPWaveSoundBufferDecodeThread::~tTVPWaveSoundBufferDecodeThread()
 }
 //---------------------------------------------------------------------------
 #define TVP_WSB_DECODE_THREAD_SLEEP_TIME 110
-void __fastcall tTVPWaveSoundBufferDecodeThread::Execute(void)
+void tTVPWaveSoundBufferDecodeThread::Execute(void)
 {
 	DWORD st = GetTickCount();
 	while(!GetTerminated())
