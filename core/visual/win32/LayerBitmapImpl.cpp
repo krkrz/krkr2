@@ -1265,8 +1265,13 @@ static void * TVPAllocBitmapBits(tjs_uint size, tjs_uint width, tjs_uint height)
 	record->sentinel_backup2 = rand() + (rand() << 16);
 
 	// set sentinel
-	*(tjs_uint32*)(ptr - sizeof(tjs_uint32)) = record->sentinel_backup1;
-	*(tjs_uint32*)(ptr + size              ) = record->sentinel_backup2;
+	*(tjs_uint32*)(ptr - sizeof(tjs_uint32)) = ~record->sentinel_backup1;
+	*(tjs_uint32*)(ptr + size              ) = ~record->sentinel_backup2;
+		// Stored sentinels are nagated, to avoid that the sentinel backups in
+		// tTVPLayerBitmapMemoryRecord becomes the same value as the sentinels.
+		// This trick will make the detection of the memory corruption easier.
+		// Because on some occasions, running memory writing will write the same
+		// values at first sentinel and the tTVPLayerBitmapMemoryRecord.
 
 	// return buffer pointer
 	return ptr;
@@ -1283,10 +1288,10 @@ static void TVPFreeBitmapBits(void *ptr)
 			(bptr - sizeof(tTVPLayerBitmapMemoryRecord) - sizeof(tjs_uint32));
 
 		// check sentinel
-		if(*(tjs_uint32*)(bptr - sizeof(tjs_uint32)) != record->sentinel_backup1)
+		if(~(*(tjs_uint32*)(bptr - sizeof(tjs_uint32))) != record->sentinel_backup1)
 			TVPThrowExceptionMessage(
 				TJS_W("Layer bitmap: Buffer underrun detected. Check your drawing code!"));
-		if(*(tjs_uint32*)(bptr + record->size      ) != record->sentinel_backup2)
+		if(~(*(tjs_uint32*)(bptr + record->size      )) != record->sentinel_backup2)
 			TVPThrowExceptionMessage(
 				TJS_W("Layer bitmap: Buffer overrun detected. Check your drawing code!"));
 
