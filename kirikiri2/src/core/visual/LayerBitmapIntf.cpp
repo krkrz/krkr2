@@ -1219,7 +1219,7 @@ TVP_DEFINE_BILINEAR_STRETCH_WITH_OPACITY_FUNCTION(
 						destp, destpitch, x_step, \
 						y_step, refp, refpitch
 template <typename tFunc>
-void TVPDoStretchLoop(
+void tTVPBaseBitmap::TVPDoStretchLoop(
 		tFunc func,
 		tjs_int x_ref_start,
 		tjs_int y_ref_start,
@@ -1251,7 +1251,7 @@ void TVPDoStretchLoop(
 						destp, destpitch, x_step, \
 						y_step, refp, refpitch
 template <typename tStretchFunc>
-void TVPDoBiLinearStretchLoop(
+void tTVPBaseBitmap::TVPDoBiLinearStretchLoop(
 		tStretchFunc stretch,
 		tjs_int rw, tjs_int rh,
 		tjs_int dw, tjs_int dh,
@@ -1903,7 +1903,7 @@ TVP_DEFINE_BILINEAR_AFFINE_WITH_OPACITY_FUNCTION(
 #define TVP_DoAffineLoop_ARGS  sxs, sys, \
 		dest, l, len, src, srcpitch, sxl, syl, srcrect
 template <typename tFuncStretch, typename tFuncAffine>
-void TVPDoAffineLoop(
+void tTVPBaseBitmap::TVPDoAffineLoop(
 		tFuncStretch stretch,
 		tFuncAffine affine,
 		tjs_int sxs,
@@ -1975,7 +1975,7 @@ void TVPDoAffineLoop(
 #define TVP_DoBilinearAffineLoop_ARGS  sxs, sys, \
 		dest, l, len, src, srcpitch, sxl, syl, ref_right_limit, ref_bottom_limit
 template <typename tFuncStretch, typename tFuncAffine>
-void TVPDoBilinearAffineLoop(
+void tTVPBaseBitmap::TVPDoBilinearAffineLoop(
 		tFuncStretch stretch,
 		tFuncAffine affine,
 		tjs_int sxs,
