@@ -9,7 +9,6 @@
 // TJS Exception Class
 //---------------------------------------------------------------------------
 #include "tjsCommHead.h"
-#pragma hdrstop
 
 #include "tjsException.h"
 

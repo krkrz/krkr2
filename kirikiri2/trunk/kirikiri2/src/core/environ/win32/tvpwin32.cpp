@@ -9,7 +9,6 @@
 // TVP Win32 Project File
 //---------------------------------------------------------------------------
 #include "tjsCommHead.h"
-#pragma hdrstop
 
 #include "SysInitIntf.h"
 #include "SysInitImpl.h"

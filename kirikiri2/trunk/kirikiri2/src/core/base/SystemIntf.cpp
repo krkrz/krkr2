@@ -9,7 +9,6 @@
 // "System" class interface
 //---------------------------------------------------------------------------
 #include "tjsCommHead.h"
-#pragma hdrstop
 
 #include "tjsMessage.h"
 #include "SystemIntf.h"

@@ -9,7 +9,6 @@
 // Watch window
 //---------------------------------------------------------------------------
 #include "tjsCommHead.h"
-#pragma hdrstop
 
 #include "WatchFormUnit.h"
 #include "MainFormUnit.h"

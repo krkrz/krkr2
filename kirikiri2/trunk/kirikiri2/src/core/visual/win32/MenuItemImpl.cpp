@@ -9,7 +9,6 @@
 // "MenuItem" class implementation
 //---------------------------------------------------------------------------
 #include "tjsCommHead.h"
-#pragma hdrstop
 
 #include "EventIntf.h"
 #include "MenuItemImpl.h"

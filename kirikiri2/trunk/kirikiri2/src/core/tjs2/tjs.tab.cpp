@@ -1,5 +1,4 @@
 #include "tjsCommHead.h"
-#pragma hdrstop
 /* A Bison parser, made by GNU Bison 1.875b.  */
 
 /* Skeleton parser for Yacc-like parsing with Bison,

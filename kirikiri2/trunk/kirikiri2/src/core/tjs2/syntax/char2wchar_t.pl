@@ -18,7 +18,6 @@ $all =~ s/\#line (\d+) \"tjs.l\"/\#line $1 \"..\\bison-flex\\tjs.l\"/g;
 
 open(FH,">".$ARGV[0]);
 print FH "#include \"tjsCommHead.h\"\n";
-print FH "#pragma hdrstop\n";
 
 print FH $all;
 

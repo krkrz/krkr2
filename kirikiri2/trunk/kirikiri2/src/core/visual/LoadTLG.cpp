@@ -9,7 +9,7 @@
 // TLG5/6 decoder
 //---------------------------------------------------------------------------
 #include "tjsCommHead.h"
-#pragma hdrstop
+
 #include "GraphicsLoaderIntf.h"
 #include "MsgIntf.h"
 #include "tjsUtils.h"

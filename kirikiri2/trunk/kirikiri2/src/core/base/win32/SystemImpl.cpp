@@ -9,7 +9,6 @@
 // "System" class implementation
 //---------------------------------------------------------------------------
 #include "tjsCommHead.h"
-#pragma hdrstop
 
 #include "GraphicsLoaderImpl.h"
 

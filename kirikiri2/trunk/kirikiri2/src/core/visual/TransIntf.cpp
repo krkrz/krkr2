@@ -9,7 +9,6 @@
 // Transition handler mamagement & default transition handlers
 //---------------------------------------------------------------------------
 #include "tjsCommHead.h"
-#pragma hdrstop
 
 #include "TransIntf.h"
 #include "LayerIntf.h"

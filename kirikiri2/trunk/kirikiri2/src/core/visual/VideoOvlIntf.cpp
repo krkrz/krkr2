@@ -9,7 +9,6 @@
 // Video Overlay support interface
 //---------------------------------------------------------------------------
 #include "tjsCommHead.h"
-#pragma hdrstop
 
 #include "MsgIntf.h"
 #include "WindowIntf.h"

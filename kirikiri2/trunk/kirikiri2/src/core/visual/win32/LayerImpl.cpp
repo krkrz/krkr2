@@ -9,7 +9,6 @@
 // Layer Management
 //---------------------------------------------------------------------------
 #include "tjsCommHead.h"
-#pragma hdrstop
 
 #include "LayerImpl.h"
 #include "MsgIntf.h"

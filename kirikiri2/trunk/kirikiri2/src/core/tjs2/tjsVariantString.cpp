@@ -9,7 +9,6 @@
 // string heap management used by tTJSVariant and tTJSString
 //---------------------------------------------------------------------------
 #include "tjsCommHead.h"
-#pragma hdrstop
 
 #include "tjsVariantString.h"
 #include "tjsError.h"

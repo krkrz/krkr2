@@ -8,10 +8,7 @@
 //---------------------------------------------------------------------------
 // Half-transparent Hint Window Support
 //---------------------------------------------------------------------------
-
-
 #include "tjsCommHead.h"
-#pragma hdrstop
 
 #include "HintWindow.h"
 #include "WindowFormUnit.h"

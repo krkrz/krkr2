@@ -9,7 +9,6 @@
 // floating menu bar implementation ( used by WindowForm when fullscreened )
 //---------------------------------------------------------------------------
 #include "tjsCommHead.h"
-#pragma hdrstop
 
 #include "WindowFormUnit.h"
 #include "MenuContainerFormUnit.h"

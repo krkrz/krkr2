@@ -9,7 +9,6 @@
 // Wide(UNICODE) native functions support
 //---------------------------------------------------------------------------
 #include "tjsCommHead.h"
-#pragma hdrstop
 
 
 #define TVP_WNF_A

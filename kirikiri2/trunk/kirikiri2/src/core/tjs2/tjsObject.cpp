@@ -9,7 +9,6 @@
 // TJS2 "Object" class implementation
 //---------------------------------------------------------------------------
 #include "tjsCommHead.h"
-#pragma hdrstop
 
 #include "tjsObject.h"
 #include "tjsUtils.h"

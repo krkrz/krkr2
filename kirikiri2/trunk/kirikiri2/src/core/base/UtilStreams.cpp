@@ -9,7 +9,6 @@
 // Stream related utilities / utility streams
 //---------------------------------------------------------------------------
 #include "tjsCommHead.h"
-#pragma hdrstop
 
 #include "UtilStreams.h"
 #include "MsgIntf.h"

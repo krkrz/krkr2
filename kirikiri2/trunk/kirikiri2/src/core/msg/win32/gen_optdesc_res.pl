@@ -43,7 +43,6 @@ print FH $copyright;
 print FH <<EOF;
 
 #include "tjsCommHead.h"
-#pragma hdrstop
 
 #include "MsgIntf.h"
 #include <zlib/zlib.h>

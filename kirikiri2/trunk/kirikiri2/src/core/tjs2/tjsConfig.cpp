@@ -11,7 +11,6 @@
 
 
 #include "tjsCommHead.h"
-#pragma hdrstop
 
 #ifdef TJS_DEBUG_PROFILE_TIME
 #include <windows.h>

@@ -9,7 +9,6 @@
 // Log Viewer Control
 //---------------------------------------------------------------------------
 #include "tjsCommHead.h"
-#pragma hdrstop
 
 #include <Clipbrd.hpp>
 

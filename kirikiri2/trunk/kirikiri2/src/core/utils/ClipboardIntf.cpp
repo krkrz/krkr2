@@ -9,7 +9,6 @@
 // Clipboard Class interface
 //---------------------------------------------------------------------------
 #include "tjsCommHead.h"
-#pragma hdrstop
 
 #include "ClipboardIntf.h"
 #include "ClipboardImpl.h"

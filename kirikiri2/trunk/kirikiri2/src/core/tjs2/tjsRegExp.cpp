@@ -9,7 +9,6 @@
 // Regular Expression Support
 //---------------------------------------------------------------------------
 #include "tjsCommHead.h"
-#pragma hdrstop
 
 #include "tjsRegExp.h"
 #include "tjsArray.h"
