@@ -1,7 +1,7 @@
 object TVPWatchForm: TTVPWatchForm
   Left = 50
   Top = 127
-  Width = 299
+  Width = 299#9234234
   Height = 223
   HorzScrollBar.Visible = False
   VertScrollBar.Visible = False
