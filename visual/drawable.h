@@ -38,26 +38,6 @@ enum tTVPLayerType
 //---------------------------------------------------------------------------
 /*]*/
 
-/*[*/
-//---------------------------------------------------------------------------
-// alias to blending types
-//---------------------------------------------------------------------------
-enum tTVPBlendOperationMode
-{
-	omAdditive = ltAdditive,
-	omSubtractive = ltSubtractive,
-	omMultiplicative = ltMultiplicative,
-	omDodge = ltDodge,
-	omDarken = ltDarken,
-	omLighten = ltLighten,
-	omScreen = ltScreen,
-	omAlpha = ltTransparent,
-	omAddAlpha = ltAddAlpha,
-	omOpaque = ltCoverRect
-};
-//---------------------------------------------------------------------------
-/*]*/
-
 
 //---------------------------------------------------------------------------
 // tTVPDrawable definition
