@@ -8,12 +8,6 @@
 //---------------------------------------------------------------------------
 // MIDI sequencer implementation
 //---------------------------------------------------------------------------
-// 2004/ 6/19 W.Dee
-//     Fixed missing DefWindowProc in tTJSNI_MIDISoundBuffer::WndProc
-// 2004/ 4/08 W.Dee          MIDIOutData->TVPMIDIOutData(fixed missing prefix)
-// 2004/ 2/13 W.Dee          Fixed problem that MIDIOutData does not recognize
-//                           running statuses.
-//---------------------------------------------------------------------------
 #include "tjsCommHead.h"
 #pragma hdrstop
 
