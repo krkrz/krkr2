@@ -2745,7 +2745,7 @@ bool tTVPBaseBitmap::AffineBlt(tTVPRect destrect, const tTVPBaseBitmap *ref,
 		dest += destpitch;
 	}
 
-	// clear upper and lower are of the affine transformation
+	// clear upper and lower area of the affine transformation
 	if(clear)
 	{
 		tjs_int h;
