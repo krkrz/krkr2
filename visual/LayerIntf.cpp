@@ -4294,9 +4294,14 @@ void tTJSNI_BaseLayer::AdjustGamma(const tTVPGLGammaAdjustData & data)
 	// this is not affected by DrawFace
 	if(!MainImage) TVPThrowExceptionMessage(TVPNotDrawableLayerType);
 
-	MainImage->AdjustGamma(
-		ClipRect,
-		data);
+	if(DrawFace == dfAddAlpha)
+		MainImage->AdjustGammaForAdditiveAlpha(
+			ClipRect,
+			data);
+	else
+		MainImage->AdjustGamma(
+			ClipRect,
+			data);
 
 	ImageModified = true;
 	Update();

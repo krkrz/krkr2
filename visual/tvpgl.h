@@ -219,6 +219,7 @@ TVP_GL_FUNC_PTR_EXTERN_DECL(void, TVPDoGrayScale,  (tjs_uint32 *dest, tjs_int le
 TVP_GL_FUNC_PTR_EXTERN_DECL(void, TVPInitGammaAdjustTempData,  (tTVPGLGammaAdjustTempData *temp, const tTVPGLGammaAdjustData *data));
 TVP_GL_FUNC_PTR_EXTERN_DECL(void, TVPUninitGammaAdjustTempData,  (tTVPGLGammaAdjustTempData *temp));
 TVP_GL_FUNC_PTR_EXTERN_DECL(void, TVPAdjustGamma,  (tjs_uint32 *dest, tjs_int len, tTVPGLGammaAdjustTempData *temp));
+TVP_GL_FUNC_PTR_EXTERN_DECL(void, TVPAdjustGamma_a,  (tjs_uint32 *dest, tjs_int len, tTVPGLGammaAdjustTempData *temp));
 TVP_GL_FUNC_PTR_EXTERN_DECL(void, TVPChBlurMulCopy65,  (tjs_uint8 *dest, const tjs_uint8 *src, tjs_int len, tjs_int level));
 TVP_GL_FUNC_PTR_EXTERN_DECL(void, TVPChBlurAddMulCopy65,  (tjs_uint8 *dest, const tjs_uint8 *src, tjs_int len, tjs_int level));
 TVP_GL_FUNC_PTR_EXTERN_DECL(void, TVPChBlurCopy65,  (tjs_uint8 *dest, tjs_int destpitch, tjs_int destwidth, tjs_int destheight, const tjs_uint8 * src, tjs_int srcpitch, tjs_int srcwidth, tjs_int srcheight, tjs_int blurwidth, tjs_int blurlevel));
