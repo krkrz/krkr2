@@ -43,6 +43,8 @@ if(TVPCPUType & TVP_CPU_HAS_MMX)
 if(TVPCPUType & TVP_CPU_HAS_MMX)
 	 TVPAddBlend_HDA_o =  TVPAddBlend_HDA_o_mmx_a;
 if(TVPCPUType & TVP_CPU_HAS_MMX)
+	 TVPAdjustGamma_a =  TVPAdjustGamma_a_mmx_a;
+if(TVPCPUType & TVP_CPU_HAS_MMX)
 	 TVPAlphaBlend =  TVPAlphaBlend_mmx_a;
 if(TVPCPUType & TVP_CPU_HAS_MMX)
 	 TVPAlphaBlend_o =  TVPAlphaBlend_o_mmx_a;

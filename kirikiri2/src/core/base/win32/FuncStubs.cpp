@@ -1906,207 +1906,215 @@ static void __stdcall TVP_Stub_461(tjs_uint32 * dest , tjs_int destlen , const t
 {
 	return TVPStretchCopy(dest, destlen, src, srcstart, srcstep);
 }
-static void __stdcall TVP_Stub_462(tjs_uint32 * dest , tjs_int destlen , const tjs_uint32 * src)
+static void __stdcall TVP_Stub_462(tjs_uint32 * dest , tjs_int destlen , const tjs_uint32 * src1 , const tjs_uint32 * src2 , tjs_int blend_y , tjs_int srcstart , tjs_int srcstep)
 {
-	return TVPFastLinearInterpH2F(dest, destlen, src);
+	return TVPInterpStretchCopy(dest, destlen, src1, src2, blend_y, srcstart, srcstep);
 }
 static void __stdcall TVP_Stub_463(tjs_uint32 * dest , tjs_int destlen , const tjs_uint32 * src)
 {
+	return TVPFastLinearInterpH2F(dest, destlen, src);
+}
+static void __stdcall TVP_Stub_464(tjs_uint32 * dest , tjs_int destlen , const tjs_uint32 * src)
+{
 	return TVPFastLinearInterpH2B(dest, destlen, src);
 }
-static void __stdcall TVP_Stub_464(tjs_uint32 * dest , tjs_int destlen , const tjs_uint32 * src0 , const tjs_uint32 * src1)
+static void __stdcall TVP_Stub_465(tjs_uint32 * dest , tjs_int destlen , const tjs_uint32 * src0 , const tjs_uint32 * src1)
 {
 	return TVPFastLinearInterpV2(dest, destlen, src0, src1);
 }
-static void __stdcall TVP_Stub_465(tjs_uint32 * dest , tjs_int destlen , const tjs_uint32 * src , tjs_int srcstart , tjs_int srcstep)
+static void __stdcall TVP_Stub_466(tjs_uint32 * dest , tjs_int destlen , const tjs_uint32 * src , tjs_int srcstart , tjs_int srcstep)
 {
 	return TVPStretchColorCopy(dest, destlen, src, srcstart, srcstep);
 }
-static void __stdcall TVP_Stub_466(tjs_uint32 * dest , tjs_int destlen , const tjs_uint32 * src , tjs_int sx , tjs_int sy , tjs_int stepx , tjs_int stepy , tjs_int srcpitch)
+static void __stdcall TVP_Stub_467(tjs_uint32 * dest , tjs_int destlen , const tjs_uint32 * src , tjs_int sx , tjs_int sy , tjs_int stepx , tjs_int stepy , tjs_int srcpitch)
 {
 	return TVPLinTransCopy(dest, destlen, src, sx, sy, stepx, stepy, srcpitch);
 }
-static void __stdcall TVP_Stub_467(tjs_uint32 * dest , tjs_int destlen , const tjs_uint32 * src , tjs_int sx , tjs_int sy , tjs_int stepx , tjs_int stepy , tjs_int srcpitch)
+static void __stdcall TVP_Stub_468(tjs_uint32 * dest , tjs_int destlen , const tjs_uint32 * src , tjs_int sx , tjs_int sy , tjs_int stepx , tjs_int stepy , tjs_int srcpitch)
 {
 	return TVPLinTransColorCopy(dest, destlen, src, sx, sy, stepx, stepy, srcpitch);
 }
-static void __stdcall TVP_Stub_468(tjs_uint32 * dest , tjs_int len , tjs_uint32 key)
+static void __stdcall TVP_Stub_469(tjs_uint32 * dest , tjs_int len , tjs_uint32 key)
 {
 	return TVPMakeAlphaFromKey(dest, len, key);
 }
-static void __stdcall TVP_Stub_469(tjs_uint32 * dest , const tjs_uint32 * src , tjs_int len)
+static void __stdcall TVP_Stub_470(tjs_uint32 * dest , const tjs_uint32 * src , tjs_int len)
 {
 	return TVPCopyMask(dest, src, len);
 }
-static void __stdcall TVP_Stub_470(tjs_uint32 * dest , const tjs_uint32 * src , tjs_int len)
+static void __stdcall TVP_Stub_471(tjs_uint32 * dest , const tjs_uint32 * src , tjs_int len)
 {
 	return TVPCopyColor(dest, src, len);
 }
-static void __stdcall TVP_Stub_471(tjs_uint32 * main , const tjs_uint8 * mask , tjs_int len)
+static void __stdcall TVP_Stub_472(tjs_uint32 * main , const tjs_uint8 * mask , tjs_int len)
 {
 	return TVPBindMaskToMain(main, mask, len);
 }
-static void __stdcall TVP_Stub_472(tjs_uint32 * dest , tjs_int len , tjs_uint32 value)
+static void __stdcall TVP_Stub_473(tjs_uint32 * dest , tjs_int len , tjs_uint32 value)
 {
 	return TVPFillARGB(dest, len, value);
 }
-static void __stdcall TVP_Stub_473(tjs_uint32 * dest , tjs_int len , tjs_uint32 value)
+static void __stdcall TVP_Stub_474(tjs_uint32 * dest , tjs_int len , tjs_uint32 value)
 {
 	return TVPFillARGB_NC(dest, len, value);
 }
-static void __stdcall TVP_Stub_474(tjs_uint32 * dest , tjs_int len , tjs_uint32 color)
+static void __stdcall TVP_Stub_475(tjs_uint32 * dest , tjs_int len , tjs_uint32 color)
 {
 	return TVPFillColor(dest, len, color);
 }
-static void __stdcall TVP_Stub_475(tjs_uint32 * dest , tjs_int len , tjs_uint32 mask)
+static void __stdcall TVP_Stub_476(tjs_uint32 * dest , tjs_int len , tjs_uint32 mask)
 {
 	return TVPFillMask(dest, len, mask);
 }
-static void __stdcall TVP_Stub_476(tjs_uint8 * line1 , tjs_uint8 * line2 , tjs_int len)
+static void __stdcall TVP_Stub_477(tjs_uint8 * line1 , tjs_uint8 * line2 , tjs_int len)
 {
 	return TVPSwapLine8(line1, line2, len);
 }
-static void __stdcall TVP_Stub_477(tjs_uint32 * line1 , tjs_uint32 * line2 , tjs_int len)
+static void __stdcall TVP_Stub_478(tjs_uint32 * line1 , tjs_uint32 * line2 , tjs_int len)
 {
 	return TVPSwapLine32(line1, line2, len);
 }
-static void __stdcall TVP_Stub_478(tjs_uint8 * pixels , tjs_int len)
+static void __stdcall TVP_Stub_479(tjs_uint8 * pixels , tjs_int len)
 {
 	return TVPReverse8(pixels, len);
 }
-static void __stdcall TVP_Stub_479(tjs_uint32 * pixels , tjs_int len)
+static void __stdcall TVP_Stub_480(tjs_uint32 * pixels , tjs_int len)
 {
 	return TVPReverse32(pixels, len);
 }
-static void __stdcall TVP_Stub_480(tjs_uint32 * dest , tjs_int len)
+static void __stdcall TVP_Stub_481(tjs_uint32 * dest , tjs_int len)
 {
 	return TVPDoGrayScale(dest, len);
 }
-static void __stdcall TVP_Stub_481(tTVPGLGammaAdjustTempData * temp , const tTVPGLGammaAdjustData * data)
+static void __stdcall TVP_Stub_482(tTVPGLGammaAdjustTempData * temp , const tTVPGLGammaAdjustData * data)
 {
 	return TVPInitGammaAdjustTempData(temp, data);
 }
-static void __stdcall TVP_Stub_482(tTVPGLGammaAdjustTempData * temp)
+static void __stdcall TVP_Stub_483(tTVPGLGammaAdjustTempData * temp)
 {
 	return TVPUninitGammaAdjustTempData(temp);
 }
-static void __stdcall TVP_Stub_483(tjs_uint32 * dest , tjs_int len , tTVPGLGammaAdjustTempData * temp)
+static void __stdcall TVP_Stub_484(tjs_uint32 * dest , tjs_int len , tTVPGLGammaAdjustTempData * temp)
 {
 	return TVPAdjustGamma(dest, len, temp);
 }
-static void __stdcall TVP_Stub_484(tjs_uint8 * dest , const tjs_uint8 * src , tjs_int len , tjs_int level)
+static void __stdcall TVP_Stub_485(tjs_uint32 * dest , tjs_int len , tTVPGLGammaAdjustTempData * temp)
+{
+	return TVPAdjustGamma_a(dest, len, temp);
+}
+static void __stdcall TVP_Stub_486(tjs_uint8 * dest , const tjs_uint8 * src , tjs_int len , tjs_int level)
 {
 	return TVPChBlurMulCopy65(dest, src, len, level);
 }
-static void __stdcall TVP_Stub_485(tjs_uint8 * dest , const tjs_uint8 * src , tjs_int len , tjs_int level)
+static void __stdcall TVP_Stub_487(tjs_uint8 * dest , const tjs_uint8 * src , tjs_int len , tjs_int level)
 {
 	return TVPChBlurAddMulCopy65(dest, src, len, level);
 }
-static void __stdcall TVP_Stub_486(tjs_uint8 * dest , tjs_int destpitch , tjs_int destwidth , tjs_int destheight , const tjs_uint8 * src , tjs_int srcpitch , tjs_int srcwidth , tjs_int srcheight , tjs_int blurwidth , tjs_int blurlevel)
+static void __stdcall TVP_Stub_488(tjs_uint8 * dest , tjs_int destpitch , tjs_int destwidth , tjs_int destheight , const tjs_uint8 * src , tjs_int srcpitch , tjs_int srcwidth , tjs_int srcheight , tjs_int blurwidth , tjs_int blurlevel)
 {
 	return TVPChBlurCopy65(dest, destpitch, destwidth, destheight, src, srcpitch, srcwidth, srcheight, blurwidth, blurlevel);
 }
-static void __stdcall TVP_Stub_487(tjs_uint8 * dest , const tjs_uint8 * buf , tjs_int len , const tjs_uint32 * pal)
+static void __stdcall TVP_Stub_489(tjs_uint8 * dest , const tjs_uint8 * buf , tjs_int len , const tjs_uint32 * pal)
 {
 	return TVPBLExpand1BitTo8BitPal(dest, buf, len, pal);
 }
-static void __stdcall TVP_Stub_488(tjs_uint32 * dest , const tjs_uint8 * buf , tjs_int len , const tjs_uint32 * pal)
+static void __stdcall TVP_Stub_490(tjs_uint32 * dest , const tjs_uint8 * buf , tjs_int len , const tjs_uint32 * pal)
 {
 	return TVPBLExpand1BitTo32BitPal(dest, buf, len, pal);
 }
-static void __stdcall TVP_Stub_489(tjs_uint8 * dest , const tjs_uint8 * buf , tjs_int len , const tjs_uint32 * pal)
+static void __stdcall TVP_Stub_491(tjs_uint8 * dest , const tjs_uint8 * buf , tjs_int len , const tjs_uint32 * pal)
 {
 	return TVPBLExpand4BitTo8BitPal(dest, buf, len, pal);
 }
-static void __stdcall TVP_Stub_490(tjs_uint32 * dest , const tjs_uint8 * buf , tjs_int len , const tjs_uint32 * pal)
+static void __stdcall TVP_Stub_492(tjs_uint32 * dest , const tjs_uint8 * buf , tjs_int len , const tjs_uint32 * pal)
 {
 	return TVPBLExpand4BitTo32BitPal(dest, buf, len, pal);
 }
-static void __stdcall TVP_Stub_491(tjs_uint8 * dest , const tjs_uint8 * buf , tjs_int len , const tjs_uint32 * pal)
+static void __stdcall TVP_Stub_493(tjs_uint8 * dest , const tjs_uint8 * buf , tjs_int len , const tjs_uint32 * pal)
 {
 	return TVPBLExpand8BitTo8BitPal(dest, buf, len, pal);
 }
-static void __stdcall TVP_Stub_492(tjs_uint32 * dest , const tjs_uint8 * buf , tjs_int len , const tjs_uint32 * pal)
+static void __stdcall TVP_Stub_494(tjs_uint32 * dest , const tjs_uint8 * buf , tjs_int len , const tjs_uint32 * pal)
 {
 	return TVPBLExpand8BitTo32BitPal(dest, buf, len, pal);
 }
-static void __stdcall TVP_Stub_493(tjs_uint32 * dest , const tjs_uint8 * buf , tjs_int len)
+static void __stdcall TVP_Stub_495(tjs_uint32 * dest , const tjs_uint8 * buf , tjs_int len)
 {
 	return TVPExpand8BitTo32BitGray(dest, buf, len);
 }
-static void __stdcall TVP_Stub_494(tjs_uint8 * dest , const tjs_uint16 * buf , tjs_int len)
+static void __stdcall TVP_Stub_496(tjs_uint8 * dest , const tjs_uint16 * buf , tjs_int len)
 {
 	return TVPBLConvert15BitTo8Bit(dest, buf, len);
 }
-static void __stdcall TVP_Stub_495(tjs_uint32 * dest , const tjs_uint16 * buf , tjs_int len)
+static void __stdcall TVP_Stub_497(tjs_uint32 * dest , const tjs_uint16 * buf , tjs_int len)
 {
 	return TVPBLConvert15BitTo32Bit(dest, buf, len);
 }
-static void __stdcall TVP_Stub_496(tjs_uint8 * dest , const tjs_uint8 * buf , tjs_int len)
+static void __stdcall TVP_Stub_498(tjs_uint8 * dest , const tjs_uint8 * buf , tjs_int len)
 {
 	return TVPBLConvert24BitTo8Bit(dest, buf, len);
 }
-static void __stdcall TVP_Stub_497(tjs_uint32 * dest , const tjs_uint8 * buf , tjs_int len)
+static void __stdcall TVP_Stub_499(tjs_uint32 * dest , const tjs_uint8 * buf , tjs_int len)
 {
 	return TVPBLConvert24BitTo32Bit(dest, buf, len);
 }
-static void __stdcall TVP_Stub_498(tjs_uint32 * dest , const tjs_uint8 * buf , tjs_int len)
+static void __stdcall TVP_Stub_500(tjs_uint32 * dest , const tjs_uint8 * buf , tjs_int len)
 {
 	return TVPConvert24BitTo32Bit(dest, buf, len);
 }
-static void __stdcall TVP_Stub_499(tjs_uint8 * dest , const tjs_uint32 * buf , tjs_int len)
+static void __stdcall TVP_Stub_501(tjs_uint8 * dest , const tjs_uint32 * buf , tjs_int len)
 {
 	return TVPBLConvert32BitTo8Bit(dest, buf, len);
 }
-static void __stdcall TVP_Stub_500(tjs_uint32 * dest , const tjs_uint32 * buf , tjs_int len)
+static void __stdcall TVP_Stub_502(tjs_uint32 * dest , const tjs_uint32 * buf , tjs_int len)
 {
 	return TVPBLConvert32BitTo32Bit_NoneAlpha(dest, buf, len);
 }
-static void __stdcall TVP_Stub_501(tjs_uint32 * dest , const tjs_uint32 * buf , tjs_int len)
+static void __stdcall TVP_Stub_503(tjs_uint32 * dest , const tjs_uint32 * buf , tjs_int len)
 {
 	return TVPBLConvert32BitTo32Bit_MulAddAlpha(dest, buf, len);
 }
-static void __stdcall TVP_Stub_502(tjs_uint32 * dest , const tjs_uint32 * buf , tjs_int len)
+static void __stdcall TVP_Stub_504(tjs_uint32 * dest , const tjs_uint32 * buf , tjs_int len)
 {
 	return TVPBLConvert32BitTo32Bit_AddAlpha(dest, buf, len);
 }
-static void __stdcall TVP_Stub_503(tjs_uint16 * dest , const tjs_uint32 * src , tjs_int len , tjs_int xofs , tjs_int yofs)
+static void __stdcall TVP_Stub_505(tjs_uint16 * dest , const tjs_uint32 * src , tjs_int len , tjs_int xofs , tjs_int yofs)
 {
 	return TVPDither32BitTo16Bit565(dest, src, len, xofs, yofs);
 }
-static void __stdcall TVP_Stub_504(tjs_uint16 * dest , const tjs_uint32 * src , tjs_int len , tjs_int xofs , tjs_int yofs)
+static void __stdcall TVP_Stub_506(tjs_uint16 * dest , const tjs_uint32 * src , tjs_int len , tjs_int xofs , tjs_int yofs)
 {
 	return TVPDither32BitTo16Bit555(dest, src, len, xofs, yofs);
 }
-static void __stdcall TVP_Stub_505(tjs_uint8 * dest , const tjs_uint32 * src , tjs_int len , tjs_int xofs , tjs_int yofs)
+static void __stdcall TVP_Stub_507(tjs_uint8 * dest , const tjs_uint32 * src , tjs_int len , tjs_int xofs , tjs_int yofs)
 {
 	return TVPDither32BitTo8Bit(dest, src, len, xofs, yofs);
 }
-static void __stdcall TVP_Stub_506(tjs_uint8 * outp , const tjs_uint8 * upper , tjs_uint8 * const * buf , tjs_int width)
+static void __stdcall TVP_Stub_508(tjs_uint8 * outp , const tjs_uint8 * upper , tjs_uint8 * const * buf , tjs_int width)
 {
 	return TVPTLG5ComposeColors3To4(outp, upper, buf, width);
 }
-static void __stdcall TVP_Stub_507(tjs_uint8 * outp , const tjs_uint8 * upper , tjs_uint8 * const * buf , tjs_int width)
+static void __stdcall TVP_Stub_509(tjs_uint8 * outp , const tjs_uint8 * upper , tjs_uint8 * const * buf , tjs_int width)
 {
 	return TVPTLG5ComposeColors4To4(outp, upper, buf, width);
 }
-static tjs_int __stdcall TVP_Stub_508(tjs_uint8 * out , const tjs_uint8 * in , tjs_int insize , tjs_uint8 * text , tjs_int initialr)
+static tjs_int __stdcall TVP_Stub_510(tjs_uint8 * out , const tjs_uint8 * in , tjs_int insize , tjs_uint8 * text , tjs_int initialr)
 {
 	return TVPTLG5DecompressSlide(out, in, insize, text, initialr);
 }
-static void __stdcall TVP_Stub_509(tjs_int8 * pixelbuf , tjs_int pixel_count , tjs_uint8 * bit_pool)
+static void __stdcall TVP_Stub_511(tjs_int8 * pixelbuf , tjs_int pixel_count , tjs_uint8 * bit_pool)
 {
 	return TVPTLG6DecodeGolombValuesForFirst(pixelbuf, pixel_count, bit_pool);
 }
-static void __stdcall TVP_Stub_510(tjs_int8 * pixelbuf , tjs_int pixel_count , tjs_uint8 * bit_pool)
+static void __stdcall TVP_Stub_512(tjs_int8 * pixelbuf , tjs_int pixel_count , tjs_uint8 * bit_pool)
 {
 	return TVPTLG6DecodeGolombValues(pixelbuf, pixel_count, bit_pool);
 }
-static void __stdcall TVP_Stub_511(tjs_uint32 * prevline , tjs_uint32 * curline , tjs_int width , tjs_int start_block , tjs_int block_limit , tjs_uint8 * filtertypes , tjs_int skipblockbytes , tjs_uint32 * in , tjs_uint32 initialp , tjs_int oddskip , tjs_int dir)
+static void __stdcall TVP_Stub_513(tjs_uint32 * prevline , tjs_uint32 * curline , tjs_int width , tjs_int start_block , tjs_int block_limit , tjs_uint8 * filtertypes , tjs_int skipblockbytes , tjs_uint32 * in , tjs_uint32 initialp , tjs_int oddskip , tjs_int dir)
 {
 	return TVPTLG6DecodeLineGeneric(prevline, curline, width, start_block, block_limit, filtertypes, skipblockbytes, in, initialp, oddskip, dir);
 }
-static void __stdcall TVP_Stub_512(tjs_uint32 * prevline , tjs_uint32 * curline , tjs_int width , tjs_int block_count , tjs_uint8 * filtertypes , tjs_int skipblockbytes , tjs_uint32 * in , tjs_uint32 initialp , tjs_int oddskip , tjs_int dir)
+static void __stdcall TVP_Stub_514(tjs_uint32 * prevline , tjs_uint32 * curline , tjs_int width , tjs_int block_count , tjs_uint8 * filtertypes , tjs_int skipblockbytes , tjs_uint32 * in , tjs_uint32 initialp , tjs_int oddskip , tjs_int dir)
 {
 	return TVPTLG6DecodeLine(prevline, curline, width, block_count, filtertypes, skipblockbytes, in, initialp, oddskip, dir);
 }
@@ -2336,38 +2344,38 @@ static tjs_uint8 compressed_functable[] = {
 0xdb, 0x48, 0x60, 0xef, 0x6a, 0x1f, 0x11, 0x62, 0xa8, 0xa9, 0xf4, 0xb7, 0xcb, 0x05, 0x7a, 0x58, 
 0x65, 0x3d, 0x0c, 0x23, 0xf2, 0x77, 0xb5, 0x8c, 0x84, 0x31, 0xd8, 0x6c, 0x06, 0xc8, 0xb9, 0x01, 
 0x81, 0x3d, 0x4c, 0x23, 0xb0, 0x77, 0xce, 0xbc, 0x02, 0xc4, 0x50, 0x53, 0x19, 0xc0, 0x2e, 0xf5, 
-0xab, 0x8d, 0x21, 0xde, 0x67, 0x9c, 0x81, 0x34, 0x63, 0xb7, 0x76, 0x01, 0x99, 0xf1, 0xf7, 0x0e, 
-0xef, 0x0f, 0xce, 0x7c, 0x61, 0xdd, 0x30, 0x27, 0x43, 0xc0, 0xdc, 0x1c, 0xf4, 0x78, 0xe3, 0x61, 
-0xb4, 0x1a, 0xcd, 0x6c, 0x43, 0x99, 0x4e, 0x3c, 0xf7, 0xff, 0x3a, 0x87, 0xfd, 0x3d, 0x95, 0xf7, 
-0x11, 0x76, 0x09, 0x3e, 0xe5, 0x6f, 0x49, 0xd9, 0x75, 0xef, 0xdf, 0xa0, 0xa3, 0x8e, 0xd6, 0xbb, 
-0x37, 0xa6, 0xdb, 0x25, 0x48, 0x3f, 0x75, 0xdb, 0xc0, 0x92, 0xad, 0x7a, 0xaf, 0xdc, 0x9b, 0xf9, 
-0x04, 0xc5, 0x21, 0x13, 0xbc, 0xc4, 0x97, 0x00, 0xc5, 0x1d, 0x0a, 0xe7, 0x33, 0x14, 0x45, 0xe3, 
-0xeb, 0x73, 0x8b, 0xcf, 0x9a, 0x67, 0x5b, 0xf2, 0xdc, 0x5e, 0x4d, 0xda, 0xb2, 0x19, 0x26, 0xda, 
-0xcc, 0xa4, 0x5b, 0xd6, 0xcd, 0xb3, 0xf8, 0x0c, 0x12, 0x16, 0x4b, 0x6f, 0x46, 0xea, 0xe4, 0x1d, 
-0x86, 0x28, 0x99, 0x5e, 0x1b, 0x02, 0xcf, 0xb5, 0x02, 0xd7, 0xf0, 0x11, 0x92, 0xd4, 0x20, 0xcb, 
-0x4c, 0x67, 0x82, 0x57, 0x37, 0x5a, 0x7c, 0x4e, 0xc0, 0x76, 0x11, 0x00, 0xcb, 0xd9, 0xbd, 0x7a, 
-0xe2, 0x7e, 0x0e, 0xd6, 0x6b, 0x30, 0x0e, 0xff, 0xda, 0xa4, 0xfc, 0x1b, 0x32, 0xf8, 0x27, 0x24, 
-0xd8, 0x07, 0x8a, 0xcf, 0x2f, 0x0c, 0x23, 0xb5, 0x5f, 0xa8, 0x14, 0xf9, 0xa8, 0x72, 0xec, 0xd9, 
-0x1e, 0x5e, 0xee, 0x43, 0xd8, 0x18, 0x27, 0xb3, 0xac, 0x9f, 0x1f, 0xce, 0x64, 0x75, 0x12, 0x6d, 
-0x08, 0xad, 0x5e, 0x59, 0xac, 0x08, 0xfd, 0xa1, 0x7e, 0x7c, 0xda, 0xd0, 0xda, 0xe5, 0x40, 0xb4, 
-0x3d, 0x1a, 0x0c, 0xcb, 0x80, 0x62, 0xcb, 0x39, 0x8d, 0xe8, 0x3e, 0x59, 0xea, 0xe4, 0xe2, 0xf4, 
-0x29, 0x01, 0x71, 0xf8, 0xea, 0x04, 0x65, 0x4b, 0xfc, 0x86, 0xfe, 0x3b, 0x07, 0x91, 0xe7, 0x24, 
-0xdc, 0x1b, 0x85, 0x8c, 0xfc, 0xfa, 0x40, 0x81, 0x6e, 0xe8, 0xa3, 0xfd, 0xb0, 0x0f, 0x77, 0xa6, 
-0xf5, 0xe1, 0x0e, 0xb5, 0x7e, 0xb3, 0x33, 0xad, 0xdf, 0xec, 0x40, 0x6b, 0x0d, 0x99, 0x65, 0x93, 
-0x0e, 0x3b, 0xc3, 0xc9, 0xc5, 0x24, 0xbf, 0xc6, 0xff, 0xea, 0xa8, 0x9a, 0xbf, 0x63, 0xf2, 0xaf, 
-0x8e, 0xfd, 0x60, 0xb8, 0x4a, 0x2e, 0x75, 0x1a, 0x81, 0x0e, 0x0e, 0x7d, 0xf4, 0x69, 0x9a, 0xd5, 
-0xc1, 0xa1, 0x9f, 0x3a, 0x16, 0x9c, 0x61, 0x50, 0x2a, 0x6d, 0x38, 0x40, 0xe3, 0x9c, 0xac, 0x55, 
-0x80, 0x02, 0xc3, 0x7f, 0xdc, 0x5e, 0xe1, 0xd8, 0xf4, 0x99, 0x8b, 0x3e, 0x90, 0x34, 0x6d, 0xb2, 
-0xaf, 0xd3, 0x19, 0x16, 0xb4, 0x0f, 0xe2, 0x14, 0x65, 0x2b, 0x48, 0x0a, 0xb8, 0x57, 0xc7, 0xf4, 
-0xc7, 0x91, 0x90, 0x8d, 0xb9, 0x2b, 0x75, 0x7b, 0xbf, 0x66, 0x00, 0x3e, 0x1a, 0x1e, 0xb8, 0xc5, 
-0x7a, 0xbb, 0x30, 0x97, 0x17, 0xe7, 0x47, 0xec, 0xeb, 0x43, 0x70, 0x0a, 0x79, 0x81, 0x95, 0xbe, 
-0x5e, 0xe2, 0x43, 0x8f, 0xd8, 0x28, 0x7e, 0x2f, 0xbe, 0x69, 0xd6, 0x68, 0x60, 0x0d, 0xfa, 0xb0, 
-0x27, 0x74, 0xf1, 0x4b, 0x8d, 0x3e, 0x85, 0xe5, 0x57, 0x12, 0x2c, 0x22, 0x14, 0xc2, 0x16, 0x1b, 
-0xb2, 0x23, 0xb0, 0x28, 0xf0, 0x31, 0x03, 0x0e, 0xe1, 0x39, 0xd5, 0x7a, 0x7d, 0x77, 0x03, 0xa2, 
-0x0d, 0x4c, 0xcf, 0x30, 0x39, 0x43, 0x24, 0xad, 0xfe, 0xcf, 0x24, 0x0b, 0x60, 0x33, 0x50, 0x27, 
-0x00, 0x56, 0x5d, 0x9e, 0xc3, 0x18, 0x12, 0x14, 0x34, 0x97, 0x98, 0xc6, 0x9f, 0x36, 0x23, 0x28, 
-0x28, 0x0d, 0xae, 0x22, 0xa8, 0xd3, 0x52, 0x8f, 0xce, 0xf2, 0xff, 0x0f, 0x66, 0x4b, 0xdb, 0xc6, 
-
+0xab, 0x8d, 0x21, 0xde, 0x67, 0xcc, 0xe4, 0xb7, 0x0d, 0x2d, 0x40, 0xbb, 0x75, 0xec, 0x67, 0x20, 
+0xcd, 0xd8, 0x2d, 0x61, 0x40, 0x72, 0xc9, 0xef, 0x0f, 0xce, 0x7c, 0x25, 0xba, 0x61, 0x4e, 0x86, 
+0x80, 0xb9, 0x39, 0xe8, 0x31, 0x7d, 0xe3, 0x2a, 0xd1, 0x4c, 0x3a, 0xd4, 0x52, 0x89, 0xef, 0x19, 
+0xbe, 0xce, 0xcb, 0x85, 0x9e, 0xca, 0xfb, 0x08, 0xbb, 0x04, 0x9f, 0xf2, 0xb7, 0xb2, 0xec, 0x7a, 
+0xf9, 0x6f, 0xd0, 0x51, 0xb7, 0xeb, 0xdd, 0x22, 0xd3, 0xed, 0x12, 0xa4, 0x9f, 0xba, 0x6d, 0x98, 
+0xc9, 0x56, 0xbd, 0xc7, 0xee, 0xcd, 0x7c, 0x82, 0xe2, 0x90, 0x09, 0x5e, 0xe2, 0x4b, 0x80, 0xe2, 
+0x0e, 0x85, 0xfa, 0x19, 0x8a, 0xa2, 0xf1, 0xf5, 0xb9, 0xc5, 0x67, 0xcd, 0xb3, 0x2d, 0x79, 0x6e, 
+0xaf, 0x26, 0x6d, 0xd9, 0x0c, 0x13, 0x6d, 0x66, 0xd2, 0x2d, 0xeb, 0xe6, 0x59, 0x7c, 0x06, 0x09, 
+0x8b, 0xa5, 0x37, 0x23, 0x75, 0xf2, 0x0e, 0x43, 0x94, 0x4c, 0xaf, 0x0d, 0x81, 0xe7, 0x5a, 0x81, 
+0x6b, 0xf8, 0x08, 0x49, 0x6a, 0x90, 0x65, 0xa6, 0x33, 0xc1, 0xab, 0x1b, 0x3b, 0x3e, 0x27, 0x60, 
+0xbb, 0x08, 0x80, 0xe5, 0x5d, 0x81, 0x7a, 0xc2, 0x7f, 0x0e, 0xd6, 0x6b, 0x30, 0x0e, 0xff, 0xda, 
+0xa4, 0xfc, 0x1b, 0x39, 0xf8, 0x27, 0x32, 0xd8, 0x07, 0x98, 0xcf, 0x2f, 0x0c, 0x23, 0xb5, 0x5f, 
+0xa8, 0x14, 0xf9, 0xa8, 0x72, 0xcc, 0xda, 0x1e, 0x5e, 0xee, 0x7b, 0xd8, 0x18, 0x27, 0xb3, 0xac, 
+0x5f, 0x6b, 0x1c, 0x6b, 0x57, 0xee, 0x87, 0x34, 0x59, 0x9d, 0x44, 0x1b, 0x42, 0xeb, 0x6e, 0x16, 
+0x75, 0x42, 0x67, 0xab, 0x1f, 0xfc, 0x36, 0x34, 0xa5, 0x39, 0x10, 0x6d, 0xec, 0x06, 0xc3, 0x32, 
+0xa0, 0xd8, 0xb2, 0x57, 0x23, 0xba, 0x4f, 0xbe, 0x3b, 0xb9, 0x38, 0x7d, 0x4a, 0x40, 0x1c, 0xbe, 
+0x3a, 0x41, 0xd9, 0x12, 0xbf, 0xa1, 0xff, 0xce, 0x41, 0xe4, 0x39, 0x09, 0xf7, 0x96, 0x23, 0x23, 
+0xbf, 0x3e, 0x50, 0xa0, 0x1b, 0x4e, 0x00, 0xfc, 0xb0, 0x0f, 0x77, 0xa6, 0xf5, 0xe1, 0x0e, 0xb5, 
+0x7e, 0xb3, 0x33, 0xad, 0xdf, 0xec, 0x40, 0x6b, 0x0d, 0x99, 0xe5, 0xa5, 0x0e, 0x7b, 0xcc, 0xc9, 
+0xc5, 0x24, 0xff, 0x00, 0xc2, 0xab, 0xa3, 0x6a, 0xfe, 0x8e, 0xc9, 0xbf, 0x3a, 0xf6, 0x83, 0xe1, 
+0x2a, 0xb9, 0xd4, 0x69, 0x04, 0x3a, 0x38, 0xf4, 0xd1, 0xa7, 0x69, 0x56, 0x07, 0x87, 0x7e, 0xea, 
+0x58, 0x70, 0x86, 0x41, 0xa9, 0xb4, 0xe1, 0x00, 0x8d, 0x73, 0xb2, 0xd6, 0x13, 0x0a, 0x0c, 0xff, 
+0x71, 0x7b, 0x85, 0x63, 0xd3, 0xa7, 0x45, 0xfa, 0x40, 0xd2, 0xb4, 0xc9, 0xbe, 0x08, 0x68, 0x58, 
+0xd0, 0x3e, 0x88, 0x53, 0x94, 0xad, 0x20, 0x29, 0xe0, 0x5e, 0x1d, 0xd3, 0x1f, 0x47, 0x42, 0x36, 
+0xe6, 0xae, 0xd4, 0xad, 0xcf, 0x30, 0x00, 0x1f, 0x0d, 0x0f, 0xdc, 0x62, 0xbd, 0x5d, 0x98, 0xcb, 
+0x8b, 0xf3, 0x23, 0xf6, 0xc5, 0x27, 0x38, 0x85, 0xbc, 0x54, 0x4b, 0x5f, 0x2f, 0xf1, 0xa1, 0x47, 
+0x6c, 0x14, 0xbf, 0x17, 0xdf, 0x91, 0x6b, 0x34, 0xb0, 0x06, 0x7d, 0xd8, 0x13, 0xba, 0xf8, 0xa5, 
+0x46, 0x9f, 0xc2, 0xf2, 0xcb, 0x14, 0x16, 0x11, 0x0a, 0x61, 0x8b, 0x0d, 0xd9, 0x11, 0x58, 0x14, 
+0xf8, 0x98, 0x01, 0x87, 0xf0, 0x9c, 0x6a, 0xbd, 0xbe, 0xbb, 0x01, 0xd1, 0x06, 0xa6, 0x67, 0x98, 
+0x9c, 0x21, 0x92, 0x56, 0xff, 0xdb, 0x93, 0x05, 0xb0, 0x19, 0xa8, 0x13, 0x00, 0xab, 0x53, 0xcf, 
+0x61, 0x0c, 0x09, 0x0a, 0xf4, 0x6a, 0xc8, 0xab, 0x07, 0xb2, 0x19, 0x41, 0x41, 0x69, 0x70, 0x15, 
+0x41, 0x9d, 0x96, 0x7a, 0x74, 0x96, 0xff, 0x7f, 0x63, 0xd6, 0x1d, 0xe9, 
 
 };
 static void * func_ptrs[] = {
@@ -2499,15 +2507,15 @@ static void * func_ptrs[] = {
 	TVP_Stub_500, TVP_Stub_501, TVP_Stub_502, TVP_Stub_503, 
 	TVP_Stub_504, TVP_Stub_505, TVP_Stub_506, TVP_Stub_507, 
 	TVP_Stub_508, TVP_Stub_509, TVP_Stub_510, TVP_Stub_511, 
-	TVP_Stub_512, 
+	TVP_Stub_512, TVP_Stub_513, TVP_Stub_514, 
 };
 
 
 void TVPExportFunctions()
 {
-	const unsigned long compressed_size = 4032;
-	const unsigned long decompressed_size = 31900;
-	const tjs_int function_count = 513;
+	const unsigned long compressed_size = 4044;
+	const unsigned long decompressed_size = 32086;
+	const tjs_int function_count = 515;
 	unsigned char * dest = new unsigned char [decompressed_size];
 
 	try
