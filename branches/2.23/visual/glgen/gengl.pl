@@ -315,6 +315,14 @@ $gpl
 #ifndef _TVPGL_H_
 #define _TVPGL_H_
 
+/*
+	key to blending suffix:
+	d : destination has alpha
+	a : destination has additive-alpha
+	o : blend with opacity
+*/
+
+
 /*[*/
 #ifdef __cplusplus
  extern "C" {
@@ -372,8 +380,8 @@ print FC &get_file_content('maketab.c');
 ;# pixel alpha blending
 ;#-----------------------------------------------------------------
 
-;# simple pixel alpha blending ( destination alpha on/off )
-;# alpha blending with opacity ( destination alpha on/off )
+;# simple pixel alpha blending ( destination alpha alpha/additive-alpha/off )
+;# alpha blending with opacity ( destination alpha alpha/additive-alpha/off )
 
 
 print FC <<EOF;
@@ -529,6 +537,42 @@ print FC <<EOF;
 
 EOF
 
+
+
+print FC <<EOF;
+/*export*/
+TVP_GL_FUNC_DECL(void, TVPAlphaBlend_a_c, (tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len))
+{/*YET NOT IMPLEMENTED*/
+	tjs_uint32 d1, s, d, sopa, addr, destalpha;
+EOF
+
+
+$content = <<EOF;
+{
+	s = *src;
+	src++;
+	d = *dest;
+	addr = ((s >> 16) & 0xff00) + (d>>24);
+	destalpha = TVPNegativeMulTable[addr]<<24;
+	sopa = TVPOpacityOnOpacityTable[addr];
+	d1 = d & 0xff00ff;
+	d1 = (d1 + (((s & 0xff00ff) - d1) * sopa >> 8)) & 0xff00ff;
+	d &= 0xff00;
+	s &= 0xff00;
+	*dest = d1 + ((d + ((s - d) * sopa >> 8)) & 0xff00) + destalpha;
+	dest++;
+}
+EOF
+
+&loop_unroll_c($content, 'len', 4);
+
+print FC <<EOF;
+}
+
+EOF
+
+
+
 print FC <<EOF;
 /*export*/
 TVP_GL_FUNC_DECL(void, TVPAlphaBlend_do_c, (tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len, tjs_int opa))
@@ -561,6 +605,317 @@ print FC <<EOF;
 
 EOF
 
+
+
+print FC <<EOF;
+/*export*/
+TVP_GL_FUNC_DECL(void, TVPAlphaBlend_ao_c, (tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len, tjs_int opa))
+{/*YET NOT IMPLEMENTED*/
+	tjs_uint32 d1, s, d, sopa, addr, destalpha;
+EOF
+
+
+$content = <<EOF;
+{
+	s = *src;
+	src++;
+	d = *dest;
+	addr = (( (s>>24)*opa) & 0xff00) + (d>>24);
+	destalpha = TVPNegativeMulTable[addr]<<24;
+	sopa = TVPOpacityOnOpacityTable[addr];
+	d1 = d & 0xff00ff;
+	d1 = (d1 + (((s & 0xff00ff) - d1) * sopa >> 8)) & 0xff00ff;
+	d &= 0xff00;
+	s &= 0xff00;
+	*dest = d1 + ((d + ((s - d) * sopa >> 8)) & 0xff00) + destalpha;
+	dest++;
+}
+EOF
+
+&loop_unroll_c($content, 'len', 4);
+
+print FC <<EOF;
+}
+
+EOF
+
+;#-----------------------------------------------------------------
+;# pixel additive alpha blending
+;#-----------------------------------------------------------------
+
+;# pixel additive alpha blending ( destination alpha is alpha/additive-alpha/off )
+;# additive alpha blending with opacity ( destination alpha alpha/additive-alpha/off )
+
+
+print FC <<EOF;
+/*export*/
+TVP_GL_FUNC_DECL(void, TVPAdditiveAlphaBlend_c, (tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len))
+{/*YET NOT IMPLEMENTED*/
+	tjs_uint32 d1, s, d, sopa;
+EOF
+
+
+$content = <<EOF;
+{
+	s = *src;
+	src++;
+	d = *dest;
+	sopa = s >> 24;
+	d1 = d & 0xff00ff;
+	d1 = (d1 + (((s & 0xff00ff) - d1) * sopa >> 8)) & 0xff00ff;
+	d &= 0xff00;
+	s &= 0xff00;
+	*dest = d1 + ((d + ((s - d) * sopa >> 8)) & 0xff00);
+	dest++;
+}
+EOF
+
+&loop_unroll_c($content, 'len', 4);
+
+print FC <<EOF;
+}
+
+EOF
+
+print FC <<EOF;
+/* HDA : hold destination alpha */
+
+/*export*/
+TVP_GL_FUNC_DECL(void, TVPAdditiveAlphaBlend_HDA_c, (tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len))
+{/*YET NOT IMPLEMENTED*/
+	tjs_uint32 d1, s, d, sopa;
+EOF
+
+$content = <<EOF;
+{
+	s = *src;
+	src++;
+	d = *dest;
+	sopa = s >> 24;
+	d1 = d & 0xff00ff;
+	d1 = ((d1 + (((s & 0xff00ff) - d1) * sopa >> 8)) & 0xff00ff) + (d & 0xff000000); /* hda */
+	d &= 0xff00;
+	s &= 0xff00;
+	*dest = d1 + ((d + ((s - d) * sopa >> 8)) & 0xff00);
+	dest++;
+}
+EOF
+
+&loop_unroll_c($content, 'len', 4);
+
+print FC <<EOF;
+}
+
+EOF
+
+print FC <<EOF;
+/*export*/
+TVP_GL_FUNC_DECL(void, TVPAdditiveAlphaBlend_o_c, (tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len, tjs_int opa))
+{/*YET NOT IMPLEMENTED*/
+	tjs_uint32 d1, s, d, sopa;
+EOF
+
+
+$content = <<EOF;
+{
+	s = *src;
+	src++;
+	d = *dest;
+	sopa = ((s >> 24) * opa) >> 8;
+	d1 = d & 0xff00ff;
+	d1 = (d1 + (((s & 0xff00ff) - d1) * sopa >> 8)) & 0xff00ff;
+	d &= 0xff00;
+	s &= 0xff00;
+	*dest = d1 + ((d + ((s - d) * sopa >> 8)) & 0xff00);
+	dest++;
+}
+EOF
+
+&loop_unroll_c($content, 'len', 4);
+
+print FC <<EOF;
+}
+
+EOF
+
+print FC <<EOF;
+
+/*export*/
+TVP_GL_FUNC_DECL(void, TVPAdditiveAlphaBlend_HDA_o_c, (tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len, tjs_int opa))
+{/*YET NOT IMPLEMENTED*/
+	tjs_uint32 d1, s, d, sopa;
+EOF
+
+$content = <<EOF;
+{
+	s = *src;
+	src++;
+	d = *dest;
+	sopa = ((s >> 24) * opa) >> 8;
+	d1 = d & 0xff00ff;
+	d1 = ((d1 + (((s & 0xff00ff) - d1) * sopa >> 8)) & 0xff00ff) + (d & 0xff000000);
+	d &= 0xff00;
+	s &= 0xff00;
+	*dest = d1 + ((d + ((s - d) * sopa >> 8)) & 0xff00);
+	dest++;
+}
+EOF
+
+&loop_unroll_c($content, 'len', 4);
+
+print FC <<EOF;
+}
+
+EOF
+
+print FC <<EOF;
+/*export*/
+TVP_GL_FUNC_DECL(void, TVPAdditiveAlphaBlend_d_c, (tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len))
+{/*YET NOT IMPLEMENTED*//*MAY LOOSE ADDITIVE STUFF*/
+	tjs_uint32 d1, s, d, sopa, addr, destalpha;
+EOF
+
+
+$content = <<EOF;
+{
+	s = *src;
+	src++;
+	d = *dest;
+	addr = ((s >> 16) & 0xff00) + (d>>24);
+	destalpha = TVPNegativeMulTable[addr]<<24;
+	sopa = TVPOpacityOnOpacityTable[addr];
+	d1 = d & 0xff00ff;
+	d1 = (d1 + (((s & 0xff00ff) - d1) * sopa >> 8)) & 0xff00ff;
+	d &= 0xff00;
+	s &= 0xff00;
+	*dest = d1 + ((d + ((s - d) * sopa >> 8)) & 0xff00) + destalpha;
+	dest++;
+}
+EOF
+
+&loop_unroll_c($content, 'len', 4);
+
+print FC <<EOF;
+}
+
+EOF
+
+print FC <<EOF;
+/*export*/
+TVP_GL_FUNC_DECL(void, TVPAdditiveAlphaBlend_a_c, (tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len))
+{/*YET NOT IMPLEMENTED*/
+	tjs_uint32 d1, s, d, sopa, addr, destalpha;
+EOF
+
+
+$content = <<EOF;
+{
+	s = *src;
+	src++;
+	d = *dest;
+	addr = ((s >> 16) & 0xff00) + (d>>24);
+	destalpha = TVPNegativeMulTable[addr]<<24;
+	sopa = TVPOpacityOnOpacityTable[addr];
+	d1 = d & 0xff00ff;
+	d1 = (d1 + (((s & 0xff00ff) - d1) * sopa >> 8)) & 0xff00ff;
+	d &= 0xff00;
+	s &= 0xff00;
+	*dest = d1 + ((d + ((s - d) * sopa >> 8)) & 0xff00) + destalpha;
+	dest++;
+}
+EOF
+
+&loop_unroll_c($content, 'len', 4);
+
+print FC <<EOF;
+}
+
+EOF
+
+print FC <<EOF;
+/*export*/
+TVP_GL_FUNC_DECL(void, TVPAdditiveAlphaBlend_do_c, (tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len, tjs_int opa))
+{/*YET NOT IMPLEMENTED*//*MAY LOOSE ADDITIVE STUFF*/
+	tjs_uint32 d1, s, d, sopa, addr, destalpha;
+EOF
+
+
+$content = <<EOF;
+{
+	s = *src;
+	src++;
+	d = *dest;
+	addr = (( (s>>24)*opa) & 0xff00) + (d>>24);
+	destalpha = TVPNegativeMulTable[addr]<<24;
+	sopa = TVPOpacityOnOpacityTable[addr];
+	d1 = d & 0xff00ff;
+	d1 = (d1 + (((s & 0xff00ff) - d1) * sopa >> 8)) & 0xff00ff;
+	d &= 0xff00;
+	s &= 0xff00;
+	*dest = d1 + ((d + ((s - d) * sopa >> 8)) & 0xff00) + destalpha;
+	dest++;
+}
+EOF
+
+&loop_unroll_c($content, 'len', 4);
+
+print FC <<EOF;
+}
+
+EOF
+
+print FC <<EOF;
+/*export*/
+TVP_GL_FUNC_DECL(void, TVPAdditiveAlphaBlend_ao_c, (tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len, tjs_int opa))
+{/*YET NOT IMPLEMENTED*/
+	tjs_uint32 d1, s, d, sopa, addr, destalpha;
+EOF
+
+
+$content = <<EOF;
+{
+	s = *src;
+	src++;
+	d = *dest;
+	addr = (( (s>>24)*opa) & 0xff00) + (d>>24);
+	destalpha = TVPNegativeMulTable[addr]<<24;
+	sopa = TVPOpacityOnOpacityTable[addr];
+	d1 = d & 0xff00ff;
+	d1 = (d1 + (((s & 0xff00ff) - d1) * sopa >> 8)) & 0xff00ff;
+	d &= 0xff00;
+	s &= 0xff00;
+	*dest = d1 + ((d + ((s - d) * sopa >> 8)) & 0xff00) + destalpha;
+	dest++;
+}
+EOF
+
+&loop_unroll_c($content, 'len', 4);
+
+print FC <<EOF;
+}
+
+EOF
+
+
+;#-----------------------------------------------------------------
+;# conversion between additive-alpha and simple alpha
+;#-----------------------------------------------------------------
+
+print FC <<EOF;
+/*export*/
+TVP_GL_FUNC_DECL(void, TVPConvertAdditiveAlphaToAlpha_c, (const tjs_uint32 *buf, tjs_int len))
+{/*YET NOT IMPLEMENTED*/
+}
+
+EOF
+
+print FC <<EOF;
+/*export*/
+TVP_GL_FUNC_DECL(void, TVPConvertAlphaToAdditiveAlpha_c, (const tjs_uint32 *buf, tjs_int len))
+{/*YET NOT IMPLEMENTED*/
+}
+
+EOF
 
 
 ;#-----------------------------------------------------------------
@@ -726,8 +1081,333 @@ EOF
 
 print FC <<EOF;
 /*export*/
+TVP_GL_FUNC_DECL(void, TVPStretchAlphaBlend_a_c, (tjs_uint32 *dest, tjs_int len, const tjs_uint32 *src, tjs_int srcstart, tjs_int srcstep))
+{/*YET NOT IMPLEMENTED*/
+	tjs_uint32 d1, s, d, sopa, addr, destalpha;
+EOF
+
+
+$content = <<EOF;
+{
+	s = src[srcstart >> 16];
+	srcstart += srcstep;
+	d = *dest;
+	addr = ((s >> 16) & 0xff00) + (d>>24);
+	destalpha = TVPNegativeMulTable[addr]<<24;
+	sopa = TVPOpacityOnOpacityTable[addr];
+	d1 = d & 0xff00ff;
+	d1 = (d1 + (((s & 0xff00ff) - d1) * sopa >> 8)) & 0xff00ff;
+	d &= 0xff00;
+	s &= 0xff00;
+	*dest = d1 + ((d + ((s - d) * sopa >> 8)) & 0xff00) + destalpha;
+	dest++;
+}
+EOF
+
+&loop_unroll_c($content, 'len', 4);
+
+print FC <<EOF;
+}
+
+EOF
+
+print FC <<EOF;
+/*export*/
 TVP_GL_FUNC_DECL(void, TVPStretchAlphaBlend_do_c, (tjs_uint32 *dest, tjs_int len, const tjs_uint32 *src, tjs_int srcstart, tjs_int srcstep, tjs_int opa))
 {
+	tjs_uint32 d1, s, d, sopa, addr, destalpha;
+EOF
+
+
+$content = <<EOF;
+{
+	s = src[srcstart >> 16];
+	srcstart += srcstep;
+	d = *dest;
+	addr = (( (s>>24)*opa) & 0xff00) + (d>>24);
+	destalpha = TVPNegativeMulTable[addr]<<24;
+	sopa = TVPOpacityOnOpacityTable[addr];
+	d1 = d & 0xff00ff;
+	d1 = (d1 + (((s & 0xff00ff) - d1) * sopa >> 8)) & 0xff00ff;
+	d &= 0xff00;
+	s &= 0xff00;
+	*dest = d1 + ((d + ((s - d) * sopa >> 8)) & 0xff00) + destalpha;
+	dest++;
+}
+EOF
+
+&loop_unroll_c($content, 'len', 4);
+
+print FC <<EOF;
+}
+
+EOF
+
+
+print FC <<EOF;
+/*export*/
+TVP_GL_FUNC_DECL(void, TVPStretchAlphaBlend_ao_c, (tjs_uint32 *dest, tjs_int len, const tjs_uint32 *src, tjs_int srcstart, tjs_int srcstep, tjs_int opa))
+{/*YET NOT IMPLEMENTED*/
+	tjs_uint32 d1, s, d, sopa, addr, destalpha;
+EOF
+
+
+$content = <<EOF;
+{
+	s = src[srcstart >> 16];
+	srcstart += srcstep;
+	d = *dest;
+	addr = (( (s>>24)*opa) & 0xff00) + (d>>24);
+	destalpha = TVPNegativeMulTable[addr]<<24;
+	sopa = TVPOpacityOnOpacityTable[addr];
+	d1 = d & 0xff00ff;
+	d1 = (d1 + (((s & 0xff00ff) - d1) * sopa >> 8)) & 0xff00ff;
+	d &= 0xff00;
+	s &= 0xff00;
+	*dest = d1 + ((d + ((s - d) * sopa >> 8)) & 0xff00) + destalpha;
+	dest++;
+}
+EOF
+
+&loop_unroll_c($content, 'len', 4);
+
+print FC <<EOF;
+}
+
+EOF
+
+
+
+;#-----------------------------------------------------------------
+;# stretching additive alpha blending
+;#-----------------------------------------------------------------
+
+;# stretching pixel additive alpha blending ( destination alpha alpha/additive-alpha/off )
+;# stretching alpha blending with opacity ( destination alpha alpha/additive-alpha/off )
+
+
+print FC <<EOF;
+/*export*/
+TVP_GL_FUNC_DECL(void, TVPStretchAdditiveAlphaBlend_c, (tjs_uint32 *dest, tjs_int len, const tjs_uint32 *src, tjs_int srcstart, tjs_int srcstep))
+{/*YET NOT IMPLEMENTED*/
+	tjs_uint32 d1, s, d, sopa;
+EOF
+
+
+$content = <<EOF;
+{
+	s = src[srcstart >> 16];
+	srcstart += srcstep;
+	d = *dest;
+	sopa = s >> 24;
+	d1 = d & 0xff00ff;
+	d1 = (d1 + (((s & 0xff00ff) - d1) * sopa >> 8)) & 0xff00ff;
+	d &= 0xff00;
+	s &= 0xff00;
+	*dest = d1 + ((d + ((s - d) * sopa >> 8)) & 0xff00);
+	dest++;
+}
+EOF
+
+&loop_unroll_c($content, 'len', 4);
+
+print FC <<EOF;
+}
+
+EOF
+
+print FC <<EOF;
+/* HDA : hold destination alpha */
+
+/*export*/
+TVP_GL_FUNC_DECL(void, TVPStretchAdditiveAlphaBlend_HDA_c, (tjs_uint32 *dest, tjs_int len, const tjs_uint32 *src, tjs_int srcstart, tjs_int srcstep))
+{/*YET NOT IMPLEMENTED*/
+	tjs_uint32 d1, s, d, sopa;
+EOF
+
+$content = <<EOF;
+{
+	s = src[srcstart >> 16];
+	srcstart += srcstep;
+	d = *dest;
+	sopa = s >> 24;
+	d1 = d & 0xff00ff;
+	d1 = ((d1 + (((s & 0xff00ff) - d1) * sopa >> 8)) & 0xff00ff) + (d & 0xff000000); /* hda */
+	d &= 0xff00;
+	s &= 0xff00;
+	*dest = d1 + ((d + ((s - d) * sopa >> 8)) & 0xff00);
+	dest++;
+}
+EOF
+
+&loop_unroll_c($content, 'len', 4);
+
+print FC <<EOF;
+}
+
+EOF
+
+print FC <<EOF;
+/*export*/
+TVP_GL_FUNC_DECL(void, TVPStretchAdditiveAlphaBlend_o_c, (tjs_uint32 *dest, tjs_int len, const tjs_uint32 *src, tjs_int srcstart, tjs_int srcstep, tjs_int opa))
+{/*YET NOT IMPLEMENTED*/
+	tjs_uint32 d1, s, d, sopa;
+EOF
+
+
+$content = <<EOF;
+{
+	s = src[srcstart >> 16];
+	srcstart += srcstep;
+	d = *dest;
+	sopa = ((s >> 24) * opa) >> 8;
+	d1 = d & 0xff00ff;
+	d1 = (d1 + (((s & 0xff00ff) - d1) * sopa >> 8)) & 0xff00ff;
+	d &= 0xff00;
+	s &= 0xff00;
+	*dest = d1 + ((d + ((s - d) * sopa >> 8)) & 0xff00);
+	dest++;
+}
+EOF
+
+&loop_unroll_c($content, 'len', 4);
+
+print FC <<EOF;
+}
+
+EOF
+
+print FC <<EOF;
+
+/*export*/
+TVP_GL_FUNC_DECL(void, TVPStretchAdditiveAlphaBlend_HDA_o_c, (tjs_uint32 *dest, tjs_int len, const tjs_uint32 *src, tjs_int srcstart, tjs_int srcstep, tjs_int opa))
+{/*YET NOT IMPLEMENTED*/
+	tjs_uint32 d1, s, d, sopa;
+EOF
+
+$content = <<EOF;
+{
+	s = src[srcstart >> 16];
+	srcstart += srcstep;
+	d = *dest;
+	sopa = ((s >> 24) * opa) >> 8;
+	d1 = d & 0xff00ff;
+	d1 = ((d1 + (((s & 0xff00ff) - d1) * sopa >> 8)) & 0xff00ff) + (d & 0xff000000);
+	d &= 0xff00;
+	s &= 0xff00;
+	*dest = d1 + ((d + ((s - d) * sopa >> 8)) & 0xff00);
+	dest++;
+}
+EOF
+
+&loop_unroll_c($content, 'len', 4);
+
+print FC <<EOF;
+}
+
+EOF
+
+print FC <<EOF;
+/*export*/
+TVP_GL_FUNC_DECL(void, TVPStretchAdditiveAlphaBlend_d_c, (tjs_uint32 *dest, tjs_int len, const tjs_uint32 *src, tjs_int srcstart, tjs_int srcstep))
+{/*YET NOT IMPLEMENTED*//*MAY LOOSE ADDITIVE STUFF*/
+	tjs_uint32 d1, s, d, sopa, addr, destalpha;
+EOF
+
+
+$content = <<EOF;
+{
+	s = src[srcstart >> 16];
+	srcstart += srcstep;
+	d = *dest;
+	addr = ((s >> 16) & 0xff00) + (d>>24);
+	destalpha = TVPNegativeMulTable[addr]<<24;
+	sopa = TVPOpacityOnOpacityTable[addr];
+	d1 = d & 0xff00ff;
+	d1 = (d1 + (((s & 0xff00ff) - d1) * sopa >> 8)) & 0xff00ff;
+	d &= 0xff00;
+	s &= 0xff00;
+	*dest = d1 + ((d + ((s - d) * sopa >> 8)) & 0xff00) + destalpha;
+	dest++;
+}
+EOF
+
+&loop_unroll_c($content, 'len', 4);
+
+print FC <<EOF;
+}
+
+EOF
+
+print FC <<EOF;
+/*export*/
+TVP_GL_FUNC_DECL(void, TVPStretchAdditiveAlphaBlend_a_c, (tjs_uint32 *dest, tjs_int len, const tjs_uint32 *src, tjs_int srcstart, tjs_int srcstep))
+{/*YET NOT IMPLEMENTED*/
+	tjs_uint32 d1, s, d, sopa, addr, destalpha;
+EOF
+
+
+$content = <<EOF;
+{
+	s = src[srcstart >> 16];
+	srcstart += srcstep;
+	d = *dest;
+	addr = ((s >> 16) & 0xff00) + (d>>24);
+	destalpha = TVPNegativeMulTable[addr]<<24;
+	sopa = TVPOpacityOnOpacityTable[addr];
+	d1 = d & 0xff00ff;
+	d1 = (d1 + (((s & 0xff00ff) - d1) * sopa >> 8)) & 0xff00ff;
+	d &= 0xff00;
+	s &= 0xff00;
+	*dest = d1 + ((d + ((s - d) * sopa >> 8)) & 0xff00) + destalpha;
+	dest++;
+}
+EOF
+
+&loop_unroll_c($content, 'len', 4);
+
+print FC <<EOF;
+}
+
+EOF
+
+print FC <<EOF;
+/*export*/
+TVP_GL_FUNC_DECL(void, TVPStretchAdditiveAlphaBlend_do_c, (tjs_uint32 *dest, tjs_int len, const tjs_uint32 *src, tjs_int srcstart, tjs_int srcstep, tjs_int opa))
+{/*YET NOT IMPLEMENTED*//*MAY LOOSE ADDITIVE STUFF*/
+	tjs_uint32 d1, s, d, sopa, addr, destalpha;
+EOF
+
+
+$content = <<EOF;
+{
+	s = src[srcstart >> 16];
+	srcstart += srcstep;
+	d = *dest;
+	addr = (( (s>>24)*opa) & 0xff00) + (d>>24);
+	destalpha = TVPNegativeMulTable[addr]<<24;
+	sopa = TVPOpacityOnOpacityTable[addr];
+	d1 = d & 0xff00ff;
+	d1 = (d1 + (((s & 0xff00ff) - d1) * sopa >> 8)) & 0xff00ff;
+	d &= 0xff00;
+	s &= 0xff00;
+	*dest = d1 + ((d + ((s - d) * sopa >> 8)) & 0xff00) + destalpha;
+	dest++;
+}
+EOF
+
+&loop_unroll_c($content, 'len', 4);
+
+print FC <<EOF;
+}
+
+EOF
+
+
+print FC <<EOF;
+/*export*/
+TVP_GL_FUNC_DECL(void, TVPStretchAdditiveAlphaBlend_ao_c, (tjs_uint32 *dest, tjs_int len, const tjs_uint32 *src, tjs_int srcstart, tjs_int srcstep, tjs_int opa))
+{/*YET NOT IMPLEMENTED*/
 	tjs_uint32 d1, s, d, sopa, addr, destalpha;
 EOF
 
@@ -765,8 +1445,8 @@ EOF
 ;# linear transforming pixel alpha blending
 ;#-----------------------------------------------------------------
 
-;# linear transforming simple pixel alpha blending ( destination alpha on/off )
-;# linear transforming alpha blending with opacity ( destination alpha on/off )
+;# linear transforming simple pixel alpha blending ( destination alpha alpha/additive-alpha/off )
+;# linear transforming alpha blending with opacity ( destination alpha alpha/additive-alpha/off )
 
 ;# 'linear transformation' does not means that does linear interpolation.
 
@@ -930,6 +1610,39 @@ EOF
 
 print FC <<EOF;
 /*export*/
+TVP_GL_FUNC_DECL(void, TVPLinTransAlphaBlend_a_c, (tjs_uint32 *dest, tjs_int len, const tjs_uint32 *src, tjs_int sx, tjs_int sy, tjs_int stepx, tjs_int stepy, tjs_int srcpitch))
+{/*YET NOT IMPLEMENTED*/
+	tjs_uint32 d1, s, d, sopa, addr, destalpha;
+EOF
+
+
+$content = <<EOF;
+{
+	s = *( (const tjs_uint32*)((const tjs_uint8*)src + (sy>>16)*srcpitch) + (sx>>16));
+	sx += stepx;
+	sy += stepy;
+	d = *dest;
+	addr = ((s >> 16) & 0xff00) + (d>>24);
+	destalpha = TVPNegativeMulTable[addr]<<24;
+	sopa = TVPOpacityOnOpacityTable[addr];
+	d1 = d & 0xff00ff;
+	d1 = (d1 + (((s & 0xff00ff) - d1) * sopa >> 8)) & 0xff00ff;
+	d &= 0xff00;
+	s &= 0xff00;
+	*dest = d1 + ((d + ((s - d) * sopa >> 8)) & 0xff00) + destalpha;
+	dest++;
+}
+EOF
+
+&loop_unroll_c($content, 'len', 4);
+
+print FC <<EOF;
+}
+
+EOF
+
+print FC <<EOF;
+/*export*/
 TVP_GL_FUNC_DECL(void, TVPLinTransAlphaBlend_do_c, (tjs_uint32 *dest, tjs_int len, const tjs_uint32 *src, tjs_int sx, tjs_int sy, tjs_int stepx, tjs_int stepy, tjs_int srcpitch, tjs_int opa))
 {
 	tjs_uint32 d1, s, d, sopa, addr, destalpha;
@@ -960,6 +1673,312 @@ print FC <<EOF;
 }
 
 EOF
+
+print FC <<EOF;
+/*export*/
+TVP_GL_FUNC_DECL(void, TVPLinTransAlphaBlend_ao_c, (tjs_uint32 *dest, tjs_int len, const tjs_uint32 *src, tjs_int sx, tjs_int sy, tjs_int stepx, tjs_int stepy, tjs_int srcpitch, tjs_int opa))
+{/*YET NOT IMPLEMENTED*/
+	tjs_uint32 d1, s, d, sopa, addr, destalpha;
+EOF
+
+
+$content = <<EOF;
+{
+	s = *( (const tjs_uint32*)((const tjs_uint8*)src + (sy>>16)*srcpitch) + (sx>>16));
+	sx += stepx;
+	sy += stepy;
+	d = *dest;
+	addr = (( (s>>24)*opa) & 0xff00) + (d>>24);
+	destalpha = TVPNegativeMulTable[addr]<<24;
+	sopa = TVPOpacityOnOpacityTable[addr];
+	d1 = d & 0xff00ff;
+	d1 = (d1 + (((s & 0xff00ff) - d1) * sopa >> 8)) & 0xff00ff;
+	d &= 0xff00;
+	s &= 0xff00;
+	*dest = d1 + ((d + ((s - d) * sopa >> 8)) & 0xff00) + destalpha;
+	dest++;
+}
+EOF
+
+&loop_unroll_c($content, 'len', 4);
+
+print FC <<EOF;
+}
+
+EOF
+
+
+
+
+
+
+
+;#-----------------------------------------------------------------
+;# linear transforming pixel additive alpha blending
+;#-----------------------------------------------------------------
+
+;# linear transforming pixel additive alpha blending ( destination alpha alpha/additive-alpha/off )
+;# linear transforming additive alpha blending with opacity ( destination alpha alpha/additive-alpha/off )
+
+print FC <<EOF;
+/*export*/
+TVP_GL_FUNC_DECL(void, TVPLinTransAdditiveAlphaBlend_c, (tjs_uint32 *dest, tjs_int len, const tjs_uint32 *src, tjs_int sx, tjs_int sy, tjs_int stepx, tjs_int stepy, tjs_int srcpitch))
+{/*YET NOT IMPLEMENTED*/
+	tjs_uint32 d1, s, d, sopa;
+EOF
+
+
+$content = <<EOF;
+{
+	s = *( (const tjs_uint32*)((const tjs_uint8*)src + (sy>>16)*srcpitch) + (sx>>16));
+	sx += stepx;
+	sy += stepy;
+	d = *dest;
+	sopa = s >> 24;
+	d1 = d & 0xff00ff;
+	d1 = (d1 + (((s & 0xff00ff) - d1) * sopa >> 8)) & 0xff00ff;
+	d &= 0xff00;
+	s &= 0xff00;
+	*dest = d1 + ((d + ((s - d) * sopa >> 8)) & 0xff00);
+	dest++;
+}
+EOF
+
+&loop_unroll_c($content, 'len', 4);
+
+print FC <<EOF;
+}
+
+EOF
+
+print FC <<EOF;
+/* HDA : hold destination alpha */
+
+/*export*/
+TVP_GL_FUNC_DECL(void, TVPLinTransAdditiveAlphaBlend_HDA_c, (tjs_uint32 *dest, tjs_int len, const tjs_uint32 *src, tjs_int sx, tjs_int sy, tjs_int stepx, tjs_int stepy, tjs_int srcpitch))
+{/*YET NOT IMPLEMENTED*/
+	tjs_uint32 d1, s, d, sopa;
+EOF
+
+$content = <<EOF;
+{
+	s = *( (const tjs_uint32*)((const tjs_uint8*)src + (sy>>16)*srcpitch) + (sx>>16));
+	sx += stepx;
+	sy += stepy;
+	d = *dest;
+	sopa = s >> 24;
+	d1 = d & 0xff00ff;
+	d1 = ((d1 + (((s & 0xff00ff) - d1) * sopa >> 8)) & 0xff00ff) + (d & 0xff000000); /* hda */
+	d &= 0xff00;
+	s &= 0xff00;
+	*dest = d1 + ((d + ((s - d) * sopa >> 8)) & 0xff00);
+	dest++;
+}
+EOF
+
+&loop_unroll_c($content, 'len', 4);
+
+print FC <<EOF;
+}
+
+EOF
+
+print FC <<EOF;
+/*export*/
+TVP_GL_FUNC_DECL(void, TVPLinTransAdditiveAlphaBlend_o_c, (tjs_uint32 *dest, tjs_int len, const tjs_uint32 *src, tjs_int sx, tjs_int sy, tjs_int stepx, tjs_int stepy, tjs_int srcpitch, tjs_int opa))
+{
+	tjs_uint32 d1, s, d, sopa;
+EOF
+
+
+$content = <<EOF;
+{/*YET NOT IMPLEMENTED*/
+	s = *( (const tjs_uint32*)((const tjs_uint8*)src + (sy>>16)*srcpitch) + (sx>>16));
+	sx += stepx;
+	sy += stepy;
+	d = *dest;
+	sopa = ((s >> 24) * opa) >> 8;
+	d1 = d & 0xff00ff;
+	d1 = (d1 + (((s & 0xff00ff) - d1) * sopa >> 8)) & 0xff00ff;
+	d &= 0xff00;
+	s &= 0xff00;
+	*dest = d1 + ((d + ((s - d) * sopa >> 8)) & 0xff00);
+	dest++;
+}
+EOF
+
+&loop_unroll_c($content, 'len', 4);
+
+print FC <<EOF;
+}
+
+EOF
+
+print FC <<EOF;
+
+/*export*/
+TVP_GL_FUNC_DECL(void, TVPLinTransAdditiveAlphaBlend_HDA_o_c, (tjs_uint32 *dest, tjs_int len, const tjs_uint32 *src, tjs_int sx, tjs_int sy, tjs_int stepx, tjs_int stepy, tjs_int srcpitch, tjs_int opa))
+{/*YET NOT IMPLEMENTED*/
+	tjs_uint32 d1, s, d, sopa;
+EOF
+
+$content = <<EOF;
+{
+	s = *( (const tjs_uint32*)((const tjs_uint8*)src + (sy>>16)*srcpitch) + (sx>>16));
+	sx += stepx;
+	sy += stepy;
+	d = *dest;
+	sopa = ((s >> 24) * opa) >> 8;
+	d1 = d & 0xff00ff;
+	d1 = ((d1 + (((s & 0xff00ff) - d1) * sopa >> 8)) & 0xff00ff) + (d & 0xff000000);
+	d &= 0xff00;
+	s &= 0xff00;
+	*dest = d1 + ((d + ((s - d) * sopa >> 8)) & 0xff00);
+	dest++;
+}
+EOF
+
+&loop_unroll_c($content, 'len', 4);
+
+print FC <<EOF;
+}
+
+EOF
+
+print FC <<EOF;
+/*export*/
+TVP_GL_FUNC_DECL(void, TVPLinTransAdditiveAlphaBlend_d_c, (tjs_uint32 *dest, tjs_int len, const tjs_uint32 *src, tjs_int sx, tjs_int sy, tjs_int stepx, tjs_int stepy, tjs_int srcpitch))
+{/*YET NOT IMPLEMENTED*//*MAY LOOSE ADDITIVE STUFF*/
+	tjs_uint32 d1, s, d, sopa, addr, destalpha;
+EOF
+
+
+$content = <<EOF;
+{
+	s = *( (const tjs_uint32*)((const tjs_uint8*)src + (sy>>16)*srcpitch) + (sx>>16));
+	sx += stepx;
+	sy += stepy;
+	d = *dest;
+	addr = ((s >> 16) & 0xff00) + (d>>24);
+	destalpha = TVPNegativeMulTable[addr]<<24;
+	sopa = TVPOpacityOnOpacityTable[addr];
+	d1 = d & 0xff00ff;
+	d1 = (d1 + (((s & 0xff00ff) - d1) * sopa >> 8)) & 0xff00ff;
+	d &= 0xff00;
+	s &= 0xff00;
+	*dest = d1 + ((d + ((s - d) * sopa >> 8)) & 0xff00) + destalpha;
+	dest++;
+}
+EOF
+
+&loop_unroll_c($content, 'len', 4);
+
+print FC <<EOF;
+}
+
+EOF
+
+print FC <<EOF;
+/*export*/
+TVP_GL_FUNC_DECL(void, TVPLinTransAdditiveAlphaBlend_a_c, (tjs_uint32 *dest, tjs_int len, const tjs_uint32 *src, tjs_int sx, tjs_int sy, tjs_int stepx, tjs_int stepy, tjs_int srcpitch))
+{/*YET NOT IMPLEMENTED*/
+	tjs_uint32 d1, s, d, sopa, addr, destalpha;
+EOF
+
+
+$content = <<EOF;
+{
+	s = *( (const tjs_uint32*)((const tjs_uint8*)src + (sy>>16)*srcpitch) + (sx>>16));
+	sx += stepx;
+	sy += stepy;
+	d = *dest;
+	addr = ((s >> 16) & 0xff00) + (d>>24);
+	destalpha = TVPNegativeMulTable[addr]<<24;
+	sopa = TVPOpacityOnOpacityTable[addr];
+	d1 = d & 0xff00ff;
+	d1 = (d1 + (((s & 0xff00ff) - d1) * sopa >> 8)) & 0xff00ff;
+	d &= 0xff00;
+	s &= 0xff00;
+	*dest = d1 + ((d + ((s - d) * sopa >> 8)) & 0xff00) + destalpha;
+	dest++;
+}
+EOF
+
+&loop_unroll_c($content, 'len', 4);
+
+print FC <<EOF;
+}
+
+EOF
+
+print FC <<EOF;
+/*export*/
+TVP_GL_FUNC_DECL(void, TVPLinTransAdditiveAlphaBlend_do_c, (tjs_uint32 *dest, tjs_int len, const tjs_uint32 *src, tjs_int sx, tjs_int sy, tjs_int stepx, tjs_int stepy, tjs_int srcpitch, tjs_int opa))
+{/*YET NOT IMPLEMENTED*//*MAY LOOSE ADDITIVE STUFF*/
+	tjs_uint32 d1, s, d, sopa, addr, destalpha;
+EOF
+
+
+$content = <<EOF;
+{
+	s = *( (const tjs_uint32*)((const tjs_uint8*)src + (sy>>16)*srcpitch) + (sx>>16));
+	sx += stepx;
+	sy += stepy;
+	d = *dest;
+	addr = (( (s>>24)*opa) & 0xff00) + (d>>24);
+	destalpha = TVPNegativeMulTable[addr]<<24;
+	sopa = TVPOpacityOnOpacityTable[addr];
+	d1 = d & 0xff00ff;
+	d1 = (d1 + (((s & 0xff00ff) - d1) * sopa >> 8)) & 0xff00ff;
+	d &= 0xff00;
+	s &= 0xff00;
+	*dest = d1 + ((d + ((s - d) * sopa >> 8)) & 0xff00) + destalpha;
+	dest++;
+}
+EOF
+
+&loop_unroll_c($content, 'len', 4);
+
+print FC <<EOF;
+}
+
+EOF
+
+print FC <<EOF;
+/*export*/
+TVP_GL_FUNC_DECL(void, TVPLinTransAdditiveAlphaBlend_ao_c, (tjs_uint32 *dest, tjs_int len, const tjs_uint32 *src, tjs_int sx, tjs_int sy, tjs_int stepx, tjs_int stepy, tjs_int srcpitch, tjs_int opa))
+{/*YET NOT IMPLEMENTED*/
+	tjs_uint32 d1, s, d, sopa, addr, destalpha;
+EOF
+
+
+$content = <<EOF;
+{
+	s = *( (const tjs_uint32*)((const tjs_uint8*)src + (sy>>16)*srcpitch) + (sx>>16));
+	sx += stepx;
+	sy += stepy;
+	d = *dest;
+	addr = (( (s>>24)*opa) & 0xff00) + (d>>24);
+	destalpha = TVPNegativeMulTable[addr]<<24;
+	sopa = TVPOpacityOnOpacityTable[addr];
+	d1 = d & 0xff00ff;
+	d1 = (d1 + (((s & 0xff00ff) - d1) * sopa >> 8)) & 0xff00ff;
+	d &= 0xff00;
+	s &= 0xff00;
+	*dest = d1 + ((d + ((s - d) * sopa >> 8)) & 0xff00) + destalpha;
+	dest++;
+}
+EOF
+
+&loop_unroll_c($content, 'len', 4);
+
+print FC <<EOF;
+}
+
+EOF
+
+
+
 
 
 
@@ -1062,6 +2081,39 @@ print FC <<EOF;
 /*export*/
 TVP_GL_FUNC_DECL(void, TVPConstAlphaBlend_d_c, (tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len, tjs_int opa))
 {
+	tjs_uint32 d1, s, d, addr;
+	tjs_int alpha;
+	if(opa > 128) opa ++; /* adjust for error */
+EOF
+
+$content = <<EOF;
+{
+	s = *src;
+	src++;
+	d = *dest;
+	addr = (( (s>>24)*opa) & 0xff00) + (d>>24);
+	alpha = TVPOpacityOnOpacityTable[addr];
+	d1 = d & 0xff00ff;
+	d1 = ((d1 + (((s & 0xff00ff) - d1) * alpha >> 8)) & 0xff00ff) +
+		(TVPNegativeMulTable[addr]<<24);
+	d &= 0xff00;
+	s &= 0xff00;
+	*dest = d1 | ((d + ((s - d) * alpha >> 8)) & 0xff00);
+	dest++;
+}
+EOF
+
+&loop_unroll_c($content, 'len', 4);
+
+print FC <<EOF;
+}
+
+EOF
+
+print FC <<EOF;
+/*export*/
+TVP_GL_FUNC_DECL(void, TVPConstAlphaBlend_a_c, (tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len, tjs_int opa))
+{/*YET NOT IMPLEMENTED*/
 	tjs_uint32 d1, s, d, addr;
 	tjs_int alpha;
 	if(opa > 128) opa ++; /* adjust for error */
@@ -1195,6 +2247,40 @@ print FC <<EOF;
 /*export*/
 TVP_GL_FUNC_DECL(void, TVPStretchConstAlphaBlend_d_c, (tjs_uint32 *dest, tjs_int len, const tjs_uint32 *src, tjs_int srcstart, tjs_int srcstep, tjs_int opa))
 {
+	tjs_uint32 d1, s, d, addr;
+	tjs_int alpha;
+	if(opa > 128) opa ++; /* adjust for error */
+EOF
+
+$content = <<EOF;
+{
+	s = src[srcstart >> 16];
+	srcstart += srcstep;
+	d = *dest;
+	addr = (( (s>>24)*opa) & 0xff00) + (d>>24);
+	alpha = TVPOpacityOnOpacityTable[addr];
+	d1 = d & 0xff00ff;
+	d1 = ((d1 + (((s & 0xff00ff) - d1) * alpha >> 8)) & 0xff00ff) +
+		(TVPNegativeMulTable[addr]<<24);
+	d &= 0xff00;
+	s &= 0xff00;
+	*dest = d1 | ((d + ((s - d) * alpha >> 8)) & 0xff00);
+	dest++;
+}
+EOF
+
+&loop_unroll_c($content, 'len', 4);
+
+print FC <<EOF;
+}
+
+EOF
+
+
+print FC <<EOF;
+/*export*/
+TVP_GL_FUNC_DECL(void, TVPStretchConstAlphaBlend_a_c, (tjs_uint32 *dest, tjs_int len, const tjs_uint32 *src, tjs_int srcstart, tjs_int srcstep, tjs_int opa))
+{/*YET NOT IMPLEMENTED*/
 	tjs_uint32 d1, s, d, addr;
 	tjs_int alpha;
 	if(opa > 128) opa ++; /* adjust for error */
@@ -1370,6 +2456,41 @@ print FC <<EOF;
 EOF
 
 
+print FC <<EOF;
+/*export*/
+TVP_GL_FUNC_DECL(void, TVPLinTransConstAlphaBlend_a_c, (tjs_uint32 *dest, tjs_int len, const tjs_uint32 *src, tjs_int sx, tjs_int sy, tjs_int stepx, tjs_int stepy, tjs_int srcpitch, tjs_int opa))
+{/*YET NOT IMPLEMENTED*/
+	tjs_uint32 d1, s, d, addr;
+	tjs_int alpha;
+	if(opa > 128) opa ++; /* adjust for error */
+EOF
+
+$content = <<EOF;
+{
+	s = *( (const tjs_uint32*)((const tjs_uint8*)src + (sy>>16)*srcpitch) + (sx>>16));
+	sx += stepx;
+	sy += stepy;
+	d = *dest;
+	addr = (( (s>>24)*opa) & 0xff00) + (d>>24);
+	alpha = TVPOpacityOnOpacityTable[addr];
+	d1 = d & 0xff00ff;
+	d1 = ((d1 + (((s & 0xff00ff) - d1) * alpha >> 8)) & 0xff00ff) +
+		(TVPNegativeMulTable[addr]<<24);
+	d &= 0xff00;
+	s &= 0xff00;
+	*dest = d1 | ((d + ((s - d) * alpha >> 8)) & 0xff00);
+	dest++;
+}
+EOF
+
+&loop_unroll_c($content, 'len', 4);
+
+print FC <<EOF;
+}
+
+EOF
+
+
 
 
 
@@ -1378,6 +2499,10 @@ EOF
 ;#-----------------------------------------------------------------
 ;# constant ratio alpha blending ( separated destination )
 ;#-----------------------------------------------------------------
+
+;# Note: Mixing different alpha blending type (such as additive-alpha vs alpha, 
+;#       alpha vs additive-alpha) may success only the destination is
+;#       additive-alpha mode. Otherwise the additive stuff may be lost.
 
 
 print FC <<EOF;
@@ -1413,7 +2538,222 @@ EOF
 print FC <<EOF;
 /*export*/
 TVP_GL_FUNC_DECL(void, TVPConstAlphaBlend_SD_d_c, (tjs_uint32 *dest, const tjs_uint32 *src1, const tjs_uint32 *src2, tjs_int len, tjs_int opa))
+{/* alpha vs alpha, destination has alpha */
+	tjs_uint32 s1_, s2, s1, addr;
+	tjs_uint32 a1, a2;
+	tjs_int alpha;
+	tjs_int iopa;
+	if(opa > 127) opa ++; /* adjust for error */
+	iopa = 256 - opa;
+	/* blending function for 'alpha-per-pixel enabled alpha blending' is complex. */
+EOF
+
+$content = <<EOF;
 {
+	s1 = *src1;
+	s2 = *src2;
+	a1 = s1 >> 24;
+	a2 = s2 >> 24;
+	addr = (a2*opa & 0xff00) + (a1*iopa >> 8);
+	alpha = TVPOpacityOnOpacityTable[addr];
+	s1_ = s1 & 0xff00ff;
+	s1_ = ((s1_ + (((s2 & 0xff00ff) - s1_) * alpha >> 8)) & 0xff00ff);
+	src1++;
+	src2++;
+	s1 &= 0xff00;
+	s2 &= 0xff00;
+	s1_ |= (a1 + ((a2 - a1)*opa >> 8)) << 24;
+	*dest = s1_ | ((s1 + ((s2 - s1) * alpha >> 8)) & 0xff00);
+	dest++;
+}
+EOF
+
+&loop_unroll_c($content, 'len', 4);
+
+print FC <<EOF;
+}
+
+EOF
+
+
+print FC <<EOF;
+/*export*/
+TVP_GL_FUNC_DECL(void, TVPConstAlphaBlend_SDd_dd_c, (tjs_uint32 *dest, const tjs_uint32 *src1, const tjs_uint32 *src2, tjs_int len, tjs_int opa))
+{/* alpha vs alpha, destination has alpha */
+	/* alias to TVPConstAlphaBlend_SD_d */
+	TVPConstAlphaBlend_SD_d(dest, src1, src2, len, opa);
+}
+
+EOF
+
+
+print FC <<EOF;
+/*export*/
+TVP_GL_FUNC_DECL(void, TVPConstAlphaBlend_SDa_dd_c, (tjs_uint32 *dest, const tjs_uint32 *src1, const tjs_uint32 *src2, tjs_int len, tjs_int opa))
+{/* alpha vs alpha, destination has additive-alpha *//*YET NOT IMPLEMENTED*/
+	tjs_uint32 s1_, s2, s1, addr;
+	tjs_uint32 a1, a2;
+	tjs_int alpha;
+	tjs_int iopa;
+	if(opa > 127) opa ++; /* adjust for error */
+	iopa = 256 - opa;
+	/* blending function for 'alpha-per-pixel enabled alpha blending' is complex. */
+EOF
+
+$content = <<EOF;
+{
+	s1 = *src1;
+	s2 = *src2;
+	a1 = s1 >> 24;
+	a2 = s2 >> 24;
+	addr = (a2*opa & 0xff00) + (a1*iopa >> 8);
+	alpha = TVPOpacityOnOpacityTable[addr];
+	s1_ = s1 & 0xff00ff;
+	s1_ = ((s1_ + (((s2 & 0xff00ff) - s1_) * alpha >> 8)) & 0xff00ff);
+	src1++;
+	src2++;
+	s1 &= 0xff00;
+	s2 &= 0xff00;
+	s1_ |= (a1 + ((a2 - a1)*opa >> 8)) << 24;
+	*dest = s1_ | ((s1 + ((s2 - s1) * alpha >> 8)) & 0xff00);
+	dest++;
+}
+EOF
+
+&loop_unroll_c($content, 'len', 4);
+
+print FC <<EOF;
+}
+
+EOF
+
+print FC <<EOF;
+/*export*/
+TVP_GL_FUNC_DECL(void, TVPConstAlphaBlend_SDa_ad_c, (tjs_uint32 *dest, const tjs_uint32 *src1, const tjs_uint32 *src2, tjs_int len, tjs_int opa))
+{/* additive-alpha(src1) vs alpha(src2), destination has additive-alpha *//*YET NOT IMPLEMENTED*/
+	tjs_uint32 s1_, s2, s1, addr;
+	tjs_uint32 a1, a2;
+	tjs_int alpha;
+	tjs_int iopa;
+	if(opa > 127) opa ++; /* adjust for error */
+	iopa = 256 - opa;
+	/* blending function for 'alpha-per-pixel enabled alpha blending' is complex. */
+EOF
+
+$content = <<EOF;
+{
+	s1 = *src1;
+	s2 = *src2;
+	a1 = s1 >> 24;
+	a2 = s2 >> 24;
+	addr = (a2*opa & 0xff00) + (a1*iopa >> 8);
+	alpha = TVPOpacityOnOpacityTable[addr];
+	s1_ = s1 & 0xff00ff;
+	s1_ = ((s1_ + (((s2 & 0xff00ff) - s1_) * alpha >> 8)) & 0xff00ff);
+	src1++;
+	src2++;
+	s1 &= 0xff00;
+	s2 &= 0xff00;
+	s1_ |= (a1 + ((a2 - a1)*opa >> 8)) << 24;
+	*dest = s1_ | ((s1 + ((s2 - s1) * alpha >> 8)) & 0xff00);
+	dest++;
+}
+EOF
+
+&loop_unroll_c($content, 'len', 4);
+
+print FC <<EOF;
+}
+
+EOF
+
+
+print FC <<EOF;
+/*export*/
+TVP_GL_FUNC_DECL(void, TVPConstAlphaBlend_SDd_ad_c, (tjs_uint32 *dest, const tjs_uint32 *src1, const tjs_uint32 *src2, tjs_int len, tjs_int opa))
+{/* additive-alpha(src1) vs alpha(src2), destination has alpha *//*YET NOT IMPLEMENTED*//*MAY LOOSE ADDITIVE STUFF*/
+	tjs_uint32 s1_, s2, s1, addr;
+	tjs_uint32 a1, a2;
+	tjs_int alpha;
+	tjs_int iopa;
+	if(opa > 127) opa ++; /* adjust for error */
+	iopa = 256 - opa;
+	/* blending function for 'alpha-per-pixel enabled alpha blending' is complex. */
+EOF
+
+$content = <<EOF;
+{
+	s1 = *src1;
+	s2 = *src2;
+	a1 = s1 >> 24;
+	a2 = s2 >> 24;
+	addr = (a2*opa & 0xff00) + (a1*iopa >> 8);
+	alpha = TVPOpacityOnOpacityTable[addr];
+	s1_ = s1 & 0xff00ff;
+	s1_ = ((s1_ + (((s2 & 0xff00ff) - s1_) * alpha >> 8)) & 0xff00ff);
+	src1++;
+	src2++;
+	s1 &= 0xff00;
+	s2 &= 0xff00;
+	s1_ |= (a1 + ((a2 - a1)*opa >> 8)) << 24;
+	*dest = s1_ | ((s1 + ((s2 - s1) * alpha >> 8)) & 0xff00);
+	dest++;
+}
+EOF
+
+&loop_unroll_c($content, 'len', 4);
+
+print FC <<EOF;
+}
+
+EOF
+
+
+print FC <<EOF;
+/*export*/
+TVP_GL_FUNC_DECL(void, TVPConstAlphaBlend_SDa_aa_c, (tjs_uint32 *dest, const tjs_uint32 *src1, const tjs_uint32 *src2, tjs_int len, tjs_int opa))
+{/* additive-alpha(src1) vs additive-alpha(src2), destination has additive-alpha *//*YET NOT IMPLEMENTED*/
+	tjs_uint32 s1_, s2, s1, addr;
+	tjs_uint32 a1, a2;
+	tjs_int alpha;
+	tjs_int iopa;
+	if(opa > 127) opa ++; /* adjust for error */
+	iopa = 256 - opa;
+	/* blending function for 'alpha-per-pixel enabled alpha blending' is complex. */
+EOF
+
+$content = <<EOF;
+{
+	s1 = *src1;
+	s2 = *src2;
+	a1 = s1 >> 24;
+	a2 = s2 >> 24;
+	addr = (a2*opa & 0xff00) + (a1*iopa >> 8);
+	alpha = TVPOpacityOnOpacityTable[addr];
+	s1_ = s1 & 0xff00ff;
+	s1_ = ((s1_ + (((s2 & 0xff00ff) - s1_) * alpha >> 8)) & 0xff00ff);
+	src1++;
+	src2++;
+	s1 &= 0xff00;
+	s2 &= 0xff00;
+	s1_ |= (a1 + ((a2 - a1)*opa >> 8)) << 24;
+	*dest = s1_ | ((s1 + ((s2 - s1) * alpha >> 8)) & 0xff00);
+	dest++;
+}
+EOF
+
+&loop_unroll_c($content, 'len', 4);
+
+print FC <<EOF;
+}
+
+EOF
+
+
+print FC <<EOF;
+/*export*/
+TVP_GL_FUNC_DECL(void, TVPConstAlphaBlend_SDd_aa_c, (tjs_uint32 *dest, const tjs_uint32 *src1, const tjs_uint32 *src2, tjs_int len, tjs_int opa))
+{/* additive-alpha(src1) vs additive-alpha(src2), destination has additive-alpha *//*YET NOT IMPLEMENTED*/
 	tjs_uint32 s1_, s2, s1, addr;
 	tjs_uint32 a1, a2;
 	tjs_int alpha;
@@ -1454,6 +2794,10 @@ EOF
 ;#-----------------------------------------------------------------
 ;# blending function for universal transition
 ;#-----------------------------------------------------------------
+
+;# Note: blending incompatible alpha type (such as additive-alpha vs alpha)
+;#       is not yet implemented.
+
 
 print FC <<EOF;
 /*export*/
@@ -1623,6 +2967,8 @@ print FC <<EOF;
 }
 
 EOF
+
+
 
 print FC <<EOF;
 /*export*/
@@ -1804,6 +3150,50 @@ EOF
 &alpha_color_map_d('65');
 
 
+sub alpha_color_map_a
+{
+	local($namesuffix);
+	$namesuffix = $_[0];
+
+
+print FC <<EOF;
+/*export*/
+TVP_GL_FUNC_DECL(void, TVPApplyColorMap${namesuffix}_a_c, (tjs_uint32 *dest, const tjs_uint8 *src, tjs_int len, tjs_uint32 color))
+{/*YET NOT IMPLEMENTED*/
+	tjs_uint32 d1, d, sopa, addr, destalpha;
+	tjs_uint32 c1 = color & 0xff00ff;
+	color = color & 0x00ff00;
+EOF
+
+
+$content = <<EOF;
+{
+	d = *dest;
+	addr = (*src<<8) + (d>>24);
+	destalpha = TVPNegativeMulTable${namesuffix}[addr]<<24;
+	sopa = TVPOpacityOnOpacityTable${namesuffix}[addr];
+	d1 = d & 0xff00ff;
+	d1 = (d1 + ((c1 - d1) * sopa >> 8)) & 0xff00ff;
+	d &= 0x00ff00;
+	*dest = d1 + ((d + ((color - d) * sopa >> 8)) & 0x00ff00) + destalpha;
+	src++;
+	dest++;
+}
+EOF
+
+&loop_unroll_c($content, 'len', 4);
+
+print FC <<EOF;
+}
+
+EOF
+
+}
+
+&alpha_color_map_a('');
+&alpha_color_map_a('65');
+
+
 sub alpha_color_map_do
 {
 	local($namesuffix);
@@ -1847,6 +3237,51 @@ EOF
 
 &alpha_color_map_do('');
 &alpha_color_map_do('65');
+
+
+sub alpha_color_map_ao
+{
+	local($namesuffix);
+	$namesuffix = $_[0];
+
+
+print FC <<EOF;
+/*export*/
+TVP_GL_FUNC_DECL(void, TVPApplyColorMap${namesuffix}_ao_c, (tjs_uint32 *dest, const tjs_uint8 *src, tjs_int len, tjs_uint32 color, tjs_int opa))
+{/*YET NOT IMPLEMENTED*/
+	tjs_uint32 d1, d, sopa, addr, destalpha;
+	tjs_uint32 c1 = color & 0xff00ff;
+	color = color & 0x00ff00;
+EOF
+
+
+$content = <<EOF;
+{
+	d = *dest;
+	addr = ((*src * opa) & 0xff00) + (d>>24);
+	destalpha = TVPNegativeMulTable${namesuffix}[addr]<<24;
+	sopa = TVPOpacityOnOpacityTable${namesuffix}[addr];
+	d1 = d & 0xff00ff;
+	d1 = (d1 + ((c1 - d1) * sopa >> 8)) & 0xff00ff;
+	d &= 0x00ff00;
+	*dest = d1 + ((d + ((color - d) * sopa >> 8)) & 0x00ff00) + destalpha;
+	src++;
+	dest++;
+}
+EOF
+
+&loop_unroll_c($content, 'len', 4);
+
+print FC <<EOF;
+}
+
+EOF
+
+}
+
+
+&alpha_color_map_ao('');
+&alpha_color_map_ao('65');
 
 
 
@@ -1915,9 +3350,44 @@ print FC <<EOF;
 
 EOF
 
+
+print FC <<EOF;
+/*export*/
+TVP_GL_FUNC_DECL(void, TVPConstColorAlphaBlend_a_c, (tjs_uint32 *dest, tjs_int len, tjs_uint32 color, tjs_int opa))
+{/*YET NOT IMPLEMENTED*/
+	tjs_uint32 d1, s1, d, dopa;
+	tjs_int alpha;
+	s1 = color & 0xff00ff;
+	color = color & 0xff00;
+EOF
+
+$content = <<EOF;
+{
+	d = *dest;
+	dopa = d>>24;
+	alpha = TVPOpacityOnOpacityTable[dopa + (opa<<8)];
+	d1 = d & 0xff00ff;
+	d1 = ((d1 + ((s1 - d1) * alpha >> 8)) & 0xff00ff) |
+		((255-((255-dopa)*(255-opa)>>8)) << 24);
+	d &= 0xff00;
+	*dest = d1 | ((d + ((color - d) * alpha >> 8)) & 0xff00);
+	dest ++;
+}
+EOF
+
+&loop_unroll_c($content, 'len', 4);
+
+print FC <<EOF;
+}
+
+EOF
+
 ;#-----------------------------------------------------------------
 ;# opacity removal
 ;#-----------------------------------------------------------------
+
+;# ??? where are these used in ?
+
 
 print FC <<EOF;
 /*export*/
@@ -2025,6 +3495,135 @@ print FC <<EOF;
 /*export*/
 TVP_GL_FUNC_DECL(void, TVPRemoveOpacity65_o_c, (tjs_uint32 *dest, const tjs_uint8 *src, tjs_int len, tjs_int strength))
 {
+	tjs_uint32 d, d2;
+
+	if(strength > 127) strength ++; /* adjust for error */
+EOF
+
+$content = <<EOF;
+	d = dest[{ofs}];;
+	dest[{ofs}] = (d & 0xffffff) + ( (((d>>24) * (16384-src[{ofs}]*strength )) << 10) & 0xff000000);;
+EOF
+$content2 = <<EOF;
+	d2 = dest[{ofs}];;
+	dest[{ofs}] = (d2 & 0xffffff) + ( (((d2>>24) * (16384-src[{ofs}]*strength )) << 10) & 0xff000000);;
+EOF
+
+&loop_unroll_c_int_2($content, $content2, 'len', 4);
+
+print FC <<EOF;
+}
+
+EOF
+
+
+
+print FC <<EOF;
+/*export*/
+TVP_GL_FUNC_DECL(void, TVPRemoveAdditiveConstOpacity_c, (tjs_uint32 *dest, tjs_int len, tjs_int strength))
+{/*YET NOT IMPLEMENTED*/
+	tjs_uint32 d, d2;
+
+	strength = 255 - strength;
+
+EOF
+
+
+$content = <<EOF;
+	d = dest[{ofs}];;
+	dest[{ofs}] = (d & 0xffffff) + ( (((d>>24)*strength) << 16) & 0xff000000);;
+EOF
+
+$content2 = <<EOF;
+	d2 = dest[{ofs}];;
+	dest[{ofs}] = (d2 & 0xffffff) + ( (((d2>>24)*strength) << 16) & 0xff000000);;
+EOF
+
+
+&loop_unroll_c_int_2($content, $content2, 'len', 4);
+
+print FC <<EOF;
+}
+
+EOF
+
+print FC <<EOF;
+/*export*/
+TVP_GL_FUNC_DECL(void, TVPRemoveAdditiveOpacity_c, (tjs_uint32 *dest, const tjs_uint8 *src, tjs_int len))
+{/*YET NOT IMPLEMENTED*/
+	tjs_uint32 d, d2;
+EOF
+
+
+$content = <<EOF;
+	d = dest[{ofs}];;
+	dest[{ofs}] = (d & 0xffffff) + ( (((d>>24) * (255-src[{ofs}])) << 16) & 0xff000000);;
+EOF
+$content2 = <<EOF;
+	d2 = dest[{ofs}];;
+	dest[{ofs}] = (d2 & 0xffffff) + ( (((d2>>24) * (255-src[{ofs}])) << 16) & 0xff000000);;
+EOF
+
+&loop_unroll_c_int_2($content, $content2, 'len', 4);
+
+print FC <<EOF;
+}
+
+EOF
+
+print FC <<EOF;
+/*export*/
+TVP_GL_FUNC_DECL(void, TVPRemoveAdditiveOpacity_o_c, (tjs_uint32 *dest, const tjs_uint8 *src, tjs_int len, tjs_int strength))
+{/*YET NOT IMPLEMENTED*/
+	tjs_uint32 d, d2;
+
+	if(strength > 127) strength ++; /* adjust for error */
+EOF
+
+$content = <<EOF;
+	d = dest[{ofs}];;
+	dest[{ofs}] = (d & 0xffffff) + ( (((d>>24) * (65535-src[{ofs}]*strength )) << 8) & 0xff000000);;
+EOF
+$content2 = <<EOF;
+	d2 = dest[{ofs}];;
+	dest[{ofs}] = (d2 & 0xffffff) + ( (((d2>>24) * (65535-src[{ofs}]*strength )) << 8) & 0xff000000);;
+EOF
+
+&loop_unroll_c_int_2($content, $content2, 'len', 4);
+
+print FC <<EOF;
+}
+
+EOF
+
+print FC <<EOF;
+/*export*/
+TVP_GL_FUNC_DECL(void, TVPRemoveAdditiveOpacity65_c, (tjs_uint32 *dest, const tjs_uint8 *src, tjs_int len))
+{/*YET NOT IMPLEMENTED*/
+	tjs_uint32 d, d2;
+EOF
+
+
+$content = <<EOF;
+	d = dest[{ofs}];;
+	dest[{ofs}] = (d & 0xffffff) + ( (((d>>24) * (64-src[{ofs}])) << 18) & 0xff000000);;
+EOF
+$content2 = <<EOF;
+	d2 = dest[{ofs}];;
+	dest[{ofs}] = (d2 & 0xffffff) + ( (((d2>>24) * (64-src[{ofs}])) << 18) & 0xff000000);;
+EOF
+
+&loop_unroll_c_int_2($content, $content2, 'len', 4);
+
+print FC <<EOF;
+}
+
+EOF
+
+print FC <<EOF;
+/*export*/
+TVP_GL_FUNC_DECL(void, TVPRemoveAdditiveOpacity65_o_c, (tjs_uint32 *dest, const tjs_uint8 *src, tjs_int len, tjs_int strength))
+{/*YET NOT IMPLEMENTED*/
 	tjs_uint32 d, d2;
 
 	if(strength > 127) strength ++; /* adjust for error */
