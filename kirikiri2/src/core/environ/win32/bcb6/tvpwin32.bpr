@@ -58,7 +58,8 @@
       intermediate\ScriptMgnIntf.obj intermediate\FuncStubs.obj 
       intermediate\OptionsDesc.obj intermediate\ConfSettingsUnit.obj 
       intermediate\ConfMainFrameUnit.obj intermediate\tjsGlobalStringMap.obj 
-      intermediate\ClipboardIntf.obj intermediate\ClipboardImpl.obj"/>
+      intermediate\ClipboardIntf.obj intermediate\ClipboardImpl.obj 
+      intermediate\tjsDisassemble.obj"/>
     <RESFILES value="tvpwin32.res ..\HBeamCur.res"/>
     <DEFFILE value="..\tvpwin32.def"/>
     <RESDEPEN value="$(RESFILES) ..\HaltWarnFormUnit.dfm 
@@ -230,6 +231,7 @@
       <FILE FILENAME="..\..\..\tjs2\tjsGlobalStringMap.cpp" FORMNAME="" UNITNAME="tjsGlobalStringMap" CONTAINERID="C/C++ コンパイラ" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\utils\ClipboardIntf.cpp" FORMNAME="" UNITNAME="ClipboardIntf" CONTAINERID="C/C++ コンパイラ" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\utils\win32\ClipboardImpl.cpp" FORMNAME="" UNITNAME="ClipboardImpl" CONTAINERID="C/C++ コンパイラ" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\..\tjs2\tjsDisassemble.cpp" FORMNAME="" UNITNAME="tjsDisassemble" CONTAINERID="C/C++ コンパイラ" DESIGNCLASS="" LOCALCOMMAND=""/>
   </FILELIST>
   <BUILDTOOLS>
   </BUILDTOOLS>
@@ -258,8 +260,8 @@ IncludeVerInfo=1
 AutoIncBuild=1
 MajorVer=2
 MinorVer=23
-Release=8
-Build=1865
+Release=9
+Build=1866
 Debug=0
 PreRelease=0
 Special=0
@@ -271,7 +273,7 @@ CodePage=932
 [Version Info Keys]
 CompanyName=
 FileDescription=TVP(KIRIKIRI) 2 core / Scripting Platform for Win32
-FileVersion=2.23.8.1865
+FileVersion=2.23.9.1866
 InternalName=tvp2/win32
 LegalCopyright=(KIRIKIRI core) (C) '97-'04 W.Dee All Rights Reserved. This software is based in part on the work of Independent JPEG Group. For details: Run this program with '-about' option.
 LegalTrademarks=
