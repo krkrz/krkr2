@@ -7,9 +7,6 @@ if "%1" == "" (
 
 set TOP_DIR=%~f1
 
-cd %TOP_DIR%\base\win32
-call makestub.bat
-
 cd %TOP_DIR%\visual\IA32
 call compile.bat
 
