@@ -87,11 +87,11 @@ public:
 // XP3 filter related
 //---------------------------------------------------------------------------
 extern bool XP3EncDLLAvailable;
-extern void (__stdcall * XP3ArchiveAttractFilter_v1_org)(
-	const char *inputfile,
+extern void (__stdcall * XP3ArchiveAttractFilter_v2_org)(
+	unsigned __int32 hash,
 	unsigned __int64 offset, void * buffer, long bufferlen);
-extern void (__stdcall * XP3ArchiveAttractFilter_v1)(
-	const char *inputfile,
+extern void (__stdcall * XP3ArchiveAttractFilter_v2)(
+	unsigned __int32 hash,
 	unsigned __int64 offset, void * buffer, long bufferlen);
 //---------------------------------------------------------------------------
 
@@ -106,9 +106,12 @@ class tTVPLocalFileStream : public tTVPStream
 private:
 	HANDLE Handle;
 	char *FileName;
+	bool UseEncryption;
+	unsigned __int32 Salt;
 
 public:
-	tTVPLocalFileStream(const char *name, unsigned int flag);
+	tTVPLocalFileStream(const char *name,  unsigned int flag, bool useencryption = false,
+		unsigned __int32 salt = 0);
 	~tTVPLocalFileStream();
 
 	unsigned __int64 Seek(__int64 offset, int whence);

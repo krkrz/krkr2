@@ -44,7 +44,7 @@ void TJS_INTF_METHOD TVPXP3ArchiveExtractionFilter(
 	// 設定される。
 
 	// ここでは単純に、xp3enc.dll のサンプルで作成された XP3 アーカイブを
-	// 復号すべく、データをすべてビット反転することにする
+	// 復号すべく、データをすべて FileHash の最下位バイトで XOR することにする。
 
 	/*
 		tTVPXP3ExtractionFilterInfo のメンバは以下の通り
@@ -54,8 +54,7 @@ void TJS_INTF_METHOD TVPXP3ArchiveExtractionFilter(
 		*                   : どのオフセット位置からのものか、を表す
 		* Buffer            : データ本体
 		* BufferSize        : "Buffer" メンバの指し示すデータのサイズ(バイト単位)
-		* FileName          : アーカイブ内ファイルのファイル名
-		* ArchiveName       : アーカイブファイルそれ自体のファイル名
+		* FileHash          : ファイルの暗号化解除状態でのファイル内容の32bitハッシュ
 	*/
 
 	// 一応構造体のサイズをチェックする
@@ -71,7 +70,7 @@ void TJS_INTF_METHOD TVPXP3ArchiveExtractionFilter(
 	// 復号
 	tjs_uint i;
 	for(i = 0; i < info->BufferSize; i++)
-		((unsigned char *)info->Buffer)[i] ^= 0xff;
+		((unsigned char *)info->Buffer)[i] ^= info->FileHash;
 }
 //---------------------------------------------------------------------------
 

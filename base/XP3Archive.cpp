@@ -8,6 +8,13 @@
 //---------------------------------------------------------------------------
 // XP3 virtual file system support
 //---------------------------------------------------------------------------
+// 2004/6/24  W.Dee
+//    Added support for segmented (multiple) XP3 index structure.
+//
+// 2004/5/29  W.Dee
+//    Added support for tTVPXP3ExtranctionFilterInfo v2 member (FileHash)
+//---------------------------------------------------------------------------
+
 #include "tjsCommHead.h"
 #pragma hdrstop
 
@@ -173,6 +180,8 @@ tTVPXP3Archive::tTVPXP3Archive(const ttstr & name) : tTVPArchive(name)
 		{ 0x69/*'i'*/, 0x6e/*'n'*/, 0x66/*'f'*/, 0x6f/*'o'*/ };
 	static tjs_uint8 cn_segm[] =
 		{ 0x73/*'s'*/, 0x65/*'e'*/, 0x67/*'g'*/, 0x6d/*'m'*/ };
+	static tjs_uint8 cn_adlr[] =
+		{ 0x61/*'a'*/, 0x64/*'d'*/, 0x6c/*'l'*/, 0x72/*'r'*/ };
 
 	TVPAddLog(TJS_W("(info) Trying to read XP3 virtual file system "
 		"information from : ") +
@@ -186,127 +195,161 @@ tTVPXP3Archive::tTVPXP3Archive(const ttstr & name) : tTVPArchive(name)
 
 		// read index position and seek
 		st->SetPosition(11 + offset);
-		tjs_uint64 index_ofs = st->ReadI64LE();
-		st->SetPosition(index_ofs + offset);
 
-		// read index to memory
-		tjs_uint8 index_flag;
-		st->ReadBuffer(&index_flag, 1);
-		tjs_uint index_size;
-
-		if(index_flag & 1)
+		// read all XP3 indices
+		while(true)
 		{
-			// compressed index
-			tjs_uint64 compressed_size = st->ReadI64LE();
-			tjs_uint64 r_index_size = st->ReadI64LE();
+			tjs_uint64 index_ofs = st->ReadI64LE();
+			st->SetPosition(index_ofs + offset);
 
-			if((tjs_uint)compressed_size != compressed_size ||
-				(tjs_uint)r_index_size != r_index_size)
-					TVPThrowExceptionMessage(TVPReadError);
-					// too large to handle, or corrupted
-			index_size = (tjs_int)r_index_size;
-			indexdata = new tjs_uint8[index_size];
-			tjs_uint8 *compressed = new tjs_uint8[(tjs_uint)compressed_size];
-			try
+			// read index to memory
+			tjs_uint8 index_flag;
+			st->ReadBuffer(&index_flag, 1);
+			tjs_uint index_size;
+
+			if((index_flag & TVP_XP3_INDEX_ENCODE_METHOD_MASK) ==
+				TVP_XP3_INDEX_ENCODE_ZLIB)
 			{
-				st->ReadBuffer(compressed, (tjs_uint)compressed_size);
+				// compressed index
+				tjs_uint64 compressed_size = st->ReadI64LE();
+				tjs_uint64 r_index_size = st->ReadI64LE();
 
-				unsigned long destlen = (unsigned long)index_size;
+				if((tjs_uint)compressed_size != compressed_size ||
+					(tjs_uint)r_index_size != r_index_size)
+						TVPThrowExceptionMessage(TVPReadError);
+						// too large to handle, or corrupted
+				index_size = (tjs_int)r_index_size;
+				indexdata = new tjs_uint8[index_size];
+				tjs_uint8 *compressed = new tjs_uint8[(tjs_uint)compressed_size];
+				try
+				{
+					st->ReadBuffer(compressed, (tjs_uint)compressed_size);
 
-				int result = uncompress(  /* uncompress from zlib */
-					(unsigned char *)indexdata,
-					&destlen, (unsigned char*)compressed,
-						(unsigned long)compressed_size);
-				if(result != Z_OK ||
-					destlen != (unsigned long)index_size)
-						TVPThrowExceptionMessage(TVPUncompressionFailed);
-			}
-			catch(...)
-			{
+					unsigned long destlen = (unsigned long)index_size;
+
+					int result = uncompress(  /* uncompress from zlib */
+						(unsigned char *)indexdata,
+						&destlen, (unsigned char*)compressed,
+							(unsigned long)compressed_size);
+					if(result != Z_OK ||
+						destlen != (unsigned long)index_size)
+							TVPThrowExceptionMessage(TVPUncompressionFailed);
+				}
+				catch(...)
+				{
+					delete [] compressed;
+					throw;
+				}
 				delete [] compressed;
-				throw;
 			}
-			delete [] compressed;
-		}
-		else
-		{
-			// uncompressed index
-			tjs_uint64 r_index_size = st->ReadI64LE();
-			if((tjs_uint)r_index_size != r_index_size)
-				TVPThrowExceptionMessage(TVPReadError);
-					// too large to handle or corrupted
-			index_size = (tjs_uint)r_index_size;
-			indexdata = new tjs_uint8[index_size];
-			st->ReadBuffer(indexdata, index_size);
-		}
-
-
-		// read index information from memory
-		tjs_uint ch_file_start = 0;
-		tjs_uint ch_file_size = index_size;
-		Count = 0;
-		for(;;)
-		{
-			// find 'File' chunk
-			if(!FindChunk(indexdata, cn_File, ch_file_start, ch_file_size))
-				break; // not found
-
-			// find 'info' sub-chunk
-			tjs_uint ch_info_start = ch_file_start;
-			tjs_uint ch_info_size = ch_file_size;
-			if(!FindChunk(indexdata, cn_info, ch_info_start, ch_info_size))
-				TVPThrowExceptionMessage(TVPReadError);
-
-			// read info sub-chunk
-			tArchiveItem item;
-			tjs_uint32 flags = ReadI32FromMem(indexdata + ch_info_start + 0);
-			if(!TVPAllowExtractProtectedStorage && (flags & (1<<31)))
-				TVPThrowExceptionMessage(TJS_W("Specified storage had been protected!"));
-			item.OrgSize = ReadI64FromMem(indexdata + ch_info_start + 4);
-			item.ArcSize = ReadI64FromMem(indexdata + ch_info_start + 12);
-
-			tjs_int len = ReadI16FromMem(indexdata + ch_info_start + 20);
-			item.Name = TVPStringFromBMPUnicode(
-				(const tjs_uint16 *)(indexdata + ch_info_start + 22), len);
-
-			// find 'segm' sub-chunk
-			// Each of in-archive storages can be splitted into some segments.
-			// Each segment can be compressed or uncompressed independently.
-			// segments can share partial area of archive storage. ( this is used for
-			// OggVorbis' VQ code book sharing )
-			tjs_uint ch_segm_start = ch_info_start + ch_info_size;
-			tjs_uint ch_segm_size = ch_file_size - ch_info_size;
-			if(!FindChunk(indexdata, cn_segm, ch_segm_start, ch_segm_size))
-				TVPThrowExceptionMessage(TVPReadError);
-
-			// read segm sub-chunk
-			tjs_int segment_count = ch_segm_size / 28;
-			tjs_uint64 offset_in_archive = 0;
-			for(tjs_int i = 0; i<segment_count; i++)
+			else if((index_flag & TVP_XP3_INDEX_ENCODE_METHOD_MASK) ==
+				TVP_XP3_INDEX_ENCODE_RAW)
 			{
-				tjs_uint pos_base = i * 28 + ch_segm_start;
-				tTVPXP3ArchiveSegment seg;
-				tjs_uint32 flags = ReadI32FromMem(indexdata + pos_base);
-				seg.IsCompressed = flags & 1;
-				seg.Start = ReadI64FromMem(indexdata + pos_base + 4) + offset;
-					// data offset in archive
-				seg.Offset = offset_in_archive; // offset in in-archive storage
-				seg.OrgSize = ReadI64FromMem(indexdata + pos_base + 12); // original size
-				seg.ArcSize = ReadI64FromMem(indexdata + pos_base + 20); // archived size
-				item.Segments.push_back(seg);
-				offset_in_archive += seg.OrgSize;
-				segmentcount ++;
+				// uncompressed index
+				tjs_uint64 r_index_size = st->ReadI64LE();
+				if((tjs_uint)r_index_size != r_index_size)
+					TVPThrowExceptionMessage(TVPReadError);
+						// too large to handle or corrupted
+				index_size = (tjs_uint)r_index_size;
+				indexdata = new tjs_uint8[index_size];
+				st->ReadBuffer(indexdata, index_size);
+			}
+			else
+			{
+				// unknown encode method
+				TVPThrowExceptionMessage(TVPReadError);
 			}
 
-			// push information
-			ItemVector.push_back(item);
 
-			// to next file
-			ch_file_start += ch_file_size;
-			ch_file_size = index_size - ch_file_start;
-			Count++;
+			// read index information from memory
+			tjs_uint ch_file_start = 0;
+			tjs_uint ch_file_size = index_size;
+			Count = 0;
+			for(;;)
+			{
+				// find 'File' chunk
+				if(!FindChunk(indexdata, cn_File, ch_file_start, ch_file_size))
+					break; // not found
+
+				// find 'info' sub-chunk
+				tjs_uint ch_info_start = ch_file_start;
+				tjs_uint ch_info_size = ch_file_size;
+				if(!FindChunk(indexdata, cn_info, ch_info_start, ch_info_size))
+					TVPThrowExceptionMessage(TVPReadError);
+
+				// read info sub-chunk
+				tArchiveItem item;
+				tjs_uint32 flags = ReadI32FromMem(indexdata + ch_info_start + 0);
+				if(!TVPAllowExtractProtectedStorage && (flags & TVP_XP3_FILE_PROTECTED))
+					TVPThrowExceptionMessage(TJS_W("Specified storage had been protected!"));
+				item.OrgSize = ReadI64FromMem(indexdata + ch_info_start + 4);
+				item.ArcSize = ReadI64FromMem(indexdata + ch_info_start + 12);
+
+				tjs_int len = ReadI16FromMem(indexdata + ch_info_start + 20);
+				ttstr name = TVPStringFromBMPUnicode(
+						(const tjs_uint16 *)(indexdata + ch_info_start + 22), len);
+				item.Name = name;
+
+				// find 'segm' sub-chunk
+				// Each of in-archive storages can be splitted into some segments.
+				// Each segment can be compressed or uncompressed independently.
+				// segments can share partial area of archive storage. ( this is used for
+				// OggVorbis' VQ code book sharing )
+				tjs_uint ch_segm_start = ch_file_start;
+				tjs_uint ch_segm_size = ch_file_size;
+				if(!FindChunk(indexdata, cn_segm, ch_segm_start, ch_segm_size))
+					TVPThrowExceptionMessage(TVPReadError);
+
+				// read segm sub-chunk
+				tjs_int segment_count = ch_segm_size / 28;
+				tjs_uint64 offset_in_archive = 0;
+				for(tjs_int i = 0; i<segment_count; i++)
+				{
+					tjs_uint pos_base = i * 28 + ch_segm_start;
+					tTVPXP3ArchiveSegment seg;
+					tjs_uint32 flags = ReadI32FromMem(indexdata + pos_base);
+
+					if((flags & TVP_XP3_SEGM_ENCODE_METHOD_MASK) ==
+							TVP_XP3_SEGM_ENCODE_RAW)
+						seg.IsCompressed = false;
+					else if((flags & TVP_XP3_SEGM_ENCODE_METHOD_MASK) ==
+							TVP_XP3_SEGM_ENCODE_ZLIB)
+						seg.IsCompressed = true;
+					else
+						TVPThrowExceptionMessage(TVPReadError); // unknown encode method
+						
+					seg.IsCompressed = flags & 1;
+					seg.Start = ReadI64FromMem(indexdata + pos_base + 4) + offset;
+						// data offset in archive
+					seg.Offset = offset_in_archive; // offset in in-archive storage
+					seg.OrgSize = ReadI64FromMem(indexdata + pos_base + 12); // original size
+					seg.ArcSize = ReadI64FromMem(indexdata + pos_base + 20); // archived size
+					item.Segments.push_back(seg);
+					offset_in_archive += seg.OrgSize;
+					segmentcount ++;
+				}
+
+				// find 'aldr' sub-chunk
+				tjs_uint ch_adlr_start = ch_file_start;
+				tjs_uint ch_adlr_size = ch_file_size;
+				if(!FindChunk(indexdata, cn_adlr, ch_adlr_start, ch_adlr_size))
+					TVPThrowExceptionMessage(TVPReadError);
+
+				// read 'aldr' sub-chunk
+				item.FileHash = ReadI32FromMem(indexdata + ch_adlr_start);
+
+				// push information
+				ItemVector.push_back(item);
+
+				// to next file
+				ch_file_start += ch_file_size;
+				ch_file_size = index_size - ch_file_start;
+				Count++;
+			}
+
+			if(!(index_flag & TVP_XP3_INDEX_CONTINUE))
+				break; // continue reading index when the bit sets
 		}
-
 	}
 	catch(...)
 	{
@@ -363,16 +406,17 @@ bool tTVPXP3Archive::FindChunk(const tjs_uint8 *data, const tjs_uint8 * name,
 		start += 4;
 		tjs_uint64 r_size = ReadI64FromMem(data + start);
 		start += 8;
-		size = (tjs_uint)r_size;
-		if(size != r_size)
+		tjs_uint size_chunk = (tjs_uint)r_size;
+		if(size_chunk != r_size)
 			TVPThrowExceptionMessage(TVPReadError);
 		if(found)
 		{
 			// found
+			size = size_chunk;
 			return true;
 		}
-		start += size;
-		pos += size;
+		start += size_chunk;
+		pos += size_chunk;
 	}
 
 	start = start_save;
@@ -799,7 +843,7 @@ tjs_uint TJS_INTF_METHOD tTVPXP3ArchiveStream::Read(void *buffer, tjs_uint read_
 		if(TVPXP3ArchiveExtractionFilter)
 		{
 			tTVPXP3ExtractionFilterInfo info(CurPos, (tjs_uint8*)buffer + write_size,
-				one_size, Owner->GetName(StorageIndex), Owner->GetName());
+				one_size, Owner->GetFileHash(StorageIndex));
 			TVPXP3ArchiveExtractionFilter
 				( (tTVPXP3ExtractionFilterInfo*) &info );
 		}

@@ -8,6 +8,9 @@
 //---------------------------------------------------------------------------
 // input related definition
 //---------------------------------------------------------------------------
+// 2004/ 6/24 W.Dee
+//    Avoided a warning in VC++ at TVPIsAnyMouseButtonPressedInShiftStateFlags
+//
 // 2004/ 4/ 9 W.Dee          Added JoyPad virtual key code definitions.
 //---------------------------------------------------------------------------
 
@@ -62,7 +65,8 @@ enum tTVPImeMode
 
 
 inline bool TVPIsAnyMouseButtonPressedInShiftStateFlags(tjs_uint32 state)
-{ return state & (TVP_SS_LEFT | TVP_SS_RIGHT | TVP_SS_MIDDLE | TVP_SS_DOUBLE); }
+{ return (state & 
+	(TVP_SS_LEFT | TVP_SS_RIGHT | TVP_SS_MIDDLE | TVP_SS_DOUBLE)) != 0; }
 
 
 
