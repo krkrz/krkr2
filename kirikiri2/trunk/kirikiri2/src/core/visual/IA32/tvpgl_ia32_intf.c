@@ -183,6 +183,8 @@ if(TVPCPUType & TVP_CPU_HAS_MMX)
 if(TVPCPUType & TVP_CPU_HAS_MMX)
 	 TVPInterpStretchAdditiveAlphaBlend =  TVPInterpStretchAdditiveAlphaBlend_mmx_a;
 if(TVPCPUType & TVP_CPU_HAS_MMX)
+	 TVPInterpStretchAdditiveAlphaBlend_o =  TVPInterpStretchAdditiveAlphaBlend_o_mmx_a;
+if(TVPCPUType & TVP_CPU_HAS_MMX)
 	 TVPInitUnivTransBlendTable =  TVPInitUnivTransBlendTable_mmx_c;
 if(TVPCPUType & TVP_CPU_HAS_MMX)
 	 TVPUnivTransBlend =  TVPUnivTransBlend_mmx_a;
