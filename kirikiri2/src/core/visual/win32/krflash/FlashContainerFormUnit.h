@@ -11,7 +11,6 @@
 #include <Forms.hpp>
 #include "ShockwaveFlashObjects_OCX.h"
 #include <OleCtrls.hpp>
-#include "..\krmovie.h"
 #include "krflashmain.h"
 #include <ExtCtrls.hpp>
 #include <Menus.hpp>

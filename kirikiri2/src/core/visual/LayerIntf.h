@@ -379,6 +379,10 @@ private:
 public:
 	void AssignImages(tTJSNI_BaseLayer *src); // assign image content
 
+	void AssignMainImage(tTVPBaseBitmap *bmp);
+		// assign single main bitmap image. the image size assigned must be
+		// identical to the destination layer bitmap.
+
 	void SetNeutralColor(tjs_uint32 color) { NeutralColor = color; }
 	tjs_uint32 GetNeutralColor() const { return NeutralColor; }
 
