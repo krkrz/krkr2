@@ -356,6 +356,8 @@ class MessageLayer extends KAGLayer
 		// do_config : コンフィギュレーションを行うか
 		super.KAGLayer(...);
 
+		type = ltAddAlpha;
+
 		this.id = id;
 		this.name = name;
 
@@ -393,6 +395,8 @@ class MessageLayer extends KAGLayer
 		lineLayer = new global.KAGLayer(window, this);
 		lineLayer.hitType = htMask;
 		lineLayer.hitThreshold = 256; // マウスメッセージは全域透過
+		lineLayer.face = dfAuto;
+		lineLayer.type = ltAddAlpha;
 		lineLayer.name = "行描画用浮遊メッセージレイヤ";
 
 		// リンクをハイライト表示するためのレイヤ
@@ -836,7 +840,7 @@ class MessageLayer extends KAGLayer
 		var lloy = lineLayerOriginY + getLineLayerTopOffset();
 
 		face = dfAuto;
-		pileRect(
+		operateRect(
 			llox,
 			lloy,
 			ll, 0, 0, ll.imageWidth, ll.imageHeight);
@@ -900,7 +904,7 @@ class MessageLayer extends KAGLayer
 					lineLayer.face = dfAuto;
 					lineLayer.copyRect(0, d, lineLayer,
 						0, 0, lineLayer.imageWidth, oldsize);
-					lineLayer.colorRect(0, 0, lineLayer.imageWidth, d, 0, -255);
+					lineLayer.fillRect(0, 0, lineLayer.imageWidth, d, 0);
 
 					lineLayer.face = dfProvince;
 					lineLayer.copyRect(0, d, lineLayer,
@@ -943,8 +947,8 @@ class MessageLayer extends KAGLayer
 						lineLayer,
 						0,0,lineLayer.imageWidth, lineLayer.imageHeight);
 					// 左端と右端を消去
-					lineLayer.colorRect(0, 0,
-						lineLayerBase - oldbase, lineLayer.imageHeight, 0, -255);
+					lineLayer.fillRect(0, 0,
+						lineLayerBase - oldbase, lineLayer.imageHeight, 0);
 					lineLayer.colorRect(
 						lineLayerBase - oldbase+oldsize, 0,
 						lineLayer.imageWidth - (lineLayerBase - oldbase + oldsize),
@@ -1205,7 +1209,7 @@ class MessageLayer extends KAGLayer
 		var lay = window.temporaryLayer;
 
 		lay.type = ltTransparent;
-		lay.face = dfAlpha;
+		lay.face = dfAuto;
 		lay.loadImages(storage, key); // 画像読み込み
 		var lw, lh;
 		lw = lay.imageWidth;
@@ -1263,16 +1267,16 @@ class MessageLayer extends KAGLayer
 			{
 				// 袋
 				lay.fillRect(0, 0, lw, lh, edgeColor);
-				lineLayer.pileRect(cx+1, cy, lay, 0, 0, lw, lh);
-				lineLayer.pileRect(cx, cy+1, lay, 0, 0, lw, lh);
-				lineLayer.pileRect(cx-1, cy, lay, 0, 0, lw, lh);
-				lineLayer.pileRect(cx, cy-1, lay, 0, 0, lw, lh);
+				lineLayer.operateRect(cx+1, cy, lay, 0, 0, lw, lh);
+				lineLayer.operateRect(cx, cy+1, lay, 0, 0, lw, lh);
+				lineLayer.operateRect(cx-1, cy, lay, 0, 0, lw, lh);
+				lineLayer.operateRect(cx, cy-1, lay, 0, 0, lw, lh);
 			}
 			else if(shadow)
 			{
 				// 影
 				lay.fillRect(0, 0, lw, lh, shadowColor);
-				lineLayer.pileRect(cx+2, cy+2, lay, 0, 0, lw, lh);
+				lineLayer.operateRect(cx+2, cy+2, lay, 0, 0, lw, lh);
 			}
 
 		}
@@ -1284,7 +1288,7 @@ class MessageLayer extends KAGLayer
 				// メインを文字色で塗りつぶす
 		}
 
-		lineLayer.pileRect(cx, cy, lay, 0, 0, lw, lh); // 描画
+		lineLayer.operateRect(cx, cy, lay, 0, 0, lw, lh); // 描画
 
 		// 描画おわり
 		lastDrawnCh="";
