@@ -30,7 +30,9 @@ tTVPDSVideoOverlay::tTVPDSVideoOverlay()
 //! @brief	  	何もしない
 //----------------------------------------------------------------------------
 tTVPDSVideoOverlay::~tTVPDSVideoOverlay()
-{}
+{
+	ReleaseAll();
+}
 //----------------------------------------------------------------------------
 //! @brief	  	フィルタグラフの構築
 //! @param 		callbackwin : メッセージを送信するウィンドウ

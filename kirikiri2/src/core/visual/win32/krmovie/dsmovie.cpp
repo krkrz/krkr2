@@ -162,7 +162,7 @@ const wchar_t* __stdcall tTVPDSMovie::SetPosition( unsigned __int64 tick )
 	if( IsEqualGUID( TIME_FORMAT_MEDIA_TIME, Format ) )
 	{
 		LONGLONG	requestTime = (LONGLONG)(tick * 10000);
-		if( FAILED(hr = MediaSeeking()->SetPositions( &requestTime, AM_SEEKING_AbsolutePositioning | AM_SEEKING_SeekToKeyFrame , NULL, AM_SEEKING_NoPositioning )) )
+		if( FAILED(hr = MediaSeeking()->SetPositions( &requestTime, AM_SEEKING_AbsolutePositioning | AM_SEEKING_SeekToKeyFrame, NULL, AM_SEEKING_NoPositioning )) )
 		{
 			return L"Failed to call IMediaSeeking::SetPositions.";
 		}
@@ -175,7 +175,7 @@ const wchar_t* __stdcall tTVPDSMovie::SetPosition( unsigned __int64 tick )
 			return L"Failed to call IBasicVideo::get_AvgTimePerFrame.";
 		}
 		LONGLONG	requestFrame = (LONGLONG)(((tick / 1000.0) / AvgTimePerFrame) + 0.5);
-		if( FAILED(hr = MediaSeeking()->SetPositions( &requestFrame, AM_SEEKING_AbsolutePositioning | AM_SEEKING_SeekToKeyFrame , NULL, AM_SEEKING_NoPositioning )) )
+		if( FAILED(hr = MediaSeeking()->SetPositions( &requestFrame, AM_SEEKING_AbsolutePositioning | AM_SEEKING_SeekToKeyFrame, NULL, AM_SEEKING_NoPositioning )) )
 		{
 			return L"Failed to call IMediaSeeking::SetPositions.";
 		}
@@ -322,7 +322,7 @@ const wchar_t* __stdcall tTVPDSMovie::SetFrame( int f )
 			return L"Failed to call IBasicVideo::get_AvgTimePerFrame.";
 		}
 		LONGLONG	requestTime = (LONGLONG)(AvgTimePerFrame * 10000000.0 * f);
-		if( FAILED(hr = MediaSeeking()->SetPositions( &requestTime, AM_SEEKING_AbsolutePositioning | AM_SEEKING_SeekToKeyFrame , NULL, AM_SEEKING_NoPositioning )) )
+		if( FAILED(hr = MediaSeeking()->SetPositions( &requestTime, AM_SEEKING_AbsolutePositioning | AM_SEEKING_SeekToKeyFrame, NULL, AM_SEEKING_NoPositioning )) )
 		{
 			return L"Failed to call IMediaSeeking::SetPositions.";
 		}
@@ -330,7 +330,7 @@ const wchar_t* __stdcall tTVPDSMovie::SetFrame( int f )
 	else if( IsEqualGUID( TIME_FORMAT_FRAME, Format ) )
 	{
 		LONGLONG	requestFrame = f;
-		if( FAILED(hr = MediaSeeking()->SetPositions( &requestFrame, AM_SEEKING_AbsolutePositioning | AM_SEEKING_SeekToKeyFrame , NULL, AM_SEEKING_NoPositioning )) )
+		if( FAILED(hr = MediaSeeking()->SetPositions( &requestFrame, AM_SEEKING_AbsolutePositioning | AM_SEEKING_SeekToKeyFrame, NULL, AM_SEEKING_NoPositioning )) )
 		{
 			return L"Failed to call IMediaSeeking::SetPositions.";
 		}
@@ -339,6 +339,7 @@ const wchar_t* __stdcall tTVPDSMovie::SetFrame( int f )
 	{
 		return L"Not supported time format.";
 	}
+
 	return NULL;
 }
 const wchar_t* __stdcall tTVPDSMovie::GetFrame( int *f )
