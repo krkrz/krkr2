@@ -708,11 +708,6 @@ public:
 	{
 		if(vt==tvtObject)
 		{
-			if(Object.ObjThis)
-			{
-				Object.ObjThis->AddRef();
-				return Object.ObjThis;
-			}
 			if(Object.Object) Object.Object->AddRef();
 			return Object.Object;
 		}
@@ -725,9 +720,7 @@ public:
 	TJS_CONST_METHOD_DEF(iTJSDispatch2 *, AsObjectNoAddRef, ())
 	{
 		if(vt==tvtObject)
-		{
-			return Object.ObjThis?Object.ObjThis:Object.Object;
-		}
+			return Object.Object;
 		TJSThrowVariantConvertError(*this, tvtObject);
 		return NULL;
 	}
