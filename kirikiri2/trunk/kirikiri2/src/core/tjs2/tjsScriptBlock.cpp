@@ -147,7 +147,27 @@ tjs_int tTJSScriptBlock::LineToSrcPos(tjs_int line) const
 {
 	// assumes line is added by LineOffset
 	line -= LineOffset;
-	return LineVector[line];	
+	return LineVector[line];
+}
+//---------------------------------------------------------------------------
+ttstr tTJSScriptBlock::GetLineDescriptionString(tjs_int pos) const
+{
+	// get short description, like "mainwindow.tjs(321)"
+	// pos is in character count from the first of the script
+	tjs_int line =SrcPosToLine(pos)+1;
+	ttstr name;
+	if(Name)
+	{
+		name = Name;
+	}
+	else
+	{
+		tjs_char ptr[128];
+		TJS_sprintf(ptr, TJS_W("0x%p"), this);
+		name = ttstr(TJS_W("anonymous@")) + ptr;
+	}
+
+	return name + TJS_W("(") + ttstr(line) + TJS_W(")");
 }
 //---------------------------------------------------------------------------
 void tTJSScriptBlock::ConsoleOutput(const tjs_char *msg, void *data)

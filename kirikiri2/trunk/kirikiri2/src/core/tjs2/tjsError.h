@@ -243,8 +243,8 @@ public:
 
 	const ttstr & GetTrace() const { return Trace; }
 
-	bool AddTrace(tTJSScriptBlock *block, tjs_int pos);
-	bool AddTrace(tTJSInterCodeContext *context, tTJSScriptBlock *block, tjs_int pos);
+	bool AddTrace(tTJSScriptBlock *block, tjs_int srcpos);
+	bool AddTrace(tTJSInterCodeContext *context, tjs_int codepos);
 	bool AddTrace(const ttstr & data);
 
 	eTJSScriptError(const ttstr &  Msg,
@@ -254,16 +254,10 @@ public:
 		eTJSError(ref), Block(ref.Block), Position(ref.Position), Trace(ref.Trace) {;}
 };
 //---------------------------------------------------------------------------
-void TJS_eTJSScriptError(const ttstr &msg, tTJSScriptBlock *block, tjs_int pos);
-void TJS_eTJSScriptError(const tjs_char *msg, tTJSScriptBlock *block, tjs_int pos);
-void TJS_eTJSScriptError(const ttstr &msg, tTJSInterCodeContext *context,
-	tTJSScriptBlock *block, tjs_int pos);
-void TJS_eTJSScriptError(const tjs_char *msg, tTJSInterCodeContext *context,
-	tTJSScriptBlock *block, tjs_int pos);
-
-ttstr TJSGetExceptionSourceString(tTJSScriptBlock *block, tjs_int pos);
-ttstr TJSGetExceptionSourceString(tTJSInterCodeContext *context,
-	tTJSScriptBlock *block, tjs_int pos);
+void TJS_eTJSScriptError(const ttstr &msg, tTJSScriptBlock *block, tjs_int srcpos);
+void TJS_eTJSScriptError(const tjs_char *msg, tTJSScriptBlock *block, tjs_int srcpos);
+void TJS_eTJSScriptError(const ttstr &msg, tTJSInterCodeContext *context, tjs_int codepos);
+void TJS_eTJSScriptError(const tjs_char *msg, tTJSInterCodeContext *context, tjs_int codepos);
 //---------------------------------------------------------------------------
 class eTJSScriptException : public eTJSScriptError
 {
@@ -280,13 +274,13 @@ public:
 };
 //---------------------------------------------------------------------------
 void TJS_eTJSScriptException(const ttstr &msg, tTJSScriptBlock *block,
-	tjs_int pos, tTJSVariant &val);
+	tjs_int srcpos, tTJSVariant &val);
 void TJS_eTJSScriptException(const tjs_char *msg, tTJSScriptBlock *block,
-	tjs_int pos, tTJSVariant &val);
+	tjs_int srcpos, tTJSVariant &val);
 void TJS_eTJSScriptException(const ttstr &msg, tTJSInterCodeContext *context,
-	tTJSScriptBlock *block, tjs_int pos, tTJSVariant &val);
+	tjs_int codepos, tTJSVariant &val);
 void TJS_eTJSScriptException(const tjs_char *msg, tTJSInterCodeContext *context,
-	tTJSScriptBlock *block, tjs_int pos, tTJSVariant &val);
+	tjs_int codepos, tTJSVariant &val);
 //---------------------------------------------------------------------------
 class eTJSCompileError : public eTJSScriptError
 {
@@ -298,8 +292,8 @@ public:
 
 };
 //---------------------------------------------------------------------------
-void TJS_eTJSCompileError(const ttstr & msg, tTJSScriptBlock *block, tjs_int pos);
-void TJS_eTJSCompileError(const tjs_char * msg, tTJSScriptBlock *block, tjs_int pos);
+void TJS_eTJSCompileError(const ttstr & msg, tTJSScriptBlock *block, tjs_int srcpos);
+void TJS_eTJSCompileError(const tjs_char * msg, tTJSScriptBlock *block, tjs_int srcpos);
 //---------------------------------------------------------------------------
 void TJSThrowFrom_tjs_error(tjs_error hr, const tjs_char *name = NULL);
 #define TJS_THROW_IF_ERROR(x) { \

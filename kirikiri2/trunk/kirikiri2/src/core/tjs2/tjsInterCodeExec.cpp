@@ -910,7 +910,7 @@ void tTJSInterCodeContext::DisplayExceptionGeneratedCode(tjs_int codepos,
 	tTJS *tjs = Block->GetTJS();
 	ttstr info(
 		TJS_W("==== An exception occured at ") +
-		TJSGetExceptionSourceString(this, Block, CodePosToSrcPos(codepos)) +
+		GetPositionDescriptionString(codepos) +
 		TJS_W(", VM ip = ") + ttstr(codepos) + TJS_W(" ===="));
 	tjs_int info_len = info.GetLen();
 
@@ -978,7 +978,7 @@ void tTJSInterCodeContext::ThrowScriptException(tTJSVariant &val,
 		msg = TJS_W("script exception");
 	}
 
-	TJS_eTJSScriptException(msg, this, block, srcpos, val);
+	TJS_eTJSScriptException(msg, this, srcpos, val);
 }
 //---------------------------------------------------------------------------
 tjs_int tTJSInterCodeContext::ExecuteCode(tTJSVariant *ra_org, tjs_int startip,
@@ -1386,44 +1386,44 @@ tjs_int tTJSInterCodeContext::ExecuteCode(tTJSVariant *ra_org, tjs_int startip,
 	}
 	catch(eTJSScriptException &e)
 	{
-		e.AddTrace(this, Block, CodePosToSrcPos(codesave-CodeArea));
+		e.AddTrace(this, codesave-CodeArea);
 		throw e;
 	}
 	catch(eTJSScriptError &e)
 	{
-		e.AddTrace(this, Block, CodePosToSrcPos(codesave-CodeArea));
+		e.AddTrace(this, codesave-CodeArea);
 		throw e;
 	}
 	catch(eTJS &e)
 	{
 		DisplayExceptionGeneratedCode(codesave - CodeArea, ra_org);
-		TJS_eTJSScriptError(e.GetMessage(), this, Block, CodePosToSrcPos(codesave-CodeArea));
+		TJS_eTJSScriptError(e.GetMessage(), this, codesave-CodeArea);
 	}
 	catch(exception &e)
 	{
 		DisplayExceptionGeneratedCode(codesave - CodeArea, ra_org);
-		TJS_eTJSScriptError(e.what(), this, Block, CodePosToSrcPos(codesave-CodeArea));
+		TJS_eTJSScriptError(e.what(), this, codesave-CodeArea);
 	}
 	catch(const wchar_t *text)
 	{
 		DisplayExceptionGeneratedCode(codesave - CodeArea, ra_org);
-		TJS_eTJSScriptError(text, this, Block, CodePosToSrcPos(codesave-CodeArea));
+		TJS_eTJSScriptError(text, this, codesave-CodeArea);
 	}
 	catch(const char *text)
 	{
 		DisplayExceptionGeneratedCode(codesave - CodeArea, ra_org);
-		TJS_eTJSScriptError(text, this, Block, CodePosToSrcPos(codesave-CodeArea));
+		TJS_eTJSScriptError(text, this, codesave-CodeArea);
 	}
 #ifdef TJS_SUPPORT_VCL
 	catch(const EAccessViolation &e)
 	{
 		DisplayExceptionGeneratedCode(codesave - CodeArea, ra_org);
-		TJS_eTJSScriptError(e.Message.c_str(), this, Block, CodePosToSrcPos(codesave-CodeArea));
+		TJS_eTJSScriptError(e.Message.c_str(), this, codesave-CodeArea);
 	}
 	catch(const Exception &e)
 	{
 		DisplayExceptionGeneratedCode(codesave - CodeArea, ra_org);
-		TJS_eTJSScriptError(e.Message.c_str(), this, Block, CodePosToSrcPos(codesave-CodeArea));
+		TJS_eTJSScriptError(e.Message.c_str(), this, codesave-CodeArea);
 	}
 #endif
 
