@@ -1530,6 +1530,36 @@ bool tTJSNI_Window::GetFocusable()
 	return Form->GetFocusable();
 }
 //---------------------------------------------------------------------------
+void tTJSNI_Window::SetZoom(tjs_int numer, tjs_int denom)
+{
+	if(!Form) return;
+	Form->SetZoom(numer, denom);
+}
+//---------------------------------------------------------------------------
+void tTJSNI_Window::SetZoomNumer(tjs_int n)
+{
+	if(!Form) return;
+	Form->SetZoomNumer(n);
+}
+//---------------------------------------------------------------------------
+tjs_int tTJSNI_Window::GetZoomNumer() const
+{
+	if(!Form) return 1;
+	return Form->GetZoomNumer();
+}
+//---------------------------------------------------------------------------
+void tTJSNI_Window::SetZoomDenom(tjs_int n)
+{
+	if(!Form) return;
+	Form->SetZoomDenom(n);
+}
+//---------------------------------------------------------------------------
+tjs_int tTJSNI_Window::GetZoomDenom() const
+{
+	if(!Form) return 1;
+	return Form->GetZoomDenom();
+}
+//---------------------------------------------------------------------------
 
 
 

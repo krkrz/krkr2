@@ -245,6 +245,12 @@ public:
 	void SetFocusable(bool b);
 	bool GetFocusable();
 
+	void SetZoom(tjs_int numer, tjs_int denom);
+	void SetZoomNumer(tjs_int n);
+	tjs_int GetZoomNumer() const;
+	void SetZoomDenom(tjs_int n);
+	tjs_int GetZoomDenom() const;
+
 protected:
 };
 //---------------------------------------------------------------------------

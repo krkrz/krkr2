@@ -94,6 +94,8 @@ class tTVPDirectDrawDoubleBuffer : public tTVPBaseDoubleBuffer
 	IDirectDrawSurface * Surface;
 	TPaintBox * Target;
 	IDirectDrawClipper * Clipper;
+	tjs_int BitmapWidth;
+	tjs_int BitmapHeight;
 
 public:
 	tTVPDirectDrawDoubleBuffer(tjs_int w, tjs_int h, TPaintBox *target);
@@ -230,7 +232,7 @@ private:	// ユーザー宣言
 
 	//-- TJS object related
 	tTJSNI_Window * TJSNativeInstance;
-	int LastMouseDownX, LastMouseDownY;
+	int LastMouseDownX, LastMouseDownY; // in Layer coodinates
 
 	//-- full screen managemant related
 	TPaintBox * PaintBox;
@@ -263,7 +265,7 @@ private:	// ユーザー宣言
 	tTVPImeMode DefaultImeMode;
 	bool MouseLeftButtonEmulatedPushed;
 	bool MouseRightButtonEmulatedPushed;
-	TPoint LastMouseMovedPos;
+	TPoint LastMouseMovedPos;  // in Layer coodinates
 
 	bool AttentionPointEnabled;
 	TPoint AttentionPoint;
@@ -285,9 +287,13 @@ private:
 	tjs_int LastMouseScreenX; // managed by RestoreMouseCursor
 	tjs_int LastMouseScreenY;
 
-	//-- layer position
+	//-- layer position / size
 	tjs_int LayerLeft;
 	tjs_int LayerTop;
+	tjs_int LayerWidth;
+	tjs_int LayerHeight;
+	tjs_int ZoomDenom; // Zooming factor denominator
+	tjs_int ZoomNumer; // Zooming factor numerator
 
 	//-- menu related
 	bool MenuBarVisible;
@@ -356,6 +362,8 @@ public:
 	void __fastcall DrawLayerImage(const tTVPRect &rect,
 		tTVPBaseBitmap *bmp, const tTVPRect &cliprect);
 
+private:
+	void __fastcall InternalSetPaintBoxSize();
 public:
 	void __fastcall SetPaintBoxSize(tjs_int w, tjs_int h);
 
@@ -372,6 +380,14 @@ public:
 	void __fastcall SetLayerTop(tjs_int top);
 	tjs_int __fastcall GetLayerTop() const { return LayerTop; }
 	void __fastcall SetLayerPosition(tjs_int left, tjs_int top);
+
+	void __fastcall SetZoom(tjs_int numer, tjs_int denom);
+	void __fastcall SetZoomNumer(tjs_int n)
+		{ SetZoom(n, ZoomDenom); }
+	tjs_int __fastcall GetZoomNumer() const { return ZoomNumer; }
+	void __fastcall SetZoomDenom(tjs_int d)
+		{ SetZoom(ZoomNumer, d); }
+	tjs_int __fastcall GetZoomDenom() const { return ZoomDenom; }
 
 	void __fastcall SetImeMode(tTVPImeMode mode);
 	void __fastcall SetDefaultImeMode(tTVPImeMode mode, bool reset);
