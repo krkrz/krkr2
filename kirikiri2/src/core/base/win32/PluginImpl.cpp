@@ -12,6 +12,8 @@
 #pragma hdrstop
 
 
+#include <algorithm>
+#include <functional>
 #include "ScriptMgnIntf.h"
 #include "PluginImpl.h"
 #include "StorageImpl.h"

@@ -1804,6 +1804,10 @@ void TTVPWindowForm::AcquireImeControl()
 			{
 				return TWinControl::SetImeCompositionWindow(Font, XPos, YPos);
 			}
+                        void __fastcall SetImeMode(TImeMode mode)
+                        {
+                                ImeMode = mode;
+                        }
 		};
 		if(TVPControlImeState)
 		{
@@ -1814,7 +1818,7 @@ void TTVPWindowForm::AcquireImeControl()
 			SetIme();
 
 			((TWinControlEx*)(PaintBox->Parent))->ResetIme();
-			PaintBox->Parent->ImeMode = LastSetImeMode;
+			((TWinControlEx*)(PaintBox->Parent))->SetImeMode(LastSetImeMode);
 			((TWinControlEx*)(PaintBox->Parent))->SetIme();
 		}
 
