@@ -8,15 +8,6 @@
 //---------------------------------------------------------------------------
 // System Initialization and Uninitialization
 //---------------------------------------------------------------------------
-// 2004/ 5/22 W.Dee
-//   '-about' command-line option added.
-//
-// 2004/ 5 /3 W.Dee          Added support for external TVP Options File (tof)
-// 2004/ 4 /9 W.Dee          Decreased graphic caehe hard limit bytes
-//                           (TVPGraphicCacheSystemLimit) to about its half.
-// 2004/ 2/10 W.Dee          Hardware exception report is improved.
-//                           The RTL needs to be updated (see below)
-//---------------------------------------------------------------------------
 #include "tjsCommHead.h"
 #pragma hdrstop
 
