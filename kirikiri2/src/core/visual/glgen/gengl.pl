@@ -5183,7 +5183,7 @@ $content = <<EOF;
 	d = dest[{ofs}];
 	alpha = d >> 24;
 	alpha_adj = alpha + (alpha >> 7);
-	recip = TVPRecipTable256[alpha];
+	recip = TVPRecipTable256_16[alpha];
 
 	/* B */
 	t = d & 0xff;
