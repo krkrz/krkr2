@@ -160,6 +160,42 @@ static TImeMode TVP_tTVPImeMode_To_TImeMode(tTVPImeMode mode)
 
 
 
+//---------------------------------------------------------------------------
+// TWinControlEx: proxy class for accessing TWinControl's protected methods
+//---------------------------------------------------------------------------
+class TWinControlEx : public TWinControl
+{
+public:
+	void __fastcall ResetIme(void);
+	void __fastcall SetIme(void);
+	bool __fastcall
+	SetImeCompositionWindow(Graphics::TFont* Font, int XPos, int YPos);
+	void __fastcall _SetImeMode(TImeMode mode);
+};
+void __fastcall TWinControlEx::ResetIme(void)
+{
+	TWinControl::ResetIme();
+}
+void __fastcall TWinControlEx::SetIme(void)
+{
+	TWinControl::SetIme();
+	if(SysLocale.FarEast && ImeMode == Controls::imDontCare)
+	Win32NLSEnableIME(Handle, TRUE);
+}
+bool __fastcall
+	TWinControlEx::SetImeCompositionWindow(Graphics::TFont* Font, int XPos, int YPos)
+{
+	return TWinControl::SetImeCompositionWindow(Font, XPos, YPos);
+}
+void __fastcall TWinControlEx::_SetImeMode(TImeMode mode)
+{
+	ImeMode = mode;
+}
+//---------------------------------------------------------------------------
+
+
+
+
 
 
 
@@ -1805,14 +1841,6 @@ void TTVPWindowForm::UnacquireImeControl()
 {
 	if(PaintBox)
 	{
-		class TWinControlEx : public TWinControl
-		{
-		public:
-			void __fastcall ResetIme(void)
-			{
-				TWinControl::ResetIme();
-			}
-		};
 		if(TVPControlImeState)
 		{
 			((TWinControlEx*)(PaintBox->Parent))->ResetIme();
@@ -1823,30 +1851,10 @@ void TTVPWindowForm::UnacquireImeControl()
 //---------------------------------------------------------------------------
 void TTVPWindowForm::AcquireImeControl()
 {
-	if(PaintBox)
+	if(PaintBox && Focused())
 	{
 		// force to access protected some methods.
 		// much nasty way ...
-		class TWinControlEx : public TWinControl
-		{
-		public:
-			void __fastcall ResetIme(void)
-			{
-				TWinControl::ResetIme();
-			}
-		public:
-			void __fastcall SetIme(void)
-			{
-				TWinControl::SetIme();
-				if(SysLocale.FarEast && ImeMode == Controls::imDontCare)
-					Win32NLSEnableIME(Handle, TRUE);
-			}
-			bool __fastcall
-				SetImeCompositionWindow(Graphics::TFont* Font, int XPos, int YPos)
-			{
-				return TWinControl::SetImeCompositionWindow(Font, XPos, YPos);
-			}
-		};
 		if(TVPControlImeState)
 		{
 			ResetIme();
@@ -1856,7 +1864,7 @@ void TTVPWindowForm::AcquireImeControl()
 			SetIme();
 
 			((TWinControlEx*)(PaintBox->Parent))->ResetIme();
-			PaintBox->Parent->ImeMode = LastSetImeMode;
+			((TWinControlEx*)(PaintBox->Parent))->_SetImeMode(LastSetImeMode);
 			((TWinControlEx*)(PaintBox->Parent))->SetIme();
 		}
 
@@ -2830,6 +2838,7 @@ void __fastcall TTVPWindowForm::WMEnable(TMessage &Msg)
 void __fastcall TTVPWindowForm::WMSetFocus(TWMSetFocus &Msg)
 {
 	::PostMessage(Handle, TVP_WM_ACQUIREIMECONTROL, 0, 0);
+
 	if(PaintBox)
 		CreateCaret(PaintBox->Parent->Handle, NULL, 1, 1);
 

@@ -43,6 +43,7 @@ class LinkButtonLayer extends ButtonLayer
 
 	function onMouseEnter()
 	{
+		parent.keyLink = linkNum;
 		if(!parent.selProcessLock && onenter !== void) Scripts.eval(onenter);
 		super.onMouseEnter(...);
 	}
@@ -2079,7 +2080,6 @@ class MessageLayer extends KAGLayer
 		{
 			highlightLink(lastLink, false);
 			lastLink = -1;
-			keyLink = -1;
 		}
 		super.onMouseLeave(...);
 	}
