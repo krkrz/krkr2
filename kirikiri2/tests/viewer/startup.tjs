@@ -57,12 +57,21 @@ class MyWindow extends Window
 			var start = System.getTickCount();
 			var dic = graphlayer.loadImages(file);
 			Debug.message((System.getTickCount() - start) + " ms");
+			graphlayer.type = ltAlpha;
 			if(dic)
 			{
 				var ar = [];
 				ar.assign(dic);
 				for(var i = 0; i < ar.count; i+= 2)
 					Debug.message(ar[i] + '=' + ar[i+1]);
+
+				switch(dic.mode)
+				{
+				case 'opaque':		graphlayer.type = ltOpaque;		break;
+				default:
+				case 'alpha':		graphlayer.type = ltAlpha;		break;
+				case 'addalpha':	graphlayer.type = ltAddAlpha;	break;
+				}
 			}
 		}
 		catch(e)
