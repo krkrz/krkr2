@@ -231,12 +231,12 @@ void tTJSDictionaryNI::Clear()
 	Owner->Clear();
 }
 //---------------------------------------------------------------------------
-bool tTJSDictionaryNI::EnumMemberCallback(const tjs_char *name, tjs_uint32 hint,
+bool tTJSDictionaryNI::EnumMemberCallback(tTJSVariantString *name,
 	const tTJSVariant & value)
 {
 	// called from tTJSCustomObject::EnumMembers
 
-	Owner->PropSet(TJS_MEMBERENSURE|TJS_IGNOREPROP, name, &hint, &value, Owner);
+	Owner->PropSetByVS(TJS_MEMBERENSURE|TJS_IGNOREPROP, name, &value, Owner);
 
 	return true;
 }
@@ -269,7 +269,7 @@ void tTJSDictionaryNI::SaveStructuredData(std::vector<iTJSDispatch2 *> &stack,
 }
 //---------------------------------------------------------------------------
 bool tTJSDictionaryNI::tSaveStructCallback::EnumMemberCallback(
-	const tjs_char *name, tjs_uint32 hint, const tTJSVariant & value)
+	tTJSVariantString *name, const tTJSVariant & value)
 {
 	// called indirectly from tTJSDictionaryNI::SaveStructuredData
 
@@ -338,7 +338,7 @@ void tTJSDictionaryNI::AssignStructure(iTJSDispatch2 * dsp,
 }
 //---------------------------------------------------------------------------
 bool tTJSDictionaryNI::tAssignStructCallback::EnumMemberCallback(
-	const tjs_char *name, tjs_uint32 hint, const tTJSVariant & value)
+	tTJSVariantString *name, const tTJSVariant & value)
 {
 	tTJSVariantType type = value.Type();
 	if(type == tvtObject)
@@ -423,12 +423,12 @@ bool tTJSDictionaryNI::tAssignStructCallback::EnumMemberCallback(
 			val = value;
 		}
 
-		Dest->PropSet(TJS_MEMBERENSURE|TJS_IGNOREPROP, name, &hint, &val, Dest);
+		Dest->PropSetByVS(TJS_MEMBERENSURE|TJS_IGNOREPROP, name, &val, Dest);
 	}
 	else
 	{
 		// other types
-		Dest->PropSet(TJS_MEMBERENSURE|TJS_IGNOREPROP, name, &hint, &value, Dest);
+		Dest->PropSetByVS(TJS_MEMBERENSURE|TJS_IGNOREPROP, name, &value, Dest);
 	}
 
 	return true;

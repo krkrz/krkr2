@@ -184,8 +184,10 @@ public:
 		iTJSDispatch2 *objthis
 		);
 
+
 	tjs_error TJS_INTF_METHOD
-	Reserved1()
+	PropSetByVS(tjs_uint32 flag, tTJSVariantString *membername,
+		const tTJSVariant *param, iTJSDispatch2 *objthis)
 	{
 		return TJS_E_NOTIMPL;
 	}
@@ -356,18 +358,14 @@ public:
 // tTJSCustomObject
 //---------------------------------------------------------------------------
 
-#define TJS_NAMESPACE_SHORT_NAME 18
-
-#define TJS_NAMESPACE_DEFAULT_HASH_BITS 6
+#define TJS_NAMESPACE_DEFAULT_HASH_BITS 3
 
 extern tjs_int TJSObjectHashBitsLimit;
 	// this limits hash table size
 
 
-
 #define TJS_SYMBOL_USING	0x1
 #define TJS_SYMBOL_INIT     0x2
-#define TJS_SYMBOL_LONG     0x4
 #define TJS_SYMBOL_HIDDEN   0x8
 
 #define TJS_MAX_NATIVE_CLASS 4
@@ -380,7 +378,7 @@ extern tjs_int TJSObjectHashBitsLimit;
 class tTJSEnumMemberCallbackIntf
 {
 public:
-	virtual bool EnumMemberCallback(const tjs_char *name, tjs_uint32 hint,
+	virtual bool EnumMemberCallback(tTJSVariantString *name,
 		const tTJSVariant & value) = 0;
 	// called per each members.
 	// if the function returns false, enumeration is to be interrupted.
@@ -396,24 +394,18 @@ class tTJSCustomObject : public tTJSDispatch
 public:
 	struct tTJSSymbolData
 	{
+		tTJSVariantString *Name; // name
 		tjs_uint32 Hash; // hash code of the name
 		tjs_uint32 SymFlags; // management flags
+		tjs_uint32 Flags;  // flags
 
 		tTJSVariant_S Value; // the value
 			/*
 				TTJSVariant_S must work with construction that fills
 					all member to zero.
 			*/
-		tjs_uint32 Flags;  // flags
-
-		union
-		{
-			tjs_char ShortName[TJS_NAMESPACE_SHORT_NAME];
-			tjs_char *LongName;
-		};
 
 		tTJSSymbolData * Next; // next chain
-
 
 		void SelfClear(void)
 		{
@@ -423,21 +415,10 @@ public:
 
 		void _SetName(const tjs_char * name)
 		{
-			if(SymFlags & TJS_SYMBOL_LONG)
-				delete [] LongName, SymFlags &= ~TJS_SYMBOL_LONG;
-			if(!name) TJS_eTJSError(TJSIDExpected);       ///
-			size_t len = TJS_strlen(name);
-			if(len==0) TJS_eTJSError(TJSIDExpected);      ///
-			if(len >= TJS_NAMESPACE_SHORT_NAME -1)
-			{
-				LongName = new tjs_char[len+1];
-				TJS_strcpy(LongName, name);
-				SymFlags |= TJS_SYMBOL_LONG;
-			}
-			else
-			{
-				wcscpy(ShortName, name);
-			}
+			if(Name) Name->Release(), Name = NULL;
+			if(!name) TJS_eTJSError(TJSIDExpected);
+			if(!name[0]) TJS_eTJSError(TJSIDExpected);
+			Name = TJSAllocVariantString(name);
 		}
 
 		void SetName(const tjs_char * name, tjs_uint32 hash)
@@ -446,18 +427,28 @@ public:
 			Hash = hash;
 		}
 
+		void _SetName(tTJSVariantString *name)
+		{
+			if(name == Name) return;
+			if(Name) Name->Release();
+			Name = name;
+			if(Name) Name->AddRef();
+		}
+
+		void SetName(tTJSVariantString *name, tjs_uint32 hash)
+		{
+			_SetName(name);
+			Hash = hash;
+		}
+
 		const tjs_char * GetName() const
 		{
-			if(SymFlags & TJS_SYMBOL_LONG)
-				return LongName;
-			else
-				return ShortName;
+			return (const tjs_char *)(*Name);
 		}
 
 		void PostClear()
 		{
-			if(SymFlags & TJS_SYMBOL_LONG)
-				delete [] LongName, SymFlags &= ~TJS_SYMBOL_LONG;
+			if(Name) Name->Release(), Name = NULL;
 			((tTJSVariant*)(&Value))->~tTJSVariant();
 			memset(&Value, 0, sizeof(Value));
 			SymFlags &= ~TJS_SYMBOL_USING;
@@ -465,23 +456,11 @@ public:
 
 		void Destory()
 		{
-			if(SymFlags & TJS_SYMBOL_LONG)
-				delete [] LongName, SymFlags &= ~TJS_SYMBOL_LONG;
+			if(Name) Name->Release();
 			((tTJSVariant*)(&Value))->~tTJSVariant();
 		}
 
-		static std::vector<tTJSSymbolData*> * SymbolHeap;
-		static tTJSSymbolData ** SymbolFreeBlocks;
-		static tjs_uint SymbolAllocatableBlockCount;
-		static tjs_uint SymbolFreeCount;
-		static tjs_uint SymbolFreeReadPoint;
-		static tjs_uint SymbolFreeWritePoint;
-
-		static void AddSymbolHeap();
-		static void UninitSymbolHeaps();
-
-		static tTJSSymbolData * AllocateSymbol();
-		static void DeallocateSymbol(tTJSSymbolData *);
+		void ReShare();
 	};
 
 
@@ -540,7 +519,10 @@ private:
 		// Adds the symbol, returns the newly created data;
 		// if already exists, returns the data.
 
-	tTJSSymbolData * AddTo(const tjs_char * name,
+	tTJSSymbolData * Add(tTJSVariantString * name);
+		// tTJSVariantString version of above.
+
+	tTJSSymbolData * AddTo(tTJSVariantString *name,
 		tTJSSymbolData *newdata, tjs_int newhashmask);
 		// Adds member to the new hash space, used in RebuildHash
 
@@ -589,6 +571,10 @@ public:
 	 iTJSDispatch2 *objthis);
 
 	tjs_error TJS_INTF_METHOD
+	PropSetByVS(tjs_uint32 flag, tTJSVariantString *membername,
+		const tTJSVariant *param, iTJSDispatch2 *objthis);
+
+	tjs_error TJS_INTF_METHOD
 	DeleteMember(tjs_uint32 flag, const tjs_char *membername, tjs_uint32 *hint,
 	 iTJSDispatch2 *objthis);
 
@@ -604,10 +590,7 @@ public:
 	CreateNew(tjs_uint32 flag, const tjs_char * membername, tjs_uint32 *hint,
 	 iTJSDispatch2 **result,
 		tjs_int numparams, tTJSVariant **param,	iTJSDispatch2 *objthis);
-/*
-	tjs_error TJS_INTF_METHOD
-	GetSuperClass(tjs_uint32 flag, iTJSDispatch2 **result, iTJSDispatch2 *objthis);
-*/
+
 	tjs_error TJS_INTF_METHOD
 	IsInstanceOf(tjs_uint32 flag, const tjs_char *membername, tjs_uint32 *hint,
 	 const tjs_char *classname,

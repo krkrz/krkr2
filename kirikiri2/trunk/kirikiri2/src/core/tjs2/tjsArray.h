@@ -95,7 +95,7 @@ public:
 	void Assign(iTJSDispatch2 *dsp);
 
 private:
-	bool EnumMemberCallback(const tjs_char *name, tjs_uint32 hint,
+	bool EnumMemberCallback(tTJSVariantString *name,
 		const tTJSVariant & value);
 		// method from tTJSEnumMemberCallbackIntf
 public:
@@ -185,13 +185,10 @@ public:
 	GetCount
 	GetCountByNum
 */
+	tjs_error TJS_INTF_METHOD
+	PropSetByVS(tjs_uint32 flag, tTJSVariantString *membername,
+		const tTJSVariant *param, iTJSDispatch2 *objthis);
 /*
-	tjs_error
-	Reserved1() // reserved; must return TJS_E_NOTIMPL
-	{
-		return TJS_E_NOTIMPL;
-	}
-
 	tjs_error
 	Reserved2() // reserved; must return TJS_E_NOTIMPL
 	{

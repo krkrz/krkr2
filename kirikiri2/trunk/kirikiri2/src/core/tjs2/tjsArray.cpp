@@ -927,12 +927,12 @@ void tTJSArrayNI::Assign(iTJSDispatch2 * dsp)
 	}
 }
 //---------------------------------------------------------------------------
-bool tTJSArrayNI::EnumMemberCallback(const tjs_char *name, tjs_uint32 hint,
+bool tTJSArrayNI::EnumMemberCallback(tTJSVariantString *name,
 	const tTJSVariant & value)
 {
 	// called from tTJSCustomObject::EnumMembers
 
-	Items.push_back(name);
+	Items.push_back(ttstr(name));
 	Items.push_back(value);
 
 	return true;
@@ -1419,6 +1419,16 @@ tjs_error TJS_INTF_METHOD
 	}
 	CheckObjectClosureAdd(ni->Items[num]);
 	return hr;
+}
+//---------------------------------------------------------------------------
+tjs_error TJS_INTF_METHOD
+	tTJSArrayObject::PropSetByVS(tjs_uint32 flag, tTJSVariantString *membername,
+		const tTJSVariant *param, iTJSDispatch2 *objthis)
+{
+	tjs_int idx;
+	if(membername && IsNumber((const tjs_char*)(*membername), idx))
+		return PropSetByNum(flag, idx, param, objthis);
+	return inherited::PropSetByVS(flag, membername, param, objthis);
 }
 //---------------------------------------------------------------------------
 tjs_error TJS_INTF_METHOD
