@@ -609,11 +609,17 @@ private:
 
 	tjs_uint CacheEnabledCount;
 
+	bool Cached;  // script-controlled cached state
+
 public:
 	bool GetCacheEnabled() const { return CacheEnabledCount!=0; }
 
+
 	tjs_uint IncCacheEnabledCount();
 	tjs_uint DecCacheEnabledCount();
+
+	void SetCached(bool b);
+	bool GetCached() const { return Cached; }
 
 	//--------------------------------------------- drawing function stuff --
 private:
