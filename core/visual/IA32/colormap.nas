@@ -4,6 +4,8 @@
 
 ; constant color alpha mapping
 
+%ifndef		GEN_CODE
+
 %include		"nasm.nah"
 
 
@@ -14,10 +16,47 @@ globaldef		TVPApplyColorMap65_d_emmx_a
 externdef		TVPNegativeMulTable65
 externdef		TVPOpacityOnOpacityTable65
 
-		segment_code
+%define		GEN_CODE
+
+
+;--------------------------------------------------------------------
+; MMX stuff
+;--------------------------------------------------------------------
+;;[function_replace_by TVPCPUType & TVP_CPU_HAS_MMX] TVPApplyColorMap65
+;;void, TVPApplyColorMap65_mmx_a, (tjs_uint32 *dest, const tjs_uint8 *src, tjs_int len, tjs_uint32 color)
+%define TVPApplyColorMap65_name TVPApplyColorMap65_mmx_a
+;--------------------------------------------------------------------
+;;[function_replace_by TVPCPUType & TVP_CPU_HAS_MMX] TVPApplyColorMap65_d
+;;void, TVPApplyColorMap65_d_mmx_a, (tjs_uint32 *dest, const tjs_uint8 *src, tjs_int len, tjs_uint32 color)
+%define TVPApplyColorMap65_d_name TVPApplyColorMap65_d_mmx_a
+;--------------------------------------------------------------------
+	%include "colormap.nas"
 ;--------------------------------------------------------------------
 
-%imacro		TVPApplyColorMap65_proto 1
+;--------------------------------------------------------------------
+; EMMX stuff
+;--------------------------------------------------------------------
+%define USE_EMMX
+;--------------------------------------------------------------------
+;;[function_replace_by TVPCPUType & TVP_CPU_HAS_EMMX && TVPCPUType & TVP_CPU_HAS_MMX] TVPApplyColorMap65
+;;void, TVPApplyColorMap65_emmx_a, (tjs_uint32 *dest, const tjs_uint8 *src, tjs_int len, tjs_uint32 color)
+%define TVPApplyColorMap65_name TVPApplyColorMap65_emmx_a
+;--------------------------------------------------------------------
+;;[function_replace_by TVPCPUType & TVP_CPU_HAS_EMMX && TVPCPUType & TVP_CPU_HAS_MMX] TVPApplyColorMap65_d
+;;void, TVPApplyColorMap65_d_emmx_a, (tjs_uint32 *dest, const tjs_uint8 *src, tjs_int len, tjs_uint32 color)
+%define TVPApplyColorMap65_d_name TVPApplyColorMap65_d_emmx_a
+;--------------------------------------------------------------------
+	%include "colormap.nas"
+;--------------------------------------------------------------------
+
+
+%else
+
+;--------------------------------------------------------------------
+		segment_code
+;--------------------------------------------------------------------
+		function_align
+TVPApplyColorMap65_name:
 		push		edi
 		push		esi
 		push		ebx
@@ -59,8 +98,9 @@ externdef		TVPOpacityOnOpacityTable65
 		loop_align
 .ploop:
 		movzx		eax,	word [ebp]		; opacity
-		%1
-
+%ifdef	USE_EMMX
+		prefetcht0	[ebp + 8]
+%endif
 		cmp			eax,	0ffffh
 		je			.pcopa					; completely opaque
 		cmp			eax,	byte 0
@@ -134,24 +174,12 @@ externdef		TVPOpacityOnOpacityTable65
 		pop			edi
 		emms
 		ret
-%endmacro
 
 
-;;[function_replace_by TVPCPUType & TVP_CPU_HAS_MMX] TVPApplyColorMap65
-;;void, TVPApplyColorMap65_mmx_a, (tjs_uint32 *dest, const tjs_uint8 *src, tjs_int len, tjs_uint32 color)
-		function_align
-TVPApplyColorMap65_mmx_a:					; constant color alpha mapping blender
-		TVPApplyColorMap65_proto		.dummy:
-
-;;[function_replace_by TVPCPUType & TVP_CPU_HAS_EMMX && TVPCPUType & TVP_CPU_HAS_MMX] TVPApplyColorMap65
-;;void, TVPApplyColorMap65_emmx_a, (tjs_uint32 *dest, const tjs_uint8 *src, tjs_int len, tjs_uint32 color)
-		function_align
-TVPApplyColorMap65_emmx_a:					; constant color alpha mapping blender
-		TVPApplyColorMap65_proto		prefetcht0	[ebp + 8]
 
 ;--------------------------------------------------------------------
-
-%macro	TVPApplyColorMap65_d_proto 1
+		function_align
+TVPApplyColorMap65_d_name:
 		push		edi
 		push		esi
 		push		ebx
@@ -195,8 +223,9 @@ TVPApplyColorMap65_emmx_a:					; constant color alpha mapping blender
 		loop_align
 .ploop:
 		movzx		eax,	word [ebp]		; opacity
-		%1
-
+%ifdef	USE_EMMX
+		prefetcht0	[ebp + 8]
+%endif
 		cmp			eax,	0ffffh
 		je			.pcopa					; completely opaque
 		cmp			eax,	byte 0
@@ -304,17 +333,7 @@ TVPApplyColorMap65_emmx_a:					; constant color alpha mapping blender
 		pop			edi
 		emms
 		ret
-%endmacro
+;--------------------------------------------------------------------
 
-;;[function_replace_by TVPCPUType & TVP_CPU_HAS_MMX] TVPApplyColorMap65_d
-;;void, TVPApplyColorMap65_d_mmx_a, (tjs_uint32 *dest, const tjs_uint8 *src, tjs_int len, tjs_uint32 color)
-		function_align
-TVPApplyColorMap65_d_mmx_a:			; constant color alpha mapping blender with destination alpha
-		TVPApplyColorMap65_d_proto		.dummy:
 
-;;[function_replace_by TVPCPUType & TVP_CPU_HAS_EMMX && TVPCPUType & TVP_CPU_HAS_MMX] TVPApplyColorMap65_d
-;;void, TVPApplyColorMap65_d_emmx_a, (tjs_uint32 *dest, const tjs_uint8 *src, tjs_int len, tjs_uint32 color)
-		function_align
-TVPApplyColorMap65_d_emmx_a:			; constant color alpha mapping blender with destination alpha
-		TVPApplyColorMap65_d_proto		prefetcht0	[ebp + 8]
-
+%endif
