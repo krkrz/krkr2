@@ -13,7 +13,7 @@
 #ifndef __KRMOVIE_H__
 #define __KRMOVIE_H__
 
-#define TVP_KRMOVIE_VER   0x00010004
+#define TVP_KRMOVIE_VER   0x00010005
 
 
 //---------------------------------------------------------------------------
