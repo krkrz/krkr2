@@ -1,54 +1,3 @@
-Index: vorbis/include/vorbis/codec.h
-===================================================================
---- vorbis/include/vorbis/codec.h	(revision 7879)
-+++ vorbis/include/vorbis/codec.h	(working copy)
-@@ -25,6 +25,8 @@
- 
- #include <ogg/ogg.h>
- 
-+#pragma pack(push, 4)
-+
- typedef struct vorbis_info{
-   int version;
-   int channels;
-@@ -232,6 +234,8 @@
- #define OV_EBADLINK   -137
- #define OV_ENOSEEK    -138
- 
-+#pragma pack(pop)
-+
- #ifdef __cplusplus
- }
- #endif /* __cplusplus */
-Index: vorbis/include/vorbis/vorbisfile.h
-===================================================================
---- vorbis/include/vorbis/vorbisfile.h	(revision 7879)
-+++ vorbis/include/vorbis/vorbisfile.h	(working copy)
-@@ -36,11 +36,12 @@
-  * the right values. For seek_func(), you *MUST* return -1 if the stream is
-  * unseekable
-  */
-+#pragma pack(push, 4)
- typedef struct {
--  size_t (*read_func)  (void *ptr, size_t size, size_t nmemb, void *datasource);
--  int    (*seek_func)  (void *datasource, ogg_int64_t offset, int whence);
--  int    (*close_func) (void *datasource);
--  long   (*tell_func)  (void *datasource);
-+  size_t (_cdecl* read_func)  (void *ptr, size_t size, size_t nmemb, void *datasource);
-+  int    (_cdecl* seek_func)  (void *datasource, ogg_int64_t offset, int whence);
-+  int    (_cdecl* close_func) (void *datasource);
-+  long   (_cdecl* tell_func)  (void *datasource);
- } ov_callbacks;
- 
- #define  NOTOPEN   0
-@@ -85,6 +86,7 @@
-   ov_callbacks callbacks;
- 
- } OggVorbis_File;
-+#pragma pack(pop)
- 
- extern int ov_clear(OggVorbis_File *vf);
- extern int ov_open(FILE *f,OggVorbis_File *vf,char *initial,long ibytes);
 Index: vorbis/lib/lsp.c
 ===================================================================
 --- vorbis/lib/lsp.c	(revision 7879)
@@ -522,7 +471,14 @@ Index: vorbis/lib/mapping0.c
 +	{
 +		int lim = n/2;
 +		int j;
-+
+ 
+-      if(mag>0)
+-	if(ang>0){
+-	  pcmM[j]=mag;
+-	  pcmA[j]=mag-ang;
+-	}else{
+-	  pcmA[j]=mag;
+-	  pcmM[j]=mag+ang;
 +		lim -= 3;
 +
 +		j = channel_coupling_sse(pcmM, pcmA, lim);
@@ -541,7 +497,14 @@ Index: vorbis/lib/mapping0.c
 +				pcmA[j]=mag;
 +			}
 +		}
-+	}
+ 	}
+-      else
+-	if(ang>0){
+-	  pcmM[j]=mag;
+-	  pcmA[j]=mag+ang;
+-	}else{
+-	  pcmA[j]=mag;
+-	  pcmM[j]=mag-ang;
 +	else if(CPU_3DN)
 +	{
 +		int lim = n/2;
@@ -565,7 +528,8 @@ Index: vorbis/lib/mapping0.c
 +				pcmA[j]=mag;
 +			}
 +		}
-+	}
+ 	}
+-    }
 +	else if(1)
 +	{
 +		int lim = n/2;
@@ -625,14 +589,7 @@ Index: vorbis/lib/mapping0.c
 +			
 +			float mag=pcmM[j];
 +		  float ang=pcmA[j];
- 
--      if(mag>0)
--	if(ang>0){
--	  pcmM[j]=mag;
--	  pcmA[j]=mag-ang;
--	}else{
--	  pcmA[j]=mag;
--	  pcmM[j]=mag+ang;
++
 +		  if(mag>0)
 +		if(ang>0){
 +		  pcmM[j]=mag;
@@ -651,16 +608,7 @@ Index: vorbis/lib/mapping0.c
 +		}
 +		}
 +*/
- 	}
--      else
--	if(ang>0){
--	  pcmM[j]=mag;
--	  pcmA[j]=mag+ang;
--	}else{
--	  pcmA[j]=mag;
--	  pcmM[j]=mag-ang;
--	}
--    }
++	}
    }
  
    /* compute and apply spectral envelope */
@@ -677,11 +625,10 @@ Index: vorbis/lib/codebook.c
  
   ********************************************************************/
  
-@@ -289,6 +289,40 @@
-     a[k]=(book->valuelist+best*dim)[k];
+@@ -290,6 +290,40 @@
    return(vorbis_book_encode(book,best,b));
  }
-+
+ 
 +/* oggpack_look and oggpack_adv: copied from bitwise.c to do inline */
 +STIN long oggpack_look(oggpack_buffer *b,int bits){
 +  unsigned long ret;
@@ -715,10 +662,11 @@ Index: vorbis/lib/codebook.c
 +  b->endbyte+=bits>>3;
 +  b->endbit=bits&7;
 +}
- 
++
  /* the 'eliminate the decode tree' optimization actually requires the
     codewords to be MSb first, not LSb.  This is an annoying inelegancy
-@@ -297,61 +331,94 @@
+    (and one of the first places where carefully thought out design
+@@ -297,15 +331,43 @@
     to an MSb bitpacker), but not actually the huge hit it appears to
     be.  The first-stage decode table catches most words so that
     bitreverse is not in the main execution path. */
@@ -731,10 +679,9 @@ Index: vorbis/lib/codebook.c
    x=    ((x>> 4)&0x0f0f0f0f) | ((x<< 4)&0xf0f0f0f0);
    x=    ((x>> 2)&0x33333333) | ((x<< 2)&0xcccccccc);
    return((x>> 1)&0x55555555) | ((x<< 1)&0xaaaaaaaa);
--}
-+}
+ }
 +*/
-+
+ 
 +STIN ogg_uint32_t bitreverse(ogg_uint32_t x){
 +	_asm
 +	{
@@ -762,103 +709,45 @@ Index: vorbis/lib/codebook.c
 +}
 +
 +
-+STIN long decode_packed_entry_number(codebook *book, oggpack_buffer *b){
-+  int  read=book->dec_maxlength;
-+  long lo,hi;
-+  long lok = oggpack_look(b,book->dec_firsttablen);
-+ 
-+  if (lok >= 0) {
-+    long entry = book->dec_firsttable[lok];
-+    if(entry&0x80000000UL){
-+      lo=(entry>>15)&0x7fff;
-+      hi=book->used_entries-(entry&0x7fff);
-+    }else{
-+      oggpack_adv(b, book->dec_codelengths[entry-1]);
-+      return(entry-1);
-+    }
-+  }else{
-+    lo=0;
-+    hi=book->used_entries;
-+  }
-+
-+
+ STIN long decode_packed_entry_number(codebook *book, oggpack_buffer *b){
+   int  read=book->dec_maxlength;
+   long lo,hi;
+@@ -325,21 +387,25 @@
+     hi=book->used_entries;
+   }
+ 
+-  lok = oggpack_look(b, read);
+ 
+-  while(lok<0 && read>1)
+-    lok = oggpack_look(b, --read);
 +  do{
 +    lok = oggpack_look(b, read--);
 +  }while(lok<0 && read>0);
 +
-+  if(lok<0)return -1;
-+
+   if(lok<0)return -1;
+ 
 +  read ++;
 +
-+  /* bisect search for the codeword in the ordered list */
+   /* bisect search for the codeword in the ordered list */
 +  
-+  {
-+    ogg_uint32_t testword=bitreverse((ogg_uint32_t)lok);
-+
-+    while(hi-lo>1){
-+      long p=(hi-lo)>>1;
+   {
+     ogg_uint32_t testword=bitreverse((ogg_uint32_t)lok);
+ 
+     while(hi-lo>1){
+       long p=(hi-lo)>>1;
+-      long test=book->codelist[lo+p]>testword;    
 +      long test=book->codelist[lo+p]>testword; 
 +      hi-=p&(-test);
-+      lo+=p&(test-1);
-+    }
-+
-+    if(book->dec_codelengths[lo]<=read){
-+      oggpack_adv(b, book->dec_codelengths[lo]);
-+      return(lo);
-+    }
-+  }
-+  
-+  oggpack_adv(b, read);
-+  return(-1);
-+}
-+
- 
--STIN long decode_packed_entry_number(codebook *book, oggpack_buffer *b){
--  int  read=book->dec_maxlength;
--  long lo,hi;
--  long lok = oggpack_look(b,book->dec_firsttablen);
-- 
--  if (lok >= 0) {
--    long entry = book->dec_firsttable[lok];
--    if(entry&0x80000000UL){
--      lo=(entry>>15)&0x7fff;
--      hi=book->used_entries-(entry&0x7fff);
--    }else{
--      oggpack_adv(b, book->dec_codelengths[entry-1]);
--      return(entry-1);
--    }
--  }else{
--    lo=0;
--    hi=book->used_entries;
--  }
--
--  lok = oggpack_look(b, read);
--
--  while(lok<0 && read>1)
--    lok = oggpack_look(b, --read);
--  if(lok<0)return -1;
--
--  /* bisect search for the codeword in the ordered list */
--  {
--    ogg_uint32_t testword=bitreverse((ogg_uint32_t)lok);
--
--    while(hi-lo>1){
--      long p=(hi-lo)>>1;
--      long test=book->codelist[lo+p]>testword;    
--      lo+=p&(test-1);
+       lo+=p&(test-1);
 -      hi-=p&(-test);
--    }
--
--    if(book->dec_codelengths[lo]<=read){
--      oggpack_adv(b, book->dec_codelengths[lo]);
--      return(lo);
--    }
--  }
--  
--  oggpack_adv(b, read);
--  return(-1);
--}
--
+     }
+ 
+     if(book->dec_codelengths[lo]<=read){
+@@ -352,6 +418,7 @@
+   return(-1);
+ }
+ 
++
  /* Decode side is specced and easier, because we don't need to find
     matches using different criteria; we simply read and map.  There are
     two things we need to do 'depending':
@@ -1502,7 +1391,7 @@ Index: vorbis/lib/mdct.c
    int i;
    int n2=n>>1;
    int log2n=lookup->log2n=rint(log((float)n)/log(2.f));
-@@ -90,169 +100,921 @@
+@@ -90,169 +100,903 @@
    lookup->scale=FLOAT_CONV(4.f/n);
  }
  
@@ -1690,32 +1579,59 @@ Index: vorbis/lib/mdct.c
 +
 +	addps		xmm0,	xmm1						// a
 +	addps		xmm4,	xmm5						// b
-+	movaps		[eax + 32],	xmm0					// a store x11 x10 x9 x8
-+	movaps		[eax + 48],	xmm4					// b store x15 x14 x13 x12
 +
 +	movaps		xmm7,	xmm6						// b xmm7 =	d		c		b		a
 +	movaps		xmm3,	xmm2						// a xmm3 =	d		-c		b		a
-+	movaps		xmm4,	xmm6						// b xmm4 =	d		c		b		a
-+
++	movaps		xmm1,	xmm6						// b xmm1 =	d		c		b		a
 +
 +	shufps		xmm3,	xmm3,	2*64+3*16+1*4+1		// a xmm3 =	-c		d		b		b
 +	shufps		xmm7,	xmm7,	3*64+2*16+0*4+0		// b xmm7 =	d		c		a		a
 +	shufps		xmm2,	xmm2,	2*64+3*16+0*4+0		// a xmm2 =	-c		d		a		a
-+	shufps		xmm4,	xmm4,	3*64+2*16+1*4+1		// b xmm4 =	d		c		b		b
++	shufps		xmm1,	xmm1,	3*64+2*16+1*4+1		// b xmm1 =	d		c		b		b
 +	xorps		xmm2,	neg_0						// a xmm2 =	-c		d		a		-a
-+	xorps		xmm4,	neg_0						// b xmm4 =	d		c		b		-b
-+	xorps		xmm0,	xmm0						// a xmm0 =	0		0		0		0
++	xorps		xmm1,	neg_0						// b xmm1 =	d		c		b		-b
 +	xorps		xmm6,	xmm6						// b xmm6 =	0		0		0		0
-+	movhps		xmm2,	xmm0						// a xmm2 =	0		0		a		-a
-+	movhps		xmm4,	xmm6						// b xmm4 =	0		0		b		-b
++	movhps		xmm2,	xmm6						// a xmm2 =	0		0		a		-a
++	movhps		xmm1,	xmm6						// b xmm1 =	0		0		b		-b
 +
 +	subps		xmm3,	xmm2						// a xmm3 =	-c		d		b-a		b+a
-+	addps		xmm7,	xmm4						// b xmm7 = d		c		a+b		a-b
++	addps		xmm7,	xmm1						// b xmm7 = d		c		a+b		a-b
 +	mulps		xmm3,	packed_cPI2_8_inv			// a xmm3 =	c		d		(b-a)*C	(b+a)*C
 +	mulps		xmm7,	packed_cPI2_8				// b xmm7 =	d		c		(a+b)*C	(a-b)*C
 +
-+	movaps		[eax],	xmm3						// a store x3 x2 x1 x0
-+	movaps		[eax + 16],	xmm7					// b store x7 x6 x5 x4
++	movaps		xmm2,	xmm7						// a xmm2 =	x7		x6		x5		x4
++	movaps		xmm6,	xmm4						// b xmm5 =	x7		x6		x5		x4
++	addps		xmm2,	xmm3						// a xmm2 =	d		c		b		a
++	addps		xmm6,	xmm0						// b xmm6 =	d		c		b		a
++
++	subps		xmm7,	xmm3						// a xmm7 =	h		g		f		e
++	subps		xmm4,	xmm0						// b xmm4 =	h		g		f		e
++
++	movaps		xmm1,	xmm7						// a xmm1 =	h		g		f		e
++	movaps		xmm5,	xmm4						// b xmm5 =	h		g		f		e
++	shufps		xmm1,	xmm1,	3*64+2*16+3*4+2		// a xmm1 =	h		g		h		g
++	shufps		xmm5,	xmm5,	3*64+2*16+3*4+2		// b xmm5 =	h		g		h		g
++	shufps		xmm7,	xmm7,	0*64+1*16+0*4+1		// a xmm7 =	e		f		e		f
++	shufps		xmm4,	xmm4,	0*64+1*16+0*4+1		// b xmm4 =	e		f		e		f
++	xorps		xmm7,	neg_1_2						// a xmm7 =	e		-f		-e		f
++	xorps		xmm4,	neg_1_2						// b xmm4 =	e		-f		-e		f
++	addps		xmm7,	xmm1						// a xmm7 =	h+e		g-f		h-e		g+f
++	addps		xmm4,	xmm5						// b xmm4 =	h+e		g-f		h-e		g+f
++	movaps		[eax],	xmm7						// a store x[3] x[2] x[1] x[0]
++	movaps		[eax + 32],	xmm4					// b store x[3] x[2] x[1] x[0]
++
++	movaps		xmm1,	xmm2						// a xmm1 =	d		c		b		a
++	movaps		xmm5,	xmm6						// b xmm5 =	d		c		b		a
++	shufps		xmm1,	xmm1,	3*64+2*16+3*4+2		// a xmm1 =	d		c		d		c
++	shufps		xmm5,	xmm5,	3*64+2*16+3*4+2		// b xmm5 =	d		c		d		c
++	shufps		xmm2,	xmm2,	1*64+0*16+1*4+0		// a xmm2 =	b		a		b		a
++	shufps		xmm6,	xmm6,	1*64+0*16+1*4+0		// b xmm6 =	b		a		b		a
++	xorps		xmm2,	neg_0_1						// a xmm2 =	b		a		-b		-a
++	xorps		xmm6,	neg_0_1						// b xmm6 =	b		a		-b		-a
++	addps		xmm2,	xmm1						// a xmm2 =	d+b		c+a		d-b		c-a
++	addps		xmm6,	xmm5						// b xmm6 =	d+b		c+a		d-b		c-a
++	movaps		[eax + 16],	xmm2					// a store x[7] x[6] x[5] x[4]
++	movaps		[eax + 16 + 32],	xmm6			// b store x[7] x[6] x[5] x[4]
  }
 +/*
 + REG_TYPE a,b,c,d;
@@ -1754,9 +1670,6 @@ Index: vorbis/lib/mdct.c
 +x[6]   = c;
 +x[7]   = d;
 +*/
-+_asm
-+{
-+	mov			eax,	x
  
 -           r0     = x[3]  - x[11];
 -           r1     = x[10] - x[2];
@@ -1764,10 +1677,7 @@ Index: vorbis/lib/mdct.c
 -           x[11] += x[3];
 -           x[2]   = r0;
 -           x[3]   = r1;
-+	movaps		xmm0,	[eax]						// a xmm0 =	x3		x2		x1		x0
-+	movaps		xmm4,	[eax + 32]					// b xmm4 =	x3		x2		x1		x0
-+	movaps		xmm1,	[eax + 16]					// a xmm1 =	x7		x6		x5		x4
-+	movaps		xmm5,	[eax + 16 +32]				// b xmm5 =	x7		x6		x5		x4
++}
  
 -           r0     = x[12] - x[4];
 -           r1     = x[13] - x[5];
@@ -1775,61 +1685,6 @@ Index: vorbis/lib/mdct.c
 -           x[13] += x[5];
 -           x[4]   = MULT_NORM((r0   - r1) * cPI2_8);
 -           x[5]   = MULT_NORM((r0   + r1) * cPI2_8);
-+	movaps		xmm2,	xmm1						// a xmm1 =	x7		x6		x5		x4
-+	movaps		xmm6,	xmm5						// b xmm5 =	x7		x6		x5		x4
-+	addps		xmm2,	xmm0						// a xmm2 =	d		c		b		a
-+	addps		xmm6,	xmm4						// b xmm6 =	d		c		b		a
- 
--           r0     = x[14] - x[6];
--           r1     = x[15] - x[7];
--           x[14] += x[6];
--           x[15] += x[7];
--           x[6]  = r0;
--           x[7]  = r1;
-+	movaps		xmm3,	xmm1						// a xmm3 =	x7		x6		x5		x4
-+	movaps		xmm7,	xmm5						// b xmm7 =	x7		x6		x5		x4
-+	subps		xmm3,	xmm0						// a xmm3 =	h		g		f		e
-+	subps		xmm7,	xmm4						// b xmm7 =	h		g		f		e
- 
--	   mdct_butterfly_8(x);
--	   mdct_butterfly_8(x+8);
-+	movaps		xmm1,	xmm3						// a xmm1 =	h		g		f		e
-+	movaps		xmm5,	xmm7						// b xmm5 =	h		g		f		e
-+	shufps		xmm1,	xmm1,	3*64+2*16+3*4+2		// a xmm1 =	h		g		h		g
-+	shufps		xmm5,	xmm5,	3*64+2*16+3*4+2		// b xmm5 =	h		g		h		g
-+	shufps		xmm3,	xmm3,	0*64+1*16+0*4+1		// a xmm3 =	e		f		e		f
-+	shufps		xmm7,	xmm7,	0*64+1*16+0*4+1		// b xmm7 =	e		f		e		f
-+	xorps		xmm3,	neg_1_2						// a xmm3 =	e		-f		-e		f
-+	xorps		xmm7,	neg_1_2						// b xmm7 =	e		-f		-e		f
-+	addps		xmm3,	xmm1						// a xmm3 =	h+e		g-f		h-e		g+f
-+	addps		xmm7,	xmm5						// b xmm7 =	h+e		g-f		h-e		g+f
-+	movaps		[eax],	xmm3						// a store x[3] x[2] x[1] x[0]
-+	movaps		[eax + 32],	xmm7					// b store x[3] x[2] x[1] x[0]
-+
-+	movaps		xmm1,	xmm2						// a xmm1 =	d		c		b		a
-+	movaps		xmm5,	xmm6						// b xmm5 =	d		c		b		a
-+	shufps		xmm1,	xmm1,	3*64+2*16+3*4+2		// a xmm1 =	d		c		d		c
-+	shufps		xmm5,	xmm5,	3*64+2*16+3*4+2		// b xmm5 =	d		c		d		c
-+	shufps		xmm2,	xmm2,	1*64+0*16+1*4+0		// a xmm2 =	b		a		b		a
-+	shufps		xmm6,	xmm6,	1*64+0*16+1*4+0		// b xmm6 =	b		a		b		a
-+	xorps		xmm2,	neg_0_1						// a xmm2 =	b		a		-b		-a
-+	xorps		xmm6,	neg_0_1						// b xmm6 =	b		a		-b		-a
-+	addps		xmm2,	xmm1						// a xmm2 =	d+b		c+a		d-b		c-a
-+	addps		xmm6,	xmm5						// b xmm6 =	d+b		c+a		d-b		c-a
-+	movaps		[eax + 16],	xmm2					// a store x[7] x[6] x[5] x[4]
-+	movaps		[eax + 16 + 32],	xmm6			// b store x[7] x[6] x[5] x[4]
- }
- 
--/* 32 point butterfly (in place, 4 register) */
--STIN void mdct_butterfly_32(DATA_TYPE *x){
--  REG_TYPE r0     = x[30] - x[14];
--  REG_TYPE r1     = x[31] - x[15];
-+}
- 
--           x[30] +=         x[14];           
--	   x[31] +=         x[15];
--           x[14]  =         r0;              
--	   x[15]  =         r1;
 +/* 16 point butterfly (in place, 4 register) (3dn) */
 +STIN void mdct_butterfly_16_3dn(DATA_TYPE *x){
 +  REG_TYPE r0;
@@ -1952,12 +1807,12 @@ Index: vorbis/lib/mdct.c
 +   mdct_butterfly_8(x+8);
 +}
  
--           r0     = x[28] - x[12];   
--	   r1     = x[29] - x[13];
--           x[28] +=         x[12];           
--	   x[29] +=         x[13];
--           x[12]  = MULT_NORM( r0 * cPI1_8  -  r1 * cPI3_8 );
--	   x[13]  = MULT_NORM( r0 * cPI3_8  +  r1 * cPI1_8 );
+-           r0     = x[14] - x[6];
+-           r1     = x[15] - x[7];
+-           x[14] += x[6];
+-           x[15] += x[7];
+-           x[6]  = r0;
+-           x[7]  = r1;
 +/* 32 point butterfly (sse) */
 +STIN void mdct_butterfly_32_sse(DATA_TYPE *x){
 +//REG_TYPE	a,b,c,d;
@@ -1966,61 +1821,27 @@ Index: vorbis/lib/mdct.c
 +	mov			eax,	x
 +}
  
--           r0     = x[26] - x[10];
--	   r1     = x[27] - x[11];
--	   x[26] +=         x[10];
--	   x[27] +=         x[11];
--	   x[10]  = MULT_NORM(( r0  - r1 ) * cPI2_8);
--	   x[11]  = MULT_NORM(( r0  + r1 ) * cPI2_8);
- 
--	   r0     = x[24] - x[8];
--	   r1     = x[25] - x[9];
--	   x[24] += x[8];
--	   x[25] += x[9];
--	   x[8]   = MULT_NORM( r0 * cPI3_8  -  r1 * cPI1_8 );
--	   x[9]   = MULT_NORM( r1 * cPI3_8  +  r0 * cPI1_8 );
+-	   mdct_butterfly_8(x);
+-	   mdct_butterfly_8(x+8);
++
 +_asm
 +{
 +	movaps		xmm5,	[eax + 8*4]					// b xmm5 =	x11		x10		x9		x8
 +	movaps		xmm1,	[eax + 12*4]				// a xmm1 =	x15		x14		x13		x12
 +	movaps		xmm4,	[eax + 24*4]				// b xmm4 =	x27		x26		x25		x24
 +	movaps		xmm0,	[eax + 28*4]				// a xmm0 =	x31		x30		x29		x28
- 
--	   r0     = x[22] - x[6];
--	   r1     = x[7]  - x[23];
--	   x[22] += x[6];
--	   x[23] += x[7];
--	   x[6]   = r1;
--	   x[7]   = r0;
- 
--	   r0     = x[4]  - x[20];
--	   r1     = x[5]  - x[21];
--	   x[20] += x[4];
--	   x[21] += x[5];
--	   x[4]   = MULT_NORM( r1 * cPI1_8  +  r0 * cPI3_8 );
--	   x[5]   = MULT_NORM( r1 * cPI3_8  -  r0 * cPI1_8 );
++
++
 +	movaps		xmm6,	xmm4						// b xmm6 =	x27		x26		x25		x24
 +	movaps		xmm2,	xmm0						// a xmm2 =	x31		x30		x29		x28
 +	subps		xmm6,	xmm5						// b xmm6 =	d		c		b		a
 +	subps		xmm2,	xmm1						// a xmm2 =	d		c		b		a
- 
--	   r0     = x[2]  - x[18];
--	   r1     = x[3]  - x[19];
--	   x[18] += x[2];
--	   x[19] += x[3];
--	   x[2]   = MULT_NORM(( r1  + r0 ) * cPI2_8);
--	   x[3]   = MULT_NORM(( r1  - r0 ) * cPI2_8);
++
 +	addps		xmm4,	xmm5						// b
 +	addps		xmm0,	xmm1						// a
 +	movaps		[eax + 24*4],	xmm4				// b store x27 x26 x25 x24
 +	movaps		[eax + 28*4],	xmm0				// a store x31 x30 x29 x28
- 
--	   r0     = x[0]  - x[16];
--	   r1     = x[1]  - x[17];
--	   x[16] += x[0];
--	   x[17] += x[1];
--	   x[0]   = MULT_NORM( r1 * cPI3_8  +  r0 * cPI1_8 );
--	   x[1]   = MULT_NORM( r1 * cPI1_8  -  r0 * cPI3_8 );
++
 +	movaps		xmm3,	xmm2						// a xmm3 =	d		c		b		a
 +	movaps		xmm7,	xmm6						// b xmm7 =	d		c		b		a
 +	shufps		xmm3,	xmm3,	3*64+2*16+0*4+0		// a xmm3 =	d		c		a		a
@@ -2028,49 +1849,79 @@ Index: vorbis/lib/mdct.c
 +	prefetcht0	[eax + 64*4]
 +	shufps		xmm2,	xmm2,	3*64+2*16+1*4+1		// a xmm2 =	d		c		b		b
 +	shufps		xmm6,	xmm6,	3*64+3*16+0*4+1		// b xmm6 =	d		d		a		b
- 
--	   mdct_butterfly_16(x);
--	   mdct_butterfly_16(x+16);
++
 +	mulps		xmm7,	packed_3_1_c				// b xmm7 =	c*C2	c*C2	b*C3	a*C3
 +	mulps		xmm3,	packed_2_3_a				// a xmm3 =	d		c		a*C3	a*C1
 +	mulps		xmm6,	packed_3_1_d				// b xmm6 =	d*C2	-d*C2	a*C1	-b*C1
 +	mulps		xmm2,	packed_2_3_b				// a xmm2 =	0		0		b*C1	-b*C3
- 
++
 +	addps		xmm6,	xmm7						// b
 +	addps		xmm2,	xmm3						// a
 +	movaps		[eax + 8*4],	xmm6				// b store x11 x10 x9 x8
 +	movaps		[eax + 12*4],	xmm2				// a store x15 x14 x13 x12
  }
  
+-/* 32 point butterfly (in place, 4 register) */
+-STIN void mdct_butterfly_32(DATA_TYPE *x){
+-  REG_TYPE r0     = x[30] - x[14];
+-  REG_TYPE r1     = x[31] - x[15];
 +_asm
 +{
 +	movaps		xmm4,	[eax + 0*4]					// b xmm4 =	x3		x2		x1		x0
 +	movaps		xmm0,	[eax + 4*4]					// a xmm0 =	x7		x6		x5		x4
 +	movaps		xmm5,	[eax + 16*4]				// b xmm5 =	x19		x18		x17		x16
 +	movaps		xmm1,	[eax + 20*4]				// a xmm1 =	x23		x22		x21		x20
-+
+ 
+-           x[30] +=         x[14];           
+-	   x[31] +=         x[15];
+-           x[14]  =         r0;              
+-	   x[15]  =         r1;
 +	movaps		xmm6,	xmm4						// b xmm6 =	x3		x2		x1		x0
 +	movaps		xmm2,	xmm0						// a xmm2 =	x7		x6		x5		x4
 +	subps		xmm6,	xmm5						// b xmm6 =	d		c		b		a
 +	subps		xmm2,	xmm1						// a xmm2 =	d		-c		b		a
-+
+ 
+-           r0     = x[28] - x[12];   
+-	   r1     = x[29] - x[13];
+-           x[28] +=         x[12];           
+-	   x[29] +=         x[13];
+-           x[12]  = MULT_NORM( r0 * cPI1_8  -  r1 * cPI3_8 );
+-	   x[13]  = MULT_NORM( r0 * cPI3_8  +  r1 * cPI1_8 );
 +	addps		xmm4,	xmm5						// b
 +	addps		xmm0,	xmm1						// a
 +	movaps		[eax + 16*4],	xmm4				// b store x19 x18 x17 x16
 +	movaps		[eax + 20*4],	xmm0				// a store x23 x22 x21 x20
-+
+ 
+-           r0     = x[26] - x[10];
+-	   r1     = x[27] - x[11];
+-	   x[26] +=         x[10];
+-	   x[27] +=         x[11];
+-	   x[10]  = MULT_NORM(( r0  - r1 ) * cPI2_8);
+-	   x[11]  = MULT_NORM(( r0  + r1 ) * cPI2_8);
 +	movaps		xmm3,	xmm2						// a xmm3 =	d		-c		b		a
 +	movaps		xmm7,	xmm6						// b xmm7 =	d		c		b		a
 +	shufps		xmm3,	xmm3,	2*64+3*16+1*4+1		// a xmm3 =	-c		d		b		b
 +	shufps		xmm7,	xmm7,	3*64+3*16+1*4+1		// b xmm7 =	d		d		b		b
 +	shufps		xmm2,	xmm2,	2*64+3*16+0*4+0		// a xmm2 =	-c		d		a		a
 +	shufps		xmm6,	xmm6,	2*64+2*16+0*4+0		// b xmm6 =	c		c		a		a
-+
+ 
+-	   r0     = x[24] - x[8];
+-	   r1     = x[25] - x[9];
+-	   x[24] += x[8];
+-	   x[25] += x[9];
+-	   x[8]   = MULT_NORM( r0 * cPI3_8  -  r1 * cPI1_8 );
+-	   x[9]   = MULT_NORM( r1 * cPI3_8  +  r0 * cPI1_8 );
 +	mulps		xmm7,	packed_ddbb					// b xmm7 =	d*C2	d*C2	b*C1	b*C3
 +	mulps		xmm3,	packed_1_3_b				// a xmm3 =	c		d		b*C3	b*C1
 +	mulps		xmm6,	packed_ccaa					// b xmm6 =	-c*C2	c*C2	-a*C3	a*C1
 +	mulps		xmm2,	packed_1_3_a				// a xmm2 =	0		0		-a*C1	a*C3
-+
+ 
+-	   r0     = x[22] - x[6];
+-	   r1     = x[7]  - x[23];
+-	   x[22] += x[6];
+-	   x[23] += x[7];
+-	   x[6]   = r1;
+-	   x[7]   = r0;
 +	addps		xmm6,	xmm7						// b
 +	addps		xmm2,	xmm3						// a
 +	movaps		[eax + 0*4],	xmm6				// b store x4 x3 x2 x1
@@ -2126,11 +1977,23 @@ Index: vorbis/lib/mdct.c
 +x[2]   = MULT_NORM(( d  + c ) * cPI2_8);
 +x[3]   = MULT_NORM(( d  - c ) * cPI2_8);
 +*/
-+
+ 
+-	   r0     = x[4]  - x[20];
+-	   r1     = x[5]  - x[21];
+-	   x[20] += x[4];
+-	   x[21] += x[5];
+-	   x[4]   = MULT_NORM( r1 * cPI1_8  +  r0 * cPI3_8 );
+-	   x[5]   = MULT_NORM( r1 * cPI3_8  -  r0 * cPI1_8 );
 +	   mdct_butterfly_16_sse(x);
 +	   mdct_butterfly_16_sse(x+16);
 +}
-+
+ 
+-	   r0     = x[2]  - x[18];
+-	   r1     = x[3]  - x[19];
+-	   x[18] += x[2];
+-	   x[19] += x[3];
+-	   x[2]   = MULT_NORM(( r1  + r0 ) * cPI2_8);
+-	   x[3]   = MULT_NORM(( r1  - r0 ) * cPI2_8);
 +/* 32 point butterfly (in place, 4 register) (3dn) */
 +STIN void mdct_butterfly_32_3dn(DATA_TYPE *x){
 +
@@ -2159,7 +2022,13 @@ Index: vorbis/lib/mdct.c
 +/**/	movq				mm2,				mm3
 +		movq				[eax + 14*4],		mm1
 +/**/	pfmul				mm3,				pi_q_18_m38
-+
+ 
+-	   r0     = x[0]  - x[16];
+-	   r1     = x[1]  - x[17];
+-	   x[16] += x[0];
+-	   x[17] += x[1];
+-	   x[0]   = MULT_NORM( r1 * cPI3_8  +  r0 * cPI1_8 );
+-	   x[1]   = MULT_NORM( r1 * cPI1_8  -  r0 * cPI3_8 );
 +/**/	pfmul				mm2,				pi_q_38_18
 +		movq				mm4,				[eax + 26*4]
 +/**/	pfacc				mm3,				mm2
@@ -2179,7 +2048,9 @@ Index: vorbis/lib/mdct.c
 +		pfmul				mm6,				pi_q_28_28
 +/**/	pfadd				mm7,				[eax +  8*4]
 +		movq				[eax + 10*4],		mm6
-+
+ 
+-	   mdct_butterfly_16(x);
+-	   mdct_butterfly_16(x+16);
 +/**/	movq				[eax + 24*4],		mm7
 +		movq				mm2,				[eax +  6*4]
 +/**/	movq				mm1,				mm0
@@ -2203,7 +2074,7 @@ Index: vorbis/lib/mdct.c
 +		punpckhdq			mm4,				mm2
 +/**/	movq				[eax + 20*4],		mm5
 +		movq				[eax +  6*4],		mm4
-+
+ 
 +/*!*/	movq				mm3,				[eax +  0*4]
 +/**/	movq				mm7,				mm6
 +/*!*/	movq				mm4,				mm3
@@ -2353,7 +2224,7 @@ Index: vorbis/lib/mdct.c
 +	   mdct_butterfly_16(x+16);
 +}
 +
- /* N point first stage butterfly (in place, 2 register) */
++/* N point first stage butterfly (in place, 2 register) */
 +STIN void mdct_butterfly_first_sse(DATA_TYPE *T,
 +					DATA_TYPE *x,
 +					int points){
@@ -2442,10 +2313,10 @@ Index: vorbis/lib/mdct.c
 +	jae			loopg
 +
 +	pop			ebx
-+}
+ }
 +/*
 +  do{
-+
+ 
 +               r0      = x1[6]      -  x2[6];
 +	       r1      = x1[7]      -  x2[7];
 +	       x1[6]  += x2[6];
@@ -2482,7 +2353,7 @@ Index: vorbis/lib/mdct.c
 +*/
 +}
 +
-+/* N point first stage butterfly (in place, 2 register) */
+ /* N point first stage butterfly (in place, 2 register) */
  STIN void mdct_butterfly_first(DATA_TYPE *T,
  					DATA_TYPE *x,
  					int points){
@@ -2531,7 +2402,7 @@ Index: vorbis/lib/mdct.c
      x1-=8;
      x2-=8;
      T+=16;
-@@ -260,46 +1022,325 @@
+@@ -260,46 +1004,325 @@
    }while(x2>=x);
  }
  
@@ -2867,7 +2738,7 @@ Index: vorbis/lib/mdct.c
  	       r0      = x1[0]      -  x2[0];
  	       r1      = x1[1]      -  x2[1];
  	       x1[0]  += x2[0];
-@@ -317,23 +1358,55 @@
+@@ -317,23 +1340,55 @@
  STIN void mdct_butterflies(mdct_lookup *init,
  			     DATA_TYPE *x,
  			     int points){
@@ -2933,7 +2804,7 @@ Index: vorbis/lib/mdct.c
  }
  
  void mdct_clear(mdct_lookup *l){
-@@ -344,7 +1417,7 @@
+@@ -344,7 +1399,7 @@
    }
  }
  
@@ -2942,7 +2813,7 @@ Index: vorbis/lib/mdct.c
  			    DATA_TYPE *x){
    int        n       = init->n;
    int       *bit     = init->bitrev;
-@@ -352,20 +1425,318 @@
+@@ -352,20 +1407,318 @@
    DATA_TYPE *w1      = x = w0+(n>>1);
    DATA_TYPE *T       = init->trig+n;
  
@@ -3262,7 +3133,7 @@ Index: vorbis/lib/mdct.c
  	      w0[0]  = r0     + r2;
  	      w1[2]  = r0     - r2;
  	      w0[1]  = r1     + r3;
-@@ -381,7 +1752,7 @@
+@@ -381,7 +1734,7 @@
  
                r0     = HALVE(x0[1] + x1[1]);
                r1     = HALVE(x0[0] - x1[0]);
@@ -3271,7 +3142,7 @@ Index: vorbis/lib/mdct.c
  	      w0[2]  = r0     + r2;
  	      w1[0]  = r0     - r2;
  	      w0[3]  = r1     + r3;
-@@ -394,7 +1765,664 @@
+@@ -394,7 +1747,664 @@
    }while(w0<w1);
  }
  
@@ -3936,7 +3807,7 @@ Index: vorbis/lib/mdct.c
    int n=init->n;
    int n2=n>>1;
    int n4=n>>2;
-@@ -439,7 +2467,7 @@
+@@ -439,7 +2449,7 @@
      DATA_TYPE *oX2=out+n2+n4;
      DATA_TYPE *iX =out;
      T             =init->trig+n2;
@@ -3945,7 +3816,7 @@ Index: vorbis/lib/mdct.c
      do{
        oX1-=4;
  
-@@ -459,7 +2487,45 @@
+@@ -459,7 +2469,45 @@
        iX    +=   8;
        T     +=   8;
      }while(iX<oX1);
@@ -3992,7 +3863,7 @@ Index: vorbis/lib/mdct.c
      iX=out+n2+n4;
      oX1=out+n4;
      oX2=oX1;
-@@ -475,7 +2541,7 @@
+@@ -475,7 +2523,7 @@
  
        oX2+=4;
      }while(oX2<iX);
@@ -4001,7 +3872,7 @@ Index: vorbis/lib/mdct.c
      iX=out+n2+n4;
      oX1=out+n2+n4;
      oX2=out+n2;
-@@ -488,8 +2554,11 @@
+@@ -488,8 +2536,11 @@
        iX+=4;
      }while(oX1>oX2);
    }
@@ -4013,7 +3884,7 @@ Index: vorbis/lib/mdct.c
  void mdct_forward(mdct_lookup *init, DATA_TYPE *in, DATA_TYPE *out){
    int n=init->n;
    int n2=n>>1;
-@@ -501,44 +2570,44 @@
+@@ -501,44 +2552,44 @@
    /* rotate */
  
    /* window + rotate + step 1 */
@@ -4088,11 +3959,10 @@ Index: vorbis/lib/block.c
  #endif
  
  int vorbis_block_init(vorbis_dsp_state *v, vorbis_block *vb){
-@@ -673,6 +673,151 @@
- 
+@@ -674,6 +674,151 @@
    return(0);
  }
-+
+ 
 +
 +void vorbis_apply_window_3dn(float *pcm, float *w1, float *w2, float *p, float *pcmlim)
 +{
@@ -4237,17 +4107,16 @@ Index: vorbis/lib/block.c
 +extern int CPU_SSE;
 +extern int CPU_3DN;
 +
- 
++
  int vorbis_synthesis_init(vorbis_dsp_state *v,vorbis_info *vi){
    if(_vds_shared_init(v,vi,0)) return 1;
-@@ -740,16 +885,64 @@
- 	  /* large/large */
+   vorbis_synthesis_restart(v);
+@@ -741,15 +886,63 @@
  	  float *w=_vorbis_window_get(b->window[1]-hs);
  	  float *pcm=v->pcm[j]+prevCenter;
--	  float *p=vb->pcm[j];
+ 	  float *p=vb->pcm[j];
 -	  for(i=0;i<n1;i++)
 -	    pcm[i]=pcm[i]*w[n1-i-1] + p[i]*w[i];
-+	  float *p=vb->pcm[j];
 +	  if(CPU_SSE && !(n1 & 0x0f) )
 +	  {
 +		if(! ( ((long)pcm | (long)p) & 0x0f ) )
