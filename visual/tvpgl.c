@@ -30,6 +30,8 @@ unsigned char TVPDitherTable_5_6[8][4][2][256];
 unsigned char TVPDitherTable_676[3][4][4][256];
 unsigned char TVP252DitherPalette[3][256];
 tjs_uint32 TVPRecipTable256[256]; /* 1/x  table  ( 65536 ) multiplied */
+tjs_uint16 TVPRecipTable256_16[256]; /* 1/x  table  ( 65536 ) multiplied,
+	but limitted to 65535 (16bits) */
 static const tjs_uint8 TVPDither4x4[4][4] = {
  {   0, 12,  2, 14   },
  {   8,  4, 10,  6   },
@@ -164,7 +166,13 @@ static void TVPInitDitherTable(void)
 
 	/* create TVPRecipTable256 */
 	TVPRecipTable256[0] = 65536;
-	for(i = 1; i < 256; i++) TVPRecipTable256[i] = 65536/i;
+	TVPRecipTable256_16[0] = 65535;
+	for(i = 1; i < 256; i++)
+	{
+		TVPRecipTable256[i] = 65536/i;
+		TVPRecipTable256_16[i] = TVPRecipTable256[i] > 0xffff ?
+									0xffff : TVPRecipTable256[i];
+	}
 }
 
 
@@ -8606,7 +8614,7 @@ TVP_GL_FUNC_DECL(void, TVPAdjustGamma_a_c, (tjs_uint32 *dest, tjs_int len, tTVPG
 	d = dest[(___index+0)];
 	alpha = d >> 24;
 	alpha_adj = alpha + (alpha >> 7);
-	recip = TVPRecipTable256[alpha];
+	recip = TVPRecipTable256_16[alpha];
 
 	/* B */
 	t = d & 0xff;
@@ -8641,7 +8649,7 @@ TVP_GL_FUNC_DECL(void, TVPAdjustGamma_a_c, (tjs_uint32 *dest, tjs_int len, tTVPG
 	d = dest[(___index+1)];
 	alpha = d >> 24;
 	alpha_adj = alpha + (alpha >> 7);
-	recip = TVPRecipTable256[alpha];
+	recip = TVPRecipTable256_16[alpha];
 
 	/* B */
 	t = d & 0xff;
@@ -8683,7 +8691,7 @@ TVP_GL_FUNC_DECL(void, TVPAdjustGamma_a_c, (tjs_uint32 *dest, tjs_int len, tTVPG
 	d = dest[___index];
 	alpha = d >> 24;
 	alpha_adj = alpha + (alpha >> 7);
-	recip = TVPRecipTable256[alpha];
+	recip = TVPRecipTable256_16[alpha];
 
 	/* B */
 	t = d & 0xff;
