@@ -44,7 +44,7 @@ static tTVPThreadPriority TVPDecodeThreadHighPriority = ttpHigher;
 static tTVPThreadPriority TVPDecodeThreadLowPriority = ttpLowest;
 static bool TVPSoundOptionsInit = false;
 static bool TVPControlPrimaryBufferRun = true;
-static bool TVPUseSoftwareBuffer = false;
+static bool TVPUseSoftwareBuffer = true;
 static bool TVPAlwaysRecreateSoundBuffer = false;
 static bool TVPPrimaryFloat = false;
 static tjs_int TVPPriamrySBFrequency = 44100;
@@ -95,10 +95,10 @@ static void TVPInitSoundOptions()
 
 	if(TVPGetCommandLine(TJS_W("-wssoft"), &val))
 	{
-		if(ttstr(val) == TJS_W("yes"))
-			TVPUseSoftwareBuffer = true;
-		else
+		if(ttstr(val) == TJS_W("no"))
 			TVPUseSoftwareBuffer = false;
+		else
+			TVPUseSoftwareBuffer = true;
 	}
 
 	if(TVPGetCommandLine(TJS_W("-wsrecreate"), &val))
