@@ -524,6 +524,38 @@ TJS_BEGIN_NATIVE_PROP_DECL(height)
 }
 TJS_END_NATIVE_PROP_DECL(height)
 //----------------------------------------------------------------------
+TJS_BEGIN_NATIVE_PROP_DECL(originalWidth)
+{
+	TJS_BEGIN_NATIVE_PROP_GETTER
+	{
+		TJS_GET_NATIVE_INSTANCE(/*var. name*/_this, /*var. type*/tTJSNI_VideoOverlay);
+
+		*result = _this->GetOriginalWidth();
+
+		return TJS_S_OK;
+	}
+	TJS_END_NATIVE_PROP_GETTER
+
+	TJS_DENY_NATIVE_PROP_SETTER
+}
+TJS_END_NATIVE_PROP_DECL(originalWidth)
+//----------------------------------------------------------------------
+TJS_BEGIN_NATIVE_PROP_DECL(originalHeight)
+{
+	TJS_BEGIN_NATIVE_PROP_GETTER
+	{
+		TJS_GET_NATIVE_INSTANCE(/*var. name*/_this, /*var. type*/tTJSNI_VideoOverlay);
+
+		*result = _this->GetOriginalHeight();
+
+		return TJS_S_OK;
+	}
+	TJS_END_NATIVE_PROP_GETTER
+
+	TJS_DENY_NATIVE_PROP_SETTER
+}
+TJS_END_NATIVE_PROP_DECL(originalHeight)
+//----------------------------------------------------------------------
 TJS_BEGIN_NATIVE_PROP_DECL(visible)
 {
 	TJS_BEGIN_NATIVE_PROP_GETTER

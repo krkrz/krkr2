@@ -861,6 +861,28 @@ void tTJSNI_VideoOverlay::SetMode( tTVPVideoOverlayMode m )
 	Mode = m;
 }
 // End:		Add:	T.Imoto
+
+//---------------------------------------------------------------------------
+tjs_int tTJSNI_VideoOverlay::GetOriginalWidth()
+{
+	// retrieve original (coded in the video stream) width size
+	if(!VideoOverlay) return 0;
+
+	long	width, height;
+	VideoOverlay->GetVideoSize( &width, &height );
+
+	return (tjs_int)width;
+}
+//---------------------------------------------------------------------------
+tjs_int tTJSNI_VideoOverlay::GetOriginalHeight()
+{
+	// retrieve original (coded in the video stream) height size
+
+	long	width, height;
+	VideoOverlay->GetVideoSize( &width, &height );
+
+	return (tjs_int)height;
+}
 //---------------------------------------------------------------------------
 void tTJSNI_VideoOverlay::ClearWndProcMessages()
 {
