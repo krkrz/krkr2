@@ -114,6 +114,7 @@ bool TJS_INTF_METHOD tTVPFunctionExporter::QueryFunctionsByNarrowString(
 //---------------------------------------------------------------------------
 extern "C" iTVPFunctionExporter * _export __stdcall TVPGetFunctionExporter()
 {
+	// for external applications
 	TVPInitExportFuncs();
     return &TVPFunctionExporter;
 }
@@ -200,28 +201,6 @@ HRESULT __stdcall tTVPStorageProvider::GetStreamForRead(
 //---------------------------------------------------------------------------
 // Plug-ins management
 //---------------------------------------------------------------------------
-extern "C"
-{
-	// V2 plug-in
-	typedef HRESULT _stdcall (*V2LinkProc)(iTVPFunctionExporter *);
-	typedef HRESULT _stdcall (*V2UnlinkProc)();
-
-	// TSS
-	typedef HRESULT _stdcall (*GetModuleInstanceProc)(ITSSModule **out,
-		ITSSStorageProvider *provider, IStream * config, HWND mainwin);
-	typedef ULONG _stdcall (*GetModuleThreadModelProc)(void);
-	typedef HRESULT _stdcall (*ShowConfigWindowProc)(HWND parentwin,
-		IStream * storage );
-	typedef ULONG _stdcall (*CanUnloadNowProc)(void);
-
-#ifdef TVP_SUPPORT_OLD_WAVEUNPACKER
-	// WaveUnpacker
-	typedef HRESULT _stdcall (*CreateWaveUnpackerProc)(IStream *storage,long size,
-		char *name,IWaveUnpacker **out); // old WaveUnpacker stuff
-#endif
-
-}
-//---------------------------------------------------------------------------
 struct tTVPPlugin
 {
 	ttstr Name;
@@ -238,16 +217,16 @@ struct tTVPPlugin
 	KMPMODULE *KMPModule;
 #endif
 
-	V2LinkProc V2Link;
-	V2UnlinkProc V2Unlink;
+	tTVPV2LinkProc V2Link;
+	tTVPV2UnlinkProc V2Unlink;
 
 
-	GetModuleInstanceProc GetModuleInstance;
-	GetModuleThreadModelProc GetModuleThreadModel;
-	ShowConfigWindowProc ShowConfigWindow;
-	CanUnloadNowProc CanUnloadNow;
+	tTVPGetModuleInstanceProc GetModuleInstance;
+	tTVPGetModuleThreadModelProc GetModuleThreadModel;
+	tTVPShowConfigWindowProc ShowConfigWindow;
+	tTVPCanUnloadNowProc CanUnloadNow;
 #ifdef TVP_SUPPORT_OLD_WAVEUNPACKER
-	CreateWaveUnpackerProc CreateWaveUnpacker;
+	tTVPCreateWaveUnpackerProc CreateWaveUnpacker;
 #endif
 
 #ifdef TVP_SUPPORT_KPI
@@ -304,21 +283,21 @@ tTVPPlugin::tTVPPlugin(const ttstr & name, ITSSStorageProvider *storageprovider)
 	try
 	{
 		// retrieve each functions
-		V2Link = (V2LinkProc)
+		V2Link = (tTVPV2LinkProc)
 			GetProcAddress(Instance, "V2Link");
-		V2Unlink = (V2UnlinkProc)
+		V2Unlink = (tTVPV2UnlinkProc)
 			GetProcAddress(Instance, "V2Unlink");
 
-		GetModuleInstance = (GetModuleInstanceProc)
+		GetModuleInstance = (tTVPGetModuleInstanceProc)
 			GetProcAddress(Instance, "GetModuleInstance");
-		GetModuleThreadModel = (GetModuleThreadModelProc)
+		GetModuleThreadModel = (tTVPGetModuleThreadModelProc)
 			GetProcAddress(Instance, "GetModuleThreadModel");
-		ShowConfigWindow = (ShowConfigWindowProc)
+		ShowConfigWindow = (tTVPShowConfigWindowProc)
 			GetProcAddress(Instance, "ShowConfigWindow");
-		CanUnloadNow = (CanUnloadNowProc)
+		CanUnloadNow = (tTVPCanUnloadNowProc)
 			GetProcAddress(Instance, "CanUnloadNow");
 #ifdef TVP_SUPPORT_OLD_WAVEUNPACKER
-		CreateWaveUnpacker = (CreateWaveUnpackerProc)
+		CreateWaveUnpacker = (tTVPCreateWaveUnpackerProc)
 			GetProcAddress(Instance, "CreateWaveUnpacker");
 #endif
 

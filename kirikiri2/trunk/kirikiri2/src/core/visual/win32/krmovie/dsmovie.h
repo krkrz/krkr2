@@ -38,10 +38,8 @@ protected:
 	bool		Shutdown;
 	RECT		Rect;
 
-#ifdef _DEBUG
 	DWORD		m_dwROTReg;	//!< ’l‚Í‚©‚Ô‚ç‚È‚¢‚æ‚¤‚É“KØ‚È•¨‚É‚·‚é‚±‚Æ
 	bool		m_RegisteredROT;
-#endif
 
 	CIStreamProxy			*m_Proxy;
 	CIStreamReader			*m_Reader;
@@ -109,52 +107,50 @@ protected:
 	}
 
 	HRESULT ConnectFilters( IBaseFilter* pFilterUpstream, IBaseFilter* pFilterDownstream );
-	const wchar_t* BuildMPEGGraph( IBaseFilter *pRdr, IBaseFilter *pSrc );
-	const wchar_t* ParseVideoType( CMediaType &mt, const wchar_t *type );
+	void BuildMPEGGraph( IBaseFilter *pRdr, IBaseFilter *pSrc );
+	void ParseVideoType( CMediaType &mt, const wchar_t *type );
 
-#ifdef _DEBUG
 	HRESULT __stdcall AddToROT( DWORD ROTreg );
 	void __stdcall RemoveFromROT( DWORD ROTreg );
-#endif	// _DEBUG
 
 public:
 	tTVPDSMovie();
 	virtual ~tTVPDSMovie();
 
-	virtual const wchar_t* __stdcall BuildGraph( HWND callbackwin, IStream *stream,
-	const wchar_t * streamname, const wchar_t *type, unsigned __int64 size ) = 0;
+	virtual void __stdcall BuildGraph( HWND callbackwin, IStream *stream,
+		const wchar_t * streamname, const wchar_t *type, unsigned __int64 size ) = 0;
 
 	virtual void __stdcall AddRef();
 	virtual void __stdcall Release();
 
 	virtual void __stdcall ReleaseAll();
 
-	virtual const wchar_t* __stdcall SetWindow(HWND window);
-	virtual const wchar_t* __stdcall SetMessageDrainWindow(HWND window);
-	virtual const wchar_t* __stdcall SetRect(RECT *rect);
-	virtual const wchar_t* __stdcall SetVisible(bool b);
+	virtual void __stdcall SetWindow(HWND window);
+	virtual void __stdcall SetMessageDrainWindow(HWND window);
+	virtual void __stdcall SetRect(RECT *rect);
+	virtual void __stdcall SetVisible(bool b);
 
-	virtual const wchar_t* __stdcall Play();
-	virtual const wchar_t* __stdcall Stop();
-	virtual const wchar_t* __stdcall Pause();
-	virtual const wchar_t* __stdcall Rewind();
+	virtual void __stdcall Play();
+	virtual void __stdcall Stop();
+	virtual void __stdcall Pause();
+	virtual void __stdcall Rewind();
 
-	virtual const wchar_t* __stdcall SetPosition(unsigned __int64 tick);
-	virtual const wchar_t* __stdcall GetPosition(unsigned __int64 *tick);
-	virtual const wchar_t* __stdcall GetStatus(tTVPVideoStatus *status);
-	virtual const wchar_t* __stdcall GetEvent(long *evcode, long *param1, long *param2, bool *got);
-	virtual const wchar_t* __stdcall FreeEventParams(long evcode, long param1, long param2);
+	virtual void __stdcall SetPosition(unsigned __int64 tick);
+	virtual void __stdcall GetPosition(unsigned __int64 *tick);
+	virtual void __stdcall GetStatus(tTVPVideoStatus *status);
+	virtual void __stdcall GetEvent(long *evcode, long *param1, long *param2, bool *got);
+	virtual void __stdcall FreeEventParams(long evcode, long param1, long param2);
 
-	virtual const wchar_t* __stdcall SetFrame( int f );
-	virtual const wchar_t* __stdcall GetFrame( int *f );
-	virtual const wchar_t* __stdcall GetFPS( double *f );
-	virtual const wchar_t* __stdcall GetNumberOfFrame( int *f );
-	virtual const wchar_t* __stdcall GetTotalTime( __int64 *t );
+	virtual void __stdcall SetFrame( int f );
+	virtual void __stdcall GetFrame( int *f );
+	virtual void __stdcall GetFPS( double *f );
+	virtual void __stdcall GetNumberOfFrame( int *f );
+	virtual void __stdcall GetTotalTime( __int64 *t );
 
-	virtual const wchar_t* __stdcall GetFrontBuffer( BYTE **buff );
-	virtual const wchar_t* __stdcall SetVideoBuffer( BYTE *buff1, BYTE *buff2, long size );
+	virtual void __stdcall GetFrontBuffer( BYTE **buff );
+	virtual void __stdcall SetVideoBuffer( BYTE *buff1, BYTE *buff2, long size );
 
-	virtual const wchar_t* __stdcall GetVideoSize( long *width, long *height );
+	virtual void __stdcall GetVideoSize( long *width, long *height );
 	virtual HRESULT __stdcall GetAvgTimePerFrame( REFTIME *pAvgTimePerFrame );
 };
 

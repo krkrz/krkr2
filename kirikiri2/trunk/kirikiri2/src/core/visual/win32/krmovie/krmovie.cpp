@@ -22,6 +22,7 @@
 #include "asyncio.h"
 #include "asyncrdr.h"
 
+#include "tp_stub.h"
 
 
 //---------------------------------------------------------------------------
@@ -37,16 +38,14 @@ BOOL APIENTRY DllMain( HANDLE hModule,
 //---------------------------------------------------------------------------
 // GetVideoOverlayObject
 //---------------------------------------------------------------------------
-const wchar_t* __stdcall GetVideoOverlayObject(
+const void __stdcall GetVideoOverlayObject(
 	HWND callbackwin, IStream *stream, const wchar_t * streamname,
 	const wchar_t *type, unsigned __int64 size, iTVPVideoOverlay **out)
 {
 	*out = new tTVPDSVideoOverlay;
 
 	if( *out )
-		return static_cast<tTVPDSVideoOverlay*>(*out)->BuildGraph( callbackwin, stream, streamname, type, size );
-	else
-		return NULL;
+		static_cast<tTVPDSVideoOverlay*>(*out)->BuildGraph( callbackwin, stream, streamname, type, size );
 }
 //---------------------------------------------------------------------------
 
@@ -62,3 +61,23 @@ void __stdcall GetAPIVersion(DWORD *ver)
 //---------------------------------------------------------------------------
 
 
+
+//---------------------------------------------------------------------------
+// V2Link : Initialize TVP plugin interface
+//---------------------------------------------------------------------------
+HRESULT __stdcall V2Link(iTVPFunctionExporter *exporter)
+{
+	TVPInitImportStub(exporter);
+
+	return S_OK;
+}
+//---------------------------------------------------------------------------
+// V2Unlink : Uninitialize TVP plugin interface
+//---------------------------------------------------------------------------
+HRESULT __stdcall V2Unlink()
+{
+	TVPUninitImportStub();
+
+	return S_OK;
+}
+//---------------------------------------------------------------------------

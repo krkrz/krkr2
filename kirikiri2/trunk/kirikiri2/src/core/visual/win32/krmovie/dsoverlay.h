@@ -51,17 +51,17 @@ public:
 	tTVPDSVideoOverlay();
 	virtual ~tTVPDSVideoOverlay();
 
-	virtual const wchar_t* __stdcall BuildGraph( HWND callbackwin, IStream *stream,
-	const wchar_t * streamname, const wchar_t *type, unsigned __int64 size );
+	virtual void __stdcall BuildGraph( HWND callbackwin, IStream *stream,
+		const wchar_t * streamname, const wchar_t *type, unsigned __int64 size );
 
 	virtual void __stdcall ReleaseAll();
 
-	virtual const wchar_t* __stdcall SetWindow(HWND window);
-	virtual const wchar_t* __stdcall SetMessageDrainWindow(HWND window);
-	virtual const wchar_t* __stdcall SetRect(RECT *rect);
-	virtual const wchar_t* __stdcall SetVisible(bool b);
+	virtual void __stdcall SetWindow(HWND window);
+	virtual void __stdcall SetMessageDrainWindow(HWND window);
+	virtual void __stdcall SetRect(RECT *rect);
+	virtual void __stdcall SetVisible(bool b);
 
-	virtual const wchar_t* __stdcall Play();
+	virtual void __stdcall Play();
 };
 
 #endif	// __DSOVERLAY_H__
