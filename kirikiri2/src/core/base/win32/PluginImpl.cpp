@@ -12,6 +12,8 @@
 #pragma hdrstop
 
 
+#include <algorithm>
+#include <functional>
 #include "ScriptMgnIntf.h"
 #include "PluginImpl.h"
 #include "StorageImpl.h"
@@ -432,9 +434,9 @@ static void TVPDestroyPluginVector(void)
 {
 	// delete all objects
 	tTVPPluginVectorType::iterator i;
-	for(i = TVPPluginVector.Vector.begin();
-		i != TVPPluginVector.Vector.end(); i++)
+	while(TVPPluginVector.Vector.size())
 	{
+		i = TVPPluginVector.Vector.end() - 1;
 		try
 		{
 			(*i)->Uninit();
@@ -443,6 +445,7 @@ static void TVPDestroyPluginVector(void)
 		catch(...)
 		{
 		}
+		TVPPluginVector.Vector.pop_back();
 	}
 }
 tTVPAtExit TVPDestroyPluginVectorAtExit

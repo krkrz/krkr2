@@ -12,6 +12,9 @@
 #pragma hdrstop
 
 #include <vector>
+#include <algorithm>
+#include <functional>
+
 #include "tjsUtils.h"
 #include "SysInitIntf.h"
 #include "ScriptMgnIntf.h"
