@@ -648,6 +648,7 @@ extern "C"
 //---------------------------------------------------------------------------
 void * dee_ogg_malloc(size_t bytes)
 {
+	bytes += 16;
 	tjs_int align = 16;
 	void *ptr = malloc(bytes + align + sizeof(alloc_record));
 	if(!ptr) return NULL;
@@ -663,6 +664,7 @@ void * dee_ogg_malloc(size_t bytes)
 //---------------------------------------------------------------------------
 void * dee_ogg_calloc(size_t num, size_t size)
 {
+	size += 16;
 	size_t sz = num * size;
 	void *ptr = dee_ogg_malloc(sz);
 	memset(ptr, 0, sz);
@@ -676,6 +678,7 @@ void dee_ogg_free(void *ptr)
 //---------------------------------------------------------------------------
 void * dee_ogg_realloc(void *block, size_t bytes)
 {
+	bytes += 16;
 	size_t org_size = (reinterpret_cast<alloc_record*>(block))[-1].org_size;
 
 	if(org_size == bytes) return block;

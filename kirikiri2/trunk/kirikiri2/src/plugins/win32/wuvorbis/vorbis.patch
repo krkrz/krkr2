@@ -284,35 +284,7 @@ Index: vorbis/lib/floor1.c
  }
  
  static void render_line0(int x0,int x1,int y0,int y1,int *d){
-@@ -958,6 +967,27 @@
-     return(0);
-   }
- }
-+#if 0
-+static int __inline render_point(int x0,int x1,int y0,int y1,int x){
-+  y0&=0x7fff; /* mask off flag */
-+  y1&=0x7fff;
-+    
-+  {
-+    int dy=y1-y0;
-+    int adx=x1-x0;
-+    int ady=abs(dy);
-+    int err=ady*(x-x0);
-+    
-+    int off=err/adx;
-+    if(dy<0)return(y0-off);
-+    return(y0+off);
-+  }
-+}
-+#endif
-+static void floo1_inverse_asm_mmx(int count, int *loneighbor, int *hineighbor,
-+	int *postlist, int quant_q, int *fit_value)
-+{
-+}
- 
- static void *floor1_inverse1(vorbis_block *vb,vorbis_look_floor *in){
-   vorbis_look_floor1 *look=(vorbis_look_floor1 *)in;
-@@ -1003,23 +1033,25 @@
+@@ -1003,23 +1012,25 @@
      }
  
      /* unwrap positive values and reconsitute via linear interpolation */
@@ -346,7 +318,7 @@ Index: vorbis/lib/floor1.c
  	  }
  	}else{
  	  if(val&1){
-@@ -1029,12 +1061,12 @@
+@@ -1029,12 +1040,12 @@
  	  }
  	}
  
@@ -769,7 +741,7 @@ Index: vorbis/lib/codebook.c
  
   ********************************************************************/
  
-@@ -290,6 +290,40 @@
+@@ -290,6 +290,33 @@
    return(vorbis_book_encode(book,best,b));
  }
  
@@ -784,19 +756,12 @@ Index: vorbis/lib/codebook.c
 +    /* not the main path */
 +    if(b->endbyte*8+bits>b->storage*8)return(-1);
 +  }
-+  
-+  ret=b->ptr[0]>>b->endbit;
-+  if(bits>8){
-+    ret|=b->ptr[1]<<(8-b->endbit);  
-+    if(bits>16){
-+      ret|=b->ptr[2]<<(16-b->endbit);  
-+      if(bits>24){
-+	ret|=b->ptr[3]<<(24-b->endbit);  
-+	if(bits>32 && b->endbit)
++
++  ret = *(ogg_uint32_t*)(b->ptr) >> b->endbit;
++
++  if(bits>32 && b->endbit)
 +	  ret|=b->ptr[4]<<(32-b->endbit);
-+      }
-+    }
-+  }
++
 +  return(m&ret);
 +}
 +
@@ -810,7 +775,7 @@ Index: vorbis/lib/codebook.c
  /* the 'eliminate the decode tree' optimization actually requires the
     codewords to be MSb first, not LSb.  This is an annoying inelegancy
     (and one of the first places where carefully thought out design
-@@ -297,15 +331,43 @@
+@@ -297,15 +324,43 @@
     to an MSb bitpacker), but not actually the huge hit it appears to
     be.  The first-stage decode table catches most words so that
     bitreverse is not in the main execution path. */
@@ -856,7 +821,7 @@ Index: vorbis/lib/codebook.c
  STIN long decode_packed_entry_number(codebook *book, oggpack_buffer *b){
    int  read=book->dec_maxlength;
    long lo,hi;
-@@ -325,21 +387,25 @@
+@@ -325,12 +380,15 @@
      hi=book->used_entries;
    }
  
@@ -873,21 +838,9 @@ Index: vorbis/lib/codebook.c
 +  read ++;
 +
    /* bisect search for the codeword in the ordered list */
-+  
    {
      ogg_uint32_t testword=bitreverse((ogg_uint32_t)lok);
- 
-     while(hi-lo>1){
-       long p=(hi-lo)>>1;
--      long test=book->codelist[lo+p]>testword;    
-+      long test=book->codelist[lo+p]>testword; 
-+      hi-=p&(-test);
-       lo+=p&(test-1);
--      hi-=p&(-test);
-     }
- 
-     if(book->dec_codelengths[lo]<=read){
-@@ -352,6 +418,7 @@
+@@ -352,6 +410,7 @@
    return(-1);
  }
  
@@ -895,6 +848,51 @@ Index: vorbis/lib/codebook.c
  /* Decode side is specced and easier, because we don't need to find
     matches using different criteria; we simply read and map.  There are
     two things we need to do 'depending':
+@@ -456,6 +515,36 @@
+   long i,j,entry;
+   int chptr=0;
+ 
++if(ch == 2)
++{
++/* special optimization for ch == 2 */
++  for(i=offset/2;i<(offset+n)/2;){
++    entry = decode_packed_entry_number(book,b);
++    if(entry==-1)return(-1);
++    {
++      int dim = book->dim;
++      const float *t = book->valuelist+entry*dim;
++      dim--;
++      for (j=0;j<dim;j+=2){
++	a[0][i+0]+=t[j+0];
++	a[1][i+0]+=t[j+1];
++	i++;
++      }
++      dim++;
++      for (;j<dim;j++){
++	a[chptr++][i]+=t[j];
++	if(chptr==ch){
++	  chptr=0;
++	  i++;
++	}
++      }
++    }
++  }
++
++}
++else
++{
++
+   for(i=offset/ch;i<(offset+n)/ch;){
+     entry = decode_packed_entry_number(book,b);
+     if(entry==-1)return(-1);
+@@ -470,6 +559,7 @@
+       }
+     }
+   }
++}
+   return(0);
+ }
+ 
 Index: vorbis/lib/vorbisfile.c
 ===================================================================
 --- vorbis/lib/vorbisfile.c	(revision 7879)
