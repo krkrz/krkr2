@@ -8,6 +8,10 @@
 //---------------------------------------------------------------------------
 // "Plugins" class implementation / Service for plug-ins
 //---------------------------------------------------------------------------
+// 2003/ 7/ 2 W.Dee
+//    Linking plugin while other plugin is linking, is prohibited by data
+//    security reason.
+//
 // 2003/ 6/23 W.Dee 
 //    Added TVPGetAutoLoadPluginCount service function.
 //
@@ -457,9 +461,14 @@ static void TVPDestroyPluginVector(void)
 tTVPAtExit TVPDestroyPluginVectorAtExit
 	(TVP_ATEXIT_PRI_RELEASE, TVPDestroyPluginVector);
 //---------------------------------------------------------------------------
+static bool TVPPluginLoading = false;
 void TVPLoadPlugin(const ttstr & name)
 {
 	// load plugin
+	if(TVPPluginLoading)
+		TVPThrowExceptionMessage(TVPCannnotLinkPluginWhilePluginLinking);
+			// linking plugin while other plugin is linking, is prohibited
+			// by data security reason.
 
 	// check whether the same plugin was already loaded
 	tTVPPluginVectorType::iterator i;
@@ -469,7 +478,18 @@ void TVPLoadPlugin(const ttstr & name)
 		if((*i)->Name == name) return;
 	}
 
-	tTVPPlugin * p = new tTVPPlugin(name, &TVPPluginVector.StorageProvider);
+	tTVPPlugin * p;
+
+	try
+	{
+		TVPPluginLoading = true;
+		p = new tTVPPlugin(name, &TVPPluginVector.StorageProvider);
+		TVPPluginLoading = false;
+	}
+	catch(...)
+	{
+		TVPPluginLoading = false;
+	}
 
 	TVPPluginVector.Vector.push_back(p);
 }
