@@ -934,7 +934,6 @@ static void _TVPDeliverContinuousEvent() // internal
 				TVPContinuousEventVector[i]->OnContinuousCallback(tick);
 			else
 				emptyflag = true;
-			i++;
 
 			if(TVPExclusiveEventPosted) return;  // check exclusive events
 		}
@@ -994,7 +993,6 @@ static void _TVPDeliverContinuousEvent() // internal
 				emptyflag = true;
 			}
 
-			i ++;
 		}
 
 		if(emptyflag)
@@ -1120,7 +1118,6 @@ void TVPDeliverCompactEvent(tjs_int level)
 			// note that the handler can remove itself while the event
 			if(TVPCompactEventVector[i])
 				TVPCompactEventVector[i]->OnCompact(level); else emptyflag = true;
-			i++;
 		}
 
 		if(emptyflag)
