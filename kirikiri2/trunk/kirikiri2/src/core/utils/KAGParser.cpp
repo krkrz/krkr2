@@ -510,7 +510,7 @@ void tTJSNI_KAGParser::LoadScenario(const ttstr & name)
 		tTJSVariant param = name;
 		tTJSVariant *pparam = &param;
 		tTJSVariant result;
-		static ttstr funcname(TJS_W("onScenarioLoad"));
+		static ttstr funcname(TJSMapGlobalStringMap(TJS_W("onScenarioLoad")));
 		tjs_error status = Owner->FuncCall(0, funcname.c_str(), funcname.GetHint(),
 			&result, 1, &pparam, Owner);
 
@@ -633,7 +633,7 @@ void tTJSNI_KAGParser::LoadScenario(const ttstr & name)
 	{
 		tTJSVariant param = StorageName;
 		tTJSVariant *pparam = &param;
-		static ttstr funcname(TJS_W("onScenarioLoaded"));
+		static ttstr funcname(TJSMapGlobalStringMap(TJS_W("onScenarioLoaded")));
 		Owner->FuncCall(0, funcname.c_str(), funcname.GetHint(),
 			NULL, 1, &pparam, Owner);
 	}
@@ -849,7 +849,7 @@ bool tTJSNI_KAGParser::SkipCommentOrLabel()
 				param[0] = CurLabel;
 				if(pagename) param[1] = CurPage;
 				tTJSVariant *pparam[2] = { param, param+1 };
-				static ttstr onLabel_name(TJS_W("onLabel"));
+				static ttstr onLabel_name(TJSMapGlobalStringMap(TJS_W("onLabel")));
 				Owner->FuncCall(0, onLabel_name.c_str(), onLabel_name.GetHint(),
 					NULL, 2, pparam, Owner);
 			}
@@ -901,7 +901,7 @@ bool tTJSNI_KAGParser::SkipCommentOrLabel()
 				{
 					tTJSVariant param[3] = {script, StorageShortName, script_start};
 					tTJSVariant *pparam[3] = { param, param+1, param+2 };
-					static ttstr onScript_name(TJS_W("onScript"));
+					static ttstr onScript_name(TJSMapGlobalStringMap(TJS_W("onScript")));
 					Owner->FuncCall(0, onScript_name.c_str(), onScript_name.GetHint(),
 						NULL, 3, pparam, Owner);
 				}
@@ -1109,10 +1109,10 @@ parse_start:
 	if(!Lines) return NULL;
 
 
-	static ttstr __tag_name(TJS_W("tagname"));
-	static ttstr __storage_name(TJS_W("storage"));
-	static ttstr __target_name(TJS_W("target"));
-	static ttstr __exp_name(TJS_W("exp"));
+	static ttstr __tag_name(TJSMapGlobalStringMap(TJS_W("tagname")));
+	static ttstr __storage_name(TJSMapGlobalStringMap(TJS_W("storage")));
+	static ttstr __target_name(TJSMapGlobalStringMap(TJS_W("target")));
+	static ttstr __exp_name(TJSMapGlobalStringMap(TJS_W("exp")));
 
 	while(true)
 	{
@@ -1211,7 +1211,7 @@ parse_start:
 					DicObj->PropSetByVS(TJS_MEMBERENSURE,
 						__tag_name.AsVariantStringNoAddRef(), &tag_val, DicObj);
 					tTJSVariant ch_val(ttstr(CurLineStr + CurPos, 1));
-					static ttstr text_name(TJS_W("text"));
+					static ttstr text_name(TJSMapGlobalStringMap(TJS_W("text")));
 					DicObj->PropSetByVS(TJS_MEMBERENSURE,
 						text_name.AsVariantStringNoAddRef(), &ch_val, DicObj);
 
@@ -1583,7 +1583,7 @@ parse_start:
 						{
 							tTJSVariant param(DicObj, DicObj);
 							tTJSVariant *pparam = &param;
-							static ttstr event_name(TJS_W("onJump"));
+							static ttstr event_name(TJSMapGlobalStringMap(TJS_W("onJump")));
 							tTJSVariant res;
 							tjs_error er = Owner->FuncCall(0, event_name.c_str(),
 								event_name.GetHint(), &res, 1, &pparam, Owner);
@@ -1614,7 +1614,7 @@ parse_start:
 						{
 							tTJSVariant param(DicObj, DicObj);
 							tTJSVariant *pparam = &param;
-							static ttstr event_name(TJS_W("onCall"));
+							static ttstr event_name(TJSMapGlobalStringMap(TJS_W("onCall")));
 							tTJSVariant res;
 							tjs_error er = Owner->FuncCall(0, event_name.c_str(),
 								event_name.GetHint(), &res, 1, &pparam, Owner);
@@ -1648,7 +1648,7 @@ parse_start:
 						{
 							tTJSVariant param(DicObj, DicObj);
 							tTJSVariant *pparam = &param;
-							static ttstr event_name(TJS_W("onReturn"));
+							static ttstr event_name(TJSMapGlobalStringMap(TJS_W("onReturn")));
 							tTJSVariant res;
 							tjs_error er = Owner->FuncCall(0, event_name.c_str(),
 								event_name.GetHint(), &res, 1, &pparam, Owner);
