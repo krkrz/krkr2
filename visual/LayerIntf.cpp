@@ -353,7 +353,7 @@ tTJSNI_BaseLayer::tTJSNI_BaseLayer()
 	CacheBitmap = NULL;
 
 	// drawing function stuff
-	DrawFace = dfBoth;
+	DrawFace = dfAlpha;
 	ImageModified = false;
 	ClipRect.left = 0;
 	ClipRect.right = 0;
@@ -436,7 +436,7 @@ tTJSNI_BaseLayer::Construct(tjs_int numparams, tTJSVariant **param,
 //		SetWindow(win);
 		Manager->AttachPrimary(this);
 		Type = DrawType = ltCoverRect; // initially ltCoverRect
-		DrawFace = dfMain; // initially dfBoth
+		DrawFace = dfMain; // initially dfMain
 		HitThreshold = 0;
 	}
 //	IncCacheEnabledCount(); ///// -------------------- test
@@ -3180,6 +3180,10 @@ bool tTJSNI_BaseLayer::ClipDestPointAndSrcRect(tjs_int &dx, tjs_int &dy,
 	return true;
 }
 //---------------------------------------------------------------------------
+tTVPBBBltMethod tTJSNI_BaseLayer::GetBltMethodFromOperationModeAndDrawFace(
+		tTVPBlendOperationMode mode);
+
+//---------------------------------------------------------------------------
 void tTJSNI_BaseLayer::FillRect(const tTVPRect &rect, tjs_uint32 color)
 {
 	// fill given rectangle with given "color"
@@ -3190,7 +3194,8 @@ void tTJSNI_BaseLayer::FillRect(const tTVPRect &rect, tjs_uint32 color)
 
 	switch(DrawFace)
 	{
-	case dfBoth: // main and mask
+	case dfAlpha: // main and mask
+	case dfAddAlpha: // main and mask
 		if(!MainImage) TVPThrowExceptionMessage(TVPNotDrawableLayerType);
 		color = (color & 0xff000000) + (TVPToActualColor(color&0xffffff)&0xffffff);
 		ImageModified = MainImage->Fill(destrect, color) || ImageModified;
@@ -3258,7 +3263,7 @@ void tTJSNI_BaseLayer::ColorRect(const tTVPRect &rect, tjs_uint32 color, tjs_int
 
 	switch(DrawFace)
 	{
-	case dfBoth: // main and mask
+	case dfAlpha: // main and mask
 		if(!MainImage) TVPThrowExceptionMessage(TVPNotDrawableLayerType);
 		if(opa > 0)
 		{
@@ -3268,6 +3273,19 @@ void tTJSNI_BaseLayer::ColorRect(const tTVPRect &rect, tjs_uint32 color, tjs_int
 		else
 		{
 			ImageModified = MainImage->RemoveConstOpacity(destrect, -opa) || ImageModified;
+		}
+		break;
+
+	case dfAddAlpha: // additive alpha; main and mask
+		if(!MainImage) TVPThrowExceptionMessage(TVPNotDrawableLayerType);
+		if(opa > 0)
+		{
+			color = TVPToActualColor(color);
+			ImageModified = MainImage->FillColorOnAddAlpha(destrect, color, opa) || ImageModified;
+		}
+		else
+		{
+			TVPThrowExceptionMessage(TVPNegativeOpacityNotSupportedOnThisFace);
 		}
 		break;
 
@@ -3330,8 +3348,22 @@ void tTJSNI_BaseLayer::DrawText(tjs_int x, tjs_int y, const ttstr &text,
 {
 	// draw text
 	if(!MainImage) TVPThrowExceptionMessage(TVPNotDrawableLayerType);
-	if(DrawFace != dfBoth && DrawFace != dfMain)
+
+	tTVPBBBltMethod met;
+
+	switch(DrawFace)
 	{
+	case dfAlpha:
+		met = bmAlphaOnAlpha;
+		break;
+	case dfAddAlpha:
+		if(opa<0) TVPThrowExceptionMessage(TVPNegativeOpacityNotSupportedOnThisFace);
+		met = bmAlphaOnAddAlpha;
+		break;
+	case dfMain:
+		met = bmAlpha;
+		break;
+	default:
 		TVPThrowExceptionMessage(TVPNotDrawableFaceType, TJS_W("drawText"));
 	}
 
@@ -3341,16 +3373,9 @@ void tTJSNI_BaseLayer::DrawText(tjs_int x, tjs_int y, const ttstr &text,
 
 	color = TVPToActualColor(color);
 
-	if(DrawFace == dfBoth)
-	{
-		MainImage->DrawText(ClipRect, x, y, text, color, true, opa, aa, shadowlevel,
+	MainImage->DrawText(ClipRect, x, y, text, color, met, opa, aa, shadowlevel,
 			shadowcolor, shadowwidth, shadowofsx, shadowofsy, &r);
-	}
-	else if(DrawFace == dfMain)
-	{
-		MainImage->DrawText(ClipRect, x, y, text, color, false, opa, aa, shadowlevel,
-			shadowcolor, shadowwidth, shadowofsx, shadowofsy, &r);
-	}
+
 	if(r.GetCount()) ImageModified = true;
 
 	if(ImageLeft != 0 || ImageTop != 0)
@@ -3365,7 +3390,7 @@ void tTJSNI_BaseLayer::PiledCopy(tjs_int dx, tjs_int dy, tTJSNI_BaseLayer *src,
 {
 	// rectangle copy of piled layer image
 
-	// this can transfer the pild image of the source layer
+	// this can transfer the piled image of the source layer
 	// this ignores Drawface of this, or DrawFace of the source layer.
 	// this is affected by source layer type.
 
@@ -3415,7 +3440,8 @@ void tTJSNI_BaseLayer::CopyRect(tjs_int dx, tjs_int dy, tTJSNI_BaseLayer *src,
 
 	switch(DrawFace)
 	{
-	case dfBoth:
+	case dfAlpha:
+	case dfAddAlpha:
 		if(!MainImage) TVPThrowExceptionMessage(TVPNotDrawableLayerType);
 		if(!src->MainImage) TVPThrowExceptionMessage(TVPSourceLayerHasNoImage);
 		ImageModified = MainImage->CopyRect(dx, dy, src->MainImage, rect,
@@ -3480,7 +3506,8 @@ void tTJSNI_BaseLayer::StretchCopy(const tTVPRect &destrect, tTJSNI_BaseLayer *s
 
 	switch(DrawFace)
 	{
-	case dfBoth:
+	case dfAlpha:
+	case dfAddAlpha:
 		if(!MainImage) TVPThrowExceptionMessage(TVPNotDrawableLayerType);
 		if(!src->MainImage) TVPThrowExceptionMessage(TVPSourceLayerHasNoImage);
 		ImageModified =
@@ -3489,7 +3516,7 @@ void tTJSNI_BaseLayer::StretchCopy(const tTVPRect &destrect, tTJSNI_BaseLayer *s
 		break;
 
 	default:
-		TVPThrowExceptionMessage(TVPNotDrawableFaceType, TJS_W("stretchRect"));
+		TVPThrowExceptionMessage(TVPNotDrawableFaceType, TJS_W("stretchCopy"));
 	}
 
 	if(ImageLeft != 0 || ImageTop != 0)
@@ -3512,7 +3539,8 @@ void tTJSNI_BaseLayer::AffineCopy(const t2DAffineMatrix &matrix, tTJSNI_BaseLaye
 
 	switch(DrawFace)
 	{
-	case dfBoth:
+	case dfAlpha:
+	case dfAddAlpha:
 	  {
 		if(!MainImage) TVPThrowExceptionMessage(TVPNotDrawableLayerType);
 		if(!src->MainImage) TVPThrowExceptionMessage(TVPSourceLayerHasNoImage);
@@ -3543,7 +3571,8 @@ void tTJSNI_BaseLayer::AffineCopy(const tTVPPoint *points, tTJSNI_BaseLayer *src
 
 	switch(DrawFace)
 	{
-	case dfBoth:
+	case dfAlpha:
+	case dfAddAlpha:
 	  {
 		if(!MainImage) TVPThrowExceptionMessage(TVPNotDrawableLayerType);
 		if(!src->MainImage) TVPThrowExceptionMessage(TVPSourceLayerHasNoImage);
@@ -3568,17 +3597,19 @@ void tTJSNI_BaseLayer::AffineCopy(const tTVPPoint *points, tTJSNI_BaseLayer *src
 void tTJSNI_BaseLayer::PileRect(tjs_int dx, tjs_int dy, tTJSNI_BaseLayer *src,
 	const tTVPRect &srcrect, tjs_int opacity, bool hda)
 {
+	// obsoleted (use OperateRect)
+
 	// pile rectangle ( pixel alpha blend )
 
 	// piled destination is determined by Drawface (not LayerType).
-	// dfBoth: destination alpha is considered
+	// dfAlpha: destination alpha is considered
 	// dfMain: destination alpha is ignored ( treated as full opaque )
 	// dfMask or dfProvince : causes an error
 	// this method ignores soruce layer's LayerType or DrawFace.
-	// the destination alpha is held on dfBoth if 'hda' is true, otherwide the
-	// alpha information is destroyed. 
+	// the destination alpha is held on dfAlpha if 'hda' is true, otherwide the
+	// alpha information is destroyed.
 
-	if(DrawFace != dfBoth && DrawFace != dfMain)
+	if(DrawFace != dfAlpha && DrawFace != dfMain)
 	{
 		TVPThrowExceptionMessage(TVPNotDrawableFaceType, TJS_W("pileRect"));
 	}
@@ -3588,7 +3619,7 @@ void tTJSNI_BaseLayer::PileRect(tjs_int dx, tjs_int dy, tTJSNI_BaseLayer *src,
 
 	switch(DrawFace)
 	{
-	case dfBoth:
+	case dfAlpha:
 		if(!MainImage) TVPThrowExceptionMessage(TVPNotDrawableLayerType);
 		if(!src->MainImage) TVPThrowExceptionMessage(TVPSourceLayerHasNoImage);
 		ImageModified =
@@ -3619,12 +3650,14 @@ void tTJSNI_BaseLayer::PileRect(tjs_int dx, tjs_int dy, tTJSNI_BaseLayer *src,
 void tTJSNI_BaseLayer::BlendRect(tjs_int dx, tjs_int dy, tTJSNI_BaseLayer *src,
 	const tTVPRect &srcrect, tjs_int opacity, bool hda)
 {
+	// obsoleted (use OperateRect)
+
 	// blend rectangle ( constant alpha blend )
 
 	// mostly the same as 'PileRect', but this does treat src as completely
 	// opaque image. 
 
-	if(DrawFace != dfBoth && DrawFace != dfMain)
+	if(DrawFace != dfAlpha && DrawFace != dfMain)
 	{
 		TVPThrowExceptionMessage(TVPNotDrawableFaceType, TJS_W("blendRect"));
 	}
@@ -3634,7 +3667,7 @@ void tTJSNI_BaseLayer::BlendRect(tjs_int dx, tjs_int dy, tTJSNI_BaseLayer *src,
 
 	switch(DrawFace)
 	{
-	case dfBoth:
+	case dfAlpha:
 		if(!MainImage) TVPThrowExceptionMessage(TVPNotDrawableLayerType);
 		if(!src->MainImage) TVPThrowExceptionMessage(TVPSourceLayerHasNoImage);
 		ImageModified =
@@ -3666,27 +3699,53 @@ void tTJSNI_BaseLayer::OperateRect(tjs_int dx, tjs_int dy, tTJSNI_BaseLayer *src
 		const tTVPRect &srcrect, tTVPBlendOperationMode mode,
 			tjs_int opacity, bool hda)
 {
-	// operate on rectangle ( add/sub/mul/div )
-
-	if(DrawFace != dfBoth && DrawFace != dfMain)
-	{
-		TVPThrowExceptionMessage(TVPNotDrawableFaceType, TJS_W("operateRect"));
-	}
+	// operate on rectangle ( add/sub/mul/div and others )
 
 	tTVPRect rect;
 	if(!ClipDestPointAndSrcRect(dx, dy, rect, srcrect)) return; // out of the clipping rect
 
 	// convert tTVPBlendOperationMode to tTVPBBBltMethod
-	tTVPBBBltMethod met = bmAdd;
+	tTVPBBBltMethod met;
+	bool met_set = false;
 	switch(mode)
 	{
-	case omAdditive: met = bmAdd; break;
-	case omSubtractive: met = bmSub; break;
-	case omMultiplicative: met = bmMul; break;
-	case omDodge: met = bmDodge; break;
-	case omDarken: met = bmDarken; break;
-	case omLighten: met = bmLighten; break;
-	case omScreen: met = bmScreen; break;
+	case omAdditive:		met_set = true; met = bmAdd;		break;
+	case omSubtractive:		met_set = true; met = bmSub;		break;
+	case omMultiplicative:	met_set = true; met = bmMul;		break;
+	case omDodge:			met_set = true; met = bmDodge;		break;
+	case omDarken:			met_set = true; met = bmDarken;		break;
+	case omLighten:			met_set = true; met = bmLighten;	break;
+	case omScreen:			met_set = true; met = bmScreen;		break;
+	case omAlpha:
+		if(DrawFace == dfAlpha)
+						{	met_set = true; met = bmAlphaOnAlpha; break;		}
+		else if(DrawFace == dfAddAlpha)
+						{	met_set = true; met = bmAlphaOnAddAlpha; break;		}
+		else if(DrawFace == dfMain)
+						{	met_set = true; met = bmAlpha; break;				}
+		break;
+	case omAddAlpha:
+		if(DrawFace == dfAlpha)
+						{	met_set = true; met = bmAddAlphaOnAlpha; break;		}
+		else if(DrawFace == dfAddAlpha)
+						{	met_set = true; met = bmAddAlphaOnAddAlpha; break;	}
+		else if(DrawFace == dfMain)
+						{	met_set = true; met = bmAddAlpha; break;			}
+		break;
+	case omOpaque:
+		if(DrawFace == dfAlpha)
+						{	met_set = true; met = bmCopyOnAlpha; break;			}
+		else if(DrawFace = dfAddAlpha)
+						{	met_set = true; met = bmCopyOnAddAlpha; break;		}
+		else if(DrawFace = dfMain)
+						{	met_set = true; met = bmCopy; break;				}
+		break;
+	}
+
+	if(!met_set)
+	{
+		// unknown blt mode
+		TVPThrowExceptionMessage(TVPNotDrawableFaceType, TJS_W("operateRect"));
 	}
 
 	// this method ignores destinaion drawface
@@ -3712,8 +3771,10 @@ void tTJSNI_BaseLayer::OperateRect(tjs_int dx, tjs_int dy, tTJSNI_BaseLayer *src
 void tTJSNI_BaseLayer::StretchPile(const tTVPRect &destrect, tTJSNI_BaseLayer *src,
 		const tTVPRect &srcrect, tjs_int opacity, tTVPBBStretchType mode, bool hda)
 {
+	// obsoleted (use OperateStretch)
+
 	// stretching pile
-	if(DrawFace != dfBoth && DrawFace != dfMain)
+	if(DrawFace != dfAlpha && DrawFace != dfMain)
 	{
 		TVPThrowExceptionMessage(TVPNotDrawableFaceType, TJS_W("stretchPile"));
 	}
@@ -3726,7 +3787,7 @@ void tTJSNI_BaseLayer::StretchPile(const tTVPRect &destrect, tTJSNI_BaseLayer *s
 
 	switch(DrawFace)
 	{
-	case dfBoth:
+	case dfAlpha:
 		if(!MainImage) TVPThrowExceptionMessage(TVPNotDrawableLayerType);
 		if(!src->MainImage) TVPThrowExceptionMessage(TVPSourceLayerHasNoImage);
 		ImageModified = MainImage->StretchBlt(ClipRect, destrect, src->MainImage, srcrect, bmAlphaOnAlpha,
@@ -3756,8 +3817,10 @@ void tTJSNI_BaseLayer::StretchPile(const tTVPRect &destrect, tTJSNI_BaseLayer *s
 void tTJSNI_BaseLayer::StretchBlend(const tTVPRect &destrect, tTJSNI_BaseLayer *src,
 		const tTVPRect &srcrect, tjs_int opacity, tTVPBBStretchType mode, bool hda)
 {
+	// obsoleted (use OperateStretch)
+
 	// stretching blend
-	if(DrawFace != dfBoth && DrawFace != dfMain)
+	if(DrawFace != dfAlpha && DrawFace != dfMain)
 	{
 		TVPThrowExceptionMessage(TVPNotDrawableFaceType, TJS_W("stretchBlend"));
 	}
@@ -3770,7 +3833,7 @@ void tTJSNI_BaseLayer::StretchBlend(const tTVPRect &destrect, tTJSNI_BaseLayer *
 
 	switch(DrawFace)
 	{
-	case dfBoth:
+	case dfAlpha:
 		if(!MainImage) TVPThrowExceptionMessage(TVPNotDrawableLayerType);
 		if(!src->MainImage) TVPThrowExceptionMessage(TVPSourceLayerHasNoImage);
 		ImageModified = MainImage->StretchBlt(ClipRect, destrect, src->MainImage, srcrect, bmCopyOnAlpha,
@@ -3800,11 +3863,13 @@ void tTJSNI_BaseLayer::AffinePile(const t2DAffineMatrix &matrix, tTJSNI_BaseLaye
 	const tTVPRect &srcrect, tjs_int opacity,
 	tTVPBBStretchType mode, bool hda)
 {
+	// obsoleted (use OperateAffine)
+
 	// affine pile
 	tTVPRect updaterect;
 	bool updated;
 
-	if(DrawFace != dfBoth && DrawFace != dfMain)
+	if(DrawFace != dfAlpha && DrawFace != dfMain)
 	{
 		TVPThrowExceptionMessage(TVPNotDrawableFaceType, TJS_W("affinePile"));
 	}
@@ -3812,7 +3877,7 @@ void tTJSNI_BaseLayer::AffinePile(const t2DAffineMatrix &matrix, tTJSNI_BaseLaye
 
 	switch(DrawFace)
 	{
-	case dfBoth:
+	case dfAlpha:
 	  {
 		if(!MainImage) TVPThrowExceptionMessage(TVPNotDrawableLayerType);
 		if(!src->MainImage) TVPThrowExceptionMessage(TVPSourceLayerHasNoImage);
@@ -3844,11 +3909,13 @@ void tTJSNI_BaseLayer::AffinePile(const tTVPPoint *points, tTJSNI_BaseLayer *src
 	const tTVPRect &srcrect, tjs_int opacity,
 	tTVPBBStretchType mode, bool hda)
 {
+	// obsoleted (use OperateAffine)
+
 	// affine pile
 	tTVPRect updaterect;
 	bool updated;
 
-	if(DrawFace != dfBoth && DrawFace != dfMain)
+	if(DrawFace != dfAlpha && DrawFace != dfMain)
 	{
 		TVPThrowExceptionMessage(TVPNotDrawableFaceType, TJS_W("affinePile"));
 	}
@@ -3856,7 +3923,7 @@ void tTJSNI_BaseLayer::AffinePile(const tTVPPoint *points, tTJSNI_BaseLayer *src
 
 	switch(DrawFace)
 	{
-	case dfBoth:
+	case dfAlpha:
 	  {
 		if(!MainImage) TVPThrowExceptionMessage(TVPNotDrawableLayerType);
 		if(!src->MainImage) TVPThrowExceptionMessage(TVPSourceLayerHasNoImage);
@@ -3888,11 +3955,13 @@ void tTJSNI_BaseLayer::AffineBlend(const t2DAffineMatrix &matrix, tTJSNI_BaseLay
 	const tTVPRect &srcrect, tjs_int opacity,
 	tTVPBBStretchType mode, bool hda)
 {
+	// obsoleted (use OperateAffine)
+
 	// affine blend
 	tTVPRect updaterect;
 	bool updated;
 
-	if(DrawFace != dfBoth && DrawFace != dfMain)
+	if(DrawFace != dfAlpha && DrawFace != dfMain)
 	{
 		TVPThrowExceptionMessage(TVPNotDrawableFaceType, TJS_W("affineBlend"));
 	}
@@ -3900,7 +3969,7 @@ void tTJSNI_BaseLayer::AffineBlend(const t2DAffineMatrix &matrix, tTJSNI_BaseLay
 
 	switch(DrawFace)
 	{
-	case dfBoth:
+	case dfAlpha:
 	  {
 		if(!MainImage) TVPThrowExceptionMessage(TVPNotDrawableLayerType);
 		if(!src->MainImage) TVPThrowExceptionMessage(TVPSourceLayerHasNoImage);
@@ -3932,11 +4001,13 @@ void tTJSNI_BaseLayer::AffineBlend(const tTVPPoint *points, tTJSNI_BaseLayer *sr
 	const tTVPRect &srcrect, tjs_int opacity,
 	tTVPBBStretchType mode, bool hda)
 {
+	// obsoleted (use OperateAffine)
+
 	// affine blend
 	tTVPRect updaterect;
 	bool updated;
 
-	if(DrawFace != dfBoth && DrawFace != dfMain)
+	if(DrawFace != dfAlpha && DrawFace != dfMain)
 	{
 		TVPThrowExceptionMessage(TVPNotDrawableFaceType, TJS_W("affineBlend"));
 	}
@@ -3944,7 +4015,7 @@ void tTJSNI_BaseLayer::AffineBlend(const tTVPPoint *points, tTJSNI_BaseLayer *sr
 
 	switch(DrawFace)
 	{
-	case dfBoth:
+	case dfAlpha:
 	  {
 		if(!MainImage) TVPThrowExceptionMessage(TVPNotDrawableLayerType);
 		if(!src->MainImage) TVPThrowExceptionMessage(TVPSourceLayerHasNoImage);

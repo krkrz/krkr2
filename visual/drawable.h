@@ -21,7 +21,7 @@ enum tTVPLayerType
 {
 	ltBinder,
 	ltCoverRect,
-	ltTransparent,
+	ltTransparent, // alpha blend
 	ltAdditive,
 	ltSubtractive,
 	ltMultiplicative,
@@ -30,7 +30,8 @@ enum tTVPLayerType
 	ltDodge,
 	ltDarken,
 	ltLighten,
-	ltScreen
+	ltScreen,
+	ltAddAlpha // additive alpha blend
 };
 //---------------------------------------------------------------------------
 /*]*/
@@ -47,7 +48,10 @@ enum tTVPBlendOperationMode
 	omDodge = ltDodge,
 	omDarken = ltDarken,
 	omLighten = ltLighten,
-	omScreen = ltScreen
+	omScreen = ltScreen,
+	omAlpha = ltTransparent,
+	omAddAlpha = ltAddAlpha,
+	omOpaque = ltCoverRect
 };
 //---------------------------------------------------------------------------
 /*]*/
