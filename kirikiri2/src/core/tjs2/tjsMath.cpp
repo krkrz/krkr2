@@ -9,9 +9,6 @@
 // TJS Math class implementation
 //---------------------------------------------------------------------------
 #include "tjsCommHead.h"
-#ifdef __BORLANDC__
-#pragma hdrstop
-#endif
 
 #include "tjsMath.h"
 #include "math.h"

@@ -843,7 +843,7 @@ struct tTJSVariantOctet_S
 // tTJSVariant_S
 //---------------------------------------------------------------------------
 #ifdef __BORLANDC__
-	#pragma option push -b
+#pragma option push -b
 #endif
 enum tTJSVariantType
 {
@@ -855,7 +855,7 @@ enum tTJSVariantType
 	tvtReal
 };
 #ifdef __BORLANDC__
-	#pragma option pop
+#pragma option pop
 #endif
 
 
@@ -1957,7 +1957,8 @@ enum tTVPPeriodEventReason
 {
 	perLoop, // the event is by loop rewind
 	perPeriod, // the event is by period point specified by the user
-	perPrepare // the event is by prepare() method
+	perPrepare, // the event is by prepare() method
+	perSegLoop, // the event is by segment loop rewind
 };
 
 

@@ -88,8 +88,8 @@
     <WARNINGS value="-wprc -wucp -w-par -w-8027 -w-8026 -wdef -wcln -wamp -wamb"/>
   </MACROS>
   <OPTIONS>
-    <CFLAG1 value="-Od -H=$(BCB)\lib\tvp32.csm -Vx -Ve -xf -X- -r- -pr -a4 -6 -b- -d -k -y -v 
-      -vi- -c -tW -tWM"/>
+    <CFLAG1 value="-Od -H=$(BCB)\lib\tvp32.csm -Hh=tjsCommHead.h -Hc -Vx -Ve -xf -X- -r- -pr 
+      -a4 -6 -b- -d -k -y -v -vi- -c -tW -tWM"/>
     <PFLAGS value="-N2intermediate -N0intermediate -$Y+ -$W -$O- -v -JPHNE -M"/>
     <RFLAGS value=""/>
     <AFLAGS value="/mx /mv64 /m5 /w2 /zi /l /z"/>
@@ -187,6 +187,12 @@ RootDir=
   </IDEOPTIONS>
 
   <FILES>
+    <FILE type="override" value="..\..\visual\tvpgl.c" translator="Auto">
+      <CFLAG1 value=" -O2 -r -k- -y -v -vi"/>
+    </FILE>
+    <FILE type="override" value="..\..\visual\GraphicsLoaderIntf.cpp" translator="Auto">
+      <WARNOPTSTR value=" -w-par"/>
+    </FILE>
     <FILE type="override" value="..\..\tjs2\tjspp.tab.cpp" translator="Auto">
       <CFLAG1 value=" -vGc-"/>
     </FILE>
@@ -195,12 +201,6 @@ RootDir=
     </FILE>
     <FILE type="override" value="..\..\tjs2\tjs.tab.cpp" translator="Auto">
       <CFLAG1 value=" -vGc-"/>
-    </FILE>
-    <FILE type="override" value="..\..\visual\tvpgl.c" translator="Auto">
-      <CFLAG1 value=" -O2 -r -k- -y -v -vi"/>
-    </FILE>
-    <FILE type="override" value="..\..\visual\GraphicsLoaderIntf.cpp" translator="Auto">
-      <WARNOPTSTR value=" -w-par"/>
     </FILE>
   </FILES>
 </PROJECT>

@@ -9,7 +9,6 @@
 // Base Layer Bitmap implementation
 //---------------------------------------------------------------------------
 #include "tjsCommHead.h"
-#pragma hdrstop
 
 #include <memory>
 #include <stdlib.h>

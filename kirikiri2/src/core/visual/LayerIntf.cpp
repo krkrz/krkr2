@@ -10,7 +10,6 @@
 //---------------------------------------------------------------------------
 
 #include "tjsCommHead.h"
-#pragma hdrstop
 
 #include "tjsArray.h"
 #include "LayerIntf.h"

@@ -11,7 +11,6 @@
 	#pragma hdrstop
 #else
 	#include "tjsCommHead.h"
-	#pragma hdrstop
 #endif
 
 #include "ConfSettingsUnit.h"

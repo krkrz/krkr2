@@ -11,9 +11,6 @@
 
 
 #include "tjsCommHead.h"
-#ifdef __BORLANDC__
-#pragma hdrstop
-#endif
 
 #ifdef TJS_DEBUG_PROFILE_TIME
 #include <windows.h>

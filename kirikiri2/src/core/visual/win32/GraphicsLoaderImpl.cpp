@@ -9,7 +9,6 @@
 // Graphics Loader ( loads graphic format from storage )
 //---------------------------------------------------------------------------
 #include "tjsCommHead.h"
-#pragma hdrstop
 
 #include "GraphicsLoaderImpl.h"
 #include "GraphicsLoaderIntf.h"

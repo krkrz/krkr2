@@ -9,7 +9,6 @@
 // Simple Pseudo Random Generator
 //---------------------------------------------------------------------------
 #include "tjsCommHead.h"
-#pragma hdrstop
 
 #include "Random.h"
 #include "md5.h"
