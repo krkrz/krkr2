@@ -49,6 +49,14 @@ if(TVPCPUType & TVP_CPU_HAS_MMX)
 if(TVPCPUType & TVP_CPU_HAS_MMX)
 	 TVPLinTransConstAlphaBlend =  TVPLinTransConstAlphaBlend_mmx_a;
 if(TVPCPUType & TVP_CPU_HAS_MMX)
+	 TVPInterpLinTransCopy =  TVPInterpLinTransCopy_mmx_a;
+if(TVPCPUType & TVP_CPU_HAS_MMX)
+	 TVPInterpLinTransConstAlphaBlend =  TVPInterpLinTransConstAlphaBlend_mmx_a;
+if(TVPCPUType & TVP_CPU_HAS_MMX)
+	 TVPInterpLinTransAdditiveAlphaBlend =  TVPInterpLinTransAdditiveAlphaBlend_mmx_a;
+if(TVPCPUType & TVP_CPU_HAS_MMX)
+	 TVPInterpLinTransAdditiveAlphaBlend_o =  TVPInterpLinTransAdditiveAlphaBlend_o_mmx_a;
+if(TVPCPUType & TVP_CPU_HAS_MMX)
 	 TVPAlphaBlend =  TVPAlphaBlend_mmx_a;
 if(TVPCPUType & TVP_CPU_HAS_MMX)
 	 TVPAlphaBlend_o =  TVPAlphaBlend_o_mmx_a;
