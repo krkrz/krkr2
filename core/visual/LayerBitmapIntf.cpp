@@ -17,6 +17,20 @@
 #include "tvpgl.h"
 
 
+//#define TVP_FORCE_BILINEAR
+
+
+//---------------------------------------------------------------------------
+// To forcing bilinear interpolation, define TVP_FORCE_BILINEAR.
+
+#ifdef TVP_FORCE_BILINEAR
+	#define TVP_BILINEAR_FORCE_COND true
+#else
+	#define TVP_BILINEAR_FORCE_COND false
+#endif
+//---------------------------------------------------------------------------
+
+
 
 //---------------------------------------------------------------------------
 // intact ( does not affect ) gamma adjustment data
@@ -1550,9 +1564,9 @@ bool tTVPBaseBitmap::StretchBlt(tTVPRect cliprect,
 		if(opa == 255)
 		{
 			// stretching copy
-			if(mode >= stFastLinear)
+			if(TVP_BILINEAR_FORCE_COND || mode >= stFastLinear)
 			{
-				if(!hda)
+				if(TVP_BILINEAR_FORCE_COND || !hda)
 				{
 					TVPDoBiLinearStretchLoop( // bilinear interpolation
 						tTVPInterpStretchCopyFunctionObject(),
@@ -1577,10 +1591,10 @@ bool tTVPBaseBitmap::StretchBlt(tTVPRect cliprect,
 		else
 		{
 			// stretching constant ratio alpha blendng
-			if(mode >= stFastLinear)
+			if(TVP_BILINEAR_FORCE_COND || mode >= stFastLinear)
 			{
 				// bilinear interpolation
-				if(!hda)
+				if(TVP_BILINEAR_FORCE_COND || !hda)
 				{
 					TVPDoBiLinearStretchLoop( // bilinear interpolation
 						tTVPInterpStretchConstAlphaBlendFunctionObject(opa),
@@ -1667,9 +1681,9 @@ bool tTVPBaseBitmap::StretchBlt(tTVPRect cliprect,
 		// additive alpha blending
 		if(opa == 255)
 		{
-			if(!hda)
+			if(TVP_BILINEAR_FORCE_COND || !hda)
 			{
-				if(mode >= stFastLinear)
+				if(TVP_BILINEAR_FORCE_COND || mode >= stFastLinear)
 				{
 					TVPDoBiLinearStretchLoop( // bilinear interpolation
 						tTVPInterpStretchAdditiveAlphaBlendFunctionObject(),
@@ -1691,9 +1705,9 @@ bool tTVPBaseBitmap::StretchBlt(tTVPRect cliprect,
 		}
 		else
 		{
-			if(!hda)
+			if(TVP_BILINEAR_FORCE_COND || !hda)
 			{
-				if(mode >= stFastLinear)
+				if(TVP_BILINEAR_FORCE_COND || mode >= stFastLinear)
 				{
 					TVPDoBiLinearStretchLoop( // bilinear interpolation
 						tTVPInterpStretchAdditiveAlphaBlend_oFunctionObject(opa),
@@ -2451,9 +2465,9 @@ bool tTVPBaseBitmap::AffineBlt(tTVPRect destrect, const tTVPBaseBitmap *ref,
 			case bmCopy:
 				if(opa == 255)
 				{
-					if(!hda)
+					if(TVP_BILINEAR_FORCE_COND || !hda)
 					{
-						if(type >= stFastLinear)
+						if(TVP_BILINEAR_FORCE_COND || type >= stFastLinear)
 						{
 							// bilinear interpolation
 							TVPDoBilinearAffineLoop(
@@ -2489,9 +2503,9 @@ bool tTVPBaseBitmap::AffineBlt(tTVPRect destrect, const tTVPBaseBitmap *ref,
 				}
 				else
 				{
-					if(!hda)
+					if(TVP_BILINEAR_FORCE_COND || !hda)
 					{
-						if(type >= stFastLinear)
+						if(TVP_BILINEAR_FORCE_COND || type >= stFastLinear)
 						{
 							// bilinear interpolation
 							TVPDoBilinearAffineLoop(
@@ -2578,9 +2592,9 @@ bool tTVPBaseBitmap::AffineBlt(tTVPRect destrect, const tTVPBaseBitmap *ref,
 				// additive alpha blending, ignoring destination alpha
 				if(opa == 255)
 				{
-					if(!hda)
+					if(TVP_BILINEAR_FORCE_COND || !hda)
 					{
-						if(type >= stFastLinear)
+						if(TVP_BILINEAR_FORCE_COND || type >= stFastLinear)
 						{
 							// bilinear interpolation
 							TVPDoBilinearAffineLoop(
@@ -2605,9 +2619,9 @@ bool tTVPBaseBitmap::AffineBlt(tTVPRect destrect, const tTVPBaseBitmap *ref,
 				}
 				else
 				{
-					if(!hda)
+					if(TVP_BILINEAR_FORCE_COND || !hda)
 					{
-						if(type >= stFastLinear)
+						if(TVP_BILINEAR_FORCE_COND || type >= stFastLinear)
 						{
 							// bilinear interpolation
 							TVPDoBilinearAffineLoop(
