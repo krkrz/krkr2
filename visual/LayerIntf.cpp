@@ -7255,10 +7255,10 @@ TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/pileRect)
 	rect.right += rect.left;
 	rect.bottom += rect.top;
 
-	if(numparams >= 9 && param[9]->Type() != tvtVoid)
+	if(numparams >= 9 && param[8]->Type() != tvtVoid)
 	{
 		TVPAddLog(TVPFormatMessage(TVPHoldDestinationAlphaParameterIsNowDeprecated,
-			TJS_W("Layer.pileRect"), TJS_W("10")));
+			TJS_W("Layer.pileRect"), TJS_W("9")));
 	}
 
 	_this->PileRect(*param[0], *param[1], src, rect,
@@ -7287,10 +7287,10 @@ TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/blendRect)
 	rect.right += rect.left;
 	rect.bottom += rect.top;
 
-	if(numparams >= 9 && param[9]->Type() != tvtVoid)
+	if(numparams >= 9 && param[8]->Type() != tvtVoid)
 	{
 		TVPAddLog(TVPFormatMessage(TVPHoldDestinationAlphaParameterIsNowDeprecated,
-			TJS_W("Layer.blendRect"), TJS_W("10")));
+			TJS_W("Layer.blendRect"), TJS_W("9")));
 	}
 
 	_this->BlendRect(*param[0], *param[1], src, rect,
