@@ -294,9 +294,43 @@ void tTJSInterCodeContext::Disassemble(
 			bool first = true;
 			tjs_char buf[256];
 			tjs_int c = 0;
-			size = st + (num<0?0:num);
-			if(num>=0)
+			if(num == -1)
 			{
+				// omit arg
+				size = st;
+				msg += TJS_W("...");
+			}
+			else if(num == -2)
+			{
+				// expand arg
+				st ++;
+				num = CodeArea[i+st-1];
+				size = st + num * 2;
+				for(tjs_int j = 0; j < num; j++)
+				{
+					if(!first) msg += TJS_W(", ");
+					first = false;
+					switch(CodeArea[i+st+j*2])
+					{
+					case fatNormal:
+						TJS_sprintf(buf, TJS_W("%%%d"),
+							TJS_FROM_VM_REG_ADDR(CodeArea[i+st+j*2+1]));
+						break;
+					case fatExpand:
+						TJS_sprintf(buf, TJS_W("%%%d*"),
+							TJS_FROM_VM_REG_ADDR(CodeArea[i+st+j*2+1]));
+						break;
+					case fatUnnamedExpand:
+						TJS_strcpy(buf, TJS_W("*"));
+						break;
+					}
+					msg += buf;
+				}
+			}
+			else
+			{
+				// normal operation
+				size = st + num;
 				while(num--)
 				{
 					if(!first) msg += TJS_W(", ");
@@ -306,10 +340,6 @@ void tTJSInterCodeContext::Disassemble(
 					c++;
 					msg += buf;
 				}
-			}
-			else
-			{
-				msg += TJS_W("...");
 			}
 
 			msg += TJS_W(")");

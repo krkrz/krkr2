@@ -181,6 +181,7 @@ int __yyerror(char * msg, void *pm);
 	T_POSTINCREMENT
 	T_SUBSTANCE
 	T_ARG
+	T_EXPANDARG
 	T_INLINEARRAY
 	T_ARRAYARG
 	T_INLINEDIC
@@ -199,9 +200,9 @@ int __yyerror(char * msg, void *pm);
 %type <np>
 	expr comma_expr assign_expr cond_expr logical_or_expr
 	logical_and_expr inclusive_or_expr exclusive_or_expr and_expr identical_expr
-	compare_expr shift_expr add_sub_expr mul_div_expr unary_expr incontextof_expr
-	priority_expr factor_expr call_arg call_arg_list func_expr_def func_call_expr
-	expr_no_comma inline_array array_elm inline_dic dic_elm
+	compare_expr shift_expr add_sub_expr mul_div_expr mul_div_expr_and_asterisk
+	unary_expr incontextof_expr priority_expr factor_expr call_arg call_arg_list
+	func_expr_def func_call_expr expr_no_comma inline_array array_elm inline_dic dic_elm
 
 %%
 
@@ -376,15 +377,21 @@ func_expr_def
 
 /* the argument definition of a function definition */
 func_decl_arg_opt
-	:
+	: /* empty */
+	| "(" func_decl_arg_collapse ")"
 	| "(" func_decl_arg_list ")"
+	| "(" func_decl_arg_at_least_one "," func_decl_arg_collapse ")"
 ;
 
 /* the argument list */
 func_decl_arg_list
-	:
-	| func_decl_arg
-	| func_decl_arg_list "," func_decl_arg
+	: /* empty */
+	| func_decl_arg_at_least_one
+;
+
+func_decl_arg_at_least_one
+	: func_decl_arg
+	| func_decl_arg_at_least_one "," func_decl_arg
 ;
 
 func_decl_arg
@@ -392,6 +399,18 @@ func_decl_arg
 												lx->GetString($1), NULL); }
 	| T_SYMBOL "=" expr_no_comma			{ cc->AddFunctionDeclArg(
 												lx->GetString($1), $3); }
+;
+
+func_decl_arg_collapse
+	: "*"									{ cc->AddFunctionDeclArgCollapse(
+												NULL); }
+	| T_SYMBOL "*"							{ cc->AddFunctionDeclArgCollapse(
+												lx->GetString($1)); }
+/*
+	These are currently not supported
+	| T_SYMBOL "*" "=" inline_array			{ ; }
+	| T_SYMBOL "*=" inline_array			{ ; }
+*/
 ;
 
 /* a property handler definition */
@@ -612,7 +631,11 @@ mul_div_expr
 	| mul_div_expr "%" unary_expr				{ $$ = cc->MakeNP2(T_PERCENT, $1, $3); }
 	| mul_div_expr "/" unary_expr				{ $$ = cc->MakeNP2(T_SLASH, $1, $3); }
 	| mul_div_expr "\\" unary_expr				{ $$ = cc->MakeNP2(T_BACKSLASH, $1, $3); }
-	| mul_div_expr "*" unary_expr				{ $$ = cc->MakeNP2(T_ASTERISK, $1, $3); }
+	| mul_div_expr_and_asterisk unary_expr		{ $$ = cc->MakeNP2(T_ASTERISK, $1, $2); }
+;
+
+mul_div_expr_and_asterisk
+	: mul_div_expr "*"							{ $$ = $1; }
 ;
 
 unary_expr
@@ -702,6 +725,8 @@ call_arg_list
 
 call_arg
 	: /* empty */						{ $$ = NULL; }
+	| "*"								{ $$ = cc->MakeNP1(T_EXPANDARG, NULL); }
+	| mul_div_expr_and_asterisk			{ $$ = cc->MakeNP1(T_EXPANDARG, $1); }
 	| expr_no_comma						{ $$ = $1; }
 ;
 
@@ -756,7 +781,7 @@ dic_elm
 
 /* a dummy element at the tail of inline dictionary elements */
 dic_dummy_elm_opt
-	:
+	: /* empty */
 	| ","
 ;
 

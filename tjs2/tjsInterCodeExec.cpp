@@ -832,6 +832,22 @@ void tTJSInterCodeContext::ExecuteAsFunction(iTJSDispatch2 *objthis,
 				for(; i<FuncDeclArgCount; i++) (r--)->Clear();
 			}
 
+			// collapse into array when FuncDeclCollapseBase >= 0
+			if(FuncDeclCollapseBase >= 0)
+			{
+				tTJSVariant *r = ra - 3 - FuncDeclCollapseBase; // target variant
+				iTJSDispatch2 * dsp = TJSCreateArrayObject();
+				*r = tTJSVariant(dsp, dsp);
+				dsp->Release();
+
+				if(numargs > FuncDeclCollapseBase)
+				{
+					// there are arguments to store
+					for(tjs_int c = 0, i = FuncDeclCollapseBase; i < numargs; i++, c++)
+						dsp->PropSetByNum(0, c, args[i], dsp);
+				}
+			}
+
 			// execute
 			ExecuteCode(ra, start_ip, args, numargs, result);
 		}
@@ -1219,18 +1235,15 @@ tjs_int tTJSInterCodeContext::ExecuteCode(tTJSVariant *ra_org, tjs_int startip,
 
 			case VM_CALL:
 			case VM_NEW:
-				CallFunction(ra, code, args, numargs);
-				code += (code[3]<0?0:code[3]) + 4;
+				code += CallFunction(ra, code, args, numargs);
 				break;
 
 			case VM_CALLD:
-				CallFunctionDirect(ra, code, args, numargs);
-				code += (code[4]<0?0:code[4]) + 5;
+				code += CallFunctionDirect(ra, code, args, numargs);
 				break;
 
 			case VM_CALLI:
-				CallFunctionIndirect(ra, code, args, numargs);
-				code += (code[4]<0?0:code[4]) + 5;
+				code += CallFunctionIndirect(ra, code, args, numargs);
 				break;
 
 			case VM_GPD:
@@ -2015,223 +2028,275 @@ void tTJSInterCodeContext::TypeOfMemberIndirect(tTJSVariant *ra,
 	}
 }
 //---------------------------------------------------------------------------
-#define CALL_E(numargs, args) \
-	tTJSVariantClosure clo = TJS_GET_VM_REG(ra, code[2]).AsObjectClosure();  \
-	try \
-	{ \
-		if(code[0] == VM_CALL) \
-		{ \
-			hr = clo.FuncCall(0, NULL, NULL, \
-				code[1]?TJS_GET_VM_REG_ADDR(ra, code[1]):NULL, (numargs), (args), \
-					clo.ObjThis?clo.ObjThis:ra[-1].AsObjectNoAddRef()); \
-		} \
-		else \
-		{ \
-			iTJSDispatch2 *dsp; \
-			hr = clo.CreateNew(0, NULL, NULL, \
-				&dsp, (numargs), (args), \
-					clo.ObjThis?clo.ObjThis:ra[-1].AsObjectNoAddRef()); \
-			if(TJS_SUCCEEDED(hr)) \
-			{ \
-				if(dsp) \
-				{ \
-					if(code[1]) TJS_GET_VM_REG(ra, code[1]) = tTJSVariant(dsp, dsp); \
-					dsp->Release(); \
-				} \
-			} \
-		}  \
-	} \
-	catch(...) \
-	{  \
-		clo.Release(); \
-		throw; \
-	} \
-	clo.Release();
-	// TODO: Null Check
+// Macros for preparing function argument pointer array.
+// code[0] is an argument count;
+// -1 for omitting ('...') argument to passing unmodified args from the caller.
+// -2 for expanding array to argument
+#define TJS_PASS_ARGS_PREPARED_ARRAY_COUNT 20
+
+#define TJS_BEGIN_FUNC_CALL_ARGS(_code)                                   \
+	tTJSVariant ** pass_args;                                             \
+	tTJSVariant *pass_args_p[TJS_PASS_ARGS_PREPARED_ARRAY_COUNT];         \
+	tTJSVariant * pass_args_v = NULL;                                     \
+	tjs_int code_size;                                                    \
+	bool alloc_args = false;                                              \
+	try                                                                   \
+	{                                                                     \
+		tjs_int pass_args_count = (_code)[0];                             \
+		if(pass_args_count == -1)                                         \
+		{                                                                 \
+			/* omitting args; pass intact aguments from the caller */     \
+			pass_args = args;                                             \
+			pass_args_count = numargs;                                    \
+			code_size = 1;                                                \
+		}                                                                 \
+		else if(pass_args_count == -2)                                    \
+		{                                                                 \
+			tjs_int args_v_count = 0;                                     \
+			/* count total argument count */                              \
+			pass_args_count = 0;                                          \
+			tjs_int arg_written_count = (_code)[1];                       \
+			code_size = arg_written_count * 2 + 2;                        \
+			for(tjs_int i = 0; i < arg_written_count; i++)                \
+			{                                                             \
+				switch((_code)[i*2+2])                                    \
+				{                                                         \
+				case fatNormal:                                           \
+					pass_args_count ++;                                   \
+					break;                                                \
+				case fatExpand:                                           \
+					args_v_count +=                                       \
+						TJSGetArrayElementCount(                          \
+							TJS_GET_VM_REG(ra, (_code)[i*2+1+2]).         \
+								AsObjectNoAddRef());                      \
+					break;                                                \
+				case fatUnnamedExpand:                                    \
+					pass_args_count +=                                    \
+						(numargs > FuncDeclUnnamedArgArrayBase)?          \
+							(numargs - FuncDeclUnnamedArgArrayBase) : 0;  \
+					break;                                                \
+				}                                                         \
+			}                                                             \
+			pass_args_count += args_v_count;                              \
+			/* allocate temporary variant array for Array object */       \
+			pass_args_v = new tTJSVariant[args_v_count];                  \
+			/* allocate pointer array */                                  \
+			if(pass_args_count < TJS_PASS_ARGS_PREPARED_ARRAY_COUNT)      \
+				pass_args = pass_args_p;                                  \
+			else                                                          \
+				pass_args = new tTJSVariant * [pass_args_count],          \
+					alloc_args = true;                                    \
+			/* create pointer array to pass to callee function */         \
+			args_v_count = 0;                                             \
+			pass_args_count = 0;                                          \
+			for(tjs_int i = 0; i < arg_written_count; i++)                \
+			{                                                             \
+				switch((_code)[i*2+2])                                    \
+				{                                                         \
+				case fatNormal:                                           \
+					pass_args[pass_args_count++] =                        \
+						TJS_GET_VM_REG_ADDR(ra, (_code)[i*2+1+2]);        \
+					break;                                                \
+				case fatExpand:                                           \
+				  {                                                       \
+					tjs_int count = TJSCopyArrayElementTo(                \
+						TJS_GET_VM_REG(ra, (_code)[i*2+1+2]).             \
+								AsObjectNoAddRef(),                       \
+								pass_args_v + args_v_count, 0, -1);       \
+					for(tjs_int j = 0; j < count; j++)                    \
+						pass_args[pass_args_count++] =                    \
+							pass_args_v + j + args_v_count;               \
+	                                                                      \
+					args_v_count += count;                                \
+	                                                                      \
+					break;                                                \
+				  }                                                       \
+				case fatUnnamedExpand:                                    \
+				  {                                                       \
+					tjs_int count =                                       \
+						(numargs > FuncDeclUnnamedArgArrayBase)?          \
+							(numargs - FuncDeclUnnamedArgArrayBase) : 0;  \
+					for(tjs_int j = 0; j < count; j++)                    \
+						pass_args[pass_args_count++] =                    \
+							args[FuncDeclUnnamedArgArrayBase + j];        \
+					break;                                                \
+				  }                                                       \
+				}                                                         \
+			}                                                             \
+		}                                                                 \
+		else if(pass_args_count <= TJS_PASS_ARGS_PREPARED_ARRAY_COUNT)    \
+		{                                                                 \
+			code_size = pass_args_count + 1;                              \
+			pass_args = pass_args_p;                                      \
+			for(tjs_int i = 0; i < pass_args_count; i++)                  \
+				pass_args[i] = TJS_GET_VM_REG_ADDR(ra, (_code)[1+i]);     \
+		}                                                                 \
+		else                                                              \
+		{                                                                 \
+			code_size = pass_args_count + 1;                              \
+			pass_args = new tTJSVariant * [pass_args_count];              \
+			alloc_args = true;                                            \
+			for(tjs_int i = 0; i < pass_args_count; i++)                  \
+				pass_args[i] = TJS_GET_VM_REG_ADDR(ra, (_code)[1+i]);     \
+		}
 
 
-void tTJSInterCodeContext::CallFunction(tTJSVariant *ra,
+#define TJS_END_FUNC_CALL_ARGS                                            \
+	}                                                                     \
+	catch(...)                                                            \
+	{                                                                     \
+		if(alloc_args) delete [] pass_args;                               \
+		if(pass_args_v) delete [] pass_args_v;                            \
+		throw;                                                            \
+	}                                                                     \
+	if(alloc_args) delete [] pass_args;                                   \
+	if(pass_args_v) delete [] pass_args_v;
+//---------------------------------------------------------------------------
+tjs_int tTJSInterCodeContext::CallFunction(tTJSVariant *ra,
 	const tjs_int32 *code, tTJSVariant **args, tjs_int numargs)
 {
-	// function calling
+	// function calling / create new object
 	tjs_error hr;
-	if(code[3] < 0) // code[3] = argument count
-	{
-		CALL_E(numargs, args);
-	}
-	else if(code[3] <= 32)
-	{
-		tTJSVariant *ptr[32];
 
-		for(tjs_int i = 0; i<code[3]; i++)
-			ptr[i] = TJS_GET_VM_REG_ADDR(ra, code[4+i]);
+	TJS_BEGIN_FUNC_CALL_ARGS(code + 3)
 
-		CALL_E(code[3], ptr);
-	}
-	else
-	{
-		tTJSVariant **ptr = new tTJSVariant *[code[3]];
-
-		for(tjs_int i = 0; i<code[3]; i++)
-			ptr[i] = TJS_GET_VM_REG_ADDR(ra, code[4+i]);
-
+		tTJSVariantClosure clo = TJS_GET_VM_REG(ra, code[2]).AsObjectClosure();
 		try
 		{
-			CALL_E(code[3], ptr);
+			if(code[0] == VM_CALL)
+			{
+				hr = clo.FuncCall(0, NULL, NULL,
+					code[1]?TJS_GET_VM_REG_ADDR(ra, code[1]):NULL, pass_args_count, pass_args,
+						clo.ObjThis?clo.ObjThis:ra[-1].AsObjectNoAddRef());
+			}
+			else
+			{
+				iTJSDispatch2 *dsp;
+				hr = clo.CreateNew(0, NULL, NULL,
+					&dsp, pass_args_count, pass_args,
+						clo.ObjThis?clo.ObjThis:ra[-1].AsObjectNoAddRef());
+				if(TJS_SUCCEEDED(hr))
+				{
+					if(dsp)
+					{
+						if(code[1]) TJS_GET_VM_REG(ra, code[1]) = tTJSVariant(dsp, dsp);
+						dsp->Release();
+					}
+				}
+			} 
 		}
 		catch(...)
-		{
-			delete [] ptr;
+		{ 
+			clo.Release();
 			throw;
 		}
-		delete [] ptr;
-	}
+		clo.Release();
+		// TODO: Null Check
+
+	TJS_END_FUNC_CALL_ARGS
 
 	if(TJS_FAILED(hr)) TJSThrowFrom_tjs_error(hr, TJS_W(""));
-}
-//---------------------------------------------------------------------------
-#undef CALL_E
-#define CALL_E(name, hint, numargs, args) \
-		hr = clo.FuncCall(0, \
-			(name), (hint), \
-			code[1]?TJS_GET_VM_REG_ADDR(ra, code[1]):NULL, (numargs), (args), \
-					clo.ObjThis?clo.ObjThis:ra[-1].AsObjectNoAddRef());
 
-void tTJSInterCodeContext::CallFunctionDirect(tTJSVariant *ra,
+	return code_size + 3;
+}
+#undef _code
+//---------------------------------------------------------------------------
+tjs_int tTJSInterCodeContext::CallFunctionDirect(tTJSVariant *ra,
 	const tjs_int32 *code, tTJSVariant **args, tjs_int numargs)
 {
-	tTJSVariantType type = TJS_GET_VM_REG(ra, code[2]).Type();
-	if(type == tvtString)
-	{
-		ProcessStringFunction(ra, code, code[1]?TJS_GET_VM_REG_ADDR(ra, code[1]):NULL);
-		return;
-	}
-	if(type == tvtOctet)
-	{
-		ProcessOctetFunction(ra, code, code[1]?TJS_GET_VM_REG_ADDR(ra, code[1]):NULL);
-		return;
-	}
-
-	tTJSVariantClosure clo =  TJS_GET_VM_REG(ra, code[2]).AsObjectClosure();
 	tjs_error hr;
-	try
-	{
-		tTJSVariant *name = TJS_GET_VM_REG_ADDR(DataArea, code[3]);
-		if(code[4] < 0) // code[4] is argument count
+
+	TJS_BEGIN_FUNC_CALL_ARGS(code + 4)
+
+		tTJSVariantType type = TJS_GET_VM_REG(ra, code[2]).Type();
+		tTJSVariant * name = TJS_GET_VM_REG_ADDR(DataArea, code[3]);
+		if(type == tvtString)
 		{
-			CALL_E(name->GetString(), name->GetHint(), numargs, args);
+			ProcessStringFunction(name->GetString(),
+				TJS_GET_VM_REG(ra, code[2]),
+				pass_args, pass_args_count, code[1]?TJS_GET_VM_REG_ADDR(ra, code[1]):NULL);
 		}
-		else if(code[4] <= 32)
+		else if(type == tvtOctet)
 		{
-			tTJSVariant *ptr[32];
-
-			for(tjs_int i = 0; i<code[4]; i++)
-				ptr[i] = TJS_GET_VM_REG_ADDR(ra, code[5+i]);
-
-			CALL_E(name->GetString(), name->GetHint(), code[4], ptr);
+			ProcessOctetFunction(name->GetString(),
+				TJS_GET_VM_REG(ra, code[2]),
+				pass_args, pass_args_count, code[1]?TJS_GET_VM_REG_ADDR(ra, code[1]):NULL);
 		}
 		else
 		{
-			tTJSVariant **ptr = new tTJSVariant *[code[4]];
-
-			for(tjs_int i = 0; i<code[4]; i++)
-				ptr[i] = TJS_GET_VM_REG_ADDR(ra, code[5+i]);
-
+			tTJSVariantClosure clo =  TJS_GET_VM_REG(ra, code[2]).AsObjectClosure();
 			try
 			{
-				CALL_E(name->GetString(), name->GetHint(), code[4], ptr);
-			}
-			catch(...)
-			{
-				delete [] ptr;
-				throw;
-			}
-			delete [] ptr;
-		}
-	}
-	catch(...)
-	{
-		clo.Release();
-		throw;
-	}
-	clo.Release();
-	if(TJS_FAILED(hr)) TJSThrowFrom_tjs_error(hr, TJS_GET_VM_REG(DataArea, code[3]).GetString());
-}
-//---------------------------------------------------------------------------
-void tTJSInterCodeContext::CallFunctionIndirect(tTJSVariant *ra,
-	const tjs_int32 *code, tTJSVariant **args, tjs_int numargs)
-{
-	tTJSVariantType type = TJS_GET_VM_REG(ra, code[2]).Type();
-	if(type == tvtString)
-	{
-		ProcessStringFunction(ra, code, code[1]?TJS_GET_VM_REG_ADDR(ra, code[1]):NULL);
-		return;
-	}
-	if(type == tvtOctet)
-	{
-		ProcessOctetFunction(ra, code, code[1]?TJS_GET_VM_REG_ADDR(ra, code[1]):NULL);
-		return;
-	}
-
-	tTJSVariantClosure clo =  TJS_GET_VM_REG(ra, code[2]).AsObjectClosure();
-	tTJSVariantString *str;
-	try
-	{
-		str = TJS_GET_VM_REG(ra, code[3]).AsString();
-	}
-	catch(...)
-	{
-		clo.Release();
-		throw;
-	}
-
-	tjs_error hr;
-	try
-	{
-		if(code[4] < 0) // code[4] is argument count
-		{
-			CALL_E((const tjs_char*)*str, NULL, numargs, args);
-		}
-		else if(code[4] <= 32)
-		{
-			tTJSVariant *ptr[32];
-
-			for(tjs_int i = 0; i<code[4]; i++)
-				ptr[i] = TJS_GET_VM_REG_ADDR(ra, code[5+i]);
-
-			CALL_E((const tjs_char*)*str, NULL, code[4], ptr);
-		}
-		else
-		{
-			tTJSVariant **ptr = new tTJSVariant *[code[4]];
-
-			for(tjs_int i = 0; i<code[4]; i++)
-				ptr[i] = TJS_GET_VM_REG_ADDR(ra, code[5+i]);
-
-			try
-			{
-				CALL_E((const tjs_char*)*str, NULL, code[4], ptr);
+				hr = clo.FuncCall(0,
+					name->GetString(), name->GetHint(),
+					code[1]?TJS_GET_VM_REG_ADDR(ra, code[1]):NULL,
+						pass_args_count, pass_args,
+						clo.ObjThis?clo.ObjThis:ra[-1].AsObjectNoAddRef());
 			}
 			catch(...)
 			{
 				clo.Release();
-				delete [] ptr;
-				if(str) str->Release();
 				throw;
 			}
-			delete [] ptr;
+			clo.Release();
 		}
 
-	}
-	catch(...)
-	{
-		clo.Release();
-		if(str) str->Release();
-		throw;
-	}
-	clo.Release();
-	if(TJS_FAILED(hr)) TJSThrowFrom_tjs_error(hr, (const tjs_char*)*str);
-	str->Release();
+	TJS_END_FUNC_CALL_ARGS
+
+	if(TJS_FAILED(hr))
+		TJSThrowFrom_tjs_error(hr,
+			ttstr(TJS_GET_VM_REG(DataArea, code[3])).c_str());
+
+	return code_size + 4;
+}
+//---------------------------------------------------------------------------
+tjs_int tTJSInterCodeContext::CallFunctionIndirect(tTJSVariant *ra,
+	const tjs_int32 *code, tTJSVariant **args, tjs_int numargs)
+{
+	tjs_error hr;
+
+	ttstr name = TJS_GET_VM_REG(ra, code[3]);
+
+	TJS_BEGIN_FUNC_CALL_ARGS(code + 4)
+
+		tTJSVariantType type = TJS_GET_VM_REG(ra, code[2]).Type();
+		if(type == tvtString)
+		{
+			ProcessStringFunction(name.c_str(),
+				TJS_GET_VM_REG(ra, code[2]),
+				pass_args, pass_args_count, code[1]?TJS_GET_VM_REG_ADDR(ra, code[1]):NULL);
+		}
+		else if(type == tvtOctet)
+		{
+			ProcessOctetFunction(name.c_str(),
+				TJS_GET_VM_REG(ra, code[2]),
+				pass_args, pass_args_count, code[1]?TJS_GET_VM_REG_ADDR(ra, code[1]):NULL);
+		}
+		else
+		{
+			tTJSVariantClosure clo =  TJS_GET_VM_REG(ra, code[2]).AsObjectClosure();
+			try
+			{
+				hr = clo.FuncCall(0,
+					name.c_str(), name.GetHint(),
+					code[1]?TJS_GET_VM_REG_ADDR(ra, code[1]):NULL,
+						pass_args_count, pass_args,
+						clo.ObjThis?clo.ObjThis:ra[-1].AsObjectNoAddRef());
+			}
+			catch(...)
+			{
+				clo.Release();
+				throw;
+			}
+			clo.Release();
+		}
+
+	TJS_END_FUNC_CALL_ARGS
+
+	if(TJS_FAILED(hr))
+		TJSThrowFrom_tjs_error(hr, name.c_str());
+
+	return code_size + 4;
 }
 //---------------------------------------------------------------------------
 void tTJSInterCodeContext::AddClassInstanceInfo(tTJSVariant *ra,
@@ -2249,10 +2314,10 @@ void tTJSInterCodeContext::AddClassInstanceInfo(tTJSVariant *ra,
 	}
 }
 //---------------------------------------------------------------------------
-#define TJS_STRFUNC_MAX 10
 static tjs_char *StrFuncs[] = { TJS_W("charAt"), TJS_W("indexOf"), TJS_W("toUpperCase"),
 	TJS_W("toLowerCase"), TJS_W("substring"), TJS_W("substr"), TJS_W("sprintf"),
 		TJS_W("replace"), TJS_W("escape"), TJS_W("split") };
+#define TJS_STRFUNC_MAX (sizeof(StrFuncs) / sizeof(StrFuncs[0]))
 static tjs_int32 StrFuncHash[TJS_STRFUNC_MAX];
 static bool TJSStrFuncInit = false;
 static void InitTJSStrFunc()
@@ -2267,41 +2332,31 @@ static void InitTJSStrFunc()
 	}
 }
 
-void tTJSInterCodeContext::ProcessStringFunction(tTJSVariant *ra,
-	const tjs_int32 *code, tTJSVariant *result)
+void tTJSInterCodeContext::ProcessStringFunction(const tjs_char *member,
+	const ttstr & target, tTJSVariant **args, tjs_int numargs, tTJSVariant *result)
 {
 	if(!TJSStrFuncInit) InitTJSStrFunc();
 
 	tjs_int32 hash;
 
-	tTJSVariantString *mem;
-	if(code[0] == VM_CALLI)
-		mem = TJS_GET_VM_REG(ra, code[3]).AsString();
-	else
-		mem = TJS_GET_VM_REG(DataArea, code[3]).AsString();
-	if(!mem) TJSThrowFrom_tjs_error(TJS_E_MEMBERNOTFOUND, TJS_W(""));
-	const tjs_char *member = (const tjs_char*)*mem;
+	if(!member) TJSThrowFrom_tjs_error(TJS_E_MEMBERNOTFOUND, TJS_W(""));
+
 	const tjs_char *m = member;
 	hash = 0;
 	while(*m) hash += *m, m++;
 
-	tjs_int argnum = code[4];
-	const tjs_char *s = TJS_GET_VM_REG(ra, code[2]).GetString(); // target string
-	const tjs_int s_len = TJS_GET_VM_REG(ra, code[2]).AsStringNoAddRef()->GetLength();
-
-
-	// code[2] is target string, copde[5]+ are arguments
+	const tjs_char *s = target.c_str(); // target string
+	const tjs_int s_len = target.GetLen();
 
 	if(hash == StrFuncHash[0] && !TJS_strcmp(StrFuncs[0], member)) // charAt
 	{
-		mem->Release();
-		if(argnum != 1) TJSThrowFrom_tjs_error(TJS_E_BADPARAMCOUNT);
-		if(!s)
+		if(numargs != 1) TJSThrowFrom_tjs_error(TJS_E_BADPARAMCOUNT);
+		if(s_len == 0)
 		{
 			if(result) *result = TJS_W("");
 			return;
 		}
-		tjs_int i = (tjs_int)TJS_GET_VM_REG(ra, code[5]).AsInteger();
+		tjs_int i = (tjs_int)*args[0];
 		if(i<0 || i>=s_len)
 		{
 			if(result) *result = TJS_W("");
@@ -2315,9 +2370,8 @@ void tTJSInterCodeContext::ProcessStringFunction(tTJSVariant *ra,
 	}
 	else if(hash == StrFuncHash[1] && !TJS_strcmp(StrFuncs[1], member)) // indexOf
 	{
-		mem->Release();
-		if(argnum != 1 && argnum != 2) TJSThrowFrom_tjs_error(TJS_E_BADPARAMCOUNT);
-		tTJSVariantString *pstr = TJS_GET_VM_REG(ra, code[5]).AsString(); // sub string
+		if(numargs != 1 && numargs != 2) TJSThrowFrom_tjs_error(TJS_E_BADPARAMCOUNT);
+		tTJSVariantString *pstr = args[0]->AsString(); // sub string
 
 		if(!s || !pstr)
 		{
@@ -2326,7 +2380,7 @@ void tTJSInterCodeContext::ProcessStringFunction(tTJSVariant *ra,
 			return;
 		}
 		tjs_int start;
-		if(argnum == 1)
+		if(numargs == 1)
 		{
 			start = 0;
 		}
@@ -2334,7 +2388,7 @@ void tTJSInterCodeContext::ProcessStringFunction(tTJSVariant *ra,
 		{
 			try // integer convertion may raise an exception
 			{
-				start = (tjs_int)TJS_GET_VM_REG(ra, code[6]).AsInteger();
+				start = (tjs_int)*args[1];
 			}
 			catch(...)
 			{
@@ -2363,8 +2417,7 @@ void tTJSInterCodeContext::ProcessStringFunction(tTJSVariant *ra,
 	}
 	else if(hash == StrFuncHash[2] && !TJS_strcmp(StrFuncs[2], member)) // toUpperCase
 	{
-		mem->Release();
-		if(argnum != 0) TJSThrowFrom_tjs_error(TJS_E_BADPARAMCOUNT);
+		if(numargs != 0) TJSThrowFrom_tjs_error(TJS_E_BADPARAMCOUNT);
 		if(result)
 		{
 			*result = s; // here s is copyed to *result ( not reference )
@@ -2383,8 +2436,7 @@ void tTJSInterCodeContext::ProcessStringFunction(tTJSVariant *ra,
 	}
 	else if(hash == StrFuncHash[3] && !TJS_strcmp(StrFuncs[3], member)) // toLowerCase
 	{
-		mem->Release();
-		if(argnum != 0) TJSThrowFrom_tjs_error(TJS_E_BADPARAMCOUNT);
+		if(numargs != 0) TJSThrowFrom_tjs_error(TJS_E_BADPARAMCOUNT);
 		if(result)
 		{
 			*result = s;
@@ -2404,18 +2456,17 @@ void tTJSInterCodeContext::ProcessStringFunction(tTJSVariant *ra,
 	else if((hash == StrFuncHash[4]  && !TJS_strcmp(StrFuncs[4], member)) ||
 		(hash == StrFuncHash[5] && !TJS_strcmp(StrFuncs[5], member))) // substring , substr
 	{
-		mem->Release();
-		if(argnum != 1 && argnum != 2) TJSThrowFrom_tjs_error(TJS_E_BADPARAMCOUNT);
-		tjs_int start = (tjs_int)TJS_GET_VM_REG(ra, code[5]).AsInteger();
+		if(numargs != 1 && numargs != 2) TJSThrowFrom_tjs_error(TJS_E_BADPARAMCOUNT);
+		tjs_int start = (tjs_int)*args[0];
 		if(start < 0 || start >= s_len)
 		{
 			if(result) *result=TJS_W("");
 			return;
 		}
 		tjs_int count;
-		if(argnum == 2)
+		if(numargs == 2)
 		{
-			count = (tjs_int)TJS_GET_VM_REG(ra, code[6]).AsInteger();
+			count = (tjs_int)*args[1];
 			if(count<0)
 			{
 				if(result) *result = TJS_W("");
@@ -2423,12 +2474,7 @@ void tTJSInterCodeContext::ProcessStringFunction(tTJSVariant *ra,
 			}
 			if(start + count > s_len) count = s_len - start;
 			if(result)
-			{
-				tjs_char *buf = new tjs_char[count+1];
-				TJS_strcpy_maxlen(buf, s+start, count);
-				*result = buf;
-				delete [] buf;
-			}
+				*result = ttstr(s+start, count);
 			return;
 		}
 		else
@@ -2437,26 +2483,12 @@ void tTJSInterCodeContext::ProcessStringFunction(tTJSVariant *ra,
 		}
 		return;
 	}
-	else if(hash == StrFuncHash[6] && !TJS_strcmp(StrFuncs[6], member))
+	else if(hash == StrFuncHash[6] && !TJS_strcmp(StrFuncs[6], member)) // sprintf
 	{
-		mem->Release();
-
 		if(result)
 		{
-			tTJSVariant **args = new tTJSVariant *[argnum];
-			for(tjs_int i = 0; i < argnum; i++)
-				args[i] = TJS_GET_VM_REG_ADDR(ra, code[5 + i]);
 			tTJSVariantString *res;
-			try
-			{
-				res = TJSFormatString(s, argnum, args);
-			}
-			catch(...)
-			{
-				delete [] args;
-				throw;
-			}
-			delete [] args;
+			res = TJSFormatString(s, numargs, args);
 			*result = res;
 			if(res) res->Release();
 		}
@@ -2464,15 +2496,13 @@ void tTJSInterCodeContext::ProcessStringFunction(tTJSVariant *ra,
 	}
 	else if(hash == StrFuncHash[7] && !TJS_strcmp(StrFuncs[7], member))  // replace
 	{
-		mem->Release();
-
 		// string.replace(pattern, replacement-string)  -->
 		// pattern.replace(string, replacement-string)
-		if(argnum < 2) TJSThrowFrom_tjs_error(TJS_E_BADPARAMCOUNT);
+		if(numargs < 2) TJSThrowFrom_tjs_error(TJS_E_BADPARAMCOUNT);
 
-		tTJSVariantClosure clo = TJS_GET_VM_REG(ra, code[5]).AsObjectClosureNoAddRef();
-		tTJSVariant *params[3] = { TJS_GET_VM_REG_ADDR(ra, code[2]),
-								TJS_GET_VM_REG_ADDR(ra, code[6]) };
+		tTJSVariantClosure clo = args[0]->AsObjectClosureNoAddRef();
+		tTJSVariant str = target;
+		tTJSVariant *params[] = { &str, args[1] };
 		static tTJSString replace_name(TJS_W("replace"));
 		clo.FuncCall(0, replace_name.c_str(), replace_name.GetHint(),
 			result, 2, params, NULL);
@@ -2481,34 +2511,38 @@ void tTJSInterCodeContext::ProcessStringFunction(tTJSVariant *ra,
 	}
 	else if(hash == StrFuncHash[8] && !TJS_strcmp(StrFuncs[8], member))  // escape
 	{
-		mem->Release();
-
 		if(result)
-		{
-			*result = ttstr(s).EscapeC();
-		}
+			*result = target.EscapeC();
 
 		return;
 	}
 	else if(hash == StrFuncHash[9] && !TJS_strcmp(StrFuncs[9], member))  // split
 	{
-		mem->Release();
-
 		// string.split(pattern, reserved, purgeempty) -->
 		// Array.split(pattern, string, reserved, purgeempty)
-		if(argnum < 1) TJSThrowFrom_tjs_error(TJS_E_BADPARAMCOUNT);
+		if(numargs < 1) TJSThrowFrom_tjs_error(TJS_E_BADPARAMCOUNT);
 
 		iTJSDispatch2 * array = TJSCreateArrayObject();
 		try
 		{
+			tTJSVariant str = target;
+			tjs_int arg_count = 2;
 			tTJSVariant *params[4] = {
-				TJS_GET_VM_REG_ADDR(ra, code[5]),
-				TJS_GET_VM_REG_ADDR(ra, code[2]),
-				argnum >= 2 ? TJS_GET_VM_REG_ADDR(ra, code[6]): TJS_GET_VM_REG_ADDR(ra, 0),
-				argnum >= 3 ? TJS_GET_VM_REG_ADDR(ra, code[7]): TJS_GET_VM_REG_ADDR(ra, 0)};
+				args[0],
+				&str };
+			if(numargs >= 2)
+			{
+				arg_count ++;
+				params[2] = args[1];
+			}
+			if(numargs >= 3)
+			{
+				arg_count ++;
+				params[3] = args[2];
+			}
 			static tTJSString split_name(TJS_W("split"));
 			array->FuncCall(0, split_name.c_str(), split_name.GetHint(),
-				NULL, 4, params, array);
+				NULL, arg_count, params, array);
 
 			if(result) *result = tTJSVariant(array, array);
 		}
@@ -2522,74 +2556,51 @@ void tTJSInterCodeContext::ProcessStringFunction(tTJSVariant *ra,
 		return;
 	}
 
-	try
-	{
-		TJSThrowFrom_tjs_error(TJS_E_MEMBERNOTFOUND, *mem);
-	}
-	catch(...)
-	{
-		mem->Release();
-		throw;
-	}
-	mem->Release(); // this will be not executed.
+	TJSThrowFrom_tjs_error(TJS_E_MEMBERNOTFOUND, member);
 }
 //---------------------------------------------------------------------------
-void tTJSInterCodeContext::ProcessOctetFunction(tTJSVariant *ra,
-	const tjs_int32 *code, tTJSVariant *result)
+void tTJSInterCodeContext::ProcessOctetFunction(const tjs_char *member, const ttstr & target,
+		tTJSVariant **args, tjs_int numargs, tTJSVariant *result)
 {
-	tTJSVariantString *mem;
-	if(code[0] == VM_CALLI)
-		mem = TJS_GET_VM_REG(ra, code[3]).AsString();
-	else
-		mem = TJS_GET_VM_REG(DataArea, code[3]).AsString();
-	if(!mem) TJSThrowFrom_tjs_error(TJS_E_MEMBERNOTFOUND, TJS_W(""));
-	const tjs_char *member = (const tjs_char*)*mem;
+	// TODO: unpack/pack implementation
 
-	tjs_int argnum = code[4];
-	const tjs_char *s = TJS_GET_VM_REG(ra, code[2]).GetString(); // target string
-
-
-	if(TJS_strcmp(TJS_W("unpack"), member))
-	{
-		mem->Release();
-
-		// unpack ( from perl function )
-
-
-		// TODO: unpack/pack implementation
-	}
-
-
-	mem->Release();
+	TJSThrowFrom_tjs_error(TJS_E_MEMBERNOTFOUND, member);
 }
 //---------------------------------------------------------------------------
 void tTJSInterCodeContext::TypeOf(tTJSVariant &val)
 {
 	// processes TJS2's typeof operator.
+	static tTJSString void_name(TJS_W("void"));
+	static tTJSString Object_name(TJS_W("Object"));
+	static tTJSString String_name(TJS_W("String"));
+	static tTJSString Integer_name(TJS_W("Integer"));
+	static tTJSString Real_name(TJS_W("Real"));
+	static tTJSString Octet_name(TJS_W("Octet"));
+
 	switch(val.Type())
 	{
 	case tvtVoid:
-		val = TJS_W("void");   // differs from TJS1
+		val = void_name;   // differs from TJS1
 		break;
 
 	case tvtObject:
-		val = TJS_W("Object");
+		val = Object_name;
 		break;
 
 	case tvtString:
-		val = TJS_W("String");
+		val = String_name;
 		break;
 
 	case tvtInteger:
-		val = TJS_W("Integer"); // differs from TJS1
+		val = Integer_name; // differs from TJS1
 		break;
 
 	case tvtReal:
-		val = TJS_W("Real"); // differs from TJS1
+		val = Real_name; // differs from TJS1
 		break;
 
 	case tvtOctet:
-		val = TJS_W("Octet");
+		val = Octet_name;
 		break;
 	}
 }
