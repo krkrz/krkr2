@@ -79,9 +79,8 @@ TVP_SVN_REVISION "\n"
 
 TVP_MSG_DECL_CONST(TVPVersionInformation,
 	
-"吉里吉里[きりきり] 2 実行コア version %1 "
-"(SVN revision " TVP_SVN_REVISION_NUMBER "; Compiled on " __DATE__ " " __TIME__ "; "
-"TJS version %2) "
+"吉里吉里[きりきり] 2 実行コア/%1 "
+"(SVN revision:" TVP_SVN_REVISION_NUMBER "; Compiled on " __DATE__ " " __TIME__ ") TJS2/%2 "
 "Copyright (C) 1997-2004 W.Dee All rights reserved.");
 
 TVP_MSG_DECL_CONST(TVPVersionInformation2,
