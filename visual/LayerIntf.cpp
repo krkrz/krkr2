@@ -3818,7 +3818,7 @@ void tTJSNI_BaseLayer::AffinePile(const t2DAffineMatrix &matrix, tTJSNI_BaseLaye
 	const tTVPRect &srcrect, tjs_int opacity,
 	tTVPBBStretchType mode, bool hda)
 {
-	// affin pile
+	// affine pile
 	tTVPRect updaterect;
 	bool updated;
 
@@ -3862,7 +3862,7 @@ void tTJSNI_BaseLayer::AffinePile(const tTVPPoint *points, tTJSNI_BaseLayer *src
 	const tTVPRect &srcrect, tjs_int opacity,
 	tTVPBBStretchType mode, bool hda)
 {
-	// affin pile
+	// affine pile
 	tTVPRect updaterect;
 	bool updated;
 
