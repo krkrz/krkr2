@@ -1778,7 +1778,7 @@ TVPDoBoxBlurAvg32_d_name:			; do blur using box-blur algorithm with alpha, 32bit
 ;--------------------------------------------------------------------
 ; SSE stuff
 ;--------------------------------------------------------------------
-;;[function_replace_by 0 && TVPCPUType & TVP_CPU_HAS_SSE && TVPCPUType & TVP_CPU_HAS_EMMX && TVPCPUType & TVP_CPU_HAS_MMX] TVPDoBoxBlurAvg16
+;;[function_replace_by TVPCPUType & TVP_CPU_HAS_SSE && TVPCPUType & TVP_CPU_HAS_EMMX && TVPCPUType & TVP_CPU_HAS_MMX] TVPDoBoxBlurAvg16
 ;;void, TVPDoBoxBlurAvg16_sse_a, (tjs_uint32 *dest, tjs_uint16 *sum, const tjs_uint16 * add, const tjs_uint16 * sub, tjs_int n, tjs_int len)
 ;--------------------------------------------------------------------
 
@@ -1900,7 +1900,7 @@ TVPDoBoxBlurAvg16_sse_a:			; do blur using box-blur algorithm, 16bit precision
 ;--------------------------------------------------------------------
 
 ;--------------------------------------------------------------------
-;;[function_replace_by 0 && TVPCPUType & TVP_CPU_HAS_SSE && TVPCPUType & TVP_CPU_HAS_EMMX && TVPCPUType & TVP_CPU_HAS_MMX] TVPDoBoxBlurAvg16_d
+;;[function_replace_by TVPCPUType & TVP_CPU_HAS_SSE && TVPCPUType & TVP_CPU_HAS_EMMX && TVPCPUType & TVP_CPU_HAS_MMX] TVPDoBoxBlurAvg16_d
 ;;void, TVPDoBoxBlurAvg16_d_sse_a, (tjs_uint32 *dest, tjs_uint16 *sum, const tjs_uint16 * add, const tjs_uint16 * sub, tjs_int n, tjs_int len)
 ;--------------------------------------------------------------------
 
