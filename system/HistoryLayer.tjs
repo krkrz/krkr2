@@ -564,12 +564,12 @@ class HistoryLayer extends Layer
 		// ”wŒi‚ð“h‚è‚Â‚Ô‚·
 		if(n === void)
 		{
-			face = dfBoth;
+			face = dfAlpha;
 			fillRect(0, 0, width, height, 0xc8000000);
 		}
 		else
 		{
-			face = dfBoth;
+			face = dfAlpha;
 			if(verticalView)
 				fillRect(width - marginR - (n+1)*lineHeight, controlHeight, lineHeight,
 					height - controlHeight, 0xc8000000);

@@ -365,9 +365,10 @@ class AnimationLayer extends KAGLayer
 			visible = false;
 			setSize(32, 32);
 			setImageSize(32, 32);
-			face = dfBoth;
+			face = dfAlpha;
 			fillRect(0, 0, 32, 32, 0);
-			type = ltCoverRect;
+			type = ltOpaque;
+			face = dfAuto;
 		}
 	}
 
@@ -659,54 +660,60 @@ class AnimationLayer extends KAGLayer
 		if(elm.mode !== void && elm.mode == "copy")
 		{
 			// コピー
-			face = dfBoth;
+			face = dfAlpha;
 			copyRect(dx, dy, temp, sx, sy, sw, sh);
 		}
 		else
 		{
 			// 重ね合わせ
-			var orgface = face;
-
 			var opa = elm.opacity === void ? 255 : +elm.opacity;
 
 			switch(elm.mode)
 			{
 			case 'add':
-				face = dfMain;
-				operateRect(dx, dy, temp, sx, sy, sw, sh, omAdditive, opa, true);
+				face = dfOpaque;
+				holdAlpha = true;
+				operateRect(dx, dy, temp, sx, sy, sw, sh, omAdditive, opa);
 				break;
 			case 'sub':
-				face = dfMain;
-				operateRect(dx, dy, temp, sx, sy, sw, sh, omSubtractive, opa, true);
+				face = dfOpaque;
+				holdAlpha = true;
+				operateRect(dx, dy, temp, sx, sy, sw, sh, omSubtractive, opa);
 				break;
 			case 'mul':
-				face = dfMain;
-				operateRect(dx, dy, temp, sx, sy, sw, sh, omMultiplicative, opa, true);
+				face = dfOpaque;
+				holdAlpha = true;
+				operateRect(dx, dy, temp, sx, sy, sw, sh, omMultiplicative, opa);
 				break;
 			case 'dodge':
-				face = dfMain;
-				operateRect(dx, dy, temp, sx, sy, sw, sh, omDodge, opa, true);
+				face = dfOpaque;
+				holdAlpha = true;
+				operateRect(dx, dy, temp, sx, sy, sw, sh, omDodge, opa);
 				break;
 			case 'darken':
-				face = dfMain;
-				operateRect(dx, dy, temp, sx, sy, sw, sh, omDarken, opa, true);
+				face = dfOpaque;
+				holdAlpha = true;
+				operateRect(dx, dy, temp, sx, sy, sw, sh, omDarken, opa);
 				break;
 			case 'lighten':
-				face = dfMain;
-				operateRect(dx, dy, temp, sx, sy, sw, sh, omLighten, opa, true);
+				face = dfOpaque;
+				holdAlpha = true;
+				operateRect(dx, dy, temp, sx, sy, sw, sh, omLighten, opa);
 				break;
 			case 'screen':
-				face = dfMain;
-				operateRect(dx, dy, temp, sx, sy, sw, sh, omScreen, opa, true);
+				face = dfOpaque;
+				holdAlpha = true;
+				operateRect(dx, dy, temp, sx, sy, sw, sh, omScreen, opa);
 				break;
 			case 'pile':
 			default:
-				face = (type == ltTransparent) ? dfBoth : dfMain;
+				face = dfAuto;
+				holdAlpha = true;
 				pileRect(dx, dy, temp, sx, sy, sw, sh, opa);
 				break;
 			}
 
-			face = orgface;
+			face = dfAuto;
 		}
 
 		// Anim_partialImageInfo に情報を追加
@@ -756,8 +763,7 @@ class AnimationLayer extends KAGLayer
 		var color = elm.color === void ? 0xffffff : +elm.color;
 		var antialiased = elm.antialiased === void ? true : +elm.antialiased;
 
-		var orgface = face;
-		face = (type == ltTransparent) ? dfBoth : dfMain;
+		face = dfAuto;
 
 		var x = +elm.x;
 		var y = +elm.y;
@@ -776,8 +782,6 @@ class AnimationLayer extends KAGLayer
 		{
 			drawText(x, y, elm.text, color, 255, antialiased); // 文字
 		}
-
-		face = orgface;
 
 		// Anim_partialImageInfo に情報を追加
 		if(Anim_partialImageInfo === void)
@@ -801,7 +805,7 @@ class AnimationLayer extends KAGLayer
 		{
 			// 色重ね合わせ
 			var orgface = layer.face;
-			layer.face = dfMain;
+			layer.face = dfOpaque;
 			layer.colorRect(0, 0, layer.imageWidth, layer.imageHeight, +param.mcolor,
 				+param.mopacity);
 			layer.face = orgface;
@@ -1090,8 +1094,9 @@ class AnimationLayer extends KAGLayer
 			sx = cl.imageWidth - sx - sw;
 		}
 
-		face = dfBoth;
+		face = dfAuto;
 		copyRect(dx, dy, cl, sx, sy, sw, sh);
+
 		return 0;
 	}
 

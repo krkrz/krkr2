@@ -418,7 +418,7 @@ class BaseLayer extends GraphicLayer
 		super.clearImage(false);
 		setImageSize(window.scWidth, window.scHeight);
 		setSizeToImageSize();
-		face = dfBoth;
+		face = dfAlpha;
 		fillRect(0, 0, imageWidth, imageHeight, 0xff000000);
 	}
 
