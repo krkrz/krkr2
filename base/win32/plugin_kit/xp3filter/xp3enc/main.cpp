@@ -36,17 +36,18 @@ int WINAPI DllEntryPoint(HINSTANCE hinst, unsigned long reason, void* lpReserved
 	ファイルを暗号化する関数を定義します。関数名は
 	XP3ArchiveAttractFilter_v の後にこの関数の用いるインターフェース
 	バージョンを指定します。
-	現在のインターフェースバージョンは 1 です。
+	現在のインターフェースバージョンは 2 です。
+	(バージョン1は吉里吉里２ 2.23 beta1 より使用不可になりました)
 	呼び出し規約には必ず _stdcall を用います。
 	ここで指定した関数名は、かならず .def ファイル中の exports 節に書き、
 	DLL からエクスポートする必要があります。
 */
-extern "C" void __stdcall XP3ArchiveAttractFilter_v1(
-	const char *inputfile,
+extern "C" void __stdcall XP3ArchiveAttractFilter_v2(
+	unsigned __int32 hash,
 	unsigned __int64 offset, void * buffer, long bufferlen)
 {
-	// バージョン 1 関数は以下の引数を受け取ります。
-	// inputfile : 入力ファイル名を表すゼロ終結文字列です。
+	// バージョン 2 関数は以下の引数を受け取ります。
+	// hash      : 入力ファイルの(暗号化解除時の)32bitハッシュです。
 	// offset    : "buffer" 引数が示すデータが、ファイルの先頭から何バイト目
 	//             であるか (ファイルが圧縮される場合、無圧縮の状態のバイト
 	//             オフセットです )
@@ -56,12 +57,11 @@ extern "C" void __stdcall XP3ArchiveAttractFilter_v1(
 	//             とは出来ません )
 	// bufferlen : "buffer" 引数が表すデータの長さです。
 
-	// inputfile を見て、その拡張子を判断し、暗号化方式を変えることも出来ます。
-	// しかしここではサンプルとして、全データに データ形式に関係なく
-	// ビットを反転する方法を示します。
+	// しかしここではサンプルとして、hash の最下位バイトを XOR する方法を
+	// 示します。
 
 	int i;
-	for(i = 0; i < bufferlen; i++) ((unsigned char*)buffer)[i] ^= 0xff;
+	for(i = 0; i < bufferlen; i++) ((unsigned char*)buffer)[i] ^= hash;
 
 }
 //---------------------------------------------------------------------------

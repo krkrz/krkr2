@@ -41,7 +41,7 @@
     <DEBUGLIBPATH value="$(BCB)\lib\debug"/>
     <RELEASELIBPATH value="$(BCB)\lib\release"/>
     <LINKER value="tlink32"/>
-    <USERDEFINES value="NO_WIN32_LEAN_AND_MEAN"/>
+    <USERDEFINES value="NO_WIN32_LEAN_AND_MEAN;_DEBUG"/>
     <SYSDEFINES value="NO_STRICT"/>
     <MAINSOURCE value="krdevui.bpf"/>
     <INCLUDEPATH value="..\..\..\sound\win32;looptune;tpc\tlg6;tpc\tlg5;tpc\psd;tpc\png;tpc;..\fgconvert\psd;..\fgconvert\png;..\..\..\..\..\Bin;$(BCB)\projects\comps\o\shlib;..\..\..\..;$(BCB)\include;$(BCB)\include\vcl;$(BCB)\include\tomcrypt"/>
@@ -49,11 +49,11 @@
     <WARNINGS value="-w-par"/>
   </MACROS>
   <OPTIONS>
-    <CFLAG1 value="-WD -O2 -H=$(BCB)\lib\vcl50.csm -Hc -Vx -Ve -ff -X- -pr -a8 -6 -b- -k- -y 
-      -v -vi -tWD -tWM -c"/>
-    <PFLAGS value="-N2intermediate -N0intermediate -$Y- -$L- -$D- -v -JPHNE -M"/>
+    <CFLAG1 value="-WD -Od -H=$(BCB)\lib\vcl50.csm -Hc -Vx -Ve -ff -X- -r- -pr -a8 -6 -b- -k 
+      -y -v -vi- -tWD -tWM -c"/>
+    <PFLAGS value="-N2intermediate -N0intermediate -$Y+ -$W -$O- -v -JPHNE -M"/>
     <RFLAGS value=""/>
-    <AFLAGS value="/mx /w2 /zn"/>
+    <AFLAGS value="/mx /w2 /zi"/>
     <LFLAGS value="-Iintermediate -D&quot;&quot; -aa -Tpd -GD -x -Gn -Gi -v"/>
   </OPTIONS>
   <LINKER>
@@ -68,7 +68,7 @@ AutoIncBuild=1
 MajorVer=1
 MinorVer=4
 Release=3
-Build=67
+Build=68
 Debug=0
 PreRelease=0
 Special=0
@@ -80,7 +80,7 @@ CodePage=932
 [Version Info Keys]
 CompanyName=
 FileDescription=TVP Development User Interface DLL
-FileVersion=1.4.3.67
+FileVersion=1.4.3.68
 InternalName=
 LegalCopyright=(C)2001-2004, W.Dee All rights reserved.
 LegalTrademarks=
@@ -133,8 +133,8 @@ Item0=$(BCB)\source\vcl
 
 [HistoryLists\hlConditionals]
 Count=4
-Item0=NO_WIN32_LEAN_AND_MEAN
-Item1=NO_WIN32_LEAN_AND_MEAN;_DEBUG
+Item0=NO_WIN32_LEAN_AND_MEAN;_DEBUG
+Item1=NO_WIN32_LEAN_AND_MEAN
 Item2=_DEBUG;NO_WIN32_LEAN_AND_MEAN
 Item3=_DEBUG
 
@@ -153,7 +153,7 @@ DebugSourceDirs=$(BCB)\source\vcl
 
 [Parameters]
 RunParams=
-HostApplication=C:\Program Files\Borland\CBuilder5\Projects\tvp2win32\environ\win32\krkrlt.exe
+HostApplication=c:\Program Files\Borland\CBuilder5\Projects\tvp2win32\environ\win32\krkrrel.exe
 RemoteHost=
 RemotePath=
 RemoteDebug=0

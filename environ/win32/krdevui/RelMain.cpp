@@ -25,10 +25,10 @@ static void _UIExecReleaser()
 	if(xp3enc)
 	{
 		void * funcptr;
-		funcptr = GetProcAddress(xp3enc, "XP3ArchiveAttractFilter_v1");
+		funcptr = GetProcAddress(xp3enc, "XP3ArchiveAttractFilter_v2");
 		if(funcptr)
 		{
-			*(void**)&XP3ArchiveAttractFilter_v1_org = funcptr;
+			*(void**)&XP3ArchiveAttractFilter_v2_org = funcptr;
 			XP3EncDLLAvailable = true;
 		}
 	}
@@ -193,11 +193,11 @@ void tTVPStream::WriteInt16(__int16 n)
 // XP3 filter related
 //---------------------------------------------------------------------------
 bool XP3EncDLLAvailable = false;
-void (__stdcall * XP3ArchiveAttractFilter_v1_org)(
-	const char *inputfile,
+void (__stdcall * XP3ArchiveAttractFilter_v2_org)(
+	unsigned __int32 hash,
 	unsigned __int64 offset, void * buffer, long bufferlen) = NULL;
-void (__stdcall * XP3ArchiveAttractFilter_v1)(
-	const char *inputfile,
+void (__stdcall * XP3ArchiveAttractFilter_v2)(
+	unsigned __int32 hash,
 	unsigned __int64 offset, void * buffer, long bufferlen) = NULL;
 //---------------------------------------------------------------------------
 
@@ -206,10 +206,13 @@ void (__stdcall * XP3ArchiveAttractFilter_v1)(
 //---------------------------------------------------------------------------
 // tTVPLocalFileStream
 //---------------------------------------------------------------------------
-tTVPLocalFileStream::tTVPLocalFileStream(const char *name, unsigned int flag)
+tTVPLocalFileStream::tTVPLocalFileStream(const char *name,
+	unsigned int flag, bool useencryption, unsigned __int32 salt)
 {
 	FileName = NULL;
 	Handle = INVALID_HANDLE_VALUE;
+	UseEncryption = useencryption;
+	Salt = salt;
 
 	FileName = new char[strlen(name) + 1];
 	try
@@ -298,15 +301,15 @@ unsigned int tTVPLocalFileStream::Read(void *buffer, unsigned int read_size)
 
 	unsigned __int64 current;
 
-	if(XP3ArchiveAttractFilter_v1)
+	if(XP3ArchiveAttractFilter_v2)
 		current = Seek(0, TVP_ST_SEEK_CUR);
 
 	ReadFile(Handle, buffer, read_size, &ret, NULL);
 
-	if(ret && XP3ArchiveAttractFilter_v1)
+	if(ret && XP3ArchiveAttractFilter_v2 && UseEncryption)
 	{
 		// v1 read filter
-		XP3ArchiveAttractFilter_v1(FileName, current, buffer, ret);
+		XP3ArchiveAttractFilter_v2(Salt, current, buffer, ret);
 	}
 
 	return ret;

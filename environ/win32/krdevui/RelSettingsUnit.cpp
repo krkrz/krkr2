@@ -731,9 +731,9 @@ void __fastcall TRelSettingsForm::CreateArchive(void)
 {
 	// setup input filter
 	if(XP3EncDLLAvailable && UseXP3EncDLLCheck->Checked)
-		XP3ArchiveAttractFilter_v1 = XP3ArchiveAttractFilter_v1_org;
+		XP3ArchiveAttractFilter_v2 = XP3ArchiveAttractFilter_v2_org;
 	else
-		XP3ArchiveAttractFilter_v1 = NULL;
+		XP3ArchiveAttractFilter_v2 = NULL;
 
 	// information vector
 	std::vector<TFileInfo> fileinfo;
@@ -899,39 +899,45 @@ void __fastcall TRelSettingsForm::CreateArchive(void)
 
 		// open input flie
 		unsigned __int64 filesize;
-		tTVPLocalFileStream infile(filename.c_str(), TVP_ST_READ);
-
-		{
-			DWORD h;
-			DWORD l = GetFileSize(infile.GetHandle(), &h);
-			filesize = ((unsigned __int64)l) + (((unsigned __int64)h)<<32);
-		}
-
-
-		// check checksum
 		unsigned __int32 adler32sum;
-		adler32sum = GetFileCheckSum(infile);
 		bool avoidstore = false;
-		for(std::vector<TFileInfo>::iterator i = fileinfo.begin();
-			i != fileinfo.end(); i++)
+
 		{
-			if(i->Adler32 == adler32sum && i->FileSize == filesize &&
-				i->LocalFileName != "")
+			tTVPLocalFileStream infile(filename.c_str(), TVP_ST_READ);
+
 			{
-				// two files may be identical
-				if(CompareFile(filename, i->LocalFileName))
+				DWORD h;
+				DWORD l = GetFileSize(infile.GetHandle(), &h);
+				filesize = ((unsigned __int64)l) + (((unsigned __int64)h)<<32);
+			}
+
+
+			// check checksum
+			adler32sum = GetFileCheckSum(infile);
+			for(std::vector<TFileInfo>::iterator i = fileinfo.begin();
+				i != fileinfo.end(); i++)
+			{
+				if(i->Adler32 == adler32sum && i->FileSize == filesize &&
+					i->LocalFileName != "")
 				{
-					// files are identical
-					avoidstore = true;
-					TFileInfo info;
-					info = *i; // copy from reference file info
-					info.LocalFileName = filename;
-					info.FileName = storefilename;
-					fileinfo.push_back(info);
-					break;
+					// two files may be identical
+					if(CompareFile(filename, i->LocalFileName))
+					{
+						// files are identical
+						avoidstore = true;
+						TFileInfo info;
+						info = *i; // copy from reference file info
+						info.LocalFileName = filename;
+						info.FileName = storefilename;
+						fileinfo.push_back(info);
+						break;
+					}
 				}
 			}
 		}
+
+		// reopen input file
+		tTVPLocalFileStream infile(filename.c_str(), TVP_ST_READ, true, adler32sum);
 
 		if(!avoidstore)
 		{
