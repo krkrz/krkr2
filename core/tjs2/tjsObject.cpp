@@ -1126,7 +1126,8 @@ tjs_error TJS_INTF_METHOD
 tTJSCustomObject::FuncCall(tjs_uint32 flag, const tjs_char * membername, tjs_uint32 *hint,
 	tTJSVariant *result, tjs_int numparams, tTJSVariant **param, iTJSDispatch2 *objthis)
 {
-	if(!GetValidity()) return TJS_E_INVALIDOBJECT;
+	if(!GetValidity())
+		return TJS_E_INVALIDOBJECT;
 
 	if(membername == NULL)
 	{
@@ -1171,7 +1172,8 @@ tjs_error TJSDefaultPropGet(tjs_uint32 flag, tTJSVariant &targ, tTJSVariant *res
 			}
 			tvclosure.Release();
 			if(TJS_SUCCEEDED(hr)) return hr;
-			if(hr != TJS_E_NOTIMPL && hr != TJS_E_INVALIDTYPE)
+			if(hr != TJS_E_NOTIMPL && hr != TJS_E_INVALIDTYPE &&
+				hr != TJS_E_INVALIDOBJECT)
 				return hr;
 		}
 	}
@@ -1195,7 +1197,8 @@ tTJSCustomObject::PropGet(tjs_uint32 flag, const tjs_char * membername, tjs_uint
 	}
 
 
-	if(!GetValidity()) return TJS_E_INVALIDOBJECT;
+	if(!GetValidity())
+		return TJS_E_INVALIDOBJECT;
 
 	if(membername == NULL)
 	{
@@ -1242,7 +1245,9 @@ tjs_error TJSDefaultPropSet(tjs_uint32 flag, tTJSVariant &targ, const tTJSVarian
 			}
 			tvclosure.Release();
 			if(TJS_SUCCEEDED(hr)) return hr;
-			if(hr != TJS_E_NOTIMPL && hr != TJS_E_INVALIDTYPE) return hr;
+			if(hr != TJS_E_NOTIMPL && hr != TJS_E_INVALIDTYPE &&
+				hr != TJS_E_INVALIDOBJECT)
+				return hr;
 		}
 	}
 
@@ -1259,7 +1264,8 @@ tjs_error TJS_INTF_METHOD
 tTJSCustomObject::PropSet(tjs_uint32 flag, const tjs_char *membername, tjs_uint32 *hint,
 	const tTJSVariant *param, iTJSDispatch2 *objthis)
 {
-	if(!GetValidity()) return TJS_E_INVALIDOBJECT;
+	if(!GetValidity())
+		return TJS_E_INVALIDOBJECT;
 
 	if(membername == NULL)
 	{
@@ -1293,7 +1299,9 @@ tTJSCustomObject::PropSet(tjs_uint32 flag, const tjs_char *membername, tjs_uint3
 				tjs_error hr = tvclosure.Object->PropSet(0, NULL, NULL, param,
 					TJS_SELECT_OBJTHIS(tvclosure, objthis));
 				if(TJS_SUCCEEDED(hr)) return hr;
-				if(hr != TJS_E_NOTIMPL && hr != TJS_E_INVALIDTYPE) return hr;
+				if(hr != TJS_E_NOTIMPL && hr != TJS_E_INVALIDTYPE &&
+					hr != TJS_E_INVALIDOBJECT)
+					return hr;
 			}
 			data = Find(membername, hint);
 		}
@@ -1321,7 +1329,8 @@ tjs_error TJS_INTF_METHOD
 tTJSCustomObject::GetCount(tjs_int *result, const tjs_char *membername, tjs_uint32 *hint,
 	iTJSDispatch2 *objthis)
 {
-	if(!GetValidity()) return TJS_E_INVALIDOBJECT;
+	if(!GetValidity())
+		return TJS_E_INVALIDOBJECT;
 
 	if(!result) return TJS_E_INVALIDPARAM;
 
@@ -1334,7 +1343,8 @@ tjs_error TJS_INTF_METHOD
 tTJSCustomObject::PropSetByVS(tjs_uint32 flag, tTJSVariantString *membername,
 	const tTJSVariant *param, iTJSDispatch2 *objthis)
 {
-	if(!GetValidity()) return TJS_E_INVALIDOBJECT;
+	if(!GetValidity())
+		return TJS_E_INVALIDOBJECT;
 
 	if(membername == NULL)
 	{
@@ -1368,7 +1378,9 @@ tTJSCustomObject::PropSetByVS(tjs_uint32 flag, tTJSVariantString *membername,
 				tjs_error hr = tvclosure.Object->PropSet(0, NULL, NULL, param,
 					TJS_SELECT_OBJTHIS(tvclosure, objthis));
 				if(TJS_SUCCEEDED(hr)) return hr;
-				if(hr != TJS_E_NOTIMPL && hr != TJS_E_INVALIDTYPE) return hr;
+				if(hr != TJS_E_NOTIMPL && hr != TJS_E_INVALIDTYPE &&
+					hr != TJS_E_INVALIDOBJECT)
+					return hr;
 			}
 			data = Find((const tjs_char *)(*membername), membername->GetHint());
 		}
@@ -1397,7 +1409,8 @@ tjs_error TJS_INTF_METHOD
 tTJSCustomObject::DeleteMember(tjs_uint32 flag, const tjs_char *membername, tjs_uint32 *hint,
 	iTJSDispatch2 *objthis)
 {
-	if(!GetValidity()) return TJS_E_INVALIDOBJECT;
+	if(!GetValidity())
+		return TJS_E_INVALIDOBJECT;
 
 	if(membername == NULL)
 	{
@@ -1431,7 +1444,8 @@ tjs_error TJS_INTF_METHOD
 tTJSCustomObject::Invalidate(tjs_uint32 flag, const tjs_char *membername, tjs_uint32 *hint,
 	iTJSDispatch2 *objthis)
 {
-	if(!GetValidity()) return TJS_E_INVALIDOBJECT;
+	if(!GetValidity())
+		return TJS_E_INVALIDOBJECT;
 
 	if(membername == NULL)
 	{
@@ -1506,7 +1520,8 @@ tTJSCustomObject::CreateNew(tjs_uint32 flag, const tjs_char * membername, tjs_ui
 	iTJSDispatch2 **result, tjs_int numparams, tTJSVariant **param,
 	iTJSDispatch2 *objthis)
 {
-	if(!GetValidity()) return TJS_E_INVALIDOBJECT;
+	if(!GetValidity())
+		return TJS_E_INVALIDOBJECT;
 
 	if(membername == NULL)
 	{
@@ -1528,7 +1543,8 @@ tTJSCustomObject::GetSuperClass(tjs_uint32 flag, iTJSDispatch2 **result,
 		iTJSDispatch2 *objthis)
 {
 	// TODO: GetSuperClass's reason for being
-	if(!GetValidity()) return TJS_E_INVALIDOBJECT;
+	if(!GetValidity())
+		return TJS_E_INVALIDOBJECT;
 
 	return TJS_E_NOTIMPL;
 }
@@ -1583,7 +1599,8 @@ tjs_error TJS_INTF_METHOD
 tTJSCustomObject::IsInstanceOf(tjs_uint32 flag, const tjs_char *membername, tjs_uint32 *hint,
 	const tjs_char *classname, iTJSDispatch2 *objthis)
 {
-	if(!GetValidity()) return TJS_E_INVALIDOBJECT;
+	if(!GetValidity())
+		return TJS_E_INVALIDOBJECT;
 
 	if(membername == NULL)
 	{
@@ -1648,7 +1665,8 @@ tjs_error TJSDefaultOperation(tjs_uint32 flag, tTJSVariant &targ,
 
 				return TJS_S_OK;
 			}
-			else if(hr != TJS_E_NOTIMPL && hr != TJS_E_INVALIDTYPE)
+			else if(hr != TJS_E_NOTIMPL && hr != TJS_E_INVALIDTYPE &&
+				hr != TJS_E_INVALIDOBJECT)
 			{
 				return hr;
 			}
@@ -1668,7 +1686,8 @@ tjs_error TJS_INTF_METHOD
 tTJSCustomObject::Operation(tjs_uint32 flag, const tjs_char *membername, tjs_uint32 *hint,
 	tTJSVariant *result, const tTJSVariant *param, iTJSDispatch2 *objthis)
 {
-	if(!GetValidity()) return TJS_E_INVALIDOBJECT;
+	if(!GetValidity())
+		return TJS_E_INVALIDOBJECT;
 
 	// operation about the member
 	// processing line is the same as above function
@@ -1713,7 +1732,8 @@ tTJSCustomObject::Operation(tjs_uint32 flag, const tjs_char *membername, tjs_uin
 
 				return TJS_S_OK;
 			}
-			else if(hr != TJS_E_NOTIMPL && hr != TJS_E_INVALIDTYPE)
+			else if(hr != TJS_E_NOTIMPL && hr != TJS_E_INVALIDTYPE &&
+				hr != TJS_E_INVALIDOBJECT)
 			{
 				return hr;
 			}
