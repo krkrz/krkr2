@@ -170,8 +170,7 @@ if(TVPCPUType & TVP_CPU_HAS_MMX)
 	 TVPSubBlend_o =  TVPSubBlend_o_mmx_a;
 if(TVPCPUType & TVP_CPU_HAS_MMX)
 	 TVPSubBlend_HDA_o =  TVPSubBlend_HDA_o_mmx_a;
-if(1)
-	 TVPTLG5DecompressSlide =  TVPTLG5DecompressSlide_a;
+ TVPTLG5DecompressSlide =  TVPTLG5DecompressSlide_a;
 if(TVPCPUType & TVP_CPU_HAS_MMX)
 	 TVPTLG5ComposeColors3To4 =  TVPTLG5ComposeColors3To4_mmx_a;
 if(TVPCPUType & TVP_CPU_HAS_MMX)
@@ -180,10 +179,8 @@ if(TVPCPUType & TVP_CPU_HAS_MMX)
 	 TVPTLG6DecodeLine =  TVPTLG6DecodeLine_mmx_a;
 if(TVPCPUType & TVP_CPU_HAS_SSE && TVPCPUType & TVP_CPU_HAS_MMX && TVPCPUType & TVP_CPU_HAS_EMMX)
 	 TVPTLG6DecodeLine =  TVPTLG6DecodeLine_sse_a;
-if(1)
-	 TVPTLG6DecodeGolombValuesForFirst =  TVPTLG6DecodeGolombValuesForFirst_a;
-if(1)
-	 TVPTLG6DecodeGolombValues =  TVPTLG6DecodeGolombValues_a;
+ TVPTLG6DecodeGolombValuesForFirst =  TVPTLG6DecodeGolombValuesForFirst_a;
+ TVPTLG6DecodeGolombValues =  TVPTLG6DecodeGolombValues_a;
 if(TVPCPUType & TVP_CPU_HAS_MMX)
 	 TVPTLG6DecodeGolombValuesForFirst =  TVPTLG6DecodeGolombValuesForFirst_mmx_a;
 if(TVPCPUType & TVP_CPU_HAS_MMX)

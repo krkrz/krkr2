@@ -54,7 +54,7 @@ sub process
 	{
 		print FH "TVP_GL_IA32_FUNC_EXTERN_DECL($3, $4, $5);\n";
 
-		print FC "if($1)\n\t";
+		print FC "if($1)\n\t" if($1 ne '1');
 		print FC "$2 = $4;\n";
 	}
 
