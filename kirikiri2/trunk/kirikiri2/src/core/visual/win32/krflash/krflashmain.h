@@ -57,6 +57,10 @@ public:
 	void __stdcall GetVideoSize( long *width, long *height );
 	void __stdcall GetFrontBuffer( BYTE **buff );
 	void __stdcall SetVideoBuffer( BYTE *buff1, BYTE *buff2, long size );
+
+	virtual void __stdcall SetStopFrame( int frame );
+	virtual void __stdcall GetStopFrame( int *frame );
+	virtual void __stdcall SetDefaultStopFrame();
 // End:	Add:	T.Imoto
 
 
