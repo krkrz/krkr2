@@ -7293,7 +7293,7 @@ TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/operateStretch)
 	srcrect.right += srcrect.left;
 	srcrect.bottom += srcrect.top;
 
-	tTVPBlendOperationMode mode = (tTVPBlendOperationMode)(tjs_int)(*param[10]);
+	tTVPBlendOperationMode mode = (tTVPBlendOperationMode)(tjs_int)(*param[9]);
 
 	tjs_int opa = 255;
 
