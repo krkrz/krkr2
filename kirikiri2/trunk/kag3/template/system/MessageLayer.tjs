@@ -401,6 +401,8 @@ class MessageLayer extends KAGLayer
 
 		// リンクをハイライト表示するためのレイヤ
 		highlightLayer = new global.KAGLayer(window, this);
+		highlightLayer.type = ltAddAlpha;
+		highlightLayer.face = dfAuto;
 		highlightLayer.hitType = htProvince;
 			// 領域画像で当たり判定を行う
 	}
@@ -1782,13 +1784,13 @@ class MessageLayer extends KAGLayer
 				highlightLayer.setSizeToImageSize();
 			}
 
-			highlightLayer.colorRect(0, 0,
+			highlightLayer.fillRect(0, 0,
 				highlightLayer.imageWidth,
-				highlightLayer.imageHeight, 0, -255);
+				highlightLayer.imageHeight, 0);
 			highlightLayer.face = dfProvince;
-			highlightLayer.colorRect(0, 0,
+			highlightLayer.fillRect(0, 0,
 				highlightLayer.imageWidth,
-				highlightLayer.imageHeight, 0, 255);
+				highlightLayer.imageHeight, 0);
 			highlightLayer.face = dfAuto;
 
 			var i;
