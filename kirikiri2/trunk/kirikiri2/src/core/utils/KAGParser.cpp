@@ -21,6 +21,7 @@
 #include "tjsHashSearch.h"
 #include "TextStream.h"
 #include "tjsGlobalStringMap.h"
+#include "EventIntf.h"
 
 //---------------------------------------------------------------------------
 /*
@@ -34,18 +35,292 @@
 //---------------------------------------------------------------------------
 
 
-// KAGParser is implemented as a TJS native class/object
+
+//---------------------------------------------------------------------------
+// tTVPScenarioCacheItem : Scenario Cache Item
+//---------------------------------------------------------------------------
+tTVPScenarioCacheItem::tTVPScenarioCacheItem(const ttstr & name, bool isstring)
+{
+	RefCount = 1;
+	Lines = NULL;
+	LineCount = 0;
+	LabelCached = false;
+	try
+	{
+		LoadScenario(name, isstring);
+	}
+	catch(...)
+	{
+		if(Lines) delete [] Lines;
+		throw;
+	}
+}
+//---------------------------------------------------------------------------
+tTVPScenarioCacheItem::~tTVPScenarioCacheItem()
+{
+	if(Lines) delete [] Lines;
+}
+//---------------------------------------------------------------------------
+void tTVPScenarioCacheItem::AddRef()
+{
+	RefCount ++;
+}
+//---------------------------------------------------------------------------
+void tTVPScenarioCacheItem::Release()
+{
+	if(RefCount == 1)
+		delete this;
+	else
+		RefCount --;
+}
+//---------------------------------------------------------------------------
+void tTVPScenarioCacheItem::LoadScenario(const ttstr & name, bool isstring)
+{
+	// load scenario from file or string to buffer
+
+	if(isstring)
+	{
+		// when onScenarioLoad returns string;
+		// assumes the string is scenario
+		Buffer = name.c_str();
+	}
+	else
+	{
+		// else load from file
+
+		tTJSTextReadStream * stream = NULL;
+
+		try
+		{
+			stream = TVPCreateTextStreamForRead(name, TJS_W(""));
+			ttstr tmp;
+			stream->Read(tmp, 0);
+			Buffer = tmp.c_str();
+			delete stream, stream = NULL;
+		}
+		catch(...)
+		{
+			if(stream) delete stream;
+			throw;
+		}
+	}
+
+	tjs_char *buffer_p = Buffer;
+
+	// count lines
+	tjs_int count = 0;
+	tjs_char *ls = buffer_p;
+	tjs_char *p = buffer_p;
+	while(*p)
+	{
+		if(*p == TJS_W('\r') || *p == TJS_W('\n'))
+		{
+			count++;
+			if(*p == TJS_W('\r') && p[1] == TJS_W('\n')) p++;
+			p++;
+			ls = p;
+		}
+		else
+		{
+			p++;
+		}
+	}
+
+	if(p!=ls)
+	{
+		count++;
+	}
+
+	if(count == 0) TVPThrowExceptionMessage(TVPKAGNoLine, name);
+
+	Lines = new tLine[count];
+	LineCount = count;
+
+	count = 0;
+	ls = buffer_p;
+	while(*ls == '\t') ls++; // skip leading tabs
+	p = ls;
+	while(*p)
+	{
+		if(*p == TJS_W('\r') || *p == TJS_W('\n'))
+		{
+			Lines[count].Start = ls;
+			Lines[count].Length = p-ls;
+			count++;
+			tjs_char *rp = p;
+			if(*p == TJS_W('\r') && p[1] == TJS_W('\n')) p++;
+			p++;
+			ls = p;
+			while(*ls == '\t') ls++;  // skip leading tabs
+			p = ls;
+			*rp = 0; // end line with null terminater
+		}
+		else
+		{
+			p++;
+		}
+	}
+
+	if(p != ls)
+	{
+		Lines[count].Start = ls;
+		Lines[count].Length = p-ls;
+	}
+}
+//---------------------------------------------------------------------------
+void tTVPScenarioCacheItem::EnsureLabelCache()
+{
+	// construct label cache
+	if(!LabelCached)
+	{
+		// make label cache
+		LabelAliases.resize(LineCount);
+		ttstr prevlabel;
+		const tjs_char *p;
+		const tjs_char *vl;
+		tjs_int i;
+		for(i = 0; i<LineCount; i++)
+		{
+			if(Lines[i].Length >= 2 &&
+				Lines[i].Start[0] == TJS_W('*'))
+			{
+				p = Lines[i].Start;
+				vl = TJS_strchr(p, TJS_W('|'));
+				ttstr label;
+				if(vl)
+				{
+					// page name found
+					label = ttstr(p, vl-p);
+				}
+				else
+				{
+					label = p;
+				}
+
+				if(!label.c_str()[1])
+				{
+					if(prevlabel.IsEmpty())
+						TVPThrowExceptionMessage(TVPKAGCannotOmmitFirstLabelName);
+					label = prevlabel;
+				}
+
+				prevlabel = label;
+
+				tLabelCacheData *data = LabelCache.Find(label);
+				if(data)
+				{
+					// previous label name found (duplicated label)
+					data->Count++;
+					label = label + TJS_W(":") + ttstr(data->Count);
+				}
+
+				LabelCache.Add(label, tLabelCacheData(i, 1));
+				LabelAliases[i] = label;
+			}
+		}
+
+		LabelCached = true;
+	}
+
+}
+//---------------------------------------------------------------------------
+
+
+
+
+
+
+//---------------------------------------------------------------------------
+// tTVPScenarioCache
+//---------------------------------------------------------------------------
+#define TVP_SCENARIO_MAX_CACHE_SIZE 8
+typedef tTJSRefHolder<tTVPScenarioCacheItem> tTVPScenarioCacheItemHolder;
+typedef tTJSHashCache<ttstr, tTVPScenarioCacheItemHolder,  tTJSHashFunc<ttstr>,
+	(TVP_SCENARIO_MAX_CACHE_SIZE*2)> tTVPScenarioCache;
+tTVPScenarioCache TVPScenarioCache(TVP_SCENARIO_MAX_CACHE_SIZE);
+//---------------------------------------------------------------------------
+void TVPClearScnearioCache()
+{
+	TVPScenarioCache.Clear();
+}
+//---------------------------------------------------------------------------
+struct tTVPClearScenarioCacheCallback : public tTVPCompactEventCallbackIntf
+{
+	virtual void TJS_INTF_METHOD OnCompact(tjs_int level)
+	{
+		if(level >= TVP_COMPACT_LEVEL_DEACTIVATE)
+		{
+			// clear the scenario cache
+#ifndef _DEBUG
+			TVPClearScnearioCache();
+#endif
+		}
+	}
+} static TVPClearScenarioCacheCallback;
+static bool TVPClearScenarioCacheCallbackInit = false;
+//---------------------------------------------------------------------------
+static tTVPScenarioCacheItem * TVPGetScenario(const ttstr & storagename, bool isstring)
+{
+	// compact interface initialization
+	if(!TVPClearScenarioCacheCallbackInit)
+	{
+		TVPAddCompactEventHook(&TVPClearScenarioCacheCallback);
+		TVPClearScenarioCacheCallbackInit = true;
+	}
+
+	if(isstring)
+	{
+		// we do not cache when the string is passed as a scenario
+		return new tTVPScenarioCacheItem(storagename, true);
+	}
+
+	// make hash and search over cache
+	tjs_uint32 hash = tTVPScenarioCache::MakeHash(storagename);
+
+	tTVPScenarioCacheItemHolder * ptr =
+		TVPScenarioCache.FindAndTouchWithHash(storagename, hash);
+	if(ptr)
+	{
+		// found in the cache
+		return ptr->GetObject();
+	}
+
+	// not found in the cache
+	tTVPScenarioCacheItem * item = new tTVPScenarioCacheItem(storagename, false);
+	try
+	{
+		// push into scenario cache hash
+		tTVPScenarioCacheItemHolder holder(item);
+		TVPScenarioCache.AddWithHash(storagename, hash, holder);
+	}
+	catch(...)
+	{
+		item->Release();
+		throw;
+	}
+
+	return item;
+}
+//---------------------------------------------------------------------------
+
+
+
+
+
+
+
+
 
 
 //---------------------------------------------------------------------------
 // tTJSNI_KAGParser : KAGParser TJS native instance
 //---------------------------------------------------------------------------
+// KAGParser is implemented as a TJS native class/object
 tTJSNI_KAGParser::tTJSNI_KAGParser()
 {
 	Owner = NULL;
+	Scenario = NULL;
 	Lines = NULL;
-	LineCount = 0;
-	LabelCached = false;
 	IgnoreCR = false;
 	DicClear = NULL;
 	DicAssign = NULL;
@@ -148,20 +423,17 @@ void tTJSNI_KAGParser::operator = (const tTJSNI_KAGParser & ref)
 	// copy CallStack
 	CallStack = ref.CallStack;
 
-	// copy StorageName, StorageShortName, Buffer
+	// copy StorageName, StorageShortName
 	StorageName = ref.StorageName;
 	StorageShortName = ref.StorageShortName;
-	Buffer = ref.Buffer;
 
-	// copy Lines and LineCount
-	if(Lines) delete [] Lines;
-	Lines = new tLine[ref.LineCount];
-	LineCount = ref.LineCount;
-	for(tjs_int i = 0; i<LineCount; i++)
+
+	// copy Scenario
+	if(Scenario != ref.Scenario)
 	{
-		Lines[i].Length = ref.Lines[i].Length;
-		Lines[i].Start = (const tjs_char *)Buffer +
-			(ref.Lines[i].Start - (const tjs_char *)ref.Buffer);
+		if(Scenario) Scenario->Release(), Scenario = NULL, Lines = NULL;
+		Scenario = ref.Scenario;
+		if(Scenario) Scenario->AddRef();
 	}
 
 	// copy CurStorage, CurLine, CurPos
@@ -518,102 +790,18 @@ void tTJSNI_KAGParser::LoadScenario(const ttstr & name)
 		{
 			// when onScenarioLoad returns string;
 			// assumes the string is scenario
-			Buffer = ttstr(result).c_str();
+			Scenario = TVPGetScenario(ttstr(result), true);
 		}
 		else
 		{
 			// else load from file
-
-			tTJSTextReadStream * stream = NULL;
-
-			try
-			{
-				stream = TVPCreateTextStreamForRead(name, TJS_W(""));
-				ttstr tmp;
-				stream->Read(tmp, 0);
-				Buffer = tmp.c_str();
-				delete stream, stream = NULL;
-			}
-			catch(...)
-			{
-				if(stream) delete stream;
-				ClearBuffer();
-				throw;
-			}
+			Scenario = TVPGetScenario(name, false);
 		}
 
-		try
-		{
-			tjs_char *buffer_p = Buffer;
+		Lines = Scenario->GetLines();
+		LineCount = Scenario->GetLineCount();
 
-			// count lines
-			tjs_int count = 0;
-			tjs_char *ls = buffer_p;
-			tjs_char *p = buffer_p;
-			while(*p)
-			{
-				if(*p == TJS_W('\r') || *p == TJS_W('\n'))
-				{
-					count++;
-					if(*p == TJS_W('\r') && p[1] == TJS_W('\n')) p++;
-					p++;
-					ls = p;
-				}
-				else
-				{
-					p++;
-				}
-			}
-
-			if(p!=ls)
-			{
-				count++;
-			}
-
-			if(count == 0) TVPThrowExceptionMessage(TVPKAGNoLine, name);
-
-			Lines = new tLine[count];
-			LineCount = count;
-
-			count = 0;
-			ls = buffer_p;
-			while(*ls == '\t') ls++; // skip leading tabs
-			p = ls;
-			while(*p)
-			{
-				if(*p == TJS_W('\r') || *p == TJS_W('\n'))
-				{
-					Lines[count].Start = ls;
-					Lines[count].Length = p-ls;
-					count++;
-					tjs_char *rp = p;
-					if(*p == TJS_W('\r') && p[1] == TJS_W('\n')) p++;
-					p++;
-					ls = p;
-					while(*ls == '\t') ls++;  // skip leading tabs
-					p = ls;
-					*rp = 0; // end line with null terminater
-				}
-				else
-				{
-					p++;
-				}
-			}
-
-			if(p != ls)
-			{
-				Lines[count].Start = ls;
-				Lines[count].Length = p-ls;
-			}
-
-			Rewind();
-
-		}
-		catch(...)
-		{
-			ClearBuffer();
-			throw;
-		}
+		Rewind();
 
 		StorageName = name;
 		StorageShortName = TVPExtractStorageName(name);
@@ -642,6 +830,7 @@ void tTJSNI_KAGParser::LoadScenario(const ttstr & name)
 void tTJSNI_KAGParser::Clear()
 {
 	// clear all states
+	TVPClearScnearioCache(); // also invalidates the scenario cache
 	ClearBuffer();
 	ClearMacroArgs();
 	ClearCallStack();
@@ -650,12 +839,7 @@ void tTJSNI_KAGParser::Clear()
 void tTJSNI_KAGParser::ClearBuffer()
 {
 	// clear internal buffer
-	Buffer.Clear();
-	if(Lines) delete [] Lines, Lines = NULL;
-	LabelCache.Clear();
-	LabelAliases.clear();
-	LabelCached = false;
-	LineCount = 0;
+	if(Scenario) Scenario->Release(), Scenario = NULL, Lines = NULL;
 	StorageName.Clear();
 	StorageShortName.Clear();
 	BreakConditionAndMacro();
@@ -681,72 +865,10 @@ void tTJSNI_KAGParser::BreakConditionAndMacro()
 		// clear macro argument down to current base stack position
 }
 //---------------------------------------------------------------------------
-const ttstr & tTJSNI_KAGParser::GetLabelAliasFromLine(tjs_int line) const
-{
-	// retrieve label alias at given line
-	return LabelAliases[line];
-}
-//---------------------------------------------------------------------------
 static bool inline TVPIsWS(tjs_char ch)
 {
 	// is white space ?
 	return (ch == TJS_W(' ') || ch == TJS_W('\t'));
-}
-//---------------------------------------------------------------------------
-void tTJSNI_KAGParser::EnsureLabelCache()
-{
-	// construct label cache
-	if(!LabelCached)
-	{
-		// make label cache
-		LabelAliases.resize(LineCount);
-		ttstr prevlabel;
-		const tjs_char *p;
-		const tjs_char *vl;
-		tjs_int i;
-		for(i = 0; i<LineCount; i++)
-		{
-			if(Lines[i].Length >= 2 &&
-				Lines[i].Start[0] == TJS_W('*'))
-			{
-				p = Lines[i].Start;
-				vl = TJS_strchr(p, TJS_W('|'));
-				ttstr label;
-				if(vl)
-				{
-					// page name found
-					label = ttstr(p, vl-p);
-				}
-				else
-				{
-					label = p;
-				}
-
-				if(!label.c_str()[1])
-				{
-					if(prevlabel.IsEmpty())
-						TVPThrowExceptionMessage(TVPKAGCannotOmmitFirstLabelName);
-					label = prevlabel;
-				}
-
-				prevlabel = label;
-
-				tLabelCacheData *data = LabelCache.Find(label);
-				if(data)
-				{
-					// previous label name found (duplicated label)
-					data->Count++;
-					label = label + TJS_W(":") + ttstr(data->Count);
-				}
-
-				LabelCache.Add(label, tLabelCacheData(i, 1));
-				LabelAliases[i] = label;
-			}
-		}
-
-		LabelCached = true;
-	}
-
 }
 //---------------------------------------------------------------------------
 void tTJSNI_KAGParser::GoToLabel(const ttstr &name)
@@ -755,11 +877,11 @@ void tTJSNI_KAGParser::GoToLabel(const ttstr &name)
 	// parameter "name" must start with '*'
 	if(name.IsEmpty()) return;
 
-	EnsureLabelCache();
+	Scenario->EnsureLabelCache();
 
-	tLabelCacheData *newline;
+	tTVPScenarioCacheItem::tLabelCacheData *newline;
 
-	newline = LabelCache.Find(name);
+	newline = Scenario->GetLabelCache().Find(name);
 
 	if(newline)
 	{
@@ -767,7 +889,7 @@ void tTJSNI_KAGParser::GoToLabel(const ttstr &name)
 		const tjs_char *vl;
 		vl = TJS_strchr(Lines[newline->Line].Start, TJS_W('|'));
 
-		CurLabel = GetLabelAliasFromLine(newline->Line);
+		CurLabel = Scenario->GetLabelAliasFromLine(newline->Line);
 		if(vl) CurPage = vl+1; else CurPage.Clear();
 		CurLine = newline->Line;
 		CurPos = 0;
@@ -809,7 +931,7 @@ bool tTJSNI_KAGParser::SkipCommentOrLabel()
 	// skip comment or label, and go to next line.
 	// fire OnScript event if [script] thru [endscript] ( or @script thru
 	// @endscript ) is found.
-	EnsureLabelCache();
+	Scenario->EnsureLabelCache();
 
 	CurPos = 0;
 	if(!Lines) return false;
@@ -831,13 +953,13 @@ bool tTJSNI_KAGParser::SkipCommentOrLabel()
 			bool pagename;
 			if(vl)
 			{
-				CurLabel = GetLabelAliasFromLine(CurLine);
+				CurLabel = Scenario->GetLabelAliasFromLine(CurLine);
 				CurPage = ttstr(vl + 1);
 				pagename = true;
 			}
 			else
 			{
-				CurLabel = GetLabelAliasFromLine(CurLine);
+				CurLabel = Scenario->GetLabelAliasFromLine(CurLine);
 				CurPage.Clear();
 				pagename = false;
 			}
@@ -977,7 +1099,7 @@ void tTJSNI_KAGParser::FindNearestLabel(tjs_int start, tjs_int &labelline,
 	// "labelline" is to be the label's line number (0-based), and
 	// "labelname" is to be its label name.
 	// "labelline" will be -1 and "labelname" be empty if the label is not found.
-	EnsureLabelCache();
+	Scenario->EnsureLabelCache();
 
 	start--;
 	while(start >= 0)
@@ -985,7 +1107,7 @@ void tTJSNI_KAGParser::FindNearestLabel(tjs_int start, tjs_int &labelline,
 		if(Lines[start].Start[0] == TJS_W('*'))
 		{
 			// label found
-			labelname = GetLabelAliasFromLine(start);
+			labelname = Scenario->GetLabelAliasFromLine(start);
 			break;
 		}
 		start --;
