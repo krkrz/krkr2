@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="Shift_JIS" ?>
+<doc>
+<title>コントローラ</title>
+
+<para>
+<ptitle>コントローラについて</ptitle>
+　コントローラは、実行中に Shift + F1 を押すことにより表示することができます。<r/>
+　コントローラでは、各デバッグ支援ウィンドウを開いたり、イベント発生の停止や TJS コンテキストのダンプ、メッセージマップファイルの作成、システムの強制終了をすることができます。<r/>
+</para>
+
+<para>
+<ptitle>画面の説明</ptitle>
+<img src="Controller.png"/><r/><r/>
+<dl>
+<dt><img src="ScriptEditorIcon.png"/> スクリプトエディタ</dt>
+<dd>
+　<link href="ScriptEditor"/> を開きます。
+</dd>
+
+<dt><img src="ExprWatchIcon.png"/> 監視式</dt>
+<dd>
+　<link href="ExprWatch"/> を開きます。
+</dd>
+
+<dt><img src="ConsoleIcon.png"/> コンソール</dt>
+<dd>
+　<link href="Console"/> を開きます。
+</dd>
+
+<dt><img src="EventIcon.png"/> イベント発生</dt>
+<dd>
+　イベントの発生を制御します。押し込まれた状態ではシステムにイベントが発生し、押し込まれてない状態ではイベントは発生しません。吉里吉里は基本的にイベント駆動型のプログラミングモデルですので、イベントが発生しない状態ではプログラムが停止することになります。例外がどこにも捕捉されなかった場合、自動的にイベントは発生しなくなります。<r/>
+　このボタンは <at href="f_System_eventDisabled.html">System.eventDisabled</at> プロパティと連動しています。
+</dd>
+
+<dt>TJS コンテキストのダンプ (コンテキストメニュー内)</dt>
+<dd>
+　TJS2 スクリプトエンジンが保持している各コンテキストのダンプ ( 主に逆アセンブル ) がファイルに出力されます。<at href="f_Scripts_dump.html">Scripts.dump</at> メソッドと同様の動作をします。
+</dd>
+
+<dt>メッセージマップファイルの作成 (コンテキストメニュー内)</dt>
+<dd>
+　吉里吉里に内蔵されている各メッセージのリストと、それに対応するメッセージの現在の設定を出力します。このファイルは吉里吉里本体と同じ場所に置くことで、吉里吉里の起動時に自動的に読み込ませてメッセージの再設定を行えるものです。デフォルトの名前は msgmap.tjs になります。
+</dd>
+
+<dt><img src="ExitIcon.png"/> プログラムの強制終了</dt>
+<dd>
+　プログラムを強制的に終了します。
+</dd>
+</dl>
+<r/>
+</para>
+
+</doc>
