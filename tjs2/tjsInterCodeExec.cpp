@@ -1358,6 +1358,11 @@ tjs_int tTJSInterCodeContext::ExecuteCode(tTJSVariant *ra_org, tjs_int startip,
 				code+=3;
 				break;
 
+			case VM_DEBUGGER:
+				TJSNativeDebuggerBreak();
+				code ++;
+				break;
+
 			default:
 				ThrowInvalidVMCode();
 			}

@@ -69,7 +69,7 @@ enum tTJSVMCodes{
 	VM_GPD, VM_SPD, VM_SPDE, VM_SPDEH, VM_GPI, VM_SPI, VM_SPIE,
 	VM_GPDS, VM_SPDS, VM_GPIS, VM_SPIS,  
 	VM_DELD, VM_DELI, VM_SRV, VM_RET, VM_ENTRY, VM_EXTRY, VM_THROW,
-	VM_CHGTHIS, VM_GLOBAL, VM_ADDCI,
+	VM_CHGTHIS, VM_GLOBAL, VM_ADDCI, VM_DEBUGGER,
 
 	__VM_LAST /* = last mark ; this is not a real operation code */} ;
 
@@ -401,6 +401,8 @@ public:
 
 	void DoBreak();
 	void DoContinue();
+
+	void DoDebugger();
 
 	void ReturnFromFunc(tTJSExprNode *node);
 

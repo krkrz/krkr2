@@ -372,6 +372,29 @@ tTJSNarrowStringHolder::~tTJSNarrowStringHolder()
 //---------------------------------------------------------------------------
 
 //---------------------------------------------------------------------------
+// native debugger break point
+//---------------------------------------------------------------------------
+void TJSNativeDebuggerBreak()
+{
+	// This function is to be called mostly when the "debugger" TJS statement is
+	// executed.
+	// Step you debbuger back to the the caller, and continue debugging.
+	// Do not use "debugger" statement unless you run the program under the native
+	// debugger, or the program may cause an unhandled debugger breakpoint
+	// exception.
+
+#if defined(__WIN32__) && defined(_M_IX86)
+	#ifdef __BORLANDC__
+			__emit__ (0xcc); // int 3 (Raise debugger breakpoint exception)
+	#else
+			_asm _emit 0xcc; // int 3 (Raise debugger breakpoint exception)
+	#endif
+#endif
+}
+//---------------------------------------------------------------------------
+
+
+//---------------------------------------------------------------------------
 // FPU control
 //---------------------------------------------------------------------------
 #if defined(__WIN32__) && !defined(__GNUC__)
