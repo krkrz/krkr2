@@ -43,7 +43,7 @@ RSC=rc.exe
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MT /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "WUVORBIS_EXPORTS" /YX /FD /c
-# ADD CPP /nologo /GB /Gr /MT /W3 /GX /Zi /O2 /I "vorbis/include" /I "ogg/include" /I "..\\" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "WUVORBIS_EXPORTS" /Fr /YX /FD /c
+# ADD CPP /nologo /Gr /MT /W3 /GX /Zi /O2 /I "vorbis/include" /I "ogg/include" /I "..\\" /D "NDEBUG" /D "WIN32" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "WUVORBIS_EXPORTS" /D "DECODE_ONLY" /Fr /YX /FD /c
 # ADD BASE MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD BASE RSC /l 0x411 /d "NDEBUG"
@@ -70,7 +70,7 @@ LINK32=link.exe
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MTd /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "WUVORBIS_EXPORTS" /YX /FD /GZ /c
-# ADD CPP /nologo /Gr /MTd /W3 /Gm /GX /ZI /Od /I "vorbis/include" /I "ogg/include" /I "..\\" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "WUVORBIS_EXPORTS" /FR /YX /FD /GZ /c
+# ADD CPP /nologo /Gr /MTd /W3 /Gm /GX /ZI /Od /I "vorbis/include" /I "ogg/include" /I "..\\" /D "_DEBUG" /D "WIN32" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "WUVORBIS_EXPORTS" /D "DECODE_ONLY" /FR /YX /FD /GZ /c
 # ADD BASE MTL /nologo /D "_DEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "_DEBUG" /mktyplib203 /win32
 # ADD BASE RSC /l 0x411 /d "_DEBUG"
@@ -94,10 +94,6 @@ LINK32=link.exe
 # PROP Default_Filter "cpp;c;cxx;rc;def;r;odl;idl;hpj;bat"
 # Begin Source File
 
-SOURCE=.\vorbis\lib\bitrate.c
-# End Source File
-# Begin Source File
-
 SOURCE=.\ogg\src\bitwise.c
 # End Source File
 # Begin Source File
@@ -107,10 +103,6 @@ SOURCE=.\vorbis\lib\block.c
 # Begin Source File
 
 SOURCE=.\vorbis\lib\codebook.c
-# End Source File
-# Begin Source File
-
-SOURCE=.\vorbis\lib\envelope.c
 # End Source File
 # Begin Source File
 
@@ -146,10 +138,6 @@ SOURCE=.\vorbis\lib\mdct.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\vorbis\lib\psy.c
-# End Source File
-# Begin Source File
-
 SOURCE=.\vorbis\lib\registry.c
 # End Source File
 # Begin Source File
@@ -159,10 +147,6 @@ SOURCE=.\vorbis\lib\res0.c
 # Begin Source File
 
 SOURCE=.\vorbis\lib\sharedbook.c
-# End Source File
-# Begin Source File
-
-SOURCE=.\vorbis\lib\smallft.c
 # End Source File
 # Begin Source File
 
@@ -218,14 +202,6 @@ SOURCE=.\vorbis\lib\codec_internal.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\vorbis\lib\envelope.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\vorbis\lib\iir.h
-# End Source File
-# Begin Source File
-
 SOURCE=.\vorbis\lib\lookup.h
 # End Source File
 # Begin Source File
@@ -263,10 +239,6 @@ SOURCE=.\vorbis\lib\registry.h
 # Begin Source File
 
 SOURCE=.\vorbis\lib\scales.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\vorbis\lib\smallft.h
 # End Source File
 # Begin Source File
 
