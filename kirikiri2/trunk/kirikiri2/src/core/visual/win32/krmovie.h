@@ -13,7 +13,7 @@
 #ifndef __KRMOVIE_H__
 #define __KRMOVIE_H__
 
-#define TVP_KRMOVIE_VER   0x00010006
+#define TVP_KRMOVIE_VER   0x00010007
 
 
 //---------------------------------------------------------------------------
@@ -55,6 +55,10 @@ public:
 	virtual void __stdcall GetVideoSize( long *width, long *height ) = 0;
 	virtual void __stdcall GetFrontBuffer( BYTE **buff ) = 0;
 	virtual void __stdcall SetVideoBuffer( BYTE *buff1, BYTE *buff2, long size ) = 0;
+
+	virtual void __stdcall SetStopFrame( int frame ) = 0;
+	virtual void __stdcall GetStopFrame( int *frame ) = 0;
+	virtual void __stdcall SetDefaultStopFrame() = 0;
 // End:	Add:	T.Imoto
 };
 //---------------------------------------------------------------------------
