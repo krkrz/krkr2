@@ -1088,7 +1088,6 @@ public:
 	{
 		TJSSetFPUE();
 		tTVReal r = rhs.AsReal();
-		if(r == 0.0) TJSThrowDivideByZero();
 		return (AsReal()/r);
 	}
 
