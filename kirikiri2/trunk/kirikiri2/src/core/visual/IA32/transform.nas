@@ -1194,27 +1194,25 @@ TVPInterpStretchCopy_mmx_a:			; bilinear stretch copy
 	psubw	mm4,	mm3		; 1 s1: mm4 = s1p1 - s1p0
 	pmullw	mm2,	mm5		; 1 s0:
 	pmullw	mm4,	mm5		; 1 s1:
-	psllw	mm6,	8		; 1 s0:
-	psllw	mm3,	8		; 1 s1:
-	paddw	mm6,	mm2		; 1 s0:
-	paddw	mm3,	mm4		; 1 s1:
-	psrlw	mm6,	8		; 1 s0: mm6 = s0p0 + (s0p1 - s0p0) * bx = S0
-	psrlw	mm3,	8		; 1 s1: mm3 = s1p0 + (s1p1 - s1p0) * bx = S1
+	psrlw	mm2,	8		; 1 s0: mm2 = (s0p1 - s0p0) * bx
+	psrlw	mm4,	8		; 1 s1: mm4 = (s1p1 - s1p0) * bx
+	paddb	mm6,	mm2		; 1 s0: mm6 = s0p0 + (s0p1 - s0p0) * bx = S0
+	paddb	mm3,	mm4		; 1 s1: mm3 = s1p0 + (s1p1 - s1p0) * bx = S1
 
 	add	ebx,	edx		; 1 srcp += srcstep
 	psubw	mm3,	mm6		; 1 s0/s1: mm3 = S1 - S0
+
 	mov	eax,	ebx		; 2 tmp = srcp
 	pmullw	mm3,	mm7		; 1 s0/s1:
 	shr	eax,	16		; 2 tmp >>= 16
 
-	psllw	mm6,	8		; 1 s0/s1:
 	movd	mm1,	[eax*4+esi]		; 2 load: load s0p0
-	paddw	mm6,	mm3		; 1 s0/s1:
+	psrlw	mm3,	8		; 1 s0/s1: mm3 = (S1 - S0) * by
 	movd	mm2,	[eax*4+esi+4]	; 2 load: load s0p1
+	paddb	mm6,	mm3		; 1 s0/s1: mm6 = S0 + (S1 - S0) * by = dst
 	movd	mm3,	[eax*4+ecx]		; 2 load: load s1p0
-	psrlw	mm6,	8		; 1 s0/s1: mm6 = S0 + (S1 - S0) * by = dst
-	movd	mm4,	[eax*4+ecx+4]	; 2 load: load s1p1
 	packuswb	mm6,	mm0		; 1 pack
+	movd	mm4,	[eax*4+ecx+4]	; 2 load: load s1p1
 
 	mov	eax,	ebx		; 2 bx:
 	movd	[edi],	mm6		; 1 store to dest
@@ -1232,24 +1230,19 @@ TVPInterpStretchCopy_mmx_a:			; bilinear stretch copy
 	psubw	mm4,	mm3		; 2 s1: mm4 = s1p1 - s1p0
 	pmullw	mm2,	mm5		; 2 s0:
 	pmullw	mm4,	mm5		; 2 s1:
-	psllw	mm1,	8		; 2 s0:
-	psllw	mm3,	8		; 2 s1:
-	paddw	mm1,	mm2		; 2 s0:
-	paddw	mm3,	mm4		; 2 s1:
-	psrlw	mm1,	8		; 2 s0: mm1 = s0p0 + (s0p1 - s0p0) * bx = S0
-	psrlw	mm3,	8		; 2 s1: mm3 = s1p0 + (s1p1 - s1p0) * bx = S1
+	psrlw	mm2,	8		; 2 s0: mm2 = (s0p1 - s0p0) * bx
+	psrlw	mm4,	8		; 2 s1: mm4 = (s1p1 - s1p0) * bx
+	paddb	mm1,	mm2		; 2 s0: mm1 = s0p0 + (s0p1 - s0p0) * bx = S0
+	paddb	mm3,	mm4		; 2 s1: mm3 = s1p0 + (s1p1 - s1p0) * bx = S1
 
-	add	ebx,	edx		; 2 srcp += srcstep
 	psubw	mm3,	mm1		; 2 s0/s1: mm3 = S1 - S0
-	add	edi,	byte 8		; 2 dest ++
+	add	ebx,	edx		; 2 srcp += srcstep
 	pmullw	mm3,	mm7		; 2 s0/s1:
-	psllw	mm1,	8		; 2 s0/s1:
+	add	edi,	byte 8		; 2 dest ++
+	psrlw	mm3,	8		; 2 s0/s1: mm3 = (S1 - S0) * by
 	cmp	edi,	ebp
-	paddw	mm1,	mm3		; 2 s0/s1:
-	psrlw	mm1,	8		; 2 s0/s1: mm1 = S0 + (S1 - S0) * by = dst
-
+	paddb	mm1,	mm3		; 2 s0/s1: mm1 = S0 + (S1 - S0) * by = dst
 	packuswb	mm1,	mm0		; 2 pack
-
 	movd	[edi+4-8],	mm1		; 2 store to dest
 
 	jb	.ploop			; jump if edi < ebp
@@ -1284,18 +1277,15 @@ TVPInterpStretchCopy_mmx_a:			; bilinear stretch copy
 	psubw	mm4,	mm3		; s1: mm4 = s1p1 - s1p0
 	pmullw	mm2,	mm5		; s0:
 	pmullw	mm4,	mm5		; s1:
-	psllw	mm1,	8		; s0:
-	psllw	mm3,	8		; s1:
-	paddw	mm1,	mm2		; s0:
-	paddw	mm3,	mm4		; s1:
-	psrlw	mm1,	8		; s0: mm1 = s0p0 + (s0p1 - s0p0) * bx = S0
-	psrlw	mm3,	8		; s1: mm3 = s1p0 + (s1p1 - s1p0) * bx = S1
+	psrlw	mm2,	8		; s0: mm2 = (s0p1 - s0p0) * bx
+	psrlw	mm4,	8		; s1: mm4 = (s1p1 - s1p0) * bx
+	paddb	mm1,	mm2		; s0: mm1 = s0p0 + (s0p1 - s0p0) * bx = S0
+	paddb	mm3,	mm4		; s1: mm3 = s1p0 + (s1p1 - s1p0) * bx = S1
 
 	psubw	mm3,	mm1		; s0/s1: mm3 = S1 - S0
 	pmullw	mm3,	mm7		; s0/s1:
-	psllw	mm1,	8		; s0/s1:
-	paddw	mm1,	mm3		; s0/s1:
-	psrlw	mm1,	8		; s0/s1: mm1 = S0 + (S1 - S0) * by = dst
+	psrlw	mm3,	8		; s0/s1: mm3 = (S1 - S0) * by
+	paddb	mm1,	mm3		; s0/s1: mm1 = S0 + (S1 - S0) * by = dst
 
 	packuswb	mm1,	mm0		; pack
 
@@ -1392,29 +1382,25 @@ TVPInterpStretchConstAlphaBlend_mmx_a:		; bilinear stretch copy with constant-al
 	psubw	mm4,	mm3		; 1 s1: mm4 = s1p1 - s1p0
 	pmullw	mm2,	mm5		; 1 s0:
 	pmullw	mm4,	mm5		; 1 s1:
-	psllw	mm1,	8		; 1 s0:
-	psllw	mm3,	8		; 1 s1:
-	paddw	mm1,	mm2		; 1 s0:
-	paddw	mm3,	mm4		; 1 s1:
+	psrlw	mm2,	8		; 1 s0:
+	psrlw	mm4,	8		; 1 s1:
+	paddb	mm1,	mm2		; 1 s0: mm1 = s0p0 + (s0p1 - s0p0) * bx = S0
+	paddb	mm3,	mm4		; 1 s1: mm3 = s1p0 + (s1p1 - s1p0) * bx = S1
 	add	ebx,	edx		; 1 srcp += srcstep
-	psrlw	mm1,	8		; 1 s0: mm1 = s0p0 + (s0p1 - s0p0) * bx = S0
-	psrlw	mm3,	8		; 1 s1: mm3 = s1p0 + (s1p1 - s1p0) * bx = S1
 	movd	mm5,	[edi]		; 1 blend dest: load original destination
 
 	psubw	mm3,	mm1		; 1 s0/s1: mm3 = S1 - S0
 	punpcklbw	mm5,	mm0		; 1 blend dest: unpack orgdst
 	pmullw	mm3,	mm7		; 1 s0/s1:
-	psllw	mm1,	8		; 1 s0/s1:
+	psrlw	mm3,	8		; 1 s0/s1:
 	mov	eax,	ebx		; 2 tmp = srcp
-	paddw	mm1,	mm3		; 1 s0/s1:
+	paddb	mm1,	mm3		; 1 s0/s1: mm1 = S0 + (S1 - S0) * by = dst
 	shr	eax,	16		; 2 tmp >>= 16
-	psrlw	mm1,	8		; 1 s0/s1: mm1 = S0 + (S1 - S0) * by = dst
 
 	psubw	mm1,	mm5		; 1 blend dest: mm1 = orgdst - dest
 	pmullw	mm1,	mm6		; 1 blend dest:
-	psllw	mm5,	8		; 1 blend dest:
-	paddw	mm5,	mm1		; 1 blend dest:
-	psrlw	mm5,	8		; 1 blend dest: mm5 = final dst
+	psrlw	mm1,	8		; 1 blend dest:
+	paddb	mm5,	mm1		; 1 blend dest: mm5 = final dst
 
 	movd	mm1,	[eax*4+esi]		; 2 load: load s0p0
 	packuswb	mm5,	mm0		; 1 pack
@@ -1439,29 +1425,25 @@ TVPInterpStretchConstAlphaBlend_mmx_a:		; bilinear stretch copy with constant-al
 	psubw	mm4,	mm3		; 2 s1: mm4 = s1p1 - s1p0
 	pmullw	mm2,	mm5		; 2 s0:
 	pmullw	mm4,	mm5		; 2 s1:
-	psllw	mm1,	8		; 2 s0:
-	psllw	mm3,	8		; 2 s1:
-	paddw	mm1,	mm2		; 2 s0:
-	paddw	mm3,	mm4		; 2 s1:
-	psrlw	mm1,	8		; 2 s0: mm1 = s0p0 + (s0p1 - s0p0) * bx = S0
-	psrlw	mm3,	8		; 2 s1: mm3 = s1p0 + (s1p1 - s1p0) * bx = S1
+	psrlw	mm2,	8		; 2 s0:
+	psrlw	mm4,	8		; 2 s1:
+	paddb	mm1,	mm2		; 2 s0: mm1 = s0p0 + (s0p1 - s0p0) * bx = S0
+	paddb	mm3,	mm4		; 2 s1: mm3 = s1p0 + (s1p1 - s1p0) * bx = S1
 
 	psubw	mm3,	mm1		; 2 s0/s1: mm3 = S1 - S0
 	movd	mm2,	[edi+4]		; 2 blend dest: load original destination
 	pmullw	mm3,	mm7		; 2 s0/s1:
-	psllw	mm1,	8		; 2 s0/s1:
+	psrlw	mm3,	8		; 2 s0/s1:
 	punpcklbw	mm2,	mm0		; 2 blend dest: unpack orgdst
-	paddw	mm1,	mm3		; 2 s0/s1:
+	paddb	mm1,	mm3		; 2 s0/s1: mm1 = S0 + (S1 - S0) * by = dst
 	add	edi,	byte 8		; 2 dest ++
-	psrlw	mm1,	8		; 2 s0/s1: mm1 = S0 + (S1 - S0) * by = dst
 
 	add	ebx,	edx		; 2 srcp += srcstep
 	psubw	mm1,	mm2		; 2 blend dest: mm1 = orgdst - dest
 	cmp	edi,	ebp
 	pmullw	mm1,	mm6		; 2 blend dest:
-	psllw	mm2,	8		; 2 blend dest:
-	paddw	mm2,	mm1		; 2 blend dest:
-	psrlw	mm2,	8		; 2 blend dest: mm2 = final dst
+	psrlw	mm1,	8		; 2 blend dest:
+	paddb	mm2,	mm1		; 2 blend dest: mm2 = final dst
 
 	packuswb	mm2,	mm0		; 2 pack
 
@@ -1500,26 +1482,22 @@ TVPInterpStretchConstAlphaBlend_mmx_a:		; bilinear stretch copy with constant-al
 	psubw	mm4,	mm3		; s1: mm4 = s1p1 - s1p0
 	pmullw	mm2,	mm5		; s0:
 	pmullw	mm4,	mm5		; s1:
-	psllw	mm1,	8		; s0:
-	psllw	mm3,	8		; s1:
-	paddw	mm1,	mm2		; s0:
-	paddw	mm3,	mm4		; s1:
-	psrlw	mm1,	8		; s0: mm1 = s0p0 + (s0p1 - s0p0) * bx = S0
-	psrlw	mm3,	8		; s1: mm3 = s1p0 + (s1p1 - s1p0) * bx = S1
+	psrlw	mm2,	8		; s0:
+	psrlw	mm4,	8		; s1:
+	paddb	mm1,	mm2		; s0: mm1 = s0p0 + (s0p1 - s0p0) * bx = S0
+	paddb	mm3,	mm4		; s1: mm3 = s1p0 + (s1p1 - s1p0) * bx = S1
 
 	psubw	mm3,	mm1		; s0/s1: mm3 = S1 - S0
 	pmullw	mm3,	mm7		; s0/s1:
-	psllw	mm1,	8		; s0/s1:
-	paddw	mm1,	mm3		; s0/s1:
-	psrlw	mm1,	8		; s0/s1: mm1 = S0 + (S1 - S0) * by = dst
+	psrlw	mm3,	8		; s0/s1:
+	paddb	mm1,	mm3		; s0/s1: mm1 = S0 + (S1 - S0) * by = dst
 
 	movd	mm2,	[edi]		; blend dest: load original destination
 	punpcklbw	mm2,	mm0		; blend dest: unpack orgdst
 	psubw	mm1,	mm2		; blend dest: mm1 = orgdst - dest
 	pmullw	mm1,	mm6		; blend dest:
-	psllw	mm2,	8		; blend dest:
-	paddw	mm2,	mm1		; blend dest:
-	psrlw	mm2,	8		; blend dest: mm2 = final dst
+	psrlw	mm1,	8		; blend dest:
+	paddb	mm2,	mm1		; blend dest: mm2 = final dst
 
 	packuswb	mm2,	mm0		; pack
 
@@ -1609,21 +1587,18 @@ TVPInterpStretchAdditiveAlphaBlend_mmx_a:		; bilinear stretching additive alpha 
 	psubw	mm4,	mm3		; 1 s1: mm4 = s1p1 - s1p0
 	pmullw	mm2,	mm5		; 1 s0:
 	pmullw	mm4,	mm5		; 1 s1:
-	psllw	mm6,	8		; 1 s0:
-	psllw	mm3,	8		; 1 s1:
-	paddw	mm6,	mm2		; 1 s0:
-	paddw	mm3,	mm4		; 1 s1:
-	psrlw	mm6,	8		; 1 s0: mm6 = s0p0 + (s0p1 - s0p0) * bx = S0
-	psrlw	mm3,	8		; 1 s1: mm3 = s1p0 + (s1p1 - s1p0) * bx = S1
+	psrlw	mm2,	8		; 1 s0:
+	psrlw	mm4,	8		; 1 s1:
+	paddb	mm6,	mm2		; 1 s0: mm6 = s0p0 + (s0p1 - s0p0) * bx = S0
+	paddb	mm3,	mm4		; 1 s1: mm3 = s1p0 + (s1p1 - s1p0) * bx = S1
 
 	psubw	mm3,	mm6		; 1 s0/s1: mm3 = S1 - S0
 	movd	mm2,	[edi]		; 1 addalphablend: load destination
 	pmullw	mm3,	mm7		; 1 s0/s1:
-	psllw	mm6,	8		; 1 s0/s1:
+	psrlw	mm3,	8		; 1 s0/s1:
 	add	ebx,	edx		; 1 srcp += srcstep
-	paddw	mm6,	mm3		; 1 s0/s1:
+	paddb	mm6,	mm3		; 1 s0/s1: mm6 = S0 + (S1 - S0) * by = dst
 	mov	eax,	ebx		; 2 tmp = srcp
-	psrlw	mm6,	8		; 1 s0/s1: mm6 = S0 + (S1 - S0) * by = dst
 
 	shr	eax,	16		; 2 tmp >>= 16
 	movq	mm3,	mm6		; 1 addalphablend:
@@ -1657,21 +1632,18 @@ TVPInterpStretchAdditiveAlphaBlend_mmx_a:		; bilinear stretching additive alpha 
 	psubw	mm4,	mm3		; 2 s1: mm4 = s1p1 - s1p0
 	pmullw	mm2,	mm5		; 2 s0:
 	pmullw	mm4,	mm5		; 2 s1:
-	psllw	mm1,	8		; 2 s0:
-	psllw	mm3,	8		; 2 s1:
-	paddw	mm1,	mm2		; 2 s0:
-	paddw	mm3,	mm4		; 2 s1:
-	psrlw	mm1,	8		; 2 s0: mm1 = s0p0 + (s0p1 - s0p0) * bx = S0
-	psrlw	mm3,	8		; 2 s1: mm3 = s1p0 + (s1p1 - s1p0) * bx = S1
+	psrlw	mm2,	8		; 2 s0:
+	psrlw	mm4,	8		; 2 s1:
+	paddb	mm1,	mm2		; 2 s0: mm1 = s0p0 + (s0p1 - s0p0) * bx = S0
+	paddb	mm3,	mm4		; 2 s1: mm3 = s1p0 + (s1p1 - s1p0) * bx = S1
 
 	psubw	mm3,	mm1		; 2 s0/s1: mm3 = S1 - S0
 	movd	mm2,	[edi+4]		; 2 addalphablend: load destination
 	pmullw	mm3,	mm7		; 2 s0/s1:
-	psllw	mm1,	8		; 2 s0/s1:
+	psrlw	mm3,	8		; 2 s0/s1:
 	add	ebx,	edx		; 2 srcp += srcstep
-	paddw	mm1,	mm3		; 2 s0/s1:
+	paddb	mm1,	mm3		; 2 s0/s1: mm1 = S0 + (S1 - S0) * by = dst
 	add	edi,	byte 8		; 2 dest ++
-	psrlw	mm1,	8		; 2 s0/s1: mm1 = S0 + (S1 - S0) * by = dst
 
 	movq	mm3,	mm1		; 2 addalphablend:
 	cmp	edi,	ebp
@@ -1723,18 +1695,15 @@ TVPInterpStretchAdditiveAlphaBlend_mmx_a:		; bilinear stretching additive alpha 
 	psubw	mm4,	mm3		; s1: mm4 = s1p1 - s1p0
 	pmullw	mm2,	mm5		; s0:
 	pmullw	mm4,	mm5		; s1:
-	psllw	mm1,	8		; s0:
-	psllw	mm3,	8		; s1:
-	paddw	mm1,	mm2		; s0:
-	paddw	mm3,	mm4		; s1:
-	psrlw	mm1,	8		; s0: mm1 = s0p0 + (s0p1 - s0p0) * bx = S0
-	psrlw	mm3,	8		; s1: mm3 = s1p0 + (s1p1 - s1p0) * bx = S1
+	psrlw	mm2,	8		; s0:
+	psrlw	mm4,	8		; s1:
+	paddb	mm1,	mm2		; s0: mm1 = s0p0 + (s0p1 - s0p0) * bx = S0
+	paddb	mm3,	mm4		; s1: mm3 = s1p0 + (s1p1 - s1p0) * bx = S1
 
 	psubw	mm3,	mm1		; s0/s1: mm3 = S1 - S0
 	pmullw	mm3,	mm7		; s0/s1:
-	psllw	mm1,	8		; s0/s1:
-	paddw	mm1,	mm3		; s0/s1:
-	psrlw	mm1,	8		; s0/s1: mm1 = S0 + (S1 - S0) * by = dst
+	psrlw	mm3,	8		; s0/s1:
+	paddb	mm1,	mm3		; s0/s1: mm1 = S0 + (S1 - S0) * by = dst
 
 	movd	mm2,	[edi]		; addalphablend: load destination
 	movq	mm3,	mm1		; addalphablend:
@@ -1843,20 +1812,17 @@ TVPInterpStretchAdditiveAlphaBlend_o_mmx_a:		; bilinear stretching additive alph
 	psubw	mm4,	mm3		; 1 s1: mm4 = s1p1 - s1p0
 	pmullw	mm2,	mm5		; 1 s0:
 	pmullw	mm4,	mm5		; 1 s1:
-	psllw	mm1,	8		; 1 s0:
-	psllw	mm3,	8		; 1 s1:
-	paddw	mm1,	mm2		; 1 s0:
-	paddw	mm3,	mm4		; 1 s1:
-	psrlw	mm1,	8		; 1 s0: mm1 = s0p0 + (s0p1 - s0p0) * bx = S0
-	psrlw	mm3,	8		; 1 s1: mm3 = s1p0 + (s1p1 - s1p0) * bx = S1
+	psrlw	mm2,	8		; 1 s0:
+	psrlw	mm4,	8		; 1 s1:
+	paddb	mm1,	mm2		; 1 s0: mm1 = s0p0 + (s0p1 - s0p0) * bx = S0
+	paddb	mm3,	mm4		; 1 s1: mm3 = s1p0 + (s1p1 - s1p0) * bx = S1
 
 	psubw	mm3,	mm1		; 1 s0/s1: mm3 = S1 - S0
 	pmullw	mm3,	mm7		; 1 s0/s1:
-	psllw	mm1,	8		; 1 s0/s1:
+	psrlw	mm3,	8		; 1 s0/s1:
 	add	ebx,	edx		; 1 srcp += srcstep
-	paddw	mm1,	mm3		; 1 s0/s1:
+	paddb	mm1,	mm3		; 1 s0/s1: mm1 = S0 + (S1 - S0) * by = dst
 	mov	eax,	ebx		; 2 tmp = srcp
-	psrlw	mm1,	8		; 1 s0/s1: mm1 = S0 + (S1 - S0) * by = dst
 	shr	eax,	16		; 2 tmp >>= 16
 	pmullw	mm1,	mm6		; 1 addalphablend:
 	psrlw	mm1,	8		; 1 dst *= opa
@@ -1896,19 +1862,16 @@ TVPInterpStretchAdditiveAlphaBlend_o_mmx_a:		; bilinear stretching additive alph
 	psubw	mm4,	mm3		; 2 s1: mm4 = s1p1 - s1p0
 	pmullw	mm2,	mm5		; 2 s0:
 	pmullw	mm4,	mm5		; 2 s1:
-	psllw	mm1,	8		; 2 s0:
-	psllw	mm3,	8		; 2 s1:
-	paddw	mm1,	mm2		; 2 s0:
-	paddw	mm3,	mm4		; 2 s1:
-	psrlw	mm1,	8		; 2 s0: mm1 = s0p0 + (s0p1 - s0p0) * bx = S0
-	psrlw	mm3,	8		; 2 s1: mm3 = s1p0 + (s1p1 - s1p0) * bx = S1
+	psrlw	mm2,	8		; 2 s0:
+	psrlw	mm4,	8		; 2 s1:
+	paddb	mm1,	mm2		; 2 s0: mm1 = s0p0 + (s0p1 - s0p0) * bx = S0
+	paddb	mm3,	mm4		; 2 s1: mm3 = s1p0 + (s1p1 - s1p0) * bx = S1
 
 	psubw	mm3,	mm1		; 2 s0/s1: mm3 = S1 - S0
 	pmullw	mm3,	mm7		; 2 s0/s1:
-	psllw	mm1,	8		; 2 s0/s1:
+	psrlw	mm3,	8		; 2 s0/s1:
 	add	edi,	byte 8		; 2 dest ++
-	paddw	mm1,	mm3		; 2 s0/s1:
-	psrlw	mm1,	8		; 2 s0/s1: mm1 = S0 + (S1 - S0) * by = dst
+	paddb	mm1,	mm3		; 2 s0/s1: mm1 = S0 + (S1 - S0) * by = dst
 
 	pmullw	mm1,	mm6		; 2 addalphablend:
 	psrlw	mm1,	8		; 2 dst *= opa
@@ -1963,18 +1926,15 @@ TVPInterpStretchAdditiveAlphaBlend_o_mmx_a:		; bilinear stretching additive alph
 	psubw	mm4,	mm3		; s1: mm4 = s1p1 - s1p0
 	pmullw	mm2,	mm5		; s0:
 	pmullw	mm4,	mm5		; s1:
-	psllw	mm1,	8		; s0:
-	psllw	mm3,	8		; s1:
-	paddw	mm1,	mm2		; s0:
-	paddw	mm3,	mm4		; s1:
-	psrlw	mm1,	8		; s0: mm1 = s0p0 + (s0p1 - s0p0) * bx = S0
-	psrlw	mm3,	8		; s1: mm3 = s1p0 + (s1p1 - s1p0) * bx = S1
+	psrlw	mm2,	8		; s0:
+	psrlw	mm4,	8		; s1:
+	paddb	mm1,	mm2		; s0: mm1 = s0p0 + (s0p1 - s0p0) * bx = S0
+	paddb	mm3,	mm4		; s1: mm3 = s1p0 + (s1p1 - s1p0) * bx = S1
 
 	psubw	mm3,	mm1		; s0/s1: mm3 = S1 - S0
 	pmullw	mm3,	mm7		; s0/s1:
-	psllw	mm1,	8		; s0/s1:
-	paddw	mm1,	mm3		; s0/s1:
-	psrlw	mm1,	8		; s0/s1: mm1 = S0 + (S1 - S0) * by = dst
+	psrlw	mm3,	8		; s0/s1:
+	paddb	mm1,	mm3		; s0/s1: mm1 = S0 + (S1 - S0) * by = dst
 
 	pmullw	mm1,	mm6		; addalphablend:
 	psrlw	mm1,	8		; dst *= opa
