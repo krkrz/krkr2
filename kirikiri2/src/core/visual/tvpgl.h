@@ -196,7 +196,7 @@ TVP_GL_FUNC_PTR_EXTERN_DECL(void, TVPScreenBlend_HDA,  (tjs_uint32 *dest, const 
 TVP_GL_FUNC_PTR_EXTERN_DECL(void, TVPScreenBlend_o,  (tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len, tjs_int opa));
 TVP_GL_FUNC_PTR_EXTERN_DECL(void, TVPScreenBlend_HDA_o,  (tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len, tjs_int opa));
 TVP_GL_FUNC_PTR_EXTERN_DECL(void, TVPStretchCopy,  (tjs_uint32 *dest, tjs_int destlen, const tjs_uint32 *src, tjs_int srcstart, tjs_int srcstep));
-TVP_GL_FUNC_DECL(void, TVPInterpStretchCopy, (tjs_uint32 *dest, tjs_int destlen, const tjs_uint32 *src1, const tjs_uint32 *src2, tjs_int blend_y, tjs_int srcstart, tjs_int srcstep));
+TVP_GL_FUNC_PTR_EXTERN_DECL(void, TVPInterpStretchCopy,  (tjs_uint32 *dest, tjs_int destlen, const tjs_uint32 *src1, const tjs_uint32 *src2, tjs_int blend_y, tjs_int srcstart, tjs_int srcstep));
 TVP_GL_FUNC_PTR_EXTERN_DECL(void, TVPFastLinearInterpH2F,  (tjs_uint32 *dest, tjs_int destlen, const tjs_uint32 *src));
 TVP_GL_FUNC_PTR_EXTERN_DECL(void, TVPFastLinearInterpH2B,  (tjs_uint32 *dest, tjs_int destlen, const tjs_uint32 *src));
 TVP_GL_FUNC_PTR_EXTERN_DECL(void, TVPFastLinearInterpV2,  (tjs_uint32 *dest, tjs_int destlen, const tjs_uint32 *src0, const tjs_uint32 *src1));
