@@ -297,7 +297,23 @@ void tTJSScriptBlock::SetText(tTJSVariant *result, const tjs_char *text,
 #endif
 
 	// execute global level script
-	ExecuteTopLevelScript(result, context);
+	try
+	{
+		ExecuteTopLevelScript(result, context);
+	}
+	catch(...)
+	{
+		if(InterCodeContextList.size() != 1)
+		{
+			if(TopLevelContext) TopLevelContext->Release(), TopLevelContext = NULL;
+			while(ContextStack.size())
+			{
+				ContextStack.top()->Release();
+				ContextStack.pop();
+			}
+		}
+		throw;
+	}
 
 	if(InterCodeContextList.size() != 1)
 	{
