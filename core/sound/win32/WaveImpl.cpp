@@ -56,7 +56,7 @@ static enum tTVPForceConvertMode { fcmNone, fcm16bit, fcm16bitMono }
 static tjs_int TVPPrimarySBCreateTryLevel = -1;
 static bool TVPExpandToQuad = true;
 static tjs_int TVPL1BufferLength = 1000; // in ms
-static tjs_int TVPL2BufferLength = 4000; // in ms
+static tjs_int TVPL2BufferLength = 1000; // in ms
 static bool TVPDirectSoundUse3D = false;
 //---------------------------------------------------------------------------
 static void TVPInitSoundOptions()
