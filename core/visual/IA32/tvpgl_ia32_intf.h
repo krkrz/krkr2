@@ -12,6 +12,7 @@
 
 
 #include "tjsTypes.h"
+#include "tvpgl.h"
 
 #ifdef _WIN32
 #define TVP_GL_IA32_FUNC_DECL(rettype, funcname, arg)  rettype __cdecl funcname arg
@@ -72,6 +73,9 @@ TVP_GL_IA32_FUNC_EXTERN_DECL(void,  TVPAddBlend_mmx_a,  (tjs_uint32 *dest, const
 TVP_GL_IA32_FUNC_EXTERN_DECL(void,  TVPAddBlend_HDA_mmx_a,  (tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len));
 TVP_GL_IA32_FUNC_EXTERN_DECL(void,  TVPAddBlend_o_mmx_a,  (tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len, tjs_int opa));
 TVP_GL_IA32_FUNC_EXTERN_DECL(void,  TVPAddBlend_HDA_o_mmx_a,  (tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len, tjs_int opa));
+/*[*/
+/*]*/
+TVP_GL_IA32_FUNC_EXTERN_DECL(void,  TVPAdjustGamma_a_mmx_a,  (tjs_uint32 *dest, tjs_int len, tTVPGLGammaAdjustTempData *temp));
 /*[*/
 /*]*/
 TVP_GL_IA32_FUNC_EXTERN_DECL(void,  TVPAlphaBlend_mmx_a,  (tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len));
