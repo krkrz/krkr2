@@ -57,13 +57,13 @@ class MainWindow extends Window // メインウィンドウクラス
 //			layer.setClip(3, 3, 639-6, 479-6);
 			var start = System.getTickCount();
 			for(var i = 0; i < 200; i++)
-			chr.doBoxBlur(7, 7);
+			chr.doBoxBlur(5, 5);
 			var end = System.getTickCount();
 			System.inform(end - start);
 		}
 		else
 		{
-			chr.doBoxBlur(7, 7);
+			chr.doBoxBlur(5, 5);
 //			chr.doBoxBlur(7, 7);
 		}
 	}
