@@ -13,6 +13,8 @@ globaldef		TVPApplyColorMap65_mmx_a
 globaldef		TVPApplyColorMap65_emmx_a
 globaldef		TVPApplyColorMap65_d_mmx_a
 globaldef		TVPApplyColorMap65_d_emmx_a
+globaldef		TVPApplyColorMap65_a_mmx_a
+globaldef		TVPApplyColorMap65_a_emmx_a
 externdef		TVPNegativeMulTable65
 externdef		TVPOpacityOnOpacityTable65
 
@@ -30,6 +32,10 @@ externdef		TVPOpacityOnOpacityTable65
 ;;void, TVPApplyColorMap65_d_mmx_a, (tjs_uint32 *dest, const tjs_uint8 *src, tjs_int len, tjs_uint32 color)
 %define TVPApplyColorMap65_d_name TVPApplyColorMap65_d_mmx_a
 ;--------------------------------------------------------------------
+;;[function_replace_by TVPCPUType & TVP_CPU_HAS_MMX] TVPApplyColorMap65_a
+;;void, TVPApplyColorMap65_a_mmx_a, (tjs_uint32 *dest, const tjs_uint8 *src, tjs_int len, tjs_uint32 color)
+%define TVPApplyColorMap65_a_name TVPApplyColorMap65_a_mmx_a
+;--------------------------------------------------------------------
 	%include "colormap.nas"
 ;--------------------------------------------------------------------
 
@@ -45,6 +51,10 @@ externdef		TVPOpacityOnOpacityTable65
 ;;[function_replace_by TVPCPUType & TVP_CPU_HAS_EMMX && TVPCPUType & TVP_CPU_HAS_MMX] TVPApplyColorMap65_d
 ;;void, TVPApplyColorMap65_d_emmx_a, (tjs_uint32 *dest, const tjs_uint8 *src, tjs_int len, tjs_uint32 color)
 %define TVPApplyColorMap65_d_name TVPApplyColorMap65_d_emmx_a
+;--------------------------------------------------------------------
+;;[function_replace_by TVPCPUType & TVP_CPU_HAS_EMMX && TVPCPUType & TVP_CPU_HAS_MMX] TVPApplyColorMap65_a
+;;void, TVPApplyColorMap65_a_emmx_a, (tjs_uint32 *dest, const tjs_uint8 *src, tjs_int len, tjs_uint32 color)
+%define TVPApplyColorMap65_a_name TVPApplyColorMap65_a_emmx_a
 ;--------------------------------------------------------------------
 	%include "colormap.nas"
 ;--------------------------------------------------------------------
@@ -318,6 +328,142 @@ TVPApplyColorMap65_d_name:
 		movd		eax,	mm1
 		or			eax,	ebx
 		mov			[edi],	eax				; store
+		add			ebp,	byte 1
+		add			edi,	byte 4
+
+		cmp			edi,	esi
+		jb			.ploop2					; jump if edi < esi
+
+.pexit:
+		pop			ebp
+		pop			edx
+		pop			ecx
+		pop			ebx
+		pop			esi
+		pop			edi
+		emms
+		ret
+
+
+;--------------------------------------------------------------------
+		function_align
+TVPApplyColorMap65_a_name:
+		push		edi
+		push		esi
+		push		ebx
+		push		ecx
+		push		edx
+		push		ebp
+		mov			ecx,	[esp + 36]		; len
+		cmp			ecx,	byte 0
+		jle			near .pexit				; jump if ecx <= 0
+		mov			edi,	[esp + 28]		; dest
+		mov			ebp,	[esp + 32]		; src
+		lea			esi,	[edi + ecx *4]	; limit
+		pxor		mm0,	mm0				; mm0 = 0
+		mov			eax,	[esp + 40]		; color   (co)
+		and			eax,	000ffffffh		; transparent
+		movd		mm7,	eax
+		mov			eax,	0x100
+		movd		mm1,	eax
+		psllq		mm1,	48
+		punpcklbw	mm7,	mm0
+		por			mm7,	mm1				; mm7 = 01 00 00 co 00 co 00 co
+		sub			esi,	byte 4			; 1*4
+		cmp			edi,	esi
+		jae			near .pfraction			; jump if edi >= esi
+		jmp .ploop
+
+.pcopa:
+		mov			eax,	[esp + 40]		; color
+		add			ebp,	byte 2
+		mov			[edi],	eax
+		mov			[edi+4],eax
+		add			edi,	byte 8
+		cmp			edi,	esi
+		jb			.ploop					; jump if edi < esi
+		jmp			.pfraction
+
+.pctransp:
+		add			ebp, byte 2
+		add			edi, byte 8
+		cmp			edi,	esi
+		jb			.ploop					; jump if edi < esi
+		jmp			.pfraction
+
+		loop_align
+.ploop:
+		movzx		eax,	word [ebp]		; opacity
+%ifdef	USE_EMMX
+		prefetcht0	[ebp + 8]
+%endif
+		cmp			eax,	0ffffh
+		je			.pcopa					; completely opaque
+		cmp			eax,	byte 0
+		je			.pctransp				; completely transparent
+
+		mov			ebx,		eax			; 1
+		and			eax,		0xff		; 1
+		shr			ebx,		8			; 2
+		movd		mm3,		eax			; 1
+		movd		mm5,		ebx			; 2
+		punpcklwd	mm3,		mm3			; 1
+		punpcklwd	mm5,		mm5			; 2
+		punpcklwd	mm3,		mm3			; 1 mm3 = 00 Sa 00 Sa 00 Sa 00 Sa
+		punpcklwd	mm5,		mm5			; 2 mm5 = 00 Sa 00 Sa 00 Sa 00 Sa
+		movq		mm4,		mm3			; 1
+		movq		mm6,		mm5			; 2
+		pmullw		mm4,		mm7			; 1
+		pmullw		mm6,		mm7			; 2
+		psrlw		mm4,		6			; 1 mm4 = 00 Sa 00 Si 00 Si 00 Si
+		psrlw		mm6,		6			; 2 mm6 = 00 Sa 00 Si 00 Si 00 Si
+		movd		mm1,		[edi]		; 1 dest     (DaDiDiDi)
+		punpcklbw	mm1,		mm0			; 1 mm1 = 00 Da 00 Di 00 Di 00 Di
+		movq		mm2,		mm1			; 1
+		pmullw		mm2,		mm3			; 1
+		paddw		mm1,		mm4			; 1
+		psrlw		mm2,		6			; 1 mm2 = 00 SaDa 00 SaDi 00 SaDi 00 SaDi
+		psubw		mm1,		mm2			; 1
+		movd		mm3,		[edi+4]		; 2 dest     (DaDiDiDi)
+		packuswb	mm1,		mm0			; 1
+		punpcklbw	mm3,		mm0			; 2 mm3 = 00 Da 00 Di 00 Di 00 Di
+		movd		[edi],		mm1			; 1 store
+		movq		mm2,		mm3			; 2
+		pmullw		mm2,		mm5			; 2
+		add			edi,	byte 8
+		psrlw		mm2,		6			; 2 mm2 = 00 SaDa 00 SaDi 00 SaDi 00 SaDi
+		add			ebp,	byte 2
+		psubw		mm3,		mm2			; 2
+		paddw		mm3,		mm6			; 2
+		cmp			edi,	esi
+		packuswb	mm3,		mm0			; 2
+		movd		[edi+4-8],	mm3			; 2 store
+
+		jb			near .ploop				; jump if edi < esi
+
+.pfraction:
+		add			esi,	byte 4
+		cmp			edi,	esi
+		jae			.pexit					; jump if edi >= esi
+
+.ploop2:	; fraction
+		movzx		eax,		byte [ebp]	; opacity   (Sa)
+		movd		mm3,		eax
+		punpcklwd	mm3,		mm3
+		punpcklwd	mm3,		mm3			; mm3 = 00 Sa 00 Sa 00 Sa 00 Sa
+		movq		mm4,		mm3
+		pmullw		mm4,		mm7
+		psrlw		mm4,		6			; mm4 = 00 Sa 00 Si 00 Si 00 Si
+		movd		mm1,		[edi]		; dest     (DaDiDiDi)
+		punpcklbw	mm1,		mm0			; mm1 = 00 Da 00 Di 00 Di 00 Di
+		movq		mm2,		mm1
+		pmullw		mm2,		mm3
+		psrlw		mm2,		6			; mm2 = 00 SaDa 00 SaDi 00 SaDi 00 SaDi
+		psubw		mm1,		mm2
+		paddw		mm1,		mm4
+		packuswb	mm1,		mm0
+		movd		[edi],		mm1			; store
+
 		add			ebp,	byte 1
 		add			edi,	byte 4
 
