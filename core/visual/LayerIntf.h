@@ -534,7 +534,7 @@ private:
 	tTJSNI_BaseLayer *SearchFirstFocusable();
 
 	tTJSNI_BaseLayer *_GetPrevFocusable(); // search next focusable layer backward
-	tTJSNI_BaseLayer *_GetNextFocusable(); // search next focusable layer backward
+	tTJSNI_BaseLayer *_GetNextFocusable(); // search next focusable layer forward
 
 public:
 	tTJSNI_BaseLayer *GetPrevFocusable();
