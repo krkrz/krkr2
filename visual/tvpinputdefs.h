@@ -8,11 +8,6 @@
 //---------------------------------------------------------------------------
 // input related definition
 //---------------------------------------------------------------------------
-// 2004/ 6/24 W.Dee
-//    Avoided a warning in VC++ at TVPIsAnyMouseButtonPressedInShiftStateFlags
-//
-// 2004/ 4/ 9 W.Dee          Added JoyPad virtual key code definitions.
-//---------------------------------------------------------------------------
 
 
 #ifndef __TVPINPUTDEFS_H__
