@@ -418,11 +418,11 @@ process_exp_stub("../../tjs2/tjsString.h");
 print OFH "#include \"tjsInterface.h\"\n";
 process_exp_stub("../../tjs2/tjsInterface.h");
 
-print OFH "#include \"tjsNative.h\"\n";
-process_exp_stub("../../tjs2/tjsNative.h");
-
 print OFH "#include \"tjsErrorDefs.h\"\n";
 process_exp_stub("../../tjs2/tjsErrorDefs.h");
+
+print OFH "#include \"tjsNative.h\"\n";
+process_exp_stub("../../tjs2/tjsNative.h");
 
 print OFH "#include \"tjsVariant.h\"\n";
 process_exp_stub("../../tjs2/tjsVariant.h");
