@@ -43,6 +43,7 @@ const tTVPBaseBitmap & TVPGetInitialBitmap();
 enum tTVPGraphicSplitOperationType
 { gsotNone, gsotSimple, gsotInterlace, gsotBiDirection };
 extern tTVPGraphicSplitOperationType TVPGraphicSplitOperationType;
+extern bool TVPDefaultHoldAlpha;
 //---------------------------------------------------------------------------
 
 
