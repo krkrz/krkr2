@@ -33,9 +33,30 @@ TVPMulBlend_mmx_a:			; pixel multiplicative blender
 		mov			edi,	[esp + 28]		; dest
 		mov			ebp,	[esp + 32]		; src
 		lea			esi,	[edi + ecx*4]	; limit
-		sub			esi,	byte 12			; 3*4
+		sub			esi,	byte 16			; 4*4
 		cmp			edi,	esi
 		jae			near .pfraction			; jump if edi >= esi
+
+		test		edi,	4
+		IF			nz
+			;	align destination pointer to QWORD
+			movd		mm1,	[edi]			; dest
+			punpcklbw	mm1,	mm0				; 
+			movd		mm3,	[ebp]			; src
+			punpcklbw	mm3,	mm0				; 
+			pmullw		mm1,	mm3				; multiply
+			psrlw		mm1,	8				; shift
+			packuswb	mm1,	mm0				; pack
+			movd		[edi],	mm1				; store
+
+			add			edi,	byte 4
+			add			ebp,	byte 4
+			cmp			edi,	esi
+
+			jae			short .pfraction		; jump if edi >= esi
+
+		ENDIF
+
 
 		loop_align
 .ploop:
@@ -74,7 +95,7 @@ TVPMulBlend_mmx_a:			; pixel multiplicative blender
 		jb			short .ploop
 
 .pfraction:
-		add			esi,	byte 12
+		add			esi,	byte 16
 		cmp			edi,	esi
 		jae			.pexit					; jump if edi >= esi
 
@@ -136,9 +157,31 @@ TVPMulBlend_HDA_mmx_a:			; pixel multiplicative blender (holding desitination al
 		mov			edi,	[esp + 28]		; dest
 		mov			ebp,	[esp + 32]		; src
 		lea			esi,	[edi + ecx*4]	; limit
-		sub			esi,	byte 12			; 3*4
+		sub			esi,	byte 16			; 4*4
 		cmp			edi,	esi
 		jae			near .pfraction			; jump if edi >= esi
+
+		test		edi,	4
+		IF			nz
+			;	align destination pointer to QWORD
+			movd		mm1,	[edi]			; dest
+			punpcklbw	mm1,	mm0				; 
+			movd		mm3,	[ebp]			; src
+			punpcklbw	mm3,	mm0				; 
+			pand		mm3,	mm6				; 1 mask
+			por			mm3,	mm7				; 1
+			pmullw		mm1,	mm3				; multiply
+			psrlw		mm1,	8				; shift
+			packuswb	mm1,	mm0				; pack
+			movd		[edi],	mm1				; store
+
+			add			edi,	byte 4
+			add			ebp,	byte 4
+			cmp			edi,	esi
+
+			jae			near .pfraction		; jump if edi >= esi
+		ENDIF
+
 
 		loop_align
 .ploop:
@@ -190,7 +233,7 @@ TVPMulBlend_HDA_mmx_a:			; pixel multiplicative blender (holding desitination al
 		jb			near .ploop
 
 .pfraction:
-		add			esi,	byte 12
+		add			esi,	byte 16
 		cmp			edi,	esi
 		jae			.pexit					; jump if edi >= esi
 
@@ -254,9 +297,33 @@ TVPMulBlend_o_mmx_a:			; pixel multiplicative blender with opacity
 		mov			edi,	[esp + 28]		; dest
 		mov			ebp,	[esp + 32]		; src
 		lea			esi,	[edi + ecx*4]	; limit
-		sub			esi,	byte 12			; 3*4
+		sub			esi,	byte 16			; 4*4
 		cmp			edi,	esi
 		jae			near .pfraction			; jump if edi >= esi
+
+		test		edi,	4
+		IF			nz
+			;	align destination pointer to QWORD
+			movd		mm1,	[edi]			; dest
+			punpcklbw	mm1,	mm0				; 
+			movd		mm3,	[ebp]			; src
+			pxor		mm3,	mm6				; 1 not src
+			punpcklbw	mm3,	mm0				; 
+			pmullw		mm3,	mm5				; 1 opa multiply
+			pxor		mm3,	mm6				; 1 not src
+			psrlw		mm3,	8				; 1 opa shift
+			pmullw		mm1,	mm3				; multiply
+			psrlw		mm1,	8				; shift
+			packuswb	mm1,	mm0				; pack
+			movd		[edi],	mm1				; store
+
+			add			edi,	byte 4
+			add			ebp,	byte 4
+			cmp			edi,	esi
+
+			jae			near .pfraction		; jump if edi >= esi
+		ENDIF
+
 
 		loop_align
 .ploop:
@@ -314,7 +381,7 @@ TVPMulBlend_o_mmx_a:			; pixel multiplicative blender with opacity
 		jb			near .ploop
 
 .pfraction:
-		add			esi,	byte 12
+		add			esi,	byte 16
 		cmp			edi,	esi
 		jae			.pexit					; jump if edi >= esi
 
@@ -388,9 +455,35 @@ TVPMulBlend_HDA_o_mmx_a:			; pixel multiplicative blender with opacity (HDA)
 		mov			edi,	[esp + 28]		; dest
 		mov			ebp,	[esp + 32]		; src
 		lea			esi,	[edi + ecx*4]	; limit
-		sub			esi,	byte 12			; 3*4
+		sub			esi,	byte 16			; 4*4
 		cmp			edi,	esi
 		jae			near .pfraction			; jump if edi >= esi
+
+		test		edi,	4
+		IF			nz
+			;	align destination pointer to QWORD
+			movd		mm1,	[edi]			; dest
+			punpcklbw	mm1,	mm0				; 
+			movd		mm3,	[ebp]			; src
+			pxor		mm3,	[edx]			; 1 not src
+			punpcklbw	mm3,	mm0				; 
+			pmullw		mm3,	mm5				; opa multiply
+			pxor		mm3,	[edx]			; 1 not src
+			psrlw		mm3,	8				; opa shift
+			pand		mm3,	mm6				; mask
+			por			mm3,	mm7				; 
+			pmullw		mm1,	mm3				; multiply
+			psrlw		mm1,	8				; shift
+			packuswb	mm1,	mm0				; pack
+			movd		[edi],	mm1				; store
+
+			add			edi,	byte 4
+			add			ebp,	byte 4
+			cmp			edi,	esi
+
+			jae			near .pfraction		; jump if edi >= esi
+		ENDIF
+
 
 		loop_align
 .ploop:
@@ -456,7 +549,7 @@ TVPMulBlend_HDA_o_mmx_a:			; pixel multiplicative blender with opacity (HDA)
 		jb			near .ploop
 
 .pfraction:
-		add			esi,	byte 12
+		add			esi,	byte 16
 		cmp			edi,	esi
 		jae			.pexit					; jump if edi >= esi
 
