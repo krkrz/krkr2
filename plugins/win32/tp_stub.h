@@ -1017,6 +1017,7 @@ typedef void (TJS_INTF_METHOD * tTVPXP3ArchiveExtractionFilter)(
 #define TVP_EPT_REMOVE_POST		0x01
 		// remove event in pending queue that has same target, source, tag and
 		// name before post
+		// (for input events, only the source and the tag are to be checked)
 #define TVP_EPT_IMMEDIATE		0x02
 		// the event will be delivered immediately
 
