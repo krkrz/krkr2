@@ -189,13 +189,31 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\BufferRenderer.cpp">
+			</File>
+			<File
 				RelativePath=".\DShowException.cpp">
+			</File>
+			<File
+				RelativePath=".\dslayerd.cpp">
 			</File>
 			<File
 				RelativePath=".\dsmovie.cpp">
 			</File>
 			<File
 				RelativePath=".\dsoverlay.cpp">
+			</File>
+			<File
+				RelativePath=".\IBufferRenderer_i.c">
+			</File>
+			<File
+				RelativePath=".\IRendererBufferAccess_i.c">
+			</File>
+			<File
+				RelativePath=".\IRendererBufferVideo_i.c">
+			</File>
+			<File
+				RelativePath=".\krlmovie.cpp">
 			</File>
 			<File
 				RelativePath="krmovie.cpp">
@@ -222,6 +240,9 @@
 				RelativePath="krmovie.rc">
 			</File>
 			<File
+				RelativePath=".\StdAfx.cpp">
+			</File>
+			<File
 				RelativePath="..\..\..\..\plugins\win32\tp_stub.cpp">
 			</File>
 		</Filter>
@@ -235,16 +256,40 @@
 				RelativePath="asyncrdr.h">
 			</File>
 			<File
+				RelativePath=".\BufferRenderer.h">
+			</File>
+			<File
 				RelativePath=".\CIStream.h">
 			</File>
 			<File
 				RelativePath=".\DShowException.h">
 			</File>
 			<File
+				RelativePath=".\dslayerd.h">
+			</File>
+			<File
 				RelativePath=".\dsmovie.h">
 			</File>
 			<File
 				RelativePath=".\dsoverlay.h">
+			</File>
+			<File
+				RelativePath=".\IBufferRenderer.h">
+			</File>
+			<File
+				RelativePath=".\IRendererBufferAccess.h">
+			</File>
+			<File
+				RelativePath=".\IRendererBufferVideo.h">
+			</File>
+			<File
+				RelativePath=".\OptionInfo.h">
+			</File>
+			<File
+				RelativePath=".\resource.h">
+			</File>
+			<File
+				RelativePath=".\StdAfx.h">
 			</File>
 			<File
 				RelativePath="..\..\..\..\plugins\win32\tp_stub.h">
