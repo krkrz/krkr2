@@ -66,7 +66,7 @@ TJS_N("const\
  /* tTVPClipboardFormat */ cbfText = 1,\
  /* TVP_COMPACT_LEVEL_???? */ clIdle = 5, clDeactivate = 10, clMinimize = 15, clAll = 100,\
  /* tTVPVideoOverlayMode Add: T.Imoto */ vomOverlay=0, vomLayer=1,\
- /* tTVPPeriodEventReason */ perLoop = 0, perPeriod = 1, perPrepare = 2,\
+ /* tTVPPeriodEventReason */ perLoop = 0, perPeriod = 1, perPrepare = 2, perSegLoop = 3,\
  /* tTVPSoundGlobalFocusMode */ sgfmNeverMute = 0, sgfmMuteOnMinimize = 1, sgfmMuteOnDeactivate = 2,\
 \
 /* file attributes */\
