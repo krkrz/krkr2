@@ -1343,7 +1343,8 @@ tjs_error TJS_INTF_METHOD
 	tTJSArrayObject::FuncCallByNum(tjs_uint32 flag, tjs_int num, tTJSVariant *result,
 		tjs_int numparams, tTJSVariant **param, iTJSDispatch2 *objthis)
 {
-	if(!GetValidity()) return TJS_E_INVALIDOBJECT;
+	if(!GetValidity())
+		return TJS_E_INVALIDOBJECT;
 
 	if(num<0)
 	{
@@ -1368,7 +1369,8 @@ tjs_error TJS_INTF_METHOD
 	tTJSArrayObject::PropGetByNum(tjs_uint32 flag, tjs_int num,
 		tTJSVariant *result, iTJSDispatch2 *objthis)
 {
-	if(!GetValidity()) return TJS_E_INVALIDOBJECT;
+	if(!GetValidity())
+		return TJS_E_INVALIDOBJECT;
 
 	if(num<0)
 	{
@@ -1394,7 +1396,8 @@ tjs_error TJS_INTF_METHOD
 	tTJSArrayObject::PropSetByNum(tjs_uint32 flag, tjs_int num,
 		const tTJSVariant *param, iTJSDispatch2 *objthis)
 {
-	if(!GetValidity()) return TJS_E_INVALIDOBJECT;
+	if(!GetValidity())
+		return TJS_E_INVALIDOBJECT;
 
 	if(num<0)
 	{
@@ -1446,7 +1449,8 @@ tjs_error TJS_INTF_METHOD
 	tTJSArrayObject::DeleteMemberByNum(tjs_uint32 flag, tjs_int num,
 	iTJSDispatch2 *objthis)
 {
-	if(!GetValidity()) return TJS_E_INVALIDOBJECT;
+	if(!GetValidity())
+		return TJS_E_INVALIDOBJECT;
 
 	if(num<0)
 	{
@@ -1475,7 +1479,8 @@ tjs_error TJS_INTF_METHOD
 	tTJSArrayObject::InvalidateByNum(tjs_uint32 flag, tjs_int num,
 		iTJSDispatch2 *objthis)
 {
-	if(!GetValidity()) return TJS_E_INVALIDOBJECT;
+	if(!GetValidity())
+		return TJS_E_INVALIDOBJECT;
 
 	if(num<0)
 	{
@@ -1502,9 +1507,7 @@ tjs_error TJS_INTF_METHOD
 		iTJSDispatch2 *objthis)
 {
 	if(!GetValidity())
-	{
 		return TJS_E_INVALIDOBJECT;
-	}
 
 	if(num<0) return inherited::IsValidByNum(flag, num, objthis);
 	ARRAY_GET_NI;
@@ -1528,7 +1531,8 @@ tjs_error TJS_INTF_METHOD
 	tTJSArrayObject::CreateNewByNum(tjs_uint32 flag, tjs_int num, iTJSDispatch2 **result,
 		tjs_int numparams, tTJSVariant **param, iTJSDispatch2 *objthis)
 {
-	if(!GetValidity()) return TJS_E_INVALIDOBJECT;
+	if(!GetValidity())
+		return TJS_E_INVALIDOBJECT;
 
 	if(num<0)
 	{
@@ -1554,7 +1558,8 @@ tjs_error TJS_INTF_METHOD
 	tTJSArrayObject::IsInstanceOfByNum(tjs_uint32 flag, tjs_int num,
 		const tjs_char *classname, iTJSDispatch2 *objthis)
 {
-	if(!GetValidity()) return TJS_E_INVALIDOBJECT;
+	if(!GetValidity())
+		return TJS_E_INVALIDOBJECT;
 
 	if(num<0)
 	{
@@ -1580,7 +1585,8 @@ tjs_error TJS_INTF_METHOD
 	tTJSArrayObject::OperationByNum(tjs_uint32 flag, tjs_int num,
 		tTJSVariant *result, const tTJSVariant *param, iTJSDispatch2 *objthis)
 {
-	if(!GetValidity()) return TJS_E_INVALIDOBJECT;
+	if(!GetValidity())
+		return TJS_E_INVALIDOBJECT;
 
 	if(num<0)
 	{
