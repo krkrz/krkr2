@@ -1,6 +1,6 @@
 object TVPVersionForm: TTVPVersionForm
   Left = 40
-  Top = 237
+  Top = 234
   HorzScrollBar.Visible = False
   VertScrollBar.Visible = False
   BorderStyle = bsDialog
