@@ -464,6 +464,9 @@ process_exp_stub("../../tjs2/tjsDictionary.h");
 print OFH "#include \"tjs.h\"\n";
 process_exp_stub("../../tjs2/tjs.h");
 
+print OFH "#include \"tjsMessage.h\"\n";
+process_exp_stub("../../tjs2/tjsMessage.h");
+
 print OFH "#include \"tjsObject.h\"\n";
 process_exp_stub("../../tjs2/tjsObject.h");
 process_exp_stub("../../tjs2/tjsObject.cpp");
