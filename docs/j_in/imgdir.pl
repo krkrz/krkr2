@@ -1,2 +1,2 @@
-$image_dir = "../kag3docs/contents/";
+$image_dir = "../j/contents/";
 
