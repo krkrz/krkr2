@@ -36,7 +36,7 @@ extern void TJSThrowStringAllocError();
 extern void TJSThrowNarrowToWideConversionError();
 extern void TJSCompactStringHeap();
 #ifdef TJS_DEBUG_DUMP_STRING
-extern void TJSDumpStringHeap(void)
+extern void TJSDumpStringHeap(void);
 #endif
 //---------------------------------------------------------------------------
 
