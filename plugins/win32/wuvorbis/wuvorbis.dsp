@@ -38,12 +38,12 @@ RSC=rc.exe
 # PROP BASE Target_Dir ""
 # PROP Use_MFC 0
 # PROP Use_Debug_Libraries 0
-# PROP Output_Dir "binary"
+# PROP Output_Dir "..\..\..\..\bin\win32\plugin\"
 # PROP Intermediate_Dir "Release"
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MT /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "WUVORBIS_EXPORTS" /YX /FD /c
-# ADD CPP /nologo /Gr /MT /W3 /GX /Zi /O2 /I "vorbis/include" /I "ogg/include" /I "..\..\..\base\win32\plugin_kit" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "WUVORBIS_EXPORTS" /Fr /YX /FD /c
+# ADD CPP /nologo /Gr /MT /W3 /GX /Zi /O2 /I "vorbis/include" /I "ogg/include" /I "..\\" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "WUVORBIS_EXPORTS" /Fr /YX /FD /c
 # ADD BASE MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD BASE RSC /l 0x411 /d "NDEBUG"
@@ -65,12 +65,12 @@ LINK32=link.exe
 # PROP BASE Target_Dir ""
 # PROP Use_MFC 0
 # PROP Use_Debug_Libraries 1
-# PROP Output_Dir "binary"
+# PROP Output_Dir "..\..\..\..\bin\win32\plugin\"
 # PROP Intermediate_Dir "Debug"
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MTd /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "WUVORBIS_EXPORTS" /YX /FD /GZ /c
-# ADD CPP /nologo /Gr /MTd /W3 /Gm /GX /ZI /Od /I "vorbis/include" /I "ogg/include" /I "..\..\..\base\win32\plugin_kit" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "WUVORBIS_EXPORTS" /FR /YX /FD /GZ /c
+# ADD CPP /nologo /Gr /MTd /W3 /Gm /GX /ZI /Od /I "vorbis/include" /I "ogg/include" /I "..\\" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "WUVORBIS_EXPORTS" /FR /YX /FD /GZ /c
 # ADD BASE MTL /nologo /D "_DEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "_DEBUG" /mktyplib203 /win32
 # ADD BASE RSC /l 0x411 /d "_DEBUG"
@@ -170,7 +170,7 @@ SOURCE=.\vorbis\lib\synthesis.c
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\..\base\win32\plugin_kit\tp_stub.cpp
+SOURCE=..\tp_stub.cpp
 # End Source File
 # Begin Source File
 
@@ -270,7 +270,7 @@ SOURCE=.\vorbis\lib\smallft.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\..\base\win32\plugin_kit\tp_stub.h
+SOURCE=..\tp_stub.h
 # End Source File
 # Begin Source File
 
@@ -283,7 +283,7 @@ SOURCE=.\vorbis\lib\window.h
 # End Group
 # Begin Source File
 
-SOURCE=..\..\..\visual\IA32\detect_cpu.obj
+SOURCE=..\..\..\core\visual\IA32\detect_cpu.obj
 # End Source File
 # End Target
 # End Project
