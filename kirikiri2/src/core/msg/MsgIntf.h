@@ -83,7 +83,7 @@ TVP_MSG_DECL_CONST(TVPVersionInformation,
 	
 "吉里吉里[きりきり] 2 実行コア/%1 "
 "(SVN revision:" TVP_SVN_REVISION_NUMBER "; Compiled on " __DATE__ " " __TIME__ ") TJS2/%2 "
-"Copyright (C) 1997-2005 W.Dee All rights reserved.");
+"Copyright (C) 1997-2005 W.Dee and contributors All rights reserved.");
 
 TVP_MSG_DECL_CONST(TVPVersionInformation2,
 	"バージョン情報の詳細は Ctrl + F12 で閲覧できます");
