@@ -816,10 +816,7 @@ EOF
 
 
 $content = <<EOF;
-{
 	dest[{ofs}] = TVPAdditiveBlend_n_a_o(dest[{ofs}], src[{ofs}], opa);
-	dest ++; src ++;
-}
 EOF
 
 &loop_unroll_c_2($content, 'len', 4);

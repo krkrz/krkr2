@@ -914,22 +914,10 @@ TVP_GL_FUNC_DECL(void, TVPAdditiveAlphaBlend_o_c, (tjs_uint32 *dest, const tjs_u
 
 		while(___index < len)
 		{
-{
 	dest[(___index+0)] = TVPAdditiveBlend_n_a_o(dest[(___index+0)], src[(___index+0)], opa);
-	dest ++; src ++;
-}
-{
 	dest[(___index+1)] = TVPAdditiveBlend_n_a_o(dest[(___index+1)], src[(___index+1)], opa);
-	dest ++; src ++;
-}
-{
 	dest[(___index+2)] = TVPAdditiveBlend_n_a_o(dest[(___index+2)], src[(___index+2)], opa);
-	dest ++; src ++;
-}
-{
 	dest[(___index+3)] = TVPAdditiveBlend_n_a_o(dest[(___index+3)], src[(___index+3)], opa);
-	dest ++; src ++;
-}
 			___index += 4;
 		}
 
@@ -937,10 +925,7 @@ TVP_GL_FUNC_DECL(void, TVPAdditiveAlphaBlend_o_c, (tjs_uint32 *dest, const tjs_u
 
 		while(___index < len)
 		{
-{
 	dest[___index] = TVPAdditiveBlend_n_a_o(dest[___index], src[___index], opa);
-	dest ++; src ++;
-}
 			___index ++;
 		}
 	}
