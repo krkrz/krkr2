@@ -29,6 +29,7 @@ namespace TJS
 extern const tjs_int TJSVersionMajor;
 extern const tjs_int TJSVersionMinor;
 extern const tjs_int TJSVersionRelease;
+extern const tjs_int TJSVersionHex;
 
 extern tjs_char TJSCompiledDate[];
 //---------------------------------------------------------------------------
@@ -69,6 +70,10 @@ extern bool TJSEnableDebugMode;
 	// Enable TJS2 Debugging support. Enabling this may make the
 	// program somewhat slower and using more memory.
 	// Do not use this mode unless you want to debug the program.
+extern bool TJSWarnOnExecutionOnDeletingObject;
+	// Output warning against running code on context of
+	// deleting-in-progress object. This is available only the Debug mode is
+	// enabled.
 
 
 //---------------------------------------------------------------------------

@@ -793,6 +793,12 @@ void tTJSInterCodeContext::ExecuteAsFunction(iTJSDispatch2 *objthis,
 		}
 */
 		if(TJSStackTracerEnabled()) TJSStackTracerPush(this, false);
+
+		// check whether the objthis is deleting
+		if(TJSWarnOnExecutionOnDeletingObject && TJSObjectFlagEnabled() &&
+			Block->GetTJS()->GetConsoleOutput())
+			TJSWarnIfObjectIsDeleting(Block->GetTJS()->GetConsoleOutput(), objthis);
+
 		try
 		{
 			ra[-1].SetObject(objthis, objthis);

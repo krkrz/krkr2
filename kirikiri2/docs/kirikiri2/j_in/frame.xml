@@ -23,6 +23,8 @@
 <link href="Transition"/><r/>
 <link href="Plugins"/><r/>
 <r/>
+<link href="Debug"/><r/>
+<r/>
 <link href="HotKeys"/><r/>
 <r/>
 <link href="ComputerDependentProblems"/><r/>
