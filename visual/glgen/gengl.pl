@@ -465,14 +465,26 @@ static tjs_uint32 TVP_INLINE_FUNC TVPAdditiveBlend_a_a_o(tjs_uint32 dest, tjs_ui
 	return TVPAdditiveBlend_a_a(dest, src);
 }
 
+static tjs_uint32 TVP_INLINE_FUNC TVPMulColor(tjs_uint32 color, tjs_uint32 fac)
+{
+	return (((((color & 0x00ff00) * fac) & 0x00ff0000) +
+			(((color & 0xff00ff) * fac) & 0xff00ff00) ) >> 8);
+}
+
+static tjs_uint32 TVP_INLINE_FUNC TVPAlphaAndColorToAdditiveAlpha(tjs_uint32 alpha, tjs_uint32 color)
+{
+	return TVPMulColor(color, alpha) + (color & 0xff000000);
+
+}
+
+static tjs_uint32 TVP_INLINE_FUNC TVPAlphaToAdditiveAlpha(tjs_uint32 a)
+{
+	return TVPAlphaAndColorToAdditiveAlpha(a >> 24, a);
+}
 
 static tjs_uint32 TVP_INLINE_FUNC TVPAdditiveBlend_a_d(tjs_uint32 dest, tjs_uint32 src)
 {
-	tjs_uint32 sopa = src >> 24;
-	return TVPAdditiveBlend_a_a(dest, 
-		(src & 0xff000000) + 
-		((	(((src & 0xff00ff)*sopa) & 0xff00ff00) + 
-			(((src & 0x00ff00)*sopa) & 0x00ff0000)    )  >>8  )   );
+	return TVPAdditiveBlend_a_a(dest, TVPAlphaToAdditiveAlpha(src));
 }
 
 static tjs_uint32 TVP_INLINE_FUNC TVPAdditiveBlend_a_d_o(tjs_uint32 dest, tjs_uint32 src, tjs_int opa)
@@ -497,14 +509,6 @@ static tjs_uint32 TVP_INLINE_FUNC TVPBlendARGB(tjs_uint32 b, tjs_uint32 a, tjs_i
 }
 
 
-
-static tjs_uint32 TVP_INLINE_FUNC TVPAlphaToAdditiveAlpha(tjs_uint32 a)
-{
-	tjs_int opa = a >> 24;
-	return (((((a & 0x00ff00) * opa) & 0x00ff0000) +
-			(((a & 0xff00ff) * opa) & 0xff00ff00) ) >> 8) + (a & 0xff000000);
-
-}
 
 
 EOF
@@ -3144,7 +3148,7 @@ print FC <<EOF;
 /*export*/
 TVP_GL_FUNC_DECL(void, TVPConstColorAlphaBlend_a_c, (tjs_uint32 *dest, tjs_int len, tjs_uint32 color, tjs_int opa))
 {
-	tjs_uint32 src = TVPAlphaToAdditiveAlpha((opa << 24) + (color&0xffffff));
+	tjs_uint32 src = TVPMulColor(color & 0xffffff, opa);
 	tjs_uint32 opa_inv = opa ^ 0xff;
 EOF
 
