@@ -1379,6 +1379,7 @@ static void __stdcall TVP_Stub_331()
 #include "tvpfontstruc.h"
 #include "tvpinputdefs.h"
 #include "LayerBitmapIntf.h"
+#include "drawable.h"
 #include "LayerIntf.h"
 static tjs_uint32 __stdcall TVP_Stub_332(tjs_uint32 col)
 {
@@ -1403,7 +1404,6 @@ static void __stdcall TVP_Stub_336(iTVPTransHandlerProvider * pro)
 {
 	return TVPRemoveTransHandlerProvider(pro);
 }
-#include "drawable.h"
 #include "transhandler.h"
 #include "tvpgl.h"
 static void __stdcall TVP_Stub_337(tjs_uint32 * dest , const tjs_uint32 * src , tjs_int len)

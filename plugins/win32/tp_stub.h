@@ -1470,6 +1470,30 @@ enum tTVPBBStretchType
 
 
 //---------------------------------------------------------------------------
+// layer / blending types
+//---------------------------------------------------------------------------
+enum tTVPLayerType
+{
+	ltBinder = 0,
+	ltCoverRect = 1,
+	ltOpaque = 1, // the same as ltCoverRect
+	ltTransparent = 2, // alpha blend
+	ltAlpha = 2, // the same as ltTransparent
+	ltAdditive = 3,
+	ltSubtractive = 4,
+	ltMultiplicative = 5,
+	ltEffect = 6,
+	ltFilter = 7,
+	ltDodge = 8,
+	ltDarken = 9,
+	ltLighten = 10,
+	ltScreen = 11,
+	ltAddAlpha = 12 // additive alpha blend
+};
+//---------------------------------------------------------------------------
+
+
+//---------------------------------------------------------------------------
 // drawn face types
 //---------------------------------------------------------------------------
 enum tTVPDrawFace
@@ -1581,30 +1605,6 @@ enum tTVPScrollTransStay
 {
 	ststNoStay, ststStayDest, ststStaySrc
 };
-
-
-//---------------------------------------------------------------------------
-// layer / blending types
-//---------------------------------------------------------------------------
-enum tTVPLayerType
-{
-	ltBinder = 0,
-	ltCoverRect = 1,
-	ltOpaque = 1, // the same as ltCoverRect
-	ltTransparent = 2, // alpha blend
-	ltAlpha = 2, // the same as ltTransparent
-	ltAdditive = 3,
-	ltSubtractive = 4,
-	ltMultiplicative = 5,
-	ltEffect = 6,
-	ltFilter = 7,
-	ltDodge = 8,
-	ltDarken = 9,
-	ltLighten = 10,
-	ltScreen = 11,
-	ltAddAlpha = 12 // additive alpha blend
-};
-//---------------------------------------------------------------------------
 
 
 //---------------------------------------------------------------------------
