@@ -859,7 +859,10 @@ ttstr TVPExtractStorageName(const ttstr & name)
 	}
 
 	p++;
-	return ttstr(p, slen - (p -s));
+	if(p == s)
+		return name;
+	else
+		return ttstr(p, slen - (p -s));
 }
 //---------------------------------------------------------------------------
 
@@ -867,7 +870,7 @@ ttstr TVPExtractStorageName(const ttstr & name)
 
 
 //---------------------------------------------------------------------------
-// TVPExtractStorageName
+// TVPExtractStoragePath
 //---------------------------------------------------------------------------
 ttstr TVPExtractStoragePath(const ttstr & name)
 {
@@ -1037,8 +1040,7 @@ static tjs_uint TVPRebuildAutoPathTable()
 						if(!TJS_strchr(name.c_str() + in_arc_name_len, TJS_W('/')))
 						{
 							ttstr sname = TVPExtractStorageName(name);
-							ttstr pname = path + sname;
-							TVPAutoPathTable.Add(sname, pname);
+							TVPAutoPathTable.Add(sname, path);
 							count ++;
 						}
 					}
@@ -1068,7 +1070,7 @@ static tjs_uint TVPRebuildAutoPathTable()
 			for(std::vector<ttstr>::iterator i = lister.list.begin();
 				i != lister.list.end(); i++)
 			{
-				TVPAutoPathTable.Add(*i, path + *i);
+				TVPAutoPathTable.Add(*i, path);
 				count ++;
 			}
 		}
@@ -1131,8 +1133,9 @@ ttstr TVPGetPlacedPath(const ttstr & name)
 	if(result)
 	{
 		// found in table
-		TVPAutoPathCache.Add(name, *result);
-		return *result;
+		ttstr found = *result + storagename;
+		TVPAutoPathCache.Add(name, found);
+		return found;
 	}
 
 	// not found
