@@ -54,8 +54,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 1,0,5,7
- PRODUCTVERSION 1,0,5,7
+ FILEVERSION 1,0,5,8
+ PRODUCTVERSION 1,0,5,8
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -72,15 +72,15 @@ BEGIN
         BEGIN
             VALUE "Comments", "Using Xiph.org Foundation libvorbis\r\nCopyright (c) 2002-2004, Xiph.org Foundation\r\n\r\nRedistribution and use in source and binary forms, with or without\r\nmodification, are permitted provided that the following conditions\r\nare met:\r\n\r\n- Redistributions of source code must retain the above copyright\r\nnotice, this list of conditions and the following disclaimer.\r\n\r\n- Redistributions in binary form must reproduce the above copyright\r\nnotice, this list of conditions and the following disclaimer in the\r\ndocumentation and/or other materials provided with the distribution.\r\n\r\n- Neither the name of the Xiph.org Foundation nor the names of its\r\ncontributors may be used to endorse or promote products derived from\r\nthis software without specific prior written permission.\r\n\r\nTHIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS\r\n``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT\r\nLIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR\r\nA PARTICULAR PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR\r\nCONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,\r\nEXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,\r\nPROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR\r\nPROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF\r\nLIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING\r\nNEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS\r\nSOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.\r\n\r\nSSE & 3DNow! patch Copyright (c) 2002-2003, W.Dee\r\n\0"
             VALUE "CompanyName", " \0"
-            VALUE "FileDescription", "Ogg Vorbis decoder for TVP Sound System (libvorbis/1.1.0; SSE&3DNow! patch/20040926)\0"
-            VALUE "FileVersion", "1, 0, 5, 7\0"
+            VALUE "FileDescription", "Ogg Vorbis decoder for TVP Sound System (libvorbis/1.1.0; SSE&3DNow! patch/20040930)\0"
+            VALUE "FileVersion", "1, 0, 5, 8\0"
             VALUE "InternalName", "wuvorbis\0"
             VALUE "LegalCopyright", "Copyright (C) 2000-2004, W.Dee All rights reserved\0"
             VALUE "LegalTrademarks", "\0"
             VALUE "OriginalFilename", "wuvorbis.dll\0"
             VALUE "PrivateBuild", "\0"
             VALUE "ProductName", "  wuvorbis\0"
-            VALUE "ProductVersion", "1, 0, 5, 7\0"
+            VALUE "ProductVersion", "1, 0, 5, 8\0"
             VALUE "SpecialBuild", "\0"
         END
     END

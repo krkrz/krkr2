@@ -63,16 +63,31 @@ Index: vorbis/lib/floor1.c
    return(**(int **)a-**(int **)b);
  }
  
-@@ -268,7 +268,7 @@
+@@ -267,20 +267,13 @@
+ 
    return(look);
  }
- 
+-
 -static int render_point(int x0,int x1,int y0,int y1,int x){
++
 +static int __inline render_point(int x0,int x1,int y0,int y1,int x){
    y0&=0x7fff; /* mask off flag */
    y1&=0x7fff;
      
-@@ -292,73 +292,81 @@
+   {
+-    int dy=y1-y0;
+-    int adx=x1-x0;
+-    int ady=abs(dy);
+-    int err=ady*(x-x0);
+-    
+-    int off=err/adx;
+-    if(dy<0)return(y0-off);
+-    return(y0+off);
++    return (y1-y0)*(x-x0)/(x1-x0) + y0;
+   }
+ }
+ 
+@@ -292,95 +285,111 @@
  }
  
  static float FLOOR1_fromdB_LOOKUP[256]={
@@ -207,18 +222,147 @@ Index: vorbis/lib/floor1.c
  };
  
 -static void render_line(int x0,int x1,int y0,int y1,float *d){
+-  int dy=y1-y0;
+-  int adx=x1-x0;
+-  int ady=abs(dy);
+-  int base=dy/adx;
+-  int sy=(dy<0?base-1:base+1);
+-  int x=x0;
+-  int y=y0;
+-  int err=0;
 +void scale_FLOOR1_fromdB_LOOKUP(float fac)
 +{
 +	int i;
 +	for(i = 0; i < sizeof(FLOOR1_fromdB_LOOKUP)/sizeof(FLOOR1_fromdB_LOOKUP[0]); i++)
 +			FLOOR1_fromdB_LOOKUP[i] *= fac;
 +}
-+
-+
+ 
+-  ady-=abs(base*adx);
+ 
+-  d[x]*=FLOOR1_fromdB_LOOKUP[y];
+-  while(++x<x1){
+-    err=err+ady;
+-    if(err>=adx){
+-      err-=adx;
+-      y+=sy;
+-    }else{
+-      y+=base;
+-    }
+-    d[x]*=FLOOR1_fromdB_LOOKUP[y];
+-  }
 +STIN void render_line(int x0,int x1,int y0,int y1,float *d){
-   int dy=y1-y0;
-   int adx=x1-x0;
-   int ady=abs(dy);
++	/* using fixed-point interpolation */
++
++	int step = ((y1-y0)<<22) / (x1 - x0);
++	int y = y0 << 22;
++
++	float *f0 = d + x0;
++	float *f1 = d + x1;
++
++	f1 -= 3;
++
++	while(f0<f1)
++	{
++		f0[0] *= FLOOR1_fromdB_LOOKUP[y>>22];
++		f0[1] *= FLOOR1_fromdB_LOOKUP[(y+step)>>22];
++		f0[2] *= FLOOR1_fromdB_LOOKUP[(y+step   +step)>>22];
++		f0[3] *= FLOOR1_fromdB_LOOKUP[(y+step*4 -step)>>22];
++
++		y += step*4;
++		f0+=4;
++	}
++
++	f1 += 3;
++
++	while(f0<f1)
++	{
++		f0[0] *= FLOOR1_fromdB_LOOKUP[y>>22];
++
++		y += step;
++		f0++;
++	}
+ }
+ 
+ static void render_line0(int x0,int x1,int y0,int y1,int *d){
+@@ -958,6 +967,27 @@
+     return(0);
+   }
+ }
++#if 0
++static int __inline render_point(int x0,int x1,int y0,int y1,int x){
++  y0&=0x7fff; /* mask off flag */
++  y1&=0x7fff;
++    
++  {
++    int dy=y1-y0;
++    int adx=x1-x0;
++    int ady=abs(dy);
++    int err=ady*(x-x0);
++    
++    int off=err/adx;
++    if(dy<0)return(y0-off);
++    return(y0+off);
++  }
++}
++#endif
++static void floo1_inverse_asm_mmx(int count, int *loneighbor, int *hineighbor,
++	int *postlist, int quant_q, int *fit_value)
++{
++}
+ 
+ static void *floor1_inverse1(vorbis_block *vb,vorbis_look_floor *in){
+   vorbis_look_floor1 *look=(vorbis_look_floor1 *)in;
+@@ -1003,23 +1033,25 @@
+     }
+ 
+     /* unwrap positive values and reconsitute via linear interpolation */
+-    for(i=2;i<look->posts;i++){
+-      int predicted=render_point(info->postlist[look->loneighbor[i-2]],
+-				 info->postlist[look->hineighbor[i-2]],
+-				 fit_value[look->loneighbor[i-2]],
+-				 fit_value[look->hineighbor[i-2]],
+-				 info->postlist[i]);
++    for(i=0;i<look->posts-2;i++){
++    	int lo = look->loneighbor[i];
++    	int hi = look->hineighbor[i];
++      int predicted=render_point(info->postlist[lo],
++				 info->postlist[hi],
++				 fit_value[lo],
++				 fit_value[hi],
++				 info->postlist[i+2]);
+       int hiroom=look->quant_q-predicted;
+       int loroom=predicted;
+       int room=(hiroom<loroom?hiroom:loroom)<<1;
+-      int val=fit_value[i];
++      int val=fit_value[i+2];
+ 
+       if(val){
+ 	if(val>=room){
+ 	  if(hiroom>loroom){
+ 	    val = val-loroom;
+ 	  }else{
+-	    val = -1-(val-hiroom);
++	    val = ~(val-hiroom);
+ 	  }
+ 	}else{
+ 	  if(val&1){
+@@ -1029,12 +1061,12 @@
+ 	  }
+ 	}
+ 
+-	fit_value[i]=val+predicted;
+-	fit_value[look->loneighbor[i-2]]&=0x7fff;
+-	fit_value[look->hineighbor[i-2]]&=0x7fff;
++	fit_value[i+2]=val+predicted;
++	fit_value[lo]&=0x7fff;
++	fit_value[hi]&=0x7fff;
+ 
+       }else{
+-	fit_value[i]=predicted|0x8000;
++	fit_value[i+2]=predicted|0x8000;
+       }
+ 	
+     }
 Index: vorbis/lib/psy.c
 ===================================================================
 --- vorbis/lib/psy.c	(revision 7879)
