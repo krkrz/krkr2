@@ -71,7 +71,10 @@ class LinkButtonLayer extends ButtonLayer
 			if(_eventTransparent != x)
 			{
 				_eventTransparent = x;
-				hitThreshold = x ? 256: 0;
+				hitType = x ? htProvince : htMask; 
+					// ボタン画像は領域画像は持っていないので
+					// hitType を htProvince にすると必ず
+					// マウスイベントを透過するようになる
 			}
 		}
 		getter()
