@@ -85,7 +85,7 @@
 <r/>
 	var p = &amp;prop; // プロパティオブジェクトを得る<r/>
 <r/>
-	*p = 30; // setter を呼び出し 30 を設定すす<r/>
+	*p = 30; // setter を呼び出し 30 を設定する<r/>
 	func(*p); // getter を呼び出し値を取得し、func に渡す<r/>
 </example>
 </para>
