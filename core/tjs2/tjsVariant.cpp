@@ -206,10 +206,7 @@ static  tTJSVariantString * TJSSpecialRealToString(tjs_real r)
 
 	if(TJS_FC_IS_NAN(cls))
 	{
-		if(TJS_FC_IS_NEGATIVE(cls))
-			return TJSAllocVariantString(TJS_W("-NaN"));
-		else
-			return TJSAllocVariantString(TJS_W("+NaN"));
+		return TJSAllocVariantString(TJS_W("NaN"));
 	}
 	if(TJS_FC_IS_INF(cls))
 	{
@@ -965,7 +962,6 @@ void tTJSVariant::operator /= (const tTJSVariant &rhs)
 	TJSSetFPUE();
 	tTVReal l=AsReal();
 	tTVReal r=rhs.AsReal();
-	if(r == 0.0) TJSThrowDivideByZero();
 	tTJSVariant_RELEASECONTENT;
 	vt=tvtReal;
 	Real=l/r;
