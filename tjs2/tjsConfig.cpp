@@ -196,6 +196,153 @@ void TJS_cdecl TJS_debug_out(const tjs_char *format, ...)
 //---------------------------------------------------------------------------
 
 
+#ifdef __WIN32__
+//---------------------------------------------------------------------------
+// Wide<->narrow conversion functions.
+// These functions (Win32 only) are as same as the RTL's, but
+// alwayes uses Win32 current code page.
+// Code algorithms are taken from borland's RTL source, but totally rewritten
+// to avoid copyright problems.
+//---------------------------------------------------------------------------
+#define TJS_MB_MAX_CHARLEN 2
+//---------------------------------------------------------------------------
+size_t TJS_mbstowcs(tjs_char *pwcs, const tjs_nchar *s, size_t n)
+{
+	if(pwcs && n == 0) return 0;
+
+	if(pwcs)
+	{
+		// Try converting to wide characters. Here assumes pwcs is large enough
+		// to store the result.
+		int count = MultiByteToWideChar(CP_ACP,
+			MB_PRECOMPOSED|MB_ERR_INVALID_CHARS, s, -1, pwcs, n);
+		if(count != 0) return count - 1;
+
+		if(GetLastError() != ERROR_INSUFFICIENT_BUFFER) return (size_t) -1;
+
+		// pwcs is not enough to store the result ...
+
+		// count number of source characters to fit the destination buffer
+		int charcnt = n;
+		const unsigned char *p;
+		for(p = (const unsigned char*)s; charcnt-- && *p; p++)
+		{
+			if(IsDBCSLeadByte(*p)) p++;
+		}
+		int bytecnt = (int)(p - (const unsigned char *)s);
+
+		count = MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED, s, bytecnt, pwcs, n);
+		if(count == 0) return (size_t) -1;
+
+		return count;
+	}
+	else
+	{
+		int count = MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED|MB_ERR_INVALID_CHARS,
+			s, -1, NULL, 0);
+		if(count == 0) return (size_t)-1;
+		return count - 1;
+	}
+}
+//---------------------------------------------------------------------------
+size_t TJS_wcstombs(tjs_nchar *s, const tjs_char *pwcs, size_t n)
+{
+	if(s && !n) return 0;
+
+	BOOL useddefault = FALSE;
+	if(s)
+	{
+		// Try converting to multibyte. Here assumes s is large enough to
+		// store the result.
+		size_t count = WideCharToMultiByte(CP_ACP, WC_COMPOSITECHECK|WC_SEPCHARS,
+			pwcs, -1, s, n, NULL, &useddefault);
+
+		if(count != 0 && !useddefault)
+			return count - 1;
+
+		if(useddefault || GetLastError () != ERROR_INSUFFICIENT_BUFFER)
+			return (size_t) -1; // may a conversion error
+
+		// Buffer is not enough to store the result ...
+		while(count < n)
+		{
+			char buffer[TJS_MB_MAX_CHARLEN + 1];
+			int retval = WideCharToMultiByte(CP_ACP, 0, pwcs, 1, buffer,
+				TJS_MB_MAX_CHARLEN, NULL, &useddefault);
+			if(retval == 0 || useddefault)
+				return (size_t) -1;
+
+			if(count + retval > n)
+				return count;
+
+			for(int i = 0; i < retval; i++, count++)
+			{
+				if((s[count] = buffer[i]) == '\0') return count;
+			}
+
+			pwcs ++;
+		}
+
+		return count;
+	}
+	else
+	{
+		// Returns the buffer size to store the result
+		int count = WideCharToMultiByte(CP_ACP, WC_COMPOSITECHECK|WC_SEPCHARS,
+			pwcs, -1, NULL, 0, NULL, &useddefault);
+		if(count == 0 || useddefault) return (size_t) -1;
+		return count - 1;
+	}
+}
+//---------------------------------------------------------------------------
+int TJS_mbtowc(tjs_char *pwc, const tjs_nchar *s, size_t n)
+{
+	if(!s || !n) return 0;
+
+	if(*s == 0)
+	{
+		if(pwc) *pwc = 0;
+		return 0;
+	}
+
+	/* Borland's RTL seems to assume always MB_MAX_CHARLEN = 2. */
+	/* This may true while we use Win32 platforms ... */
+	if(IsDBCSLeadByte((BYTE)(*s)))
+	{
+		// multi(double) byte character
+		if((int)n < TJS_MB_MAX_CHARLEN) return -1;
+		if(MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED|MB_ERR_INVALID_CHARS,
+			s, TJS_MB_MAX_CHARLEN, pwc, pwc ? 1:0) == 0)
+		{
+			if(s[1] == 0) return -1;
+		}
+		return TJS_MB_MAX_CHARLEN;
+	}
+	else
+	{
+		// single byte character
+		if(MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED|MB_ERR_INVALID_CHARS, s,
+			1, pwc, pwc ? 1:0) == 0)
+			return -1;
+		return 1;
+	}
+}
+//---------------------------------------------------------------------------
+int TJS_wctomb(tjs_nchar *s, tjs_char wc)
+{
+	if(!s) return 0;
+	BOOL useddefault = FALSE;
+	int size = WideCharToMultiByte(CP_ACP, WC_COMPOSITECHECK|WC_SEPCHARS, &wc, 1, s,
+		TJS_MB_MAX_CHARLEN, NULL, &useddefault);
+	if(useddefault) return -1;
+	if(size == 0) return -1;
+	return size;
+}
+//---------------------------------------------------------------------------
+#endif
+//---------------------------------------------------------------------------
+
+
 //---------------------------------------------------------------------------
 // tTJSNarrowStringHolder
 //---------------------------------------------------------------------------
@@ -205,8 +352,8 @@ tTJSNarrowStringHolder::tTJSNarrowStringHolder(const wchar_t * wide)
 	if(!wide)
 		n = -1;
 	else
-		n = wcstombs(NULL, wide, 0);
-		// TODO: check : wcstombs's first argument can be NULL?
+		n = TJS_wcstombs(NULL, wide, 0);
+
 	if( n == -1 )
 	{
 		Buf = TJS_N("");
@@ -215,7 +362,7 @@ tTJSNarrowStringHolder::tTJSNarrowStringHolder(const wchar_t * wide)
 	}
 	Buf = new tjs_nchar[n+1];
 	Allocated = true;
-	Buf[wcstombs(Buf, wide, n)] = 0;
+	Buf[TJS_wcstombs(Buf, wide, n)] = 0;
 }
 //---------------------------------------------------------------------------
 tTJSNarrowStringHolder::~tTJSNarrowStringHolder()
