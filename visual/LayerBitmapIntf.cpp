@@ -1869,19 +1869,20 @@ public: \
 TVP_DEFINE_BILINEAR_AFFINE_FUNCTION(
 	TVPInterpLinTransCopy,
 	*dest = color);
-/*
+
 TVP_DEFINE_BILINEAR_AFFINE_WITH_OPACITY_FUNCTION(
-	TVPInterpAffineConstAlphaBlend,
+	TVPInterpLinTransConstAlphaBlend,
 	*dest = TVPBlendARGB(*dest, color, Opacity));
 
+
 TVP_DEFINE_BILINEAR_AFFINE_FUNCTION(
-	TVPInterpAffineAdditiveAlphaBlend,
+	TVPInterpLinTransAdditiveAlphaBlend,
 	*dest = TVPAdditiveBlend_n_a(*dest, color));
 
 TVP_DEFINE_BILINEAR_AFFINE_WITH_OPACITY_FUNCTION(
-	TVPInterpAffineAdditiveAlphaBlend_o,
+	TVPInterpLinTransAdditiveAlphaBlend_o,
 	*dest = TVPAdditiveBlend_n_a_o(*dest, color, Opacity));
-*/
+
 //---------------------------------------------------------------------------
 
 // declare affine loop function
@@ -2489,15 +2490,29 @@ bool tTVPBaseBitmap::AffineBlt(tTVPRect destrect, const tTVPBaseBitmap *ref,
 				else
 				{
 					if(!hda)
-						TVPDoAffineLoop(
-							tTVPStretchWithOpacityFunctionObject(TVPStretchConstAlphaBlend, opa),
-							tTVPAffineWithOpacityFunctionObject(TVPLinTransConstAlphaBlend, opa),
-							TVP_DoAffineLoop_ARGS);
+					{
+						if(type >= stFastLinear)
+						{
+							// bilinear interpolation
+							TVPDoBilinearAffineLoop(
+								tTVPInterpLinTransConstAlphaBlendFunctionObject(opa),
+								TVP_DoBilinearAffineLoop_ARGS);
+						}
+						else
+						{
+							TVPDoAffineLoop(
+								tTVPStretchWithOpacityFunctionObject(TVPStretchConstAlphaBlend, opa),
+								tTVPAffineWithOpacityFunctionObject(TVPLinTransConstAlphaBlend, opa),
+								TVP_DoAffineLoop_ARGS);
+						}
+					}
 					else
+					{
 						TVPDoAffineLoop(
 							tTVPStretchWithOpacityFunctionObject(TVPStretchConstAlphaBlend_HDA, opa),
 							tTVPAffineWithOpacityFunctionObject(TVPLinTransConstAlphaBlend_HDA, opa),
 							TVP_DoAffineLoop_ARGS);
+					}
 				}
 				break;
 
@@ -2564,28 +2579,56 @@ bool tTVPBaseBitmap::AffineBlt(tTVPRect destrect, const tTVPBaseBitmap *ref,
 				if(opa == 255)
 				{
 					if(!hda)
-						TVPDoAffineLoop(
-							tTVPStretchFunctionObject(TVPStretchAdditiveAlphaBlend),
-							tTVPAffineFunctionObject(TVPLinTransAdditiveAlphaBlend),
-							TVP_DoAffineLoop_ARGS);
+					{
+						if(type >= stFastLinear)
+						{
+							// bilinear interpolation
+							TVPDoBilinearAffineLoop(
+								tTVPInterpLinTransAdditiveAlphaBlendFunctionObject(),
+								TVP_DoBilinearAffineLoop_ARGS);
+						}
+						else
+						{
+							TVPDoAffineLoop(
+								tTVPStretchFunctionObject(TVPStretchAdditiveAlphaBlend),
+								tTVPAffineFunctionObject(TVPLinTransAdditiveAlphaBlend),
+								TVP_DoAffineLoop_ARGS);
+						}
+					}
 					else
+					{
 						TVPDoAffineLoop(
 							tTVPStretchFunctionObject(TVPStretchAdditiveAlphaBlend_HDA),
 							tTVPAffineFunctionObject(TVPLinTransAdditiveAlphaBlend_HDA),
 							TVP_DoAffineLoop_ARGS);
+					}
 				}
 				else
 				{
 					if(!hda)
-						TVPDoAffineLoop(
-							tTVPStretchWithOpacityFunctionObject(TVPStretchAlphaBlend_o, opa),
-							tTVPAffineWithOpacityFunctionObject(TVPLinTransAdditiveAlphaBlend_o, opa),
-							TVP_DoAffineLoop_ARGS);
+					{
+						if(type >= stFastLinear)
+						{
+							// bilinear interpolation
+							TVPDoBilinearAffineLoop(
+								tTVPInterpLinTransAdditiveAlphaBlend_oFunctionObject(opa),
+								TVP_DoBilinearAffineLoop_ARGS);
+						}
+						else
+						{
+							TVPDoAffineLoop(
+								tTVPStretchWithOpacityFunctionObject(TVPStretchAlphaBlend_o, opa),
+								tTVPAffineWithOpacityFunctionObject(TVPLinTransAdditiveAlphaBlend_o, opa),
+								TVP_DoAffineLoop_ARGS);
+						}
+					}
 					else
+					{
 						TVPDoAffineLoop(
 							tTVPStretchWithOpacityFunctionObject(TVPStretchAdditiveAlphaBlend_HDA_o, opa),
 							tTVPAffineWithOpacityFunctionObject(TVPLinTransAdditiveAlphaBlend_HDA_o, opa),
 							TVP_DoAffineLoop_ARGS);
+					}
 				}
 				break;
 
