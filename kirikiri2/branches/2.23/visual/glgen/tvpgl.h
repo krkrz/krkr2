@@ -141,10 +141,13 @@ TVP_GL_FUNC_PTR_EXTERN_DECL(void, TVPConstAlphaBlend_SD_a,  (tjs_uint32 *dest, c
 TVP_GL_FUNC_PTR_EXTERN_DECL(void, TVPConstAlphaBlend_SD_d,  (tjs_uint32 *dest, const tjs_uint32 *src1, const tjs_uint32 *src2, tjs_int len, tjs_int opa));
 TVP_GL_FUNC_PTR_EXTERN_DECL(void, TVPInitUnivTransBlendTable,  (tjs_uint32 *table, tjs_int phase, tjs_int vague));
 TVP_GL_FUNC_PTR_EXTERN_DECL(void, TVPInitUnivTransBlendTable_d,  (tjs_uint32 *table, tjs_int phase, tjs_int vague));
+TVP_GL_FUNC_PTR_EXTERN_DECL(void, TVPInitUnivTransBlendTable_a,  (tjs_uint32 *table, tjs_int phase, tjs_int vague));
 TVP_GL_FUNC_PTR_EXTERN_DECL(void, TVPUnivTransBlend,  (tjs_uint32 *dest, const tjs_uint32 *src1, const tjs_uint32 *src2, const tjs_uint8 *rule, const tjs_uint32 *table, tjs_int len));
 TVP_GL_FUNC_PTR_EXTERN_DECL(void, TVPUnivTransBlend_switch,  (tjs_uint32 *dest, const tjs_uint32 *src1, const tjs_uint32 *src2, const tjs_uint8 *rule, const tjs_uint32 *table, tjs_int len, tjs_int src1lv, tjs_int src2lv));
 TVP_GL_FUNC_PTR_EXTERN_DECL(void, TVPUnivTransBlend_d,  (tjs_uint32 *dest, const tjs_uint32 *src1, const tjs_uint32 *src2, const tjs_uint8 *rule, const tjs_uint32 *table, tjs_int len));
 TVP_GL_FUNC_PTR_EXTERN_DECL(void, TVPUnivTransBlend_switch_d,  (tjs_uint32 *dest, const tjs_uint32 *src1, const tjs_uint32 *src2, const tjs_uint8 *rule, const tjs_uint32 *table, tjs_int len, tjs_int src1lv, tjs_int src2lv));
+TVP_GL_FUNC_PTR_EXTERN_DECL(void, TVPUnivTransBlend_a,  (tjs_uint32 *dest, const tjs_uint32 *src1, const tjs_uint32 *src2, const tjs_uint8 *rule, const tjs_uint32 *table, tjs_int len));
+TVP_GL_FUNC_PTR_EXTERN_DECL(void, TVPUnivTransBlend_switch_a,  (tjs_uint32 *dest, const tjs_uint32 *src1, const tjs_uint32 *src2, const tjs_uint8 *rule, const tjs_uint32 *table, tjs_int len, tjs_int src1lv, tjs_int src2lv));
 TVP_GL_FUNC_PTR_EXTERN_DECL(void, TVPApplyColorMap,  (tjs_uint32 *dest, const tjs_uint8 *src, tjs_int len, tjs_uint32 color));
 TVP_GL_FUNC_PTR_EXTERN_DECL(void, TVPApplyColorMap_o,  (tjs_uint32 *dest, const tjs_uint8 *src, tjs_int len, tjs_uint32 color, tjs_int opa));
 TVP_GL_FUNC_PTR_EXTERN_DECL(void, TVPApplyColorMap65,  (tjs_uint32 *dest, const tjs_uint8 *src, tjs_int len, tjs_uint32 color));

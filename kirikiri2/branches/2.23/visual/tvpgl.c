@@ -3937,21 +3937,15 @@ TVP_GL_FUNC_DECL(void, TVPInitUnivTransBlendTable_c, (tjs_uint32 *table, tjs_int
 /*export*/
 TVP_GL_FUNC_DECL(void, TVPInitUnivTransBlendTable_d_c, (tjs_uint32 *table, tjs_int phase, tjs_int vague))
 {
-	tjs_int i;
-	tjs_int phasemax = phase;
-	phase -= vague;
-	for(i = 0; i<256; i++)
-	{
-		if(i<phase) table[i] = 255;
-		else if(i>=phasemax) table[i] = 0;
-		else
-		{
-			int tmp = (255-(( i - phase )*255 / vague));
-			if(tmp<0) tmp = 0;
-			if(tmp>255) tmp = 255;
-			table[i] = tmp;
-		}
-	}
+	/* alias to TVPInitUnivTransBlendTable_c */
+	TVPInitUnivTransBlendTable_c(table, phase, vague);
+}
+
+/*export*/
+TVP_GL_FUNC_DECL(void, TVPInitUnivTransBlendTable_a_c, (tjs_uint32 *table, tjs_int phase, tjs_int vague))
+{
+	/* alias to TVPInitUnivTransBlendTable_c */
+	TVPInitUnivTransBlendTable_c(table, phase, vague);
 }
 
 /*export*/
@@ -4408,6 +4402,89 @@ TVP_GL_FUNC_DECL(void, TVPUnivTransBlend_switch_d_c, (tjs_uint32 *dest, const tj
 	   } while(-- lu_n);
 	}
   }
+}
+
+/*export*/
+TVP_GL_FUNC_DECL(void, TVPUnivTransBlend_a_c, (tjs_uint32 *dest, const tjs_uint32 *src1, const tjs_uint32 *src2, const tjs_uint8 *rule, const tjs_uint32 *table, tjs_int len))
+{
+	{
+		int ___index = 0;
+		len -= (4-1);
+
+		while(___index < len)
+		{
+	dest[(___index+0)] = TVPBlendARGB(src1[(___index+0)], src2[(___index+0)], table[*rule[(___index+0)]]);
+	dest[(___index+1)] = TVPBlendARGB(src1[(___index+1)], src2[(___index+1)], table[*rule[(___index+1)]]);
+	dest[(___index+2)] = TVPBlendARGB(src1[(___index+2)], src2[(___index+2)], table[*rule[(___index+2)]]);
+	dest[(___index+3)] = TVPBlendARGB(src1[(___index+3)], src2[(___index+3)], table[*rule[(___index+3)]]);
+			___index += 4;
+		}
+
+		len += (4-1);
+
+		while(___index < len)
+		{
+	dest[___index] = TVPBlendARGB(src1[___index], src2[___index], table[*rule[___index]]);
+			___index ++;
+		}
+	}
+}
+
+/*export*/
+TVP_GL_FUNC_DECL(void, TVPUnivTransBlend_switch_a_c, (tjs_uint32 *dest, const tjs_uint32 *src1, const tjs_uint32 *src2, const tjs_uint8 *rule, const tjs_uint32 *table, tjs_int len, tjs_int src1lv, tjs_int src2lv))
+{
+	tjs_int opa;
+	{
+		int ___index = 0;
+		len -= (4-1);
+
+		while(___index < len)
+		{
+	opa = *rule;
+	if(opa >= src1lv)
+		dest[(___index+0)] = src1[(___index+0)];
+	else if(opa < src2lv)
+		dest[(___index+0)] = src2[(___index+0)];
+	else
+		dest[(___index+0)] = TVPBlendARGB(src1[(___index+0)], src2[(___index+0)], table[opa]);
+	opa = *rule;
+	if(opa >= src1lv)
+		dest[(___index+1)] = src1[(___index+1)];
+	else if(opa < src2lv)
+		dest[(___index+1)] = src2[(___index+1)];
+	else
+		dest[(___index+1)] = TVPBlendARGB(src1[(___index+1)], src2[(___index+1)], table[opa]);
+	opa = *rule;
+	if(opa >= src1lv)
+		dest[(___index+2)] = src1[(___index+2)];
+	else if(opa < src2lv)
+		dest[(___index+2)] = src2[(___index+2)];
+	else
+		dest[(___index+2)] = TVPBlendARGB(src1[(___index+2)], src2[(___index+2)], table[opa]);
+	opa = *rule;
+	if(opa >= src1lv)
+		dest[(___index+3)] = src1[(___index+3)];
+	else if(opa < src2lv)
+		dest[(___index+3)] = src2[(___index+3)];
+	else
+		dest[(___index+3)] = TVPBlendARGB(src1[(___index+3)], src2[(___index+3)], table[opa]);
+			___index += 4;
+		}
+
+		len += (4-1);
+
+		while(___index < len)
+		{
+	opa = *rule;
+	if(opa >= src1lv)
+		dest[___index] = src1[___index];
+	else if(opa < src2lv)
+		dest[___index] = src2[___index];
+	else
+		dest[___index] = TVPBlendARGB(src1[___index], src2[___index], table[opa]);
+			___index ++;
+		}
+	}
 }
 
 
@@ -10140,10 +10217,13 @@ TVP_GL_FUNC_PTR_DECL(void, TVPConstAlphaBlend_SD_a,  (tjs_uint32 *dest, const tj
 TVP_GL_FUNC_PTR_DECL(void, TVPConstAlphaBlend_SD_d,  (tjs_uint32 *dest, const tjs_uint32 *src1, const tjs_uint32 *src2, tjs_int len, tjs_int opa));
 TVP_GL_FUNC_PTR_DECL(void, TVPInitUnivTransBlendTable,  (tjs_uint32 *table, tjs_int phase, tjs_int vague));
 TVP_GL_FUNC_PTR_DECL(void, TVPInitUnivTransBlendTable_d,  (tjs_uint32 *table, tjs_int phase, tjs_int vague));
+TVP_GL_FUNC_PTR_DECL(void, TVPInitUnivTransBlendTable_a,  (tjs_uint32 *table, tjs_int phase, tjs_int vague));
 TVP_GL_FUNC_PTR_DECL(void, TVPUnivTransBlend,  (tjs_uint32 *dest, const tjs_uint32 *src1, const tjs_uint32 *src2, const tjs_uint8 *rule, const tjs_uint32 *table, tjs_int len));
 TVP_GL_FUNC_PTR_DECL(void, TVPUnivTransBlend_switch,  (tjs_uint32 *dest, const tjs_uint32 *src1, const tjs_uint32 *src2, const tjs_uint8 *rule, const tjs_uint32 *table, tjs_int len, tjs_int src1lv, tjs_int src2lv));
 TVP_GL_FUNC_PTR_DECL(void, TVPUnivTransBlend_d,  (tjs_uint32 *dest, const tjs_uint32 *src1, const tjs_uint32 *src2, const tjs_uint8 *rule, const tjs_uint32 *table, tjs_int len));
 TVP_GL_FUNC_PTR_DECL(void, TVPUnivTransBlend_switch_d,  (tjs_uint32 *dest, const tjs_uint32 *src1, const tjs_uint32 *src2, const tjs_uint8 *rule, const tjs_uint32 *table, tjs_int len, tjs_int src1lv, tjs_int src2lv));
+TVP_GL_FUNC_PTR_DECL(void, TVPUnivTransBlend_a,  (tjs_uint32 *dest, const tjs_uint32 *src1, const tjs_uint32 *src2, const tjs_uint8 *rule, const tjs_uint32 *table, tjs_int len));
+TVP_GL_FUNC_PTR_DECL(void, TVPUnivTransBlend_switch_a,  (tjs_uint32 *dest, const tjs_uint32 *src1, const tjs_uint32 *src2, const tjs_uint8 *rule, const tjs_uint32 *table, tjs_int len, tjs_int src1lv, tjs_int src2lv));
 TVP_GL_FUNC_PTR_DECL(void, TVPApplyColorMap,  (tjs_uint32 *dest, const tjs_uint8 *src, tjs_int len, tjs_uint32 color));
 TVP_GL_FUNC_PTR_DECL(void, TVPApplyColorMap_o,  (tjs_uint32 *dest, const tjs_uint8 *src, tjs_int len, tjs_uint32 color, tjs_int opa));
 TVP_GL_FUNC_PTR_DECL(void, TVPApplyColorMap65,  (tjs_uint32 *dest, const tjs_uint8 *src, tjs_int len, tjs_uint32 color));
@@ -10325,10 +10405,13 @@ TVP_GL_FUNC_DECL(void, TVPInitTVPGL, ())
 	TVPConstAlphaBlend_SD_d = TVPConstAlphaBlend_SD_d_c;
 	TVPInitUnivTransBlendTable = TVPInitUnivTransBlendTable_c;
 	TVPInitUnivTransBlendTable_d = TVPInitUnivTransBlendTable_d_c;
+	TVPInitUnivTransBlendTable_a = TVPInitUnivTransBlendTable_a_c;
 	TVPUnivTransBlend = TVPUnivTransBlend_c;
 	TVPUnivTransBlend_switch = TVPUnivTransBlend_switch_c;
 	TVPUnivTransBlend_d = TVPUnivTransBlend_d_c;
 	TVPUnivTransBlend_switch_d = TVPUnivTransBlend_switch_d_c;
+	TVPUnivTransBlend_a = TVPUnivTransBlend_a_c;
+	TVPUnivTransBlend_switch_a = TVPUnivTransBlend_switch_a_c;
 	TVPApplyColorMap = TVPApplyColorMap_c;
 	TVPApplyColorMap_o = TVPApplyColorMap_o_c;
 	TVPApplyColorMap65 = TVPApplyColorMap65_c;
