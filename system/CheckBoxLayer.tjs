@@ -70,6 +70,7 @@ class CheckBoxLayer extends KAGLayer
 		if(CheckBox_checked)
 		{
 			CheckBox_glyph.face = dfOpaque;
+			CheckBox_glyph.holdAlpha = true;
 			CheckBox_glyph.fillRect(0, 0, w, h, CheckBox_glyphColor); // ãLçÜêFÇ≈ìhÇÈ
 			operateRect(l, t, CheckBox_glyph, 0, 0, w, h, omAlpha);
 		}
