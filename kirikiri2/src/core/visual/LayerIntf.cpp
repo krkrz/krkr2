@@ -353,7 +353,8 @@ tTJSNI_BaseLayer::tTJSNI_BaseLayer()
 	CacheBitmap = NULL;
 
 	// drawing function stuff
-	DrawFace = Face = dfAlpha;
+	Face = dfAuto;
+	UpdateDrawFace();
 	ImageModified = false;
 	HoldAlpha = true;
 	ClipRect.left = 0;
@@ -437,8 +438,8 @@ tTJSNI_BaseLayer::Construct(tjs_int numparams, tTJSVariant **param,
 //		SetWindow(win);
 		Manager->AttachPrimary(this);
 		Type = DisplayType = ltOpaque; // initially ltOpaque
-		DrawFace = Face = dfOpaque; // initially dfOpaque
 		NeutralColor = TVP_RGBA2COLOR(255, 255, 255, 255);
+		UpdateDrawFace();
 		HitThreshold = 0;
 	}
 //	IncCacheEnabledCount(); ///// -------------------- test

@@ -3682,7 +3682,7 @@
 		<li> <tt><kw>dfOpaque</kw></tt> または <tt><kw>dfMain</kw></tt> を指定すると、レイヤの画像はすべて完全不透明であると見なされ、描画されます。この描画方法に対応するレイヤタイプは <tt>ltOpaque</tt> または <tt>ltCoverRect</tt>、または <tt>ltAdditive</tt> のような算術/論理演算を行うレイヤタイプです。</li>
 		<li><tt><kw>dfMask</kw></tt> を指定すると、マスク画像(アルファチャンネル)を描画の対象にします。</li>
 		<li><tt><kw>dfProvince</kw></tt> を指定すると、領域画像を描画の対象にします。</li>
-		<li><tt><kw>dfAuto</kw></tt> を指定すると、現在の <ref>Layer.type</ref> プロパティに従って描画方式が自動的に決定されます。</li>
+		<li><tt><kw>dfAuto</kw></tt> を指定すると、現在の <ref>Layer.type</ref> プロパティに従って描画方式が自動的に決定されます。作成された直後のレイヤの描画方式は dfAuto です。</li>
 		</ul>
 		　このプロパティの値によっては操作できないメソッドがあります。<r/>
 	</desc>
