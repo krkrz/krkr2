@@ -244,6 +244,45 @@ static void NormalBlendFunc(tui32 *dest, tui32 *src, int len)
 
 
 //---------------------------------------------------------------------------
+// 'additive' blend function
+//---------------------------------------------------------------------------
+static inline int satadd(int a, int b)
+{
+	int r = a + b;
+	if(r > 255) r = 255;
+	r |= -(r > 255);
+	return r & 0xff;
+}
+static inline int ratio(int a, int b, int ratio)
+{
+	// return (b*ratio + a*(255-ratio))  / 255
+	return  ((b*ratio + a*(255-ratio))  * ((1<<20) / 255)) >> 20;
+}
+static void AdditiveBlendFunc(tui32 * dest , tui32 * src, int len)
+{
+	while(len--)
+	{
+		tui32 s = *src;
+		tui32 d = *dest;
+
+		int opa = s >> 24;
+
+		*dest =
+			(ratio((d    )&0xff, satadd((d    )&0xff, (s    )&0xff), opa)    )+
+			(ratio((d>> 8)&0xff, satadd((d>> 8)&0xff, (s>> 8)&0xff), opa)<< 8)+
+			(ratio((d>>16)&0xff, satadd((d>>16)&0xff, (s>>16)&0xff), opa)<<16)+
+			(d & 0xff000000) ;
+		src++;
+		dest++;
+	}
+}
+//---------------------------------------------------------------------------
+
+
+
+
+
+//---------------------------------------------------------------------------
 // copy rectangle
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -322,6 +361,8 @@ static void CopyBitmapRect(Graphics::TBitmap *dest, int x, int y,
 			memmove(d+ rect.left, s + refrect.left, w * sizeof(tui32));
 		else if(mode == 1)
 			NormalBlendFunc(d+ rect.left, s + refrect.left, w);
+		else if(mode == 2)
+			AdditiveBlendFunc(d + rect.left, s + refrect.left, w);
 	}
 }
 //---------------------------------------------------------------------------
@@ -356,6 +397,64 @@ static void SetBitmapOpacity(Graphics::TBitmap *bmp, int opa)
 		}
 	}
 
+}
+//---------------------------------------------------------------------------
+/*
+static void SetBitmapAdditiveOpacity(Graphics::TBitmap *bmp, int opa)
+{
+	// bmp must be a 32bpp bitmap
+
+	int w = bmp->Width;
+	int h = bmp->Height;
+
+	opa <<= 20;
+	opa /= 255;
+
+	for(int y = 0; y < h; y++)
+	{
+		tui32 *scl = (tui32*)bmp->ScanLine[y];
+		for(int x = 0; x< w; x++)
+		{
+			tui32 d = scl[x];
+
+			scl[x] =
+				((((d    ) & 0xff) * opa >> 20)     )+
+				((((d>> 8) & 0xff) * opa >> 20) << 8)+
+				((((d>>16) & 0xff) * opa >> 20) <<16);
+
+		}
+	}
+}
+*/
+//---------------------------------------------------------------------------
+
+
+
+
+//---------------------------------------------------------------------------
+// ConvertAlphaToAddAlpha
+//---------------------------------------------------------------------------
+void ConvertAlphaToAddAlpha(Graphics::TBitmap *in)
+{
+	// convert alpha to additive alpha
+
+	int w = in->Width;
+	int h = in->Height;
+
+	for(int y = 0; y < h; y++)
+	{
+		DWORD * p = (DWORD *)in->ScanLine[y];
+		for(int x = 0; x < w; x++)
+		{
+			DWORD s = p[x];
+			int alpha = (s >> 24) & 0xff;
+
+			p[x] = (s & 0xff000000) +
+				((((s    ) & 0xff)  * alpha / 255)    )+
+				((((s>>8 ) & 0xff)  * alpha / 255)<<8 )+
+				((((s>>16) & 0xff)  * alpha / 255)<<16) ;
+		}
+	}
 }
 //---------------------------------------------------------------------------
 
@@ -663,6 +762,7 @@ static Graphics::TBitmap *ReadPixelData(TStream *Stream, TPSDLayerRecord *lr,
 __fastcall TDeePSD::TDeePSD(void)
 {
 	// constructor
+	FOutputAddAlpha = false;
 }
 //---------------------------------------------------------------------------
 __fastcall TDeePSD::~TDeePSD(void)
@@ -760,10 +860,6 @@ void __fastcall TDeePSD::LoadFromStream(Classes::TStream * Stream)
 					throw EDeePSD("TDeePSD: This file is corrupted.");
 
 				Stream->ReadBuffer(clr->BlendMode, 4);
-				if(memcmp(clr->BlendMode, "norm", 4))
-					throw EDeePSD("TDeePSD: Layer #" + AnsiString(lay) + " has "
-						"unsupported blend mode '" + AnsiString((char*)clr->BlendMode, 4) +
-						"' (must be 'norm' [normal] blend)");
 
 				clr->Opacity = Read8(Stream);
 				clr->Clipping = Read8(Stream);
@@ -776,14 +872,42 @@ void __fastcall TDeePSD::LoadFromStream(Classes::TStream * Stream)
 
 			}
 
+
+			// check layer mode structure
+			bool additive_found = false;
+			for(int lay = 0; lay < nlayers; lay++)
+			{
+				TPSDLayerRecord *clr = lr + lay;
+				if(!memcmp(clr->BlendMode, "norm", 4))
+				{
+					// alpha blend mode
+					if(additive_found)
+						throw EDeePSD("TDeePSD: Layer #" + AnsiString(lay) + " is normal blend mode but "
+							"cannot load normal blend mode layer over linear dodge blend mode layer");
+				}
+				else if(!memcmp(clr->BlendMode, "lddg", 4))
+				{
+					// linear dodge (additive)
+					if(!FOutputAddAlpha)
+						throw EDeePSD("TDeePSD: Layer #" + AnsiString(lay) + " is linear dodge blend mode but "
+							"additive-alpha output is not selected");
+					additive_found = true;
+				}
+				else
+					throw EDeePSD("TDeePSD: Layer #" + AnsiString(lay) + " has "
+						"unsupported blend mode '" + AnsiString((char*)clr->BlendMode, 4) +
+						"' (must be 'norm' [normal] blend or 'lddg' [linear dodge] blend)");
+			}
+
+			// read each layer image
 			bool firstlayer = true;
+			additive_found = false;
 			for(int lay = 0; lay < nlayers; lay++)
 			{
 				// for each layers again
 				// read pixel data
 				TPSDLayerRecord *clr = lr + lay;
 				Graphics::TBitmap *layerbmp = ReadPixelData(Stream, lr + lay, lay);
-				if(clr->Opacity != 255) SetBitmapOpacity(layerbmp, clr->Opacity);
 				try
 				{
 					if(clr->Opacity != 0 && !(clr->Flags & 2))
@@ -792,15 +916,29 @@ void __fastcall TDeePSD::LoadFromStream(Classes::TStream * Stream)
 						refrect.left = refrect.top = 0;
 						refrect.right = layerbmp->Width;
 						refrect.bottom = layerbmp->Height;
-						if(firstlayer)
+						// blend
+						if(!memcmp(clr->BlendMode, "norm", 4))
 						{
-							// copy
-							CopyBitmapRect(this, clr->Left, clr->Top, layerbmp, refrect, 0);
+							// normal alpha blend
+							if(clr->Opacity != 255) SetBitmapOpacity(layerbmp, clr->Opacity);
+							if(firstlayer)
+								CopyBitmapRect(this, clr->Left, clr->Top, layerbmp, refrect, 0);
+							else
+								CopyBitmapRect(this, clr->Left, clr->Top, layerbmp, refrect, 1);
 						}
-						else
+						else if(FOutputAddAlpha && !memcmp(clr->BlendMode, "lddg", 4))
 						{
-							// blend
-							CopyBitmapRect(this, clr->Left, clr->Top, layerbmp, refrect, 1);
+							// linear dodge (additive) blend
+							if(clr->Opacity != 255) SetBitmapOpacity(layerbmp, clr->Opacity);
+							if(!additive_found)
+							{
+								additive_found = true;
+								ConvertAlphaToAddAlpha(this);
+							}
+							if(firstlayer)
+								CopyBitmapRect(this, clr->Left, clr->Top, layerbmp, refrect, 0);
+							else
+								CopyBitmapRect(this, clr->Left, clr->Top, layerbmp, refrect, 2);
 						}
 						firstlayer = false;
 					}
@@ -812,6 +950,8 @@ void __fastcall TDeePSD::LoadFromStream(Classes::TStream * Stream)
 				}
 				delete layerbmp;
 			}
+			if(FOutputAddAlpha && !additive_found)
+				ConvertAlphaToAddAlpha(this);
 		}
 		catch(...)
 		{

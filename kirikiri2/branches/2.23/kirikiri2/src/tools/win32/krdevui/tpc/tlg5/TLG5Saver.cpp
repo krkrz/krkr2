@@ -220,18 +220,8 @@ static void Compress(Graphics::TBitmap *bmp, TStream * out)
 	if(blocksizes) delete [] blocksizes;
 }
 //---------------------------------------------------------------------------
-void SaveTLG5(Graphics::TBitmap *in, AnsiString outfn)
+void SaveTLG5(Graphics::TBitmap *in, TStream *out)
 {
-	TFileStream * out = new TFileStream(outfn, fmCreate);
-	try
-	{
-		Compress(in, out);
-	}
-	catch(...)
-	{
-		delete out;
-		throw;
-	}
-	delete out;
+	Compress(in, out);
 }
 //---------------------------------------------------------------------------

@@ -13,6 +13,7 @@
 #include <FileCtrl.hpp>
 #include <Jpeg.hpp>
 #include <inifiles.hpp>
+#include <memory>
 
 #pragma link "vclx50.lib"
 
@@ -24,6 +25,7 @@
 #include "ProgressUnit.h"
 #include "TLG5Saver.h"
 #include "TLG6Saver.h"
+#include "TLGMetaInfo.h"
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
 #pragma resource "*.dfm"
@@ -325,8 +327,6 @@ static void ExpandOpaqueColor(Graphics::TBitmap *bmp, int n)
 
 
 
-
-
 //---------------------------------------------------------------------------
 // LoadImage
 //---------------------------------------------------------------------------
@@ -394,7 +394,8 @@ static void BindMaskToMain(Graphics::TBitmap * main, Graphics::TBitmap * mask)
 	}
 }
 //---------------------------------------------------------------------------
-static Graphics::TBitmap *LoadSingleImage(AnsiString infile)
+static Graphics::TBitmap *LoadSingleImage(AnsiString infile,
+	bool & input_is_addalpha, bool & output_is_addalpha)
 {
 	// load image
 	AnsiString ext = ExtractFileExt(infile).LowerCase();
@@ -441,8 +442,10 @@ static Graphics::TBitmap *LoadSingleImage(AnsiString infile)
 			TDeePSD *psd = new TDeePSD();
 			try
 			{
+				psd->OutputAddAlpha = output_is_addalpha;
 				psd->LoadFromFile(infile);
 				bmp->Assign(psd);
+				input_is_addalpha = psd->OutputAddAlpha;
 			}
 			catch(...)
 			{
@@ -465,10 +468,12 @@ static Graphics::TBitmap *LoadSingleImage(AnsiString infile)
 	return bmp;
 }
 //---------------------------------------------------------------------------
-static Graphics::TBitmap * LoadImage(AnsiString infile)
+static Graphics::TBitmap * LoadImage(AnsiString infile,
+	bool & input_is_addalpha, bool & output_is_addalpha)
 {
 	// load image
-	Graphics::TBitmap * bmp = LoadSingleImage(infile);
+	Graphics::TBitmap * bmp = LoadSingleImage(infile,
+		input_is_addalpha, output_is_addalpha);
 	Graphics::TBitmap * mask = NULL;
 
 	try
@@ -476,14 +481,16 @@ static Graphics::TBitmap * LoadImage(AnsiString infile)
 		Graphics::TBitmap *mask = NULL;
 
 		AnsiString maskfile = ChangeFileExt(infile, "") + "_m";
+		bool in_add_alpha = false; // dummy
+		bool out_add_alpha = false; // dummy
 		if(FileExists(maskfile + ".bmp"))
-			mask = LoadSingleImage(maskfile + ".bmp");
+			mask = LoadSingleImage(maskfile + ".bmp", in_add_alpha, out_add_alpha);
 		else if(FileExists(maskfile + ".png"))
-			mask = LoadSingleImage(maskfile + ".png");
+			mask = LoadSingleImage(maskfile + ".png", in_add_alpha, out_add_alpha);
 		else if(FileExists(maskfile + ".jpg"))
-			mask = LoadSingleImage(maskfile + ".jpg");
+			mask = LoadSingleImage(maskfile + ".jpg", in_add_alpha, out_add_alpha);
 		else if(FileExists(maskfile + ".jpeg"))
-			mask = LoadSingleImage(maskfile + ".jpeg");
+			mask = LoadSingleImage(maskfile + ".jpeg", in_add_alpha, out_add_alpha);
 
 		if(mask)
 		{
@@ -561,6 +568,21 @@ void __fastcall TTPCMainForm::UpdateState()
 
 	OpaqueJPEGOptionButton->Enabled = OpaqueJPEGFormatRadioButton->Checked;
 
+
+	b = TranspAssumeInputIsAddAlphaCheckBox->Checked;
+	TranspOutputAddAlphaFormatCheckBox->Enabled = !b;
+	if(b)
+		TranspOutputAddAlphaFormatCheckBox->Checked = b;
+	else
+		TranspOutputAddAlphaFormatCheckBox->Checked =
+			TranspOutputAddAlphaFormatCheckBox->Tag;
+
+	b = !TranspOutputAddAlphaFormatCheckBox->Checked && !TranspAssumeInputIsAddAlphaCheckBox->Checked;
+	TranspFullTranspColorMethodLabel->Font->Color = b ? clWindowText : clGrayText;
+	TranspFullTranspColorMethodComboBox->Enabled = b;
+
+
+
 	if(!ExpandButton->Checked)
 	{
 		ClientHeight = ExpandButton->Top + ExpandButton->Height + ExpandButton->Top;
@@ -599,6 +621,10 @@ void __fastcall TTPCMainForm::LoadFromIni()
 	TranspMaskFormatComboBox->ItemIndex = ini->ReadInteger("Format", "TranspMaskFormat", 1);
 	TranspMainJPEGQuality = ini->ReadInteger("Format", "TranspMainJPEGQuality", 90);
 	TranspMaskJPEGQuality = ini->ReadInteger("Format", "TranspMaskJPEGQuality", 90);
+	TranspAssumeInputIsAddAlphaCheckBox->Checked = ini->ReadBool("Format",
+		"TranspAssumeInputIsAddAlpha", false);
+	TranspOutputAddAlphaFormatCheckBox->Checked = ini->ReadBool("Format",
+		"TranspOutputAddAlphaFormat", false);
 	TranspFullTranspColorMethodComboBox->ItemIndex = ini->ReadInteger("Format",
 		"TranspFullTranspColorMethod", 0);
 
@@ -635,6 +661,8 @@ void __fastcall TTPCMainForm::SaveToIni()
 	ini->WriteInteger("Format", "TranspMaskFormat", TranspMaskFormatComboBox->ItemIndex);
 	ini->WriteInteger("Format", "TranspMainJPEGQuality", TranspMainJPEGQuality);
 	ini->WriteInteger("Format", "TranspMaskJPEGQuality", TranspMaskJPEGQuality);
+	ini->WriteBool("Format", "TranspAssumeInputIsAddAlpha", TranspAssumeInputIsAddAlphaCheckBox->Checked);
+	ini->WriteBool("Format", "TranspOutputAddAlphaFormat", TranspOutputAddAlphaFormatCheckBox->Checked);
 	ini->WriteInteger("Format", "TranspFullTranspColorMethod", TranspFullTranspColorMethodComboBox->ItemIndex);
 
 	ini->WriteBool("Output", "SameFolder", SameFolderRadioButton->Checked);
@@ -720,6 +748,22 @@ void __fastcall TTPCMainForm::TranspMainFormatComboBoxChange(TObject *Sender)
 void __fastcall TTPCMainForm::TranspMaskFormatComboBoxChange(TObject *Sender)
 {
 	UpdateState();
+}
+//---------------------------------------------------------------------------
+void __fastcall TTPCMainForm::TranspAssumeInputIsAddAlphaCheckBoxClick(
+	  TObject *Sender)
+{
+	UpdateState();
+}
+//---------------------------------------------------------------------------
+void __fastcall TTPCMainForm::TranspOutputAddAlphaFormatCheckBoxClick(TObject *Sender)
+{
+	if(TranspOutputAddAlphaFormatCheckBox->Enabled)
+	{
+		TranspOutputAddAlphaFormatCheckBox->Tag =
+			TranspOutputAddAlphaFormatCheckBox->Checked;
+		UpdateState();
+	}
 }
 //---------------------------------------------------------------------------
 void __fastcall TTPCMainForm::SameFolderRadioButtonClick(TObject *Sender)
@@ -857,8 +901,11 @@ bool __fastcall TTPCMainForm::ProcessFile(AnsiString infile)
 
 
 		// read input
-		inbmp = LoadImage(infile);
+		bool input_is_add_alpha  = TranspAssumeInputIsAddAlphaCheckBox->Checked;
+		bool output_is_add_alpha = TranspOutputAddAlphaFormatCheckBox->Checked;
+		inbmp = LoadImage(infile, input_is_add_alpha, output_is_add_alpha);
 
+		// overwrite check
 		if(!OverwriteCheckBox->Checked)
 		{
 			if(inbmp->PixelFormat == pf32bit)
@@ -925,9 +972,10 @@ bool __fastcall TTPCMainForm::ProcessFile(AnsiString infile)
 			}
 		}
 
-		if(inbmp->PixelFormat == pf32bit)
+		// expand full transparent color
+		if(inbmp->PixelFormat == pf32bit &&
+			!TranspOutputAddAlphaFormatCheckBox->Checked)
 		{
-			// clear full transparent color
 			switch(TranspFullTranspColorMethodComboBox->ItemIndex)
 			{
 			case 0: // remove
@@ -951,6 +999,13 @@ bool __fastcall TTPCMainForm::ProcessFile(AnsiString infile)
 				ExpandOpaqueColor(inbmp, 8);
 				break;
 			}
+		}
+
+		// convert alpha to addivive alpha
+		if(inbmp->PixelFormat == pf32bit &&
+			!input_is_add_alpha && output_is_add_alpha)
+		{
+			ConvertAlphaToAddAlpha(inbmp);
 		}
 
 		// write output
@@ -978,11 +1033,15 @@ bool __fastcall TTPCMainForm::ProcessFile(AnsiString infile)
 			}
 			else if(TranspTLG5FormatRadioButton->Checked)
 			{
-				SaveTLG5(inbmp, out_base + ".tlg");
+				std::auto_ptr<TStringList> tags(new TStringList());
+				tags->Append(output_is_add_alpha ? "mode=addalpha":"mode=alpha");
+				SaveTLGWithMetaInfo(tags.get(), inbmp, out_base + ".tlg", SaveTLG5);
 			}
 			else if(TranspTLG6FormatRadioButton->Checked)
 			{
-				SaveTLG6(inbmp, out_base + ".tlg");
+				std::auto_ptr<TStringList> tags(new TStringList());
+				tags->Append(output_is_add_alpha ? "mode=addalpha":"mode=alpha");
+				SaveTLGWithMetaInfo(tags.get(), inbmp, out_base + ".tlg", SaveTLG6);
 			}
 			else if(TranspSeparatedFormatRadioButton->Checked)
 			{
@@ -1025,11 +1084,15 @@ bool __fastcall TTPCMainForm::ProcessFile(AnsiString infile)
 			}
 			else if(OpaqueTLG5FormatRadioButton->Checked)
 			{
-				SaveTLG5(inbmp, out_base + ".tlg");
+				std::auto_ptr<TStringList> tags(new TStringList());
+				tags->Append("mode=opaque");
+				SaveTLGWithMetaInfo(tags.get(), inbmp, out_base + ".tlg", SaveTLG5);
 			}
 			else if(OpaqueTLG6FormatRadioButton->Checked)
 			{
-				SaveTLG6(inbmp, out_base + ".tlg");
+				std::auto_ptr<TStringList> tags(new TStringList());
+				tags->Append("mode=opaque");
+				SaveTLGWithMetaInfo(tags.get(), inbmp, out_base + ".tlg", SaveTLG6);
 			}
 			else if(OpaqueJPEGFormatRadioButton->Checked)
 			{
@@ -1076,6 +1139,8 @@ extern "C" void _export PASCAL UIExecTPC()
 	ExitProcess(0);
 }
 //---------------------------------------------------------------------------
+
+
 
 
 

@@ -841,7 +841,7 @@ void SaveTLG6(Graphics::TBitmap *bmp, TStream *out)
 
 		TLG6BitStream bs(memstream);
 
-		int buf_size = bmp->Width * bmp->Height;
+//		int buf_size = bmp->Width * bmp->Height;
 
 		// allocate buffer
 		for(int c = 0; c < colors; c++)
@@ -1133,27 +1133,6 @@ void SaveTLG6(Graphics::TBitmap *bmp, TStream *out)
 		}
 	}
 */
-}
-//---------------------------------------------------------------------------
-void SaveTLG6(Graphics::TBitmap *in, AnsiString outfn)
-{
-	TStream * out = new TFileStream(outfn, fmCreate);
-
-	try
-	{
-//		DWORD start = GetTickCount();
-		SaveTLG6(in, out);
-//		DWORD end = GetTickCount();
-//		printf("%d ms\n", (int)(end - start));
-	}
-	catch(...)
-	{
-		delete out;
-		throw;
-	}
-//	printf("output size : %d\n", out->Size);
-
-	delete out;
 }
 //---------------------------------------------------------------------------
 

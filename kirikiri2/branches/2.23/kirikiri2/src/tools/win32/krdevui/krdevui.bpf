@@ -34,6 +34,7 @@ USEUNIT("looptune\WaveDispUnit.cpp");
 USEUNIT("looptune\WaveReaderUnit.cpp");
 USEFORM("looptune\WaveWriterUnit.cpp", WaveWriterForm);
 USEUNIT("..\..\..\core\sound\win32\tvpsnd.c");
+USEUNIT("tpc\TLGMetaInfo.cpp");
 //---------------------------------------------------------------------------
 This file is used by the project manager only and should be treated like the project file
 
