@@ -1974,9 +1974,10 @@ void TVPDoAffineLoop(
 
 #define TVP_DoBilinearAffineLoop_ARGS  sxs, sys, \
 		dest, l, len, src, srcpitch, sxl, syl, ref_right_limit, ref_bottom_limit
-template <typename tFuncBilinear>
+template <typename tFuncStretch, typename tFuncAffine>
 void TVPDoBilinearAffineLoop(
-		tFuncBilinear func,
+		tFuncStretch stretch,
+		tFuncAffine affine,
 		tjs_int sxs,
 		tjs_int sys,
 		tjs_uint8 *dest,
@@ -2043,7 +2044,7 @@ void TVPDoBilinearAffineLoop(
 		blend_y = (spy & 0xffff) >> 8;
 		blend_y += blend_y>>7;
 
-		func.DoOnePixel(dp, TVPBlendARGB(
+		affine.DoOnePixel(dp, TVPBlendARGB(
 			TVPBlendARGB(c00, c01, blend_x),
 			TVPBlendARGB(c10, c11, blend_x),
 				blend_y));
@@ -2092,7 +2093,7 @@ void TVPDoBilinearAffineLoop(
 		blend_y = (spy & 0xffff) >> 8;
 		blend_y += blend_y>>7;
 
-		func.DoOnePixel(dp, TVPBlendARGB(
+		affine.DoOnePixel(dp, TVPBlendARGB(
 			TVPBlendARGB(c00, c01, blend_x),
 			TVPBlendARGB(c10, c11, blend_x),
 				blend_y));
@@ -2104,8 +2105,26 @@ void TVPDoBilinearAffineLoop(
 	}
 
 	// do center part (this may takes most time)
-	func(dp, len_remain,
-		(tjs_uint32*)src, spx, spy, sxs, sys, srcpitch);
+	if(sys == 0)
+	{
+		// do stretch
+		const tjs_uint8 * l1 = src + (spy >> 16) * srcpitch;
+		const tjs_uint8 * l2 = l1 + srcpitch;
+		stretch(
+			dp,
+			len_remain,
+			(const tjs_uint32*)l1,
+			(const tjs_uint32*)l2,
+			(spy & 0xffff) >> 8,
+			spx,
+			sxs);
+	}
+	else
+	{
+		// do affine
+		affine(dp, len_remain,
+			(tjs_uint32*)src, spx, spy, sxs, sys, srcpitch);
+	}
 }
 //---------------------------------------------------------------------------
 static inline tjs_int floor_16(tjs_int x)
@@ -2128,7 +2147,7 @@ bool tTVPBaseBitmap::AffineBlt(tTVPRect destrect, const tTVPBaseBitmap *ref,
 		tTVPRect refrect, const tTVPPointD * points_in,
 			tTVPBBBltMethod method, tjs_int opa,
 			tTVPRect * updaterect,
-			bool hda, tTVPBBStretchType type)
+			bool hda, tTVPBBStretchType type, bool clear, tjs_uint32 clearcolor)
 {
 	// unlike other drawing methods, 'destrect' is the clip rectangle of the
 	// destination bitmap.
@@ -2138,6 +2157,9 @@ bool tTVPBaseBitmap::AffineBlt(tTVPRect destrect, const tTVPBaseBitmap *ref,
 
 	// points are given as destination points, corresponding to three source
 	// points; upper-left, upper-right, bottom-left.
+
+	// if 'clear' is true, area which is out of the affine destination and
+	// within the destination bounding box, is to be filled with value 'clearcolor'.
 
 	// returns false if the updating rect is not updated
 
@@ -2444,6 +2466,20 @@ bool tTVPBaseBitmap::AffineBlt(tTVPRect destrect, const tTVPBaseBitmap *ref,
 		// - transfer
 		if(len > 0)
 		{
+			// fill left and right of the line if 'clear' is specified
+			if(clear)
+			{
+				tjs_int clen;
+
+				clen = l - destrect.left;
+				if(clen > 0)
+					(hda?TVPFillColor:TVPFillARGB)((tjs_uint32*)dest + destrect.left, clen, clearcolor);
+				clen = destrect.right - r;
+				if(clen > 0)
+					(hda?TVPFillColor:TVPFillARGB)((tjs_uint32*)dest + r, clen, clearcolor);
+			}
+
+
 			// update updaterect
 			if(firstline)
 			{
@@ -2471,6 +2507,7 @@ bool tTVPBaseBitmap::AffineBlt(tTVPRect destrect, const tTVPBaseBitmap *ref,
 						{
 							// bilinear interpolation
 							TVPDoBilinearAffineLoop(
+								tTVPInterpStretchCopyFunctionObject(),
 								tTVPInterpLinTransCopyFunctionObject(),
 								TVP_DoBilinearAffineLoop_ARGS);
 						}
@@ -2509,6 +2546,7 @@ bool tTVPBaseBitmap::AffineBlt(tTVPRect destrect, const tTVPBaseBitmap *ref,
 						{
 							// bilinear interpolation
 							TVPDoBilinearAffineLoop(
+								tTVPInterpStretchConstAlphaBlendFunctionObject(opa),
 								tTVPInterpLinTransConstAlphaBlendFunctionObject(opa),
 								TVP_DoBilinearAffineLoop_ARGS);
 						}
@@ -2598,6 +2636,7 @@ bool tTVPBaseBitmap::AffineBlt(tTVPRect destrect, const tTVPBaseBitmap *ref,
 						{
 							// bilinear interpolation
 							TVPDoBilinearAffineLoop(
+								tTVPInterpStretchAdditiveAlphaBlendFunctionObject(),
 								tTVPInterpLinTransAdditiveAlphaBlendFunctionObject(),
 								TVP_DoBilinearAffineLoop_ARGS);
 						}
@@ -2625,6 +2664,7 @@ bool tTVPBaseBitmap::AffineBlt(tTVPRect destrect, const tTVPBaseBitmap *ref,
 						{
 							// bilinear interpolation
 							TVPDoBilinearAffineLoop(
+								tTVPInterpStretchAdditiveAlphaBlend_oFunctionObject(opa),
 								tTVPInterpLinTransAdditiveAlphaBlend_oFunctionObject(opa),
 								TVP_DoBilinearAffineLoop_ARGS);
 						}
@@ -2703,23 +2743,63 @@ bool tTVPBaseBitmap::AffineBlt(tTVPRect destrect, const tTVPBaseBitmap *ref,
 		dest += destpitch;
 	}
 
-	// fill members of updaterect
-	if(!firstline && updaterect)
+	// clear upper and lower are of the affine transformation
+	if(clear)
 	{
-		updaterect->left = leftlimit;
-		updaterect->right = rightlimit + 1;
-		updaterect->top = mostupper;
-		updaterect->bottom = mostbottom + 1;
+		tjs_int h;
+		tjs_uint8 * dest = (tjs_uint8*)GetScanLineForWrite(0);
+		tjs_uint8 * p;
+		h = mostupper - destrect.top;
+		if(h > 0)
+		{
+			p = dest + destrect.top * destpitch;
+			do
+				(hda?TVPFillColor:TVPFillARGB)((tjs_uint32*)p + destrect.left,
+					destrect.right - destrect.left, clearcolor),
+				p += destpitch;
+			while(--h);
+		}
+
+		h = destrect.bottom - (mostbottom + 1);
+		if(h > 0)
+		{
+			p = dest + (mostbottom + 1) * destpitch;
+			do
+				(hda?TVPFillColor:TVPFillARGB)((tjs_uint32*)p + destrect.left,
+					destrect.right - destrect.left, clearcolor),
+				p += destpitch;
+			while(--h);
+		}
+
 	}
 
-	return !firstline;
+	// fill members of updaterect
+	if(updaterect)
+	{
+		if(clear)
+		{
+			// clear is specified
+			*updaterect = destrect;
+				// update rectangle is the same as the destination rectangle
+		}
+		else if(!firstline)
+		{
+			// update area is being
+			updaterect->left = leftlimit;
+			updaterect->right = rightlimit + 1;
+			updaterect->top = mostupper;
+			updaterect->bottom = mostbottom + 1;
+		}
+	}
+
+	return clear || !firstline;
 }
 //---------------------------------------------------------------------------
 bool tTVPBaseBitmap::AffineBlt(tTVPRect destrect, const tTVPBaseBitmap *ref,
 		tTVPRect refrect, const t2DAffineMatrix & matrix,
 			tTVPBBBltMethod method, tjs_int opa,
 			tTVPRect * updaterect,
-			bool hda, tTVPBBStretchType type)
+			bool hda, tTVPBBStretchType type, bool clear, tjs_uint32 clearcolor)
 {
 	// do transformation using 2D affine matrix.
 	//  x' =  ax + cy + tx
@@ -2745,7 +2825,7 @@ bool tTVPBaseBitmap::AffineBlt(tTVPRect destrect, const tTVPBaseBitmap *ref,
 	points[2].x = (matrix.c * bp + matrix.tx);
 	points[2].y = (matrix.d * bp + matrix.ty);
 
-	return AffineBlt(destrect, ref, refrect, points, method, opa, updaterect, hda, type);
+	return AffineBlt(destrect, ref, refrect, points, method, opa, updaterect, hda, type, clear, clearcolor);
 }
 //---------------------------------------------------------------------------
 void tTVPBaseBitmap::UDFlip(const tTVPRect &rect)

@@ -3689,7 +3689,7 @@ void tTJSNI_BaseLayer::StretchCopy(const tTVPRect &destrect, tTJSNI_BaseLayer *s
 }
 //---------------------------------------------------------------------------
 void tTJSNI_BaseLayer::AffineCopy(const t2DAffineMatrix &matrix, tTJSNI_BaseLayer *src,
-		const tTVPRect &srcrect, tTVPBBStretchType type)
+		const tTVPRect &srcrect, tTVPBBStretchType type, bool clear)
 {
 	// affine copy
 	tTVPRect updaterect;
@@ -3703,7 +3703,7 @@ void tTJSNI_BaseLayer::AffineCopy(const t2DAffineMatrix &matrix, tTJSNI_BaseLaye
 		if(!MainImage) TVPThrowExceptionMessage(TVPNotDrawableLayerType);
 		if(!src->MainImage) TVPThrowExceptionMessage(TVPSourceLayerHasNoImage);
 		updated = MainImage->AffineBlt(ClipRect, src->MainImage, srcrect, matrix,
-			bmCopy, 255, &updaterect, false, type);
+			bmCopy, 255, &updaterect, false, type, clear, NeutralColor);
 		break;
 	  }
 
@@ -3712,7 +3712,7 @@ void tTJSNI_BaseLayer::AffineCopy(const t2DAffineMatrix &matrix, tTJSNI_BaseLaye
 		if(!MainImage) TVPThrowExceptionMessage(TVPNotDrawableLayerType);
 		if(!src->MainImage) TVPThrowExceptionMessage(TVPSourceLayerHasNoImage);
 		updated = MainImage->AffineBlt(ClipRect, src->MainImage, srcrect, matrix,
-			bmCopy, 255, &updaterect, HoldAlpha, type);
+			bmCopy, 255, &updaterect, HoldAlpha, type, clear, NeutralColor);
 		break;
 	  }
 
@@ -3730,7 +3730,7 @@ void tTJSNI_BaseLayer::AffineCopy(const t2DAffineMatrix &matrix, tTJSNI_BaseLaye
 }
 //---------------------------------------------------------------------------
 void tTJSNI_BaseLayer::AffineCopy(const tTVPPointD *points, tTJSNI_BaseLayer *src,
-		const tTVPRect &srcrect, tTVPBBStretchType type)
+		const tTVPRect &srcrect, tTVPBBStretchType type, bool clear)
 {
 	// affine copy
 	tTVPRect updaterect;
@@ -3744,7 +3744,7 @@ void tTJSNI_BaseLayer::AffineCopy(const tTVPPointD *points, tTJSNI_BaseLayer *sr
 		if(!MainImage) TVPThrowExceptionMessage(TVPNotDrawableLayerType);
 		if(!src->MainImage) TVPThrowExceptionMessage(TVPSourceLayerHasNoImage);
 		updated = MainImage->AffineBlt(ClipRect, src->MainImage, srcrect, points,
-			bmCopy, 255, &updaterect, false, type);
+			bmCopy, 255, &updaterect, false, type, clear, NeutralColor);
 		break;
 	  }
 
@@ -3753,7 +3753,7 @@ void tTJSNI_BaseLayer::AffineCopy(const tTVPPointD *points, tTJSNI_BaseLayer *sr
 		if(!MainImage) TVPThrowExceptionMessage(TVPNotDrawableLayerType);
 		if(!src->MainImage) TVPThrowExceptionMessage(TVPSourceLayerHasNoImage);
 		updated = MainImage->AffineBlt(ClipRect, src->MainImage, srcrect, points,
-			bmCopy, 255, &updaterect, HoldAlpha, type);
+			bmCopy, 255, &updaterect, HoldAlpha, type, clear, NeutralColor);
 		break;
 	  }
 
@@ -7490,6 +7490,11 @@ TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/affineCopy)
 	if(numparams >= 13 && param[12]->Type() != tvtVoid)
 		type = (tTVPBBStretchType)(tjs_int)*param[12];
 
+	bool clear = false;
+
+	if(numparams >= 14 && param[13]->Type() != tvtVoid)
+		clear = (tjs_int)*param[13];
+
 	if(param[5]->operator bool())
 	{
 		// affine matrix mode
@@ -7500,7 +7505,7 @@ TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/affineCopy)
 		mat.d = *param[9];
 		mat.tx = *param[10];
 		mat.ty = *param[11];
-		_this->AffineCopy(mat, src, srcrect, type);
+		_this->AffineCopy(mat, src, srcrect, type, clear);
 	}
 	else
 	{
@@ -7512,7 +7517,7 @@ TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/affineCopy)
 		points[1].y = *param[9];
 		points[2].x = *param[10];
 		points[2].y = *param[11];
-		_this->AffineCopy(points, src, srcrect, type);
+		_this->AffineCopy(points, src, srcrect, type, clear);
 	}
 
 	return TJS_S_OK;
