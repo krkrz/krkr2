@@ -18,7 +18,7 @@ BEGIN
             VALUE "FileDescription", "TVP(kirikiri) PCM Loop Tuner\0"
             VALUE "FileVersion", "1.0.0.0\0"
             VALUE "InternalName", "\0"
-            VALUE "LegalCopyright", "Copyright (C)2002-2004, W.Dee All rights reserved\0"
+            VALUE "LegalCopyright", "Copyright (C)2002-2005, W.Dee All rights reserved\0"
             VALUE "LegalTrademarks", "\0"
             VALUE "OriginalFilename", "krkrlt.exe\0"
             VALUE "PrivateBuild", "\0"

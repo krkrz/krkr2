@@ -281,7 +281,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 　追記で、wuvorbis.dll あるいは SSE/3DNow! パッチの著作権情報ですが、
 
-SSE & 3DNow! patch Copyright (c) 2002-2003, W.Dee
+SSE & 3DNow! patch Copyright (c) 2002-2005, W.Dee
 
 　の表記をドキュメント中などの配布物に記述することが好ましいです。だたし、
 これも wuvorbis.dll のバージョン情報に含まれているので、別途、ドキュメント

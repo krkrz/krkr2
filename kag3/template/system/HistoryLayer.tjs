@@ -1,5 +1,5 @@
 // HistoryLayer.tjs - メッセージ履歴レイヤ
-// Copyright (C)2001-2004, W.Dee  改変・配布は自由です
+// Copyright (C)2001-2005, W.Dee  改変・配布は自由です
 
 class LButtonLayer extends ButtonLayer
 	// parent に onClick イベントを送るようにしたボタンレイヤ
