@@ -19,7 +19,6 @@
 #include "IRendererBufferAccess.h"
 #include "IRendererBufferVideo.h"
 
-//#define WM_GRAPHNOTIFY	(WM_USER+1)
 #define EC_UPDATE		(EC_USER+1)
 
 class TBufferRendererAllocator;
@@ -44,7 +43,7 @@ public:
 	TBufferRendererAllocator( TCHAR *, LPUNKNOWN, HRESULT * );
 	virtual ~TBufferRendererAllocator();
 
-	//オーバーライド
+	// オーバーライド
 	STDMETHODIMP SetProperties( ALLOCATOR_PROPERTIES* pRequest, ALLOCATOR_PROPERTIES* pActual );
 
 	// ダブルバッファリング用ポインタ差し替えメソッド
@@ -90,7 +89,7 @@ private:
 	bool	m_IsBufferOwner[2];	//!< バッファがこのクラスに割り当てられたものかどうかを保持
 	int		m_FrontBuffer;		//!< 現在のフロントバッファがどちらかを保持
 
-	IMediaSeeking	*m_MediaSeeking;
+	IMediaSeeking	*m_MediaSeeking;	//! DoRenderSample時にフレーム番号を得るためのIMediaSeekingインターフェイスへのポインタ
 
 	TBufferRendererInputPin		m_InputPin;		//!< 入力ピン
 	TBufferRendererAllocator	m_Allocator;	//!< メモリの割り当て
