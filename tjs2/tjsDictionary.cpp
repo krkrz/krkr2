@@ -92,11 +92,15 @@ TJS_BEGIN_NATIVE_METHOD_DECL(/*func.name*/assign)
 
 	if(numparams < 1) return TJS_E_BADPARAMCOUNT;
 
+	bool clear = true;
+	if(numparams >= 2 && param[1]->Type() != tvtVoid)
+		clear = (tjs_int)*param[1];
+
 	tTJSVariantClosure clo = param[0]->AsObjectClosureNoAddRef();
 	if(clo.ObjThis)
-		ni->Assign(clo.ObjThis);
+		ni->Assign(clo.ObjThis, clear);
 	else if(clo.Object)
-		ni->Assign(clo.Object);
+		ni->Assign(clo.Object, clear);
 	else TJS_eTJSError(TJSNullAccess);
 
 	return TJS_S_OK;
@@ -183,7 +187,7 @@ void TJS_INTF_METHOD tTJSDictionaryNI::Invalidate() // Invalidate override
 	inherited::Invalidate();
 }
 //---------------------------------------------------------------------------
-void tTJSDictionaryNI::Assign(iTJSDispatch2 * dsp)
+void tTJSDictionaryNI::Assign(iTJSDispatch2 * dsp, bool clear)
 {
 	// copy members from "dsp" to "Owner"
 
@@ -194,7 +198,7 @@ void tTJSDictionaryNI::Assign(iTJSDispatch2 * dsp)
 		ClassID_Dictionary, (iTJSNativeInstance**)&dicni)) )
 	{
 		// dictionary copy
-		Owner->Clear();
+		if(clear) Owner->Clear();
 
 		((tTJSCustomObject*)dsp)->EnumMembers((tTJSEnumMemberCallbackIntf*)this);
 
@@ -203,7 +207,7 @@ void tTJSDictionaryNI::Assign(iTJSDispatch2 * dsp)
 		TJSGetArrayClassID(), (iTJSNativeInstance**)&arrayni)) )
 	{
 		// convert from array
-		Owner->Clear();
+		if(clear) Owner->Clear();
 
 		tTJSArrayNI::tArrayItemIterator i;
 		for(i = arrayni->Items.begin(); i != arrayni->Items.end(); i++)
