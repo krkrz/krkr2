@@ -9510,7 +9510,7 @@ TVP_GL_FUNC_DECL(void, TVPAdjustGamma_a_c, (tjs_uint32 *dest, tjs_int len, tTVPG
 		t = (d>>8) & 0xff;
 		d_tmp |=  temp->G[t] << 8;
 		t = (d>>16) & 0xff; 
-		d_tmp |=  temp->B[t] << 16;
+		d_tmp |=  temp->R[t] << 16;
 		d_tmp |= 0xff000000;
 		dest[(___index+0)] = d_tmp;
 	}
@@ -9562,7 +9562,7 @@ TVP_GL_FUNC_DECL(void, TVPAdjustGamma_a_c, (tjs_uint32 *dest, tjs_int len, tTVPG
 		t = (d>>8) & 0xff;
 		d_tmp |=  temp->G[t] << 8;
 		t = (d>>16) & 0xff; 
-		d_tmp |=  temp->B[t] << 16;
+		d_tmp |=  temp->R[t] << 16;
 		d_tmp |= 0xff000000;
 		dest[(___index+1)] = d_tmp;
 	}
@@ -9621,7 +9621,7 @@ TVP_GL_FUNC_DECL(void, TVPAdjustGamma_a_c, (tjs_uint32 *dest, tjs_int len, tTVPG
 		t = (d>>8) & 0xff;
 		d_tmp |=  temp->G[t] << 8;
 		t = (d>>16) & 0xff; 
-		d_tmp |=  temp->B[t] << 16;
+		d_tmp |=  temp->R[t] << 16;
 		d_tmp |= 0xff000000;
 		dest[___index] = d_tmp;
 	}
