@@ -505,7 +505,7 @@ struct tTVPFoundPlugin
 	AnsiString Name;
 	bool operator < (const tTVPFoundPlugin &rhs) const { return Name < rhs.Name; }
 };
-
+static tjs_int TVPAutoLoadPluginCount = 0;
 static void TVPSearchPluginsAt(std::vector<tTVPFoundPlugin> &list, AnsiString folder)
 {
 	WIN32_FIND_DATA ffd;
@@ -551,6 +551,7 @@ void TVPLoadPluigins(void)
 	std::sort(list.begin(), list.end());
 
 	// load each plugin
+	TVPAutoLoadPluginCount = (tjs_int)list.size();
 	for(std::vector<tTVPFoundPlugin>::iterator i = list.begin();
 		i != list.end();
 		i++)
@@ -559,6 +560,8 @@ void TVPLoadPluigins(void)
 		TVPLoadPlugin(i->Path + i->Name);
 	}
 }
+//---------------------------------------------------------------------------
+tjs_int TVPGetAutoLoadPluginCount() { return TVPAutoLoadPluginCount; }
 //---------------------------------------------------------------------------
 
 
