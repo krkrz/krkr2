@@ -2891,7 +2891,7 @@ $content = <<EOF;
 	d = *dest;
 	sopa = *src;
 	d1 = d & 0xff00ff;
-	d1 = ((d1 + ((c1 - d1) * sopa >> $bit)) & 0xff00ff) + (d & 0xff000000);
+	d1 = ((d1 + ((c1 - d1) * sopa >> $bit)) & 0xff00ff);
 	d &= 0xff00;
 	*dest = d1 | ((d + ((color - d) * sopa >> $bit)) & 0x00ff00);
 	src++;
@@ -2910,6 +2910,84 @@ EOF
 print FC <<EOF;
 /*export*/
 TVP_GL_FUNC_DECL(void, TVPApplyColorMap${namesuffix}_o_c, (tjs_uint32 *dest, const tjs_uint8 *src, tjs_int len, tjs_uint32 color, tjs_int opa))
+{
+	tjs_uint32 d1, d, sopa;
+	tjs_uint32 c1 = color & 0xff00ff;
+	color = color & 0x00ff00;
+EOF
+
+
+$content = <<EOF;
+{
+	d = *dest;
+	sopa = (*src * opa) >> 8;
+	d1 = d & 0xff00ff;
+	d1 = ((d1 + ((c1 - d1) * sopa >> $bit)) & 0xff00ff);
+	d &= 0x00ff00;
+	*dest = d1 | ((d + ((color - d) * sopa >> $bit)) & 0x00ff00);
+	src++;
+	dest++;
+}
+EOF
+
+&loop_unroll_c($content, 'len', 4);
+
+print FC <<EOF;
+}
+
+EOF
+
+
+
+
+}
+
+&alpha_color_map(8, '');
+&alpha_color_map(6, '65');
+
+;#-----------------------------------------------------------------
+
+sub alpha_color_map_hda
+{
+	local($bit, $namesuffix);
+	$bit = $_[0];
+	$namesuffix = $_[1];
+
+print FC <<EOF;
+
+/*export*/
+TVP_GL_FUNC_DECL(void, TVPApplyColorMap${namesuffix}_HDA_c, (tjs_uint32 *dest, const tjs_uint8 *src, tjs_int len, tjs_uint32 color))
+{
+	tjs_uint32 d1, d, sopa;
+	tjs_uint32 c1 = color & 0xff00ff;
+	color = color & 0x00ff00;
+EOF
+
+
+$content = <<EOF;
+{
+	d = *dest;
+	sopa = *src;
+	d1 = d & 0xff00ff;
+	d1 = ((d1 + ((c1 - d1) * sopa >> $bit)) & 0xff00ff) + (d & 0xff000000);
+	d &= 0xff00;
+	*dest = d1 | ((d + ((color - d) * sopa >> $bit)) & 0x00ff00);
+	src++;
+	dest++;
+}
+EOF
+
+&loop_unroll_c($content, 'len', 4);
+
+print FC <<EOF;
+}
+
+EOF
+
+
+print FC <<EOF;
+/*export*/
+TVP_GL_FUNC_DECL(void, TVPApplyColorMap${namesuffix}_HDA_o_c, (tjs_uint32 *dest, const tjs_uint8 *src, tjs_int len, tjs_uint32 color, tjs_int opa))
 {
 	tjs_uint32 d1, d, sopa;
 	tjs_uint32 c1 = color & 0xff00ff;
@@ -2942,8 +3020,8 @@ EOF
 
 }
 
-&alpha_color_map(8, '');
-&alpha_color_map(6, '65');
+&alpha_color_map_hda(8, '');
+&alpha_color_map_hda(6, '65');
 
 ;#-----------------------------------------------------------------
 
@@ -3137,6 +3215,7 @@ print FC <<EOF;
 /*export*/
 TVP_GL_FUNC_DECL(void, TVPConstColorAlphaBlend_c, (tjs_uint32 *dest, tjs_int len, tjs_uint32 color, tjs_int opa))
 {
+	/* this function always holds desitination alpha channel */
 	tjs_uint32 s1, d;
 	s1 = (color & 0xff00ff)*opa ;
 	color = (color & 0xff00)*opa ;

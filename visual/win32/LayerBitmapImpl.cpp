@@ -2001,6 +2001,7 @@ struct tTVPDrawTextData
 	tTVPRect rect;
 	tjs_int bmppitch;
 	tjs_int opa;
+	bool holdalpha;
 	tTVPBBBltMethod bltmode;
 };
 bool tTVPNativeBaseBitmap::InternalDrawText(tTVPCharacterData *data, tjs_int x,
@@ -2119,17 +2120,29 @@ bool tTVPNativeBaseBitmap::InternalDrawText(tTVPCharacterData *data, tjs_int x,
 	{
 		if(dtdata->opa == 255)
 		{
-			while(h--)
-				TVPApplyColorMap65((tjs_uint32*)sl + drect.left,
-					bp + srect.left, w, color), sl += dtdata->bmppitch,
-					bp += pitch;
+			if(dtdata->holdalpha)
+				while(h--)
+					TVPApplyColorMap65_HDA((tjs_uint32*)sl + drect.left,
+						bp + srect.left, w, color), sl += dtdata->bmppitch,
+						bp += pitch;
+			else
+				while(h--)
+					TVPApplyColorMap65((tjs_uint32*)sl + drect.left,
+						bp + srect.left, w, color), sl += dtdata->bmppitch,
+						bp += pitch;
 		}
 		else
 		{
-			while(h--)
-				TVPApplyColorMap65_o((tjs_uint32*)sl + drect.left,
-					bp + srect.left, w, color, dtdata->opa), sl += dtdata->bmppitch,
-					bp += pitch;
+			if(dtdata->holdalpha)
+				while(h--)
+					TVPApplyColorMap65_HDA_o((tjs_uint32*)sl + drect.left,
+						bp + srect.left, w, color, dtdata->opa), sl += dtdata->bmppitch,
+						bp += pitch;
+			else
+				while(h--)
+					TVPApplyColorMap65_o((tjs_uint32*)sl + drect.left,
+						bp + srect.left, w, color, dtdata->opa), sl += dtdata->bmppitch,
+						bp += pitch;
 		}
 	}
 
@@ -2138,7 +2151,8 @@ bool tTVPNativeBaseBitmap::InternalDrawText(tTVPCharacterData *data, tjs_int x,
 //---------------------------------------------------------------------------
 void tTVPNativeBaseBitmap::DrawText(const tTVPRect &destrect,
 	tjs_int x, tjs_int y, const ttstr &text,
-		tjs_uint32 color, tTVPBBBltMethod bltmode, tjs_int opa, bool aa, tjs_int shlevel,
+		tjs_uint32 color, tTVPBBBltMethod bltmode, tjs_int opa,
+			bool holdalpha, bool aa, tjs_int shlevel,
 			tjs_uint32 shadowcolor,
 			tjs_int shwidth, tjs_int shofsx, tjs_int shofsy,
 			tTVPComplexRect *updaterects)
@@ -2170,6 +2184,7 @@ void tTVPNativeBaseBitmap::DrawText(const tTVPRect &destrect,
 	dtdata.bmppitch = GetPitchBytes();
 	dtdata.bltmode = bltmode;
 	dtdata.opa = opa;
+	dtdata.holdalpha = holdalpha;
 
 	tTVPFontAndCharacterData font;
 	font.Font = Font;
