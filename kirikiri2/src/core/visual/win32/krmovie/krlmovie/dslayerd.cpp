@@ -116,26 +116,20 @@ const wchar_t* __stdcall tTVPDSLayerVideo::BuildGraph( HWND callbackwin, IStream
 					throw L"Failed to call IPin::QueryPinInfo.";
 				pSpliter = pinInfo.pFilter;
 				pinInfo.pFilter->Release();
-				// AVI, QTにAudioが含まれていない場合、次の接続は失敗すると思われる。
 				if( FAILED(hr = ConnectFilters( pSpliter, pDDSRenderer ) ) )
-					throw L"Failed to call ConnectFilters.";
+				{
+					if( FAILED(hr = GraphBuilder()->RemoveFilter( pDDSRenderer)) )	// 音無しとみなして、フィルタを削除する
+						return L"Failed to call IFilterGraph::RemoveFilter.";
+				}
 			}
 		}
 		else
 		{
-			if( mt.subtype == MEDIASUBTYPE_MPEG1Video )
-			{	// Not use audio
-				if( (errmsg = BuildMPEGGraph( pBRender, m_Reader, false )) != NULL )
-					throw errmsg;
-			}
-			else
-			{
-				if( (errmsg = BuildMPEGGraph( pBRender, m_Reader, true )) != NULL )
-					throw errmsg;
-			}
+			if( (errmsg = BuildMPEGGraph( pBRender, m_Reader)) != NULL )
+				throw errmsg;
 		}
 
-#if 0	// 吉里吉里のBitmapは上下逆の形式らしいので、再接続は必要ない
+#if 0	// 吉里吉里のBitmapは上下逆の形式らしいので、上下反転のための再接続は必要ない
 		{	// Reconnect buffer render filter
 			// get decoder output pin
 			CComPtr<IPin>			pDecoderPinOut;

@@ -58,8 +58,6 @@ TBufferRenderer::TBufferRenderer( TCHAR *pName, LPUNKNOWN pUnk, HRESULT *phr )
 
 	m_FrontBuffer = 0;
 
-//	if( GetMediaPositionInterface( IID_IMediaSeeking, (void**)&m_MediaSeeking ) != S_OK )
-//		m_MediaSeeking = NULL;
 	m_MediaSeeking = NULL;
 }
 //----------------------------------------------------------------------------
@@ -145,10 +143,10 @@ HRESULT TBufferRenderer::SetMediaType( const CMediaType *pmt )
 	m_VideoHeight = abs(pviBmp->bmiHeader.biHeight);
 	m_VideoPitch = m_VideoWidth * 4;	// RGB32に決め打ち
 
-	if( IsAllocatedFrontBuffer() )
+	if( !IsAllocatedFrontBuffer() )
 		AllocFrontBuffer( GetBufferSize() );
 
-	if( IsAllocatedBackBuffer() )
+	if( !IsAllocatedBackBuffer() )
 		AllocBackBuffer( GetBufferSize() );
 
 	return S_OK;
@@ -202,7 +200,7 @@ HRESULT TBufferRenderer::DoRenderSample( IMediaSample * pSample )
 			}
 		}
 	}
-#if 0
+#if 0	// この方法で得た時間はフレーム番号とは一致しない
 	if( bGetTime == false )
 	{	// GetSampleTimesを使って時間の取得を試みる
 		REFERENCE_TIME	TimeStart;
@@ -232,9 +230,9 @@ HRESULT TBufferRenderer::DoRenderSample( IMediaSample * pSample )
 		return S_OK;
 	}
 
+	// 自前のアロケーターではないのでメモリをコピーする
 #if 0
-	// 下から上にコピー
-	if( ddsd.Format == D3DFMT_X8R8G8B8 )
+	// 下から上にコピー(上下反転化)
 	{
 		int		height = m_VideoHeight;
 		int		width = m_VideoWidth;
@@ -423,7 +421,7 @@ void TBufferRenderer::SetBackBuffer( BYTE *buff )
 		m_Buffer[1] = buff;
 }
 //---------------------------------------------------------------------------
-//! @brief	  	フロントバッファにバッファへのポインタを取得する
+//! @brief	  	フロントバッファへのポインタを取得する
 //! @return		バッファへのポインタ
 //----------------------------------------------------------------------------
 BYTE *TBufferRenderer::GetFrontBuffer()
@@ -435,7 +433,7 @@ BYTE *TBufferRenderer::GetFrontBuffer()
 		return m_Buffer[0];
 }
 //---------------------------------------------------------------------------
-//! @brief	  	バックバッファにバッファへのポインタを取得する
+//! @brief	  	バックバッファへのポインタを取得する
 //! @return		バッファへのポインタ
 //----------------------------------------------------------------------------
 BYTE *TBufferRenderer::GetBackBuffer()
@@ -608,7 +606,7 @@ STDMETHODIMP TBufferRendererInputPin::GetAllocator( IMemAllocator **ppAllocator 
 		m_pAllocator->AddRef();
 	}
 
-	//参照カウントを残すのはインタフェースの仕様です。
+	// 参照カウントを残すのはインタフェースの仕様です。
 	m_pAllocator->AddRef();
 	*ppAllocator = m_pAllocator;
 	return S_OK;
@@ -757,7 +755,7 @@ void TBufferRendererAllocator::SetPointer( IMediaSample *media, BYTE *ptr )
 	if( m_pMediaSample != NULL )
 	{
 		m_pMediaSample->GetPointer( &pBufferOwn );
-		if( pBufferOwn == pBufferParam )	// 同じバッファを指している同じと見なす
+		if( pBufferOwn == pBufferParam )	// 同じバッファを指しているので、保持しているサンプルと同じと見なす
 		{
 			LONG	cBytes = m_pMediaSample->GetSize();	// サイズは変わっていないと見なす、事前にチェックしておくこと
 			m_pMediaSample->SetPointer( ptr, cBytes );
