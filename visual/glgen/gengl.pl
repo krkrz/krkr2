@@ -4419,8 +4419,9 @@ EOF
 
 ;#-----------------------------------------------------------------
 print FC <<EOF;
+
 /*export*/
-TVP_GL_FUNC_DECL(void, TVPInterpStretchCopy, (tjs_uint32 *dest, tjs_int destlen, const tjs_uint32 *src1, const tjs_uint32 *src2, tjs_int blend_y, tjs_int srcstart, tjs_int srcstep))
+TVP_GL_FUNC_DECL(void, TVPInterpStretchCopy_c, (tjs_uint32 *dest, tjs_int destlen, const tjs_uint32 *src1, const tjs_uint32 *src2, tjs_int blend_y, tjs_int srcstart, tjs_int srcstep))
 {
 	/* stretch copy with bilinear interpolation */
 	tjs_int blend_x;
