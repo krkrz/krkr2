@@ -697,7 +697,16 @@ void __fastcall tTJSNI_VideoOverlay::WndProc(Messages::TMessage &Msg)
 								SetStatus(ssPlay); // All data has been rendered
 							}
 							else
+							{
+								// Graph manager seems not to complete playing
+								// at this point (rewinding the movie at the event
+								// handler called asynchronously from SetStatusAsync
+								// makes continuing playing, but the graph seems to
+								// be unstable).
+								// We manually stop the manager anyway.
+								VideoOverlay->Stop();
 								SetStatusAsync(ssStop); // All data has been rendered
+							}
 						}
 						break;
 					case EC_UPDATE:
