@@ -1,0 +1,2 @@
+perl makestub.pl
+pause
