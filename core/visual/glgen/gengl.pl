@@ -952,7 +952,7 @@ EOF
 $content = <<EOF;
 {
 	tmp = *buf;
-	t = (tmp >> 24) + TVPDivTable;
+	t = ((tmp >> 16) & 0xff00) + TVPDivTable;
 	*buf = (tmp & 0xff000000) +
 		(t[(tmp >> 16) & 0xff] << 16) +
 		(t[(tmp >>  8) & 0xff] <<  8) +
