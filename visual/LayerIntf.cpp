@@ -3180,9 +3180,53 @@ bool tTJSNI_BaseLayer::ClipDestPointAndSrcRect(tjs_int &dx, tjs_int &dy,
 	return true;
 }
 //---------------------------------------------------------------------------
-tTVPBBBltMethod tTJSNI_BaseLayer::GetBltMethodFromOperationModeAndDrawFace(
-		tTVPBlendOperationMode mode);
+bool tTJSNI_BaseLayer::GetBltMethodFromOperationModeAndDrawFace(
+		tTVPBBBltMethod & result,
+		tTVPBlendOperationMode mode)
+{
+	// resulting corresponding  tTVPBBBltMethod value of mode and current DrawFace.
+	// returns whether the method is known.
+	tTVPBBBltMethod met;
+	bool met_set = false;
+	switch(mode)
+	{
+	case omAdditive:		met_set = true; met = bmAdd;		break;
+	case omSubtractive:		met_set = true; met = bmSub;		break;
+	case omMultiplicative:	met_set = true; met = bmMul;		break;
+	case omDodge:			met_set = true; met = bmDodge;		break;
+	case omDarken:			met_set = true; met = bmDarken;		break;
+	case omLighten:			met_set = true; met = bmLighten;	break;
+	case omScreen:			met_set = true; met = bmScreen;		break;
+	case omAlpha:
+		if(DrawFace == dfAlpha)
+						{	met_set = true; met = bmAlphaOnAlpha; break;		}
+		else if(DrawFace == dfAddAlpha)
+						{	met_set = true; met = bmAlphaOnAddAlpha; break;		}
+		else if(DrawFace == dfMain)
+						{	met_set = true; met = bmAlpha; break;				}
+		break;
+	case omAddAlpha:
+		if(DrawFace == dfAlpha)
+						{	met_set = true; met = bmAddAlphaOnAlpha; break;		}
+		else if(DrawFace == dfAddAlpha)
+						{	met_set = true; met = bmAddAlphaOnAddAlpha; break;	}
+		else if(DrawFace == dfMain)
+						{	met_set = true; met = bmAddAlpha; break;			}
+		break;
+	case omOpaque:
+		if(DrawFace == dfAlpha)
+						{	met_set = true; met = bmCopyOnAlpha; break;			}
+		else if(DrawFace == dfAddAlpha)
+						{	met_set = true; met = bmCopyOnAddAlpha; break;		}
+		else if(DrawFace == dfMain)
+						{	met_set = true; met = bmCopy; break;				}
+		break;
+	}
 
+	result = met;
+
+	return met_set;
+}
 //---------------------------------------------------------------------------
 void tTJSNI_BaseLayer::FillRect(const tTVPRect &rect, tjs_uint32 color)
 {
@@ -3706,43 +3750,7 @@ void tTJSNI_BaseLayer::OperateRect(tjs_int dx, tjs_int dy, tTJSNI_BaseLayer *src
 
 	// convert tTVPBlendOperationMode to tTVPBBBltMethod
 	tTVPBBBltMethod met;
-	bool met_set = false;
-	switch(mode)
-	{
-	case omAdditive:		met_set = true; met = bmAdd;		break;
-	case omSubtractive:		met_set = true; met = bmSub;		break;
-	case omMultiplicative:	met_set = true; met = bmMul;		break;
-	case omDodge:			met_set = true; met = bmDodge;		break;
-	case omDarken:			met_set = true; met = bmDarken;		break;
-	case omLighten:			met_set = true; met = bmLighten;	break;
-	case omScreen:			met_set = true; met = bmScreen;		break;
-	case omAlpha:
-		if(DrawFace == dfAlpha)
-						{	met_set = true; met = bmAlphaOnAlpha; break;		}
-		else if(DrawFace == dfAddAlpha)
-						{	met_set = true; met = bmAlphaOnAddAlpha; break;		}
-		else if(DrawFace == dfMain)
-						{	met_set = true; met = bmAlpha; break;				}
-		break;
-	case omAddAlpha:
-		if(DrawFace == dfAlpha)
-						{	met_set = true; met = bmAddAlphaOnAlpha; break;		}
-		else if(DrawFace == dfAddAlpha)
-						{	met_set = true; met = bmAddAlphaOnAddAlpha; break;	}
-		else if(DrawFace == dfMain)
-						{	met_set = true; met = bmAddAlpha; break;			}
-		break;
-	case omOpaque:
-		if(DrawFace == dfAlpha)
-						{	met_set = true; met = bmCopyOnAlpha; break;			}
-		else if(DrawFace = dfAddAlpha)
-						{	met_set = true; met = bmCopyOnAddAlpha; break;		}
-		else if(DrawFace = dfMain)
-						{	met_set = true; met = bmCopy; break;				}
-		break;
-	}
-
-	if(!met_set)
+	if(!GetBltMethodFromOperationModeAndDrawFace(met, mode))
 	{
 		// unknown blt mode
 		TVPThrowExceptionMessage(TVPNotDrawableFaceType, TJS_W("operateRect"));
@@ -3847,6 +3855,41 @@ void tTJSNI_BaseLayer::StretchBlend(const tTVPRect &destrect, tTJSNI_BaseLayer *
 			opacity, hda, mode) || ImageModified;
 		break;
 	}
+
+	if(ImageLeft != 0 || ImageTop != 0)
+	{
+		ur.add_offsets(ImageLeft, ImageTop);
+		Update(ur);
+	}
+	else
+	{
+		Update(ur);
+	}
+}
+//---------------------------------------------------------------------------
+void tTJSNI_BaseLayer::OperateStretch(const tTVPRect &destrect,
+	tTJSNI_BaseLayer *src, const tTVPRect &srcrect, tTVPBlendOperationMode mode, tjs_int opacity,
+			tTVPBBStretchType type, bool hda)
+{
+	// stretching operation (add/mul/sub etc.)
+
+	tTVPRect ur = destrect;
+	if(ur.right < ur.left) std::swap(ur.right, ur.left);
+	if(ur.bottom < ur.top) std::swap(ur.bottom, ur.top);
+	if(!TVPIntersectRect(&ur, ur, ClipRect)) return; // out of the clipping rectangle
+
+	// convert tTVPBlendOperationMode to tTVPBBBltMethod
+	tTVPBBBltMethod met;
+	if(!GetBltMethodFromOperationModeAndDrawFace(met, mode))
+	{
+		// unknown blt mode
+		TVPThrowExceptionMessage(TVPNotDrawableFaceType, TJS_W("operateStretch"));
+	}
+
+	if(!MainImage) TVPThrowExceptionMessage(TVPNotDrawableLayerType);
+	if(!src->MainImage) TVPThrowExceptionMessage(TVPSourceLayerHasNoImage);
+	ImageModified = MainImage->StretchBlt(ClipRect, destrect, src->MainImage, srcrect, met,
+		opacity, hda, type) || ImageModified;
 
 	if(ImageLeft != 0 || ImageTop != 0)
 	{
@@ -4033,6 +4076,68 @@ void tTJSNI_BaseLayer::AffineBlend(const tTVPPoint *points, tTJSNI_BaseLayer *sr
 		break;
 	  }
 	}
+
+	ImageModified = updated || ImageModified;
+
+	if(updated)
+	{
+		updaterect.add_offsets(ImageLeft, ImageTop);
+		Update(updaterect);
+	}
+}
+//---------------------------------------------------------------------------
+void tTJSNI_BaseLayer::OperateAffine(const t2DAffineMatrix &matrix,
+	tTJSNI_BaseLayer *src,
+		const tTVPRect &srcrect, tTVPBlendOperationMode mode, tjs_int opacity,
+		tTVPBBStretchType type, bool hda)
+{
+	// affine operation
+	tTVPRect updaterect;
+	bool updated;
+
+	// convert tTVPBlendOperationMode to tTVPBBBltMethod
+	tTVPBBBltMethod met;
+	if(!GetBltMethodFromOperationModeAndDrawFace(met, mode))
+	{
+		// unknown blt mode
+		TVPThrowExceptionMessage(TVPNotDrawableFaceType, TJS_W("operateAffine"));
+	}
+
+	if(!MainImage) TVPThrowExceptionMessage(TVPNotDrawableLayerType);
+	if(!src->MainImage) TVPThrowExceptionMessage(TVPSourceLayerHasNoImage);
+	updated = MainImage->AffineBlt(ClipRect, src->MainImage, srcrect, matrix,
+		met, opacity, &updaterect, hda, type);
+
+	ImageModified = updated || ImageModified;
+
+	if(updated)
+	{
+		updaterect.add_offsets(ImageLeft, ImageTop);
+		Update(updaterect);
+	}
+
+}
+//---------------------------------------------------------------------------
+void tTJSNI_BaseLayer::OperateAffine(const tTVPPoint *points, tTJSNI_BaseLayer *src,
+		const tTVPRect &srcrect, tTVPBlendOperationMode mode, tjs_int opacity,
+		tTVPBBStretchType type, bool hda)
+{
+	// affine operation
+	tTVPRect updaterect;
+	bool updated;
+
+	// convert tTVPBlendOperationMode to tTVPBBBltMethod
+	tTVPBBBltMethod met;
+	if(!GetBltMethodFromOperationModeAndDrawFace(met, mode))
+	{
+		// unknown blt mode
+		TVPThrowExceptionMessage(TVPNotDrawableFaceType, TJS_W("operateAffine"));
+	}
+
+	if(!MainImage) TVPThrowExceptionMessage(TVPNotDrawableLayerType);
+	if(!src->MainImage) TVPThrowExceptionMessage(TVPSourceLayerHasNoImage);
+	updated = MainImage->AffineBlt(ClipRect, src->MainImage, srcrect, points,
+		met, opacity, &updaterect, hda, type);
 
 	ImageModified = updated || ImageModified;
 

@@ -240,6 +240,9 @@ TVP_MSG_DECL(TVPUnsupportedLayerType,
 TVP_MSG_DECL(TVPNotDrawableFaceType,
 	"%1 ではこの face に描画できません");
 
+TVP_MSG_DECL(TVPNegativeOpacityNotSupportedOnThisFace,
+	"負の不透明度はこの face では指定できません");
+
 TVP_MSG_DECL(TVPSrcRectOutOfBitmap,
 	"転送元がビットマップ外の領域を含んでいます");
 

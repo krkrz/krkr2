@@ -604,7 +604,8 @@ public:
 
 
 private:
-	tTVPBBBltMethod GetBltMethodFromOperationModeAndDrawFace(
+	bool GetBltMethodFromOperationModeAndDrawFace(
+		tTVPBBBltMethod & result,
 		tTVPBlendOperationMode mode);	
 
 public:
@@ -649,6 +650,10 @@ public:
 		const tTVPRect &srcrect, tjs_int opacity = 255,
 			tTVPBBStretchType mode = stNearest, bool hda = true);
 
+	void OperateStretch(const tTVPRect &destrect, tTJSNI_BaseLayer *src,
+		const tTVPRect &srcrect, tTVPBlendOperationMode mode, tjs_int opacity = 255,
+			tTVPBBStretchType mode = stNearest, bool hda = true);
+
 	void AffinePile(const t2DAffineMatrix &matrix, tTJSNI_BaseLayer *src,
 		const tTVPRect &srcrect, tjs_int opacity = 255,
 		tTVPBBStretchType mode = stNearest, bool hda = true);
@@ -663,6 +668,14 @@ public:
 
 	void AffineBlend(const tTVPPoint *points, tTJSNI_BaseLayer *src,
 		const tTVPRect &srcrect, tjs_int opacity = 255,
+		tTVPBBStretchType mode = stNearest, bool hda = true);
+
+	void OperateAffine(const t2DAffineMatrix &matrix, tTJSNI_BaseLayer *src,
+		const tTVPRect &srcrect, tTVPBlendOperationMode mode, tjs_int opacity = 255,
+		tTVPBBStretchType mode = stNearest, bool hda = true);
+
+	void OperateAffine(const tTVPPoint *points, tTJSNI_BaseLayer *src,
+		const tTVPRect &srcrect, tTVPBlendOperationMode mode, tjs_int opacity = 255,
 		tTVPBBStretchType mode = stNearest, bool hda = true);
 
 	void AdjustGamma(const tTVPGLGammaAdjustData & data);
