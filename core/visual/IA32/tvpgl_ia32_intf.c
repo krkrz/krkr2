@@ -79,6 +79,8 @@ if(TVPCPUType & TVP_CPU_HAS_MMX)
 if(TVPCPUType & TVP_CPU_HAS_MMX)
 	 TVPConstColorAlphaBlend_d =  TVPConstColorAlphaBlend_d_mmx_a;
 if(TVPCPUType & TVP_CPU_HAS_MMX)
+	 TVPConstColorAlphaBlend_a =  TVPConstColorAlphaBlend_a_mmx_a;
+if(TVPCPUType & TVP_CPU_HAS_MMX)
 	 TVPApplyColorMap65 =  TVPApplyColorMap65_mmx_a;
 if(TVPCPUType & TVP_CPU_HAS_EMMX && TVPCPUType & TVP_CPU_HAS_MMX)
 	 TVPApplyColorMap65 =  TVPApplyColorMap65_emmx_a;
