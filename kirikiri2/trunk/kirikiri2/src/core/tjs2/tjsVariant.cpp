@@ -876,6 +876,9 @@ void tTJSVariant::operator |= (const tTJSVariant &rhs)
 //---------------------------------------------------------------------------
 void tTJSVariant::increment(void)
 {
+	if(vt == tvtString)
+		String->ToNumber(*this);
+
 	if(vt == tvtReal)
 	{
 		TJSSetFPUE();
@@ -891,6 +894,9 @@ void tTJSVariant::increment(void)
 //---------------------------------------------------------------------------
 void tTJSVariant::decrement(void)
 {
+	if(vt == tvtString)
+		String->ToNumber(*this);
+
 	if(vt == tvtReal)
 	{
 		TJSSetFPUE();
