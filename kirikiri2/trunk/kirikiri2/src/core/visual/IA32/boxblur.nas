@@ -67,7 +67,7 @@ globaldef		TVPDoBoxBlurAvg32_d_emmx_a
 ;;void, TVPDoBoxBlurAvg32_d_mmx_a, (tjs_uint32 *dest, tjs_uint32 *sum, const tjs_uint32 * add, const tjs_uint32 * sub, tjs_int n, tjs_int len)
 %define TVPDoBoxBlurAvg32_d_name TVPDoBoxBlurAvg32_d_mmx_a
 ;--------------------------------------------------------------------
-	%include "blur.nas"
+	%include "boxblur.nas"
 ;--------------------------------------------------------------------
 
 ;--------------------------------------------------------------------
@@ -107,7 +107,7 @@ globaldef		TVPDoBoxBlurAvg32_d_emmx_a
 ;;void, TVPDoBoxBlurAvg32_d_emmx_a, (tjs_uint32 *dest, tjs_uint32 *sum, const tjs_uint32 * add, const tjs_uint32 * sub, tjs_int n, tjs_int len)
 %define TVPDoBoxBlurAvg32_d_name TVPDoBoxBlurAvg32_d_emmx_a
 ;--------------------------------------------------------------------
-	%include "blur.nas"
+	%include "boxblur.nas"
 ;--------------------------------------------------------------------
 
 %define GEN_SSE
