@@ -49,7 +49,6 @@ DShowException& DShowException::operator=(const DShowException& right)
 {
 	m_Hr = right.m_Hr;
 	AMGetErrorText( m_Hr, m_ErrorMes, MAX_ERROR_TEXT_LEN );
-	std::exception::operator=( right );
 	return *this;
 }
 
