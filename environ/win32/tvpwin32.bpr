@@ -158,7 +158,7 @@ Item0=..\..\..\..\bin\win32\
 Item1=..\..\..\..\bin\win32
 
 [Debugging]
-DebugSourceDirs=C:\Program Files\Borland\CBuilder5\Projects\tvp2win32\visual\IA32\;C:\Program Files\Borland\CBuilder5\Projects\comps\o\erinalib\library\common\
+DebugSourceDirs=C:\Program Files\Borland\CBuilder5\Projects\tvp2win32\visual\IA32\;C:\Program Files\Borland\CBuilder5\Projects\comps\o\erinalib\library\common\;C:\Program Files\Borland\CBuilder5\Projects\tvp2win32\kirikiri2\src\core\visual\IA32\
 
 [Parameters]
 RunParams=-logerror=yes -wheel=message ..\..\tests -sel
