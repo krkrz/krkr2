@@ -38,6 +38,8 @@ wu_vorbis_comment * (_cdecl *wu_ov_comment)(wu_OggVorbis_File *vf,int link) = NU
 long  (_cdecl *wu_ov_read_float)(wu_OggVorbis_File *vf,float ***pcm_channels,int samples,			  int *bitstream) = NULL;
 long  (_cdecl *wu_ov_read)(wu_OggVorbis_File *vf,char *buffer,int length,		    int bigendianp,int word,int sgned,int *bitstream) = NULL;
 int  (_cdecl *wu_ov_crosslap)(wu_OggVorbis_File *vf1,wu_OggVorbis_File *vf2) = NULL;
+int  (_cdecl *wu_ov_halfrate)(wu_OggVorbis_File *vf,int flag) = NULL;
+int  (_cdecl *wu_ov_halfrate_p)(wu_OggVorbis_File *vf) = NULL;
 void  (_cdecl *wu_SetCPUType)(unsigned __int32 type) = NULL;
 unsigned __int32  (_cdecl *wu_DetectCPU)(void) = NULL;
 void  (_cdecl *wu_ScaleOutput)(float scale) = NULL;
@@ -135,6 +137,10 @@ int WuVorbisInit(const char *dll_file_name_can_be_null)
 	if(!wu_ov_read) goto fail;
 	*(void**)&wu_ov_crosslap = GetProcAddress(WuVorbisDLL, "wu_ov_crosslap");
 	if(!wu_ov_crosslap) goto fail;
+	*(void**)&wu_ov_halfrate = GetProcAddress(WuVorbisDLL, "wu_ov_halfrate");
+	if(!wu_ov_halfrate) goto fail;
+	*(void**)&wu_ov_halfrate_p = GetProcAddress(WuVorbisDLL, "wu_ov_halfrate_p");
+	if(!wu_ov_halfrate_p) goto fail;
 	*(void**)&wu_SetCPUType = GetProcAddress(WuVorbisDLL, "wu_SetCPUType");
 	if(!wu_SetCPUType) goto fail;
 	*(void**)&wu_DetectCPU = GetProcAddress(WuVorbisDLL, "wu_DetectCPU");
@@ -195,6 +201,8 @@ int WuVorbisUninit(void)
 	wu_ov_read_float = NULL;
 	wu_ov_read = NULL;
 	wu_ov_crosslap = NULL;
+	wu_ov_halfrate = NULL;
+	wu_ov_halfrate_p = NULL;
 	wu_SetCPUType = NULL;
 	wu_DetectCPU = NULL;
 	wu_ScaleOutput = NULL;
