@@ -334,6 +334,7 @@ class AnimationLayer extends KAGLayer
 
 	var Anim_defaultFontInfo = %[];
 
+
 	function AnimationLayer(win, par)
 	{
 		// AnimationLayer コンストラクタ
@@ -488,9 +489,6 @@ class AnimationLayer extends KAGLayer
 			elm = taginfo;
 		}
 
-		// 色補正
-		applyColorCorrection(this, elm);
-
 		// フリップ
 		var ud, lr;
 		if(elm.flipud !== void && +elm.flipud)
@@ -557,6 +555,10 @@ class AnimationLayer extends KAGLayer
 			type = mode;
 		}
 
+		// 色補正
+		face = dfAuto;
+		applyColorCorrection(this, elm);
+
 		// 可視不可視、位置、不透明度、インデックス
 		if ( elm !== void && elm.pos !== void ) {
 			// ポジションに従って位置を決定
@@ -582,6 +584,17 @@ class AnimationLayer extends KAGLayer
 			// アニメーション情報をデフォルトのコンダクタに読み込む
 			loadAnimInfo(0, ''); // ついでにアニメーション開始(もし開始できれば)
 		}
+	}
+
+	function addPartialImageInfo(elm)
+	{
+		// elm を partialImageInfo に追加する
+		// Anim_partialImageInfo に情報を追加
+		if(Anim_partialImageInfo === void)
+			Anim_partialImageInfo = [];
+		var info = %[];
+		(Dictionary.assign incontextof info)(elm);
+		Anim_partialImageInfo.add(info);
 	}
 
 	function loadPartialImage(elm)
@@ -630,10 +643,19 @@ class AnimationLayer extends KAGLayer
 		if(Anim_loadParams !== void)
 		{
 			// 一時レイヤに対して色調補正
-			if(elm.mode === void || elm.mode == 'pile' ||
-				elm.mode == 'copy' || elm.mode == 'opaque' ||
-				elm.mode == 'addalpha' || elm.mode == 'alpha')
+			if(elm.mode === void || elm.mode == 'pile' || elm.mode == 'alpha')
 			{
+				temp.face = dfAlpha;
+				applyColorCorrection(temp, Anim_loadParams);
+			}
+			else if(elm.mode == 'addalpha')
+			{
+				temp.face = dfAddAlpha;
+				applyColorCorrection(temp, Anim_loadParams);
+			}
+			else if(elm.mode == 'copy' || elm.mode == 'opaque')
+			{
+				temp.face = dfOpaque;
 				applyColorCorrection(temp, Anim_loadParams);
 			}
 
@@ -736,11 +758,7 @@ class AnimationLayer extends KAGLayer
 		}
 
 		// Anim_partialImageInfo に情報を追加
-		if(Anim_partialImageInfo === void)
-			Anim_partialImageInfo = [];
-		var info = %[];
-		(Dictionary.assign incontextof info)(elm);
-		Anim_partialImageInfo.add(info);
+		addPartialImageInfo(elm);
 
 		return 0;
 	}
@@ -803,11 +821,7 @@ class AnimationLayer extends KAGLayer
 		}
 
 		// Anim_partialImageInfo に情報を追加
-		if(Anim_partialImageInfo === void)
-			Anim_partialImageInfo = [];
-		var info = %[];
-		(Dictionary.assign incontextof info)(elm);
-		Anim_partialImageInfo.add(info);
+		addPartialImageInfo(elm);
 
 		return 0;
 	}
@@ -824,10 +838,13 @@ class AnimationLayer extends KAGLayer
 		{
 			// 色重ね合わせ
 			var orgface = layer.face;
+			var orgholdlpha = layer.holdAlpha;
 			layer.face = dfOpaque;
+			layer.holdAlpha = true;
 			layer.colorRect(0, 0, layer.imageWidth, layer.imageHeight, +param.mcolor,
 				+param.mopacity);
 			layer.face = orgface;
+			layer.holdAlpha = orgholdlpha;
 		}
 	}
 
@@ -1016,10 +1033,11 @@ class AnimationLayer extends KAGLayer
 			{
 				var o = src[i];
 				var tagname = o.tagname;
-				if(tagname == "pimage")
-					loadPartialImage(o);
-				else if(tagname == "ptext")
-					drawReconstructibleText(o);
+				dm(tagname);
+				var handler = global.AnimationLayer.Anim_reconstructHandlers[tagname];
+				dm(handler);
+				if(handler !== void)
+					(handler incontextof this)(o);
 			}
 		}
 		else
@@ -1160,6 +1178,16 @@ class AnimationLayer extends KAGLayer
 
 
 }
+
+
+// pimage, ptext タグのように、栞の読み込み時に再構築
+// 可能な情報を復元する際に用いるハンドラ
+// (タグ名と、それに対応するハンドラを記述する)
+AnimationLayer.Anim_reconstructHandlers =
+	%[
+		pimage	:	AnimationLayer.loadPartialImage,
+		ptext	:	AnimationLayer.drawReconstructibleText
+	];
 
 
 class ClickGlyphLayer extends AnimationLayer
