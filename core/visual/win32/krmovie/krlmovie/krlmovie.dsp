@@ -138,6 +138,10 @@ SOURCE=.\krlmovie.def
 # End Source File
 # Begin Source File
 
+SOURCE=.\krlmovie.rc
+# End Source File
+# Begin Source File
+
 SOURCE=..\..\..\..\..\plugins\win32\tp_stub.cpp
 # End Source File
 # End Group
