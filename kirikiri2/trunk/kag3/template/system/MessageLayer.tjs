@@ -1481,7 +1481,7 @@ class MessageLayer extends KAGLayer
 
 	function createSoundExpression(exp, storage, buf)
 	{
-		// サウンドを慣らすための式を作成する
+		// サウンドを鳴らすための式を作成する
 		// exp になにか式があった場合はカンマでつなぐ
 		// この仕様は後で変更するかも
 		if(storage === void) return exp;

@@ -1983,7 +1983,7 @@ class KAGWindow extends Window
 		{
 			// 栞の見出しがないので
 			if(lastSaveDataName == "")
-				orgname = System.title; // System.title を変わりに使う
+				orgname = System.title; // System.title を代わりに使う
 			else
 				initialname = lastSaveDataName, through = true;
 		}
@@ -2381,7 +2381,7 @@ class KAGWindow extends Window
 		// コンダクタが新しいシナリオファイルを読み込む前によばれる。
 		// name は読み込もうとしたシナリオファイル。
 		// 戻り値に文字列を返すと、それをシナリオとして
-		// ファイルの変わりに使うようになるので、ここにフィルタを書くこ
+		// ファイルの代わりに使うようになるので、ここにフィルタを書くこ
 		// とができる。
 		// true を返すと通常のシナリオファイル読み込みとなる。
 		return true;
@@ -3723,7 +3723,7 @@ class KAGWindow extends Window
 
 		if(key == #'A')
 		{
-			// 自動的に読み勧める
+			// 自動的に読み進める
 			switchAutoModeByKey();
 			return;
 		}
