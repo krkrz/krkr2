@@ -242,8 +242,10 @@ TVP_GL_FUNC_PTR_EXTERN_DECL(void, TVPLinTransAlphaBlend_a,  (tjs_uint32 *dest, t
 TVP_GL_FUNC_PTR_EXTERN_DECL(void, TVPLinTransAlphaBlend_do,  (tjs_uint32 *dest, tjs_int len, const tjs_uint32 *src, tjs_int sx, tjs_int sy, tjs_int stepx, tjs_int stepy, tjs_int srcpitch, tjs_int opa));
 TVP_GL_FUNC_PTR_EXTERN_DECL(void, TVPLinTransAlphaBlend_ao,  (tjs_uint32 *dest, tjs_int len, const tjs_uint32 *src, tjs_int sx, tjs_int sy, tjs_int stepx, tjs_int stepy, tjs_int srcpitch, tjs_int opa));
 TVP_GL_FUNC_PTR_EXTERN_DECL(void, TVPLinTransAdditiveAlphaBlend,  (tjs_uint32 *dest, tjs_int len, const tjs_uint32 *src, tjs_int sx, tjs_int sy, tjs_int stepx, tjs_int stepy, tjs_int srcpitch));
+TVP_GL_FUNC_PTR_EXTERN_DECL(void, TVPInterpLinTransAdditiveAlphaBlend,  (tjs_uint32 *dest, tjs_int destlen, const tjs_uint32 *src, tjs_int sx, tjs_int sy, tjs_int stepx, tjs_int stepy, tjs_int srcpitch));
 TVP_GL_FUNC_PTR_EXTERN_DECL(void, TVPLinTransAdditiveAlphaBlend_HDA,  (tjs_uint32 *dest, tjs_int len, const tjs_uint32 *src, tjs_int sx, tjs_int sy, tjs_int stepx, tjs_int stepy, tjs_int srcpitch));
 TVP_GL_FUNC_PTR_EXTERN_DECL(void, TVPLinTransAdditiveAlphaBlend_o,  (tjs_uint32 *dest, tjs_int len, const tjs_uint32 *src, tjs_int sx, tjs_int sy, tjs_int stepx, tjs_int stepy, tjs_int srcpitch, tjs_int opa));
+TVP_GL_FUNC_PTR_EXTERN_DECL(void, TVPInterpLinTransAdditiveAlphaBlend_o,  (tjs_uint32 *dest, tjs_int destlen, const tjs_uint32 *src, tjs_int sx, tjs_int sy, tjs_int stepx, tjs_int stepy, tjs_int srcpitch, tjs_int opa));
 TVP_GL_FUNC_PTR_EXTERN_DECL(void, TVPLinTransAdditiveAlphaBlend_HDA_o,  (tjs_uint32 *dest, tjs_int len, const tjs_uint32 *src, tjs_int sx, tjs_int sy, tjs_int stepx, tjs_int stepy, tjs_int srcpitch, tjs_int opa));
 TVP_GL_FUNC_PTR_EXTERN_DECL(void, TVPLinTransAdditiveAlphaBlend_a,  (tjs_uint32 *dest, tjs_int len, const tjs_uint32 *src, tjs_int sx, tjs_int sy, tjs_int stepx, tjs_int stepy, tjs_int srcpitch));
 TVP_GL_FUNC_PTR_EXTERN_DECL(void, TVPLinTransAdditiveAlphaBlend_ao,  (tjs_uint32 *dest, tjs_int len, const tjs_uint32 *src, tjs_int sx, tjs_int sy, tjs_int stepx, tjs_int stepy, tjs_int srcpitch, tjs_int opa));
@@ -260,6 +262,7 @@ TVP_GL_FUNC_PTR_EXTERN_DECL(void, TVPStretchConstAlphaBlend_d,  (tjs_uint32 *des
 TVP_GL_FUNC_PTR_EXTERN_DECL(void, TVPStretchConstAlphaBlend_a,  (tjs_uint32 *dest, tjs_int len, const tjs_uint32 *src, tjs_int srcstart, tjs_int srcstep, tjs_int opa));
 TVP_GL_FUNC_PTR_EXTERN_DECL(void, TVPLinTransCopyOpaqueImage,  (tjs_uint32 *dest, tjs_int destlen, const tjs_uint32 *src, tjs_int sx, tjs_int sy, tjs_int stepx, tjs_int stepy, tjs_int srcpitch));
 TVP_GL_FUNC_PTR_EXTERN_DECL(void, TVPLinTransConstAlphaBlend,  (tjs_uint32 *dest, tjs_int len, const tjs_uint32 *src, tjs_int sx, tjs_int sy, tjs_int stepx, tjs_int stepy, tjs_int srcpitch, tjs_int opa));
+TVP_GL_FUNC_PTR_EXTERN_DECL(void, TVPInterpLinTransConstAlphaBlend,  (tjs_uint32 *dest, tjs_int destlen, const tjs_uint32 *src, tjs_int sx, tjs_int sy, tjs_int stepx, tjs_int stepy, tjs_int srcpitch, tjs_int opa));
 TVP_GL_FUNC_PTR_EXTERN_DECL(void, TVPLinTransConstAlphaBlend_HDA,  (tjs_uint32 *dest, tjs_int len, const tjs_uint32 *src, tjs_int sx, tjs_int sy, tjs_int stepx, tjs_int stepy, tjs_int srcpitch, tjs_int opa));
 TVP_GL_FUNC_PTR_EXTERN_DECL(void, TVPLinTransConstAlphaBlend_d,  (tjs_uint32 *dest, tjs_int len, const tjs_uint32 *src, tjs_int sx, tjs_int sy, tjs_int stepx, tjs_int stepy, tjs_int srcpitch, tjs_int opa));
 TVP_GL_FUNC_PTR_EXTERN_DECL(void, TVPLinTransConstAlphaBlend_a,  (tjs_uint32 *dest, tjs_int len, const tjs_uint32 *src, tjs_int sx, tjs_int sy, tjs_int stepx, tjs_int stepy, tjs_int srcpitch, tjs_int opa));
