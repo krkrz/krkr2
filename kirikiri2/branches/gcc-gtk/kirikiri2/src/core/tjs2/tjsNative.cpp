@@ -9,7 +9,9 @@
 // Support for C++ native class/method/property definitions
 //---------------------------------------------------------------------------
 #include "tjsCommHead.h"
+#ifdef __BORLANDC__
 #pragma hdrstop
+#endif
 
 
 #include "tjsNative.h"

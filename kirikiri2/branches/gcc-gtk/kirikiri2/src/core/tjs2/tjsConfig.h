@@ -73,7 +73,7 @@ TJS_EXP_FUNC_DEF(size_t, TJS_strlen, (const tjs_char *d));
 
 #if defined(__GNUC__)
 	#define TJS_cdecl
-	#define TJS_vsnprintf		vsnwprintf
+	#define TJS_vsnprintf		vswprintf
 	extern tjs_int TJS_sprintf(tjs_char *s, const tjs_char *format, ...);
 	#define TJS_timezone timezone
 	#define TJS_rand rand

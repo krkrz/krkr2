@@ -9,7 +9,9 @@
 // Name Space Processing
 //---------------------------------------------------------------------------
 #include "tjsCommHead.h"
+#ifdef __BORLANDC__
 #pragma hdrstop
+#endif
 
 #include "tjsInterface.h"
 #include "tjsNamespace.h"

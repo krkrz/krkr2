@@ -9,7 +9,9 @@
 // message management
 //---------------------------------------------------------------------------
 #include "tjsCommHead.h"
+#ifdef __BORLANDC__
 #pragma hdrstop
+#endif
 
 #include "tjsMessage.h"
 #include "tjsHashSearch.h"
