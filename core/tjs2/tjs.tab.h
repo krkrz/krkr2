@@ -147,18 +147,19 @@ namespace TJS {
      T_SYMBOL = 372,
      T_POSTDECREMENT = 373,
      T_POSTINCREMENT = 374,
-     T_SUBSTANCE = 375,
-     T_ARG = 376,
-     T_EXPANDARG = 377,
-     T_INLINEARRAY = 378,
-     T_ARRAYARG = 379,
-     T_INLINEDIC = 380,
-     T_DICELM = 381,
-     T_REGEXP = 382,
-     T_WITHDOT = 383,
-     T_THIS_PROXY = 384,
-     T_WITHDOT_PROXY = 385,
-     T_CONSTVAL = 386
+     T_IGNOREPROP = 375,
+     T_PROPACCESS = 376,
+     T_ARG = 377,
+     T_EXPANDARG = 378,
+     T_INLINEARRAY = 379,
+     T_ARRAYARG = 380,
+     T_INLINEDIC = 381,
+     T_DICELM = 382,
+     T_REGEXP = 383,
+     T_WITHDOT = 384,
+     T_THIS_PROXY = 385,
+     T_WITHDOT_PROXY = 386,
+     T_CONSTVAL = 387
    };
 #endif
 #define T_COMMA 258
@@ -278,18 +279,19 @@ namespace TJS {
 #define T_SYMBOL 372
 #define T_POSTDECREMENT 373
 #define T_POSTINCREMENT 374
-#define T_SUBSTANCE 375
-#define T_ARG 376
-#define T_EXPANDARG 377
-#define T_INLINEARRAY 378
-#define T_ARRAYARG 379
-#define T_INLINEDIC 380
-#define T_DICELM 381
-#define T_REGEXP 382
-#define T_WITHDOT 383
-#define T_THIS_PROXY 384
-#define T_WITHDOT_PROXY 385
-#define T_CONSTVAL 386
+#define T_IGNOREPROP 375
+#define T_PROPACCESS 376
+#define T_ARG 377
+#define T_EXPANDARG 378
+#define T_INLINEARRAY 379
+#define T_ARRAYARG 380
+#define T_INLINEDIC 381
+#define T_DICELM 382
+#define T_REGEXP 383
+#define T_WITHDOT 384
+#define T_THIS_PROXY 385
+#define T_WITHDOT_PROXY 386
+#define T_CONSTVAL 387
 
 
 
@@ -301,7 +303,7 @@ typedef union YYSTYPE {
 	tTJSExprNode *		np;
 } YYSTYPE;
 /* Line 1252 of yacc.c.  */
-#line 304 "tjs.tab.h"
+#line 306 "tjs.tab.h"
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */
 # define YYSTYPE_IS_DECLARED 1
 # define YYSTYPE_IS_TRIVIAL 1

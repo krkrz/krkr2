@@ -38,7 +38,7 @@ namespace TJS
 //---------------------------------------------------------------------------
 extern int _yyerror(const tjs_char * msg, void *pm, tjs_int pos = -1);
 //---------------------------------------------------------------------------
-#define TJS_NORMAL_AND_PROPERTY_ACCESSER(x) x, x##PD, x##PI
+#define TJS_NORMAL_AND_PROPERTY_ACCESSER(x) x, x##PD, x##PI, x##P
 
 enum tTJSVMCodes{
 
@@ -67,7 +67,7 @@ enum tTJSVMCodes{
 	VM_INT, VM_REAL, VM_STR, VM_OCTET,
 	VM_CALL, VM_CALLD, VM_CALLI, VM_NEW,
 	VM_GPD, VM_SPD, VM_SPDE, VM_SPDEH, VM_GPI, VM_SPI, VM_SPIE,
-	VM_GPDS, VM_SPDS, VM_GPIS, VM_SPIS,  
+	VM_GPDS, VM_SPDS, VM_GPIS, VM_SPIS,  VM_SETP, VM_GETP,
 	VM_DELD, VM_DELI, VM_SRV, VM_RET, VM_ENTRY, VM_EXTRY, VM_THROW,
 	VM_CHGTHIS, VM_GLOBAL, VM_ADDCI, VM_REGMEMBER, VM_DEBUGGER,
 
@@ -82,7 +82,7 @@ enum tTJSSubType{ stNone=VM_NOP, stEqual=VM_CP, stBitAND=VM_BAND, stBitOR=VM_BOR
 	stSR=VM_SR,
 
 	stPreInc = __VM_LAST, stPreDec, stPostInc, stPostDec, stDelete, stFuncCall,
-		stSubstGet, stSubstSet, stTypeOf} ;
+		stIgnorePropGet, stIgnorePropSet, stTypeOf} ;
 //---------------------------------------------------------------------------
 enum tTJSFuncArgType { fatNormal, fatExpand, fatUnnamedExpand };
 //---------------------------------------------------------------------------
@@ -495,6 +495,8 @@ private:
 		tjs_uint32 flags);
 	void SetPropertyDirect(tTJSVariant *ra, const tjs_int32 *code,
 		tjs_uint32 flags);
+	static void GetProperty(tTJSVariant *ra, const tjs_int32 *code);
+	static void SetProperty(tTJSVariant *ra, const tjs_int32 *code);
 	static void GetPropertyIndirect(tTJSVariant *ra, const tjs_int32 *code,
 		tjs_uint32 flags);
 	static void SetPropertyIndirect(tTJSVariant *ra, const tjs_int32 *code,
@@ -503,10 +505,12 @@ private:
 		tjs_uint32 ope);
 	static void OperatePropertyIndirect(tTJSVariant *ra, const tjs_int32 *code,
 		tjs_uint32 ope);
+	static void OperateProperty(tTJSVariant *ra, const tjs_int32 *code, tjs_uint32 ope);
 	void OperatePropertyDirect0(tTJSVariant *ra, const tjs_int32 *code,
 		tjs_uint32 ope);
 	static void OperatePropertyIndirect0(tTJSVariant *ra, const tjs_int32 *code,
 		tjs_uint32 ope);
+	static void OperateProperty0(tTJSVariant *ra, const tjs_int32 *code, tjs_uint32 ope);
 	void DeleteMemberDirect(tTJSVariant *ra, const tjs_int32 *code);
 	static void DeleteMemberIndirect(tTJSVariant *ra, const tjs_int32 *code);
 	void TypeOfMemberDirect(tTJSVariant *ra, const tjs_int32 *code,

@@ -1728,7 +1728,7 @@ tjs_int tTJSInterCodeContext::GenNodeCode(tjs_int & frame, tTJSExprNode *node,
 		switch(param.SubType)
 		{
 		case stNone:
-		case stSubstGet:
+		case stIgnorePropGet:
 			if(param.SubType == stNone)
 				PutCode(direct ? VM_GPD : VM_GPI, node_pos);
 			else
@@ -1740,7 +1740,7 @@ tjs_int tTJSInterCodeContext::GenNodeCode(tjs_int & frame, tTJSExprNode *node,
 			return frame-1;
 
 		case stEqual:
-		case stSubstSet:
+		case stIgnorePropSet:
 			if(param.SubType == stEqual)
 			{
 				if((*node)[0]->GetOpecode() == T_THIS_PROXY)
@@ -1999,6 +1999,95 @@ tjs_int tTJSInterCodeContext::GenNodeCode(tjs_int & frame, tTJSExprNode *node,
 		}
 	  }
 
+	case T_IGNOREPROP: // unary '&' operator
+	case T_PROPACCESS: // unary '*' operator
+		if(node->GetOpecode() ==
+			(TJSUnaryAsteriskIgnoresPropAccess?T_PROPACCESS:T_IGNOREPROP))
+		{
+			// unary '&' operator
+			// substance accessing (ignores property operation)
+		  	tSubParam sp = param;
+			if(sp.SubType == stNone) sp.SubType = stIgnorePropGet;
+			else if(sp.SubType == stEqual) sp.SubType = stIgnorePropSet;
+			else _yyerror(TJSCannotModifyLHS, Block);
+			return _GenNodeCode(frame, (*node)[0], restype, reqresaddr, sp);
+		}
+		else
+		{
+			// unary '*' operator
+			// force property access
+			resaddr = _GenNodeCode(frame, (*node)[0], TJS_RT_NEEDED, 0, tSubParam());
+			switch(param.SubType)
+			{
+			case stNone: // read from property object
+				PutCode(VM_GETP, node_pos);
+				PutCode(TJS_TO_VM_REG_ADDR(frame), node_pos);
+				PutCode(TJS_TO_VM_REG_ADDR(resaddr), node_pos);
+				frame ++;
+				return frame - 1;
+
+			case stEqual: // write to property object
+				PutCode(VM_SETP, node_pos);
+				PutCode(TJS_TO_VM_REG_ADDR(resaddr), node_pos);
+				PutCode(TJS_TO_VM_REG_ADDR(param.SubAddress), node_pos);
+				return param.SubAddress;
+
+			case stBitAND:
+			case stBitOR:
+			case stBitXOR:
+			case stSub:
+			case stAdd:
+			case stMod:
+			case stDiv:
+			case stIDiv:
+			case stMul:
+			case stLogOR:
+			case stLogAND:
+			case stSAR:
+			case stSAL:
+			case stSR:
+				PutCode((tjs_int32)param.SubType + 3, node_pos);
+					// +3 : property access
+					// ( see the ope-code's positioning order )
+				PutCode(TJS_TO_VM_REG_ADDR((restype & TJS_RT_NEEDED) ? frame: 0), node_pos);
+				PutCode(TJS_TO_VM_REG_ADDR(resaddr), node_pos);
+				PutCode(TJS_TO_VM_REG_ADDR(param.SubAddress), node_pos);
+				if(restype & TJS_RT_NEEDED) frame++;
+				return (restype & TJS_RT_NEEDED)?frame-1:0;
+
+			case stPreInc:
+			case stPreDec:
+				PutCode((param.SubType == stPreInc ? VM_INC : VM_DEC) + 3, node_pos);
+				PutCode(TJS_TO_VM_REG_ADDR((restype & TJS_RT_NEEDED) ? frame: 0), node_pos);
+				PutCode(TJS_TO_VM_REG_ADDR(resaddr), node_pos);
+				if((restype & TJS_RT_NEEDED)) frame++;
+				return (restype & TJS_RT_NEEDED)?frame-1:0;
+
+			case stPostInc:
+			case stPostDec:
+			  {
+				tjs_int retresaddr = 0;
+				if(restype & TJS_RT_NEEDED)
+				{
+					// need result ...
+					PutCode(VM_GETP, node_pos);
+					PutCode(TJS_TO_VM_REG_ADDR(frame), node_pos);
+					PutCode(TJS_TO_VM_REG_ADDR(resaddr), node_pos);
+					retresaddr = frame;
+					frame++;
+				}
+				PutCode((param.SubType == stPostInc ? VM_INC : VM_DEC) + 3, node_pos);
+				PutCode(TJS_TO_VM_REG_ADDR(0), node_pos);
+				PutCode(TJS_TO_VM_REG_ADDR(resaddr), node_pos);
+				return retresaddr;
+			  }
+
+			default:
+				_yyerror(TJSCannotModifyLHS, Block);
+				return 0;
+			}
+		}
+
 
 	case T_SUPER: // 'super'
 	  {
@@ -2096,17 +2185,6 @@ tjs_int tTJSInterCodeContext::GenNodeCode(tjs_int & frame, tTJSExprNode *node,
 		PutCode(TJS_TO_VM_REG_ADDR(frame), node_pos);
 		frame++;
 		return frame-1;
-	  }
-
-	case T_SUBSTANCE:
-	  {
-		// substance accessing
-	  	tSubParam sp = param;
-		if(sp.SubType == stNone) sp.SubType = stSubstGet;
-		else if(sp.SubType == stEqual) sp.SubType = stSubstSet;
-		else _yyerror(TJSCannotModifyLHS, Block);
-		return _GenNodeCode(frame, (*node)[0], restype, reqresaddr, sp);
-
 	  }
 
 	case T_INLINEARRAY:
