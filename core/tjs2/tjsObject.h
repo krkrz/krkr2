@@ -193,7 +193,7 @@ public:
 	}
 
 	tjs_error TJS_INTF_METHOD
-	Reserved2()
+	EnumMembers(tjs_uint32 flag, tTJSVariantClosure *callback, iTJSDispatch2 *objthis)
 	{
 		return TJS_E_NOTIMPL;
 	}
@@ -367,23 +367,13 @@ extern tjs_int TJSObjectHashBitsLimit;
 #define TJS_SYMBOL_USING	0x1
 #define TJS_SYMBOL_INIT     0x2
 #define TJS_SYMBOL_HIDDEN   0x8
+#define TJS_SYMBOL_STATIC	0x10
 
 #define TJS_MAX_NATIVE_CLASS 4
 /*
 	Number of "Native Class Instance" that can be used per a TJS Object is
 	limited as the number above.
 */
-
-
-class tTJSEnumMemberCallbackIntf
-{
-public:
-	virtual bool EnumMemberCallback(tTJSVariantString *name,
-		const tTJSVariant & value) = 0;
-	// called per each members.
-	// if the function returns false, enumeration is to be interrupted.
-	// to continue the enumeration, the function must return true.
-};
 
 
 class tTJSCustomObject : public tTJSDispatch
@@ -546,9 +536,14 @@ private:
 	tTJSSymbolData * Find(const tjs_char * name, tjs_uint32 *hint) ;
 		// Finds Name, returns its data; if not found, returns NULL
 
+	static bool CallEnumCallbackForData(tjs_uint32 flags,
+		tTJSVariant ** params,
+		tTJSVariantClosure & callback, iTJSDispatch2 * objthis,
+		const tTJSSymbolData * data);
+	void InternalEnumMembers(tjs_uint32 flags, tTJSVariantClosure *callback,
+		iTJSDispatch2 *objthis);
 	//---------------------------------------------------------------------
 public:
-	void EnumMembers(tTJSEnumMemberCallbackIntf * intf);
 	void Clear() { DeleteAllMembers(); }
 
 	//---------------------------------------------------------------------
@@ -580,6 +575,9 @@ public:
 	tjs_error TJS_INTF_METHOD
 	PropSetByVS(tjs_uint32 flag, tTJSVariantString *membername,
 		const tTJSVariant *param, iTJSDispatch2 *objthis);
+
+	tjs_error TJS_INTF_METHOD
+	EnumMembers(tjs_uint32 flag, tTJSVariantClosure *callback, iTJSDispatch2 *objthis);
 
 	tjs_error TJS_INTF_METHOD
 	DeleteMember(tjs_uint32 flag, const tjs_char *membername, tjs_uint32 *hint,

@@ -902,18 +902,8 @@ void tTJSArrayNI::Assign(iTJSDispatch2 * dsp)
 	// copy members from "dsp" to "Owner"
 
 	// determin dsp's object type
-	tTJSDictionaryNI *dicni = NULL;
 	tTJSArrayNI *arrayni = NULL;
 	if(TJS_SUCCEEDED(dsp->NativeInstanceSupport(TJS_NIS_GETINSTANCE,
-		TJSGetDictionaryClassID(), (iTJSNativeInstance**)&dicni)) )
-	{
-		// convert from dictionary
-		Items.clear();
-
-		((tTJSCustomObject*)dsp)->EnumMembers((tTJSEnumMemberCallbackIntf*)this);
-
-	}
-	else if(TJS_SUCCEEDED(dsp->NativeInstanceSupport(TJS_NIS_GETINSTANCE,
 		ClassID_Array, (iTJSNativeInstance**)&arrayni)) )
 	{
 		// copy from array
@@ -923,19 +913,40 @@ void tTJSArrayNI::Assign(iTJSDispatch2 * dsp)
 	}
 	else
 	{
-		TJS_eTJSError(TJSSpecifyDicOrArray);
+		// convert from dictionary or others
+		Items.clear();
+		tDictionaryEnumCallback callback;
+		callback.Items = &Items;
+
+		dsp->EnumMembers(TJS_IGNOREPROP, &tTJSVariantClosure(&callback, NULL), dsp);
+
 	}
 }
 //---------------------------------------------------------------------------
-bool tTJSArrayNI::EnumMemberCallback(tTJSVariantString *name,
-	const tTJSVariant & value)
+tjs_error TJS_INTF_METHOD tTJSArrayNI::tDictionaryEnumCallback::FuncCall(
+	tjs_uint32 flag, const tjs_char * membername, tjs_uint32 *hint,
+	tTJSVariant *result, tjs_int numparams, tTJSVariant **param,
+	iTJSDispatch2 *objthis)
 {
 	// called from tTJSCustomObject::EnumMembers
 
-	Items.push_back(ttstr(name));
-	Items.push_back(value);
+	if(numparams < 3) return TJS_E_BADPARAMCOUNT;
 
-	return true;
+	// hidden members are not processed
+	tjs_uint32 flags = (tjs_int)*param[1];
+	if(flags & TJS_HIDDENMEMBER)
+	{
+		if(result) *result = (tjs_int)1;
+		return TJS_S_OK;
+	}
+
+	// push items
+
+	Items->push_back(*param[0]);
+	Items->push_back(*param[2]);
+
+	if(result) *result = (tjs_int)1;
+	return TJS_S_OK;
 }
 //---------------------------------------------------------------------------
 void tTJSArrayNI::SaveStructuredData(std::vector<iTJSDispatch2 *> &stack,

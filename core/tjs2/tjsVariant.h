@@ -299,8 +299,14 @@ public:
 			ObjThis?ObjThis:(objthis?objthis:Object));
 	}
 
-//	HRESUT
-//	Reserved2()
+	tjs_error
+	EnumMembers(tjs_uint32 flag, tTJSVariantClosure *callback,
+		iTJSDispatch2 *objthis) const
+	{
+		if(!Object) TJSThrowNullAccess();
+		return Object->EnumMembers(flag, callback,
+			ObjThis?ObjThis:(objthis?objthis:Object));
+	}
 
 	tjs_error
 	DeleteMember(tjs_uint32 flag, const tjs_char *membername, tjs_uint32 *hint,

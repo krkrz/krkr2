@@ -361,7 +361,10 @@ public:
 	}
 
 	tjs_error TJS_INTF_METHOD
-	Reserved2() {return TJS_E_NOTIMPL;} // reserved
+	EnumMembers(tjs_uint32 flag, tTJSVariantClosure *callback, iTJSDispatch2 *objthis)
+	{
+		return TJS_E_NOTIMPL;
+	}
 
 	tjs_error TJS_INTF_METHOD
 	DeleteMember(tjs_uint32 flag, const tjs_char *membername, tjs_uint32 *hint,
