@@ -4,8 +4,6 @@
 
 ; Color adjustment routines (like gamma adjustment)
 
-%ifndef			GEN_CODE
-
 %include		"nasm.nah"
 
 
@@ -158,4 +156,3 @@ proc_start	TVPAdjustGamma_a_mmx_a
 	emms
 proc_end
 
-%endif
