@@ -252,6 +252,12 @@ TVP_MSG_DECL(TVPNegativeOpacityNotSupportedOnThisFace,
 TVP_MSG_DECL(TVPSrcRectOutOfBitmap,
 	"転送元がビットマップ外の領域を含んでいます。正しい範囲に収まるように転送元を指定してください");
 
+TVP_MSG_DECL(TVPBoxBlurAreaMustContainCenterPixel,
+	"矩形ブラーの範囲は必ず(0,0)をその中に含む必要があります。leftとrightが両方とも正の数値、あるいは両方とも負の数値という指定はできません(topとbottomに対しても同様)");
+
+TVP_MSG_DECL(TVPBoxBlurAreaMustBeSmallerThan16Million,
+	"矩形ブラーの範囲が大きすぎます。矩形ブラーの範囲は1677万以下である必要があります");
+
 TVP_MSG_DECL(TVPCannotChangeFocusInProcessingFocus,
 	"フォーカス変更処理中はフォーカスを新たに変更することはできません");
 
