@@ -1187,8 +1187,8 @@ tjs_int tTJSInterCodeContext::ExecuteCode(tTJSVariant *ra_org, tjs_int startip,
 
 			case VM_CHKINV:
 				TJS_GET_VM_REG(ra, code[1]) =
-					(TJS_GET_VM_REG(ra, code[1]).AsObjectClosureNoAddRef().IsValid(0,
-					NULL, NULL, ra[-1].AsObjectNoAddRef()) == TJS_S_TRUE);
+					TJSIsObjectValid(TJS_GET_VM_REG(ra, code[1]).AsObjectClosureNoAddRef().IsValid(0,
+					NULL, NULL, ra[-1].AsObjectNoAddRef()));
 				code += 2;
 				break;
 
@@ -2692,7 +2692,8 @@ tjs_error TJS_INTF_METHOD  tTJSInterCodeContext::FuncCall(
 			tTJSVariant *result,
 		tjs_int numparams, tTJSVariant **param, iTJSDispatch2 *objthis)
 {
-	if(!GetValidity()) return TJS_E_INVALIDOBJECT;
+	if(!GetValidity())
+		return TJS_E_INVALIDOBJECT;
 
 	if(membername == NULL)
 	{
@@ -2738,7 +2739,8 @@ tjs_error TJS_INTF_METHOD  tTJSInterCodeContext::PropGet(tjs_uint32 flag,
 	const tjs_char * membername, tjs_uint32 *hint, tTJSVariant *result,
 		iTJSDispatch2 *objthis)
 {
-	if(!GetValidity()) return TJS_E_INVALIDOBJECT;
+	if(!GetValidity())
+		return TJS_E_INVALIDOBJECT;
 
 	if(membername == NULL)
 	{
@@ -2771,7 +2773,8 @@ tjs_error TJS_INTF_METHOD  tTJSInterCodeContext::PropSet(tjs_uint32 flag,
 	const tjs_char *membername, tjs_uint32 *hint,
 		const tTJSVariant *param, iTJSDispatch2 *objthis)
 {
-	if(!GetValidity()) return TJS_E_INVALIDOBJECT;
+	if(!GetValidity())
+		return TJS_E_INVALIDOBJECT;
 
 	if(membername == NULL)
 	{
@@ -2826,7 +2829,8 @@ tjs_error TJS_INTF_METHOD  tTJSInterCodeContext::CreateNew(tjs_uint32 flag,
 	iTJSDispatch2 **result, tjs_int numparams,
 	tTJSVariant **param, iTJSDispatch2 *objthis)
 {
-	if(!GetValidity()) return TJS_E_INVALIDOBJECT;
+	if(!GetValidity())
+		return TJS_E_INVALIDOBJECT;
 
 	if(membername == NULL)
 	{
@@ -2869,7 +2873,8 @@ tjs_error TJS_INTF_METHOD  tTJSInterCodeContext::IsInstanceOf(tjs_uint32 flag,
 	const tjs_char *membername, tjs_uint32 *hint, const tjs_char *classname,
 		iTJSDispatch2 *objthis)
 {
-	if(!GetValidity()) return TJS_E_INVALIDOBJECT;
+	if(!GetValidity())
+		return TJS_E_INVALIDOBJECT;
 
 	if(membername == NULL)
 	{

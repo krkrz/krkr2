@@ -11,6 +11,10 @@
 
 #ifndef tjsErrorDefsH
 #define tjsErrorDefsH
+
+namespace TJS
+{
+
 /*[*/
 //---------------------------------------------------------------------------
 // return values as tjs_error
@@ -33,9 +37,18 @@
 #define TJS_FAILED(x)				((x)<0)
 #define TJS_SUCCEEDED(x)			((x)>=0)
 
+inline bool TJSIsObjectValid(tjs_error hr)
+{
+	// checks object validity by returning value of iTJSDispatch2::IsValid
 
+	if(hr == TJS_S_TRUE) return true;  // mostly expected value for valid object
+	if(hr == TJS_E_NOTIMPL) return true; // also valid for object which does not implement IsValid
 
+	return false; // otherwise the object is not valid
+}
 
 /*]*/
+
+} // namespace TJS
 
 #endif

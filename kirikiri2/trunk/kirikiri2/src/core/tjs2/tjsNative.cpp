@@ -79,7 +79,7 @@ tjs_error TJS_INTF_METHOD
 	if(membername) return tTJSDispatch::FuncCall(flag, membername, hint,
 		result, numparams, param, objthis);
 	if(!objthis) return TJS_E_NATIVECLASSCRASH;
-	if(objthis->IsValid(0, NULL, NULL, objthis) != TJS_S_TRUE)
+	if(!TJSIsObjectValid(objthis->IsValid(0, NULL, NULL, objthis)))
 		return TJS_E_INVALIDOBJECT;
 	if(result) result->Clear();
 	tjs_error er;
@@ -147,7 +147,7 @@ tTJSNativeClassProperty::PropGet(tjs_uint32 flag, const tjs_char * membername,
 	if(membername) return tTJSDispatch::PropGet(flag, membername, hint,
 		result, objthis);
 	if(!objthis) return TJS_E_NATIVECLASSCRASH;
-	if(objthis->IsValid(0, NULL, NULL, objthis) != TJS_S_TRUE)
+	if(!TJSIsObjectValid(objthis->IsValid(0, NULL, NULL, objthis)))
 		return TJS_E_INVALIDOBJECT;
 	if(!result) return TJS_E_FAIL;
 // 	AddRef();
@@ -175,7 +175,7 @@ tTJSNativeClassProperty::PropSet(tjs_uint32 flag, const tjs_char *membername,
 	if(membername) return tTJSDispatch::PropSet(flag, membername, hint,
 		param, objthis);
 	if(!objthis) return TJS_E_NATIVECLASSCRASH;
-	if(objthis->IsValid(0, NULL, NULL, objthis) != TJS_S_TRUE)
+	if(!TJSIsObjectValid(objthis->IsValid(0, NULL, NULL, objthis)))
 		return TJS_E_INVALIDOBJECT;
 	if(!param) return TJS_E_FAIL;
 //	AddRef();
@@ -202,7 +202,7 @@ tjs_error tTJSNativeClassProperty::DenyGet(tjs_uint32 flag,
 {
 	if(membername) return tTJSDispatch::PropGet(flag, membername, hint,
 		result, objthis);
-	if(objthis->IsValid(0, NULL, NULL, objthis) != TJS_S_TRUE)
+	if(!TJSIsObjectValid(objthis->IsValid(0, NULL, NULL, objthis)))
 		return TJS_E_INVALIDOBJECT;
 	return TJS_E_ACCESSDENYED;
 }
@@ -213,7 +213,7 @@ tjs_error tTJSNativeClassProperty::DenySet(tjs_uint32 flag,
 {
 	if(membername) return tTJSDispatch::PropSet(flag, membername, hint,
 		param, objthis);
-	if(objthis->IsValid(0, NULL, NULL, objthis) != TJS_S_TRUE)
+	if(!TJSIsObjectValid(objthis->IsValid(0, NULL, NULL, objthis)))
 		return TJS_E_INVALIDOBJECT;
 	return TJS_E_ACCESSDENYED; 
 }
@@ -278,7 +278,8 @@ tTJSNativeClass::FuncCall(tjs_uint32 flag, const tjs_char * membername,
 	tTJSVariant *result, tjs_int numparams, tTJSVariant **param,
 	iTJSDispatch2 *objthis)
 {
-	if(!GetValidity()) return TJS_E_INVALIDOBJECT;
+	if(!GetValidity())
+		return TJS_E_INVALIDOBJECT;
 
 	if(membername) return tTJSCustomObject::FuncCall(flag, membername, hint,
 		result, numparams, param, objthis);
