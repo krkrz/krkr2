@@ -8,11 +8,6 @@
 //---------------------------------------------------------------------------
 // "System" class implementation
 //---------------------------------------------------------------------------
-// 2003/ 4/10 W.Dee          Added JoyPad support in System.getKeyState.
-// 2003/12/6  W.Dee          Fixed System.getKeyState returns unswapped button
-//                           state even if the main/sub mouse button is swapped
-//                           by the control-panel.
-//---------------------------------------------------------------------------
 #include "tjsCommHead.h"
 #pragma hdrstop
 
