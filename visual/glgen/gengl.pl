@@ -2794,7 +2794,7 @@ TVP_GL_FUNC_DECL(void, TVPUnivTransBlend_switch_a_c, (tjs_uint32 *dest, const tj
 EOF
 
 $content = <<EOF;
-	opa = *rule;
+	opa = rule[{ofs}];
 	if(opa >= src1lv)
 		dest[{ofs}] = src1[{ofs}];
 	else if(opa < src2lv)

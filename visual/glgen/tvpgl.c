@@ -4367,28 +4367,28 @@ TVP_GL_FUNC_DECL(void, TVPUnivTransBlend_switch_a_c, (tjs_uint32 *dest, const tj
 
 		while(___index < len)
 		{
-	opa = *rule;
+	opa = rule[(___index+0)];
 	if(opa >= src1lv)
 		dest[(___index+0)] = src1[(___index+0)];
 	else if(opa < src2lv)
 		dest[(___index+0)] = src2[(___index+0)];
 	else
 		dest[(___index+0)] = TVPBlendARGB(src1[(___index+0)], src2[(___index+0)], table[opa]);
-	opa = *rule;
+	opa = rule[(___index+1)];
 	if(opa >= src1lv)
 		dest[(___index+1)] = src1[(___index+1)];
 	else if(opa < src2lv)
 		dest[(___index+1)] = src2[(___index+1)];
 	else
 		dest[(___index+1)] = TVPBlendARGB(src1[(___index+1)], src2[(___index+1)], table[opa]);
-	opa = *rule;
+	opa = rule[(___index+2)];
 	if(opa >= src1lv)
 		dest[(___index+2)] = src1[(___index+2)];
 	else if(opa < src2lv)
 		dest[(___index+2)] = src2[(___index+2)];
 	else
 		dest[(___index+2)] = TVPBlendARGB(src1[(___index+2)], src2[(___index+2)], table[opa]);
-	opa = *rule;
+	opa = rule[(___index+3)];
 	if(opa >= src1lv)
 		dest[(___index+3)] = src1[(___index+3)];
 	else if(opa < src2lv)
@@ -4402,7 +4402,7 @@ TVP_GL_FUNC_DECL(void, TVPUnivTransBlend_switch_a_c, (tjs_uint32 *dest, const tj
 
 		while(___index < len)
 		{
-	opa = *rule;
+	opa = rule[___index];
 	if(opa >= src1lv)
 		dest[___index] = src1[___index];
 	else if(opa < src2lv)
