@@ -518,7 +518,7 @@ void TVPLoadTLG(void* formatdata, void *callbackdata, tTVPGraphicSizeCallback si
 							name[namelen] = '\0';
 							tagp += namelen;
 							if(*tagp != '=') TVPThrowExceptionMessage(TVPTLGLoadError,
-								TJS_W("Malformed TLG SDS tag tag structure, missing equals after name"));
+								TJS_W("Malformed TLG SDS tag structure, missing equals after name"));
 							tagp++;
 							tjs_uint valuelen = 0;
 							while(*tagp >= '0' && *tagp <= '9')
