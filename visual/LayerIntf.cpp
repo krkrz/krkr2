@@ -905,13 +905,13 @@ void tTJSNI_BaseLayer::Exchange(tTJSNI_BaseLayer *target, bool keepchildren)
 		// two layers have the same parent and the same order mode
 		if(this_index < target_index)
 		{
-			this->SetOrderIndex(this_index);
-			target->SetOrderIndex(target_index);
+			target->SetOrderIndex(this_index);
+			this->SetOrderIndex(target_index);
 		}
 		else
 		{
-			target->SetOrderIndex(target_index);
-			this->SetOrderIndex(this_index);
+			this->SetOrderIndex(target_index);
+			target->SetOrderIndex(this_index);
 		}
 	}
 	else
