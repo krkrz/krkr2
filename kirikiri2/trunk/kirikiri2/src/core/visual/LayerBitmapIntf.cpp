@@ -1085,7 +1085,7 @@ bool tTVPBaseBitmap::StretchBlt(tTVPRect cliprect,
 {
 	// do stretch blt
 	// stFastLinear is enabled only in following condition:
-	// 
+	// -------TODO: write corresponding condition--------
 
 	// stLinear and stCubic mode are enabled only in following condition:
 	// any magnification, opa:255, method:bmCopy, hda:false
@@ -1106,15 +1106,11 @@ bool tTVPBaseBitmap::StretchBlt(tTVPRect cliprect,
 
 	// compute pitch, step, etc. needed for stretching copy/blt
 
-	// ref bound check
 	tjs_int w = GetWidth();
 	tjs_int h = GetHeight();
 	tjs_int refw = ref->GetWidth();
 	tjs_int refh = ref->GetHeight();
 
-	if(refrect.left < 0 || refrect.right > refw ||
-		refrect.top < 0 || refrect.bottom > refh)
-		TVPThrowExceptionMessage(TVPSrcRectOutOfBitmap);
 
 	// check clipping rect
 	if(cliprect.left < 0) cliprect.left = 0;
@@ -1147,6 +1143,12 @@ bool tTVPBaseBitmap::StretchBlt(tTVPRect cliprect,
 	if(rh < 0)
 		y_dir = !y_dir, std::swap(refrect.top, refrect.bottom), rh = -rh;
 
+	// ref bound check
+	if(refrect.left >= refrect.right ||
+		refrect.top >= refrect.bottom) return false;
+	if(refrect.left < 0 || refrect.right > refw ||
+		refrect.top < 0 || refrect.bottom > refh)
+		TVPThrowExceptionMessage(TVPSrcRectOutOfBitmap);
 
 	// compute step
 	tjs_int x_step = (rw << 16) / dw;
@@ -1180,15 +1182,15 @@ bool tTVPBaseBitmap::StretchBlt(tTVPRect cliprect,
 		x_step = -x_step;
 
 		if(destrect.left < cliprect.left)
+			x_ref_start = ((refrect.right << 16) - 1) + x_step * (cliprect.left - destrect.left),
 			x_dest_start = cliprect.left;
 		else
+			x_ref_start = ((refrect.right << 16) - 1),
 			x_dest_start = destrect.left;
 
 		if(destrect.right > cliprect.right)
-			x_ref_start = ((refrect.right << 16) - 1) + x_step * (destrect.right - cliprect.right),
 			x_len = cliprect.right - x_dest_start;
 		else
-			x_ref_start = ((refrect.right << 16) - 1),
 			x_len = destrect.right - x_dest_start;
 	}
 	if(x_len <= 0) return false;
@@ -1214,15 +1216,15 @@ bool tTVPBaseBitmap::StretchBlt(tTVPRect cliprect,
 		y_step = -y_step;
 
 		if(destrect.top < cliprect.top)
+			y_ref_start = ((refrect.bottom << 16) - 1) + y_step * (cliprect.top - destrect.top),
 			y_dest_start = cliprect.top;
 		else
+			y_ref_start = ((refrect.bottom << 16) - 1),
 			y_dest_start = destrect.top;
 
 		if(destrect.bottom > cliprect.bottom)
-			y_ref_start = ((refrect.bottom << 16) - 1) + y_step * (destrect.bottom - cliprect.bottom),
 			y_len = cliprect.bottom - y_dest_start;
 		else
-			y_ref_start = ((refrect.bottom << 16) - 1),
 			y_len = destrect.bottom - y_dest_start;
 	}
 
@@ -1307,11 +1309,11 @@ bool tTVPBaseBitmap::StretchBlt(tTVPRect cliprect,
 					if(x_step >= 0)
 						x_ref_start += (((rw-1)<<16) - (dw-1)*x_step)/2;
 					else
-						x_ref_start -= (((rw-1)<<16) + (dw-1)*x_step)/2 - x_step;
+						x_ref_start -= (((rw-1)<<16) + (dw-1)*x_step)/2; - x_step;
 					if(y_step >= 0)
 						y_ref_start += (((rh-1)<<16) - (dh-1)*y_step)/2;
 					else
-						y_ref_start -= (((rh-1)<<16) + (dh-1)*y_step)/2 - y_step;
+						y_ref_start -= (((rh-1)<<16) + (dh-1)*y_step)/2; - y_step;
 
 					// horizontal destination line is splitted into three parts;
 					// 1. left fraction (x_ref < 0               (lf)
