@@ -22,7 +22,7 @@ extern bool tjsEnableDicFuncQuickHack;
 // memory overflow.
 // This is done with replacing %[ ... ] to function { return %[ ... ]; }()
 // and replacing [ ... ] to function { return [ ... ]; }().
-// These replacing is applied for expcettion starts with "%[" or "[", 
+// These replacing is applied for expression which starts with "%[" or "[", 
 // may cause some sideeffects....
 
 namespace TJS
