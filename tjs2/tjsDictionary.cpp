@@ -192,18 +192,8 @@ void tTJSDictionaryNI::Assign(iTJSDispatch2 * dsp, bool clear)
 	// copy members from "dsp" to "Owner"
 
 	// determin dsp's object type
-	tTJSDictionaryNI *dicni = NULL;
 	tTJSArrayNI *arrayni = NULL;
 	if(dsp && TJS_SUCCEEDED(dsp->NativeInstanceSupport(TJS_NIS_GETINSTANCE,
-		ClassID_Dictionary, (iTJSNativeInstance**)&dicni)) )
-	{
-		// dictionary copy
-		if(clear) Owner->Clear();
-
-		((tTJSCustomObject*)dsp)->EnumMembers((tTJSEnumMemberCallbackIntf*)this);
-
-	}
-	else if(dsp && TJS_SUCCEEDED(dsp->NativeInstanceSupport(TJS_NIS_GETINSTANCE,
 		TJSGetArrayClassID(), (iTJSNativeInstance**)&arrayni)) )
 	{
 		// convert from array
@@ -212,17 +202,23 @@ void tTJSDictionaryNI::Assign(iTJSDispatch2 * dsp, bool clear)
 		tTJSArrayNI::tArrayItemIterator i;
 		for(i = arrayni->Items.begin(); i != arrayni->Items.end(); i++)
 		{
-			const tjs_char *name = i->GetString();
+			tTJSVariantString *name = i->AsStringNoAddRef();
 			i++;
 			if(arrayni->Items.end() == i) break;
-			Owner->PropSet(TJS_MEMBERENSURE|TJS_IGNOREPROP, name, i->GetHint(),
+			Owner->PropSetByVS(TJS_MEMBERENSURE|TJS_IGNOREPROP, name,
 				&(*i),
 				Owner);
 		}
 	}
 	else
 	{
-		TJS_eTJSError(TJSSpecifyDicOrArray);
+		// otherwise
+		if(clear) Owner->Clear();
+		tAssignCallback callback;
+		callback.Owner = Owner;
+
+		dsp->EnumMembers(TJS_IGNOREPROP, &tTJSVariantClosure(&callback, NULL), dsp);
+
 	}
 }
 //---------------------------------------------------------------------------
@@ -231,14 +227,28 @@ void tTJSDictionaryNI::Clear()
 	Owner->Clear();
 }
 //---------------------------------------------------------------------------
-bool tTJSDictionaryNI::EnumMemberCallback(tTJSVariantString *name,
-	const tTJSVariant & value)
+tjs_error TJS_INTF_METHOD
+tTJSDictionaryNI::tAssignCallback::FuncCall(tjs_uint32 flag,
+	const tjs_char * membername, tjs_uint32 *hint, tTJSVariant *result,
+	tjs_int numparams, tTJSVariant **param, iTJSDispatch2 *objthis)
 {
-	// called from tTJSCustomObject::EnumMembers
+	// called from iTJSDispatch2::EnumMembers
+	// (tTJSDictionaryNI::Assign calls iTJSDispatch2::EnumMembers)
+	if(numparams < 3) return TJS_E_BADPARAMCOUNT;
 
-	Owner->PropSetByVS(TJS_MEMBERENSURE|TJS_IGNOREPROP, name, &value, Owner);
+	// hidden members are not copied
+	tjs_uint32 flags = (tjs_int)*param[1];
+	if(flags & TJS_HIDDENMEMBER)
+	{
+		if(result) *result = (tjs_int)1;
+		return TJS_S_OK;
+	}
 
-	return true;
+	Owner->PropSetByVS(TJS_MEMBERENSURE|TJS_IGNOREPROP|flags,
+		param[0]->AsStringNoAddRef(), param[2], Owner);
+
+	if(result) *result = (tjs_int)1;
+	return TJS_S_OK;
 }
 //---------------------------------------------------------------------------
 void tTJSDictionaryNI::SaveStructuredData(std::vector<iTJSDispatch2 *> &stack,
@@ -257,7 +267,7 @@ void tTJSDictionaryNI::SaveStructuredData(std::vector<iTJSDispatch2 *> &stack,
 	callback.IndentStr = &indentstr2;
 	callback.First = true;
 
-	Owner->EnumMembers(&callback);
+	Owner->EnumMembers(TJS_IGNOREPROP, &tTJSVariantClosure(&callback, NULL), Owner);
 
 #ifdef TJS_TEXT_OUT_CRLF
 	if(!callback.First) string += TJS_W("\r\n");
@@ -268,10 +278,22 @@ void tTJSDictionaryNI::SaveStructuredData(std::vector<iTJSDispatch2 *> &stack,
 	string += TJS_W("]");
 }
 //---------------------------------------------------------------------------
-bool tTJSDictionaryNI::tSaveStructCallback::EnumMemberCallback(
-	tTJSVariantString *name, const tTJSVariant & value)
+tjs_error TJS_INTF_METHOD tTJSDictionaryNI::tSaveStructCallback::FuncCall(
+	tjs_uint32 flag, const tjs_char * membername, tjs_uint32 *hint,
+	tTJSVariant *result, tjs_int numparams, tTJSVariant **param,
+	iTJSDispatch2 *objthis)
 {
 	// called indirectly from tTJSDictionaryNI::SaveStructuredData
+
+	if(numparams < 3) return TJS_E_BADPARAMCOUNT;
+
+	// hidden members are not processed
+	tjs_uint32 flags = (tjs_int)*param[1];
+	if(flags & TJS_HIDDENMEMBER)
+	{
+		if(result) *result = (tjs_int)1;
+		return TJS_S_OK;
+	}
 
 #ifdef TJS_TEXT_OUT_CRLF
 	if(!First) *String += TJS_W(",\r\n");
@@ -284,23 +306,24 @@ bool tTJSDictionaryNI::tSaveStructCallback::EnumMemberCallback(
 	*String += *IndentStr;
 
 	*String += TJS_W("\"");
-	*String += ttstr(name).EscapeC();
+	*String += ttstr(*param[0]).EscapeC();
 	*String += TJS_W("\" => ");
 
-	tTJSVariantType type = value.Type();
+	tTJSVariantType type = param[2]->Type();
 	if(type == tvtObject)
 	{
 		// object
-		tTJSVariantClosure clo = value.AsObjectClosureNoAddRef();
+		tTJSVariantClosure clo = param[2]->AsObjectClosureNoAddRef();
 		tTJSArrayNI::SaveStructuredDataForObject(clo.SelectObjectNoAddRef(),
 			*Stack, *String, *IndentStr);
 	}
 	else
 	{
-		*String += TJSVariantToExpressionString(value);
+		*String += TJSVariantToExpressionString(*param[2]);
 	}
 
-	return true;
+	if(result) *result = (tjs_int)1;
+	return TJS_S_OK;
 }
 //---------------------------------------------------------------------------
 void tTJSDictionaryNI::AssignStructure(iTJSDispatch2 * dsp,
@@ -321,7 +344,7 @@ void tTJSDictionaryNI::AssignStructure(iTJSDispatch2 * dsp,
 			callback.Dest = Owner;
 			callback.Stack = &stack;
 
-			((tTJSCustomObject*)dsp)->EnumMembers(&callback);
+			dsp->EnumMembers(TJS_IGNOREPROP, &tTJSVariantClosure(&callback, NULL), dsp);
 		}
 		catch(...)
 		{
@@ -337,9 +360,26 @@ void tTJSDictionaryNI::AssignStructure(iTJSDispatch2 * dsp,
 
 }
 //---------------------------------------------------------------------------
-bool tTJSDictionaryNI::tAssignStructCallback::EnumMemberCallback(
-	tTJSVariantString *name, const tTJSVariant & value)
+tjs_error TJS_INTF_METHOD tTJSDictionaryNI::tAssignStructCallback::FuncCall(
+	tjs_uint32 flag, const tjs_char * membername, tjs_uint32 *hint,
+	tTJSVariant *result, tjs_int numparams, tTJSVariant **param,
+	iTJSDispatch2 *objthis)
 {
+	// called indirectly from tTJSDictionaryNI::AssignStructure or
+	// tTJSArrayNI::AssignStructure
+
+	if(numparams < 3) return TJS_E_BADPARAMCOUNT;
+
+	// hidden members are not processed
+	tjs_uint32 flags = (tjs_int)*param[1];
+	if(flags & TJS_HIDDENMEMBER)
+	{
+		if(result) *result = (tjs_int)1;
+		return TJS_S_OK;
+	}
+
+	tTJSVariant &value = *param[2];
+
 	tTJSVariantType type = value.Type();
 	if(type == tvtObject)
 	{
@@ -423,15 +463,16 @@ bool tTJSDictionaryNI::tAssignStructCallback::EnumMemberCallback(
 			val = value;
 		}
 
-		Dest->PropSetByVS(TJS_MEMBERENSURE|TJS_IGNOREPROP, name, &val, Dest);
+		Dest->PropSetByVS(TJS_MEMBERENSURE|TJS_IGNOREPROP, param[0]->AsStringNoAddRef(), &val, Dest);
 	}
 	else
 	{
 		// other types
-		Dest->PropSetByVS(TJS_MEMBERENSURE|TJS_IGNOREPROP, name, &value, Dest);
+		Dest->PropSetByVS(TJS_MEMBERENSURE|TJS_IGNOREPROP, param[0]->AsStringNoAddRef(), &value, Dest);
 	}
 
-	return true;
+	if(result) *result = (tjs_int)1;
+	return TJS_S_OK;
 }
 //---------------------------------------------------------------------------
 

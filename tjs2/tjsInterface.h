@@ -25,10 +25,12 @@ namespace TJS
 #define TJS_MEMBERENSURE		0x00000200 // create a member if not exists
 #define TJS_MEMBERMUSTEXIST     0x00000400 // member *must* exist ( for Dictionary/Array )
 #define TJS_IGNOREPROP			0x00000800 // ignore property invoking
-#define TJS_HIDDENMEMBER		0x00001000 // member cannot be enumerated in
-										   // tTJSCustomObject::EnumMembers
+#define TJS_HIDDENMEMBER		0x00001000 // member is hidden
 #define TJS_STATICMEMBER		0x00010000 // member is not registered to the
 										   // object (internal use)
+
+#define TJS_ENUM_NO_VALUE		0x00100000 // values are not retrieved
+										   // (for EnumMembers)
 
 #define TJS_NIS_REGISTER		0x00000001 // set native pointer
 #define TJS_NIS_GETINSTANCE		0x00000002 // get native pointer
@@ -78,6 +80,7 @@ namespace TJS
 	iTJSDispatch interface
 */
 class tTJSVariant;
+class tTJSVariantClosure;
 class tTJSVariantString;
 class iTJSNativeInstance;
 class iTJSDispatch2
@@ -175,7 +178,11 @@ public:
 		) = 0;
 
 	virtual tjs_error TJS_INTF_METHOD
-	Reserved2() = 0; // reserved ( may become member enumeration method... )
+	EnumMembers( // enumerate members
+		tjs_uint32 flag,			// enumeration flag
+		tTJSVariantClosure *callback,	// callback function interface ( called on each member )
+		iTJSDispatch2 *objthis		// object as "this"
+		) = 0;
 
 	virtual tjs_error TJS_INTF_METHOD
 	DeleteMember( // delete member

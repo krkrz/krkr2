@@ -42,7 +42,6 @@ protected:
 // tTJSDictionaryNI : TJS Dictionary Native C++ instance
 //---------------------------------------------------------------------------
 class tTJSDictionaryNI : public tTJSNativeInstance,
-							public tTJSEnumMemberCallbackIntf,
 							public tTJSSaveStructuredDataCallback
 {
 	typedef tTJSNativeInstance inherited;
@@ -65,37 +64,48 @@ public:
 	void Clear();
 
 private:
-	bool EnumMemberCallback(tTJSVariantString *name,
-		const tTJSVariant & value);
-		// method from tTJSEnumMemberCallbackIntf
+	struct tAssignCallback : public tTJSDispatch
+	{
+		tTJSCustomObject * Owner;
+		tjs_error TJS_INTF_METHOD
+		FuncCall(tjs_uint32 flag, const tjs_char * membername,
+			tjs_uint32 *hint, tTJSVariant *result, tjs_int numparams,
+			tTJSVariant **param, iTJSDispatch2 *objthis);
+			// method from iTJSDispatch2, for enumeration callback
+	};
+	friend class tSaveStructCallback;
 
 public:
 	void SaveStructuredData(std::vector<iTJSDispatch2 *> &stack,
 		tTJSStringAppender & string, const ttstr&indentstr);
 		// method from tTJSSaveStructuredDataCallback
 private:
-	struct tSaveStructCallback : public tTJSEnumMemberCallbackIntf
+	struct tSaveStructCallback : public tTJSDispatch
 	{
 		std::vector<iTJSDispatch2 *> * Stack;
 		tTJSStringAppender * String;
 		const ttstr * IndentStr;
 		bool First;
 
-		bool EnumMemberCallback(tTJSVariantString *name,
-			const tTJSVariant & value);
+		tjs_error TJS_INTF_METHOD
+		FuncCall(tjs_uint32 flag, const tjs_char * membername,
+			tjs_uint32 *hint, tTJSVariant *result, tjs_int numparams,
+			tTJSVariant **param, iTJSDispatch2 *objthis);
 	};
 	friend class tSaveStructCallback;
 
 public:
 	void AssignStructure(iTJSDispatch2 * dsp, std::vector<iTJSDispatch2 *> &stack);
 
-	struct tAssignStructCallback : public tTJSEnumMemberCallbackIntf
+	struct tAssignStructCallback : public tTJSDispatch
 	{
 		std::vector<iTJSDispatch2 *> * Stack;
 		iTJSDispatch2 * Dest;
 
-		bool EnumMemberCallback(tTJSVariantString *name,
-			const tTJSVariant & value);
+		tjs_error TJS_INTF_METHOD
+		FuncCall(tjs_uint32 flag, const tjs_char * membername,
+			tjs_uint32 *hint, tTJSVariant *result, tjs_int numparams,
+			tTJSVariant **param, iTJSDispatch2 *objthis);
 	};
 	friend class tAssignStructCallback;
 };
