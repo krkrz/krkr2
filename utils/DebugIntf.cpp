@@ -211,19 +211,30 @@ void TVPAddLog(const ttstr &line, bool appendtoimportant)
 {
 	// add a line to the log.
 	// exceeded lines over TVPLogMaxLines are eliminated.
+	// this function is not thread-safe ...
 
 	TVPEnsureLogObjects();
 	if(!TVPLogDeque) return; // log system is shuttingdown
 	if(!TVPImportantLogs) return; // log system is shuttingdown
 
-	tjs_char timebuf[40];
+	static time_t prevlogtime = 0;
+	static ttstr prevtimebuf;
+	static tjs_char timebuf[40];
+
 	tm *struct_tm;
 	time_t timer;
 	timer = time(&timer);
-	struct_tm = localtime(&timer);
 
-	TJS_strftime(timebuf, 39, TJS_W("%H:%M:%S"), struct_tm);
-	TVPLogDeque->push_back(tTVPLogItem(line, timebuf));
+	if(prevlogtime != timer)
+	{
+		struct_tm = localtime(&timer);
+		TJS_strftime(timebuf, 39, TJS_W("%H:%M:%S"), struct_tm);
+		prevlogtime = timer;
+		prevtimebuf = timebuf;
+	}
+
+	TVPLogDeque->push_back(tTVPLogItem(line, prevtimebuf));
+
 	if(appendtoimportant)
 	{
 #ifdef TJS_TEXT_OUT_CRLF
