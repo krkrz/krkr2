@@ -1,7 +1,7 @@
 //---------------------------------------------------------------------------
 /*
 	fgconvert   (graphic converter for transparent images)
-	Copyright (C) 2000-2004  W.Dee <dee@kikyou.info>
+	Copyright (C) 2000-2005  W.Dee <dee@kikyou.info>
 
 	See details of license at "license.txt"
 */

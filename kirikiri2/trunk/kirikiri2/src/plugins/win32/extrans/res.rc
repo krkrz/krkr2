@@ -75,7 +75,7 @@ BEGIN
             VALUE "FileDescription", "Extended Transition Plug-in DLL\0"
             VALUE "FileVersion", "1, 1, 1, 1\0"
             VALUE "InternalName", "extrans\0"
-            VALUE "LegalCopyright", "Copyright (C) 2002-2003 W.Dee All rights reserved.\0"
+            VALUE "LegalCopyright", "Copyright (C) 2002-2005 W.Dee All rights reserved.\0"
             VALUE "LegalTrademarks", "\0"
             VALUE "OriginalFilename", "extrans.dll\0"
             VALUE "PrivateBuild", "\0"

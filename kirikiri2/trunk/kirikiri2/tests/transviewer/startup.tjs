@@ -1,5 +1,5 @@
 // startup.tjs - ボタンレイヤ
-// Copyright (C)2001-2003, W.Dee  改変・配布は自由です
+// Copyright (C)2001-2005, W.Dee  改変・配布は自由です
 
 class KAGLayer extends Layer // KAG 用の ButtonLayer.tjs をそのまま流用するため
 {
