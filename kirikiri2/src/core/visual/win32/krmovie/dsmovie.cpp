@@ -170,7 +170,7 @@ const wchar_t* __stdcall tTVPDSMovie::SetPosition( unsigned __int64 tick )
 	else if( IsEqualGUID( TIME_FORMAT_FRAME, Format ) )
 	{
 		REFTIME	AvgTimePerFrame;
-		if( FAILED(hr = Video()->get_AvgTimePerFrame( &AvgTimePerFrame )) )
+		if( FAILED(hr = GetAvgTimePerFrame( &AvgTimePerFrame )) )
 		{
 			return L"Failed to call IBasicVideo::get_AvgTimePerFrame.";
 		}
@@ -214,7 +214,7 @@ const wchar_t* __stdcall tTVPDSMovie::GetPosition( unsigned __int64 *tick )
 	else if( IsEqualGUID( TIME_FORMAT_FRAME, Format ) )
 	{
 		REFTIME	AvgTimePerFrame;
-		if( FAILED(hr = Video()->get_AvgTimePerFrame( &AvgTimePerFrame )) )
+		if( FAILED(hr = GetAvgTimePerFrame( &AvgTimePerFrame )) )
 		{
 			return L"Failed to call IBasicVideo::get_AvgTimePerFrame.";
 		}
@@ -317,7 +317,7 @@ const wchar_t* __stdcall tTVPDSMovie::SetFrame( int f )
 	if( IsEqualGUID( TIME_FORMAT_MEDIA_TIME, Format ) )
 	{
 		REFTIME	AvgTimePerFrame;
-		if( FAILED(hr = Video()->get_AvgTimePerFrame( &AvgTimePerFrame )) )
+		if( FAILED(hr = GetAvgTimePerFrame( &AvgTimePerFrame )) )
 		{
 			return L"Failed to call IBasicVideo::get_AvgTimePerFrame.";
 		}
@@ -359,7 +359,7 @@ const wchar_t* __stdcall tTVPDSMovie::GetFrame( int *f )
 	if( IsEqualGUID( TIME_FORMAT_MEDIA_TIME, Format ) )
 	{
 		REFTIME	AvgTimePerFrame;
-		if( FAILED(hr = Video()->get_AvgTimePerFrame( &AvgTimePerFrame )) )
+		if( FAILED(hr = GetAvgTimePerFrame( &AvgTimePerFrame )) )
 		{
 			return L"Failed to call IBasicVideo::get_AvgTimePerFrame.";
 		}
@@ -383,7 +383,7 @@ const wchar_t* __stdcall tTVPDSMovie::GetFPS( double *f )
 
 	HRESULT	hr;
 	REFTIME	AvgTimePerFrame;
-	if( FAILED(hr = Video()->get_AvgTimePerFrame( &AvgTimePerFrame )) )
+	if( FAILED(hr = GetAvgTimePerFrame( &AvgTimePerFrame )) )
 	{
 		return L"Failed to call IBasicVideo::get_AvgTimePerFrame.";
 	}
@@ -408,7 +408,7 @@ const wchar_t* __stdcall tTVPDSMovie::GetNumberOfFrame( int *f )
 	if( IsEqualGUID( TIME_FORMAT_MEDIA_TIME, Format ) )
 	{
 		REFTIME	AvgTimePerFrame;
-		if( FAILED(hr = Video()->get_AvgTimePerFrame( &AvgTimePerFrame )) )
+		if( FAILED(hr = GetAvgTimePerFrame( &AvgTimePerFrame )) )
 		{
 			return L"Failed to call IBasicVideo::get_AvgTimePerFrame.";
 		}
@@ -449,7 +449,7 @@ const wchar_t* __stdcall tTVPDSMovie::GetTotalTime( __int64 *t )
 	else if( IsEqualGUID( TIME_FORMAT_FRAME, Format ) )
 	{
 		REFTIME	AvgTimePerFrame;
-		if( FAILED(hr = Video()->get_AvgTimePerFrame( &AvgTimePerFrame )) )
+		if( FAILED(hr = GetAvgTimePerFrame( &AvgTimePerFrame )) )
 		{
 			return L"Failed to call IBasicVideo::get_AvgTimePerFrame.";
 		}
@@ -576,3 +576,55 @@ void __stdcall tTVPDSMovie::RemoveFromROT( DWORD ROTreg )
 	}
 }
 #endif	// _DEBUG
+//----------------------------------------------------------------------------
+//! @brief	  	1フレームの平均表示時間を取得します
+//! @param		pAvgTimePerFrame : 1フレームの平均表示時間
+//! @return		エラー文字列
+//----------------------------------------------------------------------------
+HRESULT __stdcall tTVPDSMovie::GetAvgTimePerFrame( REFTIME *pAvgTimePerFrame )
+{
+	return Video()->get_AvgTimePerFrame( pAvgTimePerFrame );
+}
+
+#if 0
+
+	buildMPEGGraph( IPin *pRdrPinIn, IPin *pSrcPinOut, bool useSound )
+{
+	{	// Connect to MPEG 1 splitter filter
+		CComPtr<IBaseFilter>	pDDSRenderer;	// for sound renderer filter
+		if( FAILED(hr = pDDSRenderer.CoCreateInstance(CLSID_DSoundRender, NULL, CLSCTX_INPROC_SERVER)) )
+			 throw L"Failed to create sound render filter object.";
+		if( FAILED(hr = GraphBuilder()->AddFilter(pDDSRenderer, L"Sound Renderer")) )
+			throw L"Failed to call IFilterGraph::AddFilter.";
+
+		CComPtr<IBaseFilter>	pSpliter;
+		PIN_INFO	pinInfo;
+		if( FAILED(hr = pSpliterPinIn->QueryPinInfo( &pinInfo )) )
+			throw L"Failed to call IPin::QueryPinInfo.";
+		pSpliter = pinInfo.pFilter;
+		pinInfo.pFilter->Release();
+		if( FAILED(hr = ConnectFilters( pSpliter, pDDSRenderer ) ) )
+			throw L"Failed to call ConnectFilters.";
+	}
+	CLSID_MPEG1Splitter
+	CLSID_CMPEGVideoCodec
+	CLSID_CMpegAudioCodec
+
+	{	// Connect to DDS render filter
+		CComPtr<IBaseFilter>	pDDSRenderer;	// for sound renderer filter
+		if( FAILED(hr = pDDSRenderer.CoCreateInstance(CLSID_DSoundRender, NULL, CLSCTX_INPROC_SERVER)) )
+			 throw L"Failed to create sound render filter object.";
+		if( FAILED(hr = GraphBuilder()->AddFilter(pDDSRenderer, L"Sound Renderer")) )
+			throw L"Failed to call IFilterGraph::AddFilter.";
+
+		CComPtr<IBaseFilter>	pSpliter;
+		PIN_INFO	pinInfo;
+		if( FAILED(hr = pSpliterPinIn->QueryPinInfo( &pinInfo )) )
+			throw L"Failed to call IPin::QueryPinInfo.";
+		pSpliter = pinInfo.pFilter;
+		pinInfo.pFilter->Release();
+		if( FAILED(hr = ConnectFilters( pSpliter, pDDSRenderer ) ) )
+			throw L"Failed to call ConnectFilters.";
+	}
+}
+#endif
