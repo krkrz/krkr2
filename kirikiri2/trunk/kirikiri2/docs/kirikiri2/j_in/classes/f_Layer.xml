@@ -1326,7 +1326,7 @@
 				<tt><kw>dfOpaque</kw> (または<kw>dfMain</kw>) </tt> : 0xRRGGBB 形式で色を指定してください<r/>
 				<tt><kw>dfMask</kw>                  </tt> : マスク(不透明度)の値 ( 0 ～ 255 ) を指定してください<r/>
 				<tt><kw>dfProvince</kw>              </tt> : 領域の値 ( 0 ～ 255 ) を指定してください<r/>
-				　dfMain を指定した場合は、不透明度の情報はそのままになります。また、dfMask を
+				　dfOpaque を指定した場合は、不透明度の情報はそのままになります。また、dfMask を
 				指定した場合は、色の情報はそのままになります。<r/>
 			</desc>
 		</argitem>
@@ -3708,7 +3708,7 @@
 		<ref>Layer.setMainPixel</ref><r/>
 		<ref>Layer.setMaskPixel</ref><r/>
 		<ref>Layer.setProvincePixel</ref><r/>
-		<ref>Layer.fillRect</ref><r/>
+		<ref>Layer.fillRect</ref>(dfOpaqueの場合はアルファチャンネルが保護されます)<r/>
 		<ref>Layer.colorRect</ref>(現バージョンでは常にアルファチャンネルが破壊されます)<r/>
 		<ref>Layer.drawText</ref>(現バージョンでは常にアルファチャンネルが破壊されます)<r/>
 		<ref>Layer.piledCopy</ref><r/>
