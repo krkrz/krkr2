@@ -1190,6 +1190,14 @@ TVP_DEFINE_BILINEAR_STRETCH_WITH_OPACITY_FUNCTION(
 	TVPInterpStretchConstAlphaBlend,
 	*dest = TVPBlendARGB(*dest, color, Opacity));
 
+TVP_DEFINE_BILINEAR_STRETCH_FUNCTION(
+	TVPInterpStretchAdditiveAlphaBlend,
+	*dest = TVPAdditiveBlend_n_a(*dest, color));
+
+TVP_DEFINE_BILINEAR_STRETCH_WITH_OPACITY_FUNCTION(
+	TVPInterpStretchAdditiveAlphaBlend_o,
+	*dest = TVPAdditiveBlend_n_a_o(*dest, color, Opacity));
+
 //---------------------------------------------------------------------------
 
 // declare stretching loop function
@@ -1574,7 +1582,6 @@ bool tTVPBaseBitmap::StretchBlt(tTVPRect cliprect,
 				// bilinear interpolation
 				if(!hda)
 				{
-					// adjust start point
 					TVPDoBiLinearStretchLoop( // bilinear interpolation
 						tTVPInterpStretchConstAlphaBlendFunctionObject(opa),
 						TVP_DoBilinearStretchLoop_ARGS);
@@ -1661,24 +1668,50 @@ bool tTVPBaseBitmap::StretchBlt(tTVPRect cliprect,
 		if(opa == 255)
 		{
 			if(!hda)
-				TVPDoStretchLoop(
-					tTVPStretchFunctionObject(TVPStretchAdditiveAlphaBlend),
-					TVP_DoStretchLoop_ARGS);
+			{
+				if(mode >= stFastLinear)
+				{
+					TVPDoBiLinearStretchLoop( // bilinear interpolation
+						tTVPInterpStretchAdditiveAlphaBlendFunctionObject(),
+						TVP_DoBilinearStretchLoop_ARGS);
+				}
+				else
+				{
+					TVPDoStretchLoop(
+						tTVPStretchFunctionObject(TVPStretchAdditiveAlphaBlend),
+						TVP_DoStretchLoop_ARGS);
+				}
+			}
 			else
+			{
 				TVPDoStretchLoop(
 					tTVPStretchFunctionObject(TVPStretchAdditiveAlphaBlend_HDA),
 					TVP_DoStretchLoop_ARGS);
+			}
 		}
 		else
 		{
 			if(!hda)
-				TVPDoStretchLoop(
-					tTVPStretchWithOpacityFunctionObject(TVPStretchAdditiveAlphaBlend_o, opa),
-					TVP_DoStretchLoop_ARGS);
+			{
+				if(mode >= stFastLinear)
+				{
+					TVPDoBiLinearStretchLoop( // bilinear interpolation
+						tTVPInterpStretchAdditiveAlphaBlend_oFunctionObject(opa),
+						TVP_DoBilinearStretchLoop_ARGS);
+				}
+				else
+				{
+					TVPDoStretchLoop(
+						tTVPStretchWithOpacityFunctionObject(TVPStretchAdditiveAlphaBlend_o, opa),
+						TVP_DoStretchLoop_ARGS);
+				}
+			}
 			else
+			{
 				TVPDoStretchLoop(
 					tTVPStretchWithOpacityFunctionObject(TVPStretchAdditiveAlphaBlend_HDA_o, opa),
 					TVP_DoStretchLoop_ARGS);
+			}
 		}
 		break;
 

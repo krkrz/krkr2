@@ -191,22 +191,4 @@ public:
 
 
 
-
-//---------------------------------------------------------------------------
-static tjs_uint32 inline TVPBlendARGB(tjs_uint32 b, tjs_uint32 a, tjs_int ratio)
-{
-	/* returns a * ratio + b * (1 - ratio) */
-	/* ratio is in range of 0 (0%) thru 256 (100%) */
-	tjs_uint32 b2;
-	tjs_uint32 t;
-	b2 = b & 0x00ff00ff;
-	t = (b2 + (((a & 0x00ff00ff) - b2) * ratio >> 8)) & 0x00ff00ff;
-	b2 = (b & 0xff00ff00) >> 8;
-	return t + 
-		(((b2 + (( ((a & 0xff00ff00) >> 8) - b2) * ratio >> 8)) << 8)& 0xff00ff00);
-}
-//---------------------------------------------------------------------------
-
-
-
 #endif
