@@ -1,15 +1,18 @@
-/****************************************************************************/
-/*! @file
-@brief DirectShowを利用したムービーのオーバーレイ再生
+//---------------------------------------------------------------------------
+// ( part of KRMOVIE.DLL )
+// (c)2001-2004, W.Dee <dee@kikyou.info>
+//---------------------------------------------------------------------------
 
------------------------------------------------------------------------------
-	Copyright (C) 2004 T.Imoto
------------------------------------------------------------------------------
-@author		T.Imoto
-@date		2004/08/25
-@note
-			2004/08/25	T.Imoto		
-*****************************************************************************/
+/*
+	We must separate this module because sucking MS library has a lack of
+	compiler portability.
+
+	This requires DirectX7 or later or Windows Media Player 6.4 or later for
+	playbacking MPEG streams.
+
+
+	Modified by T.Imoto <http://www.kaede-software.com>
+*/
 
 #ifndef __DSOVERLAY_H__
 #define __DSOVERLAY_H__
