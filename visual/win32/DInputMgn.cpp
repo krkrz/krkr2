@@ -8,15 +8,6 @@
 //---------------------------------------------------------------------------
 // DirectInput management
 //---------------------------------------------------------------------------
-// 2004/ 6/22 W.Dee
-//   Fixed problems around pad:
-//     o   Pad keys were recognized as pressed when the button has been pushed
-//         more than once while the window is inactive.
-//
-// 2004/ 4/ 9 W.Dee          Separated from WindowImpl.cpp/h. Implemented
-//                           JoyPad input code which is contributed by
-//                           Mr. Kiyobee@TYPE-MOON.
-//---------------------------------------------------------------------------
 #include "tjsCommHead.h"
 #pragma hdrstop
 
