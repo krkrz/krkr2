@@ -204,7 +204,8 @@ tjs_int tTJSPPExprParser::GetNext(tjs_int32 &value)
 	}
 
 	const tjs_char *st = Current;
-	while((TJS_iswalpha(*Current) || *Current==TJS_W('_')) && *Current)
+	while((TJS_iswalpha(*Current) || TJS_iswdigit(*Current) ||
+		*Current==TJS_W('_')) && *Current)
 		Current++;
 
 	ttstr str(st, Current-st);
