@@ -316,6 +316,8 @@ public:
 
 	ttstr GetShortDescription() const;
 
+	tTJSScriptBlock * GetBlock() const { return Block; }
+
 private:
 	void OutputWarning(const tjs_char *msg, tjs_int pos = -1);
 
@@ -368,8 +370,10 @@ public:
 	tjs_uint GetCodeSize() const { return CodeAreaSize; }
 	tjs_uint GetDataSize() const { return DataAreaSize; }
 
-	tjs_int CodePosToSrcPos(tjs_int codepos);
-	tjs_int FindSrcLineStartCodePos(tjs_int codepos);
+	tjs_int CodePosToSrcPos(tjs_int codepos) const;
+	tjs_int FindSrcLineStartCodePos(tjs_int codepos) const;
+
+	ttstr GetPositionDescriptionString(tjs_int codepos) const;
 
 	void AddLocalVariable(const tjs_char *name, tjs_int init=0);
 	void InitLocalVariable(const tjs_char *name, tTJSExprNode *node);
