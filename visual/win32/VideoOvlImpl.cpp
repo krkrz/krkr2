@@ -24,12 +24,6 @@
 #include "krmovie.h"
 #include "PluginImpl.h"
 #include <evcode.h>
-#if 0
-typedef void (__stdcall *tGetAPIVersion)(DWORD *version);
-typedef const wchar_t*  (__stdcall *tGetVideoOverlayObject)(
-	HWND callbackwin, IStream *stream, const wchar_t * streamname,
-	const wchar_t *type, unsigned __int64 size, iTVPVideoOverlay **out);
-#endif
 //---------------------------------------------------------------------------
 class tTVPVideoModule
 {
@@ -37,6 +31,7 @@ class tTVPVideoModule
 	HMODULE Handle;
 	tGetAPIVersion procGetAPIVersion;
 	tGetVideoOverlayObject procGetVideoOverlayObject;
+	tGetVideoOverlayObject procGetVideoLayerObject; // krmovie.dll only
 	tTVPV2LinkProc procV2Link;
 	tTVPV2UnlinkProc procV2Unlink;
 
@@ -51,9 +46,14 @@ public:
 	{
 		procGetVideoOverlayObject(callbackwin, stream, streamname, type, size, out);
 	}
+	void GetVideoLayerObject(HWND callbackwin, IStream *stream,
+		const wchar_t * streamname, const wchar_t *type, unsigned __int64 size,
+		iTVPVideoOverlay **out)
+	{
+		procGetVideoLayerObject(callbackwin, stream, streamname, type, size, out);
+	}
 };
 static tTVPVideoModule *TVPMovieVideoModule = NULL;
-static tTVPVideoModule *TVPLayerMovieVideoModule = NULL;	// T.Imoto
 static tTVPVideoModule *TVPFlashVideoModule = NULL;
 static void TVPUnloadKrMovie();
 //---------------------------------------------------------------------------
@@ -71,19 +71,27 @@ tTVPVideoModule::tTVPVideoModule(const ttstr &name)
 	{
 		procGetVideoOverlayObject = (tGetVideoOverlayObject)
 			GetProcAddress(Handle, "GetVideoOverlayObject");
+
+		procGetVideoOverlayObject = (tGetVideoOverlayObject)
+			GetProcAddress(Handle, "GetVideoLayerObject");
+
 		procGetAPIVersion = (tGetAPIVersion)
 			GetProcAddress(Handle, "GetAPIVersion");
+
 		procV2Link = (tTVPV2LinkProc)
 			GetProcAddress(Handle, "V2Link");
+
 		procV2Unlink = (tTVPV2UnlinkProc)
 			GetProcAddress(Handle, "V2Unlink");
-		if(!procGetVideoOverlayObject || !procGetAPIVersion ||
-			!procV2Link || !procV2Unlink)
+
+		if(!procGetAPIVersion)
 			TVPThrowExceptionMessage(TVPInvalidKrMovieDLL);
+
 		DWORD version;
 		procGetAPIVersion(&version);
 		if(version != TVP_KRMOVIE_VER)
 			TVPThrowExceptionMessage(TVPInvalidKrMovieDLL);
+
 		procV2Link(TVPGetFunctionExporter()); // link functions used by tp_stub
 	}
 	catch(...)
@@ -109,16 +117,6 @@ static tTVPVideoModule * TVPGetMovieVideoModule()
 	return TVPMovieVideoModule;
 }
 //---------------------------------------------------------------------------
-// Start: Add: T.Imoto
-static tTVPVideoModule * TVPGetLayerMovieVideoModule()
-{
-	if(TVPLayerMovieVideoModule == NULL)
-		TVPLayerMovieVideoModule = new tTVPVideoModule("krlmovie.dll");
-
-	return TVPLayerMovieVideoModule;
-}
-// End: Add: T.Imoto
-//---------------------------------------------------------------------------
 static tTVPVideoModule * TVPGetFlashVideoModule()
 {
 	if(TVPFlashVideoModule == NULL)
@@ -126,57 +124,6 @@ static tTVPVideoModule * TVPGetFlashVideoModule()
 
 	return TVPFlashVideoModule;
 }
-//---------------------------------------------------------------------------
-/*
-//---------------------------------------------------------------------------
-static void TVPLoadKrMovie(bool flash)
-{
-	if(TVPKrMovieHandle) TVPUnloadKrMovie();
-
-	TVPFlashDllLoaded = flash;
-	TVPKrMovieHolder = new tTVPPluginHolder(TJS_W("krmovie.dll"));
-	TVPKrMovieHandle =
-		LoadLibrary(TVPKrMovieHolder->GetLocalName().AsAnsiString().c_str());
-	if(!TVPKrMovieHandle)
-	{
-		delete TVPKrMovieHolder;
-		TVPKrMovieHolder = NULL;
-		TVPThrowExceptionMessage(TVPCannotLoadKrMovieDLL);
-	}
-
-	try
-	{
-		TVPGetVideoOverlayObject = (tGetVideoOverlayObject)
-			GetProcAddress(TVPKrMovieHandle, "GetVideoOverlayObject");
-		TVPGetAPIVersion = (tGetAPIVersion)
-			GetProcAddress(TVPKrMovieHandle, "GetAPIVersion");
-		if(!TVPGetVideoOverlayObject || !TVPGetAPIVersion)
-			TVPThrowExceptionMessage(TVPInvalidKrMovieDLL);
-		DWORD version;
-		TVPGetAPIVersion(&version);
-		if(version != TVP_KRMOVIE_VER)
-			TVPThrowExceptionMessage(TVPInvalidKrMovieDLL);
-	}
-	catch(...)
-	{
-		FreeLibrary(TVPKrMovieHandle), TVPKrMovieHandle = NULL;
-		delete TVPKrMovieHolder;
-		TVPKrMovieHolder = NULL;
-		throw;
-	}
-}
-//---------------------------------------------------------------------------
-static void TVPUnloadKrMovie()
-{
-	if(!TVPKrMovieHandle) return;
-
-	FreeLibrary(TVPKrMovieHandle);
-	TVPKrMovieHandle = NULL;
-
-	delete TVPKrMovieHolder;
-	TVPKrMovieHolder = NULL;
-}
-*/
 //---------------------------------------------------------------------------
 static std::vector<tTJSNI_VideoOverlay *> TVPVideoOverlayVector;
 //---------------------------------------------------------------------------
@@ -203,7 +150,6 @@ static void TVPShutdownVideoOverlay()
 	}
 
 	if(TVPMovieVideoModule) delete TVPMovieVideoModule, TVPMovieVideoModule = NULL;
-	if(TVPLayerMovieVideoModule) delete TVPLayerMovieVideoModule, TVPLayerMovieVideoModule = NULL;	// T.Imoto
 	if(TVPFlashVideoModule) delete TVPFlashVideoModule, TVPFlashVideoModule = NULL;
 }
 static tTVPAtExit TVPShutdownVideoOverlayAtExit
@@ -318,14 +264,8 @@ void tTJSNI_VideoOverlay::Open(const ttstr &_name)
 	{
 		flash = false;
 
-		if( Mode == vomOverlay )
-		{	// load krmovie.dll
-			mod = TVPGetMovieVideoModule();
-		}
-		else
-		{	// load krlmovie.dll
-			mod = TVPGetLayerMovieVideoModule();
-		}
+		// load krmovie.dll
+		mod = TVPGetMovieVideoModule();
 
 		// prepate IStream
 		tTJSBinaryStream *stream0 = NULL;
@@ -415,7 +355,6 @@ void tTJSNI_VideoOverlay::Close()
 		delete LocalTempStorageHolder, LocalTempStorageHolder = NULL;
 	ClearWndProcMessages();
 	SetStatus(ssUnload);
-//	TVPUnloadKrMovie();
 
 	if( Bitmap[0] )
 		delete Bitmap[0];
