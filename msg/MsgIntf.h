@@ -111,22 +111,22 @@ TVP_MSG_DECL(TVPCannotFindStorage,
 	"ストレージ %1 が見つかりません");
 
 TVP_MSG_DECL(TVPCannotOpenStorageForWrite,
-	"ストレージ %1 を書き込み用に開くことができません");
+	"ストレージ %1 を書き込み用に開くことができません。ファイルが書き込み禁止になっていないか、あるいはファイルに書き込み権限があるかどうか、あるいはそもそもそれが書き込み可能なメディアやファイルなのかを確認してください");
 
 TVP_MSG_DECL(TVPStorageInArchiveNotFound,
 	"ストレージ %1 がアーカイブ %2 の中に見つかりません");
 
 TVP_MSG_DECL(TVPInvalidPathName,
-	"パス名 %1 は無効な形式です");
+	"パス名 %1 は無効な形式です。形式が正しいかどうかを確認してください");
 
 TVP_MSG_DECL(TVPUnsupportedMediaName,
 	"\"%1\" は対応していないメディアタイプです");
 
 TVP_MSG_DECL(TVPCannotUnbindXP3EXE,
-	"%1 に結合されたアーカイブを発見できませんでした");
+	"%1 は実行可能ファイルに見えますが、これに結合されたアーカイブを発見できませんでした");
 
 TVP_MSG_DECL(TVPCannotFindXP3Mark,
-	"%1 は XP3 アーカイブではないか、対応できない形式です");
+	"%1 は XP3 アーカイブではないか、対応できない形式です。アーカイブファイルを指定すべき場面で通常のファイルを指定した場合、あるいは対応できないアーカイブファイルを指定した場合などにこのエラーが発生しますので、確認してください");
 
 TVP_MSG_DECL(TVPMissingPathDelimiterAtLast,
 	"パス名の最後には '>' または '/' を指定してください (吉里吉里２ 2.19 beta 14 よりアーカイブの区切り記号が '#' から '>' に変わりました)");
@@ -136,25 +136,25 @@ TVP_MSG_DECL(TVPFilenameContainsSharpWarn,
 	"もしアーカイブの区切り文字のつもりで '#' を使用した場合は、お手数ですが '>' に変えてください");
 
 TVP_MSG_DECL(TVPCannotGetLocalName,
-	"ストレージ名 %1 をローカルファイル名に変換できません");
+	"ストレージ名 %1 をローカルファイル名に変換できません。アーカイブファイル内のファイルや、ローカルファイルでないファイルはローカルファイル名に変換できません。");
 
 TVP_MSG_DECL(TVPReadError,
-	"読み込みエラーです");
+	"読み込みエラーです。ファイルが破損している可能性や、デバイスからの読み込みに失敗した可能性があります");
 
 TVP_MSG_DECL(TVPWriteError,
 	"書き込みエラーです");
 
 TVP_MSG_DECL(TVPSeekError,
-	"シークに失敗しました");
+	"シークに失敗しました。ファイルが破損している可能性や、デバイスからの読み込みに失敗した可能性があります");
 
 TVP_MSG_DECL(TVPTruncateError,
 	"ファイルの長さを切り詰めるのに失敗しました");
 
 TVP_MSG_DECL(TVPInsufficientMemory,
-	"メモリ確保に失敗しました");
+	"メモリ確保に失敗しました。");
 
 TVP_MSG_DECL(TVPUncompressionFailed,
-	"ファイルの展開に失敗しました");
+	"ファイルの展開に失敗しました。未対応の圧縮形式が指定されたか、あるいはファイルが破損している可能性があります");
 
 TVP_MSG_DECL(TVPCompressionFailed,
 	"ファイルの圧縮に失敗しました");
@@ -163,7 +163,7 @@ TVP_MSG_DECL(TVPCannotWriteToArchive,
 	"アーカイブにデータを書き込むことはできません");
 
 TVP_MSG_DECL(TVPUnsupportedCipherMode,
-	"%1 は未対応の暗号化形式か、データが壊れています");
+	"%1 は未対応の暗号化形式か、データが破損しています");
 
 TVP_MSG_DECL(TVPUnsupportedModeString,
 	"認識できないモード文字列の指定です(%1)");
@@ -250,7 +250,7 @@ TVP_MSG_DECL(TVPNegativeOpacityNotSupportedOnThisFace,
 	"負の不透明度はこの face では指定できません");
 
 TVP_MSG_DECL(TVPSrcRectOutOfBitmap,
-	"転送元がビットマップ外の領域を含んでいます");
+	"転送元がビットマップ外の領域を含んでいます。正しい範囲に収まるように転送元を指定してください");
 
 TVP_MSG_DECL(TVPCannotChangeFocusInProcessingFocus,
 	"フォーカス変更処理中はフォーカスを新たに変更することはできません");
@@ -286,7 +286,7 @@ TVP_MSG_DECL(TVPSpecifyMenuItem,
 	"MenuItem クラスのオブジェクトを指定してください");
 
 TVP_MSG_DECL(TVPCurrentTransitionMustBeStopping,
-	"現在のトランジションを停止させてから新しいトランジションを開始してください");
+	"現在のトランジションを停止させてから新しいトランジションを開始してください。同じレイヤに対して複数のトランジションを同時に実行しようとするとこのエラーが発生します");
 
 TVP_MSG_DECL(TVPTransHandlerError,
 	"トランジションハンドラでエラーが発生しました : %1");
@@ -328,7 +328,7 @@ TVP_MSG_DECL(TVPKAGInlineScriptNotEnd,
 	"[endscript] または @endscript が見つかりません");
 
 TVP_MSG_DECL(TVPKAGSyntaxError,
-	"タグの文法エラーです");
+	"タグの文法エラーです。'[' や ']' の対応、\" と \" の対応、スペースの入れ忘れ、余分な改行などを確認してください");
 
 TVP_MSG_DECL(TVPKAGMacroEntityNotAvailable,
 	"マクロエンティティはマクロ外では使用できません");
@@ -343,7 +343,7 @@ TVP_MSG_DECL(TVPKAGSpecifyKAGParser,
 	"KAGParser クラスのオブジェクトを指定してください");
 
 TVP_MSG_DECL(TVPKAGMalformedSaveData,
-	"栞データが異常です");
+	"栞データが異常です。データが破損している可能性があります");
 
 TVP_MSG_DECL(TVPLabelOrScriptInMacro,
 	"ラベルや iscript はマクロ中に記述できません");
