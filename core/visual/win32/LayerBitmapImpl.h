@@ -199,14 +199,16 @@ public:
 			tjs_int shwidth = 0, tjs_int shofsx = 0, tjs_int shofsy = 0,
 			tTVPComplexRect *updaterects = NULL)
 	{
-		if(text.GetLen() >= 2)
+		tjs_int len = text.GetLen();
+		if(len == 0) return;
+		if(len >= 2)
 			DrawTextMultiple(
 				destrect, x, y, text,
 				color, bltmode, opa,
 				holdalpha, aa, shlevel,
 				shadowcolor, shwidth, shofsx, shofsy,
 				updaterects);
-		else
+		else    /* if len == 1 */
 			DrawTextSingle(
 				destrect, x, y, text,
 				color, bltmode, opa,
