@@ -1146,9 +1146,11 @@ void TVPAfterSystemInit()
 	{
 		ttstr str(opt);
 		if(str == TJS_W("normal"))
-			TVPJPEGFastLoad = false;
+			TVPJPEGLoadPrecision = jlpMedium;
 		else if(str == TJS_W("low"))
-			TVPJPEGFastLoad = true;
+			TVPJPEGLoadPrecision = jlpLow;
+		else if(str == TJS_W("high"))
+			TVPJPEGLoadPrecision = jlpHigh;
 
 	}
 

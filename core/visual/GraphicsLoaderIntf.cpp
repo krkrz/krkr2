@@ -679,7 +679,7 @@ extern "C"
 //---------------------------------------------------------------------------
 // JPEG loading handler
 //---------------------------------------------------------------------------
-bool TVPJPEGFastLoad = false;
+tTVPJPEGLoadPrecision TVPJPEGLoadPrecision = jlpMedium;
 //---------------------------------------------------------------------------
 struct my_error_mgr
 {
@@ -836,8 +836,22 @@ void TVPLoadJPEG(void* formatdata, void *callbackdata, tTVPGraphicSizeCallback s
 	jpeg_read_header(&cinfo, TRUE);
 
 	// decompress option
-	cinfo.dct_method = JDCT_IFAST;
-	if(TVPJPEGFastLoad) cinfo.do_fancy_upsampling = FALSE;
+	switch(TVPJPEGLoadPrecision)
+	{
+	case jlpLow:
+		cinfo.dct_method = JDCT_IFAST;
+		cinfo.do_fancy_upsampling = FALSE;
+		break;
+	case jlpMedium:
+		cinfo.dct_method = JDCT_IFAST;
+		cinfo.do_fancy_upsampling = TRUE;
+		break;
+	case jlpHigh:
+		cinfo.dct_method = JDCT_FLOAT;
+		cinfo.do_fancy_upsampling = TRUE;
+		break;
+	}
+
 	if(grayscale) cinfo.out_color_space =  JCS_GRAYSCALE;
 
 	// start decompression

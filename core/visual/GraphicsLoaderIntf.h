@@ -120,7 +120,14 @@ extern void TVPSaveAsBMP(const ttstr & storagename, const ttstr & mode,
 //---------------------------------------------------------------------------
 // JPEG loading handler
 //---------------------------------------------------------------------------
-extern bool TVPJPEGFastLoad;
+enum tTVPJPEGLoadPrecision
+{
+	jlpLow,
+	jlpMedium,
+	jlpHigh
+};
+
+extern tTVPJPEGLoadPrecision TVPJPEGLoadPrecision;
 //---------------------------------------------------------------------------
 
 
