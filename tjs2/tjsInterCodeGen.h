@@ -69,7 +69,7 @@ enum tTJSVMCodes{
 	VM_GPD, VM_SPD, VM_SPDE, VM_SPDEH, VM_GPI, VM_SPI, VM_SPIE,
 	VM_GPDS, VM_SPDS, VM_GPIS, VM_SPIS,  
 	VM_DELD, VM_DELI, VM_SRV, VM_RET, VM_ENTRY, VM_EXTRY, VM_THROW,
-	VM_CHGTHIS, VM_GLOBAL, VM_ADDCI, VM_DEBUGGER,
+	VM_CHGTHIS, VM_GLOBAL, VM_ADDCI, VM_REGMEMBER, VM_DEBUGGER,
 
 	__VM_LAST /* = last mark ; this is not a real operation code */} ;
 
@@ -508,6 +508,8 @@ private:
 	static void CharacterCodeOf(tTJSVariant &val);
 	static void CharacterCodeFrom(tTJSVariant &val);
 	static void InstanceOf(const tTJSVariant &name, tTJSVariant &targ);
+
+	void RegisterObjectMember(iTJSDispatch2 * dest);
 
 public:
 	// iTJSDispatch2 implementation

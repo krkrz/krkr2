@@ -250,7 +250,8 @@ tTJSInterCodeContext::tTJSInterCodeContext(tTJSInterCodeContext *parent,
 
 		if(ContextType == ctClass)
 		{
-			// add class information to the type instance information
+			// add class information to the class instance information
+			if(MaxFrameCount < 1) MaxFrameCount = 1;
 
 			tjs_int dp = PutData(tTJSVariant(Name));
 			// const %1, name
@@ -264,6 +265,9 @@ tTJSInterCodeContext::tTJSInterCodeContext(tTJSInterCodeContext *parent,
 			PutCode(TJS_TO_VM_REG_ADDR(1));
 			PutCode(VM_CL);
 			PutCode(TJS_TO_VM_REG_ADDR(1));
+
+			// update FunctionRegisterCodePoint
+			FunctionRegisterCodePoint = CodeAreaSize; // update FunctionRegisterCodePoint
 		}
 	}
 	catch(...)
@@ -557,6 +561,19 @@ void tTJSInterCodeContext::FixCode(void)
 	// code re-positioning and patch processing
 	// TODO: tTJSInterCodeContext::FixCode fasten the algorithm
 
+	// create 'regmember' instruction to register class members to 
+	// newly created object
+	if(ContextType == ctClass)
+	{
+		// generate a code
+		tjs_int32 * code = new tjs_int32[1];
+		code[0] = VM_REGMEMBER;
+
+		// make a patch information
+		// use FunctionRegisterCodePoint for insertion point
+		FixList.push_back(tFixData(FunctionRegisterCodePoint, 0, 1, code, true));
+	}
+
 	// process funtion reservation to enable backward reference of
 	// global/method functions
 	if(NonLocalFunctionDeclVector.size() >= 1)
@@ -773,8 +790,7 @@ void tTJSInterCodeContext::RegisterFunction()
 
 	tjs_int data = -1;
 
-	if(Parent->ContextType == ctTopLevel ||
-		Parent->ContextType == ctClass)
+	if(Parent->ContextType == ctTopLevel)
 	{
 		tTJSVariant val;
 		val = this;
@@ -783,7 +799,6 @@ void tTJSInterCodeContext::RegisterFunction()
 		tjs_int name = Parent->PutData(val);
 		bool changethis = ContextType == ctFunction ||
 							ContextType == ctProperty;
-			// Parent->ContextType == ctClass;
 		Parent->NonLocalFunctionDeclVector.push_back(
 			tNonLocalFunctionDecl(data, name, changethis));
 	}
