@@ -142,21 +142,27 @@ TVPAdditiveAlphaBlend_name:					; additive alpha blend
 
 		jmp			near	.ploop
 
+.popaque:
+		movq		mm1,	[ebp]			; load
+		movq		[edi],	mm1				; store
 .ptransp:									; completely transparent
 		add			ebp,	byte 8
 		add			edi,	byte 8
 		cmp			edi,	esi
 		jae			near	.pfraction
 
-		loop_align							; main loop
 .ploop:
-;	 full transparent checking will make the routine faster in usual usage.
+;	 full transparent / full opaque checking will make the routine faster in usual usage.
 		mov			eax,	[ebp]			; 1 src
 		mov			edx,	[ebp+4]			; 2 src
 		mov			ebx,	eax
+		mov			ecx,	eax
 
+		and			ecx,	edx
 		or			ebx,	edx
-		jz			near	.ptransp		; completely transparent
+		jz			.ptransp				; completely transparent
+		cmp			ecx,	0ff000000h
+		jae			.popaque				; totally opaque
 
 		shr			edx,	24				; 2 eax = opa
 		movd		mm4,	eax				; 1 src
@@ -559,11 +565,32 @@ TVPAdditiveAlphaBlend_a_name:					; additive alpha blend on additive alpha
 
 		ENDIF
 
+		jmp			.ploop
 
-		loop_align
+.popaque:
+		movq		mm1,	[ebp]			; load
+		movq		[edi],	mm1				; store
+.ptransp:									; completely transparent
+		add			ebp,	byte 8
+		add			edi,	byte 8
+		cmp			edi,	esi
+		jae			near	.pfraction
+
 .ploop:
-		movd		mm3,		[ebp]		; 1 src      (SaSiSiSi)
-		movd		mm5,		[ebp+4]		; 2 src      (SaSiSiSi)
+;	 full transparent / full opaque checking will make the routine faster in usual usage.
+		mov			eax,	[ebp]			; 1 src
+		mov			edx,	[ebp+4]			; 2 src
+		mov			ebx,	eax
+		mov			ecx,	eax
+
+		and			ecx,	edx
+		or			ebx,	edx
+		jz			.ptransp				; completely transparent
+		cmp			ecx,	0ff000000h
+		jae			.popaque				; totally opaque
+
+		movd		mm3,		eax			; 1 src      (SaSiSiSi)
+		movd		mm5,		edx			; 2 src      (SaSiSiSi)
 		movq		mm4,		mm3			; 1
 		movq		mm6,		mm5			; 2
 		psrlq		mm4,		24			; 1 mm4 = Sa
