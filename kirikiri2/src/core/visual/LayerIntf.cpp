@@ -3426,7 +3426,7 @@ void tTJSNI_BaseLayer::ColorRect(const tTVPRect &rect, tjs_uint32 color, tjs_int
 
 	case dfAddAlpha: // additive alpha; main and mask
 		if(!MainImage) TVPThrowExceptionMessage(TVPNotDrawableLayerType);
-		if(opa > 0)
+		if(opa >= 0)
 		{
 			color = TVPToActualColor(color);
 			ImageModified = MainImage->FillColorOnAddAlpha(destrect, color, opa) || ImageModified;
