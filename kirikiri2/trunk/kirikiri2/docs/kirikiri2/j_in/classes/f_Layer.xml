@@ -1968,8 +1968,7 @@
 		　指定されたコピー元レイヤの矩形を、コピー先 ( メソッドを実行するレイヤ ) の矩形に
 		コピーします。コピー元矩形とコピー先矩形のサイズが異なる場合は拡大または縮小が
 		行われます。<r/>
-		　現バージョンでは stFastLinear の指定で線形補間が効くのは、コピー先レイヤの横幅、縦幅の
-		　どちらか、あるいは両方がコピー元レイヤのそれぞれの２倍である場合のみです。<r/>
+		　現バージョンでは stFastLinear の指定で線形補間が効くのは、重ね合わせ先の ( メソッドを実行する ) レイヤの <ref>Layer.face</ref> プロパティが dfAlpha (または dfBoth) または dfAddAlpha の場合です。また、Layer.face プロパティが dfOpaque で、<ref>Layer.holdAlpha</ref> プロパティが偽の時も線形補間が可能です。<r/>
 		　また、現バージョンでは stLinear あるいは stCubic の指定が有効なのは、左右／上下反転を
 		伴わず、コピー先矩形がレイヤをはみ出さない場合のみです。<r/>
 		　重ね合わせ先の ( メソッドを実行する ) レイヤの <ref>Layer.face</ref> プロパティが
@@ -2165,7 +2164,7 @@
 			<desc>
 				　拡大縮小のタイプを指定します。<r/>
 				<tt><kw>stNearest</kw>    </tt> : 最近傍点法が用いられます<r/>
-				<tt><kw>stFastLinear</kw> </tt> : 低精度の線形補間が用いられます(未実装)<r/>
+				<tt><kw>stFastLinear</kw> </tt> : 低精度の線形補間が用いられます(一部実装)<r/>
 				<tt><kw>stLinear</kw>     </tt> : 線形補間が用いられます(未実装)<r/>
 				<tt><kw>stCubic</kw>      </tt> : ３次元補間が用いられます(未実装)<r/>
 				　速度は stNearest > stFastLinear > stLinear > stCubic の順に高速ですが、画質は速度が
@@ -2178,12 +2177,11 @@
 		　指定された重ね合わせ元レイヤの矩形を、重ね合わせ先 ( メソッドを実行するレイヤ ) の矩形に
 		重ね合わせます。重ね合わせ元矩形と重ね合わせ先矩形のサイズが異なる場合は拡大または縮小が
 		行われます。<r/>
-		　現バージョンでは mode には stNearest のみ指定できます。<r/>
 		　重ね合わせ元のレイヤの Layer.face プロパティは無視されますが、<ref>Layer.stretchPile</ref> と異な
 		り、重ね合わせ元のレイヤの不透明度は無視されます ( 常に完全に不透明であると見なされます )。<r/>
 		　重ね合わされる画像は、重ね合わせ先の ( メソッドを実行する ) レイヤの <ref>Layer.face</ref> プロパティの値によって変わります。<r/>
 		<tt><kw>dfAlpha</kw> (または<kw>dfBoth</kw>)    </tt> : 重ね合わせ先の不透明度を考慮した重ね合わせが行われます<r/>
-		<tt><kw>dfOpaque</kw> (または<kw>dfMain</kw>)   </tt> : 重ね合わせ先の不透明度を無視した重ね合わせが行われます(重ね合わせ先は全面完全不透明として扱われます)<r/>
+		<tt><kw>dfOpaque</kw> (または<kw>dfMain</kw>)   </tt> : 重ね合わせ先の不透明度を無視した重ね合わせが行われます(重ね合わせ先は全面完全不透明として扱われます)。この場合は、<ref>Layer.holdAlpha</ref>プロパティが偽のとき、type 引数に stFastLinear を指定することにより、線形補間が可能です。<r/>
 		<tt><kw>それ以外</kw>  </tt>                 : できません ( 例外が発生します )<r/>
 		<r/>
 		　このメソッドは旧式になりました。代わりに <ref>Layer.operateStretch</ref> を使用してください。演算のモードに omOpaque を指定すると同じ効果になります。<r/>
@@ -2272,8 +2270,8 @@
 				<tt><kw>omLighten</kw></tt> が指定された場合は比較(明)合成が行われます(現バージョンでは未実装です)。<r/>
 				<tt><kw>omScreen</kw></tt> が指定された場合はスクリーン乗算合成が行われます(現バージョンでは未実装です)。<r/>
 				<tt><kw>omAlpha</kw></tt> が指定された場合はアルファ合成が行われます。<r/>
-				<tt><kw>omAddAlpha</kw></tt> が指定された場合は加算アルファ合成が行われます。<r/>
-				<tt><kw>omOpaque</kw></tt> が指定された場合は src のアルファ情報は無視され、src は常に完全不透明であると見なされます。<r/>
+				<tt><kw>omAddAlpha</kw></tt> が指定された場合は加算アルファ合成が行われます。この場合は、転送先の <ref>Layer.face</ref> プロパティが dfOpaque かつ <ref>Layer.holdAlpha</ref> プロパティが偽のとき、type 引数に stFastLinear を指定することにより線形補間が可能です。<r/>
+				<tt><kw>omOpaque</kw></tt> が指定された場合は src のアルファ情報は無視され、src は常に完全不透明であると見なされます。この場合は、転送先の <ref>Layer.face</ref> プロパティが dfOpaque かつ <ref>Layer.holdAlpha</ref> プロパティが偽のとき、type 引数に stFastLinear を指定することにより線形補間が可能です。<r/>
 			</desc>
 		</argitem>
 		<argitem>
@@ -2289,7 +2287,7 @@
 			<desc>
 				　拡大縮小のタイプを指定します。<r/>
 				<tt><kw>stNearest</kw>    </tt> : 最近傍点法が用いられます<r/>
-				<tt><kw>stFastLinear</kw> </tt> : 低精度の線形補間が用いられます(未実装)<r/>
+				<tt><kw>stFastLinear</kw> </tt> : 低精度の線形補間が用いられます(一部実装)<r/>
 				<tt><kw>stLinear</kw>     </tt> : 線形補間が用いられます(未実装)<r/>
 				<tt><kw>stCubic</kw>      </tt> : ３次元補間が用いられます(未実装)<r/>
 				　速度は stNearest > stFastLinear > stLinear > stCubic の順に高速ですが、画質は速度が
@@ -2426,7 +2424,7 @@
 			<desc>
 				　アフィン変換のタイプを指定します。<r/>
 				<tt><kw>stNearest</kw>    </tt> : 最近傍点法が用いられます<r/>
-				<tt><kw>stFastLinear</kw> </tt> : 低精度の線形補間が用いられます(未実装)<r/>
+				<tt><kw>stFastLinear</kw> </tt> : 低精度の線形補間が用いられます(一部実装)<r/>
 				<tt><kw>stLinear</kw>     </tt> : 線形補間が用いられます(未実装)<r/>
 				<tt><kw>stCubic</kw>      </tt> : ３次元補間が用いられます(未実装)<r/>
 			</desc>
@@ -2438,7 +2436,7 @@
 		アフィン変換を行いながらコピーします。<r/>
 		　affine 引数によって、変形パラメータとして二次元アフィン変換行列を指定するか、
 		あるいは変換後の点を直接指定するかを選ぶことができます。<r/>
-		　現バージョンでは mode には stNearest のみ指定できます。<r/>
+		　現バージョンでは stFastLinear の指定で線形補間が効くのは、重ね合わせ先の ( メソッドを実行する ) レイヤの <ref>Layer.face</ref> プロパティが dfAlpha (または dfBoth) または dfAddAlpha の場合です。また、Layer.face プロパティが dfOpaque で、<ref>Layer.holdAlpha</ref> プロパティが偽の時も線形補間が可能です。<r/>
 		　重ね合わせ先の ( メソッドを実行する ) レイヤの <ref>Layer.face</ref> プロパティが
 		dfAlpha (または dfBoth) または dfAddAlpha の場合は、メイン画像とマスク画像の両方がコピーされます。<r/>
 		　重ね合わせ先の ( メソッドを実行する ) レイヤの Layer.face プロパティが
@@ -2725,7 +2723,7 @@
 			<desc>
 				　アフィン変換のタイプを指定します。<r/>
 				<tt><kw>stNearest</kw>    </tt> : 最近傍点法が用いられます<r/>
-				<tt><kw>stFastLinear</kw> </tt> : 低精度の線形補間が用いられます(未実装)<r/>
+				<tt><kw>stFastLinear</kw> </tt> : 低精度の線形補間が用いられます(一部実装)<r/>
 				<tt><kw>stLinear</kw>     </tt> : 線形補間が用いられます(未実装)<r/>
 				<tt><kw>stCubic</kw>      </tt> : ３次元補間が用いられます(未実装)<r/>
 				　速度は stNearest > stFastLinear > stLinear > stCubic の順に高速ですが、画質は速度が
@@ -2738,13 +2736,12 @@
 		　指定された重ね合わせ元レイヤの矩形を、重ね合わせ先 ( メソッドを実行するレイヤ ) に
 		アフィン変換を行いながら重ね合わせます。<r/>
 		　アフィン変換については <ref>Layer.affineCopy</ref> も参照してください。<r/>
-		　現バージョンでは mode には stNearest のみ指定できます。<r/>
 		　重ね合わせ元のレイヤの Layer.face プロパティは無視されますが、<ref>Layer.affinePile</ref> と異な
 		り、重ね合わせ元のレイヤの不透明度は無視されます ( 常に完全に不透明であると見なされます )。<r/>
 		　重ね合わされる画像は、重ね合わせ先の ( メソッドを実行する ) レイ
 		ヤの <ref>Layer.face</ref> プロパティの値によって変わります。<r/>
 		<tt><kw>dfAlpha</kw> (または<kw>dfBoth</kw>)    </tt> : 重ね合わせ先の不透明度を考慮した重ね合わせが行われます<r/>
-		<tt><kw>dfOpaque</kw> (または<kw>dfMain</kw>)   </tt> : 重ね合わせ先の不透明度を無視した重ね合わせが行われます(重ね合わせ先は全面完全不透明として扱われます)<r/>
+		<tt><kw>dfOpaque</kw> (または<kw>dfMain</kw>)   </tt> : 重ね合わせ先の不透明度を無視した重ね合わせが行われます(重ね合わせ先は全面完全不透明として扱われます)。この場合は、<ref>Layer.holdAlpha</ref>プロパティが偽のとき、type 引数に stFastLinear を指定することにより、線形補間が可能です。<r/>
 		<tt><kw>それ以外</kw>  </tt>                 : できません ( 例外が発生します )<r/>
 		<r/>
 		　このメソッドは旧式になりました。代わりに <ref>Layer.operateAffine</ref> を使用してください。演算のモードに omOpaque を指定すると同じ効果になります。<r/>
@@ -2878,8 +2875,8 @@
 				<tt><kw>omLighten</kw></tt> が指定された場合は比較(明)合成が行われます(現バージョンでは未実装です)。<r/>
 				<tt><kw>omScreen</kw></tt> が指定された場合はスクリーン乗算合成が行われます(現バージョンでは未実装です)。<r/>
 				<tt><kw>omAlpha</kw></tt> が指定された場合はアルファ合成が行われます。<r/>
-				<tt><kw>omAddAlpha</kw></tt> が指定された場合は加算アルファ合成が行われます。<r/>
-				<tt><kw>omOpaque</kw></tt> が指定された場合は src のアルファ情報は無視され、src は常に完全不透明であると見なされます。<r/>
+				<tt><kw>omAddAlpha</kw></tt> が指定された場合は加算アルファ合成が行われます。この場合は、転送先の <ref>Layer.face</ref> プロパティが dfOpaque かつ <ref>Layer.holdAlpha</ref> プロパティが偽のとき、type 引数に stFastLinear を指定することにより線形補間が可能です。<r/>
+				<tt><kw>omOpaque</kw></tt> が指定された場合は src のアルファ情報は無視され、src は常に完全不透明であると見なされます。この場合は、転送先の <ref>Layer.face</ref> プロパティが dfOpaque かつ <ref>Layer.holdAlpha</ref> プロパティが偽のとき、type 引数に stFastLinear を指定することにより線形補間が可能です。<r/>
 			</desc>
 		</argitem>
 		<argitem>
@@ -2895,7 +2892,7 @@
 			<desc>
 				　アフィン変換のタイプを指定します。<r/>
 				<tt><kw>stNearest</kw>    </tt> : 最近傍点法が用いられます<r/>
-				<tt><kw>stFastLinear</kw> </tt> : 低精度の線形補間が用いられます(未実装)<r/>
+				<tt><kw>stFastLinear</kw> </tt> : 低精度の線形補間が用いられます(一部実装)<r/>
 				<tt><kw>stLinear</kw>     </tt> : 線形補間が用いられます(未実装)<r/>
 				<tt><kw>stCubic</kw>      </tt> : ３次元補間が用いられます(未実装)<r/>
 				　速度は stNearest > stFastLinear > stLinear > stCubic の順に高速ですが、画質は速度が
@@ -2908,7 +2905,6 @@
 		　指定された重ね合わせ元レイヤの矩形を、重ね合わせ先 ( メソッドを実行するレイヤ ) に
 		アフィン変換を行いながら演算合成します。<r/>
 		　アフィン変換については <ref>Layer.affineCopy</ref> も参照してください。<r/>
-		　現バージョンでは mode には stNearest のみ指定できます。<r/>
 		　mode に omAuto を指定した場合は、演算元レイヤの<ref>Layer.type</ref>プロパティに従って演算の種類が自動的に決定されます。<r/>
 	</desc>
 </member>
