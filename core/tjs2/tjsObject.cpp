@@ -1055,7 +1055,7 @@ void tTJSCustomObject::InternalEnumMembers(tjs_uint32 flags,
 	tTJSVariantClosure *callback, iTJSDispatch2 *objthis)
 {
 	// enumlate members by calling callback.
-	// not that member changes(delete or insert) through this function is not guaranteed.
+	// note that member changes(delete or insert) through this function is not guaranteed.
 	if(!callback) return;
 
 	tTJSVariant name;
