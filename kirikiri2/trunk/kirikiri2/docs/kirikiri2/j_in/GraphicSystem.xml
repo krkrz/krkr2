@@ -179,7 +179,7 @@ ltTransparent でも同じ意味になりますが、2.23 beta 2 未満における古い名称です。
 
 <dt>演算モード</dt>
 <dd>
-　演算モードは <at href="f_Layer.operateRect.html">Layer.operateRect</at> メソッドなどの引数で指定する値で、演算元(重ね合わせるレイヤ) をどのように扱うかを指定する値です。omAuto を指定すると、演算元のレイヤタイプに従って適切なモードが決定されます。
+　演算モードは <at href="f_Layer_operateRect.html">Layer.operateRect</at> メソッドなどの引数で指定する値で、演算元(重ね合わせるレイヤ) をどのように扱うかを指定する値です。omAuto を指定すると、演算元のレイヤタイプに従って適切なモードが決定されます。
 </dd>
 
 </dl>
