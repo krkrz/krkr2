@@ -3729,7 +3729,7 @@ void tTJSNI_BaseLayer::AffineCopy(const t2DAffineMatrix &matrix, tTJSNI_BaseLaye
 	}
 }
 //---------------------------------------------------------------------------
-void tTJSNI_BaseLayer::AffineCopy(const tTVPPoint *points, tTJSNI_BaseLayer *src,
+void tTJSNI_BaseLayer::AffineCopy(const tTVPPointD *points, tTJSNI_BaseLayer *src,
 		const tTVPRect &srcrect, tTVPBBStretchType type)
 {
 	// affine copy
@@ -4084,7 +4084,7 @@ void tTJSNI_BaseLayer::AffinePile(const t2DAffineMatrix &matrix, tTJSNI_BaseLaye
 	}
 }
 //---------------------------------------------------------------------------
-void tTJSNI_BaseLayer::AffinePile(const tTVPPoint *points, tTJSNI_BaseLayer *src,
+void tTJSNI_BaseLayer::AffinePile(const tTVPPointD *points, tTJSNI_BaseLayer *src,
 	const tTVPRect &srcrect, tjs_int opacity,
 	tTVPBBStretchType type)
 {
@@ -4176,7 +4176,7 @@ void tTJSNI_BaseLayer::AffineBlend(const t2DAffineMatrix &matrix, tTJSNI_BaseLay
 	}
 }
 //---------------------------------------------------------------------------
-void tTJSNI_BaseLayer::AffineBlend(const tTVPPoint *points, tTJSNI_BaseLayer *src,
+void tTJSNI_BaseLayer::AffineBlend(const tTVPPointD *points, tTJSNI_BaseLayer *src,
 	const tTVPRect &srcrect, tjs_int opacity,
 	tTVPBBStretchType type)
 {
@@ -4257,7 +4257,7 @@ void tTJSNI_BaseLayer::OperateAffine(const t2DAffineMatrix &matrix,
 
 }
 //---------------------------------------------------------------------------
-void tTJSNI_BaseLayer::OperateAffine(const tTVPPoint *points, tTJSNI_BaseLayer *src,
+void tTJSNI_BaseLayer::OperateAffine(const tTVPPointD *points, tTJSNI_BaseLayer *src,
 		const tTVPRect &srcrect, tTVPBlendOperationMode mode, tjs_int opacity,
 		tTVPBBStretchType type)
 {
@@ -7505,7 +7505,7 @@ TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/affineCopy)
 	else
 	{
 		// points mode
-		tTVPPoint points[3];
+		tTVPPointD points[3];
 		points[0].x = *param[6];
 		points[0].y = *param[7];
 		points[1].x = *param[8];
@@ -7567,7 +7567,7 @@ TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/affinePile)
 	else
 	{
 		// points mode
-		tTVPPoint points[3];
+		tTVPPointD points[3];
 		points[0].x = *param[6];
 		points[0].y = *param[7];
 		points[1].x = *param[8];
@@ -7629,7 +7629,7 @@ TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/affineBlend)
 	else
 	{
 		// points mode
-		tTVPPoint points[3];
+		tTVPPointD points[3];
 		points[0].x = *param[6];
 		points[0].y = *param[7];
 		points[1].x = *param[8];
@@ -7699,7 +7699,7 @@ TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/operateAffine)
 	else
 	{
 		// points mode
-		tTVPPoint points[3];
+		tTVPPointD points[3];
 		points[0].x = *param[6];
 		points[0].y = *param[7];
 		points[1].x = *param[8];

@@ -675,7 +675,7 @@ public:
 	void AffineCopy(const t2DAffineMatrix &matrix, tTJSNI_BaseLayer *src,
 		const tTVPRect &srcrect, tTVPBBStretchType mode = stNearest);
 
-	void AffineCopy(const tTVPPoint *points, tTJSNI_BaseLayer *src,
+	void AffineCopy(const tTVPPointD *points, tTJSNI_BaseLayer *src,
 		const tTVPRect &srcrect, tTVPBBStretchType mode = stNearest);
 
 	void PileRect(tjs_int dx, tjs_int dy, tTJSNI_BaseLayer *src,
@@ -704,7 +704,7 @@ public:
 		const tTVPRect &srcrect, tjs_int opacity = 255,
 		tTVPBBStretchType type = stNearest);
 
-	void AffinePile(const tTVPPoint *points, tTJSNI_BaseLayer *src,
+	void AffinePile(const tTVPPointD *points, tTJSNI_BaseLayer *src,
 		const tTVPRect &srcrect, tjs_int opacity = 255,
 		tTVPBBStretchType type = stNearest);
 
@@ -712,7 +712,7 @@ public:
 		const tTVPRect &srcrect, tjs_int opacity = 255,
 		tTVPBBStretchType type = stNearest);
 
-	void AffineBlend(const tTVPPoint *points, tTJSNI_BaseLayer *src,
+	void AffineBlend(const tTVPPointD *points, tTJSNI_BaseLayer *src,
 		const tTVPRect &srcrect, tjs_int opacity = 255,
 		tTVPBBStretchType type = stNearest);
 
@@ -720,7 +720,7 @@ public:
 		const tTVPRect &srcrect, tTVPBlendOperationMode mode = omAuto, tjs_int opacity = 255,
 		tTVPBBStretchType type = stNearest);
 
-	void OperateAffine(const tTVPPoint *points, tTJSNI_BaseLayer *src,
+	void OperateAffine(const tTVPPointD *points, tTJSNI_BaseLayer *src,
 		const tTVPRect &srcrect, tTVPBlendOperationMode mode = omAuto, tjs_int opacity = 255,
 		tTVPBBStretchType type = stNearest);
 

@@ -22,13 +22,13 @@ class TestWindow extends Window
 		add(src = new Layer(this, fore));
 		add(src2 = new Layer(this, fore));
 
-		fore.loadImages("../kag3/bgimage/_24_3");
+		fore.loadImages("../../../kag3/tests/bgimage/_24_3");
 		fore.setSizeToImageSize();
-		src.loadImages("../../../../tlg4comp/b2.bmp");
+		src.loadImages ("../../../../tlg4comp/b2.bmp");
 //		src.loadImages("../kag3/bgimage/black");
 		src.setSizeToImageSize();
 		src.type = ltCoverRect;
-		src2.loadImages("../kag3/fgimage/uni");
+		src2.loadImages("../../../kag3/tests/fgimage/uni");
 		src2.setSizeToImageSize();
 		src2.type = ltTransparent;
 
@@ -36,15 +36,28 @@ class TestWindow extends Window
 
 		visible = true;
 
+		fore.face = dfOpaque;
+//		fore.setClip(200, 100, 200, 200);
+//		fore.colorRect(200, 100, 200, 200, 0xff0000, 128);
+
 		fore.face = dfBoth;
-
-		fore.setClip(100, 100, 400, 320);
-
-
+/*
+		src.face = dfOpaque;
+		src.font.height = 30;
+		src.fillRect(0, 0, 640, 480, 0);
+		src.drawText(100, 200, "•¶Žš‚¢‚Á‚Ï‚¢", 0xffffff, 255);
+		src.font.height = 16;
+		src.drawText(100, 280, "‚¢‚Á‚Ï‚¢•¶Žš", 0xffffff, 255);
+		src.drawText(100, 310, "‚¢‚Á‚Ï‚¢•¶ŽšADFGa;oija;oiergjoiao;aeij", 0xffffff, 255);
+*/
 		var start = System.getTickCount();
-		for(var i = 0; i < 2000; i++)
-			process5();
-		System.inform(System.getTickCount() - start);
+//		for(var i = 0; i < 2000; i++)
+//			process5();
+//		System.inform(System.getTickCount() - start);
+
+
+		blt(7.3);
+
 	}
 
 	function finalize()
@@ -54,17 +67,33 @@ class TestWindow extends Window
 		super.finalize(...);
 	}
 
-	function process0()
+	function blt(rad)
 	{
-		var rad = System.getTickCount() / 2000;
 		var rad2 = rad + Math.PI / 2;
 		var rad3 = rad - Math.PI / 2;
 		fore.face = dfBoth;
-		fore.affineCopy(src, 100, 140, 320, 320, false,
+		fore.holdAlpha = false;
+		fore.affineCopy(src, 0, 430, 2, 2, false,
 				Math.cos(rad) * 200 + 320,		Math.sin(rad) * 200 + 240,
 				Math.cos(rad2) * 200 + 320,		Math.sin(rad2) * 200 + 240,
 				Math.cos(rad3) * 200 + 320,		Math.sin(rad3) * 200 + 240,
-				16,, false);
+				/*stNearest */stFastLinear);
+	}
+
+	function process0()
+	{
+		var rad = System.getTickCount() / 4000;
+		var rad2 = rad + Math.PI / 2;
+		var rad3 = rad - Math.PI / 2;
+		var xz = 200; //Math.cos(rad*0.45)*500+530;
+		var yz = 200; //Math.sin(rad*0.56)*500+530;
+		fore.face = dfBoth;
+		fore.holdAlpha = false;
+		fore.affineCopy(src, 100, 200, 200, 200, false,
+				real(Math.cos(rad) * xz + 320),			real(Math.sin(rad) * yz + 240),
+				real(Math.cos(rad2) * xz + 320),		real(Math.sin(rad2) * yz + 240),
+				real(Math.cos(rad3) * xz + 320),		real(Math.sin(rad3) * yz + 240),
+				/*stNearest*/stFastLinear);
 	}
 
 	function process1()
@@ -148,7 +177,7 @@ class TestWindow extends Window
 
 	function process()
 	{
-		process5();
+		process0();
 //		this['process' +intrandom(0, 4)]();
 	}
 }
