@@ -930,13 +930,12 @@ struct tTVPXP3ExtractionFilterInfo
 	const tjs_uint64 Offset; // offset of the buffer data in uncompressed stream position
 	void * Buffer; // target data buffer
 	const tjs_uint BufferSize; // buffer size in bytes pointed by "Buffer"
-	const ttstr & FileName; // In-archive filename (normalized)
-	const ttstr & ArchiveName; // Archive filename (may be normalized)
+	const tjs_uint32 FileHash; // hash value of the file (since inteface v2)
 
 	tTVPXP3ExtractionFilterInfo(tjs_uint64 offset, void *buffer,
-		tjs_uint buffersize, const ttstr &filename, const ttstr & archivename) :
+		tjs_uint buffersize, tjs_uint32 filehash) :
 			Offset(offset), Buffer(buffer), BufferSize(buffersize),
-			FileName(filename), ArchiveName(archivename),
+			FileHash(filehash),
 			SizeOfSelf(sizeof(tTVPXP3ExtractionFilterInfo)) {;}
 };
 #pragma pack(pop)
@@ -1409,7 +1408,8 @@ enum tTVPImeMode
 
 
 inline bool TVPIsAnyMouseButtonPressedInShiftStateFlags(tjs_uint32 state)
-{ return state & (TVP_SS_LEFT | TVP_SS_RIGHT | TVP_SS_MIDDLE | TVP_SS_DOUBLE); }
+{ return (state & 
+	(TVP_SS_LEFT | TVP_SS_RIGHT | TVP_SS_MIDDLE | TVP_SS_DOUBLE)) != 0; }
 
 
 

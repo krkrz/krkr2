@@ -1,6 +1,6 @@
 object FolderSelectorForm: TFolderSelectorForm
-  Left = 31
-  Top = 36
+  Left = 117
+  Top = 38
   Width = 637
   Height = 435
   HorzScrollBar.Tracking = True

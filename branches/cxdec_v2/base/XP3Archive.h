@@ -8,6 +8,10 @@
 //---------------------------------------------------------------------------
 // XP3 virtual file system support
 //---------------------------------------------------------------------------
+// 2004/5/29  W.Dee
+//    Added tTVPXP3ExtranctionFilterInfo v2 member (FileNameHash)
+//---------------------------------------------------------------------------
+
 #ifndef XP3ArchiveH
 #define XP3ArchiveH
 
@@ -27,13 +31,12 @@ struct tTVPXP3ExtractionFilterInfo
 	const tjs_uint64 Offset; // offset of the buffer data in uncompressed stream position
 	void * Buffer; // target data buffer
 	const tjs_uint BufferSize; // buffer size in bytes pointed by "Buffer"
-	const ttstr & FileName; // In-archive filename (normalized)
-	const ttstr & ArchiveName; // Archive filename (may be normalized)
+	const tjs_uint32 FileHash; // hash value of the file (since inteface v2)
 
 	tTVPXP3ExtractionFilterInfo(tjs_uint64 offset, void *buffer,
-		tjs_uint buffersize, const ttstr &filename, const ttstr & archivename) :
+		tjs_uint buffersize, tjs_uint32 filehash) :
 			Offset(offset), Buffer(buffer), BufferSize(buffersize),
-			FileName(filename), ArchiveName(archivename),
+			FileHash(filehash),
 			SizeOfSelf(sizeof(tTVPXP3ExtractionFilterInfo)) {;}
 };
 #pragma pack(pop)
@@ -54,6 +57,19 @@ TJS_EXP_FUNC_DEF(void, TVPSetXP3ArchiveExtractionFilter, (tTVPXP3ArchiveExtracti
 //---------------------------------------------------------------------------
 // tTVPXP3Archive  : XP3 ( TVP's native archive format ) Implmentation
 //---------------------------------------------------------------------------
+#define TVP_XP3_INDEX_ENCODE_METHOD_MASK 0x07
+#define TVP_XP3_INDEX_ENCODE_RAW      0
+#define TVP_XP3_INDEX_ENCODE_ZLIB     1
+
+#define TVP_XP3_INDEX_CONTINUE   0x80
+
+#define TVP_XP3_FILE_PROTECTED (1<<31)
+
+#define TVP_XP3_SEGM_ENCODE_METHOD_MASK  0x07
+#define TVP_XP3_SEGM_ENCODE_RAW       0
+#define TVP_XP3_SEGM_ENCODE_ZLIB      1
+
+//---------------------------------------------------------------------------
 extern bool TVPIsXP3Archive(const ttstr &name); // check XP3 archive
 extern void TVPClearXP3SegmentCache(); // clear XP3 segment cache
 //---------------------------------------------------------------------------
@@ -73,6 +89,7 @@ class tTVPXP3Archive : public tTVPArchive
 	struct tArchiveItem
 	{
 		ttstr Name;
+		tjs_uint32 FileHash;
 		tjs_uint64 OrgSize; // original ( uncompressed ) size
 		tjs_uint64 ArcSize; // in-archive size
 		std::vector<tTVPXP3ArchiveSegment> Segments;
@@ -87,6 +104,7 @@ public:
 
 	tjs_uint GetCount() { return Count; }
 	const ttstr & GetName(tjs_uint idx) const { return ItemVector[idx].Name; }
+	tjs_uint32 GetFileHash(tjs_uint idx) const { return ItemVector[idx].FileHash; }
 	ttstr GetName(tjs_uint idx) { return ItemVector[idx].Name; }
 
 	const ttstr & GetName() const { return Name; }
@@ -107,7 +125,7 @@ private:
 
 
 //---------------------------------------------------------------------------
-// tTVPXP2ArchiveStream  : XP3 In-Archive Stream Implmentation
+// tTVPXP3ArchiveStream  : XP3 In-Archive Stream Implmentation
 //---------------------------------------------------------------------------
 class tTVPSegmentData;
 class tTVPXP3ArchiveStream : public tTJSBinaryStream
