@@ -2066,7 +2066,7 @@ void tTJSNI_BaseLayer::SaveLayerImage(const ttstr &name, const ttstr &type)
 	TVPSaveAsBMP(name, type, MainImage);	
 }
 //---------------------------------------------------------------------------
-void tTJSNI_BaseLayer::LoadImages(const ttstr &name, tjs_uint32 colorkey)
+iTJSDispatch2 * tTJSNI_BaseLayer::LoadImages(const ttstr &name, tjs_uint32 colorkey)
 {
 	// loads image(s) from specified storage.
 	// colorkey must be a color that should be transparent, or:
@@ -2077,48 +2077,60 @@ void tTJSNI_BaseLayer::LoadImages(const ttstr &name, tjs_uint32 colorkey)
 	//                            channel.
 	// 0x300000nn ( nn = palette index )
 	//                      : select the color key by specified palette index.
+	// returns graphic image metainfo.
 
 	if(!MainImage) TVPThrowExceptionMessage(TVPNotDrawableLayerType);
 
 	ttstr provincename;
+	iTJSDispatch2 * metainfo = NULL;
 
-	TVPLoadGraphic(MainImage, name, colorkey, 0, 0, false, &provincename);
-
-	InternalSetImageSize(MainImage->GetWidth(), MainImage->GetHeight());
-
-	if(!provincename.IsEmpty())
+	TVPLoadGraphic(MainImage, name, colorkey, 0, 0, false, &provincename, &metainfo);
+	try
 	{
-		// province image exists
-		AllocateProvinceImage();
 
-		try
+		InternalSetImageSize(MainImage->GetWidth(), MainImage->GetHeight());
+
+		if(!provincename.IsEmpty())
 		{
-			TVPLoadGraphic(ProvinceImage, provincename, 0,
-				MainImage->GetWidth(), MainImage->GetHeight(), true);
+			// province image exists
+			AllocateProvinceImage();
 
-			if(ProvinceImage->GetWidth() != MainImage->GetWidth() ||
-				ProvinceImage->GetHeight() != MainImage->GetHeight())
-				TVPThrowExceptionMessage(TVPProvinceSizeMismatch, provincename);
+			try
+			{
+				TVPLoadGraphic(ProvinceImage, provincename, 0,
+					MainImage->GetWidth(), MainImage->GetHeight(), true, NULL, NULL);
+
+				if(ProvinceImage->GetWidth() != MainImage->GetWidth() ||
+					ProvinceImage->GetHeight() != MainImage->GetHeight())
+					TVPThrowExceptionMessage(TVPProvinceSizeMismatch, provincename);
+			}
+			catch(...)
+			{
+				DeallocateProvinceImage();
+				throw;
+			}
 		}
-		catch(...)
+		else
 		{
+			// province image does not exist
 			DeallocateProvinceImage();
-			throw;
 		}
+
+		ImageModified = true;
+
+		ClipRect.left = ClipRect.top = 0;
+		ClipRect.right = MainImage->GetWidth();
+		ClipRect.bottom = MainImage->GetHeight(); // cliprect is reset
+
+		Update(false);
 	}
-	else
+	catch(...)
 	{
-		// province image does not exist
-		DeallocateProvinceImage();
+		if(metainfo) metainfo->Release();
+		throw;
 	}
 
-	ImageModified = true;
-
-	ClipRect.left = ClipRect.top = 0;
-	ClipRect.right = MainImage->GetWidth();
-	ClipRect.bottom = MainImage->GetHeight(); // cliprect is reset
-
-	Update(false);
+	return metainfo;
 }
 //---------------------------------------------------------------------------
 void tTJSNI_BaseLayer::LoadProvinceImage(const ttstr &name)
@@ -2132,7 +2144,7 @@ void tTJSNI_BaseLayer::LoadProvinceImage(const ttstr &name)
 	try
 	{
 		TVPLoadGraphic(ProvinceImage, name, 0,
-			MainImage->GetWidth(), MainImage->GetHeight(), true);
+			MainImage->GetWidth(), MainImage->GetHeight(), true, NULL, NULL);
 
 		if(ProvinceImage->GetWidth() != MainImage->GetWidth() ||
 			ProvinceImage->GetHeight() != MainImage->GetHeight())
@@ -6845,7 +6857,17 @@ TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/loadImages)
 	tjs_uint32 key = clNone;
 	if(numparams >=2 && param[1]->Type() != tvtVoid)
 		key = (tjs_uint32)param[1]->AsInteger();
-	_this->LoadImages(name, key);
+	iTJSDispatch2 * metainfo = _this->LoadImages(name, key);
+	try
+	{
+		if(result) *result = metainfo;
+	}
+	catch(...)
+	{
+		if(metainfo) metainfo->Release();
+		throw;
+	}
+	if(metainfo) metainfo->Release();
 	return TJS_S_OK;
 }
 TJS_END_NATIVE_METHOD_DECL(/*func. name*/loadImages)

@@ -410,7 +410,7 @@ public:
 
 	void SaveLayerImage(const ttstr &name, const ttstr &type);
 
-	void LoadImages(const ttstr &name, tjs_uint32 colorkey);
+	iTJSDispatch2 * LoadImages(const ttstr &name, tjs_uint32 colorkey);
 
 	void LoadProvinceImage(const ttstr &name);
 
