@@ -8,16 +8,6 @@
 //---------------------------------------------------------------------------
 // An Implementation of Hash Searching
 //---------------------------------------------------------------------------
-// 2004/ 2/ 6 W.Dee          Fixed adding problem which happens in a rare
-//                           condition.
-//                           The head element of a hash chain is empty like:
-//                           (empty) -> a -> b -> c
-//                           The problem is about to insert 'A' (which has
-//                           the same key to 'a'). The hash chain would be
-//                           unlikely following structure:
-//                           A -> a -> b -> c
-//                           While both 'A' and 'a' has the same key.
-//---------------------------------------------------------------------------
 #ifndef HashSearchH
 #define HashSearchH
 
