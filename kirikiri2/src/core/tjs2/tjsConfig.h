@@ -109,7 +109,7 @@ void TJS_debug_out(const tjs_char *format, ...);
 #define TJS_F_TRACE(x)
 #endif
 
-#define TJS_debugbreak DebugBreak()
+extern void TJSNativeDebuggerBreak();
 
 
 extern void TJSSetFPUE();

@@ -244,6 +244,7 @@ statement
 	| for
 	| "break" ";"							{ cc->DoBreak(); }
 	| "continue" ";"						{ cc->DoContinue(); }
+	| "debugger" ";"						{ cc->DoDebugger(); }
 	| variable_def
 	| func_def
 	| property_def

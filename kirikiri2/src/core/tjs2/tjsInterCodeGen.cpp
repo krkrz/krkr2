@@ -2982,6 +2982,12 @@ void tTJSInterCodeContext::DoContinue(void)
 	_yyerror(TJSMisplacedBreakContinue, Block);
 }
 //---------------------------------------------------------------------------
+void tTJSInterCodeContext::DoDebugger()
+{
+	// process "debugger" statement.
+	PutCode(VM_DEBUGGER);
+}
+//---------------------------------------------------------------------------
 void tTJSInterCodeContext::ReturnFromFunc(tTJSExprNode *node)
 {
 	// precess "return"
