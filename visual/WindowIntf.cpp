@@ -8,11 +8,6 @@
 //---------------------------------------------------------------------------
 // "Window" TJS Class implementation
 //---------------------------------------------------------------------------
-// 2004/ 4/30 W.Dee          Added support for Window.mouseCursorState
-// 2004/ 4/26 W.Dee          Added support for IME control properties.
-// 2004/ 4/19 W.Dee          Implemented onMouseLeave and onMouseEnter as
-//                           normal events.
-//---------------------------------------------------------------------------
 
 #include "tjsCommHead.h"
 #pragma hdrstop
