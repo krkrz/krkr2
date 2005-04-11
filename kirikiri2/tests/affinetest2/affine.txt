@@ -1,0 +1,27 @@
+		if(typeof global.mode == "undefined") global.mode = 1;
+		if(typeof global.x == "undefined") global.x = 1;
+		global.mode ^= 1;
+		global.x += 0.1;
+		var mode = global.mode ? stFastLinear : stNearest;
+if(1)
+{
+		do_affine( 1, 0, 0,  1, 40 , 30, mode);
+		do_affine(-1, 0, 0,  1, 80 , 30, mode);
+		do_affine(-1, 0, 0, -1, 120, 30, mode);
+		do_affine( 1, 0, 0, -1, 160, 30, mode);
+}
+if(1)
+{
+		do_affine( 0,  1,  1, 0, 40 , 70, mode);
+		do_affine( 0, -1,  1, 0, 80 , 70, mode);
+		do_affine( 0, -1, -1, 0, 120, 70, mode);
+		do_affine( 0,  1, -1, 0, 160, 70, mode);
+}
+
+//		do_affine( -30,  -10,  +10, -30,  170 , 170, mode);
+
+//		do_affine( 6, 0, 0,  6, 128 + x, 128, stFastLinear);
+//		do_affine( 3, 0, 0,  3, 128, 128, mode);
+		do_affine( 12, +41, -41,  12, 228, 128, mode);
+
+// 13

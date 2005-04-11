@@ -1922,6 +1922,9 @@ void tTVPBaseBitmap::TVPDoAffineLoop(
 
 	// skip "out of source rectangle" points
 	// from last point
+	sxl += 32768; // do +0.5 to rounding
+	syl += 32768; // do +0.5 to rounding
+
 	tjs_int spx, spy;
 	tjs_uint32 *dp;
 	dp = (tjs_uint32*)dest + l + len-1;
@@ -1961,20 +1964,23 @@ void tTVPBaseBitmap::TVPDoAffineLoop(
 		len_remain --;
 	}
 
-	// transfer a line
-	if(sys == 0)
-		stretch(dp, len_remain,
-			(tjs_uint32*)(src + (spy>>16) * srcpitch), spx, sxs);
-	else
-		affine(dp, len_remain,
-			(tjs_uint32*)src, spx, spy, sxs, sys, srcpitch);
+	if(len_remain > 0)
+	{
+		// transfer a line
+		if(sys == 0)
+			stretch(dp, len_remain,
+				(tjs_uint32*)(src + (spy>>16) * srcpitch), spx, sxs);
+		else
+			affine(dp, len_remain,
+				(tjs_uint32*)src, spx, spy, sxs, sys, srcpitch);
+	}
 }
 
 //---------------------------------------------------------------------------
 // declare affine loop function for bilinear interpolation
 
 #define TVP_DoBilinearAffineLoop_ARGS  sxs, sys, \
-		dest, l, len, src, srcpitch, sxl, syl, ref_right_limit, ref_bottom_limit
+		dest, l, len, src, srcpitch, sxl, syl, srcrect
 template <typename tFuncStretch, typename tFuncAffine>
 void tTVPBaseBitmap::TVPDoBilinearAffineLoop(
 		tFuncStretch stretch,
@@ -1988,8 +1994,7 @@ void tTVPBaseBitmap::TVPDoBilinearAffineLoop(
 		tjs_int srcpitch,
 		tjs_int sxl,
 		tjs_int syl,
-		tjs_int ref_right_limit,
-		tjs_int ref_bottom_limit)
+		const tTVPRect & srcrect)
 {
 	// bilinear interpolation copy
 	tjs_int len_remain = len;
@@ -1997,20 +2002,70 @@ void tTVPBaseBitmap::TVPDoBilinearAffineLoop(
 	tjs_int sx, sy;
 	tjs_uint32 *dp;
 
-#define FIX_SX_SY	if(sx < 0) \
-		sx = 0, fixed_count ++; \
-	if(sx >= ref_right_limit) \
-		sx = ref_right_limit - 1, fixed_count++; \
-	if(sy < 0) \
-		sy = 0, fixed_count++; \
-	if(sy >= ref_bottom_limit) \
-		sy = ref_bottom_limit - 1, fixed_count++;
+	// skip "out of source rectangle" points
+	// from last point
+	sxl += 32768; // do +0.5 to rounding
+	syl += 32768; // do +0.5 to rounding
+
+	dp = (tjs_uint32*)dest + l + len-1;
+	spx = (len-1)*sxs + sxl;
+	spy = (len-1)*sys + syl;
+
+	while(len_remain > 0)
+	{
+		tjs_int sx, sy;
+		sx = spx >> 16;
+		sy = spy >> 16;
+		if(sx >= srcrect.left && sx < srcrect.right &&
+			sy >= srcrect.top && sy < srcrect.bottom)
+			break;
+		dp--;
+		spx -= sxs;
+		spy -= sys;
+		len_remain --;
+	}
+
+	// from first point
+	spx = sxl;
+	spy = syl;
+	dp = (tjs_uint32*)dest + l;
+
+	while(len_remain > 0)
+	{
+		tjs_int sx, sy;
+		sx = spx >> 16;
+		sy = spy >> 16;
+		if(sx >= srcrect.left && sx < srcrect.right &&
+			sy >= srcrect.top && sy < srcrect.bottom)
+			break;
+		dp++;
+		l++; // step l forward
+		spx += sxs;
+		spy += sys;
+		len_remain --;
+	}
+
+	sxl = spx;
+	syl = spy;
+
+	sxl -= 32768; // take back the original
+	syl -= 32768; // take back the original
+
+#define FIX_SX_SY	\
+	if(sx < srcrect.left) \
+		sx = srcrect.left, fixed_count ++; \
+	if(sx >= srcrect.right) \
+		sx = srcrect.right - 1, fixed_count++; \
+	if(sy < srcrect.top) \
+		sy = srcrect.top, fixed_count++; \
+	if(sy >= srcrect.bottom) \
+		sy = srcrect.bottom - 1, fixed_count++;
 
 
 	// from last point
-	spx = (len-1)*sxs + sxl - 32768;
-	spy = (len-1)*sys + syl - 32768;
-	dp = (tjs_uint32*)dest + l + len-1;
+	spx = (len_remain-1)*sxs + sxl/* - 32768*/;
+	spy = (len_remain-1)*sys + syl/* - 32768*/;
+	dp = (tjs_uint32*)dest + l + len_remain-1;
 
 	while(len_remain > 0)
 	{
@@ -2057,8 +2112,8 @@ void tTVPBaseBitmap::TVPDoBilinearAffineLoop(
 	}
 
 	// from first point
-	spx = sxl - 32768;
-	spy = syl - 32768;
+	spx = sxl/* - 32768*/;
+	spy = syl/* - 32768*/;
 	dp = (tjs_uint32*)dest + l;
 
 	while(len_remain > 0)
@@ -2105,26 +2160,29 @@ void tTVPBaseBitmap::TVPDoBilinearAffineLoop(
 		len_remain --;
 	}
 
-	// do center part (this may takes most time)
-	if(sys == 0)
+	if(len_remain > 0)
 	{
-		// do stretch
-		const tjs_uint8 * l1 = src + (spy >> 16) * srcpitch;
-		const tjs_uint8 * l2 = l1 + srcpitch;
-		stretch(
-			dp,
-			len_remain,
-			(const tjs_uint32*)l1,
-			(const tjs_uint32*)l2,
-			(spy & 0xffff) >> 8,
-			spx,
-			sxs);
-	}
-	else
-	{
-		// do affine
-		affine(dp, len_remain,
-			(tjs_uint32*)src, spx, spy, sxs, sys, srcpitch);
+		// do center part (this may takes most time)
+		if(sys == 0)
+		{
+			// do stretch
+			const tjs_uint8 * l1 = src + (spy >> 16) * srcpitch;
+			const tjs_uint8 * l2 = l1 + srcpitch;
+			stretch(
+				dp,
+				len_remain,
+				(const tjs_uint32*)l1,
+				(const tjs_uint32*)l2,
+				(spy & 0xffff) >> 8,
+				spx,
+				sxs);
+		}
+		else
+		{
+			// do affine
+			affine(dp, len_remain,
+				(tjs_uint32*)src, spx, spy, sxs, sys, srcpitch);
+		}
 	}
 }
 //---------------------------------------------------------------------------
@@ -2173,21 +2231,18 @@ bool tTVPBaseBitmap::AffineBlt(tTVPRect destrect, const tTVPBaseBitmap *ref,
 		TVPThrowExceptionMessage(TVPOutOfRectangle);
 
 	// multiply source rectangle points by 65536 (16.16 fixed-point)
+	// note that each pixel has actually 1.0 x 1.0 size
+	// eg. a pixel at 0,0 may have (-0.5, -0.5) - (0.5, 0.5) area
 	tTVPRect srcrect = refrect; // unmultiplied source rectangle is saved as srcrect
-	refrect.left *= 65536;
-	refrect.top *= 65536;
-	refrect.right *= 65536;
-	refrect.bottom *= 65536;
+	refrect.left   = refrect.left   * 65536 - 32768;
+	refrect.top    = refrect.top    * 65536 - 32768;
+	refrect.right  = refrect.right  * 65536 - 32768;
+	refrect.bottom = refrect.bottom * 65536 - 32768;
 
 	// create point list in fixed point real format
 	tTVPPoint points[3];
 	for(tjs_int i = 0; i < 3; i++)
 		points[i].x = points_in[i].x * 65536, points[i].y = points_in[i].y * 65536;
-
-	// refernce limits
-	// (refernce point over this can be overrun access)
-	tjs_int ref_right_limit = ref->GetWidth();
-	tjs_int ref_bottom_limit = ref->GetHeight();
 
 	// check destination rectangle
 	if(destrect.left < 0) destrect.left = 0;
@@ -2238,7 +2293,7 @@ bool tTVPBaseBitmap::AffineBlt(tTVPRect destrect, const tTVPBaseBitmap *ref,
 	if(scanlinestart > points_y[3]) scanlinestart = points_y[3];
 	if(scanlineend < points_y[3]) scanlineend = points_y[3];
 
-	// check destrect intersections
+	// rough check destrect intersections
 	if(floor_16(leftlimit) >= destrect.right) return false;
 	if(floor_16(rightlimit) < destrect.left) return false;
 	if(floor_16(scanlinestart) >= destrect.bottom) return false;
@@ -2281,19 +2336,21 @@ bool tTVPBaseBitmap::AffineBlt(tTVPRect destrect, const tTVPBaseBitmap *ref,
 	}
 
 	// prepare to transform...
-	tjs_int yc = floor_16(scanlinestart);
-	tjs_int yclim = floor_16(scanlineend);
+	tjs_int yc    = (scanlinestart + 32768) / 65536;
+	tjs_int yclim = (scanlineend   + 32768) / 65536;
 
 	if(destrect.top > yc) yc = destrect.top;
-	if(destrect.bottom - 1 < yclim) yclim = destrect.bottom - 1;
+	if(destrect.bottom <= yclim) yclim = destrect.bottom - 1;
+	if(yc >= destrect.bottom || yclim < 0)
+		return false; // not drawable
 
 	tjs_uint8 * dest = (tjs_uint8*)GetScanLineForWrite(yc);
 	tjs_int destpitch = GetPitchBytes();
 	const tjs_uint8 * src = (const tjs_uint8 *)ref->GetScanLine(0);
 	tjs_int srcpitch = ref->GetPitchBytes();
 
-	yc = (yc << 16) + 32768;
-	yclim = (yclim << 16) + 32768;
+	yc    = yc    * 65536;
+	yclim = yclim * 65536;
 
 	// process per a line
 	tjs_int mostupper;
@@ -2301,19 +2358,19 @@ bool tTVPBaseBitmap::AffineBlt(tTVPRect destrect, const tTVPBaseBitmap *ref,
 	bool firstline = true;
 
 
-	for(; yc <= yclim; yc+=65536)
+	for(; yc <= yclim; yc+=65536, dest += destpitch)
 	{
 		// transfer a line
 
-		// adjust line limit
+		// skip out-of-range lines
 		tjs_int yl = yc;
 		if(yl < scanlinestart)
-			yl = scanlinestart;
+			continue;
 		if(yl >= scanlineend)
-			yl = scanlineend-1;
+			continue;
 
 		// actual write line
-		tjs_int y = yc >> 16;
+		tjs_int y = (yc+32768) / 65536;
 
 		// find line intersection
 		// line codes are:
@@ -2332,18 +2389,32 @@ bool tTVPBaseBitmap::AffineBlt(tTVPRect destrect, const tTVPBaseBitmap *ref,
 			if     (points_y[ip0] == yl && points_y[ip1] == yl)
 			{
 				where = points_x[ip1] > points_x[ip0] ? 0 : 65536 - 1;
-				code += 4;
+				code += 8;
 				break;
 			}
-			else if(points_y[ip0] <= yl && points_y[ip1] > yl)
+		}
+		if(code < 8)
+		{
+			for(code = 0; code < 4; code ++)
 			{
-				where = div_16(yl - points_y[ip0], points_y[ip1] - points_y[ip0]);
-				break;
-			}
-			else if(points_y[ip0] >  yl && points_y[ip1] <= yl)
-			{
-				where = div_16(points_y[ip0] - yl, points_y[ip0] - points_y[ip1]);
-				break;
+				tjs_int ip0 = code;
+				tjs_int ip1 = (code + 1) & 3;
+				if     (points_y[ip0] == yl && points_y[ip1] == yl)
+				{
+					where = points_x[ip1] > points_x[ip0] ? 0 : 65536 - 1;
+					code += 4;
+					break;
+				}
+				else if(points_y[ip0] <= yl && points_y[ip1] > yl)
+				{
+					where = div_16(yl - points_y[ip0], points_y[ip1] - points_y[ip0]);
+					break;
+				}
+				else if(points_y[ip0] >  yl && points_y[ip1] <= yl)
+				{
+					where = div_16(points_y[ip0] - yl, points_y[ip0] - points_y[ip1]);
+					break;
+				}
 			}
 		}
 		line_code0 = code;
@@ -2393,13 +2464,13 @@ bool tTVPBaseBitmap::AffineBlt(tTVPRect destrect, const tTVPBaseBitmap *ref,
 			break;
 		case 1:
 			ll  = mul_16(points_x[2] - points_x[1]   , where0) + points_x[1];
-			sxl = refrect.right - 1;
+			sxl = refrect.right;
 			syl = mul_16(refrect.bottom - refrect.top, where0) + refrect.top;
 			break;
 		case 2:
 			ll  = mul_16(points_x[3] - points_x[2]   , where0) + points_x[2];
 			sxl = mul_16(refrect.left - refrect.right, where0) + refrect.right;
-			syl = refrect.bottom - 1;
+			syl = refrect.bottom;
 			break;
 		case 3:
 			ll  = mul_16(points_x[0] - points_x[3]   , where0) + points_x[3];
@@ -2417,13 +2488,13 @@ bool tTVPBaseBitmap::AffineBlt(tTVPRect destrect, const tTVPBaseBitmap *ref,
 			break;
 		case 1:
 			rr  = mul_16(points_x[2] - points_x[1]   , where1) + points_x[1];
-			sxr = refrect.right - 1;
+			sxr = refrect.right;
 			syr = mul_16(refrect.bottom - refrect.top, where1) + refrect.top;
 			break;
 		case 2:
 			rr  = mul_16(points_x[3] - points_x[2]   , where1) + points_x[2];
 			sxr = mul_16(refrect.left - refrect.right, where1) + refrect.right;
-			syr = refrect.bottom - 1;
+			syr = refrect.bottom;
 			break;
 		case 3:
 			rr  = mul_16(points_x[0] - points_x[3]   , where1) + points_x[3];
@@ -2447,11 +2518,11 @@ bool tTVPBaseBitmap::AffineBlt(tTVPRect destrect, const tTVPBaseBitmap *ref,
 		// round l and r to integer
 		tjs_int l, r;
 
-		l = ll >> 16;
-		sxl -= mul_16(ll & 0xffff, sxs);
-		syl -= mul_16(ll & 0xffff, sys);
+		l = ((ll-1) / 65536) + 1; // ceil
+		sxl += mul_16(65535 - ((ll-1) % 65536), sxs); // adjust source start point x
+		syl += mul_16(65535 - ((ll-1) % 65536), sys); // adjust source start point y
 
-		r = ((rr - 1) >> 16) + 1;
+		r = ((rr-1) / 65536) + 1; // ceil, note that at this point r is *NOT* inclusive
 
 		// - clip widh destrect.left and destrect.right
 		if(l < destrect.left)
@@ -2462,6 +2533,8 @@ bool tTVPBaseBitmap::AffineBlt(tTVPRect destrect, const tTVPBaseBitmap *ref,
 			l = destrect.left;
 		}
 		if(r > destrect.right) r = destrect.right;
+
+		// - compute horizontal length
 		len = r - l;
 
 		// - transfer
@@ -2472,12 +2545,16 @@ bool tTVPBaseBitmap::AffineBlt(tTVPRect destrect, const tTVPBaseBitmap *ref,
 			{
 				tjs_int clen;
 
-				clen = l - destrect.left;
+				int ll = l + 1;
+				if(ll > destrect.right) ll = destrect.right;
+				clen = ll - destrect.left;
 				if(clen > 0)
 					(hda?TVPFillColor:TVPFillARGB)((tjs_uint32*)dest + destrect.left, clen, clearcolor);
-				clen = destrect.right - r;
+				int rr = r - 1;
+				if(rr < destrect.left) rr = destrect.left;
+				clen = destrect.right - rr;
 				if(clen > 0)
-					(hda?TVPFillColor:TVPFillARGB)((tjs_uint32*)dest + r, clen, clearcolor);
+					(hda?TVPFillColor:TVPFillARGB)((tjs_uint32*)dest + rr, clen, clearcolor);
 			}
 
 
@@ -2515,20 +2592,10 @@ bool tTVPBaseBitmap::AffineBlt(tTVPRect destrect, const tTVPBaseBitmap *ref,
 						else
 						{
 							// point on point (nearest) copy
-							if(sxstep == 65536 && systep == 0)
-							{
-								// intact copy
-								memcpy((tjs_uint32*)dest + l,
-									(tjs_uint32*)(src + (syl>>16) * srcpitch) + (sxl>>16),
-									len * sizeof(tjs_int32));
-							}
-							else
-							{
-								TVPDoAffineLoop(
-									tTVPStretchFunctionObject(TVPStretchCopy),
-									tTVPAffineFunctionObject(TVPLinTransCopy),
-									TVP_DoAffineLoop_ARGS);
-							}
+							TVPDoAffineLoop(
+								tTVPStretchFunctionObject(TVPStretchCopy),
+								tTVPAffineFunctionObject(TVPLinTransCopy),
+								TVP_DoAffineLoop_ARGS);
 						}
 					}
 					else
@@ -2739,9 +2806,6 @@ bool tTVPBaseBitmap::AffineBlt(tTVPRect destrect, const tTVPBaseBitmap *ref,
 				; // yet not implemented
 			}
 		}
-
-		// to next ...
-		dest += destpitch;
 	}
 
 	// clear upper and lower area of the affine transformation
@@ -2806,25 +2870,31 @@ bool tTVPBaseBitmap::AffineBlt(tTVPRect destrect, const tTVPBaseBitmap *ref,
 	//  x' =  ax + cy + tx
 	//  y' =  bx + dy + ty
 	tTVPPointD points[3];
-	int rp = refrect.get_width() - 1;
-	int bp = refrect.get_height() - 1;
+	int rp = refrect.get_width();
+	int bp = refrect.get_height();
+
+	// note that a pixel has actually 1 x 1 size, so
+	// a pixel at (0,0) covers (-0.5, -0.5) - (0.5, 0.5).
+
+#define CALC_X(x, y) (matrix.a * (x) + matrix.c * (y) + matrix.tx)
+#define CALC_Y(x, y) (matrix.b * (x) + matrix.d * (y) + matrix.ty)
 
 	// - upper-left
-	points[0].x = matrix.tx;
-	points[0].y = matrix.ty;
+	points[0].x = CALC_X(-0.5, -0.5);
+	points[0].y = CALC_Y(-0.5, -0.5);
 
 	// - upper-right
-	points[1].x = (matrix.a * rp + matrix.tx);
-	points[1].y = (matrix.b * rp + matrix.ty);
+	points[1].x = CALC_X(rp - 0.5, -0.5);
+	points[1].y = CALC_Y(rp - 0.5, -0.5);
 
 /*	// - bottom-right
-	points[2].x = (matrix.a * rp + matrix.c * bp + matrix.tx);
-	points[2].y = (matrix.b * rp + matrix.d * bp + matrix.ty);
+	points[2].x = CALC_X(rp - 0.5, bp - 0.5);
+	points[2].y = CALC_Y(rp - 0.5, bp - 0.5);
 */
 
 	// - bottom-left
-	points[2].x = (matrix.c * bp + matrix.tx);
-	points[2].y = (matrix.d * bp + matrix.ty);
+	points[2].x = CALC_X(-0.5, bp - 0.5);
+	points[2].y = CALC_Y(-0.5, bp - 0.5);
 
 	return AffineBlt(destrect, ref, refrect, points, method, opa, updaterect, hda, type, clear, clearcolor);
 }
