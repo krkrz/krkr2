@@ -210,8 +210,7 @@ private:
 			tjs_int srcpitch,
 			tjs_int sxl,
 			tjs_int syl,
-			tjs_int ref_right_limit,
-			tjs_int ref_bottom_limit);
+			const tTVPRect & srcrect);
 
 public:
 	bool AffineBlt(tTVPRect destrect, const tTVPBaseBitmap *ref,

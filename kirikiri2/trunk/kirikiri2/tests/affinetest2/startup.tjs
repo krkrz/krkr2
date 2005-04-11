@@ -1,0 +1,91 @@
+// affineCopy 等のテスト
+
+class TestWindow extends Window
+{
+	var fore; // プライマリ
+	var lay; // ソースレイヤ
+
+	function TestWindow()
+	{
+		super.Window(...);
+
+		setInnerSize(640, 480);
+
+		add(fore = new Layer(this, null));
+		add(lay  = new Layer(this, fore));
+
+		fore.setImageSize(640, 480);
+		fore.setSizeToImageSize();
+		fore.fillRect(0, 0, 640, 480, 0);
+
+		visible = true;
+
+		fore.face = dfOpaque;
+		fore.holdAlpha = false;
+
+		// 3x3 描画
+		var dots =
+		[	[ 0x0000ff, 0x00ff00, 0xff0000 ],
+			[ 0xffff80, 0xff80ff, 0x80ffff ],
+			[ 0x00ffff, 0xffff00, 0xff00ff ] ];
+
+		lay.type = ltOpaque;
+		lay.setImageSize(3+2, 3+2);
+		lay.setSize(3, 3);
+		lay.fillRect(0, 0, lay.imageWidth, lay.imageHeight, 0);
+		lay.setImagePos(-1, -1);
+		lay.setPos(0, 40);
+		lay.visible = true;
+
+		var ys = dots.count;
+		for(var y = 0; y < ys; y++)
+		{
+			var xs = dots[y].count;
+			for(var x = 0; x < xs; x++)
+			{
+				lay.setMainPixel(x + 1, y + 1, dots[y][x]);
+			}
+		}
+
+		process();
+	}
+
+	function finalize()
+	{
+		super.finalize(...);
+	}
+
+	function process()
+	{
+		// affine
+		((@'function { \n ${[].load("affine.txt").join("\n")}\n}')! incontextof this)();
+	}
+
+	function do_affine(a, b, c, d, e, f, mode = stNearest)
+	{
+		fore.fillRect(e - 30, f - 30, 60, 60, 0x404040);
+		fore.fillRect(e - 30, f, 60, 1, 0x808080);
+		fore.fillRect(e, f - 30, 1, 60, 0x808080);
+//		fore.operateAffine(fore, 0, 0, 3, 3, true, a, b, c, d, e, f, omOpaque, /*opa*/, stFastLinear);
+//		fore.operateAffine(fore, 0, 0, 3, 3, true, a, b, c, d, e, f, omOpaque, /*opa*/, stNearest);
+//		fore.affineCopy(fore, 0, 0, 3, 3, true, a, b, c, d, e, f, stFastLinear, true);
+		fore.affineCopy(lay, 1, 1, 3, 3, true, a, b, c, d, e, f, mode, false);
+//		fore.affineCopy(lay, 1, 1, 3, 3, true, a, b, c, d, e, f, mode, true);
+//		fore.affineCopy(lay, 0, 0, 5, 5, true, a, b, c, d, e, f, mode, true);
+	}
+
+	function action(ev)
+	{
+		if(ev.type == "onMouseDown" && ev.target == fore)
+		{
+			process();
+		}
+		else if(ev.type == "onMouseMove" && ev.target == this)
+		{
+			lay.setPos(ev.x - lay.width, ev.y - lay.height);
+		}
+	}
+}
+
+var a = new TestWindow();
+
