@@ -191,7 +191,7 @@ void TVPInternalLoadBMP(void *callbackdata,
 	tTJSBinaryStream * src,
 	tjs_int keyidx,
 	tTVPBMPAlphaType alphatype,
-	bool grayscale)
+	bool palettized)
 {
 	// mostly taken ( but totally re-written ) from SDL,
 	// http://www.libsdl.org/
@@ -260,9 +260,8 @@ void TVPInternalLoadBMP(void *callbackdata,
 			}
 		}
 
-		if(grayscale)
+		if(palettized)
 		{
-			// convert palette to monochrome
 			TVPDoGrayScale(palette, 256);
 		}
 
@@ -310,11 +309,11 @@ void TVPInternalLoadBMP(void *callbackdata,
 			{
 				// convert pixel format
 			case 1:
-				if(grayscale)
+				if(palettized)
 				{
-					TVPBLExpand1BitTo8BitPal(
+					TVPBLExpand1BitTo8Bit(
 						(tjs_uint8*)scanline,
-						(tjs_uint8*)buf, bi.biWidth, palette);
+						(tjs_uint8*)buf, bi.biWidth);
 				}
 				else
 				{
@@ -325,11 +324,11 @@ void TVPInternalLoadBMP(void *callbackdata,
 				break;
 
 			case 4:
-				if(grayscale)
+				if(palettized)
 				{
-					TVPBLExpand4BitTo8BitPal(
+					TVPBLExpand4BitTo8Bit(
 						(tjs_uint8*)scanline,
-						(tjs_uint8*)buf, bi.biWidth, palette);
+						(tjs_uint8*)buf, bi.biWidth);
 				}
 				else
 				{
@@ -340,11 +339,10 @@ void TVPInternalLoadBMP(void *callbackdata,
 				break;
 
 			case 8:
-				if(grayscale)
+				if(palettized)
 				{
-					TVPBLExpand8BitTo8BitPal(
-						(tjs_uint8*)scanline,
-						(tjs_uint8*)buf, bi.biWidth, palette);
+					// intact copy
+					memcpy(scanline, buf, bi.biWidth);
 				}
 				else
 				{
@@ -356,7 +354,7 @@ void TVPInternalLoadBMP(void *callbackdata,
 
 			case 15:
 			case 16:
-				if(grayscale)
+				if(palettized)
 				{
 					TVPBLConvert15BitTo8Bit(
 						(tjs_uint8*)scanline,
@@ -371,7 +369,7 @@ void TVPInternalLoadBMP(void *callbackdata,
 				break;
 
 			case 24:
-				if(grayscale)
+				if(palettized)
 				{
 					TVPBLConvert24BitTo8Bit(
 						(tjs_uint8*)scanline,
@@ -386,7 +384,7 @@ void TVPInternalLoadBMP(void *callbackdata,
 				break;
 
 			case 32:
-				if(grayscale)
+				if(palettized)
 				{
 					TVPBLConvert32BitTo8Bit(
 						(tjs_uint8*)scanline,
@@ -443,7 +441,7 @@ void TVPInternalLoadBMP(void *callbackdata,
 //---------------------------------------------------------------------------
 void TVPLoadBMP(void* formatdata, void *callbackdata, tTVPGraphicSizeCallback sizecallback,
 	tTVPGraphicScanLineCallback scanlinecallback, tTVPMetaInfoPushCallback metainfopushcallback,
-	tTJSBinaryStream *src, tjs_int keyidx,  bool grayscale)
+	tTJSBinaryStream *src, tjs_int keyidx,  bool palettized)
 {
 	// Windows BMP Loader
 	// mostly taken ( but totally re-written ) from SDL,
@@ -517,7 +515,7 @@ void TVPLoadBMP(void* formatdata, void *callbackdata, tTVPGraphicSizeCallback si
 		src->SetPosition(firstpos + bf.bfOffBits);
 
 		TVPInternalLoadBMP(callbackdata, sizecallback, scanlinecallback,
-			bi, palette, src, keyidx, batMulAlpha, grayscale);
+			bi, palette, src, keyidx, batMulAlpha, palettized);
 	}
 	catch(...)
 	{
@@ -810,7 +808,7 @@ jpeg_TStream_src (j_decompress_ptr cinfo, tTJSBinaryStream * infile)
 //---------------------------------------------------------------------------
 void TVPLoadJPEG(void* formatdata, void *callbackdata, tTVPGraphicSizeCallback sizecallback,
 	tTVPGraphicScanLineCallback scanlinecallback, tTVPMetaInfoPushCallback metainfopushcallback,
-	tTJSBinaryStream *src, tjs_int keyidx,  bool grayscale)
+	tTJSBinaryStream *src, tjs_int keyidx,  bool palettized)
 {
 	jpeg_decompress_struct cinfo;
 	my_error_mgr jerr;
@@ -851,7 +849,7 @@ void TVPLoadJPEG(void* formatdata, void *callbackdata, tTVPGraphicSizeCallback s
 		break;
 	}
 
-	if(grayscale) cinfo.out_color_space =  JCS_GRAYSCALE;
+	if(palettized) cinfo.out_color_space =  JCS_GRAYSCALE;
 
 	// start decompression
 	jpeg_start_decompress(&cinfo);
@@ -882,7 +880,7 @@ void TVPLoadJPEG(void* formatdata, void *callbackdata, tTVPGraphicSizeCallback s
 				if(!scanline) break;
 
 				// color conversion
-				if(grayscale)
+				if(palettized)
 				{
 					// write through
 					memcpy(scanline,
@@ -973,7 +971,7 @@ static void __fastcall PNG_read_row_callback(png_structp png_ptr,png_uint_32 row
 //---------------------------------------------------------------------------
 void TVPLoadPNG(void* formatdata, void *callbackdata, tTVPGraphicSizeCallback sizecallback,
 	tTVPGraphicScanLineCallback scanlinecallback, tTVPMetaInfoPushCallback metainfopushcallback,
-	tTJSBinaryStream *src, tjs_int keyidx,  bool grayscale)
+	tTJSBinaryStream *src, tjs_int keyidx,  bool palettized)
 {
 	png_structp png_ptr=NULL;
 	png_infop info_ptr=NULL;
@@ -1021,9 +1019,9 @@ extern PNG_EXPORT(png_uint_32,png_get_IHDR) PNGARG((png_structp png_ptr,
 
 		if(bit_depth==16) png_set_strip_16(png_ptr);
 
-		if(grayscale)
+		if(palettized)
 		{
-			// convert the image to grayscale one if needed
+			// convert the image to palettized one if needed
 			if(color_type == PNG_COLOR_TYPE_PALETTE)
 			{
 //				TVPThrowExceptionMessage(
@@ -1364,7 +1362,7 @@ static tTVPAtExit TVPUninitERINAAtExit
 //---------------------------------------------------------------------------
 void TVPLoadERI(void* formatdata, void *callbackdata, tTVPGraphicSizeCallback sizecallback,
 	tTVPGraphicScanLineCallback scanlinecallback, tTVPMetaInfoPushCallback metainfopushcallback,
-	tTJSBinaryStream *src, tjs_int keyidx,  bool grayscale)
+	tTJSBinaryStream *src, tjs_int keyidx,  bool palettized)
 {
 	// ERI loading handler
 	TVPInitERINA();
@@ -1407,8 +1405,8 @@ void TVPLoadERI(void* formatdata, void *callbackdata, tTVPGraphicSizeCallback si
 	else
 	{
 		// ??
-		rii.fdwFormatType = grayscale ? ERI_GRAY_IMAGE : ERI_RGBA_IMAGE;
-		rii.dwBitsPerPixel = grayscale ? 8 : 32;
+		rii.fdwFormatType = palettized ? ERI_GRAY_IMAGE : ERI_RGBA_IMAGE;
+		rii.dwBitsPerPixel = palettized ? 8 : 32;
 		has_alpha = erifile.m_InfoHeader.fdwFormatType & ERI_WITH_ALPHA;
 	}
 	
@@ -1456,7 +1454,7 @@ void TVPLoadERI(void* formatdata, void *callbackdata, tTVPGraphicSizeCallback si
 			}
 
 			// convert palette to monochrome
-			if(grayscale)
+			if(palettized)
 				TVPDoGrayScale(palette, 256);
 
 			if(keyidx != -1)
@@ -1477,7 +1475,7 @@ void TVPLoadERI(void* formatdata, void *callbackdata, tTVPGraphicSizeCallback si
 		{
 			void *scanline = scanlinecallback(callbackdata, i);
 			if(!scanline) break;
-			if(!grayscale)
+			if(!palettized)
 			{
 				// destination is RGBA
 				if(rii.dwBitsPerPixel == 8)
@@ -1515,7 +1513,7 @@ void TVPLoadERI(void* formatdata, void *callbackdata, tTVPGraphicSizeCallback si
 			}
 			else
 			{
-				// destination is grayscale
+				// destination is palettized
 				if(rii.dwBitsPerPixel == 8)
 				{
 					if((erifile.m_InfoHeader.fdwFormatType&ERI_TYPE_MASK) ==
@@ -1557,7 +1555,7 @@ void TVPLoadERI(void* formatdata, void *callbackdata, tTVPGraphicSizeCallback si
 #else // #ifdef TVP_SUPPORT_ERI
 void TVPLoadERI(void* formatdata, void *callbackdata, tTVPGraphicSizeCallback sizecallback,
 	tTVPGraphicScanLineCallback scanlinecallback, tTVPMetaInfoPushCallback metainfopushcallback,
-	tTJSBinaryStream *src, tjs_int keyidx,  bool grayscale)
+	tTJSBinaryStream *src, tjs_int keyidx,  bool palettized)
 {
 	TVPThrowExceptionMessage(TVPNotImplemented);
 }
@@ -2103,7 +2101,7 @@ static bool TVPInternalLoadGraphic(tTVPBaseBitmap *dest, const ttstr &_name,
 
 	// search according with its extension
 
-//	grayscale = true;
+//	palettized = true;
 	tjs_int namelen = _name.GetLen();
 	ttstr name(_name);
 

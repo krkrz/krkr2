@@ -53,13 +53,14 @@ typedef void (*tTVPGraphicLoadingHandler)(void* formatdata,
 	tTVPMetaInfoPushCallback metainfopushcallback,
 	tTJSBinaryStream *src,
 	tjs_int32 keyidx,
-	bool grayscale);
+	bool palettized);
 /*
 	format = format specific data given at TVPRegisterGraphicLoadingHandler
 	dest = destination callback function
 	src = source stream
 	keyidx = color key for less than or equal to 8 bit image
-	grayscale = if true, the output image must be an 8bit grayscale color.
+	palettized = if true, the output image must be an 8bit color (for province
+	   image. so the color is not important. color index must be preserved).
 	   otherwise the output image must be a 32bit full-color with opacity.
 
 	color key does not overrides image's alpha channel ( if the image has )
@@ -88,19 +89,19 @@ void TVPUnregisterGraphicLoadingHandler(const ttstr & name,
 //---------------------------------------------------------------------------
 extern void TVPLoadBMP(void* formatdata, void *callbackdata, tTVPGraphicSizeCallback sizecallback,
 	tTVPGraphicScanLineCallback scanlinecallback, tTVPMetaInfoPushCallback metainfopushcallback,
-	tTJSBinaryStream *src, tjs_int keyidx,  bool grayscale);
+	tTJSBinaryStream *src, tjs_int keyidx,  bool palettized);
 
 extern void TVPLoadJPEG(void* formatdata, void *callbackdata, tTVPGraphicSizeCallback sizecallback,
 	tTVPGraphicScanLineCallback scanlinecallback, tTVPMetaInfoPushCallback metainfopushcallback,
-	tTJSBinaryStream *src, tjs_int keyidx,  bool grayscale);
+	tTJSBinaryStream *src, tjs_int keyidx,  bool palettized);
 
 extern void TVPLoadPNG(void* formatdata, void *callbackdata, tTVPGraphicSizeCallback sizecallback,
 	tTVPGraphicScanLineCallback scanlinecallback, tTVPMetaInfoPushCallback metainfopushcallback,
-	tTJSBinaryStream *src, tjs_int keyidx,  bool grayscale);
+	tTJSBinaryStream *src, tjs_int keyidx,  bool palettized);
 
 extern void TVPLoadERI(void* formatdata, void *callbackdata, tTVPGraphicSizeCallback sizecallback,
 	tTVPGraphicScanLineCallback scanlinecallback, tTVPMetaInfoPushCallback metainfopushcallback,
-	tTJSBinaryStream *src, tjs_int keyidx,  bool grayscale);
+	tTJSBinaryStream *src, tjs_int keyidx,  bool palettized);
 
 //---------------------------------------------------------------------------
 
@@ -231,7 +232,7 @@ extern void TVPInternalLoadBMP(void *callbackdata,
 	tTJSBinaryStream * src,
 	tjs_int keyidx,
 	tTVPBMPAlphaType alphatype,
-	bool grayscale);
+	bool palettized);
 
 //---------------------------------------------------------------------------
 
