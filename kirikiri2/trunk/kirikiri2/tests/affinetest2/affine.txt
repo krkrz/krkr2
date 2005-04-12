@@ -22,6 +22,8 @@ if(1)
 
 //		do_affine( 6, 0, 0,  6, 128 + x, 128, stFastLinear);
 //		do_affine( 3, 0, 0,  3, 128, 128, mode);
-		do_affine( 12, +41, -41,  12, 228, 128, mode);
+		do_affine( 12, +41, -41,  12, 228, 128, mode/* | stRefNoClip*/);
+
+//		do_stretch(100, 100, 200, 200, mode | stRefNoClip);
 
 // 13
