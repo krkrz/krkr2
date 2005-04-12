@@ -39,12 +39,19 @@ enum tTVPBBBltMethod
 	bmAlphaOnAddAlpha,
 	bmCopyOnAddAlpha
 };
+
 enum tTVPBBStretchType
 {
 	stNearest = 0, // primal method; nearest neighbor method
 	stFastLinear = 1, // fast linear interpolation (does not have so much precision)
 	stLinear = 2,  // (strict) linear interpolation
-	stCubic = 3    // cubic interpolation
+	stCubic = 3,    // cubic interpolation
+
+	stTypeMask = 0xf, // stretch type mask
+	stFlagMask = 0xf0, // flag mask
+
+	stRefNoClip = 0x10 // referencing source is not limited by the given rectangle
+						// (may allow to see the border pixel to interpolate)
 };
 /*]*/
 
@@ -168,7 +175,7 @@ private:
 			tStretchFunc stretch,
 			tjs_int rw, tjs_int rh,
 			tjs_int dw, tjs_int dh,
-			tjs_int refw, tjs_int refh,
+			const tTVPRect & srccliprect,
 			tjs_int x_ref_start,
 			tjs_int y_ref_start,
 			tjs_int x_len, tjs_int y_len,
@@ -210,6 +217,7 @@ private:
 			tjs_int srcpitch,
 			tjs_int sxl,
 			tjs_int syl,
+			const tTVPRect & srccliprect,
 			const tTVPRect & srcrect);
 
 public:
@@ -217,14 +225,14 @@ public:
 		tTVPRect refrect, const tTVPPointD * points,
 			tTVPBBBltMethod method, tjs_int opa,
 			tTVPRect * updaterect = NULL,
-			bool hda = true, tTVPBBStretchType type = stNearest, bool clear = false,
+			bool hda = true, tTVPBBStretchType mode = stNearest, bool clear = false,
 				tjs_uint32 clearcolor = 0);
 
 	bool AffineBlt(tTVPRect destrect, const tTVPBaseBitmap *ref,
 		tTVPRect refrect, const t2DAffineMatrix & matrix,
 			tTVPBBBltMethod method, tjs_int opa,
 			tTVPRect * updaterect = NULL,
-			bool hda = true, tTVPBBStretchType type = stNearest, bool clear = false,
+			bool hda = true, tTVPBBStretchType mode = stNearest, bool clear = false,
 				tjs_uint32 clearcolor = 0);
 
 private:
