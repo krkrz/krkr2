@@ -74,6 +74,13 @@ class TestWindow extends Window
 //		fore.affineCopy(lay, 0, 0, 5, 5, true, a, b, c, d, e, f, mode, true);
 	}
 
+	function do_stretch(x, y, w, h, mode = stNearest)
+	{
+		fore.stretchCopy(x, y, w, h, lay, 2, 2, 3, 3, mode);
+//		fore.affineCopy(lay, 1, 1, 3, 3, true, a, b, c, d, e, f, mode, true);
+//		fore.affineCopy(lay, 0, 0, 5, 5, true, a, b, c, d, e, f, mode, true);
+	}
+
 	function action(ev)
 	{
 		if(ev.type == "onMouseDown" && ev.target == fore)

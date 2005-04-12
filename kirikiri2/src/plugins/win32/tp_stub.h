@@ -1813,12 +1813,19 @@ enum tTVPBBBltMethod
 	bmAlphaOnAddAlpha,
 	bmCopyOnAddAlpha
 };
+
 enum tTVPBBStretchType
 {
 	stNearest = 0, // primal method; nearest neighbor method
 	stFastLinear = 1, // fast linear interpolation (does not have so much precision)
 	stLinear = 2,  // (strict) linear interpolation
-	stCubic = 3    // cubic interpolation
+	stCubic = 3,    // cubic interpolation
+
+	stTypeMask = 0xf, // stretch type mask
+	stFlagMask = 0xf0, // flag mask
+
+	stRefNoClip = 0x10 // referencing source is not limited by the given rectangle
+						// (may allow to see the border pixel to interpolate)
 };
 
 

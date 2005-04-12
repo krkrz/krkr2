@@ -1248,7 +1248,7 @@ void tTVPBaseBitmap::TVPDoStretchLoop(
 // declare stretching loop function for bilinear interpolation
 
 #define TVP_DoBilinearStretchLoop_ARGS  rw, rh, dw, dh, \
-						refw, refh, x_ref_start, y_ref_start, x_len, y_len, \
+						srccliprect, x_ref_start, y_ref_start, x_len, y_len, \
 						destp, destpitch, x_step, \
 						y_step, refp, refpitch
 template <typename tStretchFunc>
@@ -1256,7 +1256,7 @@ void tTVPBaseBitmap::TVPDoBiLinearStretchLoop(
 		tStretchFunc stretch,
 		tjs_int rw, tjs_int rh,
 		tjs_int dw, tjs_int dh,
-		tjs_int refw, tjs_int refh,
+		const tTVPRect & srccliprect,
 		tjs_int x_ref_start,
 		tjs_int y_ref_start,
 		tjs_int x_len, tjs_int y_len,
@@ -1291,13 +1291,14 @@ void tTVPBaseBitmap::TVPDoBiLinearStretchLoop(
 		y_ref_start -= (((rh-1)<<16) + (dh-1)*y_step)/2 - y_step;
 
 	// horizontal destination line is splitted into three parts;
-	// 1. left fraction (x_ref < 0               (lf)
-	//                or x_ref >= refw - 1)
+	// 1. left fraction (x_ref < srccliprect.left               (lf)
+	//                or x_ref >= srccliprect.right - 1)
 	// 2. center                                 (c)
-	// 3. right fraction (x_ref >= refw - 1      (rf)
-	//                or x_ref < 0)
+	// 3. right fraction (x_ref >= srccliprect.right - 1        (rf)
+	//                or x_ref < srccliprect.left)
 
-	tjs_int ref_right_limit = (refw-1)<<16;
+	tjs_int ref_left_limit  = (srccliprect.left)<<16;
+	tjs_int ref_right_limit = (srccliprect.right-1)<<16;
 
 	tjs_int y_ref = y_ref_start;
 	while(y_len--)
@@ -1305,8 +1306,14 @@ void tTVPBaseBitmap::TVPDoBiLinearStretchLoop(
 		tjs_int y1 = y_ref >> 16;
 		tjs_int y2 = y1+1;
 		tjs_int y_blend = (y_ref & 0xffff) >> 8;
-		if(y1 < 0) y1 = 0; else if(y1 >= refh) y1 = refh-1;
-		if(y2 < 0) y2 = 0; else if(y2 >= refh) y2 = refh-1;
+		if(y1 < srccliprect.top)
+			y1 = srccliprect.top;
+		else if(y1 >= srccliprect.bottom)
+			y1 = srccliprect.bottom - 1;
+		if(y2 < srccliprect.top)
+			y2 = srccliprect.top;
+		else if(y2 >= srccliprect.bottom)
+			y2 = srccliprect.bottom - 1;
 
 		const tjs_uint32 * l1 =
 			(const tjs_uint32*)(refp + refpitch * y1);
@@ -1324,20 +1331,22 @@ void tTVPBaseBitmap::TVPDoBiLinearStretchLoop(
 		{
 			dp = (tjs_uint32*)destp + (x_len - 1);
 			x_ref = x_ref_start + (x_len - 1) * x_step;
-			if(x_ref < 0 && x_remain)
+			if(x_ref < ref_left_limit)
 			{
 				tjs_uint color =
-					TVPBlendARGB(*l1, *l2, y_blend);
+					TVPBlendARGB(
+						*(l1 + srccliprect.left),
+						*(l2 + srccliprect.left), y_blend);
 				do
 					stretch.DoOnePixel(dp, color), dp-- , x_ref -= x_step, x_remain --;
-				while(x_ref < 0 && x_remain);
+				while(x_ref < ref_left_limit && x_remain);
 			}
 			else if(x_ref >= ref_right_limit)
 			{
 				tjs_uint color =
 					TVPBlendARGB(
-						*(l1 + refw-1),
-						*(l2 + refw-2), y_blend);
+						*(l1 + srccliprect.right - 1),
+						*(l2 + srccliprect.right - 1), y_blend);
 				do
 					stretch.DoOnePixel(dp, color), dp-- , x_ref -= x_step, x_remain --;
 				while(x_ref >= ref_right_limit && x_remain);
@@ -1349,20 +1358,22 @@ void tTVPBaseBitmap::TVPDoBiLinearStretchLoop(
 		{
 			dp = (tjs_uint32*)destp;
 			x_ref = x_ref_start;
-			if(x_ref < 0)
+			if(x_ref < ref_left_limit)
 			{
 				tjs_uint color =
-					TVPBlendARGB(*l1, *l2, y_blend);
+					TVPBlendARGB(
+						*(l1 + srccliprect.left),
+						*(l2 + srccliprect.left), y_blend);
 				do
 					stretch.DoOnePixel(dp, color), dp++ , x_ref += x_step, x_remain --;
-				while(x_ref < 0 && x_remain);
+				while(x_ref < ref_left_limit && x_remain);
 			}
 			else if(x_ref >= ref_right_limit)
 			{
 				tjs_uint color =
 					TVPBlendARGB(
-						*(l1 + refw-1),
-						*(l2 + refw-2), y_blend);
+						*(l1 + srccliprect.right - 1),
+						*(l2 + srccliprect.right - 1), y_blend);
 				do
 					stretch.DoOnePixel(dp, color), dp++ , x_ref += x_step, x_remain --;
 				while(x_ref >= ref_right_limit && x_remain);
@@ -1401,6 +1412,10 @@ bool tTVPBaseBitmap::StretchBlt(tTVPRect cliprect,
 	// any magnification, opa:255, method:bmCopy, hda:false
 	// no reverse, destination rectangle is within the image.
 
+	// extract stretch type
+	tTVPBBStretchType type = (tTVPBBStretchType)(mode & stTypeMask);
+
+	// source and destination check
 	tjs_int dw = destrect.get_width(), dh = destrect.get_height();
 	tjs_int rw = refrect.get_width(), rh = refrect.get_height();
 
@@ -1415,7 +1430,6 @@ bool tTVPBaseBitmap::StretchBlt(tTVPRect cliprect,
 	if(!Is32BPP()) TVPThrowExceptionMessage(TVPInvalidOperationFor8BPP);
 
 	// compute pitch, step, etc. needed for stretching copy/blt
-
 	tjs_int w = GetWidth();
 	tjs_int h = GetHeight();
 	tjs_int refw = ref->GetWidth();
@@ -1429,13 +1443,13 @@ bool tTVPBaseBitmap::StretchBlt(tTVPRect cliprect,
 	if(cliprect.bottom > h) cliprect.bottom = h;
 
 	// check mode
-	if((mode == stLinear || mode == stCubic) && !hda && opa==255 && method==bmCopy
+	if((type == stLinear || type == stCubic) && !hda && opa==255 && method==bmCopy
 		&& dw > 0 && dh > 0 && rw > 0 && rh > 0 &&
 		destrect.left >= cliprect.left && destrect.top >= cliprect.top &&
 		destrect.right <= cliprect.right && destrect.bottom <= cliprect.bottom)
 	{
 		// takes another routine
-		TVPResampleImage(this, destrect, ref, refrect, mode==stLinear?1:2);
+		TVPResampleImage(this, destrect, ref, refrect, type==stLinear?1:2);
 		return true;
 	}
 
@@ -1459,6 +1473,16 @@ bool tTVPBaseBitmap::StretchBlt(tTVPRect cliprect,
 	if(refrect.left < 0 || refrect.right > refw ||
 		refrect.top < 0 || refrect.bottom > refh)
 		TVPThrowExceptionMessage(TVPSrcRectOutOfBitmap);
+
+	// make srccliprect
+	tTVPRect srccliprect;
+	if(mode & stRefNoClip)
+		srccliprect.left = 0,
+		srccliprect.top = 0,
+		srccliprect.right = refw,
+		srccliprect.bottom = refh; // no clip; all the bitmap will be the source
+	else
+		srccliprect = refrect; // clip; the source is limited to the source rectangle
 
 	// compute step
 	tjs_int x_step = (rw << 16) / dw;
@@ -1565,7 +1589,7 @@ bool tTVPBaseBitmap::StretchBlt(tTVPRect cliprect,
 		if(opa == 255)
 		{
 			// stretching copy
-			if(TVP_BILINEAR_FORCE_COND || mode >= stFastLinear)
+			if(TVP_BILINEAR_FORCE_COND || type >= stFastLinear)
 			{
 				if(TVP_BILINEAR_FORCE_COND || !hda)
 				{
@@ -1592,7 +1616,7 @@ bool tTVPBaseBitmap::StretchBlt(tTVPRect cliprect,
 		else
 		{
 			// stretching constant ratio alpha blendng
-			if(TVP_BILINEAR_FORCE_COND || mode >= stFastLinear)
+			if(TVP_BILINEAR_FORCE_COND || type >= stFastLinear)
 			{
 				// bilinear interpolation
 				if(TVP_BILINEAR_FORCE_COND || !hda)
@@ -1684,7 +1708,7 @@ bool tTVPBaseBitmap::StretchBlt(tTVPRect cliprect,
 		{
 			if(TVP_BILINEAR_FORCE_COND || !hda)
 			{
-				if(TVP_BILINEAR_FORCE_COND || mode >= stFastLinear)
+				if(TVP_BILINEAR_FORCE_COND || type >= stFastLinear)
 				{
 					TVPDoBiLinearStretchLoop( // bilinear interpolation
 						tTVPInterpStretchAdditiveAlphaBlendFunctionObject(),
@@ -1708,7 +1732,7 @@ bool tTVPBaseBitmap::StretchBlt(tTVPRect cliprect,
 		{
 			if(TVP_BILINEAR_FORCE_COND || !hda)
 			{
-				if(TVP_BILINEAR_FORCE_COND || mode >= stFastLinear)
+				if(TVP_BILINEAR_FORCE_COND || type >= stFastLinear)
 				{
 					TVPDoBiLinearStretchLoop( // bilinear interpolation
 						tTVPInterpStretchAdditiveAlphaBlend_oFunctionObject(opa),
@@ -1980,7 +2004,7 @@ void tTVPBaseBitmap::TVPDoAffineLoop(
 // declare affine loop function for bilinear interpolation
 
 #define TVP_DoBilinearAffineLoop_ARGS  sxs, sys, \
-		dest, l, len, src, srcpitch, sxl, syl, srcrect
+		dest, l, len, src, srcpitch, sxl, syl, srccliprect, srcrect
 template <typename tFuncStretch, typename tFuncAffine>
 void tTVPBaseBitmap::TVPDoBilinearAffineLoop(
 		tFuncStretch stretch,
@@ -1994,6 +2018,7 @@ void tTVPBaseBitmap::TVPDoBilinearAffineLoop(
 		tjs_int srcpitch,
 		tjs_int sxl,
 		tjs_int syl,
+		const tTVPRect & srccliprect,
 		const tTVPRect & srcrect)
 {
 	// bilinear interpolation copy
@@ -2052,14 +2077,14 @@ void tTVPBaseBitmap::TVPDoBilinearAffineLoop(
 	syl -= 32768; // take back the original
 
 #define FIX_SX_SY	\
-	if(sx < srcrect.left) \
-		sx = srcrect.left, fixed_count ++; \
-	if(sx >= srcrect.right) \
-		sx = srcrect.right - 1, fixed_count++; \
-	if(sy < srcrect.top) \
-		sy = srcrect.top, fixed_count++; \
-	if(sy >= srcrect.bottom) \
-		sy = srcrect.bottom - 1, fixed_count++;
+	if(sx < srccliprect.left) \
+		sx = srccliprect.left, fixed_count ++; \
+	if(sx >= srccliprect.right) \
+		sx = srccliprect.right - 1, fixed_count++; \
+	if(sy < srccliprect.top) \
+		sy = srccliprect.top, fixed_count++; \
+	if(sy >= srccliprect.bottom) \
+		sy = srccliprect.bottom - 1, fixed_count++;
 
 
 	// from last point
@@ -2206,7 +2231,7 @@ bool tTVPBaseBitmap::AffineBlt(tTVPRect destrect, const tTVPBaseBitmap *ref,
 		tTVPRect refrect, const tTVPPointD * points_in,
 			tTVPBBBltMethod method, tjs_int opa,
 			tTVPRect * updaterect,
-			bool hda, tTVPBBStretchType type, bool clear, tjs_uint32 clearcolor)
+			bool hda, tTVPBBStretchType mode, bool clear, tjs_uint32 clearcolor)
 {
 	// unlike other drawing methods, 'destrect' is the clip rectangle of the
 	// destination bitmap.
@@ -2221,6 +2246,9 @@ bool tTVPBaseBitmap::AffineBlt(tTVPRect destrect, const tTVPBaseBitmap *ref,
 	// within the destination bounding box, is to be filled with value 'clearcolor'.
 
 	// returns false if the updating rect is not updated
+
+	// extract stretch type
+	tTVPBBStretchType type = (tTVPBBStretchType)(mode & stTypeMask);
 
 	// check source rectangle
 	if(refrect.left >= refrect.right ||
@@ -2351,6 +2379,17 @@ bool tTVPBaseBitmap::AffineBlt(tTVPRect destrect, const tTVPBaseBitmap *ref,
 
 	yc    = yc    * 65536;
 	yclim = yclim * 65536;
+
+	// make srccliprect
+	tTVPRect srccliprect;
+	if(mode & stRefNoClip)
+		srccliprect.left = 0,
+		srccliprect.top = 0,
+		srccliprect.right = (tjs_int)ref->GetWidth(),
+		srccliprect.bottom = (tjs_int)ref->GetHeight(); // no clip; all the bitmap will be the source
+	else
+		srccliprect = srcrect; // clip; the source is limited to the source rectangle
+
 
 	// process per a line
 	tjs_int mostupper;
