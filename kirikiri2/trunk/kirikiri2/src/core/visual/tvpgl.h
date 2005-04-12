@@ -369,8 +369,10 @@ TVP_GL_FUNC_PTR_EXTERN_DECL(void, TVPChBlurMulCopy65,  (tjs_uint8 *dest, const t
 TVP_GL_FUNC_PTR_EXTERN_DECL(void, TVPChBlurAddMulCopy65,  (tjs_uint8 *dest, const tjs_uint8 *src, tjs_int len, tjs_int level));
 TVP_GL_FUNC_PTR_EXTERN_DECL(void, TVPChBlurCopy65,  (tjs_uint8 *dest, tjs_int destpitch, tjs_int destwidth, tjs_int destheight, const tjs_uint8 * src, tjs_int srcpitch, tjs_int srcwidth, tjs_int srcheight, tjs_int blurwidth, tjs_int blurlevel));
 TVP_GL_FUNC_PTR_EXTERN_DECL(void, TVPBLExpand1BitTo8BitPal,  (tjs_uint8 *dest, const tjs_uint8 *buf, tjs_int len, const tjs_uint32 *pal));
+TVP_GL_FUNC_PTR_EXTERN_DECL(void, TVPBLExpand1BitTo8Bit,  (tjs_uint8 *dest, const tjs_uint8 *buf, tjs_int len));
 TVP_GL_FUNC_PTR_EXTERN_DECL(void, TVPBLExpand1BitTo32BitPal,  (tjs_uint32 *dest, const tjs_uint8 *buf, tjs_int len, const tjs_uint32 *pal));
 TVP_GL_FUNC_PTR_EXTERN_DECL(void, TVPBLExpand4BitTo8BitPal,  (tjs_uint8 *dest, const tjs_uint8 *buf, tjs_int len, const tjs_uint32 *pal));
+TVP_GL_FUNC_PTR_EXTERN_DECL(void, TVPBLExpand4BitTo8Bit,  (tjs_uint8 *dest, const tjs_uint8 *buf, tjs_int len));
 TVP_GL_FUNC_PTR_EXTERN_DECL(void, TVPBLExpand4BitTo32BitPal,  (tjs_uint32 *dest, const tjs_uint8 *buf, tjs_int len, const tjs_uint32 *pal));
 TVP_GL_FUNC_PTR_EXTERN_DECL(void, TVPBLExpand8BitTo8BitPal,  (tjs_uint8 *dest, const tjs_uint8 *buf, tjs_int len, const tjs_uint32 *pal));
 TVP_GL_FUNC_PTR_EXTERN_DECL(void, TVPBLExpand8BitTo32BitPal,  (tjs_uint32 *dest, const tjs_uint8 *buf, tjs_int len, const tjs_uint32 *pal));

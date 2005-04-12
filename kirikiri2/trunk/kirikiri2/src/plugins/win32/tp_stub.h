@@ -2946,8 +2946,10 @@ extern void * TVPImportFuncPtrf1509827696ebf5627bee1a45d675fb8;
 extern void * TVPImportFuncPtrbbb625e23229350453161810c41419dd;
 extern void * TVPImportFuncPtr489a6aae30de0feff5d3c5fbd42ae325;
 extern void * TVPImportFuncPtr186a94b2fed609ed2d2a7ac1a2bed87f;
+extern void * TVPImportFuncPtrbde8efb9971664f2b52fe912745e2791;
 extern void * TVPImportFuncPtr386d6fa5cb73e3519b62d20470e5414b;
 extern void * TVPImportFuncPtrc61f97ec3d99bdbb23afe93870001bbf;
+extern void * TVPImportFuncPtrf92821f2b23662c6f1256511a626cd3f;
 extern void * TVPImportFuncPtr76b0732e3e2886897d5f26b4b0545dee;
 extern void * TVPImportFuncPtr903ed11ef3863850e837bd4b3b1d61a1;
 extern void * TVPImportFuncPtr2661124b39595ffafe2fb0bfb7bd2efc;
@@ -8377,6 +8379,16 @@ inline void TVPBLExpand1BitTo8BitPal(tjs_uint8 * dest , const tjs_uint8 * buf , 
 	typedef void (__stdcall * __functype)(tjs_uint8 *, const tjs_uint8 *, tjs_int , const tjs_uint32 *);
 	((__functype)(TVPImportFuncPtr186a94b2fed609ed2d2a7ac1a2bed87f))(dest, buf, len, pal);
 }
+inline void TVPBLExpand1BitTo8Bit(tjs_uint8 * dest , const tjs_uint8 * buf , tjs_int len)
+{
+	if(!TVPImportFuncPtrbde8efb9971664f2b52fe912745e2791)
+	{
+		static char funcname[] = "void ::TVPBLExpand1BitTo8Bit(tjs_uint8 *,const tjs_uint8 *,tjs_int)";
+		TVPImportFuncPtrbde8efb9971664f2b52fe912745e2791 = TVPGetImportFuncPtr(funcname);
+	}
+	typedef void (__stdcall * __functype)(tjs_uint8 *, const tjs_uint8 *, tjs_int);
+	((__functype)(TVPImportFuncPtrbde8efb9971664f2b52fe912745e2791))(dest, buf, len);
+}
 inline void TVPBLExpand1BitTo32BitPal(tjs_uint32 * dest , const tjs_uint8 * buf , tjs_int len , const tjs_uint32 * pal)
 {
 	if(!TVPImportFuncPtr386d6fa5cb73e3519b62d20470e5414b)
@@ -8396,6 +8408,16 @@ inline void TVPBLExpand4BitTo8BitPal(tjs_uint8 * dest , const tjs_uint8 * buf , 
 	}
 	typedef void (__stdcall * __functype)(tjs_uint8 *, const tjs_uint8 *, tjs_int , const tjs_uint32 *);
 	((__functype)(TVPImportFuncPtrc61f97ec3d99bdbb23afe93870001bbf))(dest, buf, len, pal);
+}
+inline void TVPBLExpand4BitTo8Bit(tjs_uint8 * dest , const tjs_uint8 * buf , tjs_int len)
+{
+	if(!TVPImportFuncPtrf92821f2b23662c6f1256511a626cd3f)
+	{
+		static char funcname[] = "void ::TVPBLExpand4BitTo8Bit(tjs_uint8 *,const tjs_uint8 *,tjs_int)";
+		TVPImportFuncPtrf92821f2b23662c6f1256511a626cd3f = TVPGetImportFuncPtr(funcname);
+	}
+	typedef void (__stdcall * __functype)(tjs_uint8 *, const tjs_uint8 *, tjs_int);
+	((__functype)(TVPImportFuncPtrf92821f2b23662c6f1256511a626cd3f))(dest, buf, len);
 }
 inline void TVPBLExpand4BitTo32BitPal(tjs_uint32 * dest , const tjs_uint8 * buf , tjs_int len , const tjs_uint32 * pal)
 {

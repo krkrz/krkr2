@@ -6048,6 +6048,39 @@ EOF
 
 print FC <<EOF;
 /*export*/
+TVP_GL_FUNC_DECL(void, TVPBLExpand1BitTo8Bit_c, (tjs_uint8 *dest, const tjs_uint8 *buf, tjs_int len))
+{
+	tjs_uint8 *d=dest, *dlim;
+	tjs_uint8 b;
+
+	dlim = dest + len-7;
+	while(d < dlim)
+	{
+		b = *(buf++);
+		d[0] = (tjs_uint8)((b&(tjs_uint)0x80)>>7);
+		d[1] = (tjs_uint8)((b&(tjs_uint)0x40)>>6);
+		d[2] = (tjs_uint8)((b&(tjs_uint)0x20)>>5);
+		d[3] = (tjs_uint8)((b&(tjs_uint)0x10)>>4);
+		d[4] = (tjs_uint8)((b&(tjs_uint)0x08)>>3);
+		d[5] = (tjs_uint8)((b&(tjs_uint)0x04)>>2);
+		d[6] = (tjs_uint8)((b&(tjs_uint)0x02)>>1);
+		d[7] = (tjs_uint8)((b&(tjs_uint)0x01)   );
+		d += 8;
+	}
+	dlim = dest + len;
+	b = *buf;
+	while(d<dlim)
+	{
+		*(d++) = (b&0x80) ? 1 : 0;
+		b<<=1;
+	}
+}
+EOF
+
+;#-----------------------------------------------------------------
+
+print FC <<EOF;
+/*export*/
 TVP_GL_FUNC_DECL(void, TVPBLExpand1BitTo32BitPal_c, (tjs_uint32 *dest, const tjs_uint8 *buf, tjs_int len, const tjs_uint32 *pal))
 {
 	tjs_uint32 p[2];
@@ -6103,6 +6136,30 @@ TVP_GL_FUNC_DECL(void, TVPBLExpand4BitTo8BitPal_c, (tjs_uint8 *dest, const tjs_u
 	}
 }
 EOF
+;#-----------------------------------------------------------------
+
+print FC <<EOF;
+/*export*/
+TVP_GL_FUNC_DECL(void, TVPBLExpand4BitTo8Bit_c, (tjs_uint8 *dest, const tjs_uint8 *buf, tjs_int len))
+{
+	tjs_uint8 *d=dest, *dlim;
+	tjs_uint8 b;
+
+	dlim = dest + (len & ~1);
+	while(d < dlim)
+	{
+		b = *(buf++);
+		d[0] = (tjs_uint8)((b&0xf0)>>4);
+		d[1] = (tjs_uint8)(b&0x0f);
+		d += 2;
+	}
+	if(len & 1)
+	{
+		b = *buf;
+		if(d<dlim) *d = (tjs_uint8)((b&0xf0)>>4);
+	}
+}
+EOF
 
 ;#-----------------------------------------------------------------
 
@@ -6151,6 +6208,7 @@ print FC <<EOF;
 }
 
 EOF
+
 
 ;#-----------------------------------------------------------------
 
