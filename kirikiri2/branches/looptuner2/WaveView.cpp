@@ -105,7 +105,7 @@ void __fastcall TWaveDrawer::SetMagnify(int m)
 		if(left > FReader->NumSamples - view) left = FReader->NumSamples - view;
 		if(left < 0) left = 0;
 
-		FStart = left;
+		FStart = PixelToSample(SampleToPixel(left)); // quantize
 		FMinRulerMajorWidth = 0;
 		FMinRulerMajorHeight = 0;
 		Invalidate();
