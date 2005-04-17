@@ -1,56 +1,15 @@
 //---------------------------------------------------------------------------
-
-#ifndef WaveReaderUnitH
-#define WaveReaderUnitH
+#ifndef TSSWaveContextH
+#define TSSWaveContextH
 
 #include <mmsystem.h>
 #include <mmreg.h>
 #include <ks.h>
 #include <ksmedia.h>
+#include "WaveContext.h"
+#include "tvpsnd.h"
 
-//---------------------------------------------------------------------------
-class TCustomWaveContext
-{
-protected:
-	virtual int __fastcall GetChannels() = 0;
-	virtual int __fastcall GetFrequency() = 0;
-	virtual DWORD __fastcall GetSpeakerConfig() = 0;
 
-public:
-	__fastcall TCustomWaveContext() { };
-	virtual __fastcall ~TCustomWaveContext() { };
-
-	virtual bool __fastcall Start(AnsiString filename) = 0;
-	virtual int __fastcall Read(__int16 * dest, int destsize) = 0;
-
-	__property int Channels = {read = GetChannels};
-	__property int Frequency = {read = GetFrequency};
-	__property DWORD SpeakerConfig = {read = GetSpeakerConfig};
-};
-//---------------------------------------------------------------------------
-class TRIFFWaveContext : public TCustomWaveContext
-{
-	int FGranuleSize;
-	int FDataSize;
-	int FDataStart;
-
-	WAVEFORMATEXTENSIBLE Format;
-	bool IsFloat;
-
-	TStream *FInputStream;
-
-protected:
-	int __fastcall GetChannels() { return Format.Format.nChannels; }
-	int __fastcall GetFrequency() { return Format.Format.nSamplesPerSec; }
-	DWORD __fastcall GetSpeakerConfig() { return Format.dwChannelMask; }
-
-public:
-	__fastcall TRIFFWaveContext();
-	__fastcall ~TRIFFWaveContext();
-
-	bool __fastcall Start(AnsiString filename);
-	int __fastcall Read(__int16 * dest, int destgranules);
-};
 //---------------------------------------------------------------------------
 class ITSSModule;
 class ITSSStorageProvider;
@@ -77,12 +36,14 @@ class TTSSWaveContext : public TCustomWaveContext
 	int FChannels;
 	int FFrequency;
 	int FBitsPerSample;
+	int FTotalSamples;
 	DWORD FSpeakerConfig;
 
 protected:
 	int __fastcall GetChannels() { return FChannels; }
 	int __fastcall GetFrequency() { return FFrequency; }
 	int __fastcall GetBitsPerSample() { return FBitsPerSample; }
+	int __fastcall GetTotalSamples() { return FTotalSamples; }
 	DWORD __fastcall GetSpeakerConfig() { return FSpeakerConfig; }
 
 public:
@@ -92,73 +53,39 @@ public:
 	bool __fastcall Start(AnsiString filename);
 	int __fastcall Read(__int16 * dest, int destgranules);
 };
-
 //---------------------------------------------------------------------------
-class TWaveReader : public TObject
+class TStorageProviderImpl : public ITSSStorageProvider
 {
-	friend class TWaveReaderThread;
+	HRESULT STDMETHODCALLTYPE QueryInterface(REFIID iid,void **ppvObjOut)
+	{
+		if(!ppvObjOut) return E_INVALIDARG;
 
-public:
-	__fastcall TWaveReader();
-	__fastcall ~TWaveReader();
+		*ppvObjOut=NULL;
+		if(!memcmp(&iid,&IID_IUnknown,16))
+			*ppvObjOut=(IUnknown*)this;
+		else if(!memcmp(&iid,&IID_ITSSStorageProvider,16))
+			*ppvObjOut=(ITSSStorageProvider*)this;
 
-private:
-	bool FReadDone;
-	int FPrevRange;
+		if(*ppvObjOut)
+		{
+			AddRef();
+			return S_OK;
+		}
+		return E_NOINTERFACE;
+	}
 
-	int FNumSamples;
+	ULONG STDMETHODCALLTYPE AddRef(void) { return 1; }
+	ULONG STDMETHODCALLTYPE Release(void) { return 1; }
 
-	WAVEFORMATEXTENSIBLE Format;
-
-	int GetChannels() { return Format.Format.nChannels; }
-	int __fastcall GetNumSamples(void) {return FNumSamples;}
-	int __fastcall GetFrequency(void) {return Format.Format.nSamplesPerSec; }
-	int __fastcall GetBitsPerSample(void) {return Format.Format.wBitsPerSample; }
-
-	__int16 *FPeaks;
-	TStream *FTmpStream;
-	AnsiString FTmpFileName;
-	TCustomWaveContext *FInputContext;
-	TWaveReaderThread * FReaderThread;
-	TNotifyEvent FOnReadProgress;
-	HANDLE FMappingFile;
-	__int16 *FData;
-	HANDLE FMapping;
-
-	TStringList *FPlugins;
-	AnsiString FFilterString;
-
-	bool __fastcall ReadBlock();
-
-	void __fastcall Map();
-
-protected:
-
-public:
-	void __fastcall Clear();
-	void __fastcall LoadWave(AnsiString filename);
-
-	void __fastcall GetPeak(int &high, int &low, int pos, int channel, int range);
-
-	int __fastcall GetData(__int16 *buf, int ofs, int num);
-
-	int __fastcall SamplePosToTime(DWORD samplepos);
-
-	__property TNotifyEvent OnReadProgress={read=FOnReadProgress, write=FOnReadProgress};
-
-	const WAVEFORMATEXTENSIBLE * GetFormat() const { return &Format; }
-
-	AnsiString __fastcall GetChannelLabel(int ch);
-
-	__property bool ReadDone = {read=FReadDone};
-	__property int NumSamples = {read=FNumSamples};
-	__property int Channels = {read=GetChannels};
-	__property int Frequency = {read=GetFrequency};
-	__property int BitsPerSample = {read=GetBitsPerSample};
-
-	__property AnsiString FilterString = {read=FFilterString};
+	HRESULT _stdcall GetStreamForRead(LPWSTR url, IUnknown ** stream );
+	HRESULT _stdcall GetStreamForWrite(LPWSTR url, IUnknown ** stream )
+		{ return E_NOTIMPL; }
+	HRESULT _stdcall GetStreamForUpdate(LPWSTR url, IUnknown ** stream )
+		{ return E_NOTIMPL; }
 };
 //---------------------------------------------------------------------------
-
+extern TStorageProviderImpl StorageProvider;
+//---------------------------------------------------------------------------
 
 #endif
+

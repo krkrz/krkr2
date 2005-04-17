@@ -4,404 +4,12 @@
 #pragma hdrstop
 
 #include <mmsystem.h>
-#include "WaveReaderUnit.h"
+#include "WaveReader.h"
+#include "TSSWaveContext.h"
+#include "RIFFWaveContext.h"
 
 #include "tvpsnd.h"
 
-const static GUID __KSDATAFORMAT_SUBTYPE_IEEE_FLOAT =
-		{ 0x00000003 , 0x0000, 0x0010, { 0x80,0x00,0x00, 0xaa, 0x00, 0x38, 0x9b, 0x71 }};
-const static GUID __KSDATAFORMAT_SUBTYPE_PCM =
-		{ 0x00000001 , 0x0000, 0x0010, { 0x80,0x00,0x00, 0xaa, 0x00, 0x38, 0x9b, 0x71 }};
-//---------------------------------------------------------------------------
-static void ConvertFloatTo16bits(short int *output, const float *input, int channels, int count)
-{
-	// 現時点では 32bit float のみを変換する
-
-	// float PCM は +1.0 ～ 0 ～ -1.0 の範囲にある
-	// 範囲外のデータはクリップする
-	int total = channels * count;
-	while(total--)
-	{
-		float t = *(input ++) * 32768.0;
-		if(t > 0)
-		{
-			int i = (int)(t + 0.5);
-			if(i > 32767) i = 32767;
-			*(output++) = (short int)i;
-		}
-		else
-		{
-			int i = (int)(t - 0.5);
-			if(i < -32768) i = -32768;
-			*(output++) = (short int)i;
-		}
-	}
-
-}
-//---------------------------------------------------------------------------
-static void ConvertIntTo16bits(short int *output, const void *input, int bytespersample,
-	int validbits, int channels, int count)
-{
-	// 本当は int16 などのサイズの決まった型をつかうべき
-
-	// 整数表現の PCM を 16bit に変換する
-	int total = channels * count;
-
-	if(bytespersample == 1)
-	{
-		// 読み込み時のチェックですでに 8bit 入力のデータは 有効ビット数が 8 ビット
-		// であることが保証されているので単に 16bit に拡張するだけにする
-		const char *p = (const char *)input;
-		while(total--) *(output++) = (short int)( ((int)*(p++)-0x80) * 0x100);
-	}
-	else if(bytespersample == 2)
-	{
-		// 有効ビット数以下の数値は マスクして取り去る
-		short int mask =  ~( (1 << (16 - validbits)) - 1);
-		const short int *p = (const short int *)input;
-		while(total--) *(output++) = (short int)(*(p++) & mask);
-	}
-	else if(bytespersample == 3)
-	{
-		long int mask = ~( (1 << (24 - validbits)) - 1);
-		const unsigned char *p = (const unsigned char *)input;
-		while(total--)
-		{
-			int t = p[0] + (p[1] << 8) + (p[2] << 16);
-			p += 3;
-			t |= -(t&0x800000); // 符号拡張
-			t &= mask; // マスク
-			t >>= 8;
-			*(output++) = (short int)t;
-		}
-	}
-	else if(bytespersample == 4)
-	{
-		long int mask = ~( (1 << (32 - validbits)) - 1);
-		const unsigned __int32 *p = (const unsigned __int32 *)input;
-		while(total--)
-		{
-			*(output++) = (short int)((*(p++) & mask) >> 16);
-		}
-	}
-
-}
-//---------------------------------------------------------------------------
-static void ConvertTo16bits(short int *output, const void *input, int bytespersample,
-	bool isfloat, int validbits, int channels, int count)
-{
-	// 指定されたフォーマットを 16bit フォーマットに変換する
-	// channels が -6 の場合は特別に
-	// FL FC FR BL BR LF と並んでいるデータ (AC3と同じ順序) を
-	// FL FR FC LF BL BR (WAVEFORMATEXTENSIBLE の期待する順序) に並び替える
-	int cns = channels;
-	if(cns<0) cns = -cns;
-
-	if(isfloat)
-		ConvertFloatTo16bits(output, (const float *)input, cns, count);
-	else
-		ConvertIntTo16bits(output, input, bytespersample, validbits, cns, count);
-
-	if(channels == -6)
-	{
-		// チャンネルの入れ替え
-		short int *op = output;
-		for(int i = 0; i < count; i++)
-		{
-			short int fc = op[1];
-			short int bl = op[3];
-			short int br = op[4];
-			op[1] = op[2];
-			op[2] = fc;
-			op[3] = op[5];
-			op[4] = bl;
-			op[5] = br;
-			op += 6;
-		}
-	}		
-}
-//---------------------------------------------------------------------------
-
-//---------------------------------------------------------------------------
-__fastcall TRIFFWaveContext::TRIFFWaveContext()
-{
-	FInputStream = NULL;
-}
-//---------------------------------------------------------------------------
-__fastcall TRIFFWaveContext::~TRIFFWaveContext()
-{
-	if(FInputStream) delete FInputStream;
-}
-//---------------------------------------------------------------------------
-bool __fastcall TRIFFWaveContext::Start(AnsiString filename)
-{
-	try
-	{
-		FInputStream = new TFileStream(filename, fmOpenRead | fmShareDenyWrite);
-	}
-	catch(...)
-	{
-		return false;
-	}
-
-	// ヘッダを読む
-	BYTE buf[8];
-	FInputStream->Position=0;
-	FInputStream->ReadBuffer(buf, 8);
-	if(memcmp(buf, "RIFF", 4)) return false; // RIFF がない
-	FInputStream->ReadBuffer(buf, 8);
-	if(memcmp(buf, "WAVEfmt ", 4)) return false; // WAVE でないか fmt チャンクがすぐこない
-
-	DWORD fmtlen;
-	FInputStream->ReadBuffer(&fmtlen,4);
-
-	FInputStream->ReadBuffer(&Format, sizeof(WAVEFORMATEX));
-	if(Format.Format.wFormatTag != WAVE_FORMAT_EXTENSIBLE &&
-		Format.Format.wFormatTag != WAVE_FORMAT_PCM &&
-		Format.Format.wFormatTag != WAVE_FORMAT_IEEE_FLOAT) return false; // 対応できないフォーマット
-
-	if(Format.Format.wFormatTag == WAVE_FORMAT_EXTENSIBLE)
-	{
-		FInputStream->ReadBuffer(
-			(char*)&Format + sizeof(Format.Format),
-			sizeof(WAVEFORMATEXTENSIBLE) - sizeof(WAVEFORMATEX));
-	}
-	else if(Format.Format.wFormatTag == WAVE_FORMAT_PCM)
-	{
-		Format.Samples.wValidBitsPerSample = Format.Format.wBitsPerSample;
-		Format.SubFormat = __KSDATAFORMAT_SUBTYPE_PCM;
-		Format.dwChannelMask = 0;
-	}
-	else if(Format.Format.wFormatTag == WAVE_FORMAT_IEEE_FLOAT)
-	{
-		Format.Samples.wValidBitsPerSample = Format.Format.wBitsPerSample;
-		Format.SubFormat = __KSDATAFORMAT_SUBTYPE_IEEE_FLOAT;
-		Format.dwChannelMask = 0;
-	}
-
-	// 各種チェック
-	if(Format.Format.wBitsPerSample & 0x07) return false; // 8 の倍数ではない
-	if(Format.Format.wBitsPerSample > 32) return false; // 32bit より大きいサイズは扱えない
-	if(Format.Format.wFormatTag == WAVE_FORMAT_EXTENSIBLE &&
-		Format.Samples.wValidBitsPerSample < 8) return false; // 有効ビットが 8 未満は扱えない
-	if(Format.Format.wBitsPerSample < Format.Samples.wValidBitsPerSample)
-		return false; // 有効ビット数が実際のビット数より大きい
-	if(!memcmp(&Format.SubFormat, &__KSDATAFORMAT_SUBTYPE_IEEE_FLOAT, 16))
-		IsFloat = true;
-	else if(!memcmp(&Format.SubFormat, &__KSDATAFORMAT_SUBTYPE_PCM, 16))
-		IsFloat = false;
-	else
-		return false; // 未知のサブフォーマット
-
-	if(IsFloat && Format.Format.wBitsPerSample != Format.Samples.wValidBitsPerSample)
-		return false; // float の有効ビット数が格納ビット数と等しくない
-	if(IsFloat && Format.Format.wBitsPerSample != 32)
-		return false; // float のビット数が 32 でない
-
-	// data チャンクを探す
-	FInputStream->Position= fmtlen + 0x14;
-
-	while(1)
-	{
-		FInputStream->ReadBuffer(buf,4); // data ?
-		FInputStream->ReadBuffer(&FDataSize,4); // データサイズ
-		if(memcmp(buf,"data",4)==0) break;
-		FInputStream->Position=FInputStream->Position+FDataSize;
-
-		if(FInputStream->Position >= FInputStream->Size) return false;
-	}
-
-	FDataStart=FInputStream->Position;
-
-	return true;
-}
-//---------------------------------------------------------------------------
-int __fastcall TRIFFWaveContext::Read(__int16 * dest, int destgranules)
-{
-	int samplesize = Format.Format.wBitsPerSample / 8 * Format.Format.nChannels;
-	destgranules *= samplesize; // data (in bytes) to read
-	int bytestowrite;
-	int remain = FDataStart + FDataSize - FInputStream->Position;
-	int readsamples;
-
-	char *buf = new char[destgranules];
-
-	try
-	{
-		bytestowrite = (destgranules>remain) ? remain : destgranules;
-		bytestowrite = FInputStream->Read(buf, bytestowrite);
-
-		readsamples = bytestowrite / samplesize;
-
-		// convert to the destination format
-		ConvertTo16bits(dest, buf, Format.Format.wBitsPerSample / 8, IsFloat,
-			Format.Samples.wValidBitsPerSample, Format.Format.nChannels, readsamples);
-	}
-	catch(...)
-	{
-		delete [] buf;
-		throw;
-	}
-	delete [] buf;
-
-	return readsamples;
-}
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-class TStorageProviderImpl : public ITSSStorageProvider
-{
-	HRESULT STDMETHODCALLTYPE QueryInterface(REFIID iid,void **ppvObjOut)
-	{
-		if(!ppvObjOut) return E_INVALIDARG;
-
-		*ppvObjOut=NULL;
-		if(!memcmp(&iid,&IID_IUnknown,16))
-			*ppvObjOut=(IUnknown*)this;
-		else if(!memcmp(&iid,&IID_ITSSStorageProvider,16))
-			*ppvObjOut=(ITSSStorageProvider*)this;
-
-		if(*ppvObjOut)
-		{
-			AddRef();
-			return S_OK;
-		}
-		return E_NOINTERFACE;
-	}
-
-	ULONG STDMETHODCALLTYPE AddRef(void) { return 1; }
-	ULONG STDMETHODCALLTYPE Release(void) { return 1; }
-
-	HRESULT _stdcall GetStreamForRead(LPWSTR url, IUnknown ** stream );
-	HRESULT _stdcall GetStreamForWrite(LPWSTR url, IUnknown ** stream )
-		{ return E_NOTIMPL; }
-	HRESULT _stdcall GetStreamForUpdate(LPWSTR url, IUnknown ** stream )
-		{ return E_NOTIMPL; }
-} static StorageProvider;
-//---------------------------------------------------------------------------
-HRESULT _stdcall TStorageProviderImpl::GetStreamForRead(LPWSTR url, IUnknown ** stream )
-{
-	TStream *tvpstream;
-
-	try
-	{
-		tvpstream = new TFileStream(AnsiString(url), fmOpenRead|fmShareDenyWrite);
-	}
-	catch(...)
-	{
-		return E_FAIL;
-	}
-
-	TStreamAdapter * adapter;
-	adapter = new TStreamAdapter(tvpstream, soOwned);
-
-	IUnknown *istream = (IUnknown*)(IStream*)(*adapter);
-	*stream = istream;
-	istream->AddRef();
-
-	return S_OK;
-}
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-__fastcall TTSSWaveContext::TTSSWaveContext(AnsiString dllname)
-{
-	FModule = NULL;
-	FHandle = NULL;
-	FDecoder = NULL;
-
-	FHandle = LoadLibrary(dllname.c_str());
-	if(FHandle == NULL)
-	{
-		throw Exception(dllname + "を読み込むことができません");
-	}
-
-	FGetModuleInstance =(GetModuleInstanceProc)
-		GetProcAddress(FHandle, "GetModuleInstance");
-	FGetModuleThreadModel =(GetModuleThreadModelProc)
-		GetProcAddress(FHandle, "GetModuleThreadModel");
-	FShowConfigWindow =(ShowConfigWindowProc)
-		GetProcAddress(FHandle, "ShowConfigWindow");
-	FCanUnloadNow = (CanUnloadNowProc)
-		GetProcAddress(FHandle, "CanUnloadNow");
-
-	if(!FGetModuleInstance || FAILED(FGetModuleInstance(&FModule, &StorageProvider,
-		NULL, Application->Handle)) )
-	{
-		FreeLibrary(FHandle);
-		FHandle = NULL;
-		throw Exception("外部 DLL "+dllname+" は使用できません");
-	}
-}
-//---------------------------------------------------------------------------
-__fastcall TTSSWaveContext::~TTSSWaveContext()
-{
-	if(FDecoder) FDecoder->Release();
-	if(FModule) FModule->Release();
-	if(FHandle) FreeLibrary(FHandle);
-}
-//---------------------------------------------------------------------------
-bool __fastcall TTSSWaveContext::Start(AnsiString filename)
-{
-	if(FDecoder) FDecoder->Release(), FDecoder = NULL;
-
-
-	HRESULT hr;
-	IUnknown * decoder;
-
-	hr = FModule->GetMediaInstance(WideString(filename).c_bstr(), &decoder);
-	if(FAILED(hr))
-	{
-		throw Exception(filename + " は開くことができません");
-	}
-
-	hr = decoder->QueryInterface(IID_ITSSWaveDecoder, (void**)&FDecoder);
-	if(FAILED(hr))
-	{
-		decoder->Release();
-		FDecoder = NULL;
-		throw Exception(filename + " のメディア・タイプは扱うことができません");
-	}
-
-	decoder->Release();
-
-	TSSWaveFormat format;
-	FDecoder->GetFormat(&format);
-	if(format.dwBitsPerSample != 16)
-	{
-		throw Exception(filename + " は 16bit PCM に変換できないため扱うことができません");
-	}
-	if(format.dwChannels > 8)
-	{
-		throw Exception(filename + " は 9チャネル以上あるため扱うことができません");
-	}
-	FChannels = format.dwChannels;
-	FFrequency = format.dwSamplesPerSec;
-	FBitsPerSample = 16;
-	FSpeakerConfig = 0; // 現時点では常に 0 (なにか規格をつくるかも)
-
-	FGranuleSize = FChannels * sizeof(__int16);
-
-//	FDecoder->SetPosition(0); /// test
-
-	return true;
-}
-//---------------------------------------------------------------------------
-int __fastcall TTSSWaveContext::Read(__int16 * dest, int destgranules)
-{
-	unsigned long written;
-	unsigned long status ;
-
-	int pos = 0;
-	int remain = destgranules;
-	do
-	{
-		FDecoder->Render(dest + FChannels * pos, remain, &written, &status);
-		remain -= written;
-		pos += written;
-	} while(remain >0 && status == 1);
-
-	return pos;
-}
-//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 class TWaveReaderThread : public TThread
 {
@@ -424,7 +32,7 @@ public:
 	{
 		if(FOwner->FOnReadProgress)
 		{
-			FOwner->FOnReadProgress(FOwner);
+			FOwner->FOnReadProgress(NULL);
 		}
 	}
 
@@ -444,6 +52,7 @@ public:
 				tickstart = GetTickCount();
 			}
 		}
+		Synchronize(SyncMethod);
 	}
 } ;
 //---------------------------------------------------------------------------
@@ -476,8 +85,29 @@ static void FindPlugins(AnsiString path, AnsiString ext, TStringList *dest)
 	}
 }
 //---------------------------------------------------------------------------
-__fastcall TWaveReader::TWaveReader()
+TWaveReader::TWaveReader()
 {
+	FReadDone = false;
+	FPrevRange = 0;
+	FNumSamples = 0;
+	FSamplesRead = 0;
+
+	ZeroMemory(&Format, sizeof(Format));
+
+	FPeaks = NULL;
+	FTmpStream = NULL;
+	FInputContext = NULL;
+	FReaderThread = NULL;
+	FOnReadProgress = NULL;
+	FMappingFile = NULL;
+	FData = NULL;
+	FMapping = NULL;
+
+	FPlugins = NULL;
+	FFilterString = NULL;
+
+	FDecodePoint = NULL;
+
 	FTmpFileName = ExtractFileDir(ParamStr(0)) + "\\temp.dat";
 	FPlugins = new TStringList();
 
@@ -578,14 +208,14 @@ __fastcall TWaveReader::TWaveReader()
 	FFilterString = ret;
 }
 //---------------------------------------------------------------------------
-__fastcall TWaveReader::~TWaveReader()
+TWaveReader::~TWaveReader()
 {
 	Clear();
 	DeleteFile(FTmpFileName);
 	delete FPlugins;
 }
 //---------------------------------------------------------------------------
-void __fastcall TWaveReader::Clear()
+void TWaveReader::Clear()
 {
 	if(FReaderThread) delete FReaderThread, FReaderThread = NULL;
 	if(FPeaks) SysFreeMem(FPeaks), FPeaks = NULL;
@@ -596,15 +226,16 @@ void __fastcall TWaveReader::Clear()
 	if(FInputContext) delete FInputContext, FInputContext = NULL;
 	FReadDone = false;
 	FNumSamples = 0;
+	FSamplesRead = 0;
 	FPrevRange = 0;
 }
 //---------------------------------------------------------------------------
-bool __fastcall TWaveReader::ReadBlock()
+bool TWaveReader::ReadBlock()
 {
 	if(FReadDone) return false;
 	__int16 *buf = new __int16[32768 * Format.Format.nChannels];
 	int written = FInputContext->Read(buf, 32768);
-	FNumSamples += written;
+	FSamplesRead += written;
 	FTmpStream->Write(buf, written * Format.Format.nChannels * sizeof(__int16));
 	delete [] buf;
 	if(written==0)
@@ -617,11 +248,13 @@ bool __fastcall TWaveReader::ReadBlock()
 	return written!=0;
 }
 //---------------------------------------------------------------------------
-void __fastcall TWaveReader::Map()
+void TWaveReader::Map()
 {
 	if(!FData)
 	{
 		if(FTmpStream) delete FTmpStream , FTmpStream = NULL;
+
+		FNumSamples = FSamplesRead;
 
 		FMappingFile =
 			CreateFile(FTmpFileName.c_str(),
@@ -700,7 +333,7 @@ void __fastcall TWaveReader::Map()
 	}
 }
 //---------------------------------------------------------------------------
-void __fastcall TWaveReader::LoadWave(AnsiString filename)
+void TWaveReader::LoadWave(AnsiString filename)
 {
 	Clear();
 
@@ -747,6 +380,12 @@ void __fastcall TWaveReader::LoadWave(AnsiString filename)
 		delete FTmpStream;
 		FTmpStream = NULL;
 		throw Exception(filename + " : この形式のファイルは読み込めないか、ファイルが異常です");
+	}
+
+	FNumSamples = FInputContext->TotalSamples;
+	if(FNumSamples >= (0x80000000ul/8))
+	{
+		throw Exception(filename + " は 大きすぎるため、扱うことができません");
 	}
 
 	// Format に格納
@@ -809,7 +448,7 @@ void __fastcall TWaveReader::LoadWave(AnsiString filename)
 	// この関数は読み込みの終了を待たずに戻ります
 }
 //---------------------------------------------------------------------------
-void __fastcall TWaveReader::GetPeak(int &high, int &low, int pos, int channel, int range)
+void TWaveReader::GetPeak(int &high, int &low, int pos, int channel, int range)
 {
 	if(!FReadDone) return;
 
@@ -851,7 +490,16 @@ void __fastcall TWaveReader::GetPeak(int &high, int &low, int pos, int channel, 
 	}
 }
 //---------------------------------------------------------------------------
-int __fastcall TWaveReader::GetData(__int16 *buf, int ofs, int num)
+int TWaveReader::GetSampleAt(int pos, int channel)
+{
+	if(pos < 0) return 0;
+	if(pos >= FNumSamples) return 0; // out of the range
+	if(channel < 0) return 0;
+	if(channel >= Format.Format.nChannels) return 0;
+	return FData[pos * Format.Format.nChannels + channel];
+}
+//---------------------------------------------------------------------------
+int TWaveReader::GetData(__int16 *buf, int ofs, int num)
 {
 	if(!FReadDone) return 0;
 
@@ -864,14 +512,14 @@ int __fastcall TWaveReader::GetData(__int16 *buf, int ofs, int num)
 	return num;
 }
 //---------------------------------------------------------------------------
-int __fastcall TWaveReader::SamplePosToTime(DWORD samplepos)
+int TWaveReader::SamplePosToTime(DWORD samplepos)
 {
 	if(!FReadDone) return -1;
 
 	return (int)((__int64)samplepos*1000L / (__int64)Format.Format.nSamplesPerSec);
 }
 //---------------------------------------------------------------------------
-AnsiString __fastcall TWaveReader::GetChannelLabel(int ch)
+AnsiString TWaveReader::GetChannelLabel(int ch)
 {
 	static AnsiString chlabels[] =
 	{"FL", "FR", "FC", "LF", "BL", "BR", "FLC", "FRC", "BC", "SL", "SR", "TC",
@@ -920,109 +568,45 @@ AnsiString __fastcall TWaveReader::GetChannelLabel(int ch)
 	return "-";
 }
 //---------------------------------------------------------------------------
-#if 0
-AnsiString __fastcall GetAvailExtensions(void)
+void TWaveReader::GetFormat(tTVPWaveFormat & format)
 {
-	// 読み込み可能な形式をフィルタ文字列の形式で得る
-
-	TStringList *exts = new TStringList;
-	TStringList *descs = new TStringList;
-
-	exts->Add(".wav");
-	descs->Add("Wave ファイル");
-
-	AnsiString exepath = ExtractFilePath(ParamStr(0));
-
-	TSearchRec sr;
-	int done;
-
-	done = FindFirst(exepath + "plugin/*.dll",
-		faReadOnly | faHidden | faSysFile | faArchive, sr);
-
-	try
-	{
-		if(!done)
-		{
-			while(!done)
-			{
-				HMODULE lib =
-					LoadLibrary((exepath + "plugin/" + sr.FindData.cFileName).c_str());
-				if(lib)
-				{
-					ITSSModule * mod;
-					GetModuleInstanceProc proc = (GetModuleInstanceProc)
-						GetProcAddress(lib, "GetModuleInstance");
-					if(proc)
-					{
-						HRESULT hr =
-							proc(&mod, &StorageProvider, NULL,
-								Application->Handle);
-						if(SUCCEEDED(hr))
-						{
-							int idx = 0;
-							for(;;)
-							{
-								wchar_t shortname[33];
-								wchar_t ext[256];
-								hr = mod->GetSupportExts(idx, shortname,
-															ext, 256);
-								if(hr != S_OK) break;
-								if(wcslen(ext) >= 1)
-								{
-									exts->Add(ext);
-									descs->Add(shortname);
-								}
-								idx++;
-							}
-							mod->Release();
-						}
-					}
-					else
-					{
-						MessageDlg(AnsiString("このプラグインは扱えません : ") +
-							sr.FindData.cFileName, mtWarning, TMsgDlgButtons() << mbOK , 0);
-					}
-					FreeLibrary(lib);
-				}
-				done = FindNext(sr);
-			}
-			FindClose(sr);
-		}
-	}
-	catch(Exception &e)
-	{
-		delete exts;
-		delete descs;
-		throw Exception(e);
-	}
-
-	AnsiString ret;
-	ret = "すべての形式 (";
-	int i;
-	for(i=0; i<exts->Count; i++)
-	{
-		if(i) ret+=";";
-		ret+= "*" + exts->Strings[i];
-	}
-	ret += ")|";
-	for(i=0; i<exts->Count; i++)
-	{
-		if(i) ret+=";";
-		ret+= "*" + exts->Strings[i];
-	}
-
-	for(i=0; i<exts->Count; i++)
-	{
-		ret+="|";
-		ret+= descs->Strings[i];
-		ret+= " (*"+ exts->Strings[i] +")|";
-		ret+= "*" + exts->Strings[i];
-	}
-
-	ret+="|すべてのファイル (*.*)|*.*";
-
-	return ret;
+	format.SamplesPerSec = Format.Format.nSamplesPerSec;
+	format.Channels = Format.Format.nChannels;
+	format.BitsPerSample = Format.Samples.wValidBitsPerSample;
+	format.BytesPerSample = Format.Format.wBitsPerSample / 8;
+	format.TotalSamples = FNumSamples;
+	format.TotalTime = SamplePosToTime(FNumSamples);
+	format.SpeakerConfig = Format.dwChannelMask;
+	format.IsFloat = false; // always 16bit integer
+	format.Seekable = true;
 }
-#endif
 //---------------------------------------------------------------------------
+bool TWaveReader::Render(void *buf, tjs_uint bufsamplelen, tjs_uint& rendered)
+{
+	// write bufsamplelen samples to buf from current FDecodePoint
+	if(FDecodePoint >= FNumSamples)
+	{
+		// already finished
+		rendered = 0;
+		return false;
+	}
+
+	tjs_uint remain = FNumSamples - FDecodePoint;
+	rendered = bufsamplelen < remain ? bufsamplelen : remain;
+	memcpy(buf, FData + FDecodePoint * Format.Format.nChannels,
+		sizeof(FData[0]) * Format.Format.nChannels * rendered);
+	FDecodePoint += rendered;
+	return FDecodePoint < FNumSamples;
+}
+//---------------------------------------------------------------------------
+bool TWaveReader::SetPosition(tjs_uint64 samplepos)
+{
+	// set FDecodePoint
+	if(samplepos >= 0x80000000ui64) return false;
+	if(samplepos >= FDecodePoint) return false;
+	FDecodePoint = (int) samplepos;
+	return true;
+}
+//---------------------------------------------------------------------------
+
 #pragma package(smart_init)

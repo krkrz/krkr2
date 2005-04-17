@@ -14,7 +14,8 @@
 #include <ks.h>
 #include <ksmedia.h>
 
-#include "DSoundUnit.h"
+#include "DSound.h"
+#include "WaveLoopManager.h"
 
 //---------------------------------------------------------------------------
 static void __fastcall ResetSoundBuffer();
@@ -69,13 +70,11 @@ static int SampleSize;
 static bool DecodeEnded;
 static int BufferRemainBlock;
 static DWORD SoundBufferWritePos;
-static DWORD SoundBufferDecodeOfs;
-static DWORD SoundBufferPrevPlayPos;
-static int SoundBufferLoopCount;
 static bool FirstWrite;
 static bool Playing = false;
-static TGetPCMDataEvent GetPCMData = NULL;
+static tTVPWaveLoopManager * Manager = NULL;
 static TPlayerThread *PlayerThread = NULL;
+static std::vector<tTVPWaveLoopSegment> Segments[2];
 //---------------------------------------------------------------------------
 void __fastcall InitDirectSound(HWND wnd)
 {
@@ -257,56 +256,6 @@ void __fastcall CreateSoundBuffer(const WAVEFORMATEXTENSIBLE * wfx)
 	ResetSoundBuffer();
 }
 //---------------------------------------------------------------------------
-#if 0
-void __fastcall CreateSoundBuffer(int freq, int channels)
-{
-	// 16bit/sample 2 秒間のセカンダリバッファを作成する
-	if(SoundBuffer)
-	{
-		SoundBuffer->Release();
-		SoundBuffer = NULL;
-	}
-
-	// セカンダリサウンドバッファの作成
-	memset(&SoundBufferDesc,0,sizeof(DSBUFFERDESC));
-	SoundBufferDesc.dwSize=sizeof(DSBUFFERDESC);
-	SoundBufferDesc.dwFlags=
-		DSBCAPS_GETCURRENTPOSITION2/* | DSBCAPS_CTRLPAN */| DSBCAPS_CTRLVOLUME
-		 |DSBCAPS_GLOBALFOCUS ;
-	SoundBufferDesc.dwBufferBytes= freq * sizeof(__int16) * channels*2;
-	SoundBufferBytes = SoundBufferDesc.dwBufferBytes;
-	SoundBufferBytesHalf = SoundBufferBytes / 2;
-
-	WAVEFORMATEX wfx;
-	wfx.wFormatTag=WAVE_FORMAT_PCM;
-	wfx.nChannels=(WORD)(channels);
-	wfx.nSamplesPerSec=freq;
-	wfx.wBitsPerSample=(WORD)16;
-	wfx.nBlockAlign=(WORD)(wfx.wBitsPerSample/8*wfx.nChannels);
-	wfx.nAvgBytesPerSec=wfx.nSamplesPerSec*wfx.nBlockAlign;
-	wfx.cbSize=0;
-
-	Frequency = freq;
-	Channels = channels;
-
-	SoundBufferDesc.lpwfxFormat=&wfx;
-
-	// セカンダリバッファを作成する
-	HRESULT hr = Sound->CreateSoundBuffer(&SoundBufferDesc,&SoundBuffer,NULL);
-	if(FAILED(hr))
-	{
-		SoundBuffer=NULL;
-		throw Exception("セカンダリバッファの作成に失敗しました"
-			"/周波数:"+AnsiString(freq)+
-			"/チャネル数:"+AnsiString(channels)+
-			"/ビット数:"+AnsiString(16)+
-			"/HRESULT:"+IntToHex((int)hr,8));
-	}
-
-	ResetSoundBuffer();
-}
-#endif
-//---------------------------------------------------------------------------
 void __fastcall DestroySoundBuffer(void)
 {
 	if(SoundBuffer)
@@ -324,11 +273,8 @@ static void __fastcall ResetSoundBuffer()
 
 	SoundBufferWritePos = 0;
 	DecodeEnded = false;
-	SoundBufferDecodeOfs = 0;
 	BufferRemainBlock = 0;
 	Playing = false;
-	SoundBufferPrevPlayPos = 0;
-	SoundBufferLoopCount = 0;
 
 
 	BYTE *p1,*p2;
@@ -346,10 +292,10 @@ static void __fastcall ResetSoundBuffer()
 	FirstWrite = true;
 }
 //---------------------------------------------------------------------------
-void __fastcall StartPlay(const WAVEFORMATEXTENSIBLE * wfx, TGetPCMDataEvent event)
+void __fastcall StartPlay(const WAVEFORMATEXTENSIBLE * wfx, tTVPWaveLoopManager * manager)
 {
 	TBufferWriteLock lock;
-	GetPCMData = event;
+	Manager = manager;
 
 	CreateSoundBuffer(wfx);
 
@@ -372,7 +318,7 @@ static void __fastcall FillSecondaryBuffer(void)
 {
 	if(!Playing) return;
 	if(!SoundBuffer) return;
-	if(!GetPCMData) return;
+	if(!Manager) return;
 
 	TBufferWriteLock lock;
 
@@ -389,12 +335,6 @@ static void __fastcall FillSecondaryBuffer(void)
 	{
 		DWORD pp=0,wp=0;
 		SoundBuffer->GetCurrentPosition(&pp,&wp);
-
-		if(pp < SoundBufferPrevPlayPos)
-		{
-			SoundBufferLoopCount++;
-		}
-		SoundBufferPrevPlayPos = pp;
 
 		wp/=SoundBufferBytesHalf;
 		pp/=SoundBufferBytesHalf;
@@ -435,9 +375,10 @@ static void __fastcall FillSecondaryBuffer(void)
 	if(SUCCEEDED(SoundBuffer->Lock(writepos, SoundBufferBytesHalf,
 		(void**)&p1, &b1, (void**)&p2, &b2, 0)))
 	{
-		DWORD written = GetPCMData((__int16*)p1, SoundBufferDecodeOfs,
-			SoundBufferBytesHalf/SampleSize);
-		SoundBufferDecodeOfs += written;
+		tjs_uint written;
+		Manager->Decode(p1, SoundBufferBytesHalf/SampleSize,
+			written, Segments[writepos ? 1: 0]);
+
 		written *= SampleSize;
 		if(written < SoundBufferBytesHalf)
 		{
@@ -463,13 +404,29 @@ DWORD __fastcall GetCurrentPlayingPos(void)
 	DWORD pp=0,wp=0;
 	SoundBuffer->GetCurrentPosition(&pp,&wp);
 
-	if(pp < SoundBufferPrevPlayPos)
+	int idx;
+	if(pp >= SoundBufferBytesHalf)
 	{
-		SoundBufferLoopCount++;
+		idx = 1;
+		pp -= SoundBufferBytesHalf;
 	}
-	SoundBufferPrevPlayPos = pp;
+	else
+	{
+		idx = 0;
+	}
 
-	return (SoundBufferLoopCount * SoundBufferBytes +pp)  /(2*Channels);
+	pp /= SampleSize;
+
+	tjs_uint pos = 0;
+	for(unsigned int i = 0 ; i < Segments[idx].size(); i++)
+	{
+		tjs_uint limit = pos + (tjs_uint)Segments[idx][i].Length;
+		if(pp >= pos && pp < limit)
+			return (DWORD)(Segments[idx][i].Start + (pp - pos));
+		pos = limit;
+	}
+
+	return 0; // will no be reached
 }
 //---------------------------------------------------------------------------
 bool __fastcall GetPlaying(void)

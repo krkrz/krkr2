@@ -1,647 +1,131 @@
-object TSSLoopTunerMainWindow: TTSSLoopTunerMainWindow
-  Left = 38
-  Top = 14
-  Width = 632
-  Height = 306
-  Caption = 'Loop Tuner (//designing//)'
+object MainForm: TMainForm
+  Left = 26
+  Top = 30
+  Width = 679
+  Height = 268
+  Caption = 'MainForm'
   Color = clBtnFace
   Font.Charset = SHIFTJIS_CHARSET
   Font.Color = clWindowText
   Font.Height = -12
   Font.Name = 'ＭＳ Ｐゴシック'
   Font.Style = []
-  Icon.Data = {
-    0000010002002020100000000000E80200002600000010101000000000002801
-    00000E0300002800000020000000400000000100040000000000800200000000
-    0000000000000000000000000000000000000000800000800000008080008000
-    00008000800080800000C0C0C000808080000000FF0000FF000000FFFF00FF00
-    0000FF00FF00FFFF0000FFFFFF00000000000000333333333000000000000000
-    00000033BBBBBBBBB330000000000000000033BBBBBBBBBBBBB3300000000000
-    0003BBBBBBBBBBBBBBBBB30000000000003FBBBBBFFFFFFFBBBBBB3000000000
-    03FBBBBFF3333333FFBBBBB30000000003FBBBF33000000033FBBBB300000000
-    3FBBBF3000000000003FBBBB300000003FBBB300000000000003FBBB30000003
-    FBBBB300000000000003FBBBB3000003FBBB30000000000000003FBBB3000003
-    FBBB30000000000000003FBBB3000003FBBB30000000000000003FBBB3000003
-    FBBB30000000000000003FBBB3000003FBBB30000000000000003FBBB3000003
-    FBBB30000000000000003FBBB3000003FBBB300000A0000000003BBBB3000003
-    FBBBB30000AA00000003FBBBB30000003FBBB30000AAA0000003FBBB30000000
-    3FBBBB3000AAAA00003BBBBB3000000003FBBBB330AAAAA033BBBBB300000000
-    03FBBBBBB0AAAAAA0BBBBBB300000000003FBBBBB0AAAAAAA0BBBF3000000000
-    0003FFBBB0AAAAAAAA0FF30000000000000033FFB0AAAAAAA0F3300000000000
-    00000033F0AAAAAA03300000000000000000000030AAAAA03000000000000000
-    0000000000AAAA0000000000000000000000000000AAA0000000000000000000
-    0000000000AA000000000000000000000000000000A000000000000000000000
-    0000000000000000000000000000FFF007FFFFC001FFFF00007FFE00003FFC00
-    001FF800000FF807F00FF01FFC07F03FFE07E03FFE03E07FFF03E07FFF03E07F
-    FF03E07FFF03E07FFF03E079FF03E078FF03E0387E03F0383E07F0181C07F800
-    000FF800000FFC00001FFE00003FFF00007FFFC001FFFFF007FFFFF81FFFFFF8
-    3FFFFFF87FFFFFF8FFFFFFF9FFFF280000001000000020000000010004000000
-    0000C00000000000000000000000000000000000000000000000000080000080
-    00000080800080000000800080008080000080808000C0C0C0000000FF0000FF
-    000000FFFF00FF000000FF00FF00FFFF0000FFFFFF0000000000000000000000
-    00BBBB0000000000BBBBBBBB0000000BBB0000BBB000000BB000000BB00000BB
-    00000000BB0000BB00000000BB0000BB00000000BB0000BB000A0000BB00000B
-    B00AA00BB000000BBB0AAA0BB0000000BB0AAAA000000000000AAA0000000000
-    000AA00000000000000A000000000000000000000000FC3F0000F00F0000E007
-    0000C0030000C3C3000087E1000087E1000084E1000084610000C0030000C003
-    0000E0070000F01F0000FC3F0000FC7F0000FCFF0000}
   Menu = MainMenu
   OldCreateOrder = False
-  OnCloseQuery = FormCloseQuery
   OnDestroy = FormDestroy
-  OnShow = FormShow
   PixelsPerInch = 96
   TextHeight = 12
   object StatusBar: TStatusBar
     Left = 0
-    Top = 233
-    Width = 624
+    Top = 195
+    Width = 671
     Height = 19
-    Panels = <
-      item
-        Alignment = taRightJustify
-        Width = 45
-      end
-      item
-        Text = '-'
-        Width = 37
-      end
-      item
-        Alignment = taRightJustify
-        Text = '-'
-        Width = 75
-      end
-      item
-        Alignment = taRightJustify
-        Text = '-'
-        Width = 115
-      end
-      item
-        Text = '-'
-        Width = 210
-      end
-      item
-        Width = 50
-      end>
+    Panels = <>
     SimplePanel = False
   end
-  object ToolBar: TToolBar
+  object ToolBar1: TToolBar
     Left = 0
     Top = 0
-    Width = 624
-    Height = 24
+    Width = 671
+    Height = 26
     AutoSize = True
     Caption = 'ToolBar'
+    EdgeBorders = [ebTop, ebBottom]
     Flat = True
-    Images = IconImageList
+    Images = ImageList
     TabOrder = 1
-    object OpenButton: TToolButton
+    object OpenToolButton: TToolButton
       Left = 0
       Top = 0
       Action = OpenAction
-      ParentShowHint = False
-      ShowHint = True
     end
-    object SaveButton: TToolButton
+    object ToolButton2: TToolButton
       Left = 23
       Top = 0
-      Action = SaveAction
-      ParentShowHint = False
-      ShowHint = True
-    end
-    object ToolButton3: TToolButton
-      Left = 46
-      Top = 0
       Width = 8
-      Caption = 'ToolButton3'
-      ImageIndex = 5
+      Caption = 'ToolButton2'
+      ImageIndex = 6
       Style = tbsSeparator
     end
-    object UndoButton: TToolButton
+    object ZoomInToolButton: TToolButton
+      Left = 31
+      Top = 0
+      Action = ZoomInAction
+    end
+    object ZoomOutToolButton: TToolButton
       Left = 54
       Top = 0
-      Action = UndoAction
-      ParentShowHint = False
-      ShowHint = True
+      Action = ZoomOutAction
     end
-    object ToolButton5: TToolButton
+    object ToolButton1: TToolButton
       Left = 77
       Top = 0
       Width = 8
-      Caption = 'ToolButton5'
+      Caption = 'ToolButton1'
       ImageIndex = 11
       Style = tbsSeparator
     end
-    object GotoFirstButton: TToolButton
+    object PlayToolButton: TToolButton
       Left = 85
       Top = 0
-      Action = GotoFirstAction
-      ParentShowHint = False
-      ShowHint = True
+      Action = PlayFromStartAction
     end
-    object GotoLastButton: TToolButton
-      Left = 108
-      Top = 0
-      Action = GotoLastAction
-      ParentShowHint = False
-      ShowHint = True
-    end
-    object ToolButton4: TToolButton
-      Left = 131
-      Top = 0
-      Width = 8
-      Caption = 'ToolButton4'
-      ImageIndex = 5
-      Style = tbsSeparator
-    end
-    object PlayNoLoopFromFirstButton: TToolButton
-      Left = 139
-      Top = 0
-      Action = PlayNoLoopFromFirstAction
-      Grouped = True
-      ParentShowHint = False
-      ShowHint = True
-      Style = tbsCheck
-    end
-    object PlayLoopFromFirstButton: TToolButton
-      Left = 162
-      Top = 0
-      Action = PlayLoopFromFirstAction
-      Grouped = True
-      ParentShowHint = False
-      ShowHint = True
-      Style = tbsCheck
-    end
-    object PlayLoopRegionButton: TToolButton
-      Left = 185
-      Top = 0
-      Action = PlayLoopRegionAction
-      Grouped = True
-      ParentShowHint = False
-      ShowHint = True
-      Style = tbsCheck
-    end
-    object StopButton: TToolButton
-      Left = 208
-      Top = 0
-      Action = StopAction
-      Grouped = True
-      ParentShowHint = False
-      ShowHint = True
-      Style = tbsCheck
-    end
-    object ToolButton1: TToolButton
-      Left = 231
-      Top = 0
-      Width = 8
-      Caption = 'ToolButton1'
-      ImageIndex = 5
-      Style = tbsSeparator
-    end
-    object FollowCurrentButton: TToolButton
-      Left = 239
-      Top = 0
-      Action = FollowCurrentAction
-      ParentShowHint = False
-      ShowHint = True
-      Style = tbsCheck
-    end
-    object ToolButton7: TToolButton
-      Left = 262
-      Top = 0
-      Width = 8
-      Caption = 'ToolButton7'
-      ImageIndex = 7
-      Style = tbsSeparator
-    end
-    object ZoomInButton: TToolButton
-      Left = 270
-      Top = 0
-      Action = ZoomInAction
-      ParentShowHint = False
-      ShowHint = True
-    end
-    object ZoomOutButton: TToolButton
-      Left = 293
-      Top = 0
-      Action = ZoomOutAction
-      ParentShowHint = False
-      ShowHint = True
-    end
-  end
-  object Panel: TPanel
-    Left = 0
-    Top = 24
-    Width = 624
-    Height = 209
-    Align = alClient
-    BevelInner = bvLowered
-    BevelOuter = bvNone
-    TabOrder = 2
   end
   object MainMenu: TMainMenu
-    Images = IconImageList
-    Left = 8
-    Top = 32
-    object FileGroupMenuItem: TMenuItem
+    Left = 400
+    Top = 80
+    object FileMenu: TMenuItem
       Caption = 'ファイル(&F)'
-      Hint = 'ファイル'
       object OpenMenuItem: TMenuItem
         Action = OpenAction
       end
-      object SaveMenuItem: TMenuItem
-        Action = SaveAction
-      end
-      object CloseMenuItem: TMenuItem
-        Action = CloseAction
-      end
-      object N1: TMenuItem
-        Caption = '-'
-      end
-      object ExportPreLoopMenuItem: TMenuItem
-        Action = ExportPreLoopAction
-      end
-      object ExportLoopMenuItem: TMenuItem
-        Action = ExportLoopAction
-      end
-      object ExportAllMenuItem: TMenuItem
-        Action = ExportAllAction
-      end
-      object N3: TMenuItem
-        Caption = '-'
-      end
-      object ExitMenuItem: TMenuItem
-        Action = ExitAction
-      end
     end
-    object RegionGroupMenuItem: TMenuItem
-      Caption = 'ループ領域(&R)'
-      Hint = 'ループ領域'
-      object UndoMenuItem: TMenuItem
-        Action = UndoAction
-      end
-      object RedoMenuItem: TMenuItem
-        Action = RedoAction
-      end
-      object N7: TMenuItem
-        Caption = '-'
-      end
-      object StepFirstPrevMenuItem: TMenuItem
-        Action = StepFirstPrevAction
-      end
-      object StepFirstNextMenuItem: TMenuItem
-        Action = StepFirstNextAction
-      end
-      object StepLastPrevMenuItem: TMenuItem
-        Action = StepLastPrevAction
-      end
-      object StepLastNextMenuItem: TMenuItem
-        Action = StepLastNextAction
-      end
-      object N8: TMenuItem
-        Caption = '-'
-      end
-      object GotoFirstMenuItem: TMenuItem
-        Action = GotoFirstAction
-      end
-      object GotoLastMenuItem: TMenuItem
-        Action = GotoLastAction
-      end
-      object SetSelectionMenuItem: TMenuItem
-        Action = SetSelectionAction
-        Visible = False
-      end
-      object FreeLoopMenuItem: TMenuItem
-        Action = FreeLoopAction
-      end
-    end
-    object PlayGroupMenuItem: TMenuItem
-      Caption = '再生(&P)'
-      Hint = '再生'
-      object PlayNoLoopFromFirstMenuItem: TMenuItem
-        Action = PlayNoLoopFromFirstAction
-        GroupIndex = 1
-        Hint = '再生|サウンドの最初からループをせずに再生します'
-        RadioItem = True
-      end
-      object PlayLoopFromFirstMenuItem: TMenuItem
-        Action = PlayLoopFromFirstAction
-        GroupIndex = 1
-        RadioItem = True
-      end
-      object PlayLoopRegionMenuItem: TMenuItem
-        Action = PlayLoopRegionAction
-        GroupIndex = 1
-        RadioItem = True
-      end
-      object StopMenuItem: TMenuItem
-        Action = StopAction
-        GroupIndex = 1
-        RadioItem = True
-      end
-    end
-    object ViewGroupMenuItem: TMenuItem
+    object ViewMenu: TMenuItem
       Caption = '表示(&V)'
-      Hint = '表示'
-      object FollowCurrentMenuItem: TMenuItem
-        Action = FollowCurrentAction
-        GroupIndex = 1
-      end
-      object N5: TMenuItem
-        Caption = '-'
-        GroupIndex = 1
-      end
       object ZoomInMenuItem: TMenuItem
         Action = ZoomInAction
-        GroupIndex = 1
       end
       object ZoomOutMenuItem: TMenuItem
         Action = ZoomOutAction
-        GroupIndex = 1
-      end
-      object N2: TMenuItem
-        Caption = '-'
-        GroupIndex = 1
-      end
-      object ShowToolBarMenuItem: TMenuItem
-        Action = ShowToolBarAction
-        GroupIndex = 1
-      end
-      object ShowStatusBarMenuItem: TMenuItem
-        Action = ShowStatusBarAction
-        GroupIndex = 1
-      end
-      object N4: TMenuItem
-        Caption = '-'
-        GroupIndex = 1
-      end
-      object ShowTimeBaseMenuItem: TMenuItem
-        Action = ShowTimeBaseAction
-        GroupIndex = 1
-        RadioItem = True
-      end
-      object ShowSampleBaseMenuItem: TMenuItem
-        Action = ShowSampleBaseAction
-        GroupIndex = 1
-        RadioItem = True
-      end
-    end
-    object HelpGroupMenuItem: TMenuItem
-      Caption = 'ヘルプ(&H)'
-      Hint = 'ヘルプ'
-      object ShowHelpMenuItem: TMenuItem
-        Action = ShowHelpAction
-      end
-      object VersionInfoMenuItem: TMenuItem
-        Action = VersionInfoAction
       end
     end
   end
   object ActionList: TActionList
-    Images = IconImageList
-    Left = 40
-    Top = 32
+    Images = ImageList
+    Left = 368
+    Top = 80
     object OpenAction: TAction
       Category = 'ファイル'
-      Caption = '開く(&O) ...'
-      Hint = '対象ファイルを開く|対象とするファイルを開きます'
+      Caption = '開く(&O)...'
+      Hint = 'ファイルを開きます'
       ImageIndex = 5
+      ShortCut = 16463
       OnExecute = OpenActionExecute
-    end
-    object SaveAction: TAction
-      Category = 'ファイル'
-      Caption = '保存(&S)'
-      Hint = 'ループ情報を保存する|ループ情報を保存します'
-      ImageIndex = 6
-      ShortCut = 16467
-      OnExecute = SaveActionExecute
-    end
-    object CloseAction: TAction
-      Category = 'ファイル'
-      Caption = '閉じる(&C)'
-      Hint = '対象ファイルを閉じる|対象とするファイルを閉じます'
-      OnExecute = CloseActionExecute
-    end
-    object ExitAction: TAction
-      Category = 'ファイル'
-      Caption = '終了(&X)'
-      Hint = '終了|アプリケーションを終了します'
-      OnExecute = ExitActionExecute
-    end
-    object GotoFirstAction: TAction
-      Category = 'ループ領域'
-      Caption = '開始点に移動(&B)'
-      Hint = '開始点に移動|ループ領域の開始点に移動します'
-      ImageIndex = 7
-      ShortCut = 66
-      OnExecute = GotoFirstActionExecute
-    end
-    object GotoLastAction: TAction
-      Category = 'ループ領域'
-      Caption = '終了点に移動(&N)'
-      Hint = '終了点に移動|ループ領域の終了点に移動します'
-      ImageIndex = 8
-      ShortCut = 78
-      OnExecute = GotoLastActionExecute
-    end
-    object SetSelectionAction: TAction
-      Category = 'ループ領域'
-      Caption = '指定(&S) ...'
-      Hint = 'ループ領域の指定|ループ領域を数値で指定します'
-    end
-    object PlayNoLoopFromFirstAction: TAction
-      Category = '再生'
-      Caption = '再生(&P)'
-      Hint = '再生|ループをせずに最初から再生します'
-      ImageIndex = 0
-      ShortCut = 80
-      OnExecute = PlayNoLoopFromFirstActionExecute
-    end
-    object PlayLoopFromFirstAction: TAction
-      Category = '再生'
-      Caption = 'ループ再生(&L)'
-      Hint = 'ループ再生|ループしながらサウンドの最初から再生します'
-      ImageIndex = 2
-      ShortCut = 76
-      OnExecute = PlayLoopFromFirstActionExecute
-    end
-    object PlayLoopRegionAction: TAction
-      Category = '再生'
-      Caption = 'ループ部分を再生(&R)'
-      Hint = 'ループ部分を再生|ループ部分のみを繰り返して再生します'
-      ImageIndex = 3
-      ShortCut = 82
-      OnExecute = PlayLoopRegionActionExecute
-    end
-    object StopAction: TAction
-      Category = '再生'
-      Caption = '停止(&S)'
-      Hint = '停止|再生を停止します'
-      ImageIndex = 4
-      ShortCut = 83
-      OnExecute = StopActionExecute
-    end
-    object FollowCurrentAction: TAction
-      Category = '表示'
-      Caption = '再生位置に追従(&F)'
-      Hint = 
-        '再生位置に追従|自動的に現在の再生位置をスクロールしながら表示し' +
-        'ます'
-      ImageIndex = 11
-      ShortCut = 70
-      OnExecute = FollowCurrentActionExecute
     end
     object ZoomInAction: TAction
       Category = '表示'
-      Caption = '時間軸拡大(&I)'
-      Hint = '時間軸拡大|波形の一部をより細かく表示します'
+      Caption = 'ズーム・イン(&I)'
+      Hint = 'ズームイン'
       ImageIndex = 9
-      ShortCut = 73
       OnExecute = ZoomInActionExecute
     end
     object ZoomOutAction: TAction
       Category = '表示'
-      Caption = '時間軸縮小(&O)'
-      Hint = '時間軸縮小|波形の広範囲をより大まかに表示します'
+      Caption = 'ズーム・アウト(&O)'
+      Hint = 'ズームアウト'
       ImageIndex = 10
-      ShortCut = 79
       OnExecute = ZoomOutActionExecute
     end
-    object ShowToolBarAction: TAction
-      Category = '表示'
-      Caption = 'ツールバーを表示する(&R)'
-      Checked = True
-      Hint = 'ツールバーを表示する|ツールバーを表示します'
-      OnExecute = ShowToolBarActionExecute
-    end
-    object ShowStatusBarAction: TAction
-      Category = '表示'
-      Caption = 'ステータスバーを表示する(&B)'
-      Checked = True
-      Hint = 'ステータスバーを表示する|ステータスバーを表示します'
-      OnExecute = ShowStatusBarActionExecute
-    end
-    object ShowTimeBaseAction: TAction
-      Category = '表示'
-      Caption = '時間で表示(&T)'
-      Checked = True
-      Hint = '時間で表示|位置情報を時間単位で表示します'
-      OnExecute = ShowTimeBaseActionExecute
-    end
-    object ShowSampleBaseAction: TAction
-      Category = '表示'
-      Caption = 'サンプル数で表示(&S)'
-      Hint = 'サンプル数で表示|位置情報をサンプル数単位で表示します'
-      OnExecute = ShowSampleBaseActionExecute
-    end
-    object ExportPreLoopAction: TAction
-      Category = 'ファイル'
-      Caption = 'ループまでを .wav 出力(&P) ...'
-      Hint = 'ループまでを出力|ループの開始までを .wav 形式で出力します'
-      OnExecute = ExportPreLoopActionExecute
-    end
-    object ExportLoopAction: TAction
-      Category = 'ファイル'
-      Caption = 'ループ部分を .wav 出力(&L) ...'
-      Hint = 'ループ部分を出力||ループ部分を .wav 形式で出力します'
-      OnExecute = ExportLoopActionExecute
-    end
-    object SetRegionStartAction: TAction
-      Category = 'ポップアップメニュー'
-      Caption = 'ループ開始点を設定(&S)'
-      Hint = 'ループ開始点を設定|ループさせたい領域の開始点をここに設定します'
-      OnExecute = SetRegionStartActionExecute
-    end
-    object SetRegionEndAction: TAction
-      Category = 'ポップアップメニュー'
-      Caption = 'ループ終了点を設定(&E)'
-      Hint = 'ループ終了点を設定|ループさせたい領域の終了点をここに設定します'
-      OnExecute = SetRegionEndActionExecute
-    end
-    object PlayFromCurrentAction: TAction
+    object PlayFromStartAction: TAction
       Category = '再生'
-      Caption = 'ここから再生(&C)'
-      Hint = 'ここから再生|ここから再生を開始します'
-      ImageIndex = 1
-      OnExecute = PlayFromCurrentActionExecute
-    end
-    object FreeLoopAction: TAction
-      Category = 'ループ領域'
-      Caption = '解除(&F)'
-      Hint = 'ループ領域の解除|ループ領域を解除します'
-      OnExecute = FreeLoopActionExecute
-    end
-    object UndoAction: TAction
-      Category = 'ループ領域'
-      Caption = '元に戻す(&U)'
-      Hint = '元に戻す|直前の操作に戻します'
-      ImageIndex = 12
-      ShortCut = 16474
-      OnExecute = UndoActionExecute
-    end
-    object RedoAction: TAction
-      Category = 'ループ領域'
-      Caption = 'やり直し(&R)'
-      Hint = 'やり直す|元に戻した操作をやり直します'
-      ImageIndex = 13
-      ShortCut = 24666
-      OnExecute = RedoActionExecute
-    end
-    object ExportAllAction: TAction
-      Category = 'ファイル'
-      Caption = '全体を .wav 出力(&E) ...'
-      OnExecute = ExportAllActionExecute
-    end
-    object ShowHelpAction: TAction
-      Category = 'ヘルプ'
-      Caption = 'ヘルプ(&H)'
-      Hint = 'ヘルプを表示します'
-      OnExecute = ShowHelpActionExecute
-    end
-    object VersionInfoAction: TAction
-      Category = 'ヘルプ'
-      Caption = 'バージョン情報(&I) ...'
-      Hint = 'バージョン情報を表示します'
-      OnExecute = VersionInfoActionExecute
-    end
-    object StepFirstPrevAction: TAction
-      Category = 'ループ領域'
-      Caption = '開始点を左に１サンプル(&Z)'
-      Hint = '開始点を左に１サンプル移動します'
-      ShortCut = 90
-      OnExecute = StepFirstPrevActionExecute
-    end
-    object StepFirstNextAction: TAction
-      Category = 'ループ領域'
-      Caption = '開始点を右に１サンプル(&X)'
-      Hint = '開始点を右に１サンプル移動します'
-      ShortCut = 88
-      OnExecute = StepFirstNextActionExecute
-    end
-    object StepLastPrevAction: TAction
-      Category = 'ループ領域'
-      Caption = '終了点を左に１サンプル(&C)'
-      Hint = '終了点を左に１サンプル移動します'
-      ShortCut = 67
-      OnExecute = StepLastPrevActionExecute
-    end
-    object StepLastNextAction: TAction
-      Category = 'ループ領域'
-      Caption = '終了点を右に１サンプル(&V)'
-      Hint = '終了点を右に１サンプル移動します'
-      ShortCut = 86
-      OnExecute = StepLastNextActionExecute
+      Caption = '初めから再生(&P)'
+      ImageIndex = 0
+      OnExecute = PlayFromStartActionExecute
     end
   end
-  object Timer: TTimer
-    Interval = 50
-    OnTimer = TimerTimer
-    Left = 72
-    Top = 32
-  end
-  object IconImageList: TImageList
-    Left = 104
-    Top = 32
+  object ImageList: TImageList
+    Left = 432
+    Top = 80
     Bitmap = {
       494C01010E001300040010001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000400000005000000001002000000000000050
@@ -1311,37 +795,7 @@ object TSSLoopTunerMainWindow: TTSSLoopTunerMainWindow
       000000000000}
   end
   object OpenDialog: TOpenDialog
-    DefaultExt = 'wav'
-    Options = [ofHideReadOnly, ofFileMustExist, ofEnableSizing]
-    Title = '対象ファイル'
-    Left = 136
-    Top = 32
-  end
-  object MainDisplayerPopupMenu: TPopupMenu
-    Images = IconImageList
-    OnPopup = MainDisplayerPopupMenuPopup
-    Left = 168
-    Top = 32
-    object PlayFromCurrentMenuAction: TMenuItem
-      Action = PlayFromCurrentAction
-      Default = True
-    end
-    object N6: TMenuItem
-      Caption = '-'
-    end
-    object SetRegionStartMenuItem: TMenuItem
-      Action = SetRegionStartAction
-    end
-    object SetRegionEndMenuItem: TMenuItem
-      Action = SetRegionEndAction
-    end
-  end
-  object SaveDialog: TSaveDialog
-    DefaultExt = 'wav'
-    Filter = 'Wave ファイル (*.wav)|*.wav'
-    Options = [ofOverwritePrompt, ofHideReadOnly, ofNoChangeDir, ofEnableSizing]
-    Title = '.wav 出力'
-    Left = 200
-    Top = 32
+    Left = 464
+    Top = 80
   end
 end
