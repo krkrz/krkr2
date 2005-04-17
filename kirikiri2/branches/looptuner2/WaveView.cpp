@@ -17,7 +17,8 @@ const TColor C_CLIENT			= clWhite;
 const TColor C_WAVE				= clBlack;
 const TColor C_WAVE2			= clGray;
 const TColor C_INF_LINE			= clGray;
-const TColor C_TIME_CLIENT		= ((TColor)0xe0e0e0);
+const TColor C_DISABLED_TIME_CLIENT		= ((TColor)0xf0f0f0);
+const TColor C_TIME_CLIENT		= clBtnFace;
 const TColor C_TIME_COLOR		= clBlack;
 //---------------------------------------------------------------------------
 
@@ -102,6 +103,7 @@ void __fastcall TWaveDrawer::SetMagnify(int m)
 		int view = PixelToSample(ClientWidth);
 		if(left < 0) left = 0;
 		if(left > FReader->NumSamples - view) left = FReader->NumSamples - view;
+		if(left < 0) left = 0;
 
 		FStart = left;
 		FMinRulerMajorWidth = 0;
@@ -248,9 +250,16 @@ void __fastcall TWaveDrawer::DrawWave(int start, bool clear)
 			Canvas->Brush->Style = bsSolid;
 			Canvas->Brush->Color = C_TIME_CLIENT;
 			Canvas->FillRect(r);
+			if(dest_right < Canvas->ClipRect.right)
+			{
+				r.left = dest_right;
+				r.right = Canvas->ClipRect.right;
+				Canvas->Brush->Color = C_DISABLED_TIME_CLIENT;
+				Canvas->FillRect(r);
+			}
 			Canvas->Pen->Color = C_TIME_COLOR;
 			Canvas->MoveTo(dest_left, head_size - 1);
-			Canvas->LineTo(dest_right, head_size - 1);
+			Canvas->LineTo(Canvas->ClipRect.right, head_size - 1);
 		}
 
 	}
