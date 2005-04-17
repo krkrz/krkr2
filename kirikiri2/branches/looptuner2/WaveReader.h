@@ -3,117 +3,89 @@
 #ifndef WaveReaderUnitH
 #define WaveReaderUnitH
 
+#include "tjsTypes.h"
+#include "WaveContext.h"
 #include <mmsystem.h>
 #include <mmreg.h>
 #include <ks.h>
 #include <ksmedia.h>
 
+
 //---------------------------------------------------------------------------
-class TCustomWaveContext
+// PCM data format (internal use)
+//---------------------------------------------------------------------------
+struct tTVPWaveFormat
 {
-protected:
-	virtual int __fastcall GetChannels() = 0;
-	virtual int __fastcall GetFrequency() = 0;
-	virtual DWORD __fastcall GetSpeakerConfig() = 0;
-
-public:
-	__fastcall TCustomWaveContext() { };
-	virtual __fastcall ~TCustomWaveContext() { };
-
-	virtual bool __fastcall Start(AnsiString filename) = 0;
-	virtual int __fastcall Read(__int16 * dest, int destsize) = 0;
-
-	__property int Channels = {read = GetChannels};
-	__property int Frequency = {read = GetFrequency};
-	__property DWORD SpeakerConfig = {read = GetSpeakerConfig};
+	tjs_uint SamplesPerSec; // sample granule per sec
+	tjs_uint Channels;
+	tjs_uint BitsPerSample; // per one sample
+	tjs_uint BytesPerSample; // per one sample
+	tjs_uint64 TotalSamples; // in sample granule; unknown for zero
+	tjs_uint64 TotalTime; // in ms; unknown for zero
+	tjs_uint32 SpeakerConfig; // bitwise OR of SPEAKER_* constants
+	bool IsFloat; // true if the data is IEEE floating point
+	bool Seekable;
 };
 //---------------------------------------------------------------------------
-class TRIFFWaveContext : public TCustomWaveContext
-{
-	int FGranuleSize;
-	int FDataSize;
-	int FDataStart;
-
-	WAVEFORMATEXTENSIBLE Format;
-	bool IsFloat;
-
-	TStream *FInputStream;
-
-protected:
-	int __fastcall GetChannels() { return Format.Format.nChannels; }
-	int __fastcall GetFrequency() { return Format.Format.nSamplesPerSec; }
-	DWORD __fastcall GetSpeakerConfig() { return Format.dwChannelMask; }
-
-public:
-	__fastcall TRIFFWaveContext();
-	__fastcall ~TRIFFWaveContext();
-
-	bool __fastcall Start(AnsiString filename);
-	int __fastcall Read(__int16 * dest, int destgranules);
-};
-//---------------------------------------------------------------------------
-class ITSSModule;
-class ITSSStorageProvider;
-class ITSSWaveDecoder;
-class TTSSWaveContext : public TCustomWaveContext
-{
-	typedef HRESULT _stdcall (*GetModuleInstanceProc)(ITSSModule **out,
-		ITSSStorageProvider *provider, IStream * config, HWND mainwin);
-	typedef ULONG _stdcall (*GetModuleThreadModelProc)(void);
-	typedef HRESULT _stdcall (*ShowConfigWindowProc)(HWND parentwin, IStream * storage );
-	typedef ULONG _stdcall (*CanUnloadNowProc)(void);
-
-	GetModuleInstanceProc FGetModuleInstance;
-	GetModuleThreadModelProc FGetModuleThreadModel;
-	ShowConfigWindowProc FShowConfigWindow;
-	CanUnloadNowProc FCanUnloadNow;
-
-	ITSSModule *FModule;
-	HMODULE FHandle;
-	ITSSWaveDecoder *FDecoder;
 
 
-	int FGranuleSize;
-	int FChannels;
-	int FFrequency;
-	int FBitsPerSample;
-	DWORD FSpeakerConfig;
 
-protected:
-	int __fastcall GetChannels() { return FChannels; }
-	int __fastcall GetFrequency() { return FFrequency; }
-	int __fastcall GetBitsPerSample() { return FBitsPerSample; }
-	DWORD __fastcall GetSpeakerConfig() { return FSpeakerConfig; }
-
-public:
-	__fastcall TTSSWaveContext(AnsiString dllname);
-	__fastcall ~TTSSWaveContext();
-
-	bool __fastcall Start(AnsiString filename);
-	int __fastcall Read(__int16 * dest, int destgranules);
-};
 
 //---------------------------------------------------------------------------
-class TWaveReader : public TObject
+// tTVPWaveDecoder interface
+//---------------------------------------------------------------------------
+class tTVPWaveDecoder
+{
+public:
+	virtual ~tTVPWaveDecoder() {};
+
+	virtual void GetFormat(tTVPWaveFormat & format) = 0;
+		/* Retrieve PCM format, etc. */
+
+	virtual bool Render(void *buf, tjs_uint bufsamplelen, tjs_uint& rendered) = 0;
+		/*
+			Render PCM from current position.
+			where "buf" is a destination buffer, "bufsamplelen" is the buffer's
+			length in sample granule, "rendered" is to be an actual number of
+			written sample granule.
+			returns whether the decoding is to be continued.
+			because "redered" can be lesser than "bufsamplelen", the player
+			should not end until the returned value becomes false.
+		*/
+
+	virtual bool SetPosition(tjs_uint64 samplepos) = 0;
+		/*
+			Seek to "samplepos". "samplepos" must be given in unit of sample granule.
+			returns whether the seeking is succeeded.
+		*/
+};
+//---------------------------------------------------------------------------
+
+
+
+
+//---------------------------------------------------------------------------
+class TWaveReader : public tTVPWaveDecoder
 {
 	friend class TWaveReaderThread;
 
 public:
-	__fastcall TWaveReader();
-	__fastcall ~TWaveReader();
+	TWaveReader();
+	~TWaveReader();
 
 private:
 	bool FReadDone;
 	int FPrevRange;
 
 	int FNumSamples;
+	int FSamplesRead;
 
 	WAVEFORMATEXTENSIBLE Format;
 
 	int GetChannels() { return Format.Format.nChannels; }
-	int __fastcall GetNumSamples(void) {return FNumSamples;}
-	int __fastcall GetFrequency(void) {return Format.Format.nSamplesPerSec; }
-	int __fastcall GetBitsPerSample(void) {return Format.Format.wBitsPerSample; }
+	int GetNumSamples(void) {return FNumSamples;}
+	int GetFrequency(void) {return Format.Format.nSamplesPerSec; }
+	int GetBitsPerSample(void) {return Format.Format.wBitsPerSample; }
 
 	__int16 *FPeaks;
 	TStream *FTmpStream;
@@ -128,35 +100,45 @@ private:
 	TStringList *FPlugins;
 	AnsiString FFilterString;
 
-	bool __fastcall ReadBlock();
+	bool ReadBlock();
 
-	void __fastcall Map();
+	void Map();
 
 protected:
 
 public:
-	void __fastcall Clear();
-	void __fastcall LoadWave(AnsiString filename);
+	void Clear();
+	void LoadWave(AnsiString filename);
 
-	void __fastcall GetPeak(int &high, int &low, int pos, int channel, int range);
+	void GetPeak(int &high, int &low, int pos, int channel, int range);
 
-	int __fastcall GetData(__int16 *buf, int ofs, int num);
+	int GetSampleAt(int pos, int channel);
 
-	int __fastcall SamplePosToTime(DWORD samplepos);
+	int GetData(__int16 *buf, int ofs, int num);
+
+	int SamplePosToTime(DWORD samplepos);
 
 	__property TNotifyEvent OnReadProgress={read=FOnReadProgress, write=FOnReadProgress};
 
-	const WAVEFORMATEXTENSIBLE * GetFormat() const { return &Format; }
+	const WAVEFORMATEXTENSIBLE * GetWindowsFormat() const { return &Format; }
 
-	AnsiString __fastcall GetChannelLabel(int ch);
+	AnsiString GetChannelLabel(int ch);
 
 	__property bool ReadDone = {read=FReadDone};
 	__property int NumSamples = {read=FNumSamples};
+	__property int SamplesRead = {read=FSamplesRead};
 	__property int Channels = {read=GetChannels};
 	__property int Frequency = {read=GetFrequency};
 	__property int BitsPerSample = {read=GetBitsPerSample};
 
 	__property AnsiString FilterString = {read=FFilterString};
+
+public:
+	// tTVPWaveDecoder stuff
+	int FDecodePoint;
+	void GetFormat(tTVPWaveFormat & format);
+	bool Render(void *buf, tjs_uint bufsamplelen, tjs_uint& rendered);
+	bool SetPosition(tjs_uint64 samplepos);
 };
 //---------------------------------------------------------------------------
 
