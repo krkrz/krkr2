@@ -1,9 +1,9 @@
-object MainForm: TMainForm
+object LoopTunerMainForm: TLoopTunerMainForm
   Left = 26
   Top = 30
   Width = 679
   Height = 268
-  Caption = 'MainForm'
+  Caption = 'LoopTunerMainForm'
   Color = clBtnFace
   Font.Charset = SHIFTJIS_CHARSET
   Font.Color = clWindowText

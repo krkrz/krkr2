@@ -18,7 +18,7 @@
 #include "WaveLoopManager.h"
 #include <ToolWin.hpp>
 //---------------------------------------------------------------------------
-class TMainForm : public TForm
+class TLoopTunerMainForm : public TForm
 {
 __published:	// IDE 管理のコンポーネント
 	TMainMenu *MainMenu;
@@ -53,11 +53,12 @@ private:	// ユーザー宣言
 	tTVPWaveLoopManager *Manager;
 
 public:		// ユーザー宣言
-	__fastcall TMainForm(TComponent* Owner);
+	__fastcall TLoopTunerMainForm(TComponent* Owner);
 private:
 	void __fastcall OnReaderProgress(TObject *sender);
+	void __fastcall OnApplicationIdle(TObject *sender, bool &done);
 };
 //---------------------------------------------------------------------------
-extern PACKAGE TMainForm *MainForm;
+extern PACKAGE TLoopTunerMainForm *LoopTunerMainForm;
 //---------------------------------------------------------------------------
 #endif

@@ -8,9 +8,9 @@
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
 #pragma resource "*.dfm"
-TMainForm *MainForm;
+TLoopTunerMainForm *LoopTunerMainForm;
 //---------------------------------------------------------------------------
-__fastcall TMainForm::TMainForm(TComponent* Owner)
+__fastcall TLoopTunerMainForm::TLoopTunerMainForm(TComponent* Owner)
 	: TForm(Owner)
 {
 	Reader = new TWaveReader();
@@ -21,9 +21,10 @@ __fastcall TMainForm::TMainForm(TComponent* Owner)
 	WaveView->Reader = Reader;
 	InitDirectSound(Application->Handle);
 	Manager = NULL;
+	Application->OnIdle = OnApplicationIdle;
 }
 //---------------------------------------------------------------------------
-void __fastcall TMainForm::FormDestroy(TObject *Sender)
+void __fastcall TLoopTunerMainForm::FormDestroy(TObject *Sender)
 {
 	StopPlay();
 	FreeDirectSound();
@@ -32,7 +33,7 @@ void __fastcall TMainForm::FormDestroy(TObject *Sender)
 	delete Reader;
 }
 //---------------------------------------------------------------------------
-void __fastcall TMainForm::OnReaderProgress(TObject *sender)
+void __fastcall TLoopTunerMainForm::OnReaderProgress(TObject *sender)
 {
 	int pct = Reader->SamplesRead / (Reader->NumSamples / 100);
 	if(pct > 100) pct = 100;
@@ -47,7 +48,7 @@ void __fastcall TMainForm::OnReaderProgress(TObject *sender)
 }
 //---------------------------------------------------------------------------
 
-void __fastcall TMainForm::OpenActionExecute(TObject *Sender)
+void __fastcall TLoopTunerMainForm::OpenActionExecute(TObject *Sender)
 {
 	OpenDialog->Filter = Reader->FilterString;
 	if(OpenDialog->Execute())
@@ -56,25 +57,43 @@ void __fastcall TMainForm::OpenActionExecute(TObject *Sender)
 	}
 }
 //---------------------------------------------------------------------------
-void __fastcall TMainForm::ZoomInActionExecute(TObject *Sender)
+void __fastcall TLoopTunerMainForm::ZoomInActionExecute(TObject *Sender)
 {
 	WaveView->Magnify ++;
 }
 //---------------------------------------------------------------------------
 
-void __fastcall TMainForm::ZoomOutActionExecute(TObject *Sender)
+void __fastcall TLoopTunerMainForm::ZoomOutActionExecute(TObject *Sender)
 {
 	WaveView->Magnify --;
 }
 //---------------------------------------------------------------------------
 
-void __fastcall TMainForm::PlayFromStartActionExecute(TObject *Sender)
+void __fastcall TLoopTunerMainForm::PlayFromStartActionExecute(TObject *Sender)
 {
 	if(Reader->ReadDone)
 	{
 		const WAVEFORMATEXTENSIBLE * wfx;
 		wfx = Reader->GetWindowsFormat();
 		StartPlay(wfx, Manager);
+	}
+}
+//---------------------------------------------------------------------------
+void __fastcall TLoopTunerMainForm::OnApplicationIdle(TObject *sender, bool &done)
+{
+	int pos = (int)GetCurrentPlayingPos();
+
+	if(pos != -1)
+	{
+		done = false;
+
+		WaveView->MarkerPos = pos;
+
+		Sleep(1); // this will make the cpu usage low
+	}
+	else
+	{
+		done = true;
 	}
 }
 //---------------------------------------------------------------------------

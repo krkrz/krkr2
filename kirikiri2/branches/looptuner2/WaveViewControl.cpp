@@ -16,7 +16,7 @@ __fastcall TWaveView::TWaveView(TWinControl *owner) :
 	FDrawer->Align = alClient;
 	Color = clNone;
 	Brush->Style = bsClear;
-	DoubleBuffered = true;
+//	DoubleBuffered = true;
 }
 //---------------------------------------------------------------------------
 __fastcall TWaveView::~TWaveView()
@@ -107,8 +107,6 @@ void __fastcall TWaveView::WMHScroll(TWMHScroll &msg)
 	si.cbSize = sizeof(si);
 	si.fMask = SIF_ALL;
 	GetScrollInfo(Handle, SB_HORZ, &si);
-
-	int org = si.nPos;
 
 	if(msg.ScrollCode == SB_THUMBTRACK)
 	{

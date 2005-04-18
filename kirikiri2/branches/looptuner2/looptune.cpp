@@ -11,14 +11,14 @@ USEUNIT("WaveView.cpp");
 USEUNIT("WaveViewControl.cpp");
 USEUNIT("WaveLoopManager.cpp");
 USEUNIT("DSound.cpp");
-USEFORM("LoopTunerMainUnit.cpp", MainForm);
+USEFORM("LoopTunerMainUnit.cpp", LoopTunerMainForm);
 //---------------------------------------------------------------------------
 WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 {
 	try
 	{
 		Application->Initialize();
-		Application->CreateForm(__classid(TMainForm), &MainForm);
+		Application->CreateForm(__classid(TLoopTunerMainForm), &LoopTunerMainForm);
 		Application->Run();
 	}
 	catch (Exception &exception)
