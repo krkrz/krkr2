@@ -19,6 +19,9 @@ private:
 	void __fastcall SetReader(TWaveReader * reader);
 	int __fastcall GetMagnify();
 	void __fastcall SetMagnify(int m);
+	int __fastcall GetMarkerPos()  { return FDrawer->MarkerPos; }
+	void __fastcall SetMarkerPos(int n)  { FDrawer->MarkerPos = n; }
+
 	void __fastcall Paint(void);
 	DYNAMIC void __fastcall Resize();
 
@@ -32,6 +35,7 @@ END_MESSAGE_MAP(TCustomControl)
 public:
 	__property TWaveReader * Reader = { read = FReader, write = SetReader };
 	__property int Magnify = { read = GetMagnify, write = SetMagnify };
+	__property int MarkerPos = { read = GetMarkerPos, write = SetMarkerPos };
 
 };
 //---------------------------------------------------------------------------

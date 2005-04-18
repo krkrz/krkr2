@@ -33,6 +33,7 @@ __fastcall TWaveDrawer::TWaveDrawer(Classes::TComponent* AOwner) :
 	FMinRulerMajorHeight = 0;
 	FRulerUnit = 0;
 	FDrawRuler = true;
+	FMarkerPos = -1;
 	Canvas->Font->Height = -12;
 }
 //---------------------------------------------------------------------------
@@ -112,6 +113,46 @@ void __fastcall TWaveDrawer::SetMagnify(int m)
 	}
 }
 //---------------------------------------------------------------------------
+void __fastcall TWaveDrawer::SetMarkerPos(int p)
+{
+	// set marker position.
+	// p = -1 for hide the marker.
+	if(!FReader || !FReader->ReadDone) p = -1;
+
+	if(p != FMarkerPos)
+	{
+		// invalidate new position and old position
+		int p_pos;
+		RECT r;
+		r.top = GetHeadSize() + Top;
+		r.bottom = ClientHeight + Top;
+
+		if(FMarkerPos != -1)
+		{
+			p_pos = SampleToPixel(FMarkerPos - FStart);
+			if(p_pos >= 0 && p_pos < ClientWidth)
+			{
+				r.left = p_pos + Left;
+				r.right = p_pos + 1 + Left;
+				InvalidateRect(Parent->Handle, &r, false);
+			}
+		}
+
+		if(p != -1)
+		{
+			p_pos = SampleToPixel(p - FStart);
+			if(p_pos >= 0 && p_pos < ClientWidth)
+			{
+				r.left = p_pos + Left;
+				r.right = p_pos + 1 + Left;
+				InvalidateRect(Parent->Handle, &r, false);
+			}
+		}
+
+		FMarkerPos = p;
+	}
+}
+//---------------------------------------------------------------------------
 void __fastcall TWaveDrawer::DrawWave(int start, bool clear)
 {
 	// draw waveform.
@@ -168,7 +209,7 @@ void __fastcall TWaveDrawer::DrawWave(int start, bool clear)
 	int xstep = FMagnify <= 0 ? 1 : (1<<FMagnify);
 	int sstep = FMagnify <= 0 ? (1<<(-FMagnify)) : 1;
 
-	int head_size = FDrawRuler ? (FMinRulerMajorHeight + 1) : 0;
+	int head_size = GetHeadSize();
 	int one_height = ((Height - head_size) / FReader->Channels) & ~1;
 	int one_height_half = one_height >> 1;
 	int one_client_height = one_height - 2; // 2 : padding margin
@@ -303,8 +344,23 @@ void __fastcall TWaveDrawer::DrawWave(int start, bool clear)
 		}
 	}
 
+	// draw marker
+	if(FMarkerPos != -1)
+	{
+		int p_pos = SampleToPixel(FMarkerPos - FStart);
+		if(p_pos >= 0 && p_pos < ClientWidth)
+		{
+			RECT r;
+			r.top = GetHeadSize() + Top;
+			r.bottom = ClientHeight + Top;
+			r.left = p_pos;
+			r.right = p_pos + 1;
+			InvertRect(Canvas->Handle, &r);
+		}
+	}
+
 	// draw time line
-	if(FDrawRuler)
+	if(FDrawRuler && Canvas->ClipRect.top < head_size)
 	{
 		// find start ruler unit
 		Canvas->Brush->Style = bsClear;
