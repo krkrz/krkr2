@@ -127,9 +127,9 @@ void __fastcall TWaveDrawer::SetMarkerPos(int p)
 		r.top = GetHeadSize() + Top;
 		r.bottom = ClientHeight + Top;
 
-		if(FMarkerPos != -1)
+		if(p != -1)
 		{
-			p_pos = SampleToPixel(FMarkerPos - FStart);
+			p_pos = SampleToPixel(p - FStart);
 			if(p_pos >= 0 && p_pos < ClientWidth)
 			{
 				r.left = p_pos + Left;
@@ -138,9 +138,9 @@ void __fastcall TWaveDrawer::SetMarkerPos(int p)
 			}
 		}
 
-		if(p != -1)
+		if(FMarkerPos != -1)
 		{
-			p_pos = SampleToPixel(p - FStart);
+			p_pos = SampleToPixel(FMarkerPos - FStart);
 			if(p_pos >= 0 && p_pos < ClientWidth)
 			{
 				r.left = p_pos + Left;
@@ -358,6 +358,7 @@ void __fastcall TWaveDrawer::DrawWave(int start, bool clear)
 			InvertRect(Canvas->Handle, &r);
 		}
 	}
+
 
 	// draw time line
 	if(FDrawRuler && Canvas->ClipRect.top < head_size)
