@@ -73,8 +73,10 @@ void __fastcall TLoopTunerMainForm::PlayFromStartActionExecute(TObject *Sender)
 {
 	if(Reader->ReadDone)
 	{
+		StopPlay();
 		const WAVEFORMATEXTENSIBLE * wfx;
 		wfx = Reader->GetWindowsFormat();
+		Manager->SetPosition(0);
 		StartPlay(wfx, Manager);
 	}
 }
@@ -85,11 +87,11 @@ void __fastcall TLoopTunerMainForm::OnApplicationIdle(TObject *sender, bool &don
 
 	if(pos != -1)
 	{
+		Sleep(1); // this will make the cpu usage low
 		done = false;
 
 		WaveView->MarkerPos = pos;
 
-		Sleep(1); // this will make the cpu usage low
 	}
 	else
 	{

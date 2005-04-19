@@ -70,6 +70,9 @@ public:
 	void SetFlag(tjs_int index, bool f);
 	void ClearFlags();
 
+	tjs_int64 GetPosition() const;
+	void SetPosition(tjs_int64 pos);
+
 	void Decode(void *dest, tjs_uint samples, tjs_uint &written,
 		std::vector<tTVPWaveLoopSegment> &segments);
 

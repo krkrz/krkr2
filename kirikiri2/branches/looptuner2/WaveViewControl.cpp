@@ -17,6 +17,9 @@ __fastcall TWaveView::TWaveView(TWinControl *owner) :
 	Color = clNone;
 	Brush->Style = bsClear;
 //	DoubleBuffered = true;
+	FFollowingMarker = true;
+	FWaitingMarker = true;
+	FSoftCenteringStartTick = 0;
 }
 //---------------------------------------------------------------------------
 __fastcall TWaveView::~TWaveView()
@@ -56,6 +59,66 @@ void __fastcall TWaveView::SetMagnify(int m)
 	si.fMask = SIF_POS;
 	si.nPos = FDrawer->Start;
 	SetScrollInfo(Handle, SB_HORZ, &si, true);
+}
+//---------------------------------------------------------------------------
+int __fastcall TWaveView::GetMarkerPos()
+{
+	return FDrawer->MarkerPos;
+}
+//---------------------------------------------------------------------------
+void __fastcall TWaveView::SetMarkerPos(int n)
+{
+	FDrawer->MarkerPos = n;
+	if(FFollowingMarker)
+	{
+		int viewsamples = FDrawer->PixelToSample(FDrawer->Width);
+		if(viewsamples * 1000 / FReader->Frequency < 500)
+		{
+			// too fast to track
+			SetView(n);
+			FWaitingMarker = false;
+		}
+		else
+		{
+
+			int px = FDrawer->SampleToPixel(n - FDrawer->Start);
+			if(px < 0 || px >= FDrawer->Width)
+			{
+				SetView(n, 1);
+				FWaitingMarker = true;
+				FSoftCenteringStartTick = 0;
+			}
+			else
+			{
+				if(FWaitingMarker)
+				{
+					if(px >= FDrawer->Width *9 / 10)
+					{
+						FWaitingMarker = false; // start following
+						FSoftCenteringStartTick = GetTickCount();
+						FSoftCenteringPos = px - FDrawer->Width / 2;
+					}
+				}
+				else
+				{
+					// soft centering
+					int elapsed = GetTickCount() - FSoftCenteringStartTick;
+					int slew = FSoftCenteringPos - elapsed / 20;
+					if(slew < 0) slew = 0;
+					int sn = n;
+					if(px > ClientWidth/2)
+					{
+						sn -= FDrawer->PixelToSample((ClientWidth/2) + slew);
+					}
+					else
+					{
+						sn -= FDrawer->PixelToSample(ClientWidth / 2);
+					}
+					SetView(sn, 0);
+				}
+			}
+		}
+	}
 }
 //---------------------------------------------------------------------------
 void __fastcall TWaveView::Paint(void)
@@ -98,6 +161,29 @@ void __fastcall TWaveView::SetScrollBarRange()
 	SetScrollInfo(Handle, SB_HORZ, &si, true);
 
 	EnableScrollBar(Handle, SB_HORZ, ESB_ENABLE_BOTH);
+}
+//---------------------------------------------------------------------------
+void __fastcall TWaveView::SetView(int n, int r)
+{
+	// set left edge of the viewport
+	int clwp = FDrawer->PixelToSample(ClientWidth);
+	clwp = clwp / 10 * r;
+	n -= clwp;
+	if(n < 0) n = 0;
+
+	SCROLLINFO si;
+	ZeroMemory(&si, sizeof(si));
+	si.cbSize = sizeof(si);
+	si.fMask = SIF_POS;
+	si.nPos = n;
+	SetScrollInfo(Handle, SB_HORZ, &si, true);
+
+	ZeroMemory(&si, sizeof(si));
+	si.cbSize = sizeof(si);
+	si.fMask = SIF_ALL;
+	GetScrollInfo(Handle, SB_HORZ, &si);
+
+	FDrawer->Start = si.nPos;
 }
 //---------------------------------------------------------------------------
 void __fastcall TWaveView::WMHScroll(TWMHScroll &msg)

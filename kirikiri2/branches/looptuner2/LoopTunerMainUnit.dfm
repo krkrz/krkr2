@@ -1,8 +1,8 @@
 object LoopTunerMainForm: TLoopTunerMainForm
-  Left = 26
-  Top = 30
-  Width = 679
-  Height = 268
+  Left = 5
+  Top = 5
+  Width = 712
+  Height = 354
   Caption = 'LoopTunerMainForm'
   Color = clBtnFace
   Font.Charset = SHIFTJIS_CHARSET
@@ -17,8 +17,8 @@ object LoopTunerMainForm: TLoopTunerMainForm
   TextHeight = 12
   object StatusBar: TStatusBar
     Left = 0
-    Top = 195
-    Width = 671
+    Top = 281
+    Width = 704
     Height = 19
     Panels = <>
     SimplePanel = False
@@ -26,7 +26,7 @@ object LoopTunerMainForm: TLoopTunerMainForm
   object ToolBar1: TToolBar
     Left = 0
     Top = 0
-    Width = 671
+    Width = 704
     Height = 26
     AutoSize = True
     Caption = 'ToolBar'

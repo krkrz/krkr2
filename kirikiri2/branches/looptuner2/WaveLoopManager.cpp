@@ -139,6 +139,17 @@ void tTVPWaveLoopManager::ClearFlags()
 	for(tjs_int i = 0; i < TVP_WL_MAX_FLAGS; i++) Flags[i] = false;
 }
 //---------------------------------------------------------------------------
+tjs_int64 tTVPWaveLoopManager::GetPosition() const
+{
+	return Position;
+}
+//---------------------------------------------------------------------------
+void tTVPWaveLoopManager::SetPosition(tjs_int64 pos)
+{
+	Position = pos;
+	Decoder->SetPosition(pos);
+}
+//---------------------------------------------------------------------------
 void tTVPWaveLoopManager::Decode(void *dest, tjs_uint samples, tjs_uint &written,
 		std::vector<tTVPWaveLoopSegment> &segments)
 {
