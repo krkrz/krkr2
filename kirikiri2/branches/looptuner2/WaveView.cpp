@@ -95,7 +95,7 @@ void __fastcall TWaveDrawer::SetMagnify(int m)
 {
 	// set magnification
 	if(m > 3) m = 3;
-	if(m < -14) m = -14;
+	if(m < -16) m = -16;
 	if(FMagnify != m)
 	{
 		int center = FStart + PixelToSample(ClientWidth >> 1);
