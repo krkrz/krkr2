@@ -16,7 +16,6 @@ __fastcall TWaveView::TWaveView(TWinControl *owner) :
 	FDrawer->Align = alClient;
 	Color = clNone;
 	Brush->Style = bsClear;
-//	DoubleBuffered = true;
 	FFollowingMarker = true;
 	FWaitingMarker = true;
 	FSoftCenteringStartTick = 0;
@@ -77,9 +76,11 @@ void __fastcall TWaveView::SetMarkerPos(int n)
 			// too fast to track
 			SetView(n);
 			FWaitingMarker = false;
+			DoubleBuffered = true;
 		}
 		else
 		{
+			DoubleBuffered = false;
 
 			int px = FDrawer->SampleToPixel(n - FDrawer->Start);
 			if(px < 0 || px >= FDrawer->Width)
@@ -135,6 +136,8 @@ void __fastcall TWaveView::Resize()
 	si.cbSize = sizeof(si);
 	si.fMask = SIF_ALL;
 	GetScrollInfo(Handle, SB_HORZ, &si);
+
+	DoubleBuffered = true;
 
 	FDrawer->Start = si.nPos;
 }
