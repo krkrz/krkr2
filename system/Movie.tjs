@@ -6,12 +6,14 @@ class Movie extends VideoOverlay
 	var owner;
 	var lastStatus = "unload"; // 直前のステータス
 	var opened = false;
+	var id = 0; // ムービーオブジェクトID
 
-	function Movie(owner)
+	function Movie(owner,id=0)
 	{
 		super.VideoOverlay(...);
 
 		this.owner = owner;
+		this.id = id;
 	}
 
 	function finalize()
@@ -25,7 +27,7 @@ class Movie extends VideoOverlay
 		// ステータスの変更があった
 		if(lastStatus == "play" && status == "stop")
 		{
-			owner.onMovieStop(); // 停止
+			owner.onMovieStop(id); // 停止
 			super.close();
 		}
 
@@ -35,7 +37,7 @@ class Movie extends VideoOverlay
 	function onPeriod(type)
 	{
 		// period イベントが発生した
-		owner.onMovieStop(); // 停止
+		owner.onMoviePeriod(id,type);
 	}
 
 	function onCallbackCommand(cmd, arg)
