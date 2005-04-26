@@ -8401,7 +8401,7 @@ TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/onKeyDown)
 	}
 
 	// call default key down behavior handler
-	if(param[2]->operator bool())
+	if(numparams < 3 || param[2]->operator bool())
 		_this->DefaultKeyDown((tjs_int)*param[0], (tjs_int)*param[1]);
 
 	return TJS_S_OK;
@@ -8423,7 +8423,7 @@ TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/onKeyUp)
 	}
 
 	// call default key up behavior handler
-	if(param[2]->operator bool())
+	if(numparams < 3 || param[2]->operator bool())
 		_this->DefaultKeyUp((tjs_int)*param[0], (tjs_int)*param[1]);
 
 	return TJS_S_OK;
@@ -8444,7 +8444,7 @@ TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/onKeyPress)
 	}
 
 	// call default key down behavior handler
-	if(param[1]->operator bool())
+	if(numparams < 2 || param[1]->operator bool())
 	{
 		ttstr p = *param[0];
 		tjs_char code;
