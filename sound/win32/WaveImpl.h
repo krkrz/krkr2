@@ -175,7 +175,6 @@ public:
 	bool GetPaused() const { return Paused; }
 	void SetPaused(bool b);
 
-	tjs_int GetFrequency() const { return Format.Format.nSamplesPerSec; }
 	tjs_int GetBitsPerSample() const {
 		if(Format.Format.wFormatTag == WAVE_FORMAT_EXTENSIBLE)
 			return Format.Samples.wValidBitsPerSample;
@@ -198,14 +197,16 @@ public:
 
 	tjs_uint64 GetTotalTime();
 
-	//-- volume/pan/3D position stuff -------------------------------------
+	//-- volume/pan/3D position/freq stuff -------------------------------------
 private:
 	tjs_int Volume;
 	tjs_int Volume2;
+	tjs_int Frequency;
 	static tjs_int GlobalVolume;
 	static tTVPSoundGlobalFocusMode GlobalFocusMode;
 
 	bool BufferCanControlPan;
+	bool BufferCanControlFrequency;
 	tjs_int Pan; // -100000 .. 0 .. 100000
 	D3DVALUE PosX, PosY, PosZ; // 3D position
 
@@ -236,6 +237,11 @@ public:
 	void SetPosZ(D3DVALUE v);
 	D3DVALUE GetPosZ() const {return PosZ;}
 
+private:
+	void SetFrequencyToBuffer();
+public:
+	tjs_int GetFrequency() const { return Frequency; }
+	void SetFrequency(tjs_int freq);
 
 	//-- visualization stuff ----------------------------------------------
 public:

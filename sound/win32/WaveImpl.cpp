@@ -1767,10 +1767,12 @@ void tTJSNI_WaveSoundBuffer::TryCreateSoundBuffer(bool use3d)
 	dsbd.dwSize = sizeof(dsbd);
 	dsbd.dwFlags = 	DSBCAPS_GETCURRENTPOSITION2 |
 		DSBCAPS_CTRLVOLUME;
+	BufferCanControlFrequency = true;
 	if(!(TVPDirectSoundUse3D && use3d))
 		dsbd.dwFlags |= DSBCAPS_CTRLPAN, BufferCanControlPan = true;
 	else
 		dsbd.dwFlags |= DSBCAPS_CTRL3D, BufferCanControlPan = false;
+	dsbd.dwFlags |= DSBCAPS_CTRLFREQUENCY;
 	if(!(TVPSoundGlobalFocusMuteVolume == 0 &&
 		TVPSoundGlobalFocusModeByOption >= sgfmMuteOnDeactivate))
 		dsbd.dwFlags |= DSBCAPS_GLOBALFOCUS;
@@ -1790,6 +1792,16 @@ void tTJSNI_WaveSoundBuffer::TryCreateSoundBuffer(bool use3d)
 		{
 			dsbd.dwFlags &= ~ DSBCAPS_CTRLPAN;
 			BufferCanControlPan = false;
+			hr = TVPDirectSound->CreateSoundBuffer(&dsbd, &SoundBuffer, NULL);
+		}
+	}
+
+	if(FAILED(hr))
+	{
+		if(BufferCanControlFrequency)
+		{
+			dsbd.dwFlags &= ~ DSBCAPS_CTRLFREQUENCY;
+			BufferCanControlFrequency = false;
 			hr = TVPDirectSound->CreateSoundBuffer(&dsbd, &SoundBuffer, NULL);
 		}
 	}
@@ -1964,9 +1976,10 @@ void tTJSNI_WaveSoundBuffer::CreateSoundBuffer()
 
 	}
 
-	// reset volume and sound position
+	// reset volume, sound position and frequency
 	SetVolumeToSoundBuffer();
 	Set3DPositionToBuffer();
+	SetFrequencyToBuffer();
 
 	// reset sound buffer
 	ResetSoundBuffer();
@@ -2619,6 +2632,7 @@ void tTJSNI_WaveSoundBuffer::Open(const ttstr & storagename)
 	try
 	{
 		Decoder->GetFormat(InputFormat);
+		Frequency = InputFormat.SamplesPerSec;
 	}
 	catch(...)
 	{
@@ -2882,6 +2896,21 @@ void tTJSNI_WaveSoundBuffer::SetPosZ(D3DVALUE v)
 {
 	PosZ = v;
 	Set3DPositionToBuffer();
+}
+//---------------------------------------------------------------------------
+void tTJSNI_WaveSoundBuffer::SetFrequencyToBuffer()
+{
+	if(BufferCanControlFrequency)
+	{
+		if(SoundBuffer) SoundBuffer->SetFrequency(Frequency);
+	}
+}
+//---------------------------------------------------------------------------
+void tTJSNI_WaveSoundBuffer::SetFrequency(tjs_int freq)
+{
+	// set frequency
+	Frequency = freq;
+	SetFrequencyToBuffer();
 }
 //---------------------------------------------------------------------------
 void tTJSNI_WaveSoundBuffer::SetUseVisBuffer(bool b)
