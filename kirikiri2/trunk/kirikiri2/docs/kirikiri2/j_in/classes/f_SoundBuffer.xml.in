@@ -380,11 +380,12 @@
 	<name>frequency</name>
 	<type>property</type>
 	<shortdesc>サンプリング周波数</shortdesc>
-	<access>r</access>
+	<access>r/w</access>
 	<desc>
-		　現在再生中のサウンドのサンプリング周波数を表します。<r/>
+		　現在再生中のサウンドのサンプリング周波数を表します。値を設定することもできます。<r/>
 		　CD と同じサンプリング周波数の場合は 44100 になります。<r/>
 		　メディアが開かれていない状態では正常な値を返さない可能性があります。<r/>
+		　値を設定すると、その周波数で再生します。<r/>
 	</desc>
 </member>
 </wave>
