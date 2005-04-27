@@ -1,5 +1,5 @@
 object LoopTunerMainForm: TLoopTunerMainForm
-  Left = 5
+  Left = 6
   Top = 5
   Width = 712
   Height = 354

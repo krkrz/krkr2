@@ -24,7 +24,7 @@
     <DEBUGLIBPATH value="$(BCB)\lib\debug"/>
     <RELEASELIBPATH value="$(BCB)\lib\release"/>
     <LINKER value="tlink32"/>
-    <USERDEFINES value="_DEBUG"/>
+    <USERDEFINES value="_DEBUG;TVP_IN_LOOP_TUNER"/>
     <SYSDEFINES value="_RTLDLL;NO_STRICT;USEPACKAGES"/>
     <MAINSOURCE value="looptune.cpp"/>
     <INCLUDEPATH value="$(BCB)\include;$(BCB)\include\vcl"/>
@@ -88,6 +88,23 @@ $(BCB)\Bin\DCLNMF50.bpl=NetMasters Fastnet Tools
 $(BCB)\Bin\dclocx50.bpl=Borland Sample Imported ActiveX Controls
 $(BCB)\Bin\dclite50.bpl=Borland Integrated Translation Environment
 $(BCB)\Bin\bcb2kaxserver50.bpl=Borland C++Builder COM Server Components Sample Package
+
+[HistoryLists\hlIncludePath]
+Count=1
+Item0=$(BCB)\include;$(BCB)\include\vcl
+
+[HistoryLists\hlLibraryPath]
+Count=1
+Item0=$(BCB)\Projects\Lib;$(BCB)\lib\obj;$(BCB)\lib
+
+[HistoryLists\hlDebugSourcePath]
+Count=1
+Item0=$(BCB)\source\vcl
+
+[HistoryLists\hlConditionals]
+Count=2
+Item0=_DEBUG;TVP_IN_LOOP_TUNER
+Item1=_DEBUG
 
 [Debugging]
 DebugSourceDirs=$(BCB)\source\vcl

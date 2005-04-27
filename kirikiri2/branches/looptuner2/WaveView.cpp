@@ -20,7 +20,49 @@ const TColor C_INF_LINE			= clGray;
 const TColor C_DISABLED_TIME_CLIENT		= ((TColor)0xf0f0f0);
 const TColor C_TIME_CLIENT		= clBtnFace;
 const TColor C_TIME_COLOR		= clBlack;
+const TColor C_LINK_WAVE_MARK	= clGray;
+const TColor C_LINK_CLIENT		= clWhite;
+const TColor C_LINK_SEPARETOR   = ((TColor)0xe0e0e0);
+const TColor C_LINK_LINE		= clBlack;
+const TColor C_LINK_WEAK_LINE	= clGray;
 //---------------------------------------------------------------------------
+const int LinkArrowSize = 4;
+const int LinkDirectionArrowWidth = 10;
+const int LinkDirectionInterval = 200;
+//---------------------------------------------------------------------------
+static std::vector<tTVPWaveLoopLink> Links;
+static std::vector<tTVPWaveLoopLink> &  GetLinks()
+{
+	if(Links.size() == 0)
+	{
+		tTVPWaveLoopLink link;
+		link.From = 1900000;
+		link.To = 550000;
+		link.Smooth = false;
+		link.Condition = false;
+		link.CondVar = -1;
+		Links.push_back(link);
+
+
+		link.From = 850000;
+		link.To = 2005000;
+		link.Smooth = false;
+		link.Condition = false;
+		link.CondVar = -1;
+		Links.push_back(link);
+
+		link.From = 1250000;
+		link.To = 2005000;
+		link.Smooth = false;
+		link.Condition = false;
+		link.CondVar = -1;
+		Links.push_back(link);
+
+	}
+	return Links;
+}
+//---------------------------------------------------------------------------
+
 
 //---------------------------------------------------------------------------
 __fastcall TWaveDrawer::TWaveDrawer(Classes::TComponent* AOwner) :
@@ -35,10 +77,20 @@ __fastcall TWaveDrawer::TWaveDrawer(Classes::TComponent* AOwner) :
 	FDrawRuler = true;
 	FMarkerPos = -1;
 	Canvas->Font->Height = -12;
+
+	FDrawLinks = true;
+	FLinkTierCount = 0;
+	NotifyLinkChanged();
 }
 //---------------------------------------------------------------------------
 __fastcall TWaveDrawer::~TWaveDrawer()
 {
+}
+//---------------------------------------------------------------------------
+void __fastcall TWaveDrawer::Paint(void)
+{
+	DrawWave(FStart, true);
+	DrawLink();
 }
 //---------------------------------------------------------------------------
 int __fastcall TWaveDrawer::PixelToSample(int pixel)
@@ -78,17 +130,20 @@ void __fastcall TWaveDrawer::SetReader(TWaveReader * reader)
 //---------------------------------------------------------------------------
 void __fastcall TWaveDrawer::SetStart(int n)
 {
+	RECT r;
+
 	// set start position
 	n = PixelToSample(SampleToPixel(n)); // quantize
-	RECT r;
 	r.left = 0;
 	r.top = 0;
 	r.right = ClientWidth;
 	r.bottom = ClientHeight;
-	ScrollWindowEx(Parent->Handle, SampleToPixel(FStart) - SampleToPixel(n), 0,
+	int d = SampleToPixel(FStart) - SampleToPixel(n);
+	ScrollWindowEx(Parent->Handle, d, 0,
 		&r, NULL, NULL, NULL, SW_INVALIDATE);
 
 	FStart = n;
+
 }
 //---------------------------------------------------------------------------
 void __fastcall TWaveDrawer::SetMagnify(int m)
@@ -109,6 +164,7 @@ void __fastcall TWaveDrawer::SetMagnify(int m)
 		FStart = PixelToSample(SampleToPixel(left)); // quantize
 		FMinRulerMajorWidth = 0;
 		FMinRulerMajorHeight = 0;
+		NotifyLinkChanged();
 		Invalidate();
 	}
 }
@@ -125,7 +181,7 @@ void __fastcall TWaveDrawer::SetMarkerPos(int p)
 		int p_pos;
 		RECT r;
 		r.top = GetHeadSize() + Top;
-		r.bottom = ClientHeight + Top;
+		r.bottom = ClientHeight - GetFootSize() + Top;
 
 		if(p != -1)
 		{
@@ -210,7 +266,9 @@ void __fastcall TWaveDrawer::DrawWave(int start, bool clear)
 	int sstep = FMagnify <= 0 ? (1<<(-FMagnify)) : 1;
 
 	int head_size = GetHeadSize();
-	int one_height = ((Height - head_size) / FReader->Channels) & ~1;
+	int foot_size = GetFootSize();
+	int bottom_limit = Height - foot_size;
+	int one_height = ((Height - head_size - foot_size) / FReader->Channels) & ~1;
 	int one_height_half = one_height >> 1;
 	int one_client_height = one_height - 2; // 2 : padding margin
 
@@ -247,7 +305,7 @@ void __fastcall TWaveDrawer::DrawWave(int start, bool clear)
 		if(Canvas->ClipRect.left < dest_left)
 		{
 			TRect r;
-			r.left = Canvas->ClipRect.left, r.top = head_size, r.right = dest_left, r.bottom = ClientHeight;
+			r.left = Canvas->ClipRect.left, r.top = head_size, r.right = dest_left, r.bottom = Height;
 			Canvas->Brush->Style = bsSolid;
 			Canvas->Brush->Color = C_DISABLEED_CLIENT;
 			Canvas->FillRect(r);
@@ -258,7 +316,7 @@ void __fastcall TWaveDrawer::DrawWave(int start, bool clear)
 		if(dest_left < dest_right)
 		{
 			TRect r;
-			r.left = dest_left, r.top = head_size, r.right = dest_right, r.bottom = ClientHeight;
+			r.left = dest_left, r.top = head_size, r.right = dest_right, r.bottom = Height;
 			Canvas->Brush->Style = bsSolid;
 			Canvas->Brush->Color = C_CLIENT;
 			Canvas->FillRect(r);
@@ -277,7 +335,7 @@ void __fastcall TWaveDrawer::DrawWave(int start, bool clear)
 		if(Canvas->ClipRect.right > dest_right)
 		{
 			TRect r;
-			r.left = dest_right, r.top = head_size, r.right = Canvas->ClipRect.right, r.bottom = ClientHeight;
+			r.left = dest_right, r.top = head_size, r.right = Canvas->ClipRect.right, r.bottom = Height;
 			Canvas->Brush->Style = bsSolid;
 			Canvas->Brush->Color = C_DISABLEED_CLIENT;
 			Canvas->FillRect(r);
@@ -303,6 +361,25 @@ void __fastcall TWaveDrawer::DrawWave(int start, bool clear)
 			Canvas->LineTo(Canvas->ClipRect.right, head_size - 1);
 		}
 
+
+		// draw link 'from' and 'to' lines
+		std::vector<tTVPWaveLoopLink> & links = /**/ GetLinks(); /**/
+		Canvas->Pen->Color = C_LINK_WAVE_MARK;
+		Canvas->Pen->Style = psDashDot;
+		for(unsigned int i = 0; i < links.size(); i++)
+		{
+			const tTVPWaveLoopLink & link = links[i];
+			int x;
+
+			x = SampleToPixel(link.From - Start);
+			Canvas->MoveTo(x, head_size);
+			Canvas->LineTo(x, bottom_limit);
+
+			x = SampleToPixel(link.To - Start);
+			Canvas->MoveTo(x, head_size);
+			Canvas->LineTo(x, bottom_limit);
+		}
+		Canvas->Pen->Style = psSolid;
 	}
 
 
@@ -351,8 +428,8 @@ void __fastcall TWaveDrawer::DrawWave(int start, bool clear)
 		if(p_pos >= 0 && p_pos < ClientWidth)
 		{
 			RECT r;
-			r.top = GetHeadSize() + Top;
-			r.bottom = ClientHeight + Top;
+			r.top = head_size + Top;
+			r.bottom = bottom_limit + Top;
 			r.left = p_pos;
 			r.right = p_pos + 1;
 			InvertRect(Canvas->Handle, &r);
@@ -449,9 +526,328 @@ void __fastcall TWaveDrawer::DrawWave(int start, bool clear)
 	}
 }
 //---------------------------------------------------------------------------
-void __fastcall TWaveDrawer::Paint(void)
+inline static bool PartIntersect(int a, int b, int i, int j)
 {
-	DrawWave(FStart, true);
+	if(a > b)
+	{
+		int t = b;
+		b = a;
+		a = t;
+	}
+	if(i > j)
+	{
+		int t = i;
+		j = i;
+		i = t;
+	}
+
+	return
+		a >= i && a <= j ||
+		b >= i && b <= j ||
+		i >= a && i <= b ||
+		j >= a && j <= b;
+}
+//---------------------------------------------------------------------------
+void __fastcall TWaveDrawer::NotifyLinkChanged()
+{
+	// re-check tier
+	int tier_count = 0;
+
+	std::vector<tTVPWaveLoopLink> & links = /**/ GetLinks(); /**/
+
+	for(unsigned int i = 0; i < links.size(); i++)
+	{
+		// search free tier
+		TTierMinMaxInfo cinfo;
+		GetLinkMinMaxPixel(links[i], cinfo);
+
+		int found_link_tier = 0;
+		int found_from_tier = 0;
+		int found_to_tier   = 0;
+
+		for(unsigned int j = 0; j < i; j++)
+		{
+			TTierMinMaxInfo jinfo;
+			GetLinkMinMaxPixel(links[j], jinfo);
+
+			// for link
+			if(PartIntersect(jinfo.LinkMin, jinfo.LinkMax, cinfo.LinkMin, cinfo.LinkMax))
+			{
+				// intersection found
+				found_link_tier = links[j].LinkTier + 1;
+			}
+
+			// for 'from'
+			if(	PartIntersect(jinfo.ToMin, jinfo.ToMax, cinfo.FromMin, cinfo.FromMax) )
+			{
+				// intersection found
+				found_from_tier = links[j].ToTier + 1;
+			}
+			if( PartIntersect(jinfo.FromMin, jinfo.FromMax, cinfo.FromMin, cinfo.FromMax))
+			{
+				// intersection found
+				found_from_tier = links[j].FromTier + 1;
+			}
+
+			// for 'to'
+			if( PartIntersect(jinfo.ToMin, jinfo.ToMax, cinfo.ToMin, cinfo.ToMax))
+			{
+				// intersection found
+				found_to_tier = links[j].ToTier + 1;
+			}
+			if(	PartIntersect(jinfo.FromMin, jinfo.FromMax, cinfo.ToMin, cinfo.ToMax))
+			{
+				// intersection found
+				found_to_tier = links[j].FromTier + 1;
+			}
+		}
+
+		links[i].LinkTier = found_link_tier;
+		links[i].FromTier = found_from_tier;
+		links[i].ToTier   = found_to_tier;
+
+		if(tier_count < found_link_tier + 1) tier_count = found_link_tier + 1;
+	}
+
+	FLinkTierCount = tier_count;
+}
+//---------------------------------------------------------------------------
+void __fastcall TWaveDrawer::GetLinkMinMaxPixel(const tTVPWaveLoopLink & link,
+		TTierMinMaxInfo & info)
+{
+	int from_px = SampleToPixel(link.From);
+	int to_px   = SampleToPixel(link.To);
+
+	int min;
+	int max;
+
+	min = from_px - 1;
+	max = from_px + 1;
+
+	if(min > to_px - (LinkArrowSize+1)) min = to_px - (LinkArrowSize+1);
+	if(max < to_px + (LinkArrowSize+1)) max = to_px + (LinkArrowSize+1);
+
+	info.LinkMin = min;
+	info.LinkMax = max;
+	info.FromMin = from_px - 1;
+	info.FromMax = from_px + 1;
+	info.ToMin   = to_px   - (LinkArrowSize+1);
+	info.ToMax   = to_px   + (LinkArrowSize+1);
+}
+//---------------------------------------------------------------------------
+void __fastcall TWaveDrawer::DrawLinkArrowAt(int tier, int where)
+{
+	// arrow bitmap:
+	// <> = 1 pixel
+
+	//       <>
+	//       <>
+	//     <><><>
+	//     <><><>
+	//   <><><><><>
+	//   <><><><><>
+	// <><><><><><><>
+	// <><><><><><><>
+	//       <>
+	//       <>
+
+	// draw up-arrow at given position
+	int foot_size = GetFootSize();
+	int y_start = Height - foot_size;
+	int y = y_start + tier * TVP_LGD_TIER_HEIGHT;
+
+	// draw arrow body
+	Canvas->Brush->Style = bsSolid;
+	Canvas->Brush->Color = Canvas->Pen->Color;
+	TRect r;
+
+	for(int i = 1; i < LinkArrowSize; i++)
+	{
+		r.left   = where - i;
+		r.top    = y + i*2;
+		r.right  = where + (i+1);
+		r.bottom = y + (i*2+2);
+		Canvas->FillRect(r);
+	}
+}
+//---------------------------------------------------------------------------
+void __fastcall TWaveDrawer::DrawDirectionArrowAt(int tier, bool dir, int where)
+{
+	// arrow bitmap:
+	// <> = 1 pixel
+
+	//         <><>
+	//     <><><><>
+	// <><><><><><><><><><>
+	//     <><><><>
+	//         <><>
+
+	//         <><>
+	//         <><><><>
+	// <><><><><><><><><><>
+	//         <><><><>
+	//         <><>
+
+	int foot_size = GetFootSize();
+	int y_start = Height - foot_size;
+	int y = y_start + tier * TVP_LGD_TIER_HEIGHT + TVP_LGD_TIER_HEIGHT - 3;
+
+	Canvas->Brush->Style = bsSolid;
+	Canvas->Brush->Color = Canvas->Pen->Color;
+	TRect r;
+
+	if(dir)
+	{
+		// dir = true: right arrow
+		r.left   = where + 0;
+		r.top    = y - 2;
+		r.right  = where + 2;
+		r.bottom = y + 3;
+		Canvas->FillRect(r);
+
+		r.left   = where + 2;
+		r.top    = y - 1;
+		r.right  = where + 4;
+		r.bottom = y + 2;
+		Canvas->FillRect(r);
+	}
+	else
+	{
+		// dir = false: left arrow
+		r.left   = where + 0;
+		r.top    = y - 1;
+		r.right  = where + 2;
+		r.bottom = y + 2;
+		Canvas->FillRect(r);
+
+		r.left   = where + 2;
+		r.top    = y - 2;
+		r.right  = where + 4;
+		r.bottom = y + 3;
+		Canvas->FillRect(r);
+	}
+}
+//---------------------------------------------------------------------------
+void __fastcall TWaveDrawer::DrawLink(void)
+{
+	if(!FReader || !FReader->ReadDone) return;
+
+	// calc start point
+	int dest_left  = Canvas->ClipRect.left;
+	int dest_right = Canvas->ClipRect.right;
+	int foot_size = GetFootSize();
+	int y_start = Height - foot_size;
+
+	if(!PartIntersect(Canvas->ClipRect.top, Canvas->ClipRect.bottom -1,
+		y_start, Height - 1)) return;
+
+	// erase background
+/*
+	TRect r;
+	r.left = dest_left, r.top = y_start,
+	r.right = dest_right, r.bottom = ClientHeight;
+	Canvas->Brush->Style = bsSolid;
+	Canvas->Brush->Color = C_LINK_CLIENT;
+	Canvas->FillRect(r);
+*/
+
+	// draw separator
+	Canvas->Pen->Color = C_LINK_SEPARETOR;
+	Canvas->MoveTo(dest_left,  y_start);
+	Canvas->LineTo(dest_right, y_start);
+
+	// draw each link (for vertical weak line)
+	Canvas->Pen->Color = C_LINK_WEAK_LINE;
+	std::vector<tTVPWaveLoopLink> & links = /**/ GetLinks(); /**/
+
+	for(unsigned int i = 0; i < links.size(); i++)
+	{
+		const tTVPWaveLoopLink & link = links[i];
+		tjs_int x;
+
+		x = SampleToPixel(link.From - Start);
+		if(x >= dest_left || x < dest_right)
+		{
+			int y = y_start + link.FromTier * TVP_LGD_TIER_HEIGHT - 1;
+			Canvas->MoveTo(x, y_start+1);
+			Canvas->LineTo(x, y);
+		}
+		x = SampleToPixel(link.To - Start);
+		if(x >= dest_left || x < dest_right)
+		{
+			int y = y_start + link.ToTier * TVP_LGD_TIER_HEIGHT - 1;
+			Canvas->MoveTo(x, y_start+1);
+			Canvas->LineTo(x, y);
+		}
+	}
+
+	// draw each link
+	int dir_step = PixelToSample(LinkDirectionInterval);
+
+	Canvas->Pen->Color = C_LINK_LINE;
+	for(unsigned int i = 0; i < links.size(); i++)
+	{
+		const tTVPWaveLoopLink & link = links[i];
+		int x_from;
+		int x_to;
+		int y_link = y_start + link.LinkTier * TVP_LGD_TIER_HEIGHT + TVP_LGD_TIER_HEIGHT - 3;
+
+		// for from line
+		x_from = SampleToPixel(link.From - Start);
+		if(x_from >= dest_left || x_from < dest_right)
+		{
+			int y0 = y_start + link.FromTier * TVP_LGD_TIER_HEIGHT;
+			Canvas->MoveTo(x_from, y0);
+			Canvas->LineTo(x_from, y_link);
+		}
+
+		// for to arrow
+		x_to = SampleToPixel(link.To - Start);
+		int xmin = x_to - (LinkArrowSize+1);
+		int xmax = x_to + (LinkArrowSize+1);
+		if(PartIntersect(xmin, xmax, dest_left, dest_right -1))
+		{
+			DrawLinkArrowAt(link.ToTier, x_to);
+			int y0 = y_start + link.ToTier * TVP_LGD_TIER_HEIGHT;
+			Canvas->MoveTo(x_to, y0);
+			Canvas->LineTo(x_to, y_link);
+		}
+
+		// for horizontal link line
+		if(PartIntersect(x_from, x_to, dest_left, dest_right-1))
+		{
+			if(x_from < x_to)
+			{
+				Canvas->MoveTo(x_from, y_link);
+				Canvas->LineTo(x_to+1, y_link);
+			}
+			else
+			{
+				Canvas->MoveTo(x_from, y_link);
+				Canvas->LineTo(x_to-1, y_link);
+			}
+		}
+
+		// for direction mark
+		int m_start = x_to < x_from ? x_to : x_from;
+		int m_end   = x_to < x_from ? x_from : x_to;
+		if(m_end - m_start > LinkDirectionArrowWidth * 2)
+		{
+			int s = (Start / dir_step) * dir_step;
+
+			for(;;)
+			{
+				int x = SampleToPixel(s - Start);
+				if(x > dest_right) break;
+
+				if(x > m_start + LinkDirectionArrowWidth && x < m_end - LinkDirectionArrowWidth)
+					DrawDirectionArrowAt(link.LinkTier, x_from < x_to, x);
+
+				s += dir_step;
+			}
+		}
+	}
+
 }
 //---------------------------------------------------------------------------
 
