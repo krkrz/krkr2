@@ -20,6 +20,7 @@ struct TTierMinMaxInfo
 };
 //---------------------------------------------------------------------------
 class TWaveReader;
+typedef void __fastcall (__closure *TNotifyWavePosEvent)(TObject *Sender, int pos);
 class TWaveDrawer : public TGraphicControl
 {
 //-- constructor and destructor
@@ -37,9 +38,32 @@ private:
 	void __fastcall Paint(void);
 
 public:
+	int __fastcall PixelToSample(int pixel);
+	int __fastcall SampleToPixel(int sample);
+	void __fastcall SetReader(TWaveReader * reader);
+
+public:
 	__property TWaveReader * Reader = { read = FReader, write = SetReader };
 	__property int Start = { read = FStart, write = SetStart };
 	__property int Magnify = { read = FMagnify, write = SetMagnify };
+
+
+//-- caret drawing stuff
+	int FCaretPos; // caret position
+	bool FDrawCaret;
+	bool FCaretVisiblePhase;
+	TTimer * FBlinkTimer;
+
+	void __fastcall InvalidateCaret(int pos);
+
+	void __fastcall SetCaretPos(int pos);
+	void __fastcall SetDrawCaret(bool b);
+
+	void __fastcall OnBlinkTimer(TObject * sender);
+
+public:
+	__property int CaretPos = { read = FCaretPos, write = SetCaretPos };
+	__property bool DrawCaret = { read = FDrawCaret, write = SetDrawCaret };
 
 //-- wave drawing stuff
 private:
@@ -49,12 +73,7 @@ private:
 	bool FDrawRuler; // whether to draw time line
 	int FMarkerPos; // marker position for current playing position, -1 for invisible
 
-public:
-	int __fastcall PixelToSample(int pixel);
-	int __fastcall SampleToPixel(int sample);
-
 private:
-	void __fastcall SetReader(TWaveReader * reader);
 	void __fastcall SetStart(int n);
 	void __fastcall SetMagnify(int m);
 	void __fastcall SetMarkerPos(int p);
@@ -63,6 +82,7 @@ private:
 
 public:
 	__property int MarkerPos = { read = FMarkerPos, write = SetMarkerPos };
+
 
 
 //-- link drawing stuff
@@ -80,6 +100,18 @@ private:
 		TTierMinMaxInfo & info);
 	void __fastcall DrawLink(void);
 
+
+//-- input
+private:
+	TNotifyWavePosEvent FOnLButtonDown;
+
+	int MouseXPosToSamplePos(int x);
+
+	DYNAMIC void __fastcall MouseDown(TMouseButton button, TShiftState shift, int x, int y);
+
+
+public:
+	__property TNotifyWavePosEvent OnLButtonDown = { read = FOnLButtonDown, write = FOnLButtonDown };
 
 };
 //---------------------------------------------------------------------------

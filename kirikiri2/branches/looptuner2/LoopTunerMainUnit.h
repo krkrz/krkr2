@@ -47,6 +47,8 @@ __published:	// IDE 管理のコンポーネント
 	void __fastcall ZoomInActionExecute(TObject *Sender);
 	void __fastcall ZoomOutActionExecute(TObject *Sender);
 	void __fastcall PlayFromStartActionExecute(TObject *Sender);
+	void __fastcall FormActivate(TObject *Sender);
+	void __fastcall FormDeactivate(TObject *Sender);
 private:	// ユーザー宣言
 	TWaveReader * Reader;
 	TWaveView *WaveView;
@@ -57,6 +59,7 @@ public:		// ユーザー宣言
 private:
 	void __fastcall OnReaderProgress(TObject *sender);
 	void __fastcall OnApplicationIdle(TObject *sender, bool &done);
+	void __fastcall OnWaveViewLButtonDown(TObject *sender, int pos);
 };
 //---------------------------------------------------------------------------
 extern PACKAGE TLoopTunerMainForm *LoopTunerMainForm;

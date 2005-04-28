@@ -1,5 +1,5 @@
 object LoopTunerMainForm: TLoopTunerMainForm
-  Left = 6
+  Left = 9
   Top = 5
   Width = 712
   Height = 354
@@ -12,7 +12,9 @@ object LoopTunerMainForm: TLoopTunerMainForm
   Font.Style = []
   Menu = MainMenu
   OldCreateOrder = False
+  OnActivate = FormActivate
   OnDestroy = FormDestroy
+  OnDeactivate = FormDeactivate
   PixelsPerInch = 96
   TextHeight = 12
   object StatusBar: TStatusBar

@@ -71,6 +71,11 @@ __fastcall TWaveDrawer::TWaveDrawer(Classes::TComponent* AOwner) :
 	FReader = NULL;
 	FMagnify = -12;
 	FStart = 0;
+
+	FCaretPos = 0;
+	FDrawCaret = true;
+	FCaretVisiblePhase = true;
+
 	FMinRulerMajorWidth = 0;
 	FMinRulerMajorHeight = 0;
 	FRulerUnit = 0;
@@ -81,10 +86,18 @@ __fastcall TWaveDrawer::TWaveDrawer(Classes::TComponent* AOwner) :
 	FDrawLinks = true;
 	FLinkTierCount = 0;
 	NotifyLinkChanged();
+
+	FBlinkTimer = new TTimer(this);
+	FBlinkTimer->OnTimer = OnBlinkTimer;
+	FBlinkTimer->Interval = GetCaretBlinkTime();
+	FBlinkTimer->Enabled = true;
+
+	FOnLButtonDown = NULL;
 }
 //---------------------------------------------------------------------------
 __fastcall TWaveDrawer::~TWaveDrawer()
 {
+	delete FBlinkTimer;
 }
 //---------------------------------------------------------------------------
 void __fastcall TWaveDrawer::Paint(void)
@@ -128,6 +141,57 @@ void __fastcall TWaveDrawer::SetReader(TWaveReader * reader)
 	Invalidate();
 }
 //---------------------------------------------------------------------------
+void __fastcall TWaveDrawer::InvalidateCaret(int pos)
+{
+	RECT r;
+	r.top = GetHeadSize() + Top;
+	r.bottom = ClientHeight + Top;
+	int p_pos = SampleToPixel(pos - FStart);
+	if(p_pos >= 0 && p_pos < ClientWidth)
+	{
+		r.left = p_pos + Left;
+		r.right = p_pos + 1 + Left;
+		InvalidateRect(Parent->Handle, &r, false);
+	}
+}
+//---------------------------------------------------------------------------
+void __fastcall TWaveDrawer::SetCaretPos(int pos)
+{
+	// set caret position.
+
+	if(pos != FCaretPos)
+	{
+		// invalidate new position and old position
+		if(FDrawCaret)
+		{
+			InvalidateCaret(FCaretPos);
+			InvalidateCaret(pos);
+		}
+
+		FCaretVisiblePhase = true;
+		FBlinkTimer->Enabled = false;
+		FBlinkTimer->Enabled = FDrawCaret;
+		FCaretPos = pos;
+	}
+}
+//---------------------------------------------------------------------------
+void __fastcall TWaveDrawer::SetDrawCaret(bool b)
+{
+	if(b != FDrawCaret)
+	{
+		FDrawCaret = b;
+		FCaretVisiblePhase = true;
+		InvalidateCaret(FCaretPos);
+		FBlinkTimer->Enabled = b;
+	}
+}
+//---------------------------------------------------------------------------
+void __fastcall TWaveDrawer::OnBlinkTimer(TObject * sender)
+{
+	FCaretVisiblePhase = !FCaretVisiblePhase;
+	InvalidateCaret(FCaretPos);
+}
+//---------------------------------------------------------------------------
 void __fastcall TWaveDrawer::SetStart(int n)
 {
 	RECT r;
@@ -153,7 +217,12 @@ void __fastcall TWaveDrawer::SetMagnify(int m)
 	if(m < -16) m = -16;
 	if(FMagnify != m)
 	{
-		int center = FStart + PixelToSample(ClientWidth >> 1);
+		int center;
+		int c_pos = SampleToPixel(FCaretPos - FStart);
+		if(c_pos >= 0 && c_pos < ClientWidth)
+			center = FCaretPos;
+		else
+			center = FStart + PixelToSample(ClientWidth >> 1);
 		FMagnify = m;
 		int left = center - PixelToSample(ClientWidth >> 1);
 		int view = PixelToSample(ClientWidth);
@@ -524,6 +593,23 @@ void __fastcall TWaveDrawer::DrawWave(int start, bool clear)
 			}
 		}
 	}
+
+
+	// draw caret
+	if(FDrawCaret && FCaretVisiblePhase)
+	{
+		int p_pos = SampleToPixel(FCaretPos - FStart);
+		if(p_pos >= 0 && p_pos < ClientWidth)
+		{
+			RECT r;
+			r.top = head_size + Top;
+			r.bottom = ClientHeight + Top;
+			r.left = p_pos;
+			r.right = p_pos + 1;
+			InvertRect(Canvas->Handle, &r);
+		}
+	}
+
 }
 //---------------------------------------------------------------------------
 inline static bool PartIntersect(int a, int b, int i, int j)
@@ -848,6 +934,25 @@ void __fastcall TWaveDrawer::DrawLink(void)
 		}
 	}
 
+}
+//---------------------------------------------------------------------------
+int TWaveDrawer::MouseXPosToSamplePos(int x)
+{
+	int least = SampleToPixel(1);
+	x += least / 2;
+	return PixelToSample(x) + FStart;
+}
+//---------------------------------------------------------------------------
+void __fastcall TWaveDrawer::MouseDown(TMouseButton button, TShiftState shift, int x, int y)
+{
+	// mouse downed
+	if(button == mbLeft)
+	{
+		if(FOnLButtonDown)
+		{
+			FOnLButtonDown(this, MouseXPosToSamplePos(x));
+		}
+	}
 }
 //---------------------------------------------------------------------------
 
