@@ -455,6 +455,7 @@ void __fastcall TWaveDrawer::DrawWave(int start, bool clear)
 	// main loop
 	int rpos = pos;
 	Canvas->Pen->Color = C_WAVE;
+	Canvas->Brush->Color = C_WAVE;
 	if(dest_left >= dest_right) return; // no more samples
 	for(int x = dest_left; x <= dest_right;
 		x += xstep, pos += sstep)
@@ -486,6 +487,16 @@ void __fastcall TWaveDrawer::DrawWave(int start, bool clear)
 				FReader->GetPeak(high, low, pos, ch, sstep);
 				Canvas->MoveTo(x, CONV_Y(high, ch));
 				Canvas->LineTo(x, CONV_Y(low , ch));
+			}
+			if(FMagnify >= 3)
+			{
+				// draw sample point
+				RECT r;
+				r.left = x - 1;
+				r.right = x + 2;
+				r.top = CONV_Y(cv, ch) - 1;
+				r.bottom = r.top + 3;
+				Canvas->FillRect(r);
 			}
 		}
 	}
