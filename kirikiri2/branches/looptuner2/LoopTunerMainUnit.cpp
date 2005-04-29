@@ -19,7 +19,8 @@ __fastcall TLoopTunerMainForm::TLoopTunerMainForm(TComponent* Owner)
 	WaveView->Parent = this;
 	WaveView->Align = alClient;
 	WaveView->Reader = Reader;
-	WaveView->OnLButtonDown = OnWaveViewLButtonDown;
+	WaveView->OnWaveLButtonDown = OnWaveViewWaveLButtonDown;
+	WaveView->OnLinkLButtonDown = OnWaveViewLinkLButtonDown;
 	InitDirectSound(Application->Handle);
 	Manager = NULL;
 	Application->OnIdle = OnApplicationIdle;
@@ -102,9 +103,14 @@ void __fastcall TLoopTunerMainForm::OnApplicationIdle(TObject *sender, bool &don
 	}
 }
 //---------------------------------------------------------------------------
-void __fastcall TLoopTunerMainForm::OnWaveViewLButtonDown(TObject *sender, int pos)
+void __fastcall TLoopTunerMainForm::OnWaveViewWaveLButtonDown(TObject *sender, int pos)
 {
 	WaveView->CaretPos = pos;
+}
+//---------------------------------------------------------------------------
+void __fastcall TLoopTunerMainForm::OnWaveViewLinkLButtonDown(TObject *sender, int link)
+{
+	WaveView->FocusedLink = link;
 }
 //---------------------------------------------------------------------------
 

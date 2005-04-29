@@ -1,6 +1,6 @@
 object LoopTunerMainForm: TLoopTunerMainForm
-  Left = 9
-  Top = 5
+  Left = 88
+  Top = 1
   Width = 712
   Height = 354
   Caption = 'LoopTunerMainForm'

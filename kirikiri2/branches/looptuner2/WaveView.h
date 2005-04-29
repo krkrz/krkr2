@@ -21,6 +21,7 @@ struct TTierMinMaxInfo
 //---------------------------------------------------------------------------
 class TWaveReader;
 typedef void __fastcall (__closure *TNotifyWavePosEvent)(TObject *Sender, int pos);
+typedef void __fastcall (__closure *TNotifyLinkEvent)(TObject *Sender, int link);
 class TWaveDrawer : public TGraphicControl
 {
 //-- constructor and destructor
@@ -89,6 +90,8 @@ public:
 private:
 	bool FDrawLinks;
 	int FLinkTierCount;
+	int FHoveredLink; // -1 for non visible
+	int FFocusedLink; // -1 for not focused
 
 public:
 	void __fastcall NotifyLinkChanged();
@@ -98,20 +101,34 @@ private:
 	void __fastcall DrawDirectionArrowAt(int tier, bool dir, int where);
 	void __fastcall GetLinkMinMaxPixel(const tTVPWaveLoopLink & link,
 		TTierMinMaxInfo & info);
+	void __fastcall DrawLinkOf(const tTVPWaveLoopLink & link);
 	void __fastcall DrawLink(void);
+	void __fastcall InvalidateLink(int linknum);
+	void __fastcall SetHoveredLink(int l);
+	void __fastcall SetFocusedLink(int l);
+	bool __fastcall IsLinkAt(int linknum, int x, int y);
+	int __fastcall GetLinkAt(int x, int y);
 
+public:
+	__property int HoveredLink = { read = FHoveredLink, write = SetHoveredLink };
+	__property int FocusedLink = { read = FFocusedLink, write = SetFocusedLink };
 
 //-- input
 private:
-	TNotifyWavePosEvent FOnLButtonDown;
+	TNotifyWavePosEvent FOnWaveLButtonDown;
+	TNotifyLinkEvent FOnLinkLButtonDown;
 
 	int MouseXPosToSamplePos(int x);
 
 	DYNAMIC void __fastcall MouseDown(TMouseButton button, TShiftState shift, int x, int y);
-
+	DYNAMIC void __fastcall MouseMove(TShiftState shift, int x, int y);
 
 public:
-	__property TNotifyWavePosEvent OnLButtonDown = { read = FOnLButtonDown, write = FOnLButtonDown };
+	void __fastcall MouseLeave();
+
+public:
+	__property TNotifyWavePosEvent OnWaveLButtonDown = { read = FOnWaveLButtonDown, write = FOnWaveLButtonDown };
+	__property TNotifyLinkEvent OnLinkLButtonDown = { read = FOnLinkLButtonDown, write = FOnLinkLButtonDown };
 
 };
 //---------------------------------------------------------------------------
