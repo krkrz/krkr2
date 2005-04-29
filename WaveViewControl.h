@@ -28,12 +28,16 @@ private:
 	void __fastcall SetMagnify(int m);
 	int __fastcall GetMarkerPos();
 	void __fastcall SetMarkerPos(int n);
-	TNotifyWavePosEvent __fastcall GetOnLButtonDown() { return FDrawer->OnLButtonDown; }
-	void __fastcall SetOnLButtonDown(TNotifyWavePosEvent ev) { FDrawer->OnLButtonDown = ev; }
+	TNotifyWavePosEvent __fastcall GetOnWaveLButtonDown() { return FDrawer->OnWaveLButtonDown; }
+	void __fastcall SetOnWaveLButtonDown(TNotifyWavePosEvent ev) { FDrawer->OnWaveLButtonDown = ev; }
+	TNotifyLinkEvent __fastcall GetOnLinkLButtonDown() { return FDrawer->OnLinkLButtonDown; }
+	void __fastcall SetOnLinkLButtonDown(TNotifyLinkEvent ev) { FDrawer->OnLinkLButtonDown = ev; }
 	int __fastcall GetCaretPos() { return FDrawer->CaretPos; }
 	void __fastcall SetCaretPos(int v) { FDrawer->CaretPos = v; }
 	bool __fastcall GetDrawCaret() { return FDrawer->DrawCaret; }
 	void __fastcall SetDrawCaret(bool v) { FDrawer->DrawCaret = v; }
+	int __fastcall GetFocusedLink() { return FDrawer->FocusedLink; }
+	void __fastcall SetFocusedLink(int v) { FDrawer->FocusedLink = v; }
 
 
 
@@ -45,16 +49,20 @@ private:
 
 BEGIN_MESSAGE_MAP
 	VCL_MESSAGE_HANDLER(WM_HSCROLL , TWMHScroll , WMHScroll)
+	VCL_MESSAGE_HANDLER(CM_MOUSELEAVE , TMessage , CMMouseLeave)
 END_MESSAGE_MAP(TCustomControl)
 	void __fastcall WMHScroll(TWMHScroll &msg);
+	void __fastcall CMMouseLeave(TMessage &msg);
 
 public:
 	__property TWaveReader * Reader = { read = FReader, write = SetReader };
 	__property int Magnify = { read = GetMagnify, write = SetMagnify };
 	__property int MarkerPos = { read = GetMarkerPos, write = SetMarkerPos };
-	__property TNotifyWavePosEvent OnLButtonDown = { read = GetOnLButtonDown, write = SetOnLButtonDown };
+	__property TNotifyWavePosEvent OnWaveLButtonDown = { read = GetOnWaveLButtonDown, write = SetOnWaveLButtonDown };
+	__property TNotifyLinkEvent OnLinkLButtonDown = { read = GetOnLinkLButtonDown, write = SetOnLinkLButtonDown };
 	__property int CaretPos = { read = GetCaretPos, write = SetCaretPos };
 	__property bool DrawCaret = { read = GetDrawCaret, write = SetDrawCaret };
+	__property int FocusedLink = { read = GetFocusedLink, write = SetFocusedLink };
 
 };
 //---------------------------------------------------------------------------

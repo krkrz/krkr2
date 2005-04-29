@@ -228,5 +228,10 @@ void __fastcall TWaveView::WMHScroll(TWMHScroll &msg)
 	FDrawer->Start = si.nPos;
 }
 //---------------------------------------------------------------------------
+void __fastcall TWaveView::CMMouseLeave(TMessage &msg)
+{
+	FDrawer->MouseLeave();
+}
+//---------------------------------------------------------------------------
 
 
