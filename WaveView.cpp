@@ -108,6 +108,11 @@ __fastcall TWaveView::TWaveView(Classes::TComponent* AOwner) :
 	FOnLinkDragOver    = NULL;
 	FOnLinkDragDrop    = NULL;
 */
+	DragScrollTimer = new TTimer(this);
+	DragScrollTimer->OnTimer = OnDragScrolltimer;
+	DragScrollTimer->Interval = 100;
+	DragScrollTimer->Enabled = false;
+
 	LastMouseDownX = -1;
 	LastMouseDownLinkNum = -1;
 	LastMouseDownLinkFromOrTo = false;
@@ -118,6 +123,7 @@ __fastcall TWaveView::TWaveView(Classes::TComponent* AOwner) :
 //---------------------------------------------------------------------------
 __fastcall TWaveView::~TWaveView()
 {
+	delete DragScrollTimer;
 	delete FBlinkTimer;
 }
 //---------------------------------------------------------------------------
@@ -268,6 +274,11 @@ void __fastcall TWaveView::WMHScroll(TWMHScroll &msg)
 
 	si.fMask = SIF_POS;
 	SetScrollInfo(Handle, SB_HORZ, &si, true);
+
+	ZeroMemory(&si, sizeof(si));
+	si.cbSize = sizeof(si);
+	si.fMask = SIF_ALL;
+	GetScrollInfo(Handle, SB_HORZ, &si);
 
 	SetStart(si.nPos);
 }
@@ -1448,6 +1459,8 @@ void __fastcall TWaveView::MouseMove(TShiftState shift, int x, int y)
 	// mouse moved
 	if(DraggingState != dsNone)
 	{
+		LastMouseMoveX = x;
+
 		// dragging
 		if(DraggingState == dsMouseDown)
 		{
@@ -1471,6 +1484,8 @@ void __fastcall TWaveView::MouseMove(TShiftState shift, int x, int y)
 
 			InvalidateLink(LastMouseDownLinkNum);
 			int pos = MouseXPosToSamplePos(x);
+			if(pos < 0) pos = 0;
+			if(pos > FReader->NumSamples) pos = FReader->NumSamples;
 			if(!LastMouseDownLinkFromOrTo)
 			{
 				// 'from'
@@ -1483,6 +1498,12 @@ void __fastcall TWaveView::MouseMove(TShiftState shift, int x, int y)
 			}
 			NotifyLinkChanged();
 			InvalidateLink(LastMouseDownLinkNum);
+
+			// scroll
+			if(x < 10 || x >= ClientWidth - 10)
+				DragScrollTimer->Enabled = true;
+			else
+				DragScrollTimer->Enabled = false;
 		}
 	}
 	else
@@ -1529,6 +1550,7 @@ void __fastcall TWaveView::MouseUp(TMouseButton button, TShiftState shift, int x
 			CaretPos = LastMouseDownLinkFromOrTo ? link.To : link.From;
 		}
 		DraggingState = dsNone;
+		DragScrollTimer->Enabled = false;
 	}
 }
 //---------------------------------------------------------------------------
@@ -1538,4 +1560,13 @@ void __fastcall TWaveView::MouseLeave()
 	HoveredLink = -1;
 }
 //---------------------------------------------------------------------------
+void __fastcall TWaveView::OnDragScrolltimer(TObject * sender)
+{
+	TWMHScroll wmscroll;
+	ZeroMemory(&wmscroll, sizeof(TWMHScroll));
+	wmscroll.ScrollCode = LastMouseMoveX > ClientWidth / 2 ? SB_LINERIGHT : SB_LINELEFT;
+	WMHScroll(wmscroll);
+}
+//---------------------------------------------------------------------------
+
 

@@ -153,7 +153,9 @@ private:
 	TNotifyLinkDragOverEvent  FOnLinkDragOver;
 	TNotifyLinkDragDropEvent  FOnLinkDragDrop;
 */
+	TTimer * DragScrollTimer;
 	int LastMouseDownX;
+	int LastMouseMoveX;
 	int LastMouseDownLinkNum;
 	bool LastMouseDownLinkFromOrTo;
 	enum { dsNone, dsMouseDown, dsDragging } DraggingState;
@@ -164,9 +166,8 @@ private:
 	DYNAMIC void __fastcall MouseDown(TMouseButton button, TShiftState shift, int x, int y);
 	DYNAMIC void __fastcall MouseMove(TShiftState shift, int x, int y);
 	DYNAMIC void __fastcall MouseUp(TMouseButton button, TShiftState shift, int x, int y);
-
-public:
 	void __fastcall MouseLeave();
+	void __fastcall OnDragScrolltimer(TObject * sender);
 
 public:
 /*
