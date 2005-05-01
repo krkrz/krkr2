@@ -1,6 +1,6 @@
 object LoopTunerMainForm: TLoopTunerMainForm
-  Left = 11
-  Top = -2
+  Left = 8
+  Top = 4
   Width = 712
   Height = 354
   Caption = 'LoopTunerMainForm'
@@ -72,6 +72,16 @@ object LoopTunerMainForm: TLoopTunerMainForm
       Top = 0
       Action = PlayFromStartAction
     end
+    object ToolButton3: TToolButton
+      Left = 108
+      Top = 0
+      Action = PlayFromCaretAction
+    end
+    object StopToolButton: TToolButton
+      Left = 131
+      Top = 0
+      Action = StopPlayAction
+    end
   end
   object MainMenu: TMainMenu
     Left = 400
@@ -111,6 +121,12 @@ object LoopTunerMainForm: TLoopTunerMainForm
       ImageIndex = 9
       OnExecute = ZoomInActionExecute
     end
+    object PlayFromCaretAction: TAction
+      Category = '再生'
+      Caption = '現在位置から再生(&C)'
+      ImageIndex = 1
+      OnExecute = PlayFromCaretActionExecute
+    end
     object ZoomOutAction: TAction
       Category = '表示'
       Caption = 'ズーム・アウト(&O)'
@@ -123,6 +139,12 @@ object LoopTunerMainForm: TLoopTunerMainForm
       Caption = '初めから再生(&P)'
       ImageIndex = 0
       OnExecute = PlayFromStartActionExecute
+    end
+    object StopPlayAction: TAction
+      Category = '再生'
+      Caption = '停止(&S)'
+      ImageIndex = 4
+      OnExecute = StopPlayActionExecute
     end
   end
   object ImageList: TImageList

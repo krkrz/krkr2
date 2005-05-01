@@ -603,7 +603,7 @@ bool TWaveReader::SetPosition(tjs_uint64 samplepos)
 {
 	// set FDecodePoint
 	if(samplepos >= 0x80000000ui64) return false;
-	if(samplepos >= FDecodePoint) return false;
+	if(samplepos >= FNumSamples) return false;
 	FDecodePoint = (int) samplepos;
 	return true;
 }

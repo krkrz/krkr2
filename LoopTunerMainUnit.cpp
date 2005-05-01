@@ -19,6 +19,7 @@ __fastcall TLoopTunerMainForm::TLoopTunerMainForm(TComponent* Owner)
 	WaveView->Parent = this;
 	WaveView->Align = alClient;
 	WaveView->Reader = Reader;
+	WaveView->OnDoubleClick = OnWaveViewDoubleClick;
 	InitDirectSound(Application->Handle);
 	Manager = NULL;
 	Application->OnIdle = OnApplicationIdle;
@@ -73,16 +74,34 @@ void __fastcall TLoopTunerMainForm::ZoomOutActionExecute(TObject *Sender)
 
 void __fastcall TLoopTunerMainForm::PlayFromStartActionExecute(TObject *Sender)
 {
+	PlayFrom(0);
+}
+//---------------------------------------------------------------------------
+void __fastcall TLoopTunerMainForm::PlayFromCaretActionExecute(
+	  TObject *Sender)
+{
+	PlayFrom(WaveView->CaretPos);
+}
+//---------------------------------------------------------------------------
+void __fastcall TLoopTunerMainForm::StopPlayActionExecute(TObject *Sender)
+{
+	StopPlay();
+}
+//---------------------------------------------------------------------------
+void __fastcall TLoopTunerMainForm::PlayFrom(int pos)
+{
 	if(Reader->ReadDone)
 	{
 		StopPlay();
 		const WAVEFORMATEXTENSIBLE * wfx;
 		wfx = Reader->GetWindowsFormat();
-		Manager->SetPosition(0);
+		Manager->SetPosition(pos);
+		WaveView->ResetMarkerFollow();
 		StartPlay(wfx, Manager);
 	}
 }
 //---------------------------------------------------------------------------
+
 void __fastcall TLoopTunerMainForm::OnApplicationIdle(TObject *sender, bool &done)
 {
 	int pos = (int)GetCurrentPlayingPos();
@@ -98,7 +117,13 @@ void __fastcall TLoopTunerMainForm::OnApplicationIdle(TObject *sender, bool &don
 	else
 	{
 		done = true;
+		WaveView->MarkerPos = -1;
 	}
+}
+//---------------------------------------------------------------------------
+void __fastcall TLoopTunerMainForm::OnWaveViewDoubleClick(TObject *Sender, int pos)
+{
+	PlayFrom(pos);
 }
 //---------------------------------------------------------------------------
 
@@ -113,4 +138,8 @@ void __fastcall TLoopTunerMainForm::FormDeactivate(TObject *Sender)
 	WaveView->DrawCaret = false;	
 }
 //---------------------------------------------------------------------------
+
+
+
+
 

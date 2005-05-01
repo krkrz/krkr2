@@ -21,8 +21,8 @@ struct TTierMinMaxInfo
 //---------------------------------------------------------------------------
 class TWaveReader;
 //---------------------------------------------------------------------------
-/*
 typedef void __fastcall (__closure *TNotifyWavePosEvent)(TObject *Sender, int pos);
+/*
 typedef void __fastcall (__closure *TNotifyLinkEvent)(TObject *Sender, int link);
 typedef void __fastcall (__closure *TNotifyLinkDragStartEvent)(
 	TObject *Sender, int link, bool from_or_to, bool &enable_drag);
@@ -107,7 +107,9 @@ private:
 	void __fastcall SetStart(int n);
 	void __fastcall SetMagnify(int m);
 	void __fastcall SetMarkerPos(int p);
-
+public:
+	void __fastcall ResetMarkerFollow();
+private:
 	void __fastcall DrawWave(int start, bool clear);
 
 public:
@@ -153,6 +155,8 @@ private:
 	TNotifyLinkDragOverEvent  FOnLinkDragOver;
 	TNotifyLinkDragDropEvent  FOnLinkDragDrop;
 */
+	TNotifyWavePosEvent FOnDoubleClick;
+
 	TTimer * DragScrollTimer;
 	int LastMouseDownX;
 	int LastMouseMoveX;
@@ -166,10 +170,12 @@ private:
 	DYNAMIC void __fastcall MouseDown(TMouseButton button, TShiftState shift, int x, int y);
 	DYNAMIC void __fastcall MouseMove(TShiftState shift, int x, int y);
 	DYNAMIC void __fastcall MouseUp(TMouseButton button, TShiftState shift, int x, int y);
+	DYNAMIC void __fastcall DblClick(void);
 	void __fastcall MouseLeave();
 	void __fastcall OnDragScrolltimer(TObject * sender);
 
 public:
+	__property TNotifyWavePosEvent OnDoubleClick = { read = FOnDoubleClick, write = FOnDoubleClick };
 /*
 	__property TNotifyWavePosEvent OnWaveLButtonDown = { read = FOnWaveLButtonDown, write = FOnWaveLButtonDown };
 	__property TNotifyLinkEvent OnLinkLButtonDown = { read = FOnLinkLButtonDown, write = FOnLinkLButtonDown };
