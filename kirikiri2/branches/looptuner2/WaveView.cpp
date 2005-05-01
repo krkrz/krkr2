@@ -101,6 +101,8 @@ __fastcall TWaveView::TWaveView(Classes::TComponent* AOwner) :
 	FBlinkTimer->OnTimer = OnBlinkTimer;
 	FBlinkTimer->Interval = GetCaretBlinkTime();
 	FBlinkTimer->Enabled = true;
+
+	FOnDoubleClick = NULL;
 /*
 	FOnWaveLButtonDown = NULL;
 	FOnLinkLButtonDown = NULL;
@@ -290,6 +292,7 @@ void __fastcall TWaveView::CMMouseLeave(TMessage &msg)
 //---------------------------------------------------------------------------
 void __fastcall TWaveView::InvalidateCaret(int pos)
 {
+	DoubleBuffered = false;
 	RECT r;
 	r.top = GetHeadSize();
 	r.bottom = ClientHeight;
@@ -446,9 +449,9 @@ void __fastcall TWaveView::SetMarkerPos(int n)
 	}
 
 	// marker following
-	if(FFollowingMarker)
+	if(FReader && FReader->ReadDone && FFollowingMarker && n != -1)
 	{
-		int viewsamples = PixelToSample(ClientWidth);
+		__int64 viewsamples = PixelToSample(ClientWidth);
 		if(viewsamples * 1000 / FReader->Frequency < 500)
 		{
 			// too fast to track
@@ -499,6 +502,11 @@ void __fastcall TWaveView::SetMarkerPos(int n)
 		}
 	}
 
+}
+//---------------------------------------------------------------------------
+void __fastcall TWaveView::ResetMarkerFollow()
+{
+	FWaitingMarker = true;
 }
 //---------------------------------------------------------------------------
 void __fastcall TWaveView::DrawWave(int start, bool clear)
@@ -1411,6 +1419,8 @@ void __fastcall TWaveView::MouseDown(TMouseButton button, TShiftState shift, int
 	int foot_size = GetFootSize();
 	int foot_start = ClientHeight - foot_size;
 
+	LastMouseDownX = x;
+
 	if(button == mbLeft)
 	{
 		if(y < foot_start)
@@ -1419,7 +1429,6 @@ void __fastcall TWaveView::MouseDown(TMouseButton button, TShiftState shift, int
 			bool from_or_to = false;
 			if(GetLinkWaveMarkAt(x, linknum, from_or_to))
 			{
-				LastMouseDownX = x;
 				LastMouseDownLinkNum = linknum;
 				LastMouseDownLinkFromOrTo = from_or_to;
 				DraggingState = dsMouseDown;
@@ -1551,6 +1560,19 @@ void __fastcall TWaveView::MouseUp(TMouseButton button, TShiftState shift, int x
 		}
 		DraggingState = dsNone;
 		DragScrollTimer->Enabled = false;
+	}
+}
+//---------------------------------------------------------------------------
+void __fastcall TWaveView::DblClick(void)
+{
+	// on double click
+	if(FOnDoubleClick)
+	{
+		int pos = MouseXPosToSamplePos(LastMouseDownX);
+		if(pos >= 0 && pos < FReader->NumSamples)
+		{
+			FOnDoubleClick(this, pos);
+		}
 	}
 }
 //---------------------------------------------------------------------------
