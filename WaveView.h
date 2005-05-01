@@ -20,14 +20,24 @@ struct TTierMinMaxInfo
 };
 //---------------------------------------------------------------------------
 class TWaveReader;
+//---------------------------------------------------------------------------
+/*
 typedef void __fastcall (__closure *TNotifyWavePosEvent)(TObject *Sender, int pos);
 typedef void __fastcall (__closure *TNotifyLinkEvent)(TObject *Sender, int link);
-class TWaveDrawer : public TGraphicControl
+typedef void __fastcall (__closure *TNotifyLinkDragStartEvent)(
+	TObject *Sender, int link, bool from_or_to, bool &enable_drag);
+typedef void __fastcall (__closure *TNotifyLinkDragOverEvent)(
+	TObject *Sender, int link, bool from_or_to, int pos);
+typedef void __fastcall (__closure *TNotifyLinkDragDropEvent)(
+	TObject *Sender, int link, bool from_or_to, int pos);
+*/
+//---------------------------------------------------------------------------
+class TWaveView : public TCustomControl
 {
 //-- constructor and destructor
 public:
-	__fastcall TWaveDrawer(Classes::TComponent* AOwner);
-	__fastcall ~TWaveDrawer();
+	__fastcall TWaveView(Classes::TComponent* AOwner);
+	__fastcall ~TWaveView();
 
 //-- common stuff
 private:
@@ -48,6 +58,25 @@ public:
 	__property int Start = { read = FStart, write = SetStart };
 	__property int Magnify = { read = FMagnify, write = SetMagnify };
 
+//-- view control
+private:
+	bool FFollowingMarker;
+	bool FWaitingMarker;
+
+	DWORD FSoftCenteringStartTick;
+	int   FSoftCenteringPos;
+
+	void __fastcall CreateParams(TCreateParams &params);
+	DYNAMIC void __fastcall Resize();
+	void __fastcall SetScrollBarRange();
+	void __fastcall SetView(int n, int r = 5);
+
+BEGIN_MESSAGE_MAP
+	VCL_MESSAGE_HANDLER(WM_HSCROLL , TWMHScroll , WMHScroll)
+	VCL_MESSAGE_HANDLER(CM_MOUSELEAVE , TMessage , CMMouseLeave)
+END_MESSAGE_MAP(TCustomControl)
+	void __fastcall WMHScroll(TWMHScroll &msg);
+	void __fastcall CMMouseLeave(TMessage &msg);
 
 //-- caret drawing stuff
 	int FCaretPos; // caret position
@@ -108,6 +137,8 @@ private:
 	void __fastcall SetFocusedLink(int l);
 	bool __fastcall IsLinkAt(int linknum, int x, int y);
 	int __fastcall GetLinkAt(int x, int y);
+	bool __fastcall IsLinkWaveMarkAt(int x, int linknum, bool &from_or_to);
+	bool __fastcall GetLinkWaveMarkAt(int x, int &linknum, bool &from_or_to);
 
 public:
 	__property int HoveredLink = { read = FHoveredLink, write = SetHoveredLink };
@@ -115,21 +146,36 @@ public:
 
 //-- input
 private:
+/*
 	TNotifyWavePosEvent FOnWaveLButtonDown;
 	TNotifyLinkEvent FOnLinkLButtonDown;
+	TNotifyLinkDragStartEvent FOnLinkDragStart;
+	TNotifyLinkDragOverEvent  FOnLinkDragOver;
+	TNotifyLinkDragDropEvent  FOnLinkDragDrop;
+*/
+	int LastMouseDownX;
+	int LastMouseDownLinkNum;
+	bool LastMouseDownLinkFromOrTo;
+	enum { dsNone, dsMouseDown, dsDragging } DraggingState;
 
 	int MouseXPosToSamplePos(int x);
 
+
 	DYNAMIC void __fastcall MouseDown(TMouseButton button, TShiftState shift, int x, int y);
 	DYNAMIC void __fastcall MouseMove(TShiftState shift, int x, int y);
+	DYNAMIC void __fastcall MouseUp(TMouseButton button, TShiftState shift, int x, int y);
 
 public:
 	void __fastcall MouseLeave();
 
 public:
+/*
 	__property TNotifyWavePosEvent OnWaveLButtonDown = { read = FOnWaveLButtonDown, write = FOnWaveLButtonDown };
 	__property TNotifyLinkEvent OnLinkLButtonDown = { read = FOnLinkLButtonDown, write = FOnLinkLButtonDown };
-
+	__property TNotifyLinkDragStartEvent OnLinkDragStart = { read = FOnLinkDragStart, write = FOnLinkDragStart };
+	__property TNotifyLinkDragOverEvent  OnLinkDragOver  = { read = FOnLinkDragOver , write = FOnLinkDragOver  };
+	__property TNotifyLinkDragDropEvent  OnLinkDragDrop  = { read = FOnLinkDragDrop , write = FOnLinkDragDrop  };
+*/
 };
 //---------------------------------------------------------------------------
 #endif

@@ -20,7 +20,7 @@ const TColor C_INF_LINE			= clGray;
 const TColor C_DISABLED_TIME_CLIENT		= ((TColor)0xf0f0f0);
 const TColor C_TIME_CLIENT		= clBtnFace;
 const TColor C_TIME_COLOR		= clBlack;
-const TColor C_LINK_WAVE_MARK	= clGray;
+const TColor C_LINK_WAVE_MARK	= ((TColor)0x0000f0);
 const TColor C_LINK_CLIENT		= clWhite;
 const TColor C_LINK_SEPARETOR   = ((TColor)0xe0e0e0);
 const TColor C_LINK_LINE		= clBlack;
@@ -67,12 +67,18 @@ static std::vector<tTVPWaveLoopLink> &  GetLinks()
 
 
 //---------------------------------------------------------------------------
-__fastcall TWaveDrawer::TWaveDrawer(Classes::TComponent* AOwner) :
-	TGraphicControl(AOwner)
+__fastcall TWaveView::TWaveView(Classes::TComponent* AOwner) :
+	TCustomControl(AOwner)
 {
+	Color = clNone;
+
 	FReader = NULL;
 	FMagnify = -12;
 	FStart = 0;
+
+	FFollowingMarker = true;
+	FWaitingMarker = true;
+	FSoftCenteringStartTick = 0;
 
 	FCaretPos = 0;
 	FDrawCaret = true;
@@ -95,23 +101,33 @@ __fastcall TWaveDrawer::TWaveDrawer(Classes::TComponent* AOwner) :
 	FBlinkTimer->OnTimer = OnBlinkTimer;
 	FBlinkTimer->Interval = GetCaretBlinkTime();
 	FBlinkTimer->Enabled = true;
-
+/*
 	FOnWaveLButtonDown = NULL;
 	FOnLinkLButtonDown = NULL;
+	FOnLinkDragStart   = NULL;
+	FOnLinkDragOver    = NULL;
+	FOnLinkDragDrop    = NULL;
+*/
+	LastMouseDownX = -1;
+	LastMouseDownLinkNum = -1;
+	LastMouseDownLinkFromOrTo = false;
+	DraggingState = dsNone;
+
+	Cursor = crIBeam;
 }
 //---------------------------------------------------------------------------
-__fastcall TWaveDrawer::~TWaveDrawer()
+__fastcall TWaveView::~TWaveView()
 {
 	delete FBlinkTimer;
 }
 //---------------------------------------------------------------------------
-void __fastcall TWaveDrawer::Paint(void)
+void __fastcall TWaveView::Paint(void)
 {
 	DrawWave(FStart, true);
 	DrawLink();
 }
 //---------------------------------------------------------------------------
-int __fastcall TWaveDrawer::PixelToSample(int pixel)
+int __fastcall TWaveView::PixelToSample(int pixel)
 {
 	if(FMagnify <= 0)
 	{
@@ -125,7 +141,7 @@ int __fastcall TWaveDrawer::PixelToSample(int pixel)
 	}
 }
 //---------------------------------------------------------------------------
-int __fastcall TWaveDrawer::SampleToPixel(int sample)
+int __fastcall TWaveView::SampleToPixel(int sample)
 {
 	if(FMagnify <= 0)
 	{
@@ -139,28 +155,143 @@ int __fastcall TWaveDrawer::SampleToPixel(int sample)
 	}
 }
 //---------------------------------------------------------------------------
-void __fastcall TWaveDrawer::SetReader(TWaveReader * reader)
+void __fastcall TWaveView::SetReader(TWaveReader * reader)
 {
 	// set wave reader
 	FReader = reader;
 	Invalidate();
+
+	SetScrollBarRange();
 }
 //---------------------------------------------------------------------------
-void __fastcall TWaveDrawer::InvalidateCaret(int pos)
+void __fastcall TWaveView::CreateParams(TCreateParams &params)
+{
+	TCustomControl::CreateParams(params);
+	params.Style |= WS_HSCROLL; // create horizontal scroll bar
+}
+//---------------------------------------------------------------------------
+void __fastcall TWaveView::Resize()
+{
+	SetScrollBarRange();
+	TCustomControl::Resize();
+
+	SCROLLINFO si;
+	ZeroMemory(&si, sizeof(si));
+	si.cbSize = sizeof(si);
+	si.fMask = SIF_ALL;
+	GetScrollInfo(Handle, SB_HORZ, &si);
+
+	DoubleBuffered = true;
+
+	SetStart(si.nPos);
+}
+//---------------------------------------------------------------------------
+void __fastcall TWaveView::SetScrollBarRange()
+{
+	if(!FReader || !FReader->ReadDone)
+	{
+		SCROLLINFO si;
+		si.cbSize = sizeof(si);
+		si.fMask = SIF_DISABLENOSCROLL;
+		SetScrollInfo(Handle, SB_HORZ, &si, true);
+		EnableScrollBar(Handle, SB_HORZ, ESB_DISABLE_BOTH);
+		return;
+	}
+
+	SCROLLINFO si;
+	si.cbSize = sizeof(si);
+	si.fMask = SIF_PAGE | SIF_RANGE/* | SIF_DISABLENOSCROLL*/;
+	si.nMin = 0;
+	si.nMax = FReader->NumSamples;
+	si.nPage = PixelToSample(ClientWidth);
+
+	SetScrollInfo(Handle, SB_HORZ, &si, true);
+
+	EnableScrollBar(Handle, SB_HORZ, ESB_ENABLE_BOTH);
+}
+//---------------------------------------------------------------------------
+void __fastcall TWaveView::SetView(int n, int r)
+{
+	// set left edge of the viewport
+	int clwp = PixelToSample(ClientWidth);
+	clwp = clwp / 10 * r;
+	n -= clwp;
+	if(n < 0) n = 0;
+
+	SCROLLINFO si;
+	ZeroMemory(&si, sizeof(si));
+	si.cbSize = sizeof(si);
+	si.fMask = SIF_POS;
+	si.nPos = n;
+	SetScrollInfo(Handle, SB_HORZ, &si, true);
+
+	ZeroMemory(&si, sizeof(si));
+	si.cbSize = sizeof(si);
+	si.fMask = SIF_ALL;
+	GetScrollInfo(Handle, SB_HORZ, &si);
+
+	SetStart(si.nPos);
+}
+//---------------------------------------------------------------------------
+void __fastcall TWaveView::WMHScroll(TWMHScroll &msg)
+{
+	SCROLLINFO si;
+	ZeroMemory(&si, sizeof(si));
+	si.cbSize = sizeof(si);
+	si.fMask = SIF_ALL;
+	GetScrollInfo(Handle, SB_HORZ, &si);
+
+	if(msg.ScrollCode == SB_THUMBTRACK)
+	{
+		si.nPos = si.nTrackPos;
+	}
+	else if(msg.ScrollCode == SB_LINELEFT)
+	{
+		si.nPos = si.nPos - PixelToSample(ClientWidth)/20;
+		if(si.nPos<0) si.nPos=0;
+	}
+	else if(msg.ScrollCode == SB_LINERIGHT)
+	{
+		si.nPos = si.nPos + PixelToSample(ClientWidth)/20;
+		if((int)(si.nPos) >= (int)(si.nMax - si.nPage)) si.nPos=si.nMax- si.nPage;
+	}
+	else if(msg.ScrollCode == SB_PAGELEFT)
+	{
+		si.nPos = si.nPos - si.nPage;
+		if(si.nPos<0) si.nPos=0;
+	}
+	else if(msg.ScrollCode == SB_PAGERIGHT)
+	{
+		si.nPos = si.nPos + si.nPage;
+		if(si.nPos >=si.nMax) si.nPos=si.nMax-1;
+	}
+
+	si.fMask = SIF_POS;
+	SetScrollInfo(Handle, SB_HORZ, &si, true);
+
+	SetStart(si.nPos);
+}
+//---------------------------------------------------------------------------
+void __fastcall TWaveView::CMMouseLeave(TMessage &msg)
+{
+	MouseLeave();
+}
+//---------------------------------------------------------------------------
+void __fastcall TWaveView::InvalidateCaret(int pos)
 {
 	RECT r;
-	r.top = GetHeadSize() + Top;
-	r.bottom = ClientHeight + Top;
+	r.top = GetHeadSize();
+	r.bottom = ClientHeight;
 	int p_pos = SampleToPixel(pos - FStart);
 	if(p_pos >= 0 && p_pos < ClientWidth)
 	{
-		r.left = p_pos + Left;
-		r.right = p_pos + 1 + Left;
-		InvalidateRect(Parent->Handle, &r, false);
+		r.left = p_pos;
+		r.right = p_pos + 1;
+		InvalidateRect(Handle, &r, false);
 	}
 }
 //---------------------------------------------------------------------------
-void __fastcall TWaveDrawer::SetCaretPos(int pos)
+void __fastcall TWaveView::SetCaretPos(int pos)
 {
 	// set caret position.
 
@@ -184,7 +315,7 @@ void __fastcall TWaveDrawer::SetCaretPos(int pos)
 	}
 }
 //---------------------------------------------------------------------------
-void __fastcall TWaveDrawer::SetDrawCaret(bool b)
+void __fastcall TWaveView::SetDrawCaret(bool b)
 {
 	if(b != FDrawCaret)
 	{
@@ -199,13 +330,13 @@ void __fastcall TWaveDrawer::SetDrawCaret(bool b)
 	}
 }
 //---------------------------------------------------------------------------
-void __fastcall TWaveDrawer::OnBlinkTimer(TObject * sender)
+void __fastcall TWaveView::OnBlinkTimer(TObject * sender)
 {
 	FCaretVisiblePhase = !FCaretVisiblePhase;
 	InvalidateCaret(FCaretPos);
 }
 //---------------------------------------------------------------------------
-void __fastcall TWaveDrawer::SetStart(int n)
+void __fastcall TWaveView::SetStart(int n)
 {
 	RECT r;
 
@@ -216,14 +347,14 @@ void __fastcall TWaveDrawer::SetStart(int n)
 	r.right = ClientWidth;
 	r.bottom = ClientHeight;
 	int d = SampleToPixel(FStart) - SampleToPixel(n);
-	ScrollWindowEx(Parent->Handle, d, 0,
+	ScrollWindowEx(Handle, d, 0,
 		&r, NULL, NULL, NULL, SW_INVALIDATE);
 
 	FStart = n;
 
 }
 //---------------------------------------------------------------------------
-void __fastcall TWaveDrawer::SetMagnify(int m)
+void __fastcall TWaveView::SetMagnify(int m)
 {
 	// set magnification
 	if(m > 3) m = 3;
@@ -248,31 +379,44 @@ void __fastcall TWaveDrawer::SetMagnify(int m)
 		FMinRulerMajorHeight = 0;
 		NotifyLinkChanged();
 		Invalidate();
+
+		// set scroll bar range
+		SetScrollBarRange();
+
+		SCROLLINFO si;
+		ZeroMemory(&si, sizeof(si));
+		si.cbSize = sizeof(si);
+		si.fMask = SIF_ALL;
+		GetScrollInfo(Handle, SB_HORZ, &si);
+
+		si.fMask = SIF_POS;
+		si.nPos = FStart;
+		SetScrollInfo(Handle, SB_HORZ, &si, true);
 	}
 }
 //---------------------------------------------------------------------------
-void __fastcall TWaveDrawer::SetMarkerPos(int p)
+void __fastcall TWaveView::SetMarkerPos(int n)
 {
 	// set marker position.
 	// p = -1 for hide the marker.
-	if(!FReader || !FReader->ReadDone) p = -1;
+	if(!FReader || !FReader->ReadDone) n = -1;
 
-	if(p != FMarkerPos)
+	if(n != FMarkerPos)
 	{
 		// invalidate new position and old position
 		int p_pos;
 		RECT r;
-		r.top = GetHeadSize() + Top;
-		r.bottom = ClientHeight - GetFootSize() + Top;
+		r.top = GetHeadSize();
+		r.bottom = ClientHeight - GetFootSize();
 
-		if(p != -1)
+		if(n != -1)
 		{
-			p_pos = SampleToPixel(p - FStart);
+			p_pos = SampleToPixel(n - FStart);
 			if(p_pos >= 0 && p_pos < ClientWidth)
 			{
-				r.left = p_pos + Left;
-				r.right = p_pos + 1 + Left;
-				InvalidateRect(Parent->Handle, &r, false);
+				r.left = p_pos;
+				r.right = p_pos + 1;
+				InvalidateRect(Handle, &r, false);
 			}
 		}
 
@@ -281,17 +425,72 @@ void __fastcall TWaveDrawer::SetMarkerPos(int p)
 			p_pos = SampleToPixel(FMarkerPos - FStart);
 			if(p_pos >= 0 && p_pos < ClientWidth)
 			{
-				r.left = p_pos + Left;
-				r.right = p_pos + 1 + Left;
-				InvalidateRect(Parent->Handle, &r, false);
+				r.left = p_pos;
+				r.right = p_pos + 1;
+				InvalidateRect(Handle, &r, false);
 			}
 		}
 
-		FMarkerPos = p;
+		FMarkerPos = n;
 	}
+
+	// marker following
+	if(FFollowingMarker)
+	{
+		int viewsamples = PixelToSample(ClientWidth);
+		if(viewsamples * 1000 / FReader->Frequency < 500)
+		{
+			// too fast to track
+			SetView(n);
+			FWaitingMarker = false;
+			DoubleBuffered = true;
+		}
+		else
+		{
+			DoubleBuffered = false;
+
+			int px = SampleToPixel(n - FStart);
+			if(px < 0 || px >= ClientWidth)
+			{
+				SetView(n, 1);
+				FWaitingMarker = true;
+				FSoftCenteringStartTick = 0;
+			}
+			else
+			{
+				if(FWaitingMarker)
+				{
+					if(px >= ClientWidth *9 / 10)
+					{
+						FWaitingMarker = false; // start following
+						FSoftCenteringStartTick = GetTickCount();
+						FSoftCenteringPos = px - ClientWidth / 2;
+					}
+				}
+				else
+				{
+					// soft centering
+					int elapsed = GetTickCount() - FSoftCenteringStartTick;
+					int slew = FSoftCenteringPos - elapsed / 20;
+					if(slew < 0) slew = 0;
+					int sn = n;
+					if(px > ClientWidth/2)
+					{
+						sn -= PixelToSample((ClientWidth/2) + slew);
+					}
+					else
+					{
+						sn -= PixelToSample(ClientWidth / 2);
+					}
+					SetView(sn, 0);
+				}
+			}
+		}
+	}
+
 }
 //---------------------------------------------------------------------------
-void __fastcall TWaveDrawer::DrawWave(int start, bool clear)
+void __fastcall TWaveView::DrawWave(int start, bool clear)
 {
 	// draw waveform.
 	// this does not clear the background unless 'clear' is true.
@@ -349,8 +548,8 @@ void __fastcall TWaveDrawer::DrawWave(int start, bool clear)
 
 	int head_size = GetHeadSize();
 	int foot_size = GetFootSize();
-	int bottom_limit = Height - foot_size;
-	int one_height = ((Height - head_size - foot_size) / FReader->Channels) & ~1;
+	int bottom_limit = ClientHeight - foot_size;
+	int one_height = ((ClientHeight - head_size - foot_size) / FReader->Channels) & ~1;
 	int one_height_half = one_height >> 1;
 	int one_client_height = one_height - 2; // 2 : padding margin
 
@@ -387,7 +586,7 @@ void __fastcall TWaveDrawer::DrawWave(int start, bool clear)
 		if(Canvas->ClipRect.left < dest_left)
 		{
 			TRect r;
-			r.left = Canvas->ClipRect.left, r.top = head_size, r.right = dest_left, r.bottom = Height;
+			r.left = Canvas->ClipRect.left, r.top = head_size, r.right = dest_left, r.bottom = ClientHeight;
 			Canvas->Brush->Style = bsSolid;
 			Canvas->Brush->Color = C_DISABLEED_CLIENT;
 			Canvas->FillRect(r);
@@ -398,7 +597,7 @@ void __fastcall TWaveDrawer::DrawWave(int start, bool clear)
 		if(dest_left < dest_right)
 		{
 			TRect r;
-			r.left = dest_left, r.top = head_size, r.right = dest_right, r.bottom = Height;
+			r.left = dest_left, r.top = head_size, r.right = dest_right, r.bottom = ClientHeight;
 			Canvas->Brush->Style = bsSolid;
 			Canvas->Brush->Color = C_CLIENT;
 			Canvas->FillRect(r);
@@ -417,7 +616,7 @@ void __fastcall TWaveDrawer::DrawWave(int start, bool clear)
 		if(Canvas->ClipRect.right > dest_right)
 		{
 			TRect r;
-			r.left = dest_right, r.top = head_size, r.right = Canvas->ClipRect.right, r.bottom = Height;
+			r.left = dest_right, r.top = head_size, r.right = Canvas->ClipRect.right, r.bottom = ClientHeight;
 			Canvas->Brush->Style = bsSolid;
 			Canvas->Brush->Color = C_DISABLEED_CLIENT;
 			Canvas->FillRect(r);
@@ -444,24 +643,6 @@ void __fastcall TWaveDrawer::DrawWave(int start, bool clear)
 		}
 
 
-		// draw link 'from' and 'to' lines
-		std::vector<tTVPWaveLoopLink> & links = /**/ GetLinks(); /**/
-		Canvas->Pen->Color = C_LINK_WAVE_MARK;
-		Canvas->Pen->Style = psDashDot;
-		for(unsigned int i = 0; i < links.size(); i++)
-		{
-			const tTVPWaveLoopLink & link = links[i];
-			int x;
-
-			x = SampleToPixel(link.From - Start);
-			Canvas->MoveTo(x, head_size);
-			Canvas->LineTo(x, bottom_limit);
-
-			x = SampleToPixel(link.To - Start);
-			Canvas->MoveTo(x, head_size);
-			Canvas->LineTo(x, bottom_limit);
-		}
-		Canvas->Pen->Style = psSolid;
 	}
 
 
@@ -521,8 +702,8 @@ void __fastcall TWaveDrawer::DrawWave(int start, bool clear)
 		if(p_pos >= 0 && p_pos < ClientWidth)
 		{
 			RECT r;
-			r.top = head_size + Top;
-			r.bottom = bottom_limit + Top;
+			r.top = head_size;
+			r.bottom = bottom_limit;
 			r.left = p_pos;
 			r.right = p_pos + 1;
 			InvertRect(Canvas->Handle, &r);
@@ -618,6 +799,24 @@ void __fastcall TWaveDrawer::DrawWave(int start, bool clear)
 		}
 	}
 
+	// draw link 'from' and 'to' lines
+	std::vector<tTVPWaveLoopLink> & links = /**/ GetLinks(); /**/
+	Canvas->Pen->Color = C_LINK_WAVE_MARK;
+	Canvas->Pen->Style = psDashDot;
+	for(unsigned int i = 0; i < links.size(); i++)
+	{
+		const tTVPWaveLoopLink & link = links[i];
+		int x;
+
+		x = SampleToPixel(link.From - Start);
+		Canvas->MoveTo(x, head_size);
+		Canvas->LineTo(x, bottom_limit);
+
+		x = SampleToPixel(link.To - Start);
+		Canvas->MoveTo(x, head_size);
+		Canvas->LineTo(x, bottom_limit);
+	}
+	Canvas->Pen->Style = psSolid;
 
 	// draw caret
 	if(FDrawCaret && FCaretVisiblePhase)
@@ -626,8 +825,8 @@ void __fastcall TWaveDrawer::DrawWave(int start, bool clear)
 		if(p_pos >= 0 && p_pos < ClientWidth)
 		{
 			RECT r;
-			r.top = head_size + Top;
-			r.bottom = ClientHeight + Top;
+			r.top = head_size;
+			r.bottom = ClientHeight;
 			r.left = p_pos;
 			r.right = p_pos + 1;
 			InvertRect(Canvas->Handle, &r);
@@ -658,7 +857,7 @@ inline static bool PartIntersect(int a, int b, int i, int j)
 		j >= a && j <= b;
 }
 //---------------------------------------------------------------------------
-void __fastcall TWaveDrawer::NotifyLinkChanged()
+void __fastcall TWaveView::NotifyLinkChanged()
 {
 	std::vector<tTVPWaveLoopLink> & links = /**/ GetLinks(); /**/
 
@@ -723,10 +922,12 @@ void __fastcall TWaveDrawer::NotifyLinkChanged()
 		if(tier_count < found_link_tier + 1) tier_count = found_link_tier + 1;
 	}
 
+	if(FLinkTierCount != tier_count)
+		Invalidate();
 	FLinkTierCount = tier_count;
 }
 //---------------------------------------------------------------------------
-void __fastcall TWaveDrawer::GetLinkMinMaxPixel(const tTVPWaveLoopLink & link,
+void __fastcall TWaveView::GetLinkMinMaxPixel(const tTVPWaveLoopLink & link,
 		TTierMinMaxInfo & info)
 {
 	int from_px = SampleToPixel(link.From);
@@ -749,7 +950,7 @@ void __fastcall TWaveDrawer::GetLinkMinMaxPixel(const tTVPWaveLoopLink & link,
 	info.ToMax   = to_px   + (LinkArrowSize+1);
 }
 //---------------------------------------------------------------------------
-void __fastcall TWaveDrawer::DrawLinkArrowAt(int tier, int where)
+void __fastcall TWaveView::DrawLinkArrowAt(int tier, int where)
 {
 	// arrow bitmap:
 	// <> = 1 pixel
@@ -767,7 +968,7 @@ void __fastcall TWaveDrawer::DrawLinkArrowAt(int tier, int where)
 
 	// draw up-arrow at given position
 	int foot_size = GetFootSize();
-	int y_start = Height - foot_size;
+	int y_start = ClientHeight - foot_size;
 	int y = y_start + tier * TVP_LGD_TIER_HEIGHT;
 
 	// draw arrow body
@@ -785,7 +986,7 @@ void __fastcall TWaveDrawer::DrawLinkArrowAt(int tier, int where)
 	}
 }
 //---------------------------------------------------------------------------
-void __fastcall TWaveDrawer::DrawDirectionArrowAt(int tier, bool dir, int where)
+void __fastcall TWaveView::DrawDirectionArrowAt(int tier, bool dir, int where)
 {
 	// arrow bitmap:
 	// <> = 1 pixel
@@ -803,7 +1004,7 @@ void __fastcall TWaveDrawer::DrawDirectionArrowAt(int tier, bool dir, int where)
 	//         <><>
 
 	int foot_size = GetFootSize();
-	int y_start = Height - foot_size;
+	int y_start = ClientHeight - foot_size;
 	int y = y_start + tier * TVP_LGD_TIER_HEIGHT + TVP_LGD_TIER_HEIGHT - 3;
 
 	Canvas->Brush->Style = bsSolid;
@@ -842,12 +1043,12 @@ void __fastcall TWaveDrawer::DrawDirectionArrowAt(int tier, bool dir, int where)
 	}
 }
 //---------------------------------------------------------------------------
-void __fastcall TWaveDrawer::DrawLinkOf(const tTVPWaveLoopLink & link)
+void __fastcall TWaveView::DrawLinkOf(const tTVPWaveLoopLink & link)
 {
 	int dest_left  = Canvas->ClipRect.left;
 	int dest_right = Canvas->ClipRect.right;
 	int foot_size = GetFootSize();
-	int y_start = Height - foot_size;
+	int y_start = ClientHeight - foot_size;
 
 	int x_from;
 	int x_to;
@@ -911,7 +1112,7 @@ void __fastcall TWaveDrawer::DrawLinkOf(const tTVPWaveLoopLink & link)
 	}
 }
 //---------------------------------------------------------------------------
-void __fastcall TWaveDrawer::DrawLink(void)
+void __fastcall TWaveView::DrawLink(void)
 {
 	if(!FReader || !FReader->ReadDone) return;
 
@@ -919,10 +1120,10 @@ void __fastcall TWaveDrawer::DrawLink(void)
 	int dest_left  = Canvas->ClipRect.left;
 	int dest_right = Canvas->ClipRect.right;
 	int foot_size = GetFootSize();
-	int y_start = Height - foot_size;
+	int y_start = ClientHeight - foot_size;
 
 	if(!PartIntersect(Canvas->ClipRect.top, Canvas->ClipRect.bottom -1,
-		y_start, Height - 1)) return;
+		y_start, ClientHeight - 1)) return;
 
 	// erase background
 /*
@@ -987,41 +1188,73 @@ void __fastcall TWaveDrawer::DrawLink(void)
 
 	if(FFocusedLink != -1)
 	{
+		Canvas->Pen->Width = 2;
 		Canvas->Pen->Color = C_LINK_FOCUS;
 		const tTVPWaveLoopLink & link = links[FFocusedLink];
 		DrawLinkOf(link);
+		Canvas->Pen->Width = 1;
 	}
 
 }
 //---------------------------------------------------------------------------
-void __fastcall TWaveDrawer::InvalidateLink(int linknum)
+void __fastcall TWaveView::InvalidateLink(int linknum)
 {
 	// invalidate displaying area of link 'linknum'.
 	// currently not completely implemented.
+
+	std::vector<tTVPWaveLoopLink> & links = /**/ GetLinks(); /**/
+
+	if(linknum < 0 || linknum >= (int)links.size()) return;
+
+	const tTVPWaveLoopLink & link = links[linknum];
+
 	int foot_size = GetFootSize();
-	int y_start = Height - foot_size;
+	int y_start = ClientHeight - foot_size;
 	RECT r;
-	r.top = y_start + Top;
-	r.bottom = Height + Top;
-	r.left = 0 + Left;
-	r.right = Width + Left;
-	InvalidateRect(Parent->Handle, &r, false);
+	r.top = y_start;
+	r.bottom = ClientHeight;
+	r.left = 0;
+	r.right = ClientWidth;
+	InvalidateRect(Handle, &r, false);
+
+	// also invalidate wave link marks
+	int x_from = SampleToPixel(link.From - Start);
+	int x_to   = SampleToPixel(link.To   - Start);
+
+	r.top = GetHeadSize();
+	r.bottom = ClientHeight - GetFootSize();
+
+	if(x_from >= 0 && x_from < ClientWidth)
+	{
+		r.left  = x_from;
+		r.right = x_from + 1;
+		InvalidateRect(Handle, &r, false);
+	}
+
+	if(x_to >= 0 && x_to < ClientWidth)
+	{
+		r.left  = x_to;
+		r.right = x_to + 1;
+		InvalidateRect(Handle, &r, false);
+	}
 }
 //---------------------------------------------------------------------------
-void __fastcall TWaveDrawer::SetHoveredLink(int l)
+void __fastcall TWaveView::SetHoveredLink(int l)
 {
 	if(FHoveredLink != l)
 	{
+		DoubleBuffered = true;
 		InvalidateLink(FHoveredLink);
 		FHoveredLink = l;
 		InvalidateLink(FHoveredLink);
 	}
 }
 //---------------------------------------------------------------------------
-void __fastcall TWaveDrawer::SetFocusedLink(int l)
+void __fastcall TWaveView::SetFocusedLink(int l)
 {
 	if(FFocusedLink != l)
 	{
+		DoubleBuffered = true;
 		InvalidateLink(FFocusedLink);
 		FFocusedLink = l;
 		InvalidateLink(FFocusedLink);
@@ -1029,7 +1262,7 @@ void __fastcall TWaveDrawer::SetFocusedLink(int l)
 	}
 }
 //---------------------------------------------------------------------------
-bool __fastcall TWaveDrawer::IsLinkAt(int linknum, int x, int y)
+bool __fastcall TWaveView::IsLinkAt(int linknum, int x, int y)
 {
 	std::vector<tTVPWaveLoopLink> & links = /**/ GetLinks(); /**/
 
@@ -1037,7 +1270,7 @@ bool __fastcall TWaveDrawer::IsLinkAt(int linknum, int x, int y)
 
 	const tTVPWaveLoopLink & link = links[linknum];
 	int foot_size = GetFootSize();
-	int y_start = Height - foot_size;
+	int y_start = ClientHeight - foot_size;
 
 	int x_from;
 	int x_to;
@@ -1053,10 +1286,10 @@ bool __fastcall TWaveDrawer::IsLinkAt(int linknum, int x, int y)
 		y >= y_link && y < y_link + TVP_LGD_TIER_HEIGHT;
 }
 //---------------------------------------------------------------------------
-int __fastcall TWaveDrawer::GetLinkAt(int x, int y)
+int __fastcall TWaveView::GetLinkAt(int x, int y)
 {
 	int foot_size = GetFootSize();
-	int y_start = Height - foot_size;
+	int y_start = ClientHeight - foot_size;
 	if(y < y_start) return -1;
 
 	// give priority to current focuesd link
@@ -1073,45 +1306,233 @@ int __fastcall TWaveDrawer::GetLinkAt(int x, int y)
 	return -1;
 }
 //---------------------------------------------------------------------------
-int TWaveDrawer::MouseXPosToSamplePos(int x)
+#define MARK_GRIP_MARGIN 2
+bool __fastcall TWaveView::IsLinkWaveMarkAt(int x, int linknum, bool &from_or_to)
+{
+	std::vector<tTVPWaveLoopLink> & links = /**/ GetLinks(); /**/
+
+	const tTVPWaveLoopLink & link = links[linknum];
+
+	int from_pos = SampleToPixel(link.From - FStart);
+	int to_pos = SampleToPixel(link.To - FStart);
+
+	bool from_match = false;
+	bool to_match = false;
+	if(from_pos - MARK_GRIP_MARGIN <= x && x <= from_pos + MARK_GRIP_MARGIN)
+		from_match = true;
+
+	if(to_pos - MARK_GRIP_MARGIN <= x && x <= to_pos + MARK_GRIP_MARGIN)
+		to_match = true;
+
+	if(to_match && from_match)
+	{
+		// both from and to are matched
+		// check which one should be taken
+
+		int center = (from_pos + to_pos) / 2;
+		if(center <= x)
+		{
+			if(link.From > link.To)
+				to_match = false;
+			else
+				from_match = false;
+		}
+		else
+		{
+			if(link.From > link.To)
+				from_match = false;
+			else
+				to_match = false;
+		}
+	}
+
+	if(to_match || from_match)
+	{
+		from_or_to = to_match;
+		return true;
+	}
+
+	return false;
+}
+//---------------------------------------------------------------------------
+bool __fastcall TWaveView::GetLinkWaveMarkAt(int x, int &linknum, bool &from_or_to)
+{
+	// give priority to focused link
+	if(FFocusedLink != -1)
+	{
+		if(IsLinkWaveMarkAt(x, FFocusedLink, from_or_to))
+		{
+			linknum = FFocusedLink;
+			return true;
+		}
+	}
+
+	// for each links
+	std::vector<tTVPWaveLoopLink> & links = /**/ GetLinks(); /**/
+
+	for(unsigned int i = 0; i < links.size(); i++)
+	{
+		if((int)i != FFocusedLink)
+		{
+			if(IsLinkWaveMarkAt(x, i, from_or_to))
+			{
+				linknum = i;
+				return true;
+			}
+		}
+	}
+
+	return false;
+}
+//---------------------------------------------------------------------------
+int TWaveView::MouseXPosToSamplePos(int x)
 {
 	int least = SampleToPixel(1);
 	x += least / 2;
 	return PixelToSample(x) + FStart;
 }
 //---------------------------------------------------------------------------
-void __fastcall TWaveDrawer::MouseDown(TMouseButton button, TShiftState shift, int x, int y)
+void __fastcall TWaveView::MouseDown(TMouseButton button, TShiftState shift, int x, int y)
 {
+	if(!FReader || !FReader->ReadDone) return;
+
 	// mouse downed
 	int foot_size = GetFootSize();
-	int foot_start = Height - foot_size;
+	int foot_start = ClientHeight - foot_size;
 
 	if(button == mbLeft)
 	{
 		if(y < foot_start)
 		{
-			if(FOnWaveLButtonDown)
+			int linknum = 0;
+			bool from_or_to = false;
+			if(GetLinkWaveMarkAt(x, linknum, from_or_to))
 			{
-				FOnWaveLButtonDown(this, MouseXPosToSamplePos(x));
+				LastMouseDownX = x;
+				LastMouseDownLinkNum = linknum;
+				LastMouseDownLinkFromOrTo = from_or_to;
+				DraggingState = dsMouseDown;
+			}
+			else
+			{
+/*
+				if(FOnWaveLButtonDown)
+				{
+					FOnWaveLButtonDown(this, MouseXPosToSamplePos(x));
+				}
+*/
+				CaretPos = MouseXPosToSamplePos(x);
 			}
 		}
 		else
 		{
+/*
 			if(FOnLinkLButtonDown)
 			{
 				FOnLinkLButtonDown(this, GetLinkAt(x, y));
 			}
+*/
+			FocusedLink = GetLinkAt(x, y);
 		}
 	}
 }
 //---------------------------------------------------------------------------
-void __fastcall TWaveDrawer::MouseMove(TShiftState shift, int x, int y)
+void __fastcall TWaveView::MouseMove(TShiftState shift, int x, int y)
 {
+	if(!FReader || !FReader->ReadDone)
+	{
+		Cursor = crDefault;
+		return;
+	}
+
 	// mouse moved
-	HoveredLink = GetLinkAt(x, y);
+	if(DraggingState != dsNone)
+	{
+		// dragging
+		if(DraggingState == dsMouseDown)
+		{
+			if(LastMouseDownX != x)
+			{
+				// dragging started
+				DraggingState = dsDragging;
+				FocusedLink = LastMouseDownLinkNum;
+			}
+		}
+		/* no else here */
+		if(DraggingState == dsDragging)
+		{
+			// enable double buffering
+			DoubleBuffered = true;
+
+			// dragging
+			std::vector<tTVPWaveLoopLink> & links = /**/ GetLinks(); /**/
+
+			tTVPWaveLoopLink &link = links[LastMouseDownLinkNum];
+
+			InvalidateLink(LastMouseDownLinkNum);
+			int pos = MouseXPosToSamplePos(x);
+			if(!LastMouseDownLinkFromOrTo)
+			{
+				// 'from'
+				link.From = pos;
+			}
+			else
+			{
+				// 'to'
+				link.To = pos;
+			}
+			NotifyLinkChanged();
+			InvalidateLink(LastMouseDownLinkNum);
+		}
+	}
+	else
+	{
+
+		int foot_size = GetFootSize();
+		int foot_start = ClientHeight - foot_size;
+
+		if(y < foot_start)
+		{
+			int linknum = 0;
+			bool from_or_to = false;
+			if(GetLinkWaveMarkAt(x, linknum, from_or_to))
+			{
+				HoveredLink = linknum;
+				Cursor = crSizeWE;
+			}
+			else
+			{
+				HoveredLink = -1;
+				Cursor = crIBeam;
+			}
+		}
+		else
+		{
+			HoveredLink = GetLinkAt(x, y);
+			Cursor = crArrow;
+		}
+	}
 }
 //---------------------------------------------------------------------------
-void __fastcall TWaveDrawer::MouseLeave()
+void __fastcall TWaveView::MouseUp(TMouseButton button, TShiftState shift, int x, int y)
+{
+	// mouse up
+	if(DraggingState != dsNone)
+	{
+		if(DraggingState == dsMouseDown)
+		{
+			// set caret to current from or to position
+			std::vector<tTVPWaveLoopLink> & links = /**/ GetLinks(); /**/
+
+			tTVPWaveLoopLink &link = links[LastMouseDownLinkNum];
+
+			CaretPos = LastMouseDownLinkFromOrTo ? link.To : link.From;
+		}
+		DraggingState = dsNone;
+	}
+}
+//---------------------------------------------------------------------------
+void __fastcall TWaveView::MouseLeave()
 {
 	// mouse leaved
 	HoveredLink = -1;

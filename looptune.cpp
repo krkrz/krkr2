@@ -8,7 +8,6 @@ USEUNIT("RIFFWaveContext.cpp");
 USEUNIT("TSSWaveContext.cpp");
 USEUNIT("tvpsnd.c");
 USEUNIT("WaveView.cpp");
-USEUNIT("WaveViewControl.cpp");
 USEUNIT("WaveLoopManager.cpp");
 USEUNIT("DSound.cpp");
 USEFORM("LoopTunerMainUnit.cpp", LoopTunerMainForm);
