@@ -59,8 +59,6 @@ public:		// ÉÜÅ[ÉUÅ[êÈåæ
 private:
 	void __fastcall OnReaderProgress(TObject *sender);
 	void __fastcall OnApplicationIdle(TObject *sender, bool &done);
-	void __fastcall OnWaveViewWaveLButtonDown(TObject *sender, int pos);
-	void __fastcall OnWaveViewLinkLButtonDown(TObject *sender, int link);
 };
 //---------------------------------------------------------------------------
 extern PACKAGE TLoopTunerMainForm *LoopTunerMainForm;
