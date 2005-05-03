@@ -129,13 +129,13 @@ void __fastcall TLoopTunerMainForm::OnWaveViewDoubleClick(TObject *Sender, int p
 
 void __fastcall TLoopTunerMainForm::FormActivate(TObject *Sender)
 {
-	WaveView->DrawCaret = true;	
+	WaveView->ShowCaret = true;
 }
 //---------------------------------------------------------------------------
 
 void __fastcall TLoopTunerMainForm::FormDeactivate(TObject *Sender)
 {
-	WaveView->DrawCaret = false;	
+	WaveView->ShowCaret = false;	
 }
 //---------------------------------------------------------------------------
 

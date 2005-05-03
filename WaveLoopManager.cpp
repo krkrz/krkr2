@@ -103,6 +103,7 @@ tTVPWaveLoopManager::tTVPWaveLoopManager(tTVPWaveDecoder * decoder)
 {
 	Position = 0;
 	IsLinksSorted = false;
+	IsLabelsSorted = false;
 	CrossFadeSamples = NULL;
 	CrossFadeLen = 0;
 	CrossFadePosition = 0;
@@ -151,10 +152,12 @@ void tTVPWaveLoopManager::SetPosition(tjs_int64 pos)
 }
 //---------------------------------------------------------------------------
 void tTVPWaveLoopManager::Decode(void *dest, tjs_uint samples, tjs_uint &written,
-		std::vector<tTVPWaveLoopSegment> &segments)
+		std::vector<tTVPWaveLoopSegment> &segments,
+		std::vector<tTVPWaveLabel> &labels)
 {
 	// decode from current position
 	segments.clear();
+	labels.clear();
 	written = 0;
 	tjs_uint8 *d = (tjs_uint8*)dest;
 
@@ -295,6 +298,7 @@ void tTVPWaveLoopManager::Decode(void *dest, tjs_uint samples, tjs_uint &written
 			one_unit = (tjs_int) (next_event_pos - Position);
 
 		segments.push_back(tTVPWaveLoopSegment(Position, one_unit));
+		GetLabelAt(Position, Position + one_unit, labels);
 
 		// decode or copy
 		if(!CrossFadeSamples)
@@ -350,7 +354,7 @@ bool tTVPWaveLoopManager::GetNearestEvent(tjs_int64 current,
 	tjs_int s = 0, e = Links.size();
 	while(e - s > 1)
 	{
-		tjs_int m = s + (e-s)/2;
+		tjs_int m = (s+e)/2;
 		if(Links[m].From <= current)
 			s = m;
 		else
@@ -401,6 +405,44 @@ bool tTVPWaveLoopManager::GetNearestEvent(tjs_int64 current,
 	link = Links[s];
 
 	return true;
+}
+//---------------------------------------------------------------------------
+void tTVPWaveLoopManager::GetLabelAt(tjs_int64 from, tjs_int64 to,
+		std::vector<tTVPWaveLabel> & labels)
+{
+	if(Labels.size() == 0) return; // no labels found
+
+	if(!IsLabelsSorted)
+	{
+		std::sort(Labels.begin(), Labels.end());
+		IsLabelsSorted = true;
+	}
+
+	// search nearest label using binary search
+	tjs_int s = 0, e = Labels.size();
+	while(e - s > 1)
+	{
+		tjs_int m = (s+e)/2;
+		if(Labels[m].Position <= from)
+			s = m;
+		else
+			e = m;
+	}
+
+	if((tjs_uint)s >= Labels.size() || Labels[s].Position < from)
+	{
+		// no labels available
+		return;
+	}
+
+	// search labels
+	for(; s < (int)Labels.size(); s++)
+	{
+		if(Labels[s].Position >= from && Labels[s].Position < to)
+			labels.push_back(Labels[s]);
+		else
+			break;
+	}
 }
 //---------------------------------------------------------------------------
 void tTVPWaveLoopManager::DoCrossFade(void *dest, void *src1,

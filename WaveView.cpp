@@ -12,21 +12,28 @@
 //---------------------------------------------------------------------------
 // Color schemes - currently fixed colors only
 //---------------------------------------------------------------------------
-const TColor C_DISABLEED_CLIENT	= clBtnFace;
-const TColor C_CLIENT			= clWhite;
-const TColor C_WAVE				= clBlack;
-const TColor C_WAVE2			= clGray;
-const TColor C_INF_LINE			= clGray;
-const TColor C_DISABLED_TIME_CLIENT		= ((TColor)0xf0f0f0);
-const TColor C_TIME_CLIENT		= clBtnFace;
-const TColor C_TIME_COLOR		= clBlack;
-const TColor C_LINK_WAVE_MARK	= ((TColor)0x0000f0);
-const TColor C_LINK_CLIENT		= clWhite;
-const TColor C_LINK_SEPARETOR   = ((TColor)0xe0e0e0);
-const TColor C_LINK_LINE		= clBlack;
-const TColor C_LINK_HOVER		= clBlue;
-const TColor C_LINK_FOCUS		= clRed;
-const TColor C_LINK_WEAK_LINE	= clGray;
+const TColor C_DISABLEED_CLIENT		= clBtnFace;
+const TColor C_CLIENT				= clWhite;
+const TColor C_WAVE					= clBlack;
+const TColor C_WAVE2				= clGray;
+const TColor C_INF_LINE				= clGray;
+const TColor C_DISABLED_TIME_CLIENT	= ((TColor)0xf0f0f0);
+const TColor C_TIME_CLIENT			= clBtnFace;
+const TColor C_TIME_COLOR			= clBlack;
+
+const TColor C_LINK_WAVE_MARK		= ((TColor)0x0000f0);
+const TColor C_LINK_CLIENT			= clWhite;
+const TColor C_LINK_SEPARETOR  		= ((TColor)0xe0e0e0);
+const TColor C_LINK_LINE			= clBlack;
+const TColor C_LINK_HOVER			= ((TColor)0x40d090);
+const TColor C_LINK_FOCUS			= clRed;
+const TColor C_LINK_WEAK_LINE		= clGray;
+
+const TColor C_LABEL_WAVE_MARK		= ((TColor)0x00f000);
+const TColor C_LABEL_MARK_LINE		= clBlack;
+const TColor C_LABEL_MARK_HOVER		= ((TColor)0x40d090);
+const TColor C_LABEL_MARK_FOCUS		= clRed;
+const TColor C_LABEL_MARK		= clYellow;
 //---------------------------------------------------------------------------
 const int LinkArrowSize = 4;
 const int LinkDirectionArrowWidth = 10;
@@ -65,6 +72,26 @@ static std::vector<tTVPWaveLoopLink> &  GetLinks()
 }
 //---------------------------------------------------------------------------
 
+//---------------------------------------------------------------------------
+static std::vector<tTVPWaveLabel> Labels;
+static std::vector<tTVPWaveLabel> &  GetLabels()
+{
+	if(Labels.size() == 0)
+	{
+		tTVPWaveLabel label;
+
+		label.Position = 3005000;
+		label.Name = "Label1";
+		Labels.push_back(label);
+
+		label.Position = 4005000;
+		label.Name = "Label2";
+		Labels.push_back(label);
+	}
+	return Labels;
+}
+//---------------------------------------------------------------------------
+
 
 //---------------------------------------------------------------------------
 __fastcall TWaveView::TWaveView(Classes::TComponent* AOwner) :
@@ -81,17 +108,17 @@ __fastcall TWaveView::TWaveView(Classes::TComponent* AOwner) :
 	FSoftCenteringStartTick = 0;
 
 	FCaretPos = 0;
-	FDrawCaret = true;
+	FShowCaret = true;
 	FCaretVisiblePhase = true;
 
 	FMinRulerMajorWidth = 0;
 	FMinRulerMajorHeight = 0;
 	FRulerUnit = 0;
-	FDrawRuler = true;
+	FShowRuler = true;
 	FMarkerPos = -1;
 	Canvas->Font->Height = -12;
 
-	FDrawLinks = true;
+	FShowLinks = true;
 	FLinkTierCount = 0;
 	FHoveredLink = -1; // -1 for non visible
 	FFocusedLink = -1; // -1 for not focused
@@ -102,6 +129,11 @@ __fastcall TWaveView::TWaveView(Classes::TComponent* AOwner) :
 	FBlinkTimer->Interval = GetCaretBlinkTime();
 	FBlinkTimer->Enabled = true;
 
+	FShowLabels = true;
+	FHoveredLabel = -1; // -1 for not hovered
+	FFocusedLabel = -1; // -1 for not focused
+
+
 	FOnDoubleClick = NULL;
 /*
 	FOnWaveLButtonDown = NULL;
@@ -111,13 +143,11 @@ __fastcall TWaveView::TWaveView(Classes::TComponent* AOwner) :
 	FOnLinkDragDrop    = NULL;
 */
 	DragScrollTimer = new TTimer(this);
-	DragScrollTimer->OnTimer = OnDragScrolltimer;
+	DragScrollTimer->OnTimer = OnDragScrollTimer;
 	DragScrollTimer->Interval = 100;
 	DragScrollTimer->Enabled = false;
 
 	LastMouseDownX = -1;
-	LastMouseDownLinkNum = -1;
-	LastMouseDownLinkFromOrTo = false;
 	DraggingState = dsNone;
 
 	Cursor = crIBeam;
@@ -132,7 +162,9 @@ __fastcall TWaveView::~TWaveView()
 void __fastcall TWaveView::Paint(void)
 {
 	DrawWave(FStart, true);
-	DrawLink();
+	DrawLinks();
+	DrawLabels();
+	DrawCaret();
 }
 //---------------------------------------------------------------------------
 int __fastcall TWaveView::PixelToSample(int pixel)
@@ -312,8 +344,13 @@ void __fastcall TWaveView::SetCaretPos(int pos)
 	if(pos != FCaretPos)
 	{
 		// invalidate new position and old position
-		if(pos >= 0) FocusedLink = -1; // caret and link are exclusive
-		if(FDrawCaret)
+		if(pos >= 0)
+		{
+			FocusedLink = -1; // caret, label and link are exclusive
+			FocusedLabel = -1;
+		}
+
+		if(FShowCaret)
 		{
 			InvalidateCaret(FCaretPos);
 			InvalidateCaret(pos);
@@ -323,17 +360,17 @@ void __fastcall TWaveView::SetCaretPos(int pos)
 		{
 			FCaretVisiblePhase = true;
 			FBlinkTimer->Enabled = false;
-			FBlinkTimer->Enabled = FDrawCaret;
+			FBlinkTimer->Enabled = FShowCaret;
 		}
 		FCaretPos = pos;
 	}
 }
 //---------------------------------------------------------------------------
-void __fastcall TWaveView::SetDrawCaret(bool b)
+void __fastcall TWaveView::SetShowCaret(bool b)
 {
-	if(b != FDrawCaret)
+	if(b != FShowCaret)
 	{
-		FDrawCaret = b;
+		FShowCaret = b;
 
 		if(FCaretPos >= 0)
 		{
@@ -348,6 +385,27 @@ void __fastcall TWaveView::OnBlinkTimer(TObject * sender)
 {
 	FCaretVisiblePhase = !FCaretVisiblePhase;
 	InvalidateCaret(FCaretPos);
+}
+//---------------------------------------------------------------------------
+void __fastcall TWaveView::DrawCaret()
+{
+	// draw caret
+	if(!FReader || !FReader->ReadDone) return;
+
+	if(FShowCaret && FCaretVisiblePhase)
+	{
+		int p_pos = SampleToPixel(FCaretPos - FStart);
+		if(p_pos >= 0 && p_pos < ClientWidth)
+		{
+			RECT r;
+			r.top = GetHeadSize();
+			r.bottom = ClientHeight;
+			r.left = p_pos;
+			r.right = p_pos + 1;
+			InvertRect(Canvas->Handle, &r);
+		}
+	}
+
 }
 //---------------------------------------------------------------------------
 void __fastcall TWaveView::SetStart(int n)
@@ -509,6 +567,28 @@ void __fastcall TWaveView::ResetMarkerFollow()
 	FWaitingMarker = true;
 }
 //---------------------------------------------------------------------------
+inline static bool PartIntersect(int a, int b, int i, int j)
+{
+	if(a > b)
+	{
+		int t = b;
+		b = a;
+		a = t;
+	}
+	if(i > j)
+	{
+		int t = i;
+		j = i;
+		i = t;
+	}
+
+	return
+		a >= i && a <= j ||
+		b >= i && b <= j ||
+		i >= a && i <= b ||
+		j >= a && j <= b;
+}
+//---------------------------------------------------------------------------
 void __fastcall TWaveView::DrawWave(int start, bool clear)
 {
 	// draw waveform.
@@ -530,7 +610,7 @@ void __fastcall TWaveView::DrawWave(int start, bool clear)
 	}
 
 	// calc minimum major ruler size
-	if(FDrawRuler && FMinRulerMajorWidth == 0)
+	if(FShowRuler && FMinRulerMajorWidth == 0)
 	{
 		AnsiString zero("00:00:00.000");
 		FMinRulerMajorWidth = Canvas->TextWidth(zero);
@@ -642,7 +722,7 @@ void __fastcall TWaveView::DrawWave(int start, bool clear)
 		}
 
 		// draw time base line
-		if(FDrawRuler)
+		if(FShowRuler)
 		{
 			TRect r;
 			r.left = dest_left, r.top = 0, r.right = dest_right, r.bottom = head_size;
@@ -731,7 +811,7 @@ void __fastcall TWaveView::DrawWave(int start, bool clear)
 
 
 	// draw time line
-	if(FDrawRuler && Canvas->ClipRect.top < head_size)
+	if(FShowRuler && Canvas->ClipRect.top < head_size)
 	{
 		// find start ruler unit
 		Canvas->Brush->Style = bsClear;
@@ -817,63 +897,6 @@ void __fastcall TWaveView::DrawWave(int start, bool clear)
 			}
 		}
 	}
-
-	// draw link 'from' and 'to' lines
-	std::vector<tTVPWaveLoopLink> & links = /**/ GetLinks(); /**/
-	Canvas->Pen->Color = C_LINK_WAVE_MARK;
-	Canvas->Pen->Style = psDashDot;
-	for(unsigned int i = 0; i < links.size(); i++)
-	{
-		const tTVPWaveLoopLink & link = links[i];
-		int x;
-
-		x = SampleToPixel(link.From - Start);
-		Canvas->MoveTo(x, head_size);
-		Canvas->LineTo(x, bottom_limit);
-
-		x = SampleToPixel(link.To - Start);
-		Canvas->MoveTo(x, head_size);
-		Canvas->LineTo(x, bottom_limit);
-	}
-	Canvas->Pen->Style = psSolid;
-
-	// draw caret
-	if(FDrawCaret && FCaretVisiblePhase)
-	{
-		int p_pos = SampleToPixel(FCaretPos - FStart);
-		if(p_pos >= 0 && p_pos < ClientWidth)
-		{
-			RECT r;
-			r.top = head_size;
-			r.bottom = ClientHeight;
-			r.left = p_pos;
-			r.right = p_pos + 1;
-			InvertRect(Canvas->Handle, &r);
-		}
-	}
-
-}
-//---------------------------------------------------------------------------
-inline static bool PartIntersect(int a, int b, int i, int j)
-{
-	if(a > b)
-	{
-		int t = b;
-		b = a;
-		a = t;
-	}
-	if(i > j)
-	{
-		int t = i;
-		j = i;
-		i = t;
-	}
-
-	return
-		a >= i && a <= j ||
-		b >= i && b <= j ||
-		i >= a && i <= b ||
-		j >= a && j <= b;
 }
 //---------------------------------------------------------------------------
 void __fastcall TWaveView::NotifyLinkChanged()
@@ -1131,13 +1154,15 @@ void __fastcall TWaveView::DrawLinkOf(const tTVPWaveLoopLink & link)
 	}
 }
 //---------------------------------------------------------------------------
-void __fastcall TWaveView::DrawLink(void)
+void __fastcall TWaveView::DrawLinks(void)
 {
 	if(!FReader || !FReader->ReadDone) return;
+	if(!FShowLinks) return;
 
 	// calc start point
 	int dest_left  = Canvas->ClipRect.left;
 	int dest_right = Canvas->ClipRect.right;
+	int head_size = GetHeadSize();
 	int foot_size = GetFootSize();
 	int y_start = ClientHeight - foot_size;
 
@@ -1214,6 +1239,26 @@ void __fastcall TWaveView::DrawLink(void)
 		Canvas->Pen->Width = 1;
 	}
 
+	// draw link 'from' and 'to' lines
+	Canvas->Pen->Color = C_LINK_WAVE_MARK;
+	Canvas->Pen->Style = psDashDot;
+	Canvas->Brush->Style = bsClear;
+	for(unsigned int i = 0; i < links.size(); i++)
+	{
+		const tTVPWaveLoopLink & link = links[i];
+		int x;
+
+		x = SampleToPixel(link.From - Start);
+		Canvas->MoveTo(x, head_size);
+		Canvas->LineTo(x, y_start);
+
+		x = SampleToPixel(link.To - Start);
+		Canvas->MoveTo(x, head_size);
+		Canvas->LineTo(x, y_start);
+	}
+	Canvas->Pen->Style = psSolid;
+
+
 }
 //---------------------------------------------------------------------------
 void __fastcall TWaveView::InvalidateLink(int linknum)
@@ -1277,7 +1322,11 @@ void __fastcall TWaveView::SetFocusedLink(int l)
 		InvalidateLink(FFocusedLink);
 		FFocusedLink = l;
 		InvalidateLink(FFocusedLink);
-		if(l != -1) CaretPos = -1; // link and caret are exclusive
+		if(l != -1)
+		{
+			CaretPos = -1; // link, label and caret are exclusive
+			FocusedLabel = -1;
+		}
 	}
 }
 //---------------------------------------------------------------------------
@@ -1326,7 +1375,7 @@ int __fastcall TWaveView::GetLinkAt(int x, int y)
 }
 //---------------------------------------------------------------------------
 #define MARK_GRIP_MARGIN 2
-bool __fastcall TWaveView::IsLinkWaveMarkAt(int x, int linknum, bool &from_or_to)
+int __fastcall TWaveView::IsLinkWaveMarkAt(int x, int linknum, bool &from_or_to)
 {
 	std::vector<tTVPWaveLoopLink> & links = /**/ GetLinks(); /**/
 
@@ -1368,21 +1417,24 @@ bool __fastcall TWaveView::IsLinkWaveMarkAt(int x, int linknum, bool &from_or_to
 	if(to_match || from_match)
 	{
 		from_or_to = to_match;
-		return true;
+		return from_or_to ? link.To : link.From;
 	}
 
-	return false;
+	return -1;
 }
 //---------------------------------------------------------------------------
-bool __fastcall TWaveView::GetLinkWaveMarkAt(int x, int &linknum, bool &from_or_to)
+int __fastcall TWaveView::GetLinkWaveMarkAt(int x, int &linknum, bool &from_or_to)
 {
 	// give priority to focused link
+	int pos;
 	if(FFocusedLink != -1)
 	{
-		if(IsLinkWaveMarkAt(x, FFocusedLink, from_or_to))
+		pos = IsLinkWaveMarkAt(x, FFocusedLink, from_or_to);
+
+		if(pos != -1)
 		{
 			linknum = FFocusedLink;
-			return true;
+			return pos;
 		}
 	}
 
@@ -1393,9 +1445,273 @@ bool __fastcall TWaveView::GetLinkWaveMarkAt(int x, int &linknum, bool &from_or_
 	{
 		if((int)i != FFocusedLink)
 		{
-			if(IsLinkWaveMarkAt(x, i, from_or_to))
+			pos = IsLinkWaveMarkAt(x, i, from_or_to);
+
+			if(pos != -1)
 			{
 				linknum = i;
+				return pos;
+			}
+		}
+	}
+
+	return -1;
+}
+//---------------------------------------------------------------------------
+void __fastcall TWaveView::DrawLabelOf(const tTVPWaveLabel & label)
+{
+	int head_size = GetHeadSize();
+	int foot_size = GetFootSize();
+	int bottom_limit = ClientHeight - foot_size;
+
+	// draw label mark
+	int x;
+	x = SampleToPixel(label.Position - Start);
+
+	Canvas->Brush->Color = C_LABEL_MARK;
+	Canvas->Brush->Style = bsSolid;
+	TPoint points[3];
+	points[0].x = x;
+	points[0].y = head_size - 2;
+	points[1].x = x - 4;
+	points[1].y = head_size - 10;
+	points[2].x = x + 4;
+	points[2].y = head_size - 10;
+
+	Canvas->Polygon(points, 2);
+
+	Canvas->Pen->Width = 1;
+	Canvas->Brush->Style = bsClear;
+	Canvas->Pen->Color = C_LABEL_WAVE_MARK;
+	Canvas->Pen->Style = psDashDot;
+	Canvas->MoveTo(x, head_size);
+	Canvas->LineTo(x, bottom_limit);
+	Canvas->Pen->Style = psSolid;
+}
+//---------------------------------------------------------------------------
+void __fastcall TWaveView::DrawLabels()
+{
+	if(!FReader || !FReader->ReadDone) return;
+	if(!FShowLabels) return;
+
+	std::vector<tTVPWaveLabel> & labels = /**/ GetLabels(); /**/
+
+	// draw each link
+	for(unsigned int i = 0; i < labels.size(); i++)
+	{
+		if((int)i == FFocusedLabel)
+			continue;
+		else if((int)i == FHoveredLabel)
+			continue;
+		else
+			Canvas->Pen->Color = C_LABEL_MARK_LINE;
+
+		const tTVPWaveLabel & label = labels[i];
+
+		DrawLabelOf(label);
+	}
+	if(FHoveredLabel != -1)
+	{
+		Canvas->Pen->Color = C_LABEL_MARK_HOVER;
+		const tTVPWaveLabel & label = labels[FHoveredLabel];
+		DrawLabelOf(label);
+	}
+
+	if(FFocusedLabel != -1)
+	{
+		Canvas->Pen->Width = 2;
+		Canvas->Pen->Color = C_LABEL_MARK_FOCUS;
+		const tTVPWaveLabel & label = labels[FFocusedLabel];
+		DrawLabelOf(label);
+		Canvas->Pen->Width = 1;
+	}
+
+}
+//---------------------------------------------------------------------------
+void __fastcall TWaveView::InvalidateLabel(int labelnum)
+{
+	// invalidate label labelnum
+	std::vector<tTVPWaveLabel> & labels = /**/ GetLabels(); /**/
+	if(labelnum < 0 || labelnum >= (int)labels.size()) return;
+
+	int head_size = GetHeadSize();
+	int foot_size = GetFootSize();
+	int bottom_limit = ClientHeight - foot_size;
+
+	// invalidate marker triangle
+	const tTVPWaveLabel & label = labels[labelnum];
+	int x = SampleToPixel(label.Position - Start);
+
+	// invalidate marker triangle
+	RECT r;
+	r.left   = x - 5;
+	r.top    = head_size - 11;
+	r.right  = x + 6;
+	r.bottom = head_size;
+	InvalidateRect(Handle, &r, FALSE);
+
+	// invalidate wave mark
+	r.left   = x;
+	r.top    = head_size;
+	r.right  = x + 1;
+	r.bottom = bottom_limit;
+	InvalidateRect(Handle, &r, FALSE);
+}
+//---------------------------------------------------------------------------
+void __fastcall TWaveView::SetHoveredLabel(int l)
+{
+	if(FHoveredLabel != l)
+	{
+		DoubleBuffered = true;
+		InvalidateLabel(FHoveredLabel);
+		FHoveredLabel = l;
+		InvalidateLabel(FHoveredLabel);
+	}
+}
+//---------------------------------------------------------------------------
+void __fastcall TWaveView::SetFocusedLabel(int l)
+{
+	if(FFocusedLabel != l)
+	{
+		DoubleBuffered = true;
+		InvalidateLabel(FFocusedLabel);
+		FFocusedLabel = l;
+		InvalidateLabel(FFocusedLabel);
+		if(l != -1)
+		{
+			CaretPos = -1; // link, label and caret are exclusive
+			FocusedLink = -1; // link, label and caret are exclusive
+		}
+	}
+}
+//---------------------------------------------------------------------------
+bool __fastcall TWaveView::IsLabelAt(int labelnum, int x, int y)
+{
+	std::vector<tTVPWaveLabel> & labels = /**/ GetLabels(); /**/
+	if(labelnum < 0 || labelnum >= (int)labels.size()) return false;
+
+	const tTVPWaveLabel & label = labels[labelnum];
+	int lx = SampleToPixel(label.Position - Start);
+
+	int head_size = GetHeadSize();
+	return y >= 0 && y < head_size && x >= lx - 4 && x <= lx + 4;
+}
+//---------------------------------------------------------------------------
+int __fastcall TWaveView::GetLabelAt(int x, int y)
+{
+	// give priority to focused label
+	if(FFocusedLabel != -1)
+	{
+		if(IsLabelAt(FFocusedLabel, x, y))
+			return FFocusedLabel;
+	}
+
+	// for each labels
+	std::vector<tTVPWaveLabel> & labels = /**/ GetLabels(); /**/
+
+	for(unsigned int i = 0; i < labels.size(); i++)
+	{
+		if((int)i != FFocusedLabel)
+		{
+			if(IsLabelAt(i, x, y))
+			{
+				return i;
+			}
+		}
+	}
+
+	return -1;
+}
+//---------------------------------------------------------------------------
+int __fastcall TWaveView::IsLabelWaveMarkAt(int x, int labelnum)
+{
+	std::vector<tTVPWaveLabel> & labels = /**/ GetLabels(); /**/
+	if(labelnum < 0 || labelnum >= (int)labels.size()) return false;
+
+	const tTVPWaveLabel & label = labels[labelnum];
+	int lx = SampleToPixel(label.Position - FStart);
+
+	return (lx - MARK_GRIP_MARGIN <= x && x <= lx + MARK_GRIP_MARGIN) ?
+		label.Position  : -1;
+}
+//---------------------------------------------------------------------------
+int __fastcall TWaveView::GetLabelWaveMarkAt(int x, int &labelnum)
+{
+	// give priority to focused label
+	int pos;
+
+	if(FFocusedLabel != -1)
+	{
+		pos = IsLabelWaveMarkAt(x, FFocusedLabel);
+
+		if(pos != -1)
+		{
+			labelnum = FFocusedLabel;
+			return pos;
+		}
+	}
+
+	// for each labels
+	std::vector<tTVPWaveLabel> & labels = /**/ GetLabels(); /**/
+
+	for(unsigned int i = 0; i < labels.size(); i++)
+	{
+		if((int)i != FFocusedLabel)
+		{
+			pos = IsLabelWaveMarkAt(x, i);
+
+			if(pos != -1)
+			{
+				labelnum = i;
+				return pos;
+			}
+		}
+	}
+
+	return -1;
+}
+//---------------------------------------------------------------------------
+bool TWaveView::GetNearestObjectAt(int x, TObjectInfo & info)
+{
+	int num = 0;
+	bool from_or_to = false;
+	int pos;
+
+	// give priority to currently focused object (link or label)
+	int prio_order[2];
+	if(FFocusedLink != -1)
+		prio_order[0] = 0, prio_order[1] = 1;
+	else if(FFocusedLabel != -1)
+		prio_order[0] = 1, prio_order[1] = 0;
+	else
+		prio_order[0] = 0, prio_order[1] = 1;
+
+
+	for(int p = 0; p < sizeof(prio_order) / sizeof(prio_order[0]); p++)
+	{
+		if(prio_order[p] == 0)
+		{
+			pos = GetLinkWaveMarkAt(x, num, from_or_to);
+
+			if(pos != -1)
+			{
+				info.Kind = okLink;
+				info.Num  = num;
+				info.FromOrTo = from_or_to;
+				info.Position = pos;
+				return true;
+			}
+		}
+		else if(prio_order[p] == 1)
+		{
+			pos = GetLabelWaveMarkAt(x, num);
+
+			if(pos != -1)
+			{
+				info.Kind = okLabel;
+				info.Num = num;
+				info.Position = pos;
+				HoveredLink = -1;
 				return true;
 			}
 		}
@@ -1416,6 +1732,7 @@ void __fastcall TWaveView::MouseDown(TMouseButton button, TShiftState shift, int
 	if(!FReader || !FReader->ReadDone) return;
 
 	// mouse downed
+	int head_size = GetHeadSize();
 	int foot_size = GetFootSize();
 	int foot_start = ClientHeight - foot_size;
 
@@ -1423,36 +1740,39 @@ void __fastcall TWaveView::MouseDown(TMouseButton button, TShiftState shift, int
 
 	if(button == mbLeft)
 	{
-		if(y < foot_start)
+		if(y < head_size)
 		{
-			int linknum = 0;
-			bool from_or_to = false;
-			if(GetLinkWaveMarkAt(x, linknum, from_or_to))
+			int fl = GetLabelAt(x, y);
+			if(fl != -1) FocusedLabel = fl;
+			// generate dragging information
+			std::vector<tTVPWaveLabel> & labels = /**/ GetLabels(); /**/
+			tTVPWaveLabel &label = labels[fl];
+			DraggingObjectInfo.Kind = okLabel;
+			DraggingObjectInfo.Num = fl;
+			DraggingObjectInfo.Position = label.Position;
+	   		DraggingState = dsMouseDown;
+			LastMouseDownPosOffset = MouseXPosToSamplePos(x) - DraggingObjectInfo.Position;
+		}
+		else if(y < foot_start)
+		{
+			TObjectInfo info;
+			if(GetNearestObjectAt(x, info))
 			{
-				LastMouseDownLinkNum = linknum;
-				LastMouseDownLinkFromOrTo = from_or_to;
+				DraggingObjectInfo = info;
 				DraggingState = dsMouseDown;
+				LastMouseDownPosOffset = MouseXPosToSamplePos(x) - DraggingObjectInfo.Position;
 			}
 			else
 			{
-/*
-				if(FOnWaveLButtonDown)
-				{
-					FOnWaveLButtonDown(this, MouseXPosToSamplePos(x));
-				}
-*/
 				CaretPos = MouseXPosToSamplePos(x);
 			}
+
 		}
 		else
 		{
-/*
-			if(FOnLinkLButtonDown)
-			{
-				FOnLinkLButtonDown(this, GetLinkAt(x, y));
-			}
-*/
-			FocusedLink = GetLinkAt(x, y);
+			HoveredLabel = -1;
+			int fl = GetLinkAt(x, y);
+			if(fl != -1) FocusedLink = fl;
 		}
 	}
 }
@@ -1477,7 +1797,10 @@ void __fastcall TWaveView::MouseMove(TShiftState shift, int x, int y)
 			{
 				// dragging started
 				DraggingState = dsDragging;
-				FocusedLink = LastMouseDownLinkNum;
+				if(DraggingObjectInfo.Kind == okLink)
+					FocusedLink = DraggingObjectInfo.Num;
+				else if(DraggingObjectInfo.Kind == okLabel)
+					FocusedLabel = DraggingObjectInfo.Num;
 			}
 		}
 		/* no else here */
@@ -1486,27 +1809,41 @@ void __fastcall TWaveView::MouseMove(TShiftState shift, int x, int y)
 			// enable double buffering
 			DoubleBuffered = true;
 
-			// dragging
-			std::vector<tTVPWaveLoopLink> & links = /**/ GetLinks(); /**/
-
-			tTVPWaveLoopLink &link = links[LastMouseDownLinkNum];
-
-			InvalidateLink(LastMouseDownLinkNum);
-			int pos = MouseXPosToSamplePos(x);
+			int pos = MouseXPosToSamplePos(x) - LastMouseDownPosOffset;
 			if(pos < 0) pos = 0;
 			if(pos > FReader->NumSamples) pos = FReader->NumSamples;
-			if(!LastMouseDownLinkFromOrTo)
+
+			// dragging
+			if(DraggingObjectInfo.Kind == okLink)
 			{
-				// 'from'
-				link.From = pos;
+				std::vector<tTVPWaveLoopLink> & links = /**/ GetLinks(); /**/
+
+				tTVPWaveLoopLink &link = links[DraggingObjectInfo.Num];
+
+				InvalidateLink(DraggingObjectInfo.Num);
+				if(!DraggingObjectInfo.FromOrTo)
+				{
+					// 'from'
+					link.From = pos;
+				}
+				else
+				{
+					// 'to'
+					link.To = pos;
+				}
+				NotifyLinkChanged();
+				InvalidateLink(DraggingObjectInfo.Num);
 			}
-			else
+			else if(DraggingObjectInfo.Kind == okLabel)
 			{
-				// 'to'
-				link.To = pos;
+				std::vector<tTVPWaveLabel> & labels = /**/ GetLabels(); /**/
+
+				tTVPWaveLabel &label = labels[DraggingObjectInfo.Num];
+
+				InvalidateLabel(DraggingObjectInfo.Num);
+				label.Position = pos;
+				InvalidateLabel(DraggingObjectInfo.Num);
 			}
-			NotifyLinkChanged();
-			InvalidateLink(LastMouseDownLinkNum);
 
 			// scroll
 			if(x < 10 || x >= ClientWidth - 10)
@@ -1517,27 +1854,44 @@ void __fastcall TWaveView::MouseMove(TShiftState shift, int x, int y)
 	}
 	else
 	{
-
+		int head_size = GetHeadSize();
 		int foot_size = GetFootSize();
 		int foot_start = ClientHeight - foot_size;
 
-		if(y < foot_start)
+		if(y < head_size)
 		{
-			int linknum = 0;
-			bool from_or_to = false;
-			if(GetLinkWaveMarkAt(x, linknum, from_or_to))
+			HoveredLink = -1;
+			HoveredLabel = GetLabelAt(x, y);
+			Cursor = crArrow;
+		}
+		else if(y < foot_start)
+		{
+			TObjectInfo info;
+			if(GetNearestObjectAt(x, info))
 			{
-				HoveredLink = linknum;
-				Cursor = crSizeWE;
+				if(info.Kind == okLink)
+				{
+					HoveredLabel = -1;
+					HoveredLink = info.Num;
+					Cursor = crSizeWE;
+				}
+				else if(info.Kind == okLabel)
+				{
+					HoveredLink = -1;
+					HoveredLabel = info.Num;
+					Cursor = crSizeWE;
+				}
 			}
 			else
 			{
-				HoveredLink = -1;
+				HoveredLink  = -1;
+				HoveredLabel = -1;
 				Cursor = crIBeam;
 			}
 		}
 		else
 		{
+			HoveredLabel = -1;
 			HoveredLink = GetLinkAt(x, y);
 			Cursor = crArrow;
 		}
@@ -1552,11 +1906,15 @@ void __fastcall TWaveView::MouseUp(TMouseButton button, TShiftState shift, int x
 		if(DraggingState == dsMouseDown)
 		{
 			// set caret to current from or to position
-			std::vector<tTVPWaveLoopLink> & links = /**/ GetLinks(); /**/
-
-			tTVPWaveLoopLink &link = links[LastMouseDownLinkNum];
-
-			CaretPos = LastMouseDownLinkFromOrTo ? link.To : link.From;
+			if(DraggingObjectInfo.Kind == okLink)
+			{
+				CaretPos = DraggingObjectInfo.Position;
+			}
+			else if(DraggingObjectInfo.Kind == okLabel)
+			{
+				if(y >= GetHeadSize())
+					CaretPos = DraggingObjectInfo.Position;
+			}
 		}
 		DraggingState = dsNone;
 		DragScrollTimer->Enabled = false;
@@ -1582,7 +1940,7 @@ void __fastcall TWaveView::MouseLeave()
 	HoveredLink = -1;
 }
 //---------------------------------------------------------------------------
-void __fastcall TWaveView::OnDragScrolltimer(TObject * sender)
+void __fastcall TWaveView::OnDragScrollTimer(TObject * sender)
 {
 	TWMHScroll wmscroll;
 	ZeroMemory(&wmscroll, sizeof(TWMHScroll));
