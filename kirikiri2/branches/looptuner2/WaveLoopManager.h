@@ -5,12 +5,19 @@
 #include "tjsTypes.h"
 #include "WaveReader.h"
 #include <vector>
+#include <string>
 
 #define TVP_WL_MAX_FLAGS 16
 
 #define TVP_WL_SMOOTH_TIME 50
 #define TVP_WL_SMOOTH_TIME_HALF (TVP_WL_SMOOTH_TIME/2)
 
+//---------------------------------------------------------------------------
+#ifdef TVP_IN_LOOP_TUNER
+	#define LABEL_STRING_TYPE  AnsiString
+#else
+	#define LABEL_STRING_TYPE  ttstr
+#endif
 //---------------------------------------------------------------------------
 struct tTVPWaveLoopLink
 {
@@ -37,6 +44,17 @@ bool inline operator < (const tTVPWaveLoopLink & lhs, const tTVPWaveLoopLink & r
 	}
 	return false;
 }
+//---------------------------------------------------------------------------
+struct tTVPWaveLabel
+{
+	tjs_int64 Position; // label position
+	LABEL_STRING_TYPE Name; // label name
+};
+
+bool inline operator < (const tTVPWaveLabel & lhs, const tTVPWaveLabel & rhs)
+{
+	return lhs.Position < rhs.Position;
+}
 
 //---------------------------------------------------------------------------
 struct tTVPWaveLoopSegment
@@ -52,6 +70,7 @@ class tTVPWaveLoopManager
 {
 	bool Flags[TVP_WL_MAX_FLAGS];
 	std::vector<tTVPWaveLoopLink> Links;
+	std::vector<tTVPWaveLabel> Labels;
 	tTVPWaveFormat Format;
 	tTVPWaveDecoder * Decoder;
 
@@ -64,8 +83,8 @@ class tTVPWaveLoopManager
 	tjs_int CrossFadeLen;
 	tjs_int CrossFadePosition;
 
-	bool IsLinksSorted; // false if links is not yet sorted
-
+	bool IsLinksSorted; // false if links are not yet sorted
+	bool IsLabelsSorted; // false if labels are not yet sorted
 
 public:
 	tTVPWaveLoopManager(tTVPWaveDecoder * decoder);
@@ -79,11 +98,15 @@ public:
 	void SetPosition(tjs_int64 pos);
 
 	void Decode(void *dest, tjs_uint samples, tjs_uint &written,
-		std::vector<tTVPWaveLoopSegment> &segments);
+		std::vector<tTVPWaveLoopSegment> &segments,
+		std::vector<tTVPWaveLabel> &labels);
 
 private:
 	bool GetNearestEvent(tjs_int64 current,
 		tTVPWaveLoopLink & link, bool ignore_conditions);
+
+	void GetLabelAt(tjs_int64 from, tjs_int64 to,
+		std::vector<tTVPWaveLabel> & labels);
 
 	void DoCrossFade(void *dest, void *src1, void *src2, tjs_int samples,
 		tjs_int ratiostart, tjs_int ratioend);

@@ -75,6 +75,7 @@ static bool Playing = false;
 static tTVPWaveLoopManager * Manager = NULL;
 static TPlayerThread *PlayerThread = NULL;
 static std::vector<tTVPWaveLoopSegment> Segments[2];
+static std::vector<tTVPWaveLabel> Labels[2];
 //---------------------------------------------------------------------------
 void __fastcall InitDirectSound(HWND wnd)
 {
@@ -377,7 +378,8 @@ static void __fastcall FillSecondaryBuffer(void)
 	{
 		tjs_uint written;
 		Manager->Decode(p1, SoundBufferBytesHalf/SampleSize,
-			written, Segments[writepos ? 1: 0]);
+			written, Segments[writepos ? 1: 0],
+				Labels[writepos ? 1: 0]);
 
 		written *= SampleSize;
 		if(written < SoundBufferBytesHalf)

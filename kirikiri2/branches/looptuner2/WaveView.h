@@ -44,8 +44,8 @@ private:
 	TWaveReader * FReader;
 	int FMagnify; // magnification level (in logarithm based 2)
 	int FStart; // start sample position at left edge of the client
-	int GetHeadSize() const { return FDrawRuler ? (FMinRulerMajorHeight + 1) : 0; }
-	int GetFootSize() const { return FDrawLinks ? (FLinkTierCount * TVP_LGD_TIER_HEIGHT) : 0; }
+	int GetHeadSize() const { return FShowRuler ? (FMinRulerMajorHeight + 1) : 0; }
+	int GetFootSize() const { return FShowLinks ? (FLinkTierCount * TVP_LGD_TIER_HEIGHT) : 0; }
 	void __fastcall Paint(void);
 
 public:
@@ -80,27 +80,29 @@ END_MESSAGE_MAP(TCustomControl)
 
 //-- caret drawing stuff
 	int FCaretPos; // caret position
-	bool FDrawCaret;
+	bool FShowCaret;
 	bool FCaretVisiblePhase;
 	TTimer * FBlinkTimer;
 
 	void __fastcall InvalidateCaret(int pos);
 
 	void __fastcall SetCaretPos(int pos);
-	void __fastcall SetDrawCaret(bool b);
+	void __fastcall SetShowCaret(bool b);
 
 	void __fastcall OnBlinkTimer(TObject * sender);
 
+	void __fastcall DrawCaret();
+
 public:
 	__property int CaretPos = { read = FCaretPos, write = SetCaretPos };
-	__property bool DrawCaret = { read = FDrawCaret, write = SetDrawCaret };
+	__property bool ShowCaret = { read = FShowCaret, write = SetShowCaret };
 
 //-- wave drawing stuff
 private:
 	int FMinRulerMajorWidth;
 	int FMinRulerMajorHeight;
 	int FRulerUnit; // time in msec/10
-	bool FDrawRuler; // whether to draw time line
+	bool FShowRuler; // whether to draw time line
 	int FMarkerPos; // marker position for current playing position, -1 for invisible
 
 private:
@@ -119,9 +121,9 @@ public:
 
 //-- link drawing stuff
 private:
-	bool FDrawLinks;
+	bool FShowLinks;
 	int FLinkTierCount;
-	int FHoveredLink; // -1 for non visible
+	int FHoveredLink; // -1 for not hovered
 	int FFocusedLink; // -1 for not focused
 
 public:
@@ -133,18 +135,39 @@ private:
 	void __fastcall GetLinkMinMaxPixel(const tTVPWaveLoopLink & link,
 		TTierMinMaxInfo & info);
 	void __fastcall DrawLinkOf(const tTVPWaveLoopLink & link);
-	void __fastcall DrawLink(void);
+	void __fastcall DrawLinks(void);
 	void __fastcall InvalidateLink(int linknum);
 	void __fastcall SetHoveredLink(int l);
 	void __fastcall SetFocusedLink(int l);
 	bool __fastcall IsLinkAt(int linknum, int x, int y);
 	int __fastcall GetLinkAt(int x, int y);
-	bool __fastcall IsLinkWaveMarkAt(int x, int linknum, bool &from_or_to);
-	bool __fastcall GetLinkWaveMarkAt(int x, int &linknum, bool &from_or_to);
+	int __fastcall IsLinkWaveMarkAt(int x, int linknum, bool &from_or_to);
+	int __fastcall GetLinkWaveMarkAt(int x, int &linknum, bool &from_or_to);
 
 public:
 	__property int HoveredLink = { read = FHoveredLink, write = SetHoveredLink };
 	__property int FocusedLink = { read = FFocusedLink, write = SetFocusedLink };
+
+//-- label drawing stuff
+private:
+	bool FShowLabels;
+	int FHoveredLabel; // -1 for not hovered
+	int FFocusedLabel; // -1 for not focused
+
+private:
+	void __fastcall DrawLabelOf(const tTVPWaveLabel & label);
+	void __fastcall DrawLabels();
+	void __fastcall InvalidateLabel(int labelnum);
+	void __fastcall SetHoveredLabel(int l);
+	void __fastcall SetFocusedLabel(int l);
+	bool __fastcall IsLabelAt(int labelnum, int x, int y);
+	int __fastcall GetLabelAt(int x, int y);
+	int __fastcall IsLabelWaveMarkAt(int x, int labelnum);
+	int __fastcall GetLabelWaveMarkAt(int x, int &labelnum);
+
+public:
+	__property int HoveredLabel = { read = FHoveredLabel, write = SetHoveredLabel };
+	__property int FocusedLabel = { read = FFocusedLabel, write = SetFocusedLabel };
 
 //-- input
 private:
@@ -157,22 +180,34 @@ private:
 */
 	TNotifyWavePosEvent FOnDoubleClick;
 
+	enum TObjectKind { okLink, okLabel };
+	enum TDraggingState { dsNone, dsMouseDown, dsDragging };
+
+	struct TObjectInfo
+	{
+		TObjectKind Kind; // object kind
+		int Num; // object number
+		bool FromOrTo; // 'from' or 'to' (for link only)
+		int Position; // object position
+	};
+
 	TTimer * DragScrollTimer;
 	int LastMouseDownX;
+	int LastMouseDownPosOffset;
 	int LastMouseMoveX;
-	int LastMouseDownLinkNum;
-	bool LastMouseDownLinkFromOrTo;
-	enum { dsNone, dsMouseDown, dsDragging } DraggingState;
 
+	TObjectInfo DraggingObjectInfo;
+	TDraggingState DraggingState;
+
+	bool GetNearestObjectAt(int x, TObjectInfo & info);
 	int MouseXPosToSamplePos(int x);
-
 
 	DYNAMIC void __fastcall MouseDown(TMouseButton button, TShiftState shift, int x, int y);
 	DYNAMIC void __fastcall MouseMove(TShiftState shift, int x, int y);
 	DYNAMIC void __fastcall MouseUp(TMouseButton button, TShiftState shift, int x, int y);
 	DYNAMIC void __fastcall DblClick(void);
 	void __fastcall MouseLeave();
-	void __fastcall OnDragScrolltimer(TObject * sender);
+	void __fastcall OnDragScrollTimer(TObject * sender);
 
 public:
 	__property TNotifyWavePosEvent OnDoubleClick = { read = FOnDoubleClick, write = FOnDoubleClick };
