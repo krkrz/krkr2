@@ -130,6 +130,20 @@ TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/atan)
 }
 TJS_END_NATIVE_METHOD_DECL(/*func. name*/atan)
 //----------------------------------------------------------------------
+TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/atan2)
+{
+	if(numparams<2) return TJS_E_BADPARAMCOUNT;
+
+	if(result)
+	{
+		TJSSetFPUE();
+		*result = atan2(param[0]->AsReal(), param[1]->AsReal());
+	}
+
+	return TJS_S_OK;
+}
+TJS_END_NATIVE_METHOD_DECL(/*func. name*/atan2)
+//----------------------------------------------------------------------
 TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/ceil)
 {
 	if(numparams<1) return TJS_E_BADPARAMCOUNT;
@@ -326,6 +340,32 @@ TJS_BEGIN_NATIVE_PROP_DECL(E)
 	TJS_DENY_NATIVE_PROP_SETTER
 }
 TJS_END_NATIVE_PROP_DECL(E)
+//----------------------------------------------------------------------
+TJS_BEGIN_NATIVE_PROP_DECL(LOG2E)
+{
+	TJS_BEGIN_NATIVE_PROP_GETTER
+	{
+		*result = M_LOG2E;
+		return TJS_S_OK;
+	}
+	TJS_END_NATIVE_PROP_GETTER
+
+	TJS_DENY_NATIVE_PROP_SETTER
+}
+TJS_END_NATIVE_PROP_DECL(LOG2E)
+//----------------------------------------------------------------------
+TJS_BEGIN_NATIVE_PROP_DECL(LOG10E)
+{
+	TJS_BEGIN_NATIVE_PROP_GETTER
+	{
+		*result = M_LOG10E;
+		return TJS_S_OK;
+	}
+	TJS_END_NATIVE_PROP_GETTER
+
+	TJS_DENY_NATIVE_PROP_SETTER
+}
+TJS_END_NATIVE_PROP_DECL(LOG10E)
 //----------------------------------------------------------------------
 TJS_BEGIN_NATIVE_PROP_DECL(LN10)
 {
