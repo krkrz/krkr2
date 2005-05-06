@@ -265,7 +265,7 @@ static tTJSInternalParseStringResult
 			if(*(*ptr)==TJS_W('x') || *(*ptr)==TJS_W('X'))
 			{
 				// hex
-				// starts with a "0x", be parsed while characters are
+				// starts with a "\x", be parsed while characters are
 				// recognized as hex-characters, but limited of size of tjs_char.
 				// on Windows, \xXXXXX will be parsed to UNICODE 16bit characters.
 				if(!TJSNext(ptr)) break;
