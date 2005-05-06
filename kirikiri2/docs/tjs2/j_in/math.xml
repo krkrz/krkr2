@@ -11,6 +11,7 @@ abs (絶対値の取得)<r/>
 acos (アーク コサイン)<r/>
 asin (アーク サイン)<r/>
 atan (アーク タンジェント)<r/>
+atan2 (2変数のアーク タンジェント)<r/>
 ceil (切り上げ)<r/>
 floor (切り捨て)<r/>
 exp (<i>e</i>のn乗)<r/>
@@ -29,6 +30,8 @@ sqrt (平方根)<r/>
 E (<i>e</i>)<r/>
 LN10 (log(10))<r/>
 LN2 (log(2))<r/>
+LOG10E (10を底とした<i>e</i>の対数)<r/>
+LOG2E (2を底とした<i>e</i>の対数)<r/>
 PI (π)<r/>
 SQRT1_2 (sqrt(1/2))<r/>
 SQRT2 (sqrt(2))<r/>
