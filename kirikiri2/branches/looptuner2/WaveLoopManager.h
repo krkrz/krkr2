@@ -12,19 +12,41 @@
 #define TVP_WL_SMOOTH_TIME 50
 #define TVP_WL_SMOOTH_TIME_HALF (TVP_WL_SMOOTH_TIME/2)
 
+#define TVP_WL_MAX_ID_LEN 16
+
+
 //---------------------------------------------------------------------------
 #ifdef TVP_IN_LOOP_TUNER
-	#define LABEL_STRING_TYPE  AnsiString
+	typedef AnsiString tTVPLabelStringType;
 #else
-	#define LABEL_STRING_TYPE  ttstr
+	typedef ttstr tTVPLabelStringType;
 #endif
+//---------------------------------------------------------------------------
+
+
+
+
+//---------------------------------------------------------------------------
+// tTVPWaveLoopLink : link structure
+//---------------------------------------------------------------------------
+enum tTVPWaveLoopLinkCondition
+{
+	llcNone,
+	llcEqual,
+	llcNotEqual,
+	llcGreater,
+	llcGreaterOrEqual,
+	llcLesser,
+	llcLesserOrEqual
+};
 //---------------------------------------------------------------------------
 struct tTVPWaveLoopLink
 {
 	tjs_int64 From;		// 'From' in sample position
 	tjs_int64 To;		// 'To' in sample position
 	bool Smooth;		// Smooth transition (uses short 50ms crossfade)
-	bool Condition;		// Condition / false:jump if not set   true:jump if set
+	tTVPWaveLoopLinkCondition Condition;	// Condition
+	tjs_int RefValue;
 	tjs_int CondVar;	// Condition variable / -1:none   >=0:variables
 #ifdef TVP_IN_LOOP_TUNER
 	// these are only used by the loop tuner
@@ -33,7 +55,7 @@ struct tTVPWaveLoopLink
 	tjs_int ToTier;		// display tier of vertical 'to' allow line
 #endif
 };
-
+//---------------------------------------------------------------------------
 bool inline operator < (const tTVPWaveLoopLink & lhs, const tTVPWaveLoopLink & rhs)
 {
 	if(lhs.From < rhs.From) return true;
@@ -45,12 +67,17 @@ bool inline operator < (const tTVPWaveLoopLink & lhs, const tTVPWaveLoopLink & r
 	return false;
 }
 //---------------------------------------------------------------------------
+
+
+//---------------------------------------------------------------------------
+// tTVPWaveLoopLink : label structure
+//---------------------------------------------------------------------------
 struct tTVPWaveLabel
 {
 	tjs_int64 Position; // label position
-	LABEL_STRING_TYPE Name; // label name
+	tTVPLabelStringType Name; // label name
 };
-
+//---------------------------------------------------------------------------
 bool inline operator < (const tTVPWaveLabel & lhs, const tTVPWaveLabel & rhs)
 {
 	return lhs.Position < rhs.Position;
@@ -64,11 +91,16 @@ struct tTVPWaveLoopSegment
 	tjs_int64 Start;
 	tjs_int64 Length;
 };
+//---------------------------------------------------------------------------
 
+
+
+//---------------------------------------------------------------------------
+// tTVPWaveLoopManager : wave loop manager
 //---------------------------------------------------------------------------
 class tTVPWaveLoopManager
 {
-	bool Flags[TVP_WL_MAX_FLAGS];
+	int Flags[TVP_WL_MAX_FLAGS];
 	std::vector<tTVPWaveLoopLink> Links;
 	std::vector<tTVPWaveLabel> Labels;
 	tTVPWaveFormat Format;
@@ -93,6 +125,7 @@ public:
 	bool GetFlag(tjs_int index);
 	void SetFlag(tjs_int index, bool f);
 	void ClearFlags();
+	void ClearLinksAndLabels();
 
 	tjs_int64 GetPosition() const;
 	void SetPosition(tjs_int64 pos);
@@ -100,6 +133,13 @@ public:
 	void Decode(void *dest, tjs_uint samples, tjs_uint &written,
 		std::vector<tTVPWaveLoopSegment> &segments,
 		std::vector<tTVPWaveLabel> &labels);
+
+
+	const std::vector<tTVPWaveLoopLink> & GetLinks() const { return Links; }
+	const std::vector<tTVPWaveLabel> & GetLabels() const { return Labels; }
+
+	void SetLinks(const std::vector<tTVPWaveLoopLink> & links) { Links = links; IsLinksSorted = false; }
+	void SetLabels(const std::vector<tTVPWaveLabel> & labels) { Labels = labels; IsLabelsSorted = false; }
 
 private:
 	bool GetNearestEvent(tjs_int64 current,
@@ -112,19 +152,37 @@ private:
 		tjs_int ratiostart, tjs_int ratioend);
 
 	void ClearCrossFadeInformation();
+//--- loop information input/output stuff
+private:
+	static bool GetInt(char *s, tjs_int &v);
+	static bool GetInt64(char *s, tjs_int64 &v);
+	static bool GetBool(char *s, bool &v);
+	static bool GetCondition(char *s, tTVPWaveLoopLinkCondition &v);
+	static bool GetString(char *s, tTVPLabelStringType &v);
+
+	static bool GetEntityToken(char * & p, char **name, char **value);
+
+	static bool ReadLinkInformation(char * & p, tTVPWaveLoopLink &link);
+	static bool ReadLabelInformation(char * & p, tTVPWaveLabel &label);
+public:
+	bool ReadInformation(char * p);
+
+#ifdef TVP_IN_LOOP_TUNER
+	// output facility (currently only available with VCL interface)
+private:
+	static void PutInt(AnsiString &s, tjs_int v);
+	static void PutInt64(AnsiString &s, tjs_int64 v);
+	static void PutBool(AnsiString &s, bool v);
+	static void PutCondition(AnsiString &s, tTVPWaveLoopLinkCondition v);
+	static void PutString(AnsiString &s, tTVPLabelStringType v);
+	static void DoSpacing(AnsiString &l, int col);
+public:
+	void WriteInformation(AnsiString &s);
+#endif
+
+
+public:
 };
 //---------------------------------------------------------------------------
-
-
-/*
-new .sli format
-
-SLI2
-Link   828843   203405   Smooth
-Link   345394   134234
-Link   823985   752653   Smooth,Cond:A=0
-
-
-*/
 #endif
 

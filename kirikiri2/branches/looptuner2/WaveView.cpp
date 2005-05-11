@@ -39,58 +39,6 @@ const int LinkArrowSize = 4;
 const int LinkDirectionArrowWidth = 10;
 const int LinkDirectionInterval = 200;
 //---------------------------------------------------------------------------
-static std::vector<tTVPWaveLoopLink> Links;
-static std::vector<tTVPWaveLoopLink> &  GetLinks()
-{
-	if(Links.size() == 0)
-	{
-		tTVPWaveLoopLink link;
-		link.From = 1900000;
-		link.To = 550000;
-		link.Smooth = false;
-		link.Condition = false;
-		link.CondVar = -1;
-		Links.push_back(link);
-
-
-		link.From = 850000;
-		link.To = 2005000;
-		link.Smooth = false;
-		link.Condition = false;
-		link.CondVar = -1;
-		Links.push_back(link);
-
-		link.From = 1250000;
-		link.To = 2005000;
-		link.Smooth = false;
-		link.Condition = false;
-		link.CondVar = -1;
-		Links.push_back(link);
-
-	}
-	return Links;
-}
-//---------------------------------------------------------------------------
-
-//---------------------------------------------------------------------------
-static std::vector<tTVPWaveLabel> Labels;
-static std::vector<tTVPWaveLabel> &  GetLabels()
-{
-	if(Labels.size() == 0)
-	{
-		tTVPWaveLabel label;
-
-		label.Position = 3005000;
-		label.Name = "Label1";
-		Labels.push_back(label);
-
-		label.Position = 4005000;
-		label.Name = "Label2";
-		Labels.push_back(label);
-	}
-	return Labels;
-}
-//---------------------------------------------------------------------------
 
 
 //---------------------------------------------------------------------------
@@ -135,13 +83,7 @@ __fastcall TWaveView::TWaveView(Classes::TComponent* AOwner) :
 
 
 	FOnDoubleClick = NULL;
-/*
-	FOnWaveLButtonDown = NULL;
-	FOnLinkLButtonDown = NULL;
-	FOnLinkDragStart   = NULL;
-	FOnLinkDragOver    = NULL;
-	FOnLinkDragDrop    = NULL;
-*/
+
 	DragScrollTimer = new TTimer(this);
 	DragScrollTimer->OnTimer = OnDragScrollTimer;
 	DragScrollTimer->Interval = 100;
@@ -899,6 +841,67 @@ void __fastcall TWaveView::DrawWave(int start, bool clear)
 	}
 }
 //---------------------------------------------------------------------------
+std::vector<tTVPWaveLoopLink> & TWaveView::GetLinks()
+{
+	if(Links.size() == 0)
+	{
+		tTVPWaveLoopLink link;
+
+		link.From = 1900000;
+		link.To = 550000;
+		link.Smooth = false;
+		link.Condition = llcNone;
+		link.CondVar = -1;
+		Links.push_back(link);
+
+
+		link.From = 850000;
+		link.To = 2005000;
+		link.Smooth = false;
+		link.Condition = llcNone;
+		link.CondVar = 0;
+		Links.push_back(link);
+
+		link.From = 2250000;
+		link.To = 3005000;
+		link.Smooth = false;
+		link.Condition = llcNone;
+		link.CondVar = 0;
+		Links.push_back(link);
+
+		link.From = 2900000;
+		link.To = 650000;
+		link.Smooth = false;
+		link.Condition = llcNone;
+		link.CondVar = 0;
+		Links.push_back(link);
+
+
+		link.From =1850000;
+		link.To = 3005000;
+		link.Smooth = false;
+		link.Condition = llcNone;
+		link.CondVar = -1;
+		Links.push_back(link);
+
+		link.From = 2250000;
+		link.To = 3005000;
+		link.Smooth = false;
+		link.Condition = llcNone;
+		link.CondVar = -1;
+		Links.push_back(link);
+
+		link.From = 3250000;
+		link.To = 4005000;
+		link.Smooth = false;
+		link.Condition = llcNone;
+		link.CondVar = -1;
+		Links.push_back(link);
+
+	}
+	return Links;
+}
+//---------------------------------------------------------------------------
 void __fastcall TWaveView::NotifyLinkChanged()
 {
 	std::vector<tTVPWaveLoopLink> & links = /**/ GetLinks(); /**/
@@ -1098,11 +1101,17 @@ void __fastcall TWaveView::DrawLinkOf(const tTVPWaveLoopLink & link)
 
 	int dir_step = PixelToSample(LinkDirectionInterval);
 
+	if(link.CondVar != -1)
+		Canvas->Pen->Style = psDot;
+	else
+		Canvas->Pen->Style = psSolid;
+
 	// for from line
 	x_from = SampleToPixel(link.From - Start);
 	if(x_from >= dest_left || x_from < dest_right)
 	{
 		int y0 = y_start + link.FromTier * TVP_LGD_TIER_HEIGHT;
+		Canvas->Brush->Style = bsClear;
 		Canvas->MoveTo(x_from, y0);
 		Canvas->LineTo(x_from, y_link);
 	}
@@ -1115,6 +1124,7 @@ void __fastcall TWaveView::DrawLinkOf(const tTVPWaveLoopLink & link)
 	{
 		DrawLinkArrowAt(link.ToTier, x_to);
 		int y0 = y_start + link.ToTier * TVP_LGD_TIER_HEIGHT;
+		Canvas->Brush->Style = bsClear;
 		Canvas->MoveTo(x_to, y0);
 		Canvas->LineTo(x_to, y_link);
 	}
@@ -1122,6 +1132,7 @@ void __fastcall TWaveView::DrawLinkOf(const tTVPWaveLoopLink & link)
 	// for horizontal link line
 	if(PartIntersect(x_from, x_to, dest_left, dest_right-1))
 	{
+		Canvas->Brush->Style = bsClear;
 		if(x_from < x_to)
 		{
 			Canvas->MoveTo(x_from, y_link);
@@ -1152,6 +1163,8 @@ void __fastcall TWaveView::DrawLinkOf(const tTVPWaveLoopLink & link)
 			s += dir_step;
 		}
 	}
+
+	Canvas->Pen->Style = psSolid;
 }
 //---------------------------------------------------------------------------
 void __fastcall TWaveView::DrawLinks(void)
@@ -1456,6 +1469,23 @@ int __fastcall TWaveView::GetLinkWaveMarkAt(int x, int &linknum, bool &from_or_t
 	}
 
 	return -1;
+}
+//---------------------------------------------------------------------------
+std::vector<tTVPWaveLabel> & TWaveView::GetLabels()
+{
+	if(Labels.size() == 0)
+	{
+		tTVPWaveLabel label;
+
+		label.Position = 3005000;
+		label.Name = "ラベル1";
+		Labels.push_back(label);
+
+		label.Position = 4005000;
+		label.Name = "ラベル2、これはテストです。本日は晴天なりなり";
+		Labels.push_back(label);
+	}
+	return Labels;
 }
 //---------------------------------------------------------------------------
 void __fastcall TWaveView::DrawLabelOf(const tTVPWaveLabel & label)
@@ -1918,6 +1948,8 @@ void __fastcall TWaveView::MouseUp(TMouseButton button, TShiftState shift, int x
 		}
 		DraggingState = dsNone;
 		DragScrollTimer->Enabled = false;
+		std::vector<tTVPWaveLoopLink> & links = /**/ GetLinks(); /**/
+		std::sort(links.begin(), links.end());
 	}
 }
 //---------------------------------------------------------------------------
