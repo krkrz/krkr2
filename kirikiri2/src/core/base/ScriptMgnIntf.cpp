@@ -995,6 +995,25 @@ TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/dumpStringHeap)
 TJS_END_NATIVE_METHOD_DECL(/*func. name*/dumpStringHeap)
 #endif
 //----------------------------------------------------------------------
+#ifdef TJS_DEBUG_CALL_MISSING
+TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/setCallMissing)
+{
+	// set to call "missing" method
+	if(numparams < 1) return TJS_E_BADPARAMCOUNT;
+
+	iTJSDispatch2 *dsp = param[0]->AsObjectNoAddRef();
+
+	if(dsp)
+	{
+		tTJSVariant missing(TJS_W("missing"));
+		dsp->ClassInstanceInfo(TJS_CII_SET_MISSING, 0, &missing);
+	}
+
+	return TJS_S_OK;
+}
+TJS_END_NATIVE_METHOD_DECL(/*func. name*/setCallMissing)
+#endif
+//----------------------------------------------------------------------
 
 	TJS_END_NATIVE_MEMBERS
 }
