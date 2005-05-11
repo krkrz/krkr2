@@ -36,7 +36,22 @@ namespace TJS
 #define TJS_NIS_GETINSTANCE		0x00000002 // get native pointer
 
 #define TJS_CII_ADD				0x00000001 // register name
+										   // 'num' argument passed to CII is to be igonored.
 #define TJS_CII_GET				0x00000000 // retrieve name
+
+#define TJS_CII_SET_FINALIZE	0x00000002 // register "finalize" method name
+										   // (set empty string not to call the method)
+										   // 'num' argument passed to CII is to be igonored.
+#define TJS_CII_SET_MISSING		0x00000003 // register "missing" method name.
+										   // the method is called when the member is not present.
+										   // (set empty string not to call the method)
+										   // 'num' argument passed to CII is to be igonored.
+										   // the method is to be called with three arguments;
+										   // get_or_set    : false for get, true for set
+										   // name          : member name
+										   // value         : value property; you must
+										   //               : dereference using unary '*' operator.
+										   // the method must return true for found, false for not-found.
 
 #define TJS_OL_LOCK				0x00000001 // Lock the object
 #define TJS_OL_UNLOCK			0x00000002 // Unlock the object
