@@ -44,8 +44,10 @@ __published:	// IDE 管理のコンポーネント
 	TAction *PlayFromStartAction;
 	TToolButton *StopToolButton;
 	TAction *StopPlayAction;
-	TToolButton *ToolButton3;
+	TToolButton *PlayFromCursorToolButton;
 	TAction *PlayFromCaretAction;
+	TAction *SaveAction;
+	TToolButton *SaveToolButton;
 	void __fastcall FormDestroy(TObject *Sender);
 	void __fastcall OpenActionExecute(TObject *Sender);
 	void __fastcall ZoomInActionExecute(TObject *Sender);
@@ -55,10 +57,12 @@ __published:	// IDE 管理のコンポーネント
 	void __fastcall FormDeactivate(TObject *Sender);
 	void __fastcall StopPlayActionExecute(TObject *Sender);
 	void __fastcall PlayFromCaretActionExecute(TObject *Sender);
+	void __fastcall SaveActionExecute(TObject *Sender);
 private:	// ユーザー宣言
 	TWaveReader * Reader;
 	TWaveView *WaveView;
 	tTVPWaveLoopManager *Manager;
+	AnsiString FileName; // current filename
 
 public:		// ユーザー宣言
 	__fastcall TLoopTunerMainForm(TComponent* Owner);

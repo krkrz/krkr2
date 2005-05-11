@@ -41,8 +41,13 @@ object LoopTunerMainForm: TLoopTunerMainForm
       Top = 0
       Action = OpenAction
     end
-    object ToolButton2: TToolButton
+    object SaveToolButton: TToolButton
       Left = 23
+      Top = 0
+      Action = SaveAction
+    end
+    object ToolButton2: TToolButton
+      Left = 46
       Top = 0
       Width = 8
       Caption = 'ToolButton2'
@@ -50,17 +55,17 @@ object LoopTunerMainForm: TLoopTunerMainForm
       Style = tbsSeparator
     end
     object ZoomInToolButton: TToolButton
-      Left = 31
+      Left = 54
       Top = 0
       Action = ZoomInAction
     end
     object ZoomOutToolButton: TToolButton
-      Left = 54
+      Left = 77
       Top = 0
       Action = ZoomOutAction
     end
     object ToolButton1: TToolButton
-      Left = 77
+      Left = 100
       Top = 0
       Width = 8
       Caption = 'ToolButton1'
@@ -68,17 +73,17 @@ object LoopTunerMainForm: TLoopTunerMainForm
       Style = tbsSeparator
     end
     object PlayToolButton: TToolButton
-      Left = 85
+      Left = 108
       Top = 0
       Action = PlayFromStartAction
     end
-    object ToolButton3: TToolButton
-      Left = 108
+    object PlayFromCursorToolButton: TToolButton
+      Left = 131
       Top = 0
       Action = PlayFromCaretAction
     end
     object StopToolButton: TToolButton
-      Left = 131
+      Left = 154
       Top = 0
       Action = StopPlayAction
     end
@@ -145,6 +150,13 @@ object LoopTunerMainForm: TLoopTunerMainForm
       Caption = '停止(&S)'
       ImageIndex = 4
       OnExecute = StopPlayActionExecute
+    end
+    object SaveAction: TAction
+      Category = 'ファイル'
+      Caption = '保存(&S)'
+      Hint = 'ファイルを保存します'
+      ImageIndex = 6
+      OnExecute = SaveActionExecute
     end
   end
   object ImageList: TImageList

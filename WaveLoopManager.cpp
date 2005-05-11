@@ -3,7 +3,13 @@
 
 #include "tjsTypes.h"
 #include "WaveLoopManager.h"
+#include "CharacterSet.h"
 
+
+#ifdef TVP_IN_LOOP_TUNER
+	#define strcasecmp strcmpi
+	#define strncasecmp strncmpi
+#endif
 
 //---------------------------------------------------------------------------
 // Wave Sample Types
@@ -137,7 +143,17 @@ void tTVPWaveLoopManager::SetFlag(tjs_int index, bool f)
 void tTVPWaveLoopManager::ClearFlags()
 {
 	// note that this function is not protected by any critical sections
-	for(tjs_int i = 0; i < TVP_WL_MAX_FLAGS; i++) Flags[i] = false;
+	for(tjs_int i = 0; i < TVP_WL_MAX_FLAGS; i++) Flags[i] = 0;
+}
+//---------------------------------------------------------------------------
+void tTVPWaveLoopManager::ClearLinksAndLabels()
+{
+	// clear links and labels
+	// note that this function is not protected by any critical sections
+	Labels.clear();
+	Links.clear();
+	IsLinksSorted = false;
+	IsLabelsSorted = false;
 }
 //---------------------------------------------------------------------------
 tjs_int64 tTVPWaveLoopManager::GetPosition() const
@@ -385,8 +401,33 @@ bool tTVPWaveLoopManager::GetNearestEvent(tjs_int64 current,
 			// check condition
 			if(Links[s].CondVar != -1)
 			{
-				if(Links[s].Condition == Flags[Links[s].CondVar])
-					break; // condition matched
+				bool match = false;
+				switch(Links[s].Condition)
+				{
+				case llcNone:
+					match = true; break;
+				case llcEqual:
+					if(Links[s].RefValue == Flags[Links[s].CondVar]) match = true;
+					break;
+				case llcNotEqual:
+					if(Links[s].RefValue != Flags[Links[s].CondVar]) match = true;
+					break;
+				case llcGreater:
+					if(Links[s].RefValue >  Flags[Links[s].CondVar]) match = true;
+					break;
+				case llcGreaterOrEqual:
+					if(Links[s].RefValue >= Flags[Links[s].CondVar]) match = true;
+					break;
+				case llcLesser:
+					if(Links[s].RefValue <  Flags[Links[s].CondVar]) match = true;
+					break;
+				case llcLesserOrEqual:
+					if(Links[s].RefValue <= Flags[Links[s].CondVar]) match = true;
+					break;
+				default:
+					match = false;
+				}
+				if(match) break; // condition matched
 			}
 			else
 			{
@@ -500,6 +541,492 @@ void tTVPWaveLoopManager::ClearCrossFadeInformation()
 {
 	if(CrossFadeSamples) delete [] CrossFadeSamples, CrossFadeSamples = NULL;
 }
+//---------------------------------------------------------------------------
+bool tTVPWaveLoopManager::GetInt(char *s, tjs_int &v)
+{
+	// convert string to integer
+	tjs_int r = 0;
+	bool sign = false;
+	while(*s && *s <= 0x20) s++; // skip spaces
+	if(!*s) return false;
+	if(*s == '-')
+	{
+		sign = true;
+		s++;
+		while(*s && *s <= 0x20) s++; // skip spaces
+		if(!*s) return false;
+	}
+
+	while(*s >= '0' && *s <= '9')
+	{
+		r *= 10;
+		r += *s - '0';
+		s++;
+	}
+	if(sign) r = -r;
+	v = r;
+	return true;
+}
+//---------------------------------------------------------------------------
+bool tTVPWaveLoopManager::GetInt64(char *s, tjs_int64 &v)
+{
+	// convert string to integer
+	tjs_int64 r = 0;
+	bool sign = false;
+	while(*s && *s <= 0x20) s++; // skip spaces
+	if(!*s) return false;
+	if(*s == '-')
+	{
+		sign = true;
+		s++;
+		while(*s && *s <= 0x20) s++; // skip spaces
+		if(!*s) return false;
+	}
+
+	while(*s >= '0' && *s <= '9')
+	{
+		r *= 10;
+		r += *s - '0';
+		s++;
+	}
+	if(sign) r = -r;
+	v = r;
+	return true;
+}
+//---------------------------------------------------------------------------
+bool tTVPWaveLoopManager::GetBool(char *s, bool &v)
+{
+	// convert string to boolean
+	if(!strcasecmp(s, "True"))		{	v = true;	return true;	}
+	if(!strcasecmp(s, "False"))		{	v = false;	return true;	}
+	if(!strcasecmp(s, "Yes"))		{	v = true;	return true;	}
+	if(!strcasecmp(s, "No"))		{	v = false;	return true;	}
+	return false;
+}
+//---------------------------------------------------------------------------
+bool tTVPWaveLoopManager::GetCondition(char *s, tTVPWaveLoopLinkCondition &v)
+{
+	// get condition value
+	if(!strcasecmp(s, "no"))		{ v = llcNone;				return true;	}
+	if(!strcasecmp(s, "eq"))		{ v = llcEqual;				return true;	}
+	if(!strcasecmp(s, "ne"))		{ v = llcNotEqual;			return true;	}
+	if(!strcasecmp(s, "gt"))		{ v = llcGreater;			return true;	}
+	if(!strcasecmp(s, "ge"))		{ v = llcGreaterOrEqual;	return true;	}
+	if(!strcasecmp(s, "lt"))		{ v = llcLesser;			return true;	}
+	if(!strcasecmp(s, "le"))		{ v = llcLesserOrEqual;		return true;	}
+	return false;
+}
+//---------------------------------------------------------------------------
+bool tTVPWaveLoopManager::GetString(char *s, tTVPLabelStringType &v)
+{
+	// convert utf-8 string s to v
+
+	// compute output (unicode) size
+	tjs_int size = TVPUtf8ToWideCharString(s, NULL);
+	if(size == -1) return false; // not able to convert the string
+
+	// allocate output buffer
+	tjs_char *us = new tjs_char[size + 1];
+	try
+	{
+		TVPUtf8ToWideCharString(s, us);
+		us[size] = TJS_W('\0');
+
+#ifdef TVP_IN_LOOP_TUNER
+		// convert us (an array of wchar_t) to AnsiString
+		v = AnsiString(us);
+#else
+		// convert us (an array of wchar_t) to ttstr
+		v = ttrstr(us);
+#endif
+
+	}
+	catch(...)
+	{
+		delete [] us;
+		throw;
+	}
+	delete [] us;
+	return true;
+}
+//---------------------------------------------------------------------------
+bool tTVPWaveLoopManager::GetEntityToken(char * & p, char **name, char **value)
+{
+	// get name=value string at 'p'.
+	// returns whether the token can be got or not.
+	// on success, *id will point start of the name, and value will point
+	// start of the value. the buffer given by 'start' will be destroied.
+
+	char * namelast;
+	char * valuelast;
+	char delimiter = '\0';
+
+	// skip preceeding white spaces
+	while(isspace(*p)) p++;
+	if(!*p) return false;
+
+	// p will now be a name
+	*name = p;
+
+	// find white space or '='
+	while(!isspace(*p) && *p != '=' && *p) p++;
+	if(!*p) return false;
+
+	namelast = p;
+
+	// skip white space
+	while(isspace(*p)) p++;
+	if(!*p) return false;
+
+	// is current pointer pointing '='  ?
+	if(*p != '=') return false;
+
+	// step pointer
+	p ++;
+	if(!*p) return false;
+
+	// skip white space
+	while(isspace(*p)) p++;
+	if(!*p) return false;
+
+	// find delimiter
+	if(*p == '\'') delimiter = *p, p++;
+	if(!*p) return false;
+
+	// now p will be start of value
+	*value = p;
+
+	// find delimiter or white space or ';'
+	while(!isspace(*p) && *p != delimiter && *p != ';' && *p) p++;
+
+	// remember value last point
+	valuelast = p;
+
+	// skip last delimiter
+	if(*p == delimiter) p++;
+
+	// put null terminator
+	*namelast = '\0';
+	*valuelast = '\0';
+
+	// finish
+	return true;
+}
+//---------------------------------------------------------------------------
+bool tTVPWaveLoopManager::ReadLinkInformation(char * & p, tTVPWaveLoopLink &link)
+{
+	// read link information from 'p'.
+	// p must point '{' , which indicates start of the block.
+	if(*p != '{') return false;
+
+	p++;
+	if(!*p) return false;
+
+	do
+	{
+		// get one token from 'p'
+		char * name;
+		char * value;
+		if(!GetEntityToken(p, &name, &value))
+			return false;
+
+		if(!strcasecmp(name, "From"))
+		{	if(!GetInt64(value, link.From))					return false;}
+		else if(!strcasecmp(name, "To"))
+		{	if(!GetInt64(value, link.To))					return false;}
+		else if(!strcasecmp(name, "Smooth"))
+		{	if(!GetBool(value, link.Smooth))				return false;}
+		else if(!strcasecmp(name, "Condition"))
+		{	if(!GetCondition(value, link.Condition))		return false;}
+		else if(!strcasecmp(name, "RefValue"))
+		{	if(!GetInt(value, link.RefValue))				return false;}
+		else if(!strcasecmp(name, "CondVar"))
+		{	if(!GetInt(value, link.CondVar))				return false;}
+		else
+		{													return false;}
+
+		// skip space
+		while(isspace(*p)) p++;
+
+		// check ';'. note that this will also be a null, if no delimiters are used
+		if(*p != ';' && *p != '\0') return false;
+		p++;
+		if(!*p) return false;
+
+		// skip space
+		while(isspace(*p)) p++;
+		if(!*p) return false;
+
+		// check '}'
+		if(*p == '}') break;
+	} while(true);
+
+	p++;
+
+	return true;
+}
+//---------------------------------------------------------------------------
+bool tTVPWaveLoopManager::ReadLabelInformation(char * & p, tTVPWaveLabel &label)
+{
+	// read label information from 'p'.
+	// p must point '{' , which indicates start of the block.
+	if(*p != '{') return false;
+
+	p++;
+	if(!*p) return false;
+
+	do
+	{
+		// get one token from 'p'
+		char * name;
+		char * value;
+		if(!GetEntityToken(p, &name, &value))
+			return false;
+
+		if(!strcasecmp(name, "Position"))
+		{	if(!GetInt64(value, label.Position))			return false;}
+		else if(!strcasecmp(name, "Name"))
+		{	if(!GetString(value, label.Name))				return false;}
+		else
+		{													return false;}
+
+		// skip space
+		while(isspace(*p)) p++;
+
+		// check ';'. note that this will also be a null, if no delimiters are used
+		if(*p != ';' && *p != '\0') return false;
+		p++;
+		if(!*p) return false;
+
+		// skip space
+		while(isspace(*p)) p++;
+		if(!*p) return false;
+
+		// check '}'
+		if(*p == '}') break;
+	} while(true);
+
+	p++;
+
+	return true;
+}
+//---------------------------------------------------------------------------
+bool tTVPWaveLoopManager::ReadInformation(char * p)
+{
+	// read information from 'p'
+	char *p_org = p;
+	Links.clear();
+	Labels.clear();
+
+	while(true)
+	{
+		if((p == p_org || p[-1] == '\n') && *p == '#')
+		{
+			// line starts with '#' is a comment
+			// skip the comment
+			while(*p != '\n' && *p) p++;
+			if(!*p) break;
+
+			p ++;
+			continue;
+		}
+
+		// skip white space
+		while(isspace(*p)) p++;
+		if(!*p) break;
+
+		// read id (Link or Label)
+		if(!strncasecmp(p, "Link", 4) && !isalpha(p[4]))
+		{
+			p += 4;
+			while(isspace(*p)) p++;
+			if(!*p) return false;
+			tTVPWaveLoopLink link;
+			if(!ReadLinkInformation(p, link)) return false;
+			Links.push_back(link);
+		}
+		else if(!strncasecmp(p, "Label", 5) && !isalpha(p[5]))
+		{
+			p += 5;
+			while(isspace(*p)) p++;
+			if(!*p) return false;
+			tTVPWaveLabel label;
+			if(!ReadLabelInformation(p, label)) return false;
+			Labels.push_back(label);
+		}
+		else
+		{
+			return false; // read error
+		}
+
+		// skip white space
+		while(isspace(*p)) p++;
+		if(!*p) break;
+	}
+
+	return true; // done
+}
+//---------------------------------------------------------------------------
+#ifdef TVP_IN_LOOP_TUNER
+//---------------------------------------------------------------------------
+void tTVPWaveLoopManager::PutInt(AnsiString &s, tjs_int v)
+{
+	s += AnsiString((int)v);
+}
+//---------------------------------------------------------------------------
+void tTVPWaveLoopManager::PutInt64(AnsiString &s, tjs_int64 v)
+{
+	s += AnsiString((__int64)v);
+}
+//---------------------------------------------------------------------------
+void tTVPWaveLoopManager::PutBool(AnsiString &s, bool v)
+{
+	s += v ? "True" : "False";
+}
+//---------------------------------------------------------------------------
+void tTVPWaveLoopManager::PutCondition(AnsiString &s, tTVPWaveLoopLinkCondition v)
+{
+	switch(v)
+	{
+		case llcNone:             s += "no" ; break;
+		case llcEqual:            s += "eq" ; break;
+		case llcNotEqual:         s += "ne" ; break;
+		case llcGreater:          s += "gt" ; break;
+		case llcGreaterOrEqual:   s += "ge" ; break;
+		case llcLesser:           s += "lt" ; break;
+		case llcLesserOrEqual:    s += "le" ; break;
+	}
+}
+//---------------------------------------------------------------------------
+void tTVPWaveLoopManager::PutString(AnsiString &s, tTVPLabelStringType v)
+{
+	// convert v to a utf-8 string
+	const tjs_char *pi;
+
+#ifdef TVP_IN_LOOP_TUNER
+	WideString wstr = v;
+	pi = wstr.c_bstr();
+#else
+	pi = v.c_str();
+#endif
+
+	// count output bytes
+	int size = TVPWideCharToUtf8String(pi, NULL);
+
+	char * out = new char [size + 1];
+	try
+	{
+		// convert the string
+		TVPWideCharToUtf8String(pi, out);
+		out[size] = '\0';
+
+		// append the string with quotation
+		s += "\'" + AnsiString(out) + "\'";
+	}
+	catch(...)
+	{
+		delete [] out;
+		throw;
+	}
+	delete [] out;
+}
+//---------------------------------------------------------------------------
+void tTVPWaveLoopManager::DoSpacing(AnsiString &l, int col)
+{
+	// fill space until the string becomes specified length
+	static const char * spaces16 = "                ";
+	int length = l.Length();
+	if(length < col)
+	{
+		int remain = col - length;
+		while(remain)
+		{
+			int one_size = remain > 16 ? 16 : remain;
+			l += ((16 - one_size) + spaces16);
+			remain -= one_size;
+		}
+	}
+}
+//---------------------------------------------------------------------------
+void tTVPWaveLoopManager::WriteInformation(AnsiString &s)
+{
+	// write current link/label information into s
+
+	// write banner
+	s = "#2.00\n# Sound Loop Information (utf-8)\n# Generated by WaveLoopManager.cpp\n";
+
+	// write links
+/*
+Link { From=0000000000000000; To=0000000000000000; Smooth=False; Condition=ne; RefValue=444444444; CondVar=99; }
+*/
+	for(std::vector<tTVPWaveLoopLink>::iterator i = Links.begin();
+		i != Links.end(); i++)
+	{
+		AnsiString l;
+		l = "Link { ";
+
+		l += "From=";
+		PutInt64(l, i->From);
+		l += ";";
+		DoSpacing(l, 30);
+
+		l += "To=";
+		PutInt64(l, i->To);
+		l += ";";
+		DoSpacing(l, 51);
+
+		l += "Smooth=";
+		PutBool(l, i->Smooth);
+		l += ";";
+		DoSpacing(l, 65);
+
+		l += "Condition=";
+		PutCondition(l, i->Condition);
+		l += ";";
+		DoSpacing(l, 79);
+
+		l += "RefValue=";
+		PutInt(l, i->RefValue);
+		l += ";";
+		DoSpacing(l, 100);
+
+		l += "CondVar=";
+		PutInt(l, i->CondVar);
+		l += ";";
+		DoSpacing(l, 112);
+
+		l += "}\n";
+		s += l;
+	}
+
+
+	// write labels
+/*
+Label { Position=0000000000000000; name="                                         "; }
+*/
+	for(std::vector<tTVPWaveLabel>::iterator i = Labels.begin();
+		i != Labels.end(); i++)
+	{
+		AnsiString l;
+		l = "Label { ";
+
+		l += "Position=";
+		PutInt64(l, i->Position);
+		l += ";";
+		DoSpacing(l, 35);
+
+		l += "Name=";
+		PutString(l, i->Name);
+		l += "; ";
+		DoSpacing(l, 85);
+
+		l += "}\n";
+		s += l;
+	}
+
+}
+//---------------------------------------------------------------------------
+#endif
 //---------------------------------------------------------------------------
 
 

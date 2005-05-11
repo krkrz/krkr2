@@ -11,6 +11,7 @@ USEUNIT("WaveView.cpp");
 USEUNIT("WaveLoopManager.cpp");
 USEUNIT("DSound.cpp");
 USEFORM("LoopTunerMainUnit.cpp", LoopTunerMainForm);
+USEUNIT("CharacterSet.cpp");
 //---------------------------------------------------------------------------
 WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 {

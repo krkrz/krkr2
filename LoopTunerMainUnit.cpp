@@ -47,6 +47,47 @@ void __fastcall TLoopTunerMainForm::OnReaderProgress(TObject *sender)
 		WaveView->Invalidate();
 		if(Manager) delete Manager, Manager = NULL;
 		Manager = new tTVPWaveLoopManager(Reader);
+
+		// load link and label information
+		if(FileExists(FileName + ".sli"))
+		{
+			char *mem = NULL;
+			TFileStream *fs = new TFileStream(FileName + ".sli", fmShareDenyWrite | fmOpenRead);
+			try
+			{
+				try
+				{
+					// load into memory
+					int size = fs->Size;
+					mem = new char [size + 1];
+					fs->Read(mem, size);
+					mem[size] = '\0';
+				}
+				catch(...)
+				{
+					delete fs;
+					throw;
+				}
+				delete fs;
+
+				// read from the memory
+				if(!Manager->ReadInformation(mem))// note that this method can destory the buffer
+				{
+					throw Exception(FileName + ".sli は文法が間違っているか、"
+						"不正な形式のため、読み込むことができません");
+				}
+			}
+			catch(...)
+			{
+				if(mem) delete [] mem;
+				throw;
+			}
+			if(mem) delete [] mem;
+		}
+		else
+		{
+			// TODO: clear the links and labels
+		}
 	}
 }
 //---------------------------------------------------------------------------
@@ -56,8 +97,32 @@ void __fastcall TLoopTunerMainForm::OpenActionExecute(TObject *Sender)
 	OpenDialog->Filter = Reader->FilterString;
 	if(OpenDialog->Execute())
 	{
-		Reader->LoadWave(OpenDialog->FileName);
+		FileName = OpenDialog->FileName;
+
+		// load wave
+		Reader->LoadWave(FileName);
 	}
+}
+//---------------------------------------------------------------------------
+void __fastcall TLoopTunerMainForm::SaveActionExecute(TObject *Sender)
+{
+	// save current loop information
+	TFileStream * fs = new TFileStream(FileName  + ".sli" ,  fmShareDenyWrite | fmCreate);
+	try
+	{
+		Manager->SetLinks(WaveView->GetLinks());
+		Manager->SetLabels(WaveView->GetLabels());
+		AnsiString str;
+		Manager->WriteInformation(str);
+		Manager->ClearLinksAndLabels();
+		fs->Write(str.c_str(), str.Length());
+	}
+	catch(...)
+	{
+		delete fs;
+		throw;
+	}
+	delete fs;
 }
 //---------------------------------------------------------------------------
 void __fastcall TLoopTunerMainForm::ZoomInActionExecute(TObject *Sender)
@@ -138,6 +203,7 @@ void __fastcall TLoopTunerMainForm::FormDeactivate(TObject *Sender)
 	WaveView->ShowCaret = false;	
 }
 //---------------------------------------------------------------------------
+
 
 
 

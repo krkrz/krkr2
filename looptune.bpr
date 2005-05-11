@@ -5,7 +5,8 @@
     <VERSION value="BCB.05.03"/>
     <PROJECT value="looptune.exe"/>
     <OBJFILES value="looptune.obj WaveReader.obj RIFFWaveContext.obj TSSWaveContext.obj 
-      tvpsnd.obj WaveView.obj WaveLoopManager.obj DSound.obj LoopTunerMainUnit.obj"/>
+      tvpsnd.obj WaveView.obj WaveLoopManager.obj DSound.obj 
+      LoopTunerMainUnit.obj CharacterSet.obj"/>
     <RESFILES value="looptune.res"/>
     <DEFFILE value=""/>
     <RESDEPEN value="$(RESFILES) LoopTunerMainUnit.dfm"/>

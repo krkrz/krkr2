@@ -22,15 +22,6 @@ struct TTierMinMaxInfo
 class TWaveReader;
 //---------------------------------------------------------------------------
 typedef void __fastcall (__closure *TNotifyWavePosEvent)(TObject *Sender, int pos);
-/*
-typedef void __fastcall (__closure *TNotifyLinkEvent)(TObject *Sender, int link);
-typedef void __fastcall (__closure *TNotifyLinkDragStartEvent)(
-	TObject *Sender, int link, bool from_or_to, bool &enable_drag);
-typedef void __fastcall (__closure *TNotifyLinkDragOverEvent)(
-	TObject *Sender, int link, bool from_or_to, int pos);
-typedef void __fastcall (__closure *TNotifyLinkDragDropEvent)(
-	TObject *Sender, int link, bool from_or_to, int pos);
-*/
 //---------------------------------------------------------------------------
 class TWaveView : public TCustomControl
 {
@@ -121,12 +112,14 @@ public:
 
 //-- link drawing stuff
 private:
+	std::vector<tTVPWaveLoopLink> Links;
 	bool FShowLinks;
 	int FLinkTierCount;
 	int FHoveredLink; // -1 for not hovered
 	int FFocusedLink; // -1 for not focused
 
 public:
+	std::vector<tTVPWaveLoopLink> &  GetLinks();
 	void __fastcall NotifyLinkChanged();
 
 private:
@@ -150,6 +143,7 @@ public:
 
 //-- label drawing stuff
 private:
+	std::vector<tTVPWaveLabel> Labels;
 	bool FShowLabels;
 	int FHoveredLabel; // -1 for not hovered
 	int FFocusedLabel; // -1 for not focused
@@ -166,18 +160,12 @@ private:
 	int __fastcall GetLabelWaveMarkAt(int x, int &labelnum);
 
 public:
+	std::vector<tTVPWaveLabel> &  GetLabels();
 	__property int HoveredLabel = { read = FHoveredLabel, write = SetHoveredLabel };
 	__property int FocusedLabel = { read = FFocusedLabel, write = SetFocusedLabel };
 
 //-- input
 private:
-/*
-	TNotifyWavePosEvent FOnWaveLButtonDown;
-	TNotifyLinkEvent FOnLinkLButtonDown;
-	TNotifyLinkDragStartEvent FOnLinkDragStart;
-	TNotifyLinkDragOverEvent  FOnLinkDragOver;
-	TNotifyLinkDragDropEvent  FOnLinkDragDrop;
-*/
 	TNotifyWavePosEvent FOnDoubleClick;
 
 	enum TObjectKind { okLink, okLabel };
@@ -211,13 +199,6 @@ private:
 
 public:
 	__property TNotifyWavePosEvent OnDoubleClick = { read = FOnDoubleClick, write = FOnDoubleClick };
-/*
-	__property TNotifyWavePosEvent OnWaveLButtonDown = { read = FOnWaveLButtonDown, write = FOnWaveLButtonDown };
-	__property TNotifyLinkEvent OnLinkLButtonDown = { read = FOnLinkLButtonDown, write = FOnLinkLButtonDown };
-	__property TNotifyLinkDragStartEvent OnLinkDragStart = { read = FOnLinkDragStart, write = FOnLinkDragStart };
-	__property TNotifyLinkDragOverEvent  OnLinkDragOver  = { read = FOnLinkDragOver , write = FOnLinkDragOver  };
-	__property TNotifyLinkDragDropEvent  OnLinkDragDrop  = { read = FOnLinkDragDrop , write = FOnLinkDragDrop  };
-*/
 };
 //---------------------------------------------------------------------------
 #endif
