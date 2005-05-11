@@ -308,6 +308,51 @@ tjs_error TJS_INTF_METHOD
 
 
 
+//---------------------------------------------------------------------------
+// property object to get/set missing member
+//---------------------------------------------------------------------------
+class tTJSSimpleGetSetProperty : public tTJSDispatch
+{
+private:
+	tTJSVariant &Value;
+
+public:
+	tTJSSimpleGetSetProperty(tTJSVariant &value) : tTJSDispatch(), Value(value)
+	{
+	};
+
+	tjs_error TJS_INTF_METHOD
+	PropGet(tjs_uint32 flag, const tjs_char * membername, tjs_uint32 *hint,
+	 tTJSVariant *result,
+		iTJSDispatch2 *objthis)
+	{
+		if(membername) return TJS_E_MEMBERNOTFOUND;
+		if(result) *result = Value;
+		return TJS_S_OK;
+	}
+
+
+	tjs_error TJS_INTF_METHOD
+	PropSet(tjs_uint32 flag, const tjs_char *membername, tjs_uint32 *hint,
+	 const tTJSVariant *param,
+		iTJSDispatch2 *objthis)
+	{
+		if(membername) return TJS_E_MEMBERNOTFOUND;
+		Value = *param;
+		return TJS_S_OK;
+	}
+
+	tjs_error TJS_INTF_METHOD
+	PropSetByVS(tjs_uint32 flag, tTJSVariantString *membername,
+		const tTJSVariant *param, iTJSDispatch2 *objthis)
+	{
+		if(membername) return TJS_E_MEMBERNOTFOUND;
+		Value = *param;
+		return TJS_S_OK;
+	}
+
+};
+//---------------------------------------------------------------------------
 
 
 //---------------------------------------------------------------------------
@@ -323,6 +368,8 @@ void TJSDoRehash() { TJSGlobalRebuildHashMagic ++; }
 // tTJSCustomObject
 //---------------------------------------------------------------------------
 tjs_int TJSObjectHashBitsLimit = 32;
+static ttstr FinalizeName;
+static ttstr MissingName;
 //---------------------------------------------------------------------------
 void tTJSCustomObject::tTJSSymbolData::ReShare()
 {
@@ -353,6 +400,16 @@ tTJSCustomObject::tTJSCustomObject(tjs_int hashbits)
 	IsInvalidated = false;
 	IsInvalidating = false;
 	CallFinalize = true;
+	CallMissing = false;
+	ProsessingMissing = false;
+	if(FinalizeName.IsEmpty())
+	{
+		// first time; initialize 'finalize' name and 'missing' name
+		FinalizeName = TJSMapGlobalStringMap(TJS_W("finalize"));
+		MissingName  = TJSMapGlobalStringMap(TJS_W("missing"));
+	}
+	finalize_name = FinalizeName;
+	missing_name = MissingName;
 	for(tjs_int i=0; i<TJS_MAX_NATIVE_CLASS; i++)
 		ClassIDs[i] = (tjs_int32)-1;
 }
@@ -396,7 +453,6 @@ void tTJSCustomObject::Finalize(void)
 	// call this object's "finalize"
 	if(CallFinalize)
 	{
-		static tTJSString finalize_name(TJS_W("finalize"));
 		FuncCall(0, finalize_name.c_str(), finalize_name.GetHint(), NULL, 0,
 			NULL, this);
 	}
@@ -416,6 +472,99 @@ void tTJSCustomObject::BeforeDestruction(void)
 	if(TJSObjectHashMapEnabled())
 		TJSSetObjectHashFlag(this, TJS_OHMF_DELETING, TJS_OHMF_SET);
 	_Finalize();
+}
+//---------------------------------------------------------------------------
+bool tTJSCustomObject::CallGetMissing(const tjs_char *name, tTJSVariant &result)
+{
+	// call 'missing' method for PopGet
+	if(ProsessingMissing) return false;
+	ProsessingMissing = true;
+	bool res = false;
+	try
+	{
+		tTJSVariant val;
+		tTJSSimpleGetSetProperty * prop = new tTJSSimpleGetSetProperty(val);
+		try
+		{
+			tTJSVariant args[3];
+			args[0] = (tjs_int) false; // false: get
+			args[1] = name;        // member name
+			args[2] = prop;
+			tTJSVariant *pargs[3] = {args +0, args +1, args +2};
+			tTJSVariant funcresult;
+			tjs_error er = 
+				FuncCall(0, missing_name.c_str(), missing_name.GetHint(), &funcresult,
+					3, pargs, this);
+			if(TJS_FAILED(er))
+			{
+				res = false;
+			}
+			else
+			{
+				res = (bool)(tjs_int)funcresult;
+				result = val;
+			}
+		}
+		catch(...)
+		{
+			prop->Release();
+			throw;
+		}
+		prop->Release();
+	}
+	catch(...)
+	{
+		ProsessingMissing = false;
+		throw;
+	}
+	ProsessingMissing = false;
+	return res;
+}
+//---------------------------------------------------------------------------
+bool tTJSCustomObject::CallSetMissing(const tjs_char *name, const tTJSVariant &value)
+{
+	// call 'missing' method for PopSet
+	if(ProsessingMissing) return false;
+	ProsessingMissing = true;
+	bool res = false;
+	try
+	{
+		tTJSVariant val(value);
+		tTJSSimpleGetSetProperty * prop = new tTJSSimpleGetSetProperty(val);
+		try
+		{
+			tTJSVariant args[3];
+			args[0] = (tjs_int) true; // true: set
+			args[1] = name;        // member name
+			args[2] = prop;
+			tTJSVariant *pargs[3] = {args +0, args +1, args +2};
+			tTJSVariant funcresult;
+			tjs_error er = 
+				FuncCall(0, missing_name.c_str(), missing_name.GetHint(), &funcresult,
+					3, pargs, this);
+			if(TJS_FAILED(er))
+			{
+				res = false;
+			}
+			else
+			{
+				res = (bool)(tjs_int)funcresult;
+			}
+		}
+		catch(...)
+		{
+			prop->Release();
+			throw;
+		}
+		prop->Release();
+	}
+	catch(...)
+	{
+		ProsessingMissing = false;
+		throw;
+	}
+	ProsessingMissing = false;
+	return res;
 }
 //---------------------------------------------------------------------------
 tTJSCustomObject::tTJSSymbolData * tTJSCustomObject::Add(const tjs_char * name,
@@ -1173,7 +1322,19 @@ tTJSCustomObject::FuncCall(tjs_uint32 flag, const tjs_char * membername, tjs_uin
 	}
 
 	tTJSSymbolData *data =  Find(membername, hint);
-	if(!data) return TJS_E_MEMBERNOTFOUND; // member not found
+
+	if(!data)
+	{
+		if(CallMissing)
+		{
+			// call 'missing' method
+			tTJSVariant value_func;
+			if(CallGetMissing(membername, value_func))
+				return TJSDefaultFuncCall(flag, value_func, result, numparams, param, objthis);
+		}
+
+		return TJS_E_MEMBERNOTFOUND; // member not found
+	}
 
 	return TJSDefaultFuncCall(flag, GetValue(data), result, numparams, param, objthis);
 }
@@ -1244,6 +1405,16 @@ tTJSCustomObject::PropGet(tjs_uint32 flag, const tjs_char * membername, tjs_uint
 
 
 	tTJSSymbolData * data = Find(membername, hint);
+	if(!data)
+	{
+		if(CallMissing)
+		{
+			// call 'missing' method
+			tTJSVariant value;
+			if(CallGetMissing(membername, value))
+				return TJSDefaultPropGet(flag, value, result, objthis);
+		}
+	}
 
 	if(!data && flag & TJS_MEMBERENSURE)
 	{
@@ -1310,6 +1481,17 @@ tTJSCustomObject::PropSet(tjs_uint32 flag, const tjs_char *membername, tjs_uint3
 	}
 
 	tTJSSymbolData * data;
+	if(CallMissing)
+	{
+		data = Find(membername, hint);
+		if(!data)
+		{
+			// call 'missing' method
+			if(CallSetMissing(membername, *param))
+				return TJS_S_OK;
+		}
+	}
+
 	if(flag & TJS_MEMBERENSURE)
 		data = Add(membername, hint); // create a member when TJS_MEMBERENSURE is specified
 	else
@@ -1394,6 +1576,17 @@ tTJSCustomObject::PropSetByVS(tjs_uint32 flag, tTJSVariantString *membername,
 	}
 
 	tTJSSymbolData * data;
+	if(CallMissing)
+	{
+		data = Find((const tjs_char *)(*membername), membername->GetHint());
+		if(!data)
+		{
+			// call 'missing' method
+			if(CallSetMissing((const tjs_char *)(*membername), *param))
+				return TJS_S_OK;
+		}
+	}
+
 	if(flag & TJS_MEMBERENSURE)
 		data = Add(membername); // create a member when TJS_MEMBERENSURE is specified
 	else
@@ -1511,6 +1704,17 @@ tTJSCustomObject::Invalidate(tjs_uint32 flag, const tjs_char *membername, tjs_ui
 
 	tTJSSymbolData * data = Find(membername, hint);
 
+	if(!data)
+	{
+		if(CallMissing)
+		{
+			// call 'missing' method
+			tTJSVariant value;
+			if(CallGetMissing(membername, value))
+				return TJSDefaultInvalidate(flag, value, objthis);
+		}
+	}
+
 	if(!data) return TJS_E_MEMBERNOTFOUND; // not found
 
 	return TJSDefaultInvalidate(flag, GetValue(data), objthis);
@@ -1545,6 +1749,17 @@ tTJSCustomObject::IsValid(tjs_uint32 flag, const tjs_char *membername, tjs_uint3
 	}
 
 	tTJSSymbolData * data = Find(membername, hint);
+
+	if(!data)
+	{
+		if(CallMissing)
+		{
+			// call 'missing' method
+			tTJSVariant value;
+			if(CallGetMissing(membername, value))
+				return TJSDefaultIsValid(flag, value, objthis);
+		}
+	}
 
 	if(!data) return TJS_E_MEMBERNOTFOUND; // not found
 
@@ -1586,6 +1801,17 @@ tTJSCustomObject::CreateNew(tjs_uint32 flag, const tjs_char * membername, tjs_ui
 	}
 
 	tTJSSymbolData * data = Find(membername, hint);
+
+	if(!data)
+	{
+		if(CallMissing)
+		{
+			// call 'missing' method
+			tTJSVariant value;
+			if(CallGetMissing(membername, value))
+				return TJSDefaultCreateNew(flag, value, result, numparams, param, objthis);
+		}
+	}
 
 	if(!data) return TJS_E_MEMBERNOTFOUND; // not found
 
@@ -1679,6 +1905,17 @@ tTJSCustomObject::IsInstanceOf(tjs_uint32 flag, const tjs_char *membername, tjs_
 
 	tTJSSymbolData * data = Find(membername, hint);
 
+	if(!data)
+	{
+		if(CallMissing)
+		{
+			// call 'missing' method
+			tTJSVariant value;
+			if(CallGetMissing(membername, value))
+				return TJSDefaultIsInstanceOf(flag, value, classname, objthis);
+		}
+	}
+
 	if(!data) return TJS_E_MEMBERNOTFOUND; // not found
 
 	return TJSDefaultIsInstanceOf(flag, GetValue(data), classname, objthis);
@@ -1761,6 +1998,15 @@ tTJSCustomObject::Operation(tjs_uint32 flag, const tjs_char *membername, tjs_uin
 		return TJS_E_INVALIDPARAM;
 
 	tTJSSymbolData * data = Find(membername, hint);
+
+	if(!data)
+	{
+		if(CallMissing)
+		{
+			// call default operation
+			return inherited::Operation(flag, membername, hint, result, param, objthis);
+		}
+	}
 
 	if(!data) return TJS_E_MEMBERNOTFOUND; // not found
 
@@ -1856,8 +2102,10 @@ tTJSCustomObject::NativeInstanceSupport(tjs_uint32 flag, tjs_int32 classid,
 tjs_error TJS_INTF_METHOD 
 tTJSCustomObject::ClassInstanceInfo(tjs_uint32 flag, tjs_uint num, tTJSVariant *value)
 {
-	if(flag == TJS_CII_ADD)
+	switch(flag)
 	{
+	case TJS_CII_ADD:
+	  {
 		// add value
 		ttstr name = value->AsStringNoAddRef();
 		if(TJSObjectHashMapEnabled() && ClassNames.size() == 0)
@@ -1867,15 +2115,35 @@ tTJSCustomObject::ClassInstanceInfo(tjs_uint32 flag, tjs_uint num, tTJSVariant *
 				// registration is from descendant to ancestor.
 		ClassNames.push_back(name);
 		return TJS_S_OK;
-	}
+	  }
 
-	if(flag == TJS_CII_GET)
-	{
+	case TJS_CII_GET:
+	  {
 		// get value
 		if(num>=ClassNames.size()) return TJS_E_FAIL;
 		*value = ClassNames[num];
 		return TJS_S_OK;
+	  }
+
+	case TJS_CII_SET_FINALIZE:
+	  {
+		// set 'finalize' method name
+		finalize_name = *value;
+		CallFinalize = !finalize_name.IsEmpty();
+		return TJS_S_OK;
+	  }
+
+	case TJS_CII_SET_MISSING:
+	  {
+		// set 'missing' method name
+		missing_name = *value;
+		CallMissing = !missing_name.IsEmpty();
+		return TJS_S_OK;
+	  }
+
+
 	}
+
 	return TJS_E_NOTIMPL;
 }
 //---------------------------------------------------------------------------

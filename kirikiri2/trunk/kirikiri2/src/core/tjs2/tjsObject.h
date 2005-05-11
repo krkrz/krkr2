@@ -492,6 +492,10 @@ public:
 protected:
 	bool GetValidity() const { return !IsInvalidated; }
 	bool CallFinalize; // set false if this object does not need to call "finalize"
+	ttstr finalize_name; // name of the 'finalize' method
+	bool CallMissing; // set true if this object should call 'missing' method
+	bool ProsessingMissing; // true if 'missing' method is being called
+	ttstr missing_name; // name of the 'missing' method
 	virtual void Finalize(void);
 	std::vector<ttstr > ClassNames;
 
@@ -523,6 +527,9 @@ private:
 			if(dsp == (iTJSDispatch2*)this) this->AddRef();
 		}
 	}
+
+	bool CallGetMissing(const tjs_char *name, tTJSVariant &result);
+	bool CallSetMissing(const tjs_char *name, const tTJSVariant &value);
 
 	tTJSSymbolData * Add(const tjs_char * name, tjs_uint32 *hint);
 		// Adds the symbol, returns the newly created data;
