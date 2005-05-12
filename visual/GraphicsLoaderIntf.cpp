@@ -1006,18 +1006,42 @@ void TVPLoadPNG(void* formatdata, void *callbackdata, tTVPGraphicSizeCallback si
 		png_read_info(png_ptr,info_ptr);
 
 		// retrieve IHDR
-/*
-extern PNG_EXPORT(png_uint_32,png_get_IHDR) PNGARG((png_structp png_ptr,
-   png_infop info_ptr, png_uint_32 *width, png_uint_32 *height,
-   int *bit_depth, int *color_type, int *interlace_type,
-   int *compression_type, int *filter_type));
-*/
 		png_uint_32 width,height;
 		int bit_depth,color_type,interlace_type,compression_type,filter_type;
 		png_get_IHDR(png_ptr,info_ptr,&width,&height,&bit_depth,&color_type,
 			&interlace_type,&compression_type,&filter_type);
 
 		if(bit_depth==16) png_set_strip_16(png_ptr);
+
+		// retrieve offset information
+		png_int_32 offset_x, offset_y;
+		int offset_unit_type;
+		if(metainfopushcallback &&
+			png_get_oFFs(png_ptr, info_ptr, &offset_x, &offset_y, &offset_unit_type))
+		{
+			// push offset information into metainfo data
+			static ttstr offs_x(TJS_W("offs_x"));
+			static ttstr offs_y(TJS_W("offs_y"));
+			static ttstr offs_unit(TJS_W("offs_unit"));
+			static ttstr pixel(TJS_W("pixel"));
+			static ttstr micrometer(TJS_W("micrometer"));
+			static ttstr unknown(TJS_W("unknown"));
+			metainfopushcallback(callbackdata, offs_x, ttstr((tjs_int)offset_x));
+			metainfopushcallback(callbackdata, offs_y, ttstr((tjs_int)offset_y));
+			switch(offset_unit_type)
+			{
+			case PNG_OFFSET_PIXEL:
+				metainfopushcallback(callbackdata, offs_unit, pixel);
+				break;
+			case PNG_OFFSET_MICROMETER:
+				metainfopushcallback(callbackdata, offs_unit, micrometer);
+				break;
+			default:
+				metainfopushcallback(callbackdata, offs_unit, unknown);
+				break;
+			}
+		}
+
 
 		if(palettized)
 		{
