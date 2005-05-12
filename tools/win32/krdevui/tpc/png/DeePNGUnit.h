@@ -46,16 +46,39 @@ class TDeePNG : public Graphics::TBitmap
 {
 private:
 protected:
+	bool ofs_set;
+	int ofs_x;
+	int ofs_y;
+	int ofs_unit;
 
 public:
 	// コンストラクタとデストラクタ
 	__fastcall TDeePNG(void);
 	__fastcall ~TDeePNG(void);
 
-
 	// Stream I/O  のオーバーライド
 	void __fastcall LoadFromStream(Classes::TStream * Stream);
 	void __fastcall SaveToStream(Classes::TStream * Stream);
+
+	// オフセット
+	void SetOffset(int ofs_x, int ofs_y, int ofs_unit)
+	{
+		this->ofs_x = ofs_x;
+		this->ofs_y = ofs_y;
+		this->ofs_unit = ofs_unit;
+		this->ofs_set = true;
+	}
+	bool GetOffset(int &ofs_x, int &ofs_y, int &ofs_unit)
+	{
+		if(!this->ofs_set) return false;
+		ofs_x = this->ofs_x;
+		ofs_y = this->ofs_y;
+		ofs_unit = this->ofs_unit;
+		return true;
+	}
+	// タグ
+	void SetTags(TStringList *tags); // set tag information from tags
+	void AppendTags(TStringList *tags); // append tag information to tags
 
 public:
 };

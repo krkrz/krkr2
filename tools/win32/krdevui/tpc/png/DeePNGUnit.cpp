@@ -238,6 +238,7 @@ static void __fastcall DeePNG_read_row_callback(png_structp png_ptr, png_uint_32
 __fastcall TDeePNG::TDeePNG(void)
 {
 	// constructor
+	ofs_set = false;
 }
 //---------------------------------------------------------------------------
 __fastcall TDeePNG::~TDeePNG(void)
@@ -314,6 +315,21 @@ void __fastcall TDeePNG::LoadFromStream(Classes::TStream * Stream)
 			break;
 		default:
 			throw EDeePNG("EDeePNG : Non-supported color type.");
+		}
+
+		// retrieve offset information
+		png_int_32 offset_x, offset_y;
+		int offset_unit_type;
+		if(png_get_oFFs(png_ptr, info_ptr, &offset_x, &offset_y, &offset_unit_type))
+		{
+			ofs_x = offset_x;
+			ofs_y = offset_y;
+			ofs_unit = offset_unit_type;
+			ofs_set = true;
+		}
+		else
+		{
+			ofs_set = false;
 		}
 
 		// check size
@@ -484,6 +500,10 @@ void __fastcall TDeePNG::SaveToStream(Classes::TStream * Stream)
 			PNG_COMPRESSION_TYPE_DEFAULT,
 			PNG_FILTER_TYPE_DEFAULT);
 
+		// set oFFs
+		if(ofs_set)
+			png_set_oFFs(png_ptr, info_ptr, ofs_x, ofs_y, ofs_unit);
+
 		// set palette
 		if(color_type == PNG_COLOR_TYPE_PALETTE)
 		{
@@ -589,6 +609,47 @@ void __fastcall TDeePNG::SaveToStream(Classes::TStream * Stream)
 	}
 
 	png_destroy_write_struct(&png_ptr, &info_ptr);
+}
+//---------------------------------------------------------------------------
+void TDeePNG::SetTags(TStringList *tags)
+{
+	if(tags)
+	{
+		AnsiString offs_x = tags->Values["offs_x"];
+		AnsiString offs_y = tags->Values["offs_y"];
+		AnsiString offs_unit = tags->Values["offs_unit"];
+		if(offs_x != "" && offs_y != "" &&
+			(offs_unit == "pixel" || offs_unit == "micrometer"))
+		{
+			int unit ;
+			if(offs_unit == "pixel")
+				unit = PNG_OFFSET_PIXEL;
+			else if(offs_unit == "micrometer")
+				unit = PNG_OFFSET_MICROMETER;
+			SetOffset(offs_x.ToInt(), offs_y.ToInt(), unit);
+		}
+	}
+}
+//---------------------------------------------------------------------------
+void TDeePNG::AppendTags(TStringList *tags)
+{
+	if(tags && ofs_set)
+	{
+		tags->Append("offs_x=" + AnsiString(ofs_x));
+		tags->Append("offs_y=" + AnsiString(ofs_y));
+		switch(ofs_unit)
+		{
+		case PNG_OFFSET_PIXEL:
+			tags->Append("offs_unit=pixel");
+			break;
+		case PNG_OFFSET_MICROMETER:
+			tags->Append("offs_unit=micrometer");
+			break;
+		default:
+			tags->Append("offs_unit=unknown");
+			break;
+		}
+	}
 }
 //---------------------------------------------------------------------------
 static void InitTDeePNG()
