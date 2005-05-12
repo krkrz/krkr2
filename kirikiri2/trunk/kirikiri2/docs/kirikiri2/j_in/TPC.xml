@@ -99,7 +99,7 @@ Photoshop‚Ìu’Êív‚Í‹g—¢‹g—¢‚ÌƒAƒ‹ƒtƒ@‡¬Au•¢‚¢Ä‚«(ƒŠƒjƒA)v‚Í‹g—¢‹g—¢‚Ì‰ÁŽ
 
 <dt>PNG</dt>
 <dd>
-@ƒtƒ‹ƒJƒ‰[‚Ì PNGA‚ ‚é‚¢‚ÍƒAƒ‹ƒtƒ@ƒ`ƒƒƒ“ƒlƒ‹•t‚«‚Ì PNG ‚Å‚·B
+@ƒtƒ‹ƒJƒ‰[‚Ì PNGA‚ ‚é‚¢‚ÍƒAƒ‹ƒtƒ@ƒ`ƒƒƒ“ƒlƒ‹•t‚«‚Ì PNG ‚Å‚·B<r/>
 </dd>
 
 <dt>TLG5</dt>
@@ -108,8 +108,6 @@ Photoshop‚Ìu’Êív‚Í‹g—¢‹g—¢‚ÌƒAƒ‹ƒtƒ@‡¬Au•¢‚¢Ä‚«(ƒŠƒjƒA)v‚Í‹g—¢‹g—¢‚Ì‰ÁŽ
 <note>
 @TLG5 Œ`Ž®‚Íˆ³k‚ÉŒ‹\ŽžŠÔ‚ª‚©‚©‚è‚Ü‚·BƒvƒƒOƒ‰ƒ€‚ªŽ~‚Ü‚Á‚Ä‚µ‚Ü‚Á‚½‚æ‚¤‚ÉŒ©‚¦‚é‚©‚à’m‚ê‚Ü‚¹‚ñB
 </note>
-@TLGŒ`Ž®‚É‚Â‚¢‚Ä‚ÍA‰æ‘œƒtƒH[ƒ}ƒbƒgƒRƒ“ƒo[ƒ^‚Íuƒ^ƒOî•ñv‚ð‘‚«o‚µ‚Ü‚·Buƒ^ƒOî•ñv‚ÍA‰æ‘œ‚Ç‚Ì‚æ‚¤‚É•\Ž¦‚³‚ê‚é‚×‚«‚©‚È‚Ç‚ðŠÜ‚Þî•ñ‚ÅA‰æ‘œƒtƒH[ƒ}ƒbƒgƒRƒ“ƒo[ƒ^‚Íuƒ^ƒOî•ñv‚Æ‚µ‚Äumodev‚ð‰æ‘œ’†‚É‘‚«o‚µ‚Ü‚·Bu•s“§–¾‚È‰æ‘œv‚Ìê‡‚Ímode=opaque‚ÅAu“§–¾•”•ª‚Ì‚ ‚é‰æ‘œv‚Åo—ÍŒ`Ž®‚ªltAddAlpha‚Å‚È‚¯‚ê‚Îmode=alphaAo—ÍŒ`Ž®‚ªltAddAlpha‚È‚ç‚Îmode=addalpha‚Æ‚¢‚¤î•ñ‚ð‘‚«o‚µ‚Ü‚·B‚±‚Ìƒ^ƒOî•ñ‚Í<at href="f_Layer_loadImages.html">Layer.loadImages</at>ƒƒ\ƒbƒh‚Ì–ß‚è’l‚Æ‚µ‚Ä“¾‚é‚±‚Æ‚ª‚Å‚«‚Ü‚·B<r/>
-@KAG‚Ìê‡A‚±‚ê‚Íimageƒ^ƒO‚Ìmode‘®«‚É‚»‚Ì‚Ü‚Ü‘Î‰ž‚µAimageƒ^ƒO‚Åmode‘®«‚ðÈ—ª‚µ‚½‚Æ‚«‚Ì‰Šú’l‚É‚È‚è‚Ü‚·B‚Â‚Ü‚èAKAG‚Å‚Ímode‘®«‚ðŽw’è‚µ‚È‚­‚Ä‚àAŽ©“®“I‚É‚»‚Ì‰æ‘œ‚É“K‚µ‚½mode‘®«‚ªÝ’è‚³‚ê‚é‚ÆŒ¾‚¤‚±‚Æ‚É‚È‚è‚Ü‚·B<r/>
 </dd>
 
 <dt>TLG6</dt>
@@ -130,6 +128,26 @@ TLG6‰æ‘œ‚É‚Â‚¢‚Ä‚ÍTLG5‰æ‘œ‚Æ“¯‚¶‚­Aƒ^ƒOî•ñ‚ð‘‚«o‚µ‚Ü‚·B<r/>
 @ƒƒCƒ“/ƒ}ƒXƒN•ª—£Œ`Ž®‚É TLG5 ‚â TLG6 Œ`Ž®‚ðŽw’è‚·‚é‚±‚Æ‚Í‚Å‚«‚Ü‚¹‚ñB
 </dd>
 </dl>
+</para>
+
+<para>
+<ptitle>ƒ^ƒOî•ñ</ptitle>
+‰æ‘œƒtƒH[ƒ}ƒbƒgƒRƒ“ƒo[ƒ^‚ÍATLG‰æ‘œ‚âPNG‰æ‘œ‚Éuƒ^ƒOî•ñv‚ð‘‚«o‚µ‚Ü‚·Buƒ^ƒOî•ñv‚ÍA‰æ‘œ‚Ç‚Ì‚æ‚¤‚É•\Ž¦‚³‚ê‚é‚×‚«‚©‚È‚Ç‚ðŠÜ‚Þî•ñ‚Å‚·B‚±‚Ìƒ^ƒOî•ñ‚Í<at href="f_Layer_loadImages.html">Layer.loadImages</at>ƒƒ\ƒbƒh‚Ì–ß‚è’l‚Æ‚µ‚Ä“¾‚é‚±‚Æ‚ª‚Å‚«‚Ü‚·B<r/><r/>
+ˆÈ‰º‚Ìƒ^ƒOî•ñ‚ª‘‚«o‚³‚ê‚Ü‚·B<r/>
+<dl>
+<dt><kw>mode</kw> (TLG‚Ì‚Ý)</dt>
+<dd>
+‰æ‘œ‚Ì•\Ž¦ƒ‚[ƒh‚Å‚·Bu•s“§–¾‚È‰æ‘œv‚Ìê‡‚Ímode=opaque‚ÅAu“§–¾•”•ª‚Ì‚ ‚é‰æ‘œv‚Åo—ÍŒ`Ž®‚ªltAddAlpha‚Å‚È‚¯‚ê‚Îmode=alphaAo—ÍŒ`Ž®‚ªltAddAlpha‚È‚ç‚Îmode=addalpha‚Æ‚¢‚¤î•ñ‚ð‘‚«o‚µ‚Ü‚·B<r/>
+@KAG‚Ìê‡A‚±‚ê‚Íimageƒ^ƒO‚Ìmode‘®«‚É‚»‚Ì‚Ü‚Ü‘Î‰ž‚µAimageƒ^ƒO‚Åmode‘®«‚ðÈ—ª‚µ‚½‚Æ‚«‚Ì‰Šú’l‚É‚È‚è‚Ü‚·B‚Â‚Ü‚èAKAG‚Å‚Ímode‘®«‚ðŽw’è‚µ‚È‚­‚Ä‚àAŽ©“®“I‚É‚»‚Ì‰æ‘œ‚É“K‚µ‚½mode‘®«‚ªÝ’è‚³‚ê‚é‚ÆŒ¾‚¤‚±‚Æ‚É‚È‚è‚Ü‚·B<r/>
+</dd>
+
+<dt><kw>offs_x</kw> <kw>offs_y</kw> <kw>offs_unit</kw> (TLG, PNG)</dt>
+<dd>
+@‚±‚ê‚ç‚ÍA•ÏŠ·Œ³‚ªPNG‚ÅA‚»‚ÌPNG‚ª‚»‚Ì‰æ‘œ‚Ì¶ã‹÷‚©‚ç‚ÌƒIƒtƒZƒbƒg(oFFsƒ`ƒƒƒ“ƒN)‚Ìî•ñ‚ðŠÜ‚ñ‚Å‚¢‚éê‡‚Ì‚Ý‚Éo—Í‚³‚ê‚Ü‚·B<r/>
+@offs_x ‚Í‰¡ˆÊ’u‚Ì¶’[‚©‚ç‚Ì‹——£Aoffs_y ‚ÍcˆÊ’u‚Ìã’[‚©‚ç‚Ì‹——£‚Å‚·Boffs_unit ‚Í <kw>pixel</kw> ‚© <kw>micrometer</kw> ‚Ì‚Ç‚¿‚ç‚©‚É‚È‚èA‹——£‚Ì’PˆÊ‚ðŽ¦‚µ‚Ü‚·B<r/>
+</dd>
+</dl>
+
 </para>
 
 <para>

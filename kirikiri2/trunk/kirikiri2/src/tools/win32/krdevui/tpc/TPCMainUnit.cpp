@@ -92,11 +92,12 @@ static AnsiString AddImageExtension(AnsiString base, int type)
 	}
 }
 //---------------------------------------------------------------------------
-static void SaveImage(Graphics::TBitmap *bmp, AnsiString filename, int type, int jpegq)
+static void SaveImage(Graphics::TBitmap *bmp, AnsiString filename, int type, int jpegq, TStringList *tags)
 {
 	// save the image
 	// type : 0(BMP) 1(JPEG) 2(PNG)
 	// jpeg : JPEG quality
+	// tags : meta information (for PNG)
 	// the extension is to be automatically added
 	if(type == 0)
 	{
@@ -127,6 +128,7 @@ static void SaveImage(Graphics::TBitmap *bmp, AnsiString filename, int type, int
 		try
 		{
 			image->Assign(bmp);
+			image->SetTags(tags);
 			image->SaveToFile(filename + ".png");
 		}
 		catch(...)
@@ -395,7 +397,7 @@ static void BindMaskToMain(Graphics::TBitmap * main, Graphics::TBitmap * mask)
 }
 //---------------------------------------------------------------------------
 static Graphics::TBitmap *LoadSingleImage(AnsiString infile,
-	bool & input_is_addalpha, bool & output_is_addalpha)
+	bool & input_is_addalpha, bool & output_is_addalpha, TStringList *tags)
 {
 	// load image
 	AnsiString ext = ExtractFileExt(infile).LowerCase();
@@ -412,6 +414,7 @@ static Graphics::TBitmap *LoadSingleImage(AnsiString infile,
 			try
 			{
 				png->LoadFromFile(infile);
+				png->AppendTags(tags);
 				bmp->Assign(png);
 			}
 			catch(...)
@@ -469,11 +472,11 @@ static Graphics::TBitmap *LoadSingleImage(AnsiString infile,
 }
 //---------------------------------------------------------------------------
 static Graphics::TBitmap * LoadImage(AnsiString infile,
-	bool & input_is_addalpha, bool & output_is_addalpha)
+	bool & input_is_addalpha, bool & output_is_addalpha, TStringList *tags)
 {
 	// load image
 	Graphics::TBitmap * bmp = LoadSingleImage(infile,
-		input_is_addalpha, output_is_addalpha);
+		input_is_addalpha, output_is_addalpha, tags);
 	Graphics::TBitmap * mask = NULL;
 
 	try
@@ -484,13 +487,13 @@ static Graphics::TBitmap * LoadImage(AnsiString infile,
 		bool in_add_alpha = false; // dummy
 		bool out_add_alpha = false; // dummy
 		if(FileExists(maskfile + ".bmp"))
-			mask = LoadSingleImage(maskfile + ".bmp", in_add_alpha, out_add_alpha);
+			mask = LoadSingleImage(maskfile + ".bmp", in_add_alpha, out_add_alpha, NULL);
 		else if(FileExists(maskfile + ".png"))
-			mask = LoadSingleImage(maskfile + ".png", in_add_alpha, out_add_alpha);
+			mask = LoadSingleImage(maskfile + ".png", in_add_alpha, out_add_alpha, NULL);
 		else if(FileExists(maskfile + ".jpg"))
-			mask = LoadSingleImage(maskfile + ".jpg", in_add_alpha, out_add_alpha);
+			mask = LoadSingleImage(maskfile + ".jpg", in_add_alpha, out_add_alpha, NULL);
 		else if(FileExists(maskfile + ".jpeg"))
-			mask = LoadSingleImage(maskfile + ".jpeg", in_add_alpha, out_add_alpha);
+			mask = LoadSingleImage(maskfile + ".jpeg", in_add_alpha, out_add_alpha, NULL);
 
 		if(mask)
 		{
@@ -903,7 +906,8 @@ bool __fastcall TTPCMainForm::ProcessFile(AnsiString infile)
 		// read input
 		bool input_is_add_alpha  = TranspAssumeInputIsAddAlphaCheckBox->Checked;
 		bool output_is_add_alpha = TranspOutputAddAlphaFormatCheckBox->Checked;
-		inbmp = LoadImage(infile, input_is_add_alpha, output_is_add_alpha);
+		std::auto_ptr<TStringList> tags(new TStringList());
+		inbmp = LoadImage(infile, input_is_add_alpha, output_is_add_alpha, tags.get());
 
 		// overwrite check
 		if(!OverwriteCheckBox->Checked)
@@ -1022,6 +1026,7 @@ bool __fastcall TTPCMainForm::ProcessFile(AnsiString infile)
 				try
 				{
 					png->Assign(inbmp);
+					png->SetTags(tags.get());
 					png->SaveToFile(out_base + ".png");
 				}
 				catch(...)
@@ -1033,13 +1038,11 @@ bool __fastcall TTPCMainForm::ProcessFile(AnsiString infile)
 			}
 			else if(TranspTLG5FormatRadioButton->Checked)
 			{
-				std::auto_ptr<TStringList> tags(new TStringList());
 				tags->Append(output_is_add_alpha ? "mode=addalpha":"mode=alpha");
 				SaveTLGWithMetaInfo(tags.get(), inbmp, out_base + ".tlg", SaveTLG5);
 			}
 			else if(TranspTLG6FormatRadioButton->Checked)
 			{
-				std::auto_ptr<TStringList> tags(new TStringList());
 				tags->Append(output_is_add_alpha ? "mode=addalpha":"mode=alpha");
 				SaveTLGWithMetaInfo(tags.get(), inbmp, out_base + ".tlg", SaveTLG6);
 			}
@@ -1049,8 +1052,8 @@ bool __fastcall TTPCMainForm::ProcessFile(AnsiString infile)
 				Graphics::TBitmap *mask = SeparateMask(inbmp);
 				try
 				{
-					SaveImage(inbmp, out_base, TranspMainFormatComboBox->ItemIndex, TranspMainJPEGQuality);
-					SaveImage(mask, out_base + "_m", TranspMaskFormatComboBox->ItemIndex, TranspMaskJPEGQuality);
+					SaveImage(inbmp, out_base, TranspMainFormatComboBox->ItemIndex, TranspMainJPEGQuality, tags.get());
+					SaveImage(mask, out_base + "_m", TranspMaskFormatComboBox->ItemIndex, TranspMaskJPEGQuality, tags.get());
 				}
 				catch(...)
 				{
@@ -1073,6 +1076,7 @@ bool __fastcall TTPCMainForm::ProcessFile(AnsiString infile)
 				try
 				{
 					png->Assign(inbmp);
+					png->SetTags(tags.get());
 					png->SaveToFile(out_base + ".png");
 				}
 				catch(...)
@@ -1084,19 +1088,17 @@ bool __fastcall TTPCMainForm::ProcessFile(AnsiString infile)
 			}
 			else if(OpaqueTLG5FormatRadioButton->Checked)
 			{
-				std::auto_ptr<TStringList> tags(new TStringList());
 				tags->Append("mode=opaque");
 				SaveTLGWithMetaInfo(tags.get(), inbmp, out_base + ".tlg", SaveTLG5);
 			}
 			else if(OpaqueTLG6FormatRadioButton->Checked)
 			{
-				std::auto_ptr<TStringList> tags(new TStringList());
 				tags->Append("mode=opaque");
 				SaveTLGWithMetaInfo(tags.get(), inbmp, out_base + ".tlg", SaveTLG6);
 			}
 			else if(OpaqueJPEGFormatRadioButton->Checked)
 			{
-				SaveImage(inbmp, out_base, 1, OpaqueJPEGQuality);
+				SaveImage(inbmp, out_base, 1, OpaqueJPEGQuality, NULL);
 			}
 		}
 	}
