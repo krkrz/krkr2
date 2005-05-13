@@ -5360,7 +5360,7 @@
 
 
 	<remarks>
-		　ビデオ再生の終了や、<ref tag="preparevideo">preparevideo<ref> タグによる再生準備の完了、<ref tag="videoevent">videoevent</ref> タグによるピリオドイベントを待ちます。<BR>
+		　ビデオ再生の終了や、<ref tag="preparevideo">preparevideo</ref> タグによる再生準備の完了、<ref tag="videoevent">videoevent</ref> タグによるピリオドイベントを待ちます。<BR>
 		　SWF(Sockwave Flash) の再生の終了を待つことはできません。<ref tag="wait">wait</ref> タ
 		グ等で必要な時間を待つなどをして対処してください。<BR>
 	</remarks>
