@@ -51,6 +51,7 @@ __fastcall TWaveView::TWaveView(Classes::TComponent* AOwner) :
 	FMagnify = -12;
 	FStart = 0;
 
+	FDoubleBufferEnabled = true;
 	FFollowingMarker = true;
 	FWaitingMarker = true;
 	FSoftCenteringStartTick = 0;
@@ -103,10 +104,21 @@ __fastcall TWaveView::~TWaveView()
 //---------------------------------------------------------------------------
 void __fastcall TWaveView::Paint(void)
 {
+	DWORD start = GetTickCount();
+
 	DrawWave(FStart, true);
 	DrawLinks();
 	DrawLabels();
 	DrawCaret();
+
+	DWORD end = GetTickCount();
+	if(FDoubleBufferEnabled && end - start > 100)
+	{
+		// too heavy to double buffering
+		// disable double buffering
+		FDoubleBufferEnabled = false;
+		DoubleBuffered = false;
+	}
 }
 //---------------------------------------------------------------------------
 int __fastcall TWaveView::PixelToSample(int pixel)
@@ -163,7 +175,8 @@ void __fastcall TWaveView::Resize()
 	si.fMask = SIF_ALL;
 	GetScrollInfo(Handle, SB_HORZ, &si);
 
-	DoubleBuffered = true;
+	FDoubleBufferEnabled = true;
+	DoubleBuffered = FDoubleBufferEnabled;
 
 	SetStart(si.nPos);
 }
@@ -457,7 +470,7 @@ void __fastcall TWaveView::SetMarkerPos(int n)
 			// too fast to track
 			SetView(n);
 			FWaitingMarker = false;
-			DoubleBuffered = true;
+			DoubleBuffered = FDoubleBufferEnabled;
 		}
 		else
 		{
@@ -904,22 +917,32 @@ std::vector<tTVPWaveLoopLink> & TWaveView::GetLinks()
 //---------------------------------------------------------------------------
 void __fastcall TWaveView::NotifyLinkChanged()
 {
+	// re-check tier
+
 	std::vector<tTVPWaveLoopLink> & links = /**/ GetLinks(); /**/
 
 	// re-check focused or hovered state
 	if(FFocusedLink >= (int)links.size()) FFocusedLink = -1;
 	if(FHoveredLink >= (int)links.size()) FHoveredLink = -1;
 
-	// re-check tier
-	int tier_count = 0;
+	// arrange link lines to ensure visibility and discrimination.
 
+	//- mark indices
+	for(unsigned int i = 0; i < links.size(); i++) links[i].Index = i;
+
+	//- sort by link distance
+	std::stable_sort(links.begin(), links.end(), tTVPWaveLoopLink::tSortByDistanceFuncObj());
+
+	//- arrange links by finding line intersections.
+	int tier_count = 0;
+	std::vector<std::vector<std::pair<int, int> > > tiers;
 	for(unsigned int i = 0; i < links.size(); i++)
 	{
 		// search free tier
 		TTierMinMaxInfo cinfo;
 		GetLinkMinMaxPixel(links[i], cinfo);
 
-		int found_link_tier = 0;
+		int found_link_tier = -1;
 		int found_from_tier = 0;
 		int found_to_tier   = 0;
 
@@ -927,13 +950,6 @@ void __fastcall TWaveView::NotifyLinkChanged()
 		{
 			TTierMinMaxInfo jinfo;
 			GetLinkMinMaxPixel(links[j], jinfo);
-
-			// for link
-			if(PartIntersect(jinfo.LinkMin, jinfo.LinkMax, cinfo.LinkMin, cinfo.LinkMax))
-			{
-				// intersection found
-				found_link_tier = links[j].LinkTier + 1;
-			}
 
 			// for 'from'
 			if(	PartIntersect(jinfo.ToMin, jinfo.ToMax, cinfo.FromMin, cinfo.FromMax) )
@@ -960,9 +976,43 @@ void __fastcall TWaveView::NotifyLinkChanged()
 			}
 		}
 
+		for(unsigned int i =
+			found_from_tier > found_to_tier ?
+				found_from_tier : found_to_tier; i < tiers.size(); i++)
+		{
+			// for link
+			bool conflicted = false;
+			std::vector<std::pair<int, int> > & tier = tiers[i];
+			for(std::vector<std::pair<int, int> >::iterator j = tier.begin();
+				j != tier.end(); j++)
+			{
+				if(PartIntersect(j->first, j->second, cinfo.LinkMin, cinfo.LinkMax))
+				{
+					// intersection found
+					conflicted = true;
+					break;
+				}
+			}
+			if(!conflicted)
+			{
+				// intersection not found
+				found_link_tier = i;
+				break;
+			}
+		}
+
+		if(found_link_tier == -1)
+		{
+			// create new tier
+			found_link_tier = tiers.size();
+			tiers.push_back(std::vector<std::pair<int, int> >() );
+		}
+
 		links[i].LinkTier = found_link_tier;
 		links[i].FromTier = found_from_tier;
 		links[i].ToTier   = found_to_tier;
+
+		tiers[found_link_tier].push_back(std::pair<int, int>(cinfo.LinkMin, cinfo.LinkMax));
 
 		if(tier_count < found_link_tier + 1) tier_count = found_link_tier + 1;
 	}
@@ -970,6 +1020,9 @@ void __fastcall TWaveView::NotifyLinkChanged()
 	if(FLinkTierCount != tier_count)
 		Invalidate();
 	FLinkTierCount = tier_count;
+
+	//- sort by Index
+	std::stable_sort(links.begin(), links.end(), tTVPWaveLoopLink::tSortByIndexFuncObj());
 }
 //---------------------------------------------------------------------------
 void __fastcall TWaveView::GetLinkMinMaxPixel(const tTVPWaveLoopLink & link,
@@ -1179,9 +1232,6 @@ void __fastcall TWaveView::DrawLinks(void)
 	int foot_size = GetFootSize();
 	int y_start = ClientHeight - foot_size;
 
-	if(!PartIntersect(Canvas->ClipRect.top, Canvas->ClipRect.bottom -1,
-		y_start, ClientHeight - 1)) return;
-
 	// erase background
 /*
 	TRect r;
@@ -1197,81 +1247,89 @@ void __fastcall TWaveView::DrawLinks(void)
 	Canvas->MoveTo(dest_left,  y_start);
 	Canvas->LineTo(dest_right, y_start);
 
-	// draw each link (for vertical weak line)
-	Canvas->Pen->Color = C_LINK_WEAK_LINE;
 	std::vector<tTVPWaveLoopLink> & links = /**/ GetLinks(); /**/
 
-	for(unsigned int i = 0; i < links.size(); i++)
+	if(PartIntersect(Canvas->ClipRect.top, Canvas->ClipRect.bottom -1,
+		y_start, ClientHeight - 1))
 	{
-		const tTVPWaveLoopLink & link = links[i];
-		tjs_int x;
+		// draw each link (for vertical weak line)
+		Canvas->Pen->Color = C_LINK_WEAK_LINE;
 
-		x = SampleToPixel(link.From - Start);
-		if(x >= dest_left || x < dest_right)
+		for(unsigned int i = 0; i < links.size(); i++)
 		{
-			int y = y_start + link.FromTier * TVP_LGD_TIER_HEIGHT - 1;
-			Canvas->MoveTo(x, y_start+1);
-			Canvas->LineTo(x, y);
+			const tTVPWaveLoopLink & link = links[i];
+			tjs_int x;
+
+			x = SampleToPixel(link.From - Start);
+			if(x >= dest_left || x < dest_right)
+			{
+				int y = y_start + link.FromTier * TVP_LGD_TIER_HEIGHT - 1;
+				Canvas->MoveTo(x, y_start+1);
+				Canvas->LineTo(x, y);
+			}
+			x = SampleToPixel(link.To - Start);
+			if(x >= dest_left || x < dest_right)
+			{
+				int y = y_start + link.ToTier * TVP_LGD_TIER_HEIGHT - 1;
+				Canvas->MoveTo(x, y_start+1);
+				Canvas->LineTo(x, y);
+			}
 		}
-		x = SampleToPixel(link.To - Start);
-		if(x >= dest_left || x < dest_right)
+
+		// draw each link
+		for(unsigned int i = 0; i < links.size(); i++)
 		{
-			int y = y_start + link.ToTier * TVP_LGD_TIER_HEIGHT - 1;
-			Canvas->MoveTo(x, y_start+1);
-			Canvas->LineTo(x, y);
+			if((int)i == FFocusedLink)
+				continue;
+			else if((int)i == FHoveredLink)
+				continue;
+			else
+				Canvas->Pen->Color = C_LINK_LINE;
+
+			const tTVPWaveLoopLink & link = links[i];
+
+			DrawLinkOf(link);
+		}
+		if(FHoveredLink != -1)
+		{
+			Canvas->Pen->Color = C_LINK_HOVER;
+			const tTVPWaveLoopLink & link = links[FHoveredLink];
+			DrawLinkOf(link);
+		}
+
+		if(FFocusedLink != -1)
+		{
+			Canvas->Pen->Width = 2;
+			Canvas->Pen->Color = C_LINK_FOCUS;
+			const tTVPWaveLoopLink & link = links[FFocusedLink];
+			DrawLinkOf(link);
+			Canvas->Pen->Width = 1;
 		}
 	}
 
-	// draw each link
-	for(unsigned int i = 0; i < links.size(); i++)
+
+	if(PartIntersect(Canvas->ClipRect.top, Canvas->ClipRect.bottom -1,
+		head_size, y_start - 1))
 	{
-		if((int)i == FFocusedLink)
-			continue;
-		else if((int)i == FHoveredLink)
-			continue;
-		else
-			Canvas->Pen->Color = C_LINK_LINE;
+		// draw link 'from' and 'to' lines
+		Canvas->Pen->Color = C_LINK_WAVE_MARK;
+		Canvas->Pen->Style = psDashDot;
+		Canvas->Brush->Style = bsClear;
+		for(unsigned int i = 0; i < links.size(); i++)
+		{
+			const tTVPWaveLoopLink & link = links[i];
+			int x;
 
-		const tTVPWaveLoopLink & link = links[i];
+			x = SampleToPixel(link.From - Start);
+			Canvas->MoveTo(x, head_size);
+			Canvas->LineTo(x, y_start);
 
-		DrawLinkOf(link);
+			x = SampleToPixel(link.To - Start);
+			Canvas->MoveTo(x, head_size);
+			Canvas->LineTo(x, y_start);
+		}
+		Canvas->Pen->Style = psSolid;
 	}
-	if(FHoveredLink != -1)
-	{
-		Canvas->Pen->Color = C_LINK_HOVER;
-		const tTVPWaveLoopLink & link = links[FHoveredLink];
-		DrawLinkOf(link);
-	}
-
-	if(FFocusedLink != -1)
-	{
-		Canvas->Pen->Width = 2;
-		Canvas->Pen->Color = C_LINK_FOCUS;
-		const tTVPWaveLoopLink & link = links[FFocusedLink];
-		DrawLinkOf(link);
-		Canvas->Pen->Width = 1;
-	}
-
-	// draw link 'from' and 'to' lines
-	Canvas->Pen->Color = C_LINK_WAVE_MARK;
-	Canvas->Pen->Style = psDashDot;
-	Canvas->Brush->Style = bsClear;
-	for(unsigned int i = 0; i < links.size(); i++)
-	{
-		const tTVPWaveLoopLink & link = links[i];
-		int x;
-
-		x = SampleToPixel(link.From - Start);
-		Canvas->MoveTo(x, head_size);
-		Canvas->LineTo(x, y_start);
-
-		x = SampleToPixel(link.To - Start);
-		Canvas->MoveTo(x, head_size);
-		Canvas->LineTo(x, y_start);
-	}
-	Canvas->Pen->Style = psSolid;
-
-
 }
 //---------------------------------------------------------------------------
 void __fastcall TWaveView::InvalidateLink(int linknum)
@@ -1320,7 +1378,7 @@ void __fastcall TWaveView::SetHoveredLink(int l)
 {
 	if(FHoveredLink != l)
 	{
-		DoubleBuffered = true;
+		DoubleBuffered = FDoubleBufferEnabled;
 		InvalidateLink(FHoveredLink);
 		FHoveredLink = l;
 		InvalidateLink(FHoveredLink);
@@ -1331,7 +1389,7 @@ void __fastcall TWaveView::SetFocusedLink(int l)
 {
 	if(FFocusedLink != l)
 	{
-		DoubleBuffered = true;
+		DoubleBuffered = FDoubleBufferEnabled;
 		InvalidateLink(FFocusedLink);
 		FFocusedLink = l;
 		InvalidateLink(FFocusedLink);
@@ -1592,7 +1650,7 @@ void __fastcall TWaveView::SetHoveredLabel(int l)
 {
 	if(FHoveredLabel != l)
 	{
-		DoubleBuffered = true;
+		DoubleBuffered = FDoubleBufferEnabled;
 		InvalidateLabel(FHoveredLabel);
 		FHoveredLabel = l;
 		InvalidateLabel(FHoveredLabel);
@@ -1603,7 +1661,7 @@ void __fastcall TWaveView::SetFocusedLabel(int l)
 {
 	if(FFocusedLabel != l)
 	{
-		DoubleBuffered = true;
+		DoubleBuffered = FDoubleBufferEnabled;
 		InvalidateLabel(FFocusedLabel);
 		FFocusedLabel = l;
 		InvalidateLabel(FFocusedLabel);
@@ -1837,7 +1895,7 @@ void __fastcall TWaveView::MouseMove(TShiftState shift, int x, int y)
 		if(DraggingState == dsDragging)
 		{
 			// enable double buffering
-			DoubleBuffered = true;
+			DoubleBuffered = FDoubleBufferEnabled;
 
 			int pos = MouseXPosToSamplePos(x) - LastMouseDownPosOffset;
 			if(pos < 0) pos = 0;
@@ -1948,8 +2006,6 @@ void __fastcall TWaveView::MouseUp(TMouseButton button, TShiftState shift, int x
 		}
 		DraggingState = dsNone;
 		DragScrollTimer->Enabled = false;
-		std::vector<tTVPWaveLoopLink> & links = /**/ GetLinks(); /**/
-		std::sort(links.begin(), links.end());
 	}
 }
 //---------------------------------------------------------------------------

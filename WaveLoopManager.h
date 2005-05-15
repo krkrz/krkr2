@@ -53,6 +53,31 @@ struct tTVPWaveLoopLink
 	tjs_int FromTier;	// display tier of vertical 'from' line
 	tjs_int LinkTier;	// display tier of horizontal link
 	tjs_int ToTier;		// display tier of vertical 'to' allow line
+	tjs_int Index;		// link index
+
+	struct tSortByDistanceFuncObj
+	{
+		bool operator()(
+			const tTVPWaveLoopLink &lhs,
+			const tTVPWaveLoopLink &rhs) const
+		{
+			tjs_int64 lhs_dist = lhs.From - lhs.To;
+			if(lhs_dist < 0) lhs_dist = -lhs_dist;
+			tjs_int64 rhs_dist = rhs.From - rhs.To;
+			if(rhs_dist < 0) rhs_dist = -rhs_dist;
+			return lhs_dist < rhs_dist;
+		}
+	};
+
+	struct tSortByIndexFuncObj
+	{
+		bool operator()(
+			const tTVPWaveLoopLink &lhs,
+			const tTVPWaveLoopLink &rhs) const
+		{
+			return lhs.Index < rhs.Index;
+		}
+	};
 #endif
 };
 //---------------------------------------------------------------------------

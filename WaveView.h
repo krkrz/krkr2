@@ -51,6 +51,7 @@ public:
 
 //-- view control
 private:
+	bool FDoubleBufferEnabled;
 	bool FFollowingMarker;
 	bool FWaitingMarker;
 
