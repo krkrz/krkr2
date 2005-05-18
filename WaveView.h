@@ -36,7 +36,7 @@ private:
 	int FMagnify; // magnification level (in logarithm based 2)
 	int FStart; // start sample position at left edge of the client
 	int GetHeadSize() const { return FShowRuler ? (FMinRulerMajorHeight + 1) : 0; }
-	int GetFootSize() const { return FShowLinks ? (FLinkTierCount * TVP_LGD_TIER_HEIGHT) : 0; }
+	int GetFootSize() const { return FShowLinks ? (FLinkTierCount * TVP_LGD_TIER_HEIGHT + TVP_LGD_TIER_HEIGHT / 2) : 0; }
 	void __fastcall Paint(void);
 
 public:

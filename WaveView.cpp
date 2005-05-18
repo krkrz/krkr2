@@ -1109,6 +1109,12 @@ void __fastcall TWaveView::DrawDirectionArrowAt(int tier, bool dir, int where)
 	Canvas->Brush->Color = Canvas->Pen->Color;
 	TRect r;
 
+	r.left = where - 2;
+	r.top = y;
+	r.right = where + 6;
+	r.bottom = y + 1;
+	Canvas->FillRect(r);
+
 	if(dir)
 	{
 		// dir = true: right arrow
