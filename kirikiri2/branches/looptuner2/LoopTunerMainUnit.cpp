@@ -147,6 +147,11 @@ void __fastcall TLoopTunerMainForm::RedoActionExecute(TObject *Sender)
 	WaveView->Redo();
 }
 //---------------------------------------------------------------------------
+void __fastcall TLoopTunerMainForm::DeleteActionExecute(TObject *Sender)
+{
+	WaveView->DeleteItem();
+}
+//---------------------------------------------------------------------------
 
 void __fastcall TLoopTunerMainForm::ActionListUpdate(TBasicAction *Action,
 	  bool &Handled)
@@ -154,6 +159,7 @@ void __fastcall TLoopTunerMainForm::ActionListUpdate(TBasicAction *Action,
 	// check enable/disable state
 	UndoAction->Enabled = WaveView->CanUndo();
 	RedoAction->Enabled = WaveView->CanRedo();
+	DeleteAction->Enabled = WaveView->CanDeleteItem();
 }
 //---------------------------------------------------------------------------
 void __fastcall TLoopTunerMainForm::PlayFromStartActionExecute(TObject *Sender)
@@ -222,6 +228,7 @@ void __fastcall TLoopTunerMainForm::FormDeactivate(TObject *Sender)
 	WaveView->ShowCaret = false;	
 }
 //---------------------------------------------------------------------------
+
 
 
 

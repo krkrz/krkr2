@@ -58,6 +58,8 @@ __published:	// IDE 管理のコンポーネント
 	TToolButton *UndoToolButton;
 	TToolButton *RedoToolButton;
 	TToolButton *ToolButton3;
+	TToolButton *DeleteToolButton;
+	TToolButton *ToolButton5;
 	void __fastcall FormDestroy(TObject *Sender);
 	void __fastcall OpenActionExecute(TObject *Sender);
 	void __fastcall ZoomInActionExecute(TObject *Sender);
@@ -71,6 +73,7 @@ __published:	// IDE 管理のコンポーネント
 	void __fastcall UndoActionExecute(TObject *Sender);
 	void __fastcall RedoActionExecute(TObject *Sender);
 	void __fastcall ActionListUpdate(TBasicAction *Action, bool &Handled);
+	void __fastcall DeleteActionExecute(TObject *Sender);
 private:	// ユーザー宣言
 	TWaveReader * Reader;
 	TWaveView *WaveView;
