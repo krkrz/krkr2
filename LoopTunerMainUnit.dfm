@@ -72,18 +72,31 @@ object LoopTunerMainForm: TLoopTunerMainForm
       ImageIndex = 14
       Style = tbsSeparator
     end
-    object ZoomInToolButton: TToolButton
+    object DeleteToolButton: TToolButton
       Left = 108
+      Top = 0
+      Action = DeleteAction
+    end
+    object ToolButton5: TToolButton
+      Left = 131
+      Top = 0
+      Width = 8
+      Caption = 'ToolButton5'
+      ImageIndex = 5
+      Style = tbsSeparator
+    end
+    object ZoomInToolButton: TToolButton
+      Left = 139
       Top = 0
       Action = ZoomInAction
     end
     object ZoomOutToolButton: TToolButton
-      Left = 131
+      Left = 162
       Top = 0
       Action = ZoomOutAction
     end
     object ToolButton1: TToolButton
-      Left = 154
+      Left = 185
       Top = 0
       Width = 8
       Caption = 'ToolButton1'
@@ -91,17 +104,17 @@ object LoopTunerMainForm: TLoopTunerMainForm
       Style = tbsSeparator
     end
     object PlayToolButton: TToolButton
-      Left = 162
+      Left = 193
       Top = 0
       Action = PlayFromStartAction
     end
     object PlayFromCursorToolButton: TToolButton
-      Left = 185
+      Left = 216
       Top = 0
       Action = PlayFromCaretAction
     end
     object StopToolButton: TToolButton
-      Left = 208
+      Left = 239
       Top = 0
       Action = StopPlayAction
     end
@@ -194,6 +207,7 @@ object LoopTunerMainForm: TLoopTunerMainForm
       Caption = '削除(&D)'
       Hint = 'アイテムを削除します'
       ImageIndex = 14
+      OnExecute = DeleteActionExecute
     end
     object UndoAction: TAction
       Category = '編集'

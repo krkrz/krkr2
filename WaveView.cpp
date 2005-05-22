@@ -39,7 +39,7 @@ const int LinkArrowSize = 4;
 const int LinkDirectionArrowWidth = 10;
 const int LinkDirectionInterval = 200;
 //---------------------------------------------------------------------------
-const int MaxUndoLevel = 3;
+const int MaxUndoLevel = 20;
 //---------------------------------------------------------------------------
 
 
@@ -166,7 +166,7 @@ void __fastcall TWaveView::SetReader(TWaveReader * reader)
 	SetScrollBarRange();
 }
 //---------------------------------------------------------------------------
-void TWaveView::PushUndo()
+void __fastcall TWaveView::PushUndo()
 {
 	// erase redo
 	if(CanRedo())
@@ -189,7 +189,7 @@ void TWaveView::PushUndo()
 	FUndoLevel ++;
 }
 //---------------------------------------------------------------------------
-void TWaveView::Undo()
+void __fastcall TWaveView::Undo()
 {
 	// do undo
 	if(CanUndo())
@@ -198,11 +198,12 @@ void TWaveView::Undo()
 		Links = FUndoStack[FUndoLevel].Links;
 		Labels = FUndoStack[FUndoLevel].Labels;
 		NotifyLinkChanged();
+		DoubleBuffered = FDoubleBufferEnabled;
 		Invalidate();
 	}
 }
 //---------------------------------------------------------------------------
-void TWaveView::Redo()
+void __fastcall TWaveView::Redo()
 {
 	if(CanRedo())
 	{
@@ -210,18 +211,46 @@ void TWaveView::Redo()
 		Links = FUndoStack[FUndoLevel].Links;
 		Labels = FUndoStack[FUndoLevel].Labels;
 		NotifyLinkChanged();
+		DoubleBuffered = FDoubleBufferEnabled;
 		Invalidate();
 	}
 }
 //---------------------------------------------------------------------------
-bool TWaveView::CanUndo() const
+bool __fastcall TWaveView::CanUndo() const
 {
 	return FUndoLevel != 0;
 }
 //---------------------------------------------------------------------------
-bool TWaveView::CanRedo() const
+bool __fastcall TWaveView::CanRedo() const
 {
 	return FUndoStack.size() - FUndoLevel > 1;
+}
+//---------------------------------------------------------------------------
+void __fastcall TWaveView::DeleteItem()
+{
+	// delete current focused item
+	if(FFocusedLink != -1)
+	{
+		Links.erase(Links.begin() + FFocusedLink);
+		FFocusedLink = -1;
+		NotifyLinkChanged();
+		DoubleBuffered = FDoubleBufferEnabled;
+		Invalidate();
+		PushUndo(); //==== push undo
+	}
+	else if(FFocusedLabel != -1)
+	{
+		Labels.erase(Labels.begin() + FFocusedLabel);
+		FFocusedLabel = -1;
+		DoubleBuffered = FDoubleBufferEnabled;
+		Invalidate();
+		PushUndo(); //==== push undo
+	}
+}
+//---------------------------------------------------------------------------
+bool __fastcall TWaveView::CanDeleteItem() const
+{
+	return FFocusedLink != -1 || FFocusedLabel != -1;
 }
 //---------------------------------------------------------------------------
 void __fastcall TWaveView::CreateParams(TCreateParams &params)

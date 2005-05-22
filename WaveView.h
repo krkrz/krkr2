@@ -63,15 +63,16 @@ private:
 	unsigned int FUndoLevel;
 
 private:
-	void PushUndo();
+	void __fastcall PushUndo();
 
 public:
-	void Undo();
-	void Redo();
-	bool CanUndo() const;
-	bool CanRedo() const;
+	void __fastcall Undo();
+	void __fastcall Redo();
+	bool __fastcall CanUndo() const;
+	bool __fastcall CanRedo() const;
 
-//	void DeleteItem(); // delete a focused item
+	void __fastcall DeleteItem();
+	bool __fastcall CanDeleteItem() const;
 
 //-- view control
 private:
