@@ -48,6 +48,16 @@ __published:	// IDE 管理のコンポーネント
 	TAction *PlayFromCaretAction;
 	TAction *SaveAction;
 	TToolButton *SaveToolButton;
+	TAction *DeleteAction;
+	TMenuItem *EditMenu;
+	TMenuItem *DeleteMenuItem;
+	TAction *UndoAction;
+	TAction *RedoAction;
+	TMenuItem *UndoMenuItem;
+	TMenuItem *RedoMenuItem;
+	TToolButton *UndoToolButton;
+	TToolButton *RedoToolButton;
+	TToolButton *ToolButton3;
 	void __fastcall FormDestroy(TObject *Sender);
 	void __fastcall OpenActionExecute(TObject *Sender);
 	void __fastcall ZoomInActionExecute(TObject *Sender);
@@ -58,6 +68,9 @@ __published:	// IDE 管理のコンポーネント
 	void __fastcall StopPlayActionExecute(TObject *Sender);
 	void __fastcall PlayFromCaretActionExecute(TObject *Sender);
 	void __fastcall SaveActionExecute(TObject *Sender);
+	void __fastcall UndoActionExecute(TObject *Sender);
+	void __fastcall RedoActionExecute(TObject *Sender);
+	void __fastcall ActionListUpdate(TBasicAction *Action, bool &Handled);
 private:	// ユーザー宣言
 	TWaveReader * Reader;
 	TWaveView *WaveView;

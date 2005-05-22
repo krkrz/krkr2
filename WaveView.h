@@ -5,6 +5,8 @@
 
 #include "WaveLoopManager.h"
 
+#include <vector>
+#include <deque>
 //---------------------------------------------------------------------------
 #define TVP_LGD_TIER_HEIGHT 12
 //---------------------------------------------------------------------------
@@ -48,6 +50,28 @@ public:
 	__property TWaveReader * Reader = { read = FReader, write = SetReader };
 	__property int Start = { read = FStart, write = SetStart };
 	__property int Magnify = { read = FMagnify, write = SetMagnify };
+
+
+//-- editing support
+private:
+	struct tHistoryInfo
+	{
+		std::vector<tTVPWaveLoopLink> Links;
+		std::vector<tTVPWaveLabel> Labels;
+	};
+	std::deque<tHistoryInfo> FUndoStack;
+	unsigned int FUndoLevel;
+
+private:
+	void PushUndo();
+
+public:
+	void Undo();
+	void Redo();
+	bool CanUndo() const;
+	bool CanRedo() const;
+
+//	void DeleteItem(); // delete a focused item
 
 //-- view control
 private:
