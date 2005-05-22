@@ -39,6 +39,8 @@ const int LinkArrowSize = 4;
 const int LinkDirectionArrowWidth = 10;
 const int LinkDirectionInterval = 200;
 //---------------------------------------------------------------------------
+const int MaxUndoLevel = 3;
+//---------------------------------------------------------------------------
 
 
 //---------------------------------------------------------------------------
@@ -67,6 +69,8 @@ __fastcall TWaveView::TWaveView(Classes::TComponent* AOwner) :
 	FMarkerPos = -1;
 	Canvas->Font->Height = -12;
 
+	FUndoLevel = 0;
+
 	FShowLinks = true;
 	FLinkTierCount = 0;
 	FHoveredLink = -1; // -1 for non visible
@@ -94,6 +98,10 @@ __fastcall TWaveView::TWaveView(Classes::TComponent* AOwner) :
 	DraggingState = dsNone;
 
 	Cursor = crIBeam;
+
+	//---------- push undo (*****)
+	PushUndo();
+	FUndoLevel = 0;
 }
 //---------------------------------------------------------------------------
 __fastcall TWaveView::~TWaveView()
@@ -156,6 +164,64 @@ void __fastcall TWaveView::SetReader(TWaveReader * reader)
 	Invalidate();
 
 	SetScrollBarRange();
+}
+//---------------------------------------------------------------------------
+void TWaveView::PushUndo()
+{
+	// erase redo
+	if(CanRedo())
+	{
+		FUndoStack.erase(FUndoStack.begin() + FUndoLevel + 1, FUndoStack.end());
+	}
+
+	// remove old data
+	if(FUndoStack.size() == (MaxUndoLevel+1))
+	{
+		FUndoStack.pop_front();
+		FUndoLevel --;
+	}
+
+	// append new data
+	tHistoryInfo info;
+	info.Links = Links;
+	info.Labels = Labels;
+	FUndoStack.push_back(info);
+	FUndoLevel ++;
+}
+//---------------------------------------------------------------------------
+void TWaveView::Undo()
+{
+	// do undo
+	if(CanUndo())
+	{
+		FUndoLevel --;
+		Links = FUndoStack[FUndoLevel].Links;
+		Labels = FUndoStack[FUndoLevel].Labels;
+		NotifyLinkChanged();
+		Invalidate();
+	}
+}
+//---------------------------------------------------------------------------
+void TWaveView::Redo()
+{
+	if(CanRedo())
+	{
+		FUndoLevel ++;
+		Links = FUndoStack[FUndoLevel].Links;
+		Labels = FUndoStack[FUndoLevel].Labels;
+		NotifyLinkChanged();
+		Invalidate();
+	}
+}
+//---------------------------------------------------------------------------
+bool TWaveView::CanUndo() const
+{
+	return FUndoLevel != 0;
+}
+//---------------------------------------------------------------------------
+bool TWaveView::CanRedo() const
+{
+	return FUndoStack.size() - FUndoLevel > 1;
 }
 //---------------------------------------------------------------------------
 void __fastcall TWaveView::CreateParams(TCreateParams &params)
@@ -2009,6 +2075,11 @@ void __fastcall TWaveView::MouseUp(TMouseButton button, TShiftState shift, int x
 				if(y >= GetHeadSize())
 					CaretPos = DraggingObjectInfo.Position;
 			}
+		}
+		else
+		{
+			// commit current state
+			PushUndo(); //==== push undo
 		}
 		DraggingState = dsNone;
 		DragScrollTimer->Enabled = false;

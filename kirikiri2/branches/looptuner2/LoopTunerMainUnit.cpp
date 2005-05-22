@@ -44,7 +44,6 @@ void __fastcall TLoopTunerMainForm::OnReaderProgress(TObject *sender)
 	if(Reader->ReadDone)
 	{
 		WaveView->Reader = Reader; // reset the reader
-		WaveView->Invalidate();
 		if(Manager) delete Manager, Manager = NULL;
 		Manager = new tTVPWaveLoopManager(Reader);
 
@@ -137,6 +136,26 @@ void __fastcall TLoopTunerMainForm::ZoomOutActionExecute(TObject *Sender)
 }
 //---------------------------------------------------------------------------
 
+void __fastcall TLoopTunerMainForm::UndoActionExecute(TObject *Sender)
+{
+	WaveView->Undo();
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TLoopTunerMainForm::RedoActionExecute(TObject *Sender)
+{
+	WaveView->Redo();
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TLoopTunerMainForm::ActionListUpdate(TBasicAction *Action,
+	  bool &Handled)
+{
+	// check enable/disable state
+	UndoAction->Enabled = WaveView->CanUndo();
+	RedoAction->Enabled = WaveView->CanRedo();
+}
+//---------------------------------------------------------------------------
 void __fastcall TLoopTunerMainForm::PlayFromStartActionExecute(TObject *Sender)
 {
 	PlayFrom(0);
@@ -203,6 +222,7 @@ void __fastcall TLoopTunerMainForm::FormDeactivate(TObject *Sender)
 	WaveView->ShowCaret = false;	
 }
 //---------------------------------------------------------------------------
+
 
 
 
