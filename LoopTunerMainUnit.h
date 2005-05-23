@@ -65,8 +65,6 @@ __published:	// IDE 管理のコンポーネント
 	void __fastcall ZoomInActionExecute(TObject *Sender);
 	void __fastcall ZoomOutActionExecute(TObject *Sender);
 	void __fastcall PlayFromStartActionExecute(TObject *Sender);
-	void __fastcall FormActivate(TObject *Sender);
-	void __fastcall FormDeactivate(TObject *Sender);
 	void __fastcall StopPlayActionExecute(TObject *Sender);
 	void __fastcall PlayFromCaretActionExecute(TObject *Sender);
 	void __fastcall SaveActionExecute(TObject *Sender);

@@ -52,6 +52,7 @@ __fastcall TWaveView::TWaveView(Classes::TComponent* AOwner) :
 	FReader = NULL;
 	FMagnify = -12;
 	FStart = 0;
+	FFocused = false;
 
 	FDoubleBufferEnabled = true;
 	FFollowingMarker = true;
@@ -59,7 +60,7 @@ __fastcall TWaveView::TWaveView(Classes::TComponent* AOwner) :
 	FSoftCenteringStartTick = 0;
 
 	FCaretPos = 0;
-	FShowCaret = true;
+	FShowCaret = false;
 	FCaretVisiblePhase = true;
 
 	FMinRulerMajorWidth = 0;
@@ -372,6 +373,19 @@ void __fastcall TWaveView::CMMouseLeave(TMessage &msg)
 	MouseLeave();
 }
 //---------------------------------------------------------------------------
+void __fastcall TWaveView::WMSetFocus(TWMSetFocus &msg)
+{
+	FFocused = true;
+	::SetFocus(Handle);
+	ResetCaretFocusState();
+}
+//---------------------------------------------------------------------------
+void __fastcall TWaveView::WMKillFocus(TWMKillFocus &msg)
+{
+	FFocused = false;
+	ResetCaretFocusState();
+}
+//---------------------------------------------------------------------------
 void __fastcall TWaveView::InvalidateCaret(int pos)
 {
 	DoubleBuffered = false;
@@ -394,12 +408,6 @@ void __fastcall TWaveView::SetCaretPos(int pos)
 	if(pos != FCaretPos)
 	{
 		// invalidate new position and old position
-		if(pos >= 0)
-		{
-			FocusedLink = -1; // caret, label and link are exclusive
-			FocusedLabel = -1;
-		}
-
 		if(FShowCaret)
 		{
 			InvalidateCaret(FCaretPos);
@@ -428,6 +436,9 @@ void __fastcall TWaveView::SetShowCaret(bool b)
 			InvalidateCaret(FCaretPos);
 			FBlinkTimer->Enabled = b;
 		}
+
+		FocusedLink = -1;
+		FocusedLabel = -1; // these are exclusive
 	}
 }
 //---------------------------------------------------------------------------
@@ -437,12 +448,18 @@ void __fastcall TWaveView::OnBlinkTimer(TObject * sender)
 	InvalidateCaret(FCaretPos);
 }
 //---------------------------------------------------------------------------
+void __fastcall TWaveView::ResetCaretFocusState()
+{
+	InvalidateCaret(FCaretPos);
+	FBlinkTimer->Enabled = FFocused;
+}
+//---------------------------------------------------------------------------
 void __fastcall TWaveView::DrawCaret()
 {
 	// draw caret
 	if(!FReader || !FReader->ReadDone) return;
 
-	if(FShowCaret && FCaretVisiblePhase)
+	if(FShowCaret && FCaretVisiblePhase && FFocused)
 	{
 		int p_pos = SampleToPixel(FCaretPos - FStart);
 		if(p_pos >= 0 && p_pos < ClientWidth)
@@ -1496,7 +1513,7 @@ void __fastcall TWaveView::SetFocusedLink(int l)
 		InvalidateLink(FFocusedLink);
 		if(l != -1)
 		{
-			CaretPos = -1; // link, label and caret are exclusive
+			FShowCaret = false; // link, label and caret are exclusive
 			FocusedLabel = -1;
 		}
 	}
@@ -1768,7 +1785,7 @@ void __fastcall TWaveView::SetFocusedLabel(int l)
 		InvalidateLabel(FFocusedLabel);
 		if(l != -1)
 		{
-			CaretPos = -1; // link, label and caret are exclusive
+			FShowCaret = false; // link, label and caret are exclusive
 			FocusedLink = -1; // link, label and caret are exclusive
 		}
 	}
@@ -1954,6 +1971,7 @@ void __fastcall TWaveView::MouseDown(TMouseButton button, TShiftState shift, int
 			else
 			{
 				CaretPos = MouseXPosToSamplePos(x);
+				ShowCaret = true;
 			}
 
 		}
@@ -2022,6 +2040,7 @@ void __fastcall TWaveView::MouseMove(TShiftState shift, int x, int y)
 				}
 				NotifyLinkChanged();
 				InvalidateLink(DraggingObjectInfo.Num);
+				CaretPos = pos; // also set the caret position
 			}
 			else if(DraggingObjectInfo.Kind == okLabel)
 			{
@@ -2032,6 +2051,7 @@ void __fastcall TWaveView::MouseMove(TShiftState shift, int x, int y)
 				InvalidateLabel(DraggingObjectInfo.Num);
 				label.Position = pos;
 				InvalidateLabel(DraggingObjectInfo.Num);
+				CaretPos = pos; // also set the caret position
 			}
 
 			// scroll
@@ -2098,11 +2118,15 @@ void __fastcall TWaveView::MouseUp(TMouseButton button, TShiftState shift, int x
 			if(DraggingObjectInfo.Kind == okLink)
 			{
 				CaretPos = DraggingObjectInfo.Position;
+				ShowCaret = true;
 			}
 			else if(DraggingObjectInfo.Kind == okLabel)
 			{
 				if(y >= GetHeadSize())
+				{
 					CaretPos = DraggingObjectInfo.Position;
+					ShowCaret = true;
+				}
 			}
 		}
 		else

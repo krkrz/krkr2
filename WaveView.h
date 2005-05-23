@@ -79,6 +79,7 @@ private:
 	bool FDoubleBufferEnabled;
 	bool FFollowingMarker;
 	bool FWaitingMarker;
+	bool FFocused;
 
 	DWORD FSoftCenteringStartTick;
 	int   FSoftCenteringPos;
@@ -91,9 +92,13 @@ private:
 BEGIN_MESSAGE_MAP
 	VCL_MESSAGE_HANDLER(WM_HSCROLL , TWMHScroll , WMHScroll)
 	VCL_MESSAGE_HANDLER(CM_MOUSELEAVE , TMessage , CMMouseLeave)
+	VCL_MESSAGE_HANDLER(WM_SETFOCUS , TWMSetFocus , WMSetFocus)
+	VCL_MESSAGE_HANDLER(WM_KILLFOCUS , TWMKillFocus , WMKillFocus)
 END_MESSAGE_MAP(TCustomControl)
 	void __fastcall WMHScroll(TWMHScroll &msg);
 	void __fastcall CMMouseLeave(TMessage &msg);
+	void __fastcall WMSetFocus(TWMSetFocus &msg);
+	void __fastcall WMKillFocus(TWMKillFocus &msg);
 
 //-- caret drawing stuff
 	int FCaretPos; // caret position
@@ -107,6 +112,7 @@ END_MESSAGE_MAP(TCustomControl)
 	void __fastcall SetShowCaret(bool b);
 
 	void __fastcall OnBlinkTimer(TObject * sender);
+	void __fastcall ResetCaretFocusState();
 
 	void __fastcall DrawCaret();
 

@@ -23,8 +23,7 @@ __fastcall TLoopTunerMainForm::TLoopTunerMainForm(TComponent* Owner)
 	InitDirectSound(Application->Handle);
 	Manager = NULL;
 	Application->OnIdle = OnApplicationIdle;
-	Application->OnActivate = FormActivate;
-	Application->OnDeactivate = FormDeactivate;
+	ActiveControl = WaveView;
 }
 //---------------------------------------------------------------------------
 void __fastcall TLoopTunerMainForm::FormDestroy(TObject *Sender)
@@ -217,17 +216,7 @@ void __fastcall TLoopTunerMainForm::OnWaveViewDoubleClick(TObject *Sender, int p
 }
 //---------------------------------------------------------------------------
 
-void __fastcall TLoopTunerMainForm::FormActivate(TObject *Sender)
-{
-	WaveView->ShowCaret = true;
-}
-//---------------------------------------------------------------------------
 
-void __fastcall TLoopTunerMainForm::FormDeactivate(TObject *Sender)
-{
-	WaveView->ShowCaret = false;	
-}
-//---------------------------------------------------------------------------
 
 
 
