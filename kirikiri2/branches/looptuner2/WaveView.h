@@ -116,9 +116,12 @@ END_MESSAGE_MAP(TCustomControl)
 
 	void __fastcall DrawCaret();
 
+	int __fastcall GetAttentionPos();
+
 public:
 	__property int CaretPos = { read = FCaretPos, write = SetCaretPos };
 	__property bool ShowCaret = { read = FShowCaret, write = SetShowCaret };
+
 
 //-- wave drawing stuff
 private:
@@ -173,6 +176,8 @@ public:
 	__property int HoveredLink = { read = FHoveredLink, write = SetHoveredLink };
 	__property int FocusedLink = { read = FFocusedLink, write = SetFocusedLink };
 
+	void __fastcall CreateNewLink();
+
 //-- label drawing stuff
 private:
 	std::vector<tTVPWaveLabel> Labels;
@@ -196,6 +201,8 @@ public:
 	__property int HoveredLabel = { read = FHoveredLabel, write = SetHoveredLabel };
 	__property int FocusedLabel = { read = FFocusedLabel, write = SetFocusedLabel };
 
+	void __fastcall CreateNewLabel();
+
 //-- input
 private:
 	TNotifyWavePosEvent FOnDoubleClick;
@@ -216,8 +223,12 @@ private:
 	int LastMouseDownPosOffset;
 	int LastMouseMoveX;
 
+	int LastClickedPos[2]; // last clicked two positions; only used for new link creation
+
 	TObjectInfo DraggingObjectInfo;
 	TDraggingState DraggingState;
+
+	void PushLastClickedPos(int pos);
 
 	bool GetNearestObjectAt(int x, TObjectInfo & info);
 	int MouseXPosToSamplePos(int x);

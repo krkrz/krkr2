@@ -98,6 +98,8 @@ __fastcall TWaveView::TWaveView(Classes::TComponent* AOwner) :
 	LastMouseDownX = -1;
 	DraggingState = dsNone;
 
+	LastClickedPos[0] = LastClickedPos[1] = 0;
+
 	Cursor = crIBeam;
 
 	//---------- push undo (*****)
@@ -475,6 +477,17 @@ void __fastcall TWaveView::DrawCaret()
 
 }
 //---------------------------------------------------------------------------
+int __fastcall TWaveView::GetAttentionPos()
+{
+	int center;
+	int c_pos = SampleToPixel(FCaretPos - FStart);
+	if(c_pos >= 0 && c_pos < ClientWidth)
+		center = FCaretPos;
+	else
+		center = FStart + PixelToSample(ClientWidth >> 1);
+	return center;
+}
+//---------------------------------------------------------------------------
 void __fastcall TWaveView::SetStart(int n)
 {
 	RECT r;
@@ -500,12 +513,7 @@ void __fastcall TWaveView::SetMagnify(int m)
 	if(m < -16) m = -16;
 	if(FMagnify != m)
 	{
-		int center;
-		int c_pos = SampleToPixel(FCaretPos - FStart);
-		if(c_pos >= 0 && c_pos < ClientWidth)
-			center = FCaretPos;
-		else
-			center = FStart + PixelToSample(ClientWidth >> 1);
+		int center = GetAttentionPos();
 		FMagnify = m;
 		int left = center - PixelToSample(ClientWidth >> 1);
 		int view = PixelToSample(ClientWidth);
@@ -1647,6 +1655,47 @@ int __fastcall TWaveView::GetLinkWaveMarkAt(int x, int &linknum, bool &from_or_t
 	return -1;
 }
 //---------------------------------------------------------------------------
+void __fastcall TWaveView::CreateNewLink()
+{
+	// create a new link
+	int from, to;
+	if(LastClickedPos[0] == LastClickedPos[1])
+	{
+		// 'from' and the 'to' is the same
+		from = LastClickedPos[0];
+		to = LastClickedPos[0] + 500000;
+	}
+	else
+	{
+		from = LastClickedPos[0];
+		to = LastClickedPos[1];
+	}
+
+	if(from < 0) from = 0;
+	if(from > FReader->NumSamples) from = FReader->NumSamples;
+
+	if(to < 0) to = 0;
+	if(to > FReader->NumSamples) to = FReader->NumSamples;
+
+
+	tTVPWaveLoopLink link;
+
+	link.From = from;
+	link.To = to;
+	link.Smooth = false;
+	link.Condition = llcNone;
+	link.CondVar = -1;
+	Links.push_back(link);
+
+	NotifyLinkChanged();
+
+	FocusedLink = Links.size() - 1; // focus last
+
+	DoubleBuffered = FDoubleBufferEnabled;
+	Invalidate();
+	PushUndo(); //==== push undo
+}
+//---------------------------------------------------------------------------
 std::vector<tTVPWaveLabel> & TWaveView::GetLabels()
 {
 	if(Labels.size() == 0)
@@ -1662,6 +1711,39 @@ std::vector<tTVPWaveLabel> & TWaveView::GetLabels()
 		Labels.push_back(label);
 	}
 	return Labels;
+}
+//---------------------------------------------------------------------------
+void __fastcall TWaveView::CreateNewLabel()
+{
+	// create new label at current caret position
+	AnsiString newbasename = "ƒ‰ƒxƒ‹";
+
+	int pos = GetAttentionPos();
+	tTVPWaveLabel label;
+	label.Position = pos;
+
+	// search free label name
+	int last = 0;
+	std::vector<tTVPWaveLabel> & labels = /**/ GetLabels(); /**/
+	for(std::vector<tTVPWaveLabel>::iterator i = labels.begin(); i != labels.end();
+		i++)
+	{
+		if(i->Name.AnsiPos(newbasename) == 1)
+		{
+			int n = atoi(i->Name.c_str() + newbasename.Length());
+			if(n >= last) last = n + 1;
+		}
+	}
+
+	label.Name = "ƒ‰ƒxƒ‹" + AnsiString(last);
+
+	Labels.push_back(label);
+
+	FocusedLabel = Labels.size() - 1;
+
+	DoubleBuffered = FDoubleBufferEnabled;
+	Invalidate();
+	PushUndo(); //==== push undo
 }
 //---------------------------------------------------------------------------
 void __fastcall TWaveView::DrawLabelOf(const tTVPWaveLabel & label)
@@ -1877,6 +1959,12 @@ int __fastcall TWaveView::GetLabelWaveMarkAt(int x, int &labelnum)
 	return -1;
 }
 //---------------------------------------------------------------------------
+void TWaveView::PushLastClickedPos(int pos)
+{
+	LastClickedPos[0] = LastClickedPos[1];
+	LastClickedPos[1] = pos;
+}
+//---------------------------------------------------------------------------
 bool TWaveView::GetNearestObjectAt(int x, TObjectInfo & info)
 {
 	int num = 0;
@@ -1970,8 +2058,10 @@ void __fastcall TWaveView::MouseDown(TMouseButton button, TShiftState shift, int
 			}
 			else
 			{
-				CaretPos = MouseXPosToSamplePos(x);
+				int pos = MouseXPosToSamplePos(x);
+				CaretPos = pos;
 				ShowCaret = true;
+				PushLastClickedPos(pos);
 			}
 
 		}
@@ -2119,6 +2209,7 @@ void __fastcall TWaveView::MouseUp(TMouseButton button, TShiftState shift, int x
 			{
 				CaretPos = DraggingObjectInfo.Position;
 				ShowCaret = true;
+				PushLastClickedPos(DraggingObjectInfo.Position);
 			}
 			else if(DraggingObjectInfo.Kind == okLabel)
 			{
@@ -2126,6 +2217,7 @@ void __fastcall TWaveView::MouseUp(TMouseButton button, TShiftState shift, int x
 				{
 					CaretPos = DraggingObjectInfo.Position;
 					ShowCaret = true;
+					PushLastClickedPos(DraggingObjectInfo.Position);
 				}
 			}
 		}

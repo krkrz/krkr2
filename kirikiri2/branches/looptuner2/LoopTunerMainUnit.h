@@ -60,6 +60,13 @@ __published:	// IDE 管理のコンポーネント
 	TToolButton *ToolButton3;
 	TToolButton *DeleteToolButton;
 	TToolButton *ToolButton5;
+	TAction *NewLinkAction;
+	TAction *NewLabelAction;
+	TMenuItem *NewLinkMenuItem;
+	TMenuItem *NewLabelMenuItem;
+	TToolButton *NewLinkToolButton;
+	TToolButton *NewLabelToolButton;
+	TToolButton *ToolButton4;
 	void __fastcall FormDestroy(TObject *Sender);
 	void __fastcall OpenActionExecute(TObject *Sender);
 	void __fastcall ZoomInActionExecute(TObject *Sender);
@@ -72,6 +79,8 @@ __published:	// IDE 管理のコンポーネント
 	void __fastcall RedoActionExecute(TObject *Sender);
 	void __fastcall ActionListUpdate(TBasicAction *Action, bool &Handled);
 	void __fastcall DeleteActionExecute(TObject *Sender);
+	void __fastcall NewLabelActionExecute(TObject *Sender);
+	void __fastcall NewLinkActionExecute(TObject *Sender);
 private:	// ユーザー宣言
 	TWaveReader * Reader;
 	TWaveView *WaveView;
