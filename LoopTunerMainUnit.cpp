@@ -152,6 +152,17 @@ void __fastcall TLoopTunerMainForm::DeleteActionExecute(TObject *Sender)
 }
 //---------------------------------------------------------------------------
 
+
+void __fastcall TLoopTunerMainForm::NewLinkActionExecute(TObject *Sender)
+{
+	WaveView->CreateNewLink();
+}
+//---------------------------------------------------------------------------
+void __fastcall TLoopTunerMainForm::NewLabelActionExecute(TObject *Sender)
+{
+	WaveView->CreateNewLabel();
+}
+//---------------------------------------------------------------------------
 void __fastcall TLoopTunerMainForm::ActionListUpdate(TBasicAction *Action,
 	  bool &Handled)
 {
@@ -215,6 +226,8 @@ void __fastcall TLoopTunerMainForm::OnWaveViewDoubleClick(TObject *Sender, int p
 	PlayFrom(pos);
 }
 //---------------------------------------------------------------------------
+
+
 
 
 
