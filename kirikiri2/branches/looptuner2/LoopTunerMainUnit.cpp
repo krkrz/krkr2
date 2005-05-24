@@ -128,22 +128,29 @@ void __fastcall TLoopTunerMainForm::ZoomInActionExecute(TObject *Sender)
 	WaveView->Magnify ++;
 }
 //---------------------------------------------------------------------------
-
 void __fastcall TLoopTunerMainForm::ZoomOutActionExecute(TObject *Sender)
 {
 	WaveView->Magnify --;
 }
 //---------------------------------------------------------------------------
-
 void __fastcall TLoopTunerMainForm::UndoActionExecute(TObject *Sender)
 {
 	WaveView->Undo();
 }
 //---------------------------------------------------------------------------
-
+void __fastcall TLoopTunerMainForm::UndoActionUpdate(TObject *Sender)
+{
+	UndoAction->Enabled = WaveView->CanUndo();
+}
+//---------------------------------------------------------------------------
 void __fastcall TLoopTunerMainForm::RedoActionExecute(TObject *Sender)
 {
 	WaveView->Redo();
+}
+//---------------------------------------------------------------------------
+void __fastcall TLoopTunerMainForm::RedoActionUpdate(TObject *Sender)
+{
+	RedoAction->Enabled = WaveView->CanRedo();
 }
 //---------------------------------------------------------------------------
 void __fastcall TLoopTunerMainForm::DeleteActionExecute(TObject *Sender)
@@ -151,8 +158,11 @@ void __fastcall TLoopTunerMainForm::DeleteActionExecute(TObject *Sender)
 	WaveView->DeleteItem();
 }
 //---------------------------------------------------------------------------
-
-
+void __fastcall TLoopTunerMainForm::DeleteActionUpdate(TObject *Sender)
+{
+	DeleteAction->Enabled = WaveView->CanDeleteItem();
+}
+//---------------------------------------------------------------------------
 void __fastcall TLoopTunerMainForm::NewLinkActionExecute(TObject *Sender)
 {
 	WaveView->CreateNewLink();
@@ -161,15 +171,6 @@ void __fastcall TLoopTunerMainForm::NewLinkActionExecute(TObject *Sender)
 void __fastcall TLoopTunerMainForm::NewLabelActionExecute(TObject *Sender)
 {
 	WaveView->CreateNewLabel();
-}
-//---------------------------------------------------------------------------
-void __fastcall TLoopTunerMainForm::ActionListUpdate(TBasicAction *Action,
-	  bool &Handled)
-{
-	// check enable/disable state
-	UndoAction->Enabled = WaveView->CanUndo();
-	RedoAction->Enabled = WaveView->CanRedo();
-	DeleteAction->Enabled = WaveView->CanDeleteItem();
 }
 //---------------------------------------------------------------------------
 void __fastcall TLoopTunerMainForm::PlayFromStartActionExecute(TObject *Sender)
@@ -226,6 +227,7 @@ void __fastcall TLoopTunerMainForm::OnWaveViewDoubleClick(TObject *Sender, int p
 	PlayFrom(pos);
 }
 //---------------------------------------------------------------------------
+
 
 
 

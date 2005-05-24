@@ -175,7 +175,6 @@ object LoopTunerMainForm: TLoopTunerMainForm
   end
   object ActionList: TActionList
     Images = ImageList
-    OnUpdate = ActionListUpdate
     Left = 368
     Top = 80
     object OpenAction: TAction
@@ -231,18 +230,21 @@ object LoopTunerMainForm: TLoopTunerMainForm
       Hint = 'アイテムを削除します'
       ImageIndex = 14
       OnExecute = DeleteActionExecute
+      OnUpdate = DeleteActionUpdate
     end
     object UndoAction: TAction
       Category = '編集'
       Caption = '元に戻す(&U)'
       ImageIndex = 12
       OnExecute = UndoActionExecute
+      OnUpdate = UndoActionUpdate
     end
     object RedoAction: TAction
       Category = '編集'
       Caption = 'やり直し(&R)'
       ImageIndex = 13
       OnExecute = RedoActionExecute
+      OnUpdate = RedoActionUpdate
     end
     object NewLinkAction: TAction
       Category = '編集'
@@ -261,7 +263,7 @@ object LoopTunerMainForm: TLoopTunerMainForm
     Left = 432
     Top = 80
     Bitmap = {
-      494C010111001300040010001000FFFFFFFFFF00FFFFFFFFFFFFFFFF424D3600
+      494C010111001300040010001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000400000005000000001002000000000000050
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
@@ -925,7 +927,8 @@ object LoopTunerMainForm: TLoopTunerMainForm
       FFFFEFFFFF9FFF9FCBFFEBFFFF0FFF0FC8FFE8FF9797EF97C83FE83F91DBE3DB
       C80FE80F907DE0FDC803E803901DE03DC80FE80F9005E00DC83FE83F901DE03D
       C8FFE8FF907DE0FDCBFFEBFF91FBE3FBFFFFEFFF97F7EFF7FFFFC7FFFC0FFC0F
-      FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF}
+      FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF00000000000000000000000000000000
+      000000000000}
   end
   object OpenDialog: TOpenDialog
     Left = 464
