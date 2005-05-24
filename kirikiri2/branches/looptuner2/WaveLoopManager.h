@@ -101,6 +101,10 @@ struct tTVPWaveLabel
 {
 	tjs_int64 Position; // label position
 	tTVPLabelStringType Name; // label name
+#ifdef TVP_IN_LOOP_TUNER
+	// these are only used by the loop tuner
+	tjs_int NameWidth; // display name width
+#endif
 };
 //---------------------------------------------------------------------------
 bool inline operator < (const tTVPWaveLabel & lhs, const tTVPWaveLabel & rhs)
