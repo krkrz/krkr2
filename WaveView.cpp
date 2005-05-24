@@ -78,7 +78,7 @@ __fastcall TWaveView::TWaveView(Classes::TComponent* AOwner) :
 
 	FShowLinks = true;
 	FLinkTierCount = 0;
-	FHoveredLink = -1; // -1 for non visible
+	FHoveredLink = -1; // -1 for not hovered
 	FFocusedLink = -1; // -1 for not focused
 	NotifyLinkChanged();
 
@@ -436,15 +436,18 @@ void __fastcall TWaveView::SetShowCaret(bool b)
 	{
 		FShowCaret = b;
 
+		InvalidateCaret(FCaretPos);
 		if(FCaretPos >= 0)
 		{
 			FCaretVisiblePhase = true;
-			InvalidateCaret(FCaretPos);
 			FBlinkTimer->Enabled = b;
 		}
 
-		FocusedLink = -1;
-		FocusedLabel = -1; // these are exclusive
+		if(FShowCaret && FCaretPos >= 0)
+		{
+			FocusedLink = -1;
+			FocusedLabel = -1; // these are exclusive
+		}
 	}
 }
 //---------------------------------------------------------------------------
@@ -1525,7 +1528,7 @@ void __fastcall TWaveView::SetFocusedLink(int l)
 		InvalidateLink(FFocusedLink);
 		if(l != -1)
 		{
-			FShowCaret = false; // link, label and caret are exclusive
+			ShowCaret = false; // link, label and caret are exclusive
 			FocusedLabel = -1;
 		}
 	}
@@ -1823,7 +1826,7 @@ void __fastcall TWaveView::DrawLabelOf(const tTVPWaveLabel & label)
 	TRect rect;
 	GetLabelNameRect(label, rect);
 	int text_x = rect.left + 2;
-	int text_y = rect.top;
+	int text_y = rect.top + 1;
 
 	Canvas->Font->Style = Canvas->Font->Style << fsBold;
 	TColor color_save = Canvas->Font->Color;
@@ -1937,7 +1940,7 @@ void __fastcall TWaveView::SetFocusedLabel(int l)
 		InvalidateLabel(FFocusedLabel);
 		if(l != -1)
 		{
-			FShowCaret = false; // link, label and caret are exclusive
+			ShowCaret = false; // link, label and caret are exclusive
 			FocusedLink = -1; // link, label and caret are exclusive
 		}
 	}
@@ -2138,15 +2141,18 @@ void __fastcall TWaveView::MouseDown(TMouseButton button, TShiftState shift, int
 		if(y < head_size)
 		{
 			int fl = GetLabelAt(x, y);
-			if(fl != -1) FocusedLabel = fl;
-			// generate dragging information
-			std::vector<tTVPWaveLabel> & labels = /**/ GetLabels(); /**/
-			tTVPWaveLabel &label = labels[fl];
-			DraggingObjectInfo.Kind = okLabel;
-			DraggingObjectInfo.Num = fl;
-			DraggingObjectInfo.Position = label.Position;
-	   		DraggingState = dsMouseDown;
-			LastMouseDownPosOffset = MouseXPosToSamplePos(x) - DraggingObjectInfo.Position;
+			if(fl != -1)
+			{
+				FocusedLabel = fl;
+				// generate dragging information
+				std::vector<tTVPWaveLabel> & labels = /**/ GetLabels(); /**/
+				tTVPWaveLabel &label = labels[fl];
+				DraggingObjectInfo.Kind = okLabel;
+				DraggingObjectInfo.Num = fl;
+				DraggingObjectInfo.Position = label.Position;
+				DraggingState = dsMouseDown;
+				LastMouseDownPosOffset = MouseXPosToSamplePos(x) - DraggingObjectInfo.Position;
+			}
 		}
 		else if(y < foot_start)
 		{

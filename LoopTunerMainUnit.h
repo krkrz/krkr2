@@ -77,10 +77,12 @@ __published:	// IDE 管理のコンポーネント
 	void __fastcall SaveActionExecute(TObject *Sender);
 	void __fastcall UndoActionExecute(TObject *Sender);
 	void __fastcall RedoActionExecute(TObject *Sender);
-	void __fastcall ActionListUpdate(TBasicAction *Action, bool &Handled);
 	void __fastcall DeleteActionExecute(TObject *Sender);
 	void __fastcall NewLabelActionExecute(TObject *Sender);
 	void __fastcall NewLinkActionExecute(TObject *Sender);
+	void __fastcall UndoActionUpdate(TObject *Sender);
+	void __fastcall RedoActionUpdate(TObject *Sender);
+	void __fastcall DeleteActionUpdate(TObject *Sender);
 private:	// ユーザー宣言
 	TWaveReader * Reader;
 	TWaveView *WaveView;
