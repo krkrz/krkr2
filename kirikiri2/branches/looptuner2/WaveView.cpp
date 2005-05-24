@@ -19,7 +19,7 @@ const TColor C_WAVE2				= clGray;
 const TColor C_INF_LINE				= clGray;
 const TColor C_DISABLED_TIME_CLIENT	= ((TColor)0xf0f0f0);
 const TColor C_TIME_CLIENT			= clBtnFace;
-const TColor C_TIME_COLOR			= clBlack;
+const TColor C_TIME_COLOR			= ((TColor)0x303030);
 
 const TColor C_LINK_WAVE_MARK		= ((TColor)0x0000f0);
 const TColor C_LINK_CLIENT			= clWhite;
@@ -33,7 +33,11 @@ const TColor C_LABEL_WAVE_MARK		= ((TColor)0x00f000);
 const TColor C_LABEL_MARK_LINE		= clBlack;
 const TColor C_LABEL_MARK_HOVER		= ((TColor)0x40d090);
 const TColor C_LABEL_MARK_FOCUS		= clRed;
-const TColor C_LABEL_MARK		= clYellow;
+const TColor C_LABEL_MARK			= clYellow;
+const TColor C_LABEL_TEXT_BG		= clWhite;
+const TColor C_LABEL_TEXT			= ((TColor)0x000080);
+const TColor C_LABEL_TEXT_HOVER		= ((TColor)0x008080);
+const TColor C_LABEL_TEXT_FOCUS		= ((TColor)0x0000ff);
 //---------------------------------------------------------------------------
 const int LinkArrowSize = 4;
 const int LinkDirectionArrowWidth = 10;
@@ -1746,6 +1750,45 @@ void __fastcall TWaveView::CreateNewLabel()
 	PushUndo(); //==== push undo
 }
 //---------------------------------------------------------------------------
+void __fastcall TWaveView::GetLabelNameRect(const tTVPWaveLabel & label, TRect & rect)
+{
+	// get label name rectangle
+	int x = SampleToPixel(label.Position - Start);
+	int head_size = GetHeadSize();
+	Canvas->Font->Style = Canvas->Font->Style << fsBold;
+
+	// decide the label position
+	int text_width = Canvas->TextWidth(label.Name) + 10;
+
+	// check right free space
+	int right_space;
+	if(PixelToSample(ClientWidth) > FReader->NumSamples)
+		right_space = ClientWidth - x;
+	else
+		right_space = SampleToPixel(FReader->NumSamples - label.Position);
+
+	// check left free space
+	int left_space;
+	left_space = SampleToPixel(label.Position);
+
+	// decide position
+	int text_x;
+	if(right_space < text_width && left_space >= text_width)
+		text_x = x - text_width;
+	else
+		text_x = x + 10;
+
+	int text_y = head_size - Canvas->TextHeight("|") - 2;
+
+	// return a rectangle
+	rect.left = text_x - 2;
+	rect.top = text_y - 1;
+	rect.right = text_x + text_width - 10 + 2;
+	rect.bottom = head_size;
+
+	Canvas->Font->Style = Canvas->Font->Style >> fsBold;
+}
+//---------------------------------------------------------------------------
 void __fastcall TWaveView::DrawLabelOf(const tTVPWaveLabel & label)
 {
 	int head_size = GetHeadSize();
@@ -1775,6 +1818,23 @@ void __fastcall TWaveView::DrawLabelOf(const tTVPWaveLabel & label)
 	Canvas->MoveTo(x, head_size);
 	Canvas->LineTo(x, bottom_limit);
 	Canvas->Pen->Style = psSolid;
+
+	// draw label name
+	TRect rect;
+	GetLabelNameRect(label, rect);
+	int text_x = rect.left + 2;
+	int text_y = rect.top;
+
+	Canvas->Font->Style = Canvas->Font->Style << fsBold;
+	TColor color_save = Canvas->Font->Color;
+	Canvas->Font->Color = C_LABEL_TEXT_BG;
+	Canvas->TextOut(text_x-2 , text_y   , label.Name);
+	Canvas->TextOut(text_x+2 , text_y   , label.Name);
+	Canvas->TextOut(text_x   , text_y-1 , label.Name);
+	Canvas->TextOut(text_x   , text_y+1 , label.Name);
+	Canvas->Font->Color = color_save;
+	Canvas->TextOut(text_x   , text_y   , label.Name);
+	Canvas->Font->Style = Canvas->Font->Style >> fsBold;
 }
 //---------------------------------------------------------------------------
 void __fastcall TWaveView::DrawLabels()
@@ -1792,7 +1852,10 @@ void __fastcall TWaveView::DrawLabels()
 		else if((int)i == FHoveredLabel)
 			continue;
 		else
+		{
 			Canvas->Pen->Color = C_LABEL_MARK_LINE;
+			Canvas->Font->Color = C_LABEL_TEXT;
+		}
 
 		const tTVPWaveLabel & label = labels[i];
 
@@ -1801,6 +1864,7 @@ void __fastcall TWaveView::DrawLabels()
 	if(FHoveredLabel != -1)
 	{
 		Canvas->Pen->Color = C_LABEL_MARK_HOVER;
+		Canvas->Font->Color = C_LABEL_TEXT_HOVER;
 		const tTVPWaveLabel & label = labels[FHoveredLabel];
 		DrawLabelOf(label);
 	}
@@ -1809,6 +1873,7 @@ void __fastcall TWaveView::DrawLabels()
 	{
 		Canvas->Pen->Width = 2;
 		Canvas->Pen->Color = C_LABEL_MARK_FOCUS;
+		Canvas->Font->Color = C_LABEL_TEXT_FOCUS;
 		const tTVPWaveLabel & label = labels[FFocusedLabel];
 		DrawLabelOf(label);
 		Canvas->Pen->Width = 1;
@@ -1844,6 +1909,11 @@ void __fastcall TWaveView::InvalidateLabel(int labelnum)
 	r.right  = x + 1;
 	r.bottom = bottom_limit;
 	InvalidateRect(Handle, &r, FALSE);
+
+	// invalidate label name
+	TRect rect;
+	GetLabelNameRect(label, rect);
+	InvalidateRect(Handle, (RECT*)&rect, FALSE);
 }
 //---------------------------------------------------------------------------
 void __fastcall TWaveView::SetHoveredLabel(int l)
@@ -1885,6 +1955,18 @@ bool __fastcall TWaveView::IsLabelAt(int labelnum, int x, int y)
 	return y >= 0 && y < head_size && x >= lx - 4 && x <= lx + 4;
 }
 //---------------------------------------------------------------------------
+bool __fastcall TWaveView::IsLabelNameAt(int labelnum, int x, int y)
+{
+	std::vector<tTVPWaveLabel> & labels = /**/ GetLabels(); /**/
+	if(labelnum < 0 || labelnum >= (int)labels.size()) return false;
+
+	const tTVPWaveLabel & label = labels[labelnum];
+	TRect rect;
+	GetLabelNameRect(label, rect);
+
+	return x >= rect.left && x < rect.right && y >= rect.top && y < rect.bottom;
+}
+//---------------------------------------------------------------------------
 int __fastcall TWaveView::GetLabelAt(int x, int y)
 {
 	// give priority to focused label
@@ -1902,6 +1984,25 @@ int __fastcall TWaveView::GetLabelAt(int x, int y)
 		if((int)i != FFocusedLabel)
 		{
 			if(IsLabelAt(i, x, y))
+			{
+				return i;
+			}
+		}
+	}
+
+	// give priority to focused label
+	if(FFocusedLabel != -1)
+	{
+		if(IsLabelNameAt(FFocusedLabel, x, y))
+			return FFocusedLabel;
+	}
+
+	// for each labels
+	for(unsigned int i = 0; i < labels.size(); i++)
+	{
+		if((int)i != FFocusedLabel)
+		{
+			if(IsLabelNameAt(i, x, y))
 			{
 				return i;
 			}

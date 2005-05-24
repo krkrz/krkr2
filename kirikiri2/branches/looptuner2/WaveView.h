@@ -186,12 +186,14 @@ private:
 	int FFocusedLabel; // -1 for not focused
 
 private:
+	void __fastcall GetLabelNameRect(const tTVPWaveLabel & label, TRect & rect);
 	void __fastcall DrawLabelOf(const tTVPWaveLabel & label);
 	void __fastcall DrawLabels();
 	void __fastcall InvalidateLabel(int labelnum);
 	void __fastcall SetHoveredLabel(int l);
 	void __fastcall SetFocusedLabel(int l);
 	bool __fastcall IsLabelAt(int labelnum, int x, int y);
+	bool __fastcall IsLabelNameAt(int labelnum, int x, int y);
 	int __fastcall GetLabelAt(int x, int y);
 	int __fastcall IsLabelWaveMarkAt(int x, int labelnum);
 	int __fastcall GetLabelWaveMarkAt(int x, int &labelnum);
