@@ -184,10 +184,14 @@ private:
 	bool FShowLabels;
 	int FHoveredLabel; // -1 for not hovered
 	int FFocusedLabel; // -1 for not focused
+	int LabelTextHeight; // label's text height
+
+public:
+	void __fastcall NotifyLabelChanged();
 
 private:
-	void __fastcall GetLabelNameRect(const tTVPWaveLabel & label, TRect & rect);
-	void __fastcall DrawLabelOf(const tTVPWaveLabel & label);
+	void __fastcall GetLabelNameRect(tTVPWaveLabel & label, TRect & rect);
+	void __fastcall DrawLabelOf(tTVPWaveLabel & label);
 	void __fastcall DrawLabels();
 	void __fastcall InvalidateLabel(int labelnum);
 	void __fastcall SetHoveredLabel(int l);
