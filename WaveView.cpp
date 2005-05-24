@@ -38,6 +38,7 @@ const TColor C_LABEL_TEXT_BG		= clWhite;
 const TColor C_LABEL_TEXT			= ((TColor)0x000080);
 const TColor C_LABEL_TEXT_HOVER		= ((TColor)0x008080);
 const TColor C_LABEL_TEXT_FOCUS		= ((TColor)0x0000ff);
+const AnsiString C_NEW_LABEL_BASE_NAME = "ƒ‰ƒxƒ‹";
 //---------------------------------------------------------------------------
 const int LinkArrowSize = 4;
 const int LinkDirectionArrowWidth = 10;
@@ -75,6 +76,7 @@ __fastcall TWaveView::TWaveView(Classes::TComponent* AOwner) :
 	Canvas->Font->Height = -12;
 
 	FUndoLevel = 0;
+	FOnNotifyPopup = NULL;
 
 	FShowLinks = true;
 	FLinkTierCount = 0;
@@ -1733,8 +1735,6 @@ std::vector<tTVPWaveLabel> & TWaveView::GetLabels()
 void __fastcall TWaveView::CreateNewLabel()
 {
 	// create new label at current caret position
-	AnsiString newbasename = "ƒ‰ƒxƒ‹";
-
 	int pos = GetAttentionPos();
 	tTVPWaveLabel label;
 	label.Position = pos;
@@ -1745,14 +1745,14 @@ void __fastcall TWaveView::CreateNewLabel()
 	for(std::vector<tTVPWaveLabel>::iterator i = labels.begin(); i != labels.end();
 		i++)
 	{
-		if(i->Name.AnsiPos(newbasename) == 1)
+		if(i->Name.AnsiPos(C_NEW_LABEL_BASE_NAME) == 1)
 		{
-			int n = atoi(i->Name.c_str() + newbasename.Length());
+			int n = atoi(i->Name.c_str() + C_NEW_LABEL_BASE_NAME.Length());
 			if(n >= last) last = n + 1;
 		}
 	}
 
-	label.Name = "ƒ‰ƒxƒ‹" + AnsiString(last);
+	label.Name = C_NEW_LABEL_BASE_NAME + AnsiString(last);
 	label.NameWidth = -1;
 
 	Labels.push_back(label);
@@ -2172,6 +2172,7 @@ void __fastcall TWaveView::MouseDown(TMouseButton button, TShiftState shift, int
 	if(!FReader || !FReader->ReadDone) return;
 
 	// mouse downed
+	PopupType = "";
 	int head_size = GetHeadSize();
 	int foot_size = GetFootSize();
 	int foot_start = ClientHeight - foot_size;
@@ -2219,6 +2220,41 @@ void __fastcall TWaveView::MouseDown(TMouseButton button, TShiftState shift, int
 			HoveredLabel = -1;
 			int fl = GetLinkAt(x, y);
 			if(fl != -1) FocusedLink = fl;
+		}
+	}
+	else
+	{
+		if(y < head_size)
+		{
+			int fl = GetLabelAt(x, y);
+			if(fl != -1)
+			{
+				FocusedLabel = fl;
+				PopupType = "Label";
+			}
+		}
+		else if(y < foot_start)
+		{
+			int pos;
+			TObjectInfo info;
+			if(GetNearestObjectAt(x, info))
+				pos = info.Position;
+			else
+				pos = MouseXPosToSamplePos(x);
+			CaretPos = pos;
+			ShowCaret = true;
+			PushLastClickedPos(pos);
+			PopupType = "Wave";
+		}
+		else
+		{
+			HoveredLabel = -1;
+			int fl = GetLinkAt(x, y);
+			if(fl != -1)
+			{
+				FocusedLink = fl;
+				PopupType = "Link";
+			}
 		}
 	}
 }
@@ -2378,6 +2414,13 @@ void __fastcall TWaveView::MouseUp(TMouseButton button, TShiftState shift, int x
 		}
 		DraggingState = dsNone;
 		DragScrollTimer->Enabled = false;
+	}
+	else
+	{
+		if(PopupType != "" && FOnNotifyPopup)
+		{
+			FOnNotifyPopup(this, PopupType);
+		}
 	}
 }
 //---------------------------------------------------------------------------

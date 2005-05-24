@@ -934,4 +934,40 @@ object LoopTunerMainForm: TLoopTunerMainForm
     Left = 464
     Top = 80
   end
+  object ForLabelPopupMenu: TPopupMenu
+    Images = ImageList
+    Left = 368
+    Top = 144
+    object ForLink_DeleteMenuItem: TMenuItem
+      Action = DeleteAction
+    end
+  end
+  object ForLinkPopupMenu: TPopupMenu
+    Images = ImageList
+    Left = 400
+    Top = 144
+    object MenuItem1: TMenuItem
+      Action = DeleteAction
+    end
+  end
+  object ForWavePopupMenu: TPopupMenu
+    Images = ImageList
+    Left = 432
+    Top = 144
+    object ForWave_ZoomInMenuItem: TMenuItem
+      Action = ZoomInAction
+    end
+    object ForWave_ZoomOutMenuItem: TMenuItem
+      Action = ZoomOutAction
+    end
+    object ForWave_PlayFromCursorMenuItem: TMenuItem
+      Action = PlayFromCaretAction
+    end
+    object ForWave_NewLinkMenuItem: TMenuItem
+      Action = NewLinkAction
+    end
+    object ForWave_NewLabelMenuItem: TMenuItem
+      Action = NewLabelAction
+    end
+  end
 end

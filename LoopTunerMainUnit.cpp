@@ -20,6 +20,7 @@ __fastcall TLoopTunerMainForm::TLoopTunerMainForm(TComponent* Owner)
 	WaveView->Align = alClient;
 	WaveView->Reader = Reader;
 	WaveView->OnDoubleClick = OnWaveViewDoubleClick;
+	WaveView->OnNotifyPopup = OnWaveViewNotifyPopup;
 	InitDirectSound(Application->Handle);
 	Manager = NULL;
 	Application->OnIdle = OnApplicationIdle;
@@ -225,6 +226,24 @@ void __fastcall TLoopTunerMainForm::OnApplicationIdle(TObject *sender, bool &don
 void __fastcall TLoopTunerMainForm::OnWaveViewDoubleClick(TObject *Sender, int pos)
 {
 	PlayFrom(pos);
+}
+//---------------------------------------------------------------------------
+void __fastcall TLoopTunerMainForm::OnWaveViewNotifyPopup(TObject *Sender, AnsiString type)
+{
+	POINT pt;
+	::GetCursorPos(&pt);
+	if(type == "Link")
+	{
+		ForLinkPopupMenu->Popup(pt.x, pt.y);
+	}
+	else if(type == "Label")
+	{
+		ForLabelPopupMenu->Popup(pt.x, pt.y);
+	}
+	else if(type == "Wave")
+	{
+		ForWavePopupMenu->Popup(pt.x, pt.y);
+	}
 }
 //---------------------------------------------------------------------------
 
