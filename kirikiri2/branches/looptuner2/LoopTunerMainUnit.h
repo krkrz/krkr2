@@ -67,6 +67,16 @@ __published:	// IDE 管理のコンポーネント
 	TToolButton *NewLinkToolButton;
 	TToolButton *NewLabelToolButton;
 	TToolButton *ToolButton4;
+	TPopupMenu *ForLabelPopupMenu;
+	TMenuItem *ForLink_DeleteMenuItem;
+	TPopupMenu *ForLinkPopupMenu;
+	TMenuItem *MenuItem1;
+	TPopupMenu *ForWavePopupMenu;
+	TMenuItem *ForWave_PlayFromCursorMenuItem;
+	TMenuItem *ForWave_NewLinkMenuItem;
+	TMenuItem *ForWave_NewLabelMenuItem;
+	TMenuItem *ForWave_ZoomInMenuItem;
+	TMenuItem *ForWave_ZoomOutMenuItem;
 	void __fastcall FormDestroy(TObject *Sender);
 	void __fastcall OpenActionExecute(TObject *Sender);
 	void __fastcall ZoomInActionExecute(TObject *Sender);
@@ -96,6 +106,7 @@ private:
 	void __fastcall PlayFrom(int pos);
 	void __fastcall OnApplicationIdle(TObject *sender, bool &done);
 	void __fastcall OnWaveViewDoubleClick(TObject *Sender, int pos);
+	void __fastcall OnWaveViewNotifyPopup(TObject *Sender, AnsiString type);
 
 };
 //---------------------------------------------------------------------------

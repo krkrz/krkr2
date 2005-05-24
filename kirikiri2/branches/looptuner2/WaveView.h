@@ -24,6 +24,7 @@ struct TTierMinMaxInfo
 class TWaveReader;
 //---------------------------------------------------------------------------
 typedef void __fastcall (__closure *TNotifyWavePosEvent)(TObject *Sender, int pos);
+typedef void __fastcall (__closure *TNotifyPopupEvent)(TObject *Sender, AnsiString where);
 //---------------------------------------------------------------------------
 class TWaveView : public TCustomControl
 {
@@ -54,6 +55,7 @@ public:
 
 //-- editing support
 private:
+	TNotifyPopupEvent FOnNotifyPopup;
 	struct tHistoryInfo
 	{
 		std::vector<tTVPWaveLoopLink> Links;
@@ -73,6 +75,9 @@ public:
 
 	void __fastcall DeleteItem();
 	bool __fastcall CanDeleteItem() const;
+
+	__property TNotifyPopupEvent OnNotifyPopup =
+		{ read = FOnNotifyPopup, write = FOnNotifyPopup };
 
 //-- view control
 private:
@@ -228,6 +233,7 @@ private:
 	int LastMouseDownX;
 	int LastMouseDownPosOffset;
 	int LastMouseMoveX;
+	AnsiString PopupType;
 
 	int LastClickedPos[2]; // last clicked two positions; only used for new link creation
 
