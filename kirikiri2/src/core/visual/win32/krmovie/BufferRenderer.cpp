@@ -628,7 +628,7 @@ void TBufferRenderer::OnRenderStart( IMediaSample *pMediaSample )
 	{
 		TimeStart = m_StartFrame + Current;
 		TimeEnd = m_StartFrame + Current;
-		m_StopFrame = m_StartFrame + Stop;
+		m_StopFrame = m_StartFrame + static_cast<LONG>(Stop);
 	}
 	else
 	{
