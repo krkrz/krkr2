@@ -107,13 +107,14 @@ public:
 	DECLARE_IUNKNOWN
 	STDMETHODIMP NonDelegatingQueryInterface( REFIID riid, void **ppv );
 
+	HRESULT OnStartStreaming(void);
+	void OnRenderStart( IMediaSample *pMediaSample );
+
+// IRendererBufferAccess
 	STDMETHOD( SetFrontBuffer )( BYTE *buff, long *size);
 	STDMETHOD( SetBackBuffer ) ( BYTE *buff, long *size);
 	STDMETHOD( GetFrontBuffer )( BYTE **buff, long *size);
 	STDMETHOD( GetBackBuffer ) ( BYTE **buff, long *size);
-	HRESULT OnStartStreaming(void);
-	void OnRenderStart( IMediaSample *pMediaSample );
-
 
 // IRendererBufferVideo
 	virtual /* [propget] */ HRESULT STDMETHODCALLTYPE get_AvgTimePerFrame( 
