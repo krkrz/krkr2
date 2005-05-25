@@ -86,13 +86,48 @@ void __stdcall tTVPDSLayerVideo::BuildGraph( HWND callbackwin, IStream *stream,
 		pBRender = pCBR;
 
 		// add fliter
-		if( FAILED(hr = GraphBuilder()->AddFilter( pBRender, L"Buffer Renderer")) )
-			ThrowDShowException(L"Failed to call GraphBuilder()->AddFilter( pBRender, L\"Buffer Renderer\").", hr);
 		if( FAILED(hr = GraphBuilder()->AddFilter( m_Reader, L"Stream Reader")) )
 			ThrowDShowException(L"Failed to call GraphBuilder()->AddFilter( m_Reader, L\"Stream Reader\").", hr);
 
 		if( mt.subtype == MEDIASUBTYPE_Avi || mt.subtype == MEDIASUBTYPE_QTMovie )
 		{
+// GraphBuilderに自動的にグラフを構築させた後、Video Rendererをすげ替える
+// 自らグラフを構築していくよりも、AVIファイルへの対応状況が良くなるはず
+#if 1
+			if( FAILED(hr = GraphBuilder()->Render(m_Reader->GetPin(0))) )
+				ThrowDShowException(L"Failed to call IGraphBuilder::Render.", hr);
+
+			CComPtr<IBaseFilter>	pRender;
+			if( FAILED(hr = FindVideoRenderer( &pRender ) ) )
+				ThrowDShowException(L"Failed to call FindVideoRenderer( &pRender ).", hr);
+
+			CComPtr<IPin>	pRenderPin;
+			pRenderPin = GetInPin(pRender, 0);
+
+			// get decoder output pin
+			CComPtr<IPin>			pDecoderPinOut;
+			if( FAILED(hr = pRenderPin->ConnectedTo( &pDecoderPinOut )) )
+				ThrowDShowException(L"Failed to call pRenderPin->ConnectedTo( &pDecoderPinOut ).", hr);
+
+			// dissconnect pins
+			if( FAILED(hr = pDecoderPinOut->Disconnect()) )
+				ThrowDShowException(L"Failed to call pDecoderPinOut->Disconnect().", hr);
+			if( FAILED(hr = pRenderPin->Disconnect()) )
+				ThrowDShowException(L"Failed to call pRenderPin->Disconnect().", hr);
+
+			// remove default render
+			if( FAILED(hr = GraphBuilder()->RemoveFilter( pRender ) ) )
+				ThrowDShowException(L"Failed to call GraphBuilder->RemoveFilter(pRenderPin).", hr);
+
+			if( FAILED(hr = GraphBuilder()->AddFilter( pBRender, L"Buffer Renderer")) )
+				ThrowDShowException(L"Failed to call GraphBuilder()->AddFilter( pBRender, L\"Buffer Renderer\").", hr);
+
+			CComPtr<IPin>	pRdrPinIn;
+			pRdrPinIn = GetInPin(pBRender, 0);
+
+			if( FAILED(hr = GraphBuilder()->ConnectDirect( pDecoderPinOut, pRdrPinIn, NULL )) )
+				ThrowDShowException(L"Failed to call GraphBuilder()->ConnectDirect( pDecoderPinOut, pRdrPinIn, NULL ).", hr);
+#else
 			CComPtr<IPin>			pRdrPinIn;
 			CComPtr<IPin>			pSrcPinOut;
 			if( FAILED(hr = pBRender->FindPin( L"In", &pRdrPinIn )) )
@@ -124,9 +159,12 @@ void __stdcall tTVPDSLayerVideo::BuildGraph( HWND callbackwin, IStream *stream,
 						ThrowDShowException(L"Failed to call GraphBuilder()->RemoveFilter( pDDSRenderer).", hr);
 				}
 			}
+#endif
 		}
 		else
 		{
+			if( FAILED(hr = GraphBuilder()->AddFilter( pBRender, L"Buffer Renderer")) )
+				ThrowDShowException(L"Failed to call GraphBuilder()->AddFilter( pBRender, L\"Buffer Renderer\").", hr);
 			BuildMPEGGraph( pBRender, m_Reader); // may throw an exception
 		}
 
@@ -173,6 +211,9 @@ void __stdcall tTVPDSLayerVideo::BuildGraph( HWND callbackwin, IStream *stream,
 
 		if( FAILED(hr = m_GraphBuilder.QueryInterface( &m_BasicVideo )) )
 			ThrowDShowException(L"Failed to query IBasicVideo", hr);
+//		m_GraphBuilder.QueryInterface( &m_BasicAudio );
+		if( FAILED(hr = m_GraphBuilder.QueryInterface( &m_BasicAudio )) )
+			ThrowDShowException(L"Failed to query IBasicAudio", hr);
 
 		if( FAILED(hr = pBRender->QueryInterface( &m_BuffAccess )) )
 			ThrowDShowException(L"Failed to query IRendererBufferAccess.", hr);
