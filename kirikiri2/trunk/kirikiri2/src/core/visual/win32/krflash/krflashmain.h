@@ -57,9 +57,22 @@ public:
 	void __stdcall GetFrontBuffer( BYTE **buff );
 	void __stdcall SetVideoBuffer( BYTE *buff1, BYTE *buff2, long size );
 
-	virtual void __stdcall SetStopFrame( int frame );
-	virtual void __stdcall GetStopFrame( int *frame );
-	virtual void __stdcall SetDefaultStopFrame();
+	void __stdcall SetStopFrame( int frame );
+	void __stdcall GetStopFrame( int *frame );
+	void __stdcall SetDefaultStopFrame();
+
+	void __stdcall SetPlayRate( double rate );
+	void __stdcall GetPlayRate( double *rate );
+
+	void __stdcall SetAudioBalance( long balance );
+	void __stdcall GetAudioBalance( long *balance );
+	void __stdcall SetAudioVolume( long volume );
+	void __stdcall GetAudioVolume( long *volume );
+
+	void __stdcall GetNumberOfAudioStream( unsigned long *streamCount );
+	void __stdcall SelectAudioStream( unsigned long num );
+	void __stdcall GetEnableAudioStreamNum( long *num );
+	void __stdcall DisableAudioStream( void );
 // End:	Add:	T.Imoto
 
 
