@@ -326,12 +326,8 @@ TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/setSegmentLoop)
 	TJS_GET_NATIVE_INSTANCE(/*var. name*/_this,
 		/*var. type*/tTJSNI_VideoOverlay);
 
-	if( numparams < 1 )
-		_this->SetSegmentLoop(-1,-1);
-	else if( numparams < 2 )
-		_this->SetSegmentLoop(0,*param[0]);
-	else if( numparams < 3 )
-		_this->SetSegmentLoop(*param[0],*param[1]);
+	if(numparams < 2) return TJS_E_BADPARAMCOUNT;
+	_this->SetSegmentLoop(*param[0],*param[1]);
 
 	return TJS_S_OK;
 }
@@ -342,7 +338,7 @@ TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/cancelSegmentLoop)
 	TJS_GET_NATIVE_INSTANCE(/*var. name*/_this,
 		/*var. type*/tTJSNI_VideoOverlay);
 
-	_this->SetSegmentLoop(-1,-1);
+	_this->CancelSegmentLoop();
 
 	return TJS_S_OK;
 }
@@ -372,6 +368,19 @@ TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/cancelPeriodEvent)
 	return TJS_S_OK;
 }
 TJS_END_NATIVE_METHOD_DECL(/*func. name*/cancelPeriodEvent)
+//----------------------------------------------------------------------
+TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/selectAudioStream)
+{
+	TJS_GET_NATIVE_INSTANCE(/*var. name*/_this,
+		/*var. type*/tTJSNI_VideoOverlay);
+
+	if( numparams < 1 ) return TJS_E_BADPARAMCOUNT;
+
+	_this->SelectAudioStream( (tjs_uint)(tjs_int)*param[0] );
+
+	return TJS_S_OK;
+}
+TJS_END_NATIVE_METHOD_DECL(/*func. name*/selectAudioStream)
 //----------------------------------------------------------------------
 // End: Add:	2004/08/23	T.Imoto
 //----------------------------------------------------------------------
@@ -613,7 +622,7 @@ TJS_BEGIN_NATIVE_PROP_DECL(visible)
 }
 TJS_END_NATIVE_PROP_DECL(visible)
 //----------------------------------------------------------------------
-// Start: Add:	2004/08/23	T.Imoto
+// Start: Add:		T.Imoto
 //----------------------------------------------------------------------
 TJS_BEGIN_NATIVE_PROP_DECL(loop)
 {
@@ -820,7 +829,144 @@ TJS_BEGIN_NATIVE_PROP_DECL(mode)
 }
 TJS_END_NATIVE_PROP_DECL(mode)
 //----------------------------------------------------------------------
-// End: Add:	2004/08/23	T.Imoto
+TJS_BEGIN_NATIVE_PROP_DECL(playRate)
+{
+	TJS_BEGIN_NATIVE_PROP_GETTER
+	{
+		TJS_GET_NATIVE_INSTANCE(/*var. name*/_this, /*var. type*/tTJSNI_VideoOverlay);
+		*result = (tjs_real)_this->GetPlayRate();
+		return TJS_S_OK;
+	}
+	TJS_END_NATIVE_PROP_GETTER
+
+	TJS_BEGIN_NATIVE_PROP_SETTER
+	{
+		TJS_GET_NATIVE_INSTANCE(/*var. name*/_this, /*var. type*/tTJSNI_VideoOverlay);
+
+		_this->SetPlayRate((tjs_real)*param);
+		return TJS_S_OK;
+	}
+	TJS_END_NATIVE_PROP_SETTER
+}
+TJS_END_NATIVE_PROP_DECL(playRate)
+//----------------------------------------------------------------------
+TJS_BEGIN_NATIVE_PROP_DECL(segmentLoopStartFrame)
+{
+	TJS_BEGIN_NATIVE_PROP_GETTER
+	{
+		TJS_GET_NATIVE_INSTANCE(/*var. name*/_this, /*var. type*/tTJSNI_VideoOverlay);
+		*result = (tjs_int)_this->GetSegmentLoopStartFrame();
+		return TJS_S_OK;
+	}
+	TJS_END_NATIVE_PROP_GETTER
+
+	TJS_DENY_NATIVE_PROP_SETTER
+}
+TJS_END_NATIVE_PROP_DECL(segmentLoopStartFrame)
+//----------------------------------------------------------------------
+TJS_BEGIN_NATIVE_PROP_DECL(segmentLoopEndFrame)
+{
+	TJS_BEGIN_NATIVE_PROP_GETTER
+	{
+		TJS_GET_NATIVE_INSTANCE(/*var. name*/_this, /*var. type*/tTJSNI_VideoOverlay);
+		*result = (tjs_int)_this->GetSegmentLoopEndFrame();
+		return TJS_S_OK;
+	}
+	TJS_END_NATIVE_PROP_GETTER
+
+	TJS_DENY_NATIVE_PROP_SETTER
+}
+TJS_END_NATIVE_PROP_DECL(segmentLoopEndFrame)
+//----------------------------------------------------------------------
+TJS_BEGIN_NATIVE_PROP_DECL(periodEventFrame)
+{
+	TJS_BEGIN_NATIVE_PROP_GETTER
+	{
+		TJS_GET_NATIVE_INSTANCE(/*var. name*/_this, /*var. type*/tTJSNI_VideoOverlay);
+		*result = (tjs_int)_this->GetPeriodEventFrame();
+		return TJS_S_OK;
+	}
+	TJS_END_NATIVE_PROP_GETTER
+
+	TJS_BEGIN_NATIVE_PROP_SETTER
+	{
+		TJS_GET_NATIVE_INSTANCE(/*var. name*/_this, /*var. type*/tTJSNI_VideoOverlay);
+		_this->SetPeriodEvent((tjs_int)*param);
+		return TJS_S_OK;
+	}
+	TJS_END_NATIVE_PROP_SETTER
+}
+TJS_END_NATIVE_PROP_DECL(periodEventFrame)
+//----------------------------------------------------------------------
+TJS_BEGIN_NATIVE_PROP_DECL(audioBalance)
+{
+	TJS_BEGIN_NATIVE_PROP_GETTER
+	{
+		TJS_GET_NATIVE_INSTANCE(/*var. name*/_this, /*var. type*/tTJSNI_VideoOverlay);
+		*result = (tjs_int)_this->GetAudioBalance();
+		return TJS_S_OK;
+	}
+	TJS_END_NATIVE_PROP_GETTER
+
+	TJS_BEGIN_NATIVE_PROP_SETTER
+	{
+		TJS_GET_NATIVE_INSTANCE(/*var. name*/_this, /*var. type*/tTJSNI_VideoOverlay);
+		_this->SetAudioBalance((tjs_int)*param);
+		return TJS_S_OK;
+	}
+	TJS_END_NATIVE_PROP_SETTER
+}
+TJS_END_NATIVE_PROP_DECL(audioBalance)
+//----------------------------------------------------------------------
+TJS_BEGIN_NATIVE_PROP_DECL(audioVolume)
+{
+	TJS_BEGIN_NATIVE_PROP_GETTER
+	{
+		TJS_GET_NATIVE_INSTANCE(/*var. name*/_this, /*var. type*/tTJSNI_VideoOverlay);
+		*result = (tjs_int)_this->GetAudioVolume();
+		return TJS_S_OK;
+	}
+	TJS_END_NATIVE_PROP_GETTER
+
+	TJS_BEGIN_NATIVE_PROP_SETTER
+	{
+		TJS_GET_NATIVE_INSTANCE(/*var. name*/_this, /*var. type*/tTJSNI_VideoOverlay);
+		_this->SetAudioVolume((tjs_int)*param);
+		return TJS_S_OK;
+	}
+	TJS_END_NATIVE_PROP_SETTER
+}
+TJS_END_NATIVE_PROP_DECL(audioVolume)
+//----------------------------------------------------------------------
+TJS_BEGIN_NATIVE_PROP_DECL(numberOfAudioStream)
+{
+	TJS_BEGIN_NATIVE_PROP_GETTER
+	{
+		TJS_GET_NATIVE_INSTANCE(/*var. name*/_this, /*var. type*/tTJSNI_VideoOverlay);
+		*result = (tjs_int)_this->GetNumberOfAudioStream();
+		return TJS_S_OK;
+	}
+	TJS_END_NATIVE_PROP_GETTER
+
+	TJS_DENY_NATIVE_PROP_SETTER
+}
+TJS_END_NATIVE_PROP_DECL(numberOfAudioStream)
+//----------------------------------------------------------------------
+TJS_BEGIN_NATIVE_PROP_DECL(enabledAudioStream)
+{
+	TJS_BEGIN_NATIVE_PROP_GETTER
+	{
+		TJS_GET_NATIVE_INSTANCE(/*var. name*/_this, /*var. type*/tTJSNI_VideoOverlay);
+		*result = (tjs_int)_this->GetEnabledAudioStream();
+		return TJS_S_OK;
+	}
+	TJS_END_NATIVE_PROP_GETTER
+
+	TJS_DENY_NATIVE_PROP_SETTER
+}
+TJS_END_NATIVE_PROP_DECL(enabledAudioStream)
+//----------------------------------------------------------------------
+// End: Add:	T.Imoto
 //----------------------------------------------------------------------
 
 	TJS_END_NATIVE_MEMBERS
