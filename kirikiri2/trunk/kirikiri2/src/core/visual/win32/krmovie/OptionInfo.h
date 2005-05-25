@@ -81,8 +81,8 @@ static inline void MakeAPause(bool _error)
 	{
 		MessageBox(TVPGetApplicationWindowHandle(),
 			_error?
-				"The graph was not properly built. Pausing.":
-				"The graph was successfully built. Pausing.", "Pause", MB_OK);
+				_T("The graph was not properly built. Pausing."):
+				_T("The graph was successfully built. Pausing."), _T("Pause"), MB_OK);
 	}
 }
 
