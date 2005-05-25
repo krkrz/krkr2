@@ -456,14 +456,6 @@ void tTJSNI_VideoOverlay::SetSegmentLoop( int comeFrame, int goFrame )
 {
 	SegLoopStartFrame = comeFrame;
 	SegLoopEndFrame = goFrame;
-	if( SegLoopEndFrame >= 0 )
-	{
-		SetStopFrame( SegLoopEndFrame );
-	}
-	else
-	{
-		SetDefaultStopFrame();
-	}
 }
 void tTJSNI_VideoOverlay::SetPeriodEvent( int eventFrame )
 {
@@ -641,12 +633,7 @@ void __fastcall tTJSNI_VideoOverlay::WndProc(Messages::TMessage &Msg)
 					case EC_COMPLETE:
 						if( Status == ssPlay )
 						{
-							if( SegLoopEndFrame >= 0 )
-							{
-								SetFrame( SegLoopStartFrame );
-								FirePeriodEvent(perSegLoop); // fire period event by segment loop rewind
-							}
-							else if( Loop )
+							if( Loop )
 							{
 								Rewind();
 								FirePeriodEvent(perLoop); // fire period event by loop rewind
@@ -670,6 +657,17 @@ void __fastcall tTJSNI_VideoOverlay::WndProc(Messages::TMessage &Msg)
 							int		curFrame = p1;
 							if( Layer1 == NULL && Layer2 == NULL )	// nothing to do.
 								return;
+
+							// 2フレーム以上差があるときはGetFrame() を現在のフレームとする
+							int frame = GetFrame();
+							if( (frame+1) < curFrame || (frame-1) > curFrame )
+								curFrame = frame;
+
+							if( (!IsPrepare) && (SegLoopEndFrame > 0) && (frame >= SegLoopEndFrame) ) {
+								SetFrame( SegLoopStartFrame > 0 ? SegLoopStartFrame : 0 );
+								FirePeriodEvent(perSegLoop); // fire period event by segment loop rewind
+								return; // Updateを行わない
+							}
 
 							// get video image size
 							long	width, height;
@@ -711,13 +709,6 @@ void __fastcall tTJSNI_VideoOverlay::WndProc(Messages::TMessage &Msg)
 							// ! Prepare mode ?
 							if( !IsPrepare )
 							{
-#if 0
-								// Segment Loop ?
-								if( SegLoopEndFrame >= 0 && curFrame >= SegLoopEndFrame )
-								{
-									SetFrame( SegLoopStartFrame );
-								}
-#endif
 								// Send period event ?
 								if( EventFrame >= 0 && !IsEventPast && curFrame >= EventFrame )
 								{
@@ -852,6 +843,88 @@ void tTJSNI_VideoOverlay::SetLayer2( tTJSNI_BaseLayer *l )
 void tTJSNI_VideoOverlay::SetMode( tTVPVideoOverlayMode m )
 {
 	Mode = m;
+}
+
+tjs_real tTJSNI_VideoOverlay::GetPlayRate()
+{
+	tjs_real	result = 0.0;
+	if(VideoOverlay)
+	{
+		VideoOverlay->GetPlayRate( &result );
+	}
+	return result;
+}
+void tTJSNI_VideoOverlay::SetPlayRate(tjs_real r)
+{
+	if(VideoOverlay)
+	{
+		VideoOverlay->SetPlayRate( r );
+	}
+}
+
+tjs_int tTJSNI_VideoOverlay::GetAudioBalance()
+{
+	long	result = 0;
+	if(VideoOverlay)
+	{
+		VideoOverlay->GetAudioBalance( &result );
+	}
+	return result;
+}
+void tTJSNI_VideoOverlay::SetAudioBalance(tjs_int b)
+{
+	if(VideoOverlay)
+	{
+		VideoOverlay->SetAudioBalance( b );
+	}
+}
+tjs_int tTJSNI_VideoOverlay::GetAudioVolume()
+{
+	long	result = 0;
+	if(VideoOverlay)
+	{
+		VideoOverlay->GetAudioVolume( &result );
+	}
+	return result;
+}
+void tTJSNI_VideoOverlay::SetAudioVolume(tjs_int b)
+{
+	if(VideoOverlay)
+	{
+		VideoOverlay->SetAudioVolume( b );
+	}
+}
+tjs_uint tTJSNI_VideoOverlay::GetNumberOfAudioStream()
+{
+	unsigned long	result = 0;
+	if(VideoOverlay)
+	{
+		VideoOverlay->GetNumberOfAudioStream( &result );
+	}
+	return result;
+}
+void tTJSNI_VideoOverlay::SelectAudioStream(tjs_uint n)
+{
+	if(VideoOverlay)
+	{
+		VideoOverlay->SelectAudioStream( n );
+	}
+}
+tjs_int tTJSNI_VideoOverlay::GetEnabledAudioStream()
+{
+	long		result = -1;
+	if(VideoOverlay)
+	{
+		VideoOverlay->GetEnableAudioStreamNum( &result );
+	}
+	return result;
+}
+void tTJSNI_VideoOverlay::DisableAudioStream()
+{
+	if(VideoOverlay)
+	{
+		VideoOverlay->DisableAudioStream();
+	}
 }
 // End:		Add:	T.Imoto
 

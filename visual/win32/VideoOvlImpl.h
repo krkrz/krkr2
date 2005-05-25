@@ -80,6 +80,7 @@ public:
 	void Prepare();
 
 	void SetSegmentLoop( int comeFrame, int goFrame );
+	void CancelSegmentLoop() { SegLoopStartFrame = -1; SegLoopEndFrame = -1; }
 	void SetPeriodEvent( int eventFrame );
 
 	void SetStopFrame( tjs_int f );
@@ -127,12 +128,23 @@ public:
 
 	void SetMode( tTVPVideoOverlayMode m );
 	tTVPVideoOverlayMode GetMode() { return Mode; }
-#if 0
-	SetSegmentLoop( int backFrame, int jumpFrame );
-	CancelSegmentLoop();
-	SetPeriodEvent(指定フレームでのイベント);
-	CancelPeriodEvent(指定フレームでのイベント解除);
-#endif
+
+	tjs_real GetPlayRate();
+	void SetPlayRate(tjs_real r);
+
+	tjs_int GetSegmentLoopStartFrame() { return SegLoopStartFrame; }
+	tjs_int GetSegmentLoopEndFrame() { return SegLoopEndFrame; }
+	tjs_int GetPeriodEventFrame() { return EventFrame; }
+
+	tjs_int GetAudioBalance();
+	void SetAudioBalance(tjs_int b);
+	tjs_int GetAudioVolume();
+	void SetAudioVolume(tjs_int v);
+
+	tjs_uint GetNumberOfAudioStream();
+	void SelectAudioStream(tjs_uint n);
+	tjs_int GetEnabledAudioStream();
+	void DisableAudioStream();
 // End:		Add:	T.Imoto
 
 	tjs_int GetOriginalWidth();
