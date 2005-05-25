@@ -26,7 +26,7 @@ class tTVPDSVideoOverlay : public tTVPDSMovie
 {
 private:
 	CComPtr<IVideoWindow>	m_VideoWindow;
-	CComPtr<IBasicAudio>	m_BasicAudio;
+//	CComPtr<IBasicAudio>	m_BasicAudio;
 
 	//----------------------------------------------------------------------------
 	//! @brief	  	IVideoWindowを取得する
@@ -41,11 +41,11 @@ private:
 	//! @brief	  	IBasicAudioを取得する
 	//! @return		IBasicAudioインターフェイス
 	//----------------------------------------------------------------------------
-	IBasicAudio *Audio()
-	{
-		assert( m_BasicAudio.p );
-		return m_BasicAudio;
-	}
+//	IBasicAudio *Audio()
+//	{
+//		assert( m_BasicAudio.p );
+//		return m_BasicAudio;
+//	}
 
 public:
 	tTVPDSVideoOverlay();
