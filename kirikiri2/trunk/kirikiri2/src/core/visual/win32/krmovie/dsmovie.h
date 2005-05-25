@@ -21,6 +21,7 @@
 #include <atlbase.h>
 #include <streams.h>
 #include "../krmovie.h"
+#include <vector>
 
 class CIStreamProxy;
 class CIStreamReader;
@@ -50,7 +51,15 @@ protected:
 	CComPtr<IMediaSeeking >	m_MediaSeeking;		//!< Media Seeking
 	CComPtr<IMediaEventEx>	m_MediaEventEx;		//!< Media Event
 	CComPtr<IBasicVideo>	m_BasicVideo;		//!< Basic Video
+	CComPtr<IBasicAudio>	m_BasicAudio;		//!< Basic Audio
 
+	CComPtr<IAMStreamSelect>	m_StreamSelect;	//!< Stream selector
+
+	struct AudioStreamInfo {
+		DWORD	groupNum;
+		long	index;
+	};
+	std::vector<AudioStreamInfo>	m_AudioStreamInfo;
 	//----------------------------------------------------------------------------
 	//! @brief	  	IMediaSeekingを取得する
 	//! @return		IMediaSeekingインターフェイス
@@ -105,6 +114,27 @@ protected:
 		assert( m_BasicVideo.p );
 		return m_BasicVideo;
 	}
+	//----------------------------------------------------------------------------
+	//! @brief	  	IBasicAudioを取得する
+	//!
+	//! Audioは存在しない場合もあるので、NULLかどうか確認してから使用すること
+	//! @return		IBasicAudioインターフェイス
+	//----------------------------------------------------------------------------
+	IBasicAudio *Audio()
+	{
+//		assert( m_BasicAudio.p );
+		return m_BasicAudio;
+	}
+	//----------------------------------------------------------------------------
+	//! @brief	  	IAMStreamSelectを取得する
+	//!
+	//! Audioを含むMPEGファイルでのみ使用可。NULLかどうか確認してから使用すること。
+	//! @return		IAMStreamSelectインターフェイス
+	//----------------------------------------------------------------------------
+	IAMStreamSelect *StreamSelect()
+	{
+		return m_StreamSelect;
+	}
 
 	HRESULT ConnectFilters( IBaseFilter* pFilterUpstream, IBaseFilter* pFilterDownstream );
 	void BuildMPEGGraph( IBaseFilter *pRdr, IBaseFilter *pSrc );
@@ -116,6 +146,14 @@ protected:
 	void UtilDeleteMediaType( AM_MEDIA_TYPE *pmt );
 	void DebugOutputPinMediaType( IPin *pPin );
 
+	void UtilFreeMediaType( AM_MEDIA_TYPE& mt );
+	HRESULT FindRenderer( const GUID *mediatype, IBaseFilter **ppFilter );
+	HRESULT FindVideoRenderer( IBaseFilter **ppFilter );
+
+	HRESULT GetPin( IBaseFilter * pFilter, PIN_DIRECTION dirrequired, int iNum, IPin **ppPin);
+	IPin *GetInPin( IBaseFilter * pFilter, int nPin );
+	IPin *GetOutPin( IBaseFilter * pFilter, int nPin );
+	HRESULT CountFilterPins(IBaseFilter *pFilter, ULONG *pulInPins, ULONG *pulOutPins);
 public:
 	tTVPDSMovie();
 	virtual ~tTVPDSMovie();
@@ -159,6 +197,19 @@ public:
 
 	virtual void __stdcall GetVideoSize( long *width, long *height );
 	virtual HRESULT __stdcall GetAvgTimePerFrame( REFTIME *pAvgTimePerFrame );
+
+	virtual void __stdcall SetPlayRate( double rate );
+	virtual void __stdcall GetPlayRate( double *rate );
+
+	virtual void __stdcall SetAudioBalance( long balance );
+	virtual void __stdcall GetAudioBalance( long *balance );
+	virtual void __stdcall SetAudioVolume( long volume );
+	virtual void __stdcall GetAudioVolume( long *volume );
+
+	virtual void __stdcall GetNumberOfAudioStream( unsigned long *streamCount );
+	virtual void __stdcall SelectAudioStream( unsigned long num );
+	virtual void __stdcall GetEnableAudioStreamNum( long *num );
+	virtual void __stdcall DisableAudioStream( void );
 };
 
 #endif
