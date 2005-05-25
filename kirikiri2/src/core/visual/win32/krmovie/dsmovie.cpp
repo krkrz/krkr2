@@ -82,6 +82,12 @@ void __stdcall tTVPDSMovie::ReleaseAll()
 	if( m_MediaEventEx.p != NULL )
 		m_MediaEventEx.Release();
 
+	if( m_StreamSelect.p != NULL )
+		m_StreamSelect.Release();
+
+	if( m_BasicAudio.p != NULL )
+		m_BasicAudio.Release();
+
 	if( m_BasicVideo.p != NULL )
 		m_BasicVideo.Release();
 
@@ -355,9 +361,6 @@ void __stdcall tTVPDSMovie::GetFrame( int *f )
 
 //----------------------------------------------------------------------------
 //! @brief	  	指定されたフレームで再生を停止させる
-//! 
-//! このメソッドによって設定された位置は、指定したフレームと完全に一致するわけではない。
-//! フレームは、指定したフレームに最も近いキーフレームの位置に設定される。
 //! @param		f : 再生を停止させるフレーム
 //----------------------------------------------------------------------------
 void __stdcall tTVPDSMovie::SetStopFrame( int f )
@@ -439,14 +442,46 @@ void __stdcall tTVPDSMovie::GetStopFrame( int *f )
 //----------------------------------------------------------------------------
 void __stdcall tTVPDSMovie::SetDefaultStopFrame()
 {
-	int		numOfFrame;
-	GetNumberOfFrame( &numOfFrame );
-	SetStopFrame( numOfFrame );
+	if(Shutdown) return;
+
+	HRESULT	hr;
+	GUID	Format;
+
+	LONGLONG	totalTime;
+	if( FAILED(hr = MediaSeeking()->GetTimeFormat( &Format ) ) )
+	{
+		ThrowDShowException(L"Failed to call IMediaSeeking::GetTimeFormat (in tTVPDSMovie::SetDefaultStopFrame).", hr);
+	}
+	if( IsEqualGUID( TIME_FORMAT_MEDIA_TIME, Format ) )
+	{
+		if( FAILED(hr = MediaSeeking()->GetDuration( &totalTime )) )
+		{
+			ThrowDShowException(L"Failed to call IMediaSeeking::GetDuration (in tTVPDSMovie::SetDefaultStopFrame).", hr);
+		}
+		if( FAILED(hr = MediaSeeking()->SetPositions( NULL, AM_SEEKING_NoPositioning, &totalTime, AM_SEEKING_AbsolutePositioning)) )
+		{
+			ThrowDShowException(L"Failed to call IMediaSeeking::SetPositions (TIME_FORMAT_MEDIA_TIME, in tTVPDSMovie::SetDefaultStopFrame).", hr);
+		}
+	}
+	else if( IsEqualGUID( TIME_FORMAT_FRAME, Format ) )
+	{
+		if( FAILED(hr = MediaSeeking()->GetDuration( &totalTime )) )
+		{
+			ThrowDShowException(L"Failed to call IMediaSeeking::GetDuration (in tTVPDSMovie::SetDefaultStopFrame).", hr);
+		}
+		if( FAILED(hr = MediaSeeking()->SetPositions( NULL, AM_SEEKING_NoPositioning, &totalTime, AM_SEEKING_AbsolutePositioning )) )
+		{
+			ThrowDShowException(L"Failed to call IMediaSeeking::SetPositions (TIME_FORMAT_FRAME, in tTVPDSMovie::SetDefaultStopFrame).", hr);
+		}
+	}
+	else
+	{
+		TVPThrowExceptionMessage(L"Not supported time format.");
+	}
 }
 //----------------------------------------------------------------------------
 //! @brief	  	FPSを取得する
 //! @param		f : FPSを入れる変数へのポインタ
-//! @return		エラーメッセージ
 //----------------------------------------------------------------------------
 void __stdcall tTVPDSMovie::GetFPS( double *f )
 {
@@ -588,6 +623,165 @@ void __stdcall tTVPDSMovie::SetVisible( bool b )
 {
 }
 //----------------------------------------------------------------------------
+//! @brief	  	再生速度を設定する
+//! @param	rate : 再生レート。1.0が等速。
+//----------------------------------------------------------------------------
+void __stdcall tTVPDSMovie::SetPlayRate( double rate )
+{
+	HRESULT hr;
+	if( rate > 0.0 )
+	{
+		if( FAILED(hr = MediaSeeking()->SetRate(rate)) )
+			ThrowDShowException(L"Failed to call IMediaSeeking::SetRate.", hr);
+	}
+}
+//----------------------------------------------------------------------------
+//! @brief	  	再生速度を取得する
+//! @param	*rate : 再生レート。1.0が等速。
+//----------------------------------------------------------------------------
+void __stdcall tTVPDSMovie::GetPlayRate( double *rate )
+{
+	HRESULT hr;
+	if( rate != NULL )
+	{
+		if( FAILED(hr = MediaSeeking()->GetRate(rate)) )
+			ThrowDShowException(L"Failed to call IMediaSeeking::GetRate.", hr);
+	}
+}
+//----------------------------------------------------------------------------
+//! @brief	  	オーディオバランスを設定する
+//! @param	balance : バランスを指定する。値は -10,000 ～ 10,000 の範囲で指定できる。
+//! 値が -10,000 の場合、右チャンネルは 100 dB 減衰され、無音となることを意味している。
+//! 値が 10,000 の場合、左チャンネルが無音であることを意味している。
+//! 真中の値は 0 で、これは両方のチャンネルがフル ボリュームであることを意味している。
+//! 一方のチャンネルが減衰されても、もう一方のチャンネルはフル ボリュームのままである。 
+//----------------------------------------------------------------------------
+void __stdcall tTVPDSMovie::SetAudioBalance( long balance )
+{
+	HRESULT	hr;
+	if( Audio() != NULL )
+	{
+		if( balance >= -10000 && balance <= 10000 )
+		{
+			if( FAILED( hr = Audio()->put_Balance(balance) ) )
+				ThrowDShowException(L"Failed to call IBasicAudio::put_Balance.", hr);
+		}
+	}
+}
+//----------------------------------------------------------------------------
+//! @brief	  	オーディオバランスを取得する
+//! @param	*balance : バランスの範囲は -10,000 ～ 10,000までである。
+//! 値が -10,000 の場合、右チャンネルは 100 dB 減衰され、無音となることを意味している。
+//! 値が 10,000 の場合、左チャンネルが無音であることを意味している。
+//! 真中の値は 0 で、これは両方のチャンネルがフル ボリュームであることを意味している。
+//! 一方のチャンネルが減衰されても、もう一方のチャンネルはフル ボリュームのままである。 
+//----------------------------------------------------------------------------
+void __stdcall tTVPDSMovie::GetAudioBalance( long *balance )
+{
+	HRESULT	hr;
+	if( Audio() != NULL && balance != NULL )
+	{
+		if( FAILED( hr = Audio()->get_Balance(balance) ) )
+			ThrowDShowException(L"Failed to call IBasicAudio::get_Balance.", hr);
+	}
+}
+//----------------------------------------------------------------------------
+//! @brief	  	オーディオボリュームを設定する
+//! @param volume : ボリュームを -10,000 ～ 0 の数値で指定する。
+//! 最大ボリュームは 0、無音は -10,000。
+//! 必要なデシベル値を 100 倍する。たとえば、-10,000 = -100 dB。 
+//----------------------------------------------------------------------------
+void __stdcall tTVPDSMovie::SetAudioVolume( long volume )
+{
+	HRESULT	hr;
+	if( Audio() != NULL )
+	{
+		if( volume >= -10000 && volume <= 0 )
+		{
+			if( FAILED( hr = Audio()->put_Volume( volume ) ) )
+				ThrowDShowException(L"Failed to call IBasicAudio::put_Volume.", hr);
+		}
+	}
+}
+//----------------------------------------------------------------------------
+//! @brief	  	オーディオボリュームを設定する
+//! @param volume : ボリュームを -10,000 ～ 0 の数値で指定する。
+//! 最大ボリュームは 0、無音は -10,000。
+//! 必要なデシベル値を 100 倍する。たとえば、-10,000 = -100 dB。 
+//----------------------------------------------------------------------------
+void __stdcall tTVPDSMovie::GetAudioVolume( long *volume )
+{
+	HRESULT	hr;
+	if( Audio() != NULL && volume != NULL )
+	{
+		if( FAILED( hr = Audio()->get_Volume( volume ) ) )
+			ThrowDShowException(L"Failed to call IBasicAudio::gut_Volume.", hr);
+	}
+}
+//----------------------------------------------------------------------------
+//! @brief	  	オーディオストリーム数を取得する
+//! @param streamCount : オーディオストリーム数を入れる変数へのポインタ
+//----------------------------------------------------------------------------
+void __stdcall tTVPDSMovie::GetNumberOfAudioStream( unsigned long *streamCount )
+{
+	if( streamCount != NULL )
+		*streamCount = m_AudioStreamInfo.size();
+}
+//----------------------------------------------------------------------------
+//! @brief	  	指定したオーディオストリーム番号のストリームを有効にする
+//! @param num : 有効にするオーディオストリーム番号
+//----------------------------------------------------------------------------
+void __stdcall tTVPDSMovie::SelectAudioStream( unsigned long num )
+{
+	HRESULT	hr;
+	if( StreamSelect() != NULL && num < m_AudioStreamInfo.size() )
+	{
+		if( FAILED(hr = StreamSelect()->Enable( m_AudioStreamInfo[num].index, AMSTREAMSELECTENABLE_ENABLE )) )
+			ThrowDShowException(L"Failed to call IAMStreamSelect::Enable.", hr);
+	}
+}
+// 一番初めに見つかった有効なストリーム番号を返す。
+// グループ内のすべてのストリームが有効である可能性もあるが、tTVPDSMovie::SelectAudioStreamを使用した場合、グループ内で1つだけか有効になる。
+void __stdcall tTVPDSMovie::GetEnableAudioStreamNum( long *num )
+{
+	HRESULT	hr;
+	*num = -1;
+	if( StreamSelect() != NULL && m_AudioStreamInfo.size() > 0)
+	{
+		long strNum = 0;
+		for( std::vector<AudioStreamInfo>::iterator i = m_AudioStreamInfo.begin(); i != m_AudioStreamInfo.end(); i++ )
+		{
+			DWORD	dwFlags;
+			if( FAILED(hr = StreamSelect()->Info( (*i).index, NULL, &dwFlags, NULL, NULL, NULL, NULL, NULL ) ) )
+				ThrowDShowException(L"Failed to call IAMStreamSelect::Info.", hr);
+
+			if( (dwFlags == AMSTREAMSELECTINFO_ENABLED) || (dwFlags == AMSTREAMSELECTINFO_EXCLUSIVE) )
+			{
+				*num = strNum;
+				break;
+			}
+			strNum++;
+		}
+	}
+}
+// MPEG Iの時、この操作は出来ない
+void __stdcall tTVPDSMovie::DisableAudioStream( void )
+{
+	HRESULT	hr;
+	if( StreamSelect() != NULL && m_AudioStreamInfo.size() > 0)
+	{
+		if( FAILED(hr = StreamSelect()->Enable( m_AudioStreamInfo[0].index, 0 )) )
+			ThrowDShowException(L"Failed to call IAMStreamSelect::Enable.", hr);
+#if 0
+		for( std::vector<AudioStreamInfo>::iterator i = m_AudioStreamInfo.begin(); i != m_AudioStreamInfo.end(); i++ )
+		{
+			if( FAILED(hr = StreamSelect()->Enable( (*i).index, 0 )) )
+				ThrowDShowException(L"Failed to call IAMStreamSelect::Enable.", hr);
+		}
+#endif
+	}
+}
+//----------------------------------------------------------------------------
 //! @brief	  	ROT ( Running Object Table )にグラフを登録する。
 //!
 //! Running Object Table functions: Used to debug. By registering the graph
@@ -665,8 +859,10 @@ void tTVPDSMovie::ParseVideoType( CMediaType &mt, const wchar_t *type )
 		mt.subtype = MEDIASUBTYPE_Avi;
 	else if (wcsicmp(type, L".mov") == 0)
 		mt.subtype = MEDIASUBTYPE_QTMovie;
-	else if (wcsicmp(type, L".mp4") == 0)
-		mt.subtype = MEDIASUBTYPE_QTMovie;
+//	else if (wcsicmp(type, L".mp4") == 0)
+//		mt.subtype = MEDIASUBTYPE_QTMovie;
+//	else if (wcsicmp(type, L".wmv") == 0)
+//		mt.subtype = SubTypeGUID_WMV3;
 	else
 		TVPThrowExceptionMessage(L"Unknown video format extension."); // unknown format
 }
@@ -719,6 +915,7 @@ void tTVPDSMovie::DebugOutputPinMediaType( IPin *pPin )
 		{
 			if(Fetched)
 			{
+#if _DEBUG
 				if( pMediaType->majortype == MEDIATYPE_Stream )
 					OutputDebugString("  MEDIATYPE_Stream : ");
 				else if( pMediaType->majortype == MEDIATYPE_Audio )
@@ -759,12 +956,250 @@ void tTVPDSMovie::DebugOutputPinMediaType( IPin *pPin )
 					OutputDebugString("  GUID_NULL\n");
 				else
 					OutputDebugString("  unknown FORMAT\n");
-
+#endif
 				UtilDeleteMediaType(pMediaType);
 			}
 		}
 	}
 }
+//----------------------------------------------------------------------------
+//! @brief	  	メディアタイプの開放
+//!
+//! AM_MEDIA_TYPEが保持しているデータのみを開放する
+//! @param		mt : 開放するデータを保持しているAM_MEDIA_TYPE
+//----------------------------------------------------------------------------
+void tTVPDSMovie::UtilFreeMediaType(AM_MEDIA_TYPE& mt)
+{
+	if(mt.cbFormat != 0)
+	{
+		CoTaskMemFree((PVOID)mt.pbFormat);
+
+		// Strictly unnecessary but tidier
+		mt.cbFormat = 0;
+		mt.pbFormat = NULL;
+	}
+	if(mt.pUnk != NULL)
+	{
+		mt.pUnk->Release();
+		mt.pUnk = NULL;
+	}
+}
+//----------------------------------------------------------------------------
+//! @brief	  	グラフ内からレンダーフィルタを探して、取得する
+//! @param		mediatype : 対象とするレンダーフィルタがサポートするメディアタイプ
+//! @param		ppFilter : 見つかったレンダーフィルタを受け取るポインタへのポインタ
+//! @return		エラーコード
+//----------------------------------------------------------------------------
+HRESULT tTVPDSMovie::FindRenderer( const GUID *mediatype, IBaseFilter **ppFilter)
+{
+	HRESULT hr;
+	IEnumFilters *pEnum = NULL;
+	IBaseFilter *pFilter = NULL;
+	IPin *pPin;
+	ULONG ulFetched, ulInPins, ulOutPins;
+	BOOL bFound=FALSE;
+
+	// Verify graph builder interface
+	if( !GraphBuilder() )
+		return E_NOINTERFACE;
+
+	// Verify that a media type was passed
+	if( !mediatype )
+		return E_POINTER;
+
+	// Clear the filter pointer in case there is no match
+	if( ppFilter )
+		*ppFilter = NULL;
+
+	// Get filter enumerator
+	hr = GraphBuilder()->EnumFilters(&pEnum);
+	if( FAILED(hr) )
+		return hr;
+
+	pEnum->Reset();
+
+	// Enumerate all filters in the graph
+	while(!bFound && (pEnum->Next(1, &pFilter, &ulFetched) == S_OK))
+	{
+#ifdef DEBUG
+		// Read filter name for debugging purposes
+		FILTER_INFO FilterInfo;
+		TCHAR szName[256];
+
+		hr = pFilter->QueryFilterInfo(&FilterInfo);
+		if (SUCCEEDED(hr))
+		{
+#ifdef UNICODE	// Show filter name in debugger
+			lstrcpyn(szName, FilterInfo.achName, 256);
+#else
+			WideCharToMultiByte(CP_ACP, 0, FilterInfo.achName, -1, szName, 256, 0, 0);
+#endif
+			FilterInfo.pGraph->Release();
+		}
+		szName[255] = 0;        // Null-terminate
+#endif
+
+		// Find a filter with one input and no output pins
+		hr = CountFilterPins(pFilter, &ulInPins, &ulOutPins);
+		if( FAILED(hr) )
+			break;
+
+		if( (ulInPins == 1) && (ulOutPins == 0) )
+		{
+			// Get the first pin on the filter
+			pPin = 0;
+			pPin = GetInPin(pFilter, 0);
+
+			// Read this pin's major media type
+			AM_MEDIA_TYPE type = {0};
+			hr = pPin->ConnectionMediaType(&type);
+			if( FAILED(hr) )
+				break;
+
+			// Is this pin's media type the requested type?
+			// If so, then this is the renderer for which we are searching.
+			// Copy the interface pointer and return.
+			if( type.majortype == *mediatype )
+			{
+				// Found our filter
+				*ppFilter = pFilter;
+				bFound = TRUE;
+			}
+			else	// This is not the renderer, so release the interface.
+				pFilter->Release();
+
+			// Delete memory allocated by ConnectionMediaType()
+			UtilFreeMediaType(type);
+		}
+		else
+		{	// No match, so release the interface
+			pFilter->Release();
+		}
+	}
+
+	pEnum->Release();
+	return hr;
+}
+//----------------------------------------------------------------------------
+//! @brief	  	グラフ内からビデオレンダーフィルタを探して、取得する
+//! @param		ppFilter : 見つかったビデオレンダーフィルタを受け取るポインタへのポインタ
+//! @return		エラーコード
+//----------------------------------------------------------------------------
+HRESULT tTVPDSMovie::FindVideoRenderer( IBaseFilter **ppFilter)
+{
+	return FindRenderer( &MEDIATYPE_Video, ppFilter);
+}
+//----------------------------------------------------------------------------
+//! @brief	  	ピンを取得する
+//! @param		ppFilter : ピンを保持しているフィルタ
+//! @param		dirrequired : ピンの方向 INPUT or OUTPUT
+//! @param		iNum : 取得したいピンの番号 0～
+//! @param		ppPin : ピンを受け取るポインタへのポインタ
+//! @return		エラーコード
+//----------------------------------------------------------------------------
+HRESULT tTVPDSMovie::GetPin( IBaseFilter * pFilter, PIN_DIRECTION dirrequired, int iNum, IPin **ppPin)
+{
+	CComPtr< IEnumPins > pEnum;
+	*ppPin = NULL;
+
+	if( !pFilter )
+		return E_POINTER;
+
+	HRESULT hr = pFilter->EnumPins(&pEnum);
+	if( FAILED(hr) )
+		return hr;
+
+	ULONG ulFound;
+	IPin *pPin;
+	hr = E_FAIL;
+
+	while(S_OK == pEnum->Next(1, &pPin, &ulFound))
+	{
+		PIN_DIRECTION pindir = (PIN_DIRECTION)3;
+
+		pPin->QueryDirection(&pindir);
+		if(pindir == dirrequired)
+		{
+			if(iNum == 0)
+			{
+				*ppPin = pPin;  // Return the pin's interface
+				hr = S_OK;      // Found requested pin, so clear error
+				break;
+			}
+			iNum--;
+		}
+		pPin->Release();
+	}
+	return hr;
+}
+//----------------------------------------------------------------------------
+//! @brief	  	入力ピンを取得する
+//! @param		ppFilter : ピンを保持しているフィルタ
+//! @param		nPin : 取得したいピンの番号 0～
+//! @return		ピンへのポインタ
+//----------------------------------------------------------------------------
+IPin *tTVPDSMovie::GetInPin( IBaseFilter * pFilter, int nPin )
+{
+	CComPtr<IPin> pComPin;
+	GetPin(pFilter, PINDIR_INPUT, nPin, &pComPin);
+	return pComPin;
+}
+//----------------------------------------------------------------------------
+//! @brief	  	出力ピンを取得する
+//! @param		ppFilter : ピンを保持しているフィルタ
+//! @param		nPin : 取得したいピンの番号 0～
+//! @return		ピンへのポインタ
+//----------------------------------------------------------------------------
+IPin *tTVPDSMovie::GetOutPin( IBaseFilter * pFilter, int nPin )
+{
+    CComPtr<IPin> pComPin;
+    GetPin(pFilter, PINDIR_OUTPUT, nPin, &pComPin);
+    return pComPin;
+}
+//----------------------------------------------------------------------------
+//! @brief	  	フィルタが保持しているピンの数を取得する
+//! @param		ppFilter : ピンを保持しているフィルタ
+//! @param		pulInPins : 入力ピンの数を受け取るための変数へのポインタ
+//! @param		pulOutPins : 出力ピンの数を受け取るための変数へのポインタ
+//! @return		エラーコード
+//----------------------------------------------------------------------------
+HRESULT tTVPDSMovie::CountFilterPins(IBaseFilter *pFilter, ULONG *pulInPins, ULONG *pulOutPins)
+{
+	HRESULT hr=S_OK;
+	IEnumPins *pEnum=0;
+	ULONG ulFound;
+	IPin *pPin;
+
+	// Verify input
+	if( !pFilter || !pulInPins || !pulOutPins )
+		return E_POINTER;
+
+	// Clear number of pins found
+	*pulInPins = 0;
+	*pulOutPins = 0;
+
+	// Get pin enumerator
+	hr = pFilter->EnumPins(&pEnum);
+	if(FAILED(hr))
+		return hr;
+
+	pEnum->Reset();
+
+	// Count every pin on the filter
+	while(S_OK == pEnum->Next(1, &pPin, &ulFound))
+	{
+		PIN_DIRECTION pindir = (PIN_DIRECTION) 3;
+		hr = pPin->QueryDirection(&pindir);
+		if(pindir == PINDIR_INPUT)
+			(*pulInPins)++;
+		else
+			(*pulOutPins)++;
+		pPin->Release();
+	}
+	pEnum->Release();
+	return hr;
+}
+
 //----------------------------------------------------------------------------
 //! @brief	  	MPEG1 用のグラフを手動で構築する
 //! @param		pRdr : グラフに参加しているレンダーフィルタ
@@ -823,6 +1258,33 @@ void tTVPDSMovie::BuildMPEGGraph( IBaseFilter *pRdr, IBaseFilter *pSrc )
 			ThrowDShowException(L"Failed to call GraphBuilder()->RemoveFilter( pMPEGAudioCodec).", hr);
 		if( FAILED(hr = GraphBuilder()->RemoveFilter( pDDSRenderer)) )
 			ThrowDShowException(L"Failed to call GraphBuilder()->RemoveFilter( pDDSRenderer).", hr);
+	}
+	else
+	{	// This MPEG file have a audio stream.
+		if( FAILED(hr = pMPEG1Splitter.QueryInterface( &m_StreamSelect ) ) )
+			ThrowDShowException(L"Failed to query IAMStreamSelect.", hr);
+
+		DWORD	numOfStream;
+		if( FAILED(hr = StreamSelect()->Count( &numOfStream )) )
+			ThrowDShowException(L"Failed to call StreamSelect()->Count(&numOfStream).", hr);
+
+		for( int i = 0; i < (int)numOfStream; i++ )
+		{
+			DWORD	dwFlags;
+			DWORD	dwGroup;
+			AM_MEDIA_TYPE	*pmt;
+			if( S_OK == StreamSelect()->Info( i, &pmt, &dwFlags, NULL, &dwGroup, NULL, NULL, NULL ) )
+			{
+				if( pmt->majortype == MEDIATYPE_Audio )
+				{
+					AudioStreamInfo	asi;
+					asi.groupNum = dwGroup;
+					asi.index = i;
+					m_AudioStreamInfo.push_back( asi );
+				}
+				DeleteMediaType(pmt);
+			}
+		}
 	}
 
 	return;
