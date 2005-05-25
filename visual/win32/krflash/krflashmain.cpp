@@ -250,6 +250,56 @@ void __stdcall tTVPFlashOverlay::SetDefaultStopFrame()
 	if(Shutdown) return;
 	TVPThrowExceptionMessage(L"SetDefaultStopFrame: Currently not supported");
 }
+void __stdcall tTVPFlashOverlay::SetPlayRate( double rate )
+{
+	if(Shutdown) return;
+	TVPThrowExceptionMessage(L"SetPlayRate: Currently not supported");
+}
+void __stdcall tTVPFlashOverlay::GetPlayRate( double *rate )
+{
+	if(Shutdown) return;
+	TVPThrowExceptionMessage(L"GetPlayRate: Currently not supported");
+}
+void __stdcall tTVPFlashOverlay::SetAudioBalance( long balance )
+{
+	if(Shutdown) return;
+	TVPThrowExceptionMessage(L"SetAudioBalance: Currently not supported");
+}
+void __stdcall tTVPFlashOverlay::GetAudioBalance( long *balance )
+{
+	if(Shutdown) return;
+	TVPThrowExceptionMessage(L"GetAudioBalance: Currently not supported");
+}
+void __stdcall tTVPFlashOverlay::SetAudioVolume( long volume )
+{
+	if(Shutdown) return;
+	TVPThrowExceptionMessage(L"SetAudioVolume: Currently not supported");
+}
+void __stdcall tTVPFlashOverlay::GetAudioVolume( long *volume )
+{
+	if(Shutdown) return;
+	TVPThrowExceptionMessage(L"GetAudioVolume: Currently not supported");
+}
+void __stdcall tTVPFlashOverlay::GetNumberOfAudioStream( unsigned long *streamCount )
+{
+	if(Shutdown) return;
+	TVPThrowExceptionMessage(L"GetNumberOfAudioStream: Currently not supported");
+}
+void __stdcall tTVPFlashOverlay::SelectAudioStream( unsigned long num )
+{
+	if(Shutdown) return;
+	TVPThrowExceptionMessage(L"SelectAudioStream: Currently not supported");
+}
+void __stdcall tTVPFlashOverlay::GetEnableAudioStreamNum( long *num )
+{
+	if(Shutdown) return;
+	TVPThrowExceptionMessage(L"GetEnableAudioStreamNum: Currently not supported");
+}
+void __stdcall tTVPFlashOverlay::DisableAudioStream( void )
+{
+	if(Shutdown) return;
+	TVPThrowExceptionMessage(L"DisableAudioStream: Currently not supported");
+}
 // End:	Add:	T.Imoto
 
 
