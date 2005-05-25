@@ -75,7 +75,7 @@ DShowException::~DShowException()
 //! @brief	  	エラーの詳細を問い合わせる
 //! @return		エラーメッセージ
 //----------------------------------------------------------------------------
-const char *DShowException::what( ) const
+const TCHAR *DShowException::what( ) const
 {
 	return m_ErrorMes;
 }

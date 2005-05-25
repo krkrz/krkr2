@@ -34,7 +34,7 @@ public:
 	DShowException( HRESULT hr ) throw( );
 	DShowException& operator=(const DShowException& right) throw( );
 	virtual ~DShowException() throw( );
-	virtual const char *what( ) const throw( );
+	virtual const TCHAR *what( ) const throw( );
 	void SetHResult( HRESULT hr ) throw( );
 };
 
