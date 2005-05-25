@@ -106,6 +106,9 @@ void __stdcall tTVPDSVideoOverlay::BuildGraph( HWND callbackwin, IStream *stream
 
 		if( FAILED(hr = m_GraphBuilder.QueryInterface( &m_BasicVideo )) )
 			ThrowDShowException(L"Failed to query IBasicVideo", hr);
+//		m_GraphBuilder.QueryInterface( &m_BasicAudio );
+//		if( FAILED(hr = m_GraphBuilder.QueryInterface( &m_BasicAudio )) )
+//			ThrowDShowException(L"Failed to query IBasicAudio", hr);
 
 		if( FAILED(hr = m_GraphBuilder.QueryInterface( &m_VideoWindow )) )
 			ThrowDShowException(L"Failed to query IVideoWindow", hr);
@@ -164,8 +167,8 @@ void __stdcall tTVPDSVideoOverlay::ReleaseAll()
 	if( m_VideoWindow.p )
 		m_VideoWindow.Release();
 
-	if( m_BasicAudio.p )
-		m_BasicAudio.Release();
+//	if( m_BasicAudio.p )
+//		m_BasicAudio.Release();
 
 	tTVPDSMovie::ReleaseAll();
 }
