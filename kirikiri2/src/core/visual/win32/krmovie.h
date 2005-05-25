@@ -13,7 +13,7 @@
 #ifndef __KRMOVIE_H__
 #define __KRMOVIE_H__
 
-#define TVP_KRMOVIE_VER   0x00010007
+#define TVP_KRMOVIE_VER   0x00010008
 
 
 //---------------------------------------------------------------------------
@@ -59,6 +59,19 @@ public:
 	virtual void __stdcall SetStopFrame( int frame ) = 0;
 	virtual void __stdcall GetStopFrame( int *frame ) = 0;
 	virtual void __stdcall SetDefaultStopFrame() = 0;
+
+	virtual void __stdcall SetPlayRate( double rate ) = 0;
+	virtual void __stdcall GetPlayRate( double *rate ) = 0;
+
+	virtual void __stdcall SetAudioBalance( long balance ) = 0;
+	virtual void __stdcall GetAudioBalance( long *balance ) = 0;
+	virtual void __stdcall SetAudioVolume( long volume ) = 0;
+	virtual void __stdcall GetAudioVolume( long *volume ) = 0;
+
+	virtual void __stdcall GetNumberOfAudioStream( unsigned long *streamCount ) = 0;
+	virtual void __stdcall SelectAudioStream( unsigned long num ) = 0;
+	virtual void __stdcall GetEnableAudioStreamNum( long *num ) = 0;
+	virtual void __stdcall DisableAudioStream( void ) = 0;
 // End:	Add:	T.Imoto
 };
 //---------------------------------------------------------------------------
