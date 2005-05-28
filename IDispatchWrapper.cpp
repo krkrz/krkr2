@@ -472,7 +472,7 @@ IDispatchWrapper::InvokeEx(
 		tTJSVariant arg;
 		storeVariant(arg, argv[0]);
 		try {
-			err = obj->PropSet(0, memberName, (tjs_uint32*)&id, &arg, obj);
+			err = obj->PropSet(TJS_MEMBERENSURE, memberName, (tjs_uint32*)&id, &arg, obj);
 		} catch(...) {
 			ret = DISP_E_EXCEPTION;
 		}
@@ -619,17 +619,18 @@ iTJSDispatch2Wrapper::Invoke(IDispatch *dispatch,
 {
 	LCID lcid = LOCALE_SYSTEM_DEFAULT;
 
-	if (membername == NULL) {
-		return TJS_E_NOTIMPL;
-	}
-
-	// DISPID の取得
 	DISPID dispId;
-	BSTR wcmdname = SysAllocString(membername);
-	HRESULT hr = dispatch->GetIDsOfNames(IID_NULL, &wcmdname, 1, lcid, &dispId);
-	SysFreeString(wcmdname);
-	if (FAILED(hr)) {
-		return TJS_E_MEMBERNOTFOUND;
+	HRESULT hr;
+	if (membername == NULL) {
+		dispId = DISPID_VALUE;
+	} else {
+		// DISPID の取得
+		BSTR wcmdname = SysAllocString(membername);
+		hr = dispatch->GetIDsOfNames(IID_NULL, &wcmdname, 1, lcid, &dispId);
+		SysFreeString(wcmdname);
+		if (FAILED(hr)) {
+			return TJS_E_MEMBERNOTFOUND;
+		}
 	}
 	
 	// 呼び出し用パラメータ変換
