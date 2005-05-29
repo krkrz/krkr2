@@ -12,6 +12,8 @@ USEUNIT("WaveLoopManager.cpp");
 USEUNIT("DSound.cpp");
 USEFORM("LoopTunerMainUnit.cpp", LoopTunerMainForm);
 USEUNIT("CharacterSet.cpp");
+USEFORM("EditLabelAttribUnit.cpp", EditLabelAttribFrame); /* TFrame: File Type */
+USEFORM("EditLinkAttribUnit.cpp", EditLinkAttribFrame); /* TFrame: File Type */
 //---------------------------------------------------------------------------
 WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 {

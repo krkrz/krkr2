@@ -77,6 +77,10 @@ __fastcall TWaveView::TWaveView(Classes::TComponent* AOwner) :
 
 	FUndoLevel = 0;
 	FOnNotifyPopup = NULL;
+	FOnShowCaret = NULL;
+	FOnLinkSelected = NULL;
+	FOnLabelSelected = NULL;
+	FOnSelectionLost = NULL;
 
 	FShowLinks = true;
 	FLinkTierCount = 0;
@@ -176,13 +180,19 @@ void __fastcall TWaveView::SetReader(TWaveReader * reader)
 	SetScrollBarRange();
 }
 //---------------------------------------------------------------------------
-void __fastcall TWaveView::PushUndo()
+void __fastcall TWaveView::EraseRedo()
 {
-	// erase redo
+	// erase redo data
 	if(CanRedo())
 	{
 		FUndoStack.erase(FUndoStack.begin() + FUndoLevel + 1, FUndoStack.end());
 	}
+}
+//---------------------------------------------------------------------------
+void __fastcall TWaveView::PushUndo()
+{
+	// erase redo
+	EraseRedo();
 
 	// remove old data
 	if(FUndoStack.size() == (MaxUndoLevel+1))
@@ -204,9 +214,23 @@ void __fastcall TWaveView::Undo()
 	// do undo
 	if(CanUndo())
 	{
-		FUndoLevel --;
-		Links = FUndoStack[FUndoLevel].Links;
-		Labels = FUndoStack[FUndoLevel].Labels;
+		int linknum = FFocusedLink;
+		int labelnum = FFocusedLabel;
+		FocusedLink = -1;
+		FocusedLabel = -1;
+
+		if(CanUndo())
+		{
+			FUndoLevel --;
+			Links = FUndoStack[FUndoLevel].Links;
+			Labels = FUndoStack[FUndoLevel].Labels;
+		}
+
+		if((int)Links.size() <= linknum) linknum = Links.size() - 1;
+		FocusedLink = linknum;
+		if((int)Labels.size() <= labelnum) labelnum = Labels.size() - 1;
+		FocusedLabel = labelnum;
+
 		NotifyLinkChanged();
 		NotifyLabelChanged();
 		DoubleBuffered = FDoubleBufferEnabled;
@@ -218,9 +242,23 @@ void __fastcall TWaveView::Redo()
 {
 	if(CanRedo())
 	{
-		FUndoLevel ++;
-		Links = FUndoStack[FUndoLevel].Links;
-		Labels = FUndoStack[FUndoLevel].Labels;
+		int linknum = FFocusedLink;
+		int labelnum = FFocusedLabel;
+		FocusedLink = -1;
+		FocusedLabel = -1;
+
+		if(CanRedo())
+		{
+			FUndoLevel ++;
+			Links = FUndoStack[FUndoLevel].Links;
+			Labels = FUndoStack[FUndoLevel].Labels;
+		}
+
+		if((int)Links.size() <= linknum) linknum = Links.size() - 1;
+		FocusedLink = linknum;
+		if((int)Labels.size() <= labelnum) labelnum = Labels.size() - 1;
+		FocusedLabel = labelnum;
+
 		NotifyLinkChanged();
 		NotifyLabelChanged();
 		DoubleBuffered = FDoubleBufferEnabled;
@@ -243,8 +281,9 @@ void __fastcall TWaveView::DeleteItem()
 	// delete current focused item
 	if(FFocusedLink != -1)
 	{
-		Links.erase(Links.begin() + FFocusedLink);
-		FFocusedLink = -1;
+		int num = FocusedLink;
+		FocusedLink = -1;
+		Links.erase(Links.begin() + num);
 		NotifyLinkChanged();
 		DoubleBuffered = FDoubleBufferEnabled;
 		Invalidate();
@@ -252,8 +291,9 @@ void __fastcall TWaveView::DeleteItem()
 	}
 	else if(FFocusedLabel != -1)
 	{
-		Labels.erase(Labels.begin() + FFocusedLabel);
-		FFocusedLabel = -1;
+		int num = FocusedLabel;
+		FocusedLabel = -1;
+		Labels.erase(Labels.begin() + num);
 		NotifyLabelChanged();
 		DoubleBuffered = FDoubleBufferEnabled;
 		Invalidate();
@@ -453,6 +493,15 @@ void __fastcall TWaveView::SetShowCaret(bool b)
 		{
 			FocusedLink = -1;
 			FocusedLabel = -1; // these are exclusive
+		}
+		else
+		{
+			if(FOnSelectionLost) FOnSelectionLost(this);
+		}
+
+		if(FShowCaret && FOnShowCaret && FCaretPos >= 0)
+		{
+			FOnShowCaret(this, FCaretPos);
 		}
 	}
 }
@@ -997,8 +1046,8 @@ std::vector<tTVPWaveLoopLink> & TWaveView::GetLinks()
 		link.From = 1900000;
 		link.To = 550000;
 		link.Smooth = false;
-		link.Condition = llcNone;
-		link.CondVar = -1;
+		link.Condition = llcEqual;
+		link.CondVar = 0;
 		Links.push_back(link);
 
 
@@ -1019,7 +1068,7 @@ std::vector<tTVPWaveLoopLink> & TWaveView::GetLinks()
 		link.From = 2900000;
 		link.To = 650000;
 		link.Smooth = false;
-		link.Condition = llcNone;
+		link.Condition = llcEqual;
 		link.CondVar = 0;
 		Links.push_back(link);
 
@@ -1027,22 +1076,22 @@ std::vector<tTVPWaveLoopLink> & TWaveView::GetLinks()
 		link.From =1850000;
 		link.To = 3005000;
 		link.Smooth = false;
-		link.Condition = llcNone;
-		link.CondVar = -1;
+		link.Condition = llcEqual;
+		link.CondVar = 0;
 		Links.push_back(link);
 
 		link.From = 2250000;
 		link.To = 3005000;
 		link.Smooth = false;
-		link.Condition = llcNone;
-		link.CondVar = -1;
+		link.Condition = llcEqual;
+		link.CondVar = 0;
 		Links.push_back(link);
 
 		link.From = 3250000;
 		link.To = 4005000;
 		link.Smooth = false;
-		link.Condition = llcNone;
-		link.CondVar = -1;
+		link.Condition = llcEqual;
+		link.CondVar = 0;
 		Links.push_back(link);
 
 		NotifyLinkChanged();
@@ -1295,7 +1344,7 @@ void __fastcall TWaveView::DrawLinkOf(const tTVPWaveLoopLink & link)
 
 	int dir_step = PixelToSample(LinkDirectionInterval);
 
-	if(link.CondVar != -1)
+	if(link.Condition != llcNone)
 		Canvas->Pen->Style = psDot;
 	else
 		Canvas->Pen->Style = psSolid;
@@ -1372,16 +1421,6 @@ void __fastcall TWaveView::DrawLinks(void)
 	int head_size = GetHeadSize();
 	int foot_size = GetFootSize();
 	int y_start = ClientHeight - foot_size;
-
-	// erase background
-/*
-	TRect r;
-	r.left = dest_left, r.top = y_start,
-	r.right = dest_right, r.bottom = ClientHeight;
-	Canvas->Brush->Style = bsSolid;
-	Canvas->Brush->Color = C_LINK_CLIENT;
-	Canvas->FillRect(r);
-*/
 
 	// draw separator
 	Canvas->Pen->Color = C_LINK_SEPARETOR;
@@ -1538,6 +1577,15 @@ void __fastcall TWaveView::SetFocusedLink(int l)
 		{
 			ShowCaret = false; // link, label and caret are exclusive
 			FocusedLabel = -1;
+			if(FOnLinkSelected)
+			{
+				std::vector<tTVPWaveLoopLink> & links = /**/ GetLinks(); /**/
+				FOnLinkSelected(this, l, links[l]);
+			}
+		}
+		else
+		{
+			if(FOnSelectionLost) FOnSelectionLost(this);
 		}
 	}
 }
@@ -1984,6 +2032,15 @@ void __fastcall TWaveView::SetFocusedLabel(int l)
 		{
 			ShowCaret = false; // link, label and caret are exclusive
 			FocusedLink = -1; // link, label and caret are exclusive
+			if(FOnLabelSelected)
+			{
+				std::vector<tTVPWaveLabel> & labels = /**/ GetLabels(); /**/
+				FOnLabelSelected(this, l, labels[l]);
+			}
+		}
+		else
+		{
+			if(FOnSelectionLost) FOnSelectionLost(this);
 		}
 	}
 }
@@ -2172,6 +2229,7 @@ void __fastcall TWaveView::MouseDown(TMouseButton button, TShiftState shift, int
 	if(!FReader || !FReader->ReadDone) return;
 
 	// mouse downed
+	SetFocus();
 	PopupType = "";
 	int head_size = GetHeadSize();
 	int foot_size = GetFootSize();
