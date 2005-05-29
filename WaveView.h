@@ -25,6 +25,9 @@ class TWaveReader;
 //---------------------------------------------------------------------------
 typedef void __fastcall (__closure *TNotifyWavePosEvent)(TObject *Sender, int pos);
 typedef void __fastcall (__closure *TNotifyPopupEvent)(TObject *Sender, AnsiString where);
+typedef void __fastcall (__closure *TShowCaretEvent)(TObject *Sender, int pos);
+typedef void __fastcall (__closure *TLinkSelected)(TObject *Sender, int num, tTVPWaveLoopLink &link);
+typedef void __fastcall (__closure *TLabelSelected)(TObject *Sender, int num, tTVPWaveLabel &label);
 //---------------------------------------------------------------------------
 class TWaveView : public TCustomControl
 {
@@ -56,6 +59,10 @@ public:
 //-- editing support
 private:
 	TNotifyPopupEvent FOnNotifyPopup;
+	TShowCaretEvent FOnShowCaret;
+	TLinkSelected FOnLinkSelected;
+	TLabelSelected FOnLabelSelected;
+	TNotifyEvent FOnSelectionLost;
 	struct tHistoryInfo
 	{
 		std::vector<tTVPWaveLoopLink> Links;
@@ -64,10 +71,10 @@ private:
 	std::deque<tHistoryInfo> FUndoStack;
 	unsigned int FUndoLevel;
 
-private:
+public:
+	void __fastcall EraseRedo();
 	void __fastcall PushUndo();
 
-public:
 	void __fastcall Undo();
 	void __fastcall Redo();
 	bool __fastcall CanUndo() const;
@@ -78,6 +85,18 @@ public:
 
 	__property TNotifyPopupEvent OnNotifyPopup =
 		{ read = FOnNotifyPopup, write = FOnNotifyPopup };
+
+	__property TShowCaretEvent OnShowCaret =
+		{ read = FOnShowCaret, write = FOnShowCaret };
+
+	__property TLinkSelected OnLinkSelected =
+		{ read = FOnLinkSelected, write = FOnLinkSelected };
+
+	__property TLabelSelected OnLabelSelected =
+		{ read = FOnLabelSelected, write = FOnLabelSelected };
+
+	__property TNotifyEvent OnSelectionLost =
+		{ read = FOnSelectionLost, write = FOnSelectionLost };
 
 //-- view control
 private:
@@ -169,7 +188,9 @@ private:
 		TTierMinMaxInfo & info);
 	void __fastcall DrawLinkOf(const tTVPWaveLoopLink & link);
 	void __fastcall DrawLinks(void);
+public:
 	void __fastcall InvalidateLink(int linknum);
+private:
 	void __fastcall SetHoveredLink(int l);
 	void __fastcall SetFocusedLink(int l);
 	bool __fastcall IsLinkAt(int linknum, int x, int y);
@@ -198,7 +219,9 @@ private:
 	void __fastcall GetLabelNameRect(tTVPWaveLabel & label, TRect & rect);
 	void __fastcall DrawLabelOf(tTVPWaveLabel & label);
 	void __fastcall DrawLabels();
+public:
 	void __fastcall InvalidateLabel(int labelnum);
+private:
 	void __fastcall SetHoveredLabel(int l);
 	void __fastcall SetFocusedLabel(int l);
 	bool __fastcall IsLabelAt(int labelnum, int x, int y);

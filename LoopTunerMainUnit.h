@@ -17,6 +17,9 @@
 #include "WaveViewControl.h"
 #include "WaveLoopManager.h"
 #include <ToolWin.hpp>
+#include "EditLabelAttribUnit.h"
+#include "EditLinkAttribUnit.h"
+#include <ExtCtrls.hpp>
 //---------------------------------------------------------------------------
 class TLoopTunerMainForm : public TForm
 {
@@ -77,6 +80,14 @@ __published:	// IDE 管理のコンポーネント
 	TMenuItem *ForWave_NewLabelMenuItem;
 	TMenuItem *ForWave_ZoomInMenuItem;
 	TMenuItem *ForWave_ZoomOutMenuItem;
+	TAction *ShowEditAttribAction;
+	TToolButton *ShowEditAttribToolButton;
+	TToolButton *ToolButton7;
+	TPanel *EditAttribPanel;
+	TBevel *EditLabelAttribBevel;
+	TPanel *EmptyEditAttribFrame;
+	TEditLinkAttribFrame *EditLinkAttribFrame;
+	TEditLabelAttribFrame *EditLabelAttribFrame;
 	void __fastcall FormDestroy(TObject *Sender);
 	void __fastcall OpenActionExecute(TObject *Sender);
 	void __fastcall ZoomInActionExecute(TObject *Sender);
@@ -93,6 +104,7 @@ __published:	// IDE 管理のコンポーネント
 	void __fastcall UndoActionUpdate(TObject *Sender);
 	void __fastcall RedoActionUpdate(TObject *Sender);
 	void __fastcall DeleteActionUpdate(TObject *Sender);
+	void __fastcall ShowEditAttribActionExecute(TObject *Sender);
 private:	// ユーザー宣言
 	TWaveReader * Reader;
 	TWaveView *WaveView;
@@ -107,7 +119,10 @@ private:
 	void __fastcall OnApplicationIdle(TObject *sender, bool &done);
 	void __fastcall OnWaveViewDoubleClick(TObject *Sender, int pos);
 	void __fastcall OnWaveViewNotifyPopup(TObject *Sender, AnsiString type);
-
+	void __fastcall OnWaveViewShowCaret(TObject *Sender, int pos);
+	void __fastcall OnWaveViewLinkSelected(TObject *Sender, int num, tTVPWaveLoopLink &link);
+	void __fastcall OnWaveViewLabelSelected(TObject *Sender, int num, tTVPWaveLabel &label);
+	void __fastcall OnWaveViewSelectionLost(TObject *Sender);
 };
 //---------------------------------------------------------------------------
 extern PACKAGE TLoopTunerMainForm *LoopTunerMainForm;

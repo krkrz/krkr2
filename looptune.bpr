@@ -6,10 +6,12 @@
     <PROJECT value="looptune.exe"/>
     <OBJFILES value="looptune.obj WaveReader.obj RIFFWaveContext.obj TSSWaveContext.obj 
       tvpsnd.obj WaveView.obj WaveLoopManager.obj DSound.obj 
-      LoopTunerMainUnit.obj CharacterSet.obj"/>
+      LoopTunerMainUnit.obj CharacterSet.obj EditLabelAttribUnit.obj 
+      EditLinkAttribUnit.obj"/>
     <RESFILES value="looptune.res"/>
     <DEFFILE value=""/>
-    <RESDEPEN value="$(RESFILES) LoopTunerMainUnit.dfm"/>
+    <RESDEPEN value="$(RESFILES) LoopTunerMainUnit.dfm EditLabelAttribUnit.dfm 
+      EditLinkAttribUnit.dfm"/>
     <LIBFILES value=""/>
     <LIBRARIES value=""/>
     <SPARELIBS value="Vcl50.lib vclx50.lib"/>
@@ -27,8 +29,8 @@
     <USERDEFINES value="_DEBUG;TVP_IN_LOOP_TUNER"/>
     <SYSDEFINES value="_RTLDLL;NO_STRICT;USEPACKAGES"/>
     <MAINSOURCE value="looptune.cpp"/>
-    <INCLUDEPATH value="$(BCB)\include;$(BCB)\include\vcl"/>
-    <LIBPATH value="$(BCB)\Projects\Lib;$(BCB)\lib\obj;$(BCB)\lib"/>
+    <INCLUDEPATH value=";;$(BCB)\include;$(BCB)\include\vcl"/>
+    <LIBPATH value=";;$(BCB)\Projects\Lib;$(BCB)\lib\obj;$(BCB)\lib"/>
     <WARNINGS value="-w-par"/>
   </MACROS>
   <OPTIONS>
