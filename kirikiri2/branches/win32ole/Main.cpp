@@ -571,7 +571,7 @@ class NI_Browser : public tTJSNativeInstance // ネイティブインスタンス
 {
 
 public:
-	TJSBrowserWindow *win;
+	TJSBrowserWindow *browser;
 
 	NI_Browser()
 	{
@@ -582,33 +582,35 @@ public:
 			にすることをおすすめします。この例では、データメンバの Value に初期
 			値として 0 を設定しています。
 		 */
-		win = NULL;
+		browser = NULL;
 	}
 
 	tjs_error TJS_INTF_METHOD
 		Construct(tjs_int numparams, tTJSVariant **param, iTJSDispatch2 *tjs_obj)
 	{
-		// TJS2 オブジェクトが作成されるときに呼ばれる
-		/*
-			TJS2 の new 演算子で TJS2 オブジェクトが作成されるときに呼ばれます。
-			numparams と param 引数は new 演算子に渡された引数を表しています。
-			tjs_obj 引数は、作成される TJS オブジェクトです。
-			この例では、引数があれば (さらにそれが void で無ければ)、それを Value
-			の初期値として設定しています。
-		*/
 		HWND handle = 0;
-		if (numparams >= 1 && param[0]->Type() == tvtInteger) {
-			handle = (HWND)(int)*param[0];
+		bool disableControl = true;
+		if (numparams >= 1) {
+			iTJSDispatch2 *win = param[0]->AsObjectNoAddRef();
+			if (win) {
+				tTJSVariant hwnd;
+				if (win->PropGet(0, TJS_W("HWND"), NULL, &hwnd, win) == TJS_S_OK) {
+					handle = (HWND)(int)hwnd;
+				}
+			}
+			if (numparams >= 2) {
+				disableControl = (int)*param[1] != 0;
+			}
 		}
-		win = new TJSBrowserWindow(handle);
+		browser = new TJSBrowserWindow(handle, disableControl);
 		return S_OK;
 	}
 
 	void TJS_INTF_METHOD Invalidate()
 	{
 		// オブジェクトが無効化されるときに呼ばれる
-		if (win) {
-			delete win;
+		if (browser) {
+			delete browser;
 		}
 	}
 };
@@ -692,7 +694,7 @@ static iTJSDispatch2 * Create_NC_Browser()
 		{
 			TJS_GET_NATIVE_INSTANCE(/*var. name*/_this, /*var. type*/NI_Browser);
 			if (numparams < 1) return TJS_E_BADPARAMCOUNT;
-			_this->win->open(param[0]->GetString());
+			_this->browser->open(param[0]->GetString());
 			return TJS_S_OK;
 		}
 		TJS_END_NATIVE_METHOD_DECL(/*func. name*/open)
@@ -701,7 +703,7 @@ static iTJSDispatch2 * Create_NC_Browser()
 		{
 			TJS_GET_NATIVE_INSTANCE(/*var. name*/_this, /*var. type*/NI_Browser);
 			if (numparams < 4) return TJS_E_BADPARAMCOUNT;
-			_this->win->setPos(*param[0], *param[1], *param[2], *param[3]);
+			_this->browser->setPos(*param[0], *param[1], *param[2], *param[3]);
 			return TJS_S_OK;
 		}
 		TJS_END_NATIVE_METHOD_DECL(/*func. name*/setPos)
@@ -709,7 +711,7 @@ static iTJSDispatch2 * Create_NC_Browser()
 		TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/back) // back メソッド
 		{
 			TJS_GET_NATIVE_INSTANCE(/*var. name*/_this, /*var. type*/NI_Browser);
-			_this->win->back();
+			_this->browser->back();
 			return TJS_S_OK;
 		}
 		TJS_END_NATIVE_METHOD_DECL(/*func. name*/back)
@@ -717,7 +719,7 @@ static iTJSDispatch2 * Create_NC_Browser()
 		TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/forward) // forward メソッド
 		{
 			TJS_GET_NATIVE_INSTANCE(/*var. name*/_this, /*var. type*/NI_Browser);
-			_this->win->forward();
+			_this->browser->forward();
 			return TJS_S_OK;
 		}
 		TJS_END_NATIVE_METHOD_DECL(/*func. name*/forward)
@@ -725,7 +727,7 @@ static iTJSDispatch2 * Create_NC_Browser()
 		TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/reload) // reload メソッド
 		{
 			TJS_GET_NATIVE_INSTANCE(/*var. name*/_this, /*var. type*/NI_Browser);
-			_this->win->reload();
+			_this->browser->reload();
 			return TJS_S_OK;
 		}
 		TJS_END_NATIVE_METHOD_DECL(/*func. name*/reload)
@@ -735,7 +737,7 @@ static iTJSDispatch2 * Create_NC_Browser()
 			TJS_BEGIN_NATIVE_PROP_GETTER
 			{
 				TJS_GET_NATIVE_INSTANCE(/*var. name*/_this,	/*var. type*/NI_Browser);
-				*result = _this->win->getVisible();
+				*result = _this->browser->getVisible();
 				return TJS_S_OK;
 			}
 			TJS_END_NATIVE_PROP_GETTER
@@ -743,7 +745,7 @@ static iTJSDispatch2 * Create_NC_Browser()
 			TJS_BEGIN_NATIVE_PROP_SETTER
 			{
 				TJS_GET_NATIVE_INSTANCE(/*var. name*/_this,	/*var. type*/NI_Browser);
-				_this->win->setVisible((bool)*param);
+				_this->browser->setVisible((bool)*param);
 				return TJS_S_OK;
 			}
 			TJS_END_NATIVE_PROP_SETTER

@@ -23,6 +23,8 @@ protected:
 	iTJSDispatch2 *obj;
 	vector<DISPID> methodEnums;
 	int methodEnumsCount;
+
+	int Construct(VARIANT *pvarResult, int argc, VARIANT *argv, tjs_error &err);
 	
 public:
 	IDispatchWrapper(iTJSDispatch2 *obj);
@@ -167,7 +169,7 @@ public:
 		tTJSVariant *result,
 		iTJSDispatch2 *objthis
 		) {
-		return Invoke(DISPATCH_METHOD|DISPATCH_PROPERTYGET, membername, result, 0, NULL);
+		return Invoke(DISPATCH_PROPERTYGET, membername, result, 0, NULL);
 	}
 	
 	tjs_error TJS_INTF_METHOD
