@@ -278,6 +278,49 @@ IDispatchWrapper::~IDispatchWrapper()
 	obj->Release();
 }
 
+int
+IDispatchWrapper::Construct(VARIANT *pvarResult, int argc, VARIANT *argv, tjs_error &err)
+{
+	log(L"construct");
+
+	int ret = S_OK;
+	
+	// 引数変換
+	tTJSVariant **args = new tTJSVariant*[argc];
+	for (int i=0;i<argc;i++) {
+		args[i] = new tTJSVariant();
+		storeVariant(*args[i], argv[argc - i - 1]);
+	}
+	
+	// コンストラクタ呼び出し
+	iTJSDispatch2 *instance = NULL;
+	try {
+		if (TJS_SUCCEEDED(err = obj->CreateNew(0, NULL, NULL, &instance, argc, args, obj))) {
+			if (instance) {
+				if (pvarResult) {
+					V_VT(pvarResult)       = VT_DISPATCH;
+					V_DISPATCH(pvarResult) = new IDispatchWrapper(instance);
+				}
+				instance->Release();
+			} else {
+				if (pvarResult) {
+					V_VT(pvarResult) = VT_NULL;
+				}
+			}
+		}
+	} catch(...) {
+		ret = DISP_E_EXCEPTION;
+	}
+	
+	// 引数破棄
+	for (i=0;i<argc;i++) {
+		delete args[i];
+	}
+	delete[] args;
+
+	return ret;
+}
+
 //----------------------------------------------------------------------------
 // IUnknown 実装
 
@@ -385,41 +428,8 @@ IDispatchWrapper::InvokeEx(
 	
 	if ((wFlags & DISPATCH_CONSTRUCT)) {
 
-		log(L"construct");
-		
-		// 引数変換
-		tTJSVariant **args = new tTJSVariant*[argc];
-		for (int i=0;i<argc;i++) {
-			args[i] = new tTJSVariant();
-			storeVariant(*args[i], argv[argc - i - 1]);
-		}
-
-		// コンストラクタ呼び出し
-		iTJSDispatch2 *instance = NULL;
-		try {
-			if (TJS_SUCCEEDED(err = obj->CreateNew(0, NULL, NULL, &instance, argc, args, obj))) {
-				if (instance) {
-					if (pvarResult) {
-						V_VT(pvarResult)       = VT_DISPATCH;
-						V_DISPATCH(pvarResult) = new IDispatchWrapper(instance);
-					}
-					instance->Release();
-				} else {
-					if (pvarResult) {
-						V_VT(pvarResult) = VT_NULL;
-					}
-				}
-			}
-		} catch(...) {
-			ret = DISP_E_EXCEPTION;
-		}
-		
-		// 引数破棄
-		for (i=0;i<argc;i++) {
-			delete args[i];
-		}
-		delete[] args;
-
+		// コンストラクタ
+		ret = Construct(pvarResult, argc, argv, err);
 		
 	} else if ((wFlags & DISPATCH_METHOD)) {
 
@@ -621,8 +631,13 @@ iTJSDispatch2Wrapper::Invoke(IDispatch *dispatch,
 
 	DISPID dispId;
 	HRESULT hr;
+
 	if (membername == NULL) {
-		dispId = DISPID_VALUE;
+		if (wFlags & DISPATCH_METHOD) {
+			dispId = DISPID_VALUE;
+		} else {
+			return TJS_E_NOTIMPL;
+		}
 	} else {
 		// DISPID の取得
 		BSTR wcmdname = SysAllocString(membername);

@@ -8,6 +8,8 @@
 #include <map>
 using namespace std;
 
+#define GLOBAL L"kirikiri"
+
 /**
  * ƒƒOo—Í—p
  */
@@ -71,7 +73,7 @@ public:
 		if (ppunkItem) {
 			*ppunkItem = NULL;
 			if (dwReturnMask & SCRIPTINFO_IUNKNOWN) {
-				if (!_wcsicmp(L"global", pstrName)) {
+				if (!_wcsicmp(GLOBAL, pstrName)) {
 					global->AddRef();
 					*ppunkItem = global;
 				}
@@ -181,7 +183,7 @@ protected:
 						// ActiveScriptSite ‚ð“o˜^
 						pScript->SetScriptSite(this);
 						// ƒOƒ[ƒoƒ‹•Ï”‚Ì–¼‘O‚ð“o˜^
-						pScript->AddNamedItem(L"global", SCRIPTITEM_ISVISIBLE | SCRIPTITEM_ISSOURCE);
+						pScript->AddNamedItem(GLOBAL, SCRIPTITEM_ISVISIBLE | SCRIPTITEM_ISSOURCE);
 						// ‰Šú‰»
 						pScriptParse->InitNew();
 						pScriptParse->Release();
@@ -277,7 +279,7 @@ public:
 				memset(&ei, 0, sizeof ei);
 
 				BSTR pParseText = ::SysAllocString(script);
-				if (SUCCEEDED(hr = pScriptParse->ParseScriptText(pParseText, L"global", NULL, NULL, 0, 0, 0L, &rs, &ei))) {
+				if (SUCCEEDED(hr = pScriptParse->ParseScriptText(pParseText, GLOBAL, NULL, NULL, 0, 0, 0L, &rs, &ei))) {
 					hr = pScript->SetScriptState(SCRIPTSTATE_CONNECTED);
 				}
 				::SysFreeString(pParseText);
