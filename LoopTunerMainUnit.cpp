@@ -5,6 +5,7 @@
 
 #include "DSound.h"
 #include "LoopTunerMainUnit.h"
+#include "LinkDetailUnit.h"
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
 #pragma link "EditLabelAttribUnit"
@@ -21,7 +22,8 @@ __fastcall TLoopTunerMainForm::TLoopTunerMainForm(TComponent* Owner)
 	WaveView->Parent = this;
 	WaveView->Align = alClient;
 	WaveView->Reader = Reader;
-	WaveView->OnDoubleClick = OnWaveViewDoubleClick;
+	WaveView->OnWaveDoubleClick = OnWaveViewWaveDoubleClick;
+	WaveView->OnLinkDoubleClick = OnWaveViewLinkDoubleClick;
 	WaveView->OnNotifyPopup = OnWaveViewNotifyPopup;
 	WaveView->OnShowCaret = OnWaveViewShowCaret;
 	WaveView->OnLinkSelected = OnWaveViewLinkSelected;
@@ -237,9 +239,25 @@ void __fastcall TLoopTunerMainForm::OnApplicationIdle(TObject *sender, bool &don
 	}
 }
 //---------------------------------------------------------------------------
-void __fastcall TLoopTunerMainForm::OnWaveViewDoubleClick(TObject *Sender, int pos)
+void __fastcall TLoopTunerMainForm::OnWaveViewWaveDoubleClick(TObject *Sender, int pos)
 {
 	PlayFrom(pos);
+}
+//---------------------------------------------------------------------------
+void __fastcall TLoopTunerMainForm::OnWaveViewLinkDoubleClick(TObject *Sender, int num, tTVPWaveLoopLink &link)
+{
+	TLinkDetailForm * ldf = new TLinkDetailForm(this);
+	try
+	{
+		ldf->SetReaderAndLink(Reader, link);
+		ldf->ShowModal();
+	}
+	catch(...)
+	{
+		delete ldf;
+		throw;
+	}
+	delete ldf;
 }
 //---------------------------------------------------------------------------
 void __fastcall TLoopTunerMainForm::OnWaveViewNotifyPopup(TObject *Sender, AnsiString type)
@@ -265,7 +283,7 @@ void __fastcall TLoopTunerMainForm::OnWaveViewShowCaret(TObject *Sender, int pos
 	EditLabelAttribBevel->Visible = false;
 
 	EmptyEditAttribFrame->Visible = true;
-	EditLinkAttribFrame->Visible = false;
+	EditLinkAttribFrame->Visible  = false;
 	EditLabelAttribFrame->Visible = false;
 
 	EditLabelAttribBevel->Visible = true;
@@ -276,10 +294,10 @@ void __fastcall TLoopTunerMainForm::OnWaveViewLinkSelected(TObject *Sender, int 
 	EditLabelAttribBevel->Visible = false;
 
 	EditLinkAttribFrame->WaveView = WaveView;
-    EditLinkAttribFrame->LinkNum = num;
+	EditLinkAttribFrame->LinkNum  = num;
 
 	EmptyEditAttribFrame->Visible = false;
-	EditLinkAttribFrame->Visible = true;
+	EditLinkAttribFrame->Visible  = true;
 	EditLabelAttribFrame->Visible = false;
 
 	EditLabelAttribBevel->Visible = true;
@@ -287,16 +305,16 @@ void __fastcall TLoopTunerMainForm::OnWaveViewLinkSelected(TObject *Sender, int 
 //---------------------------------------------------------------------------
 void __fastcall TLoopTunerMainForm::OnWaveViewLabelSelected(TObject *Sender, int num, tTVPWaveLabel &label)
 {
-	EditLabelAttribBevel->Visible = false;
+	EditLabelAttribBevel->Visible  = false;
 
 	EditLabelAttribFrame->WaveView = WaveView;
 	EditLabelAttribFrame->LabelNum = num;
 
-	EmptyEditAttribFrame->Visible = false;
-	EditLinkAttribFrame->Visible = false;
-	EditLabelAttribFrame->Visible = true;
+	EmptyEditAttribFrame->Visible  = false;
+	EditLinkAttribFrame->Visible   = false;
+	EditLabelAttribFrame->Visible  = true;
 
-	EditLabelAttribBevel->Visible = true;
+	EditLabelAttribBevel->Visible  = true;
 }
 //---------------------------------------------------------------------------
 void __fastcall TLoopTunerMainForm::OnWaveViewSelectionLost(TObject *Sender)
@@ -304,12 +322,13 @@ void __fastcall TLoopTunerMainForm::OnWaveViewSelectionLost(TObject *Sender)
 	EditLabelAttribBevel->Visible = false;
 
 	EmptyEditAttribFrame->Visible = true;
-	EditLinkAttribFrame->Visible = false;
+	EditLinkAttribFrame->Visible  = false;
 	EditLabelAttribFrame->Visible = false;
 
 	EditLabelAttribBevel->Visible = true;
 }
 //---------------------------------------------------------------------------
+
 
 
 

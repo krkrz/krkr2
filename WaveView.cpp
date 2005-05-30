@@ -7,37 +7,9 @@
 #include <math.h>
 #include "WaveView.h"
 #include "WaveReader.h"
-
+#include "ColorScheme.h"
 
 //---------------------------------------------------------------------------
-// Color schemes - currently fixed colors only
-//---------------------------------------------------------------------------
-const TColor C_DISABLEED_CLIENT		= clBtnFace;
-const TColor C_CLIENT				= clWhite;
-const TColor C_WAVE					= clBlack;
-const TColor C_WAVE2				= clGray;
-const TColor C_INF_LINE				= clGray;
-const TColor C_DISABLED_TIME_CLIENT	= ((TColor)0xf0f0f0);
-const TColor C_TIME_CLIENT			= clBtnFace;
-const TColor C_TIME_COLOR			= ((TColor)0x303030);
-
-const TColor C_LINK_WAVE_MARK		= ((TColor)0x0000f0);
-const TColor C_LINK_CLIENT			= clWhite;
-const TColor C_LINK_SEPARETOR  		= ((TColor)0xe0e0e0);
-const TColor C_LINK_LINE			= clBlack;
-const TColor C_LINK_HOVER			= ((TColor)0x40d090);
-const TColor C_LINK_FOCUS			= clRed;
-const TColor C_LINK_WEAK_LINE		= clGray;
-
-const TColor C_LABEL_WAVE_MARK		= ((TColor)0x00f000);
-const TColor C_LABEL_MARK_LINE		= clBlack;
-const TColor C_LABEL_MARK_HOVER		= ((TColor)0x40d090);
-const TColor C_LABEL_MARK_FOCUS		= clRed;
-const TColor C_LABEL_MARK			= clYellow;
-const TColor C_LABEL_TEXT_BG		= clWhite;
-const TColor C_LABEL_TEXT			= ((TColor)0x000080);
-const TColor C_LABEL_TEXT_HOVER		= ((TColor)0x008080);
-const TColor C_LABEL_TEXT_FOCUS		= ((TColor)0x0000ff);
 const AnsiString C_NEW_LABEL_BASE_NAME = "ƒ‰ƒxƒ‹";
 //---------------------------------------------------------------------------
 const int LinkArrowSize = 4;
@@ -99,7 +71,8 @@ __fastcall TWaveView::TWaveView(Classes::TComponent* AOwner) :
 	LabelTextHeight = -1;
 	NotifyLabelChanged();
 
-	FOnDoubleClick = NULL;
+	FOnWaveDoubleClick = NULL;
+	FOnLinkDoubleClick = NULL;
 
 	DragScrollTimer = new TTimer(this);
 	DragScrollTimer->OnTimer = OnDragScrollTimer;
@@ -814,7 +787,7 @@ void __fastcall TWaveView::DrawWave(int start, bool clear)
 	if(vr < dest_right) dest_right = vr;
 
 	// clear the background
-	#define		CONV_Y(v, ch) ((((v) * one_client_height) /65536) + \
+	#define		CONV_Y(v, ch) ((((v) * one_client_height) / -65536) + \
 							one_height_half + (ch) * one_height + head_size)
 
 	if(clear)
@@ -2235,6 +2208,7 @@ void __fastcall TWaveView::MouseDown(TMouseButton button, TShiftState shift, int
 	int foot_size = GetFootSize();
 	int foot_start = ClientHeight - foot_size;
 
+	LastMouseDownY = y;
 	LastMouseDownX = x;
 
 	if(button == mbLeft)
@@ -2444,6 +2418,11 @@ void __fastcall TWaveView::MouseMove(TShiftState shift, int x, int y)
 void __fastcall TWaveView::MouseUp(TMouseButton button, TShiftState shift, int x, int y)
 {
 	// mouse up
+	if(!FReader || !FReader->ReadDone)
+	{
+		return;
+	}
+
 	if(DraggingState != dsNone)
 	{
 		if(DraggingState == dsMouseDown)
@@ -2485,12 +2464,36 @@ void __fastcall TWaveView::MouseUp(TMouseButton button, TShiftState shift, int x
 void __fastcall TWaveView::DblClick(void)
 {
 	// on double click
-	if(FOnDoubleClick)
+	if(!FReader || !FReader->ReadDone)
 	{
-		int pos = MouseXPosToSamplePos(LastMouseDownX);
-		if(pos >= 0 && pos < FReader->NumSamples)
+		return;
+	}
+
+	int head_size = GetHeadSize();
+	int foot_size = GetFootSize();
+	int foot_start = ClientHeight - foot_size;
+
+	if(LastMouseDownY < head_size)
+	{
+	}
+	else if(LastMouseDownY < foot_start)
+	{
+		if(FOnWaveDoubleClick)
 		{
-			FOnDoubleClick(this, pos);
+			int pos = MouseXPosToSamplePos(LastMouseDownX);
+			if(pos >= 0 && pos < FReader->NumSamples)
+			{
+				FOnWaveDoubleClick(this, pos);
+			}
+		}
+	}
+	else
+	{
+		// link
+		if(FOnLinkDoubleClick)
+		{
+			int linknum = GetLinkAt(LastMouseDownX, LastMouseDownY);
+			FOnLinkDoubleClick(this, linknum, Links[linknum]);
 		}
 	}
 }
