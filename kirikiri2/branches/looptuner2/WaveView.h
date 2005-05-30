@@ -26,8 +26,8 @@ class TWaveReader;
 typedef void __fastcall (__closure *TNotifyWavePosEvent)(TObject *Sender, int pos);
 typedef void __fastcall (__closure *TNotifyPopupEvent)(TObject *Sender, AnsiString where);
 typedef void __fastcall (__closure *TShowCaretEvent)(TObject *Sender, int pos);
-typedef void __fastcall (__closure *TLinkSelected)(TObject *Sender, int num, tTVPWaveLoopLink &link);
-typedef void __fastcall (__closure *TLabelSelected)(TObject *Sender, int num, tTVPWaveLabel &label);
+typedef void __fastcall (__closure *TLinkSelectedEvent)(TObject *Sender, int num, tTVPWaveLoopLink &link);
+typedef void __fastcall (__closure *TLabelSelectedEvent)(TObject *Sender, int num, tTVPWaveLabel &label);
 //---------------------------------------------------------------------------
 class TWaveView : public TCustomControl
 {
@@ -60,8 +60,8 @@ public:
 private:
 	TNotifyPopupEvent FOnNotifyPopup;
 	TShowCaretEvent FOnShowCaret;
-	TLinkSelected FOnLinkSelected;
-	TLabelSelected FOnLabelSelected;
+	TLinkSelectedEvent FOnLinkSelected;
+	TLabelSelectedEvent FOnLabelSelected;
 	TNotifyEvent FOnSelectionLost;
 	struct tHistoryInfo
 	{
@@ -89,10 +89,10 @@ public:
 	__property TShowCaretEvent OnShowCaret =
 		{ read = FOnShowCaret, write = FOnShowCaret };
 
-	__property TLinkSelected OnLinkSelected =
+	__property TLinkSelectedEvent OnLinkSelected =
 		{ read = FOnLinkSelected, write = FOnLinkSelected };
 
-	__property TLabelSelected OnLabelSelected =
+	__property TLabelSelectedEvent OnLabelSelected =
 		{ read = FOnLabelSelected, write = FOnLabelSelected };
 
 	__property TNotifyEvent OnSelectionLost =
@@ -239,7 +239,8 @@ public:
 
 //-- input
 private:
-	TNotifyWavePosEvent FOnDoubleClick;
+	TNotifyWavePosEvent FOnWaveDoubleClick;
+	TLinkSelectedEvent FOnLinkDoubleClick;
 
 	enum TObjectKind { okLink, okLabel };
 	enum TDraggingState { dsNone, dsMouseDown, dsDragging };
@@ -254,6 +255,7 @@ private:
 
 	TTimer * DragScrollTimer;
 	int LastMouseDownX;
+	int LastMouseDownY;
 	int LastMouseDownPosOffset;
 	int LastMouseMoveX;
 	AnsiString PopupType;
@@ -276,7 +278,8 @@ private:
 	void __fastcall OnDragScrollTimer(TObject * sender);
 
 public:
-	__property TNotifyWavePosEvent OnDoubleClick = { read = FOnDoubleClick, write = FOnDoubleClick };
+	__property TNotifyWavePosEvent OnWaveDoubleClick = { read = FOnWaveDoubleClick, write = FOnWaveDoubleClick };
+	__property TLinkSelectedEvent OnLinkDoubleClick = { read = FOnLinkDoubleClick, write = FOnLinkDoubleClick };
 };
 //---------------------------------------------------------------------------
 #endif

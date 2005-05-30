@@ -14,6 +14,7 @@ USEFORM("LoopTunerMainUnit.cpp", LoopTunerMainForm);
 USEUNIT("CharacterSet.cpp");
 USEFORM("EditLabelAttribUnit.cpp", EditLabelAttribFrame); /* TFrame: File Type */
 USEFORM("EditLinkAttribUnit.cpp", EditLinkAttribFrame); /* TFrame: File Type */
+USEFORM("LinkDetailUnit.cpp", LinkDetailForm);
 //---------------------------------------------------------------------------
 WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 {

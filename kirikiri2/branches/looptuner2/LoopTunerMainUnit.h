@@ -117,7 +117,8 @@ private:
 	void __fastcall OnReaderProgress(TObject *sender);
 	void __fastcall PlayFrom(int pos);
 	void __fastcall OnApplicationIdle(TObject *sender, bool &done);
-	void __fastcall OnWaveViewDoubleClick(TObject *Sender, int pos);
+	void __fastcall OnWaveViewWaveDoubleClick(TObject *Sender, int pos);
+	void __fastcall OnWaveViewLinkDoubleClick(TObject *Sender, int num, tTVPWaveLoopLink &link);
 	void __fastcall OnWaveViewNotifyPopup(TObject *Sender, AnsiString type);
 	void __fastcall OnWaveViewShowCaret(TObject *Sender, int pos);
 	void __fastcall OnWaveViewLinkSelected(TObject *Sender, int num, tTVPWaveLoopLink &link);
