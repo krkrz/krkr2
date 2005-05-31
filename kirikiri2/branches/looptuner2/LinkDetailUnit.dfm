@@ -1,8 +1,8 @@
 object LinkDetailForm: TLinkDetailForm
-  Left = 63
-  Top = 336
+  Left = 70
+  Top = 361
   Width = 643
-  Height = 435
+  Height = 438
   Caption = 'LinkDetailForm'
   Color = clBtnFace
   Font.Charset = SHIFTJIS_CHARSET
@@ -11,24 +11,25 @@ object LinkDetailForm: TLinkDetailForm
   Font.Name = 'ＭＳ Ｐゴシック'
   Font.Style = []
   OldCreateOrder = False
+  OnResize = FormResize
   PixelsPerInch = 96
   TextHeight = 12
   object ToolBarPanel: TPanel
     Left = 0
-    Top = 0
+    Top = 340
     Width = 635
-    Height = 25
-    Align = alTop
+    Height = 31
+    Align = alBottom
     BevelOuter = bvNone
     TabOrder = 0
-    object BeforeToolBar: TToolBar
-      Left = 0
-      Top = 0
-      Width = 138
-      Height = 25
-      Align = alLeft
+    object PosAdjustToolBar: TToolBar
+      Left = 175
+      Top = 4
+      Width = 284
+      Height = 22
+      Align = alNone
       AutoSize = True
-      Caption = 'BeforeToolBar'
+      Caption = 'PosAdjustToolBar'
       EdgeBorders = []
       Flat = True
       Images = LoopTunerMainForm.ImageList
@@ -36,107 +37,90 @@ object LinkDetailForm: TLinkDetailForm
       object BeforePrevCrossToolButton: TToolButton
         Left = 0
         Top = 0
-        Caption = 'BeforePrevCrossToolButton'
-        ImageIndex = 22
+        Action = BeforePrevCrossAction
       end
       object BeforePrevFastToolButton: TToolButton
         Left = 23
         Top = 0
-        Caption = 'BeforePrevFastToolButton'
-        ImageIndex = 23
+        Action = BeforePrevFastAction
       end
       object BeforePrevStepToolButton: TToolButton
         Left = 46
         Top = 0
-        Caption = 'BeforePrevStepToolButton'
-        ImageIndex = 21
+        Action = BeforePrevStepAction
       end
       object BeforeNextStepToolButton: TToolButton
         Left = 69
         Top = 0
-        Caption = 'BeforeNextStepToolButton'
-        ImageIndex = 18
+        Action = BeforeNextStepAction
       end
       object BeforeNextFastToolButton: TToolButton
         Left = 92
         Top = 0
-        Caption = 'BeforeNextFastToolButton'
-        ImageIndex = 20
+        Action = BeforeNextFastAction
       end
       object BeforeNextCrossToolButton: TToolButton
         Left = 115
         Top = 0
-        Caption = 'BeforeNextCrossToolButton'
-        ImageIndex = 19
+        Action = BeforeNextCrossAction
       end
-    end
-    object AfterToolBar: TToolBar
-      Left = 497
-      Top = 0
-      Width = 138
-      Height = 25
-      Align = alRight
-      AutoSize = True
-      Caption = 'AfterToolBar'
-      EdgeBorders = []
-      Flat = True
-      Images = LoopTunerMainForm.ImageList
-      TabOrder = 1
-      object AfterPrevCrossToolButton: TToolButton
-        Left = 0
+      object ToolButton2: TToolButton
+        Left = 138
         Top = 0
-        Caption = 'AfterPrevCrossToolButton'
-        ImageIndex = 22
+        Width = 8
+        Caption = 'ToolButton2'
+        ImageIndex = 20
+        Style = tbsSeparator
+      end
+      object AfterPrevCrossToolButton: TToolButton
+        Left = 146
+        Top = 0
+        Action = AfterPrevCrossAction
       end
       object AfterPrevFastToolButton: TToolButton
-        Left = 23
+        Left = 169
         Top = 0
-        Caption = 'AfterPrevFastToolButton'
-        ImageIndex = 23
+        Action = AfterPrevFastAction
       end
       object AfterPrevStepToolButton: TToolButton
-        Left = 46
+        Left = 192
         Top = 0
-        Caption = 'AfterPrevStepToolButton'
-        ImageIndex = 21
+        Action = AfterPrevStepAction
       end
       object AfterNextStepToolButton: TToolButton
-        Left = 69
+        Left = 215
         Top = 0
-        Caption = 'AfterNextStepToolButton'
-        ImageIndex = 18
+        Action = AfterNextStepAction
       end
       object AfterNextFastToolButton: TToolButton
-        Left = 92
+        Left = 238
         Top = 0
-        Caption = 'AfterNextFastToolButton'
-        ImageIndex = 20
+        Action = AfterNextFastAction
       end
       object AfterNextCrossToolButton: TToolButton
-        Left = 115
+        Left = 261
         Top = 0
-        Caption = 'AfterNextCrossToolButton'
-        ImageIndex = 19
+        Action = AfterNextCrossAction
       end
     end
   end
   object BottomPanel: TPanel
     Left = 0
-    Top = 361
+    Top = 371
     Width = 635
-    Height = 40
+    Height = 33
     Align = alBottom
     BevelOuter = bvNone
-    BevelWidth = 2
+    BorderWidth = 4
     TabOrder = 1
     object BottomToolBar: TToolBar
-      Left = 0
-      Top = 8
-      Width = 288
-      Height = 22
-      Align = alNone
+      Left = 4
+      Top = 4
+      Width = 263
+      Height = 25
+      Align = alLeft
       AutoSize = True
-      ButtonWidth = 27
+      ButtonWidth = 25
       Caption = 'BottomToolBar'
       EdgeBorders = []
       Flat = True
@@ -145,33 +129,38 @@ object LinkDetailForm: TLinkDetailForm
       object ZoomInToolButton: TToolButton
         Left = 0
         Top = 0
-        Caption = 'ZoomInToolButton'
-        ImageIndex = 9
+        Action = ZoomInAction
       end
       object ZoomOutToolButton: TToolButton
-        Left = 27
+        Left = 25
         Top = 0
-        Caption = 'ZoomOutToolButton'
-        ImageIndex = 10
+        Action = ZoomOutAction
+      end
+      object MagnifyLabel: TLabel
+        Left = 50
+        Top = 0
+        Width = 47
+        Height = 22
+        Alignment = taCenter
+        AutoSize = False
+        Caption = '/1024'
+        Layout = tlCenter
       end
       object ToolButton17: TToolButton
-        Left = 54
+        Left = 97
         Top = 0
         Width = 8
         Caption = 'ToolButton17'
         ImageIndex = 13
         Style = tbsSeparator
       end
-      object SmoothCheckBox: TCheckBox
-        Left = 62
+      object ToolButton1: TToolButton
+        Left = 105
         Top = 0
-        Width = 83
-        Height = 22
-        Caption = 'スムーズ'
-        TabOrder = 0
+        Action = SmoothAction
       end
       object ToolButton15: TToolButton
-        Left = 145
+        Left = 130
         Top = 0
         Width = 8
         Caption = 'ToolButton15'
@@ -179,39 +168,34 @@ object LinkDetailForm: TLinkDetailForm
         Style = tbsSeparator
       end
       object PlayHalfSecToolButton: TToolButton
-        Left = 153
+        Left = 138
         Top = 0
-        Caption = 'PlayHalfSecToolButton'
-        ImageIndex = 25
+        Action = PlayHalfSecAction
       end
       object Play1SecToolButton: TToolButton
-        Left = 180
+        Left = 163
         Top = 0
-        Caption = 'Play1SecToolButton'
-        ImageIndex = 26
+        Action = Play1SecAction
       end
       object Play2SecToolButton: TToolButton
-        Left = 207
+        Left = 188
         Top = 0
-        Caption = 'Play2SecToolButton'
-        ImageIndex = 27
+        Action = Play2SecAction
       end
       object Play3SecToolButton: TToolButton
-        Left = 234
+        Left = 213
         Top = 0
-        Caption = 'Play3SecToolButton'
-        ImageIndex = 28
+        Action = Play3SecAction
       end
       object Play5SecToolButton: TToolButton
-        Left = 261
+        Left = 238
         Top = 0
-        Caption = 'Play5SecToolButton'
-        ImageIndex = 29
+        Action = Play5SecAction
       end
     end
     object OKButton: TButton
       Left = 460
-      Top = 8
+      Top = 2
       Width = 75
       Height = 25
       Anchors = [akTop, akRight]
@@ -221,7 +205,7 @@ object LinkDetailForm: TLinkDetailForm
     end
     object CancelButton: TButton
       Left = 548
-      Top = 8
+      Top = 2
       Width = 75
       Height = 25
       Anchors = [akTop, akRight]
@@ -232,9 +216,9 @@ object LinkDetailForm: TLinkDetailForm
   end
   object WaveAreaPanel: TPanel
     Left = 0
-    Top = 25
+    Top = 0
     Width = 635
-    Height = 336
+    Height = 340
     Align = alClient
     BevelOuter = bvLowered
     TabOrder = 2
@@ -242,9 +226,131 @@ object LinkDetailForm: TLinkDetailForm
       Left = 1
       Top = 1
       Width = 633
-      Height = 334
+      Height = 338
       Align = alClient
+      OnMouseDown = WavePaintBoxMouseDown
+      OnMouseMove = WavePaintBoxMouseMove
+      OnMouseUp = WavePaintBoxMouseUp
       OnPaint = WavePaintBoxPaint
+    end
+  end
+  object ActionList: TActionList
+    Images = LoopTunerMainForm.ImageList
+    Left = 304
+    Top = 248
+    object ZoomInAction: TAction
+      Category = '表示'
+      Caption = 'ズーム・イン(&I)'
+      ImageIndex = 9
+      OnExecute = ZoomInActionExecute
+    end
+    object ZoomOutAction: TAction
+      Category = '表示'
+      Caption = 'ズーム・アウト(&O)'
+      ImageIndex = 10
+      OnExecute = ZoomOutActionExecute
+    end
+    object PlayHalfSecAction: TAction
+      Category = '再生'
+      Caption = '0.5秒前から再生(&H)'
+      ImageIndex = 25
+    end
+    object Play1SecAction: TAction
+      Category = '再生'
+      Caption = '1秒前から再生(&1)'
+      ImageIndex = 26
+    end
+    object Play2SecAction: TAction
+      Category = '再生'
+      Caption = '2秒前から再生(&2)'
+      ImageIndex = 27
+    end
+    object Play3SecAction: TAction
+      Category = '再生'
+      Caption = '3秒前から再生(&3)'
+      ImageIndex = 28
+    end
+    object Play5SecAction: TAction
+      Category = '再生'
+      Caption = '5秒前から再生(&5)'
+      ImageIndex = 29
+    end
+    object SmoothAction: TAction
+      Category = '属性'
+      Caption = 'スムーズ(&S)'
+      ImageIndex = 30
+    end
+    object BeforePrevCrossAction: TAction
+      Category = 'リンク前'
+      Caption = '前のクロッシング・ポイントへ'
+      ImageIndex = 22
+      OnExecute = BeforePrevCrossActionExecute
+    end
+    object BeforePrevFastAction: TAction
+      Category = 'リンク前'
+      Caption = '前へ20ステップ'
+      ImageIndex = 23
+      OnExecute = BeforePrevFastActionExecute
+    end
+    object BeforePrevStepAction: TAction
+      Category = 'リンク前'
+      Caption = '前へ1ステップ'
+      ImageIndex = 21
+      OnExecute = BeforePrevStepActionExecute
+    end
+    object BeforeNextStepAction: TAction
+      Category = 'リンク前'
+      Caption = '次へ1ステップ'
+      ImageIndex = 18
+      OnExecute = BeforeNextStepActionExecute
+    end
+    object BeforeNextFastAction: TAction
+      Category = 'リンク前'
+      Caption = '次へ20ステップ'
+      ImageIndex = 20
+      OnExecute = BeforeNextFastActionExecute
+    end
+    object BeforeNextCrossAction: TAction
+      Category = 'リンク前'
+      Caption = '次のクロッシング・ポイントへ'
+      ImageIndex = 19
+      OnExecute = BeforeNextCrossActionExecute
+    end
+    object AfterPrevCrossAction: TAction
+      Category = 'リンク後'
+      Caption = '前のクロッシング・ポイントへ'
+      ImageIndex = 22
+      OnExecute = AfterPrevCrossActionExecute
+    end
+    object AfterPrevFastAction: TAction
+      Category = 'リンク後'
+      Caption = '前へ20ステップ'
+      ImageIndex = 23
+      OnExecute = AfterPrevFastActionExecute
+    end
+    object AfterPrevStepAction: TAction
+      Category = 'リンク後'
+      Caption = '前へ1ステップ'
+      ImageIndex = 21
+      OnExecute = AfterPrevStepActionExecute
+    end
+    object AfterNextStepAction: TAction
+      Category = 'リンク後'
+      Caption = '次へ1ステップ'
+      ImageIndex = 18
+      OnExecute = AfterNextStepActionExecute
+    end
+    object AfterNextFastAction: TAction
+      Category = 'リンク後'
+      Caption = '次へ20ステップ'
+      ImageIndex = 20
+      OnExecute = AfterNextFastActionExecute
+    end
+    object AfterNextCrossAction: TAction
+      Category = 'リンク後'
+      Caption = '次のクロッシング・ポイントへ'
+      ImageIndex = 19
+      OnExecute = AfterNextCrossActionExecute
     end
   end
 end
