@@ -1283,6 +1283,10 @@ class KAGWindow extends Window
 			f.historyData = historyLayer.save();
 		}
 
+		// ムービー
+		f.movies = [];
+		for( var i = 0; i < numMovies; i++)
+			f.movies[i] = movies[i].store();
 
 		// storeHook
 		forEachEventHook('onStore',
@@ -1357,6 +1361,10 @@ class KAGWindow extends Window
 
 		// 自動ウェイト
 		autoWCWaits.assign(f.autoWCWaits) if f.autoWCWaits !== void;
+
+		// ムービー
+		for( var i = 0; i < numMovies; i++)
+			movies[i].restore(f.movies[i]);
 
 		// 背景レイヤ
 		var backlay = elm != void && elm.backlay != void && +elm.backlay;
@@ -4387,6 +4395,8 @@ class KAGWindow extends Window
 	{
 		var id = +elm.slot;
 
+		stablePosibility = true;
+
 		// ムービーの再生終了を待つ
 		if(!movies[id].canWaitStop) return 0; // ムービー再生終了を待てなければそのまま戻る
 		if(elm.canskip !== void && +elm.canskip && clickSkipEnabled)
@@ -4504,6 +4514,7 @@ class KAGWindow extends Window
 					]);
 			}
 		}
+		notifyStable();
 		return -2;
 	}
 
@@ -5476,6 +5487,12 @@ class KAGWindow extends Window
 		return 0;
 	} incontextof this,
 
+	resumevideo : function(elm)
+	{
+		movies[+elm.slot].resume();
+		return 0;
+	} incontextof this,
+
 	preparevideo : function(elm)
 	{
 		movies[+elm.slot].prepare();
@@ -5490,12 +5507,14 @@ class KAGWindow extends Window
 
 	videolayer : function(elm)
 	{
+		movies[+elm.slot].storeLayer( elm.layer, elm.page, elm.channel );
 		movies[+elm.slot].setVideoLayer(getLayerFromElm(elm),elm);
 		return 0;
 	} incontextof this,
 
 	clearvideolayer : function(elm)
 	{
+		movies[+elm.slot].cancelLayer( elm.channel );
 		movies[+elm.slot].setVideoLayer(null,elm);
 		return 0;
 	} incontextof this,
