@@ -3,6 +3,7 @@
 #include <vcl.h>
 #pragma hdrstop
 
+#include "DSound.h"
 #include "LinkDetailUnit.h"
 #include "LoopTunerMainUnit.h"
 //---------------------------------------------------------------------------
@@ -18,6 +19,7 @@ __fastcall TLinkDetailForm::TLinkDetailForm(TComponent* Owner)
 {
 	FReader = NULL;
 	FMagnify = 0;
+	FManager = NULL;
 
 	Dragging = false;
 	BeforeOrAfter = false;
@@ -25,9 +27,19 @@ __fastcall TLinkDetailForm::TLinkDetailForm(TComponent* Owner)
 	FirstMouseDownX = 0;
 
 	WaveAreaPanel->DoubleBuffered = true;
+	PlayBeforePaintBoxPanel->DoubleBuffered = true;
+
+	PlayBeforeLength = 0;
+	PlayStartPos = 0;
 
 	UpdateLayout();
 	UpdateDisplay();
+}
+//---------------------------------------------------------------------------
+void __fastcall TLinkDetailForm::FormDestroy(TObject *Sender)
+{
+	StopPlay();
+	if(FManager) delete FManager, FManager = NULL;
 }
 //---------------------------------------------------------------------------
 void __fastcall TLinkDetailForm::SetReaderAndLink(TWaveReader * reader,
@@ -36,6 +48,12 @@ void __fastcall TLinkDetailForm::SetReaderAndLink(TWaveReader * reader,
 	// set the reader and the link
 	FReader = reader;
 	FLink = link;
+
+	if(FManager) delete FManager, FManager = NULL;
+	FManager = new tTVPWaveLoopManager(FReader);
+
+	// show link attributes
+	SmoothAction->Checked = FLink.Smooth;
 }
 //---------------------------------------------------------------------------
 int __fastcall TLinkDetailForm::PixelToSample(int pixel)
@@ -75,6 +93,29 @@ void __fastcall TLinkDetailForm::UpdateDisplay()
 void __fastcall TLinkDetailForm::UpdateLayout()
 {
 	PosAdjustToolBar->Left = (ToolBarPanel->Width - PosAdjustToolBar->Width) /2 + 1;
+}
+//---------------------------------------------------------------------------
+void __fastcall TLinkDetailForm::PlayLink(int before, int after)
+{
+	// play the link
+
+	// stop current playing sound
+	StopPlay();
+
+	std::vector<tTVPWaveLoopLink> links;
+	tTVPWaveLoopLink link = FLink;
+	link.Condition = llcNone; // disable the condition
+	links.push_back(link);
+	FManager->SetLinks(links); // set new links to the manager
+
+	const WAVEFORMATEXTENSIBLE * wfx;
+	wfx = FReader->GetWindowsFormat();
+	int before_samples = FReader->Frequency * before / 1000;
+	PlayStartPos = PlayLastPos = FLink.From - before_samples < 0 ? 0 : FLink.From - before_samples;
+	PlayBeforeLength = FLink.From - PlayStartPos;
+
+	FManager->SetPosition(PlayStartPos);
+	StartPlay(wfx, FManager);
 }
 //---------------------------------------------------------------------------
 void __fastcall TLinkDetailForm::FormResize(TObject *Sender)
@@ -246,7 +287,6 @@ void __fastcall TLinkDetailForm::WavePaintBoxPaint(TObject *Sender)
 
 }
 //---------------------------------------------------------------------------
-
 void __fastcall TLinkDetailForm::WavePaintBoxMouseDown(TObject *Sender,
 	  TMouseButton Button, TShiftState Shift, int X, int Y)
 {
@@ -256,12 +296,11 @@ void __fastcall TLinkDetailForm::WavePaintBoxMouseDown(TObject *Sender,
 		int center = WavePaintBox->Width / 2;
 		BeforeOrAfter = X < center;
 		FirstMouseDownPos =
-			(BeforeOrAfter ? FLink.From : FLink.To)/* + PixelToSample(X - center)*/;
+			(BeforeOrAfter ? FLink.From : FLink.To);
 		FirstMouseDownX = X;
 	}
 }
 //---------------------------------------------------------------------------
-
 void __fastcall TLinkDetailForm::WavePaintBoxMouseMove(TObject *Sender,
 	  TShiftState Shift, int X, int Y)
 {
@@ -283,7 +322,6 @@ void __fastcall TLinkDetailForm::WavePaintBoxMouseMove(TObject *Sender,
 	}
 }
 //---------------------------------------------------------------------------
-
 void __fastcall TLinkDetailForm::WavePaintBoxMouseUp(TObject *Sender,
 	  TMouseButton Button, TShiftState Shift, int X, int Y)
 {
@@ -307,14 +345,18 @@ void __fastcall TLinkDetailForm::ZoomOutActionExecute(TObject *Sender)
 	UpdateDisplay();
 }
 //---------------------------------------------------------------------------
-
+void __fastcall TLinkDetailForm::SmoothActionExecute(TObject *Sender)
+{
+	SmoothAction->Checked = ! SmoothAction->Checked;
+	FLink.Smooth = SmoothAction->Checked;
+}
+//---------------------------------------------------------------------------
 void __fastcall TLinkDetailForm::BeforePrevCrossActionExecute(
 	  TObject *Sender)
 {
 	//
 }
 //---------------------------------------------------------------------------
-
 void __fastcall TLinkDetailForm::BeforePrevFastActionExecute(
 	  TObject *Sender)
 {
@@ -327,7 +369,6 @@ void __fastcall TLinkDetailForm::BeforePrevFastActionExecute(
 	UpdateDisplay();
 }
 //---------------------------------------------------------------------------
-
 void __fastcall TLinkDetailForm::BeforePrevStepActionExecute(
 	  TObject *Sender)
 {
@@ -340,7 +381,6 @@ void __fastcall TLinkDetailForm::BeforePrevStepActionExecute(
 	UpdateDisplay();
 }
 //---------------------------------------------------------------------------
-
 void __fastcall TLinkDetailForm::BeforeNextStepActionExecute(
 	  TObject *Sender)
 {
@@ -353,7 +393,6 @@ void __fastcall TLinkDetailForm::BeforeNextStepActionExecute(
 	UpdateDisplay();
 }
 //---------------------------------------------------------------------------
-
 void __fastcall TLinkDetailForm::BeforeNextFastActionExecute(
 	  TObject *Sender)
 {
@@ -366,21 +405,18 @@ void __fastcall TLinkDetailForm::BeforeNextFastActionExecute(
 	UpdateDisplay();
 }
 //---------------------------------------------------------------------------
-
 void __fastcall TLinkDetailForm::BeforeNextCrossActionExecute(
       TObject *Sender)
 {
 	//
 }
 //---------------------------------------------------------------------------
-
 void __fastcall TLinkDetailForm::AfterPrevCrossActionExecute(
 	  TObject *Sender)
 {
 	//
 }
 //---------------------------------------------------------------------------
-
 void __fastcall TLinkDetailForm::AfterPrevFastActionExecute(
 	  TObject *Sender)
 {
@@ -393,7 +429,6 @@ void __fastcall TLinkDetailForm::AfterPrevFastActionExecute(
 	UpdateDisplay();
 }
 //---------------------------------------------------------------------------
-
 void __fastcall TLinkDetailForm::AfterPrevStepActionExecute(
 	  TObject *Sender)
 {
@@ -406,7 +441,6 @@ void __fastcall TLinkDetailForm::AfterPrevStepActionExecute(
 	UpdateDisplay();
 }
 //---------------------------------------------------------------------------
-
 void __fastcall TLinkDetailForm::AfterNextStepActionExecute(
 	  TObject *Sender)
 {
@@ -419,7 +453,6 @@ void __fastcall TLinkDetailForm::AfterNextStepActionExecute(
 	UpdateDisplay();
 }
 //---------------------------------------------------------------------------
-
 void __fastcall TLinkDetailForm::AfterNextFastActionExecute(
 	  TObject *Sender)
 {
@@ -432,11 +465,112 @@ void __fastcall TLinkDetailForm::AfterNextFastActionExecute(
 	UpdateDisplay();
 }
 //---------------------------------------------------------------------------
-
 void __fastcall TLinkDetailForm::AfterNextCrossActionExecute(
 	  TObject *Sender)
 {
 	//
+}
+//---------------------------------------------------------------------------
+void __fastcall TLinkDetailForm::MarkPlayButton(TObject * button)
+{
+	PlayHalfSecToolButton->Marked = PlayHalfSecToolButton == button;
+	Play1SecToolButton->Marked    = Play1SecToolButton == button;
+	Play2SecToolButton->Marked    = Play2SecToolButton == button;
+	Play3SecToolButton->Marked    = Play3SecToolButton == button;
+	Play5SecToolButton->Marked    = Play5SecToolButton == button;
+}
+//---------------------------------------------------------------------------
+void __fastcall TLinkDetailForm::PlayHalfSecActionExecute(TObject *Sender)
+{
+	MarkPlayButton(PlayHalfSecToolButton);
+	PlayLink(500);
+}
+//---------------------------------------------------------------------------
+void __fastcall TLinkDetailForm::Play1SecActionExecute(TObject *Sender)
+{
+	MarkPlayButton(Play1SecToolButton);
+	PlayLink(1000);
+}
+//---------------------------------------------------------------------------
+void __fastcall TLinkDetailForm::Play2SecActionExecute(TObject *Sender)
+{
+	MarkPlayButton(Play2SecToolButton);
+	PlayLink(2000);
+}
+//---------------------------------------------------------------------------
+void __fastcall TLinkDetailForm::Play3SecActionExecute(TObject *Sender)
+{
+	MarkPlayButton(Play3SecToolButton);
+	PlayLink(3000);
+}
+//---------------------------------------------------------------------------
+void __fastcall TLinkDetailForm::Play5SecActionExecute(TObject *Sender)
+{
+	MarkPlayButton(Play5SecToolButton);
+	PlayLink(5000);
+}
+//---------------------------------------------------------------------------
+void __fastcall TLinkDetailForm::ApplicationEventsIdle(TObject *Sender,
+	  bool &Done)
+{
+	int pos = (int)GetCurrentPlayingPos();
+
+	if(pos != -1)
+	{
+		Sleep(1); // this will make the cpu usage low
+		Done = false;
+
+		PlayBeforePaintBox->Invalidate();
+	}
+	else
+	{
+		if(PlayBeforeLength)
+		{
+			PlayBeforeLength = 0;
+			PlayBeforePaintBox->Invalidate();
+		}
+		Done = true;
+	}
+}
+//---------------------------------------------------------------------------
+void __fastcall TLinkDetailForm::PlayBeforePaintBoxPaint(TObject *Sender)
+{
+	if(PlayBeforeLength)
+	{
+		int current_pos = GetCurrentPlayingPos();
+		int elapsed = current_pos - PlayStartPos;
+		if(elapsed < 0 || elapsed >= PlayBeforeLength || current_pos < PlayLastPos)
+		{
+			PlayBeforeLength = 0;
+		}
+
+		if(PlayBeforeLength == 0)
+		{
+			PlayBeforeLabel->Visible = false;
+			return; // do nothing
+		}
+
+		PlayLastPos = current_pos;
+
+		TRect r;
+		r.left = 0;
+		r.top = 0;
+		r.right = PlayBeforePaintBox->Width *  elapsed / PlayBeforeLength;
+		r.bottom = PlayBeforePaintBox->Height;
+		PlayBeforePaintBox->Canvas->Brush->Color  = clGreen;
+		PlayBeforePaintBox->Canvas->FillRect(r);
+
+		r.left = r.right;
+		r.right = PlayBeforePaintBox->Width;
+		PlayBeforePaintBox->Canvas->Brush->Color  = clYellow;
+		PlayBeforePaintBox->Canvas->FillRect(r);
+
+		AnsiString str;
+		str.sprintf(PlayBeforeLabel->Hint.c_str(),
+			(double)(PlayBeforeLength - elapsed) / FReader->Frequency);
+		PlayBeforeLabel->Caption = str;
+		PlayBeforeLabel->Visible = true;
+	}
 }
 //---------------------------------------------------------------------------
 

@@ -1,7 +1,7 @@
 object LinkDetailForm: TLinkDetailForm
   Left = 70
   Top = 361
-  Width = 643
+  Width = 641
   Height = 438
   Caption = 'LinkDetailForm'
   Color = clBtnFace
@@ -11,13 +11,14 @@ object LinkDetailForm: TLinkDetailForm
   Font.Name = 'ÇlÇr ÇoÉSÉVÉbÉN'
   Font.Style = []
   OldCreateOrder = False
+  OnDestroy = FormDestroy
   OnResize = FormResize
   PixelsPerInch = 96
   TextHeight = 12
   object ToolBarPanel: TPanel
     Left = 0
     Top = 340
-    Width = 635
+    Width = 633
     Height = 31
     Align = alBottom
     BevelOuter = bvNone
@@ -107,12 +108,21 @@ object LinkDetailForm: TLinkDetailForm
   object BottomPanel: TPanel
     Left = 0
     Top = 371
-    Width = 635
+    Width = 633
     Height = 33
     Align = alBottom
     BevelOuter = bvNone
     BorderWidth = 4
     TabOrder = 1
+    object PlayBeforeLabel: TLabel
+      Left = 272
+      Top = 5
+      Width = 109
+      Height = 12
+      Hint = 'ÉäÉìÉNÇ‹Ç≈Ç†Ç∆ %.1f ïb'
+      Caption = 'ÉäÉìÉNÇ‹Ç≈Ç†Ç∆ %.1f ïb'
+      Visible = False
+    end
     object BottomToolBar: TToolBar
       Left = 4
       Top = 4
@@ -181,6 +191,7 @@ object LinkDetailForm: TLinkDetailForm
         Left = 188
         Top = 0
         Action = Play2SecAction
+        Marked = True
       end
       object Play3SecToolButton: TToolButton
         Left = 213
@@ -194,30 +205,46 @@ object LinkDetailForm: TLinkDetailForm
       end
     end
     object OKButton: TButton
-      Left = 460
+      Left = 458
       Top = 2
       Width = 75
       Height = 25
       Anchors = [akTop, akRight]
       Caption = 'OK'
       Default = True
-      TabOrder = 1
+      TabOrder = 2
     end
     object CancelButton: TButton
-      Left = 548
+      Left = 546
       Top = 2
       Width = 75
       Height = 25
       Anchors = [akTop, akRight]
       Cancel = True
       Caption = 'ÉLÉÉÉìÉZÉã'
-      TabOrder = 2
+      TabOrder = 3
+    end
+    object PlayBeforePaintBoxPanel: TPanel
+      Left = 272
+      Top = 18
+      Width = 105
+      Height = 7
+      BevelOuter = bvLowered
+      TabOrder = 1
+      object PlayBeforePaintBox: TPaintBox
+        Left = 1
+        Top = 1
+        Width = 103
+        Height = 5
+        Align = alClient
+        OnPaint = PlayBeforePaintBoxPaint
+      end
     end
   end
   object WaveAreaPanel: TPanel
     Left = 0
     Top = 0
-    Width = 635
+    Width = 633
     Height = 340
     Align = alClient
     BevelOuter = bvLowered
@@ -225,7 +252,7 @@ object LinkDetailForm: TLinkDetailForm
     object WavePaintBox: TPaintBox
       Left = 1
       Top = 1
-      Width = 633
+      Width = 631
       Height = 338
       Align = alClient
       OnMouseDown = WavePaintBoxMouseDown
@@ -254,31 +281,37 @@ object LinkDetailForm: TLinkDetailForm
       Category = 'çƒê∂'
       Caption = '0.5ïbëOÇ©ÇÁçƒê∂(&H)'
       ImageIndex = 25
+      OnExecute = PlayHalfSecActionExecute
     end
     object Play1SecAction: TAction
       Category = 'çƒê∂'
       Caption = '1ïbëOÇ©ÇÁçƒê∂(&1)'
       ImageIndex = 26
+      OnExecute = Play1SecActionExecute
     end
     object Play2SecAction: TAction
       Category = 'çƒê∂'
       Caption = '2ïbëOÇ©ÇÁçƒê∂(&2)'
       ImageIndex = 27
+      OnExecute = Play2SecActionExecute
     end
     object Play3SecAction: TAction
       Category = 'çƒê∂'
       Caption = '3ïbëOÇ©ÇÁçƒê∂(&3)'
       ImageIndex = 28
+      OnExecute = Play3SecActionExecute
     end
     object Play5SecAction: TAction
       Category = 'çƒê∂'
       Caption = '5ïbëOÇ©ÇÁçƒê∂(&5)'
       ImageIndex = 29
+      OnExecute = Play5SecActionExecute
     end
     object SmoothAction: TAction
       Category = 'ëÆê´'
       Caption = 'ÉXÉÄÅ[ÉY(&S)'
       ImageIndex = 30
+      OnExecute = SmoothActionExecute
     end
     object BeforePrevCrossAction: TAction
       Category = 'ÉäÉìÉNëO'
@@ -352,5 +385,10 @@ object LinkDetailForm: TLinkDetailForm
       ImageIndex = 19
       OnExecute = AfterNextCrossActionExecute
     end
+  end
+  object ApplicationEvents: TApplicationEvents
+    OnIdle = ApplicationEventsIdle
+    Left = 304
+    Top = 280
   end
 end
