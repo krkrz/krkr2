@@ -20,6 +20,7 @@
 #include "EditLabelAttribUnit.h"
 #include "EditLinkAttribUnit.h"
 #include <ExtCtrls.hpp>
+#include <AppEvnts.hpp>
 //---------------------------------------------------------------------------
 class TLoopTunerMainForm : public TForm
 {
@@ -88,6 +89,7 @@ __published:	// IDE 管理のコンポーネント
 	TPanel *EmptyEditAttribFrame;
 	TEditLinkAttribFrame *EditLinkAttribFrame;
 	TEditLabelAttribFrame *EditLabelAttribFrame;
+	TApplicationEvents *ApplicationEvents;
 	void __fastcall FormDestroy(TObject *Sender);
 	void __fastcall OpenActionExecute(TObject *Sender);
 	void __fastcall ZoomInActionExecute(TObject *Sender);
@@ -105,6 +107,7 @@ __published:	// IDE 管理のコンポーネント
 	void __fastcall RedoActionUpdate(TObject *Sender);
 	void __fastcall DeleteActionUpdate(TObject *Sender);
 	void __fastcall ShowEditAttribActionExecute(TObject *Sender);
+	void __fastcall ApplicationEventsIdle(TObject *Sender, bool &Done);
 private:	// ユーザー宣言
 	TWaveReader * Reader;
 	TWaveView *WaveView;
@@ -116,7 +119,6 @@ public:		// ユーザー宣言
 private:
 	void __fastcall OnReaderProgress(TObject *sender);
 	void __fastcall PlayFrom(int pos);
-	void __fastcall OnApplicationIdle(TObject *sender, bool &done);
 	void __fastcall OnWaveViewWaveDoubleClick(TObject *Sender, int pos);
 	void __fastcall OnWaveViewLinkDoubleClick(TObject *Sender, int num, tTVPWaveLoopLink &link);
 	void __fastcall OnWaveViewNotifyPopup(TObject *Sender, AnsiString type);

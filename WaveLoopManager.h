@@ -47,7 +47,7 @@ struct tTVPWaveLoopLink
 	bool Smooth;		// Smooth transition (uses short 50ms crossfade)
 	tTVPWaveLoopLinkCondition Condition;	// Condition
 	tjs_int RefValue;
-	tjs_int CondVar;	// Condition variable / -1:none   >=0:variables
+	tjs_int CondVar;	// Condition variable index
 #ifdef TVP_IN_LOOP_TUNER
 	// these are only used by the loop tuner
 	tjs_int FromTier;	// display tier of vertical 'from' line

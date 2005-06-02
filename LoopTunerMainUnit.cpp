@@ -31,7 +31,6 @@ __fastcall TLoopTunerMainForm::TLoopTunerMainForm(TComponent* Owner)
 	WaveView->OnSelectionLost = OnWaveViewSelectionLost;
 	InitDirectSound(Application->Handle);
 	Manager = NULL;
-	Application->OnIdle = OnApplicationIdle;
 	ActiveControl = WaveView;
 	EditAttribPanel->Height = EmptyEditAttribFrame->Height + EditLabelAttribBevel->Height;
 }
@@ -219,24 +218,25 @@ void __fastcall TLoopTunerMainForm::PlayFrom(int pos)
 	}
 }
 //---------------------------------------------------------------------------
-
-void __fastcall TLoopTunerMainForm::OnApplicationIdle(TObject *sender, bool &done)
+void __fastcall TLoopTunerMainForm::ApplicationEventsIdle(TObject *Sender,
+	  bool &Done)
 {
 	int pos = (int)GetCurrentPlayingPos();
 
 	if(pos != -1)
 	{
 		Sleep(1); // this will make the cpu usage low
-		done = false;
+		Done = false;
 
 		WaveView->MarkerPos = pos;
 
 	}
 	else
 	{
-		done = true;
+		Done = true;
 		WaveView->MarkerPos = -1;
 	}
+
 }
 //---------------------------------------------------------------------------
 void __fastcall TLoopTunerMainForm::OnWaveViewWaveDoubleClick(TObject *Sender, int pos)
@@ -328,6 +328,9 @@ void __fastcall TLoopTunerMainForm::OnWaveViewSelectionLost(TObject *Sender)
 	EditLabelAttribBevel->Visible = true;
 }
 //---------------------------------------------------------------------------
+
+
+
 
 
 

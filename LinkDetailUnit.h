@@ -14,6 +14,7 @@
 #include "WaveReader.h"
 #include "WaveLoopManager.h"
 #include <ActnList.hpp>
+#include <AppEvnts.hpp>
 //---------------------------------------------------------------------------
 class TLinkDetailForm : public TForm
 {
@@ -65,6 +66,10 @@ __published:	// IDE 管理のコンポーネント
 	TAction *BeforeNextFastAction;
 	TAction *BeforeNextCrossAction;
 	TToolButton *ToolButton2;
+	TApplicationEvents *ApplicationEvents;
+	TPanel *PlayBeforePaintBoxPanel;
+	TPaintBox *PlayBeforePaintBox;
+	TLabel *PlayBeforeLabel;
 	void __fastcall WavePaintBoxPaint(TObject *Sender);
 	void __fastcall ZoomInActionExecute(TObject *Sender);
 	void __fastcall ZoomOutActionExecute(TObject *Sender);
@@ -87,8 +92,18 @@ __published:	// IDE 管理のコンポーネント
           int X, int Y);
 	void __fastcall WavePaintBoxMouseUp(TObject *Sender, TMouseButton Button,
           TShiftState Shift, int X, int Y);
+	void __fastcall FormDestroy(TObject *Sender);
+	void __fastcall PlayHalfSecActionExecute(TObject *Sender);
+	void __fastcall Play1SecActionExecute(TObject *Sender);
+	void __fastcall Play2SecActionExecute(TObject *Sender);
+	void __fastcall Play3SecActionExecute(TObject *Sender);
+	void __fastcall Play5SecActionExecute(TObject *Sender);
+	void __fastcall ApplicationEventsIdle(TObject *Sender, bool &Done);
+	void __fastcall PlayBeforePaintBoxPaint(TObject *Sender);
+	void __fastcall SmoothActionExecute(TObject *Sender);
 private:	// ユーザー宣言
 	TWaveReader * FReader; // wave reader
+	tTVPWaveLoopManager * FManager; // wave loop manager
 	tTVPWaveLoopLink FLink; // current editting link
 	int FMagnify; // magnification level (in logarithm based 2)
 
@@ -96,6 +111,10 @@ private:	// ユーザー宣言
 	bool BeforeOrAfter;
 	int FirstMouseDownPos;
 	int FirstMouseDownX;
+
+	int PlayBeforeLength;
+	int PlayStartPos;
+	int PlayLastPos;
 
 public:		// ユーザー宣言
 	__fastcall TLinkDetailForm(TComponent* Owner);
@@ -109,6 +128,9 @@ private:
 	void __fastcall UpdateDisplay();
 	void __fastcall UpdateLayout();
 
+	void __fastcall PlayLink(int before, int after = 5000);
+
+	void __fastcall MarkPlayButton(TObject * button);
 };
 //---------------------------------------------------------------------------
 extern PACKAGE TLinkDetailForm *LinkDetailForm;
