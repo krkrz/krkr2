@@ -73,14 +73,14 @@ static void TVPCrossFadeIntegerBlend(void *dest, void *src1, void *src2,
 	tjs_int ratiostart, tjs_int ratioend,
 	tjs_int samples, tjs_int channels)
 {
-	tjs_int blend_step = (tjs_int)(
+	tjs_uint blend_step = (tjs_int)(
 		(
 			(ratioend - ratiostart) * ((tjs_int64)1<<32) / 100
 		) / samples);
 	const T *s1 = (const T *)src1;
 	const T *s2 = (const T *)src2;
 	T *out = (T *)dest;
-	tjs_int ratio = (tjs_int)(ratiostart * ((tjs_int64)1<<32) / 100);
+	tjs_uint ratio = (tjs_int)(ratiostart * ((tjs_int64)1<<32) / 100);
 	for(tjs_int i = 0; i < samples; i++)
 	{
 		for(tjs_int j = channels - 1; j >= 0; j--)
@@ -164,6 +164,7 @@ tjs_int64 tTVPWaveLoopManager::GetPosition() const
 void tTVPWaveLoopManager::SetPosition(tjs_int64 pos)
 {
 	Position = pos;
+	ClearCrossFadeInformation();
 	Decoder->SetPosition(pos);
 }
 //---------------------------------------------------------------------------
@@ -245,7 +246,7 @@ void tTVPWaveLoopManager::Decode(void *dest, tjs_uint samples, tjs_uint &written
 					{
 						tjs_int alloc_size =
 							(before_count + after_count) * 
-								Format.BytesPerSample;
+								Format.BytesPerSample * Format.Channels;
 						CrossFadeSamples = new tjs_uint8[alloc_size];
 						src1 = new tjs_uint8[alloc_size];
 						src2 = new tjs_uint8[alloc_size];
@@ -276,7 +277,7 @@ void tTVPWaveLoopManager::Decode(void *dest, tjs_uint samples, tjs_uint &written
 
 						// perform crossfade
 						tjs_int after_offset =
-							before_count * Format.BytesPerSample;
+							before_count * Format.BytesPerSample * Format.Channels;
 						DoCrossFade(CrossFadeSamples,
 							src1, src2, before_count, 0, 50);
 						DoCrossFade(CrossFadeSamples + after_offset,
@@ -308,8 +309,8 @@ void tTVPWaveLoopManager::Decode(void *dest, tjs_uint samples, tjs_uint &written
 
 		tjs_int one_unit;
 
-		if(next_not_found || next_event_pos - Position > samples)
-			one_unit = samples;
+		if(next_not_found || next_event_pos - Position > (samples - written))
+			one_unit = samples - written;
 		else
 			one_unit = (tjs_int) (next_event_pos - Position);
 
@@ -327,7 +328,7 @@ void tTVPWaveLoopManager::Decode(void *dest, tjs_uint samples, tjs_uint &written
 			written += decoded;
 			if(decoded != (tjs_uint)one_unit)
 				break; // must be an internal error but do nothing
-			d += decoded * Format.BytesPerSample;
+			d += decoded * Format.BytesPerSample * Format.Channels;
 		}
 		else
 		{
@@ -337,12 +338,12 @@ void tTVPWaveLoopManager::Decode(void *dest, tjs_uint samples, tjs_uint &written
 				one_unit = CrossFadeLen - CrossFadePosition;
 			memcpy((void *)d,
 				CrossFadeSamples +
-					CrossFadePosition * Format.BytesPerSample,
-				one_unit * Format.BytesPerSample);
+					CrossFadePosition * Format.BytesPerSample * Format.Channels,
+				one_unit * Format.BytesPerSample * Format.Channels);
 			CrossFadePosition += one_unit;
 			Position += one_unit;
 			written += one_unit;
-			d += one_unit * Format.BytesPerSample;
+			d += one_unit * Format.BytesPerSample * Format.Channels;
 			if(CrossFadePosition == CrossFadeLen)
 			{
 				// crossfade has finished
@@ -381,17 +382,6 @@ bool tTVPWaveLoopManager::GetNearestEvent(tjs_int64 current,
 	{
 		// no links available
 		return false;
-	}
-
-	if(Links[s].From == current)
-	{
-		// just current
-		;
-	}
-	else
-	{
-		// choose next one
-		s++;
 	}
 
 	if(!ignore_conditions)
@@ -517,22 +507,22 @@ void tTVPWaveLoopManager::DoCrossFade(void *dest, void *src1,
 		if(Format.BytesPerSample == 1)
 		{
 			TVPCrossFadeIntegerBlend<tTVPPCM8>(dest, src1, src2,
-				samples, ratiostart, ratioend, Format.Channels);
+				ratiostart, ratioend, samples, Format.Channels);
 		}
 		else if(Format.BytesPerSample == 2)
 		{
 			TVPCrossFadeIntegerBlend<tjs_int16>(dest, src1, src2,
-				samples, ratiostart, ratioend, Format.Channels);
+				ratiostart, ratioend, samples, Format.Channels);
 		}
 		else if(Format.BytesPerSample == 3)
 		{
 			TVPCrossFadeIntegerBlend<tTVPPCM24>(dest, src1, src2,
-				samples, ratiostart, ratioend, Format.Channels);
+				ratiostart, ratioend, samples, Format.Channels);
 		}
 		else if(Format.BytesPerSample == 4)
 		{
 			TVPCrossFadeIntegerBlend<tjs_int32>(dest, src1, src2,
-				samples, ratiostart, ratioend, Format.Channels);
+				ratiostart, ratioend, samples, Format.Channels);
 		}
 	}
 }
