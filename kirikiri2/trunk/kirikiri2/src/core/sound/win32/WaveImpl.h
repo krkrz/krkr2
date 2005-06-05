@@ -46,6 +46,10 @@ extern void TVPResetVolumeToAllSoundBuffer();
 extern void TVPSetWaveSoundBufferUse3DMode(bool b);
 extern bool TVPGetWaveSoundBufferUse3DMode();
 extern void TVPWaveSoundBufferCommitSettings();
+extern tjs_int TVPVolumeToDSAttenuate(tjs_int volume);
+extern tjs_int TVPDSAttenuateToVolume(tjs_int att);
+extern tjs_int TVPPanToDSAttenuate(tjs_int volume);
+extern tjs_int TVPDSAttenuateToPan(tjs_int att);
 //---------------------------------------------------------------------------
 
 
