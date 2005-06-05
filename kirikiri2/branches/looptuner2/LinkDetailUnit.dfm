@@ -1,6 +1,6 @@
 object LinkDetailForm: TLinkDetailForm
-  Left = 70
-  Top = 361
+  Left = 59
+  Top = 459
   Width = 641
   Height = 438
   Caption = 'LinkDetailForm'
@@ -16,6 +16,11 @@ object LinkDetailForm: TLinkDetailForm
   OnResize = FormResize
   PixelsPerInch = 96
   TextHeight = 12
+  inline EditLinkAttribFrame: TEditLinkAttribFrame
+    Width = 633
+    Align = alTop
+    TabOrder = 3
+  end
   object ToolBarPanel: TPanel
     Left = 0
     Top = 340
@@ -140,9 +145,9 @@ object LinkDetailForm: TLinkDetailForm
     BorderWidth = 4
     TabOrder = 1
     object PlayBeforeLabel: TLabel
-      Left = 272
+      Left = 304
       Top = 5
-      Width = 109
+      Width = 110
       Height = 12
       Hint = 'ÉäÉìÉNÇ‹Ç≈Ç†Ç∆ %.1f ïb'
       Caption = 'ÉäÉìÉNÇ‹Ç≈Ç†Ç∆ %.1f ïb'
@@ -151,7 +156,7 @@ object LinkDetailForm: TLinkDetailForm
     object BottomToolBar: TToolBar
       Left = 4
       Top = 4
-      Width = 263
+      Width = 288
       Height = 25
       Align = alLeft
       AutoSize = True
@@ -193,7 +198,7 @@ object LinkDetailForm: TLinkDetailForm
         ImageIndex = 13
         Style = tbsSeparator
       end
-      object ToolButton1: TToolButton
+      object SmoothToolButton: TToolButton
         Left = 105
         Top = 0
         Action = SmoothAction
@@ -208,37 +213,41 @@ object LinkDetailForm: TLinkDetailForm
         ImageIndex = 25
         Style = tbsSeparator
       end
-      object PlayHalfSecToolButton: TToolButton
+      object StopPlayToolButton: TToolButton
         Left = 138
+        Top = 0
+        Action = StopPlayAction
+      end
+      object PlayHalfSecToolButton: TToolButton
+        Left = 163
         Top = 0
         Action = PlayHalfSecAction
         ParentShowHint = False
         ShowHint = True
       end
       object Play1SecToolButton: TToolButton
-        Left = 163
+        Left = 188
         Top = 0
         Action = Play1SecAction
         ParentShowHint = False
         ShowHint = True
       end
       object Play2SecToolButton: TToolButton
-        Left = 188
+        Left = 213
         Top = 0
         Action = Play2SecAction
-        Marked = True
         ParentShowHint = False
         ShowHint = True
       end
       object Play3SecToolButton: TToolButton
-        Left = 213
+        Left = 238
         Top = 0
         Action = Play3SecAction
         ParentShowHint = False
         ShowHint = True
       end
       object Play5SecToolButton: TToolButton
-        Left = 238
+        Left = 263
         Top = 0
         Action = Play5SecAction
         ParentShowHint = False
@@ -268,7 +277,7 @@ object LinkDetailForm: TLinkDetailForm
       OnClick = CancelButtonClick
     end
     object PlayBeforePaintBoxPanel: TPanel
-      Left = 272
+      Left = 304
       Top = 18
       Width = 105
       Height = 7
@@ -286,9 +295,9 @@ object LinkDetailForm: TLinkDetailForm
   end
   object WaveAreaPanel: TPanel
     Left = 0
-    Top = 0
+    Top = 30
     Width = 633
-    Height = 340
+    Height = 310
     Align = alClient
     BevelOuter = bvLowered
     TabOrder = 2
@@ -296,7 +305,7 @@ object LinkDetailForm: TLinkDetailForm
       Left = 1
       Top = 1
       Width = 631
-      Height = 338
+      Height = 308
       Align = alClient
       OnMouseDown = WavePaintBoxMouseDown
       OnMouseMove = WavePaintBoxMouseMove
@@ -308,6 +317,13 @@ object LinkDetailForm: TLinkDetailForm
     Images = LoopTunerMainForm.ImageList
     Left = 304
     Top = 248
+    object StopPlayAction: TAction
+      Category = 'çƒê∂'
+      Caption = 'çƒê∂í‚é~'
+      Hint = 'çƒê∂Çí‚é~'
+      ImageIndex = 4
+      OnExecute = StopPlayActionExecute
+    end
     object ZoomInAction: TAction
       Category = 'ï\é¶'
       Caption = 'ÉYÅ[ÉÄÅEÉCÉì(&I)'

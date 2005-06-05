@@ -19,29 +19,33 @@ __published:	// IDE 管理のコンポーネント
 	TLabel *Label1;
 	TEdit *CondRefValueEdit;
 	TComboBox *ConditionComboBox;
-	TCheckBox *SmoothCheckBox;
 	void __fastcall EnableConditionCheckBoxClick(TObject *Sender);
 	void __fastcall CondVarComboBoxChange(TObject *Sender);
 	void __fastcall ConditionComboBoxChange(TObject *Sender);
-	void __fastcall SmoothCheckBoxClick(TObject *Sender);
 	void __fastcall CondRefValueEditExit(TObject *Sender);
 	void __fastcall ConditionComboBoxKeyDown(TObject *Sender, WORD &Key,
           TShiftState Shift);
 	void __fastcall CondRefValueEditChange(TObject *Sender);
 private:	// ユーザー宣言
-	TWaveView * FWaveView;
-	int FLinkNum;
+	tTVPWaveLoopLink FLink;
 	bool InLoading;
 
 	void __fastcall SetLinkNum(int num);
 
 	void __fastcall AttribChanged();
 	void __fastcall CommitChanges();
+
+	TNotifyEvent FOnInfoChanged;
+	TNotifyEvent FOnEraseRedo;
+
 public:		// ユーザー宣言
 	__fastcall TEditLinkAttribFrame(TComponent* Owner);
 
-	__property TWaveView * WaveView = { read = FWaveView, write = FWaveView };
-	__property int LinkNum = { read = FLinkNum, write = SetLinkNum };
+	void __fastcall SetLink(const tTVPWaveLoopLink &link);
+	void __fastcall SetLinkInfo(tTVPWaveLoopLink &link);
+
+	__property TNotifyEvent OnInfoChanged = { read = FOnInfoChanged, write = FOnInfoChanged };
+	__property TNotifyEvent OnEraseRedo = { read = FOnEraseRedo, write = FOnEraseRedo };
 };
 //---------------------------------------------------------------------------
 extern PACKAGE TEditLinkAttribFrame *EditLinkAttribFrame;

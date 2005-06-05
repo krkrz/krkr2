@@ -1,7 +1,7 @@
 object EditLinkAttribFrame: TEditLinkAttribFrame
   Left = 0
   Top = 0
-  Width = 508
+  Width = 419
   Height = 30
   HorzScrollBar.Visible = False
   VertScrollBar.Visible = False
@@ -80,15 +80,5 @@ object EditLinkAttribFrame: TEditLinkAttribFrame
       'à»è„ÇÃÇ∆Ç´'
       'ÇÊÇËè¨Ç≥Ç¢Ç∆Ç´'
       'à»â∫ÇÃÇ∆Ç´')
-  end
-  object SmoothCheckBox: TCheckBox
-    Left = 424
-    Top = 6
-    Width = 81
-    Height = 17
-    Caption = 'ÉXÉÄÅ[ÉY'
-    TabOrder = 4
-    OnClick = SmoothCheckBoxClick
-    OnKeyDown = ConditionComboBoxKeyDown
   end
 end

@@ -8,6 +8,7 @@
 #include "LoopTunerMainUnit.h"
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
+#pragma link "EditLinkAttribUnit"
 #pragma resource "*.dfm"
 #include "ColorScheme.h"
 
@@ -32,6 +33,9 @@ __fastcall TLinkDetailForm::TLinkDetailForm(TComponent* Owner)
 
 	PlayBeforeLength = 0;
 	PlayStartPos = 0;
+
+	EditLinkAttribFrame->OnInfoChanged = EditLinkAttribFrameInfoChanged;
+	EditLinkAttribFrame->OnEraseRedo   = EditLinkAttribFrameEraseRedo;
 
 	UpdateLayout();
 	UpdateDisplay();
@@ -75,6 +79,8 @@ void __fastcall TLinkDetailForm::SetReaderAndLink(TWaveReader * reader,
 	FReader = reader;
 	FLink = FLinkOriginal = link;
 	LinkNum = linknum;
+
+	EditLinkAttribFrame->SetLink(FLink);
 
 	if(FManager) delete FManager, FManager = NULL;
 	FManager = new tTVPWaveLoopManager(FReader);
@@ -535,6 +541,11 @@ void __fastcall TLinkDetailForm::MarkPlayButton(TObject * button)
 	Play5SecToolButton->Marked    = Play5SecToolButton == button;
 }
 //---------------------------------------------------------------------------
+void __fastcall TLinkDetailForm::StopPlayActionExecute(TObject *Sender)
+{
+	StopPlay();
+}
+//---------------------------------------------------------------------------
 void __fastcall TLinkDetailForm::PlayHalfSecActionExecute(TObject *Sender)
 {
 	MarkPlayButton(PlayHalfSecToolButton);
@@ -628,4 +639,16 @@ void __fastcall TLinkDetailForm::PlayBeforePaintBoxPaint(TObject *Sender)
 	}
 }
 //---------------------------------------------------------------------------
+void __fastcall TLinkDetailForm::EditLinkAttribFrameInfoChanged(TObject * Sender)
+{
+	EditLinkAttribFrame->SetLinkInfo(FLink);
+	UpdateMainWindowParams(false);
+}
+//---------------------------------------------------------------------------
+void __fastcall TLinkDetailForm::EditLinkAttribFrameEraseRedo(TObject * Sender)
+{
+	// do nothing
+}
+//---------------------------------------------------------------------------
+
 

@@ -21,18 +21,21 @@ __published:	// IDE 管理のコンポーネント
           TShiftState Shift);
 	void __fastcall LabelNameEditChange(TObject *Sender);
 private:	// ユーザー宣言
-	TWaveView * FWaveView;
-	int FLabelNum;
+	tTVPWaveLabel FLabel;
 	bool InLoading;
-	void __fastcall SetLabelNum(int num);
+	TNotifyEvent FOnInfoChanged;
+	TNotifyEvent FOnEraseRedo;
 
 	void __fastcall AttribChanged();
 	void __fastcall CommitChanges();
 public:		// ユーザー宣言
 	__fastcall TEditLabelAttribFrame(TComponent* Owner);
+	void __fastcall SetLabel(const tTVPWaveLabel &label);
+	void __fastcall SetLabelInfo(tTVPWaveLabel &label);
 
-	__property TWaveView * WaveView = { read = FWaveView, write = FWaveView };
-	__property int LabelNum = { read = FLabelNum, write = SetLabelNum };
+	__property TNotifyEvent OnInfoChanged = { read = FOnInfoChanged, write = FOnInfoChanged };
+	__property TNotifyEvent OnEraseRedo = { read = FOnEraseRedo, write = FOnEraseRedo };
+
 };
 //---------------------------------------------------------------------------
 extern PACKAGE TEditLabelAttribFrame *EditLabelAttribFrame;

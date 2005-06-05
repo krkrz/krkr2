@@ -120,15 +120,20 @@ public:		// ÉÜÅ[ÉUÅ[êÈåæ
 private:
 	void __fastcall OnReaderProgress(TObject *sender);
 	void __fastcall PlayFrom(int pos);
-	void __fastcall OnWaveViewWaveDoubleClick(TObject *Sender, int pos);
-	void __fastcall OnWaveViewLinkDoubleClick(TObject *Sender, int num, tTVPWaveLoopLink &link);
-	void __fastcall OnWaveViewNotifyPopup(TObject *Sender, AnsiString type);
-	void __fastcall OnWaveViewShowCaret(TObject *Sender, int pos);
-	void __fastcall OnWaveViewLinkSelected(TObject *Sender, int num, tTVPWaveLoopLink &link);
-	void __fastcall OnWaveViewLabelSelected(TObject *Sender, int num, tTVPWaveLabel &label);
-	void __fastcall OnWaveViewSelectionLost(TObject *Sender);
-	void __fastcall OnWaveViewLinkModified(TObject *Sender);
-	void __fastcall OnWaveViewLabelModified(TObject *Sender);
+	void __fastcall WaveViewWaveDoubleClick(TObject *Sender, int pos);
+	void __fastcall WaveViewLinkDoubleClick(TObject *Sender, int num, tTVPWaveLoopLink &link);
+	void __fastcall WaveViewNotifyPopup(TObject *Sender, AnsiString type);
+	void __fastcall WaveViewShowCaret(TObject *Sender, int pos);
+	void __fastcall WaveViewLinkSelected(TObject *Sender, int num, tTVPWaveLoopLink &link);
+	void __fastcall WaveViewLabelSelected(TObject *Sender, int num, tTVPWaveLabel &label);
+	void __fastcall WaveViewSelectionLost(TObject *Sender);
+	void __fastcall WaveViewLinkModified(TObject *Sender);
+	void __fastcall WaveViewLabelModified(TObject *Sender);
+
+	void __fastcall EditLinkAttribFrameInfoChanged(TObject * Sender);
+	void __fastcall EditLinkAttribFrameEraseRedo(TObject * Sender);
+	void __fastcall EditLabelAttribFrameInfoChanged(TObject * Sender);
+	void __fastcall EditLabelAttribFrameEraseRedo(TObject * Sender);
 };
 //---------------------------------------------------------------------------
 extern PACKAGE TLoopTunerMainForm *LoopTunerMainForm;
