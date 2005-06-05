@@ -526,6 +526,43 @@ static void TVPInitLogTable()
 	}
 }
 //---------------------------------------------------------------------------
+tjs_int TVPVolumeToDSAttenuate(tjs_int volume)
+{
+	TVPInitLogTable();
+	volume = volume / 1000;
+	if(volume > 100) volume = 100;
+	if(volume < 0 ) volume = 0;
+	return TVPLogTable[volume];
+}
+//---------------------------------------------------------------------------
+tjs_int TVPDSAttenuateToVolume(tjs_int att)
+{
+	if(att <= -10000) return 0;
+	return (tjs_int)(pow(10, (double)att / 5000.0) * 100.0) * 1000;
+}
+//---------------------------------------------------------------------------
+tjs_int TVPPanToDSAttenuate(tjs_int volume)
+{
+	TVPInitLogTable();
+	volume = volume / 1000;
+	if(volume > 100) volume = 100;
+	if(volume < -100 ) volume = -100;
+	if(volume < 0)
+		return TVPLogTable[100 - (-volume)];
+	else
+		return -TVPLogTable[100 - volume];
+}
+//---------------------------------------------------------------------------
+tjs_int TVPDSAttenuateToPan(tjs_int att)
+{
+	if(att <= -10000) return -100000;
+	if(att >=  10000) return  100000;
+	if(att < 0)
+		return (100 - (tjs_int)(pow(10, (double)att /  5000.0) * 100.0)) * -1000;
+	else
+		return (100 - (tjs_int)(pow(10, (double)att / -5000.0) * 100.0)) *  1000;
+}
+//---------------------------------------------------------------------------
 
 
 
@@ -2766,24 +2803,12 @@ void tTJSNI_WaveSoundBuffer::SetVolumeToSoundBuffer()
 		v = (Volume / 10) * (Volume2 / 10) / 1000;
 		v = (v / 10) * (GlobalVolume / 10) / 1000;
 		v = (v / 10) * (mutevol / 10) / 1000;
-		v = v / 1000;
-		if(v > 100) v = 100;
-		if(v < 0 ) v = 0;
-		SoundBuffer->SetVolume(TVPLogTable[v]);
+		SoundBuffer->SetVolume(TVPVolumeToDSAttenuate(v));
 
 		if(BufferCanControlPan)
 		{
 			// set pan
-			tjs_int v = Pan / 1000;
-			LONG pan;
-			if(v < -100) v = -100;
-			if(v > 100) v = 100;
-			if(v < 0)
-				pan = TVPLogTable[100 - (-v)];
-			else
-				pan = -TVPLogTable[100 - v];
-
-			SoundBuffer->SetPan(pan);
+			SoundBuffer->SetPan(TVPPanToDSAttenuate(Pan));
 		}
 	}
 }
