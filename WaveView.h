@@ -63,6 +63,11 @@ private:
 	TLinkSelectedEvent FOnLinkSelected;
 	TLabelSelectedEvent FOnLabelSelected;
 	TNotifyEvent FOnSelectionLost;
+	TNotifyEvent FOnLinkModified;
+	bool FInOnLinkModified; // to prevent re-entrering
+	TNotifyEvent FOnLabelModified;
+	bool FInOnLabelModified; // to prevent re-entrering
+
 	struct tHistoryInfo
 	{
 		std::vector<tTVPWaveLoopLink> Links;
@@ -74,6 +79,7 @@ private:
 public:
 	void __fastcall EraseRedo();
 	void __fastcall PushUndo();
+	void __fastcall PushFirstUndoState();
 
 	void __fastcall Undo();
 	void __fastcall Redo();
@@ -97,6 +103,13 @@ public:
 
 	__property TNotifyEvent OnSelectionLost =
 		{ read = FOnSelectionLost, write = FOnSelectionLost };
+
+	__property TNotifyEvent OnLinkModified =
+		{ read = FOnLinkModified, write = FOnLinkModified };
+
+	__property TNotifyEvent OnLabelModified =
+		{ read = FOnLabelModified, write = FOnLabelModified };
+
 
 //-- view control
 private:
@@ -178,8 +191,10 @@ private:
 	int FFocusedLink; // -1 for not focused
 
 public:
-	std::vector<tTVPWaveLoopLink> &  GetLinks();
 	void __fastcall NotifyLinkChanged();
+	void __fastcall SetLinks(const std::vector<tTVPWaveLoopLink> & links);
+	const std::vector<tTVPWaveLoopLink> & GetLinks() const { return Links; }
+	std::vector<tTVPWaveLoopLink> & GetLinks() { return Links; }
 
 private:
 	void __fastcall DrawLinkArrowAt(int tier, int where);
@@ -214,6 +229,9 @@ private:
 
 public:
 	void __fastcall NotifyLabelChanged();
+	void __fastcall SetLabels(const std::vector<tTVPWaveLabel> & labels);
+	const std::vector<tTVPWaveLabel> & GetLabels() const { return Labels; }
+	std::vector<tTVPWaveLabel> & GetLabels() { return Labels; }
 
 private:
 	void __fastcall GetLabelNameRect(tTVPWaveLabel & label, TRect & rect);
@@ -231,7 +249,6 @@ private:
 	int __fastcall GetLabelWaveMarkAt(int x, int &labelnum);
 
 public:
-	std::vector<tTVPWaveLabel> &  GetLabels();
 	__property int HoveredLabel = { read = FHoveredLabel, write = SetHoveredLabel };
 	__property int FocusedLabel = { read = FFocusedLabel, write = SetFocusedLabel };
 

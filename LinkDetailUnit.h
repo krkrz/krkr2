@@ -101,10 +101,15 @@ __published:	// IDE 管理のコンポーネント
 	void __fastcall ApplicationEventsIdle(TObject *Sender, bool &Done);
 	void __fastcall PlayBeforePaintBoxPaint(TObject *Sender);
 	void __fastcall SmoothActionExecute(TObject *Sender);
+	void __fastcall FormClose(TObject *Sender, TCloseAction &Action);
+	void __fastcall OKButtonClick(TObject *Sender);
+	void __fastcall CancelButtonClick(TObject *Sender);
 private:	// ユーザー宣言
 	TWaveReader * FReader; // wave reader
 	tTVPWaveLoopManager * FManager; // wave loop manager
+	int LinkNum; // link number
 	tTVPWaveLoopLink FLink; // current editting link
+	tTVPWaveLoopLink FLinkOriginal; // the original information of editting link
 	int FMagnify; // magnification level (in logarithm based 2)
 
 	bool Dragging;
@@ -118,13 +123,14 @@ private:	// ユーザー宣言
 
 public:		// ユーザー宣言
 	__fastcall TLinkDetailForm(TComponent* Owner);
-	void __fastcall SetReaderAndLink(TWaveReader * reader, tTVPWaveLoopLink link);
+	void __fastcall SetReaderAndLink(TWaveReader * reader, tTVPWaveLoopLink link, int linknum);
 
 public:
 	int __fastcall PixelToSample(int pixel);
 	int __fastcall SampleToPixel(int sample);
 
 private:
+	void __fastcall UpdateMainWindowParams(bool push_undo = false);
 	void __fastcall UpdateDisplay();
 	void __fastcall UpdateLayout();
 

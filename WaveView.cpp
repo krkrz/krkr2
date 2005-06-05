@@ -53,6 +53,10 @@ __fastcall TWaveView::TWaveView(Classes::TComponent* AOwner) :
 	FOnLinkSelected = NULL;
 	FOnLabelSelected = NULL;
 	FOnSelectionLost = NULL;
+	FOnLinkModified = NULL;
+	FInOnLinkModified = false; // to prevent re-entrering
+	FOnLabelModified = NULL;
+	FInOnLabelModified = false; // to prevent re-entrering
 
 	FShowLinks = true;
 	FLinkTierCount = 0;
@@ -86,9 +90,6 @@ __fastcall TWaveView::TWaveView(Classes::TComponent* AOwner) :
 
 	Cursor = crIBeam;
 
-	//---------- push undo (*****)
-	PushUndo();
-	FUndoLevel = 0;
 }
 //---------------------------------------------------------------------------
 __fastcall TWaveView::~TWaveView()
@@ -180,6 +181,13 @@ void __fastcall TWaveView::PushUndo()
 	info.Labels = Labels;
 	FUndoStack.push_back(info);
 	FUndoLevel ++;
+}
+//---------------------------------------------------------------------------
+void __fastcall TWaveView::PushFirstUndoState()
+{
+	FUndoStack.clear();
+	PushUndo();
+	FUndoLevel = 0;
 }
 //---------------------------------------------------------------------------
 void __fastcall TWaveView::Undo()
@@ -1010,94 +1018,30 @@ void __fastcall TWaveView::DrawWave(int start, bool clear)
 	}
 }
 //---------------------------------------------------------------------------
-std::vector<tTVPWaveLoopLink> & TWaveView::GetLinks()
-{
-	if(Links.size() == 0)
-	{
-		tTVPWaveLoopLink link;
-
-		link.From = 1900000;
-		link.To = 550000;
-		link.Smooth = false;
-		link.Condition = llcEqual;
-		link.CondVar = 0;
-		Links.push_back(link);
-
-
-		link.From = 850000;
-		link.To = 2005000;
-		link.Smooth = false;
-		link.Condition = llcNone;
-		link.CondVar = 0;
-		Links.push_back(link);
-
-		link.From = 2250000;
-		link.To = 3005000;
-		link.Smooth = false;
-		link.Condition = llcNone;
-		link.CondVar = 0;
-		Links.push_back(link);
-
-		link.From = 2900000;
-		link.To = 650000;
-		link.Smooth = false;
-		link.Condition = llcEqual;
-		link.CondVar = 0;
-		Links.push_back(link);
-
-
-		link.From =1850000;
-		link.To = 3005000;
-		link.Smooth = false;
-		link.Condition = llcEqual;
-		link.CondVar = 0;
-		Links.push_back(link);
-
-		link.From = 2250000;
-		link.To = 3005000;
-		link.Smooth = false;
-		link.Condition = llcEqual;
-		link.CondVar = 0;
-		Links.push_back(link);
-
-		link.From = 3250000;
-		link.To = 4005000;
-		link.Smooth = false;
-		link.Condition = llcEqual;
-		link.CondVar = 0;
-		Links.push_back(link);
-
-		NotifyLinkChanged();
-	}
-	return Links;
-}
-//---------------------------------------------------------------------------
 void __fastcall TWaveView::NotifyLinkChanged()
 {
 	// re-check tier
 
-	std::vector<tTVPWaveLoopLink> & links = /**/ GetLinks(); /**/
-
 	// re-check focused or hovered state
-	if(FFocusedLink >= (int)links.size()) FFocusedLink = -1;
-	if(FHoveredLink >= (int)links.size()) FHoveredLink = -1;
+	if(FFocusedLink >= (int)Links.size()) FFocusedLink = -1;
+	if(FHoveredLink >= (int)Links.size()) FHoveredLink = -1;
 
 	// arrange link lines to ensure visibility and discrimination.
 
 	//- mark indices
-	for(unsigned int i = 0; i < links.size(); i++) links[i].Index = i;
+	for(unsigned int i = 0; i < Links.size(); i++) Links[i].Index = i;
 
 	//- sort by link distance
-	std::stable_sort(links.begin(), links.end(), tTVPWaveLoopLink::tSortByDistanceFuncObj());
+	std::stable_sort(Links.begin(), Links.end(), tTVPWaveLoopLink::tSortByDistanceFuncObj());
 
-	//- arrange links by finding line intersections.
+	//- arrange Links by finding line intersections.
 	int tier_count = 0;
 	std::vector<std::vector<std::pair<int, int> > > tiers;
-	for(unsigned int i = 0; i < links.size(); i++)
+	for(unsigned int i = 0; i < Links.size(); i++)
 	{
 		// search free tier
 		TTierMinMaxInfo cinfo;
-		GetLinkMinMaxPixel(links[i], cinfo);
+		GetLinkMinMaxPixel(Links[i], cinfo);
 
 		int found_link_tier = -1;
 		int found_from_tier = 0;
@@ -1106,30 +1050,30 @@ void __fastcall TWaveView::NotifyLinkChanged()
 		for(unsigned int j = 0; j < i; j++)
 		{
 			TTierMinMaxInfo jinfo;
-			GetLinkMinMaxPixel(links[j], jinfo);
+			GetLinkMinMaxPixel(Links[j], jinfo);
 
 			// for 'from'
 			if(	PartIntersect(jinfo.ToMin, jinfo.ToMax, cinfo.FromMin, cinfo.FromMax) )
 			{
 				// intersection found
-				found_from_tier = links[j].ToTier + 1;
+				found_from_tier = Links[j].ToTier + 1;
 			}
 			if( PartIntersect(jinfo.FromMin, jinfo.FromMax, cinfo.FromMin, cinfo.FromMax))
 			{
 				// intersection found
-				found_from_tier = links[j].FromTier + 1;
+				found_from_tier = Links[j].FromTier + 1;
 			}
 
 			// for 'to'
 			if( PartIntersect(jinfo.ToMin, jinfo.ToMax, cinfo.ToMin, cinfo.ToMax))
 			{
 				// intersection found
-				found_to_tier = links[j].ToTier + 1;
+				found_to_tier = Links[j].ToTier + 1;
 			}
 			if(	PartIntersect(jinfo.FromMin, jinfo.FromMax, cinfo.ToMin, cinfo.ToMax))
 			{
 				// intersection found
-				found_to_tier = links[j].FromTier + 1;
+				found_to_tier = Links[j].FromTier + 1;
 			}
 		}
 
@@ -1165,9 +1109,9 @@ void __fastcall TWaveView::NotifyLinkChanged()
 			tiers.push_back(std::vector<std::pair<int, int> >() );
 		}
 
-		links[i].LinkTier = found_link_tier;
-		links[i].FromTier = found_from_tier;
-		links[i].ToTier   = found_to_tier;
+		Links[i].LinkTier = found_link_tier;
+		Links[i].FromTier = found_from_tier;
+		Links[i].ToTier   = found_to_tier;
 
 		tiers[found_link_tier].push_back(std::pair<int, int>(cinfo.LinkMin, cinfo.LinkMax));
 
@@ -1179,7 +1123,31 @@ void __fastcall TWaveView::NotifyLinkChanged()
 	FLinkTierCount = tier_count;
 
 	//- sort by Index
-	std::stable_sort(links.begin(), links.end(), tTVPWaveLoopLink::tSortByIndexFuncObj());
+	std::stable_sort(Links.begin(), Links.end(), tTVPWaveLoopLink::tSortByIndexFuncObj());
+
+	// call notify handler
+	if(FOnLinkModified && !FInOnLinkModified)
+	{
+		FInOnLinkModified = true;
+		try
+		{
+			FOnLinkModified(this);
+		}
+		catch(...)
+		{
+			FInOnLinkModified = false;
+			throw;
+		}
+		FInOnLinkModified  = false;
+	}
+}
+//---------------------------------------------------------------------------
+void __fastcall TWaveView::SetLinks(const std::vector<tTVPWaveLoopLink> & links)
+{
+	// set new link information
+	// note that this will call OnLinkModified
+	Links = links;
+	NotifyLinkChanged();
 }
 //---------------------------------------------------------------------------
 void __fastcall TWaveView::GetLinkMinMaxPixel(const tTVPWaveLoopLink & link,
@@ -1400,17 +1368,15 @@ void __fastcall TWaveView::DrawLinks(void)
 	Canvas->MoveTo(dest_left,  y_start);
 	Canvas->LineTo(dest_right, y_start);
 
-	std::vector<tTVPWaveLoopLink> & links = /**/ GetLinks(); /**/
-
 	if(PartIntersect(Canvas->ClipRect.top, Canvas->ClipRect.bottom -1,
 		y_start, ClientHeight - 1))
 	{
 		// draw each link (for vertical weak line)
 		Canvas->Pen->Color = C_LINK_WEAK_LINE;
 
-		for(unsigned int i = 0; i < links.size(); i++)
+		for(unsigned int i = 0; i < Links.size(); i++)
 		{
-			const tTVPWaveLoopLink & link = links[i];
+			const tTVPWaveLoopLink & link = Links[i];
 			tjs_int x;
 
 			x = SampleToPixel(link.From - Start);
@@ -1430,7 +1396,7 @@ void __fastcall TWaveView::DrawLinks(void)
 		}
 
 		// draw each link
-		for(unsigned int i = 0; i < links.size(); i++)
+		for(unsigned int i = 0; i < Links.size(); i++)
 		{
 			if((int)i == FFocusedLink)
 				continue;
@@ -1439,14 +1405,14 @@ void __fastcall TWaveView::DrawLinks(void)
 			else
 				Canvas->Pen->Color = C_LINK_LINE;
 
-			const tTVPWaveLoopLink & link = links[i];
+			const tTVPWaveLoopLink & link = Links[i];
 
 			DrawLinkOf(link);
 		}
 		if(FHoveredLink != -1)
 		{
 			Canvas->Pen->Color = C_LINK_HOVER;
-			const tTVPWaveLoopLink & link = links[FHoveredLink];
+			const tTVPWaveLoopLink & link = Links[FHoveredLink];
 			DrawLinkOf(link);
 		}
 
@@ -1454,7 +1420,7 @@ void __fastcall TWaveView::DrawLinks(void)
 		{
 			Canvas->Pen->Width = 2;
 			Canvas->Pen->Color = C_LINK_FOCUS;
-			const tTVPWaveLoopLink & link = links[FFocusedLink];
+			const tTVPWaveLoopLink & link = Links[FFocusedLink];
 			DrawLinkOf(link);
 			Canvas->Pen->Width = 1;
 		}
@@ -1468,9 +1434,9 @@ void __fastcall TWaveView::DrawLinks(void)
 		Canvas->Pen->Color = C_LINK_WAVE_MARK;
 		Canvas->Pen->Style = psDashDot;
 		Canvas->Brush->Style = bsClear;
-		for(unsigned int i = 0; i < links.size(); i++)
+		for(unsigned int i = 0; i < Links.size(); i++)
 		{
-			const tTVPWaveLoopLink & link = links[i];
+			const tTVPWaveLoopLink & link = Links[i];
 			int x;
 
 			x = SampleToPixel(link.From - Start);
@@ -1490,11 +1456,9 @@ void __fastcall TWaveView::InvalidateLink(int linknum)
 	// invalidate displaying area of link 'linknum'.
 	// currently not completely implemented.
 
-	std::vector<tTVPWaveLoopLink> & links = /**/ GetLinks(); /**/
+	if(linknum < 0 || linknum >= (int)Links.size()) return;
 
-	if(linknum < 0 || linknum >= (int)links.size()) return;
-
-	const tTVPWaveLoopLink & link = links[linknum];
+	const tTVPWaveLoopLink & link = Links[linknum];
 
 	int foot_size = GetFootSize();
 	int y_start = ClientHeight - foot_size;
@@ -1552,8 +1516,7 @@ void __fastcall TWaveView::SetFocusedLink(int l)
 			FocusedLabel = -1;
 			if(FOnLinkSelected)
 			{
-				std::vector<tTVPWaveLoopLink> & links = /**/ GetLinks(); /**/
-				FOnLinkSelected(this, l, links[l]);
+				FOnLinkSelected(this, l, Links[l]);
 			}
 		}
 		else
@@ -1565,11 +1528,9 @@ void __fastcall TWaveView::SetFocusedLink(int l)
 //---------------------------------------------------------------------------
 bool __fastcall TWaveView::IsLinkAt(int linknum, int x, int y)
 {
-	std::vector<tTVPWaveLoopLink> & links = /**/ GetLinks(); /**/
+	if(linknum < 0 || linknum >= (int)Links.size()) return false;
 
-	if(linknum < 0 || linknum >= (int)links.size()) return false;
-
-	const tTVPWaveLoopLink & link = links[linknum];
+	const tTVPWaveLoopLink & link = Links[linknum];
 	int foot_size = GetFootSize();
 	int y_start = ClientHeight - foot_size;
 
@@ -1598,9 +1559,7 @@ int __fastcall TWaveView::GetLinkAt(int x, int y)
 		if(IsLinkAt(FFocusedLink, x, y)) return FFocusedLink;
 
 	// walk through
-	std::vector<tTVPWaveLoopLink> & links = /**/ GetLinks(); /**/
-
-	for(unsigned int i = 0; i < links.size(); i++)
+	for(unsigned int i = 0; i < Links.size(); i++)
 	{
 		if((int)i != FFocusedLink && IsLinkAt(i, x, y)) return i;
 	}
@@ -1610,9 +1569,7 @@ int __fastcall TWaveView::GetLinkAt(int x, int y)
 #define MARK_GRIP_MARGIN 2
 int __fastcall TWaveView::IsLinkWaveMarkAt(int x, int linknum, bool &from_or_to)
 {
-	std::vector<tTVPWaveLoopLink> & links = /**/ GetLinks(); /**/
-
-	const tTVPWaveLoopLink & link = links[linknum];
+	const tTVPWaveLoopLink & link = Links[linknum];
 
 	int from_pos = SampleToPixel(link.From - FStart);
 	int to_pos = SampleToPixel(link.To - FStart);
@@ -1672,9 +1629,7 @@ int __fastcall TWaveView::GetLinkWaveMarkAt(int x, int &linknum, bool &from_or_t
 	}
 
 	// for each links
-	std::vector<tTVPWaveLoopLink> & links = /**/ GetLinks(); /**/
-
-	for(unsigned int i = 0; i < links.size(); i++)
+	for(unsigned int i = 0; i < Links.size(); i++)
 	{
 		if((int)i != FFocusedLink)
 		{
@@ -1732,27 +1687,6 @@ void __fastcall TWaveView::CreateNewLink()
 	PushUndo(); //==== push undo
 }
 //---------------------------------------------------------------------------
-std::vector<tTVPWaveLabel> & TWaveView::GetLabels()
-{
-	if(Labels.size() == 0)
-	{
-		tTVPWaveLabel label;
-
-		label.Position = 3005000;
-		label.Name = "ラベル1";
-		label.NameWidth = -1;
-		Labels.push_back(label);
-
-		label.Position = 4005000;
-		label.Name = "ラベル2、これはテストです。本日は晴天なりなり";
-		label.NameWidth = -1;
-		Labels.push_back(label);
-
-		NotifyLabelChanged();
-	}
-	return Labels;
-}
-//---------------------------------------------------------------------------
 void __fastcall TWaveView::CreateNewLabel()
 {
 	// create new label at current caret position
@@ -1762,8 +1696,7 @@ void __fastcall TWaveView::CreateNewLabel()
 
 	// search free label name
 	int last = 0;
-	std::vector<tTVPWaveLabel> & labels = /**/ GetLabels(); /**/
-	for(std::vector<tTVPWaveLabel>::iterator i = labels.begin(); i != labels.end();
+	for(std::vector<tTVPWaveLabel>::iterator i = Labels.begin(); i != Labels.end();
 		i++)
 	{
 		if(i->Name.AnsiPos(C_NEW_LABEL_BASE_NAME) == 1)
@@ -1790,13 +1723,36 @@ void __fastcall TWaveView::CreateNewLabel()
 void __fastcall TWaveView::NotifyLabelChanged()
 {
 	// notify the label information has changed
-	std::vector<tTVPWaveLabel> & labels = /**/ GetLabels(); /**/
-	for(std::vector<tTVPWaveLabel>::iterator i = labels.begin(); i != labels.end();
+	for(std::vector<tTVPWaveLabel>::iterator i = Labels.begin(); i != Labels.end();
 		i++)
 	{
 		// invalidate all cache information
 		i->NameWidth = -1;
 	}
+
+	// call notify handler
+	if(FOnLabelModified && ! FInOnLabelModified)
+	{
+		FInOnLabelModified = true;
+		try
+		{
+			FOnLabelModified(this);
+		}
+		catch(...)
+		{
+			FInOnLabelModified = false;
+			throw;
+		}
+		FInOnLabelModified  = false;
+	}
+}
+//---------------------------------------------------------------------------
+void __fastcall TWaveView::SetLabels(const std::vector<tTVPWaveLabel> & labels)
+{
+	// set new label information
+	// note that this will call OnLabelModified
+	Labels = labels;
+	NotifyLabelChanged();
 }
 //---------------------------------------------------------------------------
 void __fastcall TWaveView::GetLabelNameRect(tTVPWaveLabel & label, TRect & rect)
@@ -1907,10 +1863,8 @@ void __fastcall TWaveView::DrawLabels()
 	if(!FReader || !FReader->ReadDone) return;
 	if(!FShowLabels) return;
 
-	std::vector<tTVPWaveLabel> & labels = /**/ GetLabels(); /**/
-
 	// draw each link
-	for(unsigned int i = 0; i < labels.size(); i++)
+	for(unsigned int i = 0; i < Labels.size(); i++)
 	{
 		if((int)i == FFocusedLabel)
 			continue;
@@ -1922,7 +1876,7 @@ void __fastcall TWaveView::DrawLabels()
 			Canvas->Font->Color = C_LABEL_TEXT;
 		}
 
-		tTVPWaveLabel & label = labels[i];
+		tTVPWaveLabel & label = Labels[i];
 
 		DrawLabelOf(label);
 	}
@@ -1931,7 +1885,7 @@ void __fastcall TWaveView::DrawLabels()
 		Canvas->Pen->Width = 2;
 		Canvas->Pen->Color = C_LABEL_MARK_FOCUS;
 		Canvas->Font->Color = C_LABEL_TEXT_FOCUS;
-		tTVPWaveLabel & label = labels[FFocusedLabel];
+		tTVPWaveLabel & label = Labels[FFocusedLabel];
 		DrawLabelOf(label);
 		Canvas->Pen->Width = 1;
 	}
@@ -1940,7 +1894,7 @@ void __fastcall TWaveView::DrawLabels()
 	{
 		Canvas->Pen->Color = C_LABEL_MARK_HOVER;
 		Canvas->Font->Color = C_LABEL_TEXT_HOVER;
-		tTVPWaveLabel & label = labels[FHoveredLabel];
+		tTVPWaveLabel & label = Labels[FHoveredLabel];
 		DrawLabelOf(label);
 	}
 
@@ -1950,15 +1904,14 @@ void __fastcall TWaveView::DrawLabels()
 void __fastcall TWaveView::InvalidateLabel(int labelnum)
 {
 	// invalidate label labelnum
-	std::vector<tTVPWaveLabel> & labels = /**/ GetLabels(); /**/
-	if(labelnum < 0 || labelnum >= (int)labels.size()) return;
+	if(labelnum < 0 || labelnum >= (int)Labels.size()) return;
 
 	int head_size = GetHeadSize();
 	int foot_size = GetFootSize();
 	int bottom_limit = ClientHeight - foot_size;
 
 	// invalidate marker triangle
-	tTVPWaveLabel & label = labels[labelnum];
+	tTVPWaveLabel & label = Labels[labelnum];
 	int x = SampleToPixel(label.Position - Start);
 
 	// invalidate marker triangle
@@ -2007,8 +1960,7 @@ void __fastcall TWaveView::SetFocusedLabel(int l)
 			FocusedLink = -1; // link, label and caret are exclusive
 			if(FOnLabelSelected)
 			{
-				std::vector<tTVPWaveLabel> & labels = /**/ GetLabels(); /**/
-				FOnLabelSelected(this, l, labels[l]);
+				FOnLabelSelected(this, l, Labels[l]);
 			}
 		}
 		else
@@ -2020,10 +1972,9 @@ void __fastcall TWaveView::SetFocusedLabel(int l)
 //---------------------------------------------------------------------------
 bool __fastcall TWaveView::IsLabelAt(int labelnum, int x, int y)
 {
-	std::vector<tTVPWaveLabel> & labels = /**/ GetLabels(); /**/
-	if(labelnum < 0 || labelnum >= (int)labels.size()) return false;
+	if(labelnum < 0 || labelnum >= (int)Labels.size()) return false;
 
-	const tTVPWaveLabel & label = labels[labelnum];
+	const tTVPWaveLabel & label = Labels[labelnum];
 	int lx = SampleToPixel(label.Position - Start);
 
 	int head_size = GetHeadSize();
@@ -2032,10 +1983,9 @@ bool __fastcall TWaveView::IsLabelAt(int labelnum, int x, int y)
 //---------------------------------------------------------------------------
 bool __fastcall TWaveView::IsLabelNameAt(int labelnum, int x, int y)
 {
-	std::vector<tTVPWaveLabel> & labels = /**/ GetLabels(); /**/
-	if(labelnum < 0 || labelnum >= (int)labels.size()) return false;
+	if(labelnum < 0 || labelnum >= (int)Labels.size()) return false;
 
-	tTVPWaveLabel & label = labels[labelnum];
+	tTVPWaveLabel & label = Labels[labelnum];
 	TRect rect;
 	GetLabelNameRect(label, rect);
 
@@ -2052,9 +2002,7 @@ int __fastcall TWaveView::GetLabelAt(int x, int y)
 	}
 
 	// for each labels
-	std::vector<tTVPWaveLabel> & labels = /**/ GetLabels(); /**/
-
-	for(unsigned int i = 0; i < labels.size(); i++)
+	for(unsigned int i = 0; i < Labels.size(); i++)
 	{
 		if((int)i != FFocusedLabel)
 		{
@@ -2073,7 +2021,7 @@ int __fastcall TWaveView::GetLabelAt(int x, int y)
 	}
 
 	// for each labels
-	for(unsigned int i = 0; i < labels.size(); i++)
+	for(unsigned int i = 0; i < Labels.size(); i++)
 	{
 		if((int)i != FFocusedLabel)
 		{
@@ -2089,10 +2037,9 @@ int __fastcall TWaveView::GetLabelAt(int x, int y)
 //---------------------------------------------------------------------------
 int __fastcall TWaveView::IsLabelWaveMarkAt(int x, int labelnum)
 {
-	std::vector<tTVPWaveLabel> & labels = /**/ GetLabels(); /**/
-	if(labelnum < 0 || labelnum >= (int)labels.size()) return false;
+	if(labelnum < 0 || labelnum >= (int)Labels.size()) return false;
 
-	const tTVPWaveLabel & label = labels[labelnum];
+	const tTVPWaveLabel & label = Labels[labelnum];
 	int lx = SampleToPixel(label.Position - FStart);
 
 	return (lx - MARK_GRIP_MARGIN <= x && x <= lx + MARK_GRIP_MARGIN) ?
@@ -2116,9 +2063,7 @@ int __fastcall TWaveView::GetLabelWaveMarkAt(int x, int &labelnum)
 	}
 
 	// for each labels
-	std::vector<tTVPWaveLabel> & labels = /**/ GetLabels(); /**/
-
-	for(unsigned int i = 0; i < labels.size(); i++)
+	for(unsigned int i = 0; i < Labels.size(); i++)
 	{
 		if((int)i != FFocusedLabel)
 		{
@@ -2220,8 +2165,7 @@ void __fastcall TWaveView::MouseDown(TMouseButton button, TShiftState shift, int
 			{
 				FocusedLabel = fl;
 				// generate dragging information
-				std::vector<tTVPWaveLabel> & labels = /**/ GetLabels(); /**/
-				tTVPWaveLabel &label = labels[fl];
+				tTVPWaveLabel &label = Labels[fl];
 				DraggingObjectInfo.Kind = okLabel;
 				DraggingObjectInfo.Num = fl;
 				DraggingObjectInfo.Position = label.Position;
@@ -2330,9 +2274,7 @@ void __fastcall TWaveView::MouseMove(TShiftState shift, int x, int y)
 			// dragging
 			if(DraggingObjectInfo.Kind == okLink)
 			{
-				std::vector<tTVPWaveLoopLink> & links = /**/ GetLinks(); /**/
-
-				tTVPWaveLoopLink &link = links[DraggingObjectInfo.Num];
+				tTVPWaveLoopLink &link = Links[DraggingObjectInfo.Num];
 
 				InvalidateLink(DraggingObjectInfo.Num);
 				if(!DraggingObjectInfo.FromOrTo)
@@ -2351,9 +2293,7 @@ void __fastcall TWaveView::MouseMove(TShiftState shift, int x, int y)
 			}
 			else if(DraggingObjectInfo.Kind == okLabel)
 			{
-				std::vector<tTVPWaveLabel> & labels = /**/ GetLabels(); /**/
-
-				tTVPWaveLabel &label = labels[DraggingObjectInfo.Num];
+				tTVPWaveLabel &label = Labels[DraggingObjectInfo.Num];
 
 				InvalidateLabel(DraggingObjectInfo.Num);
 				label.Position = pos;
@@ -2512,5 +2452,4 @@ void __fastcall TWaveView::OnDragScrollTimer(TObject * sender)
 	WMHScroll(wmscroll);
 }
 //---------------------------------------------------------------------------
-
 

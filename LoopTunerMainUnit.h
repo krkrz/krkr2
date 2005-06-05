@@ -116,6 +116,7 @@ private:	// ユーザー宣言
 
 public:		// ユーザー宣言
 	__fastcall TLoopTunerMainForm(TComponent* Owner);
+	TWaveView * GetWaveView() { return WaveView; }
 private:
 	void __fastcall OnReaderProgress(TObject *sender);
 	void __fastcall PlayFrom(int pos);
@@ -126,6 +127,8 @@ private:
 	void __fastcall OnWaveViewLinkSelected(TObject *Sender, int num, tTVPWaveLoopLink &link);
 	void __fastcall OnWaveViewLabelSelected(TObject *Sender, int num, tTVPWaveLabel &label);
 	void __fastcall OnWaveViewSelectionLost(TObject *Sender);
+	void __fastcall OnWaveViewLinkModified(TObject *Sender);
+	void __fastcall OnWaveViewLabelModified(TObject *Sender);
 };
 //---------------------------------------------------------------------------
 extern PACKAGE TLoopTunerMainForm *LoopTunerMainForm;
