@@ -12,30 +12,35 @@ TEditLinkAttribFrame *EditLinkAttribFrame;
 __fastcall TEditLinkAttribFrame::TEditLinkAttribFrame(TComponent* Owner)
 	: TFrame(Owner)
 {
-	FWaveView = NULL;
+	FOnInfoChanged = NULL;
+	FOnEraseRedo = NULL;
 	InLoading = false;
 }
 //---------------------------------------------------------------------------
-void __fastcall TEditLinkAttribFrame::SetLinkNum(int linknum)
+void __fastcall TEditLinkAttribFrame::SetLink(const tTVPWaveLoopLink &link)
 {
-	if(!FWaveView) return;
-	FLinkNum = linknum;
-
-	tTVPWaveLoopLink &link = FWaveView->GetLinks()[FLinkNum];
-
 	InLoading = true;
 
-	EnableConditionCheckBox->Checked = link.Condition != llcNone;
-	CondVarComboBox->ItemIndex = (int)link.CondVar;
-	CondRefValueEdit->Text = AnsiString(link.RefValue);
-	ConditionComboBox->ItemIndex = (int)(link.Condition == 0 ? 0 : link.Condition - 1);
-	SmoothCheckBox->Checked = link.Smooth;
+	FLink = link;
+
+	EnableConditionCheckBox->Checked = FLink.Condition != llcNone;
+	CondVarComboBox->ItemIndex = (int)FLink.CondVar;
+	CondRefValueEdit->Text = AnsiString(FLink.RefValue);
+	ConditionComboBox->ItemIndex = (int)(FLink.Condition == 0 ? 0 : FLink.Condition - 1);
 
 	CondRefValueEdit->Modified = false;
 
 	InLoading = false;
 
 	AttribChanged();
+}
+//---------------------------------------------------------------------------
+void __fastcall TEditLinkAttribFrame::SetLinkInfo(tTVPWaveLoopLink &link)
+{
+	link.CondVar   = FLink.CondVar;
+	link.RefValue  = FLink.RefValue;
+	link.Condition = FLink.Condition;
+	link.Smooth    = FLink.Smooth;
 }
 //---------------------------------------------------------------------------
 void __fastcall TEditLinkAttribFrame::AttribChanged()
@@ -53,30 +58,20 @@ void __fastcall TEditLinkAttribFrame::AttribChanged()
 //---------------------------------------------------------------------------
 void __fastcall TEditLinkAttribFrame::CommitChanges()
 {
-	if(!FWaveView) return;
 	if(InLoading) return;
-
-	tTVPWaveLoopLink &link = FWaveView->GetLinks()[FLinkNum];
-
-	FWaveView->InvalidateLink(FLinkNum);
 
 	if(EnableConditionCheckBox->Checked)
 	{
-		link.CondVar = CondVarComboBox->ItemIndex;
-		link.RefValue = CondRefValueEdit->Text.ToInt();
-		link.Condition = (tTVPWaveLoopLinkCondition)(ConditionComboBox->ItemIndex + 1);
+		FLink.CondVar = CondVarComboBox->ItemIndex;
+		FLink.RefValue = CondRefValueEdit->Text.ToInt();
+		FLink.Condition = (tTVPWaveLoopLinkCondition)(ConditionComboBox->ItemIndex + 1);
 	}
 	else
 	{
-		link.Condition = llcNone;
+		FLink.Condition = llcNone;
 	}
-	link.Smooth = SmoothCheckBox->Checked;
 
-	FWaveView->NotifyLinkChanged();
-
-	FWaveView->InvalidateLink(FLinkNum);
-
-	FWaveView->PushUndo(); //==== push undo
+	if(OnInfoChanged) OnInfoChanged(this);
 }
 //---------------------------------------------------------------------------
 void __fastcall TEditLinkAttribFrame::EnableConditionCheckBoxClick(
@@ -95,12 +90,6 @@ void __fastcall TEditLinkAttribFrame::CondVarComboBoxChange(
 //---------------------------------------------------------------------------
 void __fastcall TEditLinkAttribFrame::ConditionComboBoxChange(
 	  TObject *Sender)
-{
-	AttribChanged();
-	CommitChanges();
-}
-//---------------------------------------------------------------------------
-void __fastcall TEditLinkAttribFrame::SmoothCheckBoxClick(TObject *Sender)
 {
 	AttribChanged();
 	CommitChanges();
@@ -132,7 +121,7 @@ void __fastcall TEditLinkAttribFrame::CondRefValueEditChange(
       TObject *Sender)
 {
 	if(InLoading) return;
-	if(FWaveView) FWaveView->EraseRedo();
+	if(FOnEraseRedo) FOnEraseRedo(this);
 }
 //---------------------------------------------------------------------------
 

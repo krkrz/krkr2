@@ -15,6 +15,7 @@
 #include "WaveLoopManager.h"
 #include <ActnList.hpp>
 #include <AppEvnts.hpp>
+#include "EditLinkAttribUnit.h"
 //---------------------------------------------------------------------------
 class TLinkDetailForm : public TForm
 {
@@ -58,7 +59,7 @@ __published:	// IDE 管理のコンポーネント
 	TAction *Play3SecAction;
 	TAction *Play5SecAction;
 	TAction *SmoothAction;
-	TToolButton *ToolButton1;
+	TToolButton *SmoothToolButton;
 	TAction *BeforePrevCrossAction;
 	TAction *BeforePrevFastAction;
 	TAction *BeforePrevStepAction;
@@ -70,6 +71,9 @@ __published:	// IDE 管理のコンポーネント
 	TPanel *PlayBeforePaintBoxPanel;
 	TPaintBox *PlayBeforePaintBox;
 	TLabel *PlayBeforeLabel;
+	TEditLinkAttribFrame *EditLinkAttribFrame;
+	TToolButton *StopPlayToolButton;
+	TAction *StopPlayAction;
 	void __fastcall WavePaintBoxPaint(TObject *Sender);
 	void __fastcall ZoomInActionExecute(TObject *Sender);
 	void __fastcall ZoomOutActionExecute(TObject *Sender);
@@ -104,6 +108,7 @@ __published:	// IDE 管理のコンポーネント
 	void __fastcall FormClose(TObject *Sender, TCloseAction &Action);
 	void __fastcall OKButtonClick(TObject *Sender);
 	void __fastcall CancelButtonClick(TObject *Sender);
+	void __fastcall StopPlayActionExecute(TObject *Sender);
 private:	// ユーザー宣言
 	TWaveReader * FReader; // wave reader
 	tTVPWaveLoopManager * FManager; // wave loop manager
@@ -133,10 +138,11 @@ private:
 	void __fastcall UpdateMainWindowParams(bool push_undo = false);
 	void __fastcall UpdateDisplay();
 	void __fastcall UpdateLayout();
-
 	void __fastcall PlayLink(int before, int after = 5000);
-
 	void __fastcall MarkPlayButton(TObject * button);
+
+	void __fastcall EditLinkAttribFrameInfoChanged(TObject * Sender);
+	void __fastcall EditLinkAttribFrameEraseRedo(TObject * Sender);
 };
 //---------------------------------------------------------------------------
 extern PACKAGE TLinkDetailForm *LinkDetailForm;

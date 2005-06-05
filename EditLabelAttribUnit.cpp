@@ -12,24 +12,27 @@ TEditLabelAttribFrame *EditLabelAttribFrame;
 __fastcall TEditLabelAttribFrame::TEditLabelAttribFrame(TComponent* Owner)
 	: TFrame(Owner)
 {
-	FWaveView = NULL;
+	FOnInfoChanged = NULL;
+	FOnEraseRedo = NULL;
 	InLoading = false;
 }
 //---------------------------------------------------------------------------
-void __fastcall TEditLabelAttribFrame::SetLabelNum(int num)
+void __fastcall TEditLabelAttribFrame::SetLabel(const tTVPWaveLabel &label)
 {
-	if(!FWaveView) return;
-	FLabelNum = num;
-
-	tTVPWaveLabel &label = FWaveView->GetLabels()[FLabelNum];
+	FLabel = label;
 
 	InLoading = true;
 
-	LabelNameEdit->Text = label.Name;
+	LabelNameEdit->Text = FLabel.Name;
 
 	InLoading = false;
 
 	AttribChanged();
+}
+//---------------------------------------------------------------------------
+void __fastcall TEditLabelAttribFrame::SetLabelInfo(tTVPWaveLabel &label)
+{
+	label.Name = FLabel.Name;
 }
 //---------------------------------------------------------------------------
 void __fastcall TEditLabelAttribFrame::AttribChanged()
@@ -38,20 +41,11 @@ void __fastcall TEditLabelAttribFrame::AttribChanged()
 //---------------------------------------------------------------------------
 void __fastcall TEditLabelAttribFrame::CommitChanges()
 {
-	if(!FWaveView) return;
 	if(InLoading) return;
 
-	tTVPWaveLabel &label = FWaveView->GetLabels()[FLabelNum];
+	FLabel.Name = LabelNameEdit->Text;
 
-	FWaveView->InvalidateLabel(FLabelNum);
-
-	label.Name = LabelNameEdit->Text;
-
-	FWaveView->NotifyLabelChanged();
-
-	FWaveView->InvalidateLabel(FLabelNum);
-
-	FWaveView->PushUndo(); //==== push undo
+	if(OnInfoChanged) OnInfoChanged(this);
 }
 //---------------------------------------------------------------------------
 void __fastcall TEditLabelAttribFrame::LabelNameEditExit(TObject *Sender)
@@ -70,11 +64,10 @@ void __fastcall TEditLabelAttribFrame::LabelNameEditKeyDown(
 	}
 }
 //---------------------------------------------------------------------------
-
 void __fastcall TEditLabelAttribFrame::LabelNameEditChange(TObject *Sender)
 {
 	if(InLoading) return;
-	if(FWaveView) FWaveView->EraseRedo();
+	if(OnEraseRedo) OnEraseRedo(this);
 }
 //---------------------------------------------------------------------------
 

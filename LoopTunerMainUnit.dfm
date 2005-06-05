@@ -1,6 +1,6 @@
 object LoopTunerMainForm: TLoopTunerMainForm
   Left = 72
-  Top = 1
+  Top = 0
   Width = 641
   Height = 354
   Caption = '0'
@@ -132,20 +132,20 @@ object LoopTunerMainForm: TLoopTunerMainForm
       ImageIndex = 11
       Style = tbsSeparator
     end
-    object PlayToolButton: TToolButton
+    object StopToolButton: TToolButton
       Left = 278
+      Top = 0
+      Action = StopPlayAction
+    end
+    object PlayToolButton: TToolButton
+      Left = 301
       Top = 0
       Action = PlayFromStartAction
     end
     object PlayFromCursorToolButton: TToolButton
-      Left = 301
-      Top = 0
-      Action = PlayFromCaretAction
-    end
-    object StopToolButton: TToolButton
       Left = 324
       Top = 0
-      Action = StopPlayAction
+      Action = PlayFromCaretAction
     end
   end
   object EditAttribPanel: TPanel
