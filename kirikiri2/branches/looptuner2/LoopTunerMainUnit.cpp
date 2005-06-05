@@ -29,6 +29,8 @@ __fastcall TLoopTunerMainForm::TLoopTunerMainForm(TComponent* Owner)
 	WaveView->OnLinkSelected = OnWaveViewLinkSelected;
 	WaveView->OnLabelSelected = OnWaveViewLabelSelected;
 	WaveView->OnSelectionLost = OnWaveViewSelectionLost;
+	WaveView->OnLinkModified = OnWaveViewLinkModified;
+	WaveView->OnLabelModified = OnWaveViewLabelModified;
 	InitDirectSound(Application->Handle);
 	Manager = NULL;
 	ActiveControl = WaveView;
@@ -90,6 +92,12 @@ void __fastcall TLoopTunerMainForm::OnReaderProgress(TObject *sender)
 				throw;
 			}
 			if(mem) delete [] mem;
+
+			// note that below two wiil call OnLinkModified/OnLabelModified event.
+			// but it's ok because the handler will write back the same data to the waveview.
+			WaveView->SetLinks(Manager->GetLinks());
+			WaveView->SetLabels(Manager->GetLabels());
+			WaveView->PushFirstUndoState();
 		}
 		else
 		{
@@ -249,7 +257,7 @@ void __fastcall TLoopTunerMainForm::OnWaveViewLinkDoubleClick(TObject *Sender, i
 	TLinkDetailForm * ldf = new TLinkDetailForm(this);
 	try
 	{
-		ldf->SetReaderAndLink(Reader, link);
+		ldf->SetReaderAndLink(Reader, link, num);
 		ldf->ShowModal();
 	}
 	catch(...)
@@ -328,6 +336,17 @@ void __fastcall TLoopTunerMainForm::OnWaveViewSelectionLost(TObject *Sender)
 	EditLabelAttribBevel->Visible = true;
 }
 //---------------------------------------------------------------------------
+void __fastcall TLoopTunerMainForm::OnWaveViewLinkModified(TObject *Sender)
+{
+	Manager->SetLinks(WaveView->GetLinks());
+}
+//---------------------------------------------------------------------------
+void __fastcall TLoopTunerMainForm::OnWaveViewLabelModified(TObject *Sender)
+{
+	Manager->SetLabels(WaveView->GetLabels());
+}
+//---------------------------------------------------------------------------
+
 
 
 

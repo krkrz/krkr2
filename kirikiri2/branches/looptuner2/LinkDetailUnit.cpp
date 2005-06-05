@@ -20,6 +20,7 @@ __fastcall TLinkDetailForm::TLinkDetailForm(TComponent* Owner)
 	FReader = NULL;
 	FMagnify = 0;
 	FManager = NULL;
+	LinkNum = 0;
 
 	Dragging = false;
 	BeforeOrAfter = false;
@@ -42,12 +43,38 @@ void __fastcall TLinkDetailForm::FormDestroy(TObject *Sender)
 	if(FManager) delete FManager, FManager = NULL;
 }
 //---------------------------------------------------------------------------
+void __fastcall TLinkDetailForm::FormClose(TObject *Sender,
+	  TCloseAction &Action)
+{
+	if(ModalResult == mrOk)
+	{
+		UpdateMainWindowParams(true);
+	}
+	else
+	{
+		FLink = FLinkOriginal;
+		UpdateMainWindowParams(false);
+	}
+}
+//---------------------------------------------------------------------------
+void __fastcall TLinkDetailForm::OKButtonClick(TObject *Sender)
+{
+	ModalResult = mrOk;
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TLinkDetailForm::CancelButtonClick(TObject *Sender)
+{
+	ModalResult = mrCancel;
+}
+//---------------------------------------------------------------------------
 void __fastcall TLinkDetailForm::SetReaderAndLink(TWaveReader * reader,
-	tTVPWaveLoopLink link)
+	tTVPWaveLoopLink link, int linknum)
 {
 	// set the reader and the link
 	FReader = reader;
-	FLink = link;
+	FLink = FLinkOriginal = link;
+	LinkNum = linknum;
 
 	if(FManager) delete FManager, FManager = NULL;
 	FManager = new tTVPWaveLoopManager(FReader);
@@ -82,6 +109,24 @@ int __fastcall TLinkDetailForm::SampleToPixel(int sample)
 		// expand
 		return sample << FMagnify;
 	}
+}
+//---------------------------------------------------------------------------
+void __fastcall TLinkDetailForm::UpdateMainWindowParams(bool push_undo)
+{
+	// update main window's waveview link information
+	TWaveView *waveview = ((TLoopTunerMainForm*)(Owner))->GetWaveView();
+
+	tTVPWaveLoopLink &link = waveview->GetLinks()[LinkNum];
+
+	waveview->InvalidateLink(LinkNum);
+
+	link = FLink;
+
+	waveview->NotifyLinkChanged();
+
+	waveview->InvalidateLink(LinkNum);
+
+	if(push_undo) waveview->PushUndo(); //==== push undo
 }
 //---------------------------------------------------------------------------
 void __fastcall TLinkDetailForm::UpdateDisplay()
@@ -319,6 +364,7 @@ void __fastcall TLinkDetailForm::WavePaintBoxMouseMove(TObject *Sender,
 			if(FLink.To >= FReader->NumSamples) FLink.To = FReader->NumSamples - 1;
 		}
 		WavePaintBox->Invalidate();
+		UpdateMainWindowParams();
 	}
 }
 //---------------------------------------------------------------------------
@@ -349,6 +395,7 @@ void __fastcall TLinkDetailForm::SmoothActionExecute(TObject *Sender)
 {
 	SmoothAction->Checked = ! SmoothAction->Checked;
 	FLink.Smooth = SmoothAction->Checked;
+	UpdateMainWindowParams();
 }
 //---------------------------------------------------------------------------
 void __fastcall TLinkDetailForm::BeforePrevCrossActionExecute(
@@ -366,6 +413,7 @@ void __fastcall TLinkDetailForm::BeforePrevFastActionExecute(
 	else
 		FLink.From = 0;
 	WavePaintBox->Invalidate();
+	UpdateMainWindowParams();
 	UpdateDisplay();
 }
 //---------------------------------------------------------------------------
@@ -378,6 +426,7 @@ void __fastcall TLinkDetailForm::BeforePrevStepActionExecute(
 	else
 		FLink.From = 0;
 	WavePaintBox->Invalidate();
+	UpdateMainWindowParams();
 	UpdateDisplay();
 }
 //---------------------------------------------------------------------------
@@ -390,6 +439,7 @@ void __fastcall TLinkDetailForm::BeforeNextStepActionExecute(
 	else
 		FLink.From = FReader->NumSamples - 1;
 	WavePaintBox->Invalidate();
+	UpdateMainWindowParams();
 	UpdateDisplay();
 }
 //---------------------------------------------------------------------------
@@ -402,6 +452,7 @@ void __fastcall TLinkDetailForm::BeforeNextFastActionExecute(
 	else
 		FLink.From = FReader->NumSamples - 1;
 	WavePaintBox->Invalidate();
+	UpdateMainWindowParams();
 	UpdateDisplay();
 }
 //---------------------------------------------------------------------------
@@ -426,6 +477,7 @@ void __fastcall TLinkDetailForm::AfterPrevFastActionExecute(
 	else
 		FLink.To = 0;
 	WavePaintBox->Invalidate();
+	UpdateMainWindowParams();
 	UpdateDisplay();
 }
 //---------------------------------------------------------------------------
@@ -438,6 +490,7 @@ void __fastcall TLinkDetailForm::AfterPrevStepActionExecute(
 	else
 		FLink.To = 0;
 	WavePaintBox->Invalidate();
+	UpdateMainWindowParams();
 	UpdateDisplay();
 }
 //---------------------------------------------------------------------------
@@ -450,6 +503,7 @@ void __fastcall TLinkDetailForm::AfterNextStepActionExecute(
 	else
 		FLink.To = FReader->NumSamples - 1;
 	WavePaintBox->Invalidate();
+	UpdateMainWindowParams();
 	UpdateDisplay();
 }
 //---------------------------------------------------------------------------
@@ -462,6 +516,7 @@ void __fastcall TLinkDetailForm::AfterNextFastActionExecute(
 	else
 		FLink.To = FReader->NumSamples - 1;
 	WavePaintBox->Invalidate();
+	UpdateMainWindowParams();
 	UpdateDisplay();
 }
 //---------------------------------------------------------------------------
