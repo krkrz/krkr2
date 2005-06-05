@@ -22,6 +22,7 @@
 #include "StorageImpl.h"
 #include "krmovie.h"
 #include "PluginImpl.h"
+#include "WaveImpl.h"  // for DirectSound attenuate <-> TVP volume
 #include <evcode.h>
 //---------------------------------------------------------------------------
 class tTVPVideoModule
@@ -869,13 +870,13 @@ tjs_int tTJSNI_VideoOverlay::GetAudioBalance()
 	{
 		VideoOverlay->GetAudioBalance( &result );
 	}
-	return result;
+	return TVPDSAttenuateToPan( result );
 }
 void tTJSNI_VideoOverlay::SetAudioBalance(tjs_int b)
 {
 	if(VideoOverlay)
 	{
-		VideoOverlay->SetAudioBalance( b );
+		VideoOverlay->SetAudioBalance( TVPPanToDSAttenuate( b ) );
 	}
 }
 tjs_int tTJSNI_VideoOverlay::GetAudioVolume()
@@ -885,13 +886,13 @@ tjs_int tTJSNI_VideoOverlay::GetAudioVolume()
 	{
 		VideoOverlay->GetAudioVolume( &result );
 	}
-	return result;
+	return TVPDSAttenuateToVolume( result );
 }
 void tTJSNI_VideoOverlay::SetAudioVolume(tjs_int b)
 {
 	if(VideoOverlay)
 	{
-		VideoOverlay->SetAudioVolume( b );
+		VideoOverlay->SetAudioVolume( TVPVolumeToDSAttenuate( b ) );
 	}
 }
 tjs_uint tTJSNI_VideoOverlay::GetNumberOfAudioStream()
