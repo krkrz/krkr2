@@ -808,50 +808,77 @@ bool tTVPWaveLoopManager::ReadInformation(char * p)
 	Links.clear();
 	Labels.clear();
 
-	while(true)
+	// check version
+	if(*p != '#')
 	{
-		if((p == p_org || p[-1] == '\n') && *p == '#')
+		// old sli format
+		char *p_length = strstr(p, "LoopLength=");
+		char *p_start  = strstr(p, "LoopStart=");
+		if(!p_length || !p_start) return false; // read error
+		tTVPWaveLoopLink link;
+		link.Smooth = false;
+		link.Condition = llcNone;
+		link.RefValue = 0;
+		link.CondVar = 0;
+		tjs_int64 start;
+		tjs_int64 length;
+		if(!GetInt64(p_length + 11, length)) return false;
+		if(!GetInt64(p_start  + 10, start )) return false;
+		link.From = start + length;
+		link.To = start;
+		Links.push_back(link);
+	}
+	else
+	{
+		// sli v2.0+
+		if(strncmp(p, "#2.00", 5) > 0)
+			return false; // version mismatch 
+
+		while(true)
 		{
-			// line starts with '#' is a comment
-			// skip the comment
-			while(*p != '\n' && *p) p++;
+			if((p == p_org || p[-1] == '\n') && *p == '#')
+			{
+				// line starts with '#' is a comment
+				// skip the comment
+				while(*p != '\n' && *p) p++;
+				if(!*p) break;
+
+				p ++;
+				continue;
+			}
+
+			// skip white space
+			while(isspace(*p)) p++;
 			if(!*p) break;
 
-			p ++;
-			continue;
-		}
+			// read id (Link or Label)
+			if(!strncasecmp(p, "Link", 4) && !isalpha(p[4]))
+			{
+				p += 4;
+				while(isspace(*p)) p++;
+				if(!*p) return false;
+				tTVPWaveLoopLink link;
+				if(!ReadLinkInformation(p, link)) return false;
+				Links.push_back(link);
+			}
+			else if(!strncasecmp(p, "Label", 5) && !isalpha(p[5]))
+			{
+				p += 5;
+				while(isspace(*p)) p++;
+				if(!*p) return false;
+				tTVPWaveLabel label;
+				if(!ReadLabelInformation(p, label)) return false;
+				Labels.push_back(label);
+			}
+			else
+			{
+				return false; // read error
+			}
 
-		// skip white space
-		while(isspace(*p)) p++;
-		if(!*p) break;
-
-		// read id (Link or Label)
-		if(!strncasecmp(p, "Link", 4) && !isalpha(p[4]))
-		{
-			p += 4;
+			// skip white space
 			while(isspace(*p)) p++;
-			if(!*p) return false;
-			tTVPWaveLoopLink link;
-			if(!ReadLinkInformation(p, link)) return false;
-			Links.push_back(link);
+			if(!*p) break;
 		}
-		else if(!strncasecmp(p, "Label", 5) && !isalpha(p[5]))
-		{
-			p += 5;
-			while(isspace(*p)) p++;
-			if(!*p) return false;
-			tTVPWaveLabel label;
-			if(!ReadLabelInformation(p, label)) return false;
-			Labels.push_back(label);
-		}
-		else
-		{
-			return false; // read error
-		}
-
-		// skip white space
-		while(isspace(*p)) p++;
-		if(!*p) break;
 	}
 
 	return true; // done

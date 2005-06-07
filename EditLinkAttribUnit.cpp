@@ -40,7 +40,6 @@ void __fastcall TEditLinkAttribFrame::SetLinkInfo(tTVPWaveLoopLink &link)
 	link.CondVar   = FLink.CondVar;
 	link.RefValue  = FLink.RefValue;
 	link.Condition = FLink.Condition;
-	link.Smooth    = FLink.Smooth;
 }
 //---------------------------------------------------------------------------
 void __fastcall TEditLinkAttribFrame::AttribChanged()

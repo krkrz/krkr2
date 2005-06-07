@@ -74,6 +74,8 @@ __published:	// IDE 管理のコンポーネント
 	TEditLinkAttribFrame *EditLinkAttribFrame;
 	TToolButton *StopPlayToolButton;
 	TAction *StopPlayAction;
+	TLabel *AfterLinkLabel;
+	TLabel *BeforeLinkLabel;
 	void __fastcall WavePaintBoxPaint(TObject *Sender);
 	void __fastcall ZoomInActionExecute(TObject *Sender);
 	void __fastcall ZoomOutActionExecute(TObject *Sender);

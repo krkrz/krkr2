@@ -37,6 +37,9 @@ __fastcall TLinkDetailForm::TLinkDetailForm(TComponent* Owner)
 	EditLinkAttribFrame->OnInfoChanged = EditLinkAttribFrameInfoChanged;
 	EditLinkAttribFrame->OnEraseRedo   = EditLinkAttribFrameEraseRedo;
 
+	BeforeLinkLabel->Font->Color = C_WAVE_B_FG_BASE;
+	AfterLinkLabel ->Font->Color = C_WAVE_A_FG_BASE;
+
 	UpdateLayout();
 	UpdateDisplay();
 }
@@ -293,7 +296,7 @@ void __fastcall TLinkDetailForm::WavePaintBoxPaint(TObject *Sender)
 			if(bg_high < fg_high)
 			{
 				// draw bg only
-				WavePaintBox->Canvas->Pen->Color = C_WAVE_BG;
+				WavePaintBox->Canvas->Pen->Color = x < center ? C_WAVE_B_BG : C_WAVE_A_BG;
 				WavePaintBox->Canvas->MoveTo(x, bg_high);
 				WavePaintBox->Canvas->LineTo(x, fg_high);
 				fg_bg_high = fg_high;
@@ -302,7 +305,7 @@ void __fastcall TLinkDetailForm::WavePaintBoxPaint(TObject *Sender)
 			else
 			{
 				// draw fg only
-				WavePaintBox->Canvas->Pen->Color = C_WAVE_FG;
+				WavePaintBox->Canvas->Pen->Color = x < center ? C_WAVE_B_FG : C_WAVE_A_FG;
 				WavePaintBox->Canvas->MoveTo(x, fg_high);
 				WavePaintBox->Canvas->LineTo(x, bg_high);
 				fg_bg_high = bg_high;
@@ -311,7 +314,7 @@ void __fastcall TLinkDetailForm::WavePaintBoxPaint(TObject *Sender)
 			if(bg_low < fg_low)
 			{
 				// draw fg only
-				WavePaintBox->Canvas->Pen->Color = C_WAVE_FG;
+				WavePaintBox->Canvas->Pen->Color = x < center ? C_WAVE_B_FG : C_WAVE_A_FG;
 				WavePaintBox->Canvas->MoveTo(x, bg_low);
 				WavePaintBox->Canvas->LineTo(x, fg_low);
 				fg_bg_low = bg_low;
@@ -319,14 +322,14 @@ void __fastcall TLinkDetailForm::WavePaintBoxPaint(TObject *Sender)
 			else
 			{
 				// draw bg only
-				WavePaintBox->Canvas->Pen->Color = C_WAVE_BG;
+				WavePaintBox->Canvas->Pen->Color = x < center ? C_WAVE_B_BG : C_WAVE_A_BG;
 				WavePaintBox->Canvas->MoveTo(x, fg_low);
 				WavePaintBox->Canvas->LineTo(x, bg_low);
 				fg_bg_low = fg_low;
 			}
 
 			// draw fg-bg
-			WavePaintBox->Canvas->Pen->Color = C_WAVE_FG_BG;
+			WavePaintBox->Canvas->Pen->Color = x < center ? C_WAVE_B_FG_BG : C_WAVE_A_FG_BG;
 			WavePaintBox->Canvas->MoveTo(x, fg_bg_high);
 			WavePaintBox->Canvas->LineTo(x, fg_bg_low);
 		}
