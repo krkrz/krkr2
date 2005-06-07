@@ -149,7 +149,7 @@ object LinkDetailForm: TLinkDetailForm
     object PlayBeforeLabel: TLabel
       Left = 304
       Top = 5
-      Width = 110
+      Width = 109
       Height = 12
       Hint = 'ƒŠƒ“ƒN‚Ü‚Å‚ ‚Æ %.1f •b'
       Caption = 'ƒŠƒ“ƒN‚Ü‚Å‚ ‚Æ %.1f •b'
@@ -314,6 +314,35 @@ object LinkDetailForm: TLinkDetailForm
       OnMouseMove = WavePaintBoxMouseMove
       OnMouseUp = WavePaintBoxMouseUp
       OnPaint = WavePaintBoxPaint
+    end
+    object AfterLinkLabel: TLabel
+      Left = 568
+      Top = 8
+      Width = 45
+      Height = 12
+      Anchors = [akTop, akRight]
+      Caption = 'ƒŠƒ“ƒNŒã'
+      Font.Charset = SHIFTJIS_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -12
+      Font.Name = '‚l‚r ‚oƒSƒVƒbƒN'
+      Font.Style = [fsBold]
+      ParentFont = False
+      Transparent = True
+    end
+    object BeforeLinkLabel: TLabel
+      Left = 16
+      Top = 8
+      Width = 45
+      Height = 12
+      Caption = 'ƒŠƒ“ƒN‘O'
+      Font.Charset = SHIFTJIS_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -12
+      Font.Name = '‚l‚r ‚oƒSƒVƒbƒN'
+      Font.Style = [fsBold]
+      ParentFont = False
+      Transparent = True
     end
   end
   object ActionList: TActionList

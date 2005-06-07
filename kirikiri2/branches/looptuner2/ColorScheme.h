@@ -19,11 +19,15 @@ static  const TColor C_WAVE					= ((TColor)0x000000);
 static  const TColor C_INF_LINE				= ((TColor)0x808080);
 static  const TColor C_DISABLED_TIME_CLIENT	= ((TColor)0xf0f0f0);
 
-static  const int C_FG_BLEND_RATIO			= 60; // in percent
+static  const TColor C_WAVE_B_FG_BASE		= ((TColor)0x800000);
+static  const TColor C_WAVE_B_BG			= ((TColor)0xd0d0e0);
+static  const TColor C_WAVE_B_FG			= ((TColor)BLEND_ARGB(C_WAVE_B_FG_BASE, 0xffffff, 60));
+static  const TColor C_WAVE_B_FG_BG			= ((TColor)BLEND_ARGB(C_WAVE_B_FG_BASE, 0xe0d0d0, 80));
+static  const TColor C_WAVE_A_FG_BASE		= ((TColor)0x000080);
+static  const TColor C_WAVE_A_BG			= ((TColor)0xe0d0d0);
+static  const TColor C_WAVE_A_FG			= ((TColor)BLEND_ARGB(C_WAVE_A_FG_BASE, 0xffffff, 60));
+static  const TColor C_WAVE_A_FG_BG			= ((TColor)BLEND_ARGB(C_WAVE_A_FG_BASE, 0xd0d0e0, 80));
 
-static  const TColor C_WAVE_BG				= ((TColor)0xc0c0c0);
-static  const TColor C_WAVE_FG				= ((TColor)BLEND_ARGB(0x800000, 0xffffff, C_FG_BLEND_RATIO));
-static  const TColor C_WAVE_FG_BG			= ((TColor)BLEND_ARGB(0x800000, 0xc0c0c0, C_FG_BLEND_RATIO));
 static  const TColor C_WAVE_CENTER_SPLIT	= ((TColor)0xc0c0c0);
 
 static  const TColor C_TIME_CLIENT			= clBtnFace;
