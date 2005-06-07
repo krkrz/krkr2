@@ -3117,6 +3117,15 @@
 	</remarks>
 </tag>
 
+<tag name="pausevideo">
+	<shortinfo> ビデオ再生の再開 </shortinfo>
+	<group> 効果音・BGM・ビデオ操作 </group>
+	<remarks>
+		ビデオの再生を再開します。<BR>
+		pausevideoでの一時停止後は、resumevideoを使用して、再生を再開します。<BR>
+	</remarks>
+</tag>
+
 
 
 <tag name="playse">
@@ -4956,6 +4965,49 @@
 			</info>
 		</attrib>
 
+		<attrib name="playrate">
+			<shortinfo> 再生速度 </shortinfo>
+			<required> no </required>
+			<format> 再生速度(0.0より大きい値) </format>
+			<info>
+				　メディアの再生速度を設定します。<BR>
+				　設定可能値はDirectShowのフィルタによって決まります。<BR>
+				　参考 : 音声付のMPEGファイルの場合、0.0より大きい値から2.0までの値が設定可能です。音声なしのMPEGファイルの場合、0.0より大きい値からdoubleの範囲内(たぶん)で設定可能ですが、実際の再生速度は処理速度によって上限が決まります。<BR>
+			</info>
+		</attrib>
+
+		<attrib name="volume">
+			<shortinfo> 音量 </shortinfo>
+			<required> no </required>
+			<format> 音量% (0～100) </format>
+			<info>
+				　音量を % で指定します。
+				　100 が上限です。音量の抑制のみをサポートします(増幅は
+				音源の特性上、できません)。
+			</info>
+		</attrib>
+
+		<attrib name="pan">
+			<shortinfo> 音量 </shortinfo>
+			<required> no </required>
+			<format> パン (-100～0～100) </format>
+			<info>
+				　パン (左右の音像位置) を指定します。<BR>
+				　-100 が完全な左、0 が中央、100 が完全な右です。<BR>
+				　真中の値は 0 で、これは両方のチャンネルがフルボリュームであることを意味しています。<BR>
+				　 一方のチャンネルが減衰されても、もう一方のチャンネルはフル ボリュームのままです。<BR>
+			</info>
+		</attrib>
+
+		<attrib name="audiostreamnum">
+			<shortinfo> 音声ストリーム番号 </shortinfo>
+			<required> no </required>
+			<format> 音声ストリーム番号(0～) </format>
+			<info>
+				　指定した音声ストリーム番号を有効にします。
+			</info>
+		</attrib>
+
 	</attribs>
 
 	<remarks>
@@ -5082,9 +5134,10 @@
 
 	<remarks>
 	　指定したフレームでピリオドイベントを発生させることができます。<BR>
-	　ピリオドイベントは、<ref tag="wv">wv</ref>タグで待つことができます。<BR>
+	　ピリオドイベントは、<ref tag="wp">wp</ref>タグで待つことができます。<BR>
 	</remarks>
 </tag>
+
 
 <tag name="cancelvideoevent">
 	<shortinfo> ピリオドイベントの解除 </shortinfo>
@@ -5127,7 +5180,7 @@
 	</attribs>
 
 	<remarks>
-	　ビデオの再生準備を行います。<BR>
+	ビデオの再生準備を行います。<BR>
 	レイヤー描画モード時に未描画画像が表示されてしまうのを防ぐためにこの機能を使用してください。<BR>
 	このタグの直後にかならず[wv]タグを置いて準備完了を待ってください。<BR>
 	このタグはレイヤー描画モード時のみ有効です。<BR>
@@ -5289,6 +5342,30 @@
 </tag>
 
 
+
+<tag name="wp">
+	<shortinfo> ビデオピリオドイベント待ち </shortinfo>
+	<group> 効果音・BGM・ビデオ操作 </group>
+	<attribs>
+		<attrib name="for">
+			<shortinfo> イベントの種類 </shortinfo>
+			<required> no </required>
+			<format>  	"loop","period","prepare","segLoop"のいずれか </format>
+			<info>
+				　待つイベントの種類を指定します。<BR>
+				　"loop"を指定すると、ループ終端を待ちます。<BR>
+				　"period"を指定すると、ピリオドイベントを待ちます。<BR>
+				　"prepare"を指定すると、preparevideoの準備完了を待ちます。<BR>
+				　"segLoop"を指定すると、セグメントループ終端を待ちます。<BR>
+			</info>
+		</attrib>
+	</attribs>
+
+	<remarks>
+		ピリオドイベントを待ちます。<BR>
+		for属性が未指定の場合、すべてのイベントを待ち、いずれかが発生すると処理を継続します。
+	</remarks>
+</tag>
 
 <tag name="wt">
 	<shortinfo> トランジションの終了待ち </shortinfo>
