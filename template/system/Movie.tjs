@@ -245,8 +245,8 @@ class Movie extends VideoOverlay
 				mode = vomOverlay;
 		}
 		playRate = +elm.playrate if elm.playrate !== void;
-		audioVolume = +elm.volume if elm.volume !== void;
-		audioBalance = +elm.pan if elm.pan !== void;
+		audioVolume = +elm.volume * 1000 if elm.volume !== void;
+		audioBalance = +elm.pan * 1000 if elm.pan !== void;
 		if( elm.audiostreamnum !== void )
 		{
 			selectAudioStream( +elm.audiostreamnum );
