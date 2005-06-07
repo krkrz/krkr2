@@ -52,6 +52,7 @@ void __fastcall TLinkDetailForm::FormClose(TObject *Sender,
 {
 	if(ModalResult == mrOk)
 	{
+		EditLinkAttribFrame->SetLinkInfo(FLink);
 		UpdateMainWindowParams(true);
 	}
 	else
@@ -383,6 +384,11 @@ void __fastcall TLinkDetailForm::WavePaintBoxMouseUp(TObject *Sender,
 	}
 }
 //---------------------------------------------------------------------------
+void __fastcall TLinkDetailForm::WavePaintBoxDblClick(TObject *Sender)
+{
+	PlayLink();
+}
+//---------------------------------------------------------------------------
 void __fastcall TLinkDetailForm::ZoomInActionExecute(TObject *Sender)
 {
 	if(FMagnify < 0) FMagnify ++;
@@ -532,6 +538,17 @@ void __fastcall TLinkDetailForm::AfterNextCrossActionExecute(
 	//
 }
 //---------------------------------------------------------------------------
+void __fastcall TLinkDetailForm::PlayLink()
+{
+	int ms = 500;
+	if     (PlayHalfSecToolButton->Marked)			ms = 500;
+	else if(Play1SecToolButton->Marked)				ms = 1000;
+	else if(Play2SecToolButton->Marked)				ms = 2000;
+	else if(Play3SecToolButton->Marked)				ms = 3000;
+	else if(Play5SecToolButton->Marked)				ms = 5000;
+	PlayLink(ms);
+}
+//---------------------------------------------------------------------------
 void __fastcall TLinkDetailForm::MarkPlayButton(TObject * button)
 {
 	PlayHalfSecToolButton->Marked = PlayHalfSecToolButton == button;
@@ -650,5 +667,6 @@ void __fastcall TLinkDetailForm::EditLinkAttribFrameEraseRedo(TObject * Sender)
 	// do nothing
 }
 //---------------------------------------------------------------------------
+
 
 

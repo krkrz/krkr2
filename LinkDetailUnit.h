@@ -109,6 +109,7 @@ __published:	// IDE 管理のコンポーネント
 	void __fastcall OKButtonClick(TObject *Sender);
 	void __fastcall CancelButtonClick(TObject *Sender);
 	void __fastcall StopPlayActionExecute(TObject *Sender);
+	void __fastcall WavePaintBoxDblClick(TObject *Sender);
 private:	// ユーザー宣言
 	TWaveReader * FReader; // wave reader
 	tTVPWaveLoopManager * FManager; // wave loop manager
@@ -139,6 +140,7 @@ private:
 	void __fastcall UpdateDisplay();
 	void __fastcall UpdateLayout();
 	void __fastcall PlayLink(int before, int after = 5000);
+	void __fastcall PlayLink();
 	void __fastcall MarkPlayButton(TObject * button);
 
 	void __fastcall EditLinkAttribFrameInfoChanged(TObject * Sender);

@@ -1,7 +1,7 @@
 object LoopTunerMainForm: TLoopTunerMainForm
   Left = 72
   Top = 0
-  Width = 641
+  Width = 636
   Height = 354
   Caption = '0'
   Color = clBtnFace
@@ -18,7 +18,7 @@ object LoopTunerMainForm: TLoopTunerMainForm
   object StatusBar: TStatusBar
     Left = 0
     Top = 281
-    Width = 633
+    Width = 628
     Height = 19
     Panels = <>
     SimplePanel = False
@@ -26,7 +26,7 @@ object LoopTunerMainForm: TLoopTunerMainForm
   object ToolBar1: TToolBar
     Left = 0
     Top = 0
-    Width = 633
+    Width = 628
     Height = 26
     AutoSize = True
     Caption = 'ToolBar'
@@ -151,7 +151,7 @@ object LoopTunerMainForm: TLoopTunerMainForm
   object EditAttribPanel: TPanel
     Left = 0
     Top = 184
-    Width = 633
+    Width = 628
     Height = 97
     Align = alBottom
     BevelOuter = bvNone
@@ -159,7 +159,7 @@ object LoopTunerMainForm: TLoopTunerMainForm
     object EditLabelAttribBevel: TBevel
       Left = 0
       Top = 5
-      Width = 633
+      Width = 628
       Height = 2
       Align = alBottom
       Shape = bsBottomLine
@@ -167,7 +167,7 @@ object LoopTunerMainForm: TLoopTunerMainForm
     object EmptyEditAttribFrame: TPanel
       Left = 0
       Top = 7
-      Width = 633
+      Width = 628
       Height = 30
       Align = alBottom
       BevelOuter = bvNone
@@ -176,14 +176,14 @@ object LoopTunerMainForm: TLoopTunerMainForm
     end
     inline EditLinkAttribFrame: TEditLinkAttribFrame
       Top = 37
-      Width = 633
+      Width = 628
       Align = alBottom
       TabOrder = 1
       Visible = False
     end
     inline EditLabelAttribFrame: TEditLabelAttribFrame
       Top = 67
-      Width = 633
+      Width = 628
       Align = alBottom
       TabOrder = 2
       Visible = False
