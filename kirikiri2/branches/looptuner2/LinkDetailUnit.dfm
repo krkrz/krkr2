@@ -1,10 +1,12 @@
 object LinkDetailForm: TLinkDetailForm
-  Left = 59
-  Top = 459
-  Width = 641
-  Height = 438
-  Caption = 'LinkDetailForm'
+  Left = 72
+  Top = 357
+  Width = 637
+  Height = 350
+  Caption = 'ÉäÉìÉNÇÃï“èW'
   Color = clBtnFace
+  Constraints.MinHeight = 189
+  Constraints.MinWidth = 612
   Font.Charset = SHIFTJIS_CHARSET
   Font.Color = clWindowText
   Font.Height = -12
@@ -17,14 +19,14 @@ object LinkDetailForm: TLinkDetailForm
   PixelsPerInch = 96
   TextHeight = 12
   inline EditLinkAttribFrame: TEditLinkAttribFrame
-    Width = 633
+    Width = 629
     Align = alTop
     TabOrder = 3
   end
   object ToolBarPanel: TPanel
     Left = 0
-    Top = 340
-    Width = 633
+    Top = 252
+    Width = 629
     Height = 31
     Align = alBottom
     BevelOuter = bvNone
@@ -137,8 +139,8 @@ object LinkDetailForm: TLinkDetailForm
   end
   object BottomPanel: TPanel
     Left = 0
-    Top = 371
-    Width = 633
+    Top = 283
+    Width = 629
     Height = 33
     Align = alBottom
     BevelOuter = bvNone
@@ -255,7 +257,7 @@ object LinkDetailForm: TLinkDetailForm
       end
     end
     object OKButton: TButton
-      Left = 458
+      Left = 454
       Top = 2
       Width = 75
       Height = 25
@@ -266,7 +268,7 @@ object LinkDetailForm: TLinkDetailForm
       OnClick = OKButtonClick
     end
     object CancelButton: TButton
-      Left = 546
+      Left = 542
       Top = 2
       Width = 75
       Height = 25
@@ -296,17 +298,18 @@ object LinkDetailForm: TLinkDetailForm
   object WaveAreaPanel: TPanel
     Left = 0
     Top = 30
-    Width = 633
-    Height = 310
+    Width = 629
+    Height = 222
     Align = alClient
     BevelOuter = bvLowered
     TabOrder = 2
     object WavePaintBox: TPaintBox
       Left = 1
       Top = 1
-      Width = 631
-      Height = 308
+      Width = 627
+      Height = 220
       Align = alClient
+      OnDblClick = WavePaintBoxDblClick
       OnMouseDown = WavePaintBoxMouseDown
       OnMouseMove = WavePaintBoxMouseMove
       OnMouseUp = WavePaintBoxMouseUp
@@ -315,8 +318,8 @@ object LinkDetailForm: TLinkDetailForm
   end
   object ActionList: TActionList
     Images = LoopTunerMainForm.ImageList
-    Left = 304
-    Top = 248
+    Left = 456
+    Top = 16
     object StopPlayAction: TAction
       Category = 'çƒê∂'
       Caption = 'çƒê∂í‚é~'
@@ -467,7 +470,7 @@ object LinkDetailForm: TLinkDetailForm
   end
   object ApplicationEvents: TApplicationEvents
     OnIdle = ApplicationEventsIdle
-    Left = 304
-    Top = 280
+    Left = 488
+    Top = 16
   end
 end
