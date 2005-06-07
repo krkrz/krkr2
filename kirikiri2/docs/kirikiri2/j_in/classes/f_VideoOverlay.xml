@@ -76,8 +76,8 @@
 	</arg>
 	<result></result>
 	<desc>
-		　ループの終端や、 setPeriodEventによって指定されたフレームに達した場合、または prepare メソッドにより再生準備が完了した場合に呼び出されるメソッドです。<r/>
-		　ループの終端や、 setPeriodEvent によって指定されたフレームに達した場合にこのイベントが呼ばれる時点では、再生状況によっては、すでに再生位置が指定された位置を超えている場合があります。現在の実際の再生位置を取得するには frame プロパティを参照してください。<r/>
+		ループの終端や、 setPeriodEventによって指定されたフレームに達した場合、または prepare メソッドにより再生準備が完了した場合に呼び出されるメソッドです。<r/>
+		ループの終端や、 setPeriodEvent によって指定されたフレームに達した場合にこのイベントが呼ばれる時点では、再生状況によっては、すでに再生位置が指定された位置を超えている場合があります。現在の実際の再生位置を取得するには frame プロパティを参照してください。<r/>
 	</desc>
 	<ref>VideoOverlay.setPeriodEvent</ref>
 	<ref>VideoOverlay.prepare</ref>
@@ -106,8 +106,8 @@
 	</arg>
 	<result></result>
 	<desc>
-		　SWF 再生中に、Get URL アクション (指定 URL を開くアクション) が実行されたときに発生します。<r/>
-		　SWF コンテンツ上で、このアクションの URL として 「<tt>FSCommand:</tt>(コマンド名)」 を指定し、
+		SWF 再生中に、Get URL アクション (指定 URL を開くアクション) が実行されたときに発生します。<r/>
+		SWF コンテンツ上で、このアクションの URL として 「<tt>FSCommand:</tt>(コマンド名)」 を指定し、
 		ターゲットウィンドウに引数を指定するとこのイベントを発生させることができます。<r/>
 	</desc>
 </member>
@@ -128,9 +128,9 @@
 	</arg>
 	<result></result>
 	<desc>
-		　指定されたメディアを開きます。<r/>
-		　現バージョンで再生可能なのは MPEG I (拡張子 .mpeg または .mpg または .mpv)、Macromedia Flash (拡張子 .swf) です。<r/>
-		　ビデオのみの (オーディオとマルチプレクシングされていない) MPEG I ストリームの拡張子は .mpv にしてください。<r/>
+		指定されたメディアを開きます。<r/>
+		現バージョンで再生可能なのは MPEG I (拡張子 .mpeg または .mpg または .mpv)、Macromedia Flash (拡張子 .swf) です。<r/>
+		ビデオのみの (オーディオとマルチプレクシングされていない) MPEG I ストリームの拡張子は .mpv にしてください。<r/>
 	</desc>
 </member>
 
@@ -178,7 +178,7 @@
 	</arg>
 	<result></result>
 	<desc>
-		　メディアの再生位置を先頭に移動します。<r/>
+		メディアの再生位置を先頭に移動します。<r/>
 	</desc>
 </member>
 
@@ -190,9 +190,9 @@
 	</arg>
 	<result></result>
 	<desc>
-	　メディアの1フレーム目を指定されているレイヤーに描画し、描画終了時にonPeriodイベントを発生させます。
-prepareメソッド コール後の再生は、onPeriodイベントを待機してから行ってください。<r/>
-	　このメソッドは、現バージョンでは MPEG でレイヤによる再生時にのみ使用可能です。<r/>
+		メディアの1フレーム目を指定されているレイヤーに描画し、描画終了時にonPeriodイベントを発生させます。
+		prepareメソッド コール後の再生は、onPeriodイベントを待機してから行ってください。<r/>
+		このメソッドは、現バージョンでは MPEG でレイヤによる再生時にのみ使用可能です。<r/>
 	</desc>
 	<ref>VideoOverlay.onPeriod</ref>
 </member>
@@ -206,28 +206,30 @@ prepareメソッド コール後の再生は、onPeriodイベントを待機してから行ってください。
 			<name>comeFrame</name>
 			<default></default>
 			<desc>
-				　ループ移動先フレーム。再生がgoFrameに達したとき、再生ヘッドはこのフレームに移動します。<r/>
+				　ループ移動先フレーム(ループの始端フレーム)。再生がgoFrameに達したとき、再生ヘッドはこのフレームに移動します。<r/>
 			</desc>
 		</argitem>
 		<argitem>
 			<name>goFrame</name>
 			<default></default>
 			<desc>
-				　ループ終点。このフレームの1つ前のフレームの表示が終了した時、再生ヘッドはcomeFrameへ移動します。<r/>
+				　ループ終点フレーム(ループの終端フレーム)。このフレームの1つ前のフレームの表示が終了した時、再生ヘッドはcomeFrameへ移動します。<r/>
 			</desc>
 		</argitem>
 	</arg>
 	<result></result>
 	<desc>
-		　指定されたフレーム間でループ処理を行います。<r/>
-		　ループ終端(goFrame)では、onPeriodイベントが発生します。<r/>
-		　comeFrameのフレームにはムービーファイルにキーフレームを設定しておく必要があります。<r/>
-		　設定されていない場合は、
+		指定されたフレーム間でループ処理を行います。<r/>
+		ループ終端(goFrame)では、onPeriodイベントが発生します。<r/>
+		comeFrameのフレームにはムービーファイルにキーフレームを設定しておく必要があります。<r/>
+		設定されていない場合は、
 		ループ終点から始点へ移動時に指定されたフレームに最も近いキーフレームへ再生位置が移動することになります。<r/>
-	　このメソッドは、現バージョンでは MPEG でレイヤによる再生時にのみ使用可能です。<r/>
+	このメソッドは、現バージョンでは MPEG でレイヤによる再生時にのみ使用可能です。<r/>
 	</desc>
 	<ref>VideoOverlay.cancelSegmentLoop</ref>
 	<ref>VideoOverlay.onPeriod</ref>
+	<ref>VideoOverlay.segmentLoopStartFrame</ref>
+	<ref>VideoOverlay.segmentLoopEndFrame</ref>
 </member>
 
 <member>
@@ -238,9 +240,10 @@ prepareメソッド コール後の再生は、onPeriodイベントを待機してから行ってください。
 	</arg>
 	<result></result>
 	<desc>
-		　setSegmentLoopメソッドで指定したセグメント間ループを解除します。<r/>
-		　このメソッドは、現バージョンでは MPEG でレイヤによる再生時にのみ使用可能です。<r/>
+		setSegmentLoopメソッドで指定したセグメント間ループを解除します。<r/>
+		このメソッドは、現バージョンでは MPEG でレイヤによる再生時にのみ使用可能です。<r/>
 	</desc>
+	<ref>VideoOverlay.setSegmentLoop</ref>
 </member>
 
 <member>
@@ -251,8 +254,8 @@ prepareメソッド コール後の再生は、onPeriodイベントを待機してから行ってください。
 	</arg>
 	<result></result>
 	<desc>
-		　メディアを閉じます。<r/>
-		　メディアを再生するために確保されていたリソースなどもすべて解放します。<r/>
+		メディアを閉じます。<r/>
+		メディアを再生するために確保されていたリソースなどもすべて解放します。<r/>
 	</desc>
 	<ref>VideoOverlay.setSegmentLoop</ref>
 </member>
@@ -266,15 +269,15 @@ prepareメソッド コール後の再生は、onPeriodイベントを待機してから行ってください。
 			<name>eventFrame</name>
 			<default></default>
 			<desc>
-				　onPeriodイベントを発生させるフレームを指定します。<r/>
+				onPeriodイベントを発生させるフレームを指定します。<r/>
 			</desc>
 		</argitem>
 	</arg>
 	<result></result>
 	<desc>
-		　指定したフレームでonPeriodイベントを発生させます。<r/>
-		　onPeriodイベントは、一度発生すると解除されます。再び発生させたい場合は再度このメソッドで設定してください。
-		　このメソッドは、現バージョンでは MPEG でレイヤによる再生時にのみ使用可能です。<r/>
+		指定したフレームでonPeriodイベントを発生させます。<r/>
+		onPeriodイベントは、一度発生すると解除されます。再び発生させたい場合は再度このメソッドで設定してください。<r/>
+		このメソッドは、現バージョンでは MPEG でレイヤによる再生時にのみ使用可能です。<r/>
 	</desc>
 	<ref>VideoOverlay.cancelPeriodEvent</ref>
 	<ref>VideoOverlay.onPeriod</ref>
@@ -288,8 +291,8 @@ prepareメソッド コール後の再生は、onPeriodイベントを待機してから行ってください。
 	</arg>
 	<result></result>
 	<desc>
-		　setPeriodEventメソッドで設定したイベント発生を解除します。<r/>
-		　このメソッドは、現バージョンでは MPEG でレイヤによる再生時にのみ使用可能です。<r/>
+		setPeriodEventメソッドで設定したイベント発生を解除します。<r/>
+		このメソッドは、現バージョンでは MPEG でレイヤによる再生時にのみ使用可能です。<r/>
 	</desc>
 	<ref>VideoOverlay.setPeriodEvent</ref>
 </member>
@@ -392,13 +395,38 @@ prepareメソッド コール後の再生は、onPeriodイベントを待機してから行ってください。
 	</desc>
 </member>
 
+
+<member>
+	<name>selectAudioStream</name>
+	<type>method</type>
+	<shortdesc>音声ストリームの選択</shortdesc>
+	<arg>
+		<argitem>
+			<name>streamNumber</name>
+			<default></default>
+			<desc>
+				音声ストリーム番号を指定します。<r/>
+			</desc>
+		</argitem>
+	</arg>
+	<result></result>
+	<desc>
+		指定した音声ストリーム番号を有効にします。<r/>
+		このメソッドは、現バージョンでは MPEG でレイヤによる再生時にのみ使用可能です。<r/>
+	</desc>
+	<ref>VideoOverlay.numberOfAudioStream</ref>
+	<ref>VideoOverlay.enabledAudioStream</ref>
+</member>
+
+
 <member>
 	<name>position</name>
 	<type>property</type>
 	<shortdesc>再生位置</shortdesc>
 	<access>r/w</access>
 	<desc>
-		　メディアの再生位置を ms 単位で表します。値を設定することもできます。<r/>
+		メディアの再生位置を ms 単位で表します。値を設定することもできます。<r/>
+		SWF 再生中では無効です。<r/>
 	</desc>
 	<ref>VideoOverlay.frame</ref>
 	<ref>VideoOverlay.totalTime</ref>
@@ -410,7 +438,8 @@ prepareメソッド コール後の再生は、onPeriodイベントを待機してから行ってください。
 	<shortdesc>現在のフレーム</shortdesc>
 	<access>r/w</access>
 	<desc>
-		　メディアの再生位置をフレーム単位で表します。値を設定することもできます。<r/>
+		メディアの再生位置をフレーム単位で表します。値を設定することもできます。<r/>
+		SWF 再生中では無効です。<r/>
 	</desc>
 	<ref>VideoOverlay.position</ref>
 	<ref>VideoOverlay.numberOfFrame</ref>
@@ -422,8 +451,8 @@ prepareメソッド コール後の再生は、onPeriodイベントを待機してから行ってください。
 	<shortdesc>ループ再生をするかどうか</shortdesc>
 	<access>r/w</access>
 	<desc>
-		　ループ再生の有効無効を表します。値を設定することもできます。<r/>
-		　真ならばループ、偽ならば非ループです。<r/>
+		ループ再生の有効無効を表します。値を設定することもできます。<r/>
+		真ならばループ、偽ならば非ループです。<r/>
 	</desc>
 </member>
 
@@ -434,7 +463,7 @@ prepareメソッド コール後の再生は、onPeriodイベントを待機してから行ってください。
 	<access>r/w</access>
 	<desc>
 		　再生矩形の横幅を表します。値を設定することもできます。<r/>
-		　このメソッドは、現バージョンではレイヤ再生時は使用できません(常にサイズはビデオのサイズと同じになります)。<r/>
+		　このプロパティは、現バージョンではレイヤ再生時は使用できません(常にサイズはビデオのサイズと同じになります)。<r/>
 	</desc>
 	<ref>VideoOverlay.height</ref>
 	<ref>VideoOverlay.setSize</ref>
@@ -447,7 +476,7 @@ prepareメソッド コール後の再生は、onPeriodイベントを待機してから行ってください。
 	<access>r/w</access>
 	<desc>
 		　再生矩形の縦幅を表します。値を設定することもできます。<r/>
-		　このメソッドは、現バージョンではレイヤ再生時は使用できません(常にサイズはビデオのサイズと同じになります)。<r/>
+		　このプロパティは、現バージョンではレイヤ再生時は使用できません(常にサイズはビデオのサイズと同じになります)。<r/>
 
 	</desc>
 	<ref>VideoOverlay.width</ref>
@@ -495,7 +524,8 @@ prepareメソッド コール後の再生は、onPeriodイベントを待機してから行ってください。
 	<shortdesc>フレームレート</shortdesc>
 	<access>r</access>
 	<desc>
-		　フレームレート(フレーム/秒)を表します。<r/>
+		フレームレート(フレーム/秒)を表します。<r/>
+		SWF 再生中では無効です。<r/>
 	</desc>
 </member>
 
@@ -505,7 +535,8 @@ prepareメソッド コール後の再生は、onPeriodイベントを待機してから行ってください。
 	<shortdesc>全フレーム数</shortdesc>
 	<access>r</access>
 	<desc>
-		　全フレーム数を表します。<r/>
+		全フレーム数を表します。<r/>
+		SWF 再生中では無効です。<r/>
 	</desc>
 </member>
 
@@ -515,7 +546,8 @@ prepareメソッド コール後の再生は、onPeriodイベントを待機してから行ってください。
 	<shortdesc>合計時間</shortdesc>
 	<access>r</access>
 	<desc>
-		　合計時間をms単位で表します。<r/>
+		合計時間をms単位で表します。<r/>
+		SWF 再生中では無効です。<r/>
 	</desc>
 </member>
 
@@ -528,6 +560,7 @@ prepareメソッド コール後の再生は、onPeriodイベントを待機してから行ってください。
 	<desc>
 		　レイヤ描画モード時、描画するレイヤを表します。値を設定することもできます。<r/>
 		　layer1 プロパティと layer2 プロパティを異なるレイヤに設定することにより、同時に２つのレイヤに同じ動画を表示させることができます。<r/>
+		　このプロパティは、現バージョンでは MPEG でレイヤによる再生時にのみ使用可能です。<r/>
 	</desc>
 </member>
 
@@ -538,7 +571,8 @@ prepareメソッド コール後の再生は、onPeriodイベントを待機してから行ってください。
 	<shortdesc>描画レイヤ指定2</shortdesc>
 	<access>r/w</access>
 	<desc>
-		　レイヤ描画モード時、描画するレイヤを表します。値を設定することもできます。<r/>
+		レイヤ描画モード時、描画するレイヤを表します。値を設定することもできます。<r/>
+		このプロパティは、現バージョンでは MPEG でレイヤによる再生時にのみ使用可能です。<r/>
 	</desc>
 </member>
 
@@ -548,9 +582,114 @@ prepareメソッド コール後の再生は、onPeriodイベントを待機してから行ってください。
 	<shortdesc>オーバーレイorレイヤ描画の指定</shortdesc>
 	<access>r/w</access>
 	<desc>
-		　オーバーレイモードであるか、レイヤ描画モードであるかを表します。値を設定することもできます。<r/>
-		　オーバーレイモードの場合は <kw>vomOverlay</kw>、レイヤ描画モードの場合は <kw>vomLayer</kw> となります。<r/>
+		オーバーレイモードであるか、レイヤ描画モードであるかを表します。値を設定することもできます。<r/>
+		オーバーレイモードの場合は <kw>vomOverlay</kw>、レイヤ描画モードの場合は <kw>vomLayer</kw> となります。<r/>
+		SWF 再生中では無効です。<r/>
 	</desc>
+</member>
+
+<member>
+	<name>playRate</name>
+	<type>property</type>
+	<shortdesc>再生速度</shortdesc>
+	<access>r/w</access>
+	<desc>
+		メディアの再生速度を設定します。<r/>
+		1.0 を指定すると通常の再生速度、0.5 では半分の再生速度、2では2倍の再生速度となります。<r/>
+		設定可能値はDirectShowのフィルタによって決まります。<r/>
+		参考 : 音声付のMPEGファイルの場合、0.0より大きい値から2.0までの値が設定可能です。音声なしのMPEGファイルの場合、0.0より大きい値からdoubleの範囲内(たぶん)で設定可能ですが、実際の再生速度は処理速度によって上限が決まります。<r/>
+		SWF 再生中では無効です。<r/>
+	</desc>
+</member>
+
+<member>
+	<name>segmentLoopStartFrame</name>
+	<type>property</type>
+	<shortdesc>セグメントループの開始フレーム</shortdesc>
+	<access>r</access>
+	<desc>
+		セグメントループの始端フレームです。<r/>
+		このプロパティは、現バージョンでは MPEG でレイヤによる再生時にのみ使用可能です。<r/>
+	</desc>
+	<ref>VideoOverlay.setSegmentLoop</ref>
+	<ref>VideoOverlay.cancelSegmentLoop</ref>
+</member>
+
+<member>
+	<name>segmentLoopEndFrame</name>
+	<type>property</type>
+	<shortdesc>セグメントループの開始フレーム</shortdesc>
+	<access>r</access>
+	<desc>
+		セグメントループの始端フレームです。
+		このプロパティは、現バージョンでは MPEG でレイヤによる再生時にのみ使用可能です。<r/>
+	</desc>
+	<ref>VideoOverlay.setSegmentLoop</ref>
+</member>
+
+<member>
+	<name>periodEventFrame</name>
+	<type>property</type>
+	<shortdesc>ピリオドイベントフレーム</shortdesc>
+	<access>r/w</access>
+	<desc>
+		periodイベントを発生させるフレームです。<r/>
+		未設定の場合は負の値となります。<r/>
+		このプロパティは、現バージョンでは MPEG でレイヤによる再生時にのみ使用可能です。<r/>
+	</desc>
+</member>
+
+<member>
+	<name>audioBalance</name>
+	<type>property</type>
+	<shortdesc>音声バランス(パニング)</shortdesc>
+	<access>r/w</access>
+	<desc>
+		パン (音像位置) を表します。値を設定することもできます。<r/>
+		音の聞こえる左右の位置を指定することができます。<r/>
+		-100000 ～ 0 ～ 100000 の数値で指定し、 -100000 が 完全に左、0 が中央、100000 が完全に右になります。<r/>
+		ステレオのソースを再生する場合は、パンは、左右どちらかのチャンネルを減衰させることで実現されます(0を指定すると両チャンネルが出力され、-100000を指定すると左チャンネルのみが出力される)。
+	</desc>
+</member>
+
+<member>
+	<name>audioVolume</name>
+	<type>property</type>
+	<shortdesc>音声ボリューム</shortdesc>
+	<access>r/w</access>
+	<desc>
+		再生する音量を表します。値を設定することもできます。<r/>
+		0 ～ 100000 の数値で指定し、 0 が完全ミュート、100000 が 100% の音量となります。<r/>
+	</desc>
+</member>
+
+<member>
+	<name>numberOfAudioStream</name>
+	<type>property</type>
+	<shortdesc>音声ストリーム数</shortdesc>
+	<access>r</access>
+	<desc>
+		MPEGファイルのみで利用可能です。
+		オーディオストリーム数を取得できます。
+		このプロパティは、現バージョンでは MPEG 再生時にのみ使用可能です。<r/>
+	</desc>
+	<ref>VideoOverlay.selectAudioStream</ref>
+	<ref>VideoOverlay.enabledAudioStream</ref>
+</member>
+
+<member>
+	<name>enabledAudioStream</name>
+	<type>property</type>
+	<shortdesc>再生対象音声ストリーム番号</shortdesc>
+	<access>r</access>
+	<desc>
+		MPEGファイルのみで利用可能です。
+		再生対象のオーディオストリーム番号を取得できます。
+		オーディオストリームが見付からない場合は-1を返します。
+		このプロパティは、現バージョンでは MPEG 再生時にのみ使用可能です。<r/>
+	</desc>
+	<ref>VideoOverlay.selectAudioStream</ref>
+	<ref>VideoOverlay.numberOfAudioStream</ref>
 </member>
 
 
