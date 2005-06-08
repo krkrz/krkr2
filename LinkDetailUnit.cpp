@@ -18,6 +18,8 @@ TLinkDetailForm *LinkDetailForm;
 __fastcall TLinkDetailForm::TLinkDetailForm(TComponent* Owner)
 	: TForm(Owner)
 {
+	StopPlay();
+
 	FReader = NULL;
 	FMagnify = 0;
 	FManager = NULL;

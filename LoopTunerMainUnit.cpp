@@ -18,10 +18,30 @@ __fastcall TLoopTunerMainForm::TLoopTunerMainForm(TComponent* Owner)
 {
 	Reader = new TWaveReader();
 	Reader->OnReadProgress = OnReaderProgress;
+	InitDirectSound(Application->Handle);
+	Manager = NULL;
+	ActiveControl = WaveView;
+	EditAttribPanel->Height = EmptyEditAttribFrame->Height + EditLabelAttribBevel->Height;
+	CreateWaveView();
+}
+//---------------------------------------------------------------------------
+void __fastcall TLoopTunerMainForm::FormDestroy(TObject *Sender)
+{
+	StopPlay();
+	FreeDirectSound();
+	if(WaveView) delete WaveView;
+	if(Manager) delete Manager, Manager = NULL;
+	delete Reader;
+}
+//---------------------------------------------------------------------------
+void __fastcall TLoopTunerMainForm::CreateWaveView()
+{
+	if(WaveView) delete WaveView, WaveView = NULL;
 	WaveView = new TWaveView(this);
 	WaveView->Parent = this;
 	WaveView->Align = alClient;
-	WaveView->Reader = Reader;
+	WaveView->Reader = NULL;
+	WaveView->OnStopFollowingMarker = WaveViewStopFollowingMarker;
 	WaveView->OnWaveDoubleClick		= WaveViewWaveDoubleClick;
 	WaveView->OnLinkDoubleClick		= WaveViewLinkDoubleClick;
 	WaveView->OnNotifyPopup			= WaveViewNotifyPopup;
@@ -31,19 +51,6 @@ __fastcall TLoopTunerMainForm::TLoopTunerMainForm(TComponent* Owner)
 	WaveView->OnSelectionLost		= WaveViewSelectionLost;
 	WaveView->OnLinkModified		= WaveViewLinkModified;
 	WaveView->OnLabelModified		= WaveViewLabelModified;
-	InitDirectSound(Application->Handle);
-	Manager = NULL;
-	ActiveControl = WaveView;
-	EditAttribPanel->Height = EmptyEditAttribFrame->Height + EditLabelAttribBevel->Height;
-}
-//---------------------------------------------------------------------------
-void __fastcall TLoopTunerMainForm::FormDestroy(TObject *Sender)
-{
-	StopPlay();
-	FreeDirectSound();
-	delete WaveView;
-	if(Manager) delete Manager, Manager = NULL;
-	delete Reader;
 }
 //---------------------------------------------------------------------------
 void __fastcall TLoopTunerMainForm::OnReaderProgress(TObject *sender)
@@ -114,6 +121,13 @@ void __fastcall TLoopTunerMainForm::OpenActionExecute(TObject *Sender)
 	{
 		FileName = OpenDialog->FileName;
 
+		// stop playing
+		StopPlay();
+
+		// reset all
+		CreateWaveView();
+		FollowMarkerAction->Checked = true;
+
 		// load wave
 		Reader->LoadWave(FileName);
 	}
@@ -155,29 +169,14 @@ void __fastcall TLoopTunerMainForm::UndoActionExecute(TObject *Sender)
 	WaveView->Undo();
 }
 //---------------------------------------------------------------------------
-void __fastcall TLoopTunerMainForm::UndoActionUpdate(TObject *Sender)
-{
-	UndoAction->Enabled = WaveView->CanUndo();
-}
-//---------------------------------------------------------------------------
 void __fastcall TLoopTunerMainForm::RedoActionExecute(TObject *Sender)
 {
 	WaveView->Redo();
 }
 //---------------------------------------------------------------------------
-void __fastcall TLoopTunerMainForm::RedoActionUpdate(TObject *Sender)
-{
-	RedoAction->Enabled = WaveView->CanRedo();
-}
-//---------------------------------------------------------------------------
 void __fastcall TLoopTunerMainForm::DeleteActionExecute(TObject *Sender)
 {
 	WaveView->DeleteItem();
-}
-//---------------------------------------------------------------------------
-void __fastcall TLoopTunerMainForm::DeleteActionUpdate(TObject *Sender)
-{
-	DeleteAction->Enabled = WaveView->CanDeleteItem();
 }
 //---------------------------------------------------------------------------
 void __fastcall TLoopTunerMainForm::NewLinkActionExecute(TObject *Sender)
@@ -226,6 +225,19 @@ void __fastcall TLoopTunerMainForm::PlayFrom(int pos)
 	}
 }
 //---------------------------------------------------------------------------
+void __fastcall TLoopTunerMainForm::FollowMarkerActionExecute(
+	  TObject *Sender)
+{
+	FollowMarkerAction->Checked = !FollowMarkerAction->Checked;
+	WaveView->FollowingMarker = FollowMarkerAction->Checked;
+}
+//---------------------------------------------------------------------------
+void __fastcall TLoopTunerMainForm::WaveViewStopFollowingMarker(TObject *Sender)
+{
+	FollowMarkerAction->Checked = false;
+	WaveView->FollowingMarker = FollowMarkerAction->Checked;
+}
+//---------------------------------------------------------------------------
 void __fastcall TLoopTunerMainForm::ApplicationEventsIdle(TObject *Sender,
 	  bool &Done)
 {
@@ -245,6 +257,9 @@ void __fastcall TLoopTunerMainForm::ApplicationEventsIdle(TObject *Sender,
 		WaveView->MarkerPos = -1;
 	}
 
+	UndoAction->Enabled = WaveView->CanUndo();
+	RedoAction->Enabled = WaveView->CanRedo();
+	DeleteAction->Enabled = WaveView->CanDeleteItem();
 }
 //---------------------------------------------------------------------------
 void __fastcall TLoopTunerMainForm::WaveViewWaveDoubleClick(TObject *Sender, int pos)
@@ -254,6 +269,9 @@ void __fastcall TLoopTunerMainForm::WaveViewWaveDoubleClick(TObject *Sender, int
 //---------------------------------------------------------------------------
 void __fastcall TLoopTunerMainForm::WaveViewLinkDoubleClick(TObject *Sender, int num, tTVPWaveLoopLink &link)
 {
+	bool org_waveview_followingmarker =  WaveView->FollowingMarker;
+	WaveView->FollowingMarker = true; // temporarily enable the marker
+
 	TLinkDetailForm * ldf = new TLinkDetailForm(this);
 	try
 	{
@@ -262,9 +280,11 @@ void __fastcall TLoopTunerMainForm::WaveViewLinkDoubleClick(TObject *Sender, int
 	}
 	catch(...)
 	{
+		WaveView->FollowingMarker = org_waveview_followingmarker;
 		delete ldf;
 		throw;
 	}
+	WaveView->FollowingMarker = org_waveview_followingmarker;
 	delete ldf;
 }
 //---------------------------------------------------------------------------
@@ -390,6 +410,7 @@ void __fastcall TLoopTunerMainForm::EditLabelAttribFrameEraseRedo(TObject * Send
 	WaveView->EraseRedo();
 }
 //---------------------------------------------------------------------------
+
 
 
 

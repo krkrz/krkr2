@@ -35,6 +35,7 @@ __fastcall TWaveView::TWaveView(Classes::TComponent* AOwner) :
 	FFollowingMarker = true;
 	FWaitingMarker = true;
 	FSoftCenteringStartTick = 0;
+	FOnStopFollowingMarker = NULL;
 
 	FCaretPos = 0;
 	FShowCaret = false;
@@ -152,6 +153,20 @@ void __fastcall TWaveView::SetReader(TWaveReader * reader)
 	Invalidate();
 
 	SetScrollBarRange();
+}
+//---------------------------------------------------------------------------
+void __fastcall TWaveView::ResetAll()
+{
+	FReader = NULL;
+	FUndoStack.clear();
+	FMagnify = -12;
+	FStart = 0;
+	FHoveredLink = -1; // -1 for not hovered
+	FFocusedLink = -1; // -1 for not focused
+	FHoveredLabel = -1; // -1 for not hovered
+	FFocusedLabel = -1; // -1 for not focused
+	SetScrollBarRange();
+	Invalidate();
 }
 //---------------------------------------------------------------------------
 void __fastcall TWaveView::EraseRedo()
@@ -399,6 +414,8 @@ void __fastcall TWaveView::WMHScroll(TWMHScroll &msg)
 	GetScrollInfo(Handle, SB_HORZ, &si);
 
 	SetStart(si.nPos);
+
+	if(FOnStopFollowingMarker) FOnStopFollowingMarker(this);
 }
 //---------------------------------------------------------------------------
 void __fastcall TWaveView::CMMouseLeave(TMessage &msg)
@@ -424,7 +441,7 @@ void __fastcall TWaveView::InvalidateCaret(int pos)
 	DoubleBuffered = false;
 	RECT r;
 	r.top = GetHeadSize();
-	r.bottom = ClientHeight;
+	r.bottom = ClientHeight - GetFootSize();
 	int p_pos = SampleToPixel(pos - FStart);
 	if(p_pos >= 0 && p_pos < ClientWidth)
 	{
@@ -511,7 +528,7 @@ void __fastcall TWaveView::DrawCaret()
 		{
 			RECT r;
 			r.top = GetHeadSize();
-			r.bottom = ClientHeight;
+			r.bottom = ClientHeight - GetFootSize();
 			r.left = p_pos;
 			r.right = p_pos + 1;
 			InvertRect(Canvas->Handle, &r);
@@ -679,6 +696,18 @@ void __fastcall TWaveView::SetMarkerPos(int n)
 		}
 	}
 
+}
+//---------------------------------------------------------------------------
+void __fastcall TWaveView::SetFollowingMarker(bool b)
+{
+	if(FFollowingMarker != b)
+	{
+		FFollowingMarker = b;
+		if(FFollowingMarker)
+		{
+			ResetMarkerFollow();
+		}
+	}
 }
 //---------------------------------------------------------------------------
 void __fastcall TWaveView::ResetMarkerFollow()
@@ -2171,6 +2200,7 @@ void __fastcall TWaveView::MouseDown(TMouseButton button, TShiftState shift, int
 				DraggingObjectInfo.Position = label.Position;
 				DraggingState = dsMouseDown;
 				LastMouseDownPosOffset = MouseXPosToSamplePos(x) - DraggingObjectInfo.Position;
+				if(FOnStopFollowingMarker) FOnStopFollowingMarker(this);
 			}
 		}
 		else if(y < foot_start)
@@ -2195,7 +2225,11 @@ void __fastcall TWaveView::MouseDown(TMouseButton button, TShiftState shift, int
 		{
 			HoveredLabel = -1;
 			int fl = GetLinkAt(x, y);
-			if(fl != -1) FocusedLink = fl;
+			if(fl != -1)
+			{
+				FocusedLink = fl;
+				if(FOnStopFollowingMarker) FOnStopFollowingMarker(this);
+			}
 		}
 	}
 	else
@@ -2233,6 +2267,7 @@ void __fastcall TWaveView::MouseDown(TMouseButton button, TShiftState shift, int
 			}
 		}
 	}
+
 }
 //---------------------------------------------------------------------------
 void __fastcall TWaveView::MouseMove(TShiftState shift, int x, int y)
@@ -2433,7 +2468,8 @@ void __fastcall TWaveView::DblClick(void)
 		if(FOnLinkDoubleClick)
 		{
 			int linknum = GetLinkAt(LastMouseDownX, LastMouseDownY);
-			FOnLinkDoubleClick(this, linknum, Links[linknum]);
+			if(linknum != -1)
+				FOnLinkDoubleClick(this, linknum, Links[linknum]);
 		}
 	}
 }
