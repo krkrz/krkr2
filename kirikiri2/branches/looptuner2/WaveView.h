@@ -39,21 +39,15 @@ public:
 //-- common stuff
 private:
 	TWaveReader * FReader;
-	int FMagnify; // magnification level (in logarithm based 2)
-	int FStart; // start sample position at left edge of the client
 	int GetHeadSize() const { return FShowRuler ? (FMinRulerMajorHeight + 1) : 0; }
 	int GetFootSize() const { return FShowLinks ? (FLinkTierCount * TVP_LGD_TIER_HEIGHT + TVP_LGD_TIER_HEIGHT / 2) : 0; }
 	void __fastcall Paint(void);
-
-public:
-	int __fastcall PixelToSample(int pixel);
-	int __fastcall SampleToPixel(int sample);
 	void __fastcall SetReader(TWaveReader * reader);
 
 public:
+	void __fastcall ResetAll();
+
 	__property TWaveReader * Reader = { read = FReader, write = SetReader };
-	__property int Start = { read = FStart, write = SetStart };
-	__property int Magnify = { read = FMagnify, write = SetMagnify };
 
 
 //-- editing support
@@ -113,10 +107,16 @@ public:
 
 //-- view control
 private:
+	int FMagnify; // magnification level (in logarithm based 2)
+	int FStart; // start sample position at left edge of the client
 	bool FDoubleBufferEnabled;
 	bool FFollowingMarker;
 	bool FWaitingMarker;
+	int FMarkerPos; // marker position for current playing position, -1 for invisible
 	bool FFocused;
+	int __fastcall PixelToSample(int pixel);
+	int __fastcall SampleToPixel(int sample);
+	TNotifyEvent FOnStopFollowingMarker;
 
 	DWORD FSoftCenteringStartTick;
 	int   FSoftCenteringPos;
@@ -136,6 +136,22 @@ END_MESSAGE_MAP(TCustomControl)
 	void __fastcall CMMouseLeave(TMessage &msg);
 	void __fastcall WMSetFocus(TWMSetFocus &msg);
 	void __fastcall WMKillFocus(TWMKillFocus &msg);
+	void __fastcall SetMarkerPos(int p);
+	void __fastcall SetFollowingMarker(bool b);
+public:
+	void __fastcall ResetMarkerFollow();
+private:
+	void __fastcall SetStart(int n);
+	void __fastcall SetMagnify(int m);
+
+public:
+	__property int Start = { read = FStart, write = SetStart };
+	__property int Magnify = { read = FMagnify, write = SetMagnify };
+	__property bool FollowingMarker =
+		{ read = FFollowingMarker, write = SetFollowingMarker };
+	__property TNotifyEvent OnStopFollowingMarker =
+		{ read = FOnStopFollowingMarker, write = FOnStopFollowingMarker };
+	__property int MarkerPos = { read = FMarkerPos, write = SetMarkerPos };
 
 //-- caret drawing stuff
 	int FCaretPos; // caret position
@@ -166,19 +182,10 @@ private:
 	int FMinRulerMajorHeight;
 	int FRulerUnit; // time in msec/10
 	bool FShowRuler; // whether to draw time line
-	int FMarkerPos; // marker position for current playing position, -1 for invisible
 
-private:
-	void __fastcall SetStart(int n);
-	void __fastcall SetMagnify(int m);
-	void __fastcall SetMarkerPos(int p);
-public:
-	void __fastcall ResetMarkerFollow();
 private:
 	void __fastcall DrawWave(int start, bool clear);
 
-public:
-	__property int MarkerPos = { read = FMarkerPos, write = SetMarkerPos };
 
 
 

@@ -90,6 +90,9 @@ __published:	// IDE 管理のコンポーネント
 	TEditLinkAttribFrame *EditLinkAttribFrame;
 	TEditLabelAttribFrame *EditLabelAttribFrame;
 	TApplicationEvents *ApplicationEvents;
+	TToolButton *ToolButton6;
+	TToolButton *FollowMarkerToolButton;
+	TAction *FollowMarkerAction;
 	void __fastcall FormDestroy(TObject *Sender);
 	void __fastcall OpenActionExecute(TObject *Sender);
 	void __fastcall ZoomInActionExecute(TObject *Sender);
@@ -103,11 +106,9 @@ __published:	// IDE 管理のコンポーネント
 	void __fastcall DeleteActionExecute(TObject *Sender);
 	void __fastcall NewLabelActionExecute(TObject *Sender);
 	void __fastcall NewLinkActionExecute(TObject *Sender);
-	void __fastcall UndoActionUpdate(TObject *Sender);
-	void __fastcall RedoActionUpdate(TObject *Sender);
-	void __fastcall DeleteActionUpdate(TObject *Sender);
 	void __fastcall ShowEditAttribActionExecute(TObject *Sender);
 	void __fastcall ApplicationEventsIdle(TObject *Sender, bool &Done);
+	void __fastcall FollowMarkerActionExecute(TObject *Sender);
 private:	// ユーザー宣言
 	TWaveReader * Reader;
 	TWaveView *WaveView;
@@ -118,8 +119,10 @@ public:		// ユーザー宣言
 	__fastcall TLoopTunerMainForm(TComponent* Owner);
 	TWaveView * GetWaveView() { return WaveView; }
 private:
+	void __fastcall CreateWaveView();
 	void __fastcall OnReaderProgress(TObject *sender);
 	void __fastcall PlayFrom(int pos);
+	void __fastcall WaveViewStopFollowingMarker(TObject *Sender);
 	void __fastcall WaveViewWaveDoubleClick(TObject *Sender, int pos);
 	void __fastcall WaveViewLinkDoubleClick(TObject *Sender, int num, tTVPWaveLoopLink &link);
 	void __fastcall WaveViewNotifyPopup(TObject *Sender, AnsiString type);

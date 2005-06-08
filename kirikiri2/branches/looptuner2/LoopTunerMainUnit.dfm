@@ -147,6 +147,19 @@ object LoopTunerMainForm: TLoopTunerMainForm
       Top = 0
       Action = PlayFromCaretAction
     end
+    object ToolButton6: TToolButton
+      Left = 347
+      Top = 0
+      Width = 8
+      Caption = 'ToolButton6'
+      ImageIndex = 2
+      Style = tbsSeparator
+    end
+    object FollowMarkerToolButton: TToolButton
+      Left = 355
+      Top = 0
+      Action = FollowMarkerAction
+    end
   end
   object EditAttribPanel: TPanel
     Left = 0
@@ -284,21 +297,18 @@ object LoopTunerMainForm: TLoopTunerMainForm
       Hint = 'アイテムを削除します'
       ImageIndex = 14
       OnExecute = DeleteActionExecute
-      OnUpdate = DeleteActionUpdate
     end
     object UndoAction: TAction
       Category = '編集'
       Caption = '元に戻す(&U)'
       ImageIndex = 12
       OnExecute = UndoActionExecute
-      OnUpdate = UndoActionUpdate
     end
     object RedoAction: TAction
       Category = '編集'
       Caption = 'やり直し(&R)'
       ImageIndex = 13
       OnExecute = RedoActionExecute
-      OnUpdate = RedoActionUpdate
     end
     object NewLinkAction: TAction
       Category = '編集'
@@ -318,6 +328,12 @@ object LoopTunerMainForm: TLoopTunerMainForm
       Checked = True
       ImageIndex = 17
       OnExecute = ShowEditAttribActionExecute
+    end
+    object FollowMarkerAction: TAction
+      Category = '表示'
+      Caption = 'FollowMarkerAction'
+      ImageIndex = 11
+      OnExecute = FollowMarkerActionExecute
     end
   end
   object ImageList: TImageList
