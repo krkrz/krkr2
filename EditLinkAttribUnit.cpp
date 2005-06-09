@@ -42,6 +42,11 @@ void __fastcall TEditLinkAttribFrame::SetLinkInfo(tTVPWaveLoopLink &link)
 	link.Condition = FLink.Condition;
 }
 //---------------------------------------------------------------------------
+void __fastcall TEditLinkAttribFrame::CheckUncommitted()
+{
+	CondRefValueEditExit(this);
+}
+//---------------------------------------------------------------------------
 void __fastcall TEditLinkAttribFrame::AttribChanged()
 {
 	bool b = EnableConditionCheckBox->Checked;

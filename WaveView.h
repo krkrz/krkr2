@@ -265,6 +265,7 @@ public:
 private:
 	TNotifyWavePosEvent FOnWaveDoubleClick;
 	TLinkSelectedEvent FOnLinkDoubleClick;
+	TLabelSelectedEvent FOnLabelDoubleClick;
 
 	enum TObjectKind { okLink, okLabel };
 	enum TDraggingState { dsNone, dsMouseDown, dsDragging };
@@ -284,6 +285,8 @@ private:
 	int LastMouseMoveX;
 	AnsiString PopupType;
 
+	bool DisableNextMouseDown;
+
 	int LastClickedPos[2]; // last clicked two positions; only used for new link creation
 
 	TObjectInfo DraggingObjectInfo;
@@ -298,12 +301,17 @@ private:
 	DYNAMIC void __fastcall MouseMove(TShiftState shift, int x, int y);
 	DYNAMIC void __fastcall MouseUp(TMouseButton button, TShiftState shift, int x, int y);
 	DYNAMIC void __fastcall DblClick(void);
+public:
+	void __fastcall PerformLinkDoubleClick();
+	void __fastcall PerformLabelDoubleClick();
+private:
 	void __fastcall MouseLeave();
 	void __fastcall OnDragScrollTimer(TObject * sender);
 
 public:
 	__property TNotifyWavePosEvent OnWaveDoubleClick = { read = FOnWaveDoubleClick, write = FOnWaveDoubleClick };
 	__property TLinkSelectedEvent OnLinkDoubleClick = { read = FOnLinkDoubleClick, write = FOnLinkDoubleClick };
+	__property TLabelSelectedEvent OnLabelDoubleClick = { read = FOnLabelDoubleClick, write = FOnLabelDoubleClick };
 };
 //---------------------------------------------------------------------------
 #endif

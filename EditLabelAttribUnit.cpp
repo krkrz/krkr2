@@ -24,6 +24,7 @@ void __fastcall TEditLabelAttribFrame::SetLabel(const tTVPWaveLabel &label)
 	InLoading = true;
 
 	LabelNameEdit->Text = FLabel.Name;
+	LabelNameEdit->Modified = false;
 
 	InLoading = false;
 
@@ -33,6 +34,11 @@ void __fastcall TEditLabelAttribFrame::SetLabel(const tTVPWaveLabel &label)
 void __fastcall TEditLabelAttribFrame::SetLabelInfo(tTVPWaveLabel &label)
 {
 	label.Name = FLabel.Name;
+}
+//---------------------------------------------------------------------------
+void __fastcall TEditLabelAttribFrame::CheckUncommitted()
+{
+	LabelNameEditExit(this);
 }
 //---------------------------------------------------------------------------
 void __fastcall TEditLabelAttribFrame::AttribChanged()
@@ -50,8 +56,12 @@ void __fastcall TEditLabelAttribFrame::CommitChanges()
 //---------------------------------------------------------------------------
 void __fastcall TEditLabelAttribFrame::LabelNameEditExit(TObject *Sender)
 {
-	AttribChanged();
-	CommitChanges();
+	if(LabelNameEdit->Modified)
+	{
+		AttribChanged();
+		CommitChanges();
+        LabelNameEdit->Modified = false;
+	}
 }
 //---------------------------------------------------------------------------
 void __fastcall TEditLabelAttribFrame::LabelNameEditKeyDown(
