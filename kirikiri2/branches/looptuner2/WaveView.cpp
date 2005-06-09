@@ -569,6 +569,8 @@ void __fastcall TWaveView::SetStart(int n)
 void __fastcall TWaveView::SetMagnify(int m)
 {
 	// set magnification
+	if(!FReader || !FReader->ReadDone) return;
+
 	if(m > 3) m = 3;
 	if(m < -16) m = -16;
 	if(FMagnify != m)
@@ -1678,6 +1680,8 @@ int __fastcall TWaveView::GetLinkWaveMarkAt(int x, int &linknum, bool &from_or_t
 void __fastcall TWaveView::CreateNewLink()
 {
 	// create a new link
+	if(!FReader || !FReader->ReadDone) return;
+
 	int from, to;
 	if(LastClickedPos[0] == LastClickedPos[1])
 	{
@@ -1719,6 +1723,8 @@ void __fastcall TWaveView::CreateNewLink()
 void __fastcall TWaveView::CreateNewLabel()
 {
 	// create new label at current caret position
+	if(!FReader || !FReader->ReadDone) return;
+
 	int pos = GetAttentionPos();
 	tTVPWaveLabel label;
 	label.Position = pos;
