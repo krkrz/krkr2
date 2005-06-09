@@ -6,6 +6,7 @@
 #include "DSound.h"
 #include "LoopTunerMainUnit.h"
 #include "LinkDetailUnit.h"
+#include "LabelDetailUnit.h"
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
 #pragma link "EditLabelAttribUnit"
@@ -44,6 +45,7 @@ void __fastcall TLoopTunerMainForm::CreateWaveView()
 	WaveView->OnStopFollowingMarker = WaveViewStopFollowingMarker;
 	WaveView->OnWaveDoubleClick		= WaveViewWaveDoubleClick;
 	WaveView->OnLinkDoubleClick		= WaveViewLinkDoubleClick;
+	WaveView->OnLabelDoubleClick	= WaveViewLabelDoubleClick;
 	WaveView->OnNotifyPopup			= WaveViewNotifyPopup;
 	WaveView->OnShowCaret			= WaveViewShowCaret;
 	WaveView->OnLinkSelected		= WaveViewLinkSelected;
@@ -189,6 +191,18 @@ void __fastcall TLoopTunerMainForm::NewLabelActionExecute(TObject *Sender)
 	WaveView->CreateNewLabel();
 }
 //---------------------------------------------------------------------------
+void __fastcall TLoopTunerMainForm::EditLinkDetailActionExecute(
+	  TObject *Sender)
+{
+	WaveView->PerformLinkDoubleClick();
+}
+//---------------------------------------------------------------------------
+void __fastcall TLoopTunerMainForm::EditLabelDetailActionExecute(
+	  TObject *Sender)
+{
+	WaveView->PerformLabelDoubleClick();
+}
+//---------------------------------------------------------------------------
 void __fastcall TLoopTunerMainForm::PlayFromStartActionExecute(TObject *Sender)
 {
 	PlayFrom(0);
@@ -260,6 +274,7 @@ void __fastcall TLoopTunerMainForm::ApplicationEventsIdle(TObject *Sender,
 	UndoAction->Enabled = WaveView->CanUndo();
 	RedoAction->Enabled = WaveView->CanRedo();
 	DeleteAction->Enabled = WaveView->CanDeleteItem();
+	EditLinkDetailAction->Enabled = WaveView->FocusedLink != -1;
 }
 //---------------------------------------------------------------------------
 void __fastcall TLoopTunerMainForm::WaveViewWaveDoubleClick(TObject *Sender, int pos)
@@ -285,6 +300,30 @@ void __fastcall TLoopTunerMainForm::WaveViewLinkDoubleClick(TObject *Sender, int
 		throw;
 	}
 	WaveView->FollowingMarker = org_waveview_followingmarker;
+	delete ldf;
+}
+//---------------------------------------------------------------------------
+void __fastcall TLoopTunerMainForm::WaveViewLabelDoubleClick(TObject *Sender,
+	int num, tTVPWaveLabel &label)
+{
+	TLabelDetailForm * ldf = new TLabelDetailForm(this);
+	try
+	{
+		ldf->SetLabel(label);
+		if(ldf->ShowModal() == mrOk)
+		{
+			WaveView->InvalidateLabel(num);
+			label = ldf->GetLabel();
+			WaveView->NotifyLabelChanged();
+			WaveView->InvalidateLabel(num);
+			WaveView->PushUndo(); //==== push undo
+		}
+	}
+	catch(...)
+	{
+		delete ldf;
+		throw;
+	}
 	delete ldf;
 }
 //---------------------------------------------------------------------------
@@ -410,6 +449,8 @@ void __fastcall TLoopTunerMainForm::EditLabelAttribFrameEraseRedo(TObject * Send
 	WaveView->EraseRedo();
 }
 //---------------------------------------------------------------------------
+
+
 
 
 

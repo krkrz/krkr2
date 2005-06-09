@@ -74,7 +74,7 @@ __published:	// IDE 管理のコンポーネント
 	TPopupMenu *ForLabelPopupMenu;
 	TMenuItem *ForLink_DeleteMenuItem;
 	TPopupMenu *ForLinkPopupMenu;
-	TMenuItem *MenuItem1;
+	TMenuItem *ForLink_DeleteItemMenuItem;
 	TPopupMenu *ForWavePopupMenu;
 	TMenuItem *ForWave_PlayFromCursorMenuItem;
 	TMenuItem *ForWave_NewLinkMenuItem;
@@ -93,6 +93,18 @@ __published:	// IDE 管理のコンポーネント
 	TToolButton *ToolButton6;
 	TToolButton *FollowMarkerToolButton;
 	TAction *FollowMarkerAction;
+	TMenuItem *SaveMenuItem;
+	TMenuItem *FollowMarkerMenuItem;
+	TMenuItem *ShowEditAttribMenuItem;
+	TMenuItem *PlayMenu;
+	TMenuItem *StopPlayMenuItem;
+	TMenuItem *PlayFromCaretMenuItem;
+	TMenuItem *PlayFromStartMenuItem;
+	TAction *EditLinkDetailAction;
+	TMenuItem *ForLink_EditLinkDetailMenuItem;
+	TMenuItem *EditLinkDetailMenuItem;
+	TMenuItem *ForLAbel_EditLabelDetailMenuItem;
+	TAction *EditLabelDetailAction;
 	void __fastcall FormDestroy(TObject *Sender);
 	void __fastcall OpenActionExecute(TObject *Sender);
 	void __fastcall ZoomInActionExecute(TObject *Sender);
@@ -109,6 +121,8 @@ __published:	// IDE 管理のコンポーネント
 	void __fastcall ShowEditAttribActionExecute(TObject *Sender);
 	void __fastcall ApplicationEventsIdle(TObject *Sender, bool &Done);
 	void __fastcall FollowMarkerActionExecute(TObject *Sender);
+	void __fastcall EditLinkDetailActionExecute(TObject *Sender);
+	void __fastcall EditLabelDetailActionExecute(TObject *Sender);
 private:	// ユーザー宣言
 	TWaveReader * Reader;
 	TWaveView *WaveView;
@@ -125,6 +139,7 @@ private:
 	void __fastcall WaveViewStopFollowingMarker(TObject *Sender);
 	void __fastcall WaveViewWaveDoubleClick(TObject *Sender, int pos);
 	void __fastcall WaveViewLinkDoubleClick(TObject *Sender, int num, tTVPWaveLoopLink &link);
+	void __fastcall WaveViewLabelDoubleClick(TObject *Sender, int num, tTVPWaveLabel &label);
 	void __fastcall WaveViewNotifyPopup(TObject *Sender, AnsiString type);
 	void __fastcall WaveViewShowCaret(TObject *Sender, int pos);
 	void __fastcall WaveViewLinkSelected(TObject *Sender, int num, tTVPWaveLoopLink &link);

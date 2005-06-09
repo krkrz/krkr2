@@ -78,6 +78,9 @@ __fastcall TWaveView::TWaveView(Classes::TComponent* AOwner) :
 
 	FOnWaveDoubleClick = NULL;
 	FOnLinkDoubleClick = NULL;
+	FOnLabelDoubleClick = NULL;
+
+	DisableNextMouseDown = false;
 
 	DragScrollTimer = new TTimer(this);
 	DragScrollTimer->OnTimer = OnDragScrollTimer;
@@ -2182,6 +2185,12 @@ void __fastcall TWaveView::MouseDown(TMouseButton button, TShiftState shift, int
 	if(!FReader || !FReader->ReadDone) return;
 
 	// mouse downed
+	if(DisableNextMouseDown)
+	{
+		DisableNextMouseDown = false;
+		return;
+	}
+
 	SetFocus();
 	PopupType = "";
 	int head_size = GetHeadSize();
@@ -2238,7 +2247,7 @@ void __fastcall TWaveView::MouseDown(TMouseButton button, TShiftState shift, int
 			}
 		}
 	}
-	else
+	else if(button == mbRight)
 	{
 		if(y < head_size)
 		{
@@ -2456,9 +2465,26 @@ void __fastcall TWaveView::DblClick(void)
 
 	if(LastMouseDownY < head_size)
 	{
+		// label
+		if(FOnLabelDoubleClick)
+		{
+			int labelnum = GetLabelAt(LastMouseDownX, LastMouseDownY);
+			if(labelnum != -1)
+			{
+				// cancel dragging
+				DraggingState = dsNone;
+				DragScrollTimer->Enabled = false;
+
+				// call double click handler
+				FOnLabelDoubleClick(this, labelnum, Labels[labelnum]);
+
+				DisableNextMouseDown = true; // to avoid dragging
+			}
+		}
 	}
 	else if(LastMouseDownY < foot_start)
 	{
+		// wave
 		if(FOnWaveDoubleClick)
 		{
 			int pos = MouseXPosToSamplePos(LastMouseDownX);
@@ -2477,6 +2503,22 @@ void __fastcall TWaveView::DblClick(void)
 			if(linknum != -1)
 				FOnLinkDoubleClick(this, linknum, Links[linknum]);
 		}
+	}
+}
+//---------------------------------------------------------------------------
+void __fastcall TWaveView::PerformLinkDoubleClick()
+{
+	if(FocusedLink != -1)
+	{
+		FOnLinkDoubleClick(this, FocusedLink, Links[FocusedLink]);
+	}
+}
+//---------------------------------------------------------------------------
+void __fastcall TWaveView::PerformLabelDoubleClick()
+{
+	if(FocusedLabel != -1)
+	{
+		FOnLabelDoubleClick(this, FocusedLabel, Labels[FocusedLabel]);
 	}
 }
 //---------------------------------------------------------------------------

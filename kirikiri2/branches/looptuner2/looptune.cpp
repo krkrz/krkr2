@@ -15,6 +15,7 @@ USEUNIT("CharacterSet.cpp");
 USEFORM("EditLabelAttribUnit.cpp", EditLabelAttribFrame); /* TFrame: File Type */
 USEFORM("EditLinkAttribUnit.cpp", EditLinkAttribFrame); /* TFrame: File Type */
 USEFORM("LinkDetailUnit.cpp", LinkDetailForm);
+USEFORM("LabelDetailUnit.cpp", LabelDetailForm);
 //---------------------------------------------------------------------------
 WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 {
@@ -22,6 +23,7 @@ WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	{
 		Application->Initialize();
 		Application->CreateForm(__classid(TLoopTunerMainForm), &LoopTunerMainForm);
+		Application->CreateForm(__classid(TLabelDetailForm), &LabelDetailForm);
 		Application->Run();
 	}
 	catch (Exception &exception)

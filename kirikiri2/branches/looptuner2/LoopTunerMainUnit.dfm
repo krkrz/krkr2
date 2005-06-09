@@ -38,11 +38,15 @@ object LoopTunerMainForm: TLoopTunerMainForm
       Left = 0
       Top = 0
       Action = OpenAction
+      ParentShowHint = False
+      ShowHint = True
     end
     object SaveToolButton: TToolButton
       Left = 23
       Top = 0
       Action = SaveAction
+      ParentShowHint = False
+      ShowHint = True
     end
     object ToolButton2: TToolButton
       Left = 46
@@ -56,11 +60,15 @@ object LoopTunerMainForm: TLoopTunerMainForm
       Left = 54
       Top = 0
       Action = UndoAction
+      ParentShowHint = False
+      ShowHint = True
     end
     object RedoToolButton: TToolButton
       Left = 77
       Top = 0
       Action = RedoAction
+      ParentShowHint = False
+      ShowHint = True
     end
     object ToolButton3: TToolButton
       Left = 100
@@ -74,6 +82,8 @@ object LoopTunerMainForm: TLoopTunerMainForm
       Left = 108
       Top = 0
       Action = DeleteAction
+      ParentShowHint = False
+      ShowHint = True
     end
     object ToolButton5: TToolButton
       Left = 131
@@ -87,11 +97,15 @@ object LoopTunerMainForm: TLoopTunerMainForm
       Left = 139
       Top = 0
       Action = NewLinkAction
+      ParentShowHint = False
+      ShowHint = True
     end
     object NewLabelToolButton: TToolButton
       Left = 162
       Top = 0
       Action = NewLabelAction
+      ParentShowHint = False
+      ShowHint = True
     end
     object ToolButton7: TToolButton
       Left = 185
@@ -101,28 +115,34 @@ object LoopTunerMainForm: TLoopTunerMainForm
       ImageIndex = 5
       Style = tbsSeparator
     end
-    object ShowEditAttribToolButton: TToolButton
+    object ZoomInToolButton: TToolButton
       Left = 193
       Top = 0
-      Action = ShowEditAttribAction
+      Action = ZoomInAction
+      ParentShowHint = False
+      ShowHint = True
+    end
+    object ZoomOutToolButton: TToolButton
+      Left = 216
+      Top = 0
+      Action = ZoomOutAction
+      ParentShowHint = False
+      ShowHint = True
     end
     object ToolButton4: TToolButton
-      Left = 216
+      Left = 239
       Top = 0
       Width = 8
       Caption = 'ToolButton4'
       ImageIndex = 5
       Style = tbsSeparator
     end
-    object ZoomInToolButton: TToolButton
-      Left = 224
-      Top = 0
-      Action = ZoomInAction
-    end
-    object ZoomOutToolButton: TToolButton
+    object ShowEditAttribToolButton: TToolButton
       Left = 247
       Top = 0
-      Action = ZoomOutAction
+      Action = ShowEditAttribAction
+      ParentShowHint = False
+      ShowHint = True
     end
     object ToolButton1: TToolButton
       Left = 270
@@ -132,33 +152,41 @@ object LoopTunerMainForm: TLoopTunerMainForm
       ImageIndex = 11
       Style = tbsSeparator
     end
-    object StopToolButton: TToolButton
+    object FollowMarkerToolButton: TToolButton
       Left = 278
       Top = 0
-      Action = StopPlayAction
-    end
-    object PlayToolButton: TToolButton
-      Left = 301
-      Top = 0
-      Action = PlayFromStartAction
-    end
-    object PlayFromCursorToolButton: TToolButton
-      Left = 324
-      Top = 0
-      Action = PlayFromCaretAction
+      Action = FollowMarkerAction
+      ParentShowHint = False
+      ShowHint = True
     end
     object ToolButton6: TToolButton
-      Left = 347
+      Left = 301
       Top = 0
       Width = 8
       Caption = 'ToolButton6'
       ImageIndex = 2
       Style = tbsSeparator
     end
-    object FollowMarkerToolButton: TToolButton
+    object StopToolButton: TToolButton
+      Left = 309
+      Top = 0
+      Action = StopPlayAction
+      ParentShowHint = False
+      ShowHint = True
+    end
+    object PlayToolButton: TToolButton
+      Left = 332
+      Top = 0
+      Action = PlayFromStartAction
+      ParentShowHint = False
+      ShowHint = True
+    end
+    object PlayFromCursorToolButton: TToolButton
       Left = 355
       Top = 0
-      Action = FollowMarkerAction
+      Action = PlayFromCaretAction
+      ParentShowHint = False
+      ShowHint = True
     end
   end
   object EditAttribPanel: TPanel
@@ -211,6 +239,9 @@ object LoopTunerMainForm: TLoopTunerMainForm
       object OpenMenuItem: TMenuItem
         Action = OpenAction
       end
+      object SaveMenuItem: TMenuItem
+        Action = SaveAction
+      end
     end
     object EditMenu: TMenuItem
       Caption = '編集(&E)'
@@ -229,6 +260,9 @@ object LoopTunerMainForm: TLoopTunerMainForm
       object NewLabelMenuItem: TMenuItem
         Action = NewLabelAction
       end
+      object EditLinkDetailMenuItem: TMenuItem
+        Action = EditLinkDetailAction
+      end
     end
     object ViewMenu: TMenuItem
       Caption = '表示(&V)'
@@ -237,6 +271,24 @@ object LoopTunerMainForm: TLoopTunerMainForm
       end
       object ZoomOutMenuItem: TMenuItem
         Action = ZoomOutAction
+      end
+      object FollowMarkerMenuItem: TMenuItem
+        Action = FollowMarkerAction
+      end
+      object ShowEditAttribMenuItem: TMenuItem
+        Action = ShowEditAttribAction
+      end
+    end
+    object PlayMenu: TMenuItem
+      Caption = '再生(&P)'
+      object StopPlayMenuItem: TMenuItem
+        Action = StopPlayAction
+      end
+      object PlayFromStartMenuItem: TMenuItem
+        Action = PlayFromStartAction
+      end
+      object PlayFromCaretMenuItem: TMenuItem
+        Action = PlayFromCaretAction
       end
     end
   end
@@ -247,7 +299,7 @@ object LoopTunerMainForm: TLoopTunerMainForm
     object OpenAction: TAction
       Category = 'ファイル'
       Caption = '開く(&O)...'
-      Hint = 'ファイルを開きます'
+      Hint = 'ファイルを開く'
       ImageIndex = 5
       ShortCut = 16463
       OnExecute = OpenActionExecute
@@ -259,9 +311,17 @@ object LoopTunerMainForm: TLoopTunerMainForm
       ImageIndex = 9
       OnExecute = ZoomInActionExecute
     end
+    object StopPlayAction: TAction
+      Category = '再生'
+      Caption = '停止(&S)'
+      Hint = '再生停止'
+      ImageIndex = 4
+      OnExecute = StopPlayActionExecute
+    end
     object PlayFromCaretAction: TAction
       Category = '再生'
       Caption = '現在位置から再生(&C)'
+      Hint = '現在位置から再生'
       ImageIndex = 1
       OnExecute = PlayFromCaretActionExecute
     end
@@ -275,28 +335,17 @@ object LoopTunerMainForm: TLoopTunerMainForm
     object PlayFromStartAction: TAction
       Category = '再生'
       Caption = '初めから再生(&P)'
+      Hint = '初めから再生'
       ImageIndex = 0
       OnExecute = PlayFromStartActionExecute
-    end
-    object StopPlayAction: TAction
-      Category = '再生'
-      Caption = '停止(&S)'
-      ImageIndex = 4
-      OnExecute = StopPlayActionExecute
     end
     object SaveAction: TAction
       Category = 'ファイル'
       Caption = '保存(&S)'
-      Hint = 'ファイルを保存します'
+      Hint = 'ファイルを保存'
       ImageIndex = 6
+      ShortCut = 16467
       OnExecute = SaveActionExecute
-    end
-    object DeleteAction: TAction
-      Category = '編集'
-      Caption = '削除(&D)'
-      Hint = 'アイテムを削除します'
-      ImageIndex = 14
-      OnExecute = DeleteActionExecute
     end
     object UndoAction: TAction
       Category = '編集'
@@ -310,6 +359,13 @@ object LoopTunerMainForm: TLoopTunerMainForm
       ImageIndex = 13
       OnExecute = RedoActionExecute
     end
+    object DeleteAction: TAction
+      Category = '編集'
+      Caption = '削除(&D)'
+      Hint = 'アイテムを削除します'
+      ImageIndex = 14
+      OnExecute = DeleteActionExecute
+    end
     object NewLinkAction: TAction
       Category = '編集'
       Caption = '新規リンクを作成(&J)'
@@ -322,25 +378,40 @@ object LoopTunerMainForm: TLoopTunerMainForm
       ImageIndex = 16
       OnExecute = NewLabelActionExecute
     end
+    object FollowMarkerAction: TAction
+      Category = '表示'
+      Caption = '再生位置に画面を追従(&F)'
+      Hint = '再生位置に画面を追従'
+      ImageIndex = 11
+      OnExecute = FollowMarkerActionExecute
+    end
     object ShowEditAttribAction: TAction
       Category = '表示'
       Caption = 'クイックプロパティの表示(&Q)'
       Checked = True
+      Hint = 'クイックプロパティの表示'
       ImageIndex = 17
       OnExecute = ShowEditAttribActionExecute
     end
-    object FollowMarkerAction: TAction
-      Category = '表示'
-      Caption = 'FollowMarkerAction'
-      ImageIndex = 11
-      OnExecute = FollowMarkerActionExecute
+    object EditLinkDetailAction: TAction
+      Category = '編集'
+      Caption = 'リンクチューナ(&L)'
+      Hint = 'リンクチューナ'
+      ImageIndex = 31
+      OnExecute = EditLinkDetailActionExecute
+    end
+    object EditLabelDetailAction: TAction
+      Category = '編集'
+      Caption = 'ラベルを編集(&E)'
+      Hint = 'ラベルを編集'
+      OnExecute = EditLabelDetailActionExecute
     end
   end
   object ImageList: TImageList
     Left = 432
     Top = 80
     Bitmap = {
-      494C01011F002200040010001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
+      494C010120002200040010001000FFFFFFFFFF00FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000400000009000000001002000000000000090
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
@@ -509,6 +580,7 @@ object LoopTunerMainForm: TLoopTunerMainForm
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000800000008000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
@@ -516,6 +588,7 @@ object LoopTunerMainForm: TLoopTunerMainForm
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000800000008000000080000000
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
@@ -523,18 +596,16 @@ object LoopTunerMainForm: TLoopTunerMainForm
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
-      0000000000000000000000000000000000000000000000000000000000000000
-      0000000000000000000000000000000000000000000000000000000000000000
-      0000000000000000000000000000000000000000000000000000000000000000
-      0000000000000000000000000000000000000000000000000000000000000000
+      00000000000000000000C0C0C000000000000000800000008000000080000000
+      8000000080000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000C0C0C0000000
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
-      0000000000000000000000000000000000000000000000000000000000000000
-      0000000000000000000000000000000000000000000000000000000000000000
+      0000C0C0C000C0C0C000C0C0C000000000000000800000008000000080000000
+      8000000080000000800000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
@@ -548,16 +619,16 @@ object LoopTunerMainForm: TLoopTunerMainForm
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000C0C0C000C0C0
       C000C0C0C000C0C0C000C0C0C000000000000000000000000000000000000000
-      0000000000000000000000000000000000000000000000000000000000000000
-      0000000000000000000000000000000000000000000000000000000000000000
+      00000000000000000000000000000000000000000000FF000000FF000000FF00
+      0000FF000000FF000000FF00000000000000C0C0C000C0C0C000C0C0C0000000
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000C0C0C000C0C0
       C000C0C0C000C0C0C000C0C0C000C0C0C000C0C0C00000000000000000000000
-      0000000000000000000000000000000000000000000000000000000000000000
-      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000FF000000FF00
+      0000FF000000FF000000FF00000000000000C0C0C00000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
@@ -565,6 +636,7 @@ object LoopTunerMainForm: TLoopTunerMainForm
       0000000000000000000000000000000000000000000000000000C0C0C000C0C0
       C000C0C0C000C0C0C000C0C0C000C0C0C000C0C0C000C0C0C000C0C0C0000000
       0000000000000000000000000000000000000000000000000000000000000000
+      0000FF000000FF000000FF000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
@@ -572,8 +644,7 @@ object LoopTunerMainForm: TLoopTunerMainForm
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
-      0000000000000000000000000000000000000000000000000000000000000000
-      0000000000000000000000000000000000000000000000000000000000000000
+      000000000000FF000000FF000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
@@ -1500,11 +1571,11 @@ object LoopTunerMainForm: TLoopTunerMainForm
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
-      00000000000000000000000000000000FFFFFFFFFFFF00009FFF9FFFFFFF0000
-      87FF87FFFFFF000081FF81FF80010000807F807FE0010000801F801FF8010000
-      800780079E010000801F801F87810000807F807F81E1000081FF81FF80790000
-      87E787C7801F00009FDB9FFB80070000FFF7FFE780010000FFDBFFDFFFFF0000
-      FFE7FFC3FFFF0000FFFFFFFFFFFF0000FFFFFFFFFFFFFFFFFFFF9FFF9FFF9FFF
+      00000000000000000000000000000000FFFFFFFFFFFFFFFF9FFF9FFFFFFFFFFF
+      87FF87FFFFFFFEFF81FF81FF8001FEFF807F807FE001FE3F801F801FF801FE1F
+      800780079E01FC07801F801F8781F003807F807F81E1000181FF81FF8079801F
+      87E787C7801FC07F9FDB9FFB8007F0FFFFF7FFE78001F8FFFFDBFFDFFFFFFEFF
+      FFE7FFC3FFFFFEFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF9FFF9FFF9FFF
       FFFF87FF87FF87FFCFFF81FF81FF81FFC3FF807F807F807FC0FF801F801F801F
       C03F800780078007C00F801F801F801FC003807F807F807FC00F81FF81FF81FF
       C03F875387DF87C3C0FF9EBD9FDF9FEFC3FFFEB9FFDFFFF7CFFFFEB7FFDFFFDB
@@ -1532,8 +1603,7 @@ object LoopTunerMainForm: TLoopTunerMainForm
       FFFFEFFFFF9FFF9FCBFFEBFFFF0FFF0FC8FFE8FF9797EF97C83FE83F91DBE3DB
       C80FE80F907DE0FDC803E803901DE03DC80FE80F9005E00DC83FE83F901DE03D
       C8FFE8FF907DE0FDCBFFEBFF91FBE3FBFFFFEFFF97F7EFF7FFFFC7FFFC0FFC0F
-      FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF00000000000000000000000000000000
-      000000000000}
+      FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF}
   end
   object OpenDialog: TOpenDialog
     Left = 464
@@ -1543,6 +1613,9 @@ object LoopTunerMainForm: TLoopTunerMainForm
     Images = ImageList
     Left = 368
     Top = 112
+    object ForLAbel_EditLabelDetailMenuItem: TMenuItem
+      Action = EditLabelDetailAction
+    end
     object ForLink_DeleteMenuItem: TMenuItem
       Action = DeleteAction
     end
@@ -1551,7 +1624,10 @@ object LoopTunerMainForm: TLoopTunerMainForm
     Images = ImageList
     Left = 400
     Top = 112
-    object MenuItem1: TMenuItem
+    object ForLink_EditLinkDetailMenuItem: TMenuItem
+      Action = EditLinkDetailAction
+    end
+    object ForLink_DeleteItemMenuItem: TMenuItem
       Action = DeleteAction
     end
   end

@@ -32,6 +32,7 @@ public:		// ÉÜÅ[ÉUÅ[êÈåæ
 	__fastcall TEditLabelAttribFrame(TComponent* Owner);
 	void __fastcall SetLabel(const tTVPWaveLabel &label);
 	void __fastcall SetLabelInfo(tTVPWaveLabel &label);
+	void __fastcall CheckUncommitted();
 
 	__property TNotifyEvent OnInfoChanged = { read = FOnInfoChanged, write = FOnInfoChanged };
 	__property TNotifyEvent OnEraseRedo = { read = FOnEraseRedo, write = FOnEraseRedo };

@@ -44,6 +44,8 @@ public:		// ÉÜÅ[ÉUÅ[êÈåæ
 	void __fastcall SetLink(const tTVPWaveLoopLink &link);
 	void __fastcall SetLinkInfo(tTVPWaveLoopLink &link);
 
+	void __fastcall CheckUncommitted();
+
 	__property TNotifyEvent OnInfoChanged = { read = FOnInfoChanged, write = FOnInfoChanged };
 	__property TNotifyEvent OnEraseRedo = { read = FOnEraseRedo, write = FOnEraseRedo };
 };

@@ -57,6 +57,7 @@ void __fastcall TLinkDetailForm::FormClose(TObject *Sender,
 {
 	if(ModalResult == mrOk)
 	{
+		EditLinkAttribFrame->CheckUncommitted();
 		EditLinkAttribFrame->SetLinkInfo(FLink);
 		UpdateMainWindowParams(true);
 	}
