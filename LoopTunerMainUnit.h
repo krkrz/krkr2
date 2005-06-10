@@ -105,6 +105,8 @@ __published:	// IDE 管理のコンポーネント
 	TMenuItem *EditLinkDetailMenuItem;
 	TMenuItem *ForLAbel_EditLabelDetailMenuItem;
 	TAction *EditLabelDetailAction;
+	TMenuItem *ForLabel_NewLabelMenuItem;
+	TMenuItem *ForLink_NewLinkMenuItem;
 	void __fastcall FormDestroy(TObject *Sender);
 	void __fastcall OpenActionExecute(TObject *Sender);
 	void __fastcall ZoomInActionExecute(TObject *Sender);
