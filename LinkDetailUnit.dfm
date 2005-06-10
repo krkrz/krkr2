@@ -3,6 +3,7 @@ object LinkDetailForm: TLinkDetailForm
   Top = 357
   Width = 637
   Height = 350
+  ActiveControl = WaveAreaPanel
   Caption = 'ÉäÉìÉNÇÃï“èW'
   Color = clBtnFace
   Constraints.MinHeight = 189
@@ -238,6 +239,7 @@ object LinkDetailForm: TLinkDetailForm
         Left = 213
         Top = 0
         Action = Play2SecAction
+        Marked = True
         ParentShowHint = False
         ShowHint = True
       end
@@ -302,7 +304,10 @@ object LinkDetailForm: TLinkDetailForm
     Height = 222
     Align = alClient
     BevelOuter = bvLowered
+    PopupMenu = WaveAreaPopupMenu
     TabOrder = 2
+    OnEnter = WaveAreaPanelEnter
+    OnExit = WaveAreaPanelExit
     object WavePaintBox: TPaintBox
       Left = 1
       Top = 1
@@ -348,7 +353,7 @@ object LinkDetailForm: TLinkDetailForm
   object ActionList: TActionList
     Images = LoopTunerMainForm.ImageList
     Left = 456
-    Top = 16
+    Top = 24
     object StopPlayAction: TAction
       Category = 'çƒê∂'
       Caption = 'çƒê∂í‚é~'
@@ -500,6 +505,45 @@ object LinkDetailForm: TLinkDetailForm
   object ApplicationEvents: TApplicationEvents
     OnIdle = ApplicationEventsIdle
     Left = 488
-    Top = 16
+    Top = 24
+  end
+  object WaveAreaPopupMenu: TPopupMenu
+    Left = 520
+    Top = 24
+    object ZoomInMenuItem: TMenuItem
+      Action = ZoomInAction
+      ShortCut = 73
+    end
+    object ZoomOutMenuItem: TMenuItem
+      Action = ZoomOutAction
+      ShortCut = 79
+    end
+    object N1: TMenuItem
+      Caption = '-'
+    end
+    object StopPlayMenuItem: TMenuItem
+      Action = StopPlayAction
+      ShortCut = 83
+    end
+    object PlayHalfSecMenuItem: TMenuItem
+      Action = PlayHalfSecAction
+      ShortCut = 48
+    end
+    object Play1SecMenuItem: TMenuItem
+      Action = Play1SecAction
+      ShortCut = 49
+    end
+    object Play2SecMenuItem: TMenuItem
+      Action = Play2SecAction
+      ShortCut = 50
+    end
+    object Play3SecMenuItem: TMenuItem
+      Action = Play3SecAction
+      ShortCut = 51
+    end
+    object Play5SecMenuItem: TMenuItem
+      Action = Play5SecAction
+      ShortCut = 53
+    end
   end
 end
