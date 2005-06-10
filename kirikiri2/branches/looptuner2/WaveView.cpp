@@ -2253,10 +2253,10 @@ void __fastcall TWaveView::MouseDown(TMouseButton button, TShiftState shift, int
 		{
 			int fl = GetLabelAt(x, y);
 			if(fl != -1)
-			{
 				FocusedLabel = fl;
-				PopupType = "Label";
-			}
+			else
+				CaretPos = MouseXPosToSamplePos(x);
+			PopupType = "Label";
 		}
 		else if(y < foot_start)
 		{
@@ -2278,8 +2278,14 @@ void __fastcall TWaveView::MouseDown(TMouseButton button, TShiftState shift, int
 			if(fl != -1)
 			{
 				FocusedLink = fl;
-				PopupType = "Link";
 			}
+			else
+			{
+				int pos = MouseXPosToSamplePos(x);
+				CaretPos = pos;
+				PushLastClickedPos(pos);
+			}
+			PopupType = "Link";
 		}
 	}
 

@@ -275,6 +275,7 @@ void __fastcall TLoopTunerMainForm::ApplicationEventsIdle(TObject *Sender,
 	RedoAction->Enabled = WaveView->CanRedo();
 	DeleteAction->Enabled = WaveView->CanDeleteItem();
 	EditLinkDetailAction->Enabled = WaveView->FocusedLink != -1;
+	EditLabelDetailAction->Enabled = WaveView->FocusedLabel != -1;
 }
 //---------------------------------------------------------------------------
 void __fastcall TLoopTunerMainForm::WaveViewWaveDoubleClick(TObject *Sender, int pos)
