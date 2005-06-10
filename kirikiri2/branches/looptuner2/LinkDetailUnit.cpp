@@ -30,6 +30,8 @@ __fastcall TLinkDetailForm::TLinkDetailForm(TComponent* Owner)
 	FirstMouseDownPos = 0;
 	FirstMouseDownX = 0;
 
+	WaveAreaHasFocus = true;
+
 	WaveAreaPanel->DoubleBuffered = true;
 	PlayBeforePaintBoxPanel->DoubleBuffered = true;
 
@@ -233,7 +235,7 @@ void __fastcall TLinkDetailForm::WavePaintBoxPaint(TObject *Sender)
 	}
 
 	//- draw -Inf line
-	Canvas->Pen->Color = C_INF_LINE;
+	WavePaintBox->Canvas->Pen->Color = C_INF_LINE;
 	for(int ch = 0; ch < FReader->Channels; ch ++)
 	{
 		WavePaintBox->Canvas->MoveTo(dest_left,  CONV_Y(0, ch));
@@ -343,11 +345,34 @@ void __fastcall TLinkDetailForm::WavePaintBoxPaint(TObject *Sender)
 	WavePaintBox->Canvas->MoveTo(center, 0);
 	WavePaintBox->Canvas->LineTo(center, WavePaintBox->Height);
 
+	// draw focus frame
+	if(WaveAreaHasFocus)
+	{
+		WavePaintBox->Canvas->Pen->Color = (TColor)((~C_CLIENT)&0xffffff);
+		WavePaintBox->Canvas->MoveTo(0, 0);
+		WavePaintBox->Canvas->LineTo(WavePaintBox->Width-1, 0);
+		WavePaintBox->Canvas->LineTo(WavePaintBox->Width-1, WavePaintBox->Height-1);
+		WavePaintBox->Canvas->LineTo(0, WavePaintBox->Height-1);
+		WavePaintBox->Canvas->LineTo(0, 0);
+	}
+}
+//---------------------------------------------------------------------------
+void __fastcall TLinkDetailForm::WaveAreaPanelEnter(TObject *Sender)
+{
+	WaveAreaHasFocus = true;
+	WaveAreaPanel->Invalidate();
+}
+//---------------------------------------------------------------------------
+void __fastcall TLinkDetailForm::WaveAreaPanelExit(TObject *Sender)
+{
+	WaveAreaHasFocus = false;
+	WaveAreaPanel->Invalidate();
 }
 //---------------------------------------------------------------------------
 void __fastcall TLinkDetailForm::WavePaintBoxMouseDown(TObject *Sender,
 	  TMouseButton Button, TShiftState Shift, int X, int Y)
 {
+	WaveAreaPanel->SetFocus();
 	if(Button == mbLeft)
 	{
 		Dragging = true;
@@ -675,4 +700,13 @@ void __fastcall TLinkDetailForm::EditLinkAttribFrameEraseRedo(TObject * Sender)
 //---------------------------------------------------------------------------
 
 
+
+
+
+
+void __fastcall TLinkDetailForm::ZoomInMenuItemClick(TObject *Sender)
+{
+//
+}
+//---------------------------------------------------------------------------
 

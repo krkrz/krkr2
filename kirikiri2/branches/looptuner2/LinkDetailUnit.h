@@ -16,6 +16,7 @@
 #include <ActnList.hpp>
 #include <AppEvnts.hpp>
 #include "EditLinkAttribUnit.h"
+#include <Menus.hpp>
 //---------------------------------------------------------------------------
 class TLinkDetailForm : public TForm
 {
@@ -76,6 +77,11 @@ __published:	// IDE 管理のコンポーネント
 	TAction *StopPlayAction;
 	TLabel *AfterLinkLabel;
 	TLabel *BeforeLinkLabel;
+	TPopupMenu *WaveAreaPopupMenu;
+	TMenuItem *ZoomInMenuItem;
+	TMenuItem *ZoomOutMenuItem;
+	TMenuItem *N1;
+	TMenuItem *StopPlayMenuItem;
 	void __fastcall WavePaintBoxPaint(TObject *Sender);
 	void __fastcall ZoomInActionExecute(TObject *Sender);
 	void __fastcall ZoomOutActionExecute(TObject *Sender);
@@ -112,6 +118,9 @@ __published:	// IDE 管理のコンポーネント
 	void __fastcall CancelButtonClick(TObject *Sender);
 	void __fastcall StopPlayActionExecute(TObject *Sender);
 	void __fastcall WavePaintBoxDblClick(TObject *Sender);
+	void __fastcall WaveAreaPanelEnter(TObject *Sender);
+	void __fastcall WaveAreaPanelExit(TObject *Sender);
+	void __fastcall ZoomInMenuItemClick(TObject *Sender);
 private:	// ユーザー宣言
 	TWaveReader * FReader; // wave reader
 	tTVPWaveLoopManager * FManager; // wave loop manager
@@ -119,6 +128,8 @@ private:	// ユーザー宣言
 	tTVPWaveLoopLink FLink; // current editting link
 	tTVPWaveLoopLink FLinkOriginal; // the original information of editting link
 	int FMagnify; // magnification level (in logarithm based 2)
+
+	bool WaveAreaHasFocus;
 
 	bool Dragging;
 	bool BeforeOrAfter;
