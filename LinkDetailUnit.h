@@ -82,6 +82,9 @@ __published:	// IDE 管理のコンポーネント
 	TMenuItem *ZoomOutMenuItem;
 	TMenuItem *N1;
 	TMenuItem *StopPlayMenuItem;
+	TMenuItem *BeforePrevCrossMenuItem;
+	TMenuItem *BeforePrevFastMenuItem;
+	TMenuItem *PlayMenuItem;
 	void __fastcall WavePaintBoxPaint(TObject *Sender);
 	void __fastcall ZoomInActionExecute(TObject *Sender);
 	void __fastcall ZoomOutActionExecute(TObject *Sender);
@@ -120,7 +123,9 @@ __published:	// IDE 管理のコンポーネント
 	void __fastcall WavePaintBoxDblClick(TObject *Sender);
 	void __fastcall WaveAreaPanelEnter(TObject *Sender);
 	void __fastcall WaveAreaPanelExit(TObject *Sender);
-	void __fastcall ZoomInMenuItemClick(TObject *Sender);
+	void __fastcall FormMouseWheel(TObject *Sender, TShiftState Shift,
+          int WheelDelta, TPoint &MousePos, bool &Handled);
+	void __fastcall PlayMenuItemClick(TObject *Sender);
 private:	// ユーザー宣言
 	TWaveReader * FReader; // wave reader
 	tTVPWaveLoopManager * FManager; // wave loop manager
@@ -152,10 +157,11 @@ private:
 	void __fastcall UpdateMainWindowParams(bool push_undo = false);
 	void __fastcall UpdateDisplay();
 	void __fastcall UpdateLayout();
+	void __fastcall StepBefore(int step);
+	void __fastcall StepAfter(int step);
 	void __fastcall PlayLink(int before, int after = 5000);
 	void __fastcall PlayLink();
 	void __fastcall MarkPlayButton(TObject * button);
-
 	void __fastcall EditLinkAttribFrameInfoChanged(TObject * Sender);
 	void __fastcall EditLinkAttribFrameEraseRedo(TObject * Sender);
 };

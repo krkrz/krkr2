@@ -16,6 +16,7 @@ object LinkDetailForm: TLinkDetailForm
   OldCreateOrder = False
   OnClose = FormClose
   OnDestroy = FormDestroy
+  OnMouseWheel = FormMouseWheel
   OnResize = FormResize
   PixelsPerInch = 96
   TextHeight = 12
@@ -356,7 +357,7 @@ object LinkDetailForm: TLinkDetailForm
     Top = 24
     object StopPlayAction: TAction
       Category = '再生'
-      Caption = '再生停止'
+      Caption = '再生停止(&S)'
       Hint = '再生を停止'
       ImageIndex = 4
       OnExecute = StopPlayActionExecute
@@ -377,7 +378,7 @@ object LinkDetailForm: TLinkDetailForm
     end
     object PlayHalfSecAction: TAction
       Category = '再生'
-      Caption = '0.5秒前から再生(&H)'
+      Caption = '0.5秒前から再生(&0)'
       Hint = '0.5秒前から再生'
       ImageIndex = 25
       OnExecute = PlayHalfSecActionExecute
@@ -419,84 +420,84 @@ object LinkDetailForm: TLinkDetailForm
     end
     object BeforePrevCrossAction: TAction
       Category = 'リンク前'
-      Caption = '前のクロッシング・ポイントへ'
+      Caption = '前のクロッシング・ポイントへ(&A)'
       Hint = '前のクロッシング・ポイントへ'
       ImageIndex = 22
       OnExecute = BeforePrevCrossActionExecute
     end
     object BeforePrevFastAction: TAction
       Category = 'リンク前'
-      Caption = '前へ20ステップ'
+      Caption = '前へ20ステップ(&S)'
       Hint = '前へ20ステップ'
       ImageIndex = 23
       OnExecute = BeforePrevFastActionExecute
     end
     object BeforePrevStepAction: TAction
       Category = 'リンク前'
-      Caption = '前へ1ステップ'
+      Caption = '前へ1ステップ(&D)'
       Hint = '前へ1ステップ'
       ImageIndex = 21
       OnExecute = BeforePrevStepActionExecute
     end
     object BeforeNextStepAction: TAction
       Category = 'リンク前'
-      Caption = '次へ1ステップ'
+      Caption = '次へ1ステップ(&F)'
       Hint = '次へ1ステップ'
       ImageIndex = 18
       OnExecute = BeforeNextStepActionExecute
     end
     object BeforeNextFastAction: TAction
       Category = 'リンク前'
-      Caption = '次へ20ステップ'
+      Caption = '次へ20ステップ(&G)'
       Hint = '次へ20ステップ'
       ImageIndex = 20
       OnExecute = BeforeNextFastActionExecute
     end
     object BeforeNextCrossAction: TAction
       Category = 'リンク前'
-      Caption = '次のクロッシング・ポイントへ'
+      Caption = '次のクロッシング・ポイントへ(&H)'
       Hint = '次のクロッシング・ポイントへ'
       ImageIndex = 19
       OnExecute = BeforeNextCrossActionExecute
     end
     object AfterPrevCrossAction: TAction
       Category = 'リンク後'
-      Caption = '前のクロッシング・ポイントへ'
+      Caption = '前のクロッシング・ポイントへ(&Z)'
       Hint = '前のクロッシング・ポイントへ'
       ImageIndex = 22
       OnExecute = AfterPrevCrossActionExecute
     end
     object AfterPrevFastAction: TAction
       Category = 'リンク後'
-      Caption = '前へ20ステップ'
+      Caption = '前へ20ステップ(&X)'
       Hint = '前へ20ステップ'
       ImageIndex = 23
       OnExecute = AfterPrevFastActionExecute
     end
     object AfterPrevStepAction: TAction
       Category = 'リンク後'
-      Caption = '前へ1ステップ'
+      Caption = '前へ1ステップ(&C)'
       Hint = '前へ1ステップ'
       ImageIndex = 21
       OnExecute = AfterPrevStepActionExecute
     end
     object AfterNextStepAction: TAction
       Category = 'リンク後'
-      Caption = '次へ1ステップ'
+      Caption = '次へ1ステップ(&V)'
       Hint = '次へ1ステップ'
       ImageIndex = 18
       OnExecute = AfterNextStepActionExecute
     end
     object AfterNextFastAction: TAction
       Category = 'リンク後'
-      Caption = '次へ20ステップ'
+      Caption = '次へ20ステップ(&B)'
       Hint = '次へ20ステップ'
       ImageIndex = 20
       OnExecute = AfterNextFastActionExecute
     end
     object AfterNextCrossAction: TAction
       Category = 'リンク後'
-      Caption = '次のクロッシング・ポイントへ'
+      Caption = '次のクロッシング・ポイントへ(&N)'
       Hint = '次のクロッシング・ポイントへ'
       ImageIndex = 19
       OnExecute = AfterNextCrossActionExecute
@@ -508,6 +509,7 @@ object LinkDetailForm: TLinkDetailForm
     Top = 24
   end
   object WaveAreaPopupMenu: TPopupMenu
+    Images = LoopTunerMainForm.ImageList
     Left = 520
     Top = 24
     object ZoomInMenuItem: TMenuItem
@@ -524,6 +526,12 @@ object LinkDetailForm: TLinkDetailForm
     object StopPlayMenuItem: TMenuItem
       Action = StopPlayAction
       ShortCut = 83
+    end
+    object PlayMenuItem: TMenuItem
+      Caption = '再生'
+      ImageIndex = 24
+      ShortCut = 32
+      OnClick = PlayMenuItemClick
     end
     object PlayHalfSecMenuItem: TMenuItem
       Action = PlayHalfSecAction
@@ -544,6 +552,68 @@ object LinkDetailForm: TLinkDetailForm
     object Play5SecMenuItem: TMenuItem
       Action = Play5SecAction
       ShortCut = 53
+    end
+    object BeforePrevCrossMenuItem: TMenuItem
+      Action = BeforePrevCrossAction
+      Break = mbBarBreak
+      Caption = ' '
+      ShortCut = 65
+    end
+    object BeforePrevFastMenuItem: TMenuItem
+      Action = BeforePrevFastAction
+      Caption = ' '
+      ShortCut = 83
+    end
+    object BeforePrevSepMenuItem: TMenuItem
+      Action = BeforePrevStepAction
+      Caption = ' '
+      ShortCut = 68
+    end
+    object BeforeNextStepMenuItem: TMenuItem
+      Action = BeforeNextStepAction
+      Caption = ' '
+      ShortCut = 70
+    end
+    object BeforeNextFastMenuItem: TMenuItem
+      Action = BeforeNextFastAction
+      Caption = ' '
+      ShortCut = 71
+    end
+    object BeforeNextCrossMenuItem: TMenuItem
+      Action = BeforeNextCrossAction
+      Caption = ' '
+      ShortCut = 72
+    end
+    object AfterPrevCrossMenuItem: TMenuItem
+      Action = AfterPrevCrossAction
+      Break = mbBarBreak
+      Caption = ' '
+      ShortCut = 90
+    end
+    object AfterPrevFastMenuItem: TMenuItem
+      Action = AfterPrevFastAction
+      Caption = ' '
+      ShortCut = 88
+    end
+    object AfterPrevSepMenuItem: TMenuItem
+      Action = AfterPrevStepAction
+      Caption = ' '
+      ShortCut = 67
+    end
+    object AfterNextStepMenuItem: TMenuItem
+      Action = AfterNextStepAction
+      Caption = ' '
+      ShortCut = 86
+    end
+    object AfterNextFastMenuItem: TMenuItem
+      Action = AfterNextFastAction
+      Caption = ' '
+      ShortCut = 66
+    end
+    object AfterNextCrossMenuItem: TMenuItem
+      Action = AfterNextCrossAction
+      Caption = ' '
+      ShortCut = 78
     end
   end
 end

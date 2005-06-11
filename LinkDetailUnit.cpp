@@ -420,6 +420,36 @@ void __fastcall TLinkDetailForm::WavePaintBoxDblClick(TObject *Sender)
 	PlayLink();
 }
 //---------------------------------------------------------------------------
+void __fastcall TLinkDetailForm::PlayMenuItemClick(TObject *Sender)
+{
+	PlayLink();
+}
+//---------------------------------------------------------------------------
+void __fastcall TLinkDetailForm::FormMouseWheel(TObject *Sender,
+	  TShiftState Shift, int WheelDelta, TPoint &MousePos, bool &Handled)
+{
+	// mouse wheel;
+	// check mouse cursor position
+	TPoint pos = MousePos;
+
+//	pos = ClientToScreen(pos);
+	pos = WavePaintBox->ScreenToClient(pos);
+
+	int center = WavePaintBox->Width / 2; // center line
+	if(pos.x  > center)
+	{
+		// after link
+		StepAfter(WheelDelta / 120);
+	}
+	else
+	{
+		// before link
+		StepBefore(WheelDelta / 120);
+	}
+
+	Handled = true;
+}
+//---------------------------------------------------------------------------
 void __fastcall TLinkDetailForm::ZoomInActionExecute(TObject *Sender)
 {
 	if(FMagnify < 0) FMagnify ++;
@@ -450,57 +480,29 @@ void __fastcall TLinkDetailForm::BeforePrevCrossActionExecute(
 void __fastcall TLinkDetailForm::BeforePrevFastActionExecute(
 	  TObject *Sender)
 {
-	int step = (1<<-FMagnify) * 20;
-	if(FLink.From > step)
-		FLink.From -= step;
-	else
-		FLink.From = 0;
-	WavePaintBox->Invalidate();
-	UpdateMainWindowParams();
-	UpdateDisplay();
+	StepBefore(20);
 }
 //---------------------------------------------------------------------------
 void __fastcall TLinkDetailForm::BeforePrevStepActionExecute(
 	  TObject *Sender)
 {
-	int step = (1<<-FMagnify);
-	if(FLink.From > step)
-		FLink.From -= step;
-	else
-		FLink.From = 0;
-	WavePaintBox->Invalidate();
-	UpdateMainWindowParams();
-	UpdateDisplay();
+	StepBefore(1);
 }
 //---------------------------------------------------------------------------
 void __fastcall TLinkDetailForm::BeforeNextStepActionExecute(
 	  TObject *Sender)
 {
-	int step = (1<<-FMagnify);
-	if((FReader->NumSamples - 1) - FLink.From > step )
-		FLink.From += step;
-	else
-		FLink.From = FReader->NumSamples - 1;
-	WavePaintBox->Invalidate();
-	UpdateMainWindowParams();
-	UpdateDisplay();
+	StepBefore(-1);
 }
 //---------------------------------------------------------------------------
 void __fastcall TLinkDetailForm::BeforeNextFastActionExecute(
 	  TObject *Sender)
 {
-	int step = (1<<-FMagnify) * 20;
-	if((FReader->NumSamples - 1) - FLink.From > step )
-		FLink.From += step;
-	else
-		FLink.From = FReader->NumSamples - 1;
-	WavePaintBox->Invalidate();
-	UpdateMainWindowParams();
-	UpdateDisplay();
+	StepBefore(-20);
 }
 //---------------------------------------------------------------------------
 void __fastcall TLinkDetailForm::BeforeNextCrossActionExecute(
-      TObject *Sender)
+	  TObject *Sender)
 {
 	//
 }
@@ -514,59 +516,79 @@ void __fastcall TLinkDetailForm::AfterPrevCrossActionExecute(
 void __fastcall TLinkDetailForm::AfterPrevFastActionExecute(
 	  TObject *Sender)
 {
-	int step = (1<<-FMagnify) * 20;
-	if(FLink.To > step)
-		FLink.To -= step;
-	else
-		FLink.To = 0;
-	WavePaintBox->Invalidate();
-	UpdateMainWindowParams();
-	UpdateDisplay();
+	StepAfter(20);
 }
 //---------------------------------------------------------------------------
 void __fastcall TLinkDetailForm::AfterPrevStepActionExecute(
 	  TObject *Sender)
 {
-	int step = (1<<-FMagnify);
-	if(FLink.To > step)
-		FLink.To -= step;
-	else
-		FLink.To = 0;
-	WavePaintBox->Invalidate();
-	UpdateMainWindowParams();
-	UpdateDisplay();
+	StepAfter(1);
 }
 //---------------------------------------------------------------------------
 void __fastcall TLinkDetailForm::AfterNextStepActionExecute(
 	  TObject *Sender)
 {
-	int step = (1<<-FMagnify);
-	if((FReader->NumSamples - 1) - FLink.To > step )
-		FLink.To += step;
-	else
-		FLink.To = FReader->NumSamples - 1;
-	WavePaintBox->Invalidate();
-	UpdateMainWindowParams();
-	UpdateDisplay();
+	StepAfter(-1);
 }
 //---------------------------------------------------------------------------
 void __fastcall TLinkDetailForm::AfterNextFastActionExecute(
 	  TObject *Sender)
 {
-	int step = (1<<-FMagnify) * 20;
-	if((FReader->NumSamples - 1) - FLink.To > step )
-		FLink.To += step;
-	else
-		FLink.To = FReader->NumSamples - 1;
-	WavePaintBox->Invalidate();
-	UpdateMainWindowParams();
-	UpdateDisplay();
+	StepAfter(-20);
 }
 //---------------------------------------------------------------------------
 void __fastcall TLinkDetailForm::AfterNextCrossActionExecute(
 	  TObject *Sender)
 {
 	//
+}
+//---------------------------------------------------------------------------
+void __fastcall TLinkDetailForm::StepBefore(int step)
+{
+	if(step < 0)
+	{
+		step = (1<<-FMagnify) * -step;
+		if(FLink.From > step)
+			FLink.From -= step;
+		else
+			FLink.From = 0;
+	}
+	else
+	{
+		step = (1<<-FMagnify) * step;
+		if((FReader->NumSamples - 1) - FLink.From > step )
+			FLink.From += step;
+		else
+			FLink.From = FReader->NumSamples - 1;
+	}
+
+	WavePaintBox->Invalidate();
+	UpdateMainWindowParams();
+	UpdateDisplay();
+}
+//---------------------------------------------------------------------------
+void __fastcall TLinkDetailForm::StepAfter(int step)
+{
+	if(step < 0)
+	{
+		step = (1<<-FMagnify) * -step;
+		if(FLink.To > step)
+			FLink.To -= step;
+		else
+			FLink.To = 0;
+	}
+	else
+	{
+		step = (1<<-FMagnify) * step;
+		if((FReader->NumSamples - 1) - FLink.To > step )
+			FLink.To += step;
+		else
+			FLink.To = FReader->NumSamples - 1;
+	}
+
+	WavePaintBox->Invalidate();
+	UpdateMainWindowParams();
+	UpdateDisplay();
 }
 //---------------------------------------------------------------------------
 void __fastcall TLinkDetailForm::PlayLink()
@@ -704,9 +726,6 @@ void __fastcall TLinkDetailForm::EditLinkAttribFrameEraseRedo(TObject * Sender)
 
 
 
-void __fastcall TLinkDetailForm::ZoomInMenuItemClick(TObject *Sender)
-{
-//
-}
-//---------------------------------------------------------------------------
+
+
 
