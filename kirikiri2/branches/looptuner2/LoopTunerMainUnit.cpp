@@ -53,6 +53,8 @@ void __fastcall TLoopTunerMainForm::CreateWaveView()
 	WaveView->OnSelectionLost		= WaveViewSelectionLost;
 	WaveView->OnLinkModified		= WaveViewLinkModified;
 	WaveView->OnLabelModified		= WaveViewLabelModified;
+
+	WaveView->PopupMenu = WaveViewPopupMenu;
 }
 //---------------------------------------------------------------------------
 void __fastcall TLoopTunerMainForm::OnReaderProgress(TObject *sender)

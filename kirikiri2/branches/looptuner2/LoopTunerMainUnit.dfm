@@ -412,7 +412,7 @@ object LoopTunerMainForm: TLoopTunerMainForm
     Left = 72
     Top = 32
     Bitmap = {
-      494C010121002200040010001000FFFFFFFFFF00FFFFFFFFFFFFFFFF424D3600
+      494C010121002200040010001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000400000009000000001002000000000000090
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
@@ -1604,7 +1604,8 @@ object LoopTunerMainForm: TLoopTunerMainForm
       FFFFEFFFFF9FFF9FCBFFEBFFFF0FFF0FC8FFE8FF9797EF97C83FE83F91DBE3DB
       C80FE80F907DE0FDC803E803901DE03DC80FE80F9005E00DC83FE83F901DE03D
       C8FFE8FF907DE0FDCBFFEBFF91FBE3FBFFFFEFFF97F7EFF7FFFFC7FFFC0FFC0F
-      FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF}
+      FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF00000000000000000000000000000000
+      000000000000}
   end
   object OpenDialog: TOpenDialog
     Left = 104
@@ -1662,5 +1663,42 @@ object LoopTunerMainForm: TLoopTunerMainForm
     OnIdle = ApplicationEventsIdle
     Left = 104
     Top = 64
+  end
+  object WaveViewPopupMenu: TPopupMenu
+    AutoPopup = False
+    Left = 8
+    Top = 96
+    object WaveView_ZoomInMenuItem: TMenuItem
+      Action = ZoomInAction
+      ShortCut = 73
+    end
+    object WaveView_ZoomOutMenuItem: TMenuItem
+      Action = ZoomOutAction
+      ShortCut = 79
+    end
+    object WaveView_FollowMarkerMenuItem: TMenuItem
+      Action = FollowMarkerAction
+      ShortCut = 70
+    end
+    object WaveView_StopPlayMenuItem: TMenuItem
+      Action = StopPlayAction
+      ShortCut = 83
+    end
+    object WaveView_PlayFromCaretMenuItem: TMenuItem
+      Action = PlayFromCaretAction
+      ShortCut = 32
+    end
+    object WaveView_PlayFromStartMenuItem: TMenuItem
+      Action = PlayFromStartAction
+      ShortCut = 80
+    end
+    object WaveView_UndoMenuItem: TMenuItem
+      Action = UndoAction
+      ShortCut = 85
+    end
+    object WaveView_DeleteMenuItem: TMenuItem
+      Action = DeleteAction
+      ShortCut = 46
+    end
   end
 end
