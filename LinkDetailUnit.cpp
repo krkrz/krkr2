@@ -186,17 +186,18 @@ void __fastcall TLinkDetailForm::FormResize(TObject *Sender)
 void __fastcall TLinkDetailForm::WavePaintBoxPaint(TObject *Sender)
 {
 	// draw waveform
+	TCanvas * canvas = WavePaintBox->Canvas;
 
 	// check reader validity
 	if(!FReader || !FReader->ReadDone)
 	{
 		TRect r;
-		r.left = WavePaintBox->Canvas->ClipRect.left, r.top = 0,
-			r.right = WavePaintBox->Canvas->ClipRect.right,
+		r.left = canvas->ClipRect.left, r.top = 0,
+			r.right = canvas->ClipRect.right,
 			r.bottom = WavePaintBox->Height;
-		WavePaintBox->Canvas->Brush->Style = bsSolid;
-		WavePaintBox->Canvas->Brush->Color = C_DISABLEED_CLIENT;
-		WavePaintBox->Canvas->FillRect(r);
+		canvas->Brush->Style = bsSolid;
+		canvas->Brush->Color = C_DISABLEED_CLIENT;
+		canvas->FillRect(r);
 		return ; // reader not available
 	}
 
@@ -212,8 +213,8 @@ void __fastcall TLinkDetailForm::WavePaintBoxPaint(TObject *Sender)
 	int center = WavePaintBox->Width / 2; // center line
 
 	// calc start point
-	int dest_left  = WavePaintBox->Canvas->ClipRect.left;
-	int dest_right = WavePaintBox->Canvas->ClipRect.right;
+	int dest_left  = canvas->ClipRect.left;
+	int dest_right = canvas->ClipRect.right;
 
 	int before_pos = PixelToSample(dest_left - center) + FLink.From;
 	int after_pos =  PixelToSample(dest_left - center) + FLink.To;
@@ -229,17 +230,17 @@ void __fastcall TLinkDetailForm::WavePaintBoxPaint(TObject *Sender)
 		TRect r;
 		r.left = dest_left, r.top = 0, r.right = dest_right, r.bottom =
 			WavePaintBox->Height;
-		WavePaintBox->Canvas->Brush->Style = bsSolid;
-		WavePaintBox->Canvas->Brush->Color = C_CLIENT;
-		WavePaintBox->Canvas->FillRect(r);
+		canvas->Brush->Style = bsSolid;
+		canvas->Brush->Color = C_CLIENT;
+		canvas->FillRect(r);
 	}
 
 	//- draw -Inf line
-	WavePaintBox->Canvas->Pen->Color = C_INF_LINE;
+	canvas->Pen->Color = C_INF_LINE;
 	for(int ch = 0; ch < FReader->Channels; ch ++)
 	{
-		WavePaintBox->Canvas->MoveTo(dest_left,  CONV_Y(0, ch));
-		WavePaintBox->Canvas->LineTo(dest_right, CONV_Y(0, ch));
+		canvas->MoveTo(dest_left,  CONV_Y(0, ch));
+		canvas->LineTo(dest_right, CONV_Y(0, ch));
 	}
 
 	// draw waveform
@@ -301,59 +302,59 @@ void __fastcall TLinkDetailForm::WavePaintBoxPaint(TObject *Sender)
 			if(bg_high < fg_high)
 			{
 				// draw bg only
-				WavePaintBox->Canvas->Pen->Color = x < center ? C_WAVE_B_BG : C_WAVE_A_BG;
-				WavePaintBox->Canvas->MoveTo(x, bg_high);
-				WavePaintBox->Canvas->LineTo(x, fg_high);
+				canvas->Pen->Color = x < center ? C_WAVE_B_BG : C_WAVE_A_BG;
+				canvas->MoveTo(x, bg_high);
+				canvas->LineTo(x, fg_high);
 				fg_bg_high = fg_high;
 
 			}
 			else
 			{
 				// draw fg only
-				WavePaintBox->Canvas->Pen->Color = x < center ? C_WAVE_B_FG : C_WAVE_A_FG;
-				WavePaintBox->Canvas->MoveTo(x, fg_high);
-				WavePaintBox->Canvas->LineTo(x, bg_high);
+				canvas->Pen->Color = x < center ? C_WAVE_B_FG : C_WAVE_A_FG;
+				canvas->MoveTo(x, fg_high);
+				canvas->LineTo(x, bg_high);
 				fg_bg_high = bg_high;
 			}
 
 			if(bg_low < fg_low)
 			{
 				// draw fg only
-				WavePaintBox->Canvas->Pen->Color = x < center ? C_WAVE_B_FG : C_WAVE_A_FG;
-				WavePaintBox->Canvas->MoveTo(x, bg_low);
-				WavePaintBox->Canvas->LineTo(x, fg_low);
+				canvas->Pen->Color = x < center ? C_WAVE_B_FG : C_WAVE_A_FG;
+				canvas->MoveTo(x, bg_low);
+				canvas->LineTo(x, fg_low);
 				fg_bg_low = bg_low;
 			}
 			else
 			{
 				// draw bg only
-				WavePaintBox->Canvas->Pen->Color = x < center ? C_WAVE_B_BG : C_WAVE_A_BG;
-				WavePaintBox->Canvas->MoveTo(x, fg_low);
-				WavePaintBox->Canvas->LineTo(x, bg_low);
+				canvas->Pen->Color = x < center ? C_WAVE_B_BG : C_WAVE_A_BG;
+				canvas->MoveTo(x, fg_low);
+				canvas->LineTo(x, bg_low);
 				fg_bg_low = fg_low;
 			}
 
 			// draw fg-bg
-			WavePaintBox->Canvas->Pen->Color = x < center ? C_WAVE_B_FG_BG : C_WAVE_A_FG_BG;
-			WavePaintBox->Canvas->MoveTo(x, fg_bg_high);
-			WavePaintBox->Canvas->LineTo(x, fg_bg_low);
+			canvas->Pen->Color = x < center ? C_WAVE_B_FG_BG : C_WAVE_A_FG_BG;
+			canvas->MoveTo(x, fg_bg_high);
+			canvas->LineTo(x, fg_bg_low);
 		}
 	}
 
 	// draw center split
-	WavePaintBox->Canvas->Pen->Color = C_WAVE_CENTER_SPLIT;
-	WavePaintBox->Canvas->MoveTo(center, 0);
-	WavePaintBox->Canvas->LineTo(center, WavePaintBox->Height);
+	canvas->Pen->Color = C_WAVE_CENTER_SPLIT;
+	canvas->MoveTo(center, 0);
+	canvas->LineTo(center, WavePaintBox->Height);
 
 	// draw focus frame
 	if(WaveAreaHasFocus)
 	{
-		WavePaintBox->Canvas->Pen->Color = (TColor)((~C_CLIENT)&0xffffff);
-		WavePaintBox->Canvas->MoveTo(0, 0);
-		WavePaintBox->Canvas->LineTo(WavePaintBox->Width-1, 0);
-		WavePaintBox->Canvas->LineTo(WavePaintBox->Width-1, WavePaintBox->Height-1);
-		WavePaintBox->Canvas->LineTo(0, WavePaintBox->Height-1);
-		WavePaintBox->Canvas->LineTo(0, 0);
+		canvas->Pen->Color = (TColor)((~C_CLIENT)&0xffffff);
+		canvas->MoveTo(0, 0);
+		canvas->LineTo(WavePaintBox->Width-1, 0);
+		canvas->LineTo(WavePaintBox->Width-1, WavePaintBox->Height-1);
+		canvas->LineTo(0, WavePaintBox->Height-1);
+		canvas->LineTo(0, 0);
 	}
 }
 //---------------------------------------------------------------------------
