@@ -1,6 +1,6 @@
 // Config.tjs - KAG 設定
 // Copyright (C) 2001-2004 W.Dee and contributors  改変・配布は自由です
-;global.config_version = "3.25 beta 5"; // この行を消さないでください
+;global.config_version = "3.25 beta 6"; // この行を消さないでください
 
 // このファイル内で設定できる項目は、すべて
 // ;設定名 = 値;
@@ -259,6 +259,12 @@ function KAGWindow_config()
 // 分だけ効果音を同時に再生できます。効果音を使用しない場合は 0 を指定して
 // かまいません。
 ;numSEBuffers = 3;
+
+
+// ◆ ムービーオブジェクトの数
+// 利用可能なムービーオブジェクトの最大値を指定します。つまり、ここで指定し
+// た数の分だけムービーを同時に再生できます。
+;numMovies = 1;
 
 
 // ◆ 初期状態の前景レイヤの数
