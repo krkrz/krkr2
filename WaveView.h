@@ -312,6 +312,8 @@ public:
 	__property TNotifyWavePosEvent OnWaveDoubleClick = { read = FOnWaveDoubleClick, write = FOnWaveDoubleClick };
 	__property TLinkSelectedEvent OnLinkDoubleClick = { read = FOnLinkDoubleClick, write = FOnLinkDoubleClick };
 	__property TLabelSelectedEvent OnLabelDoubleClick = { read = FOnLabelDoubleClick, write = FOnLabelDoubleClick };
+
+	__property PopupMenu;
 };
 //---------------------------------------------------------------------------
 #endif

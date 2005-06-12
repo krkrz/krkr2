@@ -107,6 +107,15 @@ __published:	// IDE 管理のコンポーネント
 	TAction *EditLabelDetailAction;
 	TMenuItem *ForLabel_NewLabelMenuItem;
 	TMenuItem *ForLink_NewLinkMenuItem;
+	TPopupMenu *WaveViewPopupMenu;
+	TMenuItem *WaveView_ZoomInMenuItem;
+	TMenuItem *WaveView_ZoomOutMenuItem;
+	TMenuItem *WaveView_FollowMarkerMenuItem;
+	TMenuItem *WaveView_StopPlayMenuItem;
+	TMenuItem *WaveView_PlayFromCaretMenuItem;
+	TMenuItem *WaveView_PlayFromStartMenuItem;
+	TMenuItem *WaveView_UndoMenuItem;
+	TMenuItem *WaveView_DeleteMenuItem;
 	void __fastcall FormDestroy(TObject *Sender);
 	void __fastcall OpenActionExecute(TObject *Sender);
 	void __fastcall ZoomInActionExecute(TObject *Sender);
