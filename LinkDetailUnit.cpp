@@ -475,7 +475,14 @@ void __fastcall TLinkDetailForm::SmoothActionExecute(TObject *Sender)
 void __fastcall TLinkDetailForm::BeforePrevCrossActionExecute(
 	  TObject *Sender)
 {
-	//
+	int found = SearchCrossingPoint(FLink.From, 1);
+	if(found != -1)
+	{
+		FLink.From = found;
+		WavePaintBox->Invalidate();
+		UpdateMainWindowParams();
+		UpdateDisplay();
+	}
 }
 //---------------------------------------------------------------------------
 void __fastcall TLinkDetailForm::BeforePrevFastActionExecute(
@@ -505,13 +512,27 @@ void __fastcall TLinkDetailForm::BeforeNextFastActionExecute(
 void __fastcall TLinkDetailForm::BeforeNextCrossActionExecute(
 	  TObject *Sender)
 {
-	//
+	int found = SearchCrossingPoint(FLink.From, -1);
+	if(found != -1)
+	{
+		FLink.From = found;
+		WavePaintBox->Invalidate();
+		UpdateMainWindowParams();
+		UpdateDisplay();
+	}
 }
 //---------------------------------------------------------------------------
 void __fastcall TLinkDetailForm::AfterPrevCrossActionExecute(
 	  TObject *Sender)
 {
-	//
+	int found = SearchCrossingPoint(FLink.To, 1);
+	if(found != -1)
+	{
+		FLink.To = found;
+		WavePaintBox->Invalidate();
+		UpdateMainWindowParams();
+		UpdateDisplay();
+	}
 }
 //---------------------------------------------------------------------------
 void __fastcall TLinkDetailForm::AfterPrevFastActionExecute(
@@ -541,7 +562,61 @@ void __fastcall TLinkDetailForm::AfterNextFastActionExecute(
 void __fastcall TLinkDetailForm::AfterNextCrossActionExecute(
 	  TObject *Sender)
 {
-	//
+	int found = SearchCrossingPoint(FLink.To, -1);
+	if(found != -1)
+	{
+		FLink.To = found;
+		WavePaintBox->Invalidate();
+		UpdateMainWindowParams();
+		UpdateDisplay();
+	}
+}
+//---------------------------------------------------------------------------
+int __fastcall TLinkDetailForm::SearchCrossingPoint(int from, int direction)
+{
+	// search previous(direction=-1) or next(direction=1) crossing point
+	// from the point 'from'.
+	// returns the found point, -1 for not-found.
+	bool *signs = NULL; // array of sign; true for positive, false for negative
+	int found_point = -1;
+
+	try
+	{
+		int ptr = from;
+
+		// allocate memory for signs
+		signs = new bool [FReader->Channels];
+
+		// set initial signs
+		for(int i = 0; i < FReader->Channels; i++)
+			signs[i] = FReader->GetSampleAt(ptr, i) >= 0;
+
+		// step
+		ptr += direction;
+
+		while(ptr >= 0 && ptr < FReader->NumSamples)
+		{
+			// find any points that one of signs changes.
+			for(int i = 0; i < FReader->Channels; i++)
+			{
+				if(signs[i] != (FReader->GetSampleAt(ptr, i) >= 0))
+				{
+					found_point = ptr;
+					break;
+				}
+			}
+			if(found_point != -1) break;
+
+			ptr += direction;
+		}
+	}
+	catch(...)
+	{
+		if(signs) delete [] signs;
+		throw;
+	}
+	if(signs) delete [] signs;
+	return found_point;
 }
 //---------------------------------------------------------------------------
 void __fastcall TLinkDetailForm::StepBefore(int step)

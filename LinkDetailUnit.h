@@ -157,6 +157,7 @@ private:
 	void __fastcall UpdateMainWindowParams(bool push_undo = false);
 	void __fastcall UpdateDisplay();
 	void __fastcall UpdateLayout();
+	int __fastcall SearchCrossingPoint(int from, int direction);
 	void __fastcall StepBefore(int step);
 	void __fastcall StepAfter(int step);
 	void __fastcall PlayLink(int before, int after = 5000);
