@@ -3117,9 +3117,24 @@
 	</remarks>
 </tag>
 
-<tag name="pausevideo">
+<tag name="resumevideo">
 	<shortinfo> ビデオ再生の再開 </shortinfo>
 	<group> 効果音・BGM・ビデオ操作 </group>
+
+	<attribs>
+		<attrib name="slot">
+			<shortinfo> ムービーオブジェクト番号 </shortinfo>
+			<required> no </required>
+			<format> ムービーオブジェクト番号(0～) </format>
+			<info>
+				この操作を行うムービーオブジェクト番号を指定します。<BR>
+				省略すると 0 が指定されたと見なされます。<BR>
+				複数のムービーを同時に操作する場合は、Config.tjs の numMovies の値も、必要な個数に変更してください。<BR>
+			</info>
+		</attrib>
+	</attribs>
+
+
 	<remarks>
 		ビデオの再生を再開します。<BR>
 		pausevideoでの一時停止後は、resumevideoを使用して、再生を再開します。<BR>
@@ -3447,6 +3462,16 @@
 	<group> 効果音・BGM・ビデオ操作 </group>
 
 	<attribs>
+		<attrib name="slot">
+			<shortinfo> ムービーオブジェクト番号 </shortinfo>
+			<required> no </required>
+			<format> ムービーオブジェクト番号(0～) </format>
+			<info>
+				この操作を行うムービーオブジェクト番号を指定します。<BR>
+				省略すると 0 が指定されたと見なされます。<BR>
+				複数のムービーを同時に操作する場合は、Config.tjs の numMovies の値も、必要な個数に変更してください。<BR>
+			</info>
+		</attrib>
 		<attrib name="storage">
 			<shortinfo> ファイル名 </shortinfo>
 			<required> no </required>
@@ -3475,6 +3500,16 @@
 	<group> 効果音・BGM・ビデオ操作 </group>
 
 	<attribs>
+		<attrib name="slot">
+			<shortinfo> ムービーオブジェクト番号 </shortinfo>
+			<required> no </required>
+			<format> ムービーオブジェクト番号(0～) </format>
+			<info>
+				この操作を行うムービーオブジェクト番号を指定します。<BR>
+				省略すると 0 が指定されたと見なされます。<BR>
+				複数のムービーを同時に操作する場合は、Config.tjs の numMovies の値も、必要な個数に変更してください。<BR>
+			</info>
+		</attrib>
 		<attrib name="storage">
 			<shortinfo> ファイル名 </shortinfo>
 			<required> yes </required>
@@ -4149,6 +4184,20 @@
 <tag name="stopvideo">
 	<shortinfo> ビデオ/SWF再生の停止 </shortinfo>
 	<group> 効果音・BGM・ビデオ操作 </group>
+
+	<attribs>
+		<attrib name="slot">
+			<shortinfo> ムービーオブジェクト番号 </shortinfo>
+			<required> no </required>
+			<format> ムービーオブジェクト番号(0～) </format>
+			<info>
+				この操作を行うムービーオブジェクト番号を指定します。<BR>
+				省略すると 0 が指定されたと見なされます。<BR>
+				複数のムービーを同時に操作する場合は、Config.tjs の numMovies の値も、必要な個数に変更してください。<BR>
+			</info>
+		</attrib>
+	</attribs>
+
 
 	<remarks>
 		　ビデオ/SWFの再生を停止します。<BR>
@@ -4878,6 +4927,17 @@
 	<shortinfo> ビデオ/SWF表示領域の属性を指定 </shortinfo>
 	<group> 効果音・BGM・ビデオ操作 </group>
 	<attribs>
+		<attrib name="slot">
+			<shortinfo> ムービーオブジェクト番号 </shortinfo>
+			<required> no </required>
+			<format> ムービーオブジェクト番号(0～) </format>
+			<info>
+				この操作を行うムービーオブジェクト番号を指定します。<BR>
+				省略すると 0 が指定されたと見なされます。<BR>
+				複数のムービーを同時に操作する場合は、Config.tjs の numMovies の値も、必要な個数に変更してください。<BR>
+			</info>
+		</attrib>
+
 		<attrib name="visible">
 			<shortinfo> 可視・不可視 </shortinfo>
 			<required> no </required>
@@ -5023,12 +5083,24 @@
 	<shortinfo> ビデオレイヤ設定 </shortinfo>
 	<group> 効果音・BGM・ビデオ操作 </group>
 	<attribs>
+		<attrib name="slot">
+			<shortinfo> ムービーオブジェクト番号 </shortinfo>
+			<required> no </required>
+			<format> ムービーオブジェクト番号(0～) </format>
+			<info>
+				この操作を行うムービーオブジェクト番号を指定します。<BR>
+				省略すると 0 が指定されたと見なされます。<BR>
+				複数のムービーを同時に操作する場合は、Config.tjs の numMovies の値も、必要な個数に変更してください。<BR>
+			</info>
+		</attrib>
+
 		<attrib name="channel">
 			<shortinfo> チャンネル </shortinfo>
 			<required> yes </required>
 			<format> 1 または 2 </format>
 			<info>
 				　レイヤ描画モードでは、同時に二つのチャンネルでビデオを再生できます。<BR>
+				　slot属性は、同時に異なるビデオを再生したいときのためにあり、channel属性は、同じビデオを２つのレイヤ(たとえば、表レイヤと裏レイヤ) で再生したいときのためにあります。<BR>
 				　この属性では、そのどちらのチャンネルに対してのレイヤを設定するかを指定します。<BR>
 			</info>
 		</attrib>
@@ -5063,6 +5135,16 @@
 	<shortinfo> ビデオレイヤ解除 </shortinfo>
 	<group> 効果音・BGM・ビデオ操作 </group>
 	<attribs>
+		<attrib name="slot">
+			<shortinfo> ムービーオブジェクト番号 </shortinfo>
+			<required> no </required>
+			<format> ムービーオブジェクト番号(0～) </format>
+			<info>
+				この操作を行うムービーオブジェクト番号を指定します。<BR>
+				省略すると 0 が指定されたと見なされます。<BR>
+				複数のムービーを同時に操作する場合は、Config.tjs の numMovies の値も、必要な個数に変更してください。<BR>
+			</info>
+		</attrib>
 		<attrib name="channel">
 			<shortinfo> チャンネル </shortinfo>
 			<required> yes </required>
@@ -5082,6 +5164,16 @@
 	<shortinfo> ビデオのセグメントループ再生 </shortinfo>
 	<group> 効果音・BGM・ビデオ操作 </group>
 	<attribs>
+		<attrib name="slot">
+			<shortinfo> ムービーオブジェクト番号 </shortinfo>
+			<required> no </required>
+			<format> ムービーオブジェクト番号(0～) </format>
+			<info>
+				この操作を行うムービーオブジェクト番号を指定します。<BR>
+				省略すると 0 が指定されたと見なされます。<BR>
+				複数のムービーを同時に操作する場合は、Config.tjs の numMovies の値も、必要な個数に変更してください。<BR>
+			</info>
+		</attrib>
 		<attrib name="start">
 			<shortinfo> 開始フレーム番号 </shortinfo>
 			<required> yes </required>
@@ -5110,6 +5202,16 @@
 	<shortinfo> ビデオのセグメントループ再生の解除 </shortinfo>
 	<group> 効果音・BGM・ビデオ操作 </group>
 	<attribs>
+		<attrib name="slot">
+			<shortinfo> ムービーオブジェクト番号 </shortinfo>
+			<required> no </required>
+			<format> ムービーオブジェクト番号(0～) </format>
+			<info>
+				この操作を行うムービーオブジェクト番号を指定します。<BR>
+				省略すると 0 が指定されたと見なされます。<BR>
+				複数のムービーを同時に操作する場合は、Config.tjs の numMovies の値も、必要な個数に変更してください。<BR>
+			</info>
+		</attrib>
 	</attribs>
 
 	<remarks>
@@ -5122,6 +5224,16 @@
 	<shortinfo> ピリオドイベントの発生 </shortinfo>
 	<group> 効果音・BGM・ビデオ操作 </group>
 	<attribs>
+		<attrib name="slot">
+			<shortinfo> ムービーオブジェクト番号 </shortinfo>
+			<required> no </required>
+			<format> ムービーオブジェクト番号(0～) </format>
+			<info>
+				この操作を行うムービーオブジェクト番号を指定します。<BR>
+				省略すると 0 が指定されたと見なされます。<BR>
+				複数のムービーを同時に操作する場合は、Config.tjs の numMovies の値も、必要な個数に変更してください。<BR>
+			</info>
+		</attrib>
 		<attrib name="frame">
 			<shortinfo> フレーム番号 </shortinfo>
 			<required> yes </required>
@@ -5143,6 +5255,16 @@
 	<shortinfo> ピリオドイベントの解除 </shortinfo>
 	<group> 効果音・BGM・ビデオ操作 </group>
 	<attribs>
+		<attrib name="slot">
+			<shortinfo> ムービーオブジェクト番号 </shortinfo>
+			<required> no </required>
+			<format> ムービーオブジェクト番号(0～) </format>
+			<info>
+				この操作を行うムービーオブジェクト番号を指定します。<BR>
+				省略すると 0 が指定されたと見なされます。<BR>
+				複数のムービーを同時に操作する場合は、Config.tjs の numMovies の値も、必要な個数に変更してください。<BR>
+			</info>
+		</attrib>
 	</attribs>
 
 	<remarks>
@@ -5155,6 +5277,16 @@
 	<shortinfo> ビデオの一時停止 </shortinfo>
 	<group> 効果音・BGM・ビデオ操作 </group>
 	<attribs>
+		<attrib name="slot">
+			<shortinfo> ムービーオブジェクト番号 </shortinfo>
+			<required> no </required>
+			<format> ムービーオブジェクト番号(0～) </format>
+			<info>
+				この操作を行うムービーオブジェクト番号を指定します。<BR>
+				省略すると 0 が指定されたと見なされます。<BR>
+				複数のムービーを同時に操作する場合は、Config.tjs の numMovies の値も、必要な個数に変更してください。<BR>
+			</info>
+		</attrib>
 	</attribs>
 
 	<remarks>
@@ -5166,6 +5298,16 @@
 	<shortinfo> ビデオの巻き戻し </shortinfo>
 	<group> 効果音・BGM・ビデオ操作 </group>
 	<attribs>
+		<attrib name="slot">
+			<shortinfo> ムービーオブジェクト番号 </shortinfo>
+			<required> no </required>
+			<format> ムービーオブジェクト番号(0～) </format>
+			<info>
+				この操作を行うムービーオブジェクト番号を指定します。<BR>
+				省略すると 0 が指定されたと見なされます。<BR>
+				複数のムービーを同時に操作する場合は、Config.tjs の numMovies の値も、必要な個数に変更してください。<BR>
+			</info>
+		</attrib>
 	</attribs>
 
 	<remarks>
@@ -5177,6 +5319,16 @@
 	<shortinfo> ビデオの再生準備 </shortinfo>
 	<group> 効果音・BGM・ビデオ操作 </group>
 	<attribs>
+		<attrib name="slot">
+			<shortinfo> ムービーオブジェクト番号 </shortinfo>
+			<required> no </required>
+			<format> ムービーオブジェクト番号(0～) </format>
+			<info>
+				この操作を行うムービーオブジェクト番号を指定します。<BR>
+				省略すると 0 が指定されたと見なされます。<BR>
+				複数のムービーを同時に操作する場合は、Config.tjs の numMovies の値も、必要な個数に変更してください。<BR>
+			</info>
+		</attrib>
 	</attribs>
 
 	<remarks>
@@ -5347,6 +5499,16 @@
 	<shortinfo> ビデオピリオドイベント待ち </shortinfo>
 	<group> 効果音・BGM・ビデオ操作 </group>
 	<attribs>
+		<attrib name="slot">
+			<shortinfo> ムービーオブジェクト番号 </shortinfo>
+			<required> no </required>
+			<format> ムービーオブジェクト番号(0～) </format>
+			<info>
+				この操作を行うムービーオブジェクト番号を指定します。<BR>
+				省略すると 0 が指定されたと見なされます。<BR>
+				複数のムービーを同時に操作する場合は、Config.tjs の numMovies の値も、必要な個数に変更してください。<BR>
+			</info>
+		</attrib>
 		<attrib name="for">
 			<shortinfo> イベントの種類 </shortinfo>
 			<required> no </required>
@@ -5419,6 +5581,16 @@
 	<shortinfo> ビデオ再生の終了待ち </shortinfo>
 	<group> 効果音・BGM・ビデオ操作 </group>
 	<attribs>
+		<attrib name="slot">
+			<shortinfo> ムービーオブジェクト番号 </shortinfo>
+			<required> no </required>
+			<format> ムービーオブジェクト番号(0～) </format>
+			<info>
+				この操作を行うムービーオブジェクト番号を指定します。<BR>
+				省略すると 0 が指定されたと見なされます。<BR>
+				複数のムービーを同時に操作する場合は、Config.tjs の numMovies の値も、必要な個数に変更してください。<BR>
+			</info>
+		</attrib>
 		<attrib name="canskip">
 			<shortinfo> スキップできるか </shortinfo>
 			<required> no </required>
