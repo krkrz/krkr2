@@ -2581,6 +2581,14 @@ bool __fastcall TTVPWindowForm::GetTrapKey() const
 void __fastcall TTVPWindowForm::CreatePaintBox(TWinControl *owner)
 {
 	DeleteDoubleBuffer();
+	ReleaseCapture(); // release mouse events which captured by VCL
+	if(TJSNativeInstance)
+	{
+		// send release capture input event
+		TVPPostInputEvent(
+			new tTVPOnReleaseCaptureInputEvent(TJSNativeInstance));
+	}
+
 
 	if(PaintBox) delete PaintBox;
 
