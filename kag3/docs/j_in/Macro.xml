@@ -14,13 +14,21 @@
 
 <para>
 <ptitle>基本的な使い方</ptitle>
-　<kw>macro</kw> タグと <kw>endmacro</kw> タグで、マクロにしたい部分を囲みます。macro タグの属性 name には、マクロ名を指定します。<r/>
+　マクロを使うには、まずマクロを「定義」しなければなりません。マクロは一度だけ定義すれば、あとはそのマクロを何回でも使うことができます。ですので、マクロを定義する場合はfirst.ksの最初などに書いておくとよいでしょう。<r/>
+<r/>
+　マクロを定義する場合は、<kw>macro</kw> タグと <kw>endmacro</kw> タグで、マクロにしたい部分を囲みます。macro タグの属性 name には、マクロ名を指定します。<r/>
 <r/>
 <bq>
 [wait time=200]<r/>
 *start|スタート<r/>
 [cm]<r/>
+; -- マクロの定義 --<r/>
 <b>[macro name=newtag]</b>[font color=0xff0000]こんな風にマクロを作ります[resetfont]<b>[endmacro]</b><r/>
+</bq>
+<r/>
+これを使いたい場合は、タグを書くのとまったく同じ要領でマクロ名を使います。<r/>
+<bq>
+; -- マクロを使う --<r/>
 [newtag]<r/>
 </bq>
 <r/>
@@ -32,11 +40,15 @@
 [wait time=200]<r/>
 *start|スタート<r/>
 [cm]<r/>
+; -- マクロの定義 --<r/>
 [macro name=newtag]<r/>
 [font color=0xff0000]<r/>
 こんな風にマクロを作ります<r/>
 [resetfont]<r/>
 [endmacro]<r/>
+</bq>
+<bq>
+; -- マクロを使う --<r/>
 [newtag]<r/>
 </bq>
 </para>
@@ -50,11 +62,15 @@
 [wait time=200]<r/>
 *start|スタート<r/>
 [cm]<r/>
+; -- マクロの定義 --<r/>
 [macro name=newtag]<r/>
 [font color=<b>%iro</b>]<r/>
 こんな風にマクロを作ります<r/>
 [resetfont]<r/>
 [endmacro]<r/>
+</bq>
+<bq>
+; -- マクロを使う --<r/>
 [newtag <b>iro=0x00ff00</b>]<r/>
 </bq>
 <r/>
@@ -78,11 +94,15 @@
 [wait time=200]<r/>
 *start|スタート<r/>
 [cm]<r/>
+; -- マクロの定義 --<r/>
 [macro name=newtag]<r/>
 [font color=%color<b>|0xff0000</b>]<r/>
 こんな風にマクロを作ります<r/>
 [resetfont]<r/>
 [endmacro]<r/>
+</bq>
+<bq>
+; -- マクロを使う --<r/>
 [newtag color=0x00ff00]<r/>
 [newtag]<r/>
 </bq>
