@@ -254,6 +254,29 @@ void __fastcall TLoopTunerMainForm::WaveViewStopFollowingMarker(TObject *Sender)
 	WaveView->FollowingMarker = FollowMarkerAction->Checked;
 }
 //---------------------------------------------------------------------------
+void __fastcall TLoopTunerMainForm::GotoLinkFromActionExecute(
+	  TObject *Sender)
+{
+	if(WaveView->FocusedLink != -1)
+	{
+		WaveView->CaretPos = WaveView->GetLinks()[WaveView->FocusedLink].From;
+		WaveView->EnsureView(WaveView->CaretPos);
+		WaveView->ShowCaret = true;
+	}
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TLoopTunerMainForm::GotoLinkToActionExecute(
+	  TObject *Sender)
+{
+	if(WaveView->FocusedLink != -1)
+	{
+		WaveView->CaretPos = WaveView->GetLinks()[WaveView->FocusedLink].To;
+		WaveView->EnsureView(WaveView->CaretPos);
+		WaveView->ShowCaret = true;
+	}
+}
+//---------------------------------------------------------------------------
 void __fastcall TLoopTunerMainForm::ApplicationEventsIdle(TObject *Sender,
 	  bool &Done)
 {
@@ -278,6 +301,8 @@ void __fastcall TLoopTunerMainForm::ApplicationEventsIdle(TObject *Sender,
 	DeleteAction->Enabled = WaveView->CanDeleteItem();
 	EditLinkDetailAction->Enabled = WaveView->FocusedLink != -1;
 	EditLabelDetailAction->Enabled = WaveView->FocusedLabel != -1;
+	GotoLinkFromAction->Enabled = WaveView->FocusedLink != -1;
+	GotoLinkToAction->Enabled = WaveView->FocusedLink != -1;
 }
 //---------------------------------------------------------------------------
 void __fastcall TLoopTunerMainForm::WaveViewWaveDoubleClick(TObject *Sender, int pos)
@@ -451,6 +476,7 @@ void __fastcall TLoopTunerMainForm::EditLabelAttribFrameEraseRedo(TObject * Send
 	WaveView->EraseRedo();
 }
 //---------------------------------------------------------------------------
+
 
 
 
