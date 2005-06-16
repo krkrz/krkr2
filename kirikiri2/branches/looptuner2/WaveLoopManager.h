@@ -174,7 +174,7 @@ public:
 	virtual ~tTVPWaveLoopManager();
 
 	bool GetFlag(tjs_int index);
-	void SetFlag(tjs_int index, bool f);
+	void SetFlag(tjs_int index, int f);
 	void ClearFlags();
 	void ClearLinksAndLabels();
 

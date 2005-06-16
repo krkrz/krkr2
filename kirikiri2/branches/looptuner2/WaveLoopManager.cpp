@@ -134,7 +134,7 @@ bool tTVPWaveLoopManager::GetFlag(tjs_int index)
 	return Flags[index];
 }
 //---------------------------------------------------------------------------
-void tTVPWaveLoopManager::SetFlag(tjs_int index, bool f)
+void tTVPWaveLoopManager::SetFlag(tjs_int index, int f)
 {
 	// note that this function is not protected by any critical sections
 	Flags[index] = f;

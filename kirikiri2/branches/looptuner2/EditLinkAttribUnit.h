@@ -26,6 +26,7 @@ __published:	// IDE 管理のコンポーネント
 	void __fastcall ConditionComboBoxKeyDown(TObject *Sender, WORD &Key,
           TShiftState Shift);
 	void __fastcall CondRefValueEditChange(TObject *Sender);
+	void __fastcall CondRefValueEditKeyPress(TObject *Sender, char &Key);
 private:	// ユーザー宣言
 	tTVPWaveLoopLink FLink;
 	bool InLoading;

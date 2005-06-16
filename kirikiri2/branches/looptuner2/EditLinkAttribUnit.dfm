@@ -62,6 +62,7 @@ object EditLinkAttribFrame: TEditLinkAttribFrame
     OnChange = CondRefValueEditChange
     OnExit = CondRefValueEditExit
     OnKeyDown = ConditionComboBoxKeyDown
+    OnKeyPress = CondRefValueEditKeyPress
   end
   object ConditionComboBox: TComboBox
     Left = 280

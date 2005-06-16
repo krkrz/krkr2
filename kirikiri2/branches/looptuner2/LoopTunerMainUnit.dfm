@@ -1,7 +1,7 @@
 object LoopTunerMainForm: TLoopTunerMainForm
-  Left = 72
-  Top = 0
-  Width = 636
+  Left = 4
+  Top = 126
+  Width = 971
   Height = 354
   Caption = '0'
   Color = clBtnFace
@@ -18,7 +18,7 @@ object LoopTunerMainForm: TLoopTunerMainForm
   object StatusBar: TStatusBar
     Left = 0
     Top = 281
-    Width = 628
+    Width = 963
     Height = 19
     Panels = <>
     SimplePanel = False
@@ -26,7 +26,7 @@ object LoopTunerMainForm: TLoopTunerMainForm
   object ToolBar1: TToolBar
     Left = 0
     Top = 0
-    Width = 628
+    Width = 963
     Height = 26
     AutoSize = True
     Caption = 'ToolBar'
@@ -137,15 +137,20 @@ object LoopTunerMainForm: TLoopTunerMainForm
       ImageIndex = 5
       Style = tbsSeparator
     end
-    object ShowEditAttribToolButton: TToolButton
+    object ShowEditFlagToolButton: TToolButton
       Left = 247
+      Top = 0
+      Action = ShowEditFlagsAction
+    end
+    object ShowEditAttribToolButton: TToolButton
+      Left = 270
       Top = 0
       Action = ShowEditAttribAction
       ParentShowHint = False
       ShowHint = True
     end
     object ToolButton1: TToolButton
-      Left = 270
+      Left = 293
       Top = 0
       Width = 8
       Caption = 'ToolButton1'
@@ -153,14 +158,14 @@ object LoopTunerMainForm: TLoopTunerMainForm
       Style = tbsSeparator
     end
     object FollowMarkerToolButton: TToolButton
-      Left = 278
+      Left = 301
       Top = 0
       Action = FollowMarkerAction
       ParentShowHint = False
       ShowHint = True
     end
     object ToolButton6: TToolButton
-      Left = 301
+      Left = 324
       Top = 0
       Width = 8
       Caption = 'ToolButton6'
@@ -168,21 +173,21 @@ object LoopTunerMainForm: TLoopTunerMainForm
       Style = tbsSeparator
     end
     object StopToolButton: TToolButton
-      Left = 309
+      Left = 332
       Top = 0
       Action = StopPlayAction
       ParentShowHint = False
       ShowHint = True
     end
     object PlayToolButton: TToolButton
-      Left = 332
+      Left = 355
       Top = 0
       Action = PlayFromStartAction
       ParentShowHint = False
       ShowHint = True
     end
     object PlayFromCursorToolButton: TToolButton
-      Left = 355
+      Left = 378
       Top = 0
       Action = PlayFromCaretAction
       ParentShowHint = False
@@ -192,7 +197,7 @@ object LoopTunerMainForm: TLoopTunerMainForm
   object EditAttribPanel: TPanel
     Left = 0
     Top = 184
-    Width = 628
+    Width = 963
     Height = 97
     Align = alBottom
     BevelOuter = bvNone
@@ -200,7 +205,7 @@ object LoopTunerMainForm: TLoopTunerMainForm
     object EditLabelAttribBevel: TBevel
       Left = 0
       Top = 5
-      Width = 628
+      Width = 963
       Height = 2
       Align = alBottom
       Shape = bsBottomLine
@@ -208,7 +213,7 @@ object LoopTunerMainForm: TLoopTunerMainForm
     object EmptyEditAttribFrame: TPanel
       Left = 0
       Top = 7
-      Width = 628
+      Width = 963
       Height = 30
       Align = alBottom
       BevelOuter = bvNone
@@ -217,23 +222,488 @@ object LoopTunerMainForm: TLoopTunerMainForm
     end
     inline EditLinkAttribFrame: TEditLinkAttribFrame
       Top = 37
-      Width = 628
+      Width = 963
       Align = alBottom
       TabOrder = 1
       Visible = False
     end
     inline EditLabelAttribFrame: TEditLabelAttribFrame
       Top = 67
-      Width = 628
+      Width = 963
       Align = alBottom
       TabOrder = 2
       Visible = False
     end
   end
+  object FlagsPanel: TPanel
+    Left = 0
+    Top = 26
+    Width = 963
+    Height = 23
+    Align = alTop
+    BevelOuter = bvNone
+    TabOrder = 3
+    object Bevel1: TBevel
+      Left = 0
+      Top = 21
+      Width = 963
+      Height = 2
+      Align = alBottom
+      Shape = bsBottomLine
+    end
+    object FlagLabel0: TLabel
+      Left = 0
+      Top = 0
+      Width = 17
+      Height = 20
+      AutoSize = False
+      Caption = ' 0'
+      Font.Charset = SHIFTJIS_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -12
+      Font.Name = 'ＭＳ ゴシック'
+      Font.Style = []
+      ParentFont = False
+      Layout = tlCenter
+    end
+    object FlagLabel1: TLabel
+      Left = 55
+      Top = 0
+      Width = 17
+      Height = 20
+      AutoSize = False
+      Caption = ' 1'
+      Font.Charset = SHIFTJIS_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -12
+      Font.Name = 'ＭＳ ゴシック'
+      Font.Style = []
+      ParentFont = False
+      Layout = tlCenter
+    end
+    object FlagLabel2: TLabel
+      Left = 110
+      Top = 0
+      Width = 17
+      Height = 20
+      AutoSize = False
+      Caption = ' 2'
+      Font.Charset = SHIFTJIS_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -12
+      Font.Name = 'ＭＳ ゴシック'
+      Font.Style = []
+      ParentFont = False
+      Layout = tlCenter
+    end
+    object FlagLabel3: TLabel
+      Left = 165
+      Top = 0
+      Width = 17
+      Height = 20
+      AutoSize = False
+      Caption = ' 3'
+      Font.Charset = SHIFTJIS_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -12
+      Font.Name = 'ＭＳ ゴシック'
+      Font.Style = []
+      ParentFont = False
+      Layout = tlCenter
+    end
+    object FlagLabel4: TLabel
+      Left = 220
+      Top = 0
+      Width = 17
+      Height = 20
+      AutoSize = False
+      Caption = ' 4'
+      Font.Charset = SHIFTJIS_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -12
+      Font.Name = 'ＭＳ ゴシック'
+      Font.Style = []
+      ParentFont = False
+      Layout = tlCenter
+    end
+    object FlagLabel5: TLabel
+      Left = 275
+      Top = 0
+      Width = 17
+      Height = 20
+      AutoSize = False
+      Caption = ' 5'
+      Font.Charset = SHIFTJIS_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -12
+      Font.Name = 'ＭＳ ゴシック'
+      Font.Style = []
+      ParentFont = False
+      Layout = tlCenter
+    end
+    object FlagLabel6: TLabel
+      Left = 330
+      Top = 0
+      Width = 17
+      Height = 20
+      AutoSize = False
+      Caption = ' 6'
+      Font.Charset = SHIFTJIS_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -12
+      Font.Name = 'ＭＳ ゴシック'
+      Font.Style = []
+      ParentFont = False
+      Layout = tlCenter
+    end
+    object FlagLabel7: TLabel
+      Left = 385
+      Top = 0
+      Width = 17
+      Height = 20
+      AutoSize = False
+      Caption = ' 7'
+      Font.Charset = SHIFTJIS_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -12
+      Font.Name = 'ＭＳ ゴシック'
+      Font.Style = []
+      ParentFont = False
+      Layout = tlCenter
+    end
+    object FlagLabel8: TLabel
+      Left = 440
+      Top = 0
+      Width = 17
+      Height = 20
+      AutoSize = False
+      Caption = ' 8'
+      Font.Charset = SHIFTJIS_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -12
+      Font.Name = 'ＭＳ ゴシック'
+      Font.Style = []
+      ParentFont = False
+      Layout = tlCenter
+    end
+    object FlagLabel9: TLabel
+      Left = 495
+      Top = 0
+      Width = 17
+      Height = 20
+      AutoSize = False
+      Caption = ' 9'
+      Font.Charset = SHIFTJIS_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -12
+      Font.Name = 'ＭＳ ゴシック'
+      Font.Style = []
+      ParentFont = False
+      Layout = tlCenter
+    end
+    object FlagLabel10: TLabel
+      Left = 550
+      Top = 0
+      Width = 17
+      Height = 20
+      AutoSize = False
+      Caption = '10'
+      Font.Charset = SHIFTJIS_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -12
+      Font.Name = 'ＭＳ ゴシック'
+      Font.Style = []
+      ParentFont = False
+      Layout = tlCenter
+    end
+    object FlagLabel11: TLabel
+      Left = 605
+      Top = 0
+      Width = 17
+      Height = 20
+      AutoSize = False
+      Caption = '11'
+      Font.Charset = SHIFTJIS_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -12
+      Font.Name = 'ＭＳ ゴシック'
+      Font.Style = []
+      ParentFont = False
+      Layout = tlCenter
+    end
+    object FlagLabel12: TLabel
+      Left = 660
+      Top = 0
+      Width = 17
+      Height = 20
+      AutoSize = False
+      Caption = '12'
+      Font.Charset = SHIFTJIS_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -12
+      Font.Name = 'ＭＳ ゴシック'
+      Font.Style = []
+      ParentFont = False
+      Layout = tlCenter
+    end
+    object FlagLabel13: TLabel
+      Left = 715
+      Top = 0
+      Width = 17
+      Height = 20
+      AutoSize = False
+      Caption = '13'
+      Font.Charset = SHIFTJIS_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -12
+      Font.Name = 'ＭＳ ゴシック'
+      Font.Style = []
+      ParentFont = False
+      Layout = tlCenter
+    end
+    object FlagLabel14: TLabel
+      Left = 770
+      Top = 0
+      Width = 17
+      Height = 20
+      AutoSize = False
+      Caption = '14'
+      Font.Charset = SHIFTJIS_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -12
+      Font.Name = 'ＭＳ ゴシック'
+      Font.Style = []
+      ParentFont = False
+      Layout = tlCenter
+    end
+    object FlagLabel15: TLabel
+      Left = 825
+      Top = 0
+      Width = 17
+      Height = 20
+      AutoSize = False
+      Caption = '15'
+      Font.Charset = SHIFTJIS_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -12
+      Font.Name = 'ＭＳ ゴシック'
+      Font.Style = []
+      ParentFont = False
+      Layout = tlCenter
+    end
+    object FlagEdit0: TEdit
+      Left = 16
+      Top = 0
+      Width = 33
+      Height = 20
+      PopupMenu = FlagsEditPopupMenu
+      TabOrder = 1
+      Text = '0'
+      OnChange = FlagEdit0Change
+      OnDblClick = FlagEdit0DblClick
+      OnKeyPress = FlagEdit0KeyPress
+      OnMouseDown = FlagEdit0MouseDown
+    end
+    object FlagEdit1: TEdit
+      Left = 71
+      Top = 0
+      Width = 33
+      Height = 20
+      PopupMenu = FlagsEditPopupMenu
+      TabOrder = 2
+      Text = '0'
+      OnChange = FlagEdit0Change
+      OnDblClick = FlagEdit0DblClick
+      OnKeyPress = FlagEdit0KeyPress
+      OnMouseDown = FlagEdit0MouseDown
+    end
+    object FlagEdit2: TEdit
+      Left = 126
+      Top = 0
+      Width = 33
+      Height = 20
+      PopupMenu = FlagsEditPopupMenu
+      TabOrder = 3
+      Text = '0'
+      OnChange = FlagEdit0Change
+      OnDblClick = FlagEdit0DblClick
+      OnKeyPress = FlagEdit0KeyPress
+      OnMouseDown = FlagEdit0MouseDown
+    end
+    object FlagEdit3: TEdit
+      Left = 181
+      Top = 0
+      Width = 33
+      Height = 20
+      PopupMenu = FlagsEditPopupMenu
+      TabOrder = 4
+      Text = '0'
+      OnChange = FlagEdit0Change
+      OnDblClick = FlagEdit0DblClick
+      OnKeyPress = FlagEdit0KeyPress
+      OnMouseDown = FlagEdit0MouseDown
+    end
+    object FlagEdit4: TEdit
+      Left = 236
+      Top = 0
+      Width = 33
+      Height = 20
+      PopupMenu = FlagsEditPopupMenu
+      TabOrder = 5
+      Text = '0'
+      OnChange = FlagEdit0Change
+      OnDblClick = FlagEdit0DblClick
+      OnKeyPress = FlagEdit0KeyPress
+      OnMouseDown = FlagEdit0MouseDown
+    end
+    object FlagEdit5: TEdit
+      Left = 291
+      Top = 0
+      Width = 33
+      Height = 20
+      PopupMenu = FlagsEditPopupMenu
+      TabOrder = 6
+      Text = '0'
+      OnChange = FlagEdit0Change
+      OnDblClick = FlagEdit0DblClick
+      OnKeyPress = FlagEdit0KeyPress
+      OnMouseDown = FlagEdit0MouseDown
+    end
+    object FlagEdit6: TEdit
+      Left = 346
+      Top = 0
+      Width = 33
+      Height = 20
+      PopupMenu = FlagsEditPopupMenu
+      TabOrder = 7
+      Text = '0'
+      OnChange = FlagEdit0Change
+      OnDblClick = FlagEdit0DblClick
+      OnKeyPress = FlagEdit0KeyPress
+      OnMouseDown = FlagEdit0MouseDown
+    end
+    object FlagEdit7: TEdit
+      Left = 401
+      Top = 0
+      Width = 33
+      Height = 20
+      PopupMenu = FlagsEditPopupMenu
+      TabOrder = 8
+      Text = '0'
+      OnChange = FlagEdit0Change
+      OnDblClick = FlagEdit0DblClick
+      OnKeyPress = FlagEdit0KeyPress
+      OnMouseDown = FlagEdit0MouseDown
+    end
+    object FlagEdit8: TEdit
+      Left = 456
+      Top = 0
+      Width = 33
+      Height = 20
+      PopupMenu = FlagsEditPopupMenu
+      TabOrder = 9
+      Text = '0'
+      OnChange = FlagEdit0Change
+      OnDblClick = FlagEdit0DblClick
+      OnKeyPress = FlagEdit0KeyPress
+      OnMouseDown = FlagEdit0MouseDown
+    end
+    object FlagEdit9: TEdit
+      Left = 511
+      Top = 0
+      Width = 33
+      Height = 20
+      PopupMenu = FlagsEditPopupMenu
+      TabOrder = 10
+      Text = '0'
+      OnChange = FlagEdit0Change
+      OnDblClick = FlagEdit0DblClick
+      OnKeyPress = FlagEdit0KeyPress
+      OnMouseDown = FlagEdit0MouseDown
+    end
+    object FlagEdit10: TEdit
+      Left = 566
+      Top = 0
+      Width = 33
+      Height = 20
+      PopupMenu = FlagsEditPopupMenu
+      TabOrder = 11
+      Text = '0'
+      OnChange = FlagEdit0Change
+      OnDblClick = FlagEdit0DblClick
+      OnKeyPress = FlagEdit0KeyPress
+      OnMouseDown = FlagEdit0MouseDown
+    end
+    object FlagEdit11: TEdit
+      Left = 621
+      Top = 0
+      Width = 33
+      Height = 20
+      PopupMenu = FlagsEditPopupMenu
+      TabOrder = 12
+      Text = '0'
+      OnChange = FlagEdit0Change
+      OnDblClick = FlagEdit0DblClick
+      OnKeyPress = FlagEdit0KeyPress
+      OnMouseDown = FlagEdit0MouseDown
+    end
+    object FlagEdit12: TEdit
+      Left = 676
+      Top = 0
+      Width = 33
+      Height = 20
+      PopupMenu = FlagsEditPopupMenu
+      TabOrder = 13
+      Text = '0'
+      OnChange = FlagEdit0Change
+      OnDblClick = FlagEdit0DblClick
+      OnKeyPress = FlagEdit0KeyPress
+      OnMouseDown = FlagEdit0MouseDown
+    end
+    object FlagEdit13: TEdit
+      Left = 731
+      Top = 0
+      Width = 33
+      Height = 20
+      PopupMenu = FlagsEditPopupMenu
+      TabOrder = 14
+      Text = '0'
+      OnChange = FlagEdit0Change
+      OnDblClick = FlagEdit0DblClick
+      OnKeyPress = FlagEdit0KeyPress
+      OnMouseDown = FlagEdit0MouseDown
+    end
+    object FlagEdit14: TEdit
+      Left = 786
+      Top = 0
+      Width = 33
+      Height = 20
+      PopupMenu = FlagsEditPopupMenu
+      TabOrder = 15
+      Text = '0'
+      OnChange = FlagEdit0Change
+      OnDblClick = FlagEdit0DblClick
+      OnKeyPress = FlagEdit0KeyPress
+      OnMouseDown = FlagEdit0MouseDown
+    end
+    object FlagEdit15: TEdit
+      Left = 841
+      Top = 0
+      Width = 33
+      Height = 20
+      PopupMenu = FlagsEditPopupMenu
+      TabOrder = 0
+      Text = '0'
+      OnChange = FlagEdit0Change
+      OnDblClick = FlagEdit0DblClick
+      OnKeyPress = FlagEdit0KeyPress
+      OnMouseDown = FlagEdit0MouseDown
+    end
+  end
   object MainMenu: TMainMenu
     Images = ImageList
     Left = 40
-    Top = 32
+    Top = 64
     object FileMenu: TMenuItem
       Caption = 'ファイル(&F)'
       object OpenMenuItem: TMenuItem
@@ -295,7 +765,14 @@ object LoopTunerMainForm: TLoopTunerMainForm
   object ActionList: TActionList
     Images = ImageList
     Left = 8
-    Top = 32
+    Top = 64
+    object ZoomInAction: TAction
+      Category = '表示'
+      Caption = 'ズーム・イン(&I)'
+      Hint = 'ズームイン'
+      ImageIndex = 9
+      OnExecute = ZoomInActionExecute
+    end
     object OpenAction: TAction
       Category = 'ファイル'
       Caption = '開く(&O)...'
@@ -304,12 +781,28 @@ object LoopTunerMainForm: TLoopTunerMainForm
       ShortCut = 16463
       OnExecute = OpenActionExecute
     end
-    object ZoomInAction: TAction
+    object ZoomOutAction: TAction
       Category = '表示'
-      Caption = 'ズーム・イン(&I)'
-      Hint = 'ズームイン'
-      ImageIndex = 9
-      OnExecute = ZoomInActionExecute
+      Caption = 'ズーム・アウト(&O)'
+      Hint = 'ズームアウト'
+      ImageIndex = 10
+      OnExecute = ZoomOutActionExecute
+    end
+    object ShowEditFlagsAction: TAction
+      Category = '表示'
+      Caption = 'フラグの表示(&G)'
+      Checked = True
+      Hint = 'フラグ編集バーを表示します'
+      ImageIndex = 35
+      OnExecute = ShowEditFlagsActionExecute
+    end
+    object ShowEditAttribAction: TAction
+      Category = '表示'
+      Caption = 'クイックプロパティの表示(&Q)'
+      Checked = True
+      Hint = 'クイックプロパティの表示'
+      ImageIndex = 32
+      OnExecute = ShowEditAttribActionExecute
     end
     object StopPlayAction: TAction
       Category = '再生'
@@ -318,19 +811,19 @@ object LoopTunerMainForm: TLoopTunerMainForm
       ImageIndex = 4
       OnExecute = StopPlayActionExecute
     end
+    object FollowMarkerAction: TAction
+      Category = '表示'
+      Caption = '再生位置に画面を追従(&F)'
+      Hint = '再生位置に画面を追従'
+      ImageIndex = 11
+      OnExecute = FollowMarkerActionExecute
+    end
     object PlayFromCaretAction: TAction
       Category = '再生'
       Caption = '現在位置から再生(&C)'
       Hint = '現在位置から再生'
       ImageIndex = 1
       OnExecute = PlayFromCaretActionExecute
-    end
-    object ZoomOutAction: TAction
-      Category = '表示'
-      Caption = 'ズーム・アウト(&O)'
-      Hint = 'ズームアウト'
-      ImageIndex = 10
-      OnExecute = ZoomOutActionExecute
     end
     object PlayFromStartAction: TAction
       Category = '再生'
@@ -378,21 +871,6 @@ object LoopTunerMainForm: TLoopTunerMainForm
       ImageIndex = 16
       OnExecute = NewLabelActionExecute
     end
-    object FollowMarkerAction: TAction
-      Category = '表示'
-      Caption = '再生位置に画面を追従(&F)'
-      Hint = '再生位置に画面を追従'
-      ImageIndex = 11
-      OnExecute = FollowMarkerActionExecute
-    end
-    object ShowEditAttribAction: TAction
-      Category = '表示'
-      Caption = 'クイックプロパティの表示(&Q)'
-      Checked = True
-      Hint = 'クイックプロパティの表示'
-      ImageIndex = 32
-      OnExecute = ShowEditAttribActionExecute
-    end
     object EditLinkDetailAction: TAction
       Category = '編集'
       Caption = 'リンクチューナ(&T)'
@@ -424,20 +902,10 @@ object LoopTunerMainForm: TLoopTunerMainForm
   end
   object ImageList: TImageList
     Left = 72
-    Top = 32
+    Top = 64
     Bitmap = {
-      494C010123002700040010001000FFFFFFFFFF00FFFFFFFFFFFFFFFF424D3600
+      494C010124002700040010001000FFFFFFFFFF00FFFFFFFFFFFFFFFF424D3600
       000000000000360000002800000040000000A0000000010020000000000000A0
-      0000000000000000000000000000000000000000000000000000000000000000
-      0000000000000000000000000000000000000000000000000000000000000000
-      0000000000000000000000000000000000000000000000000000000000000000
-      0000000000000000000000000000000000000000000000000000000000000000
-      0000000000000000000000000000000000000000000000000000000000000000
-      0000000000000000000000000000000000000000000000000000000000000000
-      0000000000000000000000000000000000000000000000000000000000000000
-      0000000000000000000000000000000000000000000000000000000000000000
-      0000000000000000000000000000000000000000000000000000000000000000
-      0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
@@ -589,22 +1057,32 @@ object LoopTunerMainForm: TLoopTunerMainForm
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
       000000000000000000000000000000000000000000000000000080800000FFFF
+      FF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF008080
+      0000000000000000000000000000000000000000000000000000808000008080
+      0000808000008080000080800000808000008080000080800000808000008080
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000008080
+      0000FFFFFF00FFFFFF00FFFFFF0000000000FFFFFF00FFFFFF00FFFFFF00FFFF
+      FF0080800000000000000000000000000000000000000000000080800000FFFF
       FF00FFFFFF000000000000000000FFFFFF00FFFFFF00FFFFFF00FFFFFF008080
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
-      0000000000000000000000000000000000000000000000000000000000000000
-      0000000000000000000000000000000000000000000000000000000000000000
-      000000000000000000000000000000000000000000000000000080800000FFFF
+      0000000000000000000000000000000000000000000000000000000000008080
+      0000FFFFFF00FFFFFF00FFFFFF0000000000FFFFFF00FFFFFF00FFFFFF00FFFF
+      FF0080800000000000000000000000000000000000000000000080800000FFFF
       FF0000000000000000000000000000000000FFFFFF00FFFFFF00FFFFFF008080
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
-      0000000000000000000000000000000000000000000000000000000000000000
-      0000000000000000000000000000000000000000000000000000808000000000
+      0000808000008080000080800000000000008080000080800000808000008080
+      0000808000008080000000000000000000000000000000000000808000000000
       00000000000000000000000000000000000000000000FFFFFF00FFFFFF008080
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
@@ -1714,11 +2192,11 @@ object LoopTunerMainForm: TLoopTunerMainForm
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
-      00000000000000000000000000000000FFFFFFFFFFFF0000FFFFFFFFFFFF0000
-      FFFFE00FE00F0000C00FFFEFFFEF0000C00FFFEFFFEF0000C00FFFEFFFEF0000
-      C00FECEFECEF0000C00FF5EFF5EF0000800FF5EFF5830000800FE0EFE0830000
-      C007FFEFDBC70000C003E0EFE0C70000C001FFEFEBEF0000FFF9FFEFFFEF0000
-      FFFFFFFFFFFF0000FFFFFFFFFFFF0000FFFFFFFFFFFFFFFF9FFF9FFFFFFFFFFF
+      00000000000000000000000000000000FFFFFFFFFFFFFFFFFFFFFFFFFFFFC00F
+      FFFFE00FE00FC00FC00FFFEFFFEFE007C00FFFEFFFEFE007C00FFFEFFFEFF003
+      C00FECEFECEFFEFFC00FF5EFF5EFFEFF800FF5EFF583FEFF800FE0EFE083FE3F
+      C007FFEFDBC7FE0FC003E0EFE0C7FE03C001FFEFEBEFFE0FFFF9FFEFFFEFFE3F
+      FFFFFFFFFFFFFEFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF9FFF9FFFFFFFFFFF
       87FF87FFFFFFFEFF81FF81FF8001FEFF807F807FE001FE3F801F801FF801FE1F
       800780079E01FC07801F801F8781F003807F807F81E1000181FF81FF8079801F
       87E787C7801FC07F9FDB9FFB8007F0FFFFF7FFE78001F8FFFFDBFFDFFFFFFEFF
@@ -1754,12 +2232,12 @@ object LoopTunerMainForm: TLoopTunerMainForm
   end
   object OpenDialog: TOpenDialog
     Left = 104
-    Top = 32
+    Top = 64
   end
   object ForLabelPopupMenu: TPopupMenu
     Images = ImageList
     Left = 8
-    Top = 64
+    Top = 96
     object ForLAbel_EditLabelDetailMenuItem: TMenuItem
       Action = EditLabelDetailAction
     end
@@ -1773,7 +2251,7 @@ object LoopTunerMainForm: TLoopTunerMainForm
   object ForLinkPopupMenu: TPopupMenu
     Images = ImageList
     Left = 40
-    Top = 64
+    Top = 96
     object ForLink_EditLinkDetailMenuItem: TMenuItem
       Action = EditLinkDetailAction
     end
@@ -1793,7 +2271,7 @@ object LoopTunerMainForm: TLoopTunerMainForm
   object ForWavePopupMenu: TPopupMenu
     Images = ImageList
     Left = 72
-    Top = 64
+    Top = 96
     object ForWave_ZoomInMenuItem: TMenuItem
       Action = ZoomInAction
     end
@@ -1813,12 +2291,12 @@ object LoopTunerMainForm: TLoopTunerMainForm
   object ApplicationEvents: TApplicationEvents
     OnIdle = ApplicationEventsIdle
     Left = 104
-    Top = 64
+    Top = 96
   end
   object WaveViewPopupMenu: TPopupMenu
     AutoPopup = False
     Left = 8
-    Top = 96
+    Top = 128
     object WaveView_ZoomInMenuItem: TMenuItem
       Action = ZoomInAction
       ShortCut = 73
@@ -1858,6 +2336,25 @@ object LoopTunerMainForm: TLoopTunerMainForm
     object WaveView_GotoLinkToMenuItem: TMenuItem
       Action = GotoLinkToAction
       ShortCut = 78
+    end
+  end
+  object FlagsEditPopupMenu: TPopupMenu
+    Left = 152
+    Top = 64
+    object FlagsEditToggleMenuItem: TMenuItem
+      Caption = 'トグル(&T)'
+      Hint = '値が0以外ならば0に、0ならば1にします'
+      OnClick = FlagsEditToggleMenuItemClick
+    end
+    object FlagsEditZeroMenuItem: TMenuItem
+      Caption = '&0にする'
+      Hint = '値を0にします'
+      OnClick = FlagsEditZeroMenuItemClick
+    end
+    object FlasgEditOneMenuItem: TMenuItem
+      Caption = '&1にする'
+      Hint = '値を1にします'
+      OnClick = FlasgEditOneMenuItemClick
     end
   end
 end

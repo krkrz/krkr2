@@ -122,6 +122,16 @@ __published:	// IDE 管理のコンポーネント
 	TMenuItem *ForLink_GotoLinkToAction;
 	TMenuItem *WaveView_GotoLinkFromMenuItem;
 	TMenuItem *WaveView_GotoLinkToMenuItem;
+	TPanel *FlagsPanel;
+	TBevel *Bevel1;
+	TLabel *FlagLabel0;
+	TEdit *FlagEdit0;
+	TPopupMenu *FlagsEditPopupMenu;
+	TMenuItem *FlagsEditZeroMenuItem;
+	TMenuItem *FlasgEditOneMenuItem;
+	TMenuItem *FlagsEditToggleMenuItem;
+	TAction *ShowEditFlagsAction;
+	TToolButton *ShowEditFlagToolButton;
 	void __fastcall FormDestroy(TObject *Sender);
 	void __fastcall OpenActionExecute(TObject *Sender);
 	void __fastcall ZoomInActionExecute(TObject *Sender);
@@ -142,11 +152,22 @@ __published:	// IDE 管理のコンポーネント
 	void __fastcall EditLabelDetailActionExecute(TObject *Sender);
 	void __fastcall GotoLinkFromActionExecute(TObject *Sender);
 	void __fastcall GotoLinkToActionExecute(TObject *Sender);
+	void __fastcall FlagsEditZeroMenuItemClick(TObject *Sender);
+	void __fastcall FlasgEditOneMenuItemClick(TObject *Sender);
+	void __fastcall FlagEdit0MouseDown(TObject *Sender, TMouseButton Button,
+          TShiftState Shift, int X, int Y);
+	void __fastcall FlagsEditToggleMenuItemClick(TObject *Sender);
+	void __fastcall FlagEdit0Change(TObject *Sender);
+	void __fastcall FlagEdit0KeyPress(TObject *Sender, char &Key);
+	void __fastcall ShowEditFlagsActionExecute(TObject *Sender);
+	void __fastcall FlagEdit0DblClick(TObject *Sender);
 private:	// ユーザー宣言
 	TWaveReader * Reader;
 	TWaveView *WaveView;
 	tTVPWaveLoopManager *Manager;
 	AnsiString FileName; // current filename
+
+	TEdit * FlagsEdits[TVP_WL_MAX_FLAGS]; // array of flag edit controls
 
 public:		// ユーザー宣言
 	__fastcall TLoopTunerMainForm(TComponent* Owner);
