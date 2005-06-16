@@ -125,7 +125,33 @@ void __fastcall TEditLinkAttribFrame::CondRefValueEditChange(
       TObject *Sender)
 {
 	if(InLoading) return;
+
+	TEdit *edit = dynamic_cast<TEdit*>(Sender);
+	if(edit)
+	{
+		if(edit->Text == "")
+		{
+			edit->Text = "0";
+			edit->SelStart = 1;
+			edit->Modified = true;
+		}
+
+		if(edit->Text != "0" && edit->Text[1] == '0')
+		{
+			edit->Text = AnsiString(edit->Text.ToInt());
+			edit->SelStart = edit->Text.Length();
+			edit->Modified = true;
+		}
+	}
+
 	if(FOnEraseRedo) FOnEraseRedo(this);
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TEditLinkAttribFrame::CondRefValueEditKeyPress(
+      TObject *Sender, char &Key)
+{
+	if(!(Key >= '0' && Key <= '9' || Key < 0x20)) Key = 0;
 }
 //---------------------------------------------------------------------------
 

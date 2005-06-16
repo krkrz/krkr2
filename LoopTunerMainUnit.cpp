@@ -223,6 +223,13 @@ void __fastcall TLoopTunerMainForm::StopPlayActionExecute(TObject *Sender)
 	StopPlay();
 }
 //---------------------------------------------------------------------------
+void __fastcall TLoopTunerMainForm::ShowEditFlagsActionExecute(
+	  TObject *Sender)
+{
+	ShowEditFlagsAction->Checked = !ShowEditFlagsAction->Checked;
+	FlagsPanel->Visible = ShowEditFlagsAction->Checked;
+}
+//---------------------------------------------------------------------------
 void __fastcall TLoopTunerMainForm::ShowEditAttribActionExecute(
 	  TObject *Sender)
 {
@@ -478,6 +485,107 @@ void __fastcall TLoopTunerMainForm::EditLabelAttribFrameEraseRedo(TObject * Send
 	WaveView->EraseRedo();
 }
 //---------------------------------------------------------------------------
+void __fastcall TLoopTunerMainForm::FlagsEditToggleMenuItemClick(
+	  TObject *Sender)
+{
+	TEdit *edit = dynamic_cast<TEdit*>(ActiveControl);
+	if(edit)
+	{
+		if(edit->Text.ToInt())
+			edit->Text = "0";
+		else
+			edit->Text = "1";
+		edit->SelStart = 1;
+	}
+}
+//---------------------------------------------------------------------------
+void __fastcall TLoopTunerMainForm::FlagEdit0DblClick(TObject *Sender)
+{
+	TEdit *edit = dynamic_cast<TEdit*>(ActiveControl);
+	if(edit)
+	{
+		if(edit->Text.ToInt())
+			edit->Text = "0";
+		else
+			edit->Text = "1";
+		edit->SelStart = 1;
+	}
+}
+//---------------------------------------------------------------------------
+void __fastcall TLoopTunerMainForm::FlagsEditZeroMenuItemClick(
+	  TObject *Sender)
+{
+	TEdit *edit = dynamic_cast<TEdit*>(ActiveControl);
+	if(edit)
+		edit->Text = "0";
+}
+//---------------------------------------------------------------------------
+void __fastcall TLoopTunerMainForm::FlasgEditOneMenuItemClick(TObject *Sender)
+{
+	TEdit *edit = dynamic_cast<TEdit*>(ActiveControl);
+	if(edit)
+		edit->Text = "1";
+}
+//---------------------------------------------------------------------------
+void __fastcall TLoopTunerMainForm::FlagEdit0MouseDown(TObject *Sender,
+	  TMouseButton Button, TShiftState Shift, int X, int Y)
+{
+	TWinControl *control = dynamic_cast<TWinControl*>(Sender);
+	if(control) control->SetFocus();
+}
+//---------------------------------------------------------------------------
+void __fastcall TLoopTunerMainForm::FlagEdit0Change(TObject *Sender)
+{
+	TEdit *edit = dynamic_cast<TEdit*>(Sender);
+	if(edit)
+	{
+		if(edit->Text == "")
+		{
+			edit->Text = "0";
+			edit->SelStart = 1;
+		}
+
+		if(edit->Text != "0" && edit->Text[1] == '0')
+		{
+			edit->Text = AnsiString(edit->Text.ToInt());
+			edit->SelStart = edit->Text.Length();
+		}
+	}
+
+	// refrect all controls
+	if(Manager)
+	{
+		int count = FlagsPanel->ControlCount;
+		for(int i = 0; i < count ; i++)
+		{
+			TControl * comp = FlagsPanel->Controls[i];
+			TEdit * edit = dynamic_cast<TEdit *>(comp);
+			if(edit)
+			{
+				if(edit->Name.AnsiPos("FlagEdit") == 1)
+				{
+					int num = atoi(edit->Name.c_str()  + 8);
+					Manager->SetFlag(num, edit->Text.ToInt());
+				}
+			}
+		}
+	}
+}
+//---------------------------------------------------------------------------
+void __fastcall TLoopTunerMainForm::FlagEdit0KeyPress(TObject *Sender,
+	  char &Key)
+{
+	if(!(Key >= '0' && Key <= '9' || Key < 0x20)) Key = 0;
+}
+//---------------------------------------------------------------------------
+
+
+
+
+
+
+
+
 
 
 
