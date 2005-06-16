@@ -2798,6 +2798,7 @@ void __fastcall TWaveView::CMWantSpecialKey(TCMWantSpecialKey &message)
 	case VK_DOWN:
 	case VK_LEFT:
 	case VK_RIGHT:
+		if(FOnStopFollowingMarker) FOnStopFollowingMarker(this);
 		message.Result = 1;
 		break;
 	}
@@ -2829,6 +2830,11 @@ void __fastcall TWaveView::KeyDown(Word &Key, Classes::TShiftState Shift)
 			// show caret
 			CaretPos = Labels[FocusedLabel].Position;
 			ShowCaret = true;
+		}
+		else if(Key == VK_RETURN)
+		{
+			// enter key pressed
+			PerformLabelDoubleClick();
 		}
 	}
 	else if(FocusedLink != -1)
@@ -2872,6 +2878,11 @@ void __fastcall TWaveView::KeyDown(Word &Key, Classes::TShiftState Shift)
 			FocusLinkAt(Links[FocusedLink].LinkTier,
 				(Links[FocusedLink].From + Links[FocusedLink].To)/2, 2);
 		}
+		else if(Key == VK_RETURN)
+		{
+			// enter key pressed
+			PerformLinkDoubleClick();
+		}
 	}
 	else/* if(ShowCaret) */
 	{
@@ -2881,7 +2892,6 @@ void __fastcall TWaveView::KeyDown(Word &Key, Classes::TShiftState Shift)
 		{
 			// move the caret left
 			int xstep = FMagnify <= 0 ? 1 : (1<<FMagnify);
-			if(FOnStopFollowingMarker) FOnStopFollowingMarker(this);
 			int cp = SampleToPixel(CaretPos);
 			cp -= xstep * ((Shift.Contains(ssShift)) ? 10 : 1);
 			cp = PixelToSample(cp);
@@ -2893,7 +2903,6 @@ void __fastcall TWaveView::KeyDown(Word &Key, Classes::TShiftState Shift)
 		{
 			// move the caret right
 			int xstep = FMagnify <= 0 ? 1 : (1<<FMagnify);
-			if(FOnStopFollowingMarker) FOnStopFollowingMarker(this);
 			int cp = SampleToPixel(CaretPos);
 			cp += xstep * ((Shift.Contains(ssShift)) ? 10 : 1);
 			cp = PixelToSample(cp);
