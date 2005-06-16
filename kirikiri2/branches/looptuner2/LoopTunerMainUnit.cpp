@@ -55,6 +55,8 @@ void __fastcall TLoopTunerMainForm::CreateWaveView()
 	WaveView->OnLabelModified		= WaveViewLabelModified;
 
 	WaveView->PopupMenu = WaveViewPopupMenu;
+
+	ActiveControl  = WaveView;
 }
 //---------------------------------------------------------------------------
 void __fastcall TLoopTunerMainForm::OnReaderProgress(TObject *sender)

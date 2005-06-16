@@ -24,7 +24,7 @@ const int MaxUndoLevel = 20;
 __fastcall TWaveView::TWaveView(Classes::TComponent* AOwner) :
 	TCustomControl(AOwner)
 {
-	Color = clNone;
+	Color = C_CLIENT;
 
 	FReader = NULL;
 	FMagnify = -12;
@@ -2359,6 +2359,30 @@ int TWaveView::MouseXPosToSamplePos(int x)
 	int least = SampleToPixel(1);
 	x += least / 2;
 	return PixelToSample(x) + FStart;
+}
+//---------------------------------------------------------------------------
+bool __fastcall TWaveView::DoMouseWheel(Classes::TShiftState Shift, int WheelDelta,
+		const Windows::TPoint &MousePos)
+{
+	WheelDelta /= 120; // is 120 minimum unit?
+
+	if(Shift.Contains(ssCtrl))
+	{
+		// zoom up/down
+		if(WheelDelta > 0)	Magnify ++;
+		else				Magnify --;
+	}
+	else
+	{
+		// scroll
+		// generate fake TWMHScroll structure and call WMHScroll
+		TWMHScroll msg;
+		ZeroMemory(&msg, sizeof(msg));
+		msg.ScrollCode = WheelDelta  > 0 ? SB_LINELEFT : SB_LINERIGHT;
+		WMHScroll(msg);
+	}
+
+	return true;
 }
 //---------------------------------------------------------------------------
 void __fastcall TWaveView::CMMouseLeave(TMessage &msg)
