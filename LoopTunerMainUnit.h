@@ -116,6 +116,12 @@ __published:	// IDE 管理のコンポーネント
 	TMenuItem *WaveView_PlayFromStartMenuItem;
 	TMenuItem *WaveView_UndoMenuItem;
 	TMenuItem *WaveView_DeleteMenuItem;
+	TAction *GotoLinkFromAction;
+	TAction *GotoLinkToAction;
+	TMenuItem *ForLink_GotoLinkFromMenuItem;
+	TMenuItem *ForLink_GotoLinkToAction;
+	TMenuItem *WaveView_GotoLinkFromMenuItem;
+	TMenuItem *WaveView_GotoLinkToMenuItem;
 	void __fastcall FormDestroy(TObject *Sender);
 	void __fastcall OpenActionExecute(TObject *Sender);
 	void __fastcall ZoomInActionExecute(TObject *Sender);
@@ -134,6 +140,8 @@ __published:	// IDE 管理のコンポーネント
 	void __fastcall FollowMarkerActionExecute(TObject *Sender);
 	void __fastcall EditLinkDetailActionExecute(TObject *Sender);
 	void __fastcall EditLabelDetailActionExecute(TObject *Sender);
+	void __fastcall GotoLinkFromActionExecute(TObject *Sender);
+	void __fastcall GotoLinkToActionExecute(TObject *Sender);
 private:	// ユーザー宣言
 	TWaveReader * Reader;
 	TWaveView *WaveView;
