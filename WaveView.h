@@ -306,12 +306,15 @@ private:
 	bool GetNearestObjectAt(int x, TObjectInfo & info);
 	int MouseXPosToSamplePos(int x);
 
+	DYNAMIC bool __fastcall DoMouseWheel(Classes::TShiftState Shift, int WheelDelta,
+		const Windows::TPoint &MousePos);
 	void __fastcall CMMouseLeave(TMessage &msg);
 	DYNAMIC void __fastcall MouseDown(TMouseButton button, TShiftState shift, int x, int y);
 	DYNAMIC void __fastcall MouseMove(TShiftState shift, int x, int y);
 	DYNAMIC void __fastcall MouseUp(TMouseButton button, TShiftState shift, int x, int y);
 	DYNAMIC void __fastcall DblClick(void);
 	DYNAMIC void __fastcall DoContextPopup(const Windows::TPoint & MousePos, bool &Handled);
+
 public:
 	void __fastcall PerformLinkDoubleClick();
 	void __fastcall PerformLabelDoubleClick();
