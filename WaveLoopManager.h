@@ -104,6 +104,28 @@ struct tTVPWaveLabel
 #ifdef TVP_IN_LOOP_TUNER
 	// these are only used by the loop tuner
 	tjs_int NameWidth; // display name width
+	tjs_int Index; // index
+
+	struct tSortByPositionFuncObj
+	{
+		bool operator()(
+			const tTVPWaveLabel &lhs,
+			const tTVPWaveLabel &rhs) const
+		{
+			return lhs.Position < rhs.Position;
+		}
+	};
+
+	struct tSortByIndexFuncObj
+	{
+		bool operator()(
+			const tTVPWaveLabel &lhs,
+			const tTVPWaveLabel &rhs) const
+		{
+			return lhs.Index < rhs.Index;
+		}
+	};
+
 #endif
 };
 //---------------------------------------------------------------------------

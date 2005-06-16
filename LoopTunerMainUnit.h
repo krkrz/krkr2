@@ -151,7 +151,7 @@ private:
 	void __fastcall WaveViewWaveDoubleClick(TObject *Sender, int pos);
 	void __fastcall WaveViewLinkDoubleClick(TObject *Sender, int num, tTVPWaveLoopLink &link);
 	void __fastcall WaveViewLabelDoubleClick(TObject *Sender, int num, tTVPWaveLabel &label);
-	void __fastcall WaveViewNotifyPopup(TObject *Sender, AnsiString type);
+	void __fastcall WaveViewNotifyPopup(TObject *Sender, AnsiString type, const TPoint &point);
 	void __fastcall WaveViewShowCaret(TObject *Sender, int pos);
 	void __fastcall WaveViewLinkSelected(TObject *Sender, int num, tTVPWaveLoopLink &link);
 	void __fastcall WaveViewLabelSelected(TObject *Sender, int num, tTVPWaveLabel &label);

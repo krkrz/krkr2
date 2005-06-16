@@ -330,21 +330,20 @@ void __fastcall TLoopTunerMainForm::WaveViewLabelDoubleClick(TObject *Sender,
 	delete ldf;
 }
 //---------------------------------------------------------------------------
-void __fastcall TLoopTunerMainForm::WaveViewNotifyPopup(TObject *Sender, AnsiString type)
+void __fastcall TLoopTunerMainForm::WaveViewNotifyPopup(TObject *Sender, AnsiString type,
+	const TPoint &point)
 {
-	POINT pt;
-	::GetCursorPos(&pt);
 	if(type == "Link")
 	{
-		ForLinkPopupMenu->Popup(pt.x, pt.y);
+		ForLinkPopupMenu->Popup(point.x, point.y);
 	}
 	else if(type == "Label")
 	{
-		ForLabelPopupMenu->Popup(pt.x, pt.y);
+		ForLabelPopupMenu->Popup(point.x, point.y);
 	}
 	else if(type == "Wave")
 	{
-		ForWavePopupMenu->Popup(pt.x, pt.y);
+		ForWavePopupMenu->Popup(point.x, point.y);
 	}
 }
 //---------------------------------------------------------------------------
