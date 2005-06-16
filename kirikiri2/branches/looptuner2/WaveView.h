@@ -24,13 +24,15 @@ struct TTierMinMaxInfo
 class TWaveReader;
 //---------------------------------------------------------------------------
 typedef void __fastcall (__closure *TNotifyWavePosEvent)(TObject *Sender, int pos);
-typedef void __fastcall (__closure *TNotifyPopupEvent)(TObject *Sender, AnsiString where);
+typedef void __fastcall (__closure *TNotifyPopupEvent)(TObject *Sender, AnsiString where, const TPoint & pos);
 typedef void __fastcall (__closure *TShowCaretEvent)(TObject *Sender, int pos);
 typedef void __fastcall (__closure *TLinkSelectedEvent)(TObject *Sender, int num, tTVPWaveLoopLink &link);
 typedef void __fastcall (__closure *TLabelSelectedEvent)(TObject *Sender, int num, tTVPWaveLabel &label);
 //---------------------------------------------------------------------------
 class TWaveView : public TCustomControl
 {
+	typedef TCustomControl inherited;
+
 //-- constructor and destructor
 public:
 	__fastcall TWaveView(Classes::TComponent* AOwner);
@@ -124,16 +126,16 @@ private:
 	void __fastcall CreateParams(TCreateParams &params);
 	DYNAMIC void __fastcall Resize();
 	void __fastcall SetScrollBarRange();
-	void __fastcall SetView(int n, int r = 5);
+	void __fastcall SetView(int n, int r = 50);
 
 BEGIN_MESSAGE_MAP
 	VCL_MESSAGE_HANDLER(WM_HSCROLL , TWMHScroll , WMHScroll)
 	VCL_MESSAGE_HANDLER(CM_MOUSELEAVE , TMessage , CMMouseLeave)
+	VCL_MESSAGE_HANDLER(CM_WANTSPECIALKEY , TCMWantSpecialKey, CMWantSpecialKey)
 	VCL_MESSAGE_HANDLER(WM_SETFOCUS , TWMSetFocus , WMSetFocus)
 	VCL_MESSAGE_HANDLER(WM_KILLFOCUS , TWMKillFocus , WMKillFocus)
 END_MESSAGE_MAP(TCustomControl)
 	void __fastcall WMHScroll(TWMHScroll &msg);
-	void __fastcall CMMouseLeave(TMessage &msg);
 	void __fastcall WMSetFocus(TWMSetFocus &msg);
 	void __fastcall WMKillFocus(TWMKillFocus &msg);
 	void __fastcall SetMarkerPos(int p);
@@ -143,6 +145,8 @@ public:
 private:
 	void __fastcall SetStart(int n);
 	void __fastcall SetMagnify(int m);
+
+	void __fastcall EnsureView(int p, int length = 0);
 
 public:
 	__property int Start = { read = FStart, write = SetStart };
@@ -219,6 +223,8 @@ private:
 	int __fastcall GetLinkAt(int x, int y);
 	int __fastcall IsLinkWaveMarkAt(int x, int linknum, bool &from_or_to);
 	int __fastcall GetLinkWaveMarkAt(int x, int &linknum, bool &from_or_to);
+	int __fastcall SelectLink(int tier, int spos, int mode);
+	void __fastcall FocusLinkAt(int tier, int spos, int mode);
 
 public:
 	__property int HoveredLink = { read = FHoveredLink, write = SetHoveredLink };
@@ -254,6 +260,8 @@ private:
 	int __fastcall GetLabelAt(int x, int y);
 	int __fastcall IsLabelWaveMarkAt(int x, int labelnum);
 	int __fastcall GetLabelWaveMarkAt(int x, int &labelnum);
+	int __fastcall SelectLabel(int spos, int mode);
+	void __fastcall FocusLabelAt(int spos, int mode);
 
 public:
 	__property int HoveredLabel = { read = FHoveredLabel, write = SetHoveredLabel };
@@ -261,7 +269,7 @@ public:
 
 	void __fastcall CreateNewLabel();
 
-//-- input
+//-- mouse input
 private:
 	TNotifyWavePosEvent FOnWaveDoubleClick;
 	TLinkSelectedEvent FOnLinkDoubleClick;
@@ -297,10 +305,12 @@ private:
 	bool GetNearestObjectAt(int x, TObjectInfo & info);
 	int MouseXPosToSamplePos(int x);
 
+	void __fastcall CMMouseLeave(TMessage &msg);
 	DYNAMIC void __fastcall MouseDown(TMouseButton button, TShiftState shift, int x, int y);
 	DYNAMIC void __fastcall MouseMove(TShiftState shift, int x, int y);
 	DYNAMIC void __fastcall MouseUp(TMouseButton button, TShiftState shift, int x, int y);
 	DYNAMIC void __fastcall DblClick(void);
+	DYNAMIC void __fastcall DoContextPopup(const Windows::TPoint & MousePos, bool &Handled);
 public:
 	void __fastcall PerformLinkDoubleClick();
 	void __fastcall PerformLabelDoubleClick();
@@ -314,6 +324,11 @@ public:
 	__property TLabelSelectedEvent OnLabelDoubleClick = { read = FOnLabelDoubleClick, write = FOnLabelDoubleClick };
 
 	__property PopupMenu;
+
+//-- keyboad input
+	void __fastcall CMWantSpecialKey(TCMWantSpecialKey &message);
+	DYNAMIC void __fastcall KeyDown(Word &Key, Classes::TShiftState Shift);
+
 };
 //---------------------------------------------------------------------------
 #endif

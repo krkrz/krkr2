@@ -356,7 +356,7 @@ void __fastcall TWaveView::SetView(int n, int r)
 {
 	// set left edge of the viewport
 	int clwp = PixelToSample(ClientWidth);
-	clwp = clwp / 10 * r;
+	clwp = clwp / 100 * r;
 	n -= clwp;
 	if(n < 0) n = 0;
 
@@ -419,11 +419,6 @@ void __fastcall TWaveView::WMHScroll(TWMHScroll &msg)
 	SetStart(si.nPos);
 
 	if(FOnStopFollowingMarker) FOnStopFollowingMarker(this);
-}
-//---------------------------------------------------------------------------
-void __fastcall TWaveView::CMMouseLeave(TMessage &msg)
-{
-	MouseLeave();
 }
 //---------------------------------------------------------------------------
 void __fastcall TWaveView::WMSetFocus(TWMSetFocus &msg)
@@ -608,6 +603,36 @@ void __fastcall TWaveView::SetMagnify(int m)
 	}
 }
 //---------------------------------------------------------------------------
+void __fastcall TWaveView::EnsureView(int p, int length)
+{
+	// scroll the view (if needed) to ensure the point p .. (p+length) is visible
+	int lim = PixelToSample(ClientWidth-1);
+
+	if(lim * 0.9 < std::abs(length))
+	{
+		// the client width is less than the length
+		if(length > 0)
+			SetView(p, 1);
+		else
+			SetView(p, 99);
+	}
+	else
+	{
+		int lofs = p - Start;
+		int rofs = p + length - Start;
+		if(rofs < lofs) std::swap(rofs, lofs);
+
+		if(lofs <= 0)
+		{
+			SetView(lofs + Start, 5);
+		}
+		else if(rofs >= lim)
+		{
+			SetView(rofs + Start, 95);
+		}
+	}
+}
+//---------------------------------------------------------------------------
 void __fastcall TWaveView::SetMarkerPos(int n)
 {
 	// set marker position.
@@ -665,7 +690,7 @@ void __fastcall TWaveView::SetMarkerPos(int n)
 			int px = SampleToPixel(n - FStart);
 			if(px < 0 || px >= ClientWidth)
 			{
-				SetView(n, 1);
+				SetView(n, 10);
 				FWaitingMarker = true;
 				FSoftCenteringStartTick = 0;
 			}
@@ -731,8 +756,8 @@ inline static bool PartIntersect(int a, int b, int i, int j)
 	if(i > j)
 	{
 		int t = i;
-		j = i;
-		i = t;
+		i = j;
+		j = t;
 	}
 
 	return
@@ -1680,6 +1705,87 @@ int __fastcall TWaveView::GetLinkWaveMarkAt(int x, int &linknum, bool &from_or_t
 	return -1;
 }
 //---------------------------------------------------------------------------
+int __fastcall TWaveView::SelectLink(int tier, int spos, int mode)
+{
+	// select link at sample position "spos", at tier "tier".
+	// mode =  0 : nearest link
+	// mode =  1 : upper link
+	// mode =  2 : lower link
+	// mode =  3 : left link
+	// mode =  4 : right link
+
+	// search the nearest link at spos
+	int found_link = -1;
+	int min_dist = -1;
+	for(unsigned int i = 0; i < Links.size(); i++)
+	{
+		if(Links[i].LinkTier != tier) continue;
+		int dist = std::abs((Links[i].From + Links[i].To)/2 - spos);
+		if(min_dist == -1 || min_dist > dist)
+			min_dist = dist, found_link = i;
+	}
+
+	if(found_link == -1) return -1; // link not found at tier
+	if(mode == 0) return found_link; // the nearest link found
+
+	// search most nearest left or right siblings
+	const tTVPWaveLoopLink & reflink = Links[found_link];
+	int reflink_num = found_link;
+	found_link = -1;
+	min_dist = -1;
+	for(unsigned int i = 0; i < Links.size(); i++)
+	{
+		if((int)i == reflink_num) continue;
+
+		int rx, ry = reflink.LinkTier * TVP_LGD_TIER_HEIGHT;
+		int cx, cy = Links[i].LinkTier * TVP_LGD_TIER_HEIGHT;
+		// find link's nearest position
+		if(Links[i].LinkTier == reflink.LinkTier ||
+			!PartIntersect(Links[i].From, Links[i].To, reflink.From, reflink.To))
+		{
+			// the same link pos or does not have link intersection
+			if(Links[i].From < reflink.From)
+			{
+				rx = SampleToPixel(std::min(reflink.From, reflink.To));
+				cx = SampleToPixel(std::max(Links[i].From, Links[i].To));
+			}
+			else
+			{
+				rx = SampleToPixel(std::max(reflink.From, reflink.To));
+				cx = SampleToPixel(std::min(Links[i].From, Links[i].To));
+			}
+		}
+		else
+		{
+			// different link tier but have intersection
+			rx = SampleToPixel((reflink.From + reflink.To)/2);
+			cx = rx;
+		}
+
+		if(mode == 1 && !(cy <= ry && std::abs(cx - rx) < ry - cy)) continue;
+		if(mode == 2 && !(cy >= ry && std::abs(cx - rx) < cy - ry)) continue;
+		if(mode == 3 && !(cx <= rx && std::abs(cy - ry) < rx - cx)) continue;
+		if(mode == 4 && !(cx >= rx && std::abs(cy - ry) < cx - rx)) continue;
+
+		int dist = (cx-rx)*(cx-rx) + (cy-ry)*(cy-ry);
+		if(min_dist == -1 || min_dist > dist)
+			min_dist = dist, found_link = i;
+	}
+
+	return found_link;
+}
+//---------------------------------------------------------------------------
+void __fastcall TWaveView::FocusLinkAt(int tier, int spos, int mode)
+{
+	// focus the nearest link
+	int found = SelectLink(tier, spos, mode);
+	if(found != -1)
+	{
+		FocusedLink = found;
+		EnsureView(Links[found].From, Links[found].To - Links[found].From);
+	}
+}
+//---------------------------------------------------------------------------
 void __fastcall TWaveView::CreateNewLink()
 {
 	// create a new link
@@ -2118,6 +2224,81 @@ int __fastcall TWaveView::GetLabelWaveMarkAt(int x, int &labelnum)
 	return -1;
 }
 //---------------------------------------------------------------------------
+int __fastcall TWaveView::SelectLabel(int spos, int mode)
+{
+	// select one label at sample position "spos".
+	// mode = -1 : search left label of spos
+	// mode = 0  : search the nearest label at spos
+	// mode = +1 : search right label of spos
+
+	// mark label index
+	for(unsigned int i = 0; i < Labels.size(); i++) Labels[i].Index = i;
+
+	// sort labels by the position
+	std::sort(Labels.begin(), Labels.end(), tTVPWaveLabel::tSortByPositionFuncObj());
+
+	// find the nearest label at spos
+	int found_label = -1;
+	do // dummy loop
+	{
+		int mindist = -1;
+		int minlabel = -1;
+		for(unsigned int i = 0; i < Labels.size(); i++)
+		{
+			int dist = std::abs(Labels[i].Position - spos);
+			if(mindist == -1 || dist < mindist)
+				mindist = dist, minlabel = i;
+		}
+		if(minlabel == -1)
+		{
+			found_label = -1;  // no labels found
+			break;
+		}
+
+		if(mode == 0) return minlabel; // nearest label found
+
+		// skip labels which have the same position
+		minlabel += mode;
+		if(minlabel < 0  || minlabel >= (int)Labels.size())
+		{
+			found_label = -1; // out of range
+			break;
+		}
+		while(minlabel >= 0 && minlabel < (int)Labels.size() && Labels[minlabel].Position == spos)
+			minlabel += mode;
+		if(minlabel < 0  || minlabel >= (int)Labels.size())
+		{
+			found_label = -1; // out of range
+			break;
+		}
+
+		found_label = minlabel; // label found
+	} while(false);
+
+	if(found_label != -1)
+	{
+		// retrieve the original label order
+		found_label = Labels[found_label].Index;
+	}
+
+	// sort labels by the index
+	std::sort(Labels.begin(), Labels.end(), tTVPWaveLabel::tSortByIndexFuncObj());
+
+	return found_label;
+}
+//---------------------------------------------------------------------------
+void __fastcall TWaveView::FocusLabelAt(int spos, int mode)
+{
+	int num = SelectLabel(spos, mode);
+	if(num != -1)
+	{
+		TRect rect;
+		GetLabelNameRect(Labels[num], rect);
+		EnsureView(Labels[num].Position, PixelToSample(rect.right - rect.left));
+		FocusedLabel = num;
+	}
+}
+//---------------------------------------------------------------------------
 void TWaveView::PushLastClickedPos(int pos)
 {
 	LastClickedPos[0] = LastClickedPos[1];
@@ -2178,6 +2359,11 @@ int TWaveView::MouseXPosToSamplePos(int x)
 	int least = SampleToPixel(1);
 	x += least / 2;
 	return PixelToSample(x) + FStart;
+}
+//---------------------------------------------------------------------------
+void __fastcall TWaveView::CMMouseLeave(TMessage &msg)
+{
+	MouseLeave();
 }
 //---------------------------------------------------------------------------
 void __fastcall TWaveView::MouseDown(TMouseButton button, TShiftState shift, int x, int y)
@@ -2450,10 +2636,7 @@ void __fastcall TWaveView::MouseUp(TMouseButton button, TShiftState shift, int x
 	}
 	else
 	{
-		if(PopupType != "" && FOnNotifyPopup)
-		{
-			FOnNotifyPopup(this, PopupType);
-		}
+		PopupType = "";
 	}
 }
 //---------------------------------------------------------------------------
@@ -2512,6 +2695,71 @@ void __fastcall TWaveView::DblClick(void)
 	}
 }
 //---------------------------------------------------------------------------
+void __fastcall TWaveView::DoContextPopup(const Windows::TPoint & MousePos, bool &Handled)
+{
+	if(FOnNotifyPopup)
+	{
+		TPoint mpos = MousePos;
+		if(mpos.x == -1 && mpos.y == -1)
+		{
+			// point not specified; decide popup point
+			if(FocusedLabel != -1)
+			{
+				mpos.x = SampleToPixel(Labels[FocusedLabel].Position - FStart);
+				mpos.y = GetHeadSize();
+			}
+			else if(FocusedLink != -1)
+			{
+				int f = SampleToPixel(Links[FocusedLink].From - FStart);
+				int t = SampleToPixel(Links[FocusedLink].To   - FStart);
+				if(f >= 0 && f <= ClientWidth)
+					mpos.x = f;
+				else if(t >= 0 && t <= ClientWidth)
+					mpos.x = t;
+				else
+				{
+					if(f >= ClientWidth)
+						mpos.x = ClientWidth;
+					else
+						mpos.x = 0;
+				}
+				int y_start = ClientHeight - GetFootSize();
+				int y = y_start +
+					Links[FocusedLink].LinkTier * TVP_LGD_TIER_HEIGHT +
+						TVP_LGD_TIER_HEIGHT - 3;
+				mpos.y = y + 3;
+			}
+			else if(ShowCaret)
+			{
+				mpos.x = SampleToPixel(CaretPos - FStart);
+				mpos.y = ClientHeight - GetFootSize();
+			}
+		}
+		mpos = ClientToScreen(mpos);
+
+		if(PopupType != "")
+		{
+			// popup by mouse
+			FOnNotifyPopup(this, PopupType, mpos);
+		}
+		else
+		{
+			// popup by the kerboard
+			// decide popup type by currently focused item
+			if(FocusedLabel != -1)
+				PopupType = "Label";
+			else if(FocusedLink != -1)
+				PopupType = "Link";
+			else if(ShowCaret)
+				PopupType = "Wave";
+			FOnNotifyPopup(this, PopupType, mpos);
+			PopupType = "";
+		}
+	}
+
+	Handled = true;
+}
+//---------------------------------------------------------------------------
 void __fastcall TWaveView::PerformLinkDoubleClick()
 {
 	if(FocusedLink != -1)
@@ -2540,6 +2788,131 @@ void __fastcall TWaveView::OnDragScrollTimer(TObject * sender)
 	ZeroMemory(&wmscroll, sizeof(TWMHScroll));
 	wmscroll.ScrollCode = LastMouseMoveX > ClientWidth / 2 ? SB_LINERIGHT : SB_LINELEFT;
 	WMHScroll(wmscroll);
+}
+//---------------------------------------------------------------------------
+void __fastcall TWaveView::CMWantSpecialKey(TCMWantSpecialKey &message)
+{
+	switch(message.CharCode)
+	{
+	case VK_UP:
+	case VK_DOWN:
+	case VK_LEFT:
+	case VK_RIGHT:
+		message.Result = 1;
+		break;
+	}
+}
+//---------------------------------------------------------------------------
+void __fastcall TWaveView::KeyDown(Word &Key, Classes::TShiftState Shift)
+{
+	if(!FReader || !FReader->ReadDone)
+	{
+		return;
+	}
+
+	// key action is to be changed by which item is currently focused
+	if(FocusedLabel != -1)
+	{
+		// currently the label is focued
+		if(Key == VK_LEFT)
+		{
+			// select left label
+			FocusLabelAt(Labels[FocusedLabel].Position, -1);
+		}
+		else if(Key == VK_RIGHT)
+		{
+			// select right label
+			FocusLabelAt(Labels[FocusedLabel].Position, 1);
+		}
+		else if(Key == VK_DOWN)
+		{
+			// show caret
+			CaretPos = Labels[FocusedLabel].Position;
+			ShowCaret = true;
+		}
+	}
+	else if(FocusedLink != -1)
+	{
+		// currently the link is focused
+		// mode =  0 : nearest link
+		// mode =  1 : upper link
+		// mode =  2 : lower link
+		// mode =  3 : left link
+		// mode =  4 : right link
+		if(Key == VK_LEFT)
+		{
+			// select left link
+			FocusLinkAt(Links[FocusedLink].LinkTier,
+				(Links[FocusedLink].From + Links[FocusedLink].To)/2, 3);
+		}
+		else if(Key == VK_RIGHT)
+		{
+			// select right link
+			FocusLinkAt(Links[FocusedLink].LinkTier,
+				(Links[FocusedLink].From + Links[FocusedLink].To)/2,  4);
+		}
+		else if(Key == VK_UP)
+		{
+			// select upper tier or wave view
+			if(Links[FocusedLink].LinkTier == 0)
+			{
+				CaretPos = (Links[FocusedLink].From + Links[FocusedLink].To)/2;
+				EnsureView(CaretPos);
+				ShowCaret = true;
+			}
+			else
+			{
+				FocusLinkAt(Links[FocusedLink].LinkTier,
+					(Links[FocusedLink].From + Links[FocusedLink].To)/2, 1);
+			}
+		}
+		else if(Key == VK_DOWN)
+		{
+			// select lower tier
+			FocusLinkAt(Links[FocusedLink].LinkTier,
+				(Links[FocusedLink].From + Links[FocusedLink].To)/2, 2);
+		}
+	}
+	else/* if(ShowCaret) */
+	{
+		// no item is selected or currently the caret is showing
+		ShowCaret = true;
+		if(Key == VK_LEFT)
+		{
+			// move the caret left
+			int xstep = FMagnify <= 0 ? 1 : (1<<FMagnify);
+			if(FOnStopFollowingMarker) FOnStopFollowingMarker(this);
+			int cp = SampleToPixel(CaretPos);
+			cp -= xstep * ((Shift.Contains(ssShift)) ? 10 : 1);
+			cp = PixelToSample(cp);
+			if(cp < 0) cp = 0;
+			EnsureView(cp);
+			CaretPos = cp;
+		}
+		else if(Key == VK_RIGHT)
+		{
+			// move the caret right
+			int xstep = FMagnify <= 0 ? 1 : (1<<FMagnify);
+			if(FOnStopFollowingMarker) FOnStopFollowingMarker(this);
+			int cp = SampleToPixel(CaretPos);
+			cp += xstep * ((Shift.Contains(ssShift)) ? 10 : 1);
+			cp = PixelToSample(cp);
+			if(cp >= FReader->NumSamples) cp = FReader->NumSamples - 1;
+			cp = PixelToSample(SampleToPixel(cp));
+			EnsureView(cp);
+			CaretPos = cp;
+		}
+		else if(Key == VK_UP)
+		{
+			// select label
+			FocusLabelAt(CaretPos, 0);
+		}
+		else if(Key == VK_DOWN)
+		{
+			// select link
+			FocusLinkAt(0, CaretPos, 0);
+		}
+	}
 }
 //---------------------------------------------------------------------------
 
