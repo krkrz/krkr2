@@ -1,7 +1,7 @@
 object LoopTunerMainForm: TLoopTunerMainForm
-  Left = 4
-  Top = 126
-  Width = 971
+  Left = 84
+  Top = 124
+  Width = 619
   Height = 354
   Caption = '0'
   Color = clBtnFace
@@ -18,7 +18,7 @@ object LoopTunerMainForm: TLoopTunerMainForm
   object StatusBar: TStatusBar
     Left = 0
     Top = 281
-    Width = 963
+    Width = 611
     Height = 19
     Panels = <>
     SimplePanel = False
@@ -26,7 +26,7 @@ object LoopTunerMainForm: TLoopTunerMainForm
   object ToolBar1: TToolBar
     Left = 0
     Top = 0
-    Width = 963
+    Width = 611
     Height = 26
     AutoSize = True
     Caption = 'ToolBar'
@@ -197,7 +197,7 @@ object LoopTunerMainForm: TLoopTunerMainForm
   object EditAttribPanel: TPanel
     Left = 0
     Top = 184
-    Width = 963
+    Width = 611
     Height = 97
     Align = alBottom
     BevelOuter = bvNone
@@ -205,7 +205,7 @@ object LoopTunerMainForm: TLoopTunerMainForm
     object EditLabelAttribBevel: TBevel
       Left = 0
       Top = 5
-      Width = 963
+      Width = 611
       Height = 2
       Align = alBottom
       Shape = bsBottomLine
@@ -213,7 +213,7 @@ object LoopTunerMainForm: TLoopTunerMainForm
     object EmptyEditAttribFrame: TPanel
       Left = 0
       Top = 7
-      Width = 963
+      Width = 611
       Height = 30
       Align = alBottom
       BevelOuter = bvNone
@@ -222,14 +222,14 @@ object LoopTunerMainForm: TLoopTunerMainForm
     end
     inline EditLinkAttribFrame: TEditLinkAttribFrame
       Top = 37
-      Width = 963
+      Width = 611
       Align = alBottom
       TabOrder = 1
       Visible = False
     end
     inline EditLabelAttribFrame: TEditLabelAttribFrame
       Top = 67
-      Width = 963
+      Width = 611
       Align = alBottom
       TabOrder = 2
       Visible = False
@@ -238,7 +238,7 @@ object LoopTunerMainForm: TLoopTunerMainForm
   object FlagsPanel: TPanel
     Left = 0
     Top = 26
-    Width = 963
+    Width = 611
     Height = 23
     Align = alTop
     BevelOuter = bvNone
@@ -246,7 +246,7 @@ object LoopTunerMainForm: TLoopTunerMainForm
     object Bevel1: TBevel
       Left = 0
       Top = 21
-      Width = 963
+      Width = 611
       Height = 2
       Align = alBottom
       Shape = bsBottomLine
@@ -904,7 +904,7 @@ object LoopTunerMainForm: TLoopTunerMainForm
     Left = 72
     Top = 64
     Bitmap = {
-      494C010124002700040010001000FFFFFFFFFF00FFFFFFFFFFFFFFFF424D3600
+      494C010124002700040010001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
       000000000000360000002800000040000000A0000000010020000000000000A0
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
@@ -2228,7 +2228,8 @@ object LoopTunerMainForm: TLoopTunerMainForm
       FFFFEFFFFF9FFF9FCBFFEBFFFF0FFF0FC8FFE8FF9797EF97C83FE83F91DBE3DB
       C80FE80F907DE0FDC803E803901DE03DC80FE80F9005E00DC83FE83F901DE03D
       C8FFE8FF907DE0FDCBFFEBFF91FBE3FBFFFFEFFF97F7EFF7FFFFC7FFFC0FFC0F
-      FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF}
+      FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF00000000000000000000000000000000
+      000000000000}
   end
   object OpenDialog: TOpenDialog
     Left = 104

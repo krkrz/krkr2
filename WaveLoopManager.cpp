@@ -314,6 +314,11 @@ void tTVPWaveLoopManager::Decode(void *dest, tjs_uint samples, tjs_uint &written
 		else
 			one_unit = (tjs_int) (next_event_pos - Position);
 
+		if(CrossFadeSamples)
+		{
+			if(one_unit > CrossFadeLen - CrossFadePosition)
+				one_unit = CrossFadeLen - CrossFadePosition;
+		}
 		segments.push_back(tTVPWaveLoopSegment(Position, one_unit));
 		GetLabelAt(Position, Position + one_unit, labels);
 
@@ -334,8 +339,6 @@ void tTVPWaveLoopManager::Decode(void *dest, tjs_uint samples, tjs_uint &written
 		{
 			// in cross fade
 			// copy prepared samples
-			if(one_unit > CrossFadeLen - CrossFadePosition)
-				one_unit = CrossFadeLen - CrossFadePosition;
 			memcpy((void *)d,
 				CrossFadeSamples +
 					CrossFadePosition * Format.BytesPerSample * Format.Channels,
@@ -367,7 +370,7 @@ bool tTVPWaveLoopManager::GetNearestEvent(tjs_int64 current,
 		IsLinksSorted = true;
 	}
 
-	// search nearest event using binary search
+	// search nearest next event using binary search
 	tjs_int s = 0, e = Links.size();
 	while(e - s > 1)
 	{
@@ -377,6 +380,8 @@ bool tTVPWaveLoopManager::GetNearestEvent(tjs_int64 current,
 		else
 			e = m;
 	}
+
+	if(s < (int)Links.size()-1 && Links[s].From < current) s++;
 
 	if((tjs_uint)s >= Links.size() || Links[s].From < current)
 	{
