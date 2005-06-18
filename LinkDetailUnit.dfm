@@ -221,6 +221,8 @@ object LinkDetailForm: TLinkDetailForm
         Left = 138
         Top = 0
         Action = StopPlayAction
+        ParentShowHint = False
+        ShowHint = True
       end
       object PlayHalfSecToolButton: TToolButton
         Left = 163
@@ -523,15 +525,16 @@ object LinkDetailForm: TLinkDetailForm
     object N1: TMenuItem
       Caption = '-'
     end
-    object StopPlayMenuItem: TMenuItem
-      Action = StopPlayAction
-      ShortCut = 83
-    end
     object PlayMenuItem: TMenuItem
       Caption = 'çƒê∂'
+      Default = True
       ImageIndex = 24
       ShortCut = 32
       OnClick = PlayMenuItemClick
+    end
+    object StopPlayMenuItem: TMenuItem
+      Action = StopPlayAction
+      ShortCut = 83
     end
     object PlayHalfSecMenuItem: TMenuItem
       Action = PlayHalfSecAction
