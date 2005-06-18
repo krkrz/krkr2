@@ -1,6 +1,6 @@
 object LoopTunerMainForm: TLoopTunerMainForm
-  Left = 84
-  Top = 124
+  Left = 73
+  Top = 109
   Width = 619
   Height = 354
   Caption = '0'
@@ -141,6 +141,8 @@ object LoopTunerMainForm: TLoopTunerMainForm
       Left = 247
       Top = 0
       Action = ShowEditFlagsAction
+      ParentShowHint = False
+      ShowHint = True
     end
     object ShowEditAttribToolButton: TToolButton
       Left = 270
@@ -2241,6 +2243,7 @@ object LoopTunerMainForm: TLoopTunerMainForm
     Top = 96
     object ForLAbel_EditLabelDetailMenuItem: TMenuItem
       Action = EditLabelDetailAction
+      Default = True
     end
     object ForLabel_NewLabelMenuItem: TMenuItem
       Action = NewLabelAction
@@ -2255,6 +2258,7 @@ object LoopTunerMainForm: TLoopTunerMainForm
     Top = 96
     object ForLink_EditLinkDetailMenuItem: TMenuItem
       Action = EditLinkDetailAction
+      Default = True
     end
     object ForLink_GotoLinkFromMenuItem: TMenuItem
       Action = GotoLinkFromAction
@@ -2273,14 +2277,15 @@ object LoopTunerMainForm: TLoopTunerMainForm
     Images = ImageList
     Left = 72
     Top = 96
+    object ForWave_PlayFromCursorMenuItem: TMenuItem
+      Action = PlayFromCaretAction
+      Default = True
+    end
     object ForWave_ZoomInMenuItem: TMenuItem
       Action = ZoomInAction
     end
     object ForWave_ZoomOutMenuItem: TMenuItem
       Action = ZoomOutAction
-    end
-    object ForWave_PlayFromCursorMenuItem: TMenuItem
-      Action = PlayFromCaretAction
     end
     object ForWave_NewLinkMenuItem: TMenuItem
       Action = NewLinkAction
@@ -2344,6 +2349,7 @@ object LoopTunerMainForm: TLoopTunerMainForm
     Top = 64
     object FlagsEditToggleMenuItem: TMenuItem
       Caption = 'トグル(&T)'
+      Default = True
       Hint = '値が0以外ならば0に、0ならば1にします'
       OnClick = FlagsEditToggleMenuItemClick
     end
