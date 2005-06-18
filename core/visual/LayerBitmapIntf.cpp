@@ -2392,8 +2392,8 @@ bool tTVPBaseBitmap::AffineBlt(tTVPRect destrect, const tTVPBaseBitmap *ref,
 
 
 	// process per a line
-	tjs_int mostupper;
-	tjs_int mostbottom;
+	tjs_int mostupper  = -1;
+	tjs_int mostbottom = -1;
 	bool firstline = true;
 
 
@@ -2853,6 +2853,14 @@ bool tTVPBaseBitmap::AffineBlt(tTVPRect destrect, const tTVPBaseBitmap *ref,
 		tjs_int h;
 		tjs_uint8 * dest = (tjs_uint8*)GetScanLineForWrite(0);
 		tjs_uint8 * p;
+		if(mostupper == -1 && mostbottom == -1)
+		{
+			// special case: nothing was drawn;
+			// clear entire area of the destrect
+			mostupper  = destrect.bottom;
+			mostbottom = destrect.bottom - 1;
+		}
+
 		h = mostupper - destrect.top;
 		if(h > 0)
 		{
