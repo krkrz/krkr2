@@ -1817,7 +1817,7 @@ void __fastcall TWaveView::CreateNewLink()
 	link.To = to;
 	link.Smooth = false;
 	link.Condition = llcNone;
-	link.CondVar = -1;
+	link.CondVar = 0;
 	Links.push_back(link);
 
 	NotifyLinkChanged();

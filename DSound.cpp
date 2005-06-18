@@ -50,7 +50,7 @@ public:
 		while(!Terminated)
 		{
 			FillSecondaryBuffer();
-			Sleep(110);
+			Sleep(50);
 		}
 	}
 
@@ -208,7 +208,7 @@ void __fastcall SetPrimaryBufferFormat(WAVEFORMATEX *wfx)
 //---------------------------------------------------------------------------
 void __fastcall CreateSoundBuffer(const WAVEFORMATEXTENSIBLE * wfx)
 {
-	// 2 秒間のセカンダリバッファを作成する
+	// 0.25 秒間のセカンダリバッファを作成する
 
 	/* wfx.Format の nAvgBytesPerSec や nBlockAlign は変な値になっていないかどうか
 	   チェックが必要 */
@@ -231,7 +231,9 @@ void __fastcall CreateSoundBuffer(const WAVEFORMATEXTENSIBLE * wfx)
 	SoundBufferDesc.dwFlags=
 		DSBCAPS_GETCURRENTPOSITION2/* | DSBCAPS_CTRLPAN */| DSBCAPS_CTRLVOLUME
 		 |DSBCAPS_GLOBALFOCUS ;
-	SoundBufferDesc.dwBufferBytes = wfx->Format.nAvgBytesPerSec * 2;
+	SoundBufferDesc.dwBufferBytes = wfx->Format.nAvgBytesPerSec /4;
+	SoundBufferDesc.dwBufferBytes /=  wfx->Format.nBlockAlign * 2;
+	SoundBufferDesc.dwBufferBytes *=  wfx->Format.nBlockAlign * 2;
 	SoundBufferBytes = SoundBufferDesc.dwBufferBytes;
 	SoundBufferBytesHalf = SoundBufferBytes / 2;
 
