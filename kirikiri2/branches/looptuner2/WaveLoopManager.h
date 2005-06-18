@@ -24,6 +24,42 @@
 //---------------------------------------------------------------------------
 
 
+#ifdef TVP_IN_LOOP_TUNER
+	//---------------------------------------------------------------------------
+	// tTJSCriticalSection ( taken from tjsUtils.h )
+	//---------------------------------------------------------------------------
+	class tTJSCriticalSection
+	{
+		CRITICAL_SECTION CS;
+	public:
+		tTJSCriticalSection() { InitializeCriticalSection(&CS); }
+		~tTJSCriticalSection() { DeleteCriticalSection(&CS); }
+
+		void Enter() { EnterCriticalSection(&CS); }
+		void Leave() { LeaveCriticalSection(&CS); }
+	};
+	//---------------------------------------------------------------------------
+	// tTJSCriticalSectionHolder ( taken from tjsUtils.h )
+	//---------------------------------------------------------------------------
+	class tTJSCriticalSectionHolder
+	{
+		tTJSCriticalSection *Section;
+	public:
+		tTJSCriticalSectionHolder(tTJSCriticalSection &cs)
+		{
+			Section = &cs;
+			Section->Enter();
+		}
+
+		~tTJSCriticalSectionHolder()
+		{
+			Section->Leave();
+		}
+	};
+#else
+	#include "tjsUtils.h"
+#endif
+//---------------------------------------------------------------------------
 
 
 //---------------------------------------------------------------------------
@@ -151,9 +187,11 @@ struct tTVPWaveLoopSegment
 //---------------------------------------------------------------------------
 class tTVPWaveLoopManager
 {
+	tTJSCriticalSection FlagsCS; // CS to protect flags/links/labels
 	int Flags[TVP_WL_MAX_FLAGS];
 	std::vector<tTVPWaveLoopLink> Links;
 	std::vector<tTVPWaveLabel> Labels;
+	tTJSCriticalSection DataCS; // CS to protect other members
 	tTVPWaveFormat Format;
 	tTVPWaveDecoder * Decoder;
 
@@ -178,6 +216,12 @@ public:
 	void ClearFlags();
 	void ClearLinksAndLabels();
 
+	const std::vector<tTVPWaveLoopLink> & GetLinks() const;
+	const std::vector<tTVPWaveLabel> & GetLabels() const;
+
+	void SetLinks(const std::vector<tTVPWaveLoopLink> & links);
+	void SetLabels(const std::vector<tTVPWaveLabel> & labels);
+
 	tjs_int64 GetPosition() const;
 	void SetPosition(tjs_int64 pos);
 
@@ -185,12 +229,6 @@ public:
 		std::vector<tTVPWaveLoopSegment> &segments,
 		std::vector<tTVPWaveLabel> &labels);
 
-
-	const std::vector<tTVPWaveLoopLink> & GetLinks() const { return Links; }
-	const std::vector<tTVPWaveLabel> & GetLabels() const { return Labels; }
-
-	void SetLinks(const std::vector<tTVPWaveLoopLink> & links) { Links = links; IsLinksSorted = false; }
-	void SetLabels(const std::vector<tTVPWaveLabel> & labels) { Labels = labels; IsLabelsSorted = false; }
 
 private:
 	bool GetNearestEvent(tjs_int64 current,
@@ -236,4 +274,5 @@ public:
 };
 //---------------------------------------------------------------------------
 #endif
+
 
