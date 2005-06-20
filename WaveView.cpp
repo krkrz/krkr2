@@ -11,6 +11,24 @@
 
 //---------------------------------------------------------------------------
 const AnsiString C_NEW_LABEL_BASE_NAME = "ラベル";
+const AnsiString C_LINK_HINT =
+	"リンク元: %s\n"	// link from
+	"リンク先: %s\n"	// link to
+	"条件    : %s"   	// condition
+	;
+const AnsiString C_LINK_COND_CODES[] = {
+	"条件無し",
+	"%d 番のフラグが %d と同じとき",
+	"%d 番のフラグが %d でないとき",
+	"%d 番のフラグが %d より大きいとき",
+	"%d 番のフラグが %d 以上のとき",
+	"%d 番のフラグが %d より小さいとき",
+	"%d 番のフラグが %d 以下のとき"
+};
+//---------------------------------------------------------------------------
+
+
+
 //---------------------------------------------------------------------------
 const int LinkArrowSize = 4;
 const int LinkDirectionArrowWidth = 10;
@@ -94,6 +112,7 @@ __fastcall TWaveView::TWaveView(Classes::TComponent* AOwner) :
 
 	Cursor = crIBeam;
 
+	ShowHint = true;
 }
 //---------------------------------------------------------------------------
 __fastcall TWaveView::~TWaveView()
@@ -1558,6 +1577,29 @@ void __fastcall TWaveView::SetHoveredLink(int l)
 		InvalidateLink(FHoveredLink);
 		FHoveredLink = l;
 		InvalidateLink(FHoveredLink);
+
+		// generate link hint
+		AnsiString hint;
+		if(FHoveredLink != -1)
+		{
+			tTVPWaveLoopLink & link = Links[FHoveredLink];
+			AnsiString cond;
+			if(link.Condition == llcNone)
+			{
+				cond = C_LINK_COND_CODES[0];
+			}
+			else
+			{
+				cond.sprintf(C_LINK_COND_CODES[(int)link.Condition].c_str(),
+					link.CondVar, link.RefValue);
+			}
+
+			hint.sprintf(C_LINK_HINT.c_str(), AnsiString((int)link.From).c_str(),
+				AnsiString((int)link.To).c_str(), cond.c_str());
+		}
+		Application->CancelHint();
+		Hint = hint;
+
 	}
 }
 //---------------------------------------------------------------------------
