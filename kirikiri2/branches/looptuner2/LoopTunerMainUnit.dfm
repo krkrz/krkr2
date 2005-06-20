@@ -1,7 +1,7 @@
 object LoopTunerMainForm: TLoopTunerMainForm
-  Left = 73
+  Left = 72
   Top = 109
-  Width = 1156
+  Width = 637
   Height = 354
   Caption = '0'
   Color = clBtnFace
@@ -18,7 +18,7 @@ object LoopTunerMainForm: TLoopTunerMainForm
   object StatusBar: TStatusBar
     Left = 0
     Top = 281
-    Width = 1148
+    Width = 629
     Height = 19
     Panels = <>
     SimplePanel = False
@@ -26,7 +26,7 @@ object LoopTunerMainForm: TLoopTunerMainForm
   object ToolBar: TToolBar
     Left = 0
     Top = 0
-    Width = 1148
+    Width = 629
     Height = 26
     AutoSize = True
     Caption = 'ToolBar'
@@ -192,7 +192,7 @@ object LoopTunerMainForm: TLoopTunerMainForm
   object FlagsPanel: TPanel
     Left = 0
     Top = 26
-    Width = 1148
+    Width = 629
     Height = 23
     Align = alTop
     BevelOuter = bvNone
@@ -200,13 +200,13 @@ object LoopTunerMainForm: TLoopTunerMainForm
     object Bevel1: TBevel
       Left = 0
       Top = 21
-      Width = 1148
+      Width = 629
       Height = 2
       Align = alBottom
       Shape = bsBottomLine
     end
     object FlagLabel0: TLabel
-      Left = 0
+      Left = 20
       Top = 0
       Width = 17
       Height = 20
@@ -221,7 +221,7 @@ object LoopTunerMainForm: TLoopTunerMainForm
       Layout = tlCenter
     end
     object FlagLabel1: TLabel
-      Left = 55
+      Left = 75
       Top = 0
       Width = 17
       Height = 20
@@ -236,7 +236,7 @@ object LoopTunerMainForm: TLoopTunerMainForm
       Layout = tlCenter
     end
     object FlagLabel2: TLabel
-      Left = 110
+      Left = 130
       Top = 0
       Width = 17
       Height = 20
@@ -251,7 +251,7 @@ object LoopTunerMainForm: TLoopTunerMainForm
       Layout = tlCenter
     end
     object FlagLabel3: TLabel
-      Left = 165
+      Left = 185
       Top = 0
       Width = 17
       Height = 20
@@ -266,7 +266,7 @@ object LoopTunerMainForm: TLoopTunerMainForm
       Layout = tlCenter
     end
     object FlagLabel4: TLabel
-      Left = 220
+      Left = 240
       Top = 0
       Width = 17
       Height = 20
@@ -281,7 +281,7 @@ object LoopTunerMainForm: TLoopTunerMainForm
       Layout = tlCenter
     end
     object FlagLabel5: TLabel
-      Left = 275
+      Left = 295
       Top = 0
       Width = 17
       Height = 20
@@ -296,7 +296,7 @@ object LoopTunerMainForm: TLoopTunerMainForm
       Layout = tlCenter
     end
     object FlagLabel6: TLabel
-      Left = 330
+      Left = 350
       Top = 0
       Width = 17
       Height = 20
@@ -311,7 +311,7 @@ object LoopTunerMainForm: TLoopTunerMainForm
       Layout = tlCenter
     end
     object FlagLabel7: TLabel
-      Left = 385
+      Left = 405
       Top = 0
       Width = 17
       Height = 20
@@ -326,7 +326,7 @@ object LoopTunerMainForm: TLoopTunerMainForm
       Layout = tlCenter
     end
     object FlagLabel8: TLabel
-      Left = 440
+      Left = 460
       Top = 0
       Width = 17
       Height = 20
@@ -341,7 +341,7 @@ object LoopTunerMainForm: TLoopTunerMainForm
       Layout = tlCenter
     end
     object FlagLabel9: TLabel
-      Left = 495
+      Left = 515
       Top = 0
       Width = 17
       Height = 20
@@ -356,7 +356,7 @@ object LoopTunerMainForm: TLoopTunerMainForm
       Layout = tlCenter
     end
     object FlagLabel10: TLabel
-      Left = 550
+      Left = 570
       Top = 0
       Width = 17
       Height = 20
@@ -371,7 +371,7 @@ object LoopTunerMainForm: TLoopTunerMainForm
       Layout = tlCenter
     end
     object FlagLabel11: TLabel
-      Left = 605
+      Left = 625
       Top = 0
       Width = 17
       Height = 20
@@ -386,7 +386,7 @@ object LoopTunerMainForm: TLoopTunerMainForm
       Layout = tlCenter
     end
     object FlagLabel12: TLabel
-      Left = 660
+      Left = 680
       Top = 0
       Width = 17
       Height = 20
@@ -401,7 +401,7 @@ object LoopTunerMainForm: TLoopTunerMainForm
       Layout = tlCenter
     end
     object FlagLabel13: TLabel
-      Left = 715
+      Left = 735
       Top = 0
       Width = 17
       Height = 20
@@ -416,7 +416,7 @@ object LoopTunerMainForm: TLoopTunerMainForm
       Layout = tlCenter
     end
     object FlagLabel14: TLabel
-      Left = 770
+      Left = 790
       Top = 0
       Width = 17
       Height = 20
@@ -431,7 +431,7 @@ object LoopTunerMainForm: TLoopTunerMainForm
       Layout = tlCenter
     end
     object FlagLabel15: TLabel
-      Left = 825
+      Left = 845
       Top = 0
       Width = 17
       Height = 20
@@ -445,8 +445,26 @@ object LoopTunerMainForm: TLoopTunerMainForm
       ParentFont = False
       Layout = tlCenter
     end
+    object FlagsClearSpeedButton: TSpeedButton
+      Left = 2
+      Top = 2
+      Width = 17
+      Height = 17
+      Hint = 'ƒtƒ‰ƒO‚ð‘S‚Ä0‚É‚·‚é'
+      Caption = 'C'
+      Flat = True
+      Font.Charset = SHIFTJIS_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -12
+      Font.Name = '‚l‚r ‚oƒSƒVƒbƒN'
+      Font.Style = [fsBold]
+      ParentFont = False
+      ParentShowHint = False
+      ShowHint = True
+      OnClick = FlagsClearSpeedButtonClick
+    end
     object FlagEdit0: TEdit
-      Left = 16
+      Left = 36
       Top = 0
       Width = 33
       Height = 20
@@ -460,7 +478,7 @@ object LoopTunerMainForm: TLoopTunerMainForm
       OnMouseDown = FlagEdit0MouseDown
     end
     object FlagEdit1: TEdit
-      Left = 71
+      Left = 91
       Top = 0
       Width = 33
       Height = 20
@@ -474,7 +492,7 @@ object LoopTunerMainForm: TLoopTunerMainForm
       OnMouseDown = FlagEdit0MouseDown
     end
     object FlagEdit2: TEdit
-      Left = 126
+      Left = 146
       Top = 0
       Width = 33
       Height = 20
@@ -488,7 +506,7 @@ object LoopTunerMainForm: TLoopTunerMainForm
       OnMouseDown = FlagEdit0MouseDown
     end
     object FlagEdit3: TEdit
-      Left = 181
+      Left = 201
       Top = 0
       Width = 33
       Height = 20
@@ -502,7 +520,7 @@ object LoopTunerMainForm: TLoopTunerMainForm
       OnMouseDown = FlagEdit0MouseDown
     end
     object FlagEdit4: TEdit
-      Left = 236
+      Left = 256
       Top = 0
       Width = 33
       Height = 20
@@ -516,7 +534,7 @@ object LoopTunerMainForm: TLoopTunerMainForm
       OnMouseDown = FlagEdit0MouseDown
     end
     object FlagEdit5: TEdit
-      Left = 291
+      Left = 311
       Top = 0
       Width = 33
       Height = 20
@@ -530,7 +548,7 @@ object LoopTunerMainForm: TLoopTunerMainForm
       OnMouseDown = FlagEdit0MouseDown
     end
     object FlagEdit6: TEdit
-      Left = 346
+      Left = 366
       Top = 0
       Width = 33
       Height = 20
@@ -544,7 +562,7 @@ object LoopTunerMainForm: TLoopTunerMainForm
       OnMouseDown = FlagEdit0MouseDown
     end
     object FlagEdit7: TEdit
-      Left = 401
+      Left = 421
       Top = 0
       Width = 33
       Height = 20
@@ -558,7 +576,7 @@ object LoopTunerMainForm: TLoopTunerMainForm
       OnMouseDown = FlagEdit0MouseDown
     end
     object FlagEdit8: TEdit
-      Left = 456
+      Left = 476
       Top = 0
       Width = 33
       Height = 20
@@ -572,7 +590,7 @@ object LoopTunerMainForm: TLoopTunerMainForm
       OnMouseDown = FlagEdit0MouseDown
     end
     object FlagEdit9: TEdit
-      Left = 511
+      Left = 531
       Top = 0
       Width = 33
       Height = 20
@@ -586,7 +604,7 @@ object LoopTunerMainForm: TLoopTunerMainForm
       OnMouseDown = FlagEdit0MouseDown
     end
     object FlagEdit10: TEdit
-      Left = 566
+      Left = 586
       Top = 0
       Width = 33
       Height = 20
@@ -600,7 +618,7 @@ object LoopTunerMainForm: TLoopTunerMainForm
       OnMouseDown = FlagEdit0MouseDown
     end
     object FlagEdit11: TEdit
-      Left = 621
+      Left = 641
       Top = 0
       Width = 33
       Height = 20
@@ -614,7 +632,7 @@ object LoopTunerMainForm: TLoopTunerMainForm
       OnMouseDown = FlagEdit0MouseDown
     end
     object FlagEdit12: TEdit
-      Left = 676
+      Left = 696
       Top = 0
       Width = 33
       Height = 20
@@ -628,7 +646,7 @@ object LoopTunerMainForm: TLoopTunerMainForm
       OnMouseDown = FlagEdit0MouseDown
     end
     object FlagEdit13: TEdit
-      Left = 731
+      Left = 751
       Top = 0
       Width = 33
       Height = 20
@@ -642,7 +660,7 @@ object LoopTunerMainForm: TLoopTunerMainForm
       OnMouseDown = FlagEdit0MouseDown
     end
     object FlagEdit14: TEdit
-      Left = 786
+      Left = 806
       Top = 0
       Width = 33
       Height = 20
@@ -656,7 +674,7 @@ object LoopTunerMainForm: TLoopTunerMainForm
       OnMouseDown = FlagEdit0MouseDown
     end
     object FlagEdit15: TEdit
-      Left = 841
+      Left = 861
       Top = 0
       Width = 33
       Height = 20

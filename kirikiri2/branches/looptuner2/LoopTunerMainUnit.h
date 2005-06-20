@@ -21,6 +21,7 @@
 #include "EditLinkAttribUnit.h"
 #include <ExtCtrls.hpp>
 #include <AppEvnts.hpp>
+#include <Buttons.hpp>
 //---------------------------------------------------------------------------
 class TLoopTunerMainForm : public TForm
 {
@@ -124,6 +125,7 @@ __published:	// IDE 管理のコンポーネント
 	TMenuItem *FlagsEditToggleMenuItem;
 	TAction *ShowEditFlagsAction;
 	TToolButton *ShowEditFlagToolButton;
+	TSpeedButton *FlagsClearSpeedButton;
 	void __fastcall FormDestroy(TObject *Sender);
 	void __fastcall OpenActionExecute(TObject *Sender);
 	void __fastcall ZoomInActionExecute(TObject *Sender);
@@ -152,6 +154,7 @@ __published:	// IDE 管理のコンポーネント
 	void __fastcall FlagEdit0KeyPress(TObject *Sender, char &Key);
 	void __fastcall ShowEditFlagsActionExecute(TObject *Sender);
 	void __fastcall FlagEdit0DblClick(TObject *Sender);
+	void __fastcall FlagsClearSpeedButtonClick(TObject *Sender);
 private:	// ユーザー宣言
 	TWaveReader * Reader;
 	TWaveView *WaveView;
