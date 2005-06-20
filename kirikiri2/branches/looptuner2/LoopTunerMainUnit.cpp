@@ -24,6 +24,9 @@ __fastcall TLoopTunerMainForm::TLoopTunerMainForm(TComponent* Owner)
 	ActiveControl = WaveView;
 	CreateWaveView();
 	ResettingFlags = false;
+
+	Application->HintHidePause = 24*60*60*1000;
+		// not to hide tool tip hint immediately
 }
 //---------------------------------------------------------------------------
 __fastcall TLoopTunerMainForm::~TLoopTunerMainForm()
