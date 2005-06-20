@@ -149,7 +149,6 @@ void __fastcall TLoopTunerMainForm::SaveActionExecute(TObject *Sender)
 		Manager->SetLabels(WaveView->GetLabels());
 		AnsiString str;
 		Manager->WriteInformation(str);
-		Manager->ClearLinksAndLabels();
 		fs->Write(str.c_str(), str.Length());
 	}
 	catch(...)
