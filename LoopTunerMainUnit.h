@@ -81,21 +81,13 @@ __published:	// IDE 管理のコンポーネント
 	TMenuItem *ForWave_NewLabelMenuItem;
 	TMenuItem *ForWave_ZoomInMenuItem;
 	TMenuItem *ForWave_ZoomOutMenuItem;
-	TAction *ShowEditAttribAction;
-	TToolButton *ShowEditAttribToolButton;
 	TToolButton *ToolButton7;
-	TPanel *EditAttribPanel;
-	TBevel *EditLabelAttribBevel;
-	TPanel *EmptyEditAttribFrame;
-	TEditLinkAttribFrame *EditLinkAttribFrame;
-	TEditLabelAttribFrame *EditLabelAttribFrame;
 	TApplicationEvents *ApplicationEvents;
 	TToolButton *ToolButton6;
 	TToolButton *FollowMarkerToolButton;
 	TAction *FollowMarkerAction;
 	TMenuItem *SaveMenuItem;
 	TMenuItem *FollowMarkerMenuItem;
-	TMenuItem *ShowEditAttribMenuItem;
 	TMenuItem *PlayMenu;
 	TMenuItem *StopPlayMenuItem;
 	TMenuItem *PlayFromCaretMenuItem;
@@ -145,7 +137,6 @@ __published:	// IDE 管理のコンポーネント
 	void __fastcall DeleteActionExecute(TObject *Sender);
 	void __fastcall NewLabelActionExecute(TObject *Sender);
 	void __fastcall NewLinkActionExecute(TObject *Sender);
-	void __fastcall ShowEditAttribActionExecute(TObject *Sender);
 	void __fastcall ApplicationEventsIdle(TObject *Sender, bool &Done);
 	void __fastcall FollowMarkerActionExecute(TObject *Sender);
 	void __fastcall EditLinkDetailActionExecute(TObject *Sender);
@@ -167,7 +158,7 @@ private:	// ユーザー宣言
 	tTVPWaveLoopManager *Manager;
 	AnsiString FileName; // current filename
 
-	TEdit * FlagsEdits[TVP_WL_MAX_FLAGS]; // array of flag edit controls
+	bool ResettingFlags;
 
 public:		// ユーザー宣言
 	__fastcall TLoopTunerMainForm(TComponent* Owner);
@@ -188,10 +179,7 @@ private:
 	void __fastcall WaveViewLinkModified(TObject *Sender);
 	void __fastcall WaveViewLabelModified(TObject *Sender);
 
-	void __fastcall EditLinkAttribFrameInfoChanged(TObject * Sender);
-	void __fastcall EditLinkAttribFrameEraseRedo(TObject * Sender);
-	void __fastcall EditLabelAttribFrameInfoChanged(TObject * Sender);
-	void __fastcall EditLabelAttribFrameEraseRedo(TObject * Sender);
+	void __fastcall ResetFlagsEditFromLoopManager();
 };
 //---------------------------------------------------------------------------
 extern PACKAGE TLoopTunerMainForm *LoopTunerMainForm;

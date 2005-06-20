@@ -22,8 +22,8 @@ __fastcall TLoopTunerMainForm::TLoopTunerMainForm(TComponent* Owner)
 	InitDirectSound(Application->Handle);
 	Manager = NULL;
 	ActiveControl = WaveView;
-	EditAttribPanel->Height = EmptyEditAttribFrame->Height + EditLabelAttribBevel->Height;
 	CreateWaveView();
+	ResettingFlags = false;
 }
 //---------------------------------------------------------------------------
 void __fastcall TLoopTunerMainForm::FormDestroy(TObject *Sender)
@@ -230,13 +230,6 @@ void __fastcall TLoopTunerMainForm::ShowEditFlagsActionExecute(
 	FlagsPanel->Visible = ShowEditFlagsAction->Checked;
 }
 //---------------------------------------------------------------------------
-void __fastcall TLoopTunerMainForm::ShowEditAttribActionExecute(
-	  TObject *Sender)
-{
-	ShowEditAttribAction->Checked = !ShowEditAttribAction->Checked;
-	EditAttribPanel->Visible = ShowEditAttribAction->Checked;
-}
-//---------------------------------------------------------------------------
 void __fastcall TLoopTunerMainForm::PlayFrom(int pos)
 {
 	if(Reader->ReadDone)
@@ -312,6 +305,8 @@ void __fastcall TLoopTunerMainForm::ApplicationEventsIdle(TObject *Sender,
 	EditLabelDetailAction->Enabled = WaveView->FocusedLabel != -1;
 	GotoLinkFromAction->Enabled = WaveView->FocusedLink != -1;
 	GotoLinkToAction->Enabled = WaveView->FocusedLink != -1;
+
+	if(Manager && Manager->GetFlagsModifiedByLabelExpression()) ResetFlagsEditFromLoopManager();
 }
 //---------------------------------------------------------------------------
 void __fastcall TLoopTunerMainForm::WaveViewWaveDoubleClick(TObject *Sender, int pos)
@@ -383,106 +378,28 @@ void __fastcall TLoopTunerMainForm::WaveViewNotifyPopup(TObject *Sender, AnsiStr
 //---------------------------------------------------------------------------
 void __fastcall TLoopTunerMainForm::WaveViewShowCaret(TObject *Sender, int pos)
 {
-	EditLabelAttribBevel->Visible = false;
-
-	EmptyEditAttribFrame->Visible = true;
-	EditLinkAttribFrame->Visible  = false;
-	EditLabelAttribFrame->Visible = false;
-
-	EditLabelAttribBevel->Visible = true;
 }
 //---------------------------------------------------------------------------
 void __fastcall TLoopTunerMainForm::WaveViewLinkSelected(TObject *Sender, int num, tTVPWaveLoopLink &link)
 {
-	EditLabelAttribBevel->Visible = false;
-
-	EditLinkAttribFrame->OnInfoChanged = EditLinkAttribFrameInfoChanged;
-	EditLinkAttribFrame->OnEraseRedo = EditLinkAttribFrameEraseRedo;
-	EditLinkAttribFrame->Tag  = num;
-	EditLinkAttribFrame->SetLink(link);
-
-	EmptyEditAttribFrame->Visible = false;
-	EditLinkAttribFrame->Visible  = true;
-	EditLabelAttribFrame->Visible = false;
-
-	EditLabelAttribBevel->Visible = true;
 }
 //---------------------------------------------------------------------------
 void __fastcall TLoopTunerMainForm::WaveViewLabelSelected(TObject *Sender, int num, tTVPWaveLabel &label)
 {
-	EditLabelAttribBevel->Visible  = false;
-
-	EditLabelAttribFrame->OnInfoChanged = EditLabelAttribFrameInfoChanged;
-	EditLabelAttribFrame->OnEraseRedo = EditLabelAttribFrameEraseRedo;
-	EditLabelAttribFrame->Tag  = num;
-	EditLabelAttribFrame->SetLabel(label);
-
-	EmptyEditAttribFrame->Visible  = false;
-	EditLinkAttribFrame->Visible   = false;
-	EditLabelAttribFrame->Visible  = true;
-
-	EditLabelAttribBevel->Visible  = true;
 }
 //---------------------------------------------------------------------------
 void __fastcall TLoopTunerMainForm::WaveViewSelectionLost(TObject *Sender)
 {
-	EditLabelAttribBevel->Visible = false;
-
-	EmptyEditAttribFrame->Visible = true;
-	EditLinkAttribFrame->Visible  = false;
-	EditLabelAttribFrame->Visible = false;
-
-	EditLabelAttribBevel->Visible = true;
 }
 //---------------------------------------------------------------------------
 void __fastcall TLoopTunerMainForm::WaveViewLinkModified(TObject *Sender)
 {
 	Manager->SetLinks(WaveView->GetLinks());
-	if(EditAttribPanel->Visible && EditLinkAttribFrame->Visible)
-	{
-		tTVPWaveLoopLink &link = WaveView->GetLinks()[EditLinkAttribFrame->Tag];
-		EditLinkAttribFrame->SetLink(link);
-	}
 }
 //---------------------------------------------------------------------------
 void __fastcall TLoopTunerMainForm::WaveViewLabelModified(TObject *Sender)
 {
 	Manager->SetLabels(WaveView->GetLabels());
-	if(EditAttribPanel->Visible && EditLabelAttribFrame->Visible)
-	{
-		tTVPWaveLabel &label = WaveView->GetLabels()[EditLabelAttribFrame->Tag];
-		EditLabelAttribFrame->SetLabel(label);
-	}
-}
-//---------------------------------------------------------------------------
-void __fastcall TLoopTunerMainForm::EditLinkAttribFrameInfoChanged(TObject * Sender)
-{
-	tTVPWaveLoopLink &link = WaveView->GetLinks()[EditLinkAttribFrame->Tag];
-	WaveView->InvalidateLink(EditLinkAttribFrame->Tag);
-	EditLinkAttribFrame->SetLinkInfo(link);
-	WaveView->NotifyLinkChanged();
-	WaveView->InvalidateLink(EditLinkAttribFrame->Tag);
-	WaveView->PushUndo(); //==== push undo
-}
-//---------------------------------------------------------------------------
-void __fastcall TLoopTunerMainForm::EditLinkAttribFrameEraseRedo(TObject * Sender)
-{
-	WaveView->EraseRedo();
-}
-//---------------------------------------------------------------------------
-void __fastcall TLoopTunerMainForm::EditLabelAttribFrameInfoChanged(TObject * Sender)
-{
-	tTVPWaveLabel &label = WaveView->GetLabels()[EditLabelAttribFrame->Tag];
-	WaveView->InvalidateLabel(EditLabelAttribFrame->Tag);
-	EditLabelAttribFrame->SetLabelInfo(label);
-	WaveView->NotifyLabelChanged();
-	WaveView->InvalidateLabel(EditLabelAttribFrame->Tag);
-	WaveView->PushUndo(); //==== push undo
-}
-//---------------------------------------------------------------------------
-void __fastcall TLoopTunerMainForm::EditLabelAttribFrameEraseRedo(TObject * Sender)
-{
-	WaveView->EraseRedo();
 }
 //---------------------------------------------------------------------------
 void __fastcall TLoopTunerMainForm::FlagsEditToggleMenuItemClick(
@@ -536,6 +453,8 @@ void __fastcall TLoopTunerMainForm::FlagEdit0MouseDown(TObject *Sender,
 //---------------------------------------------------------------------------
 void __fastcall TLoopTunerMainForm::FlagEdit0Change(TObject *Sender)
 {
+	if(ResettingFlags) return;
+
 	TEdit *edit = dynamic_cast<TEdit*>(Sender);
 	if(edit)
 	{
@@ -550,6 +469,9 @@ void __fastcall TLoopTunerMainForm::FlagEdit0Change(TObject *Sender)
 			edit->Text = AnsiString(edit->Text.ToInt());
 			edit->SelStart = edit->Text.Length();
 		}
+
+		if(edit->Text.ToInt() > TVP_WL_MAX_FLAG_VALUE)
+			edit->Text = AnsiString(TVP_WL_MAX_FLAG_VALUE);
 	}
 
 	// refrect all controls
@@ -578,7 +500,32 @@ void __fastcall TLoopTunerMainForm::FlagEdit0KeyPress(TObject *Sender,
 	if(!(Key >= '0' && Key <= '9' || Key < 0x20)) Key = 0;
 }
 //---------------------------------------------------------------------------
+void __fastcall TLoopTunerMainForm::ResetFlagsEditFromLoopManager()
+{
+	// display flags from waveloopmanager
+	if(!Manager) return;
 
+	ResettingFlags = true;
+	tjs_int flags[TVP_WL_MAX_FLAGS];
+	Manager->CopyFlags(flags);
+
+	int count = FlagsPanel->ControlCount;
+	for(int i = 0; i < count ; i++)
+	{
+		TControl * comp = FlagsPanel->Controls[i];
+		TEdit * edit = dynamic_cast<TEdit *>(comp);
+		if(edit)
+		{
+			if(edit->Name.AnsiPos("FlagEdit") == 1)
+			{
+				int num = atoi(edit->Name.c_str()  + 8);
+				edit->Text = AnsiString(flags[num]);
+			}
+		}
+	}
+	ResettingFlags = false;
+}
+//---------------------------------------------------------------------------
 
 
 

@@ -14,7 +14,7 @@ object LabelDetailForm: TLabelDetailForm
   Font.Style = []
   OldCreateOrder = False
   Position = poOwnerFormCenter
-  OnClose = FormClose
+  OnCloseQuery = FormCloseQuery
   PixelsPerInch = 96
   TextHeight = 12
   inline EditLabelAttribFrame: TEditLabelAttribFrame

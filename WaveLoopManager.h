@@ -9,6 +9,8 @@
 
 #define TVP_WL_MAX_FLAGS 16
 
+#define TVP_WL_MAX_FLAG_VALUE 9999
+
 #define TVP_WL_SMOOTH_TIME 50
 #define TVP_WL_SMOOTH_TIME_HALF (TVP_WL_SMOOTH_TIME/2)
 
@@ -18,8 +20,10 @@
 //---------------------------------------------------------------------------
 #ifdef TVP_IN_LOOP_TUNER
 	typedef AnsiString tTVPLabelStringType;
+	typedef char   tTVPLabelCharType;
 #else
 	typedef ttstr tTVPLabelStringType;
+	typedef tjs_char tTVPLabelCharType;
 #endif
 //---------------------------------------------------------------------------
 
@@ -189,6 +193,7 @@ class tTVPWaveLoopManager
 {
 	tTJSCriticalSection FlagsCS; // CS to protect flags/links/labels
 	int Flags[TVP_WL_MAX_FLAGS];
+	bool FlagsModifiedByLabelExpression; // true if the flags are modified by EvalLabelExpression
 	std::vector<tTVPWaveLoopLink> Links;
 	std::vector<tTVPWaveLabel> Labels;
 	tTJSCriticalSection DataCS; // CS to protect other members
@@ -212,7 +217,9 @@ public:
 	virtual ~tTVPWaveLoopManager();
 
 	bool GetFlag(tjs_int index);
-	void SetFlag(tjs_int index, int f);
+	void CopyFlags(tjs_int *dest);
+	bool GetFlagsModifiedByLabelExpression();
+	void SetFlag(tjs_int index, tjs_int f);
 	void ClearFlags();
 	void ClearLinksAndLabels();
 
@@ -241,6 +248,34 @@ private:
 		tjs_int ratiostart, tjs_int ratioend);
 
 	void ClearCrossFadeInformation();
+
+//--- flag manupulation by label expression
+	enum tExpressionToken {
+		etUnknown,
+		etEOE,			// End of the expression
+		etLBracket,		// '['
+		etRBracket,		// ']'
+		etInteger,		// integer number
+		etEqual,		// '='
+		etPlus,			// '+'
+		etMinus,		// '-'
+		etPlusEqual,	// '+='
+		etMinusEqual,	// '-='
+		etIncrement,	// '++'
+		etDecrement		// '--'
+	};
+public:
+	static bool GetLabelExpression(const tTVPLabelStringType &label,
+		tExpressionToken * ope = NULL,
+		tjs_int *lv = NULL,
+		tjs_int *rv = NULL, bool *is_rv_indirect = NULL);
+private:
+	bool EvalLabelExpression(const tTVPLabelStringType &label);
+
+	static tExpressionToken GetExpressionToken(const tTVPLabelCharType * &  p , tjs_int * value);
+	static bool GetLabelCharInt(const tTVPLabelCharType *s, tjs_int &v);
+
+
 //--- loop information input/output stuff
 private:
 	static bool GetInt(char *s, tjs_int &v);
