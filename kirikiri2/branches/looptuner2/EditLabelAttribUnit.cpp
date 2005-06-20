@@ -4,6 +4,7 @@
 #pragma hdrstop
 
 #include "EditLabelAttribUnit.h"
+#include "WaveLoopManager.h"
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
 #pragma resource "*.dfm"

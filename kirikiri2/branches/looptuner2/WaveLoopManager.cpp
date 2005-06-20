@@ -117,6 +117,7 @@ tTVPWaveLoopManager::tTVPWaveLoopManager(tTVPWaveDecoder * decoder)
 
 	decoder->GetFormat(Format);
 	ClearFlags();
+	FlagsModifiedByLabelExpression = false;
 
 	// compute ShortCrossFadeHalfSamples
 	ShortCrossFadeHalfSamples =
@@ -134,9 +135,25 @@ bool tTVPWaveLoopManager::GetFlag(tjs_int index)
 	return Flags[index];
 }
 //---------------------------------------------------------------------------
-void tTVPWaveLoopManager::SetFlag(tjs_int index, int f)
+void tTVPWaveLoopManager::CopyFlags(tjs_int *dest)
 {
 	volatile tTJSCriticalSectionHolder CS(FlagsCS);
+	// copy flags into dest, and clear FlagsModifiedByLabelExpression
+	memcpy(dest, Flags, sizeof(Flags));
+	FlagsModifiedByLabelExpression = false;
+}
+//---------------------------------------------------------------------------
+bool tTVPWaveLoopManager::GetFlagsModifiedByLabelExpression()
+{
+	volatile tTJSCriticalSectionHolder CS(FlagsCS);
+	return FlagsModifiedByLabelExpression;
+}
+//---------------------------------------------------------------------------
+void tTVPWaveLoopManager::SetFlag(tjs_int index, tjs_int f)
+{
+	volatile tTJSCriticalSectionHolder CS(FlagsCS);
+	if(f < 0) f = 0;
+	if(f > TVP_WL_MAX_FLAG_VALUE) f = TVP_WL_MAX_FLAG_VALUE;
 	Flags[index] = f;
 }
 //---------------------------------------------------------------------------
@@ -354,7 +371,19 @@ void tTVPWaveLoopManager::Decode(void *dest, tjs_uint samples, tjs_uint &written
 				one_unit = CrossFadeLen - CrossFadePosition;
 		}
 		segments.push_back(tTVPWaveLoopSegment(Position, one_unit));
+
+		// evaluate each label
+		tjs_uint label_base = labels.size();
 		GetLabelAt(Position, Position + one_unit, labels);
+		for(std::vector<tTVPWaveLabel>::iterator i = labels.begin() + label_base;
+			i != labels.end(); i++)
+		{
+			if(i->Name.c_str()[0] == ':')
+			{
+				// for each label
+				EvalLabelExpression(i->Name);
+			}
+		}
 
 		// decode or copy
 		if(!CrossFadeSamples)
@@ -443,16 +472,16 @@ bool tTVPWaveLoopManager::GetNearestEvent(tjs_int64 current,
 					if(Links[s].RefValue != Flags[Links[s].CondVar]) match = true;
 					break;
 				case llcGreater:
-					if(Links[s].RefValue >  Flags[Links[s].CondVar]) match = true;
-					break;
-				case llcGreaterOrEqual:
-					if(Links[s].RefValue >= Flags[Links[s].CondVar]) match = true;
-					break;
-				case llcLesser:
 					if(Links[s].RefValue <  Flags[Links[s].CondVar]) match = true;
 					break;
-				case llcLesserOrEqual:
+				case llcGreaterOrEqual:
 					if(Links[s].RefValue <= Flags[Links[s].CondVar]) match = true;
+					break;
+				case llcLesser:
+					if(Links[s].RefValue >  Flags[Links[s].CondVar]) match = true;
+					break;
+				case llcLesserOrEqual:
+					if(Links[s].RefValue >= Flags[Links[s].CondVar]) match = true;
 					break;
 				default:
 					match = false;
@@ -484,7 +513,6 @@ void tTVPWaveLoopManager::GetLabelAt(tjs_int64 from, tjs_int64 to,
 	volatile tTJSCriticalSectionHolder CS(FlagsCS);
 
 	if(Labels.size() == 0) return; // no labels found
-
 	if(!IsLabelsSorted)
 	{
 		std::sort(Labels.begin(), Labels.end());
@@ -501,6 +529,8 @@ void tTVPWaveLoopManager::GetLabelAt(tjs_int64 from, tjs_int64 to,
 		else
 			e = m;
 	}
+
+	if(s < (int)Labels.size()-1 && Labels[s].Position < from) s++;
 
 	if((tjs_uint)s >= Labels.size() || Labels[s].Position < from)
 	{
@@ -572,6 +602,201 @@ void tTVPWaveLoopManager::DoCrossFade(void *dest, void *src1,
 void tTVPWaveLoopManager::ClearCrossFadeInformation()
 {
 	if(CrossFadeSamples) delete [] CrossFadeSamples, CrossFadeSamples = NULL;
+}
+//---------------------------------------------------------------------------
+bool tTVPWaveLoopManager::GetLabelExpression(const tTVPLabelStringType &label,
+	tTVPWaveLoopManager::tExpressionToken * ope,
+	tjs_int *lv,
+	tjs_int *rv, bool *is_rv_indirect)
+{
+	const tTVPLabelCharType * p = label.c_str();
+	tExpressionToken token;
+	tExpressionToken operation;
+	tjs_int value  = 0;
+	tjs_int lvalue = 0;
+	tjs_int rvalue = 0;
+	bool rv_indirect = false;
+
+	if(*p != ':') return false; // not expression
+	p++;
+
+	token = GetExpressionToken(p, &value);
+	if(token != etLBracket) return false; // lvalue must form of '[' integer ']'
+	token = GetExpressionToken(p, &value);
+	if(token != etInteger) return false; // lvalue must form of '[' integer ']'
+	lvalue = value;
+	if(lvalue < 0 || lvalue >= TVP_WL_MAX_FLAGS) return false; // out of the range
+	token = GetExpressionToken(p, &value);
+	if(token != etRBracket) return false; // lvalue must form of '[' integer ']'
+
+	token = GetExpressionToken(p, &value);
+	switch(token)
+	{
+	case etEqual:
+	case etPlusEqual:  case etIncrement:
+	case etMinusEqual: case etDecrement:
+		break;
+	default:
+		return false; // unknown operation
+	}
+	operation = token;
+
+	token = GetExpressionToken(p, &value);
+	if(token == etLBracket)
+	{
+		// indirect value
+		token = GetExpressionToken(p, &value);
+		if(token != etInteger) return false; // rvalue does not have form of '[' integer ']'
+		rvalue = value;
+		if(rvalue < 0 || rvalue >= TVP_WL_MAX_FLAGS) return false; // out of the range
+		token = GetExpressionToken(p, &value);
+		if(token != etRBracket) return false; // rvalue does not have form of '[' integer ']'
+		rv_indirect = true;
+	}
+	else if(token == etInteger)
+	{
+		// direct value
+		rv_indirect = false;
+		rvalue = value;
+	}
+	else if(token == etEOE)
+	{
+		if(!(operation == etIncrement || operation == etDecrement))
+			return false; // increment or decrement cannot have operand
+	}
+	else
+	{
+		return false; // syntax error
+	}
+
+	token = GetExpressionToken(p, &value);
+	if(token != etEOE) return false; // excess characters
+
+	if(ope) *ope = operation;
+	if(lv)  *lv = lvalue;
+	if(rv)  *rv = rvalue;
+	if(is_rv_indirect) * is_rv_indirect = rv_indirect;
+
+	return true;
+}
+//---------------------------------------------------------------------------
+bool tTVPWaveLoopManager::EvalLabelExpression(const tTVPLabelStringType &label)
+{
+	// eval expression specified by 'label'
+	// commit the result when 'commit' is true.
+	// returns whether the label syntax is correct.
+	volatile tTJSCriticalSectionHolder CS(FlagsCS);
+
+	tExpressionToken operation;
+	tjs_int lvalue;
+	tjs_int rvalue;
+	bool is_rv_indirect;
+
+	if(!GetLabelExpression(label, &operation, &lvalue, &rvalue, &is_rv_indirect)) return false;
+
+	if(is_rv_indirect) rvalue = Flags[rvalue];
+
+	switch(operation)
+	{
+	case etEqual:
+		FlagsModifiedByLabelExpression = true;
+		Flags[lvalue] = rvalue;
+		break;
+	case etPlusEqual:
+		FlagsModifiedByLabelExpression = true;
+		Flags[lvalue] += rvalue;
+		break;
+	case etMinusEqual:
+		FlagsModifiedByLabelExpression = true;
+		Flags[lvalue] -= rvalue;
+		break;
+	case etIncrement:
+		FlagsModifiedByLabelExpression = true;
+		Flags[lvalue] ++;
+		break;
+	case etDecrement:
+		FlagsModifiedByLabelExpression = true;
+		Flags[lvalue] --;
+		break;
+	}
+
+	if(Flags[lvalue] < 0) Flags[lvalue] = 0;
+	if(Flags[lvalue] > TVP_WL_MAX_FLAG_VALUE) Flags[lvalue] = TVP_WL_MAX_FLAG_VALUE;
+
+	return true;
+}
+//---------------------------------------------------------------------------
+tTVPWaveLoopManager::tExpressionToken
+	tTVPWaveLoopManager::GetExpressionToken(const tTVPLabelCharType *  & p, tjs_int * value)
+{
+	// get token at pointer 'p'
+
+	while(*p && *p <= 0x20) p++; // skip spaces
+	if(!*p) return etEOE;
+
+	switch(*p)
+	{
+	case '0': case '1': case '2': case '3': case '4':
+	case '5': case '6': case '7': case '8': case '9':
+		// numbers
+		if(value) GetLabelCharInt(p, *value);
+		while(*p && *p >= '0' && *p <= '9') p++;
+		return etInteger;
+
+	case '[':
+		p++;
+		return etLBracket;
+	case ']':
+		p++;
+		return etRBracket;
+
+	case '=':
+		p++;
+		return etEqual;
+
+	case '+':
+		p++;
+		if(*p == '=') { p++; return etPlusEqual; }
+		if(*p == '+') { p++; return etIncrement; }
+		return etPlus;
+	case '-':
+		p++;
+		if(*p == '=') { p++; return etMinusEqual; }
+		if(*p == '-') { p++; return etDecrement; }
+		return etPlus;
+
+	default:
+		;
+	}
+
+	p++;
+	return etUnknown;
+}
+//---------------------------------------------------------------------------
+bool tTVPWaveLoopManager::GetLabelCharInt(const tTVPLabelCharType *s, tjs_int &v)
+{
+	// convert string to integer
+	tjs_int r = 0;
+	bool sign = false;
+	while(*s && *s <= 0x20) s++; // skip spaces
+	if(!*s) return false;
+	if(*s == '-')
+	{
+		sign = true;
+		s++;
+		while(*s && *s <= 0x20) s++; // skip spaces
+		if(!*s) return false;
+	}
+
+	while(*s >= '0' && *s <= '9')
+	{
+		r *= 10;
+		r += *s - '0';
+		s++;
+	}
+	if(sign) r = -r;
+	v = r;
+	return true;
 }
 //---------------------------------------------------------------------------
 bool tTVPWaveLoopManager::GetInt(char *s, tjs_int &v)

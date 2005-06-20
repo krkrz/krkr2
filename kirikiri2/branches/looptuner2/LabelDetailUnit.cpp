@@ -4,6 +4,7 @@
 #pragma hdrstop
 
 #include "LabelDetailUnit.h"
+#include "WaveLoopManager.h"
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
 #pragma link "EditLabelAttribUnit"
@@ -37,13 +38,20 @@ void __fastcall TLabelDetailForm::CancelButtonClick(TObject *Sender)
 }
 //---------------------------------------------------------------------------
 
-void __fastcall TLabelDetailForm::FormClose(TObject *Sender,
-      TCloseAction &Action)
+
+void __fastcall TLabelDetailForm::FormCloseQuery(TObject *Sender,
+	  bool &CanClose)
 {
+
 	if(ModalResult == mrOk)
 	{
 		EditLabelAttribFrame->CheckUncommitted();
 		EditLabelAttribFrame->SetLabelInfo(FLabel);
+		if(FLabel.Name[1] == ':' && !tTVPWaveLoopManager::GetLabelExpression(FLabel.Name))
+		{
+			Application->MessageBox("®‚Ì•¶–@‚ªŠÔˆá‚Á‚Ä‚¢‚Ü‚·", "ƒGƒ‰[", MB_OK|MB_ICONEXCLAMATION);
+			CanClose = false;
+		}
 	}
 }
 //---------------------------------------------------------------------------

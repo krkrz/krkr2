@@ -1,7 +1,7 @@
 object LoopTunerMainForm: TLoopTunerMainForm
   Left = 73
   Top = 109
-  Width = 619
+  Width = 635
   Height = 354
   Caption = '0'
   Color = clBtnFace
@@ -18,7 +18,7 @@ object LoopTunerMainForm: TLoopTunerMainForm
   object StatusBar: TStatusBar
     Left = 0
     Top = 281
-    Width = 611
+    Width = 627
     Height = 19
     Panels = <>
     SimplePanel = False
@@ -26,7 +26,7 @@ object LoopTunerMainForm: TLoopTunerMainForm
   object ToolBar1: TToolBar
     Left = 0
     Top = 0
-    Width = 611
+    Width = 627
     Height = 26
     AutoSize = True
     Caption = 'ToolBar'
@@ -144,15 +144,8 @@ object LoopTunerMainForm: TLoopTunerMainForm
       ParentShowHint = False
       ShowHint = True
     end
-    object ShowEditAttribToolButton: TToolButton
-      Left = 270
-      Top = 0
-      Action = ShowEditAttribAction
-      ParentShowHint = False
-      ShowHint = True
-    end
     object ToolButton1: TToolButton
-      Left = 293
+      Left = 270
       Top = 0
       Width = 8
       Caption = 'ToolButton1'
@@ -160,14 +153,14 @@ object LoopTunerMainForm: TLoopTunerMainForm
       Style = tbsSeparator
     end
     object FollowMarkerToolButton: TToolButton
-      Left = 301
+      Left = 278
       Top = 0
       Action = FollowMarkerAction
       ParentShowHint = False
       ShowHint = True
     end
     object ToolButton6: TToolButton
-      Left = 324
+      Left = 301
       Top = 0
       Width = 8
       Caption = 'ToolButton6'
@@ -175,80 +168,39 @@ object LoopTunerMainForm: TLoopTunerMainForm
       Style = tbsSeparator
     end
     object StopToolButton: TToolButton
-      Left = 332
+      Left = 309
       Top = 0
       Action = StopPlayAction
       ParentShowHint = False
       ShowHint = True
     end
     object PlayToolButton: TToolButton
-      Left = 355
+      Left = 332
       Top = 0
       Action = PlayFromStartAction
       ParentShowHint = False
       ShowHint = True
     end
     object PlayFromCursorToolButton: TToolButton
-      Left = 378
+      Left = 355
       Top = 0
       Action = PlayFromCaretAction
       ParentShowHint = False
       ShowHint = True
     end
   end
-  object EditAttribPanel: TPanel
-    Left = 0
-    Top = 184
-    Width = 611
-    Height = 97
-    Align = alBottom
-    BevelOuter = bvNone
-    TabOrder = 2
-    object EditLabelAttribBevel: TBevel
-      Left = 0
-      Top = 5
-      Width = 611
-      Height = 2
-      Align = alBottom
-      Shape = bsBottomLine
-    end
-    object EmptyEditAttribFrame: TPanel
-      Left = 0
-      Top = 7
-      Width = 611
-      Height = 30
-      Align = alBottom
-      BevelOuter = bvNone
-      Caption = 'アイテムを選択するとここにプロパティが表示されます'
-      TabOrder = 0
-    end
-    inline EditLinkAttribFrame: TEditLinkAttribFrame
-      Top = 37
-      Width = 611
-      Align = alBottom
-      TabOrder = 1
-      Visible = False
-    end
-    inline EditLabelAttribFrame: TEditLabelAttribFrame
-      Top = 67
-      Width = 611
-      Align = alBottom
-      TabOrder = 2
-      Visible = False
-    end
-  end
   object FlagsPanel: TPanel
     Left = 0
     Top = 26
-    Width = 611
+    Width = 627
     Height = 23
     Align = alTop
     BevelOuter = bvNone
-    TabOrder = 3
+    TabOrder = 2
     object Bevel1: TBevel
       Left = 0
       Top = 21
-      Width = 611
+      Width = 627
       Height = 2
       Align = alBottom
       Shape = bsBottomLine
@@ -498,6 +450,7 @@ object LoopTunerMainForm: TLoopTunerMainForm
       Top = 0
       Width = 33
       Height = 20
+      MaxLength = 4
       PopupMenu = FlagsEditPopupMenu
       TabOrder = 1
       Text = '0'
@@ -511,6 +464,7 @@ object LoopTunerMainForm: TLoopTunerMainForm
       Top = 0
       Width = 33
       Height = 20
+      MaxLength = 4
       PopupMenu = FlagsEditPopupMenu
       TabOrder = 2
       Text = '0'
@@ -524,6 +478,7 @@ object LoopTunerMainForm: TLoopTunerMainForm
       Top = 0
       Width = 33
       Height = 20
+      MaxLength = 4
       PopupMenu = FlagsEditPopupMenu
       TabOrder = 3
       Text = '0'
@@ -537,6 +492,7 @@ object LoopTunerMainForm: TLoopTunerMainForm
       Top = 0
       Width = 33
       Height = 20
+      MaxLength = 4
       PopupMenu = FlagsEditPopupMenu
       TabOrder = 4
       Text = '0'
@@ -550,6 +506,7 @@ object LoopTunerMainForm: TLoopTunerMainForm
       Top = 0
       Width = 33
       Height = 20
+      MaxLength = 4
       PopupMenu = FlagsEditPopupMenu
       TabOrder = 5
       Text = '0'
@@ -563,6 +520,7 @@ object LoopTunerMainForm: TLoopTunerMainForm
       Top = 0
       Width = 33
       Height = 20
+      MaxLength = 4
       PopupMenu = FlagsEditPopupMenu
       TabOrder = 6
       Text = '0'
@@ -576,6 +534,7 @@ object LoopTunerMainForm: TLoopTunerMainForm
       Top = 0
       Width = 33
       Height = 20
+      MaxLength = 4
       PopupMenu = FlagsEditPopupMenu
       TabOrder = 7
       Text = '0'
@@ -589,6 +548,7 @@ object LoopTunerMainForm: TLoopTunerMainForm
       Top = 0
       Width = 33
       Height = 20
+      MaxLength = 4
       PopupMenu = FlagsEditPopupMenu
       TabOrder = 8
       Text = '0'
@@ -602,6 +562,7 @@ object LoopTunerMainForm: TLoopTunerMainForm
       Top = 0
       Width = 33
       Height = 20
+      MaxLength = 4
       PopupMenu = FlagsEditPopupMenu
       TabOrder = 9
       Text = '0'
@@ -615,6 +576,7 @@ object LoopTunerMainForm: TLoopTunerMainForm
       Top = 0
       Width = 33
       Height = 20
+      MaxLength = 4
       PopupMenu = FlagsEditPopupMenu
       TabOrder = 10
       Text = '0'
@@ -628,6 +590,7 @@ object LoopTunerMainForm: TLoopTunerMainForm
       Top = 0
       Width = 33
       Height = 20
+      MaxLength = 4
       PopupMenu = FlagsEditPopupMenu
       TabOrder = 11
       Text = '0'
@@ -641,6 +604,7 @@ object LoopTunerMainForm: TLoopTunerMainForm
       Top = 0
       Width = 33
       Height = 20
+      MaxLength = 4
       PopupMenu = FlagsEditPopupMenu
       TabOrder = 12
       Text = '0'
@@ -654,6 +618,7 @@ object LoopTunerMainForm: TLoopTunerMainForm
       Top = 0
       Width = 33
       Height = 20
+      MaxLength = 4
       PopupMenu = FlagsEditPopupMenu
       TabOrder = 13
       Text = '0'
@@ -667,6 +632,7 @@ object LoopTunerMainForm: TLoopTunerMainForm
       Top = 0
       Width = 33
       Height = 20
+      MaxLength = 4
       PopupMenu = FlagsEditPopupMenu
       TabOrder = 14
       Text = '0'
@@ -680,6 +646,7 @@ object LoopTunerMainForm: TLoopTunerMainForm
       Top = 0
       Width = 33
       Height = 20
+      MaxLength = 4
       PopupMenu = FlagsEditPopupMenu
       TabOrder = 15
       Text = '0'
@@ -693,6 +660,7 @@ object LoopTunerMainForm: TLoopTunerMainForm
       Top = 0
       Width = 33
       Height = 20
+      MaxLength = 4
       PopupMenu = FlagsEditPopupMenu
       TabOrder = 0
       Text = '0'
@@ -747,9 +715,6 @@ object LoopTunerMainForm: TLoopTunerMainForm
       object FollowMarkerMenuItem: TMenuItem
         Action = FollowMarkerAction
       end
-      object ShowEditAttribMenuItem: TMenuItem
-        Action = ShowEditAttribAction
-      end
     end
     object PlayMenu: TMenuItem
       Caption = '再生(&P)'
@@ -797,14 +762,6 @@ object LoopTunerMainForm: TLoopTunerMainForm
       Hint = 'フラグ編集バーを表示します'
       ImageIndex = 35
       OnExecute = ShowEditFlagsActionExecute
-    end
-    object ShowEditAttribAction: TAction
-      Category = '表示'
-      Caption = 'クイックプロパティの表示(&Q)'
-      Checked = True
-      Hint = 'クイックプロパティの表示'
-      ImageIndex = 32
-      OnExecute = ShowEditAttribActionExecute
     end
     object StopPlayAction: TAction
       Category = '再生'
