@@ -57,6 +57,7 @@ object EditLinkAttribFrame: TEditLinkAttribFrame
     Top = 4
     Width = 33
     Height = 20
+    MaxLength = 4
     TabOrder = 2
     Text = '0'
     OnChange = CondRefValueEditChange
