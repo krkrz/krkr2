@@ -191,14 +191,9 @@ object LoopTunerMainForm: TLoopTunerMainForm
     object IgnoreLinksToolButton: TToolButton
       Left = 378
       Top = 0
-      Hint = 
-        'リンクを無視して再生を行います。リンクに遭遇してもジャンプを行い' +
-        'ません'
-      Caption = 'リンクを無視して再生(&G)'
-      ImageIndex = 36
+      Action = IgnoreLinksAction
       ParentShowHint = False
       ShowHint = True
-      OnClick = IgnoreLinksActionExecute
     end
   end
   object FlagsPanel: TPanel
@@ -758,12 +753,7 @@ object LoopTunerMainForm: TLoopTunerMainForm
         Action = PlayFromCaretAction
       end
       object IgnoreLinksMenuItem: TMenuItem
-        Caption = 'リンクを無視して再生(&G)'
-        Hint = 
-          'リンクを無視して再生を行います。リンクに遭遇してもジャンプを行い' +
-          'ません'
-        ImageIndex = 36
-        OnClick = IgnoreLinksActionExecute
+        Action = IgnoreLinksAction
       end
     end
   end
@@ -2318,13 +2308,8 @@ object LoopTunerMainForm: TLoopTunerMainForm
       ShortCut = 70
     end
     object WaveView_IgnoreLinksMenuItem: TMenuItem
-      Caption = 'リンクを無視して再生(&G)'
-      Hint = 
-        'リンクを無視して再生を行います。リンクに遭遇してもジャンプを行い' +
-        'ません'
-      ImageIndex = 36
+      Action = IgnoreLinksAction
       ShortCut = 71
-      OnClick = IgnoreLinksActionExecute
     end
     object WaveView_StopPlayMenuItem: TMenuItem
       Action = StopPlayAction
