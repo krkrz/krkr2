@@ -17,7 +17,7 @@ class BaseConductor extends KAGParser
 	var oneshot;
 	var _interrupted = false; // 中断中か
 	var timerEnabled = false; // タイマが起動中か
-	var pending; // 後回しにされたタグ
+	var pendings; // 後回しにされたタグ
 	var inProcessing = false; // timerCallback を処理中かどうか
 	var reentered = false; // timerCallback 中に 再入したか
 	var nextTimerTick = 0; // 次にタイマーが発動されるはずの tick
@@ -33,6 +33,8 @@ class BaseConductor extends KAGParser
 		oneshot = new AsyncTrigger(timerCallback, '');
 			// これも同様
 		oneshot.cached = true; // イベントのキャッシュを有効に
+
+		pendings = [];
 	}
 
 	function finalize()
@@ -46,7 +48,7 @@ class BaseConductor extends KAGParser
 	function clear()
 	{
 		// clear オーバーライド
-		pending = void;
+		pendings.clear();
 		super.clear();
 	}
 
@@ -67,11 +69,11 @@ class BaseConductor extends KAGParser
 			inProcessing = true;
 			for(;;)
 			{
-				if(pending !== void)
+				if(pendings.count > 0)
 				{
 					// 後回しにされたタグがある場合
-					obj = pending;
-					pending = void;
+					obj = pendings[0];
+					pendings.erase(0);
 				}
 				else
 				{
@@ -108,7 +110,7 @@ class BaseConductor extends KAGParser
 						switch(step)
 						{
 						case -5: // いったんイベントを処理(現在のタグは後回し)
-							pending = obj;
+							pendings.insert(0, obj);
 							oneshot.mode = atmAtIdle;
 							oneshot.trigger(); // トリガ
 							timer.interval = 0; // タイマは停止
@@ -123,7 +125,7 @@ class BaseConductor extends KAGParser
 							reentered = false;
 							return;
 						case -3: // 後回ししてブレーク
-							pending = obj;
+							pendings.insert(0, obj);
 							timer.interval = 0; // タイマは停止
 							inProcessing = false;
 							reentered = false;
@@ -278,10 +280,10 @@ class BaseConductor extends KAGParser
 		t.enabled = st.enabled;
 		timerEnabled = src.timerEnabled;
 		_interrupted = src._interrupted;
-		if(src.pending !== void)
-			(Dictionary.assign incontextof pending)(src.pending);
+		if(src.pendings.count > 0)
+			pendings.assignStruct(src.pendings);
 		else
-			pending = src.pending;
+			pendings.clear();
 		super.assign(src);
 	}
 
@@ -295,23 +297,27 @@ class BaseConductor extends KAGParser
 	{
 		// restore オーバーライド
 		super.restore(...);
-		pending = void;
+		pendings.clear();
 	}
 
 	function loadScenario()
 	{
 		// loadScenario オーバーライド
-		pending = void;
+		pendings.clear();
 		super.loadScenario(...);
 	}
 
 	function goToLabel()
 	{
 		// goToLabel オーバーライド
-		pending = void;
+		pendings.clear();
 		super.goToLabel(...);
 	}
 
+	function enqueueTag(tag)
+	{
+		pendings.add(tag);
+	}
 }
 
 
