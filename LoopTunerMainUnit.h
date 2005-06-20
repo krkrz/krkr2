@@ -126,6 +126,10 @@ __published:	// IDE 管理のコンポーネント
 	TAction *ShowEditFlagsAction;
 	TToolButton *ShowEditFlagToolButton;
 	TSpeedButton *FlagsClearSpeedButton;
+	TToolButton *IgnoreLinksToolButton;
+	TMenuItem *IgnoreLinksMenuItem;
+	TMenuItem *WaveView_IgnoreLinksMenuItem;
+	TAction *IgnoreLinksAction;
 	void __fastcall FormDestroy(TObject *Sender);
 	void __fastcall OpenActionExecute(TObject *Sender);
 	void __fastcall ZoomInActionExecute(TObject *Sender);
@@ -155,6 +159,7 @@ __published:	// IDE 管理のコンポーネント
 	void __fastcall ShowEditFlagsActionExecute(TObject *Sender);
 	void __fastcall FlagEdit0DblClick(TObject *Sender);
 	void __fastcall FlagsClearSpeedButtonClick(TObject *Sender);
+	void __fastcall IgnoreLinksActionExecute(TObject *Sender);
 private:	// ユーザー宣言
 	TWaveReader * Reader;
 	TWaveView *WaveView;
@@ -165,6 +170,7 @@ private:	// ユーザー宣言
 
 public:		// ユーザー宣言
 	__fastcall TLoopTunerMainForm(TComponent* Owner);
+	__fastcall ~TLoopTunerMainForm();
 	TWaveView * GetWaveView() { return WaveView; }
 private:
 	void __fastcall CreateWaveView();

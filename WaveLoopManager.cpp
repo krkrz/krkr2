@@ -114,6 +114,7 @@ tTVPWaveLoopManager::tTVPWaveLoopManager(tTVPWaveDecoder * decoder)
 	CrossFadeLen = 0;
 	CrossFadePosition = 0;
 	Decoder = decoder;
+	IgnoreLinks = false;
 
 	decoder->GetFormat(Format);
 	ClearFlags();
@@ -201,6 +202,19 @@ void tTVPWaveLoopManager::SetLabels(const std::vector<tTVPWaveLabel> & labels)
 	IsLabelsSorted = false;
 }
 //---------------------------------------------------------------------------
+bool tTVPWaveLoopManager::GetIgnoreLinks() const
+{
+	volatile tTJSCriticalSectionHolder
+		CS(const_cast<tTVPWaveLoopManager*>(this)->DataCS);
+	return IgnoreLinks;
+}
+//---------------------------------------------------------------------------
+void tTVPWaveLoopManager::SetIgnoreLinks(bool b)
+{
+	volatile tTJSCriticalSectionHolder CS(DataCS);
+	IgnoreLinks = b;
+}
+//---------------------------------------------------------------------------
 tjs_int64 tTVPWaveLoopManager::GetPosition() const
 {
 	// we cannot assume that the 64bit data access is truely atomic on 32bit machines.
@@ -238,7 +252,7 @@ void tTVPWaveLoopManager::Decode(void *dest, tjs_uint samples, tjs_uint &written
 
 		// check nearest link
 		tTVPWaveLoopLink link;
-		if(GetNearestEvent(Position, link, false))
+		if(!IgnoreLinks && GetNearestEvent(Position, link, false))
 		{
 			// nearest event found ...
 			if(link.From == Position)

@@ -188,6 +188,18 @@ object LoopTunerMainForm: TLoopTunerMainForm
       ParentShowHint = False
       ShowHint = True
     end
+    object IgnoreLinksToolButton: TToolButton
+      Left = 378
+      Top = 0
+      Hint = 
+        'リンクを無視して再生を行います。リンクに遭遇してもジャンプを行い' +
+        'ません'
+      Caption = 'リンクを無視して再生(&G)'
+      ImageIndex = 36
+      ParentShowHint = False
+      ShowHint = True
+      OnClick = IgnoreLinksActionExecute
+    end
   end
   object FlagsPanel: TPanel
     Left = 0
@@ -745,12 +757,41 @@ object LoopTunerMainForm: TLoopTunerMainForm
       object PlayFromCaretMenuItem: TMenuItem
         Action = PlayFromCaretAction
       end
+      object IgnoreLinksMenuItem: TMenuItem
+        Caption = 'リンクを無視して再生(&G)'
+        Hint = 
+          'リンクを無視して再生を行います。リンクに遭遇してもジャンプを行い' +
+          'ません'
+        ImageIndex = 36
+        OnClick = IgnoreLinksActionExecute
+      end
     end
   end
   object ActionList: TActionList
     Images = ImageList
     Left = 8
     Top = 64
+    object StopPlayAction: TAction
+      Category = '再生'
+      Caption = '停止(&S)'
+      Hint = '再生停止'
+      ImageIndex = 4
+      OnExecute = StopPlayActionExecute
+    end
+    object PlayFromCaretAction: TAction
+      Category = '再生'
+      Caption = '現在位置から再生(&C)'
+      Hint = '現在位置から再生'
+      ImageIndex = 1
+      OnExecute = PlayFromCaretActionExecute
+    end
+    object PlayFromStartAction: TAction
+      Category = '再生'
+      Caption = '初めから再生(&P)'
+      Hint = '初めから再生'
+      ImageIndex = 0
+      OnExecute = PlayFromStartActionExecute
+    end
     object ZoomInAction: TAction
       Category = '表示'
       Caption = 'ズーム・イン(&I)'
@@ -781,33 +822,12 @@ object LoopTunerMainForm: TLoopTunerMainForm
       ImageIndex = 35
       OnExecute = ShowEditFlagsActionExecute
     end
-    object StopPlayAction: TAction
-      Category = '再生'
-      Caption = '停止(&S)'
-      Hint = '再生停止'
-      ImageIndex = 4
-      OnExecute = StopPlayActionExecute
-    end
     object FollowMarkerAction: TAction
       Category = '表示'
       Caption = '再生位置に画面を追従(&F)'
       Hint = '再生位置に画面を追従'
       ImageIndex = 11
       OnExecute = FollowMarkerActionExecute
-    end
-    object PlayFromCaretAction: TAction
-      Category = '再生'
-      Caption = '現在位置から再生(&C)'
-      Hint = '現在位置から再生'
-      ImageIndex = 1
-      OnExecute = PlayFromCaretActionExecute
-    end
-    object PlayFromStartAction: TAction
-      Category = '再生'
-      Caption = '初めから再生(&P)'
-      Hint = '初めから再生'
-      ImageIndex = 0
-      OnExecute = PlayFromStartActionExecute
     end
     object SaveAction: TAction
       Category = 'ファイル'
@@ -876,12 +896,19 @@ object LoopTunerMainForm: TLoopTunerMainForm
       ImageIndex = 34
       OnExecute = GotoLinkToActionExecute
     end
+    object IgnoreLinksAction: TAction
+      Category = '再生'
+      Caption = 'リンクを無視して再生します'
+      Hint = 'リンクを無視し、ジャンプせずに再生します'
+      ImageIndex = 36
+      OnExecute = IgnoreLinksActionExecute
+    end
   end
   object ImageList: TImageList
     Left = 72
     Top = 64
     Bitmap = {
-      494C010124002700040010001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
+      494C010125002700040010001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
       000000000000360000002800000040000000A0000000010020000000000000A0
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
@@ -2165,11 +2192,11 @@ object LoopTunerMainForm: TLoopTunerMainForm
       0000000000000000000000000000000000000000000000000000000000000000
       000000000000000000000000000000000000424D3E000000000000003E000000
       2800000040000000A00000000100010000000000000500000000000000000000
-      000000000000000000000000FFFFFF0000000000000000000000000000000000
-      0000000000000000000000000000000000000000000000000000000000000000
-      0000000000000000000000000000000000000000000000000000000000000000
-      0000000000000000000000000000000000000000000000000000000000000000
-      00000000000000000000000000000000FFFFFFFFFFFFFFFFFFFFFFFFFFFFC00F
+      000000000000000000000000FFFFFF00FFFF000000000000FFFF000000000000
+      FFFF000000000000FFFF000000000000FFBF000000000000FF9F000000000000
+      D20F000000000000D207000000000000D203000000000000D207000000000000
+      D20F000000000000FF9F000000000000FFBF000000000000FFFF000000000000
+      FFFF000000000000FFFF000000000000FFFFFFFFFFFFFFFFFFFFFFFFFFFFC00F
       FFFFE00FE00FC00FC00FFFEFFFEFE007C00FFFEFFFEFE007C00FFFEFFFEFF003
       C00FECEFECEFFEFFC00FF5EFF5EFFEFF800FF5EFF583FEFF800FE0EFE083FE3F
       C007FFEFDBC7FE0FC003E0EFE0C7FE03C001FFEFEBEFFE0FFFF9FFEFFFEFFE3F
@@ -2290,6 +2317,15 @@ object LoopTunerMainForm: TLoopTunerMainForm
       Action = FollowMarkerAction
       ShortCut = 70
     end
+    object WaveView_IgnoreLinksMenuItem: TMenuItem
+      Caption = 'リンクを無視して再生(&G)'
+      Hint = 
+        'リンクを無視して再生を行います。リンクに遭遇してもジャンプを行い' +
+        'ません'
+      ImageIndex = 36
+      ShortCut = 71
+      OnClick = IgnoreLinksActionExecute
+    end
     object WaveView_StopPlayMenuItem: TMenuItem
       Action = StopPlayAction
       ShortCut = 83
@@ -2304,7 +2340,7 @@ object LoopTunerMainForm: TLoopTunerMainForm
     end
     object WaveView_UndoMenuItem: TMenuItem
       Action = UndoAction
-      ShortCut = 85
+      ShortCut = 16474
     end
     object WaveView_DeleteMenuItem: TMenuItem
       Action = DeleteAction

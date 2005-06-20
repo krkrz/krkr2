@@ -26,6 +26,10 @@ __fastcall TLoopTunerMainForm::TLoopTunerMainForm(TComponent* Owner)
 	ResettingFlags = false;
 }
 //---------------------------------------------------------------------------
+__fastcall TLoopTunerMainForm::~TLoopTunerMainForm()
+{
+}
+//---------------------------------------------------------------------------
 void __fastcall TLoopTunerMainForm::FormDestroy(TObject *Sender)
 {
 	StopPlay();
@@ -38,6 +42,7 @@ void __fastcall TLoopTunerMainForm::FormDestroy(TObject *Sender)
 void __fastcall TLoopTunerMainForm::CreateWaveView()
 {
 	if(WaveView) delete WaveView, WaveView = NULL;
+
 	WaveView = new TWaveView(this);
 	WaveView->Parent = this;
 	WaveView->Align = alClient;
@@ -69,6 +74,8 @@ void __fastcall TLoopTunerMainForm::OnReaderProgress(TObject *sender)
 		WaveView->Reader = Reader; // reset the reader
 		if(Manager) delete Manager, Manager = NULL;
 		Manager = new tTVPWaveLoopManager(Reader);
+		IgnoreLinksAction->Checked = false;
+		FlagsClearSpeedButtonClick(this);
 
 		// load link and label information
 		if(FileExists(FileName + ".sli"))
@@ -106,7 +113,6 @@ void __fastcall TLoopTunerMainForm::OnReaderProgress(TObject *sender)
 			}
 			if(mem) delete [] mem;
 
-			FlagsClearSpeedButtonClick(this);
 			// note that below two wiil call OnLinkModified/OnLabelModified event.
 			// but it's ok because the handler will write back the same data to the waveview.
 			WaveView->SetLinks(Manager->GetLinks());
@@ -228,6 +234,13 @@ void __fastcall TLoopTunerMainForm::ShowEditFlagsActionExecute(
 {
 	ShowEditFlagsAction->Checked = !ShowEditFlagsAction->Checked;
 	FlagsPanel->Visible = ShowEditFlagsAction->Checked;
+}
+//---------------------------------------------------------------------------
+void __fastcall TLoopTunerMainForm::IgnoreLinksActionExecute(
+	  TObject *Sender)
+{
+	IgnoreLinksAction->Checked = !IgnoreLinksAction->Checked;
+ 	if(Manager) Manager->SetIgnoreLinks(IgnoreLinksAction->Checked);
 }
 //---------------------------------------------------------------------------
 void __fastcall TLoopTunerMainForm::PlayFrom(int pos)
@@ -550,7 +563,6 @@ void __fastcall TLoopTunerMainForm::FlagsClearSpeedButtonClick(
 	ResettingFlags = false;
 }
 //---------------------------------------------------------------------------
-
 
 
 

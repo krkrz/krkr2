@@ -52,6 +52,11 @@ void __fastcall TLabelDetailForm::FormCloseQuery(TObject *Sender,
 			Application->MessageBox("式の文法が間違っています", "エラー", MB_OK|MB_ICONEXCLAMATION);
 			CanClose = false;
 		}
+		if(FLabel.Name.AnsiPos("'") != 0)
+		{
+			Application->MessageBox("ラベル名にアポストロフィー (') を含める事はできません", "エラー", MB_OK|MB_ICONEXCLAMATION);
+			CanClose = false;
+		}
 	}
 }
 //---------------------------------------------------------------------------
