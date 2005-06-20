@@ -106,6 +106,7 @@ void __fastcall TLoopTunerMainForm::OnReaderProgress(TObject *sender)
 			}
 			if(mem) delete [] mem;
 
+			FlagsClearSpeedButtonClick(this);
 			// note that below two wiil call OnLinkModified/OnLabelModified event.
 			// but it's ok because the handler will write back the same data to the waveview.
 			WaveView->SetLinks(Manager->GetLinks());
@@ -525,6 +526,31 @@ void __fastcall TLoopTunerMainForm::ResetFlagsEditFromLoopManager()
 	ResettingFlags = false;
 }
 //---------------------------------------------------------------------------
+void __fastcall TLoopTunerMainForm::FlagsClearSpeedButtonClick(
+	  TObject *Sender)
+{
+	ResettingFlags = true;
+
+	int count = FlagsPanel->ControlCount;
+	for(int i = 0; i < count ; i++)
+	{
+		TControl * comp = FlagsPanel->Controls[i];
+		TEdit * edit = dynamic_cast<TEdit *>(comp);
+		if(edit)
+		{
+			if(edit->Name.AnsiPos("FlagEdit") == 1)
+			{
+				edit->Text = "0";
+			}
+		}
+	}
+
+	if(Manager) Manager->ClearFlags();
+
+	ResettingFlags = false;
+}
+//---------------------------------------------------------------------------
+
 
 
 
