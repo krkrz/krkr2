@@ -38,6 +38,8 @@ public:
 	__fastcall TWaveView(Classes::TComponent* AOwner);
 	__fastcall ~TWaveView();
 
+	void __fastcall ClearAll();
+
 //-- common stuff
 private:
 	TWaveReader * FReader;

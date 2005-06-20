@@ -44,11 +44,14 @@ void __fastcall TLoopTunerMainForm::FormDestroy(TObject *Sender)
 //---------------------------------------------------------------------------
 void __fastcall TLoopTunerMainForm::CreateWaveView()
 {
-	if(WaveView) delete WaveView, WaveView = NULL;
+	if(!WaveView)
+	{
+		WaveView = new TWaveView(this);
+		WaveView->Parent = this;
+		WaveView->Align = alClient;
+	}
 
-	WaveView = new TWaveView(this);
-	WaveView->Parent = this;
-	WaveView->Align = alClient;
+	WaveView->ClearAll();
 	WaveView->Reader = NULL;
 	WaveView->OnStopFollowingMarker = WaveViewStopFollowingMarker;
 	WaveView->OnWaveDoubleClick		= WaveViewWaveDoubleClick;

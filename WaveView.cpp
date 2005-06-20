@@ -42,6 +42,27 @@ const int MaxUndoLevel = 20;
 __fastcall TWaveView::TWaveView(Classes::TComponent* AOwner) :
 	TCustomControl(AOwner)
 {
+	FBlinkTimer = new TTimer(this);
+	FBlinkTimer->OnTimer = OnBlinkTimer;
+	FBlinkTimer->Interval = GetCaretBlinkTime();
+	FBlinkTimer->Enabled = true;
+
+	DragScrollTimer = new TTimer(this);
+	DragScrollTimer->OnTimer = OnDragScrollTimer;
+	DragScrollTimer->Interval = 100;
+	DragScrollTimer->Enabled = false;
+
+	ClearAll();
+}
+//---------------------------------------------------------------------------
+__fastcall TWaveView::~TWaveView()
+{
+	delete DragScrollTimer;
+	delete FBlinkTimer;
+}
+//---------------------------------------------------------------------------
+void __fastcall TWaveView::ClearAll()
+{
 	Color = C_CLIENT;
 
 	FReader = NULL;
@@ -53,6 +74,7 @@ __fastcall TWaveView::TWaveView(Classes::TComponent* AOwner) :
 	FFollowingMarker = true;
 	FWaitingMarker = true;
 	FSoftCenteringStartTick = 0;
+	FSoftCenteringPos = 0;
 	FOnStopFollowingMarker = NULL;
 
 	FCaretPos = 0;
@@ -66,7 +88,6 @@ __fastcall TWaveView::TWaveView(Classes::TComponent* AOwner) :
 	FMarkerPos = -1;
 	Canvas->Font->Height = -12;
 
-	FUndoLevel = 0;
 	FOnNotifyPopup = NULL;
 	FOnShowCaret = NULL;
 	FOnLinkSelected = NULL;
@@ -77,17 +98,17 @@ __fastcall TWaveView::TWaveView(Classes::TComponent* AOwner) :
 	FOnLabelModified = NULL;
 	FInOnLabelModified = false; // to prevent re-entrering
 
+	FUndoStack.clear();
+	FUndoLevel = 0;
+
+	Links.clear();
 	FShowLinks = true;
 	FLinkTierCount = 0;
 	FHoveredLink = -1; // -1 for not hovered
 	FFocusedLink = -1; // -1 for not focused
 	NotifyLinkChanged();
 
-	FBlinkTimer = new TTimer(this);
-	FBlinkTimer->OnTimer = OnBlinkTimer;
-	FBlinkTimer->Interval = GetCaretBlinkTime();
-	FBlinkTimer->Enabled = true;
-
+	Labels.clear();
 	FShowLabels = true;
 	FHoveredLabel = -1; // -1 for not hovered
 	FFocusedLabel = -1; // -1 for not focused
@@ -98,27 +119,19 @@ __fastcall TWaveView::TWaveView(Classes::TComponent* AOwner) :
 	FOnLinkDoubleClick = NULL;
 	FOnLabelDoubleClick = NULL;
 
-	DisableNextMouseDown = false;
-
-	DragScrollTimer = new TTimer(this);
-	DragScrollTimer->OnTimer = OnDragScrollTimer;
-	DragScrollTimer->Interval = 100;
-	DragScrollTimer->Enabled = false;
-
 	LastMouseDownX = -1;
+	LastMouseDownY = -1;
+	LastMouseDownPosOffset = 0;
+	LastMouseMoveX = -1;
+	PopupType = "";
 	DraggingState = dsNone;
+	DisableNextMouseDown = false;
 
 	LastClickedPos[0] = LastClickedPos[1] = 0;
 
 	Cursor = crIBeam;
 
 	ShowHint = true;
-}
-//---------------------------------------------------------------------------
-__fastcall TWaveView::~TWaveView()
-{
-	delete DragScrollTimer;
-	delete FBlinkTimer;
 }
 //---------------------------------------------------------------------------
 void __fastcall TWaveView::Paint(void)
