@@ -1,7 +1,7 @@
 object LoopTunerMainForm: TLoopTunerMainForm
   Left = 73
   Top = 109
-  Width = 635
+  Width = 1156
   Height = 354
   Caption = '0'
   Color = clBtnFace
@@ -18,15 +18,15 @@ object LoopTunerMainForm: TLoopTunerMainForm
   object StatusBar: TStatusBar
     Left = 0
     Top = 281
-    Width = 627
+    Width = 1148
     Height = 19
     Panels = <>
     SimplePanel = False
   end
-  object ToolBar1: TToolBar
+  object ToolBar: TToolBar
     Left = 0
     Top = 0
-    Width = 627
+    Width = 1148
     Height = 26
     AutoSize = True
     Caption = 'ToolBar'
@@ -192,7 +192,7 @@ object LoopTunerMainForm: TLoopTunerMainForm
   object FlagsPanel: TPanel
     Left = 0
     Top = 26
-    Width = 627
+    Width = 1148
     Height = 23
     Align = alTop
     BevelOuter = bvNone
@@ -200,7 +200,7 @@ object LoopTunerMainForm: TLoopTunerMainForm
     object Bevel1: TBevel
       Left = 0
       Top = 21
-      Width = 627
+      Width = 1148
       Height = 2
       Align = alBottom
       Shape = bsBottomLine

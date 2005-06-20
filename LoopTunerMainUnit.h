@@ -33,7 +33,7 @@ __published:	// IDE 管理のコンポーネント
 	TMenuItem *OpenMenuItem;
 	TStatusBar *StatusBar;
 	TOpenDialog *OpenDialog;
-	TToolBar *ToolBar1;
+	TToolBar *ToolBar;
 	TToolButton *OpenToolButton;
 	TToolButton *ToolButton2;
 	TAction *ZoomInAction;
