@@ -13,7 +13,7 @@
     <RESDEPEN value="$(RESFILES) LoopTunerMainUnit.dfm EditLabelAttribUnit.dfm 
       EditLinkAttribUnit.dfm LinkDetailUnit.dfm LabelDetailUnit.dfm"/>
     <LIBFILES value=""/>
-    <LIBRARIES value=""/>
+    <LIBRARIES value="vclx50.lib Vcl50.lib"/>
     <SPARELIBS value="Vcl50.lib vclx50.lib"/>
     <PACKAGES value="Vcl50.bpi bcb2kaxserver50.bpi Vclx50.bpi bcbsmp50.bpi Inet50.bpi 
       Inetdb50.bpi Vclbde50.bpi Vcldb50.bpi vcldbx50.bpi VCLIB50.bpi vclie50.bpi 
@@ -27,10 +27,10 @@
     <RELEASELIBPATH value="$(BCB)\lib\release"/>
     <LINKER value="tlink32"/>
     <USERDEFINES value="_DEBUG;TVP_IN_LOOP_TUNER"/>
-    <SYSDEFINES value="_RTLDLL;NO_STRICT;USEPACKAGES"/>
+    <SYSDEFINES value="NO_STRICT"/>
     <MAINSOURCE value="looptune.cpp"/>
-    <INCLUDEPATH value=";;$(BCB)\include;$(BCB)\include\vcl"/>
-    <LIBPATH value=";;$(BCB)\Projects\Lib;$(BCB)\lib\obj;$(BCB)\lib"/>
+    <INCLUDEPATH value="$(BCB)\include;$(BCB)\include\vcl"/>
+    <LIBPATH value="$(BCB)\Projects\Lib;$(BCB)\lib\obj;$(BCB)\lib"/>
     <WARNINGS value="-w-par"/>
   </MACROS>
   <OPTIONS>
@@ -42,9 +42,9 @@
     <LFLAGS value="-D&quot;&quot; -aa -Tpe -x -Gn -v"/>
   </OPTIONS>
   <LINKER>
-    <ALLOBJ value="c0w32.obj $(PACKAGES) Memmgr.Lib sysinit.obj $(OBJFILES)"/>
+    <ALLOBJ value="c0w32.obj sysinit.obj $(OBJFILES)"/>
     <ALLRES value="$(RESFILES)"/>
-    <ALLLIB value="$(LIBFILES) $(LIBRARIES) import32.lib cp32mti.lib"/>
+    <ALLLIB value="$(LIBFILES) $(LIBRARIES) import32.lib cp32mt.lib"/>
   </LINKER>
   <IDEOPTIONS>
 [Version Info]
@@ -93,13 +93,13 @@ $(BCB)\Bin\bcb2kaxserver50.bpl=Borland C++Builder COM Server Components Sample P
 
 [HistoryLists\hlIncludePath]
 Count=2
-Item0=;;$(BCB)\include;$(BCB)\include\vcl
-Item1=$(BCB)\include;$(BCB)\include\vcl
+Item0=$(BCB)\include;$(BCB)\include\vcl
+Item1=;;$(BCB)\include;$(BCB)\include\vcl
 
 [HistoryLists\hlLibraryPath]
 Count=2
-Item0=;;$(BCB)\Projects\Lib;$(BCB)\lib\obj;$(BCB)\lib
-Item1=$(BCB)\Projects\Lib;$(BCB)\lib\obj;$(BCB)\lib
+Item0=$(BCB)\Projects\Lib;$(BCB)\lib\obj;$(BCB)\lib
+Item1=;;$(BCB)\Projects\Lib;$(BCB)\lib\obj;$(BCB)\lib
 
 [HistoryLists\hlDebugSourcePath]
 Count=1
@@ -122,7 +122,7 @@ RemoteDebug=0
 
 [Compiler]
 ShowInfoMsgs=0
-LinkDebugVcl=0
+LinkDebugVcl=1
 LinkCGLIB=0
   </IDEOPTIONS>
 </PROJECT>

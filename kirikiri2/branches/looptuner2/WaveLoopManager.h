@@ -212,6 +212,8 @@ class tTVPWaveLoopManager
 	bool IsLinksSorted; // false if links are not yet sorted
 	bool IsLabelsSorted; // false if labels are not yet sorted
 
+	bool IgnoreLinks; // decode the samples with ignoring links
+
 public:
 	tTVPWaveLoopManager(tTVPWaveDecoder * decoder);
 	virtual ~tTVPWaveLoopManager();
@@ -229,13 +231,15 @@ public:
 	void SetLinks(const std::vector<tTVPWaveLoopLink> & links);
 	void SetLabels(const std::vector<tTVPWaveLabel> & labels);
 
+	bool GetIgnoreLinks() const;
+	void SetIgnoreLinks(bool b);
+
 	tjs_int64 GetPosition() const;
 	void SetPosition(tjs_int64 pos);
 
 	void Decode(void *dest, tjs_uint samples, tjs_uint &written,
 		std::vector<tTVPWaveLoopSegment> &segments,
 		std::vector<tTVPWaveLabel> &labels);
-
 
 private:
 	bool GetNearestEvent(tjs_int64 current,
