@@ -968,7 +968,14 @@ bool tTVPWaveLoopManager::GetEntityToken(char * & p, char **name, char **value)
 	*value = p;
 
 	// find delimiter or white space or ';'
-	while(!isspace(*p) && *p != delimiter && *p != ';' && *p) p++;
+	if(delimiter == '\0')
+	{
+		while((!isspace(*p) && *p != ';') && *p) p++;
+	}
+	else
+	{
+		while((*p != delimiter) && *p) p++;
+	}
 
 	// remember value last point
 	valuelast = p;
