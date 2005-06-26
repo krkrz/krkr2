@@ -172,6 +172,10 @@ public:		// ƒ†[ƒU[éŒ¾
 	__fastcall TLoopTunerMainForm(TComponent* Owner);
 	__fastcall ~TLoopTunerMainForm();
 	TWaveView * GetWaveView() { return WaveView; }
+
+
+protected:
+
 private:
 	void __fastcall CreateWaveView();
 	void __fastcall OnReaderProgress(TObject *sender);

@@ -78,8 +78,34 @@ void __fastcall TLoopTunerMainForm::OnReaderProgress(TObject *sender)
 	if(Reader->ReadDone)
 	{
 		WaveView->Reader = Reader; // reset the reader
+		Manager->SetDecoder(Reader);
+
+		// note that below two wiil call OnLinkModified/OnLabelModified event.
+		// but it's ok because the handler will write back the same data to the waveview.
+		WaveView->SetLinks(Manager->GetLinks());
+		WaveView->SetLabels(Manager->GetLabels());
+		WaveView->PushFirstUndoState();
+	}
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TLoopTunerMainForm::OpenActionExecute(TObject *Sender)
+{
+	OpenDialog->Filter = Reader->FilterString;
+	if(OpenDialog->Execute())
+	{
+		FileName = OpenDialog->FileName;
+
+		// stop playing
+		StopPlay();
+
+		// reset all
+		CreateWaveView();
+		FollowMarkerAction->Checked = true;
+
+		// create manager
 		if(Manager) delete Manager, Manager = NULL;
-		Manager = new tTVPWaveLoopManager(Reader);
+		Manager = new tTVPWaveLoopManager();
 		IgnoreLinksAction->Checked = false;
 		FlagsClearSpeedButtonClick(this);
 
@@ -118,34 +144,7 @@ void __fastcall TLoopTunerMainForm::OnReaderProgress(TObject *sender)
 				throw;
 			}
 			if(mem) delete [] mem;
-
-			// note that below two wiil call OnLinkModified/OnLabelModified event.
-			// but it's ok because the handler will write back the same data to the waveview.
-			WaveView->SetLinks(Manager->GetLinks());
-			WaveView->SetLabels(Manager->GetLabels());
-			WaveView->PushFirstUndoState();
 		}
-		else
-		{
-			// TODO: clear the links and labels
-		}
-	}
-}
-//---------------------------------------------------------------------------
-
-void __fastcall TLoopTunerMainForm::OpenActionExecute(TObject *Sender)
-{
-	OpenDialog->Filter = Reader->FilterString;
-	if(OpenDialog->Execute())
-	{
-		FileName = OpenDialog->FileName;
-
-		// stop playing
-		StopPlay();
-
-		// reset all
-		CreateWaveView();
-		FollowMarkerAction->Checked = true;
 
 		// load wave
 		Reader->LoadWave(FileName);
