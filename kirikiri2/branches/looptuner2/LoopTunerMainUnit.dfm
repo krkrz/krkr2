@@ -204,6 +204,7 @@ object LoopTunerMainForm: TLoopTunerMainForm
     Align = alTop
     BevelOuter = bvNone
     TabOrder = 2
+    Visible = False
     object Bevel1: TBevel
       Left = 0
       Top = 21
@@ -807,7 +808,6 @@ object LoopTunerMainForm: TLoopTunerMainForm
     object ShowEditFlagsAction: TAction
       Category = '表示'
       Caption = 'フラグの表示(&G)'
-      Checked = True
       Hint = 'フラグ編集バーを表示します'
       ImageIndex = 35
       OnExecute = ShowEditFlagsActionExecute
