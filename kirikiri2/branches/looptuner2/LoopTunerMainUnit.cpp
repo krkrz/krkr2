@@ -85,6 +85,8 @@ void __fastcall TLoopTunerMainForm::OnReaderProgress(TObject *sender)
 		WaveView->SetLinks(Manager->GetLinks());
 		WaveView->SetLabels(Manager->GetLabels());
 		WaveView->PushFirstUndoState();
+
+		WaveView->SetInitialMagnify();
 	}
 }
 //---------------------------------------------------------------------------
