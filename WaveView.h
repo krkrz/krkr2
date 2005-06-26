@@ -149,6 +149,7 @@ private:
 	void __fastcall SetMagnify(int m);
 
 public:
+	void __fastcall SetInitialMagnify();
 	void __fastcall EnsureView(int p, int length = 0);
 
 public:

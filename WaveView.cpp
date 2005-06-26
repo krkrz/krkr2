@@ -35,6 +35,8 @@ const int LinkDirectionArrowWidth = 10;
 const int LinkDirectionInterval = 200;
 //---------------------------------------------------------------------------
 const int MaxUndoLevel = 20;
+const int MaxMagnify = 3;
+const int MinMagnify = -16;
 //---------------------------------------------------------------------------
 
 
@@ -601,8 +603,8 @@ void __fastcall TWaveView::SetMagnify(int m)
 	// set magnification
 	if(!FReader || !FReader->ReadDone) return;
 
-	if(m > 3) m = 3;
-	if(m < -16) m = -16;
+	if(m > MaxMagnify) m = MaxMagnify;
+	if(m < MinMagnify) m = MinMagnify;
 	if(FMagnify != m)
 	{
 		int center = GetAttentionPos();
@@ -633,6 +635,29 @@ void __fastcall TWaveView::SetMagnify(int m)
 		si.nPos = FStart;
 		SetScrollInfo(Handle, SB_HORZ, &si, true);
 	}
+}
+//---------------------------------------------------------------------------
+void __fastcall TWaveView::SetInitialMagnify()
+{
+	// set initial view magnify, which fits the current view width
+	int m;
+	for(m = MaxMagnify; m >= MinMagnify; m--)
+	{
+		int w;
+		if(m <= 0)
+		{
+			// shrink
+			w = FReader->NumSamples >> (-m);
+		}
+		else
+		{
+			// expand
+			w = FReader->NumSamples << m;
+		}
+		if(w < ClientWidth) break;
+	}
+
+	SetMagnify(m);
 }
 //---------------------------------------------------------------------------
 void __fastcall TWaveView::EnsureView(int p, int length)
