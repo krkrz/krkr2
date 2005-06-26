@@ -140,6 +140,19 @@ void tTVPLogStreamHolder::Open(const tjs_nchar *mode)
 				));
 #endif
 			Log(separator);
+
+
+			static tjs_char timebuf[80];
+
+			tm *struct_tm;
+			time_t timer;
+			timer = time(&timer);
+
+			struct_tm = localtime(&timer);
+			TJS_strftime(timebuf, 79, TJS_W("%#c"), struct_tm);
+
+			Log(ttstr(TJS_W("Logging to ")) + ttstr(filename) + TJS_W(" started on ") + timebuf);
+
 		}
 	}
 	catch(...)
