@@ -251,7 +251,8 @@ public:
 
 private:
 	void __fastcall GetLabelNameRect(tTVPWaveLabel & label, TRect & rect);
-	void __fastcall DrawLabelOf(tTVPWaveLabel & label);
+	void __fastcall DrawLabelMarkOf(tTVPWaveLabel & label);
+	void __fastcall DrawLabelNameOf(tTVPWaveLabel & label);
 	void __fastcall DrawLabels();
 public:
 	void __fastcall InvalidateLabel(int labelnum);

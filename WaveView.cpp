@@ -2002,7 +2002,7 @@ void __fastcall TWaveView::GetLabelNameRect(tTVPWaveLabel & label, TRect & rect)
 	Canvas->Font->Style = Canvas->Font->Style >> fsBold;
 }
 //---------------------------------------------------------------------------
-void __fastcall TWaveView::DrawLabelOf(tTVPWaveLabel & label)
+void __fastcall TWaveView::DrawLabelMarkOf(tTVPWaveLabel & label)
 {
 	int head_size = GetHeadSize();
 	int foot_size = GetFootSize();
@@ -2032,6 +2032,10 @@ void __fastcall TWaveView::DrawLabelOf(tTVPWaveLabel & label)
 	Canvas->LineTo(x, bottom_limit);
 	Canvas->Pen->Style = psSolid;
 
+}
+//---------------------------------------------------------------------------
+void __fastcall TWaveView::DrawLabelNameOf(tTVPWaveLabel & label)
+{
 	// draw label name
 	TRect rect;
 	GetLabelNameRect(label, rect);
@@ -2062,7 +2066,7 @@ void __fastcall TWaveView::DrawLabels()
 	if(!FReader || !FReader->ReadDone) return;
 	if(!FShowLabels) return;
 
-	// draw each link
+	// draw each label mark
 	for(unsigned int i = 0; i < Labels.size(); i++)
 	{
 		if((int)i == FFocusedLabel)
@@ -2077,7 +2081,7 @@ void __fastcall TWaveView::DrawLabels()
 
 		tTVPWaveLabel & label = Labels[i];
 
-		DrawLabelOf(label);
+		DrawLabelMarkOf(label);
 	}
 	if(FFocusedLabel != -1)
 	{
@@ -2085,16 +2089,49 @@ void __fastcall TWaveView::DrawLabels()
 		Canvas->Pen->Color = C_LABEL_MARK_FOCUS;
 		Canvas->Font->Color = C_LABEL_TEXT_FOCUS;
 		tTVPWaveLabel & label = Labels[FFocusedLabel];
-		DrawLabelOf(label);
+		DrawLabelMarkOf(label);
 		Canvas->Pen->Width = 1;
 	}
-
 	if(FHoveredLabel != -1 && FHoveredLabel != FFocusedLabel)
 	{
 		Canvas->Pen->Color = C_LABEL_MARK_HOVER;
 		Canvas->Font->Color = C_LABEL_TEXT_HOVER;
 		tTVPWaveLabel & label = Labels[FHoveredLabel];
-		DrawLabelOf(label);
+		DrawLabelMarkOf(label);
+	}
+
+	// draw each label name
+	for(unsigned int i = 0; i < Labels.size(); i++)
+	{
+		if((int)i == FFocusedLabel)
+			continue;
+		else if((int)i == FHoveredLabel)
+			continue;
+		else
+		{
+			Canvas->Pen->Color = C_LABEL_MARK_LINE;
+			Canvas->Font->Color = C_LABEL_TEXT;
+		}
+
+		tTVPWaveLabel & label = Labels[i];
+
+		DrawLabelNameOf(label);
+	}
+	if(FFocusedLabel != -1)
+	{
+		Canvas->Pen->Width = 2;
+		Canvas->Pen->Color = C_LABEL_MARK_FOCUS;
+		Canvas->Font->Color = C_LABEL_TEXT_FOCUS;
+		tTVPWaveLabel & label = Labels[FFocusedLabel];
+		DrawLabelNameOf(label);
+		Canvas->Pen->Width = 1;
+	}
+	if(FHoveredLabel != -1 && FHoveredLabel != FFocusedLabel)
+	{
+		Canvas->Pen->Color = C_LABEL_MARK_HOVER;
+		Canvas->Font->Color = C_LABEL_TEXT_HOVER;
+		tTVPWaveLabel & label = Labels[FHoveredLabel];
+		DrawLabelNameOf(label);
 	}
 
 
