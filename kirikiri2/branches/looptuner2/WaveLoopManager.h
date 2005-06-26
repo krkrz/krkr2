@@ -215,8 +215,10 @@ class tTVPWaveLoopManager
 	bool IgnoreLinks; // decode the samples with ignoring links
 
 public:
-	tTVPWaveLoopManager(tTVPWaveDecoder * decoder);
+	tTVPWaveLoopManager();
 	virtual ~tTVPWaveLoopManager();
+
+	void SetDecoder(tTVPWaveDecoder * decoder);
 
 	bool GetFlag(tjs_int index);
 	void CopyFlags(tjs_int *dest);

@@ -105,7 +105,7 @@ static void TVPCrossFadeIntegerBlend(void *dest, void *src1, void *src2,
 //---------------------------------------------------------------------------
 // tTVPWaveLoopManager
 //---------------------------------------------------------------------------
-tTVPWaveLoopManager::tTVPWaveLoopManager(tTVPWaveDecoder * decoder)
+tTVPWaveLoopManager::tTVPWaveLoopManager()
 {
 	Position = 0;
 	IsLinksSorted = false;
@@ -113,21 +113,29 @@ tTVPWaveLoopManager::tTVPWaveLoopManager(tTVPWaveDecoder * decoder)
 	CrossFadeSamples = NULL;
 	CrossFadeLen = 0;
 	CrossFadePosition = 0;
-	Decoder = decoder;
+	Decoder = NULL;
 	IgnoreLinks = false;
+	memset(&Format, 0, sizeof(Format));
 
-	decoder->GetFormat(Format);
 	ClearFlags();
 	FlagsModifiedByLabelExpression = false;
-
-	// compute ShortCrossFadeHalfSamples
-	ShortCrossFadeHalfSamples =
-		Format.SamplesPerSec * TVP_WL_SMOOTH_TIME_HALF / 1000;
 }
 //---------------------------------------------------------------------------
 tTVPWaveLoopManager::~tTVPWaveLoopManager()
 {
 	ClearCrossFadeInformation();
+}
+//---------------------------------------------------------------------------
+void tTVPWaveLoopManager::SetDecoder(tTVPWaveDecoder * decoder)
+{
+	// set decoder and compute ShortCrossFadeHalfSamples
+	Decoder = decoder;
+	if(decoder)
+		decoder->GetFormat(Format);
+	else
+		memset(&Format, 0, sizeof(Format));
+	ShortCrossFadeHalfSamples =
+		Format.SamplesPerSec * TVP_WL_SMOOTH_TIME_HALF / 1000;
 }
 //---------------------------------------------------------------------------
 bool tTVPWaveLoopManager::GetFlag(tjs_int index)

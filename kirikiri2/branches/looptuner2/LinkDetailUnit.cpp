@@ -92,7 +92,8 @@ void __fastcall TLinkDetailForm::SetReaderAndLink(TWaveReader * reader,
 	EditLinkAttribFrame->SetLink(FLink);
 
 	if(FManager) delete FManager, FManager = NULL;
-	FManager = new tTVPWaveLoopManager(FReader);
+	FManager = new tTVPWaveLoopManager();
+	FManager->SetDecoder(FReader);
 
 	// show link attributes
 	SmoothAction->Checked = FLink.Smooth;
