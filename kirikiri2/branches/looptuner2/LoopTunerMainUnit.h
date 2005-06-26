@@ -160,6 +160,7 @@ __published:	// IDE 管理のコンポーネント
 	void __fastcall FlagEdit0DblClick(TObject *Sender);
 	void __fastcall FlagsClearSpeedButtonClick(TObject *Sender);
 	void __fastcall IgnoreLinksActionExecute(TObject *Sender);
+	void __fastcall FormCloseQuery(TObject *Sender, bool &CanClose);
 private:	// ユーザー宣言
 	TWaveReader * Reader;
 	TWaveView *WaveView;
@@ -177,6 +178,7 @@ public:		// ユーザー宣言
 protected:
 
 private:
+	bool __fastcall GetCanClose();
 	void __fastcall CreateWaveView();
 	void __fastcall OnReaderProgress(TObject *sender);
 	void __fastcall PlayFrom(int pos);

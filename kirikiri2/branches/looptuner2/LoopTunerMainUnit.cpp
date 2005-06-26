@@ -42,6 +42,32 @@ void __fastcall TLoopTunerMainForm::FormDestroy(TObject *Sender)
 	delete Reader;
 }
 //---------------------------------------------------------------------------
+bool __fastcall TLoopTunerMainForm::GetCanClose()
+{
+	// get whether the document can be closed
+	if(!Manager) return true;
+	if(WaveView->CanUndo())
+	{
+		int r = MessageDlg("ファイル " + FileName + ".sli は変更されています。\n"
+			"変更を保存しますか？", mtWarning, TMsgDlgButtons() << mbYes << mbNo << mbCancel, 0);
+		if(r == mrYes)
+		{
+			SaveAction->Execute();
+		}
+		else if(r == mrCancel)
+		{
+			return false;
+		}
+	}
+	return true;
+}
+//---------------------------------------------------------------------------
+void __fastcall TLoopTunerMainForm::FormCloseQuery(TObject *Sender,
+	  bool &CanClose)
+{
+	CanClose =  GetCanClose();
+}
+//---------------------------------------------------------------------------
 void __fastcall TLoopTunerMainForm::CreateWaveView()
 {
 	if(!WaveView)
@@ -93,6 +119,7 @@ void __fastcall TLoopTunerMainForm::OnReaderProgress(TObject *sender)
 
 void __fastcall TLoopTunerMainForm::OpenActionExecute(TObject *Sender)
 {
+	if(!GetCanClose()) return;
 	OpenDialog->Filter = Reader->FilterString;
 	if(OpenDialog->Execute())
 	{
@@ -570,7 +597,6 @@ void __fastcall TLoopTunerMainForm::FlagsClearSpeedButtonClick(
 	ResettingFlags = false;
 }
 //---------------------------------------------------------------------------
-
 
 
 
