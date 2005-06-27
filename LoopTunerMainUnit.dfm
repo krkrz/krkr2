@@ -1,9 +1,9 @@
-object LoopTunerMainForm: TLoopTunerMainForm
+object TSSLoopTuner2MainForm: TTSSLoopTuner2MainForm
   Left = 83
   Top = 7
   Width = 637
   Height = 354
-  Caption = '0'
+  Caption = '(//designing//)'
   Color = clBtnFace
   Font.Charset = SHIFTJIS_CHARSET
   Font.Color = clWindowText
@@ -15,6 +15,7 @@ object LoopTunerMainForm: TLoopTunerMainForm
   OnClose = FormClose
   OnCloseQuery = FormCloseQuery
   OnDestroy = FormDestroy
+  OnShow = FormShow
   PixelsPerInch = 96
   TextHeight = 12
   object StatusBar: TStatusBar

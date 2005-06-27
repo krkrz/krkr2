@@ -2,6 +2,7 @@
 
 #include <vcl.h>
 #pragma hdrstop
+#include <mbstring.h>
 
 #include "DSound.h"
 #include "LoopTunerMainUnit.h"
@@ -13,17 +14,27 @@
 #pragma link "EditLabelAttribUnit"
 #pragma link "EditLinkAttribUnit"
 #pragma resource "*.dfm"
-TLoopTunerMainForm *LoopTunerMainForm;
+TTSSLoopTuner2MainForm *TSSLoopTuner2MainForm;
 //---------------------------------------------------------------------------
 
 
 
 
+//---------------------------------------------------------------------------
+AnsiString __fastcall GetLongFileName(AnsiString fn)
+{
+	// fn をロングファイル名に変換して返す
+	char buf[MAX_PATH];
+	char *fnp=0;
+	GetFullPathName(fn.c_str(),MAX_PATH,buf,&fnp);
+	return AnsiString(buf);
+}
+//---------------------------------------------------------------------------
 
 
 //---------------------------------------------------------------------------
 static AnsiString OrgCaption;
-__fastcall TLoopTunerMainForm::TLoopTunerMainForm(TComponent* Owner)
+__fastcall TTSSLoopTuner2MainForm::TTSSLoopTuner2MainForm(TComponent* Owner)
 	: TForm(Owner)
 {
 	Reader = new TWaveReader();
@@ -38,16 +49,28 @@ __fastcall TLoopTunerMainForm::TLoopTunerMainForm(TComponent* Owner)
 		// not to hide tool tip hint immediately
 
 	ReadFromIni();
-
-
 	Caption = OrgCaption = Application->Title;
+
+	// open a file specified in command line argument
+	int i;
+	int paramcount = ParamCount();
+	for(i=1; i<=paramcount; i++)
+	{
+		if(FileExists(ParamStr(i)))
+		{
+			OpenDialog->FileName = GetLongFileName(ParamStr(i));
+			Open();
+			break;
+		}
+	}
+
 }
 //---------------------------------------------------------------------------
-__fastcall TLoopTunerMainForm::~TLoopTunerMainForm()
+__fastcall TTSSLoopTuner2MainForm::~TTSSLoopTuner2MainForm()
 {
 }
 //---------------------------------------------------------------------------
-void __fastcall TLoopTunerMainForm::ReadFromIni()
+void __fastcall TTSSLoopTuner2MainForm::ReadFromIni()
 {
 	// read information from ini file
 	const char * section = "Main";
@@ -57,17 +80,25 @@ void __fastcall TLoopTunerMainForm::ReadFromIni()
 
 	bool b = GetIniFile()->ReadBool(section, "ShowEditFlags", false);
 	if(b) ShowEditFlagsAction->Execute();
+
+	OpenDialog->InitialDir = GetIniFile()->ReadString("Folder", "InitialDir", "");
 }
 //---------------------------------------------------------------------------
-void __fastcall TLoopTunerMainForm::WriteToIni()
+void __fastcall TTSSLoopTuner2MainForm::WriteToIni()
 {
 	// write information to ini file
 	const char * section = "Main";
 	WriteWindowBasicInformationToIniFile(section, this);
 	GetIniFile()->WriteBool(section, "ShowEditFlags", ShowEditFlagsAction->Checked);
+
+	if(OpenDialog->FileName != "")
+	{
+		GetIniFile()->WriteString("Folder", "InitialDir",ExtractFilePath(
+			OpenDialog->FileName));
+	}
 }
 //---------------------------------------------------------------------------
-void __fastcall TLoopTunerMainForm::FormDestroy(TObject *Sender)
+void __fastcall TTSSLoopTuner2MainForm::FormDestroy(TObject *Sender)
 {
 	StopPlay();
 	FreeDirectSound();
@@ -76,7 +107,12 @@ void __fastcall TLoopTunerMainForm::FormDestroy(TObject *Sender)
 	delete Reader;
 }
 //---------------------------------------------------------------------------
-bool __fastcall TLoopTunerMainForm::GetCanClose()
+void __fastcall TTSSLoopTuner2MainForm::FormShow(TObject *Sender)
+{
+	DragAcceptFiles(Handle,true);
+}
+//---------------------------------------------------------------------------
+bool __fastcall TTSSLoopTuner2MainForm::GetCanClose()
 {
 	// get whether the document can be closed
 	if(!Manager) return true;
@@ -96,19 +132,19 @@ bool __fastcall TLoopTunerMainForm::GetCanClose()
 	return true;
 }
 //---------------------------------------------------------------------------
-void __fastcall TLoopTunerMainForm::FormClose(TObject *Sender,
+void __fastcall TTSSLoopTuner2MainForm::FormClose(TObject *Sender,
 	  TCloseAction &Action)
 {
 	WriteToIni();
 }
 //---------------------------------------------------------------------------
-void __fastcall TLoopTunerMainForm::FormCloseQuery(TObject *Sender,
+void __fastcall TTSSLoopTuner2MainForm::FormCloseQuery(TObject *Sender,
 	  bool &CanClose)
 {
 	CanClose =  GetCanClose();
 }
 //---------------------------------------------------------------------------
-void __fastcall TLoopTunerMainForm::CreateWaveView()
+void __fastcall TTSSLoopTuner2MainForm::CreateWaveView()
 {
 	if(!WaveView)
 	{
@@ -136,12 +172,12 @@ void __fastcall TLoopTunerMainForm::CreateWaveView()
 	ActiveControl  = WaveView;
 }
 //---------------------------------------------------------------------------
-void __fastcall TLoopTunerMainForm::ApplicationEventsHint(TObject *Sender)
+void __fastcall TTSSLoopTuner2MainForm::ApplicationEventsHint(TObject *Sender)
 {
 	StatusBar->Panels->Items[4]->Text =   GetLongHint(Application->Hint);
 }
 //---------------------------------------------------------------------------
-void __fastcall TLoopTunerMainForm::OnReaderProgress(TObject *sender)
+void __fastcall TTSSLoopTuner2MainForm::OnReaderProgress(TObject *sender)
 {
 	int pct = Reader->SamplesRead / (Reader->NumSamples / 100);
 	if(pct > 100) pct = 100;
@@ -165,73 +201,90 @@ void __fastcall TLoopTunerMainForm::OnReaderProgress(TObject *sender)
 	}
 }
 //---------------------------------------------------------------------------
+void __fastcall TTSSLoopTuner2MainForm::Open()
+{
+	// check the extension ".sli"
+	if(OpenDialog->FileName.Length() >= 4)
+	{
+		if(!_mbsicmp(OpenDialog->FileName.c_str() +
+			(OpenDialog->FileName.Length() - 4), ".sli"))
+		{
+			AnsiString n = OpenDialog->FileName;
+			n.SetLength(n.Length() - 4);
+			OpenDialog->FileName = n;
+		}
+	}
 
-void __fastcall TLoopTunerMainForm::OpenActionExecute(TObject *Sender)
+	FileName = OpenDialog->FileName;
+
+	// stop playing
+	StopPlay();
+
+	// reset all
+	Caption = OrgCaption;
+	Application->Title = Caption;
+	CreateWaveView();
+	FollowMarkerAction->Checked = true;
+
+	// create manager
+	if(Manager) delete Manager, Manager = NULL;
+	Manager = new tTVPWaveLoopManager();
+	IgnoreLinksAction->Checked = false;
+	FlagsClearSpeedButtonClick(this);
+
+	// load link and label information
+	if(FileExists(FileName + ".sli"))
+	{
+		char *mem = NULL;
+		TFileStream *fs = new TFileStream(FileName + ".sli", fmShareDenyWrite | fmOpenRead);
+		try
+		{
+			try
+			{
+				// load into memory
+				int size = fs->Size;
+				mem = new char [size + 1];
+				fs->Read(mem, size);
+				mem[size] = '\0';
+			}
+			catch(...)
+			{
+				delete fs;
+				throw;
+			}
+			delete fs;
+
+			// read from the memory
+			if(!Manager->ReadInformation(mem))// note that this method can destory the buffer
+			{
+				throw Exception(FileName + ".sli は文法が間違っているか、"
+					"不正な形式のため、読み込むことができません");
+			}
+		}
+		catch(...)
+		{
+			if(mem) delete [] mem;
+			throw;
+		}
+		if(mem) delete [] mem;
+	}
+
+	// load wave
+	Reader->LoadWave(FileName);
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TTSSLoopTuner2MainForm::OpenActionExecute(TObject *Sender)
 {
 	if(!GetCanClose()) return;
 	OpenDialog->Filter = Reader->FilterString;
 	if(OpenDialog->Execute())
 	{
-		FileName = OpenDialog->FileName;
-
-		// stop playing
-		StopPlay();
-
-		// reset all
-		Caption = OrgCaption;
-		Application->Title = Caption;
-		CreateWaveView();
-		FollowMarkerAction->Checked = true;
-
-		// create manager
-		if(Manager) delete Manager, Manager = NULL;
-		Manager = new tTVPWaveLoopManager();
-		IgnoreLinksAction->Checked = false;
-		FlagsClearSpeedButtonClick(this);
-
-		// load link and label information
-		if(FileExists(FileName + ".sli"))
-		{
-			char *mem = NULL;
-			TFileStream *fs = new TFileStream(FileName + ".sli", fmShareDenyWrite | fmOpenRead);
-			try
-			{
-				try
-				{
-					// load into memory
-					int size = fs->Size;
-					mem = new char [size + 1];
-					fs->Read(mem, size);
-					mem[size] = '\0';
-				}
-				catch(...)
-				{
-					delete fs;
-					throw;
-				}
-				delete fs;
-
-				// read from the memory
-				if(!Manager->ReadInformation(mem))// note that this method can destory the buffer
-				{
-					throw Exception(FileName + ".sli は文法が間違っているか、"
-						"不正な形式のため、読み込むことができません");
-				}
-			}
-			catch(...)
-			{
-				if(mem) delete [] mem;
-				throw;
-			}
-			if(mem) delete [] mem;
-		}
-
-		// load wave
-		Reader->LoadWave(FileName);
+		Open();
 	}
 }
 //---------------------------------------------------------------------------
-void __fastcall TLoopTunerMainForm::SaveActionExecute(TObject *Sender)
+void __fastcall TTSSLoopTuner2MainForm::SaveActionExecute(TObject *Sender)
 {
 	// save current loop information
 	TFileStream * fs = new TFileStream(FileName  + ".sli" ,  fmShareDenyWrite | fmCreate);
@@ -251,86 +304,145 @@ void __fastcall TLoopTunerMainForm::SaveActionExecute(TObject *Sender)
 	delete fs;
 }
 //---------------------------------------------------------------------------
-void __fastcall TLoopTunerMainForm::ZoomInActionExecute(TObject *Sender)
+void __fastcall TTSSLoopTuner2MainForm::WMDoOpen(TMessage &msg)
+{
+	if(!GetCanClose()) return;
+	Open();
+}
+//---------------------------------------------------------------------------
+void __fastcall TTSSLoopTuner2MainForm::WMShowFront(TMessage &msg)
+{
+	Application->Restore();
+	Application->BringToFront();
+	this->BringToFront();
+}
+//---------------------------------------------------------------------------
+void __fastcall TTSSLoopTuner2MainForm::WMCopyData(TWMCopyData &msg)
+{
+	if(msg.CopyDataStruct->dwData == 0x746f8ab3)
+	{
+		if(msg.CopyDataStruct->lpData && msg.CopyDataStruct->cbData >= 6 &&
+			!memcmp((const char*)msg.CopyDataStruct->lpData, "open:", 5))
+		{
+			// open action
+			const char *filename = (const char*)(msg.CopyDataStruct->lpData) + 5;
+
+			OpenDialog->FileName = GetLongFileName(filename);
+			::PostMessage(Handle, WM_DOOPEN, 0, 0);
+		}
+	}
+}
+//---------------------------------------------------------------------------
+void __fastcall TTSSLoopTuner2MainForm::WMDropFiles(TMessage &msg)
+{
+	HDROP hd=(HDROP)msg.WParam;
+
+	char FileName[ MAX_PATH ];
+	int FileCount=
+		DragQueryFile(hd,0xFFFFFFFF,NULL,MAX_PATH);
+			//いくつ落とされたか
+
+	for(int i=FileCount-1;i>=0;i--)
+	{
+		DragQueryFile(hd, i, FileName, MAX_PATH );
+		WIN32_FIND_DATA fd;
+		HANDLE h;
+		if((h = FindFirstFile(FileName,&fd))!=INVALID_HANDLE_VALUE)
+		{
+			FindClose(h);
+
+			DragFinish(hd);
+
+			OpenDialog->FileName = GetLongFileName(FileName);
+			::PostMessage(Handle, WM_DOOPEN, 0, 0);
+
+			return;
+		}
+
+	}
+	DragFinish(hd);
+}
+//---------------------------------------------------------------------------
+void __fastcall TTSSLoopTuner2MainForm::ZoomInActionExecute(TObject *Sender)
 {
 	WaveView->Magnify ++;
 	StatusBar->Panels->Items[0]->Text = WaveView->GetMagnifyString();
 }
 //---------------------------------------------------------------------------
-void __fastcall TLoopTunerMainForm::ZoomOutActionExecute(TObject *Sender)
+void __fastcall TTSSLoopTuner2MainForm::ZoomOutActionExecute(TObject *Sender)
 {
 	WaveView->Magnify --;
 	StatusBar->Panels->Items[0]->Text = WaveView->GetMagnifyString();
 }
 //---------------------------------------------------------------------------
-void __fastcall TLoopTunerMainForm::UndoActionExecute(TObject *Sender)
+void __fastcall TTSSLoopTuner2MainForm::UndoActionExecute(TObject *Sender)
 {
 	WaveView->Undo();
 }
 //---------------------------------------------------------------------------
-void __fastcall TLoopTunerMainForm::RedoActionExecute(TObject *Sender)
+void __fastcall TTSSLoopTuner2MainForm::RedoActionExecute(TObject *Sender)
 {
 	WaveView->Redo();
 }
 //---------------------------------------------------------------------------
-void __fastcall TLoopTunerMainForm::DeleteActionExecute(TObject *Sender)
+void __fastcall TTSSLoopTuner2MainForm::DeleteActionExecute(TObject *Sender)
 {
 	WaveView->DeleteItem();
 }
 //---------------------------------------------------------------------------
-void __fastcall TLoopTunerMainForm::NewLinkActionExecute(TObject *Sender)
+void __fastcall TTSSLoopTuner2MainForm::NewLinkActionExecute(TObject *Sender)
 {
 	WaveView->CreateNewLink();
 }
 //---------------------------------------------------------------------------
-void __fastcall TLoopTunerMainForm::NewLabelActionExecute(TObject *Sender)
+void __fastcall TTSSLoopTuner2MainForm::NewLabelActionExecute(TObject *Sender)
 {
 	WaveView->CreateNewLabel();
 }
 //---------------------------------------------------------------------------
-void __fastcall TLoopTunerMainForm::EditLinkDetailActionExecute(
+void __fastcall TTSSLoopTuner2MainForm::EditLinkDetailActionExecute(
 	  TObject *Sender)
 {
 	WaveView->PerformLinkDoubleClick();
 }
 //---------------------------------------------------------------------------
-void __fastcall TLoopTunerMainForm::EditLabelDetailActionExecute(
+void __fastcall TTSSLoopTuner2MainForm::EditLabelDetailActionExecute(
 	  TObject *Sender)
 {
 	WaveView->PerformLabelDoubleClick();
 }
 //---------------------------------------------------------------------------
-void __fastcall TLoopTunerMainForm::PlayFromStartActionExecute(TObject *Sender)
+void __fastcall TTSSLoopTuner2MainForm::PlayFromStartActionExecute(TObject *Sender)
 {
 	PlayFrom(0);
 }
 //---------------------------------------------------------------------------
-void __fastcall TLoopTunerMainForm::PlayFromCaretActionExecute(
+void __fastcall TTSSLoopTuner2MainForm::PlayFromCaretActionExecute(
 	  TObject *Sender)
 {
 	PlayFrom(WaveView->CaretPos);
 }
 //---------------------------------------------------------------------------
-void __fastcall TLoopTunerMainForm::StopPlayActionExecute(TObject *Sender)
+void __fastcall TTSSLoopTuner2MainForm::StopPlayActionExecute(TObject *Sender)
 {
 	StopPlay();
 }
 //---------------------------------------------------------------------------
-void __fastcall TLoopTunerMainForm::ShowEditFlagsActionExecute(
+void __fastcall TTSSLoopTuner2MainForm::ShowEditFlagsActionExecute(
 	  TObject *Sender)
 {
 	ShowEditFlagsAction->Checked = !ShowEditFlagsAction->Checked;
 	FlagsPanel->Visible = ShowEditFlagsAction->Checked;
 }
 //---------------------------------------------------------------------------
-void __fastcall TLoopTunerMainForm::IgnoreLinksActionExecute(
+void __fastcall TTSSLoopTuner2MainForm::IgnoreLinksActionExecute(
 	  TObject *Sender)
 {
 	IgnoreLinksAction->Checked = !IgnoreLinksAction->Checked;
  	if(Manager) Manager->SetIgnoreLinks(IgnoreLinksAction->Checked);
 }
 //---------------------------------------------------------------------------
-void __fastcall TLoopTunerMainForm::PlayFrom(int pos)
+void __fastcall TTSSLoopTuner2MainForm::PlayFrom(int pos)
 {
 	if(Reader->ReadDone)
 	{
@@ -343,20 +455,20 @@ void __fastcall TLoopTunerMainForm::PlayFrom(int pos)
 	}
 }
 //---------------------------------------------------------------------------
-void __fastcall TLoopTunerMainForm::FollowMarkerActionExecute(
+void __fastcall TTSSLoopTuner2MainForm::FollowMarkerActionExecute(
 	  TObject *Sender)
 {
 	FollowMarkerAction->Checked = !FollowMarkerAction->Checked;
 	WaveView->FollowingMarker = FollowMarkerAction->Checked;
 }
 //---------------------------------------------------------------------------
-void __fastcall TLoopTunerMainForm::WaveViewStopFollowingMarker(TObject *Sender)
+void __fastcall TTSSLoopTuner2MainForm::WaveViewStopFollowingMarker(TObject *Sender)
 {
 	FollowMarkerAction->Checked = false;
 	WaveView->FollowingMarker = FollowMarkerAction->Checked;
 }
 //---------------------------------------------------------------------------
-void __fastcall TLoopTunerMainForm::GotoLinkFromActionExecute(
+void __fastcall TTSSLoopTuner2MainForm::GotoLinkFromActionExecute(
 	  TObject *Sender)
 {
 	if(WaveView->FocusedLink != -1)
@@ -368,7 +480,7 @@ void __fastcall TLoopTunerMainForm::GotoLinkFromActionExecute(
 }
 //---------------------------------------------------------------------------
 
-void __fastcall TLoopTunerMainForm::GotoLinkToActionExecute(
+void __fastcall TTSSLoopTuner2MainForm::GotoLinkToActionExecute(
 	  TObject *Sender)
 {
 	if(WaveView->FocusedLink != -1)
@@ -379,7 +491,7 @@ void __fastcall TLoopTunerMainForm::GotoLinkToActionExecute(
 	}
 }
 //---------------------------------------------------------------------------
-void __fastcall TLoopTunerMainForm::ApplicationEventsIdle(TObject *Sender,
+void __fastcall TTSSLoopTuner2MainForm::ApplicationEventsIdle(TObject *Sender,
 	  bool &Done)
 {
 	int pos = (int)GetCurrentPlayingPos();
@@ -422,12 +534,12 @@ void __fastcall TLoopTunerMainForm::ApplicationEventsIdle(TObject *Sender,
 	StatusBar->Panels->Items[2]->Text = cursor_pos;
 }
 //---------------------------------------------------------------------------
-void __fastcall TLoopTunerMainForm::WaveViewWaveDoubleClick(TObject *Sender, int pos)
+void __fastcall TTSSLoopTuner2MainForm::WaveViewWaveDoubleClick(TObject *Sender, int pos)
 {
 	PlayFrom(pos);
 }
 //---------------------------------------------------------------------------
-void __fastcall TLoopTunerMainForm::WaveViewLinkDoubleClick(TObject *Sender, int num, tTVPWaveLoopLink &link)
+void __fastcall TTSSLoopTuner2MainForm::WaveViewLinkDoubleClick(TObject *Sender, int num, tTVPWaveLoopLink &link)
 {
 	bool org_waveview_followingmarker =  WaveView->FollowingMarker;
 	WaveView->FollowingMarker = true; // temporarily enable the marker
@@ -448,7 +560,7 @@ void __fastcall TLoopTunerMainForm::WaveViewLinkDoubleClick(TObject *Sender, int
 	delete ldf;
 }
 //---------------------------------------------------------------------------
-void __fastcall TLoopTunerMainForm::WaveViewLabelDoubleClick(TObject *Sender,
+void __fastcall TTSSLoopTuner2MainForm::WaveViewLabelDoubleClick(TObject *Sender,
 	int num, tTVPWaveLabel &label)
 {
 	TLabelDetailForm * ldf = new TLabelDetailForm(this);
@@ -472,7 +584,7 @@ void __fastcall TLoopTunerMainForm::WaveViewLabelDoubleClick(TObject *Sender,
 	delete ldf;
 }
 //---------------------------------------------------------------------------
-void __fastcall TLoopTunerMainForm::WaveViewNotifyPopup(TObject *Sender, AnsiString type,
+void __fastcall TTSSLoopTuner2MainForm::WaveViewNotifyPopup(TObject *Sender, AnsiString type,
 	const TPoint &point)
 {
 	if(type == "Link")
@@ -489,33 +601,33 @@ void __fastcall TLoopTunerMainForm::WaveViewNotifyPopup(TObject *Sender, AnsiStr
 	}
 }
 //---------------------------------------------------------------------------
-void __fastcall TLoopTunerMainForm::WaveViewShowCaret(TObject *Sender, int pos)
+void __fastcall TTSSLoopTuner2MainForm::WaveViewShowCaret(TObject *Sender, int pos)
 {
 }
 //---------------------------------------------------------------------------
-void __fastcall TLoopTunerMainForm::WaveViewLinkSelected(TObject *Sender, int num, tTVPWaveLoopLink &link)
+void __fastcall TTSSLoopTuner2MainForm::WaveViewLinkSelected(TObject *Sender, int num, tTVPWaveLoopLink &link)
 {
 }
 //---------------------------------------------------------------------------
-void __fastcall TLoopTunerMainForm::WaveViewLabelSelected(TObject *Sender, int num, tTVPWaveLabel &label)
+void __fastcall TTSSLoopTuner2MainForm::WaveViewLabelSelected(TObject *Sender, int num, tTVPWaveLabel &label)
 {
 }
 //---------------------------------------------------------------------------
-void __fastcall TLoopTunerMainForm::WaveViewSelectionLost(TObject *Sender)
+void __fastcall TTSSLoopTuner2MainForm::WaveViewSelectionLost(TObject *Sender)
 {
 }
 //---------------------------------------------------------------------------
-void __fastcall TLoopTunerMainForm::WaveViewLinkModified(TObject *Sender)
+void __fastcall TTSSLoopTuner2MainForm::WaveViewLinkModified(TObject *Sender)
 {
 	Manager->SetLinks(WaveView->GetLinks());
 }
 //---------------------------------------------------------------------------
-void __fastcall TLoopTunerMainForm::WaveViewLabelModified(TObject *Sender)
+void __fastcall TTSSLoopTuner2MainForm::WaveViewLabelModified(TObject *Sender)
 {
 	Manager->SetLabels(WaveView->GetLabels());
 }
 //---------------------------------------------------------------------------
-void __fastcall TLoopTunerMainForm::FlagsEditToggleMenuItemClick(
+void __fastcall TTSSLoopTuner2MainForm::FlagsEditToggleMenuItemClick(
 	  TObject *Sender)
 {
 	TEdit *edit = dynamic_cast<TEdit*>(ActiveControl);
@@ -529,7 +641,7 @@ void __fastcall TLoopTunerMainForm::FlagsEditToggleMenuItemClick(
 	}
 }
 //---------------------------------------------------------------------------
-void __fastcall TLoopTunerMainForm::FlagEdit0DblClick(TObject *Sender)
+void __fastcall TTSSLoopTuner2MainForm::FlagEdit0DblClick(TObject *Sender)
 {
 	TEdit *edit = dynamic_cast<TEdit*>(ActiveControl);
 	if(edit)
@@ -542,7 +654,7 @@ void __fastcall TLoopTunerMainForm::FlagEdit0DblClick(TObject *Sender)
 	}
 }
 //---------------------------------------------------------------------------
-void __fastcall TLoopTunerMainForm::FlagsEditZeroMenuItemClick(
+void __fastcall TTSSLoopTuner2MainForm::FlagsEditZeroMenuItemClick(
 	  TObject *Sender)
 {
 	TEdit *edit = dynamic_cast<TEdit*>(ActiveControl);
@@ -550,21 +662,21 @@ void __fastcall TLoopTunerMainForm::FlagsEditZeroMenuItemClick(
 		edit->Text = "0";
 }
 //---------------------------------------------------------------------------
-void __fastcall TLoopTunerMainForm::FlasgEditOneMenuItemClick(TObject *Sender)
+void __fastcall TTSSLoopTuner2MainForm::FlasgEditOneMenuItemClick(TObject *Sender)
 {
 	TEdit *edit = dynamic_cast<TEdit*>(ActiveControl);
 	if(edit)
 		edit->Text = "1";
 }
 //---------------------------------------------------------------------------
-void __fastcall TLoopTunerMainForm::FlagEdit0MouseDown(TObject *Sender,
+void __fastcall TTSSLoopTuner2MainForm::FlagEdit0MouseDown(TObject *Sender,
 	  TMouseButton Button, TShiftState Shift, int X, int Y)
 {
 	TWinControl *control = dynamic_cast<TWinControl*>(Sender);
 	if(control) control->SetFocus();
 }
 //---------------------------------------------------------------------------
-void __fastcall TLoopTunerMainForm::FlagEdit0Change(TObject *Sender)
+void __fastcall TTSSLoopTuner2MainForm::FlagEdit0Change(TObject *Sender)
 {
 	if(ResettingFlags) return;
 
@@ -607,13 +719,13 @@ void __fastcall TLoopTunerMainForm::FlagEdit0Change(TObject *Sender)
 	}
 }
 //---------------------------------------------------------------------------
-void __fastcall TLoopTunerMainForm::FlagEdit0KeyPress(TObject *Sender,
+void __fastcall TTSSLoopTuner2MainForm::FlagEdit0KeyPress(TObject *Sender,
 	  char &Key)
 {
 	if(!(Key >= '0' && Key <= '9' || Key < 0x20)) Key = 0;
 }
 //---------------------------------------------------------------------------
-void __fastcall TLoopTunerMainForm::ResetFlagsEditFromLoopManager()
+void __fastcall TTSSLoopTuner2MainForm::ResetFlagsEditFromLoopManager()
 {
 	// display flags from waveloopmanager
 	if(!Manager) return;
@@ -639,7 +751,7 @@ void __fastcall TLoopTunerMainForm::ResetFlagsEditFromLoopManager()
 	ResettingFlags = false;
 }
 //---------------------------------------------------------------------------
-void __fastcall TLoopTunerMainForm::FlagsClearSpeedButtonClick(
+void __fastcall TTSSLoopTuner2MainForm::FlagsClearSpeedButtonClick(
 	  TObject *Sender)
 {
 	ResettingFlags = true;
@@ -663,6 +775,7 @@ void __fastcall TLoopTunerMainForm::FlagsClearSpeedButtonClick(
 	ResettingFlags = false;
 }
 //---------------------------------------------------------------------------
+
 
 
 

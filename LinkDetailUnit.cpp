@@ -138,7 +138,7 @@ int __fastcall TLinkDetailForm::SampleToPixel(int sample)
 void __fastcall TLinkDetailForm::UpdateMainWindowParams(bool push_undo)
 {
 	// update main window's waveview link information
-	TWaveView *waveview = ((TLoopTunerMainForm*)(Owner))->GetWaveView();
+	TWaveView *waveview = ((TTSSLoopTuner2MainForm*)(Owner))->GetWaveView();
 
 	tTVPWaveLoopLink &link = waveview->GetLinks()[LinkNum];
 
