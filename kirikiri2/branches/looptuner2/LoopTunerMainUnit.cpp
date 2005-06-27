@@ -96,6 +96,11 @@ void __fastcall TLoopTunerMainForm::CreateWaveView()
 	ActiveControl  = WaveView;
 }
 //---------------------------------------------------------------------------
+void __fastcall TLoopTunerMainForm::ApplicationEventsHint(TObject *Sender)
+{
+	StatusBar->Panels->Items[4]->Text =   GetLongHint(Application->Hint);
+}
+//---------------------------------------------------------------------------
 void __fastcall TLoopTunerMainForm::OnReaderProgress(TObject *sender)
 {
 	int pct = Reader->SamplesRead / (Reader->NumSamples / 100);
@@ -113,6 +118,7 @@ void __fastcall TLoopTunerMainForm::OnReaderProgress(TObject *sender)
 		WaveView->PushFirstUndoState();
 
 		WaveView->SetInitialMagnify();
+		StatusBar->Panels->Items[0]->Text = WaveView->GetMagnifyString();
 	}
 }
 //---------------------------------------------------------------------------
@@ -203,11 +209,13 @@ void __fastcall TLoopTunerMainForm::SaveActionExecute(TObject *Sender)
 void __fastcall TLoopTunerMainForm::ZoomInActionExecute(TObject *Sender)
 {
 	WaveView->Magnify ++;
+	StatusBar->Panels->Items[0]->Text = WaveView->GetMagnifyString();
 }
 //---------------------------------------------------------------------------
 void __fastcall TLoopTunerMainForm::ZoomOutActionExecute(TObject *Sender)
 {
 	WaveView->Magnify --;
+	StatusBar->Panels->Items[0]->Text = WaveView->GetMagnifyString();
 }
 //---------------------------------------------------------------------------
 void __fastcall TLoopTunerMainForm::UndoActionExecute(TObject *Sender)
@@ -338,11 +346,14 @@ void __fastcall TLoopTunerMainForm::ApplicationEventsIdle(TObject *Sender,
 
 		WaveView->MarkerPos = pos;
 
+		StatusBar->Panels->Items[3]->Text = "Ä¶’† " + Reader->SamplePosToTimeString(pos);
 	}
 	else
 	{
 		Done = true;
 		WaveView->MarkerPos = -1;
+
+		StatusBar->Panels->Items[3]->Text = "’âŽ~";
 	}
 
 	UndoAction->Enabled = WaveView->CanUndo();
@@ -354,6 +365,16 @@ void __fastcall TLoopTunerMainForm::ApplicationEventsIdle(TObject *Sender,
 	GotoLinkToAction->Enabled = WaveView->FocusedLink != -1;
 
 	if(Manager && Manager->GetFlagsModifiedByLabelExpression()) ResetFlagsEditFromLoopManager();
+
+
+	POINT mouse_pt;
+	GetCursorPos(&mouse_pt);
+	mouse_pt = WaveView->ScreenToClient(*(TPoint*)&mouse_pt);
+	AnsiString cursor_pos, cursor_ch;
+	WaveView->GetPositionStringAt(mouse_pt.x, mouse_pt.y, cursor_pos, cursor_ch);
+
+	StatusBar->Panels->Items[1]->Text = cursor_ch;
+	StatusBar->Panels->Items[2]->Text = cursor_pos;
 }
 //---------------------------------------------------------------------------
 void __fastcall TLoopTunerMainForm::WaveViewWaveDoubleClick(TObject *Sender, int pos)
@@ -597,6 +618,7 @@ void __fastcall TLoopTunerMainForm::FlagsClearSpeedButtonClick(
 	ResettingFlags = false;
 }
 //---------------------------------------------------------------------------
+
 
 
 

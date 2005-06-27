@@ -130,6 +130,7 @@ __published:	// IDE 管理のコンポーネント
 	TMenuItem *IgnoreLinksMenuItem;
 	TMenuItem *WaveView_IgnoreLinksMenuItem;
 	TAction *IgnoreLinksAction;
+	TMenuItem *ShowEditFlagMenuItem;
 	void __fastcall FormDestroy(TObject *Sender);
 	void __fastcall OpenActionExecute(TObject *Sender);
 	void __fastcall ZoomInActionExecute(TObject *Sender);
@@ -161,6 +162,7 @@ __published:	// IDE 管理のコンポーネント
 	void __fastcall FlagsClearSpeedButtonClick(TObject *Sender);
 	void __fastcall IgnoreLinksActionExecute(TObject *Sender);
 	void __fastcall FormCloseQuery(TObject *Sender, bool &CanClose);
+	void __fastcall ApplicationEventsHint(TObject *Sender);
 private:	// ユーザー宣言
 	TWaveReader * Reader;
 	TWaveView *WaveView;

@@ -10,11 +10,14 @@
 #include "ColorScheme.h"
 
 //---------------------------------------------------------------------------
+// constants
+//---------------------------------------------------------------------------
 const AnsiString C_NEW_LABEL_BASE_NAME = "ƒ‰ƒxƒ‹";
 const AnsiString C_LINK_HINT =
 	"ƒŠƒ“ƒNŒ³: %s\n"	// link from
 	"ƒŠƒ“ƒNæ: %s\n"	// link to
-	"ðŒ    : %s"   	// condition
+	"‹——£ : %s\n"		// distance
+	"ðŒ : %s"   		// condition
 	;
 const AnsiString C_LINK_COND_CODES[] = {
 	"ðŒ–³‚µ",
@@ -27,8 +30,6 @@ const AnsiString C_LINK_COND_CODES[] = {
 };
 //---------------------------------------------------------------------------
 
-
-
 //---------------------------------------------------------------------------
 const int LinkArrowSize = 4;
 const int LinkDirectionArrowWidth = 10;
@@ -40,6 +41,9 @@ const int MinMagnify = -16;
 //---------------------------------------------------------------------------
 
 
+
+//---------------------------------------------------------------------------
+// TWaveView
 //---------------------------------------------------------------------------
 __fastcall TWaveView::TWaveView(Classes::TComponent* AOwner) :
 	TCustomControl(AOwner)
@@ -70,7 +74,6 @@ void __fastcall TWaveView::ClearAll()
 	FReader = NULL;
 	FMagnify = -12;
 	FStart = 0;
-	FFocused = false;
 
 	FDoubleBufferEnabled = true;
 	FFollowingMarker = true;
@@ -457,14 +460,12 @@ void __fastcall TWaveView::WMHScroll(TWMHScroll &msg)
 //---------------------------------------------------------------------------
 void __fastcall TWaveView::WMSetFocus(TWMSetFocus &msg)
 {
-	FFocused = true;
 	::SetFocus(Handle);
 	ResetCaretFocusState();
 }
 //---------------------------------------------------------------------------
 void __fastcall TWaveView::WMKillFocus(TWMKillFocus &msg)
 {
-	FFocused = false;
 	ResetCaretFocusState();
 }
 //---------------------------------------------------------------------------
@@ -545,7 +546,7 @@ void __fastcall TWaveView::OnBlinkTimer(TObject * sender)
 void __fastcall TWaveView::ResetCaretFocusState()
 {
 	InvalidateCaret(FCaretPos);
-	FBlinkTimer->Enabled = FFocused;
+	FBlinkTimer->Enabled = Focused();
 }
 //---------------------------------------------------------------------------
 void __fastcall TWaveView::DrawCaret()
@@ -553,7 +554,7 @@ void __fastcall TWaveView::DrawCaret()
 	// draw caret
 	if(!FReader || !FReader->ReadDone) return;
 
-	if(FShowCaret && FCaretVisiblePhase && FFocused)
+	if(FShowCaret && FCaretVisiblePhase && Focused())
 	{
 		int p_pos = SampleToPixel(FCaretPos - FStart);
 		if(p_pos >= 0 && p_pos < ClientWidth)
@@ -660,6 +661,21 @@ void __fastcall TWaveView::SetInitialMagnify()
 	SetMagnify(m);
 }
 //---------------------------------------------------------------------------
+AnsiString __fastcall TWaveView::GetMagnifyString()
+{
+	AnsiString ret;
+	if(FMagnify >= 0)
+	{
+		ret.sprintf("x%d", 1 << FMagnify);
+		return ret;
+	}
+	else
+	{
+		ret.sprintf("/%d", 1 << (-FMagnify));
+		return ret;
+	}
+}
+//---------------------------------------------------------------------------
 void __fastcall TWaveView::EnsureView(int p, int length)
 {
 	// scroll the view (if needed) to ensure the point p .. (p+length) is visible
@@ -688,6 +704,36 @@ void __fastcall TWaveView::EnsureView(int p, int length)
 			SetView(rofs + Start, 95);
 		}
 	}
+}
+//---------------------------------------------------------------------------
+void __fastcall TWaveView::GetPositionStringAt(int vx, int vy,
+	AnsiString &pos, AnsiString &channel)
+{
+	// vx vy are in client coodinates
+	if(!FReader || !FReader->ReadDone ||
+		vx < 0 || vy < 0 || vx >= ClientWidth || vy >= ClientHeight)
+	{
+		pos = "-"; channel = "-";
+		return;
+	}
+
+	int last = SampleToPixel(FReader->NumSamples - FStart);
+	if(last <= vx)
+	{
+		pos = "-"; channel = "-";
+		return;
+	}
+
+	pos = FReader->SamplePosToTimeString(PixelToSample(vx) + FStart);
+
+	int head_size = GetHeadSize();
+	int foot_size = GetFootSize();
+
+	int one_height = ((ClientHeight - head_size - foot_size) / FReader->Channels) & ~1;
+
+	int ch = (vy - head_size) / one_height;
+
+	channel = FReader->GetChannelLabel(ch);
 }
 //---------------------------------------------------------------------------
 void __fastcall TWaveView::SetMarkerPos(int n)
@@ -1116,15 +1162,15 @@ void __fastcall TWaveView::DrawWave(int start, bool clear)
 				if(FRulerUnit >= 5000)
 				{
 					sprintf(buf, "%02d:%02d:%02d",
-						t / 1000 / 60 / 60,
-						t / 1000 / 60 % 60,
+						t / (1000 * 60 * 60),
+						t / (1000 * 60) % 60,
 						t / 1000 % 60);
 				}
 				else
 				{
 					sprintf(buf, "%02d:%02d:%02d.%03d",
-						t / 1000 / 60 / 60,
-						t / 1000 / 60 % 60,
+						t / (1000 * 60 * 60),
+						t / (1000 * 60) % 60,
 						t / 1000 % 60,
 						t % 1000);
 				}
@@ -1632,8 +1678,11 @@ void __fastcall TWaveView::SetHoveredLink(int l)
 					link.CondVar, link.RefValue);
 			}
 
-			hint.sprintf(C_LINK_HINT.c_str(), AnsiString((int)link.From).c_str(),
-				AnsiString((int)link.To).c_str(), cond.c_str());
+			hint.sprintf(C_LINK_HINT.c_str(),
+				FReader->SamplePosToTimeString(link.From),
+				FReader->SamplePosToTimeString(link.To),
+				FReader->SamplePosToTimeString(std::abs(link.To - link.From)),
+				cond.c_str());
 		}
 		Application->CancelHint();
 		Hint = hint;
