@@ -22,6 +22,7 @@ TLoopTunerMainForm *LoopTunerMainForm;
 
 
 //---------------------------------------------------------------------------
+static AnsiString OrgCaption;
 __fastcall TLoopTunerMainForm::TLoopTunerMainForm(TComponent* Owner)
 	: TForm(Owner)
 {
@@ -37,6 +38,9 @@ __fastcall TLoopTunerMainForm::TLoopTunerMainForm(TComponent* Owner)
 		// not to hide tool tip hint immediately
 
 	ReadFromIni();
+
+
+	Caption = OrgCaption = Application->Title;
 }
 //---------------------------------------------------------------------------
 __fastcall TLoopTunerMainForm::~TLoopTunerMainForm()
@@ -141,7 +145,7 @@ void __fastcall TLoopTunerMainForm::OnReaderProgress(TObject *sender)
 {
 	int pct = Reader->SamplesRead / (Reader->NumSamples / 100);
 	if(pct > 100) pct = 100;
-	Caption = AnsiString(pct);
+	Caption = ExtractFileName(FileName) +  " - “Ç‚Ýž‚Ý’† " + AnsiString(pct) + "%";
 	if(Reader->ReadDone)
 	{
 		WaveView->Reader = Reader; // reset the reader
@@ -155,6 +159,9 @@ void __fastcall TLoopTunerMainForm::OnReaderProgress(TObject *sender)
 
 		WaveView->SetInitialMagnify();
 		StatusBar->Panels->Items[0]->Text = WaveView->GetMagnifyString();
+
+		Caption = ExtractFileName(FileName) + " - " + OrgCaption;
+		Application->Title = Caption;
 	}
 }
 //---------------------------------------------------------------------------
@@ -171,6 +178,8 @@ void __fastcall TLoopTunerMainForm::OpenActionExecute(TObject *Sender)
 		StopPlay();
 
 		// reset all
+		Caption = OrgCaption;
+		Application->Title = Caption;
 		CreateWaveView();
 		FollowMarkerAction->Checked = true;
 
