@@ -117,7 +117,6 @@ private:
 	bool FFollowingMarker;
 	bool FWaitingMarker;
 	int FMarkerPos; // marker position for current playing position, -1 for invisible
-	bool FFocused;
 	int __fastcall PixelToSample(int pixel);
 	int __fastcall SampleToPixel(int sample);
 	TNotifyEvent FOnStopFollowingMarker;
@@ -150,9 +149,12 @@ private:
 
 public:
 	void __fastcall SetInitialMagnify();
+	AnsiString __fastcall GetMagnifyString();
 	void __fastcall EnsureView(int p, int length = 0);
 
 public:
+	void __fastcall GetPositionStringAt(int vx, int vy, AnsiString &pos, AnsiString &channel);
+
 	__property int Start = { read = FStart, write = SetStart };
 	__property int Magnify = { read = FMagnify, write = SetMagnify };
 	__property bool FollowingMarker =

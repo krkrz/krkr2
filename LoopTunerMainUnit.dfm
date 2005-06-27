@@ -1,6 +1,6 @@
 object LoopTunerMainForm: TLoopTunerMainForm
-  Left = 72
-  Top = 109
+  Left = 83
+  Top = 7
   Width = 637
   Height = 354
   Caption = '0'
@@ -21,7 +21,27 @@ object LoopTunerMainForm: TLoopTunerMainForm
     Top = 281
     Width = 629
     Height = 19
-    Panels = <>
+    Panels = <
+      item
+        Alignment = taRightJustify
+        Width = 45
+      end
+      item
+        Text = '-'
+        Width = 37
+      end
+      item
+        Alignment = taRightJustify
+        Text = '-'
+        Width = 75
+      end
+      item
+        Text = '-'
+        Width = 110
+      end
+      item
+        Width = 210
+      end>
     SimplePanel = False
   end
   object ToolBar: TToolBar
@@ -459,7 +479,7 @@ object LoopTunerMainForm: TLoopTunerMainForm
       Top = 2
       Width = 17
       Height = 17
-      Hint = 'フラグを全て0にする'
+      Hint = 'フラグを全て0にします'
       Caption = 'C'
       Flat = True
       Font.Charset = SHIFTJIS_CHARSET
@@ -742,6 +762,9 @@ object LoopTunerMainForm: TLoopTunerMainForm
       object FollowMarkerMenuItem: TMenuItem
         Action = FollowMarkerAction
       end
+      object ShowEditFlagMenuItem: TMenuItem
+        Action = ShowEditFlagsAction
+      end
     end
     object PlayMenu: TMenuItem
       Caption = '再生(&P)'
@@ -766,35 +789,35 @@ object LoopTunerMainForm: TLoopTunerMainForm
     object StopPlayAction: TAction
       Category = '再生'
       Caption = '停止(&S)'
-      Hint = '再生停止'
+      Hint = '現在の再生を停止します'
       ImageIndex = 4
       OnExecute = StopPlayActionExecute
     end
     object PlayFromCaretAction: TAction
       Category = '再生'
       Caption = '現在位置から再生(&C)'
-      Hint = '現在位置から再生'
+      Hint = '現在のキャレット位置から再生します'
       ImageIndex = 1
       OnExecute = PlayFromCaretActionExecute
     end
     object PlayFromStartAction: TAction
       Category = '再生'
       Caption = '初めから再生(&P)'
-      Hint = '初めから再生'
+      Hint = 'サウンドの先頭から再生します'
       ImageIndex = 0
       OnExecute = PlayFromStartActionExecute
     end
     object ZoomInAction: TAction
       Category = '表示'
       Caption = 'ズーム・イン(&I)'
-      Hint = 'ズームイン'
+      Hint = '波形をズームインします'
       ImageIndex = 9
       OnExecute = ZoomInActionExecute
     end
     object OpenAction: TAction
       Category = 'ファイル'
       Caption = '開く(&O)...'
-      Hint = 'ファイルを開く'
+      Hint = 'ファイルを開きます'
       ImageIndex = 5
       ShortCut = 16463
       OnExecute = OpenActionExecute
@@ -802,7 +825,7 @@ object LoopTunerMainForm: TLoopTunerMainForm
     object ZoomOutAction: TAction
       Category = '表示'
       Caption = 'ズーム・アウト(&O)'
-      Hint = 'ズームアウト'
+      Hint = '波形をズームアウトします'
       ImageIndex = 10
       OnExecute = ZoomOutActionExecute
     end
@@ -816,14 +839,14 @@ object LoopTunerMainForm: TLoopTunerMainForm
     object FollowMarkerAction: TAction
       Category = '表示'
       Caption = '再生位置に画面を追従(&F)'
-      Hint = '再生位置に画面を追従'
+      Hint = '再生位置に画面を追従します'
       ImageIndex = 11
       OnExecute = FollowMarkerActionExecute
     end
     object SaveAction: TAction
       Category = 'ファイル'
       Caption = '保存(&S)'
-      Hint = 'ファイルを保存'
+      Hint = 'ファイルを保存します'
       ImageIndex = 6
       ShortCut = 16467
       OnExecute = SaveActionExecute
@@ -831,45 +854,49 @@ object LoopTunerMainForm: TLoopTunerMainForm
     object UndoAction: TAction
       Category = '編集'
       Caption = '元に戻す(&U)'
+      Hint = '最後の編集を取り消し、直前の状態に戻します'
       ImageIndex = 12
       OnExecute = UndoActionExecute
     end
     object RedoAction: TAction
       Category = '編集'
       Caption = 'やり直し(&R)'
+      Hint = '「元に戻す」で元に戻した変更を再度適用します'
       ImageIndex = 13
       OnExecute = RedoActionExecute
     end
     object DeleteAction: TAction
       Category = '編集'
       Caption = '削除(&D)'
-      Hint = 'アイテムを削除します'
+      Hint = '現在選択されているアイテムを削除します'
       ImageIndex = 14
       OnExecute = DeleteActionExecute
     end
     object NewLinkAction: TAction
       Category = '編集'
       Caption = '新規リンクを作成(&J)'
+      Hint = '新しいリンクを作成します'
       ImageIndex = 15
       OnExecute = NewLinkActionExecute
     end
     object NewLabelAction: TAction
       Category = '編集'
       Caption = '新規ラベルの作成(&L)'
+      Hint = '新しいラベルを作成します'
       ImageIndex = 16
       OnExecute = NewLabelActionExecute
     end
     object EditLinkDetailAction: TAction
       Category = '編集'
       Caption = 'リンクチューナ(&T)'
-      Hint = 'リンクチューナ'
+      Hint = 'リンクチューナを表示します'
       ImageIndex = 31
       OnExecute = EditLinkDetailActionExecute
     end
     object EditLabelDetailAction: TAction
       Category = '編集'
       Caption = 'ラベルを編集(&E)'
-      Hint = 'ラベルを編集'
+      Hint = 'ラベルを編集します'
       ImageIndex = 17
       OnExecute = EditLabelDetailActionExecute
     end
@@ -889,7 +916,7 @@ object LoopTunerMainForm: TLoopTunerMainForm
     end
     object IgnoreLinksAction: TAction
       Category = '再生'
-      Caption = 'リンクを無視して再生します'
+      Caption = 'リンクを無視して再生(&G)'
       Hint = 'リンクを無視し、ジャンプせずに再生します'
       ImageIndex = 36
       OnExecute = IgnoreLinksActionExecute
@@ -2289,6 +2316,7 @@ object LoopTunerMainForm: TLoopTunerMainForm
   end
   object ApplicationEvents: TApplicationEvents
     OnIdle = ApplicationEventsIdle
+    OnHint = ApplicationEventsHint
     Left = 104
     Top = 96
   end

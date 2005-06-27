@@ -139,6 +139,8 @@ public:
 	void GetFormat(tTVPWaveFormat & format);
 	bool Render(void *buf, tjs_uint bufsamplelen, tjs_uint& rendered);
 	bool SetPosition(tjs_uint64 samplepos);
+
+	AnsiString SamplePosToTimeString(int pos); // returns HH:MM:SS.nnn string
 };
 //---------------------------------------------------------------------------
 

@@ -608,5 +608,21 @@ bool TWaveReader::SetPosition(tjs_uint64 samplepos)
 	return true;
 }
 //---------------------------------------------------------------------------
+AnsiString TWaveReader::SamplePosToTimeString(int pos)
+{
+	// returns HH:MM:SS.nnn string
+	int t = SamplePosToTime(pos);
+
+	AnsiString ret;
+
+	ret.sprintf("%02d:%02d:%02d.%03d",
+						t / (1000 * 60 * 60),
+						t / (1000 * 60) % 60,
+						t / 1000 % 60,
+						t % 1000);
+
+	return ret;
+}
+//---------------------------------------------------------------------------
 
 #pragma package(smart_init)
