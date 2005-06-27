@@ -493,6 +493,8 @@ void __fastcall TWaveView::InvalidateCaret(int pos)
 void __fastcall TWaveView::SetCaretPos(int pos)
 {
 	// set caret position.
+	if(pos < 0) pos = 0;
+	if(pos >= FReader->NumSamples) pos = FReader->NumSamples - 1;
 
 	if(pos != FCaretPos)
 	{
