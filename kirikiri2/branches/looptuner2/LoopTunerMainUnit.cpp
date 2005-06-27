@@ -7,12 +7,20 @@
 #include "LoopTunerMainUnit.h"
 #include "LinkDetailUnit.h"
 #include "LabelDetailUnit.h"
+#include "looptune.h"
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
 #pragma link "EditLabelAttribUnit"
 #pragma link "EditLinkAttribUnit"
 #pragma resource "*.dfm"
 TLoopTunerMainForm *LoopTunerMainForm;
+//---------------------------------------------------------------------------
+
+
+
+
+
+
 //---------------------------------------------------------------------------
 __fastcall TLoopTunerMainForm::TLoopTunerMainForm(TComponent* Owner)
 	: TForm(Owner)
@@ -27,10 +35,32 @@ __fastcall TLoopTunerMainForm::TLoopTunerMainForm(TComponent* Owner)
 
 	Application->HintHidePause = 24*60*60*1000;
 		// not to hide tool tip hint immediately
+
+	ReadFromIni();
 }
 //---------------------------------------------------------------------------
 __fastcall TLoopTunerMainForm::~TLoopTunerMainForm()
 {
+}
+//---------------------------------------------------------------------------
+void __fastcall TLoopTunerMainForm::ReadFromIni()
+{
+	// read information from ini file
+	const char * section = "Main";
+
+	// window position and size
+	ReadWindowBasicInformationFromIniFile(section, this);
+
+	bool b = GetIniFile()->ReadBool(section, "ShowEditFlags", false);
+	if(b) ShowEditFlagsAction->Execute();
+}
+//---------------------------------------------------------------------------
+void __fastcall TLoopTunerMainForm::WriteToIni()
+{
+	// write information to ini file
+	const char * section = "Main";
+	WriteWindowBasicInformationToIniFile(section, this);
+	GetIniFile()->WriteBool(section, "ShowEditFlags", ShowEditFlagsAction->Checked);
 }
 //---------------------------------------------------------------------------
 void __fastcall TLoopTunerMainForm::FormDestroy(TObject *Sender)
@@ -60,6 +90,12 @@ bool __fastcall TLoopTunerMainForm::GetCanClose()
 		}
 	}
 	return true;
+}
+//---------------------------------------------------------------------------
+void __fastcall TLoopTunerMainForm::FormClose(TObject *Sender,
+	  TCloseAction &Action)
+{
+	WriteToIni();
 }
 //---------------------------------------------------------------------------
 void __fastcall TLoopTunerMainForm::FormCloseQuery(TObject *Sender,

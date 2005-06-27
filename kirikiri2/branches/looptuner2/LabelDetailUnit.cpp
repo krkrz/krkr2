@@ -5,6 +5,7 @@
 
 #include "LabelDetailUnit.h"
 #include "WaveLoopManager.h"
+#include "looptune.h"
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
 #pragma link "EditLabelAttribUnit"
@@ -14,6 +15,17 @@ TLabelDetailForm *LabelDetailForm;
 __fastcall TLabelDetailForm::TLabelDetailForm(TComponent* Owner)
 	: TForm(Owner)
 {
+	
+	// window position and size
+	ReadWindowBasicInformationFromIniFile("LabelDetail", this);
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TLabelDetailForm::FormClose(TObject *Sender,
+	  TCloseAction &Action)
+{
+	// write information to ini file
+	WriteWindowBasicInformationToIniFile("LabelDetail", this);
 }
 //---------------------------------------------------------------------------
 void __fastcall TLabelDetailForm::SetLabel(const tTVPWaveLabel & label)

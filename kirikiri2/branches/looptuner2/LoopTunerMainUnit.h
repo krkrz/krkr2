@@ -163,6 +163,7 @@ __published:	// IDE 管理のコンポーネント
 	void __fastcall IgnoreLinksActionExecute(TObject *Sender);
 	void __fastcall FormCloseQuery(TObject *Sender, bool &CanClose);
 	void __fastcall ApplicationEventsHint(TObject *Sender);
+	void __fastcall FormClose(TObject *Sender, TCloseAction &Action);
 private:	// ユーザー宣言
 	TWaveReader * Reader;
 	TWaveView *WaveView;
@@ -174,6 +175,10 @@ private:	// ユーザー宣言
 public:		// ユーザー宣言
 	__fastcall TLoopTunerMainForm(TComponent* Owner);
 	__fastcall ~TLoopTunerMainForm();
+
+	void __fastcall ReadFromIni();
+	void __fastcall WriteToIni();
+
 	TWaveView * GetWaveView() { return WaveView; }
 
 

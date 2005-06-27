@@ -6,6 +6,7 @@
 #include "DSound.h"
 #include "LinkDetailUnit.h"
 #include "LoopTunerMainUnit.h"
+#include "looptune.h"
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
 #pragma link "EditLinkAttribUnit"
@@ -46,6 +47,10 @@ __fastcall TLinkDetailForm::TLinkDetailForm(TComponent* Owner)
 
 	UpdateLayout();
 	UpdateDisplay();
+
+	
+	// window position and size
+	ReadWindowBasicInformationFromIniFile("LinkDetail", this);
 }
 //---------------------------------------------------------------------------
 void __fastcall TLinkDetailForm::FormDestroy(TObject *Sender)
@@ -68,6 +73,9 @@ void __fastcall TLinkDetailForm::FormClose(TObject *Sender,
 		FLink = FLinkOriginal;
 		UpdateMainWindowParams(false);
 	}
+
+	// write information to ini file
+	WriteWindowBasicInformationToIniFile("LinkDetail", this);
 }
 //---------------------------------------------------------------------------
 void __fastcall TLinkDetailForm::OKButtonClick(TObject *Sender)
