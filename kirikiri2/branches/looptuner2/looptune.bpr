@@ -16,9 +16,8 @@
     <LIBRARIES value="vclx50.lib Vcl50.lib"/>
     <SPARELIBS value="Vcl50.lib vclx50.lib"/>
     <PACKAGES value="Vcl50.bpi bcb2kaxserver50.bpi Vclx50.bpi bcbsmp50.bpi Inet50.bpi 
-      Inetdb50.bpi Vclbde50.bpi Vcldb50.bpi vcldbx50.bpi VCLIB50.bpi vclie50.bpi 
-      NMFast50.bpi dclocx50.bpi Qrpt50.bpi TeeUI50.bpi TeeDB50.bpi Tee50.bpi 
-      TeeQR50.bpi shlbpk.bpi"/>
+      Inetdb50.bpi vcldbx50.bpi VCLIB50.bpi vclie50.bpi NMFast50.bpi 
+      dclocx50.bpi Qrpt50.bpi TeeUI50.bpi TeeDB50.bpi Tee50.bpi TeeQR50.bpi"/>
     <PATHCPP value=".;"/>
     <PATHPAS value=".;"/>
     <PATHRC value=".;"/>
@@ -75,6 +74,10 @@ ProductVersion=1.0.0.0
 Comments=
 
 [Excluded Packages]
+C:\WINDOWS\System32\ibsmp50.bpl=Borland C++ InterBase Alerter Component
+$(BCB)\Bin\applet50.bpl=Borland Control Panel Applet Package
+$(BCB)\Projects\Bpl\flashbpk.bpl=d:\program files\borland\cbuilder5\Projects\Bpl\flashbpk
+$(BCB)\Projects\Bpl\shlbpk.bpl=d:\program files\borland\cbuilder5\Projects\Bpl\shlbpk
 $(BCB)\Bin\dcl31w50.bpl=Delphi 1.0 Compatibility Components
 $(BCB)\Bin\bcbsmp50.bpl=Borland C++ Sample Components
 $(BCB)\Bin\dclqrt50.bpl=QuickReport Components
