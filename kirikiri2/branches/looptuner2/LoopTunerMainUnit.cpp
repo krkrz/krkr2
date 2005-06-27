@@ -116,7 +116,7 @@ bool __fastcall TTSSLoopTuner2MainForm::GetCanClose()
 {
 	// get whether the document can be closed
 	if(!Manager) return true;
-	if(WaveView->CanUndo())
+	if(WaveView->Modified)
 	{
 		int r = MessageDlg("ファイル " + FileName + ".sli は変更されています。\n"
 			"変更を保存しますか？", mtWarning, TMsgDlgButtons() << mbYes << mbNo << mbCancel, 0);
@@ -295,6 +295,7 @@ void __fastcall TTSSLoopTuner2MainForm::SaveActionExecute(TObject *Sender)
 		AnsiString str;
 		Manager->WriteInformation(str);
 		fs->Write(str.c_str(), str.Length());
+		WaveView->Modified = false;
 	}
 	catch(...)
 	{

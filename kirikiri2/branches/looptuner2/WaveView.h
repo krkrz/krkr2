@@ -65,6 +65,7 @@ private:
 	bool FInOnLinkModified; // to prevent re-entrering
 	TNotifyEvent FOnLabelModified;
 	bool FInOnLabelModified; // to prevent re-entrering
+	bool FModified;
 
 	struct tHistoryInfo
 	{
@@ -107,6 +108,9 @@ public:
 
 	__property TNotifyEvent OnLabelModified =
 		{ read = FOnLabelModified, write = FOnLabelModified };
+
+	__property bool Modified =
+		{ read = FModified, write = FModified };
 
 
 //-- view control
