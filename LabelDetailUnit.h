@@ -18,6 +18,7 @@ __published:	// IDE 管理のコンポーネント
 	void __fastcall OKButtonClick(TObject *Sender);
 	void __fastcall CancelButtonClick(TObject *Sender);
 	void __fastcall FormCloseQuery(TObject *Sender, bool &CanClose);
+	void __fastcall FormClose(TObject *Sender, TCloseAction &Action);
 private:	// ユーザー宣言
 	int LabelNum; // label number
 	tTVPWaveLabel FLabel; // current editting label

@@ -12,6 +12,7 @@ object LoopTunerMainForm: TLoopTunerMainForm
   Font.Style = []
   Menu = MainMenu
   OldCreateOrder = False
+  OnClose = FormClose
   OnCloseQuery = FormCloseQuery
   OnDestroy = FormDestroy
   PixelsPerInch = 96

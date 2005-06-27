@@ -5,7 +5,7 @@ object LabelDetailForm: TLabelDetailForm
   Height = 116
   ActiveControl = EditLabelAttribFrame.LabelNameEdit
   BorderWidth = 8
-  Caption = 'LabelDetailForm'
+  Caption = 'ÉâÉxÉãÇÃï“èW'
   Color = clBtnFace
   Font.Charset = SHIFTJIS_CHARSET
   Font.Color = clWindowText
@@ -13,7 +13,7 @@ object LabelDetailForm: TLabelDetailForm
   Font.Name = 'ÇlÇr ÇoÉSÉVÉbÉN'
   Font.Style = []
   OldCreateOrder = False
-  Position = poOwnerFormCenter
+  OnClose = FormClose
   OnCloseQuery = FormCloseQuery
   PixelsPerInch = 96
   TextHeight = 12
