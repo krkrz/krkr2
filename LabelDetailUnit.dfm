@@ -1,11 +1,12 @@
 object LabelDetailForm: TLabelDetailForm
   Left = 227
   Top = 716
-  Width = 404
-  Height = 116
   ActiveControl = EditLabelAttribFrame.LabelNameEdit
+  BorderStyle = bsDialog
   BorderWidth = 8
   Caption = 'ÉâÉxÉãÇÃï“èW'
+  ClientHeight = 66
+  ClientWidth = 380
   Color = clBtnFace
   Font.Charset = SHIFTJIS_CHARSET
   Font.Color = clWindowText
