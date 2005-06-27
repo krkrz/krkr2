@@ -22,6 +22,7 @@ WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	try
 	{
 		Application->Initialize();
+		Application->Title = "Loop Tuner";
 		Application->CreateForm(__classid(TLoopTunerMainForm), &LoopTunerMainForm);
 		Application->CreateForm(__classid(TLabelDetailForm), &LabelDetailForm);
 		Application->Run();
