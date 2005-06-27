@@ -505,6 +505,7 @@ void __fastcall TTSSLoopTuner2MainForm::ApplicationEventsIdle(TObject *Sender,
 		WaveView->MarkerPos = pos;
 
 		StatusBar->Panels->Items[3]->Text = "Ä¶’† " + Reader->SamplePosToTimeString(pos);
+		StopPlayAction->Enabled = true;
 	}
 	else
 	{
@@ -512,6 +513,7 @@ void __fastcall TTSSLoopTuner2MainForm::ApplicationEventsIdle(TObject *Sender,
 		WaveView->MarkerPos = -1;
 
 		StatusBar->Panels->Items[3]->Text = "’âŽ~";
+		StopPlayAction->Enabled = false;
 	}
 
 	UndoAction->Enabled = WaveView->CanUndo();
@@ -522,8 +524,16 @@ void __fastcall TTSSLoopTuner2MainForm::ApplicationEventsIdle(TObject *Sender,
 	GotoLinkFromAction->Enabled = WaveView->FocusedLink != -1;
 	GotoLinkToAction->Enabled = WaveView->FocusedLink != -1;
 
-	if(Manager && Manager->GetFlagsModifiedByLabelExpression()) ResetFlagsEditFromLoopManager();
+	bool en = Reader && Reader->ReadDone;
+	SaveAction            ->Enabled  = en;
+	PlayFromCaretAction   ->Enabled  = en;
+	PlayFromStartAction   ->Enabled  = en;
+	ZoomInAction          ->Enabled  = en;
+	ZoomOutAction         ->Enabled  = en;
+	NewLinkAction         ->Enabled  = en;
+	NewLabelAction        ->Enabled  = en;
 
+	if(Manager && Manager->GetFlagsModifiedByLabelExpression()) ResetFlagsEditFromLoopManager();
 
 	POINT mouse_pt;
 	GetCursorPos(&mouse_pt);
