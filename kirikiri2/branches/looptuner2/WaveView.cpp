@@ -532,6 +532,7 @@ void __fastcall TWaveView::SetShowCaret(bool b)
 		{
 			FocusedLink = -1;
 			FocusedLabel = -1; // these are exclusive
+			Hint = "";
 		}
 		else
 		{
@@ -1195,6 +1196,7 @@ void __fastcall TWaveView::NotifyLinkChanged()
 	// re-check focused or hovered state
 	if(FFocusedLink >= (int)Links.size()) FFocusedLink = -1;
 	if(FHoveredLink >= (int)Links.size()) FHoveredLink = -1;
+	Hint = "";
 
 	// arrange link lines to ensure visibility and discrimination.
 
@@ -1694,7 +1696,6 @@ void __fastcall TWaveView::SetHoveredLink(int l)
 		}
 		Application->CancelHint();
 		Hint = hint;
-
 	}
 }
 //---------------------------------------------------------------------------
@@ -1710,6 +1711,7 @@ void __fastcall TWaveView::SetFocusedLink(int l)
 		{
 			ShowCaret = false; // link, label and caret are exclusive
 			FocusedLabel = -1;
+			Hint = "";
 			if(FOnLinkSelected)
 			{
 				FOnLinkSelected(this, l, Links[l]);
@@ -2276,6 +2278,7 @@ void __fastcall TWaveView::SetFocusedLabel(int l)
 		{
 			ShowCaret = false; // link, label and caret are exclusive
 			FocusedLink = -1; // link, label and caret are exclusive
+			Hint = "";
 			if(FOnLabelSelected)
 			{
 				FOnLabelSelected(this, l, Labels[l]);
