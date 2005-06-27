@@ -23,7 +23,10 @@
 #include <AppEvnts.hpp>
 #include <Buttons.hpp>
 //---------------------------------------------------------------------------
-class TLoopTunerMainForm : public TForm
+#define WM_SHOWFRONT (WM_USER+201)
+#define WM_DOOPEN   (WM_USER+202)
+//---------------------------------------------------------------------------
+class TTSSLoopTuner2MainForm : public TForm
 {
 __published:	// IDE 管理のコンポーネント
 	TMainMenu *MainMenu;
@@ -164,6 +167,7 @@ __published:	// IDE 管理のコンポーネント
 	void __fastcall FormCloseQuery(TObject *Sender, bool &CanClose);
 	void __fastcall ApplicationEventsHint(TObject *Sender);
 	void __fastcall FormClose(TObject *Sender, TCloseAction &Action);
+	void __fastcall FormShow(TObject *Sender);
 private:	// ユーザー宣言
 	TWaveReader * Reader;
 	TWaveView *WaveView;
@@ -173,8 +177,8 @@ private:	// ユーザー宣言
 	bool ResettingFlags;
 
 public:		// ユーザー宣言
-	__fastcall TLoopTunerMainForm(TComponent* Owner);
-	__fastcall ~TLoopTunerMainForm();
+	__fastcall TTSSLoopTuner2MainForm(TComponent* Owner);
+	__fastcall ~TTSSLoopTuner2MainForm();
 
 	void __fastcall ReadFromIni();
 	void __fastcall WriteToIni();
@@ -183,11 +187,25 @@ public:		// ユーザー宣言
 
 
 protected:
+	void __fastcall WMShowFront(TMessage &msg);
+	void __fastcall WMDoOpen(TMessage &msg);
+	void __fastcall WMCopyData(TWMCopyData &msg);
+	void __fastcall WMDropFiles(TMessage &msg);
+
+
+BEGIN_MESSAGE_MAP
+	VCL_MESSAGE_HANDLER(WM_SHOWFRONT , TMessage , WMShowFront);
+	VCL_MESSAGE_HANDLER(WM_DOOPEN, TMessage, WMDoOpen);
+	VCL_MESSAGE_HANDLER(WM_DROPFILES,TMessage,WMDropFiles);
+	VCL_MESSAGE_HANDLER(WM_COPYDATA,TWMCopyData,WMCopyData);
+END_MESSAGE_MAP(TForm)
+
 
 private:
 	bool __fastcall GetCanClose();
 	void __fastcall CreateWaveView();
 	void __fastcall OnReaderProgress(TObject *sender);
+	void __fastcall Open();
 	void __fastcall PlayFrom(int pos);
 	void __fastcall WaveViewStopFollowingMarker(TObject *Sender);
 	void __fastcall WaveViewWaveDoubleClick(TObject *Sender, int pos);
@@ -204,6 +222,6 @@ private:
 	void __fastcall ResetFlagsEditFromLoopManager();
 };
 //---------------------------------------------------------------------------
-extern PACKAGE TLoopTunerMainForm *LoopTunerMainForm;
+extern PACKAGE TTSSLoopTuner2MainForm *TSSLoopTuner2MainForm;
 //---------------------------------------------------------------------------
 #endif

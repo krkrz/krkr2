@@ -3,6 +3,7 @@
 #include <vcl.h>
 #pragma hdrstop
 #include <inifiles.hpp>
+#include "LoopTunerMainUnit.h"
 #include "looptune.h"
 USERES("looptune.res");
 USEUNIT("WaveReader.cpp");
@@ -12,7 +13,7 @@ USEUNIT("tvpsnd.c");
 USEUNIT("WaveView.cpp");
 USEUNIT("WaveLoopManager.cpp");
 USEUNIT("DSound.cpp");
-USEFORM("LoopTunerMainUnit.cpp", LoopTunerMainForm);
+USEFORM("LoopTunerMainUnit.cpp", TSSLoopTuner2MainForm);
 USEUNIT("CharacterSet.cpp");
 USEFORM("EditLabelAttribUnit.cpp", EditLabelAttribFrame); /* TFrame: File Type */
 USEFORM("EditLinkAttribUnit.cpp", EditLinkAttribFrame); /* TFrame: File Type */
@@ -21,11 +22,37 @@ USEFORM("LabelDetailUnit.cpp", LabelDetailForm);
 //---------------------------------------------------------------------------
 WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 {
+	HWND wnd = FindWindow("TTSSLoopTuner2MainForm", NULL);
+	if(wnd)
+	{
+		char buf[256];
+		GetWindowText(wnd, buf, 256-1);
+		if(strstr(buf, "(//designing//)")==NULL)
+		{
+			PostMessage(wnd, WM_SHOWFRONT, 0, 0);
+			int i;
+			for(i=1; i<_argc; i++)
+			{
+				if(FileExists(_argv[i]))
+				{
+					AnsiString data = "open:" + AnsiString(_argv[i]);
+					COPYDATASTRUCT cds;
+					cds.dwData = 0x746f8ab3;
+					cds.cbData = data.Length() + 1;
+					cds.lpData = data.c_str();
+					SendMessage(wnd, WM_COPYDATA, NULL, (LPARAM)&cds);
+					break;
+				}
+			}
+			return 0;
+		}
+	}
+
 	try
 	{
 		Application->Initialize();
 		Application->Title = "Loop Tuner";
-		Application->CreateForm(__classid(TLoopTunerMainForm), &LoopTunerMainForm);
+		Application->CreateForm(__classid(TTSSLoopTuner2MainForm), &TSSLoopTuner2MainForm);
 		Application->CreateForm(__classid(TLabelDetailForm), &LabelDetailForm);
 		Application->Run();
 	}
