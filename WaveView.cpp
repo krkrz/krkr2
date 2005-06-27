@@ -137,6 +137,8 @@ void __fastcall TWaveView::ClearAll()
 	Cursor = crIBeam;
 
 	ShowHint = true;
+
+	FModified = false;
 }
 //---------------------------------------------------------------------------
 void __fastcall TWaveView::Paint(void)
@@ -236,6 +238,9 @@ void __fastcall TWaveView::PushUndo()
 	info.Labels = Labels;
 	FUndoStack.push_back(info);
 	FUndoLevel ++;
+
+	// set modified flag
+	FModified = true;
 }
 //---------------------------------------------------------------------------
 void __fastcall TWaveView::PushFirstUndoState()
@@ -243,6 +248,7 @@ void __fastcall TWaveView::PushFirstUndoState()
 	FUndoStack.clear();
 	PushUndo();
 	FUndoLevel = 0;
+	FModified = false;
 }
 //---------------------------------------------------------------------------
 void __fastcall TWaveView::Undo()
