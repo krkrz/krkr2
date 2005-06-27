@@ -119,6 +119,19 @@ struct tTVPWaveLoopLink
 		}
 	};
 #endif
+
+	tTVPWaveLoopLink()
+	{
+		From = To = 0;
+		Smooth = false;
+		Condition = llcNone;
+		RefValue = CondVar = 0;
+
+#ifdef TVP_IN_LOOP_TUNER
+		FromTier = LinkTier = ToTier = 0;
+		Index = 0;
+#endif
+	}
 };
 //---------------------------------------------------------------------------
 bool inline operator < (const tTVPWaveLoopLink & lhs, const tTVPWaveLoopLink & rhs)
@@ -167,6 +180,16 @@ struct tTVPWaveLabel
 	};
 
 #endif
+
+	tTVPWaveLabel()
+	{
+		Position = 0;
+
+#ifdef TVP_IN_LOOP_TUNER
+		NameWidth = 0;
+		Index = 0;
+#endif
+	}
 };
 //---------------------------------------------------------------------------
 bool inline operator < (const tTVPWaveLabel & lhs, const tTVPWaveLabel & rhs)
