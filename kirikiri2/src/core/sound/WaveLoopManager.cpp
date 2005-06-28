@@ -15,12 +15,13 @@
 
 #include "tjsCommHead.h"
 
+#include <algorithm>
 #include "tjsTypes.h"
 #include "WaveLoopManager.h"
 #include "CharacterSet.h"
 
 
-#ifdef TVP_IN_LOOP_TUNER
+#ifdef __BORLANDC__
 	#define strcasecmp strcmpi
 	#define strncasecmp strncmpi
 #endif
@@ -930,7 +931,7 @@ bool tTVPWaveLoopManager::GetString(char *s, tTVPLabelStringType &v)
 		v = AnsiString(us);
 #else
 		// convert us (an array of wchar_t) to ttstr
-		v = ttrstr(us);
+		v = ttstr(us);
 #endif
 
 	}
