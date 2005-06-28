@@ -16,16 +16,16 @@ USERES("looptune.res");
 USEUNIT("WaveReader.cpp");
 USEUNIT("RIFFWaveContext.cpp");
 USEUNIT("TSSWaveContext.cpp");
-USEUNIT("tvpsnd.c");
 USEUNIT("WaveView.cpp");
-USEUNIT("WaveLoopManager.cpp");
 USEUNIT("DSound.cpp");
 USEFORM("LoopTunerMainUnit.cpp", TSSLoopTuner2MainForm);
-USEUNIT("CharacterSet.cpp");
 USEFORM("EditLabelAttribUnit.cpp", EditLabelAttribFrame); /* TFrame: File Type */
 USEFORM("EditLinkAttribUnit.cpp", EditLinkAttribFrame); /* TFrame: File Type */
 USEFORM("LinkDetailUnit.cpp", LinkDetailForm);
 USEFORM("LabelDetailUnit.cpp", LabelDetailForm);
+USEUNIT("..\..\..\..\core\sound\WaveLoopManager.cpp");
+USEUNIT("..\..\..\..\core\sound\win32\tvpsnd.c");
+USEUNIT("..\..\..\..\core\base\CharacterSet.cpp");
 //---------------------------------------------------------------------------
 WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 {
