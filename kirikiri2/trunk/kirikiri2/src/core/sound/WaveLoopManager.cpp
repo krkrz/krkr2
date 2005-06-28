@@ -1,5 +1,19 @@
-#include <vcl.h>
-#pragma hdrstop
+//---------------------------------------------------------------------------
+/*
+	TVP2 ( T Visual Presenter 2 )  A script authoring tool
+	Copyright (C) 2000-2005  W.Dee <dee@kikyou.info> and contributors
+
+	See details of license at "license.txt"
+*/
+//---------------------------------------------------------------------------
+// Wave Loop Manager
+//---------------------------------------------------------------------------
+/*
+	This module will be shared between TVP2 and
+	Loop Tuner 2 (a GUI loop-point editor)
+*/
+
+#include "tjsCommHead.h"
 
 #include "tjsTypes.h"
 #include "WaveLoopManager.h"
