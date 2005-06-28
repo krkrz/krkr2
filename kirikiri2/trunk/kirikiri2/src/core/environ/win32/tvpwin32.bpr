@@ -59,7 +59,8 @@
       intermediate\VersionFormUnit.obj intermediate\MsgIntf.obj 
       intermediate\MsgImpl.obj intermediate\ScriptMgnIntf.obj 
       intermediate\FuncStubs.obj intermediate\OptionsDesc.obj 
-      intermediate\ConfSettingsUnit.obj intermediate\ConfMainFrameUnit.obj"/>
+      intermediate\ConfSettingsUnit.obj intermediate\ConfMainFrameUnit.obj 
+      intermediate\CharacterSet.obj intermediate\WaveLoopManager.obj"/>
     <RESFILES value="tvpwin32.res HBeamCur.res"/>
     <DEFFILE value="tvpwin32.def"/>
     <RESDEPEN value="$(RESFILES) HaltWarnFormUnit.dfm ..\..\utils\win32\ConsoleFormUnit.dfm 

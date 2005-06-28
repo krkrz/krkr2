@@ -14,9 +14,13 @@
 //---------------------------------------------------------------------------
 
 #include "tjsTypes.h"
-#include "WaveReader.h"
 #include <vector>
 #include <string>
+#ifdef TVP_IN_LOOP_TUNER
+	#include "WaveReader.h"
+#else
+	#include "WaveIntf.h"
+#endif
 
 #define TVP_WL_MAX_FLAGS 16
 
