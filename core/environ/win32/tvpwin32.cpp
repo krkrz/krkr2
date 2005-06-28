@@ -151,6 +151,8 @@ USE("..\..\base\common.h", File);
 USE("..\..\utils\ObjectList.h", File);
 USEUNIT("..\..\..\tools\win32\krdevui\ConfSettingsUnit.cpp");
 USEFORM("..\..\..\tools\win32\krdevui\ConfMainFrameUnit.cpp", ConfMainFrame); /* TFrame: File Type */
+USEUNIT("..\..\base\CharacterSet.cpp");
+USEUNIT("..\..\sound\WaveLoopManager.cpp");
 //---------------------------------------------------------------------------
 #ifdef TVP_SUPPORT_ERI
 #	pragma link "../../../../Lib/liberina.lib"

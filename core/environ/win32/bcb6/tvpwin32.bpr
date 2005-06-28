@@ -59,7 +59,8 @@
       intermediate\OptionsDesc.obj intermediate\ConfSettingsUnit.obj 
       intermediate\ConfMainFrameUnit.obj intermediate\tjsGlobalStringMap.obj 
       intermediate\ClipboardIntf.obj intermediate\ClipboardImpl.obj 
-      intermediate\tjsDisassemble.obj intermediate\tjsDebug.obj"/>
+      intermediate\tjsDisassemble.obj intermediate\tjsDebug.obj 
+      intermediate\CharacterSet.obj intermediate\WaveLoopManager.obj"/>
     <RESFILES value="tvpwin32.res ..\HBeamCur.res"/>
     <DEFFILE value="..\tvpwin32.def"/>
     <RESDEPEN value="$(RESFILES) ..\HaltWarnFormUnit.dfm 
@@ -233,6 +234,8 @@
       <FILE FILENAME="..\..\..\utils\win32\ClipboardImpl.cpp" FORMNAME="" UNITNAME="ClipboardImpl" CONTAINERID="C/C++ コンパイラ" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\tjs2\tjsDisassemble.cpp" FORMNAME="" UNITNAME="tjsDisassemble" CONTAINERID="C/C++ コンパイラ" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\tjs2\tjsDebug.cpp" FORMNAME="" UNITNAME="tjsDebug" CONTAINERID="C/C++ コンパイラ" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\..\base\CharacterSet.cpp" FORMNAME="" UNITNAME="CharacterSet" CONTAINERID="C/C++ コンパイラ" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\..\sound\WaveLoopManager.cpp" FORMNAME="" UNITNAME="WaveLoopManager" CONTAINERID="C/C++ コンパイラ" DESIGNCLASS="" LOCALCOMMAND=""/>
   </FILELIST>
   <BUILDTOOLS>
   </BUILDTOOLS>
