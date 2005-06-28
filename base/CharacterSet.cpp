@@ -129,7 +129,7 @@ static bool inline TVPWideCharToUtf8(const char * & in, tjs_char *out)
 	else if(p[0] < 0xe0)
 	{
 		// two bytes (11bits)
-		if(p[1] & 0xc0 != 0x80) return false;
+		if((p[1] & 0xc0) != 0x80) return false;
 		if(out) *out = ((p[0] & 0x1f) << 6) + (p[1] & 0x3f);
 		in += 2;
 		return true;
