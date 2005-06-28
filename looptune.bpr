@@ -74,10 +74,8 @@ ProductVersion=1.0.0.0
 Comments=
 
 [Excluded Packages]
-C:\WINDOWS\System32\ibsmp50.bpl=Borland C++ InterBase Alerter Component
 $(BCB)\Bin\applet50.bpl=Borland Control Panel Applet Package
-$(BCB)\Projects\Bpl\flashbpk.bpl=d:\program files\borland\cbuilder5\Projects\Bpl\flashbpk
-$(BCB)\Projects\Bpl\shlbpk.bpl=d:\program files\borland\cbuilder5\Projects\Bpl\shlbpk
+C:\WINDOWS\system32\ibsmp50.bpl=Borland C++ InterBase Alerter Component
 $(BCB)\Bin\dcl31w50.bpl=Delphi 1.0 Compatibility Components
 $(BCB)\Bin\bcbsmp50.bpl=Borland C++ Sample Components
 $(BCB)\Bin\dclqrt50.bpl=QuickReport Components
