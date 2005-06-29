@@ -16,11 +16,6 @@
 #include "tjsTypes.h"
 #include <vector>
 #include <string>
-#ifdef TVP_IN_LOOP_TUNER
-	#include "WaveReader.h"
-#else
-	#include "WaveIntf.h"
-#endif
 
 #define TVP_WL_MAX_FLAGS 16
 
@@ -31,6 +26,9 @@
 
 #define TVP_WL_MAX_ID_LEN 16
 
+#ifdef TVP_IN_LOOP_TUNER
+	#include "WaveReader.h"
+#endif
 
 //---------------------------------------------------------------------------
 #ifdef TVP_IN_LOOP_TUNER
@@ -227,6 +225,8 @@ struct tTVPWaveLoopSegment
 //---------------------------------------------------------------------------
 // tTVPWaveLoopManager : wave loop manager
 //---------------------------------------------------------------------------
+class tTVPWaveDecoder;
+class tTVPWaveFormat;
 class tTVPWaveLoopManager
 {
 	tTJSCriticalSection FlagsCS; // CS to protect flags/links/labels
@@ -235,7 +235,7 @@ class tTVPWaveLoopManager
 	std::vector<tTVPWaveLoopLink> Links;
 	std::vector<tTVPWaveLabel> Labels;
 	tTJSCriticalSection DataCS; // CS to protect other members
-	tTVPWaveFormat Format;
+	tTVPWaveFormat * Format;
 	tTVPWaveDecoder * Decoder;
 
 	tjs_int ShortCrossFadeHalfSamples;
