@@ -97,6 +97,12 @@ class MyWindow extends Window
 		{
 			visoptions.type = !visoptions.type;
 		}
+		else if(ev.target == buf)
+		{
+			var ar = [];
+			ar.assign(ev);
+			Debug.message(ar*);
+		}
 	}
 }
 
