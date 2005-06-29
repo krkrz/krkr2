@@ -19,6 +19,7 @@
 #include <ksmedia.h>
 
 #include "WaveIntf.h"
+#include "WaveLoopManager.h"
 
 /*[*/
 //---------------------------------------------------------------------------
@@ -57,6 +58,7 @@ extern tjs_int TVPDSAttenuateToPan(tjs_int att);
 //---------------------------------------------------------------------------
 // tTJSNI_WaveSoundBuffer : Wave Native Instance
 //---------------------------------------------------------------------------
+class tTVPWaveLoopManager;
 class tTVPWaveSoundBufferDecodeThread;
 class tTJSNI_WaveSoundBuffer : public tTJSNI_BaseWaveSoundBuffer
 {
@@ -119,15 +121,11 @@ public:
 
 private:
 	tTVPWaveDecoder * Decoder;
+	tTVPWaveLoopManager * LoopManager;
 	tTVPWaveSoundBufferDecodeThread * Thread;
 public:
 	bool ThreadCallbackEnabled;
 private:
-	tjs_uint64 LoopStart;
-	tjs_uint64 LoopLength;
-	tjs_uint64 LoopEnd;
-
-
 	bool BufferPlaying; // whether this sound buffer is playing
 	bool DSBufferPlaying; // whether the DS buffer is 'actually' playing
 	bool Paused;
@@ -146,24 +144,31 @@ private:
 	bool L2BufferEnded;
 	tjs_uint8 *VisBuffer; // buffer for visualization
 	tjs_int *L2BufferDecodedSamplesInUnit;
-	tjs_uint64 *L2BufferSamplePositions;
-	tjs_uint64 *L1BufferSamplePositions;
+	std::vector<tTVPWaveLoopSegment> *L1BufferSegments;
+	std::vector<tTVPWaveLabel> *L1BufferLabels;
+	std::vector<tTVPWaveLoopSegment> *L2BufferSegments;
+	std::vector<tTVPWaveLabel> *L2BufferLabels;
 
 	bool Looping;
 
 	void Clear();
 
-	tjs_uint _Decode(void *buffer, tjs_uint bufsamplelen);
-	tjs_uint Decode(void *buffer, tjs_uint bufsamplelen);
+	tjs_uint Decode(void *buffer, tjs_uint bufsamplelen,
+		std::vector<tTVPWaveLoopSegment> & segments,
+		std::vector<tTVPWaveLabel> & labels);
 
 public:
 	bool FillL2Buffer(bool firstwrite, bool fromdecodethread);
 
 private:
 	void PrepareToReadL2Buffer(bool firstread);
-	tjs_uint ReadL2Buffer(void *buffer, tjs_uint64 & pcmpos);
+	tjs_uint ReadL2Buffer(void *buffer,
+		std::vector<tTVPWaveLoopSegment> & segments,
+		std::vector<tTVPWaveLabel> & labels);
 
-	void FillDSBuffer(tjs_int writepos, tjs_uint64 * pcmpos);
+	void FillDSBuffer(tjs_int writepos,
+		std::vector<tTVPWaveLoopSegment> & segments,
+		std::vector<tTVPWaveLabel> & labels);
 public:
 	bool FillBuffer(bool firstwrite = false, bool allowpause = true);
 

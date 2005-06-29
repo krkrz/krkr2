@@ -20,6 +20,12 @@
 #include "WaveLoopManager.h"
 #include "CharacterSet.h"
 
+#ifdef TVP_IN_LOOP_TUNER
+	#include "WaveReader.h"
+#else
+	#include "WaveIntf.h"
+#endif
+
 
 #ifdef __BORLANDC__
 	#define strcasecmp strcmpi
@@ -130,7 +136,8 @@ tTVPWaveLoopManager::tTVPWaveLoopManager()
 	CrossFadePosition = 0;
 	Decoder = NULL;
 	IgnoreLinks = false;
-	memset(&Format, 0, sizeof(Format));
+	Format = new tTVPWaveFormat;
+	memset(Format, 0, sizeof(*Format));
 
 	ClearFlags();
 	FlagsModifiedByLabelExpression = false;
@@ -139,6 +146,7 @@ tTVPWaveLoopManager::tTVPWaveLoopManager()
 tTVPWaveLoopManager::~tTVPWaveLoopManager()
 {
 	ClearCrossFadeInformation();
+	delete Format;
 }
 //---------------------------------------------------------------------------
 void tTVPWaveLoopManager::SetDecoder(tTVPWaveDecoder * decoder)
@@ -146,11 +154,11 @@ void tTVPWaveLoopManager::SetDecoder(tTVPWaveDecoder * decoder)
 	// set decoder and compute ShortCrossFadeHalfSamples
 	Decoder = decoder;
 	if(decoder)
-		decoder->GetFormat(Format);
+		decoder->GetFormat(*Format);
 	else
-		memset(&Format, 0, sizeof(Format));
+		memset(Format, 0, sizeof(*Format));
 	ShortCrossFadeHalfSamples =
-		Format.SamplesPerSec * TVP_WL_SMOOTH_TIME_HALF / 1000;
+		Format->SamplesPerSec * TVP_WL_SMOOTH_TIME_HALF / 1000;
 }
 //---------------------------------------------------------------------------
 bool tTVPWaveLoopManager::GetFlag(tjs_int index)
@@ -266,7 +274,7 @@ void tTVPWaveLoopManager::Decode(void *dest, tjs_uint samples, tjs_uint &written
 	written = 0;
 	tjs_uint8 *d = (tjs_uint8*)dest;
 
-	while(written != samples && Position < Format.TotalSamples)
+	while(written != samples/* && Position < Format->TotalSamples*/)
 	{
 		// decide next operation
 		tjs_int64 next_event_pos;
@@ -313,12 +321,12 @@ void tTVPWaveLoopManager::Decode(void *dest, tjs_uint samples, tjs_uint &written
 					before_count = link.From - Position;
 					// adjust after count
 					tjs_int after_count = ShortCrossFadeHalfSamples;
-					if(Format.TotalSamples - link.From < after_count)
+					if(Format->TotalSamples - link.From < after_count)
 						after_count =
-							(tjs_int)(Format.TotalSamples - link.From);
-					if(Format.TotalSamples - link.To < after_count)
+							(tjs_int)(Format->TotalSamples - link.From);
+					if(Format->TotalSamples - link.To < after_count)
 						after_count =
-							(tjs_int)(Format.TotalSamples - link.To);
+							(tjs_int)(Format->TotalSamples - link.To);
 					tTVPWaveLoopLink over_to_link;
 					if(GetNearestEvent(link.To, over_to_link, true))
 					{
@@ -334,7 +342,7 @@ void tTVPWaveLoopManager::Decode(void *dest, tjs_uint samples, tjs_uint &written
 					{
 						tjs_int alloc_size =
 							(before_count + after_count) * 
-								Format.BytesPerSample * Format.Channels;
+								Format->BytesPerSample * Format->Channels;
 						CrossFadeSamples = new tjs_uint8[alloc_size];
 						src1 = new tjs_uint8[alloc_size];
 						src2 = new tjs_uint8[alloc_size];
@@ -365,7 +373,7 @@ void tTVPWaveLoopManager::Decode(void *dest, tjs_uint samples, tjs_uint &written
 
 						// perform crossfade
 						tjs_int after_offset =
-							before_count * Format.BytesPerSample * Format.Channels;
+							before_count * Format->BytesPerSample * Format->Channels;
 						DoCrossFade(CrossFadeSamples,
 							src1, src2, before_count, 0, 50);
 						DoCrossFade(CrossFadeSamples + after_offset,
@@ -433,7 +441,7 @@ void tTVPWaveLoopManager::Decode(void *dest, tjs_uint samples, tjs_uint &written
 			written += decoded;
 			if(decoded != (tjs_uint)one_unit)
 				break; // must be an internal error but do nothing
-			d += decoded * Format.BytesPerSample * Format.Channels;
+			d += decoded * Format->BytesPerSample * Format->Channels;
 		}
 		else
 		{
@@ -441,12 +449,12 @@ void tTVPWaveLoopManager::Decode(void *dest, tjs_uint samples, tjs_uint &written
 			// copy prepared samples
 			memcpy((void *)d,
 				CrossFadeSamples +
-					CrossFadePosition * Format.BytesPerSample * Format.Channels,
-				one_unit * Format.BytesPerSample * Format.Channels);
+					CrossFadePosition * Format->BytesPerSample * Format->Channels,
+				one_unit * Format->BytesPerSample * Format->Channels);
 			CrossFadePosition += one_unit;
 			Position += one_unit;
 			written += one_unit;
-			d += one_unit * Format.BytesPerSample * Format.Channels;
+			d += one_unit * Format->BytesPerSample * Format->Channels;
 			if(CrossFadePosition == CrossFadeLen)
 			{
 				// crossfade has finished
@@ -591,7 +599,7 @@ void tTVPWaveLoopManager::DoCrossFade(void *dest, void *src1,
 	// do on-memory wave crossfade
 	// using src1 (fading out) and src2 (fading in).
 
-	if(Format.IsFloat)
+	if(Format->IsFloat)
 	{
 		float blend_step =
 			(float)((ratioend - ratiostart) / 100.0 / samples);
@@ -601,7 +609,7 @@ void tTVPWaveLoopManager::DoCrossFade(void *dest, void *src1,
 		float ratio = ratiostart / 100.0;
 		for(tjs_int i = 0; i < samples; i++)
 		{
-			for(tjs_int j = Format.Channels - 1; j >= 0; j--)
+			for(tjs_int j = Format->Channels - 1; j >= 0; j--)
 			{
 				*out = *s1 + (*s2 - *s1) * ratio;
 				s1 ++;
@@ -613,25 +621,25 @@ void tTVPWaveLoopManager::DoCrossFade(void *dest, void *src1,
 	}
 	else
 	{
-		if(Format.BytesPerSample == 1)
+		if(Format->BytesPerSample == 1)
 		{
 			TVPCrossFadeIntegerBlend<tTVPPCM8>(dest, src1, src2,
-				ratiostart, ratioend, samples, Format.Channels);
+				ratiostart, ratioend, samples, Format->Channels);
 		}
-		else if(Format.BytesPerSample == 2)
+		else if(Format->BytesPerSample == 2)
 		{
 			TVPCrossFadeIntegerBlend<tjs_int16>(dest, src1, src2,
-				ratiostart, ratioend, samples, Format.Channels);
+				ratiostart, ratioend, samples, Format->Channels);
 		}
-		else if(Format.BytesPerSample == 3)
+		else if(Format->BytesPerSample == 3)
 		{
 			TVPCrossFadeIntegerBlend<tTVPPCM24>(dest, src1, src2,
-				ratiostart, ratioend, samples, Format.Channels);
+				ratiostart, ratioend, samples, Format->Channels);
 		}
-		else if(Format.BytesPerSample == 4)
+		else if(Format->BytesPerSample == 4)
 		{
 			TVPCrossFadeIntegerBlend<tjs_int32>(dest, src1, src2,
-				ratiostart, ratioend, samples, Format.Channels);
+				ratiostart, ratioend, samples, Format->Channels);
 		}
 	}
 }

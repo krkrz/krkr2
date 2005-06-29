@@ -1709,6 +1709,7 @@ tTJSNI_WaveSoundBuffer::tTJSNI_WaveSoundBuffer()
 #endif
 	TVPInitLogTable();
 	Decoder = NULL;
+	LoopManager = NULL;
 	Thread = NULL;
 	UseVisBuffer = false;
 	VisBuffer = NULL;
@@ -1723,8 +1724,10 @@ tTJSNI_WaveSoundBuffer::tTJSNI_WaveSoundBuffer()
 	SoundBuffer = NULL;
 	Sound3DBuffer = NULL;
 	L2BufferDecodedSamplesInUnit = NULL;
-	L2BufferSamplePositions = NULL;
-	L1BufferSamplePositions = NULL;
+	L1BufferSegments = NULL;
+	L1BufferLabels = NULL;
+	L2BufferSegments = NULL;
+	L2BufferLabels = NULL;
 	L1BufferUnits = 0;
 	L2BufferUnits = 0;
 	TVPAddWaveSoundBuffer(this);
@@ -1773,8 +1776,10 @@ void tTJSNI_WaveSoundBuffer::TryCreateSoundBuffer(bool use3d)
 
 	L1BufferUnits = TVPL1BufferLength / (1000 / TVP_WSB_ACCESS_FREQ);
 	if(L1BufferUnits <= 1) L1BufferUnits = 2;
-	if(L1BufferSamplePositions) delete [] L1BufferSamplePositions, L1BufferSamplePositions = NULL;
-	L1BufferSamplePositions = new tjs_uint64[L1BufferUnits];
+	if(L1BufferSegments) delete [] L1BufferSegments, L1BufferSegments = NULL;
+	if(L1BufferLabels) delete [] L1BufferLabels, L1BufferLabels = NULL;
+	L1BufferSegments = new std::vector<tTVPWaveLoopSegment>[L1BufferUnits];
+	L1BufferLabels = new std::vector<tTVPWaveLabel>[L1BufferUnits];
 	BufferBytes = AccessUnitBytes * L1BufferUnits;
 		// l1 buffer bytes
 
@@ -1789,9 +1794,11 @@ void tTJSNI_WaveSoundBuffer::TryCreateSoundBuffer(bool use3d)
 	if(L2BufferUnits <= 1) L2BufferUnits = 2;
 
 	if(L2BufferDecodedSamplesInUnit) delete [] L2BufferDecodedSamplesInUnit, L2BufferDecodedSamplesInUnit = NULL;
-	if(L2BufferSamplePositions) delete [] L2BufferSamplePositions, L2BufferSamplePositions = NULL;
+	if(L2BufferSegments) delete [] L2BufferSegments, L2BufferSegments = NULL;
+	if(L2BufferLabels) delete [] L2BufferLabels, L2BufferLabels = NULL;
 	L2BufferDecodedSamplesInUnit = new tjs_int[L2BufferUnits];
-	L2BufferSamplePositions = new tjs_uint64[L2BufferUnits];
+	L2BufferSegments = new std::vector<tTVPWaveLoopSegment>[L2BufferUnits];
+	L2BufferLabels = new std::vector<tTVPWaveLabel>[L2BufferUnits];
 
 	L2AccessUnitBytes = AccessUnitSamples * InputFormat.BytesPerSample * InputFormat.Channels;
 	Level2BufferSize = L2AccessUnitBytes * L2BufferUnits;
@@ -2041,11 +2048,12 @@ void tTJSNI_WaveSoundBuffer::DestroySoundBuffer()
 
 	DSBufferPlaying = false;
 	BufferPlaying = false;
-	CurrentPos = 0;
 
-	if(L1BufferSamplePositions) delete [] L1BufferSamplePositions, L1BufferSamplePositions = NULL;
+	if(L1BufferSegments) delete [] L1BufferSegments, L1BufferSegments = NULL;
+	if(L1BufferLabels) delete [] L1BufferLabels, L1BufferLabels = NULL;
 	if(L2BufferDecodedSamplesInUnit) delete [] L2BufferDecodedSamplesInUnit, L2BufferDecodedSamplesInUnit = NULL;
-	if(L2BufferSamplePositions) delete [] L2BufferSamplePositions, L2BufferSamplePositions = NULL;
+	if(L2BufferLabels) delete [] L2BufferLabels, L2BufferLabels = NULL;
+	if(L2BufferSegments) delete [] L2BufferSegments, L2BufferSegments = NULL;
 	if(Level2Buffer) delete [] Level2Buffer, Level2Buffer = NULL;
 	L1BufferUnits = 0;
 	L2BufferUnits = 0;
@@ -2095,16 +2103,22 @@ void tTJSNI_WaveSoundBuffer::ResetSoundBuffer()
 //---------------------------------------------------------------------------
 void tTJSNI_WaveSoundBuffer::ResetSamplePositions()
 {
-	// reset L2BufferSamplePositions and L1BufferSamplePositions
-	if(L2BufferSamplePositions)
+	// reset L2BufferSegments and L1BufferSegments, and labels
+	if(L2BufferSegments)
 	{
 		for(int i = 0; i < L2BufferUnits; i++)
-			L2BufferSamplePositions[i] = (tjs_uint64)(tjs_int64)-1;
+		{
+			L2BufferSegments[i].clear();
+			L2BufferLabels[i].clear();
+		}
 	}
-	if(L1BufferSamplePositions)
+	if(L1BufferSegments)
 	{
 		for(int i = 0; i < L1BufferUnits; i++)
-			L1BufferSamplePositions[i] = (tjs_uint64)(tjs_int64)-1;
+		{
+			L1BufferSegments[i].clear();
+			L1BufferLabels[i].clear();
+		}
 	}
 }
 //---------------------------------------------------------------------------
@@ -2115,9 +2129,8 @@ void tTJSNI_WaveSoundBuffer::Clear()
 	ThreadCallbackEnabled = false;
 	TVPCheckSoundBufferAllSleep();
 	if(Thread) delete Thread, Thread = NULL;
+	if(LoopManager) delete LoopManager, LoopManager = NULL;
 	if(Decoder) delete Decoder, Decoder = NULL;
-	LoopLength = LoopStart = LoopEnd = 0;
-	CurrentPos = 0;
 	BufferPlaying = false;
 	DSBufferPlaying = false;
 	Paused = false;
@@ -2127,90 +2140,25 @@ void tTJSNI_WaveSoundBuffer::Clear()
 	SetStatus(ssUnload);
 }
 //---------------------------------------------------------------------------
-tjs_uint tTJSNI_WaveSoundBuffer::_Decode(void *buffer, tjs_uint bufsamplelen)
+tjs_uint tTJSNI_WaveSoundBuffer::Decode(void *buffer, tjs_uint bufsamplelen,
+		std::vector<tTVPWaveLoopSegment> & segments,
+		std::vector<tTVPWaveLabel> & labels)
 {
-	tjs_uint written = 0;
-	tjs_int samplesize = InputFormat.BytesPerSample * InputFormat.Channels;
-	while(written < bufsamplelen)
+	// decode one buffer unit
+	tjs_uint w = 0;
+
+	try
 	{
-		tjs_uint w;
-		bool cont;
-
-		try
-		{
-			// decode
-			cont = Decoder->Render((tjs_uint8*)buffer +
-				written * samplesize,
-				bufsamplelen - written, w);
-		}
-		catch(...)
-		{
-			w = 0;
-			cont = false;
-		}
-
-		written += w;
-		CurrentPos += w;
-
-		if(!cont)
-		{
-			// decoding had been finished
-
-			if(LoopLength == 0 && Looping)
-			{
-				// loop information is not loaded. do simple loop.
-				// set decode position to zero.
-				Decoder->SetPosition(0);
-				CurrentPos = 0;
-			}
-			else
-			{
-				return written;
-			}
-		}
+		// decode
+		LoopManager->Decode((tjs_uint8*)buffer, bufsamplelen, w, segments, labels);
+	}
+	catch(...)
+	{
+		// ignore errors
+		w = 0;
 	}
 
-	return written;
-}
-//---------------------------------------------------------------------------
-tjs_uint tTJSNI_WaveSoundBuffer::Decode(void *buffer, tjs_uint bufsamplelen)
-{
-	// decode PCM.
-	if(LoopLength == 0 || !Looping ||
-		(LoopLength != 0 && CurrentPos >= LoopEnd))
-			return _Decode(buffer, bufsamplelen);
-
-	// loop information processing
-	tjs_uint written = 0;
-	tjs_uint remain = bufsamplelen;
-	tjs_int samplesize = InputFormat.BytesPerSample * InputFormat.Channels;
-	while(remain)
-	{
-		tjs_uint l;  // decode size at once
-
-		// determine size to decode
-		if(LoopEnd - CurrentPos < 0x10000000L)
-			l = LoopEnd - CurrentPos;
-		else
-			l = 0x10000000; // we must care well when converting from i64 to i32.
-
-		if(remain < l) l = remain;
-
-		tjs_uint decoded = _Decode((tjs_uint8*)buffer + written * samplesize, l);
-
-		written += decoded;
-		remain -= decoded;
-		if(decoded < l) return written; // may be a decode error
-
-
-		if(CurrentPos == LoopEnd)
-		{
-			Decoder->SetPosition(LoopStart); // seek to loop start point
-			CurrentPos = LoopStart;
-		}
-	}
-
-	return written;
+	return w;
 }
 //---------------------------------------------------------------------------
 bool tTJSNI_WaveSoundBuffer::FillL2Buffer(bool firstwrite, bool fromdecodethread)
@@ -2252,15 +2200,15 @@ bool tTJSNI_WaveSoundBuffer::FillL2Buffer(bool firstwrite, bool fromdecodethread
 	}
 	else
 	{
-        tjs_uint64 currentpcmpos = CurrentPos;
-
-		tjs_uint decoded = Decode(L2BufferWritePos * L2AccessUnitBytes + Level2Buffer,
-			AccessUnitSamples);
+		tjs_uint decoded = Decode(
+			L2BufferWritePos * L2AccessUnitBytes + Level2Buffer,
+			AccessUnitSamples,
+			L2BufferSegments[L2BufferWritePos],
+			L2BufferLabels[L2BufferWritePos]);
 
 		if(decoded < (tjs_uint) AccessUnitSamples) L2BufferEnded = true;
 
 		L2BufferDecodedSamplesInUnit[L2BufferWritePos] = decoded;
-        L2BufferSamplePositions[L2BufferWritePos] = currentpcmpos;
 	}
 
 	L2BufferWritePos++;
@@ -2293,16 +2241,18 @@ void tTJSNI_WaveSoundBuffer::PrepareToReadL2Buffer(bool firstread)
 			// before entering critical section
 }
 //---------------------------------------------------------------------------
-tjs_uint tTJSNI_WaveSoundBuffer::ReadL2Buffer(void *buffer, tjs_uint64 &pcmpos)
+tjs_uint tTJSNI_WaveSoundBuffer::ReadL2Buffer(void *buffer,
+		std::vector<tTVPWaveLoopSegment> & segments,
+		std::vector<tTVPWaveLabel> & labels)
 {
 	tjs_uint decoded = L2BufferDecodedSamplesInUnit[L2BufferReadPos];
 
+	segments = L2BufferSegments[L2BufferReadPos];
+	labels = L2BufferLabels[L2BufferReadPos];
 
 	TVPConvertWaveFormatToDestinationFormat(buffer,
 		L2BufferReadPos * L2AccessUnitBytes + Level2Buffer, decoded,
 		&Format, &InputFormat);
-
-    pcmpos = L2BufferSamplePositions[L2BufferReadPos];
 
 	if(decoded < (tjs_uint)AccessUnitSamples)
 	{
@@ -2322,7 +2272,9 @@ tjs_uint tTJSNI_WaveSoundBuffer::ReadL2Buffer(void *buffer, tjs_uint64 &pcmpos)
 	return decoded;
 }
 //---------------------------------------------------------------------------
-void tTJSNI_WaveSoundBuffer::FillDSBuffer(tjs_int writepos, tjs_uint64 * pcmpos)
+void tTJSNI_WaveSoundBuffer::FillDSBuffer(tjs_int writepos,
+		std::vector<tTVPWaveLoopSegment> & segments,
+		std::vector<tTVPWaveLabel> & labels)
 {
 	BYTE *p1, *p2;
 	DWORD b1, b2;
@@ -2344,12 +2296,12 @@ void tTJSNI_WaveSoundBuffer::FillDSBuffer(tjs_int writepos, tjs_uint64 * pcmpos)
 
 		if(UseVisBuffer)
 		{
-			decoded = ReadL2Buffer(VisBuffer + writepos, *pcmpos);
+			decoded = ReadL2Buffer(VisBuffer + writepos, segments, labels);
 			memcpy(p1, VisBuffer + writepos, AccessUnitBytes);
 		}
 		else
 		{
-			decoded = ReadL2Buffer(p1, *pcmpos);
+			decoded = ReadL2Buffer(p1, segments, labels);
 		}
 
 		if(PlayStopPos == -1 && decoded < (tjs_uint)AccessUnitSamples)
@@ -2407,7 +2359,6 @@ bool tTJSNI_WaveSoundBuffer::FillBuffer(bool firstwrite, bool allowpause)
 
 	// check buffer playing position
 	tjs_int writepos;
-	tjs_uint64 * pcmpos;
 
 	DWORD pp = 0, wp = 0; // write pos and read pos
 	if(FAILED(SoundBuffer->GetCurrentPosition(&pp, &wp))) return true;
@@ -2418,11 +2369,14 @@ bool tTJSNI_WaveSoundBuffer::FillBuffer(bool firstwrite, bool allowpause)
 		// drift between main clock and clocks which come from other sources
 		// is a good environ noise.
 
+	std::vector<tTVPWaveLoopSegment> * segment;
+	std::vector<tTVPWaveLabel> * label;
 
 	if(firstwrite)
 	{
 		writepos = 0;
-		pcmpos = L1BufferSamplePositions + 0;
+		segment = L1BufferSegments + 0;
+		label   = L1BufferLabels + 0;
 		PlayStopPos = -1;
 		SoundBufferWritePos = 1;
 		SoundBufferPrevReadPos = 0;
@@ -2476,7 +2430,8 @@ bool tTJSNI_WaveSoundBuffer::FillBuffer(bool firstwrite, bool allowpause)
 		}
 
 		writepos = SoundBufferWritePos * AccessUnitBytes;
-		pcmpos = L1BufferSamplePositions + SoundBufferWritePos;
+		segment = L1BufferSegments + SoundBufferWritePos;
+		label   = L1BufferLabels   + SoundBufferWritePos;
 		SoundBufferWritePos ++;
 		if(SoundBufferWritePos >= L1BufferUnits)
 			SoundBufferWritePos = 0;
@@ -2487,7 +2442,7 @@ bool tTJSNI_WaveSoundBuffer::FillBuffer(bool firstwrite, bool allowpause)
 	if(bufferremain > 1) // buffer is ready
 	{
 		// with no locking operations
-		FillDSBuffer(writepos, pcmpos);
+		FillDSBuffer(writepos, *segment, *label);
 	}
 	else
 	{
@@ -2495,7 +2450,7 @@ bool tTJSNI_WaveSoundBuffer::FillBuffer(bool firstwrite, bool allowpause)
 
 		{
 			tTJSCriticalSectionHolder l2holder(L2BufferCS);
-			FillDSBuffer(writepos, pcmpos);
+			FillDSBuffer(writepos, *segment, *label);
 		}
 	}
 	return false;
@@ -2572,8 +2527,9 @@ void tTJSNI_WaveSoundBuffer::Play()
 	tTJSCriticalSectionHolder holder(BufferCS);
 	tTJSCriticalSectionHolder l2holder(L2BufferCS);
 
-	if(!Decoder->SetPosition(CurrentPos))
-		Decoder->SetPosition(CurrentPos = 0);
+	// XXX: is this right?
+//	if(!LoopManager->SetPosition(CurrentPos))
+//		LoopManager->SetPosition(CurrentPos = 0);
 
 	StartPlay();
 	SetStatus(ssPlay);
@@ -2593,7 +2549,7 @@ void tTJSNI_WaveSoundBuffer::Stop()
 	if(Status != ssUnload) SetStatus(ssStop);
 
 	// rewind
-	CurrentPos = 0;
+	if(LoopManager) LoopManager->SetPosition(0);
 }
 //---------------------------------------------------------------------------
 void tTJSNI_WaveSoundBuffer::SetPaused(bool b)
@@ -2631,40 +2587,6 @@ void tTJSNI_WaveSoundBuffer::Open(const ttstr & storagename)
 
 	Decoder = TVPCreateWaveDecoder(storagename);
 
-	// open loop information file
-	ttstr sliname = storagename + TJS_W(".sli");
-	if(TVPIsExistentStorage(sliname))
-	{
-		tTVPStreamHolder slistream(sliname);
-		tjs_uint8 *buffer;
-		tjs_uint size;
-		buffer = new tjs_uint8 [ (size = slistream->GetSize()) +1];
-		try
-		{
-			slistream->ReadBuffer(buffer, size);
-			buffer[size] = 0;
-			char *p;
-			p = strstr((char*)buffer, "LoopStart=");
-			if(!p) TVPThrowExceptionMessage(TVPInvalidLoopInformation, sliname);
-			p += 10; // length of "LoopStart="
-			LoopStart = _atoi64(p);
-
-			p = strstr((char*)buffer, "LoopLength=");
-			if(!p) TVPThrowExceptionMessage(TVPInvalidLoopInformation, sliname);
-			p += 11; // length of "LoopLength="
-			LoopLength = _atoi64(p);
-
-			LoopEnd = LoopStart + LoopLength;
-		}
-		catch(...)
-		{
-			delete [] buffer;
-			Clear();
-			throw;
-		}
-		delete [] buffer;
-	}
-
 	// retrieve format
 	try
 	{
@@ -2677,16 +2599,10 @@ void tTJSNI_WaveSoundBuffer::Open(const ttstr & storagename)
 		throw;
 	}
 
-	if(LoopLength && InputFormat.TotalSamples)
-	{
-		// if loop information is alive and totalsamples are known
-		if(LoopStart + LoopLength > InputFormat.TotalSamples)
-		{
-			// loop length exceeds total length
-			Clear();
-			TVPThrowExceptionMessage(TVPInvalidLoopInformation, sliname);
-		}
-	}
+	// make manager
+	LoopManager = new tTVPWaveLoopManager();
+	LoopManager->SetDecoder(Decoder);
+///////////////////////////////////////////////////////////////////////// TODO: must read sli file
 
 	// set status to stop
 	SetStatus(ssStop);
@@ -2704,33 +2620,27 @@ tjs_uint64 tTJSNI_WaveSoundBuffer::GetPosition()
 
 	tjs_int rblock = pp / AccessUnitBytes;
 
-	if(L1BufferSamplePositions[rblock] == (tjs_uint64)(tjs_int64)-1)
+	std::vector<tTVPWaveLoopSegment> & segs = L1BufferSegments[rblock];
+	if(segs.size() == 0)
 		return 0L;
 
 	tjs_int offset = pp % AccessUnitBytes;
 
 	offset /= Format.Format.nBlockAlign;
 
-	tjs_uint64 pos = L1BufferSamplePositions[rblock] + offset;
 
-	if(Looping)
+
+	tjs_int spos = 0;
+	tjs_uint64 pos;
+	for(unsigned int i = 0; i < segs.size(); i++)
 	{
-		if(LoopLength != 0)
+		tjs_int limit = spos + segs[i].Length;
+		if(offset >= spos && offset < limit)
 		{
-			while(pos >= LoopEnd) pos -= LoopLength;
+			pos = segs[i].Start + (offset - spos);
+			break;
 		}
-		else
-		{
-			// simple loop
-			if(InputFormat.TotalSamples != 0)
-				while(pos >= InputFormat.TotalSamples) pos -= InputFormat.TotalSamples;
-		}
-	}
-	else
-	{
-		// not looping
-		if(InputFormat.TotalSamples != 0)
-			while(pos >= InputFormat.TotalSamples) pos -= InputFormat.TotalSamples;
+		spos = limit;
 	}
 
 	return pos * 1000 / Format.Format.nSamplesPerSec;
@@ -2745,13 +2655,12 @@ void tTJSNI_WaveSoundBuffer::SetPosition(tjs_uint64 pos)
 	if(BufferPlaying && DSBufferPlaying)
 	{
 		StopPlay();
-		if(Decoder->SetPosition(possamples))
-			CurrentPos = possamples;
+		LoopManager->SetPosition(possamples);
 		StartPlay();
 	}
 	else
 	{
-		if(Decoder->SetPosition(possamples)) CurrentPos = possamples;
+		LoopManager->SetPosition(possamples);
 	}
 }
 //---------------------------------------------------------------------------
@@ -3008,19 +2917,22 @@ tjs_int tTJSNI_WaveSoundBuffer::GetVisBuffer(tjs_int16 *dest, tjs_int numsamples
 	if(channels != Format.Format.nChannels && channels != 1) return 0;
 
 	// retrieve current playing position
+
 	DWORD wp, pp;
 	{
 		tTJSCriticalSectionHolder holder(BufferCS);
+		// the critical section protects only here;
+		// the rest is not important code (does anyone care about that the retrieved
+		// visualization becomes wrong a little ?)
 
 		if(FAILED(SoundBuffer->GetCurrentPosition(&pp, &wp))) return 0;
+
+		pp += aheadsamples * Format.Format.nBlockAlign;
+		pp = pp % BufferBytes;
+
+		if(L1BufferSegments[pp/AccessUnitBytes].size() == 0)
+			return 0;
 	}
-
-
-	pp += aheadsamples * Format.Format.nBlockAlign;
-	pp = pp % BufferBytes;
-
-	if(L1BufferSamplePositions[pp/AccessUnitBytes] == (tjs_uint64)(tjs_int64)-1)
-		return 0;
 
 	pp /= Format.Format.nBlockAlign;
 
