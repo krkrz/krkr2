@@ -241,6 +241,8 @@ class tTVPWaveLoopManager
 	tjs_int ShortCrossFadeHalfSamples;
 		// TVP_WL_SMOOTH_TIME_HALF in sample unit
 
+	bool Looping;
+
 	tjs_int64 Position; // decoding position
 
 	tjs_uint8 *CrossFadeSamples; // sample buffer for crossfading
@@ -276,6 +278,9 @@ public:
 
 	tjs_int64 GetPosition() const;
 	void SetPosition(tjs_int64 pos);
+
+	bool GetLooping() const { return Looping; }
+	void SetLooping(bool b) { Looping = b; }
 
 	void Decode(void *dest, tjs_uint samples, tjs_uint &written,
 		std::vector<tTVPWaveLoopSegment> &segments,
