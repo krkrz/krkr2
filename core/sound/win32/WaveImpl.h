@@ -198,7 +198,7 @@ public:
 	void Open(const ttstr & storagename);
 
 public:
-	void SetLooping(bool b) { Looping = b; }
+	void SetLooping(bool b);
 	bool GetLooping() const { return Looping; }
 
     tjs_uint64 GetPosition();
