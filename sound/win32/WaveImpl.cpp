@@ -2602,10 +2602,41 @@ void tTJSNI_WaveSoundBuffer::Open(const ttstr & storagename)
 	// make manager
 	LoopManager = new tTVPWaveLoopManager();
 	LoopManager->SetDecoder(Decoder);
-///////////////////////////////////////////////////////////////////////// TODO: must read sli file
+	LoopManager->SetLooping(Looping);
+
+	// open loop information file
+	ttstr sliname = storagename + TJS_W(".sli");
+	if(TVPIsExistentStorage(sliname))
+	{
+		tTVPStreamHolder slistream(sliname);
+		char *buffer;
+		tjs_uint size;
+		buffer = new char [ (size = slistream->GetSize()) +1];
+		try
+		{
+			slistream->ReadBuffer(buffer, size);
+			buffer[size] = 0;
+
+			if(!LoopManager->ReadInformation(buffer))
+				TVPThrowExceptionMessage(TVPInvalidLoopInformation, sliname);
+		}
+		catch(...)
+		{
+			delete [] buffer;
+			Clear();
+			throw;
+		}
+		delete [] buffer;
+	}
 
 	// set status to stop
 	SetStatus(ssStop);
+}
+//---------------------------------------------------------------------------
+void tTJSNI_WaveSoundBuffer::SetLooping(bool b)
+{
+	Looping = b;
+	if(LoopManager) LoopManager->SetLooping(Looping);
 }
 //---------------------------------------------------------------------------
 tjs_uint64 tTJSNI_WaveSoundBuffer::GetPosition()

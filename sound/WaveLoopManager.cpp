@@ -136,6 +136,7 @@ tTVPWaveLoopManager::tTVPWaveLoopManager()
 	CrossFadePosition = 0;
 	Decoder = NULL;
 	IgnoreLinks = false;
+	Looping = false;
 	Format = new tTVPWaveFormat;
 	memset(Format, 0, sizeof(*Format));
 
@@ -440,7 +441,13 @@ void tTVPWaveLoopManager::Decode(void *dest, tjs_uint samples, tjs_uint &written
 			Position += decoded;
 			written += decoded;
 			if(decoded != (tjs_uint)one_unit)
-				break; // must be an internal error but do nothing
+			{
+				// must be the end of the decode
+				if(!Looping) break; // end decoding
+				// rewind and continue
+				Position = 0;
+				Decoder->SetPosition(0);
+			}
 			d += decoded * Format->BytesPerSample * Format->Channels;
 		}
 		else
