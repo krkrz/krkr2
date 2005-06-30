@@ -45,6 +45,7 @@ public:
 
 	void __fastcall Execute(void)
 	{
+		Sleep(100); // sleep a while; this will arrow other threads to do unprocessed events.
 		DWORD tickstart = GetTickCount();
 		while(!Terminated)
 		{
