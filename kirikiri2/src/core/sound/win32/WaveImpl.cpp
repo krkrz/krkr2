@@ -2245,6 +2245,12 @@ tjs_uint tTJSNI_WaveSoundBuffer::ReadL2Buffer(void *buffer,
 		std::vector<tTVPWaveLoopSegment> & segments,
 		std::vector<tTVPWaveLabel> & labels)
 {
+	// This routine is protected by BufferCS, not L2BufferCS, while
+	// this routine reads L2 buffer.
+	// But It's ok because this function will never read currently writing L2
+	// buffer. L2 buffer having at least one rendered unit is
+	// guaranteed at this point.
+
 	tjs_uint decoded = L2BufferDecodedSamplesInUnit[L2BufferReadPos];
 
 	segments = L2BufferSegments[L2BufferReadPos];
