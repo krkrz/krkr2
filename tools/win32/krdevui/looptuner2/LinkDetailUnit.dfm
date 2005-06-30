@@ -43,7 +43,7 @@ object LinkDetailForm: TLinkDetailForm
       Caption = 'PosAdjustToolBar'
       EdgeBorders = []
       Flat = True
-      Images = LoopTunerMainForm.ImageList
+      Images = TSSLoopTuner2MainForm.ImageList
       TabOrder = 0
       object BeforePrevCrossToolButton: TToolButton
         Left = 0
@@ -168,7 +168,7 @@ object LinkDetailForm: TLinkDetailForm
       Caption = 'BottomToolBar'
       EdgeBorders = []
       Flat = True
-      Images = LoopTunerMainForm.ImageList
+      Images = TSSLoopTuner2MainForm.ImageList
       TabOrder = 0
       object ZoomInToolButton: TToolButton
         Left = 0
@@ -354,7 +354,7 @@ object LinkDetailForm: TLinkDetailForm
     end
   end
   object ActionList: TActionList
-    Images = LoopTunerMainForm.ImageList
+    Images = TSSLoopTuner2MainForm.ImageList
     Left = 456
     Top = 24
     object StopPlayAction: TAction
@@ -511,7 +511,7 @@ object LinkDetailForm: TLinkDetailForm
     Top = 24
   end
   object WaveAreaPopupMenu: TPopupMenu
-    Images = LoopTunerMainForm.ImageList
+    Images = TSSLoopTuner2MainForm.ImageList
     Left = 520
     Top = 24
     object ZoomInMenuItem: TMenuItem
