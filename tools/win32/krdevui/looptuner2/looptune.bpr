@@ -123,8 +123,9 @@ Count=1
 Item0=..\intermediate
 
 [HistoryLists\hlFinalOutputDir]
-Count=1
-Item0=..\..\..\..\..\bin\win32\tools
+Count=2
+Item0=..\..\..\..\..\bin\win32\tools\
+Item1=..\..\..\..\..\bin\win32\tools
 
 [Debugging]
 DebugSourceDirs=$(BCB)\source\vcl
