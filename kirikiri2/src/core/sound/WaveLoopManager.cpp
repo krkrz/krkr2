@@ -33,6 +33,16 @@
 #endif
 
 //---------------------------------------------------------------------------
+const int TVPWaveLoopLinkGiveUpCount = 10;
+	// This is for preventing infinite loop caused by recursive links.
+	// If the decoding point does not change when the loop manager follows the
+	// links, after 'TVPWaveLoopLinkGiveUpCount' times the loop manager
+	// will give up the decoding.
+//---------------------------------------------------------------------------
+
+
+
+//---------------------------------------------------------------------------
 // Wave Sample Types
 //---------------------------------------------------------------------------
 #ifndef TJS_HOST_IS_BIG_ENDIAN
@@ -275,6 +285,8 @@ void tTVPWaveLoopManager::Decode(void *dest, tjs_uint samples, tjs_uint &written
 	written = 0;
 	tjs_uint8 *d = (tjs_uint8*)dest;
 
+	tjs_int give_up_count = 0;
+
 	while(written != samples/* && Position < Format->TotalSamples*/)
 	{
 		// decide next operation
@@ -290,6 +302,10 @@ void tTVPWaveLoopManager::Decode(void *dest, tjs_uint samples, tjs_uint &written
 			if(link.From == Position)
 			{
 				// do jump
+				give_up_count ++;
+				if(give_up_count >= TVPWaveLoopLinkGiveUpCount)
+					break; // give up decoding
+
 				Position = link.To;
 				if(!CrossFadeSamples)
 					Decoder->SetPosition(Position);
@@ -418,6 +434,8 @@ void tTVPWaveLoopManager::Decode(void *dest, tjs_uint samples, tjs_uint &written
 		}
 		segments.push_back(tTVPWaveLoopSegment(Position, one_unit));
 
+		if(one_unit > 0) give_up_count = 0; // reset give up count
+
 		// evaluate each label
 		tjs_uint label_base = labels.size();
 		GetLabelAt(Position, Position + one_unit, labels);
@@ -445,6 +463,11 @@ void tTVPWaveLoopManager::Decode(void *dest, tjs_uint samples, tjs_uint &written
 				// must be the end of the decode
 				if(!Looping) break; // end decoding
 				// rewind and continue
+				if(Position == 0)
+				{
+					// already rewinded; must be an error
+					break;
+				}
 				Position = 0;
 				Decoder->SetPosition(0);
 			}
