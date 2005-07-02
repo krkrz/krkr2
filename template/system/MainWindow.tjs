@@ -1497,9 +1497,6 @@ class KAGWindow extends Window
 		// pflags -> flags
 		(Dictionary.assignStruct incontextof flags)(pflags);
 
-		// 読み込み
-		internalRestoreFlags(pcflags);
-
 		// 栞管理関連
 		storeLabelPassed = true;
 		nextRecordHistory = false;
@@ -1510,6 +1507,9 @@ class KAGWindow extends Window
 		mainConductor.restore(pcflags.mainConductor);
 		extraConductor.clear();
 		setConductorToMain();
+
+		// 読み込み
+		internalRestoreFlags(pcflags);
 
 		// メニュー関連
 		setMenuAccessibleAll();
