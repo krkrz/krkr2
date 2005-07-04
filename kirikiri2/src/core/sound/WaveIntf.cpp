@@ -699,8 +699,22 @@ tjs_error TJS_INTF_METHOD
 //---------------------------------------------------------------------------
 void TJS_INTF_METHOD tTJSNI_BaseWaveSoundBuffer::Invalidate()
 {
-
 	inherited::Invalidate();
+}
+//---------------------------------------------------------------------------
+void tTJSNI_BaseWaveSoundBuffer::InvokeLabelEvent(const ttstr & name)
+{
+	// the invoked event is to be delivered asynchronously.
+	// the event is to be erased when the SetStatus is called, but it's ok.
+	// ( SetStatus calls TVPCancelSourceEvents(Owner); )
+
+	if(Owner && CanDeliverEvents)
+	{
+		tTJSVariant param(name);
+		static ttstr eventname(TJS_W("onLabel"));
+		TVPPostEvent(Owner, Owner, eventname, 0, TVP_EPT_POST,
+			1, &param);
+	}
 }
 //---------------------------------------------------------------------------
 
@@ -849,6 +863,23 @@ TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/onFadeCompleted)
 	return TJS_S_OK;
 }
 TJS_END_NATIVE_METHOD_DECL(/*func. name*/onFadeCompleted)
+//----------------------------------------------------------------------
+TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/onLabel)
+{
+	TJS_GET_NATIVE_INSTANCE(/*var. name*/_this,
+		/*var. type*/tTJSNI_WaveSoundBuffer);
+
+	tTJSVariantClosure obj = _this->GetActionOwnerNoAddRef();
+	if(obj.Object)
+	{
+		TVP_ACTION_INVOKE_BEGIN(1, "onLabel", objthis);
+		TVP_ACTION_INVOKE_MEMBER("name");
+		TVP_ACTION_INVOKE_END(obj);
+	}
+
+	return TJS_S_OK;
+}
+TJS_END_NATIVE_METHOD_DECL(/*func. name*/onLabel)
 //----------------------------------------------------------------------
 
 //-- properties

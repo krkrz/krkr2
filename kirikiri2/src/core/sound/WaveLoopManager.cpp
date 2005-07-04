@@ -449,6 +449,11 @@ void tTVPWaveLoopManager::Decode(void *dest, tjs_uint samples, tjs_uint &written
 			}
 		}
 
+		// calculate each label offset
+		for(std::vector<tTVPWaveLabel>::iterator i = labels.begin() + label_base;
+			i != labels.end(); i++)
+			i->Offset = (tjs_int)(i->Position - Position) + written;
+
 		// decode or copy
 		if(!CrossFadeSamples)
 		{
