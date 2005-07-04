@@ -3312,7 +3312,7 @@ TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/freeDirectSound)  /* static */
 TJS_END_NATIVE_METHOD_DECL_OUTER(/*object to register*/cls,
 	/*func. name*/freeDirectSound)
 //----------------------------------------------------------------------
-TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/getVisBuffer)  /* static */
+TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/getVisBuffer)
 {
 	// get samples for visualization 
 	TJS_GET_NATIVE_INSTANCE(/*var. name*/_this,

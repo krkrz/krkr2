@@ -15,6 +15,7 @@
 #include "StorageIntf.h"
 #include "MsgIntf.h"
 #include "UtilStreams.h"
+#include "WaveLoopManager.h"
 
 
 //---------------------------------------------------------------------------
@@ -685,6 +686,8 @@ tTVPWaveDecoder *  TVPCreateWaveDecoder(const ttstr & storagename)
 //---------------------------------------------------------------------------
 tTJSNI_BaseWaveSoundBuffer::tTJSNI_BaseWaveSoundBuffer()
 {
+	LoopManager = NULL;
+	WaveFlagsObject = NULL;
 }
 //---------------------------------------------------------------------------
 tjs_error TJS_INTF_METHOD
@@ -699,6 +702,14 @@ tjs_error TJS_INTF_METHOD
 //---------------------------------------------------------------------------
 void TJS_INTF_METHOD tTJSNI_BaseWaveSoundBuffer::Invalidate()
 {
+	// invalidate wave flags object
+	if(WaveFlagsObject)
+	{
+		WaveFlagsObject->Invalidate(0, NULL, NULL, WaveFlagsObject);
+		WaveFlagsObject->Release();
+	}
+
+
 	inherited::Invalidate();
 }
 //---------------------------------------------------------------------------
@@ -715,6 +726,17 @@ void tTJSNI_BaseWaveSoundBuffer::InvokeLabelEvent(const ttstr & name)
 		TVPPostEvent(Owner, Owner, eventname, 0, TVP_EPT_POST,
 			1, &param);
 	}
+}
+//---------------------------------------------------------------------------
+iTJSDispatch2 * tTJSNI_BaseWaveSoundBuffer::GetWaveFlagsObjectNoAddRef()
+{
+	if(WaveFlagsObject) return WaveFlagsObject;
+
+	if(!Owner) TVPThrowInternalError;
+
+	WaveFlagsObject = TVPCreateWaveFlagsObject(Owner);
+
+	return WaveFlagsObject;
 }
 //---------------------------------------------------------------------------
 
@@ -1197,6 +1219,22 @@ TJS_BEGIN_NATIVE_PROP_DECL(channels)
 }
 TJS_END_NATIVE_PROP_DECL(channels)
 //----------------------------------------------------------------------
+TJS_BEGIN_NATIVE_PROP_DECL(flags)
+{
+	TJS_BEGIN_NATIVE_PROP_GETTER
+	{
+		TJS_GET_NATIVE_INSTANCE(/*var. name*/_this, /*var. type*/tTJSNI_WaveSoundBuffer);
+
+		iTJSDispatch2 * dsp = _this->GetWaveFlagsObjectNoAddRef();
+		*result = tTJSVariant(dsp, dsp);
+		return TJS_S_OK;
+	}
+	TJS_END_NATIVE_PROP_GETTER
+
+	TJS_DENY_NATIVE_PROP_SETTER
+}
+TJS_END_NATIVE_PROP_DECL(flags)
+//----------------------------------------------------------------------
 TJS_BEGIN_NATIVE_PROP_DECL(globalVolume)
 {
 	TJS_BEGIN_NATIVE_PROP_GETTER
@@ -1244,6 +1282,171 @@ TJS_END_NATIVE_STATIC_PROP_DECL(globalFocusMode)
 //----------------------------------------------------------------------
 
 
+}
+//---------------------------------------------------------------------------
+
+
+
+
+
+
+
+
+//---------------------------------------------------------------------------
+// tTJSNI_WaveFlags : Wave Flags object
+//---------------------------------------------------------------------------
+tTJSNI_WaveFlags::tTJSNI_WaveFlags()
+{
+	Buffer = NULL;
+}
+//---------------------------------------------------------------------------
+tTJSNI_WaveFlags::~tTJSNI_WaveFlags()
+{
+}
+//---------------------------------------------------------------------------
+tjs_error TJS_INTF_METHOD tTJSNI_WaveFlags::Construct(tjs_int numparams,
+	tTJSVariant **param, iTJSDispatch2 *tjs_obj)
+{
+	if(numparams < 1) return TJS_E_BADPARAMCOUNT;
+
+	iTJSDispatch2 *dsp = param[0]->AsObjectNoAddRef();
+
+	tTJSNI_WaveSoundBuffer *buffer = NULL;
+	if(TJS_FAILED(dsp->NativeInstanceSupport(TJS_NIS_GETINSTANCE,
+		tTJSNC_WaveSoundBuffer::ClassID, (iTJSNativeInstance**)&buffer)))
+		TVPThrowInternalError;
+
+	Buffer = buffer;
+
+	return TJS_S_OK;
+}
+//---------------------------------------------------------------------------
+void TJS_INTF_METHOD tTJSNI_WaveFlags::Invalidate()
+{
+	Buffer = NULL;
+
+	inherited::Invalidate();
+}
+//---------------------------------------------------------------------------
+
+
+
+
+
+//---------------------------------------------------------------------------
+// tTJSNC_WaveFlags : Wave Flags class
+//---------------------------------------------------------------------------
+tjs_uint32 tTJSNC_WaveFlags::ClassID = -1;
+tTJSNC_WaveFlags::tTJSNC_WaveFlags() : tTJSNativeClass(TJS_W("WaveFlags"))
+{
+	TJS_BEGIN_NATIVE_MEMBERS(WaveFlags) // constructor
+	TJS_DECL_EMPTY_FINALIZE_METHOD
+//----------------------------------------------------------------------
+TJS_BEGIN_NATIVE_CONSTRUCTOR_DECL(/*var.name*/_this, /*var.type*/tTJSNI_WaveFlags,
+	/*TJS class name*/WaveFlags)
+{
+	return TJS_S_OK;
+}
+TJS_END_NATIVE_CONSTRUCTOR_DECL(/*TJS class name*/WaveFlags)
+//----------------------------------------------------------------------
+
+//-- methods
+
+//---------------------------------------------------------------------------
+TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/reset)
+{
+	TJS_GET_NATIVE_INSTANCE(/*var. name*/_this, /*var. type*/tTJSNI_WaveFlags);
+
+	tTVPWaveLoopManager * manager =
+		_this->GetBuffer()->GetWaveLoopManager(); /* note that the manager can be null */
+
+	if(manager) manager->ClearFlags();
+
+	return TJS_S_OK;
+}
+TJS_END_NATIVE_METHOD_DECL(/*func. name*/reset)
+//----------------------------------------------------------------------
+
+//-- properties
+
+//----------------------------------------------------------------------
+TJS_BEGIN_NATIVE_PROP_DECL(count)
+{
+	TJS_BEGIN_NATIVE_PROP_GETTER
+	{
+		TJS_GET_NATIVE_INSTANCE(/*var. name*/_this, /*var. type*/tTJSNI_WaveFlags);
+		*result = TVP_WL_MAX_FLAGS; // always this value
+		return TJS_S_OK;
+	}
+	TJS_END_NATIVE_PROP_GETTER
+
+	TJS_DENY_NATIVE_PROP_SETTER
+}
+TJS_END_NATIVE_PROP_DECL(count)
+//----------------------------------------------------------------------
+#define TVP_DEFINE_FLAG_PROP(N) \
+	TJS_BEGIN_NATIVE_PROP_DECL(N)                                                                    \
+	{                                                                                                \
+		TJS_BEGIN_NATIVE_PROP_GETTER                                                                 \
+		{                                                                                            \
+			TJS_GET_NATIVE_INSTANCE(/*var. name*/_this, /*var. type*/tTJSNI_WaveFlags);              \
+			tTVPWaveLoopManager * manager =                                                          \
+				_this->GetBuffer()->GetWaveLoopManager(); /* note that the manager can be null */    \
+			if(manager) *result = manager->GetFlag(N); else *result = (tjs_int)0;                    \
+			return TJS_S_OK;                                                                         \
+		}                                                                                            \
+		TJS_END_NATIVE_PROP_GETTER                                                                   \
+                                                                                                     \
+		TJS_BEGIN_NATIVE_PROP_SETTER                                                                 \
+		{                                                                                            \
+			TJS_GET_NATIVE_INSTANCE(/*var. name*/_this, /*var. type*/tTJSNI_WaveFlags);              \
+			tTVPWaveLoopManager * manager =                                                          \
+				_this->GetBuffer()->GetWaveLoopManager(); /* note that the manager can be null */    \
+			if(manager) manager->SetFlag(N, (tjs_int)*param);                                        \
+			return TJS_S_OK;                                                                         \
+		}                                                                                            \
+		TJS_END_NATIVE_PROP_SETTER                                                                   \
+	}                                                                                                \
+	TJS_END_NATIVE_PROP_DECL(N)                                                                      
+
+TVP_DEFINE_FLAG_PROP(0)
+TVP_DEFINE_FLAG_PROP(1)
+TVP_DEFINE_FLAG_PROP(2)
+TVP_DEFINE_FLAG_PROP(3)
+TVP_DEFINE_FLAG_PROP(4)
+TVP_DEFINE_FLAG_PROP(5)
+TVP_DEFINE_FLAG_PROP(6)
+TVP_DEFINE_FLAG_PROP(7)
+TVP_DEFINE_FLAG_PROP(8)
+TVP_DEFINE_FLAG_PROP(9)
+TVP_DEFINE_FLAG_PROP(10)
+TVP_DEFINE_FLAG_PROP(11)
+TVP_DEFINE_FLAG_PROP(12)
+TVP_DEFINE_FLAG_PROP(13)
+TVP_DEFINE_FLAG_PROP(14)
+TVP_DEFINE_FLAG_PROP(15)
+
+//----------------------------------------------------------------------
+	TJS_END_NATIVE_MEMBERS
+}
+//---------------------------------------------------------------------------
+iTJSDispatch2 * TVPCreateWaveFlagsObject(iTJSDispatch2 * buffer)
+{
+	struct tHolder
+	{
+		iTJSDispatch2 * Obj;
+		tHolder() { Obj = new tTJSNC_WaveFlags(); }
+		~tHolder() { Obj->Release(); }
+	} static waveflagsclass;
+
+	iTJSDispatch2 *out;
+	tTJSVariant param(buffer);
+	tTJSVariant *pparam = &param;
+	if(TJS_FAILED(waveflagsclass.Obj->CreateNew(0, NULL, NULL, &out, 1, &pparam,
+		waveflagsclass.Obj)))
+		TVPThrowInternalError;
+
+	return out;
 }
 //---------------------------------------------------------------------------
 
