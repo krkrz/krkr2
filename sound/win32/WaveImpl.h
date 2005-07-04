@@ -39,6 +39,8 @@ struct IDirectSound;
 
 #define TVP_WSB_ACCESS_FREQ (8)  // wave sound buffer access frequency (hz)
 
+#define TVP_TIMEOFS_INVALID_VALUE ((tjs_int)(- 2147483648i64)) // invalid value for 32bit time offset
+
 //---------------------------------------------------------------------------
 
 TJS_EXP_FUNC_DEF(void, TVPReleaseDirectSound, ());
@@ -146,8 +148,14 @@ private:
 	tjs_int *L2BufferDecodedSamplesInUnit;
 	std::vector<tTVPWaveLoopSegment> *L1BufferSegments;
 	std::vector<tTVPWaveLabel> *L1BufferLabels;
+	std::vector<tTVPWaveLabel> LabelEventQueue;
+	tjs_int64 *L1BufferDecodeSamplePos;
 	std::vector<tTVPWaveLoopSegment> *L2BufferSegments;
 	std::vector<tTVPWaveLabel> *L2BufferLabels;
+
+	tjs_int64 DecodePos; // decoded samples from directsound buffer play
+	tjs_int64 LastCheckedDecodePos; // last sured position (TVP_TIMEOFS_INVALID_VALUE for not checked) and 
+	tjs_uint64 LastCheckedTick; // last sured tick time
 
 	bool Looping;
 
@@ -172,6 +180,13 @@ private:
 public:
 	bool FillBuffer(bool firstwrite = false, bool allowpause = true);
 
+private:
+	void ResetLastCheckedDecodePos(DWORD pp = (DWORD)-1);
+
+public:
+	tjs_int FireLabelEventsAndGetNearestLabelEventStep(tjs_int64 tick);
+	tjs_int GetNearestEventStep();
+	void FlushAllLabelEvents();
 
 private:
 	void StartPlay();

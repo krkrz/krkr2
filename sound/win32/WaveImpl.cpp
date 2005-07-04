@@ -24,6 +24,7 @@
 #include "ThreadIntf.h"
 #include "Random.h"
 #include "UtilStreams.h"
+#include "TickCount.h"
 
 #ifdef TVP_SUPPORT_OLD_WAVEUNPACKER
 	#include "oldwaveunpacker.h"
@@ -1430,13 +1431,30 @@ tTJSCriticalSection TVPWaveSoundBufferVectorCS;
 //---------------------------------------------------------------------------
 // tTVPWaveSoundBufferThread : playing thread
 //---------------------------------------------------------------------------
+/*
+	The system has one playing thread.
+	The playing thread fills each sound buffer's L1 (DirectSound) buffer, and
+	also manages timing for label events.
+	The technique used in this algorithm is similar to Timer claass implementation.
+*/
 class tTVPWaveSoundBufferThread : public tTVPThread
 {
 	tTVPThreadEvent Event;
 
+	HWND UtilWindow; // utility window to notify the pending events occur
+	bool PendingLabelEventExists;
+	bool WndProcToBeCalled;
+	DWORD NextLabelEventTick;
+	DWORD LastFilledTick;
+
 public:
 	tTVPWaveSoundBufferThread();
 	~tTVPWaveSoundBufferThread();
+
+private:
+	void __fastcall UtilWndProc(Messages::TMessage &Msg);
+public:
+	void ReschedulePendingLabelEvent(tjs_int tick);
 
 protected:
 	void Execute(void);
@@ -1445,11 +1463,17 @@ public:
 	void Start(void);
 	void CheckBufferSleep();
 
+
 } static *TVPWaveSoundBufferThread = NULL;
 //---------------------------------------------------------------------------
 tTVPWaveSoundBufferThread::tTVPWaveSoundBufferThread()
 	: tTVPThread(true)
 {
+	UtilWindow = AllocateHWnd(UtilWndProc);
+	PendingLabelEventExists = false;
+	NextLabelEventTick = 0;
+	LastFilledTick = 0;
+	WndProcToBeCalled = false;
 	SetPriority(ttpHighest);
 	Resume();
 }
@@ -1461,6 +1485,69 @@ tTVPWaveSoundBufferThread::~tTVPWaveSoundBufferThread()
 	Resume();
 	Event.Set();
 	WaitFor();
+	DeallocateHWnd(UtilWindow);
+}
+//---------------------------------------------------------------------------
+void __fastcall tTVPWaveSoundBufferThread::UtilWndProc(Messages::TMessage &Msg)
+{
+	// Window procedure of UtilWindow
+	if(Msg.Msg == WM_USER + 1 && !GetTerminated())
+	{
+		// pending events occur
+		tTJSCriticalSectionHolder holder(TVPWaveSoundBufferVectorCS); // protect the object
+
+		WndProcToBeCalled = false;
+
+		tjs_int64 tick = TVPGetTickCount();
+
+		int nearest_next = TVP_TIMEOFS_INVALID_VALUE;
+
+		std::vector<tTJSNI_WaveSoundBuffer *>::iterator i;
+		for(i = TVPWaveSoundBufferVector.begin();
+			i != TVPWaveSoundBufferVector.end(); i++)
+		{
+			int next = (*i)->FireLabelEventsAndGetNearestLabelEventStep(tick);
+				// fire label events and get nearest label event step
+			if(next != TVP_TIMEOFS_INVALID_VALUE)
+			{
+				if(nearest_next == TVP_TIMEOFS_INVALID_VALUE || nearest_next > next)
+					nearest_next = next;
+			}
+		}
+
+		if(nearest_next != TVP_TIMEOFS_INVALID_VALUE)
+		{
+			PendingLabelEventExists = true;
+			NextLabelEventTick = timeGetTime() + nearest_next;
+		}
+		else
+		{
+			PendingLabelEventExists = false;
+		}
+	}
+	else
+	{
+		Msg.Result =  DefWindowProc(UtilWindow, Msg.Msg, Msg.WParam, Msg.LParam);
+	}
+}
+//---------------------------------------------------------------------------
+void tTVPWaveSoundBufferThread::ReschedulePendingLabelEvent(tjs_int tick)
+{
+	if(tick == TVP_TIMEOFS_INVALID_VALUE) return; // no need to reschedule
+	DWORD eventtick = timeGetTime() + tick;
+
+	tTJSCriticalSectionHolder holder(TVPWaveSoundBufferVectorCS);
+
+	if(PendingLabelEventExists)
+	{
+		if((tjs_int32)NextLabelEventTick - (tjs_int32)eventtick > 0)
+			NextLabelEventTick = eventtick;
+	}
+	else
+	{
+		PendingLabelEventExists = true;
+		NextLabelEventTick = eventtick;
+	}
 }
 //---------------------------------------------------------------------------
 #define TVP_WSB_THREAD_SLEEP_TIME 60
@@ -1469,25 +1556,55 @@ void tTVPWaveSoundBufferThread::Execute(void)
 	while(!GetTerminated())
 	{
 		// thread loop for playing thread
-		DWORD time = GetTickCount();
+		DWORD time = timeGetTime();
 		TVPPushEnvironNoise(&time, sizeof(time));
 
 		{	// thread-protected
 			tTJSCriticalSectionHolder holder(TVPWaveSoundBufferVectorCS);
-			std::vector<tTJSNI_WaveSoundBuffer *>::iterator i;
-			for(i = TVPWaveSoundBufferVector.begin();
-				i != TVPWaveSoundBufferVector.end(); i++)
+
+			// check PendingLabelEventExists
+			if(PendingLabelEventExists)
 			{
-				if((*i)->ThreadCallbackEnabled)
-					(*i)->FillBuffer(); // fill sound buffer
+				if(!WndProcToBeCalled)
+				{
+					WndProcToBeCalled = true;
+					::PostMessage(UtilWindow, WM_USER+1, 0, 0);
+				}
+			}
+
+			if(time - LastFilledTick >= TVP_WSB_THREAD_SLEEP_TIME)
+			{
+				std::vector<tTJSNI_WaveSoundBuffer *>::iterator i;
+				for(i = TVPWaveSoundBufferVector.begin();
+					i != TVPWaveSoundBufferVector.end(); i++)
+				{
+					if((*i)->ThreadCallbackEnabled)
+						(*i)->FillBuffer(); // fill sound buffer
+				}
+				LastFilledTick = time;
 			}
 		}	// end-of-thread-protected
-		time = GetTickCount() - time;
+
+		DWORD time2;
+		time2 = timeGetTime();
+		time = time2 - time;
 
 		if(time < TVP_WSB_THREAD_SLEEP_TIME)
-			Event.WaitFor(TVP_WSB_THREAD_SLEEP_TIME - time);
+		{
+			tjs_int sleep_time = TVP_WSB_THREAD_SLEEP_TIME - time;
+			if(PendingLabelEventExists)
+			{
+				tjs_int step_to_next = (tjs_int32)NextLabelEventTick - (tjs_int32)time2;
+				if(step_to_next < sleep_time)
+					sleep_time = step_to_next;
+				if(sleep_time < 1) sleep_time = 1;
+			}
+			Event.WaitFor(sleep_time);
+		}
 		else
+		{
 			Event.WaitFor(1);
+		}
 	}
 }
 //---------------------------------------------------------------------------
@@ -1582,6 +1699,12 @@ static void TVPRemoveWaveSoundBuffer(tTJSNI_WaveSoundBuffer * buffer)
 		if(TVPWaveSoundBufferThread)
 			delete TVPWaveSoundBufferThread, TVPWaveSoundBufferThread = NULL;
 	}
+}
+//---------------------------------------------------------------------------
+static void TVPReschedulePendingLabelEvent(tjs_int tick)
+{
+	if(TVPWaveSoundBufferThread)
+		TVPWaveSoundBufferThread->ReschedulePendingLabelEvent(tick);
 }
 //---------------------------------------------------------------------------
 void TVPResetVolumeToAllSoundBuffer()
@@ -1725,9 +1848,11 @@ tTJSNI_WaveSoundBuffer::tTJSNI_WaveSoundBuffer()
 	Sound3DBuffer = NULL;
 	L2BufferDecodedSamplesInUnit = NULL;
 	L1BufferSegments = NULL;
-	L1BufferLabels = NULL;
 	L2BufferSegments = NULL;
+	L1BufferLabels = NULL;
 	L2BufferLabels = NULL;
+	L1BufferDecodeSamplePos = NULL;
+	DecodePos = 0;
 	L1BufferUnits = 0;
 	L2BufferUnits = 0;
 	TVPAddWaveSoundBuffer(this);
@@ -1777,9 +1902,12 @@ void tTJSNI_WaveSoundBuffer::TryCreateSoundBuffer(bool use3d)
 	L1BufferUnits = TVPL1BufferLength / (1000 / TVP_WSB_ACCESS_FREQ);
 	if(L1BufferUnits <= 1) L1BufferUnits = 2;
 	if(L1BufferSegments) delete [] L1BufferSegments, L1BufferSegments = NULL;
-	if(L1BufferLabels) delete [] L1BufferLabels, L1BufferLabels = NULL;
 	L1BufferSegments = new std::vector<tTVPWaveLoopSegment>[L1BufferUnits];
+	if(L1BufferLabels) delete [] L1BufferLabels, L1BufferLabels = NULL;
 	L1BufferLabels = new std::vector<tTVPWaveLabel>[L1BufferUnits];
+	LabelEventQueue.clear();
+	if(L1BufferDecodeSamplePos) delete [] L1BufferDecodeSamplePos, L1BufferDecodeSamplePos = NULL;
+	L1BufferDecodeSamplePos = new tjs_int64[L1BufferUnits];
 	BufferBytes = AccessUnitBytes * L1BufferUnits;
 		// l1 buffer bytes
 
@@ -2051,6 +2179,8 @@ void tTJSNI_WaveSoundBuffer::DestroySoundBuffer()
 
 	if(L1BufferSegments) delete [] L1BufferSegments, L1BufferSegments = NULL;
 	if(L1BufferLabels) delete [] L1BufferLabels, L1BufferLabels = NULL;
+	LabelEventQueue.clear();
+	if(L1BufferDecodeSamplePos) delete [] L1BufferDecodeSamplePos, L1BufferDecodeSamplePos = NULL;
 	if(L2BufferDecodedSamplesInUnit) delete [] L2BufferDecodedSamplesInUnit, L2BufferDecodedSamplesInUnit = NULL;
 	if(L2BufferLabels) delete [] L2BufferLabels, L2BufferLabels = NULL;
 	if(L2BufferSegments) delete [] L2BufferSegments, L2BufferSegments = NULL;
@@ -2107,19 +2237,30 @@ void tTJSNI_WaveSoundBuffer::ResetSamplePositions()
 	if(L2BufferSegments)
 	{
 		for(int i = 0; i < L2BufferUnits; i++)
-		{
 			L2BufferSegments[i].clear();
+	}
+	if(L2BufferLabels)
+	{
+		for(int i = 0; i < L2BufferUnits; i++)
 			L2BufferLabels[i].clear();
-		}
 	}
 	if(L1BufferSegments)
 	{
 		for(int i = 0; i < L1BufferUnits; i++)
-		{
 			L1BufferSegments[i].clear();
-			L1BufferLabels[i].clear();
-		}
 	}
+	if(L1BufferLabels)
+	{
+		for(int i = 0; i < L1BufferUnits; i++)
+			L1BufferLabels[i].clear();
+	}
+	if(L1BufferDecodeSamplePos)
+	{
+		for(int i = 0; i < L1BufferUnits; i++)
+			L1BufferDecodeSamplePos[i] = -1;
+	}
+	LabelEventQueue.clear();
+	DecodePos = 0;
 }
 //---------------------------------------------------------------------------
 void tTJSNI_WaveSoundBuffer::Clear()
@@ -2196,6 +2337,8 @@ bool tTJSNI_WaveSoundBuffer::FillL2Buffer(bool firstwrite, bool fromdecodethread
 
 	if(L2BufferEnded)
 	{
+		L2BufferSegments[L2BufferWritePos].clear();
+		L2BufferLabels[L2BufferWritePos].clear();
 		L2BufferDecodedSamplesInUnit[L2BufferWritePos] = 0;
 	}
 	else
@@ -2285,6 +2428,9 @@ void tTJSNI_WaveSoundBuffer::FillDSBuffer(tjs_int writepos,
 	BYTE *p1, *p2;
 	DWORD b1, b2;
 
+	segments.clear();
+	labels.clear();
+
 	HRESULT hr;
 	hr = SoundBuffer->Lock(writepos, AccessUnitBytes,
 		(void**)&p1, &b1, (void**)&p2, &b2, 0);
@@ -2369,26 +2515,30 @@ bool tTJSNI_WaveSoundBuffer::FillBuffer(bool firstwrite, bool allowpause)
 	DWORD pp = 0, wp = 0; // write pos and read pos
 	if(FAILED(SoundBuffer->GetCurrentPosition(&pp, &wp))) return true;
 
-
 	TVPPushEnvironNoise(&pp, sizeof(pp));
 	TVPPushEnvironNoise(&wp, sizeof(wp));
 		// drift between main clock and clocks which come from other sources
 		// is a good environ noise.
 
+	// check position
 	std::vector<tTVPWaveLoopSegment> * segment;
 	std::vector<tTVPWaveLabel> * label;
+	tjs_int64 * bufferdecodesamplepos;
 
 	if(firstwrite)
 	{
 		writepos = 0;
 		segment = L1BufferSegments + 0;
 		label   = L1BufferLabels + 0;
+		bufferdecodesamplepos = L1BufferDecodeSamplePos + 0;
 		PlayStopPos = -1;
 		SoundBufferWritePos = 1;
 		SoundBufferPrevReadPos = 0;
 	}
 	else
 	{
+		ResetLastCheckedDecodePos(pp);
+
 		if(PlayStopPos != -1)
 		{
 			// check whether the buffer playing position passes over PlayStopPos
@@ -2397,6 +2547,7 @@ bool tTJSNI_WaveSoundBuffer::FillBuffer(bool firstwrite, bool allowpause)
 				if(PlayStopPos >= SoundBufferPrevReadPos ||
 					PlayStopPos < (tjs_int)pp)
 				{
+					FlushAllLabelEvents();
 					SoundBuffer->Stop();
 					ResetSamplePositions();
 					DSBufferPlaying = false;
@@ -2410,6 +2561,7 @@ bool tTJSNI_WaveSoundBuffer::FillBuffer(bool firstwrite, bool allowpause)
 				if(PlayStopPos >= SoundBufferPrevReadPos &&
 					PlayStopPos < (tjs_int)pp)
 				{
+					FlushAllLabelEvents();
 					SoundBuffer->Stop();
 					ResetSamplePositions();
 					DSBufferPlaying = false;
@@ -2438,6 +2590,7 @@ bool tTJSNI_WaveSoundBuffer::FillBuffer(bool firstwrite, bool allowpause)
 		writepos = SoundBufferWritePos * AccessUnitBytes;
 		segment = L1BufferSegments + SoundBufferWritePos;
 		label   = L1BufferLabels   + SoundBufferWritePos;
+		bufferdecodesamplepos = L1BufferDecodeSamplePos + SoundBufferWritePos;
 		SoundBufferWritePos ++;
 		if(SoundBufferWritePos >= L1BufferUnits)
 			SoundBufferWritePos = 0;
@@ -2445,6 +2598,7 @@ bool tTJSNI_WaveSoundBuffer::FillBuffer(bool firstwrite, bool allowpause)
 
 	SoundBufferPrevReadPos = pp;
 
+	// decode
 	if(bufferremain > 1) // buffer is ready
 	{
 		// with no locking operations
@@ -2459,14 +2613,133 @@ bool tTJSNI_WaveSoundBuffer::FillBuffer(bool firstwrite, bool allowpause)
 			FillDSBuffer(writepos, *segment, *label);
 		}
 	}
+
+	// insert labels into LabelEventQueue and sort
+	if(label->size() != 0)
+	{
+		// add DecodePos offset to each item->Offset
+		for(std::vector<tTVPWaveLabel>::iterator i = label->begin();
+			i != label->end(); i++)
+				i->Offset += DecodePos;
+
+		// insert and sort
+		LabelEventQueue.insert(LabelEventQueue.end(),
+			label->begin(), label->end());
+		std::sort(LabelEventQueue.begin(), LabelEventQueue.end(),
+			tTVPWaveLabel::tSortByOffsetFuncObj());
+
+		// re-schedule label events
+		TVPReschedulePendingLabelEvent(GetNearestEventStep());
+	}
+
+	// write bufferdecodesamplepos
+	*bufferdecodesamplepos = DecodePos;
+	DecodePos += AccessUnitSamples;
+
 	return false;
+}
+//---------------------------------------------------------------------------
+void tTJSNI_WaveSoundBuffer::ResetLastCheckedDecodePos(DWORD pp)
+{
+	// set LastCheckedDecodePos and  LastCheckedTick
+	// we shoud reset these values because the clock sources are usually
+	// not identical.
+	tTJSCriticalSectionHolder holder(BufferCS);
+
+	if(pp == (DWORD)-1)
+	{
+		if(!SoundBuffer) return;
+		DWORD wp = 0;
+		if(FAILED(SoundBuffer->GetCurrentPosition(&pp, &wp)))
+			return; // must not be an error ...
+	}
+
+	tjs_int ppb = pp / AccessUnitBytes;
+	tjs_int ppm = pp % AccessUnitBytes;
+	if(L1BufferDecodeSamplePos[ppb] != -1)
+	{
+		LastCheckedDecodePos = L1BufferDecodeSamplePos[ppb] + ppm / Format.Format.nBlockAlign;
+		LastCheckedTick = TVPGetTickCount();
+	}
+}
+//---------------------------------------------------------------------------
+tjs_int tTJSNI_WaveSoundBuffer::FireLabelEventsAndGetNearestLabelEventStep(tjs_int64 tick)
+{
+	// fire events, event.EventTick <= tick, and return relative time to
+	// next nearest event (return TVP_TIMEOFS_INVALID_VALUE for no events).
+
+	// the vector LabelEventQueue must be sorted by the position.
+	tTJSCriticalSectionHolder holder(BufferCS);
+
+	if(!BufferPlaying) return TVP_TIMEOFS_INVALID_VALUE; // buffer is not currently playing
+	if(!DSBufferPlaying) return TVP_TIMEOFS_INVALID_VALUE; // direct sound buffer is not currently playing
+
+	if(LabelEventQueue.size() == 0) return TVP_TIMEOFS_INVALID_VALUE; // no more events
+
+	// calculate current playing decodepos
+	// at this point, LastCheckedDecodePos must not be -1
+	if(LastCheckedDecodePos == -1) ResetLastCheckedDecodePos();
+	tjs_int64 decodepos = (tick - LastCheckedTick) * Frequency / 1000 +
+		LastCheckedDecodePos;
+
+	while(true)
+	{
+		if(LabelEventQueue.size() == 0) break;
+		std::vector<tTVPWaveLabel>::iterator i = LabelEventQueue.begin();
+		int diff = (tjs_int32)i->Offset - (tjs_int32)decodepos;
+		if(diff <= 0)
+			InvokeLabelEvent(i->Name);
+		else
+			break;
+		LabelEventQueue.erase(i);
+	}
+
+	if(LabelEventQueue.size() == 0) return TVP_TIMEOFS_INVALID_VALUE; // no more events
+
+	return (tjs_int)(
+		(LabelEventQueue[0].Offset - (tjs_int32)decodepos) * 1000 / Frequency);
+}
+//---------------------------------------------------------------------------
+tjs_int tTJSNI_WaveSoundBuffer::GetNearestEventStep()
+{
+	// get nearest event stop from current tick
+	// (current tick is taken from TVPGetTickCount)
+	tTJSCriticalSectionHolder holder(BufferCS);
+
+	if(LabelEventQueue.size() == 0) return TVP_TIMEOFS_INVALID_VALUE; // no more events
+
+	// calculate current playing decodepos
+	// at this point, LastCheckedDecodePos must not be -1
+	if(LastCheckedDecodePos == -1) ResetLastCheckedDecodePos();
+	tjs_int64 decodepos = (TVPGetTickCount() - LastCheckedTick) * Frequency / 1000 +
+		LastCheckedDecodePos;
+
+	return (tjs_int)(
+		(LabelEventQueue[0].Offset - (tjs_int32)decodepos) * 1000 / Frequency);
+}
+//---------------------------------------------------------------------------
+void tTJSNI_WaveSoundBuffer::FlushAllLabelEvents()
+{
+	// called at the end of the decode.
+	// flush all undelivered events.
+	tTJSCriticalSectionHolder holder(BufferCS);
+
+	for(std::vector<tTVPWaveLabel>::iterator i = LabelEventQueue.begin();
+		i != LabelEventQueue.end(); i++)
+		InvokeLabelEvent(i->Name);
+
+	LabelEventQueue.clear();
 }
 //---------------------------------------------------------------------------
 void tTJSNI_WaveSoundBuffer::StartPlay()
 {
 	if(!Decoder) return;
 
-	TVPEnsurePrimaryBufferPlay(); // let primary buffer to start running
+	// let primary buffer to start running
+	TVPEnsurePrimaryBufferPlay();
+
+	// ensure playing thread
+	TVPEnsureWaveSoundBufferWorking();
 
 	// play from first
 
@@ -2492,11 +2765,12 @@ void tTJSNI_WaveSoundBuffer::StartPlay()
 			DSBufferPlaying = true;
 		}
 
-
+		// re-schedule label events
+		ResetLastCheckedDecodePos();
+		TVPReschedulePendingLabelEvent(GetNearestEventStep());
 	}	// end of thread protected block
 
 	// ensure thread
-	TVPEnsureWaveSoundBufferWorking();
 	if(!Thread)
 	{
 		ThreadCallbackEnabled = true;
@@ -2517,6 +2791,7 @@ void tTJSNI_WaveSoundBuffer::StopPlay()
 	SoundBuffer->Stop();
 	DSBufferPlaying = false;
 	BufferPlaying = false;
+
 }
 //---------------------------------------------------------------------------
 void tTJSNI_WaveSoundBuffer::Play()
