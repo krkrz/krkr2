@@ -55,7 +55,7 @@ static tjs_int TVPSoundGlobalFocusMuteVolume = 0;
 static enum tTVPForceConvertMode { fcmNone, fcm16bit, fcm16bitMono }
 	TVPForceConvertMode = fcmNone;
 static tjs_int TVPPrimarySBCreateTryLevel = -1;
-static bool TVPExpandToQuad = true;
+static bool TVPExpandToQuad = false;
 static tjs_int TVPL1BufferLength = 1000; // in ms
 static tjs_int TVPL2BufferLength = 1000; // in ms
 static bool TVPDirectSoundUse3D = false;
