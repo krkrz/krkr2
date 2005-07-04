@@ -81,11 +81,14 @@ struct tTVPPCM24
 	}
 	operator tjs_int () const
 	{
+		tjs_int t;
 #if TJS_HOST_IS_BIG_ENDIAN
-		return (value[0] << 16) + (value[1] << 8) + (value[2]);
+		t = ((tjs_int)value[0] << 16) + ((tjs_int)value[1] << 8) + ((tjs_int)value[2]);
 #else
-		return (value[2] << 16) + (value[1] << 8) + (value[0]);
+		t = ((tjs_int)value[2] << 16) + ((tjs_int)value[1] << 8) + ((tjs_int)value[0]);
 #endif
+		t |= -(t&0x800000); // extend sign
+		return t;
 	}
 };
 #ifdef __WIN32__
@@ -98,7 +101,6 @@ struct tTVPPCM24
 //---------------------------------------------------------------------------
 // Crossfade Template function
 //---------------------------------------------------------------------------
-#define MULT32(a, b)  ((tjs_int32)(((tjs_int64)(a)*(tjs_int64)(b))>>32))
 template <typename T>
 static void TVPCrossFadeIntegerBlend(void *dest, void *src1, void *src2,
 	tjs_int ratiostart, tjs_int ratioend,
@@ -118,7 +120,9 @@ static void TVPCrossFadeIntegerBlend(void *dest, void *src1, void *src2,
 		{
 			tjs_int si1 = (tjs_int)*s1;
 			tjs_int si2 = (tjs_int)*s2;
-			tjs_int o = si1 + MULT32((si2 - si1), ratio);
+			tjs_int o = (tjs_int) (
+						(((tjs_int64)si2 * (tjs_uint64)ratio) >> 32) +
+						(((tjs_int64)si1 * (0x100000000ui64 - (tjs_uint64)ratio) ) >> 32) );
 			*out = o;
 			s1 ++;
 			s2 ++;
