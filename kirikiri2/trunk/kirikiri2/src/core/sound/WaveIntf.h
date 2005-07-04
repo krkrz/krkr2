@@ -139,6 +139,8 @@ public:
 	void TJS_INTF_METHOD Invalidate();
 
 protected:
+	void InvokeLabelEvent(const ttstr & name);
+
 public:
 };
 //---------------------------------------------------------------------------
