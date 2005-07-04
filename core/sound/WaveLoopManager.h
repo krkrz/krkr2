@@ -167,10 +167,17 @@ struct tTVPWaveLabel
 {
 	tjs_int64 Position; // label position
 	tTVPLabelStringType Name; // label name
+	tjs_int Offset;
+		/*
+			This member will be set in tTVPWaveLoopManager::Decode,
+			and will contain the sample granule offset from first decoding
+			point at call of tTVPWaveLoopManager::Decode().
+		*/
 #ifdef TVP_IN_LOOP_TUNER
 	// these are only used by the loop tuner
 	tjs_int NameWidth; // display name width
 	tjs_int Index; // index
+#endif
 
 	struct tSortByPositionFuncObj
 	{
@@ -182,6 +189,17 @@ struct tTVPWaveLabel
 		}
 	};
 
+	struct tSortByOffsetFuncObj
+	{
+		bool operator()(
+			const tTVPWaveLabel &lhs,
+			const tTVPWaveLabel &rhs) const
+		{
+			return lhs.Offset < rhs.Offset;
+		}
+	};
+
+#ifdef TVP_IN_LOOP_TUNER
 	struct tSortByIndexFuncObj
 	{
 		bool operator()(
@@ -191,13 +209,12 @@ struct tTVPWaveLabel
 			return lhs.Index < rhs.Index;
 		}
 	};
-
 #endif
 
 	tTVPWaveLabel()
 	{
 		Position = 0;
-
+		Offset = 0;
 #ifdef TVP_IN_LOOP_TUNER
 		NameWidth = 0;
 		Index = 0;
