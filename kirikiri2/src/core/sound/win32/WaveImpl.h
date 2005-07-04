@@ -123,7 +123,6 @@ public:
 
 private:
 	tTVPWaveDecoder * Decoder;
-	tTVPWaveLoopManager * LoopManager;
 	tTVPWaveSoundBufferDecodeThread * Thread;
 public:
 	bool ThreadCallbackEnabled;
