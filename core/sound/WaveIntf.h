@@ -127,9 +127,15 @@ extern tTVPWaveDecoder *  TVPCreateWaveDecoder(const ttstr & storagename);
 //---------------------------------------------------------------------------
 // tTJSNI_BaseWaveSoundBuffer
 //---------------------------------------------------------------------------
+class tTVPWaveLoopManager;
 class tTJSNI_BaseWaveSoundBuffer : public tTJSNI_SoundBuffer
 {
 	typedef tTJSNI_SoundBuffer inherited;
+
+	iTJSDispatch2 * WaveFlagsObject;
+
+protected:
+	tTVPWaveLoopManager * LoopManager; // will be set by tTJSNI_WaveSoundBuffer
 
 public:
 	tTJSNI_BaseWaveSoundBuffer();
@@ -142,6 +148,8 @@ protected:
 	void InvokeLabelEvent(const ttstr & name);
 
 public:
+	iTJSDispatch2 * GetWaveFlagsObjectNoAddRef();
+	tTVPWaveLoopManager * GetWaveLoopManager() const { return LoopManager; }
 };
 //---------------------------------------------------------------------------
 
@@ -168,5 +176,54 @@ protected:
 //---------------------------------------------------------------------------
 extern tTJSNativeClass * TVPCreateNativeClass_WaveSoundBuffer();
 //---------------------------------------------------------------------------
+
+
+
+
+
+
+//---------------------------------------------------------------------------
+// tTJSNI_WaveFlags : Wave Flags object
+//---------------------------------------------------------------------------
+class tTJSNI_WaveSoundBuffer;
+class tTJSNI_WaveFlags : public tTJSNativeInstance
+{
+	typedef tTJSNativeInstance inherited;
+
+	tTJSNI_WaveSoundBuffer * Buffer;
+
+public:
+	tTJSNI_WaveFlags();
+	~tTJSNI_WaveFlags();
+	tjs_error TJS_INTF_METHOD Construct(tjs_int numparams, tTJSVariant **param,
+		iTJSDispatch2 *tjs_obj);
+	void TJS_INTF_METHOD Invalidate();
+
+	tTJSNI_WaveSoundBuffer * GetBuffer() const { return Buffer; }
+};
+//---------------------------------------------------------------------------
+
+
+
+//---------------------------------------------------------------------------
+// tTJSNC_WaveFlags : Wave Flags class
+//---------------------------------------------------------------------------
+class tTJSNC_WaveFlags : public tTJSNativeClass
+{
+public:
+	tTJSNC_WaveFlags();
+	static tjs_uint32 ClassID;
+
+protected:
+	tTJSNativeInstance *CreateNativeInstance() { return new tTJSNI_WaveFlags(); }
+};
+//---------------------------------------------------------------------------
+iTJSDispatch2 * TVPCreateWaveFlagsObject(iTJSDispatch2 * buffer);
+//---------------------------------------------------------------------------
+
+
+
+
+
 
 #endif
