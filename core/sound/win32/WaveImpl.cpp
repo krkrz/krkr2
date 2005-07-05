@@ -2785,6 +2785,7 @@ void tTJSNI_WaveSoundBuffer::StartPlay()
 	}	// end of thread protected block
 
 	// ensure thread
+	TVPEnsureWaveSoundBufferWorking(); // wake the playing thread up again
 	if(!Thread)
 	{
 		ThreadCallbackEnabled = true;
