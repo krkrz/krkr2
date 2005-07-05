@@ -1860,6 +1860,22 @@ tTJSNI_WaveSoundBuffer::tTJSNI_WaveSoundBuffer()
 	ZeroMemory(&InputFormat, sizeof(InputFormat));
 	ZeroMemory(&Format, sizeof(Format));
 	Looping = false;
+	DSBufferPlaying = false;
+	BufferPlaying = false;
+	Paused = false;
+	BufferBytes = 0;
+	AccessUnitBytes = 0;
+	AccessUnitSamples = 0;
+	L2AccessUnitBytes = 0;
+	SoundBufferPrevReadPos = 0;
+	SoundBufferWritePos = 0;
+	PlayStopPos = 0;
+	L2BufferReadPos = 0;
+	L2BufferWritePos = 0;
+	L2BufferRemain = 0;
+	L2BufferEnded = false;
+	LastCheckedDecodePos = -1;
+	LastCheckedTick = 0;
 }
 //---------------------------------------------------------------------------
 tjs_error TJS_INTF_METHOD
@@ -2552,7 +2568,6 @@ bool tTJSNI_WaveSoundBuffer::FillBuffer(bool firstwrite, bool allowpause)
 					ResetSamplePositions();
 					DSBufferPlaying = false;
 					BufferPlaying = false;
-					CurrentPos = 0;
 					return true;
 				}
 			}
@@ -2566,7 +2581,6 @@ bool tTJSNI_WaveSoundBuffer::FillBuffer(bool firstwrite, bool allowpause)
 					ResetSamplePositions();
 					DSBufferPlaying = false;
 					BufferPlaying = false;
-					CurrentPos = 0;
 					return true;
 				}
 			}
@@ -2807,10 +2821,6 @@ void tTJSNI_WaveSoundBuffer::Play()
 	if(Thread) { Thread->SetPriority(TVPDecodeThreadHighPriority);}
 	tTJSCriticalSectionHolder holder(BufferCS);
 	tTJSCriticalSectionHolder l2holder(L2BufferCS);
-
-	// XXX: is this right?
-//	if(!LoopManager->SetPosition(CurrentPos))
-//		LoopManager->SetPosition(CurrentPos = 0);
 
 	StartPlay();
 	SetStatus(ssPlay);
