@@ -2940,10 +2940,8 @@ tjs_uint64 tTJSNI_WaveSoundBuffer::GetPosition()
 
 	offset /= Format.Format.nBlockAlign;
 
-
-
 	tjs_int spos = 0;
-	tjs_uint64 pos;
+	tjs_uint64 pos = segs[0].Start;
 	for(unsigned int i = 0; i < segs.size(); i++)
 	{
 		tjs_int limit = spos + segs[i].Length;
