@@ -133,8 +133,6 @@ private:
 
 	bool UseVisBuffer;
 
-	tjs_uint64 CurrentPos; // current decoding ( not playing ) position in samples
-
 	tjs_int SoundBufferPrevReadPos;
 	tjs_int SoundBufferWritePos;
 	tjs_int PlayStopPos; // in bytes
@@ -153,7 +151,7 @@ private:
 	std::vector<tTVPWaveLabel> *L2BufferLabels;
 
 	tjs_int64 DecodePos; // decoded samples from directsound buffer play
-	tjs_int64 LastCheckedDecodePos; // last sured position (TVP_TIMEOFS_INVALID_VALUE for not checked) and 
+	tjs_int64 LastCheckedDecodePos; // last sured position (-1 for not checked) and 
 	tjs_uint64 LastCheckedTick; // last sured tick time
 
 	bool Looping;
