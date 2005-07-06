@@ -1,6 +1,6 @@
 object LinkDetailForm: TLinkDetailForm
-  Left = 72
-  Top = 357
+  Left = 82
+  Top = 361
   Width = 637
   Height = 350
   ActiveControl = WaveAreaPanel
