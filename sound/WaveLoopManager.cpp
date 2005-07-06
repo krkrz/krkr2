@@ -537,6 +537,17 @@ bool tTVPWaveLoopManager::GetNearestEvent(tjs_int64 current,
 		return false;
 	}
 
+	// rewind while the link 'from' is the same
+	tjs_int64 from = Links[s].From;
+	while(true)
+	{
+		if(s >= 1 && Links[s-1].From == from)
+			s--;
+		else
+			break;
+	}
+
+	// check conditions
 	if(!ignore_conditions)
 	{
 		do
