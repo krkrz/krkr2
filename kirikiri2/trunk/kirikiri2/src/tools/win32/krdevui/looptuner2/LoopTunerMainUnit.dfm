@@ -731,6 +731,12 @@ object TSSLoopTuner2MainForm: TTSSLoopTuner2MainForm
       object SaveMenuItem: TMenuItem
         Action = SaveAction
       end
+      object N1: TMenuItem
+        Caption = '-'
+      end
+      object CloseMenuItem: TMenuItem
+        Action = CloseAction
+      end
     end
     object EditMenu: TMenuItem
       Caption = '編集(&E)'
@@ -781,6 +787,15 @@ object TSSLoopTuner2MainForm: TTSSLoopTuner2MainForm
       end
       object IgnoreLinksMenuItem: TMenuItem
         Action = IgnoreLinksAction
+      end
+    end
+    object HelpMenu: TMenuItem
+      Caption = 'ヘルプ(&H)'
+      object ShowHelpMenuItem: TMenuItem
+        Action = ShowHelpAction
+      end
+      object ShowAboutMenuItem: TMenuItem
+        Action = ShowAboutAction
       end
     end
   end
@@ -883,21 +898,21 @@ object TSSLoopTuner2MainForm: TTSSLoopTuner2MainForm
     end
     object NewLabelAction: TAction
       Category = '編集'
-      Caption = '新規ラベルの作成(&L)'
+      Caption = '新規ラベルを作成(&L)'
       Hint = '新しいラベルを作成します'
       ImageIndex = 16
       OnExecute = NewLabelActionExecute
     end
     object EditLinkDetailAction: TAction
       Category = '編集'
-      Caption = 'リンクチューナ(&T)'
-      Hint = 'リンクチューナを表示します'
+      Caption = 'リンクの編集(&T) ...'
+      Hint = 'リンクの詳細を編集します'
       ImageIndex = 31
       OnExecute = EditLinkDetailActionExecute
     end
     object EditLabelDetailAction: TAction
       Category = '編集'
-      Caption = 'ラベルを編集(&E)'
+      Caption = 'ラベルを編集(&E) ...'
       Hint = 'ラベルを編集します'
       ImageIndex = 17
       OnExecute = EditLabelDetailActionExecute
@@ -922,6 +937,24 @@ object TSSLoopTuner2MainForm: TTSSLoopTuner2MainForm
       Hint = 'リンクを無視し、ジャンプせずに再生します'
       ImageIndex = 36
       OnExecute = IgnoreLinksActionExecute
+    end
+    object CloseAction: TAction
+      Category = 'ファイル'
+      Caption = '終了(&X)'
+      Hint = 'ループチューナを終了します'
+      OnExecute = CloseActionExecute
+    end
+    object ShowHelpAction: TAction
+      Category = 'ヘルプ'
+      Caption = 'ヘルプ(&H) ...'
+      Hint = 'ループチューナのヘルプを表示します'
+      OnExecute = ShowHelpActionExecute
+    end
+    object ShowAboutAction: TAction
+      Category = 'ヘルプ'
+      Caption = 'ループチューナについて(&A) ...'
+      Hint = 'ループチューナの著作権・バージョン情報を表示します'
+      OnExecute = ShowAboutActionExecute
     end
   end
   object ImageList: TImageList

@@ -141,6 +141,14 @@ __published:	// IDE 管理のコンポーネント
 	TMenuItem *WaveView_IgnoreLinksMenuItem;
 	TAction *IgnoreLinksAction;
 	TMenuItem *ShowEditFlagMenuItem;
+	TAction *CloseAction;
+	TMenuItem *N1;
+	TMenuItem *CloseMenuItem;
+	TAction *ShowHelpAction;
+	TAction *ShowAboutAction;
+	TMenuItem *HelpMenu;
+	TMenuItem *ShowHelpMenuItem;
+	TMenuItem *ShowAboutMenuItem;
 	void __fastcall FormDestroy(TObject *Sender);
 	void __fastcall OpenActionExecute(TObject *Sender);
 	void __fastcall ZoomInActionExecute(TObject *Sender);
@@ -175,6 +183,9 @@ __published:	// IDE 管理のコンポーネント
 	void __fastcall ApplicationEventsHint(TObject *Sender);
 	void __fastcall FormClose(TObject *Sender, TCloseAction &Action);
 	void __fastcall FormShow(TObject *Sender);
+	void __fastcall CloseActionExecute(TObject *Sender);
+	void __fastcall ShowAboutActionExecute(TObject *Sender);
+	void __fastcall ShowHelpActionExecute(TObject *Sender);
 private:	// ユーザー宣言
 	TWaveReader * Reader;
 	TWaveView *WaveView;
