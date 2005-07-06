@@ -152,6 +152,9 @@ bool inline operator < (const tTVPWaveLoopLink & lhs, const tTVPWaveLoopLink & r
 	if(lhs.From < rhs.From) return true;
 	if(lhs.From == rhs.From)
 	{
+		// give priority to conditional link
+		if(lhs.Condition != rhs.Condition)
+			return lhs.Condition > rhs.Condition;
 		// give priority to conditional expression
 		return lhs.CondVar > rhs.CondVar;
 	}
