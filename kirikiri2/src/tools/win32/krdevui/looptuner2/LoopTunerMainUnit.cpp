@@ -151,6 +151,56 @@ void __fastcall TTSSLoopTuner2MainForm::FormCloseQuery(TObject *Sender,
 	CanClose =  GetCanClose();
 }
 //---------------------------------------------------------------------------
+void __fastcall TTSSLoopTuner2MainForm::CloseActionExecute(TObject *Sender)
+{
+	Close();
+}
+//---------------------------------------------------------------------------
+void __fastcall TTSSLoopTuner2MainForm::ShowHelpActionExecute(
+	  TObject *Sender)
+{
+	ShellExecute(NULL,"open", (ExtractFilePath(ParamStr(0)) +
+		"..\\kr2doc\\contents\\LoopTuner.html").c_str(),
+		NULL,"",SW_SHOWNORMAL);
+}
+//---------------------------------------------------------------------------
+void __fastcall TTSSLoopTuner2MainForm::ShowAboutActionExecute(
+      TObject *Sender)
+{
+	static VS_FIXEDFILEINFO *FixedFileInfo;
+	static BYTE VersionInfo[16384];
+	static AnsiString VersionString;
+	long VersionNumber;
+
+	static bool DoGet=true;
+	if(DoGet)
+	{
+		DoGet=false;
+
+		UINT dum;
+
+		char krdevui_path[MAX_PATH+1];
+		if(0 == GetModuleFileName(GetModuleHandle("krdevui.dll"), krdevui_path, MAX_PATH))
+			GetModuleFileName(GetModuleHandle("looptune.exe"), krdevui_path, MAX_PATH);
+
+		GetFileVersionInfo(krdevui_path,0,16384,(void*)VersionInfo);
+		VerQueryValue((void*)VersionInfo,"\\",(void**)(&FixedFileInfo),
+			&dum);
+
+		char *buf;
+		VerQueryValue((void*)VersionInfo,
+			"\\StringFileInfo\\041103A4\\FileVersion",
+			(void**)&buf,&dum);
+		VersionString=buf;
+	}
+
+	MessageDlg("Loop Tuner 2  version " + VersionString +
+		"  (C) 2000-2005 W.Dee All rights reserved.\n"
+		"各プラグインのバージョン情報は plugin フォルダの中の"
+		"各 DLL のプロパティを参照してください",
+			mtInformation, TMsgDlgButtons() << mbOK, 0);
+}
+//---------------------------------------------------------------------------
 void __fastcall TTSSLoopTuner2MainForm::CreateWaveView()
 {
 	if(!WaveView)
@@ -793,6 +843,8 @@ void __fastcall TTSSLoopTuner2MainForm::FlagsClearSpeedButtonClick(
 	ResettingFlags = false;
 }
 //---------------------------------------------------------------------------
+
+
 
 
 
