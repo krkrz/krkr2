@@ -359,7 +359,7 @@ object LinkDetailForm: TLinkDetailForm
     Top = 24
     object StopPlayAction: TAction
       Category = 'çƒê∂'
-      Caption = 'çƒê∂í‚é~(&S)'
+      Caption = 'çƒê∂í‚é~(&Q)'
       Hint = 'çƒê∂Çí‚é~'
       ImageIndex = 4
       OnExecute = StopPlayActionExecute
@@ -534,7 +534,7 @@ object LinkDetailForm: TLinkDetailForm
     end
     object StopPlayMenuItem: TMenuItem
       Action = StopPlayAction
-      ShortCut = 83
+      ShortCut = 81
     end
     object PlayHalfSecMenuItem: TMenuItem
       Action = PlayHalfSecAction
