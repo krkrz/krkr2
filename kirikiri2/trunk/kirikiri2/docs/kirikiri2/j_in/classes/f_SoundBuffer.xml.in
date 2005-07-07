@@ -3,6 +3,9 @@
 <title><classname/></title>
 <desc>
 　<classname/> クラスは、<midi>MIDIの再生</midi><wave>PCMの再生</wave><cdda>CD-DAの再生</cdda>を管理するクラスです。<r/>
+<wave>
+　WaveSoundBuffer クラスでは、<link href="LoopTuner" /> で作成した .sli ファイルを読み込み、処理することができます。詳しくはループチューナの説明をご覧ください。<r/>
+</wave>
 </desc>
 
 <member>
@@ -46,6 +49,27 @@
 	</desc>
 </member>
 
+<wave>
+<member>
+	<name>onLabel</name>
+	<type>event</type>
+	<shortdesc>ラベルを通過した</shortdesc>
+	<arg>
+		<argitem>
+			<name>name</name>
+			<default></default>
+			<desc>
+				　通過したラベル名です。<r/>
+			</desc>
+		</argitem>
+	</arg>
+	<result></result>
+	<desc>
+		　再生位置がラベルを通過した際に発生します。<r/>
+	</desc>
+</member>
+</wave>
+
 <member>
 	<name>onFadeCompleted</name>
 	<type>event</type>
@@ -79,6 +103,7 @@
 	<result></result>
 	<desc>
 		　指定されたメディアを開きます。このメソッドは再生を開始しません。<r/>
+		<wave>　指定されたストレージ名に .sli を付加したファイル名があれば、サウンドループ情報として読み込みます。<r/></wave>
 	</desc>
 </member>
 
@@ -300,7 +325,7 @@
 	<desc>
 		　ループ再生を行うかどうかを表します。値を設定することもできます。<r/>
 		　真を指定するとループ再生がされます。<r/>
-		<wave>　偽を指定すると、再生しているメディアにループ情報がある場合でもループ情報が無視されます。<r/></wave>
+		<wave>　偽を指定しても、再生しているメディアにループ情報があったとしても、ループ情報が利用されます。<r/></wave>
 	</desc>
 </member>
 
@@ -400,6 +425,31 @@
 		　現在再生中のサウンドの量子化ビット数を表します。<r/>
 		　CD と同じ量子化ビット数の場合は 16 になります。<r/>
 		　メディアが開かれていない状態では正常な値を返さない可能性があります。<r/>
+	</desc>
+</member>
+</wave>
+
+<wave>
+<member>
+	<name>flags</name>
+	<type>property</type>
+	<shortdesc>フラグ</shortdesc>
+	<access>r</access>
+	<desc>
+		　フラグを表すオブジェクトを得ることができます。<r/>
+		　このオブジェクトには 0 ～ 15 のプロパティがあり、それぞれ各フラグの値を表しています。プロパティには間接メンバ選択演算子 ('[ ]' 演算子) を用いてアクセスすることができます。これらのプロパティには値を設定することもできます。値は 0 ～ 9999 の範囲であり、これを下回ったり、上回ることはできません。<r/>
+		　このオブジェクトの count プロパティは常に 16 を返します。<r/>
+		　このオブジェクトには reset メソッドがあり、このメソッドを実行すると、全てのフラグが 0 にリセットされます。<r/>
+		　メディアを開いていない場合は、このオブジェクトのプロパティに値を設定しても無視されます。<r/>
+		　このオブジェクトは一見配列オブジェクトにも見えますが、いわゆるTJSの配列オブジェクト('Array' クラスのオブジェクト) ではありません。<r/>
+		　フラグは <ref>WaveSoundBuffer.open</ref> メソッドで全て 0 にリセットされます。<r/>
+<example>
+var buf = new WaveSoundBuffer(window);<r/>
+(略)<r/>
+buf.flags.reset(); // 全てのフラグを 0 にリセット<r/>
+var cnt = buf.flags.count; // cnt には 16 が入る<r/>
+buf.flags[4] = 34; // 4番のフラグに34を代入<r/>
+</example>
 	</desc>
 </member>
 </wave>
