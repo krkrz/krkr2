@@ -633,6 +633,16 @@ void tTVPWaveLoopManager::GetLabelAt(tjs_int64 from, tjs_int64 to,
 		return;
 	}
 
+	// rewind while the label position is the same
+	tjs_int64 pos = Labels[s].Position;
+	while(true)
+	{
+		if(s >= 1 && Labels[s-1].Position == pos)
+			s--;
+		else
+			break;
+	}
+
 	// search labels
 	for(; s < (int)Labels.size(); s++)
 	{
