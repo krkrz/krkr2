@@ -805,7 +805,7 @@ object TSSLoopTuner2MainForm: TTSSLoopTuner2MainForm
     Top = 64
     object StopPlayAction: TAction
       Category = 'çƒê∂'
-      Caption = 'í‚é~(&S)'
+      Caption = 'í‚é~(&Q)'
       Hint = 'åªç›ÇÃçƒê∂Çí‚é~ÇµÇ‹Ç∑'
       ImageIndex = 4
       OnExecute = StopPlayActionExecute
@@ -2377,7 +2377,7 @@ object TSSLoopTuner2MainForm: TTSSLoopTuner2MainForm
     end
     object WaveView_StopPlayMenuItem: TMenuItem
       Action = StopPlayAction
-      ShortCut = 83
+      ShortCut = 81
     end
     object WaveView_PlayFromCaretMenuItem: TMenuItem
       Action = PlayFromCaretAction

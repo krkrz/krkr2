@@ -821,3 +821,4 @@ void __fastcall TLinkDetailForm::EditLinkAttribFrameEraseRedo(TObject * Sender)
 
 
 
+
