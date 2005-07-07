@@ -129,9 +129,6 @@ OriginalFilename=
 ProductName=
 ProductVersion=1.0.0.0
 
-[Excluded Packages]
-$(BCB)\Projects\Bpl\shlbpk.bpl=d:\program files\borland\cbuilder5\Projects\Bpl\shlbpk
-
 [HistoryLists\hlIncludePath]
 Count=3
 Item0=..\..\tj2;..\..\t2;..\..\..\tools\win32\krdevui;krdevui;..\..\..\..\Bin;..\..\sound;..\..\sound\win32;..\..\msg\win32;..\..\visual\win32;..\..\visual;..\..\base\win32;..\..\base;..\..\msg;..\..\utils\win32;..\..\utils;..\..\base\storage;..\..\tjs2;..\..\visual\window;..\..\..;..\..\visual\IA32;$(BCB)\include;$(BCB)\include\vcl;$(BCB)\include\libjpeg2;$(BCB)\include\libpng;$(BCB)\include\erina
