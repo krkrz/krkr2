@@ -1115,10 +1115,6 @@ class KAGWindow extends Window
 			chAntialiasMenuItem.checked = chDefaultAntialiased;
 		chDefaultFace = scflags.chDefaultFace if scflags.chDefaultFace !== void;
 
-		autoMode = scflags.autoMode if scflags.autoMode !== void;
-		if(typeof this.autoModeMenuItem != "undefined")
-			autoModeMenuItem.checked = autoMode;
-
 		setMessageLayerUserFont();
 
 		bgm.restoreSystemState(scflags);
@@ -1156,7 +1152,6 @@ class KAGWindow extends Window
 		scflags.chDefaultFace = chDefaultFace;
 		scflags.chNonStopToPageBreak = chNonStopToPageBreak;
 		scflags.ch2ndNonStopToPageBreak = ch2ndNonStopToPageBreak;
-		scflags.autoMode = autoMode;
 
 		// ブックマーク名
 		scflags.bookMarkNames = bookMarkNames; // (コピーではなくて)参照で十分
