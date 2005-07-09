@@ -34,7 +34,7 @@ TVP_MSG_DECL_CONST(TVPAboutString,
 TVP_SVN_REVISION "\n"
 "Copyright (C) 1997-2005 W.Dee and contributors All rights reserved.\n"
 "Contributors in alphabetical order:\n"
-"  Kiyobee, MIK, Takenori Imoto, yun\n"
+"  Kiyobee, Kouhei Yanagita, MIK, Takenori Imoto, yun\n"
 "吉里吉里実行コアの使用/配布/改変は、\n"
 "SDK 付属の license.txt に書かれているライセンスに従って行うことができます.\n"
 "------------------------------------------------------------------------------\n"
