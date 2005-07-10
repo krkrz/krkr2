@@ -61,6 +61,7 @@ extern "C" int _export PASCAL UIExecLoopTuner(void)
 {
 	if(FindOtherLoopTunerInstanceAndNotify())
 	{
+		Application->Initialize();
 		TTSSLoopTuner2MainForm * form = new TTSSLoopTuner2MainForm(Application);
 		form->ShowModal();
 		CommitAndCloseIniFile();

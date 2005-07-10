@@ -110,21 +110,10 @@ __published:	// IDE 管理のコンポーネント
 	TAction *EditLabelDetailAction;
 	TMenuItem *ForLabel_NewLabelMenuItem;
 	TMenuItem *ForLink_NewLinkMenuItem;
-	TPopupMenu *WaveViewPopupMenu;
-	TMenuItem *WaveView_ZoomInMenuItem;
-	TMenuItem *WaveView_ZoomOutMenuItem;
-	TMenuItem *WaveView_FollowMarkerMenuItem;
-	TMenuItem *WaveView_StopPlayMenuItem;
-	TMenuItem *WaveView_PlayFromCaretMenuItem;
-	TMenuItem *WaveView_PlayFromStartMenuItem;
-	TMenuItem *WaveView_UndoMenuItem;
-	TMenuItem *WaveView_DeleteMenuItem;
 	TAction *GotoLinkFromAction;
 	TAction *GotoLinkToAction;
 	TMenuItem *ForLink_GotoLinkFromMenuItem;
 	TMenuItem *ForLink_GotoLinkToAction;
-	TMenuItem *WaveView_GotoLinkFromMenuItem;
-	TMenuItem *WaveView_GotoLinkToMenuItem;
 	TPanel *FlagsPanel;
 	TBevel *Bevel1;
 	TLabel *FlagLabel0;
@@ -138,7 +127,6 @@ __published:	// IDE 管理のコンポーネント
 	TSpeedButton *FlagsClearSpeedButton;
 	TToolButton *IgnoreLinksToolButton;
 	TMenuItem *IgnoreLinksMenuItem;
-	TMenuItem *WaveView_IgnoreLinksMenuItem;
 	TAction *IgnoreLinksAction;
 	TMenuItem *ShowEditFlagMenuItem;
 	TAction *CloseAction;
@@ -185,6 +173,7 @@ __published:	// IDE 管理のコンポーネント
 	void __fastcall CloseActionExecute(TObject *Sender);
 	void __fastcall ShowAboutActionExecute(TObject *Sender);
 	void __fastcall ShowHelpActionExecute(TObject *Sender);
+	void __fastcall FlagEdit15Enter(TObject *Sender);
 private:	// ユーザー宣言
 	TWaveReader * Reader;
 	TWaveView *WaveView;
