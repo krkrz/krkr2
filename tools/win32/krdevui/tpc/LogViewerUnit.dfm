@@ -1,6 +1,6 @@
 object LogViewerForm: TLogViewerForm
-  Left = 45
-  Top = 414
+  Left = 47
+  Top = 354
   Width = 463
   Height = 328
   BorderWidth = 10
@@ -19,7 +19,7 @@ object LogViewerForm: TLogViewerForm
   TextHeight = 12
   object Panel1: TPanel
     Left = 0
-    Top = 248
+    Top = 241
     Width = 435
     Height = 33
     Align = alBottom
@@ -41,7 +41,7 @@ object LogViewerForm: TLogViewerForm
     Left = 0
     Top = 0
     Width = 435
-    Height = 248
+    Height = 241
     Align = alClient
     MaxLength = 10000000
     PlainText = True

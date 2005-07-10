@@ -1,6 +1,6 @@
 object ProgressForm: TProgressForm
-  Left = 175
-  Top = 394
+  Left = 195
+  Top = 346
   ActiveControl = CancelButton
   BorderStyle = bsDialog
   Caption = '•ÏŠ·’† ...'

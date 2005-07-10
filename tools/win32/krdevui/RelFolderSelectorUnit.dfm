@@ -1,6 +1,6 @@
 object RelFolderSelectorForm: TRelFolderSelectorForm
-  Left = 130
-  Top = 345
+  Left = 141
+  Top = 261
   Width = 416
   Height = 383
   HorzScrollBar.Tracking = True

@@ -143,7 +143,7 @@ void __fastcall TEditLinkAttribFrame::CondRefValueEditChange(
 			edit->Modified = true;
 		}
 
-		if(edit->Text != "0" && edit->Text[1] == '0')
+		if(edit->Text != "0" && edit->Text.c_str()[0] == '0')
 		{
 			edit->Text = AnsiString(edit->Text.ToInt());
 			edit->SelStart = edit->Text.Length();

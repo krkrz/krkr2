@@ -1,6 +1,6 @@
 object RandomizeForm: TRandomizeForm
-  Left = 444
-  Top = 13
+  Left = 429
+  Top = 26
   BorderStyle = bsDialog
   Caption = 'エントロピーを収集中'
   ClientHeight = 182

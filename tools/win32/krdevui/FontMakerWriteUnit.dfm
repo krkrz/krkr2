@@ -1,6 +1,6 @@
 object FontMakerWriteForm: TFontMakerWriteForm
-  Left = 254
-  Top = 283
+  Left = 104
+  Top = 188
   BorderStyle = bsDialog
   Caption = 'çÏê¨íÜ ...'
   ClientHeight = 64

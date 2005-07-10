@@ -1,6 +1,6 @@
 object FontPreviewForm: TFontPreviewForm
-  Left = 62
-  Top = 921
+  Left = 105
+  Top = 114
   Width = 599
   Height = 390
   Caption = 'フォントサンプル'
@@ -67,7 +67,7 @@ object FontPreviewForm: TFontPreviewForm
   end
   object StatusBar: TStatusBar
     Left = 0
-    Top = 344
+    Top = 337
     Width = 591
     Height = 19
     Panels = <
@@ -83,7 +83,7 @@ object FontPreviewForm: TFontPreviewForm
     Left = 0
     Top = 20
     Width = 591
-    Height = 324
+    Height = 317
     Align = alClient
     BevelInner = bvLowered
     BevelOuter = bvNone
