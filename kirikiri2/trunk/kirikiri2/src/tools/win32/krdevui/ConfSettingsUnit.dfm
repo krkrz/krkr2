@@ -1,6 +1,6 @@
 object ConfSettingsForm: TConfSettingsForm
-  Left = 82
-  Top = 690
+  Left = 11
+  Top = 15
   Width = 607
   Height = 389
   Caption = 'ê›íË'

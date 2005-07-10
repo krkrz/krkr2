@@ -1,6 +1,6 @@
 object TPCMainForm: TTPCMainForm
-  Left = 186
-  Top = 6
+  Left = 152
+  Top = 7
   ActiveControl = CloseButton
   BorderStyle = bsDialog
   Caption = '画像フォーマットコンバータ'

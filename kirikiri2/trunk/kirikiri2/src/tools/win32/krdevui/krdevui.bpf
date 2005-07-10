@@ -28,13 +28,21 @@ USEFORM("SignMainFormUnit.cpp", SignMainForm);
 USELIB("..\..\..\..\..\Lib\libtomcrypt.lib");
 USEUNIT("tpc\tlg6\TLG6Saver.cpp");
 USEUNIT("tpc\tlg6\GolombTable.cpp");
-USEUNIT("looptune\DSoundUnit.cpp");
-USEFORM("looptune\LoopTuneMainUnit.cpp", TSSLoopTunerMainWindow);
-USEUNIT("looptune\WaveDispUnit.cpp");
-USEUNIT("looptune\WaveReaderUnit.cpp");
-USEFORM("looptune\WaveWriterUnit.cpp", WaveWriterForm);
-USEUNIT("..\..\..\core\sound\win32\tvpsnd.c");
 USEUNIT("tpc\TLGMetaInfo.cpp");
+USEUNIT("looptuner2\DSound.cpp");
+USEFORM("looptuner2\EditLabelAttribUnit.cpp", EditLabelAttribFrame); /* TFrame: File Type */
+USEFORM("looptuner2\EditLinkAttribUnit.cpp", EditLinkAttribFrame); /* TFrame: File Type */
+USEFORM("looptuner2\LabelDetailUnit.cpp", LabelDetailForm);
+USEFORM("looptuner2\LinkDetailUnit.cpp", LinkDetailForm);
+USEUNIT("looptuner2\looptune.cpp");
+USEFORM("looptuner2\LoopTunerMainUnit.cpp", TSSLoopTuner2MainForm);
+USEUNIT("looptuner2\RIFFWaveContext.cpp");
+USEUNIT("looptuner2\TSSWaveContext.cpp");
+USEUNIT("looptuner2\WaveReader.cpp");
+USEUNIT("looptuner2\WaveView.cpp");
+USEUNIT("..\..\..\core\base\CharacterSet.cpp");
+USEUNIT("..\..\..\core\sound\WaveLoopManager.cpp");
+USEUNIT("..\..\..\core\sound\win32\tvpsnd.c");
 //---------------------------------------------------------------------------
 This file is used by the project manager only and should be treated like the project file
 

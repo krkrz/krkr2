@@ -66,7 +66,7 @@ void __fastcall TLabelDetailForm::FormCloseQuery(TObject *Sender,
 	{
 		EditLabelAttribFrame->CheckUncommitted();
 		EditLabelAttribFrame->SetLabelInfo(FLabel);
-		if(FLabel.Name[1] == ':' && !tTVPWaveLoopManager::GetLabelExpression(FLabel.Name))
+		if(FLabel.Name.c_str()[0] == ':' && !tTVPWaveLoopManager::GetLabelExpression(FLabel.Name))
 		{
 			Application->MessageBox("®‚Ì•¶–@‚ªŠÔˆá‚Á‚Ä‚¢‚Ü‚·", "ƒGƒ‰[", MB_OK|MB_ICONEXCLAMATION);
 			CanClose = false;

@@ -1,6 +1,6 @@
 object JPEGQualityForm: TJPEGQualityForm
-  Left = 154
-  Top = 541
+  Left = 214
+  Top = 359
   BorderStyle = bsDialog
   Caption = 'JPEG ƒIƒvƒVƒ‡ƒ“'
   ClientHeight = 113
