@@ -1,7 +1,7 @@
 object TSSLoopTuner2MainForm: TTSSLoopTuner2MainForm
   Left = 38
   Top = 18
-  Width = 637
+  Width = 638
   Height = 354
   Caption = '(//designing//)'
   Color = clBtnFace
@@ -526,7 +526,7 @@ object TSSLoopTuner2MainForm: TTSSLoopTuner2MainForm
   object StatusBar: TStatusBar
     Left = 0
     Top = 281
-    Width = 629
+    Width = 630
     Height = 19
     Panels = <
       item
@@ -554,7 +554,7 @@ object TSSLoopTuner2MainForm: TTSSLoopTuner2MainForm
   object ToolBar: TToolBar
     Left = 0
     Top = 0
-    Width = 629
+    Width = 630
     Height = 26
     AutoSize = True
     Caption = 'ToolBar'
@@ -727,7 +727,7 @@ object TSSLoopTuner2MainForm: TTSSLoopTuner2MainForm
   object FlagsPanel: TPanel
     Left = 0
     Top = 26
-    Width = 629
+    Width = 630
     Height = 23
     Align = alTop
     BevelOuter = bvNone
@@ -736,7 +736,7 @@ object TSSLoopTuner2MainForm: TTSSLoopTuner2MainForm
     object Bevel1: TBevel
       Left = 0
       Top = 21
-      Width = 629
+      Width = 630
       Height = 2
       Align = alBottom
       Shape = bsBottomLine
@@ -1010,6 +1010,7 @@ object TSSLoopTuner2MainForm: TTSSLoopTuner2MainForm
       Text = '0'
       OnChange = FlagEdit0Change
       OnDblClick = FlagEdit0DblClick
+      OnEnter = FlagEdit15Enter
       OnKeyPress = FlagEdit0KeyPress
       OnMouseDown = FlagEdit0MouseDown
     end
@@ -1024,6 +1025,7 @@ object TSSLoopTuner2MainForm: TTSSLoopTuner2MainForm
       Text = '0'
       OnChange = FlagEdit0Change
       OnDblClick = FlagEdit0DblClick
+      OnEnter = FlagEdit15Enter
       OnKeyPress = FlagEdit0KeyPress
       OnMouseDown = FlagEdit0MouseDown
     end
@@ -1038,6 +1040,7 @@ object TSSLoopTuner2MainForm: TTSSLoopTuner2MainForm
       Text = '0'
       OnChange = FlagEdit0Change
       OnDblClick = FlagEdit0DblClick
+      OnEnter = FlagEdit15Enter
       OnKeyPress = FlagEdit0KeyPress
       OnMouseDown = FlagEdit0MouseDown
     end
@@ -1052,6 +1055,7 @@ object TSSLoopTuner2MainForm: TTSSLoopTuner2MainForm
       Text = '0'
       OnChange = FlagEdit0Change
       OnDblClick = FlagEdit0DblClick
+      OnEnter = FlagEdit15Enter
       OnKeyPress = FlagEdit0KeyPress
       OnMouseDown = FlagEdit0MouseDown
     end
@@ -1066,6 +1070,7 @@ object TSSLoopTuner2MainForm: TTSSLoopTuner2MainForm
       Text = '0'
       OnChange = FlagEdit0Change
       OnDblClick = FlagEdit0DblClick
+      OnEnter = FlagEdit15Enter
       OnKeyPress = FlagEdit0KeyPress
       OnMouseDown = FlagEdit0MouseDown
     end
@@ -1080,6 +1085,7 @@ object TSSLoopTuner2MainForm: TTSSLoopTuner2MainForm
       Text = '0'
       OnChange = FlagEdit0Change
       OnDblClick = FlagEdit0DblClick
+      OnEnter = FlagEdit15Enter
       OnKeyPress = FlagEdit0KeyPress
       OnMouseDown = FlagEdit0MouseDown
     end
@@ -1094,6 +1100,7 @@ object TSSLoopTuner2MainForm: TTSSLoopTuner2MainForm
       Text = '0'
       OnChange = FlagEdit0Change
       OnDblClick = FlagEdit0DblClick
+      OnEnter = FlagEdit15Enter
       OnKeyPress = FlagEdit0KeyPress
       OnMouseDown = FlagEdit0MouseDown
     end
@@ -1108,6 +1115,7 @@ object TSSLoopTuner2MainForm: TTSSLoopTuner2MainForm
       Text = '0'
       OnChange = FlagEdit0Change
       OnDblClick = FlagEdit0DblClick
+      OnEnter = FlagEdit15Enter
       OnKeyPress = FlagEdit0KeyPress
       OnMouseDown = FlagEdit0MouseDown
     end
@@ -1122,6 +1130,7 @@ object TSSLoopTuner2MainForm: TTSSLoopTuner2MainForm
       Text = '0'
       OnChange = FlagEdit0Change
       OnDblClick = FlagEdit0DblClick
+      OnEnter = FlagEdit15Enter
       OnKeyPress = FlagEdit0KeyPress
       OnMouseDown = FlagEdit0MouseDown
     end
@@ -1136,6 +1145,7 @@ object TSSLoopTuner2MainForm: TTSSLoopTuner2MainForm
       Text = '0'
       OnChange = FlagEdit0Change
       OnDblClick = FlagEdit0DblClick
+      OnEnter = FlagEdit15Enter
       OnKeyPress = FlagEdit0KeyPress
       OnMouseDown = FlagEdit0MouseDown
     end
@@ -1150,6 +1160,7 @@ object TSSLoopTuner2MainForm: TTSSLoopTuner2MainForm
       Text = '0'
       OnChange = FlagEdit0Change
       OnDblClick = FlagEdit0DblClick
+      OnEnter = FlagEdit15Enter
       OnKeyPress = FlagEdit0KeyPress
       OnMouseDown = FlagEdit0MouseDown
     end
@@ -1164,6 +1175,7 @@ object TSSLoopTuner2MainForm: TTSSLoopTuner2MainForm
       Text = '0'
       OnChange = FlagEdit0Change
       OnDblClick = FlagEdit0DblClick
+      OnEnter = FlagEdit15Enter
       OnKeyPress = FlagEdit0KeyPress
       OnMouseDown = FlagEdit0MouseDown
     end
@@ -1178,6 +1190,7 @@ object TSSLoopTuner2MainForm: TTSSLoopTuner2MainForm
       Text = '0'
       OnChange = FlagEdit0Change
       OnDblClick = FlagEdit0DblClick
+      OnEnter = FlagEdit15Enter
       OnKeyPress = FlagEdit0KeyPress
       OnMouseDown = FlagEdit0MouseDown
     end
@@ -1192,6 +1205,7 @@ object TSSLoopTuner2MainForm: TTSSLoopTuner2MainForm
       Text = '0'
       OnChange = FlagEdit0Change
       OnDblClick = FlagEdit0DblClick
+      OnEnter = FlagEdit15Enter
       OnKeyPress = FlagEdit0KeyPress
       OnMouseDown = FlagEdit0MouseDown
     end
@@ -1206,6 +1220,7 @@ object TSSLoopTuner2MainForm: TTSSLoopTuner2MainForm
       Text = '0'
       OnChange = FlagEdit0Change
       OnDblClick = FlagEdit0DblClick
+      OnEnter = FlagEdit15Enter
       OnKeyPress = FlagEdit0KeyPress
       OnMouseDown = FlagEdit0MouseDown
     end
@@ -1220,6 +1235,7 @@ object TSSLoopTuner2MainForm: TTSSLoopTuner2MainForm
       Text = '0'
       OnChange = FlagEdit0Change
       OnDblClick = FlagEdit0DblClick
+      OnEnter = FlagEdit15Enter
       OnKeyPress = FlagEdit0KeyPress
       OnMouseDown = FlagEdit0MouseDown
     end
@@ -1313,6 +1329,7 @@ object TSSLoopTuner2MainForm: TTSSLoopTuner2MainForm
       Caption = '停止(&Q)'
       Hint = '現在の再生を停止します'
       ImageIndex = 4
+      ShortCut = 81
       OnExecute = StopPlayActionExecute
     end
     object PlayFromCaretAction: TAction
@@ -1320,6 +1337,7 @@ object TSSLoopTuner2MainForm: TTSSLoopTuner2MainForm
       Caption = '現在位置から再生(&C)'
       Hint = '現在のキャレット位置から再生します'
       ImageIndex = 1
+      ShortCut = 32
       OnExecute = PlayFromCaretActionExecute
     end
     object PlayFromStartAction: TAction
@@ -1327,6 +1345,7 @@ object TSSLoopTuner2MainForm: TTSSLoopTuner2MainForm
       Caption = '初めから再生(&P)'
       Hint = 'サウンドの先頭から再生します'
       ImageIndex = 0
+      ShortCut = 80
       OnExecute = PlayFromStartActionExecute
     end
     object ZoomInAction: TAction
@@ -1334,6 +1353,7 @@ object TSSLoopTuner2MainForm: TTSSLoopTuner2MainForm
       Caption = 'ズーム・イン(&I)'
       Hint = '波形をズームインします'
       ImageIndex = 9
+      ShortCut = 73
       OnExecute = ZoomInActionExecute
     end
     object OpenAction: TAction
@@ -1349,6 +1369,7 @@ object TSSLoopTuner2MainForm: TTSSLoopTuner2MainForm
       Caption = 'ズーム・アウト(&O)'
       Hint = '波形をズームアウトします'
       ImageIndex = 10
+      ShortCut = 79
       OnExecute = ZoomOutActionExecute
     end
     object ShowEditFlagsAction: TAction
@@ -1363,6 +1384,7 @@ object TSSLoopTuner2MainForm: TTSSLoopTuner2MainForm
       Caption = '再生位置に画面を追従(&F)'
       Hint = '再生位置に画面を追従します'
       ImageIndex = 11
+      ShortCut = 70
       OnExecute = FollowMarkerActionExecute
     end
     object SaveAction: TAction
@@ -1378,6 +1400,7 @@ object TSSLoopTuner2MainForm: TTSSLoopTuner2MainForm
       Caption = '元に戻す(&U)'
       Hint = '最後の編集を取り消し、直前の状態に戻します'
       ImageIndex = 12
+      ShortCut = 16474
       OnExecute = UndoActionExecute
     end
     object RedoAction: TAction
@@ -1385,6 +1408,7 @@ object TSSLoopTuner2MainForm: TTSSLoopTuner2MainForm
       Caption = 'やり直し(&R)'
       Hint = '「元に戻す」で元に戻した変更を再度適用します'
       ImageIndex = 13
+      ShortCut = 24666
       OnExecute = RedoActionExecute
     end
     object DeleteAction: TAction
@@ -1392,6 +1416,7 @@ object TSSLoopTuner2MainForm: TTSSLoopTuner2MainForm
       Caption = '削除(&D)'
       Hint = '現在選択されているアイテムを削除します'
       ImageIndex = 14
+      ShortCut = 46
       OnExecute = DeleteActionExecute
     end
     object NewLinkAction: TAction
@@ -1399,6 +1424,7 @@ object TSSLoopTuner2MainForm: TTSSLoopTuner2MainForm
       Caption = '新規リンクを作成(&J)'
       Hint = '新しいリンクを作成します'
       ImageIndex = 15
+      ShortCut = 74
       OnExecute = NewLinkActionExecute
     end
     object NewLabelAction: TAction
@@ -1406,6 +1432,7 @@ object TSSLoopTuner2MainForm: TTSSLoopTuner2MainForm
       Caption = '新規ラベルを作成(&L)'
       Hint = '新しいラベルを作成します'
       ImageIndex = 16
+      ShortCut = 76
       OnExecute = NewLabelActionExecute
     end
     object EditLinkDetailAction: TAction
@@ -1427,6 +1454,7 @@ object TSSLoopTuner2MainForm: TTSSLoopTuner2MainForm
       Caption = 'リンク元に移動(&B)'
       Hint = 'リンク元を表示します'
       ImageIndex = 33
+      ShortCut = 66
       OnExecute = GotoLinkFromActionExecute
     end
     object GotoLinkToAction: TAction
@@ -1434,6 +1462,7 @@ object TSSLoopTuner2MainForm: TTSSLoopTuner2MainForm
       Caption = 'リンク先に移動(&N)'
       Hint = 'リンク先を表示します'
       ImageIndex = 34
+      ShortCut = 78
       OnExecute = GotoLinkToActionExecute
     end
     object IgnoreLinksAction: TAction
@@ -1441,6 +1470,7 @@ object TSSLoopTuner2MainForm: TTSSLoopTuner2MainForm
       Caption = 'リンクを無視して再生(&G)'
       Hint = 'リンクを無視し、ジャンプせずに再生します'
       ImageIndex = 36
+      ShortCut = 71
       OnExecute = IgnoreLinksActionExecute
     end
     object CloseAction: TAction
@@ -2859,55 +2889,6 @@ object TSSLoopTuner2MainForm: TTSSLoopTuner2MainForm
     OnHint = ApplicationEventsHint
     Left = 104
     Top = 96
-  end
-  object WaveViewPopupMenu: TPopupMenu
-    AutoPopup = False
-    Left = 8
-    Top = 128
-    object WaveView_ZoomInMenuItem: TMenuItem
-      Action = ZoomInAction
-      ShortCut = 73
-    end
-    object WaveView_ZoomOutMenuItem: TMenuItem
-      Action = ZoomOutAction
-      ShortCut = 79
-    end
-    object WaveView_FollowMarkerMenuItem: TMenuItem
-      Action = FollowMarkerAction
-      ShortCut = 70
-    end
-    object WaveView_IgnoreLinksMenuItem: TMenuItem
-      Action = IgnoreLinksAction
-      ShortCut = 71
-    end
-    object WaveView_StopPlayMenuItem: TMenuItem
-      Action = StopPlayAction
-      ShortCut = 81
-    end
-    object WaveView_PlayFromCaretMenuItem: TMenuItem
-      Action = PlayFromCaretAction
-      ShortCut = 32
-    end
-    object WaveView_PlayFromStartMenuItem: TMenuItem
-      Action = PlayFromStartAction
-      ShortCut = 80
-    end
-    object WaveView_UndoMenuItem: TMenuItem
-      Action = UndoAction
-      ShortCut = 16474
-    end
-    object WaveView_DeleteMenuItem: TMenuItem
-      Action = DeleteAction
-      ShortCut = 46
-    end
-    object WaveView_GotoLinkFromMenuItem: TMenuItem
-      Action = GotoLinkFromAction
-      ShortCut = 66
-    end
-    object WaveView_GotoLinkToMenuItem: TMenuItem
-      Action = GotoLinkToAction
-      ShortCut = 78
-    end
   end
   object FlagsEditPopupMenu: TPopupMenu
     Left = 152

@@ -362,6 +362,7 @@ object LinkDetailForm: TLinkDetailForm
       Caption = '再生停止(&Q)'
       Hint = '再生を停止'
       ImageIndex = 4
+      ShortCut = 81
       OnExecute = StopPlayActionExecute
     end
     object ZoomInAction: TAction
@@ -369,6 +370,7 @@ object LinkDetailForm: TLinkDetailForm
       Caption = 'ズーム・イン(&I)'
       Hint = '波形を拡大する'
       ImageIndex = 9
+      ShortCut = 73
       OnExecute = ZoomInActionExecute
     end
     object ZoomOutAction: TAction
@@ -376,6 +378,7 @@ object LinkDetailForm: TLinkDetailForm
       Caption = 'ズーム・アウト(&O)'
       Hint = '波形を縮小する'
       ImageIndex = 10
+      ShortCut = 79
       OnExecute = ZoomOutActionExecute
     end
     object PlayHalfSecAction: TAction
@@ -383,6 +386,7 @@ object LinkDetailForm: TLinkDetailForm
       Caption = '0.5秒前から再生(&0)'
       Hint = '0.5秒前から再生'
       ImageIndex = 25
+      ShortCut = 16432
       OnExecute = PlayHalfSecActionExecute
     end
     object Play1SecAction: TAction
@@ -390,6 +394,7 @@ object LinkDetailForm: TLinkDetailForm
       Caption = '1秒前から再生(&1)'
       Hint = '1秒前から再生'
       ImageIndex = 26
+      ShortCut = 16433
       OnExecute = Play1SecActionExecute
     end
     object Play2SecAction: TAction
@@ -397,6 +402,7 @@ object LinkDetailForm: TLinkDetailForm
       Caption = '2秒前から再生(&2)'
       Hint = '2秒前から再生'
       ImageIndex = 27
+      ShortCut = 16434
       OnExecute = Play2SecActionExecute
     end
     object Play3SecAction: TAction
@@ -404,6 +410,7 @@ object LinkDetailForm: TLinkDetailForm
       Caption = '3秒前から再生(&3)'
       Hint = '3秒前から再生'
       ImageIndex = 28
+      ShortCut = 16435
       OnExecute = Play3SecActionExecute
     end
     object Play5SecAction: TAction
@@ -411,6 +418,7 @@ object LinkDetailForm: TLinkDetailForm
       Caption = '5秒前から再生(&5)'
       Hint = '5秒前から再生'
       ImageIndex = 29
+      ShortCut = 16437
       OnExecute = Play5SecActionExecute
     end
     object SmoothAction: TAction
@@ -418,6 +426,7 @@ object LinkDetailForm: TLinkDetailForm
       Caption = 'スムーズ(&S)'
       Hint = 'リンクをスムーズにする'
       ImageIndex = 30
+      ShortCut = 77
       OnExecute = SmoothActionExecute
     end
     object BeforePrevCrossAction: TAction
@@ -425,6 +434,7 @@ object LinkDetailForm: TLinkDetailForm
       Caption = '前のクロッシング・ポイントへ(&A)'
       Hint = '前のクロッシング・ポイントへ'
       ImageIndex = 22
+      ShortCut = 65
       OnExecute = BeforePrevCrossActionExecute
     end
     object BeforePrevFastAction: TAction
@@ -432,6 +442,7 @@ object LinkDetailForm: TLinkDetailForm
       Caption = '前へ20ステップ(&S)'
       Hint = '前へ20ステップ'
       ImageIndex = 23
+      ShortCut = 83
       OnExecute = BeforePrevFastActionExecute
     end
     object BeforePrevStepAction: TAction
@@ -439,6 +450,7 @@ object LinkDetailForm: TLinkDetailForm
       Caption = '前へ1ステップ(&D)'
       Hint = '前へ1ステップ'
       ImageIndex = 21
+      ShortCut = 68
       OnExecute = BeforePrevStepActionExecute
     end
     object BeforeNextStepAction: TAction
@@ -446,6 +458,7 @@ object LinkDetailForm: TLinkDetailForm
       Caption = '次へ1ステップ(&F)'
       Hint = '次へ1ステップ'
       ImageIndex = 18
+      ShortCut = 70
       OnExecute = BeforeNextStepActionExecute
     end
     object BeforeNextFastAction: TAction
@@ -453,6 +466,7 @@ object LinkDetailForm: TLinkDetailForm
       Caption = '次へ20ステップ(&G)'
       Hint = '次へ20ステップ'
       ImageIndex = 20
+      ShortCut = 71
       OnExecute = BeforeNextFastActionExecute
     end
     object BeforeNextCrossAction: TAction
@@ -460,6 +474,7 @@ object LinkDetailForm: TLinkDetailForm
       Caption = '次のクロッシング・ポイントへ(&H)'
       Hint = '次のクロッシング・ポイントへ'
       ImageIndex = 19
+      ShortCut = 72
       OnExecute = BeforeNextCrossActionExecute
     end
     object AfterPrevCrossAction: TAction
@@ -467,6 +482,7 @@ object LinkDetailForm: TLinkDetailForm
       Caption = '前のクロッシング・ポイントへ(&Z)'
       Hint = '前のクロッシング・ポイントへ'
       ImageIndex = 22
+      ShortCut = 90
       OnExecute = AfterPrevCrossActionExecute
     end
     object AfterPrevFastAction: TAction
@@ -474,6 +490,7 @@ object LinkDetailForm: TLinkDetailForm
       Caption = '前へ20ステップ(&X)'
       Hint = '前へ20ステップ'
       ImageIndex = 23
+      ShortCut = 88
       OnExecute = AfterPrevFastActionExecute
     end
     object AfterPrevStepAction: TAction
@@ -481,6 +498,7 @@ object LinkDetailForm: TLinkDetailForm
       Caption = '前へ1ステップ(&C)'
       Hint = '前へ1ステップ'
       ImageIndex = 21
+      ShortCut = 67
       OnExecute = AfterPrevStepActionExecute
     end
     object AfterNextStepAction: TAction
@@ -488,6 +506,7 @@ object LinkDetailForm: TLinkDetailForm
       Caption = '次へ1ステップ(&V)'
       Hint = '次へ1ステップ'
       ImageIndex = 18
+      ShortCut = 86
       OnExecute = AfterNextStepActionExecute
     end
     object AfterNextFastAction: TAction
@@ -495,6 +514,7 @@ object LinkDetailForm: TLinkDetailForm
       Caption = '次へ20ステップ(&B)'
       Hint = '次へ20ステップ'
       ImageIndex = 20
+      ShortCut = 66
       OnExecute = AfterNextFastActionExecute
     end
     object AfterNextCrossAction: TAction
@@ -502,7 +522,15 @@ object LinkDetailForm: TLinkDetailForm
       Caption = '次のクロッシング・ポイントへ(&N)'
       Hint = '次のクロッシング・ポイントへ'
       ImageIndex = 19
+      ShortCut = 78
       OnExecute = AfterNextCrossActionExecute
+    end
+    object PlayAction: TAction
+      Category = '再生'
+      Caption = 'PlayAction'
+      ImageIndex = 24
+      ShortCut = 32
+      OnExecute = PlayActionExecute
     end
   end
   object ApplicationEvents: TApplicationEvents
@@ -516,11 +544,9 @@ object LinkDetailForm: TLinkDetailForm
     Top = 24
     object ZoomInMenuItem: TMenuItem
       Action = ZoomInAction
-      ShortCut = 73
     end
     object ZoomOutMenuItem: TMenuItem
       Action = ZoomOutAction
-      ShortCut = 79
     end
     object N1: TMenuItem
       Caption = '-'
@@ -534,89 +560,71 @@ object LinkDetailForm: TLinkDetailForm
     end
     object StopPlayMenuItem: TMenuItem
       Action = StopPlayAction
-      ShortCut = 81
     end
     object PlayHalfSecMenuItem: TMenuItem
       Action = PlayHalfSecAction
-      ShortCut = 48
     end
     object Play1SecMenuItem: TMenuItem
       Action = Play1SecAction
-      ShortCut = 49
     end
     object Play2SecMenuItem: TMenuItem
       Action = Play2SecAction
-      ShortCut = 50
     end
     object Play3SecMenuItem: TMenuItem
       Action = Play3SecAction
-      ShortCut = 51
     end
     object Play5SecMenuItem: TMenuItem
       Action = Play5SecAction
-      ShortCut = 53
     end
     object BeforePrevCrossMenuItem: TMenuItem
       Action = BeforePrevCrossAction
       Break = mbBarBreak
       Caption = ' '
-      ShortCut = 65
     end
     object BeforePrevFastMenuItem: TMenuItem
       Action = BeforePrevFastAction
       Caption = ' '
-      ShortCut = 83
     end
     object BeforePrevSepMenuItem: TMenuItem
       Action = BeforePrevStepAction
       Caption = ' '
-      ShortCut = 68
     end
     object BeforeNextStepMenuItem: TMenuItem
       Action = BeforeNextStepAction
       Caption = ' '
-      ShortCut = 70
     end
     object BeforeNextFastMenuItem: TMenuItem
       Action = BeforeNextFastAction
       Caption = ' '
-      ShortCut = 71
     end
     object BeforeNextCrossMenuItem: TMenuItem
       Action = BeforeNextCrossAction
       Caption = ' '
-      ShortCut = 72
     end
     object AfterPrevCrossMenuItem: TMenuItem
       Action = AfterPrevCrossAction
       Break = mbBarBreak
       Caption = ' '
-      ShortCut = 90
     end
     object AfterPrevFastMenuItem: TMenuItem
       Action = AfterPrevFastAction
       Caption = ' '
-      ShortCut = 88
     end
     object AfterPrevSepMenuItem: TMenuItem
       Action = AfterPrevStepAction
       Caption = ' '
-      ShortCut = 67
     end
     object AfterNextStepMenuItem: TMenuItem
       Action = AfterNextStepAction
       Caption = ' '
-      ShortCut = 86
     end
     object AfterNextFastMenuItem: TMenuItem
       Action = AfterNextFastAction
       Caption = ' '
-      ShortCut = 66
     end
     object AfterNextCrossMenuItem: TMenuItem
       Action = AfterNextCrossAction
       Caption = ' '
-      ShortCut = 78
     end
   end
 end

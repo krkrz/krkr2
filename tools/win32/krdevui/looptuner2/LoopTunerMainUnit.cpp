@@ -221,8 +221,6 @@ void __fastcall TTSSLoopTuner2MainForm::CreateWaveView()
 	WaveView->OnLinkModified		= WaveViewLinkModified;
 	WaveView->OnLabelModified		= WaveViewLabelModified;
 
-	WaveView->PopupMenu = WaveViewPopupMenu;
-
 	ActiveControl  = WaveView;
 }
 //---------------------------------------------------------------------------
@@ -706,6 +704,14 @@ void __fastcall TTSSLoopTuner2MainForm::FlagsEditToggleMenuItemClick(
 	}
 }
 //---------------------------------------------------------------------------
+void __fastcall TTSSLoopTuner2MainForm::FlagEdit15Enter(TObject *Sender)
+{
+	// select nothing
+	WaveView->ShowCaret = false;
+	WaveView->FocusedLink = -1;
+	WaveView->FocusedLabel = -1;
+}
+//---------------------------------------------------------------------------
 void __fastcall TTSSLoopTuner2MainForm::FlagEdit0DblClick(TObject *Sender)
 {
 	TEdit *edit = dynamic_cast<TEdit*>(ActiveControl);
@@ -840,6 +846,7 @@ void __fastcall TTSSLoopTuner2MainForm::FlagsClearSpeedButtonClick(
 	ResettingFlags = false;
 }
 //---------------------------------------------------------------------------
+
 
 
 
