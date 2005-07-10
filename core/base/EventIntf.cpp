@@ -1158,8 +1158,16 @@ void TVPDeliverCompactEvent(tjs_int level)
 		for(tjs_uint i = 0; i < TVPCompactEventVector.size(); i ++)
 		{
 			// note that the handler can remove itself while the event
-			if(TVPCompactEventVector[i])
-				TVPCompactEventVector[i]->OnCompact(level); else emptyflag = true;
+			try
+			{
+				try
+				{
+					if(TVPCompactEventVector[i])
+						TVPCompactEventVector[i]->OnCompact(level); else emptyflag = true;
+				}
+				TJS_CONVERT_TO_TJS_EXCEPTION
+			}
+			TVP_CATCH_AND_SHOW_SCRIPT_EXCEPTION_FORCE_SHOW_EXCEPTION(TJS_W("Compact Event"));
 		}
 
 		if(emptyflag)
