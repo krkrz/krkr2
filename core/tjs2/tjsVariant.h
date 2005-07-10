@@ -463,18 +463,6 @@ extern void TJSThrowVariantConvertError(const tTJSVariant & from, tTJSVariantTyp
 	#pragma warn -8026
 #endif
 
-#define tTJSVariant_RELEASECONTENT \
-		if(vt==tvtObject) \
-		{ \
-			if(Object.Object) Object.Object->Release(); \
-			if(Object.ObjThis) Object.ObjThis->Release(); \
-		} \
-		else \
-		{ \
-			if(vt==tvtString) { if(String) String->Release(); } \
-			else if(vt==tvtOctet) { if(Octet) Octet->Release(); } \
-		}
-
 
 /*start-of-tTJSVariant*/
 class tTJSVariant : protected tTJSVariant_S
@@ -492,8 +480,10 @@ private:
 
 	void ReleaseObject()
 	{
-		if(Object.Object) Object.Object->Release();
-		if(Object.ObjThis) Object.ObjThis->Release();
+		iTJSDispatch2 * object = Object.Object;
+		iTJSDispatch2 * objthis = Object.ObjThis;
+		if(object) Object.Object = NULL, object->Release();
+		if(objthis) Object.ObjThis = NULL, objthis->Release();
 		// does not release the string nor octet
 	}
 
@@ -515,8 +505,7 @@ private:
 	{
 		if(vt==tvtObject)
 		{
-			if(Object.Object) Object.Object->Release();
-			if(Object.ObjThis) Object.ObjThis->Release();
+			ReleaseObject();
 		}
 		else
 		{
@@ -531,7 +520,12 @@ public:
 	{
 		if(objthis) objthis->AddRef();
 		if(vt!=tvtObject) TJSThrowVariantConvertError(*this, tvtObject);
-		if(Object.ObjThis) Object.ObjThis->Release();
+		if(Object.ObjThis)
+		{
+			iTJSDispatch2 * objthis = Object.ObjThis;
+			Object.ObjThis = NULL;
+			objthis->Release();
+		}
 		Object.ObjThis = objthis;
 	}
 
@@ -543,27 +537,7 @@ public:
 		vt=tvtVoid;
 	}
 
-	TJS_METHOD_DEF(TJS_METHOD_RET_EMPTY, tTJSVariant, (const tTJSVariant &ref)) // from tTJSVariant
-	;/*{
-
-		tTJSVariant_BITCOPY(*this, ref);
-		if(vt==tvtObject)
-		{
-			if(Object.Object) Object.Object->AddRef();
-			if(Object.ObjThis) Object.ObjThis->AddRef();
-		}
-		else
-		{
-			if(vt==tvtString)
-			{
-				if(String) String->AddRef();
-			}
-			else if(vt==tvtOctet)
-			{
-				if(Octet) Octet->AddRef();
-			}
-		}
-	}*/
+	TJS_METHOD_DEF(TJS_METHOD_RET_EMPTY, tTJSVariant, (const tTJSVariant &ref)); // from tTJSVariant
 
 	TJS_METHOD_DEF(TJS_METHOD_RET_EMPTY, tTJSVariant, (iTJSDispatch2 *ref)) // from Object
 	{
@@ -668,19 +642,7 @@ public:
 
 	//---- destructor -------------------------------------------------------
 
-	TJS_METHOD_DEF(TJS_METHOD_RET_EMPTY, ~tTJSVariant, ())
-	;/*{
-		if(vt==tvtObject)
-		{
-			if(Object.Object) Object.Object->Release();
-			if(Object.ObjThis) Object.ObjThis->Release();
-		}
-		else
-		{
-			if(vt==tvtString) { if(String) String->Release(); }
-			else if(vt==tvtOctet) { if(Octet) Octet->Release(); }
-		}
-	}*/
+	TJS_METHOD_DEF(TJS_METHOD_RET_EMPTY, ~tTJSVariant, ());
 
 	//---- type -------------------------------------------------------------
 
@@ -698,20 +660,7 @@ public:
 
 	//---- clear ------------------------------------------------------------
 
-	TJS_METHOD_DEF(void, Clear, ())
-	;/*{
-		if(vt==tvtObject)
-		{
-			if(Object.Object) Object.Object->Release();
-			if(Object.ObjThis) Object.ObjThis->Release();
-		}
-		else
-		{
-			if(vt==tvtString) { if(String) String->Release(); }
-			else if(vt==tvtOctet) { if(Octet) Octet->Release(); }
-		}
-		vt=tvtVoid;
-	}*/
+	TJS_METHOD_DEF(void, Clear, ());
 
 	//---- type conversion --------------------------------------------------
 

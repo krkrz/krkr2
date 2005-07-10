@@ -375,24 +375,14 @@ tTJSVariant::tTJSVariant(const tjs_uint8 ** src)
 //---------------------------------------------------------------------------
 tTJSVariant::~tTJSVariant()
 {
-	switch(vt)
-	{
-	case tvtObject:
-		if(Object.Object) Object.Object->Release();
-		if(Object.ObjThis) Object.ObjThis->Release();
-		break;
-	case tvtString:
-		if(String) String->Release();
-		break;
-	case tvtOctet:
-		if(Octet) Octet->Release();
-		break;
-	}
+	Clear();
 }
 //---------------------------------------------------------------------------
 void tTJSVariant::Clear()
 {
-	switch(vt)
+	tTJSVariantType o_vt = vt;
+	vt = tvtVoid;
+	switch(o_vt)
 	{
 	case tvtObject:
 		if(Object.Object) Object.Object->Release();
@@ -405,7 +395,6 @@ void tTJSVariant::Clear()
 		if(Octet) Octet->Release();
 		break;
 	}
-	vt=tvtVoid;
 }
 //---------------------------------------------------------------------------
 void tTJSVariant::ToString()
@@ -870,7 +859,7 @@ bool tTJSVariant::LittlerThan(const tTJSVariant &val2) const
 void tTJSVariant::logicalorequal (const tTJSVariant &rhs)
 {
 	bool l=operator bool();
-	tTJSVariant_RELEASECONTENT;
+	ReleaseContent();
 	vt=tvtInteger;
 	Integer=l||rhs.operator bool();
 }
@@ -878,7 +867,7 @@ void tTJSVariant::logicalorequal (const tTJSVariant &rhs)
 void tTJSVariant::logicalandequal (const tTJSVariant &rhs)
 {
 	bool l=operator bool();
-	tTJSVariant_RELEASECONTENT;
+	ReleaseContent();
 	vt=tvtInteger;
 	Integer=l&&rhs.operator bool();
 }
@@ -886,7 +875,7 @@ void tTJSVariant::logicalandequal (const tTJSVariant &rhs)
 void tTJSVariant::operator |= (const tTJSVariant &rhs)
 {
 	tTVInteger l=AsInteger();
-	tTJSVariant_RELEASECONTENT;
+	ReleaseContent();
 	vt=tvtInteger;
 	Integer=l|rhs.AsInteger();
 }
@@ -930,7 +919,7 @@ void tTJSVariant::decrement(void)
 void tTJSVariant::operator ^= (const tTJSVariant &rhs)
 {
 	tjs_int64 l=AsInteger();
-	tTJSVariant_RELEASECONTENT;
+	ReleaseContent();
 	vt=tvtInteger;
 	Integer=l^rhs.AsInteger();
 }
@@ -938,7 +927,7 @@ void tTJSVariant::operator ^= (const tTJSVariant &rhs)
 void tTJSVariant::operator &= (const tTJSVariant &rhs)
 {
 	tTVInteger l=AsInteger();
-	tTJSVariant_RELEASECONTENT;
+	ReleaseContent();
 	vt=tvtInteger;
 	Integer=l&rhs.AsInteger();
 }
@@ -946,7 +935,7 @@ void tTJSVariant::operator &= (const tTJSVariant &rhs)
 void tTJSVariant::operator >>= (const tTJSVariant &rhs)
 {
 	tTVInteger l=AsInteger();
-	tTJSVariant_RELEASECONTENT;
+	ReleaseContent();
 	vt=tvtInteger;
 	Integer=l>>(tjs_int)rhs.AsInteger();
 }
@@ -954,7 +943,7 @@ void tTJSVariant::operator >>= (const tTJSVariant &rhs)
 void tTJSVariant::rbitshiftequal (const tTJSVariant &rhs)
 {
 	tTVInteger l=AsInteger();
-	tTJSVariant_RELEASECONTENT;
+	ReleaseContent();
 	vt=tvtInteger;
 	Integer=(tjs_int64)((tjs_uint64)l>> (tjs_int)rhs);
 }
@@ -962,7 +951,7 @@ void tTJSVariant::rbitshiftequal (const tTJSVariant &rhs)
 void tTJSVariant::operator <<= (const tTJSVariant &rhs)
 {
 	tTVInteger l=AsInteger();
-	tTJSVariant_RELEASECONTENT;
+	ReleaseContent();
 	vt=tvtInteger;
 	Integer=l<<(tjs_int)rhs.AsInteger();
 }
@@ -972,7 +961,7 @@ void tTJSVariant::operator %= (const tTJSVariant &rhs)
 	tTVInteger r=rhs.AsInteger();
 	if(r == 0) TJSThrowDivideByZero();
 	tTVInteger l=AsInteger();
-	tTJSVariant_RELEASECONTENT;
+	ReleaseContent();
 	vt=tvtInteger;
 	Integer=l%r;
 }
@@ -982,7 +971,7 @@ void tTJSVariant::operator /= (const tTJSVariant &rhs)
 	TJSSetFPUE();
 	tTVReal l=AsReal();
 	tTVReal r=rhs.AsReal();
-	tTJSVariant_RELEASECONTENT;
+	ReleaseContent();
 	vt=tvtReal;
 	Real=l/r;
 }
@@ -992,7 +981,7 @@ void tTJSVariant::idivequal (const tTJSVariant &rhs)
 	tTVInteger r=rhs.AsInteger();
 	tTVInteger l=AsInteger();
 	if(r == 0) TJSThrowDivideByZero();
-	tTJSVariant_RELEASECONTENT;
+	ReleaseContent();
 	vt=tvtInteger;
 	Integer=l/r;
 }
@@ -1001,7 +990,7 @@ void tTJSVariant::InternalMul(const tTJSVariant &rhs)
 {
 	tTJSVariant l;
 	AsNumber(l);
-	tTJSVariant_RELEASECONTENT;
+	ReleaseContent();
 	tTJSVariant r;
 	rhs.AsNumber(r);
 	if(l.vt == tvtInteger && r.vt == tvtInteger)
@@ -1018,7 +1007,7 @@ void tTJSVariant::InternalMul(const tTJSVariant &rhs)
 void tTJSVariant::logicalnot()
 {
 	bool res = !operator bool();
-	tTJSVariant_RELEASECONTENT;
+	ReleaseContent();
 	vt = tvtInteger;
 	Integer = (tjs_int)res;
 }
@@ -1026,7 +1015,7 @@ void tTJSVariant::logicalnot()
 void tTJSVariant::bitnot()
 {
 	tjs_int64 res = ~AsInteger();
-	tTJSVariant_RELEASECONTENT;
+	ReleaseContent();
 	vt = tvtInteger;
 	Integer = res;
 }
@@ -1051,7 +1040,7 @@ void tTJSVariant::InternalChangeSign()
 {
 	tTJSVariant val;
 	AsNumber(val);
-	tTJSVariant_RELEASECONTENT;
+	ReleaseContent();
 	if(val.vt == tvtInteger)
 	{
 		vt = tvtInteger;
@@ -1069,7 +1058,7 @@ void tTJSVariant::InternalSub(const tTJSVariant &rhs)
 {
 	tTJSVariant l;
 	AsNumber(l);
-	tTJSVariant_RELEASECONTENT;
+	ReleaseContent();
 	tTJSVariant r;
 	rhs.AsNumber(r);
 	if(l.vt == tvtInteger && r.vt == tvtInteger)
@@ -1132,7 +1121,7 @@ void tTJSVariant::operator +=(const tTJSVariant &rhs)
 		if(vt==tvtInteger)
 		{
 			tTVInteger l=Integer;
-			tTJSVariant_RELEASECONTENT;
+			ReleaseContent();
 			vt=tvtInteger;
 			Integer=l+rhs.Integer;
 			return;
@@ -1164,7 +1153,7 @@ void tTJSVariant::operator +=(const tTJSVariant &rhs)
 
 	TJSSetFPUE();
 	tTVReal l=AsReal();
-	tTJSVariant_RELEASECONTENT;
+	ReleaseContent();
 	vt=tvtReal;
 	Real=l+rhs.AsReal();
 }
