@@ -440,6 +440,12 @@ void __fastcall TLinkDetailForm::WavePaintBoxDblClick(TObject *Sender)
 	PlayLink();
 }
 //---------------------------------------------------------------------------
+
+void __fastcall TLinkDetailForm::PlayActionExecute(TObject *Sender)
+{
+	PlayLink();
+}
+//---------------------------------------------------------------------------
 void __fastcall TLinkDetailForm::PlayMenuItemClick(TObject *Sender)
 {
 	PlayLink();
@@ -815,6 +821,8 @@ void __fastcall TLinkDetailForm::EditLinkAttribFrameEraseRedo(TObject * Sender)
 	// do nothing
 }
 //---------------------------------------------------------------------------
+
+
 
 
 

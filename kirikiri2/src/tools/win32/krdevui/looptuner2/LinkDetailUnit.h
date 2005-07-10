@@ -92,6 +92,7 @@ __published:	// IDE 管理のコンポーネント
 	TMenuItem *BeforePrevCrossMenuItem;
 	TMenuItem *BeforePrevFastMenuItem;
 	TMenuItem *PlayMenuItem;
+	TAction *PlayAction;
 	void __fastcall WavePaintBoxPaint(TObject *Sender);
 	void __fastcall ZoomInActionExecute(TObject *Sender);
 	void __fastcall ZoomOutActionExecute(TObject *Sender);
@@ -132,6 +133,7 @@ __published:	// IDE 管理のコンポーネント
 	void __fastcall WaveAreaPanelExit(TObject *Sender);
 	void __fastcall FormMouseWheel(TObject *Sender, TShiftState Shift,
           int WheelDelta, TPoint &MousePos, bool &Handled);
+	void __fastcall PlayActionExecute(TObject *Sender);
 	void __fastcall PlayMenuItemClick(TObject *Sender);
 private:	// ユーザー宣言
 	TWaveReader * FReader; // wave reader
