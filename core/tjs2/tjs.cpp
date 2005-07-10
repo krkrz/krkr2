@@ -41,7 +41,7 @@ extern iTJSDispatch2 * TJSCreateRegExpClass();
 //---------------------------------------------------------------------------
 const tjs_int TJSVersionMajor   = 2;
 const tjs_int TJSVersionMinor   = 4;
-const tjs_int TJSVersionRelease = 16;
+const tjs_int TJSVersionRelease = 17;
 const tjs_int TJSVersionHex =
 	TJSVersionMajor * 0x1000000 + TJSVersionMinor * 0x10000 + TJSVersionRelease;
 
