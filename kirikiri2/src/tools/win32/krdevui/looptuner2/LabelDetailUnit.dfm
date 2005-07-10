@@ -1,6 +1,6 @@
 object LabelDetailForm: TLabelDetailForm
-  Left = 227
-  Top = 716
+  Left = 151
+  Top = 185
   ActiveControl = EditLabelAttribFrame.LabelNameEdit
   BorderStyle = bsDialog
   BorderWidth = 8

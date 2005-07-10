@@ -58,6 +58,9 @@ __fastcall TLinkDetailForm::TLinkDetailForm(TComponent* Owner)
 	
 	// window position and size
 	ReadWindowBasicInformationFromIniFile("LinkDetail", this);
+
+	// assign mainwindow's icon
+	Icon->Assign(((TForm*)Owner)->Icon);
 }
 //---------------------------------------------------------------------------
 void __fastcall TLinkDetailForm::FormDestroy(TObject *Sender)

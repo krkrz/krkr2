@@ -1,6 +1,6 @@
 object RelSettingsForm: TRelSettingsForm
-  Left = 32
-  Top = 33
+  Left = 26
+  Top = 20
   Width = 579
   Height = 367
   HorzScrollBar.Tracking = True

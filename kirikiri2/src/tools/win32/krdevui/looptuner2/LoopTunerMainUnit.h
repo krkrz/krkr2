@@ -149,7 +149,6 @@ __published:	// IDE 管理のコンポーネント
 	TMenuItem *HelpMenu;
 	TMenuItem *ShowHelpMenuItem;
 	TMenuItem *ShowAboutMenuItem;
-	void __fastcall FormDestroy(TObject *Sender);
 	void __fastcall OpenActionExecute(TObject *Sender);
 	void __fastcall ZoomInActionExecute(TObject *Sender);
 	void __fastcall ZoomOutActionExecute(TObject *Sender);

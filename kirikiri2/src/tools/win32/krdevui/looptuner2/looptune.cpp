@@ -27,40 +27,17 @@ USEUNIT("..\..\..\..\core\sound\WaveLoopManager.cpp");
 USEUNIT("..\..\..\..\core\sound\win32\tvpsnd.c");
 USEUNIT("..\..\..\..\core\base\CharacterSet.cpp");
 //---------------------------------------------------------------------------
+static bool FindOtherLoopTunerInstanceAndNotify();
+//---------------------------------------------------------------------------
 WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 {
-	HWND wnd = FindWindow("TTSSLoopTuner2MainForm", NULL);
-	if(wnd)
-	{
-		char buf[256];
-		GetWindowText(wnd, buf, 256-1);
-		if(strstr(buf, "(//designing//)")==NULL)
-		{
-			PostMessage(wnd, WM_SHOWFRONT, 0, 0);
-			int i;
-			for(i=1; i<_argc; i++)
-			{
-				if(FileExists(_argv[i]))
-				{
-					AnsiString data = "open:" + AnsiString(_argv[i]);
-					COPYDATASTRUCT cds;
-					cds.dwData = 0x746f8ab3;
-					cds.cbData = data.Length() + 1;
-					cds.lpData = data.c_str();
-					SendMessage(wnd, WM_COPYDATA, NULL, (LPARAM)&cds);
-					break;
-				}
-			}
-			return 0;
-		}
-	}
-
 	try
 	{
+		if(!FindOtherLoopTunerInstanceAndNotify()) return 0;
+
 		Application->Initialize();
 		Application->Title = "Loop Tuner";
 		Application->CreateForm(__classid(TTSSLoopTuner2MainForm), &TSSLoopTuner2MainForm);
-		Application->CreateForm(__classid(TLabelDetailForm), &LabelDetailForm);
 		Application->Run();
 	}
 	catch (Exception &exception)
@@ -72,6 +49,67 @@ WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	return 0;
 }
 //---------------------------------------------------------------------------
+
+
+
+
+
+//---------------------------------------------------------------------------
+// exported 'main' function
+//---------------------------------------------------------------------------
+extern "C" int _export PASCAL UIExecLoopTuner(void)
+{
+	if(FindOtherLoopTunerInstanceAndNotify())
+	{
+		TTSSLoopTuner2MainForm * form = new TTSSLoopTuner2MainForm(Application);
+		form->ShowModal();
+	}
+	ExitProcess(0);
+	return 0;
+}
+//---------------------------------------------------------------------------
+
+
+
+
+//---------------------------------------------------------------------------
+// support function for communicating other loop tuner instances
+//---------------------------------------------------------------------------
+static bool FindOtherLoopTunerInstanceAndNotify()
+{
+	HWND wnd = FindWindow("TTSSLoopTuner2MainForm", NULL);
+	if(wnd)
+	{
+		char buf[256];
+		GetWindowText(wnd, buf, 256-1);
+		if(strstr(buf, "(//designing//)")==NULL)
+		{
+			PostMessage(wnd, WM_SHOWFRONT, 0, 0);
+			int i;
+			int paramcount = ParamCount();
+			for(i=1; i<=paramcount; i++)
+			{
+				if(FileExists(ParamStr(i)))
+				{
+					AnsiString data = "open:" + AnsiString(ParamStr(i));
+					COPYDATASTRUCT cds;
+					cds.dwData = 0x746f8ab3;
+					cds.cbData = data.Length() + 1;
+					cds.lpData = data.c_str();
+					SendMessage(wnd, WM_COPYDATA, NULL, (LPARAM)&cds);
+					break;
+				}
+			}
+			return false; // exit the application
+		}
+	}
+	return true; // continue the application
+}
+//---------------------------------------------------------------------------
+
+
+
+
 
 
 

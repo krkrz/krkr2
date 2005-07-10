@@ -46,7 +46,7 @@ __fastcall TTSSLoopTuner2MainForm::TTSSLoopTuner2MainForm(TComponent* Owner)
 {
 	Reader = new TWaveReader();
 	Reader->OnReadProgress = OnReaderProgress;
-	InitDirectSound(Application->Handle);
+	InitDirectSound(Handle);
 	Manager = NULL;
 	ActiveControl = WaveView;
 	CreateWaveView();
@@ -56,7 +56,7 @@ __fastcall TTSSLoopTuner2MainForm::TTSSLoopTuner2MainForm(TComponent* Owner)
 		// not to hide tool tip hint immediately
 
 	ReadFromIni();
-	Caption = OrgCaption = Application->Title;
+	Caption = OrgCaption = "Loop Tuner";
 
 	// open a file specified in command line argument
 	int i;
@@ -105,15 +105,6 @@ void __fastcall TTSSLoopTuner2MainForm::WriteToIni()
 	}
 }
 //---------------------------------------------------------------------------
-void __fastcall TTSSLoopTuner2MainForm::FormDestroy(TObject *Sender)
-{
-	StopPlay();
-	FreeDirectSound();
-	if(WaveView) delete WaveView;
-	if(Manager) delete Manager, Manager = NULL;
-	delete Reader;
-}
-//---------------------------------------------------------------------------
 void __fastcall TTSSLoopTuner2MainForm::FormShow(TObject *Sender)
 {
 	DragAcceptFiles(Handle,true);
@@ -143,6 +134,12 @@ void __fastcall TTSSLoopTuner2MainForm::FormClose(TObject *Sender,
 	  TCloseAction &Action)
 {
 	WriteToIni();
+	StopPlay();
+	FreeDirectSound();
+	WaveView->ClearAll();
+	if(Manager) delete Manager, Manager = NULL;
+	delete Reader;
+//	if(WaveView) delete WaveView; // the framework will free this
 }
 //---------------------------------------------------------------------------
 void __fastcall TTSSLoopTuner2MainForm::FormCloseQuery(TObject *Sender,
@@ -757,7 +754,7 @@ void __fastcall TTSSLoopTuner2MainForm::FlagEdit0Change(TObject *Sender)
 			edit->SelStart = 1;
 		}
 
-		if(edit->Text != "0" && edit->Text[1] == '0')
+		if(edit->Text != "0" && edit->Text.c_str()[0] == '0')
 		{
 			edit->Text = AnsiString(edit->Text.ToInt());
 			edit->SelStart = edit->Text.Length();
@@ -843,6 +840,7 @@ void __fastcall TTSSLoopTuner2MainForm::FlagsClearSpeedButtonClick(
 	ResettingFlags = false;
 }
 //---------------------------------------------------------------------------
+
 
 
 

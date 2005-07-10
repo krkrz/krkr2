@@ -1,6 +1,6 @@
 object RelDirSearchForm: TRelDirSearchForm
-  Left = 82
-  Top = 540
+  Left = 76
+  Top = 459
   BorderIcons = [biSystemMenu]
   BorderStyle = bsDialog
   Caption = '‹g—¢‹g—¢ Releaser'
