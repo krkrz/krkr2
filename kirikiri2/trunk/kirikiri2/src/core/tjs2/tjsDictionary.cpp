@@ -38,6 +38,9 @@ TJS_END_NATIVE_STATIC_CONSTRUCTOR_DECL(/*TJS class name*/Dictionary)
 //----------------------------------------------------------------------
 TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/load)
 {
+	TJS_GET_NATIVE_INSTANCE(/* var. name */ni, /* var. type */tTJSDictionaryNI);
+	if(!ni->IsValid()) return TJS_E_INVALIDOBJECT;
+
 	// TODO: implement Dictionary.load()
 	return TJS_S_OK;
 }
@@ -45,6 +48,9 @@ TJS_END_NATIVE_STATIC_METHOD_DECL(/*func. name*/load)
 //----------------------------------------------------------------------
 TJS_BEGIN_NATIVE_METHOD_DECL(/*func.name*/save)
 {
+	TJS_GET_NATIVE_INSTANCE(/* var. name */ni, /* var. type */tTJSDictionaryNI);
+	if(!ni->IsValid()) return TJS_E_INVALIDOBJECT;
+
 	// TODO: implement Dictionary.save();
 	return TJS_S_OK;
 }
@@ -56,6 +62,7 @@ TJS_BEGIN_NATIVE_METHOD_DECL(/*func.name*/saveStruct)
 	// the content can be interpret as an expression to re-construct the object.
 
 	TJS_GET_NATIVE_INSTANCE(/* var. name */ni, /* var. type */tTJSDictionaryNI);
+	if(!ni->IsValid()) return TJS_E_INVALIDOBJECT;
 
 	if(numparams < 1) return TJS_E_BADPARAMCOUNT;
 
@@ -88,6 +95,7 @@ TJS_END_NATIVE_STATIC_METHOD_DECL(/*func.name*/saveStruct)
 TJS_BEGIN_NATIVE_METHOD_DECL(/*func.name*/assign)
 {
 	TJS_GET_NATIVE_INSTANCE(/* var. name */ni, /* var. type */tTJSDictionaryNI);
+	if(!ni->IsValid()) return TJS_E_INVALIDOBJECT;
 
 	if(numparams < 1) return TJS_E_BADPARAMCOUNT;
 
@@ -109,6 +117,7 @@ TJS_END_NATIVE_STATIC_METHOD_DECL(/*func.name*/assign)
 TJS_BEGIN_NATIVE_METHOD_DECL(/* func.name */assignStruct)
 {
 	TJS_GET_NATIVE_INSTANCE(/* var. name */ni, /* var. type */tTJSDictionaryNI);
+	if(!ni->IsValid()) return TJS_E_INVALIDOBJECT;
 
 	if(numparams < 1) return TJS_E_BADPARAMCOUNT;
 
@@ -128,6 +137,7 @@ TJS_END_NATIVE_STATIC_METHOD_DECL(/* func.name */assignStruct)
 TJS_BEGIN_NATIVE_METHOD_DECL(/*func.name*/clear)
 {
 	TJS_GET_NATIVE_INSTANCE(/* var. name */ni, /* var. type */tTJSDictionaryNI);
+	if(!ni->IsValid()) return TJS_E_INVALIDOBJECT;
 
 	ni->Clear();
 
