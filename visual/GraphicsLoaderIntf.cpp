@@ -191,7 +191,7 @@ void TVPInternalLoadBMP(void *callbackdata,
 	tTJSBinaryStream * src,
 	tjs_int keyidx,
 	tTVPBMPAlphaType alphatype,
-	bool palettized)
+	tTVPGraphicLoadMode mode)
 {
 	// mostly taken ( but totally re-written ) from SDL,
 	// http://www.libsdl.org/
@@ -260,7 +260,7 @@ void TVPInternalLoadBMP(void *callbackdata,
 			}
 		}
 
-		if(palettized)
+		if(mode == glmGrayscale)
 		{
 			TVPDoGrayScale(palette, 256);
 		}
@@ -270,6 +270,12 @@ void TVPInternalLoadBMP(void *callbackdata,
 			// if color key by palette index is specified
 			palette[keyidx&0xff] &= 0x00ffffff; // make keyidx transparent
 		}
+	}
+	else
+	{
+		if(mode == glmPalettized)
+			TVPThrowExceptionMessage(TVPImageLoadError,
+				TJS_W("Unsupported color mode for palettized image."));
 	}
 
 	tjs_int height;
@@ -309,11 +315,17 @@ void TVPInternalLoadBMP(void *callbackdata,
 			{
 				// convert pixel format
 			case 1:
-				if(palettized)
+				if(mode == glmPalettized)
 				{
 					TVPBLExpand1BitTo8Bit(
 						(tjs_uint8*)scanline,
 						(tjs_uint8*)buf, bi.biWidth);
+				}
+				else if(mode == glmGrayscale)
+				{
+					TVPBLExpand1BitTo8BitPal(
+						(tjs_uint8*)scanline,
+						(tjs_uint8*)buf, bi.biWidth, palette);
 				}
 				else
 				{
@@ -324,11 +336,17 @@ void TVPInternalLoadBMP(void *callbackdata,
 				break;
 
 			case 4:
-				if(palettized)
+				if(mode == glmPalettized)
 				{
 					TVPBLExpand4BitTo8Bit(
 						(tjs_uint8*)scanline,
 						(tjs_uint8*)buf, bi.biWidth);
+				}
+				else if(mode == glmGrayscale)
+				{
+					TVPBLExpand4BitTo8BitPal(
+						(tjs_uint8*)scanline,
+						(tjs_uint8*)buf, bi.biWidth, palette);
 				}
 				else
 				{
@@ -339,10 +357,18 @@ void TVPInternalLoadBMP(void *callbackdata,
 				break;
 
 			case 8:
-				if(palettized)
+				if(mode == glmPalettized)
 				{
 					// intact copy
 					memcpy(scanline, buf, bi.biWidth);
+				}
+				else
+				if(mode == glmGrayscale)
+				{
+					// convert to grayscale
+					TVPBLExpand8BitTo8BitPal(
+						(tjs_uint8*)scanline,
+						(tjs_uint8*)buf, bi.biWidth, palette);
 				}
 				else
 				{
@@ -354,7 +380,7 @@ void TVPInternalLoadBMP(void *callbackdata,
 
 			case 15:
 			case 16:
-				if(palettized)
+				if(mode == glmGrayscale)
 				{
 					TVPBLConvert15BitTo8Bit(
 						(tjs_uint8*)scanline,
@@ -369,7 +395,7 @@ void TVPInternalLoadBMP(void *callbackdata,
 				break;
 
 			case 24:
-				if(palettized)
+				if(mode == glmGrayscale)
 				{
 					TVPBLConvert24BitTo8Bit(
 						(tjs_uint8*)scanline,
@@ -384,7 +410,7 @@ void TVPInternalLoadBMP(void *callbackdata,
 				break;
 
 			case 32:
-				if(palettized)
+				if(mode == glmGrayscale)
 				{
 					TVPBLConvert32BitTo8Bit(
 						(tjs_uint8*)scanline,
@@ -441,7 +467,7 @@ void TVPInternalLoadBMP(void *callbackdata,
 //---------------------------------------------------------------------------
 void TVPLoadBMP(void* formatdata, void *callbackdata, tTVPGraphicSizeCallback sizecallback,
 	tTVPGraphicScanLineCallback scanlinecallback, tTVPMetaInfoPushCallback metainfopushcallback,
-	tTJSBinaryStream *src, tjs_int keyidx,  bool palettized)
+	tTJSBinaryStream *src, tjs_int keyidx,  tTVPGraphicLoadMode mode)
 {
 	// Windows BMP Loader
 	// mostly taken ( but totally re-written ) from SDL,
@@ -515,7 +541,7 @@ void TVPLoadBMP(void* formatdata, void *callbackdata, tTVPGraphicSizeCallback si
 		src->SetPosition(firstpos + bf.bfOffBits);
 
 		TVPInternalLoadBMP(callbackdata, sizecallback, scanlinecallback,
-			bi, palette, src, keyidx, batMulAlpha, palettized);
+			bi, palette, src, keyidx, batMulAlpha, mode);
 	}
 	catch(...)
 	{
@@ -686,7 +712,8 @@ struct my_error_mgr
 METHODDEF(void)
 my_error_exit(j_common_ptr cinfo)
 {
-	TVPThrowExceptionMessage(TVPJPEGLoadError, cinfo->err->msg_code);
+	TVPThrowExceptionMessage(TVPJPEGLoadError,
+		ttstr(TJS_W("error code : ")) + ttstr(cinfo->err->msg_code));
 }
 //---------------------------------------------------------------------------
 METHODDEF(void)
@@ -808,8 +835,16 @@ jpeg_TStream_src (j_decompress_ptr cinfo, tTJSBinaryStream * infile)
 //---------------------------------------------------------------------------
 void TVPLoadJPEG(void* formatdata, void *callbackdata, tTVPGraphicSizeCallback sizecallback,
 	tTVPGraphicScanLineCallback scanlinecallback, tTVPMetaInfoPushCallback metainfopushcallback,
-	tTJSBinaryStream *src, tjs_int keyidx,  bool palettized)
+	tTJSBinaryStream *src, tjs_int keyidx,  tTVPGraphicLoadMode mode)
 {
+	// JPEG loading handler
+
+	// JPEG does not support palettized image
+	if(mode == glmPalettized)
+		TVPThrowExceptionMessage(TVPJPEGLoadError,
+			ttstr(TJS_W("JPEG does not support palettized image")));
+
+	// prepare variables
 	jpeg_decompress_struct cinfo;
 	my_error_mgr jerr;
 	JSAMPARRAY buffer;
@@ -849,7 +884,7 @@ void TVPLoadJPEG(void* formatdata, void *callbackdata, tTVPGraphicSizeCallback s
 		break;
 	}
 
-	if(palettized) cinfo.out_color_space =  JCS_GRAYSCALE;
+	if(mode == glmGrayscale) cinfo.out_color_space =  JCS_GRAYSCALE;
 
 	// start decompression
 	jpeg_start_decompress(&cinfo);
@@ -880,7 +915,7 @@ void TVPLoadJPEG(void* formatdata, void *callbackdata, tTVPGraphicSizeCallback s
 				if(!scanline) break;
 
 				// color conversion
-				if(palettized)
+				if(mode == glmGrayscale)
 				{
 					// write through
 					memcpy(scanline,
@@ -971,7 +1006,7 @@ static void __fastcall PNG_read_row_callback(png_structp png_ptr,png_uint_32 row
 //---------------------------------------------------------------------------
 void TVPLoadPNG(void* formatdata, void *callbackdata, tTVPGraphicSizeCallback sizecallback,
 	tTVPGraphicScanLineCallback scanlinecallback, tTVPMetaInfoPushCallback metainfopushcallback,
-	tTJSBinaryStream *src, tjs_int keyidx,  bool palettized)
+	tTJSBinaryStream *src, tjs_int keyidx,  tTVPGraphicLoadMode mode)
 {
 	png_structp png_ptr=NULL;
 	png_infop info_ptr=NULL;
@@ -1043,19 +1078,33 @@ void TVPLoadPNG(void* formatdata, void *callbackdata, tTVPGraphicSizeCallback si
 		}
 
 
-		if(palettized)
+		bool do_convert_rgb_gray = false;
+
+		if(mode == glmPalettized)
 		{
 			// convert the image to palettized one if needed
+			if(bit_depth > 8)
+				TVPThrowExceptionMessage(
+					TVPPNGLoadError, TJS_W("Unsupported color type for palattized image"));
+
 			if(color_type == PNG_COLOR_TYPE_PALETTE)
 			{
-//				TVPThrowExceptionMessage(
-//					TVPPNGLoadError,
-//					TJS_W("Unsupported color type "
-//						"(in conversion of to a grayscaled image)"));
-				if (bit_depth < 8)
-					png_set_packing(png_ptr);
+				png_set_packing(png_ptr);
 			}
 
+			if(color_type == PNG_COLOR_TYPE_GRAY) png_set_gray_1_2_4_to_8(png_ptr);
+		}
+		else if(mode == glmGrayscale)
+		{
+			// convert the image to grayscale
+			if(color_type == PNG_COLOR_TYPE_PALETTE)
+			{
+				png_set_palette_to_rgb(png_ptr);
+				png_set_bgr(png_ptr);
+				if (bit_depth < 8)
+					png_set_packing(png_ptr);
+				do_convert_rgb_gray = true; // manual conversion
+			}
 			if(color_type == PNG_COLOR_TYPE_GRAY &&
 				bit_depth < 8) png_set_gray_1_2_4_to_8(png_ptr);
 			if(color_type == PNG_COLOR_TYPE_RGB ||
@@ -1064,28 +1113,10 @@ void TVPLoadPNG(void* formatdata, void *callbackdata, tTVPGraphicSizeCallback si
 			if(color_type == PNG_COLOR_TYPE_RGB_ALPHA ||
 				color_type == PNG_COLOR_TYPE_GRAY_ALPHA)
 				png_set_strip_alpha(png_ptr);
-/*
-			if(color_type == PNG_COLOR_TYPE_GRAY_ALPHA)
-			{
-				png_color_16 my_background;
-				png_color_16p image_background;
-
-				if (png_get_bKGD(png_ptr, info_ptr, &image_background))
-				{
-					png_set_background(png_ptr, image_background,
-					  PNG_BACKGROUND_GAMMA_FILE, 1, 1.0);
-				}
-				else
-				{
-					memset(&my_background, 0xff, sizeof(png_color_16));
-					png_set_background(png_ptr, &my_background,
-					  PNG_BACKGROUND_GAMMA_SCREEN, 0, 1.0);
-				}
-			}
-*/
 		}
 		else
 		{
+			// glmNormal
 			// convert the image to full color ( 32bits ) one if needed
 
 			if(color_type == PNG_COLOR_TYPE_PALETTE)
@@ -1165,12 +1196,27 @@ void TVPLoadPNG(void* formatdata, void *callbackdata, tTVPGraphicSizeCallback si
 		if(info_ptr->interlace_type == PNG_INTERLACE_NONE)
 		{
 			// non-interlace
+			if(do_convert_rgb_gray)
+			{
+				png_uint_32 rowbytes = png_get_rowbytes(png_ptr, info_ptr);
+				image = new tjs_uint8[rowbytes];
+			}
 
 			for(i=0; i<height; i++)
 			{
 				void *scanline = scanlinecallback(callbackdata, i);
 				if(!scanline) break;
-				png_read_row(png_ptr, (png_bytep)scanline, NULL);
+				if(!do_convert_rgb_gray)
+				{
+					png_read_row(png_ptr, (png_bytep)scanline, NULL);
+				}
+				else
+				{
+					png_read_row(png_ptr, (png_bytep)image, NULL);
+					TVPBLConvert24BitTo8Bit(
+						(tjs_uint8*)scanline,
+						(tjs_uint8*)image, width);
+				}
 				scanlinecallback(callbackdata, -1);
 			}
 
@@ -1196,12 +1242,21 @@ void TVPLoadPNG(void* formatdata, void *callbackdata, tTVPGraphicSizeCallback si
 			// finish loading
 			png_read_end(png_ptr, info_ptr);
 
-			// set the
+			// set the pixel data
 			for(i=0; i<height; i++)
 			{
 				void *scanline = scanlinecallback(callbackdata, i);
 				if(!scanline) break;
-				memcpy(scanline, row_pointers[i], rowbytes);
+				if(!do_convert_rgb_gray)
+				{
+					memcpy(scanline, row_pointers[i], rowbytes);
+				}
+				else
+				{
+					TVPBLConvert24BitTo8Bit(
+						(tjs_uint8*)scanline,
+						(tjs_uint8*)row_pointers[i], width);
+				}
 				scanlinecallback(callbackdata, -1);
 			}
 		}
@@ -1386,13 +1441,18 @@ static tTVPAtExit TVPUninitERINAAtExit
 //---------------------------------------------------------------------------
 void TVPLoadERI(void* formatdata, void *callbackdata, tTVPGraphicSizeCallback sizecallback,
 	tTVPGraphicScanLineCallback scanlinecallback, tTVPMetaInfoPushCallback metainfopushcallback,
-	tTJSBinaryStream *src, tjs_int keyidx,  bool palettized)
+	tTJSBinaryStream *src, tjs_int keyidx,  tTVPGraphicLoadMode mode)
 {
 	// ERI loading handler
 	TVPInitERINA();
 
 	// ERI-chan ( stands for "Entis Rasterized Image" ) will be
 	// available at http://www.entis.gr.jp/eri/
+
+	// currently TVP's ERI handler does not support palettized ERI loading
+	if(mode == glmPalettized)
+		TVPThrowExceptionMessage(TVPERILoadError,
+			TJS_W("currently Kirikiri does not support loading palettized ERI image."));
 
 	// create wrapper object for EFileObject
 	tTVPEFileObject fileobject(src);
@@ -1429,8 +1489,8 @@ void TVPLoadERI(void* formatdata, void *callbackdata, tTVPGraphicSizeCallback si
 	else
 	{
 		// ??
-		rii.fdwFormatType = palettized ? ERI_GRAY_IMAGE : ERI_RGBA_IMAGE;
-		rii.dwBitsPerPixel = palettized ? 8 : 32;
+		rii.fdwFormatType = (mode == glmGrayscale) ? ERI_GRAY_IMAGE : ERI_RGBA_IMAGE;
+		rii.dwBitsPerPixel = (mode == glmGrayscale) ? 8 : 32;
 		has_alpha = erifile.m_InfoHeader.fdwFormatType & ERI_WITH_ALPHA;
 	}
 	
@@ -1478,7 +1538,7 @@ void TVPLoadERI(void* formatdata, void *callbackdata, tTVPGraphicSizeCallback si
 			}
 
 			// convert palette to monochrome
-			if(palettized)
+			if(mode == glmGrayscale)
 				TVPDoGrayScale(palette, 256);
 
 			if(keyidx != -1)
@@ -1499,7 +1559,7 @@ void TVPLoadERI(void* formatdata, void *callbackdata, tTVPGraphicSizeCallback si
 		{
 			void *scanline = scanlinecallback(callbackdata, i);
 			if(!scanline) break;
-			if(!palettized)
+			if(mode == glmNormal)
 			{
 				// destination is RGBA
 				if(rii.dwBitsPerPixel == 8)
@@ -1537,7 +1597,7 @@ void TVPLoadERI(void* formatdata, void *callbackdata, tTVPGraphicSizeCallback si
 			}
 			else
 			{
-				// destination is palettized
+				// destination is grayscale
 				if(rii.dwBitsPerPixel == 8)
 				{
 					if((erifile.m_InfoHeader.fdwFormatType&ERI_TYPE_MASK) ==
@@ -1579,7 +1639,7 @@ void TVPLoadERI(void* formatdata, void *callbackdata, tTVPGraphicSizeCallback si
 #else // #ifdef TVP_SUPPORT_ERI
 void TVPLoadERI(void* formatdata, void *callbackdata, tTVPGraphicSizeCallback sizecallback,
 	tTVPGraphicScanLineCallback scanlinecallback, tTVPMetaInfoPushCallback metainfopushcallback,
-	tTJSBinaryStream *src, tjs_int keyidx,  bool palettized)
+	tTJSBinaryStream *src, tjs_int keyidx,  tTVPGraphicLoadMode mode)
 {
 	TVPThrowExceptionMessage(TVPNotImplemented);
 }
@@ -1613,7 +1673,9 @@ void TVPLoadERI(void* formatdata, void *callbackdata, tTVPGraphicSizeCallback si
 //---------------------------------------------------------------------------
 enum tTVPLoadGraphicType
 {
-	lgtFullColor, lgtProvince, lgtMask
+	lgtFullColor, // full 32bit color
+	lgtPalGray, // palettized or grayscale
+	lgtMask // mask
 };
 struct tTVPGraphicMetaInfoPair
 {
@@ -1667,7 +1729,7 @@ static void TVPLoadGraphic_SizeCallback(void *callbackdata, tjs_uint w,
 	}
 	else
 	{
-		// normal load
+		// normal load or province load
 		data->Dest->Recreate(w, h, data->Type!=lgtFullColor?8:32);
 	}
 }
@@ -1751,7 +1813,7 @@ static void * TVPLoadGraphic_ScanLineCallback(void *callbackdata, tjs_int y)
 
 			return NULL;
 		}
-		else
+		else if(data->Type == lgtPalGray)
 		{
 			// nothing to do
 			if(data->OrgW < data->BufW || data->OrgH < data->BufH)
@@ -1781,6 +1843,7 @@ static void * TVPLoadGraphic_ScanLineCallback(void *callbackdata, tjs_int y)
 			return NULL;
 		}
 	}
+	return NULL;
 }
 //---------------------------------------------------------------------------
 static void TVPLoadGraphic_MetaInfoPushCallback(void *callbackdata,
@@ -1919,13 +1982,13 @@ struct tTVPGraphicsSearchData
 {
 	ttstr Name;
 	tjs_int32 KeyIdx; // color key index
-	bool Province; // for province or rule graphic ( in other words : 8bit graphic )
+	tTVPGraphicLoadMode Mode; // image mode
 	tjs_uint DesW; // desired width ( 0 for original size )
 	tjs_uint DesH; // desired height ( 0 for original size )
 
 	bool operator == (const tTVPGraphicsSearchData &rhs) const
 	{
-		return KeyIdx == rhs.KeyIdx && Province == rhs.Province &&
+		return KeyIdx == rhs.KeyIdx && Mode == rhs.Mode &&
 			Name == rhs.Name && DesW == rhs.DesW && DesH == rhs.DesH;
 	}
 };
@@ -1938,7 +2001,7 @@ public:
 		tjs_uint32 v = tTJSHashFunc<ttstr>::Make(val.Name);
 
 		v ^= val.KeyIdx + (val.KeyIdx >> 23);
-		v ^= val.Province;
+		v ^= (val.Mode << 30);
 		v ^= val.DesW + (val.DesW >> 8);
 		v ^= val.DesH + (val.DesH >> 8);
 		return v;
@@ -2104,10 +2167,9 @@ static bool TVPClearGraphicCacheCallbackInit = false;
 //---------------------------------------------------------------------------
 static bool TVPInternalLoadGraphic(tTVPBaseBitmap *dest, const ttstr &_name,
 	tjs_uint32 keyidx, tjs_uint desw, tjs_int desh, std::vector<tTVPGraphicMetaInfoPair> * * MetaInfo,
-		bool province, ttstr *provincename)
+		tTVPGraphicLoadMode mode, ttstr *provincename)
 {
 	// name must be normalized.
-	// "province" parameter is to be used for province image loading.
 	// if "provincename" is non-null, this function set it to province storage
 	// name ( with _p suffix ) for convinience.
 	// desw and desh are desired size. if the actual picture is smaller than
@@ -2124,8 +2186,6 @@ static bool TVPInternalLoadGraphic(tTVPBaseBitmap *dest, const ttstr &_name,
 
 
 	// search according with its extension
-
-//	palettized = true;
 	tjs_int namelen = _name.GetLen();
 	ttstr name(_name);
 
@@ -2171,7 +2231,7 @@ static bool TVPInternalLoadGraphic(tTVPBaseBitmap *dest, const ttstr &_name,
 	tTVPLoadGraphicData data;
 	data.Dest = dest;
 	data.ColorKey = keyidx;
-	data.Type = province?lgtProvince:lgtFullColor;
+	data.Type = mode == glmNormal? lgtFullColor : lgtPalGray;
 	data.Name = name;
 	data.DesW = desw;
 	data.DesH = desh;
@@ -2193,18 +2253,18 @@ static bool TVPInternalLoadGraphic(tTVPBaseBitmap *dest, const ttstr &_name,
 
 	(handler->Handler)(handler->FormatData, (void*)&data, TVPLoadGraphic_SizeCallback,
 		TVPLoadGraphic_ScanLineCallback, TVPLoadGraphic_MetaInfoPushCallback,
-		holder.Get(), keyidx, province);
+		holder.Get(), keyidx, mode);
 
 	*MetaInfo = data.MetaInfo;
 
-	if(keyadapt && !province)
+	if(keyadapt && mode == glmNormal)
 	{
 		// adaptive color key
 		TVPMakeAlphaFromAdaptiveColor(dest);
 	}
 
 
-	if(province) return true;
+	if(mode != glmNormal) return true;
 
 	if(provincename)
 	{
@@ -2294,7 +2354,7 @@ static bool TVPInternalLoadGraphic(tTVPBaseBitmap *dest, const ttstr &_name,
 		(handler->Handler)(handler->FormatData, (void*)&data,
 			TVPLoadGraphic_SizeCallback, TVPLoadGraphic_ScanLineCallback,
 			NULL,
-			holder.Get(), -1, true);
+			holder.Get(), -1, glmGrayscale);
     }
 	catch(...)
     {
@@ -2317,7 +2377,7 @@ static bool TVPInternalLoadGraphic(tTVPBaseBitmap *dest, const ttstr &_name,
 //---------------------------------------------------------------------------
 void TVPLoadGraphic(tTVPBaseBitmap *dest, const ttstr &name, tjs_int32 keyidx,
 	tjs_uint desw, tjs_uint desh,
-	bool province, ttstr *provincename, iTJSDispatch2 ** metainfo)
+	tTVPGraphicLoadMode mode, ttstr *provincename, iTJSDispatch2 ** metainfo)
 {
 	// loading with cache management
 	ttstr nname = TVPNormalizeStorageName(name);
@@ -2328,7 +2388,7 @@ void TVPLoadGraphic(tTVPBaseBitmap *dest, const ttstr &name, tjs_int32 keyidx,
 	{
 		searchdata.Name = nname;
 		searchdata.KeyIdx = keyidx;
-		searchdata.Province = province;
+		searchdata.Mode = mode;
 		searchdata.DesW = desw;
 		searchdata.DesH = desh;
 
@@ -2356,7 +2416,7 @@ void TVPLoadGraphic(tTVPBaseBitmap *dest, const ttstr &name, tjs_int32 keyidx,
 	std::vector<tTVPGraphicMetaInfoPair> * mi = NULL;
 	try
 	{
-		TVPInternalLoadGraphic(dest, nname, keyidx, desw, desh, &mi, province, &pn);
+		TVPInternalLoadGraphic(dest, nname, keyidx, desw, desh, &mi, mode, &pn);
 
 		if(provincename) *provincename = pn;
 		if(metainfo)
@@ -2456,7 +2516,7 @@ void TVPTouchImages(const std::vector<ttstr> & storages, tjs_int limit,
 			statusstr += storages[count];
 
 			TVPLoadGraphic(&tmp, storages[count++], 0x1fffffff,
-				0, 0, false, NULL); // load image
+				0, 0, glmNormal, NULL); // load image
 
 			// get image size
 			tTVPGraphicImageData * data = new tTVPGraphicImageData();
@@ -2492,7 +2552,7 @@ void TVPTouchImages(const std::vector<ttstr> & storages, tjs_int limit,
 		tTVPGraphicsSearchData searchdata;
 		searchdata.Name = TVPNormalizeStorageName(storages[count]);
 		searchdata.KeyIdx = 0x1fffffff;
-		searchdata.Province = false;
+		searchdata.Mode = glmNormal;
 		searchdata.DesW = 0;
 		searchdata.DesH = 0;
 

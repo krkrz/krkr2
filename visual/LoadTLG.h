@@ -14,7 +14,7 @@
 
 extern void TVPLoadTLG(void* formatdata, void *callbackdata, tTVPGraphicSizeCallback sizecallback,
 	tTVPGraphicScanLineCallback scanlinecallback, tTVPMetaInfoPushCallback metainfopushcallback,
-	tTJSBinaryStream *src, tjs_int keyidx,  bool palettized);
+	tTJSBinaryStream *src, tjs_int keyidx, tTVPGraphicLoadMode mode);
 
 
 #endif

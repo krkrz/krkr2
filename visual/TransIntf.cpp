@@ -149,7 +149,7 @@ tjs_error TJS_INTF_METHOD tTVPSimpleImageProvider::LoadImage(
 
 	try
 	{
-		TVPLoadGraphic(bitmap, name, key, w, h, bpp == 8);
+		TVPLoadGraphic(bitmap, name, key, w, h, bpp == 8 ? glmGrayscale : glmNormal);
 	}
 	catch(...)
 	{
@@ -180,7 +180,7 @@ iTVPScanLineProvider * TVPSLPLoadImage(const ttstr &name, tjs_int bpp,
 
 	try
 	{
-		TVPLoadGraphic(bitmap, name, key, w, h, bpp == 8);
+		TVPLoadGraphic(bitmap, name, key, w, h, bpp == 8 ? glmGrayscale : glmNormal);
 		pro = new tTVPScanLineProviderForBaseBitmap(bitmap, true);
 	}
 	catch(...)

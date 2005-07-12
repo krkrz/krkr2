@@ -2103,7 +2103,7 @@ iTJSDispatch2 * tTJSNI_BaseLayer::LoadImages(const ttstr &name, tjs_uint32 color
 	ttstr provincename;
 	iTJSDispatch2 * metainfo = NULL;
 
-	TVPLoadGraphic(MainImage, name, colorkey, 0, 0, false, &provincename, &metainfo);
+	TVPLoadGraphic(MainImage, name, colorkey, 0, 0, glmNormal, &provincename, &metainfo);
 	try
 	{
 
@@ -2117,7 +2117,7 @@ iTJSDispatch2 * tTJSNI_BaseLayer::LoadImages(const ttstr &name, tjs_uint32 color
 			try
 			{
 				TVPLoadGraphic(ProvinceImage, provincename, 0,
-					MainImage->GetWidth(), MainImage->GetHeight(), true, NULL, NULL);
+					MainImage->GetWidth(), MainImage->GetHeight(), glmPalettized, NULL, NULL);
 
 				if(ProvinceImage->GetWidth() != MainImage->GetWidth() ||
 					ProvinceImage->GetHeight() != MainImage->GetHeight())
@@ -2161,7 +2161,7 @@ void tTJSNI_BaseLayer::LoadProvinceImage(const ttstr &name)
 	try
 	{
 		TVPLoadGraphic(ProvinceImage, name, 0,
-			MainImage->GetWidth(), MainImage->GetHeight(), true, NULL, NULL);
+			MainImage->GetWidth(), MainImage->GetHeight(), glmPalettized, NULL, NULL);
 
 		if(ProvinceImage->GetWidth() != MainImage->GetWidth() ||
 			ProvinceImage->GetHeight() != MainImage->GetHeight())
