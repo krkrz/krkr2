@@ -46,6 +46,13 @@ typedef void (*tTVPMetaInfoPushCallback)
 	this can be null.
 */
 
+enum tTVPGraphicLoadMode
+{
+	glmNormal, // normal, ie. 32bit ARGB graphic
+	glmPalettized, // palettized 8bit mode
+	glmGrayscale // grayscale 8bit mode
+};
+
 typedef void (*tTVPGraphicLoadingHandler)(void* formatdata,
 	void *callbackdata,
 	tTVPGraphicSizeCallback sizecallback,
@@ -53,14 +60,15 @@ typedef void (*tTVPGraphicLoadingHandler)(void* formatdata,
 	tTVPMetaInfoPushCallback metainfopushcallback,
 	tTJSBinaryStream *src,
 	tjs_int32 keyidx,
-	bool palettized);
+	tTVPGraphicLoadMode mode);
 /*
 	format = format specific data given at TVPRegisterGraphicLoadingHandler
 	dest = destination callback function
 	src = source stream
 	keyidx = color key for less than or equal to 8 bit image
-	palettized = if true, the output image must be an 8bit color (for province
+	mode = if glmPalettized, the output image must be an 8bit color (for province
 	   image. so the color is not important. color index must be preserved).
+	   if glmGrayscale, the output image must be an 8bit grayscale image.
 	   otherwise the output image must be a 32bit full-color with opacity.
 
 	color key does not overrides image's alpha channel ( if the image has )
@@ -89,19 +97,19 @@ void TVPUnregisterGraphicLoadingHandler(const ttstr & name,
 //---------------------------------------------------------------------------
 extern void TVPLoadBMP(void* formatdata, void *callbackdata, tTVPGraphicSizeCallback sizecallback,
 	tTVPGraphicScanLineCallback scanlinecallback, tTVPMetaInfoPushCallback metainfopushcallback,
-	tTJSBinaryStream *src, tjs_int keyidx,  bool palettized);
+	tTJSBinaryStream *src, tjs_int keyidx,  tTVPGraphicLoadMode mode);
 
 extern void TVPLoadJPEG(void* formatdata, void *callbackdata, tTVPGraphicSizeCallback sizecallback,
 	tTVPGraphicScanLineCallback scanlinecallback, tTVPMetaInfoPushCallback metainfopushcallback,
-	tTJSBinaryStream *src, tjs_int keyidx,  bool palettized);
+	tTJSBinaryStream *src, tjs_int keyidx,  tTVPGraphicLoadMode mode);
 
 extern void TVPLoadPNG(void* formatdata, void *callbackdata, tTVPGraphicSizeCallback sizecallback,
 	tTVPGraphicScanLineCallback scanlinecallback, tTVPMetaInfoPushCallback metainfopushcallback,
-	tTJSBinaryStream *src, tjs_int keyidx,  bool palettized);
+	tTJSBinaryStream *src, tjs_int keyidx,  tTVPGraphicLoadMode mode);
 
 extern void TVPLoadERI(void* formatdata, void *callbackdata, tTVPGraphicSizeCallback sizecallback,
 	tTVPGraphicScanLineCallback scanlinecallback, tTVPMetaInfoPushCallback metainfopushcallback,
-	tTJSBinaryStream *src, tjs_int keyidx,  bool palettized);
+	tTJSBinaryStream *src, tjs_int keyidx,  tTVPGraphicLoadMode mode);
 
 //---------------------------------------------------------------------------
 
@@ -168,7 +176,7 @@ extern void TVPTouchImages(const std::vector<ttstr> & storages, tjs_int limit,
 //---------------------------------------------------------------------------
 extern void TVPLoadGraphic(tTVPBaseBitmap *dest, const ttstr &name, tjs_int keyidx,
 	tjs_uint desw, tjs_uint desh,
-	bool province, ttstr *provincename = NULL, iTJSDispatch2 ** metainfo = NULL);
+	tTVPGraphicLoadMode mode, ttstr *provincename = NULL, iTJSDispatch2 ** metainfo = NULL);
 	// throws exception when this function can not handle the file
 //---------------------------------------------------------------------------
 
@@ -232,7 +240,7 @@ extern void TVPInternalLoadBMP(void *callbackdata,
 	tTJSBinaryStream * src,
 	tjs_int keyidx,
 	tTVPBMPAlphaType alphatype,
-	bool palettized);
+	tTVPGraphicLoadMode mode);
 
 //---------------------------------------------------------------------------
 

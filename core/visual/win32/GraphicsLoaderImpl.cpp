@@ -127,7 +127,7 @@ public:
 		tTVPGraphicScanLineCallback scanlinecallback,
 		tTJSBinaryStream *src,
 		tjs_int keyidx,
-		bool palettized);
+		tTVPGraphicLoadMode mode);
 
 };
 //---------------------------------------------------------------------------
@@ -147,7 +147,7 @@ void tTVPSusiePicturePlugin::Load(void *callbackdata,
 		tTVPGraphicScanLineCallback scanlinecallback,
 		tTJSBinaryStream *src,
 		tjs_int keyidx,
-		bool palettized)
+		tTVPGraphicLoadMode mode)
 {
 	bool bitmaplocked = false;
 	HLOCAL bitmap = NULL;
@@ -219,7 +219,7 @@ void tTVPSusiePicturePlugin::Load(void *callbackdata,
 		// pass information to TVPInternalLoadBMP
 		TVPInternalLoadBMP(callbackdata, sizecallback, scanlinecallback,
 			bi, ((tjs_uint8*)srcbi) + bi.biSize, &memstream, keyidx, AlphaType,
-				palettized);
+				mode);
 
 	}
 	catch(...)
@@ -272,11 +272,11 @@ static void TVPLoadViaSusiePlugin(void* formatdata, void *callbackdata,
 	tTVPMetaInfoPushCallback metainfopushcallback,
 	tTJSBinaryStream *src,
 	tjs_int keyidx,
-	bool palettized)
+	tTVPGraphicLoadMode mode)
 {
 	tTVPSusiePicturePlugin * plugin = (tTVPSusiePicturePlugin*)formatdata;
 	plugin->Load(callbackdata, sizecallback, scanlinecallback, src, keyidx,
-		palettized);
+		mode);
 }
 //---------------------------------------------------------------------------
 
