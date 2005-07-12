@@ -14,6 +14,7 @@
 #include <mmreg.h>
 #include <syncobjs.hpp>
 #include <math.h>
+#include <algorithm>
 #include "MainFormUnit.h"
 #include "DebugIntf.h"
 #include "MsgIntf.h"
