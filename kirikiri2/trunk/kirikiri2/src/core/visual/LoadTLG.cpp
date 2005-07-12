@@ -44,10 +44,10 @@ void TVPLoadTLG5(void* formatdata, void *callbackdata,
 	tTVPGraphicScanLineCallback scanlinecallback,
 	tTJSBinaryStream *src,
 	tjs_int keyidx,
-	bool palettized)
+	tTVPGraphicLoadMode mode)
 {
 	// load TLG v5.0 lossless compressed graphic
-	if(palettized)
+	if(mode != glmNormal)
 		TVPThrowExceptionMessage(TVPTLGLoadError,
 			TJS_W("TLG cannot be used as universal transition rule, province(_p) or mask(_m) images."));
 
@@ -429,7 +429,7 @@ void TVPLoadTLG6(void* formatdata, void *callbackdata,
 //---------------------------------------------------------------------------
 static void TVPInternalLoadTLG(void* formatdata, void *callbackdata, tTVPGraphicSizeCallback sizecallback,
 	tTVPGraphicScanLineCallback scanlinecallback, tTVPMetaInfoPushCallback metainfopushcallback,
-	tTJSBinaryStream *src, tjs_int keyidx,  bool palettized)
+	tTJSBinaryStream *src, tjs_int keyidx,  tTVPGraphicLoadMode mode)
 {
 	// read header
 	unsigned char mark[12];
@@ -439,12 +439,12 @@ static void TVPInternalLoadTLG(void* formatdata, void *callbackdata, tTVPGraphic
 	if(!memcmp("TLG5.0\x00raw\x1a\x00", mark, 11))
 	{
 		TVPLoadTLG5(formatdata, callbackdata, sizecallback,
-			scanlinecallback, src, keyidx, palettized);
+			scanlinecallback, src, keyidx, mode);
 	}
 	else if(!memcmp("TLG6.0\x00raw\x1a\x00", mark, 11))
 	{
 		TVPLoadTLG6(formatdata, callbackdata, sizecallback,
-			scanlinecallback, src, keyidx, palettized);
+			scanlinecallback, src, keyidx, mode);
 	}
 	else
 	{
@@ -456,7 +456,7 @@ static void TVPInternalLoadTLG(void* formatdata, void *callbackdata, tTVPGraphic
 
 void TVPLoadTLG(void* formatdata, void *callbackdata, tTVPGraphicSizeCallback sizecallback,
 	tTVPGraphicScanLineCallback scanlinecallback, tTVPMetaInfoPushCallback metainfopushcallback,
-	tTJSBinaryStream *src, tjs_int keyidx,  bool palettized)
+	tTJSBinaryStream *src, tjs_int keyidx,  tTVPGraphicLoadMode mode)
 {
 	// read header
 	unsigned char mark[12];
@@ -478,7 +478,7 @@ void TVPLoadTLG(void* formatdata, void *callbackdata, tTVPGraphicSizeCallback si
 
 		// try to load TLG raw data
 		TVPInternalLoadTLG(formatdata, callbackdata, sizecallback,
-			scanlinecallback, metainfopushcallback, src, keyidx, palettized);
+			scanlinecallback, metainfopushcallback, src, keyidx, mode);
 
 		// seek to meta info data point
 		src->Seek(rawlen + 11 + 4, TJS_BS_SEEK_SET);
@@ -568,7 +568,7 @@ void TVPLoadTLG(void* formatdata, void *callbackdata, tTVPGraphicSizeCallback si
 
 		// try to load TLG raw data
 		TVPInternalLoadTLG(formatdata, callbackdata, sizecallback,
-			scanlinecallback, metainfopushcallback, src, keyidx, palettized);
+			scanlinecallback, metainfopushcallback, src, keyidx, mode);
 	}
 
 

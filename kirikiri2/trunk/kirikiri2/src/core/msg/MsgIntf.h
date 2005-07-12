@@ -189,7 +189,7 @@ TVP_MSG_DECL(TVPImageLoadError,
 	"画像読み込み中にエラーが発生しました/%1");
 
 TVP_MSG_DECL(TVPJPEGLoadError,
-	"JPEG 読み込み中にエラーが発生しました/エラーコード %1");
+	"JPEG 読み込み中にエラーが発生しました/%1");
 
 TVP_MSG_DECL(TVPPNGLoadError,
 	"PNG 読み込み中にエラーが発生しました/%1");
