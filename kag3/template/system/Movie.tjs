@@ -63,6 +63,10 @@ class Movie extends VideoOverlay
 		{
 			mode = vomLayer;
 			loop = dic.loop;
+			layerNumber[0] = dic.layerNumber[0];
+			layerNumber[1] = dic.layerNumber[1];
+			layerPage[0] = dic.layerPage[0];
+			layerPage[1] = dic.layerPage[1];
 			if( dic.layerNumber[0] !== void && dic.layerPage[0] !== void )
 			{
 				var elm = %[];
@@ -80,7 +84,10 @@ class Movie extends VideoOverlay
 			if( dic.lastStatus != "unload" )
 			{
 				this.open( dic.storageName );
-				frame = dic.frame;
+				periodEventFrame = dic.periodEventFrame;	// この設定は必ずフレームより前に行うこと
+				if( dic.frame >= 0 )
+					frame = dic.frame;
+
 				if( numberOfAudioStream > 0 ) {
 					audioBalance = dic.audioBalance;
 					audioVolume = dic.audioVolume;
@@ -89,7 +96,6 @@ class Movie extends VideoOverlay
 						super.selectAudioStream( dic.enabledAudioStream );
 					}
 				}
-				periodEventFrame = dic.periodEventFrame;
 				super.setSegmentLoop( dic.segmentLoopStartFrame, dic.segmentLoopEndFrame );
 				if( dic.lastStatus == "pause" || dic.lastStatus == "play" )
 				{
