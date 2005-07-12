@@ -251,6 +251,11 @@ class KAGWindow extends Window
 	var padKeyMapReverse; // キーコード -> パッドボタン。コンストラクタ内で設定
 
 
+	var holdPeriodEventQueue = [];	// 保留にされたムービーのピリオドイベントキュー
+	var isLeavePeriodEvent = false;	// ムービーのピリオドイベントを保留にするかどうか
+	var isWaitPeriodEvent = false;	// ムービーのピリオドイベント待ち状態かどうか
+	var waitedPeriodEventStorageName = void;	// ピリオドイベント待ちをコールしたストレージ名
+
 	//------------------------------------------------------ コンストラクタ --
 
 	function KAGWindow(ismain = true, width = 0, height = 0)
@@ -405,8 +410,6 @@ class KAGWindow extends Window
 		{
 			for( var i = 0; i < numMovies; i++)
 				add(movies[i] = new Movie(this,i));
-//			movie = new Movie(this);
-//			add(movie);
 		}
 
 		// デフォルトのハンドラを追加
@@ -1279,9 +1282,12 @@ class KAGWindow extends Window
 		}
 
 		// ムービー
-		f.movies = [];
-		for( var i = 0; i < numMovies; i++)
-			f.movies[i] = movies[i].store();
+		if( isMain )
+		{
+			f.movies = [];
+			for( var i = 0; i < numMovies; i++)
+				f.movies[i] = movies[i].store();
+		}
 
 		// storeHook
 		forEachEventHook('onStore',
@@ -1358,8 +1364,11 @@ class KAGWindow extends Window
 		autoWCWaits.assign(f.autoWCWaits) if f.autoWCWaits !== void;
 
 		// ムービー
-		for( var i = 0; i < numMovies; i++)
-			movies[i].restore(f.movies[i]);
+		if( isMain )
+		{
+			for( var i = 0; i < numMovies; i++)
+				movies[i].restore(f.movies[i]);
+		}
 
 		// 背景レイヤ
 		var backlay = elm != void && elm.backlay != void && +elm.backlay;
@@ -1472,6 +1481,9 @@ class KAGWindow extends Window
 	function restoreFlags()
 	{
 		// pcflags, pflags から情報を読み出す
+
+		// ロード時、ムービーのピリオドイベント情報をクリアする
+		purgeMoviePeriod();
 
 		// スナップショットの破棄
 		freeSnapshot();
@@ -2513,10 +2525,44 @@ class KAGWindow extends Window
 					notifyRun();
 					conductor.run();
 				}
+				isLeavePeriodEvent = false;
+				if(elm.storage !== void || elm.target !== void)
+				{	// returnで元の位置以外に戻る時はピリオドイベントをクリアする。
+					holdPeriodEventQueue.clear();
+					isWaitPeriodEvent = false;
+				}
+				if( isWaitPeriodEvent == true )
+				{	// [wp]でピリオドイベント待ちをしている時のみ、トリガーする
+					fireMoviePeriodFromQueue();
+				}
 				return false; // return は実行しない
 			}
 		}
 		return true;
+	}
+	function purgeMoviePeriod()
+	{
+		isLeavePeriodEvent = false;
+		holdPeriodEventQueue.clear();
+		isWaitPeriodEvent = false;
+		waitedPeriodEventStorageName = void;
+	}
+	function fireMoviePeriodFromQueue()
+	{
+		var retVal = false;
+		if( holdPeriodEventQueue.count > 0 )
+		{
+			if( waitedPeriodEventStorageName == conductor.curStorage && conductor == mainConductor )
+			{
+				for( var i = 0; i < holdPeriodEventQueue.count; i++ )
+				{
+					conductor.trigger( holdPeriodEventQueue[i] );
+					retVal = true;
+				}
+			}
+			holdPeriodEventQueue.clear();
+		}
+		return retVal;
 	}
 
 	function onConductorAfterReturn()
@@ -2709,6 +2755,8 @@ class KAGWindow extends Window
 
 	function callRightClickSubRoutine()
 	{
+		isLeavePeriodEvent = true;
+
 		// 右クリックサブルーチンを呼ぶ
 		if(typeof this.rightClickMenuItem != "undefined")
 		{
@@ -4382,132 +4430,117 @@ class KAGWindow extends Window
 
 	function onMoviePeriod(id,type)
 	{
-		// ムービーの再生が終了した
-		conductor.trigger('movieperiod'+id+'_'+type);
+		// ムービーのピリオドイベントが発生した
+		if( isLeavePeriodEvent != false )
+		{
+			holdPeriodEventQueue.add( 'movieperiod'+id+'_'+type );
+		}
+		else
+		{
+			conductor.trigger('movieperiod'+id+'_'+type);
+		}
 	}
 
 	function waitMoviePeriod(elm)
 	{
+		isWaitPeriodEvent = true;
+		waitedPeriodEventStorageName = conductor.curStorage;
+	
 		var id = +elm.slot;
 
 		stablePosibility = true;
 
-		// ムービーの再生終了を待つ
-		if(!movies[id].canWaitStop) return 0; // ムービー再生終了を待てなければそのまま戻る
-		if(elm.canskip !== void && +elm.canskip && clickSkipEnabled)
+		if( holdPeriodEventQueue.count > 0 )
 		{
-			// スキップできる場合
-			if(skipMode)
+			var		triggered = false;
+			for( var i = 0; i < holdPeriodEventQueue.count; i++ )
 			{
-				// スキップ中の場合
-				movies[id].stop();
-				return 0; // スキップ中の場合は再生を停止させて返る
-			}
-			if( elm.for !== void )
-			{
-				if( elm.for == 'loop' )
+				if( elm.for !== void )
 				{
-					conductor.wait(%[
-						click : function (id) { } incontextof this,
-						'click_arg' => id, // ハンドラへの引数
-						'movieperiod'+id+'_'+perLoop => function (id) { } incontextof this,
-						'movieperiod'+id+'_arg' => id // ハンドラへの引数
-						]);
-				}
-				else if( elm.for == 'period' )
-				{
-					conductor.wait(%[
-						click : function (id) { } incontextof this,
-						'click_arg' => id, // ハンドラへの引数
-						'movieperiod'+id+'_'+perPeriod => function (id) { } incontextof this,
-						'movieperiod'+id+'_arg' => id // ハンドラへの引数
-						]);
-				}
-				else if( elm.for == 'prepare' )
-				{
-					conductor.wait(%[
-						click : function (id) { } incontextof this,
-						'click_arg' => id, // ハンドラへの引数
-						'movieperiod'+id+'_'+perPrepare => function (id) { } incontextof this,
-						'movieperiod'+id+'_arg' => id // ハンドラへの引数
-						]);
-				}
-				else if( elm.for == 'segLoop' )
-				{
-					conductor.wait(%[
-						click : function (id) { } incontextof this,
-						'click_arg' => id, // ハンドラへの引数
-						'movieperiod'+id+'_'+perSegLoop => function (id) { } incontextof this,
-						'movieperiod'+id+'_arg' => id // ハンドラへの引数
-						]);
+					if( elm.for == 'loop' )
+					{
+						if( ('movieperiod'+id+'_'+perLoop) == holdPeriodEventQueue[i] )
+							triggered = true;
+					}
+					else if( elm.for == 'period' )
+					{
+						if( ('movieperiod'+id+'_'+perPeriod) == holdPeriodEventQueue[i] )
+							triggered = true;
+					}
+					else if( elm.for == 'prepare' )
+					{
+						if( ('movieperiod'+id+'_'+perPrepare) == holdPeriodEventQueue[i] )
+							triggered = true;
+					}
+					else if( elm.for == 'segLoop' )
+					{
+						if( ('movieperiod'+id+'_'+perSegLoop) == holdPeriodEventQueue[i] )
+							triggered = true;
+					}
+					else
+					{
+						triggered == true;
+					}
 				}
 				else
 				{
-					return 0; // 引数が変
+					triggered == true;
 				}
+			}
+			holdPeriodEventQueue.clear();
+			if( triggered == true )
+			{
+				isWaitPeriodEvent = false;
+				return 0;
+			}
+		}
+
+		// ムービーのピリオドイベントを待つ
+		if(!movies[id].canWaitStop) return 0; // ムービーが再生中でなければそのまま戻る
+		if( elm.for !== void )
+		{
+			if( elm.for == 'loop' )
+			{
+				conductor.wait(%[
+					'movieperiod'+id+'_'+perLoop => function (id) { notifyRun(); isWaitPeriodEvent = false;} incontextof this,
+					'movieperiod'+id+'_arg' => id // ハンドラへの引数
+					]);
+			}
+			else if( elm.for == 'period' )
+			{
+				conductor.wait(%[
+					'movieperiod'+id+'_'+perPeriod => function (id) { notifyRun(); isWaitPeriodEvent = false;} incontextof this,
+					'movieperiod'+id+'_arg' => id // ハンドラへの引数
+					]);
+			}
+			else if( elm.for == 'prepare' )
+			{
+				conductor.wait(%[
+					'movieperiod'+id+'_'+perPrepare => function (id) { notifyRun(); isWaitPeriodEvent = false;} incontextof this,
+					'movieperiod'+id+'_arg' => id // ハンドラへの引数
+					]);
+			}
+			else if( elm.for == 'segLoop' )
+			{
+				conductor.wait(%[
+					'movieperiod'+id+'_'+perSegLoop => function (id) { notifyRun(); isWaitPeriodEvent = false;} incontextof this,
+					'movieperiod'+id+'_arg' => id // ハンドラへの引数
+					]);
 			}
 			else
 			{
-				conductor.wait(%[
-					click : function (id) { } incontextof this,
-					'click_arg' => id, // ハンドラへの引数
-	
-					'movieperiod'+id+'_'+perLoop => function (id) { } incontextof this,
-					'movieperiod'+id+'_'+perPeriod => function (id) { } incontextof this,
-					'movieperiod'+id+'_'+perPrepare => function (id) { } incontextof this,
-					'movieperiod'+id+'_'+perSegLoop => function (id) { } incontextof this,
-					'movieperiod'+id+'_arg' => id // ハンドラへの引数
-					]);
+				return 0; // 引数が変
 			}
 		}
 		else
 		{
-			// スキップできない場合
-			if( elm.for !== void )
-			{
-				if( elm.for == 'loop' )
-				{
-					conductor.wait(%[
-						'movieperiod'+id+'_'+perLoop => function (id) { } incontextof this,
-						'movieperiod'+id+'_arg' => id // ハンドラへの引数
-						]);
-				}
-				else if( elm.for == 'period' )
-				{
-					conductor.wait(%[
-						'movieperiod'+id+'_'+perPeriod => function (id) { } incontextof this,
-						'movieperiod'+id+'_arg' => id // ハンドラへの引数
-						]);
-				}
-				else if( elm.for == 'prepare' )
-				{
-					conductor.wait(%[
-						'movieperiod'+id+'_'+perPrepare => function (id) { } incontextof this,
-						'movieperiod'+id+'_arg' => id // ハンドラへの引数
-						]);
-				}
-				else if( elm.for == 'segLoop' )
-				{
-					conductor.wait(%[
-						'movieperiod'+id+'_'+perSegLoop => function (id) { } incontextof this,
-						'movieperiod'+id+'_arg' => id // ハンドラへの引数
-						]);
-				}
-				else
-				{
-					return 0; // 引数が変
-				}
-			}
-			else
-			{
-				conductor.wait(%[
-					'movieperiod'+id+'_'+perLoop => function (id) { } incontextof this,
-					'movieperiod'+id+'_'+perPeriod => function (id) { } incontextof this,
-					'movieperiod'+id+'_'+perPrepare => function (id) { } incontextof this,
-					'movieperiod'+id+'_'+perSegLoop => function (id) { } incontextof this,
-					'movieperiod'+id+'_arg' => id // ハンドラへの引数
-					]);
-			}
+			conductor.wait(%[
+				'movieperiod'+id+'_'+perLoop => function (id) { notifyRun(); isWaitPeriodEvent = false;} incontextof this,
+				'movieperiod'+id+'_'+perPeriod => function (id) { notifyRun(); isWaitPeriodEvent = false;} incontextof this,
+				'movieperiod'+id+'_'+perPrepare => function (id) { notifyRun(); isWaitPeriodEvent = false;} incontextof this,
+				'movieperiod'+id+'_'+perSegLoop => function (id) { notifyRun(); isWaitPeriodEvent = false;} incontextof this,
+				'movieperiod'+id+'_arg' => id // ハンドラへの引数
+				]);
 		}
 		notifyStable();
 		return -2;
