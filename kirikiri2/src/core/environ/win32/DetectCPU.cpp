@@ -125,7 +125,7 @@ void tTVPCPUCheckThread::Execute(void)
 static ttstr TVPDumpCPUFeatures(tjs_uint32 features)
 {
 	ttstr ret;
-#define TVP_DUMP_CPU(x, n) { ret += TJS_W("  " n); \
+#define TVP_DUMP_CPU(x, n) { ret += TJS_W("  ") TJS_W(n);  \
 	if(features & x) ret += TJS_W(":yes"); else ret += TJS_W(":no"); }
 
 	TVP_DUMP_CPU(TVP_CPU_HAS_FPU, "FPU");
