@@ -83,7 +83,7 @@ TJS_BEGIN_NATIVE_CONSTRUCTOR_DECL(/*var. name*/_this, /*var. type*/tTJSNI_Date,
 			t.tm_min = m;
 			t.tm_sec = s;
 			_this->DateTime = mktime(&t);
-			if(_this->DateTime == -1) TJS_eTJSError(TJSInvalidValueForTimestamp);
+			if(_this->DateTime == -1) TJS::TJS_eTJSError(TJSInvalidValueForTimestamp);
 //			_this->DateTime -= TJS_timezone;
 		}
 	}
@@ -103,7 +103,7 @@ TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/setYear)
 	memcpy(&t, te, sizeof(tm));
 	t.tm_year = (tjs_int)param[0]->AsInteger() - 1900;
 	_this->DateTime = mktime(&t);
-	if(_this->DateTime == -1) TJS_eTJSError(TJSInvalidValueForTimestamp);
+	if(_this->DateTime == -1) TJS::TJS_eTJSError(TJSInvalidValueForTimestamp);
 
 	return TJS_S_OK;
 }
@@ -120,7 +120,7 @@ TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/setMonth)
 	memcpy(&t, te, sizeof(tm));
 	t.tm_mon = (tjs_int)param[0]->AsInteger();
 	_this->DateTime = mktime(&t);
-	if(_this->DateTime == -1) TJS_eTJSError(TJSInvalidValueForTimestamp);
+	if(_this->DateTime == -1) TJS::TJS_eTJSError(TJSInvalidValueForTimestamp);
 
 	return TJS_S_OK;
 }
@@ -137,7 +137,7 @@ TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/setDate)
 	memcpy(&t, te, sizeof(tm));
 	t.tm_mday = (tjs_int)param[0]->AsInteger();
 	_this->DateTime = mktime(&t);
-	if(_this->DateTime == -1) TJS_eTJSError(TJSInvalidValueForTimestamp);
+	if(_this->DateTime == -1) TJS::TJS_eTJSError(TJSInvalidValueForTimestamp);
 
 	return TJS_S_OK;
 }
@@ -154,7 +154,7 @@ TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/setHours)
 	memcpy(&t, te, sizeof(tm));
 	t.tm_hour = (tjs_int)param[0]->AsInteger();
 	_this->DateTime = mktime(&t) ;
-	if(_this->DateTime == -1) TJS_eTJSError(TJSInvalidValueForTimestamp);
+	if(_this->DateTime == -1) TJS::TJS_eTJSError(TJSInvalidValueForTimestamp);
 
 	return TJS_S_OK;
 }
@@ -171,7 +171,7 @@ TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/setMinutes)
 	memcpy(&t, te, sizeof(tm));
 	t.tm_min = (tjs_int)param[0]->AsInteger();
 	_this->DateTime = mktime(&t);
-	if(_this->DateTime == -1) TJS_eTJSError(TJSInvalidValueForTimestamp);
+	if(_this->DateTime == -1) TJS::TJS_eTJSError(TJSInvalidValueForTimestamp);
 
 	return TJS_S_OK;
 }
@@ -188,7 +188,7 @@ TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/setSeconds)
 	memcpy(&t, te, sizeof(tm));
 	t.tm_sec = (tjs_int)param[0]->AsInteger();
 	_this->DateTime = mktime(&t);
-	if(_this->DateTime == -1) TJS_eTJSError(TJSInvalidValueForTimestamp);
+	if(_this->DateTime == -1) TJS::TJS_eTJSError(TJSInvalidValueForTimestamp);
 
 	return TJS_S_OK;
 }

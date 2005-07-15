@@ -67,11 +67,11 @@ tTJSDateParser::tTJSDateParser(const tjs_char *in)
 	YearSet = MonthSet = MDaySet = HourSet = MinSet = SecSet = TimeZoneSet =
 	TimeZoneOffsetSet = AMPMSet = false;
 
-	if(dpparse(this)) TJS_eTJSError(TJSCannotParseDate);
+	if(dpparse(this)) TJS::TJS_eTJSError(TJSCannotParseDate);
 
 	// currently no omissions is allowed except for Secs
 	if(!YearSet || !MonthSet || !MDaySet || !HourSet || !MinSet)
-		TJS_eTJSError(TJSCannotParseDate);
+		TJS::TJS_eTJSError(TJSCannotParseDate);
 	if(!SecSet) SecSet = true, Sec = 0;
 
 	// convert Timezone/TimezoneOffset to time_t representation
@@ -113,7 +113,7 @@ tTJSDateParser::tTJSDateParser(const tjs_char *in)
 	stm.tm_sec = Sec;
 
 	time_t tmv = mktime(&stm);
-	if(tmv == -1) TJS_eTJSError(TJSInvalidValueForTimestamp);
+	if(tmv == -1) TJS::TJS_eTJSError(TJSInvalidValueForTimestamp);
 
 	// adjust time zone
 	tmv -= TJS_timezone;

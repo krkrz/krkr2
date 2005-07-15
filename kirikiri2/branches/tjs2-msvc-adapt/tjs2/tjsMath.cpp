@@ -25,7 +25,7 @@
 //---------------------------------------------------------------------------
 // these functions invalidate the mathmarical error
 // (other exceptions, like divide-by-zero error, are not to be caught here)
-#if defined(__WIN32__) && !defined(__GNUC__)
+#if defined(__WIN32__) && !defined(__GNUC__) && !defined (_MSC_VER)
 #ifndef TJS_NO_MASK_MATHERR
 int _USERENTRY _matherr(struct _exception *e)
 {

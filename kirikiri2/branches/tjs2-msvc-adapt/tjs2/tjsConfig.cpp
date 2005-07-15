@@ -403,7 +403,7 @@ static bool TJSFPUInit = false;
 #endif
 void TJSSetFPUE()
 {
-#if defined(__WIN32__) && !defined(__GNUC__)
+#if defined(__WIN32__) && !defined(__GNUC__) && !defined (_MSC_VER)
 	if(!TJSFPUInit)
 	{
 		TJSFPUInit = true;

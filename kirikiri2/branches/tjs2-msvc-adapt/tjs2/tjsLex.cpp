@@ -180,7 +180,7 @@ static tTJSSkipCommentResult TJSSkipComment(const tjs_char **ptr)
 		// block comment; skip to the next '*' '/'
 		// and we must allow nesting of the comment.
 		(*ptr) += 2;
-		if(*(*ptr) == 0) TJS_eTJSError(TJSUnclosedComment);
+		if(*(*ptr) == 0) TJS::TJS_eTJSError(TJSUnclosedComment);
 		tjs_int level = 0;
 		for(;;)
 		{
@@ -199,7 +199,7 @@ static tTJSSkipCommentResult TJSSkipComment(const tjs_char **ptr)
 				}
 				level --;
 			}
-			if(!TJSNext(&(*ptr))) TJS_eTJSError(TJSUnclosedComment);
+			if(!TJSNext(&(*ptr))) TJS::TJS_eTJSError(TJSUnclosedComment);
 		}
 		if(*(*ptr) ==0) return scrEnded;
 		TJSSkipSpace(&(*ptr));
@@ -363,7 +363,7 @@ static tTJSInternalParseStringResult
 	if(status == psrNone)
 	{
 		// error
-		TJS_eTJSError(TJSStringParseError);
+		TJS::TJS_eTJSError(TJSStringParseError);
 	}
 
 	str.FixLen();
@@ -778,7 +778,7 @@ static bool TJSParseOctet(tTJSVariant &val, const tjs_char **ptr)
 		switch(TJSSkipComment(ptr))
 		{
 		case scrEnded:
-			TJS_eTJSError(TJSStringParseError);
+			TJS::TJS_eTJSError(TJSStringParseError);
 		case scrContinue:
 		case scrNotComment:
 			;
@@ -837,7 +837,7 @@ static bool TJSParseOctet(tTJSVariant &val, const tjs_char **ptr)
 		{
 			buf = (tjs_uint8*)TJS_realloc(buf, buflen+1);
 			if(!buf)
-				TJS_eTJSError(TJSInsufficientMem);
+				TJS::TJS_eTJSError(TJSInsufficientMem);
 			buf[buflen] = cur;
 			buflen++;
 
@@ -848,7 +848,7 @@ static bool TJSParseOctet(tTJSVariant &val, const tjs_char **ptr)
 	}
 
 	// error
-	TJS_eTJSError(TJSStringParseError);
+	TJS::TJS_eTJSError(TJSStringParseError);
 
 	return false;
 }
@@ -868,7 +868,7 @@ static bool TJSParseRegExp(tTJSVariant &pat, const tjs_char **ptr)
 	// this returns an internal representation: '//flag/pattern' that can be parsed by
 	// RegExp._compile
 
-//	if(!TJSNext((*ptr))) TJS_eTJSError(TJSStringParseError);
+//	if(!TJSNext((*ptr))) TJS::TJS_eTJSError(TJSStringParseError);
 
 	bool ok = false;
 	bool lastbackslash = false;
@@ -902,7 +902,7 @@ static bool TJSParseRegExp(tTJSVariant &pat, const tjs_char **ptr)
 				flag += *(*ptr);
 				if(!TJSNext(ptr)) break;
 			}
-			str = TJS_W("/""/")+ flag + TJS_W("/") + str;
+			str = TJS_W("/")TJS_W("/")+ flag + TJS_W("/") + str;
 			ok = true;
 			break;
 		}
@@ -917,7 +917,7 @@ static bool TJSParseRegExp(tTJSVariant &pat, const tjs_char **ptr)
 	if(!ok)
 	{
 		// error
-		TJS_eTJSError(TJSStringParseError);
+		TJS::TJS_eTJSError(TJSStringParseError);
 	}
 
 	pat = str;
@@ -1546,7 +1546,7 @@ re_match:
 	{
 		ttstr str(TJSInvalidChar);
 		str.Replace(TJS_W("%1"), ttstr(*Current).EscapeC());
-		TJS_eTJSError(str);
+		TJS::TJS_eTJSError(str);
 	}
 
 
@@ -1560,7 +1560,7 @@ re_match:
 	{
 		ttstr str(TJSInvalidChar);
 		str.Replace(TJS_W("%1"), ttstr(*Current).EscapeC());
-		TJS_eTJSError(str);
+		TJS::TJS_eTJSError(str);
 	}
 
 	ttstr str(Current, nch);
@@ -1737,7 +1737,7 @@ tjs_int tTJSLexicalAnalyzer::GetNext(tjs_int &value)
 		}
 		catch(eTJSCompileError &e)
 		{
-			_yyerror(e.GetMessage().c_str(), Block, e.GetPosition());
+			_yyerror(e.GetEMessage().c_str(), Block, e.GetPosition());
 			return 0;
 		}
 		Current = Script;
@@ -1901,17 +1901,17 @@ tjs_int tTJSLexicalAnalyzer::GetNext(tjs_int &value)
 		}
 		catch(eTJSCompileError &e)
 		{
-			_yyerror(e.GetMessage().c_str(), Block);
+			_yyerror(e.GetEMessage().c_str(), Block);
 			return 0;
 		}
 		catch(eTJSScriptError &e)
 		{
-			_yyerror(e.GetMessage().c_str(), Block);
+			_yyerror(e.GetEMessage().c_str(), Block);
 			return 0;
 		}
 		catch(eTJS &e)
 		{
-			_yyerror(e.GetMessage().c_str(), Block);
+			_yyerror(e.GetEMessage().c_str(), Block);
 			return 0;
 		}
 	#ifdef TJS_SUPPORT_VCL

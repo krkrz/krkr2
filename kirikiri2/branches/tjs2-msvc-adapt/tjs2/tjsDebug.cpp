@@ -383,7 +383,7 @@ public:
 			{
 				tjs_int v = TJSRestoreLog<tjs_int>();
 				if(v != TJSVersionHex)
-					TJS_eTJSError(TJS_W("Object Hash Map log version mismatch"));
+					TJS::TJS_eTJSError(TJS_W("Object Hash Map log version mismatch"));
 			}
 			else if(id == liiAdd)     // 02 add a object
 			{
@@ -412,7 +412,7 @@ public:
 			}
 			else
 			{
-				TJS_eTJSError(TJS_W("Currupted Object Hash Map log"));
+				TJS::TJS_eTJSError(TJS_W("Currupted Object Hash Map log"));
 			}
 		}
 	}

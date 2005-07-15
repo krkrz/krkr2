@@ -45,7 +45,7 @@ const tjs_int TJSVersionRelease = 17;
 const tjs_int TJSVersionHex =
 	TJSVersionMajor * 0x1000000 + TJSVersionMinor * 0x10000 + TJSVersionRelease;
 
-tjs_char TJSCompiledDate[] = TJS_W("" __DATE__ " " __TIME__);
+tjs_char TJSCompiledDate[] = TJS_W("") TJS_W("2005") TJS_W(" ") TJS_W("11");
 	// first empty literal string is to avoid a compile error with bcc which can not
 	// process directly L __DATE__ as a pre-processer wide literal string.
 //---------------------------------------------------------------------------
@@ -544,7 +544,7 @@ tTJSTextWriteStream * (*TJSCreateTextStreamForWrite)(const tTJSString &name,
 
 void TJS_INTF_METHOD tTJSBinaryStream::SetEndOfStorage()
 {
-	TJS_eTJSError(TJSWriteError);
+	TJS::TJS_eTJSError(TJSWriteError);
 }
 //---------------------------------------------------------------------------
 tjs_uint64 TJS_INTF_METHOD tTJSBinaryStream::GetSize()
@@ -563,19 +563,19 @@ tjs_uint64 tTJSBinaryStream::GetPosition()
 void tTJSBinaryStream::SetPosition(tjs_uint64 pos)
 {
 	if(pos != Seek(pos, TJS_BS_SEEK_SET))
-		TJS_eTJSError(TJSSeekError);
+		TJS::TJS_eTJSError(TJSSeekError);
 }
 //---------------------------------------------------------------------------
 void tTJSBinaryStream::ReadBuffer(void *buffer, tjs_uint read_size)
 {
 	if(Read(buffer, read_size) != read_size)
-		TJS_eTJSError(TJSReadError);
+		TJS::TJS_eTJSError(TJSReadError);
 }
 //---------------------------------------------------------------------------
 void tTJSBinaryStream::WriteBuffer(const void *buffer, tjs_uint write_size)
 {
 	if(Write(buffer, write_size) != write_size)
-		TJS_eTJSError(TJSWriteError);
+		TJS::TJS_eTJSError(TJSWriteError);
 }
 //---------------------------------------------------------------------------
 tjs_uint64 tTJSBinaryStream::ReadI64LE()

@@ -418,8 +418,8 @@ public:
 		void _SetName(const tjs_char * name)
 		{
 			if(Name) Name->Release(), Name = NULL;
-			if(!name) TJS_eTJSError(TJSIDExpected);
-			if(!name[0]) TJS_eTJSError(TJSIDExpected);
+			if(!name) TJS::TJS_eTJSError(TJSIDExpected);
+			if(!name[0]) TJS::TJS_eTJSError(TJSIDExpected);
 			Name = TJSAllocVariantString(name);
 		}
 

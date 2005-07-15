@@ -315,7 +315,7 @@ TJS_BEGIN_NATIVE_METHOD_DECL(/* func. name */load)
 					p++;
 					if(p[-1] == TJS_W('\r') && p[0] == TJS_W('\n')) p++;
 
-					vs = TJSAllocVariantString(sp, l);
+                    vs = TJS::TJSAllocVariantString(sp, l);
 					ni->Items[lines++] = vs;
 					if(vs) vs->Release(), vs = NULL;
 
@@ -328,7 +328,7 @@ TJS_BEGIN_NATIVE_METHOD_DECL(/* func. name */load)
 			l = p - sp;
 			if(l)
 			{
-				vs = TJSAllocVariantString(sp, l);
+                vs = TJS::TJSAllocVariantString(sp, l);
 				ni->Items[lines] = vs;
 				if(vs) vs->Release(), vs = NULL;
 			}
@@ -695,7 +695,7 @@ TJS_BEGIN_NATIVE_METHOD_DECL(/* func.name */assign)
 		ni->Assign(clo.ObjThis);
 	else if(clo.Object)
 		ni->Assign(clo.Object);
-	else TJS_eTJSError(TJSNullAccess);
+	else TJS::TJS_eTJSError(TJSNullAccess);
 
 	return TJS_S_OK;
 }
@@ -715,7 +715,7 @@ TJS_BEGIN_NATIVE_METHOD_DECL(/* func.name */assignStruct)
 		ni->AssignStructure(clo.ObjThis, stack);
 	else if(clo.Object)
 		ni->AssignStructure(clo.Object, stack);
-	else TJS_eTJSError(TJSNullAccess);
+	else TJS::TJS_eTJSError(TJSNullAccess);
 
 	return TJS_S_OK;
 }
@@ -1158,7 +1158,7 @@ void tTJSArrayNI::AssignStructure(iTJSDispatch2 * dsp,
 	}
 	else
 	{
-		TJS_eTJSError(TJSSpecifyDicOrArray);
+		TJS::TJS_eTJSError(TJSSpecifyDicOrArray);
 	}
 }
 //---------------------------------------------------------------------------
@@ -1196,7 +1196,7 @@ void tTJSArrayObject::Finalize()
 	tTJSArrayNI *ni;
 	if(TJS_FAILED(NativeInstanceSupport(TJS_NIS_GETINSTANCE,
 		ClassID_Array, (iTJSNativeInstance**)&ni)))
-			TJS_eTJSError(TJSNativeClassCrash);
+			TJS::TJS_eTJSError(TJSNativeClassCrash);
 	Clear(ni);
 
 	inherited::Finalize();
@@ -1316,8 +1316,8 @@ tjs_int tTJSArrayObject::Remove(tTJSArrayNI * ni, const tTJSVariant &ref, bool r
 //---------------------------------------------------------------------------
 void tTJSArrayObject::Erase(tTJSArrayNI * ni, tjs_int num)
 {
-	if(num < 0) TJS_eTJSError(TJSRangeError);
-	if((unsigned)num >= ni->Items.size()) TJS_eTJSError(TJSRangeError);
+	if(num < 0) TJS::TJS_eTJSError(TJSRangeError);
+	if((unsigned)num >= ni->Items.size()) TJS::TJS_eTJSError(TJSRangeError);
 
 	CheckObjectClosureRemove(ni->Items[num]);
 	ni->Items.erase(ni->Items.begin() + num);
@@ -1325,9 +1325,9 @@ void tTJSArrayObject::Erase(tTJSArrayNI * ni, tjs_int num)
 //---------------------------------------------------------------------------
 void tTJSArrayObject::Insert(tTJSArrayNI *ni, const tTJSVariant &val, tjs_int num)
 {
-	if(num < 0) TJS_eTJSError(TJSRangeError);
+	if(num < 0) TJS::TJS_eTJSError(TJSRangeError);
 	tjs_int count = ni->Items.size();
-	if(num > count) TJS_eTJSError(TJSRangeError);
+	if(num > count) TJS::TJS_eTJSError(TJSRangeError);
 
 	if(num == count)
 		ni->Items.push_back(val);
@@ -1671,7 +1671,7 @@ tjs_int TJSGetArrayElementCount(iTJSDispatch2 * dsp)
 	tTJSArrayNI *ni;
 	if(TJS_FAILED(dsp->NativeInstanceSupport(TJS_NIS_GETINSTANCE,
 		ClassID_Array, (iTJSNativeInstance**)&ni)))
-			TJS_eTJSError(TJSSpecifyArray);
+			TJS::TJS_eTJSError(TJSSpecifyArray);
 	return ni->Items.size();
 }
 //---------------------------------------------------------------------------
@@ -1683,7 +1683,7 @@ tjs_int TJSCopyArrayElementTo(iTJSDispatch2 * dsp,
 	tTJSArrayNI *ni;
 	if(TJS_FAILED(dsp->NativeInstanceSupport(TJS_NIS_GETINSTANCE,
 		ClassID_Array, (iTJSNativeInstance**)&ni)))
-			TJS_eTJSError(TJSSpecifyArray);
+			TJS::TJS_eTJSError(TJSSpecifyArray);
 
 	if(count < 0) count = ni->Items.size();
 

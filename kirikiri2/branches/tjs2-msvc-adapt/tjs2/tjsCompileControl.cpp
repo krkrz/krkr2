@@ -90,7 +90,7 @@ tjs_int32 tTJSPPExprParser::Parse()
 	Result = 0;
 	if(ppparse(this))
 	{
-		TJS_eTJSError(TJSPPError);
+		TJS::TJS_eTJSError(TJSPPError);
 	}
 	return Result;
 }

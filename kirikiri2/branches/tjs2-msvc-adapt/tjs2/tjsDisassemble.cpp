@@ -132,7 +132,7 @@ void tTJSInterCodeContext::Disassemble(
 
 #define OP2_DISASM(c, x) \
 	case c: \
-		msg.printf(TJS_W(x " %%%d, %%%d"), TJS_FROM_VM_REG_ADDR(CodeArea[i+1]), \
+		msg.printf(TJS_W(x) TJS_W(" %%%d, %%%d"), TJS_FROM_VM_REG_ADDR(CodeArea[i+1]), \
 										TJS_FROM_VM_REG_ADDR(CodeArea[i+2])); \
 		size = 3; \
 		break
@@ -150,12 +150,12 @@ void tTJSInterCodeContext::Disassemble(
 
 #define OP2_DISASM(c, x) \
 	case c: \
-		msg.printf(TJS_W(x " %%%d, %%%d"), TJS_FROM_VM_REG_ADDR(CodeArea[i+1]), \
+		msg.printf(TJS_W(x) TJS_W(" %%%d, %%%d"), TJS_FROM_VM_REG_ADDR(CodeArea[i+1]), \
 									TJS_FROM_VM_REG_ADDR(CodeArea[i+2])); \
 		size = 3; \
 		break; \
 	case c+1: \
-		msg.printf(TJS_W(x "pd" " %%%d, %%%d.*%d, %%%d"), \
+		msg.printf(TJS_W(x) TJS_W("pd") TJS_W(" %%%d, %%%d.*%d, %%%d"), \
 			TJS_FROM_VM_REG_ADDR(CodeArea[i+1]), \
 			TJS_FROM_VM_REG_ADDR(CodeArea[i+2]), \
 			TJS_FROM_VM_REG_ADDR(CodeArea[i+3]), \
@@ -168,7 +168,7 @@ void tTJSInterCodeContext::Disassemble(
 		size = 5; \
 		break; \
 	case c+2: \
-		msg.printf(TJS_W(x "pi" " %%%d, %%%d.%%%d, %%%d"), \
+		msg.printf(TJS_W(x) TJS_W("pi") TJS_W(" %%%d, %%%d.%%%d, %%%d"), \
 			TJS_FROM_VM_REG_ADDR(CodeArea[i+1]), \
 			TJS_FROM_VM_REG_ADDR(CodeArea[i+2]), \
 			TJS_FROM_VM_REG_ADDR(CodeArea[i+3]), \
@@ -202,7 +202,7 @@ void tTJSInterCodeContext::Disassemble(
 #undef OP2_DISASM
 
 #define OP1_DISASM(x) \
-	msg.printf(TJS_W(x " %%%d"), TJS_FROM_VM_REG_ADDR(CodeArea[i+1])); \
+	msg.printf(TJS_W(x) TJS_W(" %%%d"), TJS_FROM_VM_REG_ADDR(CodeArea[i+1])); \
 	size = 2
 		// instructions that have one operand which represent a register,
 		// except for inc, dec
@@ -236,11 +236,11 @@ void tTJSInterCodeContext::Disassemble(
 
 #define OP1_DISASM(c, x) \
 	case c: \
-		msg.printf(TJS_W(x " %%%d"), TJS_FROM_VM_REG_ADDR(CodeArea[i+1])); \
+		msg.printf(TJS_W(x) TJS_W(" %%%d"), TJS_FROM_VM_REG_ADDR(CodeArea[i+1])); \
 		size = 2; \
 		break; \
 	case c+1: \
-		msg.printf(TJS_W(x "pd" " %%%d, %%%d.*%d"), \
+		msg.printf(TJS_W(x) TJS_W("pd") TJS_W(" %%%d, %%%d.*%d"), \
 			TJS_FROM_VM_REG_ADDR(CodeArea[i+1]), \
 			TJS_FROM_VM_REG_ADDR(CodeArea[i+2]), \
 			TJS_FROM_VM_REG_ADDR(CodeArea[i+3])); \
@@ -253,7 +253,7 @@ void tTJSInterCodeContext::Disassemble(
 		size = 4; \
 		break; \
 	case c+2: \
-		msg.printf(TJS_W(x "pi" " %%%d, %%%d.%%%d"), \
+		msg.printf(TJS_W(x) TJS_W("pi") TJS_W(" %%%d, %%%d.%%%d"), \
 			TJS_FROM_VM_REG_ADDR(CodeArea[i+1]), \
 			TJS_FROM_VM_REG_ADDR(CodeArea[i+2]), \
 			TJS_FROM_VM_REG_ADDR(CodeArea[i+3])); \
@@ -274,7 +274,7 @@ void tTJSInterCodeContext::Disassemble(
 
 
 #define OP1A_DISASM(x) \
-	msg.printf(TJS_W(x " %09d"), TJS_FROM_VM_CODE_ADDR(CodeArea[i+1]) + i); \
+	msg.printf(TJS_W(x) TJS_W(" %09d"), TJS_FROM_VM_CODE_ADDR(CodeArea[i+1]) + i); \
 	size = 2
 		// instructions that have one operand which represents code area
 		case VM_JF:		OP1A_DISASM("jf");		break;

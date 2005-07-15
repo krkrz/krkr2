@@ -1,0 +1,14 @@
+// コンソールに文字列を表示して改行
+cout ( "Test out"+100 ) ;
+endl () ;
+
+// コンソールから入力を取得
+cout ( "Get value : " ) ;
+var buf = cin () ;
+
+// 入力された文字列をそのまま表示
+cout ( buf ) ;
+endl () ;
+
+// return でコンソールから抜けてシステム終了。
+return 100 ;

@@ -34,13 +34,13 @@ void TJSGetExceptionObject(tTJS *tjs, tTJSVariant *res, tTJSVariant &msg,
 	static tTJSString Exception_name(TJS_W("Exception"));
 	tjs_error hr = global->PropGet(0, Exception_name.c_str(),
 		Exception_name.GetHint(), &val, global);
-	if(TJS_FAILED(hr)) TJS_eTJSError(TJSExceptionNotFound);
+	if(TJS_FAILED(hr)) TJS::TJS_eTJSError(TJSExceptionNotFound);
 	// create an Exception object
 	iTJSDispatch2 *excpobj;
 	tTJSVariantClosure clo = val.AsObjectClosureNoAddRef();
 	tTJSVariant *pmsg = &msg;
 	hr = clo.CreateNew(0, NULL, NULL, &excpobj, 1, &pmsg, clo.ObjThis);
-	if(TJS_FAILED(hr)) TJS_eTJSError(TJSExceptionNotFound);
+	if(TJS_FAILED(hr)) TJS::TJS_eTJSError(TJSExceptionNotFound);
 	if(trace)
 	{
 		static tTJSString trace_name(TJS_W("trace"));
@@ -149,8 +149,8 @@ static void TJSReportExceptionSource(const ttstr &msg,
 //---------------------------------------------------------------------------
 void TJS_eTJS() { throw eTJS(); }
 //---------------------------------------------------------------------------
-void TJS_eTJSError(const ttstr & msg) { throw eTJSError(msg); }
-void TJS_eTJSError(const tjs_char* msg) { throw eTJSError(msg); }
+void TJS::TJS_eTJSError(const ttstr & msg) { throw eTJSError(msg); }
+void TJS::TJS_eTJSError(const tjs_char* msg) { throw eTJSError(msg); }
 //---------------------------------------------------------------------------
 void TJS_eTJSVariantError(const ttstr & msg) { throw eTJSVariantError(msg); }
 void TJS_eTJSVariantError(const tjs_char * msg) { throw eTJSVariantError(msg); }
@@ -235,33 +235,33 @@ void TJSThrowFrom_tjs_error(tjs_error hr, const tjs_char *name)
 		{
 			ttstr str(TJSMemberNotFound);
 			str.Replace(TJS_W("%1"), name);
-			TJS_eTJSError(str);
+			TJS::TJS_eTJSError(str);
 		}
 		else
 		{
-			TJS_eTJSError(TJSMemberNotFoundNoNameGiven);
+			TJS::TJS_eTJSError(TJSMemberNotFoundNoNameGiven);
 		}
 	  }
 	case TJS_E_NOTIMPL:
-		TJS_eTJSError(TJSNotImplemented);
+		TJS::TJS_eTJSError(TJSNotImplemented);
 	case TJS_E_INVALIDPARAM:
-		TJS_eTJSError(TJSInvalidParam);
+		TJS::TJS_eTJSError(TJSInvalidParam);
 	case TJS_E_BADPARAMCOUNT:
-		TJS_eTJSError(TJSBadParamCount);
+		TJS::TJS_eTJSError(TJSBadParamCount);
 	case TJS_E_INVALIDTYPE:
-		TJS_eTJSError(TJSInvalidType);
+		TJS::TJS_eTJSError(TJSInvalidType);
 	case TJS_E_ACCESSDENYED:
-		TJS_eTJSError(TJSAccessDenyed);
+		TJS::TJS_eTJSError(TJSAccessDenyed);
 	case TJS_E_INVALIDOBJECT:
-		TJS_eTJSError(TJSInvalidObject);
+		TJS::TJS_eTJSError(TJSInvalidObject);
 	case TJS_E_NATIVECLASSCRASH:
-		TJS_eTJSError(TJSNativeClassCrash);
+		TJS::TJS_eTJSError(TJSNativeClassCrash);
 	default:
 		if(TJS_FAILED(hr))
 		{
 			tjs_char buf[256];
 			TJS_sprintf(buf, TJS_W("Unknown failure : %08X"), hr);
-			TJS_eTJSError(buf);
+			TJS::TJS_eTJSError(buf);
 		}
 	}
 }

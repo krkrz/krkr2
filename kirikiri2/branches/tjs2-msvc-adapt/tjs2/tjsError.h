@@ -33,7 +33,7 @@ extern ttstr TJSNonamedException;
 	#define TJS_CONVERT_TO_TJS_EXCEPTION_ADDITIONAL \
 		catch(const Exception &e) \
 		{ \
-			TJS_eTJSError(e.Message.c_str()); \
+			TJS::TJS_eTJSError(e.Message.c_str()); \
 		}
 #else
 	#define TJS_CONVERT_TO_TJS_EXCEPTION_ADDITIONAL
@@ -59,19 +59,19 @@ extern ttstr TJSNonamedException;
 	} \
 	catch(const eTJS &e) \
 	{ \
-		TJS_eTJSError(e.GetMessage()); \
+		TJS::TJS_eTJSError(e.GetEMessage()); \
 	} \
 	catch(const std::exception &e) \
 	{ \
-		TJS_eTJSError(e.what()); \
+		TJS::TJS_eTJSError(e.what()); \
 	} \
 	catch(const wchar_t *text) \
 	{ \
-		TJS_eTJSError(text); \
+		TJS::TJS_eTJSError(text); \
 	} \
 	catch(const char *text) \
 	{ \
-		TJS_eTJSError(text); \
+		TJS::TJS_eTJSError(text); \
 	} \
 	TJS_CONVERT_TO_TJS_EXCEPTION_ADDITIONAL
 //---------------------------------------------------------------------------
@@ -128,7 +128,7 @@ extern void TJSGetExceptionObject(tTJS *tjs, tTJSVariant *res, tTJSVariant &msg,
 		before_catched \
 		if(result_condition) \
 		{ \
-			tTJSVariant msg(e.GetMessage()); \
+			tTJSVariant msg(e.GetEMessage()); \
 			tTJSVariant trace(e.GetTrace()); \
 			TJSGetExceptionObject((tjs), (result_addr), msg, &trace); \
 		} \
@@ -139,7 +139,7 @@ extern void TJSGetExceptionObject(tTJS *tjs, tTJSVariant *res, tTJSVariant &msg,
 		before_catched \
 		if(result_condition) \
 		{ \
-			tTJSVariant msg(e.GetMessage()); \
+			tTJSVariant msg(e.GetEMessage()); \
 			TJSGetExceptionObject((tjs), (result_addr), msg, NULL); \
 		} \
 		when_catched; \
@@ -180,7 +180,7 @@ public:
 	eTJS(const eTJS&) {;}
 	eTJS& operator= (const eTJS& e) { return *this; }
 	virtual ~eTJS() {;}
-	virtual const ttstr & GetMessage() const 
+	virtual const ttstr & GetEMessage() const 
 	{ return TJSNonamedException; }
 };
 //---------------------------------------------------------------------------
@@ -191,7 +191,7 @@ class eTJSError : public eTJS
 public:
 	eTJSError(const ttstr & Msg) :
 		Message(Msg) {;}
-	const ttstr & GetMessage() const { return Message; }
+	const ttstr & GetEMessage() const { return Message; }
 
 	void AppendMessage(const ttstr & msg) { Message += msg; }
 

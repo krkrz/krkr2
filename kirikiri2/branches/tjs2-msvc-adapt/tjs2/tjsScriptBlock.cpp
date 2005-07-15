@@ -351,7 +351,7 @@ void tTJSScriptBlock::PushContextStack(const tjs_char *name, tTJSContextType typ
 	cntx = new tTJSInterCodeContext(InterCodeContext, name, this, type);
 	if(InterCodeContext==NULL)
 	{
-		if(TopLevelContext) TJS_eTJSError(TJSInternalError);
+		if(TopLevelContext) TJS::TJS_eTJSError(TJSInternalError);
 		TopLevelContext = cntx;
 		TopLevelContext->AddRef();
 	}
