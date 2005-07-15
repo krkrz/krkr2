@@ -1226,6 +1226,7 @@ public:
 	//------ allocator/deallocater ------------------------------------------
 	TJS_STATIC_METHOD_DEF(void *, operator new, (size_t size)) { return new char[size]; }
 	TJS_STATIC_METHOD_DEF(void, operator delete, (void * p)) { delete [] ((char*)p); }
+	TJS_STATIC_METHOD_DEF(void, operator delete, (void * p, void * buf)) { ; }
 
 	TJS_STATIC_METHOD_DEF(void *, operator new [], (size_t size)) { return new char[size]; }
 	TJS_STATIC_METHOD_DEF(void, operator delete [], (void *p)) { delete [] ((char*)p); }
