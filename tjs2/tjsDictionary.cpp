@@ -108,7 +108,7 @@ TJS_BEGIN_NATIVE_METHOD_DECL(/*func.name*/assign)
 		ni->Assign(clo.ObjThis, clear);
 	else if(clo.Object)
 		ni->Assign(clo.Object, clear);
-	else TJS_eTJSError(TJSNullAccess);
+	else TJS::TJS_eTJSError(TJSNullAccess);
 
 	return TJS_S_OK;
 }
@@ -128,7 +128,7 @@ TJS_BEGIN_NATIVE_METHOD_DECL(/* func.name */assignStruct)
 		ni->AssignStructure(clo.ObjThis, stack);
 	else if(clo.Object)
 		ni->AssignStructure(clo.Object, stack);
-	else TJS_eTJSError(TJSNullAccess);
+    else TJS::TJS_eTJSError(TJSNullAccess);
 
 	return TJS_S_OK;
 }
@@ -364,7 +364,7 @@ void tTJSDictionaryNI::AssignStructure(iTJSDispatch2 * dsp,
 	}
 	else
 	{
-		TJS_eTJSError(TJSSpecifyDicOrArray);
+		TJS::TJS_eTJSError(TJSSpecifyDicOrArray);
 	}
 
 }

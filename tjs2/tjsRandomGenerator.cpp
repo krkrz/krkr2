@@ -80,7 +80,7 @@ void tTJSNI_RandomGenerator::Randomize(tTJSVariant ** param, tjs_int numparams)
 			{
 				// may be a reconstructible information
 				tTJSVariantClosure clo = param[0]->AsObjectClosureNoAddRef();
-				if(!clo.Object) TJS_eTJSError(TJSNullAccess);
+				if(!clo.Object) TJS::TJS_eTJSError(TJSNullAccess);
 
 
 				ttstr state;
@@ -94,7 +94,7 @@ void tTJSNI_RandomGenerator::Randomize(tTJSVariant ** param, tjs_int numparams)
 
 				state = val;
 				if(state.GetLen() != TJS_MT_N * 8)
-					TJS_eTJSError(TJSNotReconstructiveRandomizeData);
+					TJS::TJS_eTJSError(TJSNotReconstructiveRandomizeData);
 
 				const tjs_char *p = state.c_str();
 
@@ -107,7 +107,7 @@ void tTJSNI_RandomGenerator::Randomize(tTJSVariant ** param, tjs_int numparams)
 					{
 						tmp = TJSHexNum(p[j]);
 						if(tmp == -1)
-							TJS_eTJSError(TJSNotReconstructiveRandomizeData);
+							TJS::TJS_eTJSError(TJSNotReconstructiveRandomizeData);
 						else
 							n <<= 4, n += tmp;
 					}
@@ -131,7 +131,7 @@ void tTJSNI_RandomGenerator::Randomize(tTJSVariant ** param, tjs_int numparams)
 			catch(...)
 			{
 				if(data) delete data;
-				TJS_eTJSError(TJSNotReconstructiveRandomizeData);
+				TJS::TJS_eTJSError(TJSNotReconstructiveRandomizeData);
 			}
 			delete data;
 		}

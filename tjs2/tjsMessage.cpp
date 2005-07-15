@@ -137,7 +137,7 @@ ttstr TJSCreateMessageMapString()
 	return TJS_W("");
 }
 //---------------------------------------------------------------------------
-ttstr TJSGetMessageMapMessage(const tjs_char *name)
+ttstr TJSGetEMessageMapMessage(const tjs_char *name)
 {
 	if(TJSMessageMapper)
 	{

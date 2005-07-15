@@ -169,14 +169,14 @@ class tTJSString;
 class tTJSTextReadStream
 {
 public:
-	virtual TJS_INTF_METHOD tjs_uint Read(tTJSString & targ, tjs_uint size) = 0;
+	virtual  tjs_uint TJS_INTF_METHOD Read(tTJSString & targ, tjs_uint size) = 0;
 	virtual ~tTJSTextReadStream() {;}
 };
 //---------------------------------------------------------------------------
 class tTJSTextWriteStream
 {
 public:
-	virtual TJS_INTF_METHOD void Write(const tTJSString & targ) = 0;
+	virtual  void TJS_INTF_METHOD Write(const tTJSString & targ) = 0;
 	virtual ~tTJSTextWriteStream() {;}
 };
 //---------------------------------------------------------------------------

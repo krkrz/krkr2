@@ -83,12 +83,21 @@ TJS_EXP_FUNC_DEF(size_t, TJS_strlen, (const tjs_char *d));
 	#define TJS_mbtowc   mbtowc
 	#define TJS_wctomb   wctomb
 #elif __WIN32__
-	#define TJS_cdecl __cdecl
-	#define TJS_vsnprintf		vsnwprintf
+    #define TJS_cdecl __cdecl
+    #ifdef _MSC_VER
+        #define TJS_vsnprintf       _vsnwprintf
+    #else
+	    #define TJS_vsnprintf		vsnwprintf
+    #endif
 	#define TJS_sprintf			swprintf
 	#define TJS_timezone _timezone
-	#define TJS_rand _lrand
-	#define TJS_RAND_MAX LRAND_MAX
+    #ifdef _MSC_VER
+        #define TJS_rand rand
+        #define TJS_RAND_MAX RAND_MAX
+    #else
+    	#define TJS_rand _lrand
+	    #define TJS_RAND_MAX LRAND_MAX
+    #endif
 	extern size_t TJS_mbstowcs(tjs_char *pwcs, const tjs_nchar *s, size_t n);
 	extern size_t TJS_wcstombs(tjs_nchar *s, const tjs_char *pwcs, size_t n);
 	extern int TJS_mbtowc(tjs_char *pwc, const tjs_nchar *s, size_t n);
@@ -174,7 +183,7 @@ public:
 
 	operator const tjs_nchar *()
 	{
-		return Buf;
+		return Buf ;
 	}
 };
 //---------------------------------------------------------------------------

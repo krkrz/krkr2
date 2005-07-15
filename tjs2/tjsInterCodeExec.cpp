@@ -36,7 +36,7 @@ static void ThrowFrom_tjs_error_num(tjs_error hr, tjs_int num)
 //---------------------------------------------------------------------------
 static void ThrowInvalidVMCode()
 {
-	TJS_eTJSError(TJSInvalidOpecode);
+	TJS::TJS_eTJSError(TJSInvalidOpecode);
 }
 //---------------------------------------------------------------------------
 static void GetStringProperty(tTJSVariant *result, const tTJSVariant *str,
@@ -68,7 +68,7 @@ static void GetStringProperty(tTJSVariant *result, const tTJSVariant *str,
 			tjs_int len = valstr->GetLength();
 			if(n == len) { *result = tTJSVariant(TJS_W("")); return; }
 			if(n<0 || n>len)
-				TJS_eTJSError(TJSRangeError);
+				TJS::TJS_eTJSError(TJSRangeError);
 			tjs_char bf[2];
 			bf[1] = 0;
 			bf[0] = s[n];
@@ -86,7 +86,7 @@ static void GetStringProperty(tTJSVariant *result, const tTJSVariant *str,
 		tjs_int len = valstr->GetLength();
 		if(n == len) { *result = tTJSVariant(TJS_W("")); return; }
 		if(n<0 || n>len)
-			TJS_eTJSError(TJSRangeError);
+			TJS::TJS_eTJSError(TJSRangeError);
 		tjs_char bf[2];
 		bf[1] = 0;
 		bf[0] = s[n];
@@ -146,7 +146,7 @@ static void GetOctetProperty(tTJSVariant *result, const tTJSVariant *octet,
 			tjs_int n = TJS_atoi(name);
 			tjs_int len = o?o->GetLength():0;
 			if(n<0 || n>=len)
-				TJS_eTJSError(TJSRangeError);
+				TJS::TJS_eTJSError(TJSRangeError);
 			*result = tTVInteger(o->GetData()[n]);
 			return;
 		}
@@ -159,7 +159,7 @@ static void GetOctetProperty(tTJSVariant *result, const tTJSVariant *octet,
 		tjs_int n = (tjs_int)member.AsInteger();
 		tjs_int len = o?o->GetLength():0;
 		if(n<0 || n>=len)
-			TJS_eTJSError(TJSRangeError);
+			TJS::TJS_eTJSError(TJSRangeError);
 		*result = tTVInteger(o->GetData()[n]);
 		return;
 	}
@@ -1414,7 +1414,7 @@ tjs_int tTJSInterCodeContext::ExecuteCode(tTJSVariant *ra_org, tjs_int startip,
 	catch(eTJS &e)
 	{
 		DisplayExceptionGeneratedCode(codesave - CodeArea, ra_org);
-		TJS_eTJSScriptError(e.GetMessage(), this, codesave-CodeArea);
+		TJS_eTJSScriptError(e.GetEMessage(), this, codesave-CodeArea);
 	}
 	catch(exception &e)
 	{

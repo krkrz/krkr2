@@ -13,7 +13,13 @@
 #include "tjsRegExp.h"
 #include "tjsArray.h"
 
+#if !defined(_MSC_VER)
 #include <function.h>
+#endif
+
+#if defined (_MSC_VER)
+#include <boost/functional.hpp>
+#endif
 
 using namespace boost;
 
@@ -114,20 +120,28 @@ public:
 
 		// grep thru target string
 		tjs_int targlen = target.GetLen();
+#ifdef _MSC_VER
 		unsigned int match_count = regex_grep
 			(
-			std::bind1st(std::mem_fun(&tTJSReplacePredicator::Callback), this),
+            boost::bind1st(boost::mem_fun(&tTJSReplacePredicator::Callback),this),
 			target.c_str(),
 			_this->RegEx,
 			match_default|match_not_dot_null);
-
+#else
+		unsigned int match_count = regex_grep
+			(
+            std::bind1st(std::mem_fun_ref(&tTJSReplacePredicator::Callback),this),
+			target.c_str(),
+			_this->RegEx,
+			match_default|match_not_dot_null);
+#endif
 		if(lastpos < targlen)
 			res += ttstr(target.c_str() + lastpos, targlen - lastpos);
 	}
 
 	const ttstr & GetRes() const { return res; }
 
-	bool TJS_cdecl Callback(const match_results<const tjs_char *> what)
+	bool Callback(const match_results<const tjs_char *> what)
 	{
 		// callback on each match
 
@@ -196,13 +210,21 @@ public:
 
 		// grep thru target
 		tjs_int targlen = target.GetLen();
-		unsigned int match_count = regex_grep
+#ifdef _MSC_VER
+        unsigned int match_count = regex_grep
 			(
-			std::bind1st(std::mem_fun(&tTJSSplitPredicator::Callback), this),
+            boost::bind1st(boost::mem_fun(&tTJSSplitPredicator::Callback), this),
 			target.c_str(),
 			regex,
 			match_default|match_not_dot_null);
-
+#else
+        unsigned int match_count = regex_grep
+			(
+			std::bind1st(std::mem_fun_ref(&tTJSSplitPredicator::Callback), this),
+			target.c_str(),
+			regex,
+			match_default|match_not_dot_null);
+#endif
 
 		// output last
 		if(lastlen !=0 || lastpos != targlen)
@@ -216,7 +238,7 @@ public:
 		}
 	}
 
-	bool TJS_cdecl Callback(const match_results<const tjs_char *> what)
+	bool Callback(const match_results<const tjs_char *> what)
 	{
 		tjs_int pos = what.position();
 		tjs_int len = what.length();
@@ -365,7 +387,7 @@ TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/_compile)
 	}
 	catch(std::exception &e)
 	{
-		TJS_eTJSError(e.what());
+		TJS::TJS_eTJSError(e.what());
 	}
 
 	_this->Flags = flags;
@@ -730,7 +752,7 @@ void tTJSNC_RegExp::Compile(tjs_int numparams, tTJSVariant **param, tTJSNI_RegEx
 	}
 	catch(std::exception &e)
 	{
-		TJS_eTJSError(e.what());
+		TJS::TJS_eTJSError(e.what());
 	}
 
 	_this->Flags = flags;
@@ -765,7 +787,7 @@ bool tTJSNC_RegExp::Match(match_results<const tjs_char *>& what,
 	}
 
 	return regex_search(target.c_str()+searchstart,
-		what, _this->RegEx, flags);
+        what, _this->RegEx, (boost::regex_constants::match_flag_type)flags);
 
 }
 //---------------------------------------------------------------------------

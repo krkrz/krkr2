@@ -176,7 +176,7 @@ void TJSThrowVariantConvertError(const tTJSVariant & from, tTJSVariantType to1,
 //---------------------------------------------------------------------------
 void TJSThrowNullAccess()
 {
-	TJS_eTJSError(TJSNullAccess);
+	TJS::TJS_eTJSError(TJSNullAccess);
 }
 //---------------------------------------------------------------------------
 void TJSThrowDivideByZero()
