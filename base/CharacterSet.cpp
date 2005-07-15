@@ -111,7 +111,7 @@ tjs_int TVPWideCharToUtf8String(const tjs_char *in, char * out)
 	return count;
 }
 //---------------------------------------------------------------------------
-static bool inline TVPWideCharToUtf8(const char * & in, tjs_char *out)
+static bool inline TVPUtf8ToWideChar(const char * & in, tjs_char *out)
 {
 	// convert a utf-8 charater from 'in' to wide charater 'out'
 	const unsigned char * & p = (const unsigned char * &)in;
@@ -192,13 +192,13 @@ tjs_int TVPUtf8ToWideCharString(const char * in, tjs_char *out)
 		tjs_char c;
 		if(out)
 		{
-			if(!TVPWideCharToUtf8(in, &c))
+			if(!TVPUtf8ToWideChar(in, &c))
 				return -1; // invalid character found
 			*out++ = c;
 		}
 		else
 		{
-			if(!TVPWideCharToUtf8(in, NULL))
+			if(!TVPUtf8ToWideChar(in, NULL))
 				return -1; // invalid character found
 		}
 		count ++;
