@@ -15,8 +15,8 @@
 // import message strings
 //---------------------------------------------------------------------------
 
-#define TVP_MSG_DECL(name, msg) tTJSMessageHolder name(TJS_W(#name), TJS_W(msg));
-#define TVP_MSG_DECL_CONST(name, msg) tTJSMessageHolder name(TJS_W(#name), TJS_W(msg), false);
+#define TVP_MSG_DECL(name, msg) tTJSMessageHolder name(TJS_W(#name), msg);
+#define TVP_MSG_DECL_CONST(name, msg) tTJSMessageHolder name(TJS_W(#name), msg, false);
 
 #include "MsgIntf.h"
 #include "DebugIntf.h"
