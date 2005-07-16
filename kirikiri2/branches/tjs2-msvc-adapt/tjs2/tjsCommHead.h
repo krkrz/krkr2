@@ -20,7 +20,7 @@
 #include <vcl.h>
 #endif
 
-#ifdef __WIN32__
+#if defined(__WIN32__) || defined(_MSC_VER)
 #include <windows.h>
 #endif
 
