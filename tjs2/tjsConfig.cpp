@@ -195,7 +195,7 @@ void TJS_cdecl TJS_debug_out(const tjs_char *format, ...)
 //---------------------------------------------------------------------------
 
 
-#ifdef __WIN32__
+#if defined(__WIN32__) || defined (_MSC_VER)
 //---------------------------------------------------------------------------
 // Wide<->narrow conversion functions.
 // These functions (Win32 only) are as same as the RTL's, but
