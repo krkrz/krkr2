@@ -176,7 +176,7 @@ void tTJSInterCodeContext::Disassemble(
 		size = 5; \
 		break; \
 	case c+3: \
-		msg.printf(TJS_W(x "p" " %%%d, %%%d, %%%d"), \
+		msg.printf(TJS_W(x) TJS_W("p") TJS_W(" %%%d, %%%d, %%%d"), \
 			TJS_FROM_VM_REG_ADDR(CodeArea[i+1]), \
 			TJS_FROM_VM_REG_ADDR(CodeArea[i+2]), \
 			TJS_FROM_VM_REG_ADDR(CodeArea[i+3])); \
@@ -260,7 +260,7 @@ void tTJSInterCodeContext::Disassemble(
 		size = 4; \
 		break; \
 	case c+3: \
-		msg.printf(TJS_W(x "p" " %%%d, %%%d"), \
+		msg.printf(TJS_W(x) TJS_W("p") TJS_W(" %%%d, %%%d"), \
 			TJS_FROM_VM_REG_ADDR(CodeArea[i+1]), \
 			TJS_FROM_VM_REG_ADDR(CodeArea[i+2])); \
 		size = 3; \
