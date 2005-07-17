@@ -79,6 +79,13 @@ class BaseConductor extends KAGParser
 				{
 					// 後回しにされたタグがないので次のタグを得る
 					obj = getNextTag(); // 次のタグを得る
+
+					// getNextTag() の中で、pendings に追加された (iscript など)
+					if(pendings.count > 0)
+					{
+						pendings.add(obj);
+						continue;
+					}
 				}
 
 				if(obj === void)
