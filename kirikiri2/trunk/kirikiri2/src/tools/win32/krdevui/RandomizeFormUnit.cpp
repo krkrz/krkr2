@@ -28,7 +28,7 @@ void __fastcall TRandomizeForm::TimerTimer(TObject *Sender)
 
 	DWORD tick = GetTickCount();
 
-	yarrow_add_entropy(	(const unsigned char*)&tick, sizeof(tick), State);
+	fortuna_add_entropy(	(const unsigned char*)&tick, sizeof(tick), State);
 
 	POINT pos;
 	GetCursorPos(&pos);
@@ -39,10 +39,10 @@ void __fastcall TRandomizeForm::TimerTimer(TObject *Sender)
 	time_t current;
 	time(&current);
 
-	yarrow_add_entropy(	(const unsigned char*)&current, sizeof(current), State);
-	yarrow_add_entropy(	(const unsigned char*)&pos, sizeof(pos), State);
-	yarrow_add_entropy(	(const unsigned char*)&Distance, sizeof(Distance), State);
-	yarrow_add_entropy(	(const unsigned char*)&status, sizeof(status), State);
+	fortuna_add_entropy(	(const unsigned char*)&current, sizeof(current), State);
+	fortuna_add_entropy(	(const unsigned char*)&pos, sizeof(pos), State);
+	fortuna_add_entropy(	(const unsigned char*)&Distance, sizeof(Distance), State);
+	fortuna_add_entropy(	(const unsigned char*)&status, sizeof(status), State);
 
 	Distance += (pos.x - PrevMousePos.x)*(pos.x - PrevMousePos.x);
 	Distance += (pos.y - PrevMousePos.y)*(pos.y - PrevMousePos.y);
@@ -56,10 +56,13 @@ void __fastcall TRandomizeForm::TimerTimer(TObject *Sender)
 bool RandomizePRNG(prng_state *state)
 {
 	// initialize random generator
-	errno = register_prng(&yarrow_desc);
-	if(errno != CRYPT_OK) throw Exception(error_to_string(errno));
+	if(find_prng("fortuna") == -1)
+	{
+		errno = register_prng(&fortuna_desc);
+		if(errno != CRYPT_OK) throw Exception(error_to_string(errno));
+	}
 
-	errno = yarrow_start(state);
+	errno = fortuna_start(state);
 	if(errno != CRYPT_OK) throw Exception(error_to_string(errno));
 
 	TRandomizeForm *form = new TRandomizeForm(Application, state);
@@ -68,7 +71,7 @@ bool RandomizePRNG(prng_state *state)
 
 	if(result != mrOk) return false;
 
-	errno = yarrow_ready(state);
+	errno = fortuna_ready(state);
 	if(errno != CRYPT_OK) throw Exception(error_to_string(errno));
 
 	return true;
@@ -81,8 +84,8 @@ static BOOL CALLBACK EnumWindowsProc(HWND wnd, LPARAM lp)
 	GetWindowRect(wnd, &r);
 	char tmp[256];
 	GetWindowText(wnd, tmp, 255);
-	yarrow_add_entropy(	(const unsigned char*)&r, sizeof(r), state);
-	yarrow_add_entropy(	(const unsigned char*)tmp, sizeof(tmp), state);
+	fortuna_add_entropy(	(const unsigned char*)&r, sizeof(r), state);
+	fortuna_add_entropy(	(const unsigned char*)tmp, sizeof(tmp), state);
 
 	return TRUE;
 }
@@ -90,14 +93,17 @@ static BOOL CALLBACK EnumWindowsProc(HWND wnd, LPARAM lp)
 bool RandomizePRNGSimple(prng_state *state)
 {
 	// initialize random generator, in simple way
-	errno = register_prng(&yarrow_desc);
-	if(errno != CRYPT_OK) throw Exception(error_to_string(errno));
+	if(find_prng("fortuna") == -1)
+	{
+		errno = register_prng(&fortuna_desc);
+		if(errno != CRYPT_OK) throw Exception(error_to_string(errno));
+	}
 
-	errno = yarrow_start(state);
+	errno = fortuna_start(state);
 	if(errno != CRYPT_OK) throw Exception(error_to_string(errno));
 
 	DWORD tick = GetTickCount();
-	yarrow_add_entropy(	(const unsigned char*)&tick, sizeof(tick), state);
+	fortuna_add_entropy(	(const unsigned char*)&tick, sizeof(tick), state);
 
 	POINT pos;
 	GetCursorPos(&pos);
@@ -108,16 +114,16 @@ bool RandomizePRNGSimple(prng_state *state)
 	time_t current;
 	time(&current);
 
-	yarrow_add_entropy(	(const unsigned char*)&current, sizeof(current), state);
-	yarrow_add_entropy(	(const unsigned char*)&pos, sizeof(pos), state);
-	yarrow_add_entropy(	(const unsigned char*)&status, sizeof(status), state);
+	fortuna_add_entropy(	(const unsigned char*)&current, sizeof(current), state);
+	fortuna_add_entropy(	(const unsigned char*)&pos, sizeof(pos), state);
+	fortuna_add_entropy(	(const unsigned char*)&status, sizeof(status), state);
 
 	EnumWindows((WNDENUMPROC)EnumWindowsProc, (LPARAM)state);
 
 	tick = GetTickCount();
-	yarrow_add_entropy(	(const unsigned char*)&tick, sizeof(tick), state);
+	fortuna_add_entropy(	(const unsigned char*)&tick, sizeof(tick), state);
 
-	errno = yarrow_ready(state);
+	errno = fortuna_ready(state);
 	if(errno != CRYPT_OK) throw Exception(error_to_string(errno));
 
 	return true;
