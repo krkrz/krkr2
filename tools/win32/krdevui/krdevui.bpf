@@ -25,7 +25,6 @@ USEUNIT("SignUnit.cpp");
 USEUNIT("KrkrExecutableUnit.cpp");
 USEFORM("RandomizeFormUnit.cpp", RandomizeForm);
 USEFORM("SignMainFormUnit.cpp", SignMainForm);
-USELIB("..\..\..\..\..\Lib\libtomcrypt.lib");
 USEUNIT("tpc\tlg6\TLG6Saver.cpp");
 USEUNIT("tpc\tlg6\GolombTable.cpp");
 USEUNIT("tpc\TLGMetaInfo.cpp");
@@ -43,6 +42,7 @@ USEUNIT("looptuner2\WaveView.cpp");
 USEUNIT("..\..\..\core\base\CharacterSet.cpp");
 USEUNIT("..\..\..\core\sound\WaveLoopManager.cpp");
 USEUNIT("..\..\..\core\sound\win32\tvpsnd.c");
+USELIB("..\..\..\..\..\..\..\Lib\libtomcrypt1.lib");
 //---------------------------------------------------------------------------
 This file is used by the project manager only and should be treated like the project file
 

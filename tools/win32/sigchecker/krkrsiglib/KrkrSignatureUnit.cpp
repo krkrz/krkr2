@@ -2,21 +2,33 @@
 #include <vcl.h>
 #pragma hdrstop
 
-#include "mycrypt.h"
+#define _MSC_VER
+#include <tomcrypt.h>
+#undef _MSC_VER
+
 #include "KrkrExecutableUnit.h"
 #include "KrkrSignatureUnit.h"
 
 
 //---------------------------------------------------------------------------
-#define HASH_INIT    md5_init
-#define HASH_PROCESS md5_process
-#define HASH_DONE    md5_done
-#define HASH_METHOD_STRING "MD5"
-#define HASH_SIZE     16
+#define HASH_INIT    sha256_init
+#define HASH_PROCESS sha256_process
+#define HASH_DONE    sha256_done
+#define HASH_DESC    sha256_desc
+#define HASH_METHOD_STRING "SHA256"
+#define HASH_METHOD_INTERNAL_STRING "sha256"
+#define HASH_SIZE     32
 //---------------------------------------------------------------------------
 static bool MakeFileHash(AnsiString fn, unsigned char *hash, int ignorestart,
 	int ignoreend, TSigProgressNotifyEvent notify)
 {
+	if(find_hash(HASH_METHOD_INTERNAL_STRING) == -1)
+	{
+		int errnum = register_hash(&HASH_DESC);
+		if(errnum != CRYPT_OK) throw Exception(error_to_string(errno));
+	}
+
+
 	if(notify)
 		if(!notify(0)) return true;
 
@@ -107,6 +119,29 @@ static bool MakeFileHash(AnsiString fn, unsigned char *hash, int ignorestart,
 	return interrupted;
 }
 //---------------------------------------------------------------------------
+static void ImportKey(AnsiString inkey, AnsiString startline, AnsiString endline,
+	rsa_key * key)
+{
+	const char *pkey = inkey.c_str();
+	const char *start = strstr(pkey, startline.c_str());
+	if(!start) throw Exception("Cannot find \"" + startline + "\" in the key string");
+	const char *end = strstr(pkey, endline.c_str());
+	if(!end) throw Exception("Cannot find \"" + endline + "\" in the key string");
+
+	start += startline.Length();
+	char buf[10240];
+	unsigned long buf_len;
+	int errnum;
+
+	buf_len = sizeof(buf) - 1;
+	errnum = base64_decode((const unsigned char*)(start),
+		end - start, buf, &buf_len);
+	if(errnum != CRYPT_OK) throw Exception(error_to_string(errnum));
+
+	errnum = rsa_import(buf, buf_len, key);
+	if(errnum != CRYPT_OK) throw Exception(error_to_string(errnum));
+}
+//---------------------------------------------------------------------------
 static bool CheckSignatureOfFile(AnsiString pubkey,
 	AnsiString signfn, int ignorestart, int ignoreend, int ofs,
 		TSigProgressNotifyEvent notify)
@@ -116,27 +151,15 @@ static bool CheckSignatureOfFile(AnsiString pubkey,
 	if(signfn == "") throw Exception("Specify target file");
 
 	// read pubkey
-	char buf[1024];
+	char buf[10240];
 	unsigned long buf_len;
-	char buf_asc[1024*3/2+2];
+	char buf_asc[sizeof(buf)*3/2+2];
 	unsigned long buf_asc_len;
 
-	AnsiString pubkeymark("-- PUBLIC KEY - ECC(160) --");
-	if(pubkey.Length() <  pubkeymark.Length())
-		throw Exception("Invalid public key");
-	if(strncmp(pubkey.c_str(), pubkeymark.c_str(), pubkeymark.Length()))
-		throw Exception("Invalid public key");
+	rsa_key key;
 
-	ecc_key key;
-
-	buf_len = sizeof(buf) - 1;
-	int errnum;
-	errnum = base64_decode((const unsigned char*)(pubkey.c_str() + pubkeymark.Length()),
-		pubkey.Length() - pubkeymark.Length(), buf, &buf_len);
-	if(errnum != CRYPT_OK) throw Exception(error_to_string(errnum));
-
-	errnum = ecc_import(buf, buf_len, &key);
-	if(errnum != CRYPT_OK) throw Exception(error_to_string(errnum));
+	ImportKey(pubkey, "-----BEGIN PUBLIC KEY-----", "-----END PUBLIC KEY-----",
+		&key);
 
 	// read signature file
 
@@ -166,12 +189,12 @@ static bool CheckSignatureOfFile(AnsiString pubkey,
 	buf_asc[buf_asc_len] = 0;
 	buf_asc_len = strlen(buf_asc);
 
-	AnsiString signmark("-- SIGNATURE - ECC(160)/" HASH_METHOD_STRING " --");
+	AnsiString signmark("-- SIGNATURE - " HASH_METHOD_STRING "/PSS/RSA --\r\n");
 	if(strncmp(buf_asc, signmark.c_str(), signmark.Length()))
 		throw Exception("Invalid signature file format");
 
 	buf_len = sizeof(buf) - 1;
-	errnum = base64_decode((const unsigned char*)(buf_asc + signmark.Length()),
+	int errnum = base64_decode((const unsigned char*)(buf_asc + signmark.Length()),
 		buf_asc_len - signmark.Length(), buf, &buf_len);
 	if(errnum != CRYPT_OK) throw Exception(error_to_string(errnum));
 
@@ -185,8 +208,9 @@ static bool CheckSignatureOfFile(AnsiString pubkey,
 		if(!interrupted)
 		{
 			// check signature
-			buf_len = sizeof(buf);
-			errnum = ecc_verify_hash(buf, buf_len, hash, HASH_SIZE, &stat, &key);
+			errnum = rsa_verify_hash(buf, buf_len, hash, HASH_SIZE,
+				find_hash(HASH_METHOD_INTERNAL_STRING), HASH_SIZE,
+				&stat, &key);
 			if(errnum != CRYPT_OK) throw Exception(error_to_string(errnum));
 		}
 		else
@@ -196,10 +220,10 @@ static bool CheckSignatureOfFile(AnsiString pubkey,
 	}
 	catch(...)
 	{
-		ecc_free(&key);
+		rsa_free(&key);
 		throw;
 	}
-	ecc_free(&key);
+	rsa_free(&key);
 
 	return stat;
 }

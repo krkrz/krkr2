@@ -4,7 +4,7 @@ object SignMainForm: TSignMainForm
   ActiveControl = PageControl
   BorderStyle = bsDialog
   Caption = 'キー・署名ツール'
-  ClientHeight = 305
+  ClientHeight = 384
   ClientWidth = 369
   Color = clBtnFace
   Font.Charset = SHIFTJIS_CHARSET
@@ -639,7 +639,7 @@ object SignMainForm: TSignMainForm
   TextHeight = 12
   object CloseButton: TButton
     Left = 147
-    Top = 272
+    Top = 352
     Width = 75
     Height = 25
     Cancel = True
@@ -652,7 +652,7 @@ object SignMainForm: TSignMainForm
     Left = 8
     Top = 8
     Width = 353
-    Height = 257
+    Height = 337
     ActivePage = KeyGenTabSheet
     TabOrder = 1
     object KeyGenTabSheet: TTabSheet
@@ -705,14 +705,14 @@ object SignMainForm: TSignMainForm
       end
       object Label6: TLabel
         Left = 8
-        Top = 149
+        Top = 173
         Width = 98
         Height = 12
         Caption = '生成された公開鍵 :'
       end
       object Label7: TLabel
         Left = 8
-        Top = 180
+        Top = 244
         Width = 98
         Height = 12
         Caption = '生成された秘密鍵 :'
@@ -726,10 +726,24 @@ object SignMainForm: TSignMainForm
       end
       object Label9: TLabel
         Left = 9
-        Top = 208
+        Top = 296
         Width = 327
         Height = 12
         Caption = '※ ウィンドウを閉じるときにクリップボードの内容はクリアされます'
+      end
+      object KeyGeneratingLabel: TLabel
+        Left = 16
+        Top = 128
+        Width = 308
+        Height = 12
+        Caption = 'キーを生成中です .. これにはしばらく時間がかかります'
+        Font.Charset = SHIFTJIS_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -12
+        Font.Name = 'ＭＳ Ｐゴシック'
+        Font.Style = [fsBold]
+        ParentFont = False
+        Visible = False
       end
       object GenerateButton: TButton
         Left = 135
@@ -741,32 +755,9 @@ object SignMainForm: TSignMainForm
         TabOrder = 0
         OnClick = GenerateButtonClick
       end
-      object GeneratedPublicKeyEdit: TEdit
-        Left = 112
-        Top = 145
-        Width = 145
-        Height = 20
-        ReadOnly = True
-        TabOrder = 1
-      end
-      object GeneratedPrivateKeyEdit: TEdit
-        Left = 112
-        Top = 176
-        Width = 145
-        Height = 20
-        Color = clWhite
-        Font.Charset = SHIFTJIS_CHARSET
-        Font.Color = clRed
-        Font.Height = -12
-        Font.Name = 'ＭＳ Ｐゴシック'
-        Font.Style = []
-        ParentFont = False
-        ReadOnly = True
-        TabOrder = 2
-      end
       object CopyPublicKeyButton: TButton
         Left = 264
-        Top = 143
+        Top = 167
         Width = 75
         Height = 25
         Hint = 'クリップボードに公開鍵をコピーします'
@@ -774,12 +765,12 @@ object SignMainForm: TSignMainForm
         Enabled = False
         ParentShowHint = False
         ShowHint = True
-        TabOrder = 3
+        TabOrder = 2
         OnClick = CopyPublicKeyButtonClick
       end
       object CopyPrivateKeyButton: TButton
         Left = 264
-        Top = 174
+        Top = 238
         Width = 75
         Height = 25
         Hint = 'クリップボードに秘密鍵をコピーします'
@@ -789,6 +780,24 @@ object SignMainForm: TSignMainForm
         ShowHint = True
         TabOrder = 4
         OnClick = CopyPrivateKeyButtonClick
+      end
+      object GeneratedPublicKeyEdit: TMemo
+        Left = 112
+        Top = 144
+        Width = 145
+        Height = 65
+        ReadOnly = True
+        ScrollBars = ssVertical
+        TabOrder = 1
+      end
+      object GeneratedPrivateKeyEdit: TMemo
+        Left = 112
+        Top = 216
+        Width = 145
+        Height = 65
+        ReadOnly = True
+        ScrollBars = ssVertical
+        TabOrder = 3
       end
     end
     object SignTabSheet: TTabSheet
@@ -803,22 +812,21 @@ object SignMainForm: TSignMainForm
       end
       object Label11: TLabel
         Left = 16
-        Top = 37
+        Top = 61
         Width = 57
         Height = 12
         Caption = '秘密鍵(&P) :'
-        FocusControl = SignPrivateKeyEdit
       end
       object Label12: TLabel
         Left = 8
-        Top = 72
+        Top = 120
         Width = 249
         Height = 12
         Caption = '署名を行う対象となるファイルを指定してください。'
       end
       object Label13: TLabel
         Left = 8
-        Top = 136
+        Top = 288
         Width = 274
         Height = 12
         Caption = '現バージョンでは吉里吉里本体にのみ署名可能です。'
@@ -826,7 +834,7 @@ object SignMainForm: TSignMainForm
       end
       object Label14: TLabel
         Left = 16
-        Top = 100
+        Top = 148
         Width = 86
         Height = 12
         Caption = '対象ファイル(&T) :'
@@ -834,76 +842,69 @@ object SignMainForm: TSignMainForm
       end
       object Label15: TLabel
         Left = 8
-        Top = 152
+        Top = 200
         Width = 232
         Height = 12
         Caption = 'ファイルをこのウィンドウにドロップすることでも'
       end
       object Label16: TLabel
         Left = 8
-        Top = 168
+        Top = 216
         Width = 207
         Height = 12
         Caption = '対象ファイルを指定することが出来ます。'
       end
       object SignDoneLabel: TLabel
-        Left = 56
-        Top = 216
+        Left = 16
+        Top = 264
         Width = 96
         Height = 12
         Caption = '署名を行いました。'
         Visible = False
       end
-      object SignPrivateKeyEdit: TEdit
-        Left = 88
-        Top = 33
-        Width = 241
-        Height = 20
-        Color = clWhite
-        Font.Charset = SHIFTJIS_CHARSET
-        Font.Color = clRed
-        Font.Height = -12
-        Font.Name = 'ＭＳ Ｐゴシック'
-        Font.Style = []
-        ParentFont = False
-        TabOrder = 0
-        OnChange = SignPrivateKeyEditChange
-      end
       object SignFileNameEdit: TEdit
         Left = 112
-        Top = 96
+        Top = 144
         Width = 217
         Height = 20
-        TabOrder = 1
+        TabOrder = 0
         OnChange = SignPrivateKeyEditChange
       end
       object SignFileNameRefButton: TButton
         Left = 264
-        Top = 126
+        Top = 174
         Width = 67
         Height = 25
         Caption = '参照(&R) ...'
-        TabOrder = 2
+        TabOrder = 1
         OnClick = SignFileNameRefButtonClick
       end
       object SignButton: TButton
         Left = 132
-        Top = 192
+        Top = 256
         Width = 82
         Height = 25
         Caption = '署名する(&S)'
         Default = True
         Enabled = False
-        TabOrder = 3
+        TabOrder = 2
         OnClick = SignButtonClick
+      end
+      object SignPrivateKeyEdit: TMemo
+        Left = 88
+        Top = 32
+        Width = 241
+        Height = 65
+        TabOrder = 3
+        OnChange = SignPrivateKeyEditChange
       end
     end
     object CheckSignTabSheet: TTabSheet
       Caption = '署名確認'
       ImageIndex = 2
       object SignatureIsValidLabel: TLabel
-        Left = 32
-        Top = 216
+        Left = 0
+        Top = 264
         Width = 124
         Height = 12
         Caption = '署名は正当なものです。'
@@ -911,21 +912,21 @@ object SignMainForm: TSignMainForm
       end
       object Label18: TLabel
         Left = 8
-        Top = 168
+        Top = 216
         Width = 207
         Height = 12
         Caption = '対象ファイルを指定することが出来ます。'
       end
       object Label19: TLabel
         Left = 8
-        Top = 152
+        Top = 200
         Width = 232
         Height = 12
         Caption = 'ファイルをこのウィンドウにドロップすることでも'
       end
       object Label20: TLabel
         Left = 16
-        Top = 100
+        Top = 148
         Width = 86
         Height = 12
         Caption = '対象ファイル(&T) :'
@@ -933,7 +934,7 @@ object SignMainForm: TSignMainForm
       end
       object Label21: TLabel
         Left = 8
-        Top = 136
+        Top = 280
         Width = 274
         Height = 12
         Caption = '現バージョンでは吉里吉里本体にのみ署名可能です。'
@@ -941,18 +942,17 @@ object SignMainForm: TSignMainForm
       end
       object Label22: TLabel
         Left = 8
-        Top = 72
+        Top = 120
         Width = 290
         Height = 12
         Caption = '署名をチェックする対象となるファイルを指定してください。'
       end
       object Label23: TLabel
         Left = 16
-        Top = 37
+        Top = 61
         Width = 57
         Height = 12
         Caption = '公開鍵(&P) :'
-        FocusControl = CheckSignPublicKeyEdit
       end
       object Label24: TLabel
         Left = 8
@@ -962,8 +962,8 @@ object SignMainForm: TSignMainForm
         Caption = '署名を確認します。公開鍵を指定してください。'
       end
       object SignatureIsInvalidLabel: TLabel
-        Left = 184
-        Top = 216
+        Left = 16
+        Top = 296
         Width = 169
         Height = 12
         Caption = '署名は正当な物ではありません。'
@@ -971,50 +971,44 @@ object SignMainForm: TSignMainForm
       end
       object CheckSignatureButton: TButton
         Left = 132
-        Top = 192
+        Top = 256
         Width = 82
         Height = 25
         Caption = 'チェック(&S)'
         Default = True
         Enabled = False
-        TabOrder = 3
+        TabOrder = 2
         OnClick = CheckSignatureButtonClick
       end
       object CheckSignFileNameRefButton: TButton
         Left = 264
-        Top = 126
+        Top = 174
         Width = 67
         Height = 25
         Caption = '参照(&R) ...'
-        TabOrder = 2
+        TabOrder = 1
         OnClick = CheckSignFileNameRefButtonClick
       end
       object CheckSignFileNameEdit: TEdit
         Left = 112
-        Top = 96
+        Top = 144
         Width = 217
         Height = 20
-        TabOrder = 1
+        TabOrder = 0
         OnChange = CheckSignPublicKeyEditChange
       end
-      object CheckSignPublicKeyEdit: TEdit
+      object CheckSignPublicKeyEdit: TMemo
         Left = 88
-        Top = 33
+        Top = 32
         Width = 241
-        Height = 20
-        Font.Charset = SHIFTJIS_CHARSET
-        Font.Color = clWindowText
-        Font.Height = -12
-        Font.Name = 'ＭＳ Ｐゴシック'
-        Font.Style = []
-        ParentFont = False
-        TabOrder = 0
+        Height = 65
+        TabOrder = 3
         OnChange = CheckSignPublicKeyEditChange
       end
     end
   end
   object OpenDialog: TOpenDialog
-    Left = 20
-    Top = 223
+    Left = 268
+    Top = 263
   end
 end
