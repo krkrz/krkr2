@@ -5,20 +5,49 @@
 
 #include "SignUnit.h"
 #include "RandomizeFormUnit.h"
-#include "mycrypt.h"
+
+#define _MSC_VER
+#include <tomcrypt.h>
+#undef _MSC_VER
+
 
 #include <string.h>
 
-#define HASH_INIT    md5_init
-#define HASH_PROCESS md5_process
-#define HASH_DONE    md5_done
-#define HASH_METHOD_STRING "MD5"
-#define HASH_SIZE     16
+#define HASH_INIT    sha256_init
+#define HASH_PROCESS sha256_process
+#define HASH_DONE    sha256_done
+#define HASH_DESC    sha256_desc
+#define HASH_METHOD_STRING "SHA256"
+#define HASH_METHOD_INTERNAL_STRING "sha256"
+#define HASH_SIZE     32
 
+//---------------------------------------------------------------------------
+AnsiString Split64(AnsiString s)
+{
+	// split s in 64characters intervally
+	int len = s.Length();
+	const char * p = s.c_str();
+	AnsiString ret;
+	while(len > 0)
+	{
+		int one_size = len > 64 ? 64  : len;
+		ret += AnsiString(p, one_size) + "\r\n";
+		p += one_size;
+		len -= one_size;
+	}
+	return ret;
+}
 //---------------------------------------------------------------------------
 static void MakeFileHash(AnsiString fn, unsigned char *hash, int ignorestart,
 	int ignoreend)
 {
+	if(find_hash(HASH_METHOD_INTERNAL_STRING) == -1)
+	{
+		int errnum = register_hash(&HASH_DESC);
+		if(errnum != CRYPT_OK) throw Exception(error_to_string(errno));
+	}
+
+
 	TFileStream *fs;
 	fs = new TFileStream(fn, fmOpenRead | fmShareDenyWrite);
 	if(ignorestart != -1 && ignoreend == -1) ignoreend = fs->Size;
@@ -66,6 +95,29 @@ static void MakeFileHash(AnsiString fn, unsigned char *hash, int ignorestart,
 	delete fs;
 }
 //---------------------------------------------------------------------------
+static void ImportKey(AnsiString inkey, AnsiString startline, AnsiString endline,
+	rsa_key * key)
+{
+	const char *pkey = inkey.c_str();
+	const char *start = strstr(pkey, startline.c_str());
+	if(!start) throw Exception("Cannot find \"" + startline + "\" in the key string");
+	const char *end = strstr(pkey, endline.c_str());
+	if(!end) throw Exception("Cannot find \"" + endline + "\" in the key string");
+
+	start += startline.Length();
+	char buf[10240];
+	unsigned long buf_len;
+	int errnum;
+
+	buf_len = sizeof(buf) - 1;
+	errnum = base64_decode((const unsigned char*)(start),
+		end - start, buf, &buf_len);
+	if(errnum != CRYPT_OK) throw Exception(error_to_string(errnum));
+
+	errnum = rsa_import(buf, buf_len, key);
+	if(errnum != CRYPT_OK) throw Exception(error_to_string(errnum));
+}
+//---------------------------------------------------------------------------
 bool SignFile(AnsiString privkey, AnsiString signfn, int ignorestart, int ignoreend, int ofs)
 {
 	// ofs is -1  : for separeted sinature file (.sig) .
@@ -76,28 +128,18 @@ bool SignFile(AnsiString privkey, AnsiString signfn, int ignorestart, int ignore
 	if(signfn == "") throw Exception("Specify target file");
 
 	// read privkey
-	AnsiString privkeymark("-- PRIVATE KEY - ECC(160) --");
-	if(privkey.Length() <  privkeymark.Length())
-		throw Exception("Invalid private key");
-	if(strncmp(privkey.c_str(), privkeymark.c_str(), privkeymark.Length()))
-		throw Exception("Invalid private key");
-
-	ecc_key key;
+	rsa_key key;
 	int errnum;
-	char buf[1024];
-	unsigned long buf_len;
 
-	buf_len = sizeof(buf) - 1;
-	errnum = base64_decode((const unsigned char*)(privkey.c_str() + privkeymark.Length()),
-		privkey.Length() - privkeymark.Length(), buf, &buf_len);
-	if(errnum != CRYPT_OK) throw Exception(error_to_string(errnum));
-
-	errnum = ecc_import(buf, buf_len, &key);
-	if(errnum != CRYPT_OK) throw Exception(error_to_string(errnum));
+	ImportKey(privkey, "-----BEGIN RSA PRIVATE KEY-----", "-----END RSA PRIVATE KEY-----",
+		&key);
 
 	try
 	{
-		// initialize random generator
+		char buf[10240];
+		unsigned long buf_len;
+
+		// initialize random number generator
 		prng_state prng;
 		if(!RandomizePRNGSimple(&prng)) return false;
 
@@ -107,18 +149,22 @@ bool SignFile(AnsiString privkey, AnsiString signfn, int ignorestart, int ignore
 
 		// sign
 		buf_len = sizeof(buf) - 1;
-		errnum = ecc_sign_hash(hash, HASH_SIZE, buf, &buf_len, &prng, find_prng("yarrow"), &key);
+		errnum = rsa_sign_hash(hash, HASH_SIZE, buf, &buf_len,
+			&prng, find_prng("fortuna"),
+			find_hash(HASH_METHOD_INTERNAL_STRING), HASH_SIZE,
+			&key);
 		if(errnum != CRYPT_OK) throw Exception(error_to_string(errnum));
 
 		// convert to readable text
-		char buf_asc[1024*3/2+2];
+		char buf_asc[10240*3/2+2];
 		unsigned long buf_asc_len;
 		buf_asc_len = sizeof(buf_asc) - 1;
 		errnum = base64_encode(buf, buf_len, buf_asc, &buf_asc_len);
 		if(errnum != CRYPT_OK) throw Exception(error_to_string(errnum));
 		buf_asc[buf_asc_len] = 0;
 
-		AnsiString sign = AnsiString("-- SIGNATURE - ECC(160)/" HASH_METHOD_STRING " --") + buf_asc;
+		AnsiString sign = AnsiString("-- SIGNATURE - " HASH_METHOD_STRING "/PSS/RSA --\r\n") +
+			Split64(buf_asc);
 
 		// write it to the file
 		TFileStream * st;
@@ -153,10 +199,10 @@ bool SignFile(AnsiString privkey, AnsiString signfn, int ignorestart, int ignore
 	}
 	catch(...)
 	{
-		ecc_free(&key);
+		rsa_free(&key);
 		throw;
 	}
-	ecc_free(&key);
+	rsa_free(&key);
 
 	return true;
 }
@@ -169,27 +215,15 @@ bool CheckSignatureOfFile(AnsiString pubkey, AnsiString signfn,
 	if(signfn == "") throw Exception("Specify target file");
 
 	// read pubkey
-	char buf[1024];
+	char buf[10240];
 	unsigned long buf_len;
-	char buf_asc[1024*3/2+2];
+	char buf_asc[sizeof(buf)*3/2+2];
 	unsigned long buf_asc_len;
 
-	AnsiString pubkeymark("-- PUBLIC KEY - ECC(160) --");
-	if(pubkey.Length() <  pubkeymark.Length())
-		throw Exception("Invalid public key");
-	if(strncmp(pubkey.c_str(), pubkeymark.c_str(), pubkeymark.Length()))
-		throw Exception("Invalid public key");
+	rsa_key key;
 
-	ecc_key key;
-
-	buf_len = sizeof(buf) - 1;
-	int errnum;
-	errnum = base64_decode((const unsigned char*)(pubkey.c_str() + pubkeymark.Length()),
-		pubkey.Length() - pubkeymark.Length(), buf, &buf_len);
-	if(errnum != CRYPT_OK) throw Exception(error_to_string(errnum));
-
-	errnum = ecc_import(buf, buf_len, &key);
-	if(errnum != CRYPT_OK) throw Exception(error_to_string(errnum));
+	ImportKey(pubkey, "-----BEGIN PUBLIC KEY-----", "-----END PUBLIC KEY-----",
+		&key);
 
 	// read signature file
 
@@ -219,12 +253,12 @@ bool CheckSignatureOfFile(AnsiString pubkey, AnsiString signfn,
 	buf_asc[buf_asc_len] = 0;
 	buf_asc_len = strlen(buf_asc);
 
-	AnsiString signmark("-- SIGNATURE - ECC(160)/" HASH_METHOD_STRING " --");
+	AnsiString signmark("-- SIGNATURE - " HASH_METHOD_STRING "/PSS/RSA --\r\n");
 	if(strncmp(buf_asc, signmark.c_str(), signmark.Length()))
 		throw Exception("Invalid signature file format");
 
 	buf_len = sizeof(buf) - 1;
-	errnum = base64_decode((const unsigned char*)(buf_asc + signmark.Length()),
+	int errnum = base64_decode((const unsigned char*)(buf_asc + signmark.Length()),
 		buf_asc_len - signmark.Length(), buf, &buf_len);
 	if(errnum != CRYPT_OK) throw Exception(error_to_string(errnum));
 
@@ -236,16 +270,17 @@ bool CheckSignatureOfFile(AnsiString pubkey, AnsiString signfn,
 		MakeFileHash(signfn, hash, ignorestart, ignoreend);
 
 		// check signature
-		buf_len = sizeof(buf);
-		errnum = ecc_verify_hash(buf, buf_len, hash, HASH_SIZE, &stat, &key);
+		errnum = rsa_verify_hash(buf, buf_len, hash, HASH_SIZE,
+			find_hash(HASH_METHOD_INTERNAL_STRING), HASH_SIZE,
+			&stat, &key);
 		if(errnum != CRYPT_OK) throw Exception(error_to_string(errnum));
 	}
 	catch(...)
 	{
-		ecc_free(&key);
+		rsa_free(&key);
 		throw;
 	}
-	ecc_free(&key);
+	rsa_free(&key);
 
 	return stat;
 }

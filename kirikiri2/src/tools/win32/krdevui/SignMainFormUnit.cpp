@@ -5,7 +5,9 @@
 
 #include <clipbrd.hpp>
 
-#include "mycrypt.h"
+#define _MSC_VER
+#include <tomcrypt.h>
+#undef _MSC_VER
 
 #include "SignMainFormUnit.h"
 #include "RandomizeFormUnit.h"
@@ -51,16 +53,22 @@ void __fastcall TSignMainForm::GenerateButtonClick(TObject *Sender)
 	prng_state prng;
 	int errnum;
 
+	CopyPublicKeyButton->Enabled = false;
+	CopyPrivateKeyButton->Enabled = false;
+
 	// initialize random generator
 	if(!RandomizePRNG(&prng)) return;
 
+	// once process message to display window
+	KeyGeneratingLabel->Visible = true;
+	Application->ProcessMessages();
 
 	// generate key
-	ecc_key key;
-	char buf[1024];
-	char buf_asc[1024*3/2+2];
+	rsa_key key;
+	char buf[10240];
+	char buf_asc[sizeof(buf)*3/2+2];
 
-	errnum = ecc_make_key(&prng, find_prng("yarrow"), 20, &key);
+	errnum = rsa_make_key(&prng, find_prng("fortuna"), 128, 65537, &key);
 	if(errnum != CRYPT_OK) throw Exception(error_to_string(errnum));
 
 
@@ -71,32 +79,38 @@ void __fastcall TSignMainForm::GenerateButtonClick(TObject *Sender)
 
 		// public key
 		outlen = sizeof(buf) - 1;
-		errnum = ecc_export(buf, &outlen, PK_PUBLIC, &key);
+		errnum = rsa_export(buf, &outlen, PK_PUBLIC, &key);
 		if(errnum != CRYPT_OK) throw Exception(error_to_string(errnum));
 		asc_outlen = sizeof(buf_asc) - 1;
 		base64_encode(buf, outlen, buf_asc, &asc_outlen);
 		buf_asc[asc_outlen] = 0;
-		GeneratedPublicKeyEdit->Text = AnsiString("-- PUBLIC KEY - ECC(160) --") + buf_asc;
+		GeneratedPublicKeyEdit->Text =
+			AnsiString("-----BEGIN PUBLIC KEY-----\r\n") + Split64(buf_asc) +
+			AnsiString("-----END PUBLIC KEY-----\r\n");
 
 		// private key
 		outlen = sizeof(buf) - 1;
-		errnum = ecc_export(buf, &outlen, PK_PRIVATE, &key);
+		errnum = rsa_export(buf, &outlen, PK_PRIVATE, &key);
 		if(errnum != CRYPT_OK) throw Exception(error_to_string(errnum));
 		asc_outlen = sizeof(buf_asc) - 1;
 		base64_encode(buf, outlen, buf_asc, &asc_outlen);
 		buf_asc[asc_outlen] = 0;
-		GeneratedPrivateKeyEdit->Text = AnsiString("-- PRIVATE KEY - ECC(160) --") + buf_asc;
+		GeneratedPrivateKeyEdit->Text =
+			AnsiString("-----BEGIN RSA PRIVATE KEY-----\r\n") + Split64(buf_asc) +
+			AnsiString("-----END RSA PRIVATE KEY-----\r\n");
 	}
 	catch(...)
 	{
-		ecc_free(&key);
+		rsa_free(&key);
+		KeyGeneratingLabel->Visible = false;
 		throw;
 	}
 
-	ecc_free(&key);
+	rsa_free(&key);
 
 	CopyPublicKeyButton->Enabled = true;
 	CopyPrivateKeyButton->Enabled = true;
+	KeyGeneratingLabel->Visible = false;
 }
 //---------------------------------------------------------------------------
 
@@ -208,16 +222,22 @@ void __fastcall TSignMainForm::CheckSignatureButtonClick(TObject *Sender)
 //---------------------------------------------------------------------------
 void __fastcall TSignMainForm::SignPrivateKeyEditChange(TObject *Sender)
 {
-	AnsiString mark("-- PRIVATE KEY - ECC(160) --");
-	bool state = !strncmp(SignPrivateKeyEdit->Text.c_str(), mark.c_str(), mark.Length()) &&
+	AnsiString mark1("-----BEGIN RSA PRIVATE KEY-----");
+	AnsiString mark2("-----END RSA PRIVATE KEY-----");
+	bool state =
+		strstr(SignPrivateKeyEdit->Text.c_str(), mark1.c_str()) &&
+		strstr(SignPrivateKeyEdit->Text.c_str(), mark2.c_str()) &&
 		FileExists(SignFileNameEdit->Text);
 	SignButton->Enabled = state;
 }
 //---------------------------------------------------------------------------
 void __fastcall TSignMainForm::CheckSignPublicKeyEditChange(TObject *Sender)
 {
-	AnsiString mark("-- PUBLIC KEY - ECC(160) --");
-	bool state = !strncmp(CheckSignPublicKeyEdit->Text.c_str(), mark.c_str(), mark.Length()) &&
+	AnsiString mark1("-----BEGIN PUBLIC KEY-----");
+	AnsiString mark2("-----END PUBLIC KEY-----");
+	bool state =
+		strstr(CheckSignPublicKeyEdit->Text.c_str(), mark1.c_str()) &&
+		strstr(CheckSignPublicKeyEdit->Text.c_str(), mark2.c_str()) &&
 		FileExists(CheckSignFileNameEdit->Text) /*&& FileExists(CheckSignFileNameEdit->Text + ".sig")*/;
 	CheckSignatureButton->Enabled = state;
 }
@@ -260,40 +280,72 @@ void __fastcall TSignMainForm::WMDropFiles(TMessage &Msg)
 
 
 //---------------------------------------------------------------------------
+static AnsiString ReadTextFile(AnsiString fn)
+{
+	// fn ‚ð‘S‚Ä“Ç‚ÝAAnsiString ‚Æ‚µ‚Ä•Ô‚·
+	TFileStream *s = new TFileStream(fn, fmOpenRead|fmShareDenyWrite);
+	AnsiString ret;
+	char *buf = NULL;
+	try
+	{
+		int size = s->Size;
+		buf = new char [ size + 1];
+		s->ReadBuffer(buf, size);
+		buf[size] = '\0';
+		ret = buf;
+	}
+	catch(...)
+	{
+		if(buf) delete [] buf;
+		delete s;
+		throw;
+	}
+	if(buf) delete [] buf;
+	delete s;
+	return ret;
+}
+//---------------------------------------------------------------------------
 extern "C" void _export PASCAL UIExecSign()
 {
 	// check argvs
-	int argc = ParamCount();
-	if(argc >= 3 && !strcmp(ParamStr(1).c_str(), "-sign"))
+	try
 	{
-		AnsiString target = ParamStr(2);
-		AnsiString privkey = ParamStr(3);
-		AnsiString mark = XRELEASE_SIG____;
-		if(argc >= 5) mark = ParamStr(4);
-
-		int ignorestart = CheckKrkrExecutable(target, XOPT_EMBED_AREA_);
-		int signofs = CheckKrkrExecutable(target, mark.c_str());
-		int xp3ofs = CheckKrkrExecutable(target, XP3_SIG);
-
-		if(ignorestart != 0 && signofs != 0)
+		int argc = ParamCount();
+		if(argc >= 3 && !strcmp(ParamStr(1).c_str(), "-sign"))
 		{
-			// krkr executable
-			SignFile(privkey, target,
-				ignorestart, xp3ofs?xp3ofs:-1, signofs+ 16+4);
+			AnsiString target = ParamStr(2);
+			AnsiString privkey = ReadTextFile(ParamStr(3));
+			AnsiString mark = XRELEASE_SIG____;
+			if(argc >= 5) mark = ParamStr(4);
+
+			int ignorestart = CheckKrkrExecutable(target, XOPT_EMBED_AREA_);
+			int signofs = CheckKrkrExecutable(target, mark.c_str());
+			int xp3ofs = CheckKrkrExecutable(target, XP3_SIG);
+
+			if(ignorestart != 0 && signofs != 0)
+			{
+				// krkr executable
+				SignFile(privkey, target,
+					ignorestart, xp3ofs?xp3ofs:-1, signofs+ 16+4);
+			}
+			else
+			{
+				// normal file
+				SignFile(privkey, target, -1, -1, -1);
+			}
+			return;
 		}
-		else
-		{
-			// normal file
-			SignFile(privkey, target, -1, -1, -1);
-		}
-		return;
+
+
+		// execute
+		TSignMainForm * signmainform = new TSignMainForm(Application);
+		signmainform->ShowModal();
+		delete signmainform;
 	}
-
-
-	// execute
-	TSignMainForm * signmainform = new TSignMainForm(Application);
-	signmainform->ShowModal();
-	delete signmainform;
+	catch(Exception &e)
+	{
+		MessageBox(NULL, e.Message.c_str(), "Error", MB_OK | MB_ICONEXCLAMATION);
+	}
 }
 //---------------------------------------------------------------------------
 

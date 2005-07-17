@@ -7,13 +7,17 @@
 #include <ExtCtrls.hpp>
 #include <StdCtrls.hpp>
 //---------------------------------------------------------------------------
-#include <tomcrypt/mycrypt.h>
-//---------------------------------------------------------------------------
 #include <Classes.hpp>
 #include <Controls.hpp>
 #include <StdCtrls.hpp>
 #include <Forms.hpp>
 #include <ExtCtrls.hpp>
+
+//---------------------------------------------------------------------------
+#define _MSC_VER
+#include <tomcrypt.h>
+#undef _MSC_VER
+
 //---------------------------------------------------------------------------
 class TRandomizeForm : public TForm
 {

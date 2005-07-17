@@ -12,8 +12,28 @@
 
 #if 0
 // テスト用に使っているキーペア
--- PUBLIC KEY - ECC(160) --hgACAAEUFAAAABkiVqMkINmoCYhe41wzleMIqElUAA==
--- PRIVATE KEY - ECC(160) --hgACAAAUFAAAABkiVqMkINmoCYhe41wzleMIqElUABQAAADZsyrLo1RKsgt17saXG+pDfVSDfw==
+-----BEGIN PUBLIC KEY-----
+MIGJAoGBAJYfPysW57qE3J2ddGWEG+RzXUzFkWa0ct3p7qJfuWDB+52DbfS9qSpw
+iTHQ54vl7K35x+WDQdn29cfgJxp9UD3fzY4h6E2ReE9vj4h0FCMK8dpCFnQkOD/M
+hDSiXfXz7KmfMXppM0CjofvH+IL7BJ3/GcLFcuEw3hEnzoajIm1TAgMBAAE=
+-----END PUBLIC KEY-----
+
+-----BEGIN RSA PRIVATE KEY-----
+MIICXAIBAAKBgQCWHz8rFue6hNydnXRlhBvkc11MxZFmtHLd6e6iX7lgwfudg230
+vakqcIkx0OeL5eyt+cflg0HZ9vXH4CcafVA9382OIehNkXhPb4+IdBQjCvHaQhZ0
+JDg/zIQ0ol318+ypnzF6aTNAo6H7x/iC+wSd/xnCxXLhMN4RJ86GoyJtUwIDAQAB
+AoGABHj02FNL3xYzPmzg+V9It3Mqbe2a6dzpaSwdhG/mpXfSB7zRK0/1OML2i2nm
+ZBgbB4ngBzn0XcqKQwSuFY9zMwEIB+Bd1KQguslNdTGFyoKFS1aOly768q3KD6G5
+ojl7e8l2RqiZDlY6/0Dz7OdEaHbUXYJ+k3p9EQGeakEbLHkCQQDFEUilrXF0DCE3
+z+BCppl/5R4wrVw0LH4f9lGLV/+36nvV7T1vraSeOUVtWsySfsgqDO/8oLJP+N3c
+0fLwOWVLAkEAwwQAur5/SqyA0LoFBjpVQN1rx7vcRYPWB/mKv0XzumAFaQVJpMtO
+GhTNLKMbaAXnPT4T5qNhBWeYB5q3jkX7GQJBAJMS3iP/+M9CCjyMIPO9QIwp48ky
+aMDrf8m83IjhSRDqqDc1UoeZkWUgmwcNH+YpRpvTgfwJtmpm8rXN3sCYJVcCQAOn
+c4wMPb5cdR10Htv7A9XvUDGx53K2AbCskFj9Ko/3dKJ/It4foRsEAMQxWjYcxjRz
+kVPlA9BiHIsn7wCPdyECQEncAeBuhPrBiyuszuh90wqjd53MzRSpm28/ynafwmyj
+rwW1SrP9HPgBYHz4CzyoFVEn6WTZjo5QYB7TOoFjmfI=
+-----END RSA PRIVATE KEY-----
+
 #endif
 
 #include "KrkrSignatureUnit.h"
@@ -21,6 +41,31 @@
 #pragma package(smart_init)
 #pragma resource "*.dfm"
 TMainForm *MainForm;
+//---------------------------------------------------------------------------
+static AnsiString ReadTextFile(AnsiString fn)
+{
+	// fn を全て読み、AnsiString として返す
+	TFileStream *s = new TFileStream(fn, fmOpenRead|fmShareDenyWrite);
+	AnsiString ret;
+	char *buf = NULL;
+	try
+	{
+		int size = s->Size;
+		buf = new char [ size + 1];
+		s->ReadBuffer(buf, size);
+		buf[size] = '\0';
+		ret = buf;
+	}
+	catch(...)
+	{
+		if(buf) delete [] buf;
+		delete s;
+		throw;
+	}
+	if(buf) delete [] buf;
+	delete s;
+	return ret;
+}
 //---------------------------------------------------------------------------
 __fastcall TMainForm::TMainForm(TComponent* Owner)
 	: TForm(Owner)
@@ -30,7 +75,8 @@ __fastcall TMainForm::TMainForm(TComponent* Owner)
 	Aborting = false;
 
 	// ini ファイルを読み込む
-	TMemIniFile * memini = new TMemIniFile(ChangeFileExt(ParamStr(0), ".ini"));
+	AnsiString inifn = ChangeFileExt(ParamStr(0), ".ini");
+	TMemIniFile * memini = new TMemIniFile(inifn);
 	try
 	{
 		// キャプションを読み込む
@@ -39,7 +85,9 @@ __fastcall TMainForm::TMainForm(TComponent* Owner)
 		Application->Title = Caption;
 
 		// 公開鍵を読み込む
-		PublicKey = memini->ReadString("key", "publickey", "");
+		// 公開鍵は ini ファイルをそのまま用いる
+		// (ini ファイル中に記述された公開鍵を自動的に認識できるため)
+		PublicKey = ReadTextFile(inifn);
 
 		// notice の読み込みとコンポーネントの位置調整
 		AnsiString notice =
