@@ -120,6 +120,34 @@ TJS_EXP_FUNC_DEF(void, TVPHandleApplicationMessage, ());
 TJS_EXP_FUNC_DEF(bool, TVPRegisterGlobalObject, (const tjs_char *name, iTJSDispatch2 * dsp));
 TJS_EXP_FUNC_DEF(bool, TVPRemoveGlobalObject, (const tjs_char *name));
 
+/*[*/
+//---------------------------------------------------------------------------
+// data types for TVPDoTryBlock
+//---------------------------------------------------------------------------
+	// TVPDoTryBlock executes specified 'tryblock' in try block.
+	// If any exception occured,
+	// 'catchblock' is to be executed. 'data' is applicatoin defined data
+	// block passed to 'tryblock' and 'catchblock' and 'finallyblock'.
+	// 'catchblock's first argument is the exception type, currently
+	// 'eTJS' or 'unknown'. The second argument is exception message
+	// (if exists. otherwise empty).
+	// if the 'catchblock' returns true, the exception is to be rethrown.
+	// if false then the exception is to be vanished.
+	// 'finallyblock' can be null, is to be executed whatever the exception
+	// is generated or not.
+
+typedef void (TJS_USERENTRY *tTVPTryBlockFunction)(void * data);
+typedef bool (TJS_USERENTRY *tTVPCatchBlockFunction)(const ttstr & type, const ttstr & message, void * data);
+typedef void (TJS_USERENTRY *tTVPFinallyBlockFunction)(void *data);
+//---------------------------------------------------------------------------
+
+
+
+
+/*]*/
+
+TJS_EXP_FUNC_DEF(void, TVPDoTryBlock, (tTVPTryBlockFunction tryblock, tTVPCatchBlockFunction catchblock, tTVPFinallyBlockFunction finallyblock, void *data));
+
 
 TJS_EXP_FUNC_DEF(bool, TVPGetFileVersionOf, (const char * module_filename, tjs_int &major, tjs_int &minor, tjs_int &release, tjs_int &build));
 

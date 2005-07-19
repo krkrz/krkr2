@@ -1353,6 +1353,31 @@ typedef tjs_uint8 TVP_md5_state_t[4*2+4*4+64]; // md5_state_t
 
 
 //---------------------------------------------------------------------------
+// data types for TVPDoTryBlock
+//---------------------------------------------------------------------------
+	// TVPDoTryBlock executes specified 'tryblock' in try block.
+	// If any exception occured,
+	// 'catchblock' is to be executed. 'data' is applicatoin defined data
+	// block passed to 'tryblock' and 'catchblock' and 'finallyblock'.
+	// 'catchblock's first argument is the exception type, currently
+	// 'eTJS' or 'unknown'. The second argument is exception message
+	// (if exists. otherwise empty).
+	// if the 'catchblock' returns true, the exception is to be rethrown.
+	// if false then the exception is to be vanished.
+	// 'finallyblock' can be null, is to be executed whatever the exception
+	// is generated or not.
+
+typedef void (TJS_USERENTRY *tTVPTryBlockFunction)(void * data);
+typedef bool (TJS_USERENTRY *tTVPCatchBlockFunction)(const ttstr & type, const ttstr & message, void * data);
+typedef void (TJS_USERENTRY *tTVPFinallyBlockFunction)(void *data);
+//---------------------------------------------------------------------------
+
+
+
+
+
+
+//---------------------------------------------------------------------------
 // tTJSBinaryStream constants
 //---------------------------------------------------------------------------
 #define TJS_BS_READ 0
@@ -2764,6 +2789,7 @@ extern void * TVPImportFuncPtr3d70bb72a7d7765c7e8ea580079ab7e9;
 extern void * TVPImportFuncPtreba9b272d78a4b0cd7f9212e29a58607;
 extern void * TVPImportFuncPtrcfbe8ee9d43aa64ae4190eac91f7c55f;
 extern void * TVPImportFuncPtra4308a386968ef5d23025ab8a9e8c6db;
+extern void * TVPImportFuncPtr5a4fcbe1e398e3d9690d571acbbbae9f;
 extern void * TVPImportFuncPtrb8305ae2ae49a3f7f711105e77bafdf0;
 extern void * TVPImportFuncPtrfb3b405f8747b54f26c332b9e6af81cd;
 extern void * TVPImportFuncPtrba40ffbca76695b54a02aa8c1f1e047b;
@@ -6360,6 +6386,16 @@ inline bool TVPRemoveGlobalObject(const tjs_char * name)
 	}
 	typedef bool (__stdcall * __functype)(const tjs_char *);
 	return ((__functype)(TVPImportFuncPtra4308a386968ef5d23025ab8a9e8c6db))(name);
+}
+inline void TVPDoTryBlock(tTVPTryBlockFunction tryblock , tTVPCatchBlockFunction catchblock , tTVPFinallyBlockFunction finallyblock , void * data)
+{
+	if(!TVPImportFuncPtr5a4fcbe1e398e3d9690d571acbbbae9f)
+	{
+		static char funcname[] = "void ::TVPDoTryBlock(tTVPTryBlockFunction,tTVPCatchBlockFunction,tTVPFinallyBlockFunction,void *)";
+		TVPImportFuncPtr5a4fcbe1e398e3d9690d571acbbbae9f = TVPGetImportFuncPtr(funcname);
+	}
+	typedef void (__stdcall * __functype)(tTVPTryBlockFunction , tTVPCatchBlockFunction , tTVPFinallyBlockFunction , void *);
+	((__functype)(TVPImportFuncPtr5a4fcbe1e398e3d9690d571acbbbae9f))(tryblock, catchblock, finallyblock, data);
 }
 inline bool TVPGetFileVersionOf(const char * module_filename , tjs_int & major , tjs_int & minor , tjs_int & release , tjs_int & build)
 {
