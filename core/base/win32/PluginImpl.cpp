@@ -832,6 +832,39 @@ bool TVPRemoveGlobalObject(const tjs_char *name)
 	return TJS_SUCCEEDED(er);
 }
 //---------------------------------------------------------------------------
+void TVPDoTryBlock(
+	tTVPTryBlockFunction tryblock,
+	tTVPCatchBlockFunction catchblock,
+	tTVPFinallyBlockFunction finallyblock,
+	void *data)
+{
+	try
+	{
+		tryblock(data);
+	}
+	catch(const eTJS & e)
+	{
+		if(catchblock(TJS_W("eTJS"), e.GetMessage(), data))
+		{
+			if(finallyblock) finallyblock(data);
+			throw;
+		}
+		if(finallyblock) finallyblock(data);
+		return;
+	}
+	catch(...)
+	{
+		if(catchblock(TJS_W("eTJS"), ttstr(), data))
+		{
+			if(finallyblock) finallyblock(data);
+			throw;
+		}
+		if(finallyblock) finallyblock(data);
+		return;
+	}
+	if(finallyblock) finallyblock(data);
+}
+//---------------------------------------------------------------------------
 
 
 
