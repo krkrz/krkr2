@@ -17,8 +17,8 @@
 #include "tjsTypes.h"
 
 
-extern tjs_int TVPWideCharToUtf8String(const tjs_char *in, char * out);
-extern tjs_int TVPUtf8ToWideCharString(const char * in, tjs_char *out);
+TJS_EXP_FUNC_DEF(tjs_int, TVPWideCharToUtf8String, (const tjs_char *in, char * out));
+TJS_EXP_FUNC_DEF(tjs_int, TVPUtf8ToWideCharString, (const char * in, tjs_char *out));
 
 
 
