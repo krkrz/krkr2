@@ -429,6 +429,12 @@ process_exp_stub("../../tjs2/tjsVariant.h");
 print OFH "#include \"StorageIntf.h\"\n";
 process_exp_stub("../StorageIntf.h");
 
+print OFH "#include \"TextStream.h\"\n";
+process_exp_stub("../TextStream.h");
+
+print OFH "#include \"CharacterSet.h\"\n";
+process_exp_stub("../CharacterSet.h");
+
 print OFH "#include \"XP3Archive.h\"\n";
 process_exp_stub("../XP3Archive.h");
 
