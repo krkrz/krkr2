@@ -87,7 +87,7 @@ void tTVPScenarioCacheItem::LoadScenario(const ttstr & name, bool isstring)
 	{
 		// else load from file
 
-		tTJSTextReadStream * stream = NULL;
+		iTJSTextReadStream * stream = NULL;
 
 		try
 		{
@@ -95,13 +95,13 @@ void tTVPScenarioCacheItem::LoadScenario(const ttstr & name, bool isstring)
 			ttstr tmp;
 			stream->Read(tmp, 0);
 			Buffer = tmp.c_str();
-			delete stream, stream = NULL;
 		}
 		catch(...)
 		{
-			if(stream) delete stream;
+			stream->Destruct();
 			throw;
 		}
+		stream->Destruct();
 	}
 
 	tjs_char *buffer_p = Buffer;

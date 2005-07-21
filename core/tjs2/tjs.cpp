@@ -519,17 +519,17 @@ void tTJS::DoGarbageCollection()
 //---------------------------------------------------------------------------
 // TextStream Creation
 //---------------------------------------------------------------------------
-tTJSTextReadStream * TJSDefCreateTextStreamForRead(const tTJSString &name,
+iTJSTextReadStream * TJSDefCreateTextStreamForRead(const tTJSString &name,
 	const tTJSString &mode)
 { return NULL; }
-tTJSTextWriteStream * TJSDefCreateTextStreamForWrite(const tTJSString &name,
+iTJSTextWriteStream * TJSDefCreateTextStreamForWrite(const tTJSString &name,
 	const tTJSString &mode)
 { return NULL; }
 //---------------------------------------------------------------------------
-tTJSTextReadStream * (*TJSCreateTextStreamForRead)(const tTJSString &name,
+iTJSTextReadStream * (*TJSCreateTextStreamForRead)(const tTJSString &name,
 	const tTJSString &mode) =
 	TJSDefCreateTextStreamForRead;
-tTJSTextWriteStream * (*TJSCreateTextStreamForWrite)(const tTJSString &name,
+iTJSTextWriteStream * (*TJSCreateTextStreamForWrite)(const tTJSString &name,
 	const tTJSString &mode) =
 	TJSDefCreateTextStreamForWrite;
 //---------------------------------------------------------------------------
