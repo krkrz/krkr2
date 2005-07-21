@@ -554,7 +554,7 @@ void TVPExecuteStorage(const ttstr &name, tTJSVariant *result, bool isexpression
 	ttstr place(TVPSearchPlacedPath(name));
 	ttstr shortname(TVPExtractStorageName(place));
 
-	tTJSTextReadStream * stream = TVPCreateTextStreamForRead(place, modestr);
+	iTJSTextReadStream * stream = TVPCreateTextStreamForRead(place, modestr);
 	ttstr buffer;
 	try
 	{
@@ -562,10 +562,10 @@ void TVPExecuteStorage(const ttstr &name, tTJSVariant *result, bool isexpression
 	}
 	catch(...)
 	{
-		delete stream;
+		stream->Destruct();
 		throw;
 	}
-	delete stream;
+	stream->Destruct();
 
 	if(TVPScriptEngine)
 	{
@@ -597,7 +597,7 @@ void TVPCreateMessageMapFile(const ttstr &filename)
 
 	script += TJS_W("}");
 
-	tTJSTextWriteStream * stream = TVPCreateTextStreamForWrite(
+	iTJSTextWriteStream * stream = TVPCreateTextStreamForWrite(
 		filename, TJS_W(""));
 	try
 	{
@@ -605,11 +605,11 @@ void TVPCreateMessageMapFile(const ttstr &filename)
 	}
 	catch(...)
 	{
-		delete stream;
+		stream->Destruct();
 		throw;
 	}
 
-	delete stream;
+	stream->Destruct();
 }
 //---------------------------------------------------------------------------
 

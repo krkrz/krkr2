@@ -260,7 +260,7 @@ TJS_BEGIN_NATIVE_METHOD_DECL(/* func. name */load)
 	ttstr mode;
 	if(numparams >= 2 && param[1]->Type() != tvtVoid) mode =*param[1];
 
-	tTJSTextReadStream * stream = TJSCreateTextStreamForRead(name, mode);
+	iTJSTextReadStream * stream = TJSCreateTextStreamForRead(name, mode);
 	try
 	{
 		ni->Items.clear();
@@ -343,10 +343,10 @@ TJS_BEGIN_NATIVE_METHOD_DECL(/* func. name */load)
 	}
 	catch(...)
 	{
-		delete stream;
+		stream->Destruct();
 		throw;
 	}
-	delete stream;
+	stream->Destruct();
 
 	if(result) *result = tTJSVariant(objthis, objthis);
 
@@ -366,7 +366,7 @@ TJS_BEGIN_NATIVE_METHOD_DECL(/* func. name */save)
 	ttstr name(*param[0]);
 	ttstr mode;
 	if(numparams >= 2 && param[1]->Type() != tvtVoid) mode = *param[1];
-	tTJSTextWriteStream * stream = TJSCreateTextStreamForWrite(name, mode);
+	iTJSTextWriteStream * stream = TJSCreateTextStreamForWrite(name, mode);
 	try
 	{
 		tTJSArrayNI::tArrayItemIterator i = ni->Items.begin();
@@ -389,10 +389,10 @@ TJS_BEGIN_NATIVE_METHOD_DECL(/* func. name */save)
 	}
 	catch(...)
 	{
-		delete stream;
+		stream->Destruct();
 		throw;
 	}
-	delete stream;
+	stream->Destruct();
 
 	if(result) *result = tTJSVariant(objthis, objthis);
 
@@ -412,7 +412,7 @@ TJS_BEGIN_NATIVE_METHOD_DECL(/* func. name */saveStruct)
 	ttstr mode;
 	if(numparams >= 2 && param[1]->Type() != tvtVoid) mode = *param[1];
 
-	tTJSTextWriteStream * stream = TJSCreateTextStreamForWrite(name, mode);
+	iTJSTextWriteStream * stream = TJSCreateTextStreamForWrite(name, mode);
 	try
 	{
 		std::vector<iTJSDispatch2 *> stack;
@@ -423,10 +423,10 @@ TJS_BEGIN_NATIVE_METHOD_DECL(/* func. name */saveStruct)
 	}
 	catch(...)
 	{
-		delete stream;
+		stream->Destruct();
 		throw;
 	}
-	delete stream;
+	stream->Destruct();
 
 	if(result) *result = tTJSVariant(objthis, objthis);
 
