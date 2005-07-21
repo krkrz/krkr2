@@ -1378,26 +1378,26 @@ typedef void (TJS_USERENTRY *tTVPFinallyBlockFunction)(void *data);
 
 
 //---------------------------------------------------------------------------
-// tTJSTextStream - used by Array.save/load Dictionaty.save/load
+// iTJSTextStream - used by Array.save/load Dictionaty.save/load
 //---------------------------------------------------------------------------
 class tTJSString;
-class tTJSTextReadStream
+class iTJSTextReadStream
 {
 public:
 	virtual tjs_uint TJS_INTF_METHOD Read(tTJSString & targ, tjs_uint size) = 0;
-	virtual ~tTJSTextReadStream() {;}
+	virtual void TJS_INTF_METHOD Destruct() = 0; // must delete itself
 };
 //---------------------------------------------------------------------------
-class tTJSTextWriteStream
+class iTJSTextWriteStream
 {
 public:
 	virtual void TJS_INTF_METHOD Write(const tTJSString & targ) = 0;
-	virtual ~tTJSTextWriteStream() {;}
+	virtual void TJS_INTF_METHOD Destruct() = 0; // must delete itself
 };
 //---------------------------------------------------------------------------
-extern tTJSTextReadStream * (*TJSCreateTextStreamForRead)(const tTJSString &name,
+extern iTJSTextReadStream * (*TJSCreateTextStreamForRead)(const tTJSString &name,
 	const tTJSString &modestr);
-extern tTJSTextWriteStream * (*TJSCreateTextStreamForWrite)(const tTJSString &name,
+extern iTJSTextWriteStream * (*TJSCreateTextStreamForWrite)(const tTJSString &name,
 	const tTJSString &modestr);
 //---------------------------------------------------------------------------
 
@@ -2776,8 +2776,8 @@ extern void * TVPImportFuncPtr725e49de1d970ef04b179776666f2c34;
 extern void * TVPImportFuncPtr55a9b73f877bfd4c6d8157e7b1c458df;
 extern void * TVPImportFuncPtrd070209f152dd22087e6e996e02c85cf;
 extern void * TVPImportFuncPtr308f905626bc51c7ef9b65b2c0ca34b2;
-extern void * TVPImportFuncPtr1fca36cb750e53713466083c7940a01a;
-extern void * TVPImportFuncPtrf952bab8ddb8f420a5de9bd29a498c70;
+extern void * TVPImportFuncPtr95aab2a1ac9491e8026f4977e0918760;
+extern void * TVPImportFuncPtr0c99a79e866f08b4df3914e83fc203dc;
 extern void * TVPImportFuncPtr900476efbc2031e643c042ca8e63a3d7;
 extern void * TVPImportFuncPtr07dfce61d490cf671a2d5359d713d64a;
 extern void * TVPImportFuncPtr52d30ac8479ef7e870b5aff076482799;
@@ -5964,25 +5964,25 @@ inline void TVPClearStorageCaches()
 	typedef void (__stdcall * __functype)();
 	((__functype)(TVPImportFuncPtr308f905626bc51c7ef9b65b2c0ca34b2))();
 }
-inline tTJSTextReadStream * TVPCreateTextStreamForRead(const ttstr & name , const ttstr & modestr)
+inline iTJSTextReadStream * TVPCreateTextStreamForRead(const ttstr & name , const ttstr & modestr)
 {
-	if(!TVPImportFuncPtr1fca36cb750e53713466083c7940a01a)
+	if(!TVPImportFuncPtr95aab2a1ac9491e8026f4977e0918760)
 	{
-		static char funcname[] = "tTJSTextReadStream * ::TVPCreateTextStreamForRead(const ttstr &,const ttstr &)";
-		TVPImportFuncPtr1fca36cb750e53713466083c7940a01a = TVPGetImportFuncPtr(funcname);
+		static char funcname[] = "iTJSTextReadStream * ::TVPCreateTextStreamForRead(const ttstr &,const ttstr &)";
+		TVPImportFuncPtr95aab2a1ac9491e8026f4977e0918760 = TVPGetImportFuncPtr(funcname);
 	}
-	typedef tTJSTextReadStream * (__stdcall * __functype)(const ttstr &, const ttstr &);
-	return ((__functype)(TVPImportFuncPtr1fca36cb750e53713466083c7940a01a))(name, modestr);
+	typedef iTJSTextReadStream * (__stdcall * __functype)(const ttstr &, const ttstr &);
+	return ((__functype)(TVPImportFuncPtr95aab2a1ac9491e8026f4977e0918760))(name, modestr);
 }
-inline tTJSTextWriteStream * TVPCreateTextStreamForWrite(const ttstr & name , const ttstr & modestr)
+inline iTJSTextWriteStream * TVPCreateTextStreamForWrite(const ttstr & name , const ttstr & modestr)
 {
-	if(!TVPImportFuncPtrf952bab8ddb8f420a5de9bd29a498c70)
+	if(!TVPImportFuncPtr0c99a79e866f08b4df3914e83fc203dc)
 	{
-		static char funcname[] = "tTJSTextWriteStream * ::TVPCreateTextStreamForWrite(const ttstr &,const ttstr &)";
-		TVPImportFuncPtrf952bab8ddb8f420a5de9bd29a498c70 = TVPGetImportFuncPtr(funcname);
+		static char funcname[] = "iTJSTextWriteStream * ::TVPCreateTextStreamForWrite(const ttstr &,const ttstr &)";
+		TVPImportFuncPtr0c99a79e866f08b4df3914e83fc203dc = TVPGetImportFuncPtr(funcname);
 	}
-	typedef tTJSTextWriteStream * (__stdcall * __functype)(const ttstr &, const ttstr &);
-	return ((__functype)(TVPImportFuncPtrf952bab8ddb8f420a5de9bd29a498c70))(name, modestr);
+	typedef iTJSTextWriteStream * (__stdcall * __functype)(const ttstr &, const ttstr &);
+	return ((__functype)(TVPImportFuncPtr0c99a79e866f08b4df3914e83fc203dc))(name, modestr);
 }
 inline tjs_int TVPWideCharToUtf8String(const tjs_char * in , char * out)
 {

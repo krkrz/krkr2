@@ -32,7 +32,7 @@
 	note: encryption of mode 0 or 1 ( simple crypt ) does never intend data pretection
 		  security.
 */
-class tTVPTextReadStream : public tTJSTextReadStream
+class tTVPTextReadStream : public iTJSTextReadStream
 {
 	tTJSBinaryStream * Stream;
 	bool DirectLoad;
@@ -174,7 +174,8 @@ public:
 		}
 	}
 
-	virtual ~tTVPTextReadStream()
+
+	~tTVPTextReadStream()
 	{
 		if(Stream) delete Stream;
 		if(Buffer) delete [] Buffer;
@@ -295,9 +296,12 @@ public:
 			return size;
 		}
 	}
+
+	void TJS_INTF_METHOD Destruct() { delete this; }
+
 };
 //---------------------------------------------------------------------------
-class tTVPTextWriteStream : public tTJSTextWriteStream
+class tTVPTextWriteStream : public iTJSTextWriteStream
 {
 	// TODO: 32bit wchar_t support
 
@@ -396,7 +400,7 @@ public:
 
 	}
 
-	virtual ~tTVPTextWriteStream()
+	~tTVPTextWriteStream()
 	{
 		if(CryptMode == 2)
 		{
@@ -545,15 +549,17 @@ public:
 			Stream->WriteBuffer(ptr, size); // write directly
 		}
 	}
+
+	void TJS_INTF_METHOD Destruct() { delete this; }
 };
 //---------------------------------------------------------------------------
-tTJSTextReadStream * TVPCreateTextStreamForRead(const ttstr & name,
+iTJSTextReadStream * TVPCreateTextStreamForRead(const ttstr & name,
 	const ttstr & modestr)
 {
 	return new tTVPTextReadStream(name, modestr);
 }
 //---------------------------------------------------------------------------
-tTJSTextWriteStream * TVPCreateTextStreamForWrite(const ttstr & name,
+iTJSTextWriteStream * TVPCreateTextStreamForWrite(const ttstr & name,
 	const ttstr & modestr)
 {
 	return new tTVPTextWriteStream(name, modestr);
