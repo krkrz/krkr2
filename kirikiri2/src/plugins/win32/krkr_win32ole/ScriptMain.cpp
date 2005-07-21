@@ -320,33 +320,20 @@ public:
 	 */
 	tjs_error execStorage(const tjs_char *progId, const tjs_char *filename, tTJSVariant *result) {
 		
-		IStream *stream = TVPCreateIStream(filename, TJS_BS_READ);
-		if (stream) {
-			// ファイルサイズ取得
-			STATSTG stat;
-			memset(&stat, 0, sizeof(stat));
-			stream->Stat(&stat, STATFLAG_NONAME);
-			ULONG size = stat.cbSize.LowPart; // XXX 32bitの壁こえるとはまるコード
-
-			char *buf = new char[size + 1]; 
-			ULONG count = 0;
+		tTJSTextReadStream * stream = TVPCreateTextStreamForRead(filename, TJS_W(""));
+		try {
 			tjs_error ret;
-			if (stream->Read(buf, size, &count) == S_OK) {
-				// 変換処理
-				buf[count] = '\0';
-				ttstr data(buf);
-				ret = exec(progId, data.c_str(), result);
-			} else {
-				// XXX ファイルの読み込みに失敗
-				ret = TJS_E_FAIL;
-			}
-			delete[] buf;
-			stream->Release();
-			return ret;
-		} else {
-			// XXX ファイルが開けない
-			return TJS_E_FAIL; 
+			ttstr data;
+			stream->Read(data, 0);
+			ret = exec(progId, data.c_str(), result);
 		}
+		catch(...)
+		{
+			stream->Destruct();
+			throw;
+		}
+		stream->Destuct();
+		return ret;
 	}
 };
 
