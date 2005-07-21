@@ -70,7 +70,7 @@ TJS_BEGIN_NATIVE_METHOD_DECL(/*func.name*/saveStruct)
 	ttstr mode;
 	if(numparams >= 2 && param[1]->Type() != tvtVoid) mode = *param[1];
 
-	tTJSTextWriteStream * stream = TJSCreateTextStreamForWrite(name, mode);
+	iTJSTextWriteStream * stream = TJSCreateTextStreamForWrite(name, mode);
 	try
 	{
 		std::vector<iTJSDispatch2 *> stack;
@@ -81,10 +81,10 @@ TJS_BEGIN_NATIVE_METHOD_DECL(/*func.name*/saveStruct)
 	}
 	catch(...)
 	{
-		delete stream;
+		stream->Destruct();
 		throw;
 	}
-	delete stream;
+	stream->Destruct();
 
 	if(result) *result = tTJSVariant(objthis, objthis);
 

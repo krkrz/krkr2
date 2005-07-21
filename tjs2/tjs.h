@@ -164,26 +164,26 @@ public:
 
 /*[*/
 //---------------------------------------------------------------------------
-// tTJSTextStream - used by Array.save/load Dictionaty.save/load
+// iTJSTextStream - used by Array.save/load Dictionaty.save/load
 //---------------------------------------------------------------------------
 class tTJSString;
-class tTJSTextReadStream
+class iTJSTextReadStream
 {
 public:
 	virtual tjs_uint TJS_INTF_METHOD Read(tTJSString & targ, tjs_uint size) = 0;
-	virtual ~tTJSTextReadStream() {;}
+	virtual void TJS_INTF_METHOD Destruct() = 0; // must delete itself
 };
 //---------------------------------------------------------------------------
-class tTJSTextWriteStream
+class iTJSTextWriteStream
 {
 public:
 	virtual void TJS_INTF_METHOD Write(const tTJSString & targ) = 0;
-	virtual ~tTJSTextWriteStream() {;}
+	virtual void TJS_INTF_METHOD Destruct() = 0; // must delete itself
 };
 //---------------------------------------------------------------------------
-extern tTJSTextReadStream * (*TJSCreateTextStreamForRead)(const tTJSString &name,
+extern iTJSTextReadStream * (*TJSCreateTextStreamForRead)(const tTJSString &name,
 	const tTJSString &modestr);
-extern tTJSTextWriteStream * (*TJSCreateTextStreamForWrite)(const tTJSString &name,
+extern iTJSTextWriteStream * (*TJSCreateTextStreamForWrite)(const tTJSString &name,
 	const tTJSString &modestr);
 //---------------------------------------------------------------------------
 
