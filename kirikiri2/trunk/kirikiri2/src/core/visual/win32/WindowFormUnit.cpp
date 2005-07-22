@@ -2907,24 +2907,18 @@ void __fastcall TTVPWindowForm::TabMenuItemClick(TObject *Sender)
 	FormKeyDown(this, key, TShiftState());
 	char keychar = '\t';
 	FormKeyPress(this, keychar);
-	key = VK_TAB;
-	FormKeyUp(this, key, TShiftState());
 }
 //---------------------------------------------------------------------------
 void __fastcall TTVPWindowForm::ShitTabMenuItemClick(TObject *Sender)
 {
 	WORD key = VK_TAB;
 	FormKeyDown(this, key, TShiftState()<<ssShift);
-	key = VK_TAB;
-	FormKeyUp(this, key, TShiftState()<<ssShift);
 }
 //---------------------------------------------------------------------------
 void __fastcall TTVPWindowForm::AltEnterMenuItemClick(TObject *Sender)
 {
 	WORD key = VK_RETURN;
 	FormKeyDown(this, key, TShiftState()<<ssAlt);
-	key = VK_RETURN;
-	FormKeyUp(this, key, TShiftState()<<ssAlt);
 }
 //---------------------------------------------------------------------------
 void __fastcall TTVPWindowForm::FormResize(TObject *Sender)
