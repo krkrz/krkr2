@@ -306,6 +306,8 @@ public:
 	tTVPLayerType GetType() const { return Type; }
 	void SetType(tTVPLayerType type);
 
+	const tjs_char * GetTypeNameString();
+
 	static bool IsTypeUsingAlpha(tTVPLayerType type)
 		{ return type == ltAlpha || type == ltAddAlpha; }
 

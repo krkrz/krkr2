@@ -1280,7 +1280,8 @@ void tTJSNI_BaseLayer::DumpStructure(int level)
 			ttstr(TJS_W(")")) + ttstr(TJS_W(" ")) +
 				ttstr(GetVisible()?TJS_W("visible"):TJS_W("invisible")) +
 				TJS_W(" index=") + ttstr(GetAbsoluteOrderIndex()) +
-				ttstr(TJS_W(" ")) + ttstr(ProvinceImage?TJS_W("p"):TJS_W("")));
+				ttstr(ProvinceImage?TJS_W(" p"):TJS_W("")) +
+				TJS_W(" ") + ttstr(GetTypeNameString()));
 	}
 	catch(...)
 	{
@@ -1459,6 +1460,27 @@ void tTJSNI_BaseLayer::SetType(tTVPLayerType type)
 		}
 		NotifyLayerTypeChange();
 		Update();
+	}
+}
+//---------------------------------------------------------------------------
+const tjs_char * tTJSNI_BaseLayer::GetTypeNameString()
+{
+	switch(Type)
+	{
+	case ltBinder:			return TJS_W("ltBinder");
+	case ltOpaque:			return TJS_W("ltOpaque");
+	case ltAlpha:			return TJS_W("ltAlpha");
+	case ltAdditive:		return TJS_W("ltAdditive");
+	case ltSubtractive:		return TJS_W("ltSubtractive");
+	case ltMultiplicative:	return TJS_W("ltMultiplicative");
+	case ltEffect:			return TJS_W("ltEffect");
+	case ltFilter:			return TJS_W("ltFilter");
+	case ltDodge:			return TJS_W("ltDodge");
+	case ltDarken:			return TJS_W("ltDarken");
+	case ltLighten:			return TJS_W("ltLighten");
+	case ltScreen:			return TJS_W("ltScreen");
+	case ltAddAlpha:		return TJS_W("ltAddAlpha");
+	default:				return TJS_W("unknown");
 	}
 }
 //---------------------------------------------------------------------------
