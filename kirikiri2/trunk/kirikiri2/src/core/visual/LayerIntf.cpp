@@ -4987,7 +4987,7 @@ void tTJSNI_BaseLayer::BltImage(tTVPBaseBitmap *dest, tTVPLayerType destlayertyp
 
 	case ltAdditive:
 		// additive blend
-		hda = IsTypeUsingAlpha(drawtype);
+		hda = IsTypeUsingAlpha(destlayertype);
 			// hda = true if destination has alpha
 			// ( preserving mask )
 		met = bmAdd;
@@ -4995,37 +4995,37 @@ void tTJSNI_BaseLayer::BltImage(tTVPBaseBitmap *dest, tTVPLayerType destlayertyp
 
 	case ltSubtractive:
 		// subtractive blend
-		hda = IsTypeUsingAlpha(drawtype);
+		hda = IsTypeUsingAlpha(destlayertype);
 		met = bmSub;
 		break;
 
 	case ltMultiplicative:
 		// multiplicative blend
-		hda = IsTypeUsingAlpha(drawtype);
+		hda = IsTypeUsingAlpha(destlayertype);
 		met = bmMul;
 		break;
 
 	case ltDodge:
 		// color dodge ( "Ooi yaki" in Japanese )
-		hda = IsTypeUsingAlpha(drawtype);
+		hda = IsTypeUsingAlpha(destlayertype);
 		met = bmDodge;
 		break;
 
 	case ltDarken:
 		// darken blend (select lower luminosity)
-		hda = IsTypeUsingAlpha(drawtype);
+		hda = IsTypeUsingAlpha(destlayertype);
 		met = bmDarken;
 		break;
 
 	case ltLighten:
 		// lighten blend (select higher luminosity)
-		hda = IsTypeUsingAlpha(drawtype);
+		hda = IsTypeUsingAlpha(destlayertype);
 		met = bmLighten;
 		break;
 
 	case ltScreen:
 		// screen multiplicative blend
-		hda = IsTypeUsingAlpha(drawtype);
+		hda = IsTypeUsingAlpha(destlayertype);
 		met = bmScreen;
 		break;
 
