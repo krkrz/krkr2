@@ -331,6 +331,7 @@ TJS_MSG_DECL(TJSNarrowToWideConversionError, TJS_W("Cannot convert given narrow 
 TJS_MSG_DECL(TJSVariantConvertError, TJS_W("Cannot convert the variable type (%1 to %2)"))
 TJS_MSG_DECL(TJSVariantConvertErrorToObject, TJS_W("Cannot convert the variable type (%1 to Object)"))
 TJS_MSG_DECL(TJSIDExpected, TJS_W("Specify an ID"))
+TJS_MSG_DECL(TJSSubstitutionInBooleanContext, TJS_W("Substitution in boolean context (use form of '(A=B)!=0' to compare to zero)"));
 TJS_MSG_DECL(TJSCannotModifyLHS, TJS_W("This expression cannot be used as a lvalue"))
 TJS_MSG_DECL(TJSInsufficientMem, TJS_W("Insufficient memory"))
 TJS_MSG_DECL(TJSCannotGetResult, TJS_W("Cannot get the value of this expression"))
