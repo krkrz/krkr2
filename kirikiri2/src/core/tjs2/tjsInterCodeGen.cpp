@@ -1097,6 +1097,13 @@ tjs_int tTJSInterCodeContext::GenNodeCode(tjs_int & frame, tTJSExprNode *node,
 	  {
 		// simple substitution
 		if(param.SubType) _yyerror(TJSCannotModifyLHS, Block);
+
+		if(restype & TJS_RT_CFLAG)
+		{
+			// '=' operator in boolean context
+			OutputWarning(TJSSubstitutionInBooleanContext, node_pos);
+		}
+
 		resaddr = _GenNodeCode(frame, (*node)[1], TJS_RT_NEEDED, 0, param);
 
 		tSubParam param2;

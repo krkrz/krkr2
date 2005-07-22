@@ -16,6 +16,7 @@ TJS_MSG_DECL(TJSNarrowToWideConversionError, TJS_W("ANSI 文字列を UNICODE 文字列
 TJS_MSG_DECL(TJSVariantConvertError, TJS_W("%1 から %2 へ型を変換できません"))
 TJS_MSG_DECL(TJSVariantConvertErrorToObject, TJS_W("%1 から Object へ型を変換できません。Object 型が要求される文脈で Object 型以外の値が渡されるとこのエラーが発生します"))
 TJS_MSG_DECL(TJSIDExpected, TJS_W("識別子を指定してください"))
+TJS_MSG_DECL(TJSSubstitutionInBooleanContext, TJS_W("論理値が求められている場所で = 演算子が使用されています(== 演算子の間違いですか？代入した上でゼロと値を比較したい場合は、(A=B) != 0 の形式を使うことをお勧めします)"));
 TJS_MSG_DECL(TJSCannotModifyLHS, TJS_W("不正な代入か不正な式の操作です"))
 TJS_MSG_DECL(TJSInsufficientMem, TJS_W("メモリが足りません"))
 TJS_MSG_DECL(TJSCannotGetResult, TJS_W("この式からは値を得ることができません"))
