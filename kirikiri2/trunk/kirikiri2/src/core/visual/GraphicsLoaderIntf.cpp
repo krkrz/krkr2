@@ -1940,6 +1940,27 @@ static void TVPMakeAlphaFromAdaptiveColor(tTVPBaseBitmap *dest)
 	delete [] buffer;
 }
 //---------------------------------------------------------------------------
+static void TVPDoAlphaColorMat(tTVPBaseBitmap *dest, tjs_uint32 color)
+{
+	// Do alpha matting.
+	// 'mat' means underlying color of the image. This function piles
+	// specified color under the image, then blend. The output image
+	// will be totally opaque. This function always assumes the image
+	// has pixel value for alpha blend mode, not additive alpha blend mode.
+	if(!dest->Is32BPP()) return;
+
+	tjs_int w = dest->GetWidth();
+	tjs_int h = dest->GetHeight();
+
+	for(tjs_int y = 0; y < h; y++)
+	{
+		tjs_uint32 * buffer = (tjs_uint32*)dest->GetScanLineForWrite(y);
+		TVPAlphaColorMat(buffer, color, w);
+	}
+}
+//---------------------------------------------------------------------------
+
+
 
 //---------------------------------------------------------------------------
 static iTJSDispatch2 * TVPMetaInfoPairsToDictionary(
@@ -2238,13 +2259,15 @@ static bool TVPInternalLoadGraphic(tTVPBaseBitmap *dest, const ttstr &_name,
 	data.NeedMetaInfo = true;
 	data.MetaInfo = NULL;
 
-	bool keyadapt = keyidx == 0x1ffffff;
+	bool keyadapt = (keyidx == TVP_clAdapt);
+	bool doalphacolormat = TVP_Is_clAlphaMat(keyidx);
+	tjs_uint32 alphamatcolor = TVP_get_clAlphaMat(keyidx);
 
-	if((keyidx & 0xff000000) == 0x03000000)
+	if(TVP_Is_clPalIdx(keyidx))
 	{
 		// pass the palette index number to the handler.
 		// ( since only Graphic Loading Handler can process the palette information )
-		keyidx &= 0xff;
+		keyidx = TVP_get_clPalIdx(keyidx);
 	}
 	else
 	{
@@ -2315,11 +2338,11 @@ static bool TVPInternalLoadGraphic(tTVPBaseBitmap *dest, const ttstr &_name,
 			if(i.IsNull())
 			{
 				// not found
-				return true;
+				handler = NULL;
+				break;
 			}
 
 			handler = & i.GetValue();
-
 			break;
 		}
 		else
@@ -2335,34 +2358,42 @@ static bool TVPInternalLoadGraphic(tTVPBaseBitmap *dest, const ttstr &_name,
 		}
 	}
 
-	if(!handler) return true;
+	if(handler)
+	{
+		// open the mask file
+		holder.Open(name);
 
-	// open the mask file
-	holder.Open(name);
+		// fill "data"'s member
+	    data.Type = lgtMask;
+	    data.Name = name;
+		data.Buffer = NULL;
+		data.DesW = desw;
+		data.DesH = desh;
+		data.NeedMetaInfo = false;
 
-	// fill "data"'s member
-    data.Type = lgtMask;
-    data.Name = name;
-	data.Buffer = NULL;
-	data.DesW = desw;
-	data.DesH = desh;
-	data.NeedMetaInfo = false;
+	    try
+	    {
+			// load image via handler
+			(handler->Handler)(handler->FormatData, (void*)&data,
+				TVPLoadGraphic_SizeCallback, TVPLoadGraphic_ScanLineCallback,
+				NULL,
+				holder.Get(), -1, glmGrayscale);
+	    }
+		catch(...)
+	    {
+			if(data.Buffer) delete [] data.Buffer;
+			throw;
+		}
 
-    try
-    {
-		// load image via handler
-		(handler->Handler)(handler->FormatData, (void*)&data,
-			TVPLoadGraphic_SizeCallback, TVPLoadGraphic_ScanLineCallback,
-			NULL,
-			holder.Get(), -1, glmGrayscale);
-    }
-	catch(...)
-    {
-		if(data.Buffer) delete [] data.Buffer;
-		throw;
+	    if(data.Buffer) delete [] data.Buffer;
 	}
 
-    if(data.Buffer) delete [] data.Buffer;
+	// do color matting
+	if(doalphacolormat)
+	{
+		// alpha color mat
+		TVPDoAlphaColorMat(dest, alphamatcolor);
+	}
 
 	return true;
 }
@@ -2515,7 +2546,7 @@ void TVPTouchImages(const std::vector<ttstr> & storages, tjs_int limit,
 			first = false;
 			statusstr += storages[count];
 
-			TVPLoadGraphic(&tmp, storages[count++], 0x1fffffff,
+			TVPLoadGraphic(&tmp, storages[count++], TVP_clNone,
 				0, 0, glmNormal, NULL); // load image
 
 			// get image size
@@ -2551,7 +2582,7 @@ void TVPTouchImages(const std::vector<ttstr> & storages, tjs_int limit,
 	{
 		tTVPGraphicsSearchData searchdata;
 		searchdata.Name = TVPNormalizeStorageName(storages[count]);
-		searchdata.KeyIdx = 0x1fffffff;
+		searchdata.KeyIdx = TVP_clNone;
 		searchdata.Mode = glmNormal;
 		searchdata.DesW = 0;
 		searchdata.DesH = 0;

@@ -734,6 +734,68 @@ TVP_GL_FUNC_DECL(void, TVPAlphaBlend_ao_c, (tjs_uint32 *dest, const tjs_uint32 *
 }
 
 /*export*/
+TVP_GL_FUNC_DECL(void, TVPAlphaColorMat_c, (tjs_uint32 *dest, const tjs_uint32 color, tjs_int len))
+{
+	tjs_uint32 d1, s, d, sopa;
+  if(len > 0)
+  {
+	int lu_n = (len + (4-1)) / 4;
+	switch(len % 4)
+	{
+	case 0: do { {
+	s = *dest;
+	d = color;
+	sopa = s >> 24;
+	d1 = d & 0xff00ff;
+	d1 = (d1 + (((s & 0xff00ff) - d1) * sopa >> 8)) & 0xff00ff;
+	d &= 0xff00;
+	s &= 0xff00;
+	*dest = d1 + ((d + ((s - d) * sopa >> 8)) & 0xff00) + 0xff000000;
+	dest++;
+}
+;
+	case 3: {
+	s = *dest;
+	d = color;
+	sopa = s >> 24;
+	d1 = d & 0xff00ff;
+	d1 = (d1 + (((s & 0xff00ff) - d1) * sopa >> 8)) & 0xff00ff;
+	d &= 0xff00;
+	s &= 0xff00;
+	*dest = d1 + ((d + ((s - d) * sopa >> 8)) & 0xff00) + 0xff000000;
+	dest++;
+}
+;
+	case 2: {
+	s = *dest;
+	d = color;
+	sopa = s >> 24;
+	d1 = d & 0xff00ff;
+	d1 = (d1 + (((s & 0xff00ff) - d1) * sopa >> 8)) & 0xff00ff;
+	d &= 0xff00;
+	s &= 0xff00;
+	*dest = d1 + ((d + ((s - d) * sopa >> 8)) & 0xff00) + 0xff000000;
+	dest++;
+}
+;
+	case 1: {
+	s = *dest;
+	d = color;
+	sopa = s >> 24;
+	d1 = d & 0xff00ff;
+	d1 = (d1 + (((s & 0xff00ff) - d1) * sopa >> 8)) & 0xff00ff;
+	d &= 0xff00;
+	s &= 0xff00;
+	*dest = d1 + ((d + ((s - d) * sopa >> 8)) & 0xff00) + 0xff000000;
+	dest++;
+}
+;
+	   } while(-- lu_n);
+	}
+  }
+}
+
+/*export*/
 TVP_GL_FUNC_DECL(void, TVPAdditiveAlphaBlend_c, (tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len))
 {
 	{
@@ -11341,6 +11403,7 @@ TVP_GL_FUNC_PTR_DECL(void, TVPAlphaBlend_d,  (tjs_uint32 *dest, const tjs_uint32
 TVP_GL_FUNC_PTR_DECL(void, TVPAlphaBlend_a,  (tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len));
 TVP_GL_FUNC_PTR_DECL(void, TVPAlphaBlend_do,  (tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len, tjs_int opa));
 TVP_GL_FUNC_PTR_DECL(void, TVPAlphaBlend_ao,  (tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len, tjs_int opa));
+TVP_GL_FUNC_PTR_DECL(void, TVPAlphaColorMat,  (tjs_uint32 *dest, const tjs_uint32 color, tjs_int len));
 TVP_GL_FUNC_PTR_DECL(void, TVPAdditiveAlphaBlend,  (tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len));
 TVP_GL_FUNC_PTR_DECL(void, TVPAdditiveAlphaBlend_HDA,  (tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len));
 TVP_GL_FUNC_PTR_DECL(void, TVPAdditiveAlphaBlend_o,  (tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len, tjs_int opa));
@@ -11541,6 +11604,7 @@ TVP_GL_FUNC_DECL(void, TVPInitTVPGL, ())
 	TVPAlphaBlend_a = TVPAlphaBlend_a_c;
 	TVPAlphaBlend_do = TVPAlphaBlend_do_c;
 	TVPAlphaBlend_ao = TVPAlphaBlend_ao_c;
+	TVPAlphaColorMat = TVPAlphaColorMat_c;
 	TVPAdditiveAlphaBlend = TVPAdditiveAlphaBlend_c;
 	TVPAdditiveAlphaBlend_HDA = TVPAdditiveAlphaBlend_HDA_c;
 	TVPAdditiveAlphaBlend_o = TVPAdditiveAlphaBlend_o_c;

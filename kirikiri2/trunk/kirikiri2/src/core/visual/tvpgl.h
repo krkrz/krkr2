@@ -210,6 +210,7 @@ TVP_GL_FUNC_PTR_EXTERN_DECL(void, TVPAlphaBlend_d,  (tjs_uint32 *dest, const tjs
 TVP_GL_FUNC_PTR_EXTERN_DECL(void, TVPAlphaBlend_a,  (tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len));
 TVP_GL_FUNC_PTR_EXTERN_DECL(void, TVPAlphaBlend_do,  (tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len, tjs_int opa));
 TVP_GL_FUNC_PTR_EXTERN_DECL(void, TVPAlphaBlend_ao,  (tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len, tjs_int opa));
+TVP_GL_FUNC_PTR_EXTERN_DECL(void, TVPAlphaColorMat,  (tjs_uint32 *dest, const tjs_uint32 color, tjs_int len));
 TVP_GL_FUNC_PTR_EXTERN_DECL(void, TVPAdditiveAlphaBlend,  (tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len));
 TVP_GL_FUNC_PTR_EXTERN_DECL(void, TVPAdditiveAlphaBlend_HDA,  (tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len));
 TVP_GL_FUNC_PTR_EXTERN_DECL(void, TVPAdditiveAlphaBlend_o,  (tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len, tjs_int opa));

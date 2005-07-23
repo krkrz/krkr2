@@ -764,6 +764,40 @@ print FC <<EOF;
 EOF
 
 ;#-----------------------------------------------------------------
+;# alpha blend matting
+;#-----------------------------------------------------------------
+
+print FC <<EOF;
+/*export*/
+TVP_GL_FUNC_DECL(void, TVPAlphaColorMat_c, (tjs_uint32 *dest, const tjs_uint32 color, tjs_int len))
+{
+	tjs_uint32 d1, s, d, sopa;
+EOF
+
+
+$content = <<EOF;
+{
+	s = *dest;
+	d = color;
+	sopa = s >> 24;
+	d1 = d & 0xff00ff;
+	d1 = (d1 + (((s & 0xff00ff) - d1) * sopa >> 8)) & 0xff00ff;
+	d &= 0xff00;
+	s &= 0xff00;
+	*dest = d1 + ((d + ((s - d) * sopa >> 8)) & 0xff00) + 0xff000000;
+	dest++;
+}
+EOF
+
+&loop_unroll_c($content, 'len', 4);
+
+print FC <<EOF;
+}
+
+EOF
+
+
+;#-----------------------------------------------------------------
 ;# pixel additive alpha blending
 ;#-----------------------------------------------------------------
 

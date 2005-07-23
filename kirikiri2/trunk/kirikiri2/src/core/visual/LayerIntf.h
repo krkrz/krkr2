@@ -105,10 +105,14 @@ enum tTVPHitType {htMask, htProvince};
 //---------------------------------------------------------------------------
 // color key types
 //---------------------------------------------------------------------------
-#define TVP_clAdapt			((tjs_uint32)(0x1ffffff)
-#define TVP_clNone			((tjs_uint32)(0x2ffffff)
-#define TVP_Is_clPalIdx(n)	((tjs_uint32)(((n)&0xff000000) == 0x3000000)
-#define TVP_get_clPalIdx(n) ((tjs_uint32)((n)&0xff)
+#define TVP_clAdapt				((tjs_uint32)(0x01ffffff))
+#define TVP_clNone				((tjs_uint32)(0x1fffffff))
+#define TVP_clPalIdx			((tjs_uint32)(0x03000000))
+#define TVP_clAlphaMat			((tjs_uint32)(0x04000000))
+#define TVP_Is_clPalIdx(n)		((tjs_uint32)(((n)&0xff000000) == TVP_clPalIdx))
+#define TVP_get_clPalIdx(n)		((tjs_uint32)((n)&0xff))
+#define TVP_Is_clAlphaMat(n)	((tjs_uint32)(((n)&0xff000000) == TVP_clAlphaMat))
+#define TVP_get_clAlphaMat(n)	((tjs_uint32)((n)&0xffffff))
 //---------------------------------------------------------------------------
 /*]*/
 
