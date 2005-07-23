@@ -122,6 +122,8 @@ TJS_N("const\
  clInfoBk = 0x80000018,\
  clNone = 0x1fffffff,\
  clAdapt= 0x01ffffff,\
+ clPalIdx = 0x3000000,\
+ clAlphaMat = 0x4000000,\
 /* virtual keycodes */\
  VK_LBUTTON =0x01,\
  VK_RBUTTON =0x02,\
