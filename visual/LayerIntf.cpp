@@ -2116,8 +2116,10 @@ iTJSDispatch2 * tTJSNI_BaseLayer::LoadImages(const ttstr &name, tjs_uint32 color
 	//                            the top line of the image.
 	// 0x 1f ff ff ff (clNone)  : does not apply the colorkey, or uses image alpha
 	//                            channel.
-	// 0x300000nn ( nn = palette index )
-	//                      : select the color key by specified palette index.
+	// 0x30000000 (clPalIdx) + nn ( nn = palette index )
+	//                          : select the color key by specified palette index.
+	// 0x40000000 (TVP_clAlphaMat) + 0xRRGGBB ( 0xRRGGBB = matting color )
+	//                          : do matting with the color using alpha blending.
 	// returns graphic image metainfo.
 
 	if(!MainImage) TVPThrowExceptionMessage(TVPNotDrawableLayerType);
