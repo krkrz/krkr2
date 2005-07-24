@@ -72,18 +72,18 @@ static void TJS_USERENTRY TryBlock1(void * data)
 	TVPExecuteScript(TJS_W("var a = 3, b = 0; var c = a \\ b;"), NULL);
 }
 //---------------------------------------------------------------------------
-static bool TJS_USERENTRY CatchBlock1(const ttstr &type, const ttstr &message, void * data)
+static bool TJS_USERENTRY CatchBlock1(void * data, const tTVPExceptionDesc & desc)
 {
 	// catch ブロックです。
 	// tryblock 内で例外が発生した場合はこの関数が呼び出されます。
-	// type は 例外の型を表し、TJS 由来の例外の場合は "eTJS" 、それ以外の場合は
+	// desc.type は 例外の型を表し、TJS 由来の例外の場合は "eTJS" 、それ以外の場合は
 	// "unknown" になっています。
-	// message は、例外のメッセージです。メッセージが無い場合は空文字列となっています。
+	// desc.message は、例外のメッセージです。メッセージが無い場合は空文字列となっています。
 	// この関数が true を返すと、例外は再送されます。
 	// false を返すと、例外は吸収されます。
 	// data には、TVPDoTryBlock で指定した data 引数の値が渡されます。
 
-	TVPAddLog(TJS_W("exception type:") + type + TJS_W(", message:") + message);
+	TVPAddLog(TJS_W("exception type:") + desc.type + TJS_W(", message:") + desc.message);
 	return *(bool*)data;
 }
 //---------------------------------------------------------------------------
@@ -153,22 +153,19 @@ void TVPDoTryBlock(
 	}
 	catch(const eTJS & e)
 	{
-		if(catchblock(TJS_W("eTJS"), e.GetMessage(), data))
-		{
-			if(finallyblock) finallyblock(data);
-			throw;
-		}
 		if(finallyblock) finallyblock(data);
+		tTVPExceptionDesc desc;
+		desc.type = TJS_W("eTJS");
+		desc.message = e.GetMessage();
+		if(catchblock(data, desc)) throw;
 		return;
 	}
 	catch(...)
 	{
-		if(catchblock(TJS_W("eTJS"), ttstr(), data))
-		{
-			if(finallyblock) finallyblock(data);
-			throw;
-		}
 		if(finallyblock) finallyblock(data);
+		tTVPExceptionDesc desc;
+		desc.type = TJS_W("unknown");
+		if(catchblock(data, desc)) throw;
 		return;
 	}
 	if(finallyblock) finallyblock(data);

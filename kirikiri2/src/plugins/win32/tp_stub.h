@@ -1178,206 +1178,6 @@ public:
 
 
 //---------------------------------------------------------------------------
-// iTVPStorageMedia
-//---------------------------------------------------------------------------
-/*
-	abstract class for managing media ( like file: http: etc.)
-*/
-
-
-	// for plug-in
-class tTJSBinaryStream;
-
-
-//---------------------------------------------------------------------------
-class iTVPStorageLister // callback class for GetListAt
-{
-public:
-	virtual void Add(const ttstr &file) = 0;
-};
-//---------------------------------------------------------------------------
-class iTVPStorageMedia
-{
-public:
-	virtual void AddRef() = 0;
-	virtual void Release() = 0;
-
-	virtual ttstr GetName() = 0;
-		// returns media name like "file", "http" etc.
-
-//	virtual ttstr IsCaseSensitive() = 0;
-		// returns whether this media is case sensitive or not
-
-	virtual void NormalizeDomainName(ttstr &name) = 0;
-		// normalize domain name according with the media's rule
-
-	virtual void NormalizePathName(ttstr &name) = 0;
-		// normalize path name according with the media's rule
-
-	// "name" below is normalized but does not contain media, eg.
-	// not "media://domain/path" but "domain/path"
-
-	virtual bool CheckExistentStorage(const ttstr &name) = 0;
-		// check file existence
-
-	virtual tTJSBinaryStream * Open(const ttstr & name, tjs_uint32 flags) = 0;
-		// open a storage and return a tTJSBinaryStream instance.
-		// name does not contain in-archive storage name but
-		// is normalized.
-
-	virtual void GetListAt(const ttstr &name, iTVPStorageLister * lister) = 0;
-		// list files at given place
-
-	virtual ttstr GetLocallyAccessibleName(const ttstr &name) = 0;
-		// basically the same as above,
-		// check wether given name is easily accessible from local OS filesystem.
-		// if true, returns local OS native name. otherwise returns an empty string.
-};
-//---------------------------------------------------------------------------
-
-
-//---------------------------------------------------------------------------
-// Extraction filter related
-//---------------------------------------------------------------------------
-#pragma pack(push, 4)
-struct tTVPXP3ExtractionFilterInfo
-{
-	const tjs_uint SizeOfSelf; // structure size of tTVPXP3ExtractionFilterInfo itself
-	const tjs_uint64 Offset; // offset of the buffer data in uncompressed stream position
-	void * Buffer; // target data buffer
-	const tjs_uint BufferSize; // buffer size in bytes pointed by "Buffer"
-	const tjs_uint32 FileHash; // hash value of the file (since inteface v2)
-
-	tTVPXP3ExtractionFilterInfo(tjs_uint64 offset, void *buffer,
-		tjs_uint buffersize, tjs_uint32 filehash) :
-			Offset(offset), Buffer(buffer), BufferSize(buffersize),
-			FileHash(filehash),
-			SizeOfSelf(sizeof(tTVPXP3ExtractionFilterInfo)) {;}
-};
-#pragma pack(pop)
-
-#ifndef TVP_tTVPXP3ArchiveExtractionFilter_CONVENTION
-	#ifdef _WIN32
-		#define	TVP_tTVPXP3ArchiveExtractionFilter_CONVENTION _stdcall
-	#else
-		#define TVP_tTVPXP3ArchiveExtractionFilter_CONVENTION
-	#endif
-#endif
-	// TVP_tTVPXP3ArchiveExtractionFilter_CONV is _stdcall on win32 platforms,
-	// for backward application compatibility.
-
-typedef void (TVP_tTVPXP3ArchiveExtractionFilter_CONVENTION *
-	tTVPXP3ArchiveExtractionFilter)(tTVPXP3ExtractionFilterInfo *info);
-
-
-
-
-//---------------------------------------------------------------------------
-// Script Event Related
-//---------------------------------------------------------------------------
-#define TVP_EPT_POST			0x00  // normal post, simply add to queue
-#define TVP_EPT_REMOVE_POST		0x01
-		// remove event in pending queue that has same target, source, tag and
-		// name before post
-		// (for input events, only the source and the tag are to be checked)
-#define TVP_EPT_IMMEDIATE		0x02
-		// the event will be delivered immediately
-
-#define TVP_EPT_DISCARDABLE		0x10
-		// the event can be discarded when event system is disabled
-
-#define TVP_EPT_EXCLUSIVE		0x20
-		// (with TVP_EPT_POST only)
-		// the event is given priority and other posted events are not processed
-		// until the exclusive event is processed.
-
-#define TVP_EPT_METHOD_MASK		0x0f
-
-
-class tTVPContinuousEventCallbackIntf // callback class for continuous event delivering
-{
-public:
-	virtual void TJS_INTF_METHOD OnContinuousCallback(tjs_uint64 tick) = 0;
-};
-
-
-//---------------------------------------------------------------------------
-// System "Compact" Event related
-//---------------------------------------------------------------------------
-#define TVP_COMPACT_LEVEL_IDLE        5  // the application is in idle state
-#define TVP_COMPACT_LEVEL_DEACTIVATE 10  // the application had been deactivated
-#define TVP_COMPACT_LEVEL_MINIMIZE   15  // the application had been minimized
-#define TVP_COMPACT_LEVEL_MAX       100  // strongest level, should clear all caches
-//---------------------------------------------------------------------------
-class tTVPCompactEventCallbackIntf // callback class for compact event delivering
-{
-public:
-	virtual void TJS_INTF_METHOD OnCompact(tjs_int level) = 0;
-};
-
-
-//---------------------------------------------------------------------------
-// AsyncTrigger related
-//---------------------------------------------------------------------------
-enum tTVPAsyncTriggerMode
-{
-	atmNormal, atmExclusive, atmAtIdle
-};
-
-
-//---------------------------------------------------------------------------
-// iTVPFunctionExporter, exporting main module's functions
-//---------------------------------------------------------------------------
-struct iTVPFunctionExporter
-{
-	virtual bool TJS_INTF_METHOD QueryFunctions(const tjs_char **name, void **function,
-		tjs_uint count) = 0;
-	virtual bool TJS_INTF_METHOD QueryFunctionsByNarrowString(const char **name,
-		void **function, tjs_uint count) = 0;
-};
-//---------------------------------------------------------------------------
-
-
-
-
-
-//---------------------------------------------------------------------------
-// this stub includes exported function from Independent implementation of
-// MD5 (RFC 1321) by Aladdin Enterprises.
-//---------------------------------------------------------------------------
-// TVP_md5_init, TVP_md5_append, TVP_md5_finish are exported
-typedef tjs_uint8 TVP_md5_state_t[4*2+4*4+64]; // md5_state_t
-//---------------------------------------------------------------------------
-
-
-
-
-//---------------------------------------------------------------------------
-// data types for TVPDoTryBlock
-//---------------------------------------------------------------------------
-	// TVPDoTryBlock executes specified 'tryblock' in try block.
-	// If any exception occured,
-	// 'catchblock' is to be executed. 'data' is applicatoin defined data
-	// block passed to 'tryblock' and 'catchblock' and 'finallyblock'.
-	// 'catchblock's first argument is the exception type, currently
-	// 'eTJS' or 'unknown'. The second argument is exception message
-	// (if exists. otherwise empty).
-	// if the 'catchblock' returns true, the exception is to be rethrown.
-	// if false then the exception is to be vanished.
-	// 'finallyblock' can be null, is to be executed whatever the exception
-	// is generated or not.
-
-typedef void (TJS_USERENTRY *tTVPTryBlockFunction)(void * data);
-typedef bool (TJS_USERENTRY *tTVPCatchBlockFunction)(const ttstr & type, const ttstr & message, void * data);
-typedef void (TJS_USERENTRY *tTVPFinallyBlockFunction)(void *data);
-//---------------------------------------------------------------------------
-
-
-
-
-
-
-//---------------------------------------------------------------------------
 // iTJSTextStream - used by Array.save/load Dictionaty.save/load
 //---------------------------------------------------------------------------
 class tTJSString;
@@ -1724,781 +1524,6 @@ public:
 //---------------------------------------------------------------------------
 
 
-//---------------------------------------------------------------------------
-// KAG Parser debug level
-//---------------------------------------------------------------------------
-enum tTVPKAGDebugLevel
-{
-	tkdlNone, // none is reported
-	tkdlSimple, // simple report
-	tkdlVerbose // complete report ( verbose )
-};
-
-
-//---------------------------------------------------------------------------
-// tTVPClipboardFormat
-//---------------------------------------------------------------------------
-enum tTVPClipboardFormat
-{
-	cbfText = 1
-};
-
-
-//---------------------------------------------------------------------------
-// Sound Global Focus Mode
-//---------------------------------------------------------------------------
-enum tTVPSoundGlobalFocusMode
-{
-	/*0*/ sgfmNeverMute,			// never mutes
-	/*1*/ sgfmMuteOnMinimize,		// will mute on the application minimize
-	/*2*/ sgfmMuteOnDeactivate		// will mute on the application deactivation
-};
-//---------------------------------------------------------------------------
-
-
-
-
-
-//---------------------------------------------------------------------------
-// IDirectSound former declaration
-//---------------------------------------------------------------------------
-#ifndef __DSOUND_INCLUDED__
-struct IDirectSound;
-#endif
-
-
-
-
-
-//---------------------------------------------------------------------------
-// font ralated constants
-//---------------------------------------------------------------------------
-#define TVP_TF_ITALIC    0x01
-#define TVP_TF_BOLD      0x02
-#define TVP_TF_UNDERLINE 0x04
-#define TVP_TF_STRIKEOUT 0x08
-
-
-//---------------------------------------------------------------------------
-#define TVP_FSF_FIXEDPITCH   1      // fsfFixedPitch
-#define TVP_FSF_SAMECHARSET  2      // fsfSameCharSet
-#define TVP_FSF_NOVERTICAL   4      // fsfNoVertical
-#define TVP_FSF_TRUETYPEONLY 8      // fsfTrueTypeOnly
-#define TVP_FSF_USEFONTFACE  0x100  // fsfUseFontFace
-
-
-
-//---------------------------------------------------------------------------
-// mouse button
-//---------------------------------------------------------------------------
-enum tTVPMouseButton
-{
-	mbLeft,
-	mbRight,
-	mbMiddle
-};
-
-
-
-//---------------------------------------------------------------------------
-// IME modes : comes from VCL's TImeMode
-//---------------------------------------------------------------------------
-enum tTVPImeMode
-{
-	imDisable,
-	imClose,
-	imOpen,
-	imDontCare,
-	imSAlpha,
-	imAlpha,
-	imHira,
-	imSKata,
-	imKata,
-	imChinese,
-	imSHanguel,
-	imHanguel
-};
-
-
-//---------------------------------------------------------------------------
-// shift state
-//---------------------------------------------------------------------------
-#define TVP_SS_SHIFT   0x01
-#define TVP_SS_ALT     0x02
-#define TVP_SS_CTRL    0x04
-#define TVP_SS_LEFT    0x08
-#define TVP_SS_RIGHT   0x10
-#define TVP_SS_MIDDLE  0x20
-#define TVP_SS_DOUBLE  0x40
-#define TVP_SS_REPEAT  0x80
-
-
-inline bool TVPIsAnyMouseButtonPressedInShiftStateFlags(tjs_uint32 state)
-{ return (state & 
-	(TVP_SS_LEFT | TVP_SS_RIGHT | TVP_SS_MIDDLE | TVP_SS_DOUBLE)) != 0; }
-
-
-
-//---------------------------------------------------------------------------
-// JoyPad virtual key codes
-//---------------------------------------------------------------------------
-// These VKs are KIRIKIRI specific. Not widely used.
-#define VK_PAD_FIRST	0xB0   // first PAD related key code
-#define VK_PADLEFT		0xB5
-#define VK_PADUP		0xB6
-#define VK_PADRIGHT		0xB7
-#define VK_PADDOWN		0xB8
-#define VK_PAD1			0xC0
-#define VK_PAD2			0xC1
-#define VK_PAD3			0xC2
-#define VK_PAD4			0xC3
-#define VK_PAD5			0xC4
-#define VK_PAD6			0xC5
-#define VK_PAD7			0xC6
-#define VK_PAD8			0xC7
-#define VK_PAD9			0xC8
-#define VK_PAD10		0xC9
-#define VK_PADANY		0xDF   // returns whether any one of pad buttons are pressed,
-							   // in System.getKeyState
-#define VK_PAD_LAST		0xDF   // last PAD related key code
-//---------------------------------------------------------------------------
-
-
-//---------------------------------------------------------------------------
-// tTVPBBBltMethod and tTVPBBStretchType
-//---------------------------------------------------------------------------
-enum tTVPBBBltMethod
-{
-	bmCopy,
-	bmCopyOnAlpha,
-	bmAlpha,
-	bmAlphaOnAlpha,
-	bmAdd,
-	bmSub,
-	bmMul,
-	bmDodge,
-	bmDarken,
-	bmLighten,
-	bmScreen,
-	bmAddAlpha,
-	bmAddAlphaOnAddAlpha,
-	bmAddAlphaOnAlpha,
-	bmAlphaOnAddAlpha,
-	bmCopyOnAddAlpha
-};
-
-enum tTVPBBStretchType
-{
-	stNearest = 0, // primal method; nearest neighbor method
-	stFastLinear = 1, // fast linear interpolation (does not have so much precision)
-	stLinear = 2,  // (strict) linear interpolation
-	stCubic = 3,    // cubic interpolation
-
-	stTypeMask = 0xf, // stretch type mask
-	stFlagMask = 0xf0, // flag mask
-
-	stRefNoClip = 0x10 // referencing source is not limited by the given rectangle
-						// (may allow to see the border pixel to interpolate)
-};
-
-
-//---------------------------------------------------------------------------
-// layer / blending types
-//---------------------------------------------------------------------------
-enum tTVPLayerType
-{
-	ltBinder = 0,
-	ltCoverRect = 1,
-	ltOpaque = 1, // the same as ltCoverRect
-	ltTransparent = 2, // alpha blend
-	ltAlpha = 2, // the same as ltTransparent
-	ltAdditive = 3,
-	ltSubtractive = 4,
-	ltMultiplicative = 5,
-	ltEffect = 6,
-	ltFilter = 7,
-	ltDodge = 8,
-	ltDarken = 9,
-	ltLighten = 10,
-	ltScreen = 11,
-	ltAddAlpha = 12 // additive alpha blend
-};
-//---------------------------------------------------------------------------
-
-
-//---------------------------------------------------------------------------
-// drawn face types
-//---------------------------------------------------------------------------
-enum tTVPDrawFace
-{
-	dfBoth  = 0,
-	dfAlpha = 0,
-	dfAddAlpha = 4,
-	dfMain = 1,
-	dfOpaque = 1,
-	dfMask = 2,
-	dfProvince = 3,
-	dfAuto = 128 // face is chosen automatically from the layer type
-};
-//---------------------------------------------------------------------------
-
-
-//---------------------------------------------------------------------------
-// alias to blending types
-//---------------------------------------------------------------------------
-enum tTVPBlendOperationMode
-{
-	omAdditive = ltAdditive,
-	omSubtractive = ltSubtractive,
-	omMultiplicative = ltMultiplicative,
-	omDodge = ltDodge,
-	omDarken = ltDarken,
-	omLighten = ltLighten,
-	omScreen = ltScreen,
-	omAlpha = ltTransparent,
-	omAddAlpha = ltAddAlpha,
-	omOpaque = ltCoverRect,
-
-	omAuto = 128   // operation mode is guessed from the source layer type
-};
-//---------------------------------------------------------------------------
-
-
-//---------------------------------------------------------------------------
-// layer hit test type
-//---------------------------------------------------------------------------
-enum tTVPHitType {htMask, htProvince};
-//---------------------------------------------------------------------------
-
-
-//---------------------------------------------------------------------------
-// color key types
-//---------------------------------------------------------------------------
-#define TVP_clAdapt			((tjs_uint32)(0x1ffffff)
-#define TVP_clNone			((tjs_uint32)(0x2ffffff)
-#define TVP_Is_clPalIdx(n)	((tjs_uint32)(((n)&0xff000000) == 0x3000000)
-#define TVP_get_clPalIdx(n) ((tjs_uint32)((n)&0xff)
-//---------------------------------------------------------------------------
-
-
-//---------------------------------------------------------------------------
-// Window related constants
-//---------------------------------------------------------------------------
-enum tTVPUpdateType
-{
-	utNormal, // only needed region
-	utEntire // entire of window
-};
-//---------------------------------------------------------------------------
-enum tTVPBorderStyle
-{
-	bsNone=0,  bsSingle=1,  bsSizeable=2,  bsDialog=3,  bsToolWindow=4,
-	bsSizeToolWin =5
-};
-//---------------------------------------------------------------------------
-enum tTVPMouseCursorState
-{
-	mcsVisible, // the mouse cursor is visible
-	mcsTempHidden, // the mouse cursor is temporarily hidden
-	mcsHidden // the mouse cursor is invisible
-};
-//---------------------------------------------------------------------------
-
-
-//---------------------------------------------------------------------------
-// window message receivers
-//---------------------------------------------------------------------------
-enum tTVPWMRRegMode { wrmRegister=0, wrmUnregister=1 };
-#pragma pack(push, 4)
-struct tTVPWindowMessage
-{
-	unsigned int Msg; // window message
-	int WParam;  // WPARAM
-	int LParam;  // LPARAM
-	int Result;  // result
-};
-#pragma pack(pop)
-typedef bool (__stdcall * tTVPWindowMessageReceiver)
-	(void *userdata, tTVPWindowMessage *Message);
-
-#define TVP_WM_DETACH (WM_USER+106)  // before re-generating the window
-#define TVP_WM_ATTACH (WM_USER+107)  // after re-generating the window
-
-
-
-
-//---------------------------------------------------------------------------
-// tTVPVideoOverlayMode
-//---------------------------------------------------------------------------
-enum tTVPVideoOverlayMode {
-	vomOverlay,		// Overlay
-	vomLayer,		// Draw Layer
-};
-
-
-
-
-
-
-//---------------------------------------------------------------------------
-// tTVPPeriodEventType : event type in onPeriod event
-//---------------------------------------------------------------------------
-enum tTVPPeriodEventReason
-{
-	perLoop, // the event is by loop rewind
-	perPeriod, // the event is by period point specified by the user
-	perPrepare, // the event is by prepare() method
-	perSegLoop, // the event is by segment loop rewind
-};
-
-
-
-
-
-//---------------------------------------------------------------------------
-// scroll transition handler
-//---------------------------------------------------------------------------
-enum tTVPScrollTransFrom
-{
-	sttLeft, sttTop, sttRight, sttBottom
-};
-enum tTVPScrollTransStay
-{
-	ststNoStay, ststStayDest, ststStaySrc
-};
-
-
-//---------------------------------------------------------------------------
-// tTVPTransType
-//---------------------------------------------------------------------------
-// transition type
-#ifdef __BORLANDC__
-	#pragma option push -b
-#endif
-enum tTVPTransType
-{
-	ttSimple, // transition using only one(self) layer ( eg. simple fading )
-	ttExchange // transition using two layer ( eg. cross fading )
-};
-#ifdef __BORLANDC__
-	#pragma option pop
-#endif
-//---------------------------------------------------------------------------
-
-
-
-//---------------------------------------------------------------------------
-// tTVPTransUpdateType
-//---------------------------------------------------------------------------
-// transition update type
-#ifdef __BORLANDC__
-	#pragma option push -b
-#endif
-enum tTVPTransUpdateType
-{
-	tutDivisibleFade,
-	tutDivisible,
-	tutGiveUpdate
-};
-#ifdef __BORLANDC__
-	#pragma option pop
-#endif
-/*
-	there are two types of transition update method;
-	tutDivisibleFade, tutDivisible and tutGiveUpdate.
-
-	tutDivisibleFade
-		used when the transition processing is region-divisible and
-		the transition updates entire area of the layer.
-		update area is always given by iTVPTransHandler::Process caller.
-		handler must use only given area of the source bitmap on each
-		callbacking.
-
-	tutDivisible
-		same as tutDivisibleFade, except for its usage of source area.
-		handler can use any area of the source bitmap.
-		this will somewhat slower than tutDivisibleFade.
-
-	tutGiveUpdate
-		used when the transition processing is not region-divisible or
-		the transition updates only some small regions rather than entire
-		area.
-		update area is given by callee of iTVPTransHandler::Process, 
-		via iTVPLayerUpdater interface.
-*/
-//---------------------------------------------------------------------------
-
-
-
-//---------------------------------------------------------------------------
-// iTVPScanLineProvider
-//---------------------------------------------------------------------------
-// provides layer scanline
-class iTVPScanLineProvider
-{
-public:
-	virtual tjs_error TJS_INTF_METHOD AddRef() = 0;
-	virtual tjs_error TJS_INTF_METHOD Release() = 0;
-		// call "Release" when done with this object
-
-	virtual tjs_error TJS_INTF_METHOD GetWidth(/*out*/tjs_int *width) = 0;
-		// return image width
-	virtual tjs_error TJS_INTF_METHOD GetHeight(/*out*/tjs_int *height) = 0;
-		// return image height
-	virtual tjs_error TJS_INTF_METHOD GetPixelFormat(/*out*/tjs_int *bpp) = 0;
-		// return image bit depth
-	virtual tjs_error TJS_INTF_METHOD GetPitchBytes(/*out*/tjs_int *pitch) = 0;
-		// return image bitmap data width in bytes ( offset to next down line )
-	virtual tjs_error TJS_INTF_METHOD GetScanLine(/*in*/tjs_int line,
-			/*out*/const void ** scanline) = 0;
-		// return image pixel scan line pointer
-	virtual tjs_error TJS_INTF_METHOD GetScanLineForWrite(/*in*/tjs_int line,
-			/*out*/void ** scanline) = 0;
-		// return image pixel scan line pointer for writing
-};
-//---------------------------------------------------------------------------
-
-
-
-//---------------------------------------------------------------------------
-// iTVPSimpleOptionProvider
-//---------------------------------------------------------------------------
-// provides option set
-class iTVPSimpleOptionProvider
-{
-public:
-	virtual tjs_error TJS_INTF_METHOD AddRef() = 0;
-	virtual tjs_error TJS_INTF_METHOD Release() = 0;
-		// call this when done with this object
-
-	virtual tjs_error TJS_INTF_METHOD GetAsNumber(
-			/*in*/const tjs_char *name, /*out*/tjs_int64 *value) = 0;
-		// retrieve option as a number.
-	virtual tjs_error TJS_INTF_METHOD GetAsString(
-			/*in*/const tjs_char *name, /*out*/const tjs_char **out) = 0;
-		// retrieve option as a string.
-		// note that you must use the returned string as an one time string
-		// pointer; you cannot hold its pointer and/or use it later.
-
-	virtual tjs_error TJS_INTF_METHOD GetValue(
-			/*in*/const tjs_char *name, /*out*/tTJSVariant *dest) = 0;
-		// retrieve option as a tTJSVariant.
-
-	virtual tjs_error TJS_INTF_METHOD Reserved2() = 0;
-
-	virtual tjs_error TJS_INTF_METHOD GetDispatchObject(iTJSDispatch2 **dsp)
-		 = 0;
-		// retrieve internal dispatch object ( if exists )
-};
-//---------------------------------------------------------------------------
-
-
-//---------------------------------------------------------------------------
-// iTVPSimpleImageProvider
-//---------------------------------------------------------------------------
-// image loader
-class iTVPSimpleImageProvider
-{
-public:
-	virtual tjs_error TJS_INTF_METHOD LoadImage(
-			/*in*/const tjs_char *name, /*in*/tjs_int bpp,
-			/*in*/tjs_uint32 key, 
-			/*in*/tjs_uint w,
-			/*in*/tjs_uint h,
-			/*out*/iTVPScanLineProvider ** scpro) = 0;
-		// load an image.
-		// returned image be an 8bpp bitmap when bpp == 8, otherwise
-		// 32bpp.
-		// key is a color key. pass 0x02ffffff for not to apply color key.
-		// you must release "scpro" when you done with it.
-		// w and h are desired size of the image. if the actual size is smaller
-		// than these, the image is to be tiled. give 0, 0 to obtain original
-		// sized image.
-};
-//---------------------------------------------------------------------------
-
-
-
-
-//---------------------------------------------------------------------------
-// iTVPLayerUpdater
-//---------------------------------------------------------------------------
-// layer update region notification interface
-class iTVPLayerUpdater
-{
-public:
-	virtual tjs_error TJS_INTF_METHOD UpdateRect(tjs_int left,
-		tjs_int top, tjs_int right, tjs_int bottom);
-		// notify that the layer image had been changed.
-};
-//---------------------------------------------------------------------------
-
-
-
-//---------------------------------------------------------------------------
-// tTVPDivisibleData
-//---------------------------------------------------------------------------
-// structure used by iTVPDivisibleTransHandler::Process
-#ifdef _WIN32
-#pragma pack(push, 4)
-#endif
-
-struct tTVPDivisibleData
-{
-	/*const*/tjs_int Left; // processing rectangle left
-	/*const*/tjs_int Top; // processing rectangle top
-	/*const*/tjs_int Width; // processing rectangle width
-	/*const*/tjs_int Height; // processing rectangle height
-	iTVPScanLineProvider *Dest; // destination image
-	tjs_int DestLeft; // destination image rectangle's left
-	tjs_int DestTop; // destination image rectangle's top
-	/*const*/iTVPScanLineProvider *Src1; // source 1 (self layer image)
-	/*const*/tjs_int Src1Left; // source 1 image rectangle's left
-	/*const*/tjs_int Src1Top; // source 1 image rectangle's top
-	/*const*/iTVPScanLineProvider *Src2; // source 2 (other layer image)
-	/*const*/tjs_int Src2Left; // source 2 image rectangle's left
-	/*const*/tjs_int Src2Top; // source 2 image rectangle's top
-};
-/* note that "Src2" will be null when transition type is ttSimple. */
-/* Src1Left, Src1Top, Src2Left, Src2Top are not used when the transition is
-	tutDivisible. */
-
-#ifdef _WIN32
-#pragma pack(pop)
-#endif
-
-
-
-//---------------------------------------------------------------------------
-// iTVPBaseTransHandler
-//---------------------------------------------------------------------------
-class iTVPBaseTransHandler
-{
-public:
-	virtual tjs_error TJS_INTF_METHOD AddRef() = 0;
-	virtual tjs_error TJS_INTF_METHOD Release() = 0;
-
-	virtual tjs_error TJS_INTF_METHOD SetOption(
-			/*in*/iTVPSimpleOptionProvider *options // option provider
-		) = 0;
-		// Set option for current processing transition
-};
-//---------------------------------------------------------------------------
-
-
-
-//---------------------------------------------------------------------------
-// iTVPDivisibleTransHandler
-//---------------------------------------------------------------------------
-class iTVPDivisibleTransHandler : public iTVPBaseTransHandler
-{
-public:
-	virtual tjs_error TJS_INTF_METHOD StartProcess(
-			/*in*/tjs_uint64 tick) = 0;
-		// called before one processing time unit.
-		// expected return values are:
-		// TJS_S_TRUE: continue processing
-		// TJS_S_FALSE: break processing
-
-	virtual tjs_error TJS_INTF_METHOD EndProcess() = 0;
-		// called after one processing time unit.
-		// expected return values are:
-		// TJS_S_TRUE: continue processing
-		// TJS_S_FALSE: break processing
-
-	virtual tjs_error TJS_INTF_METHOD Process(
-			/*in,out*/tTVPDivisibleData *data) = 0;
-		// called during StartProcess and EndProcess per an update rectangle.
-		// the handler processes given rectangle and put result image to
-		// "Dest"( in tTVPDivisibleData ).
-		// given "Dest" is a internal image buffer, but callee can change
-		// the "Dest" pointer to Src1 or Src2. Also DestLeft and DestTop can
-		// be changed to point destination image part.
-
-	virtual tjs_error TJS_INTF_METHOD MakeFinalImage(
-			/*in,out*/iTVPScanLineProvider ** dest, // destination
-			/*in*/iTVPScanLineProvider * src1, // source 1
-			/*in*/iTVPScanLineProvider * src2 // source 2
-			) = 0;
-		// will be called after StartProcess/EndProcess returns TJS_S_FALSE.
-		// this function does not called in some occasions.
-		// fill "dest" to make a final image.
-		// dest can be set to either src1 or src2.
-};
-//---------------------------------------------------------------------------
-
-
-
-//---------------------------------------------------------------------------
-// iTVPGiveUpdateTransHandler
-//---------------------------------------------------------------------------
-class iTVPGiveUpdateTransHandler : public iTVPBaseTransHandler
-{
-public:
-	virtual tjs_error TJS_INTF_METHOD Process(
-			/*in*/tjs_uint64 tick, // tick count provided by the system in ms
-			/*in*/iTVPLayerUpdater * updater, // layer updater object
-			/*in*/iTVPScanLineProvider * dest, // destination
-			/*in*/iTVPScanLineProvider * src1, // source 1
-			/*in*/iTVPScanLineProvider * src2 // source 2
-		) = 0;
-	// process the transition.
-	// callee must call updater->UpdateLayerRect when changing the layer image.
-	// updater->UpdateLayerRect can be called more than once.
-};
-//---------------------------------------------------------------------------
-
-
-
-//---------------------------------------------------------------------------
-// iTVPTransHandlerProvider
-//---------------------------------------------------------------------------
-// transition handler provider abstract class
-class iTVPTransHandlerProvider
-{
-public:
-	virtual tjs_error TJS_INTF_METHOD AddRef() = 0;
-	virtual tjs_error TJS_INTF_METHOD Release() = 0;
-
-	virtual tjs_error TJS_INTF_METHOD GetName(
-			/*out*/const tjs_char ** name) = 0;
-		// return this transition name
-
-	virtual tjs_error TJS_INTF_METHOD StartTransition(
-			/*in*/iTVPSimpleOptionProvider *options, // option provider
-			/*in*/iTVPSimpleImageProvider *imagepro, // image provider
-			/*in*/tTVPLayerType layertype, // destination layer type
-			/*in*/tjs_uint src1w, tjs_uint src1h, // source 1 size
-			/*in*/tjs_uint src2w, tjs_uint src2h, // source 2 size
-			/*out*/tTVPTransType *type, // transition type
-			/*out*/tTVPTransUpdateType * updatetype, // update typwe
-			/*out*/iTVPBaseTransHandler ** handler // transition handler
-			) = 0;
-		// start transition and return a handler.
-		// "handler" is an object of iTVPDivisibleTransHandler when
-		// updatetype is tutDivisibleFade or tutDivisible.
-		// Otherwise is an object of iTVPGiveUpdateTransHandler ( cast to
-		// each class to use it )
-		// layertype is the destination layer type.
-};
-//---------------------------------------------------------------------------
-
-
-#ifdef __cplusplus
- extern "C" {
-#endif
-
-
-#pragma pack(push, 4)
-typedef struct
-{
-	/* structure used for adjustment of gamma levels */
-
-	float RGamma; /* R gamma   ( 0.10 -- 1.00 -- 9.99) */
-	tjs_int RFloor;   /* output floor value  ( 0 -- 255 ) */
-	tjs_int RCeil;    /* output ceil value ( 0 -- 255 ) */
-	float GGamma; /* G */
-	tjs_int GFloor;
-	tjs_int GCeil;
-	float BGamma; /* B */
-	tjs_int BFloor;
-	tjs_int BCeil;
-} tTVPGLGammaAdjustData;
-#pragma pack(pop)
-
-
-#pragma pack(push, 4)
-typedef struct
-{
-	tjs_uint8 B[256];
-	tjs_uint8 G[256];
-	tjs_uint8 R[256];
-} tTVPGLGammaAdjustTempData;
-#pragma pack(pop)
-
-
-#ifdef __cplusplus
- }
-#endif
-
-
-#define TVP_RGB2COLOR(r,g,b) ((((r)<<16) + ((g)<<8) + (b)) | 0xff000000)
-#define TVP_RGBA2COLOR(r,g,b,a) \
-	(((a)<<24) +  (((r)<<16) + ((g)<<8) + (b)))
-
-
-//---------------------------------------------------------------------------
-// CPU Types
-//---------------------------------------------------------------------------
-
-
-#define TVP_CPU_HAS_FPU 0x000010000
-#define TVP_CPU_HAS_MMX 0x000020000
-#define TVP_CPU_HAS_3DN 0x000040000
-#define TVP_CPU_HAS_SSE 0x000080000
-#define TVP_CPU_HAS_CMOV 0x000100000
-#define TVP_CPU_HAS_E3DN 0x000200000
-#define TVP_CPU_HAS_EMMX 0x000400000
-#define TVP_CPU_HAS_SSE2 0x000800000
-#define TVP_CPU_HAS_TSC 0x001000000
-#define TVP_CPU_FEATURE_MASK 0x0ffff0000
-#define TVP_CPU_IS_INTEL 0x000000010
-#define TVP_CPU_IS_AMD 0x000000020
-#define TVP_CPU_IS_IDT 0x000000030
-#define TVP_CPU_IS_CYRIX 0x000000040
-#define TVP_CPU_IS_NEXGEN 0x000000050
-#define TVP_CPU_IS_RISE 0x000000060
-#define TVP_CPU_IS_UMC 0x000000070
-#define TVP_CPU_IS_TRANSMETA 0x000000080
-#define TVP_CPU_IS_UNKNOWN 0x000000000
-#define TVP_CPU_VENDOR_MASK 0x000000ff0
-#define TVP_CPU_FAMILY_MASK 0x00000000f
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 #ifdef __BORLANDC__
 #pragma warn -8027
 #endif
@@ -2758,6 +1783,12 @@ extern void * TVPImportFuncPtr923f8161f2d2ba0e883bc4edc2901960;
 extern void * TVPImportFuncPtr6f70cdb7586cbe571204f286f43c9780;
 extern void * TVPImportFuncPtr9a4eaa6a627038799015c093609bdde7;
 extern void * TVPImportFuncPtrc8bb6590f4a7adc906d7b3e42d907267;
+extern void * TVPImportFuncPtr8323d57f26876d87271dbfa257b7f7e2;
+extern void * TVPImportFuncPtr4add3926c72ba9df9259be58b680de0d;
+extern void * TVPImportFuncPtr075d42cff8dc0c1fbd99c7459a63e526;
+extern void * TVPImportFuncPtrb6bc45b28e194c7ac98bfdea88edee36;
+extern void * TVPImportFuncPtr6dff6abb075da1a304520e60c011ef7b;
+extern void * TVPImportFuncPtr892ffbdb8375851fc557e4abe9589b77;
 extern void * TVPImportFuncPtre0ff899ea4a9cc49a0e3b38deaf93b45;
 extern void * TVPImportFuncPtr4b9c9ac2aafad07af4b16f34e9d4bba2;
 extern void * TVPImportFuncPtrc2e423356d9ca3f26f9c1d294ee9b742;
@@ -2830,12 +1861,6 @@ extern void * TVPImportFuncPtr5a4fcbe1e398e3d9690d571acbbbae9f;
 extern void * TVPImportFuncPtrb8305ae2ae49a3f7f711105e77bafdf0;
 extern void * TVPImportFuncPtrfb3b405f8747b54f26c332b9e6af81cd;
 extern void * TVPImportFuncPtrba40ffbca76695b54a02aa8c1f1e047b;
-extern void * TVPImportFuncPtr8323d57f26876d87271dbfa257b7f7e2;
-extern void * TVPImportFuncPtr4add3926c72ba9df9259be58b680de0d;
-extern void * TVPImportFuncPtr075d42cff8dc0c1fbd99c7459a63e526;
-extern void * TVPImportFuncPtrb6bc45b28e194c7ac98bfdea88edee36;
-extern void * TVPImportFuncPtr6dff6abb075da1a304520e60c011ef7b;
-extern void * TVPImportFuncPtr892ffbdb8375851fc557e4abe9589b77;
 extern void * TVPImportFuncPtrcdefadd0c3bf15b4639b2f0338a40585;
 extern void * TVPImportFuncPtr4bf80e9bac16b9e3f9bf385b2fbce657;
 extern void * TVPImportFuncPtr51aeacf2b6ef9deb01c3b3db201d6bf9;
@@ -2872,6 +1897,7 @@ extern void * TVPImportFuncPtreed221c603243522667e2f1c6ace3ba4;
 extern void * TVPImportFuncPtr1f973c5e3cfaf00fa752b7e22d7ba481;
 extern void * TVPImportFuncPtrb9d5260bba9edd7503f1adf882218979;
 extern void * TVPImportFuncPtraedbd2eda61145de808e295331884245;
+extern void * TVPImportFuncPtrce0f184e84752eb279e4f900d8b53c18;
 extern void * TVPImportFuncPtr0217d49393163b80897d044c1d93092f;
 extern void * TVPImportFuncPtr5bbd9d5b364840e9615af35a62f69d7d;
 extern void * TVPImportFuncPtr2b2837e81fcaeec35f61a2a3ecf2fb2d;
@@ -5271,6 +4297,997 @@ public:
 };
 
 //---------------------------------------------------------------------------
+// stubs (misc)
+//---------------------------------------------------------------------------
+
+
+//---------------------------------------------------------------------------
+// iTVPStorageMedia
+//---------------------------------------------------------------------------
+/*
+	abstract class for managing media ( like file: http: etc.)
+*/
+
+
+	// for plug-in
+class tTJSBinaryStream;
+
+
+//---------------------------------------------------------------------------
+class iTVPStorageLister // callback class for GetListAt
+{
+public:
+	virtual void Add(const ttstr &file) = 0;
+};
+//---------------------------------------------------------------------------
+class iTVPStorageMedia
+{
+public:
+	virtual void AddRef() = 0;
+	virtual void Release() = 0;
+
+	virtual ttstr GetName() = 0;
+		// returns media name like "file", "http" etc.
+
+//	virtual ttstr IsCaseSensitive() = 0;
+		// returns whether this media is case sensitive or not
+
+	virtual void NormalizeDomainName(ttstr &name) = 0;
+		// normalize domain name according with the media's rule
+
+	virtual void NormalizePathName(ttstr &name) = 0;
+		// normalize path name according with the media's rule
+
+	// "name" below is normalized but does not contain media, eg.
+	// not "media://domain/path" but "domain/path"
+
+	virtual bool CheckExistentStorage(const ttstr &name) = 0;
+		// check file existence
+
+	virtual tTJSBinaryStream * Open(const ttstr & name, tjs_uint32 flags) = 0;
+		// open a storage and return a tTJSBinaryStream instance.
+		// name does not contain in-archive storage name but
+		// is normalized.
+
+	virtual void GetListAt(const ttstr &name, iTVPStorageLister * lister) = 0;
+		// list files at given place
+
+	virtual ttstr GetLocallyAccessibleName(const ttstr &name) = 0;
+		// basically the same as above,
+		// check wether given name is easily accessible from local OS filesystem.
+		// if true, returns local OS native name. otherwise returns an empty string.
+};
+//---------------------------------------------------------------------------
+
+
+//---------------------------------------------------------------------------
+// Extraction filter related
+//---------------------------------------------------------------------------
+#pragma pack(push, 4)
+struct tTVPXP3ExtractionFilterInfo
+{
+	const tjs_uint SizeOfSelf; // structure size of tTVPXP3ExtractionFilterInfo itself
+	const tjs_uint64 Offset; // offset of the buffer data in uncompressed stream position
+	void * Buffer; // target data buffer
+	const tjs_uint BufferSize; // buffer size in bytes pointed by "Buffer"
+	const tjs_uint32 FileHash; // hash value of the file (since inteface v2)
+
+	tTVPXP3ExtractionFilterInfo(tjs_uint64 offset, void *buffer,
+		tjs_uint buffersize, tjs_uint32 filehash) :
+			Offset(offset), Buffer(buffer), BufferSize(buffersize),
+			FileHash(filehash),
+			SizeOfSelf(sizeof(tTVPXP3ExtractionFilterInfo)) {;}
+};
+#pragma pack(pop)
+
+#ifndef TVP_tTVPXP3ArchiveExtractionFilter_CONVENTION
+	#ifdef _WIN32
+		#define	TVP_tTVPXP3ArchiveExtractionFilter_CONVENTION _stdcall
+	#else
+		#define TVP_tTVPXP3ArchiveExtractionFilter_CONVENTION
+	#endif
+#endif
+	// TVP_tTVPXP3ArchiveExtractionFilter_CONV is _stdcall on win32 platforms,
+	// for backward application compatibility.
+
+typedef void (TVP_tTVPXP3ArchiveExtractionFilter_CONVENTION *
+	tTVPXP3ArchiveExtractionFilter)(tTVPXP3ExtractionFilterInfo *info);
+
+
+
+
+//---------------------------------------------------------------------------
+// Script Event Related
+//---------------------------------------------------------------------------
+#define TVP_EPT_POST			0x00  // normal post, simply add to queue
+#define TVP_EPT_REMOVE_POST		0x01
+		// remove event in pending queue that has same target, source, tag and
+		// name before post
+		// (for input events, only the source and the tag are to be checked)
+#define TVP_EPT_IMMEDIATE		0x02
+		// the event will be delivered immediately
+
+#define TVP_EPT_DISCARDABLE		0x10
+		// the event can be discarded when event system is disabled
+
+#define TVP_EPT_EXCLUSIVE		0x20
+		// (with TVP_EPT_POST only)
+		// the event is given priority and other posted events are not processed
+		// until the exclusive event is processed.
+
+#define TVP_EPT_METHOD_MASK		0x0f
+
+
+class tTVPContinuousEventCallbackIntf // callback class for continuous event delivering
+{
+public:
+	virtual void TJS_INTF_METHOD OnContinuousCallback(tjs_uint64 tick) = 0;
+};
+
+
+//---------------------------------------------------------------------------
+// System "Compact" Event related
+//---------------------------------------------------------------------------
+#define TVP_COMPACT_LEVEL_IDLE        5  // the application is in idle state
+#define TVP_COMPACT_LEVEL_DEACTIVATE 10  // the application had been deactivated
+#define TVP_COMPACT_LEVEL_MINIMIZE   15  // the application had been minimized
+#define TVP_COMPACT_LEVEL_MAX       100  // strongest level, should clear all caches
+//---------------------------------------------------------------------------
+class tTVPCompactEventCallbackIntf // callback class for compact event delivering
+{
+public:
+	virtual void TJS_INTF_METHOD OnCompact(tjs_int level) = 0;
+};
+
+
+//---------------------------------------------------------------------------
+// AsyncTrigger related
+//---------------------------------------------------------------------------
+enum tTVPAsyncTriggerMode
+{
+	atmNormal, atmExclusive, atmAtIdle
+};
+
+
+//---------------------------------------------------------------------------
+// iTVPFunctionExporter, exporting main module's functions
+//---------------------------------------------------------------------------
+struct iTVPFunctionExporter
+{
+	virtual bool TJS_INTF_METHOD QueryFunctions(const tjs_char **name, void **function,
+		tjs_uint count) = 0;
+	virtual bool TJS_INTF_METHOD QueryFunctionsByNarrowString(const char **name,
+		void **function, tjs_uint count) = 0;
+};
+//---------------------------------------------------------------------------
+
+
+
+
+
+//---------------------------------------------------------------------------
+// this stub includes exported function from Independent implementation of
+// MD5 (RFC 1321) by Aladdin Enterprises.
+//---------------------------------------------------------------------------
+// TVP_md5_init, TVP_md5_append, TVP_md5_finish are exported
+typedef tjs_uint8 TVP_md5_state_t[4*2+4*4+64]; // md5_state_t
+//---------------------------------------------------------------------------
+
+
+
+
+//---------------------------------------------------------------------------
+// data types for TVPDoTryBlock
+//---------------------------------------------------------------------------
+	// TVPDoTryBlock executes specified 'tryblock' in try block.
+	// If any exception occured,
+	// 'catchblock' is to be executed. 'data' is applicatoin defined data
+	// block passed to 'tryblock' and 'catchblock' and 'finallyblock'.
+	// if the 'catchblock' returns true, the exception is to be rethrown.
+	// if false then the exception is to be vanished.
+	// 'finallyblock' can be null, is to be executed whatever the exception
+	// is generated or not.
+
+struct tTVPExceptionDesc
+{
+	ttstr type; // the exception type, currently 'eTJS' or 'unknown'
+	ttstr message; // the exception message (if exists. otherwise empty).
+};
+
+typedef void (TJS_USERENTRY *tTVPTryBlockFunction)(void * data);
+typedef bool (TJS_USERENTRY *tTVPCatchBlockFunction)(void * data, const tTVPExceptionDesc & desc);
+typedef void (TJS_USERENTRY *tTVPFinallyBlockFunction)(void *data);
+//---------------------------------------------------------------------------
+
+
+
+
+
+
+//---------------------------------------------------------------------------
+// KAG Parser debug level
+//---------------------------------------------------------------------------
+enum tTVPKAGDebugLevel
+{
+	tkdlNone, // none is reported
+	tkdlSimple, // simple report
+	tkdlVerbose // complete report ( verbose )
+};
+
+
+//---------------------------------------------------------------------------
+// tTVPClipboardFormat
+//---------------------------------------------------------------------------
+enum tTVPClipboardFormat
+{
+	cbfText = 1
+};
+
+
+//---------------------------------------------------------------------------
+// Sound Global Focus Mode
+//---------------------------------------------------------------------------
+enum tTVPSoundGlobalFocusMode
+{
+	/*0*/ sgfmNeverMute,			// never mutes
+	/*1*/ sgfmMuteOnMinimize,		// will mute on the application minimize
+	/*2*/ sgfmMuteOnDeactivate		// will mute on the application deactivation
+};
+//---------------------------------------------------------------------------
+
+
+
+
+
+//---------------------------------------------------------------------------
+// IDirectSound former declaration
+//---------------------------------------------------------------------------
+#ifndef __DSOUND_INCLUDED__
+struct IDirectSound;
+#endif
+
+
+
+
+
+//---------------------------------------------------------------------------
+// font ralated constants
+//---------------------------------------------------------------------------
+#define TVP_TF_ITALIC    0x01
+#define TVP_TF_BOLD      0x02
+#define TVP_TF_UNDERLINE 0x04
+#define TVP_TF_STRIKEOUT 0x08
+
+
+//---------------------------------------------------------------------------
+#define TVP_FSF_FIXEDPITCH   1      // fsfFixedPitch
+#define TVP_FSF_SAMECHARSET  2      // fsfSameCharSet
+#define TVP_FSF_NOVERTICAL   4      // fsfNoVertical
+#define TVP_FSF_TRUETYPEONLY 8      // fsfTrueTypeOnly
+#define TVP_FSF_USEFONTFACE  0x100  // fsfUseFontFace
+
+
+
+//---------------------------------------------------------------------------
+// mouse button
+//---------------------------------------------------------------------------
+enum tTVPMouseButton
+{
+	mbLeft,
+	mbRight,
+	mbMiddle
+};
+
+
+
+//---------------------------------------------------------------------------
+// IME modes : comes from VCL's TImeMode
+//---------------------------------------------------------------------------
+enum tTVPImeMode
+{
+	imDisable,
+	imClose,
+	imOpen,
+	imDontCare,
+	imSAlpha,
+	imAlpha,
+	imHira,
+	imSKata,
+	imKata,
+	imChinese,
+	imSHanguel,
+	imHanguel
+};
+
+
+//---------------------------------------------------------------------------
+// shift state
+//---------------------------------------------------------------------------
+#define TVP_SS_SHIFT   0x01
+#define TVP_SS_ALT     0x02
+#define TVP_SS_CTRL    0x04
+#define TVP_SS_LEFT    0x08
+#define TVP_SS_RIGHT   0x10
+#define TVP_SS_MIDDLE  0x20
+#define TVP_SS_DOUBLE  0x40
+#define TVP_SS_REPEAT  0x80
+
+
+inline bool TVPIsAnyMouseButtonPressedInShiftStateFlags(tjs_uint32 state)
+{ return (state & 
+	(TVP_SS_LEFT | TVP_SS_RIGHT | TVP_SS_MIDDLE | TVP_SS_DOUBLE)) != 0; }
+
+
+
+//---------------------------------------------------------------------------
+// JoyPad virtual key codes
+//---------------------------------------------------------------------------
+// These VKs are KIRIKIRI specific. Not widely used.
+#define VK_PAD_FIRST	0xB0   // first PAD related key code
+#define VK_PADLEFT		0xB5
+#define VK_PADUP		0xB6
+#define VK_PADRIGHT		0xB7
+#define VK_PADDOWN		0xB8
+#define VK_PAD1			0xC0
+#define VK_PAD2			0xC1
+#define VK_PAD3			0xC2
+#define VK_PAD4			0xC3
+#define VK_PAD5			0xC4
+#define VK_PAD6			0xC5
+#define VK_PAD7			0xC6
+#define VK_PAD8			0xC7
+#define VK_PAD9			0xC8
+#define VK_PAD10		0xC9
+#define VK_PADANY		0xDF   // returns whether any one of pad buttons are pressed,
+							   // in System.getKeyState
+#define VK_PAD_LAST		0xDF   // last PAD related key code
+//---------------------------------------------------------------------------
+
+
+//---------------------------------------------------------------------------
+// tTVPBBBltMethod and tTVPBBStretchType
+//---------------------------------------------------------------------------
+enum tTVPBBBltMethod
+{
+	bmCopy,
+	bmCopyOnAlpha,
+	bmAlpha,
+	bmAlphaOnAlpha,
+	bmAdd,
+	bmSub,
+	bmMul,
+	bmDodge,
+	bmDarken,
+	bmLighten,
+	bmScreen,
+	bmAddAlpha,
+	bmAddAlphaOnAddAlpha,
+	bmAddAlphaOnAlpha,
+	bmAlphaOnAddAlpha,
+	bmCopyOnAddAlpha
+};
+
+enum tTVPBBStretchType
+{
+	stNearest = 0, // primal method; nearest neighbor method
+	stFastLinear = 1, // fast linear interpolation (does not have so much precision)
+	stLinear = 2,  // (strict) linear interpolation
+	stCubic = 3,    // cubic interpolation
+
+	stTypeMask = 0xf, // stretch type mask
+	stFlagMask = 0xf0, // flag mask
+
+	stRefNoClip = 0x10 // referencing source is not limited by the given rectangle
+						// (may allow to see the border pixel to interpolate)
+};
+
+
+//---------------------------------------------------------------------------
+// layer / blending types
+//---------------------------------------------------------------------------
+enum tTVPLayerType
+{
+	ltBinder = 0,
+	ltCoverRect = 1,
+	ltOpaque = 1, // the same as ltCoverRect
+	ltTransparent = 2, // alpha blend
+	ltAlpha = 2, // the same as ltTransparent
+	ltAdditive = 3,
+	ltSubtractive = 4,
+	ltMultiplicative = 5,
+	ltEffect = 6,
+	ltFilter = 7,
+	ltDodge = 8,
+	ltDarken = 9,
+	ltLighten = 10,
+	ltScreen = 11,
+	ltAddAlpha = 12 // additive alpha blend
+};
+//---------------------------------------------------------------------------
+
+
+//---------------------------------------------------------------------------
+// drawn face types
+//---------------------------------------------------------------------------
+enum tTVPDrawFace
+{
+	dfBoth  = 0,
+	dfAlpha = 0,
+	dfAddAlpha = 4,
+	dfMain = 1,
+	dfOpaque = 1,
+	dfMask = 2,
+	dfProvince = 3,
+	dfAuto = 128 // face is chosen automatically from the layer type
+};
+//---------------------------------------------------------------------------
+
+
+//---------------------------------------------------------------------------
+// alias to blending types
+//---------------------------------------------------------------------------
+enum tTVPBlendOperationMode
+{
+	omAdditive = ltAdditive,
+	omSubtractive = ltSubtractive,
+	omMultiplicative = ltMultiplicative,
+	omDodge = ltDodge,
+	omDarken = ltDarken,
+	omLighten = ltLighten,
+	omScreen = ltScreen,
+	omAlpha = ltTransparent,
+	omAddAlpha = ltAddAlpha,
+	omOpaque = ltCoverRect,
+
+	omAuto = 128   // operation mode is guessed from the source layer type
+};
+//---------------------------------------------------------------------------
+
+
+//---------------------------------------------------------------------------
+// layer hit test type
+//---------------------------------------------------------------------------
+enum tTVPHitType {htMask, htProvince};
+//---------------------------------------------------------------------------
+
+
+//---------------------------------------------------------------------------
+// color key types
+//---------------------------------------------------------------------------
+#define TVP_clAdapt				((tjs_uint32)(0x01ffffff))
+#define TVP_clNone				((tjs_uint32)(0x1fffffff))
+#define TVP_clPalIdx			((tjs_uint32)(0x03000000))
+#define TVP_clAlphaMat			((tjs_uint32)(0x04000000))
+#define TVP_Is_clPalIdx(n)		((tjs_uint32)(((n)&0xff000000) == TVP_clPalIdx))
+#define TVP_get_clPalIdx(n)		((tjs_uint32)((n)&0xff))
+#define TVP_Is_clAlphaMat(n)	((tjs_uint32)(((n)&0xff000000) == TVP_clAlphaMat))
+#define TVP_get_clAlphaMat(n)	((tjs_uint32)((n)&0xffffff))
+//---------------------------------------------------------------------------
+
+
+//---------------------------------------------------------------------------
+// Window related constants
+//---------------------------------------------------------------------------
+enum tTVPUpdateType
+{
+	utNormal, // only needed region
+	utEntire // entire of window
+};
+//---------------------------------------------------------------------------
+enum tTVPBorderStyle
+{
+	bsNone=0,  bsSingle=1,  bsSizeable=2,  bsDialog=3,  bsToolWindow=4,
+	bsSizeToolWin =5
+};
+//---------------------------------------------------------------------------
+enum tTVPMouseCursorState
+{
+	mcsVisible, // the mouse cursor is visible
+	mcsTempHidden, // the mouse cursor is temporarily hidden
+	mcsHidden // the mouse cursor is invisible
+};
+//---------------------------------------------------------------------------
+
+
+//---------------------------------------------------------------------------
+// window message receivers
+//---------------------------------------------------------------------------
+enum tTVPWMRRegMode { wrmRegister=0, wrmUnregister=1 };
+#pragma pack(push, 4)
+struct tTVPWindowMessage
+{
+	unsigned int Msg; // window message
+	int WParam;  // WPARAM
+	int LParam;  // LPARAM
+	int Result;  // result
+};
+#pragma pack(pop)
+typedef bool (__stdcall * tTVPWindowMessageReceiver)
+	(void *userdata, tTVPWindowMessage *Message);
+
+#define TVP_WM_DETACH (WM_USER+106)  // before re-generating the window
+#define TVP_WM_ATTACH (WM_USER+107)  // after re-generating the window
+
+
+
+
+//---------------------------------------------------------------------------
+// tTVPVideoOverlayMode
+//---------------------------------------------------------------------------
+enum tTVPVideoOverlayMode {
+	vomOverlay,		// Overlay
+	vomLayer,		// Draw Layer
+};
+
+
+
+
+
+
+//---------------------------------------------------------------------------
+// tTVPPeriodEventType : event type in onPeriod event
+//---------------------------------------------------------------------------
+enum tTVPPeriodEventReason
+{
+	perLoop, // the event is by loop rewind
+	perPeriod, // the event is by period point specified by the user
+	perPrepare, // the event is by prepare() method
+	perSegLoop, // the event is by segment loop rewind
+};
+
+
+
+
+
+//---------------------------------------------------------------------------
+// scroll transition handler
+//---------------------------------------------------------------------------
+enum tTVPScrollTransFrom
+{
+	sttLeft, sttTop, sttRight, sttBottom
+};
+enum tTVPScrollTransStay
+{
+	ststNoStay, ststStayDest, ststStaySrc
+};
+
+
+//---------------------------------------------------------------------------
+// tTVPTransType
+//---------------------------------------------------------------------------
+// transition type
+#ifdef __BORLANDC__
+	#pragma option push -b
+#endif
+enum tTVPTransType
+{
+	ttSimple, // transition using only one(self) layer ( eg. simple fading )
+	ttExchange // transition using two layer ( eg. cross fading )
+};
+#ifdef __BORLANDC__
+	#pragma option pop
+#endif
+//---------------------------------------------------------------------------
+
+
+
+//---------------------------------------------------------------------------
+// tTVPTransUpdateType
+//---------------------------------------------------------------------------
+// transition update type
+#ifdef __BORLANDC__
+	#pragma option push -b
+#endif
+enum tTVPTransUpdateType
+{
+	tutDivisibleFade,
+	tutDivisible,
+	tutGiveUpdate
+};
+#ifdef __BORLANDC__
+	#pragma option pop
+#endif
+/*
+	there are two types of transition update method;
+	tutDivisibleFade, tutDivisible and tutGiveUpdate.
+
+	tutDivisibleFade
+		used when the transition processing is region-divisible and
+		the transition updates entire area of the layer.
+		update area is always given by iTVPTransHandler::Process caller.
+		handler must use only given area of the source bitmap on each
+		callbacking.
+
+	tutDivisible
+		same as tutDivisibleFade, except for its usage of source area.
+		handler can use any area of the source bitmap.
+		this will somewhat slower than tutDivisibleFade.
+
+	tutGiveUpdate
+		used when the transition processing is not region-divisible or
+		the transition updates only some small regions rather than entire
+		area.
+		update area is given by callee of iTVPTransHandler::Process, 
+		via iTVPLayerUpdater interface.
+*/
+//---------------------------------------------------------------------------
+
+
+
+//---------------------------------------------------------------------------
+// iTVPScanLineProvider
+//---------------------------------------------------------------------------
+// provides layer scanline
+class iTVPScanLineProvider
+{
+public:
+	virtual tjs_error TJS_INTF_METHOD AddRef() = 0;
+	virtual tjs_error TJS_INTF_METHOD Release() = 0;
+		// call "Release" when done with this object
+
+	virtual tjs_error TJS_INTF_METHOD GetWidth(/*out*/tjs_int *width) = 0;
+		// return image width
+	virtual tjs_error TJS_INTF_METHOD GetHeight(/*out*/tjs_int *height) = 0;
+		// return image height
+	virtual tjs_error TJS_INTF_METHOD GetPixelFormat(/*out*/tjs_int *bpp) = 0;
+		// return image bit depth
+	virtual tjs_error TJS_INTF_METHOD GetPitchBytes(/*out*/tjs_int *pitch) = 0;
+		// return image bitmap data width in bytes ( offset to next down line )
+	virtual tjs_error TJS_INTF_METHOD GetScanLine(/*in*/tjs_int line,
+			/*out*/const void ** scanline) = 0;
+		// return image pixel scan line pointer
+	virtual tjs_error TJS_INTF_METHOD GetScanLineForWrite(/*in*/tjs_int line,
+			/*out*/void ** scanline) = 0;
+		// return image pixel scan line pointer for writing
+};
+//---------------------------------------------------------------------------
+
+
+
+//---------------------------------------------------------------------------
+// iTVPSimpleOptionProvider
+//---------------------------------------------------------------------------
+// provides option set
+class iTVPSimpleOptionProvider
+{
+public:
+	virtual tjs_error TJS_INTF_METHOD AddRef() = 0;
+	virtual tjs_error TJS_INTF_METHOD Release() = 0;
+		// call this when done with this object
+
+	virtual tjs_error TJS_INTF_METHOD GetAsNumber(
+			/*in*/const tjs_char *name, /*out*/tjs_int64 *value) = 0;
+		// retrieve option as a number.
+	virtual tjs_error TJS_INTF_METHOD GetAsString(
+			/*in*/const tjs_char *name, /*out*/const tjs_char **out) = 0;
+		// retrieve option as a string.
+		// note that you must use the returned string as an one time string
+		// pointer; you cannot hold its pointer and/or use it later.
+
+	virtual tjs_error TJS_INTF_METHOD GetValue(
+			/*in*/const tjs_char *name, /*out*/tTJSVariant *dest) = 0;
+		// retrieve option as a tTJSVariant.
+
+	virtual tjs_error TJS_INTF_METHOD Reserved2() = 0;
+
+	virtual tjs_error TJS_INTF_METHOD GetDispatchObject(iTJSDispatch2 **dsp)
+		 = 0;
+		// retrieve internal dispatch object ( if exists )
+};
+//---------------------------------------------------------------------------
+
+
+//---------------------------------------------------------------------------
+// iTVPSimpleImageProvider
+//---------------------------------------------------------------------------
+// image loader
+class iTVPSimpleImageProvider
+{
+public:
+	virtual tjs_error TJS_INTF_METHOD LoadImage(
+			/*in*/const tjs_char *name, /*in*/tjs_int bpp,
+			/*in*/tjs_uint32 key, 
+			/*in*/tjs_uint w,
+			/*in*/tjs_uint h,
+			/*out*/iTVPScanLineProvider ** scpro) = 0;
+		// load an image.
+		// returned image be an 8bpp bitmap when bpp == 8, otherwise
+		// 32bpp.
+		// key is a color key. pass 0x02ffffff for not to apply color key.
+		// you must release "scpro" when you done with it.
+		// w and h are desired size of the image. if the actual size is smaller
+		// than these, the image is to be tiled. give 0, 0 to obtain original
+		// sized image.
+};
+//---------------------------------------------------------------------------
+
+
+
+
+//---------------------------------------------------------------------------
+// iTVPLayerUpdater
+//---------------------------------------------------------------------------
+// layer update region notification interface
+class iTVPLayerUpdater
+{
+public:
+	virtual tjs_error TJS_INTF_METHOD UpdateRect(tjs_int left,
+		tjs_int top, tjs_int right, tjs_int bottom);
+		// notify that the layer image had been changed.
+};
+//---------------------------------------------------------------------------
+
+
+
+//---------------------------------------------------------------------------
+// tTVPDivisibleData
+//---------------------------------------------------------------------------
+// structure used by iTVPDivisibleTransHandler::Process
+#ifdef _WIN32
+#pragma pack(push, 4)
+#endif
+
+struct tTVPDivisibleData
+{
+	/*const*/tjs_int Left; // processing rectangle left
+	/*const*/tjs_int Top; // processing rectangle top
+	/*const*/tjs_int Width; // processing rectangle width
+	/*const*/tjs_int Height; // processing rectangle height
+	iTVPScanLineProvider *Dest; // destination image
+	tjs_int DestLeft; // destination image rectangle's left
+	tjs_int DestTop; // destination image rectangle's top
+	/*const*/iTVPScanLineProvider *Src1; // source 1 (self layer image)
+	/*const*/tjs_int Src1Left; // source 1 image rectangle's left
+	/*const*/tjs_int Src1Top; // source 1 image rectangle's top
+	/*const*/iTVPScanLineProvider *Src2; // source 2 (other layer image)
+	/*const*/tjs_int Src2Left; // source 2 image rectangle's left
+	/*const*/tjs_int Src2Top; // source 2 image rectangle's top
+};
+/* note that "Src2" will be null when transition type is ttSimple. */
+/* Src1Left, Src1Top, Src2Left, Src2Top are not used when the transition is
+	tutDivisible. */
+
+#ifdef _WIN32
+#pragma pack(pop)
+#endif
+
+
+
+//---------------------------------------------------------------------------
+// iTVPBaseTransHandler
+//---------------------------------------------------------------------------
+class iTVPBaseTransHandler
+{
+public:
+	virtual tjs_error TJS_INTF_METHOD AddRef() = 0;
+	virtual tjs_error TJS_INTF_METHOD Release() = 0;
+
+	virtual tjs_error TJS_INTF_METHOD SetOption(
+			/*in*/iTVPSimpleOptionProvider *options // option provider
+		) = 0;
+		// Set option for current processing transition
+};
+//---------------------------------------------------------------------------
+
+
+
+//---------------------------------------------------------------------------
+// iTVPDivisibleTransHandler
+//---------------------------------------------------------------------------
+class iTVPDivisibleTransHandler : public iTVPBaseTransHandler
+{
+public:
+	virtual tjs_error TJS_INTF_METHOD StartProcess(
+			/*in*/tjs_uint64 tick) = 0;
+		// called before one processing time unit.
+		// expected return values are:
+		// TJS_S_TRUE: continue processing
+		// TJS_S_FALSE: break processing
+
+	virtual tjs_error TJS_INTF_METHOD EndProcess() = 0;
+		// called after one processing time unit.
+		// expected return values are:
+		// TJS_S_TRUE: continue processing
+		// TJS_S_FALSE: break processing
+
+	virtual tjs_error TJS_INTF_METHOD Process(
+			/*in,out*/tTVPDivisibleData *data) = 0;
+		// called during StartProcess and EndProcess per an update rectangle.
+		// the handler processes given rectangle and put result image to
+		// "Dest"( in tTVPDivisibleData ).
+		// given "Dest" is a internal image buffer, but callee can change
+		// the "Dest" pointer to Src1 or Src2. Also DestLeft and DestTop can
+		// be changed to point destination image part.
+
+	virtual tjs_error TJS_INTF_METHOD MakeFinalImage(
+			/*in,out*/iTVPScanLineProvider ** dest, // destination
+			/*in*/iTVPScanLineProvider * src1, // source 1
+			/*in*/iTVPScanLineProvider * src2 // source 2
+			) = 0;
+		// will be called after StartProcess/EndProcess returns TJS_S_FALSE.
+		// this function does not called in some occasions.
+		// fill "dest" to make a final image.
+		// dest can be set to either src1 or src2.
+};
+//---------------------------------------------------------------------------
+
+
+
+//---------------------------------------------------------------------------
+// iTVPGiveUpdateTransHandler
+//---------------------------------------------------------------------------
+class iTVPGiveUpdateTransHandler : public iTVPBaseTransHandler
+{
+public:
+	virtual tjs_error TJS_INTF_METHOD Process(
+			/*in*/tjs_uint64 tick, // tick count provided by the system in ms
+			/*in*/iTVPLayerUpdater * updater, // layer updater object
+			/*in*/iTVPScanLineProvider * dest, // destination
+			/*in*/iTVPScanLineProvider * src1, // source 1
+			/*in*/iTVPScanLineProvider * src2 // source 2
+		) = 0;
+	// process the transition.
+	// callee must call updater->UpdateLayerRect when changing the layer image.
+	// updater->UpdateLayerRect can be called more than once.
+};
+//---------------------------------------------------------------------------
+
+
+
+//---------------------------------------------------------------------------
+// iTVPTransHandlerProvider
+//---------------------------------------------------------------------------
+// transition handler provider abstract class
+class iTVPTransHandlerProvider
+{
+public:
+	virtual tjs_error TJS_INTF_METHOD AddRef() = 0;
+	virtual tjs_error TJS_INTF_METHOD Release() = 0;
+
+	virtual tjs_error TJS_INTF_METHOD GetName(
+			/*out*/const tjs_char ** name) = 0;
+		// return this transition name
+
+	virtual tjs_error TJS_INTF_METHOD StartTransition(
+			/*in*/iTVPSimpleOptionProvider *options, // option provider
+			/*in*/iTVPSimpleImageProvider *imagepro, // image provider
+			/*in*/tTVPLayerType layertype, // destination layer type
+			/*in*/tjs_uint src1w, tjs_uint src1h, // source 1 size
+			/*in*/tjs_uint src2w, tjs_uint src2h, // source 2 size
+			/*out*/tTVPTransType *type, // transition type
+			/*out*/tTVPTransUpdateType * updatetype, // update typwe
+			/*out*/iTVPBaseTransHandler ** handler // transition handler
+			) = 0;
+		// start transition and return a handler.
+		// "handler" is an object of iTVPDivisibleTransHandler when
+		// updatetype is tutDivisibleFade or tutDivisible.
+		// Otherwise is an object of iTVPGiveUpdateTransHandler ( cast to
+		// each class to use it )
+		// layertype is the destination layer type.
+};
+//---------------------------------------------------------------------------
+
+
+#ifdef __cplusplus
+ extern "C" {
+#endif
+
+
+#pragma pack(push, 4)
+typedef struct
+{
+	/* structure used for adjustment of gamma levels */
+
+	float RGamma; /* R gamma   ( 0.10 -- 1.00 -- 9.99) */
+	tjs_int RFloor;   /* output floor value  ( 0 -- 255 ) */
+	tjs_int RCeil;    /* output ceil value ( 0 -- 255 ) */
+	float GGamma; /* G */
+	tjs_int GFloor;
+	tjs_int GCeil;
+	float BGamma; /* B */
+	tjs_int BFloor;
+	tjs_int BCeil;
+} tTVPGLGammaAdjustData;
+#pragma pack(pop)
+
+
+#pragma pack(push, 4)
+typedef struct
+{
+	tjs_uint8 B[256];
+	tjs_uint8 G[256];
+	tjs_uint8 R[256];
+} tTVPGLGammaAdjustTempData;
+#pragma pack(pop)
+
+
+#ifdef __cplusplus
+ }
+#endif
+
+
+#define TVP_RGB2COLOR(r,g,b) ((((r)<<16) + ((g)<<8) + (b)) | 0xff000000)
+#define TVP_RGBA2COLOR(r,g,b,a) \
+	(((a)<<24) +  (((r)<<16) + ((g)<<8) + (b)))
+
+
+//---------------------------------------------------------------------------
+// CPU Types
+//---------------------------------------------------------------------------
+
+
+#define TVP_CPU_HAS_FPU 0x000010000
+#define TVP_CPU_HAS_MMX 0x000020000
+#define TVP_CPU_HAS_3DN 0x000040000
+#define TVP_CPU_HAS_SSE 0x000080000
+#define TVP_CPU_HAS_CMOV 0x000100000
+#define TVP_CPU_HAS_E3DN 0x000200000
+#define TVP_CPU_HAS_EMMX 0x000400000
+#define TVP_CPU_HAS_SSE2 0x000800000
+#define TVP_CPU_HAS_TSC 0x001000000
+#define TVP_CPU_FEATURE_MASK 0x0ffff0000
+#define TVP_CPU_IS_INTEL 0x000000010
+#define TVP_CPU_IS_AMD 0x000000020
+#define TVP_CPU_IS_IDT 0x000000030
+#define TVP_CPU_IS_CYRIX 0x000000040
+#define TVP_CPU_IS_NEXGEN 0x000000050
+#define TVP_CPU_IS_RISE 0x000000060
+#define TVP_CPU_IS_UMC 0x000000070
+#define TVP_CPU_IS_TRANSMETA 0x000000080
+#define TVP_CPU_IS_UNKNOWN 0x000000000
+#define TVP_CPU_VENDOR_MASK 0x000000ff0
+#define TVP_CPU_FAMILY_MASK 0x00000000f
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+//---------------------------------------------------------------------------
+
+
+
+
+//---------------------------------------------------------------------------
 // stubs
 //---------------------------------------------------------------------------
 
@@ -5783,6 +5800,66 @@ inline tTVReal TJSStringToReal(const tjs_char * str)
 	}
 	typedef tTVReal (__stdcall * __functype)(const tjs_char *);
 	return ((__functype)(TVPImportFuncPtrc8bb6590f4a7adc906d7b3e42d907267))(str);
+}
+inline iTJSDispatch2 * TJSCreateArrayObject(iTJSDispatch2 * * classout = NULL)
+{
+	if(!TVPImportFuncPtr8323d57f26876d87271dbfa257b7f7e2)
+	{
+		static char funcname[] = "iTJSDispatch2 * ::TJSCreateArrayObject(iTJSDispatch2 * *)";
+		TVPImportFuncPtr8323d57f26876d87271dbfa257b7f7e2 = TVPGetImportFuncPtr(funcname);
+	}
+	typedef iTJSDispatch2 * (__stdcall * __functype)(iTJSDispatch2 * *);
+	return ((__functype)(TVPImportFuncPtr8323d57f26876d87271dbfa257b7f7e2))(classout);
+}
+inline iTJSDispatch2 * TJSCreateDictionaryObject(iTJSDispatch2 * * classout = NULL)
+{
+	if(!TVPImportFuncPtr4add3926c72ba9df9259be58b680de0d)
+	{
+		static char funcname[] = "iTJSDispatch2 * ::TJSCreateDictionaryObject(iTJSDispatch2 * *)";
+		TVPImportFuncPtr4add3926c72ba9df9259be58b680de0d = TVPGetImportFuncPtr(funcname);
+	}
+	typedef iTJSDispatch2 * (__stdcall * __functype)(iTJSDispatch2 * *);
+	return ((__functype)(TVPImportFuncPtr4add3926c72ba9df9259be58b680de0d))(classout);
+}
+inline ttstr TJSGetMessageMapMessage(const tjs_char * name)
+{
+	if(!TVPImportFuncPtr075d42cff8dc0c1fbd99c7459a63e526)
+	{
+		static char funcname[] = "ttstr ::TJSGetMessageMapMessage(const tjs_char *)";
+		TVPImportFuncPtr075d42cff8dc0c1fbd99c7459a63e526 = TVPGetImportFuncPtr(funcname);
+	}
+	typedef ttstr (__stdcall * __functype)(const tjs_char *);
+	return ((__functype)(TVPImportFuncPtr075d42cff8dc0c1fbd99c7459a63e526))(name);
+}
+inline ttstr TJSMapGlobalStringMap(const ttstr & string)
+{
+	if(!TVPImportFuncPtrb6bc45b28e194c7ac98bfdea88edee36)
+	{
+		static char funcname[] = "ttstr ::TJSMapGlobalStringMap(const ttstr &)";
+		TVPImportFuncPtrb6bc45b28e194c7ac98bfdea88edee36 = TVPGetImportFuncPtr(funcname);
+	}
+	typedef ttstr (__stdcall * __functype)(const ttstr &);
+	return ((__functype)(TVPImportFuncPtrb6bc45b28e194c7ac98bfdea88edee36))(string);
+}
+inline void TJSDoVariantOperation(tjs_int op , tTJSVariant & target , const tTJSVariant * param)
+{
+	if(!TVPImportFuncPtr6dff6abb075da1a304520e60c011ef7b)
+	{
+		static char funcname[] = "void ::TJSDoVariantOperation(tjs_int,tTJSVariant &,const tTJSVariant *)";
+		TVPImportFuncPtr6dff6abb075da1a304520e60c011ef7b = TVPGetImportFuncPtr(funcname);
+	}
+	typedef void (__stdcall * __functype)(tjs_int , tTJSVariant &, const tTJSVariant *);
+	((__functype)(TVPImportFuncPtr6dff6abb075da1a304520e60c011ef7b))(op, target, param);
+}
+inline void TJSDoRehash()
+{
+	if(!TVPImportFuncPtr892ffbdb8375851fc557e4abe9589b77)
+	{
+		static char funcname[] = "void ::TJSDoRehash()";
+		TVPImportFuncPtr892ffbdb8375851fc557e4abe9589b77 = TVPGetImportFuncPtr(funcname);
+	}
+	typedef void (__stdcall * __functype)();
+	((__functype)(TVPImportFuncPtr892ffbdb8375851fc557e4abe9589b77))();
 }
 inline ttstr TVPGetTemporaryName()
 {
@@ -6504,66 +6581,6 @@ inline tjs_uint32 TVPGetCPUType()
 	typedef tjs_uint32 (__stdcall * __functype)();
 	return ((__functype)(TVPImportFuncPtrba40ffbca76695b54a02aa8c1f1e047b))();
 }
-inline iTJSDispatch2 * TJSCreateArrayObject(iTJSDispatch2 * * classout = NULL)
-{
-	if(!TVPImportFuncPtr8323d57f26876d87271dbfa257b7f7e2)
-	{
-		static char funcname[] = "iTJSDispatch2 * ::TJSCreateArrayObject(iTJSDispatch2 * *)";
-		TVPImportFuncPtr8323d57f26876d87271dbfa257b7f7e2 = TVPGetImportFuncPtr(funcname);
-	}
-	typedef iTJSDispatch2 * (__stdcall * __functype)(iTJSDispatch2 * *);
-	return ((__functype)(TVPImportFuncPtr8323d57f26876d87271dbfa257b7f7e2))(classout);
-}
-inline iTJSDispatch2 * TJSCreateDictionaryObject(iTJSDispatch2 * * classout = NULL)
-{
-	if(!TVPImportFuncPtr4add3926c72ba9df9259be58b680de0d)
-	{
-		static char funcname[] = "iTJSDispatch2 * ::TJSCreateDictionaryObject(iTJSDispatch2 * *)";
-		TVPImportFuncPtr4add3926c72ba9df9259be58b680de0d = TVPGetImportFuncPtr(funcname);
-	}
-	typedef iTJSDispatch2 * (__stdcall * __functype)(iTJSDispatch2 * *);
-	return ((__functype)(TVPImportFuncPtr4add3926c72ba9df9259be58b680de0d))(classout);
-}
-inline ttstr TJSGetMessageMapMessage(const tjs_char * name)
-{
-	if(!TVPImportFuncPtr075d42cff8dc0c1fbd99c7459a63e526)
-	{
-		static char funcname[] = "ttstr ::TJSGetMessageMapMessage(const tjs_char *)";
-		TVPImportFuncPtr075d42cff8dc0c1fbd99c7459a63e526 = TVPGetImportFuncPtr(funcname);
-	}
-	typedef ttstr (__stdcall * __functype)(const tjs_char *);
-	return ((__functype)(TVPImportFuncPtr075d42cff8dc0c1fbd99c7459a63e526))(name);
-}
-inline ttstr TJSMapGlobalStringMap(const ttstr & string)
-{
-	if(!TVPImportFuncPtrb6bc45b28e194c7ac98bfdea88edee36)
-	{
-		static char funcname[] = "ttstr ::TJSMapGlobalStringMap(const ttstr &)";
-		TVPImportFuncPtrb6bc45b28e194c7ac98bfdea88edee36 = TVPGetImportFuncPtr(funcname);
-	}
-	typedef ttstr (__stdcall * __functype)(const ttstr &);
-	return ((__functype)(TVPImportFuncPtrb6bc45b28e194c7ac98bfdea88edee36))(string);
-}
-inline void TJSDoVariantOperation(tjs_int op , tTJSVariant & target , const tTJSVariant * param)
-{
-	if(!TVPImportFuncPtr6dff6abb075da1a304520e60c011ef7b)
-	{
-		static char funcname[] = "void ::TJSDoVariantOperation(tjs_int,tTJSVariant &,const tTJSVariant *)";
-		TVPImportFuncPtr6dff6abb075da1a304520e60c011ef7b = TVPGetImportFuncPtr(funcname);
-	}
-	typedef void (__stdcall * __functype)(tjs_int , tTJSVariant &, const tTJSVariant *);
-	((__functype)(TVPImportFuncPtr6dff6abb075da1a304520e60c011ef7b))(op, target, param);
-}
-inline void TJSDoRehash()
-{
-	if(!TVPImportFuncPtr892ffbdb8375851fc557e4abe9589b77)
-	{
-		static char funcname[] = "void ::TJSDoRehash()";
-		TVPImportFuncPtr892ffbdb8375851fc557e4abe9589b77 = TVPGetImportFuncPtr(funcname);
-	}
-	typedef void (__stdcall * __functype)();
-	((__functype)(TVPImportFuncPtr892ffbdb8375851fc557e4abe9589b77))();
-}
 inline void TVPAddLog(const ttstr & line)
 {
 	if(!TVPImportFuncPtrcdefadd0c3bf15b4639b2f0338a40585)
@@ -6923,6 +6940,16 @@ inline void TVPAlphaBlend_ao(tjs_uint32 * dest , const tjs_uint32 * src , tjs_in
 	}
 	typedef void (__stdcall * __functype)(tjs_uint32 *, const tjs_uint32 *, tjs_int , tjs_int);
 	((__functype)(TVPImportFuncPtraedbd2eda61145de808e295331884245))(dest, src, len, opa);
+}
+inline void TVPAlphaColorMat(tjs_uint32 * dest , const tjs_uint32 color , tjs_int len)
+{
+	if(!TVPImportFuncPtrce0f184e84752eb279e4f900d8b53c18)
+	{
+		static char funcname[] = "void ::TVPAlphaColorMat(tjs_uint32 *,const tjs_uint32,tjs_int)";
+		TVPImportFuncPtrce0f184e84752eb279e4f900d8b53c18 = TVPGetImportFuncPtr(funcname);
+	}
+	typedef void (__stdcall * __functype)(tjs_uint32 *, const tjs_uint32 , tjs_int);
+	((__functype)(TVPImportFuncPtrce0f184e84752eb279e4f900d8b53c18))(dest, color, len);
 }
 inline void TVPAdditiveAlphaBlend(tjs_uint32 * dest , const tjs_uint32 * src , tjs_int len)
 {
