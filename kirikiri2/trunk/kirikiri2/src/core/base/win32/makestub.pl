@@ -426,6 +426,28 @@ process_exp_stub("../../tjs2/tjsNative.h");
 print OFH "#include \"tjsVariant.h\"\n";
 process_exp_stub("../../tjs2/tjsVariant.h");
 
+print OFH "#include \"tjsArray.h\"\n";
+process_exp_stub("../../tjs2/tjsArray.h");
+
+print OFH "#include \"tjsDictionary.h\"\n";
+process_exp_stub("../../tjs2/tjsDictionary.h");
+
+print OFH "#include \"tjs.h\"\n";
+process_exp_stub("../../tjs2/tjs.h");
+
+print OFH "#include \"tjsMessage.h\"\n";
+process_exp_stub("../../tjs2/tjsMessage.h");
+
+print OFH "#include \"tjsGlobalStringMap.h\"\n";
+process_exp_stub("../../tjs2/tjsGlobalStringMap.h");
+
+print OFH "#include \"tjsObject.h\"\n";
+process_exp_stub("../../tjs2/tjsObject.h");
+process_exp_stub("../../tjs2/tjsObject.cpp");
+
+$defs_system = $defs;
+$defs = '';
+
 print OFH "#include \"StorageIntf.h\"\n";
 process_exp_stub("../StorageIntf.h");
 
@@ -464,25 +486,6 @@ process_exp_stub("../win32/SysInitImpl.h");
 
 print OFH "#include \"DetectCPU.h\"\n";
 process_exp_stub("../../environ/win32/DetectCPU.h");
-
-print OFH "#include \"tjsArray.h\"\n";
-process_exp_stub("../../tjs2/tjsArray.h");
-
-print OFH "#include \"tjsDictionary.h\"\n";
-process_exp_stub("../../tjs2/tjsDictionary.h");
-
-print OFH "#include \"tjs.h\"\n";
-process_exp_stub("../../tjs2/tjs.h");
-
-print OFH "#include \"tjsMessage.h\"\n";
-process_exp_stub("../../tjs2/tjsMessage.h");
-
-print OFH "#include \"tjsGlobalStringMap.h\"\n";
-process_exp_stub("../../tjs2/tjsGlobalStringMap.h");
-
-print OFH "#include \"tjsObject.h\"\n";
-process_exp_stub("../../tjs2/tjsObject.h");
-process_exp_stub("../../tjs2/tjsObject.cpp");
 
 print OFH "#include \"DebugIntf.h\"\n";
 process_exp_stub("../../utils/DebugIntf.h");
@@ -553,6 +556,8 @@ process_exp_stub("../../visual/tvpgl.h");
 print OFH "#include \"tvpgl_ia32_intf.h\"\n";
 process_exp_stub("../../visual/IA32/tvpgl_ia32_intf.h");
 
+$defs_misc = $defs;
+$defs = '';
 
 @all_list = (@method_list, @func_list);
 
@@ -687,7 +692,7 @@ print OHFH <<EOF;
 
 EOF
 
-print OHFH $defs;
+print OHFH $defs_system;
 
 
 print OHFH <<EOF;
@@ -863,6 +868,21 @@ print OHFH <<EOF;
 EOF
 
 print OHFH <<EOF;
+
+//---------------------------------------------------------------------------
+// stubs (misc)
+//---------------------------------------------------------------------------
+
+EOF
+
+print OHFH $defs_misc;
+
+
+print OHFH <<EOF;
+//---------------------------------------------------------------------------
+
+
+
 
 //---------------------------------------------------------------------------
 // stubs

@@ -844,22 +844,19 @@ void TVPDoTryBlock(
 	}
 	catch(const eTJS & e)
 	{
-		if(catchblock(TJS_W("eTJS"), e.GetMessage(), data))
-		{
-			if(finallyblock) finallyblock(data);
-			throw;
-		}
 		if(finallyblock) finallyblock(data);
+		tTVPExceptionDesc desc;
+		desc.type = TJS_W("eTJS");
+		desc.message = e.GetMessage();
+		if(catchblock(data, desc)) throw;
 		return;
 	}
 	catch(...)
 	{
-		if(catchblock(TJS_W("eTJS"), ttstr(), data))
-		{
-			if(finallyblock) finallyblock(data);
-			throw;
-		}
 		if(finallyblock) finallyblock(data);
+		tTVPExceptionDesc desc;
+		desc.type = TJS_W("unknown");
+		if(catchblock(data, desc)) throw;
 		return;
 	}
 	if(finallyblock) finallyblock(data);

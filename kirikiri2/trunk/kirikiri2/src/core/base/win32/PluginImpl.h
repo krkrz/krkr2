@@ -128,16 +128,19 @@ TJS_EXP_FUNC_DEF(bool, TVPRemoveGlobalObject, (const tjs_char *name));
 	// If any exception occured,
 	// 'catchblock' is to be executed. 'data' is applicatoin defined data
 	// block passed to 'tryblock' and 'catchblock' and 'finallyblock'.
-	// 'catchblock's first argument is the exception type, currently
-	// 'eTJS' or 'unknown'. The second argument is exception message
-	// (if exists. otherwise empty).
 	// if the 'catchblock' returns true, the exception is to be rethrown.
 	// if false then the exception is to be vanished.
 	// 'finallyblock' can be null, is to be executed whatever the exception
 	// is generated or not.
 
+struct tTVPExceptionDesc
+{
+	ttstr type; // the exception type, currently 'eTJS' or 'unknown'
+	ttstr message; // the exception message (if exists. otherwise empty).
+};
+
 typedef void (TJS_USERENTRY *tTVPTryBlockFunction)(void * data);
-typedef bool (TJS_USERENTRY *tTVPCatchBlockFunction)(const ttstr & type, const ttstr & message, void * data);
+typedef bool (TJS_USERENTRY *tTVPCatchBlockFunction)(void * data, const tTVPExceptionDesc & desc);
 typedef void (TJS_USERENTRY *tTVPFinallyBlockFunction)(void *data);
 //---------------------------------------------------------------------------
 
