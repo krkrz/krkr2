@@ -295,7 +295,7 @@ IDispatchWrapper::Construct(VARIANT *pvarResult, int argc, VARIANT *argv, tjs_er
 	// コンストラクタ呼び出し
 	iTJSDispatch2 *instance = NULL;
 	try {
-		if (TJS_SUCCEEDED(err = obj->CreateNew(0, NULL, NULL, &instance, argc, args, obj))) {
+		if (TJS_SUCCEEDED(err = Try_iTJSDispatch2_CreateNew(obj, 0, NULL, NULL, &instance, argc, args, obj))) {
 			if (instance) {
 				if (pvarResult) {
 					V_VT(pvarResult)       = VT_DISPATCH;
@@ -425,7 +425,8 @@ IDispatchWrapper::InvokeEx(
 
 	HRESULT ret = S_OK;
 	tjs_error err;
-	
+	ttstr errmesg;
+
 	if ((wFlags & DISPATCH_CONSTRUCT)) {
 
 		// コンストラクタ
@@ -446,11 +447,14 @@ IDispatchWrapper::InvokeEx(
 		// オブジェクト実行用のスクリプトクラスを生成
 		tTJSVariant result;
 		try {
-			if (TJS_SUCCEEDED(err = obj->FuncCall(0, memberName, (tjs_uint32*)&id, &result, argc, args, obj))) {
+			if (TJS_SUCCEEDED(err = Try_iTJSDispatch2_FuncCall(obj, 0, memberName, (tjs_uint32*)&id, &result, argc, args, obj))) {
 				if (pvarResult) {
 					storeVariant(*pvarResult, result);
 				}
 			}
+		} catch(const tTVPExceptionDesc &desc) {
+			errmesg = desc.message.IsEmpty() ? desc.type : desc.message;
+			ret = DISP_E_EXCEPTION;
 		} catch(...) {
 			ret = DISP_E_EXCEPTION;
 		}
@@ -467,11 +471,14 @@ IDispatchWrapper::InvokeEx(
 		
 		tTJSVariant result;
 		try {
-			if (TJS_SUCCEEDED(err = obj->PropGet(0, memberName, (tjs_uint32*)&id, &result, obj))) {
+			if (TJS_SUCCEEDED(err = Try_iTJSDispatch2_PropGet(obj, 0, memberName, (tjs_uint32*)&id, &result, obj))) {
 				if (pvarResult) {
 					storeVariant(*pvarResult, result);
 				}
 			}
+		} catch(const tTVPExceptionDesc &desc) {
+			errmesg = desc.message.IsEmpty() ? desc.type : desc.message;
+			ret = DISP_E_EXCEPTION;
 		} catch(...)    {
 			ret = DISP_E_EXCEPTION;
 		}
@@ -482,7 +489,10 @@ IDispatchWrapper::InvokeEx(
 		tTJSVariant arg;
 		storeVariant(arg, argv[0]);
 		try {
-			err = obj->PropSet(TJS_MEMBERENSURE, memberName, (tjs_uint32*)&id, &arg, obj);
+			err = Try_iTJSDispatch2_PropSet(obj, TJS_MEMBERENSURE, memberName, (tjs_uint32*)&id, &arg, obj);
+		} catch(const tTVPExceptionDesc &desc) {
+			errmesg = desc.message.IsEmpty() ? desc.type : desc.message;
+			ret = DISP_E_EXCEPTION;
 		} catch(...) {
 			ret = DISP_E_EXCEPTION;
 		}
@@ -493,7 +503,7 @@ IDispatchWrapper::InvokeEx(
 			memset(pei, 0, sizeof(EXCEPINFO));
 			pei->wCode = 0x0201;
 			pei->bstrSource = SysAllocString(L"TJScript");
-			pei->bstrDescription = SysAllocString(L"Exception");
+			pei->bstrDescription = SysAllocString(errmesg.c_str());
 			pei->scode = DISP_E_EXCEPTION;
 		}
 	} else if (TJS_FAILED(err)) {
@@ -528,7 +538,7 @@ IDispatchWrapper::DeleteMemberByDispID(
 	HRESULT ret = S_FALSE;
 	if (memberName) {
 		try {
-			if (TJS_SUCCEEDED(obj->DeleteMember(TJS_MEMBERMUSTEXIST, memberName, (tjs_uint32*)&id, obj))) {
+			if (TJS_SUCCEEDED(Try_iTJSDispatch2_DeleteMember(obj, TJS_MEMBERMUSTEXIST, memberName, (tjs_uint32*)&id, obj))) {
 				ret = S_OK;
 			}
 		} catch(...)  {
@@ -594,7 +604,7 @@ IDispatchWrapper::GetNextDispID(
 		GetEnumCaller caller(&methodEnums);
 		tTJSVariantClosure closure(&caller);
 		try {
-			obj->EnumMembers(TJS_ENUM_NO_VALUE, &closure, obj);
+			Try_iTJSDispatch2_EnumMembers(obj, TJS_ENUM_NO_VALUE, &closure, obj);
 		} catch (...) {
 			TVPAddLog(L"EnumMembers で例外");
 		}
