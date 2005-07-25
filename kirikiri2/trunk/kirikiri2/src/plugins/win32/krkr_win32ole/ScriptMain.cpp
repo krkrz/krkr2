@@ -320,9 +320,9 @@ public:
 	 */
 	tjs_error execStorage(const tjs_char *progId, const tjs_char *filename, tTJSVariant *result) {
 		
-		tTJSTextReadStream * stream = TVPCreateTextStreamForRead(filename, TJS_W(""));
+		iTJSTextReadStream * stream = TVPCreateTextStreamForRead(filename, TJS_W(""));
+		tjs_error ret;
 		try {
-			tjs_error ret;
 			ttstr data;
 			stream->Read(data, 0);
 			ret = exec(progId, data.c_str(), result);
@@ -332,7 +332,7 @@ public:
 			stream->Destruct();
 			throw;
 		}
-		stream->Destuct();
+		stream->Destruct();
 		return ret;
 	}
 };
