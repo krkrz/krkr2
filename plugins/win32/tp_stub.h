@@ -8829,4 +8829,38 @@ extern void TVPUninitImportStub();
 extern tjs_int TVPPluginGlobalRefCount;
 //---------------------------------------------------------------------------
 
+//---------------------------------------------------------------------------
+// exception protected function stub
+//---------------------------------------------------------------------------
+
+extern tjs_uint Try_iTJSDispatch2_AddRef(iTJSDispatch2 * _this);
+extern tjs_uint Try_iTJSDispatch2_Release(iTJSDispatch2 * _this);
+extern tjs_error Try_iTJSDispatch2_FuncCall(iTJSDispatch2 * _this, tjs_uint32 flag, const tjs_char * membername, tjs_uint32 *hint, tTJSVariant *result, tjs_int numparams, tTJSVariant **param, iTJSDispatch2 *objthis);
+extern tjs_error Try_iTJSDispatch2_FuncCallByNum(iTJSDispatch2 * _this, tjs_uint32 flag, tjs_int num, tTJSVariant *result, tjs_int numparams, tTJSVariant **param, iTJSDispatch2 *objthis);
+extern tjs_error Try_iTJSDispatch2_PropGet(iTJSDispatch2 * _this, tjs_uint32 flag, const tjs_char * membername, tjs_uint32 *hint, tTJSVariant *result, iTJSDispatch2 *objthis);
+extern tjs_error Try_iTJSDispatch2_PropGetByNum(iTJSDispatch2 * _this, tjs_uint32 flag, tjs_int num, tTJSVariant *result, iTJSDispatch2 *objthis);
+extern tjs_error Try_iTJSDispatch2_PropSet(iTJSDispatch2 * _this, tjs_uint32 flag, const tjs_char *membername, tjs_uint32 *hint, const tTJSVariant *param, iTJSDispatch2 *objthis);
+extern tjs_error Try_iTJSDispatch2_PropSetByNum(iTJSDispatch2 * _this, tjs_uint32 flag, tjs_int num, const tTJSVariant *param, iTJSDispatch2 *objthis);
+extern tjs_error Try_iTJSDispatch2_GetCount(iTJSDispatch2 * _this, tjs_int *result, const tjs_char *membername, tjs_uint32 *hint, iTJSDispatch2 *objthis);
+extern tjs_error Try_iTJSDispatch2_GetCountByNum(iTJSDispatch2 * _this, tjs_int *result, tjs_int num, iTJSDispatch2 *objthis);
+extern tjs_error Try_iTJSDispatch2_PropSetByVS(iTJSDispatch2 * _this, tjs_uint32 flag, tTJSVariantString *membername, const tTJSVariant *param, iTJSDispatch2 *objthis);
+extern tjs_error Try_iTJSDispatch2_EnumMembers(iTJSDispatch2 * _this, tjs_uint32 flag, tTJSVariantClosure *callback, iTJSDispatch2 *objthis);
+extern tjs_error Try_iTJSDispatch2_DeleteMember(iTJSDispatch2 * _this, tjs_uint32 flag, const tjs_char *membername, tjs_uint32 *hint, iTJSDispatch2 *objthis);
+extern tjs_error Try_iTJSDispatch2_DeleteMemberByNum(iTJSDispatch2 * _this, tjs_uint32 flag, tjs_int num, iTJSDispatch2 *objthis);
+extern tjs_error Try_iTJSDispatch2_Invalidate(iTJSDispatch2 * _this, tjs_uint32 flag, const tjs_char *membername, tjs_uint32 *hint, iTJSDispatch2 *objthis);
+extern tjs_error Try_iTJSDispatch2_InvalidateByNum(iTJSDispatch2 * _this, tjs_uint32 flag, tjs_int num, iTJSDispatch2 *objthis);
+extern tjs_error Try_iTJSDispatch2_IsValid(iTJSDispatch2 * _this, tjs_uint32 flag, const tjs_char *membername, tjs_uint32 *hint, iTJSDispatch2 *objthis);
+extern tjs_error Try_iTJSDispatch2_IsValidByNum(iTJSDispatch2 * _this, tjs_uint32 flag, tjs_int num, iTJSDispatch2 *objthis);
+extern tjs_error Try_iTJSDispatch2_CreateNew(iTJSDispatch2 * _this, tjs_uint32 flag, const tjs_char * membername, tjs_uint32 *hint, iTJSDispatch2 **result, tjs_int numparams, tTJSVariant **param, iTJSDispatch2 *objthis);
+extern tjs_error Try_iTJSDispatch2_CreateNewByNum(iTJSDispatch2 * _this, tjs_uint32 flag, tjs_int num, iTJSDispatch2 **result, tjs_int numparams, tTJSVariant **param, iTJSDispatch2 *objthis);
+extern tjs_error Try_iTJSDispatch2_Reserved1(iTJSDispatch2 * _this);
+extern tjs_error Try_iTJSDispatch2_IsInstanceOf(iTJSDispatch2 * _this, tjs_uint32 flag, const tjs_char *membername, tjs_uint32 *hint, const tjs_char *classname, iTJSDispatch2 *objthis);
+extern tjs_error Try_iTJSDispatch2_IsInstanceOfByNum(iTJSDispatch2 * _this, tjs_uint32 flag, tjs_int num, const tjs_char *classname, iTJSDispatch2 *objthis);
+extern tjs_error Try_iTJSDispatch2_Operation(iTJSDispatch2 * _this, tjs_uint32 flag, const tjs_char *membername, tjs_uint32 *hint, tTJSVariant *result, const tTJSVariant *param, iTJSDispatch2 *objthis);
+extern tjs_error Try_iTJSDispatch2_OperationByNum(iTJSDispatch2 * _this, tjs_uint32 flag, tjs_int num, tTJSVariant *result, const tTJSVariant *param, iTJSDispatch2 *objthis);
+extern tjs_error Try_iTJSDispatch2_NativeInstanceSupport(iTJSDispatch2 * _this, tjs_uint32 flag, tjs_int32 classid, iTJSNativeInstance **pointer);
+extern tjs_error Try_iTJSDispatch2_ClassInstanceInfo(iTJSDispatch2 * _this, tjs_uint32 flag, tjs_uint num, tTJSVariant *value);
+extern tjs_error Try_iTJSDispatch2_Reserved2(iTJSDispatch2 * _this);
+extern tjs_error Try_iTJSDispatch2_Reserved3(iTJSDispatch2 * _this);
+
 #endif

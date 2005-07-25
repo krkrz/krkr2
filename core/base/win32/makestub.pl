@@ -15,6 +15,10 @@ EOF
 use Compress::Zlib;
 use Digest::MD5  qw(md5 md5_hex md5_base64);
 
+
+$output_tpstub_h = "../../../plugins/win32/tp_stub.h";
+$output_tpstub_cpp = "../../../plugins/win32/tp_stub.cpp";
+
 ;# This perl script is VERY VERY complicated so I do never want to see again.
 
 $num = 0;
@@ -652,8 +656,8 @@ EOF
 
 ;# stub library for plugin
 
-open(OHFH, ">../../../plugins/win32/tp_stub.h") or die;
-open(OCFH, ">../../../plugins/win32/tp_stub.cpp") or die;
+open(OHFH, ">$output_tpstub_h") or die;
+open(OCFH, ">$output_tpstub_cpp") or die;
 
 print OHFH $copyright;
 print OCFH $copyright;
@@ -985,6 +989,142 @@ extern void TVPUninitImportStub();
 extern tjs_int TVPPluginGlobalRefCount;
 //---------------------------------------------------------------------------
 
+EOF
+
+close OCFH;
+close OHFH;
+
+
+
+;#---------------------------------------------------------------------------
+;# exception protected function stub
+;#---------------------------------------------------------------------------
+
+;# currently only for iTJSDispatch2
+
+;# read the header
+open OHFH, "$output_tpstub_h" or die;
+undef $/;
+$oh = <OHFH>;
+close OHFH;
+
+;# extract iTJSDispatch2 declaration
+die if($oh !~ /class\s+iTJSDispatch2\s+\{(.*?)\}/s);
+$class_iTJSDispatch2 = $1;
+
+;# eliminate comments
+$class_iTJSDispatch2 =~ s|//.*?\n||gs;
+$class_iTJSDispatch2 =~ s|/\*.*?\*/||gs;
+
+;# extract method declarations
+$hc = '';
+$cc = '';
+
+$cc .= <<EOF;
+
+static bool TJS_USERENTRY _CatchFuncCall(void *data, const tTVPExceptionDesc & desc)
+{
+	throw desc;
+}
+EOF
+
+while($class_iTJSDispatch2 =~
+	m|virtual\s+(\w+)\s+TJS_INTF_METHOD\s+(\w+)\s*\(\s*(.*?)\s*\)|gs)
+{
+	$ret_type = $1;
+	$method_name = $2;
+	@args = split(/\s*,\s*/, $3 eq 'void' ? '' : $3);
+
+	$hc .= 
+		("extern $ret_type Try_iTJSDispatch2_$method_name(" .
+			join(', ',  ("iTJSDispatch2 * _this", @args)) . ");\n");
+
+
+	$cc .= "struct t_iTJSDispatch2_$method_name\n";
+	$cc .= "{\n";
+	if($ret_type ne 'void')
+	{
+		$cc .= "\t$ret_type _ret;\n";
+	}
+
+	foreach $arg ("iTJSDispatch2 * _this", @args)
+	{
+		$cc .= "\t$arg;\n";
+	}
+
+	@arg_names = ();
+	foreach $arg (@args)
+	{
+		if($arg =~ /(\w+)$/)
+		{
+			push @arg_names, $1;
+		}
+	}
+	$cc .= "\tt_iTJSDispatch2_$method_name(\n\t\t\t";
+	$cc .= join("_,\n\t\t\t",  ("iTJSDispatch2 * _this", @args));
+	$cc .= "_\n\t\t\t) :\n\t\t";
+	@arg_initials = ();
+	foreach $arg_name ("_this", @arg_names)
+	{
+		push @arg_initials, "$arg_name(${arg_name}_)";
+	}
+
+	$cc .= join(",\n\t\t", @arg_initials);
+	$cc .= "\t{;}\n";
+
+	$cc .= "\n};\n";
+
+	$cc .= "static void TJS_USERENTRY _Try_iTJSDispatch2_$method_name(void *data)\n";
+	$cc .= "{\n";
+	$cc .= "	t_iTJSDispatch2_$method_name * arg = (t_iTJSDispatch2_$method_name *)data;\n";
+	$cc .= "	arg->_ret = \n" if $ret_Type ne 'void';
+	$cc .= "	arg->_this->$method_name(\n		";
+	@arg_args = ();
+	foreach $arg_name (@arg_names)
+	{
+		push @arg_args, "arg->$arg_name";
+	}
+	$cc .= join(",\n\t\t", @arg_args);
+	$cc .= "\n		);\n";
+	$cc .= "}\n";
+	$cc .= 
+		("$ret_type Try_iTJSDispatch2_$method_name(" .
+			join(', ',  ("iTJSDispatch2 * _this", @args)) . ")\n");
+	$cc .= "{\n";
+	$cc .= "	t_iTJSDispatch2_$method_name arg(\n		";
+	$cc .= join(",\n		", ("_this", @arg_names));
+	$cc .= "\n	);\n";
+	$cc .= "	TVPDoTryBlock(_Try_iTJSDispatch2_$method_name, _CatchFuncCall, NULL, &arg);\n";
+	$cc .= "	return arg._ret;\n" if  $ret_Type ne 'void';
+	$cc .= "}\n";
+
+}
+
+
+open OHFH,">>$output_tpstub_h" or die;
+print OHFH <<EOF;
+//---------------------------------------------------------------------------
+// exception protected function stub
+//---------------------------------------------------------------------------
+
+EOF
+print OHFH $hc;
+print OHFH <<EOF;
+
 #endif
 EOF
+close OHFH;
+
+open OCFH,">>$output_tpstub_cpp" or die;
+print OCFH <<EOF;
+//---------------------------------------------------------------------------
+// exception protected function stub
+//---------------------------------------------------------------------------
+
+EOF
+print OCFH $cc;
+
+
+;#---------------------------------------------------------------------------
+
 
