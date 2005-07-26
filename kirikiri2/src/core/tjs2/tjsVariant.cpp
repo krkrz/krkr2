@@ -480,10 +480,22 @@ void tTJSVariant::CopyRef(const tTJSVariant & ref) // from reference to tTJSVari
 		vt = tvtVoid;
 		return;
 	case tvtObject:
-		((tTJSVariantClosure&)ref.Object).AddRef();
-		ReleaseContent();
-		Object = ref.Object;
-		vt = tvtObject;
+		if(this != &ref)
+		{
+			/*
+				note:
+				ReleaseContent makes the object variables null during clear,
+				thus makes the resulting object also null when the ref and this are
+				exactly the same object.
+				This does not affect string nor octet because the ReleaseContent
+				does *not* make the pointer null during clear when the variant type
+				is string or octet.
+			*/
+			((tTJSVariantClosure&)ref.Object).AddRef();
+			ReleaseContent();
+			Object = ref.Object;
+			vt = tvtObject;
+		}
 		return;
 	case tvtString:
 		if(ref.String) ref.String->AddRef();
