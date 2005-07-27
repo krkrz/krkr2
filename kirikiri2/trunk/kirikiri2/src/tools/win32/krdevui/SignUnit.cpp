@@ -44,7 +44,7 @@ static void MakeFileHash(AnsiString fn, unsigned char *hash, int ignorestart,
 	if(find_hash(HASH_METHOD_INTERNAL_STRING) == -1)
 	{
 		int errnum = register_hash(&HASH_DESC);
-		if(errnum != CRYPT_OK) throw Exception(error_to_string(errno));
+		if(errnum != CRYPT_OK) throw Exception(error_to_string(errnum));
 	}
 
 
