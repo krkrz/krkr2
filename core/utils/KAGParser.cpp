@@ -98,10 +98,10 @@ void tTVPScenarioCacheItem::LoadScenario(const ttstr & name, bool isstring)
 		}
 		catch(...)
 		{
-			stream->Destruct();
+			if(stream) stream->Destruct();
 			throw;
 		}
-		stream->Destruct();
+		if(stream) stream->Destruct();
 	}
 
 	tjs_char *buffer_p = Buffer;
