@@ -253,7 +253,7 @@ bool CheckSignatureOfFile(AnsiString pubkey, AnsiString signfn,
 	buf_asc[buf_asc_len] = 0;
 	buf_asc_len = strlen(buf_asc);
 
-	AnsiString signmark("-- SIGNATURE - " HASH_METHOD_STRING "/PSS/RSA --\r\n");
+	AnsiString signmark("-- SIGNATURE - " HASH_METHOD_STRING "/PSS/RSA --");
 	if(strncmp(buf_asc, signmark.c_str(), signmark.Length()))
 		throw Exception("Invalid signature file format");
 
