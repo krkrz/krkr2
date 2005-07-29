@@ -955,10 +955,10 @@ class MessageLayer extends KAGLayer
 					// ¶’[‚Æ‰E’[‚ğÁ‹
 					lineLayer.fillRect(0, 0,
 						lineLayerBase - oldbase, lineLayer.imageHeight, 0);
-					lineLayer.colorRect(
+					lineLayer.fillRect(
 						lineLayerBase - oldbase+oldsize, 0,
 						lineLayer.imageWidth - (lineLayerBase - oldbase + oldsize),
-						lineLayer.imageHeight, 0, -255);
+						lineLayer.imageHeight, 0);
 
 					lineLayer.face = dfProvince;
 					lineLayer.copyRect(
