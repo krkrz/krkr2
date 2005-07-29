@@ -127,6 +127,8 @@ __fastcall TMainForm::TMainForm(TComponent* Owner)
 	ListView->Items->BeginUpdate();
 	try
 	{
+		AllFileList = "";
+		AllFileCount = 0;
 		MakeFileList(BaseDir, BaseDir.Length());
 	}
 	catch(...)
@@ -293,6 +295,9 @@ void __fastcall TMainForm::CopyResultButtonClick(TObject *Sender)
 			ListView->Items->Item[i]->SubItems->Strings[0] + "\r\n";
 	}
 
+	str.cat_sprintf("\r\nAll files in target directory (0x%04X files):\r\n", AllFileCount);
+	str += AllFileList;
+
 	Clipboard()->AsText = str;
 
 	Application->MessageBox(TheResultWasCopiedIntoClipboardLabel->Caption.c_str(),
@@ -319,6 +324,14 @@ void __fastcall TMainForm::MakeFileList(AnsiString path, int baselen)
 					AnsiString name = AnsiString(path.c_str()+ baselen) +
 						r.FindData.cFileName;
 
+					// append to the list
+					AllFileList.cat_sprintf("%s\t%11d\t%s\r\n",
+						FileDateToDateTime(r.Time).FormatString("yyyy/mm/dd hh:nn:ss").c_str(),
+						r.Size,
+						(path + r.FindData.cFileName).c_str());
+					AllFileCount ++;
+
+					// check file extension
 					AnsiString fileext = ExtractFileExt(r.FindData.cFileName);
 					bool add;
 					if(!fileext.AnsiCompareIC(".sig"))
@@ -348,6 +361,14 @@ void __fastcall TMainForm::MakeFileList(AnsiString path, int baselen)
 				else
 				{
 					// a directory
+
+					// append to the list
+					AllFileList.cat_sprintf("%s\t[directory]\t%s\r\n",
+						FileDateToDateTime(r.Time).FormatString("yyyy/mm/dd hh:nn:ss").c_str(),
+						(path + r.FindData.cFileName).c_str());
+					AllFileCount ++;
+
+					// recurse
 					if(r.Name != "." && r.Name != "..")
 					{
 						MakeFileList(path  + r.FindData.cFileName+
