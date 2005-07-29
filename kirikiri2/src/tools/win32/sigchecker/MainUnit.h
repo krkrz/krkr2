@@ -34,6 +34,8 @@ private:	// ユーザー宣言
 	AnsiString BaseDir;
 	AnsiString PublicKey;
 	TListItem *CurrentCheckingItem;
+	AnsiString AllFileList;
+	int AllFileCount;
 	DWORD LastDisplayedTick;
 public:		// ユーザー宣言
 	__fastcall TMainForm(TComponent* Owner);
