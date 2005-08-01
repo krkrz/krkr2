@@ -1,0 +1,165 @@
+/*
+  PhotoShop-like layer blender for KIRIKIRI (C-version);
+  (c);2004-2005 Kengo Takagi (Kenjo); <kenjo@ceres.dti.ne.jp>
+*/
+
+#ifndef _tvp_ps_blend_h
+#define _tvp_ps_blend_h
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+/* ------------------------------ Initialize */
+
+void __cdecl TVPPsMakeTable(void);
+
+/* ------------------------------ for C version */
+
+void __cdecl TVPPsAlphaBlend_c(tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len);
+void __cdecl TVPPsAlphaBlend_o_c(tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len, tjs_int opa);
+void __cdecl TVPPsAlphaBlend_HDA_c(tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len);
+void __cdecl TVPPsAlphaBlend_HDA_o_c(tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len, tjs_int opa);
+
+void __cdecl TVPPsAddBlend_c(tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len);
+void __cdecl TVPPsAddBlend_o_c(tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len, tjs_int opa);
+void __cdecl TVPPsAddBlend_HDA_c(tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len);
+void __cdecl TVPPsAddBlend_HDA_o_c(tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len, tjs_int opa);
+
+void __cdecl TVPPsSubBlend_c(tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len);
+void __cdecl TVPPsSubBlend_o_c(tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len, tjs_int opa);
+void __cdecl TVPPsSubBlend_HDA_c(tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len);
+void __cdecl TVPPsSubBlend_HDA_o_c(tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len, tjs_int opa);
+
+void __cdecl TVPPsMulBlend_c(tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len);
+void __cdecl TVPPsMulBlend_o_c(tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len, tjs_int opa);
+void __cdecl TVPPsMulBlend_HDA_c(tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len);
+void __cdecl TVPPsMulBlend_HDA_o_c(tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len, tjs_int opa);
+
+void __cdecl TVPPsScreenBlend_c(tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len);
+void __cdecl TVPPsScreenBlend_o_c(tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len, tjs_int opa);
+void __cdecl TVPPsScreenBlend_HDA_c(tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len);
+void __cdecl TVPPsScreenBlend_HDA_o_c(tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len, tjs_int opa);
+
+void __cdecl TVPPsOverlayBlend_c(tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len);
+void __cdecl TVPPsOverlayBlend_o_c(tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len, tjs_int opa);
+void __cdecl TVPPsOverlayBlend_HDA_c(tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len);
+void __cdecl TVPPsOverlayBlend_HDA_o_c(tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len, tjs_int opa);
+
+void __cdecl TVPPsHardLightBlend_c(tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len);
+void __cdecl TVPPsHardLightBlend_o_c(tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len, tjs_int opa);
+void __cdecl TVPPsHardLightBlend_HDA_c(tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len);
+void __cdecl TVPPsHardLightBlend_HDA_o_c(tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len, tjs_int opa);
+
+void __cdecl TVPPsSoftLightBlend_c(tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len);
+void __cdecl TVPPsSoftLightBlend_o_c(tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len, tjs_int opa);
+void __cdecl TVPPsSoftLightBlend_HDA_c(tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len);
+void __cdecl TVPPsSoftLightBlend_HDA_o_c(tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len, tjs_int opa);
+
+void __cdecl TVPPsColorDodgeBlend_c(tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len);
+void __cdecl TVPPsColorDodgeBlend_o_c(tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len, tjs_int opa);
+void __cdecl TVPPsColorDodgeBlend_HDA_c(tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len);
+void __cdecl TVPPsColorDodgeBlend_HDA_o_c(tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len, tjs_int opa);
+
+void __cdecl TVPPsColorBurnBlend_c(tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len);
+void __cdecl TVPPsColorBurnBlend_o_c(tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len, tjs_int opa);
+void __cdecl TVPPsColorBurnBlend_HDA_c(tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len);
+void __cdecl TVPPsColorBurnBlend_HDA_o_c(tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len, tjs_int opa);
+
+void __cdecl TVPPsLightenBlend_c(tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len);
+void __cdecl TVPPsLightenBlend_o_c(tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len, tjs_int opa);
+void __cdecl TVPPsLightenBlend_HDA_c(tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len);
+void __cdecl TVPPsLightenBlend_HDA_o_c(tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len, tjs_int opa);
+
+void __cdecl TVPPsDarkenBlend_c(tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len);
+void __cdecl TVPPsDarkenBlend_o_c(tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len, tjs_int opa);
+void __cdecl TVPPsDarkenBlend_HDA_c(tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len);
+void __cdecl TVPPsDarkenBlend_HDA_o_c(tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len, tjs_int opa);
+
+void __cdecl TVPPsDiffBlend_c(tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len);
+void __cdecl TVPPsDiffBlend_o_c(tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len, tjs_int opa);
+void __cdecl TVPPsDiffBlend_HDA_c(tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len);
+void __cdecl TVPPsDiffBlend_HDA_o_c(tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len, tjs_int opa);
+
+void __cdecl TVPPsExclusionBlend_c(tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len);
+void __cdecl TVPPsExclusionBlend_o_c(tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len, tjs_int opa);
+void __cdecl TVPPsExclusionBlend_HDA_c(tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len);
+void __cdecl TVPPsExclusionBlend_HDA_o_c(tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len, tjs_int opa);
+
+/* ------------------------------ for asm version */
+
+void __cdecl TVPPsAlphaBlend_mmx_a(tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len);
+void __cdecl TVPPsAlphaBlend_o_mmx_a(tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len, tjs_int opa);
+void __cdecl TVPPsAlphaBlend_HDA_mmx_a(tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len);
+void __cdecl TVPPsAlphaBlend_HDA_o_mmx_a(tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len, tjs_int opa);
+
+void __cdecl TVPPsAddBlend_mmx_a(tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len);
+void __cdecl TVPPsAddBlend_o_mmx_a(tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len, tjs_int opa);
+void __cdecl TVPPsAddBlend_HDA_mmx_a(tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len);
+void __cdecl TVPPsAddBlend_HDA_o_mmx_a(tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len, tjs_int opa);
+
+void __cdecl TVPPsSubBlend_mmx_a(tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len);
+void __cdecl TVPPsSubBlend_o_mmx_a(tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len, tjs_int opa);
+void __cdecl TVPPsSubBlend_HDA_mmx_a(tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len);
+void __cdecl TVPPsSubBlend_HDA_o_mmx_a(tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len, tjs_int opa);
+
+void __cdecl TVPPsMulBlend_mmx_a(tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len);
+void __cdecl TVPPsMulBlend_o_mmx_a(tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len, tjs_int opa);
+void __cdecl TVPPsMulBlend_HDA_mmx_a(tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len);
+void __cdecl TVPPsMulBlend_HDA_o_mmx_a(tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len, tjs_int opa);
+
+void __cdecl TVPPsScreenBlend_mmx_a(tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len);
+void __cdecl TVPPsScreenBlend_o_mmx_a(tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len, tjs_int opa);
+void __cdecl TVPPsScreenBlend_HDA_mmx_a(tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len);
+void __cdecl TVPPsScreenBlend_HDA_o_mmx_a(tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len, tjs_int opa);
+
+void __cdecl TVPPsOverlayBlend_mmx_a(tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len);
+void __cdecl TVPPsOverlayBlend_o_mmx_a(tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len, tjs_int opa);
+void __cdecl TVPPsOverlayBlend_HDA_mmx_a(tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len);
+void __cdecl TVPPsOverlayBlend_HDA_o_mmx_a(tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len, tjs_int opa);
+
+void __cdecl TVPPsHardLightBlend_mmx_a(tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len);
+void __cdecl TVPPsHardLightBlend_o_mmx_a(tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len, tjs_int opa);
+void __cdecl TVPPsHardLightBlend_HDA_mmx_a(tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len);
+void __cdecl TVPPsHardLightBlend_HDA_o_mmx_a(tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len, tjs_int opa);
+
+void __cdecl TVPPsSoftLightBlend_mmx_a(tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len);
+void __cdecl TVPPsSoftLightBlend_o_mmx_a(tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len, tjs_int opa);
+void __cdecl TVPPsSoftLightBlend_HDA_mmx_a(tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len);
+void __cdecl TVPPsSoftLightBlend_HDA_o_mmx_a(tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len, tjs_int opa);
+
+void __cdecl TVPPsColorDodgeBlend_mmx_a(tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len);
+void __cdecl TVPPsColorDodgeBlend_o_mmx_a(tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len, tjs_int opa);
+void __cdecl TVPPsColorDodgeBlend_HDA_mmx_a(tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len);
+void __cdecl TVPPsColorDodgeBlend_HDA_o_mmx_a(tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len, tjs_int opa);
+
+void __cdecl TVPPsColorBurnBlend_mmx_a(tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len);
+void __cdecl TVPPsColorBurnBlend_o_mmx_a(tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len, tjs_int opa);
+void __cdecl TVPPsColorBurnBlend_HDA_mmx_a(tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len);
+void __cdecl TVPPsColorBurnBlend_HDA_o_mmx_a(tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len, tjs_int opa);
+
+void __cdecl TVPPsLightenBlend_mmx_a(tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len);
+void __cdecl TVPPsLightenBlend_o_mmx_a(tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len, tjs_int opa);
+void __cdecl TVPPsLightenBlend_HDA_mmx_a(tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len);
+void __cdecl TVPPsLightenBlend_HDA_o_mmx_a(tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len, tjs_int opa);
+
+void __cdecl TVPPsDarkenBlend_mmx_a(tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len);
+void __cdecl TVPPsDarkenBlend_o_mmx_a(tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len, tjs_int opa);
+void __cdecl TVPPsDarkenBlend_HDA_mmx_a(tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len);
+void __cdecl TVPPsDarkenBlend_HDA_o_mmx_a(tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len, tjs_int opa);
+
+void __cdecl TVPPsDiffBlend_mmx_a(tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len);
+void __cdecl TVPPsDiffBlend_o_mmx_a(tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len, tjs_int opa);
+void __cdecl TVPPsDiffBlend_HDA_mmx_a(tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len);
+void __cdecl TVPPsDiffBlend_HDA_o_mmx_a(tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len, tjs_int opa);
+
+void __cdecl TVPPsExclusionBlend_mmx_a(tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len);
+void __cdecl TVPPsExclusionBlend_o_mmx_a(tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len, tjs_int opa);
+void __cdecl TVPPsExclusionBlend_HDA_mmx_a(tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len);
+void __cdecl TVPPsExclusionBlend_HDA_o_mmx_a(tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len, tjs_int opa);
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif _tvp_ps_blend_h
