@@ -211,6 +211,8 @@ TVP_GL_IA32_FUNC_EXTERN_DECL(void,  TVPTLG6DecodeGolombValuesForFirst_emmx_a,  (
 TVP_GL_IA32_FUNC_EXTERN_DECL(void,  TVPTLG6DecodeGolombValues_emmx_a,  (tjs_int8 *pixelbuf, tjs_int pixel_count, tjs_uint8 *bit_pool));
 /*[*/
 /*]*/
+/*[*/
+/*]*/
 TVP_GL_IA32_FUNC_EXTERN_DECL(void,  TVPInitUnivTransBlendTable_mmx_c,  (tjs_uint32 *table, tjs_int phase, tjs_int vague));
 TVP_GL_IA32_FUNC_EXTERN_DECL(void,  TVPUnivTransBlend_mmx_a,  (tjs_uint32 *dest, const tjs_uint32 *src1, const tjs_uint32 *src2, const tjs_uint8 *rule, const tjs_uint32 *table, tjs_int len));
 TVP_GL_IA32_FUNC_EXTERN_DECL(void,  TVPUnivTransBlend_emmx_a,  (tjs_uint32 *dest, const tjs_uint32 *src1, const tjs_uint32 *src2, const tjs_uint8 *rule, const tjs_uint32 *table, tjs_int len));
