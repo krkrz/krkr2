@@ -122,26 +122,30 @@ TVPAlphaBlend_name:
 			; align destination pointer to QWORD
 
 		mov	eax,	[ebp]		; src
-
-		movd	mm2,	eax
-		shr	eax,	24		; eax >>= 24
-		movd	mm1,	[edi]		; dest
-		movd	mm4,	eax
-		punpcklbw	mm2,	mm0		; unpack
-		punpcklwd	mm4,	mm4		; unpack
-		punpcklbw	mm1,	mm0		; unpack
-		punpcklwd	mm4,	mm4		; unpack
-		psubw	mm2,	mm1		; mm2 -= mm1
+		cmp	eax,	0ff000000h
+		IF	ae
+			; totally opaque
+			mov	[edi],	eax	; intact copy
+		ELSE
+			; not totally opaque
+			movd	mm2,	eax
+			shr	eax,	24		; eax >>= 24
+			movd	mm1,	[edi]		; dest
+			movd	mm4,	eax
+			punpcklbw	mm2,	mm0		; unpack
+			punpcklwd	mm4,	mm4		; unpack
+			punpcklbw	mm1,	mm0		; unpack
+			punpcklwd	mm4,	mm4		; unpack
+			psubw	mm2,	mm1		; mm2 -= mm1
+			pmullw	mm2,	mm4		; mm2 *= mm4
+			psrlw	mm2,	8		; mm2 >>= 8
+			paddb	mm1,	mm2		; mm1 += mm2
+			packuswb	mm1,	mm0		; pack
+			movd	[edi],	mm1		; store
+		ENDIF
 		add	edi,	byte 4
-		pmullw	mm2,	mm4		; mm2 *= mm4
-		psllw	mm1,	8		; mm1 <<= 8
-		paddw	mm1,	mm2		; mm1 += mm2
-		psrlw	mm1,	8		; mm1 >>= 8
 		add	ebp,	byte 4
-		packuswb	mm1,	mm0		; pack
 		cmp	edi,	esi
-		movd	[edi-4], mm1		; store
-
 		jae	near .pfraction		; jump if edi >= esi
 
 	ENDIF
@@ -224,24 +228,30 @@ TVPAlphaBlend_name:
 
 .ploop2:	; fractions
 	mov	eax,	[ebp]		; src
-
-	movd	mm2,	eax
-	shr	eax,	24		; eax >>= 24
-	movd	mm1,	[edi]		; dest
-	movd	mm4,	eax
-	punpcklbw	mm2,	mm0		; unpack
-	punpcklwd	mm4,	mm4		; unpack
-	punpcklbw	mm1,	mm0		; unpack
-	punpcklwd	mm4,	mm4		; unpack
-	psubw	mm2,	mm1		; mm2 -= mm1
+	cmp	eax,	0ff000000h
+	IF	ae
+		; totally opaque
+		mov	[edi],	eax	; intact copy
+	ELSE
+		; not totally opaque
+		movd	mm2,	eax
+		shr	eax,	24		; eax >>= 24
+		movd	mm1,	[edi]		; dest
+		movd	mm4,	eax
+		punpcklbw	mm2,	mm0		; unpack
+		punpcklwd	mm4,	mm4		; unpack
+		punpcklbw	mm1,	mm0		; unpack
+		punpcklwd	mm4,	mm4		; unpack
+		psubw	mm2,	mm1		; mm2 -= mm1
+		pmullw	mm2,	mm4		; mm2 *= mm4
+		psrlw	mm2,	8		; mm2 >>= 8
+		paddb	mm1,	mm2		; mm1 += mm2
+		packuswb	mm1,	mm0		; pack
+		movd	[edi],	mm1		; store
+	ENDIF
 	add	edi,	byte 4
-	pmullw	mm2,	mm4		; mm2 *= mm4
-	psrlw	mm2,	8		; mm2 >>= 8
-	paddb	mm1,	mm2		; mm1 += mm2
 	add	ebp,	byte 4
-	packuswb	mm1,	mm0		; pack
 	cmp	edi,	esi
-	movd	[edi-4], mm1		; store
 
 	jb	.ploop2		; jump if edi < esi
 
