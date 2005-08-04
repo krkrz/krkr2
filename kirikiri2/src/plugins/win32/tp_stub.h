@@ -2084,6 +2084,70 @@ extern void * TVPImportFuncPtre7a1ac237f00bb6320d0e0ac7e6d51c6;
 extern void * TVPImportFuncPtrd87682f6d691350878077bd101b7f0fc;
 extern void * TVPImportFuncPtrd7ae155eaabd8e65d6b4d356fe4af496;
 extern void * TVPImportFuncPtrbe3a1844ea6af533bd4e7b0a76c826a1;
+extern void * TVPImportFuncPtraa531d2c3c87f456e48a14722faa1c1f;
+extern void * TVPImportFuncPtr6889cd886e1c2e7faf541528636c16c3;
+extern void * TVPImportFuncPtr5d9266e6a8a154fe4ba80b0995e109ab;
+extern void * TVPImportFuncPtra7dc19b023737979ad1ae1ae01d560d2;
+extern void * TVPImportFuncPtrd20444b7a6243d668a0d3956d95af510;
+extern void * TVPImportFuncPtr1458dec9eee36816c8002d4049840355;
+extern void * TVPImportFuncPtr21137ff5351245b1611852301b7f5796;
+extern void * TVPImportFuncPtrc07fc4e45fc2dc44d839c5e012d0be60;
+extern void * TVPImportFuncPtr6815b962a3122ae967284239932cc656;
+extern void * TVPImportFuncPtre96cccbe1f16b0fb74673f2ec3343ff8;
+extern void * TVPImportFuncPtre8cd7494f919b18a992cb8c2722b2bf0;
+extern void * TVPImportFuncPtr990fdefcafc0de5e8e1f502c1b341e44;
+extern void * TVPImportFuncPtrde5d83ba307e822825062377fb76c2ba;
+extern void * TVPImportFuncPtr5e28bcc0f5ad6a038eb5a6535b56386c;
+extern void * TVPImportFuncPtre33419e8ede4bb501ab1787cf17c7ca5;
+extern void * TVPImportFuncPtr1cd7cb9580c0cf723dea402b85a720b1;
+extern void * TVPImportFuncPtrd18ca17fad389ff60ce3caa769083798;
+extern void * TVPImportFuncPtr0a959a5ff02530a8eb122e7e1f8ceed3;
+extern void * TVPImportFuncPtra4774ea559e64b4667b3845f8540d207;
+extern void * TVPImportFuncPtr52eae3e8106494bfa604c15492ecb9f4;
+extern void * TVPImportFuncPtr882f458df5e05bb9ab2222e79f6c81cf;
+extern void * TVPImportFuncPtr6069a18bf7d3f394c230cdcf2f574ef4;
+extern void * TVPImportFuncPtr75b60565caf44027cc52b2b5cf6b0ea3;
+extern void * TVPImportFuncPtr9d735149c3ad586363895f76645abf2e;
+extern void * TVPImportFuncPtrea5168fae254acdd8c8db6f1f3d2da03;
+extern void * TVPImportFuncPtrf5a42bd5239e1a0be29f92eb838d2c8c;
+extern void * TVPImportFuncPtr7cc8cd9f415b183b42c546635aeade7f;
+extern void * TVPImportFuncPtrad2fefa53e05528f9c1fe29d27db0f37;
+extern void * TVPImportFuncPtrf3e06fed4c82a9bd1b53252abaf50847;
+extern void * TVPImportFuncPtr960db7ea36202bf7ec3bf6b767cc045e;
+extern void * TVPImportFuncPtr7bf5d357eb52dd206a269b54c8136e0e;
+extern void * TVPImportFuncPtrba1c9b771c5cdb725128de684af3c9ca;
+extern void * TVPImportFuncPtr69cc6311196adc134fd153c4c5346bc5;
+extern void * TVPImportFuncPtr8ed68f8e79efe1c767f92e7d92eb8b54;
+extern void * TVPImportFuncPtr60da1e9ec15b251ff18ddcdf8a3e93e0;
+extern void * TVPImportFuncPtref47304bad87a036e38f0319b48c1f6e;
+extern void * TVPImportFuncPtr182d19020e4e2d5cd1462d7c8ef24d1f;
+extern void * TVPImportFuncPtr9e1fa429a92a5c99d397a06c20fd6705;
+extern void * TVPImportFuncPtr74ac7c291299eb928aa4c2899df5567e;
+extern void * TVPImportFuncPtrfb645d9ec0ef3fd2aba2b762ef6b9a15;
+extern void * TVPImportFuncPtrf988626275257574050ac789f9060a3b;
+extern void * TVPImportFuncPtr1831064ed23493cef407648763ba4d69;
+extern void * TVPImportFuncPtr305390c94750daa7124db3ff6e77931c;
+extern void * TVPImportFuncPtr4fb384a391bfcf6a3a2932661d3051aa;
+extern void * TVPImportFuncPtr305537c4820e23cf217a15efb56dba1c;
+extern void * TVPImportFuncPtraacf83677ca7df75117f7bafa7a53791;
+extern void * TVPImportFuncPtrd14b922fefc6c07aa536b94762579fe5;
+extern void * TVPImportFuncPtr00fd650a79c603bdeb2f8e36f667a782;
+extern void * TVPImportFuncPtra36ee133c07c30185b0bbc6375954e88;
+extern void * TVPImportFuncPtrdc657ecacf8e578870314427216864d9;
+extern void * TVPImportFuncPtre79d02b58a8bfdee439bc0694d7edd6d;
+extern void * TVPImportFuncPtr6b7537b66b71d27384bea45bc2bf24b4;
+extern void * TVPImportFuncPtrb3456dbad652b52f5bce1889b6f4d0ef;
+extern void * TVPImportFuncPtr9a50803a03e1ccb60120dff8b92ecdcd;
+extern void * TVPImportFuncPtr0f6b3940dc72e3e56cd15216b53b9126;
+extern void * TVPImportFuncPtr23b647f1c825e214a7465de3ebe9968d;
+extern void * TVPImportFuncPtr8ec96bc7b777180f23e1a2e43bf9a413;
+extern void * TVPImportFuncPtrcffd45014652659638d59abe11daf3be;
+extern void * TVPImportFuncPtra784285a35b1bc76bb367305b5099e35;
+extern void * TVPImportFuncPtr03773751329896facf2003ab79bbc475;
+extern void * TVPImportFuncPtr923884216edf134d07d8e70f8f57e827;
+extern void * TVPImportFuncPtre48798dc69498f80b6633bb405eda6eb;
+extern void * TVPImportFuncPtr998a5e1aa5cd85689795348fc540a655;
+extern void * TVPImportFuncPtr5f6d263c0d48d03f6eb0dc44c9dd0be2;
 
 
 //---------------------------------------------------------------------------
@@ -4664,7 +4728,23 @@ enum tTVPBBBltMethod
 	bmAddAlphaOnAddAlpha,
 	bmAddAlphaOnAlpha,
 	bmAlphaOnAddAlpha,
-	bmCopyOnAddAlpha
+	bmCopyOnAddAlpha,
+	bmPsNormal,
+	bmPsAdditive,
+	bmPsSubtractive,
+	bmPsMultiplicative,
+	bmPsScreen,
+	bmPsOverlay,
+	bmPsHardLight,
+	bmPsSoftLight,
+	bmPsColorDodge,
+	bmPsColorDodge5,
+	bmPsColorBurn,
+	bmPsLighten,
+	bmPsDarken,
+	bmPsDifference,
+	bmPsDifference5,
+	bmPsExclusion
 };
 
 enum tTVPBBStretchType
@@ -4701,9 +4781,61 @@ enum tTVPLayerType
 	ltDarken = 9,
 	ltLighten = 10,
 	ltScreen = 11,
-	ltAddAlpha = 12 // additive alpha blend
+	ltAddAlpha = 12, // additive alpha blend
+	ltPsNormal = 13,
+	ltPsAdditive = 14,
+	ltPsSubtractive = 15,
+	ltPsMultiplicative = 16,
+	ltPsScreen = 17,
+	ltPsOverlay = 18,
+	ltPsHardLight = 19,
+	ltPsSoftLight = 20,
+	ltPsColorDodge = 21,
+	ltPsColorDodge5 = 22,
+	ltPsColorBurn = 23,
+	ltPsLighten = 24,
+	ltPsDarken = 25,
+	ltPsDifference = 26,
+	ltPsDifference5 = 27,
+	ltPsExclusion = 28
 };
 //---------------------------------------------------------------------------
+static bool inline TVPIsTypeUsingAlpha(tTVPLayerType type)
+	{
+		return type == ltAlpha	||
+			ltPsNormal			||
+			ltPsAdditive		||
+			ltPsSubtractive		||
+			ltPsMultiplicative	||
+			ltPsScreen			||
+			ltPsOverlay			||
+			ltPsHardLight		||
+			ltPsSoftLight		||
+			ltPsColorDodge		||
+			ltPsColorDodge5		||
+			ltPsColorBurn		||
+			ltPsLighten			||
+			ltPsDarken			||
+			ltPsDifference		||
+			ltPsDifference5		||
+			ltPsExclusion		;
+	}
+
+static bool inline TVPIsTypeUsingAddAlpha(tTVPLayerType type)
+	{
+		return type == ltAddAlpha;
+	}
+
+static bool inline TVPIsTypeUsingAlphaChannel(tTVPLayerType type)
+	{
+		return
+			TVPIsTypeUsingAddAlpha(type) ||
+			TVPIsTypeUsingAlpha(type);
+	}
+//---------------------------------------------------------------------------
+
+
+
 
 
 //---------------------------------------------------------------------------
@@ -4728,6 +4860,22 @@ enum tTVPDrawFace
 //---------------------------------------------------------------------------
 enum tTVPBlendOperationMode
 {
+	omPsNormal = ltPsNormal,
+	omPsAdditive = ltPsAdditive,
+	omPsSubtractive = ltPsSubtractive,
+	omPsMultiplicative = ltPsMultiplicative,
+	omPsScreen = ltPsScreen,
+	omPsOverlay = ltPsOverlay,
+	omPsHardLight = ltPsHardLight,
+	omPsSoftLight = ltPsSoftLight,
+	omPsColorDodge = ltPsColorDodge,
+	omPsColorDodge5 = ltPsColorDodge5,
+	omPsColorBurn = ltPsColorBurn,
+	omPsLighten = ltPsLighten,
+	omPsDarken = ltPsDarken,
+	omPsDifference = ltPsDifference,
+	omPsDifference5 = ltPsDifference5,
+	omPsExclusion = ltPsExclusion,
 	omAdditive = ltAdditive,
 	omSubtractive = ltSubtractive,
 	omMultiplicative = ltMultiplicative,
@@ -5237,6 +5385,8 @@ typedef struct
 #define TVP_CPU_IS_UNKNOWN 0x000000000
 #define TVP_CPU_VENDOR_MASK 0x000000ff0
 #define TVP_CPU_FAMILY_MASK 0x00000000f
+
+
 
 
 
@@ -8810,6 +8960,646 @@ inline void TVPTLG6DecodeLine(tjs_uint32 * prevline , tjs_uint32 * curline , tjs
 	}
 	typedef void (__stdcall * __functype)(tjs_uint32 *, tjs_uint32 *, tjs_int , tjs_int , tjs_uint8 *, tjs_int , tjs_uint32 *, tjs_uint32 , tjs_int , tjs_int);
 	((__functype)(TVPImportFuncPtrbe3a1844ea6af533bd4e7b0a76c826a1))(prevline, curline, width, block_count, filtertypes, skipblockbytes, in, initialp, oddskip, dir);
+}
+inline void TVPPsAlphaBlend(tjs_uint32 * dest , const tjs_uint32 * src , tjs_int len)
+{
+	if(!TVPImportFuncPtraa531d2c3c87f456e48a14722faa1c1f)
+	{
+		static char funcname[] = "void ::TVPPsAlphaBlend(tjs_uint32 *,const tjs_uint32 *,tjs_int)";
+		TVPImportFuncPtraa531d2c3c87f456e48a14722faa1c1f = TVPGetImportFuncPtr(funcname);
+	}
+	typedef void (__stdcall * __functype)(tjs_uint32 *, const tjs_uint32 *, tjs_int);
+	((__functype)(TVPImportFuncPtraa531d2c3c87f456e48a14722faa1c1f))(dest, src, len);
+}
+inline void TVPPsAlphaBlend_o(tjs_uint32 * dest , const tjs_uint32 * src , tjs_int len , tjs_int opa)
+{
+	if(!TVPImportFuncPtr6889cd886e1c2e7faf541528636c16c3)
+	{
+		static char funcname[] = "void ::TVPPsAlphaBlend_o(tjs_uint32 *,const tjs_uint32 *,tjs_int,tjs_int)";
+		TVPImportFuncPtr6889cd886e1c2e7faf541528636c16c3 = TVPGetImportFuncPtr(funcname);
+	}
+	typedef void (__stdcall * __functype)(tjs_uint32 *, const tjs_uint32 *, tjs_int , tjs_int);
+	((__functype)(TVPImportFuncPtr6889cd886e1c2e7faf541528636c16c3))(dest, src, len, opa);
+}
+inline void TVPPsAlphaBlend_HDA(tjs_uint32 * dest , const tjs_uint32 * src , tjs_int len)
+{
+	if(!TVPImportFuncPtr5d9266e6a8a154fe4ba80b0995e109ab)
+	{
+		static char funcname[] = "void ::TVPPsAlphaBlend_HDA(tjs_uint32 *,const tjs_uint32 *,tjs_int)";
+		TVPImportFuncPtr5d9266e6a8a154fe4ba80b0995e109ab = TVPGetImportFuncPtr(funcname);
+	}
+	typedef void (__stdcall * __functype)(tjs_uint32 *, const tjs_uint32 *, tjs_int);
+	((__functype)(TVPImportFuncPtr5d9266e6a8a154fe4ba80b0995e109ab))(dest, src, len);
+}
+inline void TVPPsAlphaBlend_HDA_o(tjs_uint32 * dest , const tjs_uint32 * src , tjs_int len , tjs_int opa)
+{
+	if(!TVPImportFuncPtra7dc19b023737979ad1ae1ae01d560d2)
+	{
+		static char funcname[] = "void ::TVPPsAlphaBlend_HDA_o(tjs_uint32 *,const tjs_uint32 *,tjs_int,tjs_int)";
+		TVPImportFuncPtra7dc19b023737979ad1ae1ae01d560d2 = TVPGetImportFuncPtr(funcname);
+	}
+	typedef void (__stdcall * __functype)(tjs_uint32 *, const tjs_uint32 *, tjs_int , tjs_int);
+	((__functype)(TVPImportFuncPtra7dc19b023737979ad1ae1ae01d560d2))(dest, src, len, opa);
+}
+inline void TVPPsAddBlend(tjs_uint32 * dest , const tjs_uint32 * src , tjs_int len)
+{
+	if(!TVPImportFuncPtrd20444b7a6243d668a0d3956d95af510)
+	{
+		static char funcname[] = "void ::TVPPsAddBlend(tjs_uint32 *,const tjs_uint32 *,tjs_int)";
+		TVPImportFuncPtrd20444b7a6243d668a0d3956d95af510 = TVPGetImportFuncPtr(funcname);
+	}
+	typedef void (__stdcall * __functype)(tjs_uint32 *, const tjs_uint32 *, tjs_int);
+	((__functype)(TVPImportFuncPtrd20444b7a6243d668a0d3956d95af510))(dest, src, len);
+}
+inline void TVPPsAddBlend_o(tjs_uint32 * dest , const tjs_uint32 * src , tjs_int len , tjs_int opa)
+{
+	if(!TVPImportFuncPtr1458dec9eee36816c8002d4049840355)
+	{
+		static char funcname[] = "void ::TVPPsAddBlend_o(tjs_uint32 *,const tjs_uint32 *,tjs_int,tjs_int)";
+		TVPImportFuncPtr1458dec9eee36816c8002d4049840355 = TVPGetImportFuncPtr(funcname);
+	}
+	typedef void (__stdcall * __functype)(tjs_uint32 *, const tjs_uint32 *, tjs_int , tjs_int);
+	((__functype)(TVPImportFuncPtr1458dec9eee36816c8002d4049840355))(dest, src, len, opa);
+}
+inline void TVPPsAddBlend_HDA(tjs_uint32 * dest , const tjs_uint32 * src , tjs_int len)
+{
+	if(!TVPImportFuncPtr21137ff5351245b1611852301b7f5796)
+	{
+		static char funcname[] = "void ::TVPPsAddBlend_HDA(tjs_uint32 *,const tjs_uint32 *,tjs_int)";
+		TVPImportFuncPtr21137ff5351245b1611852301b7f5796 = TVPGetImportFuncPtr(funcname);
+	}
+	typedef void (__stdcall * __functype)(tjs_uint32 *, const tjs_uint32 *, tjs_int);
+	((__functype)(TVPImportFuncPtr21137ff5351245b1611852301b7f5796))(dest, src, len);
+}
+inline void TVPPsAddBlend_HDA_o(tjs_uint32 * dest , const tjs_uint32 * src , tjs_int len , tjs_int opa)
+{
+	if(!TVPImportFuncPtrc07fc4e45fc2dc44d839c5e012d0be60)
+	{
+		static char funcname[] = "void ::TVPPsAddBlend_HDA_o(tjs_uint32 *,const tjs_uint32 *,tjs_int,tjs_int)";
+		TVPImportFuncPtrc07fc4e45fc2dc44d839c5e012d0be60 = TVPGetImportFuncPtr(funcname);
+	}
+	typedef void (__stdcall * __functype)(tjs_uint32 *, const tjs_uint32 *, tjs_int , tjs_int);
+	((__functype)(TVPImportFuncPtrc07fc4e45fc2dc44d839c5e012d0be60))(dest, src, len, opa);
+}
+inline void TVPPsSubBlend(tjs_uint32 * dest , const tjs_uint32 * src , tjs_int len)
+{
+	if(!TVPImportFuncPtr6815b962a3122ae967284239932cc656)
+	{
+		static char funcname[] = "void ::TVPPsSubBlend(tjs_uint32 *,const tjs_uint32 *,tjs_int)";
+		TVPImportFuncPtr6815b962a3122ae967284239932cc656 = TVPGetImportFuncPtr(funcname);
+	}
+	typedef void (__stdcall * __functype)(tjs_uint32 *, const tjs_uint32 *, tjs_int);
+	((__functype)(TVPImportFuncPtr6815b962a3122ae967284239932cc656))(dest, src, len);
+}
+inline void TVPPsSubBlend_o(tjs_uint32 * dest , const tjs_uint32 * src , tjs_int len , tjs_int opa)
+{
+	if(!TVPImportFuncPtre96cccbe1f16b0fb74673f2ec3343ff8)
+	{
+		static char funcname[] = "void ::TVPPsSubBlend_o(tjs_uint32 *,const tjs_uint32 *,tjs_int,tjs_int)";
+		TVPImportFuncPtre96cccbe1f16b0fb74673f2ec3343ff8 = TVPGetImportFuncPtr(funcname);
+	}
+	typedef void (__stdcall * __functype)(tjs_uint32 *, const tjs_uint32 *, tjs_int , tjs_int);
+	((__functype)(TVPImportFuncPtre96cccbe1f16b0fb74673f2ec3343ff8))(dest, src, len, opa);
+}
+inline void TVPPsSubBlend_HDA(tjs_uint32 * dest , const tjs_uint32 * src , tjs_int len)
+{
+	if(!TVPImportFuncPtre8cd7494f919b18a992cb8c2722b2bf0)
+	{
+		static char funcname[] = "void ::TVPPsSubBlend_HDA(tjs_uint32 *,const tjs_uint32 *,tjs_int)";
+		TVPImportFuncPtre8cd7494f919b18a992cb8c2722b2bf0 = TVPGetImportFuncPtr(funcname);
+	}
+	typedef void (__stdcall * __functype)(tjs_uint32 *, const tjs_uint32 *, tjs_int);
+	((__functype)(TVPImportFuncPtre8cd7494f919b18a992cb8c2722b2bf0))(dest, src, len);
+}
+inline void TVPPsSubBlend_HDA_o(tjs_uint32 * dest , const tjs_uint32 * src , tjs_int len , tjs_int opa)
+{
+	if(!TVPImportFuncPtr990fdefcafc0de5e8e1f502c1b341e44)
+	{
+		static char funcname[] = "void ::TVPPsSubBlend_HDA_o(tjs_uint32 *,const tjs_uint32 *,tjs_int,tjs_int)";
+		TVPImportFuncPtr990fdefcafc0de5e8e1f502c1b341e44 = TVPGetImportFuncPtr(funcname);
+	}
+	typedef void (__stdcall * __functype)(tjs_uint32 *, const tjs_uint32 *, tjs_int , tjs_int);
+	((__functype)(TVPImportFuncPtr990fdefcafc0de5e8e1f502c1b341e44))(dest, src, len, opa);
+}
+inline void TVPPsMulBlend(tjs_uint32 * dest , const tjs_uint32 * src , tjs_int len)
+{
+	if(!TVPImportFuncPtrde5d83ba307e822825062377fb76c2ba)
+	{
+		static char funcname[] = "void ::TVPPsMulBlend(tjs_uint32 *,const tjs_uint32 *,tjs_int)";
+		TVPImportFuncPtrde5d83ba307e822825062377fb76c2ba = TVPGetImportFuncPtr(funcname);
+	}
+	typedef void (__stdcall * __functype)(tjs_uint32 *, const tjs_uint32 *, tjs_int);
+	((__functype)(TVPImportFuncPtrde5d83ba307e822825062377fb76c2ba))(dest, src, len);
+}
+inline void TVPPsMulBlend_o(tjs_uint32 * dest , const tjs_uint32 * src , tjs_int len , tjs_int opa)
+{
+	if(!TVPImportFuncPtr5e28bcc0f5ad6a038eb5a6535b56386c)
+	{
+		static char funcname[] = "void ::TVPPsMulBlend_o(tjs_uint32 *,const tjs_uint32 *,tjs_int,tjs_int)";
+		TVPImportFuncPtr5e28bcc0f5ad6a038eb5a6535b56386c = TVPGetImportFuncPtr(funcname);
+	}
+	typedef void (__stdcall * __functype)(tjs_uint32 *, const tjs_uint32 *, tjs_int , tjs_int);
+	((__functype)(TVPImportFuncPtr5e28bcc0f5ad6a038eb5a6535b56386c))(dest, src, len, opa);
+}
+inline void TVPPsMulBlend_HDA(tjs_uint32 * dest , const tjs_uint32 * src , tjs_int len)
+{
+	if(!TVPImportFuncPtre33419e8ede4bb501ab1787cf17c7ca5)
+	{
+		static char funcname[] = "void ::TVPPsMulBlend_HDA(tjs_uint32 *,const tjs_uint32 *,tjs_int)";
+		TVPImportFuncPtre33419e8ede4bb501ab1787cf17c7ca5 = TVPGetImportFuncPtr(funcname);
+	}
+	typedef void (__stdcall * __functype)(tjs_uint32 *, const tjs_uint32 *, tjs_int);
+	((__functype)(TVPImportFuncPtre33419e8ede4bb501ab1787cf17c7ca5))(dest, src, len);
+}
+inline void TVPPsMulBlend_HDA_o(tjs_uint32 * dest , const tjs_uint32 * src , tjs_int len , tjs_int opa)
+{
+	if(!TVPImportFuncPtr1cd7cb9580c0cf723dea402b85a720b1)
+	{
+		static char funcname[] = "void ::TVPPsMulBlend_HDA_o(tjs_uint32 *,const tjs_uint32 *,tjs_int,tjs_int)";
+		TVPImportFuncPtr1cd7cb9580c0cf723dea402b85a720b1 = TVPGetImportFuncPtr(funcname);
+	}
+	typedef void (__stdcall * __functype)(tjs_uint32 *, const tjs_uint32 *, tjs_int , tjs_int);
+	((__functype)(TVPImportFuncPtr1cd7cb9580c0cf723dea402b85a720b1))(dest, src, len, opa);
+}
+inline void TVPPsScreenBlend(tjs_uint32 * dest , const tjs_uint32 * src , tjs_int len)
+{
+	if(!TVPImportFuncPtrd18ca17fad389ff60ce3caa769083798)
+	{
+		static char funcname[] = "void ::TVPPsScreenBlend(tjs_uint32 *,const tjs_uint32 *,tjs_int)";
+		TVPImportFuncPtrd18ca17fad389ff60ce3caa769083798 = TVPGetImportFuncPtr(funcname);
+	}
+	typedef void (__stdcall * __functype)(tjs_uint32 *, const tjs_uint32 *, tjs_int);
+	((__functype)(TVPImportFuncPtrd18ca17fad389ff60ce3caa769083798))(dest, src, len);
+}
+inline void TVPPsScreenBlend_o(tjs_uint32 * dest , const tjs_uint32 * src , tjs_int len , tjs_int opa)
+{
+	if(!TVPImportFuncPtr0a959a5ff02530a8eb122e7e1f8ceed3)
+	{
+		static char funcname[] = "void ::TVPPsScreenBlend_o(tjs_uint32 *,const tjs_uint32 *,tjs_int,tjs_int)";
+		TVPImportFuncPtr0a959a5ff02530a8eb122e7e1f8ceed3 = TVPGetImportFuncPtr(funcname);
+	}
+	typedef void (__stdcall * __functype)(tjs_uint32 *, const tjs_uint32 *, tjs_int , tjs_int);
+	((__functype)(TVPImportFuncPtr0a959a5ff02530a8eb122e7e1f8ceed3))(dest, src, len, opa);
+}
+inline void TVPPsScreenBlend_HDA(tjs_uint32 * dest , const tjs_uint32 * src , tjs_int len)
+{
+	if(!TVPImportFuncPtra4774ea559e64b4667b3845f8540d207)
+	{
+		static char funcname[] = "void ::TVPPsScreenBlend_HDA(tjs_uint32 *,const tjs_uint32 *,tjs_int)";
+		TVPImportFuncPtra4774ea559e64b4667b3845f8540d207 = TVPGetImportFuncPtr(funcname);
+	}
+	typedef void (__stdcall * __functype)(tjs_uint32 *, const tjs_uint32 *, tjs_int);
+	((__functype)(TVPImportFuncPtra4774ea559e64b4667b3845f8540d207))(dest, src, len);
+}
+inline void TVPPsScreenBlend_HDA_o(tjs_uint32 * dest , const tjs_uint32 * src , tjs_int len , tjs_int opa)
+{
+	if(!TVPImportFuncPtr52eae3e8106494bfa604c15492ecb9f4)
+	{
+		static char funcname[] = "void ::TVPPsScreenBlend_HDA_o(tjs_uint32 *,const tjs_uint32 *,tjs_int,tjs_int)";
+		TVPImportFuncPtr52eae3e8106494bfa604c15492ecb9f4 = TVPGetImportFuncPtr(funcname);
+	}
+	typedef void (__stdcall * __functype)(tjs_uint32 *, const tjs_uint32 *, tjs_int , tjs_int);
+	((__functype)(TVPImportFuncPtr52eae3e8106494bfa604c15492ecb9f4))(dest, src, len, opa);
+}
+inline void TVPPsOverlayBlend(tjs_uint32 * dest , const tjs_uint32 * src , tjs_int len)
+{
+	if(!TVPImportFuncPtr882f458df5e05bb9ab2222e79f6c81cf)
+	{
+		static char funcname[] = "void ::TVPPsOverlayBlend(tjs_uint32 *,const tjs_uint32 *,tjs_int)";
+		TVPImportFuncPtr882f458df5e05bb9ab2222e79f6c81cf = TVPGetImportFuncPtr(funcname);
+	}
+	typedef void (__stdcall * __functype)(tjs_uint32 *, const tjs_uint32 *, tjs_int);
+	((__functype)(TVPImportFuncPtr882f458df5e05bb9ab2222e79f6c81cf))(dest, src, len);
+}
+inline void TVPPsOverlayBlend_o(tjs_uint32 * dest , const tjs_uint32 * src , tjs_int len , tjs_int opa)
+{
+	if(!TVPImportFuncPtr6069a18bf7d3f394c230cdcf2f574ef4)
+	{
+		static char funcname[] = "void ::TVPPsOverlayBlend_o(tjs_uint32 *,const tjs_uint32 *,tjs_int,tjs_int)";
+		TVPImportFuncPtr6069a18bf7d3f394c230cdcf2f574ef4 = TVPGetImportFuncPtr(funcname);
+	}
+	typedef void (__stdcall * __functype)(tjs_uint32 *, const tjs_uint32 *, tjs_int , tjs_int);
+	((__functype)(TVPImportFuncPtr6069a18bf7d3f394c230cdcf2f574ef4))(dest, src, len, opa);
+}
+inline void TVPPsOverlayBlend_HDA(tjs_uint32 * dest , const tjs_uint32 * src , tjs_int len)
+{
+	if(!TVPImportFuncPtr75b60565caf44027cc52b2b5cf6b0ea3)
+	{
+		static char funcname[] = "void ::TVPPsOverlayBlend_HDA(tjs_uint32 *,const tjs_uint32 *,tjs_int)";
+		TVPImportFuncPtr75b60565caf44027cc52b2b5cf6b0ea3 = TVPGetImportFuncPtr(funcname);
+	}
+	typedef void (__stdcall * __functype)(tjs_uint32 *, const tjs_uint32 *, tjs_int);
+	((__functype)(TVPImportFuncPtr75b60565caf44027cc52b2b5cf6b0ea3))(dest, src, len);
+}
+inline void TVPPsOverlayBlend_HDA_o(tjs_uint32 * dest , const tjs_uint32 * src , tjs_int len , tjs_int opa)
+{
+	if(!TVPImportFuncPtr9d735149c3ad586363895f76645abf2e)
+	{
+		static char funcname[] = "void ::TVPPsOverlayBlend_HDA_o(tjs_uint32 *,const tjs_uint32 *,tjs_int,tjs_int)";
+		TVPImportFuncPtr9d735149c3ad586363895f76645abf2e = TVPGetImportFuncPtr(funcname);
+	}
+	typedef void (__stdcall * __functype)(tjs_uint32 *, const tjs_uint32 *, tjs_int , tjs_int);
+	((__functype)(TVPImportFuncPtr9d735149c3ad586363895f76645abf2e))(dest, src, len, opa);
+}
+inline void TVPPsHardLightBlend(tjs_uint32 * dest , const tjs_uint32 * src , tjs_int len)
+{
+	if(!TVPImportFuncPtrea5168fae254acdd8c8db6f1f3d2da03)
+	{
+		static char funcname[] = "void ::TVPPsHardLightBlend(tjs_uint32 *,const tjs_uint32 *,tjs_int)";
+		TVPImportFuncPtrea5168fae254acdd8c8db6f1f3d2da03 = TVPGetImportFuncPtr(funcname);
+	}
+	typedef void (__stdcall * __functype)(tjs_uint32 *, const tjs_uint32 *, tjs_int);
+	((__functype)(TVPImportFuncPtrea5168fae254acdd8c8db6f1f3d2da03))(dest, src, len);
+}
+inline void TVPPsHardLightBlend_o(tjs_uint32 * dest , const tjs_uint32 * src , tjs_int len , tjs_int opa)
+{
+	if(!TVPImportFuncPtrf5a42bd5239e1a0be29f92eb838d2c8c)
+	{
+		static char funcname[] = "void ::TVPPsHardLightBlend_o(tjs_uint32 *,const tjs_uint32 *,tjs_int,tjs_int)";
+		TVPImportFuncPtrf5a42bd5239e1a0be29f92eb838d2c8c = TVPGetImportFuncPtr(funcname);
+	}
+	typedef void (__stdcall * __functype)(tjs_uint32 *, const tjs_uint32 *, tjs_int , tjs_int);
+	((__functype)(TVPImportFuncPtrf5a42bd5239e1a0be29f92eb838d2c8c))(dest, src, len, opa);
+}
+inline void TVPPsHardLightBlend_HDA(tjs_uint32 * dest , const tjs_uint32 * src , tjs_int len)
+{
+	if(!TVPImportFuncPtr7cc8cd9f415b183b42c546635aeade7f)
+	{
+		static char funcname[] = "void ::TVPPsHardLightBlend_HDA(tjs_uint32 *,const tjs_uint32 *,tjs_int)";
+		TVPImportFuncPtr7cc8cd9f415b183b42c546635aeade7f = TVPGetImportFuncPtr(funcname);
+	}
+	typedef void (__stdcall * __functype)(tjs_uint32 *, const tjs_uint32 *, tjs_int);
+	((__functype)(TVPImportFuncPtr7cc8cd9f415b183b42c546635aeade7f))(dest, src, len);
+}
+inline void TVPPsHardLightBlend_HDA_o(tjs_uint32 * dest , const tjs_uint32 * src , tjs_int len , tjs_int opa)
+{
+	if(!TVPImportFuncPtrad2fefa53e05528f9c1fe29d27db0f37)
+	{
+		static char funcname[] = "void ::TVPPsHardLightBlend_HDA_o(tjs_uint32 *,const tjs_uint32 *,tjs_int,tjs_int)";
+		TVPImportFuncPtrad2fefa53e05528f9c1fe29d27db0f37 = TVPGetImportFuncPtr(funcname);
+	}
+	typedef void (__stdcall * __functype)(tjs_uint32 *, const tjs_uint32 *, tjs_int , tjs_int);
+	((__functype)(TVPImportFuncPtrad2fefa53e05528f9c1fe29d27db0f37))(dest, src, len, opa);
+}
+inline void TVPPsSoftLightBlend(tjs_uint32 * dest , const tjs_uint32 * src , tjs_int len)
+{
+	if(!TVPImportFuncPtrf3e06fed4c82a9bd1b53252abaf50847)
+	{
+		static char funcname[] = "void ::TVPPsSoftLightBlend(tjs_uint32 *,const tjs_uint32 *,tjs_int)";
+		TVPImportFuncPtrf3e06fed4c82a9bd1b53252abaf50847 = TVPGetImportFuncPtr(funcname);
+	}
+	typedef void (__stdcall * __functype)(tjs_uint32 *, const tjs_uint32 *, tjs_int);
+	((__functype)(TVPImportFuncPtrf3e06fed4c82a9bd1b53252abaf50847))(dest, src, len);
+}
+inline void TVPPsSoftLightBlend_o(tjs_uint32 * dest , const tjs_uint32 * src , tjs_int len , tjs_int opa)
+{
+	if(!TVPImportFuncPtr960db7ea36202bf7ec3bf6b767cc045e)
+	{
+		static char funcname[] = "void ::TVPPsSoftLightBlend_o(tjs_uint32 *,const tjs_uint32 *,tjs_int,tjs_int)";
+		TVPImportFuncPtr960db7ea36202bf7ec3bf6b767cc045e = TVPGetImportFuncPtr(funcname);
+	}
+	typedef void (__stdcall * __functype)(tjs_uint32 *, const tjs_uint32 *, tjs_int , tjs_int);
+	((__functype)(TVPImportFuncPtr960db7ea36202bf7ec3bf6b767cc045e))(dest, src, len, opa);
+}
+inline void TVPPsSoftLightBlend_HDA(tjs_uint32 * dest , const tjs_uint32 * src , tjs_int len)
+{
+	if(!TVPImportFuncPtr7bf5d357eb52dd206a269b54c8136e0e)
+	{
+		static char funcname[] = "void ::TVPPsSoftLightBlend_HDA(tjs_uint32 *,const tjs_uint32 *,tjs_int)";
+		TVPImportFuncPtr7bf5d357eb52dd206a269b54c8136e0e = TVPGetImportFuncPtr(funcname);
+	}
+	typedef void (__stdcall * __functype)(tjs_uint32 *, const tjs_uint32 *, tjs_int);
+	((__functype)(TVPImportFuncPtr7bf5d357eb52dd206a269b54c8136e0e))(dest, src, len);
+}
+inline void TVPPsSoftLightBlend_HDA_o(tjs_uint32 * dest , const tjs_uint32 * src , tjs_int len , tjs_int opa)
+{
+	if(!TVPImportFuncPtrba1c9b771c5cdb725128de684af3c9ca)
+	{
+		static char funcname[] = "void ::TVPPsSoftLightBlend_HDA_o(tjs_uint32 *,const tjs_uint32 *,tjs_int,tjs_int)";
+		TVPImportFuncPtrba1c9b771c5cdb725128de684af3c9ca = TVPGetImportFuncPtr(funcname);
+	}
+	typedef void (__stdcall * __functype)(tjs_uint32 *, const tjs_uint32 *, tjs_int , tjs_int);
+	((__functype)(TVPImportFuncPtrba1c9b771c5cdb725128de684af3c9ca))(dest, src, len, opa);
+}
+inline void TVPPsColorDodgeBlend(tjs_uint32 * dest , const tjs_uint32 * src , tjs_int len)
+{
+	if(!TVPImportFuncPtr69cc6311196adc134fd153c4c5346bc5)
+	{
+		static char funcname[] = "void ::TVPPsColorDodgeBlend(tjs_uint32 *,const tjs_uint32 *,tjs_int)";
+		TVPImportFuncPtr69cc6311196adc134fd153c4c5346bc5 = TVPGetImportFuncPtr(funcname);
+	}
+	typedef void (__stdcall * __functype)(tjs_uint32 *, const tjs_uint32 *, tjs_int);
+	((__functype)(TVPImportFuncPtr69cc6311196adc134fd153c4c5346bc5))(dest, src, len);
+}
+inline void TVPPsColorDodgeBlend_o(tjs_uint32 * dest , const tjs_uint32 * src , tjs_int len , tjs_int opa)
+{
+	if(!TVPImportFuncPtr8ed68f8e79efe1c767f92e7d92eb8b54)
+	{
+		static char funcname[] = "void ::TVPPsColorDodgeBlend_o(tjs_uint32 *,const tjs_uint32 *,tjs_int,tjs_int)";
+		TVPImportFuncPtr8ed68f8e79efe1c767f92e7d92eb8b54 = TVPGetImportFuncPtr(funcname);
+	}
+	typedef void (__stdcall * __functype)(tjs_uint32 *, const tjs_uint32 *, tjs_int , tjs_int);
+	((__functype)(TVPImportFuncPtr8ed68f8e79efe1c767f92e7d92eb8b54))(dest, src, len, opa);
+}
+inline void TVPPsColorDodgeBlend_HDA(tjs_uint32 * dest , const tjs_uint32 * src , tjs_int len)
+{
+	if(!TVPImportFuncPtr60da1e9ec15b251ff18ddcdf8a3e93e0)
+	{
+		static char funcname[] = "void ::TVPPsColorDodgeBlend_HDA(tjs_uint32 *,const tjs_uint32 *,tjs_int)";
+		TVPImportFuncPtr60da1e9ec15b251ff18ddcdf8a3e93e0 = TVPGetImportFuncPtr(funcname);
+	}
+	typedef void (__stdcall * __functype)(tjs_uint32 *, const tjs_uint32 *, tjs_int);
+	((__functype)(TVPImportFuncPtr60da1e9ec15b251ff18ddcdf8a3e93e0))(dest, src, len);
+}
+inline void TVPPsColorDodgeBlend_HDA_o(tjs_uint32 * dest , const tjs_uint32 * src , tjs_int len , tjs_int opa)
+{
+	if(!TVPImportFuncPtref47304bad87a036e38f0319b48c1f6e)
+	{
+		static char funcname[] = "void ::TVPPsColorDodgeBlend_HDA_o(tjs_uint32 *,const tjs_uint32 *,tjs_int,tjs_int)";
+		TVPImportFuncPtref47304bad87a036e38f0319b48c1f6e = TVPGetImportFuncPtr(funcname);
+	}
+	typedef void (__stdcall * __functype)(tjs_uint32 *, const tjs_uint32 *, tjs_int , tjs_int);
+	((__functype)(TVPImportFuncPtref47304bad87a036e38f0319b48c1f6e))(dest, src, len, opa);
+}
+inline void TVPPsColorDodge5Blend(tjs_uint32 * dest , const tjs_uint32 * src , tjs_int len)
+{
+	if(!TVPImportFuncPtr182d19020e4e2d5cd1462d7c8ef24d1f)
+	{
+		static char funcname[] = "void ::TVPPsColorDodge5Blend(tjs_uint32 *,const tjs_uint32 *,tjs_int)";
+		TVPImportFuncPtr182d19020e4e2d5cd1462d7c8ef24d1f = TVPGetImportFuncPtr(funcname);
+	}
+	typedef void (__stdcall * __functype)(tjs_uint32 *, const tjs_uint32 *, tjs_int);
+	((__functype)(TVPImportFuncPtr182d19020e4e2d5cd1462d7c8ef24d1f))(dest, src, len);
+}
+inline void TVPPsColorDodge5Blend_o(tjs_uint32 * dest , const tjs_uint32 * src , tjs_int len , tjs_int opa)
+{
+	if(!TVPImportFuncPtr9e1fa429a92a5c99d397a06c20fd6705)
+	{
+		static char funcname[] = "void ::TVPPsColorDodge5Blend_o(tjs_uint32 *,const tjs_uint32 *,tjs_int,tjs_int)";
+		TVPImportFuncPtr9e1fa429a92a5c99d397a06c20fd6705 = TVPGetImportFuncPtr(funcname);
+	}
+	typedef void (__stdcall * __functype)(tjs_uint32 *, const tjs_uint32 *, tjs_int , tjs_int);
+	((__functype)(TVPImportFuncPtr9e1fa429a92a5c99d397a06c20fd6705))(dest, src, len, opa);
+}
+inline void TVPPsColorDodge5Blend_HDA(tjs_uint32 * dest , const tjs_uint32 * src , tjs_int len)
+{
+	if(!TVPImportFuncPtr74ac7c291299eb928aa4c2899df5567e)
+	{
+		static char funcname[] = "void ::TVPPsColorDodge5Blend_HDA(tjs_uint32 *,const tjs_uint32 *,tjs_int)";
+		TVPImportFuncPtr74ac7c291299eb928aa4c2899df5567e = TVPGetImportFuncPtr(funcname);
+	}
+	typedef void (__stdcall * __functype)(tjs_uint32 *, const tjs_uint32 *, tjs_int);
+	((__functype)(TVPImportFuncPtr74ac7c291299eb928aa4c2899df5567e))(dest, src, len);
+}
+inline void TVPPsColorDodge5Blend_HDA_o(tjs_uint32 * dest , const tjs_uint32 * src , tjs_int len , tjs_int opa)
+{
+	if(!TVPImportFuncPtrfb645d9ec0ef3fd2aba2b762ef6b9a15)
+	{
+		static char funcname[] = "void ::TVPPsColorDodge5Blend_HDA_o(tjs_uint32 *,const tjs_uint32 *,tjs_int,tjs_int)";
+		TVPImportFuncPtrfb645d9ec0ef3fd2aba2b762ef6b9a15 = TVPGetImportFuncPtr(funcname);
+	}
+	typedef void (__stdcall * __functype)(tjs_uint32 *, const tjs_uint32 *, tjs_int , tjs_int);
+	((__functype)(TVPImportFuncPtrfb645d9ec0ef3fd2aba2b762ef6b9a15))(dest, src, len, opa);
+}
+inline void TVPPsColorBurnBlend(tjs_uint32 * dest , const tjs_uint32 * src , tjs_int len)
+{
+	if(!TVPImportFuncPtrf988626275257574050ac789f9060a3b)
+	{
+		static char funcname[] = "void ::TVPPsColorBurnBlend(tjs_uint32 *,const tjs_uint32 *,tjs_int)";
+		TVPImportFuncPtrf988626275257574050ac789f9060a3b = TVPGetImportFuncPtr(funcname);
+	}
+	typedef void (__stdcall * __functype)(tjs_uint32 *, const tjs_uint32 *, tjs_int);
+	((__functype)(TVPImportFuncPtrf988626275257574050ac789f9060a3b))(dest, src, len);
+}
+inline void TVPPsColorBurnBlend_o(tjs_uint32 * dest , const tjs_uint32 * src , tjs_int len , tjs_int opa)
+{
+	if(!TVPImportFuncPtr1831064ed23493cef407648763ba4d69)
+	{
+		static char funcname[] = "void ::TVPPsColorBurnBlend_o(tjs_uint32 *,const tjs_uint32 *,tjs_int,tjs_int)";
+		TVPImportFuncPtr1831064ed23493cef407648763ba4d69 = TVPGetImportFuncPtr(funcname);
+	}
+	typedef void (__stdcall * __functype)(tjs_uint32 *, const tjs_uint32 *, tjs_int , tjs_int);
+	((__functype)(TVPImportFuncPtr1831064ed23493cef407648763ba4d69))(dest, src, len, opa);
+}
+inline void TVPPsColorBurnBlend_HDA(tjs_uint32 * dest , const tjs_uint32 * src , tjs_int len)
+{
+	if(!TVPImportFuncPtr305390c94750daa7124db3ff6e77931c)
+	{
+		static char funcname[] = "void ::TVPPsColorBurnBlend_HDA(tjs_uint32 *,const tjs_uint32 *,tjs_int)";
+		TVPImportFuncPtr305390c94750daa7124db3ff6e77931c = TVPGetImportFuncPtr(funcname);
+	}
+	typedef void (__stdcall * __functype)(tjs_uint32 *, const tjs_uint32 *, tjs_int);
+	((__functype)(TVPImportFuncPtr305390c94750daa7124db3ff6e77931c))(dest, src, len);
+}
+inline void TVPPsColorBurnBlend_HDA_o(tjs_uint32 * dest , const tjs_uint32 * src , tjs_int len , tjs_int opa)
+{
+	if(!TVPImportFuncPtr4fb384a391bfcf6a3a2932661d3051aa)
+	{
+		static char funcname[] = "void ::TVPPsColorBurnBlend_HDA_o(tjs_uint32 *,const tjs_uint32 *,tjs_int,tjs_int)";
+		TVPImportFuncPtr4fb384a391bfcf6a3a2932661d3051aa = TVPGetImportFuncPtr(funcname);
+	}
+	typedef void (__stdcall * __functype)(tjs_uint32 *, const tjs_uint32 *, tjs_int , tjs_int);
+	((__functype)(TVPImportFuncPtr4fb384a391bfcf6a3a2932661d3051aa))(dest, src, len, opa);
+}
+inline void TVPPsLightenBlend(tjs_uint32 * dest , const tjs_uint32 * src , tjs_int len)
+{
+	if(!TVPImportFuncPtr305537c4820e23cf217a15efb56dba1c)
+	{
+		static char funcname[] = "void ::TVPPsLightenBlend(tjs_uint32 *,const tjs_uint32 *,tjs_int)";
+		TVPImportFuncPtr305537c4820e23cf217a15efb56dba1c = TVPGetImportFuncPtr(funcname);
+	}
+	typedef void (__stdcall * __functype)(tjs_uint32 *, const tjs_uint32 *, tjs_int);
+	((__functype)(TVPImportFuncPtr305537c4820e23cf217a15efb56dba1c))(dest, src, len);
+}
+inline void TVPPsLightenBlend_o(tjs_uint32 * dest , const tjs_uint32 * src , tjs_int len , tjs_int opa)
+{
+	if(!TVPImportFuncPtraacf83677ca7df75117f7bafa7a53791)
+	{
+		static char funcname[] = "void ::TVPPsLightenBlend_o(tjs_uint32 *,const tjs_uint32 *,tjs_int,tjs_int)";
+		TVPImportFuncPtraacf83677ca7df75117f7bafa7a53791 = TVPGetImportFuncPtr(funcname);
+	}
+	typedef void (__stdcall * __functype)(tjs_uint32 *, const tjs_uint32 *, tjs_int , tjs_int);
+	((__functype)(TVPImportFuncPtraacf83677ca7df75117f7bafa7a53791))(dest, src, len, opa);
+}
+inline void TVPPsLightenBlend_HDA(tjs_uint32 * dest , const tjs_uint32 * src , tjs_int len)
+{
+	if(!TVPImportFuncPtrd14b922fefc6c07aa536b94762579fe5)
+	{
+		static char funcname[] = "void ::TVPPsLightenBlend_HDA(tjs_uint32 *,const tjs_uint32 *,tjs_int)";
+		TVPImportFuncPtrd14b922fefc6c07aa536b94762579fe5 = TVPGetImportFuncPtr(funcname);
+	}
+	typedef void (__stdcall * __functype)(tjs_uint32 *, const tjs_uint32 *, tjs_int);
+	((__functype)(TVPImportFuncPtrd14b922fefc6c07aa536b94762579fe5))(dest, src, len);
+}
+inline void TVPPsLightenBlend_HDA_o(tjs_uint32 * dest , const tjs_uint32 * src , tjs_int len , tjs_int opa)
+{
+	if(!TVPImportFuncPtr00fd650a79c603bdeb2f8e36f667a782)
+	{
+		static char funcname[] = "void ::TVPPsLightenBlend_HDA_o(tjs_uint32 *,const tjs_uint32 *,tjs_int,tjs_int)";
+		TVPImportFuncPtr00fd650a79c603bdeb2f8e36f667a782 = TVPGetImportFuncPtr(funcname);
+	}
+	typedef void (__stdcall * __functype)(tjs_uint32 *, const tjs_uint32 *, tjs_int , tjs_int);
+	((__functype)(TVPImportFuncPtr00fd650a79c603bdeb2f8e36f667a782))(dest, src, len, opa);
+}
+inline void TVPPsDarkenBlend(tjs_uint32 * dest , const tjs_uint32 * src , tjs_int len)
+{
+	if(!TVPImportFuncPtra36ee133c07c30185b0bbc6375954e88)
+	{
+		static char funcname[] = "void ::TVPPsDarkenBlend(tjs_uint32 *,const tjs_uint32 *,tjs_int)";
+		TVPImportFuncPtra36ee133c07c30185b0bbc6375954e88 = TVPGetImportFuncPtr(funcname);
+	}
+	typedef void (__stdcall * __functype)(tjs_uint32 *, const tjs_uint32 *, tjs_int);
+	((__functype)(TVPImportFuncPtra36ee133c07c30185b0bbc6375954e88))(dest, src, len);
+}
+inline void TVPPsDarkenBlend_o(tjs_uint32 * dest , const tjs_uint32 * src , tjs_int len , tjs_int opa)
+{
+	if(!TVPImportFuncPtrdc657ecacf8e578870314427216864d9)
+	{
+		static char funcname[] = "void ::TVPPsDarkenBlend_o(tjs_uint32 *,const tjs_uint32 *,tjs_int,tjs_int)";
+		TVPImportFuncPtrdc657ecacf8e578870314427216864d9 = TVPGetImportFuncPtr(funcname);
+	}
+	typedef void (__stdcall * __functype)(tjs_uint32 *, const tjs_uint32 *, tjs_int , tjs_int);
+	((__functype)(TVPImportFuncPtrdc657ecacf8e578870314427216864d9))(dest, src, len, opa);
+}
+inline void TVPPsDarkenBlend_HDA(tjs_uint32 * dest , const tjs_uint32 * src , tjs_int len)
+{
+	if(!TVPImportFuncPtre79d02b58a8bfdee439bc0694d7edd6d)
+	{
+		static char funcname[] = "void ::TVPPsDarkenBlend_HDA(tjs_uint32 *,const tjs_uint32 *,tjs_int)";
+		TVPImportFuncPtre79d02b58a8bfdee439bc0694d7edd6d = TVPGetImportFuncPtr(funcname);
+	}
+	typedef void (__stdcall * __functype)(tjs_uint32 *, const tjs_uint32 *, tjs_int);
+	((__functype)(TVPImportFuncPtre79d02b58a8bfdee439bc0694d7edd6d))(dest, src, len);
+}
+inline void TVPPsDarkenBlend_HDA_o(tjs_uint32 * dest , const tjs_uint32 * src , tjs_int len , tjs_int opa)
+{
+	if(!TVPImportFuncPtr6b7537b66b71d27384bea45bc2bf24b4)
+	{
+		static char funcname[] = "void ::TVPPsDarkenBlend_HDA_o(tjs_uint32 *,const tjs_uint32 *,tjs_int,tjs_int)";
+		TVPImportFuncPtr6b7537b66b71d27384bea45bc2bf24b4 = TVPGetImportFuncPtr(funcname);
+	}
+	typedef void (__stdcall * __functype)(tjs_uint32 *, const tjs_uint32 *, tjs_int , tjs_int);
+	((__functype)(TVPImportFuncPtr6b7537b66b71d27384bea45bc2bf24b4))(dest, src, len, opa);
+}
+inline void TVPPsDiffBlend(tjs_uint32 * dest , const tjs_uint32 * src , tjs_int len)
+{
+	if(!TVPImportFuncPtrb3456dbad652b52f5bce1889b6f4d0ef)
+	{
+		static char funcname[] = "void ::TVPPsDiffBlend(tjs_uint32 *,const tjs_uint32 *,tjs_int)";
+		TVPImportFuncPtrb3456dbad652b52f5bce1889b6f4d0ef = TVPGetImportFuncPtr(funcname);
+	}
+	typedef void (__stdcall * __functype)(tjs_uint32 *, const tjs_uint32 *, tjs_int);
+	((__functype)(TVPImportFuncPtrb3456dbad652b52f5bce1889b6f4d0ef))(dest, src, len);
+}
+inline void TVPPsDiffBlend_o(tjs_uint32 * dest , const tjs_uint32 * src , tjs_int len , tjs_int opa)
+{
+	if(!TVPImportFuncPtr9a50803a03e1ccb60120dff8b92ecdcd)
+	{
+		static char funcname[] = "void ::TVPPsDiffBlend_o(tjs_uint32 *,const tjs_uint32 *,tjs_int,tjs_int)";
+		TVPImportFuncPtr9a50803a03e1ccb60120dff8b92ecdcd = TVPGetImportFuncPtr(funcname);
+	}
+	typedef void (__stdcall * __functype)(tjs_uint32 *, const tjs_uint32 *, tjs_int , tjs_int);
+	((__functype)(TVPImportFuncPtr9a50803a03e1ccb60120dff8b92ecdcd))(dest, src, len, opa);
+}
+inline void TVPPsDiffBlend_HDA(tjs_uint32 * dest , const tjs_uint32 * src , tjs_int len)
+{
+	if(!TVPImportFuncPtr0f6b3940dc72e3e56cd15216b53b9126)
+	{
+		static char funcname[] = "void ::TVPPsDiffBlend_HDA(tjs_uint32 *,const tjs_uint32 *,tjs_int)";
+		TVPImportFuncPtr0f6b3940dc72e3e56cd15216b53b9126 = TVPGetImportFuncPtr(funcname);
+	}
+	typedef void (__stdcall * __functype)(tjs_uint32 *, const tjs_uint32 *, tjs_int);
+	((__functype)(TVPImportFuncPtr0f6b3940dc72e3e56cd15216b53b9126))(dest, src, len);
+}
+inline void TVPPsDiffBlend_HDA_o(tjs_uint32 * dest , const tjs_uint32 * src , tjs_int len , tjs_int opa)
+{
+	if(!TVPImportFuncPtr23b647f1c825e214a7465de3ebe9968d)
+	{
+		static char funcname[] = "void ::TVPPsDiffBlend_HDA_o(tjs_uint32 *,const tjs_uint32 *,tjs_int,tjs_int)";
+		TVPImportFuncPtr23b647f1c825e214a7465de3ebe9968d = TVPGetImportFuncPtr(funcname);
+	}
+	typedef void (__stdcall * __functype)(tjs_uint32 *, const tjs_uint32 *, tjs_int , tjs_int);
+	((__functype)(TVPImportFuncPtr23b647f1c825e214a7465de3ebe9968d))(dest, src, len, opa);
+}
+inline void TVPPsDiff5Blend(tjs_uint32 * dest , const tjs_uint32 * src , tjs_int len)
+{
+	if(!TVPImportFuncPtr8ec96bc7b777180f23e1a2e43bf9a413)
+	{
+		static char funcname[] = "void ::TVPPsDiff5Blend(tjs_uint32 *,const tjs_uint32 *,tjs_int)";
+		TVPImportFuncPtr8ec96bc7b777180f23e1a2e43bf9a413 = TVPGetImportFuncPtr(funcname);
+	}
+	typedef void (__stdcall * __functype)(tjs_uint32 *, const tjs_uint32 *, tjs_int);
+	((__functype)(TVPImportFuncPtr8ec96bc7b777180f23e1a2e43bf9a413))(dest, src, len);
+}
+inline void TVPPsDiff5Blend_o(tjs_uint32 * dest , const tjs_uint32 * src , tjs_int len , tjs_int opa)
+{
+	if(!TVPImportFuncPtrcffd45014652659638d59abe11daf3be)
+	{
+		static char funcname[] = "void ::TVPPsDiff5Blend_o(tjs_uint32 *,const tjs_uint32 *,tjs_int,tjs_int)";
+		TVPImportFuncPtrcffd45014652659638d59abe11daf3be = TVPGetImportFuncPtr(funcname);
+	}
+	typedef void (__stdcall * __functype)(tjs_uint32 *, const tjs_uint32 *, tjs_int , tjs_int);
+	((__functype)(TVPImportFuncPtrcffd45014652659638d59abe11daf3be))(dest, src, len, opa);
+}
+inline void TVPPsDiff5Blend_HDA(tjs_uint32 * dest , const tjs_uint32 * src , tjs_int len)
+{
+	if(!TVPImportFuncPtra784285a35b1bc76bb367305b5099e35)
+	{
+		static char funcname[] = "void ::TVPPsDiff5Blend_HDA(tjs_uint32 *,const tjs_uint32 *,tjs_int)";
+		TVPImportFuncPtra784285a35b1bc76bb367305b5099e35 = TVPGetImportFuncPtr(funcname);
+	}
+	typedef void (__stdcall * __functype)(tjs_uint32 *, const tjs_uint32 *, tjs_int);
+	((__functype)(TVPImportFuncPtra784285a35b1bc76bb367305b5099e35))(dest, src, len);
+}
+inline void TVPPsDiff5Blend_HDA_o(tjs_uint32 * dest , const tjs_uint32 * src , tjs_int len , tjs_int opa)
+{
+	if(!TVPImportFuncPtr03773751329896facf2003ab79bbc475)
+	{
+		static char funcname[] = "void ::TVPPsDiff5Blend_HDA_o(tjs_uint32 *,const tjs_uint32 *,tjs_int,tjs_int)";
+		TVPImportFuncPtr03773751329896facf2003ab79bbc475 = TVPGetImportFuncPtr(funcname);
+	}
+	typedef void (__stdcall * __functype)(tjs_uint32 *, const tjs_uint32 *, tjs_int , tjs_int);
+	((__functype)(TVPImportFuncPtr03773751329896facf2003ab79bbc475))(dest, src, len, opa);
+}
+inline void TVPPsExclusionBlend(tjs_uint32 * dest , const tjs_uint32 * src , tjs_int len)
+{
+	if(!TVPImportFuncPtr923884216edf134d07d8e70f8f57e827)
+	{
+		static char funcname[] = "void ::TVPPsExclusionBlend(tjs_uint32 *,const tjs_uint32 *,tjs_int)";
+		TVPImportFuncPtr923884216edf134d07d8e70f8f57e827 = TVPGetImportFuncPtr(funcname);
+	}
+	typedef void (__stdcall * __functype)(tjs_uint32 *, const tjs_uint32 *, tjs_int);
+	((__functype)(TVPImportFuncPtr923884216edf134d07d8e70f8f57e827))(dest, src, len);
+}
+inline void TVPPsExclusionBlend_o(tjs_uint32 * dest , const tjs_uint32 * src , tjs_int len , tjs_int opa)
+{
+	if(!TVPImportFuncPtre48798dc69498f80b6633bb405eda6eb)
+	{
+		static char funcname[] = "void ::TVPPsExclusionBlend_o(tjs_uint32 *,const tjs_uint32 *,tjs_int,tjs_int)";
+		TVPImportFuncPtre48798dc69498f80b6633bb405eda6eb = TVPGetImportFuncPtr(funcname);
+	}
+	typedef void (__stdcall * __functype)(tjs_uint32 *, const tjs_uint32 *, tjs_int , tjs_int);
+	((__functype)(TVPImportFuncPtre48798dc69498f80b6633bb405eda6eb))(dest, src, len, opa);
+}
+inline void TVPPsExclusionBlend_HDA(tjs_uint32 * dest , const tjs_uint32 * src , tjs_int len)
+{
+	if(!TVPImportFuncPtr998a5e1aa5cd85689795348fc540a655)
+	{
+		static char funcname[] = "void ::TVPPsExclusionBlend_HDA(tjs_uint32 *,const tjs_uint32 *,tjs_int)";
+		TVPImportFuncPtr998a5e1aa5cd85689795348fc540a655 = TVPGetImportFuncPtr(funcname);
+	}
+	typedef void (__stdcall * __functype)(tjs_uint32 *, const tjs_uint32 *, tjs_int);
+	((__functype)(TVPImportFuncPtr998a5e1aa5cd85689795348fc540a655))(dest, src, len);
+}
+inline void TVPPsExclusionBlend_HDA_o(tjs_uint32 * dest , const tjs_uint32 * src , tjs_int len , tjs_int opa)
+{
+	if(!TVPImportFuncPtr5f6d263c0d48d03f6eb0dc44c9dd0be2)
+	{
+		static char funcname[] = "void ::TVPPsExclusionBlend_HDA_o(tjs_uint32 *,const tjs_uint32 *,tjs_int,tjs_int)";
+		TVPImportFuncPtr5f6d263c0d48d03f6eb0dc44c9dd0be2 = TVPGetImportFuncPtr(funcname);
+	}
+	typedef void (__stdcall * __functype)(tjs_uint32 *, const tjs_uint32 *, tjs_int , tjs_int);
+	((__functype)(TVPImportFuncPtr5f6d263c0d48d03f6eb0dc44c9dd0be2))(dest, src, len, opa);
 }
 
 #ifdef __BORLANDC__

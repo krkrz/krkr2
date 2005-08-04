@@ -1862,6 +1862,22 @@
 			<desc>
 				　演算のモードを指定します。<r/>
 				<tt><kw>omAuto</kw></tt> が指定された場合は演算元レイヤの<ref>Layer.type</ref>プロパティに従って演算の種類が自動的に決定されます。<r/>
+				<tt><kw>omPsNormal</kw></tt> が指定された場合はPhotoshop互換のアルファ合成が行われます。<r/>
+				<tt><kw>omPsAdditive</kw></tt> が指定された場合はPhotoshop互換の覆い焼き(リニア)合成が行われます。<r/>
+				<tt><kw>omPsSubtractive</kw></tt> が指定された場合はPhotoshop互換の焼き込み(リニア)合成が行われます。<r/>
+				<tt><kw>omPsMultiplicative</kw></tt> が指定された場合はPhotoshop互換の乗算合成が行われます。<r/>
+				<tt><kw>omPsScreen</kw></tt> が指定された場合はPhotoshop互換のスクリーン合成が行われます。<r/>
+				<tt><kw>omPsOverlay</kw></tt> が指定された場合はPhotoshop互換のオーバーレイ合成が行われます。<r/>
+				<tt><kw>omPsHardLight</kw></tt> が指定された場合はPhotoshop互換のハードライト合成が行われます。<r/>
+				<tt><kw>omPsSoftLight</kw></tt> が指定された場合はPhotoshop互換のソフトライト合成が行われます。<r/>
+				<tt><kw>omPsColorDodge</kw></tt> が指定された場合はPhotoshop互換の覆い焼きカラー合成が行われます。<r/>
+				<tt><kw>omPsColorDodge5</kw></tt> が指定された場合はPhotoshopのバージョン5.x 以下と互換の覆い焼きカラー合成が行われます。<r/>
+				<tt><kw>omPsColorBurn</kw></tt> が指定された場合はPhotoshop互換の焼き込みカラー合成が行われます。<r/>
+				<tt><kw>omPsLighten</kw></tt> が指定された場合はPhotoshop互換の比較(明)合成が行われます。<r/>
+				<tt><kw>omPsDarken</kw></tt> が指定された場合はPhotoshop互換の比較(暗)合成が行われます。<r/>
+				<tt><kw>omPsDifference</kw></tt> が指定された場合はPhotoshop互換の差の絶対値合成が行われます。<r/>
+				<tt><kw>omPsDifference5</kw></tt> が指定された場合はPhotoshopのバージョン 5.x 以下と互換の差の絶対値合成が行われます。<r/>
+				<tt><kw>omPsExclusion</kw></tt> が指定された場合はPhotoshop互換の除外合成が行われます。<r/>
 				<tt><kw>omAdditive</kw></tt> が指定された場合は加算合成が行われます。<r/>
 				<tt><kw>omSubtractive</kw></tt> が指定された場合は減算合成が行われます。<r/>
 				<tt><kw>omMultiplicative</kw></tt> が指定された場合は乗算合成が行われます。<r/>
@@ -2288,6 +2304,22 @@
 			<desc>
 				　演算のモードを指定します。<r/>
 				<tt><kw>omAuto</kw></tt> が指定された場合は演算元レイヤの<ref>Layer.type</ref>プロパティに従って演算の種類が自動的に決定されます。<r/>
+				<tt><kw>omPsNormal</kw></tt> が指定された場合はPhotoshop互換のアルファ合成が行われます(現バージョンでは未実装です)。<r/>
+				<tt><kw>omPsAdditive</kw></tt> が指定された場合はPhotoshop互換の覆い焼き(リニア)合成が行われます(現バージョンでは未実装です)。<r/>
+				<tt><kw>omPsSubtractive</kw></tt> が指定された場合はPhotoshop互換の焼き込み(リニア)合成が行われます(現バージョンでは未実装です)。<r/>
+				<tt><kw>omPsMultiplicative</kw></tt> が指定された場合はPhotoshop互換の乗算合成が行われます(現バージョンでは未実装です)。<r/>
+				<tt><kw>omPsScreen</kw></tt> が指定された場合はPhotoshop互換のスクリーン合成が行われます(現バージョンでは未実装です)。<r/>
+				<tt><kw>omPsOverlay</kw></tt> が指定された場合はPhotoshop互換のオーバーレイ合成が行われます(現バージョンでは未実装です)。<r/>
+				<tt><kw>omPsHardLight</kw></tt> が指定された場合はPhotoshop互換のハードライト合成が行われます(現バージョンでは未実装です)。<r/>
+				<tt><kw>omPsSoftLight</kw></tt> が指定された場合はPhotoshop互換のソフトライト合成が行われます(現バージョンでは未実装です)。<r/>
+				<tt><kw>omPsColorDodge</kw></tt> が指定された場合はPhotoshop互換の覆い焼きカラー合成が行われます(現バージョンでは未実装です)。<r/>
+				<tt><kw>omPsColorDodge5</kw></tt> が指定された場合はPhotoshopのバージョン5.x 以下と互換の覆い焼きカラー合成が行われます(現バージョンでは未実装です)。<r/>
+				<tt><kw>omPsColorBurn</kw></tt> が指定された場合はPhotoshop互換の焼き込みカラー合成が行われます(現バージョンでは未実装です)。<r/>
+				<tt><kw>omPsLighten</kw></tt> が指定された場合はPhotoshop互換の比較(明)合成が行われます(現バージョンでは未実装です)。<r/>
+				<tt><kw>omPsDarken</kw></tt> が指定された場合はPhotoshop互換の比較(暗)合成が行われます(現バージョンでは未実装です)。<r/>
+				<tt><kw>omPsDifference</kw></tt> が指定された場合はPhotoshop互換の差の絶対値合成が行われます(現バージョンでは未実装です)。<r/>
+				<tt><kw>omPsDifference5</kw></tt> が指定された場合はPhotoshopのバージョン 5.x 以下と互換の差の絶対値合成が行われます(現バージョンでは未実装です)。<r/>
+				<tt><kw>omPsExclusion</kw></tt> が指定された場合はPhotoshop互換の除外合成が行われます(現バージョンでは未実装です)。<r/>
 				<tt><kw>omAdditive</kw></tt> が指定された場合は加算合成が行われます(現バージョンでは未実装です)。<r/>
 				<tt><kw>omSubtractive</kw></tt> が指定された場合は減算合成が行われます(現バージョンでは未実装です)。<r/>
 				<tt><kw>omMultiplicative</kw></tt> が指定された場合は乗算合成が行われます(現バージョンでは未実装です)。<r/>
@@ -2924,6 +2956,22 @@
 			<desc>
 				　演算のモードを指定します。<r/>
 				<tt><kw>omAuto</kw></tt> が指定された場合は演算元レイヤの<ref>Layer.type</ref>プロパティに従って演算の種類が自動的に決定されます。<r/>
+				<tt><kw>omPsNormal</kw></tt> が指定された場合はPhotoshop互換のアルファ合成が行われます(現バージョンでは未実装です)。<r/>
+				<tt><kw>omPsAdditive</kw></tt> が指定された場合はPhotoshop互換の覆い焼き(リニア)合成が行われます(現バージョンでは未実装です)。<r/>
+				<tt><kw>omPsSubtractive</kw></tt> が指定された場合はPhotoshop互換の焼き込み(リニア)合成が行われます(現バージョンでは未実装です)。<r/>
+				<tt><kw>omPsMultiplicative</kw></tt> が指定された場合はPhotoshop互換の乗算合成が行われます(現バージョンでは未実装です)。<r/>
+				<tt><kw>omPsScreen</kw></tt> が指定された場合はPhotoshop互換のスクリーン合成が行われます(現バージョンでは未実装です)。<r/>
+				<tt><kw>omPsOverlay</kw></tt> が指定された場合はPhotoshop互換のオーバーレイ合成が行われます(現バージョンでは未実装です)。<r/>
+				<tt><kw>omPsHardLight</kw></tt> が指定された場合はPhotoshop互換のハードライト合成が行われます(現バージョンでは未実装です)。<r/>
+				<tt><kw>omPsSoftLight</kw></tt> が指定された場合はPhotoshop互換のソフトライト合成が行われます(現バージョンでは未実装です)。<r/>
+				<tt><kw>omPsColorDodge</kw></tt> が指定された場合はPhotoshop互換の覆い焼きカラー合成が行われます(現バージョンでは未実装です)。<r/>
+				<tt><kw>omPsColorDodge5</kw></tt> が指定された場合はPhotoshopのバージョン5.x 以下と互換の覆い焼きカラー合成が行われます(現バージョンでは未実装です)。<r/>
+				<tt><kw>omPsColorBurn</kw></tt> が指定された場合はPhotoshop互換の焼き込みカラー合成が行われます(現バージョンでは未実装です)。<r/>
+				<tt><kw>omPsLighten</kw></tt> が指定された場合はPhotoshop互換の比較(明)合成が行われます(現バージョンでは未実装です)。<r/>
+				<tt><kw>omPsDarken</kw></tt> が指定された場合はPhotoshop互換の比較(暗)合成が行われます(現バージョンでは未実装です)。<r/>
+				<tt><kw>omPsDifference</kw></tt> が指定された場合はPhotoshop互換の差の絶対値合成が行われます(現バージョンでは未実装です)。<r/>
+				<tt><kw>omPsDifference5</kw></tt> が指定された場合はPhotoshopのバージョン 5.x 以下と互換の差の絶対値合成が行われます(現バージョンでは未実装です)。<r/>
+				<tt><kw>omPsExclusion</kw></tt> が指定された場合はPhotoshop互換の除外合成が行われます(現バージョンでは未実装です)。<r/>
 				<tt><kw>omAdditive</kw></tt> が指定された場合は加算合成が行われます(現バージョンでは未実装です)。<r/>
 				<tt><kw>omSubtractive</kw></tt> が指定された場合は減算合成が行われます(現バージョンでは未実装です)。<r/>
 				<tt><kw>omMultiplicative</kw></tt> が指定された場合は乗算合成が行われます(現バージョンでは未実装です)。<r/>
@@ -3774,6 +3822,7 @@
 		<li><tt><kw>ltLighten</kw></tt> を指定すると、比較(明)合成が行われます。マスク画像は無視されます。このタイプに適した描画方式は <tt><kw>dfOpaque</kw></tt> です。</li>
 		<li><tt><kw>ltScreen</kw></tt> を指定すると、スクリーン乗算合成が行われます。マスク画像は無視されます。このタイプに適した描画方式は <tt><kw>dfOpaque</kw></tt> です。</li>
 		</ul>
+		　この他のレイヤ表示タイプについては<link href="GraphicSystem" />を参照してください。<r/>
 	</desc>
 	<ref>Layer.face</ref>
 </member>

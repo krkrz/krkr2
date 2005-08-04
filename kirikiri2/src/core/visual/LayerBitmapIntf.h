@@ -37,7 +37,23 @@ enum tTVPBBBltMethod
 	bmAddAlphaOnAddAlpha,
 	bmAddAlphaOnAlpha,
 	bmAlphaOnAddAlpha,
-	bmCopyOnAddAlpha
+	bmCopyOnAddAlpha,
+	bmPsNormal,
+	bmPsAdditive,
+	bmPsSubtractive,
+	bmPsMultiplicative,
+	bmPsScreen,
+	bmPsOverlay,
+	bmPsHardLight,
+	bmPsSoftLight,
+	bmPsColorDodge,
+	bmPsColorDodge5,
+	bmPsColorBurn,
+	bmPsLighten,
+	bmPsDarken,
+	bmPsDifference,
+	bmPsDifference5,
+	bmPsExclusion
 };
 
 enum tTVPBBStretchType
