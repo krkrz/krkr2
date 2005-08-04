@@ -26,15 +26,18 @@ unsigned char TVPPsTableOverlay[256][256];
   Operation defines
 -------------------------------------------------------------------- */
 #define TVPPS_MAINLOOP \
-        tjs_int i;                                                                                         \
-        for (i=len>>2; i>0; --i) { OPERATION1; OPERATION1; OPERATION1; OPERATION1; }                       \
-        switch ( len&3 ) {                                                                                 \
-        case 3: OPERATION1;                                                                                \
-        case 2: OPERATION1;                                                                                \
-        case 1: OPERATION1;                                                                                \
-        case 0:                                                                                            \
-                break;                                                                                     \
-        }
+		if(len > 0) {                                        \
+			tjs_int lu_n = (len + (4-1)) / 4;                \
+			switch(len % 4) {                                \
+			case 0:                                          \
+					do {                                     \
+						OPERATION1;                          \
+			case 3:		OPERATION1;                          \
+			case 2:		OPERATION1;                          \
+			case 1:		OPERATION1;                          \
+					} while(-- lu_n);                        \
+			}                                                \
+		}
 
 #define TVPPS_ALPHABLEND { \
         TVPPS_REG tjs_uint32 d1 = d&0x00ff00ff, d2 = d&0x0000ff00;                                         \
