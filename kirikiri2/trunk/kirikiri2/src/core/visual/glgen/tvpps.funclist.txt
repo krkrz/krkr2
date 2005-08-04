@@ -1,6 +1,6 @@
 /*
-  PhotoShop-like layer blender for KIRIKIRI (C-version);
-  (c);2004-2005 Kengo Takagi (Kenjo); <kenjo@ceres.dti.ne.jp>
+  Photoshop-like layer blender for KIRIKIRI (C-version)
+  (c)2004-2005 Kengo Takagi (Kenjo) <kenjo@ceres.dti.ne.jp>
 */
 
 #ifndef _tvp_ps_blend_h
@@ -61,6 +61,11 @@ void __cdecl TVPPsColorDodgeBlend_o_c(tjs_uint32 *dest, const tjs_uint32 *src, t
 void __cdecl TVPPsColorDodgeBlend_HDA_c(tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len);
 void __cdecl TVPPsColorDodgeBlend_HDA_o_c(tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len, tjs_int opa);
 
+void __cdecl TVPPsColorDodge5Blend_c(tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len);
+void __cdecl TVPPsColorDodge5Blend_o_c(tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len, tjs_int opa);
+void __cdecl TVPPsColorDodge5Blend_HDA_c(tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len);
+void __cdecl TVPPsColorDodge5Blend_HDA_o_c(tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len, tjs_int opa);
+
 void __cdecl TVPPsColorBurnBlend_c(tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len);
 void __cdecl TVPPsColorBurnBlend_o_c(tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len, tjs_int opa);
 void __cdecl TVPPsColorBurnBlend_HDA_c(tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len);
@@ -80,6 +85,11 @@ void __cdecl TVPPsDiffBlend_c(tjs_uint32 *dest, const tjs_uint32 *src, tjs_int l
 void __cdecl TVPPsDiffBlend_o_c(tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len, tjs_int opa);
 void __cdecl TVPPsDiffBlend_HDA_c(tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len);
 void __cdecl TVPPsDiffBlend_HDA_o_c(tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len, tjs_int opa);
+
+void __cdecl TVPPsDiff5Blend_c(tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len);
+void __cdecl TVPPsDiff5Blend_o_c(tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len, tjs_int opa);
+void __cdecl TVPPsDiff5Blend_HDA_c(tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len);
+void __cdecl TVPPsDiff5Blend_HDA_o_c(tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len, tjs_int opa);
 
 void __cdecl TVPPsExclusionBlend_c(tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len);
 void __cdecl TVPPsExclusionBlend_o_c(tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len, tjs_int opa);
@@ -133,6 +143,11 @@ void __cdecl TVPPsColorDodgeBlend_o_mmx_a(tjs_uint32 *dest, const tjs_uint32 *sr
 void __cdecl TVPPsColorDodgeBlend_HDA_mmx_a(tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len);
 void __cdecl TVPPsColorDodgeBlend_HDA_o_mmx_a(tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len, tjs_int opa);
 
+void __cdecl TVPPsColorDodge5Blend_mmx_a(tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len);
+void __cdecl TVPPsColorDodge5Blend_o_mmx_a(tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len, tjs_int opa);
+void __cdecl TVPPsColorDodge5Blend_HDA_mmx_a(tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len);
+void __cdecl TVPPsColorDodge5Blend_HDA_o_mmx_a(tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len, tjs_int opa);
+
 void __cdecl TVPPsColorBurnBlend_mmx_a(tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len);
 void __cdecl TVPPsColorBurnBlend_o_mmx_a(tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len, tjs_int opa);
 void __cdecl TVPPsColorBurnBlend_HDA_mmx_a(tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len);
@@ -152,6 +167,11 @@ void __cdecl TVPPsDiffBlend_mmx_a(tjs_uint32 *dest, const tjs_uint32 *src, tjs_i
 void __cdecl TVPPsDiffBlend_o_mmx_a(tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len, tjs_int opa);
 void __cdecl TVPPsDiffBlend_HDA_mmx_a(tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len);
 void __cdecl TVPPsDiffBlend_HDA_o_mmx_a(tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len, tjs_int opa);
+
+void __cdecl TVPPsDiff5Blend_mmx_a(tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len);
+void __cdecl TVPPsDiff5Blend_o_mmx_a(tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len, tjs_int opa);
+void __cdecl TVPPsDiff5Blend_HDA_mmx_a(tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len);
+void __cdecl TVPPsDiff5Blend_HDA_o_mmx_a(tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len, tjs_int opa);
 
 void __cdecl TVPPsExclusionBlend_mmx_a(tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len);
 void __cdecl TVPPsExclusionBlend_o_mmx_a(tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len, tjs_int opa);
