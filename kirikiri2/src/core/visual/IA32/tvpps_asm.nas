@@ -1,4 +1,4 @@
-; PhotoShop-like layer blender for KIRIKIRI
+; Photoshop-like layer blender for KIRIKIRI
 ; (c)2004-2005 Kengo Takagi (Kenjo) <kenjo@ceres.dti.ne.jp>
 ;
 ; TODO:
@@ -10,6 +10,9 @@
 ; 050727 Kenjo : - Used lightenblend.nas/darkenblend.nas algorithm for Lighten/Darken blend (2clock/pixel faster)
 ;                - Optimized AlphaBlend (2clk/pixel), Mul(1clk), Screen(1clk), SoftLight/ColorBurn(1clk?),
 ;                  ColorDodge(7clk?), Diff(1clk)
+; 050804 Kenjo : - Fixed Add/Sub/ColorDodge/Diff as Photoshop7 style
+;                - Separated Photoshop5.x style ColorDodge/Diff as different functions
+;                - Fixed Diff(PS5) calculation
 
 %include "nasm.nah"
 
@@ -261,7 +264,7 @@ _TVPPs%1_HDA_o_mmx_a:
 %endmacro
 
 
-; calc src*alpha BEFORE table reference (for ColorDodge)
+; calc src*alpha BEFORE table reference (for PS5 style ColorDodge)
 %macro MACRO_TABLE_BLEND2.1 2
 	movd       mm2, [esi]           ; src
 	movq       mm0, mm2             ;
@@ -471,6 +474,9 @@ _TVPPs%1_HDA_o_mmx_a:
 %endmacro
 
 
+; -------------------- Fade src BEFORE add/sub
+%if 0
+
 ; ############### Add
 %macro AddBlend.1 1
 	movd       mm2, [esi]           ; src
@@ -615,6 +621,209 @@ _TVPPs%1_HDA_o_mmx_a:
 	psubusb    mm1, mm0             ; mm1 = dst+src (saturate)
 	movq       [edi-8], mm1         ; store mm1 to dst ptr
 %endmacro
+
+
+; -------------------- Blend src and dst AFTER add/sub
+%else
+
+; ############### Add
+%macro AddBlend.1 1
+	movd       mm2, [esi]           ; src
+	movd       mm1, [edi]           ; dst
+	movq       mm0, mm2             ; mm0 = src
+	psrld      mm2, 25              ;
+	paddusb    mm0, mm1             ; mm0 = dst+src (saturate)
+%if %1&IS_OPA
+	pmullw     mm2, mm4             ;
+%endif
+	punpcklbw  mm1, mm5             ; mm1 = 00AA00RR00GG00BB
+	punpcklbw  mm0, mm5             ; mm0 = 00AA00RR00GG00BB
+%if %1&IS_OPA
+	psrld      mm2, 8               ; mm2 = (alpha*alv)>>8
+%endif
+%if %1&IS_HDA
+	movq       mm7, mm2             ; mm7 = 00000000000000AA
+	punpcklwd  mm2, mm2             ; mm2 = 0000000000AA00AA
+	psubw      mm0, mm1             ; mm0 = src-dst
+	punpckldq  mm2, mm7             ; mm2 = 000000AA00AA00AA
+%else
+	punpcklwd  mm2, mm2             ; mm2 = 0000000000AA00AA
+	psubw      mm0, mm1             ; mm0 = src-dst
+	punpckldq  mm2, mm2             ; mm2 = 00AA00AA00AA00AA
+%endif
+	pmullw     mm0, mm2             ;
+	add        esi, 4               ; src ptr++
+	psraw      mm0, 7               ;
+	paddw      mm1, mm0             ; mm1 = ((src-dst)*a)>>7)+dst
+	add        edi, 4               ; dst ptr++
+	packuswb   mm1, mm5             ; mm1 = AARRGGBB
+	movd       [edi-4], mm1         ; store mm1 to dst ptr
+%endmacro
+
+%macro AddBlend.2 1
+	movq       mm2, [esi]           ; src
+	movq       mm1, [edi]           ; dst
+	movq       mm0, mm2             ; mm0 = src
+	movq       mm6, mm2             ; mm6 = src
+	psrld      mm2, 25              ;
+	psrlq      mm6, 57              ;
+	movd       eax, mm6             ; eax = alpha (h)
+	movq       mm6, mm1             ; mm6 = dst
+	paddusb    mm0, mm1             ; mm0 = dst+src (saturate)
+	movq       mm3, mm0             ; mm3 = dst+src (saturate)
+%if %1&IS_OPA
+	pmullw     mm2, mm4             ;
+%endif
+	punpcklbw  mm1, mm5             ; mm1 = 00AA00RR00GG00BB
+	punpcklbw  mm0, mm5             ; mm0 = 00AA00RR00GG00BB
+%if %1&IS_OPA
+	psrld      mm2, 8               ; mm2 = (alpha*alv)>>8
+%endif
+%if %1&IS_HDA
+	movq       mm7, mm2             ; mm7 = 00000000000000AA
+	punpcklwd  mm2, mm2             ; mm2 = 0000000000AA00AA
+	psubw      mm0, mm1             ; mm0 = src-dst
+	punpckldq  mm2, mm7             ; mm2 = 000000AA00AA00AA
+%else
+	punpcklwd  mm2, mm2             ; mm2 = 0000000000AA00AA
+	psubw      mm0, mm1             ; mm0 = src-dst
+	punpckldq  mm2, mm2             ; mm2 = 00AA00AA00AA00AA
+%endif
+	pmullw     mm0, mm2             ;
+	movd       mm2, eax             ; mm2 = alpha (h)
+	psraw      mm0, 7               ;
+	paddw      mm1, mm0             ; mm1 = ((src-dst)*a)>>7)+dst
+%if %1&IS_OPA
+	pmullw     mm2, mm4             ;
+%endif
+	punpckhbw  mm6, mm5             ; mm6 = 00AA00RR00GG00BB
+	punpckhbw  mm3, mm5             ; mm3 = 00AA00RR00GG00BB
+%if %1&IS_OPA
+	psrld      mm2, 8               ; mm2 = (alpha*alv)>>8
+%endif
+%if %1&IS_HDA
+	movq       mm7, mm2             ; mm7 = 00000000000000AA
+	punpcklwd  mm2, mm2             ; mm2 = 0000000000AA00AA
+	psubw      mm3, mm6             ; mm3 = src-dst
+	punpckldq  mm2, mm7             ; mm2 = 000000AA00AA00AA
+%else
+	punpcklwd  mm2, mm2             ; mm2 = 0000000000AA00AA
+	psubw      mm3, mm6             ; mm3 = src-dst
+	punpckldq  mm2, mm2             ; mm2 = 00AA00AA00AA00AA
+%endif
+	pmullw     mm3, mm2             ;
+	add        esi, 8               ; src ptr++
+	psraw      mm3, 7               ;
+	paddw      mm6, mm3             ; mm6 = ((src-dst)*a)>>7)+dst
+	add        edi, 8               ; dst ptr++
+	packuswb   mm1, mm6             ; mm1 = AARRGGBB
+	movq       [edi-8], mm1         ; store mm1 to dst ptr
+%endmacro
+
+
+; ############### Sub
+%macro SubBlend.1 1
+	pxor       mm3, mm3
+	movd       mm2, [esi]           ; src
+	movd       mm1, [edi]           ; dst
+	pcmpeqd    mm3, mm3             ; mm3 = FFFFFFFFFFFFFFFF
+	movq       mm7, mm2             ; mm7 = src
+	psrld      mm2, 25              ;
+	pxor       mm7, mm3             ; mm7 = ~src
+	movq       mm0, mm1             ; mm0 = dst
+%if %1&IS_OPA
+	pmullw     mm2, mm4             ;
+%endif
+	psubusb    mm0, mm7             ; mm0 = dst-src (saturate)
+	punpcklbw  mm1, mm5             ; mm1 = 00AA00RR00GG00BB
+	punpcklbw  mm0, mm5             ; mm0 = 00AA00RR00GG00BB
+%if %1&IS_OPA
+	psrld      mm2, 8               ; mm2 = (alpha*alv)>>8
+%endif
+%if %1&IS_HDA
+	movq       mm7, mm2             ; mm7 = 00000000000000AA
+	punpcklwd  mm2, mm2             ; mm2 = 0000000000AA00AA
+	psubw      mm0, mm1             ; mm0 = src-dst
+	punpckldq  mm2, mm7             ; mm2 = 000000AA00AA00AA
+%else
+	punpcklwd  mm2, mm2             ; mm2 = 0000000000AA00AA
+	psubw      mm0, mm1             ; mm0 = src-dst
+	punpckldq  mm2, mm2             ; mm2 = 00AA00AA00AA00AA
+%endif
+	pmullw     mm0, mm2             ;
+	add        esi, 4               ; src ptr++
+	psraw      mm0, 7               ;
+	paddw      mm1, mm0             ; mm1 = ((src-dst)*a)>>7)+dst
+	add        edi, 4               ; dst ptr++
+	packuswb   mm1, mm5             ; mm1 = AARRGGBB
+	movd       [edi-4], mm1         ; store mm1 to dst ptr
+%endmacro
+
+%macro SubBlend.2 1
+	pxor       mm3, mm3
+	movq       mm2, [esi]           ; src
+	movq       mm1, [edi]           ; dst
+	pcmpeqd    mm3, mm3             ; mm3 = FFFFFFFFFFFFFFFF
+	movq       mm7, mm2             ; mm7 = src
+	movq       mm6, mm2             ; mm6 = src
+	psrld      mm2, 25              ;
+	psrlq      mm6, 57              ;
+	movd       eax, mm6             ; eax = alpha (h)
+	movq       mm6, mm1             ; mm6 = dst
+	pxor       mm7, mm3             ; mm7 = ~src
+	movq       mm0, mm1             ; mm0 = dst
+%if %1&IS_OPA
+	pmullw     mm2, mm4             ;
+%endif
+	psubusb    mm0, mm7             ; mm0 = dst-src (saturate)
+	movq       mm3, mm0             ; mm7 = dst-src (saturate)
+	punpcklbw  mm1, mm5             ; mm1 = 00AA00RR00GG00BB
+	punpcklbw  mm0, mm5             ; mm0 = 00AA00RR00GG00BB
+%if %1&IS_OPA
+	psrld      mm2, 8               ; mm2 = (alpha*alv)>>8
+%endif
+%if %1&IS_HDA
+	movq       mm7, mm2             ; mm7 = 00000000000000AA
+	punpcklwd  mm2, mm2             ; mm2 = 0000000000AA00AA
+	psubw      mm0, mm1             ; mm0 = src-dst
+	punpckldq  mm2, mm7             ; mm2 = 000000AA00AA00AA
+%else
+	punpcklwd  mm2, mm2             ; mm2 = 0000000000AA00AA
+	psubw      mm0, mm1             ; mm0 = src-dst
+	punpckldq  mm2, mm2             ; mm2 = 00AA00AA00AA00AA
+%endif
+	pmullw     mm0, mm2             ;
+	movd       mm2, eax             ; mm2 = alpha (h)
+	psraw      mm0, 7               ;
+	paddw      mm1, mm0             ; mm1 = ((src-dst)*a)>>7)+dst
+%if %1&IS_OPA
+	pmullw     mm2, mm4             ;
+%endif
+	punpckhbw  mm6, mm5             ; mm6 = 00AA00RR00GG00BB
+	punpckhbw  mm3, mm5             ; mm3 = 00AA00RR00GG00BB
+%if %1&IS_OPA
+	psrld      mm2, 8               ; mm2 = (alpha*alv)>>8
+%endif
+%if %1&IS_HDA
+	movq       mm0, mm2             ; mm0 = 00000000000000AA
+	punpcklwd  mm2, mm2             ; mm2 = 0000000000AA00AA
+	psubw      mm3, mm6             ; mm3 = src-dst
+	punpckldq  mm2, mm0             ; mm2 = 000000AA00AA00AA
+%else
+	punpcklwd  mm2, mm2             ; mm2 = 0000000000AA00AA
+	psubw      mm3, mm6             ; mm3 = src-dst
+	punpckldq  mm2, mm2             ; mm2 = 00AA00AA00AA00AA
+%endif
+	pmullw     mm3, mm2             ;
+	add        esi, 8               ; src ptr++
+	psraw      mm3, 7               ;
+	paddw      mm6, mm3             ; mm6 = ((src-dst)*a)>>7)+dst
+	add        edi, 8               ; dst ptr++
+	packuswb   mm1, mm6             ; mm1 = AARRGGBBAARRGGBB
+	movq       [edi-8], mm1         ; store mm1 to dst ptr
+%endmacro
+
+%endif
 
 
 ; ############### Mul
@@ -1108,10 +1317,20 @@ _TVPPs%1_HDA_o_mmx_a:
 
 ; ############### ColorDodge
 %macro ColorDodgeBlend.1 1
-	MACRO_TABLE_BLEND2.1 %1,_TVPPsTableColorDodge
+	MACRO_TABLE_BLEND.1 %1,_TVPPsTableColorDodge
 %endmacro
 
 %macro ColorDodgeBlend.2 1
+	MACRO_TABLE_BLEND.2 %1,_TVPPsTableColorDodge
+%endmacro
+
+
+; ############### ColorDodge (Photoshop5 style)
+%macro ColorDodge5Blend.1 1
+	MACRO_TABLE_BLEND2.1 %1,_TVPPsTableColorDodge
+%endmacro
+
+%macro ColorDodge5Blend.2 1
 	MACRO_TABLE_BLEND2.2 %1,_TVPPsTableColorDodge
 %endmacro
 
@@ -1327,12 +1546,183 @@ _TVPPs%1_HDA_o_mmx_a:
 
 
 ; ############### Diff
-; It seems to me, Photoshop works :
+%macro DiffBlend.1 1
+	movd       mm2, [esi]           ; src
+	movd       mm1, [edi]           ; dst
+	movq       mm0, mm1             ; mm0 = dst
+	movq       mm3, mm2             ; mm3 = src
+	psrld      mm2, 25              ;
+	psubusb    mm0, mm3             ; mm0 = dst-src (saturate)
+%if %1&IS_OPA
+	pmullw     mm2, mm4             ;
+%endif
+	psubusb    mm3, mm1             ; mm3 = src-dst (saturate)
+	paddb      mm0, mm3             ; mm0 = Diff
+%if %1&IS_OPA
+	psrld      mm2, 8               ; mm2 = (alpha*opa)>>8
+%endif
+	punpcklbw  mm1, mm5             ; mm1 = 00AA00RR00GG00BB
+	punpcklbw  mm0, mm5             ; mm0 = 00AA00RR00GG00BB
+%if %1&IS_HDA
+	movq       mm3, mm2             ; mm3 = 00000000000000AA
+	punpcklwd  mm2, mm2             ; mm2 = 0000000000AA00AA
+	psubw      mm0, mm1             ; mm0 = src-dst
+	punpckldq  mm2, mm3             ; mm2 = 000000AA00AA00AA
+%else
+	punpcklwd  mm2, mm2             ; mm2 = 0000000000AA00AA
+	psubw      mm0, mm1             ; mm0 = src-dst
+	punpckldq  mm2, mm2             ; mm2 = 000000AA00AA00AA
+%endif
+	pmullw     mm0, mm2             ;
+	add        esi, 4               ; src ptr++
+	psraw      mm0, 7               ;
+	paddw      mm1, mm0             ; mm1 = ((src-dst)*a)>>7)+dst
+	add        edi, 4               ; dst ptr++
+	packuswb   mm1, mm5             ; mm1 = AARRGGBB
+	movd       [edi-4], mm1         ; store mm1 to dst ptr
+%endmacro
+
+%if 0
+%macro DiffBlend.2 1
+	movq       mm2, [esi]           ; src
+	movq       mm1, [edi]           ; dst
+	movq       mm6, mm2             ; mm6 = src
+	movq       mm7, mm1             ; mm7 = dst
+	movq       mm0, mm1             ; mm0 = dst
+	movq       mm3, mm2             ; mm3 = src
+	psrld      mm2, 25              ; 7bit alpha
+	psubusb    mm0, mm3             ; mm0 = dst-src (saturate)
+%if %1&IS_OPA
+	pmullw     mm2, mm4             ;
+%endif
+	psubusb    mm3, mm1             ; mm3 = src-dst (saturate)
+	paddb      mm0, mm3             ; mm0 = Diff
+%if %1&IS_OPA
+	psrld      mm2, 8               ; mm2 = (alpha*opa)>>8
+%endif
+	punpcklbw  mm1, mm5             ; mm1 = 00AA00RR00GG00BB
+	punpcklbw  mm0, mm5             ; mm0 = 00AA00RR00GG00BB
+%if %1&IS_HDA
+	movq       mm3, mm2             ; mm3 = 00000000000000AA
+	punpcklwd  mm2, mm2             ; mm2 = 0000000000AA00AA
+	psubw      mm0, mm1             ; mm0 = src-dst
+	punpckldq  mm2, mm3             ; mm2 = 000000AA00AA00AA
+%else
+	punpcklwd  mm2, mm2             ; mm2 = 0000000000AA00AA
+	psubw      mm0, mm1             ; mm0 = src-dst
+	punpckldq  mm2, mm2             ; mm2 = 000000AA00AA00AA
+%endif
+	pmullw     mm0, mm2             ;
+	movq       mm3, mm6             ; mm3 = src
+	psraw      mm0, 7               ;
+	paddw      mm1, mm0             ; mm1 = ((src-dst)*a)>>7)+dst
+	movq       mm0, mm7             ; mm0 = dst
+	psrlq      mm6, 57              ; 7bit alpha
+	psubusb    mm0, mm3             ; mm0 = dst-src (saturate)
+%if %1&IS_OPA
+	pmullw     mm6, mm4             ;
+%endif
+	psubusb    mm3, mm7             ; mm3 = src-dst (saturate)
+	paddb      mm0, mm3             ; mm0 = Diff
+%if %1&IS_OPA
+	psrld      mm6, 8               ; mm6 = (alpha*opa)>>8
+%endif
+	punpckhbw  mm7, mm5             ; mm7 = 00AA00RR00GG00BB
+	punpckhbw  mm0, mm5             ; mm0 = 00AA00RR00GG00BB
+%if %1&IS_HDA
+	movq       mm3, mm6             ; mm3 = 00000000000000AA
+	punpcklwd  mm6, mm6             ; mm6 = 0000000000AA00AA
+	psubw      mm0, mm7             ; mm0 = src-dst
+	punpckldq  mm6, mm3             ; mm6 = 000000AA00AA00AA
+%else
+	punpcklwd  mm6, mm6             ; mm6 = 0000000000AA00AA
+	psubw      mm0, mm7             ; mm0 = src-dst
+	punpckldq  mm6, mm6             ; mm6 = 000000AA00AA00AA
+%endif
+	pmullw     mm0, mm6             ;
+	add        esi, 8               ; src ptr++
+	psraw      mm0, 7               ;
+	paddw      mm7, mm0             ; mm7 = ((src-dst)*a)>>7)+dst
+	add        edi, 8               ; dst ptr++
+	packuswb   mm1, mm7             ; mm1 = AARRGGBB
+	movq       [edi-8], mm1         ; store mm1 to dst ptr
+%endmacro
+
+
+%else
+
+
+%macro DiffBlend.2 1
+	movq       mm2, [esi]           ; src
+	movq       mm1, [edi]           ; dst
+	movq       mm3, mm2             ; mm3 = src
+	movq       mm7, mm1             ; mm7 = dst
+	psrlq      mm3, 57              ; 7bit alpha
+	movd       eax, mm3             ; eax = alpha (h)
+	movq       mm0, mm1             ; mm0 = dst
+	movq       mm3, mm2             ; mm3 = src
+	psrld      mm2, 25              ; 7bit alpha
+	psubusb    mm0, mm3             ; mm0 = dst-src (saturate)
+%if %1&IS_OPA
+	pmullw     mm2, mm4             ;
+%endif
+	psubusb    mm3, mm1             ; mm3 = src-dst (saturate)
+	paddb      mm0, mm3             ; mm0 = Diff
+	movq       mm6, mm0             ; mm6 = Diff
+%if %1&IS_OPA
+	psrld      mm2, 8               ; mm2 = (alpha*opa)>>8
+%endif
+	punpcklbw  mm1, mm5             ; mm1 = 00AA00RR00GG00BB
+	punpcklbw  mm0, mm5             ; mm0 = 00AA00RR00GG00BB
+%if %1&IS_HDA
+	movq       mm3, mm2             ; mm3 = 00000000000000AA
+	punpcklwd  mm2, mm2             ; mm2 = 0000000000AA00AA
+	psubw      mm0, mm1             ; mm0 = src-dst
+	punpckldq  mm2, mm3             ; mm2 = 000000AA00AA00AA
+%else
+	punpcklwd  mm2, mm2             ; mm2 = 0000000000AA00AA
+	psubw      mm0, mm1             ; mm0 = src-dst
+	punpckldq  mm2, mm2             ; mm2 = 000000AA00AA00AA
+%endif
+	pmullw     mm0, mm2             ;
+	movd       mm2, eax             ; mm2 = 7bit alpha (h)
+	psraw      mm0, 7               ;
+%if %1&IS_OPA
+	pmullw     mm2, mm4             ;
+%endif
+	paddw      mm1, mm0             ; mm1 = ((src-dst)*a)>>7)+dst
+%if %1&IS_OPA
+	psrld      mm2, 8               ; mm2 = (alpha*opa)>>8
+%endif
+	punpckhbw  mm7, mm5             ; mm7 = 00AA00RR00GG00BB
+	punpckhbw  mm6, mm5             ; mm6 = 00AA00RR00GG00BB
+%if %1&IS_HDA
+	movq       mm3, mm2             ; mm3 = 00000000000000AA
+	punpcklwd  mm2, mm2             ; mm2 = 0000000000AA00AA
+	psubw      mm6, mm7             ; mm6 = src-dst
+	punpckldq  mm2, mm3             ; mm2 = 000000AA00AA00AA
+%else
+	punpcklwd  mm2, mm2             ; mm2 = 0000000000AA00AA
+	psubw      mm6, mm7             ; mm6 = src-dst
+	punpckldq  mm2, mm2             ; mm2 = 000000AA00AA00AA
+%endif
+	pmullw     mm6, mm2             ;
+	add        esi, 8               ; src ptr++
+	psraw      mm6, 7               ;
+	paddw      mm7, mm6             ; mm7 = ((src-dst)*a)>>7)+dst
+	add        edi, 8               ; dst ptr++
+	packuswb   mm1, mm7             ; mm1 = AARRGGBBAARRGGBB
+	movq       [edi-8], mm1         ; store mm1 to dst ptr
+%endmacro
+
+
+%endif
+
+
+; Photoshop5 works :
 ;   1. s = (*src) * alpha
 ;   2. diff = abs(s-(*dst))
-;   3. alphablend diff & (*dst)
-; so, 2 times multiply required.
-%macro DiffBlend.1 1
+%macro Diff5Blend.1 1
 	movd       mm6, [esi]           ; src
 	movq       mm0, mm6             ; mm0 = src
 	psrld      mm6, 25              ; 7bit alpha
@@ -1360,17 +1750,13 @@ _TVPPs%1_HDA_o_mmx_a:
 	psubusw    mm7, mm0             ; mm7 = dst-src (saturate)
 	psubusw    mm0, mm1             ; mm0 = src-dst (saturate)
 	paddw      mm7, mm0             ; mm7 = diff
-	psubw      mm7, mm1             ; mm7 = diff-dst                  XXX penalty
-	pmullw     mm7, mm6             ; mm7 = (diff-dst)*a              XXX penalty
 	add        esi, 4               ; src ptr++
-	psraw      mm7, 7               ; mm0 = (((diff-dst)*a)>>7)
-	paddw      mm1, mm7             ; mm1 = (((diff-dst)*a)>>7)+dst
 	add        edi, 4               ; dst ptr++
-	packuswb   mm1, mm5             ; mm1 = AARRGGBB
-	movd       [edi-4], mm1         ; store mm1 to dst ptr
+	packuswb   mm7, mm5             ; mm1 = AARRGGBB
+	movd       [edi-4], mm7         ; store mm7 to dst ptr
 %endmacro
 
-%macro DiffBlend.2 1
+%macro Diff5Blend.2 1
 	movq       mm6, [esi]           ; src
 	movq       mm0, mm6             ; mm0 = src
 	movq       mm2, mm6             ; mm2 = src
@@ -1396,47 +1782,39 @@ _TVPPs%1_HDA_o_mmx_a:
 %endif
 	pmullw     mm0, mm6             ; mm0 = src*a
 	movq       mm7, mm1             ; mm7 = dst
-	psraw      mm0, 7               ; mm0 = ((src*a)>>7)              XXX penalty (mul result)
+	movq       mm6, mm2             ; src
+	psraw      mm0, 7               ; mm0 = ((src*a)>>7)
+	psrlq      mm6, 57              ; 7bit alpha
 	psubusw    mm7, mm0             ; mm7 = dst-src (saturate)
 	psubusw    mm0, mm1             ; mm0 = src-dst (saturate)
-	paddw      mm7, mm0             ; mm7 = diff
-	psubw      mm7, mm1             ; mm7 = diff-dst                  XXX penalty
-	pmullw     mm7, mm6             ; mm7 = (diff-dst)*a              XXX penalty
-	movq       mm6, mm2             ; src
-	psraw      mm7, 7               ; mm0 = (((diff-dst)*a)>>7)
-	psrlq      mm6, 57              ; 7bit alpha
-	punpckhbw  mm2, mm5             ; mm2 = 00AA00RR00GG00BB
 %if %1&IS_OPA
 	pmullw     mm6, mm4             ; mm6 = alpha*opa
 %endif
-	paddw      mm1, mm7             ; mm1 = (((diff-dst)*a)>>7)+dst
+	paddw      mm7, mm0             ; mm7 = diff
+	punpckhbw  mm2, mm5             ; mm2 = 00AA00RR00GG00BB
 %if %1&IS_OPA
 	psrld      mm6, 8               ; mm6 = (alpha*opa)>>8
 %endif
 %if %1&IS_HDA
-	movq       mm7, mm6             ; mm7 = 00000000000000AA
+	movq       mm0, mm6             ; mm7 = 00000000000000AA
 	punpcklwd  mm6, mm6             ; mm6 = 0000000000AA00AA
 	punpckhbw  mm3, mm5             ; mm3 = 00AA00RR00GG00BB
-	punpckldq  mm6, mm7             ; mm6 = 000000AA00AA00AA (keep dst alpha)
+	punpckldq  mm6, mm0             ; mm6 = 000000AA00AA00AA (keep dst alpha)
 %else
 	punpcklwd  mm6, mm6             ; mm6 = 0000000000AA00AA
 	punpckhbw  mm3, mm5             ; mm3 = 00AA00RR00GG00BB
 	punpckldq  mm6, mm6             ; mm6 = 00AA00AA00AA00AA
 %endif
 	pmullw     mm2, mm6             ; mm2 = src*a
-	movq       mm7, mm3             ; mm7 = dst
+	movq       mm1, mm3             ; mm1 = dst
 	psraw      mm2, 7               ; mm2 = ((src*a)>>7)              XXX penalty (mul result)
-	psubusw    mm7, mm2             ; mm7 = dst-src (saturate)
+	psubusw    mm1, mm2             ; mm1 = dst-src (saturate)
 	psubusw    mm2, mm3             ; mm2 = src-dst (saturate)
-	paddw      mm7, mm2             ; mm7 = diff
-	psubw      mm7, mm3             ; mm7 = diff-dst                  XXX penalty
-	pmullw     mm7, mm6             ; mm7 = (diff-dst)*a              XXX penalty
+	paddw      mm1, mm2             ; mm1 = diff
+	packuswb   mm7, mm1             ; mm1 = AARRGGBBAARRGGBB
+	movq       [edi], mm7           ; store mm7 to dst ptr
 	add        esi, 8               ; src ptr++
-	psraw      mm7, 7               ; mm2 = (((diff-dst)*a)>>7)
-	paddw      mm3, mm7             ; mm3 = (((diff-dst)*a)>>7)+dst
 	add        edi, 8               ; dst ptr++
-	packuswb   mm1, mm3             ; mm1 = AARRGGBBAARRGGBB
-	movq       [edi-8], mm1         ; store mm1 to dst ptr
 %endmacro
 
 
@@ -1552,10 +1930,12 @@ MACRO_FUNCDEF OverlayBlend
 MACRO_FUNCDEF HardLightBlend
 MACRO_FUNCDEF SoftLightBlend
 MACRO_FUNCDEF ColorDodgeBlend
+MACRO_FUNCDEF ColorDodge5Blend
 MACRO_FUNCDEF ColorBurnBlend
 MACRO_FUNCDEF LightenBlend
 MACRO_FUNCDEF DarkenBlend
 MACRO_FUNCDEF DiffBlend
+MACRO_FUNCDEF Diff5Blend
 MACRO_FUNCDEF ExclusionBlend
 
 

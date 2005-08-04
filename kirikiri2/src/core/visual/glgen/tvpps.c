@@ -1,5 +1,5 @@
 /*
-  PhotoShop-like layer blender for KIRIKIRI (C-version)
+  Photoshop-like layer blender for KIRIKIRI (C-version)
   (c)2004-2005 Kengo Takagi (Kenjo) <kenjo@ceres.dti.ne.jp>
 */
 
@@ -49,27 +49,46 @@ unsigned char TVPPsTableOverlay[256][256];
 
 
 #define TVPPsOperationAlphaBlend      { \
-		TVPPS_ALPHABLEND                                                                                   \
+        TVPPS_ALPHABLEND                                                                                   \
 }
+#if 0 /* Fade src BEFORE add/sub */
 #define TVPPsOperationAddBlend        { \
         TVPPS_REG tjs_uint32 n;                                                                            \
-		TVPPS_FADESRC                                                                                      \
-		n = (((d&s)<<1)+((d^s)&0x00fefefe))&0x01010100;                                                    \
+        TVPPS_FADESRC                                                                                      \
+        n = (((d&s)<<1)+((d^s)&0x00fefefe))&0x01010100;                                                    \
         n = ((n>>8)+0x007f7f7f)^0x007f7f7f;                                                                \
         s = (d+s-n)|n;                                                                                     \
 }
 #define TVPPsOperationSubBlend        { \
         TVPPS_REG tjs_uint32 n;                                                                            \
-		TVPPS_FADESRC                                                                                      \
+        TVPPS_FADESRC                                                                                      \
+        s = ~s;                                                                                            \
         n = (((~d&s)<<1)+((~d^s)&0x00fefefe))&0x01010100;                                                  \
         n = ((n>>8)+0x007f7f7f)^0x007f7f7f;                                                                \
         s = (d|n)-(s|n);                                                                                   \
 }
+#else  /* Blend src and dst AFTER add/sub */
+#define TVPPsOperationAddBlend        { \
+        TVPPS_REG tjs_uint32 n;                                                                            \
+        n = (((d&s)<<1)+((d^s)&0x00fefefe))&0x01010100;                                                    \
+        n = ((n>>8)+0x007f7f7f)^0x007f7f7f;                                                                \
+        s = (d+s-n)|n;                                                                                     \
+        TVPPS_ALPHABLEND                                                                                   \
+}
+#define TVPPsOperationSubBlend        { \
+        TVPPS_REG tjs_uint32 n;                                                                            \
+        s = ~s;                                                                                            \
+        n = (((~d&s)<<1)+((~d^s)&0x00fefefe))&0x01010100;                                                  \
+        n = ((n>>8)+0x007f7f7f)^0x007f7f7f;                                                                \
+        s = (d|n)-(s|n);                                                                                   \
+        TVPPS_ALPHABLEND                                                                                   \
+}
+#endif
 #define TVPPsOperationMulBlend        { \
         s = ( ((((d>>16)&0xff)*(s&0x00ff0000))&0xff000000) |                                               \
               ((((d>>8 )&0xff)*(s&0x0000ff00))&0x00ff0000) |                                               \
               ((((d>>0 )&0xff)*(s&0x000000ff))           ) ) >> 8;                                         \
-		TVPPS_ALPHABLEND                                                                                   \
+        TVPPS_ALPHABLEND                                                                                   \
 }
 #define TVPPsOperationScreenBlend     { \
         /* c = ((s+d-(s*d)/255)-d)*a + d = (s-(s*d)/255)*a + d */                                          \
@@ -85,50 +104,56 @@ unsigned char TVPPsTableOverlay[256][256];
         s = (TVPPsTableOverlay[(s>>16)&0xff][(d>>16)&0xff]<<16) |                                          \
             (TVPPsTableOverlay[(s>>8 )&0xff][(d>>8 )&0xff]<<8 ) |                                          \
             (TVPPsTableOverlay[(s>>0 )&0xff][(d>>0 )&0xff]<<0 );                                           \
-		TVPPS_ALPHABLEND                                                                                   \
+        TVPPS_ALPHABLEND                                                                                   \
 }
 #define TVPPsOperationHardLightBlend  { \
         s = (TVPPsTableOverlay[(d>>16)&0xff][(s>>16)&0xff]<<16) |                                          \
             (TVPPsTableOverlay[(d>>8 )&0xff][(s>>8 )&0xff]<<8 ) |                                          \
             (TVPPsTableOverlay[(d>>0 )&0xff][(s>>0 )&0xff]<<0 );                                           \
-		TVPPS_ALPHABLEND                                                                                   \
+        TVPPS_ALPHABLEND                                                                                   \
 }
 #else
 #define TVPPsOperationOverlayBlend    { \
         TVPPS_REG tjs_uint32 n = (((d&0x00808080)>>7)+0x007f7f7f)^0x007f7f7f;                              \
         TVPPS_REG tjs_uint32 sa1, sa2, d1 = d&n, s1 = s&n;                                                 \
         /* some tricks to avoid overflow (error between /255 and >>8) */                                   \
-		s |= 0x00010101;                                                                                   \
+        s |= 0x00010101;                                                                                   \
         sa1 = ( ((((d>>16)&0xff)*(s&0x00ff0000))&0xff800000) |                                             \
                 ((((d>>0 )&0xff)*(s&0x000000ff))           ) ) >> 7;                                       \
         sa2 = ( ((((d>>8 )&0xff)*(s&0x0000ff00))&0x00ff8000) ) >> 7;                                       \
-		s = ((sa1&~n)|(sa2&~n));                                                                           \
+        s = ((sa1&~n)|(sa2&~n));                                                                           \
         s |= (((s1&0x00fe00fe)+(d1&0x00ff00ff))<<1)-(n&0x00ff00ff)-(sa1&n);                                \
         s |= (((s1&0x0000fe00)+(d1&0x0000ff00))<<1)-(n&0x0000ff00)-(sa2&n);                                \
-		TVPPS_ALPHABLEND                                                                                   \
+        TVPPS_ALPHABLEND                                                                                   \
 }
 #define TVPPsOperationHardLightBlend  { \
         TVPPS_REG tjs_uint32 n = (((s&0x00808080)>>7)+0x007f7f7f)^0x007f7f7f;                              \
         TVPPS_REG tjs_uint32 sa1, sa2, d1 = d&n, s1 = s&n;                                                 \
         /* some tricks to avoid overflow (error between /255 and >>8) */                                   \
-		d |= 0x00010101;                                                                                   \
+        d |= 0x00010101;                                                                                   \
         sa1 = ( ((((d>>16)&0xff)*(s&0x00ff0000))&0xff800000) |                                             \
                 ((((d>>0 )&0xff)*(s&0x000000ff))           ) ) >> 7;                                       \
         sa2 = ( ((((d>>8 )&0xff)*(s&0x0000ff00))&0x00ff8000) ) >> 7;                                       \
-		s = ((sa1&~n)|(sa2&~n));                                                                           \
+        s = ((sa1&~n)|(sa2&~n));                                                                           \
         s |= (((s1&0x00ff00ff)+(d1&0x00fe00fe))<<1)-(n&0x00ff00ff)-(sa1&n);                                \
         s |= (((s1&0x0000ff00)+(d1&0x0000fe00))<<1)-(n&0x0000ff00)-(sa2&n);                                \
-		TVPPS_ALPHABLEND                                                                                   \
+        TVPPS_ALPHABLEND                                                                                   \
 }
 #endif
 #define TVPPsOperationSoftLightBlend  { \
         s = (TVPPsTableSoftLight[(s>>16)&0xff][(d>>16)&0xff]<<16) |                                        \
             (TVPPsTableSoftLight[(s>>8 )&0xff][(d>>8 )&0xff]<<8 ) |                                        \
             (TVPPsTableSoftLight[(s>>0 )&0xff][(d>>0 )&0xff]<<0 );                                         \
-		TVPPS_ALPHABLEND                                                                                   \
+        TVPPS_ALPHABLEND                                                                                   \
 }
 #define TVPPsOperationColorDodgeBlend { \
-		TVPPS_FADESRC                                                                                      \
+        s = (TVPPsTableColorDodge[(s>>16)&0xff][(d>>16)&0xff]<<16) |                                       \
+            (TVPPsTableColorDodge[(s>>8 )&0xff][(d>>8 )&0xff]<<8 ) |                                       \
+            (TVPPsTableColorDodge[(s>>0 )&0xff][(d>>0 )&0xff]<<0 );                                        \
+        TVPPS_ALPHABLEND                                                                                   \
+}
+#define TVPPsOperationColorDodge5Blend { \
+        TVPPS_FADESRC                                                                                      \
         s = (TVPPsTableColorDodge[(s>>16)&0xff][(d>>16)&0xff]<<16) |                                       \
             (TVPPsTableColorDodge[(s>>8 )&0xff][(d>>8 )&0xff]<<8 ) |                                       \
             (TVPPsTableColorDodge[(s>>0 )&0xff][(d>>0 )&0xff]<<0 );                                        \
@@ -137,32 +162,39 @@ unsigned char TVPPsTableOverlay[256][256];
         s = (TVPPsTableColorBurn[(s>>16)&0xff][(d>>16)&0xff]<<16) |                                        \
             (TVPPsTableColorBurn[(s>>8 )&0xff][(d>>8 )&0xff]<<8 ) |                                        \
             (TVPPsTableColorBurn[(s>>0 )&0xff][(d>>0 )&0xff]<<0 );                                         \
-		TVPPS_ALPHABLEND                                                                                   \
+        TVPPS_ALPHABLEND                                                                                   \
 }
 #define TVPPsOperationLightenBlend    { \
         TVPPS_REG tjs_uint32 n;                                                                            \
         n = (((~d&s)<<1)+((~d^s)&0x00fefefe))&0x01010100;                                                  \
         n = ((n>>8)+0x007f7f7f)^0x007f7f7f;                                                                \
-		/* n=mask (d<s:0xff, d>=s:0x00) */                                                                 \
-		s = (s&n)|(d&~n);                                                                                  \
-		TVPPS_ALPHABLEND                                                                                   \
+        /* n=mask (d<s:0xff, d>=s:0x00) */                                                                 \
+        s = (s&n)|(d&~n);                                                                                  \
+        TVPPS_ALPHABLEND                                                                                   \
 }
 #define TVPPsOperationDarkenBlend     { \
         TVPPS_REG tjs_uint32 n;                                                                            \
         n = (((~d&s)<<1)+((~d^s)&0x00fefefe))&0x01010100;                                                  \
         n = ((n>>8)+0x007f7f7f)^0x007f7f7f;                                                                \
-		/* n=mask (d<s:0xff, d>=s:0x00) */                                                                 \
-		s = (d&n)|(s&~n);                                                                                  \
-		TVPPS_ALPHABLEND                                                                                   \
+        /* n=mask (d<s:0xff, d>=s:0x00) */                                                                 \
+        s = (d&n)|(s&~n);                                                                                  \
+        TVPPS_ALPHABLEND                                                                                   \
 }
 #define TVPPsOperationDiffBlend       { \
         TVPPS_REG tjs_uint32 n;                                                                            \
-		TVPPS_FADESRC        /* Fade src first */                                                          \
         n = (((~d&s)<<1)+((~d^s)&0x00fefefe))&0x01010100;                                                  \
         n = ((n>>8)+0x007f7f7f)^0x007f7f7f;                                                                \
-		/* n=mask (d<s:0xff, d>=s:0x00) */                                                                 \
-		s = ((s&n)-(d&n))|((d&~n)-(s&~n));                                                                 \
-		TVPPS_ALPHABLEND     /* Alphablend result & dst */                                                 \
+        /* n=mask (d<s:0xff, d>=s:0x00) */                                                                 \
+        s = ((s&n)-(d&n))|((d&~n)-(s&~n));                                                                 \
+        TVPPS_ALPHABLEND     /* Alphablend result & dst */                                                 \
+}
+#define TVPPsOperationDiff5Blend      { \
+        TVPPS_REG tjs_uint32 n;                                                                            \
+        TVPPS_FADESRC        /* Fade src first */                                                          \
+        n = (((~d&s)<<1)+((~d^s)&0x00fefefe))&0x01010100;                                                  \
+        n = ((n>>8)+0x007f7f7f)^0x007f7f7f;                                                                \
+        /* n=mask (d<s:0xff, d>=s:0x00) */                                                                 \
+        s = ((s&n)-(d&n))|((d&~n)-(s&~n));                                                                 \
 }
 #define TVPPsOperationExclusionBlend  { \
         /* c = ((s+d-(s*d*2)/255)-d)*a + d = (s-(s*d*2)/255)*a + d */                                      \
@@ -262,6 +294,13 @@ void __cdecl TVPPsMakeTable(void)
 #define TVPPS_OPERATION  TVPPsOperationColorDodgeBlend
 #include "tvpps.inc"
 
+#define TVPPS_FUNC_NORM  TVPPsColorDodge5Blend_c
+#define TVPPS_FUNC_O     TVPPsColorDodge5Blend_o_c
+#define TVPPS_FUNC_HDA   TVPPsColorDodge5Blend_HDA_c
+#define TVPPS_FUNC_HDA_O TVPPsColorDodge5Blend_HDA_o_c
+#define TVPPS_OPERATION  TVPPsOperationColorDodge5Blend
+#include "tvpps.inc"
+
 #define TVPPS_FUNC_NORM  TVPPsColorBurnBlend_c
 #define TVPPS_FUNC_O     TVPPsColorBurnBlend_o_c
 #define TVPPS_FUNC_HDA   TVPPsColorBurnBlend_HDA_c
@@ -288,6 +327,13 @@ void __cdecl TVPPsMakeTable(void)
 #define TVPPS_FUNC_HDA   TVPPsDiffBlend_HDA_c
 #define TVPPS_FUNC_HDA_O TVPPsDiffBlend_HDA_o_c
 #define TVPPS_OPERATION  TVPPsOperationDiffBlend
+#include "tvpps.inc"
+
+#define TVPPS_FUNC_NORM  TVPPsDiff5Blend_c
+#define TVPPS_FUNC_O     TVPPsDiff5Blend_o_c
+#define TVPPS_FUNC_HDA   TVPPsDiff5Blend_HDA_c
+#define TVPPS_FUNC_HDA_O TVPPsDiff5Blend_HDA_o_c
+#define TVPPS_OPERATION  TVPPsOperationDiff5Blend
 #include "tvpps.inc"
 
 #define TVPPS_FUNC_NORM  TVPPsExclusionBlend_c
