@@ -72,6 +72,22 @@ enum tTVPDrawFace
 //---------------------------------------------------------------------------
 enum tTVPBlendOperationMode
 {
+	omPsNormal = ltPsNormal,
+	omPsAdditive = ltPsAdditive,
+	omPsSubtractive = ltPsSubtractive,
+	omPsMultiplicative = ltPsMultiplicative,
+	omPsScreen = ltPsScreen,
+	omPsOverlay = ltPsOverlay,
+	omPsHardLight = ltPsHardLight,
+	omPsSoftLight = ltPsSoftLight,
+	omPsColorDodge = ltPsColorDodge,
+	omPsColorDodge5 = ltPsColorDodge5,
+	omPsColorBurn = ltPsColorBurn,
+	omPsLighten = ltPsLighten,
+	omPsDarken = ltPsDarken,
+	omPsDifference = ltPsDifference,
+	omPsDifference5 = ltPsDifference5,
+	omPsExclusion = ltPsExclusion,
 	omAdditive = ltAdditive,
 	omSubtractive = ltSubtractive,
 	omMultiplicative = ltMultiplicative,
@@ -311,11 +327,6 @@ public:
 	void SetType(tTVPLayerType type);
 
 	const tjs_char * GetTypeNameString();
-
-	static bool IsTypeUsingAlpha(tTVPLayerType type)
-		{ return type == ltAlpha || type == ltAddAlpha; }
-
-	bool GetDestHasAlpha() const { return IsTypeUsingAlpha(DisplayType); }
 
 	void ConvertLayerType(tTVPDrawFace fromtype);
 

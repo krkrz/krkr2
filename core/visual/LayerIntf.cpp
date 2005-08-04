@@ -1326,18 +1326,34 @@ void tTJSNI_BaseLayer::UpdateDrawFace()
 		switch(DisplayType)
 		{
 	//	case ltBinder:
-		case ltOpaque:			DrawFace = dfOpaque;			break;
-		case ltAlpha:			DrawFace = dfAlpha;				break;
-		case ltAdditive:		DrawFace = dfOpaque;			break;
-		case ltSubtractive:		DrawFace = dfOpaque;			break;
-		case ltMultiplicative:	DrawFace = dfOpaque;			break;
+		case ltOpaque:				DrawFace = dfOpaque;			break;
+		case ltAlpha:				DrawFace = dfAlpha;				break;
+		case ltAdditive:			DrawFace = dfOpaque;			break;
+		case ltSubtractive:			DrawFace = dfOpaque;			break;
+		case ltMultiplicative:		DrawFace = dfOpaque;			break;
 	//	case ltEffect:
 	//	case ltFilter:
-		case ltDodge:			DrawFace = dfOpaque;			break;
-		case ltDarken:			DrawFace = dfOpaque;			break;
-		case ltLighten:			DrawFace = dfOpaque;			break;
-		case ltScreen:			DrawFace = dfOpaque;			break;
-		case ltAddAlpha:		DrawFace = dfAddAlpha;			break;
+		case ltDodge:				DrawFace = dfOpaque;			break;
+		case ltDarken:				DrawFace = dfOpaque;			break;
+		case ltLighten:				DrawFace = dfOpaque;			break;
+		case ltScreen:				DrawFace = dfOpaque;			break;
+		case ltAddAlpha:			DrawFace = dfAddAlpha;			break;
+		case ltPsNormal:			DrawFace = dfAlpha;				break;
+		case ltPsAdditive:			DrawFace = dfAlpha;				break;
+		case ltPsSubtractive:		DrawFace = dfAlpha;				break;
+		case ltPsMultiplicative:	DrawFace = dfAlpha;				break;
+		case ltPsScreen:			DrawFace = dfAlpha;				break;
+		case ltPsOverlay:			DrawFace = dfAlpha;				break;
+		case ltPsHardLight:			DrawFace = dfAlpha;				break;
+		case ltPsSoftLight:			DrawFace = dfAlpha;				break;
+		case ltPsColorDodge:		DrawFace = dfAlpha;				break;
+		case ltPsColorDodge5:		DrawFace = dfAlpha;				break;
+		case ltPsColorBurn:			DrawFace = dfAlpha;				break;
+		case ltPsLighten:			DrawFace = dfAlpha;				break;
+		case ltPsDarken:			DrawFace = dfAlpha;				break;
+		case ltPsDifference:	 	DrawFace = dfAlpha;				break;
+		case ltPsDifference5:	 	DrawFace = dfAlpha;				break;
+		case ltPsExclusion:			DrawFace = dfAlpha;				break;
 		default:
 							DrawFace = dfOpaque;			break;
 		}
@@ -1356,17 +1372,35 @@ tTVPBlendOperationMode tTJSNI_BaseLayer::GetOperationModeFromType() const
 	{
 //	case ltBinder:
 	case ltOpaque:			return omOpaque;			 
-	case ltAlpha:			return omAlpha;				 
-	case ltAdditive:		return omAdditive;			 
-	case ltSubtractive:		return omSubtractive;		 
+	case ltAlpha:			return omAlpha;
+	case ltAdditive:		return omAdditive;
+	case ltSubtractive:		return omSubtractive;
 	case ltMultiplicative:	return omMultiplicative;	 
 //	case ltEffect:
 //	case ltFilter:
-	case ltDodge:			return omDodge;				 
-	case ltDarken:			return omDarken;			 
-	case ltLighten:			return omLighten;			 
-	case ltScreen:			return omScreen;			 
-	case ltAddAlpha:		return omAddAlpha;			 
+	case ltDodge:			return omDodge;
+	case ltDarken:			return omDarken;
+	case ltLighten:			return omLighten;
+	case ltScreen:			return omScreen;
+	case ltAddAlpha:		return omAddAlpha;
+	case ltPsNormal:		return omPsNormal;
+	case ltPsAdditive:		return omPsAdditive;
+	case ltPsSubtractive:	return omPsSubtractive;
+	case ltPsMultiplicative:return omPsMultiplicative;
+	case ltPsScreen:		return omPsScreen;
+	case ltPsOverlay:		return omPsOverlay;
+	case ltPsHardLight:		return omPsHardLight;
+	case ltPsSoftLight:		return omPsSoftLight;
+	case ltPsColorDodge:	return omPsColorDodge;
+	case ltPsColorDodge5:	return omPsColorDodge5;
+	case ltPsColorBurn:		return omPsColorBurn;
+	case ltPsLighten:		return omPsLighten;
+	case ltPsDarken:		return omPsDarken;
+	case ltPsDifference:	return omPsDifference;
+	case ltPsDifference5:	return omPsDifference5;
+	case ltPsExclusion:		return omPsExclusion;
+
+
 	default:
 							return omOpaque;
 	}
@@ -1457,6 +1491,104 @@ void tTJSNI_BaseLayer::SetType(tTVPLayerType type)
 			DisplayType = Type;
 			AllocateImage();
 			break;
+
+		case ltPsNormal:
+			NeutralColor = TVP_RGBA2COLOR(0, 0, 0, 0);
+			DisplayType = Type;
+			AllocateImage();
+			break;
+
+		case ltPsAdditive:
+			NeutralColor = TVP_RGBA2COLOR(0, 0, 0, 0);
+			DisplayType = Type;
+			AllocateImage();
+			break;
+
+		case ltPsSubtractive:
+			NeutralColor = TVP_RGBA2COLOR(255, 255, 255, 0);
+			DisplayType = Type;
+			AllocateImage();
+			break;
+
+		case ltPsMultiplicative:
+			NeutralColor = TVP_RGBA2COLOR(255, 255, 255, 0);
+			DisplayType = Type;
+			AllocateImage();
+			break;
+
+		case ltPsScreen:
+			NeutralColor = TVP_RGBA2COLOR(0, 0, 0, 0);
+			DisplayType = Type;
+			AllocateImage();
+			break;
+
+		case ltPsOverlay:
+			NeutralColor = TVP_RGBA2COLOR(128, 128, 128, 0);
+			DisplayType = Type;
+			AllocateImage();
+			break;
+
+		case ltPsHardLight:
+			NeutralColor = TVP_RGBA2COLOR(128, 128, 128, 0);
+			DisplayType = Type;
+			AllocateImage();
+			break;
+
+		case ltPsSoftLight:
+			NeutralColor = TVP_RGBA2COLOR(128, 128, 128, 0);
+			DisplayType = Type;
+			AllocateImage();
+			break;
+
+		case ltPsColorDodge:
+			NeutralColor = TVP_RGBA2COLOR(0, 0, 0, 0);
+			DisplayType = Type;
+			AllocateImage();
+			break;
+
+		case ltPsColorDodge5:
+			NeutralColor = TVP_RGBA2COLOR(0, 0, 0, 0);
+			DisplayType = Type;
+			AllocateImage();
+			break;
+
+		case ltPsColorBurn:
+			NeutralColor = TVP_RGBA2COLOR(255, 255, 255, 0);
+			DisplayType = Type;
+			AllocateImage();
+			break;
+
+		case ltPsLighten:
+			NeutralColor = TVP_RGBA2COLOR(0, 0, 0, 0);
+			DisplayType = Type;
+			AllocateImage();
+			break;
+
+		case ltPsDarken:
+			NeutralColor = TVP_RGBA2COLOR(255, 255, 255, 0);
+			DisplayType = Type;
+			AllocateImage();
+			break;
+
+		case ltPsDifference:
+			NeutralColor = TVP_RGBA2COLOR(0, 0, 0, 0);
+			DisplayType = Type;
+			AllocateImage();
+			break;
+
+		case ltPsDifference5:
+			NeutralColor = TVP_RGBA2COLOR(0, 0, 0, 0);
+			DisplayType = Type;
+			AllocateImage();
+			break;
+
+		case ltPsExclusion:
+			NeutralColor = TVP_RGBA2COLOR(0, 0, 0, 0);
+			DisplayType = Type;
+			AllocateImage();
+			break;
+
+
 		}
 		NotifyLayerTypeChange();
 		Update();
@@ -1480,6 +1612,23 @@ const tjs_char * tTJSNI_BaseLayer::GetTypeNameString()
 	case ltLighten:			return TJS_W("ltLighten");
 	case ltScreen:			return TJS_W("ltScreen");
 	case ltAddAlpha:		return TJS_W("ltAddAlpha");
+	case ltPsNormal:		return TJS_W("PsNormal");
+	case ltPsAdditive:		return TJS_W("PsAdditive");
+	case ltPsSubtractive:	return TJS_W("PsSubtractive");
+	case ltPsMultiplicative:return TJS_W("PsMultiplicative");
+	case ltPsScreen:		return TJS_W("PsScreen");
+	case ltPsOverlay:		return TJS_W("PsOverlay");
+	case ltPsHardLight:		return TJS_W("PsHardLight");
+	case ltPsSoftLight:		return TJS_W("PsSoftLight");
+	case ltPsColorDodge:	return TJS_W("PsColorDodge");
+	case ltPsColorDodge5:	return TJS_W("PsColorDodge5");
+	case ltPsColorBurn:		return TJS_W("PsColorBurn");
+	case ltPsLighten:		return TJS_W("PsLighten");
+	case ltPsDarken:		return TJS_W("PsDarken");
+	case ltPsDifference:	return TJS_W("PsDifference");
+	case ltPsDifference5:	return TJS_W("PsDifference5");
+	case ltPsExclusion:		return TJS_W("PsExclusion");
+
 	default:				return TJS_W("unknown");
 	}
 }
@@ -3349,13 +3498,29 @@ bool tTJSNI_BaseLayer::GetBltMethodFromOperationModeAndDrawFace(
 	bool met_set = false;
 	switch(mode)
 	{
-	case omAdditive:		met_set = true; met = bmAdd;		break;
-	case omSubtractive:		met_set = true; met = bmSub;		break;
-	case omMultiplicative:	met_set = true; met = bmMul;		break;
-	case omDodge:			met_set = true; met = bmDodge;		break;
-	case omDarken:			met_set = true; met = bmDarken;		break;
-	case omLighten:			met_set = true; met = bmLighten;	break;
-	case omScreen:			met_set = true; met = bmScreen;		break;
+	case omPsNormal:			met_set = true; met = bmPsNormal;			break;
+	case omPsAdditive:			met_set = true; met = bmPsAdditive;			break;
+	case omPsSubtractive:		met_set = true; met = bmPsSubtractive;		break;
+	case omPsMultiplicative:	met_set = true; met = bmPsMultiplicative;	break;
+	case omPsScreen:			met_set = true; met = bmPsScreen;			break;
+	case omPsOverlay:			met_set = true; met = bmPsOverlay;			break;
+	case omPsHardLight:			met_set = true; met = bmPsHardLight;		break;
+	case omPsSoftLight:			met_set = true; met = bmPsSoftLight;		break;
+	case omPsColorDodge:		met_set = true; met = bmPsColorDodge;		break;
+	case omPsColorDodge5:		met_set = true; met = bmPsColorDodge5;		break;
+	case omPsColorBurn:			met_set = true; met = bmPsColorBurn;		break;
+	case omPsLighten:			met_set = true; met = bmPsLighten;			break;
+	case omPsDarken:			met_set = true; met = bmPsDarken;			break;
+	case omPsDifference:   		met_set = true; met = bmPsDifference;		break;
+	case omPsDifference5:   	met_set = true; met = bmPsDifference5;		break;
+	case omPsExclusion:			met_set = true; met = bmPsExclusion;		break;
+	case omAdditive:			met_set = true; met = bmAdd;				break;
+	case omSubtractive:			met_set = true; met = bmSub;				break;
+	case omMultiplicative:		met_set = true; met = bmMul;				break;
+	case omDodge:				met_set = true; met = bmDodge;				break;
+	case omDarken:				met_set = true; met = bmDarken;				break;
+	case omLighten:				met_set = true; met = bmLighten;			break;
+	case omScreen:				met_set = true; met = bmScreen;				break;
 	case omAlpha:
 		if(DrawFace == dfAlpha)
 						{	met_set = true; met = bmAlphaOnAlpha; break;		}
@@ -4932,7 +5097,7 @@ void tTJSNI_BaseLayer::QueryUpdateExcludeRect(tTVPRect &rect, bool parentvisible
 
 	// recur to children
 	parentvisible = parentvisible && Visible &&
-		(DisplayType == ltOpaque || DisplayType == ltAlpha || DisplayType == ltAddAlpha) &&
+		(DisplayType == ltOpaque || DisplayType == ltAlpha || DisplayType == ltAddAlpha || DisplayType == ltPsNormal) &&
 		Opacity == 255; // fixed 2004/01/09 W.Dee
 	TVP_LAYER_FOR_EACH_CHILD_NOLOCK_BACKWARD_BEGIN(child)
 
@@ -5011,7 +5176,7 @@ void tTJSNI_BaseLayer::BltImage(tTVPBaseBitmap *dest, tTVPLayerType destlayertyp
 
 	case ltAdditive:
 		// additive blend
-		hda = IsTypeUsingAlpha(destlayertype);
+		hda = TVPIsTypeUsingAlphaChannel(destlayertype);
 			// hda = true if destination has alpha
 			// ( preserving mask )
 		met = bmAdd;
@@ -5019,37 +5184,37 @@ void tTJSNI_BaseLayer::BltImage(tTVPBaseBitmap *dest, tTVPLayerType destlayertyp
 
 	case ltSubtractive:
 		// subtractive blend
-		hda = IsTypeUsingAlpha(destlayertype);
+		hda = TVPIsTypeUsingAlphaChannel(destlayertype);
 		met = bmSub;
 		break;
 
 	case ltMultiplicative:
 		// multiplicative blend
-		hda = IsTypeUsingAlpha(destlayertype);
+		hda = TVPIsTypeUsingAlphaChannel(destlayertype);
 		met = bmMul;
 		break;
 
 	case ltDodge:
 		// color dodge ( "Ooi yaki" in Japanese )
-		hda = IsTypeUsingAlpha(destlayertype);
+		hda = TVPIsTypeUsingAlphaChannel(destlayertype);
 		met = bmDodge;
 		break;
 
 	case ltDarken:
 		// darken blend (select lower luminosity)
-		hda = IsTypeUsingAlpha(destlayertype);
+		hda = TVPIsTypeUsingAlphaChannel(destlayertype);
 		met = bmDarken;
 		break;
 
 	case ltLighten:
 		// lighten blend (select higher luminosity)
-		hda = IsTypeUsingAlpha(destlayertype);
+		hda = TVPIsTypeUsingAlphaChannel(destlayertype);
 		met = bmLighten;
 		break;
 
 	case ltScreen:
 		// screen multiplicative blend
-		hda = IsTypeUsingAlpha(destlayertype);
+		hda = TVPIsTypeUsingAlphaChannel(destlayertype);
 		met = bmScreen;
 		break;
 
@@ -5061,6 +5226,102 @@ void tTJSNI_BaseLayer::BltImage(tTVPBaseBitmap *dest, tTVPLayerType destlayertyp
 			met = bmAddAlphaOnAddAlpha;
 		else
 			met = bmAddAlpha;
+		break;
+
+	case ltPsNormal:
+		// Photoshop compatible normal blend
+		hda = TVPIsTypeUsingAlphaChannel(destlayertype);
+		met = bmPsNormal;
+		break;
+
+	case ltPsAdditive:
+		// Photoshop compatible additive blend
+		hda = TVPIsTypeUsingAlphaChannel(destlayertype);
+		met = bmPsAdditive;
+		break;
+
+	case ltPsSubtractive:
+		// Photoshop compatible subtractive blend
+		hda = TVPIsTypeUsingAlphaChannel(destlayertype);
+		met = bmPsSubtractive;
+		break;
+
+	case ltPsMultiplicative:
+		// Photoshop compatible multiplicative blend
+		hda = TVPIsTypeUsingAlphaChannel(destlayertype);
+		met = bmPsMultiplicative;
+		break;
+
+	case ltPsScreen:
+		// Photoshop compatible screen blend
+		hda = TVPIsTypeUsingAlphaChannel(destlayertype);
+		met = bmPsScreen;
+		break;
+
+	case ltPsOverlay:
+		// Photoshop compatible overlay blend
+		hda = TVPIsTypeUsingAlphaChannel(destlayertype);
+		met = bmPsOverlay;
+		break;
+
+	case ltPsHardLight:
+		// Photoshop compatible hard light blend
+		hda = TVPIsTypeUsingAlphaChannel(destlayertype);
+		met = bmPsHardLight;
+		break;
+
+	case ltPsSoftLight:
+		// Photoshop compatible soft light blend
+		hda = TVPIsTypeUsingAlphaChannel(destlayertype);
+		met = bmPsSoftLight;
+		break;
+
+	case ltPsColorDodge:
+		// Photoshop compatible color dodge blend
+		hda = TVPIsTypeUsingAlphaChannel(destlayertype);
+		met = bmPsColorDodge;
+		break;
+
+	case ltPsColorDodge5:
+		// Photoshop 5.x compatible color dodge blend
+		hda = TVPIsTypeUsingAlphaChannel(destlayertype);
+		met = bmPsColorDodge5;
+		break;
+
+	case ltPsColorBurn:
+		// Photoshop compatible color burn blend
+		hda = TVPIsTypeUsingAlphaChannel(destlayertype);
+		met = bmPsColorBurn;
+		break;
+
+	case ltPsLighten:
+		// Photoshop compatible compare (lighten) blend
+		hda = TVPIsTypeUsingAlphaChannel(destlayertype);
+		met = bmPsLighten;
+		break;
+
+	case ltPsDarken:
+		// Photoshop compatible compare (darken) blend
+		hda = TVPIsTypeUsingAlphaChannel(destlayertype);
+		met = bmPsDarken;
+		break;
+
+	case ltPsDifference:
+		// Photoshop compatible difference blend
+		hda = TVPIsTypeUsingAlphaChannel(destlayertype);
+		met = bmPsDifference;
+		break;
+
+	case ltPsDifference5:
+		// Photoshop 5.x compatible difference blend
+		hda = TVPIsTypeUsingAlphaChannel(destlayertype);
+		met = bmPsDifference5;
+		break;
+
+	case ltPsExclusion:
+		// Photoshop compatible exclusion blend
+		hda = TVPIsTypeUsingAlphaChannel(destlayertype);
+		met = bmPsExclusion;
 		break;
 
 	default:
