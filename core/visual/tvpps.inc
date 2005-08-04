@@ -1,8 +1,8 @@
 /*
-  PhotoShop-like layer blender for KIRIKIRI (C-version)
+  Photoshop-like layer blender for KIRIKIRI (C-version)
   (c)2004-2005 Kengo Takagi (Kenjo) <kenjo@ceres.dti.ne.jp>
 
-  Include file for function macro expansion (see also psblends_c.c)
+  Include file for function macro expansion (see also tvpps.c)
 */
 
 /* ------------------------------ */
