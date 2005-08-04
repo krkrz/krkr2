@@ -37,6 +37,8 @@ char TVPTLG6GolombBitLengthTable
 	{ { 0 } };
 
 
+static void TVPPsMakeTable(void);
+
 static void TVPTLG6InitLeadingZeroTable(void)
 {
 	/* table which indicates first set bit position + 1. */
@@ -238,6 +240,7 @@ static void TVPCreateTable(void)
 	TVPInitDitherTable();
 	TVPTLG6InitLeadingZeroTable();
 	TVPTLG6InitGolombTable();
+	TVPPsMakeTable();
 }
 
 static void TVPDestroyTable(void)

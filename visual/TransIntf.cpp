@@ -654,7 +654,7 @@ void tTVPCrossFadeTransHandler::Blend(tTVPDivisibleData *data)
 
 	tjs_int h = data->Height;
 
-	if(DestLayerType == ltAlpha)
+	if(TVPIsTypeUsingAlpha(DestLayerType))
 	{
 		while(h--)
 		{
@@ -663,7 +663,7 @@ void tTVPCrossFadeTransHandler::Blend(tTVPDivisibleData *data)
 			dest += destpitch, src1 += src1pitch, src2 += src2pitch;
 		}
 	}
-	else if(DestLayerType == ltAddAlpha)
+	else if(TVPIsTypeUsingAddAlpha(DestLayerType))
 	{
 		while(h--)
 		{
@@ -810,9 +810,9 @@ tjs_error TJS_INTF_METHOD tTVPUniversalTransHandler::StartProcess(
 	// start one frame of the transition
 
 	// create blend table
-	if(DestLayerType == ltAlpha)
+	if(TVPIsTypeUsingAlpha(DestLayerType))
 		TVPInitUnivTransBlendTable_d(BlendTable, Phase, Vague);
-	else if(DestLayerType == ltAddAlpha)
+	else if(TVPIsTypeUsingAddAlpha(DestLayerType))
 		TVPInitUnivTransBlendTable_a(BlendTable, Phase, Vague);
 	else
 		TVPInitUnivTransBlendTable(BlendTable, Phase, Vague);
@@ -851,7 +851,7 @@ void tTVPUniversalTransHandler::Blend(tTVPDivisibleData *data)
 	tjs_int h = data->Height;
 	if(Vague >= 512)
 	{
-		if(DestLayerType == ltAlpha)
+		if(TVPIsTypeUsingAlpha(DestLayerType))
 		{
 			while(h--)
 			{
@@ -861,7 +861,7 @@ void tTVPUniversalTransHandler::Blend(tTVPDivisibleData *data)
 				rule += rulepitch;
 			}
 		}
-		else if(DestLayerType == ltAddAlpha)
+		else if(TVPIsTypeUsingAddAlpha(DestLayerType))
 		{
 			while(h--)
 			{
@@ -887,7 +887,7 @@ void tTVPUniversalTransHandler::Blend(tTVPDivisibleData *data)
 		tjs_int src1lv = Phase;
 		tjs_int src2lv = Phase - Vague;
 
-		if(DestLayerType == ltAlpha)
+		if(TVPIsTypeUsingAlpha(DestLayerType))
 		{
 			while(h--)
 			{
@@ -898,7 +898,7 @@ void tTVPUniversalTransHandler::Blend(tTVPDivisibleData *data)
 				rule += rulepitch;
 			}
 		}
-		else if(DestLayerType == ltAddAlpha)
+		else if(TVPIsTypeUsingAddAlpha(DestLayerType))
 		{
 			while(h--)
 			{

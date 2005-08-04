@@ -3,10 +3,6 @@
   (c)2004-2005 Kengo Takagi (Kenjo) <kenjo@ceres.dti.ne.jp>
 */
 
-#include <math.h>
-#include "tjsTypes.h"
-#include "tvpps.h"
-
 
 #define TVPPS_REG register
 #define TVPPS_USE_OVERLAY_TABLE
@@ -210,7 +206,7 @@ unsigned char TVPPsTableOverlay[256][256];
 /* --------------------------------------------------------------------
   Table initialize function
 -------------------------------------------------------------------- */
-void __cdecl TVPPsMakeTable(void)
+void TVPPsMakeTable(void)
 {
 	int s, d;
 	for (s=0; s<256; s++) {
