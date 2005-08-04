@@ -1,0 +1,127 @@
+var mode_list = [
+	"ltPsNormal",
+	"ltPsAdditive",
+	"ltPsSubtractive",
+	"ltPsMultiplicative",
+	"ltPsScreen",
+	"ltPsOverlay",
+	"ltPsHardLight",
+	"ltPsSoftLight",
+	"ltPsColorDodge",
+	"ltPsColorDodge5",
+	"ltPsColorBurn",
+	"ltPsLighten",
+	"ltPsDarken",
+	"ltPsDifference",
+	"ltPsDifference5",
+	"ltPsExclusion"
+];
+
+
+class MyWindow extends Window
+{
+	var primlayer;
+	var forelayer;
+	var tmplayer;
+
+	function MyWindow()
+	{
+		super.Window();
+
+		// 下敷き(プライマリレイヤ)
+		add(primlayer = new Layer(this, null));
+		primlayer.loadImages("grad_base");
+		primlayer.setSizeToImageSize();
+		setInnerSize(primlayer.width, primlayer.height);
+
+		// 上に重ねるレイヤ
+		add(forelayer = new Layer(this, primlayer));
+		forelayer.setPos(0, 0);
+		forelayer.visible = true;
+		forelayer.loadImages("grad_fore");
+		forelayer.setSizeToImageSize();
+
+		// 一時レイヤ
+		add(tmplayer = new Layer(this, primlayer));
+		tmplayer.setImageSize(primlayer.imageWidth, primlayer.imageHeight);
+		tmplayer.setSizeToImageSize();
+
+		visible = true;
+
+		test();
+
+	}
+
+	function save_image(fn)
+	{
+		// primlayer と forelayer を重ね合わせた画像を保存
+		tmplayer.piledCopy(0, 0, primlayer, 0, 0, primlayer.width, primlayer.height);
+		tmplayer.saveLayerImage(fn, "bmp24");
+	}
+
+	function test_normal(mode, fn)
+	{
+		// 普通の重ね合わせ
+		primlayer.loadImages("grad_base");
+		forelayer.loadImages("grad_fore");
+		forelayer.face = dfMask;
+		forelayer.fillRect(0, 0, forelayer.imageWidth, forelayer.imageHeight,
+			255); // 不透明度を 255 で塗りつぶし
+		forelayer.type = mode;
+		forelayer.opacity = 255;
+		save_image(fn);
+	}
+
+	function test_o(mode, fn)
+	{
+		// 不透明度を 128 にした重ね合わせ
+		primlayer.loadImages("grad_base");
+		forelayer.loadImages("grad_fore");
+		forelayer.type = mode;
+		forelayer.opacity = 128;
+		save_image(fn);
+	}
+
+	function test_h(mode, fn)
+	{
+		// 全ピクセルの不透明度を 128 にした重ね合わせ
+		primlayer.loadImages("grad_base");
+		forelayer.loadImages("grad_fore");
+		forelayer.face = dfMask;
+		forelayer.fillRect(0, 0, forelayer.imageWidth, forelayer.imageHeight,
+			128); // 不透明度を 128 で塗りつぶし
+		forelayer.type = mode;
+		forelayer.opacity = 255;
+		save_image(fn);
+	}
+
+	function test_c(mode, fn)
+	{
+		// 表レイヤと裏レイヤをとりかえ、不透明度を 128 にした重ね合わせ
+		primlayer.loadImages("grad_fore");
+		forelayer.loadImages("grad_base");
+		forelayer.type = mode;
+		forelayer.opacity = 128;
+		save_image(fn);
+	}
+
+	function test()
+	{
+		// テストを実行する
+		for(var i = 0; i < mode_list.count; i++)
+		{
+			var mode = global[mode_list[i]];
+			var fn_base = "kirikiri/original/" + mode_list[i];
+			test_normal(mode, fn_base + ".bmp");
+			test_o(mode, fn_base + "_o.bmp");
+			test_h(mode, fn_base + "_h.bmp");
+			test_c(mode, fn_base + "_c.bmp");
+		}
+
+	}
+
+}
+
+var a = new MyWindow();
+
+/*------------------ viewer ------------------*/
