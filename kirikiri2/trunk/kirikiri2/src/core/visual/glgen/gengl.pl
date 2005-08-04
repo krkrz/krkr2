@@ -303,6 +303,11 @@ $gpl
 #include "tjsTypes.h"
 #include "tvpgl.h"
 
+#if __BORLANDC__
+	#pragma warn -par /* prevent unsed parameter warning */
+	#pragma warn -aus /* prevent unsed variable warning */
+#endif
+
 EOF
 ;#-----------------------------------------------------------------
 print FH <<EOF;
@@ -7203,6 +7208,54 @@ TVP_GL_FUNC_DECL(void, TVPTLG6DecodeLine_c, (tjs_uint32 *prevline, tjs_uint32 *c
 EOF
 
 ;#-----------------------------------------------------------------
+;# process tvpps.c
+;#-----------------------------------------------------------------
+
+open PSC, "tvpps.c" or die;
+
+$exportlist = '';
+while($line = <PSC>)
+{
+	if($line =~ /^\#define\s+TVPPS_FUNC_NORM\s+(\w+)/)
+	{
+		;# normal function
+		$exportlist .= "/*export*/\n";
+		$exportlist .= "TVP_GL_FUNC_DECL(void, $1, (tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len))\n{}\n";
+	}
+	elsif($line =~ /^\#define\s+TVPPS_FUNC_O\s+(\w+)/)
+	{
+		;# with opacity 
+		$exportlist .= "/*export*/\n";
+		$exportlist .= "TVP_GL_FUNC_DECL(void, $1, (tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len, tjs_int opa))\n{}\n";
+	}
+	elsif($line =~ /^\#define\s+TVPPS_FUNC_HDA\s+(\w+)/)
+	{
+		;# with hda
+		$exportlist .= "/*export*/\n";
+		$exportlist .= "TVP_GL_FUNC_DECL(void, $1, (tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len))\n{}\n";
+	}
+	elsif($line =~ /^\#define\s+TVPPS_FUNC_HDA_O\s+(\w+)/)
+	{
+		;# with hda opacity
+		$exportlist .= "/*export*/\n";
+		$exportlist .= "TVP_GL_FUNC_DECL(void, $1, (tjs_uint32 *dest, const tjs_uint32 *src, tjs_int len, tjs_int opa))\n{}\n";
+	}
+
+	print FC $line;
+}
+
+print FC "\n\n";
+print FC "#if 0\n";
+print FC "/* dummy definitions to be checked in gengl.pl */\n";
+print FC "$exportlist\n";
+print FC "#endif\n";
+print FC "\n\n";
+
+;#-----------------------------------------------------------------
+
+
+
+;#-----------------------------------------------------------------
 ;# write the footer
 ;#-----------------------------------------------------------------
 
@@ -7248,6 +7301,7 @@ TVP_GL_FUNC_DECL(void, TVPUninitTVPGL, ())
 	TVPDestroyTable();
 }
 /*end of the file*/
+
 EOF
 close FC;
 ;#-----------------------------------------------------------------

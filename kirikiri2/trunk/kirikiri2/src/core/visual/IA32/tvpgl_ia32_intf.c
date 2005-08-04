@@ -226,6 +226,134 @@ if(TVPCPUType & TVP_CPU_HAS_EMMX && TVPCPUType & TVP_CPU_HAS_MMX)
 if(TVPCPUType & TVP_CPU_HAS_EMMX && TVPCPUType & TVP_CPU_HAS_MMX)
 	 TVPTLG6DecodeGolombValues =  TVPTLG6DecodeGolombValues_emmx_a;
 if(TVPCPUType & TVP_CPU_HAS_MMX)
+	 TVPPsAlphaBlend =  TVPPsAlphaBlend_mmx_a;
+if(TVPCPUType & TVP_CPU_HAS_MMX)
+	 TVPPsAlphaBlend_o =  TVPPsAlphaBlend_o_mmx_a;
+if(TVPCPUType & TVP_CPU_HAS_MMX)
+	 TVPPsAlphaBlend_HDA =  TVPPsAlphaBlend_HDA_mmx_a;
+if(TVPCPUType & TVP_CPU_HAS_MMX)
+	 TVPPsAlphaBlend_HDA_o =  TVPPsAlphaBlend_HDA_o_mmx_a;
+if(TVPCPUType & TVP_CPU_HAS_MMX)
+	 TVPPsAddBlend =  TVPPsAddBlend_mmx_a;
+if(TVPCPUType & TVP_CPU_HAS_MMX)
+	 TVPPsAddBlend_o =  TVPPsAddBlend_o_mmx_a;
+if(TVPCPUType & TVP_CPU_HAS_MMX)
+	 TVPPsAddBlend_HDA =  TVPPsAddBlend_HDA_mmx_a;
+if(TVPCPUType & TVP_CPU_HAS_MMX)
+	 TVPPsAddBlend_HDA_o =  TVPPsAddBlend_HDA_o_mmx_a;
+if(TVPCPUType & TVP_CPU_HAS_MMX)
+	 TVPPsSubBlend =  TVPPsSubBlend_mmx_a;
+if(TVPCPUType & TVP_CPU_HAS_MMX)
+	 TVPPsSubBlend_o =  TVPPsSubBlend_o_mmx_a;
+if(TVPCPUType & TVP_CPU_HAS_MMX)
+	 TVPPsSubBlend_HDA =  TVPPsSubBlend_HDA_mmx_a;
+if(TVPCPUType & TVP_CPU_HAS_MMX)
+	 TVPPsSubBlend_HDA_o =  TVPPsSubBlend_HDA_o_mmx_a;
+if(TVPCPUType & TVP_CPU_HAS_MMX)
+	 TVPPsMulBlend =  TVPPsMulBlend_mmx_a;
+if(TVPCPUType & TVP_CPU_HAS_MMX)
+	 TVPPsMulBlend_o =  TVPPsMulBlend_o_mmx_a;
+if(TVPCPUType & TVP_CPU_HAS_MMX)
+	 TVPPsMulBlend_HDA =  TVPPsMulBlend_HDA_mmx_a;
+if(TVPCPUType & TVP_CPU_HAS_MMX)
+	 TVPPsMulBlend_HDA_o =  TVPPsMulBlend_HDA_o_mmx_a;
+if(TVPCPUType & TVP_CPU_HAS_MMX)
+	 TVPPsScreenBlend =  TVPPsScreenBlend_mmx_a;
+if(TVPCPUType & TVP_CPU_HAS_MMX)
+	 TVPPsScreenBlend_o =  TVPPsScreenBlend_o_mmx_a;
+if(TVPCPUType & TVP_CPU_HAS_MMX)
+	 TVPPsScreenBlend_HDA =  TVPPsScreenBlend_HDA_mmx_a;
+if(TVPCPUType & TVP_CPU_HAS_MMX)
+	 TVPPsScreenBlend_HDA_o =  TVPPsScreenBlend_HDA_o_mmx_a;
+if(TVPCPUType & TVP_CPU_HAS_MMX)
+	 TVPPsOverlayBlend =  TVPPsOverlayBlend_mmx_a;
+if(TVPCPUType & TVP_CPU_HAS_MMX)
+	 TVPPsOverlayBlend_o =  TVPPsOverlayBlend_o_mmx_a;
+if(TVPCPUType & TVP_CPU_HAS_MMX)
+	 TVPPsOverlayBlend_HDA =  TVPPsOverlayBlend_HDA_mmx_a;
+if(TVPCPUType & TVP_CPU_HAS_MMX)
+	 TVPPsOverlayBlend_HDA_o =  TVPPsOverlayBlend_HDA_o_mmx_a;
+if(TVPCPUType & TVP_CPU_HAS_MMX)
+	 TVPPsHardLightBlend =  TVPPsHardLightBlend_mmx_a;
+if(TVPCPUType & TVP_CPU_HAS_MMX)
+	 TVPPsHardLightBlend_o =  TVPPsHardLightBlend_o_mmx_a;
+if(TVPCPUType & TVP_CPU_HAS_MMX)
+	 TVPPsHardLightBlend_HDA =  TVPPsHardLightBlend_HDA_mmx_a;
+if(TVPCPUType & TVP_CPU_HAS_MMX)
+	 TVPPsHardLightBlend_HDA_o =  TVPPsHardLightBlend_HDA_o_mmx_a;
+if(TVPCPUType & TVP_CPU_HAS_MMX)
+	 TVPPsSoftLightBlend =  TVPPsSoftLightBlend_mmx_a;
+if(TVPCPUType & TVP_CPU_HAS_MMX)
+	 TVPPsSoftLightBlend_o =  TVPPsSoftLightBlend_o_mmx_a;
+if(TVPCPUType & TVP_CPU_HAS_MMX)
+	 TVPPsSoftLightBlend_HDA =  TVPPsSoftLightBlend_HDA_mmx_a;
+if(TVPCPUType & TVP_CPU_HAS_MMX)
+	 TVPPsSoftLightBlend_HDA_o =  TVPPsSoftLightBlend_HDA_o_mmx_a;
+if(TVPCPUType & TVP_CPU_HAS_MMX)
+	 TVPPsColorDodgeBlend =  TVPPsColorDodgeBlend_mmx_a;
+if(TVPCPUType & TVP_CPU_HAS_MMX)
+	 TVPPsColorDodgeBlend_o =  TVPPsColorDodgeBlend_o_mmx_a;
+if(TVPCPUType & TVP_CPU_HAS_MMX)
+	 TVPPsColorDodgeBlend_HDA =  TVPPsColorDodgeBlend_HDA_mmx_a;
+if(TVPCPUType & TVP_CPU_HAS_MMX)
+	 TVPPsColorDodgeBlend_HDA_o =  TVPPsColorDodgeBlend_HDA_o_mmx_a;
+if(TVPCPUType & TVP_CPU_HAS_MMX)
+	 TVPPsColorDodge5Blend =  TVPPsColorDodge5Blend_mmx_a;
+if(TVPCPUType & TVP_CPU_HAS_MMX)
+	 TVPPsColorDodge5Blend_o =  TVPPsColorDodge5Blend_o_mmx_a;
+if(TVPCPUType & TVP_CPU_HAS_MMX)
+	 TVPPsColorDodge5Blend_HDA =  TVPPsColorDodge5Blend_HDA_mmx_a;
+if(TVPCPUType & TVP_CPU_HAS_MMX)
+	 TVPPsColorDodge5Blend_HDA_o =  TVPPsColorDodge5Blend_HDA_o_mmx_a;
+if(TVPCPUType & TVP_CPU_HAS_MMX)
+	 TVPPsColorBurnBlend =  TVPPsColorBurnBlend_mmx_a;
+if(TVPCPUType & TVP_CPU_HAS_MMX)
+	 TVPPsColorBurnBlend_o =  TVPPsColorBurnBlend_o_mmx_a;
+if(TVPCPUType & TVP_CPU_HAS_MMX)
+	 TVPPsColorBurnBlend_HDA =  TVPPsColorBurnBlend_HDA_mmx_a;
+if(TVPCPUType & TVP_CPU_HAS_MMX)
+	 TVPPsColorBurnBlend_HDA_o =  TVPPsColorBurnBlend_HDA_o_mmx_a;
+if(TVPCPUType & TVP_CPU_HAS_MMX)
+	 TVPPsLightenBlend =  TVPPsLightenBlend_mmx_a;
+if(TVPCPUType & TVP_CPU_HAS_MMX)
+	 TVPPsLightenBlend_o =  TVPPsLightenBlend_o_mmx_a;
+if(TVPCPUType & TVP_CPU_HAS_MMX)
+	 TVPPsLightenBlend_HDA =  TVPPsLightenBlend_HDA_mmx_a;
+if(TVPCPUType & TVP_CPU_HAS_MMX)
+	 TVPPsLightenBlend_HDA_o =  TVPPsLightenBlend_HDA_o_mmx_a;
+if(TVPCPUType & TVP_CPU_HAS_MMX)
+	 TVPPsDarkenBlend =  TVPPsDarkenBlend_mmx_a;
+if(TVPCPUType & TVP_CPU_HAS_MMX)
+	 TVPPsDarkenBlend_o =  TVPPsDarkenBlend_o_mmx_a;
+if(TVPCPUType & TVP_CPU_HAS_MMX)
+	 TVPPsDarkenBlend_HDA =  TVPPsDarkenBlend_HDA_mmx_a;
+if(TVPCPUType & TVP_CPU_HAS_MMX)
+	 TVPPsDarkenBlend_HDA_o =  TVPPsDarkenBlend_HDA_o_mmx_a;
+if(TVPCPUType & TVP_CPU_HAS_MMX)
+	 TVPPsDiffBlend =  TVPPsDiffBlend_mmx_a;
+if(TVPCPUType & TVP_CPU_HAS_MMX)
+	 TVPPsDiffBlend_o =  TVPPsDiffBlend_o_mmx_a;
+if(TVPCPUType & TVP_CPU_HAS_MMX)
+	 TVPPsDiffBlend_HDA =  TVPPsDiffBlend_HDA_mmx_a;
+if(TVPCPUType & TVP_CPU_HAS_MMX)
+	 TVPPsDiffBlend_HDA_o =  TVPPsDiffBlend_HDA_o_mmx_a;
+if(TVPCPUType & TVP_CPU_HAS_MMX)
+	 TVPPsDiff5Blend =  TVPPsDiff5Blend_mmx_a;
+if(TVPCPUType & TVP_CPU_HAS_MMX)
+	 TVPPsDiff5Blend_o =  TVPPsDiff5Blend_o_mmx_a;
+if(TVPCPUType & TVP_CPU_HAS_MMX)
+	 TVPPsDiff5Blend_HDA =  TVPPsDiff5Blend_HDA_mmx_a;
+if(TVPCPUType & TVP_CPU_HAS_MMX)
+	 TVPPsDiff5Blend_HDA_o =  TVPPsDiff5Blend_HDA_o_mmx_a;
+if(TVPCPUType & TVP_CPU_HAS_MMX)
+	 TVPPsExclusionBlend =  TVPPsExclusionBlend_mmx_a;
+if(TVPCPUType & TVP_CPU_HAS_MMX)
+	 TVPPsExclusionBlend_o =  TVPPsExclusionBlend_o_mmx_a;
+if(TVPCPUType & TVP_CPU_HAS_MMX)
+	 TVPPsExclusionBlend_HDA =  TVPPsExclusionBlend_HDA_mmx_a;
+if(TVPCPUType & TVP_CPU_HAS_MMX)
+	 TVPPsExclusionBlend_HDA_o =  TVPPsExclusionBlend_HDA_o_mmx_a;
+if(TVPCPUType & TVP_CPU_HAS_MMX)
 	 TVPInitUnivTransBlendTable =  TVPInitUnivTransBlendTable_mmx_c;
 if(TVPCPUType & TVP_CPU_HAS_MMX)
 	 TVPUnivTransBlend =  TVPUnivTransBlend_mmx_a;

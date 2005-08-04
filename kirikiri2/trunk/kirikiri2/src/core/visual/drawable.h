@@ -33,9 +33,61 @@ enum tTVPLayerType
 	ltDarken = 9,
 	ltLighten = 10,
 	ltScreen = 11,
-	ltAddAlpha = 12 // additive alpha blend
+	ltAddAlpha = 12, // additive alpha blend
+	ltPsNormal = 13,
+	ltPsAdditive = 14,
+	ltPsSubtractive = 15,
+	ltPsMultiplicative = 16,
+	ltPsScreen = 17,
+	ltPsOverlay = 18,
+	ltPsHardLight = 19,
+	ltPsSoftLight = 20,
+	ltPsColorDodge = 21,
+	ltPsColorDodge5 = 22,
+	ltPsColorBurn = 23,
+	ltPsLighten = 24,
+	ltPsDarken = 25,
+	ltPsDifference = 26,
+	ltPsDifference5 = 27,
+	ltPsExclusion = 28
 };
 //---------------------------------------------------------------------------
+static bool inline TVPIsTypeUsingAlpha(tTVPLayerType type)
+	{
+		return type == ltAlpha	||
+			ltPsNormal			||
+			ltPsAdditive		||
+			ltPsSubtractive		||
+			ltPsMultiplicative	||
+			ltPsScreen			||
+			ltPsOverlay			||
+			ltPsHardLight		||
+			ltPsSoftLight		||
+			ltPsColorDodge		||
+			ltPsColorDodge5		||
+			ltPsColorBurn		||
+			ltPsLighten			||
+			ltPsDarken			||
+			ltPsDifference		||
+			ltPsDifference5		||
+			ltPsExclusion		;
+	}
+
+static bool inline TVPIsTypeUsingAddAlpha(tTVPLayerType type)
+	{
+		return type == ltAddAlpha;
+	}
+
+static bool inline TVPIsTypeUsingAlphaChannel(tTVPLayerType type)
+	{
+		return
+			TVPIsTypeUsingAddAlpha(type) ||
+			TVPIsTypeUsingAlpha(type);
+	}
+//---------------------------------------------------------------------------
+
+
+
 /*]*/
 
 

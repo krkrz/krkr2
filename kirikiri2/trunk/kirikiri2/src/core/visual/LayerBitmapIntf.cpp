@@ -668,6 +668,40 @@ bool tTVPBaseBitmap::Blt(tjs_int x, tjs_int y, const tTVPBaseBitmap *ref,
 	const tjs_uint8 * src = (const tjs_uint8*)ref->GetScanLine(refrect.top) +
 		refrect.left*sizeof(tjs_uint32);
 
+#define TVP_BLEND_4(basename) /* blend for 4 types (normal, opacity, HDA, HDA opacity) */ \
+	if(opa == 255)                                                            \
+	{                                                                         \
+		if(!hda)                                                              \
+		{                                                                     \
+			while(h--)                                                        \
+				basename((tjs_uint32*)dest, (tjs_uint32*)src, w),             \
+				dest+=dpitch, src+=spitch;                                    \
+                                                                              \
+		}                                                                     \
+		else                                                                  \
+		{                                                                     \
+			while(h--)                                                        \
+				basename##_HDA((tjs_uint32*)dest, (tjs_uint32*)src, w),       \
+				dest+=dpitch, src+=spitch;                                    \
+		}                                                                     \
+	}                                                                         \
+	else                                                                      \
+	{                                                                         \
+		if(!hda)                                                              \
+		{                                                                     \
+			while(h--)                                                        \
+				basename##_o((tjs_uint32*)dest, (tjs_uint32*)src, w, opa),    \
+				dest+=dpitch, src+=spitch;                                    \
+		}                                                                     \
+		else                                                                  \
+		{                                                                     \
+			while(h--)                                                        \
+				basename##_HDA_o((tjs_uint32*)dest, (tjs_uint32*)src, w, opa),\
+				dest+=dpitch, src+=spitch;                                    \
+		}                                                                     \
+	}
+
+
 	switch(method)
 	{
 	case bmCopy:
@@ -708,37 +742,7 @@ bool tTVPBaseBitmap::Blt(tjs_int x, tjs_int y, const tTVPBaseBitmap *ref,
 
 	case bmAlpha:
 		// alpha blending, ignoring destination alpha
-		if(opa == 255)
-		{
-			if(!hda)
-			{
-				while(h--)
-					TVPAlphaBlend((tjs_uint32*)dest, (tjs_uint32*)src, w),
-					dest+=dpitch, src+=spitch;
-
-			}
-			else
-			{
-				while(h--)
-					TVPAlphaBlend_HDA((tjs_uint32*)dest, (tjs_uint32*)src, w),
-					dest+=dpitch, src+=spitch;
-			}
-		}
-		else
-		{
-			if(!hda)
-			{
-				while(h--)
-					TVPAlphaBlend_o((tjs_uint32*)dest, (tjs_uint32*)src, w, opa),
-					dest+=dpitch, src+=spitch;
-			}
-			else
-			{
-				while(h--)
-					TVPAlphaBlend_HDA_o((tjs_uint32*)dest, (tjs_uint32*)src, w, opa),
-					dest+=dpitch, src+=spitch;
-			}
-		}
+		TVP_BLEND_4(TVPAlphaBlend);
 		break;
 
 	case bmAlphaOnAlpha:
@@ -755,279 +759,47 @@ bool tTVPBaseBitmap::Blt(tjs_int x, tjs_int y, const tTVPBaseBitmap *ref,
 
 	case bmAdd:
 		// additive blending ( this does not consider distination alpha )
-		if(opa == 255)
-		{
-			if(!hda)
-			{
-				while(h--)
-					TVPAddBlend((tjs_uint32*)dest, (tjs_uint32*)src, w),
-					dest+=dpitch, src+=spitch;
-			}
-			else
-			{
-				while(h--)
-					TVPAddBlend_HDA((tjs_uint32*)dest, (tjs_uint32*)src, w),
-					dest+=dpitch, src+=spitch;
-			}
-		}
-		else
-		{
-			if(!hda)
-			{
-				while(h--)
-					TVPAddBlend_o((tjs_uint32*)dest, (tjs_uint32*)src, w, opa),
-					dest+=dpitch, src+=spitch;
-			}
-			else
-			{
-				while(h--)
-					TVPAddBlend_HDA_o((tjs_uint32*)dest, (tjs_uint32*)src, w, opa),
-					dest+=dpitch, src+=spitch;
-			}
-		}
+		TVP_BLEND_4(TVPAddBlend);
 		break;
 
 	case bmSub:
 		// subtractive blending ( this does not consider distination alpha )
-		if(opa == 255)
-		{
-			if(!hda)
-			{
-				while(h--)
-					TVPSubBlend((tjs_uint32*)dest, (tjs_uint32*)src, w),
-					dest+=dpitch, src+=spitch;
-			}
-			else
-			{
-				while(h--)
-					TVPSubBlend_HDA((tjs_uint32*)dest, (tjs_uint32*)src, w),
-					dest+=dpitch, src+=spitch;
-			}
-		}
-		else
-		{
-			if(!hda)
-			{
-				while(h--)
-					TVPSubBlend_o((tjs_uint32*)dest, (tjs_uint32*)src, w, opa),
-					dest+=dpitch, src+=spitch;
-			}
-			else
-			{
-				while(h--)
-					TVPSubBlend_HDA_o((tjs_uint32*)dest, (tjs_uint32*)src, w, opa),
-					dest+=dpitch, src+=spitch;
-			}
-		}
+		TVP_BLEND_4(TVPSubBlend);
 		break;
 
 	case bmMul:
 		// multiplicative blending ( this does not consider distination alpha )
-		if(opa == 255)
-		{
-			if(!hda)
-			{
-				while(h--)
-					TVPMulBlend((tjs_uint32*)dest, (tjs_uint32*)src, w),
-					dest+=dpitch, src+=spitch;
-			}
-			else
-			{
-				while(h--)
-					TVPMulBlend_HDA((tjs_uint32*)dest, (tjs_uint32*)src, w),
-					dest+=dpitch, src+=spitch;
-			}
-		}
-		else
-		{
-			if(!hda)
-			{
-				while(h--)
-					TVPMulBlend_o((tjs_uint32*)dest, (tjs_uint32*)src, w, opa),
-					dest+=dpitch, src+=spitch;
-			}
-			else
-			{
-				while(h--)
-					TVPMulBlend_HDA_o((tjs_uint32*)dest, (tjs_uint32*)src, w, opa),
-					dest+=dpitch, src+=spitch;
-			}
-		}
+		TVP_BLEND_4(TVPMulBlend);
 		break;
 
 
 	case bmDodge:
 		// color dodge mode ( this does not consider distination alpha )
-		if(opa == 255)
-		{
-			if(!hda)
-			{
-				while(h--)
-					TVPColorDodgeBlend((tjs_uint32*)dest, (tjs_uint32*)src, w),
-					dest+=dpitch, src+=spitch;
-			}
-			else
-			{
-				while(h--)
-					TVPColorDodgeBlend_HDA((tjs_uint32*)dest, (tjs_uint32*)src, w),
-					dest+=dpitch, src+=spitch;
-			}
-		}
-		else
-		{
-			if(!hda)
-			{
-				while(h--)
-					TVPColorDodgeBlend_o((tjs_uint32*)dest, (tjs_uint32*)src, w, opa),
-					dest+=dpitch, src+=spitch;
-			}
-			else
-			{
-				while(h--)
-					TVPColorDodgeBlend_HDA_o((tjs_uint32*)dest, (tjs_uint32*)src, w, opa),
-					dest+=dpitch, src+=spitch;
-			}
-		}
+		TVP_BLEND_4(TVPColorDodgeBlend);
 		break;
 
 
 	case bmDarken:
 		// darken mode ( this does not consider distination alpha )
-		if(opa == 255)
-		{
-			if(!hda)
-			{
-				while(h--)
-					TVPDarkenBlend((tjs_uint32*)dest, (tjs_uint32*)src, w),
-					dest+=dpitch, src+=spitch;
-			}
-			else
-			{
-				while(h--)
-					TVPDarkenBlend_HDA((tjs_uint32*)dest, (tjs_uint32*)src, w),
-					dest+=dpitch, src+=spitch;
-			}
-		}
-		else
-		{
-			if(!hda)
-			{
-				while(h--)
-					TVPDarkenBlend_o((tjs_uint32*)dest, (tjs_uint32*)src, w, opa),
-					dest+=dpitch, src+=spitch;
-			}
-			else
-			{
-				while(h--)
-					TVPDarkenBlend_HDA_o((tjs_uint32*)dest, (tjs_uint32*)src, w, opa),
-					dest+=dpitch, src+=spitch;
-			}
-		}
+		TVP_BLEND_4(TVPDarkenBlend);
 		break;
 
 
 	case bmLighten:
 		// lighten mode ( this does not consider distination alpha )
-		if(opa == 255)
-		{
-			if(!hda)
-			{
-				while(h--)
-					TVPLightenBlend((tjs_uint32*)dest, (tjs_uint32*)src, w),
-					dest+=dpitch, src+=spitch;
-			}
-			else
-			{
-				while(h--)
-					TVPLightenBlend_HDA((tjs_uint32*)dest, (tjs_uint32*)src, w),
-					dest+=dpitch, src+=spitch;
-			}
-		}
-		else
-		{
-			if(!hda)
-			{
-				while(h--)
-					TVPLightenBlend_o((tjs_uint32*)dest, (tjs_uint32*)src, w, opa),
-					dest+=dpitch, src+=spitch;
-			}
-			else
-			{
-				while(h--)
-					TVPLightenBlend_HDA_o((tjs_uint32*)dest, (tjs_uint32*)src, w, opa),
-					dest+=dpitch, src+=spitch;
-			}
-		}
+		TVP_BLEND_4(TVPLightenBlend);
 		break;
 
 
 	case bmScreen:
 		// screen multiplicative mode ( this does not consider distination alpha )
-		if(opa == 255)
-		{
-			if(!hda)
-			{
-				while(h--)
-					TVPScreenBlend((tjs_uint32*)dest, (tjs_uint32*)src, w),
-					dest+=dpitch, src+=spitch;
-			}
-			else
-			{
-				while(h--)
-					TVPScreenBlend_HDA((tjs_uint32*)dest, (tjs_uint32*)src, w),
-					dest+=dpitch, src+=spitch;
-			}
-		}
-		else
-		{
-			if(!hda)
-			{
-				while(h--)
-					TVPScreenBlend_o((tjs_uint32*)dest, (tjs_uint32*)src, w, opa),
-					dest+=dpitch, src+=spitch;
-			}
-			else
-			{
-				while(h--)
-					TVPScreenBlend_HDA_o((tjs_uint32*)dest, (tjs_uint32*)src, w, opa),
-					dest+=dpitch, src+=spitch;
-			}
-		}
+		TVP_BLEND_4(TVPScreenBlend);
 		break;
 
 
 	case bmAddAlpha:
 		// Additive Alpha
-		if(opa == 255)
-		{
-			if(!hda)
-			{
-				while(h--)
-					TVPAdditiveAlphaBlend((tjs_uint32*)dest, (tjs_uint32*)src, w),
-					dest+=dpitch, src+=spitch;
-			}
-			else
-			{
-				while(h--)
-					TVPAdditiveAlphaBlend_HDA((tjs_uint32*)dest, (tjs_uint32*)src, w),
-					dest+=dpitch, src+=spitch;
-			}
-		}
-		else
-		{
-			if(!hda)
-			{
-				while(h--)
-					TVPAdditiveAlphaBlend_o((tjs_uint32*)dest, (tjs_uint32*)src, w, opa),
-					dest+=dpitch, src+=spitch;
-			}
-			else
-			{
-				while(h--)
-					TVPAdditiveAlphaBlend_HDA_o((tjs_uint32*)dest, (tjs_uint32*)src, w, opa),
-					dest+=dpitch, src+=spitch;
-			}
-		}
+		TVP_BLEND_4(TVPAdditiveAlphaBlend);
 		break;
 
 
@@ -1083,7 +855,86 @@ bool tTVPBaseBitmap::Blt(tjs_int x, tjs_int y, const tTVPBaseBitmap *ref,
 		break;
 
 
+	case bmPsNormal:
+		// Photoshop compatible normal blend
+		// (may take the same effect as bmAlpha)
+		TVP_BLEND_4(TVPPsAlphaBlend);
+		break;
 
+	case bmPsAdditive:
+		// Photoshop compatible additive blend
+		TVP_BLEND_4(TVPPsAddBlend);
+		break;
+
+	case bmPsSubtractive:
+		// Photoshop compatible subtractive blend
+		TVP_BLEND_4(TVPPsSubBlend);
+		break;
+
+	case bmPsMultiplicative:
+		// Photoshop compatible multiplicative blend
+		TVP_BLEND_4(TVPPsMulBlend);
+		break;
+
+	case bmPsScreen:
+		// Photoshop compatible screen blend
+		TVP_BLEND_4(TVPPsScreenBlend);
+		break;
+
+	case bmPsOverlay:
+		// Photoshop compatible overlay blend
+		TVP_BLEND_4(TVPPsOverlayBlend);
+		break;
+
+	case bmPsHardLight:
+		// Photoshop compatible hard light blend
+		TVP_BLEND_4(TVPPsHardLightBlend);
+		break;
+
+	case bmPsSoftLight:
+		// Photoshop compatible soft light blend
+		TVP_BLEND_4(TVPPsSoftLightBlend);
+		break;
+
+	case bmPsColorDodge:
+		// Photoshop compatible color dodge blend
+		TVP_BLEND_4(TVPPsColorDodgeBlend);
+		break;
+
+	case bmPsColorDodge5:
+		// Photoshop 5.x compatible color dodge blend
+		TVP_BLEND_4(TVPPsColorDodge5Blend);
+		break;
+
+	case bmPsColorBurn:
+		// Photoshop compatible color burn blend
+		TVP_BLEND_4(TVPPsColorBurnBlend);
+		break;
+
+	case bmPsLighten:
+		// Photoshop compatible compare (lighten) blend
+		TVP_BLEND_4(TVPPsLightenBlend);
+		break;
+
+	case bmPsDarken:
+		// Photoshop compatible compare (darken) blend
+		TVP_BLEND_4(TVPPsDarkenBlend);
+		break;
+
+	case bmPsDifference:
+		// Photoshop compatible difference blend
+		TVP_BLEND_4(TVPPsDiffBlend);
+		break;
+
+	case bmPsDifference5:
+		// Photoshop 5.x compatible difference blend
+		TVP_BLEND_4(TVPPsDiff5Blend);
+		break;
+
+	case bmPsExclusion:
+		// Photoshop compatible exclusion blend
+		TVP_BLEND_4(TVPPsExclusionBlend);
+		break;
 
 
 	default:
