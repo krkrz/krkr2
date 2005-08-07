@@ -1784,11 +1784,14 @@ extern void * TVPImportFuncPtr6f70cdb7586cbe571204f286f43c9780;
 extern void * TVPImportFuncPtr9a4eaa6a627038799015c093609bdde7;
 extern void * TVPImportFuncPtrc8bb6590f4a7adc906d7b3e42d907267;
 extern void * TVPImportFuncPtr8323d57f26876d87271dbfa257b7f7e2;
+extern void * TVPImportFuncPtr4d6f148e8997e1ae0cc0006ec1bd9618;
+extern void * TVPImportFuncPtr7f03a4ddb254d0518642d15513eaea85;
 extern void * TVPImportFuncPtr4add3926c72ba9df9259be58b680de0d;
 extern void * TVPImportFuncPtr075d42cff8dc0c1fbd99c7459a63e526;
 extern void * TVPImportFuncPtrb6bc45b28e194c7ac98bfdea88edee36;
 extern void * TVPImportFuncPtr6dff6abb075da1a304520e60c011ef7b;
 extern void * TVPImportFuncPtr892ffbdb8375851fc557e4abe9589b77;
+extern void * TVPImportFuncPtrb2f3538284fc2adda2a43272ee654a96;
 extern void * TVPImportFuncPtre0ff899ea4a9cc49a0e3b38deaf93b45;
 extern void * TVPImportFuncPtr4b9c9ac2aafad07af4b16f34e9d4bba2;
 extern void * TVPImportFuncPtrc2e423356d9ca3f26f9c1d294ee9b742;
@@ -5961,6 +5964,26 @@ inline iTJSDispatch2 * TJSCreateArrayObject(iTJSDispatch2 * * classout = NULL)
 	typedef iTJSDispatch2 * (__stdcall * __functype)(iTJSDispatch2 * *);
 	return ((__functype)(TVPImportFuncPtr8323d57f26876d87271dbfa257b7f7e2))(classout);
 }
+inline tjs_int TJSGetArrayElementCount(iTJSDispatch2 * dsp)
+{
+	if(!TVPImportFuncPtr4d6f148e8997e1ae0cc0006ec1bd9618)
+	{
+		static char funcname[] = "tjs_int ::TJSGetArrayElementCount(iTJSDispatch2 *)";
+		TVPImportFuncPtr4d6f148e8997e1ae0cc0006ec1bd9618 = TVPGetImportFuncPtr(funcname);
+	}
+	typedef tjs_int (__stdcall * __functype)(iTJSDispatch2 *);
+	return ((__functype)(TVPImportFuncPtr4d6f148e8997e1ae0cc0006ec1bd9618))(dsp);
+}
+inline tjs_int TJSCopyArrayElementTo(iTJSDispatch2 * dsp , tTJSVariant * dest , tjs_uint start , tjs_int count)
+{
+	if(!TVPImportFuncPtr7f03a4ddb254d0518642d15513eaea85)
+	{
+		static char funcname[] = "tjs_int ::TJSCopyArrayElementTo(iTJSDispatch2 *,tTJSVariant *,tjs_uint,tjs_int)";
+		TVPImportFuncPtr7f03a4ddb254d0518642d15513eaea85 = TVPGetImportFuncPtr(funcname);
+	}
+	typedef tjs_int (__stdcall * __functype)(iTJSDispatch2 *, tTJSVariant *, tjs_uint , tjs_int);
+	return ((__functype)(TVPImportFuncPtr7f03a4ddb254d0518642d15513eaea85))(dsp, dest, start, count);
+}
 inline iTJSDispatch2 * TJSCreateDictionaryObject(iTJSDispatch2 * * classout = NULL)
 {
 	if(!TVPImportFuncPtr4add3926c72ba9df9259be58b680de0d)
@@ -6010,6 +6033,16 @@ inline void TJSDoRehash()
 	}
 	typedef void (__stdcall * __functype)();
 	((__functype)(TVPImportFuncPtr892ffbdb8375851fc557e4abe9589b77))();
+}
+inline iTJSDispatch2 * TJSCreateCustomObject()
+{
+	if(!TVPImportFuncPtrb2f3538284fc2adda2a43272ee654a96)
+	{
+		static char funcname[] = "iTJSDispatch2 * ::TJSCreateCustomObject()";
+		TVPImportFuncPtrb2f3538284fc2adda2a43272ee654a96 = TVPGetImportFuncPtr(funcname);
+	}
+	typedef iTJSDispatch2 * (__stdcall * __functype)();
+	return ((__functype)(TVPImportFuncPtrb2f3538284fc2adda2a43272ee654a96))();
 }
 inline ttstr TVPGetTemporaryName()
 {
