@@ -282,11 +282,11 @@ TJS_EXP_FUNC_DEF(iTJSDispatch2 *, TJSCreateArrayObject, (iTJSDispatch2 **classou
 //---------------------------------------------------------------------------
 // Utility functions
 //---------------------------------------------------------------------------
-tjs_int TJSGetArrayElementCount(iTJSDispatch2 * dsp);
+TJS_EXP_FUNC_DEF(tjs_int, TJSGetArrayElementCount, (iTJSDispatch2 * dsp));
 //---------------------------------------------------------------------------
-tjs_int TJSCopyArrayElementTo(iTJSDispatch2 * dsp,
-	tTJSVariant *dest, tjs_uint start, tjs_int count);
+TJS_EXP_FUNC_DEF(tjs_int, TJSCopyArrayElementTo, (iTJSDispatch2 * dsp, tTJSVariant *dest, tjs_uint start, tjs_int count));
 //---------------------------------------------------------------------------
+
 
 } // namespace TJS
 
