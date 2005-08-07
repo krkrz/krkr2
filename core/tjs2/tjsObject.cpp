@@ -2148,5 +2148,17 @@ tTJSCustomObject::ClassInstanceInfo(tjs_uint32 flag, tjs_uint num, tTJSVariant *
 }
 //---------------------------------------------------------------------------
 
+
+//---------------------------------------------------------------------------
+// TJSCreateCustomObject
+//---------------------------------------------------------------------------
+iTJSDispatch2 * TJSCreateCustomObject()
+{
+	// utility function; returns newly created empty tTJSCustomObject
+	return new tTJSCustomObject();
+}
+//---------------------------------------------------------------------------
+
+
 }
 
