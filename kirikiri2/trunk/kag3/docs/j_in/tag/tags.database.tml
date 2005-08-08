@@ -1263,7 +1263,7 @@
 		<attrib name="mode">
 			<shortinfo> 前景レイヤ透過モード </shortinfo>
 			<required> no </required>
-			<format> "alpha"(デフォルト) または "transp" "opaque" "rect" "add" "sub" "mul" "dodge" "darken" "lighten" "screen"のいずれか</format>
+			<format> "alpha"(デフォルト) または "transp" "opaque" "rect" "add" "sub" "mul" "dodge" "darken" "lighten" "screen" "psadd" "pssub" "psmul" "psscreen" "psoverlay" "pshlight" "psslight" "psdodge" "psdodge5" "psburn" "pslighten" "psdarken" "psdiff" "psdiff5" "psexcl" のいずれか</format>
 			<info>
 				　前景レイヤの透過モードを指定します。前景レイヤ以外には
 				指定しないでください。<BR>
@@ -1279,6 +1279,21 @@
 				　"darken" を指定すると「比較(暗)」合成が行われます。<BR>
 				　"lighten" を指定すると「比較(明)」合成が行われます。<BR>
 				　"screen" を指定すると「スクリーン乗算」合成が行われます。<BR>
+				　"psadd" を指定すると、Photoshop互換の「覆い焼き(リニア)」合成が行われます。<BR>
+				　"pssub" を指定すると、Photoshop互換の「焼き込み(リニア)」合成が行われます。<BR>
+				　"psmul" を指定すると、Photoshop互換の「乗算」合成が行われます。<BR>
+				　"psscreen" を指定すると、Photoshop互換の「スクリーン」合成が行われます。<BR>
+				　"psoverlay" を指定すると、Photoshop互換の「オーバーレイ」合成が行われます。<BR>
+				　"pshlight" を指定すると、Photoshop互換の「ハードライト」合成が行われます。<BR>
+				　"psslight" を指定すると、Photoshop互換の「ソフトライト」合成が行われます。<BR>
+				　"psdodge" を指定すると、Photoshop互換の「覆い焼きカラー」合成が行われます。<BR>
+				　"psdodge5" を指定すると、Photoshop互換の「覆い焼きカラー」合成(Photoshop 5.x 以下と互換)が行われます。<BR>
+				　"psburn" を指定すると、Photoshop互換の「焼き込みカラー」合成が行われます。<BR>
+				　"pslighten" を指定すると、Photoshop互換の「比較(明)」合成が行われます。<BR>
+				　"psdarken" を指定すると、Photoshop互換の「比較(暗)」合成が行われます。<BR>
+				　"psdiff" を指定すると、Photoshop互換の「差の絶対値」合成が行われます。<BR>
+				　"psdiff5" を指定すると、Photoshop互換の「差の絶対値」合成(Photoshop 5.x 以下と互換)が行われます。<BR>
+				　"psexcl" を指定すると、Photoshop互換の「除外」合成が行われます。<BR>
 				　透明度情報を持たない画像を指定する場合は "opaque" に指定する方が
 				負荷が軽くて済みます。<BR>
 				<BR>
@@ -5936,7 +5951,7 @@
 		<attrib name="mode">
 			<shortinfo> 重ね合わせモード </shortinfo>
 			<required> no </required>
-			<format> "copy" (デフォルト) または "opaque" または "pile" または "alpha" または "add" または "sub" または "mul" または "dodge" または "darken" または "lighten" または "screen" </format>
+			<format> "copy" (デフォルト) または "opaque" または "pile" または "alpha" または "add" または "sub" または "mul" または "dodge" または "darken" または "lighten" または "screen" または "psadd" または "pssub" または "psmul" または "psscreen" または "psoverlay" または "pshlight" または "psslight" または "psdodge" または "psdodge5" または "psburn" または "pslighten" または "psdarken" または "psdiff" または "psdiff5" または "psexcl" </format>
 			<info>
 				　sx sy sw sh の各属性で指定した矩形領域を 重ね合わせるか、あるいは
 				単純にコピーするか、あるいは演算を行うかを指定します。<BR>
@@ -5944,7 +5959,7 @@
 				コピーされます。"copy" でも "opaque" でも同じ意味です。<BR>
 				　"pile" または "alpha" を指定すると、アルファ合成による重ね合わせが行われます。"pile" でも "alpha" でも同じ意味です。<BR>
 				　"addalpha" を指定すると、加算アルファ合成による重ね合わせが行われます。<BR>
-				　"add" "sub" "mul" "dodge" "darken" "lighten" "screen" はそれぞれ、加算、減算、乗算、多い焼き、比較(暗)、比較(明)、スクリーン乗算の合成を行います。
+				　そのほかのモードについては <ref tag="image">image</ref> タグの mode 属性を参照してください。<BR>
 				　省略すると "pile" が指定されたと見なされます。例外的に TLG5/6 画像は画像中にどの重ね合わせモードで重ね合わされるかの情報を持っています (この情報は <ref tag="image">image</ref> タグで読み込まれる物と同一です)。この場合は、この属性が省略された場合は、その画像が情報として持っている重ね合わせモードに従います。<BR>
 			</info>
 		</attrib>
