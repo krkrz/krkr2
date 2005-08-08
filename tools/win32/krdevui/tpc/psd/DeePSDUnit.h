@@ -48,7 +48,7 @@ class TDeePSD : public Graphics::TBitmap
 {
 private:
 protected:
-	bool FOutputAddAlpha;
+	AnsiString FLayerMode;
 
 public:
 	// コンストラクタとデストラクタ
@@ -61,7 +61,7 @@ public:
 	void __fastcall SaveToStream(Classes::TStream * Stream);
 
 public:
-	__property bool OutputAddAlpha = {read=FOutputAddAlpha, write=FOutputAddAlpha};
+	__property AnsiString LayerMode = { read = FLayerMode, write = FLayerMode };
 
 };
 //---------------------------------------------------------------------------
