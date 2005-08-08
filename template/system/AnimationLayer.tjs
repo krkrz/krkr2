@@ -537,19 +537,9 @@ class AnimationLayer extends KAGLayer
 
 			if(elm.mode !== void)
 			{
-				switch(elm.mode)
-				{
-				case "opaque":
-				case "rect":		mode = ltOpaque;			break;
-				case "addalpha":	mode = ltAddAlpha;			break;
-				case "add":			mode = ltAdditive;			break;
-				case "sub":			mode = ltSubtractive;		break;
-				case "mul":			mode = ltMultiplicative;	break;
-				case "dodge":		mode = ltDodge;				break;
-				case "darken":		mode = ltDarken;			break;
-				case "lighten":		mode = ltLighten;			break;
-				case "screen":		mode = ltScreen;			break;
-				}
+				var layertypeinfo = imageTagLayerType[elm.mode];
+				if(layertypeinfo !== void)
+					mode = layertypeinfo.type;
 			}
 
 			type = mode;
@@ -638,26 +628,26 @@ class AnimationLayer extends KAGLayer
 			elm = taginfo;
 		}
 
+		// レイヤモード
+		{
+			var mode = ltAlpha;
+
+			if(elm.mode !== void)
+			{
+				var layertypeinfo = imageTagLayerType[elm.mode];
+				if(layertypeinfo !== void)
+					mode = layertypeinfo.type;
+			}
+
+			temp.type = mode;
+		}
+
 		// 画像補整
 		var lr = false, ud = false;
 		if(Anim_loadParams !== void)
 		{
 			// 一時レイヤに対して色調補正
-			if(elm.mode === void || elm.mode == 'pile' || elm.mode == 'alpha')
-			{
-				temp.type = ltAlpha;
-				applyColorCorrection(temp, Anim_loadParams);
-			}
-			else if(elm.mode == 'addalpha')
-			{
-				temp.type = ltAddAlpha;
-				applyColorCorrection(temp, Anim_loadParams);
-			}
-			else if(elm.mode == 'copy' || elm.mode == 'opaque')
-			{
-				temp.type = ltOpaque;
-				applyColorCorrection(temp, Anim_loadParams);
-			}
+			applyColorCorrection(temp, Anim_loadParams);
 
 			// フリップ
 			if(Anim_loadParams.flipud !== void && +Anim_loadParams.flipud)
@@ -707,52 +697,19 @@ class AnimationLayer extends KAGLayer
 
 			switch(elm.mode)
 			{
-			case 'add':
-				face = dfOpaque;
-				holdAlpha = true;
-				operateRect(dx, dy, temp, sx, sy, sw, sh, omAdditive, opa);
-				break;
-			case 'sub':
-				face = dfOpaque;
-				holdAlpha = true;
-				operateRect(dx, dy, temp, sx, sy, sw, sh, omSubtractive, opa);
-				break;
-			case 'mul':
-				face = dfOpaque;
-				holdAlpha = true;
-				operateRect(dx, dy, temp, sx, sy, sw, sh, omMultiplicative, opa);
-				break;
-			case 'dodge':
-				face = dfOpaque;
-				holdAlpha = true;
-				operateRect(dx, dy, temp, sx, sy, sw, sh, omDodge, opa);
-				break;
-			case 'darken':
-				face = dfOpaque;
-				holdAlpha = true;
-				operateRect(dx, dy, temp, sx, sy, sw, sh, omDarken, opa);
-				break;
-			case 'lighten':
-				face = dfOpaque;
-				holdAlpha = true;
-				operateRect(dx, dy, temp, sx, sy, sw, sh, omLighten, opa);
-				break;
-			case 'screen':
-				face = dfOpaque;
-				holdAlpha = true;
-				operateRect(dx, dy, temp, sx, sy, sw, sh, omScreen, opa);
+			case 'pile':
+			case 'alpha':
+				face = dfAddAlpha;
 				break;
 			case 'addalpha':
 				face = dfAddAlpha;
-				operateRect(dx, dy, temp, sx, sy, sw, sh, omAddAlpha, opa);
 				break;
-			case 'pile':
-			case 'alpha':
 			default:
-				face = dfAuto;
-				operateRect(dx, dy, temp, sx, sy, sw, sh, omAlpha, opa);
+				face = dfOpaque;
+				holdAlpha = true;
 				break;
 			}
+			operateRect(dx, dy, temp, sx, sy, sw, sh, omAuto, opa);
 
 			face = dfAuto;
 		}
