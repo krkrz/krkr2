@@ -65,12 +65,11 @@ class MyWindow extends Window
 				for(var i = 0; i < ar.count; i+= 2)
 					Debug.message(ar[i] + '=' + ar[i+1]);
 
-				switch(dic.mode)
+				if(dic.mode !== void)
 				{
-				case 'opaque':		graphlayer.type = ltOpaque;		break;
-				default:
-				case 'alpha':		graphlayer.type = ltAlpha;		break;
-				case 'addalpha':	graphlayer.type = ltAddAlpha;	break;
+					var layertypeinfo = imageTagLayerType[dic.mode];
+					if(layertypeinfo !== void)
+						graphlayer.type = layertypeinfo.type;
 				}
 			}
 		}

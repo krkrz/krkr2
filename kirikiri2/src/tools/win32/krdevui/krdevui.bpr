@@ -173,7 +173,7 @@ DebugSourceDirs=$(BCB)\source\vcl
 
 [Parameters]
 RunParams=
-HostApplication=C:\Program Files\Borland\CBuilder5\Projects\tvp2win32\kirikiri2\bin\win32\tools\krkrsign.exe
+HostApplication=C:\Program Files\Borland\CBuilder5\Projects\tvp2win32\kirikiri2\bin\win32\tools\krkrtpc.exe
 RemoteHost=
 RemotePath=
 RemoteDebug=0
