@@ -278,6 +278,23 @@ static void AdditiveBlendFunc(tui32 * dest , tui32 * src, int len)
 	}
 }
 //---------------------------------------------------------------------------
+static void AdditiveCopyFunc(tui32 * dest , tui32 * src, int len)
+{
+	while(len--)
+	{
+		tui32 s = *src;
+		tui32 d = *dest;
+
+		int opa = s >> 24;
+
+		*dest =	((((s    )&0xff) * opa / 255)    ) +
+				((((s>> 8)&0xff) * opa / 255)<<8 ) +
+				((((s>>16)&0xff) * opa / 255)<<16) ;
+		src++;
+		dest++;
+	}
+}
+//---------------------------------------------------------------------------
 
 
 
@@ -363,6 +380,8 @@ static void CopyBitmapRect(Graphics::TBitmap *dest, int x, int y,
 		else if(mode == 1)
 			NormalBlendFunc(d+ rect.left, s + refrect.left, w);
 		else if(mode == 2)
+			AdditiveCopyFunc(d + rect.left, s + refrect.left, w);
+		else if(mode == 3)
 			AdditiveBlendFunc(d + rect.left, s + refrect.left, w);
 	}
 }
@@ -763,7 +782,7 @@ static Graphics::TBitmap *ReadPixelData(TStream *Stream, TPSDLayerRecord *lr,
 __fastcall TDeePSD::TDeePSD(void)
 {
 	// constructor
-	FOutputAddAlpha = false;
+	FLayerMode = "";
 }
 //---------------------------------------------------------------------------
 __fastcall TDeePSD::~TDeePSD(void)
@@ -875,34 +894,109 @@ void __fastcall TDeePSD::LoadFromStream(Classes::TStream * Stream)
 
 
 			// check layer mode structure
-			bool additive_found = false;
-			for(int lay = 0; lay < nlayers; lay++)
+			AnsiString org_layer_mode = FLayerMode;
+			bool visible_found = false;
+			if(FLayerMode == "addalpha")
 			{
-				TPSDLayerRecord *clr = lr + lay;
-				if(!memcmp(clr->BlendMode, "norm", 4))
+				// Additive Alpha output mode
+				bool additive_found = false;
+				for(int lay = 0; lay < nlayers; lay++)
 				{
-					// alpha blend mode
-					if(additive_found)
-						throw EDeePSD("TDeePSD: Layer #" + AnsiString(lay) + " is normal blend mode but "
-							"cannot load normal blend mode layer over linear dodge blend mode layer");
+					TPSDLayerRecord *clr = lr + lay;
+
+					if(clr->Opacity != 0 && !(clr->Flags & 2))
+					{
+
+						if(!memcmp(clr->BlendMode, "norm", 4))
+						{
+							// alpha blend mode
+							if(additive_found)
+								throw EDeePSD("TDeePSD: Layer #" + AnsiString(lay) + " is normal blend mode but "
+									"cannot load normal blend mode layer over linear dodge blend mode layer");
+						}
+						else if(!memcmp(clr->BlendMode, "lddg", 4))
+						{
+							// linear dodge (additive)
+							additive_found = true;
+						}
+						else
+							throw EDeePSD("TDeePSD: Layer #" + AnsiString(lay) + " has "
+								"unsupported blend mode '" + AnsiString((char*)clr->BlendMode, 4) +
+								"' (must be 'norm' [normal] blend or 'lddg' [linear dodge] blend)");
+
+						visible_found = true;
+					}
 				}
-				else if(!memcmp(clr->BlendMode, "lddg", 4))
-				{
-					// linear dodge (additive)
-					if(!FOutputAddAlpha)
-						throw EDeePSD("TDeePSD: Layer #" + AnsiString(lay) + " is linear dodge blend mode but "
-							"additive-alpha output is not selected");
-					additive_found = true;
-				}
-				else
-					throw EDeePSD("TDeePSD: Layer #" + AnsiString(lay) + " has "
-						"unsupported blend mode '" + AnsiString((char*)clr->BlendMode, 4) +
-						"' (must be 'norm' [normal] blend or 'lddg' [linear dodge] blend)");
 			}
+			else
+			{
+				// normal mode
+				// we only can pile 'normal' blend mode.
+				// other blend modes cannot be piled yet.
+
+				FLayerMode = "";
+
+				for(int lay = 0; lay < nlayers; lay++)
+				{
+					TPSDLayerRecord *clr = lr + lay;
+					if(clr->Opacity != 0 && !(clr->Flags & 2))
+					{
+
+
+						if(FLayerMode != "")
+						{
+							if(FLayerMode != "alpha" || memcmp(clr->BlendMode, "norm", 4))
+							{
+								throw EDeePSD("TDeePSD: Layer #" + AnsiString(lay) + " has "
+									"blend mode '" + AnsiString((char*)clr->BlendMode, 4) +
+									"' but currently this PSD loader cannot pile layers more than one in this mode.");
+							}
+						}
+						if(!memcmp(clr->BlendMode, "norm", 4))
+							FLayerMode = "alpha";
+						else if(!memcmp(clr->BlendMode, "lddg", 4))
+							FLayerMode = "psadd";
+						else if(!memcmp(clr->BlendMode, "lbrn", 4))
+							FLayerMode = "pssub";
+						else if(!memcmp(clr->BlendMode, "mul ", 4))
+							FLayerMode = "psmul";
+						else if(!memcmp(clr->BlendMode, "scrn", 4))
+							FLayerMode = "psscreen";
+						else if(!memcmp(clr->BlendMode, "over", 4))
+							FLayerMode = "psoverlay";
+						else if(!memcmp(clr->BlendMode, "hLit", 4))
+							FLayerMode = "pshlight";
+						else if(!memcmp(clr->BlendMode, "sLit", 4))
+							FLayerMode = "psslight";
+						else if(!memcmp(clr->BlendMode, "div ", 4))
+							FLayerMode = "psdodge";
+						else if(!memcmp(clr->BlendMode, "idiv", 4))
+							FLayerMode = "psburn";
+						else if(!memcmp(clr->BlendMode, "lite", 4))
+							FLayerMode = "pslighten";
+						else if(!memcmp(clr->BlendMode, "dark", 4))
+							FLayerMode = "psdarken";
+						else if(!memcmp(clr->BlendMode, "diff", 4))
+							FLayerMode = "psdiff";
+						else if(!memcmp(clr->BlendMode, "smud", 4))
+							FLayerMode = "psexcl";
+						else
+							throw EDeePSD("TDeePSD: Layer #" + AnsiString(lay) + " has "
+								"unsupported blend mode '" + AnsiString((char*)clr->BlendMode, 4) +
+								"'");
+						visible_found = true;
+					}
+				}
+
+				if(org_layer_mode != "" && FLayerMode != org_layer_mode)
+					throw EDeePSD("TDeePSD: Unexpected layer mode '" + FLayerMode + "'");
+			}
+			if(!visible_found)
+				throw EDeePSD("TDeePSD: This image does not have any visible layer");
 
 			// read each layer image
 			bool firstlayer = true;
-			additive_found = false;
+			bool additive_found = false;
 			for(int lay = 0; lay < nlayers; lay++)
 			{
 				// for each layers again
@@ -927,7 +1021,7 @@ void __fastcall TDeePSD::LoadFromStream(Classes::TStream * Stream)
 							else
 								CopyBitmapRect(this, clr->Left, clr->Top, layerbmp, refrect, 1);
 						}
-						else if(FOutputAddAlpha && !memcmp(clr->BlendMode, "lddg", 4))
+						else if(org_layer_mode == "addalpha" && !memcmp(clr->BlendMode, "lddg", 4))
 						{
 							// linear dodge (additive) blend
 							if(clr->Opacity != 255) SetBitmapOpacity(layerbmp, clr->Opacity);
@@ -937,9 +1031,15 @@ void __fastcall TDeePSD::LoadFromStream(Classes::TStream * Stream)
 								ConvertAlphaToAddAlpha(this);
 							}
 							if(firstlayer)
-								CopyBitmapRect(this, clr->Left, clr->Top, layerbmp, refrect, 0);
-							else
 								CopyBitmapRect(this, clr->Left, clr->Top, layerbmp, refrect, 2);
+							else
+								CopyBitmapRect(this, clr->Left, clr->Top, layerbmp, refrect, 3);
+						}
+						else
+						{
+							if(clr->Opacity != 255) SetBitmapOpacity(layerbmp, clr->Opacity);
+							if(firstlayer)
+								CopyBitmapRect(this, clr->Left, clr->Top, layerbmp, refrect, 0);
 						}
 						firstlayer = false;
 					}
@@ -951,7 +1051,7 @@ void __fastcall TDeePSD::LoadFromStream(Classes::TStream * Stream)
 				}
 				delete layerbmp;
 			}
-			if(FOutputAddAlpha && !additive_found)
+			if(org_layer_mode == "addalpha" && !additive_found)
 				ConvertAlphaToAddAlpha(this);
 		}
 		catch(...)
@@ -984,6 +1084,7 @@ void __fastcall TDeePSD::LoadFromStream(Classes::TStream * Stream)
 		}
 
 		delete layerbmp;
+		FLayerMode = "alpha"; // always assumes alpha
 	}
 }
 //---------------------------------------------------------------------------

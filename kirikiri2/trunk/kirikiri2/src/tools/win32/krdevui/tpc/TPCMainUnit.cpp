@@ -397,7 +397,7 @@ static void BindMaskToMain(Graphics::TBitmap * main, Graphics::TBitmap * mask)
 }
 //---------------------------------------------------------------------------
 static Graphics::TBitmap *LoadSingleImage(AnsiString infile,
-	bool & input_is_addalpha, bool & output_is_addalpha, TStringList *tags)
+	AnsiString & input_type, AnsiString & output_type, TStringList *tags)
 {
 	// load image
 	AnsiString ext = ExtractFileExt(infile).LowerCase();
@@ -407,6 +407,8 @@ static Graphics::TBitmap *LoadSingleImage(AnsiString infile,
 		if(ext == ".bmp")
 		{
 			bmp->LoadFromFile(infile);
+			// all input files is to be assumed as alpha except if there is not specification
+			if(input_type == "") input_type = "alpha";
 		}
 		else if(ext == ".png")
 		{
@@ -423,6 +425,8 @@ static Graphics::TBitmap *LoadSingleImage(AnsiString infile,
 				throw;
 			}
 			delete png;
+			// all input files is to be assumed as alpha except if there is not specification
+			if(input_type == "") input_type = "alpha";
 		}
 		else if(ext == ".jpg" || ext == ".jpeg" || ext == ".jfif")
 		{
@@ -439,16 +443,18 @@ static Graphics::TBitmap *LoadSingleImage(AnsiString infile,
 				throw;
 			}
 			delete jpg;
+			// all input files is to be assumed as alpha except if there is not specification
+			if(input_type == "") input_type = "alpha";
 		}
 		else if(ext == ".psd" || ext == ".pdd")
 		{
 			TDeePSD *psd = new TDeePSD();
 			try
 			{
-				psd->OutputAddAlpha = output_is_addalpha;
+				psd->LayerMode = output_type;
 				psd->LoadFromFile(infile);
 				bmp->Assign(psd);
-				input_is_addalpha = psd->OutputAddAlpha;
+				input_type = psd->LayerMode;
 			}
 			catch(...)
 			{
@@ -472,11 +478,11 @@ static Graphics::TBitmap *LoadSingleImage(AnsiString infile,
 }
 //---------------------------------------------------------------------------
 static Graphics::TBitmap * LoadImage(AnsiString infile,
-	bool & input_is_addalpha, bool & output_is_addalpha, TStringList *tags)
+	AnsiString & input_type, AnsiString & output_type, TStringList *tags)
 {
 	// load image
 	Graphics::TBitmap * bmp = LoadSingleImage(infile,
-		input_is_addalpha, output_is_addalpha, tags);
+		input_type, output_type, tags);
 	Graphics::TBitmap * mask = NULL;
 
 	try
@@ -484,16 +490,16 @@ static Graphics::TBitmap * LoadImage(AnsiString infile,
 		Graphics::TBitmap *mask = NULL;
 
 		AnsiString maskfile = ChangeFileExt(infile, "") + "_m";
-		bool in_add_alpha = false; // dummy
-		bool out_add_alpha = false; // dummy
+		AnsiString _input_type; // dummy
+		AnsiString _output_type; // dummy
 		if(FileExists(maskfile + ".bmp"))
-			mask = LoadSingleImage(maskfile + ".bmp", in_add_alpha, out_add_alpha, NULL);
+			mask = LoadSingleImage(maskfile + ".bmp", _input_type, _output_type, NULL);
 		else if(FileExists(maskfile + ".png"))
-			mask = LoadSingleImage(maskfile + ".png", in_add_alpha, out_add_alpha, NULL);
+			mask = LoadSingleImage(maskfile + ".png", _input_type, _output_type, NULL);
 		else if(FileExists(maskfile + ".jpg"))
-			mask = LoadSingleImage(maskfile + ".jpg", in_add_alpha, out_add_alpha, NULL);
+			mask = LoadSingleImage(maskfile + ".jpg", _input_type, _output_type, NULL);
 		else if(FileExists(maskfile + ".jpeg"))
-			mask = LoadSingleImage(maskfile + ".jpeg", in_add_alpha, out_add_alpha, NULL);
+			mask = LoadSingleImage(maskfile + ".jpeg", _input_type, _output_type, NULL);
 
 		if(mask)
 		{
@@ -507,9 +513,16 @@ static Graphics::TBitmap * LoadImage(AnsiString infile,
 		}
 		else
 		{
-			if(!CheckTransparentImage(bmp))
-				bmp->PixelFormat = pf24bit;
+			if(input_type == "alpha" || input_type == "addalpha")
+			{
+				if(!CheckTransparentImage(bmp))
+				{
+					bmp->PixelFormat = pf24bit;
+					input_type = "opaque";
+				}
+			}
 		}
+		if(output_type == "") output_type = input_type;
 
 	}
 	catch(...)
@@ -904,10 +917,10 @@ bool __fastcall TTPCMainForm::ProcessFile(AnsiString infile)
 
 
 		// read input
-		bool input_is_add_alpha  = TranspAssumeInputIsAddAlphaCheckBox->Checked;
-		bool output_is_add_alpha = TranspOutputAddAlphaFormatCheckBox->Checked;
+		AnsiString input_type   = TranspAssumeInputIsAddAlphaCheckBox->Checked ? "addalpha" : "";
+		AnsiString output_type  = TranspOutputAddAlphaFormatCheckBox->Checked ? "addalpha" : "";
 		std::auto_ptr<TStringList> tags(new TStringList());
-		inbmp = LoadImage(infile, input_is_add_alpha, output_is_add_alpha, tags.get());
+		inbmp = LoadImage(infile, input_type, output_type, tags.get());
 
 		// overwrite check
 		if(!OverwriteCheckBox->Checked)
@@ -977,7 +990,7 @@ bool __fastcall TTPCMainForm::ProcessFile(AnsiString infile)
 		}
 
 		// expand full transparent color
-		if(inbmp->PixelFormat == pf32bit &&
+		if(inbmp->PixelFormat == pf32bit && output_type == "ltAlpha" && 
 			!TranspOutputAddAlphaFormatCheckBox->Checked)
 		{
 			switch(TranspFullTranspColorMethodComboBox->ItemIndex)
@@ -1007,10 +1020,13 @@ bool __fastcall TTPCMainForm::ProcessFile(AnsiString infile)
 
 		// convert alpha to addivive alpha
 		if(inbmp->PixelFormat == pf32bit &&
-			!input_is_add_alpha && output_is_add_alpha)
+			input_type == "alpha" && output_type == "addalpha")
 		{
 			ConvertAlphaToAddAlpha(inbmp);
 		}
+
+		// append 'mode' tag
+		tags->Append("mode=" + output_type);
 
 		// write output
 		if(inbmp->PixelFormat == pf32bit)
@@ -1038,12 +1054,10 @@ bool __fastcall TTPCMainForm::ProcessFile(AnsiString infile)
 			}
 			else if(TranspTLG5FormatRadioButton->Checked)
 			{
-				tags->Append(output_is_add_alpha ? "mode=addalpha":"mode=alpha");
 				SaveTLGWithMetaInfo(tags.get(), inbmp, out_base + ".tlg", SaveTLG5);
 			}
 			else if(TranspTLG6FormatRadioButton->Checked)
 			{
-				tags->Append(output_is_add_alpha ? "mode=addalpha":"mode=alpha");
 				SaveTLGWithMetaInfo(tags.get(), inbmp, out_base + ".tlg", SaveTLG6);
 			}
 			else if(TranspSeparatedFormatRadioButton->Checked)
@@ -1088,12 +1102,10 @@ bool __fastcall TTPCMainForm::ProcessFile(AnsiString infile)
 			}
 			else if(OpaqueTLG5FormatRadioButton->Checked)
 			{
-				tags->Append("mode=opaque");
 				SaveTLGWithMetaInfo(tags.get(), inbmp, out_base + ".tlg", SaveTLG5);
 			}
 			else if(OpaqueTLG6FormatRadioButton->Checked)
 			{
-				tags->Append("mode=opaque");
 				SaveTLGWithMetaInfo(tags.get(), inbmp, out_base + ".tlg", SaveTLG6);
 			}
 			else if(OpaqueJPEGFormatRadioButton->Checked)
@@ -1104,7 +1116,7 @@ bool __fastcall TTPCMainForm::ProcessFile(AnsiString infile)
 	}
 	catch(Exception &e)
 	{
-		Log += e.Message + "\n";
+		Log += "ÉGÉâÅ[: " + e.Message + "\n";
 		error = true;
 	}
 	catch(...)
