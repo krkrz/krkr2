@@ -437,7 +437,17 @@ class MessageLayer extends KAGLayer
 			{
 				// ƒtƒŒ[ƒ€‰æ‘œ‚ªw’è‚³‚ê‚Ä‚¢‚È‚¢ê‡
 				face = dfAuto;
-				fillRect(0, 0, imageWidth, imageHeight, (frameOpacity << 24) + frameColor);
+				if(type == ltAddAlpha)
+				{
+					fillRect(0, 0, imageWidth, imageHeight, (frameOpacity << 24) +
+						((int)((((frameColor&0xff0000)>>16) * frameOpacity) / 255)<<16 ) +
+						((int)((((frameColor&0x00ff00)>> 8) * frameOpacity) / 255)<< 8 ) +
+						((int)((((frameColor&0x0000ff)    ) * frameOpacity) / 255)     ) );
+				}
+				else
+				{
+					fillRect(0, 0, imageWidth, imageHeight, (frameOpacity << 24) + frameColor);
+				}
 			}
 			else
 			{
