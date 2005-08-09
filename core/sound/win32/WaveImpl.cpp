@@ -2119,7 +2119,7 @@ void tTJSNI_WaveSoundBuffer::CreateSoundBuffer()
 
 
 			// log
-			if(SoundBuffer)
+			if(SoundBuffer && firstfailed)
 			{
 				WAVEFORMATEXTENSIBLE wfx;
 				HRESULT hr = SoundBuffer->GetFormat(
@@ -2150,9 +2150,7 @@ void tTJSNI_WaveSoundBuffer::CreateSoundBuffer()
 
 				if(firstfailed)
 					TVPAddImportantLog(log);
-				else
-					TVPAddLog(log);
-				}
+			}
 		}
 		catch(ttstr & e)
 		{
