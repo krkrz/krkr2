@@ -5156,9 +5156,9 @@ void tTJSNI_BaseLayer::BltImage(tTVPBaseBitmap *dest, tTVPLayerType destlayertyp
 
 	case ltOpaque: // formerly ltCoverRect
 		// copy
-		if(destlayertype == ltAlpha)
+		if(TVPIsTypeUsingAlpha(destlayertype))
 			met = bmCopyOnAlpha;
-		else if(destlayertype == ltAddAlpha)
+		else if(TVPIsTypeUsingAddAlpha(destlayertype))
 			met = bmCopyOnAddAlpha;
 		else
 			met = bmCopy;
@@ -5166,9 +5166,9 @@ void tTJSNI_BaseLayer::BltImage(tTVPBaseBitmap *dest, tTVPLayerType destlayertyp
 
 	case ltAlpha: // formerly ltTransparent
 		// alpha blend
-		if(destlayertype == ltAlpha)
+		if(TVPIsTypeUsingAlpha(destlayertype))
 			met = bmAlphaOnAlpha;
-		else if(destlayertype == ltAddAlpha)
+		else if(TVPIsTypeUsingAddAlpha(destlayertype))
 			met = bmAlphaOnAddAlpha;
 		else
 			met = bmAlpha;
@@ -5220,9 +5220,9 @@ void tTJSNI_BaseLayer::BltImage(tTVPBaseBitmap *dest, tTVPLayerType destlayertyp
 
 	case ltAddAlpha:
 		// alpha blend
-		if(destlayertype == ltAlpha)
+		if(TVPIsTypeUsingAlpha(destlayertype))
 			met = bmAddAlphaOnAlpha;
-		else if(destlayertype == ltAddAlpha)
+		else if(TVPIsTypeUsingAddAlpha(destlayertype))
 			met = bmAddAlphaOnAddAlpha;
 		else
 			met = bmAddAlpha;
