@@ -699,14 +699,16 @@ class AnimationLayer extends KAGLayer
 			{
 			case 'pile':
 			case 'alpha':
-				face = dfAddAlpha;
+				holdAlpha = false;
+				face = dfAlpha;
 				break;
 			case 'addalpha':
+				holdAlpha = false;
 				face = dfAddAlpha;
 				break;
 			default:
-				face = dfOpaque;
 				holdAlpha = true;
+				face = dfOpaque;
 				break;
 			}
 			operateRect(dx, dy, temp, sx, sy, sw, sh, omAuto, opa);
