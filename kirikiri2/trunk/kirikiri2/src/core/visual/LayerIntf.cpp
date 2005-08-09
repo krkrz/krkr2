@@ -6120,28 +6120,19 @@ void tTJSNI_BaseLayer::InternalStopTransition()
 			static ttstr eventname(TJS_W("onTransitionCompleted"));
 
 			// fire SYNCHRONOUS event of "onTransitionCompleted"
-			try
-			{
-				tTJSVariant param[2];
-				param[0] = tTJSVariant(TransDestObj, TransDestObj);
-				param[1] = tTJSVariant(TransSrcObj, TransSrcObj);
-				TVPPostEvent(Owner, Owner, eventname, 0,
-					TVP_EPT_IMMEDIATE, 2, param);
-			}
-			catch(...)
-			{
-				// release destination and source objects
-				if(TransDestObj) TransDestObj->Release(), TransDestObj = NULL;
-				if(TransSrcObj) TransSrcObj->Release(), TransSrcObj = NULL;
-				throw;
-			}
+			tTJSVariant param[2];
+			param[0] = tTJSVariant(TransDestObj, TransDestObj);
+			if(TransDestObj) TransDestObj->Release(), TransDestObj = NULL;
+			param[1] = tTJSVariant(TransSrcObj, TransSrcObj);
+			if(TransSrcObj) TransSrcObj->Release(), TransSrcObj = NULL;
 
+			TVPPostEvent(Owner, Owner, eventname, 0,
+				TVP_EPT_IMMEDIATE, 2, param);
 		}
 
 		// release destination and source objects
 		if(TransDestObj) TransDestObj->Release(), TransDestObj = NULL;
 		if(TransSrcObj) TransSrcObj->Release(), TransSrcObj = NULL;
-
 	}
 
 }
