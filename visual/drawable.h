@@ -54,23 +54,24 @@ enum tTVPLayerType
 //---------------------------------------------------------------------------
 static bool inline TVPIsTypeUsingAlpha(tTVPLayerType type)
 	{
-		return type == ltAlpha	||
-			ltPsNormal			||
-			ltPsAdditive		||
-			ltPsSubtractive		||
-			ltPsMultiplicative	||
-			ltPsScreen			||
-			ltPsOverlay			||
-			ltPsHardLight		||
-			ltPsSoftLight		||
-			ltPsColorDodge		||
-			ltPsColorDodge5		||
-			ltPsColorBurn		||
-			ltPsLighten			||
-			ltPsDarken			||
-			ltPsDifference		||
-			ltPsDifference5		||
-			ltPsExclusion		;
+		return
+			type == ltAlpha				||
+			type == ltPsNormal			||
+			type == ltPsAdditive		||
+			type == ltPsSubtractive		||
+			type == ltPsMultiplicative	||
+			type == ltPsScreen			||
+			type == ltPsOverlay			||
+			type == ltPsHardLight		||
+			type == ltPsSoftLight		||
+			type == ltPsColorDodge		||
+			type == ltPsColorDodge5		||
+			type == ltPsColorBurn		||
+			type == ltPsLighten			||
+			type == ltPsDarken			||
+			type == ltPsDifference		||
+			type == ltPsDifference5		||
+			type == ltPsExclusion		;
 	}
 
 static bool inline TVPIsTypeUsingAddAlpha(tTVPLayerType type)
