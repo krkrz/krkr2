@@ -684,7 +684,7 @@ class AnimationLayer extends KAGLayer
 			sx = temp.imageWidth - sx - sw;
 		}
 
-		if(elm.mode !== void && (elm.mode == 'copy' || elm.mode == 'opaque'))
+		if(elm.mode == 'copy' || elm.mode == 'opaque')
 		{
 			// ÉRÉsÅ[
 			face = dfAlpha;
@@ -697,6 +697,7 @@ class AnimationLayer extends KAGLayer
 
 			switch(elm.mode)
 			{
+			case '': // default
 			case 'pile':
 			case 'alpha':
 				holdAlpha = false;
