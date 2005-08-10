@@ -5951,7 +5951,7 @@
 		<attrib name="mode">
 			<shortinfo> 重ね合わせモード </shortinfo>
 			<required> no </required>
-			<format> "copy" (デフォルト) または "opaque" または "pile" または "alpha" または "add" または "sub" または "mul" または "dodge" または "darken" または "lighten" または "screen" または "psadd" または "pssub" または "psmul" または "psscreen" または "psoverlay" または "pshlight" または "psslight" または "psdodge" または "psdodge5" または "psburn" または "pslighten" または "psdarken" または "psdiff" または "psdiff5" または "psexcl" </format>
+			<format> "copy"または "opaque" または "pile"  (デフォルト) または "alpha" または "add" または "sub" または "mul" または "dodge" または "darken" または "lighten" または "screen" または "psadd" または "pssub" または "psmul" または "psscreen" または "psoverlay" または "pshlight" または "psslight" または "psdodge" または "psdodge5" または "psburn" または "pslighten" または "psdarken" または "psdiff" または "psdiff5" または "psexcl" </format>
 			<info>
 				　sx sy sw sh の各属性で指定した矩形領域を 重ね合わせるか、あるいは
 				単純にコピーするか、あるいは演算を行うかを指定します。<BR>
