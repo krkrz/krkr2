@@ -710,5 +710,41 @@ System.exceptionHandler = function (e)<r/>
 
 </member>
 
+<member>
+	<name>onActivate</name>
+	<type>property</type>
+	<shortdesc>アプリケーションがアクティブになったとき</shortdesc>
+	<access>r/w</access>
+	<desc>
+		　アプリケーションがアクティブになったときに呼び出されるイベント関数を表します。<r/>
+		　null を指定すると関数は呼び出されません。<r/>
+		　通常のイベントハンドラと異なり、このイベントを受け取りたい場合は、呼び出したい関数をこのプロパティに設定してください。<r/>
+		　<ref>Window.onActivate</ref> は、同じアプリケーション内のそれぞれのウィンドウがアクティブになったときに発生しますが、このイベントは、アプリケーション自体がアクティブになった場合に発生します。<r/>
+		　このイベントは、アプリケーションが既にアクティブの場合にも発生する可能性があるので注意してください (完全に onActivate → onDeactivate → onActivate → …… の順に発生する保証がない )。<r/>
+	</desc>
+	<ref>System.onDeactivate</ref>
+	<ref>Window.onActivate</ref>
+	<ref>Window.onDeactivate</ref>
+
+</member>
+
+<member>
+	<name>onDeactivate</name>
+	<type>property</type>
+	<shortdesc>アプリケーションが非アクティブになったとき</shortdesc>
+	<access>r/w</access>
+	<desc>
+		　アプリケーションが非アクティブになったときに呼び出されるイベント関数を表します。<r/>
+		　null を指定すると関数は呼び出されません。<r/>
+		　通常のイベントハンドラと異なり、このイベントを受け取りたい場合は、呼び出したい関数をこのプロパティに設定してください。<r/>
+		　<ref>Window.onDeactivate</ref> は、同じアプリケーション内のそれぞれのウィンドウが非アクティブになったときに発生しますが、このイベントは、アプリケーション自体が非アクティブになった場合に発生します。<r/>
+		　このイベントは、アプリケーションが既に非アクティブの場合にも発生する可能性があるので注意してください (完全に onActivate → onDeactivate → onActivate → …… の順に発生する保証がない )。<r/>
+	</desc>
+	<ref>System.onActivate</ref>
+	<ref>Window.onActivate</ref>
+	<ref>Window.onDeactivate</ref>
+
+</member>
+
 
 </doc>

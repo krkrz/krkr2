@@ -528,6 +528,58 @@ static void TVPGetDesktopRect(tTVPRect &dest)
 
 
 
+
+
+//---------------------------------------------------------------------------
+// System.onActivate and System.onDeactivate related
+//---------------------------------------------------------------------------
+static void TVPOnApplicationActivate(bool activate_or_deactivate);
+//---------------------------------------------------------------------------
+class tTVPOnApplicationActivateEvent : public tTVPBaseInputEvent
+{
+	static tTVPUniqueTagForInputEvent Tag;
+	bool ActivateOrDeactivate; // true for activate; otherwise deactivate
+public:
+	tTVPOnApplicationActivateEvent(bool activate_or_deactivate) :
+		tTVPBaseInputEvent(Application, Tag),
+		ActivateOrDeactivate(activate_or_deactivate) {};
+	void Deliver() const
+	{ TVPOnApplicationActivate(ActivateOrDeactivate); }
+	static tjs_int GetTag() { return (tjs_int)Tag; }
+};
+tTVPUniqueTagForInputEvent tTVPOnApplicationActivateEvent              ::Tag;
+//---------------------------------------------------------------------------
+void TVPPostApplicationActivateEvent()
+{
+	TVPPostInputEvent(new tTVPOnApplicationActivateEvent(true));
+}
+//---------------------------------------------------------------------------
+void TVPPostApplicationDeactivateEvent()
+{
+	TVPPostInputEvent(new tTVPOnApplicationActivateEvent(false));
+}
+//---------------------------------------------------------------------------
+static void TVPOnApplicationActivate(bool activate_or_deactivate)
+{
+	// called by event system, to fire System.onActivate or
+	// System.onDeactivate event
+	if(!TVPMainFormAlive) return;
+
+	// check the state again (because the state may change during the event delivering).
+	// but note that this implementation might fire activate events even in the application
+	// is already activated (the same as deactivation).
+	if(activate_or_deactivate != TVPMainForm->GetApplicationActivating()) return;
+
+	// fire the event
+	TVPCancelInputEvents(Application, tTVPOnApplicationActivateEvent::GetTag()); // discard old events
+	TVPFireOnApplicationActivateEvent(activate_or_deactivate);
+}
+//---------------------------------------------------------------------------
+
+
+
+
+
 //---------------------------------------------------------------------------
 // TVPCreateNativeClass_System
 //---------------------------------------------------------------------------
