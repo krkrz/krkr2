@@ -213,6 +213,10 @@ private:	// ƒ†[ƒU[éŒ¾
 	bool InMode;
 	bool Focusable;
 
+public:
+	bool GetWindowActive();
+
+private:
 	//-- double-buffering related
 	tTVPBaseDoubleBuffer *DoubleBuffer;
 	tTVPDoubleBufferStyle DoubleBufferStyle;
