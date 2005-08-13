@@ -18,6 +18,65 @@
 #include "EventIntf.h"
 #include "LayerIntf.h"
 #include "Random.h"
+#include "ScriptMgnIntf.h"
+#include "DebugIntf.h"
+
+
+//---------------------------------------------------------------------------
+// TVPFireOnApplicationActivateEvent
+//---------------------------------------------------------------------------
+void TVPFireOnApplicationActivateEvent(bool activate_or_deactivate)
+{
+	// get the script engine
+	tTJS *engine = TVPGetScriptEngine();
+	if(!engine)
+		return; // the script engine had been shutdown
+
+	// get System.onActivate or System.onDeactivate
+	// and call it.
+	iTJSDispatch2 * global = TVPGetScriptEngine()->GetGlobalNoAddRef();
+	if(!global) return;
+
+	tTJSVariant val;
+	tTJSVariant val2;
+	tTJSVariantClosure clo;
+	tTJSVariantClosure func;
+
+	try
+	{
+		tjs_error er;
+		er = global->PropGet(TJS_MEMBERMUSTEXIST, TJS_W("System"), NULL, &val, global);
+		if(TJS_FAILED(er)) return;
+
+		if(val.Type() != tvtObject) return;
+
+		clo = val.AsObjectClosureNoAddRef();
+
+		if(clo.Object == NULL) return;
+
+		clo.PropGet(TJS_MEMBERMUSTEXIST,
+				activate_or_deactivate?
+					TJS_W("onActivate"):
+					TJS_W("onDeactivate"),
+			NULL, &val2, NULL);
+
+		if(val2.Type() != tvtObject) return;
+
+		func = val2.AsObjectClosureNoAddRef();
+	}
+	catch(const eTJS &e)
+	{
+		// the system should not throw exceptions during retrieving the function
+		TVPAddLog(TJS_W("Error in retrieving System.onActivate/onDeactivate : ") +
+			e.GetMessage() );
+		return;
+	}
+
+	if(func.Object != NULL) func.FuncCall(0, NULL, NULL, NULL, 0, NULL, NULL);
+}
+//---------------------------------------------------------------------------
+
+
 
 
 //---------------------------------------------------------------------------
@@ -326,6 +385,10 @@ TJS_END_NATIVE_PROP_DECL(osName)
 	// register default "exceptionHandler" member
 	tTJSVariant val((iTJSDispatch2*)NULL, (iTJSDispatch2*)NULL);
 	PropSet(TJS_MEMBERENSURE, TJS_W("exceptionHandler"), NULL, &val, this);
+
+	// and onActivate, onDeactivate
+	PropSet(TJS_MEMBERENSURE, TJS_W("onActivate"), NULL, &val, this);
+	PropSet(TJS_MEMBERENSURE, TJS_W("onDeactivate"), NULL, &val, this);
 }
 //---------------------------------------------------------------------------
 tTJSNativeInstance * tTJSNC_System::CreateNativeInstance()
