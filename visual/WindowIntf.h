@@ -87,6 +87,8 @@ public:
 	void TJS_INTF_METHOD Invalidate();
 
 	bool IsMainWindow() const;
+	virtual bool GetWindowActive() = 0;
+	void FireOnActivate(bool activate_or_deactivate);
 
 	//----- event dispatching
 public:
@@ -112,6 +114,7 @@ public:
 	void OnFileDrop(const tTJSVariant &array);
 	void OnMouseWheel(tjs_uint32 shift, tjs_int delta, tjs_int x, tjs_int y);
 	void OnPopupHide();
+	void OnActivate(bool activate_or_deactivate);
 
 	void ClearInputEvents();
 
@@ -430,6 +433,17 @@ public:
 		tTVPBaseInputEvent(win, Tag) {};
 	void Deliver() const
 	{ ((tTJSNI_BaseWindow*)GetSource())->OnPopupHide(); }
+};
+//---------------------------------------------------------------------------
+class tTVPOnWindowActivateEvent : public tTVPBaseInputEvent
+{
+	static tTVPUniqueTagForInputEvent Tag;
+	bool ActivateOrDeactivate;
+public:
+	tTVPOnWindowActivateEvent(tTJSNI_BaseWindow *win, bool activate_or_deactivate) :
+		tTVPBaseInputEvent(win, Tag), ActivateOrDeactivate(activate_or_deactivate) {};
+	void Deliver() const
+	{ ((tTJSNI_BaseWindow*)GetSource())->OnActivate(ActivateOrDeactivate); }
 };
 //---------------------------------------------------------------------------
 

@@ -123,6 +123,10 @@ public:
 
 	void TickBeat();
 
+private:
+	bool GetWindowActive();
+
+public:
 //-- event control
 	virtual void PostInputEvent(const ttstr &name, iTJSDispatch2 * params);  // override
 
