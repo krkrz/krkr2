@@ -468,6 +468,39 @@
 	<ref>Window.stayOnTop</ref>
 </member>
 
+<member>
+	<name>onActivate</name>
+	<type>event</type>
+	<shortdesc>ウィンドウがアクティブになったとき</shortdesc>
+	<arg>
+	</arg>
+	<result></result>
+	<desc>
+		　ウィンドウがアクティブになったときに呼び出されるイベント関数を表します。<r/>
+		　このイベントは、ウィンドウが既にアクティブの場合にも発生する可能性があるので注意してください (完全に onActivate → onDeactivate → onActivate → …… の順に発生する保証がない )。<r/>
+	</desc>
+	<ref>Window.onDeactivate</ref>
+	<ref>System.onActivate</ref>
+	<ref>System.onDeactivate</ref>
+
+</member>
+
+<member>
+	<name>onDeactivate</name>
+	<type>event</type>
+	<shortdesc>ウィンドウが非アクティブになったとき</shortdesc>
+	<arg>
+	</arg>
+	<result></result>
+	<desc>
+		　ウィンドウが非アクティブになったときに呼び出されるイベント関数を表します。<r/>
+		　このイベントは、ウィンドウが既に非アクティブの場合にも発生する可能性があるので注意してください (完全に onActivate → onDeactivate → onActivate → …… の順に発生する保証がない )。<r/>
+	</desc>
+	<ref>Window.onActivate</ref>
+	<ref>System.onActivate</ref>
+	<ref>System.onDeactivate</ref>
+
+</member>
 
 
 <member>

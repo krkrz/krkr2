@@ -1036,6 +1036,11 @@ void __fastcall TTVPWindowForm::SendCloseMessage()
 	::PostMessage(Handle, WM_CLOSE, 0, 0);
 }
 //---------------------------------------------------------------------------
+bool TTVPWindowForm::GetWindowActive()
+{
+	return GetForegroundWindow() == Handle;
+}
+//---------------------------------------------------------------------------
 void __fastcall TTVPWindowForm::DeliverPopupHide()
 {
 	// deliver onPopupHide event to unfocusable windows
@@ -3119,6 +3124,7 @@ void __fastcall TTVPWindowForm::WMSetFocus(TWMSetFocus &Msg)
 	if(DIPadDevice && TJSNativeInstance && PaintBox)
 		DIPadDevice->WindowActivated();
 
+	if(TJSNativeInstance) TJSNativeInstance->FireOnActivate(true);
 }
 //---------------------------------------------------------------------------
 void __fastcall TTVPWindowForm::WMKillFocus(TWMKillFocus &Msg)
@@ -3129,6 +3135,7 @@ void __fastcall TTVPWindowForm::WMKillFocus(TWMKillFocus &Msg)
 	if(DIPadDevice && TJSNativeInstance && PaintBox)
 		DIPadDevice->WindowDeactivated();
 
+	if(TJSNativeInstance) TJSNativeInstance->FireOnActivate(false);
 }
 //---------------------------------------------------------------------------
 void __fastcall TTVPWindowForm::WMEnterMenuLoop(TWMEnterMenuLoop &Msg)
