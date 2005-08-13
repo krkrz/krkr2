@@ -42,5 +42,6 @@ TJS_EXP_FUNC_DEF(ttstr, TVPGetPlatformName, ());
 TJS_EXP_FUNC_DEF(ttstr, TVPGetOSName, ());
 		// retrieve OS name
 		// implement in each platform.
+extern void TVPFireOnApplicationActivateEvent(bool activate_or_deactivate);
 //---------------------------------------------------------------------------
 #endif
