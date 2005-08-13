@@ -105,6 +105,7 @@ tTVPUniqueTagForInputEvent tTVPOnKeyPressInputEvent           ::Tag;
 tTVPUniqueTagForInputEvent tTVPOnFileDropInputEvent           ::Tag;
 tTVPUniqueTagForInputEvent tTVPOnMouseWheelInputEvent         ::Tag;
 tTVPUniqueTagForInputEvent tTVPOnPopupHideInputEvent          ::Tag;
+tTVPUniqueTagForInputEvent tTVPOnWindowActivateEvent          ::Tag;
 //---------------------------------------------------------------------------
 
 
@@ -215,6 +216,15 @@ tTJSNI_BaseWindow::Invalidate()
 bool tTJSNI_BaseWindow::IsMainWindow() const
 {
 	return TVPMainWindow == static_cast<const tTJSNI_Window*>(this);
+}
+//---------------------------------------------------------------------------
+void tTJSNI_BaseWindow::FireOnActivate(bool activate_or_deactivate)
+{
+	// fire Window.onActivate or Window.onDeactivate event
+	TVPPostInputEvent(
+		new tTVPOnWindowActivateEvent(this, activate_or_deactivate),
+		TVP_EPT_REMOVE_POST // to discard redundant events
+		);
 }
 //---------------------------------------------------------------------------
 tTVPBaseBitmap * tTJSNI_BaseWindow::GetDrawTargetBitmap(const tTVPRect &rect,
@@ -437,6 +447,23 @@ void tTJSNI_BaseWindow::OnPopupHide()
 	{
 		static ttstr eventname(TJS_W("onPopupHide"));
 		TVPPostEvent(Owner, Owner, eventname, 0, TVP_EPT_IMMEDIATE, 0, NULL);
+	}
+}
+//---------------------------------------------------------------------------
+void tTJSNI_BaseWindow::OnActivate(bool activate_or_deactivate)
+{
+	if(!CanDeliverEvents()) return;
+
+	// re-check the window activate state
+	if(GetWindowActive() == activate_or_deactivate)
+	{
+		if(Owner)
+		{
+			static ttstr a_eventname(TJS_W("onActivate"));
+			static ttstr d_eventname(TJS_W("onDeactivate"));
+			TVPPostEvent(Owner, Owner, activate_or_deactivate?a_eventname:d_eventname,
+				0, TVP_EPT_IMMEDIATE, 0, NULL);
+		}
 	}
 }
 //---------------------------------------------------------------------------
@@ -934,6 +961,28 @@ TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/onPopupHide)
 	return TJS_S_OK;
 }
 TJS_END_NATIVE_METHOD_DECL(/*func. name*/onPopupHide)
+//----------------------------------------------------------------------
+TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/onActivate)
+{
+	TJS_GET_NATIVE_INSTANCE(/*var. name*/_this, /*var. type*/tTJSNI_Window);
+
+	TVP_ACTION_INVOKE_BEGIN(0, "onActivate", objthis);
+	TVP_ACTION_INVOKE_END(tTJSVariantClosure(objthis, objthis));
+
+	return TJS_S_OK;
+}
+TJS_END_NATIVE_METHOD_DECL(/*func. name*/onActivate)
+//----------------------------------------------------------------------
+TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/onDeactivate)
+{
+	TJS_GET_NATIVE_INSTANCE(/*var. name*/_this, /*var. type*/tTJSNI_Window);
+
+	TVP_ACTION_INVOKE_BEGIN(0, "onDeactivate", objthis);
+	TVP_ACTION_INVOKE_END(tTJSVariantClosure(objthis, objthis));
+
+	return TJS_S_OK;
+}
+TJS_END_NATIVE_METHOD_DECL(/*func. name*/onDeactivate)
 //----------------------------------------------------------------------
 
 

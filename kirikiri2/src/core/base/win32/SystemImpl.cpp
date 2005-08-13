@@ -545,18 +545,17 @@ public:
 		ActivateOrDeactivate(activate_or_deactivate) {};
 	void Deliver() const
 	{ TVPOnApplicationActivate(ActivateOrDeactivate); }
-	static tjs_int GetTag() { return (tjs_int)Tag; }
 };
 tTVPUniqueTagForInputEvent tTVPOnApplicationActivateEvent              ::Tag;
 //---------------------------------------------------------------------------
 void TVPPostApplicationActivateEvent()
 {
-	TVPPostInputEvent(new tTVPOnApplicationActivateEvent(true));
+	TVPPostInputEvent(new tTVPOnApplicationActivateEvent(true), TVP_EPT_REMOVE_POST);
 }
 //---------------------------------------------------------------------------
 void TVPPostApplicationDeactivateEvent()
 {
-	TVPPostInputEvent(new tTVPOnApplicationActivateEvent(false));
+	TVPPostInputEvent(new tTVPOnApplicationActivateEvent(false), TVP_EPT_REMOVE_POST);
 }
 //---------------------------------------------------------------------------
 static void TVPOnApplicationActivate(bool activate_or_deactivate)
@@ -571,7 +570,6 @@ static void TVPOnApplicationActivate(bool activate_or_deactivate)
 	if(activate_or_deactivate != TVPMainForm->GetApplicationActivating()) return;
 
 	// fire the event
-	TVPCancelInputEvents(Application, tTVPOnApplicationActivateEvent::GetTag()); // discard old events
 	TVPFireOnApplicationActivateEvent(activate_or_deactivate);
 }
 //---------------------------------------------------------------------------

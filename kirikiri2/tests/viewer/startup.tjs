@@ -123,6 +123,17 @@ class MyWindow extends Window
 			Debug.message(s);
 		}
 	}
+
+	function onActivate()
+	{
+		Debug.message("onActivate");
+	}
+
+	function onDeactivate()
+	{
+		Debug.message("onDeactivate");
+	}
+
 }
 
 var a = new MyWindow();

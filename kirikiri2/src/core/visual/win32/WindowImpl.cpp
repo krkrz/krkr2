@@ -918,6 +918,12 @@ void tTJSNI_Window::TickBeat()
 	if(Form) Form->TickBeat();
 }
 //---------------------------------------------------------------------------
+bool tTJSNI_Window::GetWindowActive()
+{
+	if(Form) return Form->GetWindowActive();
+	return false;	
+}
+//---------------------------------------------------------------------------
 void tTJSNI_Window::PostInputEvent(const ttstr &name, iTJSDispatch2 * params)
 {
 	// posts input event
