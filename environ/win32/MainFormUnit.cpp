@@ -36,6 +36,7 @@
 #include "HintWindow.h"
 #include "VersionFormUnit.h"
 #include "WaveImpl.h"
+#include "SystemImpl.h"
 
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
@@ -623,6 +624,9 @@ void __fastcall TTVPMainForm::ApplicationActivate(TObject *Sender)
 	TVPShowModalAtAppActivate();
 	TVPShowFontSelectFormAtAppActivate();
 	TVPResetVolumeToAllSoundBuffer();
+
+	// trigger System.onActivate event
+	TVPPostApplicationActivateEvent();
 }
 //---------------------------------------------------------------------------
 void __fastcall TTVPMainForm::ApplicationDeactivate(TObject *Sender)
@@ -646,6 +650,9 @@ void __fastcall TTVPMainForm::ApplicationDeactivate(TObject *Sender)
 
 	// set sound volume
 	TVPResetVolumeToAllSoundBuffer();
+
+	// trigger System.onDeactivate event
+	TVPPostApplicationDeactivateEvent();
 }
 //---------------------------------------------------------------------------
 void __fastcall TTVPMainForm::ApplicationMinimize(TObject *Sender)
