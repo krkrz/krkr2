@@ -342,9 +342,10 @@ void __fastcall TWaveView::DeleteItem()
 	{
 		int num = FocusedLabel;
 		FocusedLabel = -1;
+		InvalidateLabel(num);
 		Labels.erase(Labels.begin() + num);
 		NotifyLabelChanged();
-		DoubleBuffered = FDoubleBufferEnabled;
+		DoubleBuffered = false; // FDoubleBufferEnabled;
 		Invalidate();
 		PushUndo(); //==== push undo
 	}
