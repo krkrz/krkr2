@@ -445,11 +445,13 @@ void __fastcall TTSSLoopTuner2MainForm::DeleteActionExecute(TObject *Sender)
 //---------------------------------------------------------------------------
 void __fastcall TTSSLoopTuner2MainForm::NewLinkActionExecute(TObject *Sender)
 {
+	WaveViewStopFollowingMarker(this);
 	WaveView->CreateNewLink();
 }
 //---------------------------------------------------------------------------
 void __fastcall TTSSLoopTuner2MainForm::NewLabelActionExecute(TObject *Sender)
 {
+	WaveViewStopFollowingMarker(this);
 	WaveView->CreateNewLabel();
 }
 //---------------------------------------------------------------------------
@@ -526,6 +528,7 @@ void __fastcall TTSSLoopTuner2MainForm::GotoLinkFromActionExecute(
 {
 	if(WaveView->FocusedLink != -1)
 	{
+		WaveViewStopFollowingMarker(this);
 		WaveView->CaretPos = WaveView->GetLinks()[WaveView->FocusedLink].From;
 		WaveView->EnsureView(WaveView->CaretPos);
 		WaveView->ShowCaret = true;
@@ -538,6 +541,7 @@ void __fastcall TTSSLoopTuner2MainForm::GotoLinkToActionExecute(
 {
 	if(WaveView->FocusedLink != -1)
 	{
+		WaveViewStopFollowingMarker(this);
 		WaveView->CaretPos = WaveView->GetLinks()[WaveView->FocusedLink].To;
 		WaveView->EnsureView(WaveView->CaretPos);
 		WaveView->ShowCaret = true;
