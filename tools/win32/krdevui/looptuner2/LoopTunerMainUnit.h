@@ -137,6 +137,7 @@ __published:	// IDE 管理のコンポーネント
 	TMenuItem *HelpMenu;
 	TMenuItem *ShowHelpMenuItem;
 	TMenuItem *ShowAboutMenuItem;
+	TTimer *BlinkTimer;
 	void __fastcall OpenActionExecute(TObject *Sender);
 	void __fastcall ZoomInActionExecute(TObject *Sender);
 	void __fastcall ZoomOutActionExecute(TObject *Sender);
@@ -174,6 +175,7 @@ __published:	// IDE 管理のコンポーネント
 	void __fastcall ShowAboutActionExecute(TObject *Sender);
 	void __fastcall ShowHelpActionExecute(TObject *Sender);
 	void __fastcall FlagEdit15Enter(TObject *Sender);
+	void __fastcall BlinkTimerTimer(TObject *Sender);
 private:	// ユーザー宣言
 	TWaveReader * Reader;
 	TWaveView *WaveView;
