@@ -26,6 +26,13 @@ TTSSLoopTuner2MainForm *TSSLoopTuner2MainForm;
 
 
 
+//---------------------------------------------------------------------------
+// the tool bar icon "Follow Marker" blinks when checked.
+// these are indices of icons, in ImageList
+#define FOLLOW_BLINK_NORMAL 11
+#define FOLLOW_BLINK_BLINK  37
+#define FOLLOW_BLINK_BLINK2 38
+
 
 //---------------------------------------------------------------------------
 AnsiString __fastcall GetLongFileName(AnsiString fn)
@@ -510,17 +517,32 @@ void __fastcall TTSSLoopTuner2MainForm::PlayFrom(int pos)
 	}
 }
 //---------------------------------------------------------------------------
+void __fastcall TTSSLoopTuner2MainForm::BlinkTimerTimer(TObject *Sender)
+{
+	if(FollowMarkerAction->Checked && (int)GetCurrentPlayingPos() != -1)
+	{
+		FollowMarkerToolButton->ImageIndex =
+			((GetTickCount() / 500) & 1) ? FOLLOW_BLINK_BLINK2 : FOLLOW_BLINK_BLINK;
+	}
+	else
+	{
+		FollowMarkerToolButton->ImageIndex = FOLLOW_BLINK_NORMAL;
+	}
+}
+//---------------------------------------------------------------------------
 void __fastcall TTSSLoopTuner2MainForm::FollowMarkerActionExecute(
 	  TObject *Sender)
 {
 	FollowMarkerAction->Checked = !FollowMarkerAction->Checked;
 	WaveView->FollowingMarker = FollowMarkerAction->Checked;
+	FollowMarkerToolButton->ImageIndex = FOLLOW_BLINK_NORMAL;
 }
 //---------------------------------------------------------------------------
 void __fastcall TTSSLoopTuner2MainForm::WaveViewStopFollowingMarker(TObject *Sender)
 {
 	FollowMarkerAction->Checked = false;
 	WaveView->FollowingMarker = FollowMarkerAction->Checked;
+	FollowMarkerToolButton->ImageIndex = FOLLOW_BLINK_NORMAL;
 }
 //---------------------------------------------------------------------------
 void __fastcall TTSSLoopTuner2MainForm::GotoLinkFromActionExecute(
@@ -850,6 +872,7 @@ void __fastcall TTSSLoopTuner2MainForm::FlagsClearSpeedButtonClick(
 	ResettingFlags = false;
 }
 //---------------------------------------------------------------------------
+
 
 
 
