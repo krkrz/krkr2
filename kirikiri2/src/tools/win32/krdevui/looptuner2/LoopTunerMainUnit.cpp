@@ -98,8 +98,19 @@ void __fastcall TTSSLoopTuner2MainForm::ReadFromIni()
 	// window position and size
 	ReadWindowBasicInformationFromIniFile(section, this);
 
-	bool b = GetIniFile()->ReadBool(section, "ShowEditFlags", false);
+	bool b;
+
+	b = GetIniFile()->ReadBool(section, "ShowEditFlags", false);
 	if(b) ShowEditFlagsAction->Execute();
+
+	b = GetIniFile()->ReadBool(section, "ShowToolBar", true);
+	if(b) ShowToolBarAction->Execute();
+
+	b = GetIniFile()->ReadBool(section, "ShowTotalView", true);
+	if(b) ShowTotalViewAction->Execute();
+
+	b = GetIniFile()->ReadBool(section, "ShowStatusBar", true);
+	if(b) ShowStatusBarAction->Execute();
 
 	OpenDialog->InitialDir = GetIniFile()->ReadString("Folder", "InitialDir", "");
 }
@@ -110,6 +121,9 @@ void __fastcall TTSSLoopTuner2MainForm::WriteToIni()
 	const char * section = "Main";
 	WriteWindowBasicInformationToIniFile(section, this);
 	GetIniFile()->WriteBool(section, "ShowEditFlags", ShowEditFlagsAction->Checked);
+	GetIniFile()->WriteBool(section, "ShowToolBar", ShowToolBarAction->Checked);
+	GetIniFile()->WriteBool(section, "ShowTotalView", ShowTotalViewAction->Checked);
+	GetIniFile()->WriteBool(section, "ShowStatusBar", ShowStatusBarAction->Checked);
 
 	if(OpenDialog->FileName != "")
 	{
@@ -508,6 +522,29 @@ void __fastcall TTSSLoopTuner2MainForm::ShowEditFlagsActionExecute(
 {
 	ShowEditFlagsAction->Checked = !ShowEditFlagsAction->Checked;
 	FlagsPanel->Visible = ShowEditFlagsAction->Checked;
+}
+//---------------------------------------------------------------------------
+void __fastcall TTSSLoopTuner2MainForm::ShowStatusBarActionExecute(
+	  TObject *Sender)
+{
+	ShowStatusBarAction->Checked = !ShowStatusBarAction->Checked;
+	StatusBar->Visible = ShowStatusBarAction->Checked;
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TTSSLoopTuner2MainForm::ShowTotalViewActionExecute(
+	  TObject *Sender)
+{
+	ShowTotalViewAction->Checked = !ShowTotalViewAction->Checked;
+	TotalView->Visible = ShowTotalViewAction->Checked;
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TTSSLoopTuner2MainForm::ShowToolBarActionExecute(
+	  TObject *Sender)
+{
+	ShowToolBarAction->Checked = !ShowToolBarAction->Checked;
+	ToolBar->Visible = ShowToolBarAction->Checked;
 }
 //---------------------------------------------------------------------------
 void __fastcall TTSSLoopTuner2MainForm::IgnoreLinksActionExecute(
@@ -914,6 +951,7 @@ void __fastcall TTSSLoopTuner2MainForm::TotalViewDoubleClick(TObject *Sender, in
 	if(!FollowMarkerAction->Checked) FollowMarkerActionExecute(this);
 }
 //---------------------------------------------------------------------------
+
 
 
 
