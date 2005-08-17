@@ -57,6 +57,10 @@ static  const TColor C_LABEL_TEXT_BG		= clWhite;
 static  const TColor C_LABEL_TEXT			= ((TColor)0x000080);
 static  const TColor C_LABEL_TEXT_HOVER		= ((TColor)0x008080);
 static  const TColor C_LABEL_TEXT_FOCUS		= ((TColor)0x0000ff);
+
+static  const TColor C_WAVETHUMB_LINKS		= ((TColor)0xffd0d0);
+static  const TColor C_WAVETHUMB_LABELS		= ((TColor)0x00a000);
+
 //---------------------------------------------------------------------------
 
 #endif

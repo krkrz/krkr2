@@ -26,6 +26,7 @@ USEFORM("LabelDetailUnit.cpp", LabelDetailForm);
 USEUNIT("..\..\..\..\core\sound\WaveLoopManager.cpp");
 USEUNIT("..\..\..\..\core\sound\win32\tvpsnd.c");
 USEUNIT("..\..\..\..\core\base\CharacterSet.cpp");
+USEUNIT("TotalView.cpp");
 //---------------------------------------------------------------------------
 static bool FindOtherLoopTunerInstanceAndNotify();
 //---------------------------------------------------------------------------
