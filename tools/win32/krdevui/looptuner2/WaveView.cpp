@@ -88,10 +88,13 @@ void __fastcall TWaveView::ClearAll()
 	FSoftCenteringStartTick = 0;
 	FSoftCenteringPos = 0;
 	FOnStopFollowingMarker = NULL;
+	FOnRangeChanged = NULL;
+	FOnMarkerStateChanged = NULL;
 
 	FCaretPos = 0;
 	FShowCaret = false;
 	FCaretVisiblePhase = true;
+	FOnCaretStateChanged = NULL;
 
 	FMinRulerMajorWidth = 0;
 	FMinRulerMajorHeight = 0;
@@ -267,6 +270,8 @@ void __fastcall TWaveView::Undo()
 		int labelnum = FFocusedLabel;
 		FocusedLink = -1;
 		FocusedLabel = -1;
+		HoveredLink = -1;
+		HoveredLabel = -1;
 
 		if(CanUndo())
 		{
@@ -295,6 +300,8 @@ void __fastcall TWaveView::Redo()
 		int labelnum = FFocusedLabel;
 		FocusedLink = -1;
 		FocusedLabel = -1;
+		HoveredLink = -1;
+		HoveredLabel = -1;
 
 		if(CanRedo())
 		{
@@ -332,6 +339,7 @@ void __fastcall TWaveView::DeleteItem()
 	{
 		int num = FocusedLink;
 		FocusedLink = -1;
+		HoveredLink = -1;
 		Links.erase(Links.begin() + num);
 		NotifyLinkChanged();
 		DoubleBuffered = FDoubleBufferEnabled;
@@ -342,10 +350,11 @@ void __fastcall TWaveView::DeleteItem()
 	{
 		int num = FocusedLabel;
 		FocusedLabel = -1;
-		InvalidateLabel(num);
+		HoveredLabel = -1;
+//		InvalidateLabel(num);
 		Labels.erase(Labels.begin() + num);
 		NotifyLabelChanged();
-		DoubleBuffered = false; // FDoubleBufferEnabled;
+		DoubleBuffered = false;
 		Invalidate();
 		PushUndo(); //==== push undo
 	}
@@ -520,6 +529,8 @@ void __fastcall TWaveView::SetCaretPos(int pos)
 			FBlinkTimer->Enabled = FShowCaret;
 		}
 		FCaretPos = pos;
+		if(FOnCaretStateChanged)
+			FOnCaretStateChanged(this, FCaretPos, FShowCaret && FCaretVisiblePhase && Focused());
 	}
 }
 //---------------------------------------------------------------------------
@@ -551,6 +562,8 @@ void __fastcall TWaveView::SetShowCaret(bool b)
 		{
 			FOnShowCaret(this, FCaretPos);
 		}
+		if(FOnCaretStateChanged)
+			FOnCaretStateChanged(this, FCaretPos, FShowCaret && FCaretVisiblePhase && Focused());
 	}
 }
 //---------------------------------------------------------------------------
@@ -558,12 +571,16 @@ void __fastcall TWaveView::OnBlinkTimer(TObject * sender)
 {
 	FCaretVisiblePhase = !FCaretVisiblePhase;
 	InvalidateCaret(FCaretPos);
+	if(FOnCaretStateChanged)
+		FOnCaretStateChanged(this, FCaretPos, FShowCaret && FCaretVisiblePhase && Focused());
 }
 //---------------------------------------------------------------------------
 void __fastcall TWaveView::ResetCaretFocusState()
 {
 	InvalidateCaret(FCaretPos);
 	FBlinkTimer->Enabled = Focused();
+	if(FOnCaretStateChanged)
+		FOnCaretStateChanged(this, FCaretPos, FShowCaret && FCaretVisiblePhase && Focused());
 }
 //---------------------------------------------------------------------------
 void __fastcall TWaveView::DrawCaret()
@@ -598,6 +615,18 @@ int __fastcall TWaveView::GetAttentionPos()
 	return center;
 }
 //---------------------------------------------------------------------------
+void __fastcall TWaveView::FireRangeChanged()
+{
+	if(FOnRangeChanged && FReader)
+	{
+		int length;
+		length = PixelToSample(ClientWidth);
+		if(length >= FReader->NumSamples)
+			length = FReader->NumSamples;
+		FOnRangeChanged(this, FStart, length);
+	}
+}
+//---------------------------------------------------------------------------
 void __fastcall TWaveView::SetStart(int n)
 {
 	RECT r;
@@ -613,7 +642,7 @@ void __fastcall TWaveView::SetStart(int n)
 		&r, NULL, NULL, NULL, SW_INVALIDATE);
 
 	FStart = n;
-
+	FireRangeChanged();
 }
 //---------------------------------------------------------------------------
 void __fastcall TWaveView::SetMagnify(int m)
@@ -638,6 +667,7 @@ void __fastcall TWaveView::SetMagnify(int m)
 		FMinRulerMajorHeight = 0;
 		NotifyLinkChanged();
 		NotifyLabelChanged();
+		FireRangeChanged();
 		Invalidate();
 
 		// set scroll bar range
@@ -790,6 +820,7 @@ void __fastcall TWaveView::SetMarkerPos(int n)
 		}
 
 		FMarkerPos = n;
+		if(FOnMarkerStateChanged) FOnMarkerStateChanged(this, FMarkerPos, FMarkerPos != -1);
 	}
 
 	// marker following
@@ -2014,6 +2045,10 @@ void __fastcall TWaveView::CreateNewLabel()
 void __fastcall TWaveView::NotifyLabelChanged()
 {
 	// notify the label information has changed
+	if(FFocusedLabel >= (int)Labels.size()) FFocusedLabel = -1;
+	if(FHoveredLabel >= (int)Labels.size()) FHoveredLabel = -1;
+
+
 	for(std::vector<tTVPWaveLabel>::iterator i = Labels.begin(); i != Labels.end();
 		i++)
 	{

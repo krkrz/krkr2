@@ -11,7 +11,8 @@
       ..\intermediate\EditLabelAttribUnit.obj 
       ..\intermediate\EditLinkAttribUnit.obj ..\intermediate\LinkDetailUnit.obj 
       ..\intermediate\LabelDetailUnit.obj ..\intermediate\WaveLoopManager.obj 
-      ..\intermediate\tvpsnd.obj ..\intermediate\CharacterSet.obj"/>
+      ..\intermediate\tvpsnd.obj ..\intermediate\CharacterSet.obj 
+      ..\intermediate\TotalView.obj"/>
     <RESFILES value="looptune.res"/>
     <DEFFILE value=""/>
     <RESDEPEN value="$(RESFILES) LoopTunerMainUnit.dfm EditLabelAttribUnit.dfm 

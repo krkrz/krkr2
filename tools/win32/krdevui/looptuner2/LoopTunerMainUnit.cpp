@@ -51,6 +51,13 @@ static AnsiString OrgCaption;
 __fastcall TTSSLoopTuner2MainForm::TTSSLoopTuner2MainForm(TComponent* Owner)
 	: TForm(Owner)
 {
+	TotalView = new TTotalView(this);
+	TotalView->Parent = this;
+	TotalView->Align = alTop;
+	TotalView->Top = ClientHeight;
+	TotalView->OnPoint = TotalViewPoint;
+	TotalView->OnDoubleClick = TotalViewDoubleClick;
+
 	Reader = new TWaveReader();
 	Reader->OnReadProgress = OnReaderProgress;
 	InitDirectSound(Handle);
@@ -77,7 +84,6 @@ __fastcall TTSSLoopTuner2MainForm::TTSSLoopTuner2MainForm(TComponent* Owner)
 			break;
 		}
 	}
-
 }
 //---------------------------------------------------------------------------
 __fastcall TTSSLoopTuner2MainForm::~TTSSLoopTuner2MainForm()
@@ -217,6 +223,9 @@ void __fastcall TTSSLoopTuner2MainForm::CreateWaveView()
 	WaveView->ClearAll();
 	WaveView->Reader = NULL;
 	WaveView->OnStopFollowingMarker = WaveViewStopFollowingMarker;
+	WaveView->OnRangeChanged		= WaveViewRangeChanged;
+	WaveView->OnCaretStateChanged	= WaveViewCaretStateChanged;
+	WaveView->OnMarkerStateChanged	= WaveViewMarkerStateChanged;
 	WaveView->OnWaveDoubleClick		= WaveViewWaveDoubleClick;
 	WaveView->OnLinkDoubleClick		= WaveViewLinkDoubleClick;
 	WaveView->OnLabelDoubleClick	= WaveViewLabelDoubleClick;
@@ -244,12 +253,15 @@ void __fastcall TTSSLoopTuner2MainForm::OnReaderProgress(TObject *sender)
 	if(Reader->ReadDone)
 	{
 		WaveView->Reader = Reader; // reset the reader
+		TotalView->Reader = Reader;
 		Manager->SetDecoder(Reader);
 
 		// note that below two wiil call OnLinkModified/OnLabelModified event.
 		// but it's ok because the handler will write back the same data to the waveview.
 		WaveView->SetLinks(Manager->GetLinks());
 		WaveView->SetLabels(Manager->GetLabels());
+		TotalView->SetLinks(WaveView->GetLinks());
+		TotalView->SetLabels(WaveView->GetLabels());
 		WaveView->PushFirstUndoState();
 
 		WaveView->SetInitialMagnify();
@@ -283,6 +295,7 @@ void __fastcall TTSSLoopTuner2MainForm::Open()
 	Caption = OrgCaption;
 	Application->Title = Caption;
 	CreateWaveView();
+	TotalView->ResetAll();
 	FollowMarkerAction->Checked = true;
 
 	// create manager
@@ -545,6 +558,21 @@ void __fastcall TTSSLoopTuner2MainForm::WaveViewStopFollowingMarker(TObject *Sen
 	FollowMarkerToolButton->ImageIndex = FOLLOW_BLINK_NORMAL;
 }
 //---------------------------------------------------------------------------
+void __fastcall TTSSLoopTuner2MainForm::WaveViewRangeChanged(TObject *Sender, int start, int length)
+{
+	TotalView->SetViewRange(start, length);
+}
+//---------------------------------------------------------------------------
+void __fastcall TTSSLoopTuner2MainForm::WaveViewCaretStateChanged(TObject *Sender, int pos, bool visible)
+{
+	TotalView->SetCaretState(pos, visible);
+}
+//---------------------------------------------------------------------------
+void __fastcall TTSSLoopTuner2MainForm::WaveViewMarkerStateChanged(TObject *Sender, int pos, bool visible)
+{
+	TotalView->SetMarkerState(pos, visible);
+}
+//---------------------------------------------------------------------------
 void __fastcall TTSSLoopTuner2MainForm::GotoLinkFromActionExecute(
 	  TObject *Sender)
 {
@@ -709,11 +737,19 @@ void __fastcall TTSSLoopTuner2MainForm::WaveViewSelectionLost(TObject *Sender)
 void __fastcall TTSSLoopTuner2MainForm::WaveViewLinkModified(TObject *Sender)
 {
 	Manager->SetLinks(WaveView->GetLinks());
+	TotalView->SetLinks(WaveView->GetLinks());
 }
 //---------------------------------------------------------------------------
 void __fastcall TTSSLoopTuner2MainForm::WaveViewLabelModified(TObject *Sender)
 {
 	Manager->SetLabels(WaveView->GetLabels());
+	TotalView->SetLabels(WaveView->GetLabels());
+}
+//---------------------------------------------------------------------------
+void __fastcall TTSSLoopTuner2MainForm::TotalViewPoint(TObject *Sender, int pos)
+{
+	WaveViewStopFollowingMarker(this);
+	WaveView->SetView(pos);
 }
 //---------------------------------------------------------------------------
 void __fastcall TTSSLoopTuner2MainForm::FlagsEditToggleMenuItemClick(
@@ -872,7 +908,12 @@ void __fastcall TTSSLoopTuner2MainForm::FlagsClearSpeedButtonClick(
 	ResettingFlags = false;
 }
 //---------------------------------------------------------------------------
-
+void __fastcall TTSSLoopTuner2MainForm::TotalViewDoubleClick(TObject *Sender, int pos)
+{
+	PlayFrom(pos);
+	if(!FollowMarkerAction->Checked) FollowMarkerActionExecute(this);
+}
+//---------------------------------------------------------------------------
 
 
 

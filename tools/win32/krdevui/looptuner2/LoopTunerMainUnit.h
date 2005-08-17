@@ -23,6 +23,7 @@
 #include "WaveReader.h"
 #include "WaveViewControl.h"
 #include "WaveLoopManager.h"
+#include "TotalView.h"
 #include <ToolWin.hpp>
 #include "EditLabelAttribUnit.h"
 #include "EditLinkAttribUnit.h"
@@ -179,6 +180,7 @@ __published:	// IDE 管理のコンポーネント
 private:	// ユーザー宣言
 	TWaveReader * Reader;
 	TWaveView *WaveView;
+	TTotalView *TotalView;
 	tTVPWaveLoopManager *Manager;
 	AnsiString FileName; // current filename
 
@@ -216,6 +218,9 @@ private:
 	void __fastcall Open();
 	void __fastcall PlayFrom(int pos);
 	void __fastcall WaveViewStopFollowingMarker(TObject *Sender);
+	void __fastcall WaveViewRangeChanged(TObject *Sender, int start, int length);
+	void __fastcall WaveViewCaretStateChanged(TObject *Sender, int pos, bool visible);
+	void __fastcall WaveViewMarkerStateChanged(TObject *Sender, int pos, bool visible);
 	void __fastcall WaveViewWaveDoubleClick(TObject *Sender, int pos);
 	void __fastcall WaveViewLinkDoubleClick(TObject *Sender, int num, tTVPWaveLoopLink &link);
 	void __fastcall WaveViewLabelDoubleClick(TObject *Sender, int num, tTVPWaveLabel &label);
@@ -226,6 +231,8 @@ private:
 	void __fastcall WaveViewSelectionLost(TObject *Sender);
 	void __fastcall WaveViewLinkModified(TObject *Sender);
 	void __fastcall WaveViewLabelModified(TObject *Sender);
+	void __fastcall TotalViewPoint(TObject *Sender, int pos);
+	void __fastcall TotalViewDoubleClick(TObject *Sender, int pos);
 
 	void __fastcall ResetFlagsEditFromLoopManager();
 };
