@@ -30,6 +30,9 @@ struct TTierMinMaxInfo
 //---------------------------------------------------------------------------
 class TWaveReader;
 //---------------------------------------------------------------------------
+typedef void __fastcall (__closure *TCaretStateChanged)(TObject *Sender, int caretpos, bool showcaret);
+typedef TCaretStateChanged TMarkerStateChanged;
+typedef void __fastcall (__closure *TWaveViewRangeChanged)(TObject *Sender, int viewstart, int viewlength);
 typedef void __fastcall (__closure *TNotifyWavePosEvent)(TObject *Sender, int pos);
 typedef void __fastcall (__closure *TNotifyPopupEvent)(TObject *Sender, AnsiString where, const TPoint & pos);
 typedef void __fastcall (__closure *TShowCaretEvent)(TObject *Sender, int pos);
@@ -131,6 +134,8 @@ private:
 	int __fastcall PixelToSample(int pixel);
 	int __fastcall SampleToPixel(int sample);
 	TNotifyEvent FOnStopFollowingMarker;
+	TMarkerStateChanged FOnMarkerStateChanged;
+	TWaveViewRangeChanged FOnRangeChanged;
 
 	DWORD FSoftCenteringStartTick;
 	int   FSoftCenteringPos;
@@ -138,8 +143,11 @@ private:
 	void __fastcall CreateParams(TCreateParams &params);
 	DYNAMIC void __fastcall Resize();
 	void __fastcall SetScrollBarRange();
+
+public:
 	void __fastcall SetView(int n, int r = 50);
 
+private:
 BEGIN_MESSAGE_MAP
 	VCL_MESSAGE_HANDLER(WM_HSCROLL , TWMHScroll , WMHScroll)
 	VCL_MESSAGE_HANDLER(CM_MOUSELEAVE , TMessage , CMMouseLeave)
@@ -155,6 +163,7 @@ END_MESSAGE_MAP(TCustomControl)
 public:
 	void __fastcall ResetMarkerFollow();
 private:
+	void __fastcall FireRangeChanged();
 	void __fastcall SetStart(int n);
 	void __fastcall SetMagnify(int m);
 
@@ -173,12 +182,17 @@ public:
 	__property TNotifyEvent OnStopFollowingMarker =
 		{ read = FOnStopFollowingMarker, write = FOnStopFollowingMarker };
 	__property int MarkerPos = { read = FMarkerPos, write = SetMarkerPos };
+	__property TWaveViewRangeChanged OnRangeChanged =
+		{ read = FOnRangeChanged, write = FOnRangeChanged };
+	__property TMarkerStateChanged OnMarkerStateChanged =
+		{ read = FOnMarkerStateChanged, write = FOnMarkerStateChanged };
 
 //-- caret drawing stuff
 	int FCaretPos; // caret position
 	bool FShowCaret;
 	bool FCaretVisiblePhase;
 	TTimer * FBlinkTimer;
+	TCaretStateChanged FOnCaretStateChanged;
 
 	void __fastcall InvalidateCaret(int pos);
 
@@ -195,7 +209,8 @@ public:
 public:
 	__property int CaretPos = { read = FCaretPos, write = SetCaretPos };
 	__property bool ShowCaret = { read = FShowCaret, write = SetShowCaret };
-
+	__property TCaretStateChanged OnCaretStateChanged =
+		{ read = FOnCaretStateChanged, write = FOnCaretStateChanged };
 
 //-- wave drawing stuff
 private:
