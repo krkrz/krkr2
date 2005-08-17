@@ -445,6 +445,7 @@ void TTotalView::SetLabels(const std::vector<tTVPWaveLabel> & labels)
 //---------------------------------------------------------------------------
 void __fastcall TTotalView::MouseDown(TMouseButton button, TShiftState shift, int x, int y)
 {
+	if(!FReader) return;
 	if(!FMouseDowned)
 	{
 		FMouseDowned = true;
@@ -455,16 +456,19 @@ void __fastcall TTotalView::MouseDown(TMouseButton button, TShiftState shift, in
 //---------------------------------------------------------------------------
 void __fastcall TTotalView::MouseMove(TShiftState shift, int x, int y)
 {
+	if(!FReader) return;
 	if(FMouseDowned) if(FOnPoint) FOnPoint(this, x * FMagnify);
 }
 //---------------------------------------------------------------------------
 void __fastcall TTotalView::MouseUp(TMouseButton button, TShiftState shift, int x, int y)
 {
+	if(!FReader) return;
 	FMouseDowned = false;
 }
 //---------------------------------------------------------------------------
 void __fastcall TTotalView::DblClick(void)
 {
+	if(!FReader) return;
 	FMouseDowned = true;
 	if(FOnDoubleClick) FOnDoubleClick(this, LastClickedPos);
 }
