@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!-- Created with Inkscape (http://www.inkscape.org/) -->
 <svg
-   xmlns:xml="http://www.w3.org/XML/1998/namespace"
    xmlns:dc="http://purl.org/dc/elements/1.1/"
    xmlns:cc="http://web.resource.org/cc/"
    xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
@@ -12,7 +11,7 @@
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
    sodipodi:docname="lt_main_window.svg"
    sodipodi:docbase="C:\Program Files\Borland\CBuilder5\Projects\tvp2win32\kirikiri2\docs\kirikiri2\j_in\imgsrc"
-   inkscape:version="0.40+cvs"
+   inkscape:version="0.42"
    sodipodi:version="0.32"
    id="svg2"
    height="297mm"
@@ -20,33 +19,30 @@
   <defs
      id="defs3" />
   <sodipodi:namedview
-     inkscape:window-y="29"
-     inkscape:window-x="22"
-     inkscape:window-height="777"
-     inkscape:window-width="909"
+     inkscape:window-y="24"
+     inkscape:window-x="13"
+     inkscape:window-height="661"
+     inkscape:window-width="689"
      inkscape:current-layer="layer1"
      inkscape:document-units="px"
-     inkscape:cy="520.00000"
-     inkscape:cx="375.00000"
-     inkscape:zoom="0.35000000"
+     inkscape:cy="459.66567"
+     inkscape:cx="386.06561"
+     inkscape:zoom="1.0000000"
      inkscape:pageshadow="2"
      inkscape:pageopacity="0.0"
      borderopacity="1.0"
      bordercolor="#666666"
      pagecolor="#ffffff"
-     id="base" />
+     id="base"
+     showgrid="false" />
   <metadata
      id="metadata4">
-    <rdf:RDF
-       id="RDF5">
+    <rdf:RDF>
       <cc:Work
-         id="Work6"
          rdf:about="">
-        <dc:format
-           id="format7">image/svg+xml</dc:format>
+        <dc:format>image/svg+xml</dc:format>
         <dc:type
-           rdf:resource="http://purl.org/dc/dcmitype/StillImage"
-           id="type9" />
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -54,79 +50,98 @@
      id="layer1"
      inkscape:groupmode="layer"
      inkscape:label="Layer 1">
-    <g
-       transform="translate(110.1456,412.8622)"
-       id="g1310">
-      <image
-         xlink:href="lt_main_window.png"
-         sodipodi:absref="C:\Program Files\Borland\CBuilder5\Projects\tvp2win32\kirikiri2\docs\kirikiri2\j_in\imgsrc\lt_main_window.png"
-         width="421.00000"
-         height="239.00000"
-         id="image1329" />
-      <rect
-         style="opacity:0.36813185;fill:none;fill-opacity:1.0000000;stroke:#ff0000;stroke-width:2.4999995;stroke-miterlimit:4.0000000;stroke-opacity:1.0000000"
-         id="rect1331"
-         width="445.98868"
-         height="21.000000"
-         x="-7.9943991"
-         y="73.362183"
-         ry="8.0000000"
-         rx="7.9999976" />
-      <rect
-         style="opacity:0.36813185;fill:none;fill-opacity:1.0000000;stroke:#ff0000;stroke-width:2.5000029;stroke-miterlimit:4.0000000;stroke-opacity:1.0000000"
-         id="rect2091"
-         width="444.00000"
-         height="80.670959"
-         x="-7.0000000"
-         y="97.027260"
-         ry="8.0000172"
-         rx="8.0000000" />
-      <rect
-         style="opacity:0.36813185;fill:none;fill-opacity:1.0000000;stroke:#ff0000;stroke-width:2.5000033;stroke-miterlimit:4.0000000;stroke-opacity:1.0000000"
-         id="rect2093"
-         width="444.00000"
-         height="20.451403"
-         x="-7.0000000"
-         y="180.13657"
-         ry="8.0000210"
-         rx="8.0000000" />
-      <text
-         xml:space="preserve"
-         style="font-size:14.000000;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;fill:#000000;fill-opacity:1.0000000;stroke:none;stroke-width:1.0000000px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1.0000000;font-family:MS PGothic;text-anchor:start;writing-mode:lr-tb"
-         x="445"
-         y="83.362183"
-         id="text2095"
-         sodipodi:linespacing="100%"><tspan
-           x="445.00000"
-           y="83.362183"
-           sodipodi:role="line"
-           id="tspan2105">タイムライン・</tspan><tspan
-           x="445.00000"
-           y="97.362183"
-           sodipodi:role="line"
-           id="tspan2107">ラベル表示部分</tspan></text>
-      <text
-         xml:space="preserve"
-         style="font-size:14.000000;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;fill:#000000;fill-opacity:1.0000000;stroke:none;stroke-width:1.0000000px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1.0000000;font-family:MS PGothic;text-anchor:start;writing-mode:lr-tb"
-         x="442.78516"
-         y="143.20203"
-         id="text2099"
-         sodipodi:linespacing="100%"><tspan
-           x="442.78516"
-           y="143.20203"
-           sodipodi:role="line"
-           id="tspan2103">波形表示部分</tspan></text>
-      <text
-         xml:space="preserve"
-         style="font-size:14.000000;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;fill:#000000;fill-opacity:1.0000000;stroke:none;stroke-width:1.0000000px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1.0000000;font-family:MS PGothic;text-anchor:start;writing-mode:lr-tb"
-         x="443.83594"
-         y="195.20203"
-         id="text2109"
-         sodipodi:linespacing="100%"><tspan
-           x="443.83594"
-           y="195.20203"
-           sodipodi:role="line"
-           id="tspan2113">リンク表示部分</tspan></text>
-    </g>
+    <image
+       xlink:href="lt_main_window.png"
+       sodipodi:absref="C:\Program Files\Borland\CBuilder5\Projects\tvp2win32\kirikiri2\docs\kirikiri2\j_in\imgsrc\lt_main_window.png"
+       width="439.00000"
+       height="251.00000"
+       id="image1490"
+       x="107.00000"
+       y="394.36218"
+       style="opacity:1.0000000" />
+    <rect
+       rx="7.9999933"
+       ry="8.0000000"
+       y="489.62964"
+       x="93.309998"
+       height="12.189618"
+       width="466.44034"
+       id="rect1331"
+       style="opacity:0.36813185;fill:none;fill-opacity:1.0000000;stroke:#ff0000;stroke-width:2.4999988;stroke-miterlimit:4.0000000;stroke-opacity:1.0000000" />
+    <rect
+       rx="8.0000048"
+       ry="8.0000124"
+       y="505.84750"
+       x="93.312393"
+       height="77.754303"
+       width="466.43448"
+       id="rect2091"
+       style="opacity:0.36813185;fill:none;fill-opacity:1.0000000;stroke:#ff0000;stroke-width:2.5000029;stroke-miterlimit:4.0000000;stroke-opacity:1.0000000" />
+    <rect
+       rx="8.0000048"
+       ry="8.0000143"
+       y="588.79193"
+       x="93.312775"
+       height="15.864239"
+       width="466.43448"
+       id="rect2093"
+       style="opacity:0.36813185;fill:none;fill-opacity:1.0000000;stroke:#ff0000;stroke-width:2.5000031;stroke-miterlimit:4.0000000;stroke-opacity:1.0000000" />
+    <text
+       sodipodi:linespacing="100.00000%"
+       id="text2095"
+       y="496.51843"
+       x="567.04688"
+       style="font-size:14.000000px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:100.00000%;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1.0000000;stroke:none;stroke-width:1.0000000px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1.0000000;font-family:MS PGothic"
+       xml:space="preserve"><tspan
+         id="tspan2105"
+         sodipodi:role="line"
+         y="496.51843"
+         x="567.04688">タイムライン・</tspan><tspan
+         id="tspan2107"
+         sodipodi:role="line"
+         y="510.51843"
+         x="567.04688">ラベル表示部分</tspan></text>
+    <text
+       sodipodi:linespacing="100.00000%"
+       id="text2099"
+       y="555.72156"
+       x="566.07031"
+       style="font-size:14.000000px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:100.00000%;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1.0000000;stroke:none;stroke-width:1.0000000px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1.0000000;font-family:MS PGothic"
+       xml:space="preserve"><tspan
+         id="tspan2103"
+         sodipodi:role="line"
+         y="555.72156"
+         x="566.07031">波形表示部分</tspan></text>
+    <text
+       sodipodi:linespacing="100.00000%"
+       id="text2109"
+       y="601.72156"
+       x="565.80469"
+       style="font-size:14.000000px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:100.00000%;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1.0000000;stroke:none;stroke-width:1.0000000px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1.0000000;font-family:MS PGothic"
+       xml:space="preserve"><tspan
+         id="tspan2113"
+         sodipodi:role="line"
+         y="601.72156"
+         x="565.80469">リンク表示部分</tspan></text>
+    <rect
+       rx="7.9999933"
+       ry="8.0000010"
+       y="470.52271"
+       x="93.309998"
+       height="14.679055"
+       width="466.44034"
+       id="rect2222"
+       style="opacity:0.36813185;fill:none;fill-opacity:1.0000000;stroke:#ff0000;stroke-width:2.4999990;stroke-miterlimit:4.0000000;stroke-opacity:1.0000000" />
+    <text
+       sodipodi:linespacing="125.00000%"
+       id="text2224"
+       y="477.12"
+       x="567.72266"
+       style="font-size:14.000000px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125.00000%;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1.0000000;stroke:none;stroke-width:1.0000000px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1.0000000;font-family:MS PGothic"
+       xml:space="preserve"><tspan
+         sodipodi:role="line"
+         id="tspan2230"
+         x="567.72266"
+         y="477.12000">縮小波形表示部分</tspan></text>
   </g>
 </svg>
