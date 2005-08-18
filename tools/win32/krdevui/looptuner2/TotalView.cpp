@@ -86,6 +86,7 @@ public:
 
 	__fastcall ~TThumbnailThread(void)
 	{
+		Priority = tpNormal;
 		Suspended = false;
 		Terminate();
 		WaitFor();
