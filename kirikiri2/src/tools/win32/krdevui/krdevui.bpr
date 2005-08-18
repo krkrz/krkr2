@@ -24,7 +24,7 @@
       intermediate\RIFFWaveContext.obj intermediate\TSSWaveContext.obj 
       intermediate\WaveReader.obj intermediate\WaveView.obj 
       intermediate\CharacterSet.obj intermediate\WaveLoopManager.obj 
-      intermediate\tvpsnd.obj"/>
+      intermediate\tvpsnd.obj intermediate\TotalView.obj"/>
     <RESFILES value="krdevui.res"/>
     <DEFFILE value=""/>
     <RESDEPEN value="$(RESFILES) FolderSelectorUnit.dfm ConfSettingsUnit.dfm 
