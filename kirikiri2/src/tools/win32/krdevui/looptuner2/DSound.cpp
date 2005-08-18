@@ -13,8 +13,8 @@
 #include <syncobjs.hpp>
 
 #define DIRECTSOUND_VERSION 0x0300
-#include <dsound.h>
 #include <mmsystem.h>
+#include <dsound.h>
 
 
 #include <mmreg.h>
