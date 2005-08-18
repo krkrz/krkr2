@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!-- Created with Inkscape (http://www.inkscape.org/) -->
 <svg
-   xmlns:xml="http://www.w3.org/XML/1998/namespace"
    xmlns:dc="http://purl.org/dc/elements/1.1/"
    xmlns:cc="http://web.resource.org/cc/"
    xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
@@ -15,23 +14,38 @@
    inkscape:export-filename="C:\Program Files\Borland\CBuilder5\Projects\tvp2win32\kirikiri2\docs\kirikiri2\j_in\imgsrc\lt_seamless_loop_.png"
    sodipodi:docname="lt_seamless_loop.svg"
    sodipodi:docbase="C:\Program Files\Borland\CBuilder5\Projects\tvp2win32\kirikiri2\docs\kirikiri2\j_in\imgsrc"
-   inkscape:version="0.40+cvs"
+   inkscape:version="0.42"
    sodipodi:version="0.32"
    id="svg2"
    height="297mm"
    width="210mm">
   <defs
-     id="defs3" />
+     id="defs3">
+    <marker
+       inkscape:stockid="Arrow2Lend"
+       orient="auto"
+       refY="0.0"
+       refX="0.0"
+       id="Arrow2Lend"
+       style="overflow:visible;">
+      <path
+         sodipodi:nodetypes="cccc"
+         id="path2250"
+         style="font-size:12.0;fill-rule:evenodd;stroke-width:0.62500000;stroke-linejoin:round;"
+         d="M 8.7185878,4.0337352 L -2.2072895,0.016013256 L 8.7185884,-4.0017078 C 6.9730900,-1.6296469 6.9831476,1.6157441 8.7185878,4.0337352 z "
+         transform="scale(1.1) rotate(180) translate(-5,0)" />
+    </marker>
+  </defs>
   <sodipodi:namedview
-     inkscape:window-y="145"
-     inkscape:window-x="110"
-     inkscape:window-height="765"
-     inkscape:window-width="909"
+     inkscape:window-y="45"
+     inkscape:window-x="77"
+     inkscape:window-height="1083"
+     inkscape:window-width="1298"
      showgrid="true"
      inkscape:current-layer="layer1"
      inkscape:document-units="px"
-     inkscape:cy="120.00000"
-     inkscape:cx="375.00000"
+     inkscape:cy="94.632570"
+     inkscape:cx="365.14899"
      inkscape:zoom="1.0000000"
      inkscape:pageshadow="2"
      inkscape:pageopacity="0.0"
@@ -41,16 +55,12 @@
      id="base" />
   <metadata
      id="metadata4">
-    <rdf:RDF
-       id="RDF5">
+    <rdf:RDF>
       <cc:Work
-         id="Work6"
          rdf:about="">
-        <dc:format
-           id="format7">image/svg+xml</dc:format>
+        <dc:format>image/svg+xml</dc:format>
         <dc:type
-           rdf:resource="http://purl.org/dc/dcmitype/StillImage"
-           id="type9" />
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -66,22 +76,6 @@
        width="403.00000"
        sodipodi:absref="C:\Program Files\Borland\CBuilder5\Projects\tvp2win32\kirikiri2\docs\kirikiri2\j_in\imgsrc\lt_seamless_loop.png"
        xlink:href="lt_seamless_loop.png" />
-    <path
-       transform="matrix(-0.266332,0.377862,-6.575228e-2,-4.634479e-2,102.1196,868.7844)"
-       d="M 197.03772,709.36218 L 117.48114,755.29420 L 117.48114,663.43017 L 197.03772,709.36218 z "
-       inkscape:randomized="0.00000000"
-       inkscape:rounded="0.00000000"
-       inkscape:flatsided="true"
-       sodipodi:arg2="1.0471976"
-       sodipodi:arg1="0.00000000"
-       sodipodi:r2="26.518862"
-       sodipodi:r1="53.037724"
-       sodipodi:cy="709.36218"
-       sodipodi:cx="144.00000"
-       sodipodi:sides="3"
-       id="path2071"
-       style="opacity:0.36813185;fill:#ff0000;fill-opacity:1.0000000;stroke:none;stroke-width:6.2327332;stroke-miterlimit:4.0000000;stroke-opacity:1.0000000"
-       sodipodi:type="star" />
     <text
        id="text2073"
        y="876.10437"
@@ -92,22 +86,6 @@
          x="13.179688"
          id="tspan2075"
          sodipodi:role="line">サウンドの先頭</tspan></text>
-    <path
-       transform="matrix(-0.217961,0.407683,-7.094148e-2,-3.792768e-2,200.2697,853.1137)"
-       d="M 197.03772,709.36218 L 117.48114,755.29420 L 117.48114,663.43017 L 197.03772,709.36218 z "
-       inkscape:randomized="0.00000000"
-       inkscape:rounded="0.00000000"
-       inkscape:flatsided="true"
-       sodipodi:arg2="1.0471976"
-       sodipodi:arg1="0.00000000"
-       sodipodi:r2="26.518862"
-       sodipodi:r1="53.037724"
-       sodipodi:cy="709.36218"
-       sodipodi:cx="144.00000"
-       sodipodi:sides="3"
-       id="path2077"
-       style="opacity:0.36813185;fill:#ff0000;fill-opacity:1.0000000;stroke:none;stroke-width:6.2327332;stroke-miterlimit:4.0000000;stroke-opacity:1.0000000"
-       sodipodi:type="star" />
     <text
        sodipodi:linespacing="100%"
        id="text2079"
@@ -119,22 +97,6 @@
          sodipodi:role="line"
          y="876.10437"
          x="129.17969">ループの始点</tspan></text>
-    <path
-       transform="matrix(0.194631,0.419322,-7.296681e-2,3.386809e-2,364.2459,804.2206)"
-       d="M 197.03772,709.36218 L 117.48114,755.29420 L 117.48114,663.43017 L 197.03772,709.36218 z "
-       inkscape:randomized="0.00000000"
-       inkscape:rounded="0.00000000"
-       inkscape:flatsided="true"
-       sodipodi:arg2="1.0471976"
-       sodipodi:arg1="0.00000000"
-       sodipodi:r2="26.518862"
-       sodipodi:r1="53.037724"
-       sodipodi:cy="709.36218"
-       sodipodi:cx="144.00000"
-       sodipodi:sides="3"
-       id="path2085"
-       style="opacity:0.36813185;fill:#ff0000;fill-opacity:1.0000000;stroke:none;stroke-width:6.2327332;stroke-miterlimit:4.0000000;stroke-opacity:1.0000000"
-       sodipodi:type="star" />
     <text
        sodipodi:linespacing="100%"
        id="text2087"
@@ -157,5 +119,20 @@
          sodipodi:role="line"
          y="1061.0497"
          x="72.125000">ループの終点に達した時点で、ループの始点に移る</tspan></text>
+    <path
+       style="fill:none;fill-opacity:0.75000000;fill-rule:evenodd;stroke:#000000;stroke-width:1.0000000px;stroke-linecap:butt;stroke-linejoin:miter;marker-start:none;marker-end:url(#Arrow2Lend);stroke-opacity:1.0000000"
+       d="M 24.912428,882.86218 L 7.5000000,904.60914"
+       id="path2299"
+       sodipodi:nodetypes="cc" />
+    <path
+       style="fill:none;fill-opacity:0.75000000;fill-rule:evenodd;stroke:#000000;stroke-width:1.0000000px;stroke-linecap:butt;stroke-linejoin:miter;marker-start:none;marker-end:url(#Arrow2Lend);stroke-opacity:1.0000000"
+       d="M 130.50000,879.86218 L 113.08757,901.60914"
+       id="path2305"
+       sodipodi:nodetypes="cc" />
+    <path
+       style="fill:none;fill-opacity:0.75000000;fill-rule:evenodd;stroke:#000000;stroke-width:1.0000000px;stroke-linecap:butt;stroke-linejoin:miter;marker-start:none;marker-end:url(#Arrow2Lend);stroke-opacity:1.0000000"
+       d="M 320.42893,881.56929 L 345.79646,902.60914"
+       id="path2307"
+       sodipodi:nodetypes="cc" />
   </g>
 </svg>
