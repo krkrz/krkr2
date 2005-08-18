@@ -192,6 +192,7 @@ void __fastcall TTotalView::ResetAll()
 	if(FThumbnailer) delete FThumbnailer, FThumbnailer = NULL;
 	FViewStart = 0;
 	Reader = NULL;
+	FMagnify = 1.0;
 	FViewLength = 0;
 	FCaretPos = -1;
 	FShowCaret = false;
@@ -243,7 +244,7 @@ void __fastcall TTotalView::RecreateWaveCache()
 	if(FThumbnailer) delete FThumbnailer, FThumbnailer = NULL;
 
 	// caluclate magnification level
-	FMagnify = FReader->NumSamples / (ClientWidth ? ClientWidth : 0);
+	FMagnify = (double)FReader->NumSamples / (ClientWidth ? ClientWidth : 0);
 
 	// recreate bitmap
 	RecreateWaveCacheBitmap();
