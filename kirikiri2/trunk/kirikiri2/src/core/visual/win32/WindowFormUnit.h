@@ -287,6 +287,7 @@ private:
 
 	//-- mouse cursor
 	tTVPMouseCursorState MouseCursorState;
+	bool ForceMouseCursorVisible; // true in menu select
 	TCursor CurrentMouseCursor;
 	tjs_int LastMouseScreenX; // managed by RestoreMouseCursor
 	tjs_int LastMouseScreenY;
@@ -373,6 +374,8 @@ private:
 public:
 	void __fastcall SetPaintBoxSize(tjs_int w, tjs_int h);
 
+	void __fastcall SetMouseCursorToWindow(TCursor cursor);
+
 	void __fastcall SetDefaultMouseCursor();
 	void __fastcall SetMouseCursor(tjs_int handle);
 
@@ -416,6 +419,7 @@ public:
 private:
 	void __fastcall RestoreMouseCursor();
 	void __fastcall SetMouseCursorVisibleState(bool b);
+	void __fastcall SetForceMouseCursorVisible(bool s);
 
 public:
 

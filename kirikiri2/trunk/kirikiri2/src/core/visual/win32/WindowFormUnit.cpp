@@ -824,6 +824,7 @@ __fastcall TTVPWindowForm::TTVPWindowForm(TComponent* Owner, tTJSNI_Window *ni)
 
 
 	MouseCursorState = mcsVisible;
+	ForceMouseCursorVisible = false;
 	CurrentMouseCursor = crDefault;
 
 	DoubleBuffer = NULL;
@@ -1797,16 +1798,21 @@ void __fastcall TTVPWindowForm::SetPaintBoxSize(tjs_int w, tjs_int h)
 	InternalSetPaintBoxSize();
 }
 //---------------------------------------------------------------------------
+void __fastcall TTVPWindowForm::SetMouseCursorToWindow(TCursor cursor)
+{
+	TCursor bk = Screen->Cursor;
+	Screen->Cursor = cursor;
+	if(PaintBox) PaintBox->Cursor = cursor;
+	Screen->Cursor = bk;
+}
+//---------------------------------------------------------------------------
 void __fastcall TTVPWindowForm::SetDefaultMouseCursor()
 {
 	if(!PaintBox || PaintBox->Cursor != crDefault)
 	{
-		if(MouseCursorState == mcsVisible)
+		if(MouseCursorState == mcsVisible && !ForceMouseCursorVisible)
 		{
-			TCursor bk = Screen->Cursor;
-			Screen->Cursor = crDefault;
-			if(PaintBox) PaintBox->Cursor = crDefault;
-			Screen->Cursor = bk;
+			SetMouseCursorToWindow(crDefault);
 		}
 	}
 	CurrentMouseCursor = crDefault;
@@ -1816,12 +1822,9 @@ void __fastcall TTVPWindowForm::SetMouseCursor(tjs_int handle)
 {
 	if(!PaintBox || PaintBox->Cursor != handle)
 	{
-		if(MouseCursorState == mcsVisible)
+		if(MouseCursorState == mcsVisible && !ForceMouseCursorVisible)
 		{
-			TCursor bk = Screen->Cursor;
-			Screen->Cursor = (TCursor)handle;
-			if(PaintBox) PaintBox->Cursor = (TCursor)handle;
-			Screen->Cursor = bk;
+			SetMouseCursorToWindow((TCursor)handle);
 		}
 	}
 	CurrentMouseCursor = (TCursor)handle;
@@ -2096,12 +2099,12 @@ void __fastcall TTVPWindowForm::SetMouseCursorState(tTVPMouseCursorState mcs)
 	if(MouseCursorState == mcsVisible && mcs != mcsVisible)
 	{
 		// formerly visible and newly invisible
-		SetMouseCursorVisibleState(false);
+		if(!ForceMouseCursorVisible) SetMouseCursorVisibleState(false);
 	}
 	else if(MouseCursorState != mcsVisible && mcs == mcsVisible)
 	{
 		// formerly invisible and newly visible
-		SetMouseCursorVisibleState(true);
+		if(!ForceMouseCursorVisible) SetMouseCursorVisibleState(true);
 	}
 
 	if(MouseCursorState != mcs && mcs == mcsTempHidden)
@@ -2111,7 +2114,6 @@ void __fastcall TTVPWindowForm::SetMouseCursorState(tTVPMouseCursorState mcs)
 		LastMouseScreenX = pt.x;
 		LastMouseScreenY = pt.y;
 	}
-
 
 	MouseCursorState = mcs;
 }
@@ -2135,18 +2137,28 @@ void __fastcall TTVPWindowForm::SetMouseCursorVisibleState(bool b)
 	// set mouse cursor visible state
 	// this does not look MouseCursorState
 	if(b)
-	{
-		TCursor bk = Screen->Cursor;
-		Screen->Cursor = CurrentMouseCursor;
-		if(PaintBox) PaintBox->Cursor = CurrentMouseCursor;
-		Screen->Cursor = bk;
-	}
+		SetMouseCursorToWindow(CurrentMouseCursor);
 	else
+		SetMouseCursorToWindow(crNone);
+}
+//---------------------------------------------------------------------------
+void __fastcall TTVPWindowForm::SetForceMouseCursorVisible(bool s)
+{
+	if(ForceMouseCursorVisible != s)
 	{
-		TCursor bk = Screen->Cursor;
-		Screen->Cursor = crNone;
-		if(PaintBox) PaintBox->Cursor = crNone;
-		Screen->Cursor = bk;
+		if(s)
+		{
+			// force visible mode
+			// the cursor is to be fixed in crDefault
+			SetMouseCursorToWindow(crDefault);
+		}
+		else
+		{
+			// normal mode
+			// restore normal cursor
+			SetMouseCursorVisibleState(MouseCursorState == mcsVisible);
+		}
+		ForceMouseCursorVisible = s;
 	}
 }
 //---------------------------------------------------------------------------
@@ -3320,6 +3332,9 @@ void __fastcall TTVPWindowForm::TickBeat()
 		showingmenu = showingmenu || MenuContainer->GetShowingMenu();
 	}
 
+	// set mouse cursor state
+	SetForceMouseCursorVisible(showingmenu);
+
 	// watch menu bar drop
 	if(focused && !showingmenu) CheckMenuBarDrop();
 
@@ -3439,30 +3454,7 @@ void __fastcall TTVPWindowForm::GenerateMouseEvent(bool fl, bool fr, bool fu, bo
 
 	if(!right && !left && !up && !down)
 	{
-		if(LastMouseMoved)
-		{
-/*
-			if(MouseKeyXAccel > 10 || MouseKeyXAccel < -10 ||
-				MouseKeyYAccel > 10 || MouseKeyYAccel < -10)
-			{
-
-				mouse_event(
-					MOUSEEVENTF_MOVE,
-							MouseKeyXAccel ? (MouseKeyXAccel>0?-1:1) : 0,
-							MouseKeyYAccel ? (MouseKeyYAccel>0?-1:1) : 0,
-							0, 0);
-			}
-*/
-			LastMouseMoved = false;
-/*
-			TCursor sbk = Screen->Cursor;
-			TCursor pbk = PaintBox->Cursor;
-			Screen->Cursor = crNone;           SetCursorPos
-			PaintBox->Cursor = crNone;
-			PaintBox->Cursor = pbk;
-			Screen->Cursor = sbk;
-*/
-		}
+		LastMouseMoved = false;
 		MouseKeyXAccel = MouseKeyYAccel = 0;
 	}
 
