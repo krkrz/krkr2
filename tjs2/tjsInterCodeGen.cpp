@@ -2111,7 +2111,7 @@ tjs_int tTJSInterCodeContext::GenNodeCode(tjs_int & frame, tTJSExprNode *node,
 		}
 		else
 		{
-			if((node = Parent->SuperClassExpr) == NULL)
+			if(!Parent || (node = Parent->SuperClassExpr) == NULL)
 			{
 				_yyerror(TJSCannotGetSuper, Block);
 				return 0;
