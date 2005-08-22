@@ -2567,6 +2567,7 @@ bool tTJSNI_WaveSoundBuffer::FillBuffer(bool firstwrite, bool allowpause)
 					ResetSamplePositions();
 					DSBufferPlaying = false;
 					BufferPlaying = false;
+					if(LoopManager) LoopManager->SetPosition(0);
 					return true;
 				}
 			}
@@ -2580,6 +2581,7 @@ bool tTJSNI_WaveSoundBuffer::FillBuffer(bool firstwrite, bool allowpause)
 					ResetSamplePositions();
 					DSBufferPlaying = false;
 					BufferPlaying = false;
+					if(LoopManager) LoopManager->SetPosition(0);
 					return true;
 				}
 			}
