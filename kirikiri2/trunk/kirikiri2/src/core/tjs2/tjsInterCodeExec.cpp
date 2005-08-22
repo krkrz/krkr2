@@ -1697,8 +1697,7 @@ void tTJSInterCodeContext::SetPropertyIndirect(tTJSVariant *ra,
 					TJS_GET_VM_REG_ADDR(ra, code[3]),
 					clo.ObjThis?clo.ObjThis:ra[-1].AsObjectNoAddRef());
 			if(TJS_FAILED(hr))
-				ThrowFrom_tjs_error_num(hr,
-					(tjs_int)TJS_GET_VM_REG(ra, code[3]).AsInteger());
+				ThrowFrom_tjs_error_num(hr, (tjs_int)ra_code2->AsInteger());
 		}
 		catch(...)
 		{
