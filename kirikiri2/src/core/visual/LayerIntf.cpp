@@ -6665,7 +6665,10 @@ void tTVPLayerManager::PrimaryMouseUp(tjs_int x, tjs_int y, tTVPMouseButton mb,
 		l->FireMouseUp(x, y, mb, flags);
 
 		if(!TVPIsAnyMouseButtonPressedInShiftStateFlags(flags))
+		{
 			ReleaseCapture();
+			PrimaryMouseMove(x, y, flags); // force recheck current under-cursor layer
+		}
 	}
 }
 //---------------------------------------------------------------------------
@@ -6750,6 +6753,18 @@ void tTVPLayerManager::ForceMouseLeave()
 		lay->FireMouseLeave();
 		if(lay->Owner) lay->Owner->Release();
 	}
+}
+//---------------------------------------------------------------------------
+void tTVPLayerManager::ForceMouseRecheck()
+{
+	PrimaryMouseMove(LastMouseMoveX, LastMouseMoveY, 0);
+}
+//---------------------------------------------------------------------------
+void tTVPLayerManager::MouseOutOfWindow()
+{
+	// notifys that the mouse cursor goes outside of the window.
+	if(!CaptureOwner)
+		PrimaryMouseMove(-1, -1, 0); // force mouse cursor out of the all
 }
 //---------------------------------------------------------------------------
 void tTVPLayerManager::LeaveMouseFromTree(tTJSNI_BaseLayer *root)
@@ -7191,7 +7206,7 @@ void tTVPLayerManager::TimerBeat()
 	// To re-check current layer under current mouse position
 	// and update hint, cursor type and process layer enter/leave.
 	// This can be reasonably slow, about 1 sec interval.
-	PrimaryMouseMove(LastMouseMoveX, LastMouseMoveY, 0);
+	ForceMouseRecheck();
 }
 //---------------------------------------------------------------------------
 void tTVPLayerManager::DumpPrimaryStructure()

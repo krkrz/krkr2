@@ -1058,8 +1058,8 @@ public:
 		{ PrimaryMouseUp(x, y, mb, flags); }
 	void NotifyMouseMove(tjs_int x, tjs_int y, tjs_uint32 flags)
 		{ PrimaryMouseMove(x, y, flags); }
-	void NotifyForceMouseLeave()
-		{ ForceMouseLeave(); }
+	void NotifyMouseOutOfWindow()
+		{ MouseOutOfWindow(); }
 	void NotifyKeyDown(tjs_uint key, tjs_uint32 shift)
 		{ PrimaryKeyDown(key, shift); }
 	void NotifyKeyUp(tjs_uint key, tjs_uint32 shift)
@@ -1080,6 +1080,8 @@ public:
 
 	void PrimaryMouseMove(tjs_int x, tjs_int y, tjs_uint32 flags);
 	void ForceMouseLeave();
+	void ForceMouseRecheck();
+	void MouseOutOfWindow();
 	void LeaveMouseFromTree(tTJSNI_BaseLayer *root); // force to leave mouse
 
 	void ReleaseCapture();

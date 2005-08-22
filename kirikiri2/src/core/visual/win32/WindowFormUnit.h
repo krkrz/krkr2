@@ -137,7 +137,7 @@ public:
 
 
 //---------------------------------------------------------------------------
-// Window instance
+// TTVPWindowForm
 //---------------------------------------------------------------------------
 #define TVP_WM_SHOWVISIBLE (WM_USER + 2)
 #define TVP_WM_SHOWTOP     (WM_USER + 3)

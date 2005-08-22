@@ -2687,6 +2687,8 @@ void __fastcall TTVPWindowForm::PaintBoxMouseDown(TObject *Sender,
 	X = MulDiv(X, ZoomDenom, ZoomNumer);
 	Y = MulDiv(Y, ZoomDenom, ZoomNumer);
 
+	::SetCaptureControl(PaintBox);
+
 	LastMouseDownX = X;
 	LastMouseDownY = Y;
 
@@ -2993,7 +2995,7 @@ void __fastcall TTVPWindowForm::CMMouseLeave(TMessage &Msg)
 	if(TJSNativeInstance)
 	{
 		TVPPostInputEvent(
-			new tTVPOnMouseForceLeaveInputEvent(TJSNativeInstance));
+			new tTVPOnMouseOutOfWindowInputEvent(TJSNativeInstance));
 		TVPPostInputEvent(
 			new tTVPOnMouseLeaveInputEvent(TJSNativeInstance));
 	}
