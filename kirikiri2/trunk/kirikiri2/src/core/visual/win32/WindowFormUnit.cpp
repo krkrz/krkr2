@@ -2709,6 +2709,8 @@ void __fastcall TTVPWindowForm::PaintBoxMouseUp(TObject *Sender,
 	X = MulDiv(X, ZoomDenom, ZoomNumer);
 	Y = MulDiv(Y, ZoomDenom, ZoomNumer);
 
+	::SetCaptureControl(NULL);
+
 	if(TJSNativeInstance)
 	{
 		tjs_uint32 shift = TVP_TShiftState_To_uint32(Shift);
