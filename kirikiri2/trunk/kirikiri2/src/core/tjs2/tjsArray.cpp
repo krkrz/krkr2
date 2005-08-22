@@ -51,12 +51,16 @@ static bool inline TJS_iswdigit(tjs_char ch)
 //---------------------------------------------------------------------------
 static bool IsNumber(const tjs_char *str, tjs_int &result)
 {
-	// when str indicates a positive number, this function converts it to
+	// when str indicates a number, this function converts it to
 	// number and put to result, and returns true.
 	// otherwise returns false.
 	if(!str) return false;
 	const tjs_char *orgstr = str;
 
+	if(!*str) return false;
+	while(*str && TJS_iswspace(*str)) str++;
+	if(!*str) return false;
+	if(*str == TJS_W('-')) str++; // sign
 	if(!*str) return false;
 	while(*str && TJS_iswspace(*str)) str++;
 	if(!*str) return false;
@@ -814,10 +818,11 @@ TJS_BEGIN_NATIVE_METHOD_DECL(/* func.name */find)
 	if(result)
 	{
 		tTJSVariant & val = *param[0];
-		int start = 0;
+		tjs_int start = 0;
 		if(numparams >= 2) start = *param[1];
+		if(start < 0) start += ni->Items.size();
 		if(start < 0) start = 0;
-		if((unsigned)start >= ni->Items.size()) { *result = -1; return TJS_S_OK; }
+		if(start >= (tjs_int)ni->Items.size()) { *result = -1; return TJS_S_OK; }
 
 		tTJSArrayNI::tArrayItemIterator i;
 		for(i = ni->Items.begin() + start; i != ni->Items.end(); i++)
@@ -1186,10 +1191,14 @@ tTJSArrayObject::~tTJSArrayObject()
 			return TJS_E_NATIVECLASSCRASH;
 static tTJSVariant VoidValue;
 #define ARRAY_GET_VAL \
-	tjs_uint membercount = ni->Items.size(); \
-	if((flag & TJS_MEMBERMUSTEXIST) && membercount <= (tjs_uint)num) \
+	tjs_int membercount = (tjs_int)(ni->Items.size()); \
+	if(num < 0) num = membercount + num; \
+	if((flag & TJS_MEMBERMUSTEXIST) && (num < 0 || membercount <= num)) \
 		return TJS_E_MEMBERNOTFOUND; \
-	tTJSVariant val(membercount<=(tjs_uint)num?VoidValue:ni->Items[num]);
+	tTJSVariant val ( (membercount<=num || num < 0) ?VoidValue:ni->Items[num]);
+		// Do not take reference of the element (because the element *might*
+		// disappear in function call, property handler etc.) So here must be
+		// an object copy, not reference.
 //---------------------------------------------------------------------------
 void tTJSArrayObject::Finalize()
 {
@@ -1316,6 +1325,7 @@ tjs_int tTJSArrayObject::Remove(tTJSArrayNI * ni, const tTJSVariant &ref, bool r
 //---------------------------------------------------------------------------
 void tTJSArrayObject::Erase(tTJSArrayNI * ni, tjs_int num)
 {
+	if(num < 0) num += ni->Items.size();
 	if(num < 0) TJS_eTJSError(TJSRangeError);
 	if((unsigned)num >= ni->Items.size()) TJS_eTJSError(TJSRangeError);
 
@@ -1325,8 +1335,9 @@ void tTJSArrayObject::Erase(tTJSArrayNI * ni, tjs_int num)
 //---------------------------------------------------------------------------
 void tTJSArrayObject::Insert(tTJSArrayNI *ni, const tTJSVariant &val, tjs_int num)
 {
+	if(num < 0) num += ni->Items.size();
 	if(num < 0) TJS_eTJSError(TJSRangeError);
-	tjs_int count = ni->Items.size();
+	tjs_int count = (tjs_int)ni->Items.size();
 	if(num > count) TJS_eTJSError(TJSRangeError);
 
 	if(num == count)
@@ -1356,10 +1367,6 @@ tjs_error TJS_INTF_METHOD
 	if(!GetValidity())
 		return TJS_E_INVALIDOBJECT;
 
-	if(num<0)
-	{
-		return inherited::FuncCallByNum(flag, num, result, numparams, param, objthis);
-	}
 	ARRAY_GET_NI;
 	ARRAY_GET_VAL;
 	return TJSDefaultFuncCall(flag, val, result, numparams, param, objthis);
@@ -1382,10 +1389,6 @@ tjs_error TJS_INTF_METHOD
 	if(!GetValidity())
 		return TJS_E_INVALIDOBJECT;
 
-	if(num<0)
-	{
-		return inherited::PropGetByNum(flag, num, result, objthis);
-	}
 	ARRAY_GET_NI;
 	ARRAY_GET_VAL;
 	return TJSDefaultPropGet(flag, val, result, objthis);
@@ -1409,28 +1412,27 @@ tjs_error TJS_INTF_METHOD
 	if(!GetValidity())
 		return TJS_E_INVALIDOBJECT;
 
-	if(num<0)
-	{
-		return inherited::PropSetByNum(flag, num, param, objthis);
-	}
 	ARRAY_GET_NI;
-	if((tjs_uint)num >= ni->Items.size())
+	if(num < 0) num += ni->Items.size();
+	if(num >= (tjs_int)ni->Items.size())
 	{
 		if(flag & TJS_MEMBERMUSTEXIST) return TJS_E_MEMBERNOTFOUND;
 		ni->Items.resize(num+1);
 	}
+	if(num < 0) return TJS_E_MEMBERNOTFOUND;
+	tTJSVariant &val = ni->Items[num];
 	tjs_error hr;
-	CheckObjectClosureRemove(ni->Items[num]);
+	CheckObjectClosureRemove(val);
 	try
 	{
-		hr = TJSDefaultPropSet(flag, ni->Items[num], param, objthis);
+		hr = TJSDefaultPropSet(flag, val, param, objthis);
 	}
 	catch(...)
 	{
-		CheckObjectClosureAdd(ni->Items[num]);
+		CheckObjectClosureAdd(val);
 		throw;
 	}
-	CheckObjectClosureAdd(ni->Items[num]);
+	CheckObjectClosureAdd(val);
 	return hr;
 }
 //---------------------------------------------------------------------------
@@ -1462,12 +1464,9 @@ tjs_error TJS_INTF_METHOD
 	if(!GetValidity())
 		return TJS_E_INVALIDOBJECT;
 
-	if(num<0)
-	{
-		return inherited::DeleteMemberByNum(flag, num, objthis);
-	}
 	ARRAY_GET_NI;
-	if((tjs_uint)num>=ni->Items.size()) return TJS_E_MEMBERNOTFOUND;
+	if(num < 0) num += ni->Items.size();
+	if(num < 0 || (tjs_uint)num>=ni->Items.size()) return TJS_E_MEMBERNOTFOUND;
 	CheckObjectClosureRemove(ni->Items[num]);
 	std::deque<tTJSVariant>::iterator i;
 	ni->Items.erase(ni->Items.begin() + num);
@@ -1492,10 +1491,6 @@ tjs_error TJS_INTF_METHOD
 	if(!GetValidity())
 		return TJS_E_INVALIDOBJECT;
 
-	if(num<0)
-	{
-		return inherited::InvalidateByNum(flag, num, objthis);
-	}
 	ARRAY_GET_NI;
 	ARRAY_GET_VAL;
 	return TJSDefaultInvalidate(flag, val, objthis);
@@ -1519,7 +1514,6 @@ tjs_error TJS_INTF_METHOD
 	if(!GetValidity())
 		return TJS_E_INVALIDOBJECT;
 
-	if(num<0) return inherited::IsValidByNum(flag, num, objthis);
 	ARRAY_GET_NI;
 	ARRAY_GET_VAL;
 	return TJSDefaultIsValid(flag, val, objthis);
@@ -1544,10 +1538,6 @@ tjs_error TJS_INTF_METHOD
 	if(!GetValidity())
 		return TJS_E_INVALIDOBJECT;
 
-	if(num<0)
-	{
-		return inherited::CreateNewByNum(flag, num, result, numparams, param, objthis);
-	}
 	ARRAY_GET_NI;
 	ARRAY_GET_VAL;
 	return TJSDefaultCreateNew(flag, val, result, numparams, param, objthis);
@@ -1571,10 +1561,6 @@ tjs_error TJS_INTF_METHOD
 	if(!GetValidity())
 		return TJS_E_INVALIDOBJECT;
 
-	if(num<0)
-	{
-		return inherited::IsInstanceOfByNum(flag, num, classname, objthis);
-	}
 	ARRAY_GET_NI;
 	ARRAY_GET_VAL;
 	return TJSDefaultIsInstanceOf(flag, val, classname, objthis);
@@ -1598,16 +1584,14 @@ tjs_error TJS_INTF_METHOD
 	if(!GetValidity())
 		return TJS_E_INVALIDOBJECT;
 
-	if(num<0)
-	{
-		return inherited::OperationByNum(flag, num, result, param, objthis);
-	}
 	ARRAY_GET_NI;
-	if((tjs_uint)num >= ni->Items.size())
+	if(num < 0) num += ni->Items.size();
+	if(num >= (tjs_int)ni->Items.size())
 	{
 		if(flag & TJS_MEMBERMUSTEXIST) return TJS_E_MEMBERNOTFOUND;
 		ni->Items.resize(num+1);
 	}
+	if(num < 0) return TJS_E_MEMBERNOTFOUND;
 	tjs_error hr;
 	tTJSVariant &val = ni->Items[num];
 	CheckObjectClosureRemove(val);
