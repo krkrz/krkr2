@@ -96,7 +96,7 @@ tTVPUniqueTagForInputEvent tTVPOnMouseDownInputEvent          ::Tag;
 tTVPUniqueTagForInputEvent tTVPOnMouseUpInputEvent            ::Tag;
 tTVPUniqueTagForInputEvent tTVPOnMouseMoveInputEvent          ::Tag;
 tTVPUniqueTagForInputEvent tTVPOnReleaseCaptureInputEvent     ::Tag;
-tTVPUniqueTagForInputEvent tTVPOnMouseForceLeaveInputEvent    ::Tag;
+tTVPUniqueTagForInputEvent tTVPOnMouseOutOfWindowInputEvent   ::Tag;
 tTVPUniqueTagForInputEvent tTVPOnMouseEnterInputEvent         ::Tag;
 tTVPUniqueTagForInputEvent tTVPOnMouseLeaveInputEvent         ::Tag;
 tTVPUniqueTagForInputEvent tTVPOnKeyDownInputEvent            ::Tag;
@@ -351,10 +351,10 @@ void tTJSNI_BaseWindow::OnReleaseCapture()
 		LayerManager->ReleaseCapture();
 }
 //---------------------------------------------------------------------------
-void tTJSNI_BaseWindow::OnMouseForceLeave()
+void tTJSNI_BaseWindow::OnMouseOutOfWindow()
 {
 	if(!CanDeliverEvents()) return;
-	if(LayerManager) LayerManager->NotifyForceMouseLeave();
+	if(LayerManager) LayerManager->NotifyMouseOutOfWindow();
 }
 //---------------------------------------------------------------------------
 void tTJSNI_BaseWindow::OnMouseEnter()

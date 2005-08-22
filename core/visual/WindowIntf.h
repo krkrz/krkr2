@@ -105,7 +105,7 @@ public:
 	void OnMouseUp(tjs_int x, tjs_int y, tTVPMouseButton mb, tjs_uint32 flags);
 	void OnMouseMove(tjs_int x, tjs_int y, tjs_uint32 flags);
 	void OnReleaseCapture();
-	void OnMouseForceLeave();
+	void OnMouseOutOfWindow();
 	void OnMouseEnter();
 	void OnMouseLeave();
 	void OnKeyDown(tjs_uint key, tjs_uint32 shift);
@@ -333,14 +333,14 @@ public:
 	{ ((tTJSNI_BaseWindow*)GetSource())->OnReleaseCapture(); }
 };
 //---------------------------------------------------------------------------
-class tTVPOnMouseForceLeaveInputEvent : public tTVPBaseInputEvent
+class tTVPOnMouseOutOfWindowInputEvent : public tTVPBaseInputEvent
 {
 	static tTVPUniqueTagForInputEvent Tag;
 public:
-	tTVPOnMouseForceLeaveInputEvent(tTJSNI_BaseWindow *win) :
+	tTVPOnMouseOutOfWindowInputEvent(tTJSNI_BaseWindow *win) :
 		tTVPBaseInputEvent(win, Tag) {};
 	void Deliver() const
-	{ ((tTJSNI_BaseWindow*)GetSource())->OnMouseForceLeave(); }
+	{ ((tTJSNI_BaseWindow*)GetSource())->OnMouseOutOfWindow(); }
 };
 //---------------------------------------------------------------------------
 class tTVPOnMouseEnterInputEvent : public tTVPBaseInputEvent
