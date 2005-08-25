@@ -32,6 +32,9 @@ static bool TVPAlive = false; // true if the DLL is called from TVP
 static bool OldEncoderWarned = false;
 static LONG AllocCount = 0; // memory block allocation count for decoder
 
+static bool Look_Replay_Gain = false; // whether to look replay gain information
+static bool Use_Album_Gain = false; // whether to use album gain, otherwise use track gain
+
 //---------------------------------------------------------------------------
 int WINAPI DllEntryPoint(HINSTANCE hinst, unsigned long reason, void* lpReserved)
 {
@@ -417,6 +420,27 @@ HRESULT VorbisWaveDecoder::SetStream(IStream *stream, LPWSTR url)
 			}
 		}
 	}
+
+	if(Look_Replay_Gain)
+	{
+		for(int i = 0; i < InputFile.links; i++)
+		{
+			// for each stream
+			float gain = 1.0;
+			vorbis_comment *vc = ov_comment(&InputFile, i);
+			const char * track = vorbis_comment_query(vc, "replaygain_track_gain", 0);
+			const char * album = vorbis_comment_query(vc, "replaygain_album_gain", 0);
+
+			const char * sel = Use_Album_Gain ? ( album ? album : track ) : track;
+			if(sel)
+			{
+				float db = (float)atof(sel); // in db
+				gain *= (float)pow(10.0, db / 20); // convert db to multiplier
+			}
+			
+			vorbis_info_set_global_gain(ov_info(&InputFile, i), gain);
+		}
+	}
 #endif
 
 	return S_OK;
@@ -581,6 +605,26 @@ extern "C" HRESULT _stdcall _export V2Link(iTVPFunctionExporter *exporter)
 		}
 	}
 
+	Look_Replay_Gain = true; // whether to look replay gain information
+	Use_Album_Gain = false; // whether to use album gain, otherwise use track gain
+
+	if(TVPGetCommandLine(TJS_W("-vorbis_rg"), &val))
+	{
+		ttstr sval(val);
+		if(sval == TJS_W("none") || sval == TJS_W("no"))
+		{
+			Look_Replay_Gain = false;
+		}
+		else if(sval == TJS_W("track"))
+		{
+			Use_Album_Gain = false;
+		}
+		else if(sval == TJS_W("album"))
+		{
+			Use_Album_Gain = true;
+		}
+	}
+
 #endif
 
 	return S_OK;
@@ -615,6 +659,8 @@ L"-1.7;-1.7dB,-1.8;-1.8dB,-1.9;-1.9dB,-2;-2dB,-3;-3dB,-4;"
 L"-4dB,-5;-5dB,-6;-6dB,-7;-7dB,-8;-8dB,-9;-9dB,-10;-10dB\n"
 L"OggVorbisデコーダ:出力形式;OggVorbis デコーダが出力する PCM 形式の設定です。|"
 L"vorbis_pcm_format|select,*i16;16bit 整数 PCM,f32;32bit 浮動小数点数 PCM\n"
+L"OggVorbisデコーダ:ReplayGain;ReplayGainに対応するかどうかの設定です。|"
+L"vorbis_rg|select,none;対応しない,album;Album Gain を見る,*track;Track Gain を見る\n"
 /*
 L"OggVorbisデコーダ:音質;OggVorbisデコーダの音質設定です。「低い」を選択すると「通常」よりも再生の品質は低くなりますが、"
 L"OggVorbisのデコードに関するCPUへの負担が軽くなります。|"
@@ -632,6 +678,8 @@ L"-1.7;-1.7dB,-1.8;-1.8dB,-1.9;-1.9dB,-2;-2dB,-3;-3dB,-4;"
 L"-4dB,-5;-5dB,-6;-6dB,-7;-7dB,-8;-8dB,-9;-9dB,-10;-10dB\n"
 L"OggVorbis decoder:Output format;Specify PCM format that the OggVorbis decoder outputs.|"
 L"vorbis_pcm_format|select,*i16;16bit integer PCM,f32;32bit floating-point PCM\n"
+L"OggVorbis decoder:ReplayGain;Whether to apply ReplayGain tag information.|"
+L"vorbis_rg|select,none;Ignore,album;Apply Album Gain,*track;Apply Track Gain\n"
 /*
 L"OggVorbis decoder:Quality;Quality setting for the OggVorbis decoder. "
 L"\"Low\" performs faster speed and lower CPU usage than \"Normal\", but the sound quality will be degraded.|"

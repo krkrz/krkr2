@@ -1,7 +1,84 @@
-Index: vorbis/lib/lsp.c
+Index: include/vorbis/codec.h
 ===================================================================
---- vorbis/lib/lsp.c	(revision 7879)
-+++ vorbis/lib/lsp.c	(working copy)
+--- include/vorbis/codec.h	(リビジョン 7879)
++++ include/vorbis/codec.h	(作業コピー)
+@@ -25,6 +25,8 @@
+ 
+ #include <ogg/ogg.h>
+ 
++#pragma pack(push, 4)
++
+ typedef struct vorbis_info{
+   int version;
+   int channels;
+@@ -50,6 +52,8 @@
+   long bitrate_lower;
+   long bitrate_window;
+ 
++  float  global_gain;
++
+   void *codec_setup;
+ } vorbis_info;
+ 
+@@ -163,6 +167,7 @@
+ /* Vorbis PRIMITIVES: general ***************************************/
+ 
+ extern void     vorbis_info_init(vorbis_info *vi);
++extern void     vorbis_info_set_global_gain(vorbis_info *info, float global_gain);
+ extern void     vorbis_info_clear(vorbis_info *vi);
+ extern int      vorbis_info_blocksize(vorbis_info *vi,int zo);
+ extern void     vorbis_comment_init(vorbis_comment *vc);
+@@ -232,6 +237,8 @@
+ #define OV_EBADLINK   -137
+ #define OV_ENOSEEK    -138
+ 
++#pragma pack(pop)
++
+ #ifdef __cplusplus
+ }
+ #endif /* __cplusplus */
+Index: include/vorbis/vorbisfile.h
+===================================================================
+--- include/vorbis/vorbisfile.h	(リビジョン 7879)
++++ include/vorbis/vorbisfile.h	(作業コピー)
+@@ -36,11 +36,12 @@
+  * the right values. For seek_func(), you *MUST* return -1 if the stream is
+  * unseekable
+  */
++#pragma pack(push, 4)
+ typedef struct {
+-  size_t (*read_func)  (void *ptr, size_t size, size_t nmemb, void *datasource);
+-  int    (*seek_func)  (void *datasource, ogg_int64_t offset, int whence);
+-  int    (*close_func) (void *datasource);
+-  long   (*tell_func)  (void *datasource);
++  size_t (_cdecl* read_func)  (void *ptr, size_t size, size_t nmemb, void *datasource);
++  int    (_cdecl* seek_func)  (void *datasource, ogg_int64_t offset, int whence);
++  int    (_cdecl* close_func) (void *datasource);
++  long   (_cdecl* tell_func)  (void *datasource);
+ } ov_callbacks;
+ 
+ #define  NOTOPEN   0
+@@ -85,6 +86,7 @@
+   ov_callbacks callbacks;
+ 
+ } OggVorbis_File;
++#pragma pack(pop)
+ 
+ extern int ov_clear(OggVorbis_File *vf);
+ extern int ov_open(FILE *f,OggVorbis_File *vf,char *initial,long ibytes);
+@@ -131,6 +133,8 @@
+ 		    int bigendianp,int word,int sgned,int *bitstream);
+ extern int ov_crosslap(OggVorbis_File *vf1,OggVorbis_File *vf2);
+ 
++extern void ov_set_global_gain(OggVorbis_File *vf, float gain);
++
+ extern int ov_halfrate(OggVorbis_File *vf,int flag);
+ extern int ov_halfrate_p(OggVorbis_File *vf);
+ 
+Index: lib/lsp.c
+===================================================================
+--- lib/lsp.c	(リビジョン 7879)
++++ lib/lsp.c	(作業コピー)
 @@ -11,7 +11,7 @@
   ********************************************************************
  
@@ -20,10 +97,48 @@ Index: vorbis/lib/lsp.c
    return (*(float *)a<*(float *)b)-(*(float *)a>*(float *)b);
  }
  
-Index: vorbis/lib/floor1.c
+Index: lib/floor0.c
 ===================================================================
---- vorbis/lib/floor1.c	(revision 7879)
-+++ vorbis/lib/floor1.c	(working copy)
+--- lib/floor0.c	(リビジョン 7879)
++++ lib/floor0.c	(作業コピー)
+@@ -11,7 +11,7 @@
+  ********************************************************************
+ 
+  function: floor backend 0 implementation
+- last mod: $Id: floor0.c,v 1.55 2003/09/05 23:17:49 giles Exp $
++ last mod: $Id$
+ 
+  ********************************************************************/
+ 
+@@ -158,6 +158,8 @@
+   vorbis_look_floor0 *look=(vorbis_look_floor0 *)i;
+   vorbis_info_floor0 *info=look->vi;
+   int j,k;
++
++  float recip_global_gain = vb->vd->vi->global_gain != 0.0 ? 1.0 / vb->vd->vi->global_gain : 0.0;
+ 
+   int ampraw=oggpack_read(&vb->opb,info->ampbits);
+   if(ampraw>0){ /* also handles the -1 out of data case */
+@@ -175,8 +177,13 @@
+          vector */
+       float *lsp=_vorbis_block_alloc(vb,sizeof(*lsp)*(look->m+b->dim+1));
+             
+-      for(j=0;j<look->m;j+=b->dim)
+-	if(vorbis_book_decodev_set(b,lsp+j,&vb->opb,b->dim)==-1)goto eop;
++      for(j=0;j<look->m;j+=b->dim)
++	  {
++		if(vorbis_book_decodev_set(b,lsp+j,&vb->opb,b->dim)==-1)goto eop;
++		/* we must apply recip of global gain because the codebook is already
++		   controlled by global gain! */
++		for(k=0;k<b->dim;k++) lsp[j+k]*=recip_global_gain;
++	  }
+       for(j=0;j<look->m;){
+ 	for(k=0;k<b->dim;k++,j++)lsp[j]+=last;
+ 	last=lsp[j-1];
+Index: lib/floor1.c
+===================================================================
+--- lib/floor1.c	(リビジョン 7879)
++++ lib/floor1.c	(作業コピー)
 @@ -11,7 +11,7 @@
   ********************************************************************
  
@@ -87,7 +202,7 @@ Index: vorbis/lib/floor1.c
    }
  }
  
-@@ -292,95 +285,111 @@
+@@ -292,95 +285,110 @@
  }
  
  static float FLOOR1_fromdB_LOOKUP[256]={
@@ -267,7 +382,6 @@ Index: vorbis/lib/floor1.c
 +		f0[1] *= FLOOR1_fromdB_LOOKUP[(y+step)>>22];
 +		f0[2] *= FLOOR1_fromdB_LOOKUP[(y+step   +step)>>22];
 +		f0[3] *= FLOOR1_fromdB_LOOKUP[(y+step*4 -step)>>22];
-+
 +		y += step*4;
 +		f0+=4;
 +	}
@@ -284,7 +398,7 @@ Index: vorbis/lib/floor1.c
  }
  
  static void render_line0(int x0,int x1,int y0,int y1,int *d){
-@@ -1003,23 +1012,25 @@
+@@ -1003,23 +1011,25 @@
      }
  
      /* unwrap positive values and reconsitute via linear interpolation */
@@ -318,7 +432,7 @@ Index: vorbis/lib/floor1.c
  	  }
  	}else{
  	  if(val&1){
-@@ -1029,12 +1040,12 @@
+@@ -1029,12 +1039,12 @@
  	  }
  	}
  
@@ -335,10 +449,10 @@ Index: vorbis/lib/floor1.c
        }
  	
      }
-Index: vorbis/lib/psy.c
+Index: lib/psy.c
 ===================================================================
---- vorbis/lib/psy.c	(revision 7879)
-+++ vorbis/lib/psy.c	(working copy)
+--- lib/psy.c	(リビジョン 7879)
++++ lib/psy.c	(作業コピー)
 @@ -11,7 +11,7 @@
   ********************************************************************
  
@@ -357,10 +471,10 @@ Index: vorbis/lib/psy.c
    float f1=fabs(**(float**)a);
    float f2=fabs(**(float**)b);
    return (f1<f2)-(f1>f2);
-Index: vorbis/lib/mapping0.c
+Index: lib/mapping0.c
 ===================================================================
---- vorbis/lib/mapping0.c	(revision 7879)
-+++ vorbis/lib/mapping0.c	(working copy)
+--- lib/mapping0.c	(リビジョン 7879)
++++ lib/mapping0.c	(作業コピー)
 @@ -11,7 +11,7 @@
   ********************************************************************
  
@@ -576,7 +690,7 @@ Index: vorbis/lib/mapping0.c
  static int mapping0_inverse(vorbis_block *vb,vorbis_info_mapping *l){
    vorbis_dsp_state     *vd=vb->vd;
    vorbis_info          *vi=vd->vi;
-@@ -790,27 +989,133 @@
+@@ -790,29 +989,135 @@
      float *pcmM=vb->pcm[info->coupling_mag[i]];
      float *pcmA=vb->pcm[info->coupling_ang[i]];
  
@@ -726,8 +840,11 @@ Index: vorbis/lib/mapping0.c
 +*/
 +	}
    }
- 
+-
++
    /* compute and apply spectral envelope */
+   for(i=0;i<vi->channels;i++){
+     float *pcm=vb->pcm[i];
 @@ -835,10 +1140,18 @@
  
  /* export hooks */
@@ -748,10 +865,10 @@ Index: vorbis/lib/mapping0.c
    &mapping0_inverse
  };
  
-Index: vorbis/lib/codebook.c
+Index: lib/codebook.c
 ===================================================================
---- vorbis/lib/codebook.c	(revision 7879)
-+++ vorbis/lib/codebook.c	(working copy)
+--- lib/codebook.c	(リビジョン 7879)
++++ lib/codebook.c	(作業コピー)
 @@ -11,7 +11,7 @@
   ********************************************************************
  
@@ -913,10 +1030,32 @@ Index: vorbis/lib/codebook.c
    return(0);
  }
  
-Index: vorbis/lib/info.c
+Index: lib/codebook.h
 ===================================================================
---- vorbis/lib/info.c	(revision 7879)
-+++ vorbis/lib/info.c	(working copy)
+--- lib/codebook.h	(リビジョン 7879)
++++ lib/codebook.h	(作業コピー)
+@@ -11,7 +11,7 @@
+  ********************************************************************
+ 
+  function: basic shared codebook operations
+- last mod: $Id: codebook.h,v 1.13 2002/06/28 22:19:35 xiphmont Exp $
++ last mod: $Id$
+ 
+  ********************************************************************/
+ 
+@@ -119,7 +119,7 @@
+ extern void vorbis_staticbook_clear(static_codebook *b);
+ extern void vorbis_staticbook_destroy(static_codebook *b);
+ extern int vorbis_book_init_encode(codebook *dest,const static_codebook *source);
+-extern int vorbis_book_init_decode(codebook *dest,const static_codebook *source);
++extern int vorbis_book_init_decode(codebook *dest,const static_codebook *source, float global_gain);
+ extern void vorbis_book_clear(codebook *b);
+ 
+ extern float *_book_unquantize(const static_codebook *b,int n,int *map);
+Index: lib/info.c
+===================================================================
+--- lib/info.c	(リビジョン 7879)
++++ lib/info.c	(作業コピー)
 @@ -11,7 +11,7 @@
   ********************************************************************
  
@@ -926,7 +1065,23 @@ Index: vorbis/lib/info.c
  
   ********************************************************************/
  
-@@ -180,10 +180,10 @@
+@@ -149,9 +149,15 @@
+ /* used by synthesis, which has a full, alloced vi */
+ void vorbis_info_init(vorbis_info *vi){
+   memset(vi,0,sizeof(*vi));
++  vi->global_gain = 1.0;
+   vi->codec_setup=_ogg_calloc(1,sizeof(codec_setup_info));
+ }
+ 
++/* set global gain. shoud be called before decoding a stream */
++void vorbis_info_set_global_gain(vorbis_info *vi, float gain){
++	vi->global_gain = gain;
++}
++
+ void vorbis_info_clear(vorbis_info *vi){
+   codec_setup_info     *ci=vi->codec_setup;
+   int i;
+@@ -180,10 +186,10 @@
      }
      if(ci->fullbooks)
  	_ogg_free(ci->fullbooks);
@@ -939,10 +1094,10 @@ Index: vorbis/lib/info.c
      _ogg_free(ci);
    }
  
-Index: vorbis/lib/vorbisfile.c
+Index: lib/vorbisfile.c
 ===================================================================
---- vorbis/lib/vorbisfile.c	(revision 7879)
-+++ vorbis/lib/vorbisfile.c	(working copy)
+--- lib/vorbisfile.c	(リビジョン 7879)
++++ lib/vorbisfile.c	(作業コピー)
 @@ -735,10 +735,10 @@
  
  int ov_open(FILE *f,OggVorbis_File *vf,char *initial,long ibytes){
@@ -1343,10 +1498,10 @@ Index: vorbis/lib/vorbisfile.c
  
    /* splice */
    _ov_splice(pcm,lappcm,n1,n2,vi1->channels,vi2->channels,w1,w2);
-Index: vorbis/lib/window.c
+Index: lib/window.c
 ===================================================================
---- vorbis/lib/window.c	(revision 7879)
-+++ vorbis/lib/window.c	(working copy)
+--- lib/window.c	(リビジョン 7879)
++++ lib/window.c	(作業コピー)
 @@ -11,7 +11,7 @@
   ********************************************************************
  
@@ -1428,10 +1583,10 @@ Index: vorbis/lib/window.c
    0.0000000578F, 0.0000005198F, 0.0000014438F, 0.0000028299F, 
    0.0000046780F, 0.0000069882F, 0.0000097604F, 0.0000129945F, 
    0.0000166908F, 0.0000208490F, 0.0000254692F, 0.0000305515F, 
-Index: vorbis/lib/lookup_data.h
+Index: lib/lookup_data.h
 ===================================================================
---- vorbis/lib/lookup_data.h	(revision 7879)
-+++ vorbis/lib/lookup_data.h	(working copy)
+--- lib/lookup_data.h	(リビジョン 7879)
++++ lib/lookup_data.h	(作業コピー)
 @@ -11,7 +11,7 @@
   ********************************************************************
  
@@ -1471,10 +1626,10 @@ Index: vorbis/lib/lookup_data.h
  
  #ifdef INT_LOOKUP
  
-Index: vorbis/lib/lookup.c
+Index: lib/lookup.c
 ===================================================================
---- vorbis/lib/lookup.c	(revision 7879)
-+++ vorbis/lib/lookup.c	(working copy)
+--- lib/lookup.c	(リビジョン 9835)
++++ lib/lookup.c	(作業コピー)
 @@ -11,7 +11,7 @@
   ********************************************************************
  
@@ -1510,10 +1665,23 @@ Index: vorbis/lib/lookup.c
    return INVSQ2EXP_LOOKUP[a-INVSQ2EXP_LOOKUP_MIN];
  }
  
-Index: vorbis/lib/sharedbook.c
+Index: lib/res0.c
 ===================================================================
---- vorbis/lib/sharedbook.c	(revision 7879)
-+++ vorbis/lib/sharedbook.c	(working copy)
+--- lib/res0.c	(リビジョン 7879)
++++ lib/res0.c	(作業コピー)
+@@ -11,7 +11,7 @@
+  ********************************************************************
+ 
+  function: residue backend 0, 1 and 2 implementation
+- last mod: $Id: res0.c,v 1.50 2003/12/30 11:02:22 xiphmont Exp $
++ last mod: $Id$
+ 
+  ********************************************************************/
+ 
+Index: lib/sharedbook.c
+===================================================================
+--- lib/sharedbook.c	(リビジョン 7879)
++++ lib/sharedbook.c	(作業コピー)
 @@ -11,7 +11,7 @@
   ********************************************************************
  
@@ -1523,7 +1691,7 @@ Index: vorbis/lib/sharedbook.c
  
   ********************************************************************/
  
-@@ -309,7 +309,7 @@
+@@ -309,13 +309,13 @@
    return((x>> 1)&0x55555555UL) | ((x<< 1)&0xaaaaaaaaUL);
  }
  
@@ -1532,10 +1700,28 @@ Index: vorbis/lib/sharedbook.c
    return ( **(ogg_uint32_t **)a>**(ogg_uint32_t **)b)- 
      ( **(ogg_uint32_t **)a<**(ogg_uint32_t **)b);
  }
-Index: vorbis/lib/mdct.c
+ 
+ /* decode codebook arrangement is more heavily optimized than encode */
+-int vorbis_book_init_decode(codebook *c,const static_codebook *s){
++int vorbis_book_init_decode(codebook *c,const static_codebook *s, float gain){
+   int i,j,n=0,tabn;
+   int *sortindex;
+   memset(c,0,sizeof(*c));
+@@ -367,6 +367,10 @@
+   }
+ 
+   c->valuelist=_book_unquantize(s,n,sortindex);
++
++  if(c->valuelist)
++  	for(i=0;i<n*s->dim;i++) c->valuelist[i]*=gain;
++
+   c->dec_index=_ogg_malloc(n*sizeof(*c->dec_index));
+ 
+   for(n=0,i=0;i<s->entries;i++)
+Index: lib/mdct.c
 ===================================================================
---- vorbis/lib/mdct.c	(revision 7879)
-+++ vorbis/lib/mdct.c	(working copy)
+--- lib/mdct.c	(リビジョン 7879)
++++ lib/mdct.c	(作業コピー)
 @@ -12,7 +12,7 @@
  
   function: normalized modified discrete cosine transform
@@ -4121,10 +4307,10 @@ Index: vorbis/lib/mdct.c
      w2[i]=   MULT_NORM(r1*T[1] + r0*T[0]);
      w2[i+1]= MULT_NORM(r1*T[0] - r0*T[1]);
      x1 +=4;
-Index: vorbis/lib/block.c
+Index: lib/block.c
 ===================================================================
---- vorbis/lib/block.c	(revision 7879)
-+++ vorbis/lib/block.c	(working copy)
+--- lib/block.c	(リビジョン 7879)
++++ lib/block.c	(作業コピー)
 @@ -11,7 +11,7 @@
   ********************************************************************
  
@@ -4151,7 +4337,7 @@ Index: vorbis/lib/block.c
    if(encp){ /* encode/decode differ here */
  
      /* analysis always needs an fft */
-@@ -230,7 +231,9 @@
+@@ -230,12 +231,15 @@
      }
  
      v->analysisp=1;
@@ -4162,7 +4348,15 @@ Index: vorbis/lib/block.c
      /* finish the codebooks */
      if(!ci->fullbooks){
        ci->fullbooks=_ogg_calloc(ci->books,sizeof(*ci->fullbooks));
-@@ -278,7 +281,8 @@
+-      for(i=0;i<ci->books;i++){
+-	vorbis_book_init_decode(ci->fullbooks+i,ci->book_param[i]);
++      for(i=0;i<ci->books;i++){
++		  /* apply gain control */
++		  vorbis_book_init_decode(ci->fullbooks+i,ci->book_param[i],vi->global_gain);
+ 	/* decode codebooks are now standalone after init */
+ 	vorbis_staticbook_destroy(ci->book_param[i]);
+ 	ci->book_param[i]=NULL;
+@@ -278,7 +282,8 @@
  
    return 0;
  }
@@ -4172,7 +4366,7 @@ Index: vorbis/lib/block.c
  /* arbitrary settings and spec-mandated numbers get filled in here */
  int vorbis_analysis_init(vorbis_dsp_state *v,vorbis_info *vi){
    private_state *b=NULL;
-@@ -294,7 +298,8 @@
+@@ -294,7 +299,8 @@
    vorbis_bitrate_init(vi,&b->bms);
  
    return(0);
@@ -4182,7 +4376,7 @@ Index: vorbis/lib/block.c
  
  void vorbis_dsp_clear(vorbis_dsp_state *v){
    int i;
-@@ -305,10 +310,12 @@
+@@ -305,10 +311,12 @@
  
      if(b){
  	
@@ -4195,7 +4389,7 @@ Index: vorbis/lib/block.c
  
        if(b->transform[0]){
  	mdct_clear(b->transform[0][0]);
-@@ -333,18 +340,18 @@
+@@ -333,18 +341,18 @@
  	    free_look(b->residue[i]);
  	_ogg_free(b->residue);
        }
@@ -4216,7 +4410,7 @@ Index: vorbis/lib/block.c
      }
      
      if(v->pcm){
-@@ -487,7 +494,8 @@
+@@ -487,7 +495,8 @@
    }
    return(0);
  }
@@ -4226,7 +4420,7 @@ Index: vorbis/lib/block.c
  /* do the deltas, envelope shaping, pre-echo and determine the size of
     the next block on which to continue analysis */
  int vorbis_analysis_blockout(vorbis_dsp_state *v,vorbis_block *vb){
-@@ -649,7 +657,8 @@
+@@ -649,7 +658,8 @@
  
    /* done */
    return(1);
@@ -4236,7 +4430,7 @@ Index: vorbis/lib/block.c
  
  int vorbis_synthesis_restart(vorbis_dsp_state *v){
    vorbis_info *vi=v->vi;
-@@ -674,6 +683,151 @@
+@@ -674,6 +684,151 @@
    return(0);
  }
  
@@ -4388,7 +4582,7 @@ Index: vorbis/lib/block.c
  int vorbis_synthesis_init(vorbis_dsp_state *v,vorbis_info *vi){
    if(_vds_shared_init(v,vi,0)) return 1;
    vorbis_synthesis_restart(v);
-@@ -741,15 +895,63 @@
+@@ -741,15 +896,63 @@
  	  float *w=_vorbis_window_get(b->window[1]-hs);
  	  float *pcm=v->pcm[j]+prevCenter;
  	  float *p=vb->pcm[j];
@@ -4456,7 +4650,7 @@ Index: vorbis/lib/block.c
  	}
        }else{
  	if(v->W){
-@@ -757,8 +959,34 @@
+@@ -757,8 +960,34 @@
  	  float *w=_vorbis_window_get(b->window[0]-hs);
  	  float *pcm=v->pcm[j]+prevCenter;
  	  float *p=vb->pcm[j]+n1/2-n0/2;
@@ -4493,7 +4687,7 @@ Index: vorbis/lib/block.c
  	  for(;i<n1/2+n0/2;i++)
  	    pcm[i]=p[i];
  	}else{
-@@ -766,8 +994,32 @@
+@@ -766,8 +995,32 @@
  	  float *w=_vorbis_window_get(b->window[0]-hs);
  	  float *pcm=v->pcm[j]+prevCenter;
  	  float *p=vb->pcm[j];
@@ -4528,7 +4722,7 @@ Index: vorbis/lib/block.c
  	}
        }
        
-@@ -775,8 +1027,7 @@
+@@ -775,8 +1028,7 @@
        {
  	float *pcm=v->pcm[j]+thisCenter;
  	float *p=vb->pcm[j]+n;
