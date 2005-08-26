@@ -45,7 +45,7 @@ TVP_MSG_DECL(TVPInvalidBPP,
 	TJS_W("無効な色深度です"));
 
 TVP_MSG_DECL(TVPCannotLoadPlugin,
-	TJS_W("指定されたプラグイン %1 を読み込めません"));
+	TJS_W("プラグイン %1 を読み込めません"));
 
 TVP_MSG_DECL(TVPNotValidPlugin,
 	TJS_W("%1 は有効なプラグインではありません"));
