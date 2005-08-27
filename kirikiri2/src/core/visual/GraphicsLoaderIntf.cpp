@@ -2631,10 +2631,6 @@ void TVPSetGraphicCacheLimit(tjs_uint limit)
 	}
 
 	TVPCheckGraphicCacheLimit();
-
-	TVPAddImportantLog(ttstr(TJS_W("(info) Setting graphic cache limit to (in bytes) : ")) +
-		ttstr((tjs_int)TVPGraphicCacheLimit));
-
 }
 //---------------------------------------------------------------------------
 tjs_uint TVPGetGraphicCacheLimit()
