@@ -151,6 +151,7 @@ void tTVPSusieArchivePlugin::GetFileList(AnsiString localname,
 
 				tTVPSusieFileRecord record;
 				record.Name = buf;
+				tTVPArchive::NormalizeInArchiveStorageName(record.Name);
 				record.Position = info->position;
 				record.Size = info->filesize;
 
