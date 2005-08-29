@@ -1032,7 +1032,6 @@ static tjs_uint TVPRebuildAutoPathTable()
 				for(tjs_uint i = 0; i < storagecount; i++)
 				{
 					ttstr name = arc->GetName(i);
-					tTVPArchive::NormalizeInArchiveStorageName(name);
 
 					if(name.StartsWith(in_arc_name))
 					{

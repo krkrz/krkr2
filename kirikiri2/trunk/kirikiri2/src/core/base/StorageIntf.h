@@ -52,6 +52,7 @@ public:
 	//-- must be implemented by delivered class
 	virtual tjs_uint GetCount() = 0;
 	virtual ttstr GetName(tjs_uint idx) = 0;
+		// returned name must be already normalized using NormalizeInArchiveStorageName
 
 	virtual tTJSBinaryStream * CreateStreamByIndex(tjs_uint idx) = 0;
 
