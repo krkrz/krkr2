@@ -282,6 +282,7 @@ tTVPXP3Archive::tTVPXP3Archive(const ttstr & name) : tTVPArchive(name)
 				ttstr name = TVPStringFromBMPUnicode(
 						(const tjs_uint16 *)(indexdata + ch_info_start + 22), len);
 				item.Name = name;
+				NormalizeInArchiveStorageName(item.Name);
 
 				// find 'segm' sub-chunk
 				// Each of in-archive storages can be splitted into some segments.
