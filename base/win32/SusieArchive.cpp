@@ -47,6 +47,10 @@ struct tTVPSusieFileRecord
 	ttstr Name;
 	unsigned long Position;
 	unsigned long Size;
+	bool operator < (const tTVPSusieFileRecord & rhs) const
+	{
+		return this->Name < rhs.Name;
+	}
 };
 //---------------------------------------------------------------------------
 // tTVPSusiePlugin is defined in GraphicLoaderImpl.h
@@ -160,6 +164,9 @@ void tTVPSusieArchivePlugin::GetFileList(AnsiString localname,
 
 			info++;
 		}
+
+		// sort item vector by its name (required for tTVPArchive specification)
+		std::stable_sort(dest.begin(), dest.end());
 	}
 	catch(...)
 	{

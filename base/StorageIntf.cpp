@@ -20,6 +20,7 @@
 #include "tjsArray.h"
 #include "SysInitIntf.h"
 #include "XP3Archive.h"
+#include "TickCount.h"
 
 
 
@@ -682,6 +683,39 @@ bool tTVPArchive::IsExistent(const ttstr & name)
 	return Hash.Find(name) != NULL;
 }
 //---------------------------------------------------------------------------
+tjs_int tTVPArchive::GetFirstIndexStartsWith(const ttstr & prefix)
+{
+	// returns first index which have 'prefix' at start of the name.
+	// returns -1 if the target is not found.
+	// the item must be sorted by ttstr::operator < , otherwise this function
+	// will not work propertly.
+	tjs_uint total_count = GetCount();
+	tjs_int s = 0, e = total_count;
+	while(e - s > 1)
+	{
+		tjs_int m = (e + s) / 2;
+		if(!(GetName(m) < prefix))
+		{
+			// m is after or at the target
+			e = m;
+		}
+		else
+		{
+			// m is before the target
+			s = m;
+		}
+	}
+
+	// at this point, s or s+1 should point the target.
+	// be certain.
+	if(s >= (tjs_int)total_count) return -1; // out of the index
+	if(GetName(s).StartsWith(prefix)) return s;
+	s++;
+	if(s >= (tjs_int)total_count) return -1; // out of the index
+	if(GetName(s).StartsWith(prefix)) return s;
+	return -1;
+}
+//---------------------------------------------------------------------------
 
 
 
@@ -1004,6 +1038,7 @@ static tjs_uint TVPRebuildAutoPathTable()
 
 	TVPAutoPathTable.Clear();
 
+	tjs_uint64 tick = TVPGetTickCount();
 	TVPAddLog(TJS_W("(info) Rebuilding Auto Path Table ..."));
 
 	tjs_uint totalcount = 0;
@@ -1026,20 +1061,34 @@ static tjs_uint TVPRebuildAutoPathTable()
 
 			tTVPArchive *arc;
 			arc = TVPArchiveCache.Get(arcname);
+
 			try
 			{
 				tjs_uint storagecount = arc->GetCount();
-				for(tjs_uint i = 0; i < storagecount; i++)
-				{
-					ttstr name = arc->GetName(i);
 
-					if(name.StartsWith(in_arc_name))
+				// get first index which the item has 'in_arc_name' as its start
+				// of the string.
+				tjs_int i = arc->GetFirstIndexStartsWith(in_arc_name);
+				if(i != -1)
+				{
+					for(; i < (tjs_int)storagecount; i++)
 					{
-						if(!TJS_strchr(name.c_str() + in_arc_name_len, TJS_W('/')))
+						ttstr name = arc->GetName(i);
+
+						if(name.StartsWith(in_arc_name))
 						{
-							ttstr sname = TVPExtractStorageName(name);
-							TVPAutoPathTable.Add(sname, path);
-							count ++;
+							if(!TJS_strchr(name.c_str() + in_arc_name_len, TJS_W('/')))
+							{
+								ttstr sname = TVPExtractStorageName(name);
+								TVPAutoPathTable.Add(sname, path);
+								count ++;
+							}
+						}
+						else
+						{
+							// no need to check more;
+							// because the list is sorted by the name.
+							break;
 						}
 					}
 				}
@@ -1079,9 +1128,12 @@ static tjs_uint TVPRebuildAutoPathTable()
 		totalcount += count;
 	}
 
+	tjs_uint64 endtick = TVPGetTickCount();
+
 	TVPAddLog(ttstr(TJS_W("(info) Total ")) +
 			ttstr((tjs_int)totalcount) + TJS_W(" file(s) found, ") +
-			ttstr((tjs_int)TVPAutoPathTable.GetCount()) + TJS_W(" file(s) activated.") );
+			ttstr((tjs_int)TVPAutoPathTable.GetCount()) + TJS_W(" file(s) activated.") + 
+			TJS_W(" (") + ttstr((tjs_int)(endtick - tick)) + TJS_W("ms)"));
 
 	AutoPathTableInit = true;
 
