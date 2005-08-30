@@ -1031,8 +1031,7 @@ TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/dumpStringHeap)
 TJS_END_NATIVE_METHOD_DECL(/*func. name*/dumpStringHeap)
 #endif
 //----------------------------------------------------------------------
-#ifdef TJS_DEBUG_CALL_MISSING
-TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/setCallMissing)
+TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/setCallMissing) /* UNDOCUMENTED: subject to change */
 {
 	// set to call "missing" method
 	if(numparams < 1) return TJS_E_BADPARAMCOUNT;
@@ -1047,8 +1046,7 @@ TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/setCallMissing)
 
 	return TJS_S_OK;
 }
-TJS_END_NATIVE_METHOD_DECL(/*func. name*/setCallMissing)
-#endif
+TJS_END_NATIVE_METHOD_DECL(/*func. name*/setCallMissing) /* UNDOCUMENTED: subject to change */
 //----------------------------------------------------------------------
 
 	TJS_END_NATIVE_MEMBERS
