@@ -100,6 +100,10 @@ class tTVPXP3Archive : public tTVPArchive
 		tjs_uint64 OrgSize; // original ( uncompressed ) size
 		tjs_uint64 ArcSize; // in-archive size
 		std::vector<tTVPXP3ArchiveSegment> Segments;
+		bool operator < (const tArchiveItem &rhs) const
+		{
+			return this->Name < rhs.Name;
+		}
 	};
 
 	tjs_int Count;

@@ -344,6 +344,9 @@ tTVPXP3Archive::tTVPXP3Archive(const ttstr & name) : tTVPArchive(name)
 			if(!(index_flag & TVP_XP3_INDEX_CONTINUE))
 				break; // continue reading index when the bit sets
 		}
+
+		// sort item vector by its name (required for tTVPArchive specification)
+		std::stable_sort(ItemVector.begin(), ItemVector.end());
 	}
 	catch(...)
 	{
