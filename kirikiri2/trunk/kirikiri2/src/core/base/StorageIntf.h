@@ -53,6 +53,8 @@ public:
 	virtual tjs_uint GetCount() = 0;
 	virtual ttstr GetName(tjs_uint idx) = 0;
 		// returned name must be already normalized using NormalizeInArchiveStorageName
+		// and the index must be sorted by its name, using ttstr::operator < .
+		// this is needed by fast directory search.
 
 	virtual tTJSBinaryStream * CreateStreamByIndex(tjs_uint idx) = 0;
 
@@ -71,6 +73,9 @@ private:
 public:
 	tTJSBinaryStream * CreateStream(const ttstr & name);
 	bool IsExistent(const ttstr & name);
+
+	tjs_int GetFirstIndexStartsWith(const ttstr & prefix);
+		// returns first index which have 'prefix' at start of the name.
 };
 //---------------------------------------------------------------------------
 
