@@ -256,7 +256,11 @@ tTJSString tTJSString::UnescapeC() const
 bool tTJSString::StartsWith(const tjs_char *string) const
 {
 	// return true if this starts with "string"
-	if(!Ptr) return false;
+	if(!Ptr)
+	{
+		if(!*string) return true; // empty string starts with empty string
+		return false;
+	}
 	const tjs_char *this_p = *Ptr;
 	while(*string && *this_p)
 	{
