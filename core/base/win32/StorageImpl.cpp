@@ -874,10 +874,41 @@ HRESULT STDMETHODCALLTYPE tTVPIStreamAdapter::Stat(STATSTG *pstatstg, DWORD grfS
 	if(pstatstg)
 	{
 		ZeroMemory(pstatstg, sizeof(*pstatstg));
+
+		// pwcsName
+		// this object's storage pointer does not have a name ...
+		if(!(grfStatFlag &  STATFLAG_NONAME))
+		{
+			// anyway returns an empty string
+			LPWSTR str = (LPWSTR)CoTaskMemAlloc(sizeof(*str));
+			if(str == NULL) return E_OUTOFMEMORY;
+			*str = L'\0';
+			pstatstg->pwcsName = str;
+		}
+
+		// type
+		pstatstg->type = STGTY_STREAM;
+
+		// cbSize
 		pstatstg->cbSize.QuadPart = Stream->GetSize();
+
+		// mtime, ctime, atime unknown
+
+		// grfMode unknown
+		pstatstg->grfMode = STGM_DIRECT | STGM_READWRITE | STGM_SHARE_DENY_WRITE ;
+			// Note that this method always returns flags above, regardless of the
+			// actual mode.
+			// In the return value, the stream is to be indicated that the
+			// stream can be written, but of cource, the Write method will fail
+			// if the stream is read-only.
+
+		// grfLockSuppoted
+		pstatstg->grfLocksSupported = 0;
+
+		// grfStatBits unknown
 	}
 
-	return E_NOTIMPL;
+	return S_OK;
 }
 //---------------------------------------------------------------------------
 HRESULT STDMETHODCALLTYPE tTVPIStreamAdapter::Clone(IStream **ppstm)
