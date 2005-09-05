@@ -2388,7 +2388,7 @@ void __fastcall TTVPWindowForm::SetVisible(bool b)
 {
 	if(Focusable)
 	{
-		Visible = true;
+		Visible = b;
 	}
 	else
 	{
