@@ -423,32 +423,20 @@ bool tTVPXP3Archive::FindChunk(const tjs_uint8 *data, const tjs_uint8 * name,
 //---------------------------------------------------------------------------
 tjs_int16 tTVPXP3Archive::ReadI16FromMem(const tjs_uint8 *mem)
 {
-#if TJS_HOST_IS_BIG_ENDIAN
 	return (tjs_int16)mem[0] + ((tjs_int16)mem[1] << 8);
-#else
-	return *(const tjs_int16*)mem;
-#endif
 }
 //---------------------------------------------------------------------------
 tjs_int32 tTVPXP3Archive::ReadI32FromMem(const tjs_uint8 *mem)
 {
-#if TJS_HOST_IS_BIG_ENDIAN
 	return (tjs_int32)mem[0] + ((tjs_int32)mem[1] << 8) +
 		((tjs_int32)mem[2] << 16) + ((tjs_int32)mem[3] << 24);
-#else
-	return *(const tjs_int32*)mem;
-#endif
 }
 //---------------------------------------------------------------------------
 tjs_int64 tTVPXP3Archive::ReadI64FromMem(const tjs_uint8 *mem)
 {
-#if TJS_HOST_IS_BIG_ENDIAN
 	tjs_int32 low = ReadI32FromMem(mem);
 	tjs_int32 high = ReadI32FromMem(mem + 4);
 	return ((tjs_int64)high << 32) | ((tjs_int64)low);
-#else
-	return *(const tjs_int64*)mem;
-#endif
 }
 //---------------------------------------------------------------------------
 
