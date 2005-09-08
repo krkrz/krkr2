@@ -16,6 +16,7 @@
 #include "DebugIntf.h"
 #include "EventIntf.h"
 #include "UtilStreams.h"
+#include "SysInitIntf.h"
 
 #include <zlib/zlib.h>
 
@@ -31,6 +32,180 @@ void TVPSetXP3ArchiveExtractionFilter(tTVPXP3ArchiveExtractionFilter filter)
 	TVPXP3ArchiveExtractionFilter = filter;
 }
 //---------------------------------------------------------------------------
+
+
+
+//---------------------------------------------------------------------------
+// tTVPXP3ArchiveHandleCache
+//---------------------------------------------------------------------------
+#define TVP_MAX_ARCHIVE_HANDLE_CACHE 8
+static tjs_uint TVPArchiveHandleCacheAge = 0;
+struct tTVPArchiveHandleCacheItem
+{
+	void * Pointer;
+	tTJSBinaryStream * Stream;
+	tjs_uint Age;
+};
+//---------------------------------------------------------------------------
+static tTVPArchiveHandleCacheItem * TVPArchiveHandleCachePool = NULL;
+static bool TVPArchiveHandleCacheInit = false;
+static bool TVPArchiveHandleCacheShutdown = false;
+static tTJSCriticalSection TVPArchiveHandleCacheCS;
+//---------------------------------------------------------------------------
+static tTJSBinaryStream * TVPGetCachedArchiveHandle(void * pointer, const ttstr & name)
+{
+	// get cached archive file handle from the pool
+	if(TVPArchiveHandleCacheShutdown)
+	{
+		// the pool has shutdown
+		return TVPCreateStream(name);
+	}
+
+	tTJSCriticalSectionHolder cs_holder(TVPArchiveHandleCacheCS);
+
+	if(!TVPArchiveHandleCacheInit)
+	{
+		// initialize the pool
+		TVPArchiveHandleCachePool =
+			new tTVPArchiveHandleCacheItem[TVP_MAX_ARCHIVE_HANDLE_CACHE];
+		for(tjs_int i =0; i < TVP_MAX_ARCHIVE_HANDLE_CACHE; i++)
+		{
+			TVPArchiveHandleCachePool[i].Pointer = NULL;
+			TVPArchiveHandleCachePool[i].Stream = NULL;
+			TVPArchiveHandleCachePool[i].Age = 0;
+		}
+		TVPArchiveHandleCacheInit = true;
+	}
+
+	// linear search wiil be enough here because the 
+	// TVP_MAX_ARCHIVE_HANDLE_CACHE is relatively small
+	for(tjs_int i =0; i < TVP_MAX_ARCHIVE_HANDLE_CACHE; i++)
+	{
+		tTVPArchiveHandleCacheItem *item =
+			TVPArchiveHandleCachePool + i;
+		if(item->Stream && item->Pointer == pointer)
+		{
+			// found in the pool
+			tTJSBinaryStream * stream = item->Stream;
+			item->Stream = NULL;
+			return stream;
+		}
+	}
+
+	// not found in the pool
+	// simply create a stream and return it
+	return TVPCreateStream(name);
+}
+//---------------------------------------------------------------------------
+static void TVPReleaseCachedArchiveHandle(void * pointer,
+						tTJSBinaryStream * stream)
+{
+	// release archive file handle
+	if(TVPArchiveHandleCacheShutdown) return;
+	if(!TVPArchiveHandleCacheInit) return;
+
+	tTJSCriticalSectionHolder cs_holder(TVPArchiveHandleCacheCS);
+
+	// search empty cell in the pool
+	tjs_uint oldest_age = 0;
+	tjs_int oldest = 0;
+	for(tjs_int i = 0; i < TVP_MAX_ARCHIVE_HANDLE_CACHE; i++)
+	{
+		tTVPArchiveHandleCacheItem *item =
+			TVPArchiveHandleCachePool + i;
+		if(item->Stream == NULL)
+		{
+			// found the empty cell; fill it
+			item->Pointer = pointer;
+			item->Stream = stream;
+			item->Age = ++TVPArchiveHandleCacheAge;
+				// counter overflow in TVPArchiveHandleCacheAge
+				// is not so a big problem.
+				// counter overflow can worsen the cache performance,
+				// but it occurs only when the counter is overflowed
+				// (it's too far less than usual)
+			return;
+		}
+
+		if(i == 0 || oldest_age > item->Age)
+		{
+			oldest_age = item->Age;
+			oldest = i;
+		}
+	}
+
+	// empty cell not found
+	// free oldest cell and fill it
+	tTVPArchiveHandleCacheItem *oldest_item =
+		TVPArchiveHandleCachePool + oldest;
+	delete oldest_item->Stream, oldest_item->Stream = NULL;
+	oldest_item->Pointer = pointer;
+	oldest_item->Stream = stream;
+	oldest_item->Age = ++TVPArchiveHandleCacheAge;
+}
+//---------------------------------------------------------------------------
+static void TVPFreeArchiveHandlePoolByPointer(void * pointer)
+{
+	// free all streams which have specified pointer
+	if(TVPArchiveHandleCacheShutdown) return;
+	if(!TVPArchiveHandleCacheInit) return;
+
+	tTJSCriticalSectionHolder cs_holder(TVPArchiveHandleCacheCS);
+
+	for(tjs_int i = 0; i < TVP_MAX_ARCHIVE_HANDLE_CACHE; i++)
+	{
+		tTVPArchiveHandleCacheItem *item =
+			TVPArchiveHandleCachePool + i;
+		if(item->Stream && item->Pointer == pointer)
+		{
+			delete item->Stream, item->Stream = NULL;
+			item->Pointer = NULL;
+			item->Age = 0;
+		}
+	}
+}
+//---------------------------------------------------------------------------
+static void TVPFreeArchiveHandlePool()
+{
+	// free all streams
+	if(TVPArchiveHandleCacheShutdown) return;
+	if(!TVPArchiveHandleCacheInit) return;
+
+	tTJSCriticalSectionHolder cs_holder(TVPArchiveHandleCacheCS);
+
+	for(tjs_int i = 0; i < TVP_MAX_ARCHIVE_HANDLE_CACHE; i++)
+	{
+		tTVPArchiveHandleCacheItem *item =
+			TVPArchiveHandleCachePool + i;
+		if(item->Stream)
+		{
+			delete item->Stream, item->Stream = NULL;
+			item->Pointer = NULL;
+			item->Age = 0;
+		}
+	}
+}
+//---------------------------------------------------------------------------
+static void TVPShutdownArchiveHandleCache()
+{
+	// free all stream and shutdown the pool
+	tTJSCriticalSectionHolder cs_holder(TVPArchiveHandleCacheCS);
+
+	TVPArchiveHandleCacheShutdown = true;
+	if(!TVPArchiveHandleCacheInit) return;
+
+	for(tjs_int i =0; i < TVP_MAX_ARCHIVE_HANDLE_CACHE; i++)
+	{
+		if(TVPArchiveHandleCachePool[i].Stream)
+			delete TVPArchiveHandleCachePool[i].Stream;
+	}
+	delete [] TVPArchiveHandleCachePool;
+}
+//---------------------------------------------------------------------------
+static tTVPAtExit TVPShutdownArchiveCacheAtExit
+	(TVP_ATEXIT_PRI_CLEANUP, TVPShutdownArchiveHandleCache);
+//---------------------------------------------------------------------------
+
 
 
 
@@ -364,6 +539,7 @@ tTVPXP3Archive::tTVPXP3Archive(const ttstr & name) : tTVPArchive(name)
 //---------------------------------------------------------------------------
 tTVPXP3Archive::~tTVPXP3Archive()
 {
+	TVPFreeArchiveHandlePoolByPointer(this);
 }
 //---------------------------------------------------------------------------
 tTJSBinaryStream * tTVPXP3Archive::CreateStreamByIndex(tjs_uint idx)
@@ -372,8 +548,7 @@ tTJSBinaryStream * tTVPXP3Archive::CreateStreamByIndex(tjs_uint idx)
 
 	tArchiveItem &item = ItemVector[idx];
 
-	tTJSBinaryStream *stream = TVPCreateStream(Name);
-
+	tTJSBinaryStream *stream = TVPGetCachedArchiveHandle(this, Name);
 
 	tTJSBinaryStream *out;
 	try
@@ -383,7 +558,7 @@ tTJSBinaryStream * tTVPXP3Archive::CreateStreamByIndex(tjs_uint idx)
 	}
 	catch(...)
 	{
-		delete stream;
+		TVPReleaseCachedArchiveHandle(this, stream);
 		throw;
 	}
 
@@ -576,6 +751,8 @@ struct tTVPClearSegmentCacheCallback : public tTVPCompactEventCallbackIntf
 		{
 			// clear the segment cache on application deactivate
 			TVPClearXP3SegmentCache();
+			// also free archive handle pool
+			TVPFreeArchiveHandlePool();
 		}
 	}
 } static TVPClearSegmentCacheCallback;
@@ -649,9 +826,9 @@ tTVPXP3ArchiveStream::tTVPXP3ArchiveStream(tTVPXP3Archive *owner,
 //---------------------------------------------------------------------------
 tTVPXP3ArchiveStream::~tTVPXP3ArchiveStream()
 {
+	TVPReleaseCachedArchiveHandle(Owner, Stream);
 	Owner->Release(); // unhook
 	if(SegmentData) SegmentData->Release();
-	delete Stream;
 }
 //---------------------------------------------------------------------------
 void tTVPXP3ArchiveStream::EnsureSegment()
