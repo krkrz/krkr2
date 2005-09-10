@@ -77,13 +77,15 @@ public:
 // storage is copied to local fliesystem if needed.
 class tTVPLocalTempStorageHolder
 {
-	bool MustBeDeleted;
+	bool FileMustBeDeleted;
+	bool FolderMustBeDeleted;
 	ttstr LocalName;
+	ttstr LocalFolder;
 public:
-	tTVPLocalTempStorageHolder(const ttstr & name, bool plugin_rule = false);
+	tTVPLocalTempStorageHolder(const ttstr & name);
 	~tTVPLocalTempStorageHolder();
 
-	bool IsTemporaryFile() const { return MustBeDeleted; }
+	bool IsTemporaryFile() const { return FileMustBeDeleted; }
 
 	const ttstr & GetLocalName() const { return LocalName; }
 };

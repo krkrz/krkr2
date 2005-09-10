@@ -14,7 +14,7 @@
 #include "MsgIntf.h"
 #include "DebugIntf.h"
 #include "EventIntf.h"
-
+#include "StorageIntf.h"
 
 
 
@@ -25,37 +25,27 @@
 // tTVPLocalTempStorageHolder
 //---------------------------------------------------------------------------
 #define TVP_LOCAL_TEMP_COPY_BLOCK_SIZE 65536*2
-tTVPLocalTempStorageHolder::tTVPLocalTempStorageHolder(const ttstr & name,
-	bool plugin_rule)
+tTVPLocalTempStorageHolder::tTVPLocalTempStorageHolder(const ttstr & name)
 {
 	// name must be normalized !!!
 
-	MustBeDeleted = false;
+	FileMustBeDeleted = false;
+	FolderMustBeDeleted = false;
 	LocalName = TVPGetLocallyAccessibleName(name);
 	if(LocalName.IsEmpty())
 	{
 		// file must be copied to local filesystem
 
-		if(plugin_rule)
-		{
-			// plug-in temporary file must exist at program's directory at the
-			// same storage name
-			ttstr e_name = TVPExtractStorageName(name);
-			LocalName = TVPGetAppPath() + e_name;
-			if(TVPIsExistentStorageNoSearchNoNormalize(LocalName))
-			{
-				MustBeDeleted = false;
-				return; // already existed
-			}
-			LocalName = TVPGetLocallyAccessibleName(LocalName);
-			if(LocalName.IsEmpty()) TVPThrowInternalError;
-		}
-		else
-		{
-			ttstr ext = TVPExtractStorageExt(name);
-			LocalName = TVPGetTemporaryName() + ext;
-		}
-		MustBeDeleted = true;
+		// note that the basename is much more important than the directory
+		// which the file is to be in, so we create a temporary folder and
+		// store the file in it.
+
+		LocalFolder = TVPGetTemporaryName();
+		LocalName = LocalFolder + TJS_W("/") + TVPExtractStorageName(name);
+		TVPCreateFolders(LocalFolder); // create temporary folder
+		FolderMustBeDeleted = true;
+		FileMustBeDeleted = true;
+
 		try
 		{
 			// copy to local file
@@ -81,7 +71,8 @@ tTVPLocalTempStorageHolder::tTVPLocalTempStorageHolder(const ttstr & name,
 		}
 		catch(...)
 		{
-			TVPRemoveFile(LocalName);
+			if(FileMustBeDeleted) TVPRemoveFile(LocalName);
+			if(FolderMustBeDeleted) TVPRemoveFolder(LocalFolder);
 			throw;
 		}
 	}
@@ -89,7 +80,8 @@ tTVPLocalTempStorageHolder::tTVPLocalTempStorageHolder(const ttstr & name,
 //---------------------------------------------------------------------------
 tTVPLocalTempStorageHolder::~tTVPLocalTempStorageHolder()
 {
-	if(MustBeDeleted) TVPRemoveFile(LocalName);
+	if(FileMustBeDeleted) TVPRemoveFile(LocalName);
+	if(FolderMustBeDeleted) TVPRemoveFolder(LocalFolder);
 }
 //---------------------------------------------------------------------------
 
