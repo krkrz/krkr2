@@ -108,7 +108,7 @@ USEUNIT("..\..\utils\win32\ClipboardImpl.cpp");
 USEUNIT("..\..\base\XP3Archive.cpp");
 USEUNIT("..\..\base\TextStream.cpp");
 USEUNIT("..\..\base\UtilStreams.cpp");
-USEUNIT("..\..\base\win32\FileSelecter.cpp");
+USEUNIT("..\..\base\win32\FileSelector.cpp");
 USEUNIT("..\..\base\win32\SusieArchive.cpp");
 USEUNIT("..\..\base\StorageIntf.cpp");
 USEUNIT("..\..\base\win32\StorageImpl.cpp");

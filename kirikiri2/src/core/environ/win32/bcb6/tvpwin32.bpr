@@ -37,7 +37,7 @@
       intermediate\Random.obj intermediate\md5.obj intermediate\ThreadIntf.obj 
       intermediate\ThreadImpl.obj intermediate\XP3Archive.obj 
       intermediate\TextStream.obj intermediate\UtilStreams.obj 
-      intermediate\FileSelecter.obj intermediate\SusieArchive.obj 
+      intermediate\FileSelector.obj intermediate\SusieArchive.obj 
       intermediate\StorageIntf.obj intermediate\StorageImpl.obj 
       intermediate\ScriptMgnImpl.obj intermediate\EventIntf.obj 
       intermediate\EventImpl.obj intermediate\SysInitIntf.obj 
@@ -186,7 +186,7 @@
       <FILE FILENAME="..\..\..\base\XP3Archive.cpp" FORMNAME="" UNITNAME="XP3Archive" CONTAINERID="C/C++ コンパイラ" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\base\TextStream.cpp" FORMNAME="" UNITNAME="TextStream" CONTAINERID="C/C++ コンパイラ" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\base\UtilStreams.cpp" FORMNAME="" UNITNAME="UtilStreams" CONTAINERID="C/C++ コンパイラ" DESIGNCLASS="" LOCALCOMMAND=""/>
-      <FILE FILENAME="..\..\..\base\win32\FileSelecter.cpp" FORMNAME="" UNITNAME="FileSelecter" CONTAINERID="C/C++ コンパイラ" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\..\base\win32\FileSelector.cpp" FORMNAME="" UNITNAME="FileSelector" CONTAINERID="C/C++ コンパイラ" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\base\win32\SusieArchive.cpp" FORMNAME="" UNITNAME="SusieArchive" CONTAINERID="C/C++ コンパイラ" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\base\StorageIntf.cpp" FORMNAME="" UNITNAME="StorageIntf" CONTAINERID="C/C++ コンパイラ" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\base\win32\StorageImpl.cpp" FORMNAME="" UNITNAME="StorageImpl" CONTAINERID="C/C++ コンパイラ" DESIGNCLASS="" LOCALCOMMAND=""/>
