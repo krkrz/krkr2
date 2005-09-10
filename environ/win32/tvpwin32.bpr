@@ -39,7 +39,7 @@
       intermediate\ThreadIntf.obj intermediate\ThreadImpl.obj 
       intermediate\ClipboardIntf.obj intermediate\ClipboardImpl.obj 
       intermediate\XP3Archive.obj intermediate\TextStream.obj 
-      intermediate\UtilStreams.obj intermediate\FileSelecter.obj 
+      intermediate\UtilStreams.obj intermediate\FileSelector.obj 
       intermediate\SusieArchive.obj intermediate\StorageIntf.obj 
       intermediate\StorageImpl.obj intermediate\ScriptMgnImpl.obj 
       intermediate\EventIntf.obj intermediate\EventImpl.obj 

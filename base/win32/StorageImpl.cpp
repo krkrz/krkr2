@@ -23,7 +23,7 @@
 #include "Random.h"
 #include "XP3Archive.h"
 #include "SusieArchive.h"
-#include "FileSelecter.h"
+#include "FileSelector.h"
 
 #include <time.h>
 
