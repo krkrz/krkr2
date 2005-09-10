@@ -192,6 +192,13 @@ extern ttstr TVPGetLocallyAccessibleName(const ttstr &name);
 extern bool TVPRemoveFile(const ttstr &name);
 	// remove local file ( "name" is a local *native* name )
 	// this must not throw an exception ( return false if error )
+extern bool TVPRemoveFolder(const ttstr &name);
+	// remove local directory ( "name" is a local *native* name )
+	// this must not throw an exception ( return false if error )
+bool TVPCreateFolders(const ttstr &folder);
+	// create folder along with the argument recursively (like mkdir -p).
+	// 'folder' must be a local native name.
+
 //---------------------------------------------------------------------------
 
 
