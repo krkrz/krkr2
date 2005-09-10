@@ -6,7 +6,7 @@
 	See details of license at "license.txt"
 */
 //---------------------------------------------------------------------------
-// File Selecter dialog box
+// File Selector dialog box
 //---------------------------------------------------------------------------
 #include "tjsCommHead.h"
 
