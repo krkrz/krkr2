@@ -24,6 +24,7 @@
 #include "XP3Archive.h"
 #include "SusieArchive.h"
 #include "FileSelector.h"
+#include "Random.h"
 
 #include <time.h>
 
@@ -293,7 +294,6 @@ ttstr TVPGetTemporaryName()
 
 	{
 		tTJSCriticalSectionHolder holder(TVPTempUniqueNumCS);
-		num = TVPTempUniqueNum ++;
 
 		if(!TVPTempPathInit)
 		{
@@ -311,11 +311,21 @@ ttstr TVPGetTemporaryName()
 			}
 			if(TVPTempPath.GetLastChar() != TJS_W('\\')) TVPTempPath += TJS_W("\\");
 			TVPProcessID = (tjs_int) GetCurrentProcessId();
+			TVPTempUniqueNum = (tjs_int) GetTickCount();
 			TVPTempPathInit = true;
 		}
+		num = TVPTempUniqueNum ++;
 	}
 
-	return TVPTempPath + TJS_W("krkr") + ttstr(num) + TJS_W("_") + ttstr(TVPProcessID);
+	unsigned char buf[16];
+	TVPGetRandomBits128(buf);
+	tjs_char random[128];
+	TJS_sprintf(random, TJS_W("%02x%02x%02x%02x%02x%02x"),
+		buf[0], buf[1], buf[2], buf[3],
+		buf[4], buf[5]);
+
+	return TVPTempPath + TJS_W("krkr_") + ttstr(random) +
+		TJS_W("_") + ttstr(num) + TJS_W("_") + ttstr(TVPProcessID);
 }
 //---------------------------------------------------------------------------
 
@@ -343,6 +353,22 @@ bool TVPRemoveFile(const ttstr &name)
 
 
 
+//---------------------------------------------------------------------------
+// TVPRemoveFolder
+//---------------------------------------------------------------------------
+bool TVPRemoveFolder(const ttstr &name)
+{
+	if(!procRemoveDirectoryW)
+	{
+		tTJSNarrowStringHolder holder(name.c_str());
+		return RemoveDirectoryA(holder);
+	}
+	else
+	{
+		return RemoveDirectoryW(name.c_str());
+	}
+}
+//---------------------------------------------------------------------------
 
 
 
@@ -1077,42 +1103,37 @@ tTVPPluginHolder::tTVPPluginHolder(const ttstr &aname)
 {
 	LocalTempStorageHolder = NULL;
 
-	// search exepath, exepath\system, exepath\plugin
-	ttstr exepath =
-		IncludeTrailingBackslash(ExtractFileDir(ParamStr(0)));
-	ttstr pname = exepath + aname;
-	if(TVPCheckExistentLocalFile(pname))
+	// search in TVP storage system
+	ttstr place(TVPGetPlacedPath(aname));
+	if(!place.IsEmpty())
 	{
-		LocalName = pname;
-		return;
+		LocalTempStorageHolder = new tTVPLocalTempStorageHolder(place);
 	}
+	else
+	{
+		// not found in TVP storage system; search exepath, exepath\system, exepath\plugin
+		ttstr exepath =
+			IncludeTrailingBackslash(ExtractFileDir(ParamStr(0)));
+		ttstr pname = exepath + aname;
+		if(TVPCheckExistentLocalFile(pname))
+		{
+			LocalName = pname;
+			return;
+		}
 
-	pname = exepath + TJS_W("system\\") + aname;
-	if(TVPCheckExistentLocalFile(pname))
-	{
-		LocalName = pname;
-		return;
-	}
+		pname = exepath + TJS_W("system\\") + aname;
+		if(TVPCheckExistentLocalFile(pname))
+		{
+			LocalName = pname;
+			return;
+		}
 
-	pname = exepath + TJS_W("plugin\\") + aname;
-	if(TVPCheckExistentLocalFile(pname))
-	{
-		LocalName = pname;
-		return;
-	}
-
-	// not found in these directories; search in TVP storage system
-	ttstr place(TVPSearchPlacedPath(aname));
-	try
-	{
-		// this may fail if the program is running under read-only
-		// directory.
-		LocalTempStorageHolder = new tTVPLocalTempStorageHolder(place, true);
-	}
-	catch(...)
-	{
-		// try normal temporary storage rule
-		LocalTempStorageHolder = new tTVPLocalTempStorageHolder(place, false);
+		pname = exepath + TJS_W("plugin\\") + aname;
+		if(TVPCheckExistentLocalFile(pname))
+		{
+			LocalName = pname;
+			return;
+		}
 	}
 }
 //---------------------------------------------------------------------------
