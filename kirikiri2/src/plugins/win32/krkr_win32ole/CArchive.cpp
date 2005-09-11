@@ -190,15 +190,15 @@ public:
 	}
 };
 
-static IInternetSession *pIInternetSession;
-static IClassFactory *pcf;
+static IInternetSession *pIInternetSession = NULL;
+static IClassFactory *pcf = NULL;
 
 /**
  * アーカイブ処理をプロセスのインターネットセッションに登録する
  */
 void registArchive()
 {
-	if (CoInternetGetSession(0, &pIInternetSession, 0) == S_OK) {
+	if (pIInternetSession == NULL && CoInternetGetSession(0, &pIInternetSession, 0) == S_OK) {
 		pcf = new CArchive();
 		GUID dummy;
 		pIInternetSession->RegisterNameSpace(pcf, (REFCLSID)dummy, PROTOCOL, 0, NULL, 0);
