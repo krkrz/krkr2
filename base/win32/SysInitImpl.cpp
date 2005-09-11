@@ -1090,17 +1090,17 @@ void TVPAfterSystemInit()
 		else if(TVPTotalPhysMemory <= 64*1024*1024)
 			TVPGraphicCacheSystemLimit = 0;
 		else if(TVPTotalPhysMemory <= 96*1024*1024)
-			TVPGraphicCacheSystemLimit = 0;
+			TVPGraphicCacheSystemLimit = 4;
 		else if(TVPTotalPhysMemory <= 128*1024*1024)
-			TVPGraphicCacheSystemLimit = 10;
+			TVPGraphicCacheSystemLimit = 8;
 		else if(TVPTotalPhysMemory <= 192*1024*1024)
-			TVPGraphicCacheSystemLimit = 20;
+			TVPGraphicCacheSystemLimit = 12;
 		else if(TVPTotalPhysMemory <= 256*1024*1024)
-			TVPGraphicCacheSystemLimit = 30;
+			TVPGraphicCacheSystemLimit = 20;
 		else if(TVPTotalPhysMemory <= 512*1024*1024)
-			TVPGraphicCacheSystemLimit = 64;
+			TVPGraphicCacheSystemLimit = 40;
 		else
-			TVPGraphicCacheSystemLimit = 80;
+			TVPGraphicCacheSystemLimit = 64;
 		TVPGraphicCacheSystemLimit *= 1024*1024;
 	}
 	else
