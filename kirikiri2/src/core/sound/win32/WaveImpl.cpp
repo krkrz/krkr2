@@ -1799,21 +1799,30 @@ void tTVPWaveSoundBufferDecodeThread::Execute(void)
 		DWORD st = GetTickCount();
 		while(Running)
 		{
-			volatile tTJSCriticalSectionHolder cs_holder(OneLoopCS);
+			bool wait;
+			DWORD et;
+
 			if(Running)
 			{
-				bool wait = !Owner->FillL2Buffer(false, true); // fill
-				if(GetTerminated()) break;
-				DWORD et = GetTickCount();
-				TVPPushEnvironNoise(&et, sizeof(et));
+				volatile tTJSCriticalSectionHolder cs_holder(OneLoopCS);
+				wait = !Owner->FillL2Buffer(false, true); // fill
+			}
 
+			if(GetTerminated()) break;
+
+			if(Running)
+			{
+				et = GetTickCount();
+				TVPPushEnvironNoise(&et, sizeof(et));
 				if(wait)
 				{
 					// buffer is full; sleep longer
 					DWORD elapsed = et -st;
 					if(elapsed < TVP_WSB_DECODE_THREAD_SLEEP_TIME)
+					{
 						Event.WaitFor(
 							TVP_WSB_DECODE_THREAD_SLEEP_TIME - elapsed);
+					}
 				}
 				else
 				{
@@ -1835,6 +1844,7 @@ void tTVPWaveSoundBufferDecodeThread::Interrupt()
 	// interrupt the thread
 	if(!Running) return;
 	SetPriority(TVPDecodeThreadHighPriority);
+	Event.Set();
 	tTJSCriticalSectionHolder cs_holder(OneLoopCS);
 		// this ensures that this function stops the decoding
 	Running = false;
