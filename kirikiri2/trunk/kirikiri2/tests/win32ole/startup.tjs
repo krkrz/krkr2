@@ -1,0 +1,50 @@
+Plugins.link("win32ole.dll");
+
+var win = new Window();
+win.setInnerSize(420, 440);
+win.visible = true;
+
+// IE はりつけ
+var ie = new ActiveX("Shell.Explorer.2", win);
+
+// 場所とサイズを指定して表示
+ie.setPos(10,10);
+ie.setSize(400,200);
+ie.visible = true;
+
+// IEコンポーネントは、Asynchronous Pluggable Protocols に対応しているので
+// krkr: プロトコル指定で、
+// アーカイブ中のファイルも開くことができる
+ie.Navigate2("krkr:test.html");
+
+// 外部UIハンドラ登録。空で指定するとコンテキストメニューが消える
+//ie.setExternalUI();
+
+// イベントハンドラ用のクラス
+class WebEventHandler {
+    // イベント名に合致するファンクションが呼び出される
+    function DocumentComplete(disp,url) {
+        Debug.message("document complete!!");
+    }
+};
+// 第一引数がイベントの種別の名前。タイプライブラリに登録されている必要がある。
+ie.addEvent("DWebBrowserEvents2", new WebEventHandler());
+
+// MediaPlayerはりつけ
+var mp = new ActiveX("MediaPlayer.MediaPlayer.1", win);
+mp.setPos(10,220);
+mp.setSize(400,200);
+mp.visible = true;
+mp.AutoStart = true;
+//mp.Open("c:test.wma");
+
+// EXCEL 呼び出し
+var	excel = new WIN32OLE("Excel.Application");
+excel.Visible = true;
+var workbook = excel.Workbooks.Add();
+var worksheet = workbook.Worksheets(1);
+worksheet.Range("A1").value = 99;
+worksheet.Range("A2").value = 10;
+// 定数情報の取得
+excel.getConstant();
+Debug.message("xlinfo:" + excel.xlInfo);

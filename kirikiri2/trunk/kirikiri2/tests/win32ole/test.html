@@ -1,0 +1,44 @@
+<script>
+function showMember(obj)
+{
+	document.write("<table border=1><tr><th>名前 <th>型 <th>値");
+	for (member in obj) {
+		var value = obj[member];
+	    document.write("<tr>");
+	    document.write("<td>" + member);
+	    document.write("<td>" + typeof(value));
+	    document.write("<td>" + value);
+	    document.writeln("</tr>");
+	}
+	document.write("</table>");
+}
+</script>
+
+<h1>てすとページ</h1>
+
+<p>
+吉里吉里の実行パス:
+<script>
+document.write(window.external.System.exePath)
+</script>
+
+<p>
+グローバルメンバ一覧
+<script>showMember(window.external)</script>
+
+<p>
+System メンバ一覧
+<script>showMember(window.external.System)</script>
+
+<p>
+Layer メンバ一覧
+<script>showMember(window.external.Layer)</script>
+
+<script>
+window.external.Debug.message("test");
+window.external.Debug.message(12345);
+window.external.Debug.message(window.external.System);
+</script>
+
+<p>
+<button onclick='window.external.System.terminate()'>吉里吉里を終了させる</button>
