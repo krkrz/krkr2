@@ -3062,6 +3062,7 @@ class KAGWindow extends Window
 	{
 		// レンダリング済みフォントを現在の操作対象のレイヤに選択
 		// されているフォントにマッピングする
+		current.decideSizeChange();
 		current.lineLayer.font.mapPrerenderedFont(storage);
 	}
 
