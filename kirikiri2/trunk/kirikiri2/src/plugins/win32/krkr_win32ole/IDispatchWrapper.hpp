@@ -24,11 +24,14 @@ protected:
 	vector<DISPID> methodEnums;
 	int methodEnumsCount;
 
-	int Construct(VARIANT *pvarResult, int argc, VARIANT *argv, tjs_error &err);
+	static int Construct(iTJSDispatch2 *obj, VARIANT *pvarResult, int argc, VARIANT *argv, tjs_error &err);
+public:
+	static HRESULT InvokeEx(iTJSDispatch2 *obj, const tjs_char *methodName, WORD wFlags, DISPPARAMS *pdp, VARIANT *pvarRes, EXCEPINFO *pei, DISPID id=0);
 	
 public:
 	IDispatchWrapper(iTJSDispatch2 *obj);
 	~IDispatchWrapper();
+	
 	
 	//----------------------------------------------------------------------------
 	// IUnknown 実装
@@ -181,6 +184,43 @@ public:
 		iTJSDispatch2 *objthis
 		) {
 		return Invoke(DISPATCH_PROPERTYPUT, membername, NULL, 1, (class tTJSVariant**)&param);
+	}
+};
+
+
+/**
+ * IDispatch 直下メソッド用 iTJSDispatch2 ラッパー
+ */
+class iTJSDispatch2WrapperForMethod : public tTJSDispatch
+{
+protected:
+	IDispatch *dispatch;
+	ttstr method;
+	
+public:
+	/// コンストラクタ
+	iTJSDispatch2WrapperForMethod(IDispatch *dispatch, const tjs_char *method) : dispatch(dispatch), method(method) {
+		if (dispatch) {
+			dispatch->AddRef();
+		}
+	}
+	
+	/// デストラクタ
+	~iTJSDispatch2WrapperForMethod() {
+		if (dispatch) {
+			dispatch->Release();
+		}
+	}
+
+	/// 関数呼び出し
+	tjs_error TJS_INTF_METHOD FuncCall(
+		tjs_uint32 flag, const tjs_char * membername, tjs_uint32 *hint,
+		tTJSVariant *result,
+		tjs_int numparams, tTJSVariant **param, iTJSDispatch2 *objthis) {
+		if (membername != NULL) {
+			return DISP_E_MEMBERNOTFOUND;
+		}
+		return iTJSDispatch2Wrapper::Invoke(dispatch, DISPATCH_METHOD|DISPATCH_PROPERTYGET, method.c_str(), result, numparams, param);
 	}
 };
 
