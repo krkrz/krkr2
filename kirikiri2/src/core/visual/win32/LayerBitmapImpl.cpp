@@ -406,6 +406,8 @@ void TVPMapPrerenderedFont(const tTVPFont & font, const ttstr & storage)
 	}
 
 	TVPGlobalFontStateMagic ++; // increase magic number
+
+	TVPClearFontCache(); // clear font cache
 }
 //---------------------------------------------------------------------------
 void TVPUnmapPrerenderedFont(const tTVPFont & font)
@@ -1992,12 +1994,16 @@ bool tTVPNativeBaseBitmap::SelectFont(tjs_uint32 flags, const ttstr &caption,
 //---------------------------------------------------------------------------
 void tTVPNativeBaseBitmap::MapPrerenderedFont(const ttstr & storage)
 {
+	ApplyFont();
 	TVPMapPrerenderedFont(Font, storage);
+	FontChanged = true;
 }
 //---------------------------------------------------------------------------
 void tTVPNativeBaseBitmap::UnmapPrerenderedFont()
 {
+	ApplyFont();
 	TVPUnmapPrerenderedFont(Font);
+	FontChanged = true;
 }
 //---------------------------------------------------------------------------
 struct tTVPDrawTextData
