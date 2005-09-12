@@ -6661,13 +6661,15 @@ void tTVPLayerManager::PrimaryMouseUp(tjs_int x, tjs_int y, tTVPMouseButton mb,
 
 	if(l)
 	{
+		int orig_x = x, orig_y = y;
+
 		l->FromPrimaryCoordinates(x, y);
 		l->FireMouseUp(x, y, mb, flags);
 
 		if(!TVPIsAnyMouseButtonPressedInShiftStateFlags(flags))
 		{
 			ReleaseCapture();
-			PrimaryMouseMove(x, y, flags); // force recheck current under-cursor layer
+			PrimaryMouseMove(orig_x, orig_y, flags); // force recheck current under-cursor layer
 		}
 	}
 }
