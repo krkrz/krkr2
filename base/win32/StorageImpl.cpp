@@ -893,9 +893,9 @@ HRESULT STDMETHODCALLTYPE tTVPIStreamAdapter::UnlockRegion(ULARGE_INTEGER libOff
 //---------------------------------------------------------------------------
 HRESULT STDMETHODCALLTYPE tTVPIStreamAdapter::Stat(STATSTG *pstatstg, DWORD grfStatFlag)
 {
-	// Only pstatstg->cbSize is to be stored.
-	// This method dare to return E_NOTIMPL because this implements the
-	// method incompletely.
+	// This method imcompletely fills the target structure, because some
+	// informations like access mode or stream name are already lost
+	// at this point.
 
 	if(pstatstg)
 	{
@@ -932,6 +932,10 @@ HRESULT STDMETHODCALLTYPE tTVPIStreamAdapter::Stat(STATSTG *pstatstg, DWORD grfS
 		pstatstg->grfLocksSupported = 0;
 
 		// grfStatBits unknown
+	}
+	else
+	{
+		return E_INVALIDARG;
 	}
 
 	return S_OK;
