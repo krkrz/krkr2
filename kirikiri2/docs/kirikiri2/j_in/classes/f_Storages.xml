@@ -87,12 +87,12 @@
 			</desc>
 		</argitem>
 	</arg>
-	<result>発見された場所を統一ストレージ名で返ります。見つからなかった場合は空文字列が返ります。</result>
+	<result>発見された場所が統一ストレージ名で返ります。見つからなかった場合は空文字列が返ります。</result>
 	<desc>
 		　storage で指定されたストレージを<kw>自動検索パス</kw>から検索します。<r/>
 	</desc>
 	<ref>Storages.getFullPath</ref>
-	<ref>Storaegs.isExistentStorage</ref>
+	<ref>Storages.isExistentStorage</ref>
 </member>
 
 <member>
