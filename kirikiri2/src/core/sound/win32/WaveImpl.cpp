@@ -2571,7 +2571,7 @@ bool tTJSNI_WaveSoundBuffer::FillBuffer(bool firstwrite, bool allowpause)
 		bufferremain = L2BufferRemain;
 	}
 
-	if(Thread->GetRunning() && bufferremain < L2BufferUnits / 4)
+	if(Thread->GetRunning() && (bufferremain*2+bufferremain/2) < L2BufferUnits )
 		Thread->SetPriority(ttpNormal);
 
 	// check buffer playing position
