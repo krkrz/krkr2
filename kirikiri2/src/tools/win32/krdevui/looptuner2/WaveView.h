@@ -97,6 +97,7 @@ public:
 
 	void __fastcall DeleteItem();
 	bool __fastcall CanDeleteItem() const;
+	void __fastcall ClearAllLabels();
 
 	__property TNotifyPopupEvent OnNotifyPopup =
 		{ read = FOnNotifyPopup, write = FOnNotifyPopup };
@@ -300,7 +301,7 @@ public:
 	__property int HoveredLabel = { read = FHoveredLabel, write = SetHoveredLabel };
 	__property int FocusedLabel = { read = FFocusedLabel, write = SetFocusedLabel };
 
-	void __fastcall CreateNewLabel();
+	void __fastcall CreateNewLabel(int pos = -1);
 
 //-- mouse input
 private:

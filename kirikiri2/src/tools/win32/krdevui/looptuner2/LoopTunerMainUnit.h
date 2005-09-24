@@ -142,9 +142,14 @@ __published:	// IDE 管理のコンポーネント
 	TAction *ShowToolBarAction;
 	TAction *ShowTotalViewAction;
 	TAction *ShowStatusBarAction;
+	TAction *NewLinkOnPlayAction;
+	TAction *ClearAllLabelsAction;
 	TMenuItem *ShowToolBarMenuItem;
 	TMenuItem *ShowTotalViewMenuItem;
 	TMenuItem *ShowStatusBarMenuItem;
+	TMenuItem *NewLinkOnPlayMenuItem;
+	TMenuItem *NewLinkOnPlay_A_MenuItem;
+	TMenuItem *NewLinkOnPlay_S_MenuItem;
 	void __fastcall OpenActionExecute(TObject *Sender);
 	void __fastcall ZoomInActionExecute(TObject *Sender);
 	void __fastcall ZoomOutActionExecute(TObject *Sender);
@@ -186,6 +191,8 @@ __published:	// IDE 管理のコンポーネント
 	void __fastcall ShowStatusBarActionExecute(TObject *Sender);
 	void __fastcall ShowTotalViewActionExecute(TObject *Sender);
 	void __fastcall ShowToolBarActionExecute(TObject *Sender);
+	void __fastcall ClearAllLabelsActionExecute(TObject *Sender);
+	void __fastcall NewLinkOnPlayActionExecute(TObject *Sender);
 private:	// ユーザー宣言
 	TWaveReader * Reader;
 	TWaveView *WaveView;

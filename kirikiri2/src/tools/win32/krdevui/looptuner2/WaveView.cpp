@@ -365,6 +365,18 @@ bool __fastcall TWaveView::CanDeleteItem() const
 	return FFocusedLink != -1 || FFocusedLabel != -1;
 }
 //---------------------------------------------------------------------------
+void __fastcall TWaveView::ClearAllLabels()
+{
+	// delete all labels
+	FocusedLabel = -1;
+	HoveredLabel = -1;
+	Labels.clear();
+	NotifyLabelChanged();
+	DoubleBuffered = false;
+	Invalidate();
+	PushUndo();
+}
+//---------------------------------------------------------------------------
 void __fastcall TWaveView::CreateParams(TCreateParams &params)
 {
 	TCustomControl::CreateParams(params);
@@ -2007,12 +2019,12 @@ void __fastcall TWaveView::CreateNewLink()
 	PushUndo(); //==== push undo
 }
 //---------------------------------------------------------------------------
-void __fastcall TWaveView::CreateNewLabel()
+void __fastcall TWaveView::CreateNewLabel(int pos)
 {
 	// create new label at current caret position
 	if(!FReader || !FReader->ReadDone) return;
 
-	int pos = GetAttentionPos();
+	if(pos == -1) pos = GetAttentionPos();
 	tTVPWaveLabel label;
 	label.Position = pos;
 
