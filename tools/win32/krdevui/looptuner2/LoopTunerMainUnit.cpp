@@ -501,6 +501,19 @@ void __fastcall TTSSLoopTuner2MainForm::EditLabelDetailActionExecute(
 	WaveView->PerformLabelDoubleClick();
 }
 //---------------------------------------------------------------------------
+void __fastcall TTSSLoopTuner2MainForm::ClearAllLabelsActionExecute(TObject *Sender)
+{
+	WaveView->ClearAllLabels();
+}
+//---------------------------------------------------------------------------
+void __fastcall TTSSLoopTuner2MainForm::NewLinkOnPlayActionExecute(
+	  TObject *Sender)
+{
+	int pos = (int)GetCurrentPlayingPos();
+	if(pos != -1)
+		WaveView->CreateNewLabel(pos);
+}
+//---------------------------------------------------------------------------
 void __fastcall TTSSLoopTuner2MainForm::PlayFromStartActionExecute(TObject *Sender)
 {
 	PlayFrom(0);
@@ -649,6 +662,7 @@ void __fastcall TTSSLoopTuner2MainForm::ApplicationEventsIdle(TObject *Sender,
 
 		StatusBar->Panels->Items[3]->Text = "Ä¶’† " + Reader->SamplePosToTimeString(pos);
 		StopPlayAction->Enabled = true;
+		NewLinkOnPlayAction->Enabled = true;
 	}
 	else
 	{
@@ -657,6 +671,7 @@ void __fastcall TTSSLoopTuner2MainForm::ApplicationEventsIdle(TObject *Sender,
 
 		StatusBar->Panels->Items[3]->Text = "’âŽ~";
 		StopPlayAction->Enabled = false;
+		NewLinkOnPlayAction->Enabled = false;
 	}
 
 	UndoAction->Enabled = WaveView->CanUndo();
@@ -666,6 +681,7 @@ void __fastcall TTSSLoopTuner2MainForm::ApplicationEventsIdle(TObject *Sender,
 	EditLabelDetailAction->Enabled = WaveView->FocusedLabel != -1;
 	GotoLinkFromAction->Enabled = WaveView->FocusedLink != -1;
 	GotoLinkToAction->Enabled = WaveView->FocusedLink != -1;
+	ClearAllLabelsAction->Enabled = WaveView->GetLabels().size() != 0;
 
 	bool en = Reader && Reader->ReadDone;
 	SaveAction            ->Enabled  = en;
@@ -951,7 +967,6 @@ void __fastcall TTSSLoopTuner2MainForm::TotalViewDoubleClick(TObject *Sender, in
 	if(!FollowMarkerAction->Checked) FollowMarkerActionExecute(this);
 }
 //---------------------------------------------------------------------------
-
 
 
 
