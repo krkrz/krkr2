@@ -1830,7 +1830,7 @@ tjs_int tTJSLexicalAnalyzer::GetNext(tjs_int &value)
 					tTJSVariant v;
 					tTJSInternalParseStringResult res =
 						TJSInternalParseString(v, &Current,
-							data.Delimiter, TJS_W('&'));
+							data.Delimiter, TJS_W('&')!=0);
 					if(res == psrDelimiter)
 					{
 						// embeddable expression mode ended
