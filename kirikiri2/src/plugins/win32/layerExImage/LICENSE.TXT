@@ -1,7 +1,6 @@
 
 本ソースは一部で CxImage から参照したコードを使用しています。
-Go Watanabe / go@denpa.org
-
+追加コピーライト Go Watanabe / go@denpa.org
 
 -----------------------------------------------------------------------------
 This copy of the CxImage notices is provided for your convenience. In case of

@@ -9,8 +9,6 @@
 class NI_LayerExImage : public NI_LayerExBase
 {
 public:
-	NI_LayerExImage(iTJSDispatch2 *layerobj) : NI_LayerExBase(layerobj) {};
-	
 	/**
 	 * ルックアップテーブル反映
 	 * @param pLut lookup table

@@ -17,33 +17,6 @@ static void log(const tjs_char *format, ...)
 
 #include "LayerExImage.h"
 
-// クラスID
-static tjs_int32 ClassID_LayerExImage = -1;
-
-/**
- * レイヤオブジェクトからレイヤ拡張ネイティブインスタンスを取得する。
- * ネイティブインスタンスを持ってない場合は自動的に割り当てる
- * @param objthis レイヤオブジェクト
- * @return Layer拡張書き込み用ネイティブインスタンス。取得失敗したら NULL
- */
-NI_LayerExImage *
-getLayerExImageNative(iTJSDispatch2 *layerobj)
-{
-	if (!layerobj) return NULL;
-
-	NI_LayerExImage *_this;
-	if (TJS_FAILED(layerobj->NativeInstanceSupport(TJS_NIS_GETINSTANCE,
-												   ClassID_LayerExImage, (iTJSNativeInstance**)&_this))) {
-		_this = new NI_LayerExImage(layerobj);
-		if (TJS_FAILED(layerobj->NativeInstanceSupport(TJS_NIS_REGISTER,
-													   ClassID_LayerExImage, (iTJSNativeInstance **)&_this))) {
-			return NULL;
-		}
-	}
-	_this->reset(layerobj);
-	return _this;
-}
-
 /**
  * 明度とコントラスト
  * @param brightness 明度 -255 ～ 255, 負数の場合は暗くなる
@@ -61,8 +34,9 @@ public:
 		if (numparams < 1) return TJS_E_BADPARAMCOUNT;
 
 		NI_LayerExImage *image;
-		if ((image = getLayerExImageNative(objthis)) == NULL) return TJS_E_NATIVECLASSCRASH;
-		
+		if ((image = (NI_LayerExImage*)NI_LayerExBase::getNative(objthis)) == NULL) return TJS_E_NATIVECLASSCRASH;
+
+		image->reset(objthis);
 		image->light(*param[0], numparams > 1 ? (int)*param[1] : 0);
 		image->redraw(objthis);
 		
@@ -88,8 +62,9 @@ public:
 		if (numparams < 2) return TJS_E_BADPARAMCOUNT;
 
 		NI_LayerExImage *image;
-		if ((image = getLayerExImageNative(objthis)) == NULL) return TJS_E_NATIVECLASSCRASH;
+		if ((image = (NI_LayerExImage*)NI_LayerExBase::getNative(objthis)) == NULL) return TJS_E_NATIVECLASSCRASH;
 		
+		image->reset(objthis);
 		image->colorize(*param[0], *param[1], numparams > 2 ? *param[2] : 1.0f);
 		image->redraw(objthis);
 		
@@ -110,10 +85,12 @@ public:
 		tTJSVariant *result,
 		tjs_int numparams, tTJSVariant **param, iTJSDispatch2 *objthis) {
 
-		NI_LayerExImage *image;
-		if ((image = getLayerExImageNative(objthis)) == NULL) return TJS_E_NATIVECLASSCRASH;
-		
 		if (numparams < 1) return TJS_E_BADPARAMCOUNT;
+
+		NI_LayerExImage *image;
+		if ((image = (NI_LayerExImage*)NI_LayerExBase::getNative(objthis)) == NULL) return TJS_E_NATIVECLASSCRASH;
+		
+		image->reset(objthis);
 		image->noise(*param[0]);
 		image->redraw(objthis);
 		
@@ -176,8 +153,10 @@ extern "C" HRESULT _stdcall _export V2Link(iTVPFunctionExporter *exporter)
 	// スタブの初期化(必ず記述する)
 	TVPInitImportStub(exporter);
 
-	// クラスオブジェクト登録
-	ClassID_LayerExImage = TJSRegisterNativeClass(TJS_W("LayerExImage"));
+	// クラスオブジェクトチェック
+	if ((NI_LayerExBase::classId = TJSFindNativeClassID(L"LayerExBase")) <= 0) {
+		NI_LayerExBase::classId = TJSRegisterNativeClass(L"LayerExBase");
+	}
 
 	{
 		// TJS のグローバルオブジェクトを取得する
@@ -188,6 +167,9 @@ extern "C" HRESULT _stdcall _export V2Link(iTVPFunctionExporter *exporter)
 		TVPExecuteExpression(TJS_W("Layer"), &varScripts);
 		iTJSDispatch2 *dispatch = varScripts.AsObjectNoAddRef();
 		if (dispatch) {
+			// プロパティ初期化
+			NI_LayerExBase::init(dispatch);
+
 			addMethod(dispatch, L"light",  new tLightFunction());
 			addMethod(dispatch, L"colorize",  new tColorizeFunction());
 			addMethod(dispatch, L"noise",  new tNoiseFunction());
@@ -217,6 +199,9 @@ extern "C" HRESULT _stdcall _export V2Unlink()
 	// 大きくなっていれば失敗ということにする。
 	if(TVPPluginGlobalRefCount > GlobalRefCountAtInit) return E_FAIL;
 		// E_FAIL が帰ると、Plugins.unlink メソッドは偽を返す
+
+	// プロパティ開放
+	NI_LayerExBase::unInit();
 
 	// - まず、TJS のグローバルオブジェクトを取得する
 	iTJSDispatch2 * global = TVPGetScriptDispatch();
