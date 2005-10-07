@@ -289,7 +289,7 @@ class MessageLayer extends KAGLayer
 	/*C*/var bold; // ボールドで描画するか
 	/*CS*/var defaultFace = "user"; // デフォルトのフォント
 	/*C*/var userFace = "ＭＳ Ｐ明朝"; // ユーザの選んだフォント
-	/*C*/var face; // フォント
+	/*C*/var fontFace; // フォント
 	/*CS*/var defaultChColor = 0xffffff; // デフォルトの文字色
 	/*C*/var chColor; // 文字色
 	/*C*/var defaultAntialiased = true; // デフォルトでアンチエイリアスを掛けるか
@@ -565,12 +565,12 @@ class MessageLayer extends KAGLayer
 		// 各デフォルトの設定を書き戻し
 		if(!vertical)
 		{
-			lineLayer.font.face = face = defaultFace == 'user' ? userFace : defaultFace;
+			lineLayer.font.face = fontFace = defaultFace == 'user' ? userFace : defaultFace;
 			lineLayer.font.angle = 0;
 		}
 		else
 		{
-			lineLayer.font.face = '@' + (face = defaultFace == 'user' ? userFace : defaultFace);
+			lineLayer.font.face = '@' + (fontFace = defaultFace == 'user' ? userFace : defaultFace);
 			lineLayer.font.angle = 2700;
 		}
 
@@ -605,17 +605,17 @@ class MessageLayer extends KAGLayer
 			if(elmface == 'default')
 			{
 				lineLayer.font.angle = 0;
-				lineLayer.font.face = face =  defaultFace;
+				lineLayer.font.face = fontFace =  defaultFace;
 			}
 			else if(elmface == 'user')
 			{
 				lineLayer.font.angle = 0;
-				lineLayer.font.face = face = userFace;
+				lineLayer.font.face = fontFace = userFace;
 			}
 			else if(elmface !== void)
 			{
 				lineLayer.font.angle = 0;
-				lineLayer.font.face = face = elmface;
+				lineLayer.font.face = fontFace = elmface;
 			}
 		}
 		else
@@ -623,19 +623,19 @@ class MessageLayer extends KAGLayer
 			var elmface = elm.face;
 			if(elmface == 'default')
 			{
-				var f = '@' + (face = defaultFace);
+				var f = '@' + (fontFace = defaultFace);
 				lineLayer.font.angle = 2700;
 				lineLayer.font.face = f;
 			}
 			else if(elmface == 'user')
 			{
-				var f = '@' + (face = userFace);
+				var f = '@' + (fontFace = userFace);
 				lineLayer.font.angle = 2700;
 				lineLayer.font.face = f;
 			}
 			else if(elmface !== void)
 			{
-				var f = '@' + (face = elmface);
+				var f = '@' + (fontFace = elmface);
 				lineLayer.font.angle = 2700;
 				lineLayer.font.face = f;
 			}
@@ -2593,7 +2593,7 @@ class MessageLayer extends KAGLayer
 		bold = src.bold;
 		defaultFace = src.defaultFace;
 		userFace = src.userFace;
-		face = src.face;
+		fontFace = src.fontFace;
 		defaultChColor = src.defaultChColor;
 		chColor = src.chColor;
 		defaultAntialiased = src.defaultAntialiased;
