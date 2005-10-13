@@ -756,9 +756,19 @@ void TVPInitializeBaseSystems()
 		TVPSetCurrentDirectory(curdir);
 	}
 
-	const tjs_char name_msgmap [] = TJS_W("msgmap.tjs");
-	if(TVPIsExistentStorage(name_msgmap))
-		TVPExecuteStorage(name_msgmap, NULL, false, TJS_W(""));
+	// load message map file
+	bool load_msgmap = true;
+	if(TVPGetCommandLine(TJS_W("-loadmsgmap"), &v))
+	{
+		if(ttstr(v) == TJS_W("no")) load_msgmap = false;
+	}
+
+	if(load_msgmap)
+	{
+		const tjs_char name_msgmap [] = TJS_W("msgmap.tjs");
+		if(TVPIsExistentStorage(name_msgmap))
+			TVPExecuteStorage(name_msgmap, NULL, false, TJS_W(""));
+	}
 }
 //---------------------------------------------------------------------------
 
