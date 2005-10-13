@@ -11,6 +11,7 @@
 #include "tjsCommHead.h"
 
 #include <cderr.h>
+#include <objbase.h>
 
 #include "MsgIntf.h"
 
