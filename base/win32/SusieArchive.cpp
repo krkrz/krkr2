@@ -19,6 +19,7 @@
 #include "XP3Archive.h"
 #include "MsgIntf.h"
 #include "SysInitIntf.h"
+#include <algorithm>
 
 //---------------------------------------------------------------------------
 
