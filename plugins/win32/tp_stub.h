@@ -4690,24 +4690,24 @@ inline bool TVPIsAnyMouseButtonPressedInShiftStateFlags(tjs_uint32 state)
 // JoyPad virtual key codes
 //---------------------------------------------------------------------------
 // These VKs are KIRIKIRI specific. Not widely used.
-#define VK_PAD_FIRST	0xB0   // first PAD related key code
-#define VK_PADLEFT		0xB5
-#define VK_PADUP		0xB6
-#define VK_PADRIGHT		0xB7
-#define VK_PADDOWN		0xB8
-#define VK_PAD1			0xC0
-#define VK_PAD2			0xC1
-#define VK_PAD3			0xC2
-#define VK_PAD4			0xC3
-#define VK_PAD5			0xC4
-#define VK_PAD6			0xC5
-#define VK_PAD7			0xC6
-#define VK_PAD8			0xC7
-#define VK_PAD9			0xC8
-#define VK_PAD10		0xC9
-#define VK_PADANY		0xDF   // returns whether any one of pad buttons are pressed,
-							   // in System.getKeyState
-#define VK_PAD_LAST		0xDF   // last PAD related key code
+#define VK_PAD_FIRST	0x1B0   // first PAD related key code
+#define VK_PADLEFT		0x1B5
+#define VK_PADUP		0x1B6
+#define VK_PADRIGHT		0x1B7
+#define VK_PADDOWN		0x1B8
+#define VK_PAD1			0x1C0
+#define VK_PAD2			0x1C1
+#define VK_PAD3			0x1C2
+#define VK_PAD4			0x1C3
+#define VK_PAD5			0x1C4
+#define VK_PAD6			0x1C5
+#define VK_PAD7			0x1C6
+#define VK_PAD8			0x1C7
+#define VK_PAD9			0x1C8
+#define VK_PAD10		0x1C9
+#define VK_PADANY		0x1DF   // returns whether any one of pad buttons are pressed,
+							    // in System.getKeyState
+#define VK_PAD_LAST		0x1DF   // last PAD related key code
 //---------------------------------------------------------------------------
 
 
