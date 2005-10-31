@@ -175,7 +175,7 @@ struct tTVPHWExceptionData
 	tjs_int Code;
 	tjs_uint8 *EIP;
 	tjs_uint32 *ESP;
-	int AccessFlag; // for EAccessViolation (0=read, 1=write)
+	int AccessFlag; // for EAccessViolation (0=read, 1=write, 8=execute)
 	void *AccessTarget; // for EAccessViolation
 	CONTEXT Context; // OS exception context
 	char Module[MAX_PATH]; // module name which caused the exception
@@ -608,8 +608,14 @@ void TVPDumpHWException()
 	if(d->Code == 11)
 	{
 		// EAccessViolation
-		TJS_sprintf(buf, TJS_W("(%ls access to 0x%p)"),
-			d->AccessFlag ? TJS_W("write") : TJS_W("read"), d->AccessTarget);
+		const tjs_char *mode = TJS_W("unknown");
+		if(d->AccessFlag == 0)
+			mode = TJS_W("read");
+		else if(d->AccessFlag == 1)
+			mode = TJS_W("write");
+		else if(d->AccessFlag == 8)
+			mode = TJS_W("execute");
+		TJS_sprintf(buf, TJS_W("(%ls access to 0x%p)"), mode, d->AccessTarget);
 		line += buf;
 	}
 

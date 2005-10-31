@@ -15,6 +15,8 @@ globaldef		TVPInterpLinTransAdditiveAlphaBlend_mmx_a
 globaldef		TVPInterpLinTransAdditiveAlphaBlend_o_mmx_a
 
 ;--------------------------------------------------------------------
+	segment_code
+;--------------------------------------------------------------------
 
 ;;[function_replace_by TVPCPUType & TVP_CPU_HAS_MMX] TVPLinTransCopy
 ;;void, TVPLinTransCopy_mmx_a, (tjs_uint32 *dest, tjs_int len, const tjs_uint32 *src,  tjs_int sx, tjs_int sy, tjs_int stepx, tjs_int stepy, tjs_int srcpitch)
