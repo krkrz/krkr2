@@ -187,15 +187,23 @@ private:
 		bool LineBufferUsing; // whether LineBuffer is used or not
 		tjs_uint MacroArgStackBase;
 		tjs_uint MacroArgStackDepth;
+		std::vector<tjs_int> ExcludeLevelStack;
+		std::vector<bool> IfLevelExecutedStack;
+        tjs_int ExcludeLevel;
+        tjs_int IfLevel;
 
 		tCallStackData(const ttstr &storage, const ttstr &label,
 			tjs_int offset, const ttstr &orglinestr, const ttstr &linebuffer,
 			tjs_int pos, bool linebufferusing, tjs_uint macroargstackbase,
-			tjs_uint macroargstackdepth) :
+			tjs_uint macroargstackdepth,
+			const std::vector<tjs_int> &excludelevelstack, tjs_int excludelevel,
+			const std::vector<bool> &iflevelexecutedstack, tjs_int iflevel) :
 			Storage(storage), Label(label), Offset(offset), OrgLineStr(orglinestr),
 			LineBuffer(linebuffer), Pos(pos), LineBufferUsing(linebufferusing),
 			MacroArgStackBase(macroargstackbase),
-			MacroArgStackDepth(macroargstackdepth) {;}
+			MacroArgStackDepth(macroargstackdepth),
+			ExcludeLevelStack(excludelevelstack), ExcludeLevel(excludelevel),
+			IfLevelExecutedStack(iflevelexecutedstack), IfLevel(iflevel) {;}
 	};
 	std::vector<tCallStackData> CallStack;
 
@@ -225,6 +233,9 @@ private:
 
 	tjs_int ExcludeLevel;
 	tjs_int IfLevel;
+
+	std::vector<tjs_int> ExcludeLevelStack;
+	std::vector<bool> IfLevelExecutedStack;
 
 	bool Interrupted;
 
@@ -260,6 +271,10 @@ private:
 
 	void PushCallStack();
 	void PopCallStack(const ttstr &storage, const ttstr &label);
+	void StoreIntStackToDic(iTJSDispatch2 *dic, std::vector<tjs_int> &stack, const tjs_char *membername);
+	void StoreBoolStackToDic(iTJSDispatch2 *dic, std::vector<bool> &stack, const tjs_char *membername);
+	void RestoreIntStackFromStr(std::vector<tjs_int> &stack, const ttstr &str);
+	void RestoreBoolStackFromStr(std::vector<bool> &stack, const ttstr &str);
 
 public:
 	void ClearCallStack();
