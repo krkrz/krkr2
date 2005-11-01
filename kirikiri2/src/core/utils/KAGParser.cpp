@@ -464,6 +464,8 @@ void tTJSNI_KAGParser::operator = (const tTJSNI_KAGParser & ref)
 	// copy ExcludeLevel, IfLevel
 	ExcludeLevel = ref.ExcludeLevel;
 	IfLevel = ref.IfLevel;
+	ExcludeLevelStack = ref.ExcludeLevelStack;
+	IfLevelExecutedStack = ref.IfLevelExecutedStack;
 }
 //---------------------------------------------------------------------------
 iTJSDispatch2 *tTJSNI_KAGParser::Store()
@@ -563,6 +565,15 @@ iTJSDispatch2 *tTJSNI_KAGParser::Store()
 				val = (tjs_int)i->MacroArgStackDepth;
 				dic->PropSet(TJS_MEMBERENSURE, TJS_W("macroArgStackDepth"), NULL,
 					&val, dic);
+				val = i->ExcludeLevel;
+				dic->PropSet(TJS_MEMBERENSURE, TJS_W("ExcludeLevel"), NULL,
+					&val, dic);
+				val = (tjs_int)i->IfLevel;
+				dic->PropSet(TJS_MEMBERENSURE, TJS_W("IfLevel"), NULL,
+					&val, dic);
+                
+				StoreIntStackToDic(dic, i->ExcludeLevelStack, TJS_W("ExcludeLevelStack"));
+				StoreBoolStackToDic(dic, i->IfLevelExecutedStack, TJS_W("IfLevelExecutedStack"));
 			}
 		}
 		
@@ -603,7 +614,14 @@ iTJSDispatch2 *tTJSNI_KAGParser::Store()
 
 		// ( RecordingMacro, RecordingMacroStr, RecordingMacroName are not stored)
 
-		// ( ExcludeLevel, IfLevel are not stored )
+
+		// ExcludeLevel, IfLevel, ExcludeLevelStack, IfLevelExecutedStack
+		val = ExcludeLevel;
+		dic->PropSet(TJS_MEMBERENSURE, TJS_W("ExcludeLevel"), NULL, &val, dic);
+		val = IfLevel;
+		dic->PropSet(TJS_MEMBERENSURE, TJS_W("IfLevel"), NULL, &val, dic);
+		StoreIntStackToDic(dic, ExcludeLevelStack, TJS_W("ExcludeLevelStack"));
+		StoreBoolStackToDic(dic, IfLevelExecutedStack, TJS_W("IfLevelExecutedStack"));
 
 		// store MacroArgStackBase, MacroArgStackDepth
 		val = (tjs_int)MacroArgStackBase;
@@ -621,6 +639,77 @@ iTJSDispatch2 *tTJSNI_KAGParser::Store()
 		throw;
 	}
 	return dic;
+}
+//---------------------------------------------------------------------------
+void tTJSNI_KAGParser::StoreIntStackToDic(iTJSDispatch2 *dic, std::vector<tjs_int> &stack, const tjs_char *membername)
+{
+	ttstr stack_str;
+	const static tjs_char hex[] = TJS_W("0123456789abcdef");
+	tjs_char *p = stack_str.AllocBuffer(stack.size() * 8);
+	for(std::vector<tjs_int>::iterator it = stack.begin(); it != stack.end(); ++it)
+	{
+		tjs_int v = *it;
+		p[0] = hex[(v >> 28) & 0x000f];
+		p[1] = hex[(v >> 24) & 0x000f];
+		p[2] = hex[(v >> 20) & 0x000f];
+		p[3] = hex[(v >> 16) & 0x000f];
+		p[4] = hex[(v >> 12) & 0x000f];
+		p[5] = hex[(v >>  8) & 0x000f];
+		p[6] = hex[(v >>  4) & 0x000f];
+		p[7] = hex[(v >>  0) & 0x000f];
+		p += 8;
+	}
+	*p = '\0';
+	stack_str.FixLen();
+	tTJSVariant val;
+	val = stack_str;
+	dic->PropSet(TJS_MEMBERENSURE, membername, NULL, &val, dic);
+}
+
+void tTJSNI_KAGParser::RestoreIntStackFromStr(std::vector<tjs_int> &stack, const ttstr &str)
+{
+	stack.clear();
+	tjs_int len = str.length() / 8;
+	for(tjs_int i = 0; i < len; ++i)
+	{
+		stack.push_back(
+			(((str[i+0] <= '9') ? (str[i+0] - '0') : (str[i+0] - 'a' + 10)) << 28) |
+			(((str[i+1] <= '9') ? (str[i+1] - '0') : (str[i+1] - 'a' + 10)) << 24) |
+			(((str[i+2] <= '9') ? (str[i+2] - '0') : (str[i+2] - 'a' + 10)) << 20) |
+			(((str[i+3] <= '9') ? (str[i+3] - '0') : (str[i+3] - 'a' + 10)) << 16) |
+			(((str[i+4] <= '9') ? (str[i+4] - '0') : (str[i+4] - 'a' + 10)) << 12) |
+			(((str[i+5] <= '9') ? (str[i+5] - '0') : (str[i+5] - 'a' + 10)) <<  8) |
+			(((str[i+6] <= '9') ? (str[i+6] - '0') : (str[i+6] - 'a' + 10)) <<  4) |
+			(((str[i+7] <= '9') ? (str[i+7] - '0') : (str[i+7] - 'a' + 10)) <<  0)
+		);
+	}
+}
+//---------------------------------------------------------------------------
+void tTJSNI_KAGParser::RestoreBoolStackFromStr(std::vector<bool> &stack, const ttstr &str)
+{
+	stack.clear();
+	tjs_int len = str.length();
+	for(tjs_int i = 0; i < len; ++i)
+	{
+		stack.push_back(str[i] == '1');
+	}
+}
+//---------------------------------------------------------------------------
+void tTJSNI_KAGParser::StoreBoolStackToDic(iTJSDispatch2 *dic, std::vector<bool> &stack, const tjs_char *membername)
+{
+	ttstr stack_str;
+	const static tjs_char bit[] = TJS_W("01");
+	tjs_char *p = stack_str.AllocBuffer(stack.size());
+	for(std::vector<bool>::iterator it = stack.begin(); it != stack.end(); ++it)
+	{
+		*p = bit[(tjs_int)(*it)];
+		++p;
+	}
+	*p = '\0';
+	stack_str.FixLen();
+	tTJSVariant val;
+	val = stack_str;
+	dic->PropSet(TJS_MEMBERENSURE, membername, NULL, &val, dic);
 }
 //---------------------------------------------------------------------------
 void tTJSNI_KAGParser::Restore(iTJSDispatch2 *dic)
@@ -705,6 +794,10 @@ void tTJSNI_KAGParser::Restore(iTJSDispatch2 *dic)
 				bool LineBufferUsing;
 				tjs_uint MacroArgStackBase;
 				tjs_uint MacroArgStackDepth;
+				tjs_int ExcludeLevel;
+				tjs_int IfLevel;
+				std::vector<tjs_int> ExcludeLevelStack;
+				std::vector<bool> IfLevelExecutedStack;
 
 				tTJSVariant val;
 
@@ -728,10 +821,24 @@ void tTJSNI_KAGParser::Restore(iTJSDispatch2 *dic)
 				MacroArgStackBase = (tjs_int)val;
 				dic.PropGet(0, TJS_W("macroArgStackDepth"), NULL, &val, NULL);
 				MacroArgStackDepth = (tjs_int)val;
+				dic.PropGet(0, TJS_W("ExcludeLevel"), NULL, &val, NULL);
+				ExcludeLevel = val;
+				dic.PropGet(0, TJS_W("IfLevel"), NULL, &val, NULL);
+				IfLevel = val;
+
+				ttstr stack_str;
+				dic.PropGet(0, TJS_W("ExcludeLevelStack"), NULL, &val, NULL);
+				stack_str = val;
+				RestoreIntStackFromStr(ExcludeLevelStack, stack_str);
+
+				dic.PropGet(0, TJS_W("IfLevelExecutedStack"), NULL, &val, NULL);
+				stack_str = val;
+				RestoreBoolStackFromStr(IfLevelExecutedStack, stack_str);
 
 				CallStack.push_back(tCallStackData(
 					Storage, Label, Offset, OrgLineStr, LineBuffer, Pos,
-						LineBufferUsing, MacroArgStackBase, MacroArgStackDepth));
+					LineBufferUsing, MacroArgStackBase, MacroArgStackDepth,
+					ExcludeLevelStack, ExcludeLevel, IfLevelExecutedStack, IfLevel));
 			}
 		}
 
@@ -754,6 +861,36 @@ void tTJSNI_KAGParser::Restore(iTJSDispatch2 *dic)
 		ClearBuffer(); // ensure re-loading the scenario
 		LoadScenario(storage);
 		GoToLabel(label);
+
+		// ExcludeLevel, IfLevel
+		val.Clear();
+		dic->PropGet(0, TJS_W("ExcludeLevel"), NULL,
+			&val, dic);
+		if(val.Type() != tvtVoid) ExcludeLevel = (tjs_int)val;
+		val.Clear();
+		dic->PropGet(0, TJS_W("IfLevel"), NULL,
+			&val, dic);
+		if(val.Type() != tvtVoid) IfLevel = (tjs_int)val;
+
+		// ExcludeLevelStack, IfLevelExecutedStack
+		val.Clear();
+		dic->PropGet(0, TJS_W("ExcludeLevelStack"), NULL, &val, dic);
+		if(val.Type() != tvtVoid)
+		{
+			ttstr stack_str;
+			stack_str = val;
+			RestoreIntStackFromStr(ExcludeLevelStack, stack_str);
+		}
+
+		val.Clear();
+		dic->PropGet(0, TJS_W("IfLevelExecutedStack"), NULL, &val, dic);
+		if(val.Type() != tvtVoid)
+		{
+			ttstr stack_str;
+			stack_str = val;
+			RestoreBoolStackFromStr(IfLevelExecutedStack, stack_str);
+		}
+
 
 		// restore MacroArgStackBase
 		val.Clear();
@@ -862,6 +999,8 @@ void tTJSNI_KAGParser::BreakConditionAndMacro()
 	// break condition state and macro recording
 	RecordingMacro = false;
 	ExcludeLevel = -1;
+	ExcludeLevelStack.clear();
+	IfLevelExecutedStack.clear();
 	IfLevel = 0;
 	PopMacroArgsTo(MacroArgStackBase);
 		// clear macro argument down to current base stack position
@@ -1141,7 +1280,8 @@ void tTJSNI_KAGParser::PushCallStack()
 
 	CallStack.push_back(tCallStackData(StorageName, labelname, CurLine - labelline,
 		curline_content,
-		LineBuffer, CurPos, LineBufferUsing, MacroArgStackBase, MacroArgStackDepth));
+		LineBuffer, CurPos, LineBufferUsing, MacroArgStackBase, MacroArgStackDepth,
+		ExcludeLevelStack, ExcludeLevel, IfLevelExecutedStack, IfLevel));
 	MacroArgStackBase = MacroArgStackDepth;
 }
 //---------------------------------------------------------------------------
@@ -1189,6 +1329,11 @@ void tTJSNI_KAGParser::PopCallStack(const ttstr &storage, const ttstr &label)
 			}
 		}
 		CurPos = data.Pos;
+
+        ExcludeLevelStack = data.ExcludeLevelStack;
+        ExcludeLevel = data.ExcludeLevel;
+        IfLevelExecutedStack = data.IfLevelExecutedStack;
+        IfLevel = data.IfLevel;
 
 		if(DebugLevel >= tkdlSimple)
 		{
@@ -1411,7 +1556,7 @@ parse_start:
 
 		// check special control tags
 		enum tSpecialTags
-		{ tag_other, tag_if, tag_ignore, tag_endif, tag_endignore,
+		{ tag_other, tag_if, tag_else, tag_elsif, tag_ignore, tag_endif, tag_endignore,
 			tag_emb, tag_macro, tag_endmacro, tag_macropop, tag_erasemacro,
 			tag_jump, tag_call, tag_return} tagkind;
 		static bool tag_checker_init = false;
@@ -1427,6 +1572,10 @@ parse_start:
 				ttstr(TJS_W("endif")), (tjs_int)tag_endif);
 			special_tags_hash.Add(
 				ttstr(TJS_W("endignore")), (tjs_int)tag_endignore);
+			special_tags_hash.Add(
+				ttstr(TJS_W("else")), (tjs_int)tag_else);
+			special_tags_hash.Add(
+				ttstr(TJS_W("elsif")), (tjs_int)tag_elsif);
 			special_tags_hash.Add(
 				ttstr(TJS_W("emb")), (tjs_int)tag_emb);
 			special_tags_hash.Add(
@@ -1551,39 +1700,94 @@ parse_start:
 					break;
 				}
 
-				// if/endif
+				// if/ignore
 				if(tagkind == tag_if || tagkind == tag_ignore)
 				{
-					tTJSVariant val;
-					ttstr exp;
-					DicObj->PropGet(0, __exp_name.c_str(), __exp_name.GetHint(), &val, DicObj);
-					exp = val;
-					if(exp == TJS_W(""))
-						TVPThrowExceptionMessage(TVPKAGSyntaxError);
-					TVPExecuteExpression(exp, &val);
 					IfLevel ++;
+					IfLevelExecutedStack.push_back(false);
+					ExcludeLevelStack.push_back(ExcludeLevel);
 
-					bool cond = val.operator bool();
-					if(tagkind == tag_if) cond = !cond;
-
-					if(cond)
+					if(ExcludeLevel == -1)
 					{
-						if(ExcludeLevel == -1)
+						tTJSVariant val;
+						ttstr exp;
+						DicObj->PropGet(0, __exp_name.c_str(), __exp_name.GetHint(), &val, DicObj);
+						exp = val;
+						if(exp == TJS_W(""))
+							TVPThrowExceptionMessage(TVPKAGSyntaxError);
+						TVPExecuteExpression(exp, &val);
+
+						bool cond = val.operator bool();
+
+						IfLevelExecutedStack.back() = cond;
+						if(!cond)
 						{
 							ExcludeLevel = IfLevel;
 						}
 					}
 				}
 
+				// elsif
+				if(tagkind == tag_elsif)
+				{
+					if(IfLevelExecutedStack.empty())
+					{
+						// no preceded if/ignore tag.
+						// should throw an exception?
+					}
+					else if(IfLevelExecutedStack.back())
+					{
+						ExcludeLevel = IfLevel;
+					}
+					else if(IfLevel == ExcludeLevel){
+						tTJSVariant val;
+						ttstr exp;
+						DicObj->PropGet(0, __exp_name.c_str(), __exp_name.GetHint(), &val, DicObj);
+						exp = val;
+						const std::string s = exp.AsStdString();
+						if(exp == TJS_W(""))
+							TVPThrowExceptionMessage(TVPKAGSyntaxError);
+						TVPExecuteExpression(exp, &val);
+
+						bool cond = val.operator bool();
+						if(cond)
+						{
+							IfLevelExecutedStack.back() = true;
+							ExcludeLevel = -1;
+						}
+					}
+				}
+
+				// else
+				if(tagkind == tag_else)
+				{
+					if(IfLevelExecutedStack.empty())
+					{
+						// no preceded if/ignore tag.
+						// should throw an exception?
+					}
+					else if(IfLevelExecutedStack.back())
+					{
+						ExcludeLevel = IfLevel;
+					}
+					else if(IfLevel == ExcludeLevel)
+					{
+						IfLevelExecutedStack.back() = true;
+						ExcludeLevel = -1;
+					}
+				}
 
 				// endif/endignore
 				if(tagkind == tag_endif || tagkind == tag_endignore)
 				{
 					// endif
-					if(IfLevel == ExcludeLevel)
+					if(!ExcludeLevelStack.empty())
 					{
-						ExcludeLevel = -1;
+						ExcludeLevel = ExcludeLevelStack.back();
+						ExcludeLevelStack.pop_back();
 					}
+					if(!IfLevelExecutedStack.empty())
+						IfLevelExecutedStack.pop_back();
 
 					IfLevel --;
 					if(IfLevel < 0) IfLevel = 0;
@@ -1955,7 +2159,7 @@ parse_start:
 
 			// special attibute processing
 			bool store = true;
-			if(!RecordingMacro && ExcludeLevel == -1)
+			if((!RecordingMacro && ExcludeLevel == -1) || tagkind == tag_elsif)
 			{
 				// process expression entity or macro argument
 				if(entity)
