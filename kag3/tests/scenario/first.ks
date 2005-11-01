@@ -124,7 +124,5 @@ yh
 @jump storage=infscroll.ks
 @jump storage=staffroll_test.ks
 @jump storage=layerdrag.ks
-
-5308
-5348
+@jump storage=else-elsif_test.ks
 
