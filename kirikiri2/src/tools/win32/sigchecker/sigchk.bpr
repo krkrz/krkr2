@@ -49,7 +49,7 @@ IncludeVerInfo=1
 AutoIncBuild=1
 MajorVer=1
 MinorVer=0
-Release=2
+Release=3
 Build=5
 Debug=0
 PreRelease=0
@@ -62,7 +62,7 @@ CodePage=932
 [Version Info Keys]
 CompanyName=kikyou.info
 FileDescription=Digital signature/file integrity check tool
-FileVersion=1.0.2.5
+FileVersion=1.0.3.5
 InternalName=sigchk
 LegalCopyright=(C) 2004, W.Dee All rights reserved.
 LegalTrademarks=
@@ -70,6 +70,9 @@ OriginalFilename=sigchk.exe
 ProductName=
 ProductVersion=1.0.0.0
 Comments=
+
+[Excluded Packages]
+$(BCB)\Bin\dclite50.bpl=Borland Integrated Translation Environment
 
 [HistoryLists\hlIncludePath]
 Count=3
@@ -108,10 +111,5 @@ RemoteDebug=0
 ShowInfoMsgs=0
 LinkDebugVcl=0
 LinkCGLIB=0
-
-[Language]
-ActiveLang=
-ProjectLang=
-RootDir=
   </IDEOPTIONS>
 </PROJECT>
