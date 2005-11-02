@@ -167,12 +167,12 @@ static bool CheckSignatureOfFile(AnsiString pubkey,
 	if(ofs == -1)
 	{
 		// separated
-		st = new TFileStream(signfn  + ".sig", fmOpenRead|fmShareDenyWrite);
+		st = new TFileStream(signfn  + ".sig", fmOpenRead);
 	}
 	else
 	{
 		// embedded
-		st = new TFileStream(signfn, fmOpenReadWrite|fmShareDenyWrite);
+		st = new TFileStream(signfn, fmOpenRead);
 		st->Position = ofs;
 	}
 	try
