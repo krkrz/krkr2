@@ -1088,21 +1088,87 @@
 			<format> TJS 式 </format>
 			<info>
 				　評価する TJS 式を指定します。この式の結果が false ( または 0 な
-				らば、endif タグまでの文章やタグが無視されます。<BR>
+				らば、elsif・else・endif タグまでの文章やタグが無視されます。<BR>
 			</info>
 		</attrib>
 	</attribs>
 
 	<remarks>
-		　式を評価し、その結果が false ( または 0 ) ならば、endif タグまでに
-		ある文章やタグが無視されます。<BR>
-		　逆に言うと ( というか普通はこういいますが ) 、式を評価し、その結果が
-		true ( または 0 以外 ) ならば、endif までにある文章やタグを実行し、
+		式を評価し、その結果が true ( または 0 以外 ) ならば、
+		elsif・else・endif のいずれかまでにある文章やタグを実行し、
 		そうでない場合は無視します。<BR>
 		　if ～ endif の間にはラベルを挟まないでください。<BR>
 	</remarks>
+
+	<example>
+		; 例1
+		[if exp="false"]<BR>
+		ここは表示されない<BR>
+		[else]<BR>
+		ここは表示される<BR>
+		[endif]<BR>
+		<BR>
+		; 例2
+		[if exp="false"]<BR>
+		ここは表示されない<BR>
+		[elsif exp="false"]<BR>
+		ここは表示されない<BR>
+		[else]<BR>
+		ここは表示される<BR>
+		[endif]<BR>
+		<BR>
+		; 例3
+		[if exp="false"]<BR>
+		ここは表示されない<BR>
+		[elsif exp="true"]<BR>
+		ここは表示される<BR>
+		[else]<BR>
+		ここは表示されない<BR>
+		[endif]<BR>
+		<BR>
+		; 例4
+		[if exp="true"]<BR>
+		ここは表示される<BR>
+		[elsif exp="true"]<BR>
+		ここは表示されない<BR>
+		[else]<BR>
+		ここは表示されない<BR>
+		[endif]<BR>
+		<BR>
+	</example>
 </tag>
 
+<tag name="else">
+	<shortinfo>if の中身が実行されなかったときに実行</shortinfo>
+	<group> 変数・TJS 操作 </group>
+	<remarks>
+		　<ref tag="if">if</ref> タグもしくは <ref tag="elsif">elsif</ref> タグ
+		と <ref tag="endif">endif タグの間で用いられます。
+		if または elsif ブロックの中身がひとつも実行されていないとき、
+		else から endif までの間を実行します。
+	</remarks>
+</tag>
+
+<tag name="elsif">
+	<shortinfo>それまでの if の中身が実行されていなかったときに、条件付きで実行</shortinfo>
+	<group> 変数・TJS 操作 </group>
+	<attribs>
+		<attrib name="exp">
+			<shortinfo> TJS 式 </shortinfo>
+			<required> yes </required>
+			<format> TJS 式 </format>
+			<info>
+				　評価する TJS 式を指定します。<BR>
+			</info>
+		</attrib>
+	</attribs>
+
+	<remarks>
+		　<ref tag="if">if</ref> タグと <ref tag="endif">endif</ref> タグの間で用いられます。
+		それまでの if タグまたは elsif タグの中身がひとつも実行されていないときに
+		式を評価し、その結果が真ならば elsif から次の elsif・else・endif までの間を実行します。
+	</remarks>
+</tag>
 
 <tag name="endif">
 	<shortinfo> 条件によりシナリオを実行(の終了) </shortinfo>
