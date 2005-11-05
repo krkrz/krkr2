@@ -1143,7 +1143,7 @@
 	<group> 変数・TJS 操作 </group>
 	<remarks>
 		　<ref tag="if">if</ref> タグもしくは <ref tag="elsif">elsif</ref> タグ
-		と <ref tag="endif">endif タグの間で用いられます。
+		と <ref tag="endif">endif</ref> タグの間で用いられます。
 		if または elsif ブロックの中身がひとつも実行されていないとき、
 		else から endif までの間を実行します。
 	</remarks>
