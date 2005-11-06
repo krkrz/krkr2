@@ -1145,7 +1145,8 @@
 		　<ref tag="if">if</ref> タグもしくは <ref tag="elsif">elsif</ref> タグ
 		と <ref tag="endif">endif</ref> タグの間で用いられます。
 		if または elsif ブロックの中身がひとつも実行されていないとき、
-		else から endif までの間を実行します。
+		else から endif までの間を実行します。<BR>
+		　使い方の例については、<ref tag="if">if</ref> タグの項目を参照してください。
 	</remarks>
 </tag>
 
@@ -1166,7 +1167,8 @@
 	<remarks>
 		　<ref tag="if">if</ref> タグと <ref tag="endif">endif</ref> タグの間で用いられます。
 		それまでの if タグまたは elsif タグの中身がひとつも実行されていないときに
-		式を評価し、その結果が真ならば elsif から次の elsif・else・endif までの間を実行します。
+		式を評価し、その結果が真ならば elsif から次の elsif・else・endif までの間を実行します。<BR>
+		　使い方の例については、<ref tag="if">if</ref> タグの項目を参照してください。
 	</remarks>
 </tag>
 
