@@ -20,6 +20,87 @@ static void log(const tjs_char *format, ...)
 	va_end(args);
 }
 
+//---------------------------------------------------------------------------
+
+// Array クラスメンバ
+static iTJSDispatch2 *ArrayCountProp   = NULL;   // Array.count
+
+// -----------------------------------------------------------------
+
+static void
+addMember(iTJSDispatch2 *dispatch, const tjs_char *name, iTJSDispatch2 *member)
+{
+	tTJSVariant var = tTJSVariant(member);
+	member->Release();
+	dispatch->PropSet(
+		TJS_MEMBERENSURE, // メンバがなかった場合には作成するようにするフラグ
+		name, // メンバ名 ( かならず TJS_W( ) で囲む )
+		NULL, // ヒント ( 本来はメンバ名のハッシュ値だが、NULL でもよい )
+		&var, // 登録する値
+		dispatch // コンテキスト
+		);
+}
+
+static iTJSDispatch2*
+getMember(iTJSDispatch2 *dispatch, const tjs_char *name)
+{
+	tTJSVariant val;
+	if (TJS_FAILED(dispatch->PropGet(TJS_IGNOREPROP,
+									 name,
+									 NULL,
+									 &val,
+									 dispatch))) {
+		ttstr msg = TJS_W("can't get member:");
+		msg += name;
+		TVPThrowExceptionMessage(msg.c_str());
+	}
+	return val.AsObject();
+}
+
+static iTJSDispatch2*
+getMember(iTJSDispatch2 *dispatch, int num)
+{
+	tTJSVariant val;
+	if (TJS_FAILED(dispatch->PropGetByNum(TJS_IGNOREPROP,
+										  num,
+										  &val,
+										  dispatch))) {
+		ttstr msg = TJS_W("can't get array index:");
+		msg += num;
+		TVPThrowExceptionMessage(msg.c_str());
+	}
+	return val.AsObject();
+}
+
+static void
+delMember(iTJSDispatch2 *dispatch, const tjs_char *name)
+{
+	dispatch->DeleteMember(
+		0, // フラグ ( 0 でよい )
+		name, // メンバ名
+		NULL, // ヒント
+		dispatch // コンテキスト
+		);
+}
+
+static REAL
+getRealValue(iTJSDispatch2 *obj, const tjs_char *name)
+{
+	tTJSVariant val;
+	if (TJS_FAILED(obj->PropGet(0,
+								name,
+								NULL,
+								&val,
+								obj))) {
+		ttstr msg = TJS_W("can't get member:");
+		msg += name;
+		TVPThrowExceptionMessage(msg.c_str());
+	}
+	return val.AsReal();
+}
+
+//---------------------------------------------------------------------------
+
 // GDI 基本情報
 GdiplusStartupInput gdiplusStartupInput;
 ULONG_PTR gdiplusToken;
@@ -241,18 +322,22 @@ public:
 
 		// 線の太さの指定がある場合
 		if (numparams > 1) {
-			const Brush *brush = NI_Brush::getBrush(param[0]->AsObjectNoAddRef());
-			if (brush) {
-				setBrushPen(brush, param[1]->AsReal());
-			} else {
+			switch (param[0]->Type()) {
+			case tvtObject:
+				setBrushPen(NI_Brush::getBrush(param[0]->AsObjectNoAddRef()), param[1]->AsReal());
+				break;
+			default:
 				setColorPen(param[0]->AsInteger(), param[1]->AsReal());
+				break;
 			}
 		} else if (numparams > 0) {
-			const Brush *brush = NI_Brush::getBrush(param[0]->AsObjectNoAddRef());
-			if (brush) {
-				setBrushPen(brush);
-			} else {
+			switch (param[0]->Type()) {
+			case tvtObject:
+				setBrushPen(NI_Brush::getBrush(param[0]->AsObjectNoAddRef()));
+				break;
+			default:
 				setColorPen(param[0]->AsInteger());
+				break;
 			}
 		} else {
 			pen = new Pen(Color(0));
@@ -328,13 +413,7 @@ static iTJSDispatch2 * Create_NC_Pen()
 			if (numparams < 1) {
 				return TJS_E_BADPARAMCOUNT;
 			}
-
-			Brush *brush = NI_Brush::getBrush(param[0]->AsObjectNoAddRef());
-			if (brush) {
-				pen->SetBrush(brush);
-			} else {
-				TVPThrowExceptionMessage(L"第一引数はブラシである必要があります");
-			}
+			pen->SetBrush(NI_Brush::getBrush(param[0]->AsObjectNoAddRef()));
 			return TJS_S_OK;
 		}
 		TJS_END_NATIVE_METHOD_DECL(/*func. name*/setBrush)
@@ -653,7 +732,7 @@ public:
 			_graphics->DrawRectangle(pen, x, y, width, height);
 		}
 	}
-
+	
 	/**
 	 * 矩形の塗りつぶし
 	 * @param x
@@ -666,6 +745,46 @@ public:
 			_graphics->FillRectangle(brush, x, y, width, height);
 		}
 	}
+
+	/**
+	 * ベジェ曲線の描画
+	 * @param width
+	 * @param height
+	 */
+	void drawBezier(Pen *pen, REAL x1, REAL y1, REAL x2, REAL y2, REAL x3, REAL y3, REAL x4, REAL y4) {
+		if (pen) {
+			_graphics->DrawBezier(pen, x1, y1, x2, y2, x3, y3, x4, y4);
+		}
+	}
+
+	/**
+	 * ベジェ曲線の描画
+	 * @param width
+	 * @param height
+	 */
+	void drawBeziers(Pen *pen, iTJSDispatch2 *array) {
+		if (pen) {
+			// 点の個数取得
+			tjs_int count = 0;
+			{
+				tTJSVariant result;
+				if (TJS_SUCCEEDED(ArrayCountProp->PropGet(0, NULL, NULL, &result, array))) {
+					count = result.AsInteger();
+				}
+			}
+			if (count) {
+				PointF *points = new PointF[count];
+				for (tjs_int i=0;i<count;i++) {
+					iTJSDispatch2 *obj = getMember(array, i);
+					points[i].X = getRealValue(obj, L"x");
+					points[i].Y = getRealValue(obj, L"y");
+				}			
+				_graphics->DrawBeziers(pen, points, count);
+				delete[] points;
+			}
+		}
+	}
+	
 	
 	/**
 	 * 文字列の描画
@@ -716,7 +835,7 @@ public:
 		}
 		in->Release();
 	}
-
+	
 public:
 	/**
 	 * パスを描画する
@@ -898,6 +1017,61 @@ public:
 };
 
 /**
+ * ベジェ描画
+ */
+class tDrawBezierFunction : public tTJSDispatch
+{
+protected:
+public:
+	tjs_error TJS_INTF_METHOD FuncCall(
+		tjs_uint32 flag, const tjs_char * membername, tjs_uint32 *hint,
+		tTJSVariant *result,
+		tjs_int numparams, tTJSVariant **param, iTJSDispatch2 *objthis) {
+
+		NI_GdiPlusInfo *_this;
+		if ((_this = getGdiPlusNative(objthis)) == NULL) return TJS_E_NATIVECLASSCRASH;
+		
+		if (numparams < 9) return TJS_E_BADPARAMCOUNT;
+
+		_this->drawBezier(NI_Pen::getPen(param[0]->AsObjectNoAddRef()),
+						  param[1]->AsReal(),
+						  param[2]->AsReal(),
+						  param[3]->AsReal(),
+						  param[4]->AsReal(),
+						  param[5]->AsReal(),
+						  param[6]->AsReal(),
+						  param[7]->AsReal(),
+						  param[8]->AsReal()
+						  );  // height
+		return TJS_S_OK;
+	}
+};
+
+/**
+ * ベジェ描画
+ */
+class tDrawBeziersFunction : public tTJSDispatch
+{
+protected:
+public:
+	tjs_error TJS_INTF_METHOD FuncCall(
+		tjs_uint32 flag, const tjs_char * membername, tjs_uint32 *hint,
+		tTJSVariant *result,
+		tjs_int numparams, tTJSVariant **param, iTJSDispatch2 *objthis) {
+
+		NI_GdiPlusInfo *_this;
+		if ((_this = getGdiPlusNative(objthis)) == NULL) return TJS_E_NATIVECLASSCRASH;
+		
+		if (numparams < 2) return TJS_E_BADPARAMCOUNT;
+		_this->drawBeziers(NI_Pen::getPen(param[0]->AsObjectNoAddRef()),
+						   param[1]->AsObjectNoAddRef()
+						   );
+		return TJS_S_OK;
+	}
+};
+
+
+/**
  * テキスト描画
  */
 class tDrawStringFunction : public tTJSDispatch
@@ -962,31 +1136,6 @@ int WINAPI DllEntryPoint(HINSTANCE hinst, unsigned long reason,
 	return 1;
 }
 
-static void
-addMember(iTJSDispatch2 *dispatch, const tjs_char *name, iTJSDispatch2 *member)
-{
-	tTJSVariant var = tTJSVariant(member);
-	member->Release();
-	dispatch->PropSet(
-		TJS_MEMBERENSURE, // メンバがなかった場合には作成するようにするフラグ
-		name, // メンバ名 ( かならず TJS_W( ) で囲む )
-		NULL, // ヒント ( 本来はメンバ名のハッシュ値だが、NULL でもよい )
-		&var, // 登録する値
-		dispatch // コンテキスト
-		);
-}
-
-static void
-delMember(iTJSDispatch2 *dispatch, const tjs_char *name)
-{
-	dispatch->DeleteMember(
-		0, // フラグ ( 0 でよい )
-		name, // メンバ名
-		NULL, // ヒント
-		dispatch // コンテキスト
-		);
-}
-
 //---------------------------------------------------------------------------
 static tjs_int GlobalRefCountAtInit = 0;
 extern "C" HRESULT _stdcall _export V2Link(iTVPFunctionExporter *exporter)
@@ -1004,32 +1153,49 @@ extern "C" HRESULT _stdcall _export V2Link(iTVPFunctionExporter *exporter)
 	
 	// クラスオブジェクト登録
 	ClassID_GdiPlusInfo = TJSRegisterNativeClass(TJS_W("GdiPlusInfo"));
+
+	// TJS のグローバルオブジェクトを取得する
+	iTJSDispatch2 * global = TVPGetScriptDispatch();
 	
-	{
-		// TJS のグローバルオブジェクトを取得する
-		iTJSDispatch2 * global = TVPGetScriptDispatch();
+	if (global) {
+
+		// Arary クラスメンバー取得
+		{
+			tTJSVariant varScripts;
+			TVPExecuteExpression(TJS_W("Array"), &varScripts);
+			iTJSDispatch2 *dispatch = varScripts.AsObjectNoAddRef();
+			// メンバ取得
+			ArrayCountProp = getMember(dispatch, TJS_W("count"));
+		}
 
 		// Layer クラスオブジェクトを取得
-		tTJSVariant varScripts;
-		TVPExecuteExpression(TJS_W("Layer"), &varScripts);
-		iTJSDispatch2 *dispatch = varScripts.AsObjectNoAddRef();
-		if (dispatch) {
-			// プロパティ初期化
-			NI_LayerExBase::init(dispatch);
+		{
+			tTJSVariant varScripts;
+			TVPExecuteExpression(TJS_W("Layer"), &varScripts);
+			iTJSDispatch2 *dispatch = varScripts.AsObjectNoAddRef();
+			if (dispatch) {
+				// プロパティ初期化
+				NI_LayerExBase::init(dispatch);
+				
+				// 固有拡張クラス追加
+				addMember(dispatch, L"Pen",    Create_NC_Pen());
+				addMember(dispatch, L"Brush",  Create_NC_Brush());
+				addMember(dispatch, L"Font",   Create_NC_Font());
+				
+				// メンバ追加
+				addMember(dispatch, L"drawEllipse",   new tDrawEllipseFunction());
+				addMember(dispatch, L"fillEllipse",   new tFillEllipseFunction());
+				addMember(dispatch, L"drawLine",      new tDrawLineFunction());
+				addMember(dispatch, L"drawRectangle", new tDrawRectangleFunction());
+				addMember(dispatch, L"fillRectangle", new tFillRectangleFunction());
+				
+				addMember(dispatch, L"drawBezier", new tDrawBezierFunction());
+				addMember(dispatch, L"drawBeziers", new tDrawBeziersFunction());
 
-			// 固有拡張クラス追加
-			addMember(dispatch, L"Pen",    Create_NC_Pen());
-			addMember(dispatch, L"Brush",  Create_NC_Brush());
-			addMember(dispatch, L"Font",   Create_NC_Font());
+				addMember(dispatch, L"drawString",    new tDrawStringFunction());
+				addMember(dispatch, L"drawImage",     new tDrawImageFunction());
+			}
 			
-			// メンバ追加
-			addMember(dispatch, L"drawEllipse",   new tDrawEllipseFunction());
-			addMember(dispatch, L"fillEllipse",   new tFillEllipseFunction());
-			addMember(dispatch, L"drawLine",      new tDrawLineFunction());
-			addMember(dispatch, L"drawRectangle", new tDrawRectangleFunction());
-			addMember(dispatch, L"fillRectangle", new tFillRectangleFunction());
-			addMember(dispatch, L"drawString",    new tDrawStringFunction());
-			addMember(dispatch, L"drawImage",     new tDrawImageFunction());
 		}
 		
 		global->Release();
@@ -1064,30 +1230,33 @@ extern "C" HRESULT _stdcall _export V2Unlink()
 	iTJSDispatch2 * global = TVPGetScriptDispatch();
 
 	// - global の DeleteMember メソッドを用い、オブジェクトを削除する
-	if(global)
-	{
-		// TJS 自体が既に解放されていたときなどは
-		// global は NULL になり得るので global が NULL でない
-		// ことをチェックする
+	if (global)	{
 
-		// Layer クラスオブジェクトを取得
-		tTJSVariant varScripts;
-		TVPExecuteExpression(TJS_W("Layer"), &varScripts);
-		iTJSDispatch2 *dispatch = varScripts.AsObjectNoAddRef();
-		if (dispatch) {
-			delMember(dispatch, L"Pen");
-			delMember(dispatch, L"Brush");
-			delMember(dispatch, L"Font");
-
-			delMember(dispatch, L"drawEllipse");
-			delMember(dispatch, L"fillEllipse");
-			delMember(dispatch, L"drawString");
-			delMember(dispatch, L"drawLine");
-			delMember(dispatch, L"drawRectangle");
-			delMember(dispatch, L"fillRectangle");
-			delMember(dispatch, L"drawImage");
+		{
+			// Layer クラスオブジェクトを取得
+			tTJSVariant varScripts;
+			TVPExecuteExpression(TJS_W("Layer"), &varScripts);
+			iTJSDispatch2 *dispatch = varScripts.AsObjectNoAddRef();
+			if (dispatch) {
+				delMember(dispatch, L"Pen");
+				delMember(dispatch, L"Brush");
+				delMember(dispatch, L"Font");
+				
+				delMember(dispatch, L"drawEllipse");
+				delMember(dispatch, L"fillEllipse");
+				delMember(dispatch, L"drawString");
+				delMember(dispatch, L"drawLine");
+				delMember(dispatch, L"drawRectangle");
+				delMember(dispatch, L"fillRectangle");
+				delMember(dispatch, L"drawImage");
+			}
 		}
 
+		if (ArrayCountProp) {
+			ArrayCountProp->Release();
+			ArrayCountProp = NULL;
+		}
+		
 		global->Release();
 	}
 
