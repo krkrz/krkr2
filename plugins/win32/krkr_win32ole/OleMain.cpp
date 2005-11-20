@@ -941,18 +941,16 @@ public:
 		if (numparams >= 2) {
 			// 第二パラメータから HWND を取得
 			iTJSDispatch2 *win = param[1]->AsObjectNoAddRef();
-			if (win) {
-				tTJSVariant hwnd;
-				if (win->PropGet(0, TJS_W("HWND"), NULL, &hwnd, win) == TJS_S_OK) {
-					handle = (HWND)(int)hwnd;
-					style = WS_CHILD|WS_CLIPCHILDREN|WS_VISIBLE; // 子ウインドウ
-					RECT rect;
-					::GetClientRect(handle, &rect);   // 親全領域
-					left   = rect.left;
-					top    = rect.top;
-					width  = rect.right - rect.left;
-					height = rect.bottom - rect.top;
-				}
+			tTJSVariant hwnd;
+			if (win->PropGet(0, TJS_W("HWND"), NULL, &hwnd, win) == TJS_S_OK) {
+				handle = (HWND)(int)hwnd;
+				style = WS_CHILD|WS_CLIPCHILDREN|WS_VISIBLE; // 子ウインドウ
+				RECT rect;
+				::GetClientRect(handle, &rect);   // 親全領域
+				left   = rect.left;
+				top    = rect.top;
+				width  = rect.right - rect.left;
+				height = rect.bottom - rect.top;
 			}
 			// 表示領域の変更
 			if (numparams >= 6) {

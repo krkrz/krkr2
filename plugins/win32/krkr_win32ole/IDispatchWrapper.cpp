@@ -205,12 +205,14 @@ IDispatchWrapper::storeVariant(VARIANT &result, tTJSVariant &variant)
 		// オブジェクト
 		//log(L"object");
 		{
-			iTJSDispatch2 *dispatch = variant.AsObjectNoAddRef();
-			if (dispatch) {
+			switch (variant.Type()) {
+			case tvtObject:
 				V_VT(&result)       = VT_DISPATCH;
-				V_DISPATCH(&result) = new IDispatchWrapper(dispatch);
-			} else {
+				V_DISPATCH(&result) = new IDispatchWrapper(variant.AsObjectNoAddRef());
+				break;
+			default:
 				V_VT(&result) = VT_NULL;
+				break;
 			}
 		}
 		break;
