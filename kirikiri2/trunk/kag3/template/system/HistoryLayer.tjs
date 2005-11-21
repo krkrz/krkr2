@@ -446,7 +446,7 @@ class HistoryLayer extends Layer
 			if((len = font.getTextWidth(currentLine += ch)) >= relinePos)
 			{
 				var curlen = currentLine.length;
-				var lastch = curlen >= 1 ? currentLine[curlen - 1] : '';
+				var lastch = curlen >= 2 ? currentLine[curlen - 2] : '';
 
 				if(((lastch=='' || wwLeading.indexOf(lastch)==-1) &&
 					wwFollowing.indexOf(ch)==-1) ||
