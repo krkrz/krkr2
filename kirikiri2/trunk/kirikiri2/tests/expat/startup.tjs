@@ -1,0 +1,65 @@
+Scripts.execStorage("XML.tjs");
+
+class MyWindow extends Window
+{
+    var base;
+    
+    function MyWindow() {
+        super.Window();
+        // ベースレイヤ
+        base = new Layer(this,null);
+        base.visible=true;
+        base.setSize(640,480);
+        base.fillRect(0,0,640,480,0x888888);
+        setInnerSize(base.width, base.height);
+    }
+}
+
+// 窓
+var win = new MyWindow();
+win.visible=true;
+
+// XML ドキュメント
+
+function showNode(node, indent) {
+    switch (node.nodeType) {
+    case DOMNode.ELEMENT_NODE:
+        Debug.message(indent + "ELEMENT tagName:" + node.tagName);
+        {
+            var attrs = node.attributes;
+            for (var i=0;i<attrs.length;i++) {
+                showNode(attrs.item(i), indent + "   ");
+            }
+        }
+        break;
+    case DOMNode.ATTRIBUTE_NODE:
+        Debug.message(indent +"ATTR name:" + node.name + " value:" + node.value);
+        break;
+    case DOMNode.TEXT_NODE:
+        Debug.message(indent + "TEXT data:" + node.data);
+        break;
+    case DOMNode.COMMENT_NODE:
+        Debug.message(indent + "COMMENT data:" + node.data);
+        break;
+    }
+    var childNodes = node.childNodes;
+    for (var i=0;i<childNodes.length;i++) {
+        showNode(childNodes.item(i), indent + " ");
+    }
+};
+
+var doc = new DOMDocument();
+
+if (doc.parse("<xml value='aaa' hoge='bbb'><hoge>data</hoge></xml>")) {
+    Debug.message("parse succeeded");
+    showNode(doc.documentElement, " ");
+} else {
+    Debug.message("parse failed");
+}
+
+if (doc.parseStorage("hoge.xml")) {
+    Debug.message("parse succeeded");
+    showNode(doc.documentElement, " ");
+} else {
+    Debug.message("parse failed");
+}
