@@ -175,8 +175,8 @@ class SplineMover extends LinearMover
 		{
 			var x = 1 / tmpx[i];
 			var y = 1 / tmpy[i];
-			tx[i+1] = tmpx[i+2] - tmpx[i+1] - path[pi  ] * x;
-			ty[i+1] = tmpy[i+2] - tmpy[i+1] - path[pi+1] * y;
+			tx[i+1] = tmpx[i+2] - tmpx[i+1] - tmpx[i] * x;
+			ty[i+1] = tmpy[i+2] - tmpy[i+1] - tmpy[i] * y;
 			tmpx[i+1] = 4 - x;
 			tmpy[i+1] = 4 - y;
 		}
@@ -187,7 +187,7 @@ class SplineMover extends LinearMover
 		for(var i = points-2, pi = path.count-6; i>0; i--, pi -= 3)
 		{
 			tx[i] = (tx[i] - tx[i+1]) / tmpx[i];
-			ty[i] = (ty[i] - ty[i+1]) / tmpx[i];
+			ty[i] = (ty[i] - ty[i+1]) / tmpy[i];
 		}
 	}
 
