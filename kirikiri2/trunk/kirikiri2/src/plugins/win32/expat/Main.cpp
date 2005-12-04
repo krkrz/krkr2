@@ -18,11 +18,6 @@ static void log(const tjs_char *format, ...)
 #define XML_UNICODE
 #include "expat.h"
 
-//---------------------------------------------------------------------------
-
-// Array クラスメンバ
-static iTJSDispatch2 *ArrayAddMethod   = NULL;   // Array.add
-
 // -----------------------------------------------------------------
 
 static void
@@ -299,17 +294,18 @@ public:
 		parser = XML_ParserCreate(NULL);
 		// ハンドラ登録処理
 		if (parser) {
-			target = numparams > 0 ? param[0]->AsObjectNoAddRef() : tjs_obj;
-			target->AddRef();
+			if (numparams > 0) {
+				target = param[0]->AsObject();
+			}
 		}
-
 		return S_OK;
 	}
 
 	/**
 	 * パーサの初期化処理
 	 */
-	void init() {
+	void init(iTJSDispatch2 *objthis) {
+		iTJSDispatch2 *target = this->target ? this->target : objthis;
 		XML_ParserReset(parser, L"UTF-8");
 		XML_SetUserData(parser, target);
 		entryHandler(StartElement, startElement);
@@ -362,11 +358,11 @@ public:
 	 * @param text パース対象のテキスト
 	 * @return 成功するとtrue
 	 */
-	bool parse(tTJSVariantString *text) {
+	bool parse(tTJSVariantString *text, iTJSDispatch2 *objthis) {
 		bool ret = false;
 		if (parser) {
 
-			init();
+			init(objthis);
 			
 			// UTF-8 文字列に戻す
 			int len = ::WideCharToMultiByte(CP_UTF8, 0, *text, text->GetLength(), NULL, 0, NULL, NULL);
@@ -384,12 +380,12 @@ public:
 	 * @param filename パース対象のファイル
 	 * @return 成功するとtrue
 	 */
-	bool parseStorage(tTJSVariantString *filename) {
+	bool parseStorage(tTJSVariantString *filename, iTJSDispatch2 *objthis) {
 
 		bool ret = false;
 		if (parser) {
 
-			init();
+			init(objthis);
 
 			IStream *in = TVPCreateIStream(filename, TJS_BS_READ);
 			if(!in) {
@@ -468,7 +464,7 @@ static iTJSDispatch2 * Create_NC_XMLParser()
 		{
 			TJS_GET_NATIVE_INSTANCE(/*var. name*/_this, /*var. type*/NI_XMLParser);
 			if (numparams < 1) return TJS_E_BADPARAMCOUNT;
-			bool ret = _this->parse(param[0]->AsStringNoAddRef());
+			bool ret = _this->parse(param[0]->AsStringNoAddRef(), objthis);
 			if (result) {
 				*result = ret;
 			}
@@ -480,7 +476,7 @@ static iTJSDispatch2 * Create_NC_XMLParser()
 		{
 			TJS_GET_NATIVE_INSTANCE(/*var. name*/_this, /*var. type*/NI_XMLParser);
 			if (numparams < 1) return TJS_E_BADPARAMCOUNT;
-			bool ret = _this->parseStorage(param[0]->AsStringNoAddRef());
+			bool ret = _this->parseStorage(param[0]->AsStringNoAddRef(), objthis);
 			if (result) {
 				*result = ret;
 			}
