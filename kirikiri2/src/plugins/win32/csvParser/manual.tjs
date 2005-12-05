@@ -26,8 +26,8 @@ class CSVParser {
     function initStorage(filename,utf8=false);
 
     /**
-     * 次の行の情報を文字列として取得する
-     * @return 行をカラムごとに分割したArray
+     * 次の行の情報を配列として取得する
+     * @return カラムデータ(Array)
      */
     function getNext();
 
@@ -54,8 +54,8 @@ class CSVParser {
 
     /**
      * parse/parseStorage で呼び出されるイベント
-     * @param args 行をカラムごとに分解したArray
-     * @param lineNo 行番号(1からになる)
+     * @param columns カラムデータ(Array)
+     * @param lineNo 論理行番号(1～)
      */
-    function doLine(args, lineNo);
+    function doLine(columns, lineNo);
 };

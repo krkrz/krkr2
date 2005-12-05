@@ -21,7 +21,6 @@ static void log(const tjs_char *format, ...)
 //---------------------------------------------------------------------------
 
 // Array クラスメンバ
-static iTJSDispatch2 *ArrayAddMethod   = NULL;   // Array.add
 static iTJSDispatch2 *ArrayClearMethod   = NULL;   // Array.clear
 
 // -----------------------------------------------------------------
@@ -277,6 +276,7 @@ protected:
 
 		ttstr fld;
 		int i, j;
+		tjs_int cnt = 0;
 	
 		if (line.length() == 0) {
 			return;
@@ -312,10 +312,9 @@ protected:
 			}
 		next:
 			{
-				tTJSVariant *vars[1];
+				// 登録
 				tTJSVariant var(fld);
-				vars[0] = &var;
-				ArrayAddMethod->FuncCall(0, NULL, NULL, NULL, 1, vars, fields);
+				fields->PropSetByNum(TJS_MEMBERENSURE, cnt++, &var, fields);
 			}
 			i = j + 1;
 		} while (j < line.length());
@@ -342,7 +341,6 @@ public:
 	 * @param tjs_obj this オブジェクト
 	 */
 	tjs_error TJS_INTF_METHOD Construct(tjs_int numparams, tTJSVariant **param, iTJSDispatch2 *tjs_obj) {
-		fields = TJSCreateArrayObject();
 		if (numparams > 0) {
 			target = param[0]->AsObject();
 			if (numparams > 1) {
@@ -356,9 +354,20 @@ public:
 	}
 
 	/**
+	 * ファイルクローズ処理
+	 */
+	void clear() {
+		if (file) {
+			delete file;
+			file = NULL;
+		}
+	}
+	
+	/**
 	 * TJS invalidate
 	 */
 	void TJS_INTF_METHOD Invalidate() {
+		clear();
 		if (fields) {
 			ArrayClearMethod->FuncCall(0, NULL, NULL, NULL, 0, NULL, fields);
 			fields->Release();
@@ -368,20 +377,13 @@ public:
 			target->Release();
 			target = NULL;
 		}
-		if (file) {
-			delete file;
-			file = NULL;
-		}
 	}
 
 	/**
 	 * パーサの初期化処理
 	 */
 	void init(tTJSVariantString *text) {
-		if (file) {
-			delete file;
-			file = NULL;
-		}
+		clear();
 		file = new IFileStr(text);
 		lineNo = 0;
 	}
@@ -390,10 +392,7 @@ public:
 	 * 初期化処理
 	 */
 	void initStorage(tTJSVariantString *filename, bool utf8=false) {
-		if (file) {
-			delete file;
-			file = NULL;
-		}
+		clear();
 		file = new IFileStorage(filename, utf8 ? CP_UTF8 : CP_ACP);
 		lineNo = 0;
 	}
@@ -401,16 +400,24 @@ public:
 
 	// 1行読み出し
 	bool getNextLine(tTJSVariant *result = NULL) {
-		ArrayClearMethod->FuncCall(0, NULL, NULL, NULL, 0, NULL, fields);
-		line = L"";
-		addline();
-		split();
-		if (line.length() > 0) {
-			lineNo++;
-			if (result) {
-				*result = fields;
+		if (file) {
+			if (fields) {
+				ArrayClearMethod->FuncCall(0, NULL, NULL, NULL, 0, NULL, fields);
+			} else {
+				fields = TJSCreateArrayObject();
 			}
-			return true;
+			line = L"";
+			addline();
+			split();
+			if (line.length() > 0) {
+				lineNo++;
+				if (result) {
+					*result = tTJSVariant(fields,fields);
+				}
+				return true;
+			} else {
+				clear();
+			}
 		}
 		return false;
 	}
@@ -431,7 +438,7 @@ public:
 		if (file && isValidMember(target, L"doLine")) {
 			iTJSDispatch2 *method = getMember(target, L"doLine");
 			while (getNextLine()) {
-				tTJSVariant var1 = tTJSVariant(fields);
+				tTJSVariant var1 = tTJSVariant(fields,fields);
 				tTJSVariant var2 = tTJSVariant(lineNo);
 				tTJSVariant *vars[2];
 				vars[0] = &var1;
@@ -439,6 +446,7 @@ public:
 				method->FuncCall(0, NULL, NULL, NULL, 2, vars, target);
 			}
 			method->Release();
+			clear();
 		}
 	}
 
@@ -566,7 +574,6 @@ extern "C" HRESULT _stdcall _export V2Link(iTVPFunctionExporter *exporter)
 			TVPExecuteExpression(TJS_W("Array"), &varScripts);
 			iTJSDispatch2 *dispatch = varScripts.AsObjectNoAddRef();
 			// メンバ取得
-			ArrayAddMethod = getMember(dispatch, TJS_W("add"));
 			ArrayClearMethod = getMember(dispatch, TJS_W("clear"));
 		}
 
@@ -602,11 +609,6 @@ extern "C" HRESULT _stdcall _export V2Unlink()
 	// - global の DeleteMember メソッドを用い、オブジェクトを削除する
 	if (global)	{
 		delMember(global, L"CSVParser");
-
-		if (ArrayAddMethod) {
-			ArrayAddMethod->Release();
-			ArrayAddMethod = NULL;
-		}
 		if (ArrayClearMethod) {
 			ArrayClearMethod->Release();
 			ArrayClearMethod = NULL;
