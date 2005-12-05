@@ -263,6 +263,16 @@ public:
 	}
 
 	/**
+	 * ファイルクローズ処理
+	 */
+	void clear() {
+		if (file) {
+			delete file;
+			file = NULL;
+		}
+	}
+	
+	/**
 	 * TJS invalidate
 	 */
 	void TJS_INTF_METHOD Invalidate() {
@@ -270,20 +280,14 @@ public:
 			target->Release();
 			target = NULL;
 		}
-		if (file) {
-			delete file;
-			file = NULL;
-		}
+		clear();
 	}
 
 	/**
 	 * パーサの初期化処理
 	 */
 	void init(tTJSVariantString *text) {
-		if (file) {
-			delete file;
-			file = NULL;
-		}
+		clear();
 		file = new IFileStr(text);
 		lineNo = 0;
 	}
@@ -292,10 +296,7 @@ public:
 	 * 初期化処理
 	 */
 	void initStorage(tTJSVariantString *filename, bool utf8=false) {
-		if (file) {
-			delete file;
-			file = NULL;
-		}
+		clear();
 		file = new IFileStorage(filename, utf8 ? CP_UTF8 : CP_ACP);
 		lineNo = 0;
 	}
@@ -306,9 +307,13 @@ public:
 	 * @return 成功するとtrue
 	 */
 	bool getNextLine(ttstr &line) {
-		if (file && file->getNextLine(line)) {
-			lineNo++;
-			return true;
+		if (file) {
+			if (file->getNextLine(line)) {
+				lineNo++;
+				return true;
+			} else {
+				clear();
+			}
 		}
 		return false;
 	}
@@ -338,6 +343,7 @@ public:
 				method->FuncCall(0, NULL, NULL, NULL, 2, vars, target);
 			}
 			method->Release();
+			clear();
 		}
 	}
 
