@@ -29,7 +29,7 @@ class LineParser {
      * Ÿ‚Ìs‚Ìî•ñ‚ğ•¶š—ñ‚Æ‚µ‚Äæ“¾‚·‚é
      * @return s
      */
-    function getNext();
+    function getNextLine();
 
     /**
      * Œ»İ‚Ìˆ—Ï‚İs”Ô†‚ğæ“¾‚·‚é
