@@ -29,7 +29,7 @@ class CSVParser {
      * 次の行の情報を配列として取得する
      * @return カラムデータ(Array)
      */
-    function getNext();
+    function getNextLine();
 
     /**
      * 現在の処理済み行番号を取得する
