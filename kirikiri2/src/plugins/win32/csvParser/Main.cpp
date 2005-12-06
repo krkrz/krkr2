@@ -487,7 +487,7 @@ static iTJSDispatch2 * Create_NC_CSVParser()
 		{
 			TJS_GET_NATIVE_INSTANCE(/*var. name*/_this, /*var. type*/NI_CSVParser);
 			if (numparams < 1) return TJS_E_BADPARAMCOUNT;
-			_this->initStorage(param[0]->AsStringNoAddRef(), numparams > 1 && (*param[0] ? true : false));
+			_this->initStorage(param[0]->AsStringNoAddRef(), numparams > 1 && (tjs_int)*param[1] != 0);
 			return TJS_S_OK;
 		}
 		TJS_END_NATIVE_METHOD_DECL(/*func. name*/initStorage)
@@ -515,7 +515,7 @@ static iTJSDispatch2 * Create_NC_CSVParser()
 		{
 			TJS_GET_NATIVE_INSTANCE(/*var. name*/_this, /*var. type*/NI_CSVParser);
 			if (numparams > 0) {
-				_this->initStorage(param[0]->AsStringNoAddRef(), numparams > 1 && (*param[1] ? true : false));
+				_this->initStorage(param[0]->AsStringNoAddRef(), numparams > 1 && (tjs_int)*param[1] != 0);
 			}
 			_this->parse(objthis);
 			return TJS_S_OK;
