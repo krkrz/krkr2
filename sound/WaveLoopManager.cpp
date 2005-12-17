@@ -658,6 +658,7 @@ void tTVPWaveLoopManager::DoCrossFade(void *dest, void *src1,
 {
 	// do on-memory wave crossfade
 	// using src1 (fading out) and src2 (fading in).
+	if(samples == 0) return; // nothing to do
 
 	if(Format->IsFloat)
 	{
