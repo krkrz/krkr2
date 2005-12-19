@@ -52,6 +52,29 @@ bool TVPSystemIsBasedOnNT = false; // is system NT based ?
 
 
 //---------------------------------------------------------------------------
+// System security options
+//---------------------------------------------------------------------------
+// system security options are held inside the executable, where
+// signature checker will refer. This enables the signature checker
+// (or other security modules like XP3 encryption module) to check
+// the changes which is not intended by the contents author.
+const static char TVPSystemSecurityOptions[] = 
+"-- TVPSystemSecurityOptions disablemsgmap(0):forcedataxp3(0) --";
+//---------------------------------------------------------------------------
+int GetSystemSecurityOption(const char *name)
+{
+	size_t namelen = strlen(name);
+	const char *p = strstr(TVPSystemSecurityOptions, name);
+	if(!p) return 0;
+	if(p[namelen] == '(' && p[namelen + 2] == ')')
+		return p[namelen+1] - '0';
+	return 0;
+}
+//---------------------------------------------------------------------------
+
+
+
+//---------------------------------------------------------------------------
 // delayed DLL load procedure hook
 //---------------------------------------------------------------------------
 // for supporting of "_inmm.dll" (C) irori
@@ -763,11 +786,7 @@ void TVPInitializeBaseSystems()
 	}
 
 	// load message map file
-	bool load_msgmap = true;
-	if(TVPGetCommandLine(TJS_W("-loadmsgmap"), &v))
-	{
-		if(ttstr(v) == TJS_W("no")) load_msgmap = false;
-	}
+	bool load_msgmap = GetSystemSecurityOption("disablemsgmap") == 0;
 
 	if(load_msgmap)
 	{
@@ -853,27 +872,35 @@ void TVPBeforeSystemInit()
 	bool nosel = false;
 	bool forcesel = false;
 
-	if(TVPGetCommandLine(TJS_W("-nosel")) || TVPGetCommandLine(TJS_W("-about")))
-	{
-		nosel = true;
-	}
-	else for(tjs_int i = 1; i<_argc; i++)
-	{
-		if(_argv[i][0] != '-')
-		{
-			// TODO: set the current directory
-			strcpy(buf, _argv[i]);
-			if(DirectoryExists(buf)) // is directory?
-				strcat(buf, "\\");
+	bool forcedataxp3 = GetSystemSecurityOption("forcedataxp3") != 0;
 
-			TVPProjectDirSelected = true;
-			bufset = true;
+	if(!forcedataxp3)
+	{
+		if(TVPGetCommandLine(TJS_W("-nosel")) || TVPGetCommandLine(TJS_W("-about")))
+		{
 			nosel = true;
+		}
+		else
+		{
+			for(tjs_int i = 1; i<_argc; i++)
+			{
+				if(_argv[i][0] != '-')
+				{
+					// TODO: set the current directory
+					strcpy(buf, _argv[i]);
+					if(DirectoryExists(buf)) // is directory?
+						strcat(buf, "\\");
+
+					TVPProjectDirSelected = true;
+					bufset = true;
+					nosel = true;
+				}
+			}
 		}
 	}
 
 	// check "-sel" option, to force show folder selection window
-	if(TVPGetCommandLine(TJS_W("-sel")))
+	if(!forcedataxp3 && TVPGetCommandLine(TJS_W("-sel")))
 	{
 		// sel option was set
 		if(bufset)
@@ -890,7 +917,7 @@ void TVPBeforeSystemInit()
 	}
 
 	// check "content-data" directory
-	if(!nosel)
+	if(!forcedataxp3 && !nosel)
 	{
 		char tmp[MAX_PATH];
 		strcpy(tmp, IncludeTrailingBackslash(ExtractFileDir(ParamStr(0))).c_str());
@@ -949,7 +976,7 @@ void TVPBeforeSystemInit()
 
 
 	// check "data" directory
-	if(!nosel)
+	if(!forcedataxp3 && !nosel)
 	{
 		char tmp[MAX_PATH];
 		strcpy(tmp, IncludeTrailingBackslash(ExtractFileDir(ParamStr(0))).c_str());
@@ -967,12 +994,13 @@ void TVPBeforeSystemInit()
 	// decide a directory to execute or to show folder selection
 	if(!bufset)
 	{
+		if(forcedataxp3) throw EAbort("Aborted");
 		strcpy(buf, ExtractFileDir(ParamStr(0)).c_str());
 		int curdirlen = strlen(buf);
 		if(buf[curdirlen-1] != '\\') buf[curdirlen] = '\\', buf[curdirlen+1] = 0;
 	}
 
-	if(!nosel || forcesel)
+	if(!forcedataxp3 && (!nosel || forcesel))
 	{
 		// load krdevui.dll ( TVP[KiRikiri] Development User Interface )
 		HMODULE krdevui = LoadLibrary("krdevui.dll");
