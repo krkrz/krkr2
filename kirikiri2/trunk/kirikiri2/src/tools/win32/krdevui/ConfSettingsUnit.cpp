@@ -105,6 +105,7 @@ void __fastcall TConfSettingsForm::OKButtonClick(TObject *Sender)
 void __fastcall TConfSettingsForm::ShowUserConfig(AnsiString exename)
 {
 	ConfMainFrame->IconGroupBox->Visible = false;
+	ConfMainFrame->ReleaseOptionGroupBox->Visible = false;
 	ConfMainFrame->InvisibleCheckBox->Visible = false;
 	IconChangeWarnLabel->Visible = false;
 	ConfMainFrame->SetExcludeOptions();

@@ -1,16 +1,16 @@
 object RelSettingsForm: TRelSettingsForm
-  Left = 26
-  Top = 20
-  Width = 579
-  Height = 367
+  Left = 76
+  Top = 368
+  Width = 630
+  Height = 440
   HorzScrollBar.Tracking = True
   HorzScrollBar.Visible = False
   VertScrollBar.Tracking = True
   VertScrollBar.Visible = False
   Caption = '吉里吉里 Releaser - 設定'
   Color = clBtnFace
-  Constraints.MinHeight = 344
-  Constraints.MinWidth = 576
+  Constraints.MinHeight = 440
+  Constraints.MinWidth = 630
   Font.Charset = SHIFTJIS_CHARSET
   Font.Color = clWindowText
   Font.Height = -12
@@ -173,8 +173,8 @@ object RelSettingsForm: TRelSettingsForm
   PixelsPerInch = 96
   TextHeight = 12
   object NoExtNameLabel: TLabel
-    Left = 155
-    Top = 311
+    Left = 206
+    Top = 384
     Width = 64
     Height = 12
     Anchors = [akRight, akBottom]
@@ -182,8 +182,8 @@ object RelSettingsForm: TRelSettingsForm
     Visible = False
   end
   object InterruptNameLabel: TLabel
-    Left = 155
-    Top = 327
+    Left = 206
+    Top = 392
     Width = 24
     Height = 12
     Anchors = [akRight, akBottom]
@@ -191,8 +191,8 @@ object RelSettingsForm: TRelSettingsForm
     Visible = False
   end
   object ExitNameLabel: TLabel
-    Left = 187
-    Top = 327
+    Left = 238
+    Top = 392
     Width = 24
     Height = 12
     Anchors = [akRight, akBottom]
@@ -200,8 +200,8 @@ object RelSettingsForm: TRelSettingsForm
     Visible = False
   end
   object ArchiveCreatedNameLabel: TLabel
-    Left = 227
-    Top = 311
+    Left = 278
+    Top = 384
     Width = 128
     Height = 12
     Anchors = [akRight, akBottom]
@@ -209,8 +209,8 @@ object RelSettingsForm: TRelSettingsForm
     Visible = False
   end
   object InterruptedNameLabel: TLabel
-    Left = 219
-    Top = 327
+    Left = 270
+    Top = 392
     Width = 64
     Height = 12
     Anchors = [akRight, akBottom]
@@ -219,8 +219,8 @@ object RelSettingsForm: TRelSettingsForm
   end
   object ProgressLabel: TLabel
     Left = 8
-    Top = 319
-    Width = 372
+    Top = 392
+    Width = 423
     Height = 12
     Alignment = taRightJustify
     Anchors = [akLeft, akRight, akBottom]
@@ -235,8 +235,8 @@ object RelSettingsForm: TRelSettingsForm
     Visible = False
   end
   object OKButton: TButton
-    Left = 392
-    Top = 310
+    Left = 443
+    Top = 375
     Width = 75
     Height = 25
     Anchors = [akRight, akBottom]
@@ -246,8 +246,8 @@ object RelSettingsForm: TRelSettingsForm
     OnClick = OKButtonClick
   end
   object CancelButton: TButton
-    Left = 480
-    Top = 310
+    Left = 531
+    Top = 375
     Width = 75
     Height = 25
     Anchors = [akRight, akBottom]
@@ -258,7 +258,7 @@ object RelSettingsForm: TRelSettingsForm
   end
   object SelectFolderButton: TButton
     Left = 8
-    Top = 310
+    Top = 375
     Width = 137
     Height = 25
     Anchors = [akLeft, akBottom]
@@ -269,8 +269,8 @@ object RelSettingsForm: TRelSettingsForm
   object PageControl: TPageControl
     Left = 8
     Top = 8
-    Width = 553
-    Height = 296
+    Width = 604
+    Height = 361
     ActivePage = OutputSheel
     Anchors = [akLeft, akTop, akRight, akBottom]
     TabOrder = 3
@@ -326,7 +326,7 @@ object RelSettingsForm: TRelSettingsForm
       end
       object Label6: TLabel
         Left = 8
-        Top = 208
+        Top = 273
         Width = 87
         Height = 12
         Anchors = [akLeft, akBottom]
@@ -335,7 +335,7 @@ object RelSettingsForm: TRelSettingsForm
       object OutputFileGroup: TGroupBox
         Left = 8
         Top = 72
-        Width = 529
+        Width = 580
         Height = 57
         Anchors = [akLeft, akTop, akRight]
         Caption = '出力ファイル(&F)'
@@ -343,13 +343,13 @@ object RelSettingsForm: TRelSettingsForm
         object OutputFileNameEdit: TEdit
           Left = 8
           Top = 24
-          Width = 449
+          Width = 500
           Height = 20
           Anchors = [akLeft, akTop, akRight]
           TabOrder = 0
         end
         object SetFileNameButton: TButton
-          Left = 464
+          Left = 515
           Top = 24
           Width = 57
           Height = 20
@@ -362,7 +362,7 @@ object RelSettingsForm: TRelSettingsForm
       object OutputFormatGroup: TGroupBox
         Left = 8
         Top = 8
-        Width = 529
+        Width = 580
         Height = 57
         Anchors = [akLeft, akTop, akRight]
         Caption = '出力形式(&T)'
@@ -400,8 +400,8 @@ object RelSettingsForm: TRelSettingsForm
       end
       object InputDirectoryMemo: TMemo
         Left = 8
-        Top = 224
-        Width = 529
+        Top = 289
+        Width = 580
         Height = 33
         Anchors = [akLeft, akRight, akBottom]
         BorderStyle = bsNone
@@ -453,24 +453,24 @@ object RelSettingsForm: TRelSettingsForm
         FocusControl = DiscardExtList
       end
       object Label7: TLabel
-        Left = 419
-        Top = 207
+        Left = 470
+        Top = 272
         Width = 111
         Height = 12
         Anchors = [akRight, akBottom]
         Caption = '※ドラッグ＆ドロップで'
       end
       object Label8: TLabel
-        Left = 427
-        Top = 223
+        Left = 478
+        Top = 288
         Width = 104
         Height = 12
         Anchors = [akRight, akBottom]
         Caption = '各項目間を移動する'
       end
       object Label9: TLabel
-        Left = 427
-        Top = 239
+        Left = 478
+        Top = 304
         Width = 73
         Height = 12
         Anchors = [akRight, akBottom]
@@ -480,7 +480,7 @@ object RelSettingsForm: TRelSettingsForm
         Left = 8
         Top = 40
         Width = 105
-        Height = 216
+        Height = 281
         Anchors = [akLeft, akTop, akBottom]
         DragMode = dmAutomatic
         ItemHeight = 12
@@ -494,7 +494,7 @@ object RelSettingsForm: TRelSettingsForm
         Left = 152
         Top = 40
         Width = 105
-        Height = 216
+        Height = 281
         Anchors = [akLeft, akTop, akBottom]
         DragMode = dmAutomatic
         ItemHeight = 12
@@ -508,7 +508,7 @@ object RelSettingsForm: TRelSettingsForm
         Left = 296
         Top = 40
         Width = 105
-        Height = 216
+        Height = 281
         Anchors = [akLeft, akTop, akBottom]
         DragMode = dmAutomatic
         ItemHeight = 12
@@ -637,51 +637,51 @@ object RelSettingsForm: TRelSettingsForm
       inline ConfMainFrame: TConfMainFrame
         Left = 8
         Top = 8
-        Width = 532
-        Height = 256
+        Width = 583
+        Height = 321
         Anchors = [akLeft, akTop, akRight, akBottom]
         inherited IconGroupBox: TGroupBox
-          Top = 193
-          Width = 532
+          Top = 258
+          Width = 583
         end
         inherited OptionsGroupBox: TGroupBox
-          Width = 532
-          Height = 185
-          inherited Label2: TLabel
-            Left = 307
-          end
-          inherited Label3: TLabel
-            Left = 307
-          end
+          Width = 583
+          Height = 199
           inherited OptionsTreeView: TTreeView
-            Width = 292
-            Height = 136
+            Height = 157
+            TabOrder = 3
           end
           inherited OptionValueComboBox: TComboBox
-            Left = 307
-            Width = 217
+            TabOrder = 0
           end
           inherited OptionDescMemo: TMemo
-            Left = 307
-            Width = 217
-            Height = 64
+            Height = 85
+            TabOrder = 4
           end
           inherited RestoreDefaultButton: TButton
-            Left = 307
+            TabOrder = 2
           end
           inherited InvisibleCheckBox: TCheckBox
-            Left = 460
+            TabOrder = 1
           end
         end
+        inherited ReleaseOptionGroupBox: TGroupBox
+          Top = 208
+          Width = 583
+        end
         inherited Panel1: TPanel
-          Top = 185
-          Width = 532
+          Top = 249
+          Width = 583
+        end
+        inherited Panel2: TPanel
+          Top = 199
+          Width = 583
         end
       end
     end
   end
   object SaveProfileButton: TButton
-    Left = 403
+    Left = 454
     Top = 7
     Width = 76
     Height = 18
@@ -691,7 +691,7 @@ object RelSettingsForm: TRelSettingsForm
     OnClick = SaveProfileButtonClick
   end
   object LoadProfileButton: TButton
-    Left = 483
+    Left = 534
     Top = 7
     Width = 76
     Height = 18
@@ -701,7 +701,7 @@ object RelSettingsForm: TRelSettingsForm
     OnClick = LoadProfileButtonClick
   end
   object StaticText1: TStaticText
-    Left = 323
+    Left = 374
     Top = 9
     Width = 72
     Height = 16

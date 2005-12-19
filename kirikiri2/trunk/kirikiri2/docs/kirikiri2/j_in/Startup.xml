@@ -48,6 +48,7 @@
 </dl>
 <r/>
 　いずれの方法でも決定できなかった場合は、フォルダ/アーカイブ選択の画面が出ます。<r/>
+　ただし、リリースオプションで 「XP3アーカイブのみから実行」が指定されていた場合は、data.xp3ファイル、data.exeファイル、「自分自身に XP3 アーカイブが結合されているとき」の場合の動作しかしません ( <link href="Configure"/> 参照 )。<r/>
 </para>
 
 <para>
@@ -81,7 +82,7 @@
 
 <para>
 <ptitle>メッセージマップファイル</ptitle>
-　吉里吉里は、起動直後に吉里吉里と同じフォルダに msgmap.tjs があるかどうかを調べ、それが存在すれば実行します。msgmap.tjs では <at href="f_System_assignMessage.html">System.assignMessage</at> を使用してメッセージの割り当てを変更することができます。msgmap.tjs は <link href="Controller" /> でも作成することができます。<r/>
+　吉里吉里は、起動直後に吉里吉里と同じフォルダに msgmap.tjs があるかどうかを調べ、それが存在すれば実行します。ただしリリースオプションでこれを読み込まないように指定されていた場合を除きます ( <link href="Configure"/> 参照 )。msgmap.tjs では <at href="f_System_assignMessage.html">System.assignMessage</at> を使用してメッセージの割り当てを変更することができます。msgmap.tjs は <link href="Controller" /> でも作成することができます。<r/>
 </para>
 
 </doc>

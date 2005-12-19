@@ -40,9 +40,13 @@ __published:	// IDE 管理のコンポーネント
 	TLabel *ReadingOptionsLabel;
 	TLabel *Label3;
 	TButton *RestoreDefaultButton;
-	TPanel *Panel1;
 	TCheckBox *InvisibleCheckBox;
 	TEdit *OptionValueEdit;
+	TGroupBox *ReleaseOptionGroupBox;
+	TPanel *Panel1;
+	TPanel *Panel2;
+	TCheckBox *DisableMessageMapCheckBox;
+	TCheckBox *ForceDataXP3CheckBox;
 	void __fastcall RefIconButtonClick(TObject *Sender);
 	void __fastcall OptionsTreeViewChange(TObject *Sender, TTreeNode *Node);
 	void __fastcall OptionValueComboBoxChange(TObject *Sender);
@@ -102,6 +106,11 @@ public:
 	static unsigned int __fastcall FindOptionAreaOffset(AnsiString target);
 
 	void __fastcall SetExcludeOptions() { ExcludeInvisibleOptions = true; }
+
+	static int GetSecurityOptionItem(const char *options, const char *name);
+	void __fastcall GetSecurityOptionFromExe(AnsiString exe);
+	static void SetSecurityOptionItem(char *options, const char *name, int value);
+	void __fastcall SetSecurityOptionToExe(AnsiString exe);
 };
 //---------------------------------------------------------------------------
 extern PACKAGE TConfMainFrame *ConfMainFrame;
