@@ -2,16 +2,16 @@ object ConfMainFrame: TConfMainFrame
   Left = 0
   Top = 0
   Width = 585
-  Height = 303
+  Height = 328
   TabOrder = 0
   object IconGroupBox: TGroupBox
     Left = 0
-    Top = 240
+    Top = 265
     Width = 585
     Height = 63
     Align = alBottom
     Caption = 'アイコン(&I)'
-    TabOrder = 0
+    TabOrder = 2
     object ChangeIconCheck: TCheckBox
       Left = 8
       Top = 32
@@ -52,11 +52,11 @@ object ConfMainFrame: TConfMainFrame
     Left = 0
     Top = 0
     Width = 585
-    Height = 232
+    Height = 206
     Align = alClient
     Caption = 'オプション(&O)'
     Enabled = False
-    TabOrder = 1
+    TabOrder = 0
     object Label1: TLabel
       Left = 8
       Top = 16
@@ -101,7 +101,7 @@ object ConfMainFrame: TConfMainFrame
       Left = 8
       Top = 32
       Width = 348
-      Height = 185
+      Height = 159
       Anchors = [akLeft, akTop, akRight, akBottom]
       HideSelection = False
       Indent = 19
@@ -127,7 +127,7 @@ object ConfMainFrame: TConfMainFrame
       Left = 363
       Top = 104
       Width = 209
-      Height = 113
+      Height = 87
       Anchors = [akTop, akRight, akBottom]
       BorderStyle = bsNone
       Color = clBtnFace
@@ -167,20 +167,54 @@ object ConfMainFrame: TConfMainFrame
       OnChange = OptionValueEditChange
     end
   end
+  object ReleaseOptionGroupBox: TGroupBox
+    Left = 0
+    Top = 215
+    Width = 585
+    Height = 41
+    Align = alBottom
+    Caption = 'リリースオプション(&R)'
+    TabOrder = 1
+    object DisableMessageMapCheckBox: TCheckBox
+      Left = 8
+      Top = 16
+      Width = 345
+      Height = 17
+      Caption = 'メッセージマップファイル(msgmap.tjs)を読み込まない(&M)'
+      TabOrder = 0
+    end
+    object ForceDataXP3CheckBox: TCheckBox
+      Left = 368
+      Top = 16
+      Width = 201
+      Height = 17
+      Caption = 'XP3アーカイブのみから実行(&3)'
+      TabOrder = 1
+    end
+  end
   object Panel1: TPanel
     Left = 0
-    Top = 232
+    Top = 206
     Width = 585
-    Height = 8
+    Height = 9
     Align = alBottom
     BevelOuter = bvNone
-    TabOrder = 2
+    TabOrder = 3
+  end
+  object Panel2: TPanel
+    Left = 0
+    Top = 256
+    Width = 585
+    Height = 9
+    Align = alBottom
+    BevelOuter = bvNone
+    TabOrder = 4
   end
   object OpenPictureDialog: TOpenPictureDialog
     Filter = 'アイコン (*.ico)|*.ico'
     Options = [ofHideReadOnly, ofPathMustExist, ofFileMustExist, ofEnableSizing]
     Title = 'アイコンの指定'
-    Left = 136
-    Top = 248
+    Left = 88
+    Top = 232
   end
 end

@@ -1211,6 +1211,8 @@ void __fastcall TConfMainFrame::ReadOptionInfoFromExe()
 
 	if(!FileExists(SourceExe)) return;
 
+	GetSecurityOptionFromExe(SourceExe);
+
 	// get temporary file name
 	char dir[MAX_PATH];
 	dir[0] = 0;
@@ -1310,6 +1312,8 @@ void __fastcall TConfMainFrame::LoadOptionsFromExe(int mode)
 //---------------------------------------------------------------------------
 void __fastcall TConfMainFrame::SaveOptionsToExe(AnsiString target)
 {
+	SetSecurityOptionToExe(target);
+
 	// ".conf" file exists?
 	bool confmode = false;
 	AnsiString conffilename = ChangeFileExt(target, ".tof");
@@ -1403,6 +1407,96 @@ unsigned int __fastcall TConfMainFrame::FindOptionAreaOffset(AnsiString target)
 	}
 
 	return offset;
+}
+//---------------------------------------------------------------------------
+int TConfMainFrame::GetSecurityOptionItem(const char *options, const char *name)
+{
+	size_t namelen = strlen(name);
+	const char *p = strstr(options, name);
+	if(!p) return 0;
+	if(p[namelen] == '(' && p[namelen + 2] == ')')
+		return p[namelen+1] - '0';
+	return 0;
+}
+//---------------------------------------------------------------------------
+void __fastcall TConfMainFrame::GetSecurityOptionFromExe(AnsiString exe)
+{
+	TStream *stream = new TFileStream(exe, fmOpenRead|fmShareDenyWrite);
+	unsigned char *buf = NULL;
+	size_t read_size;
+	try
+	{
+		buf = new unsigned char [KRKR_MAX_SIZE];
+		read_size = stream->Read(buf, KRKR_MAX_SIZE);
+
+		for(int i = 0; i < read_size; i++)
+		{
+			if(buf[i] == '-' && buf[i+1] == '-')
+			{
+				if(!strncmp((const char *)(buf+i+2), " TVPSystemSecurityOptions", 25))
+				{
+					DisableMessageMapCheckBox->Checked =
+							GetSecurityOptionItem(buf+i+25+2, "disablemsgmap") != 0;
+					ForceDataXP3CheckBox->Checked =
+							GetSecurityOptionItem(buf+i+25+2, "forcedataxp3") != 0;
+				}
+			}
+		}
+	}
+	catch(...)
+	{
+		delete stream;
+		delete [] buf;
+		throw;
+	}
+	delete stream;
+	delete [] buf;
+}
+//---------------------------------------------------------------------------
+void TConfMainFrame::SetSecurityOptionItem(char *options, const char *name, int value)
+{
+	size_t namelen = strlen(name);
+	char *p = strstr(options, name);
+	if(!p) return;
+	if(p[namelen] == '(' && p[namelen + 2] == ')')
+		p[namelen+1] = (char)(value + '0');
+}
+//---------------------------------------------------------------------------
+void __fastcall TConfMainFrame::SetSecurityOptionToExe(AnsiString exe)
+{
+	TStream *stream = new TFileStream(exe, fmOpenRead|fmShareDenyWrite);
+	unsigned char *buf = NULL;
+	size_t read_size;
+	try
+	{
+		buf = new unsigned char [KRKR_MAX_SIZE];
+		read_size = stream->Read(buf, KRKR_MAX_SIZE);
+
+		for(int i = 0; i < read_size; i++)
+		{
+			if(buf[i] == '-' && buf[i+1] == '-')
+			{
+				if(!strncmp((const char *)(buf+i+2), " TVPSystemSecurityOptions", 25))
+				{
+					SetSecurityOptionItem(buf+i+25+2, "disablemsgmap",
+						DisableMessageMapCheckBox->Checked ? 1:0);
+					SetSecurityOptionItem(buf+i+25+2, "forcedataxp3",
+						ForceDataXP3CheckBox->Checked ? 1:0);
+				}
+			}
+		}
+		delete stream; stream = NULL;
+		stream = new TFileStream(exe, fmOpenWrite|fmShareDenyWrite);
+		stream->WriteBuffer(buf, read_size);
+	}
+	catch(...)
+	{
+		delete stream;
+		delete [] buf;
+		throw;
+	}
+	delete stream;
+	delete [] buf;
 }
 //---------------------------------------------------------------------------
 
