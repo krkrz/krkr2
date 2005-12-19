@@ -1,8 +1,8 @@
 object ConfSettingsForm: TConfSettingsForm
-  Left = 11
-  Top = 15
+  Left = 56
+  Top = 447
   Width = 607
-  Height = 389
+  Height = 406
   Caption = 'ê›íË'
   Color = clBtnFace
   Constraints.MinHeight = 389
@@ -26,7 +26,7 @@ object ConfSettingsForm: TConfSettingsForm
   end
   object IconChangeWarnLabel: TLabel
     Left = 8
-    Top = 320
+    Top = 337
     Width = 407
     Height = 12
     Anchors = [akLeft, akBottom]
@@ -52,7 +52,7 @@ object ConfSettingsForm: TConfSettingsForm
   end
   object OKButton: TButton
     Left = 425
-    Top = 327
+    Top = 344
     Width = 75
     Height = 25
     Anchors = [akRight, akBottom]
@@ -63,7 +63,7 @@ object ConfSettingsForm: TConfSettingsForm
   end
   object CancelButton: TButton
     Left = 505
-    Top = 327
+    Top = 344
     Width = 75
     Height = 25
     Anchors = [akRight, akBottom]
@@ -76,34 +76,44 @@ object ConfSettingsForm: TConfSettingsForm
     Left = 8
     Top = 8
     Width = 578
-    Height = 306
+    Height = 323
     Anchors = [akLeft, akTop, akRight, akBottom]
     TabOrder = 2
     inherited IconGroupBox: TGroupBox
-      Top = 243
+      Top = 260
       Width = 578
+      TabOrder = 1
     end
     inherited OptionsGroupBox: TGroupBox
       Width = 578
-      Height = 235
+      Height = 201
       inherited Label2: TLabel
         Left = 360
       end
       inherited OptionsTreeView: TTreeView
-        Width = 340
+        TabOrder = 2
       end
       inherited OptionValueComboBox: TComboBox
         Left = 360
       end
       inherited OptionDescMemo: TMemo
-        Left = 360
+        TabOrder = 0
       end
       inherited RestoreDefaultButton: TButton
         Width = 121
       end
     end
+    inherited ReleaseOptionGroupBox: TGroupBox
+      Top = 210
+      Width = 578
+      TabOrder = 2
+    end
     inherited Panel1: TPanel
-      Top = 235
+      Top = 201
+      Width = 578
+    end
+    inherited Panel2: TPanel
+      Top = 251
       Width = 578
     end
   end
