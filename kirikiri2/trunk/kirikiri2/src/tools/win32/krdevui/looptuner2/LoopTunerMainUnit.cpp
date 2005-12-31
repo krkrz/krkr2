@@ -1,7 +1,7 @@
 //---------------------------------------------------------------------------
 /*
 	TVP2 ( T Visual Presenter 2 )  A script authoring tool
-	Copyright (C) 2000-2005  W.Dee <dee@kikyou.info> and contributors
+	Copyright (C) 2000-2006 W.Dee <dee@kikyou.info> and contributors
 
 	See details of license at "license.txt"
 */
@@ -219,7 +219,7 @@ void __fastcall TTSSLoopTuner2MainForm::ShowAboutActionExecute(
 	}
 
 	MessageDlg("Loop Tuner 2  version " + VersionString +
-		"  (C) 2000-2005 W.Dee All rights reserved.\n"
+		"  (C) 2000-2006 W.Dee All rights reserved.\n"
 		"各プラグインのバージョン情報は plugin フォルダの中の"
 		"各 DLL のプロパティを参照してください",
 			mtInformation, TMsgDlgButtons() << mbOK, 0);

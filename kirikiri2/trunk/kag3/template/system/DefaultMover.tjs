@@ -1,5 +1,5 @@
 // DefaultMover.tjs - レイヤ自動移動のデフォルトのハンドラ
-// Copyright (C)2001-2005, W.Dee and contributors  改変・配布は自由です
+// Copyright (C)2001-2006, W.Dee and contributors  改変・配布は自由です
 
 class LinearMover
 {

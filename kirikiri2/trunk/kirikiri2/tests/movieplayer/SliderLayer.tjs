@@ -1,5 +1,5 @@
 // SliderLayer.tjs - スライダーレイヤ
-// Copyright (C)2001-2005, W.Dee  改変・配布は自由です
+// Copyright (C)2001-2006, W.Dee  改変・配布は自由です
 
 class SliderLayer extends Layer
 {
