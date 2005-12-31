@@ -1,5 +1,5 @@
 // Conductor.tjs - KAG シナリオ進行処理
-// Copyright (C)2001-2005, W.Dee and contributors  改変・配布は自由です
+// Copyright (C)2001-2006, W.Dee and contributors  改変・配布は自由です
 
 
 class ConductorException extends Exception
