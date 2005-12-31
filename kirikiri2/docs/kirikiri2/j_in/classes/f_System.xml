@@ -455,7 +455,7 @@
 		　吉里吉里本体のバージョン情報文字列を得ることができます。<r/>
 		　バージョン情報文字列は <ref>System.versionString</ref> よりも長い形式で、<r/>
 		以下のようになります。<r/>
-		<tt>吉里吉里[きりきり] 2 実行コア/2.25.3.889 (SVN revision:764; Compiled on Mar 26 2005 23:54:10) TJS2/2.4.15 Copyright (C) 1997-2005 W.Dee and contributors All rights reserved.</tt><r/>
+		<tt>吉里吉里[きりきり] 2 実行コア/2.25.3.889 (SVN revision:764; Compiled on Mar 26 2005 23:54:10) TJS2/2.4.15 Copyright (C) 1997-2006 W.Dee and contributors All rights reserved.</tt><r/>
 	</desc>
 </member>
 
