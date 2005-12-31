@@ -18,7 +18,7 @@ BEGIN
             VALUE "FileDescription", "TVP(kirikiri) Font Renderer\0"
             VALUE "FileVersion", "1.0.0.0\0"
             VALUE "InternalName", "\0"
-            VALUE "LegalCopyright", "Copyright (C)2001-2005, W.Dee All rights reserved\0"
+            VALUE "LegalCopyright", "Copyright (C)2001-2006, W.Dee All rights reserved\0"
             VALUE "LegalTrademarks", "\0"
             VALUE "OriginalFilename", "krkrfont.exe\0"
             VALUE "PrivateBuild", "\0"
