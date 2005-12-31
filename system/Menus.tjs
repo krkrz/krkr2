@@ -1,5 +1,5 @@
 // Menus.tjs - メニュー作成関数の定義
-// Copyright (C)2001-2005, W.Dee and contributors  改変・配布は自由です
+// Copyright (C)2001-2006, W.Dee and contributors  改変・配布は自由です
 
 function KAGWindow_createMenus()
 {
