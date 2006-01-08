@@ -401,7 +401,7 @@ TJS 式として評価し、その結果を属性の値とします。たとえば、<span class="script">[
 </div>
 <h1><a name="tag_cond_attrib" id="tag_cond_attrib">cond 属性</a></h1>
 <div class="para"><div>
-　macro endmacro if endif ignore endignore iscript endscript のタグをのぞき、すべてのタグに cond 属性があります。<br />
+　macro endmacro if else elsif endif ignore endignore iscript endscript のタグをのぞき、すべてのタグに cond 属性があります。<br />
 　cond 属性には TJS式 を指定し、この式を評価した結果が真の時のみにそのタグが実行されます。偽の時はタグは実行されません。<br />
 <br />
 例 :<br />
