@@ -280,7 +280,7 @@ public:
 
 	void SetDecoder(tTVPWaveDecoder * decoder);
 
-	bool GetFlag(tjs_int index);
+	int GetFlag(tjs_int index);
 	void CopyFlags(tjs_int *dest);
 	bool GetFlagsModifiedByLabelExpression();
 	void SetFlag(tjs_int index, tjs_int f);
