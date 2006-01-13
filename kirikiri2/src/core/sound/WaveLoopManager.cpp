@@ -176,7 +176,7 @@ void tTVPWaveLoopManager::SetDecoder(tTVPWaveDecoder * decoder)
 		Format->SamplesPerSec * TVP_WL_SMOOTH_TIME_HALF / 1000;
 }
 //---------------------------------------------------------------------------
-bool tTVPWaveLoopManager::GetFlag(tjs_int index)
+int tTVPWaveLoopManager::GetFlag(tjs_int index)
 {
 	volatile tTJSCriticalSectionHolder CS(FlagsCS);
 	return Flags[index];
