@@ -2959,6 +2959,7 @@ void tTJSNI_WaveSoundBuffer::Open(const ttstr & storagename)
 
 			if(!LoopManager->ReadInformation(buffer))
 				TVPThrowExceptionMessage(TVPInvalidLoopInformation, sliname);
+			RecreateWaveLabelsObject();
 		}
 		catch(...)
 		{
@@ -2979,7 +2980,7 @@ void tTJSNI_WaveSoundBuffer::SetLooping(bool b)
 	if(LoopManager) LoopManager->SetLooping(Looping);
 }
 //---------------------------------------------------------------------------
-tjs_uint64 tTJSNI_WaveSoundBuffer::GetPosition()
+tjs_uint64 tTJSNI_WaveSoundBuffer::GetSamplePosition()
 {
 	if(!Decoder) return 0L;
 	if(!SoundBuffer) return 0L;
@@ -3012,12 +3013,12 @@ tjs_uint64 tTJSNI_WaveSoundBuffer::GetPosition()
 		spos = limit;
 	}
 
-	return pos * 1000 / Format.Format.nSamplesPerSec;
+	return pos;
 }
 //---------------------------------------------------------------------------
-void tTJSNI_WaveSoundBuffer::SetPosition(tjs_uint64 pos)
+void tTJSNI_WaveSoundBuffer::SetSamplePosition(tjs_uint64 pos)
 {
-	tjs_uint64 possamples = pos * Format.Format.nSamplesPerSec / 1000; // in samples
+	tjs_uint64 possamples = pos; // in samples
 
 	if(InputFormat.TotalSamples && InputFormat.TotalSamples <= possamples) return;
 
@@ -3031,6 +3032,19 @@ void tTJSNI_WaveSoundBuffer::SetPosition(tjs_uint64 pos)
 	{
 		LoopManager->SetPosition(possamples);
 	}
+}
+//---------------------------------------------------------------------------
+tjs_uint64 tTJSNI_WaveSoundBuffer::GetPosition()
+{
+	if(!Decoder) return 0L;
+	if(!SoundBuffer) return 0L;
+
+	return GetSamplePosition() * 1000 / Format.Format.nSamplesPerSec;
+}
+//---------------------------------------------------------------------------
+void tTJSNI_WaveSoundBuffer::SetPosition(tjs_uint64 pos)
+{
+	SetSamplePosition(pos * Format.Format.nSamplesPerSec / 1000); // in samples
 }
 //---------------------------------------------------------------------------
 tjs_uint64 tTJSNI_WaveSoundBuffer::GetTotalTime()

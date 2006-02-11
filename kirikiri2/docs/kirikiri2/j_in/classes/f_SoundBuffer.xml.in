@@ -292,6 +292,17 @@
 	</desc>
 </member>
 
+<wave>
+<member>
+	<name>samplePosition</name>
+	<type>property</type>
+	<shortdesc>再生位置</shortdesc>
+	<access>r/w</access>
+	<desc>
+		　再生位置をサンプル数単位で表します。値を設定するとその位置に移動します。<r/>
+	</desc>
+</member>
+</wave>
 <member>
 	<name>paused</name>
 	<type>property</type>
@@ -449,6 +460,26 @@ var buf = new WaveSoundBuffer(window);<r/>
 buf.flags.reset(); // 全てのフラグを 0 にリセット<r/>
 var cnt = buf.flags.count; // cnt には 16 が入る<r/>
 buf.flags[4] = 34; // 4番のフラグに34を代入<r/>
+</example>
+	</desc>
+</member>
+</wave>
+
+<wave>
+<member>
+	<name>labels</name>
+	<type>property</type>
+	<shortdesc>ラベル</shortdesc>
+	<access>r</access>
+	<desc>
+		　ラベルを表すオブジェクトを得ることができます。<r/>
+		　このオブジェクトは辞書配列で、それぞれ、ループ情報中のラベルの名前をメンバ名とした要素が入っています。それぞれの要素も辞書配列で、name メンバはラベルの名前を表し、position メンバはミリ秒単位でのラベルの位置を表し、samplePosition はサンプル数単位でのラベルの位置を表しています。<r/>
+		　この辞書配列は読み出し専用であると考えてください。値を代入したり、新しいメンバを作成しても反映されることはありません。<r/>
+<example>
+var buf = new WaveSoundBuffer(window);<r/>
+(略)<r/>
+debug.message(buf.labels['start'].position); // 'start' というラベル名の位置をミリ秒単位で<r/>
+debug.message(buf.labels['start'].samplePosition); // 'start' というラベル名の位置をサンプル数単位で<r/>
 </example>
 	</desc>
 </member>
