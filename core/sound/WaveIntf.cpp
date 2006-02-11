@@ -16,6 +16,7 @@
 #include "MsgIntf.h"
 #include "UtilStreams.h"
 #include "WaveLoopManager.h"
+#include "tjsDictionary.h"
 
 
 //---------------------------------------------------------------------------
@@ -688,6 +689,7 @@ tTJSNI_BaseWaveSoundBuffer::tTJSNI_BaseWaveSoundBuffer()
 {
 	LoopManager = NULL;
 	WaveFlagsObject = NULL;
+	WaveLabelsObject = NULL;
 }
 //---------------------------------------------------------------------------
 tjs_error TJS_INTF_METHOD
@@ -707,8 +709,10 @@ void TJS_INTF_METHOD tTJSNI_BaseWaveSoundBuffer::Invalidate()
 	{
 		WaveFlagsObject->Invalidate(0, NULL, NULL, WaveFlagsObject);
 		WaveFlagsObject->Release();
+		WaveFlagsObject = NULL;
 	}
 
+	RecreateWaveLabelsObject();
 
 	inherited::Invalidate();
 }
@@ -728,6 +732,17 @@ void tTJSNI_BaseWaveSoundBuffer::InvokeLabelEvent(const ttstr & name)
 	}
 }
 //---------------------------------------------------------------------------
+void tTJSNI_BaseWaveSoundBuffer::RecreateWaveLabelsObject()
+{
+	// indicate recreating WaveLabelsObject
+	if(WaveLabelsObject)
+	{
+		WaveLabelsObject->Invalidate(0, NULL, NULL, WaveLabelsObject);
+		WaveLabelsObject->Release();
+		WaveLabelsObject = NULL;
+	}
+}
+//---------------------------------------------------------------------------
 iTJSDispatch2 * tTJSNI_BaseWaveSoundBuffer::GetWaveFlagsObjectNoAddRef()
 {
 	if(WaveFlagsObject) return WaveFlagsObject;
@@ -737,6 +752,52 @@ iTJSDispatch2 * tTJSNI_BaseWaveSoundBuffer::GetWaveFlagsObjectNoAddRef()
 	WaveFlagsObject = TVPCreateWaveFlagsObject(Owner);
 
 	return WaveFlagsObject;
+}
+//---------------------------------------------------------------------------
+iTJSDispatch2 * tTJSNI_BaseWaveSoundBuffer::GetWaveLabelsObjectNoAddRef()
+{
+	if(WaveLabelsObject) return WaveLabelsObject;
+
+	// build label dictionay from WaveLoopManager
+	WaveLabelsObject = TJSCreateDictionaryObject();
+
+	if(LoopManager)
+	{
+		const std::vector<tTVPWaveLabel> & labels = LoopManager->GetLabels();
+
+		int freq = LoopManager->GetFormat().SamplesPerSec;
+
+		int count = 0;
+		for(std::vector<tTVPWaveLabel>::const_iterator i = labels.begin();
+			i != labels.end(); i++, count++)
+		{
+			iTJSDispatch2 * item_dic = TJSCreateDictionaryObject();
+			try
+			{
+				tTJSVariant val;
+				val = i->Name;
+				item_dic->PropSet(TJS_MEMBERENSURE, TJS_W("name"), NULL, &val, item_dic);
+				val = i->Position;
+				item_dic->PropSet(TJS_MEMBERENSURE, TJS_W("samplePosition"), NULL, &val, item_dic);
+				val = freq ? i->Position * 1000 / freq : 0;
+				item_dic->PropSet(TJS_MEMBERENSURE, TJS_W("position"), NULL, &val, item_dic);
+
+				tTJSVariant item_dic_var(item_dic, item_dic);
+
+				if(!i->Name.IsEmpty())
+					WaveLabelsObject->PropSet(TJS_MEMBERENSURE, i->Name.c_str(), NULL,
+						&item_dic_var, WaveLabelsObject);
+			}
+			catch(...)
+			{
+				item_dic->Release();
+				throw;
+			}
+			item_dic->Release();
+		}
+	}
+
+	return WaveLabelsObject;
 }
 //---------------------------------------------------------------------------
 
@@ -930,6 +991,30 @@ TJS_BEGIN_NATIVE_PROP_DECL(position)
 	TJS_END_NATIVE_PROP_SETTER
 }
 TJS_END_NATIVE_PROP_DECL(position)
+//----------------------------------------------------------------------
+TJS_BEGIN_NATIVE_PROP_DECL(samplePosition)
+{
+	TJS_BEGIN_NATIVE_PROP_GETTER
+	{
+		TJS_GET_NATIVE_INSTANCE(/*var. name*/_this, /*var. type*/tTJSNI_WaveSoundBuffer);
+
+		*result = (tjs_int64)_this->GetSamplePosition();
+
+		return TJS_S_OK;
+	}
+	TJS_END_NATIVE_PROP_GETTER
+
+	TJS_BEGIN_NATIVE_PROP_SETTER
+	{
+		TJS_GET_NATIVE_INSTANCE(/*var. name*/_this, /*var. type*/tTJSNI_WaveSoundBuffer);
+
+		_this->SetSamplePosition((tjs_uint64)(tjs_int64)*param);
+
+		return TJS_S_OK;
+	}
+	TJS_END_NATIVE_PROP_SETTER
+}
+TJS_END_NATIVE_PROP_DECL(samplePosition)
 //----------------------------------------------------------------------
 TJS_BEGIN_NATIVE_PROP_DECL(paused)
 {
@@ -1234,6 +1319,22 @@ TJS_BEGIN_NATIVE_PROP_DECL(flags)
 	TJS_DENY_NATIVE_PROP_SETTER
 }
 TJS_END_NATIVE_PROP_DECL(flags)
+//----------------------------------------------------------------------
+TJS_BEGIN_NATIVE_PROP_DECL(labels)
+{
+	TJS_BEGIN_NATIVE_PROP_GETTER
+	{
+		TJS_GET_NATIVE_INSTANCE(/*var. name*/_this, /*var. type*/tTJSNI_WaveSoundBuffer);
+
+		iTJSDispatch2 * dsp = _this->GetWaveLabelsObjectNoAddRef();
+		*result = tTJSVariant(dsp, dsp);
+		return TJS_S_OK;
+	}
+	TJS_END_NATIVE_PROP_GETTER
+
+	TJS_DENY_NATIVE_PROP_SETTER
+}
+TJS_END_NATIVE_PROP_DECL(labels)
 //----------------------------------------------------------------------
 TJS_BEGIN_NATIVE_PROP_DECL(globalVolume)
 {

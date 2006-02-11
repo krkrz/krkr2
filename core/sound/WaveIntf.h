@@ -133,6 +133,7 @@ class tTJSNI_BaseWaveSoundBuffer : public tTJSNI_SoundBuffer
 	typedef tTJSNI_SoundBuffer inherited;
 
 	iTJSDispatch2 * WaveFlagsObject;
+	iTJSDispatch2 * WaveLabelsObject;
 
 protected:
 	tTVPWaveLoopManager * LoopManager; // will be set by tTJSNI_WaveSoundBuffer
@@ -146,9 +147,11 @@ public:
 
 protected:
 	void InvokeLabelEvent(const ttstr & name);
+	void RecreateWaveLabelsObject();
 
 public:
 	iTJSDispatch2 * GetWaveFlagsObjectNoAddRef();
+	iTJSDispatch2 * GetWaveLabelsObjectNoAddRef();
 	tTVPWaveLoopManager * GetWaveLoopManager() const { return LoopManager; }
 };
 //---------------------------------------------------------------------------

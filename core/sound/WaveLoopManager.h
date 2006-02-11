@@ -306,6 +306,8 @@ public:
 		std::vector<tTVPWaveLoopSegment> &segments,
 		std::vector<tTVPWaveLabel> &labels);
 
+	const tTVPWaveFormat & GetFormat() const { return *Format; }
+
 private:
 	bool GetNearestEvent(tjs_int64 current,
 		tTVPWaveLoopLink & link, bool ignore_conditions);
