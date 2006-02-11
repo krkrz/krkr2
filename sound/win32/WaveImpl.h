@@ -213,6 +213,9 @@ public:
 	void SetLooping(bool b);
 	bool GetLooping() const { return Looping; }
 
+    tjs_uint64 GetSamplePosition();
+	void SetSamplePosition(tjs_uint64 pos);
+
     tjs_uint64 GetPosition();
 	void SetPosition(tjs_uint64 pos);
 
