@@ -34,6 +34,7 @@ CUnknown * WINAPI TBufferRenderer::CreateInstance( LPUNKNOWN pUnk, HRESULT *phr 
 		*phr = E_OUTOFMEMORY;
 	return punk;
 }
+#pragma warning(disable: 4355)	// コンストラクタのベースメンバ初期化時にthisを使うとワーニングが出るのでそれを抑止
 //----------------------------------------------------------------------------
 //! @brief	  	TBufferRenderer constructor
 //! @param		pName : デバッグのために使用される記述へのポインタ。
@@ -62,6 +63,7 @@ TBufferRenderer::TBufferRenderer( TCHAR *pName, LPUNKNOWN pUnk, HRESULT *phr )
 
 	m_StartFrame = 0;
 }
+#pragma warning(default: 4355)
 //----------------------------------------------------------------------------
 //! @brief	  	TBufferRenderer destructor
 //----------------------------------------------------------------------------
@@ -123,10 +125,13 @@ HRESULT TBufferRenderer::CheckMediaType( const CMediaType *pmt )
 
 	// Only accept RGB32
 	pvi = (VIDEOINFO *)pmt->Format();
-	if( IsEqualGUID( *pmt->Type(), MEDIATYPE_Video) && IsEqualGUID( *pmt->Subtype(), MEDIASUBTYPE_RGB32) )
+	if( IsEqualGUID( *pmt->Type(), MEDIATYPE_Video) )
 	{
-		hr = S_OK;
-		m_MtIn = (*pmt);
+		if( IsEqualGUID( *pmt->Subtype(), MEDIASUBTYPE_RGB32))
+		{
+			hr = S_OK;
+			m_MtIn = (*pmt);
+		}
 	}
 
 	return hr;
@@ -385,6 +390,8 @@ void TBufferRenderer::SetBackBuffer( BYTE *buff )
 		m_Buffer[0] = buff;
 	else
 		m_Buffer[1] = buff;
+	
+	SetPointer( buff );
 }
 //---------------------------------------------------------------------------
 //! @brief	  	フロントバッファへのポインタを取得する
@@ -419,6 +426,9 @@ BYTE *TBufferRenderer::GetBackBuffer()
 //----------------------------------------------------------------------------
 HRESULT TBufferRenderer::SetFrontBuffer( BYTE *buff, long *size )
 {
+	if( m_State == State_Running )
+		return S_FALSE;
+
 	CAutoLock cAutoLock(&m_BufferLock);	// クリティカルセクション
 	if( buff == NULL && size != NULL )
 	{
@@ -444,6 +454,9 @@ HRESULT TBufferRenderer::SetFrontBuffer( BYTE *buff, long *size )
 //----------------------------------------------------------------------------
 HRESULT TBufferRenderer::SetBackBuffer( BYTE *buff, long *size )
 {
+	if( m_State == State_Running )
+		return S_FALSE;
+
 	CAutoLock cAutoLock(&m_BufferLock);	// クリティカルセクション
 	if( buff == NULL && size != NULL )
 	{
@@ -681,10 +694,10 @@ STDMETHODIMP TBufferRendererInputPin::GetAllocator( IMemAllocator **ppAllocator 
 		m_pAllocator = &(m_pRenderer->m_Allocator);
 		m_pAllocator->AddRef();
 	}
-
 	// 参照カウントを残すのはインタフェースの仕様です。
 	m_pAllocator->AddRef();
 	*ppAllocator = m_pAllocator;
+
 	return S_OK;
 }
 //----------------------------------------------------------------------------
@@ -715,6 +728,14 @@ STDMETHODIMP TBufferRendererInputPin::NotifyAllocator( IMemAllocator * pAllocato
 void TBufferRendererInputPin::SetPointer( IMediaSample *media, BYTE *ptr )
 {
 	m_pRenderer->m_Allocator.SetPointer( media, ptr );
+}
+//----------------------------------------------------------------------------
+//! @brief	  	アロケーターが持つメディアサンプルにポインタを設定します
+//! @param		ptr : 設定するポインタ
+//----------------------------------------------------------------------------
+void TBufferRendererInputPin::SetPointer( BYTE *ptr )
+{
+	m_pRenderer->m_Allocator.SetPointer( ptr );
 }
 //----------------------------------------------------------------------------
 //## TBufferRendererAllocator
@@ -827,14 +848,17 @@ STDMETHODIMP TBufferRendererAllocator::SetProperties( ALLOCATOR_PROPERTIES* pReq
 void TBufferRendererAllocator::SetPointer( IMediaSample *media, BYTE *ptr )
 {
 	BYTE	*pBufferParam, *pBufferOwn;
-	media->GetPointer( &pBufferParam);
-	if( m_pMediaSample != NULL )
+	if( media )
 	{
-		m_pMediaSample->GetPointer( &pBufferOwn );
-		if( pBufferOwn == pBufferParam )	// 同じバッファを指しているので、保持しているサンプルと同じと見なす
+		media->GetPointer( &pBufferParam);
+		if( m_pMediaSample != NULL )
 		{
-			LONG	cBytes = m_pMediaSample->GetSize();	// サイズは変わっていないと見なす、事前にチェックしておくこと
-			m_pMediaSample->SetPointer( ptr, cBytes );
+			m_pMediaSample->GetPointer( &pBufferOwn );
+			if( pBufferOwn == pBufferParam )	// 同じバッファを指しているので、保持しているサンプルと同じと見なす
+			{
+				LONG	cBytes = m_pMediaSample->GetSize();	// サイズは変わっていないと見なす、事前にチェックしておくこと
+				m_pMediaSample->SetPointer( ptr, cBytes );
+			}
 		}
 	}
 }
