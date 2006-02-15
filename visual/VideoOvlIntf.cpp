@@ -173,7 +173,25 @@ void tTJSNI_BaseVideoOverlay::FirePeriodEvent(tTVPPeriodEventReason reason)
 	}
 }
 //---------------------------------------------------------------------------
-
+void tTJSNI_BaseVideoOverlay::FireFrameUpdateEvent( tjs_int frame )
+{
+	// fire onFrameUpdate event
+	// this is always synchronized event.
+	
+	if(Owner)
+	{
+		// fire
+		if(CanDeliverEvents)
+		{
+			// fire onPeriod event
+			tTJSVariant param[1] = {frame};
+			static ttstr eventname(TJS_W("onFrameUpdate"));
+			TVPPostEvent(Owner, Owner, eventname, 0, TVP_EPT_IMMEDIATE,
+				1, param);
+		}
+	}
+}
+//---------------------------------------------------------------------------
 
 
 //---------------------------------------------------------------------------
@@ -382,6 +400,39 @@ TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/selectAudioStream)
 }
 TJS_END_NATIVE_METHOD_DECL(/*func. name*/selectAudioStream)
 //----------------------------------------------------------------------
+TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/setMixingLayer)
+{
+	TJS_GET_NATIVE_INSTANCE(/*var. name*/_this,
+		/*var. type*/tTJSNI_VideoOverlay);
+
+	if( numparams < 1 ) return TJS_E_BADPARAMCOUNT;
+
+	tTJSNI_BaseLayer *src = NULL;
+	tTJSVariantClosure clo = param[0]->AsObjectClosureNoAddRef();
+	if(clo.Object)
+	{
+		if(TJS_FAILED(clo.Object->NativeInstanceSupport(TJS_NIS_GETINSTANCE,
+			tTJSNC_Layer::ClassID, (iTJSNativeInstance**)&src)))
+			TVPThrowExceptionMessage(TVPSpecifyLayer);
+		if(!src) TVPThrowExceptionMessage(TVPSpecifyLayer);
+	}
+	_this->SetMixingLayer(src);
+
+	return TJS_S_OK;
+}
+TJS_END_NATIVE_METHOD_DECL(/*func. name*/setMixingLayer)
+//----------------------------------------------------------------------
+TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/resetMixingLayer)
+{
+	TJS_GET_NATIVE_INSTANCE(/*var. name*/_this,
+		/*var. type*/tTJSNI_VideoOverlay);
+
+	_this->ResetMixingBitmap();
+
+	return TJS_S_OK;
+}
+TJS_END_NATIVE_METHOD_DECL(/*func. name*/resetMixingLayer)
+//----------------------------------------------------------------------
 // End: Add:	2004/08/23	T.Imoto
 //----------------------------------------------------------------------
 
@@ -439,6 +490,23 @@ TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/onPeriod)
 	return TJS_S_OK;
 }
 TJS_END_NATIVE_METHOD_DECL(/*func. name*/onPeriod)
+//----------------------------------------------------------------------
+TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/onFrameUpdate)
+{
+	TJS_GET_NATIVE_INSTANCE(/*var. name*/_this,
+		/*var. type*/tTJSNI_VideoOverlay);
+
+	tTJSVariantClosure obj = _this->GetActionOwnerNoAddRef();
+	if(obj.Object)
+	{
+		TVP_ACTION_INVOKE_BEGIN(1, "onFrameUpdate", objthis);
+		TVP_ACTION_INVOKE_MEMBER("frame");
+		TVP_ACTION_INVOKE_END(obj);
+	}
+
+	return TJS_S_OK;
+}
+TJS_END_NATIVE_METHOD_DECL(/*func. name*/onFrameUpdate)
 //----------------------------------------------------------------------
 
 //-- properties
@@ -962,9 +1030,89 @@ TJS_BEGIN_NATIVE_PROP_DECL(enabledAudioStream)
 	}
 	TJS_END_NATIVE_PROP_GETTER
 
-	TJS_DENY_NATIVE_PROP_SETTER
+	TJS_BEGIN_NATIVE_PROP_SETTER
+	{
+		TJS_GET_NATIVE_INSTANCE(/*var. name*/_this, /*var. type*/tTJSNI_VideoOverlay);
+		_this->SelectAudioStream( (tjs_uint)(tjs_int)*param );
+		return TJS_S_OK;
+	}
+	TJS_END_NATIVE_PROP_SETTER
 }
 TJS_END_NATIVE_PROP_DECL(enabledAudioStream)
+//----------------------------------------------------------------------
+TJS_BEGIN_NATIVE_PROP_DECL(numberOfVideoStream)
+{
+	TJS_BEGIN_NATIVE_PROP_GETTER
+	{
+		TJS_GET_NATIVE_INSTANCE(/*var. name*/_this, /*var. type*/tTJSNI_VideoOverlay);
+		*result = (tjs_int)_this->GetNumberOfVideoStream();
+		return TJS_S_OK;
+	}
+	TJS_END_NATIVE_PROP_GETTER
+
+	TJS_DENY_NATIVE_PROP_SETTER
+}
+TJS_END_NATIVE_PROP_DECL(numberOfVideoStream)
+//----------------------------------------------------------------------
+TJS_BEGIN_NATIVE_PROP_DECL(enabledVideoStream)
+{
+	TJS_BEGIN_NATIVE_PROP_GETTER
+	{
+		TJS_GET_NATIVE_INSTANCE(/*var. name*/_this, /*var. type*/tTJSNI_VideoOverlay);
+		*result = (tjs_int)_this->GetEnabledVideoStream();
+		return TJS_S_OK;
+	}
+	TJS_END_NATIVE_PROP_GETTER
+
+	TJS_BEGIN_NATIVE_PROP_SETTER
+	{
+		TJS_GET_NATIVE_INSTANCE(/*var. name*/_this, /*var. type*/tTJSNI_VideoOverlay);
+		_this->SelectVideoStream( (tjs_uint)(tjs_int)*param );
+		return TJS_S_OK;
+	}
+	TJS_END_NATIVE_PROP_SETTER
+}
+TJS_END_NATIVE_PROP_DECL(enabledVideoStream)
+//----------------------------------------------------------------------
+TJS_BEGIN_NATIVE_PROP_DECL(mixingMovieAlpha)
+{
+	TJS_BEGIN_NATIVE_PROP_GETTER
+	{
+		TJS_GET_NATIVE_INSTANCE(/*var. name*/_this, /*var. type*/tTJSNI_VideoOverlay);
+		*result = (tjs_real)_this->GetMixingMovieAlpha();
+		return TJS_S_OK;
+	}
+	TJS_END_NATIVE_PROP_GETTER
+
+	TJS_BEGIN_NATIVE_PROP_SETTER
+	{
+		TJS_GET_NATIVE_INSTANCE(/*var. name*/_this, /*var. type*/tTJSNI_VideoOverlay);
+		_this->SetMixingMovieAlpha( (tjs_real)*param );
+		return TJS_S_OK;
+	}
+	TJS_END_NATIVE_PROP_SETTER
+}
+TJS_END_NATIVE_PROP_DECL(mixingMovieAlpha)
+//----------------------------------------------------------------------
+TJS_BEGIN_NATIVE_PROP_DECL(mixingMovieBGColor)
+{
+	TJS_BEGIN_NATIVE_PROP_GETTER
+	{
+		TJS_GET_NATIVE_INSTANCE(/*var. name*/_this, /*var. type*/tTJSNI_VideoOverlay);
+		*result = (tjs_int)_this->GetMixingMovieBGColor();
+		return TJS_S_OK;
+	}
+	TJS_END_NATIVE_PROP_GETTER
+
+	TJS_BEGIN_NATIVE_PROP_SETTER
+	{
+		TJS_GET_NATIVE_INSTANCE(/*var. name*/_this, /*var. type*/tTJSNI_VideoOverlay);
+		_this->SetMixingMovieBGColor( (tjs_uint)(tjs_int)*param );
+		return TJS_S_OK;
+	}
+	TJS_END_NATIVE_PROP_SETTER
+}
+TJS_END_NATIVE_PROP_DECL(mixingMovieBGColor)
 //----------------------------------------------------------------------
 // End: Add:	T.Imoto
 //----------------------------------------------------------------------

@@ -21,6 +21,7 @@
 enum tTVPVideoOverlayMode {
 	vomOverlay,		// Overlay
 	vomLayer,		// Draw Layer
+	vomMixer,		// VMR
 };
 
 
