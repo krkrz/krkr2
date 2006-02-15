@@ -13,7 +13,7 @@
 #ifndef __KRMOVIE_H__
 #define __KRMOVIE_H__
 
-#define TVP_KRMOVIE_VER   0x00010008
+#define TVP_KRMOVIE_VER   0x0001000A
 
 
 //---------------------------------------------------------------------------
@@ -72,6 +72,20 @@ public:
 	virtual void __stdcall SelectAudioStream( unsigned long num ) = 0;
 	virtual void __stdcall GetEnableAudioStreamNum( long *num ) = 0;
 	virtual void __stdcall DisableAudioStream( void ) = 0;
+
+	virtual void __stdcall GetNumberOfVideoStream( unsigned long *streamCount ) = 0;
+	virtual void __stdcall SelectVideoStream( unsigned long num ) = 0;
+	virtual void __stdcall GetEnableVideoStreamNum( long *num ) = 0;
+
+	virtual void __stdcall SetMixingBitmap( HDC hdc, RECT *dest, float alpha ) = 0;
+	virtual void __stdcall ResetMixingBitmap() = 0;
+
+	virtual void __stdcall SetMixingMovieAlpha( float a ) = 0;
+	virtual void __stdcall GetMixingMovieAlpha( float *a ) = 0;
+	virtual void __stdcall SetMixingMovieBGColor( unsigned long col ) = 0;
+	virtual void __stdcall GetMixingMovieBGColor( unsigned long *col ) = 0;
+
+	virtual void __stdcall PresentVideoImage() = 0;
 // End:	Add:	T.Imoto
 };
 //---------------------------------------------------------------------------
