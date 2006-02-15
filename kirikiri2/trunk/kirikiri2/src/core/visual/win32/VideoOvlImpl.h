@@ -145,6 +145,18 @@ public:
 	void SelectAudioStream(tjs_uint n);
 	tjs_int GetEnabledAudioStream();
 	void DisableAudioStream();
+
+	tjs_uint GetNumberOfVideoStream();
+	void SelectVideoStream(tjs_uint n);
+	tjs_int GetEnabledVideoStream();
+	void SetMixingLayer( tTJSNI_BaseLayer *l );
+	void ResetMixingBitmap();
+
+	void SetMixingMovieAlpha( tjs_real a );
+	tjs_real GetMixingMovieAlpha();
+	void SetMixingMovieBGColor( tjs_uint col );
+	tjs_uint GetMixingMovieBGColor();
+
 // End:		Add:	T.Imoto
 
 	tjs_int GetOriginalWidth();
