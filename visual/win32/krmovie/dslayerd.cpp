@@ -53,23 +53,20 @@ void __stdcall tTVPDSLayerVideo::BuildGraph( HWND callbackwin, IStream *stream,
 
 	// detect CMediaType from stream's extension ('type')
 	try {
-		CMediaType mt;
-		mt.majortype = MEDIATYPE_Stream;
-		ParseVideoType( mt, type ); // may throw an exception
-
-		// create proxy filter
-		m_Proxy = new CIStreamProxy( stream, size );
-		hr = S_OK;
-		m_Reader = new CIStreamReader( m_Proxy, &mt, &hr );
-
-		if( FAILED(hr) || m_Reader == NULL )
-			ThrowDShowException(L"Failed to create proxy filter object.", hr);
-
-		m_Reader->AddRef();
-
 		// create IFilterGraph instance
 		if( FAILED(hr = m_GraphBuilder.CoCreateInstance(CLSID_FilterGraph, NULL, CLSCTX_INPROC)) )
 			ThrowDShowException(L"Failed to create FilterGraph.", hr);
+
+#if	0
+		{
+			HANDLE	hFile = CreateFile( "C:\\krdslog.txt", GENERIC_WRITE|GENERIC_READ, FILE_SHARE_WRITE|FILE_SHARE_READ, NULL, CREATE_ALWAYS,
+				FILE_ATTRIBUTE_NORMAL | FILE_FLAG_WRITE_THROUGH, NULL );
+			if( hFile != INVALID_HANDLE_VALUE )
+			{
+				GraphBuilder()->SetLogFile( (DWORD_PTR)hFile );
+			}
+		}
+#endif
 
 		// Register to ROT
 		if(GetShouldRegisterToROT())
@@ -85,87 +82,109 @@ void __stdcall tTVPDSLayerVideo::BuildGraph( HWND callbackwin, IStream *stream,
 			ThrowDShowException(L"Failed to create buffer renderer object.", hr);
 		pBRender = pCBR;
 
-		// add fliter
-		if( FAILED(hr = GraphBuilder()->AddFilter( m_Reader, L"Stream Reader")) )
-			ThrowDShowException(L"Failed to call GraphBuilder()->AddFilter( m_Reader, L\"Stream Reader\").", hr);
-
-		if( mt.subtype == MEDIASUBTYPE_Avi || mt.subtype == MEDIASUBTYPE_QTMovie )
+		if( IsWindowsMediaFile(type) )
 		{
-// GraphBuilderに自動的にグラフを構築させた後、Video Rendererをすげ替える
-// 自らグラフを構築していくよりも、AVIファイルへの対応状況が良くなるはず
-#if 1
-			if( FAILED(hr = GraphBuilder()->Render(m_Reader->GetPin(0))) )
-				ThrowDShowException(L"Failed to call IGraphBuilder::Render.", hr);
-
-			CComPtr<IBaseFilter>	pRender;
-			if( FAILED(hr = FindVideoRenderer( &pRender ) ) )
-				ThrowDShowException(L"Failed to call FindVideoRenderer( &pRender ).", hr);
-
-			CComPtr<IPin>	pRenderPin;
-			pRenderPin = GetInPin(pRender, 0);
-
-			// get decoder output pin
-			CComPtr<IPin>			pDecoderPinOut;
-			if( FAILED(hr = pRenderPin->ConnectedTo( &pDecoderPinOut )) )
-				ThrowDShowException(L"Failed to call pRenderPin->ConnectedTo( &pDecoderPinOut ).", hr);
-
-			// dissconnect pins
-			if( FAILED(hr = pDecoderPinOut->Disconnect()) )
-				ThrowDShowException(L"Failed to call pDecoderPinOut->Disconnect().", hr);
-			if( FAILED(hr = pRenderPin->Disconnect()) )
-				ThrowDShowException(L"Failed to call pRenderPin->Disconnect().", hr);
-
-			// remove default render
-			if( FAILED(hr = GraphBuilder()->RemoveFilter( pRender ) ) )
-				ThrowDShowException(L"Failed to call GraphBuilder->RemoveFilter(pRenderPin).", hr);
-
 			if( FAILED(hr = GraphBuilder()->AddFilter( pBRender, L"Buffer Renderer")) )
 				ThrowDShowException(L"Failed to call GraphBuilder()->AddFilter( pBRender, L\"Buffer Renderer\").", hr);
 
-			CComPtr<IPin>	pRdrPinIn;
-			pRdrPinIn = GetInPin(pBRender, 0);
-
-			if( FAILED(hr = GraphBuilder()->ConnectDirect( pDecoderPinOut, pRdrPinIn, NULL )) )
-				ThrowDShowException(L"Failed to call GraphBuilder()->ConnectDirect( pDecoderPinOut, pRdrPinIn, NULL ).", hr);
-#else
-			CComPtr<IPin>			pRdrPinIn;
-			CComPtr<IPin>			pSrcPinOut;
-			if( FAILED(hr = pBRender->FindPin( L"In", &pRdrPinIn )) )
-				ThrowDShowException(L"Failed to call pBRender->FindPin( L\"In\", &pRdrPinIn ).", hr);
-			pSrcPinOut = m_Reader->GetPin(0);
-			if( FAILED(hr = GraphBuilder()->Connect( pSrcPinOut, pRdrPinIn )) )
-				ThrowDShowException(L"Failed to call GraphBuilder()->Connect( pSrcPinOut, pRdrPinIn ).", hr);
-	
-			CComPtr<IPin>			pSpliterPinIn;
-			if( FAILED(hr = pSrcPinOut->ConnectedTo( &pSpliterPinIn )) )
-				ThrowDShowException(L"Failed to call pSrcPinOut->ConnectedTo( &pSpliterPinIn ).", hr);
-	
-			{	// Connect to DDS render filter
-				CComPtr<IBaseFilter>	pDDSRenderer;	// for sound renderer filter
-				if( FAILED(hr = pDDSRenderer.CoCreateInstance(CLSID_DSoundRender, NULL, CLSCTX_INPROC_SERVER)) )
-					ThrowDShowException(L"Failed to create sound render filter object.", hr);
-				if( FAILED(hr = GraphBuilder()->AddFilter(pDDSRenderer, L"Sound Renderer")) )
-					ThrowDShowException(L"Failed to call GraphBuilder()->AddFilter(pDDSRenderer, L\"Sound Renderer\").", hr);
-	
-				CComPtr<IBaseFilter>	pSpliter;
-				PIN_INFO	pinInfo;
-				if( FAILED(hr = pSpliterPinIn->QueryPinInfo( &pinInfo )) )
-					ThrowDShowException(L"Failed to call pSpliterPinIn->QueryPinInfo( &pinInfo ).", hr);
-				pSpliter = pinInfo.pFilter;
-				pinInfo.pFilter->Release();
-				if( FAILED(hr = ConnectFilters( pSpliter, pDDSRenderer ) ) )
-				{
-					if( FAILED(hr = GraphBuilder()->RemoveFilter( pDDSRenderer)) )	// 音無しとみなして、フィルタを削除する
-						ThrowDShowException(L"Failed to call GraphBuilder()->RemoveFilter( pDDSRenderer).", hr);
-				}
-			}
-#endif
+			BuildWMVGraph( pBRender, stream );
 		}
 		else
 		{
-			if( FAILED(hr = GraphBuilder()->AddFilter( pBRender, L"Buffer Renderer")) )
-				ThrowDShowException(L"Failed to call GraphBuilder()->AddFilter( pBRender, L\"Buffer Renderer\").", hr);
-			BuildMPEGGraph( pBRender, m_Reader); // may throw an exception
+			CMediaType mt;
+			mt.majortype = MEDIATYPE_Stream;
+			ParseVideoType( mt, type ); // may throw an exception
+	
+			// create proxy filter
+			m_Proxy = new CIStreamProxy( stream, size );
+			hr = S_OK;
+			m_Reader = new CIStreamReader( m_Proxy, &mt, &hr );
+			if( FAILED(hr) || m_Reader == NULL )
+				ThrowDShowException(L"Failed to create proxy filter object.", hr);
+			m_Reader->AddRef();
+
+			// add fliter
+			if( FAILED(hr = GraphBuilder()->AddFilter( m_Reader, L"Stream Reader")) )
+				ThrowDShowException(L"Failed to call GraphBuilder()->AddFilter( m_Reader, L\"Stream Reader\").", hr);
+	
+			if( mt.subtype == MEDIASUBTYPE_Avi || mt.subtype == MEDIASUBTYPE_QTMovie )
+			{
+// GraphBuilderに自動的にグラフを構築させた後、Video Rendererをすげ替える
+// 自らグラフを構築していくよりも、AVIファイルへの対応状況が良くなるはず
+#if 1
+				if( FAILED(hr = GraphBuilder()->Render(m_Reader->GetPin(0))) )
+					ThrowDShowException(L"Failed to call IGraphBuilder::Render.", hr);
+	
+				CComPtr<IBaseFilter>	pRender;
+				if( FAILED(hr = FindVideoRenderer( &pRender ) ) )
+					ThrowDShowException(L"Failed to call FindVideoRenderer( &pRender ).", hr);
+	
+				CComPtr<IPin>	pRenderPin;
+				pRenderPin = GetInPin(pRender, 0);
+	
+				// get decoder output pin
+				CComPtr<IPin>			pDecoderPinOut;
+				if( FAILED(hr = pRenderPin->ConnectedTo( &pDecoderPinOut )) )
+					ThrowDShowException(L"Failed to call pRenderPin->ConnectedTo( &pDecoderPinOut ).", hr);
+	
+				// dissconnect pins
+				if( FAILED(hr = pDecoderPinOut->Disconnect()) )
+					ThrowDShowException(L"Failed to call pDecoderPinOut->Disconnect().", hr);
+				if( FAILED(hr = pRenderPin->Disconnect()) )
+					ThrowDShowException(L"Failed to call pRenderPin->Disconnect().", hr);
+	
+				// remove default render
+				if( FAILED(hr = GraphBuilder()->RemoveFilter( pRender ) ) )
+					ThrowDShowException(L"Failed to call GraphBuilder->RemoveFilter(pRenderPin).", hr);
+	
+				if( FAILED(hr = GraphBuilder()->AddFilter( pBRender, L"Buffer Renderer")) )
+					ThrowDShowException(L"Failed to call GraphBuilder()->AddFilter( pBRender, L\"Buffer Renderer\").", hr);
+	
+				CComPtr<IPin>	pRdrPinIn;
+				pRdrPinIn = GetInPin(pBRender, 0);
+	
+				if( FAILED(hr = GraphBuilder()->ConnectDirect( pDecoderPinOut, pRdrPinIn, NULL )) )
+					ThrowDShowException(L"Failed to call GraphBuilder()->ConnectDirect( pDecoderPinOut, pRdrPinIn, NULL ).", hr);
+#else
+				CComPtr<IPin>			pRdrPinIn;
+				CComPtr<IPin>			pSrcPinOut;
+				if( FAILED(hr = pBRender->FindPin( L"In", &pRdrPinIn )) )
+					ThrowDShowException(L"Failed to call pBRender->FindPin( L\"In\", &pRdrPinIn ).", hr);
+				pSrcPinOut = m_Reader->GetPin(0);
+				if( FAILED(hr = GraphBuilder()->Connect( pSrcPinOut, pRdrPinIn )) )
+					ThrowDShowException(L"Failed to call GraphBuilder()->Connect( pSrcPinOut, pRdrPinIn ).", hr);
+		
+				CComPtr<IPin>			pSpliterPinIn;
+				if( FAILED(hr = pSrcPinOut->ConnectedTo( &pSpliterPinIn )) )
+					ThrowDShowException(L"Failed to call pSrcPinOut->ConnectedTo( &pSpliterPinIn ).", hr);
+		
+				{	// Connect to DDS render filter
+					CComPtr<IBaseFilter>	pDDSRenderer;	// for sound renderer filter
+					if( FAILED(hr = pDDSRenderer.CoCreateInstance(CLSID_DSoundRender, NULL, CLSCTX_INPROC_SERVER)) )
+						ThrowDShowException(L"Failed to create sound render filter object.", hr);
+					if( FAILED(hr = GraphBuilder()->AddFilter(pDDSRenderer, L"Sound Renderer")) )
+						ThrowDShowException(L"Failed to call GraphBuilder()->AddFilter(pDDSRenderer, L\"Sound Renderer\").", hr);
+		
+					CComPtr<IBaseFilter>	pSpliter;
+					PIN_INFO	pinInfo;
+					if( FAILED(hr = pSpliterPinIn->QueryPinInfo( &pinInfo )) )
+						ThrowDShowException(L"Failed to call pSpliterPinIn->QueryPinInfo( &pinInfo ).", hr);
+					pSpliter = pinInfo.pFilter;
+					pinInfo.pFilter->Release();
+					if( FAILED(hr = ConnectFilters( pSpliter, pDDSRenderer ) ) )
+					{
+						if( FAILED(hr = GraphBuilder()->RemoveFilter( pDDSRenderer)) )	// 音無しとみなして、フィルタを削除する
+							ThrowDShowException(L"Failed to call GraphBuilder()->RemoveFilter( pDDSRenderer).", hr);
+					}
+				}
+#endif
+			}
+			else
+			{
+				if( FAILED(hr = GraphBuilder()->AddFilter( pBRender, L"Buffer Renderer")) )
+					ThrowDShowException(L"Failed to call GraphBuilder()->AddFilter( pBRender, L\"Buffer Renderer\").", hr);
+				BuildMPEGGraph( pBRender, m_Reader); // may throw an exception
+			}
 		}
 
 #if 0	// 吉里吉里のBitmapは上下逆の形式らしいので、上下反転のための再接続は必要ない

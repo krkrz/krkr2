@@ -45,23 +45,12 @@ void __stdcall tTVPDSVideoOverlay::BuildGraph( HWND callbackwin, IStream *stream
 {
 	HRESULT			hr;
 
-	CoInitialize(NULL);
+//	CoInitialize(NULL);
 
 	// detect CMediaType from stream's extension ('type')
 	try {
-		CMediaType mt;
-		mt.majortype = MEDIATYPE_Stream;
-		ParseVideoType( mt, type ); // may throw an exception
-
-		// create proxy filter
-		m_Proxy = new CIStreamProxy( stream, size );
-		hr = S_OK;
-		m_Reader = new CIStreamReader( m_Proxy, &mt, &hr );
-
-		if( FAILED(hr) || m_Reader == NULL )
-			ThrowDShowException(L"Failed to create proxy filter object.", hr);
-
-		m_Reader->AddRef();
+		if( FAILED(hr = CoInitializeEx(NULL, COINIT_APARTMENTTHREADED)) )
+			ThrowDShowException(L"Failed to call CoInitializeEx.", hr);
 
 		// create IFilterGraph instance
 		if( FAILED(hr = m_GraphBuilder.CoCreateInstance(CLSID_FilterGraph, NULL, CLSCTX_INPROC)) )
@@ -73,17 +62,7 @@ void __stdcall tTVPDSVideoOverlay::BuildGraph( HWND callbackwin, IStream *stream
 			AddToROT(m_dwROTReg);
 		}
 
-		// add fliter
-		if( FAILED(hr = GraphBuilder()->AddFilter( m_Reader, NULL)) )
-			ThrowDShowException(L"Failed to call IFilterGraph::AddFilter.", hr);
-
-		if( mt.subtype == MEDIASUBTYPE_Avi || mt.subtype == MEDIASUBTYPE_QTMovie )
-		{
-			// render output pin
-			if( FAILED(hr = GraphBuilder()->Render(m_Reader->GetPin(0))) )
-				ThrowDShowException(L"Failed to call IGraphBuilder::Render.", hr);
-		}
-		else
+		if( IsWindowsMediaFile(type) )
 		{
 			CComPtr<IBaseFilter>	pVRender;	// for video renderer filter
 			if( FAILED(hr = pVRender.CoCreateInstance(CLSID_VideoRenderer, NULL, CLSCTX_INPROC_SERVER)) )
@@ -91,7 +70,43 @@ void __stdcall tTVPDSVideoOverlay::BuildGraph( HWND callbackwin, IStream *stream
 			if( FAILED(hr = GraphBuilder()->AddFilter(pVRender, L"Video Renderer")) )
 				ThrowDShowException(L"Failed to call IFilterGraph::AddFilter.", hr);
 
-			BuildMPEGGraph( pVRender, m_Reader); // may throw an exception
+			BuildWMVGraph( pVRender, stream );
+		}
+		else
+		{
+			CMediaType mt;
+			mt.majortype = MEDIATYPE_Stream;
+			ParseVideoType( mt, type ); // may throw an exception
+
+			// create proxy filter
+			m_Proxy = new CIStreamProxy( stream, size );
+			hr = S_OK;
+			m_Reader = new CIStreamReader( m_Proxy, &mt, &hr );
+
+			if( FAILED(hr) || m_Reader == NULL )
+				ThrowDShowException(L"Failed to create proxy filter object.", hr);
+
+			m_Reader->AddRef();
+			// add fliter
+			if( FAILED(hr = GraphBuilder()->AddFilter( m_Reader, NULL)) )
+				ThrowDShowException(L"Failed to call IFilterGraph::AddFilter.", hr);
+
+			if( mt.subtype == MEDIASUBTYPE_Avi || mt.subtype == MEDIASUBTYPE_QTMovie )
+			{
+				// render output pin
+				if( FAILED(hr = GraphBuilder()->Render(m_Reader->GetPin(0))) )
+					ThrowDShowException(L"Failed to call IGraphBuilder::Render.", hr);
+			}
+			else
+			{
+				CComPtr<IBaseFilter>	pVRender;	// for video renderer filter
+				if( FAILED(hr = pVRender.CoCreateInstance(CLSID_VideoRenderer, NULL, CLSCTX_INPROC_SERVER)) )
+					ThrowDShowException(L"Failed to create video renderer filter object.", hr);
+				if( FAILED(hr = GraphBuilder()->AddFilter(pVRender, L"Video Renderer")) )
+					ThrowDShowException(L"Failed to call IFilterGraph::AddFilter.", hr);
+
+				BuildMPEGGraph( pVRender, m_Reader); // may throw an exception
+			}
 		}
 
 		// query each interfaces
@@ -106,9 +121,6 @@ void __stdcall tTVPDSVideoOverlay::BuildGraph( HWND callbackwin, IStream *stream
 
 		if( FAILED(hr = m_GraphBuilder.QueryInterface( &m_BasicVideo )) )
 			ThrowDShowException(L"Failed to query IBasicVideo", hr);
-//		m_GraphBuilder.QueryInterface( &m_BasicAudio );
-//		if( FAILED(hr = m_GraphBuilder.QueryInterface( &m_BasicAudio )) )
-//			ThrowDShowException(L"Failed to query IBasicAudio", hr);
 
 		if( FAILED(hr = m_GraphBuilder.QueryInterface( &m_VideoWindow )) )
 			ThrowDShowException(L"Failed to query IVideoWindow", hr);
@@ -159,6 +171,9 @@ void __stdcall tTVPDSVideoOverlay::BuildGraph( HWND callbackwin, IStream *stream
 //----------------------------------------------------------------------------
 void __stdcall tTVPDSVideoOverlay::ReleaseAll()
 {
+	// Reset owner window
+	VideoWindow()->put_Owner(NULL);
+
 	if( m_MediaControl.p != NULL )
 	{
 		m_MediaControl->Stop();
@@ -166,9 +181,6 @@ void __stdcall tTVPDSVideoOverlay::ReleaseAll()
 
 	if( m_VideoWindow.p )
 		m_VideoWindow.Release();
-
-//	if( m_BasicAudio.p )
-//		m_BasicAudio.Release();
 
 	tTVPDSMovie::ReleaseAll();
 }
@@ -202,14 +214,14 @@ void __stdcall tTVPDSVideoOverlay::SetWindow( HWND window )
 			{
 				ThrowDShowException(L"Failed to call IVideoWindow::put_WindowStyle.", hr);
 			}
-			if( FAILED(hr = VideoWindow()->put_Visible(Visible?OATRUE:OAFALSE)) )
-			{
-				ThrowDShowException(L"Failed to call IVideoWindow::put_Visible.", hr);
-			}
 			if( FAILED(hr = VideoWindow()->SetWindowPosition(Rect.left, Rect.top,
 				Rect.right-Rect.left, Rect.bottom-Rect.top)) )
 			{
 				ThrowDShowException(L"Failed to call IVideoWindow::SetWindowPosition.", hr);
+			}
+			if( FAILED(hr = VideoWindow()->put_Visible(Visible?OATRUE:OAFALSE)) )
+			{
+				ThrowDShowException(L"Failed to call IVideoWindow::put_Visible.", hr);
 			}
 		}
 		OwnerWindow = window;
