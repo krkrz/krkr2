@@ -57,6 +57,7 @@ protected:
 	void SetStatusAsync(tTVPSoundStatus s);
 	void FireCallbackCommand(const ttstr & command, const ttstr & argument);
 	void FirePeriodEvent(tTVPPeriodEventReason reason);
+	void FireFrameUpdateEvent( tjs_int frame );
 
 
 public:
