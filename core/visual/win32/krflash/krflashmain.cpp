@@ -300,6 +300,56 @@ void __stdcall tTVPFlashOverlay::DisableAudioStream( void )
 	if(Shutdown) return;
 	TVPThrowExceptionMessage(L"DisableAudioStream: Currently not supported");
 }
+void __stdcall tTVPFlashOverlay::GetNumberOfVideoStream( unsigned long *streamCount )
+{
+	if(Shutdown) return;
+	TVPThrowExceptionMessage(L"GetNumberOfVideoStream: Currently not supported");
+}
+void __stdcall tTVPFlashOverlay::SelectVideoStream( unsigned long num )
+{
+	if(Shutdown) return;
+	TVPThrowExceptionMessage(L"SelectVideoStream: Currently not supported");
+}
+void __stdcall tTVPFlashOverlay::GetEnableVideoStreamNum( long *num )
+{
+	if(Shutdown) return;
+	TVPThrowExceptionMessage(L"GetEnableVideoStreamNum: Currently not supported");
+}
+void __stdcall tTVPFlashOverlay::SetMixingBitmap( HDC hdc, RECT *dest, float alpha )
+{
+	if(Shutdown) return;
+	TVPThrowExceptionMessage(L"SetMixingBitmap: Currently not supported");
+}
+void __stdcall tTVPFlashOverlay::ResetMixingBitmap()
+{
+	if(Shutdown) return;
+	TVPThrowExceptionMessage(L"ResetMixingBitmap: Currently not supported");
+}
+void __stdcall tTVPFlashOverlay::SetMixingMovieAlpha( float a )
+{
+	if(Shutdown) return;
+	TVPThrowExceptionMessage(L"SetMixingMovieAlpha: Currently not supported");
+}
+void __stdcall tTVPFlashOverlay::GetMixingMovieAlpha( float *a )
+{
+	if(Shutdown) return;
+	TVPThrowExceptionMessage(L"GetMixingMovieAlpha: Currently not supported");
+}
+void __stdcall tTVPFlashOverlay::SetMixingMovieBGColor( unsigned long col )
+{
+	if(Shutdown) return;
+	TVPThrowExceptionMessage(L"SetMixingMovieBGColor: Currently not supported");
+}
+void __stdcall tTVPFlashOverlay::GetMixingMovieBGColor( unsigned long *col )
+{
+	if(Shutdown) return;
+	TVPThrowExceptionMessage(L"GetMixingMovieBGColor: Currently not supported");
+}
+void __stdcall tTVPFlashOverlay::PresentVideoImage()
+{
+	if(Shutdown) return;
+	TVPThrowExceptionMessage(L"PresentVideoImage: Currently not supported");
+}
 // End:	Add:	T.Imoto
 
 
