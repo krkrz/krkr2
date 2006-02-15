@@ -19,6 +19,21 @@
 
 #include "DShowException.h"
 
+#include <dmodshow.h>
+#include <dmoreg.h>
+#include "CDemuxSource.h"
+#include "CWMReader.h"
+
+// {BAE59473-019E-4f1f-8A8C-3D41A9F4921E}
+static const GUID CLSID_WMReaderSource = 
+{ 0xbae59473, 0x19e, 0x4f1f, { 0x8a, 0x8c, 0x3d, 0x41, 0xa9, 0xf4, 0x92, 0x1e } };
+
+// WMVとWMAのDecoderのクラスID
+static const GUID CLSID_WMVDecoderDMO = 
+{ 0x82d353df, 0x90bd, 0x4382, { 0x8b, 0xc2, 0x3f, 0x61, 0x92, 0xb7, 0x6e, 0x34 } };
+static const GUID CLSID_WMADecoderDMO = 
+{ 0x2eeb4adf, 0x4578, 0x4d10, { 0xbc, 0xa7, 0xbb, 0x95, 0x5f, 0x56, 0x32, 0x0a } };
+
 tTVPDSMovie::tTVPDSMovie()
 {
 	m_dwROTReg = 0xfedcba98;
@@ -34,6 +49,7 @@ tTVPDSMovie::tTVPDSMovie()
 	RefCount = 1;
 	Shutdown = false;
 }
+
 tTVPDSMovie::~tTVPDSMovie()
 {
 	Shutdown = true;
@@ -243,7 +259,14 @@ void __stdcall tTVPDSMovie::GetEvent( long *evcode, long *param1, long *param2, 
 	HRESULT hr;
 	*got = false;
 	hr = Event()->GetEvent(evcode, param1, param2, 0);
-	if(SUCCEEDED(hr)) *got = true;
+	if( SUCCEEDED(hr) )
+	{
+		if( *evcode == EC_ERRORABORT )
+		{
+			ThrowDShowException(L"Error Abort.", static_cast<HRESULT>(*param1) );
+		}
+		*got = true;
+	}
 	return;
 }
 //----------------------------------------------------------------------------
@@ -578,6 +601,8 @@ void __stdcall tTVPDSMovie::GetTotalTime( __int64 *t )
 //----------------------------------------------------------------------------
 void __stdcall tTVPDSMovie::GetVideoSize( long *width, long *height )
 {
+	if(Shutdown) return;
+
 	if( width != NULL )
 		Video()->get_SourceWidth( width );
 
@@ -628,6 +653,8 @@ void __stdcall tTVPDSMovie::SetVisible( bool b )
 //----------------------------------------------------------------------------
 void __stdcall tTVPDSMovie::SetPlayRate( double rate )
 {
+	if(Shutdown) return;
+
 	HRESULT hr;
 	if( rate > 0.0 )
 	{
@@ -641,6 +668,8 @@ void __stdcall tTVPDSMovie::SetPlayRate( double rate )
 //----------------------------------------------------------------------------
 void __stdcall tTVPDSMovie::GetPlayRate( double *rate )
 {
+	if(Shutdown) { *rate = 1.0; return; }
+
 	HRESULT hr;
 	if( rate != NULL )
 	{
@@ -658,6 +687,8 @@ void __stdcall tTVPDSMovie::GetPlayRate( double *rate )
 //----------------------------------------------------------------------------
 void __stdcall tTVPDSMovie::SetAudioBalance( long balance )
 {
+	if(Shutdown) return;
+
 	HRESULT	hr;
 	if( Audio() != NULL )
 	{
@@ -678,6 +709,8 @@ void __stdcall tTVPDSMovie::SetAudioBalance( long balance )
 //----------------------------------------------------------------------------
 void __stdcall tTVPDSMovie::GetAudioBalance( long *balance )
 {
+	if(Shutdown) { *balance = 0; return; }
+
 	HRESULT	hr;
 	if( Audio() != NULL && balance != NULL )
 	{
@@ -693,6 +726,8 @@ void __stdcall tTVPDSMovie::GetAudioBalance( long *balance )
 //----------------------------------------------------------------------------
 void __stdcall tTVPDSMovie::SetAudioVolume( long volume )
 {
+	if(Shutdown) return;
+
 	HRESULT	hr;
 	if( Audio() != NULL )
 	{
@@ -711,6 +746,8 @@ void __stdcall tTVPDSMovie::SetAudioVolume( long volume )
 //----------------------------------------------------------------------------
 void __stdcall tTVPDSMovie::GetAudioVolume( long *volume )
 {
+	if(Shutdown) { *volume = 0; } return;
+
 	HRESULT	hr;
 	if( Audio() != NULL && volume != NULL )
 	{
@@ -724,6 +761,8 @@ void __stdcall tTVPDSMovie::GetAudioVolume( long *volume )
 //----------------------------------------------------------------------------
 void __stdcall tTVPDSMovie::GetNumberOfAudioStream( unsigned long *streamCount )
 {
+	if(Shutdown) return;
+
 	if( streamCount != NULL )
 		*streamCount = m_AudioStreamInfo.size();
 }
@@ -733,23 +772,84 @@ void __stdcall tTVPDSMovie::GetNumberOfAudioStream( unsigned long *streamCount )
 //----------------------------------------------------------------------------
 void __stdcall tTVPDSMovie::SelectAudioStream( unsigned long num )
 {
+	if(Shutdown) return;
+
+	SelectStream( num, m_AudioStreamInfo );
+}
+//----------------------------------------------------------------------------
+// @brief		有効なオーディオストリーム番号を得る
+// 一番初めに見つかった有効なストリーム番号を返す。
+// グループ内のすべてのストリームが有効である可能性もあるが、tTVPDSMovie::SelectAudioStreamを使用した場合、グループ内で1つだけか有効になる。
+//----------------------------------------------------------------------------
+void __stdcall tTVPDSMovie::GetEnableAudioStreamNum( long *num )
+{
+	if(Shutdown) return;
+
+	GetEnableStreamNum( num, m_AudioStreamInfo );
+}
+//----------------------------------------------------------------------------
+//! @brief	  	ビデオストリーム数を取得する
+//! @param streamCount : ビデオストリーム数を入れる変数へのポインタ
+//----------------------------------------------------------------------------
+void __stdcall tTVPDSMovie::GetNumberOfVideoStream( unsigned long *streamCount )
+{
+	if(Shutdown) return;
+
+	if( streamCount != NULL )
+		*streamCount = m_VideoStreamInfo.size();
+}
+//----------------------------------------------------------------------------
+//! @brief	  	指定したビデオストリーム番号のストリームを有効にする
+//! @param num : 有効にするビデオストリーム番号
+//----------------------------------------------------------------------------
+void __stdcall tTVPDSMovie::SelectVideoStream( unsigned long num )
+{
+	if(Shutdown) return;
+
+	SelectStream( num, m_VideoStreamInfo );
+}
+//----------------------------------------------------------------------------
+// @brief		有効なビデオストリーム番号を得る
+// 一番初めに見つかった有効なストリーム番号を返す。
+// グループ内のすべてのストリームが有効である可能性もあるが、tTVPDSMovie::SelectAudioStreamを使用した場合、グループ内で1つだけか有効になる。
+//----------------------------------------------------------------------------
+void __stdcall tTVPDSMovie::GetEnableVideoStreamNum( long *num )
+{
+	if(Shutdown) return;
+
+	GetEnableStreamNum( num, m_VideoStreamInfo );
+}
+//----------------------------------------------------------------------------
+//! @brief	  	指定したストリーム番号のストリームを有効にする
+//! @param num : 有効にするストリーム番号
+//! @param si : ビデオかオーディオのストリーム情報
+//----------------------------------------------------------------------------
+void __stdcall tTVPDSMovie::SelectStream( unsigned long num, std::vector<StreamInfo> &si )
+{
+	if(Shutdown) return;
+
 	HRESULT	hr;
-	if( StreamSelect() != NULL && num < m_AudioStreamInfo.size() )
+	if( StreamSelect() != NULL && num < si.size() )
 	{
-		if( FAILED(hr = StreamSelect()->Enable( m_AudioStreamInfo[num].index, AMSTREAMSELECTENABLE_ENABLE )) )
+		if( FAILED(hr = StreamSelect()->Enable( si[num].index, AMSTREAMSELECTENABLE_ENABLE )) )
 			ThrowDShowException(L"Failed to call IAMStreamSelect::Enable.", hr);
 	}
 }
-// 一番初めに見つかった有効なストリーム番号を返す。
-// グループ内のすべてのストリームが有効である可能性もあるが、tTVPDSMovie::SelectAudioStreamを使用した場合、グループ内で1つだけか有効になる。
-void __stdcall tTVPDSMovie::GetEnableAudioStreamNum( long *num )
+//----------------------------------------------------------------------------
+// @brief		有効なビデオストリーム番号を得る
+//! @param num : 有効なストリーム番号を入れる変数へのポインタ
+//! @param si : ビデオかオーディオのストリーム情報
+//----------------------------------------------------------------------------
+void __stdcall tTVPDSMovie::GetEnableStreamNum( long *num, std::vector<StreamInfo> &si )
 {
+	if(Shutdown) return;
+
 	HRESULT	hr;
 	*num = -1;
-	if( StreamSelect() != NULL && m_AudioStreamInfo.size() > 0)
+	if( StreamSelect() != NULL && si.size() > 0)
 	{
 		long strNum = 0;
-		for( std::vector<AudioStreamInfo>::iterator i = m_AudioStreamInfo.begin(); i != m_AudioStreamInfo.end(); i++ )
+		for( std::vector<StreamInfo>::iterator i = si.begin(); i != si.end(); i++ )
 		{
 			DWORD	dwFlags;
 			if( FAILED(hr = StreamSelect()->Info( (*i).index, NULL, &dwFlags, NULL, NULL, NULL, NULL, NULL ) ) )
@@ -764,22 +864,69 @@ void __stdcall tTVPDSMovie::GetEnableAudioStreamNum( long *num )
 		}
 	}
 }
+//----------------------------------------------------------------------------
+// @brief		オーディオストリームを無効にする
 // MPEG Iの時、この操作は出来ない
+//----------------------------------------------------------------------------
 void __stdcall tTVPDSMovie::DisableAudioStream( void )
 {
+	if(Shutdown) return;
+
 	HRESULT	hr;
 	if( StreamSelect() != NULL && m_AudioStreamInfo.size() > 0)
 	{
 		if( FAILED(hr = StreamSelect()->Enable( m_AudioStreamInfo[0].index, 0 )) )
 			ThrowDShowException(L"Failed to call IAMStreamSelect::Enable.", hr);
 #if 0
-		for( std::vector<AudioStreamInfo>::iterator i = m_AudioStreamInfo.begin(); i != m_AudioStreamInfo.end(); i++ )
+		for( std::vector<StreamInfo>::iterator i = m_AudioStreamInfo.begin(); i != m_AudioStreamInfo.end(); i++ )
 		{
 			if( FAILED(hr = StreamSelect()->Enable( (*i).index, 0 )) )
 				ThrowDShowException(L"Failed to call IAMStreamSelect::Enable.", hr);
 		}
 #endif
 	}
+}
+//----------------------------------------------------------------------------
+//! @brief	  	何もしない。
+//----------------------------------------------------------------------------
+void __stdcall tTVPDSMovie::SetMixingBitmap( HDC hdc, RECT *dest, float alpha )
+{
+}
+//----------------------------------------------------------------------------
+//! @brief	  	何もしない。
+//----------------------------------------------------------------------------
+void __stdcall tTVPDSMovie::ResetMixingBitmap()
+{
+}
+//----------------------------------------------------------------------------
+//! @brief	  	何もしない。
+//----------------------------------------------------------------------------
+void __stdcall tTVPDSMovie::SetMixingMovieAlpha( float a )
+{
+}
+//----------------------------------------------------------------------------
+//! @brief	  	何もしない。
+//----------------------------------------------------------------------------
+void __stdcall tTVPDSMovie::GetMixingMovieAlpha( float *a )
+{
+}
+//----------------------------------------------------------------------------
+//! @brief	  	何もしない。
+//----------------------------------------------------------------------------
+void __stdcall tTVPDSMovie::SetMixingMovieBGColor( unsigned long col )
+{
+}
+//----------------------------------------------------------------------------
+//! @brief	  	何もしない。
+//----------------------------------------------------------------------------
+void __stdcall tTVPDSMovie::GetMixingMovieBGColor( unsigned long *col )
+{
+}
+//----------------------------------------------------------------------------
+//! @brief	  	何もしない。
+//----------------------------------------------------------------------------
+void __stdcall tTVPDSMovie::PresentVideoImage()
+{
 }
 //----------------------------------------------------------------------------
 //! @brief	  	ROT ( Running Object Table )にグラフを登録する。
@@ -835,6 +982,8 @@ void __stdcall tTVPDSMovie::RemoveFromROT( DWORD ROTreg )
 //----------------------------------------------------------------------------
 HRESULT __stdcall tTVPDSMovie::GetAvgTimePerFrame( REFTIME *pAvgTimePerFrame )
 {
+	if(Shutdown) return S_OK;
+
 	return Video()->get_AvgTimePerFrame( pAvgTimePerFrame );
 }
 //----------------------------------------------------------------------------
@@ -851,8 +1000,10 @@ void tTVPDSMovie::ParseVideoType( CMediaType &mt, const wchar_t *type )
 	else if (wcsicmp(type, L".mpeg") == 0)
 		mt.subtype = MEDIASUBTYPE_MPEG1System;
 	else if (wcsicmp(type, L".mpv") == 0) 
-//		mt.subtype = MEDIASUBTYPE_MPEG1Video;
-		mt.subtype = MEDIASUBTYPE_MPEG1System;
+		mt.subtype = MEDIASUBTYPE_MPEG1Video;
+//		mt.subtype = MEDIASUBTYPE_MPEG1System;
+	else if (wcsicmp(type, L".m1v") == 0) 
+		mt.subtype = MEDIASUBTYPE_MPEG1Video;
 	else if (wcsicmp(type, L".dat") == 0)
 		mt.subtype = MEDIASUBTYPE_MPEG1VideoCD;
 	else if (wcsicmp(type, L".avi") == 0)
@@ -866,7 +1017,23 @@ void tTVPDSMovie::ParseVideoType( CMediaType &mt, const wchar_t *type )
 	else
 		TVPThrowExceptionMessage(L"Unknown video format extension."); // unknown format
 }
-
+//----------------------------------------------------------------------------
+//! @brief	  	拡張子からムービーがWindows Media Fileかどうか判別します
+//! @param		type : ムービーファイルの拡張子
+//! @return		Windows Media Fileかどうか
+//----------------------------------------------------------------------------
+bool tTVPDSMovie::IsWindowsMediaFile( const wchar_t *type ) const
+{
+	if( (wcsicmp(type, L".asf") == 0) || (wcsicmp(type, L".wma") == 0) ||
+		(wcsicmp(type, L".wmv") == 0) )
+	{
+		return true;
+	}
+	else
+	{
+		return false;
+	}
+}
 //----------------------------------------------------------------------------
 //! @brief	  	メディアタイプの開放
 //!				IEnumMediaTypesで取得したAM_MEDIA_TYPEは、このメソッドで削除すること
@@ -916,46 +1083,7 @@ void tTVPDSMovie::DebugOutputPinMediaType( IPin *pPin )
 			if(Fetched)
 			{
 #if _DEBUG
-				if( pMediaType->majortype == MEDIATYPE_Stream )
-					OutputDebugString("  MEDIATYPE_Stream : ");
-				else if( pMediaType->majortype == MEDIATYPE_Audio )
-					OutputDebugString("  MEDIATYPE_Audio : ");
-				else if( pMediaType->majortype == MEDIATYPE_Video )
-					OutputDebugString("  MEDIATYPE_Video : ");
-				else
-					OutputDebugString("  unknown MEDIATYPE : ");
-
-				if( pMediaType->subtype == MEDIASUBTYPE_MPEG1System )
-					OutputDebugString("  MEDIASUBTYPE_MPEG1System : ");
-				else if( pMediaType->subtype == MEDIASUBTYPE_MPEG1VideoCD )
-					OutputDebugString("  MEDIASUBTYPE_MPEG1VideoCD : ");
-				else if( pMediaType->subtype == MEDIASUBTYPE_MPEG1Packet )
-					OutputDebugString("  MEDIASUBTYPE_MPEG1Packet : ");
-				else if( pMediaType->subtype == MEDIASUBTYPE_MPEG1Payload )
-					OutputDebugString("  MEDIASUBTYPE_MPEG1Payload : ");
-				else if( pMediaType->subtype == MEDIASUBTYPE_MPEG1Video )
-					OutputDebugString("  MEDIASUBTYPE_MPEG1Video : ");
-				else if( pMediaType->subtype == MEDIASUBTYPE_MPEG1Audio )
-					OutputDebugString("  MEDIASUBTYPE_MPEG1Audio : ");
-				else
-					OutputDebugString("  unknown MEDIASUBTYPE\n");
-
-				if( pMediaType->formattype == FORMAT_DvInfo )
-					OutputDebugString("  FORMAT_DvInfo\n");
-				else if( pMediaType->formattype == FORMAT_MPEGVideo )
-					OutputDebugString("  FORMAT_MPEGVideo\n");
-				else if( pMediaType->formattype == FORMAT_MPEG2Video )
-					OutputDebugString("  FORMAT_MPEG2Video\n");
-				else if( pMediaType->formattype == FORMAT_VideoInfo )
-					OutputDebugString("  FORMAT_VideoInfo\n");
-				else if( pMediaType->formattype == FORMAT_VideoInfo2 )
-					OutputDebugString("  FORMAT_VideoInfo2\n");
-				else if( pMediaType->formattype == FORMAT_WaveFormatEx )
-					OutputDebugString("  FORMAT_WaveFormatEx\n");
-				else if( pMediaType->formattype == GUID_NULL )
-					OutputDebugString("  GUID_NULL\n");
-				else
-					OutputDebugString("  unknown FORMAT\n");
+				DisplayType( "DebugOutputPinMediaType:\n", pMediaType );
 #endif
 				UtilDeleteMediaType(pMediaType);
 			}
@@ -1204,7 +1332,6 @@ HRESULT tTVPDSMovie::CountFilterPins(IBaseFilter *pFilter, ULONG *pulInPins, ULO
 //! @brief	  	MPEG1 用のグラフを手動で構築する
 //! @param		pRdr : グラフに参加しているレンダーフィルタ
 //! @param		pSrc : グラフに参加しているソースフィルタ
-//! @param		useSound : サウンドが使用されるかどうか
 //----------------------------------------------------------------------------
 void tTVPDSMovie::BuildMPEGGraph( IBaseFilter *pRdr, IBaseFilter *pSrc )
 {
@@ -1275,12 +1402,16 @@ void tTVPDSMovie::BuildMPEGGraph( IBaseFilter *pRdr, IBaseFilter *pSrc )
 			AM_MEDIA_TYPE	*pmt;
 			if( S_OK == StreamSelect()->Info( i, &pmt, &dwFlags, NULL, &dwGroup, NULL, NULL, NULL ) )
 			{
+				StreamInfo	si;
+				si.groupNum = dwGroup;
+				si.index = i;
 				if( pmt->majortype == MEDIATYPE_Audio )
 				{
-					AudioStreamInfo	asi;
-					asi.groupNum = dwGroup;
-					asi.index = i;
-					m_AudioStreamInfo.push_back( asi );
+					m_AudioStreamInfo.push_back( si );
+				}
+				else if( pmt->majortype == MEDIATYPE_Video )
+				{
+					m_VideoStreamInfo.push_back( si );
 				}
 				DeleteMediaType(pmt);
 			}
@@ -1288,6 +1419,81 @@ void tTVPDSMovie::BuildMPEGGraph( IBaseFilter *pRdr, IBaseFilter *pSrc )
 	}
 
 	return;
+}
+//----------------------------------------------------------------------------
+//! @brief	  	WMV 用のグラフを手動で構築する
+//! @param		pRdr : レンダーフィルタ
+//! @param		pStream : ソースストリーム (WMVであること)
+//----------------------------------------------------------------------------
+void tTVPDSMovie::BuildWMVGraph( IBaseFilter *pRdr, IStream *pStream )
+{
+	HRESULT	hr = S_OK;
+
+	CComPtr<IBaseFilter>	pWMSource;
+	CWMReader		*pReader = new CWMReader();
+	CDemuxSource	*pWMAS = new CDemuxSource(NULL, &hr, pReader, CLSID_WMReaderSource );
+	if( FAILED(hr) )
+		ThrowDShowException(L"Failed to create Windows Media stream source object.", hr);
+
+	pWMSource = pWMAS;
+	if( FAILED(hr = pWMAS->OpenStream( pStream ) ) )
+		ThrowDShowException(L"Failed to call CDemuxSource::OpenStream( stream ).", hr);
+
+	if( FAILED(hr = GraphBuilder()->AddFilter( pWMSource, L"Windows Media stream source")) )
+		ThrowDShowException(L"Failed to call GraphBuilder()->AddFilter( pWMSource, L\"Windows Media stream source\").", hr);
+
+	CComPtr<IBaseFilter>	pWMVDec;
+	if( FAILED(pWMVDec.CoCreateInstance(CLSID_DMOWrapperFilter, NULL, CLSCTX_INPROC_SERVER )) )
+		ThrowDShowException(L"Failed to create DMOWrapperFilter.", hr);
+
+	{	// Set WMV Decoder DMO
+		CComPtr<IDMOWrapperFilter>	pWmvDmoWrapper;
+		if( FAILED(hr = pWMVDec.QueryInterface( &pWmvDmoWrapper )) )
+			ThrowDShowException(L"Failed to query IDMOWrapperFilter.", hr);
+		if( FAILED(hr = pWmvDmoWrapper->Init(CLSID_WMVDecoderDMO, DMOCATEGORY_VIDEO_DECODER)) )
+			ThrowDShowException(L"Failed to call IDMOWrapperFilter::Init.", hr);
+	}
+	if( FAILED(hr = GraphBuilder()->AddFilter( pWMVDec, L"Windows Media Video Decoder (DMO Wrapper)")) )
+		ThrowDShowException(L"Failed to call GraphBuilder()->AddFilter( pWMVDec, L\"Windows Media Video Decoder (DMO Wrapper)\").", hr);
+
+	// Connect to decoder filter
+	if( FAILED(hr = ConnectFilters( pWMSource, pWMVDec )) )
+		ThrowDShowException(L"Failed to call ConnectFilters( pWMSource, pWMVDec ).", hr);
+
+	// Connect to render filter
+	if( FAILED(hr = ConnectFilters( pWMVDec, pRdr )) )
+		ThrowDShowException(L"Failed to call ConnectFilters( pWMVDec, pRdr ).", hr);
+
+	CComPtr<IBaseFilter>	pWMADec;
+	if( FAILED(pWMADec.CoCreateInstance(CLSID_DMOWrapperFilter, NULL, CLSCTX_INPROC_SERVER )) )
+		ThrowDShowException(L"Failed to create DMOWrapperFilter.", hr);
+
+	{	// Set WMA Decoder DMO
+		CComPtr<IDMOWrapperFilter>	pWmaDmoWrapper;
+		if( FAILED(hr = pWMADec.QueryInterface( &pWmaDmoWrapper )) )
+			ThrowDShowException(L"Failed to query IDMOWrapperFilter.", hr);
+		if( FAILED(hr = pWmaDmoWrapper->Init(CLSID_WMADecoderDMO, DMOCATEGORY_AUDIO_DECODER)) )
+			ThrowDShowException(L"Failed to call IDMOWrapperFilter::Init.", hr);
+	}
+	if( FAILED(hr = GraphBuilder()->AddFilter( pWMADec, L"Windows Media Audio Decoder (DMO Wrapper)")) )
+		ThrowDShowException(L"Failed to call GraphBuilder()->AddFilter( pWMADec, L\"Windows Media Audio Decoder (DMO Wrapper)\").", hr);
+
+	// Connect to decoder filter
+	if( FAILED(hr = ConnectFilters( pWMSource, pWMADec )) )
+	{	// オーディオがない
+		if( FAILED(hr = GraphBuilder()->RemoveFilter( pWMADec)) )
+			ThrowDShowException(L"Failed to call GraphBuilder()->RemoveFilter( pDDSRenderer).", hr);
+		return;
+	}
+
+	CComPtr<IBaseFilter>	pDDSRenderer;	// for sound renderer filter
+	if( FAILED(hr = pDDSRenderer.CoCreateInstance(CLSID_DSoundRender, NULL, CLSCTX_INPROC_SERVER)) )
+		ThrowDShowException(L"Failed to create sound render filter object.", hr);
+	if( FAILED(hr = GraphBuilder()->AddFilter(pDDSRenderer, L"Sound Renderer")) )
+		ThrowDShowException(L"Failed to call GraphBuilder()->AddFilter(pDDSRenderer, L\"Sound Renderer\").", hr);
+	if( FAILED(hr = ConnectFilters( pWMADec, pDDSRenderer ) ) )
+		ThrowDShowException(L"Failed to call ConnectFilters( pWMADec, pDDSRenderer ).", hr);
+
 }
 //----------------------------------------------------------------------------
 //! @brief	  	2つのフィルターを接続する
@@ -1380,3 +1586,4 @@ HRESULT tTVPDSMovie::ConnectFilters( IBaseFilter* pFilterUpstream, IBaseFilter* 
 
 	return E_FAIL;
 }
+
