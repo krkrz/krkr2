@@ -65,7 +65,7 @@ TJS_N("const\
  /* tTVPBBStretchType */ stNearest=0, stFastLinear=1, stLinear=2, stCubic=3, stRefNoClip = 0x10,\
  /* tTVPClipboardFormat */ cbfText = 1,\
  /* TVP_COMPACT_LEVEL_???? */ clIdle = 5, clDeactivate = 10, clMinimize = 15, clAll = 100,\
- /* tTVPVideoOverlayMode Add: T.Imoto */ vomOverlay=0, vomLayer=1,\
+ /* tTVPVideoOverlayMode Add: T.Imoto */ vomOverlay=0, vomLayer=1, vomMixer=2,\
  /* tTVPPeriodEventReason */ perLoop = 0, perPeriod = 1, perPrepare = 2, perSegLoop = 3,\
  /* tTVPSoundGlobalFocusMode */ sgfmNeverMute = 0, sgfmMuteOnMinimize = 1, sgfmMuteOnDeactivate = 2,\
 \
