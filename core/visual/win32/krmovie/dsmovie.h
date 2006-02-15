@@ -55,18 +55,21 @@ protected:
 
 	CComPtr<IAMStreamSelect>	m_StreamSelect;	//!< Stream selector
 
-	struct AudioStreamInfo {
+	struct StreamInfo {
 		DWORD	groupNum;
 		long	index;
 	};
-	std::vector<AudioStreamInfo>	m_AudioStreamInfo;
+	std::vector<StreamInfo>	m_AudioStreamInfo;
+	std::vector<StreamInfo>	m_VideoStreamInfo;
 	//----------------------------------------------------------------------------
 	//! @brief	  	IMediaSeekingを取得する
 	//! @return		IMediaSeekingインターフェイス
 	//----------------------------------------------------------------------------
 	IMediaSeeking *MediaSeeking()
 	{
-		assert( m_MediaSeeking.p );
+		//assert( m_MediaSeeking.p );
+		if( !m_MediaSeeking.p )
+			assert( m_MediaSeeking.p );
 		return m_MediaSeeking;
 	}
 	//----------------------------------------------------------------------------
@@ -136,9 +139,45 @@ protected:
 		return m_StreamSelect;
 	}
 
+	//----------------------------------------------------------------------------
+	//! @brief	  	BigEndian <-> LittleEndian
+	//! @param		l : 変換前
+	//! @return		変換後
+	//----------------------------------------------------------------------------
+	inline unsigned long ChangeEndian32(unsigned long l)
+	{
+#if defined(_MSC_VER) && (_MSC_VER >= 1300)
+		return _byteswap_ulong(l);	// VC7.0以降
+#else
+#	if 1
+		// ベタに書く
+		unsigned long result;
+		unsigned char *ps=(unsigned char *)&l;
+		unsigned char *pd=(unsigned char *)&result;
+		pd[0] = ps[3];
+		pd[1] = ps[2];
+		pd[2] = ps[1];
+		pd[3] = ps[0];
+		return result;
+#	else
+		// テンポラリ使わずに
+		register unsigned char *p=(unsigned char *)&l;
+		p[0]^=p[3];
+		p[3]^=p[0];
+		p[0]^=p[3];
+		p[1]^=p[2];
+		p[2]^=p[1];
+		p[1]^=p[2];
+		return l;
+#	endif
+#endif
+	}
+
 	HRESULT ConnectFilters( IBaseFilter* pFilterUpstream, IBaseFilter* pFilterDownstream );
 	void BuildMPEGGraph( IBaseFilter *pRdr, IBaseFilter *pSrc );
 	void ParseVideoType( CMediaType &mt, const wchar_t *type );
+	bool IsWindowsMediaFile( const wchar_t *type ) const;
+	void BuildWMVGraph( IBaseFilter *pRdr, IStream *pStream );
 
 	HRESULT __stdcall AddToROT( DWORD ROTreg );
 	void __stdcall RemoveFromROT( DWORD ROTreg );
@@ -154,6 +193,7 @@ protected:
 	IPin *GetInPin( IBaseFilter * pFilter, int nPin );
 	IPin *GetOutPin( IBaseFilter * pFilter, int nPin );
 	HRESULT CountFilterPins(IBaseFilter *pFilter, ULONG *pulInPins, ULONG *pulOutPins);
+
 public:
 	tTVPDSMovie();
 	virtual ~tTVPDSMovie();
@@ -210,6 +250,23 @@ public:
 	virtual void __stdcall SelectAudioStream( unsigned long num );
 	virtual void __stdcall GetEnableAudioStreamNum( long *num );
 	virtual void __stdcall DisableAudioStream( void );
+
+	virtual void __stdcall GetNumberOfVideoStream( unsigned long *streamCount );
+	virtual void __stdcall SelectVideoStream( unsigned long num );
+	virtual void __stdcall GetEnableVideoStreamNum( long *num );
+
+	virtual void __stdcall SetMixingBitmap( HDC hdc, RECT *dest, float alpha );
+	virtual void __stdcall ResetMixingBitmap();
+
+	virtual void __stdcall SetMixingMovieAlpha( float a );
+	virtual void __stdcall GetMixingMovieAlpha( float *a );
+	virtual void __stdcall SetMixingMovieBGColor( unsigned long col );
+	virtual void __stdcall GetMixingMovieBGColor( unsigned long *col );
+	virtual void __stdcall PresentVideoImage();
+
+private:
+	void __stdcall SelectStream( unsigned long num, std::vector<StreamInfo> &si );
+	void __stdcall GetEnableStreamNum( long *num, std::vector<StreamInfo> &si );
 };
 
 #endif
