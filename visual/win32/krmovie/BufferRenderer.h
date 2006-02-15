@@ -48,6 +48,7 @@ public:
 
 	// ダブルバッファリング用ポインタ差し替えメソッド
 	void SetPointer( IMediaSample *media, BYTE *ptr );
+	void SetPointer( BYTE *ptr ) { SetPointer(m_pMediaSample,ptr); };
 };
 
 //----------------------------------------------------------------------------
@@ -71,6 +72,7 @@ public:
 
 	// ダブルバッファリング用ポインタ差し替えメソッド
 	void SetPointer( IMediaSample *media, BYTE *ptr );
+	void SetPointer( BYTE *ptr );
 };
 
 //----------------------------------------------------------------------------
@@ -153,6 +155,10 @@ protected:
 	void SetPointer( IMediaSample *media, BYTE *ptr )
 	{
 		m_InputPin.SetPointer( media, ptr );
+	}
+	void SetPointer( BYTE *ptr )
+	{
+		m_InputPin.SetPointer( ptr );
 	}
 };
 
