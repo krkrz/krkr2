@@ -32,6 +32,7 @@ class tTVPVideoModule
 	tGetAPIVersion procGetAPIVersion;
 	tGetVideoOverlayObject procGetVideoOverlayObject;
 	tGetVideoOverlayObject procGetVideoLayerObject; // krmovie.dll only
+	tGetVideoOverlayObject procGetMixingVideoOverlayObject; // krmovie.dll only
 	tTVPV2LinkProc procV2Link;
 	tTVPV2UnlinkProc procV2Unlink;
 
@@ -51,6 +52,12 @@ public:
 		iTVPVideoOverlay **out)
 	{
 		procGetVideoLayerObject(callbackwin, stream, streamname, type, size, out);
+	}
+	void GetMixingVideoOverlayObject(HWND callbackwin, IStream *stream,
+		const wchar_t * streamname, const wchar_t *type, unsigned __int64 size,
+		iTVPVideoOverlay **out)
+	{
+		procGetMixingVideoOverlayObject(callbackwin, stream, streamname, type, size, out);
 	}
 };
 static tTVPVideoModule *TVPMovieVideoModule = NULL;
@@ -74,6 +81,9 @@ tTVPVideoModule::tTVPVideoModule(const ttstr &name)
 
 		procGetVideoLayerObject = (tGetVideoOverlayObject)
 			GetProcAddress(Handle, "GetVideoLayerObject");
+
+		procGetMixingVideoOverlayObject = (tGetVideoOverlayObject)
+			GetProcAddress(Handle, "GetMixingVideoOverlayObject");
 
 		procGetAPIVersion = (tGetAPIVersion)
 			GetProcAddress(Handle, "GetAPIVersion");
@@ -300,13 +310,17 @@ void tTJSNI_VideoOverlay::Open(const ttstr &_name)
 				mod->GetVideoLayerObject(UtilWindow,
 					istream, name.c_str(), ext.c_str(),
 					size, &VideoOverlay);
+			else if(Mode == vomMixer)
+				mod->GetMixingVideoOverlayObject(UtilWindow,
+					istream, name.c_str(), ext.c_str(),
+					size, &VideoOverlay);
 			else
 				mod->GetVideoOverlayObject(UtilWindow,
 					istream, name.c_str(), ext.c_str(),
 					size, &VideoOverlay);
 		}
 
-		if( flash || (Mode == vomOverlay) )
+		if( flash || (Mode == vomOverlay) || (Mode == vomMixer)  )
 		{
 			ResetOverlayParams();
 		}
@@ -579,7 +593,7 @@ void tTJSNI_VideoOverlay::ResetOverlayParams()
 	// retrieve new window information from owner window and
 	// set video owner window / message drain window.
 	// also sets rectangle and visible state.
-	if(VideoOverlay && Window && Mode == vomOverlay)
+	if(VideoOverlay && Window && (Mode == vomOverlay || Mode == vomMixer) )
 	{
 		tjs_int ofsx, ofsy;
 		OwnerWindow = Window->GetWindowHandle(ofsx, ofsy);
@@ -597,7 +611,7 @@ void tTJSNI_VideoOverlay::ResetOverlayParams()
 //---------------------------------------------------------------------------
 void tTJSNI_VideoOverlay::DetachVideoOverlay()
 {
-	if(VideoOverlay && Window && Mode == vomOverlay)
+	if(VideoOverlay && Window && (Mode == vomOverlay || Mode == vomMixer) )
 	{
 		VideoOverlay->SetWindow(NULL);
 		VideoOverlay->SetMessageDrainWindow(UtilWindow);
@@ -706,6 +720,7 @@ void __fastcall tTJSNI_VideoOverlay::WndProc(Messages::TMessage &Msg)
 							}
 							if( l1 ) l1->Update();
 							if( l2 ) l2->Update();
+							FireFrameUpdateEvent( curFrame );
 
 							// ! Prepare mode ?
 							if( !IsPrepare )
@@ -724,7 +739,24 @@ void __fastcall tTJSNI_VideoOverlay::WndProc(Messages::TMessage &Msg)
 								Rewind();
 								IsPrepare = false;
 							}
-                        }
+						}
+						else if( Mode == vomMixer && Status == ssPlay )
+						{
+							int frame = GetFrame();
+							if( (!IsPrepare) && (SegLoopEndFrame > 0) && (frame >= SegLoopEndFrame) ) {
+								SetFrame( SegLoopStartFrame > 0 ? SegLoopStartFrame : 0 );
+								FirePeriodEvent(perSegLoop); // fire period event by segment loop rewind
+								return;
+							}
+							VideoOverlay->PresentVideoImage();
+							FireFrameUpdateEvent( frame );
+							// Send period event ?
+							if( EventFrame >= 0 && !IsEventPast && frame >= EventFrame )
+							{
+								EventFrame = -1;
+								FirePeriodEvent(perPeriod); // fire period event by setPeriodEvent()
+							}
+						}
 						break;
 				}
 				VideoOverlay->FreeEventParams( evcode, p1, p2 );
@@ -926,6 +958,121 @@ void tTJSNI_VideoOverlay::DisableAudioStream()
 	{
 		VideoOverlay->DisableAudioStream();
 	}
+}
+
+tjs_uint tTJSNI_VideoOverlay::GetNumberOfVideoStream()
+{
+	unsigned long	result = 0;
+	if(VideoOverlay)
+	{
+		VideoOverlay->GetNumberOfVideoStream( &result );
+	}
+	return result;
+}
+void tTJSNI_VideoOverlay::SelectVideoStream(tjs_uint n)
+{
+	if(VideoOverlay)
+	{
+		VideoOverlay->SelectVideoStream( n );
+	}
+}
+tjs_int tTJSNI_VideoOverlay::GetEnabledVideoStream()
+{
+	long		result = -1;
+	if(VideoOverlay)
+	{
+		VideoOverlay->GetEnableVideoStreamNum( &result );
+	}
+	return result;
+}
+void tTJSNI_VideoOverlay::SetMixingLayer( tTJSNI_BaseLayer *l )
+{
+	if(VideoOverlay)
+	{
+		if( l )
+		{
+			if( l->GetVisible() )
+			{
+				float	alpha = static_cast<float>(l->GetOpacity()) / 255.0f;
+				RECT	dest;
+				dest.left = l->GetLeft() + l->GetImageLeft();
+				dest.top = l->GetTop() + l->GetImageTop();
+				dest.right = dest.left + l->GetImageWidth();
+				dest.bottom = dest.top + l->GetImageHeight();
+
+				// tTVPBaseBitmap->tTVPBitmap
+				tTVPBitmap *bmp = l->GetMainImage()->GetBitmap();
+				if( bmp )
+				{
+					HDC hdc;
+					if( hdc = bmp->GetBitmapDC() )
+					{	// ‚·‚Å‚ÉHDC‚ª‚ ‚é‚Ì‚Å‚»‚ê‚ðŽg‚¤
+						VideoOverlay->SetMixingBitmap( hdc, &dest, alpha );
+					}
+					else
+					{	// Ž©‘O‚ÅDC‚ðì‚é
+						HDC			ref = GetDC(0);
+						HBITMAP		myDIB = CreateDIBitmap( ref, bmp->GetBITMAPINFOHEADER(), CBM_INIT, bmp->GetBits(), bmp->GetBITMAPINFO(), bmp->Is8bit() ? DIB_PAL_COLORS : DIB_RGB_COLORS );
+						hdc = CreateCompatibleDC( NULL );
+						HGDIOBJ		hOldBmp = SelectObject( hdc, myDIB );
+
+						VideoOverlay->SetMixingBitmap( hdc, &dest, alpha );
+
+						SelectObject( hdc, hOldBmp );
+						DeleteObject( myDIB );
+						DeleteDC( hdc );
+					}
+				}
+			}
+			else
+			{
+				VideoOverlay->ResetMixingBitmap();
+			}
+		}
+		else
+		{
+			VideoOverlay->ResetMixingBitmap();
+		}
+	}
+}
+void tTJSNI_VideoOverlay::ResetMixingBitmap()
+{
+	if(VideoOverlay)
+	{
+		VideoOverlay->ResetMixingBitmap();
+	}
+}
+void tTJSNI_VideoOverlay::SetMixingMovieAlpha( tjs_real a )
+{
+	if(VideoOverlay)
+	{
+		VideoOverlay->SetMixingMovieAlpha( static_cast<float>(a) );
+	}
+}
+tjs_real tTJSNI_VideoOverlay::GetMixingMovieAlpha()
+{
+	float	ret = 0.0f;
+	if(VideoOverlay)
+	{
+		VideoOverlay->GetMixingMovieAlpha( &ret );
+	}
+	return static_cast<tjs_real>(ret);
+}
+void tTJSNI_VideoOverlay::SetMixingMovieBGColor( tjs_uint col )
+{
+	if(VideoOverlay)
+	{
+		VideoOverlay->SetMixingMovieBGColor( col );
+	}
+}
+tjs_uint tTJSNI_VideoOverlay::GetMixingMovieBGColor()
+{
+	unsigned long	ret;
+	if(VideoOverlay)
+	{
+		VideoOverlay->GetMixingMovieBGColor( &ret );
+	}
+	return static_cast<tjs_uint>(ret);
 }
 // End:		Add:	T.Imoto
 
