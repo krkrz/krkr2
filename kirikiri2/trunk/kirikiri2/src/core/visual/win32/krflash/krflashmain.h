@@ -73,6 +73,19 @@ public:
 	void __stdcall SelectAudioStream( unsigned long num );
 	void __stdcall GetEnableAudioStreamNum( long *num );
 	void __stdcall DisableAudioStream( void );
+
+	void __stdcall GetNumberOfVideoStream( unsigned long *streamCount );
+	void __stdcall SelectVideoStream( unsigned long num );
+	void __stdcall GetEnableVideoStreamNum( long *num );
+
+	void __stdcall SetMixingBitmap( HDC hdc, RECT *dest, float alpha );
+	void __stdcall ResetMixingBitmap();
+
+	void __stdcall SetMixingMovieAlpha( float a );
+	void __stdcall GetMixingMovieAlpha( float *a );
+	void __stdcall SetMixingMovieBGColor( unsigned long col );
+	void __stdcall GetMixingMovieBGColor( unsigned long *col );
+	void __stdcall PresentVideoImage();
 // End:	Add:	T.Imoto
 
 
