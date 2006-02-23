@@ -356,11 +356,11 @@ public:
 			}
 			break;
 		default:
-			if (isalpha(ch)) {
+			if (ch >= 'a' && ch <= 'z') {
 			
 				// •¶Žš—ñ‚ð’Šo
 				ttstr s;
-				while (isalpha(ch)) {
+				while (ch >= 'a' && ch <= 'z') {
 					s += ch;
 					ch = getc();
 				}
