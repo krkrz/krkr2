@@ -493,12 +493,12 @@ public:
 		}
 	}
 
-	inline int addIndent() {
+	inline void addIndent() {
 		indent++;
 		newline();
 	}
 
-	inline int delIndent() {
+	inline void delIndent() {
 		indent--;
 		newline();
 	}
