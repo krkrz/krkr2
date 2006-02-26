@@ -775,7 +775,7 @@ iTJSDispatch2 * tTJSNI_BaseWaveSoundBuffer::GetWaveLabelsObjectNoAddRef()
 			try
 			{
 				tTJSVariant val;
-				val = i->Name;
+				val = i->Name.c_str(); // c_str() to avoid race condition for ttstr
 				item_dic->PropSet(TJS_MEMBERENSURE, TJS_W("name"), NULL, &val, item_dic);
 				val = i->Position;
 				item_dic->PropSet(TJS_MEMBERENSURE, TJS_W("samplePosition"), NULL, &val, item_dic);
