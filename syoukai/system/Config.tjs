@@ -1,6 +1,6 @@
 // Config.tjs - KAG 設定
 // Copyright (C) 2001-2004 W.Dee and contributors  改変・配布は自由です
-;global.config_version = "3.27 beta 1"; // この行を消さないでください
+;global.config_version = "3.27-dev.20060219"; // この行を消さないでください
 
 // このファイル内で設定できる項目は、すべて
 // ;設定名 = 値;
