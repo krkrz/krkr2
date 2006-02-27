@@ -2067,10 +2067,8 @@ parse_start:
 
 			const tjs_char *attribnamestart = CurLineStr + CurPos;
 			while(CurLineStr[CurPos] && !TVPIsWS(CurLineStr[CurPos]) &&
-				CurLineStr[CurPos] != TJS_W('='))
+				CurLineStr[CurPos] != TJS_W('=') && CurLineStr[CurPos] != ldelim)
 					CurPos ++;
-			if(CurLineStr[CurPos] == 0)
-				TVPThrowExceptionMessage(TVPKAGSyntaxError);
 
 			const tjs_char *attribnameend = CurLineStr + CurPos;
 
@@ -2079,83 +2077,91 @@ parse_start:
 
 			// =
 			while(TVPIsWS(CurLineStr[CurPos])) CurPos ++;
-			while(CurLineStr[CurPos] && CurLineStr[CurPos] != TJS_W('='))
-					CurPos ++;
-			if(CurLineStr[CurPos] == 0)
-				TVPThrowExceptionMessage(TVPKAGSyntaxError);
-			CurPos++;
-			if(CurLineStr[CurPos] == 0)
-				TVPThrowExceptionMessage(TVPKAGSyntaxError);
-			while(CurLineStr[CurPos] && TVPIsWS(CurLineStr[CurPos])) CurPos ++;
-			if(CurLineStr[CurPos] == 0)
-				TVPThrowExceptionMessage(TVPKAGSyntaxError);
 
-			// attrib value
-			tjs_char vdelim = 0; // value delimiter
 			bool entity = false;
 			bool macroarg = false;
+			ttstr value;
 
-			if(CurLineStr[CurPos] == TJS_W('&'))
-				entity = true, CurPos++;
-			else if(CurLineStr[CurPos] == TJS_W('%'))
-				macroarg = true, CurPos++;
-
-			if(CurLineStr[CurPos] == TJS_W('\"') ||
-				CurLineStr[CurPos] == TJS_W('\''))
+			if(CurLineStr[CurPos] != TJS_W('='))
 			{
-				vdelim = CurLineStr[CurPos];
-				CurPos++;
+				// arrtibute value omitted
+				value = TJS_W("true"); // always true
 			}
-
-			const tjs_char *valuestart = CurLineStr + CurPos;
-
-			while(CurLineStr[CurPos] &&
-				(vdelim ? (CurLineStr[CurPos] != vdelim) :
-					(CurLineStr[CurPos] != ldelim &&
-						!TVPIsWS(CurLineStr[CurPos])) ) )
+			else
 			{
-				if(CurLineStr[CurPos] == TJS_W('`'))
+				if(CurLineStr[CurPos] == 0)
+					TVPThrowExceptionMessage(TVPKAGSyntaxError);
+				CurPos++;
+				if(CurLineStr[CurPos] == 0)
+					TVPThrowExceptionMessage(TVPKAGSyntaxError);
+				while(CurLineStr[CurPos] && TVPIsWS(CurLineStr[CurPos])) CurPos ++;
+				if(CurLineStr[CurPos] == 0)
+					TVPThrowExceptionMessage(TVPKAGSyntaxError);
+
+				// attrib value
+				tjs_char vdelim = 0; // value delimiter
+
+				if(CurLineStr[CurPos] == TJS_W('&'))
+					entity = true, CurPos++;
+				else if(CurLineStr[CurPos] == TJS_W('%'))
+					macroarg = true, CurPos++;
+
+				if(CurLineStr[CurPos] == TJS_W('\"') ||
+					CurLineStr[CurPos] == TJS_W('\''))
 				{
-					// escaped with '`'
+					vdelim = CurLineStr[CurPos];
 					CurPos++;
-					if(CurLineStr[CurPos] == 0)
-						TVPThrowExceptionMessage(TVPKAGSyntaxError);
 				}
-				CurPos++;
-			}
 
-			if(ldelim != 0 && CurLineStr[CurPos] == 0)
-				TVPThrowExceptionMessage(TVPKAGSyntaxError);
-			const tjs_char *valueend = CurLineStr + CurPos;
+				const tjs_char *valuestart = CurLineStr + CurPos;
 
-			if(vdelim) CurPos ++;
-
-			// unescape ` character of value
-			ttstr value(valuestart, valueend - valuestart);
-			if(valueend != valuestart)
-			{
-				// value has at least one character
-				tjs_char * vp = value.Independ();
-				tjs_char * wvp = vp;
-
-				if(!entity && *vp == TJS_W('&')) entity = true, vp++;
-				if(!macroarg && *vp == TJS_W('%')) macroarg = true, vp++;
-
-				while(*vp)
+				while(CurLineStr[CurPos] &&
+					(vdelim ? (CurLineStr[CurPos] != vdelim) :
+						(CurLineStr[CurPos] != ldelim &&
+							!TVPIsWS(CurLineStr[CurPos])) ) )
 				{
-					if(*vp == TJS_W('`'))
+					if(CurLineStr[CurPos] == TJS_W('`'))
 					{
-						vp++;
-						if(!*vp) break;
+						// escaped with '`'
+						CurPos++;
+						if(CurLineStr[CurPos] == 0)
+							TVPThrowExceptionMessage(TVPKAGSyntaxError);
 					}
-					*wvp = *vp;
-					vp++;
-					wvp++;
+					CurPos++;
 				}
-				*wvp = 0;
-				value.FixLen();
-			}
 
+				if(ldelim != 0 && CurLineStr[CurPos] == 0)
+					TVPThrowExceptionMessage(TVPKAGSyntaxError);
+				const tjs_char *valueend = CurLineStr + CurPos;
+
+				if(vdelim) CurPos ++;
+
+				// unescape ` character of value
+				value = ttstr(valuestart, valueend - valuestart);
+				if(valueend != valuestart)
+				{
+					// value has at least one character
+					tjs_char * vp = value.Independ();
+					tjs_char * wvp = vp;
+
+					if(!entity && *vp == TJS_W('&')) entity = true, vp++;
+					if(!macroarg && *vp == TJS_W('%')) macroarg = true, vp++;
+
+					while(*vp)
+					{
+						if(*vp == TJS_W('`'))
+						{
+							vp++;
+							if(!*vp) break;
+						}
+						*wvp = *vp;
+						vp++;
+						wvp++;
+					}
+					*wvp = 0;
+					value.FixLen();
+				}
+			}
 
 			// special attibute processing
 			bool store = true;
