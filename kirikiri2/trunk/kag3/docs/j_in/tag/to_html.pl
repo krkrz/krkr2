@@ -386,6 +386,7 @@ __DATA__
 　また、属性の値に対し、&amp; を最初につけると、その後に書いたものを
 TJS 式として評価し、その結果を属性の値とします。たとえば、<span class="script">[trans time=&amp;f.clearTime]</span> とすると、<span class="script">f.clearTime</span> という変数の内容が、time
 属性の値となります。<br />
+　属性の値を省略すると (属性のうち '=' 以降を書かないと)、true という属性の値が指定されたと見なされます。たとえば、<span class="script">[playse loop storage="shock.wav"]</span> は、loop 属性の値が省略されていますが、これは <span class="script">[playse loop=true storage="shock.wav"]</span> と同じ意味になります。<br />
 </div></div>
 <h1><a name="tag_command" id="tag_command">コマンド行</a></h1>
 <div class="para"><div>
