@@ -2291,6 +2291,8 @@ void __fastcall TTVPWindowForm::SetFullScreenMode(bool b)
 		throw;
 	}
 	CallWindowAttach();
+
+	SetMouseCursor(CurrentMouseCursor);
 }
 //---------------------------------------------------------------------------
 bool __fastcall TTVPWindowForm::GetFullScreenMode() const
