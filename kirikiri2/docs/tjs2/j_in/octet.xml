@@ -17,7 +17,7 @@
 <example>
 	var oct = &lt;% 11 22 33 %>;<r/>
 	var n = oct.length;  // n ‚É‚Í 3 ‚ª‘ã“ü‚³‚ê‚é<r/>
-	var n = &lt;% 11 22 33 %>.length; // ‚±‚ê‚à“¯‚¶‚­ 5 ‚ª‘ã“ü‚³‚ê‚é<r/>
+	var n = &lt;% 11 22 33 %>.length; // ‚±‚ê‚à“¯‚¶‚­ 3 ‚ª‘ã“ü‚³‚ê‚é<r/>
 </example>
 </para>
 

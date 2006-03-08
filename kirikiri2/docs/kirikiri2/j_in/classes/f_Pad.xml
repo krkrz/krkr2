@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="Shift_JIS" ?>
+<doc>
+<title>Pad</title>
+<desc>
+　Pad クラスは、簡単なテキストエディタの機能を提供するクラスです。
+</desc>
+
+
+<member>
+	<name>Pad</name>
+	<type>constructor</type>
+	<shortdesc>Pad オブジェクトの構築</shortdesc>
+	<arg>
+	</arg>
+	<result></result>
+	<desc>
+		　Pad クラスのオブジェクトを構築します。<r/>
+	</desc>
+</member>
+
+<member>
+	<name>visible</name>
+	<type>property</type>
+	<shortdesc>表示されているかどうか</shortdesc>
+	<access>r/w</access>
+	<desc>
+		　パッドが表示されているかどうかを表します。値を設定することもできます。<r/>
+		　真を指定すると表示されます。<r/>
+	</desc>
+</member>
+
+<member>
+	<name>text</name>
+	<type>property</type>
+	<shortdesc>内容</shortdesc>
+	<access>r/w</access>
+	<desc>
+		　パッドの内容(テキストエディタの内容)を表します。値を設定することもできます。<r/>
+	</desc>
+</member>
+
+<member>
+	<name>fileName</name>
+	<type>property</type>
+	<shortdesc>ファイル名</shortdesc>
+	<access>r/w</access>
+	<desc>
+		　パッドの内容を保存するファイル名を表します。値を設定することもできます。<r/>
+		　パッドを右クリックして「保存...」を選択すると、デフォルトでこのファイル名が指定されるようになります。
+	</desc>
+</member>
+
+<member>
+	<name>color</name>
+	<type>property</type>
+	<shortdesc>背景色</shortdesc>
+	<access>r/w</access>
+	<desc>
+		　パッドの背景色を 0xRRGGBB 形式で表します。値を設定することもできます。<r/>
+	</desc>
+</member>
+
+<member>
+	<name>title</name>
+	<type>property</type>
+	<shortdesc>タイトル</shortdesc>
+	<access>r/w</access>
+	<desc>
+		　パッドのタイトル(ウィンドウのタイトル)を表します。値を設定することもできます。<r/>
+	</desc>
+</member>
+
+</doc>
