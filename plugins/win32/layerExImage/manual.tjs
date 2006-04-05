@@ -23,5 +23,5 @@ class Layer {
      * ノイズ追加
      * @param level ノイズレベル 0 (no noise) ～ 255 (lot of noise).
      */
-    function noize(level);
+    function noise(level);
 };
