@@ -85,6 +85,7 @@ class tGetDirListFunction : public tTJSDispatch
 					array->PropSetByNum(0, count++, &val, array);
 
 				} while(FindNextFile(handle, &data));
+				FindClose(handle);
 			}
 			else
 			{
