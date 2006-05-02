@@ -7350,7 +7350,7 @@ TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/getMainPixel)
 {
 	TJS_GET_NATIVE_INSTANCE(/*var. name*/_this, /*var. type*/tTJSNI_Layer);
 	if(numparams < 2) return TJS_E_BADPARAMCOUNT;
-	*result = (tjs_int64)_this->GetMainPixel(*param[0], *param[1]);
+	if(result) *result = (tjs_int64)_this->GetMainPixel(*param[0], *param[1]);
 	return TJS_S_OK;
 }
 TJS_END_NATIVE_METHOD_DECL(/*func. name*/getMainPixel)
@@ -7368,7 +7368,7 @@ TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/getMaskPixel)
 {
 	TJS_GET_NATIVE_INSTANCE(/*var. name*/_this, /*var. type*/tTJSNI_Layer);
 	if(numparams < 2) return TJS_E_BADPARAMCOUNT;
-	*result = _this->GetMaskPixel(*param[0], *param[1]);
+	if(result) *result = _this->GetMaskPixel(*param[0], *param[1]);
 	return TJS_S_OK;
 }
 TJS_END_NATIVE_METHOD_DECL(/*func. name*/getMaskPixel)
@@ -7386,7 +7386,7 @@ TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/getProvincePixel)
 {
 	TJS_GET_NATIVE_INSTANCE(/*var. name*/_this, /*var. type*/tTJSNI_Layer);
 	if(numparams < 2) return TJS_E_BADPARAMCOUNT;
-	*result = _this->GetProvincePixel(*param[0], *param[1]);
+	if(result) *result = _this->GetProvincePixel(*param[0], *param[1]);
 	return TJS_S_OK;
 }
 TJS_END_NATIVE_METHOD_DECL(/*func. name*/getProvincePixel)
@@ -10074,7 +10074,7 @@ TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/getTextWidth)
 	TJS_GET_NATIVE_INSTANCE(/*var. name*/_this, /*var. type*/tTJSNI_Font);
 	if(numparams < 1) return TJS_E_BADPARAMCOUNT;
 
-	*result = _this->GetLayer()->GetTextWidth(*param[0]);
+	if(result) *result = _this->GetLayer()->GetTextWidth(*param[0]);
 
 	return TJS_S_OK;
 }
@@ -10085,7 +10085,7 @@ TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/getTextHeight)
 	TJS_GET_NATIVE_INSTANCE(/*var. name*/_this, /*var. type*/tTJSNI_Font);
 	if(numparams < 1) return TJS_E_BADPARAMCOUNT;
 
-	*result = _this->GetLayer()->GetTextHeight(*param[0]);
+	if(result) *result = _this->GetLayer()->GetTextHeight(*param[0]);
 
 	return TJS_S_OK;
 }
@@ -10096,7 +10096,7 @@ TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/getEscWidthX)
 	TJS_GET_NATIVE_INSTANCE(/*var. name*/_this, /*var. type*/tTJSNI_Font);
 	if(numparams < 1) return TJS_E_BADPARAMCOUNT;
 
-	*result = _this->GetLayer()->GetEscWidthX(*param[0]);
+	if(result) *result = _this->GetLayer()->GetEscWidthX(*param[0]);
 
 	return TJS_S_OK;
 }
@@ -10107,7 +10107,7 @@ TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/getEscWidthY)
 	TJS_GET_NATIVE_INSTANCE(/*var. name*/_this, /*var. type*/tTJSNI_Font);
 	if(numparams < 1) return TJS_E_BADPARAMCOUNT;
 
-	*result = _this->GetLayer()->GetEscWidthY(*param[0]);
+	if(result) *result = _this->GetLayer()->GetEscWidthY(*param[0]);
 
 	return TJS_S_OK;
 }
@@ -10118,7 +10118,7 @@ TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/getEscHeightX)
 	TJS_GET_NATIVE_INSTANCE(/*var. name*/_this, /*var. type*/tTJSNI_Font);
 	if(numparams < 1) return TJS_E_BADPARAMCOUNT;
 
-	*result = _this->GetLayer()->GetEscHeightX(*param[0]);
+	if(result) *result = _this->GetLayer()->GetEscHeightX(*param[0]);
 
 	return TJS_S_OK;
 }
@@ -10129,7 +10129,7 @@ TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/getEscHeightY)
 	TJS_GET_NATIVE_INSTANCE(/*var. name*/_this, /*var. type*/tTJSNI_Font);
 	if(numparams < 1) return TJS_E_BADPARAMCOUNT;
 
-	*result = _this->GetLayer()->GetEscHeightY(*param[0]);
+	if(result) *result = _this->GetLayer()->GetEscHeightY(*param[0]);
 
 	return TJS_S_OK;
 }
@@ -10146,8 +10146,10 @@ TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/doUserSelect)
 	ttstr prompt = *param[2];
 	ttstr samplestring = *param[3];
 
-	*result = (tjs_int)_this->GetLayer()->DoUserFontSelect(flags, caption,
+	tjs_int ret = (tjs_int)_this->GetLayer()->DoUserFontSelect(flags, caption,
 		prompt, samplestring);
+
+	if(result) *result = ret;
 
 	return TJS_S_OK;
 }
