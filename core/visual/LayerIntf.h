@@ -552,7 +552,7 @@ public:
 	void ReleaseCapture();
 
 private:
-	tTJSNI_BaseLayer *SearchFirstFocusable();
+	tTJSNI_BaseLayer *SearchFirstFocusable(bool ignore_chain_focusable = true);
 
 	tTJSNI_BaseLayer *_GetPrevFocusable(); // search next focusable layer backward
 	tTJSNI_BaseLayer *_GetNextFocusable(); // search next focusable layer forward
@@ -1088,7 +1088,7 @@ public:
 	void ReleaseCaptureFromTree(tTJSNI_BaseLayer * layer);
 
 	bool BlurTree(tTJSNI_BaseLayer *root); // remove focus from "root"
-	tTJSNI_BaseLayer *SearchFirstFocusable(); // search first focusable layer
+	tTJSNI_BaseLayer *SearchFirstFocusable(bool ignore_chain_focusable = true); // search first focusable layer
 
 
 	tTJSNI_BaseLayer *GetFocusedLayer() const { return FocusedLayer; }
