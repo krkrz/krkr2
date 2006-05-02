@@ -2906,12 +2906,19 @@ bool tTJSNI_BaseLayer::GetFocused()
 	return Manager->GetFocusedLayer() == this;
 }
 //---------------------------------------------------------------------------
-tTJSNI_BaseLayer *tTJSNI_BaseLayer::SearchFirstFocusable()
+tTJSNI_BaseLayer *tTJSNI_BaseLayer::SearchFirstFocusable(bool ignore_chain_focusable)
 {
-	if(GetNodeFocusable()) return this;
+	if(ignore_chain_focusable)
+	{
+		if(GetNodeFocusable()) return this;
+	}
+	else
+	{
+		if(GetNodeFocusable() && JoinFocusChain) return this;
+	}
 
 	TVP_LAYER_FOR_EACH_CHILD_NOLOCK_BEGIN(child)
-		tTJSNI_BaseLayer * lay = child->SearchFirstFocusable();
+		tTJSNI_BaseLayer * lay = child->SearchFirstFocusable(ignore_chain_focusable);
 		if(lay) return lay;
 	TVP_LAYER_FOR_EACH_CHILD_NOLOCK_END
 
@@ -3248,29 +3255,13 @@ void tTJSNI_BaseLayer::DefaultKeyDown(tjs_uint key, tjs_uint32 shift)
 	if((key == VK_TAB || key == VK_RIGHT || key == VK_DOWN) && no_shift_downed)
 	{
 		// [TAB] [<RIGHT>] [<DOWN>] : to next focusable
-		if(Manager->GetFocusedLayer() == NULL)
-		{
-			tTJSNI_BaseLayer *lay = Manager->SearchFirstFocusable();
-			if(lay) Manager->SetFocusTo(lay, true);
-		}
-		else
-		{
-			Manager->FocusNext();
-		}
+		Manager->FocusNext();
 	}
 	else if((key == VK_TAB && (shift & TVP_SS_SHIFT) && !(shift & TVP_SS_ALT) &&
 		!(shift & TVP_SS_CTRL)) || key == VK_LEFT || key == VK_UP)
 	{
 		// [SHIFT]+[TAB] [<LEFT>] [<UP>] : to previous focusable
-		if(Manager->GetFocusedLayer() == NULL)
-		{
-			tTJSNI_BaseLayer *lay = Manager->SearchFirstFocusable();
-			if(lay) Manager->SetFocusTo(lay, false);
-		}
-		else
-		{
-			Manager->FocusPrev();
-		}
+		Manager->FocusPrev();
 	}
 	else if((key == VK_RETURN || key == VK_ESCAPE) && no_shift_downed)
 	{
@@ -6837,7 +6828,7 @@ void tTVPLayerManager::CheckTreeFocusableState(tTJSNI_BaseLayer *root)
 /*	// uncomment here to auto-focus
 	if(FocusedLayer) return;
 
-	tTJSNI_BaseLayer *lay = root->SearchFirstFocusable();
+	tTJSNI_BaseLayer *lay = root->SearchFirstFocusable(true);
 	if(lay) SetFocusTo(lay, true);
 */
 }
@@ -6847,7 +6838,7 @@ tTJSNI_BaseLayer *tTVPLayerManager::FocusPrev()
 	// focus to previous layer
 	tTJSNI_BaseLayer *l;
 	if(!FocusedLayer)
-		l = SearchFirstFocusable();// search first focusable layer
+		l = SearchFirstFocusable(false);// search first focusable layer
 	else
 		l = FocusedLayer->GetPrevFocusable();
 
@@ -6860,7 +6851,7 @@ tTJSNI_BaseLayer *tTVPLayerManager::FocusNext()
 	// focus to next layer
 	tTJSNI_BaseLayer *l;
 	if(!FocusedLayer)
-		l = SearchFirstFocusable();// search first focusable layer
+		l = SearchFirstFocusable(false);// search first focusable layer
 	else
 		l = FocusedLayer->GetNextFocusable();
 
@@ -6868,11 +6859,11 @@ tTJSNI_BaseLayer *tTVPLayerManager::FocusNext()
 	return l;
 }
 //---------------------------------------------------------------------------
-tTJSNI_BaseLayer *tTVPLayerManager::SearchFirstFocusable()
+tTJSNI_BaseLayer *tTVPLayerManager::SearchFirstFocusable(bool ignore_chain_focusable)
 {
 	// (primary only) search first focusable layer
 	if(!Primary) return NULL;
-	tTJSNI_BaseLayer *lay = Primary->SearchFirstFocusable();
+	tTJSNI_BaseLayer *lay = Primary->SearchFirstFocusable(ignore_chain_focusable);
 
 	return lay;
 }
@@ -7359,7 +7350,7 @@ TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/getMainPixel)
 {
 	TJS_GET_NATIVE_INSTANCE(/*var. name*/_this, /*var. type*/tTJSNI_Layer);
 	if(numparams < 2) return TJS_E_BADPARAMCOUNT;
-	if(result) *result = (tjs_int64)_this->GetMainPixel(*param[0], *param[1]);
+	*result = (tjs_int64)_this->GetMainPixel(*param[0], *param[1]);
 	return TJS_S_OK;
 }
 TJS_END_NATIVE_METHOD_DECL(/*func. name*/getMainPixel)
@@ -7377,7 +7368,7 @@ TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/getMaskPixel)
 {
 	TJS_GET_NATIVE_INSTANCE(/*var. name*/_this, /*var. type*/tTJSNI_Layer);
 	if(numparams < 2) return TJS_E_BADPARAMCOUNT;
-	if(result) *result = _this->GetMaskPixel(*param[0], *param[1]);
+	*result = _this->GetMaskPixel(*param[0], *param[1]);
 	return TJS_S_OK;
 }
 TJS_END_NATIVE_METHOD_DECL(/*func. name*/getMaskPixel)
@@ -7395,7 +7386,7 @@ TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/getProvincePixel)
 {
 	TJS_GET_NATIVE_INSTANCE(/*var. name*/_this, /*var. type*/tTJSNI_Layer);
 	if(numparams < 2) return TJS_E_BADPARAMCOUNT;
-	if(result) *result = _this->GetProvincePixel(*param[0], *param[1]);
+	*result = _this->GetProvincePixel(*param[0], *param[1]);
 	return TJS_S_OK;
 }
 TJS_END_NATIVE_METHOD_DECL(/*func. name*/getProvincePixel)
@@ -10083,7 +10074,7 @@ TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/getTextWidth)
 	TJS_GET_NATIVE_INSTANCE(/*var. name*/_this, /*var. type*/tTJSNI_Font);
 	if(numparams < 1) return TJS_E_BADPARAMCOUNT;
 
-	if(result) *result = _this->GetLayer()->GetTextWidth(*param[0]);
+	*result = _this->GetLayer()->GetTextWidth(*param[0]);
 
 	return TJS_S_OK;
 }
@@ -10094,7 +10085,7 @@ TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/getTextHeight)
 	TJS_GET_NATIVE_INSTANCE(/*var. name*/_this, /*var. type*/tTJSNI_Font);
 	if(numparams < 1) return TJS_E_BADPARAMCOUNT;
 
-	if(result) *result = _this->GetLayer()->GetTextHeight(*param[0]);
+	*result = _this->GetLayer()->GetTextHeight(*param[0]);
 
 	return TJS_S_OK;
 }
@@ -10105,7 +10096,7 @@ TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/getEscWidthX)
 	TJS_GET_NATIVE_INSTANCE(/*var. name*/_this, /*var. type*/tTJSNI_Font);
 	if(numparams < 1) return TJS_E_BADPARAMCOUNT;
 
-	if(result) *result = _this->GetLayer()->GetEscWidthX(*param[0]);
+	*result = _this->GetLayer()->GetEscWidthX(*param[0]);
 
 	return TJS_S_OK;
 }
@@ -10116,7 +10107,7 @@ TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/getEscWidthY)
 	TJS_GET_NATIVE_INSTANCE(/*var. name*/_this, /*var. type*/tTJSNI_Font);
 	if(numparams < 1) return TJS_E_BADPARAMCOUNT;
 
-	if(result) *result = _this->GetLayer()->GetEscWidthY(*param[0]);
+	*result = _this->GetLayer()->GetEscWidthY(*param[0]);
 
 	return TJS_S_OK;
 }
@@ -10127,7 +10118,7 @@ TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/getEscHeightX)
 	TJS_GET_NATIVE_INSTANCE(/*var. name*/_this, /*var. type*/tTJSNI_Font);
 	if(numparams < 1) return TJS_E_BADPARAMCOUNT;
 
-	if(result) *result = _this->GetLayer()->GetEscHeightX(*param[0]);
+	*result = _this->GetLayer()->GetEscHeightX(*param[0]);
 
 	return TJS_S_OK;
 }
@@ -10138,7 +10129,7 @@ TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/getEscHeightY)
 	TJS_GET_NATIVE_INSTANCE(/*var. name*/_this, /*var. type*/tTJSNI_Font);
 	if(numparams < 1) return TJS_E_BADPARAMCOUNT;
 
-	if(result) *result = _this->GetLayer()->GetEscHeightY(*param[0]);
+	*result = _this->GetLayer()->GetEscHeightY(*param[0]);
 
 	return TJS_S_OK;
 }
@@ -10155,10 +10146,8 @@ TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/doUserSelect)
 	ttstr prompt = *param[2];
 	ttstr samplestring = *param[3];
 
-	tjs_int ret = (tjs_int)_this->GetLayer()->DoUserFontSelect(flags, caption,
+	*result = (tjs_int)_this->GetLayer()->DoUserFontSelect(flags, caption,
 		prompt, samplestring);
-
-	if(result) *result = ret;
 
 	return TJS_S_OK;
 }
