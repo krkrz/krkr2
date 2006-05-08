@@ -3886,8 +3886,7 @@ class KAGWindow extends Window
 			if(sg(VK_RETURN) || sg(VK_SPACE))
 			{
 				// キーが押されてた
-				if((shift & ssRepeat) && clickSkipEnabled && 
-					conductor.status == conductor.mRun)
+				if((shift & ssRepeat) && clickSkipEnabled)
 				{
 					// キーリピート
 					if(skipMode != 4 && skipKeyRepressed)
