@@ -734,6 +734,9 @@ class KAGEnvLayer extends KAGEnvImage {
         foreach(elm, doCommand);
         hideMessage();
         updateImage();
+		if (ret === void) {
+			ret = 0;
+		}
         return ret;
     }
 }
@@ -1633,6 +1636,9 @@ class KAGEnvCharacter extends KAGEnvLevelLayer, KAGEnvImage {
         foreach(elm, doCommand);
         hideMessage();
         updateImage();
+		if (ret === void) {
+			ret = 0;
+		}
         return ret;
     }
 
@@ -2412,6 +2418,9 @@ class KAGEnvironment extends KAGEnvImage {
         foreach(elm, doCommand);
         hideMessage();
         updateImage();
+		if (ret === void) {
+			ret = 0;
+		}
         return ret;
     }
 
