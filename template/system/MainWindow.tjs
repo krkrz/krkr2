@@ -4,6 +4,13 @@
 
 // このスクリプトは有効な perl5 スクリプトでもある
 
+// スキップモードが変更になったとき呼び出される
+var onSkipModeChange;
+
+// 自動再生モードが変更になったとき呼び出される
+var onAutoModeChange;
+
+
 class KAGWindow extends Window
 {
 	// KAG のウィンドウ クラス
