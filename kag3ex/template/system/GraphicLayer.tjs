@@ -15,7 +15,7 @@ class ProvinceContext
 	var autodisable;
 
 	function ProvinceContext() {};
-	function finalize() {};
+    function finalize() {};
 }
 
 class GraphicLayer extends AnimationLayer
@@ -308,7 +308,7 @@ class GraphicLayer extends AnimationLayer
 		var dic = super.store();
 		dic.loadedProvinceImage = loadedProvinceImage;
 		dic.loadedProvinceActions = loadedProvinceActions;
-		return dic;
+        return dic;
 	}
 
 	function restore(dic)
@@ -323,7 +323,8 @@ class GraphicLayer extends AnimationLayer
 			loadProvinceActions(dic.loadedProvinceActions);
 		else
 			clearProvinceActions();
-	}
+    }
+
 }
 
 class BaseLayer extends GraphicLayer
@@ -378,7 +379,7 @@ class BaseLayer extends GraphicLayer
 
 	function setOptions(elm)
 	{
-		// setOptions オーバーライド
+        // setOptions オーバーライド
 		if(elm.visible !== void)
 		{
 			if(isPrimary) elm.visible = true; else elm.visible = false;
@@ -476,20 +477,178 @@ class BaseLayer extends GraphicLayer
 	}
 }
 
-class CharacterLayer extends GraphicLayer
+class GraphicLayerEx extends GraphicLayer {
+    
+    function GraphicLayerEx() {
+        super.GraphicLayer(...);
+    }
+
+    function setOptions(elm)
+	{
+        super.setOptions(elm);
+        // ごう拡張 ActionLayer に対応
+        type   = global[elm.type] if elm.type   !== void;
+        rotate = +elm.rotate if elm.rotate !== void;
+        zoomx  = +elm.zoomx  if elm.zoomx  !== void;
+		zoomy  = +elm.zoomy  if elm.zoomy  !== void;
+		zoom   = +elm.zoom   if elm.zoom   !== void;
+        afx    = elm.afx    if elm.afx    !== void;
+        afy    = elm.afy    if elm.afy    !== void;
+        if (elm.reset !== void && elm.reset) {
+            reset();
+        }
+	}
+
+    /**
+     * 継承して拡張。reset() させる
+     */
+	function freeImage() {
+        super.freeImage(...);
+        reset();
+    }
+    
+    function store()
+    {
+		var dic = super.store();
+        dic.rotate = rotate;
+        dic.zoomx  = zoomx;
+        dic.zoomy  = zoomy;
+        dic.afx    = afx;
+        dic.afy    = afy;
+        return dic;
+    }
+
+	function restore(dic)
+	{
+		super.restore(dic);
+        rotate = dic.rotate if dic.rotate !== void; 
+        zoomx  = dic.zoomx  if dic.zoomx  !== void;
+        zoomy  = dic.zoomy  if dic.zoomy  !== void;
+        afx    = dic.afx    if dic.afx    !== void;
+        afy    = dic.afy    if dic.afy    !== void;
+    }
+
+    var doAction;
+    
+    /**
+     * アクション開始処理
+     */
+    function beginAction() {
+        if (!inAction && !doAction) {
+            window.actionCount++;
+            doAction = true;
+        }
+        super.beginAction(...);
+        //dm("アクションカウント:" + window.actionCount);
+    }
+    
+    /**
+     * アクション終了時に呼び出されるイベント
+     */
+    function onActionCompleted() {
+        if (doAction) {
+            window.actionCount--;
+            doAction = false;
+            //dm("アクションカウント:" + window.actionCount);
+            if (window.actionCount <= 0) {
+                window.onActionStop();
+            }
+            window.onLayerActionStop(this);
+        }
+    }
+}
+
+class StageLayer extends GraphicLayerEx
+{
+    // 舞台・イベント用特殊固定レイヤ
+
+    function StageLayer(win, par, name, id)
+	{
+		super.GraphicLayerEx(win, par, name, id);
+		type = ltCoverRect;
+		hitType = htMask;
+		hitThreshold = 0;
+	}
+
+	function finalize()
+	{
+		super.finalize(...);
+	}
+
+	function internalOnMouseDown(x, y, button, processprovince = true)
+	{
+		// 内部関数
+		var provinceprocessed = false;
+		if(button == mbLeft && processprovince && !window.messageLayerHiding)
+			provinceprocessed = processProvince(x, y);
+		if(button == mbLeft && !provinceprocessed)
+		{
+            window.onPrimaryClick();
+		}
+		else if(button == mbRight)
+		{
+            window.onPrimaryRightClick();
+		}
+	}
+
+	function onMouseDown(x, y, button)
+	{
+		// マウスが押された
+		super.onMouseDown(...);
+		internalOnMouseDown(x, y, button);
+	}
+    
+	function assign(src)
+	{
+		// assign オーバーライド
+		super.assign(src);
+		assignVisibleState(src);
+	}
+
+	function atEndOfTransition(src, withchildren, exchange)
+	{
+		// atEndOfTransition オーバーライド
+		super.atEndOfTransition(...);
+		if(src == null)
+		{
+			//・背景レイヤがsrcなしでトランジション(children=true)
+			//　何もしなくてよいが、終了時に子レイヤは非表示になる。
+			//・背景レイヤがsrcなしでトランジション(children=false)
+			//　本当に何もしない。
+		}
+		else
+		{
+            super.assign(src);
+            exchangeInfo();
+            window.exchangeForeBack();
+            window.callExchangeInfo();
+            window.swapStageLayer(id);
+		}
+	}
+
+	function assignTransSrc()
+	{
+		// トランジションもと(comp)をコピーする
+		assign(comp);
+	}
+}
+
+class CharacterLayer extends GraphicLayerEx
 {
 	// 前景レイヤ
 	var autoHide = false; // メッセージレイヤと一緒に隠れることができるか
 	var invisibleByUser = false; // ユーザにより一時的に不可視
-	var visibleBeforeUserInvisible  = false;
+    var visibleBeforeUserInvisible  = false;
+    var level; // 表示レベル補正用
 
-	function CharacterLayer(win, par, name, id)
+	function CharacterLayer(win, par, name, id, level=0)
 	{
-		super.GraphicLayer(win, par, name, id);
+        super.GraphicLayerEx(win, par, name, id);
 		freeImage();
 		type = ltCoverRect;
 		hitType = htMask;
-		hitThreshold = 64;
+        hitThreshold = 64;
+        this.level = level;
 	}
 
 	function finalize()
@@ -520,14 +679,15 @@ class CharacterLayer extends GraphicLayer
 		assignVisibleState(src);
 		// 親クラスの assign は可視・不可視などの情報をコピーしないため
 		// ここで assignVisibleState を呼ぶ必要がある
-		autoHide = src.autoHide;
+        autoHide = src.autoHide;
+        level = src.level;
 	}
 
 	function setOptions(elm)
 	{
 		// setOptions オーバーライド
-		super.setOptions(elm);
-		autoHide = +elm.autohide if elm.autohide !== void;
+        super.setOptions(elm);
+        autoHide = +elm.autohide if elm.autohide !== void;
 	}
 
 	function atEndOfTransition(src, withchildren, exchange)
@@ -592,17 +752,16 @@ class CharacterLayer extends GraphicLayer
 	{
 		// store オーバーライド
 		var dic = super.store();
-		dic.autoHide = autoHide;
-		return dic;
+        dic.autoHide = autoHide;
+        dic.level    = level;
+        return dic;
 	}
 
 	function restore(dic)
 	{
 		// restore オーバーライド
 		autoHide = +dic.autoHide if dic.autoHide !== void;
-		super.restore(dic);
+        level    = +dic.level if dic.level !== void;
+        super.restore(dic);
 	}
-
 }
-
-

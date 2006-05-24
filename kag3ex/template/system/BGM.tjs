@@ -10,7 +10,8 @@ class KAGSoundBuffer
 	var owner; // オーナー
 
 	var inFadeAndStop = false; // フェード終了時に演奏を停止するか
-	var inFading = false; // フェード中か
+    var inFadeAndPause = false; // フェード終了時に演奏を一時停止するか
+    var inFading = false; // フェード中か
 	var prevstatus = "unload"; // 直前のステータス
 
 	function KAGSoundBuffer(owner, sbclass)
@@ -35,13 +36,15 @@ class KAGSoundBuffer
 		// stopFade オーバーライド
 		sbclass.stopFade(...);
 		inFadeAndStop = false;
-	}
+        inFadeAndPause = false;
+    }
 
 	function stop()
 	{
 		// stop オーバーライド
 		sbclass.stop(...);
 		inFadeAndStop = false;
+		inFadeAndPause = false;
 	}
 
 	function fadeOutAndStop(time, delay = 0)
@@ -52,6 +55,14 @@ class KAGSoundBuffer
 		sbclass.fade(0, time, delay);
 	}
 
+	function fadeOutAndPause(time, delay = 0)
+	{
+		// 時間 time, delay でフェードアウト後、演奏を停止する
+		inFading = true;
+		inFadeAndPause = true;
+		sbclass.fade(0, time, delay);
+	}
+    
 	function onFadeCompleted()
 	{
 		// フェードが終了した
@@ -60,7 +71,10 @@ class KAGSoundBuffer
 		{
 			sbclass.stop(); // inFadeAndStop ならば停止
 			inFadeAndStop = false;
-		}
+        } else if (inFadeAndPause) {
+			sbclass.paused = true; // inFadeAndPause ならば一時停止
+			inFadeAndPause = false;
+        }
 		sbclass.onFadeCompleted(...);
 		owner.onSoundBufferFadeCompleted(this);
 	}
@@ -135,7 +149,7 @@ class BGM
 	var buf2; // バッファ 2
 	var currentBuffer;  // buf1 or buf2
 	var looping = true; // ループ中かどうか
-	var volume = 100000; // ボリューム
+    var volume = 100000; // ボリューム
 
 	var playingStorage; // 演奏中のストレージ
 	var currentStorage; // 見かけの演奏中のストレージ
@@ -210,7 +224,7 @@ class BGM
 		restore(flags); // 状態を復帰
 	}
 
-	function playBuffer(buf, storage, loop)
+	function playBuffer(buf, storage, loop, start)
 	{
 		// buf に対して演奏を開始させる
 
@@ -280,7 +294,14 @@ class BGM
 				buf.paused = false;
 				buf.looping = loop; // 引数の "loop"
 				buf.open(storage);
-				buf.play();
+                // ごう追加 再生位置制御
+                if (start !== void &&
+                    buf.labels !== void &&
+                    (start = buf.labels[start]) !== void &&
+                    (start = start.samplePosition) !== void) {
+                    buf.samplePosition = start;
+                }
+                buf.play();
 			}
 			catch(e)
 			{
@@ -310,7 +331,7 @@ class BGM
 		}
 		stopFade(); // フェーディングは終了
 		buf1.volume = volume;
-		playBuffer(buf1, elm.storage, loop);
+		playBuffer(buf1, elm.storage, loop, elm.start);
 		if(loop)
 			currentStorage = elm.storage; // ループ演奏の場合
 		else
@@ -336,7 +357,7 @@ class BGM
 			dm("BGM の停止に失敗しました(実行は続行できます) : " + e.message);
 		}
 		if(time != 0) buf1.volume = 0; else buf1.volume = volume;
-		playBuffer(buf1, elm.storage, loop);
+		playBuffer(buf1, elm.storage, loop, elm.start);
 		if(_enabled) if(time !=0 ) currentBuffer.fade(volume, time);
 		looping = loop;
 		if(loop) currentStorage = elm.storage; else currentStorage = "";
@@ -356,7 +377,7 @@ class BGM
 			dm("BGM の停止に失敗しました(実行は続行できます) : " + e.message);
 		}
 //		stopFade();
-		currentStorage = "";
+        currentStorage = "";
 		playingStorage = "";
 	}
 
@@ -370,8 +391,8 @@ class BGM
 	function resume()
 	{
 		// 演奏を再開
-		buf1.paused = false;
-		buf2.paused = false if buf2 !== void;
+        buf1.paused = false;
+        buf2.paused = false if buf2 !== void;
 	}
 
 	function fadeOut(elm)
@@ -382,6 +403,11 @@ class BGM
 		currentStorage = "";
 	}
 
+    function fadePause(elm)
+    {
+		if(_enabled) currentBuffer.fadeOutAndPause(elm.time);
+    }    
+    
 	function fade(elm)
 	{
 		// 指定音量までフェード
@@ -459,7 +485,7 @@ class BGM
 			var nextbuffer; // 次の演奏バッファ
 			nextbuffer = (currentBuffer == buf1) ? buf2 : buf1;
 			if(intime != 0) nextbuffer.volume = 0; else nextbuffer.volume = volume;
-			playBuffer(nextbuffer, elm.storage, loop);
+			playBuffer(nextbuffer, elm.storage, loop, elm.start);
 			if(intime != 0) nextbuffer.fade(volume, intime, outtime - overlap);
 		}
 		else
@@ -504,8 +530,8 @@ class BGM
 			var v2 = +elm.gvolume;
 			v2 = int(v2 * 1000);
 			sysvar.globalVolume = v2;
-			buf1.volume2 = v2;
-			buf2.volume2 = v2 if doubleBuffered;
+            buf1.volume2 = v2;
+            buf2.volume2 = v2 if doubleBuffered;
 		}
 	}
 
@@ -567,14 +593,32 @@ class BGM
 		var sysvar = dic.bgm;
 		if(sysvar !== void)
 		{
-			var v2 = sysvar.globalVolume;
-			if(v2 !== void)
+            var v2 = sysvar.globalVolume;
+            if(v2 !== void)
 			{
 				v2 = +v2;
-				buf1.volume2 = v2;
-				buf2.volume2 = v2 if doubleBuffered;
+                buf1.volume2 = v2;
+                buf2.volume2 = v2 if doubleBuffered;
 			}
 		}
 	}
+
+
+    // true の場合はボリューム補正する
+    var _voldown;
+
+    property voldown {
+        getter() {
+            return _voldown;
+        }
+        setter(v) {
+            _voldown = v;
+            if (_voldown) {
+                currentBuffer.fade(volume * 0.5, 300);
+            } else {
+                currentBuffer.fade(volume, 300);
+            }
+        }
+    }
 }
 

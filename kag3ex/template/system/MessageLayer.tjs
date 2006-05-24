@@ -21,8 +21,8 @@ class LinkButtonLayer extends ButtonLayer
 	{
 		// コンストラクタ
 		super.ButtonLayer(...);
-		focusable = false; // フォーカスは受け取らない
-		hint = "";
+        focusable = false; // フォーカスは受け取らない
+        hint = "";
 	}
 
 	function finalize()
@@ -37,10 +37,18 @@ class LinkButtonLayer extends ButtonLayer
 
 	function onMouseUp(x, y, button, shift)
 	{
-		if(enabled && button == mbLeft) parent.onButtonClick(linkNum);
-		if(this isvalid) super.onMouseUp(...);
+        if(enabled && button == mbLeft) parent.onButtonClick(linkNum);
+        if(this isvalid) super.onMouseUp(...);
 	}
 
+	function onMouseDown(x, y, button)
+	{
+		super.onMouseDown(...);
+        if(button == mbRight) {
+            window.onPrimaryRightClick();
+        }
+	}
+    
 	function onMouseEnter()
 	{
 		parent.keyLink = linkNum;
@@ -91,7 +99,8 @@ class LinkCheckBoxLayer extends CheckBoxLayer
 	// チェックボックス
 	var linkNum; // リンク番号
 	var exp; // 式
-	var vertical; // 縦書きモード
+    var change; // 変更式
+    var vertical; // 縦書きモード
 
 	function LinkCheckBoxLayer(win, par)
 	{
@@ -146,6 +155,22 @@ class LinkCheckBoxLayer extends CheckBoxLayer
 	{
 		kag.inputTemp = checked;
 		Scripts.eval(("(" + exp + ") = kag.inputTemp"));
+	}
+
+    function onChange(checked)
+    {
+        if (change !== void) {
+            kag.inputTemp = checked;
+            Scripts.eval(("(" + change + ") = kag.inputTemp"));
+        }
+    }
+
+	function onMouseDown(x, y, button)
+	{
+		super.onMouseDown(...);
+        if(button == mbRight) {
+            window.onPrimaryRightClick();
+        }
 	}
 }
 
@@ -209,6 +234,152 @@ class LinkEditLayer extends EditLayer
 		kag.inputTemp = text;
 		Scripts.eval(("(" + exp + ") = kag.inputTemp"));
 	}
+
+	function onMouseDown(x, y, button)
+	{
+		super.onMouseDown(...);
+        if(button == mbRight) {
+            window.onPrimaryRightClick();
+        }
+	}
+}
+
+class LinkSliderLayer extends SliderLayer
+{
+    // メッセージレイヤに「スライダ」として管理されるためのスライダ
+	var linkNum; // リンク番号
+    var exp; // 式
+    var change; // 変更式
+    var changese; // 変更時SE
+
+    function LinkSliderLayer(win, par)
+    {
+        // コンストラクタ
+        super.SliderLayer(...);
+        joinFocusChain = false;
+        hint = "";
+    }
+    
+	function finalize()
+	{
+		super.finalize(...);
+	}
+
+	function assign(src)
+	{
+		super.assign(src);
+		linkNum = src.linkNum;
+	}
+
+	function onSearchPrevFocusable(layer)
+	{
+		super.onSearchPrevFocusable(parent.findPrevFocusable(this, layer));
+	}
+
+	function onSearchNextFocusable(layer)
+	{
+		super.onSearchNextFocusable(parent.findNextFocusable(this, layer));
+	}
+
+	function onFocus(prevfocused, direction)
+        {
+        parent.keyLink = linkNum;
+        super.onFocus(...);
+	}
+
+	function commit()
+	{
+		kag.inputTemp = position;
+		Scripts.eval(("(" + exp + ") = kag.inputTemp"));
+	}
+
+    function onChange(position, dragging)
+    {
+        if (change !== void) {
+            kag.inputTemp = position;
+            Scripts.eval(("(" + change + ") = kag.inputTemp"));
+            if (changese !== void && !dragging) {
+                Scripts.eval(changese);
+            }
+        }
+    }
+
+	function onMouseDown(x, y, button)
+	{
+		super.onMouseDown(...);
+        if(button == mbRight) {
+            window.onPrimaryRightClick();
+        }
+	}
+}
+
+/**
+ * システムボタン拡張
+ * KAG のサンプルプラグインの拡張
+ */
+class SystemButtonLayer extends ButtonLayer
+{
+    var noStable; // 非Stable時でも有効
+    var onclick; // クリック時に実行するもの
+    var onenter; // マウスが入ってきたときに実行するもの
+    var onleave; // マウスが出ていったときに実行するもの
+
+	function SystemButtonLayer(window, parent)
+	{
+		super.ButtonLayer(window, parent);
+		focusable = false;
+		visible = true;
+        onenter = void;
+        onleave = void;
+        onclick = void;
+        noStable = void;
+	}
+
+	function finalize()
+	{
+		super.finalize(...);
+	}
+
+	function onClick()
+	{
+		super.onClick(...);
+	}
+
+	function onMouseEnter()
+	{
+        if(onenter !== void) Scripts.eval(onenter);
+		super.onMouseEnter(...);
+	}
+
+	function onMouseLeave()
+	{
+        if(onleave !== void) Scripts.eval(onleave);
+        super.onMouseLeave(...);
+	}
+    
+	function onMouseUp(x, y, button, shift)
+	{
+        if (enabled && button == mbLeft && onclick !== void && (noStable || window.inStable)) {
+            Scripts.eval(onclick);
+        }
+        super.onMouseUp(...);
+    }
+
+	function onMouseDown(x, y, button)
+	{
+		super.onMouseDown(...);
+        if(button == mbRight) {
+            window.onPrimaryRightClick();
+        }
+	}
+    
+    function assign(src) {
+        super.assign(src);
+        onclick = src.onclick;
+        onenter = src.onenter;
+        onleave = src.onleave;
+        noStable = src.noStable;
+    }
 }
 
 class MessageLayer extends KAGLayer
@@ -342,11 +513,69 @@ class MessageLayer extends KAGLayer
 	var lastMouseDownY; // 最後にマウスがクリックされた Y 座標
 
 	// リンクタイプ
-	var ltNormal = 1;
-	var ltButton = 2;
-	var ltEdit = 3;
-	var ltCheckBox = 4;
+    var ltNormal   = 1;
+    var ltButton   = 2;
+    var ltEdit     = 3;
+    var ltCheckBox = 4;
+    var ltSlider   = 5;
+    
+    // 名前描画用レイヤ
+    var nameLayer;
+    var nameLeft = 0;
+    var nameTop = 0;
+    var nameWidth = 8;
+    var nameHeight = 8;
 
+    // 顔描画用レイヤ
+    var faceLayer;
+    var faceLeft = 0;
+    var faceTop = 0;
+    var faceWidth = 8;
+    var faceHeight = 8;
+
+    // システムボタンレイヤ
+    var buttons = %[];
+
+    // タイムアウト処理用
+    var timeoutTimer;
+    var timeoutTime;
+    var timeoutStorage;
+    var timeoutTarget;
+        
+    function clearTimeout() {
+        stopTimeout();
+        timeoutTime    = void;
+        timeoutStorage = void;
+        timeoutTarget  = void;
+    }
+    
+    function timeoutHandler() {
+        window.process(timeoutStorage, timeoutTarget);
+        clearTimeout();
+    }
+
+    function addTimeout(elm) {
+        timeoutTime    = elm.time;
+        timeoutStorage = elm.storage;
+        timeoutTarget  = elm.target;
+    }
+
+    function stopTimeout() {
+        if (timeoutTimer !== void) {
+            invalidate timeoutTimer;
+            timeoutTimer = void;
+        }
+    }
+    
+    function startTimeout() {
+        if (timeoutTime > 0 && (timeoutStorage !== void || timeoutTarget !== void)) {
+            timeoutTimer = new Timer(timeoutHandler, '');
+            timeoutTimer.capacity = 1;
+            timeoutTimer.interval = timeoutTime;
+            timeoutTimer.enabled  = true;
+        }
+    }
+    
 	function MessageLayer(owner, parent, name, id, do_config)
 	{
 		// MessageLayer コンストラクタ
@@ -408,17 +637,37 @@ class MessageLayer extends KAGLayer
 		highlightLayer.type = layerType;
 		highlightLayer.face = dfAuto;
 		highlightLayer.hitType = htProvince;
-			// 領域画像で当たり判定を行う
-	}
+        // 領域画像で当たり判定を行う
 
+        nameLayer = new global.KAGLayer(window, this);
+        nameLayer.type = layerType;
+        nameLayer.name = "名前表示用レイヤ";
+
+        faceLayer = new global.KAGLayer(window, this);
+        faceLayer.type = ltAlpha;
+        faceLayer.name = "表情表示用レイヤ";
+    }
+
+    function clearSystemButtons() {
+        // ボタン情報の破棄
+        foreach(buttons, function(name,value,dict) {
+            invalidate value;
+            delete dict[name];
+        });
+    }
+    
 	function finalize()
 	{
-		// invalidateLinkObjects(); // リンクに結びつけられたオブジェクトの無効化
+        // invalidateLinkObjects(); // リンクに結びつけられたオブジェクトの無効化
 		invalidateLinkObjects();
-		invalidate highlightLayer;
-		invalidate lineLayer;
+        invalidate highlightLayer;
+        invalidate lineLayer;
+        invalidate nameLayer;
+        invalidate faceLayer;
+        invalidate timeoutTimer if timeoutTimer !== void;
 
-
+        clearSystemButtons();
+        invalidate buttons;
 		super.finalize();
 	}
 
@@ -479,7 +728,10 @@ class MessageLayer extends KAGLayer
 		lastMouseX = cursorX;
 		lastMouseY = cursorY;
 		initLineLayer();
-	}
+
+        clearFace();
+        processName();
+    }
 
 	function setPosition(elm)
 	{
@@ -505,8 +757,20 @@ class MessageLayer extends KAGLayer
 		draggable = +elm.draggable if elm.draggable !== void;
 		visible = +elm.visible if elm.visible !== void;
 
-		clear();
-	}
+        // 名前窓
+        nameLeft  = +elm.nameleft   if elm.nameleft   !== void;
+        nameTop   = +elm.nametop    if elm.nametop    !== void;
+        nameWidth = +elm.namewidth  if elm.namewidth  !== void;
+        nameHeight= +elm.nameheight if elm.nameheight !== void;
+        
+        // 表情窓
+        faceLeft  = +elm.faceleft   if elm.faceleft   !== void;
+        faceTop   = +elm.facetop    if elm.facetop    !== void;
+        faceWidth = +elm.facewidth  if elm.facewidth  !== void;
+        faceHeight= +elm.faceheight if elm.faceheight !== void;
+        
+        clear();
+    }
 
 	function clear()
 	{
@@ -532,7 +796,11 @@ class MessageLayer extends KAGLayer
 		decideSizeChange();
 		initLineLayer();
 		currentRuby = "";
-	}
+
+        nameLayer.setPos(nameLeft, nameTop, nameWidth, nameHeight);
+        faceLayer.setPos(faceLeft, faceTop, faceWidth, faceHeight);
+        clearTimeout();
+    }
 
 	function clear2()
 	{
@@ -567,13 +835,13 @@ class MessageLayer extends KAGLayer
 		{
 			lineLayer.font.face = fontFace = defaultFace == 'user' ? userFace : defaultFace;
 			lineLayer.font.angle = 0;
-		}
+        }
 		else
 		{
 			lineLayer.font.face = '@' + (fontFace = defaultFace == 'user' ? userFace : defaultFace);
 			lineLayer.font.angle = 2700;
-		}
-
+        }
+        
 		lineLayer.font.bold = bold = defaultBold;
 		lineLayer.font.italic=false;
 		_fontSize = defaultFontSize;
@@ -592,7 +860,13 @@ class MessageLayer extends KAGLayer
 			relinexpos = imageWidth - marginR - marginRCh * _fontSize;
 		else
 			relinexpos = imageHeight - marginB - marginRCh * _fontSize;
-	}
+
+        nameLayer.font.face   = lineLayer.font.face;
+        nameLayer.font.angle  = lineLayer.font.angle;
+        nameLayer.font.bold   = lineLayer.font.bold;
+        nameLayer.font.italic = lineLayer.font.italic;
+        nameLayer.font.height = defaultFontSize;
+    }
 
 	function setFont(elm)
 	{
@@ -604,8 +878,8 @@ class MessageLayer extends KAGLayer
 			var elmface = elm.face;
 			if(elmface == 'default')
 			{
-				lineLayer.font.angle = 0;
-				lineLayer.font.face = fontFace =  defaultFace;
+                lineLayer.font.angle = 0;
+                lineLayer.font.face = fontFace =  defaultFace;
 			}
 			else if(elmface == 'user')
 			{
@@ -641,7 +915,7 @@ class MessageLayer extends KAGLayer
 			}
 		}
 
-		if(elm.antialiased == 'default')
+        if(elm.antialiased == 'default')
 			antialiased = defaultAntialiased;
 		else if(elm.antialiased !== void)
 			antialiased = +elm.antialiased;
@@ -700,7 +974,13 @@ class MessageLayer extends KAGLayer
 			relinexpos = int(imageWidth-marginR-marginRCh*_fontSize);
 		else
 			relinexpos = int(imageHeight-marginB-marginRCh*_fontSize);
-	}
+
+        nameLayer.font.face   = lineLayer.font.face;
+        nameLayer.font.angle  = lineLayer.font.angle;
+        nameLayer.font.bold   = lineLayer.font.bold;
+        nameLayer.font.italic = lineLayer.font.italic;
+        nameLayer.font.height = defaultFontSize;
+    }
 
 	function setDefaultFont(elm)
 	{
@@ -936,7 +1216,7 @@ class MessageLayer extends KAGLayer
 					links[n].y[l] += lineLayer.imageHeight - oldsize;
 				}
 				// 位置移動 
-				lineLayer.setPos(lineLayerOriginX + getLineLayerLeftOffset(),
+                lineLayer.setPos(lineLayerOriginX + getLineLayerLeftOffset(),
 							lineLayerOriginY + getLineLayerTopOffset());
 			}
 		}
@@ -1385,8 +1665,8 @@ class MessageLayer extends KAGLayer
 		var dx = lineLayerBase - (cw>>1);
 		var dy = lineLayerPos;
 
-		if(edge)
-			ll.drawText(dx, dy, text, chColor, 255, antialiased, 512, edgeColor, 1, 0, 0); // 文字
+        if(edge)
+			ll.drawText(dx, dy, text, chColor, 255, antialiased, edgeEmphasis, edgeColor, edgeExtent, 0, 0); // 文字
 		else if(shadow)
 			ll.drawText(dx, dy, text, chColor, 255, antialiased, 255, shadowColor, 0, 2, 2); // 文字
 		else
@@ -1425,7 +1705,35 @@ class MessageLayer extends KAGLayer
 		return false;
 	}
 
+    /**
+     * 名前の消去
+     */
+    function clearName() {
+        nameLayer.visible = false;
+    }
 
+    /**
+     * 名前の描画
+     */
+    function processName(text=void) {
+        // 消去
+        nameLayer.fillRect(0,0,nameLayer.width,nameLayer.height,0);
+        if(edge)
+            nameLayer.drawText(0, 0, text, chColor, 255, antialiased, 512, edgeColor, 1, 0, 0); // 文字
+        else if(shadow)
+            nameLayer.drawText(0, 0, text, chColor, 255, antialiased, 255, shadowColor, 0, 2, 2); // 文字
+        else
+            nameLayer.drawText(0, 0, text, chColor, 255, antialiased); // 文字
+        nameLayer.visible = true;
+    }
+
+    /**
+     * 顔画像の描画
+     */
+    function clearFace() {
+        faceLayer.visible = false;
+    }
+    
 	function invalidateLinkObjects()
 	{
 		// リンクアイテムにオブジェクトが割り当てられていた場合無効化
@@ -1570,15 +1878,24 @@ class MessageLayer extends KAGLayer
 	{
 		// グラフィカルボタンを配置
 		var object = new LinkButtonLayer(window, this);
-		object.loadImages(elm.graphic, elm.graphickey);
-		object.linkNum = numLinks;
-		object.setPos(x, y);
+        object.name =  "button" + numLinks;
+        if (elm.normal !== void) {
+            object.loadButtons(elm.normal, elm.over, elm.on, elm.focus);
+        } else {
+            object.loadImages(elm.graphic, elm.graphickey);
+        }
+        object.linkNum = numLinks;
+        object.setPos(x, y);
 		object.hint = elm.hint;
-		object.visible = true;
+        object.visible = true;
 		object.onenter = createSoundExpression(elm.onenter, elm.enterse, elm.entersebuf);
 		object.onleave = createSoundExpression(elm.onleave, elm.leavese, elm.leavesebuf);
-		object.hitThreshold =
-			(elm.recthit === void || +elm.recthit) ? 0 : 64;
+        object.hitThreshold = (elm.recthit === void || +elm.recthit) ? 0 : 64;
+        if (elm.enabled !== void) {
+            object.enabled = (elm.enabled != 0);
+        } else if (elm.disabled !== void && elm.disabled) {
+            object.enabled = false;
+        }
 
 		links[numLinks] = %[
 			type :			ltButton,
@@ -1610,6 +1927,7 @@ class MessageLayer extends KAGLayer
 		// 単一行エディットを配置
 		changeLineSize() if sizeChanged;
 		var object = new LinkEditLayer(window, this, vertical);
+        object.name =  "edit" + numLinks;
 		var of = object.font;
 		var lf = lineLayer.font;
 		of.face = lf.face;
@@ -1619,12 +1937,13 @@ class MessageLayer extends KAGLayer
 		of.height = lf.height;
 		object.linkNum = numLinks;
 		object.text = Scripts.eval(elm.name);
-		object.exp = elm.name;
-		object.antialiased = antialiased;
+        object.exp = elm.name;
+        object.antialiased = antialiased;
 		object.color = elm.bgcolor if elm.bgcolor !== void; // color でない事に注意
 		object.textColor = elm.color if elm.color !== void; // textColor でないことに注意
 		object.maxChars = elm.maxchars if elm.maxchars !== void;
 		object.bgOpacity = elm.opacity if elm.opacity !== void;
+		object.noborder = elm.noborder if elm.noborder !== void;
 
 		var len = elm.length === void ? 200: +elm.length;
 		if(vertical)
@@ -1668,11 +1987,13 @@ class MessageLayer extends KAGLayer
 	function addCheckBox(elm)
 	{
 		var object = new LinkCheckBoxLayer(window, this, vertical);
-		object.linkNum = numLinks;
+        object.name = "check" + numLinks;
+        object.linkNum = numLinks;
 		object.vertical = vertical;
 		object.checked = Scripts.eval(elm.name);
 		object.exp = elm.name;
-		object.color = elm.bgcolor if elm.bgcolor !== void; // color でない事に注意
+        object.change = elm.onchange if elm.onchange !== void;
+        object.color = elm.bgcolor if elm.bgcolor !== void; // color でない事に注意
 		object.glyphColor = elm.color if elm.color !== void; // glyphColor でないことに注意
 		object.bgOpacity = elm.opacity if elm.opacity !== void;
 
@@ -1731,6 +2052,120 @@ class MessageLayer extends KAGLayer
 		comp.setSelProcessLock(false); // 選択ロック解除
 	}
 
+	function addSlider(elm)
+	{
+        var object = new LinkSliderLayer(window, this, vertical);
+        object.linkNum = numLinks;
+        object.exp     = elm.name;
+        object.color = elm.bgcolor if elm.bgcolor !== void; // color でない事に注意
+        object.bgOpacity = elm.opacity if elm.opacity !== void;
+        object.min = +elm.min if elm.min !== void;
+        object.max = +elm.max if elm.max !== void;
+        if (elm.value !== void) {
+            object.position = +Scripts.eval(elm.value);
+            object.change = elm.value;
+        } else {
+            object.position = +elm.position if elm.position !== void;
+            object.change = elm.onchange if elm.onchange !== void;
+        }
+        object.changese = createSoundExpression(void, elm.changese, elm.changesebuf);
+        
+        // ベースの指定
+        if (elm.base !== void) {
+            object.loadBase(elm.base);
+        } else {
+            object.width   = elm.width  === void ? 200 : +elm.width;
+            object.height  = elm.height === void ? 30  : +elm.height;
+        }
+        // タブの指定
+        if (elm.normal !== void) {
+            object.loadTabs(elm.normal, elm.over, elm.on);
+        } else if (elm.tab !== void) {
+            object.loadTab(elm.tab);
+        }
+        
+        var cw;
+        var lw = object.width;
+		var lh = object.height;
+		if(vertical)
+		{
+			if(lw > lineSize) lineSize = lw; else lw = object.width = lineSize; // 拡張
+			cw = lh;
+		}
+		else
+		{
+			if(lh > lineSize) lineSize = lh; else lh = object.height = lineSize; // 拡張
+			cw = lw;
+		}
+
+		changeLineSize();
+
+		var cx,cy;
+		if(vertical)
+		{
+			cx = lineLayerBase - (lw>>1);
+			cy = lineLayerPos;
+		}
+		else
+		{
+			cx = lineLayerPos;
+			cy = lineLayerBase - lh;
+		}
+
+        object.setPos(cx + lineLayerOriginX + getLineLayerLeftOffset(),
+                      cy + lineLayerOriginY + getLineLayerTopOffset());
+
+        if(vertical) y+=cw; else x+=cw;
+        lineLayerPos += cw;
+        lineLayerLength += cw;
+
+        object.visible = true;
+
+        links[numLinks] = %[
+			type :			ltSlider,
+			exp :			elm.name,
+			object :		object,
+			x :				[object.left],
+			y :				[object.top],
+			w :				[object.width],
+			h :				[object.height],
+			fixed :			[true], // 固定!!!
+			lineCount :		1
+			];
+
+        numLinks ++;
+        focusable = true;
+        setSelProcessLock(false); // 選択ロック解除
+		comp.setSelProcessLock(false); // 選択ロック解除
+	}
+
+    /**
+     * システムボタンの登録
+     */
+    function addSystemButton(elm) {
+        var object = new SystemButtonLayer(window, this);
+        object.name = elm.name;
+        if (elm.normal !== void) {
+            object.loadButtons(elm.normal, elm.over, elm.on, elm.focus);
+        } else {
+            object.loadImages(elm.graphic, elm.graphickey);
+        }
+        object.setPos(elm.x, elm.y);
+        object.hint = elm.hint;
+        object.visible = true;
+        object.onclick = createSoundExpression(elm.exp, elm.clickse, elm.clicksebuf);
+		object.onenter = createSoundExpression(elm.onenter, elm.enterse, elm.entersebuf);
+        object.onleave = createSoundExpression(elm.onleave, elm.leavese, elm.leavesebuf);
+        object.hitThreshold = (elm.recthit === void || +elm.recthit) ? 0 : 64;
+        if (elm.enabled !== void) {
+            object.enabled = (elm.enabled != 0);
+        } else if (elm.disabled !== void && elm.disabled) {
+            object.enabled = false;
+        }
+        object.noStable = elm.nostable;
+        buttons[elm.name] = object;
+    }
+    
 	function highlightLink(n, b = false)
 	{
 		// n 番目のリンクを
@@ -1746,7 +2181,7 @@ class MessageLayer extends KAGLayer
 			var xofs = lineLayerOriginX + getLineLayerLeftOffset();
 			var yofs = lineLayerOriginY + getLineLayerTopOffset();
 
-			if(linkn.onenter != '') Scripts.eval(linkn.onenter);
+            if(linkn.onenter != '') Scripts.eval(linkn.onenter);
 
 			// ハイライトする
 			if(!vertical)
@@ -1862,7 +2297,10 @@ class MessageLayer extends KAGLayer
 
 	function processLink(n)
 	{
-		// リンク番号 n を処理する
+        // タイムアウト処理は停止
+        stopTimeout();
+
+        // リンク番号 n を処理する
 		var ln = links[n];
 		if(ln === void) return;
 
@@ -1875,12 +2313,12 @@ class MessageLayer extends KAGLayer
 		if(ln.storage != '' || ln.target != '')
 		{
 			window.lockMessageLayerSelProcess(); // 選択をロック
-			if(window.getKeyState(VK_RETURN) || window.getKeyState(VK_SPACE))
+			if(window.getKeyState(VK_RETURN) || window.getKeyState(VK_SPACE) || window.getKeyState(VK_CONTROL))
 				window.hideMouseCursor();
 					// キーボードによる操作の場合はマウスカーソルを隠す
 			window.process(ln.storage, ln.target, ln.countPage);
 		}
-	}
+    }
 
 	function onButtonClick(num)
 	{
@@ -1903,7 +2341,7 @@ class MessageLayer extends KAGLayer
 				var item = lks[i];
 				var type = item.type;
 				if(type == ltButton) item.object.eventTransparent = b;
-				else if(type == ltEdit || type == ltCheckBox) item.object.enabled = !b;
+                else if(type == ltEdit || type == ltCheckBox || type == ltSlider) item.object.enabled = !b;
 			}
 		}
 	}
@@ -1931,7 +2369,7 @@ class MessageLayer extends KAGLayer
 		{
 			var item = lks[i];
 			var type = item.type;
-			if(type == ltEdit || type == ltCheckBox) item.object.commit();
+            if(type == ltEdit || type == ltCheckBox || type == ltSlider) item.object.commit();
 		}
 	}
 
@@ -1972,7 +2410,7 @@ class MessageLayer extends KAGLayer
 
 		var n;
 		n = findLink(x, y);
-		if(n == -1)
+        if(n == -1)
 		{
 			return false; // とりあえず透過
 		}
@@ -2119,7 +2557,7 @@ class MessageLayer extends KAGLayer
 		var width = linkn.w[0];
 		var height = linkn.h[0];
 		var x, y;
-		if(linkn.type == ltEdit)
+        if(linkn.type == ltEdit)
 		{
 			// カーソルはじゃまなので端っこに置く
 			if(vertical)
@@ -2158,7 +2596,7 @@ class MessageLayer extends KAGLayer
 			internalMouseMove(x, y);
 			if(force) keyLink = n; // 一応再設定
 		}
-		if(linkn.type == ltEdit || linkn.type == ltCheckBox)
+		if(linkn.type == ltEdit || linkn.type == ltCheckBox || linkn.type == ltSlider)
 		{
 			var obj = linkn.object;
 			if(force) obj.focus();
@@ -2439,7 +2877,7 @@ class MessageLayer extends KAGLayer
 	function assignComp()
 	{
 		// 対になるレイヤの内容をコピー
-		assign(comp);
+        assign(comp);
 	}
 
 	function beginTransition(elm)
@@ -2507,7 +2945,15 @@ class MessageLayer extends KAGLayer
 						// object は再作成
 					object.assign(sl_d_object);
 					tl_d.object = object;
-				}
+                }else if(type == ltSlider)
+				{
+					// チェックボックス
+					var sl_d_object = sl_d.object;
+					var object = new LinkSliderLayer(window, this);
+						// object は再作成
+					object.assign(sl_d_object);
+					tl_d.object = object;
+                }
 			}
 		}
 
@@ -2625,7 +3071,31 @@ class MessageLayer extends KAGLayer
 		lastMouseX = src.lastMouseX;
 		lastMouseY = src.lastMouseY;
 		// [end_assign_vars]
-	}
+
+        // 名前レイヤ
+        nameLayer.assignImages(src.nameLayer, true);
+        nameLeft   = src.nameLeft;
+        nameTop    = src.nameTop;
+        nameWidth  = src.nameWidth;
+        nameHeight = src.nameHeight;
+
+        // 表情レイヤ
+        faceLayer.assignImages(src.faceLayer, true);
+        faceLeft   = src.faceLeft;
+        faceTop    = src.faceTop;
+        faceWidth  = src.faceWidth;
+        faceHeight = src.faceHeight;
+        
+        // システムボタンのコピー処理
+        clearSystemButtons();
+        foreach(src.buttons, function(name,value,srcbuttons,self) {
+            // クローン処理
+            var b = new SystemButtonLayer(self.window, self);
+            b.assign(value);
+            self.buttons[name] = b;
+        }, this);
+        
+    }
 
 	function assign(src)
 	{
@@ -2782,6 +3252,16 @@ class MessageLayer extends KAGLayer
 		}
 	}
 
+    /**
+     * 安定動作状態が変更されたときに呼び出される
+     */
+    function onStableStateChanged(stable) {
+        foreach(buttons, function(name,value,buttons,stable) {
+            if (!value.noStable) {
+                value.enabled = stable;
+            }
+        }, stable);
+    }
 }
 
 

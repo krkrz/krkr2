@@ -132,6 +132,50 @@ class ButtonLayer extends KAGLayer
 		Butt_imageLoaded = true;
 	}
 
+    /**
+     * 分離ボタン画像の読み込み
+     */
+    function loadButtons(normal, over, on, focus) {
+        var temp = window.temporaryLayer;
+        
+        if (focus !== void) {
+            Butt_showFocusImage = true;
+        }
+        temp.loadImages(normal);
+        var w = temp.imageWidth;
+        var h = temp.imageHeight;
+        super.width  = w;
+        super.height = h;
+        imageWidth  = w * (Butt_showFocusImage ? 4 : 3);
+        imageHeight = h;
+        callOnPaint = true;
+        Butt_imageLoaded = true;
+        
+        copyRect(0, 0, temp, 0, 0, w, h);
+        if (over !== void) {
+            temp.loadImages(over);
+        }
+        copyRect(w*2, 0, temp, 0, 0, w, h);
+
+        if (on !== void) {
+            temp.loadImages(on);
+        }
+        copyRect(w, 0, temp, 0, 0, w, h);
+        
+        if (Butt_showFocusImage) {
+            if (focus !== void) {
+                temp.loadImages(focus);
+            } else if (over !== void) {
+                temp.loadImages(over);
+            } else if (on !== void) {
+                temp.loadImages(on);
+            } else {
+                temp.loadImages(normal);
+            }
+            copyRect(w*3, 0, temp, 0, 0, w, h);
+        }
+    }
+    
 	function discardImage()
 	{
 		// 画像を破棄し、文字ボタンレイヤとして動作するようにする

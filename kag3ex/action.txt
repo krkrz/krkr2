@@ -1,0 +1,161 @@
+Title: 吉里吉里/KAG改 アクション解説
+Author: 合資会社ワムソフト 渡邊剛
+
+●概要
+
+ActionLayer は、吉里吉里のレイヤに自動駆動アクション機能を追加したものです。
+
+◇TJS での利用
+
+ ActionLayer の beginAction にパラメータを渡すことで使用可能になります
+ パターン1
+   第一引数: モジュール
+   第二引数: パラメータの辞書
+ パターン2
+   第一引数: パラメータの辞書。"module" でモジュール名を指定する
+
+◇KAGEX での利用
+
+アクションの起動
+ [action layer=レイヤ名 module=モジュール名 time=1000 ... ]
+
+アクションの停止
+ [stopaction layer=レイヤ名]
+
+アクション待ち
+ [wact layer=レイヤ名]
+ レイヤ名を省略した場合は全アクションの終了を待ちます
+
+◇アクションの動作上の注意点
+
+・同じグループのモジュールに属するアクションは互いに排他です
+・別のグループのモジュールに属するアクションは同時に適用できます
+
+●パラメータについて
+
+◇全アクション共通パラメータ
+
+time	アクションが実行される時間
+delay	アクション開始までの遅延時間
+
+◇移動モジュール
+
+◆共通
+
+x		移動先位置
+y		移動先位置
+
+◆LayerNormalMoveModule  通常移動
+
+特に追加なし
+
+◆LayerAccelMoveModule　 加速移動
+
+特に追加なし
+
+◆LayerDecelMoveModule   減速移動
+
+特に追加なし
+
+◆LayerParabolaMoveModule  放物線移動
+
+x/y が放物線の頂点になります（最終点ではありません）
+topTime	頂点通過時間（time の1/2を指定すると丁度落下しきることになる)
+
+◇アクションモジュール
+
+◆共通
+
+特になし
+
+◆LayerVibrateActionModule	振動アクション
+
+vibration	振動量(pixel)
+waitTime	振動間の待ち時間(ms)
+
+◆LayerVibrateActionModule	縦ゆれアクション
+
+vibration	上下振動量(pixel)
+cycle		周期(ms)
+
+◆LayerJumpOnceActionModule	縦ゆれアクション（単発）
+
+vibration	上下振動量(pixel)
+cycle		周期(ms)
+
+◆LayerWaveActionModule 	横ゆれアクション
+
+vibration	左右振動量(pixel)
+cycle		周期(ms)
+
+◆LayerWaveOnceActionModule 	横ゆれアクション（単発）
+
+vibration	左右振動量(pixel)
+cycle		周期(ms)
+
+◆LayerFallActionModule		落下アクション
+
+distance	落下距離(pixel)
+fallTime	落下時間(ms)
+
+◇拡大縮小モジュール
+
+◆共通パラメータ
+
+特になし
+
+◆LayerNormalZoomModule		単純拡大
+
+zoom	最終サイズ（縦長・横長になっている状態からの変更は考慮しない）
+
+◆LayerVRotateZoomModule	拡縮を使った擬似3D回転（縦軸）
+
+angvel	回転の角速度（度/sec）
+
+◆LayerHRotateZoomModule	拡縮を使った擬似3D回転（横軸）
+
+angvel	回転の角速度（度/sec）
+
+◆LayerHeartBeatZoomModule	ハートビート
+
+zoom	最大拡大率
+
+◆LayerVibrateZoomModule	ズーム振動
+
+vibration	振動量(％)
+ waitTime	振動間の待ち時間(ms)
+
+◇回転モジュール
+
+◆LayerNormalRotateModule	単純回転
+
+angvel		角速度（度/sec）
+
+◆LayerVibrateRotateModule	回転振動
+
+vibration	振幅(度)
+cycle		周期(ms)
+
+◆LayerFalldownRotateModule		転倒
+
+angle	転倒時最大角（-90～90が適正 正で左、負で右に転倒）
+
+◆LayerToRotateModule		指定角度へ
+
+angle	指定角度
+
+◇モードモジュール
+
+◆LayerBlinkModeModule		点滅処理
+
+showTime	表示時間(ms)
+hideTime	消去時間(ms)
+
+◆LayerFadeModeModule		フェード処理用
+
+intime		フェードイン時間   (0の場合フェードインしない)
+outtime		フェードアウト時間 (0の場合フェードアウトしない)
+
+◆LayerFadeToModeModule		指定された不透明度に変更
+
+opacity		不透明度
