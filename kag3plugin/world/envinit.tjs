@@ -1,0 +1,227 @@
+%[
+    // 時間情報
+    "times" => %[
+        "昼" => %[
+            "prefix" => "A",
+            ],
+        "夕" => %[
+            "prefix" => "B",
+            "lightColor" => 0xc0ff6010,    // 背景補正光色
+            "lightType" => ltPsHardLight,  // 背景補正光合成種別
+            "brightness" => 0,             // 背景明度補正
+            "contrast" => 0,               // 背景コントラスト補正
+            "charLightColor" => 0xffff0000,   // キャラ補正光合成色
+            "charLightType" => ltPsSoftLight, // キャラ補正光合成種別
+            "charBrightness" => 0,            // キャラ明度補正
+            "charContrast" => 0,              // キャラコントラスト補正
+            ],
+        "夜" => %[
+            "prefix" => "C",
+            "lightColor" => 0xc0000040,   // キャラ補正光合成色
+            "lightType" => ltPsHardLight, // キャラ補正光合成種別
+            "brightness" => -20,          // キャラ明度補正
+            "contrast" => -30,            // キャラコントラスト補正
+            "charLightColor" => 0xff400080,   // キャラ補正光合成色
+            "charLightType" => ltPsSoftLight, // キャラ補正光合成種別
+            "charBrightness" => -50,          // キャラ明度補正
+            "charContrast" => -30,            // キャラコントラスト補正
+            ]
+        ],
+    
+    // 場所情報
+    "stages" => %[
+        "白" => %[
+            "image" => "white",
+            ],
+        "暗転" => %[
+            "image" => "black",
+            ],
+        "自室" => %[
+            "image" => "BG01TIME",
+            ],
+        ],
+
+    "defaultTime" => "昼",
+    
+    // キャラクタ配置総合オフセット（画面中央原点)
+    "yoffset" => 700,
+    
+    // キャラクタ配置情報定義
+    "positions" => %[
+
+        "出" => %[
+            "type" => KAGEnvironment.DISPPOSITION,
+            "disp" => KAGEnvImage.BOTH
+            ],
+
+        "立" => %[
+            "type" => KAGEnvironment.DISPPOSITION,
+            "disp" => KAGEnvImage.BU
+            ],
+        
+        "消" => %[
+            "type" => KAGEnvironment.DISPPOSITION,
+            "disp" => KAGEnvImage.CLEAR
+            ],
+
+        "顔" => %[
+            "type" => KAGEnvironment.DISPPOSITION,
+            "disp" => KAGEnvImage.FACE
+            ],
+
+        "無" => %[
+            "type" => KAGEnvironment.DISPPOSITION,
+            "disp" => KAGEnvImage.INVISIBLE
+            ],
+        
+        "左奥" => %[
+            "type" => KAGEnvironment.XPOSITION,
+            "xpos" => int -440
+            ],
+        "右奥" => %[
+            "type" => KAGEnvironment.XPOSITION,
+            "xpos" => int 440
+            ],
+        "左" => %[
+            "type" => KAGEnvironment.XPOSITION,
+            "xpos" => int -200
+            ],
+        "右" => %[
+            "type" => KAGEnvironment.XPOSITION,
+            "xpos" => int 200
+            ],
+        "左中" => %[
+            "type" => KAGEnvironment.XPOSITION,
+            "xpos" => int -100
+            ],
+        "右中" => %[
+            "type" => KAGEnvironment.XPOSITION,
+            "xpos" => int 100
+            ],
+        "左外" => %[
+            "type" => KAGEnvironment.XPOSITION,
+            "xpos" => int -600
+            ],
+        "右外" => %[
+            "type" => KAGEnvironment.XPOSITION,
+            "xpos" => int 600
+            ],
+        "中" => %[
+            "type" => KAGEnvironment.XPOSITION,
+            "xpos" => int 0
+            ],
+
+        "奥" => %[
+            "type" => KAGEnvironment.LEVEL,
+            "level" => int 0
+            ],
+
+        "前" => %[
+            "type" => KAGEnvironment.LEVEL,
+            "level" => int 1
+            ],
+
+        "手前" => %[
+            "type" => KAGEnvironment.LEVEL,
+            "level" => int 2
+            ],
+        ],
+
+    // 表示レベル用情報
+    "levels" => [
+        %[
+            // 拡大率指定
+            "zoom" => 60,
+            "name" => "1"
+            ],
+        %[
+            "zoom" => 100,
+            "name" => "0"
+            ],
+        %[
+            "zoom" => 150,
+            "name" => "2"
+            ],
+        ],
+    
+    "defaultLevel" => 1,
+    // 表情窓用のレベル指定
+    "faceLevelName" => "f",
+    
+    "actions" => %[
+        "おじぎ" => %[
+            "module" => LayerJumpOnceActionModule,
+            "vibration" => -50,
+            "cycle" => 3000,
+            ],
+        "どっきり" => %[
+            "module" => LayerHeartBeatZoomModule,
+            "time" => 200,
+            "zoom" => 120,
+            ],
+        "びょんびょん" => %[
+            "module" => LayerJumpActionModule,
+            "vibration" => 30,
+            "cycle" => 1000,
+            ],
+        "ガクガク" => %[
+            "module" => LayerVibrateActionModule,
+            "vibration" => 3,
+            "waitTime" => 40
+            ]
+        ],
+
+    // 画面更新パラメータ
+    "transitions" => %[
+        "normal" => %[
+            "time" => 1000,
+            "method" => "crossfade",
+            ],
+    ],
+
+    // fade コマンドの規定値:全体用 (未定義の場合埋め込み値 500)
+    "fadeValue" => 1000,
+    // fade コマンドの規定値:キャラクタ用（未定義だと fadeValue を参照)
+    "charFadeValue" => 300,
+    
+    // キャラクタ定義情報
+    "characters" => %[
+        // 定義
+
+        "主人公" => %[
+            "nameAlias" => "f.name",
+            ],
+        
+        "みく" => %[
+            // ポーズ登録(表情ファイルの使い分けが無い範囲)
+            "poses" => %[
+                // ポーズ指定
+                "通常" => %[
+                    // 画像名 合成済みパターン
+                    "image"     => "mik_LEVEL_DRESS_FACE",
+//                    "image"     => "mik_0_DRESS_0",
+//                    "faceImage" => "mik_0_0_FACE",
+
+                    // 服装バリエーション
+                    "dresses" => %[
+                        "制服"     => "0",
+                        ],
+                    // 標準服装
+                    "defaultDress" => "0",
+                    // 表情バリエーション
+                    "faces" => %[
+                        "01"    => "01",
+                        "02"    => "02",
+                        "03"    => "03",
+                        "04"    => "04",
+                        ],
+                    // 標準表情
+                    "defaultFace" => "01",
+                    ],
+                ],
+            "defaultPose" => "通常",
+            "voiceFile" => "voice/mik/mik%06d%s.ogg",
+            "voiceName" => "mik",
+            ],
+        ],
+    ];

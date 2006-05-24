@@ -179,3 +179,18 @@ function number_format(n)
 
 	return out;
 }
+
+/**
+ * 辞書の総なめ処理
+ * @param dict 辞書
+ * @func 処理ファンクション func(name, value, dict);
+ */
+function foreach(dict, func, param) {
+    if (dict) {
+        var names = [];
+        names.assign(dict);
+        for (var i=0; i<names.count; i+= 2) {
+            func(names[i], names[i+1], dict, param);
+        }
+    }
+}

@@ -147,8 +147,7 @@ class CheckBoxLayer extends KAGLayer
 	{
 		// onMouseDown イベントハンドラ
 		focus();
-		CheckBox_checked = !CheckBox_checked;
-		update();
+        checked = !checked;
 		super.onMouseDown(...);
 	}
 
@@ -167,8 +166,7 @@ class CheckBoxLayer extends KAGLayer
 			if(key == VK_RETURN || key == VK_SPACE)
 			{
 				// スペースキーまたはエンターキー
-				CheckBox_checked = !CheckBox_checked;
-				update();
+                checked = !checked;
 				super.onKeyDown(key, shift, false); // 処理をしたのでprocessにfalseを渡す
 			}
 			else
@@ -256,12 +254,18 @@ class CheckBoxLayer extends KAGLayer
 		{
 			CheckBox_checked = int x;
 			update();
-		}
+            onChange(CheckBox_checked);
+        }
 		getter
 		{
 			return CheckBox_checked;
 		}
 	}
+
+    function onChange(checked)
+	{
+	}
+
 }
 
 

@@ -21,7 +21,8 @@ class EditLayer extends KAGLayer
 	var Edit_textColor = clWindowText;
 	var Edit_blinkTimer;
 	var Edit_vertical = false;
-
+    var Edit_noborder = false;
+    
 	function EditLayer(win, par, vert = false)
 	{
 		super.KAGLayer(win, par);
@@ -68,7 +69,8 @@ class EditLayer extends KAGLayer
 		Edit_opacity = src.Edit_opacity;
 		Edit_vertical = src.Edit_vertical;
 		Edit_maxChars = src.Edit_maxChars;
-		var f = font;
+		Edit_noborder = src.Edit_noborder;
+        var f = font;
 		var sf = src.font;
 		f.face = sf.face;
 		f.angle = sf.angle;
@@ -393,11 +395,13 @@ class EditLayer extends KAGLayer
 			fillRect(imageWidth - 3, 0, 3, imageHeight, 0);
 			colorRect(imageWidth - 3, 0, 3, imageHeight, Edit_color, Edit_opacity);
 		}
-		// ˜g‚ð•`‰æ
-		colorRect(0, 0, imageWidth, 1, 0x000000, 128);
-		colorRect(0, 1, 1, imageHeight-2, 0x000000, 128);
-		colorRect(imageWidth-1, 1, 1, imageHeight-1, 0xffffff, 128);
-		colorRect(1, imageHeight-1, imageWidth-2, 1, 0xffffff, 128);
+        if (!Edit_noborder) {
+            // ˜g‚ð•`‰æ
+            colorRect(0, 0, imageWidth, 1, 0x000000, 128);
+            colorRect(0, 1, 1, imageHeight-2, 0x000000, 128);
+            colorRect(imageWidth-1, 1, 1, imageHeight-1, 0xffffff, 128);
+            colorRect(1, imageHeight-1, imageWidth-2, 1, 0xffffff, 128);
+        }
 	}
 
 	property text
@@ -534,6 +538,19 @@ class EditLayer extends KAGLayer
 		getter
 		{
 			return Edit_opacity;
+		}
+	}
+
+	property noborder
+	{
+		setter(x)
+		{
+			Edit_noborder = int x;
+			update();
+		}
+		getter
+		{
+			return Edit_noborder;
 		}
 	}
 }
