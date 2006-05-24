@@ -178,12 +178,16 @@ property askYesNo { getter() { KAGLoadScript("YesNoDialog.tjs"); return global.a
 property CheckBoxLayer { getter() { KAGLoadScript("CheckBoxLayer.tjs"); return global.CheckBoxLayer; } }
 property ButtonLayer { getter() { KAGLoadScript("ButtonLayer.tjs"); return global.ButtonLayer; } }
 property EditLayer { getter() { KAGLoadScript("EditLayer.tjs"); return global.EditLayer; } }
+property SliderLayer { getter() { KAGLoadScript("SliderLayer.tjs"); return global.SliderLayer; } }
 property KAGPlugin { getter() { KAGLoadScript("Plugin.tjs"); return global.KAGPlugin; } }
 
 /*
 	各システム読み込み
 */
 dm("KAG System スクリプトを読み込んでいます...");
+
+// add by GoWatanabe
+KAGLoadScript("LayerEx.tjs");
 
 KAGLoadScript("Utils.tjs");
 KAGLoadScript("KAGLayer.tjs");
@@ -192,6 +196,12 @@ KAGLoadScript("BGM.tjs");
 KAGLoadScript("SE.tjs");
 KAGLoadScript("Movie.tjs");
 KAGLoadScript("Conductor.tjs");
+
+// add by GoWatanabe
+// AnimationLayer の下層に AffineLayer/ActionLayer を仕込む
+KAGLoadScript("AffineLayer.tjs");
+KAGLoadScript("ActionLayer.tjs");
+
 KAGLoadScript("AnimationLayer.tjs");
 KAGLoadScript("GraphicLayer.tjs");
 KAGLoadScript("MessageLayer.tjs");

@@ -12,7 +12,7 @@ class SESoundBuffer extends WaveSoundBuffer
 	var currentStorage = ""; // 見かけの演奏中のストレージ
 	var currentVolume = 100; // 見かけのボリューム
 	var inFadeAndStop = false; // フェード終了時に停止するか
-
+    
 	function SESoundBuffer(owner, id)
 	{
 		// コンストラクタ
@@ -34,7 +34,8 @@ class SESoundBuffer extends WaveSoundBuffer
 		super.stop();
 		stopFade();
 		var storage = elm.storage;
-		var found = true;
+        var start = elm.start;
+        var found = true;
 		if(!Storages.isExistentStorage(storage))
 		{
 			var test;
@@ -57,9 +58,16 @@ class SESoundBuffer extends WaveSoundBuffer
 			currentStorage = "";
 		try
 		{
-			super.open(storage);
-			if(resetvolume) super.volume = currentVolume * 1000;
-			super.play();
+            super.open(storage);
+            if(resetvolume) super.volume = currentVolume * 1000;
+            // 再生位置指定
+            if (start !== void &&
+                super.labels !== void &&
+                (start = super.labels[start]) !== void &&
+                (start = start.samplePosition) !== void) {
+                super.samplePosition = start;
+            }
+            super.play();
 		}
 		catch(e)
 		{
@@ -163,7 +171,7 @@ class SESoundBuffer extends WaveSoundBuffer
 			}
 			inFadeAndStop = false;
 		}
-		super.onFadeCompleted(...);
+        super.onFadeCompleted(...);
 		owner.onSESoundBufferFadeCompleted(id); // フェード終了
 	}
 
