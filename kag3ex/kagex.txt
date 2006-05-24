@@ -15,6 +15,11 @@ KAG の基本機能はそのまま維持されています。KAG の詳細については
 
 krkr.exe		吉里吉里実行ファイル本体
 plugin/			プラグイン
+
+※プラグインとして以下のものが事実上必須です。
+  layerExImage.dll
+  wuvorbis.dll
+
 savedata/		セーブデータ
 
 data/			データ領域
