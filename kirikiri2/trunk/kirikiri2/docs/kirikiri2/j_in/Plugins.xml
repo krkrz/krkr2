@@ -125,7 +125,7 @@
 <dd>
 　ActiveX コントロール吉里吉里のウィンドウに貼り付けたり、OLE オートメーション可能なオブジェクトを吉里吉里から操作するためのプラグインです。<r/>
 　これを使用すると、たとえば吉里吉里のウィンドウに Web ブラウザ (Internet Explorer) や メディアプレーヤを貼り付けたり、Excel を吉里吉里から操作したりすることができます。<r/>
-　使用方法については 吉里吉里ソースの <a href="https://sv.kikyou.info/svn/kirikiri2/trunk/kirikiri2/src/plugins/win32/krkr_win32ole/manual.tjs">kirikiri2/src/plugins/win32/krkr_win32ole/manual.tjs</a> および <a href="https://sv.kikyou.info/svn/kirikiri2/trunk/kirikiri2/tests/win32ole">kirikiri2/trunk/kirikiri2/tests/win32ole</a> ディレクトリを参照してください。<r/>
+　使用方法については 吉里吉里ソースの <a href="https://sv.kikyou.info/trac/kirikiri/browser/kirikiri2/trunk/kirikiri2/src/plugins/win32/krkr_win32ole/manual.tjs">kirikiri2/src/plugins/win32/krkr_win32ole/manual.tjs</a> および <a href="https://sv.kikyou.info/trac/kirikiri/browser/kirikiri2/trunk/kirikiri2/tests/win32ole">kirikiri2/trunk/kirikiri2/tests/win32ole</a> ディレクトリを参照してください。<r/>
 </dd>
 
 <dt><kw>wsh.dll</kw> (experimental)</dt>
@@ -134,8 +134,62 @@
 　このプラグインを接続すると、<at href="f_Scripts_exec.html">Scripts.exec</at> と <at href="f_Scripts_execStorage.html">Scripts.execStorage</at> が拡張されます。<r/>
 　Scripts.exec は第２引数に 拡張子、あるいは ProgId 、あるいは CLSID を受け付けるようになります。Scripts.execStorage も Scripts.exec 同様に第２引数に拡張子、あるいは ProgId 、あるいは CLSID を受け付けるようになりますが、第２引数が省略された場合は第１引数の拡張子から言語が決定されます。<r/>
 　拡張子は js, vbs, pl, rb のいずれかで、ProgId は、それぞれ JScript, VBScript, PerlScript, RubyScript となります。CLSID を指定する場合は、スクリプトエンジンのクラスIDを指定します。これら以外の拡張子が渡された場合は TJS スクリプトとして実行します。<r/>
-　使用方法については 吉里吉里ソースの <a href="https://sv.kikyou.info/svn/kirikiri2/trunk/kirikiri2/tests/wsh">kirikiri2/trunk/kirikiri2/tests/wsh</a> ディレクトリを参照してください。<r/>
+　使用方法については 吉里吉里ソースの <a href="https://sv.kikyou.info/trac/kirikiri/browser/kirikiri2/trunk/kirikiri2/tests/wsh">kirikiri2/trunk/kirikiri2/tests/wsh</a> ディレクトリを参照してください。<r/>
 </dd>
+
+
+<dt><kw>agg.dll</kw> (experimental)</dt>
+<dd>
+　吉里吉里で <a href="http://www.antigrain.com/">AGG (Anti-Grain Geometry)</a> を利用して図形描画を行うプラグインです。<r/>
+　簡易的な SVG 読み込み/描画機能を利用することができます。<r/>
+　SVG を描画するには、たとえば
+<example>
+var svg  = new AGGPrimitive(layer, "SVG", "tiger.svg");<r/>
+var svg1 = new AGGPrimitive(layer, "SVG", "tiger.svg");<r/>
+</example>
+とします (もとの AGG の SVG 読み込みサポートの制限により、読み込めない SVG が多いです)。<r/>
+　詳しくは 吉里吉里ソースの <a href="https://sv.kikyou.info/trac/kirikiri/browser/kirikiri2/trunk/kirikiri2/src/plugins/win32/layerExAgg/">kirikiri2/trunk/kirikiri2/src/plugins/win32/layerExAgg</a> ディレクトリを参照してください。<r/>
+</dd>
+
+
+
+<dt><kw>csvParser.dll</kw> (experimental)</dt>
+<dd>
+　吉里吉里で CSV (Comma Separated Values) ファイルを読み込むためのプラグインです。<r/>
+　詳しくは 吉里吉里ソースの <a href="https://sv.kikyou.info/trac/kirikiri/browser/kirikiri2/trunk/kirikiri2/src/plugins/win32/csvParser/">kirikiri2/trunk/kirikiri2/src/plugins/win32/csvParser</a> ディレクトリを参照してください。<r/>
+</dd>
+
+
+
+<dt><kw>expat.dll</kw> (experimental)</dt>
+<dd>
+　吉里吉里で <a href="http://expat.sourceforge.net/">Expat</a> を通じて XML ァイルを読み込むためのプラグインです。<r/>
+　詳しくは 吉里吉里ソースの <a href="https://sv.kikyou.info/trac/kirikiri/browser/kirikiri2/trunk/kirikiri2/src/plugins/win32/expat/">kirikiri2/trunk/kirikiri2/src/plugins/win32/expat</a> ディレクトリを参照してください。<r/>
+</dd>
+
+
+
+<dt><kw>json.dll</kw> (experimental)</dt>
+<dd>
+　吉里吉里で <a href="http://www.json.org/">JSON</a> を読み込むためのプラグインです。<r/>
+　詳しくは 吉里吉里ソースの <a href="https://sv.kikyou.info/trac/kirikiri/browser/kirikiri2/trunk/kirikiri2/src/plugins/win32/json/">kirikiri2/trunk/kirikiri2/src/plugins/win32/json</a> ディレクトリを参照してください。<r/>
+</dd>
+
+
+<dt><kw>layerExImage.dll</kw> (experimental)</dt>
+<dd>
+　レイヤに対し、明度とコントラストの調整、色相と彩度の調整、ノイズ追加を読み込むためのプラグインです。<r/>
+　詳しくは 吉里吉里ソースの <a href="https://sv.kikyou.info/trac/kirikiri/browser/kirikiri2/trunk/kirikiri2/src/plugins/win32/layerExImage/">kirikiri2/trunk/kirikiri2/src/plugins/win32/layerExImage</a> ディレクトリを参照してください。<r/>
+</dd>
+
+
+<dt><kw>perspective.dll</kw> (experimental)</dt>
+<dd>
+　レイヤのパースペクティブ変形を行うプラグインです。<r/>
+　詳しくは 吉里吉里ソースの <a href="https://sv.kikyou.info/trac/kirikiri/browser/kirikiri2/trunk/kirikiri2/src/plugins/win32/layerExPerspective/">kirikiri2/trunk/kirikiri2/src/plugins/win32/layerPerspective</a> ディレクトリを参照してください。<r/>
+</dd>
+
+
 
 
 
