@@ -46,7 +46,7 @@
 　吉里吉里２は多くの方の協力があって成り立っています。みなさまのご厚意に感謝いたします。<r/>
 　特に吉里吉里/KAGに関してＰＩＡ少尉様には多くの助言をいただきました。ありがとうございます。<r/>
 <r/>
-　Win32Ole プラグインは Go Watanabe 氏からいただきました。ありがとうございます。<r/>
+　Win32Ole プラグインをはじめとする様々なプラグインは Go Watanabe 氏からいただきました。ありがとうございます。<r/>
 <r/>
 　Photoshop互換のブレンド関数群は Kenjo 氏からいただきました。ありがとうございます。<r/>
 <r/>
@@ -195,8 +195,60 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.<r/>
 <dd>
     <at target="_top"  href="http://libtomcrypt.org/">http://libtomcrypt.org/</at><r/>
 </dd>
-</dl>
 
+
+
+
+
+<dt>AGG (Anti-Grain Geometry)</dt>
+<dd>
+    <at target="_top"  href="http://antigrain.com/">http://antigrain.com/</at><r/>
+<r/>
+The Anti-Grain Geometry Project<r/>
+A high quality rendering engine for C++<r/>
+http://antigrain.com<r/>
+<r/>
+Anti-Grain Geometry - Version 2.3 <r/>
+Copyright (C) 2002-2005 Maxim Shemanarev (McSeem) <r/>
+<r/>
+Permission to copy, use, modify, sell and distribute this software 
+is granted provided this copyright notice appears in all copies. 
+This software is provided "as is" without express or implied
+warranty, and with no claim as to its suitability for any purpose.
+</dd>
+
+
+
+<dt>Expat</dt>
+<dd>
+    <at target="_top"  href="http://expat.sourceforge.net/">http://expat.sourceforge.net/</at><r/>
+<r/>
+Copyright (c) 1998, 1999, 2000 Thai Open Source Software Center Ltd
+                               and Clark Cooper<r/>
+Copyright (c) 2001, 2002, 2003, 2004, 2005, 2006 Expat maintainers.<r/>
+<r/>
+Permission is hereby granted, free of charge, to any person obtaining
+a copy of this software and associated documentation files (the
+"Software"), to deal in the Software without restriction, including
+without limitation the rights to use, copy, modify, merge, publish,
+distribute, sublicense, and/or sell copies of the Software, and to
+permit persons to whom the Software is furnished to do so, subject to
+the following conditions:<r/>
+<r/>
+The above copyright notice and this permission notice shall be included
+in all copies or substantial portions of the Software.<r/>
+<r/>
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+</dd>
+
+
+</dl>
 </para>
 
 </doc>
