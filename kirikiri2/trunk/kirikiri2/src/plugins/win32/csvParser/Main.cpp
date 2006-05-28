@@ -253,9 +253,6 @@ protected:
 	// 行情報(ワイドキャラで処理する)
 	ttstr line;
 	
-	// 結果格納用
-	iTJSDispatch2 *fields;
-
 	bool addline() {
 		return file->addNextLine(line);
 	}
@@ -272,7 +269,7 @@ protected:
 	}
 
 	// 分割処理
-	void split() {
+	void split(iTJSDispatch2 *fields) {
 
 		ttstr fld;
 		int i, j;
@@ -331,7 +328,6 @@ public:
 		lineNo = 0;
 		separator = ',';
 		newline = L"\r\n";
-		fields = NULL;
 	}
 
 	/**
@@ -368,11 +364,6 @@ public:
 	 */
 	void TJS_INTF_METHOD Invalidate() {
 		clear();
-		if (fields) {
-			ArrayClearMethod->FuncCall(0, NULL, NULL, NULL, 0, NULL, fields);
-			fields->Release();
-			fields = NULL;
-		}
 		if (target) {
 			target->Release();
 			target = NULL;
@@ -400,26 +391,24 @@ public:
 
 	// 1行読み出し
 	bool getNextLine(tTJSVariant *result = NULL) {
+		bool ret = false;
 		if (file) {
-			if (fields) {
-				ArrayClearMethod->FuncCall(0, NULL, NULL, NULL, 0, NULL, fields);
-			} else {
-				fields = TJSCreateArrayObject();
-			}
+			iTJSDispatch2 *fields = TJSCreateArrayObject();
 			line = L"";
 			addline();
-			split();
+			split(fields);
 			if (line.length() > 0) {
 				lineNo++;
 				if (result) {
 					*result = tTJSVariant(fields,fields);
 				}
-				return true;
+				ret = true;
 			} else {
 				clear();
 			}
+			fields->Release();
 		}
-		return false;
+		return ret;
 	}
 	
 	/**
@@ -437,11 +426,12 @@ public:
 		iTJSDispatch2 *target = this->target ? this->target : objthis;
 		if (file && isValidMember(target, L"doLine")) {
 			iTJSDispatch2 *method = getMember(target, L"doLine");
-			while (getNextLine()) {
-				tTJSVariant var1 = tTJSVariant(fields,fields);
+
+			tTJSVariant result;
+			while (getNextLine(&result)) {
 				tTJSVariant var2 = tTJSVariant(lineNo);
 				tTJSVariant *vars[2];
-				vars[0] = &var1;
+				vars[0] = &result;
 				vars[1] = &var2;
 				method->FuncCall(0, NULL, NULL, NULL, 2, vars, target);
 			}
