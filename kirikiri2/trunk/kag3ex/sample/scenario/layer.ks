@@ -1,6 +1,6 @@
 *start|スタート
 
-[cm]
+[layopt layer=message0 visible]
 レイヤテスト
 [l][r]
 
