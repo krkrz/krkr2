@@ -88,6 +88,9 @@ class KAGWindow extends Window
 	var historyShowing = false; // メッセージ履歴レイヤを表示中か
 	var lastHistoryHiddenTick = 0; // 最後に履歴レイヤが非表示になったときの tick
 
+    var selectLayer; // 選択肢レイヤ
+    var selectShowing = false; // 選択肢レイヤが表示中か
+    
 	/*C*/var numCharacterLayers = 0; // 前景レイヤの数
 	/*C*/var numMessageLayers = 1; // メッセージレイヤの数
 
@@ -149,7 +152,8 @@ class KAGWindow extends Window
 
 	/*C*/var clickSkipEnabled = true; // クリックスキップが有効か
 	/*C*/var nextSkipEnabled = true; // 次の選択肢(/未読)まで進むが有効か
-	var _skipMode = 0; // スキップのモード
+
+    var _skipMode = 0; // スキップのモード
 		// 0=スキップなし, 1=クリック待ち記号まで, 2=改ページ待ち記号まで, 3=次の停止まで
 		// 4=早送り
     property skipMode {
@@ -185,6 +189,7 @@ class KAGWindow extends Window
     var autoModeAddWait;
     /**
      * 自動待ちに追加時間を加算処理する（ボイス用）
+     * @param time 加算時間
      */
     function addAutoWait(time=void) {
         if (time !== void) {
@@ -193,6 +198,10 @@ class KAGWindow extends Window
             autoModeAddWait = void;
         }
     }
+
+    /**
+     * 自動待ち時間の計算を行う
+     */
     function calcAutoModePageWait() {
         if (autoModeAddWait !== void) {
             var waittime = autoModeAddWait - System.getTickCount();
@@ -312,6 +321,49 @@ class KAGWindow extends Window
 	var isWaitPeriodEvent = false;	// ムービーのピリオドイベント待ち状態かどうか
 	var waitedPeriodEventStorageName = void;	// ピリオドイベント待ちをコールしたストレージ名
 
+	//------------------------------------------------------ ダイアログレイヤ処理 --
+
+    var dialogStack = []; // ダイアログレイヤの処理
+    
+    /**
+     * ダイアログを開く
+     * @param init ダイアログ初期化コード。辞書またはファイル
+     */
+    function openDialog(init, okfunc, cancelfunc) {
+        if (init instanceof "Dictionary") {
+            
+        } else if (typeof init == "string") {
+            init = Scripts.evalStorage(init);
+        } else {
+            throw new Exception("ダイアログ初期化コードが不正です" + init);
+        }
+        var dialog = new DialogLayer(this, init, okfunc, cancelfunc);
+        dialogStack.add(dialog);
+    }
+
+    /**
+     * ダイアログ消去処理
+     */
+    function closeDialog(dialog) {
+        for (var i=dialogStack.count-1; i>=0; i--) {
+            if (dialogStack[i] === dialog) {
+                delete dialogStack[i];
+            }
+        }
+    }
+
+    /**
+     * 全ダイアログの抹殺
+     */
+    function closeAllDialog() {
+        for (var i=dialogStack.count-1; i>=0; i--) {
+            var dialog = dialogStack[i];
+            delete dialogStack[i];
+            dialog.closeForce();
+            invalidate dialog;
+        }
+    }
+    
 	//------------------------------------------------------ コンストラクタ --
 
 	function KAGWindow(ismain = true, width = 0, height = 0)
@@ -446,6 +498,10 @@ class KAGWindow extends Window
 		historyLayer = new HistoryLayer(this, fore.base);
 		add(historyLayer);
 
+        // 選択肢レイヤの作成
+        selectLayer = new SelectLayer(this, fore.base);
+        add(selectLayer);
+        
 		// 前景レイヤの作成
 		allocateCharacterLayers(numCharacterLayers);
 
@@ -1024,7 +1080,7 @@ class KAGWindow extends Window
 
 		// autoEnable が true のすべてのメニュー項目の accessible の
 		// 値を設定する
-		var notmodal = !historyLayer.visible && !messageLayerHiding;
+        var notmodal = !historyLayer.visible && !messageLayerHiding;
 		var state = inStable && notmodal;
 		internalSetMenuAccessibleAll(menu, state);
 
@@ -1033,7 +1089,7 @@ class KAGWindow extends Window
             skipToNextStopMenuItem.enabled = state && !inSleep && nextSkipEnabled && (sflags.allskip || getCurrentRead());
 
 		if(typeof this.rightClickMenuItem != "undefined")
-			rightClickMenuItem.enabled = inStable && !historyLayer.visible;
+            rightClickMenuItem.enabled = inStable && !historyLayer.visible;
 
 		if(typeof this.showHistoryMenuItem != "undefined")
 			showHistoryMenuItem.enabled = inStable && !messageLayerHiding &&
@@ -2502,6 +2558,39 @@ class KAGWindow extends Window
 		return -2; // break
 	}
 
+    //------------------------------------------------------- 選択肢 --
+
+    function setSelectOptions(elm)
+	{
+        selectLayer.setOptions(elm);
+	}
+
+    function addSelect(elm) {
+        selectLayer.addSelect(elm);
+    }
+    
+	function showSelect()
+	{
+        // 選択肢レイヤを表示する
+        selectLayer.parent   = fore.base; // 選択肢窓の親を再設定
+        selectLayer.absolute = 3000000; // この部分再考の必要あるかも
+        selectLayer.start();
+        selectShowing = true;
+		setMenuAccessibleAll();
+        conductor.wait(%[ select : function {} incontextof this ]);
+        return -2; // break
+	}
+    
+    function hideSelect()
+	{
+		// メッセージ履歴レイヤを非表示にする
+        selectLayer.done();
+        selectShowing = false;
+        setMenuAccessibleAll();
+        conductor.trigger('select'); // 'select' を送る
+	}
+
+    
 	//-------------------------------------------------------------- process --
 
 	function process(file, label, countpage = true, immediate = false)
@@ -3163,6 +3252,8 @@ class KAGWindow extends Window
         for(var i = layers.count-1; i >= 0; i--) layers[i].setHiddenStateByUser(b);
         layers = fore.layers;
 		for(var i = layers.count-1; i >= 0; i--) layers[i].setHiddenStateByUser(b);
+
+        selectLayer.setHiddenStateByUser(b);
         
 		// プラグインを呼ぶ
 		forEachEventHook('onMessageHiddenStateChanged',
@@ -5875,6 +5966,8 @@ class KAGWindow extends Window
             base.messages[i].clear();
             base.messages[i].visible = false;
         }
+        // 選択肢窓消去
+        hideSelect();
         return 0;
     } incontextof this,
                   
@@ -6361,6 +6454,26 @@ class KAGWindow extends Window
 		return waitTrigger(elm);
 	} incontextof this,
 
+	//----------------------------------------- タグハンドラ群(選択肢) --
+
+    seladd : function(elm)
+    {
+        addSelect(elm);
+        return 0;
+	} incontextof this,
+
+    select : function(elm)
+    {
+        cancelSkip();
+        return showSelect();
+	} incontextof this,
+
+	selopt : function(elm)
+	{
+		setSelectOptions(elm);
+		return 0;
+	} incontextof this,
+                  
 	//----------------------------------------------- タグハンドラ群の終わり --
 
 		interrupt : function(elm) { return -2; } incontextof this ];
