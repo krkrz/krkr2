@@ -34,9 +34,12 @@ class SelectButtonLayer extends ButtonLayer
         var cnt = Butt_showFocusImage ? 4 : 3;
         var tw = font.getTextWidth(message);
         var th = font.getTextHeight(message);
+        var y = (height-th)>>1;
+        dm("サイズ:" + width + " ," + height);
+        var dx = (width-tw)>>1;
         for (var i=0;i<cnt;i++) {
-            var x = i*width + (width-tw)>>1;
-            var y = (height-th)>>1;
+            var x = i*width + dx;
+            dm("メッセージ:" + x);
             drawText(x, y, message, parent.fontColor, 255);
         }
     }
@@ -59,7 +62,7 @@ class SelectButtonLayer extends ButtonLayer
 
         if (parent.normalImage !== void) {
             // 画像がある場合はロード
-            loadImage(parent.normalImage, parent.overImage, parent.onImage, parent.focusImage);
+            loadButtons(parent.normalImage, parent.overImage, parent.onImage, parent.focusImage);
             drawMessage(message);
         } else if (parent.graphic !== void) {
             // 画像がある場合はロード
@@ -237,7 +240,7 @@ class SelectLayer extends KAGLayer {
         var y = h;
         for (var i=0; i<selects.count;i++) {
             var select = selects[i];
-            select.setPos(kag.scWidth/2 - select.width / 2, y - select.height / 2);
+            select.setPos(width/2 - select.width / 2, y - select.height / 2);
             y += h;
         }
         for (var i=0;i<selects.count; i++) {
