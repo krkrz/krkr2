@@ -1436,6 +1436,10 @@ class KAGEnvCharacter extends KAGEnvLevelLayer, KAGEnvImage {
                 
                 // 画像をレイヤに割り当てる
                 layer.assignImages(baseImage);
+				// 初期化処理XXX ちょっと再検討必要かも
+				layer.type    = layer._initTyoe = baseImage.type;
+				layer.opacity = layer._initOpacity = baseImage.opacity;
+
                 //　表情指定
                 if (faceName !== void) {
                     faceImageName = faceImageName.replace(/DRESS/, dressName);
@@ -1444,7 +1448,7 @@ class KAGEnvCharacter extends KAGEnvLevelLayer, KAGEnvImage {
                     try {
                         if (faceImage === void) {
                             faceImage = new global.Layer(kag, kag.fore.base);
-                            faceImage = "立ち絵顔画像処理用:" + name;
+                            faceImage.name = "立ち絵顔画像処理用:" + name;
                         }
                         imageInfo = faceImage.loadImages(faceImageName);
                     } catch (e) {
@@ -1458,7 +1462,7 @@ class KAGEnvCharacter extends KAGEnvLevelLayer, KAGEnvImage {
                     }
                     if (imageInfo && imageInfo.offs_x !== void) {
                         layer.operateRect(imageInfo.offs_x, imageInfo.offs_y,
-                                          faceImage, 0, 0, faceImage.imageWidth, faceImage.imageHeight);
+	                                          faceImage, 0, 0, faceImage.imageWidth, faceImage.imageHeight);
                     } else {
                         layer.operateRect(0,0,faceImage,0,0,faceImage.imageWidth, faceImage.imageHeight);
                     }
