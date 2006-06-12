@@ -192,6 +192,7 @@ KAGLoadScript("LayerEx.tjs");
 KAGLoadScript("Utils.tjs");
 KAGLoadScript("KAGLayer.tjs");
 KAGLoadScript("SelectLayer.tjs");
+KAGLoadScript("DialogLayer.tjs");
 KAGLoadScript("HistoryLayer.tjs");
 KAGLoadScript("BGM.tjs");
 KAGLoadScript("SE.tjs");

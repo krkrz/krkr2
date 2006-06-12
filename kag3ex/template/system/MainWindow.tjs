@@ -329,38 +329,31 @@ class KAGWindow extends Window
      * ダイアログを開く
      * @param init ダイアログ初期化コード。辞書またはファイル
      */
-    function openDialog(init, okfunc, cancelfunc) {
-        if (init instanceof "Dictionary") {
-            
-        } else if (typeof init == "string") {
-            init = Scripts.evalStorage(init);
-        } else {
-            throw new Exception("ダイアログ初期化コードが不正です" + init);
-        }
-        var dialog = new DialogLayer(this, init, okfunc, cancelfunc);
+    function openDialog(dialog) {
         dialogStack.add(dialog);
+        dialog.visible = true;
     }
 
     /**
      * ダイアログ消去処理
+     * 指定された dialog の参照を解除する
      */
     function closeDialog(dialog) {
         for (var i=dialogStack.count-1; i>=0; i--) {
             if (dialogStack[i] === dialog) {
+                dialog.visible = false;
                 delete dialogStack[i];
             }
         }
     }
 
     /**
-     * 全ダイアログの抹殺
+     * 全ダイアログの消去
      */
     function closeAllDialog() {
         for (var i=dialogStack.count-1; i>=0; i--) {
-            var dialog = dialogStack[i];
+            dialogStack[u].visible = false;
             delete dialogStack[i];
-            dialog.closeForce();
-            invalidate dialog;
         }
     }
     
