@@ -1,0 +1,858 @@
+
+class DialogButtonLayer extends ButtonLayer
+{
+	// グラフィカルボタンとして動作するためのレイヤ
+	var linkNum; // リンク番号
+	var onenter; // マウスが入ってきたときに実行するもの
+	var onleave; // マウスが出ていったときに実行するもの
+	var _eventTransparent = false;
+
+	function DialogButtonLayer(win, par)
+	{
+		// コンストラクタ
+		super.ButtonLayer(...);
+        focusable = false; // フォーカスは受け取らない
+        hint = "";
+	}
+
+	function finalize()
+	{
+		super.finalize(...);
+	}
+
+	function onClick()
+	{
+		super.onClick(...);
+	}
+
+	function onMouseUp(x, y, button, shift)
+	{
+        if(enabled && button == mbLeft) parent.onButtonClick(linkNum);
+        if(this isvalid) super.onMouseUp(...);
+	}
+
+	function onMouseEnter()
+	{
+		parent.keyLink = linkNum;
+		if(!parent.selProcessLock && onenter !== void) Scripts.eval(onenter);
+		super.onMouseEnter(...);
+	}
+
+	function onMouseLeave()
+	{
+		if(!parent.selProcessLock && onleave !== void) Scripts.eval(onleave);
+		super.onMouseLeave(...);
+	}
+
+	property eventTransparent
+	{
+		// イベントを透過するかどうか
+		setter(x)
+		{
+			if(_eventTransparent != x)
+			{
+				_eventTransparent = x;
+				hitType = x ? htProvince : htMask; 
+					// ボタン画像は領域画像は持っていないので
+					// hitType を htProvince にすると必ず
+					// マウスイベントを透過するようになる
+			}
+		}
+		getter()
+		{
+			return _eventTransparent;
+		}
+	}
+}
+
+class DialogCheckBoxLayer extends CheckBoxLayer
+{
+	// メッセージレイヤに「リンク」として管理されるための
+	// チェックボックス
+	var linkNum; // リンク番号
+	var exp; // 式
+    var change; // 変更式
+    var vertical; // 縦書きモード
+
+	function DialogCheckBoxLayer(win, par)
+	{
+		// コンストラクタ
+		super.CheckBoxLayer(...);
+		joinFocusChain = false; // フォーカスチェーンには参加しない
+		hint = "";
+	}
+
+	function finalize()
+	{
+		super.finalize(...);
+	}
+
+	function onKeyDown(key, shift, process)
+	{
+		// 縦書きの時は右と左を入れ替える
+		if(vertical)
+		{
+			if(key == VK_LEFT) key = VK_RIGHT;
+			else if(key == VK_RIGHT) key = VK_LEFT;
+		}
+		super.onKeyDown(key, shift, process);
+	}
+
+	function onSearchPrevFocusable(layer)
+	{
+		super.onSearchPrevFocusable(parent.findPrevFocusable(this, layer));
+	}
+
+	function onSearchNextFocusable(layer)
+	{
+		super.onSearchNextFocusable(parent.findNextFocusable(this, layer));
+	}
+
+	function onFocus(prevfocused, direction)
+	{
+		parent.keyLink = linkNum;
+		super.onFocus(...);
+	}
+
+	function commit()
+	{
+		kag.inputTemp = checked;
+		Scripts.eval(("(" + exp + ") = kag.inputTemp"));
+	}
+
+    function onChange(checked)
+    {
+        if (change !== void) {
+            kag.inputTemp = checked;
+            Scripts.eval(("(" + change + ") = kag.inputTemp"));
+        }
+    }
+}
+
+
+class DialogEditLayer extends EditLayer
+{
+	// メッセージレイヤに「リンク」として管理されるための
+	// 単一行編集レイヤ
+	var linkNum; // リンク番号
+	var exp; // 式
+
+	function DialogEditLayer(win, par)
+	{
+		// コンストラクタ
+		super.EditLayer(...);
+		joinFocusChain = false; // フォーカスチェーンには参加しない
+		hint = "";
+	}
+
+	function finalize()
+	{
+		super.finalize(...);
+	}
+
+	function onKeyDown(key, shift, process)
+	{
+		// 縦書きの時は右と左を入れ替える
+		if(Edit_vertical)
+		{
+			if(key == VK_LEFT) key = VK_RIGHT;
+			else if(key == VK_RIGHT) key = VK_LEFT;
+		}
+		super.onKeyDown(key, shift, process);
+	}
+
+	function onSearchPrevFocusable(layer)
+	{
+		super.onSearchPrevFocusable(parent.findPrevFocusable(this, layer));
+	}
+
+	function onSearchNextFocusable(layer)
+	{
+		super.onSearchNextFocusable(parent.findNextFocusable(this, layer));
+	}
+
+	function onFocus(prevfocused, direction)
+	{
+		parent.keyLink = linkNum;
+		super.onFocus(...);
+	}
+
+	function commit()
+	{
+		kag.inputTemp = text;
+		Scripts.eval(("(" + exp + ") = kag.inputTemp"));
+	}
+}
+
+class DialogSliderLayer extends SliderLayer
+{
+    // メッセージレイヤに「スライダ」として管理されるためのスライダ
+	var linkNum; // リンク番号
+    var exp; // 式
+    var change; // 変更式
+    var changese; // 変更時SE
+
+    function DialogSliderLayer(win, par)
+    {
+        // コンストラクタ
+        super.SliderLayer(...);
+        joinFocusChain = false;
+        hint = "";
+    }
+    
+	function finalize()
+	{
+		super.finalize(...);
+	}
+
+	function onSearchPrevFocusable(layer)
+	{
+		super.onSearchPrevFocusable(parent.findPrevFocusable(this, layer));
+	}
+
+	function onSearchNextFocusable(layer)
+	{
+		super.onSearchNextFocusable(parent.findNextFocusable(this, layer));
+	}
+
+	function onFocus(prevfocused, direction)
+        {
+        parent.keyLink = linkNum;
+        super.onFocus(...);
+	}
+
+	function commit()
+	{
+		kag.inputTemp = position;
+		Scripts.eval(("(" + exp + ") = kag.inputTemp"));
+	}
+
+    function onChange(position, dragging)
+    {
+        if (change !== void) {
+            kag.inputTemp = position;
+            Scripts.eval(("(" + change + ") = kag.inputTemp"));
+            if (changese !== void && !dragging) {
+                Scripts.eval(changese);
+            }
+        }
+    }
+}
+
+/**
+ * ダイアログ処理用のレイヤ
+ */
+
+class DialogLayer extends KAGLayer
+{
+	var layerType = ltAddAlpha; // レイヤタイプ
+    /*CS*/var frameGraphic = ""; // フレーム画像ファイル名
+	/*CS*/var frameKey = clNone; // フレーム画像キー
+	/*CS*/var frameColor = 0x000000; // フレームの色
+	/*CS*/var frameOpacity = 128; // フレームの不透明度
+    
+    var links = []; // リンク
+    /*C*/var numLinks = 0; // レイヤ内のリンクの数
+
+	var lastLink = -1; // 最後に選択したリンク番号
+	var keyLink = -1; // キーボードで選択したリンク番号
+	/*C*/var selProcessLock = false; // process 後にリンクが操作されるのを防ぐためのフラグ
+
+	// リンクタイプ
+    var ltNormal   = 1;
+    var ltButton   = 2;
+    var ltEdit     = 3;
+    var ltCheckBox = 4;
+    var ltSlider   = 5;
+
+    /**
+     * コンストラクタ
+     */
+	function DialogLayer(owner, parent, name) {
+
+        // DialogLayer コンストラクタ
+        // owner : オーナー KAG Window
+		// parent : 親レイヤ
+        // name 名前
+		// left, top, width, height : 初期位置
+		// do_config : コンフィギュレーションを行うか
+		super.KAGLayer(...);
+		this.name = name;
+
+        // レイヤタイプの設定
+		type = layerType;
+
+        // 当たり判定初期化
+        hitType = htMask;
+        hitThreshold = 0; // マウスメッセージは全域不透過
+        
+        // サイズはデフォルトで決定する
+        setPos(0, 0);
+        setImageSize(parent.width, parent.height);
+        setSize(parent.width, parent.height);
+		imageModified = true;
+    }
+    
+	function finalize()
+	{
+		invalidateLinkObjects();
+		super.finalize();
+	}
+
+    /**
+     * 閉じる処理
+     */
+    function close() {
+        window.closeDialog(this);
+    }
+
+    /**
+     * レイヤの内容消去
+     */
+	function clearLayer()
+	{
+        if(imageModified) {
+
+            if (frameGraphic == "") {
+                // フレーム画像が指定されていない場合
+                face = dfAuto;
+                if(type == ltAddAlpha) {
+                    fillRect(0, 0, imageWidth, imageHeight, (frameOpacity << 24) +
+                             ((int)((((frameColor&0xff0000)>>16) * frameOpacity) / 255)<<16 ) +
+                             ((int)((((frameColor&0x00ff00)>> 8) * frameOpacity) / 255)<< 8 ) +
+                             ((int)((((frameColor&0x0000ff)    ) * frameOpacity) / 255)     ) );
+                } else {
+                    fillRect(0, 0, imageWidth, imageHeight, (frameOpacity << 24) + frameColor);
+				}
+            } else {
+                loadImages(frameGraphic, frameKey);
+                setSizeToImageSize();
+			}
+            face = dfProvince;
+            colorRect(0, 0, imageWidth, imageHeight, 0); // 領域もクリア
+            face = dfAuto;
+		}
+        imageModified = false;
+
+        focusable = false;
+
+        invalidateLinkObjects(); // リンクに関連づけられたオブジェクトを無効化
+        links.clear();
+        numLinks = 0;
+
+		lastLink = -1;
+		keyLink = -1;
+    }
+
+    function setOption(elm)
+	{
+        left        = elm.left   if elm.left !== void;
+		top         = elm.top    if elm.top !== void;
+        imageWidth  = elm.width  if elm.width !== void;
+        imageHeight = elm.height if elm.height !== void;
+        setSizeToImageSize();
+
+		frameGraphic  = elm.frame    if elm.frame !== void;
+		frameKey      = elm.framekey if elm.framekey !== void;
+		frameColor    = +elm.color   if elm.color !== void;
+        frameOpacity  = +elm.opacity if elm.opacity !== void;
+
+        vertical = +elm.vertical if elm.vertical !== void;
+
+        imageModified = true; // 強制的にメッセージレイヤをクリアするために
+        clearLayer();
+    }
+
+	function invalidateLinkObjects()
+	{
+		// リンクアイテムにオブジェクトが割り当てられていた場合無効化
+        for(var i = links.count-1; i>=0; i--) {
+			if(links[i].type != ltNormal)
+				invalidate links[i].object;
+			links[i].type = 0;
+		}
+	}
+
+	function createSoundExpression(exp, storage, buf)
+	{
+		// サウンドを鳴らすための式を作成する
+		// exp になにか式があった場合はカンマでつなぐ
+		// この仕様は後で変更するかも
+		if(storage === void) return exp;
+		if(buf === void) buf = 0;
+		var seexp = "(kag.se["+buf+"].play(%[storage:\"" + storage.escape() +"\"]))";
+		if(exp !== void)
+			exp = seexp + ",("+exp+")";
+		else
+			exp = seexp;
+		return exp;
+	}
+
+    /**
+     * ボタンの配置
+     */
+    function addButton(elm)	{
+
+        var x = elm.x;
+        var y = elm.y;
+
+        // グラフィカルボタンを配置
+        var object = new DialogButtonLayer(window, this);
+        object.name =  "button" + numLinks;
+        if (elm.normal !== void) {
+            object.loadButtons(elm.normal, elm.over, elm.on, elm.focus);
+        } else if (elm.graphic !== void) {
+            object.loadImages(elm.graphic, elm.graphickey);
+        } else if (elm.caption !== void) {
+            object.caption = elm.caption;
+        }
+        object.linkNum = numLinks;
+        object.setPos(x, y);
+		object.hint = elm.hint;
+        object.visible = true;
+
+        object.onenter = createSoundExpression(elm.onenter, elm.enterse, elm.entersebuf);
+		object.onleave = createSoundExpression(elm.onleave, elm.leavese, elm.leavesebuf);
+        object.hitThreshold = (elm.recthit === void || +elm.recthit) ? 0 : 64;
+        if (elm.enabled !== void) {
+            object.enabled = (elm.enabled != 0);
+        } else if (elm.disabled !== void && elm.disabled) {
+            object.enabled = false;
+        }
+
+		links[numLinks] = %[
+			type :			ltButton,
+			graphic :		elm.graphic,
+			graphickey :	elm.graphickey,
+			storage :		elm.storage,
+			target :		elm.target,
+			exp :			createSoundExpression(elm.exp, elm.clickse, elm.clicksebuf),
+			countPage :		(elm.countpage === void) ? true : +elm.countpage,
+			object :		object,
+			onenter :		object.onenter,
+			onleave :		object.onleave,
+			x :				[x],
+			y :				[y],
+			w :				[object.width],
+			h :				[object.height],
+			fixed :			[true],
+			];
+
+		numLinks++;
+		focusable = true; // フォーカスを受け取れるように
+	}
+
+    /**
+     * 単一行エディットの配置
+     */
+	function addEdit(elm) {
+        var x = elm.x;
+        var y = elm.y;
+
+		var object = new DialogEditLayer(window, this, vertical);
+        object.name =  "edit" + numLinks;
+		var of = object.font;
+
+        //var lf = lineLayer.font;
+        //of.face   = lf.face;
+        //of.angle  = lf.angle;
+        //of.bold   = lf.bold;
+        //of.italic = lf.italic;
+        //of.height = lf.height;
+
+        object.linkNum = numLinks;
+		object.text = Scripts.eval(elm.name);
+        object.exp = elm.name;
+        object.antialiased = antialiased;
+		object.color = elm.bgcolor if elm.bgcolor !== void; // color でない事に注意
+		object.textColor = elm.color if elm.color !== void; // textColor でないことに注意
+		object.maxChars = elm.maxchars if elm.maxchars !== void;
+		object.bgOpacity = elm.opacity if elm.opacity !== void;
+		object.noborder = elm.noborder if elm.noborder !== void;
+
+		var len = elm.length === void ? 200: +elm.length;
+		if(vertical) {
+            object.setPos(x, y);
+            object.height = len;
+			object.width = lf.height + 6;
+        } else {
+			object.setPos(x, y);
+            object.width  = len;
+            object.height = lf.height + 6;
+        }
+		object.visible = true;
+
+		links[numLinks] = %[
+			type :			ltEdit,
+			exp :			elm.name,
+			object :		object,
+			x :				[object.left],
+			y :				[object.top],
+			w :				[object.width],
+			h :				[object.height],
+			fixed :			[true],
+			];
+
+		numLinks ++;
+		focusable = true;
+	}
+
+    /**
+     * チェックボックスの配置
+     */
+	function addCheckBox(elm) {
+        var x = elm.x;
+        var y = elm.y;
+
+        var object = new DialogCheckBoxLayer(window, this, vertical);
+        object.name = "check" + numLinks;
+        object.linkNum = numLinks;
+		object.vertical = vertical;
+		object.checked = Scripts.eval(elm.name);
+		object.exp = elm.name;
+        object.change = elm.onchange if elm.onchange !== void;
+        object.color = elm.bgcolor if elm.bgcolor !== void; // color でない事に注意
+		object.glyphColor = elm.color if elm.color !== void; // glyphColor でないことに注意
+		object.bgOpacity = elm.opacity if elm.opacity !== void;
+
+        object.setPos(x, y);
+		object.visible = true;
+
+		links[numLinks] = %[
+			type :			ltCheckBox,
+			exp :			elm.name,
+			object :		object,
+			x :				[object.left],
+			y :				[object.top],
+			w :				[object.width],
+			h :				[object.height],
+			fixed :			[true], // 固定!!!
+			];
+
+		numLinks ++;
+		focusable = true;
+	}
+
+    /**
+     * スライダの配置
+     */
+	function addSlider(elm)	{
+        var x = elm.x;
+        var y = elm.y;
+
+        var object = new LinkSliderLayer(window, this, vertical);
+        object.linkNum = numLinks;
+        object.exp     = elm.name;
+        object.color = elm.bgcolor if elm.bgcolor !== void; // color でない事に注意
+        object.bgOpacity = elm.opacity if elm.opacity !== void;
+        object.min = +elm.min if elm.min !== void;
+        object.max = +elm.max if elm.max !== void;
+        if (elm.value !== void) {
+            object.position = +Scripts.eval(elm.value);
+            object.change = elm.value;
+        } else {
+            object.position = +elm.position if elm.position !== void;
+            object.change = elm.onchange if elm.onchange !== void;
+        }
+        object.changese = createSoundExpression(void, elm.changese, elm.changesebuf);
+        
+        // ベースの指定
+        if (elm.base !== void) {
+            object.loadBase(elm.base);
+        } else {
+            object.width   = elm.width  === void ? 200 : +elm.width;
+            object.height  = elm.height === void ? 30  : +elm.height;
+        }
+        // タブの指定
+        if (elm.normal !== void) {
+            object.loadTabs(elm.normal, elm.over, elm.on);
+        } else if (elm.tab !== void) {
+            object.loadTab(elm.tab);
+        }
+        
+        object.setPos(x, y);
+        object.visible = true;
+
+        links[numLinks] = %[
+			type :			ltSlider,
+			exp :			elm.name,
+			object :		object,
+			x :				[object.left],
+			y :				[object.top],
+			w :				[object.width],
+			h :				[object.height],
+			fixed :			[true], // 固定!!!
+			];
+
+        numLinks ++;
+        focusable = true;
+	}
+
+    /**
+     * リンクの処理
+     */
+	function processLink(n)	{
+        // リンク番号 n を処理する
+		var ln = links[n];
+		if(ln === void) return;
+
+		// 実行
+		Scripts.eval(ln.exp) if ln.exp != '';
+
+		if(ln.storage != '' || ln.target != '')
+		{
+			if(window.getKeyState(VK_RETURN) || window.getKeyState(VK_SPACE) || window.getKeyState(VK_CONTROL))
+				window.hideMouseCursor();
+					// キーボードによる操作の場合はマウスカーソルを隠す
+			window.process(ln.storage, ln.target, ln.countPage);
+		}
+    }
+
+    /**
+     * 番号 num のグラフィカルボタンがクリックされた
+     */
+	function onButtonClick(num)	{
+		processLink(num);
+	}
+
+    /**
+     * フォーム要素の内容をコミット
+     */
+	function commit() {
+		var lks = links;
+		for(var i = 0; i < numLinks; i++)
+		{
+			var item = lks[i];
+			var type = item.type;
+            if(type == ltEdit || type == ltCheckBox || type == ltSlider) item.object.commit();
+		}
+	}
+
+	function setFocusToLink(n, force = false) {
+		// マウスカーソルを リンク番号 n の位置に移動させたり、
+		// フォーカスを与えたりする
+		// force=false の場合はキーボード操作が行われた場合のみ
+		// マウスカーソルを移動するが、force=true のばあいはキーボードの状態に
+		// 関わらずマウスカーソルを移動し、フォーカスを設定する
+		var linkn = links[n];
+		if(linkn === void) return;
+        var left   = linkn.x[0];
+        var top    = linkn.y[0];
+        var width  = linkn.w[0];
+		var height = linkn.h[0];
+		var x, y;
+        if(linkn.type == ltEdit)
+		{
+			// カーソルはじゃまなので端っこに置く
+			if(vertical)
+			{
+				x = left + (width>>1);
+				y = top;
+			}
+			else
+			{
+				x = left;
+				y = top + (height>>1);
+			}
+		}
+		else
+		{
+			x = left + (width>>1);
+			y = top + (height>>1);
+		}
+		if(!linkn.fixed[0])
+		{
+			// unfixed
+			x += lineLayerOriginX + getLineLayerLeftOffset();
+			y += lineLayerOriginY + getLineLayerTopOffset();
+		}
+
+		// キーボードで操作が行われた場合にのみカーソルを
+		// 移動させるため、該当するキーが押されているかチェックを行う
+		var sgks = window.getKeyState;
+		var process = force || sgks(VK_LEFT) || sgks(VK_UP) || sgks(VK_RIGHT) || sgks(VK_DOWN) || sgks(VK_TAB);
+		if(process)
+		{
+			cursorX = x;
+			cursorY = y;
+			internalMouseMove(x, y);
+			if(force) keyLink = n; // 一応再設定
+		}
+		if(linkn.type == ltEdit || linkn.type == ltCheckBox || linkn.type == ltSlider)
+		{
+			var obj = linkn.object;
+			if(force) obj.focus();
+			return obj;
+		}
+		if(force) focus();
+		return void;
+	}
+
+	function onKeyDown(key, shift)
+	{
+		// キーが押された
+		if(window.preProcessKeys(key, shift)) return;
+
+		if(!focusable || !numLinks) { return super.onKeyDown(...); }
+
+		var l, r;
+		if(vertical)
+		{
+			l=VK_RIGHT;
+			r=VK_LEFT;
+		}
+		else
+		{
+			l=VK_LEFT;
+			r=VK_RIGHT;
+		}
+
+		if(!selProcessLock && ((key == VK_UP && !(shift & ssShift)) || key == l ||
+			(key == VK_TAB && (shift & ssShift))))
+		{
+			if(keyLink == -1 || keyLink == 0)
+			{
+				var l = focusPrev();
+				if(l !== null) return;
+				keyLink = numLinks - 1;
+			}
+			else
+			{
+				keyLink--;
+			}
+			var obj = setFocusToLink(keyLink);
+			if(obj !== void) obj.focus();
+		}
+		else if(!selProcessLock && (key == VK_DOWN || key == r || (key == VK_TAB && !(shift & ssShift))))
+		{
+			if(keyLink == -1 || keyLink == numLinks -1)
+			{
+				var l = focusNext();
+				if(l !== null) return;
+				keyLink = 0;
+			}
+			else
+			{
+				keyLink ++;
+			}
+			var obj = setFocusToLink(keyLink);
+			if(obj !== void) obj.focus();
+		}
+		else if(key == VK_SPACE || key == VK_RETURN)
+		{
+			if(selProcessLock || keyLink == -1)
+				window.checkProceedingKey(key, shift);
+			else
+				processLink(keyLink);
+		}
+		else
+		{
+			window.processKeys(key, shift); // window に処理をまかせる
+		}
+	}
+
+	function findPrevFocusable(control, layer)
+	{
+		if(control.linkNum != 0) return this; else return prevFocusable;
+	}
+
+	function findNextFocusable(control, layer)
+	{
+		if(control.linkNum != numLinks -1) return this; else return layer;
+	}
+
+	function onBeforeFocus(layer, blured, direction)
+	{
+		// フォーカスを得る前に呼ばれる
+		// 最初のリンクまでカーソルを移動させる
+
+		if(!selProcessLock)
+		{
+			// キーボードで操作が行われた場合にのみカーソルを
+			// 移動させるため、該当するキーが押されているかチェックを行う
+			var sgks = window.getKeyState;
+			var process = sgks(VK_LEFT) || sgks(VK_UP) || sgks(VK_RIGHT) ||
+				sgks(VK_DOWN) || sgks(VK_TAB);
+
+			if(process && (blured == null || blured.parent != this))
+			{
+				if(direction)
+				{
+					// forward
+					keyLink = 0;
+				}
+				else
+				{
+					// backward
+					keyLink = numLinks-1;
+				}
+				var obj = setFocusToLink(keyLink);
+				if(obj !== void)
+				{
+					super.onBeforeFocus(obj, blured, direction);
+					return;
+				}
+			}
+
+			if(blured != null && blured.parent == this)
+			{
+				if(direction)
+				{
+					if(keyLink == -1 || keyLink == numLinks -1)
+						keyLink = 0;
+					else
+						keyLink++;
+				}
+				else
+				{
+					if(keyLink == -1 || keyLink == 0)
+						keyLink = numLinks - 1;
+					else
+						keyLink--;
+				}
+
+				var obj = setFocusToLink(keyLink);
+				if(obj !== void)
+				{
+					super.onBeforeFocus(obj, blured, direction);
+					return;
+				}
+			}
+		}
+
+		super.onBeforeFocus(...);
+	}
+
+    // -----------------------------------------------------------------
+
+
+    
+    // -----------------------------------------------------------------
+
+    var handlers = %[
+    option   : setOption incontextof this,
+    button   : addButton incontextof this,
+	edit     : addEdit incontextof this,
+	checkbox : addCheckBox incontextof this,
+	slider   : addSlider incontextof this,
+	commit   : commit incontextof this,
+        ];
+    
+    /**
+     * 初期化処理
+     */
+    function load(storage) {
+        var parser = new KAGParser();
+        parser.loadScenario(storage);
+        var elm;
+        while ((elm = parser.getNextTag()) !== void) {
+            var tagname = elm.tagname;
+            var handler = handlers[tagname];
+            if (handler !== void) {
+                handler(elm);
+            } else {
+                dm("不明なタグ:" + tagname);
+            }
+        }
+    }
+}
