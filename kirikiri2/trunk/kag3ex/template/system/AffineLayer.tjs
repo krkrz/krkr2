@@ -439,7 +439,7 @@ class AffineLayer extends KAGLayer {
     function loadImages(image,colorKey=clNone) {
         var ret = _image.loadImages(...);
         if (ret != null) {
-            _initType = ret.mode !== void ? global.imageTagLayerType[ret.mode] : ltAlpha;
+            _initType = ret.mode !== void ? global.imageTagLayerType[ret.mode].type : ltAlpha;
             _initOpacity = ret.opacity !== void ? ret.opacity : 255;
         } else {
             _initType = ltAlpha;
