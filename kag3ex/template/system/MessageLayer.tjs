@@ -384,7 +384,52 @@ class SystemButtonLayer extends ButtonLayer
 
 class MessageLayer extends KAGLayer
 {
-	var wwFollowing = "%),:;]}｡｣ﾞﾟ。，、．：；゛゜ヽヾゝ"
+    var myleft;
+    var mytop;
+    var diffx  = 0;
+    var diffy  = 0;
+
+    function setDiff(diffx, diffy) {
+        this.diffx = (int)diffx;
+        this.diffy = (int)diffy;
+        super.left = myleft + this.diffx;
+        super.top  = mytop  + this.diffy;
+    }
+
+    property left {
+        setter(v) {
+            myleft = (int)v;
+            super.left = myleft + diffx;
+            dm("LEFT", myleft, super.left);
+        }
+        getter() {
+            return myleft;
+        }
+    }
+
+    property top {
+        setter(v) {
+            mytop = (int)v;
+            super.top = mytop + diffy;
+            dm("TOP", mytop, super.top);
+        }
+        getter() {
+            return mytop;
+        }
+    }
+
+    function setPos(l, t, w=void, h=void) {
+        dm("setPos" , l, t, w, h);
+        left = (int)l;
+        top  = (int)t;
+        width  = (int)w if w !== void;
+        height = (int)h if h !== void;
+        dm("pos", super.left, super.top, super.width, super.height);
+    }
+
+
+    
+    var wwFollowing = "%),:;]}｡｣ﾞﾟ。，、．：；゛゜ヽヾゝ"
                 "ゞ々’”）〕］｝〉》」』】°′″℃￠％‰"; // 行頭禁則文字
 	var wwFollowingWeak="!.?､･ｧｨｩｪｫｬｭｮｯｰ・？！ーぁぃぅぇぉっゃゅょゎァィ"
                 "ゥェォッャュョヮヵヶ"; // 行頭(弱)禁則文字
@@ -578,16 +623,19 @@ class MessageLayer extends KAGLayer
     
 	function MessageLayer(owner, parent, name, id, do_config)
 	{
-		// MessageLayer コンストラクタ
+        left = 0;
+        top  = 0;
+
+        // MessageLayer コンストラクタ
 		// owner : オーナー KAG Window
-		// parent : 親レイヤ
-		// name 名前
+        // parent : 親レイヤ
+        // name 名前
 		// id : 識別子
 		// left, top, width, height : 初期位置
 		// do_config : コンフィギュレーションを行うか
 		super.KAGLayer(...);
 
-
+        
 		this.id = id;
 		this.name = name;
 

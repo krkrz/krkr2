@@ -245,7 +245,7 @@ class DialogSliderLayer extends SliderLayer
 
 class DialogLayer extends KAGLayer
 {
-	var layerType = ltAddAlpha; // レイヤタイプ
+    var layerType = ltAddAlpha; // レイヤタイプ
     /*CS*/var frameGraphic = ""; // フレーム画像ファイル名
 	/*CS*/var frameKey = clNone; // フレーム画像キー
 	/*CS*/var frameColor = 0x000000; // フレームの色
@@ -265,6 +265,9 @@ class DialogLayer extends KAGLayer
     var ltCheckBox = 4;
     var ltSlider   = 5;
 
+    var xpos;
+    var ypos;
+    
     /**
      * コンストラクタ
      */
@@ -325,8 +328,21 @@ class DialogLayer extends KAGLayer
                     fillRect(0, 0, imageWidth, imageHeight, (frameOpacity << 24) + frameColor);
 				}
             } else {
-                loadImages(frameGraphic, frameKey);
-                setSizeToImageSize();
+                // センタリング表示
+                var layer = new global.Layer(window, this);
+                layer.loadImages(frameGraphic, frameKey);
+                layer.setSizeToImageSize();
+
+                // 消去
+                fillRect(0, 0, imageWidth, imageHeight, 0);
+
+                // 画像コピー
+                var l, t;
+                l = ((width  - layer.width)>>1)  + left;
+                t = ((height - layer.height)>>1) + top;
+                operateRect(l, t, layer, 0, 0, layer.width, layer.height);
+
+                invalidate layer;
 			}
             face = dfProvince;
             colorRect(0, 0, imageWidth, imageHeight, 0); // 領域もクリア
@@ -342,6 +358,9 @@ class DialogLayer extends KAGLayer
 
 		lastLink = -1;
 		keyLink = -1;
+
+        xpos = 0;
+        ypos = 0;
     }
 
     function setOption(elm)
@@ -389,12 +408,21 @@ class DialogLayer extends KAGLayer
 	}
 
     /**
+     * 配置座標指定
+     */
+    function locate(elm) {
+        xpos = elm.x if elm.x !== void;
+        ypos = elm.y if elm.y !== void;
+    }
+
+    
+    /**
      * ボタンの配置
      */
     function addButton(elm)	{
 
-        var x = elm.x;
-        var y = elm.y;
+        var x = elm.x !== void ? elm.x : xpos;
+        var y = elm.y !== void ? elm.y : ypos;
 
         // グラフィカルボタンを配置
         var object = new DialogButtonLayer(window, this);
@@ -446,8 +474,9 @@ class DialogLayer extends KAGLayer
      * 単一行エディットの配置
      */
 	function addEdit(elm) {
-        var x = elm.x;
-        var y = elm.y;
+
+        var x = elm.x !== void ? elm.x : xpos;
+        var y = elm.y !== void ? elm.y : ypos;
 
 		var object = new DialogEditLayer(window, this, vertical);
         object.name =  "edit" + numLinks;
@@ -501,8 +530,9 @@ class DialogLayer extends KAGLayer
      * チェックボックスの配置
      */
 	function addCheckBox(elm) {
-        var x = elm.x;
-        var y = elm.y;
+
+        var x = elm.x !== void ? elm.x : xpos;
+        var y = elm.y !== void ? elm.y : ypos;
 
         var object = new DialogCheckBoxLayer(window, this, vertical);
         object.name = "check" + numLinks;
@@ -537,8 +567,9 @@ class DialogLayer extends KAGLayer
      * スライダの配置
      */
 	function addSlider(elm)	{
-        var x = elm.x;
-        var y = elm.y;
+
+        var x = elm.x !== void ? elm.x : xpos;
+        var y = elm.y !== void ? elm.y : ypos;
 
         var object = new LinkSliderLayer(window, this, vertical);
         object.linkNum = numLinks;
@@ -825,12 +856,9 @@ class DialogLayer extends KAGLayer
 
     // -----------------------------------------------------------------
 
-
-    
-    // -----------------------------------------------------------------
-
     var handlers = %[
     option   : setOption incontextof this,
+    locate   : locate incontextof this,
     button   : addButton incontextof this,
 	edit     : addEdit incontextof this,
 	checkbox : addCheckBox incontextof this,
