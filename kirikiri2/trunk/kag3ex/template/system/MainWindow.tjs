@@ -155,7 +155,11 @@ class KAGWindow extends Window
 
     var _skipMode = 0; // スキップのモード
 		// 0=スキップなし, 1=クリック待ち記号まで, 2=改ページ待ち記号まで, 3=次の停止まで
-		// 4=早送り
+		// 4=早送り 5==特殊スキップ処理中
+
+    // beginskip 中のスキップモード
+    var prevSkipMode;
+    
     property skipMode {
         setter(v) {
             _skipMode = v;
@@ -329,9 +333,21 @@ class KAGWindow extends Window
      * ダイアログを開く
      * @param init ダイアログ初期化コード。辞書またはファイル
      */
-    function openDialog(dialog) {
-        dialogStack.add(dialog);
-        dialog.visible = true;
+    function openDialog(elm) {
+        if (elm.name !== void && elm.storage !== void) {
+            var dialog = new DialogLayer(this, base, elm.name);
+            dialog.load(elm.storage);
+            // ダイアログが開いたらコンダクタを停止させる
+            if (dialogStack.count == 0) {
+                conductor.wait(%[ dialog : function{} incontextof this ]);
+            }
+            dialogStack.add(dialog);
+            dialog.visible = true;
+            return -2;
+        } else {
+            dm("ダイアログを開くことができません", elm,name, elm.storage);
+        }
+        return 0;
     }
 
     /**
@@ -344,6 +360,10 @@ class KAGWindow extends Window
                 dialog.visible = false;
                 delete dialogStack[i];
             }
+        }
+        // 全てのダイアログが終了した
+        if (dialogStack.count == 0) {
+            trigger("dialog");
         }
     }
 
@@ -2648,7 +2668,8 @@ class KAGWindow extends Window
 
 	function onConductorScenarioLoad(name)
 	{
-		// コンダクタが新しいシナリオファイルを読み込む前によばれる。
+        prevSkipMode = void;
+        // コンダクタが新しいシナリオファイルを読み込む前によばれる。
 		// name は読み込もうとしたシナリオファイル。
 		// 戻り値に文字列を返すと、それをシナリオとして
 		// ファイルの代わりに使うようになるので、ここにフィルタを書くこ
@@ -3254,9 +3275,15 @@ class KAGWindow extends Window
 			%[hidden:b]);
 	}
 
+    // メッセージレイヤ状態を同期
+    function syncMessageLayer() {
+        var messages = back.messages;
+        for(var i = messages.count-1; i >= 0; i--) messages[i].assignComp();
+    }
+    
 	function hideMessageLayerByUser()
 	{
-		// メッセージレイヤを一時的に隠す
+        // メッセージレイヤを一時的に隠す
 		if(messageLayerHiding) return;
 		setMessageLayerHiddenState(true);
 		if(typeof this.rightClickMenuItem !== "undefined")
@@ -3268,9 +3295,9 @@ class KAGWindow extends Window
 
 	function showMessageLayerByUser()
 	{
-		// 一時的に隠されていたメッセージレイヤを元に戻す
+        // 一時的に隠されていたメッセージレイヤを元に戻す
 		if(!messageLayerHiding) return;
-		setMessageLayerHiddenState(false);
+        setMessageLayerHiddenState(false);
 		if(typeof this.rightClickMenuItem !== "undefined")
 			rightClickMenuItem.checked = false;
 		messageLayerHiding = false;
@@ -4144,6 +4171,17 @@ class KAGWindow extends Window
 			quakeTimer.enabled =true;
 	}
 
+    /**
+     * レイヤ位置の調整
+     * メッセージレイヤの位置を自動的にずらす
+     */
+    function setLayerPos(x, y) {
+        super.setLayerPos(x, y);
+        for(var i = 0; i< fore.messages.count; i++) fore.messages[i].setDiff(-x, -y);
+        for(var i = 0; i< back.messages.count; i++) back.messages[i].setDiff(-x, -y);
+    }
+
+    
 	function stopQuake()
 	{
 		// 揺れを停止
@@ -4243,7 +4281,7 @@ class KAGWindow extends Window
 				var runst = conductor.mRun;
 				var stopst = conductor.mStop;
 
-                if(st != stopst && canCancelSkipByClick && skipMode && skipMode != 4)
+                if(st != stopst && canCancelSkipByClick && skipMode && skipMode != 4 && skipMode != 5)
 				{
 					// クリックによるスキップの解除が可能
 					cancelSkip();
@@ -4256,12 +4294,20 @@ class KAGWindow extends Window
 					if(!conductor.trigger('click')) // 待ち状態でない場合は単に無視される
 					{
 						// ハンドラが見つからないなど、処理されなかった場合
-						if(st == runst && clickSkipEnabled && skipMode == 0)
-						{
-							// クリックによるスキップが可能
-							skipToClick();
-						}
-					}
+                        if (prevSkipMode !== void) {
+                            skipMode = 5;
+                        } else {
+                            if(st == runst && clickSkipEnabled && skipMode == 0)
+  						    {
+                                // クリックによるスキップが可能
+                                skipToClick();
+                            }
+                        }
+                    } else {
+                        if (prevSkipMode !== void) {
+                            skipMode = 5;
+                        }
+                    }
 				}
 			}
 		}
@@ -6466,7 +6512,39 @@ class KAGWindow extends Window
 		setSelectOptions(elm);
 		return 0;
 	} incontextof this,
-                  
+
+	//----------------------------------------- タグハンドラ群(ダイアログ) --
+
+	dialog : function(elm)
+	{
+        return openDialog(elm);
+	} incontextof this,
+
+
+	//----------------------------------------- タグハンドラ群(特殊スキップ処理) --
+
+    beginskip : function(elm)
+	{
+        // 現在のスキップモードを記録
+        prevSkipMode = skipMode;
+        if (skipMode) {
+            // 既にスキップしてた場合は停止できないスキップ状態にする
+            skipMode = 5;
+        }
+        return 0;
+	} incontextof this,
+
+    endskip : function(elm)
+	{
+        if (prevSkipMode == 0) {
+            cancelSkip();
+        } else {
+            skipMode = prevSkipMode;
+        }
+        prevSkipMode = void;
+        return 0;
+	} incontextof this,
+
 	//----------------------------------------------- タグハンドラ群の終わり --
 
 		interrupt : function(elm) { return -2; } incontextof this ];
