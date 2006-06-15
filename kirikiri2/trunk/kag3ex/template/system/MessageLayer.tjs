@@ -400,7 +400,6 @@ class MessageLayer extends KAGLayer
         setter(v) {
             myleft = (int)v;
             super.left = myleft + diffx;
-            dm("LEFT", myleft, super.left);
         }
         getter() {
             return myleft;
@@ -411,7 +410,6 @@ class MessageLayer extends KAGLayer
         setter(v) {
             mytop = (int)v;
             super.top = mytop + diffy;
-            dm("TOP", mytop, super.top);
         }
         getter() {
             return mytop;
@@ -419,12 +417,10 @@ class MessageLayer extends KAGLayer
     }
 
     function setPos(l, t, w=void, h=void) {
-        dm("setPos" , l, t, w, h);
         left = (int)l;
         top  = (int)t;
         width  = (int)w if w !== void;
         height = (int)h if h !== void;
-        dm("pos", super.left, super.top, super.width, super.height);
     }
 
 
