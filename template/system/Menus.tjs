@@ -135,6 +135,8 @@ function KAGWindow_createMenus()
 
 	menu.add(this.debugMenu = new KAGMenuItem(this, "デバッグ(&D)", 0, void, false));
 
+		debugMenu.add(this.reloadScenarioMenuItem = new KAGMenuItem(this, "シナリオの読込み(&R)", 1,
+			onExecDialogMenuItemClick, false));
 		debugMenu.add(this.reloadScenarioMenuItem = new KAGMenuItem(this, "シナリオの再読込み(&R)", 1,
 			onReloadScenarioMenuItemClick, false));
 		debugMenu.add(this.showConsoleMenuItem = new KAGMenuItem(this, "コンソール(&C)\tShift+F4", 1,

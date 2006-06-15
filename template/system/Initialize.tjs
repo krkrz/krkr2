@@ -180,6 +180,7 @@ property ButtonLayer { getter() { KAGLoadScript("ButtonLayer.tjs"); return globa
 property EditLayer { getter() { KAGLoadScript("EditLayer.tjs"); return global.EditLayer; } }
 property SliderLayer { getter() { KAGLoadScript("SliderLayer.tjs"); return global.SliderLayer; } }
 property KAGPlugin { getter() { KAGLoadScript("Plugin.tjs"); return global.KAGPlugin; } }
+property execDialog { getter() { KAGLoadScript("ExecDialog.tjs"); return global.execDialog; } }
 
 /*
 	各システム読み込み

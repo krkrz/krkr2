@@ -1047,6 +1047,12 @@ class KAGWindow extends Window
 		invalidate win;
 	}
 
+    // シナリオ実行ダイアログ呼び出し
+    function onExecDialogMenuItemClick(sender)
+    {
+        execDialog();
+    }
+    
 	function onReloadScenarioMenuItemClick(sender)
 	{
 		saveBookMark(1000, false);
@@ -1459,6 +1465,7 @@ class KAGWindow extends Window
 		}
 
         f.lineMode  = lineMode;
+        f.autoLabelMode = autoLabelMode;
         f.afterPage = afterPage;
         f.emptyLine = emptyLine;
         
@@ -1547,6 +1554,7 @@ class KAGWindow extends Window
             setLineMode("line");
             break;
         }
+        autoLabelMode = f.autoLabelMode;
         afterPage = f.afterPage;
         emptyLine = f.emptyLine;
         
@@ -2683,18 +2691,23 @@ class KAGWindow extends Window
 	{
 		// コンダクタが新しいシナリオファイルを読み込んだ
 //		if(!usingExtraConductor) incRecordLabel(true);
-        if (!usingExtraConductor) {
-            setLineMode();
-        }
         return true;
 	}
 
+    // ------------------------------------------------------ 自動ラベル処理
+
+    var autoLabelMode;   // 自動ラベルモード
+    var autoLabelCount;  // 自動ラベルカウンタ
+    var insertAutoLabel; // 自動ラベル初期化指定フラグ
+    
 	function onConductorLabel(label, page)
 	{
 		// コンダクタがラベルを通過した
 		if(!usingExtraConductor)
 		{
-			incRecordLabel(true);
+            // 自動ラベル処理
+            autoLabelCount = 1 if !insertAutoLabel;
+            incRecordLabel(true);
 			setRecordLabel(conductor.curStorage, label);
 		}
 		setUserSpeed();
@@ -2812,9 +2825,31 @@ class KAGWindow extends Window
 			if(!getCurrentRead() && skipMode != 4)
 				cancelSkip(); // 未読なのでスキップを停止
 		}
-	}
 
+        // 自動ラベル処理
+        if (insertAutoLabel) {
+            currentLabel += ':' + autoLabelCount;
+            currentRecordName = 'trail_' + Storages.chopStorageExt(Storages.extractStorageName(conductor.curStorage)) + '_' + currentLabel;
+            if (!getCurrentRead() && kag.skipMode != 4) {
+                kag.cancelSkip(); // 未読なのでスキップを停止
+            }
+            dm("自動ラベル処理:",currentLabel, currentRecordName);
+            autoLabelCount++;
+            insertAutoLabel = false;
+        }
+        
+    }
 
+    // セーブポイントを登録する
+    function setAutoLabel() {
+        if (insertAutoLabel) {
+            // 今のスタックをつむ
+            conductor.callLabel("");
+            // セーブポイント記録用処理
+            processCall("autolabel.ks", "*label");
+        }
+    }
+    
 	function onConductorScript(script, scriptname, lineofs)
 	{
 		// iscript タグ
@@ -5246,6 +5281,10 @@ class KAGWindow extends Window
                 }
                 return 0;
             } else if (emptyLine) {
+                // 自動ラベル処理を実行
+                if (autoLabelMode) {
+                    insertAutoLabel = true;
+                }
                 // 行頭での処理
                 emptyLine = false;
                 if (elm.text == "【") {
@@ -5323,6 +5362,11 @@ class KAGWindow extends Window
         return 0;
     } incontextof this,
 
+    autolabelmode : function(elm) {
+        autoLabelMode = elm.mode;
+        return 0;
+    } incontextof this,
+
 	origr : function(elm)
     {
         // 改行
@@ -5360,6 +5404,7 @@ class KAGWindow extends Window
                 return 0; // 空行は無視する
             } else {
                 emptyLine = true;
+                setAutoLabel();
                 return tagHandlers.p(elm);
             }
             break;
@@ -5370,6 +5415,7 @@ class KAGWindow extends Window
                 return 0; // 空行は無視する
             } else {
                 emptyLine = true;
+                setAutoLabel();
                 return tagHandlers.l(elm);
             }
         }
