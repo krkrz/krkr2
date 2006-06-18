@@ -241,7 +241,7 @@ class AffineLayer extends KAGLayer {
     /// ズームY（％指定）
     property zoomy {
         setter(v) {
-            _zoomx = v;
+            _zoomy = v;
             calcAffine();
         }
         getter() {
