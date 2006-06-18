@@ -1,3 +1,3 @@
 ;毎行保存用サブルーチン
-*label|
+*autoLabelLabel|
 @return
