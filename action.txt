@@ -73,7 +73,7 @@ topTime	頂点通過時間（time の1/2を指定すると丁度落下しきることになる)
 vibration	振動量(pixel)
 waitTime	振動間の待ち時間(ms)
 
-◆LayerVibrateActionModule	縦ゆれアクション
+◆LayerJumpActionModule	縦ゆれアクション
 
 vibration	上下振動量(pixel)
 cycle		周期(ms)
