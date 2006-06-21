@@ -10,8 +10,8 @@ class DialogButtonLayer extends ButtonLayer
 	function DialogButtonLayer(win, par)
 	{
 		// コンストラクタ
-		super.ButtonLayer(...);
-        focusable = false; // フォーカスは受け取らない
+        super.ButtonLayer(...);
+        //focusable = false; // フォーカスは受け取らない
         hint = "";
 	}
 
@@ -246,17 +246,19 @@ class DialogSliderLayer extends SliderLayer
 class DialogLayer extends KAGLayer
 {
     var layerType = ltAddAlpha; // レイヤタイプ
-    /*CS*/var frameGraphic = ""; // フレーム画像ファイル名
-	/*CS*/var frameKey = clNone; // フレーム画像キー
-	/*CS*/var frameColor = 0x000000; // フレームの色
-	/*CS*/var frameOpacity = 128; // フレームの不透明度
+
+    
+    var frameGraphic = ""; // フレーム画像ファイル名
+	var frameKey = clNone; // フレーム画像キー
+	var frameColor = 0x000000; // フレームの色
+    var frameOpacity = 128; // フレームの不透明度
     
     var links = []; // リンク
-    /*C*/var numLinks = 0; // レイヤ内のリンクの数
+    var numLinks = 0; // レイヤ内のリンクの数
 
 	var lastLink = -1; // 最後に選択したリンク番号
 	var keyLink = -1; // キーボードで選択したリンク番号
-	/*C*/var selProcessLock = false; // process 後にリンクが操作されるのを防ぐためのフラグ
+	var selProcessLock = false; // process 後にリンクが操作されるのを防ぐためのフラグ
 
 	// リンクタイプ
     var ltNormal   = 1;
@@ -267,6 +269,11 @@ class DialogLayer extends KAGLayer
 
     var xpos;
     var ypos;
+
+    var xoff = 0;
+    var yoff = 0;
+
+    var vertical = false;
     
     /**
      * コンストラクタ
@@ -306,7 +313,9 @@ class DialogLayer extends KAGLayer
      * 閉じる処理
      */
     function close() {
-        window.closeDialog(this);
+        if (this isvalid && window != null) {
+            window.closeDialog(this);
+        }
     }
 
     /**
@@ -327,6 +336,9 @@ class DialogLayer extends KAGLayer
                 } else {
                     fillRect(0, 0, imageWidth, imageHeight, (frameOpacity << 24) + frameColor);
 				}
+                xoff = 0;
+                ypff = 0;
+
             } else {
                 // センタリング表示
                 var layer = new global.Layer(window, this);
@@ -337,10 +349,9 @@ class DialogLayer extends KAGLayer
                 fillRect(0, 0, imageWidth, imageHeight, 0);
 
                 // 画像コピー
-                var l, t;
-                l = ((width  - layer.width)>>1)  + left;
-                t = ((height - layer.height)>>1) + top;
-                operateRect(l, t, layer, 0, 0, layer.width, layer.height);
+                xoff = ((width  - layer.width)>>1)  + left;
+                yoff = ((height - layer.height)>>1) + top;
+                operateRect(xoff, yoff, layer, 0, 0, layer.width, layer.height);
 
                 invalidate layer;
 			}
@@ -435,7 +446,7 @@ class DialogLayer extends KAGLayer
             object.caption = elm.caption;
         }
         object.linkNum = numLinks;
-        object.setPos(x, y);
+        object.setPos(xoff + x, xoff + y);
 		object.hint = elm.hint;
         object.visible = true;
 
@@ -463,7 +474,6 @@ class DialogLayer extends KAGLayer
 			y :				[y],
 			w :				[object.width],
 			h :				[object.height],
-			fixed :			[true],
 			];
 
 		numLinks++;
@@ -501,11 +511,11 @@ class DialogLayer extends KAGLayer
 
 		var len = elm.length === void ? 200: +elm.length;
 		if(vertical) {
-            object.setPos(x, y);
+            object.setPos(xoff + x, xoff + y);
             object.height = len;
-			object.width = lf.height + 6;
+            object.width = lf.height + 6;
         } else {
-			object.setPos(x, y);
+            object.setPos(xoff + x, yoff + y);
             object.width  = len;
             object.height = lf.height + 6;
         }
@@ -519,11 +529,10 @@ class DialogLayer extends KAGLayer
 			y :				[object.top],
 			w :				[object.width],
 			h :				[object.height],
-			fixed :			[true],
 			];
 
 		numLinks ++;
-		focusable = true;
+        focusable = true;
 	}
 
     /**
@@ -545,7 +554,7 @@ class DialogLayer extends KAGLayer
 		object.glyphColor = elm.color if elm.color !== void; // glyphColor でないことに注意
 		object.bgOpacity = elm.opacity if elm.opacity !== void;
 
-        object.setPos(x, y);
+        object.setPos(xoff + x, yoff + y);
 		object.visible = true;
 
 		links[numLinks] = %[
@@ -556,7 +565,6 @@ class DialogLayer extends KAGLayer
 			y :				[object.top],
 			w :				[object.width],
 			h :				[object.height],
-			fixed :			[true], // 固定!!!
 			];
 
 		numLinks ++;
@@ -601,7 +609,7 @@ class DialogLayer extends KAGLayer
             object.loadTab(elm.tab);
         }
         
-        object.setPos(x, y);
+        object.setPos(xoff + x, yoff + y);
         object.visible = true;
 
         links[numLinks] = %[
@@ -612,7 +620,6 @@ class DialogLayer extends KAGLayer
 			y :				[object.top],
 			w :				[object.width],
 			h :				[object.height],
-			fixed :			[true], // 固定!!!
 			];
 
         numLinks ++;
@@ -660,7 +667,10 @@ class DialogLayer extends KAGLayer
 	}
 
 	function setFocusToLink(n, force = false) {
-		// マウスカーソルを リンク番号 n の位置に移動させたり、
+
+        dm("setFocusToLink" + n);
+
+        // マウスカーソルを リンク番号 n の位置に移動させたり、
 		// フォーカスを与えたりする
 		// force=false の場合はキーボード操作が行われた場合のみ
 		// マウスカーソルを移動するが、force=true のばあいはキーボードの状態に
@@ -691,12 +701,6 @@ class DialogLayer extends KAGLayer
 			x = left + (width>>1);
 			y = top + (height>>1);
 		}
-		if(!linkn.fixed[0])
-		{
-			// unfixed
-			x += lineLayerOriginX + getLineLayerLeftOffset();
-			y += lineLayerOriginY + getLineLayerTopOffset();
-		}
 
 		// キーボードで操作が行われた場合にのみカーソルを
 		// 移動させるため、該当するキーが押されているかチェックを行う
@@ -704,10 +708,9 @@ class DialogLayer extends KAGLayer
 		var process = force || sgks(VK_LEFT) || sgks(VK_UP) || sgks(VK_RIGHT) || sgks(VK_DOWN) || sgks(VK_TAB);
 		if(process)
 		{
-			cursorX = x;
-			cursorY = y;
-			internalMouseMove(x, y);
-			if(force) keyLink = n; // 一応再設定
+            window.cursorX = x;
+            window.cursorY = y;
+            if(force) keyLink = n; // 一応再設定
 		}
 		if(linkn.type == ltEdit || linkn.type == ltCheckBox || linkn.type == ltSlider)
 		{
@@ -721,11 +724,16 @@ class DialogLayer extends KAGLayer
 
 	function onKeyDown(key, shift)
 	{
-		// キーが押された
+        dm("キーがおされた");
+
+        // キーが押された
 		if(window.preProcessKeys(key, shift)) return;
 
 		if(!focusable || !numLinks) { return super.onKeyDown(...); }
 
+        dm("キーがおされた2");
+
+        
 		var l, r;
 		if(vertical)
 		{
@@ -751,7 +759,7 @@ class DialogLayer extends KAGLayer
 			{
 				keyLink--;
 			}
-			var obj = setFocusToLink(keyLink);
+            var obj = setFocusToLink(keyLink);
 			if(obj !== void) obj.focus();
 		}
 		else if(!selProcessLock && (key == VK_DOWN || key == r || (key == VK_TAB && !(shift & ssShift))))
@@ -778,7 +786,8 @@ class DialogLayer extends KAGLayer
 		}
 		else
 		{
-			window.processKeys(key, shift); // window に処理をまかせる
+            dm("ウインドウに処理まかせ");
+            window.processKeys(key, shift); // window に処理をまかせる
 		}
 	}
 
