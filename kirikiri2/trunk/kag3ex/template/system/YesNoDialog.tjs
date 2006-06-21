@@ -155,11 +155,24 @@ class YesNoDialogWindow extends Window
 }
 
 // Yes か No かはっきりさせる関数
-function askYesNo(message, caption = "確認")
+function askYesNo(message, caption = "確認", yesFunc=void, noFunc=void, param=void, doneFunc=void)
 {
-	var win = new YesNoDialogWindow(message, caption);
+    var win = new YesNoDialogWindow(message, caption);
 	win.showModal();
-	var res = win.result;
-	invalidate win;
-	return res;
+    var res = win.result;
+    invalidate win;
+
+    if (res) {
+        if (yesFunc !== void) {
+            yesFunc(param);
+        }
+    } else {
+        if (noFunc !== void) {
+            noFunc(param);
+        }
+    }
+
+    if (doneFunc !== void) {
+        doneFunc(param);
+    }
 }

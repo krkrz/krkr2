@@ -74,8 +74,9 @@ class AffineLayer extends KAGLayer {
      * ファイナライザのっとり
      */
     function finalize() {
-        invalidate _image;
         super.finalize();
+        // 最後まで残しておかないと他のメソッドをよばれた時に困る
+        invalidate _image;
     }
     
     /**

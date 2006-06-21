@@ -95,13 +95,13 @@ class SelectButtonLayer extends ButtonLayer
 	}
     
 	function onMouseUp(x, y, button, shift)	{
-        super.onMouseUp(...);
         if (enabled && button == mbLeft) {
             if (onclick !== void) {
                 Scripts.eval(onclick);
             }
-            parent.onButtonClick(this);
+            if (this isvalid && parent isvalid) parent.onButtonClick(this);
         }
+        if (this isvalid) super.onMouseUp(...);
 	}
 }
 
@@ -265,15 +265,17 @@ class SelectLayer extends KAGLayer {
         if (select !== void) {
             // 実行
             Scripts.eval(select.onclick) if select.onclick != '';
-            if(select.storage != '' || select.target != '')	{
-                window.lockMessageLayerSelProcess(); // 選択をロック
-                if (window.getKeyState(VK_RETURN) || window.getKeyState(VK_SPACE) || window.getKeyState(VK_CONTROL))
-                    window.hideMouseCursor();
-                // キーボードによる操作の場合はマウスカーソルを隠す
-                window.process(select.storage, select.target);
+            if (select isvalid) {
+                if (select.storage != '' || select.target != '')	{
+                    window.lockMessageLayerSelProcess(); // 選択をロック
+                    if (window.getKeyState(VK_RETURN) || window.getKeyState(VK_SPACE) || window.getKeyState(VK_CONTROL))
+                        window.hideMouseCursor();
+                    // キーボードによる操作の場合はマウスカーソルを隠す
+                    window.process(select.storage, select.target);
+                }
+                window.hideSelect();
             }
         }
-        window.hideSelect();
     }
 
     var invisibleByUser = false; // ユーザにより一時的に不可視

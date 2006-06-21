@@ -88,7 +88,7 @@ class KAGWindow extends Window
 	var historyShowing = false; // メッセージ履歴レイヤを表示中か
 	var lastHistoryHiddenTick = 0; // 最後に履歴レイヤが非表示になったときの tick
 
-    var selectLayer; // 選択肢レイヤ
+    var selectLayer;           // 選択肢レイヤ
     var selectShowing = false; // 選択肢レイヤが表示中か
     
 	/*C*/var numCharacterLayers = 0; // 前景レイヤの数
@@ -129,6 +129,15 @@ class KAGWindow extends Window
 //	var movie; // ムービーオブジェクト
 	var movies = []; // ムービーオブジェクト
 
+    function isMoviePlaying() {
+        for (var i=0;i<numMovies;i++) {
+            if (movies[i].canWaitStop) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
 	var transCount; // 現在進行中のトランジションの数
 	var moveCount; // 現在進行中の自動移動の数
     var actionCount;
@@ -153,6 +162,10 @@ class KAGWindow extends Window
 	/*C*/var clickSkipEnabled = true; // クリックスキップが有効か
 	/*C*/var nextSkipEnabled = true; // 次の選択肢(/未読)まで進むが有効か
 
+    /*C*/var allskip   = false; // 0:既読のみスキップ 1:全てスキップ
+    /*C*/var afterauto = false; // 選択後オート   1:継続 0:解除
+    /*C*/var afterskip = false; // 選択後スキップ 1:継続 0:解除
+    
     var _skipMode = 0; // スキップのモード
 		// 0=スキップなし, 1=クリック待ち記号まで, 2=改ページ待ち記号まで, 3=次の停止まで
 		// 4=早送り 5==特殊スキップ処理中
@@ -171,7 +184,7 @@ class KAGWindow extends Window
             return _skipMode;
         }
     }
-    
+
     var _autoMode = false; // 自動読みすすみモードかどうか
     property autoMode {
         setter(v) {
@@ -325,25 +338,74 @@ class KAGWindow extends Window
 	var isWaitPeriodEvent = false;	// ムービーのピリオドイベント待ち状態かどうか
 	var waitedPeriodEventStorageName = void;	// ピリオドイベント待ちをコールしたストレージ名
 
+    // ------------------------------------------------------ 自動ラベル処理
+
+    var autoLabelMode;   // 自動ラベルモード
+    var autoLabelCount;  // 自動ラベルカウンタ
+
+    // ------------------------------------------------------ 回想再生処理
+
+    var recollectionBookmark = 5000; 
+    var recollectionEndLabel; // 回想終了を示すラベル
+    var recollectionStorage;  // 回想終了時の遷移先ストレージ
+    var recollectionTarget;   // 回想終了時の遷移先ターゲット
+
+    /**
+     * 回想中かどうか
+     */
+    property isRecollection {
+        getter() {
+            recollectionEndLabel !== void;
+        }
+    }
+    
+    /**
+     * 回想モード実行を開始する
+     */
+    function startRecollection(elm) {
+        if (elm.no !== void) {
+            var num = (int)elm.no;
+            if (loadBookMark(recollectionBookmark + num)) {
+                recollectionEndLabel = "*kaisouEnd" + num;
+                recollectionStorage  = elm.doneStorage;
+                recollectionTarget   = elm.doneTarget;
+            } else {
+                process(elm.doneStorage, elm.doneTarget);
+            }
+        }
+    }
+
+    function endRecollection() {
+        recollectionEndLabel = void;
+        recollectionStorage = void;
+        recollectionTarget  = void;
+    }
+    
 	//------------------------------------------------------ ダイアログレイヤ処理 --
 
     var dialogStack = []; // ダイアログレイヤの処理
+
+    function openDialog(dialog) {
+        lockMessageLayerSelProcess();
+        // ダイアログが開いたらコンダクタを停止させる
+        if (dialogStack.count == 0) {
+            conductor.wait(%[ dialog : function{} incontextof this ]);
+        }
+        dialogStack.add(dialog);
+        dialog.visible = true;
+        return -2;
+    }
+        
     
     /**
      * ダイアログを開く
      * @param init ダイアログ初期化コード。辞書またはファイル
      */
-    function openDialog(elm) {
+    function openDialogParam(elm) {
         if (elm.name !== void && elm.storage !== void) {
-            var dialog = new DialogLayer(this, base, elm.name);
+            var dialog = new DialogLayer(this, fore.base, elm.name);
             dialog.load(elm.storage);
-            // ダイアログが開いたらコンダクタを停止させる
-            if (dialogStack.count == 0) {
-                conductor.wait(%[ dialog : function{} incontextof this ]);
-            }
-            dialogStack.add(dialog);
-            dialog.visible = true;
-            return -2;
+            return openDialog(dialog);
         } else {
             dm("ダイアログを開くことができません", elm,name, elm.storage);
         }
@@ -363,6 +425,7 @@ class KAGWindow extends Window
         }
         // 全てのダイアログが終了した
         if (dialogStack.count == 0) {
+            unlockMessageLayerSelProcess();
             trigger("dialog");
         }
     }
@@ -372,7 +435,7 @@ class KAGWindow extends Window
      */
     function closeAllDialog() {
         for (var i=dialogStack.count-1; i>=0; i--) {
-            dialogStack[u].visible = false;
+            dialogStack[i].visible = false;
             delete dialogStack[i];
         }
     }
@@ -651,12 +714,19 @@ class KAGWindow extends Window
 
 	//-------------------------------------------------- onCloseQuery/close --
 
+    function onCloseYes() {
+        shutdown();
+    }
+
 	function onCloseQuery()
 	{
 		saveSystemVariables();
-		if(!askOnClose) { super.onCloseQuery(true); return; }
-		super.onCloseQuery(askYesNo("終了しますか？"));
-	}
+        if(!askOnClose) { super.onCloseQuery(true); return; }
+        if (dialogStack.count == 0) {
+            askYesNo("終了しますか？", "確認", onCloseYes);
+        }
+        super.onCloseQuery(false);
+    }
 
 	function close()
 	{
@@ -1105,7 +1175,7 @@ class KAGWindow extends Window
 
 		// その他のメニューの使用可/不可
 		if(typeof this.skipToNextStopMenuItem != "undefined")
-            skipToNextStopMenuItem.enabled = state && !inSleep && nextSkipEnabled && (sflags.allskip || getCurrentRead());
+            skipToNextStopMenuItem.enabled = state && !inSleep && nextSkipEnabled && (allskip || getCurrentRead());
 
 		if(typeof this.rightClickMenuItem != "undefined")
             rightClickMenuItem.enabled = inStable && !historyLayer.visible;
@@ -1261,6 +1331,10 @@ class KAGWindow extends Window
 			}
 		}
 
+        allskip = scflags.allskip if scflags.allskip !== void;
+        afterauto = scflags.afterauto if scflags.afterauto !== void;
+        afterskip = scflags.afterskip if scflags.afterskip !== void;
+        
 		lastSaveDataNameGlobal = scflags.lastSaveDataNameGlobal if scflags.lastSaveDataNameGlobal !== void;
 
 		bookMarkNames = scflags.bookMarkNames if scflags.bookMarkNames !== void;
@@ -1332,6 +1406,12 @@ class KAGWindow extends Window
 
 		scflags.lastSaveDataNameGlobal = lastSaveDataNameGlobal;
 
+        // 全てスキップ
+        scflags.allskip = allskip;
+
+        scflags.afterauto = afterauto;
+        scflags.afterskip = afterskip;
+        
 		// ファイルに書き込む
 		if(!readOnlyMode)
 		{
@@ -1705,6 +1785,9 @@ class KAGWindow extends Window
 		// メッセージ履歴を隠す
 		hideHistory();
 
+        // 選択肢を隠す
+        hideSelect();
+        
 		// スキップのキャンセル
 		cancelSkip();
 
@@ -1788,7 +1871,19 @@ class KAGWindow extends Window
 		return historyOfStore.count;
 	}
 
-	function goBackHistory(ask = true)
+    function goBackYes() {
+        // user と core を pflags, pcflags に戻す
+        (Dictionary.assignStruct incontextof pflags)(historyOfStore[0].user);
+        (Dictionary.assignStruct incontextof pcflags)(historyOfStore[0].core);
+        
+        // 記録の先頭を削除する
+        historyOfStore.erase(0);
+        
+        // データを元に、栞をたどる動作をする
+        restoreFlags();
+    }
+
+    function goBackHistory(ask = true)
 	{
 		// 通過記録をたどり、戻る
 
@@ -1799,28 +1894,12 @@ class KAGWindow extends Window
 		if(ask)
 		{
 			var prompt = "「"+ historyOfStore[0].core.currentPageName + "」まで戻りますか?";
-			result = askYesNo(prompt);
+            askYesNo(prompt, "確認", goBackYes);
 		}
 		else
 		{
-			result = true;
+            goBackYes();
 		}
-
-		if(result)
-		{
-			// user と core を pflags, pcflags に戻す
-			(Dictionary.assignStruct incontextof pflags)(historyOfStore[0].user);
-			(Dictionary.assignStruct incontextof pcflags)(historyOfStore[0].core);
-
-			// 記録の先頭を削除する
-			historyOfStore.erase(0);
-
-			// データを元に、栞をたどる動作をする
-			restoreFlags();
-
-			return true;
-		}
-		return false;
 	}
 
 	//--------------------------------------------------------------- 栞管理 --
@@ -2203,9 +2282,9 @@ class KAGWindow extends Window
 		if(bookMarkDates[num] != "") // bookMarkDates が空文字の場合は栞は存在しない
 			prompt += "「" + bookMarkNames[num] + "」";
 		prompt += "に「"+ pcflags.currentPageName + "」をはさみますか?";
-		var result = askYesNo(prompt);
-		if(result) return saveBookMark(num);
-		return false;
+
+        askYesNo(prompt, "確認", saveBookMark, void, num);
+        return true;
 	}
 
 	function loadBookMarkWithAsk(num)
@@ -2217,9 +2296,9 @@ class KAGWindow extends Window
 		var prompt = "栞 ";
 		if(num < numBookMarks) prompt += (num + 1);
 		prompt += "「"+ bookMarkNames[num] + "」をたどりますか?";
-		var result = askYesNo(prompt);
-		if(result) return loadBookMark(num);
-		return false;
+
+        askYesNo(prompt, "確認", loadBookMark, num);
+        return true;
 	}
 
 	function saveBookMarkToFileWithAsk()
@@ -2388,8 +2467,7 @@ class KAGWindow extends Window
 	function goToStartWithAsk()
 	{
 		// 最初に戻る(確認あり)
-		var result = askYesNo("最初に戻ります。よろしいですか ?");
-		if(result) goToStart();
+        askYesNo("最初に戻ります。よろしいですか ?", "確認", goToStart);
 	}
 
 	function tempSave(num)
@@ -2596,7 +2674,7 @@ class KAGWindow extends Window
 	{
         // 選択肢レイヤを表示する
         selectLayer.parent   = fore.base; // 選択肢窓の親を再設定
-        selectLayer.absolute = 3000000; // この部分再考の必要あるかも
+        selectLayer.absolute = 1000000;
         selectLayer.start();
         selectShowing = true;
 		setMenuAccessibleAll();
@@ -2606,18 +2684,19 @@ class KAGWindow extends Window
     
     function hideSelect()
 	{
-		// メッセージ履歴レイヤを非表示にする
+        // 選択肢レイヤを非表示にする
         selectLayer.done();
         selectShowing = false;
         setMenuAccessibleAll();
         conductor.trigger('select'); // 'select' を送る
 	}
-
     
 	//-------------------------------------------------------------- process --
 
 	function process(file, label, countpage = true, immediate = false)
 	{
+        closeAllDialog();
+
         // 指定ファイル、指定ラベルから実行を開始する
 		if(!usingExtraConductor) incRecordLabel(countpage);
 		setUserSpeed();
@@ -2640,6 +2719,7 @@ class KAGWindow extends Window
 			isFirstProcess = false;
 		}
 
+        endRecollection();
 
 		dm("処理を開始します");
 		inSleep = false;
@@ -2649,7 +2729,9 @@ class KAGWindow extends Window
 
 	function processGo()
 	{
-		// コンダクタを現在位置から実行開始させる
+        endRecollection();
+
+        // コンダクタを現在位置から実行開始させる
 		dm("処理を開始します");
 		inSleep = false;
 		notifyRun();
@@ -2696,11 +2778,7 @@ class KAGWindow extends Window
         return true;
 	}
 
-    // ------------------------------------------------------ 自動ラベル処理
 
-    var autoLabelMode;   // 自動ラベルモード
-    var autoLabelCount;  // 自動ラベルカウンタ
-    
 	function onConductorLabel(label, page)
 	{
         // コンダクタがラベルを通過した
@@ -2717,7 +2795,7 @@ class KAGWindow extends Window
 		if(!usingExtraConductor)
 		{
             if (label !== "*autoLabelLabel") {
-                if(!getCurrentRead() && skipMode != 4)
+                if(!(allskip || getCurrentRead()) && skipMode != 4)
                     cancelSkip(); // 未読なのでスキップを停止
             }
             currentLabel = label;
@@ -2738,6 +2816,45 @@ class KAGWindow extends Window
 			if(recordHistoryOfStore == 1) // 1 : 保存可能なラベルごと
 				setToRecordHistory();
 		}
+
+        if (label.substring(0,12) == "*kaisouBegin") {
+
+            // 回想用の記録処理を行う
+            var num = (int)label.substring(12);
+            saveBookMark(recollectionBookmark + num, false);
+
+        } else if (label.substring(0,10) == "*kaisouEnd") {
+
+            // すぐ既読にする
+            if(!usingExtraConductor) incRecordLabel(true);
+
+            // 回想終了処理
+            if (recollectionEndLabel !== void && recollectionEndLabel == label) {
+                if (recollectionStorage != '' || recollectionTarget != '') {
+                    
+                    // 実行を登録アドレスに移す
+                    if (recollectionStorage != '') {
+                        conductor.loadScenario(recollectionStorage);
+                    }
+                    if (recollectionTarget != '') {
+                        conductor.goToLabel(recollectionTarget);
+                    }
+                    inSleep = false;
+                    notifyRun();
+                    if (conductor.status != conductor.mRun) conductor.run();
+                    
+                } else {
+                    
+                    // 実行停止
+                    stablePosibility = true;
+                    cancelSkip();
+                    isSleep = true;
+                    notifyStable();
+                }
+                
+                endRecollection();
+            }
+        }
 		return true;
 	}
 
@@ -2827,10 +2944,8 @@ class KAGWindow extends Window
 		setUserSpeed();
 		if(!usingExtraConductor)
 		{
-            if(!getCurrentRead() && skipMode != 4) {
-                dm("未読なのでスキップ!");
+            if(!(allskip || getCurrentRead()) && skipMode != 4)
                 cancelSkip(); // 未読なのでスキップを停止
-            }
 		}
     }
 
@@ -3286,7 +3401,7 @@ class KAGWindow extends Window
         layers = fore.layers;
 		for(var i = layers.count-1; i >= 0; i--) layers[i].setHiddenStateByUser(b);
 
-        selectLayer.setHiddenStateByUser(b);
+        //selectLayer.setHiddenStateByUser(b);
         
 		// プラグインを呼ぶ
 		forEachEventHook('onMessageHiddenStateChanged',
@@ -3962,12 +4077,13 @@ class KAGWindow extends Window
 
 	function getCurrentRead()
 	{
+        // 自動ラベルモードでは行単位で判定する必要がある 
         if (autoLabelMode) {
             if (currentRecordName != "") {
                 var label = "auto" + currentRecordName;
-                dm("ラベル:" + label);
-                dm("フラグ:" + sflags[label]);
-                dm("カウント:" + autoLabelCount);
+                //dm("ラベル:" + label);
+                //dm("フラグ:" + sflags[label]);
+                //dm("カウント:" + autoLabelCount);
                 return sflags[label] !== void && sflags[label] >= autoLabelCount;
             }
         }
@@ -4011,7 +4127,7 @@ class KAGWindow extends Window
 	function skipToStop()
 	{
         // すべてスキップまたは既読の場合のみ
-        if (sflags.allskip || getCurrentRead()) {
+        if (allskip || getCurrentRead()) {
             // 次の停止までスキップ
             onPrimaryClick(); // クリックの動作をエミュレートする
             skipMode = 3;
@@ -4668,18 +4784,11 @@ class KAGWindow extends Window
 		if(skipMode) return -4; // いったんイベントを処理
 		if(autoMode)
 		{
-			// 自動読みすすみの場合
             var wait = calcAutoModePageWait();
-			conductor.waitWithTimeOut(%[ // タイムアウト付きウェイト
-				click : function
-				{
-                    cancelAutoMode();
-				} incontextof this,
-				timeout : function
-				{
-				} incontextof this
-				], wait <= 0 ? 1 : wait);
-			return -3;
+            if (wait <= 0) {
+                wait = 1;
+            }
+            return wait;
         }
 
 		current.showPageBreakGlyph(pageBreak);
@@ -5172,6 +5281,9 @@ class KAGWindow extends Window
         }
     }
 
+    /**
+     * 自動ラベルモードの既読処理
+     */
     function incAutoLabel() {
         if (autoLabelMode) {
             if (currentRecordName != "") {
@@ -5190,6 +5302,7 @@ class KAGWindow extends Window
         if (autoLabelMode) {
             incAutoLabel();
             autoLabelCount++;
+            // 自動ラベル処理をコンダクタにわりこませる
             conductor.pendings.insert(0, %[tagname: "autolabel"]);
         }
     }
@@ -6561,7 +6674,19 @@ class KAGWindow extends Window
 
     select : function(elm)
     {
-        cancelSkip();
+        tagHandlers.er();
+        showMessageLayerByUser();      // メッセージ窓は表示状態に
+        if (recordHistoryOfStore == 2) // 2 : 選択肢 ( @s タグ ) ごと
+            setToRecordHistory();
+
+        if (skipMode == 1 || skipMode == 2) cancelSkip();
+        if (skipMode == 4 && !skipKeyPressing()) cancelSkip();
+        if (!afterauto) cancelAutoMode();
+        if (!afterskip) cancelSkip();
+
+        stablePosibility = true;
+        notifyStable();
+        
         return showSelect();
 	} incontextof this,
 
@@ -6575,7 +6700,7 @@ class KAGWindow extends Window
 
 	dialog : function(elm)
 	{
-        return openDialog(elm);
+        return openDialogParam(elm);
 	} incontextof this,
 
 
@@ -6603,10 +6728,14 @@ class KAGWindow extends Window
         return 0;
 	} incontextof this,
 
-	//----------------------------------------------- タグハンドラ群の終わり --
+	//----------------------------------------------- 自動ラベル処理 --
 
     autolabel : function(elm)
 	{
+        // 自動ラベル処理用特殊タグ
+        // 通常の KAG からよぶことはない。pending 処理をつかって
+        // 行頭に擬似的に挿入される
+
         // 今のスタックをつむ
         conductor.callLabel("");
         // 自動ラベル用のシナリオの強制呼び出し
@@ -6615,6 +6744,13 @@ class KAGWindow extends Window
         return 0;
 	} incontextof this,
 
+	//----------------------------------------------- 回想モード --
+
+    recollection : function(elm)
+	{
+        startRecollection(elm);
+        return 0;
+	} incontextof this,
                   
 	//----------------------------------------------- タグハンドラ群の終わり --
 
