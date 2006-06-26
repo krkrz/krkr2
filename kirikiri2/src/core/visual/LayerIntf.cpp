@@ -6682,12 +6682,35 @@ void tTVPLayerManager::PrimaryMouseMove(tjs_int x, tjs_int y, tjs_uint32 flags)
 	if(LastMouseMoveSent != l)
 	{
 		if(LastMouseMoveSent) LastMouseMoveSent->FireMouseLeave();
+
+		// recheck l because the layer may become invalid during
+		// FireMouseLeave call.
+		if(CaptureOwner)
+			l = CaptureOwner;
+		else
+			l = GetMostFrontChildAt(x, y);
+
 		if(l)
 		{
 			InNotifyingHintOrCursorChange = true;
 			try
 			{
-				l->FireMouseEnter();
+				tTJSNI_BaseLayer *ll;
+				do
+				{
+					l->FireMouseEnter();
+
+					// recheck l because the layer may become invalid during
+					// FireMouseEnter call.
+					if(CaptureOwner)
+						ll = CaptureOwner;
+					else
+						ll = GetMostFrontChildAt(x, y);
+
+					if(l == ll) break;
+					l = ll;
+				} while(true);
+
 				l->SetCurrentCursorToWindow();
 				l->SetCurrentHintToWindow();
 			}
