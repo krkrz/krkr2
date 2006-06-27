@@ -14,6 +14,7 @@
 #include "MainFormUnit.h"
 #include "ScriptMgnIntf.h"
 #include "SysInitIntf.h"
+#include "LayerIntf.h" // for TVPToActualColor
 #include <clipbrd.hpp>
 
 //---------------------------------------------------------------------------
@@ -240,7 +241,13 @@ ttstr __fastcall TTVPPadForm::GetLines() const
 //---------------------------------------------------------------------------
 void __fastcall TTVPPadForm::SetEditColor(tjs_uint32 color)
 {
-	Memo->Color = (TColor)ColorToRGB((TColor)color);
+	color = TVPToActualColor(color);
+
+	// exchange byte order of color, since VCL's color representation differs
+	// from TVP expects.
+	color = ((color & 0xff0000) >> 16) + (color & 0x00ff00) + ((color & 0x0000ff) << 16);
+
+	Memo->Color = color;
 }
 //---------------------------------------------------------------------------
 tjs_uint32 TTVPPadForm::GetEditColor() const
