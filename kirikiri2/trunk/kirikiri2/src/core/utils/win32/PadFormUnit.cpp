@@ -252,7 +252,8 @@ void __fastcall TTVPPadForm::SetEditColor(tjs_uint32 color)
 //---------------------------------------------------------------------------
 tjs_uint32 TTVPPadForm::GetEditColor() const
 {
-	return (tjs_uint32)Memo->Color;
+	tjs_uint32 color = (tjs_uint32)Memo->Color;
+	return ((color & 0xff0000) >> 16) + (color & 0x00ff00) + ((color & 0x0000ff) << 16);
 }
 //---------------------------------------------------------------------------
 void TTVPPadForm::SetFileName(const ttstr &name)
