@@ -37,7 +37,7 @@ class LinkButtonLayer extends ButtonLayer
 
 	function onMouseUp(x, y, button, shift)
 	{
-		if(enabled && button == mbLeft) parent.onButtonClick(linkNum);
+		if(enabled && button == mbLeft && !parent.selProcessLock) parent.onButtonClick(linkNum);
 		if(this isvalid) super.onMouseUp(...);
 	}
 
