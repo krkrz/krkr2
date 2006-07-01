@@ -27,6 +27,7 @@ class KAGSoundBuffer
 	{
 		// fade オーバーライド
 		inFading = true;
+		inFadeAndStop = false;
 		sbclass.fade(...);
 	}
 
