@@ -15,13 +15,16 @@ class LinkButtonLayer extends ButtonLayer
 	var linkNum; // リンク番号
 	var onenter; // マウスが入ってきたときに実行するもの
 	var onleave; // マウスが出ていったときに実行するもの
-	var _eventTransparent = false;
 
+    var _eventTransparent;
+    var _focusable;
+    
 	function LinkButtonLayer(win, par)
 	{
 		// コンストラクタ
-		super.ButtonLayer(...);
+        super.ButtonLayer(...);
         focusable = false; // フォーカスは受け取らない
+        eventTransparent = false;
         hint = "";
 	}
 
@@ -32,19 +35,19 @@ class LinkButtonLayer extends ButtonLayer
 
 	function onClick()
 	{
-		super.onClick(...);
+        super.onClick(...);
 	}
 
 	function onMouseUp(x, y, button, shift)
 	{
-        if(enabled && button == mbLeft) parent.onButtonClick(linkNum);
+        if(enabled && button == mbLeft && !parent.selProcessLock) parent.onButtonClick(linkNum);
         if(this isvalid) super.onMouseUp(...);
 	}
 
 	function onMouseDown(x, y, button)
 	{
 		super.onMouseDown(...);
-        if(button == mbRight) {
+        if (button == mbRight) {
             window.onPrimaryRightClick();
         }
 	}
@@ -69,9 +72,27 @@ class LinkButtonLayer extends ButtonLayer
 		onenter = src.onenter;
 		onleave = src.onleave;
 		hint = src.hint;
-		eventTransparent = src.eventTransparent;
+        eventTransparent = src.eventTransparent;
 	}
 
+    property enabled {
+        // 有効かどうか
+        // 無効な場合はイベントを透過させる
+        setter(x) {
+            super.enabled = x;
+            if (x) {
+                hitType = _eventTransparent ? htProvince : htMask; 
+                super.focusable = _focusable;
+            } else {
+                hitType = htProvince;
+                super.focusable = false;
+            }
+        }
+        getter() {
+            return super.enabled;
+        }
+    }
+    
 	property eventTransparent
 	{
 		// イベントを透過するかどうか
@@ -91,6 +112,22 @@ class LinkButtonLayer extends ButtonLayer
 			return _eventTransparent;
 		}
 	}
+
+	property focusable
+	{
+		// イベントを透過するかどうか
+		setter(x)
+		{
+            super.focusable = x;
+            _focusable = x;
+		}
+		getter()
+		{
+            return super.focusable;
+		}
+	}
+
+
 }
 
 class LinkCheckBoxLayer extends CheckBoxLayer
@@ -340,11 +377,6 @@ class SystemButtonLayer extends ButtonLayer
 		super.finalize(...);
 	}
 
-	function onClick()
-	{
-		super.onClick(...);
-	}
-
 	function onMouseEnter()
 	{
         if(onenter !== void) Scripts.eval(onenter);
@@ -379,6 +411,7 @@ class SystemButtonLayer extends ButtonLayer
         onenter = src.onenter;
         onleave = src.onleave;
         noStable = src.noStable;
+        enabled = src.enabled;
     }
 }
 
@@ -545,6 +578,8 @@ class MessageLayer extends KAGLayer
 	/*C*/var lastMouseX;
 	/*C*/var lastMouseY; // リンクを表示したときの最後のマウスカーソルの位置
 
+    /*C*/var eventTransparent = true; // イベントの透過
+    
 	var ml, mt, mw, mh; // 初期レイヤサイズ(config用)
 
 	var invisibleByUser = false; // ユーザにより一時的に不可視
@@ -686,10 +721,12 @@ class MessageLayer extends KAGLayer
         nameLayer = new global.KAGLayer(window, this);
         nameLayer.type = layerType;
         nameLayer.name = "名前表示用レイヤ";
-
+        nameLayer.hitType = htProvince;
+        
         faceLayer = new global.KAGLayer(window, this);
         faceLayer.type = ltAlpha;
         faceLayer.name = "表情表示用レイヤ";
+        faceLayer.hitType = htProvince;
     }
 
     function clearSystemButtons() {
@@ -800,7 +837,8 @@ class MessageLayer extends KAGLayer
 		vertical = +elm.vertical if elm.vertical !== void;
 		draggable = +elm.draggable if elm.draggable !== void;
 		visible = +elm.visible if elm.visible !== void;
-
+        eventTransparent = +elm.transparent if elm.transparent !== void;
+        
         // 名前窓
         nameLeft  = +elm.nameleft   if elm.nameleft   !== void;
         nameTop   = +elm.nametop    if elm.nametop    !== void;
@@ -2429,8 +2467,10 @@ class MessageLayer extends KAGLayer
 
 	function internalHitTest(x, y)
 	{
-		// onHitTest イベントハンドラ(内部関数)
+        // onHitTest イベントハンドラ(内部関数)
 
+        if (!eventTransparent) return true;
+        
 		if(isDragPos(x, y))
 		{
 			cursor = window.cursorDraggable;
@@ -2456,7 +2496,7 @@ class MessageLayer extends KAGLayer
 		n = findLink(x, y);
         if(n == -1)
 		{
-			return false; // とりあえず透過
+            return false; // とりあえず透過
 		}
 		else
 		{
@@ -2503,9 +2543,14 @@ class MessageLayer extends KAGLayer
 
 	function onMouseDown(x, y, button)
 	{
-		lastMouseDownX = x;
+        lastMouseDownX = x;
 		lastMouseDownY = y;
 
+        // 右クリックは素通しする
+        if (button == mbRight) {
+            window.onPrimaryRightClick();
+        }
+        
 		internalOnMouseDown(x - imageLeft, y - imageTop, button);
 
 		super.onMouseDown(...);
@@ -2570,7 +2615,7 @@ class MessageLayer extends KAGLayer
 
 	function onMouseMove(x, y)
 	{
-		// onMouseMove イベントハンドラ
+        // onMouseMove イベントハンドラ
 		super.onMouseMove(...);
 
 		internalMouseMove(x - imageLeft, y - imageTop);
@@ -2942,6 +2987,8 @@ class MessageLayer extends KAGLayer
 
 		focusable = src.focusable;
 
+        eventTransparent = src.eventTransparent;
+        
 		// links のコピー
 		{
 			invalidateLinkObjects(); // 一応オブジェクトはすべて無効化
@@ -3188,7 +3235,8 @@ class MessageLayer extends KAGLayer
 		dic.glyphFixedPosition = glyphFixedPosition;
 		dic.glyphFixedLeft = glyphFixedLeft;
 		dic.glyphFixedTop = glyphFixedTop;
-		dic.draggable = draggable;
+        dic.draggable = draggable;
+        dic.eventTransparent = eventTransparent;
 		// [end_store_vars]
 		return dic;
 	}
@@ -3236,7 +3284,8 @@ class MessageLayer extends KAGLayer
 		glyphFixedLeft = dic.glyphFixedLeft if dic.glyphFixedLeft !== void;
 		glyphFixedTop = dic.glyphFixedTop if dic.glyphFixedTop !== void;
 		draggable = dic.draggable if dic.draggable !== void;
-		// [end_restore_vars]
+        eventTransparent = dic.eventTransparent if dic.eventTransparent !== void;
+        // [end_restore_vars]
 		super.restore(dic);
 	}
 
@@ -3295,17 +3344,6 @@ class MessageLayer extends KAGLayer
 			visible = visibleBeforeUserInvisible;
 		}
 	}
-
-    /**
-     * 安定動作状態が変更されたときに呼び出される
-     */
-    function onStableStateChanged(stable) {
-        foreach(buttons, function(name,value,buttons,stable) {
-            if (!value.noStable) {
-                value.enabled = stable;
-            }
-        }, stable);
-    }
 }
 
 

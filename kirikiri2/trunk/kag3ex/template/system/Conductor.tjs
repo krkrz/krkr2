@@ -171,20 +171,28 @@ class BaseConductor extends KAGParser
 		}
 		catch(e)
 		{
-//			Debug.logAsError();
+            //			Debug.logAsError();
 			timer.enabled = false;
 			timerEnabled =false;
 			onStop();
 			inProcessing = false;
-			var msg = "エラーが発生しました\n"
-				"ファイル : " + curStorage + "   行 : " + (curLine+1) + "\n"
-				"タグ : " + (obj === void ? "不明" : obj.tagname)
-				+ " ( ← エラーの発生した前後のタグを示している場合もあります )\n"
-				+ e.message;
-			if((typeof e.trace) != "undefined") dm("trace : " + e.trace);
-			dm(msg);
-			throw new ConductorException(msg);
-//			System.inform(msg, "エラー");
+
+            if (e.message.substring(0,17) == "シナリオファイルに変更があったため") {
+
+                System.inform("シナリオファイルの変更により、このセーブデータは不整合になりました。\r\n申し訳ありませんが、タイトルに戻ります。");
+                kag.goToStart();
+
+            } else {
+                var msg = "エラーが発生しました\n"
+                    "ファイル : " + curStorage + "   行 : " + (curLine+1) + "\n"
+                        "タグ : " + (obj === void ? "不明" : obj.tagname)
+                            + " ( ← エラーの発生した前後のタグを示している場合もあります )\n"
+                                + e.message;
+                if((typeof e.trace) != "undefined") dm("trace : " + e.trace);
+                dm(msg);
+                throw new ConductorException(msg);
+                //			System.inform(msg, "エラー");
+            }
 		}
 	}
 
@@ -409,7 +417,7 @@ class Conductor extends BaseConductor
 
 	function trigger(name)
 	{
-		// waitUntil 内にシグナル名 name が存在すれば、実行再開、
+        // waitUntil 内にシグナル名 name が存在すれば、実行再開、
 		// 同時に waitUntil に登録されたメソッド(リスタートハンドラ)を呼ぶ
 		// シグナル名に _arg がついたものが waitUntil 内にあれば、
 		// それを引数としてハンドラに渡す

@@ -138,6 +138,7 @@ class AffineLayer extends KAGLayer {
                     _ay = 0;
                     super.assignImages(_image);
                     super.setSize(_image.width, _image.height);
+                    super.setImagePos(_image.imageLeft, _image.imageTop);
                 } else {
                     //Debug.message("do affine:" + _rotate + " : " + _zoomx + " : " + _zoomy);
                     // ‰ñ“]Šp‚ÆŠg‘å—¦‚©‚çAffine’lŒvŽZ
@@ -204,7 +205,7 @@ class AffineLayer extends KAGLayer {
                         super.setSize(w, h);
                         var tx = x0 - x[0];
                         var ty = y0 - y[0];
-                        super.affineCopy(_image,0,0,_image.width,_image.height,true,dxh,dyh,dxv,dyv,tx,ty,stCubic|stRefNoClip,true);
+                        super.affineCopy(_image,-_image.imageLeft,-_image.imageTop,_image.width,_image.height,true,dxh,dyh,dxv,dyv,tx,ty,stCubic|stRefNoClip,true);
                         //super.affineCopy(_image,0,0,_image.width,_image.height,true,dxh,dyh,dxv,dyv,tx,ty,stNearest,true);
                     }
                 }
@@ -480,7 +481,7 @@ class AffineLayer extends KAGLayer {
      */
     function setImagePos(l, t, w, h) {
         _image.setImagePos(...);
-        calcOffset();
+        calcAffine();
     }
 
     /**
@@ -490,6 +491,7 @@ class AffineLayer extends KAGLayer {
      */
     function setImageSize(w, h) {
         _image.setImageSize(...);
+        calcAffine();
     }
     
     /**
@@ -507,6 +509,7 @@ class AffineLayer extends KAGLayer {
      */
     function setSize(w, h) {
         _image.setSize(w, h);
+        calcAffine();
     }
 
     /**
@@ -514,6 +517,7 @@ class AffineLayer extends KAGLayer {
      */
     function setSizeToImageSize() {
         _image.setSizeToImageSize();
+        calcAffine();
     }
 
     function stretchBlend(dleft, dtop, dwidth, dheight, src, sleft, stop, swidth, sheight, opa=255, type=stNearest) {
@@ -554,7 +558,7 @@ class AffineLayer extends KAGLayer {
     property width {
         setter(v) {
             _image.width = v;
-            calcOffset();
+            calcAffine();
         }
         getter() {
             return _image.width;
@@ -564,7 +568,7 @@ class AffineLayer extends KAGLayer {
     property height {
         setter(v) {
             _image.height = v;
-            calcOffset();
+            calcAffine();
         }
         getter() {
             return _image.height;
@@ -574,7 +578,7 @@ class AffineLayer extends KAGLayer {
     property imageLeft {
         setter(v) {
             _image.imageLeft = v;
-            calcOffset();
+            calcAffine();
         }
         getter() {
             return _image.imageLeft;
@@ -584,7 +588,7 @@ class AffineLayer extends KAGLayer {
     property imageTop {
         setter(v) {
             _image.imageTop = v;
-            calcOffset();
+            calcAffine();
         }
         getter() {
             return _image.imageTop;
@@ -594,7 +598,7 @@ class AffineLayer extends KAGLayer {
     property imageWidth {
         setter(v) {
             _image.imageWidth = v;
-            calcOffset();
+            calcAffine();
         }
         getter() {
             return _image.imageWidth;
@@ -604,7 +608,7 @@ class AffineLayer extends KAGLayer {
     property imageHeight {
         setter(v) {
             _image.imageHeight = v;
-            calcOffset();
+            calcAffine();
         }
         getter() {
             return _image.imageHeight;

@@ -633,7 +633,7 @@ class HistoryLayer extends Layer
 
 		updateButtonState();
 		visible = true;
-		setMode();
+//		setMode();
 		focus();
 		lastWheelTick = 0;
 

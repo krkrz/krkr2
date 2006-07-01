@@ -6,6 +6,8 @@
  */
 class SelectButtonLayer extends ButtonLayer
 {
+    var owner; // セレクトレイヤ本体
+
     var onclick; // クリック時に実行するもの
     var onenter; // マウスが入ってきたときに実行するもの
     var onleave; // マウスが出ていったときに実行するもの
@@ -16,12 +18,12 @@ class SelectButtonLayer extends ButtonLayer
      * 文字描画処理に細工
      */
     function drawText(x, y, text, color, opa=255) {
-        if (parent.fontEdge) {
+        if (owner.fontEdge) {
             super.drawText(x, y, text, color, opa, true,
-                           parent.fontEdgeEmphasis, parent.fontEdgeColor, parent.fontEdgeExtent, 0, 0);
-        } else if(parent.fontShadow) {
+                           owner.fontEdgeEmphasis, owner.fontEdgeColor, owner.fontEdgeExtent, 0, 0);
+        } else if(owner.fontShadow) {
             super.drawText(x, y, text, color, opa, true,
-                           255, parent.fontShadowColor, 0, 2, 2);
+                           255, owner.fontShadowColor, 0, 2, 2);
         } else {
             super.drawText(x, y, text, color, opa, true);
         }
@@ -35,44 +37,46 @@ class SelectButtonLayer extends ButtonLayer
         var tw = font.getTextWidth(message);
         var th = font.getTextHeight(message);
         var y = (height-th)>>1;
-        dm("サイズ:" + width + " ," + height);
+        //dm("サイズ:" + width + " ," + height);
         var dx = (width-tw)>>1;
         for (var i=0;i<cnt;i++) {
             var x = i*width + dx;
-            dm("メッセージ:" + x);
-            drawText(x, y, message, parent.fontColor, 255);
+            //dm("メッセージ:" + x);
+            drawText(x, y, message, owner.fontColor, 255);
         }
     }
     
     /**
      * コンストラクタ
-     * @param window  ウインドウを指定
-     * @param parent  親レイヤを指定
+     * @param owner   選択レイヤ
      * @param message 表示するメッセージを指定
      */
-    function SelectButtonLayer(window, parent, message) {
+    function SelectButtonLayer(owner, message) {
 
-        super.ButtonLayer(window, parent);
+        this.owner = owner;
+        
+        // レイヤ初期化
+        super.ButtonLayer(owner.window, owner.window.primaryLayer);
 
         // 文字初期化
-        font.face   = parent.fontFace;
-        font.bold   = parent.fontBold;
-        font.italic = parent.fontItalic;
-        font.height = parent.fontSize;
+        font.face   = owner.fontFace;
+        font.bold   = owner.fontBold;
+        font.italic = owner.fontItalic;
+        font.height = owner.fontSize;
 
-        if (parent.normalImage !== void) {
+        if (owner.normalImage !== void) {
             // 画像がある場合はロード
-            loadButtons(parent.normalImage, parent.overImage, parent.onImage, parent.focusImage);
+            loadButtons(owner.normalImage, owner.overImage, owner.onImage, owner.focusImage);
             drawMessage(message);
-        } else if (parent.graphic !== void) {
+        } else if (owner.graphic !== void) {
             // 画像がある場合はロード
-            loadImages(parent.graphic, parent.graphickey);
+            loadImages(owner.graphic, owner.graphickey);
             drawMessage(message);
         } else {
             // ない場合は組み込みボタンとして処理
-            width        = parent.selectWidth;
-            height       = parent.selectHeight;
-            captionColor = parent.selectColor;
+            width        = owner.selectWidth;
+            height       = owner.selectHeight;
+            captionColor = owner.selectColor;
             caption      = message;
         }
 
@@ -99,18 +103,33 @@ class SelectButtonLayer extends ButtonLayer
             if (onclick !== void) {
                 Scripts.eval(onclick);
             }
-            if (this isvalid && parent isvalid) parent.onButtonClick(this);
+            if (this isvalid && parent isvalid) owner.onButtonClick(this);
         }
         if (this isvalid) super.onMouseUp(...);
 	}
 }
 
 /**
+ * 選択ボタン取得用
+ */
+function getSelectButtonLayer(owner, name)
+{
+    return new SelectButtonLayer(owner, name);
+}
+
+/**
  * 選択肢処理用ロジック
  * KAG用に特化しています
  */
-class SelectLayer extends KAGLayer {
+class SelectLayer {
 
+    var window;
+    
+    var left;
+    var top;
+    var width;
+    var height;
+    
     // 選択肢項目の属性
     var selectWidth  = 400;
     var selectHeight = 50;
@@ -143,8 +162,13 @@ class SelectLayer extends KAGLayer {
     var clickse;
     
 	function setOptions(elm) {
-        super.setOptions(elm);
 
+        // 選択肢領域指定
+        left   = +elm.left if elm.left !== void;
+        top    = +elm.top  if elm.top  !== void;
+        width  = +elm.width if elm.width !== void;
+        height = +elm.height if elm.height !== void;
+        
         // 画像指定
         normalImage = elm.normal if elm.normal !== void;
         overImage   = elm.over   if elm.over   !== void;
@@ -154,8 +178,8 @@ class SelectLayer extends KAGLayer {
         graphickey  = elm.graphickey if elm.graphickey !== void;
 
         // サイズ指定
-        selectWidth  = elm.selectWidth  if elm.selectWidth  !== void;
-        selectHeight = elm.selectHeight if elm.selectHeight !== void;
+        selectWidth  = +elm.selectWidth  if elm.selectWidth  !== void;
+        selectHeight = +elm.selectHeight if elm.selectHeight !== void;
 
         // フォント指定
         fontSize   = elm.size if elm.size !== void;
@@ -171,12 +195,6 @@ class SelectLayer extends KAGLayer {
         enterse = elm.enterse if elm.enterse !== void;
         leavese = elm.leavese if elm.leavese !== void;
         clickse = elm.clickse if elm.clickse !== void;
-
-        // 選択肢領域指定
-        left   = elm.left if elm.left !== void;
-        top    = elm.top  if elm.top  !== void;
-        width  = elm.width if elm.width !== void;
-        height = elm.height if elm.height !== void;
     }
 
     // 登録済み選択肢
@@ -186,26 +204,38 @@ class SelectLayer extends KAGLayer {
      * コンストラクタ
      */
     function SelectLayer(window) {
-        super.Layer(window, window.primaryLayer);
-        setImageSize(parent.width, parent.height);
-        setSizeToImageSize();
-        hitType      = htMask;
-        hitThreshold = 1;
-        focusable = true;
-        cursor = window.cursorDefault;
+        this.window = window;
+        left   = 0;
+        top    = 0;
+        width  = window.primaryLayer.width;
+        height = window.primaryLayer.height;
     }
 
     function finalize() {
         clear();
-        super.finalize(...);
     }
+
+    var _visible = false;
+    property visible {
+        setter(v) {
+            for (var i=0; i<selects.count;i++) {
+                var select = selects[i];
+                select.visible = v;
+            }
+            _visible = v;
+        }
+        getter() {
+            return _visible;
+        }
+    }
+
     
     /**
      * ボタン消去
      */
     function clear() {
-        for (var i=selects.count-1;i>=0;i--) {
-            dm("消去" + i);
+        visible = false;
+        for (var i=0; i<selects.count;i++) {
             var select = selects[i];
             invalidate select;
         }
@@ -217,15 +247,19 @@ class SelectLayer extends KAGLayer {
      */
     function addSelect(elm) {
 
-        var enterse  = elm.enterse !== void ? elm.enterse : enterse;
-        var leavese  = elm.leavese !== void ? elm.leavese : leavese;
-        var clickse  = elm.clickse !== void ? elm.clickse : clickse;
-
-        var select = new SelectButtonLayer(window, this, elm.text);
+        var enterse    = elm.enterse !== void ? elm.enterse : enterse;
+        var leavese    = elm.leavese !== void ? elm.leavese : leavese;
+        var clickse    = elm.clickse !== void ? elm.clickse : clickse;
+        var entersebuf = elm.entersebuf !== void ? elm.entersebuf : 1;
+        var leavesebuf = elm.leavesebuf !== void ? elm.leavesebuf : 1;
+        var clicksebuf = elm.clicksebuf !== void ? elm.clicksebuf : 2;
         
-        select.onenter = MessageLayer.createSoundExpression(elm.onenter, enterse, elm.entersebuf);
-        select.onleave = MessageLayer.createSoundExpression(elm.onleave, leavese, elm.leavesebuf);
-        select.onclick = MessageLayer.createSoundExpression(elm.exp,     clickse, elm.clicksebuf),
+        var select = getSelectButtonLayer(this, elm.text);
+        select.name = "選択肢ボタン" + elm.text;
+        
+        select.onenter = MessageLayer.createSoundExpression(elm.onenter, enterse, entersebuf);
+        select.onleave = MessageLayer.createSoundExpression(elm.onleave, leavese, leavesebuf);
+        select.onclick = MessageLayer.createSoundExpression(elm.exp,     clickse, clicksebuf),
         select.storage = elm.storage;
         select.target  = elm.target;
         
@@ -235,17 +269,15 @@ class SelectLayer extends KAGLayer {
     /**
      * 選択処理開始
      */
-    function start() {
+    function start(parent, absolute) {
         var h = height / (selects.count + 1);
         var y = h;
         for (var i=0; i<selects.count;i++) {
             var select = selects[i];
-            select.setPos(width/2 - select.width / 2, y - select.height / 2);
+            select.parent   = parent;
+            select.absolute = absolute + 4;
+            select.setPos(left + width/2 - select.width / 2, top  + y - select.height / 2);
             y += h;
-        }
-        for (var i=0;i<selects.count; i++) {
-            var select = selects[i];
-            select.visible = true;
         }
         visible = true;
     }
@@ -254,7 +286,6 @@ class SelectLayer extends KAGLayer {
      * 完了
      */
     function done() {
-        visible = false;
         clear();
     }
     
@@ -263,27 +294,24 @@ class SelectLayer extends KAGLayer {
      */
     function onButtonClick(select) {
         if (select !== void) {
-            // 実行
             Scripts.eval(select.onclick) if select.onclick != '';
             if (select isvalid) {
                 if (select.storage != '' || select.target != '')	{
-                    window.lockMessageLayerSelProcess(); // 選択をロック
-                    if (window.getKeyState(VK_RETURN) || window.getKeyState(VK_SPACE) || window.getKeyState(VK_CONTROL))
-                        window.hideMouseCursor();
-                    // キーボードによる操作の場合はマウスカーソルを隠す
                     window.process(select.storage, select.target);
+                } else {
+                    window.conductor.run(false);
                 }
-                window.hideSelect();
+                window.doneSelect();
             }
         }
     }
 
-    var invisibleByUser = false; // ユーザにより一時的に不可視
+	var invisibleByUser = false; // ユーザにより一時的に不可視
 	var visibleBeforeUserInvisible  = false;
 
 	function setHiddenStateByUser(b)
 	{
-		// ユーザが右クリックなどでメッセージレイヤを一時的に隠すときに
+        // ユーザが右クリックなどでメッセージレイヤを一時的に隠すときに
 		// 呼ばれる
 		if(b)
 		{
@@ -297,6 +325,4 @@ class SelectLayer extends KAGLayer {
 			visible = visibleBeforeUserInvisible;
 		}
 	}
-
-
 }

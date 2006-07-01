@@ -446,7 +446,7 @@ class SliderLayer extends KAGLayer
 		{
             if(x < Slider_min) x = Slider_min;
             if(x > Slider_max) x = Slider_max;
-            dm("slider position:" + x);
+            //dm("slider position:" + x);
             Slider_position = x;
             update();
             onChange(Slider_position, Slider_dragging);

@@ -27,8 +27,9 @@ class DialogButtonLayer extends ButtonLayer
 
 	function onMouseUp(x, y, button, shift)
 	{
-        if(enabled && button == mbLeft) parent.onButtonClick(linkNum);
-        if(this isvalid) super.onMouseUp(...);
+        if (enabled && button == mbLeft) parent.onButtonClick(linkNum);
+        else if (button == mbRight) parent.close();
+        if (this isvalid) super.onMouseUp(...);
 	}
 
 	function onMouseEnter()
@@ -245,9 +246,8 @@ class DialogSliderLayer extends SliderLayer
 
 class DialogLayer extends KAGLayer
 {
-    var layerType = ltAddAlpha; // レイヤタイプ
+    var layerType = ltAlpha; // レイヤタイプ
 
-    
     var frameGraphic = ""; // フレーム画像ファイル名
 	var frameKey = clNone; // フレーム画像キー
 	var frameColor = 0x000000; // フレームの色
@@ -270,23 +270,20 @@ class DialogLayer extends KAGLayer
     var xpos;
     var ypos;
 
-    var xoff = 0;
-    var yoff = 0;
-
     var vertical = false;
     
     /**
      * コンストラクタ
      */
-	function DialogLayer(owner, parent, name) {
-
+    function DialogLayer(window, parent, name) {
+        
         // DialogLayer コンストラクタ
         // owner : オーナー KAG Window
 		// parent : 親レイヤ
         // name 名前
-		// left, top, width, height : 初期位置
+        // left, top, width, height : 初期位置
 		// do_config : コンフィギュレーションを行うか
-		super.KAGLayer(...);
+        super.KAGLayer(...);
 		this.name = name;
 
         // レイヤタイプの設定
@@ -297,25 +294,28 @@ class DialogLayer extends KAGLayer
         hitThreshold = 0; // マウスメッセージは全域不透過
         
         // サイズはデフォルトで決定する
-        setPos(0, 0);
-        setImageSize(parent.width, parent.height);
-        setSize(parent.width, parent.height);
 		imageModified = true;
     }
-    
-	function finalize()
+
+    function finalize()
 	{
 		invalidateLinkObjects();
 		super.finalize();
 	}
 
     /**
+     * 開く処理
+     */
+    function open() {
+        window.openDialog(this);
+    }
+    
+    /**
      * 閉じる処理
      */
     function close() {
-        if (this isvalid && window != null) {
-            window.closeDialog(this);
-        }
+        visible = false;
+        window.closeDialog(this);
     }
 
     /**
@@ -336,24 +336,11 @@ class DialogLayer extends KAGLayer
                 } else {
                     fillRect(0, 0, imageWidth, imageHeight, (frameOpacity << 24) + frameColor);
 				}
-                xoff = 0;
-                ypff = 0;
 
             } else {
                 // センタリング表示
-                var layer = new global.Layer(window, this);
-                layer.loadImages(frameGraphic, frameKey);
-                layer.setSizeToImageSize();
-
-                // 消去
-                fillRect(0, 0, imageWidth, imageHeight, 0);
-
-                // 画像コピー
-                xoff = ((width  - layer.width)>>1)  + left;
-                yoff = ((height - layer.height)>>1) + top;
-                operateRect(xoff, yoff, layer, 0, 0, layer.width, layer.height);
-
-                invalidate layer;
+                loadImages(frameGraphic, frameKey);
+                setSizeToImageSize();
 			}
             face = dfProvince;
             colorRect(0, 0, imageWidth, imageHeight, 0); // 領域もクリア
@@ -369,6 +356,9 @@ class DialogLayer extends KAGLayer
 
 		lastLink = -1;
 		keyLink = -1;
+
+        // 場所の初期化
+        setPos(((parent.width  - width)>>1), ((parent.height - height)>>1));
 
         xpos = 0;
         ypos = 0;
@@ -446,7 +436,7 @@ class DialogLayer extends KAGLayer
             object.caption = elm.caption;
         }
         object.linkNum = numLinks;
-        object.setPos(xoff + x, xoff + y);
+        object.setPos(x, y);
 		object.hint = elm.hint;
         object.visible = true;
 
@@ -511,11 +501,11 @@ class DialogLayer extends KAGLayer
 
 		var len = elm.length === void ? 200: +elm.length;
 		if(vertical) {
-            object.setPos(xoff + x, xoff + y);
+            object.setPos(x, y);
             object.height = len;
             object.width = lf.height + 6;
         } else {
-            object.setPos(xoff + x, yoff + y);
+            object.setPos(x, y);
             object.width  = len;
             object.height = lf.height + 6;
         }
@@ -554,7 +544,7 @@ class DialogLayer extends KAGLayer
 		object.glyphColor = elm.color if elm.color !== void; // glyphColor でないことに注意
 		object.bgOpacity = elm.opacity if elm.opacity !== void;
 
-        object.setPos(xoff + x, yoff + y);
+        object.setPos(x, y);
 		object.visible = true;
 
 		links[numLinks] = %[
@@ -609,7 +599,7 @@ class DialogLayer extends KAGLayer
             object.loadTab(elm.tab);
         }
         
-        object.setPos(xoff + x, yoff + y);
+        object.setPos(x, y);
         object.visible = true;
 
         links[numLinks] = %[
@@ -724,81 +714,7 @@ class DialogLayer extends KAGLayer
 
 	function onKeyDown(key, shift)
 	{
-        dm("キーがおされた");
-
-        // キーが押された
-		if(window.preProcessKeys(key, shift)) return;
-
 		if(!focusable || !numLinks) { return super.onKeyDown(...); }
-
-        dm("キーがおされた2");
-
-        
-		var l, r;
-		if(vertical)
-		{
-			l=VK_RIGHT;
-			r=VK_LEFT;
-		}
-		else
-		{
-			l=VK_LEFT;
-			r=VK_RIGHT;
-		}
-
-		if(!selProcessLock && ((key == VK_UP && !(shift & ssShift)) || key == l ||
-			(key == VK_TAB && (shift & ssShift))))
-		{
-			if(keyLink == -1 || keyLink == 0)
-			{
-				var l = focusPrev();
-				if(l !== null) return;
-				keyLink = numLinks - 1;
-			}
-			else
-			{
-				keyLink--;
-			}
-            var obj = setFocusToLink(keyLink);
-			if(obj !== void) obj.focus();
-		}
-		else if(!selProcessLock && (key == VK_DOWN || key == r || (key == VK_TAB && !(shift & ssShift))))
-		{
-			if(keyLink == -1 || keyLink == numLinks -1)
-			{
-				var l = focusNext();
-				if(l !== null) return;
-				keyLink = 0;
-			}
-			else
-			{
-				keyLink ++;
-			}
-			var obj = setFocusToLink(keyLink);
-			if(obj !== void) obj.focus();
-		}
-		else if(key == VK_SPACE || key == VK_RETURN)
-		{
-			if(selProcessLock || keyLink == -1)
-				window.checkProceedingKey(key, shift);
-			else
-				processLink(keyLink);
-		}
-		else
-		{
-            dm("ウインドウに処理まかせ");
-            window.processKeys(key, shift); // window に処理をまかせる
-		}
-	}
-
-	function findPrevFocusable(control, layer)
-	{
-		if(control.linkNum != 0) return this; else return prevFocusable;
-	}
-
-	function findNextFocusable(control, layer)
-	{
-		if(control.linkNum != numLinks -1) return this; else return layer;
 	}
 
 	function onBeforeFocus(layer, blured, direction)
@@ -863,6 +779,14 @@ class DialogLayer extends KAGLayer
 		super.onBeforeFocus(...);
 	}
 
+
+	function onMouseUp(x, y, button, shift)
+	{
+        // 右クリックでなにもせずに閉じる（キャンセル扱い）
+        if (enabled && button == mbRight) close();
+        if (this isvalid) super.onMouseUp(...);
+	}
+    
     // -----------------------------------------------------------------
 
     var handlers = %[
