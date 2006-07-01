@@ -176,7 +176,7 @@ if(!System.createAppLock(System.exePath.replace(/[^A-Za-z]/g, '_')))
 
 property askYesNo { getter() { KAGLoadScript("YesNoDialog.tjs"); return global.askYesNo; } }
 property CheckBoxLayer { getter() { KAGLoadScript("CheckBoxLayer.tjs"); return global.CheckBoxLayer; } }
-property ButtonLayer { getter() { KAGLoadScript("ButtonLayer.tjs"); return global.ButtonLayer; } }
+//property ButtonLayer { getter() { KAGLoadScript("ButtonLayer.tjs"); return global.ButtonLayer; } }
 property EditLayer { getter() { KAGLoadScript("EditLayer.tjs"); return global.EditLayer; } }
 property SliderLayer { getter() { KAGLoadScript("SliderLayer.tjs"); return global.SliderLayer; } }
 property KAGPlugin { getter() { KAGLoadScript("Plugin.tjs"); return global.KAGPlugin; } }
@@ -192,7 +192,11 @@ KAGLoadScript("LayerEx.tjs");
 
 KAGLoadScript("Utils.tjs");
 KAGLoadScript("KAGLayer.tjs");
+
+KAGLoadScript("ButtonLayer.tjs");
+
 KAGLoadScript("SelectLayer.tjs");
+KAGLoadScript("MapSelectLayer.tjs");
 KAGLoadScript("DialogLayer.tjs");
 KAGLoadScript("HistoryLayer.tjs");
 KAGLoadScript("BGM.tjs");
@@ -211,6 +215,7 @@ KAGLoadScript("MessageLayer.tjs");
 KAGLoadScript("Menus.tjs");
 KAGLoadScript("DefaultMover.tjs");
 KAGLoadScript("MainWindow.tjs");
+
 if(Storages.isExistentStorage("Override.tjs"))
 	KAGLoadScript("Override.tjs");
 if(Storages.isExistentStorage(System.exePath + "Override2.tjs"))

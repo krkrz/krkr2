@@ -184,12 +184,14 @@ class ButtonLayer extends KAGLayer
 		update();
 	}
 
-	function onMouseDown()
+	function onMouseDown(x, y, button)
 	{
 		// onMouseDown イベントハンドラ
-		Butt_mouseDown = true;
-		focus();
-		update();
+        if (button == mbLeft) {
+            Butt_mouseDown = true;
+            focus();
+            update();
+        }
 		super.onMouseDown(...);
 	}
 
@@ -226,7 +228,7 @@ class ButtonLayer extends KAGLayer
 	function onMouseEnter()
 	{
 		// マウスがレイヤ領域内に入った
-		update();
+        update();
 		Butt_mouseOn = true;
 		super.onMouseEnter(...);
 	}

@@ -28,6 +28,8 @@ class KAGSoundBuffer
 	{
 		// fade オーバーライド
 		inFading = true;
+		inFadeAndStop = false;
+        inFadeAndPause = false;
 		sbclass.fade(...);
 	}
 
@@ -65,7 +67,7 @@ class KAGSoundBuffer
     
 	function onFadeCompleted()
 	{
-		// フェードが終了した
+        // フェードが終了した
 		inFading = false;
 		if(inFadeAndStop)
 		{
@@ -224,7 +226,7 @@ class BGM
 		restore(flags); // 状態を復帰
 	}
 
-	function playBuffer(buf, storage, loop, start)
+	function playBuffer(buf, storage, loop, paused = false, start)
 	{
 		// buf に対して演奏を開始させる
 
@@ -291,7 +293,6 @@ class BGM
 
 			try
 			{
-				buf.paused = false;
 				buf.looping = loop; // 引数の "loop"
 				buf.open(storage);
                 // ごう追加 再生位置制御
@@ -301,6 +302,7 @@ class BGM
                     (start = start.samplePosition) !== void) {
                     buf.samplePosition = start;
                 }
+                buf.paused = paused;
                 buf.play();
 			}
 			catch(e)
@@ -316,8 +318,8 @@ class BGM
 	{
 		// elm.storage で与えられた BGM の演奏を開始
 		// elm.loop が true ならばループ再生を行う
+		// elm.paused が true ならばポーズされた状態で演奏を開始する
 		// buf1 で演奏を行う
-		if(elm.storage == currentStorage) return; // 同じ曲は再演奏しない
 		var loop = elm.loop === void ? true : +elm.loop;
 
 		try
@@ -330,8 +332,8 @@ class BGM
 			dm("BGM の停止に失敗しました(実行は続行できます) : " + e.message);
 		}
 		stopFade(); // フェーディングは終了
-		buf1.volume = volume;
-		playBuffer(buf1, elm.storage, loop, elm.start);
+        buf1.volume = volume;
+        playBuffer(buf1, elm.storage, loop, elm.paused ? true : false, elm.start);
 		if(loop)
 			currentStorage = elm.storage; // ループ演奏の場合
 		else
@@ -342,7 +344,7 @@ class BGM
 
 	function fadeIn(elm)
 	{
-		// 音量 0 から演奏を開始し、フェードインする
+        // 音量 0 から演奏を開始し、フェードインする
 		var loop = elm.loop === void ? true : +elm.loop;
 		var time = elm.time === void ? 5000 : +elm.time;
 
@@ -357,7 +359,7 @@ class BGM
 			dm("BGM の停止に失敗しました(実行は続行できます) : " + e.message);
 		}
 		if(time != 0) buf1.volume = 0; else buf1.volume = volume;
-		playBuffer(buf1, elm.storage, loop, elm.start);
+		playBuffer(buf1, elm.storage, loop, false, elm.start);
 		if(_enabled) if(time !=0 ) currentBuffer.fade(volume, time);
 		looping = loop;
 		if(loop) currentStorage = elm.storage; else currentStorage = "";
@@ -390,7 +392,7 @@ class BGM
 
 	function resume()
 	{
-		// 演奏を再開
+        // 演奏を再開
         buf1.paused = false;
         buf2.paused = false if buf2 !== void;
 	}
@@ -405,7 +407,7 @@ class BGM
 
     function fadePause(elm)
     {
-		if(_enabled) currentBuffer.fadeOutAndPause(elm.time);
+        if(_enabled) currentBuffer.fadeOutAndPause(elm.time);
     }    
     
 	function fade(elm)
@@ -485,7 +487,7 @@ class BGM
 			var nextbuffer; // 次の演奏バッファ
 			nextbuffer = (currentBuffer == buf1) ? buf2 : buf1;
 			if(intime != 0) nextbuffer.volume = 0; else nextbuffer.volume = volume;
-			playBuffer(nextbuffer, elm.storage, loop, elm.start);
+			playBuffer(nextbuffer, elm.storage, loop, false, elm.start);
 			if(intime != 0) nextbuffer.fade(volume, intime, outtime - overlap);
 		}
 		else
@@ -571,6 +573,7 @@ class BGM
 		// 辞書配列に現在の状態を待避
 		var dic = %[];
 		dic.currentStorage = currentStorage;
+        dic.paused = buf1.paused;
 		dic.volume = volume;
 		return dic;
 	}
@@ -579,10 +582,10 @@ class BGM
 	{
 		// 辞書配列から現在の状態を復帰
 		stopFade();
-		setVolume(dic.volume);
-		if(dic.currentStorage != "")
-			play(%[ storage : dic.currentStorage, loop : true]);
-		else
+        setVolume(dic.volume);
+        if(dic.currentStorage != "") {
+            play(%[ storage : dic.currentStorage, loop : true, paused: dic.paused]);
+        } else
 			stop();
 	}
 
