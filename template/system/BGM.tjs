@@ -211,7 +211,7 @@ class BGM
 		restore(flags); // 状態を復帰
 	}
 
-	function playBuffer(buf, storage, loop)
+	function playBuffer(buf, storage, loop, paused = false)
 	{
 		// buf に対して演奏を開始させる
 
@@ -278,9 +278,9 @@ class BGM
 
 			try
 			{
-				buf.paused = false;
 				buf.looping = loop; // 引数の "loop"
 				buf.open(storage);
+				buf.paused = paused;
 				buf.play();
 			}
 			catch(e)
@@ -296,8 +296,8 @@ class BGM
 	{
 		// elm.storage で与えられた BGM の演奏を開始
 		// elm.loop が true ならばループ再生を行う
+		// elm.paused が true ならばポーズされた状態で再生を開始する
 		// buf1 で演奏を行う
-		if(elm.storage == currentStorage) return; // 同じ曲は再演奏しない
 		var loop = elm.loop === void ? true : +elm.loop;
 
 		try
@@ -311,7 +311,7 @@ class BGM
 		}
 		stopFade(); // フェーディングは終了
 		buf1.volume = volume;
-		playBuffer(buf1, elm.storage, loop);
+		playBuffer(buf1, elm.storage, loop, elm.paused ? true : false);
 		if(loop)
 			currentStorage = elm.storage; // ループ演奏の場合
 		else
@@ -337,7 +337,7 @@ class BGM
 			dm("BGM の停止に失敗しました(実行は続行できます) : " + e.message);
 		}
 		if(time != 0) buf1.volume = 0; else buf1.volume = volume;
-		playBuffer(buf1, elm.storage, loop);
+		playBuffer(buf1, elm.storage, loop, false);
 		if(_enabled) if(time !=0 ) currentBuffer.fade(volume, time);
 		looping = loop;
 		if(loop) currentStorage = elm.storage; else currentStorage = "";
@@ -460,7 +460,7 @@ class BGM
 			var nextbuffer; // 次の演奏バッファ
 			nextbuffer = (currentBuffer == buf1) ? buf2 : buf1;
 			if(intime != 0) nextbuffer.volume = 0; else nextbuffer.volume = volume;
-			playBuffer(nextbuffer, elm.storage, loop);
+			playBuffer(nextbuffer, elm.storage, loop, false);
 			if(intime != 0) nextbuffer.fade(volume, intime, outtime - overlap);
 		}
 		else
@@ -546,6 +546,7 @@ class BGM
 		// 辞書配列に現在の状態を待避
 		var dic = %[];
 		dic.currentStorage = currentStorage;
+		dic.paused = buf1.paused;
 		dic.volume = volume;
 		return dic;
 	}
@@ -556,7 +557,7 @@ class BGM
 		stopFade();
 		setVolume(dic.volume);
 		if(dic.currentStorage != "")
-			play(%[ storage : dic.currentStorage, loop : true]);
+			play(%[ storage : dic.currentStorage, loop : true, paused : dic.paused]);
 		else
 			stop();
 	}
