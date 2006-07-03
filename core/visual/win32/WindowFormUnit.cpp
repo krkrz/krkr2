@@ -340,19 +340,6 @@ void TVPInitWindowOptions()
 		}
 	}
 
-	if(TVPGetCommandLine(TJS_W("-smoothzoom"), &val))
-	{
-		ttstr str(val);
-		if(str == TJS_W("no"))
-		{
-			TVPZoomInterpolation = false;
-		}
-		else
-		{
-			TVPZoomInterpolation = true;
-		}
-	}
-
 	if(TVPGetCommandLine(TJS_W("-wheel"), &val) )
 	{
 		ttstr str(val);
@@ -401,6 +388,23 @@ void TVPInitWindowOptions()
 			initddraw = true;
 		TVPSelectedDoubleBufferStyle = TVPDoubleBufferStyle;
 	}
+
+
+	if(TVPGetCommandLine(TJS_W("-smoothzoom"), &val))
+	{
+		ttstr str(val);
+		if(str == TJS_W("no"))
+		{
+			TVPZoomInterpolation = false;
+			TVPDoubleBufferStyle = tdbsGDI; // Currently only GDI method is enabled
+			TVPSelectedDoubleBufferStyle = TVPDoubleBufferStyle;
+		}
+		else
+		{
+			TVPZoomInterpolation = true;
+		}
+	}
+
 
 	if(TVPGetCommandLine(TJS_W("-controlime"), &val) )
 	{
