@@ -250,7 +250,9 @@ static bool TVPWindowOptionsInit = false;
 static bool TVPUseDither = false;
 static tTVPDoubleBufferStyle TVPDoubleBufferStyle = tdbsNone;
 static tTVPDoubleBufferStyle TVPSelectedDoubleBufferStyle = tdbsNone;
-int TVPFullScreenBPP = 0; // 0 for no-change
+static int TVPFullScreenBPP = 0; // 0 for no-change
+static bool TVPZoomInterpolation = true;
+static bool TVPFullScreenNoResolutionChange = false;
 static bool TVPControlImeState = true;
 //---------------------------------------------------------------------------
 void TVPInitWindowOptions()
@@ -322,6 +324,32 @@ void TVPInitWindowOptions()
 		else
 		{
 			TVPFullScreenBPP = (tjs_int)str.AsInteger();
+		}
+	}
+
+	if(TVPGetCommandLine(TJS_W("-fsres"), &val))
+	{
+		ttstr str(val);
+		if(str == TJS_W("nochange"))
+		{
+			TVPFullScreenNoResolutionChange = true;
+		}
+		else
+		{
+			TVPFullScreenNoResolutionChange = false;
+		}
+	}
+
+	if(TVPGetCommandLine(TJS_W("-smoothzoom"), &val))
+	{
+		ttstr str(val);
+		if(str == TJS_W("no"))
+		{
+			TVPZoomInterpolation = false;
+		}
+		else
+		{
+			TVPZoomInterpolation = true;
 		}
 	}
 
@@ -701,7 +729,10 @@ void tTVPGDIDoubleBuffer::Finish()
 	{
 		// zooming enabled
 		// entire of the bitmap is to be transfered (this is not optimal. FIX ME!)
-		SetStretchBltMode(Target->Canvas->Handle, HALFTONE);
+		if(TVPZoomInterpolation)
+			SetStretchBltMode(Target->Canvas->Handle, HALFTONE);
+		else
+			SetStretchBltMode(Target->Canvas->Handle, COLORONCOLOR);
 		SetBrushOrgEx(Target->Canvas->Handle, 0, 0, NULL);
 
 		StretchBlt(Target->Canvas->Handle,
@@ -793,8 +824,8 @@ __fastcall TTVPWindowForm::TTVPWindowForm(TComponent* Owner, tTJSNI_Window *ni)
 
 	PaintBox = NULL;
 
-	ZoomDenom = 1;
-	ZoomNumer = 1;
+	ZoomDenom = ActualZoomDenom = 1;
+	ZoomNumer = ActualZoomNumer = 1;
 
 	DefaultImeMode = ::imDisable;
 	LastSetImeMode = Controls::imDontCare;
@@ -1491,7 +1522,7 @@ void __fastcall TTVPWindowForm::BeginDrawLayerImage(const tTVPComplexRect & rect
 	{
 		try
 		{
-			bool force_db = ZoomNumer != 1 || ZoomDenom != 1;
+			bool force_db = ActualZoomNumer != 1 || ActualZoomDenom != 1;
 				// zooming needs double-buffering
 			bool is_main = TJSNativeInstance->IsMainWindow();
 
@@ -1779,12 +1810,22 @@ void __fastcall TTVPWindowForm::DrawLayerImage(const tTVPRect &rect,
 	}
 }
 //---------------------------------------------------------------------------
+void __fastcall TTVPWindowForm::ZoomRectangle(
+	tjs_int & left, tjs_int & top,
+	tjs_int & right, tjs_int & bottom)
+{
+	left =   MulDiv(left  ,  ActualZoomNumer, ActualZoomDenom);
+	top =    MulDiv(top   ,  ActualZoomNumer, ActualZoomDenom);
+	right =  MulDiv(right ,  ActualZoomNumer, ActualZoomDenom);
+	bottom = MulDiv(bottom,  ActualZoomNumer, ActualZoomDenom);
+}
+//---------------------------------------------------------------------------
 void __fastcall TTVPWindowForm::InternalSetPaintBoxSize()
 {
-	tjs_int l = MulDiv(LayerLeft,   ZoomNumer, ZoomDenom);
-	tjs_int t = MulDiv(LayerTop,	ZoomNumer, ZoomDenom);
-	tjs_int w = MulDiv(LayerWidth,  ZoomNumer, ZoomDenom);
-	tjs_int h = MulDiv(LayerHeight, ZoomNumer, ZoomDenom);
+	tjs_int l = MulDiv(LayerLeft,   ActualZoomNumer, ActualZoomDenom);
+	tjs_int t = MulDiv(LayerTop,    ActualZoomNumer, ActualZoomDenom);
+	tjs_int w = MulDiv(LayerWidth,  ActualZoomNumer, ActualZoomDenom);
+	tjs_int h = MulDiv(LayerHeight, ActualZoomNumer, ActualZoomDenom);
 	PaintBox->SetBounds(l, t, w, h);
 }
 //---------------------------------------------------------------------------
@@ -1841,8 +1882,8 @@ void __fastcall TTVPWindowForm::GetCursorPos(tjs_int &x, tjs_int &y)
 		POINT mp = {0, 0};
 		::GetCursorPos(&mp);
 
-		x = MulDiv(mp.x - origin.x, ZoomDenom, ZoomNumer);
-		y = MulDiv(mp.y - origin.y, ZoomDenom, ZoomNumer);
+		x = MulDiv(mp.x - origin.x, ActualZoomDenom, ActualZoomNumer);
+		y = MulDiv(mp.y - origin.y, ActualZoomDenom, ActualZoomNumer);
 	}
 	else
 	{
@@ -1859,8 +1900,8 @@ void __fastcall TTVPWindowForm::SetCursorPos(tjs_int x, tjs_int y)
 		TPoint pt;
 		pt = PaintBox->ClientToScreen(
 			TPoint(
-					MulDiv(x, ZoomNumer, ZoomDenom),
-					MulDiv(y, ZoomNumer, ZoomDenom)));
+					MulDiv(x, ActualZoomNumer, ActualZoomDenom),
+					MulDiv(y, ActualZoomNumer, ActualZoomDenom)));
 		::SetCursorPos(pt.x, pt.y);
 
 		LastMouseScreenX = LastMouseScreenY = -1; // force to display mouse cursor
@@ -1916,21 +1957,37 @@ void __fastcall TTVPWindowForm::SetLayerPosition(tjs_int left, tjs_int top)
 	}
 }
 //---------------------------------------------------------------------------
-void __fastcall TTVPWindowForm::SetZoom(tjs_int numer, tjs_int denom)
+void __fastcall TTVPWindowForm::AdjustNumerAndDenom(tjs_int &n, tjs_int &d)
 {
-	// set layer zooming factor;
-	// the zooming factor is passed in numerator/denoiminator style.
-	// we must find GCM to optimize numer/denium via Euclidean algorithm.
-	tjs_int a = numer;
-	tjs_int b = denom;
+	tjs_int a = n;
+	tjs_int b = d;
 	while(b)
 	{
 		tjs_int t = b;
 		b = a % b;
 		a = t;
 	}
-	ZoomNumer = numer / a;
-	ZoomDenom = denom / a;
+	n = n / a;
+	d = d / a;
+}
+//---------------------------------------------------------------------------
+void __fastcall TTVPWindowForm::SetZoom(tjs_int numer, tjs_int denom, bool set_logical)
+{
+	// set layer zooming factor;
+	// the zooming factor is passed in numerator/denoiminator style.
+	// we must find GCM to optimize numer/denium via Euclidean algorithm.
+	AdjustNumerAndDenom(numer, denom);
+	if(set_logical)
+	{
+		ZoomNumer = numer;
+		ZoomDenom = denom;
+	}
+	if(!GetFullScreenMode())
+	{
+		// in fullscreen mode, zooming factor is controlled by the system
+		ActualZoomDenom = denom;
+		ActualZoomNumer = numer;
+	}
 	if(TVPDoubleBufferStyle == tdbsAuto)
 		TVPSelectedDoubleBufferStyle = TVPDoubleBufferStyle; // due to recalc speed
 	DeleteDoubleBuffer();
@@ -2056,8 +2113,8 @@ bool TTVPWindowForm::ProcessTrappedKeyMessage(LRESULT &result, UINT msg, WPARAM 
 void __fastcall TTVPWindowForm::SetAttentionPoint(tjs_int left, tjs_int top,
 	TFont *font)
 {
-	left = MulDiv(left, ZoomNumer, ZoomDenom);
-	top = MulDiv(top, ZoomNumer, ZoomDenom);
+	left = MulDiv(left, ActualZoomNumer, ActualZoomDenom);
+	top = MulDiv(top, ActualZoomNumer, ActualZoomDenom);
 
 	if(ScrollBox->BorderStyle == Forms::bsSingle)
 	{
@@ -2194,19 +2251,24 @@ void __fastcall TTVPWindowForm::SetFullScreenMode(bool b)
 			OrgWidth = Width;
 			OrgHeight = Height;
 
+			// determine fullscreen size
+			int fs_w = TVPFullScreenNoResolutionChange ? Screen->Width : InnerWidthSave;
+			int fs_h = TVPFullScreenNoResolutionChange ? Screen->Height : InnerHeightSave;
+
 			// check display mode
 			tjs_int bpp = 0;
-			TVPTestDisplayMode(InnerWidthSave, InnerHeightSave, bpp);
+			TVPTestDisplayMode(fs_w, fs_h, bpp);
 			if(bpp == 0 || bpp <= 8)
 				TVPThrowExceptionMessage(TVPCannotFindDisplayMode,
-					ttstr(InnerWidthSave) + ttstr(TJS_W("x")) +
-					ttstr(InnerHeightSave));
+					ttstr(fs_w) + ttstr(TJS_W("x")) +
+					ttstr(fs_h));
 
-			// set ScrollBox invisible
-			ScrollBox->Visible = false;
+			// set ScrollBox' border invisible
+			OrgInnerSunken = GetInnerSunken();
+			ScrollBox->BorderStyle = Forms::bsNone;
 
 			// change PaintBox's Owner to directly the Form
-			CreatePaintBox(this);
+//			CreatePaintBox(this);
 
 			// set BorderStyle
 			OrgStyle = GetWindowLong(Handle, GWL_STYLE);
@@ -2220,20 +2282,57 @@ void __fastcall TTVPWindowForm::SetFullScreenMode(bool b)
 			// try to switch to fullscreen
 			try
 			{
-				TVPSwitchToFullScreen(Handle, InnerWidthSave, InnerHeightSave);
+				TVPSwitchToFullScreen(Handle, fs_w, fs_h);
 			}
 			catch(...)
 			{
 				SetFullScreenMode(false);
 			}
 
+			// determine fullscreen zoom factor and ScrollBox size
+			int sb_w, sb_h, zoom_d, zoom_n;
+			if(TVPFullScreenNoResolutionChange)
+			{
+				// try make window size using height
+				double win_aspect;
+				win_aspect = (double)InnerWidthSave / (double)InnerHeightSave;
+				sb_w = int(fs_h * win_aspect + 0.5);
+				sb_h = fs_h;
+				if(sb_w > fs_w)
+				{
+					// try make window size using width
+					win_aspect = (double)InnerHeightSave / (double)InnerWidthSave;
+					sb_h = int(fs_w * win_aspect + 0.5);
+					sb_w = fs_w;
+				}
+				zoom_n = sb_w;
+				zoom_d = InnerWidthSave;
+			}
+			else
+			{
+				// zooming factor is always 1
+				zoom_n = zoom_d = 1;
+				// window size is the same as screen size
+				sb_w = fs_w; sb_h = fs_h;
+			}
+
+			SetZoom(zoom_n, zoom_d, false);
+
+			// indicate fullscreen state
 			TVPFullScreenedWindow = this;
 
 			// reset window size
 			Left = 0;
 			Top = 0;
-			Width = InnerWidthSave;
-			Height = InnerHeightSave;
+			Width = fs_w;
+			Height = fs_h;
+
+			// reset ScrollBox size
+			ScrollBox->Align = alNone;
+			ScrollBox->Left = (fs_w - sb_w)/2;
+			ScrollBox->Top = (fs_h - sb_h)/2;
+			ScrollBox->Width = sb_w;
+			ScrollBox->Height = sb_h;
 
 			// float menu bar
 			CreateMenuContainer();
@@ -2262,16 +2361,23 @@ void __fastcall TTVPWindowForm::SetFullScreenMode(bool b)
 			TVPRevertFromFullScreen(Handle);
 			TVPFullScreenedWindow = NULL;
 
+			// revert zooming factor
+			ActualZoomDenom = ZoomDenom;
+			ActualZoomNumer = ZoomNumer;
+
+			SetZoom(ZoomNumer, ZoomDenom);  // reset zoom factor
+
 			// set BorderStyle
 			SetWindowLong(Handle, GWL_STYLE, OrgStyle);
 			SetWindowLong(Handle, GWL_EXSTYLE, OrgExStyle);
 			ScrollBox->BorderStyle = OrgScrollBoxBorderStyle;
 
 			// change PaintBox's Owner to the ScrollBox
-			CreatePaintBox(ScrollBox);
+//			CreatePaintBox(ScrollBox);
 
 			// set ScrollBox visible
-			ScrollBox->Visible = true;
+			SetInnerSunken(OrgInnerSunken);
+			ScrollBox->Align = alClient;
 			SetWindowPos(ScrollBox->Handle, HWND_BOTTOM, 0, 0, 0, 0,
 				SWP_NOMOVE|SWP_NOSIZE|SWP_NOACTIVATE);
 
@@ -2536,8 +2642,10 @@ void __fastcall TTVPWindowForm::SetShowScrollBars(bool b)
 {
 	ScrollBox->HorzScrollBar->Visible = b;
 	ScrollBox->VertScrollBar->Visible = b;
-	ScrollBox->Brush->Style = b?bsSolid:bsClear;
-	this->Brush->Style = b?bsSolid:bsClear;
+	ScrollBox->Color = clBlack;
+	ScrollBox->Brush->Style = bsSolid; // b?bsSolid:bsClear;
+	this->Color = clBlack;
+	this->Brush->Style = bsSolid; // b?bsSolid:bsClear;
 }
 //---------------------------------------------------------------------------
 bool __fastcall TTVPWindowForm::GetShowScrollBars() const
@@ -2659,8 +2767,8 @@ void __fastcall TTVPWindowForm::PaintBoxDblClick(TObject *Sender)
 void __fastcall TTVPWindowForm::PaintBoxMouseMove(TObject *Sender,
 	  TShiftState Shift, int X, int Y)
 {
-	X = MulDiv(X, ZoomDenom, ZoomNumer);
-	Y = MulDiv(Y, ZoomDenom, ZoomNumer);
+	X = MulDiv(X, ActualZoomDenom, ActualZoomNumer);
+	Y = MulDiv(Y, ActualZoomDenom, ActualZoomNumer);
 
 	if(TJSNativeInstance)
 	{
@@ -2686,8 +2794,8 @@ void __fastcall TTVPWindowForm::PaintBoxMouseDown(TObject *Sender,
 {
 	if(!CanSendPopupHide()) DeliverPopupHide();
 
-	X = MulDiv(X, ZoomDenom, ZoomNumer);
-	Y = MulDiv(Y, ZoomDenom, ZoomNumer);
+	X = MulDiv(X, ActualZoomDenom, ActualZoomNumer);
+	Y = MulDiv(Y, ActualZoomDenom, ActualZoomNumer);
 
 	::SetCaptureControl(PaintBox);
 
@@ -2708,8 +2816,8 @@ void __fastcall TTVPWindowForm::PaintBoxMouseDown(TObject *Sender,
 void __fastcall TTVPWindowForm::PaintBoxMouseUp(TObject *Sender,
 	  TMouseButton Button, TShiftState Shift, int X, int Y)
 {
-	X = MulDiv(X, ZoomDenom, ZoomNumer);
-	Y = MulDiv(Y, ZoomDenom, ZoomNumer);
+	X = MulDiv(X, ActualZoomDenom, ActualZoomNumer);
+	Y = MulDiv(Y, ActualZoomDenom, ActualZoomNumer);
 
 	::SetCaptureControl(NULL);
 
@@ -2965,10 +3073,10 @@ void __fastcall TTVPWindowForm::PaintBoxPaint(TObject *Sender)
 		tTVPRect r;
 		TRect tr = PaintBox->Canvas->ClipRect;
 
-		r.left = MulDiv(tr.left, ZoomDenom, ZoomNumer);
-		r.top = MulDiv(tr.top, ZoomDenom, ZoomNumer);
-		r.right = MulDiv(tr.right, ZoomDenom, ZoomNumer);
-		r.bottom = MulDiv(tr.bottom, ZoomDenom, ZoomNumer);
+		r.left = MulDiv(tr.left, ActualZoomDenom, ActualZoomNumer);
+		r.top = MulDiv(tr.top, ActualZoomDenom, ActualZoomNumer);
+		r.right = MulDiv(tr.right, ActualZoomDenom, ActualZoomNumer);
+		r.bottom = MulDiv(tr.bottom, ActualZoomDenom, ActualZoomNumer);
 
 		TJSNativeInstance->NotifyWindowExposureToLayer(r);
 
@@ -3313,6 +3421,8 @@ HWND __fastcall TTVPWindowForm::GetWindowHandle(tjs_int &ofsx, tjs_int &ofsy)
 				SWP_NOMOVE|SWP_NOSIZE|SWP_NOACTIVATE);
 	}
 	ofsx = ofsy = GetInnerSunken()?2:0;
+	ofsx += ScrollBox->Align == alClient ? 0 : ScrollBox->Left;
+	ofsy += ScrollBox->Align == alClient ? 0 : ScrollBox->Top;
 	return Handle;
 }
 //---------------------------------------------------------------------------
@@ -3374,8 +3484,8 @@ void __fastcall TTVPWindowForm::TickBeat()
 				POINT mp = {0, 0};
 				::GetCursorPos(&mp);
 
-				tjs_int x = MulDiv(mp.x - origin.x, ZoomDenom, ZoomNumer);
-				tjs_int y = MulDiv(mp.y - origin.y, ZoomDenom, ZoomNumer);
+				tjs_int x = MulDiv(mp.x - origin.x, ActualZoomDenom, ActualZoomNumer);
+				tjs_int y = MulDiv(mp.y - origin.y, ActualZoomDenom, ActualZoomNumer);
 
 				TVPPostInputEvent(new tTVPOnMouseWheelInputEvent(TJSNativeInstance,
 						shift, delta, x, y));

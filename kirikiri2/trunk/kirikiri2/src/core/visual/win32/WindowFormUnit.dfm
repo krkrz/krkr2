@@ -1,6 +1,6 @@
 object TVPWindowForm: TTVPWindowForm
-  Left = 335
-  Top = 175
+  Left = 245
+  Top = 137
   Width = 323
   Height = 227
   HorzScrollBar.Tracking = True
