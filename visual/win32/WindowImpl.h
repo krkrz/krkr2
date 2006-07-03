@@ -171,6 +171,9 @@ public:
 	void DetachVideoOverlay();
 
 //-- interface to plugin
+	void ZoomRectangle(
+		tjs_int & left, tjs_int & top,
+		tjs_int & right, tjs_int & bottom);
 	HWND GetWindowHandleForPlugin();
 	void RegisterWindowMessageReceiver(tTVPWMRRegMode mode,
 		void * proc, const void *userdata);

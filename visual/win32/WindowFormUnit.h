@@ -249,6 +249,7 @@ private:
 	int OrgTop;
 	int OrgWidth;
 	int OrgHeight;
+	bool OrgInnerSunken;
 	TTVPMenuContainerForm * MenuContainer;
 	DWORD ResetStayOnTopStateTick;
 
@@ -297,8 +298,10 @@ private:
 	tjs_int LayerTop;
 	tjs_int LayerWidth;
 	tjs_int LayerHeight;
-	tjs_int ZoomDenom; // Zooming factor denominator
-	tjs_int ZoomNumer; // Zooming factor numerator
+	tjs_int ZoomDenom; // Zooming factor denominator (setting)
+	tjs_int ZoomNumer; // Zooming factor numerator (setting)
+	tjs_int ActualZoomDenom; // Zooming factor denominator (actual)
+	tjs_int ActualZoomNumer; // Zooming factor numerator (actual)
 
 	//-- menu related
 	bool MenuBarVisible;
@@ -369,6 +372,9 @@ public:
 	void __fastcall DrawLayerImage(const tTVPRect &rect,
 		tTVPBaseBitmap *bmp, const tTVPRect &cliprect);
 
+	void __fastcall ZoomRectangle(
+		tjs_int & left, tjs_int & top,
+		tjs_int & right, tjs_int & bottom);
 private:
 	void __fastcall InternalSetPaintBoxSize();
 public:
@@ -390,7 +396,8 @@ public:
 	tjs_int __fastcall GetLayerTop() const { return LayerTop; }
 	void __fastcall SetLayerPosition(tjs_int left, tjs_int top);
 
-	void __fastcall SetZoom(tjs_int numer, tjs_int denom);
+	void __fastcall AdjustNumerAndDenom(tjs_int &n, tjs_int &d);
+	void __fastcall SetZoom(tjs_int numer, tjs_int denom, bool set_logical = true);
 	void __fastcall SetZoomNumer(tjs_int n)
 		{ SetZoom(n, ZoomDenom); }
 	tjs_int __fastcall GetZoomNumer() const { return ZoomNumer; }
