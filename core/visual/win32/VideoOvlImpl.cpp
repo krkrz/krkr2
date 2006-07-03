@@ -14,6 +14,7 @@
 
 #include "MsgIntf.h"
 #include "VideoOvlImpl.h"
+#include "DebugIntf.h"
 // Start:	Add:	T.Imoto
 #include "LayerIntf.h"
 #include "LayerBitmapIntf.h"
@@ -491,9 +492,17 @@ void tTJSNI_VideoOverlay::SetRectangleToVideoOverlay()
 	{
 		tjs_int ofsx, ofsy;
 		Window->GetWindowHandle(ofsx, ofsy);
-		RECT r = {Rect.left + ofsx, Rect.top + ofsy,
-			Rect.right + ofsx, Rect.bottom + ofsy};
-		VideoOverlay->SetRect(&r);
+		tjs_int l = Rect.left;
+		tjs_int t = Rect.top;
+		tjs_int r = Rect.right;
+		tjs_int b = Rect.bottom;
+		TVPAddLog(TJS_W("Video zoom: (") + ttstr(l) + TJS_W(",") + ttstr(t) + TJS_W(")-(") +
+			ttstr(r) + TJS_W(",") + ttstr(b) + TJS_W(") ->"));
+		Window->ZoomRectangle(l, t, r, b);
+		TVPAddLog(TJS_W("(") + ttstr(l) + TJS_W(",") + ttstr(t) + TJS_W(")-(") +
+			ttstr(r) + TJS_W(",") + ttstr(b) + TJS_W(")"));
+		RECT rect = {l + ofsx, t + ofsy, r + ofsx, b + ofsy};
+		VideoOverlay->SetRect(&rect);
 	}
 }
 //---------------------------------------------------------------------------
