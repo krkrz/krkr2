@@ -1147,6 +1147,14 @@ HWND tTJSNI_Window::GetSurfaceWindowHandle()
 	return Form->GetSurfaceWindowHandle();
 }
 //---------------------------------------------------------------------------
+void tTJSNI_Window::ZoomRectangle(
+	tjs_int & left, tjs_int & top,
+	tjs_int & right, tjs_int & bottom)
+{
+	if(!Form) return;
+	Form->ZoomRectangle(left, top, right, bottom);
+}
+//---------------------------------------------------------------------------
 HWND tTJSNI_Window::GetWindowHandle(tjs_int &ofsx, tjs_int &ofsy)
 {
 	if(!Form) return NULL;
