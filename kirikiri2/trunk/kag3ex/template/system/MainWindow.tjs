@@ -1156,12 +1156,13 @@ class KAGWindow extends Window
 
 		// autoEnable が true のすべてのメニュー項目の accessible の
 		// 値を設定する
-        var notmodal = !historyLayer.visible && !messageLayerHiding && !selectShowing && !mapSelectShowing && !currentDialog;
-		var state = inStable && notmodal;
-		internalSetMenuAccessibleAll(menu, state);
+        var notmodal = !historyLayer.visible && !messageLayerHiding && !currentDialog;
+        var state = inStable && notmodal;
+        internalSetMenuAccessibleAll(menu, state);
 
 		// その他のメニューの使用可/不可
         var canSkip = state && !inSleep && nextSkipEnabled && (allskip || getCurrentRead());
+        //dm("canSkip:" + canSkip);
         if(typeof this.skipToNextStopMenuItem != "undefined")
             skipToNextStopMenuItem.enabled = canSkip;
 
@@ -1806,6 +1807,9 @@ class KAGWindow extends Window
 		// メニュー関連
 		setMenuAccessibleAll();
 
+        // 回想中止
+        endRecollection();
+        
 		// 実行開始
 		processGo();
 	}
@@ -2293,7 +2297,7 @@ class KAGWindow extends Window
 		if(num < numBookMarks) prompt += (num + 1);
 		prompt += "「"+ bookMarkNames[num] + "」をたどりますか?";
 
-        askYesNo(prompt, "確認", loadBookMark, num);
+        askYesNo(prompt, "確認", loadBookMark, void, num);
         return true;
 	}
 
@@ -2516,7 +2520,10 @@ class KAGWindow extends Window
 
 	function incRecordLabel(count)
 	{
-		// sflags[currentRecordName]++
+        // 自動ラベルもアップする
+        incAutoLabel();
+
+        // sflags[currentRecordName]++
 		if(autoRecordPageShowing)
 		{
 			if(currentRecordName != "")
@@ -2792,8 +2799,6 @@ class KAGWindow extends Window
 
 	function processGo()
 	{
-        endRecollection();
-
         // コンダクタを現在位置から実行開始させる
 		dm("処理を開始します");
 		inSleep = false;
@@ -2848,9 +2853,8 @@ class KAGWindow extends Window
 		if(!usingExtraConductor)
 		{
             if (label !== "*autoLabelLabel") {
-                incAutoLabel();
-                autoLabelCount = 1;
                 incRecordLabel(true);
+                autoLabelCount = 1;
             }
             setRecordLabel(conductor.curStorage, label);
 		}
