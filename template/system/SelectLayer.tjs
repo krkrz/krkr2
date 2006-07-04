@@ -100,10 +100,7 @@ class SelectButtonLayer extends ButtonLayer
     
 	function onMouseUp(x, y, button, shift)	{
         if (enabled && button == mbLeft) {
-            if (onclick !== void) {
-                Scripts.eval(onclick);
-            }
-            if (this isvalid && parent isvalid) owner.onButtonClick(this);
+            owner.onButtonClick(this);
         }
         if (this isvalid) super.onMouseUp(...);
 	}
@@ -299,7 +296,7 @@ class SelectLayer {
                 if (select.storage != '' || select.target != '')	{
                     window.process(select.storage, select.target);
                 } else {
-                    window.conductor.run(false);
+                    window.processGo();
                 }
                 window.doneSelect();
             }
