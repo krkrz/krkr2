@@ -427,7 +427,7 @@ class MapSelectLayer extends KAGLayer {
                     // キーボードによる操作の場合はマウスカーソルを隠す
                     window.process(select.storage, select.target);
                 } else {
-                    window.conductor.run(false);
+                    window.processGo();
                 }
                 window.doneMapSelect();
             }
