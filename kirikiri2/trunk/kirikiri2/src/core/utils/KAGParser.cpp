@@ -1718,6 +1718,7 @@ parse_start:
 						TVPExecuteExpression(exp, &val);
 
 						bool cond = val.operator bool();
+						if(tagkind == tag_ignore) cond = ! cond;
 
 						IfLevelExecutedStack.back() = cond;
 						if(!cond)
