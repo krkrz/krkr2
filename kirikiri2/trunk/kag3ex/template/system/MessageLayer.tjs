@@ -118,12 +118,12 @@ class LinkButtonLayer extends ButtonLayer
 		// イベントを透過するかどうか
 		setter(x)
 		{
-            super.focusable = x;
             _focusable = x;
-		}
-		getter()
+            super.focusable = x && enabled;
+        }
+        getter()
 		{
-            return super.focusable;
+            return _focusable;
 		}
 	}
 
@@ -617,16 +617,23 @@ class MessageLayer extends KAGLayer
     var timeoutTime;
     var timeoutStorage;
     var timeoutTarget;
-        
+    var timeoutExp;
+    
     function clearTimeout() {
         stopTimeout();
         timeoutTime    = void;
         timeoutStorage = void;
         timeoutTarget  = void;
+        timeoutExp     = void;
     }
     
     function timeoutHandler() {
-        window.process(timeoutStorage, timeoutTarget);
+        // 実行
+        Scripts.eval(timeoutExp) if timeoutExp != '';
+        if (timeoutStorage != '' || timeoutTarget != '') {
+            window.lockMessageLayerSelProcess(); // 選択をロック
+            window.process(timeoutStorage, timeoutTarget);
+        }
         clearTimeout();
     }
 
@@ -634,6 +641,12 @@ class MessageLayer extends KAGLayer
         timeoutTime    = elm.time;
         timeoutStorage = elm.storage;
         timeoutTarget  = elm.target;
+        if (elm.exp !== void) {
+            timeoutExp = createSoundExpression(elm.exp, elm.clickse, elm.clicksebuf);
+        }
+        focusable = true; // フォーカスを受け取れるように
+        setSelProcessLock(false); // 選択ロック解除
+		comp.setSelProcessLock(false); // 選択ロック解除
     }
 
     function stopTimeout() {
@@ -650,6 +663,45 @@ class MessageLayer extends KAGLayer
             timeoutTimer.interval = timeoutTime;
             timeoutTimer.enabled  = true;
         }
+    }
+
+    var clickExp;
+    var clickStorage;
+    var clickTarget;
+
+    function clearClick() {
+        clickStorage = void;
+        clickTarget  = void;
+        clickExp     = void;
+    }
+
+    function addClick(elm) {
+        clickStorage = elm.storage;
+        clickTarget  = elm.target;
+        if (elm.exp !== void) {
+            clickExp = createSoundExpression(elm.exp, elm.clickse, elm.clicksebuf);
+        }
+        focusable = true; // フォーカスを受け取れるように
+        setSelProcessLock(false); // 選択ロック解除
+        comp.setSelProcessLock(false); // 選択ロック解除
+        selClickLock = false;
+    }
+
+    function hasClick() {
+        return clickExp !== void || clickStorage !== void || clickTarget !== void;
+    }
+    
+    function processClick() {
+        Scripts.eval(clickExp) if clickExp != '';
+        if(clickStorage != '' || clickTarget != '') {
+            window.lockMessageLayerSelProcess(); // 選択をロック
+            if (window.getKeyState(VK_RETURN) || window.getKeyState(VK_SPACE) || window.getKeyState(VK_CONTROL))
+                window.hideMouseCursor();
+            // キーボードによる操作の場合はマウスカーソルを隠す
+            window.process(clickStorage, clickTarget);
+        }
+        selClickLock = false;
+        clearClick();
     }
     
 	function MessageLayer(owner, parent, name, id, do_config)
@@ -882,6 +934,7 @@ class MessageLayer extends KAGLayer
         nameLayer.setPos(nameLeft, nameTop, nameWidth, nameHeight);
         faceLayer.setPos(faceLeft, faceTop, faceWidth, faceHeight);
         clearTimeout();
+        clearClick();
     }
 
 	function clear2()
@@ -2386,9 +2439,15 @@ class MessageLayer extends KAGLayer
 		var ln = links[n];
 		if(ln === void) return;
 
+        // XXX 足してみた
+        if (ln.object !== void && !ln.object.enabled) {
+            return;
+        }
+        
 		// 裏画面のハイライトを非表示
 		if(comp !== void) comp.highlightLayer.visible = false;
-
+        
+        
 		// 実行
 		Scripts.eval(ln.exp) if ln.exp != '';
 
@@ -2469,16 +2528,12 @@ class MessageLayer extends KAGLayer
 	{
         // onHitTest イベントハンドラ(内部関数)
 
-        if (!eventTransparent) return true;
-        
 		if(isDragPos(x, y))
 		{
 			cursor = window.cursorDraggable;
 			showParentHint = true;
 			return true; // 不透過
 		}
-
-		if(selProcessLock) return false; // 透過
 
 		if(selClickLock)
 		{
@@ -2492,11 +2547,15 @@ class MessageLayer extends KAGLayer
 			}
 		}
 
+        if (!eventTransparent) return true;
+
+		if (selProcessLock) return false; // 透過
+        
 		var n;
 		n = findLink(x, y);
         if(n == -1)
 		{
-            return false; // とりあえず透過
+            return hasClick(); // クリック処理がなければ透過
 		}
 		else
 		{
@@ -2514,18 +2573,21 @@ class MessageLayer extends KAGLayer
 
 	function internalOnMouseDown(x, y, button)
 	{
-		// onMouseDown イベントハンドラ(内部関数)
+        // onMouseDown イベントハンドラ(内部関数)
 		if(button == mbLeft && !selProcessLock)
 		{
-			if(!selClickLock)
+            if(!selClickLock)
 			{
-				var n = findLink(x, y);
+                var n = findLink(x, y);
 
 				if(n != -1)
 				{
 					processLink(n);
 					return;
-				}
+                } else if (hasClick()) {
+                    processClick();
+                    return;
+                }
 			}
 		}
 
@@ -2700,7 +2762,7 @@ class MessageLayer extends KAGLayer
 		// キーが押された
 		if(window.preProcessKeys(key, shift)) return;
 
-		if(!focusable || !numLinks) { return super.onKeyDown(...); }
+		if(!focusable || (!numLinks && !hasClick())) { return super.onKeyDown(...); }
 
 		var l, r;
 		if(vertical)
@@ -2749,9 +2811,14 @@ class MessageLayer extends KAGLayer
 		}
 		else if(key == VK_SPACE || key == VK_RETURN)
 		{
-			if(selProcessLock || keyLink == -1)
-				window.checkProceedingKey(key, shift);
-			else
+            selClickLock = false;
+            if(selProcessLock || keyLink == -1) {
+                if (hasClick()) {
+                    processClick();
+                } else {
+                    window.checkProceedingKey(key, shift);
+                }
+            } else
 				processLink(keyLink);
 		}
 		else
@@ -3176,6 +3243,15 @@ class MessageLayer extends KAGLayer
         faceTop    = src.faceTop;
         faceWidth  = src.faceWidth;
         faceHeight = src.faceHeight;
+
+        timeoutTime    = src.timeoutTime;
+        timeoutStorage = src.timeoutStorage;
+        timeoutTarget  = src.timeoutTarget;
+        timeoutExp     = src.timeoutExp;
+
+        clickStorage = src.clickStorage;
+        clickTarget  = src.clickTarget;
+        clickExp     = src.clickExp;
         
         // システムボタンのコピー処理
         clearSystemButtons();

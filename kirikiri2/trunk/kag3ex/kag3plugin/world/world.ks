@@ -556,8 +556,8 @@ class KAGEnvImage {
     }
 
     function hideMessage() {
-        if (trans !== void && trans.msgoff && !kag.messageLayerHiding) {
-            kag.hideMessageLayerByUser();
+        if (trans !== void && trans.msgoff) {
+            kag.invisibleCurrentMessageLayer();
         }
     }
     
@@ -748,6 +748,19 @@ class KAGEnvBaseLayer extends KAGEnvLayer {
 
     var name;
 
+	var _imageFile;
+	property imageFile {
+		setter(v) {
+            if (v !== void) {
+                kag.sflags["cg_" + (v.toUpperCase())] = true;
+            }
+            _imageFile = v;
+		}
+		getter() {
+			return _imageFile;
+		}
+	}
+
     /**
      * コンストラクタ
      * @param env 環境
@@ -777,6 +790,8 @@ class KAGEnvLevelLayer {
     var layerId;
     /// 表示レベル
     var level;
+	/// 表示絶対レベル
+	var absolute;
 
     // 表示位置座標
     var xpos;
@@ -836,6 +851,7 @@ class KAGEnvLevelLayer {
             kag.toBack(id, base);
         }
         front = back = void;
+		absolute = base.layers[id].absolute;
         return base.layers[id];
     }
 
@@ -858,6 +874,7 @@ class KAGEnvLevelLayer {
      */
     function setLevel(cmd, elm) {
         level = cmd;
+		absolute = void;
     } 
 
     function setXPos(cmd, elm) {
@@ -884,6 +901,7 @@ class KAGEnvLevelLayer {
     function onStore(f) {
         f.layerId = layerId;
         f.level = level;
+		f.absolute = absolute;
         f.xpos = xpos;
         f.xposFrom = xposFrom;
         f.ypos = ypos;
@@ -895,14 +913,24 @@ class KAGEnvLevelLayer {
     function onRestore(f) {
         layerId = f.layerId;
         level = f.level;
+		absolute = f.absolute;
         xpos = f.xpos;
         xposFrom = f.xposFrom;
         ypos = f.ypos;
         yposFrom = f.yposFrom;
         moveTime = f.moveTime;
         moveAccel = f.moveAccel;
-    }
-    
+		// レベルの復帰
+		var layer = kag.fore.layers[env.initLayerCount + layerId];
+		if (layer !== void) {
+			if (level !== void) {
+				layer.level = level;
+			}
+			if (absolute !== void) {
+				layer.absolute = absolute;
+			}
+	    }
+	}
 }
 
 /**
@@ -1062,6 +1090,7 @@ class KAGEnvCharacter extends KAGEnvLevelLayer, KAGEnvImage {
 
     /// ボイス情報
     var voice;
+	var strVoice;
 
     // ベース画像名
     var baseImageName;
@@ -1127,6 +1156,7 @@ class KAGEnvCharacter extends KAGEnvLevelLayer, KAGEnvImage {
         f.dress = dress;
         f.face = face;
         f.voice = voice;
+		f.strVoice = strVoice;
     }
 
     /**
@@ -1137,6 +1167,7 @@ class KAGEnvCharacter extends KAGEnvLevelLayer, KAGEnvImage {
         dress = f.dress;
         face  = f.face;
         voice = f.voice;
+		strVoice = f.strVoice;
         global.KAGEnvLevelLayer.onRestore(f);
         global.KAGEnvImage.onRestore(f);
     }
@@ -1658,14 +1689,17 @@ class KAGEnvCharacter extends KAGEnvLevelLayer, KAGEnvImage {
     function setVoice(param) {
         if (typeof param == "Integer") {
             voice = param;
+			strVoice = void;
         } else if (typeof param == "String") {
             if (reNumber.test(param)) {
                 voice = (int)param;
+				strVoice = void;
             } else {
-                voice = param;
+				strVoice = param;
             }
         } else {
             voice = void;
+			strVoice = void;
         }
         //dm("ボイス設定:" + param + ":" + voice);
     }
@@ -1688,7 +1722,7 @@ class KAGEnvCharacter extends KAGEnvLevelLayer, KAGEnvImage {
             if (f.name != sf.defaultName || f.family != sf.defaultFamily) {
                 // デフォルト以外の名前の場合
                 var name = init.voiceFile.sprintf(voice, "N");
-                if (Storages.isExistentStorage, name) {
+                if (Storages.isExistentStorage(name)) {
                     return name;
                 }
             }
@@ -1700,7 +1734,7 @@ class KAGEnvCharacter extends KAGEnvLevelLayer, KAGEnvImage {
     }
 
     function getCurrentVoice() {
-        return getVoice(voice);
+        return getVoice(strVoice !== void ? strVoice : voice);
     }
     
     var soundBuffer;
@@ -1735,36 +1769,45 @@ class KAGEnvCharacter extends KAGEnvLevelLayer, KAGEnvImage {
         var ret = void;
         if (voicename === void) {
             voicename = getCurrentVoice();
-            if (typeof voice == "Integer") {
-                voice++;
+            if (strVoice !== void) {
+                strVoice = void;
             } else {
-                voice = void;
+                if (typeof voice == "Integer") {
+                    voice++;
+                } else {
+                    voice = void;
+                }
             }
         }
+
         if (voicename !== void && kag.getVoiceOn(init.voiceName)) {
 
             // ほかのボイスを消去 XXX
             env.stopAllVoice();
 
-            //dm("再生処理:" + voicename);
-            // 再生処理実行
-            if (soundBuffer == void) {
-                soundBuffer = new VoiceTrack(this);
-            }
-            // ボリューム補正
-            //dm("ボイスボリューム" + kag.voicevolume);
-            soundBuffer.volume2 = kag.voicevolume * 1000;
-            try {
-                soundBuffer.open(voicename);
-                soundBuffer.play();
-                ret = soundBuffer.totalTime;
-            } catch (e) {
-                dm("ボイス再生に失敗しました ファイル名:" + voicename);
+            if (!kag.skipMode) {
+                //dm("再生処理:" + voicename);
+                // 再生処理実行
+                if (soundBuffer == void) {
+                    soundBuffer = new VoiceTrack(this);
+                }
+                // ボリューム補正
+                //dm("ボイスボリューム" + kag.voicevolume);
+                soundBuffer.volume2 = kag.voicevolume * 1000;
+                try {
+                    soundBuffer.open(voicename);
+                    soundBuffer.play();
+                    ret = soundBuffer.totalTime;
+                } catch (e) {
+                    dm("ボイス再生に失敗しました ファイル名:" + voicename);
+                }
             }
         }
         if (ret) {
             voiceEndTime = System.getTickCount() + ret;
-        }
+        } else {
+			voiceEndTime = void;
+		}
         return ret;
     }
 
@@ -1801,7 +1844,9 @@ class KAGEnvCharacter extends KAGEnvLevelLayer, KAGEnvImage {
     function waitVoice(param) {
         if (voiceEndTime !== void) {
             var waitTime = voiceEndTime - System.getTickCount();
-            ret = kag.waitTime(waitTime, param == true && kag.clickSkipEnabled);
+			if (waitTime > 0) {
+	            ret = kag.waitTime(waitTime, param == true && kag.clickSkipEnabled);
+			}
         }
     }
     
@@ -1938,7 +1983,10 @@ class KAGEnvironment extends KAGEnvImage {
 
         kag.tagHandlers["dispname"] = this.dispname;
         kag.tagHandlers["endline"]  = this.endline;
+		kag.tagHandlers["quake"] = this.quake;
+
         kag.unknownHandler = this.unknown;
+
         
         dm("環境初期化完了");
     }
@@ -1953,7 +2001,6 @@ class KAGEnvironment extends KAGEnvImage {
 
         var chars = %[];
         foreach(characters, function(name, value, dict) {
-//            dm("キャラ保存:" + name + " value:" + value);
             var fch = %[];
             value.onStore(fch);
             this[name] = fch;
@@ -1962,7 +2009,6 @@ class KAGEnvironment extends KAGEnvImage {
         
         var lays = %[];
         foreach(layers, function(name, value, dict) {
-//            dm("レイヤ保存:" + name + " value:" + value);
             var fch = %[];
             value.onStore(fch);
             this[name] = fch;
@@ -2170,8 +2216,8 @@ class KAGEnvironment extends KAGEnvImage {
         }
         trans.children = true;
 
-        if (trans.msgoff && !kag.messageLayerHiding) {
-            kag.hideMessageLayerByUser();
+        if (trans.msgoff) {
+            kag.invisibleCurrentMessageLayer();
         }
 		kag.syncMessageLayer();
         
@@ -2517,6 +2563,15 @@ class KAGEnvironment extends KAGEnvImage {
             return ch.playVoice(voicename);
         }
     }
+
+
+    function quake(elm)	{
+        // 揺れをのっとる
+        if (!isSkip()) {
+            kag.doQuake(elm);
+        }
+        return 0;
+	}
     
     /**
      * 行終了処理ハンドラ

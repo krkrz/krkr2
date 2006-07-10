@@ -79,7 +79,6 @@ class SelectButtonLayer extends ButtonLayer
             captionColor = owner.selectColor;
             caption      = message;
         }
-
     }
 
     function finalize() {
@@ -89,7 +88,8 @@ class SelectButtonLayer extends ButtonLayer
 	function onMouseEnter()
 	{
         if(onenter !== void) Scripts.eval(onenter);
-		super.onMouseEnter(...);
+        super.onMouseEnter(...);
+        focus();
 	}
 
 	function onMouseLeave()
@@ -104,6 +104,28 @@ class SelectButtonLayer extends ButtonLayer
         }
         if (this isvalid) super.onMouseUp(...);
 	}
+
+	function onKeyDown(key, shift, process)
+	{
+        // キーが押された
+        if(window.preProcessKeys(key, shift)) return;
+        if (enabled && (key == VK_SPACE || key == VK_RETURN)) {
+            owner.onButtonClick(this);
+        }
+        if (this isvalid) super.onKeyDown(...);
+    }
+
+	function onFocus(prevfocused, direction)
+	{
+        // キー操作によるフォーカス変動の場合にマウスカーソルも移動
+        var sgks = window.getKeyState;
+        var process = sgks(VK_LEFT) || sgks(VK_UP) || sgks(VK_RIGHT) ||
+            sgks(VK_DOWN) || sgks(VK_TAB);
+        if(process) {
+            cursorX = (width>>1);
+            cursorY = (height>>1);
+        }
+    }
 }
 
 /**
@@ -247,9 +269,9 @@ class SelectLayer {
         var enterse    = elm.enterse !== void ? elm.enterse : enterse;
         var leavese    = elm.leavese !== void ? elm.leavese : leavese;
         var clickse    = elm.clickse !== void ? elm.clickse : clickse;
-        var entersebuf = elm.entersebuf !== void ? elm.entersebuf : 1;
-        var leavesebuf = elm.leavesebuf !== void ? elm.leavesebuf : 1;
-        var clicksebuf = elm.clicksebuf !== void ? elm.clicksebuf : 2;
+        var entersebuf = elm.entersebuf !== void ? elm.entersebuf : kag.numSEBuffers - 2;
+        var leavesebuf = elm.leavesebuf !== void ? elm.leavesebuf : kag.numSEBuffers - 2;
+        var clicksebuf = elm.clicksebuf !== void ? elm.clicksebuf : kag.numSEBuffers - 1;
         
         var select = getSelectButtonLayer(this, elm.text);
         select.name = "選択肢ボタン" + elm.text;
@@ -272,7 +294,7 @@ class SelectLayer {
         for (var i=0; i<selects.count;i++) {
             var select = selects[i];
             select.parent   = parent;
-            select.absolute = absolute + 4;
+            select.absolute = absolute + 4 + i;
             select.setPos(left + width/2 - select.width / 2, top  + y - select.height / 2);
             y += h;
         }
@@ -306,7 +328,7 @@ class SelectLayer {
 	var invisibleByUser = false; // ユーザにより一時的に不可視
 	var visibleBeforeUserInvisible  = false;
 
-	function setHiddenStateByUser(b)
+    function setHiddenStateByUser(b)
 	{
         // ユーザが右クリックなどでメッセージレイヤを一時的に隠すときに
 		// 呼ばれる
@@ -322,4 +344,18 @@ class SelectLayer {
 			visible = visibleBeforeUserInvisible;
 		}
 	}
+
+    function lockFocus() {
+        for (var i=0; i<selects.count;i++) {
+            var select = selects[i];
+            select.focusable = false;
+        }
+    }
+    
+    function unlockFocus() {
+        for (var i=0; i<selects.count;i++) {
+            var select = selects[i];
+            select.focusable = true;
+        }
+    }
 }
