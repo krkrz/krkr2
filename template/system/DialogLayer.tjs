@@ -11,7 +11,7 @@ class DialogButtonLayer extends ButtonLayer
 	{
 		// コンストラクタ
         super.ButtonLayer(...);
-        //focusable = false; // フォーカスは受け取らない
+        focusable = false; // フォーカスは受け取らない
         hint = "";
 	}
 
@@ -153,7 +153,7 @@ class DialogEditLayer extends EditLayer
 
 	function onKeyDown(key, shift, process)
 	{
-		// 縦書きの時は右と左を入れ替える
+        // 縦書きの時は右と左を入れ替える
 		if(Edit_vertical)
 		{
 			if(key == VK_LEFT) key = VK_RIGHT;
@@ -309,6 +309,13 @@ class DialogLayer extends KAGLayer
     function open() {
         window.openDialog(this);
     }
+
+    /**
+     * オープン直後によばれる
+     */
+    function onOpen() {
+    }
+
     
     /**
      * 閉じる処理
@@ -623,17 +630,11 @@ class DialogLayer extends KAGLayer
         // リンク番号 n を処理する
 		var ln = links[n];
 		if(ln === void) return;
-
 		// 実行
 		Scripts.eval(ln.exp) if ln.exp != '';
-
-		if(ln.storage != '' || ln.target != '')
-		{
-			if(window.getKeyState(VK_RETURN) || window.getKeyState(VK_SPACE) || window.getKeyState(VK_CONTROL))
-				window.hideMouseCursor();
-					// キーボードによる操作の場合はマウスカーソルを隠す
-			window.process(ln.storage, ln.target, ln.countPage);
-		}
+		if(ln.storage != '' || ln.target != '')	{
+            window.process(ln.storage, ln.target, ln.countPage);
+        }
     }
 
     /**
@@ -657,8 +658,6 @@ class DialogLayer extends KAGLayer
 	}
 
 	function setFocusToLink(n, force = false) {
-
-        dm("setFocusToLink" + n);
 
         // マウスカーソルを リンク番号 n の位置に移動させたり、
 		// フォーカスを与えたりする
@@ -698,8 +697,8 @@ class DialogLayer extends KAGLayer
 		var process = force || sgks(VK_LEFT) || sgks(VK_UP) || sgks(VK_RIGHT) || sgks(VK_DOWN) || sgks(VK_TAB);
 		if(process)
 		{
-            window.cursorX = x;
-            window.cursorY = y;
+            cursorX = x;
+            cursorY = y;
             if(force) keyLink = n; // 一応再設定
 		}
 		if(linkn.type == ltEdit || linkn.type == ltCheckBox || linkn.type == ltSlider)
@@ -714,9 +713,71 @@ class DialogLayer extends KAGLayer
 
 	function onKeyDown(key, shift)
 	{
-		if(!focusable || !numLinks) { return super.onKeyDown(...); }
+        if(!focusable || !numLinks) { return super.onKeyDown(...); }
+
+		var l, r;
+        l=VK_LEFT;
+        r=VK_RIGHT;
+
+		if(!selProcessLock && ((key == VK_UP && !(shift & ssShift)) || key == l ||
+			(key == VK_TAB && (shift & ssShift))))
+		{
+            if(keyLink == -1 || keyLink == 0)
+			{
+				var l = focusPrev();
+				if(l !== null) return;
+				keyLink = numLinks - 1;
+			}
+			else
+			{
+				keyLink--;
+			}
+			var obj = setFocusToLink(keyLink);
+			if(obj !== void) obj.focus();
+		}
+		else if(!selProcessLock && (key == VK_DOWN || key == r || (key == VK_TAB && !(shift & ssShift))))
+		{
+			if(keyLink == -1 || keyLink == numLinks -1)
+			{
+				var l = focusNext();
+				if(l !== null) return;
+				keyLink = 0;
+			}
+			else
+			{
+				keyLink ++;
+			}
+			var obj = setFocusToLink(keyLink);
+			if(obj !== void) obj.focus();
+		}
+		else if(key == VK_SPACE || key == VK_RETURN)
+		{
+            if(selProcessLock || keyLink == -1) {
+                window.checkProceedingKey(key, shift);
+            } else
+				processLink(keyLink);
+		}
+        else if(key == VK_ESCAPE)
+		{
+            close();
+        }
+		else
+		{
+			window.processKeys(key, shift); // window に処理をまかせる
+		}
+    }
+
+
+	function findPrevFocusable(control, layer)
+	{
+		if(control.linkNum != 0) return this; else return prevFocusable;
 	}
 
+	function findNextFocusable(control, layer)
+	{
+		if(control.linkNum != numLinks -1) return this; else return layer;
+	}
+    
 	function onBeforeFocus(layer, blured, direction)
 	{
 		// フォーカスを得る前に呼ばれる

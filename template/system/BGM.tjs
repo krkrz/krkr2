@@ -83,7 +83,7 @@ class KAGSoundBuffer
 
 	function onStatusChanged()
 	{
-		sbclass.onStatusChanged(...);
+        sbclass.onStatusChanged(...);
 		var ps = prevstatus; // prev. status
 		var cs = sbclass.status; // current status
 		prevstatus = cs;
@@ -559,7 +559,7 @@ class BGM
 
 	function onSoundBufferStop(source)
 	{
-		if(currentBuffer == source)
+        if(currentBuffer == source)
 		{
 			// 演奏が終了した
 			playingStorage = "";
@@ -616,12 +616,24 @@ class BGM
         }
         setter(v) {
             _voldown = v;
-            if (_voldown) {
-                currentBuffer.fade(volume * 0.5, 300);
-            } else {
-                currentBuffer.fade(volume, 300);
+            if (_enabled) {
+                if (_voldown) {
+                    currentBuffer.fade(volume * 0.5, 300);
+                } else {
+                    currentBuffer.fade(volume, 300);
+                }
             }
         }
     }
+
+    function setLoop(loop) {
+        if(_enabled) {
+            currentBuffer.looping = loop;
+            // ループするときはフラグ0を0にしておくルールに!
+            currentBuffer.flags[0] = loop ? 0 : 1;
+        }
+        looping = loop;
+    }
+
 }
 
