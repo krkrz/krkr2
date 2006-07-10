@@ -346,7 +346,7 @@ class KAGWindow extends Window
      */
     property isRecollection {
         getter() {
-            recollectionEndLabel !== void;
+            return recollectionEndLabel !== void;
         }
     }
     
@@ -383,6 +383,7 @@ class KAGWindow extends Window
             global.currentDialog.visible = true;
             global.currentDialog.setMode();
             global.currentDialog.focus();
+            global.currentDialog.onOpen();
         }
         setMenuAccessibleAll();
     }
@@ -905,9 +906,9 @@ class KAGWindow extends Window
 
 	function action(ev)
 	{
-		if(ev.type == 'onKeyDown' && ev.target === this)
+        if(ev.type == 'onKeyDown' && ev.target === this)
 		{
-			// パッド入力に対応する処理
+            // パッド入力に対応する処理
 			var handler = padKeyMap[ev.key];
 			if(handler !== void)
 			{
@@ -1142,12 +1143,12 @@ class KAGWindow extends Window
 
 	function canStore()
 	{
-		return storeEnabled && storeLabelPassed;
+		return storeEnabled && storeLabelPassed && !isRecollection;
 	}
 
 	function canRestore()
 	{
-		return restoreEnabled;
+		return restoreEnabled && !isRecollection;
 	}
 
 	function setMenuAccessibleAll()
@@ -2768,7 +2769,11 @@ class KAGWindow extends Window
         closeDialog();
 
         // 指定ファイル、指定ラベルから実行を開始する
-		if(!usingExtraConductor) incRecordLabel(countpage);
+
+        if(!usingExtraConductor) {
+            incRecordLabel(countpage);
+            endRecollection();
+        }
 		setUserSpeed();
 
 		if(file != '')
@@ -2788,8 +2793,6 @@ class KAGWindow extends Window
 			storeFlags(); // 一番最初の状態をストア
 			isFirstProcess = false;
 		}
-
-        endRecollection();
 
 		dm("処理を開始します");
 		inSleep = false;
@@ -3123,7 +3126,9 @@ class KAGWindow extends Window
 		onExtraConductorReturn = onreturn;
 		inSleepBeforeExtraConductor = inSleep; // inSleep 保存
 		storeMessageLayerSelProcessLock(); // メッセージレイヤの storeSelProcessLock を呼ぶ
-		conductor = extraConductor; // コンダクタを切り替える
+        selectLayer.lockFocus();
+        mapSelectLayer.lockFocus();
+        conductor = extraConductor; // コンダクタを切り替える
 		(Dictionary.assign incontextof extraConductor.macros)(mainConductor.macros);
 			// マクロはコピー
 		usingExtraConductor = true;
@@ -3156,7 +3161,9 @@ class KAGWindow extends Window
 			inSleep = inSleepBeforeExtraConductor; // inSleep 復帰
 			notifyStable();
 		}
-		restoreMessageLayerSelProcessLock(); // メッセージレイヤの restoreSelProcessLock を呼ぶ
+        mapSelectLayer.unlockFocus();
+        selectLayer.unlockFocus();
+        restoreMessageLayerSelProcessLock(); // メッセージレイヤの restoreSelProcessLock を呼ぶ
 		setMenuAccessibleAll();
 		cancelSkip();
 
@@ -4738,7 +4745,7 @@ class KAGWindow extends Window
 
 	function onKeyDown(key, shift)
 	{
-		if(focusedLayer === null)
+        if(focusedLayer === null)
 			internalOnKeyDown(key, shift);
 		super.onKeyDown(...);
 	}
@@ -4970,6 +4977,42 @@ class KAGWindow extends Window
 
 	//------------------------------------------------------------- BGM 処理 --
 
+    var bgmStopExp;
+    var bgmStopStorage;
+    var bgmStopTarget;
+
+    function handleBgmStop() {
+        // BGM停止ハンドラ
+
+        // パラメータを保持して破棄
+        var exp     = bgmStopExp;
+        var storage = bgmStopStorage;
+        var target  = bgmStopTarget;
+        clearBgmStop();
+        
+        // 処理実行
+        if (exp !== void) {
+            Scripts.eval(exp);
+        }
+        if (storage !== void || target !== void) {
+            window.process(storage, target);
+        }
+    }
+    
+    function setBgmStop(elm) {
+        // BGM停止時処理の登録
+        bgmStopExp     = elm.exp;
+        bgmStopStorage = elm.storage;
+        bgmStopTarget  = elm.target;
+    }
+    
+    function clearBgmStop() {
+        // BGM停止時処理の解除
+        bgmStopExp     = void;
+        bgmStopStorage = void;
+        bgmStopTarget  = void;
+    }
+    
 	function onBGMFadeCompleted()
 	{
 		// BGM のフェードが完了した
@@ -4978,9 +5021,14 @@ class KAGWindow extends Window
 
 	function onBGMStop()
 	{
-		// BGM が停止した
-		conductor.trigger('bgmstop');
-	}
+        // BGM が停止した
+        conductor.trigger('bgmstop');
+        if (bgmStopExp !== void || bgmStopStorage !== void || bgmStopTarget !== void) {
+            global.stopBgmTrigger = new AsyncTrigger(handleBgmStop, '');
+            global.stopBgmTrigger.cached = true;
+            global.stopBgmTrigger.trigger();
+        }
+    }
 
 	function waitBGMFade(elm)
 	{
@@ -5770,6 +5818,14 @@ class KAGWindow extends Window
         current.addTimeout(elm);
         return 0;
     } incontextof this,
+
+    click : function(elm)
+    {
+        // クリック処理の登録(カレントのみ)
+        current.addClick(elm);
+        return 0;
+    } incontextof this,
+
                   
 	l : function(elm)
 	{
@@ -6009,6 +6065,7 @@ class KAGWindow extends Window
         // メッセージ履歴レイヤの消去
         historyLayer.clear();
         historyOfStore.clear();
+		nextRecordHistory = false;
         return 0;
 	} incontextof this,
                   
@@ -6475,10 +6532,12 @@ class KAGWindow extends Window
 
 	playbgm : function(elm)
 	{
-		// BGM の演奏
+        // BGM の演奏
 		bgm.play(elm);
+        clearBgmStop();
+        // 再生既読フラグ
         if (elm.storage !== void) {
-            kag.sflags["bgm_" + elm.storage] = true;
+            kag.sflags["bgm_" + (elm.storage.toUpperCase())] = true;
         }
         return 0;
 	} incontextof this,
@@ -6536,6 +6595,7 @@ class KAGWindow extends Window
 	{
 		// BGM の入れ替え/クロスフェード
 		bgm.exchange(elm);
+        clearBgmStop();
 		return 0;
 	} incontextof this,
 
@@ -6546,6 +6606,20 @@ class KAGWindow extends Window
 		return 0;
 	} incontextof this,
 
+    setbgmstop : function(elm)
+	{
+		// BGM の終了時コールバックの登録
+        setBgmStop(elm);
+        return 0;
+	} incontextof this,
+
+    clearbgmstop : function(elm)
+	{
+		// BGM の終了時コールバックの削除
+        clearBgmStop();
+        return 0;
+	} incontextof this,
+                  
 	wb : function(elm)
 	{
 		// BGM のフェード終了待ち
@@ -6927,7 +7001,7 @@ class KAGWindow extends Window
      */
     property bgmvolume {
         getter() {
-            dm("bgmVolume 取得");
+            //dm("bgmVolume 取得");
             if (scflags.bgm !== void && scflags.bgm.globalVolume !== void) {
                 return scflags.bgm.globalVolume / 1000;
             }

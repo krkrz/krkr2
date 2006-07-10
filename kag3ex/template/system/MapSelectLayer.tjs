@@ -73,18 +73,10 @@ class MapSelectButtonLayer extends Layer
     }
     
 	function onMouseUp(x, y, button, shift)	{
-       // onMouseUp イベントハンドラ
         if (enabled && button == mbLeft) {
-            if (onclick !== void) {
-                Scripts.eval(onclick);
-            }
-            if (this isvalid && parent isvalid) {
-                parent.onButtonClick(this);
-            }
+            parent.onButtonClick(this);
         }
-        if (this isvalid) {
-            super.onMouseUp(...);
-        }
+        if (this isvalid) super.onMouseUp(...);
     }
 
 	function onMouseEnter()	{
@@ -93,6 +85,7 @@ class MapSelectButtonLayer extends Layer
 		update();
 		Butt_mouseOn = true;
 		super.onMouseEnter(...);
+        focus();
 	}
 
 	function onMouseLeave()	{
@@ -105,50 +98,25 @@ class MapSelectButtonLayer extends Layer
 
 	function onKeyDown(key, shift, process)
 	{
-		// キーが押された
-		if(process)
-		{
-			if(key == VK_RETURN || key == VK_SPACE)
-			{
-				// スペースキーまたはエンターキー
-				Butt_keyPressed = true;
-				super.onKeyDown(key, shift, false); // 処理をしたのでprocessにfalseを渡す
-			}
-			else
-			{
-				super.onKeyDown(...);
-			}
-		}
-		else
-		{
-			// process が false の場合は処理は行わない
-			super.onKeyDown(...);
-		}
-	}
+        // キーが押された
+        if(window.preProcessKeys(key, shift)) return;
+        if (enabled && (key == VK_SPACE || key == VK_RETURN)) {
+            parent.onButtonClick(this);
+        }
+        if (this isvalid) super.onKeyDown(...);
+    }
 
-	function onKeyUp(key, shift, process)
+	function onFocus(prevfocused, direction)
 	{
-		// キーが離された
-		if(process)
-		{
-			if(key == VK_RETURN || key == VK_SPACE)
-			{
-				// スペースキーまたはエンターキー
-				var flag = Butt_keyPressed;
-				Butt_keyPressed = false;
-				super.onKeyUp(key, shift, false);
-                if (flag) onClick(width \ 2, height \ 2); // クリック動作
-			}
-			else
-			{
-				super.onKeyUp(...);
-			}
-		}
-		else
-		{
-			super.onKeyUp(...);
-		}
-	}
+        // キー操作によるフォーカス変動の場合にマウスカーソルも移動
+        var sgks = window.getKeyState;
+        var process = sgks(VK_LEFT) || sgks(VK_UP) || sgks(VK_RIGHT) ||
+            sgks(VK_DOWN) || sgks(VK_TAB);
+        if(process) {
+            cursorX = (width>>1);
+            cursorY = (height>>1);
+        }
+    }
 }
 
 /**
@@ -254,7 +222,7 @@ class MapSelectLayer extends KAGLayer {
         setSizeToImageSize();
         hitType      = htMask;
         hitThreshold = 1;
-        focusable    = true;
+        focusable    = false;
         cursor = window.cursorDefault;
         
         // タイマーを作成
@@ -340,9 +308,9 @@ class MapSelectLayer extends KAGLayer {
         var leavese  = elm.leavese !== void ? elm.leavese : leavese;
         var clickse  = elm.clickse !== void ? elm.clickse : clickse;
 
-        var entersebuf = elm.entersebuf !== void ? elm.entersebuf : 1;
-        var leavesebuf = elm.leavesebuf !== void ? elm.leavesebuf : 1;
-        var clicksebuf = elm.clicksebuf !== void ? elm.clicksebuf : 2;
+        var entersebuf = elm.entersebuf !== void ? elm.entersebuf : kag.numSEBuffers - 2;
+        var leavesebuf = elm.leavesebuf !== void ? elm.leavesebuf : kag.numSEBuffers - 2;
+        var clicksebuf = elm.clicksebuf !== void ? elm.clicksebuf : kag.numSEBuffers - 1;
 
         var select = new MapSelectButtonLayer(window, this, info);
 
@@ -417,7 +385,6 @@ class MapSelectLayer extends KAGLayer {
      */
     function onButtonClick(select) {
         if (select !== void) {
-            // 実行
             Scripts.eval(select.onclick) if select.onclick != '';
             if (select isvalid) {
                 if (select.storage != '' || select.target != '')	{
@@ -452,4 +419,19 @@ class MapSelectLayer extends KAGLayer {
 			visible = visibleBeforeUserInvisible;
 		}
 	}
+
+    function lockFocus() {
+        for (var i=0; i<selects.count;i++) {
+            var select = selects[i];
+            select.focusable = false;
+        }
+    }
+    
+    function unlockFocus() {
+        for (var i=0; i<selects.count;i++) {
+            var select = selects[i];
+            select.focusable = true;
+        }
+    }
+
 }
