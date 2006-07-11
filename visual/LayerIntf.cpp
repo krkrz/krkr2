@@ -4771,6 +4771,13 @@ bool tTJSNI_BaseLayer::DoUserFontSelect(tjs_uint32 flags, const ttstr &caption,
 	return b;
 }
 //---------------------------------------------------------------------------
+void tTJSNI_BaseLayer::GetFontList(tjs_uint32 flags, std::vector<ttstr> & list)
+{
+	ApplyFont();
+
+	MainImage->GetFontList(flags, list);
+}
+//---------------------------------------------------------------------------
 void tTJSNI_BaseLayer::MapPrerenderedFont(const ttstr & storage)
 {
 	ApplyFont();
@@ -10177,6 +10184,36 @@ TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/doUserSelect)
 	return TJS_S_OK;
 }
 TJS_END_NATIVE_METHOD_DECL(/*func. name*/doUserSelect)
+//----------------------------------------------------------------------
+TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/getList)
+{
+	TJS_GET_NATIVE_INSTANCE(/*var. name*/_this, /*var. type*/tTJSNI_Font);
+
+	if(numparams < 1) return TJS_E_BADPARAMCOUNT;
+
+	tjs_uint32 flags = (tjs_int64)*param[0];
+
+	std::vector<ttstr> list;
+	_this->GetLayer()->GetFontList(flags, list);
+
+	if(result)
+	{
+		iTJSDispatch2 *dsp;
+		dsp = TJSCreateArrayObject();
+		tTJSVariant tmp(dsp, dsp);
+		*result = tmp;
+		dsp->Release();
+
+		for(tjs_uint i = 0; i < list.size(); i++)
+		{
+			tmp = list[i];
+			dsp->PropSetByNum(TJS_MEMBERENSURE, i, &tmp, dsp);
+		}
+	}
+
+	return TJS_S_OK;
+}
+TJS_END_NATIVE_METHOD_DECL(/*func. name*/getList)
 //----------------------------------------------------------------------
 TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/mapPrerenderedFont)
 {
