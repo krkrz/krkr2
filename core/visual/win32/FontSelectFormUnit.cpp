@@ -44,41 +44,6 @@ void TVPHideFontSelectFormAtAppDeactivate()
 	}
 }
 //---------------------------------------------------------------------------
-int CALLBACK TVPFSFEnumFontsProc(LOGFONT *lplf, TEXTMETRIC *lptm, DWORD type,
-	LPARAM data)
-{
-	// enumerate fonts
-
-	TTVPFontSelectForm *form = reinterpret_cast<TTVPFontSelectForm*>(data);
-	if(form->Flags & TVP_FSF_FIXEDPITCH)
-	{
-		// fixed pitch only ?
-		if(lptm->tmPitchAndFamily & TMPF_FIXED_PITCH) return 1;
-	}
-
-	if(form->Flags & TVP_FSF_SAMECHARSET)
-	{
-		// sama character set only ?
-		if(lplf->lfCharSet != form->RefFont.lfCharSet) return 1;
-	}
-
-	if(form->Flags & TVP_FSF_NOVERTICAL)
-	{
-		// not to list vertical fonts up ?
-		if(lplf->lfFaceName[0] == '@') return 1;
-	}
-
-	if(form->Flags & TVP_FSF_TRUETYPEONLY)
-	{
-		// true type only ?
-		if(!(type & TRUETYPE_FONTTYPE)) return 1;
-	}
-
-	form->ListBox->Items->Add(lplf->lfFaceName);
-
-	return 1;
-}
-//---------------------------------------------------------------------------
 __fastcall TTVPFontSelectForm::TTVPFontSelectForm(TComponent* Owner, TCanvas *RefCanvas,
 	int flags, AnsiString caption, AnsiString prompt, AnsiString samplestring)
 	: TForm(Owner)
@@ -99,9 +64,13 @@ __fastcall TTVPFontSelectForm::TTVPFontSelectForm(TComponent* Owner, TCanvas *Re
 
 	Memo->Font->Height = -itemheight;
 
-	::EnumFonts(RefCanvas->Handle, NULL, (int (__stdcall *)())TVPFSFEnumFontsProc,
-		reinterpret_cast<LPARAM>(this));
+	std::vector<AnsiString> fontlist;
 
+	TVPGetFontList(fontlist, flags, RefCanvas);
+
+	for(std::vector<AnsiString>::iterator i = fontlist.begin();
+		i != fontlist.end(); i++)
+		ListBox->Items->Add(*i);
 
 	int n = ListBox->Items->IndexOf(RefFont.lfFaceName);
 	if(n!=-1)
@@ -196,5 +165,81 @@ HDWP TTVPFontSelectForm::ShowTop(HDWP hdwp)
 	return hdwp;
 }
 //---------------------------------------------------------------------------
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+//---------------------------------------------------------------------------
+struct tTVPFSEnumFontsProcData
+{
+	std::vector<AnsiString> & List;
+	tjs_uint32 Flags;
+	LOGFONT RefFont;
+
+	tTVPFSEnumFontsProcData(std::vector<AnsiString> & list, tjs_uint32 flags, TFont * reffont) :
+		List(list), Flags(flags)
+	{
+		GetObject(reffont->Handle, sizeof(LOGFONT), &RefFont);
+	}
+};
+//---------------------------------------------------------------------------
+int CALLBACK TVPFSFEnumFontsProc(LOGFONT *lplf, TEXTMETRIC *lptm, DWORD type,
+	LPARAM userdata)
+{
+	// enumerate fonts
+	tTVPFSEnumFontsProcData *data = reinterpret_cast<tTVPFSEnumFontsProcData*>(userdata);
+
+	if(data->Flags & TVP_FSF_FIXEDPITCH)
+	{
+		// fixed pitch only ?
+		if(lptm->tmPitchAndFamily & TMPF_FIXED_PITCH) return 1;
+	}
+
+	if(data->Flags & TVP_FSF_SAMECHARSET)
+	{
+		// sama character set only ?
+		if(lplf->lfCharSet != data->RefFont.lfCharSet) return 1;
+	}
+
+	if(data->Flags & TVP_FSF_NOVERTICAL)
+	{
+		// not to list vertical fonts up ?
+		if(lplf->lfFaceName[0] == '@') return 1;
+	}
+
+	if(data->Flags & TVP_FSF_TRUETYPEONLY)
+	{
+		// true type only ?
+		if(!(type & TRUETYPE_FONTTYPE)) return 1;
+	}
+
+	data->List.push_back(lplf->lfFaceName);
+
+	return 1;
+}
+//---------------------------------------------------------------------------
+void TVPGetFontList(std::vector<AnsiString> & list, tjs_uint32 flags, TCanvas * refcanvas)
+{
+	tTVPFSEnumFontsProcData data(list, flags, refcanvas->Font);
+
+	::EnumFonts(refcanvas->Handle, NULL, (int (__stdcall *)())TVPFSFEnumFontsProc,
+		reinterpret_cast<LPARAM>(&data));
+}
+//---------------------------------------------------------------------------
+
 
 

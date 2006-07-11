@@ -172,6 +172,8 @@ public:
 	bool SelectFont(tjs_uint32 Flags, const ttstr &caption, const ttstr &prompt,
 		const ttstr &samplestring, ttstr &selectedfont);
 
+	void GetFontList(tjs_uint32 flags, std::vector<ttstr> &list);
+
 	void MapPrerenderedFont(const ttstr & storage);
 	void UnmapPrerenderedFont();
 
