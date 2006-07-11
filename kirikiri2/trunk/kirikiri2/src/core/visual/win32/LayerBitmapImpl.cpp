@@ -1992,6 +1992,15 @@ bool tTVPNativeBaseBitmap::SelectFont(tjs_uint32 flags, const ttstr &caption,
 	}
 }
 //---------------------------------------------------------------------------
+void tTVPNativeBaseBitmap::GetFontList(tjs_uint32 flags, std::vector<ttstr> &list)
+{
+	ApplyFont();
+	std::vector<AnsiString> ansilist;
+	TVPGetFontList(ansilist, flags, GetFontCanvas());
+	for(std::vector<AnsiString>::iterator i = ansilist.begin(); i != ansilist.end(); i++)
+		list.push_back(i->c_str());
+}
+//---------------------------------------------------------------------------
 void tTVPNativeBaseBitmap::MapPrerenderedFont(const ttstr & storage)
 {
 	ApplyFont();

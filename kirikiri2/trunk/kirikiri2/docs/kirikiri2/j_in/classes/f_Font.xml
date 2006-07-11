@@ -204,6 +204,27 @@
 </member>
 
 <member>
+	<name>getList</name>
+	<type>method</type>
+	<shortdesc>フォント名の列挙</shortdesc>
+	<arg>
+		<argitem>
+			<name>flags</name>
+			<default></default>
+			<desc>
+				　フォントをどのように列挙するかを指定します。<ref>Font.doUserSelect</ref>で
+				指定するものと同一です (ただしこのメソッドには
+				<tt>fsfUseFontFace</tt>は指定しても無視されます)<r/>
+			</desc>
+		</argitem>
+	</arg>
+	<result>フォント名(文字列)が各要素として格納されている配列</result>
+	<desc>
+		フォント名を列挙し、配列として返します。
+	</desc>
+</member>
+
+<member>
 	<name>mapPrerenderedFont</name>
 	<type>method</type>
 	<shortdesc>レンダリング済みフォントの割り当て</shortdesc>
