@@ -356,7 +356,10 @@ class KAGWindow extends Window
     function startRecollection(elm) {
         if (elm.no !== void) {
             var num = (int)elm.no;
+            // ロード処理中も isRecollection を有効にするためとりあえず設定
+            recollectionEndLabel = true;
             if (loadBookMark(recollectionBookmark + num)) {
+                // ロード処理で消されてるのでもう一度設定
                 recollectionEndLabel = "*kaisouEnd" + num;
                 recollectionStorage  = elm.doneStorage;
                 recollectionTarget   = elm.doneTarget;
@@ -6944,10 +6947,14 @@ class KAGWindow extends Window
     beginskip : function(elm)
 	{
         // 現在のスキップモードを記録
-        prevSkipMode = skipMode;
-        if (skipMode) {
-            // 既にスキップしてた場合は停止できないスキップ状態にする
-            skipMode = 5;
+        if (prevSkipMode !== void) {
+            throw new Exception("beginskipは入れ子できません!!!");
+        } else {
+            prevSkipMode = skipMode;
+            if (skipMode) {
+                // 既にスキップしてた場合は停止できないスキップ状態にする
+                skipMode = 5;
+            }
         }
         return 0;
 	} incontextof this,
