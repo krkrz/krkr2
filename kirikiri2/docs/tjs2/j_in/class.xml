@@ -61,6 +61,9 @@
 		}<r/>
 	}<r/>
 </example>
+<r/>
+クラスに対して instanceof 演算子を "Class" を伴って使用した場合は真になります(上記の例で言うと、test instanceof "Class" は真)。<r/>
+
 </para>
 
 <para>
