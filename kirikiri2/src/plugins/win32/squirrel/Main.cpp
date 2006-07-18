@@ -69,10 +69,7 @@ delMember(iTJSDispatch2 *dispatch, const tjs_char *name)
 
 //---------------------------------------------------------------------------
 
-extern void store(HSQUIRRELVM v, tTJSVariant &variant);
 extern void store(tTJSVariant &result, SquirrelObject &variant);
-extern void store(tTJSVariant &result, StackHandler &stack, int idx=1);
-extern void store(tTJSVariant &result, HSQUIRRELVM v, int idx=-1);
 extern void registglobal(HSQUIRRELVM v, const SQChar *name, iTJSDispatch2 *dispatch);
 
 //---------------------------------------------------------------------------
@@ -189,7 +186,7 @@ extern "C" HRESULT _stdcall V2Link(iTVPFunctionExporter *exporter)
 		}
 		
 		// ƒOƒ[ƒoƒ‹‚É“o˜^
-		registglobal(SquirrelVM::GetVMPtr(), L"global", global);
+		registglobal(SquirrelVM::GetVMPtr(), L"krkr", global);
 		
 		global->Release();
 	}
