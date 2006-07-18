@@ -1,0 +1,65 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 9.00
+# Visual Studio 2005
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "squirrelBase", "squirrelBase.vcproj", "{99495428-58B1-484B-948A-B744811A4909}"
+	ProjectSection(ProjectDependencies) = postProject
+		{A79653F2-73F4-4F57-AE86-4AEBDE795232} = {A79653F2-73F4-4F57-AE86-4AEBDE795232}
+		{B6DA293C-F1BB-4800-8134-70CBE80F70A0} = {B6DA293C-F1BB-4800-8134-70CBE80F70A0}
+		{F9811314-C694-49A4-BD87-BA2E7F30D358} = {F9811314-C694-49A4-BD87-BA2E7F30D358}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "squirrel", "sqplus\squirrel\squirrel.vcproj", "{A79653F2-73F4-4F57-AE86-4AEBDE795232}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "sqstdlib", "sqplus\sqstdlib\sqstdlib.vcproj", "{B6DA293C-F1BB-4800-8134-70CBE80F70A0}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "sqplus", "sqplus\sqplus\sqplus.vcproj", "{F9811314-C694-49A4-BD87-BA2E7F30D358}"
+	ProjectSection(ProjectDependencies) = postProject
+		{B6DA293C-F1BB-4800-8134-70CBE80F70A0} = {B6DA293C-F1BB-4800-8134-70CBE80F70A0}
+		{A79653F2-73F4-4F57-AE86-4AEBDE795232} = {A79653F2-73F4-4F57-AE86-4AEBDE795232}
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug - Unicode|Win32 = Debug - Unicode|Win32
+		Debug|Win32 = Debug|Win32
+		Release - Unicode|Win32 = Release - Unicode|Win32
+		Release|Win32 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{99495428-58B1-484B-948A-B744811A4909}.Debug - Unicode|Win32.ActiveCfg = Debug|Win32
+		{99495428-58B1-484B-948A-B744811A4909}.Debug - Unicode|Win32.Build.0 = Debug|Win32
+		{99495428-58B1-484B-948A-B744811A4909}.Debug|Win32.ActiveCfg = Debug|Win32
+		{99495428-58B1-484B-948A-B744811A4909}.Debug|Win32.Build.0 = Debug|Win32
+		{99495428-58B1-484B-948A-B744811A4909}.Release - Unicode|Win32.ActiveCfg = Release|Win32
+		{99495428-58B1-484B-948A-B744811A4909}.Release - Unicode|Win32.Build.0 = Release|Win32
+		{99495428-58B1-484B-948A-B744811A4909}.Release|Win32.ActiveCfg = Release|Win32
+		{99495428-58B1-484B-948A-B744811A4909}.Release|Win32.Build.0 = Release|Win32
+		{A79653F2-73F4-4F57-AE86-4AEBDE795232}.Debug - Unicode|Win32.ActiveCfg = Debug - Unicode|Win32
+		{A79653F2-73F4-4F57-AE86-4AEBDE795232}.Debug - Unicode|Win32.Build.0 = Debug - Unicode|Win32
+		{A79653F2-73F4-4F57-AE86-4AEBDE795232}.Debug|Win32.ActiveCfg = Debug - Unicode|Win32
+		{A79653F2-73F4-4F57-AE86-4AEBDE795232}.Debug|Win32.Build.0 = Debug - Unicode|Win32
+		{A79653F2-73F4-4F57-AE86-4AEBDE795232}.Release - Unicode|Win32.ActiveCfg = Release - Unicode|Win32
+		{A79653F2-73F4-4F57-AE86-4AEBDE795232}.Release - Unicode|Win32.Build.0 = Release - Unicode|Win32
+		{A79653F2-73F4-4F57-AE86-4AEBDE795232}.Release|Win32.ActiveCfg = Release - Unicode|Win32
+		{A79653F2-73F4-4F57-AE86-4AEBDE795232}.Release|Win32.Build.0 = Release - Unicode|Win32
+		{B6DA293C-F1BB-4800-8134-70CBE80F70A0}.Debug - Unicode|Win32.ActiveCfg = Debug - Unicode|Win32
+		{B6DA293C-F1BB-4800-8134-70CBE80F70A0}.Debug - Unicode|Win32.Build.0 = Debug - Unicode|Win32
+		{B6DA293C-F1BB-4800-8134-70CBE80F70A0}.Debug|Win32.ActiveCfg = Debug - Unicode|Win32
+		{B6DA293C-F1BB-4800-8134-70CBE80F70A0}.Debug|Win32.Build.0 = Debug - Unicode|Win32
+		{B6DA293C-F1BB-4800-8134-70CBE80F70A0}.Release - Unicode|Win32.ActiveCfg = Release - Unicode|Win32
+		{B6DA293C-F1BB-4800-8134-70CBE80F70A0}.Release - Unicode|Win32.Build.0 = Release - Unicode|Win32
+		{B6DA293C-F1BB-4800-8134-70CBE80F70A0}.Release|Win32.ActiveCfg = Release - Unicode|Win32
+		{B6DA293C-F1BB-4800-8134-70CBE80F70A0}.Release|Win32.Build.0 = Release - Unicode|Win32
+		{F9811314-C694-49A4-BD87-BA2E7F30D358}.Debug - Unicode|Win32.ActiveCfg = Debug - Unicode|Win32
+		{F9811314-C694-49A4-BD87-BA2E7F30D358}.Debug - Unicode|Win32.Build.0 = Debug - Unicode|Win32
+		{F9811314-C694-49A4-BD87-BA2E7F30D358}.Debug|Win32.ActiveCfg = Debug - Unicode|Win32
+		{F9811314-C694-49A4-BD87-BA2E7F30D358}.Debug|Win32.Build.0 = Debug - Unicode|Win32
+		{F9811314-C694-49A4-BD87-BA2E7F30D358}.Release - Unicode|Win32.ActiveCfg = Release - Unicode|Win32
+		{F9811314-C694-49A4-BD87-BA2E7F30D358}.Release - Unicode|Win32.Build.0 = Release - Unicode|Win32
+		{F9811314-C694-49A4-BD87-BA2E7F30D358}.Release|Win32.ActiveCfg = Release - Unicode|Win32
+		{F9811314-C694-49A4-BD87-BA2E7F30D358}.Release|Win32.Build.0 = Release - Unicode|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
