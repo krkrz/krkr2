@@ -32,6 +32,8 @@
 		return a+b-c*d;<r/>
 	}<r/>
 </example>
+<r/>
+関数に対して instanceof 演算子を "Function" を伴って使用した場合は真になります(上記の例で言うと、func instanceof "Function" は真)。<r/>
 </para>
 
 <para>
