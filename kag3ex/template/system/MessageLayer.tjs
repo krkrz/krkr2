@@ -863,7 +863,7 @@ class MessageLayer extends KAGLayer
 		initLineLayer();
 
         clearFace();
-        processName();
+        clearName();
     }
 
 	function setPosition(elm)
@@ -896,7 +896,7 @@ class MessageLayer extends KAGLayer
         nameTop   = +elm.nametop    if elm.nametop    !== void;
         nameWidth = +elm.namewidth  if elm.namewidth  !== void;
         nameHeight= +elm.nameheight if elm.nameheight !== void;
-        
+
         // 表情窓
         faceLeft  = +elm.faceleft   if elm.faceleft   !== void;
         faceTop   = +elm.facetop    if elm.facetop    !== void;
@@ -1847,21 +1847,44 @@ class MessageLayer extends KAGLayer
         nameLayer.visible = false;
     }
 
+    var nameImageMap;
+    var defaultNameImage;
+    
     /**
      * 名前の描画
      */
     function processName(text=void) {
         // 消去
         nameLayer.fillRect(0,0,nameLayer.width,nameLayer.height,0);
-        if(edge)
-            nameLayer.drawText(0, 0, text, chColor, 255, antialiased, 512, edgeColor, 1, 0, 0); // 文字
-        else if(shadow)
-            nameLayer.drawText(0, 0, text, chColor, 255, antialiased, 255, shadowColor, 0, 2, 2); // 文字
-        else
-            nameLayer.drawText(0, 0, text, chColor, 255, antialiased); // 文字
-        nameLayer.visible = true;
+        if (text !== void) {
+            dm("名前:" + text);
+            if (nameImageMap !== void ) {
+                var image = nameImageMap[text];
+                if (image === void) {
+                    image = defaultNameImage;
+                }
+                dm("ファイル:" + image);
+                nameLayer.loadImages(image);
+                nameLayer.visible = true;
+            } else {
+                if(edge)
+                    nameLayer.drawText(0, 0, text, chColor, 255, antialiased, 512, edgeColor, 1, 0, 0); // 文字
+                else if(shadow)
+                    nameLayer.drawText(0, 0, text, chColor, 255, antialiased, 255, shadowColor, 0, 2, 2); // 文字
+                else
+                    nameLayer.drawText(0, 0, text, chColor, 255, antialiased); // 文字
+                nameLayer.visible = true;
+            }
+        } else {
+            nameLayer.visible = false;
+        }
     }
 
+    function setNameImage(map, defaultImage) {
+        nameImageMap = map;
+        defaultNameImage = defaultImage;
+    }
+    
     /**
      * 顔画像の描画
      */
