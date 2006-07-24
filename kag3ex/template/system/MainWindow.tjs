@@ -1544,6 +1544,7 @@ class KAGWindow extends Window
 		}
 
         f.lineMode  = lineMode;
+        f.crAfterName = crAfterName;
         f.autoLabelMode = autoLabelMode;
         f.autoLabelCount = autoLabelCount;
         f.afterPage = afterPage;
@@ -1634,6 +1635,7 @@ class KAGWindow extends Window
             setLineMode("line");
             break;
         }
+        crAfterName = f.crAfterName;
         autoLabelMode = f.autoLabelMode;
         autoLabelCount = f.autoLabelCount;
         afterPage = f.afterPage;
@@ -5393,12 +5395,14 @@ class KAGWindow extends Window
 
     // ------------------------------------------------------ 改行特殊制御モード
 
-    var lineMode;   // 改行処理モード
-    var afterPage;  // 改ページ直後
-    var emptyLine;  // まだ行が空
-    var nameMode;   // 名前処理モード ※行単位で完結するので保存の必要なし
-    var nameStr;    // 現在の名前
-    var nameDisp;   // 現在の表示名
+    var lineMode;    // 改行処理モード
+    var crAfterName; // 名前の後に改行をいれるか
+    var afterPage;   // 改ページ直後
+    var emptyLine;   // まだ行が空
+    var nameMode;    // 名前処理モード ※行単位で完結するので保存の必要なし
+    var afterName;   // 名前処理の直後
+    var nameStr;     // 現在の名前
+    var nameDisp;    // 現在の表示名
     
     /**
      * @param lineMode
@@ -5426,6 +5430,14 @@ class KAGWindow extends Window
         }
     }
 
+    /**
+     * @param crAfterName 名前の後に改行をいれるかどうか
+     */
+    function setCrAfterName(crAfterName) {
+        this.crAfterName = crAfterName;
+        afterName = false;
+    }
+    
     /**
      * 自動ラベルモードの既読処理
      */
@@ -5535,6 +5547,9 @@ class KAGWindow extends Window
                 // ここでは emptyLine の状態はありえない
                 if (elm.text == "】") {
                     nameMode = 0;
+                    if (crAfterName) {
+                        afterName = true;
+                    }
                     //dm("名前処理:" + nameStr + ":" + nameDisp);
                     if (tagHandlers.dispname !== void) {
                         tagHandlers.dispname(%["name" => nameStr, "disp" => nameDisp]);
@@ -5569,6 +5584,7 @@ class KAGWindow extends Window
                 }
             }
         }
+        afterName = false;
         return tagHandlers.origch(elm);
 
     } incontextof this,
@@ -5631,6 +5647,11 @@ class KAGWindow extends Window
         return 0;
     } incontextof this,
 
+    craftername : function(elm) {
+        setCrAfterName(elm.mode);
+        return 0;
+    } incontextof this,
+
     autolabelmode : function(elm) {
         autoLabelMode = elm.mode;
         return 0;
@@ -5672,8 +5693,11 @@ class KAGWindow extends Window
             if (emptyLine) {
                 return 0; // 空行は無視する
             } else {
-                emptyLine = true;
-                return tagHandlers.p(elm);
+                // 名前の直後の改行は無視する
+                if (!afterName) {
+                    emptyLine = true;
+                    return tagHandlers.p(elm);
+                }
             }
             break;
         case 2:
@@ -5682,10 +5706,14 @@ class KAGWindow extends Window
             if (emptyLine) {
                 return 0; // 空行は無視する
             } else {
-                emptyLine = true;
-                return tagHandlers.l(elm);
+                // 名前の直後の改行は無視する
+                if (!afterName) {
+                    emptyLine = true;
+                    return tagHandlers.l(elm);
+                }
             }
         }
+        return 0;
 	} incontextof this,
 
 	ruby : function(elm)
@@ -6538,10 +6566,6 @@ class KAGWindow extends Window
         // BGM の演奏
 		bgm.play(elm);
         clearBgmStop();
-        // 再生既読フラグ
-        if (elm.storage !== void) {
-            kag.sflags["bgm_" + (elm.storage.toUpperCase())] = true;
-        }
         return 0;
 	} incontextof this,
 
