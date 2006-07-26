@@ -1,6 +1,15 @@
 @if exp="typeof(global.world_object) == 'undefined'"
 @iscript
 
+
+/**
+ * ワールド拡張
+ * ◇フック一覧
+ * グローバルに以下のメソッドがあった場合はフックとして呼び出します
+ * setTimeHook(time, elm)     時間変更時フック
+ * setStageHook(stage, elm)   ステージ変更時フック
+ */
+
 /**
  * 空の辞書
  */
@@ -282,13 +291,12 @@ class KAGEnvImage {
         }
         return false;
     }
-    
+
     /**
      * トランジションを設定
      * @param name トランジション名
      */
     function setTrans(name, elm) {
-
         var info;
         if (env.transitions !== void && (info = env.transitions[name]) !== void) {
             // 登録済みトランジション
@@ -302,7 +310,7 @@ class KAGEnvImage {
                     //delete elm[name];
                 }
             }, tr);
-            if (!isSkip()) {
+            if (!env.transMode && !isSkip()) {
                 trans = tr;
                 redraw = true;
             }
@@ -321,7 +329,7 @@ class KAGEnvImage {
                 }
             }, tr);
             tr.method = name;
-            if (!isSkip()) {
+            if (!env.transMode && !isSkip()) {
                 trans = tr;
                 redraw = true;
             }
@@ -330,6 +338,24 @@ class KAGEnvImage {
         return false;
     }
 
+    /**
+     * トランジションを設定
+     * @param param トランジション指定　文字列または辞書
+     * @return 設定した場合ｈ
+     */
+    function setTrans2(param) {
+        if (param === void) {
+            return false;
+        } else if (typeof param == "String") {
+            setTrans(param);
+            return true;
+        } else if (param instanceof "Dictionary") {
+            setTrans(param.method, param);
+            return true;
+        }
+        return false;
+    }
+    
     /**
      * 状態更新処理
      */
@@ -459,8 +485,13 @@ class KAGEnvImage {
     reset : function(param, elm) {
         resetFlag = true;
     } incontextof this,
-        
-    trans  : setTrans incontextof this,
+    trans  : function(param, elm) {
+        if (param == "void") {
+            trans = void;
+        } else {
+            setTrans(param, elm);
+        }
+    } incontextof this,
     action : setAction incontextof this,
 
     sync : function(param) { if (param) { syncMode = true; } } incontextof this,
@@ -565,11 +596,13 @@ class KAGEnvImage {
      * 画像の描画
      */
     function updateImage(base) {
+        dm("画像更新");
         kag.updateBeforeCh = 1;
         // 描画更新が必要な場合
         if (redraw) {
 
             if (base === void && trans) {
+
                 kag.fore.base.stopTransition();
                 
                 // 更新処理を走らせる場合
@@ -1176,7 +1209,7 @@ class KAGEnvCharacter extends KAGEnvLevelLayer, KAGEnvImage {
      * ポーズの設定
      */
     function setPose(poseName) {
-        var info = poses[cmd];
+        var info = poses[poseName];
         if (info !== void) {
             if (poseName != pose || disp == CLEAR) {
                 pose = poseName;
@@ -1184,6 +1217,18 @@ class KAGEnvCharacter extends KAGEnvLevelLayer, KAGEnvImage {
                     disp = BOTH;
                 }
                 redraw = true;
+
+                // トランジション指定
+                if (!setTrans2(info.trans)) {
+                    if (!setTrans2(init.poseTrans)) {
+                        if (!setTrans2(init.charTrans)) {
+                            if (!setTrans2(env.envinfo.poseTrans)) {
+                                setTrans2(env.envinfo.charTrans);
+                            }
+                        }
+                    }
+                }
+
             }
             // 服装初期化処理
             if (dress !== void && (info.dresses == void || info.dresses[dress] == void)) {
@@ -1210,6 +1255,14 @@ class KAGEnvCharacter extends KAGEnvLevelLayer, KAGEnvImage {
                 disp = BOTH;
             }
             redraw = true;
+            // トランジション指定
+            if (!setTrans2(init.dressTrans)) {
+                if (!setTrans2(init.charTrans)) {
+                    if (!setTrans2(env.envinfo.dressTrans)) {
+                        setTrans2(env.envinfo.charTrans);
+                    }
+                }
+            }
         }
     }
 
@@ -1223,9 +1276,24 @@ class KAGEnvCharacter extends KAGEnvLevelLayer, KAGEnvImage {
                 disp = BOTH;
             }
             redraw = true;
+            // トランジション指定
+            if (!setTrans2(init.faceTrans)) {
+                if (!setTrans2(init.charTrans)) {
+                    if (!setTrans2(env.envinfo.faceTrans)) {
+                        setTrans2(env.envinfo.charTrans);
+                    }
+                }
+            }
         }
     }
 
+    function setPositionTrans(info) {
+        // トランジション指定
+        if (!setTrans2(info.trans)) {
+            setTrans2(env.envinfo.positionTrans);
+        }
+    }
+    
     /**
      * 表示位置の設定
      */
@@ -1250,6 +1318,7 @@ class KAGEnvCharacter extends KAGEnvLevelLayer, KAGEnvImage {
             } else {
                 xpos = info.xpos;
                 reposition = true;
+                setPositionTrans(info);
             }
             if (disp == CLEAR) {
                 disp = BOTH;
@@ -1267,6 +1336,7 @@ class KAGEnvCharacter extends KAGEnvLevelLayer, KAGEnvImage {
             } else {
                 ypos = info.ypos;
                 reposition = true;
+                setPositionTrans(info);
             }
             if (!visible) {
                 visible = true;
@@ -1275,6 +1345,7 @@ class KAGEnvCharacter extends KAGEnvLevelLayer, KAGEnvImage {
         case global.KAGEnvironment.DISPPOSITION:
             disp = info.disp;
             redraw = true;
+            setPositionTrans(info);
             break;
         case global.KAGEnvironment.LEVEL:
             //dm("レベル:" + info.level);
@@ -1284,6 +1355,7 @@ class KAGEnvCharacter extends KAGEnvLevelLayer, KAGEnvImage {
             if (disp > CLEAR) {
                 redraw = true;
             }
+            setPositionTrans(info);
             break;
         }
     }
@@ -1408,11 +1480,13 @@ class KAGEnvCharacter extends KAGEnvLevelLayer, KAGEnvImage {
     };
 
     /**
-     * 現在の立ち絵の描画
+     * 立ち絵の描画
      * @param layer 描画対象レイヤ
      * @param levelName レベル名
+     * @param pose ポーズ指定
+     * @return 成功したら true
      */
-    function _drawLayer(layer, levelName) {
+	function _drawLayerPose(layer, levelName, pose) {
 
         var imageName;
         var poseInfo;
@@ -1429,17 +1503,15 @@ class KAGEnvCharacter extends KAGEnvLevelLayer, KAGEnvImage {
             var dressName;
             if (dress !== void) {
                 dressName = dresses[dress];
-            } else {
-                dressName = poseInfo.defaultDress;
-            }
+            } 
+            dressName = poseInfo.defaultDress if dressName === void;
 
             // 表情指定が無い場合はデフォルトを参照
             var faceName;
             if (face !== void) {
                 faceName = faces[face];
-            } else {
-                faceName = poseInfo.defaultFace;
             }
+            faceName = poseInfo.defaultFace if faceName === void;
 
             //dm("dress:", dressName, "face:", faceName);
             
@@ -1447,45 +1519,85 @@ class KAGEnvCharacter extends KAGEnvLevelLayer, KAGEnvImage {
                 
                 // 顔分離型立ち絵
 
-                // レベル用調整処理
-                faceImageName = faceImageName.replace(/LEVEL/, levelName);
-                
-                if (dressName !== void) {
-                    imageName = imageName.replace(/DRESS/, dressName);
-                }
+                // ベース部分
+                var imageFile = imageName.replace(/DRESS/, dressName);
 
                 // ベース画像のロード
-                if (baseImageName != imageName) {
-                    baseImageName = imageName;
+                if (baseImageName != imageFile) {
+                    baseImageName = imageFile;
                     // 画像ベースのキャッシュ用
                     if (baseImage === void) {
                         baseImage = new global.Layer(kag, kag.fore.base);
                         baseImage.name = "立ち絵画像キャッシュ:" + name;
                     }
-                    baseImage.loadImages(imageName);
+					try {
+                        baseImage.loadImages(imageFile);
+                    } catch (e) {
+                        dm("立ち絵ベース画像の読み込みに失敗しました:" + imageFile);
+                        if (dressName !== poseInfo.defaultDress) {
+                            dm("デフォルトの服装を試用します:" + poseInfo.defaultDress);
+                            dressName = poseInfo.defaultDress;
+                            imageFile = imageName.replace(/DRESS/, dressName);
+                            baseImageName = imageFile;
+                            try {
+                                baseImage.loadImages(imageFile);
+                            } catch (e) {
+                                dm("立ち絵ベース画像の読み込みに失敗しました:" + imageFile);
+                                return false;
+                            }
+                        } else {
+                            return false;
+                        }
+					} 
                 }
                 
                 // 画像をレイヤに割り当てる
                 layer.assignImages(baseImage);
+                // 初期化処理XXX ちょっと再検討必要かも
+				layer.type    = layer._initTyoe    = baseImage.type;
+                layer.opacity = layer._initOpacity = baseImage.opacity;
+
+                // レベル用調整処理
+                faceImageName = faceImageName.replace(/LEVEL/, levelName);
+                
                 //　表情指定
                 if (faceName !== void) {
-                    faceImageName = faceImageName.replace(/DRESS/, dressName);
-                    faceImageName = faceImageName.replace(/FACE/, faceName);
+                    imageFile = faceImageName.replace(/DRESS/, dressName);
+                    imageFile = imageFile.replace(/FACE/, faceName);
                     var imageInfo;
+                    if (faceImage === void) {
+                        faceImage = new global.Layer(kag, kag.fore.base);
+                        faceImage.name = "立ち絵顔画像処理用:" + name;
+                    }
                     try {
-                        if (faceImage === void) {
-                            faceImage = new global.Layer(kag, kag.fore.base);
-                            faceImage = "立ち絵顔画像処理用:" + name;
-                        }
-                        imageInfo = faceImage.loadImages(faceImageName);
+                        imageInfo = faceImage.loadImages(imageFile);
                     } catch (e) {
-                        var faceImageName = poseInfo.faceImageDefault;
-                        if (faceImageName !== void) {
-                            faceImageName = poseInfo.faceImageName;
-                            faceImageName = faceImageName.replace(/DRESS/, poseInfo.defaultDress);
+                        var succeeded = false;
+                        // 服装のデフォルトおとしこみはエラー扱いではない
+                        if (dressName != poseInfo.defaultDress) {
+                            dressName = poseInfo.defaultDress;
+                            imageFile = faceImageName.replace(/DRESS/, dressName);
+                            imageFile = imageFile.replace(/FACE/, faceName);
+                            try {
+                                imageInfo = faceImage.loadImages(imageFile);
+                                succeeded = true;
+                            } catch (e) {
+                            }
                         }
-                        faceImageName = faceImageName.replace(/FACE/, faceName);
-                        imageInfo = faceImage.loadImages(faceImageName);
+                        if (!succeeded) {
+                            dm("表情画像の読み込みに失敗しました:" + imageFile);
+                            if (faceName != poseInfo.defaultFace) {
+                                dm("デフォルトの表情を試用します:" + poseInfo.defaultFace);
+                                faceName = poseInfo.defaultFace;
+                                imageFile = faceImageName.replace(/DRESS/, dressName);
+                                imageFile = imageFile.replace(/FACE/, faceName);
+                                try {
+                                    imageInfo = faceImage.loadImages(imageFile);
+                                } catch (e) {
+                                    dm("表情画像の読み込みに失敗しました:" + imageFile);
+                                }
+                            }
+                        }
                     }
                     if (imageInfo && imageInfo.offs_x !== void) {
                         layer.operateRect(imageInfo.offs_x, imageInfo.offs_y,
@@ -1494,6 +1606,7 @@ class KAGEnvCharacter extends KAGEnvLevelLayer, KAGEnvImage {
                         layer.operateRect(0,0,faceImage,0,0,faceImage.imageWidth, faceImage.imageHeight);
                     }
                 }
+                return true;
                 
             } else {
                 // 顔合成型立ち絵
@@ -1512,28 +1625,55 @@ class KAGEnvCharacter extends KAGEnvLevelLayer, KAGEnvImage {
                     } else {
                         layer.loadImages(imageName);
                     }
+                    return true;
                 } catch (e) {
                     dm("ERROR:画像ファイルの読み込みに失敗しました:" + imageName);
                 }
             }
-            layer.setSizeToImageSize();
+        } else {
+            dm("立ち絵情報がありません:" + pose);
+        }
+        return false;
+    }
 
-            // 色補正処理
-            var timeInfo;
-            if ((timeInfo = env.currentTime) !== void) {
-                // レイヤ合成
-                if (timeInfo.charLightColor !== void) {
-                    layer.holdAlpha = true;
-                    layer.fillOperateRect(0,0,
-                                          layer.width,layer.height,
-                                          timeInfo.charLightColor,
-                                          timeInfo.charLightType);
+    /**
+     * 現在の立ち絵の描画
+     * @param layer 描画対象レイヤ
+     * @param levelName レベル名
+     */
+    function _drawLayer(layer, levelName) {
+
+        if (!_drawLayerPose(layer, levelName, pose)) {
+            dm("立ち絵がロードできませんでした:" + pose);
+            if (pose !== init.defaultPose) {
+                dm("デフォルトのポーズを試用します:" + init.defaultPose);
+                if (!_drawLayerPose(layer, levelName, init.defaultPose)) {
+                    dm("立ち絵がロードできませんでした:" + init.defaultPose);
+                    return;
                 }
-                // 明度補正
-                if (timeInfo.charBrightness !== void) {
-                    layer.light(timeInfo.charBrightness,
-                                timeInfo.charContrast);
-                }
+            } else {
+                return;
+            }
+        }
+
+        // サイズ補正
+        layer.setSizeToImageSize();
+        
+        // 色補正処理
+        var timeInfo;
+        if ((timeInfo = env.currentTime) !== void) {
+            // レイヤ合成
+            if (timeInfo.charLightColor !== void) {
+                layer.holdAlpha = true;
+                layer.fillOperateRect(0,0,
+                                      layer.width,layer.height,
+                                      timeInfo.charLightColor,
+                                      timeInfo.charLightType);
+            }
+            // 明度補正
+            if (timeInfo.charBrightness !== void) {
+                layer.light(timeInfo.charBrightness,
+                            timeInfo.charContrast);
             }
         }
     }
@@ -1719,14 +1859,16 @@ class KAGEnvCharacter extends KAGEnvLevelLayer, KAGEnvImage {
             if (init.voiceFile === void) {
                 return void;
             }
+            var voiceBase = f.voiceBase !== void ? f.voiceBase : "";
             if (f.name != sf.defaultName || f.family != sf.defaultFamily) {
                 // デフォルト以外の名前の場合
-                var name = init.voiceFile.sprintf(voice, "N");
+                var name = init.voiceFile.sprintf(voiceBase, voice, "N");
                 if (Storages.isExistentStorage(name)) {
                     return name;
                 }
             }
-            return init.voiceFile.sprintf(voice, "");
+            // 普通の名前の場合
+            return init.voiceFile.sprintf(voiceBase, voice, "");
         } else if (typeof voice == "String") {
             return voice;
         }
@@ -1805,9 +1947,7 @@ class KAGEnvCharacter extends KAGEnvLevelLayer, KAGEnvImage {
         }
         if (ret) {
             voiceEndTime = System.getTickCount() + ret;
-        } else {
-			voiceEndTime = void;
-		}
+        }
         return ret;
     }
 
@@ -1844,13 +1984,253 @@ class KAGEnvCharacter extends KAGEnvLevelLayer, KAGEnvImage {
     function waitVoice(param) {
         if (voiceEndTime !== void) {
             var waitTime = voiceEndTime - System.getTickCount();
-			if (waitTime > 0) {
-	            ret = kag.waitTime(waitTime, param == true && kag.clickSkipEnabled);
-			}
+            ret = kag.waitTime(waitTime, param == true && kag.clickSkipEnabled);
         }
     }
     
 };
+
+/**
+ * 環境BGMオブジェクト
+ */
+class KAGEnvBgm {
+
+    var env;
+    
+    /**
+     * コンストラクタ
+     */
+    function KAGEnvBgm(env) {
+        this.env = env;
+    }
+
+    /**
+     * 再生処理
+     * @param param 再生対象ファイル
+     */
+    function play(param, elm) {
+        if (param !== void) {
+            var time = +elm.time;
+            if (elm.noxchg) {
+                if (time > 0)  {
+                    kag.bgm.fadeIn(%[ storage:param, loop:elm.loop, time:time, start:elm.start]);
+                } else {
+                    kag.bgm.play(%[ storage:param, loop:elm.loop, paused:elm.paused, start:elm.start]);
+                }
+            } else {
+                if (time > 0 || +elm.intime > 0) {
+                    kag.bgm.exchange(%[ storage:param, loop:elm.loop, time:time, intime:elm.intime, outtime:elm.outtime, overlap:elm.overlap, start:elm.start]);
+                } else {
+                    kag.bgm.play(%[ storage:param, loop:elm.loop, paused:elm.paused, start:elm.start]);
+                }
+            }
+            kag.clearBgmStop();
+            // 再生既読フラグ
+            kag.sflags["bgm_" + (param.toUpperCase())] = true;
+        }
+    }
+
+    /**
+     * 停止処理
+     * @param param フェードアウト時間
+     */
+    function stop(param, elm) {
+        if (+param > 0) {
+            kag.bgm.fadeOut(%[ time: +param]);
+        } else {
+            kag.bgm.stop();
+        }
+    }
+
+    /**
+     * ポーズ処理
+     * @param param フェードアウト時間
+     */
+    function pause(param, elm) {
+        if (+param > 0) {
+            kag.bgm.fadePause(%[ time: +param]);
+        } else {
+            kag.bgm.pause();
+        }
+    }
+
+    /**
+     * 再開
+     */
+    function resume(param, elm) {
+        kag.bgm.resume();
+    }
+
+    /**
+     * 音量フェード
+     * @param param フェード時間
+     */
+    function fade(param, elm) {
+        kag.bgm.fade(%[ time:elm.time, volume:param ]);
+    }
+
+    var bgmcommands = %[
+    tagname : null, 
+    play : play incontextof this,
+    stop : stop incontextof this,
+    pause : pause incontextof this,
+    resume : resume incontextof this,
+    fade : fade incontextof this,
+    noxchg : null,
+    loop : null,
+    time : null,
+    start : null,
+    paused : null,
+    intime : null,
+    outtime : null,
+    overlap : null,
+        ];
+
+	var doflag;
+    
+    /**
+     * コマンドの実行
+     * @param cmd コマンド
+     * @param param パラメータ
+     * @param elm 他のコマンドも含む全パラメータ
+     * @return 実行が行われた場合 true
+     */
+    function doCommand(cmd, param, elm) {
+        var func;
+        if ((func = bgmcommands[cmd]) !== void) {
+            if (func != null) {
+                func(param, elm);
+                doflag = true;
+            }
+            return true;
+        }
+        // 再生コマンドとみなす
+        play(cmd, elm);
+        doflag = true;
+        return true;
+    }
+
+    /**
+     * KAG タグ処理
+     * @param elm 引数
+     */
+    function tagfunc(elm) {
+        dm("BGM 用ファンクション呼び出し!");
+		doflag = false;
+        foreach(elm, doCommand);
+        // 何もしなかった場合、かつ、タグ名が bgm でなければそれを再生する
+        if (!doflag && elm.tagname != "bgm") {
+            play(elm.tagname, elm);
+        }
+        return 0;
+    }
+    
+};
+
+/**
+ * 環境BGMオブジェクト
+ */
+class KAGEnvSE {
+
+    var env;
+    var id;
+    var name;  // 参照しているファイル名
+    var count; // 参照されたカウント値
+    
+    /**
+     * コンストラクタ
+     */
+    function KAGEnvSE(env, id) {
+        this.env = env;
+        this.id = id;
+    }
+
+    /**
+     * 再生処理
+     * @param param 再生対象ファイル
+     */
+    function play(param, elm) {
+        if (param !== void) {
+            name = param;
+            var time = +elm.time;
+            if (time > 0)  {
+                kag.se[id].fadeIn(%[ storage:param, loop:elm.loop, time:time, start:elm.start]);
+            } else {
+                kag.se[id].play(%[ storage:param, loop:elm.loop, start:elm.start]);
+            }
+        }
+    }
+
+    /**
+     * 停止処理
+     * @param param フェードアウト時間
+     */
+    function stop(param, elm) {
+        if (+param > 0) {
+            kag.se[id].fadeOut(%[ time: +param]);
+        } else {
+            kag.se[id].stop();
+        }
+    }
+
+    /**
+     * 音量フェード
+     * @param param フェード時間
+     */
+    function fade(param, elm) {
+        kag.se[id].fade(%[ time:elm.time, volume:param ]);
+    }
+
+    var secommands = %[
+    tagname : null, 
+    play : play incontextof this,
+    stop : stop incontextof this,
+    fade : fade incontextof this,
+    loop : null,
+    time : null,
+    start : null,
+        ];
+
+	var doflag;
+
+    /**
+     * コマンドの実行
+     * @param cmd コマンド
+     * @param param パラメータ
+     * @param elm 他のコマンドも含む全パラメータ
+     * @return 実行が行われた場合 true
+     */
+    function doCommand(cmd, param, elm) {
+        var func;
+        if ((func = secommands[cmd]) !== void) {
+            if (func != null) {
+                func(param, elm);
+				doflag = true;
+            }
+            return true;
+        }
+        // 再生コマンドとみなす
+        play(cmd, elm);
+		doflag = true;
+        return true;
+    }
+
+    /**
+     * KAG タグ処理
+     * @param elm 引数
+     */
+    function tagfunc(elm) {
+        dm("SE 用ファンクション呼び出し!");
+		doflag = false;
+        foreach(elm, doCommand);
+        // 何もしなかった場合、かつ、タグ名が se でなければそれを再生する
+        if (!doflag && elm.tagname != "se") {
+            play(elm.tagname, elm);
+        }
+        return 0;
+    }
+};
+
 
 /**
  * 環境オブジェクト
@@ -1904,6 +2284,16 @@ class KAGEnvironment extends KAGEnvImage {
     /// イベントレイヤ
     var event;
 
+    // BGM 系
+    var bgm;
+    var origOnBgmStop;
+    function onBGMStop() {
+        origOnBgmStop(...);
+    }
+
+    // SE 系
+    var ses;
+    
     //　現在時刻
     property currentTime {
         getter() {
@@ -1926,6 +2316,14 @@ class KAGEnvironment extends KAGEnvImage {
         characterInits = %[];
         layers = %[];
         event = new KAGEnvBaseLayer(env, "event");
+
+        // BGM オブジェクト
+        bgm = new KAGEnvBgm(env);
+        // SE 保持用。配列
+        ses = [];
+        for (var i=0; i<kag.numSEBuffers; i++) {
+            ses[i] = new KAGEnvSE(env, i);
+        }
         
         // 最初の実行時にその時点で存在しているレイヤの番号までは対象からはずすようにする
         initLayerCount = kag.numCharacterLayers;
@@ -1983,10 +2381,10 @@ class KAGEnvironment extends KAGEnvImage {
 
         kag.tagHandlers["dispname"] = this.dispname;
         kag.tagHandlers["endline"]  = this.endline;
-		kag.tagHandlers["quake"] = this.quake;
+		kag.tagHandlers["quake"]    = this.quake;
 
         kag.unknownHandler = this.unknown;
-
+        kag.seStopHandler  = this.onSeStop;
         
         dm("環境初期化完了");
     }
@@ -2098,6 +2496,13 @@ class KAGEnvironment extends KAGEnvImage {
         kag.allocateCharacterLayers(initLayerCount + layerCount, false);
         transMode = void;
 		trans = void;
+
+        // SE 初期化
+        for (var i=0;i<ses.count;i++) {
+            ses[i].name  = void;
+            ses[i].count = 0;
+        }
+        seCount = 0;
     }
 
     /**
@@ -2131,12 +2536,26 @@ class KAGEnvironment extends KAGEnvImage {
     /**
      * 舞台を設定する
      * @param stageName 舞台名
+     * @param elm コマンドのほかの要素
      */
-    function setStage(stageName) {
+    function setStage(stageName, elm) {
         if (stageName != stage || disp == CLEAR) {
             stage = stageName;
             disp = BOTH;
+
+			// ステージ変更時フック
+			if (global.setStageHook !== void) {
+				global.setStageHook(stageName, elm);
+			}
+
             // 舞台変更時はキャラの立ち絵を消去する？
+
+            // トランジション指定
+            if (!setTrans2(stages[stage].trans)) {
+                if (!setTrans2(env.envinfo.stageTrans)) {
+                    setTrans2(env.envinfo.envTrans);
+                }
+            }
         }
         // イベント絵は消去
         event.disp = CLEAR;
@@ -2144,16 +2563,30 @@ class KAGEnvironment extends KAGEnvImage {
 
     /**
      * 時間を設定する
-     * @param timeName
+     * @param timeName 時間名
+     * @param elm コマンドのほかの要素
      */
-    function setTime(timeName) {
+    function setTime(timeName, elm) {
         if (timeName != time || disp == CLEAR) {
             time = timeName;
             disp = BOTH;
+
+			// 時間変更時フック
+			if (global.setTimeHook !== void) {
+				global.setTimeHook(timeName, elm);
+			}
+
             // 時間変更はキャラの立ち絵も再描画の必要がある
             foreach(characters, function(name, value, dict) {
                 value.setTime();
             });
+
+            // トランジション指定
+            if (!setTrans2(times[time].trans)) {
+                if (!setTrans2(env.envinfo.timeTrans)) {
+                    setTrans2(env.envinfo.envTrans);
+                }
+            }
         }
         // イベント絵は消去
         event.disp = CLEAR;
@@ -2265,7 +2698,7 @@ class KAGEnvironment extends KAGEnvImage {
         }
         return 0;
     }        
-    
+
     var envCommands = %[
     /**
      * 全体の初期化処理
@@ -2304,12 +2737,14 @@ class KAGEnvironment extends KAGEnvImage {
         }
 
         var find = false;
+
+        // 時間と舞台
         var info;
         if (times !== void && (info = times[cmd]) !== void) {
-            setTime(cmd);
+            setTime(cmd, elm);
             find = true;
         } else if (stages !== void && (info = stages[cmd]) !== void) {
-            setStage(cmd);
+            setStage(cmd, elm);
             find = true;
         }
 
@@ -2348,26 +2783,30 @@ class KAGEnvironment extends KAGEnvImage {
                     // 画像がロードできなかった場合は補正で対応
                     image = stages[stage].image;
                     image = image.replace(/TIME/, times[defaultTime].prefix);
-                    layer.loadImages(%[ "storage" => image ]);
 
-                    // 色補正処理
-                    var timeInfo;
-                    if ((timeInfo = currentTime) !== void) {
-                        // レイヤ合成
-                        if (timeInfo.lightColor !== void) {
-                            layer.holdAlpha = true;
-                            layer.fillOperateRect(0,0,
-                                                  layer.width,layer.height,
-                                                  timeInfo.lightColor,
-                                                  timeInfo.lightType);
+                    try {
+                        layer.loadImages(%[ "storage" => image ]);
+                        
+                        // 色補正処理
+                        var timeInfo;
+                        if ((timeInfo = currentTime) !== void) {
+                            // レイヤ合成
+                            if (timeInfo.lightColor !== void) {
+                                layer.holdAlpha = true;
+                                layer.fillOperateRect(0,0,
+                                                      layer.width,layer.height,
+                                                      timeInfo.lightColor,
+                                                      timeInfo.lightType);
+                            }
+                            // 明度補正
+                            if (timeInfo.brightness !== void) {
+                                layer.light(timeInfo.brightness,
+                                            timeInfo.contrast);
+                            }
                         }
-                        // 明度補正
-                        if (timeInfo.brightness !== void) {
-                            layer.light(timeInfo.brightness,
-                                        timeInfo.contrast);
-                        }
+                    } catch (e) {
+                        dm("背景画像がロードできません" + image);
                     }
-
                 }
                 layer.left = (kag.scWidth  / 2) - layer.imageWidth / 2;
                 layer.top  = (kag.scHeight / 2) - layer.imageHeight / 2;
@@ -2629,10 +3068,11 @@ class KAGEnvironment extends KAGEnvImage {
                     dispName = name;
                 }
             }
-            if (dispName.length <= 1) {
-                dispName = "　" + dispName + "　";
-            }
-            var dispName = "【" + dispName + "】";
+// XXX 名前補正。外だしにすること!
+//            if (dispName.length <= 1) {
+//                dispName = "　" + dispName + "　";
+//            }
+//            var dispName = "【" + dispName + "】";
             kag.current.processName(dispName);
             if (kag.historyWriteEnabled) kag.historyLayer.store(dispName + " ");
             
@@ -2654,6 +3094,66 @@ class KAGEnvironment extends KAGEnvImage {
             }
         }
         return 0;
+    }
+
+    var seCount = 0;
+    /**
+     * SE 処理用オブジェクトの取得
+     * @param id SE番号指定
+     * 一番古いSEがわかるようにカウント処理をしている
+     */
+    function getSe(id) {
+        ses[id].count = seCount++;
+        return ses[id];
+    }
+
+    /**
+     * SE 停止時の処理
+     * 停止中状態にする
+     */
+    function onSeStop(id) {
+        if (id < ses.count) {
+            ses[id].name = void;
+        }
+    }
+    
+    /**
+     * SE の ID を決定する
+     * @param buf バッファIDを指定
+     */
+    function getSeId(buf) {
+        // 直接バッファが指定されている場合はそれを返す
+        if (buf !== void && +buf < ses.count) {
+            return +buf;
+        }
+        // 使われてないものをさがす
+        var max = seCount;
+        var old = void;
+        for (var i=0; i<ses.count; i++) {
+            if (ses[i].name == void) {
+                return i;
+            }
+            if (ses[i].count < max) {
+                max = ses[i].count;
+                old = i;
+            }
+        }
+        // 一番古いものを返す
+        return old;
+    }
+
+    /**
+     * SE の ID を決定する
+     * @param name SE の名前
+     */
+    function getSeIdFromName(name) {
+        for (var i=0; i<ses.count; i++) {
+            if (ses[i].name == name) {
+                return i;
+            }
+        }
+        // みつからないのであいている番号を返す
+        return getSeId();
     }
     
     /**
@@ -2678,6 +3178,24 @@ class KAGEnvironment extends KAGEnvImage {
         // イベント用処理
         if (tagName == "event" || tagName == "ev") {
             return event.tagfunc(elm);
+        } else if (tagName.substring(0,2) == "ev") {
+            elm[tagName] = true;
+            return event.tagfunc(elm);
+        }
+
+        // BGM 処理用
+        if (tagName == "bgm") {
+            return bgm.tagfunc(elm);
+        } else if (tagName.substring(0,3) == "bgm") {
+            return bgm.tagfunc(elm);
+        }
+
+        // SE 処理用
+        if (tagName == "se") {
+            return getSe(getSeId(elm.buf)).tagfunc(elm);
+        } else if (tagName.substring(0,2) == "se") {
+            var se = getSe(getSeIdFromName(tagName));
+            return se.tagfunc(elm);
         }
         
         // 該当キャラクタが存在するか？
