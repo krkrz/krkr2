@@ -1,7 +1,6 @@
 @if exp="typeof(global.world_object) == 'undefined'"
 @iscript
 
-
 /**
  * ワールド拡張
  * ◇フック一覧
@@ -9,6 +8,8 @@
  * setTimeHook(time, elm)     時間変更時フック
  * setStageHook(stage, elm)   ステージ変更時フック
  */
+var setTimeHook;
+var setStageHook;
 
 /**
  * 空の辞書
