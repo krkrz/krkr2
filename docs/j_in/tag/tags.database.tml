@@ -3996,6 +3996,21 @@
 <tag name="r">
 	<shortinfo> 改行する </shortinfo>
 	<group> メッセージ操作 </group>
+	<attribs>
+		<attrib name="eol">
+			<shortinfo> 行末の改行かどうか </shortinfo>
+			<required> no </required>
+			<format> true </format>
+			<info>
+				Config.tjs の ignoreCR が false の場合、KAG は改行の際に r
+				タグを生成しますが、この「改行の際に生成される r タグ」の場合は
+				この属性があり、値が true になっています。シナリオ中に書かれた
+				[r] タグの場合はこの属性はありません。<BR>
+				この属性はTJSスクリプト内部で改行と[r]タグを区別したい場合に
+				使用されますので、KAGシナリオ上でこの属性を指定する意味はありません。
+			</info>
+		</attrib>
+	</attribs>
 	<remarks>
 		　改行します。<BR>
 	</remarks>
