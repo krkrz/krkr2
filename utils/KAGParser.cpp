@@ -1391,6 +1391,7 @@ parse_start:
 
 
 	static ttstr __tag_name(TJSMapGlobalStringMap(TJS_W("tagname")));
+	static ttstr __eol_name(TJSMapGlobalStringMap(TJS_W("eol")));
 	static ttstr __storage_name(TJSMapGlobalStringMap(TJS_W("storage")));
 	static ttstr __target_name(TJSMapGlobalStringMap(TJS_W("target")));
 	static ttstr __exp_name(TJSMapGlobalStringMap(TJS_W("exp")));
@@ -1440,9 +1441,12 @@ parse_start:
 				// line ended ...
 				TagLine = CurLine;
 				static tTJSVariant r_val(TJS_W("r"));
+				static tTJSVariant true_val(TJS_W("true"));
 				DicObj->PropSetByVS(TJS_MEMBERENSURE,
 					__tag_name.AsVariantStringNoAddRef(), &r_val, DicObj);
-				if(RecordingMacro) RecordingMacroStr += TJS_W("[r]");
+				DicObj->PropSetByVS(TJS_MEMBERENSURE,
+					__eol_name.AsVariantStringNoAddRef(), &true_val, DicObj);
+				if(RecordingMacro) RecordingMacroStr += TJS_W("[r eol=true]");
 				CurLine++;
 				CurPos = 0;
 				LineBufferUsing = false;
