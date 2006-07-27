@@ -1879,7 +1879,9 @@ class KAGWindow extends Window
 		// 次の「保存可能なラベル」通過時に
 		// 通過記録を行うように設定する
 		// ( ただし、そのときに記録されるのは、現在の状態 )
-		nextRecordHistory = true;
+        if (!isRecollection) {
+            nextRecordHistory = true;
+        }
 	}
 
 	function isHistoryOfStoreAlive()
