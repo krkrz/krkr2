@@ -1549,6 +1549,7 @@ class KAGWindow extends Window
         f.autoLabelCount = autoLabelCount;
         f.afterPage = afterPage;
         f.emptyLine = emptyLine;
+        f.prevEmptyLine = prevEmptyLine;
         
 		// storeHook
 		forEachEventHook('onStore',
@@ -1624,7 +1625,7 @@ class KAGWindow extends Window
 		// 自動ウェイト
 		autoWCWaits.assign(f.autoWCWaits) if f.autoWCWaits !== void;
 
-        switch (f.lineMode) {
+        switch (f.ineMode) {
         case 0:
             setLineMode();
             break;
@@ -1634,12 +1635,22 @@ class KAGWindow extends Window
         case 2:
             setLineMode("line");
             break;
+        case 3:
+            setLineMode("vn");
+            break;
+        case 4:
+            setLineMode("tex");
+            break;
+        case 5:
+            setLineMode("free");
+            break;
         }
         crAfterName = f.crAfterName;
         autoLabelMode = f.autoLabelMode;
         autoLabelCount = f.autoLabelCount;
         afterPage = f.afterPage;
         emptyLine = f.emptyLine;
+        prevEmptyLine = f.prevEmptyLine;
         
 		// ムービー
 		if( isMain )
@@ -5024,10 +5035,16 @@ class KAGWindow extends Window
 		conductor.trigger('bgmfade');
 	}
 
+    // BGM 停止時拡張ハンドラ
+    var bgmStopHandler;
+    
 	function onBGMStop()
 	{
         // BGM が停止した
         conductor.trigger('bgmstop');
+        if (bgmStopHandler !== void) {
+            bgmStopHandler();
+        }
         if (bgmStopExp !== void || bgmStopStorage !== void || bgmStopTarget !== void) {
             global.stopBgmTrigger = new AsyncTrigger(handleBgmStop, '');
             global.stopBgmTrigger.cached = true;
@@ -5119,10 +5136,16 @@ class KAGWindow extends Window
 		conductor.trigger('sefade' + id);
 	}
 
-	function onSESoundBufferStop(id)
+    // SE 停止時拡張ハンドラ
+    var seStopHandler;
+    
+    function onSESoundBufferStop(id)
 	{
 		// 効果音の再生が終了した
-		conductor.trigger('sestop' + id);
+        conductor.trigger('sestop' + id);
+        if (seStopHandler !== void) {
+            seStopHandler(id);
+        }
 	}
 
 	function waitSEFade(elm)
@@ -5399,6 +5422,7 @@ class KAGWindow extends Window
     var crAfterName; // 名前の後に改行をいれるか
     var afterPage;   // 改ページ直後
     var emptyLine;   // まだ行が空
+    var prevEmptyLine;   // 前の空行状態
     var nameMode;    // 名前処理モード ※行単位で完結するので保存の必要なし
     var afterName;   // 名前処理の直後
     var nameStr;     // 現在の名前
@@ -5408,7 +5432,10 @@ class KAGWindow extends Window
      * @param lineMode
      * 0: 通常
      * 1:行単位で [p]
-     * 2:行単位で [l] 空行で [p]
+     * 2:行単位で [l] 手動で [p]
+     * 3:行単位で [l] 空行で [p]
+     * 4:改行は無視。空行で [p]
+     * 5:改行は [r] 。空行で [p]
      */
     function setLineMode(lineMode) {
         if (lineMode === void) {
@@ -5420,13 +5447,36 @@ class KAGWindow extends Window
             mainConductor.ignoreCR  = false;
             afterPage = true;
             emptyLine = true;
+            prevEmptyLine = true;
             this.lineMode = 1;
         } else if (lineMode == "line") {
             dm("ラインモード:line");
             mainConductor.ignoreCR  = false;
             afterPage = true;
             emptyLine = true;
+            prevEmptyLine = true;
             this.lineMode = 2;
+        } else if (lineMode == "vn") {
+            dm("ラインモード:vn");
+            mainConductor.ignoreCR  = false;
+            afterPage = true;
+            emptyLine = true;
+            prevEmptyLine = true;
+            this.lineMode = 3;
+        } else if (lineMode == "tex") {
+            dm("ラインモード:tex");
+            mainConductor.ignoreCR  = false;
+            afterPage = true;
+            emptyLine = true;
+            prevEmptyLine = true;
+            this.lineMode = 4;
+        } else if (lineMode == "free") {
+            dm("ラインモード:free");
+            mainConductor.ignoreCR  = false;
+            afterPage = true;
+            emptyLine = true;
+            prevEmptyLine = true;
+            this.lineMode = 5;
         }
     }
 
@@ -5538,6 +5588,27 @@ class KAGWindow extends Window
                     }
                 }
                 break;
+            case 3:
+            case 5:
+                if (afterPage) {
+                    afterPage = false;
+                    if (emptyLine) {
+                        tagHandlers.cm();
+                    }
+                } else {
+                    if (emptyLine) {
+                        tagHandlers.origr(elm);
+                    }
+                }
+                break;
+            case 4:
+                if (afterPage) {
+                    afterPage = false;
+                    if (emptyLine) {
+                        tagHandlers.cm();
+                    }
+                }
+                break;
             }
 
             // 名前表示専用処理
@@ -5578,8 +5649,14 @@ class KAGWindow extends Window
                     return 0;
                 } else {
                     // 名前指定がない場合はパラメータなしで名前処理を呼び出す
-                    if (tagHandlers.dispname !== void) {
-                        tagHandlers.dispname();
+                    if (lineMode == 3 || lineMode == 4 || lineMode == 5) {
+                        if (prevEmptyLine && tagHandlers.dispname !== void) {
+                            tagHandlers.dispname();
+                        }
+                    } else {
+                        if (tagHandlers.dispname !== void) {
+                            tagHandlers.dispname();
+                        }
                     }
                 }
             }
@@ -5677,24 +5754,26 @@ class KAGWindow extends Window
                   
 	r : function(elm)
 	{
-        // ヒストリの登録アクションの消去
-        if (lineMode && !emptyLine) {
-            if (tagHandlers.endline !== void) {
-                tagHandlers.endline();
-            }
-        }
         switch (lineMode) {
         case 0:
+            prevEmptyLine = emptyLine;
             return tagHandlers.origr(elm);
             break;
         case 1:
             //dm("page:改行");
             nameMode = 0;
             if (emptyLine) {
+                prevEmptyLine = emptyLine;
                 return 0; // 空行は無視する
             } else {
+
                 // 名前の直後の改行は無視する
                 if (!afterName) {
+                    // ヒストリの登録アクションの消去
+                    if (tagHandlers.endline !== void) {
+                        tagHandlers.endline();
+                    }
+                    prevEmptyLine = emptyLine;
                     emptyLine = true;
                     return tagHandlers.p(elm);
                 }
@@ -5704,12 +5783,77 @@ class KAGWindow extends Window
             //dm("line:改行");
             nameMode = 0;
             if (emptyLine) {
+                prevEmptyLine = emptyLine;
                 return 0; // 空行は無視する
+            } else {
+
+                // 名前の直後の改行は無視する
+                if (!afterName) {
+                    // ヒストリの登録アクションの消去
+                    if (tagHandlers.endline !== void) {
+                        tagHandlers.endline();
+                    }
+                    prevEmptyLine = emptyLine;
+                    emptyLine = true;
+                    return tagHandlers.l(elm);
+                }
+            }
+            break;
+        case 3:
+            //dm("vn:改行");
+            nameMode = 0;
+            if (emptyLine) {
+                if (!prevEmptyLine) {
+                    // 最初の空行で改ページ
+
+                    // ヒストリの登録アクションの消去
+                    if (tagHandlers.endline !== void) {
+                        tagHandlers.endline();
+                    }
+                    // 改行
+                    prevEmptyLine = emptyLine;
+                    return tagHandlers.p(elm);
+                } else {
+                    // そうでない空行は無視する
+                    prevEmptyLine = emptyLine;
+                    return 0;
+                }
             } else {
                 // 名前の直後の改行は無視する
                 if (!afterName) {
+                    prevEmptyLine = emptyLine;
                     emptyLine = true;
                     return tagHandlers.l(elm);
+                }
+            }
+            break;
+
+        case 4:
+        case 5:
+            //dm("tex/free:改行");
+            nameMode = 0;
+            if (emptyLine) {
+                if (!prevEmptyLine) {
+                    // 最初の空行で改ページ
+
+                    // ヒストリの登録アクションの消去
+                    if (tagHandlers.endline !== void) {
+                        tagHandlers.endline();
+                    }
+                    // 改行
+                    prevEmptyLine = emptyLine;
+                    return tagHandlers.p(elm);
+                } else {
+                    // そうでない空行は無視する
+                    prevEmptyLine = emptyLine;
+                    return 0;
+                }
+            } else {
+                // 名前の直後の改行は無視する
+                if (!afterName) {
+                    prevEmptyLine = emptyLine;
+                    emptyLine = true;
+                    return 0;
                 }
             }
         }
@@ -5866,13 +6010,17 @@ class KAGWindow extends Window
 
 	p : function(elm)
 	{
+        dm("改ページ");
         // 自動ラベルモードは p タグにおいて有効
         setAutoLabel();
-        if (lineMode == 2) {
+        if (lineMode == 2 || lineMode == 3) {
             afterPage = true;
             if (emptyLine) {
                 return 0;
             }
+            emptyLine = true;
+        } else if (lineMode == 4 || lineMode == 5) {
+            afterPage = true;
             emptyLine = true;
         }
         // ページクリック待ち
