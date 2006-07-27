@@ -1936,7 +1936,7 @@ class KAGEnvCharacter extends KAGEnvLevelLayer, KAGEnvImage {
                 }
                 // ボリューム補正
                 //dm("ボイスボリューム" + kag.voicevolume);
-                soundBuffer.volume2 = kag.voicevolume * 1000;
+                soundBuffer.volume2 = kag.getVoiceVolume(init.voiceName) * 1000;
                 try {
                     soundBuffer.open(voicename);
                     soundBuffer.play();

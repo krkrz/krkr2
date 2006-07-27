@@ -33,7 +33,6 @@ class KAGWindow extends Window
 		// ゆん氏からいただきました。
 		// この場を借りてお礼申し上げます。
 
-
 	var snapshotLayer = void; // 画像のスナップショットを一時的に保存するレイヤ
 	var snapshotLockCount = 0; // ロックカウント
 
@@ -293,6 +292,8 @@ class KAGWindow extends Window
 	var numBookMarks = 10; // メニューに用意する栞のサブメニュー項目の数
 	var showBookMarkDate = false; // メニューに栞をはさんだ日付時刻を表示するか
 
+    var bookMarkDateSecond = false; // 日付に秒までふくめるか
+    
 	var bookMarkNames = []; // メニューに設定されている栞の名前
 	var bookMarkDates = []; // 栞の日付
 	var bookMarkProtectedStates = []; // 栞が保護されているかの情報
@@ -2221,9 +2222,15 @@ class KAGWindow extends Window
 			bookMarkNames[num] = dic.currentPageName;
 			var date = new Date();
 			date.setTime(dic.storeTime);
-			date = "%04d/%02d/%02d %02d:%02d".sprintf(
-				date.getYear(), date.getMonth() + 1, date.getDate(),
-				date.getHours(), date.getMinutes() );
+            if (bookMarkDateSecond) {
+                date = "%04d/%02d/%02d %02d:%02d:%02d".sprintf(
+                    date.getYear(), date.getMonth() + 1, date.getDate(),
+                    date.getHours(), date.getMinutes(), date.getSeconds() );
+            } else {
+                date = "%04d/%02d/%02d %02d:%02d".sprintf(
+                    date.getYear(), date.getMonth() + 1, date.getDate(),
+                    date.getHours(), date.getMinutes() );
+            }
 			bookMarkDates[num] = date;
 			setBookMarkMenuCaptions();
 			saveSystemVariables();
@@ -7266,6 +7273,33 @@ class KAGWindow extends Window
             scflags.voiceon = %[];
         }
         scflags.voiceon[name] = on;
+    }
+
+    /**
+     * 指定された名前のキャラのボイスを有効にする
+     */
+    function getVoiceVolume(name) {
+        if (name === void) {
+            name = "etc";
+        }
+        if (scflags.voice !== void && 
+            scflags.voice[name] !== void) {
+            return scflags.voice[name] / 1000;
+        }
+        return voicevolume;
+    }
+    
+    /**
+     * 指定された名前のキャラのボイスを有効にする
+     */
+    function setVoiceVolume(name, vol) {
+        if (name === void) {
+            name = "etc";
+        }
+        if (scflags.voice === void) {
+            scflags.voice = %[];
+        }
+        scflags.voice[name] = vol * 1000;
     }
 
     /**
