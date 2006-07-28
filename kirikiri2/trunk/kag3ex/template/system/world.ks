@@ -146,7 +146,7 @@ class KAGEnvImage {
     }
     
     function isSkip() {
-        return env.kag.skipMode || env.kag.sflags.noeffect;
+        return env.kag.skipMode || env.kag.noeffect;
     }
 
     // Šeíî•ñ‚ğ•Û‚·‚éŠÂ‹«
@@ -282,6 +282,9 @@ class KAGEnvImage {
                         }, action);
                         action.module = name;
                         action.time = elm.time if elm.time !== void;
+						if (action.time !== void) {
+							action.time *= kag.drawspeed;
+						}
                         actionList.add(action);
                         return true;
                     }
