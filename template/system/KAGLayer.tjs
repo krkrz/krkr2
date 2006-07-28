@@ -197,7 +197,7 @@ class KAGLayer extends Layer
 		var method = elm.method;
 		if(elm.time !== void)
 		{
-            if (window.drawspeed != void) {
+            if (window.drawspeed !== void) {
                 elm.time *= window.drawspeed;
             }
             elm.time = 1 if +elm.time == 0; // 時間に 0 は指定できないので
@@ -265,7 +265,7 @@ class KAGLayer extends Layer
 		// elm に従い自動移動を開始する
 
         // 速度補正
-        if (window.drawspeed != void) {
+        if (window.drawspeed !== void) {
             elm.time *= window.drawspeed;
         }
 
