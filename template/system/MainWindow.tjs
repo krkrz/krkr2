@@ -7330,6 +7330,39 @@ class KAGWindow extends Window
         }
     }
 
+    /**
+     * 描画速度 (トランジションの再生倍率を指定する）
+     */
+    property drawspeed {
+        getter() {
+            if (scflags.drawspeed === void) {
+                return 1.0;
+            }
+            return scflags.drawspeed;
+        }
+        setter(v) {
+            scflags.drawspeed = v;
+        }
+    }
+    
+    /**
+     * エフェクトの有効・無効（トランジション補正と連動）
+     */
+    property noeffect {
+        getter() {
+            if (scflags.drawspeed === void) {
+                return false;
+            }
+            return scflags.drawspeed == 0;
+        }
+        setter(v) {
+            if (v) {
+                scflags.drawspeed = 0;
+            } else {
+                delete scflags.drawspeed;
+            }
+        }
+    }
 }
 
 
