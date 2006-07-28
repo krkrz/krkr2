@@ -1626,7 +1626,7 @@ class KAGWindow extends Window
 		// 自動ウェイト
 		autoWCWaits.assign(f.autoWCWaits) if f.autoWCWaits !== void;
 
-        switch (f.ineMode) {
+        switch (f.lineMode) {
         case 0:
             setLineMode();
             break;
