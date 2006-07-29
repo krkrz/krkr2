@@ -2219,6 +2219,7 @@ class MessageLayer extends KAGLayer
         object.bgOpacity = elm.opacity if elm.opacity !== void;
         object.min = +elm.min if elm.min !== void;
         object.max = +elm.max if elm.max !== void;
+        object.nohilight = elm.nohilight if elm.nohilight !== void;
         if (elm.value !== void) {
             object.position = +Scripts.eval(elm.value);
             object.change = elm.value;
