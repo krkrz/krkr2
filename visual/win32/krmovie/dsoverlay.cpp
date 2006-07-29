@@ -172,7 +172,7 @@ void __stdcall tTVPDSVideoOverlay::BuildGraph( HWND callbackwin, IStream *stream
 void __stdcall tTVPDSVideoOverlay::ReleaseAll()
 {
 	// Reset owner window
-	VideoWindow()->put_Owner(NULL);
+//	VideoWindow()->put_Owner(NULL);
 
 	if( m_MediaControl.p != NULL )
 	{
