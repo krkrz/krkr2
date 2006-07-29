@@ -28,6 +28,8 @@ class SliderLayer extends KAGLayer
     var Slider_color = clWindow; // 背景色
     var Slider_opacity = 192; // 不透明度
 
+    var nohilight; // ハイライトしない
+    
     /**
      * コンストラクタ
      */
@@ -75,7 +77,7 @@ class SliderLayer extends KAGLayer
                 colorRect(0, 0, imw, imh, Slider_color, Slider_opacity);
         }
         
-        if (focused)	{
+        if (focused && !nohilight)	{
             // フォーカスがあるのでハイライトする
             colorRect(0, 0, width-1, 1, clHighlight, 128);
             colorRect(0, 1, 1, height-2, clHighlight, 128);
