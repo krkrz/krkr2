@@ -620,8 +620,10 @@ class KAGEnvImage {
 
                 // 裏レイヤが対象
                 var layer = getLayer(kag.back);
-                drawLayer(layer);
-                calcPosition(layer);
+                if (isShowBU()) {
+                    drawLayer(layer);
+                    calcPosition(layer);
+                }
                 updateLayer(layer);
                 beginTransition(trans);
                 
@@ -653,8 +655,10 @@ class KAGEnvImage {
                 } else {
                     // フェード処理
                     //dm("フェードを opacity 処理で実現");
-                    drawLayer(layer);
-                    calcPosition(layer);
+                    if (isShowBU()) {
+                        drawLayer(layer);
+                        calcPosition(layer);
+                    }
                     updateLayer(layer);
                 }
             }
@@ -1223,11 +1227,13 @@ class KAGEnvCharacter extends KAGEnvLevelLayer, KAGEnvImage {
                 redraw = true;
 
                 // トランジション指定
-                if (!setTrans2(info.trans)) {
-                    if (!setTrans2(init.poseTrans)) {
-                        if (!setTrans2(init.charTrans)) {
-                            if (!setTrans2(env.envinfo.poseTrans)) {
-                                setTrans2(env.envinfo.charTrans);
+                if (isShowBU()) {
+                    if (!setTrans2(info.trans)) {
+                        if (!setTrans2(init.poseTrans)) {
+                            if (!setTrans2(init.charTrans)) {
+                                if (!setTrans2(env.envinfo.poseTrans)) {
+                                    setTrans2(env.envinfo.charTrans);
+                                }
                             }
                         }
                     }
@@ -1260,10 +1266,12 @@ class KAGEnvCharacter extends KAGEnvLevelLayer, KAGEnvImage {
             }
             redraw = true;
             // トランジション指定
-            if (!setTrans2(init.dressTrans)) {
-                if (!setTrans2(init.charTrans)) {
-                    if (!setTrans2(env.envinfo.dressTrans)) {
-                        setTrans2(env.envinfo.charTrans);
+            if (isShowBU()) {
+                if (!setTrans2(init.dressTrans)) {
+                    if (!setTrans2(init.charTrans)) {
+                        if (!setTrans2(env.envinfo.dressTrans)) {
+                            setTrans2(env.envinfo.charTrans);
+                        }
                     }
                 }
             }
@@ -1281,10 +1289,12 @@ class KAGEnvCharacter extends KAGEnvLevelLayer, KAGEnvImage {
             }
             redraw = true;
             // トランジション指定
-            if (!setTrans2(init.faceTrans)) {
-                if (!setTrans2(init.charTrans)) {
-                    if (!setTrans2(env.envinfo.faceTrans)) {
-                        setTrans2(env.envinfo.charTrans);
+            if (isShowBU()) {
+                if (!setTrans2(init.faceTrans)) {
+                    if (!setTrans2(init.charTrans)) {
+                        if (!setTrans2(env.envinfo.faceTrans)) {
+                            setTrans2(env.envinfo.charTrans);
+                        }
                     }
                 }
             }
@@ -1293,8 +1303,10 @@ class KAGEnvCharacter extends KAGEnvLevelLayer, KAGEnvImage {
 
     function setPositionTrans(info) {
         // トランジション指定
-        if (!setTrans2(info.trans)) {
-            setTrans2(env.envinfo.positionTrans);
+        if (isShowBU()) {
+            if (!setTrans2(info.trans)) {
+                setTrans2(env.envinfo.positionTrans);
+            }
         }
     }
     
@@ -1488,6 +1500,7 @@ class KAGEnvCharacter extends KAGEnvLevelLayer, KAGEnvImage {
      * @param layer 描画対象レイヤ
      * @param levelName レベル名
      * @param pose ポーズ指定
+     * @oaram face 顔描画を示すフラグ
      * @return 成功したら true
      */
 	function _drawLayerPose(layer, levelName, pose) {
@@ -1496,8 +1509,9 @@ class KAGEnvCharacter extends KAGEnvLevelLayer, KAGEnvImage {
         var poseInfo;
         if (poses !== void && (poseInfo = poses[pose]) !== void) {
 
-            var imageName     = poseInfo.image;
-            var faceImageName = poseInfo.faceImage;
+            // 顔描画の場合は msgImage / msgFaceImage を優先
+            var imageName     = (levelName == env.faceLevelName && poseInfo.msgImage !== void)     ? poseInfo.msgImage : poseInfo.image;
+            var faceImageName = (levelName == env.faceLevelName && poseInfo.msgFaceImage !== void) ? poseInfo.msgFaceImage : poseInfo.faceImage;
             var dresses       = poseInfo.dresses;
             var faces         = poseInfo.faces;
 
