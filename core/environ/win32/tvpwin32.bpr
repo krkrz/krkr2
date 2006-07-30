@@ -94,7 +94,7 @@
     <PFLAGS value="-N2intermediate -N0intermediate -$Y- -$L- -$D- -v -JPHNE -M"/>
     <RFLAGS value=""/>
     <AFLAGS value="/mx /mv64 /m5 /w2 /zn /l /z"/>
-    <LFLAGS value="-B:0x400000 -Iintermediate -dWINSPOOL.DRV -dWINMM.DLL -dMSVFW32.DLL -dCOMDLG32.DLL 
+    <LFLAGS value="-Iintermediate -dWINSPOOL.DRV -dWINMM.DLL -dMSVFW32.DLL -dCOMDLG32.DLL 
       -D&quot;&quot; -GC&quot;TVP(kirikiri) for win32&quot; -Rr -H:0x10000 -aa -Tpe -GD -x -Gn -v"/>
   </OPTIONS>
   <LINKER>
@@ -109,7 +109,7 @@ AutoIncBuild=1
 MajorVer=2
 MinorVer=27
 Release=2006
-Build=710
+Build=731
 Debug=0
 PreRelease=0
 Special=0
@@ -121,7 +121,7 @@ CodePage=932
 [Version Info Keys]
 CompanyName=
 FileDescription=TVP(KIRIKIRI) 2 core / Scripting Platform for Win32
-FileVersion=2.27.2006.710
+FileVersion=2.27.2006.731
 InternalName=tvp2/win32
 LegalCopyright=(KIRIKIRI core) (C) '97-'05 W.Dee and Contributors All Rights Reserved. This software is based in part on the work of Independent JPEG Group. For details: Run this program with '-about' option.
 LegalTrademarks=
