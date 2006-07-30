@@ -1936,7 +1936,7 @@ class KAGEnvCharacter extends KAGEnvLevelLayer, KAGEnvImage {
             // ほかのボイスを消去 XXX
             env.stopAllVoice();
 
-            if (!kag.skipMode) {
+            if (!kag.skipMode && kag.voiceenable) {
                 //dm("再生処理:" + voicename);
                 // 再生処理実行
                 if (soundBuffer == void) {
