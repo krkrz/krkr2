@@ -662,6 +662,9 @@ class KAGEnvImage {
                     updateLayer(layer);
                 }
             }
+
+            env.drawFace(this);
+
             redraw = false;
         } else {
             var layer = getLayer(base);
@@ -1717,13 +1720,12 @@ class KAGEnvCharacter extends KAGEnvLevelLayer, KAGEnvImage {
      * 表情を描画する
      */
     function drawFace(layer, faceLevelName) {
-        //dm("表情描画" + faceLevelName);
+        //dm("表情描画:" + name);
         if (faceLevelName !== void && poses !== void) {
             _drawLayer(layer, faceLevelName);
             layer.visible = true;
         } else {
-            layer.fillRect(0, 0, layer.width, layer.height, 0);
-            layer.visible = false;
+            env.clearFace();
         }
     }
     
@@ -2325,6 +2327,10 @@ class KAGEnvironment extends KAGEnvImage {
             }
         }
     }
+
+    // 処理対象になるデフォルトのオブジェクト
+    // 名前表示のあと設定される
+    var currentObject;
     
     /**
      * コンストラクタ
@@ -2526,6 +2532,9 @@ class KAGEnvironment extends KAGEnvImage {
             ses[i].count = 0;
         }
         seCount = 0;
+
+        // カレントオブジェクト初期化
+        currentObject = void;
     }
 
     /**
@@ -3049,7 +3058,7 @@ class KAGEnvironment extends KAGEnvImage {
      * 表情消去処理
      */
     function clearFace() {
-		dm("表情消去処理:" + envinfo.clearFace);
+        //dm("表情消去処理:" + envinfo.clearFace);
         if (envinfo.clearFace !== void) {
             kag.current.faceLayer.loadImages(envinfo.clearFace);
             kag.current.faceLayer.visible = true;
@@ -3058,6 +3067,16 @@ class KAGEnvironment extends KAGEnvImage {
         }
     }
 
+    // 指定されたキャラクタの表情が表示可能なら表示する
+    function drawFace(ch) {
+        if (faceLevelName !== void && currentObject === ch) {
+            if (ch !== void && ch.isShowFace()) {
+                ch.drawFace(kag.current.faceLayer, faceLevelName);
+            } else {
+                clearFace();
+            }
+        }
+    }
     
     /**
      * 名前表示処理ハンドラ
@@ -3079,6 +3098,9 @@ class KAGEnvironment extends KAGEnvImage {
             // 追加waitはなし
             kag.addAutoWait();
 
+            // カレントオブジェクトの解除
+            currentObject = void;
+            
         } else {
 
             var name = elm.name;
@@ -3114,13 +3136,10 @@ class KAGEnvironment extends KAGEnvImage {
             if (kag.historyWriteEnabled) kag.historyLayer.store(dispName + " ");
             
             // 表情変更処理
-            if (faceLevelName !== void) {
-                if (ch !== void && ch.isShowFace()) {
-                    ch.drawFace(kag.current.faceLayer, faceLevelName);
-                } else {
-                    clearFace();
-                }
-            }
+			if (currentObject !== ch) {
+	            currentObject = ch;
+	            drawFace(ch);
+			}
             
             // ボイス再生
             if (ch !== void) {
@@ -3129,6 +3148,7 @@ class KAGEnvironment extends KAGEnvImage {
             } else {
                 kag.addAutoWait();
             }
+
         }
         return 0;
     }
@@ -3248,8 +3268,10 @@ class KAGEnvironment extends KAGEnvImage {
         }
         
         // カレントオブジェクトのコマンドとして実行してみる
-        //if () {
-        //}
+        if (currentObject !== void) {
+            elm[tagName] = true;
+            return currentObject.tagfunc(elm);
+        }
     }
 };
 
