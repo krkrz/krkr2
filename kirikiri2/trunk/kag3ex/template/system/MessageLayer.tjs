@@ -810,7 +810,7 @@ class MessageLayer extends KAGLayer
 
 	function setCompLayer(lay) { comp = lay; }
 
-	function clearLayer()
+    function clearLayer(all=true)
 	{
 		// ƒŒƒCƒ„‚ðƒNƒŠƒA
 		window.updateBeforeCh = 1;
@@ -866,8 +866,10 @@ class MessageLayer extends KAGLayer
 		lastMouseY = cursorY;
 		initLineLayer();
 
-        clearFace();
-        clearName();
+        if (all) {
+            clearFace();
+            clearName();
+        }
     }
 
 	function setPosition(elm)
