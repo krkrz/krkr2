@@ -528,12 +528,17 @@ class BGM
 			// 大域ボリューム
 			var sysvar = owner.scflags; // システム(コア)変数
 			if(sysvar.bgm === void) sysvar.bgm = %[];
-			sysvar = sysvar.bgm;
-			var v2 = +elm.gvolume;
-			v2 = int(v2 * 1000);
+            sysvar = sysvar.bgm;
+            var v2 = +elm.gvolume;
+            v2 = int(v2 * 1000);
 			sysvar.globalVolume = v2;
-            buf1.volume2 = v2;
-            buf2.volume2 = v2 if doubleBuffered;
+            if (sysvar.enable === void || sysvar.enable) {
+                buf1.volume2 = v2;
+                buf2.volume2 = v2 if doubleBuffered;
+            } else {
+                buf1.volume2 = 0;
+                buf2.volume2 = 0 if doubleBuffered;
+            }
 		}
 	}
 
@@ -593,16 +598,20 @@ class BGM
 	{
 		// システム変数 dic から情報を設定する
 		// 大域ボリュームの情報を得る
-		var sysvar = dic.bgm;
-		if(sysvar !== void)
+        var sysvar = dic.bgm;
+        if(sysvar !== void)
 		{
-            var v2 = sysvar.globalVolume;
-            if(v2 !== void)
-			{
-				v2 = +v2;
-                buf1.volume2 = v2;
-                buf2.volume2 = v2 if doubleBuffered;
-			}
+            if (sysvar.enable === void || sysvar.enable) {
+                var v2 = sysvar.globalVolume;
+                if(v2 !== void)	{
+                    v2 = +v2;
+                    buf1.volume2 = v2;
+                    buf2.volume2 = v2 if doubleBuffered;
+                }
+            } else {
+                buf1.volume2 = 0;
+                buf2.volume2 = 0 if doubleBuffered;
+            }
 		}
 	}
 
