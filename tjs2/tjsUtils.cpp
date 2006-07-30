@@ -163,7 +163,7 @@ tTJSString TJSVariantToExpressionString(const tTJSVariant &val)
 	  }
 	case tvtOctet:
 	  {
-		tTJSString str(TJS_W("octet <% "));
+		tTJSString str(TJS_W("/*octet*/ <% "));
 		tTJSVariantString * s = TJSOctetToListString(val.AsOctetNoAddRef());
 		try
 		{
