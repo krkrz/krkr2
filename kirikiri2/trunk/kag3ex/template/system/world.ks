@@ -2119,7 +2119,7 @@ class KAGEnvBgm {
      * @param elm 引数
      */
     function tagfunc(elm) {
-        dm("BGM 用ファンクション呼び出し!");
+		//dm("BGM 用ファンクション呼び出し!");
 		doflag = false;
         foreach(elm, doCommand);
         // 何もしなかった場合、かつ、タグ名が bgm でなければそれを再生する
@@ -2224,7 +2224,7 @@ class KAGEnvSE {
      * @param elm 引数
      */
     function tagfunc(elm) {
-        dm("SE 用ファンクション呼び出し!");
+		//dm("SE 用ファンクション呼び出し!");
 		doflag = false;
         foreach(elm, doCommand);
         // 何もしなかった場合、かつ、タグ名が se でなければそれを再生する
@@ -3025,6 +3025,20 @@ class KAGEnvironment extends KAGEnvImage {
             kag.historyLayer.reline();
         }
     }
+
+    /**
+     * 表情消去処理
+     */
+    function clearFace() {
+		dm("表情消去処理:" + envinfo.clearFace);
+        if (envinfo.clearFace !== void) {
+            kag.current.faceLayer.loadImages(envinfo.clearFace);
+            kag.current.faceLayer.visible = true;
+        } else {
+            kag.current.clearFace();
+        }
+    }
+
     
     /**
      * 名前表示処理ハンドラ
@@ -3041,7 +3055,7 @@ class KAGEnvironment extends KAGEnvImage {
             // 名前消去
             kag.current.clearName();
             if (faceLevelName !== void) {
-                kag.current.clearFace();
+                clearFace();
             }
             // 追加waitはなし
             kag.addAutoWait();
@@ -3085,7 +3099,7 @@ class KAGEnvironment extends KAGEnvImage {
                 if (ch !== void && ch.isShowFace()) {
                     ch.drawFace(kag.current.faceLayer, faceLevelName);
                 } else {
-                    kag.current.clearFace();
+                    clearFace();
                 }
             }
             

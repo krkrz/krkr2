@@ -1857,13 +1857,11 @@ class MessageLayer extends KAGLayer
         // 消去
         nameLayer.fillRect(0,0,nameLayer.width,nameLayer.height,0);
         if (text !== void) {
-            dm("名前:" + text);
             if (nameImageMap !== void ) {
                 var image = nameImageMap[text];
                 if (image === void) {
                     image = defaultNameImage;
                 }
-                dm("ファイル:" + image);
                 nameLayer.loadImages(image);
                 nameLayer.visible = true;
             } else {
