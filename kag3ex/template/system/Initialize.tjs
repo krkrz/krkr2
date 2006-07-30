@@ -65,6 +65,7 @@ Storages.addAutoPath("scenario/"); // シナリオフォルダ
 Storages.addAutoPath("image/"); // そのほかの画像フォルダ
 Storages.addAutoPath("system/"); // システムフォルダ
 Storages.addAutoPath("voice/");  // ボイスフォルダ
+Storages.addAutoPath("face/");   // フェイスフォルダ
 
 // パッチアーカイブの検索と使用
 // もしこれらの名前を持ったアーカイブが実行可能ファイルと
@@ -80,6 +81,7 @@ useArchiveIfExists("scenario.xp3");
 useArchiveIfExists("image.xp3");
 useArchiveIfExists("system.xp3");
 useArchiveIfExists("voice.xp3");
+useArchiveIfExists("face.xp3");
 
 useArchiveIfExists("patch.xp3");
 
