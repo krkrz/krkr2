@@ -7182,6 +7182,26 @@ class KAGWindow extends Window
 
 	//------------------------------------------------------ 特殊変数処理 --
     // システム画面用に簡易参照できるメソッド・プロパティを追加
+
+    /**
+     * BGM 有効値の設定
+     * true / false
+     */
+    property bgmenable {
+        getter() {
+            if (scflags.bgm !== void && scflags.bgm.enable !== void) {
+                return scflags.bgm.enable;
+            }
+            return true;
+        }
+        setter(v) {
+            if (scflags.bgm === void) {
+                scflags.bgm = %[];
+            }
+            scflags.bgm.enable = v;
+            bgm.restoreSystemState(scflags);
+        }
+    }
     
     /**
      * BGM ボリューム値の設定
@@ -7205,12 +7225,37 @@ class KAGWindow extends Window
     }
 
     /**
+     * BGM 有効値の設定
+     * true / false
+     */
+    property seenable {
+        getter() {
+            if (scflags.se !== void && scflags.se[0] !== void && scflags.se[0].enable !== void) {
+                return scflags.se[0].enable;
+            }
+            return true;
+        }
+        setter(v) {
+            if (scflags.se === void) {
+                scflags.se = %[];
+            }
+            for(var i = 0; i<numSEBuffers+1; i++) {
+                if (scflags.se[i] === void) {
+                    scflags.se[i] = %[];
+                }
+                scflags.se[i].enable = v;
+                se[i].restoreSystemState(scflags);
+            }
+        }
+    }
+    
+    /**
      * SE ボリューム値の設定
      * 100段階設定
      */
     property sevolume {
         getter() {
-            if (scflags.se !== void && scflags.se !== void && scflags.se[0] !== void) {
+            if (scflags.se !== void && scflags.se[0] !== void) {
                 return scflags.se[0].globalVolume / 1000;
             }
             return 100;
@@ -7229,6 +7274,25 @@ class KAGWindow extends Window
         }
     }
 
+    /**
+     * ボイス有効値の設定
+     * true / false
+     */
+    property voiceenable {
+        getter() {
+            if (scflags.voice !== void && scflags.voice.enable !== void) {
+                return scflags.voice.enable;
+            }
+            return true;
+        }
+        setter(v) {
+            if (scflags.voice === void) {
+                scflags.voice = %[];
+            }
+            scflags.voice.enable = v;
+        }
+    }
+    
     /**
      * ボイスの代表ボリューム
      * 100段階設定
