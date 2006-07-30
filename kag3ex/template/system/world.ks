@@ -3127,13 +3127,22 @@ class KAGEnvironment extends KAGEnvImage {
                     dispName = name;
                 }
             }
+
 // XXX 名前補正。外だしにすること!
 //            if (dispName.length <= 1) {
 //                dispName = "　" + dispName + "　";
 //            }
 //            var dispName = "【" + dispName + "】";
+
+
             kag.current.processName(dispName);
-            if (kag.historyWriteEnabled) kag.historyLayer.store(dispName + " ");
+            if (kag.historyWriteEnabled) {
+				if (kag.historyLayer.storeName !== void) {
+                    kag.historyLayer.storeName(dispName);
+				} else {
+					kag.historyLayer.store(dispName + " ");
+                }
+			}
             
             // 表情変更処理
 			if (currentObject !== ch) {
