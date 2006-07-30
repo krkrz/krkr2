@@ -94,7 +94,7 @@
     <PFLAGS value="-N2intermediate -N0intermediate -$Y- -$L- -$D- -v -JPHNE -M"/>
     <RFLAGS value=""/>
     <AFLAGS value="/mx /mv64 /m5 /w2 /zn /l /z"/>
-    <LFLAGS value="-Iintermediate -dWINSPOOL.DRV -dWINMM.DLL -dMSVFW32.DLL -dCOMDLG32.DLL 
+    <LFLAGS value="-B:0x400000 -Iintermediate -dWINSPOOL.DRV -dWINMM.DLL -dMSVFW32.DLL -dCOMDLG32.DLL 
       -D&quot;&quot; -GC&quot;TVP(kirikiri) for win32&quot; -Rr -H:0x10000 -aa -Tpe -GD -x -Gn -v"/>
   </OPTIONS>
   <LINKER>
