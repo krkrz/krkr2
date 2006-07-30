@@ -570,6 +570,10 @@ class MessageLayer extends KAGLayer
 	/*CS*/var glyphFixedLeft = 0; // その位置
 	/*CS*/var glyphFixedTop = 0;
 
+	/*CS*/var glyphFixedSize   = false; // 記号を固定サイズに
+	/*CS*/var glyphFixedWidth  = 24;     // その位置
+	/*CS*/var glyphFixedHeight = 24;
+    
 	/*CS*/var draggable = false; // メッセージレイヤをドラッグ可能か
 	var dragging = false; // ドラッグ中か
 	var dragOriginX, dragOriginY; // ドラッグ中、つかんでいる座標
@@ -2990,7 +2994,12 @@ class MessageLayer extends KAGLayer
 		glyphobj.loadImages(storage, key); // 画像を読み込む
 		glyphobj.bringToFront(); // 最前面に
 
-		if(glyphFixedPosition)
+		if(glyphFixedSize)
+		{
+			glyphobj.setSize(glyphFixedWidth, glyphFixedHeight);
+		}
+
+        if(glyphFixedPosition)
 		{
 			glyphobj.setPos(glyphFixedLeft, glyphFixedTop);
 		}
@@ -3007,7 +3016,7 @@ class MessageLayer extends KAGLayer
 					lineLayerPos + lineLayerOriginY + getLineLayerTopOffset());
 			}
 		}
-		glyphobj.visible = true;
+        glyphobj.visible = true;
 	}
 
 	function showLineBreakGlyph(glyphobj)
