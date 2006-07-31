@@ -2647,9 +2647,9 @@ void __fastcall TTVPWindowForm::SetShowScrollBars(bool b)
 	ScrollBox->HorzScrollBar->Visible = b;
 	ScrollBox->VertScrollBar->Visible = b;
 	ScrollBox->Color = clBlack;
-	ScrollBox->Brush->Style = bsSolid; // b?bsSolid:bsClear;
+	ScrollBox->Brush->Style = b?bsSolid:bsClear;
 	this->Color = clBlack;
-	this->Brush->Style = bsSolid; // b?bsSolid:bsClear;
+	this->Brush->Style = bsSolid;
 }
 //---------------------------------------------------------------------------
 bool __fastcall TTVPWindowForm::GetShowScrollBars() const
