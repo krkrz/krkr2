@@ -3137,7 +3137,7 @@ class KAGEnvironment extends KAGEnvImage {
 
             kag.current.processName(dispName);
             if (kag.historyWriteEnabled) {
-				if (kag.historyLayer.storeName !== void) {
+				if (typeof kag.historyLayer.storeName !== 'undefined') {
                     kag.historyLayer.storeName(dispName);
 				} else {
 					kag.historyLayer.store(dispName + " ");
