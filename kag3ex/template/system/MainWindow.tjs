@@ -6019,7 +6019,6 @@ class KAGWindow extends Window
 
 	p : function(elm)
 	{
-        dm("改ページ");
         // 自動ラベルモードは p タグにおいて有効
         setAutoLabel();
         if (lineMode == 2 || lineMode == 3) {
