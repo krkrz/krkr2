@@ -600,7 +600,6 @@ class KAGEnvImage {
      * 画像の描画
      */
     function updateImage(base) {
-        dm("画像更新");
         kag.updateBeforeCh = 1;
         // 描画更新が必要な場合
         if (redraw) {
@@ -2543,8 +2542,9 @@ class KAGEnvironment extends KAGEnvImage {
     function hideCharacters() {
         // キャラクタ情報の破棄
         foreach(characters, function(name,value,dict) {
-            value.disp = CLEAR;
+            value.disp = global.KAGEnvImage.CLEAR;
         });
+		redraw = true;
     }
 
     /**
@@ -2553,8 +2553,9 @@ class KAGEnvironment extends KAGEnvImage {
     function hideLayers() {
         // 特殊レイヤ情報の破棄
         foreach(layers, function(name,value,dict) {
-            value.disp = CLEAR;
+            value.disp = global.KAGEnvImage.CLEAR;
         });
+		redraw = true;
     }
 
     /**
@@ -2563,6 +2564,7 @@ class KAGEnvironment extends KAGEnvImage {
     function hideAll() {
         hideCharacters();
         hideLayers();
+		redraw = true;
     }
 
     /**
