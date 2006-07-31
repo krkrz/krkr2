@@ -193,6 +193,5 @@ tp_stub.cpp、tvpsnd.h をプラグインで使用することができます。
 ● 作者の連絡先
 
 　W.Dee <dee@kikyou.info>
-　吉里吉里/KAG 推進委員会 : http://www.piass.com/kpc/
 　吉里吉里 ダウンロード ページ : http://kikyou.info/tvp/
 
