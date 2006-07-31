@@ -665,8 +665,6 @@ class KAGEnvImage {
                 }
             }
 
-            env.drawFace(this);
-
             redraw = false;
         } else {
             var layer = getLayer(base);
@@ -1779,6 +1777,9 @@ class KAGEnvCharacter extends KAGEnvLevelLayer, KAGEnvImage {
     function updateLayer(layer) {
         global.KAGEnvImage.updateLayer(...);
 
+        // 表情描画
+        env.drawFace(layer.parent === kag.fore ? 0 : 1, this);
+        
         // キャラクタが表示されてない場合はエモーションは無効
         if (!isShowBU()) {
             setEmotion();
@@ -3063,7 +3064,6 @@ class KAGEnvironment extends KAGEnvImage {
      * 表情消去処理
      */
     function clearFace() {
-        //dm("表情消去処理:" + envinfo.clearFace);
         if (envinfo.clearFace !== void) {
             kag.current.faceLayer.loadImages(envinfo.clearFace);
             kag.current.faceLayer.visible = true;
@@ -3073,10 +3073,13 @@ class KAGEnvironment extends KAGEnvImage {
     }
 
     // 指定されたキャラクタの表情が表示可能なら表示する
-    function drawFace(ch) {
+    function drawFace(page, ch) {
         if (faceLevelName !== void && currentObject === ch) {
             if (ch !== void && ch.isShowFace()) {
-                ch.drawFace(kag.current.faceLayer, faceLevelName);
+                ch.drawFace(page == 0
+                            ? kag.fore.messages[kag.currentNum].faceLayer
+                            : kag.back.messages[kag.currentNum].faceLayer,
+                            faceLevelName);
             } else {
                 clearFace();
             }
@@ -3148,12 +3151,17 @@ class KAGEnvironment extends KAGEnvImage {
 					kag.historyLayer.store(dispName + " ");
                 }
 			}
+
+            // 消去状態なら顔表示状態にする
+            if (ch !== void && ch.disp == CLEAR) {
+                ch.disp = FACE;
+            }
             
             // 表情変更処理
-			if (currentObject !== ch) {
-	            currentObject = ch;
-	            drawFace(ch);
-			}
+            //if (currentObject !== ch) {
+                currentObject = ch;
+                drawFace(kag.currentPage, ch);
+			//}
             
             // ボイス再生
             if (ch !== void) {
