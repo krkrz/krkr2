@@ -689,6 +689,8 @@ class KAGEnvLayer extends KAGEnvImage {
 
     /// 描画中画像
     var imageFile;
+	var xoff;
+	var yoff;
 
     function KAGEnvLayer(env) {
         super.KAGEnvImage(env);
@@ -697,11 +699,15 @@ class KAGEnvLayer extends KAGEnvImage {
 
     function onStore(f) {
         f.imageFile = imageFile;
+        f.xoff = xoff;
+        f.yoff = yoff;
         super.onStore(f);
     }
     
     function onRestore(f) {
         imageFile = f.imageFile;
+        xoff = f.xoff;
+        yoff = f.yoff;
         super.onRestore(f);
     }
 
@@ -709,6 +715,12 @@ class KAGEnvLayer extends KAGEnvImage {
     file : function(param, elm) {
         imageFile = param;
         disp = BOTH;
+    } incontextof this,
+    xoff : function(param, elm) {
+        xoff = param;
+    } incontextof this,
+    yoff : function(param, elm) {
+        yoff = param;
     } incontextof this
         ];
 
@@ -767,6 +779,11 @@ class KAGEnvLayer extends KAGEnvImage {
     function drawLayer(layer) {
         if (imageFile !== void) {
             layer.loadImages(%[ "storage" => imageFile]);
+            // 座標補正
+            if (xoff !== void || yoff== void) {
+                layer.left = xoff if xoff !== void;
+                layer.top  = yoff if yoff !== void;
+            }
         }
     }
 
@@ -798,8 +815,33 @@ class KAGEnvBaseLayer extends KAGEnvLayer {
             if (v !== void) {
                 kag.sflags["cg_" + (v.toUpperCase())] = true;
             }
-            _imageFile = v;
-		}
+
+            // イベント画像情報
+            var eventInfo;
+            if (env.events !== void) {
+                eventInfo = env.events[v];
+            }
+            var eventTrans;
+            if (eventInfo !== void) {
+                eventTrans = eventInfo.trans;
+                _imageFile = eventInfo.image !== void ? eventInfo.image : v;
+                xoff = eventInfo.xoff;
+                yoff = eventInfo.yoff;
+            } else {
+                _imageFile = v;
+                xoff = void;
+                yoff = void;
+            }
+            dm("画像指定:" + _imageFile);
+            
+            // トランジション指定
+            if (!setTrans2(eventTrans)) {
+                if (!setTrans2(env.envinfo.eventTrans)) {
+                    setTrans2(env.envinfo.envTrans);
+                }
+            }
+
+        }
 		getter() {
 			return _imageFile;
 		}
@@ -2285,6 +2327,7 @@ class KAGEnvironment extends KAGEnvImage {
 
     var times;        //< 時間情報
     var stages;       //< 舞台情報
+	var events;       //< イベント絵情報
     var positions;    //< 配置情報
     var actions;      //< アクション情報
     var transitions;  //< トランジション情報
@@ -2367,6 +2410,7 @@ class KAGEnvironment extends KAGEnvImage {
             if (envinfo) {
                 times       = envinfo.times;       showKeys("times", times);
                 stages      = envinfo.stages;      showKeys("stages", stages);
+                events      = envinfo.events;      showKeys("stages", events);
                 positions   = envinfo.positions;   showKeys("positions", positions);
                 actions     = envinfo.actions;     showKeys("actions", actions);
                 emotions    = envinfo.emotions;    showKeys("actions", actions);
@@ -2846,8 +2890,10 @@ class KAGEnvironment extends KAGEnvImage {
                         dm("背景画像がロードできません" + image);
                     }
                 }
-                layer.left = (kag.scWidth  / 2) - layer.imageWidth / 2;
-                layer.top  = (kag.scHeight / 2) - layer.imageHeight / 2;
+                var xoff = stages[stage].xoff;
+                var yoff = stages[stage].yoff;
+                layer.left = (kag.scWidth  / 2) - layer.imageWidth / 2  + (xoff !== void ? xoff : 0);
+                layer.top  = (kag.scHeight / 2) - layer.imageHeight / 2 + (yoff !== void ? yoff : 0);
 
             } else {
                 dm("時間のデフォルト指定が存在していません");
