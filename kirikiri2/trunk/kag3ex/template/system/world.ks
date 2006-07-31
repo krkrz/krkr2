@@ -451,7 +451,10 @@ class KAGEnvImage {
             }
         }
         if (syncMode) {
-            kag._waitLayerAction(layer);
+			dm("ƒAƒNƒVƒ‡ƒ“‘Ò‚¿");
+			if (ret == 0) {
+				ret = kag._waitLayerAction(layer);
+			}
             syncMode = false;
         }
     }
@@ -2946,7 +2949,7 @@ class KAGEnvironment extends KAGEnvImage {
             }
             redraw = false;
         } else {
-            ret = updateLayer(getLayer());
+            updateLayer(getLayer());
         }
         trans = void;
     }
