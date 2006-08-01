@@ -829,8 +829,8 @@ class KAGEnvBaseLayer extends KAGEnvLayer {
                 yoff = eventInfo.yoff;
             } else {
                 _imageFile = v;
-                xoff = void;
-                yoff = void;
+                xoff = 0;
+                yoff = 0;
             }
             dm("‰æ‘œŽw’è:" + _imageFile);
             
