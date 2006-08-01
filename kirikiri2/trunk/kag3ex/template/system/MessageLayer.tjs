@@ -650,7 +650,7 @@ class MessageLayer extends KAGLayer
         }
         focusable = true; // フォーカスを受け取れるように
         setSelProcessLock(false); // 選択ロック解除
-		comp.setSelProcessLock(false); // 選択ロック解除
+        //comp.setSelProcessLock(false); // 選択ロック解除
     }
 
     function stopTimeout() {
@@ -687,7 +687,7 @@ class MessageLayer extends KAGLayer
         }
         focusable = true; // フォーカスを受け取れるように
         setSelProcessLock(false); // 選択ロック解除
-        comp.setSelProcessLock(false); // 選択ロック解除
+        //comp.setSelProcessLock(false); // 選択ロック解除
         selClickLock = false;
     }
 
@@ -2010,7 +2010,7 @@ class MessageLayer extends KAGLayer
 		lastMouseY = cursorY;
 		selClickLock = true;
 		setSelProcessLock(false); // 選択ロック解除
-		comp.setSelProcessLock(false); // 選択ロック解除
+        //comp.setSelProcessLock(false); // 選択ロック解除
 	}
 
 	function findLink(x,y)
@@ -2081,7 +2081,7 @@ class MessageLayer extends KAGLayer
 		numLinks++;
 		focusable = true; // フォーカスを受け取れるように
 		setSelProcessLock(false); // 選択ロック解除
-		comp.setSelProcessLock(false); // 選択ロック解除
+        //comp.setSelProcessLock(false); // 選択ロック解除
 	}
 
 	function addEdit(elm)
@@ -2143,7 +2143,7 @@ class MessageLayer extends KAGLayer
 		numLinks ++;
 		focusable = true;
 		setSelProcessLock(false); // 選択ロック解除
-		comp.setSelProcessLock(false); // 選択ロック解除
+        //comp.setSelProcessLock(false); // 選択ロック解除
 	}
 
 	function addCheckBox(elm)
@@ -2211,7 +2211,7 @@ class MessageLayer extends KAGLayer
 		numLinks ++;
 		focusable = true;
 		setSelProcessLock(false); // 選択ロック解除
-		comp.setSelProcessLock(false); // 選択ロック解除
+        //comp.setSelProcessLock(false); // 選択ロック解除
 	}
 
 	function addSlider(elm)
@@ -2299,7 +2299,7 @@ class MessageLayer extends KAGLayer
         numLinks ++;
         focusable = true;
         setSelProcessLock(false); // 選択ロック解除
-		comp.setSelProcessLock(false); // 選択ロック解除
+        //comp.setSelProcessLock(false); // 選択ロック解除
 	}
 
     /**
