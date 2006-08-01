@@ -7029,8 +7029,6 @@ class KAGWindow extends Window
 
     select : function(elm)
     {
-        tagHandlers.cm();
-
         kag.current.visible = true;
         showMessageLayerByUser();
 
