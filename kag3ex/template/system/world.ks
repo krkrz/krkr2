@@ -3227,8 +3227,6 @@ class KAGEnvironment extends KAGEnvImage {
             var name = elm.name;
             var disp = elm.disp;
 
-            dm("–¼‘O•\Ž¦:" + name);
-            
             var ch = getCharacter(name);
             var voice;
 
