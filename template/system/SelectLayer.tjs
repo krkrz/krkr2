@@ -248,7 +248,20 @@ class SelectLayer {
         }
     }
 
-    
+    var _opacity = false;
+    property opacity {
+        setter(v) {
+            for (var i=0; i<selects.count;i++) {
+                var select = selects[i];
+                select.opacity = v;
+            }
+            _opacity = v;
+        }
+        getter() {
+            return _opacity;
+        }
+    }
+
     /**
      * ƒ{ƒ^ƒ“Á‹Ž
      */
