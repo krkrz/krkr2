@@ -625,7 +625,7 @@ class BGM
         }
         setter(v) {
             _voldown = v;
-            if (_enabled) {
+            if (_enabled &&  currentStorage != "") {
                 if (_voldown) {
                     currentBuffer.fade(volume * 0.5, 300);
                 } else {
