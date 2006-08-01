@@ -813,34 +813,38 @@ class KAGEnvBaseLayer extends KAGEnvLayer {
 	property imageFile {
 		setter(v) {
             if (v !== void) {
+                // 記録
                 kag.sflags["cg_" + (v.toUpperCase())] = true;
-            }
 
-            // イベント画像情報
-            var eventInfo;
-            if (env.events !== void) {
-                eventInfo = env.events[v];
-            }
-            var eventTrans;
-            if (eventInfo !== void) {
-                eventTrans = eventInfo.trans;
-                _imageFile = eventInfo.image !== void ? eventInfo.image : v;
-                xoff = eventInfo.xoff;
-                yoff = eventInfo.yoff;
+                var eventInfo;
+                if (env.events !== void) {
+                    eventInfo = env.events[v];
+                }
+                var eventTrans;
+                if (eventInfo !== void) {
+                    eventTrans = eventInfo.trans;
+                    _imageFile = eventInfo.image !== void ? eventInfo.image : v;
+                    xoff = eventInfo.xoff;
+                    yoff = eventInfo.yoff;
+                } else {
+                    _imageFile = v;
+                    xoff = 0;
+                    yoff = 0;
+                }
+                //dm("画像指定:" + _imageFile);
+                
+                // トランジション指定
+                if (!setTrans2(eventTrans)) {
+                    if (!setTrans2(env.envinfo.eventTrans)) {
+                        setTrans2(env.envinfo.envTrans);
+                    }
+                }
+
             } else {
-                _imageFile = v;
+                _imageFile = void;
                 xoff = 0;
                 yoff = 0;
             }
-            dm("画像指定:" + _imageFile);
-            
-            // トランジション指定
-            if (!setTrans2(eventTrans)) {
-                if (!setTrans2(env.envinfo.eventTrans)) {
-                    setTrans2(env.envinfo.envTrans);
-                }
-            }
-
         }
 		getter() {
 			return _imageFile;
