@@ -824,8 +824,8 @@ class KAGEnvBaseLayer extends KAGEnvLayer {
                 if (eventInfo !== void) {
                     eventTrans = eventInfo.trans;
                     _imageFile = eventInfo.image !== void ? eventInfo.image : v;
-                    xoff = eventInfo.xoff;
-                    yoff = eventInfo.yoff;
+                    xoff = (int)eventInfo.xoff;
+                    yoff = (int)eventInfo.yoff;
                 } else {
                     _imageFile = v;
                     xoff = 0;
@@ -2894,8 +2894,8 @@ class KAGEnvironment extends KAGEnvImage {
                         dm("îwåiâÊëúÇ™ÉçÅ[ÉhÇ≈Ç´Ç‹ÇπÇÒ" + image);
                     }
                 }
-                var xoff = stages[stage].xoff;
-                var yoff = stages[stage].yoff;
+                var xoff = (int)stages[stage].xoff;
+                var yoff = (int)stages[stage].yoff;
                 layer.left = (kag.scWidth  / 2) - layer.imageWidth / 2  + (xoff !== void ? xoff : 0);
                 layer.top  = (kag.scHeight / 2) - layer.imageHeight / 2 + (yoff !== void ? yoff : 0);
 
