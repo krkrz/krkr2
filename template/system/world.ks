@@ -2149,7 +2149,12 @@ class KAGEnvBgm {
      * @param param フェード時間
      */
     function wait(param, elm) {
-		ret = kag.waitBGMStop(elm);
+		var e = %[];
+        (Dictionary.assign incontextof e)(elm, false);
+        if (e.canskip === void) {
+            e.canskip = true;
+		}
+        ret = kag.waitBGMStop(e);
     }
 
     /**
@@ -2157,7 +2162,12 @@ class KAGEnvBgm {
      * @param param フェード時間
      */
     function waitFade(param, elm) {
-		ret = kag.waitBGMFade(elm);
+		var e = %[];
+        (Dictionary.assign incontextof e)(elm, false);
+        if (e.canskip === void) {
+            e.canskip = true;
+		}
+		ret = kag.waitBGMFade(e);
     }
 
 
@@ -2285,10 +2295,12 @@ class KAGEnvSE {
      * 終了待ち
      */
     function wait(param, elm) {
-        dm("停止待ち");
 		var e = %[];
         (Dictionary.assign incontextof e)(elm, false);
         e.buf = id;
+        if (e.canskip === void) {
+            e.canskip = true;
+		}
         ret = kag.waitSEStop(e);
     }
 
@@ -2299,6 +2311,9 @@ class KAGEnvSE {
         var e = %[];
         (Dictionary.assign incontextof e)(elm, false);
         e.buf = id;
+        if (e.canskip === void) {
+            e.canskip = true;
+		}
         ret = kag.waitSEStop(e);
     }
 
