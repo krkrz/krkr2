@@ -394,7 +394,9 @@ class SystemButtonLayer extends ButtonLayer
         if (enabled && button == mbLeft && onclick !== void && (noStable || window.inStable)) {
             Scripts.eval(onclick);
         }
-        super.onMouseUp(...);
+        if (isvalid this) {
+            super.onMouseUp(...);
+        }
     }
 
 	function onMouseDown(x, y, button)
@@ -1862,7 +1864,7 @@ class MessageLayer extends KAGLayer
     function processName(text=void) {
         // è¡ãé
         nameLayer.fillRect(0,0,nameLayer.width,nameLayer.height,0);
-        if (text !== void) {
+        if (text != "") {
             if (nameImageMap !== void ) {
                 var image = nameImageMap[text];
                 if (image === void) {
