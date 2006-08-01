@@ -1540,7 +1540,6 @@ class MessageLayer extends KAGLayer
 		lastMouseY = cursorY;
 		selClickLock = true;
 		setSelProcessLock(false); // 選択ロック解除
-		comp.setSelProcessLock(false); // 選択ロック解除
 	}
 
 	function findLink(x,y)
@@ -1602,7 +1601,6 @@ class MessageLayer extends KAGLayer
 		numLinks++;
 		focusable = true; // フォーカスを受け取れるように
 		setSelProcessLock(false); // 選択ロック解除
-		comp.setSelProcessLock(false); // 選択ロック解除
 	}
 
 	function addEdit(elm)
@@ -1662,7 +1660,6 @@ class MessageLayer extends KAGLayer
 		numLinks ++;
 		focusable = true;
 		setSelProcessLock(false); // 選択ロック解除
-		comp.setSelProcessLock(false); // 選択ロック解除
 	}
 
 	function addCheckBox(elm)
@@ -1728,7 +1725,6 @@ class MessageLayer extends KAGLayer
 		numLinks ++;
 		focusable = true;
 		setSelProcessLock(false); // 選択ロック解除
-		comp.setSelProcessLock(false); // 選択ロック解除
 	}
 
 	function highlightLink(n, b = false)
@@ -1948,7 +1944,7 @@ class MessageLayer extends KAGLayer
 	function internalHitTest(x, y)
 	{
 		// onHitTest イベントハンドラ(内部関数)
-
+ 
 		if(isDragPos(x, y))
 		{
 			cursor = window.cursorDraggable;
