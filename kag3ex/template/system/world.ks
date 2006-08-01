@@ -451,7 +451,7 @@ class KAGEnvImage {
             }
         }
         if (syncMode) {
-			dm("アクション待ち");
+            //dm("アクション待ち");
 			if (ret == 0) {
 				ret = kag._waitLayerAction(layer);
 			}
@@ -834,6 +834,7 @@ class KAGEnvBaseLayer extends KAGEnvLayer {
                 //dm("画像指定:" + _imageFile);
                 
                 // トランジション指定
+				dm("イベント用にトランジション指定");
                 if (!setTrans2(eventTrans)) {
                     if (!setTrans2(env.envinfo.eventTrans)) {
                         setTrans2(env.envinfo.envTrans);
@@ -1787,8 +1788,8 @@ class KAGEnvCharacter extends KAGEnvLevelLayer, KAGEnvImage {
 			var levelYoffset = 0;
             var levelInfo = env.levels[level];
             if (levelInfo !== void) {
-                zoom         = levelInfo.zoom;
-				levelYoffset = levelInfo.yoffset;
+                zoom         = (int)levelInfo.zoom;
+				levelYoffset = (int)levelInfo.yoffset;
             }
             if (zoom === void) {
                 zoom = 100;
@@ -2420,8 +2421,8 @@ class KAGEnvironment extends KAGEnvImage {
                 emotions    = envinfo.emotions;    showKeys("actions", actions);
                 transitions = envinfo.transitions; showKeys("transitions", transitions);
                 defaultTime = envinfo.defaultTime; dm("defaultTime:" + defaultTime);
-                yoffset     = envinfo.yoffset;     dm("yoffset:" + yoffset);
-                defaultLevel = envinfo.defaultLevel; dm("defaultLevel:" + defaultLevel);
+                yoffset     = (int)envinfo.yoffset;     dm("yoffset:" + yoffset);
+                defaultLevel = (int)envinfo.defaultLevel; dm("defaultLevel:" + defaultLevel);
                 levels       = envinfo.levels;
                 faceLevelName = envinfo.faceLevelName;
            }
@@ -2548,6 +2549,9 @@ class KAGEnvironment extends KAGEnvImage {
     var time;
     /// 舞台
     var stage;
+
+	var reposition;
+
     /// イベント絵
     var event;
 
@@ -2560,6 +2564,7 @@ class KAGEnvironment extends KAGEnvImage {
         dm("初期化処理");
         time = void;
         stage = void;
+        reposition = void;
         disp       = CLEAR;
         event.disp = CLEAR;
         // キャラクタ情報の破棄
@@ -2627,6 +2632,8 @@ class KAGEnvironment extends KAGEnvImage {
     function setStage(stageName, elm) {
         if (stageName != stage || disp == CLEAR) {
             stage = stageName;
+			reposition = true;
+
             disp = BOTH;
 
 			// ステージ変更時フック
@@ -2642,6 +2649,7 @@ class KAGEnvironment extends KAGEnvImage {
                     setTrans2(env.envinfo.envTrans);
                 }
             }
+
         }
         // イベント絵は消去
         event.disp = CLEAR;
@@ -2894,10 +2902,13 @@ class KAGEnvironment extends KAGEnvImage {
                         dm("背景画像がロードできません" + image);
                     }
                 }
-                var xoff = (int)stages[stage].xoff;
-                var yoff = (int)stages[stage].yoff;
-                layer.left = (kag.scWidth  / 2) - layer.imageWidth / 2  + (xoff !== void ? xoff : 0);
-                layer.top  = (kag.scHeight / 2) - layer.imageHeight / 2 + (yoff !== void ? yoff : 0);
+				if (reposition) {
+	                var xoff = (int)stages[stage].xoff;
+	                var yoff = (int)stages[stage].yoff;
+	                layer.left = (kag.scWidth  / 2) - layer.imageWidth / 2  + (xoff !== void ? xoff : 0);
+    	            layer.top  = (kag.scHeight / 2) - layer.imageHeight / 2 + (yoff !== void ? yoff : 0);
+                    reposition = false;
+                }
 
             } else {
                 dm("時間のデフォルト指定が存在していません");
@@ -3164,6 +3175,8 @@ class KAGEnvironment extends KAGEnvImage {
             var name = elm.name;
             var disp = elm.disp;
 
+            dm("名前表示:" + name);
+            
             var ch = getCharacter(name);
             var voice;
 
@@ -3208,9 +3221,19 @@ class KAGEnvironment extends KAGEnvImage {
             }
             
             // 表情変更処理
-            //if (currentObject !== ch) {
-                currentObject = ch;
+            currentObject = ch;
+            if (ch !== void) {
                 drawFace(kag.currentPage, ch);
+            } else {
+                dm("表情なしパターン:" + name);
+                var img;
+                if (envinfo.nameFaces !== void && (img = envinfo.nameFaces[name]) !== void) {
+                    kag.current.faceLayer.loadImages(img);
+                    kag.current.faceLayer.visible = true;
+                } else {
+                    clearFace();
+                }
+            }
 			//}
             
             // ボイス再生
