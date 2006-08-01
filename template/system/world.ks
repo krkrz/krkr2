@@ -2071,7 +2071,7 @@ class KAGEnvCharacter extends KAGEnvLevelLayer, KAGEnvImage {
 class KAGEnvBgm {
 
     var env;
-    
+
     /**
      * コンストラクタ
      */
@@ -2144,6 +2144,23 @@ class KAGEnvBgm {
         kag.bgm.fade(%[ time:elm.time, volume:param ]);
     }
 
+    /**
+     * 終了まち
+     * @param param フェード時間
+     */
+    function wait(param, elm) {
+		ret = kag.waitBGMStop(elm);
+    }
+
+    /**
+     * 終了まち
+     * @param param フェード時間
+     */
+    function waitFade(param, elm) {
+		ret = kag.waitBGMFade(elm);
+    }
+
+
     var bgmcommands = %[
     tagname : null, 
     play : play incontextof this,
@@ -2151,6 +2168,8 @@ class KAGEnvBgm {
     pause : pause incontextof this,
     resume : resume incontextof this,
     fade : fade incontextof this,
+    wait : wait incontextof this,
+    waitfade : waitFade incontextof this,
     noxchg : null,
     loop : null,
     time : null,
@@ -2159,6 +2178,7 @@ class KAGEnvBgm {
     intime : null,
     outtime : null,
     overlap : null,
+    canskip : null,
         ];
 
 	var doflag;
@@ -2185,19 +2205,22 @@ class KAGEnvBgm {
         return true;
     }
 
+	var ret;
+
     /**
      * KAG タグ処理
      * @param elm 引数
      */
     function tagfunc(elm) {
 		//dm("BGM 用ファンクション呼び出し!");
+		ret = 0;
 		doflag = false;
         foreach(elm, doCommand);
         // 何もしなかった場合、かつ、タグ名が bgm でなければそれを再生する
         if (!doflag && elm.tagname != "bgm") {
             play(elm.tagname, elm);
         }
-        return 0;
+        return ret;
     }
     
 };
@@ -2226,6 +2249,8 @@ class KAGEnvSE {
      */
     function play(param, elm) {
         if (param !== void) {
+            dm("再生:" + param);
+
             name = param;
             var time = +elm.time;
             if (time > 0)  {
@@ -2256,14 +2281,38 @@ class KAGEnvSE {
         kag.se[id].fade(%[ time:elm.time, volume:param ]);
     }
 
+    /**
+     * 終了待ち
+     */
+    function wait(param, elm) {
+        dm("停止待ち");
+		var e = %[];
+        (Dictionary.assign incontextof e)(elm, false);
+        e.buf = id;
+        ret = kag.waitSEStop(e);
+    }
+
+    /**
+     * フェード終了待ち
+     */
+    function waitFade(param, elm) {
+        var e = %[];
+        (Dictionary.assign incontextof e)(elm, false);
+        e.buf = id;
+        ret = kag.waitSEStop(e);
+    }
+
     var secommands = %[
     tagname : null, 
     play : play incontextof this,
     stop : stop incontextof this,
     fade : fade incontextof this,
+	wait : wait incontextof this,
+	waitfade : waitFade incontextof this,
     loop : null,
     time : null,
     start : null,
+	canskip : null,
         ];
 
 	var doflag;
@@ -2290,19 +2339,22 @@ class KAGEnvSE {
         return true;
     }
 
+    var ret;
+    
     /**
      * KAG タグ処理
      * @param elm 引数
      */
     function tagfunc(elm) {
-		//dm("SE 用ファンクション呼び出し!");
-		doflag = false;
+        dm("SE 用ファンクション呼び出し!");
+        doflag = false;
+        ret = 0;
         foreach(elm, doCommand);
         // 何もしなかった場合、かつ、タグ名が se でなければそれを再生する
         if (!doflag && elm.tagname != "se") {
             play(elm.tagname, elm);
         }
-        return 0;
+        return ret;
     }
 };
 
