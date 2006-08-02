@@ -527,6 +527,7 @@ public:
 		tjs_int64 time;
 		tjs_error er = options->GetAsNumber(TJS_W("time"), (tjs_int64 *)&time);
 		if(TJS_FAILED(er)) TVPThrowExceptionMessage(TVPSpecifyOption, TJS_W("time"));
+		if(time < 2) time = 2; // too small time may cause problem
 
 		return  (iTVPBaseTransHandler *)
 			(new tTVPCrossFadeTransHandler(options, layertype, time));
@@ -764,6 +765,7 @@ public:
 		tjs_int64 time;
 		er = options->GetAsNumber(TJS_W("time"), (tjs_int64 *)&time);
 		if(TJS_FAILED(er)) TVPThrowExceptionMessage(TVPSpecifyOption, TJS_W("time"));
+		if(time < 2) time = 2; // too small time may cause problem
 
 		// retrieve "vague" option
 		tjs_int64 vague;
@@ -1039,6 +1041,7 @@ public:
 		tjs_int64 time;
 		er = options->GetAsNumber(TJS_W("time"), &time);
 		if(TJS_FAILED(er)) TVPThrowExceptionMessage(TVPSpecifyOption, TJS_W("time"));
+		if(time < 2) time = 2; // too small time may cause problem
 
 		// retrieve "from" option
 		tTVPScrollTransFrom from;

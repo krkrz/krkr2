@@ -189,6 +189,7 @@ public:
 			return TJS_E_FAIL; // time 属性が指定されていない
 		if(tmp.Type() == tvtVoid) return TJS_E_FAIL;
 		time = (tjs_int64)tmp;
+		if(time < 2) time = 2; // あまり小さな数値を指定すると問題が起きるので
 
 		if(TJS_SUCCEEDED(options->GetValue(TJS_W("factor"), &tmp)))
 			if(tmp.Type() != tvtVoid) factor = (double)tmp;
@@ -287,6 +288,7 @@ public:
 			return TJS_E_FAIL; // time 属性が指定されていない
 		if(tmp.Type() == tvtVoid) return TJS_E_FAIL;
 		time = (tjs_int64)tmp;
+		if(time < 2) time = 2; // あまり小さな数値を指定すると問題が起きるので
 
 		if(TJS_SUCCEEDED(options->GetValue(TJS_W("accel"), &tmp)))
 			if(tmp.Type() != tvtVoid) accel = (double)tmp;
@@ -455,6 +457,7 @@ public:
 			return TJS_E_FAIL; // time 属性が指定されていない
 		if(tmp.Type() == tvtVoid) return TJS_E_FAIL;
 		time = (tjs_int64)tmp;
+		if(time < 2) time = 2; // あまり小さな数値を指定すると問題が起きるので
 
 		if(TJS_SUCCEEDED(options->GetValue(TJS_W("bgcolor"), &tmp)))
 			if(tmp.Type() != tvtVoid) bgcolor = (tjs_int)tmp;
