@@ -333,6 +333,7 @@ public:
 			return TJS_E_FAIL; // time 属性が指定されていない
 		if(tmp.Type() == tvtVoid) return TJS_E_FAIL;
 		time = (tjs_int64)tmp;
+		if(time < 2) time = 2; // あまり小さな数値を指定すると問題が起きるので
 
 		if(TJS_SUCCEEDED(options->GetValue(TJS_W("maxh"), &tmp)))
 			if(tmp.Type() != tvtVoid) maxh = (tjs_int)tmp;
