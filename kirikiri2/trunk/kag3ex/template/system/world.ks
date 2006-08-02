@@ -651,9 +651,7 @@ class KAGEnvImage {
     // 必要に応じてこのメソッドをオーバライドする
     // 標準のものは単純な座標指定になっている
     function calcPosition(layer) {
-        dm("位置の再計算");
         if (reposition) {
-            dm("再計算開始:" + moveTime);
             var l = (int)xpos;
             var t = (int)ypos;
             if (moveTime !== void && moveTime > 0) {
@@ -795,10 +793,15 @@ class KAGEnvLayer extends KAGEnvImage {
         super.onRestore(f);
     }
 
-    var _layerCommands = %[
-    file : function(param, elm) {
+    function setImageFile(param, elm) {
         imageFile = param;
         disp = BOTH;
+        return true;
+    }
+
+    var _layerCommands = %[
+    file : function(param, elm) {
+        setImageFile(param);
     } incontextof this,
         ];
 
@@ -845,8 +848,7 @@ class KAGEnvLayer extends KAGEnvImage {
 
         // 画像のロード
         if (!find) {
-            imageFile = cmd;
-            disp = BOTH;
+            find = setImageFile(cmd);
         }
         return find;
     }
@@ -881,21 +883,19 @@ class KAGEnvLayer extends KAGEnvImage {
 class KAGEnvBaseLayer extends KAGEnvLayer {
 
     var name;
-
+    var _eventTrans;
 	var _imageFile;
 	property imageFile {
 		setter(v) {
+            _eventTrans = void;
             if (v !== void) {
-                // 記録
-                kag.sflags["cg_" + (v.toUpperCase())] = true;
-
+                
                 var eventInfo;
                 if (env.events !== void) {
                     eventInfo = env.events[v];
                 }
-                var eventTrans;
                 if (eventInfo !== void) {
-                    eventTrans = eventInfo.trans;
+                    _eventTrans = eventInfo.trans;
                     _imageFile = eventInfo.image !== void ? eventInfo.image : v;
                     xpos = (int)eventInfo.xoff;
                     ypos = (int)eventInfo.yoff;
@@ -908,14 +908,6 @@ class KAGEnvBaseLayer extends KAGEnvLayer {
                 }
                 dm("画像指定:" + _imageFile);
                 
-                // トランジション指定
-				dm("イベント用にトランジション指定");
-                if (!setTrans2(eventTrans)) {
-                    if (!setTrans2(env.envinfo.eventTrans)) {
-                        setTrans2(env.envinfo.envTrans);
-                    }
-                }
-
             } else {
                 _imageFile = void;
                 xpos = 0;
@@ -927,7 +919,7 @@ class KAGEnvBaseLayer extends KAGEnvLayer {
 			return _imageFile;
 		}
 	}
-
+    
     /**
      * コンストラクタ
      * @param env 環境
@@ -936,6 +928,22 @@ class KAGEnvBaseLayer extends KAGEnvLayer {
     function KAGEnvBaseLayer(env, name) {
         super.KAGEnvLayer(env);
         this.name = name;
+    }
+
+    function setImageFile(file, param) {
+        var find =  super.setImageFile(file, param);
+        if (find) {
+            // 記録
+            kag.sflags["cg_" + (file.toUpperCase())] = true;
+            // トランジション指定
+            dm("イベント用にトランジション指定");
+            if (!setTrans2(_eventTrans)) {
+                if (!setTrans2(env.envinfo.eventTrans)) {
+                    setTrans2(env.envinfo.envTrans);
+                }
+            }
+        }
+        return find;
     }
 
     function getLayer(base) {
