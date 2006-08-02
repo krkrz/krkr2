@@ -54,8 +54,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 1,1,1,1
- PRODUCTVERSION 1,1,1,1
+ FILEVERSION 1,1,2,2
+ PRODUCTVERSION 1,1,2,2
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -73,14 +73,14 @@ BEGIN
             VALUE "Comments", "\0"
             VALUE "CompanyName", " \0"
             VALUE "FileDescription", "Extended Transition Plug-in DLL\0"
-            VALUE "FileVersion", "1, 1, 1, 1\0"
+            VALUE "FileVersion", "1, 1, 2, 2\0"
             VALUE "InternalName", "extrans\0"
             VALUE "LegalCopyright", "Copyright (C) 2002-2006 W.Dee and contributors All rights reserved.\0"
             VALUE "LegalTrademarks", "\0"
             VALUE "OriginalFilename", "extrans.dll\0"
             VALUE "PrivateBuild", "\0"
             VALUE "ProductName", "extrans\0"
-            VALUE "ProductVersion", "1, 1, 1, 1\0"
+            VALUE "ProductVersion", "1, 1, 2, 2\0"
             VALUE "SpecialBuild", "\0"
         END
     END
