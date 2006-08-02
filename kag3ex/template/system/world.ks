@@ -40,7 +40,8 @@ function showKeys(name, dict) {
  * 分割パラメータの前側を取得
  * @param value パラメータ
  */
-function getTo(value) {
+function getTo(value)
+{
     var p;
     if ((p = value.indexOf(":")) > 0) {
         return value.substring(0, p);
@@ -213,6 +214,18 @@ class KAGEnvImage {
     var afx;
     var afy;
 
+    // 表示位置座標
+    var xpos;
+    var ypos;
+    var xposFrom;
+    var yposFrom;
+    var moveTime;
+    var moveAccel;
+
+    // 位置変更
+    var reposition;
+
+    
     // アクション処理
     var actionList;
     var syncMode;
@@ -233,6 +246,15 @@ class KAGEnvImage {
      */
     function KAGEnvImage(env) {
         this.env = env;
+
+        xpos = 0;
+        ypos = 0;
+        xposFrom = void;
+        yposFrom = void;
+        moveTime = void;
+        moveAccel = void;
+        reposition = true;
+
         resetFlag = false;
         fadeTime = void;
         actionList = new Array();
@@ -244,6 +266,27 @@ class KAGEnvImage {
         invalidate actionList;
     }
 
+    function setXPos(cmd, elm) {
+        dm("X位置指定:" + cmd + ":" + elm.time);
+        xposFrom = getFrom(cmd);
+        xpos     = getTo(cmd);
+        if (moveTime === void) {
+            moveTime  = elm.time;
+            moveAccel = elm.accel;
+        }
+        reposition = true;
+    } 
+
+    function setYPos(cmd, elm) {
+        yposFrom = getFrom(cmd);
+        ypos     = getTo(cmd);
+        if (moveTime === void) {
+            moveTime  = elm.time;
+            moveAccel = elm.accel;
+        }
+        reposition = true;
+    }
+    
     /**
      * アクションを設定
      * @param name アクション名
@@ -303,6 +346,7 @@ class KAGEnvImage {
     function setTrans(name, elm) {
         var info;
         if (env.transitions !== void && (info = env.transitions[name]) !== void) {
+            dm("トランジション設定:" + name);
             // 登録済みトランジション
             var tr = %[];
             // コピー
@@ -323,11 +367,13 @@ class KAGEnvImage {
         
         if (elm !== void && (transitionName[name] !== void ||
                              name.substring(0,5) == "trans")) {
+            dm("規定のトランジション設定:" + name);
             // 規定のトランジション
             var tr = %[];
             // パラメータのコピー
             foreach(elm, function(name, value, elm, tr) {
                 if (transitionParam[name] !== void) {
+                    dm("パラメータ:" + name);
                     tr[name] = value;
                     //delete elm[name];
                 }
@@ -348,16 +394,21 @@ class KAGEnvImage {
      * @return 設定した場合ｈ
      */
     function setTrans2(param) {
-        if (param === void) {
+        if (trans == void) {
+            dm("トランジション設定2:" + param);
+            if (param === void) {
+                return false;
+            } else if (typeof param == "String") {
+                setTrans(param);
+                return true;
+            } else if (param instanceof "Dictionary") {
+                setTrans(param.method, param);
+                return true;
+            }
             return false;
-        } else if (typeof param == "String") {
-            setTrans(param);
-            return true;
-        } else if (param instanceof "Dictionary") {
-            setTrans(param.method, param);
+        } else {
             return true;
         }
-        return false;
     }
     
     /**
@@ -506,6 +557,9 @@ class KAGEnvImage {
     show : function(param) { disp = BOTH;   } incontextof this,
     hide : function(param) { disp = CLEAR; } incontextof this,
     visible : function(param) { disp = param ? BOTH : CLEAR; }  incontextof this,
+    xpos : this.setXPos incontextof this,
+    ypos : this.setYPos incontextof this,
+    accel : null, // 無視
         ];
 
     /**
@@ -552,6 +606,13 @@ class KAGEnvImage {
         f.actionList  = new Array();
         f.actionList.assign(actionList);
         f.disp = disp;
+
+        f.xpos = xpos;
+        f.xposFrom = xposFrom;
+        f.ypos = ypos;
+        f.yposFrom = yposFrom;
+        f.moveTime = moveTime;
+        f.moveAccel = moveAccel;
     }
 
     /**
@@ -574,13 +635,42 @@ class KAGEnvImage {
             actionList.assign(f.actionList);
         }
         disp = f.disp;
+
+        xpos = f.xpos;
+        xposFrom = f.xposFrom;
+        ypos = f.ypos;
+        yposFrom = f.yposFrom;
+        moveTime = f.moveTime;
+        moveAccel = f.moveAccel;
     }
 
     // このメソッドを実装する
     // function getLayer(base);
     // function drawLayer(layer);
-    // 
+
+    // 必要に応じてこのメソッドをオーバライドする
+    // 標準のものは単純な座標指定になっている
     function calcPosition(layer) {
+        dm("位置の再計算");
+        if (reposition) {
+            dm("再計算開始:" + moveTime);
+            var l = (int)xpos;
+            var t = (int)ypos;
+            if (moveTime !== void && moveTime > 0) {
+                if (xposFrom !== void || yposFrom !== void) {
+                    var fl = xposFrom !== void ? (int)xposFrom : l;
+                    var ft = yposFrom !== void ? (int)yposFrom : t;
+                    layer.setPos(fl, ft);
+                }
+                layer.setMove(l, t, moveAccel, moveTime);
+            } else {
+                layer.setMove(l, t);
+            }
+            xposFrom = void;
+            yposFrom = void;
+            moveTime = void;
+            reposition = false;
+        }
     }
 
     // トランジション実行
@@ -689,8 +779,6 @@ class KAGEnvLayer extends KAGEnvImage {
 
     /// 描画中画像
     var imageFile;
-	var xoff;
-	var yoff;
 
     function KAGEnvLayer(env) {
         super.KAGEnvImage(env);
@@ -699,15 +787,11 @@ class KAGEnvLayer extends KAGEnvImage {
 
     function onStore(f) {
         f.imageFile = imageFile;
-        f.xoff = xoff;
-        f.yoff = yoff;
         super.onStore(f);
     }
     
     function onRestore(f) {
         imageFile = f.imageFile;
-        xoff = f.xoff;
-        yoff = f.yoff;
         super.onRestore(f);
     }
 
@@ -716,12 +800,6 @@ class KAGEnvLayer extends KAGEnvImage {
         imageFile = param;
         disp = BOTH;
     } incontextof this,
-    xoff : function(param, elm) {
-        xoff = param;
-    } incontextof this,
-    yoff : function(param, elm) {
-        yoff = param;
-    } incontextof this
         ];
 
     /**
@@ -779,11 +857,6 @@ class KAGEnvLayer extends KAGEnvImage {
     function drawLayer(layer) {
         if (imageFile !== void) {
             layer.loadImages(%[ "storage" => imageFile]);
-            // 座標補正
-            if (xoff !== void || yoff== void) {
-                layer.left = xoff if xoff !== void;
-                layer.top  = yoff if yoff !== void;
-            }
         }
     }
 
@@ -824,14 +897,16 @@ class KAGEnvBaseLayer extends KAGEnvLayer {
                 if (eventInfo !== void) {
                     eventTrans = eventInfo.trans;
                     _imageFile = eventInfo.image !== void ? eventInfo.image : v;
-                    xoff = (int)eventInfo.xoff;
-                    yoff = (int)eventInfo.yoff;
+                    xpos = (int)eventInfo.xoff;
+                    ypos = (int)eventInfo.yoff;
+                    reposition = true;
                 } else {
                     _imageFile = v;
-                    xoff = 0;
-                    yoff = 0;
+                    xpos = 0;
+                    xpos = 0;
+                    reposition = true;
                 }
-                //dm("画像指定:" + _imageFile);
+                dm("画像指定:" + _imageFile);
                 
                 // トランジション指定
 				dm("イベント用にトランジション指定");
@@ -843,8 +918,9 @@ class KAGEnvBaseLayer extends KAGEnvLayer {
 
             } else {
                 _imageFile = void;
-                xoff = 0;
-                yoff = 0;
+                xpos = 0;
+                ypos = 0;
+                reposition = true;
             }
         }
 		getter() {
@@ -884,16 +960,7 @@ class KAGEnvLevelLayer {
 	/// 表示絶対レベル
 	var absolute;
 
-    // 表示位置座標
-    var xpos;
-    var ypos;
-    var xposFrom;
-    var yposFrom;
-    var moveTime;
-    var moveAccel;
-    
     /// 位置変更
-    var reposition;
     var front;
     var back;
 
@@ -903,14 +970,7 @@ class KAGEnvLevelLayer {
      */
     function KAGEnvLevelLayer(layerId) {
         this.layerId = layerId;
-        xpos = 0;
-        ypos = 0;
-        xposFrom = void;
-        yposFrom = void;
-        moveTime = void;
-        moveAccel = void;
         level = void;
-        reposition = true;
     }
 
     function finalize() {
@@ -968,50 +1028,18 @@ class KAGEnvLevelLayer {
 		absolute = void;
     } 
 
-    function setXPos(cmd, elm) {
-		//dm("X位置指定:" + cmd + ":" + elm.time);
-        xposFrom = getFrom(cmd);
-        xpos     = getTo(cmd);
-        if (xposFrom !== void && moveTime === void) {
-            moveTime  = elm.time;
-            moveAccel = elm.accel;
-        }
-        reposition = true;
-    } 
-
-    function setYPos(cmd, elm) {
-        yposFrom = getFrom(cmd);
-        ypos     = getTo(cmd);
-        if (yposFrom !== void && moveTime === void) {
-            moveTime  = elm.time;
-            moveAccel = elm.accel;
-        }
-        reposition = true;
-    }
-    
     function onStore(f) {
         f.layerId = layerId;
         f.level = level;
 		f.absolute = absolute;
-        f.xpos = xpos;
-        f.xposFrom = xposFrom;
-        f.ypos = ypos;
-        f.yposFrom = yposFrom;
-        f.moveTime = moveTime;
-        f.moveAccel = moveAccel;
     }
 
     function onRestore(f) {
         layerId = f.layerId;
         level = f.level;
 		absolute = f.absolute;
-        xpos = f.xpos;
-        xposFrom = f.xposFrom;
-        ypos = f.ypos;
-        yposFrom = f.yposFrom;
-        moveTime = f.moveTime;
-        moveAccel = f.moveAccel;
-		// レベルの復帰
+
+        // レベルの復帰
 		var layer = kag.fore.layers[env.initLayerCount + layerId];
 		if (layer !== void) {
 			if (level !== void) {
@@ -1051,6 +1079,10 @@ class KAGEnvSimpleLayer extends KAGEnvLevelLayer, KAGEnvLayer {
         global.KAGEnvLayer.finalize();
     }
     
+    /*
+     * 前景色レイヤ用のオーバライド
+     * 画面中央原点で処理されている
+     */
     function calcPosition(layer) {
         if (reposition) {
             var l = kag.scWidth / 2 + (int)xpos - layer.imageWidth / 2;
@@ -1085,12 +1117,9 @@ class KAGEnvSimpleLayer extends KAGEnvLevelLayer, KAGEnvLayer {
     }
 
     var layerCommands = %[
-    xpos : this.setXPos incontextof this,
-    ypos : this.setYPos incontextof this,
     front : this.setFront incontextof this,
     back : this.setBack incontextof this,
     level : this.setLevel incontextof this,
-    accel : null, // 無視
         ];
 }
 
@@ -2361,9 +2390,9 @@ class KAGEnvSE {
      * @param elm 引数
      */
     function tagfunc(elm) {
-        dm("SE 用ファンクション呼び出し!");
-        doflag = false;
+        // dm("SE 用ファンクション呼び出し!");
         ret = 0;
+        doflag = false;
         foreach(elm, doCommand);
         // 何もしなかった場合、かつ、タグ名が se でなければそれを再生する
         if (!doflag && elm.tagname != "se") {
@@ -2527,6 +2556,9 @@ class KAGEnvironment extends KAGEnvImage {
         kag.tagHandlers["newlay"]  = this.newLayer;
         kag.tagHandlers["newchar"] = this.newCharacter;
 
+        kag.tagHandlers["msgoff"] = this.msgoff;
+        kag.tagHandlers["msgon"]  = this.msgon;
+        
         kag.tagHandlers["dispname"] = this.dispname;
         kag.tagHandlers["endline"]  = this.endline;
 		kag.tagHandlers["quake"]    = this.quake;
@@ -2699,8 +2731,8 @@ class KAGEnvironment extends KAGEnvImage {
     function setStage(stageName, elm) {
         if (stageName != stage || disp == CLEAR) {
             stage = stageName;
-			reposition = true;
-
+            reposition = true;
+            
             disp = BOTH;
 
 			// ステージ変更時フック
@@ -2860,6 +2892,16 @@ class KAGEnvironment extends KAGEnvImage {
         return 0;
     }        
 
+    function msgoff(elm) {
+        kag.invisibleCurrentMessageLayer();
+        return 0;
+    }
+
+    function msgon(elm) {
+        kag.visibleCurrentMessageLayer();
+        return 0;
+    }
+    
     var envCommands = %[
     /**
      * 全体の初期化処理
@@ -2940,6 +2982,15 @@ class KAGEnvironment extends KAGEnvImage {
                 // 画像のロードと座標補正処理
                 try {
                     layer.loadImages(%[ "storage" => image ]);
+
+                    // センター原点で計算
+                    if (reposition) {
+                        var xoff = (int)stages[stage].xoff;
+                        var yoff = (int)stages[stage].yoff;
+                        xpos  = (kag.scWidth  / 2) - layer.imageWidth / 2  + (xoff !== void ? xoff : 0);
+                        ypos  = (kag.scHeight / 2) - layer.imageHeight / 2 + (yoff !== void ? yoff : 0);
+                    }
+
                 } catch(e) {
                     // 画像がロードできなかった場合は補正で対応
                     image = stages[stage].image;
@@ -2965,16 +3016,18 @@ class KAGEnvironment extends KAGEnvImage {
                                             timeInfo.contrast);
                             }
                         }
+
+                        // センター原点で計算
+                        if (reposition) {
+                            var xoff = (int)stages[stage].xoff;
+                            var yoff = (int)stages[stage].yoff;
+                            xpos  = (kag.scWidth  / 2) - layer.imageWidth / 2  + (xoff !== void ? xoff : 0);
+                            ypos  = (kag.scHeight / 2) - layer.imageHeight / 2 + (yoff !== void ? yoff : 0);
+                        }
+                        
                     } catch (e) {
                         dm("背景画像がロードできません" + image);
                     }
-                }
-				if (reposition) {
-	                var xoff = (int)stages[stage].xoff;
-	                var yoff = (int)stages[stage].yoff;
-	                layer.left = (kag.scWidth  / 2) - layer.imageWidth / 2  + (xoff !== void ? xoff : 0);
-    	            layer.top  = (kag.scHeight / 2) - layer.imageHeight / 2 + (yoff !== void ? yoff : 0);
-                    reposition = false;
                 }
 
             } else {
@@ -3010,6 +3063,8 @@ class KAGEnvironment extends KAGEnvImage {
         }, base);
         event.updateImage(base);
         updateLayer(layer);
+        calcPosition(layer);
+
     }
     
     /**
@@ -3078,7 +3133,9 @@ class KAGEnvironment extends KAGEnvImage {
             }
             redraw = false;
         } else {
-            updateLayer(getLayer());
+            var layer = getLayer();
+            updateLayer(layer);
+            calcPosition(layer);
         }
         trans = void;
     }
@@ -3089,7 +3146,7 @@ class KAGEnvironment extends KAGEnvImage {
      */
     function tagfunc(elm) {
         //dm("環境タグがよばれたよ");
-        var ret;
+        ret = void;
         foreach(elm, doCommand);
         hideMessage();
         updateImage();
