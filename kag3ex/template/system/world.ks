@@ -2758,7 +2758,10 @@ class KAGEnvironment extends KAGEnvImage {
 
         }
         // イベント絵は消去
-        event.disp = CLEAR;
+        if (event.disp != CLEAR) {
+            event.disp = CLEAR;
+            redraw = true;
+        }
     }
 
     /**
@@ -2789,7 +2792,10 @@ class KAGEnvironment extends KAGEnvImage {
             }
         }
         // イベント絵は消去
-        event.disp = CLEAR;
+        if (event.disp != CLEAR) {
+            event.disp = CLEAR;
+            redraw = true;
+        }
     }
 
     // トランジションモード
@@ -2828,7 +2834,7 @@ class KAGEnvironment extends KAGEnvImage {
                     //delete elm[name];
                 }
             }, tr);
-        } else if (transitionName[name] !== void || name.name.substring(0,5) == "trans") {
+        } else if (transitionName[name] !== void || name.substring(0,5) == "trans") {
             // 規定のトランジション
             // パラメータのコピー
             foreach(elm, function(name, value, elm, tr) {
@@ -3071,7 +3077,6 @@ class KAGEnvironment extends KAGEnvImage {
         event.updateImage(base);
         updateLayer(layer);
         calcPosition(layer);
-
     }
     
     /**
