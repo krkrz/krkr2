@@ -992,6 +992,13 @@ class KAGWindow extends Window
 		goToStartWithAsk();
 	}
 
+    function onAllSkipMenuItemClick(sender)
+    {
+		sender.checked = true;
+        allskip = sender.skip;
+		saveSystemVariables();
+    }
+    
 	function onChSpeedMenuItemClick(sender)
 	{
 		sender.checked = true;
@@ -1331,7 +1338,20 @@ class KAGWindow extends Window
 			}
 		}
 
-        allskip = scflags.allskip if scflags.allskip !== void;
+        if (scflags.allskip !== void) {
+            allskip = scflags.allskip;
+            if (typeof this.allskipMenu !== "undefined") {
+                var children = allskipMenu.children;
+                for(var i = children.count-1; i >= 0; i--) {
+                    var item = children[i];
+                    if(typeof item.skip !== "undefined" && item.skip == allskip) {
+                        item.checked = true;
+                        break;
+                    }
+                }
+            }
+        }
+
         afterauto = scflags.afterauto if scflags.afterauto !== void;
         afterskip = scflags.afterskip if scflags.afterskip !== void;
         
