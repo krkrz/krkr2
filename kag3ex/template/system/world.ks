@@ -278,6 +278,7 @@ class KAGEnvImage {
     } 
 
     function setYPos(cmd, elm) {
+        dm("Y位置指定:" + cmd + ":" + elm.time);
         yposFrom = getFrom(cmd);
         ypos     = getTo(cmd);
         if (moveTime === void) {
@@ -346,7 +347,7 @@ class KAGEnvImage {
     function setTrans(name, elm) {
         var info;
         if (env.transitions !== void && (info = env.transitions[name]) !== void) {
-            dm("トランジション設定:" + name);
+            //dm("トランジション設定:" + name);
             // 登録済みトランジション
             var tr = %[];
             // コピー
@@ -367,13 +368,13 @@ class KAGEnvImage {
         
         if (elm !== void && (transitionName[name] !== void ||
                              name.substring(0,5) == "trans")) {
-            dm("規定のトランジション設定:" + name);
+            //dm("規定のトランジション設定:" + name);
             // 規定のトランジション
             var tr = %[];
             // パラメータのコピー
             foreach(elm, function(name, value, elm, tr) {
                 if (transitionParam[name] !== void) {
-                    dm("パラメータ:" + name);
+                    //dm("パラメータ:" + name);
                     tr[name] = value;
                     //delete elm[name];
                 }
@@ -395,7 +396,7 @@ class KAGEnvImage {
      */
     function setTrans2(param) {
         if (trans == void) {
-            dm("トランジション設定2:" + param);
+            //dm("トランジション設定2:" + param);
             if (param === void) {
                 return false;
             } else if (typeof param == "String") {
@@ -652,6 +653,7 @@ class KAGEnvImage {
     // 標準のものは単純な座標指定になっている
     function calcPosition(layer) {
         if (reposition) {
+            dm("位置の再設定:" + xpos + "," + ypos);
             var l = (int)xpos;
             var t = (int)ypos;
             if (moveTime !== void && moveTime > 0) {
@@ -784,8 +786,8 @@ class KAGEnvLayer extends KAGEnvImage {
     }
 
     function onStore(f) {
-        f.imageFile = imageFile;
         super.onStore(f);
+        f.imageFile = imageFile;
     }
     
     function onRestore(f) {
@@ -794,6 +796,9 @@ class KAGEnvLayer extends KAGEnvImage {
     }
 
     function setImageFile(param, elm) {
+
+        dm("画像設定 for EnvLayer");
+
         imageFile = param;
         disp = BOTH;
         return true;
@@ -883,42 +888,6 @@ class KAGEnvLayer extends KAGEnvImage {
 class KAGEnvBaseLayer extends KAGEnvLayer {
 
     var name;
-    var _eventTrans;
-	var _imageFile;
-	property imageFile {
-		setter(v) {
-            _eventTrans = void;
-            if (v !== void) {
-                
-                var eventInfo;
-                if (env.events !== void) {
-                    eventInfo = env.events[v];
-                }
-                if (eventInfo !== void) {
-                    _eventTrans = eventInfo.trans;
-                    _imageFile = eventInfo.image !== void ? eventInfo.image : v;
-                    xpos = (int)eventInfo.xoff;
-                    ypos = (int)eventInfo.yoff;
-                    reposition = true;
-                } else {
-                    _imageFile = v;
-                    xpos = 0;
-                    xpos = 0;
-                    reposition = true;
-                }
-                dm("画像指定:" + _imageFile);
-                
-            } else {
-                _imageFile = void;
-                xpos = 0;
-                ypos = 0;
-                reposition = true;
-            }
-        }
-		getter() {
-			return _imageFile;
-		}
-	}
     
     /**
      * コンストラクタ
@@ -931,19 +900,49 @@ class KAGEnvBaseLayer extends KAGEnvLayer {
     }
 
     function setImageFile(file, param) {
-        var find =  super.setImageFile(file, param);
-        if (find) {
+
+        var eventTrans;
+        
+        if (file !== void) {
+
+            var eventInfo;
+            if (env.events !== void) {
+                eventInfo = env.events[file];
+            }
+            if (eventInfo !== void) {
+                eventTrans = eventInfo.trans;
+                imageFile = eventInfo.image !== void ? eventInfo.image : v;
+                xpos = (int)eventInfo.xoff;
+                ypos = (int)eventInfo.yoff;
+                reposition = true;
+            } else {
+                imageFile = file;
+                xpos = 0;
+                ypos = 0;
+                reposition = true;
+            }
+
+            disp = BOTH;
+            
             // 記録
             kag.sflags["cg_" + (file.toUpperCase())] = true;
+            
             // トランジション指定
-            dm("イベント用にトランジション指定");
-            if (!setTrans2(_eventTrans)) {
+            if (!setTrans2(eventTrans)) {
                 if (!setTrans2(env.envinfo.eventTrans)) {
                     setTrans2(env.envinfo.envTrans);
                 }
             }
+
+        } else {
+            imageFile = void;
+            disp = CLEAR;
+            xpos = 0;
+            ypos = 0;
+            reposition = true;
         }
-        return find;
+
+        return true;
     }
 
     function getLayer(base) {
