@@ -537,6 +537,7 @@ class RelativeLayer extends KAGLayer
 	function loadImages(storage, key)
 	{
         var ret = super.loadImages(storage, key);
+        setSizeToImageSize();
         top  = top;
         left = left;
 	}
