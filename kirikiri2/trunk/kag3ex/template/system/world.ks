@@ -1215,6 +1215,8 @@ class KAGEnvCharacter extends KAGEnvLevelLayer, KAGEnvImage {
     /// 表情
     var face;
 
+    var facePoseMap;
+    
     /// ボイス情報
     var voice;
 	var strVoice;
@@ -1250,6 +1252,20 @@ class KAGEnvCharacter extends KAGEnvLevelLayer, KAGEnvImage {
         this.init     = init;
         if (init) {
             poses = init.poses; //showKeys("poses", poses);
+
+            // 表情ポーズ同期機能
+            if (init.facePose) {
+                // 表情からポーズに対するマップを作成する
+                facePoseMap = %[];
+                foreach(poses, function(name, value, dict, facePoseMap) {
+                    var faces = [];
+                    faces.assign(value.faces);
+                    for (var i=0; i<faces.count; i+= 2) {
+                        facePoseMap[faces[i]] = name;
+                    }
+                }, facePoseMap);
+            }
+
         }
     }
     
@@ -1533,7 +1549,18 @@ class KAGEnvCharacter extends KAGEnvLevelLayer, KAGEnvImage {
         
         var info;
         var find = false;
-        if (poses !== void) {
+
+        // 顔ポーズマップが存在する場合
+        if (facePoseMap !== void) {
+            var p;
+            if ((p = facePoseMap[cmd]) !== void) {
+                setPose(p);
+                setFace(cmd);
+                find = true;
+            }
+        }
+
+        if (!find && poses !== void) {
             if (poses[cmd] !== void) {
                 find = true;
                 setPose(cmd);
@@ -3258,14 +3285,22 @@ class KAGEnvironment extends KAGEnvImage {
     }
 
     /**
+     * 表情表示処理
+     */
+    function loadFace(name) {
+        kag.current.faceLayer.loadImages(name);
+        kag.current.faceLayer.visible = true;
+    }
+
+    
+    /**
      * 表情消去処理
      */
     function clearFace() {
         if (envinfo.clearFace !== void) {
-            kag.current.faceLayer.loadImages(envinfo.clearFace);
-            kag.current.faceLayer.visible = true;
+            loadFace(envinfo.clearFace);
         } else {
-            kag.current.clearFace();
+            kag.current.faceLayer.visible = false;
         }
     }
 
@@ -3296,7 +3331,7 @@ class KAGEnvironment extends KAGEnvImage {
         if (elm === void || elm.name === void || elm.name == "") {
             // 名前表示初期化ロジック
             // 名前消去
-            kag.current.clearName();
+            kag.current.nameLayer.visible = false;
             if (faceLevelName !== void) {
                 clearFace();
             }
@@ -3362,8 +3397,7 @@ class KAGEnvironment extends KAGEnvImage {
                 dm("表情なしパターン:" + name);
                 var img;
                 if (envinfo.nameFaces !== void && (img = envinfo.nameFaces[name]) !== void) {
-                    kag.current.faceLayer.loadImages(img);
-                    kag.current.faceLayer.visible = true;
+                    loadFace(img);
                 } else {
                     clearFace();
                 }
