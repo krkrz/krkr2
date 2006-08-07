@@ -3317,7 +3317,7 @@ class KAGEnvironment extends KAGEnvImage {
             }
         }
     }
-    
+
     /**
      * 名前表示処理ハンドラ
      */
@@ -3368,12 +3368,10 @@ class KAGEnvironment extends KAGEnvImage {
                 }
             }
 
-// XXX 名前補正。外だしにすること!
-//            if (dispName.length <= 1) {
-//                dispName = "　" + dispName + "　";
-//            }
-//            var dispName = "【" + dispName + "】";
-
+            // 名前加工処理
+            if (typeof global.dispNameFilter !== 'undefined') {
+                dispName = global.dispNameFilter(dispName);
+            }
 
             kag.current.processName(dispName);
             if (kag.historyWriteEnabled) {
