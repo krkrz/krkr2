@@ -1830,7 +1830,7 @@ class KAGEnvCharacter extends KAGEnvLevelLayer, KAGEnvImage {
      * 表情を描画する
      */
     function drawFace(layer, faceLevelName) {
-        //dm("表情描画:" + name);
+		//dm("表情描画:" + name + " face:" + face + " layer:" + layer.name + " level:" + faceLevelName);
         if (faceLevelName !== void && poses !== void) {
             _drawLayer(layer, faceLevelName);
             layer.visible = true;
@@ -1888,7 +1888,7 @@ class KAGEnvCharacter extends KAGEnvLevelLayer, KAGEnvImage {
         global.KAGEnvImage.updateLayer(...);
 
         // 表情描画
-        env.drawFace(layer.parent === kag.fore ? 0 : 1, this);
+        env.drawFace(layer.parent === kag.fore.base ? 0 : 1, this);
         
         // キャラクタが表示されてない場合はエモーションは無効
         if (!isShowBU()) {
