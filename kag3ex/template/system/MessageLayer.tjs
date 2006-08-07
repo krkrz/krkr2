@@ -417,6 +417,97 @@ class SystemButtonLayer extends ButtonLayer
     }
 }
 
+/**
+ * 表示状態と表示レベルについてあるレイヤと相対同期するレイヤ
+ */
+class RelativeLayer extends KAGLayer
+{
+    var owner;
+
+    function disp() {
+        dm(name, visible, absolute, top, left, width, height);
+    }
+    
+    var _visible;
+    property visible {
+        setter(v) {
+            _visible = v;
+            super.visible = owner.visible && _visible;
+            disp();
+        }
+        getter() {
+            return _visible;
+        }
+    }
+
+    var _absolute;
+    property absolute {
+        setter(v) {
+            _absolute = v;
+            super.absolute = owner.absolute + _absolute;
+            disp();
+        }
+        getter() {
+            return _absolute;
+        }
+    }
+
+    var _left;
+    property left {
+        setter(v) {
+            _left = v;
+            super.left = owner.left + _left;
+            disp();
+        }
+        getter() {
+            return _left;
+        }
+    }
+
+    var _top;
+    property top {
+        setter(v) {
+            _top = v;
+            super.top = owner.top + _top;
+            disp();
+        }
+        getter() {
+            return _top;
+        }
+    }
+
+    function setPos(l, t, w=void, h=void) {
+        left = (int)l;
+        top  = (int)t;
+        width  = (int)w if w !== void;
+        height = (int)h if h !== void;
+    }
+
+	function assignImages(src, copyvisiblestate = false)
+	{
+        super.assignImages(src);
+        if (copyvisiblestate) {
+            var su = super;
+            visible = src.visible;
+            su.opacity = src.opacity;
+            absolute = src.absolute if !src.isPrimary && src.parent.absoluteOrderMode;
+            su.type = src.type;
+            setPos(src.left, src.top, src.width, src.height);
+            su.setImagePos(src.imageLeft, src.imageTop);
+        }
+    }
+    
+    function RelativeLayer(owner) {
+        this.owner = owner;
+        super.KAGLayer(owner.window, owner.parent);
+        setPos(0,0,8,8);
+        absolute = 1;
+        visible = false;
+    }
+}
+
+
+
 class MessageLayer extends KAGLayer
 {
     var myleft;
@@ -435,6 +526,8 @@ class MessageLayer extends KAGLayer
         setter(v) {
             myleft = (int)v;
             super.left = myleft + diffx;
+            faceLayer.left = faceLayer.left if faceLayer !== void;
+            nameLayer.left = nameLayer.left if nameLayer !== void;
         }
         getter() {
             return myleft;
@@ -445,6 +538,8 @@ class MessageLayer extends KAGLayer
         setter(v) {
             mytop = (int)v;
             super.top = mytop + diffy;
+            faceLayer.top = faceLayer.top if faceLayer !== void;
+            nameLayer.top = nameLayer.top if nameLayer !== void;
         }
         getter() {
             return mytop;
@@ -458,7 +553,29 @@ class MessageLayer extends KAGLayer
         height = (int)h if h !== void;
     }
 
+    // 表示状態
+    property visible {
+        setter(v) {
+            super.visible = v;
+            faceLayer.visible = faceLayer.visible if faceLayer !== void;
+            nameLayer.visible = nameLayer.visible if nameLayer !== void;
+        }
+        getter() {
+            return super.visible;
+        }
+    }
 
+    // 表示位置
+    property absolute {
+        setter(v) {
+            super.absolute = v;
+            faceLayer.absolute = faceLayer.absolute if faceLayer !== void;
+            nameLayer.absolute = nameLayer.absolute if nameLayer !== void;
+        }
+        getter() {
+            return super.absolute;
+        }
+    }
     
     var wwFollowing = "%),:;]}｡｣ﾞﾟ。，、．：；゛゜ヽヾゝ"
                 "ゞ々’”）〕］｝〉》」』】°′″℃￠％‰"; // 行頭禁則文字
@@ -603,17 +720,9 @@ class MessageLayer extends KAGLayer
     
     // 名前描画用レイヤ
     var nameLayer;
-    var nameLeft = 0;
-    var nameTop = 0;
-    var nameWidth = 8;
-    var nameHeight = 8;
 
     // 顔描画用レイヤ
     var faceLayer;
-    var faceLeft = 0;
-    var faceTop = 0;
-    var faceWidth = 8;
-    var faceHeight = 8;
 
     // システムボタンレイヤ
     var buttons = %[];
@@ -776,12 +885,12 @@ class MessageLayer extends KAGLayer
 		highlightLayer.hitType = htProvince;
         // 領域画像で当たり判定を行う
 
-        nameLayer = new global.KAGLayer(window, this);
+        nameLayer = new RelativeLayer(this);
         nameLayer.type = layerType;
         nameLayer.name = "名前表示用レイヤ";
         nameLayer.hitType = htProvince;
-        
-        faceLayer = new global.KAGLayer(window, this);
+
+        faceLayer = new RelativeLayer(this);
         faceLayer.type = ltAlpha;
         faceLayer.name = "表情表示用レイヤ";
         faceLayer.hitType = htProvince;
@@ -869,8 +978,8 @@ class MessageLayer extends KAGLayer
 		initLineLayer();
 
         if (all) {
-            clearFace();
-            clearName();
+            faceLayer.visible = false;
+            nameLayer.visible = false;
         }
     }
 
@@ -900,16 +1009,18 @@ class MessageLayer extends KAGLayer
         eventTransparent = +elm.transparent if elm.transparent !== void;
         
         // 名前窓
-        nameLeft  = +elm.nameleft   if elm.nameleft   !== void;
-        nameTop   = +elm.nametop    if elm.nametop    !== void;
-        nameWidth = +elm.namewidth  if elm.namewidth  !== void;
-        nameHeight= +elm.nameheight if elm.nameheight !== void;
-
+        nameLayer.left     = +elm.nameleft   if elm.nameleft   !== void;
+        nameLayer.top      = +elm.nametop    if elm.nametop    !== void;
+        nameLayer.width    = +elm.namewidth  if elm.namewidth  !== void;
+        nameLayer.height   = +elm.nameheight if elm.nameheight !== void;
+        nameLayer.absolute = +elm.nameabsolute if elm.nameabsolute !== void;
+        
         // 表情窓
-        faceLeft  = +elm.faceleft   if elm.faceleft   !== void;
-        faceTop   = +elm.facetop    if elm.facetop    !== void;
-        faceWidth = +elm.facewidth  if elm.facewidth  !== void;
-        faceHeight= +elm.faceheight if elm.faceheight !== void;
+        faceLayer.left     = +elm.faceleft   if elm.faceleft   !== void;
+        faceLayer.top      = +elm.facetop    if elm.facetop    !== void;
+        faceLayer.width    = +elm.facewidth  if elm.facewidth  !== void;
+        faceLayer.height   = +elm.faceheight if elm.faceheight !== void;
+        faceLayer.absolute = +elm.faceabsolute if elm.faceabsolute !== void;
         
         clear();
     }
@@ -939,8 +1050,6 @@ class MessageLayer extends KAGLayer
 		initLineLayer();
 		currentRuby = "";
 
-        nameLayer.setPos(nameLeft, nameTop, nameWidth, nameHeight);
-        faceLayer.setPos(faceLeft, faceTop, faceWidth, faceHeight);
         clearTimeout();
         clearClick();
     }
@@ -1848,13 +1957,6 @@ class MessageLayer extends KAGLayer
 		return false;
 	}
 
-    /**
-     * 名前の消去
-     */
-    function clearName() {
-        nameLayer.visible = false;
-    }
-
     var nameImageMap;
     var defaultNameImage;
     
@@ -1889,13 +1991,6 @@ class MessageLayer extends KAGLayer
     function setNameImage(map, defaultImage) {
         nameImageMap = map;
         defaultNameImage = defaultImage;
-    }
-    
-    /**
-     * 顔画像の描画
-     */
-    function clearFace() {
-        faceLayer.visible = false;
     }
     
 	function invalidateLinkObjects()
@@ -3267,17 +3362,9 @@ class MessageLayer extends KAGLayer
 
         // 名前レイヤ
         nameLayer.assignImages(src.nameLayer, true);
-        nameLeft   = src.nameLeft;
-        nameTop    = src.nameTop;
-        nameWidth  = src.nameWidth;
-        nameHeight = src.nameHeight;
 
         // 表情レイヤ
         faceLayer.assignImages(src.faceLayer, true);
-        faceLeft   = src.faceLeft;
-        faceTop    = src.faceTop;
-        faceWidth  = src.faceWidth;
-        faceHeight = src.faceHeight;
 
         timeoutTime    = src.timeoutTime;
         timeoutStorage = src.timeoutStorage;
@@ -3348,7 +3435,9 @@ class MessageLayer extends KAGLayer
 		dic.glyphFixedTop = glyphFixedTop;
         dic.draggable = draggable;
         dic.eventTransparent = eventTransparent;
-		// [end_store_vars]
+        dic.faceLayer = faceLayer.store();
+        dic.nameLayer = nameLayer.store();
+        // [end_store_vars]
 		return dic;
 	}
 
@@ -3396,6 +3485,8 @@ class MessageLayer extends KAGLayer
 		glyphFixedTop = dic.glyphFixedTop if dic.glyphFixedTop !== void;
 		draggable = dic.draggable if dic.draggable !== void;
         eventTransparent = dic.eventTransparent if dic.eventTransparent !== void;
+        faceLayer.restore(dic.faceLayer) if dic.faceLayer !== void;
+        nameLayer.restore(dic.nameLayer) if dic.nameLayer !== void;
         // [end_restore_vars]
 		super.restore(dic);
 	}
