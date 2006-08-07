@@ -423,17 +423,12 @@ class SystemButtonLayer extends ButtonLayer
 class RelativeLayer extends KAGLayer
 {
     var owner;
-
-    function disp() {
-        dm(name, visible, absolute, top, left, width, height);
-    }
     
     var _visible;
     property visible {
         setter(v) {
             _visible = v;
             super.visible = owner.visible && _visible;
-            disp();
         }
         getter() {
             return _visible;
@@ -445,19 +440,46 @@ class RelativeLayer extends KAGLayer
         setter(v) {
             _absolute = v;
             super.absolute = owner.absolute + _absolute;
-            disp();
         }
         getter() {
             return _absolute;
         }
     }
 
+    // å¥ì_ï‚ê≥èàóù
+    var _originMode = 0;
+    property originMode {
+        setter(v) {
+            _originMode = v;
+            left = left;
+            top = top;
+        }
+        getter() {
+            return _originMode;
+        }
+    }
+    
     var _left;
     property left {
         setter(v) {
             _left = v;
-            super.left = owner.left + _left;
-            disp();
+            switch (_originMode) {
+            case 0:
+            case 6:
+            case 7:
+                super.left = owner.left + _left;
+                break;
+            case 1:
+            case 5:
+            case 8:
+                super.left = owner.left + _left - width / 2;
+                break;
+            case 2:
+            case 3:
+            case 4:
+                super.left = owner.left + _left - width;
+                break;
+            }
         }
         getter() {
             return _left;
@@ -468,8 +490,23 @@ class RelativeLayer extends KAGLayer
     property top {
         setter(v) {
             _top = v;
-            super.top = owner.top + _top;
-            disp();
+            switch (_originMode) {
+            case 0:
+            case 1:
+            case 2:
+                super.top = owner.top + _top;
+                break;
+            case 3:
+            case 7:
+            case 8:
+                super.top = owner.top + _top - height / 2;
+                break;
+            case 4:
+            case 5:
+            case 6:
+                super.top = owner.top + _top - height;
+                break;
+            }
         }
         getter() {
             return _top;
@@ -496,6 +533,24 @@ class RelativeLayer extends KAGLayer
             su.setImagePos(src.imageLeft, src.imageTop);
         }
     }
+
+	function loadImages(storage, key)
+	{
+        var ret = super.loadImages(storage, key);
+        top  = top;
+        left = left;
+	}
+
+	function store() {
+        var dic = super.store();
+        dic.originMode = originMode;
+        return dic;
+    }
+    
+    function restore(dic) {
+        originMode = dic.originMode if dic.originMode !== void;
+        super.restore(dic);
+    }
     
     function RelativeLayer(owner) {
         this.owner = owner;
@@ -505,8 +560,6 @@ class RelativeLayer extends KAGLayer
         visible = false;
     }
 }
-
-
 
 class MessageLayer extends KAGLayer
 {
@@ -1014,6 +1067,7 @@ class MessageLayer extends KAGLayer
         nameLayer.width    = +elm.namewidth  if elm.namewidth  !== void;
         nameLayer.height   = +elm.nameheight if elm.nameheight !== void;
         nameLayer.absolute = +elm.nameabsolute if elm.nameabsolute !== void;
+        nameLayer.originMode = +elm.nameorigin if elm.nameorigin !== void;
         
         // ï\èÓëã
         faceLayer.left     = +elm.faceleft   if elm.faceleft   !== void;
@@ -1021,6 +1075,7 @@ class MessageLayer extends KAGLayer
         faceLayer.width    = +elm.facewidth  if elm.facewidth  !== void;
         faceLayer.height   = +elm.faceheight if elm.faceheight !== void;
         faceLayer.absolute = +elm.faceabsolute if elm.faceabsolute !== void;
+        faceLayer.originMode = +elm.faceorigin if elm.faceorigin !== void;
         
         clear();
     }
