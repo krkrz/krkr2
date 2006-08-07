@@ -941,12 +941,12 @@ class MessageLayer extends KAGLayer
 
         nameLayer = new RelativeLayer(this);
         nameLayer.type = layerType;
-        nameLayer.name = "名前表示用レイヤ";
+        nameLayer.name = name + ":名前";
         nameLayer.hitType = htProvince;
 
         faceLayer = new RelativeLayer(this);
         faceLayer.type = ltAlpha;
-        faceLayer.name = "表情表示用レイヤ";
+        faceLayer.name = name + ":表情";
         faceLayer.hitType = htProvince;
     }
 
@@ -3584,7 +3584,15 @@ class MessageLayer extends KAGLayer
 		var tmp = src.name;
 		src.name = name;
 		name = tmp;
-	}
+
+        tmp = src.nameLayer.name;
+        src.nameLayer.name = nameLayer.name;
+        nameLayer.name = tmp;
+
+        tmp = src.faceLayer.name;
+        src.faceLayer.name = faceLayer.name;
+        faceLayer.name = tmp;
+    }
 
 	function setHiddenStateByUser(b)
 	{
