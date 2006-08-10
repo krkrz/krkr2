@@ -83,6 +83,9 @@ useArchiveIfExists("system.xp3");
 useArchiveIfExists("voice.xp3");
 useArchiveIfExists("face.xp3");
 
+if(Storages.isExistentStorage("Storages.tjs"))
+	Scripts.execStorage("Storages.tjs");
+
 useArchiveIfExists("patch.xp3");
 
 // 追加のパッチ用アーカイブの検索
