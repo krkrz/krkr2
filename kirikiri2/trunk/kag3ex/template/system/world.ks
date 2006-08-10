@@ -2545,7 +2545,7 @@ class KAGEnvironment extends KAGEnvImage {
             if (envinfo) {
                 times       = envinfo.times;       showKeys("times", times);
                 stages      = envinfo.stages;      showKeys("stages", stages);
-                events      = envinfo.events;      showKeys("stages", events);
+                events      = envinfo.events;      showKeys("events", events);
                 positions   = envinfo.positions;   showKeys("positions", positions);
                 actions     = envinfo.actions;     showKeys("actions", actions);
                 emotions    = envinfo.emotions;    showKeys("actions", actions);
@@ -3496,7 +3496,8 @@ class KAGEnvironment extends KAGEnvImage {
         // イベント用処理
         if (tagName == "event" || tagName == "ev") {
             return event.tagfunc(elm);
-        } else if (tagName.substring(0,2) == "ev") {
+        } else if (tagName.substring(0,2) == "ev" ||
+                   (events !== void && events[tagName] !== void)) {
             elm[tagName] = true;
             return event.tagfunc(elm);
         }
