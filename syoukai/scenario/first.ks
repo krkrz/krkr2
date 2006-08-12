@@ -1,7 +1,3 @@
-@image storage="_24" layer=base
-@quake time=20000
-@s
-
 @call storage="snow.ks"
 ; ↑ 雪 plug-in を読み込む
 @wait time=200
@@ -322,6 +318,7 @@
 　みなさんも是非吉里吉里/KAGを使ってすばらしいゲームを作ってください。[l][r]
 [r]
 @start_select
+[link exp="System.shellExecute('http://www.piass.com/kpc/')" hint="吉里吉里/KAG推進委員会を開きます"]吉里吉里/KAG推進委員会[endlink][r]
 [link exp="System.shellExecute('http://kikyou.info/tvp/')" hint="ダウンロードページを開きます"]吉里吉里ダウンロードページ[endlink][r]
 [r]
 [link target=*to_syokai_start]メニューに戻る[endlink]
