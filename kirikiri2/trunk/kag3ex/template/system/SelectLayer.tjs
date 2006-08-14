@@ -142,6 +142,8 @@ function getSelectButtonLayer(owner, name)
  */
 class SelectLayer {
 
+    var msgoff = false;
+    
     var window;
     
     var left;
@@ -214,6 +216,9 @@ class SelectLayer {
         enterse = elm.enterse if elm.enterse !== void;
         leavese = elm.leavese if elm.leavese !== void;
         clickse = elm.clickse if elm.clickse !== void;
+
+        // メッセージ窓を消去するかどうか
+        msgoff = elm.msgoff if elm.msgoff !== void;
     }
 
     // 登録済み選択肢

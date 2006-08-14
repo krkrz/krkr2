@@ -80,7 +80,7 @@ class KAGWindow extends Window
 	var chDefaultAntialiased; // 文字にアンチエイリアスをかけるかどうか
 	var chDefaultFace; // 文字のデフォルトのフォント
 
-	var initialMessageLayerVisible = true;
+    var initialMessageLayerVisible = true;
 
 	var historyLayer; // メッセージ履歴レイヤ
 	/*C*/var historyWriteEnabled = true; // メッセージレイヤに文字を出力するか
@@ -100,6 +100,8 @@ class KAGWindow extends Window
 	/*C*/var numCharacterLayers = 0; // 前景レイヤの数
 	/*C*/var numMessageLayers = 1; // メッセージレイヤの数
 
+    /*C*/var messageFadeTime = 500; // メッセージレイヤの表示ON/OFF の時間
+    
     var fore = %[]; // 表レイヤ
 	var back = %[]; // 裏レイヤ
 
@@ -3572,22 +3574,57 @@ class KAGWindow extends Window
 		return -2; // break
 	}
 
-    function invisibleCurrentMessageLayer() {
-        kag.current.visible = false;
-        // プラグインを呼ぶ
-        forEachEventHook('onCurrentMessageVisibleChanged',
-                         function(handler, f) { handler(f.hidden); } incontextof this,
-                         %[hidden:true]);
+    /**
+     * 現在のメッセージ窓の表示状態の変更
+     * @param visible
+     * @return 処理の待ちが必要な場合は true を返す
+     */
+    function setCurrentMessageLayerVisible(visible) {
+
+        dm("現在のメッセージ窓の状態を変更");
+        
+        if (fore.messages[currentNum].visible != visible) {
+            if (!skipMode && messageFadeTime > 0) {
+
+                // 裏は先に消しておく。そうしないと msgvisible がとんでしまって
+                // せっかくの待ちが解除される
+                back.messages[currentNum].visible = visible;
+                
+                // 処理待ち
+                var layer = fore.messages[currentNum];
+                layer.setVisibleTime(visible, messageFadeTime);
+
+                dm("窓処理待ち");
+
+                conductor.wait(%[
+                click : function(layer) {
+                    dm("窓処理クリックによる解除");
+                    updateBeforeCh = 1;
+                    layer.fadeDone();
+                } incontextof this,
+                'click_arg' => layer,
+                msgvisible : function() {
+                    dm("窓処理完了による解除");
+                    updateBeforeCh = 1;
+                } incontextof this
+                    ]);
+
+                forEachEventHook('onCurrentMessageVisibleChanged',
+                                 function(handler, f) { handler(f.hidden, f.page); } incontextof this,
+                                 %[hidden:!visible, page:0]);
+                
+                return true;
+            } else {
+                fore.messages[currentNum].visible = visible;
+                forEachEventHook('onCurrentMessageVisibleChanged',
+                                 function(handler, f) { handler(f.hidden, f.page); } incontextof this,
+                                 %[hidden:!visible, page:0]);
+                back.messages[currentNum].visible = visible;
+            }
+        }
+        return false;
     }
 
-    function visibleCurrentMessageLayer() {
-        kag.current.visible = true;
-        // プラグインを呼ぶ
-        forEachEventHook('onCurrentMessageVisibleChanged',
-                         function(handler, f) { handler(f.hidden); } incontextof this,
-                         %[hidden:false]);
-    }
-    
 	function selectFont()
 	{
 		// フォントを選択する
@@ -4396,7 +4433,7 @@ class KAGWindow extends Window
 		else
 		{
 			waittime = +elm.time;
-		}
+        }
 		return waitTime(waittime, (elm.canskip === void || +elm.canskip) && clickSkipEnabled);
 	}
 
@@ -5596,7 +5633,9 @@ class KAGWindow extends Window
         if (lineMode) {
 
             // 表示処理
-            visibleCurrentMessageLayer();
+            if (setCurrentMessageLayerVisible(true)) {
+                return -5;
+            }
             
             // テキストクリア処理
             switch (lineMode) {
@@ -6649,13 +6688,15 @@ class KAGWindow extends Window
                   
 	trans : function(elm)
 	{
+        dm("トランジションの開始");
         // トランジションの開始
-		getLayerPageFromElm(elm, false).beginTransition(elm);
+        getLayerPageFromElm(elm, false).beginTransition(elm);
 		return 0;
 	} incontextof this,
 
 	wt : function(elm)
 	{
+        dm("トランジションをまつ");
 		// トランジションを待つ
 		return waitTransition(elm);
 	} incontextof this,
@@ -7049,8 +7090,10 @@ class KAGWindow extends Window
 
     select : function(elm)
     {
-        kag.current.visible = true;
-        showMessageLayerByUser();
+        if (selectLayer.msgoff && setCurrentMessageLayerVisible(false)) {
+            // 処理待ち
+            return -5;
+        }
 
         if (recordHistoryOfStore == 3) // 2 : 選択肢 ( @s タグ ) ごと
             setToRecordHistory();
@@ -7106,11 +7149,10 @@ class KAGWindow extends Window
 
     mselect : function(elm)
     {
-        tagHandlers.cm();
-
-        // メッセージ窓の強制消去
-        kag.current.visible = false;
-        setMessageLayerHiddenState(true);
+        if (mapSelectLayer.msgoff && setCurrentMessageLayerVisible(false)) {
+            // 処理待ち
+            return -5;
+        }
 
         if (recordHistoryOfStore == 3) // 2 : 選択肢 ( @s タグ ) ごと
             setToRecordHistory();

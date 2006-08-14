@@ -125,6 +125,8 @@ class MapSelectButtonLayer extends Layer
  */
 class MapSelectLayer extends KAGLayer {
 
+    var msgoff = true;
+
     // ベースの画像
     var frameGraphic = ""; // フレーム画像ファイル名
     var frameKey = clNone; // フレーム画像キー
@@ -205,6 +207,9 @@ class MapSelectLayer extends KAGLayer {
         frameColor    = +elm.color   if elm.color !== void;
         frameOpacity  = +elm.opacity if elm.opacity !== void;
         clearLayer();
+
+        // メッセージ窓を消去するかどうか
+        msgoff = elm.msgoff if elm.msgoff !== void;
     }
 
     // 登録済みボタン情報
