@@ -341,15 +341,14 @@ class KAGEnvImage {
     }
 
     /**
-     * トランジションを設定
-     * @param name トランジション名
+     * トランジション情報の取得
      */
-    function setTrans(name, elm) {
+    function getTrans(name, elm) {
+        dm("トランジション情報取得");
+        var tr = %[];
+        // 名前指定で上書き
         var info;
         if (env.transitions !== void && (info = env.transitions[name]) !== void) {
-            //dm("トランジション設定:" + name);
-            // 登録済みトランジション
-            var tr = %[];
             // コピー
             (Dictionary.assign incontextof tr)(info, false); 
             // パラメータのコピー
@@ -359,27 +358,27 @@ class KAGEnvImage {
                     //delete elm[name];
                 }
             }, tr);
-            if (!env.transMode && !isSkip()) {
-                trans = tr;
-                redraw = true;
-            }
-            return true;
-        }
-        
-        if (elm !== void && (transitionName[name] !== void ||
-                             name.substring(0,5) == "trans")) {
-            //dm("規定のトランジション設定:" + name);
+        } else if (elm != null && (transitionName[name] !== void || name.substring(0,5) == "trans")) {
             // 規定のトランジション
-            var tr = %[];
             // パラメータのコピー
             foreach(elm, function(name, value, elm, tr) {
                 if (transitionParam[name] !== void) {
-                    //dm("パラメータ:" + name);
                     tr[name] = value;
                     //delete elm[name];
                 }
             }, tr);
             tr.method = name;
+        }
+        return tr;
+    }
+    
+    /**
+     * トランジションを設定
+     * @param name トランジション名
+     */
+    function setTrans(name, elm) {
+        var tr = getTrans(name, elm);
+        if (tr.method !== void) {
             if (!env.transMode && !isSkip()) {
                 trans = tr;
                 redraw = true;
@@ -675,17 +674,38 @@ class KAGEnvImage {
 
     // トランジション実行
     function beginTransition(trans) {
-        kag.fore.base.beginTransition(trans);
-        if (trans.transwait !== void) {
-            ret = kag.waitTime((int)trans.time + (int)trans.transwait, kag.clickSkipEnabled);
+        if (trans.time === void || isSkip()) {
+            trans.time = 1;
+        }
+        trans.children = true;
+
+        if (false) {
+            kag.fore.base.beginTransition(trans);
+            if (trans.transwait !== void) {
+                ret = kag.waitTime((int)trans.time + (int)trans.transwait, kag.clickSkipEnabled);
+            } else {
+                ret = kag.waitTransition(EMPTY);
+            }
         } else {
-            ret = kag.waitTransition(EMPTY);
+            // 処理を割り込ませる
+            trans.tagname = "trans";
+            kag.conductor.enqueueTag(trans);
+            if (trans.transwait !== void) {
+                kag.conductor.enqueueTag(%[ tagname : "wait", time : (int)trans.time + (int)trans.transwait]);
+            } else {
+                kag.conductor.enqueueTag(%[ tagname : "wt" ]);
+            }
         }
     }
 
+    /**
+     * メッセージ窓消去処理
+     */
     function hideMessage() {
         if (trans !== void && trans.msgoff) {
-            kag.invisibleCurrentMessageLayer();
+            if (kag.setCurrentMessageLayerVisible(false)) {
+                ret = -2;
+            }
         }
     }
     
@@ -701,14 +721,8 @@ class KAGEnvImage {
 
                 kag.fore.base.stopTransition();
                 
-                // 更新処理を走らせる場合
-                if (trans.time === void) {
-                    trans.time = 1000;
-                }
-                trans.children = true;
-    
                 // 全レイヤをバックアップ
-                kag.backupLayer(%[], true);
+                kag.backupLayer(EMPTY, true);
 
                 // 裏レイヤが対象
                 var layer = getLayer(kag.back);
@@ -735,7 +749,7 @@ class KAGEnvImage {
                     fadeTime = void;
 
                     // 全レイヤを裏にバックアップ
-                    kag.backupLayer(%[], true);
+                    kag.backupLayer(EMPTY, true);
 
                     // 裏レイヤが対象
                     layer = getLayer(kag.back);
@@ -1822,8 +1836,7 @@ class KAGEnvCharacter extends KAGEnvLevelLayer, KAGEnvImage {
         if (levelName === void) {
             levelName = level;
         }
-        var ret = _drawLayer(layer, levelName);
-        return ret;
+        return _drawLayer(layer, levelName);
     }
     
     /**
@@ -2487,15 +2500,12 @@ class KAGEnvironment extends KAGEnvImage {
     var characters;
     /// レイヤ情報
     var layers;
+
     /// イベントレイヤ
     var event;
 
     // BGM 系
     var bgm;
-    var origOnBgmStop;
-    function onBGMStop() {
-        origOnBgmStop(...);
-    }
 
     // SE 系
     var ses;
@@ -2584,18 +2594,18 @@ class KAGEnvironment extends KAGEnvImage {
         }
         
         // KAG に自分をコマンドとして登録
-        kag.tagHandlers["env"] = this.tagfunc;
+        kag.tagHandlers["env"]        = this.tagfunc;
         kag.tagHandlers["begintrans"] = this.beginTrans;
-        kag.tagHandlers["endtrans"] = this.endTrans;
-        kag.tagHandlers["newlay"]  = this.newLayer;
-        kag.tagHandlers["newchar"] = this.newCharacter;
+        kag.tagHandlers["endtrans"]   = this.endTrans;
+        kag.tagHandlers["newlay"]     = this.newLayer;
+        kag.tagHandlers["newchar"]    = this.newCharacter;
 
-        kag.tagHandlers["msgoff"] = this.msgoff;
-        kag.tagHandlers["msgon"]  = this.msgon;
+        kag.tagHandlers["msgoff"]     = this.msgoff;
+        kag.tagHandlers["msgon"]      = this.msgon;
         
-        kag.tagHandlers["dispname"] = this.dispname;
-        kag.tagHandlers["endline"]  = this.endline;
-		kag.tagHandlers["quake"]    = this.quake;
+        kag.tagHandlers["dispname"]   = this.dispname;
+        kag.tagHandlers["endline"]    = this.endline;
+		kag.tagHandlers["quake"]      = this.quake;
 
         kag.unknownHandler = this.unknown;
         kag.seStopHandler  = this.onSeStop;
@@ -2682,11 +2692,6 @@ class KAGEnvironment extends KAGEnvImage {
     var time;
     /// 舞台
     var stage;
-
-	var reposition;
-
-    /// イベント絵
-    var event;
 
     // -----------------------------------------
 
@@ -2833,74 +2838,25 @@ class KAGEnvironment extends KAGEnvImage {
      */
     function beginTrans(elm) {
         kag.fore.base.stopTransition();
-        kag.backupLayer(%[], true);
+        kag.backupLayer(EMPTY, true);
         transMode = true;
         return 0;
     }
-
+    
     /**
      * 全体トランジション終了
      */
     function endTrans(elm) {
-
-        var name = elm.trans;
         ret = void;
-
-        var tr = %[];
-        
-        // トランジション終了処理
-        // 名前指定で上書き
-        var info;
-        if (env.transitions !== void && (info = env.transitions[name]) !== void) {
-            // コピー
-            (Dictionary.assign incontextof tr)(info, false); 
-            // パラメータのコピー
-            foreach(elm, function(name, value, elm, tr) {
-                if (transitionParam[name] !== void) {
-                    tr[name] = value;
-                    //delete elm[name];
-                }
-            }, tr);
-        } else if (transitionName[name] !== void || name.substring(0,5) == "trans") {
-            // 規定のトランジション
-            // パラメータのコピー
-            foreach(elm, function(name, value, elm, tr) {
-                if (transitionParam[name] !== void) {
-                    tr[name] = value;
-                    //delete elm[name];
-                }
-            }, tr);
-            tr.method = name;
-        }
-        var trans = tr;
+        trans = getTrans(elm.trans, elm);
+        // 未指定時
         if (trans.method === void) {
-            trans.method = "universal";
-        }
-        
-        if (trans.time === void) {
-            trans.time = 1000;
-        }
-        trans.children = true;
-
-        if (trans.msgoff) {
-            kag.invisibleCurrentMessageLayer();
-        }
-		kag.syncMessageLayer();
-        
-        // スキップ処理中
-        if (isSkip()) {
-            trans.time = 1;
-            kag.fore.base.beginTransition(trans);
-            ret = kag.waitTransition(EMPTY);
+            // 裏画面から書き戻す
+            kag.backupLayer(EMPTY, false);
         } else {
-            kag.fore.base.beginTransition(trans);
-            if (trans.transwait !== void) {
-                ret = kag.waitTime((int)trans.time + (int)trans.transwait, kag.clickSkipEnabled);
-            } else {
-                ret = kag.waitTransition(EMPTY);
-            }
+            hideMessage();
+            beginTransition(trans);
         }
-
         transMode = false;
         return ret;
     }
@@ -2933,13 +2889,11 @@ class KAGEnvironment extends KAGEnvImage {
     }        
 
     function msgoff(elm) {
-        kag.invisibleCurrentMessageLayer();
-        return 0;
+        return kag.setCurrentMessageLayerVisible(false) ? -2 : 0;
     }
 
     function msgon(elm) {
-        kag.visibleCurrentMessageLayer();
-        return 0;
+        return kag.setCurrentMessageLayerVisible(true) ? -2 : 0;
     }
     
     var envCommands = %[
@@ -3125,18 +3079,13 @@ class KAGEnvironment extends KAGEnvImage {
                 trans.children = true;
 
                 // 全レイヤをバックアップ
-                kag.backupLayer(%[], true);
+                kag.backupLayer(EMPTY, true);
                 
                 // ステージの描画
                 drawAll(kag.back);
                 
                 // トランジション実行
-                kag.fore.base.beginTransition(trans);
-                if (ret == 0) {
-                    ret = kag.waitTransition(EMPTY);
-                } else {
-                    kag.waitTransition(EMPTY);
-                }
+                beginTransition(trans);
                 
             } else {
 
@@ -3153,18 +3102,13 @@ class KAGEnvironment extends KAGEnvImage {
                     fadeTime = void;
 
                     // 全レイヤを裏にバックアップ
-                    kag.backupLayer(%[], true);
+                    kag.backupLayer(EMPTY, true);
 
                     // 裏レイヤが対象
                     drawAll(kag.back);
-                    
+
                     // トランジション実行
-                    kag.fore.base.beginTransition(trans);
-                    if (ret == 0) {
-                        ret = kag.waitTransition(EMPTY);
-                    } else {
-                        kag.waitTransition(EMPTY);
-                    }
+                    beginTransition(trans);
 
                 } else {
                     drawAll();
@@ -3288,10 +3232,11 @@ class KAGEnvironment extends KAGEnvImage {
      * 表情表示処理
      */
     function loadFace(name) {
-        kag.current.faceLayer.loadImages(name);
-        kag.current.faceLayer.visible = true;
+        var base =  transMode ? kag.back : kag.fore;
+        var faceLayer = base.messages[kag.currentNum].faceLayer;
+        faceLayer.loadImages(name);
+        faceLayer.visible = true;
     }
-
     
     /**
      * 表情消去処理
@@ -3300,7 +3245,9 @@ class KAGEnvironment extends KAGEnvImage {
         if (envinfo.clearFace !== void) {
             loadFace(envinfo.clearFace);
         } else {
-            kag.current.faceLayer.visible = false;
+            var base =  transMode ? kag.back : kag.fore;
+            var faceLayer = base.messages[kag.currentNum].faceLayer;
+            faceLayer.visible = false;
         }
     }
 
@@ -3327,11 +3274,14 @@ class KAGEnvironment extends KAGEnvImage {
             stopAllVoice();
         }
 
+        var base =  transMode ? kag.back : kag.fore;
+        var msg  = base.messages[kag.currentNum];
+        
         //dm("名前表示ハンドラ");
         if (elm === void || elm.name === void || elm.name == "") {
             // 名前表示初期化ロジック
             // 名前消去
-            kag.current.nameLayer.visible = false;
+            msg.processName();
             if (faceLevelName !== void) {
                 clearFace();
             }
@@ -3373,7 +3323,7 @@ class KAGEnvironment extends KAGEnvImage {
                 dispName = global.dispNameFilter(dispName);
             }
 
-            kag.current.processName(dispName);
+            msg.processName(dispName);
             if (kag.historyWriteEnabled) {
 				if (typeof kag.historyLayer.storeName !== 'undefined') {
                     kag.historyLayer.storeName(dispName);
