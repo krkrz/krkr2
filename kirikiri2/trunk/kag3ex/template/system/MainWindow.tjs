@@ -286,7 +286,8 @@ class KAGWindow extends Window
 	/*C*/var storeEnabled = true; // ユーザが「栞をはさむ」メニューにアクセス可能かどうか
 	/*C*/var restoreEnabled = true; // ユーザが「栞をたどる」メニューにアクセス可能かどうか
 	var storeLabelPassed = false; // 保存可能なラベルを通過したかどうか
-	/*C*/var currentLabel = ""; // 現在のラベル
+    /*C*/var currentStorage = ""; // 現在のラベル
+    /*C*/var currentLabel = ""; // 現在のラベル
 	/*C*/var currentPageName = ""; // 現在のページ名
 	var currentRecordName = ""; // 現在の記録名 ( trail_ストレージ_ラベル )
 	var autoRecordPageShowing = false; // ラベル通過記録をするか
@@ -297,8 +298,9 @@ class KAGWindow extends Window
     var bookMarkDateSecond = false; // 日付に秒までふくめるか
     
 	var bookMarkNames = []; // メニューに設定されている栞の名前
+    var bookMarkStorages = []; // 栞のシナリオ名
 	var bookMarkDates = []; // 栞の日付
-	var bookMarkProtectedStates = []; // 栞が保護されているかの情報
+    var bookMarkProtectedStates = []; // 栞が保護されているかの情報
 
 	var showFixedPitchOnlyInFontSelector = false; // フォント選択で固定ピットフォントのみを表示するか
 
@@ -1404,6 +1406,7 @@ class KAGWindow extends Window
 		lastSaveDataNameGlobal = scflags.lastSaveDataNameGlobal if scflags.lastSaveDataNameGlobal !== void;
 
 		bookMarkNames = scflags.bookMarkNames if scflags.bookMarkNames !== void;
+		bookMarkStorages = scflags.bookMarkStorages if scflags.bookMarkStorages !== void;
 		bookMarkDates = scflags.bookMarkDates if scflags.bookMarkDates !== void;
 		bookMarkProtectedStates = scflags.bookMarkProtectedStates if scflags.bookMarkProtectedStates !== void;
 
@@ -1467,7 +1470,8 @@ class KAGWindow extends Window
 
 		// ブックマーク名
 		scflags.bookMarkNames = bookMarkNames; // (コピーではなくて)参照で十分
-		scflags.bookMarkDates = bookMarkDates;
+        scflags.bookMarkStorages = bookMarkStorages;
+        scflags.bookMarkDates = bookMarkDates;
 		scflags.bookMarkProtectedStates = bookMarkProtectedStates;
 
 		scflags.lastSaveDataNameGlobal = lastSaveDataNameGlobal;
@@ -1541,7 +1545,8 @@ class KAGWindow extends Window
 		f.startAnchorEnabled = startAnchorEnabled;
 		f.storeEnabled = storeEnabled;
 		f.restoreEnabled = restoreEnabled;
-		f.currentLabel = currentLabel;
+        f.currentStorage  = currentStorage;
+        f.currentLabel    = currentLabel;
 		f.currentPageName = currentPageName;
 		// [end_store_vars]
 
@@ -1683,7 +1688,8 @@ class KAGWindow extends Window
 		startAnchorEnabled = f.startAnchorEnabled if f.startAnchorEnabled !== void;
 		storeEnabled = f.storeEnabled if f.storeEnabled !== void;
 		restoreEnabled = f.restoreEnabled if f.restoreEnabled !== void;
-		currentLabel = f.currentLabel if f.currentLabel !== void;
+        currentStorage = f.currentStorage if f.currentStorage !== void;
+        currentLabel = f.currentLabel if f.currentLabel !== void;
 		currentPageName = f.currentPageName if f.currentPageName !== void;
 		// [end_restore_vars]
 
@@ -2109,6 +2115,15 @@ class KAGWindow extends Window
 		return "(未設定)";
 	}
 
+	function getBookMarkStorage(num)
+	{
+        // 栞番号 num のストレージ名を得る
+        if(bookMarkDates[num] != '') // 空文字列の場合は栞がないということ
+            return bookMarkStorages[num];
+		return "";
+	}
+
+    
 	function getBookMarkDate(num)
 	{
 		// 栞番号 num の日付を得る
@@ -2287,7 +2302,8 @@ class KAGWindow extends Window
 		// bookMarkDates[num] や bookMarkNames[num] に設定する
 		if(num < numBookMarks)
 		{
-			bookMarkNames[num] = dic.currentPageName;
+            bookMarkStorages[num] = dic.currentStorage;
+            bookMarkNames[num] = dic.currentPageName;
 			var date = new Date();
 			date.setTime(dic.storeTime);
             if (bookMarkDateSecond) {
@@ -2958,6 +2974,7 @@ class KAGWindow extends Window
             if (label !== "*autoLabelLabel") {
                 if(!(allskip || getCurrentRead()) && skipMode != 4)
                     cancelSkip(); // 未読なのでスキップを停止
+                currentStorage = conductor.curStorage;
             }
             currentLabel = label;
 		}
@@ -3028,7 +3045,7 @@ class KAGWindow extends Window
 				returnExtraConductor(run);
 				if(elm.storage !== void) conductor.loadScenario(elm.storage);
 				if(elm.target !== void) conductor.goToLabel(elm.target);
-				setRecordLabel(conductor.curStorage, currentLabel = conductor.curLabel);
+				setRecordLabel(currentStorage = conductor.curStorage, currentLabel = conductor.curLabel);
 				if(run)
 				{
 					notifyRun();
@@ -3079,7 +3096,7 @@ class KAGWindow extends Window
 		// コンダクタが return タグを実行した後
 		if(!usingExtraConductor)
 		{
-			setRecordLabel(conductor.curStorage, currentLabel = conductor.curLabel);
+			setRecordLabel(currentStorage = conductor.curStorage, currentLabel = conductor.curLabel);
 		}
 		setUserSpeed();
 		if(!usingExtraConductor)
