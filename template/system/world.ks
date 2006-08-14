@@ -344,7 +344,7 @@ class KAGEnvImage {
      * トランジション情報の取得
      */
     function getTrans(name, elm) {
-        dm("トランジション情報取得");
+//        dm("トランジション情報取得");
         var tr = %[];
         // 名前指定で上書き
         var info;

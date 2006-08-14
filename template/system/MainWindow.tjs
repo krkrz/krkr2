@@ -3615,17 +3615,13 @@ class KAGWindow extends Window
                 var layer = fore.messages[currentNum];
                 layer.setVisibleTime(visible, messageFadeTime);
 
-                dm("窓処理待ち");
-
                 conductor.wait(%[
                 click : function(layer) {
-                    dm("窓処理クリックによる解除");
                     updateBeforeCh = 1;
                     layer.fadeDone();
                 } incontextof this,
                 'click_arg' => layer,
                 msgvisible : function() {
-                    dm("窓処理完了による解除");
                     updateBeforeCh = 1;
                 } incontextof this
                     ]);
@@ -5660,7 +5656,7 @@ class KAGWindow extends Window
 
             // 表示処理
             if (setCurrentMessageLayerVisible(true)) {
-                return -5;
+                return -3;
             }
             
             // テキストクリア処理
@@ -6714,7 +6710,6 @@ class KAGWindow extends Window
                   
 	trans : function(elm)
 	{
-        dm("トランジションの開始");
         // トランジションの開始
         getLayerPageFromElm(elm, false).beginTransition(elm);
 		return 0;
@@ -6722,7 +6717,6 @@ class KAGWindow extends Window
 
 	wt : function(elm)
 	{
-        dm("トランジションをまつ");
 		// トランジションを待つ
 		return waitTransition(elm);
 	} incontextof this,
@@ -7118,7 +7112,7 @@ class KAGWindow extends Window
     {
         if (selectLayer.msgoff && setCurrentMessageLayerVisible(false)) {
             // 処理待ち
-            return -5;
+            return -3;
         }
 
         if (recordHistoryOfStore == 3) // 2 : 選択肢 ( @s タグ ) ごと
@@ -7177,7 +7171,7 @@ class KAGWindow extends Window
     {
         if (mapSelectLayer.msgoff && setCurrentMessageLayerVisible(false)) {
             // 処理待ち
-            return -5;
+            return -3;
         }
 
         if (recordHistoryOfStore == 3) // 2 : 選択肢 ( @s タグ ) ごと

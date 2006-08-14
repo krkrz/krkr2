@@ -642,7 +642,9 @@ class MessageLayer extends KAGLayer
         setInnerOpacity(_opacity);
         setInnerVisible(_visible);
         _fadeTimer.enabled = false;
-        window.trigger("msgvisible");
+        if (window.isMain) {
+            window.trigger("msgvisible");
+        }
     }
     
     // •s“§–¾“x
