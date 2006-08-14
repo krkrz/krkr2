@@ -613,7 +613,7 @@ class MessageLayer extends KAGLayer
      */
     function setInnerOpacity(v) {
         if (v !== void) {
-            dm("内部不透明度指定:" + v);
+            //dm("内部不透明度指定:" + v);
             super.opacity = v;
             faceLayer.opacity = v if faceLayer !== void;
             nameLayer.opacity = v if nameLayer !== void;
@@ -626,7 +626,7 @@ class MessageLayer extends KAGLayer
      */
     function setInnerVisible(v) {
         if (v !== void) {
-            dm("内部表示状態指定:" + v);
+            //dm("内部表示状態指定:" + v);
             super.visible     = v;
             faceLayer.visible = faceLayer.visible if faceLayer !== void;
             nameLayer.visible = nameLayer.visible if nameLayer !== void;
@@ -638,7 +638,7 @@ class MessageLayer extends KAGLayer
      * 実行中のフェードを中止する
      */
     function fadeDone() {
-        dm("窓表示処理終了");
+        //dm("窓表示処理終了");
         setInnerOpacity(_opacity);
         setInnerVisible(_visible);
         _fadeTimer.enabled = false;
@@ -688,7 +688,7 @@ class MessageLayer extends KAGLayer
      */
     function setVisibleTime(v, time) {
         if (v != visible) {
-            dm("窓フェード表示処理:" + v);
+            //dm("窓フェード表示処理:" + v);
             _visible = v;
             _opacity = v ? 255 : 0;
             if (time > 0) {
