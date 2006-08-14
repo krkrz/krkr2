@@ -369,10 +369,54 @@ class KAGWindow extends Window
             } else {
                 process(elm.doneStorage, elm.doneTarget);
             }
+        } else if (elm.storage !== void || elm.target !== void) {
+            process(elm.storage, elm.target);
+            recollectionEndLabel = "*kaisouEndStorage";
+            recollectionStorage  = elm.doneStorage;
+            recollectionTarget   = elm.doneTarget;
         }
     }
 
+    /**
+     * 回想モード実行を終了する
+     */
     function endRecollection() {
+
+        var ret = -1;
+        
+        // 回想終了処理
+        if (recollectionEndLabel !== void ) {
+            
+            if (recollectionStorage != '' || recollectionTarget != '') {
+                
+                // 実行を登録アドレスに移す
+                if (recollectionStorage != '') {
+                    conductor.loadScenario(recollectionStorage);
+                }
+                if (recollectionTarget != '') {
+                    conductor.goToLabel(recollectionTarget);
+                }
+                inSleep = false;
+                notifyRun();
+                if (conductor.status != conductor.mRun) conductor.run();
+                ret = 0;
+                
+            } else {
+                
+                // 実行停止
+                stablePosibility = true;
+                cancelSkip();
+                isSleep = true;
+                notifyStable();
+            }
+            
+            stopRecollection();
+        }
+
+        return ret;
+    }
+    
+    function stopRecollection() {
         recollectionEndLabel = void;
         recollectionStorage = void;
         recollectionTarget  = void;
@@ -1848,7 +1892,7 @@ class KAGWindow extends Window
 		setMenuAccessibleAll();
 
         // 回想中止
-        endRecollection();
+        stopRecollection();
         
 		// 実行開始
 		processGo();
@@ -2819,7 +2863,7 @@ class KAGWindow extends Window
 
         if(!usingExtraConductor) {
             incRecordLabel(countpage);
-            endRecollection();
+            stopRecollection();
         }
 		setUserSpeed();
 
@@ -2945,32 +2989,11 @@ class KAGWindow extends Window
             // すぐ既読にする
             if(!usingExtraConductor) incRecordLabel(true);
 
-            // 回想終了処理
-            if (recollectionEndLabel !== void && recollectionEndLabel == label) {
-                if (recollectionStorage != '' || recollectionTarget != '') {
-                    
-                    // 実行を登録アドレスに移す
-                    if (recollectionStorage != '') {
-                        conductor.loadScenario(recollectionStorage);
-                    }
-                    if (recollectionTarget != '') {
-                        conductor.goToLabel(recollectionTarget);
-                    }
-                    inSleep = false;
-                    notifyRun();
-                    if (conductor.status != conductor.mRun) conductor.run();
-                    
-                } else {
-                    
-                    // 実行停止
-                    stablePosibility = true;
-                    cancelSkip();
-                    isSleep = true;
-                    notifyStable();
-                }
-                
+            // 回想終了
+            if (label == recollectionEndLabel) {
                 endRecollection();
             }
+            
         }
 		return true;
 	}
@@ -3581,8 +3604,6 @@ class KAGWindow extends Window
      */
     function setCurrentMessageLayerVisible(visible) {
 
-        dm("現在のメッセージ窓の状態を変更");
-        
         if (fore.messages[currentNum].visible != visible) {
             if (!skipMode && messageFadeTime > 0) {
 
@@ -4243,6 +4264,11 @@ class KAGWindow extends Window
 
 	function getCurrentRead()
 	{
+        // 回想中は常に既読
+        if (isRecollection) {
+            return true;
+        }
+
         // 自動ラベルモードでは行単位で判定する必要がある 
         if (autoLabelMode) {
             if (currentRecordName != "") {
@@ -7232,6 +7258,11 @@ class KAGWindow extends Window
 	{
         startRecollection(elm);
         return 0;
+	} incontextof this,
+
+    endrecollection : function(elm)
+	{
+        return endRecollection();
 	} incontextof this,
                   
 	//----------------------------------------------- タグハンドラ群の終わり --
