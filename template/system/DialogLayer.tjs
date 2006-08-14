@@ -27,8 +27,9 @@ class DialogButtonLayer extends ButtonLayer
 
 	function onMouseUp(x, y, button, shift)
 	{
-        if (enabled && button == mbLeft) parent.onButtonClick(linkNum);
+        if (enabled && button == mbLeft && Butt_mouseDown) parent.onButtonClick(linkNum);
         else if (button == mbRight) parent.close();
+        
         if (this isvalid) super.onMouseUp(...);
 	}
 
