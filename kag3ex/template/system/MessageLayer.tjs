@@ -607,16 +607,101 @@ class MessageLayer extends KAGLayer
         height = (int)h if h !== void;
     }
 
-    // 表示状態
-    property visible {
-        setter(v) {
-            super.visible = v;
+    /**
+     * 不透明度変更処理
+     * 関連レイヤもあわせて制御
+     */
+    function setInnerOpacity(v) {
+        if (v !== void) {
+            dm("内部不透明度指定:" + v);
+            super.opacity = v;
+            faceLayer.opacity = v if faceLayer !== void;
+            nameLayer.opacity = v if nameLayer !== void;
+        }
+    }
+
+    /**
+     * 表示状態変更処理
+     * 関連レイヤもあわせて制御
+     */
+    function setInnerVisible(v) {
+        if (v !== void) {
+            dm("内部表示状態指定:" + v);
+            super.visible     = v;
             faceLayer.visible = faceLayer.visible if faceLayer !== void;
             nameLayer.visible = nameLayer.visible if nameLayer !== void;
         }
-        getter() {
-            return super.visible;
+    }
+
+    /**
+     * 本来指定されている最終的な表示状態・不透明度にもどして
+     * 実行中のフェードを中止する
+     */
+    function fadeDone() {
+        dm("窓表示処理終了");
+        setInnerOpacity(_opacity);
+        setInnerVisible(_visible);
+        _fadeTimer.enabled = false;
+        window.trigger("msgvisible");
+    }
+    
+    // 不透明度
+    var _opacity;
+    property opacity {
+        setter(v) {
+            _opacity = v;
+            fadeDone();
         }
+        getter() {
+            return _opacity;
+        }
+    }
+
+    // 表示状態
+    var _visible;
+    property visible {
+        setter(v) {
+            _visible = v;
+            fadeDone();
+        }
+        getter() {
+            return _visible;
+        }
+    }
+
+    var _fadeTimer;
+    var _fadeStartTime;
+    var _fadeTime;
+    var _startOpacity;
+    
+    function fadeHandler() {
+        var now = System.getTickCount() - _fadeStartTime;
+        if (now >= _fadeTime) {
+            fadeDone();
+        } else {
+            setInnerOpacity(_startOpacity + (_opacity - _startOpacity) * now / _fadeTime);
+        }
+    }
+
+    /**
+     * visible に応じてフェードも自動調整する
+     */
+    function setVisibleTime(v, time) {
+        if (v != visible) {
+            dm("窓フェード表示処理:" + v);
+            _visible = v;
+            _opacity = v ? 255 : 0;
+            if (time > 0) {
+                _fadeStartTime = System.getTickCount();
+                _fadeTime      = time;
+                setInnerOpacity(v ? 0 : super.opacity);
+                setInnerVisible(true);
+                _startOpacity = super.opacity;
+                _fadeTimer.enabled = true;
+            } else {
+                fadeDone();
+            }
+        } 
     }
 
     // 表示位置
@@ -873,7 +958,7 @@ class MessageLayer extends KAGLayer
         clearClick();
     }
     
-	function MessageLayer(owner, parent, name, id, do_config)
+    function MessageLayer(owner, parent, name, id, do_config)
 	{
         left = 0;
         top  = 0;
@@ -948,6 +1033,11 @@ class MessageLayer extends KAGLayer
         faceLayer.type = ltAlpha;
         faceLayer.name = name + ":表情";
         faceLayer.hitType = htProvince;
+        
+        _fadeTimer = new Timer(fadeHandler, '');
+        _fadeTimer.capacity = 1;
+        _fadeTimer.interval = 10;
+        _fadeTimer.enabled  = false;
     }
 
     function clearSystemButtons() {
@@ -2019,11 +2109,9 @@ class MessageLayer extends KAGLayer
     /**
      * 名前の描画
      */
-    function processName(text=void) {
-        // 消去
-        nameLayer.fillRect(0,0,nameLayer.width,nameLayer.height,0);
-        if (text != "") {
-            if (nameImageMap !== void ) {
+    function processName(text="") {
+        if (nameImageMap !== void ) {
+            if (text != "") {
                 var image = nameImageMap[text];
                 if (image === void) {
                     image = defaultNameImage;
@@ -2031,6 +2119,11 @@ class MessageLayer extends KAGLayer
                 nameLayer.loadImages(image);
                 nameLayer.visible = true;
             } else {
+                nameLayer.visible = false;
+            }
+        } else {
+            if (text != "") {
+                    nameLayer.fillRect(0,0,nameLayer.width,nameLayer.height,0);
                 if(edge)
                     nameLayer.drawText(0, 0, text, chColor, 255, antialiased, 512, edgeColor, 1, 0, 0); // 文字
                 else if(shadow)
@@ -2038,9 +2131,9 @@ class MessageLayer extends KAGLayer
                 else
                     nameLayer.drawText(0, 0, text, chColor, 255, antialiased); // 文字
                 nameLayer.visible = true;
+            } else {
+                nameLayer.visible = false;
             }
-        } else {
-            nameLayer.visible = false;
         }
     }
 
