@@ -145,7 +145,8 @@ class KAGEnvImage {
             }
         }
     }
-    
+
+    // スキップ状態か
     function isSkip() {
         return env.kag.skipMode || env.kag.noeffect;
     }
@@ -247,8 +248,8 @@ class KAGEnvImage {
     function KAGEnvImage(env) {
         this.env = env;
 
-        xpos = 0;
-        ypos = 0;
+        xpos     = void;
+        ypos     = void;
         xposFrom = void;
         yposFrom = void;
         moveTime = void;
@@ -267,7 +268,7 @@ class KAGEnvImage {
     }
 
     function setXPos(cmd, elm) {
-        dm("X位置指定:" + cmd + ":" + elm.time);
+        //dm("X位置指定:" + cmd + ":" + elm.time);
         xposFrom = getFrom(cmd);
         xpos     = getTo(cmd);
         if (moveTime === void) {
@@ -278,7 +279,7 @@ class KAGEnvImage {
     } 
 
     function setYPos(cmd, elm) {
-        dm("Y位置指定:" + cmd + ":" + elm.time);
+        //dm("Y位置指定:" + cmd + ":" + elm.time);
         yposFrom = getFrom(cmd);
         ypos     = getTo(cmd);
         if (moveTime === void) {
@@ -1339,6 +1340,7 @@ class KAGEnvCharacter extends KAGEnvLevelLayer, KAGEnvImage {
                 pose = poseName;
                 if (disp == CLEAR) {
                     disp = BOTH;
+                    reposition = true;
                 }
                 redraw = true;
 
@@ -1379,6 +1381,7 @@ class KAGEnvCharacter extends KAGEnvLevelLayer, KAGEnvImage {
             dress = dressName;
             if (disp == CLEAR) {
                 disp = BOTH;
+                reposition = true;
             }
             redraw = true;
             // トランジション指定
@@ -1402,6 +1405,7 @@ class KAGEnvCharacter extends KAGEnvLevelLayer, KAGEnvImage {
             face = faceName;
             if (disp == CLEAR) {
                 disp = BOTH;
+                reposition = true;
             }
             redraw = true;
             // トランジション指定
@@ -1417,6 +1421,9 @@ class KAGEnvCharacter extends KAGEnvLevelLayer, KAGEnvImage {
         }
     }
 
+    /**
+     * 場所表示用トランジション設定
+     */
     function setPositionTrans(info) {
         // トランジション指定
         if (isShowBU()) {
@@ -1865,6 +1872,14 @@ class KAGEnvCharacter extends KAGEnvLevelLayer, KAGEnvImage {
     function calcPosition(layer) {
         if (reposition) {
 
+            // 未初期化時デフォルト
+            if (xpos === void) {
+                xpos = env.defaultXpos;
+            }
+            if (ypos === void) {
+                ypos = env.defaultYpos;
+            }
+            
             // レベル別座標補正処理。とりあえず適当で画面中央に向かって縮小処理してある
             var zoom;
 			var levelYoffset = 0;
@@ -2487,6 +2502,8 @@ class KAGEnvironment extends KAGEnvImage {
     var transitions;  //< トランジション情報
     var defaultTime;  //< デフォルトの時間
     var yoffset;      //< キャラクタ配置のyoffset 値
+    var defaultXpos;  //< キャラクタ配置の初期X位置
+    var defaultYpos;  //< キャラクタ配置の初期Y位置
     var defaultLevel; //< キャラクタレベルのデフォルト値
     var levels;       //< キャラクタレベル別補正情報
     var faceLevelName;//< フェイスウインドウ用の表示名
@@ -2564,11 +2581,13 @@ class KAGEnvironment extends KAGEnvImage {
                 events      = envinfo.events;      showKeys("events", events);
                 positions   = envinfo.positions;   showKeys("positions", positions);
                 actions     = envinfo.actions;     showKeys("actions", actions);
-                emotions    = envinfo.emotions;    showKeys("actions", actions);
+                emotions    = envinfo.emotions;    showKeys("emotions", emotions);
                 transitions = envinfo.transitions; showKeys("transitions", transitions);
-                defaultTime = envinfo.defaultTime; dm("defaultTime:" + defaultTime);
+                defaultTime = envinfo.defaultTime;      dm("defaultTime:" + defaultTime);
                 yoffset     = (int)envinfo.yoffset;     dm("yoffset:" + yoffset);
-                defaultLevel = (int)envinfo.defaultLevel; dm("defaultLevel:" + defaultLevel);
+                defaultXpos = (int)envinfo.defaultXpos;
+                defaultYpos = (int)envinfo.defaultYpos;
+                defaultLevel = (int)envinfo.defaultLevel;
                 levels       = envinfo.levels;
                 faceLevelName = envinfo.faceLevelName;
            }
