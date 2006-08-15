@@ -65,6 +65,15 @@ function getFrom(value) {
     }
 }
 
+function toNumber(value)
+{
+    if (value === void || value === null) {
+        return value;
+    } else {
+        return +value;
+    }
+}
+
 var transitionName = %[
     "universal" => true,
     "crossfade" => true,
@@ -518,21 +527,21 @@ class KAGEnvImage {
         type =  global[param];
     } incontextof this,
     opacity : function(param, elm) {
-        opacityFrom = getFrom(param);
-        opacity     = getTo(param);
+        opacityFrom = toNumber(getFrom(param));
+        opacity     = toNumber(getTo(param));
         opacityTime = isSkip() ? 0 : elm.time;
     } incontextof this,
     fade :  function(param, elm) {
         fadeTime = isSkip() ? void : param;
     } incontextof this,
     rotate : function(param, elm) {
-        rotateFrom = getFrom(param);
-        rotate     = getTo(param);
+        rotateFrom = toNumber(getFrom(param));
+        rotate     = toNumber(getTo(param));
         rotateTime = isSkip() ? 0 : elm.time;
     } incontextof this,
     zoom : function(param, elm) {
-        zoomFrom = getFrom(param);
-        zoom     = getTo(param);
+        zoomFrom = toNumber(getFrom(param));
+        zoom     = toNumber(getTo(param));
         zoomTime = isSkip() ? 0 : elm.time;
     } incontextof this,
     afx : function(param, elm) {
