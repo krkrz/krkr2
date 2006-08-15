@@ -59,7 +59,7 @@ class SelectButtonLayer extends ButtonLayer
         super.ButtonLayer(owner.window, owner.window.primaryLayer);
 
         // 文字初期化
-        font.face   = owner.fontFace;
+        font.face   = owner.fontFace !== void ? owner.fontFace : owner.window.chDefaultFace;
         font.bold   = owner.fontBold;
         font.italic = owner.fontItalic;
         font.height = owner.fontSize;
@@ -143,6 +143,7 @@ function getSelectButtonLayer(owner, name)
 class SelectLayer {
 
     var msgoff = false;
+    var fadeTime;
     
     var window;
     
@@ -166,7 +167,7 @@ class SelectLayer {
     var focusImage;
 
     // フォント
-    var fontFace = "ＭＳ Ｐ明朝";
+    var fontFace;
     var fontBold;
     var fontItalic;
     var fontShadow;
@@ -203,6 +204,7 @@ class SelectLayer {
         selectHeight = +elm.selectHeight if elm.selectHeight !== void;
 
         // フォント指定
+        fontFace   = elm.fontFace if elm.fontFace !== void;
         fontSize   = elm.size if elm.size !== void;
         fontColor  = elm.color if elm.color !== void;
         fontItalic = elm.italic if elm.italic !== void;
@@ -219,6 +221,9 @@ class SelectLayer {
 
         // メッセージ窓を消去するかどうか
         msgoff = elm.msgoff if elm.msgoff !== void;
+
+        // フェード時間
+        fadeTime = +elm.fadetime if elm.fadetime !== void;
     }
 
     // 登録済み選択肢
@@ -233,52 +238,132 @@ class SelectLayer {
         top    = 0;
         width  = window.primaryLayer.width;
         height = window.primaryLayer.height;
+
+        _fadeTimer = new Timer(fadeHandler, '');
+        _fadeTimer.capacity = 1;
+        _fadeTimer.interval = 10;
+        _fadeTimer.enabled  = false;
     }
 
     function finalize() {
-        clear();
+        clearButtons();
+        invalidate _fadeTimer;
     }
 
-    var _visible = false;
-    property visible {
-        setter(v) {
-            for (var i=0; i<selects.count;i++) {
-                var select = selects[i];
-                select.visible = v;
-            }
-            _visible = v;
-        }
-        getter() {
-            return _visible;
-        }
-    }
-
-    var _opacity = false;
-    property opacity {
-        setter(v) {
+    /**
+     * 不透明度変更処理
+     * 関連レイヤもあわせて制御
+     */
+    function setInnerOpacity(v) {
+        if (v !== void) {
             for (var i=0; i<selects.count;i++) {
                 var select = selects[i];
                 select.opacity = v;
             }
+        }
+    }
+
+    /**
+     * 表示状態変更処理
+     * 関連レイヤもあわせて制御
+     */
+    function setInnerVisible(v) {
+        if (v !== void) {
+            for (var i=0; i<selects.count;i++) {
+                var select = selects[i];
+                select.visible = v;
+            }
+        }
+    }
+
+    /**
+     * 本来指定されている最終的な表示状態・不透明度にもどして
+     * 実行中のフェードを中止する
+     */
+    function fadeDone() {
+        setInnerOpacity(_opacity);
+        setInnerVisible(_visible);
+        _fadeTimer.enabled = false;
+    }
+    
+    // 不透明度
+    var _opacity;
+    property opacity {
+        setter(v) {
             _opacity = v;
+            fadeDone();
         }
         getter() {
             return _opacity;
         }
     }
 
+    // 表示状態
+    var _visible = false;
+    property visible {
+        setter(v) {
+            _visible = v;
+            fadeDone();
+        }
+        getter() {
+            return _visible;
+        }
+    }
+
+    var _fadeTimer;
+    var _fadeStartTime;
+    var _fadeTime;
+    var _startOpacity;
+    var _fadeDoneFunc;
+    
+    function fadeHandler() {
+        var now = System.getTickCount() - _fadeStartTime;
+        if (now >= _fadeTime) {
+            fadeDone();
+            if (_fadeDoneFunc !== void) {
+                _fadeDoneFunc();
+            }
+        } else {
+            setInnerOpacity(_startOpacity + (_opacity - _startOpacity) * now / _fadeTime);
+        }
+    }
+
+    /**
+     * visible に応じてフェードも自動調整する
+     */
+    function setVisibleTime(v, time, done=void) {
+        if (v != visible) {
+//            dm("窓フェード表示処理:" + v);
+            _visible = v;
+            _opacity = v ? 255 : 0;
+            if (time > 0) {
+                _fadeStartTime = System.getTickCount();
+                _fadeTime      = time;
+                setInnerOpacity(v ? 0 : 255);
+                setInnerVisible(true);
+                _startOpacity = v ? 0 : 255;
+                _fadeDoneFunc = done;
+                _fadeTimer.enabled = true;
+            } else {
+                fadeDone();
+                if (done !== void) {
+                    done();
+                }
+            }
+        } 
+    }
+
     /**
      * ボタン消去
      */
-    function clear() {
-        visible = false;
+    function clearButtons() {
         for (var i=0; i<selects.count;i++) {
             var select = selects[i];
             invalidate select;
         }
         selects.clear();
     }
-    
+
     /**
      * 選択肢を追加
      */
@@ -316,14 +401,25 @@ class SelectLayer {
             select.setPos(left + width/2 - select.width / 2, top  + y - select.height / 2);
             y += h;
         }
-        visible = true;
+//        dm("フェード時間" + fadeTime);
+        if (fadeTime > 0) {
+            setVisibleTime(true, fadeTime);
+        } else {
+            visible = true;
+        }
     }
 
     /**
      * 完了
      */
     function done() {
-        clear();
+// 対応めんどいのでとりあえず一瞬消去で対応
+//        if (fadeTime !== void) {
+//            setVisibleTime(false, fadeTime, clearButtons);
+//        } else {
+            visible = false;
+            clearButtons();
+//        }
     }
     
     /**
