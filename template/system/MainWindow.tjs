@@ -1618,6 +1618,7 @@ class KAGWindow extends Window
         f.lineMode  = lineMode;
         f.crAfterName = crAfterName;
         f.erAfterPage = erAfterPage;
+        f.autoIndent = autoIndent;
         f.autoLabelMode = autoLabelMode;
         f.autoLabelCount = autoLabelCount;
         f.afterPage = afterPage;
@@ -1721,6 +1722,7 @@ class KAGWindow extends Window
         }
         crAfterName = f.crAfterName;
         erAfterPage = f.erAfterPage;
+        autoIndent = f.autoIndent;
         autoLabelMode = f.autoLabelMode;
         autoLabelCount = f.autoLabelCount;
         afterPage = f.afterPage;
@@ -5528,6 +5530,7 @@ class KAGWindow extends Window
     var lineMode;    // 改行処理モード
     var crAfterName; // 名前の後に改行をいれるか
     var erAfterPage; // 改ページ直後に画面消去するか
+    var autoIndent;  // 「『で自動的にインデントする
     var afterPage;   // 改ページ直後
     var emptyLine;   // まだ行が空
     var prevEmptyLine;   // 前の空行状態
@@ -5601,6 +5604,13 @@ class KAGWindow extends Window
     function setCrAfterName(crAfterName) {
         this.crAfterName = crAfterName;
         afterName = false;
+    }
+
+    /**
+     * @param autoIndent 名前直後の「『で自動的にインデント処理
+     */
+    function setAutoIndent(autoIndent) {
+        this.autoIndent = autoIndent;
     }
     
     /**
@@ -5735,9 +5745,8 @@ class KAGWindow extends Window
                 // ここでは emptyLine の状態はありえない
                 if (elm.text == "】") {
                     nameMode = 0;
-                    if (crAfterName) {
-                        afterName = true;
-                    }
+                    afterName = true;
+
                     //dm("名前処理:" + nameStr + ":" + nameDisp);
                     if (tagHandlers.dispname !== void) {
                         tagHandlers.dispname(%["name" => nameStr, "disp" => nameDisp]);
@@ -5776,6 +5785,10 @@ class KAGWindow extends Window
                         }
                     }
                 }
+            }
+            // 自動インデント処理
+            if (autoIndent && afterName && (elm.text == "「" || elm.text == "『")) {
+                conductor.pendings.add(%[ tagname : "indent" ]);
             }
         }
         afterName = false;
@@ -5850,6 +5863,11 @@ class KAGWindow extends Window
         setErAfterPage(elm.mode);
         return 0;
     } incontextof this,
+
+    autoindent : function(elm) {
+        setAutoIndent(elm.mode);
+        return 0;
+    } incontextof this,
                   
     autolabelmode : function(elm) {
         autoLabelMode = elm.mode;
@@ -5890,7 +5908,7 @@ class KAGWindow extends Window
             } else {
 
                 // 名前の直後の改行は無視する
-                if (!afterName) {
+                if (!(crAfterName && afterName)) {
                     // ヒストリの登録アクションの消去
                     if (tagHandlers.endline !== void) {
                         tagHandlers.endline();
@@ -5910,7 +5928,7 @@ class KAGWindow extends Window
             } else {
 
                 // 名前の直後の改行は無視する
-                if (!afterName) {
+                if (!(crAfterName && afterName)) {
                     // ヒストリの登録アクションの消去
                     if (tagHandlers.endline !== void) {
                         tagHandlers.endline();
@@ -5942,7 +5960,7 @@ class KAGWindow extends Window
                 }
             } else {
                 // 名前の直後の改行は無視する
-                if (!afterName) {
+                if (!(crAfterName && afterName)) {
                     prevEmptyLine = emptyLine;
                     emptyLine = true;
                     return tagHandlers.l(elm);
@@ -5972,7 +5990,7 @@ class KAGWindow extends Window
                 }
             } else {
                 // 名前の直後の改行は無視する
-                if (!afterName) {
+                if (!(crAfterName && afterName)) {
                     prevEmptyLine = emptyLine;
                     emptyLine = true;
                     return 0;
