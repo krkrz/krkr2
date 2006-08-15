@@ -676,7 +676,7 @@ class KAGEnvImage {
     // トランジション実行
     function beginTransition(trans) {
         if (trans.time === void || isSkip()) {
-            trans.time = 1;
+            trans.time = 0;
         }
         trans.children = true;
 
@@ -810,12 +810,16 @@ class KAGEnvLayer extends KAGEnvImage {
         super.onRestore(f);
     }
 
-    function setImageFile(param, elm) {
+    function setImageFile(file, elm) {
 
         dm("画像設定 for EnvLayer");
 
         imageFile = param;
         disp = BOTH;
+
+        // 記録
+        kag.sflags["cg_" + (file.toUpperCase())] = true;
+
         return true;
     }
 
@@ -914,7 +918,7 @@ class KAGEnvBaseLayer extends KAGEnvLayer {
         this.name = name;
     }
 
-    function setImageFile(file, param) {
+    function setImageFile(file, elm) {
 
         var eventTrans;
         
