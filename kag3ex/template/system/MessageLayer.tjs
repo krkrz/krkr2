@@ -1062,7 +1062,8 @@ class MessageLayer extends KAGLayer
 
         clearSystemButtons();
         invalidate buttons;
-		super.finalize();
+        invalidate _fadeTimer;
+        super.finalize();
 	}
 
 	function setCompLayer(lay) { comp = lay; }
