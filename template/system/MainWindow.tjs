@@ -3625,8 +3625,10 @@ class KAGWindow extends Window
      */
     function setCurrentMessageLayerVisible(visible) {
 
+        var fadeTime = messageFadeTime * drawspeed;
+        
         if (fore.messages[currentNum].visible != visible) {
-            if (!skipMode && messageFadeTime > 0) {
+            if (!skipMode && fadeTime > 0) {
 
                 // — ‚Íæ‚ÉÁ‚µ‚Ä‚¨‚­B‚»‚¤‚µ‚È‚¢‚Æ msgvisible ‚ª‚Æ‚ñ‚Å‚µ‚Ü‚Á‚Ä
                 // ‚¹‚Á‚©‚­‚Ì‘Ò‚¿‚ª‰ğœ‚³‚ê‚é
@@ -3634,7 +3636,7 @@ class KAGWindow extends Window
                 
                 // ˆ—‘Ò‚¿
                 var layer = fore.messages[currentNum];
-                layer.setVisibleTime(visible, messageFadeTime);
+                layer.setVisibleTime(visible, fadeTime);
 
                 conductor.wait(%[
                 click : function(layer) {
