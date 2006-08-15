@@ -1851,6 +1851,12 @@ class KAGEnvCharacter extends KAGEnvLevelLayer, KAGEnvImage {
             env.clearFace();
         }
     }
+
+    property yoffset {
+        getter() {
+            return init.yoffset !== void ? +env.yoffset + +init.yoffset : +env.yoffset;
+        }
+    }
     
     /**
      * ÉåÉCÉÑîzíuèàóù
@@ -1875,11 +1881,11 @@ class KAGEnvCharacter extends KAGEnvLevelLayer, KAGEnvImage {
 			}
             
             var l = kag.scWidth  / 2 + ((int)xpos * zoom / 100) - layer.imageWidth / 2;
-            var t = kag.scHeight / 2 + ((env.yoffset - (int)ypos) * zoom / 100) - layer.imageHeight + levelYoffset;
+            var t = kag.scHeight / 2 + ((yoffset - (int)ypos) * zoom / 100) - layer.imageHeight + levelYoffset;
             if (moveTime) {
                 if (xposFrom !== void || yposFrom !== void) {
                     var fl = xposFrom !== void ? kag.scWidth  / 2 + ((int)xposFrom * zoom / 100) - layer.imageWidth / 2 : l;
-                    var ft = yposFrom !== void ? kag.scHeight / 2 + ((env.yoffset - (int)yposFrom) * zoom / 100) - layer.imageHeight + levelYoffset: t;
+                    var ft = yposFrom !== void ? kag.scHeight / 2 + ((yoffset - (int)yposFrom) * zoom / 100) - layer.imageHeight + levelYoffset: t;
                     layer.setPos(fl, ft);
                 } 
                 layer.setMove(l, t, moveAccel, moveTime);
