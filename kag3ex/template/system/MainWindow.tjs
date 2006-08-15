@@ -1617,6 +1617,7 @@ class KAGWindow extends Window
 
         f.lineMode  = lineMode;
         f.crAfterName = crAfterName;
+        f.erAfterPage = erAfterPage;
         f.autoLabelMode = autoLabelMode;
         f.autoLabelCount = autoLabelCount;
         f.afterPage = afterPage;
@@ -1719,6 +1720,7 @@ class KAGWindow extends Window
             break;
         }
         crAfterName = f.crAfterName;
+        erAfterPage = f.erAfterPage;
         autoLabelMode = f.autoLabelMode;
         autoLabelCount = f.autoLabelCount;
         afterPage = f.afterPage;
@@ -5525,6 +5527,7 @@ class KAGWindow extends Window
 
     var lineMode;    // 改行処理モード
     var crAfterName; // 名前の後に改行をいれるか
+    var erAfterPage; // 改ページ直後に画面消去するか
     var afterPage;   // 改ページ直後
     var emptyLine;   // まだ行が空
     var prevEmptyLine;   // 前の空行状態
@@ -5585,6 +5588,13 @@ class KAGWindow extends Window
         }
     }
 
+    /**
+     * @param erAfterPage ページ待ち直後に画面消去
+     */
+    function setErAfterPage(erAfterPage) {
+        this.erAfterPage = erAfterPage;
+    }
+    
     /**
      * @param crAfterName 名前の後に改行をいれるかどうか
      */
@@ -5679,15 +5689,15 @@ class KAGWindow extends Window
             // テキストクリア処理
             switch (lineMode) {
             case 1:
-                if (emptyLine) {
-                    tagHandlers.cm();
+                if (emptyLine && !erAfterPage) {
+                    tagHandlers.er();
                 }
                 break;
             case 2:
                 if (afterPage) {
                     afterPage = false;
-                    if (emptyLine) {
-                        tagHandlers.cm();
+                    if (emptyLine && !erAfterPage) {
+                        tagHandlers.er();
                     }
                 } else {
                     if (emptyLine) {
@@ -5699,8 +5709,8 @@ class KAGWindow extends Window
             case 5:
                 if (afterPage) {
                     afterPage = false;
-                    if (emptyLine) {
-                        tagHandlers.cm();
+                    if (emptyLine && !erAfterPage) {
+                        tagHandlers.er();
                     }
                 } else {
                     if (emptyLine) {
@@ -5711,8 +5721,8 @@ class KAGWindow extends Window
             case 4:
                 if (afterPage) {
                     afterPage = false;
-                    if (emptyLine) {
-                        tagHandlers.cm();
+                    if (emptyLine && !erAfterPage) {
+                        tagHandlers.er();
                     }
                 }
                 break;
@@ -5836,6 +5846,11 @@ class KAGWindow extends Window
         return 0;
     } incontextof this,
 
+    erafterpage : function(elm) {
+        setErAfterPage(elm.mode);
+        return 0;
+    } incontextof this,
+                  
     autolabelmode : function(elm) {
         autoLabelMode = elm.mode;
         return 0;
@@ -6131,7 +6146,15 @@ class KAGWindow extends Window
         }
         // ページクリック待ち
         if(historyWriteEnabled) historyLayer.reline();
-        return showPageBreak(elm);
+
+        var ret = showPageBreak(elm);
+
+        // ページ待ち後に消去を強制投入
+        if (erAfterPage) {
+            conductor.pendings.insert(0, %[tagname: "er"]);
+        }
+        
+        return ret;
 
 	} incontextof this,
 
