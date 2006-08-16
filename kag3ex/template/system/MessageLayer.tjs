@@ -525,9 +525,10 @@ class RelativeLayer extends KAGLayer
         super.assignImages(src);
         if (copyvisiblestate) {
             var su = super;
-            visible = src.visible;
-            su.opacity = src.opacity;
+            visible  = src.visible;
+            opacity  = src.opacity;
             absolute = src.absolute if !src.isPrimary && src.parent.absoluteOrderMode;
+            _originMode = src._originMode;
             su.type = src.type;
             setPos(src.left, src.top, src.width, src.height);
             su.setImagePos(src.imageLeft, src.imageTop);
@@ -3326,7 +3327,7 @@ class MessageLayer extends KAGLayer
 
 	function internalAssign(src, copyvisiblestate)
 	{
-		// レイヤの情報をコピー
+        // レイヤの情報をコピー
 		// ( コピーする情報が膨大なのでちょっと実行時間がかかる )
 
 		// このレイヤ自身の画像、位置、透明度などのコピー
