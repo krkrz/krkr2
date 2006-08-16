@@ -7,7 +7,7 @@ Author: 合資会社ワムソフト
 
 ●キャラクター・背景の登録方法
 
-吉里吉里/KAGEX ではスクリプトを簡略化する為に envinit.tjs というファイルにエイリアスとしてキャラクターや背景などスクリプト中によく使う素材を登録できます。
+吉里吉里/KAGEX ではスクリプトを簡略化する為に envinit.tjs というファイルにとしてキャラクターや背景などスクリプト中によく使う素材を登録できます。
 
 例えば 通常の KAG で背景、キャラクター（立ち絵）を表示しようとすると
 
@@ -20,12 +20,12 @@ Author: 合資会社ワムソフト
 [あかり 出 中]
 
 というスクリプトにて背景・キャラクターを表示することができます。
-ただし、この方法でのスクリプトを行うには事前に envinit.tjs というファイルに「エイリアス」として登録が必要になります。
+ただし、この方法でのスクリプトを行うには事前に envinit.tjs というファイルに「」として登録が必要になります。
 
 envinit.tjs 自体は TJS2 のディクショナリで構成されています。
 必ず定義の前後を %[ ] にて囲う必要があります。
 
-例）背景の登録例 (エイリアス：stages)
+例）背景の登録例 (：stages)
 
     // 場所情報
     "stages" => %[
@@ -45,13 +45,13 @@ envinit.tjs 自体は TJS2 のディクショナリで構成されています。
 
 背景は stages というディクショナリ内に記述します。
 
-"エイリアス名" => %[
+"名" => %[
 	"image" => "画像ファイル名",
 ],
 
 というのが１つの背景素材の記述になります。
 
-例）キャラクターの登録例（エイリアス：characters、positions、levels）
+例）キャラクターの登録例（：characters、positions、levels）
 
     // キャラクタ定義情報
     "characters" => %[
@@ -190,11 +190,11 @@ envinit.tjs 自体は TJS2 のディクショナリで構成されています。
             ],
         ],
 
-エイリアス charactors はキャラクタの素材登録、
+ charactors はキャラクタの素材登録、
 posiotion は左右位置の登録、
 levels は奥行きの登録になります。
 
-● エイリアス charactors の詳細説明
+●  charactors の詳細説明
 
 まず、キャラクターの立ち絵の構成は以下の様にします
 
@@ -226,9 +226,9 @@ levels は奥行きの登録になります。
             "voiceName" => "",
             ],
 
-● エイリアス levels の詳細説明
+●  levels の詳細説明
 
-エイリアス levels は charactor の LEVEL 部分にそのまま反映されます。
+ levels は charactor の LEVEL 部分にそのまま反映されます。
 
     "levels" => [
         %[
@@ -240,12 +240,12 @@ levels は奥行きの登録になります。
 
 という構成になります。
 
-● エイリアス positions の詳細説明
+●  positions の詳細説明
 
     // キャラクタ配置情報定義
     "positions" => %[
 
-        "エイリアス名" => %[
+        "名" => %[
             "type" => 指定タイプ,
 		KAGEnvironment.DISPPOSITION : 表示指定 
 		KAGEnvironment.XPOSITION    : X座標指定
@@ -257,6 +257,6 @@ levels は奥行きの登録になります。
 		KAGEnvImage.FACE       : 顔のみ表示
 		KAGEnvImage.INVISIBLE  : 非表示
             "xpos" => X座標を数値で指定 
-            "level" => エイリアス levels、charactors の LEVEL を指定
+            "level" =>  levels、charactors の LEVEL を指定
             ],
         ],
