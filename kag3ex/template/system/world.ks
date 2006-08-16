@@ -821,9 +821,9 @@ class KAGEnvLayer extends KAGEnvImage {
 
     function setImageFile(file, elm) {
 
-        dm("‰æ‘œİ’è for EnvLayer");
+        //dm("‰æ‘œİ’è for EnvLayer");
 
-        imageFile = param;
+        imageFile = file;
         disp = BOTH;
 
         // ‹L˜^
