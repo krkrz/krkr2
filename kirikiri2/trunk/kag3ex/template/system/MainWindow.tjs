@@ -2883,7 +2883,6 @@ class KAGWindow extends Window
 
         if(!usingExtraConductor) {
             incRecordLabel(countpage);
-            stopRecollection();
         }
 		setUserSpeed();
 
@@ -7314,6 +7313,12 @@ class KAGWindow extends Window
         return 0;
 	} incontextof this,
 
+    stoprecollection : function(elm)
+    {
+        stopRecollection(elm);
+        return 0;
+    } incontextof this,
+                  
     endrecollection : function(elm)
 	{
         return endRecollection();
