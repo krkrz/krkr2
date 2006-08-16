@@ -1233,7 +1233,7 @@ class KAGWindow extends Window
             showHistoryMenuItem.enabled = inStable && !messageLayerHiding && global.currentDialog===void &&
 				historyEnabled;
 
-        var canAuto = notmodal && (autoMode || !skipMode);
+        var canAuto = state && !inSleep && !skipMode || autoMode;
         if(typeof this.autoModeMenuItem != "undefined")
             autoModeMenuItem.enabled = canAuto;
 
