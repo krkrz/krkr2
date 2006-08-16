@@ -383,7 +383,7 @@ class LayerParabolaMoveModule extends LayerMoveModule {
     var t0;    // 頂点通過時間（の2倍値）
     function LayerParabolaMoveModule(layer, options) {
         super.LayerMoveModule(layer, options);
-        var topTime = (int)options["topTime"];
+        var topTime = (int)options["toptime"];
         t0 = topTime ? (topTime * 2) : time;
     }
     function action(layer, now, done) {
@@ -425,7 +425,7 @@ class LayerVibrateActionModule extends LayerActionModule {
     function LayerVibrateActionModule(layer, options) {
         super.LayerActionModule(layer, options);
         vibration  = (int)options["vibration"];
-        waitTime   = (int)options["waitTime"];
+        waitTime   = (int)options["waittime"];
         nextTime = 0;
     }
     function action(layer, now, done) {
@@ -546,7 +546,7 @@ class LayerFallActionModule extends LayerActionModule {
     function LayerFallActionModule(layer, options) {
         super.LayerActionModule(layer, options);
         distance = (int)options["distance"];
-        fallTime = (int)options["fallTime"];
+        fallTime = (int)options["falltime"];
         if (fallTime == void) {
             fallTime = time;
         }
@@ -669,7 +669,7 @@ class LayerVibrateZoomModule extends LayerZoomModule {
     function LayerVibrateZoomModule(layer, options) {
         super.LayerZoomModule(layer, options);
         vibration  = (int)options["vibration"];
-        waitTime   = (int)options["waitTime"];
+        waitTime   = (int)options["waittime"];
         nextTime = 0;
     }
     function action(layer, now, done) {
@@ -797,8 +797,8 @@ class LayerBlinkModeModule extends LayerModeModule {
     function LayerBlinkModeModule(layer, options) {
         super.LayerModeModule(layer, options);
         showFlag = true;
-        showTime = (int)options["showTime"];
-        hideTime = (int)options["hideTime"];
+        showTime = (int)options["showtime"];
+        hideTime = (int)options["hidetime"];
     }
     function action(layer, now, done) {
         if (done) {

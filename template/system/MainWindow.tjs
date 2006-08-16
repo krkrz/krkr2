@@ -3617,6 +3617,14 @@ class KAGWindow extends Window
 		return -2; // break
 	}
 
+    function setCurrentMessageLayerVisibleFast(page, visible) {
+        var base = page == 0 ? fore : back;
+        base.messages[currentNum].visible = visible;
+        forEachEventHook('onCurrentMessageVisibleChanged',
+                         function(handler, f) { handler(f.hidden, f.page); } incontextof this,
+                         %[hidden:!visible, page:page]);
+    }
+    
     /**
      * 現在のメッセージ窓の表示状態の変更
      * @param visible
