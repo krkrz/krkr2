@@ -120,16 +120,16 @@ var actionParam = %[
     "delay" => true,
     "x" => true,
     "y" => true,
-    "topTime" => true,
+    "toptime" => true,
     "vibration" => true,
-    "waitTime" => true,
+    "waittime" => true,
     "cycle" => true,
     "distance" => true,
-    "fallTime" => true,
+    "falltime" => true,
     "angvel" => true,
     "angle" => true,
-    "showTime" => true,
-    "hideTime" => true,
+    "showtime" => true,
+    "hidetime" => true,
     "intime" => true,
     "outtime" => true,
     ];
@@ -825,6 +825,7 @@ class KAGEnvLayer extends KAGEnvImage {
 
         imageFile = file;
         disp = BOTH;
+        reposition = true;
 
         // 記録
         kag.sflags["cg_" + (file.toUpperCase())] = true;
@@ -951,6 +952,7 @@ class KAGEnvBaseLayer extends KAGEnvLayer {
             }
 
             disp = BOTH;
+            reposition = true;
             
             // 記録
             kag.sflags["cg_" + (file.toUpperCase())] = true;
@@ -2642,6 +2644,7 @@ class KAGEnvironment extends KAGEnvImage {
 
         kag.tagHandlers["msgoff"]     = this.msgoff;
         kag.tagHandlers["msgon"]      = this.msgon;
+        kag.tagHandlers["clear"]      = this.clear;
         
         kag.tagHandlers["dispname"]   = this.dispname;
         kag.tagHandlers["endline"]    = this.endline;
@@ -2772,6 +2775,15 @@ class KAGEnvironment extends KAGEnvImage {
     }
 
     /**
+     * 背景とイベント絵の消去
+     */
+    function hideBase() {
+        disp = CLEAR;
+        event.disp = CLEAR;
+        redraw = true;
+    }
+    
+    /**
      * 全キャラクタ消去
      */
     function hideCharacters() {
@@ -2794,14 +2806,22 @@ class KAGEnvironment extends KAGEnvImage {
     }
 
     /**
+     * 前景要素消去
+     */
+    function hideFore() {
+        hideCharacters();
+        hideLayers();
+    }
+
+    /**
      * 全要素消去
      */
     function hideAll() {
+        hideBase();
         hideCharacters();
         hideLayers();
-		redraw = true;
     }
-
+    
     /**
      * 舞台を設定する
      * @param stageName 舞台名
@@ -2934,12 +2954,66 @@ class KAGEnvironment extends KAGEnvImage {
         return 0;
     }        
 
-    function msgoff(elm) {
-        return kag.setCurrentMessageLayerVisible(false) ? -2 : 0;
+    /**
+     * メッセージ窓のトランジション処理をくみこんだ ON/OFF
+     */
+    function msgonoff(elm, v) {
+        if (!transMode && !isSkip()) {
+            var trans;
+            if (elm.trans !== void) {
+                trans = getTrans(elm.trans, elm);
+            } else if (elm.fade !== void) {
+                var fadeTime = +elm.fade;
+                trans = %[ "method" => "crossfade",
+                           "children" => true,
+                           "time" => fadeTime > 1 ? fadeTime : fadeValue];
+            }
+            if (trans !== void) {
+                kag.updateBeforeCh = 1;
+                kag.fore.base.stopTransition();
+                kag.backupLayer(EMPTY, true);
+                kag.setCurrentMessageLayerVisibleFast(1, v);
+                beginTransition(trans);
+                return 0;
+            } else {
+                return kag.setCurrentMessageLayerVisible(v) ? -2 : 0;
+            }
+        }
+        kag.setCurrentMessageLayerVisibleFast(transMode ? 1: 0, false);
+        return 0;
     }
 
-    function msgon(elm) {
-        return kag.setCurrentMessageLayerVisible(true) ? -2 : 0;
+    function msgon(elm) { return msgonoff(elm, true); }
+    function msgoff(elm) { return msgonoff(elm, false); }
+
+    /**
+     * 画面の表示要素の全消去
+     */
+    function clear(elm) {
+        hideAll();
+        if (!transMode && !isSkip()) {
+            var trans;
+            if (elm.trans !== void) {
+                trans = getTrans(elm.trans, elm);
+            } else if (elm.fade !== void) {
+                var fadeTime = +elm.fade;
+                trans = %[ "method" => "crossfade",
+                           "children" => true,
+                           "time" => fadeTime > 1 ? fadeTime : fadeValue];
+            }
+            if (trans) {
+                kag.updateBeforeCh = 1;
+                kag.fore.base.stopTransition();
+                kag.backupLayer(EMPTY, true);
+                kag.setCurrentMessageLayerVisibleFast(1, false);
+                drawAll(kag.back);
+                beginTransition(trans);
+                return 0;
+            }
+        }
+        kag.setCurrentMessageLayerVisibleFast(transMode ? 1: 0, false);
+        drawAll();
+        return 0;
     }
     
     var envCommands = %[
@@ -2949,6 +3023,7 @@ class KAGEnvironment extends KAGEnvImage {
     init : this.init incontextof this,
     stage : this.setStage incontextof this,
     stime : this.setTime incontextof this,
+    hidebase : this.hideBase incontextof this,
     hidecharacters : this.hideCharacters incontextof this,
     hidelayers : this.hideLayers incontextof this,
     hideall : this.hideAll incontextof this,
