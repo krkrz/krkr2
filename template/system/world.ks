@@ -2439,6 +2439,7 @@ class KAGEnvSE {
     time : null,
     start : null,
 	canskip : null,
+	buf : null
         ];
 
 	var doflag;
