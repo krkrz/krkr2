@@ -1497,6 +1497,7 @@ class KAGEnvCharacter extends KAGEnvLevelLayer, KAGEnvImage {
         case global.KAGEnvironment.DISPPOSITION:
             disp = info.disp;
             redraw = true;
+			reposition = true;
             setPositionTrans(info);
             break;
         case global.KAGEnvironment.LEVEL:
@@ -2916,6 +2917,12 @@ class KAGEnvironment extends KAGEnvImage {
      * 新規キャラクタ生成
      */
     function newCharacter(elm) {
+		// 既存データは廃棄
+		if (characters[elm.name] !== void) {
+	        invalidate characters[elm.name];
+            delete characters[elm.name];
+		}
+		// 新規生成
         var ch = getCharacter(elm.name, elm.initname);
         if (ch != null) {
             delete elm.tagname;
