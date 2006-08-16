@@ -60,7 +60,7 @@ y		移動先位置
 ◆LayerParabolaMoveModule  放物線移動
 
 x/y が放物線の頂点になります（最終点ではありません）
-topTime	頂点通過時間（time の1/2を指定すると丁度落下しきることになる)
+toptime	頂点通過時間（time の1/2を指定すると丁度落下しきることになる)
 
 ◇アクションモジュール
 
@@ -71,7 +71,7 @@ topTime	頂点通過時間（time の1/2を指定すると丁度落下しきることになる)
 ◆LayerVibrateActionModule	振動アクション
 
 vibration	振動量(pixel)
-waitTime	振動間の待ち時間(ms)
+waittime	振動間の待ち時間(ms)
 
 ◆LayerJumpActionModule	縦ゆれアクション
 
@@ -96,7 +96,7 @@ cycle		周期(ms)
 ◆LayerFallActionModule		落下アクション
 
 distance	落下距離(pixel)
-fallTime	落下時間(ms)
+falltime	落下時間(ms)
 
 ◇拡大縮小モジュール
 
@@ -123,7 +123,7 @@ zoom	最大拡大率
 ◆LayerVibrateZoomModule	ズーム振動
 
 vibration	振動量(％)
- waitTime	振動間の待ち時間(ms)
+waittime	振動間の待ち時間(ms)
 
 ◇回転モジュール
 
@@ -148,8 +148,8 @@ angle	指定角度
 
 ◆LayerBlinkModeModule		点滅処理
 
-showTime	表示時間(ms)
-hideTime	消去時間(ms)
+showtime	表示時間(ms)
+hidetime	消去時間(ms)
 
 ◆LayerFadeModeModule		フェード処理用
 
