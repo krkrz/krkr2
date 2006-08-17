@@ -676,13 +676,14 @@ class MessageLayer extends KAGLayer
     var _fadeStartTime;
     var _fadeTime;
     var _startOpacity;
+    var _toOpacity;
     
     function fadeHandler() {
         var now = System.getTickCount() - _fadeStartTime;
         if (now >= _fadeTime) {
             fadeDone();
         } else {
-            setInnerOpacity(_startOpacity + (_opacity - _startOpacity) * now / _fadeTime);
+            setInnerOpacity(_startOpacity + (_toOpacity - _startOpacity) * now / _fadeTime);
         }
     }
 
@@ -693,13 +694,13 @@ class MessageLayer extends KAGLayer
         if (v != visible) {
             //dm("窓フェード表示処理:" + v);
             _visible = v;
-            _opacity = v ? 255 : 0;
             if (time > 0) {
                 _fadeStartTime = System.getTickCount();
                 _fadeTime      = time;
-                setInnerOpacity(v ? 0 : super.opacity);
+                _startOpacity = v ? 0 : _opacity;
+                _toOpacity    = v ? _opacity : 0;
+                setInnerOpacity(_startOpacity);
                 setInnerVisible(true);
-                _startOpacity = super.opacity;
                 _fadeTimer.enabled = true;
             } else {
                 fadeDone();
@@ -975,6 +976,8 @@ class MessageLayer extends KAGLayer
 		// do_config : コンフィギュレーションを行うか
 		super.KAGLayer(...);
 
+        _opacity = super.opacity;
+        _visible = super.visible;
         
 		this.id = id;
 		this.name = name;
@@ -1069,7 +1072,7 @@ class MessageLayer extends KAGLayer
 
 	function setCompLayer(lay) { comp = lay; }
 
-    function clearLayer(all=true)
+    function clearLayer(all)
 	{
 		// レイヤをクリア
 		window.updateBeforeCh = 1;
@@ -1172,13 +1175,13 @@ class MessageLayer extends KAGLayer
         faceLayer.absolute = +elm.faceabsolute if elm.faceabsolute !== void;
         faceLayer.originMode = +elm.faceorigin if elm.faceorigin !== void;
         
-        clear();
+        clear(true);
     }
 
-	function clear()
+	function clear(all=false)
 	{
 		// メッセージレイヤをクリアする
-		clearLayer();
+		clearLayer(all);
 
 		// 表示位置を初期位置に
 		if(vertical)
@@ -1204,14 +1207,14 @@ class MessageLayer extends KAGLayer
         clearClick();
     }
 
-	function clear2()
+	function clear2(all=false)
 	{
 		// メッセージレイヤをクリアするが
 		// フォントのリセットなどは行わない
 		// メッセージが下端までいって自動的にページ待ち→メッセージレイヤクリア
 		// となるときに呼ばれる
 
-		clearLayer();
+		clearLayer(all);
 
 		// 表示位置を初期位置に
 		if(vertical)

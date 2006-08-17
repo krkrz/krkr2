@@ -3480,9 +3480,9 @@ class KAGWindow extends Window
 
 		var messages;
 		messages = fore.messages;
-		for(var i = messages.count-1; i >= 0; i--) messages[i].clear();
+		for(var i = messages.count-1; i >= 0; i--) messages[i].clear(true);
 		messages = back.messages;
-		for(var i = messages.count-1; i >= 0; i--) messages[i].clear();
+		for(var i = messages.count-1; i >= 0; i--) messages[i].clear(true);
 		if(resetcurrent)
 		{
 			currentNum = 0;
@@ -5709,14 +5709,14 @@ class KAGWindow extends Window
             switch (lineMode) {
             case 1:
                 if (emptyLine && !erAfterPage) {
-                    tagHandlers.er();
+                    tagHandlers.er(%[all:true]);
                 }
                 break;
             case 2:
                 if (afterPage) {
                     afterPage = false;
                     if (emptyLine && !erAfterPage) {
-                        tagHandlers.er();
+                        tagHandlers.er(%[all:true]);
                     }
                 } else {
                     if (emptyLine) {
@@ -5729,7 +5729,7 @@ class KAGWindow extends Window
                 if (afterPage) {
                     afterPage = false;
                     if (emptyLine && !erAfterPage) {
-                        tagHandlers.er();
+                        tagHandlers.er(%[all:true]);
                     }
                 } else {
                     if (emptyLine) {
@@ -5741,7 +5741,7 @@ class KAGWindow extends Window
                 if (afterPage) {
                     afterPage = false;
                     if (emptyLine && !erAfterPage) {
-                        tagHandlers.er();
+                        tagHandlers.er(%[all:true]);
                     }
                 }
                 break;
@@ -6221,8 +6221,8 @@ class KAGWindow extends Window
 	{
 		// 現在のメッセージレイヤのクリア
 		if(historyWriteEnabled) historyLayer.repage();
-		if(currentWithBack) current.comp.clear();
-		current.clear();
+		if(currentWithBack) current.comp.clear(elm.all);
+		current.clear(elm.all);
 		return 0;
 	} incontextof this,
 
@@ -6659,12 +6659,20 @@ class KAGWindow extends Window
             base.layers[i].visible = false;
         }
         for(var i = base.messages.count-1; i >= 0; i--) {
-            base.messages[i].clear();
+            base.messages[i].clear(true);
             base.messages[i].visible = false;
         }
         // 選択肢窓消去
         hideSelect();
         hideMapSelect();
+        return 0;
+    } incontextof this,
+
+    syncmsg : function(elm) {
+        dm("メッセージ窓シンクロ");
+        // メッセージ窓だけ表から裏にコピー
+        var messages = fore.messages;
+        for(var i = messages.count-1; i >= 0; i--) messages[i].assignComp();
         return 0;
     } incontextof this,
                   
