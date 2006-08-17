@@ -2923,6 +2923,7 @@ class KAGEnvironment extends KAGEnvImage {
             beginTransition(trans);
         }
         transMode = false;
+        trans = void;
         return ret;
     }
 
