@@ -1549,7 +1549,17 @@ class KAGEnvCharacter extends KAGEnvLevelLayer, KAGEnvImage {
     var charCommands = %[
     pose    : this.setPose incontextof this,
     dress   : this.setDress incontextof this,
-    face    : this.setFace incontextof this,
+    face    : function(cmd) {
+        if (facePoseMap !== void) {
+            var p;
+            if ((p = facePoseMap[cmd]) !== void) {
+                setPose(p);
+                setFace(cmd);
+            }
+        } else {
+            setFace(cmd);
+        }
+    }incontextof this,
     pos     : this.setPosition incontextof this,
     emotion : this.setEmotion incontextof this,
     xpos    : this.setXPos incontextof this,
@@ -1562,6 +1572,7 @@ class KAGEnvCharacter extends KAGEnvLevelLayer, KAGEnvImage {
     playvoice : this.playVoice2 incontextof this,
     waitvoice : this.waitVoice incontextof this,
     facewin : function(param) { disp = FACE;   } incontextof this,
+    faceon : null
         ];
 
     /**
@@ -1993,6 +2004,12 @@ class KAGEnvCharacter extends KAGEnvLevelLayer, KAGEnvImage {
     function tagfunc(elm) {
         //dm("キャラクタタグの呼び出し:" + name);
         ret = void;
+        if (elm.faceon) {
+            if (env.faceLevelName !== void) {
+                env.clearFace();
+            }
+            env.currentObject = this;
+        }
         foreach(elm, doCommand);
         hideMessage();
         updateImage();
