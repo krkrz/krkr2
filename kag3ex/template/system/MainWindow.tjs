@@ -6171,6 +6171,12 @@ class KAGWindow extends Window
             afterPage = true;
             emptyLine = true;
         }
+
+        // 自動インデント解除
+        if (autoIndent) {
+            tagHandlers.endindent();
+        }
+
         // ページクリック待ち
         if(historyWriteEnabled) historyLayer.reline();
 
