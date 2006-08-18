@@ -2,6 +2,9 @@
 #include "tp_stub.h"
 #include "sqplus.h"
 
+#define KIRIKIRI_GLOBAL L"krkr"
+#define SQUIRREL_GLOBAL L"sqglobal"
+
 /**
  * ƒƒOo—Í—p
  */
@@ -83,6 +86,7 @@ delMember(iTJSDispatch2 *dispatch, const tjs_char *name)
 //---------------------------------------------------------------------------
 
 extern void store(tTJSVariant &result, SquirrelObject &variant);
+extern void store(tTJSVariant &result, HSQUIRRELVM v, int idx=-1);
 extern void registglobal(HSQUIRRELVM v, const SQChar *name, iTJSDispatch2 *dispatch);
 
 //---------------------------------------------------------------------------
@@ -238,8 +242,26 @@ extern "C" HRESULT _stdcall V2Link(iTVPFunctionExporter *exporter)
 			addMember(dispatch, TJS_W("execStorageSQ"), new tExecStorageFunction());
 		}
 		
-		// ƒOƒ[ƒoƒ‹‚É“o˜^
-		registglobal(SquirrelVM::GetVMPtr(), L"krkr", global);
+		// Squirrel ‚Ì ƒOƒ[ƒoƒ‹‚É‹g—¢‹g—¢‚Ì ƒOƒ[ƒoƒ‹‚ð“o˜^‚·‚é
+		registglobal(SquirrelVM::GetVMPtr(), KIRIKIRI_GLOBAL, global);
+
+		// ‹g—¢‹g—¢‚ÌƒOƒ[ƒoƒ‹‚É Squirrel ‚ÌƒOƒ[ƒoƒ‹‚ð“o˜^‚·‚é
+		{
+			tTJSVariant result = tTJSVariant();
+			
+			HSQUIRRELVM v = SquirrelVM::GetVMPtr();
+			sq_pushroottable(v);
+			store(result, v, -1);
+			sq_pop(v, 1);
+			
+			global->PropSet(
+				TJS_MEMBERENSURE,
+				SQUIRREL_GLOBAL,
+				NULL,
+				&result,
+				global
+				);
+		}
 		
 		global->Release();
 	}
@@ -281,6 +303,8 @@ extern "C" HRESULT _stdcall V2Unlink()
 			delMember(dispatch, TJS_W("execStorageSQ"));
 		}
 
+		delMember(global, SQUIRREL_GLOBAL);
+		
 		global->Release();
 	}
 
