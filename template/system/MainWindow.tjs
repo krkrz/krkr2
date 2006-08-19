@@ -5755,11 +5755,10 @@ class KAGWindow extends Window
                 if (elm.text == "】") {
                     nameMode = 0;
                     afterName = true;
-
+                    
                     //dm("名前処理:" + nameStr + ":" + nameDisp);
-                    if (tagHandlers.dispname !== void) {
-                        tagHandlers.dispname(%["name" => nameStr, "disp" => nameDisp]);
-                    }
+                    conductor.pendings.insert(0, %[ "tagname" => "dispname",
+                                                    "name" => nameStr, "disp" => nameDisp]);
                     return 0;
                 } else {
                     if (nameMode == 1) {
@@ -5784,14 +5783,10 @@ class KAGWindow extends Window
                     return 0;
                 } else {
                     // 名前指定がない場合はパラメータなしで名前処理を呼び出す
-                    if (lineMode == 3 || lineMode == 4 || lineMode == 5) {
-                        if (prevEmptyLine && tagHandlers.dispname !== void) {
-                            tagHandlers.dispname();
-                        }
-                    } else {
-                        if (tagHandlers.dispname !== void) {
-                            tagHandlers.dispname();
-                        }
+                    if (lineMode < 3 || prevEmptyLine) {
+                        conductor.pendings.insert(0, elm);
+                        conductor.pendings.insert(0, %[ tagname : "dispname" ]);
+                        return -4;
                     }
                 }
             }
