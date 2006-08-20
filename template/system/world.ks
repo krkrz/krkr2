@@ -354,7 +354,6 @@ class KAGEnvImage {
      * トランジション情報の取得
      */
     function getTrans(name, elm) {
-//        dm("トランジション情報取得");
         var tr = %[];
         // 名前指定で上書き
         var info;
@@ -386,7 +385,7 @@ class KAGEnvImage {
      * トランジションを設定
      * @param name トランジション名
      */
-    function setTrans(name, elm) {
+    function _setTrans(name, elm) {
         var tr = getTrans(name, elm);
         if (tr.method !== void) {
             if (!env.transMode && !isSkip()) {
@@ -398,6 +397,14 @@ class KAGEnvImage {
         return false;
     }
 
+    function setTrans(name, elm) {
+        if (name == "void") {
+            trans = void;
+        } else {
+            _setTrans(name, elm);
+        }
+    }
+    
     /**
      * トランジションを設定
      * @param param トランジション指定　文字列または辞書
@@ -409,10 +416,10 @@ class KAGEnvImage {
             if (param === void) {
                 return false;
             } else if (typeof param == "String") {
-                setTrans(param);
+                _setTrans(param);
                 return true;
             } else if (param instanceof "Dictionary") {
-                setTrans(param.method, param);
+                _setTrans(param.method, param);
                 return true;
             }
             return false;
@@ -532,7 +539,7 @@ class KAGEnvImage {
         opacityTime = isSkip() ? 0 : elm.time;
     } incontextof this,
     fade :  function(param, elm) {
-        fadeTime = isSkip() ? void : param;
+        fadeTime = isSkip() || env.transMode ? void : param;
     } incontextof this,
     rotate : function(param, elm) {
         rotateFrom = toNumber(getFrom(param));
@@ -553,13 +560,7 @@ class KAGEnvImage {
     reset : function(param, elm) {
         resetFlag = true;
     } incontextof this,
-    trans  : function(param, elm) {
-        if (param == "void") {
-            trans = void;
-        } else {
-            setTrans(param, elm);
-        }
-    } incontextof this,
+    trans  : setTrans incontextof this,
     action : setAction incontextof this,
 
     sync : function(param) { if (param) { syncMode = true; } } incontextof this,
@@ -662,7 +663,6 @@ class KAGEnvImage {
     // 標準のものは単純な座標指定になっている
     function calcPosition(layer) {
         if (reposition) {
-            dm("位置の再設定:" + xpos + "," + ypos);
             var l = (int)xpos;
             var t = (int)ypos;
             if (moveTime !== void && moveTime > 0) {
@@ -878,7 +878,7 @@ class KAGEnvLayer extends KAGEnvImage {
 
         // 更新
         if (!find) {
-            find = setTrans(cmd, elm);
+            find = _setTrans(cmd, elm);
         }
 
         // 画像のロード
@@ -1664,7 +1664,7 @@ class KAGEnvCharacter extends KAGEnvLevelLayer, KAGEnvImage {
         
         // 更新
         if (!find) {
-            find = setTrans(cmd, elm);
+            find = _setTrans(cmd, elm);
         }
         
         return find;
@@ -2397,8 +2397,6 @@ class KAGEnvSE {
      */
     function play(param, elm) {
         if (param !== void) {
-            dm("再生:" + param);
-
             name = param;
             var time = +elm.time;
             if (time > 0)  {
@@ -2938,22 +2936,41 @@ class KAGEnvironment extends KAGEnvImage {
         transMode = true;
         return 0;
     }
-    
+
+    /**
+     * トランジション指定をコマンドから探す処理
+     */
+    function checkTrans(cmd, param, elm) {
+        if (cmd == "tagname") {
+            // ignore
+        } else if (cmd == "trans") {
+            setTrans(param, elm);
+        } else if (cmd == "fade") {
+            var fadeTime = +param;
+            trans = %[ "method" => "crossfade",
+                       "children" => true,
+                       "time" => fadeTime > 1 ? fadeTime : fadeValue];
+        } else {
+            _setTrans(cmd, elm);
+        }
+	}
+
     /**
      * 全体トランジション終了
      */
     function endTrans(elm) {
+        // まず解除（トランジション処理中で true だと処理が登録されないので)
+        transMode = false;
         ret = void;
-        trans = getTrans(elm.trans, elm);
+        foreach(elm, checkTrans);
         // 未指定時
-        if (trans.method === void) {
-            // 裏画面から書き戻す
-            kag.backupLayer(EMPTY, false);
-        } else {
+        if (trans !== void && trans.method !== void) {
             hideMessage();
             beginTransition(trans);
+        } else {
+            // 裏画面から書き戻す
+            kag.backupLayer(EMPTY, false);
         }
-        transMode = false;
         trans = void;
         return ret;
     }
@@ -2995,29 +3012,22 @@ class KAGEnvironment extends KAGEnvImage {
      * メッセージ窓のトランジション処理をくみこんだ ON/OFF
      */
     function msgonoff(elm, v) {
+        ret = void;
         if (!transMode && !isSkip()) {
-            var trans;
-            if (elm.trans !== void) {
-                trans = getTrans(elm.trans, elm);
-            } else if (elm.fade !== void) {
-                var fadeTime = +elm.fade;
-                trans = %[ "method" => "crossfade",
-                           "children" => true,
-                           "time" => fadeTime > 1 ? fadeTime : fadeValue];
-            }
-            if (trans !== void) {
+            foreach(elm, checkTrans);
+            if (trans !== void && trans.method !== void) {
                 kag.updateBeforeCh = 1;
                 kag.fore.base.stopTransition();
                 kag.backupLayer(EMPTY, true);
                 kag.setCurrentMessageLayerVisibleFast(1, v);
                 beginTransition(trans);
-                return 0;
+                return ret;
             } else {
                 return kag.setCurrentMessageLayerVisible(v) ? -2 : 0;
             }
         }
         kag.setCurrentMessageLayerVisibleFast(transMode ? 1: 0, false);
-        return 0;
+        return ret;
     }
 
     function msgon(elm) { return msgonoff(elm, true); }
@@ -3027,30 +3037,23 @@ class KAGEnvironment extends KAGEnvImage {
      * 画面の表示要素の全消去
      */
     function clear(elm) {
+        ret = void;
         hideAll();
         if (!transMode && !isSkip()) {
-            var trans;
-            if (elm.trans !== void) {
-                trans = getTrans(elm.trans, elm);
-            } else if (elm.fade !== void) {
-                var fadeTime = +elm.fade;
-                trans = %[ "method" => "crossfade",
-                           "children" => true,
-                           "time" => fadeTime > 1 ? fadeTime : fadeValue];
-            }
-            if (trans) {
+            foreach(elm, checkTrans);
+            if (trans !== void && trans.method !== void) {
                 kag.updateBeforeCh = 1;
                 kag.fore.base.stopTransition();
                 kag.backupLayer(EMPTY, true);
                 kag.setCurrentMessageLayerVisibleFast(1, false);
                 drawAll(kag.back);
                 beginTransition(trans);
-                return 0;
+                return ret;
             }
         }
         kag.setCurrentMessageLayerVisibleFast(transMode ? 1: 0, false);
         drawAll();
-        return 0;
+        return ret;
     }
     
     var envCommands = %[
@@ -3510,8 +3513,6 @@ class KAGEnvironment extends KAGEnvImage {
 
             // 追加waitはなし
             kag.addAutoWait();
-            // カレントオブジェクトの解除
-            dm("かれんとオブジェクト削除");
             currentNameTarget = void;
             
         } else {
@@ -3559,9 +3560,6 @@ class KAGEnvironment extends KAGEnvImage {
             }
             
             // 表情変更処理
-            dm("表情変更処理");
-            dm("currentNameTarget:" + currentNameTarget);
-            dm("ch:" + ch);
             if (faceLevelName !== void && currentNameTarget != ch && (ch === void || ch.isShowFace()) && !transMode && !isSkip() && faceFadeTime > 0) {
 
                 currentNameTarget = ch;
@@ -3609,7 +3607,6 @@ class KAGEnvironment extends KAGEnvImage {
      * ボイス再生用
      */
     function dispnameVoice(elm) {
-        dm("ボイス再生!!");
         // ボイス再生
         if (currentNameTarget !== void) {
             // ボイス再生処理
