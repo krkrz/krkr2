@@ -126,12 +126,14 @@ var actionParam = %[
     "cycle" => true,
     "distance" => true,
     "falltime" => true,
+    "zoom" => true,
     "angvel" => true,
     "angle" => true,
     "showtime" => true,
     "hidetime" => true,
     "intime" => true,
     "outtime" => true,
+    "opacity" => true,
     ];
 
 /**
@@ -388,10 +390,15 @@ class KAGEnvImage {
     function _setTrans(name, elm) {
         var tr = getTrans(name, elm);
         if (tr.method !== void) {
-            if (!env.transMode && !isSkip()) {
-                trans = tr;
-                redraw = true;
+            if (trans === void) {
+                if (!env.transMode && !isSkip()) {
+                    trans = tr;
+                } else {
+                    // 無効なトランジションを指定
+                    trans = %[];
+                }
             }
+            redraw = true;
             return true;
         }
         return false;
@@ -399,7 +406,7 @@ class KAGEnvImage {
 
     function setTrans(name, elm) {
         if (name == "void") {
-            trans = void;
+            trans = %[];
         } else {
             _setTrans(name, elm);
         }
@@ -519,10 +526,8 @@ class KAGEnvImage {
             }
         }
         if (syncMode) {
-            //dm("アクション待ち");
-			if (ret == 0) {
-				ret = kag._waitLayerAction(layer);
-			}
+            ret = kag._waitLayerAction(layer);
+            dm("アクション待ち:" + ret);
             syncMode = false;
         }
     }
@@ -688,25 +693,15 @@ class KAGEnvImage {
             trans.time = 0;
         }
         trans.children = true;
-
-        if (false) {
-            kag.fore.base.beginTransition(trans);
-            if (trans.transwait !== void) {
-                ret = kag.waitTime((int)trans.time + (int)trans.transwait, kag.clickSkipEnabled);
-            } else {
-                ret = kag.waitTransition(EMPTY);
-            }
+        // 処理を割り込ませる
+        trans.tagname = "trans";
+        kag.conductor.pendings.insert(0, %[ tagname : "syncmsg" ]);
+        if (trans.transwait !== void) {
+            kag.conductor.pendings.insert(0, %[ tagname : "wait", time : (int)trans.time + (int)trans.transwait]);
         } else {
-            // 処理を割り込ませる
-            trans.tagname = "trans";
-            kag.conductor.pendings.insert(0, %[ tagname : "syncmsg" ]);
-            if (trans.transwait !== void) {
-                kag.conductor.pendings.insert(0, %[ tagname : "wait", time : (int)trans.time + (int)trans.transwait]);
-            } else {
-                kag.conductor.pendings.insert(0, %[ tagname : "wt" ]);
-            }
-            kag.conductor.pendings.insert(0, trans);
+            kag.conductor.pendings.insert(0, %[ tagname : "wt" ]);
         }
+        kag.conductor.pendings.insert(0, trans);
     }
 
     /**
@@ -727,8 +722,8 @@ class KAGEnvImage {
         kag.updateBeforeCh = 1;
         // 描画更新が必要な場合
         if (redraw) {
-
-            if (base === void && trans) {
+            
+            if (base === void && trans !== void && trans.method !== void) {
 
                 kag.fore.base.stopTransition();
                 
@@ -3066,6 +3061,7 @@ class KAGEnvironment extends KAGEnvImage {
     hidebase : this.hideBase incontextof this,
     hidecharacters : this.hideCharacters incontextof this,
     hidelayers : this.hideLayers incontextof this,
+    hidefore : this.hideFore incontextof this,
     hideall : this.hideAll incontextof this,
     stopallvoice : this.stopAllVoice incontextof this,
         ];
@@ -3230,7 +3226,8 @@ class KAGEnvironment extends KAGEnvImage {
 
         // 描画更新が必要な場合
         if (redraw) {
-            if (trans) {
+
+            if (trans !== void && trans.method !== void) {
                 kag.fore.base.stopTransition();
                 
                 // 更新処理を走らせる場合
@@ -3485,7 +3482,7 @@ class KAGEnvironment extends KAGEnvImage {
      */
     function dispname(elm) {
 
-        ret = 0;
+        ret = void;
         
         if (kag.sflags.voicecut) {
             stopAllVoice();
