@@ -5898,11 +5898,15 @@ class KAGWindow extends Window
                   
 	r : function(elm)
 	{
+        // è“®w’è‚Ìê‡‚Í]—ˆ‚Ì‹““®‚É‚·‚é
+        if (elm.eol === void) {
+            return tagHandlers.origr(elm);
+        }
+
         switch (lineMode) {
         case 0:
             prevEmptyLine = emptyLine;
             return tagHandlers.origr(elm);
-            break;
         case 1:
             //dm("page:‰üs");
             nameMode = 0;
