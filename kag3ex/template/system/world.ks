@@ -1575,6 +1575,7 @@ class KAGEnvCharacter extends KAGEnvLevelLayer, KAGEnvImage {
     back    : this.setBack incontextof this,
     level   : this.setLevel incontextof this,
     voice   : this.setVoice incontextof this,
+    nextvoice : this.setNextVoice incontextof this,
     clearVoice : this.clearVoice incontextof this,
     playvoice : this.playVoice2 incontextof this,
     waitvoice : this.waitVoice incontextof this,
@@ -2053,6 +2054,13 @@ class KAGEnvCharacter extends KAGEnvLevelLayer, KAGEnvImage {
     }
 
     /**
+     * ボイスファイル指定＋次回再生エントリ
+     */
+    function setNextVoice(param) {
+        env.entryNextVoice(this);
+    }
+    
+    /**
      * ボイスファイル指定の解除
      */
     function clearVoice() {
@@ -2086,7 +2094,7 @@ class KAGEnvCharacter extends KAGEnvLevelLayer, KAGEnvImage {
     function getCurrentVoice() {
         return getVoice(strVoice !== void ? strVoice : voice);
     }
-    
+
     var soundBuffer;
     var voiceEndTime;
     
@@ -2131,10 +2139,6 @@ class KAGEnvCharacter extends KAGEnvLevelLayer, KAGEnvImage {
         }
 
         if (voicename !== void && kag.getVoiceOn(init.voiceName)) {
-
-            // ほかのボイスを消去 XXX
-            env.stopAllVoice();
-
             if (!kag.skipMode && kag.voiceenable) {
                 //dm("再生処理:" + voicename);
                 // 再生処理実行
@@ -2801,6 +2805,16 @@ class KAGEnvironment extends KAGEnvImage {
         if (faceLevelName !== void) {
             clearFace();
         }
+
+        voiceCharacters.clear();
+    }
+
+    /**
+     * イベント絵の消去
+     */
+    function hideEvent() {
+        event.disp = CLEAR;
+        redraw = true;
     }
 
     /**
@@ -2820,6 +2834,10 @@ class KAGEnvironment extends KAGEnvImage {
         foreach(characters, function(name,value,dict) {
             value.disp = global.KAGEnvImage.CLEAR;
         });
+        // 表情も消去
+        if (faceLevelName !== void) {
+            clearFace();
+        }
 		redraw = true;
     }
 
@@ -3008,7 +3026,7 @@ class KAGEnvironment extends KAGEnvImage {
      */
     function msgonoff(elm, v) {
         ret = void;
-        if (!transMode && !isSkip()) {
+        if (!transMode && !isSkip() && elm.nofade === void) {
             foreach(elm, checkTrans);
             if (trans !== void && trans.method !== void) {
                 kag.updateBeforeCh = 1;
@@ -3059,6 +3077,7 @@ class KAGEnvironment extends KAGEnvImage {
     stage : this.setStage incontextof this,
     stime : this.setTime incontextof this,
     hidebase : this.hideBase incontextof this,
+    hideevent : this.hideEvent incontextof this,
     hidecharacters : this.hideCharacters incontextof this,
     hidelayers : this.hideLayers incontextof this,
     hidefore : this.hideFore incontextof this,
@@ -3367,7 +3386,6 @@ class KAGEnvironment extends KAGEnvImage {
      * 指定したキャラで指定したボイスファイルを再生
      */
     function playVoice(name, voicename) {
-        stopAllVoice();
         var ch = getCharacter(name);
         if (ch !== void && voicename !== void) {
             return ch.playVoice(voicename);
@@ -3476,6 +3494,64 @@ class KAGEnvironment extends KAGEnvImage {
         }
         drawNamePage(1, name);
     }
+
+    var voiceCharacters = [];
+
+    function getVoicePlayingScript(ch) {
+        var voice;
+        if (ch !== void && (voice = ch.getCurrentVoice()) != void) {
+            return "global.world_object.env.playVoice(\"" + ch.name + "\",\"" + voice + "\");";
+        } else {
+            return "";
+        }
+    }
+    
+    /**
+     * 次回同時に鳴らすボイスの追加
+     */
+    function entryNextVoice(ch) {
+        voiceCharacters.add(ch);
+    }
+    
+    function getNextVoiceScript() {
+        var ret = "";
+        for (var i=voiceCharacters.count-1;i>=0;i--) {
+            ret += getVoicePlayingScript(voiceCharacters[i]);
+        }
+        return ret;
+    }
+
+    /**
+     * ならすボイスがあるか
+     */
+    function checkNextVoice() {
+        for (var i=voiceCharacters.count-1;i>=0;i--) {
+            var voice = voiceCharacters[i].getCurrentVoice();
+            if (voice !== void) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * 複数ボイスを鳴らす
+     */
+    function playNextVoice() {
+        var ret = void;
+        for (var i=voiceCharacters.count-1;i>=0;i--) {
+            var ch = voiceCharacters[i]; 
+            var voice = ch.getCurrentVoice();
+            if (voice !== void) {
+                var r = ch.playVoice();
+                if (ret === void || (r !== void && r > ret)) {
+                    ret = r;
+                }
+            }
+        }
+        voiceCharacters.clear();
+        return ret;
+    }
     
     /**
      * 名前表示処理ハンドラ
@@ -3518,10 +3594,11 @@ class KAGEnvironment extends KAGEnvImage {
             var disp = elm.disp;
 
             var ch = getCharacter(name);
-            var voice;
 
-            if (kag.historyWriteEnabled && ch !== void && (voice = ch.getCurrentVoice()) !== void) {
-                kag.historyLayer.setNewAction("global.world_object.env.playVoice(\"" + name + "\",\"" + voice + "\")");
+            // ボイスの登録
+            var nextVoice;
+            if (kag.historyWriteEnabled && (nextVoice = getNextVoiceScript() + getVoicePlayingScript(ch)) != "") {
+                kag.historyLayer.setNewAction("global.world_object.env.stopAllVoice();" + nextVoice);
             }
             
             // 名前表示処理
@@ -3606,8 +3683,18 @@ class KAGEnvironment extends KAGEnvImage {
     function dispnameVoice(elm) {
         // ボイス再生
         if (currentNameTarget !== void) {
-            // ボイス再生処理
-            kag.addAutoWait(currentNameTarget.playVoice());
+            // ボイス再生がある場合
+            if (currentNameTarget.getCurrentVoice() !== void || checkNextVoice()) {
+                // ほかのボイスを消去する
+                env.stopAllVoice();
+                // 同時再生ボイスの再生
+                var ret = currentNameTarget.playVoice();
+                var r = playNextVoice();
+                if (ret === void || (r !== void && r > ret)) {
+                    ret = r;
+                }
+                kag.addAutoWait(ret);
+            }
         } else {
             kag.addAutoWait();
         }
