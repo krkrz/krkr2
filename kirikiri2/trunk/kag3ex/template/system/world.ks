@@ -2167,7 +2167,7 @@ class KAGEnvCharacter extends KAGEnvLevelLayer, KAGEnvImage {
      * ボイスの外部からの再生
      */
     function playVoice2(param) {
-        //dm("外部ボイス再生:", param);
+        //dm("外部ボイス再生:" + param);
         if (typeof param == "String") {
             if (reNumber.test(param)) {
                 param = (int)param;
@@ -3584,9 +3584,8 @@ class KAGEnvironment extends KAGEnvImage {
                 }
             }
 
-            // 追加waitはなし
-            kag.addAutoWait();
             currentNameTarget = void;
+            dispnameVoice();
             
         } else {
 
@@ -3652,6 +3651,7 @@ class KAGEnvironment extends KAGEnvImage {
                     }
                 }
 
+                // ボイス再生処理の先送り
                 kag.conductor.pendings.insert(0, %[ tagname : "dispnameVoice" ]);
 
                 beginTransition(%[ method: "crossfade", time: faceFadeTime]);
@@ -3671,7 +3671,7 @@ class KAGEnvironment extends KAGEnvImage {
                         clearFace();
                     }
                 }
-                dispnameVoice(elm);
+                dispnameVoice();
             }
         }
         return ret;
@@ -3679,25 +3679,33 @@ class KAGEnvironment extends KAGEnvImage {
 
     /**
      * ボイス再生用
+     * ボイスの状態に応じた待ち時間補正も行う
      */
-    function dispnameVoice(elm) {
+    function dispnameVoice() {
         // ボイス再生
+        var ret;
         if (currentNameTarget !== void) {
             // ボイス再生がある場合
             if (currentNameTarget.getCurrentVoice() !== void || checkNextVoice()) {
                 // ほかのボイスを消去する
                 env.stopAllVoice();
                 // 同時再生ボイスの再生
-                var ret = currentNameTarget.playVoice();
+                ret = currentNameTarget.playVoice();
                 var r = playNextVoice();
                 if (ret === void || (r !== void && r > ret)) {
                     ret = r;
                 }
-                kag.addAutoWait(ret);
             }
         } else {
-            kag.addAutoWait();
+            // ボイス再生がある場合
+            if (checkNextVoice()) {
+                // ほかのボイスを消去する
+                env.stopAllVoice();
+                // 同時再生ボイスの再生
+                ret = playNextVoice();
+            }
         }
+        kag.addAutoWait(ret);
         return 0;
     }
 

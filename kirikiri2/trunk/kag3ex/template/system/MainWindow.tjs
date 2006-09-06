@@ -6674,7 +6674,7 @@ class KAGWindow extends Window
     } incontextof this,
 
     syncmsg : function(elm) {
-        dm("メッセージ窓シンクロ");
+        //dm("メッセージ窓シンクロ");
         // メッセージ窓だけ表から裏にコピー
         var messages = fore.messages;
         for(var i = messages.count-1; i >= 0; i--) messages[i].assignComp();
