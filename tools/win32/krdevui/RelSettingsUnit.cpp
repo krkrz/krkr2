@@ -263,6 +263,14 @@ void __fastcall TRelSettingsForm::XP3ArchiveRadioClick(TObject *Sender)
 
 void __fastcall TRelSettingsForm::ExecutableRadioClick(TObject *Sender)
 {
+	if(GetKrKrFileName() == "")
+	{
+		MessageDlg(
+			MissingKrKrEXELabel->Caption,
+			mtError, TMsgDlgButtons() << mbOK, 0);
+		XP3ArchiveRadio->Checked = true;
+		return;
+	}
 	if(OutputFileNameEdit->Text != "")
 	{
 		OutputFileNameEdit->Text =
@@ -433,7 +441,10 @@ void __fastcall TRelSettingsForm::OKButtonClick(TObject *Sender)
 {
 	if(ExecutableRadio->Checked && GetKrKrFileName() == "")
 	{
-		throw Exception(MissingKrKrEXELabel->Caption);
+		MessageDlg(
+			MissingKrKrEXELabel->Caption,
+			mtError, TMsgDlgButtons() << mbOK, 0);
+		return;
 	}
 
 	if(OutputFileNameEdit->Text == "")

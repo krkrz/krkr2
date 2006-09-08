@@ -73,8 +73,8 @@ IncludeVerInfo=1
 AutoIncBuild=1
 MajorVer=1
 MinorVer=4
-Release=5
-Build=77
+Release=6
+Build=78
 Debug=0
 PreRelease=0
 Special=0
@@ -86,9 +86,9 @@ CodePage=932
 [Version Info Keys]
 CompanyName=
 FileDescription=TVP Development User Interface DLL
-FileVersion=1.4.5.77
+FileVersion=1.4.6.78
 InternalName=
-LegalCopyright=(C)2001-2006, W.Dee All rights reserved.
+LegalCopyright=(C)2001-2005, W.Dee All rights reserved.
 LegalTrademarks=
 OriginalFilename=krdevui.dll
 ProductName=
@@ -109,8 +109,8 @@ $(BCB)\Bin\dclnet50.bpl=Borland Internet Components
 $(BCB)\Bin\DBWEBXPRT.BPL=Borland Web Wizard Package
 $(BCB)\Bin\DCLNMF50.bpl=NetMasters Fastnet Tools
 $(BCB)\Bin\dclocx50.bpl=Borland Sample Imported ActiveX Controls
-$(BCB)\Bin\dclite50.bpl=Borland Integrated Translation Environment
 $(BCB)\Bin\bcb2kaxserver50.bpl=Borland C++Builder COM Server Components Sample Package
+$(BCB)\Bin\dclite50.bpl=Borland Integrated Translation Environment
 
 [HistoryLists\hlIncludePath]
 Count=15
