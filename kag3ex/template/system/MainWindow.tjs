@@ -5111,6 +5111,13 @@ class KAGWindow extends Window
 
 	//------------------------------------------------------------- BGM 処理 --
 
+	function onBGMFadeCompleted()
+	{
+		// BGM のフェードが完了した
+		conductor.trigger('bgmfade');
+	}
+
+    // BGM停止処理
     var bgmStopExp;
     var bgmStopStorage;
     var bgmStopTarget;
@@ -5147,12 +5154,6 @@ class KAGWindow extends Window
         bgmStopTarget  = void;
     }
     
-	function onBGMFadeCompleted()
-	{
-		// BGM のフェードが完了した
-		conductor.trigger('bgmfade');
-	}
-
     // BGM 停止時拡張ハンドラ
     var bgmStopHandler;
     
@@ -5170,6 +5171,63 @@ class KAGWindow extends Window
         }
     }
 
+    // ------------------------------------------
+    
+    var bgmLabelInfos = %[];
+    var bgmLabelInfo;
+
+    function handleBgmLabel() {
+        if (bgmLabelInfo !== void) {
+            if (bgmLabelInfo.exp !== void) {
+                Scripts.eval(bgmLabelInfo.exp);
+            }
+            if (bgmLabelInfo.storage !== void || bgmLabelInfo.target !== void) {
+                window.process(bgmLabelInfo.storage, bgmLabelInfo.target);
+            }
+        }
+    }
+
+    // BGM 停止時拡張ハンドラ
+    var bgmLabelHandler;
+
+    function onBGMLabel(label) {
+        // BGM のラベル通過処理
+        conductor.trigger('bgmlabel_' + label);
+        if (bgmLabelHandler !== void) {
+            bgmLabelHandler();
+        }
+        var obj = bgmLabelInfos[label];
+        if (obj !== void) {
+            bgmLabelInfo = obj;
+            global.labelBgmTrigger = new AsyncTrigger(handleBgmLabel, '');
+            global.labelBgmTrigger.cached = true;
+            global.labelBgmTrigger.trigger();
+        }
+    }
+
+    /**
+     * BGM ラベル処理の登録
+     */
+    function setBgmLabel(elm) {
+        if (elm.name !== void) {
+            var obj = %[];
+            obj.storage = elm.storage;
+            obj.target  = elm.target;
+            obj.exp     = elm.exp;
+            bgmLabelInfos[elm.name] = obj;
+        }
+    }
+
+    /**
+     * BGM ラベル処理の解除
+     */
+    function clearBgmLabel() {
+        bgmLabelInfos = %[];
+        bgmLabelInfo = void;
+    }
+
+    // ----------------------------------------------------------------------
+    
 	function waitBGMFade(elm)
 	{
 		// BGM のフェード終了を待つ
@@ -6883,6 +6941,7 @@ class KAGWindow extends Window
         // BGM の演奏
 		bgm.play(elm);
         clearBgmStop();
+        clearBgmLabel();
         return 0;
 	} incontextof this,
 
@@ -6940,6 +6999,7 @@ class KAGWindow extends Window
 		// BGM の入れ替え/クロスフェード
 		bgm.exchange(elm);
         clearBgmStop();
+        clearBgmLabel();
 		return 0;
 	} incontextof this,
 
@@ -6963,7 +7023,20 @@ class KAGWindow extends Window
         clearBgmStop();
         return 0;
 	} incontextof this,
-                  
+
+    setbgmlabel : function(elm) {
+        // BGM のラベル時コールバックの登録
+        setBgmLabel(elm);
+        return 0;
+    } incontextof this,
+
+    clearbgmlabel : function(elm)
+	{
+        // BGM のラベル時コールバックの削除
+        clearBgmLabel();
+        return 0;
+	} incontextof this,
+
 	wb : function(elm)
 	{
 		// BGM のフェード終了待ち
