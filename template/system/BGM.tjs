@@ -105,6 +105,10 @@ class KAGWaveSoundBuffer extends WaveSoundBuffer, KAGSoundBuffer
 		global.KAGSoundBuffer.finalize(...);
 		global.WaveSoundBuffer.finalize(...);
 	}
+
+    function onLabel(label) {
+        owner.owner.onBGMLabel(label);
+    }
 }
 
 class KAGMIDISoundBuffer extends MIDISoundBuffer, KAGSoundBuffer
