@@ -2237,6 +2237,7 @@ class KAGEnvBgm {
                 }
             }
             kag.clearBgmStop();
+			kag.clearBgmLabel();
             // Ä¶Šù“Çƒtƒ‰ƒO
             kag.sflags["bgm_" + (param.toUpperCase())] = true;
         }
