@@ -759,8 +759,10 @@ class KAGEnvImage {
 
                     // 裏レイヤが対象
                     layer = getLayer(kag.back);
-                    drawLayer(layer);
-                    calcPosition(layer);
+                    if (isShowBU()) {
+                        drawLayer(layer);
+                        calcPosition(layer);
+                    }
                     updateLayer(layer);
                     beginTransition(trans);
 
@@ -2177,7 +2179,7 @@ class KAGEnvCharacter extends KAGEnvLevelLayer, KAGEnvImage {
         }
         playVoice(getVoice(param));
     }
-    
+
     /**
      * ボイスの停止
      */
@@ -2200,6 +2202,15 @@ class KAGEnvCharacter extends KAGEnvLevelLayer, KAGEnvImage {
         }
     }
     
+
+    /**
+     * ボイスのボリュームの再調整
+     */
+    function resetVoiceVolume() {
+        if (soundBuffer !== void) {
+            soundBuffer.volume2 = kag.getVoiceVolume(init.voiceName) * 1000;
+        }
+    }
 };
 
 /**
@@ -2237,7 +2248,7 @@ class KAGEnvBgm {
                 }
             }
             kag.clearBgmStop();
-			kag.clearBgmLabel();
+            kag.clearBgmLabel();
             // 再生既読フラグ
             kag.sflags["bgm_" + (param.toUpperCase())] = true;
         }
@@ -3383,6 +3394,15 @@ class KAGEnvironment extends KAGEnvImage {
         });
     }
 
+    /**
+     * 全キャラのボイスを停止する
+     */
+    function resetAllVoiceVolume() {
+        foreach(characters, function(name, value, dict) {
+            value.resetVoiceVolume();
+        });
+    }
+    
     /*
      * 指定したキャラで指定したボイスファイルを再生
      */
