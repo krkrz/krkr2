@@ -8,6 +8,7 @@
 var onModeChange;
 
 var currentDialog;
+var conductorStatus;
 
 class KAGWindow extends Window
 {
@@ -437,6 +438,11 @@ class KAGWindow extends Window
             global.currentDialog.focus();
             global.currentDialog.onOpen();
         }
+        conductorStatus = conductor.status;
+        if (conductorStatus == conductor.mRun) {
+            conductor.sleep();
+            conductor.interrupt();
+        }
         setMenuAccessibleAll();
     }
 
@@ -448,6 +454,9 @@ class KAGWindow extends Window
             global.currentDialog = void;
         }
         if (this isvalid) {
+            if (conductorStatus == conductor.mRun) {
+                conductor.run(false);
+            }
             setMenuAccessibleAll();
         }
     }
@@ -4051,23 +4060,31 @@ class KAGWindow extends Window
 
 	function exchangeForeBack()
 	{
-		// レイヤの裏と表を取り替える
-		var tmp = fore;
+        var tmp = fore;
 		fore = back;
 		back = tmp;
 		current = (currentPage?back:fore).messages[currentNum]; // current は設定し直し
 		forEachEventHook('onExchangeForeBack',
 				function(handler, f) { handler(); } incontextof this);
-	}
+
+        // 選択肢復帰
+        if (selectShowing) {
+            showSelect();
+        }
+        if (mapSelectShowing) {
+            showMapSelect();
+        }
+    }
 
 	function swapBaseLayer()
 	{
-		// 背景レイヤのみを取り替える
-		var tmp = fore.base;
+        // 背景レイヤのみを取り替える
+        var tmp = fore.base;
 		fore.base = back.base;
 		back.base = tmp;
-		current = (currentPage?back:fore).messages[currentNum]; // current は設定し直し
-	}
+        current = (currentPage?back:fore).messages[currentNum]; // current は設定し直し
+
+    }
 
 	function swapStageLayer(id)
 	{
