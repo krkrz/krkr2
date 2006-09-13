@@ -709,6 +709,7 @@ class KAGEnvImage {
      */
     function hideMessage() {
         if (trans !== void && trans.msgoff) {
+            kag.conductor.pendings.insert(0, %[ tagname : "er", all:true]);
             if (kag.setCurrentMessageLayerVisible(false)) {
                 ret = -2;
             }
@@ -3038,6 +3039,9 @@ class KAGEnvironment extends KAGEnvImage {
      */
     function msgonoff(elm, v) {
         ret = void;
+        if (!v) {
+            kag.conductor.pendings.insert(0, %[ tagname : "er", all:true]);
+        }
         if (!transMode && !isSkip() && elm.nofade === void) {
             foreach(elm, checkTrans);
             if (trans !== void && trans.method !== void) {
@@ -3051,7 +3055,7 @@ class KAGEnvironment extends KAGEnvImage {
                 return kag.setCurrentMessageLayerVisible(v) ? -2 : 0;
             }
         }
-        kag.setCurrentMessageLayerVisibleFast(transMode ? 1: 0, false);
+        kag.setCurrentMessageLayerVisibleFast(transMode ? 1: 0, v);
         return ret;
     }
 
@@ -3063,6 +3067,7 @@ class KAGEnvironment extends KAGEnvImage {
      */
     function clear(elm) {
         ret = void;
+        kag.conductor.pendings.insert(0, %[ tagname : "er", all:true]);
         hideAll();
         if (!transMode && !isSkip()) {
             foreach(elm, checkTrans);
