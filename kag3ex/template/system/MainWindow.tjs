@@ -2817,6 +2817,10 @@ class KAGWindow extends Window
     }
     
     function afterSelect() {
+        if (erAfterPage) {
+            // 選択肢後もテキスト消去
+            tagHandlers.er(%[all:true]);
+        }
         if (afterauto && selectPrevAutoMode) {
             enterAutoMode();
         }
@@ -7320,6 +7324,11 @@ class KAGWindow extends Window
         if (selectLayer.msgoff && setCurrentMessageLayerVisible(false)) {
             // 処理待ち
             return -3;
+        } else {
+            if (elm.text !== void) {
+                tagHandlers.er(%[all:true]);
+                tagHandlers.origch(%[text:elm.text]);
+            }
         }
 
         if (recordHistoryOfStore == 3) // 2 : 選択肢 ( @s タグ ) ごと
