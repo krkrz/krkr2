@@ -4457,7 +4457,7 @@ class KAGWindow extends Window
 		timeOrigin = System.getTickCount();
 	}
 
-	function waitTime(waittime, canskip)
+	function waitTime(waittime, canskip, trans=false)
 	{
         // waittime 分待つ
 		if(waittime == 0) return 0;
@@ -4469,7 +4469,23 @@ class KAGWindow extends Window
 				// スキップ中の場合
 				return 0; // スキップ中の場合はなにもせずに返る
 			}
-			conductor.waitWithTimeOut(%[
+
+            if (trans) {
+            conductor.waitWithTimeOut(%[
+				click : function
+				{
+					updateBeforeCh = 1;
+					stopAllTransitions(); // すべてのトランジションは停止
+				} incontextof this,
+				timeout : function
+				{
+					updateBeforeCh = 1;
+					stopAllTransitions(); // すべてのトランジションは停止
+				} incontextof this
+				], waittime);
+
+            } else {
+            conductor.waitWithTimeOut(%[
 				click : function
 				{
 					// やることなし
@@ -4480,16 +4496,27 @@ class KAGWindow extends Window
 					// やることなし
 				} incontextof this
 				], waittime);
+            }
 		}
 		else
 		{
 			// スキップできない場合
+            if (trans) {
+			conductor.waitWithTimeOut(%[
+				timeout : function
+				{
+					updateBeforeCh = 1;
+					stopAllTransitions(); // すべてのトランジションは停止
+				} incontextof this
+				], waittime);
+            } else {
 			conductor.waitWithTimeOut(%[
 				timeout : function
 				{
 					// やることなし
 				} incontextof this
 				], waittime);
+            }
 		}
 		return -2; // break
 		
@@ -4511,7 +4538,7 @@ class KAGWindow extends Window
 		{
 			waittime = +elm.time;
         }
-		return waitTime(waittime, (elm.canskip === void || +elm.canskip) && clickSkipEnabled);
+		return waitTime(waittime, (elm.canskip === void || +elm.canskip) && clickSkipEnabled, elm.trans !== void ? elm.trans : false);
 	}
 
 	function doWaitCh(elm)
