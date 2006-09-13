@@ -1216,12 +1216,12 @@ class KAGWindow extends Window
 
 		// autoEnable が true のすべてのメニュー項目の accessible の
 		// 値を設定する
-        var notmodal = !historyLayer.visible && !messageLayerHiding && !currentDialog;
-        var state = inStable && notmodal;
+        var modal = historyLayer.visible || messageLayerHiding || currentDialog;
+        var state = inStable && !modal;
         internalSetMenuAccessibleAll(menu, state);
 
-		// その他のメニューの使用可/不可
-        var canSkip = state && !inSleep && nextSkipEnabled && (allskip || getCurrentRead());
+        // その他のメニューの使用可/不可
+        var canSkip = !modal && (inStable || skipMode) && !inSleep && nextSkipEnabled && (allskip || getCurrentRead());
         //dm("canSkip:" + canSkip);
         if(typeof this.skipToNextStopMenuItem != "undefined")
             skipToNextStopMenuItem.enabled = canSkip;
@@ -1233,7 +1233,7 @@ class KAGWindow extends Window
             showHistoryMenuItem.enabled = inStable && !messageLayerHiding && global.currentDialog===void &&
 				historyEnabled;
 
-        var canAuto = state && !inSleep && !skipMode || autoMode;
+        var canAuto = !modal && (inStable || autoMode) && !inSleep && !skipMode;
         if(typeof this.autoModeMenuItem != "undefined")
             autoModeMenuItem.enabled = canAuto;
 
@@ -1269,7 +1269,7 @@ class KAGWindow extends Window
 
         // 全制御
         if (global.onModeChange !== void) {
-            global.onModeChange(this, autoMode, skipMode, canAuto, canSkip, selectShowing || mapSelectShowing);
+            global.onModeChange(this, autoMode, skipMode, canAuto, canSkip, selectShowing || mapSelectShowing, modal);
         }
     }
 
@@ -1813,9 +1813,17 @@ class KAGWindow extends Window
 		{
 			for(var i = 0; i < numCharacterLayers; i++)
 			{
-				fore.layers[i].restore(f.foreCharacterLayers[i]);
-				back.layers[i].restore(f.backCharacterLayers[i]);
-			}
+                try {
+                    fore.layers[i].restore(f.foreCharacterLayers[i]);
+                } catch (e) {
+                    dm("画像の読み込みに失敗しました");
+                } 
+                try {
+                    back.layers[i].restore(f.backCharacterLayers[i]);
+                } catch (e) {
+                    dm("画像の読み込みに失敗しました");
+                } 
+            }
 		}
 
 		// quake 関連
@@ -4419,7 +4427,7 @@ class KAGWindow extends Window
 		// 自動読みすすみモードに入る
 		if(typeof this.autoModeMenuItem !== "undefined")
 			autoModeMenuItem.checked = true;
-		if(inStable)
+        //if(inStable)
 			onPrimaryClick();
 		autoMode = true;
 	}
@@ -6409,6 +6417,7 @@ class KAGWindow extends Window
 	{
 		// スキップの解除
 		cancelSkip();
+        setMenuAccessibleAll();
 		return 0;
 	} incontextof this,
 
@@ -6416,6 +6425,7 @@ class KAGWindow extends Window
 	{
 		// 「自動的に読み進む」の解除
 		cancelAutoMode();
+        setMenuAccessibleAll();
 		return 0;
 	} incontextof this,
 
@@ -7036,7 +7046,7 @@ class KAGWindow extends Window
         clearBgmLabel();
         return 0;
 	} incontextof this,
-
+                  
 	wb : function(elm)
 	{
 		// BGM のフェード終了待ち
