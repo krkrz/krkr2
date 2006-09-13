@@ -697,7 +697,7 @@ class KAGEnvImage {
         trans.tagname = "trans";
         kag.conductor.pendings.insert(0, %[ tagname : "syncmsg" ]);
         if (trans.transwait !== void) {
-            kag.conductor.pendings.insert(0, %[ tagname : "wait", time : (int)trans.time + (int)trans.transwait]);
+            kag.conductor.pendings.insert(0, %[ tagname : "wait", time : (int)trans.time + (int)trans.transwait, trans:true ]);
         } else {
             kag.conductor.pendings.insert(0, %[ tagname : "wt" ]);
         }
