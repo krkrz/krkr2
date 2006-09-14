@@ -384,14 +384,10 @@ class KAGWindow extends Window
      * 回想モード実行を終了する
      */
     function endRecollection() {
-
-        var ret = -1;
-        
         // 回想終了処理
-        if (recollectionEndLabel !== void ) {
-            
+        if (isRecollection) {
+            var ret = -1;
             if (recollectionStorage != '' || recollectionTarget != '') {
-                
                 // 実行を登録アドレスに移す
                 if (recollectionStorage != '') {
                     conductor.loadScenario(recollectionStorage);
@@ -403,20 +399,17 @@ class KAGWindow extends Window
                 notifyRun();
                 if (conductor.status != conductor.mRun) conductor.run();
                 ret = 0;
-                
             } else {
-                
                 // 実行停止
                 stablePosibility = true;
                 cancelSkip();
                 isSleep = true;
                 notifyStable();
             }
-            
             stopRecollection();
+            return ret;
         }
-
-        return ret;
+        return 0;
     }
     
     function stopRecollection() {
