@@ -1017,13 +1017,15 @@ class KAGWindow extends Window
 
 	function onSkipToNextStopMenuItemClick(sender)
 	{
-		skipToStop();
+        if (skipMode) cancelSkip(); else skipToStop();
+        setMenuAccessibleAll();
 	}
 
 	function onAutoModeMenuItemClick(sender)
 	{
 		if(autoMode) cancelAutoMode(); else enterAutoMode();
-	}
+        setMenuAccessibleAll();
+    }
 
 	function onAutoModeWaitMenuClick(sender)
 	{
@@ -1620,6 +1622,7 @@ class KAGWindow extends Window
         f.lineMode  = lineMode;
         f.crAfterName = crAfterName;
         f.erAfterPage = erAfterPage;
+        f.noCrOnce = noCrOnce;
         f.autoIndent = autoIndent;
         f.autoLabelMode = autoLabelMode;
         f.autoLabelCount = autoLabelCount;
@@ -1724,6 +1727,7 @@ class KAGWindow extends Window
         }
         crAfterName = f.crAfterName;
         erAfterPage = f.erAfterPage;
+        noCrOnce    = f.noCrOnce;
         autoIndent = f.autoIndent;
         autoLabelMode = f.autoLabelMode;
         autoLabelCount = f.autoLabelCount;
@@ -4424,7 +4428,8 @@ class KAGWindow extends Window
 				autoModeMenuItem.checked = false;
 
             // 待ちを強制解除する
-            conductor.run(false);
+            // XXX なぜたしたのか？問題あるのではずし。要AUTOMODE 再確認
+            //          conductor.run(false);
 
             var t = conductor.lastTagName;
             if(t == 'p'){
@@ -5646,6 +5651,7 @@ class KAGWindow extends Window
     var lineMode;    // 改行処理モード
     var crAfterName; // 名前の後に改行をいれるか
     var erAfterPage; // 改ページ直後に画面消去するか
+    var noCrOnce;    // 画面消去処理を１回なしにする
     var autoIndent;  // 「『で自動的にインデントする
     var afterPage;   // 改ページ直後
     var emptyLine;   // まだ行が空
@@ -5713,7 +5719,7 @@ class KAGWindow extends Window
     function setErAfterPage(erAfterPage) {
         this.erAfterPage = erAfterPage;
     }
-    
+
     /**
      * @param crAfterName 名前の後に改行をいれるかどうか
      */
@@ -5975,6 +5981,11 @@ class KAGWindow extends Window
         return 0;
     } incontextof this,
 
+    nor : function(elm) {
+        noCrOnce = true;
+        return 0;
+    } incontextof this,
+
     autoindent : function(elm) {
         setAutoIndent(elm.mode);
         return 0;
@@ -6010,6 +6021,13 @@ class KAGWindow extends Window
             return tagHandlers.origr(elm);
         }
 
+        if (noCrOnce) {
+            noCrOnce = false;
+            prevEmptyLine = emptyLine;
+            emptyLine = true;
+            return 0;
+        }
+        
         switch (lineMode) {
         case 0:
             prevEmptyLine = emptyLine;
@@ -6267,6 +6285,7 @@ class KAGWindow extends Window
 	{
         // 自動ラベルモードは p タグにおいて有効
         setAutoLabel();
+
         if (lineMode == 2 || lineMode == 3) {
             afterPage = true;
             if (emptyLine) {
@@ -6292,7 +6311,7 @@ class KAGWindow extends Window
         if (erAfterPage) {
             conductor.pendings.insert(0, %[tagname: "er"]);
         }
-        
+
         return ret;
 
 	} incontextof this,
@@ -7317,11 +7336,6 @@ class KAGWindow extends Window
         if (selectLayer.msgoff && setCurrentMessageLayerVisible(false)) {
             // 処理待ち
             return -3;
-        } else {
-            if (elm.text !== void) {
-                tagHandlers.er(%[all:true]);
-                tagHandlers.origch(%[text:elm.text]);
-            }
         }
 
         if (recordHistoryOfStore == 3) // 2 : 選択肢 ( @s タグ ) ごと
