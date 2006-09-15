@@ -1272,7 +1272,7 @@ class KAGWindow extends Window
 		}
 
         // ëSêßå‰
-        if (global.onModeChange !== void) {
+        if (this == global.Window.mainWindow && global.onModeChange !== void) {
             global.onModeChange(this, autoMode, skipMode, canAuto, canSkip, selectShowing || mapSelectShowing, modal);
         }
     }
