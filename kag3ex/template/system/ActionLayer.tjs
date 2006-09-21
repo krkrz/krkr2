@@ -5,9 +5,10 @@ var ACTION_MODULE_NUM = 6;
  */
 class ActionLayer extends AffineLayer {
 
-    var _modules;  ///< モジュール保持用配列
+    var _modules;        ///< モジュール保持用配列
     var _actionTimer;    ///< アクション駆動用タイマ
-
+    var _params =%[];    ///< モジュール用パラメータ
+    
     /**
      * コンストラクタ
      */
@@ -38,12 +39,15 @@ class ActionLayer extends AffineLayer {
         stopAction();
         super.assignImages(src);
         if (src instanceof "ActionLayer") {
+            // モジュールを複製
             _modules = new Array();
             for (var i=0;i<ACTION_MODULE_NUM; i++) {
                 if (src._modules[i] != void) {
                     _modules[i] = src._modules[i];
                 }
             }
+            // パラメータも複製
+            (Dictionary.assign incontextof _params)(src._params);
             _beginAction();
         }
     }
@@ -421,22 +425,19 @@ class LayerActionModule extends LayerModule {
 class LayerVibrateActionModule extends LayerActionModule {
     var vibration;
     var waitTime;
-    var nextTime;
     function LayerVibrateActionModule(layer, options) {
         super.LayerActionModule(layer, options);
         vibration  = (int)options["vibration"];
         waitTime   = (int)options["waittime"];
-        nextTime = 0;
+        layer._params.LayerVibrateActionNextTime = 0;
     }
     function action(layer, now, done) {
         if (done) {
             layer.setActionOffset(0, 0);
-        } else if (now >= nextTime) {
+        } else if (now >= layer._params.LayerVibrateActionNextTime) {
             layer.setActionOffset(Math.random() * vibration - vibration/2,
                                   Math.random() * vibration - vibration/2);
-            if (waitTime) {
-                nextTime += waitTime;
-            }
+            layer._params.LayerVibrateActionNextTime += waitTime;
         }
     }
 };
@@ -665,24 +666,21 @@ class LayerHeartBeatZoomModule extends LayerZoomModule {
 class LayerVibrateZoomModule extends LayerZoomModule {
     var vibration;
     var waitTime;
-    var nextTime;
     function LayerVibrateZoomModule(layer, options) {
         super.LayerZoomModule(layer, options);
         vibration  = (int)options["vibration"];
         waitTime   = (int)options["waittime"];
-        nextTime = 0;
+        layer._params.LayerVibrateZoomNextTime = 0;
     }
     function action(layer, now, done) {
         if (done) {
             layer.setZoom(startZoomX, startZoomY);
         } else {
-            if (now >= nextTime) {
+            if (now >= layer._params.LayerVibrateZoomNextTime) {
                 layer.setZoom(
                     startZoomX + Math.random() * vibration - vibration/2,
                     startZoomY + Math.random() * vibration - vibration/2);
-                if (waitTime) {
-                    nextTime += waitTime;
-                }
+                layer._params.LayerVibrateZoomNextTime += waitTime;
             }
         }
     }

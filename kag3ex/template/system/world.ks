@@ -207,24 +207,87 @@ class KAGEnvImage {
     var resetFlag;
     // フェード処理フラグ
     var fadeTime;
+
     // 種別
-    var type;
+    var _type;
+    var doType;
+    property type {
+        getter() {
+            return _type;
+        }
+        setter(v) {
+            _type = v;
+            doType = (v !== void);
+        }
+    }
+
     // 透明度
     var opacityFrom;
-    var opacity;
     var opacityTime;
+    var _opacity;
+    var doOpacity;
+    property opacity {
+        getter() {
+            return _opacity;
+        }
+        setter(v) {
+            _opacity = v;
+            doOpacity = (v !== void);
+        }
+    }
+
     // 回転
     var rotateFrom;
-    var rotate;
     var rotateTime;
+    var _rotate;
+    var doRotate;
+    property rotate {
+        getter() {
+            return _rotate;
+        }
+        setter(v) {
+            _rotate = v;
+            doRotate = (v !== void);
+        }
+    }
+
     // ズーム処理
     var zoomFrom;
-    var zoom;
     var zoomTime;
+    var _zoom;
+    var doZoom;
+    property zoom {
+        getter() {
+            return _zoom;
+        }
+        setter(v) {
+            _zoom = v;
+            doZoom = (v !== void);
+        }
+    }
 
     // 回転原点指定
-    var afx;
-    var afy;
+    var _afx;
+    var _afy;
+    var doAffine;
+    property afx {
+        getter() {
+            return _afx;
+        }
+        setter(v) {
+            _afx = v;
+            doAffine = (v !== void);
+        }
+    }
+    property afy {
+        getter() {
+            return _afy;
+        }
+        setter(v) {
+            _afy = v;
+            doAffine = (v !== void);
+        }
+    }
 
     // 表示位置座標
     var xpos;
@@ -236,7 +299,6 @@ class KAGEnvImage {
 
     // 位置変更
     var reposition;
-
     
     // アクション処理
     var actionList;
@@ -258,14 +320,30 @@ class KAGEnvImage {
      */
     function KAGEnvImage(env) {
         this.env = env;
+        actionList = new Array();
+        _disp = CLEAR;
+    }
 
+    function initImage() {
+        type = void;
+        opacityFrom = void;
+        opacityTime = void;
+        opacity = void;
+        rotateFrom = void;
+        rotateTime = void;
+        rotate = void;
+        zoomFrom = void;
+        zoomTime = void;
+        zoom = void;
+        afx = void;
+        afy = void;
         xpos     = void;
         ypos     = void;
         xposFrom = void;
         yposFrom = void;
         moveTime = void;
         moveAccel = void;
-        reposition = true;
+        reposition = false;
 
         resetFlag = false;
         fadeTime = void;
@@ -273,30 +351,49 @@ class KAGEnvImage {
         _disp = CLEAR;
     }
 
+    function initLayer() {
+        if (!doType) {
+            _type = void;
+        }
+        if (!doOpacity) {
+            _opacity = void;
+        }
+        if (!doRotate) {
+            _rotate = void;
+        }
+        if (!doZoom) {
+            _zoom = void;
+        }
+        if (!doAffine) {
+            _afx = void;
+            _afy = void;
+        }
+    }
+    
     function finalize() {
         actionList.clear();
         invalidate actionList;
     }
 
     function setXPos(cmd, elm) {
-        //dm("X位置指定:" + cmd + ":" + elm.time);
         xposFrom = getFrom(cmd);
         xpos     = getTo(cmd);
         if (moveTime === void) {
             moveTime  = elm.time;
             moveAccel = elm.accel;
         }
+        dm("X位置指定:", xpos, xposFrom, moveTime);
         reposition = true;
     } 
 
     function setYPos(cmd, elm) {
-        //dm("Y位置指定:" + cmd + ":" + elm.time);
         yposFrom = getFrom(cmd);
         ypos     = getTo(cmd);
         if (moveTime === void) {
             moveTime  = elm.time;
             moveAccel = elm.accel;
         }
+        dm("Y位置指定:", ypos, yposFrom, moveTime);
         reposition = true;
     }
     
@@ -440,14 +537,15 @@ class KAGEnvImage {
      */
     function updateLayer(layer) {
         if (resetFlag) {
-            type    = void;
-            opacity = void;
-            rotate  = void;
-            zoom    = void;
-            afx     = void;
-            afy     = void;
-            actionList.clear();
+            dm("リセット実行");
             layer.reset();
+            _type    = layer.type;
+            _opacity = layer.opacity;
+            _rotate  = layer.rotate;
+            _zoom    = layer.zoom;
+            _afx     = layer.afx;
+            _afy     = layer.afy;
+            actionList.clear();
             resetFlag = false;
             fadeTime = void;
         } else {
@@ -474,46 +572,44 @@ class KAGEnvImage {
             }
             fadeTime = void;
 
-            if (afx !== void) {
+            if (doAffine) {
                 layer.afx = afx;
-                afx = void;
-            }
-            if (afy !== void) {
                 layer.afy = afy;
-                afy = void;
+                doAffine = false;
             }
-            if (opacity !== void) {
-                //dm("透明度変更:" + opacity + ":" + opacityTime); 
+            if (doOpacity) {
+                dm("透明度変更:" + opacity + ":" + opacityTime); 
                 if (opacityFrom !== void) {
                     layer.opacity = opacityFrom;
-					opacityFrom = void;
+                    opacityFrom = void;
                 }
                 layer.setOpacityTime(opacity, opacityTime);
-                opacity = void;
+                doOpacity = false;
             }
-            if (rotate !== void) {
-                //dm("回転変更:" + rotate + ":" + rotateTime);
+            if (doRotate) {
+                dm("回転変更:" + rotate + ":" + rotateTime);
                 if (rotateFrom !== void) {
                     layer.rotate = rotateFrom;
-					rotateFrom = void;
+                    rotateFrom = void;
                 }
                 layer.setRotateTime(rotate, rotateTime);
-                rotate = void;
+                doRotate = false;
             }
-            if (zoom !== void) {
-                //dm("ズーム変更:" + zoom + ":" + zoomTime);
+            if (doZoom) {
+                dm("ズーム変更:" + zoom + ":" + zoomTime);
                 if (zoomFrom !== void) {
                     layer.zoom = zoomFrom;
-					zoomFrom = void;
+                    zoomFrom = void;
                 }
                 layer.setZoomTime(zoom, zoomTime);
-                zoom = void;
+                doZoom = false;
             }
-            if (type !== void) {
-                //dm("合成種別変更");
+            if (doType) {
+                dm("合成種別変更");
                 layer.type = type;
-                type = void;
+                doType = false;
             }
+
             // アクション処理
             for (var i=0;i<actionList.count;i++) {
                 layer.beginAction(actionList[i]);
@@ -608,56 +704,42 @@ class KAGEnvImage {
      * セーブ処理
      */
     function onStore(f) {
-        f.resetFlag = resetFlag;
-        f.type = type;
-        f.opacityFrom = opacityFrom;
-        f.opacity     = opacity;
-        f.opacityTime = opacityTime;
-        f.rotateFrom  = rotateFrom;
-        f.rotate      = rotate;
-        f.rotateTime  = rotateTime;
-        f.zoomFrom    = zoomFrom;
-        f.zoom        = zoom;
-        f.zoomTime    = zoomTime;
-        f.actionList  = new Array();
-        f.actionList.assign(actionList);
-        f.disp = disp;
-
-        f.xpos = xpos;
-        f.xposFrom = xposFrom;
-        f.ypos = ypos;
-        f.yposFrom = yposFrom;
-        f.moveTime = moveTime;
-        f.moveAccel = moveAccel;
+        f.type    = type;
+        f.opacity = opacity;
+        f.rotate  = rotate;
+        f.zoom    = zoom;
+        f.xpos    = xpos;
+        f.ypos    = ypos;
+        f.disp    = disp;
     }
 
     /**
      * ロード処理
      */
     function onRestore(f) {
-        resetFlag = f.resetFlag;
+        dm("復帰ずーむ:" + f.zoom);
         type = f.type;
-        opacityFrom = f.opacityFrom;
         opacity     = f.opacity;
-        opacityTime = f.opacityTime;
-        rotateFrom  = f.rotateFrom;
+        opacityFrom = void;
+        opacityTime = void;
         rotate      = f.rotate;
-        rotateTime  = f.rotateTime;
-        zoomFrom    = f.zoomFrom;
+        rotateFrom  = void;
+        rotateTime  = void;
         zoom        = f.zoom;
-        zoomTime    = f.zoomTime;
-        actionList.clear();
-        if (f.actionList) {
-            actionList.assign(f.actionList);
-        }
-        disp = f.disp;
+        zoomFrom    = void;
+        zoomTime    = void;
 
-        xpos = f.xpos;
-        xposFrom = f.xposFrom;
-        ypos = f.ypos;
-        yposFrom = f.yposFrom;
-        moveTime = f.moveTime;
-        moveAccel = f.moveAccel;
+        actionList.clear();
+        
+        xpos      = f.xpos;
+        xposFrom  = void;
+        ypos      = f.ypos;
+        yposFrom  = void;
+        moveTime  = void;
+        moveAccel = void;
+        reposition = true;
+
+        disp = f.disp;
     }
 
     // このメソッドを実装する
@@ -668,6 +750,7 @@ class KAGEnvImage {
     // 標準のものは単純な座標指定になっている
     function calcPosition(layer) {
         if (reposition) {
+			dm("位置指定1",xpos,ypos);
             var l = (int)xpos;
             var t = (int)ypos;
             if (moveTime !== void && moveTime > 0) {
@@ -823,6 +906,7 @@ class KAGEnvLayer extends KAGEnvImage {
         //dm("画像設定 for EnvLayer");
 
         imageFile = file;
+        initLayer();
         disp = BOTH;
         reposition = true;
 
@@ -834,7 +918,7 @@ class KAGEnvLayer extends KAGEnvImage {
 
     var _layerCommands = %[
     file : function(param, elm) {
-        setImageFile(param);
+        setImageFile(param, elm);
     } incontextof this,
         ];
 
@@ -881,7 +965,7 @@ class KAGEnvLayer extends KAGEnvImage {
 
         // 画像のロード
         if (!find) {
-            find = setImageFile(cmd);
+            find = setImageFile(cmd, elm);
         }
         return find;
     }
@@ -892,6 +976,7 @@ class KAGEnvLayer extends KAGEnvImage {
     function drawLayer(layer) {
         if (imageFile !== void) {
             layer.loadImages(%[ "storage" => imageFile]);
+            initLayer();
         }
     }
 
@@ -940,13 +1025,15 @@ class KAGEnvBaseLayer extends KAGEnvLayer {
             if (eventInfo !== void) {
                 eventTrans = eventInfo.trans;
                 imageFile = eventInfo.image !== void ? eventInfo.image : v;
-                xpos = (int)eventInfo.xoff;
-                ypos = (int)eventInfo.yoff;
+                initLayer();
+                xpos = elm.xpos !== void ? (int)elm.xpos : (int)eventInfo.xoff;
+                ypos = elm.ypos !== void ? (int)elm.ypos : (int)eventInfo.yoff;
                 reposition = true;
             } else {
                 imageFile = file;
-                xpos = 0;
-                ypos = 0;
+                initLayer();
+                xpos = elm.xpos !== void ? (int)elm.xpos : 0;
+                ypos = elm.ypos !== void ? (int)elm.ypos : 0;
                 reposition = true;
             }
 
@@ -965,9 +1052,10 @@ class KAGEnvBaseLayer extends KAGEnvLayer {
 
         } else {
             imageFile = void;
+            initLayer();
             disp = CLEAR;
-            xpos = 0;
-            ypos = 0;
+            xpos = elm.xpos !== void ? (int)elm.xpos : 0;
+            ypos = elm.ypos !== void ? (int)elm.ypos : 0;
             reposition = true;
         }
 
@@ -1121,6 +1209,7 @@ class KAGEnvSimpleLayer extends KAGEnvLevelLayer, KAGEnvLayer {
      */
     function calcPosition(layer) {
         if (reposition) {
+			dm("位置指定2");
             var l = kag.scWidth / 2 + (int)xpos - layer.imageWidth / 2;
             var t = kag.scHeight/ 2 + (int)ypos - layer.imageHeight / 2;
             if (moveTime !== void && moveTime > 0) {
@@ -1357,7 +1446,7 @@ class KAGEnvCharacter extends KAGEnvLevelLayer, KAGEnvImage {
                     reposition = true;
                 }
                 redraw = true;
-
+                
                 // トランジション指定
                 if (isShowBU()) {
                     if (!setTrans2(info.trans)) {
@@ -1370,7 +1459,11 @@ class KAGEnvCharacter extends KAGEnvLevelLayer, KAGEnvImage {
                         }
                     }
                 }
-
+                
+                // 表情表示取得
+                if (isShowFace() && (elm.faceon || env.showFaceMode) && !elm.faceoff) {
+                    env.currentNameTarget = this;
+                }
             }
             // 服装初期化処理
             if (dress !== void && (info.dresses == void || info.dresses[dress] == void)) {
@@ -1381,10 +1474,7 @@ class KAGEnvCharacter extends KAGEnvLevelLayer, KAGEnvImage {
                 face = void;
             }
         }
-        // 表情表示取得
-        if (isShowFace() && (elm.faceon || env.showFaceMode) && !elm.faceoff) {
-            env.currentNameTarget = this;
-        }
+
         // ypos はポーズ設定したときに0に戻す
         ypos = 0;
         // エモーションクリア
@@ -1413,10 +1503,10 @@ class KAGEnvCharacter extends KAGEnvLevelLayer, KAGEnvImage {
                     }
                 }
             }
-        }
-        // 表情表示取得
-        if (isShowFace() && (elm.faceon || env.showFaceMode) && !elm.faceoff) {
-            env.currentNameTarget = this;
+            // 表情表示取得
+            if (isShowFace() && (elm.faceon || env.showFaceMode) && !elm.faceoff) {
+                env.currentNameTarget = this;
+            }
         }
     }
     /**
@@ -1440,10 +1530,11 @@ class KAGEnvCharacter extends KAGEnvLevelLayer, KAGEnvImage {
                     }
                 }
             }
-        }
-        // 表情表示取得
-        if (isShowFace() && (elm.faceon || env.showFaceMode) && !elm.faceoff) {
-            env.currentNameTarget = this;
+
+            // 表情表示取得
+            if (isShowFace() && (elm.faceon || env.showFaceMode) && !elm.faceoff) {
+                env.currentNameTarget = this;
+            }
         }
     }
 
@@ -1746,7 +1837,7 @@ class KAGEnvCharacter extends KAGEnvLevelLayer, KAGEnvImage {
                 // 画像をレイヤに割り当てる
                 layer.assignImages(baseImage);
                 // 初期化処理XXX ちょっと再検討必要かも
-				layer.type    = layer._initTyoe    = baseImage.type;
+				layer.type    = layer._initType    = baseImage.type;
                 layer.opacity = layer._initOpacity = baseImage.opacity;
 
                 // レベル用調整処理
@@ -1912,6 +2003,8 @@ class KAGEnvCharacter extends KAGEnvLevelLayer, KAGEnvImage {
     function calcPosition(layer) {
         if (reposition) {
 
+			dm("位置指定3");
+
             // 未初期化時デフォルト
             if (xpos === void) {
                 xpos = env.defaultXpos;
@@ -1962,7 +2055,7 @@ class KAGEnvCharacter extends KAGEnvLevelLayer, KAGEnvImage {
         global.KAGEnvImage.updateLayer(...);
 
         // 表情描画
-        env.drawFacePage(layer.parent === kag.fore.base ? 0 : 1, this);
+        env.drawFacePage(layer.parent === kag.fore.base ? kag.fore : kag.back, this);
         
         // キャラクタが表示されてない場合はエモーションは無効
         if (!isShowBU()) {
@@ -2785,12 +2878,15 @@ class KAGEnvironment extends KAGEnvImage {
      * 環境情報の初期化
      */
     function init() {
+
         dm("初期化処理");
         time = void;
         stage = void;
-        reposition = void;
-        disp       = CLEAR;
-        event.disp = CLEAR;
+        transMode = void;
+
+        initImage();
+        event.initImage();
+
         // キャラクタ情報の破棄
         foreach(characters, function(name,value,dict) {
             invalidate value;
@@ -2803,8 +2899,6 @@ class KAGEnvironment extends KAGEnvImage {
         });
         layerCount = 0;
         kag.allocateCharacterLayers(initLayerCount + layerCount, false);
-        transMode = void;
-		trans = void;
 
         // SE 初期化
         for (var i=0;i<ses.count;i++) {
@@ -2815,9 +2909,7 @@ class KAGEnvironment extends KAGEnvImage {
 
         // カレントオブジェクト初期化
         currentNameTarget = void;
-        if (faceLevelName !== void) {
-            clearFace();
-        }
+        redraw = true;
 
         voiceCharacters.clear();
     }
@@ -2847,11 +2939,8 @@ class KAGEnvironment extends KAGEnvImage {
         foreach(characters, function(name,value,dict) {
             value.disp = global.KAGEnvImage.CLEAR;
         });
-        // 表情も消去
-        if (faceLevelName !== void) {
-            clearFace();
-        }
-		redraw = true;
+        currentNameTarget = void;
+        redraw = true;
     }
 
     /**
@@ -3237,10 +3326,11 @@ class KAGEnvironment extends KAGEnvImage {
     }
     
     function drawAll(base) {
+
         var layer = getLayer(base);
 
         drawStage(layer);
-        
+
         // 子要素の再描画
         foreach(characters, function(name, value, dict, base) {
             value.updateImage(base);
@@ -3249,10 +3339,19 @@ class KAGEnvironment extends KAGEnvImage {
             value.updateImage(base);
         }, base);
         event.updateImage(base);
+
+        // メッセージ窓初期化
+        if (currentNameTarget == void) {
+            drawNamePage(base);
+            if (faceLevelName !== void) {
+                clearFacePage(base);
+            }
+        }
+        
         updateLayer(layer);
         calcPosition(layer);
     }
-    
+
     /**
      * 再描画処理
      */
@@ -3286,8 +3385,8 @@ class KAGEnvironment extends KAGEnvImage {
                 var layer = getLayer();
 
                 // フェード判定
-                // 既に表示されてるときはトランジションで代用
-                if (fadeTime !== void && isShowBU() && layer.visible) {
+                // 環境に対する命令の場合は常にトランジションを使う
+                if (fadeTime !== void) {
 
                     kag.fore.base.stopTransition();
                     var trans = %[ "method" => "crossfade",
@@ -3329,11 +3428,6 @@ class KAGEnvironment extends KAGEnvImage {
         updateImage();
 
         // カレントオブジェクトの解除 XXX ここでいいのか？
-        currentNameTarget = void;
-        drawName();
-        if (faceLevelName !== void) {
-            clearFace();
-        }
         return ret;
     }
 
@@ -3437,12 +3531,22 @@ class KAGEnvironment extends KAGEnvImage {
         }
     }
 
+    function getMessageLayer(base) {
+        if (base === void) {
+            base = transMode ? kag.back : kag.fore;
+        }
+        return base.messages[kag.currentNum];
+    }
+
+    function getFaceLayer(base) {
+        return getMessageLayer(base).faceLayer;
+    }
+    
     /**
      * 表情表示処理下請け
      */
-    function loadFacePage(page, name) {
-        var base = page ? kag.back : kag.fore;
-        var faceLayer = base.messages[kag.currentNum].faceLayer;
+    function loadFacePage(base, name) {
+        var faceLayer = getFaceLayer(base);
         faceLayer.loadImages(name);
         faceLayer.visible = true;
     }
@@ -3452,17 +3556,16 @@ class KAGEnvironment extends KAGEnvImage {
      */
     function loadFace(name) {
         if (!transMode) {
-            loadFacePage(0, name);
+            loadFacePage(kag.fore, name);
         }
-        loadFacePage(1, name);
+        loadFacePage(kag.back, name);
     }
 
-    function clearFacePage(page) {
+    function clearFacePage(base) {
         if (envinfo.clearFace !== void) {
-            loadFacePage(page, envinfo.clearFace);
+            loadFacePage(base, envinfo.clearFace);
         } else {
-            var base = page ? kag.back : kag.fore;
-            var faceLayer = base.messages[kag.currentNum].faceLayer;
+            var faceLayer = getFaceLayer(base);
             faceLayer.visible = false;
         }
     }
@@ -3472,24 +3575,23 @@ class KAGEnvironment extends KAGEnvImage {
      */
     function clearFace() {
         if (!transMode) {
-            clearFacePage(0);
+            clearFacePage(kag.fore);
         }
-        clearFacePage(1);
+        clearFacePage(kag.back);
     }
 
     // 指定されたキャラクタの表情が表示可能なら表示する
-    function drawFacePage(page, ch) {
+    function drawFacePage(base, ch) {
         if (faceLevelName !== void && currentNameTarget === ch) {
             if (ch !== void) {
-                var layer = page == 0 ? kag.fore.messages[kag.currentNum].faceLayer 
-                    : kag.back.messages[kag.currentNum].faceLayer;
+                var layer = getFaceLayer(base);
                 if (ch.isShowFace()) {
                     ch.drawFace(layer, faceLevelName);
                 } else {
                     layer.visible = false;
                 }
             } else {
-                clearFacePage(page);
+                clearFacePage(base);
             }
         }
     }
@@ -3497,17 +3599,16 @@ class KAGEnvironment extends KAGEnvImage {
     // 指定されたキャラクタの表情が表示可能なら表示する
     function drawFace(ch) {
         if (!transMode) {
-            drawFacePage(0, ch);
+            drawFacePage(kag.fore, ch);
         }
-        drawFacePage(1, ch);
+        drawFacePage(kag.back, ch);
     }
     
     /**
      * 名前の表示（ページ指定あり)
      */
-    function drawNamePage(page, name="") {
-        var base = page ? kag.back : kag.fore;
-        var msg  = base.messages[kag.currentNum];
+    function drawNamePage(base, name="") {
+        var msg = getMessageLayer(base);
         msg.processName(name);
     }
 
@@ -3516,9 +3617,9 @@ class KAGEnvironment extends KAGEnvImage {
      */
     function drawName(name = "") {
         if (!transMode) {
-            drawNamePage(0, name);
+            drawNamePage(kag.fore, name);
         }
-        drawNamePage(1, name);
+        drawNamePage(kag.back, name);
     }
 
     var voiceCharacters = [];
@@ -3597,8 +3698,8 @@ class KAGEnvironment extends KAGEnvImage {
                 
                 // フェースをフェードで消去する場合
                 kag.backupLayer(EMPTY, true);
-                drawNamePage(1, "");
-                clearFacePage(1);
+                drawNamePage(kag.back, "");
+                clearFacePage(kag.back);
                 beginTransition(%[ method: "crossfade", time: faceFadeTime]);
                 
             } else {
@@ -3659,21 +3760,22 @@ class KAGEnvironment extends KAGEnvImage {
             }
             
             // 表情変更処理
-            if (faceLevelName !== void && currentNameTarget != ch && (ch === void || ch.isShowFace()) && !transMode && !isSkip() && faceFadeTime > 0) {
+            if (faceLevelName !== void && currentNameTarget != ch && !transMode && !isSkip() && faceFadeTime > 0) {
 
+                // フェードで表示する場合
+                
                 currentNameTarget = ch;
 
-                // フェースをフェードで表示する場合
                 kag.backupLayer(EMPTY, true);
-                drawNamePage(1, dispName);
-                if (ch !== void) {
-                    drawFacePage(1, ch);
+                drawNamePage(kag.back, dispName);
+                if (ch !== void && ch.isShowFace()) {
+                    drawFacePage(kag.back, ch);
                 } else {
                     var img;
                     if (envinfo.nameFaces !== void && (img = envinfo.nameFaces[name]) !== void) {
-                        loadFacePage(1, img);
+                        loadFacePage(kag.back, img);
                     } else {
-                        clearFacePage(1);
+                        clearFacePage(kag.back);
                     }
                 }
 
@@ -3684,10 +3786,12 @@ class KAGEnvironment extends KAGEnvImage {
 
             } else {
 
+                // 瞬間表示する場合
+                
                 currentNameTarget = ch;
                 
                 drawName(dispName);
-                if (ch !== void) {
+                if (ch !== void && ch.isShowFace()) {
                     drawFace(ch);
                 } else {
                     var img;
