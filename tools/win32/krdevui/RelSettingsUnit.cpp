@@ -773,8 +773,8 @@ void __fastcall TRelSettingsForm::CreateArchive(void)
 
 	unsigned __int64 offset = stream.GetPosition();
 
-	unsigned __int64 compsizelimit = CompressLimitSizeEdit->Text.ToInt() *
-		(unsigned __int64 )1024;
+	unsigned __int64 compsizelimit = (!CompressLimitCheck->Checked) ?
+		(__int64)-1 : CompressLimitSizeEdit->Text.ToInt() * (unsigned __int64 )1024;
 
 	// count total files
 	int totalcount = 0;
@@ -960,7 +960,7 @@ void __fastcall TRelSettingsForm::CreateArchive(void)
 			bool isov = OVBookShareCheck->Checked && ext == ".ogg"; // ogg vorbis
 
 			if(CompressExtList->Items->IndexOf(ext) == -1 ||
-				filesize >= compsizelimit ||
+				(compsizelimit != (__int64)-1 && filesize >= compsizelimit) ||
 					filesize >= ((unsigned __int64)2*1024*1024*1024-1) || isov)
 			{
 				// avoid compress
