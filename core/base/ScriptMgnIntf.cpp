@@ -13,6 +13,7 @@
 
 #include "tjs.h"
 #include "tjsDebug.h"
+#include "tjsArray.h"
 #include "ScriptMgnIntf.h"
 #include "StorageIntf.h"
 #include "DebugIntf.h"
@@ -1047,6 +1048,45 @@ TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/setCallMissing) /* UNDOCUMENTED: subj
 	return TJS_S_OK;
 }
 TJS_END_NATIVE_METHOD_DECL(/*func. name*/setCallMissing) /* UNDOCUMENTED: subject to change */
+//----------------------------------------------------------------------
+TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/getClassNames) /* UNDOCUMENTED: subject to change */
+{
+	// get class name as an array, last (most end) class first.
+	if(numparams < 1) return TJS_E_BADPARAMCOUNT;
+
+	iTJSDispatch2 *dsp = param[0]->AsObjectNoAddRef();
+
+	if(dsp)
+	{
+		iTJSDispatch2 * array =  TJSCreateArrayObject();
+		try
+		{
+			tjs_uint num = 0;
+			while(true)
+			{
+				tTJSVariant val;
+				tjs_error err = dsp->ClassInstanceInfo(TJS_CII_GET, num, &val);
+				if(TJS_FAILED(err)) break;
+				array->PropSetByNum(TJS_MEMBERENSURE, num, &val, array);
+				num ++;
+			}
+			if(result) *result = array;
+		}
+		catch(...)
+		{
+			array->Release();
+			throw;
+		}
+		array->Release();
+	}
+	else
+	{
+		return TJS_E_FAIL;
+	}
+
+	return TJS_S_OK;
+}
+TJS_END_NATIVE_METHOD_DECL(/*func. name*/getClassNames) /* UNDOCUMENTED: subject to change */
 //----------------------------------------------------------------------
 
 	TJS_END_NATIVE_MEMBERS
