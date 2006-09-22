@@ -541,8 +541,8 @@ class KAGEnvImage {
             layer.reset();
             _type    = layer.type;
             _opacity = layer.opacity;
-            _rotate  = layer.rotate;
-            _zoom    = layer.zoom;
+            _rotate  = 0;
+            _zoom    = 100;
             _afx     = layer.afx;
             _afy     = layer.afy;
             actionList.clear();
