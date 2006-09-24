@@ -135,12 +135,14 @@ class ActionLayer extends AffineLayer {
             } else {
                 moduleType = moduleName;
             }
-            if (typeof moduleType == "Object" && moduleType.LayerModule != void) {
-                // モジュールの生成と登録
-                var module = new moduleType(this, options);
-                _modules[module.type] = module;
-            } else {
-                throw new Exception("指定されたモジュール" + moduleName + "は存在しないか LayerModule ではありません");
+            if (moduleType != null) {
+                if (typeof moduleType == "Object" && moduleType.LayerModule != void) {
+                    // モジュールの生成と登録
+                    var module = new moduleType(this, options);
+                    _modules[module.type] = module;
+                } else {
+                    throw new Exception("指定されたモジュール" + moduleName + "は存在しないか LayerModule ではありません");
+                }
             }
 
         } else {

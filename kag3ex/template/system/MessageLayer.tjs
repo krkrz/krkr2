@@ -1034,7 +1034,8 @@ class MessageLayer extends KAGLayer
         nameLayer.type = layerType;
         nameLayer.name = name + ":名前";
         nameLayer.hitType = htProvince;
-
+        resetNameLayerFont();
+        
         faceLayer = new RelativeLayer(this);
         faceLayer.type = ltAlpha;
         faceLayer.name = name + ":表情";
@@ -1230,6 +1231,11 @@ class MessageLayer extends KAGLayer
 		initLineLayer();
 	}
 
+    function resetNameLayerFont() {
+        nameLayer.font.face   = userFace;
+        nameLayer.font.height = defaultFontSize;
+    }
+    
 	function resetFont()
 	{
 		// フォントのリセット
@@ -1263,14 +1269,8 @@ class MessageLayer extends KAGLayer
 		// 改行位置を計算
 		if(!vertical)
 			relinexpos = imageWidth - marginR - marginRCh * _fontSize;
-		else
-			relinexpos = imageHeight - marginB - marginRCh * _fontSize;
-
-        nameLayer.font.face   = lineLayer.font.face;
-        nameLayer.font.angle  = lineLayer.font.angle;
-        nameLayer.font.bold   = lineLayer.font.bold;
-        nameLayer.font.italic = lineLayer.font.italic;
-        nameLayer.font.height = defaultFontSize;
+        else
+            relinexpos = imageHeight - marginB - marginRCh * _fontSize;
     }
 
 	function setFont(elm)
@@ -1379,12 +1379,6 @@ class MessageLayer extends KAGLayer
 			relinexpos = int(imageWidth-marginR-marginRCh*_fontSize);
 		else
 			relinexpos = int(imageHeight-marginB-marginRCh*_fontSize);
-
-        nameLayer.font.face   = lineLayer.font.face;
-        nameLayer.font.angle  = lineLayer.font.angle;
-        nameLayer.font.bold   = lineLayer.font.bold;
-        nameLayer.font.italic = lineLayer.font.italic;
-        nameLayer.font.height = defaultFontSize;
     }
 
 	function setDefaultFont(elm)

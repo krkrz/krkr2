@@ -375,6 +375,8 @@ class AffineLayer extends KAGLayer {
             _zoomy  = src._zoomy;
             _act_x  = src._act_x;
             _act_y  = src._act_y;
+            _afn_offx = src._afn_offx;
+            _afn_offy = src._afn_offy;
             calcAffine();
         } else {
             _image.assignImages(src);
