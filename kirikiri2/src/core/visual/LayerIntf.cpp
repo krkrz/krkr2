@@ -4797,7 +4797,7 @@ iTJSDispatch2 * tTJSNI_BaseLayer::GetFontObjectNoAddRef()
 	if(FontObject) return FontObject;
 
 	// create font object if the object is not yet created.
-	if(!Owner) TVPThrowExceptionMessage(TJS_W("Panic! Layer object is not propery constructed. The constructor was not called??"));
+	if(!Owner) TVPThrowExceptionMessage(TJS_W("Panic! Layer object is not properly constructed. The constructor was not called??"));
 	FontObject = TVPCreateFontObject(Owner);
 
 	return FontObject;
