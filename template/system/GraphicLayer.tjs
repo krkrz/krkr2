@@ -452,7 +452,10 @@ class BaseLayer extends GraphicLayer
 				super.exchangeInfo();
 				window.exchangeForeBack();
 				window.callExchangeInfo();
-			}
+
+                // 裏画面のアクションを停止させる
+                window.stopAllActions('back');
+            }
 			else
 			{
 				//・背景レイヤがsrcありでトランジション(children=false)
@@ -549,13 +552,23 @@ class GraphicLayerEx extends GraphicLayer {
         if (doAction) {
             window.actionCount--;
             doAction = false;
-            //dm("アクションカウント:" + window.actionCount);
+            window.onLayerActionStop(this);
             if (window.actionCount <= 0) {
                 window.onActionStop();
             }
-            window.onLayerActionStop(this);
         }
+        //dm("アクション終了後カウント:" + window.actionCount);
     }
+
+    function assign(src) {
+        super.assign(src);
+        if (inAction && !doAction) {
+            doAction = true;
+            window.actionCount++;
+        }
+        //dm("アクションカウント:" + window.actionCount);
+    }
+
 }
 
 class StageLayer extends GraphicLayerEx
@@ -611,17 +624,13 @@ class StageLayer extends GraphicLayerEx
 		super.atEndOfTransition(...);
 		if(src == null)
 		{
-			//・背景レイヤがsrcなしでトランジション(children=true)
-			//　何もしなくてよいが、終了時に子レイヤは非表示になる。
-			//・背景レイヤがsrcなしでトランジション(children=false)
-			//　本当に何もしない。
+			//・ステージレイヤ、イベント絵レイヤが、srcなしでトランジション (children=true)
+			//　何もしなくてよいが、終了後それらの子レイヤは自動的に非表示になる。
 		}
 		else
 		{
             super.assign(src);
             exchangeInfo();
-            window.exchangeForeBack();
-            window.callExchangeInfo();
             window.swapStageLayer(id);
 		}
 	}
