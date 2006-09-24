@@ -8,7 +8,6 @@
 var onModeChange;
 
 var currentDialog;
-var conductorStatus;
 
 class KAGWindow extends Window
 {
@@ -431,11 +430,7 @@ class KAGWindow extends Window
             global.currentDialog.focus();
             global.currentDialog.onOpen();
         }
-        conductorStatus = conductor.status;
-        if (conductorStatus == conductor.mRun) {
-            conductor.sleep();
-            conductor.interrupt();
-        }
+        conductor.interrupted = true;
         setMenuAccessibleAll();
     }
 
@@ -447,9 +442,7 @@ class KAGWindow extends Window
             global.currentDialog = void;
         }
         if (this isvalid) {
-            if (conductorStatus == conductor.mRun) {
-                conductor.run(false);
-            }
+            conductor.interrupted = false;
             setMenuAccessibleAll();
         }
     }
@@ -3538,11 +3531,13 @@ class KAGWindow extends Window
 		messages = fore.messages;
 		for(var i = messages.count-1; i >= 0; i--)
 			messages[i].defaultAntialiased = chDefaultAntialiased,
-			messages[i].userFace = chDefaultFace;
+			messages[i].userFace = chDefaultFace,
+			messages[i].resetNameLayerFont();
 		messages = back.messages;
 		for(var i = messages.count-1; i >= 0; i--)
 			messages[i].defaultAntialiased = chDefaultAntialiased,
-			messages[i].userFace = chDefaultFace;
+			messages[i].userFace = chDefaultFace,
+			messages[i].resetNameLayerFont();
 	}
 
 	function storeMessageLayerSelProcessLock()
@@ -3916,7 +3911,7 @@ class KAGWindow extends Window
 
 	function backupLayer(elm, toback)
 	{
-		// レイヤの表←→裏間のコピーを行う
+        // レイヤの表←→裏間のコピーを行う
 		// toback = true の場合は表→裏、false の場合は裏→表
 		if(elm.layer !== void)
 		{
@@ -4179,11 +4174,11 @@ class KAGWindow extends Window
 		moveCount = 0; // 一応
 	}
 
-	function onActionStop()
+    function onActionStop()
 	{
         // 全レイヤの動作が終了した
         conductor.trigger('action');
-	}
+    }
     
 	function waitAction(elm)
 	{
@@ -4275,19 +4270,22 @@ class KAGWindow extends Window
         }
     }
     
-	function stopAllActions()
+    function stopAllActions(page=null)
 	{
-		// すべての自動アクションを停止させる(base と メッセージ窓には無効)
-		var layers, messages;
-        fore.stage.stopAction();
-        back.stage.stopAction();
-        fore.event.stopAction();
-        back.event.stopAction();
-        layers = fore.layers;
-		for(var i = layers.count-1; i >= 0; i--) layers[i].stopAction();
-		layers = back.layers;
-		for(var i = layers.count-1; i >= 0; i--) layers[i].stopAction();
-		actionCount = 0; // 一応
+        // すべての自動アクションを停止させる(base と メッセージ窓には無効)
+        var layers, messages;
+        if (page == null || page == 'fore') {
+            fore.stage.stopAction();
+            fore.event.stopAction();
+            layers = fore.layers;
+            for(var i = layers.count-1; i >= 0; i--) layers[i].stopAction();
+        }
+        if (page == null || page == 'back') {
+            back.stage.stopAction();
+            back.event.stopAction();
+            layers = back.layers;
+            for(var i = layers.count-1; i >= 0; i--) layers[i].stopAction();
+        }
 	}
     
 	//------------------------------------------------ ディレイ/スキップ関連 --
@@ -6988,7 +6986,7 @@ class KAGWindow extends Window
                 dm("指定されたレイヤはアクションを指定できません");
             }
         } else {
-            stopAllActions();
+            stopAllActions(elm.page);
         }
 		return 0;
 	} incontextof this,
