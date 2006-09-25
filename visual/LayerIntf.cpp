@@ -2240,7 +2240,7 @@ void tTJSNI_BaseLayer::IndependMainImage(bool copy)
 //---------------------------------------------------------------------------
 void tTJSNI_BaseLayer::IndependProvinceImage(bool copy)
 {
-	if(MainImage)
+	if(ProvinceImage)
 	{
 		if(copy)
 			ProvinceImage->Independ();
