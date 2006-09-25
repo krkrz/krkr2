@@ -5333,6 +5333,7 @@ void tTJSNI_BaseLayer::DrawSelf(tTVPDrawable *target, tTVPRect &pr,
 	tTVPRect &cr)
 {
 	// draw self MainImage(only) to target
+	if(!MainImage) return; // main image does not exist
 	cr.add_offsets(-ImageLeft, -ImageTop);
 
 	if(InTransition && !TransWithChildren && DivisibleTransHandler)
@@ -5387,6 +5388,7 @@ void tTJSNI_BaseLayer::CopySelfForRect(tTVPBaseBitmap *dest, tjs_int destx, tjs_
 void tTJSNI_BaseLayer::CopySelf(tTVPBaseBitmap *dest, tjs_int destx, tjs_int desty,
 	const tTVPRect &r)
 {
+	if(!MainImage) return; // main image does not exist
 
 	const tTVPRect &uer = UpdateExcludeRect;
 	if(uer.is_empty())
@@ -5464,6 +5466,9 @@ void tTJSNI_BaseLayer::Draw(tTVPDrawable *target, const tTVPRect &r, bool visibl
 
 	tTVPRect rect = r;
 	if(!TVPIntersectRect(&rect, rect, Rect)) return; // no intersection
+
+
+	CurrentDrawTarget = target;
 
 	ParentRectToChildRect(rect);
 
@@ -5659,12 +5664,21 @@ void tTJSNI_BaseLayer::Draw(tTVPDrawable *target, const tTVPRect &r, bool visibl
 			} // overlapped region
 		} // has visible children/no visible children
 	} // cache enabled/disabled
+
+	CurrentDrawTarget = NULL;
 }
 //---------------------------------------------------------------------------
 tTVPBaseBitmap * tTJSNI_BaseLayer::GetDrawTargetBitmap(const tTVPRect &rect,
 	tTVPRect &cliprect)
 {
 	// called from children to get the image buffer drawn to.
+	if(DisplayType == ltBinder)
+	{
+		tTVPRect _rect(rect);
+		_rect.add_offsets(Rect.left, Rect.top);
+		tTVPBaseBitmap * bmp = CurrentDrawTarget->GetDrawTargetBitmap(_rect, cliprect);
+		return bmp;
+	}
 	tjs_int w = rect.get_width();
 	tjs_int h = rect.get_height();
 	if(UpdateRectForChild.get_width() < w || UpdateRectForChild.get_height() < h)
@@ -5677,6 +5691,8 @@ tTVPBaseBitmap * tTJSNI_BaseLayer::GetDrawTargetBitmap(const tTVPRect &rect,
 //---------------------------------------------------------------------------
 tTVPLayerType tTJSNI_BaseLayer::GetTargetLayerType()
 {
+	if(DisplayType == ltBinder) // return parent's display layer type when DisplayType == ltBinder
+		return Parent ? Parent->DisplayType : ltOpaque;
 	return DisplayType;
 }
 //---------------------------------------------------------------------------
@@ -5687,6 +5703,15 @@ void tTJSNI_BaseLayer::DrawCompleted(const tTVPRect &destrect,
 {
 	// called from children to notify that the image drawing is completed.
 	// blend the image to the target unless bmp is the same as UpdateBitmapForChild.
+	if(DisplayType == ltBinder)
+	{
+		tTVPRect _destrect(destrect);
+		tTVPRect _cliprect(cliprect);
+		_destrect.add_offsets(Rect.left, Rect.top);
+		CurrentDrawTarget->DrawCompleted(_destrect, bmp, _cliprect, type, opacity);
+		return;
+	}
+
 	if(bmp != UpdateBitmapForChild)
 	{
 		BltImage(UpdateBitmapForChild, DisplayType,
