@@ -312,8 +312,9 @@ public:
 
 	//--------------------------------------------- layer type management --
 private:
-	tTVPLayerType Type;
-	tTVPLayerType DisplayType;
+	tTVPLayerType Type; // user set Type
+	tTVPLayerType DisplayType; // actual Type
+		// note that Type and DisplayType are different when Type = {ltEffect|ltFilter}
 
 	void NotifyLayerTypeChange();
 
@@ -812,6 +813,7 @@ private:
 	tTVPRect UpdateRectForChild; // to be used in tTVPDrawable::GetDrawTargetBitmap
 	tjs_int UpdateRectForChildOfsX;
 	tjs_int UpdateRectForChildOfsY;
+	tTVPDrawable * CurrentDrawTarget; // set by Draw
 	tTVPBaseBitmap *UpdateBitmapForChild; // to be used in tTVPDrawable::GetDrawTargetBitmap
 	tTVPRect UpdateExcludeRect; // rectangle whose update is not be needed
 
