@@ -420,9 +420,9 @@ class KAGWindow extends Window
 	//------------------------------------------------------ ダイアログレイヤ処理 --
 
     function handleOpenDialog() {
-        stopAllTransitions();
-        cancelSkip();
         if (global.currentDialog !== void) {
+            stopAllTransitions();
+            cancelSkip();
             global.currentDialog.parent = fore.base;
             global.currentDialog.absolute = 9000000;
             global.currentDialog.visible = true;
@@ -430,8 +430,6 @@ class KAGWindow extends Window
             global.currentDialog.focus();
             global.currentDialog.onOpen();
         }
-        conductor.interrupted = true;
-        setMenuAccessibleAll();
     }
 
     function handleCloseDialog() {
@@ -441,10 +439,6 @@ class KAGWindow extends Window
             invalidate global.currentDialog;
             global.currentDialog = void;
         }
-        if (this isvalid) {
-            conductor.interrupted = false;
-            setMenuAccessibleAll();
-        }
     }
     
     function openDialog(dialog) {
@@ -452,6 +446,11 @@ class KAGWindow extends Window
             global.currentDialog !== dialog) {
             invalidate global.currentDialog;
         }
+
+        mainConductor.interrupted = true;
+        extraConductor.interrupted = true;
+        setMenuAccessibleAll();
+
         global.currentDialog = dialog;
         global.openDialogTrigger = new AsyncTrigger(handleOpenDialog, '');
         global.openDialogTrigger.cached = true;
@@ -460,6 +459,11 @@ class KAGWindow extends Window
 
     function closeDialog(dialog=void) {
         if (dialog === void || global.currentDialog === dialog) {
+
+            mainConductor.interrupted = false;
+            extraConductor.interrupted = false;
+            setMenuAccessibleAll();
+
             if (global.currentDialog !== void) {
                 global.closeDialogTrigger = new AsyncTrigger(handleCloseDialog, '');
                 global.closeDialogTrigger.cached = true;
