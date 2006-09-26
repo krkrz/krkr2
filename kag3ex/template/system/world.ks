@@ -947,8 +947,10 @@ class KAGEnvImage {
     // function getLayer(base);
     // function drawLayer(layer);
 
-    // 必要に応じてこのメソッドをオーバライドする
-    // 標準のものは単純な座標指定になっている
+    /**
+     * レイヤ配置処理(標準)：左上原点
+     * @param layer 処理対象レイヤ
+     */
     function calcPosition(layer) {
         if (reposition) {
             //dm("位置指定1",xpos,ypos);
@@ -1104,10 +1106,16 @@ class KAGEnvLayer extends KAGEnvImage {
 
     function setImageFile(file, elm) {
 
-        //dm("画像設定 for EnvLayer");
-
         imageFile = file;
         disp = BOTH;
+
+        // 背景指定時に座標指定がなければ場所情報を初期化する
+        if (elm.xpos === void) {
+            xpos = void;
+        }
+        if (elm.ypos === void) {
+            ypos = void;
+        }
         reposition = true;
 
         // 記録
@@ -1244,13 +1252,13 @@ class KAGEnvBaseLayer extends KAGEnvLayer {
             if (eventInfo !== void) {
                 eventTrans = eventInfo.trans;
                 imageFile = eventInfo.image !== void ? eventInfo.image : v;
-                xpos = elm.xpos !== void ? (int)elm.xpos : (int)eventInfo.xoff;
-                ypos = elm.ypos !== void ? (int)elm.ypos : (int)eventInfo.yoff;
+                xpos = elm.xpos !== void ? (int)elm.xpos : eventInfo.xoff;
+                ypos = elm.ypos !== void ? (int)elm.ypos : eventInfo.yoff;
                 reposition = true;
             } else {
                 imageFile = file;
-                xpos = elm.xpos !== void ? (int)elm.xpos : 0;
-                ypos = elm.ypos !== void ? (int)elm.ypos : 0;
+                xpos = elm.xpos !== void ? (int)elm.xpos : void;
+                ypos = elm.ypos !== void ? (int)elm.ypos : void;
                 reposition = true;
             }
 
@@ -1270,8 +1278,8 @@ class KAGEnvBaseLayer extends KAGEnvLayer {
         } else {
             imageFile = void;
             disp = CLEAR;
-            xpos = elm.xpos !== void ? (int)elm.xpos : 0;
-            ypos = elm.ypos !== void ? (int)elm.ypos : 0;
+            xpos = elm.xpos !== void ? (int)elm.xpos : void;
+            ypos = elm.ypos !== void ? (int)elm.ypos : void;
             reposition = true;
         }
 
@@ -1430,9 +1438,9 @@ class KAGEnvSimpleLayer extends KAGEnvLevelLayer, KAGEnvLayer {
         global.KAGEnvLayer.finalize();
     }
     
-    /*
-     * 前景色レイヤ用のオーバライド
-     * 画面中央原点で処理されている
+    /**
+     * レイヤ配置処理(環境レイヤ用)：中央原点
+     * @param layer 処理対象レイヤ
      */
     function calcPosition(layer) {
         if (reposition) {
@@ -1451,7 +1459,7 @@ class KAGEnvSimpleLayer extends KAGEnvLevelLayer, KAGEnvLayer {
             }
             xposFrom = void;
             yposFrom = void;
-	        moveTime = void;
+            moveTime = void;
             reposition = false;
         }
     }
@@ -1564,8 +1572,10 @@ class KAGEnvCharacter extends KAGEnvLevelLayer, KAGEnvImage {
     
     /// ボイス情報
     var voice;
-	var strVoice;
-
+    var strVoice;
+    var incVoice;   // true なら文字列指定時もカウントする
+    var noincVoice; // true ならカウントしない
+    
     // ベース画像名
     var baseImageName;
     // ベース画像
@@ -2237,12 +2247,11 @@ class KAGEnvCharacter extends KAGEnvLevelLayer, KAGEnvImage {
     }
     
     /**
-     * レイヤ配置処理
+     * レイヤ配置処理(キャラクタ用)：中央原点＋レベル補正
      * @param layer 処理対象レイヤ
      */
     function calcPosition(layer) {
         if (reposition) {
-
             //dm("位置指定3");
 
             // 未初期化時デフォルト
@@ -2364,25 +2373,38 @@ class KAGEnvCharacter extends KAGEnvLevelLayer, KAGEnvImage {
     }
 
     var reNumber = new RegExp("^[0-9][0-9]*$");
+
+    // 加算しないフラグ
+    var noinc;
     
     /**
      * ボイスファイルの指定
      */
-    function setVoice(param) {
+    function setVoice(param, elm) {
         if (typeof param == "Integer") {
-            voice = param;
-			strVoice = void;
+            if (elm.once) {
+                strVoice = getVoice(param);
+            } else {
+                voice = param;
+                strVoice = void;
+            }
         } else if (typeof param == "String") {
             if (reNumber.test(param)) {
-                voice = (int)param;
-				strVoice = void;
+                if (elm.once) {
+                    strVoice = getVoice((int)param);
+                } else {
+                    voice = (int)param;
+                    strVoice = void;
+                }
             } else {
 				strVoice = param;
             }
         } else {
             voice = void;
-			strVoice = void;
+            strVoice = void;
         }
+        incVoice   = elm.incvoice;
+        noincVoice = elm.noincvoice;
         //dm("ボイス設定:" + param + ":" + voice);
     }
 
@@ -2398,10 +2420,12 @@ class KAGEnvCharacter extends KAGEnvLevelLayer, KAGEnvImage {
      */
     function clearVoice() {
         voice = void;
+        strVoice = void;
     }
     
     /**
-     * 現在のボイスファイル名の取得
+     * ボイスファイル名の取得
+     * @param voice パラメータ　数値の場合は書式処理、文字列の場合はそのまま返す
      */
     function getVoice(voice) {
         if (typeof voice == "Integer") {
@@ -2425,7 +2449,7 @@ class KAGEnvCharacter extends KAGEnvLevelLayer, KAGEnvImage {
     }
 
     function getCurrentVoice() {
-        return getVoice(strVoice !== void ? strVoice : voice);
+        return strVoice == "ignore" ? void : getVoice(strVoice !== void ? strVoice : voice);
     }
 
     var soundBuffer;
@@ -2460,15 +2484,18 @@ class KAGEnvCharacter extends KAGEnvLevelLayer, KAGEnvImage {
         var ret = void;
         if (voicename === void) {
             voicename = getCurrentVoice();
-            if (strVoice !== void) {
-                strVoice = void;
-            } else {
+            if (strVoice === void || incVoice) {
                 if (typeof voice == "Integer") {
-                    voice++;
+                    if (!noincVoice) {
+                        voice++;
+                    }
                 } else {
                     voice = void;
                 }
             }
+            incVoice   = void;
+            noincVoice = void;
+            strVoice   = void;
         }
 
         if (voicename !== void && kag.getVoiceOn(init.voiceName)) {
@@ -3311,21 +3338,23 @@ class KAGEnvironment extends KAGEnvImage {
      */
     function setStage(stageName, elm) {
         if (stageName != stage || disp == CLEAR) {
-            stage = stageName;
 
-            // 背景指定時は場所情報を初期化する
-            xpos = void;
-            ypos = void;
-            reposition = true;
-            
+            stage = stageName;
             disp = BOTH;
+
+            // 背景指定時に座標指定がなければ場所情報を初期化する
+            if (elm.xpos === void) {
+                xpos = void;
+            }
+            if (elm.ypos === void) {
+                ypos = void;
+            }
+            reposition = true;
 
 			// ステージ変更時フック
 			if (global.setStageHook !== void) {
 				global.setStageHook(stageName, elm);
 			}
-
-            // 舞台変更時はキャラの立ち絵を消去する？
 
             // トランジション指定
             if (!setTrans2(stages[stage].trans)) {
@@ -3597,15 +3626,12 @@ class KAGEnvironment extends KAGEnvImage {
                 try {
                     layer.loadImages(%[ "storage" => image ]);
                     
-                    // センター原点で計算
                     if (reposition) {
-                        if (xpos == null) {
-                            var xoff = (int)stages[stage].xoff;
-                            xpos  = (kag.scWidth  / 2) - layer.imageWidth / 2  + (xoff !== void ? xoff : 0);
+                        if (xpos === void) {
+                            xpos = (int)stages[stage].xoff;
                         }
-                        if (ypos == null) {
-                            var yoff = (int)stages[stage].yoff;
-                            ypos  = (kag.scHeight / 2) - layer.imageHeight / 2 + (yoff !== void ? yoff : 0);
+                        if (ypos === void) {
+                            ypos = (int)stages[stage].yoff;
                         }
                     }
 
@@ -3635,12 +3661,13 @@ class KAGEnvironment extends KAGEnvImage {
                             }
                         }
 
-                        // センター原点で計算
                         if (reposition) {
-                            var xoff = (int)stages[stage].xoff;
-                            var yoff = (int)stages[stage].yoff;
-                            xpos  = (kag.scWidth  / 2) - layer.imageWidth / 2  + (xoff !== void ? xoff : 0);
-                            ypos  = (kag.scHeight / 2) - layer.imageHeight / 2 + (yoff !== void ? yoff : 0);
+                            if (xpos === void) {
+                                xpos = (int)stages[stage].xoff;
+                            }
+                            if (ypos === void) {
+                                ypos = (int)stages[stage].yoff;
+                            }
                         }
                         
                     } catch (e) {
@@ -3706,6 +3733,32 @@ class KAGEnvironment extends KAGEnvImage {
         calcPosition(layer);
     }
 
+    /**
+     * レイヤ配置処理(背景用)：中央原点
+     * @param layer 処理対象レイヤ
+     */
+    function calcPosition(layer) {
+        if (reposition) { 
+            //dm("位置指定2");
+            var l = kag.scWidth / 2 + (int)xpos - layer.imageWidth / 2;
+            var t = kag.scHeight/ 2 + (int)ypos - layer.imageHeight / 2;
+            if (moveTime !== void && moveTime > 0) {
+                if (xposFrom !== void || yposFrom !== void) {
+                    var fl = xposFrom !== void ? kag.scWidth  / 2 + (int)xposFrom - layer.imageWidth / 2 : l;
+                    var ft = yposFrom !== void ? kag.scHeight / 2 + (int)yposFrom - layer.imageHeight / 2 : t;
+                    layer.setPos(fl, ft);
+                }
+                layer.setMove(l, t, moveAccel, moveTime);
+            } else {
+                layer.setMove(l, t);
+            }
+            xposFrom = void;
+            yposFrom = void;
+            moveTime = void;
+            reposition = false;
+        }
+    }
+    
     /**
      * 再描画処理
      */
@@ -3965,7 +4018,7 @@ class KAGEnvironment extends KAGEnvImage {
 
     function getVoicePlayingScript(ch) {
         var voice;
-        if (ch !== void && (voice = ch.getCurrentVoice()) != void) {
+        if (ch !== void && (voice = ch.getCurrentVoice()) !== void) {
             return "global.world_object.env.playVoice(\"" + ch.name + "\",\"" + voice + "\");";
         } else {
             return "";
