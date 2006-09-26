@@ -1996,6 +1996,10 @@ class KAGEnvCharacter extends KAGEnvLevelLayer, KAGEnvImage {
         if (!find) {
             find = _setTrans(cmd, elm);
         }
+
+        if (!find) {
+            dm("不明なコマンドです:" + cmd);
+        }
         
         return find;
     };
@@ -3604,6 +3608,10 @@ class KAGEnvironment extends KAGEnvImage {
             find = setTrans(cmd, elm);
         }
 
+        if (!find) {
+            dm("不明なコマンドです:" + cmd);
+        }
+        
         return find;
     }
 
