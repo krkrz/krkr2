@@ -1996,10 +1996,6 @@ class KAGEnvCharacter extends KAGEnvLevelLayer, KAGEnvImage {
         if (!find) {
             find = _setTrans(cmd, elm);
         }
-
-        if (!find) {
-            dm("不明なコマンドです:" + cmd);
-        }
         
         return find;
     };
@@ -3139,6 +3135,7 @@ class KAGEnvironment extends KAGEnvImage {
         // 特殊ハンドラ登録
         kag.unknownHandler         = this.unknown;
         kag.seStopHandler          = this.onSeStop;
+        kag.stopActionHandler      = this.onStopAction;
         
         dm("環境初期化完了");
     }
@@ -3220,6 +3217,9 @@ class KAGEnvironment extends KAGEnvImage {
         }
         if (kag.seStopHandler== this.onSeStop) {
             kag.seStopHandler          = void;
+        }
+        if (kag.stopActionHandler === this.onStopAction) {
+            kag.stopActionHandler = void;
         }
         invalidate characters;
         invalidate layers;
@@ -3608,10 +3608,6 @@ class KAGEnvironment extends KAGEnvImage {
             find = setTrans(cmd, elm);
         }
 
-        if (!find) {
-            dm("不明なコマンドです:" + cmd);
-        }
-        
         return find;
     }
 
@@ -4391,6 +4387,21 @@ class KAGEnvironment extends KAGEnvImage {
             return currentNameTarget.tagfunc(elm);
         }
     }
+
+    /**
+     * アクション停止
+     */
+    function onStopAction() {
+        stopAction();
+        event.stopAction();
+        foreach(characters, function(name, value, dict) {
+            value.stopAction();
+        });
+        foreach(layers, function(name, value, dict) {
+            value.stopAction();
+        });
+    }
+
 };
 
 KAGEnvironment.XPOSITION    = 1;
