@@ -1783,10 +1783,8 @@ class KAGEnvCharacter extends KAGEnvLevelLayer, KAGEnvImage {
      */
     function setPositionTrans(info) {
         // トランジション指定
-        if (isShowBU()) {
-            if (!setTrans2(info.trans)) {
-                setTrans2(env.envinfo.positionTrans);
-            }
+        if (!setTrans2(info.trans)) {
+            setTrans2(env.envinfo.positionTrans);
         }
     }
     
