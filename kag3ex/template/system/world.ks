@@ -1844,7 +1844,7 @@ class KAGEnvCharacter extends KAGEnvLevelLayer, KAGEnvImage {
             disp = info.disp;
             redraw = true;
 			reposition = true;
-            setPositionTrans(info, force);
+            setPositionTrans(info, true);
             break;
 
         case global.KAGEnvironment.LEVEL:
