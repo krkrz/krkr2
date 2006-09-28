@@ -1781,10 +1781,12 @@ class KAGEnvCharacter extends KAGEnvLevelLayer, KAGEnvImage {
     /**
      * 場所表示用トランジション設定
      */
-    function setPositionTrans(info) {
+    function setPositionTrans(info, force=false) {
         // トランジション指定
-        if (!setTrans2(info.trans)) {
-            setTrans2(env.envinfo.positionTrans);
+        if (force || isShowBU()) {
+            if (!setTrans2(info.trans)) {
+                setTrans2(env.envinfo.positionTrans);
+            }
         }
     }
     
@@ -1818,6 +1820,7 @@ class KAGEnvCharacter extends KAGEnvLevelLayer, KAGEnvImage {
                 disp = init.noPose ? FACE : BOTH;
             }
             break;
+
         case global.KAGEnvironment.YPOSITION:
             moveTime = isSkip() ? 0 : elm.time;
             moveAccel = (elm.accel === void) ? 0 : +elm.accel;
@@ -1836,12 +1839,14 @@ class KAGEnvCharacter extends KAGEnvLevelLayer, KAGEnvImage {
                 visible = true;
             }
             break;
+
         case global.KAGEnvironment.DISPPOSITION:
             disp = info.disp;
             redraw = true;
 			reposition = true;
-            setPositionTrans(info);
+            setPositionTrans(info, force);
             break;
+
         case global.KAGEnvironment.LEVEL:
             //dm("レベル:" + info.level);
             level = info.level;
