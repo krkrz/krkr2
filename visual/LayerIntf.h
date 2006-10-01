@@ -380,8 +380,10 @@ public:
 	//-------------------------------------------- image buffer management --
 private:
 	tTVPBaseBitmap *MainImage;
+	bool CanHaveImage; // whether the layer can have image
 	tTVPBaseBitmap *ProvinceImage;
-	tjs_uint32 NeutralColor;
+	tjs_uint32 NeutralColor; // Neutral Color (which can be set by the user)
+	tjs_uint32 TransparentColor; // transparent color (which cannot be set by the user, decided by layer type)
 
 	void ChangeImageSize(tjs_uint width, tjs_uint height);
 
@@ -403,6 +405,9 @@ public:
 
 	void SetNeutralColor(tjs_uint32 color) { NeutralColor = color; }
 	tjs_uint32 GetNeutralColor() const { return NeutralColor; }
+
+	void SetHasImage(bool b);
+	bool GetHasImage() const;
 
 public:
 	void SetImageLeft(tjs_int left);
@@ -833,6 +838,8 @@ public:
 	void Update(tTVPComplexRect &rects, bool tempupdate = false);
 	void Update(const tTVPRect &rect, bool tempupdate = false);
 	void Update(bool tempupdate = false);
+
+	void UpdateAllChildren(bool tempupdate = false);
 
 	void UpdateByScript(const tTVPRect &rect) { CallOnPaint = true; Update(rect); }
 	void UpdateByScript() { CallOnPaint = true; Update(); }

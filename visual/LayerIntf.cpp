@@ -319,7 +319,7 @@ tTJSNI_BaseLayer::tTJSNI_BaseLayer()
 	// layer type management
 	DisplayType = Type = ltAlpha;
 		// later reset this if the layer becomes a primary layer
-	NeutralColor = TVP_RGBA2COLOR(255, 255, 255, 0);
+	NeutralColor = TransparentColor = TVP_RGBA2COLOR(255, 255, 255, 0);
 
 	// geographical management
 	ExposedRegionValid = false;
@@ -344,6 +344,7 @@ tTJSNI_BaseLayer::tTJSNI_BaseLayer()
 
 	// image buffer management
 	MainImage = NULL;
+	CanHaveImage = true;
 	ProvinceImage = NULL;
 	ImageLeft = 0;
 	ImageTop = 0;
@@ -439,7 +440,7 @@ tTJSNI_BaseLayer::Construct(tjs_int numparams, tTJSVariant **param,
 //		SetWindow(win);
 		Manager->AttachPrimary(this);
 		Type = DisplayType = ltOpaque; // initially ltOpaque
-		NeutralColor = TVP_RGBA2COLOR(255, 255, 255, 255);
+		NeutralColor = TransparentColor = TVP_RGBA2COLOR(255, 255, 255, 255);
 		UpdateDrawFace();
 		HitThreshold = 0;
 	}
@@ -1415,176 +1416,205 @@ void tTJSNI_BaseLayer::SetType(tTVPLayerType type)
 		switch(Type)
 		{
 		case ltBinder:
-			NeutralColor = TVP_RGBA2COLOR(255, 255, 255, 0);
+			NeutralColor = TransparentColor = TVP_RGBA2COLOR(255, 255, 255, 0);
 			DisplayType = Type;
+			CanHaveImage = false;
 			DeallocateImage();
 			break;
 
 		case ltOpaque: // formerly ltCoverRect
-			NeutralColor = TVP_RGBA2COLOR(255, 255, 255, 0);
+			NeutralColor = TransparentColor = TVP_RGBA2COLOR(255, 255, 255, 0);
 			DisplayType = Type;
+			CanHaveImage = true;
 			AllocateImage();
 			break;
 
 		case ltAlpha: // formerly ltTransparent
-			NeutralColor = TVP_RGBA2COLOR(255, 255, 255, 0);
+			NeutralColor = TransparentColor = TVP_RGBA2COLOR(255, 255, 255, 0);
 			DisplayType = Type;
+			CanHaveImage = true;
 			AllocateImage();
 			break;
 
 		case ltAdditive:
-			NeutralColor = TVP_RGBA2COLOR(0, 0, 0, 0);
+			NeutralColor = TransparentColor = TVP_RGBA2COLOR(0, 0, 0, 0);
 			DisplayType = Type;
+			CanHaveImage = true;
 			AllocateImage();
 			break;
 
 		case ltSubtractive:
-			NeutralColor = TVP_RGBA2COLOR(255, 255, 255, 0);
+			NeutralColor = TransparentColor = TVP_RGBA2COLOR(255, 255, 255, 0);
 			DisplayType = Type;
+			CanHaveImage = true;
 			AllocateImage();
 			break;
 
 		case ltMultiplicative:
-			NeutralColor = TVP_RGBA2COLOR(255, 255, 255, 0);
+			NeutralColor = TransparentColor = TVP_RGBA2COLOR(255, 255, 255, 0);
 			DisplayType = Type;
+			CanHaveImage = true;
 			AllocateImage();
 			break;
 
 		case ltEffect:
-			NeutralColor = TVP_RGBA2COLOR(255, 255, 255, 0);
+			NeutralColor = TransparentColor = TVP_RGBA2COLOR(255, 255, 255, 0);
 			DisplayType = ltBinder;  // TODO: retrieve actual DrawType
+			CanHaveImage = false;
 			DeallocateImage();
 			break;
 
 		case ltFilter:
-			NeutralColor = TVP_RGBA2COLOR(255, 255, 255, 0);
+			NeutralColor = TransparentColor = TVP_RGBA2COLOR(255, 255, 255, 0);
 			DisplayType = ltBinder;  // TODO: retrieve actual DisplayType
+			CanHaveImage = false;
 			DeallocateImage();
 			break;
 
 		case ltDodge:
-			NeutralColor = TVP_RGBA2COLOR(0, 0, 0, 0);
+			NeutralColor = TransparentColor = TVP_RGBA2COLOR(0, 0, 0, 0);
 			DisplayType = Type;
+			CanHaveImage = true;
 			AllocateImage();
 			break;
 
 		case ltDarken:
-			NeutralColor = TVP_RGBA2COLOR(255, 255, 255, 0);
+			NeutralColor = TransparentColor = TVP_RGBA2COLOR(255, 255, 255, 0);
 			DisplayType = Type;
+			CanHaveImage = true;
 			AllocateImage();
 			break;
 
 		case ltLighten:
-			NeutralColor = TVP_RGBA2COLOR(0, 0, 0, 0);
+			NeutralColor = TransparentColor = TVP_RGBA2COLOR(0, 0, 0, 0);
 			DisplayType = Type;
+			CanHaveImage = true;
 			AllocateImage();
 			break;
 
 		case ltScreen:
-			NeutralColor = TVP_RGBA2COLOR(0, 0, 0, 0);
+			NeutralColor = TransparentColor = TVP_RGBA2COLOR(0, 0, 0, 0);
 			DisplayType = Type;
+			CanHaveImage = true;
 			AllocateImage();
 			break;
 
 		case ltAddAlpha:
-			NeutralColor = TVP_RGBA2COLOR(0, 0, 0, 0);
+			NeutralColor = TransparentColor = TVP_RGBA2COLOR(0, 0, 0, 0);
 			DisplayType = Type;
+			CanHaveImage = true;
 			AllocateImage();
 			break;
 
 		case ltPsNormal:
-			NeutralColor = TVP_RGBA2COLOR(0, 0, 0, 0);
+			NeutralColor = TransparentColor = TVP_RGBA2COLOR(0, 0, 0, 0);
 			DisplayType = Type;
+			CanHaveImage = true;
 			AllocateImage();
 			break;
 
 		case ltPsAdditive:
-			NeutralColor = TVP_RGBA2COLOR(0, 0, 0, 0);
+			NeutralColor = TransparentColor = TVP_RGBA2COLOR(0, 0, 0, 0);
 			DisplayType = Type;
+			CanHaveImage = true;
 			AllocateImage();
 			break;
 
 		case ltPsSubtractive:
-			NeutralColor = TVP_RGBA2COLOR(255, 255, 255, 0);
+			NeutralColor = TransparentColor = TVP_RGBA2COLOR(255, 255, 255, 0);
 			DisplayType = Type;
+			CanHaveImage = true;
 			AllocateImage();
 			break;
 
 		case ltPsMultiplicative:
-			NeutralColor = TVP_RGBA2COLOR(255, 255, 255, 0);
+			NeutralColor = TransparentColor = TVP_RGBA2COLOR(255, 255, 255, 0);
 			DisplayType = Type;
+			CanHaveImage = true;
 			AllocateImage();
 			break;
 
 		case ltPsScreen:
-			NeutralColor = TVP_RGBA2COLOR(0, 0, 0, 0);
+			NeutralColor = TransparentColor = TVP_RGBA2COLOR(0, 0, 0, 0);
 			DisplayType = Type;
+			CanHaveImage = true;
 			AllocateImage();
 			break;
 
 		case ltPsOverlay:
-			NeutralColor = TVP_RGBA2COLOR(128, 128, 128, 0);
+			NeutralColor = TransparentColor = TVP_RGBA2COLOR(128, 128, 128, 0);
 			DisplayType = Type;
+			CanHaveImage = true;
 			AllocateImage();
 			break;
 
 		case ltPsHardLight:
-			NeutralColor = TVP_RGBA2COLOR(128, 128, 128, 0);
+			NeutralColor = TransparentColor = TVP_RGBA2COLOR(128, 128, 128, 0);
 			DisplayType = Type;
+			CanHaveImage = true;
 			AllocateImage();
 			break;
 
 		case ltPsSoftLight:
-			NeutralColor = TVP_RGBA2COLOR(128, 128, 128, 0);
+			NeutralColor = TransparentColor = TVP_RGBA2COLOR(128, 128, 128, 0);
 			DisplayType = Type;
+			CanHaveImage = true;
 			AllocateImage();
 			break;
 
 		case ltPsColorDodge:
-			NeutralColor = TVP_RGBA2COLOR(0, 0, 0, 0);
+			NeutralColor = TransparentColor = TVP_RGBA2COLOR(0, 0, 0, 0);
 			DisplayType = Type;
+			CanHaveImage = true;
 			AllocateImage();
 			break;
 
 		case ltPsColorDodge5:
-			NeutralColor = TVP_RGBA2COLOR(0, 0, 0, 0);
+			NeutralColor = TransparentColor = TVP_RGBA2COLOR(0, 0, 0, 0);
 			DisplayType = Type;
+			CanHaveImage = true;
 			AllocateImage();
 			break;
 
 		case ltPsColorBurn:
-			NeutralColor = TVP_RGBA2COLOR(255, 255, 255, 0);
+			NeutralColor = TransparentColor = TVP_RGBA2COLOR(255, 255, 255, 0);
 			DisplayType = Type;
+			CanHaveImage = true;
 			AllocateImage();
 			break;
 
 		case ltPsLighten:
-			NeutralColor = TVP_RGBA2COLOR(0, 0, 0, 0);
+			NeutralColor = TransparentColor = TVP_RGBA2COLOR(0, 0, 0, 0);
 			DisplayType = Type;
+			CanHaveImage = true;
 			AllocateImage();
 			break;
 
 		case ltPsDarken:
-			NeutralColor = TVP_RGBA2COLOR(255, 255, 255, 0);
+			NeutralColor = TransparentColor = TVP_RGBA2COLOR(255, 255, 255, 0);
 			DisplayType = Type;
+			CanHaveImage = true;
 			AllocateImage();
 			break;
 
 		case ltPsDifference:
-			NeutralColor = TVP_RGBA2COLOR(0, 0, 0, 0);
+			NeutralColor = TransparentColor = TVP_RGBA2COLOR(0, 0, 0, 0);
 			DisplayType = Type;
+			CanHaveImage = true;
 			AllocateImage();
 			break;
 
 		case ltPsDifference5:
-			NeutralColor = TVP_RGBA2COLOR(0, 0, 0, 0);
+			NeutralColor = TransparentColor = TVP_RGBA2COLOR(0, 0, 0, 0);
 			DisplayType = Type;
+			CanHaveImage = true;
 			AllocateImage();
 			break;
 
 		case ltPsExclusion:
-			NeutralColor = TVP_RGBA2COLOR(0, 0, 0, 0);
+			NeutralColor = TransparentColor = TVP_RGBA2COLOR(0, 0, 0, 0);
 			DisplayType = Type;
+			CanHaveImage = true;
 			AllocateImage();
 			break;
 
@@ -2053,6 +2083,18 @@ void tTJSNI_BaseLayer::AssignMainImage(tTVPBaseBitmap *bmp)
 		ImageModified = true;
 		Update(false); // update
 	}
+}
+//---------------------------------------------------------------------------
+void tTJSNI_BaseLayer::SetHasImage(bool b)
+{
+	if(!CanHaveImage && b)
+		TVPThrowExceptionMessage(TVPLayerCannotHaveImage);
+	if(b) AllocateImage(); else DeallocateImage();
+}
+//---------------------------------------------------------------------------
+bool tTJSNI_BaseLayer::GetHasImage() const
+{
+	return MainImage != NULL;
 }
 //---------------------------------------------------------------------------
 void tTJSNI_BaseLayer::SetImageLeft(tjs_int left)
@@ -4935,6 +4977,16 @@ void tTJSNI_BaseLayer::Update(tTVPComplexRect &rects, bool tempupdate)
 
 	if(!tempupdate)
 	{
+		// in case of tempupdate == false
+		/*
+			tempupdate == true indicates that the layer content is not changed, 
+			but the layer need to be updated to the window.
+			Mainly used by transition update.
+
+			There is no need to update CacheRecalcRegion because the
+			layer content is not changed when tempupdate == true.
+		*/
+
 		if(GetCacheEnabled())
 		{
 			// caching is enabled
@@ -4992,6 +5044,15 @@ void tTJSNI_BaseLayer::ParentUpdate()
 		Parent->UpdateChildRegion(this, c, false, GetVisible(),
 			GetNodeVisible());
 	}
+}
+//---------------------------------------------------------------------------
+void tTJSNI_BaseLayer::UpdateAllChildren(bool tempupdate)
+{
+	TVP_LAYER_FOR_EACH_CHILD_BEGIN(child)
+
+		child->Update(tempupdate);
+
+	TVP_LAYER_FOR_EACH_CHILD_END
 }
 //---------------------------------------------------------------------------
 void tTJSNI_BaseLayer::BeforeCompletion()
@@ -5332,8 +5393,9 @@ void tTJSNI_BaseLayer::BltImage(tTVPBaseBitmap *dest, tTVPLayerType destlayertyp
 void tTJSNI_BaseLayer::DrawSelf(tTVPDrawable *target, tTVPRect &pr,
 	tTVPRect &cr)
 {
+	if(!MainImage) return;
+
 	// draw self MainImage(only) to target
-	if(!MainImage) return; // main image does not exist
 	cr.add_offsets(-ImageLeft, -ImageTop);
 
 	if(InTransition && !TransWithChildren && DivisibleTransHandler)
@@ -5381,15 +5443,26 @@ void tTJSNI_BaseLayer::CopySelfForRect(tTVPBaseBitmap *dest, tjs_int destx, tjs_
 	}
 	else
 	{
-		dest->CopyRect(destx, desty, MainImage, cr);
+		if(MainImage)
+		{
+			dest->CopyRect(destx, desty, MainImage, cr);
+		}
+		else
+		{
+			// main image does not exist
+			// fill destination with TransparentColor
+			// (this need to be transparent, so we do not use NeutralColor which can be
+			//  set by the user unless the DisplayType is ltOpaque)
+			dest->Fill(tTVPRect(destx, desty,
+					destx + cr.get_width(), desty + cr.get_height()),
+					DisplayType == ltOpaque ? NeutralColor : TransparentColor);
+		}
 	}
 }
 //---------------------------------------------------------------------------
 void tTJSNI_BaseLayer::CopySelf(tTVPBaseBitmap *dest, tjs_int destx, tjs_int desty,
 	const tTVPRect &r)
 {
-	if(!MainImage) return; // main image does not exist
-
 	const tTVPRect &uer = UpdateExcludeRect;
 	if(uer.is_empty())
 	{
@@ -6029,6 +6102,15 @@ void tTJSNI_BaseLayer::StartTransition(const ttstr &name, bool withchildren,
 		if(TransType == ttExchange && !transsource)
 			TVPThrowExceptionMessage(TVPSpecifyTransitionSource);
 
+		// check wether the source and destination both have image
+		if(!withchildren)
+		{
+			if(!MainImage)
+				TVPThrowExceptionMessage(TVPTransitionSourceAndDestinationMustHaveImage);
+			if(transsource && !transsource->MainImage)
+				TVPThrowExceptionMessage(TVPTransitionSourceAndDestinationMustHaveImage);
+		}
+
 		// set to cache
 		TransWithChildren = withchildren;
 		if(TransWithChildren)
@@ -6192,7 +6274,16 @@ void tTJSNI_BaseLayer::InvokeTransition(tjs_uint64 tick)
 		}
 		else
 		{
-			Update(true); // update without re-computing piled images
+			if(!MainImage && TransWithChildren)
+			{
+				// update only for child region
+				UpdateAllChildren(true);
+				if(TransSrc) TransSrc->UpdateAllChildren(true);
+			}
+			else
+			{
+				Update(true); // update without re-computing piled images
+			}
 		}
 	}
 	else
@@ -9970,6 +10061,26 @@ TJS_BEGIN_NATIVE_PROP_DECL(neutralColor)
 	TJS_END_NATIVE_PROP_SETTER
 }
 TJS_END_NATIVE_PROP_DECL(neutralColor)
+//----------------------------------------------------------------------
+TJS_BEGIN_NATIVE_PROP_DECL(hasImage)
+{
+	TJS_BEGIN_NATIVE_PROP_GETTER
+	{
+		TJS_GET_NATIVE_INSTANCE(/*var. name*/_this, /*var. type*/tTJSNI_Layer);
+		*result = (tjs_int)(bool)_this->GetHasImage();
+		return TJS_S_OK;
+	}
+	TJS_END_NATIVE_PROP_GETTER
+
+	TJS_BEGIN_NATIVE_PROP_SETTER
+	{
+		TJS_GET_NATIVE_INSTANCE(/*var. name*/_this, /*var. type*/tTJSNI_Layer);
+		_this->SetHasImage((bool)*param);
+		return TJS_S_OK;
+	}
+	TJS_END_NATIVE_PROP_SETTER
+}
+TJS_END_NATIVE_PROP_DECL(hasImage)
 //----------------------------------------------------------------------
 TJS_BEGIN_NATIVE_PROP_DECL(mainImageBuffer)
 {

@@ -311,6 +311,12 @@ TVP_MSG_DECL(TVPCannotFindTransHander,
 TVP_MSG_DECL(TVPSpecifyTransitionSource,
 	TJS_W("トランジション元を指定してください"));
 
+TVP_MSG_DECL(TVPLayerCannotHaveImage,
+	TJS_W("このレイヤは画像を持つことはできません"));
+
+TVP_MSG_DECL(TVPTransitionSourceAndDestinationMustHaveImage,
+	TJS_W("トランジション元とトランジション先はともに画像を持っている必要があります"));
+
 TVP_MSG_DECL(TVPCannotLoadRuleGraphic,
 	TJS_W("ルール画像 %1 を読み込むことができません"));
 
