@@ -822,7 +822,8 @@ private:
 	tTVPBaseBitmap *UpdateBitmapForChild; // to be used in tTVPDrawable::GetDrawTargetBitmap
 	tTVPRect UpdateExcludeRect; // rectangle whose update is not be needed
 
-	tTVPComplexRect CacheRecalcRegion; // region that must be reconstructed
+	tTVPComplexRect CacheRecalcRegion; // region that must be reconstructed for cache
+	tTVPComplexRect DrawnRegion; // region that is already marked as "blitted"
 
 	bool CallOnPaint; // call onPaint event when flaged
 
