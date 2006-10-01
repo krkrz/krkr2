@@ -5393,7 +5393,33 @@ void tTJSNI_BaseLayer::BltImage(tTVPBaseBitmap *dest, tTVPLayerType destlayertyp
 void tTJSNI_BaseLayer::DrawSelf(tTVPDrawable *target, tTVPRect &pr,
 	tTVPRect &cr)
 {
-	if(!MainImage) return;
+	if(!MainImage)
+	{
+		if(DisplayType == ltOpaque)
+		{
+			// fill destination with specified color
+			tTVPBaseBitmap *temp = tTVPTempBitmapHolder::GetTemp(
+								cr.get_width(),
+								cr.get_height());
+			try
+			{
+				// do transition
+				tTVPRect bitmaprect = cr;
+				bitmaprect.set_offsets(0, 0);
+				CopySelf(temp, 0, 0, bitmaprect); // this fills temp with neutral color
+
+				// send completion message
+				target->DrawCompleted(pr, temp, bitmaprect, DisplayType, Opacity);
+			}
+			catch(...)
+			{
+				tTVPTempBitmapHolder::FreeTemp();
+				throw;
+			}
+			tTVPTempBitmapHolder::FreeTemp();
+		}
+		return;
+	}
 
 	// draw self MainImage(only) to target
 	cr.add_offsets(-ImageLeft, -ImageTop);
@@ -5568,13 +5594,19 @@ void tTJSNI_BaseLayer::Draw(tTVPDrawable *target, const tTVPRect &r, bool visibl
 			// intersection check
 			if(!TVPIntersectRect(&cr, cr, rect)) continue;
 
+			// clear DrawnRegion
+			DrawnRegion.Clear();
+
 			// setup UpdateBitmapForChild
 			UpdateBitmapForChild = CacheBitmap;
 
 			// copy self image to UpdateBitmapForChild
-			CopySelf(UpdateBitmapForChild,
-					cr.left,
-					cr.top, cr); // transfer self image
+			if(MainImage != NULL)
+			{
+				CopySelf(UpdateBitmapForChild,
+						cr.left,
+						cr.top, cr); // transfer self image
+			}
 
 			TVP_LAYER_FOR_EACH_CHILD_BEGIN(child)
 			{
@@ -5594,6 +5626,25 @@ void tTJSNI_BaseLayer::Draw(tTVPDrawable *target, const tTVPRect &r, bool visibl
 				child->Draw((tTVPDrawable*)this, UpdateRectForChild, true);
 			}
 			TVP_LAYER_FOR_EACH_CHILD_END
+
+			// special optimazation for MainImage == NULL
+
+			if(MainImage == NULL)
+			{
+				tTVPComplexRect nr;
+				nr.Or(cr);
+				nr.Sub(DrawnRegion);
+				tTVPComplexRect::tIterator it = nr.GetIterator();
+				while(it.Step())
+				{
+					tTVPRect r(*it);
+					CopySelf(UpdateBitmapForChild,
+							r.left,
+							r.top, r);
+							// CopySelf of MainImage == NULL actually
+							// fills target rectangle with full transparency
+				}
+			}
 
 		}
 
@@ -5643,6 +5694,9 @@ void tTJSNI_BaseLayer::Draw(tTVPDrawable *target, const tTVPRect &r, bool visibl
 			}
 
 			// process overlapped region
+			// clear DrawnRegion
+			DrawnRegion.Clear();
+
 			it = overlapped.GetIterator();
 			while(it.Step())
 			{
@@ -5787,10 +5841,83 @@ void tTJSNI_BaseLayer::DrawCompleted(const tTVPRect &destrect,
 
 	if(bmp != UpdateBitmapForChild)
 	{
-		BltImage(UpdateBitmapForChild, DisplayType,
-			destrect.left - UpdateOfsX,
-			destrect.top - UpdateOfsY,
-			bmp, cliprect, type, opacity);
+		if(MainImage == NULL)
+		{
+			// special optimization for MainImage == NULL
+			// (all the layer face is treated as transparent)
+			tTVPComplexRect nr; // new region
+			nr.Or(destrect);
+			nr.Sub(DrawnRegion);
+			tTVPComplexRect or; // operation region
+			// now nr is a client region which is not overlapped by children
+			// at this time
+			if(DisplayType == type && opacity == 255)
+			{
+				// DisplayType == type and full opacity
+				// just copy the target bitmap
+				tTVPComplexRect::tIterator it = nr.GetIterator();
+				while(it.Step())
+				{
+					tTVPRect r(*it);
+					tTVPRect sr;
+					sr.left = cliprect.left + (r.left - destrect.left);
+					sr.top  = cliprect.top  + (r.top  - destrect.top );
+					sr.right = sr.left + r.get_width();
+					sr.bottom = sr.top + r.get_height();
+
+					UpdateBitmapForChild->CopyRect(
+						r.left - UpdateOfsX, r.top - UpdateOfsY,
+						bmp, sr);
+				}
+				// calculate operation region
+				or.Or(destrect);
+				or.Sub(nr);
+			}
+			else
+			{
+				// set operation region
+				tTVPComplexRect::tIterator it = nr.GetIterator();
+				while(it.Step())
+				{
+					tTVPRect r(*it);
+					r.add_offsets(-UpdateOfsX, -UpdateOfsY);
+					// fill r with transparent color
+					CopySelf(UpdateBitmapForChild,
+							r.left,
+							r.top, r);
+							// CopySelf of MainImage == NULL actually
+							// fills target rectangle with full transparency
+				}
+				or.Or(destrect);
+			}
+
+			// operate r
+			tTVPComplexRect::tIterator it = or.GetIterator();
+			while(it.Step())
+			{
+				tTVPRect r(*it);
+				tTVPRect sr;
+				sr.left = cliprect.left + (r.left - destrect.left);
+				sr.top  = cliprect.top  + (r.top  - destrect.top );
+				sr.right = sr.left + r.get_width();
+				sr.bottom = sr.top + r.get_height();
+
+				BltImage(UpdateBitmapForChild, DisplayType,
+					r.left - UpdateOfsX,
+					r.top - UpdateOfsY,
+					bmp, sr, type, opacity);
+			}
+
+			// update DrawnRegion
+			DrawnRegion.Or(destrect);
+		}
+		else
+		{
+			BltImage(UpdateBitmapForChild, DisplayType,
+				destrect.left - UpdateOfsX,
+				destrect.top - UpdateOfsY,
+				bmp, cliprect, type, opacity);
+		}
 	}
 }
 //---------------------------------------------------------------------------
@@ -6274,7 +6401,7 @@ void tTJSNI_BaseLayer::InvokeTransition(tjs_uint64 tick)
 		}
 		else
 		{
-			if(!MainImage && TransWithChildren)
+			if(!MainImage && TransWithChildren && TransUpdateType == tutDivisibleFade)
 			{
 				// update only for child region
 				UpdateAllChildren(true);
