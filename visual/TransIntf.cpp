@@ -21,7 +21,7 @@
 #include "DebugIntf.h"
 
 
-// #define TVP_TRANS_SHOW_FPS
+#define TVP_TRANS_SHOW_FPS
 
 //---------------------------------------------------------------------------
 // iTVPSimpleOptionProvider implementation

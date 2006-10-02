@@ -348,7 +348,6 @@ private:
 		{ if(!ExposedRegionValid) CreateExposedRegion();
 		  return OverlappedRegion; }
 
-
 	void InternalSetSize(tjs_uint width, tjs_uint height);
 	void InternalSetBounds(const tTVPRect &rect);
 
@@ -824,6 +823,7 @@ private:
 
 	tTVPComplexRect CacheRecalcRegion; // region that must be reconstructed for cache
 	tTVPComplexRect DrawnRegion; // region that is already marked as "blitted"
+	bool DirectTransferToParent; // child image should be directly transfered into parent
 
 	bool CallOnPaint; // call onPaint event when flaged
 

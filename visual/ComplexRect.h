@@ -248,6 +248,7 @@ public: // iterator
 		const tTVPRegionRect * Current;
 
 	public: // constructor and destructor
+		tIterator() : Head(NULL), Current(NULL) {;}
 		tIterator(const tTVPRegionRect * head) : Head(head), Current(NULL) {;}
 
 	public: // operator function (data access)
