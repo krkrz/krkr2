@@ -272,6 +272,7 @@ bool TVPDefaultHoldAlpha = false;
 #define TVP_UPDATE_UNITE_LIMIT 300
 #define TVP_CACHE_UNITE_LIMIT 60
 #define TVP_EXPOSED_UNITE_LIMIT 30
+#define TVP_DIRECT_UNITE_LIMIT 10
 //---------------------------------------------------------------------------
 
 
@@ -1621,6 +1622,7 @@ void tTJSNI_BaseLayer::SetType(tTVPLayerType type)
 
 		}
 		NotifyLayerTypeChange();
+		SetToCreateExposedRegion();
 		Update();
 	}
 }
@@ -1705,63 +1707,120 @@ void tTJSNI_BaseLayer::CreateExposedRegion()
 	ExposedRegion.Clear();
 	OverlappedRegion.Clear();
 
-	if(GetVisibleChildrenCount() > TVP_EXPOSED_UNITE_LIMIT)
+	tTVPRect rect;
+	rect.left = rect.top = 0;
+	rect.right = Rect.get_width();
+	rect.bottom = Rect.get_height();
+
+	if(MainImage != NULL)
 	{
-		tTVPRect rect;
-		rect.left = rect.top = 0;
-		rect.right = Rect.get_width();
-		rect.bottom = Rect.get_height();
-		ExposedRegion.Or(rect);
-		
-		bool first = true;
+		// the layer has image
 
-		tTVPRect r2;
+		if(GetVisibleChildrenCount() > TVP_EXPOSED_UNITE_LIMIT)
+		{
+			ExposedRegion.Or(rect);
 
-		TVP_LAYER_FOR_EACH_CHILD_NOLOCK_BEGIN(child)
+			bool first = true;
 
-			if(child->IsSeen())
-			{
-				tTVPRect r(child->GetRect());
-				if(TVPIntersectRect(&r, r, rect))
+			tTVPRect r2;
+
+			TVP_LAYER_FOR_EACH_CHILD_NOLOCK_BEGIN(child)
+
+				if(child->IsSeen())
 				{
-					if(first)
+					tTVPRect r(child->GetRect());
+					if(TVPIntersectRect(&r, r, rect))
 					{
-						r2 = child->GetRect();
-						first = false;
-					}
-					else
-					{
-						TVPUnionRect(&r2, r2, r);
+						if(first)
+						{
+							r2 = child->GetRect();
+							first = false;
+						}
+						else
+						{
+							TVPUnionRect(&r2, r2, r);
+						}
 					}
 				}
-			}
 
-		TVP_LAYER_FOR_EACH_CHILD_NOLOCK_END
+			TVP_LAYER_FOR_EACH_CHILD_NOLOCK_END
 
-		OverlappedRegion.Or(r2);
+			OverlappedRegion.Or(r2);
 
-		ExposedRegion.Sub(OverlappedRegion);
+			ExposedRegion.Sub(OverlappedRegion);
+		}
+		else
+		{
+			tTVPRect rect;
+			rect.left = rect.top = 0;
+			rect.right = Rect.get_width();
+			rect.bottom = Rect.get_height();
+			ExposedRegion.Or(rect);
+
+			TVP_LAYER_FOR_EACH_CHILD_NOLOCK_BEGIN(child)
+
+				if(child->IsSeen())
+				{
+					tTVPRect r(child->GetRect());
+					if(TVPIntersectRect(&r, r, rect))
+						OverlappedRegion.Or(r);
+				}
+
+			TVP_LAYER_FOR_EACH_CHILD_NOLOCK_END
+
+			ExposedRegion.Sub(OverlappedRegion);
+		}
 	}
 	else
 	{
-		tTVPRect rect;
-		rect.left = rect.top = 0;
-		rect.right = Rect.get_width();
-		rect.bottom = Rect.get_height();
-		ExposedRegion.Or(rect);
+		// the layer has no image
+		// ExposedRegion : child layer can directly transfer the image to the parent's target
+		// OverlappedRegion : Inverse of ExposedRegion
 
-		TVP_LAYER_FOR_EACH_CHILD_NOLOCK_BEGIN(child)
+		ExposedRegion.Clear();
+		OverlappedRegion.Clear();
+		OverlappedRegion.Or(rect);
 
-			if(child->IsSeen())
-			{
-				tTVPRect r(child->GetRect());
-				if(TVPIntersectRect(&r, r, rect))
-					OverlappedRegion.Or(r);
-			}
+		// ExposedRegion is a region with is only one child layer piled
+		// under the parent layer.
+		// Recalculating this is pretty high-cost operation, 
+		if(GetVisibleChildrenCount() < TVP_DIRECT_UNITE_LIMIT)
+		{
+			tTVPComplexRect & one = ExposedRegion; // alias of ExposedRegion
+			tTVPComplexRect   two; // region which is more than two layers piled
 
-		TVP_LAYER_FOR_EACH_CHILD_NOLOCK_END
+			TVP_LAYER_FOR_EACH_CHILD_NOLOCK_BEGIN(child)
 
-		ExposedRegion.Sub(OverlappedRegion);
+				if(child->IsSeen())
+				{
+					tTVPRect r(child->GetRect());
+					if(
+						child->DisplayType == this->DisplayType &&
+						child->Opacity == 255)
+					{
+						tTVPComplexRect one_and_r(one);
+						one_and_r.And(r);
+						tTVPComplexRect two_and_r(two);
+						two_and_r.And(r);
+						one.Sub(one_and_r);
+						two.Or(one_and_r);
+						two.Or(two_and_r);
+						tTVPComplexRect tmp; tmp.Or(r);
+						tmp.Sub(one_and_r);
+						tmp.Sub(two_and_r);
+						one.Or(tmp);
+					}
+					else
+					{
+						two.Or(r);
+						one.Sub(r);
+					}
+				}
+
+			TVP_LAYER_FOR_EACH_CHILD_NOLOCK_END
+		}
+
+		OverlappedRegion.Sub(ExposedRegion);
 	}
 
 	ExposedRegionValid = true;
@@ -5579,6 +5638,7 @@ void tTJSNI_BaseLayer::Draw(tTVPDrawable *target, const tTVPRect &r, bool visibl
 	}
 
 	// process drawing
+	DirectTransferToParent = false;
 	bool totalopaque = (DisplayType == ltOpaque && Opacity == 255);
 
 	if(GetCacheEnabled() &&
@@ -5678,24 +5738,13 @@ void tTJSNI_BaseLayer::Draw(tTVPDrawable *target, const tTVPRect &r, bool visibl
 			const tTVPComplexRect & overlapped = GetOverlappedRegion();
 			const tTVPComplexRect & exposed = GetExposedRegion();
 
-			// process exposed region
-			tTVPComplexRect::tIterator it = exposed.GetIterator();
-			while(it.Step())
-			{
-				tTVPRect cr(*it);
-
-				// intersection check
-				if(!TVPIntersectRect(&cr, cr, rect)) continue;
-
-				// send completion message to the target
-				tTVPRect pr = cr;
-				pr.add_offsets(Rect.left, Rect.top);
-				DrawSelf(target, pr, cr);
-			}
-
 			// process overlapped region
 			// clear DrawnRegion
+			tTVPComplexRect::tIterator it;
+
+
 			DrawnRegion.Clear();
+
 
 			it = overlapped.GetIterator();
 			while(it.Step())
@@ -5713,10 +5762,6 @@ void tTJSNI_BaseLayer::Draw(tTVPDrawable *target, const tTVPRect &r, bool visibl
 				if(totalopaque)
 				{
 					// this layer is totally opaque
-					if(Parent)
-					{
-						Parent = Parent;
-					}
 					UpdateBitmapForChild = target->GetDrawTargetBitmap(
 						cr, updaterectforchild);
 				}
@@ -5779,16 +5824,72 @@ void tTJSNI_BaseLayer::Draw(tTVPDrawable *target, const tTVPRect &r, bool visibl
 				}
 
 				// send completion message to the target
-				tTVPRect pr = cr;
-				pr.add_offsets(Rect.left, Rect.top);
-				target->DrawCompleted(pr, UpdateBitmapForChild, updaterectforchild,
-					DisplayType, Opacity);
+				if(DisplayType != ltBinder)
+				{
+					tTVPRect pr = cr;
+					pr.add_offsets(Rect.left, Rect.top);
+					target->DrawCompleted(pr, UpdateBitmapForChild, updaterectforchild,
+						DisplayType, Opacity);
+				}
 
 				// release temporary bitmap
 				if(tempalloc) tTVPTempBitmapHolder::FreeTemp();
 
 
 			} // overlapped region
+
+
+			// process exposed region
+			DirectTransferToParent = true; // this flag is used only when MainImage == NULL
+
+
+			it = exposed.GetIterator();
+			while(it.Step())
+			{
+				tTVPRect cr(*it);
+
+				// intersection check
+				if(!TVPIntersectRect(&cr, cr, rect)) continue;
+
+				if(MainImage != NULL)
+				{
+					// send completion message to the target
+					tTVPRect pr = cr;
+					pr.add_offsets(Rect.left, Rect.top);
+					DrawSelf(target, pr, cr);
+				}
+				else
+				{
+					// call children's "Draw" method
+
+					tTVPRect cr(*it);
+
+					// intersection check
+					if(!TVPIntersectRect(&cr, cr, rect)) continue;
+
+
+					tTVPRect updaterectforchild;
+
+					TVP_LAYER_FOR_EACH_CHILD_BEGIN(child)
+					{
+						// for each child...
+
+						// visible check
+						if(!child->Visible) continue;
+
+						// intersection check
+						tTVPRect chrect;
+						if(!TVPIntersectRect(&chrect, cr, child->Rect))
+							continue;
+
+						// call children's "Draw" method
+						child->Draw((tTVPDrawable*)this, chrect, true);
+					}
+					TVP_LAYER_FOR_EACH_CHILD_END
+
+				}
+			}
+			DirectTransferToParent = false;
 		} // has visible children/no visible children
 	} // cache enabled/disabled
 
@@ -5799,7 +5900,7 @@ tTVPBaseBitmap * tTJSNI_BaseLayer::GetDrawTargetBitmap(const tTVPRect &rect,
 	tTVPRect &cliprect)
 {
 	// called from children to get the image buffer drawn to.
-	if(DisplayType == ltBinder)
+	if(DisplayType == ltBinder || MainImage == NULL && DirectTransferToParent)
 	{
 		tTVPRect _rect(rect);
 		_rect.add_offsets(Rect.left, Rect.top);
@@ -5830,7 +5931,7 @@ void tTJSNI_BaseLayer::DrawCompleted(const tTVPRect &destrect,
 {
 	// called from children to notify that the image drawing is completed.
 	// blend the image to the target unless bmp is the same as UpdateBitmapForChild.
-	if(DisplayType == ltBinder)
+	if(DisplayType == ltBinder || MainImage == NULL && DirectTransferToParent)
 	{
 		tTVPRect _destrect(destrect);
 		tTVPRect _cliprect(cliprect);
@@ -6401,7 +6502,8 @@ void tTJSNI_BaseLayer::InvokeTransition(tjs_uint64 tick)
 		}
 		else
 		{
-			if(!MainImage && TransWithChildren && TransUpdateType == tutDivisibleFade)
+			if(!MainImage && TransWithChildren &&
+				TransUpdateType == tutDivisibleFade && DisplayType != ltOpaque)
 			{
 				// update only for child region
 				UpdateAllChildren(true);
