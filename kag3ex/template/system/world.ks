@@ -2512,6 +2512,14 @@ class KAGEnvCharacter extends KAGEnvLevelLayer, KAGEnvImage {
                 //dm("ボイスボリューム" + kag.voicevolume);
                 soundBuffer.volume2 = kag.getVoiceVolume(init.voiceName) * 1000;
                 try {
+                    // 拡張子補完処理
+                    if (!Storages.isExistentStorage(voicename)) {
+                        var test;
+                        if(test = voicename + ".wav", Storages.isExistentStorage(test))
+                            voicename = test;
+                        else if(test = voicename + ".ogg", Storages.isExistentStorage(test))
+                            voicename = test;
+                    }
                     soundBuffer.open(voicename);
                     soundBuffer.play();
                     ret = soundBuffer.totalTime;
@@ -3132,8 +3140,9 @@ class KAGEnvironment extends KAGEnvImage {
         
         kag.tagHandlers["dispname"]        = this.dispname;
         kag.tagHandlers["dispnameVoice"]   = this.dispnameVoice;
-        kag.tagHandlers["endline"]    = this.endline;
-		kag.tagHandlers["quake"]      = this.quake;
+        kag.tagHandlers["endline"]         = this.endline;
+		kag.tagHandlers["quake"]           = this.quake;
+		kag.tagHandlers["afterpage"]       = this.afterpage;
 
         // 特殊ハンドラ登録
         kag.unknownHandler         = this.unknown;
@@ -4268,6 +4277,15 @@ class KAGEnvironment extends KAGEnvImage {
         return 0;
     }
 
+    /**
+     * ページ処理後に呼び出される処理
+     */
+    function afterpage(elm) {
+        if (kag.sflags.voicecutpage) {
+            stopAllVoice();
+        }
+        return 0;
+    }
     
     var seCount = 0;
     /**
