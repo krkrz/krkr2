@@ -2764,6 +2764,12 @@ bool tTJSNI_BaseLayer::_HitTestNoVisibleCheck(tjs_int x, tjs_int y)
 		}
 		else
 		{
+			// layer has no image
+			// all pixels are treated as 0 alpha value
+			if(x >= 0 && y >= 0 && x < Rect.get_width() && y < Rect.get_height())
+			{
+				if(0 < HitThreshold) return false; else return true;
+			}
 			return false;
 		}
 	}
