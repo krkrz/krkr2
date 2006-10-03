@@ -3622,6 +3622,24 @@
 </member>
 
 <member>
+	<name>hasImage</name>
+	<type>property</type>
+	<shortdesc>レイヤが画像を持っているかどうか</shortdesc>
+	<access>r/w</access>
+	<desc>
+		　レイヤが画像を持っているかどうかを表します。値を設定することもできます。<r/>
+		　真を指定するとレイヤは画像を持ちます。これがデフォルトです。<r/>
+		　偽を指定するとレイヤの画像は開放され、レイヤは画像を持たなくなります。<r/>
+		　<ref>Layer.type</ref>プロパティを設定するとhasImageは真にリセットされます。<r/>
+		　レイヤが画像を持たない場合、<ref>Layer.type</ref>が<kw>ltOpaque</kw>ならばレイヤは全面
+		<ref>Layer.neutralColor</ref>で塗りつぶされているとして表示されます。<r/>
+		　それ以外のタイプの場合は完全に透明として扱われます。<r/>
+		　このプロパティが偽のレイヤは<ref>Layer.hitType</ref>がhtMaskの場合はマウスイベントを受け取ることはできません。また、描画やフォントを操作することはできません。<r/>
+		　このプロパティが偽のレイヤは、通常、複数の子レイヤをまとめ、自分自身は透明なだけのレイヤとして使います。
+	</desc>
+</member>
+
+<member>
 	<name>opacity</name>
 	<type>property</type>
 	<shortdesc>不透明度</shortdesc>
