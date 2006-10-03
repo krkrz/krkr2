@@ -6025,6 +6025,12 @@ class KAGWindow extends Window
 
         if (noCrOnce) {
             noCrOnce = false;
+            // 強制ヒストリ改行
+            if(historyWriteEnabled) historyLayer.reline();
+            // ヒストリの登録アクションの消去
+            if (tagHandlers.endline !== void) {
+                tagHandlers.endline();
+            }
             prevEmptyLine = emptyLine;
             emptyLine = true;
             return 0;
@@ -6283,6 +6289,11 @@ class KAGWindow extends Window
 		return showLineBreak(elm);
 	} incontextof this,
 
+    afterpage : function(elm) {
+        // ページ処理完了後ハンドラ
+        return 0;
+    } incontextof this,
+                  
 	p : function(elm)
 	{
         // 自動ラベルモードは p タグにおいて有効
@@ -6309,6 +6320,9 @@ class KAGWindow extends Window
 
         var ret = showPageBreak(elm);
 
+        // ページ終了後に呼ばれるタグ
+        conductor.pendings.insert(0, %[tagname: "afterpage"]);
+        
         // ページ待ち後に消去を強制投入
         if (erAfterPage) {
             conductor.pendings.insert(0, %[tagname: "er"]);
