@@ -1,0 +1,252 @@
+// KAGPAWidgitLayer.tjs - ボタンレイヤ
+// Copyright (C)2006, SB@Nomadiclife  改変・配布は自由です
+
+
+/*! 縦置きに対応したSliderLayer
+
+	SliderLayer上位互換、verticalにtrueを設定しない時はSliderLayerそのものです。
+	Slider_tabHeightはSlider_tabWidthをラップしているだけです。
+
+	drawHighLightをfalseにすれば、フォーカスが渡った場合でもハイライト(枠)を描画しません。
+	drawLineをfalseにすれば、中央部のラインを描画しません。
+	これら２つのプロパティは、初期状態ではtrueとなっています。
+*/
+
+ class exSliderLayer extends SliderLayer{
+	
+	var Slider_vertical;//縦向きか
+	var Slider_drawHighLight;//ハイライトを描画するか
+	var Slider_drawLine;//中央部のラインを描画するか
+
+ function exSliderLayer(win,par){
+	super.SliderLayer(...);
+	Slider_drawHighLight = true;
+	Slider_drawLine = true;
+	update();
+	}
+
+ function finalize(){
+	super.finalize(...);
+	}
+
+ function assign(src){
+	vertical = src.Slider_vertical;
+	super.assign(...);
+	}
+
+ function onPaint(){
+
+	global.Layer.onPaint();
+
+	if(Slider_vertical){//縦
+
+		var imw = imageWidth, imh = imageHeight;
+		var tabh = Slider_tabHeight;
+		var htabh = tabh >> 1;
+
+		// 下敷きを塗る
+		fillRect(0, 0, imw, imh, 0);
+
+		if(focused&&Slider_drawHighLight){
+			// フォーカスがあるのでハイライトする
+			colorRect(0, 0, width-1, 1, clHighlight, 128);
+			colorRect(0, 1, 1, height-2, clHighlight, 128);
+			colorRect(0, height-1, width, 1, clHighlight, 128);
+			colorRect(width-1, 0, 1, height-1, clHighlight, 128);
+			}
+
+		//中央のライン
+		if(Slider_drawLine){
+			var himw = imw >> 1;
+			var bottom = imh - tabh;
+			fillRect(himw - 1,htabh,1,bottom,0x80000000);
+			fillRect(himw,htabh,1,bottom,0x80FFFFFF);
+			}
+
+		//タブ
+		var pos_y = int(
+			(Slider_position-Slider_min) * (imh - tabh - 2)/(Slider_max - Slider_min))
+			 + htabh + 1;
+		var y_htabh = pos_y - htabh;
+		fillRect(0,y_htabh,imw,tabh,0xFFFFFF + (nodeEnabled ? 0:0xc0000000));
+		if(Slider_mouseOn){
+			colorRect(0,y_htabh,imw,tabh,clHighlight,64);
+			}
+		colorRect(0,y_htabh + 1, 1, tabh-2, 0xffffff, 128);
+		colorRect(imw-1,y_htabh + 1,1,tabh-2,0x000000,128);
+		colorRect(0,y_htabh,width,1,0xFFFFFF,128);
+		colorRect(0,pos_y + htabh - 1,1,width,1,0x000000,128);
+	}else{
+
+		// よく使う値をローカル変数に用意する
+		var imw = imageWidth, imh = imageHeight;
+		var tabw = Slider_tabWidth;
+		var htabw = tabw >> 1;
+
+		// 下敷きを塗る
+		fillRect(0, 0, imw, imh, 0);
+
+		if(focused&&Slider_drawHighLight)
+		{
+			// フォーカスがあるのでハイライトする
+			colorRect(0, 0, width-1, 1, clHighlight, 128);
+			colorRect(0, 1, 1, height-2, clHighlight, 128);
+			colorRect(0, height-1, width, 1, clHighlight, 128);
+			colorRect(width-1, 0, 1, height-1, clHighlight, 128);
+		}
+
+		// 中央のへこみ線
+		if(Slider_drawLine){
+			var himh = imh >> 1;
+			var right = imw - tabw;
+			fillRect(htabw, himh - 1, right, 1, 0x80000000);
+			fillRect(htabw, himh    , right, 1, 0x80ffffff);
+		}
+
+		// タブ
+		var pos_x = int(
+			(Slider_position-Slider_min) * (imw - tabw - 2)/(Slider_max - Slider_min)) +
+			htabw + 1;
+		var x_htabw = pos_x - htabw;
+		fillRect(x_htabw, 0, tabw, imh, 0xffffff + (nodeEnabled ? 0 : 0xc0000000));
+		if(Slider_mouseOn)
+		{
+			colorRect(x_htabw, 0, tabw, imh, clHighlight, 64);
+		}
+		colorRect(x_htabw + 1, 0, tabw-2, 1, 0xffffff, 128);
+		colorRect(x_htabw + 1, imh - 1, tabw-2, 1, 0x000000, 128);
+		colorRect(x_htabw, 0, 1, height, 0xffffff, 128);
+		colorRect(pos_x + htabw - 1, 0, 1, height, 0x000000, 128);
+
+		}
+	}
+
+ function onMouseDown(x,y,button){
+	if(Slider_vertical){
+	//縦のとき
+	focus();
+	global.Layer.onMouseDown(...);
+
+	var tabh = Slider_tabHeight;
+	var htabh = tabh >> 1;
+	var pos_y = int(
+			(Slider_position-Slider_min) * (imageHeight - tabh - 2)/(Slider_max - Slider_min)) +
+			htabh + 1;
+	if(pos_y - htabh > y){
+		// タブより左
+		position = Slider_position - int((Slider_max - Slider_min)/ (tabh-2));
+	}else if(pos_y + htabh < y){
+		// タブより右
+		position = Slider_position + int((Slider_max - Slider_min)/ (tabh-2));
+	}else{
+		// タブ
+		// タブのドラッグを開始
+		Slider_dragging = true;
+		Slider_dragOriginX = y - pos_y;
+		}
+
+	}else{
+		//横のときはスーパークラスのものでいい
+		super.onMouseDown(...);
+		}
+	}
+
+ function onMouseMove(x,y){
+	if(Slider_vertical){
+
+	global.Layer.onMouseMove(...);
+
+	if(Slider_dragging){
+		// タブをドラッグ
+		position = int(
+			(y - Slider_dragOriginX - (Slider_tabHeight >> 1)) * (Slider_max - Slider_min) /
+			(imageHeight - Slider_tabHeight - 2) + Slider_min);
+		}
+
+	}else{
+		super.onMouseDown(...);
+		}
+	}
+
+ property vertical	{
+	setter(v){
+		Slider_vertical = v;
+		update();
+		}
+	getter{
+		return Slider_vertical;
+		}
+	}
+
+ property Slider_tabHeight{
+	setter(h){
+		Slider_tabWidth = h;
+		update();
+		}
+	getter{
+		return Slider_tabWidth;
+		}
+	}
+
+ property drawHighLight{
+	setter(h){
+		Slider_drawHighLight = h;
+		update();
+		}
+	getter{
+		return Slider_drawHighLight;
+		}
+	}
+
+ property drawLine{
+	setter(l){
+		Slider_drawLine = l;
+		update();
+		}
+	getter{
+		return Slider_drawLine;
+		}
+	}
+
+}
+
+
+ 
+/*! 背景とタブ部の画像読み込みに対応したSliderLayer
+
+	exSliderLayer上位互換、画像をロードしなければexSliderLayerそのものです。
+	但し、背景画像が(L,Rのどちらかでも)ロードされた場合にはハイライト及び中央部のラインは描画されません。
+
+	loadImages()の仕様が変わっています。loadImages(surface,storage,colorkey)となり、
+	surfaceには
+	・"t":タブ部
+	・"l":タブより左の背景
+	・"r":タブより右の背景
+	を指定します。
+	これら以外のパラメータが与えられた場合には何もしません。(super.loadImagesの動作はしません。)
+	"l"か"r"どちらかのみが読み込まれている場合は、既に読み込まれた側の画像が両方に適用されます。
+
+	タブ部には、KAGのグラフィカルボタンのように
+	・通常の状態
+	・タブの上にマウスカーソルがある状態
+	が順に並んだ画像を使用します。
+	マウスのボタンが押された状態、の画像は今のところ使用しないという仕様になっています
+
+	背景は、例えば"l"指定で■■■■■■■■■、"r"指定で□□□□□□□□□、
+	タブが▽のような画像だった場合に
+	■■■■▽□□□□
+	のようになります。
+	例えば、音量等の大きさだけ背景部のライトが点灯する…のような表現が可能です。
+
+	背景画像にも、タブ部の画像のように
+	・通常の状態
+	・スライダー上にマウスカーソルがある状態
+	が順に並んだ画像を使用してください。
+
+	タブへの画像読み込みにはtabImageプロパティを使用してください。
+	画像を取り消す場合にはvoidを代入します。
+	背景l、背景rも同様にbaseImageL、baseImageRに対しての代入で設定して下さい。
+	これらのプロパティ及びloadImagesメソッド以外での操作をした場合の動作は未確認です。
+
+*/
+
