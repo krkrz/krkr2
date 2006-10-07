@@ -10,6 +10,9 @@
 	drawHighLightをfalseにすれば、フォーカスが渡った場合でもハイライト(枠)を描画しません。
 	drawLineをfalseにすれば、中央部のラインを描画しません。
 	これら２つのプロパティは、初期状態ではtrueとなっています。
+	10/7追加
+	タブの左右(上下)でセンターのラインの色を変えられるようにした
+
 */
 
  class exSliderLayer extends SliderLayer{
@@ -59,6 +62,7 @@
 		if(Slider_drawLine){
 			var himw = imw >> 1;
 			var bottom = imh - tabh;
+			//下
 			fillRect(himw - 1,htabh,1,bottom,0x80000000);
 			fillRect(himw,htabh,1,bottom,0x80FFFFFF);
 			}
@@ -68,6 +72,12 @@
 			(Slider_position-Slider_min) * (imh - tabh - 2)/(Slider_max - Slider_min))
 			 + htabh + 1;
 		var y_htabh = pos_y - htabh;
+		//中央のラインその2
+		if(Slider_drawLine){
+			var himw = imw >> 1;
+			fillRect(himw - 1,htabh,1,y_htabh,0x80000000);
+			fillRect(himw,htabh,1,y_htabh,0x80FF0000);
+			}
 		fillRect(0,y_htabh,imw,tabh,0xFFFFFF + (nodeEnabled ? 0:0xc0000000));
 		if(Slider_mouseOn){
 			colorRect(0,y_htabh,imw,tabh,clHighlight,64);
@@ -100,7 +110,7 @@
 			var himh = imh >> 1;
 			var right = imw - tabw;
 			fillRect(htabw, himh - 1, right, 1, 0x80000000);
-			fillRect(htabw, himh    , right, 1, 0x80ffffff);
+			fillRect(htabw, himh, right, 1, 0x80ffffff);
 		}
 
 		// タブ
@@ -108,6 +118,13 @@
 			(Slider_position-Slider_min) * (imw - tabw - 2)/(Slider_max - Slider_min)) +
 			htabw + 1;
 		var x_htabw = pos_x - htabw;
+		dm("x_htabw:" +x_htabw);
+		// 中央のへこみ線2
+		if(Slider_drawLine){
+			var himh = imh >> 1;
+			fillRect(htabw, himh - 1, x_htabw, 1, 0x80000000);
+			fillRect(htabw, himh, x_htabw, 1, 0x80ff0000);
+		}
 		fillRect(x_htabw, 0, tabw, imh, 0xffffff + (nodeEnabled ? 0 : 0xc0000000));
 		if(Slider_mouseOn)
 		{
@@ -121,7 +138,7 @@
 		}
 	}
 
- function onMouseDown(x,y,button){
+ function onMouseDown(x,y,button,shift){
 	if(Slider_vertical){
 	//縦のとき
 	focus();
@@ -133,10 +150,10 @@
 			(Slider_position-Slider_min) * (imageHeight - tabh - 2)/(Slider_max - Slider_min)) +
 			htabh + 1;
 	if(pos_y - htabh > y){
-		// タブより左
+		// タブより上
 		position = Slider_position - int((Slider_max - Slider_min)/ (tabh-2));
 	}else if(pos_y + htabh < y){
-		// タブより右
+		// タブより下
 		position = Slider_position + int((Slider_max - Slider_min)/ (tabh-2));
 	}else{
 		// タブ
@@ -164,7 +181,7 @@
 		}
 
 	}else{
-		super.onMouseDown(...);
+		super.onMouseMove(...);
 		}
 	}
 
@@ -210,43 +227,70 @@
 
 }
 
+//position変化時にコールバックするexSliderLayer
 
+class KAGPAexSliderLayer extends exSliderLayer{
+
+	var Slider_callBack;
+
+ function KAGPAexSliderLayer(win,par){
+	super.exSliderLayer(...);
+	}
+
+ function finalize(){
+	super.finalize(...);
+	}
+
+ function onChange(pos){
+	super.onChange(pos);
+	Slider_callBack(this,pos) if Slider_callBack !== void;
+	}
+ }
+
+//クリック時にコールバックするButtonLayer
  
-/*! 背景とタブ部の画像読み込みに対応したSliderLayer
+ class KAGPAButtonLayer extends ButtonLayer{
 
-	exSliderLayer上位互換、画像をロードしなければexSliderLayerそのものです。
-	但し、背景画像が(L,Rのどちらかでも)ロードされた場合にはハイライト及び中央部のラインは描画されません。
+	var Butt_callBack;
 
-	loadImages()の仕様が変わっています。loadImages(surface,storage,colorkey)となり、
-	surfaceには
-	・"t":タブ部
-	・"l":タブより左の背景
-	・"r":タブより右の背景
-	を指定します。
-	これら以外のパラメータが与えられた場合には何もしません。(super.loadImagesの動作はしません。)
-	"l"か"r"どちらかのみが読み込まれている場合は、既に読み込まれた側の画像が両方に適用されます。
+ function KAGPAButtonLayer(win,par){
+	super.ButtonLayer(...);
+	}
 
-	タブ部には、KAGのグラフィカルボタンのように
-	・通常の状態
-	・タブの上にマウスカーソルがある状態
-	が順に並んだ画像を使用します。
-	マウスのボタンが押された状態、の画像は今のところ使用しないという仕様になっています
+ function finalize(){
+	super.finalize(...);
+	}
 
-	背景は、例えば"l"指定で■■■■■■■■■、"r"指定で□□□□□□□□□、
-	タブが▽のような画像だった場合に
-	■■■■▽□□□□
-	のようになります。
-	例えば、音量等の大きさだけ背景部のライトが点灯する…のような表現が可能です。
+ function onClick(){
+	super.onClick();
+	Butt_callBack(this) if Butt_callback !== void;
+	}
+ }
 
-	背景画像にも、タブ部の画像のように
-	・通常の状態
-	・スライダー上にマウスカーソルがある状態
-	が順に並んだ画像を使用してください。
+//クリック時にコールバックするCHeckBoxLayer
 
-	タブへの画像読み込みにはtabImageプロパティを使用してください。
-	画像を取り消す場合にはvoidを代入します。
-	背景l、背景rも同様にbaseImageL、baseImageRに対しての代入で設定して下さい。
-	これらのプロパティ及びloadImagesメソッド以外での操作をした場合の動作は未確認です。
+class KAGPACheckBoxLayer extends CheckBoxLayer{
 
-*/
+	var CheckBox_callBack;
 
+ function KAGPACheckBoxLayer(win,par){
+	super.CheckBoxLayer(...);
+	}
+
+ function finalize(){
+	super.finalize(...);
+	}
+
+ function onMouseDown(){
+	super.onMouseDown(...);
+	CheckBox_callBack(this,CheckBox_checked) if CheckBox_callback !== void;
+	}
+
+ function onKeyDown(key,shift,process){
+	super.onKeyDown(...);
+	if(process&&(key == VK_RETURN||key==VK_SPACE)){
+		CheckBox_callBack(this,CheckBox_checked) if CheckBox_callback !== void;
+		}
+	}
+ }
+ 
