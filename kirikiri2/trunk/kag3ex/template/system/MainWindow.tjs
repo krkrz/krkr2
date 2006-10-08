@@ -4071,10 +4071,10 @@ class KAGWindow extends Window
 
         // 選択肢復帰
         if (selectShowing) {
-            showSelect();
+            selectLayer.setParent(fore.base, 1000000);
         }
         if (mapSelectShowing) {
-            showMapSelect();
+            mapSelectLayer.setParent(fore.base, 1000000);
         }
     }
 
@@ -6944,7 +6944,16 @@ class KAGWindow extends Window
 	trans : function(elm)
 	{
         // トランジションの開始
-        getLayerPageFromElm(elm, false).beginTransition(elm);
+        var layer = getLayerPageFromElm(elm, false);
+        if (layer == fore.base)  {
+            if (selectShowing) {
+                selectLayer.setParent(back.base, 1000000);
+            }
+            if (mapSelectShowing) {
+                mapSelectLayer.setParent(back.base, 1000000);
+            }
+        }
+        layer.beginTransition(elm);
 		return 0;
 	} incontextof this,
 
