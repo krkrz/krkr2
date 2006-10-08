@@ -458,12 +458,15 @@ class KAGWindow extends Window
     }
 
     function closeDialog(dialog=void) {
-        if (dialog === void || global.currentDialog === dialog) {
-
-            mainConductor.interrupted = false;
-            extraConductor.interrupted = false;
+        if (global.currentDialog !== void && (dialog === void || global.currentDialog === dialog)) {
+            if (mainConductor.interrupted) {
+                mainConductor.interrupted  = false;
+            }
+            if (extraConductor.interrupted) {
+                extraConductor.interrupted = false;
+            }
             setMenuAccessibleAll();
-
+            
             if (global.currentDialog !== void) {
                 global.closeDialogTrigger = new AsyncTrigger(handleCloseDialog, '');
                 global.closeDialogTrigger.cached = true;
@@ -2892,8 +2895,6 @@ class KAGWindow extends Window
 
 	function process(file, label, countpage = true, immediate = false)
 	{
-        closeDialog();
-
         // 指定ファイル、指定ラベルから実行を開始する
 
         if(!usingExtraConductor) {
@@ -3035,8 +3036,9 @@ class KAGWindow extends Window
 
 	function onConductorJump(elm)
 	{
-		// コンダクタで jump タグを処理するとき
-		if(!usingExtraConductor) incRecordLabel(elm.countpage === void || +elm.countpage);
+        // コンダクタで jump タグを処理するとき
+        closeDialog();
+        if(!usingExtraConductor) incRecordLabel(elm.countpage === void || +elm.countpage);
 		return true;
 	}
 
@@ -5824,14 +5826,14 @@ class KAGWindow extends Window
             switch (lineMode) {
             case 1:
                 if (emptyLine && !erAfterPage) {
-                    tagHandlers.er(%[all:true]);
+                    tagHandlers.er(%[]);
                 }
                 break;
             case 2:
                 if (afterPage) {
                     afterPage = false;
                     if (emptyLine && !erAfterPage) {
-                        tagHandlers.er(%[all:true]);
+                        tagHandlers.er(%[]);
                     }
                 } else {
                     if (emptyLine) {
@@ -5844,7 +5846,7 @@ class KAGWindow extends Window
                 if (afterPage) {
                     afterPage = false;
                     if (emptyLine && !erAfterPage) {
-                        tagHandlers.er(%[all:true]);
+                        tagHandlers.er(%[]);
                     }
                 } else {
                     if (emptyLine) {
@@ -5856,7 +5858,7 @@ class KAGWindow extends Window
                 if (afterPage) {
                     afterPage = false;
                     if (emptyLine && !erAfterPage) {
-                        tagHandlers.er(%[all:true]);
+                        tagHandlers.er(%[]);
                     }
                 }
                 break;
@@ -6275,6 +6277,13 @@ class KAGWindow extends Window
         return 0;
     } incontextof this,
 
+    ctimeout : function(elm)
+    {
+        // タイムアウト処理の解除（カレントのみ）
+        current.clearTimeout();
+        return 0;
+    } incontextof this,
+                  
     click : function(elm)
     {
         // クリック処理の登録(カレントのみ)
@@ -6366,7 +6375,7 @@ class KAGWindow extends Window
 
 	er : function(elm)
 	{
-		// 現在のメッセージレイヤのクリア
+        // 現在のメッセージレイヤのクリア
 		if(historyWriteEnabled) historyLayer.repage();
 		if(currentWithBack) current.comp.clear(elm.all);
 		current.clear(elm.all);
