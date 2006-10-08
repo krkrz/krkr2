@@ -118,6 +118,69 @@
 </member>
 
 <member>
+	<name>popup</name>
+	<type>method</type>
+	<shortdesc>メニュー項目のポップアップ表示</shortdesc>
+	<arg>
+		<argitem>
+			<name>flags</name>
+			<default></default>
+			<desc>
+				メニューの挙動を表すフラグです。以下の値のビット論理和を指定してください。<r/>
+				<kw>tpmLeftButton</kw><r/>
+				<kw>tpmRightButton</kw><r/>
+				<kw>tpmLeftAlign</kw><r/>
+				<kw>tpmCenterAlign</kw><r/>
+				<kw>tpmRightAlign</kw><r/>
+				<kw>tpmTopAlign</kw><r/>
+				<kw>tpmVCenterAlign</kw><r/>
+				<kw>tpmBottomAlign</kw><r/>
+				<kw>tpmHorizontal</kw><r/>
+				<kw>tpmVertical</kw><r/>
+				<kw>tpmNoNotify</kw><r/>
+				<kw>tpmReturnCmd</kw><r/>
+				<kw>tpmRecurse</kw><r/>
+				<kw>tpmHorPosAnimation</kw><r/>
+				<kw>tpmHorNegAnimation</kw><r/>
+				<kw>tpmVerPosAnimation</kw><r/>
+				<kw>tpmVerNegAnimation</kw><r/>
+				<kw>tpmNoAnimation</kw><r/>
+				これらのフラグの詳細については<at target="_top" href="http://msdn.microsoft.com/library/ja/jpwinui/html/_win32_trackpopupmenu.asp?frame=true">MSDNの該当ページ</at>を参照してください。
+				
+			</desc>
+		</argitem>
+		<argitem>
+			<name>x</name>
+			<default></default>
+			<desc>
+				ウィンドウのクライアント座標上でのx位置を表します。
+			</desc>
+		</argitem>
+		<argitem>
+			<name>y</name>
+			<default></default>
+			<desc>
+				ウィンドウのクライアント座標上でのy位置を表します。
+			</desc>
+		</argitem>
+	</arg>
+	<result>flagsにtpmReturnCmdが指定されていた場合は、
+		選択されたメニュー項目のIDを整数で返します(ただし、現バージョンではこのIDを吉里吉里側から設定することができないため、flagsにtpmReturnCmdを指定することは意味がありません)。
+		何も選択されずにキャンセルされた場合は0を返します。
+	</result>
+	<desc>
+		メニュー項目をポップアップ表示します。このメソッドは、メニューが閉じられるまで帰ってきません。<r/>
+		メニューが閉じられるまでの間に他の非同期イベントが発生する可能性があるので注意してください。<r/>
+		<ref>Window.menu</ref>そのものはポップアップできません。<r/>
+		非表示状態のメニュー項目はポップアップできません。<r/>
+		<ref>Window.menu</ref>の子でないメニューはポップアップできません。<r/>
+	</desc>
+</member>
+
+
+
+
+<member>
 	<name>caption</name>
 	<type>property</type>
 	<shortdesc>キャプション</shortdesc>
@@ -170,6 +233,16 @@
 </member>
 
 <member>
+	<name>window</name>
+	<type>property</type>
+	<shortdesc>オーナーウィンドウ</shortdesc>
+	<access>r</access>
+	<desc>
+		　このメニューアイテムを保持するオーナーウィンドウ(Windowクラスのオブジェクト)を表します。<r/>
+	</desc>
+</member>
+
+<member>
 	<name>group</name>
 	<type>property</type>
 	<shortdesc>グループ番号</shortdesc>
@@ -192,6 +265,33 @@
 		　ラジオ項目かどうかを指定します。値を設定することもできます。<r/>
 		　この項目が真の場合の動作については <ref>MenuItem.checked</ref> プロパティを
 		参照してください。<r/>
+	</desc>
+</member>
+
+<member>
+	<name>index</name>
+	<type>property</type>
+	<shortdesc>順番</shortdesc>
+	<access>r/w</access>
+	<desc>
+		　同じ親を持つメニュー項目間における順番を表す、0または正の整数です。<r/>
+		　0が先頭を表します。<r/>
+		　現在位置を取得したり、位置を変更するときに便利です。<r/>
+		　値を設定すると、その位置にメニュー項目が移動します。<r/>
+	</desc>
+</member>
+
+<member>
+	<name>HMENU</name>
+	<type>property</type>
+	<shortdesc>HMENUメニュー項目ハンドル</shortdesc>
+	<access>r</access>
+	<desc>
+		　Windows APIにおけるHMENU型のメニュー項目ハンドルを表します。<r/>
+		　このプロパティはプラグインなどでメニュー項目に直接アクセスしたいときに用います。<r/>
+		　TJS2からのアクセスは意味がありません。<r/>
+		　ここで得られるのは整数ですが、プラグインなどでこの数値を使う場合は
+		HMENU 型に キャストして使ってください。<r/>
 	</desc>
 </member>
 
@@ -238,6 +338,17 @@
 	<desc>
 		　子メニュー項目がリストされた配列オブジェクトを表します。<r/>
 		　ここで得られた配列に値を書き込んだり、項目の削除や追加などをしても実際のメニュー項目の状態には反映されません。読み取りのみが行えると考えてください。<r/>
+	</desc>
+</member>
+
+
+<member>
+	<name>root</name>
+	<type>property</type>
+	<shortdesc>ルートメニュー項目</shortdesc>
+	<access>r</access>
+	<desc>
+		　ルート(大本)のメニュー項目(MenuItemクラスのインスタンス)を表します。<r/>
 	</desc>
 </member>
 

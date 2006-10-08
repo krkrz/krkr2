@@ -114,6 +114,24 @@ void tTJSNI_MenuItem::Remove(tTJSNI_MenuItem *item)
 	}
 }
 //---------------------------------------------------------------------------
+HMENU tTJSNI_MenuItem::GetMenuItemHandleForPlugin() const
+{
+	if(!MenuItem) return NULL;
+	return MenuItem->Handle;
+}
+//---------------------------------------------------------------------------
+tjs_int tTJSNI_MenuItem::GetIndex() const
+{
+	if(!MenuItem) return NULL;
+	return MenuItem->MenuIndex;
+}
+//---------------------------------------------------------------------------
+void tTJSNI_MenuItem::SetIndex(tjs_int newIndex)
+{
+	if(!MenuItem) return;
+	MenuItem->MenuIndex = newIndex;
+}
+//---------------------------------------------------------------------------
 void tTJSNI_MenuItem::SetCaption(const ttstr & caption)
 {
 	if(!MenuItem) return;
@@ -200,7 +218,38 @@ bool tTJSNI_MenuItem::GetVisible() const
 	if(Window) return Window->GetMenuBarVisible(); else return MenuItem->Visible;
 }
 //---------------------------------------------------------------------------
+tjs_int tTJSNI_MenuItem::TrackPopup(tjs_uint32 flags, tjs_int x, tjs_int y) const
+{
+	if(!MenuItem) return 0;
 
+	HWND  hWindow;
+	if (GetRootMenuItem() && GetRootMenuItem()->GetWindow()) {
+		hWindow = GetRootMenuItem()->GetWindow()->GetWindowHandleForPlugin();
+	} else {
+		return 0;
+	}
+	HMENU hMenuItem = GetMenuItemHandleForPlugin();
+
+	// we assume where that x and y are in client coordinates.
+	// TrackPopupMenuEx requires screen coordinates, so here converts them.
+	POINT scrPoint;	// screen
+	scrPoint.x = x;
+	scrPoint.y = y;
+	BOOL rvScr = ::ClientToScreen(hWindow, &scrPoint);
+	if (!rvScr)
+	{
+		// TODO
+	}
+
+	BOOL rvPopup = TrackPopupMenuEx(hMenuItem, flags, scrPoint.x, scrPoint.y, hWindow, NULL);
+	if (!rvPopup)
+	{
+		// TODO
+		// should raise an exception when the API fails
+	}
+
+	return rvPopup;
+}
 
 
 //---------------------------------------------------------------------------
@@ -219,9 +268,28 @@ tTJSNativeInstance *tTJSNC_MenuItem::CreateNativeInstance()
 //---------------------------------------------------------------------------
 tTJSNativeClass * TVPCreateNativeClass_MenuItem()
 {
-	return new tTJSNC_MenuItem();
+	tTJSNativeClass *cls = new tTJSNC_MenuItem();
+	static tjs_uint32 TJS_NCM_CLASSID;
+	TJS_NCM_CLASSID = tTJSNC_MenuItem::ClassID;
+
+//---------------------------------------------------------------------------
+TJS_BEGIN_NATIVE_PROP_DECL(HMENU)
+{
+	TJS_BEGIN_NATIVE_PROP_GETTER
+	{
+		TJS_GET_NATIVE_INSTANCE(/*var. name*/_this, /*var. type*/tTJSNI_MenuItem);
+		if (result) *result = (tTVInteger)(tjs_uint)_this->GetMenuItemHandleForPlugin();
+		return TJS_S_OK;
+	}
+	TJS_END_NATIVE_PROP_GETTER
+
+	TJS_DENY_NATIVE_PROP_SETTER
 }
+TJS_END_NATIVE_PROP_DECL_OUTER(cls, HMENU)
 //---------------------------------------------------------------------------
 
+
+	return cls;
+}
 //---------------------------------------------------------------------------
 

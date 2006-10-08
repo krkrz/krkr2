@@ -20,6 +20,7 @@
 #include <ToolWin.hpp>
 #include <Menus.hpp>
 #include <Dialogs.hpp>
+
 typedef void __fastcall (__closure *TCDPExecEvent)(System::TObject* Sender,
 	const ttstr & content);
 //---------------------------------------------------------------------------
@@ -105,6 +106,30 @@ public:		// ÉÜÅ[ÉUÅ[êÈåæ
 	bool __fastcall GetExecButtonEnabled();
 	void __fastcall SetReadOnly(bool st);
 	bool __fastcall GetReadOnly();
+	void __fastcall ResetConstraints(void);
+
+	TFont *    __fastcall GetFont(void) const;
+	void       __fastcall SetFontColor(tjs_uint32 color);
+	tjs_uint32 __fastcall GetFontColor() const;
+	tjs_int    __fastcall GetFontHeight() const;	// pixel
+	void       __fastcall SetFontHeight(tjs_int t);
+	tjs_int    __fastcall GetFontSize() const;	// point
+	void       __fastcall SetFontSize(tjs_int t);
+	ttstr      __fastcall GetFontName(void) const;
+	void       __fastcall SetFontName(const ttstr & name);
+	bool       __fastcall ContainsFontStyle(tjs_int style) const;
+	void       __fastcall AddFontStyle(tjs_int style);
+	void       __fastcall RemoveFontStyle(tjs_int style);
+	bool       __fastcall GetWordWrap(void) const;
+	void       __fastcall SetWordWrap(bool ww);
+	tjs_int    __fastcall GetOpacity(void) const;
+	void       __fastcall SetOpacity(tjs_int opa);
+	bool       __fastcall GetStatusBarVisible(void) const;
+	void       __fastcall SetStatusBarVisible(bool vis);
+	tjs_int    __fastcall GetScrollBarsVisible(void) const;
+	void       __fastcall SetScrollBarsVisible(tjs_int vis);
+	tjs_int    __fastcall GetBorderStyle() const;
+	void       __fastcall SetBorderStyle(tjs_int style);
 
 private:
 	void __fastcall WriteProfile();

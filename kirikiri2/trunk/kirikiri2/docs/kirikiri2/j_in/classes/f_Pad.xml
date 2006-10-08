@@ -70,4 +70,211 @@
 	</desc>
 </member>
 
+<member>
+	<name>showScrollBars</name>
+	<type>property</type>
+	<shortdesc>スクロールバーの表示状態</shortdesc>
+	<access>r/w</access>
+	<desc>
+		　スクロールバーの表示状態を表します。<r/>
+		以下のいずれかの値を採ることができます。<r/>
+		<kw>ssNone</kw> スクロールバーを表示しない<r/>
+		<kw>ssHorizontal</kw> 水平スクロールバーのみを表示する<r/>
+		<kw>ssVertical</kw> 垂直スクロールバーのみを表示する<r/>
+		<kw>ssBoth</kw> 水平・垂直両方のスクロールバーを表示する<r/>
+		デフォルトはssBothです。
+	</desc>
+</member>
+
+<member>
+	<name>showStatusBar</name>
+	<type>property</type>
+	<shortdesc>ステータスバーを表示するかどうか</shortdesc>
+	<access>r/w</access>
+	<desc>
+		ステータスバーを表示するかどうかを表します。値を設定することもできます。<r/>
+		デフォルトは真です。
+	</desc>
+</member>
+
+<member>
+	<name>statusText</name>
+	<type>property</type>
+	<shortdesc>ステータスバーに表示するテキスト</shortdesc>
+	<access>r/w</access>
+	<desc>
+		ステータスバーに表示するテキストを表します。値を設定することもできます。<r/>
+	</desc>
+</member>
+
+<member>
+	<name>borderStyle</name>
+	<type>property</type>
+	<shortdesc>ウィンドウ外見</shortdesc>
+	<access>r/w</access>
+	<desc>
+		　ウィンドウの外見を表します。値を設定することもできます。<r/>
+		　指定可能な値については<ref>Window.borderStyle</ref>を参照してください。<r/>
+	</desc>
+</member>
+
+<member>
+	<name>wordWrap</name>
+	<type>property</type>
+	<shortdesc>右端で折り返すかどうか</shortdesc>
+	<access>r/w</access>
+	<desc>
+		　内容を右端で折り返すかどうかを表します。値を設定することもできます。<r/>
+		真にすると、文字列表示領域の右端で文字列が自動的に折り返されます。<r/>
+		ただし、文字としての改行コードが挿入されるわけではなく、
+		あくまで表示上改行されるだけです。この場合、水平スクロールバーは無効になります。<r/>
+		偽の場合、表示領域を超える文字列があっても折り返されません。<r/>
+		デフォルトは偽です。
+	</desc>
+</member>
+
+<member>
+	<name>readOnly</name>
+	<type>property</type>
+	<shortdesc>読み込み専用かどうか</shortdesc>
+	<access>r/w</access>
+	<desc>
+		　内容が読み込み専用かどうかを表します。値を設定することもできます。<r/>
+		　真を指定すると内容の編集はできなくなりますが、textプロパティでのテキストの設定はできます。<r/>
+	</desc>
+</member>
+
+<member>
+	<name>fontColor</name>
+	<type>property</type>
+	<shortdesc>フォントの色</shortdesc>
+	<access>r/w</access>
+	<desc>
+		　フォントの色を0xRRGGBB形式で表します。値を設定することもできます。<r/>
+		　デフォルトは0xffffff(白)です。<r/>
+	</desc>
+</member>
+
+<member>
+	<name>fontFace</name>
+	<type>property</type>
+	<shortdesc>フォント名</shortdesc>
+	<access>r/w</access>
+	<desc>
+		　フォント名を表します。値を設定することもできます。<r/>
+		　デフォルトは"MS 明朝"です。
+	</desc>
+</member>
+
+<member>
+	<name>fontHeight</name>
+	<type>property</type>
+	<shortdesc>フォントの高さ</shortdesc>
+	<access>r/w</access>
+	<desc>
+		　フォントの高さをピクセル単位で指定します。値を設定することもできます。<r/>
+		　デフォルトは12です。
+	</desc>
+</member>
+
+<member>
+	<name>fontSize</name>
+	<type>property</type>
+	<shortdesc>フォントのサイズ</shortdesc>
+	<access>r/w</access>
+	<desc>
+		　フォントの大きさポイント単位で指定します。値を設定することもできます。<r/>
+		　デフォルトは9です。
+	</desc>
+</member>
+
+<member>
+	<name>fontBold</name>
+	<type>property</type>
+	<shortdesc>太字</shortdesc>
+	<access>r/w</access>
+	<desc>
+		　フォントを太字にするかどうかを表します。値を設定することもできます。<r/>
+		　この設定は、編集領域すべての文字に影響します。<r/>
+		　デフォルトは偽です。
+	</desc>
+</member>
+
+<member>
+	<name>fontItalic</name>
+	<type>property</type>
+	<shortdesc>斜体</shortdesc>
+	<access>r/w</access>
+	<desc>
+		　フォントを斜体にするかどうかを表します。値を設定することもできます。<r/>
+		　この設定は、編集領域すべての文字に影響します。<r/>
+		　デフォルトは偽です。
+	</desc>
+</member>
+
+<member>
+	<name>fontUnderline</name>
+	<type>property</type>
+	<shortdesc>アンダーライン</shortdesc>
+	<access>r/w</access>
+	<desc>
+		　フォントにアンダーラインを引くかどうかを表します。値を設定することもできます。<r/>
+		　この設定は、編集領域すべての文字に影響します。<r/>
+		　デフォルトは偽です。
+	</desc>
+</member>
+
+<member>
+	<name>fontStrikeOut</name>
+	<type>property</type>
+	<shortdesc>取消線</shortdesc>
+	<access>r/w</access>
+	<desc>
+		　フォントに取消線を引くかどうかを表します。値を設定することもできます。<r/>
+		　この設定は、編集領域すべての文字に影響します。<r/>
+		　デフォルトは偽です。
+	</desc>
+</member>
+
+<member>
+	<name>left</name>
+	<type>property</type>
+	<shortdesc>ウィンドウの左端位置</shortdesc>
+	<access>r/w</access>
+	<desc>
+		　ウィンドウの左端位置を表します。<r/>
+	</desc>
+</member>
+
+<member>
+	<name>top</name>
+	<type>property</type>
+	<shortdesc>ウィンドウの上端位置</shortdesc>
+	<access>r/w</access>
+	<desc>
+		　ウィンドウの上端位置を表します。<r/>
+	</desc>
+</member>
+
+<member>
+	<name>width</name>
+	<type>property</type>
+	<shortdesc>ウィンドウの幅</shortdesc>
+	<access>r/w</access>
+	<desc>
+		　ウィンドウの幅を表します。<r/>
+	</desc>
+</member>
+
+<member>
+	<name>height</name>
+	<type>property</type>
+	<shortdesc>ウィンドウの高さ</shortdesc>
+	<access>r/w</access>
+	<desc>
+		　ウィンドウの高さを表します。<r/>
+	</desc>
+</member>
+
+
 </doc>

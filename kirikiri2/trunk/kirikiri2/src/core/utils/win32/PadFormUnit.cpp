@@ -149,7 +149,7 @@ void __fastcall TTVPPadForm::MemoPopupMenuPopup(TObject *Sender)
 
 	CutMenuItem->Enabled = Memo->SelLength;
 	CopyMenuItem->Enabled = Memo->SelLength;
-	PasteMenuItem->Enabled = Clipboard()->HasFormat(CF_TEXT);
+	PasteMenuItem->Enabled = Clipboard()->HasFormat(CF_TEXT) && !Memo->ReadOnly;
 	UndoMenuItem->Enabled = Memo->CanUndo;
 }
 //---------------------------------------------------------------------------
@@ -167,6 +167,7 @@ void __fastcall TTVPPadForm::CopyMenuItemClick(TObject *Sender)
 //---------------------------------------------------------------------------
 void __fastcall TTVPPadForm::PasteMenuItemClick(TObject *Sender)
 {
+	if(Memo->ReadOnly) return;
 	if(Clipboard()->HasFormat(CF_TEXT))
 	{
 		AnsiString text = Clipboard()->AsText;
@@ -256,15 +257,172 @@ tjs_uint32 TTVPPadForm::GetEditColor() const
 	return ((color & 0xff0000) >> 16) + (color & 0x00ff00) + ((color & 0x0000ff) << 16);
 }
 //---------------------------------------------------------------------------
-void TTVPPadForm::SetFileName(const ttstr &name)
+void __fastcall TTVPPadForm::SetFileName(const ttstr &name)
 {
 	// name must be a local file name
 	SaveDialog->FileName = name.AsAnsiString();
 }
 //---------------------------------------------------------------------------
-ttstr TTVPPadForm::GetFileName() const
+ttstr __fastcall TTVPPadForm::GetFileName() const
 {
 	return ttstr(SaveDialog->FileName);
+}
+//---------------------------------------------------------------------------
+TFont * __fastcall TTVPPadForm::GetFont(void) const
+{
+	return Memo->Font;
+}
+//---------------------------------------------------------------------------
+/*
+VCL treats size as being negative value of height, but here we let user access
+them both in positive value.
+*/
+tjs_int __fastcall TTVPPadForm::GetFontHeight() const	// pixel
+{
+	tjs_int t = GetFont()->Height;
+	if (t < 0) t = -t;
+	return t;
+}
+//---------------------------------------------------------------------------
+void __fastcall TTVPPadForm::SetFontHeight(tjs_int t)
+{
+	if (t > 0) t = -t;	// do nagate
+	GetFont()->Height = t;
+}
+//---------------------------------------------------------------------------
+tjs_int __fastcall TTVPPadForm::GetFontSize() const	// point
+{
+	tjs_int t = GetFont()->Size;
+	if (t < 0) t = -t;
+	return t;
+}
+//---------------------------------------------------------------------------
+void __fastcall TTVPPadForm::SetFontSize(tjs_int t)
+{
+	if (t < 0) t = -t;
+	GetFont()->Size = t;
+}
+//---------------------------------------------------------------------------
+static enum TFontStyle TVPFontStyleToVCLFontStyle(tjs_int style)
+{
+	enum TFontStyle fs = 0;
+	switch (style) {
+	case TVP_TF_ITALIC    : fs = fsItalic; break;
+	case TVP_TF_BOLD      : fs = fsBold; break;
+	case TVP_TF_UNDERLINE : fs = fsUnderline; break;
+	case TVP_TF_STRIKEOUT : fs = fsStrikeOut; break;
+	}
+	return fs;
+}
+bool __fastcall TTVPPadForm::ContainsFontStyle(tjs_int style) const
+{
+	enum TFontStyle fs = TVPFontStyleToVCLFontStyle(style);
+	bool rv = GetFont()->Style.Contains(fs);
+	return rv;
+}
+//---------------------------------------------------------------------------
+void __fastcall TTVPPadForm::AddFontStyle(tjs_int style)
+{
+	enum TFontStyle fs = TVPFontStyleToVCLFontStyle(style);
+	GetFont()->Style = GetFont()->Style << fs;
+	return;
+}
+//---------------------------------------------------------------------------
+void __fastcall TTVPPadForm::RemoveFontStyle(tjs_int style)
+{
+	enum TFontStyle fs = TVPFontStyleToVCLFontStyle(style);
+	GetFont()->Style = GetFont()->Style >> fs;
+	return;
+}
+//---------------------------------------------------------------------------
+ttstr __fastcall TTVPPadForm::GetFontName(void) const
+{
+	return ttstr(GetFont()->Name);
+}
+//---------------------------------------------------------------------------
+void __fastcall TTVPPadForm::SetFontName(const ttstr & name)
+{
+	GetFont()->Name = name.AsAnsiString();
+}
+//---------------------------------------------------------------------------
+void __fastcall TTVPPadForm::SetFontColor(tjs_uint32 color)
+{
+	color = TVPToActualColor(color);
+	color = ((color & 0xff0000) >> 16) + (color & 0x00ff00) + ((color & 0x0000ff) << 16);
+
+	Memo->Font->Color = color;
+}
+//---------------------------------------------------------------------------
+tjs_uint32 TTVPPadForm::GetFontColor() const
+{
+	tjs_uint32 color = (tjs_uint32)Memo->Color;
+	return ((color & 0xff0000) >> 16) + (color & 0x00ff00) + ((color & 0x0000ff) << 16);
+}
+//---------------------------------------------------------------------------
+bool __fastcall TTVPPadForm::GetWordWrap(void) const
+{
+	return Memo->WordWrap;
+}
+//---------------------------------------------------------------------------
+void __fastcall TTVPPadForm::SetWordWrap(bool ww)
+{
+	Memo->WordWrap = ww;
+}
+//---------------------------------------------------------------------------
+tjs_int __fastcall TTVPPadForm::GetOpacity(void) const
+{
+#ifndef TVP_NO_USE_PAD_ALPHABLEND
+	return AlphaBlendValue;
+#else
+	return 255;
+#endif
+}
+//---------------------------------------------------------------------------
+void __fastcall TTVPPadForm::SetOpacity(tjs_int opa)
+{
+#ifndef TVP_NO_USE_PAD_ALPHABLEND
+	if (opa < 0) opa = 0;
+	if (opa > 255) opa = 255;
+	AlphaBlend = (opa == 255) ? false : true;
+	AlphaBlendValue = opa;
+#endif
+}
+//---------------------------------------------------------------------------
+bool __fastcall TTVPPadForm::GetStatusBarVisible(void) const
+{
+	return StatusBar->Visible;
+}
+//---------------------------------------------------------------------------
+void __fastcall TTVPPadForm::SetStatusBarVisible(bool vis)
+{
+	StatusBar->Visible = vis;
+}
+//---------------------------------------------------------------------------
+tjs_int __fastcall TTVPPadForm::GetScrollBarsVisible(void) const
+{
+	return Memo->ScrollBars;
+}
+//---------------------------------------------------------------------------
+void __fastcall TTVPPadForm::SetScrollBarsVisible(tjs_int vis)
+{
+	Memo->ScrollBars = (TScrollStyle) vis;
+}
+//---------------------------------------------------------------------------
+tjs_int __fastcall TTVPPadForm::GetBorderStyle() const
+{
+	return BorderStyle;
+}
+//---------------------------------------------------------------------------
+void __fastcall TTVPPadForm::SetBorderStyle(tjs_int style)
+{
+	BorderStyle = (TFormBorderStyle) style;
+}
+//---------------------------------------------------------------------------
+void __fastcall TTVPPadForm::ResetConstraints(void)
+{
+	tjs_int titleh = Height - ClientHeight;
+	tjs_int sbarh = StatusBar->Visible ? StatusBar->Height : 0;
+	Constraints->MinHeight = titleh + sbarh;
 }
 //---------------------------------------------------------------------------
 void __fastcall TTVPPadForm::UpdatePosition(void)
@@ -396,5 +554,7 @@ void __fastcall TTVPPadForm::ShowOnTopMenuItemClick(TObject *Sender)
 	FormStyle = FormStyle == fsStayOnTop ? fsNormal : fsStayOnTop;
 }
 //---------------------------------------------------------------------------
+
+
 
 
