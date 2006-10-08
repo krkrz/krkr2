@@ -969,6 +969,32 @@ TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/unlink)
 TJS_END_NATIVE_METHOD_DECL_OUTER(/*object to register*/cls,
 	/*func. name*/unlink)
 //----------------------------------------------------------------------
+TJS_BEGIN_NATIVE_METHOD_DECL(getList)
+{
+	iTJSDispatch2 * array = TJSCreateArrayObject();
+	try
+	{
+		tTVPPluginVectorType::iterator i;
+		tjs_int idx = 0;
+		for(i = TVPPluginVector.Vector.begin(); i != TVPPluginVector.Vector.end(); i++)
+		{
+			tTJSVariant val = (*i)->Name.c_str();
+			array->PropSetByNum(TJS_MEMBERENSURE, idx++, &val, array);
+		}
+	
+		if (result) *result = array;
+	}
+	catch(...)
+	{
+		array->Release();
+		throw;
+	}
+	array->Release();
+	return TJS_S_OK;
+}
+TJS_END_NATIVE_METHOD_DECL_OUTER(cls, getList)
+//---------------------------------------------------------------------------
+
 
 //---------------------------------------------------------------------------
 	return cls;

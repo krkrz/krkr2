@@ -45,4 +45,17 @@
 </member>
 
 
+<member>
+	<name>getList</name>
+	<type>method</type>
+	<shortdesc>リストの取得</shortdesc>
+	<arg>
+	</arg>
+	<result>リンクされているプラグイン名が格納された配列</result>
+	<desc>
+		　プラグインのリストを取得します。返される配列は、リンクした順番でプラグイン名が列挙された物です。<r/>
+	</desc>
+</member>
+
+
 </doc>
