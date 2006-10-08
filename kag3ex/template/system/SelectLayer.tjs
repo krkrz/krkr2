@@ -388,6 +388,17 @@ class SelectLayer {
         selects.add(select);
     }
 
+    /*
+     * 親の差し替え
+     */
+    function setParent(parent, absolute) {
+        for (var i=0; i<selects.count;i++) {
+            var select = selects[i];
+            select.parent   = parent;
+            select.absolute = absolute + 4 + i;
+        }
+    }
+    
     /**
      * 選択処理開始
      */

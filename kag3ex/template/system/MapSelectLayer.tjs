@@ -329,6 +329,14 @@ class MapSelectLayer extends KAGLayer {
         selects.add(select);
     }
 
+    /*
+     * 親の差し替え
+     */
+    function setParent(parent, absolute) {
+        this.parent = parent;
+        this.absolute = absolute;
+    }
+    
     /**
      * 選択処理開始
      */
