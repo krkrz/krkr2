@@ -65,7 +65,14 @@ public:
 
 	void SetVisible(bool b);
 	bool GetVisible() const;
-	
+
+	tjs_int GetIndex() const;
+	void SetIndex(tjs_int newIndex);
+
+	tjs_int TrackPopup(tjs_uint32 flags, tjs_int x, tjs_int y) const;
+
+//-- interface to plugin
+	HMENU GetMenuItemHandleForPlugin() const;
 };
 //---------------------------------------------------------------------------
 
