@@ -43,7 +43,51 @@ public:
 	virtual void SetTitle(const ttstr &title);
 	virtual ttstr GetTitle() const;
 
+	virtual tjs_uint32 GetFontColor() const;
+	virtual void SetFontColor(tjs_uint32 color);
+	virtual tjs_int GetFontHeight() const;	// pixel
+	virtual void SetFontHeight(tjs_int height);
+	virtual tjs_int GetFontSize() const;	// point
+	virtual void SetFontSize(tjs_int size);
+	virtual bool ContainsFontStyle(tjs_int style) const;
+	virtual void AddFontStyle(tjs_int style);
+	virtual void RemoveFontStyle(tjs_int style);
+	virtual ttstr GetFontName(void) const;
+	virtual void SetFontName(const ttstr & name);
+	virtual bool IsReadOnly(void) const;
+	virtual void SetReadOnly(bool ro);
+	virtual bool GetWordWrap(void) const;
+	virtual void SetWordWrap(bool ww);
+	virtual tjs_int GetOpacity(void) const;
+	virtual void SetOpacity(tjs_int opa);
+	virtual bool GetStatusBarVisible(void) const;
+	virtual void SetStatusBarVisible(bool vis);
+	virtual tjs_int GetScrollBarsVisible(void) const;
+	virtual void SetScrollBarsVisible(tjs_int vis);
+	virtual tjs_int GetBorderStyle(void) const const;
+	virtual void SetBorderStyle(tjs_int style);
+	virtual ttstr GetStatusText() const;
+	virtual void SetStatusText(const ttstr &title);
+
+	// form position and size
+	virtual tjs_int GetFormHeight(void) const;
+	virtual tjs_int GetFormWidth(void) const;
+	virtual tjs_int GetFormTop(void) const;
+	virtual tjs_int GetFormLeft(void) const;
+	virtual void SetFormHeight(tjs_int value);
+	virtual void SetFormWidth(tjs_int value);
+	virtual void SetFormTop(tjs_int value);
+	virtual void SetFormLeft(tjs_int value);
+
+	// 
+	virtual bool GetUserCreationMode(void) const;
+	virtual void SetUserCreationMode(bool mode);
+
 protected:
+	bool UserCreationMode; // true if this form was created by the userscript,
+						// otherwise (when created by the system as "Script Editor") this will be false
+	bool MultilineMode;
+
 private:
 };
 //---------------------------------------------------------------------------

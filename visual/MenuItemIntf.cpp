@@ -219,6 +219,18 @@ void tTJSNI_BaseMenuItem::OnClick(void)
 	TVPPostEvent(Owner, Owner, eventname, 0, TVP_EPT_IMMEDIATE, 0, NULL);
 }
 //---------------------------------------------------------------------------
+tTJSNI_BaseMenuItem * tTJSNI_BaseMenuItem::GetRootMenuItem()
+{
+	tTJSNI_BaseMenuItem * current = this;
+	tTJSNI_BaseMenuItem * parent = current->GetParent();
+	while (parent)
+	{
+		current = parent;
+		parent = current->GetParent();
+	}
+	return current;
+}
+//---------------------------------------------------------------------------
 
 
 
@@ -276,6 +288,19 @@ TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/remove)
 }
 TJS_END_NATIVE_METHOD_DECL(/*func. name*/remove)
 //----------------------------------------------------------------------
+TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/popup) // not trackPopup
+{
+	TJS_GET_NATIVE_INSTANCE(/*var. name*/_this, /*var. type*/tTJSNI_MenuItem);
+	if(numparams < 3) return TJS_E_BADPARAMCOUNT;
+	tjs_uint32 flags = (tTVInteger)*param[0];
+	tjs_int x = *param[1];
+	tjs_int y = *param[2];
+	tjs_int rv = _this->TrackPopup(flags, x, y);
+	if (result) *result = rv;
+	return TJS_S_OK;
+}
+TJS_END_NATIVE_METHOD_DECL(/*func. name*/popup) // not trackPopup
+//---------------------------------------------------------------------------
 
 //-- events
 
@@ -481,6 +506,72 @@ TJS_BEGIN_NATIVE_PROP_DECL(children)
 	TJS_DENY_NATIVE_PROP_SETTER
 }
 TJS_END_NATIVE_PROP_DECL(children)
+//----------------------------------------------------------------------
+TJS_BEGIN_NATIVE_PROP_DECL(root) // not rootMenuItem
+{
+	TJS_BEGIN_NATIVE_PROP_GETTER
+	{
+		TJS_GET_NATIVE_INSTANCE(/*var. name*/_this, /*var. type*/tTJSNI_MenuItem);
+		tTJSNI_BaseMenuItem * root = _this->GetRootMenuItem();
+		if (root)
+		{
+			iTJSDispatch2 *dsp = root->GetOwnerNoAddRef();
+			if (result) *result = tTJSVariant(dsp, dsp);
+		}
+		else
+		{
+			if (result) *result = tTJSVariant((iTJSDispatch2 *)NULL);
+		}
+		return TJS_S_OK;
+	}
+	TJS_END_NATIVE_PROP_GETTER
+
+	TJS_DENY_NATIVE_PROP_SETTER
+}
+TJS_END_NATIVE_PROP_DECL(root) // not rootMenuItem
+//----------------------------------------------------------------------
+TJS_BEGIN_NATIVE_PROP_DECL(window)
+{
+	TJS_BEGIN_NATIVE_PROP_GETTER
+	{
+		TJS_GET_NATIVE_INSTANCE(/*var. name*/_this, /*var. type*/tTJSNI_MenuItem);
+		tTJSNI_Window * window = _this->GetWindow();
+		if (window)
+		{
+			iTJSDispatch2 *dsp = window->GetOwnerNoAddRef();
+			if (result) *result = tTJSVariant(dsp, dsp);
+		}
+		else
+		{
+			if (result) *result = tTJSVariant((iTJSDispatch2 *)NULL);
+		}
+		return TJS_S_OK;
+	}
+	TJS_END_NATIVE_PROP_GETTER
+
+	TJS_DENY_NATIVE_PROP_SETTER
+}
+TJS_END_NATIVE_PROP_DECL(window)
+//----------------------------------------------------------------------
+TJS_BEGIN_NATIVE_PROP_DECL(index)
+{
+	TJS_BEGIN_NATIVE_PROP_GETTER
+	{
+		TJS_GET_NATIVE_INSTANCE(/*var. name*/_this, /*var. type*/tTJSNI_MenuItem);
+		if (result) *result = (tTVInteger)_this->GetIndex();
+		return TJS_S_OK;
+	}
+	TJS_END_NATIVE_PROP_GETTER
+
+	TJS_BEGIN_NATIVE_PROP_SETTER
+	{
+		TJS_GET_NATIVE_INSTANCE(/*var. name*/_this, /*var. type*/tTJSNI_MenuItem);
+		_this->SetIndex((tjs_int)(*param));
+		return TJS_S_OK;
+	}
+	TJS_END_NATIVE_PROP_SETTER
+}
+TJS_END_NATIVE_PROP_DECL(index)
 //----------------------------------------------------------------------
 
 	TJS_END_NATIVE_MEMBERS

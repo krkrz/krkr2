@@ -127,6 +127,30 @@ TJS_N("const\
  clAdapt= 0x01ffffff,\
  clPalIdx = 0x3000000,\
  clAlphaMat = 0x4000000,\
+/* for Menu.trackPopup (see winuser.h) */\
+ tpmLeftButton      = 0x0000,\
+ tpmRightButton     = 0x0002,\
+ tpmLeftAlign       = 0x0000,\
+ tpmCenterAlign     = 0x0004,\
+ tpmRightAlign      = 0x0008,\
+ tpmTopAlign        = 0x0000,\
+ tpmVCenterAlign    = 0x0010,\
+ tpmBottomAlign     = 0x0020,\
+ tpmHorizontal      = 0x0000,\
+ tpmVertical        = 0x0040,\
+ tpmNoNotify        = 0x0080,\
+ tpmReturnCmd       = 0x0100,\
+ tpmRecurse         = 0x0001,\
+ tpmHorPosAnimation = 0x0400,\
+ tpmHorNegAnimation = 0x0800,\
+ tpmVerPosAnimation = 0x1000,\
+ tpmVerNegAnimation = 0x2000,\
+ tpmNoAnimation     = 0x4000,\
+/* for Pad.showScrollBars (see Vcl/stdctrls.hpp :: enum TScrollStyle) */\
+ ssNone       = 0,\
+ ssHorizontal = 1,\
+ ssVertical   = 2,\
+ ssBoth       = 3,\
 /* virtual keycodes */\
  VK_LBUTTON =0x01,\
  VK_RBUTTON =0x02,\
