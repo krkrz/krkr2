@@ -68,6 +68,10 @@ public:
 
 	tTJSNI_BaseMenuItem * GetParent() const { return Parent; }
 
+	tTJSNI_BaseMenuItem * GetRootMenuItem();
+
+	tTJSNI_Window * GetWindow() const { return Window; }
+
 	iTJSDispatch2 * GetChildrenArrayNoAddRef();
 
 
