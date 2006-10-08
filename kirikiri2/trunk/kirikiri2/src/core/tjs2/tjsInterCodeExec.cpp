@@ -2420,9 +2420,40 @@ void tTJSInterCodeContext::AddClassInstanceInfo(tTJSVariant *ra,
 	}
 }
 //---------------------------------------------------------------------------
-static tjs_char *StrFuncs[] = { TJS_W("charAt"), TJS_W("indexOf"), TJS_W("toUpperCase"),
-	TJS_W("toLowerCase"), TJS_W("substring"), TJS_W("substr"), TJS_W("sprintf"),
-		TJS_W("replace"), TJS_W("escape"), TJS_W("split") };
+static tjs_char *StrFuncs[] =
+{ 
+	TJS_W("charAt"), 
+	TJS_W("indexOf"), 
+	TJS_W("toUpperCase"),
+	TJS_W("toLowerCase"), 
+	TJS_W("substring"), 
+	TJS_W("substr"), 
+	TJS_W("sprintf"),
+	TJS_W("replace"), 
+	TJS_W("escape"), 
+	TJS_W("split"),
+	TJS_W("trim"),
+	TJS_W("reverse"),
+	TJS_W("repeat") 
+};
+
+enum tTJSStringMethodNameIndex
+{
+	TJSStrMethod_charAt = 0,
+	TJSStrMethod_indexOf,
+	TJSStrMethod_toUpperCase,
+	TJSStrMethod_toLowerCase,
+	TJSStrMethod_substring, 
+	TJSStrMethod_substr, 
+	TJSStrMethod_sprintf,
+	TJSStrMethod_replace, 
+	TJSStrMethod_escape, 
+	TJSStrMethod_split,
+	TJSStrMethod_trim,
+	TJSStrMethod_reverse,
+	TJSStrMethod_repeat
+};
+
 #define TJS_STRFUNC_MAX (sizeof(StrFuncs) / sizeof(StrFuncs[0]))
 static tjs_int32 StrFuncHash[TJS_STRFUNC_MAX];
 static bool TJSStrFuncInit = false;
@@ -2454,7 +2485,9 @@ void tTJSInterCodeContext::ProcessStringFunction(const tjs_char *member,
 	const tjs_char *s = target.c_str(); // target string
 	const tjs_int s_len = target.GetLen();
 
-	if(hash == StrFuncHash[0] && !TJS_strcmp(StrFuncs[0], member)) // charAt
+#define TJS_STR_METHOD_IS(_name) (hash == StrFuncHash[TJSStrMethod_##_name] && !TJS_strcmp(StrFuncs[TJSStrMethod_##_name], member))
+
+	if(TJS_STR_METHOD_IS(charAt))
 	{
 		if(numargs != 1) TJSThrowFrom_tjs_error(TJS_E_BADPARAMCOUNT);
 		if(s_len == 0)
@@ -2474,7 +2507,7 @@ void tTJSInterCodeContext::ProcessStringFunction(const tjs_char *member,
 		if(result) *result = bt;
 		return;
 	}
-	else if(hash == StrFuncHash[1] && !TJS_strcmp(StrFuncs[1], member)) // indexOf
+	else if(TJS_STR_METHOD_IS(indexOf))
 	{
 		if(numargs != 1 && numargs != 2) TJSThrowFrom_tjs_error(TJS_E_BADPARAMCOUNT);
 		tTJSVariantString *pstr = args[0]->AsString(); // sub string
@@ -2521,7 +2554,7 @@ void tTJSInterCodeContext::ProcessStringFunction(const tjs_char *member,
 		if(pstr) pstr->Release();
 		return;
 	}
-	else if(hash == StrFuncHash[2] && !TJS_strcmp(StrFuncs[2], member)) // toUpperCase
+	else if(TJS_STR_METHOD_IS(toUpperCase))
 	{
 		if(numargs != 0) TJSThrowFrom_tjs_error(TJS_E_BADPARAMCOUNT);
 		if(result)
@@ -2540,7 +2573,7 @@ void tTJSInterCodeContext::ProcessStringFunction(const tjs_char *member,
 		}
 		return;
 	}
-	else if(hash == StrFuncHash[3] && !TJS_strcmp(StrFuncs[3], member)) // toLowerCase
+	else if(TJS_STR_METHOD_IS(toLowerCase))
 	{
 		if(numargs != 0) TJSThrowFrom_tjs_error(TJS_E_BADPARAMCOUNT);
 		if(result)
@@ -2559,8 +2592,7 @@ void tTJSInterCodeContext::ProcessStringFunction(const tjs_char *member,
 		}
 		return;
 	}
-	else if((hash == StrFuncHash[4]  && !TJS_strcmp(StrFuncs[4], member)) ||
-		(hash == StrFuncHash[5] && !TJS_strcmp(StrFuncs[5], member))) // substring , substr
+	else if(TJS_STR_METHOD_IS(substring) || TJS_STR_METHOD_IS(substr))
 	{
 		if(numargs != 1 && numargs != 2) TJSThrowFrom_tjs_error(TJS_E_BADPARAMCOUNT);
 		tjs_int start = (tjs_int)*args[0];
@@ -2589,7 +2621,7 @@ void tTJSInterCodeContext::ProcessStringFunction(const tjs_char *member,
 		}
 		return;
 	}
-	else if(hash == StrFuncHash[6] && !TJS_strcmp(StrFuncs[6], member)) // sprintf
+	else if(TJS_STR_METHOD_IS(sprintf))
 	{
 		if(result)
 		{
@@ -2600,7 +2632,7 @@ void tTJSInterCodeContext::ProcessStringFunction(const tjs_char *member,
 		}
 		return;
 	}
-	else if(hash == StrFuncHash[7] && !TJS_strcmp(StrFuncs[7], member))  // replace
+	else if(TJS_STR_METHOD_IS(replace))
 	{
 		// string.replace(pattern, replacement-string)  -->
 		// pattern.replace(string, replacement-string)
@@ -2615,14 +2647,14 @@ void tTJSInterCodeContext::ProcessStringFunction(const tjs_char *member,
 
 		return;
 	}
-	else if(hash == StrFuncHash[8] && !TJS_strcmp(StrFuncs[8], member))  // escape
+	else if(TJS_STR_METHOD_IS(escape))
 	{
 		if(result)
 			*result = target.EscapeC();
 
 		return;
 	}
-	else if(hash == StrFuncHash[9] && !TJS_strcmp(StrFuncs[9], member))  // split
+	else if(TJS_STR_METHOD_IS(split))
 	{
 		// string.split(pattern, reserved, purgeempty) -->
 		// Array.split(pattern, string, reserved, purgeempty)
@@ -2661,6 +2693,78 @@ void tTJSInterCodeContext::ProcessStringFunction(const tjs_char *member,
 
 		return;
 	}
+	else if(TJS_STR_METHOD_IS(trim))
+	{
+		if(numargs != 0) TJSThrowFrom_tjs_error(TJS_E_BADPARAMCOUNT);
+		if(!result) return;
+
+		tjs_int w_len = s_len;
+		const tjs_char *src = s + s_len - 1;
+		/*  s/\s+$//;  */
+		while (w_len > 0 && *src > 0x00 && *src <= 0x20)
+		{
+			w_len--;
+			src--;
+		}
+		src = s;
+		/*  s/^\s+//;  */
+		while (w_len > 0 && *src > 0x00 && *src <= 0x20)
+		{
+			w_len--;
+			src++;
+		}
+
+		*result = tTJSString(src, w_len);
+		return;
+	}
+	else if(TJS_STR_METHOD_IS(reverse))
+	{
+		if(numargs != 0) TJSThrowFrom_tjs_error(TJS_E_BADPARAMCOUNT);
+ 		if(!result) return;
+		if(result)
+		{
+			*result = s;
+			const tjs_char *pstr = result->GetString();
+			if(pstr)
+			{
+				tjs_int w_len = s_len;
+				tjs_char *dest = (tjs_char*)pstr;    // WARNING!! modification of const
+				const tjs_char *src = s + s_len - 1;
+
+				while (w_len--)
+				{
+					*dest++ = *src--;
+				}
+			}
+		}
+		return;
+	}
+	else if(TJS_STR_METHOD_IS(repeat))
+	{
+		if(numargs != 1) TJSThrowFrom_tjs_error(TJS_E_BADPARAMCOUNT);
+		if(!result) return;
+		tjs_int count = (tjs_int)*args[0];
+
+		if(count <= 0 || s_len <= 0)
+		{
+			*result = TJS_W("");
+			return;
+		}
+
+		const destLength = s_len * count;
+		tTJSString new_str = tTJSString(tTJSStringBufferLength(destLength));
+		tjs_char * dest = new_str.Independ();
+		while(count--)
+		{
+			TJS_strcpy(dest, s);
+			dest += s_len;
+		}
+		*result = new_str;
+
+		return;
+	}
+
+#undef TJS_STR_METHOD_IS
 
 	TJSThrowFrom_tjs_error(TJS_E_MEMBERNOTFOUND, member);
 }

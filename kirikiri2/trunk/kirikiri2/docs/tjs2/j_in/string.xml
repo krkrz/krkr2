@@ -150,5 +150,47 @@
 </example>
 </para>
 
+<para>
+<ptitle>trim</ptitle>
+　trim メソッドは、文字列の先頭と最後の空白を取り除いた文字列を返します。元の文字列には影響を与えません。<r/>
+　先頭と最後の空白とは、文字コードがU+0001～U+0020の文字を指します。つまり、ASCII制御文字なども含まれますが、いわゆる全角の空白は含みません。<r/>
+　連続して先頭または最後にこれらの空白があった場合は、すべて取り除かれます。<r/>
+<bq>
+構文 : trim()
+</bq>
+　先頭と末尾の空白文字が削除された文字列を返します。元の文字列には影響を与えません。<r/>
+<r/>
+<example>
+	var str = "  Hoge ".trim(); // str は "Hoge" です。<r/>
+</example>
+</para>
+
+<para>
+<ptitle>reverse</ptitle>
+　reverse メソッドは、文字の並びを逆転した文字列を返します。元の文字列には影響を与えません。<r/>
+　現バージョンのTJS2では、UTF-16のうちサロゲートペアを含む文字列の動作は保証しません。<r/>
+<bq>
+構文 : reverse()
+</bq>
+　文字の並びを逆転した文字列を返します。元の文字列には影響を与えません。<r/>
+<r/>
+<example>
+	var str = "Hoge".reverse(); // str は "egoH" です。
+</example>
+</para>
+
+<para>
+<ptitle>repeat</ptitle>
+　repeat メソッドは、指定した回数だけ文字列を繰り返した文字列を返します。元の文字列には影響を与えません。<r/>
+<bq>
+構文 : repeat(count)
+</bq>
+　count個、この文字列を繰り返した文字列を返します。元の文字列には影響を与えません。<r/>
+<r/>
+<example>
+	var str = "Hoge".repeat(3); // str は "HogeHogeHoge" です。
+</example>
+</para>
+
 
 </doc>
