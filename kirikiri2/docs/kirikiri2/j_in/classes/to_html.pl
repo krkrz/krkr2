@@ -179,6 +179,19 @@ EOF
 			foreach my $child ($node->getChildNodes) { &gen_html($child); }
 			print OH "</a>";
 		}
+		elsif($name eq "at")
+		{
+			if($node->getAttribute("target") ne '')
+			{
+				print OH "<a target=\"" . $node->getAttribute("target") . "\" class=\"jump\" href=\"" . sjis($node->getAttribute("href")) . "\">";
+			}
+			else
+			{
+				print OH "<a target=\"$a_target\" class=\"jump\" href=\"" . sjis($node->getAttribute("href")) . "\">";
+			}
+			foreach my $child ($node->getChildNodes) { &gen_html($child); }
+			print OH "</a>";
+		}
 		elsif($name eq "r")
 		{
 			print OH "<br />\n";
