@@ -468,6 +468,11 @@ sub writekeywords
 <div><a class="jump" href="frame.html" target="index">目次へ</a></div>
 <div><a class="jump" href="keywords_p.html">場所順キーワード一覧へ</a></div>
 
+<script type="text/javascript" src="keywordgrep.js"></script>
+<form action="#" onsubmit="return false">
+<input type="text" value="" size="30" onkeyup="grep(this.value)" accesskey="/" />
+</form>
+
 <table class="keywords" summary="キーワード一覧です"><tbody>
 EOF
 
@@ -531,6 +536,12 @@ EOF
 <body>
 <div><a class="jump" href="frame.html" target="index">目次へ</a></div>
 <div><a class="jump" href="keywords.html">キーワード一覧へ</a></div>
+
+<script type="text/javascript" src="keywordgrep.js"></script>
+<form action="#" onsubmit="return false">
+<input type="text" value="" size="30" onkeyup="grep(this.value)" accesskey="/" />
+</form>
+
 <table class="keywords" summary="場所順キーワード一覧です"><tbody>
 EOF
 
