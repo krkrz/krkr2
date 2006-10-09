@@ -459,6 +459,7 @@ sub writekeywords
 	<title>キーワード一覧</title>
 	<meta name="author" content="W.Dee" />
 	<meta http-equiv="Content-Style-Type" content="text/css" />
+	<meta http-equiv="Content-Script-Type" content="text/javascript" />
 	<link href="keywords.css" type="text/css" rel="stylesheet" title="吉里吉里関連リファレンス用キーワード一覧スタイル" />
 	<link href="mailto:dee\@kikyou.info" rev="Made" />
 	<link href="index.html" target="_top" rel="Start" title="トップページ" />
@@ -528,6 +529,7 @@ EOF
 	<title>場所順キーワード一覧</title>
 	<meta name="author" content="W.Dee" />
 	<meta http-equiv="Content-Style-Type" content="text/css" />
+	<meta http-equiv="Content-Script-Type" content="text/javascript" />
 	<link href="keywords.css" type="text/css" rel="stylesheet" title="吉里吉里関連リファレンス用キーワード一覧スタイル" />
 	<link href="mailto:dee\@kikyou.info" rev="Made" />
 	<link href="index.html" target="_top" rel="Start" title="トップページ" />
