@@ -8,7 +8,8 @@ function grep(str) {
     }
   }
 
-  for (var i = 0; i < spans.length; ++i) {
+  var n = spans.length;
+  for (var i = 0; i < n; ++i) {
     var span = spans[i];
     var text1 = span.parentNode.childNodes[0].nodeValue;
     var text2 = span.childNodes[0].nodeValue;
