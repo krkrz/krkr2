@@ -4135,7 +4135,7 @@ class KAGEnvironment extends KAGEnvImage {
             
             // 表情変更処理
             if (faceLevelName !== void && currentNameTarget != ch &&
-                ((currentNameTarget !== void && currentNameTarget.isShowFace()) || ch.isShowFace()) &&
+                ((currentNameTarget !== void && currentNameTarget.isShowFace()) || (ch !== void && ch.isShowFace())) &&
                 !transMode && !isSkip() && faceFadeTime > 0) {
                 
                 // フェードで表示する場合
