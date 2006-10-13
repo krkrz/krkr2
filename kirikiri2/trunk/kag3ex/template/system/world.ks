@@ -4126,7 +4126,24 @@ class KAGEnvironment extends KAGEnvImage {
         } else {
 
             var name = elm.name;
+            var disp = elm.disp;
             var ch = getCharacter(name);
+
+            // 名前表示処理
+            var dispName;
+            if (disp !== void && disp != "") {
+                dispName = disp;
+            } else {
+                if (ch !== void && ch.init.nameAlias !== void) {
+                    dispName = Scripts.eval(ch.init.nameAlias);
+					if (dispName === void) {
+                        dispName = name;
+					}
+                } else {
+                    dispName = name;
+                }
+            }
+			elm.dispName = dispName;
             
             // 消去状態なら顔表示状態にする
             if (ch !== void && ch.disp == CLEAR && ch.poses) {
@@ -4150,7 +4167,7 @@ class KAGEnvironment extends KAGEnvImage {
                     drawFacePage(kag.back, ch);
                 } else {
                     var img;
-                    if (envinfo.nameFaces !== void && (img = envinfo.nameFaces[name]) !== void) {
+                    if (envinfo.nameFaces !== void && (img = envinfo.nameFaces[envinfo.dispNameFace ? dispName : name]) !== void) {
                         loadFacePage(kag.back, img);
                     } else {
                         clearFacePage(kag.back);
@@ -4179,7 +4196,7 @@ class KAGEnvironment extends KAGEnvImage {
                     drawFacePage(kag.back, ch);
                 } else {
                     var img;
-                    if (envinfo.nameFaces !== void && (img = envinfo.nameFaces[name]) !== void) {
+                    if (envinfo.nameFaces !== void && (img = envinfo.nameFaces[envinfo.dispNameFace ? dispName : name]) !== void) {
                         if (!transMode) {
                             loadFacePage(kag.fore, img);
                         }
@@ -4207,8 +4224,11 @@ class KAGEnvironment extends KAGEnvImage {
             // すでに名前表示済み
             
         } else {
-            var name = elm.name;
-            var disp = elm.disp;
+            var name     = elm.name;
+            var dispName = elm.dispName;
+			if (dispName === void) {
+				dispName = name;
+			}
 
             var ch = getCharacter(name);
 
@@ -4218,20 +4238,6 @@ class KAGEnvironment extends KAGEnvImage {
                 kag.historyLayer.setNewAction("global.world_object.env.stopAllVoice();" + nextVoice);
             }
 
-            // 名前表示処理
-            var dispName;
-            if (disp !== void && disp != "") {
-                dispName = disp;
-            } else {
-                if (ch !== void && ch.init.nameAlias !== void) {
-                    dispName = Scripts.eval(ch.init.nameAlias);
-					if (dispName === void) {
-                        dispName = name;
-					}
-                } else {
-                    dispName = name;
-                }
-            }
             // 名前加工処理
             if (typeof global.dispNameFilter !== 'undefined') {
                 dispName = global.dispNameFilter(dispName);
