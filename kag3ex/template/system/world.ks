@@ -3950,7 +3950,7 @@ class KAGEnvironment extends KAGEnvImage {
     function endline(elm) {
         if (kag.historyWriteEnabled) {
             kag.historyLayer.clearAction();
-            kag.historyLayer.reline();
+//          kag.historyLayer.reline();
         }
     }
 
