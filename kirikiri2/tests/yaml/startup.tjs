@@ -1,0 +1,156 @@
+// YAML <http://yaml.org>
+
+Debug.console.visible = true;
+var win = new Window();
+win.visible=true;
+
+Scripts.execStorage('YAML.tjs');
+
+
+function eq(x, y) {
+    if (x instanceof 'Dictionary' && y instanceof 'Dictionary') {
+        var a = [];
+        a.assign(x);
+        var keys_x = [];
+        for (var i = 0; i < a.count; i += 2) {
+            keys_x.add(a[i]);
+        }
+        keys_x.sort();
+
+        a.assign(y);
+        var keys_y = [];
+        for (var i = 0; i < a.count; i += 2) {
+            keys_y.add(a[i]);
+        }
+        keys_y.sort();
+
+        if (!eq(keys_x, keys_y)) {
+            return false;
+        }
+
+        for (var i = 0; i < keys_x.count; ++i) {
+            if (!eq(x[keys_x[i]], y[keys_y[i]])) {
+                return false;
+            }
+        }
+        return true;
+    }
+    else if (x instanceof 'Array' && y instanceof 'Array') {
+        if (x.count != y.count){
+            return false;
+        }
+
+        for (var i = 0; i < x.count; ++i) {
+            if (!eq(x[i], y[i])) {
+                return false;
+            }
+        }
+        return true;
+    }
+    else {
+        return x === y;
+    }
+}
+
+
+function ok(expected, yaml) {
+    if (eq(expected, YAML.parse(yaml))) {
+        Debug.message('.');
+    }
+    else {
+        Debug.message('Failed:\n' + yaml);
+    }
+}
+
+
+Debug.message('----------- test start');
+ok('hoge', 'hoge');
+ok(10, '10');
+ok(0xff, '0xff');
+ok(3.14, '3.14');
+ok(1.23e-4, '1.23e-4');
+ok(Infinity, '.inf');
+ok(-Infinity, '-.inf');
+ok(true, 'true');
+ok(false, 'false');
+ok([void, true, false], '- ~\n- y\n- n');
+ok(['hoge', 'fuga'], "- hoge\n- fuga");
+ok(%['hoge' => 'fuga'], "hoge: fuga");
+ok([%['hoge' => 'fuga'], %['foo' => 'bar']], "- hoge: fuga\n- foo: bar");
+ok(%['hoge' => ['foo', 'bar']], "hoge: - foo\n      - bar");
+ok(%['hoge' => ['foo', 'bar']], "\n\nhoge: - foo\n\n\n      - bar");
+ok(['foo', 'bar'], "- foo\n\n\n- bar");
+ok(['foo', 'bar'], "- foo    \n\n\n- bar  ");
+ok(['foo', 'bar'], "- foo\n                         \n- bar");
+ok("I've", '"' + "I've" + '"');
+ok("I've", "'I''ve'");
+ok("a'b'c''", "'a''b''c'''''");
+ok("\\n", "'\\n'");
+ok('hoge"fuga', '\'hoge"fuga\'');
+ok('hoge"fuga', '"hoge\\"fuga"');
+ok(['hoge'], "- hoge # comment");
+ok('newline\n', '"newline\\n"');
+ok('hoge\\n', "'hoge\\n'");
+ok('\\', '"\\\\"');
+ok(' ', '"\\x20"');
+ok(' \n!', '"\\x20\\n\\u0021"');
+ok('\\xzz', '"\\xzz"');
+ok('\\n', '"\\\\n"');
+ok('a: b', '"a: b"');
+ok('- a', '"- a"');
+
+ok(["a'b'c''", "hoge\nfuga"], "- 'a''b''c'''''\n- \"hoge\\nfuga\"");
+ok(%["a'b'c''" => "hoge\nfuga"], "'a''b''c''''': \"hoge\\nfuga\"");
+
+ok(%['hoge' => 'http://example.com'], "hoge: http://example.com");
+ok(%['hoge' => 'http://example2.com'], "hoge: http://example2.com # foobar");
+ok(%['1st' => '2nd'], "1st: 2nd");
+ok(['1st', '2nd', 3], "- 1st\n- 2nd\n- 3");
+ok(%['hoge' => 'fuga', 'foo' => 'bar'], '
+hoge:
+  fuga
+foo:
+  bar
+');
+ok(%['google' => 'http://www.google.com/', 'yahoo' => ['http://www.yahoo.com/', 'http://www.yahoo.co.jp/'], 'bar' => 'hoge # bar'], '
+google: # foo
+  http://www.google.com/
+yahoo: #foo
+  - http://www.yahoo.com/
+  - http://www.yahoo.co.jp/
+bar:
+  "hoge # bar"
+');
+ok(%['hoge' => ['alpha', 'beta', 'gamma'], 'foo' => ['foo', %['x' => true, 'z' => 'w']]], '
+hoge:
+  - alpha
+  - beta
+  - gamma
+foo:
+  - foo
+  - x: y
+    z: w
+');
+
+ok(%['times' => %['’‹' => %['prefix' => '01'], '—[' => %['prefix' => '02', 'lightColor' => 0xc0ff6010]],
+     'stages' => %['“¹˜H' => %['image' => 'bg01_TIME']], 'defaultTime' => '’‹'],
+'
+# ŽžŠÔî•ñ
+times:
+  ’‹:
+    prefix: "01"
+  —[:
+    prefix: "02"
+    lightColor: 0xc0ff6010
+    
+# êŠî•ñ
+stages:
+  "“¹˜H":
+    image: bg01_TIME
+
+defaultTime: ’‹
+');
+
+ok(%['times' => %['’‹' => %['prefix' => '01'], '—[' => %['prefix' => '02', 'lightColor' => 0xc0ff6010]],
+     'stages' => %['“¹˜H' => %['image' => 'bg01_TIME']], 'defaultTime' => '’‹'],
+   [].load('test.yaml'));
