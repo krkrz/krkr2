@@ -1,6 +1,8 @@
 @if exp="typeof(global.world_object) == 'undefined'"
 @iscript
 
+KAGLoadScript('YAML.tjs');
+
 /**
  * ワールド拡張
  * ◇フック一覧
@@ -3081,34 +3083,29 @@ class KAGEnvironment extends KAGEnvImage {
         
         // 最初の実行時にその時点で存在しているレイヤの番号までは対象からはずすようにする
         initLayerCount = kag.numCharacterLayers;
-        
-        try {
-            // 初期化情報展開
-            envinfo = Scripts.evalStorage("envinit.tjs");
-            // デバッグ表示
-            if (envinfo) {
-                times       = envinfo.times;       showKeys("times", times);
-                stages      = envinfo.stages;      showKeys("stages", stages);
-                events      = envinfo.events;      showKeys("events", events);
-                positions   = envinfo.positions;   showKeys("positions", positions);
-                actions     = envinfo.actions;     showKeys("actions", actions);
-                emotions    = envinfo.emotions;    showKeys("emotions", emotions);
-                transitions = envinfo.transitions; showKeys("transitions", transitions);
-                defaultTime = envinfo.defaultTime;      dm("defaultTime:" + defaultTime);
-                yoffset     = (int)envinfo.yoffset;     dm("yoffset:" + yoffset);
-                defaultXpos = (int)envinfo.defaultXpos;
-                defaultYpos = (int)envinfo.defaultYpos;
-                defaultLevel = (int)envinfo.defaultLevel;
-                levels       = envinfo.levels;
-                faceLevelName = envinfo.faceLevelName;
-                showFaceMode  = envinfo.showFaceMode;
-                faceFadeTime  = envinfo.faceFadeTime;
-           }
-        } catch (e) {
-            throw new Exception("初期化情報のパースに失敗しました(詳細はコンソール参照)");
-        }
+
+        // 初期化情報展開
+        envinfo = loadEnvinfo();
 
         if (envinfo) {
+            // デバッグ表示 
+            times       = envinfo.times;       showKeys("times", times);
+            stages      = envinfo.stages;      showKeys("stages", stages);
+            events      = envinfo.events;      showKeys("events", events);
+            positions   = envinfo.positions;   showKeys("positions", positions);
+            actions     = envinfo.actions;     showKeys("actions", actions);
+            emotions    = envinfo.emotions;    showKeys("emotions", emotions);
+            transitions = envinfo.transitions; showKeys("transitions", transitions);
+            defaultTime = envinfo.defaultTime;      dm("defaultTime:" + defaultTime);
+            yoffset     = (int)envinfo.yoffset;     dm("yoffset:" + yoffset);
+            defaultXpos = (int)envinfo.defaultXpos;
+            defaultYpos = (int)envinfo.defaultYpos;
+            defaultLevel = (int)envinfo.defaultLevel;
+            levels       = envinfo.levels;
+            faceLevelName = envinfo.faceLevelName;
+            showFaceMode  = envinfo.showFaceMode;
+            faceFadeTime  = envinfo.faceFadeTime;
+
         
             // キャラクタ情報初期化処理
             if (envinfo.characters !== void) {
@@ -3154,6 +3151,22 @@ class KAGEnvironment extends KAGEnvImage {
         kag.stopActionHandler      = this.onStopAction;
         
         dm("環境初期化完了");
+    }
+
+    /**
+     * 初期化情報のロード
+     */
+    function loadEnvinfo() {
+        try {
+            var yamlFile = 'envinit.yaml';
+            if (Storages.isExistentStorage(yamlFile)) {
+                return YAML.parse([].load(yamlFile));
+            }
+
+            return Scripts.evalStorage("envinit.tjs");
+        } catch (e) {
+            throw new Exception("初期化情報のパースに失敗しました(詳細はコンソール参照)");
+        }
     }
 
     /**
