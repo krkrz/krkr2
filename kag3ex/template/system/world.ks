@@ -1184,7 +1184,11 @@ class KAGEnvLayer extends KAGEnvImage {
     function drawLayer(layer) {
         initLayer(layer);
         if (imageFile !== void) {
-            layer.loadImages(%[ "storage" => imageFile]);
+            try {
+                layer.loadImages(%[ "storage" => imageFile]);
+            } catch (e) {
+                dm("‰æ‘œ‚Ì“Ç‚İ‚İ‚É¸”s‚µ‚Ü‚µ‚½:" + imageFile);
+            }
         }
         if (grayscale) {
             layer.doGrayScale();
@@ -3970,7 +3974,11 @@ class KAGEnvironment extends KAGEnvImage {
      */
     function loadFacePage(base, name) {
         var faceLayer = getFaceLayer(base);
-        faceLayer.loadImages(name);
+        try {
+            faceLayer.loadImages(name);
+        } catch (e) {
+            dm("•\î‰æ‘œ‚Ìƒ[ƒh‚É¸”s‚µ‚Ü‚µ‚½:" + name);
+        }
         faceLayer.visible = true;
     }
 
