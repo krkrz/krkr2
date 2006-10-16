@@ -1,5 +1,13 @@
 var spans = document.getElementsByTagName('span');
+var lastValue = '';
+
 function grep(str) {
+  if (str == lastValue) {
+      return;
+  } else {
+      lastValue = str;
+  }
+
   var regs = [];
   var words = str.split(' ');
   for (var i = 0; i < words.length; ++i) {
@@ -29,3 +37,13 @@ function grep(str) {
     }
   }
 }
+
+function onTimer() {
+    grep(document.getElementById('grepword').value);
+}
+
+function init() {
+    setInterval(onTimer, 500);
+}
+
+window.onload = init;

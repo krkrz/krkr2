@@ -471,7 +471,7 @@ sub writekeywords
 
 <script type="text/javascript" src="keywordgrep.js"></script>
 <form action="#" onsubmit="return false">
-<input type="text" value="" size="30" onkeyup="grep(this.value)" accesskey="/" />
+<input type="text" value="" size="30" id="grepword" accesskey="/" />
 </form>
 
 <table class="keywords" summary="キーワード一覧です"><tbody>
@@ -541,7 +541,7 @@ EOF
 
 <script type="text/javascript" src="keywordgrep.js"></script>
 <form action="#" onsubmit="return false">
-<input type="text" value="" size="30" onkeyup="grep(this.value)" accesskey="/" />
+<input type="text" value="" size="30" id="grepword" accesskey="/" />
 </form>
 
 <table class="keywords" summary="場所順キーワード一覧です"><tbody>
