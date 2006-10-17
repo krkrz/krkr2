@@ -119,6 +119,7 @@ var transitionParam = %[
     ];
 
 var actionParam = %[
+    "time" => true,
     "delay" => true,
     "x" => true,
     "y" => true,
@@ -576,7 +577,6 @@ class KAGEnvImage {
                     if (moduleType !== void && typeof moduleType == "Object" && moduleType.LayerModule != void) {
                         // アクションモジュール名の場合
                         var action = %[];
-                        // 元要素からパラメータを削除しつつコピー
                         foreach(elm, function(name, value, elm, action) {
                             if (actionParam[name] !== void) {
                                 action[name] = value;
@@ -620,7 +620,6 @@ class KAGEnvImage {
             foreach(elm, function(name, value, elm, tr) {
                 if (transitionParam[name] !== void) {
                     tr[name] = value;
-                    //delete elm[name];
                 }
             }, tr);
         } else if (elm != null && (transitionName[name] !== void || name.substring(0,5) == "trans")) {
@@ -629,7 +628,6 @@ class KAGEnvImage {
             foreach(elm, function(name, value, elm, tr) {
                 if (transitionParam[name] !== void) {
                     tr[name] = value;
-                    //delete elm[name];
                 }
             }, tr);
             tr.method = name;
