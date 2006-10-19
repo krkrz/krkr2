@@ -40,7 +40,10 @@ BITS 32
 	extern %1
 %endmacro
 
-%define function_align		align 4
+%macro function_align 0
+		segment_code
+		align 4
+%endmacro
 %define loop_align			align 4
 ; since borland linker seems not to align functions except for DWORD
 ; ( loop_align should be 16 when considering CPU memrory cache )
