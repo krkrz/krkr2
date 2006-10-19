@@ -125,6 +125,7 @@ TVPTLG5DecompressSlide_a:					; modified LZSS decompressor
 ;;[function_replace_by TVPCPUType & TVP_CPU_HAS_MMX] TVPTLG5ComposeColors3To4
 ;;void, TVPTLG5ComposeColors3To4_mmx_a, (tjs_uint8 *outp, const tjs_uint8 *upper, tjs_uint8 * const * buf, tjs_int width)
 
+	function_align
 TVPTLG5ComposeColors3To4_mmx_a:
 	push	edi
 	push	esi
@@ -266,6 +267,7 @@ TVPTLG5ComposeColors3To4_mmx_a:
 ;;[function_replace_by TVPCPUType & TVP_CPU_HAS_MMX] TVPTLG5ComposeColors4To4
 ;;void, TVPTLG5ComposeColors4To4_mmx_a, (tjs_uint8 *outp, const tjs_uint8 *upper, tjs_uint8 * const * buf, tjs_int width)
 
+	function_align
 TVPTLG5ComposeColors4To4_mmx_a:
 	push	edi
 	push	esi
