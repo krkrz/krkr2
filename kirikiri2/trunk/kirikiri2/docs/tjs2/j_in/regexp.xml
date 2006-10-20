@@ -45,6 +45,7 @@ new RegExp(&lt;パターン文字列>, &lt;フラグ文字列=''>);<r/>
 構文 : test(&lt;文字列>)<r/>
 </bq>
 　パターンにマッチすれば真、マッチしなければ偽が返ります。<r/>
+　このメソッドはこのオブジェクトの各プロパティの値を更新します。<r/>
 </para>
 
 <para>
@@ -124,6 +125,19 @@ new RegExp(&lt;パターン文字列>, &lt;フラグ文字列=''>);<r/>
 <ptitle>rightContext</ptitle>
 　マッチング対象文字列のうち、マッチした部分よりも右側の文字列をあらわす、読み出し専用のプロパティです。<r/>
 </para>
+
+<para>
+<ptitle>lastMatch</ptitle>
+　マッチング対象文字列を表します。matches[0] と同じです。
+</para>
+
+<para>
+<ptitle>lastParen</ptitle>
+　マッチした各部分のうち、最後の部分を返します。matches[matches.count-1] と同じです。
+</para>
+
+
+
 
 <para>
 <ptitle>Copyright notice</ptitle>
