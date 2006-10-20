@@ -83,6 +83,8 @@ public:
 	static void Compile(tjs_int numparam, tTJSVariant **param, tTJSNI_RegExp *_this);
 	static bool Match(boost::match_results<const tjs_char *>& what,
 		ttstr target, tTJSNI_RegExp *_this);
+	static bool Exec(boost::match_results<const tjs_char *>& what,
+		ttstr target, tTJSNI_RegExp *_this);
 	static iTJSDispatch2 * GetResultArray(bool matched, tTJSNI_RegExp *_this,
 		const boost::match_results<const tjs_char *>& what);
 
@@ -92,6 +94,7 @@ private:
 public:
 	static tjs_uint32 ClassID;
 
+	static tTJSVariant LastRegExp;
 };
 //---------------------------------------------------------------------------
 extern iTJSDispatch2 * TJSCreateRegExpClass();

@@ -136,6 +136,14 @@ new RegExp(&lt;パターン文字列>, &lt;フラグ文字列=''>);<r/>
 　マッチした各部分のうち、最後の部分を返します。matches[matches.count-1] と同じです。
 </para>
 
+<para>
+<ptitle>RegExp.last</ptitle>
+　最後に test あるいは exec メソッドが実行された RegExp クラスのインスタンスです。
+<bq>
+例 : if(/pat(\d+)/.test(target)) { return RegExp.last.matches[1]; }<r/>
+</bq>
+
+</para>
 
 
 
