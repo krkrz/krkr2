@@ -289,6 +289,8 @@ void tTJSNI_RegExp::Split(iTJSDispatch2 ** array, const ttstr &target, bool purg
 //---------------------------------------------------------------------------
 // tTJSNC_RegExp : TJS Native Class : RegExp
 //---------------------------------------------------------------------------
+tTJSVariant tTJSNC_RegExp::LastRegExp;
+//---------------------------------------------------------------------------
 tjs_uint32 tTJSNC_RegExp::ClassID = (tjs_uint32)-1;
 tTJSNC_RegExp::tTJSNC_RegExp() :
 	tTJSNativeClass(TJS_W("RegExp"))
@@ -381,17 +383,20 @@ TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/test)
 	/*
 		do the text searching.
 		return match found ( true ), or not found ( false ).
-		this function may not change any internal status.
+		this function *changes* internal status.
 	*/
 
 	if(numparams < 1) return TJS_E_BADPARAMCOUNT;
 
+	ttstr target(*param[0]);
+	match_results<const tjs_char *> what;
+	bool matched = tTJSNC_RegExp::Exec(what, target, _this);
+
+	tTJSNC_RegExp::LastRegExp = objthis;
 
 	if(result)
 	{
-		ttstr target(*param[0]);
-		match_results<const wchar_t *> what;
-		*result = tTJSNC_RegExp::Match(what, target, _this);
+		*result = matched;
 	}
 
 	return TJS_S_OK;
@@ -435,7 +440,7 @@ TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/exec)
 		same as the match except for the internal status' change.
 		var ar;
 		var pat = /:(\d+):(\d+):/g;
-		while((ar = pat.match(target).count)
+		while((ar = pat.match(target)).count)
 		{
 			// ...
 		}
@@ -445,41 +450,9 @@ TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/exec)
 
 	ttstr target(*param[0]);
 	match_results<const tjs_char *> what;
-	bool matched = tTJSNC_RegExp::Match(what, target, _this);
-	iTJSDispatch2 *array = tTJSNC_RegExp::GetResultArray(matched, _this, what);
+	tTJSNC_RegExp::Exec(what, target, _this);
 
-	_this->Array = tTJSVariant(array, array);
-	array->Release();
-
-	if(matched)
-	{
-		_this->Input = *param[0];
-		if(_this->RegEx.empty())
-		{
-			_this->Index = _this->Start;
-			_this->LastIndex = _this->Start;
-			_this->LastParen = ttstr();
-			_this->LeftContext = ttstr(*param[0], _this->Start);
-		}
-		else
-		{
-			_this->Index = _this->Start + what.position();
-			_this->LastIndex = _this->Start + what.position() + what.length();
-			_this->LastMatch = ttstr(what[0].first,
-				what[0].second - what[0].first);
-			tjs_uint last = what.size() -1;
-			_this->LastParen = ttstr(what[last].first,
-				what[last].second - what[last].first);
-			_this->LeftContext = ttstr(*param[0], _this->Start + what.position());
-			_this->RightContext = ttstr(target.c_str() + _this->LastIndex);
-			if(_this->Flags & globalsearch)
-			{
-				// global search flag changes the next search starting position.
-				tjs_uint match_end = _this->LastIndex;
-				_this->Start = match_end;
-			}
-		}
-	}
+	tTJSNC_RegExp::LastRegExp = objthis;
 
 	if(result)
 	{
@@ -699,6 +672,20 @@ TJS_BEGIN_NATIVE_PROP_DECL(rightContext)
 }
 TJS_END_NATIVE_PROP_DECL(rightContext)
 //---------------------------------------------------------------------------
+TJS_BEGIN_NATIVE_PROP_DECL(last)
+{
+	TJS_BEGIN_NATIVE_PROP_GETTER
+	{
+		TJS_GET_NATIVE_INSTANCE(/*var. name*/_this, /*var. type*/tTJSNI_RegExp);
+		*result = tTJSNC_RegExp::LastRegExp;;
+		return TJS_S_OK;
+	}
+	TJS_END_NATIVE_PROP_GETTER
+
+	TJS_DENY_NATIVE_PROP_SETTER
+}
+TJS_END_NATIVE_PROP_DECL(last)
+//---------------------------------------------------------------------------
 	TJS_END_NATIVE_MEMBERS
 }
 //---------------------------------------------------------------------------
@@ -767,6 +754,45 @@ bool tTJSNC_RegExp::Match(match_results<const tjs_char *>& what,
 	return regex_search(target.c_str()+searchstart,
 		what, _this->RegEx, flags);
 
+}
+//---------------------------------------------------------------------------
+bool tTJSNC_RegExp::Exec(boost::match_results<const tjs_char *>& what, ttstr target, tTJSNI_RegExp *_this)
+{
+	bool matched = tTJSNC_RegExp::Match(what, target, _this);
+	iTJSDispatch2 *array = tTJSNC_RegExp::GetResultArray(matched, _this, what);
+
+	_this->Array = tTJSVariant(array, array);
+	array->Release();
+
+	_this->Input = target;
+	if(!matched || _this->RegEx.empty())
+	{
+		_this->Index = _this->Start;
+		_this->LastIndex = _this->Start;
+		_this->LastMatch = ttstr();
+		_this->LastParen = ttstr();
+		_this->LeftContext = ttstr(target, _this->Start);
+	}
+	else
+	{
+		_this->Index = _this->Start + what.position();
+		_this->LastIndex = _this->Start + what.position() + what.length();
+		_this->LastMatch = ttstr(what[0].first,
+			what[0].second - what[0].first);
+		tjs_uint last = what.size() -1;
+		_this->LastParen = ttstr(what[last].first,
+			what[last].second - what[last].first);
+		_this->LeftContext = ttstr(target, _this->Start + what.position());
+		_this->RightContext = ttstr(target.c_str() + _this->LastIndex);
+		if(_this->Flags & globalsearch)
+		{
+			// global search flag changes the next search starting position.
+			tjs_uint match_end = _this->LastIndex;
+			_this->Start = match_end;
+		}
+	}
+
+	return matched;
 }
 //---------------------------------------------------------------------------
 iTJSDispatch2 * tTJSNC_RegExp::GetResultArray(bool matched, tTJSNI_RegExp *_this,
