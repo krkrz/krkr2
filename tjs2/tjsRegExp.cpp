@@ -468,8 +468,8 @@ TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/exec)
 			_this->LastMatch = ttstr(what[0].first,
 				what[0].second - what[0].first);
 			tjs_uint last = what.size() -1;
-			_this->LastParen = ttstr(what[last-1].first,
-				what[last-1].second - what[last-1].first);
+			_this->LastParen = ttstr(what[last].first,
+				what[last].second - what[last].first);
 			_this->LeftContext = ttstr(*param[0], _this->Start + what.position());
 			_this->RightContext = ttstr(target.c_str() + _this->LastIndex);
 			if(_this->Flags & globalsearch)
