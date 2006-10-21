@@ -72,7 +72,7 @@ class YAML {
             lines = _skipEmptyLines(lines);
     
             var parser;
-            if (/\A- /.test(lines[0])) {
+            if (/\A-( |\z)/.test(lines[0])) {
                 parser = new YAML.SequenceParser();
             }
             else if (_isMapKeyLine(lines[0])) {
@@ -224,7 +224,7 @@ class YAML {
         function _getNextValue(lines) {
             var last = lines.count;
             for (var i = 1; i < lines.count; ++i) {
-                if (!/\A(\s|\z)/.test(lines[i])) {
+                if (/\A\S/.test(lines[i])) {
                     last = i;
                     break;
                 }
@@ -239,10 +239,30 @@ class YAML {
                 remaining_lines.add(lines[i]);
             }
     
-            var r = /\A-\s+/.exec(one_elem_lines[0]);
-            var indent = r[0].length;
-    
-            for (var i = 1; i < one_elem_lines.count; ++i) {
+            var m = /\A(-\s+)\S/.match(one_elem_lines[0]);
+            var indent;
+            var beg;
+            if (m.count > 0) {
+                // 値が - と同じ行
+                // - hoge
+                indent = m[1].length;
+                beg = 0;
+            }
+            else {
+                var m = /\A(\s+)\S/.match(one_elem_lines[1]);
+                if (m.count > 0) {
+                    // 値が - の次の行
+                    // -
+                    //   hoge
+                    indent = m[1].length;
+                    beg = 1;
+                }
+                else {
+                    throw new Exception("Parse error: `-' の次の行に値がありません");
+                }
+            }
+
+            for (var i = beg + 1; i < one_elem_lines.count; ++i) {
                 var s = one_elem_lines[i];
                 if (s.substr(0, indent) + ' '.repeat(indent - s.length) != ' '.repeat(indent)) {
                     throw new Exception('Parse error: シーケンスの値の中でインデントが下がっています: ' + s);
@@ -250,7 +270,7 @@ class YAML {
             }
     
             var a = [];
-            for (var i = 0; i < one_elem_lines.count; ++i) {
+            for (var i = beg; i < one_elem_lines.count; ++i) {
                 a.add(one_elem_lines[i].substr(indent));
             }
             return [remaining_lines, (new YAML.TopParser()).parseLines(a)];
