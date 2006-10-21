@@ -82,6 +82,23 @@ ok(%['hoge' => ['foo', 'bar']], "\n\nhoge: - foo\n\n\n      - bar");
 ok(['foo', 'bar'], "- foo\n\n\n- bar");
 ok(['foo', 'bar'], "- foo    \n\n\n- bar  ");
 ok(['foo', 'bar'], "- foo\n                         \n- bar");
+ok(['foo'], "-\n  foo");
+ok(['foo'], "-    \n  foo");
+ok(['foo', 'bar'], "-\n   foo\n-  bar");
+ok([['foo', 'bar', 'hoge']], "-\n  - foo\n  - bar\n  - hoge");
+ok([[['foo']]],"- \n  - \n    - foo");
+ok([[['foo', 'bar']]],"- - - foo\n    - bar");
+ok([['hoge', 'fuga', ['foo', %['aaa' => 'bbb', 'ccc' => 'ddd']], 'eee'], 'zzz'],"
+-
+  - hoge
+  - fuga
+  -
+    - foo
+    - aaa: bbb
+      ccc: ddd
+  - eee
+- zzz
+");
 ok("I've", '"' + "I've" + '"');
 ok("I've", "'I''ve'");
 ok("a'b'c''", "'a''b''c'''''");
