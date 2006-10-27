@@ -1,0 +1,28 @@
+Plugins.link("ogre.dll");
+
+var WIDTH=800;
+var HEIGHT=600;
+
+class MyWindow extends Window
+{
+    var base;
+    
+    function MyWindow() {
+        super.Window();
+        
+        // ベースレイヤ
+        base = new Layer(this,null);
+        base.visible=true;
+        base.setSize(WIDTH,HEIGHT);
+        base.fillRect(0,0,WIDTH,HEIGHT,0x0);
+
+        setInnerSize(WIDTH, HEIGHT);
+    }
+}
+
+// 窓
+var win = new MyWindow();
+win.visible=true;
+
+// OGREの初期化実行
+win.initOGRE();
