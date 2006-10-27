@@ -439,6 +439,7 @@ class KAGWindow extends Window
             invalidate global.currentDialog;
             global.currentDialog = void;
         }
+	if (this isvalid) kag.setMenuAccessibleAll();
     }
     
     function openDialog(dialog) {
@@ -4276,6 +4277,8 @@ class KAGWindow extends Window
         }
     }
     
+    var stopActionHandler;
+    
     function stopAllActions(page=null)
 	{
         // すべての自動アクションを停止させる(base と メッセージ窓には無効)
@@ -4291,6 +4294,12 @@ class KAGWindow extends Window
             back.event.stopAction();
             layers = back.layers;
             for(var i = layers.count-1; i >= 0; i--) layers[i].stopAction();
+        }
+        // 外部通知用
+        if (page == null) {
+            if (stopActionHandler !== void) {
+                stopActionHandler();
+            }
         }
 	}
     
