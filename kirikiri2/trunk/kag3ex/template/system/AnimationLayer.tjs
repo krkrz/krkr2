@@ -968,7 +968,11 @@ class AnimationLayer extends ActionLayer
 	function restore(dic)
 	{
 		// dic から情報を読み出す
-		loadImages(dic.loadParams);
+        try {
+            loadImages(dic.loadParams);
+        } catch (e) {
+            dm("ロード時に画像の読み込みに失敗しました:" + dic.loadParams);
+        } 
 		if(dic.loadParams !== void)
 		{
 			// アニメーションセグメントの情報を復元
