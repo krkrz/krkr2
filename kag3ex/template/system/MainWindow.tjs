@@ -439,7 +439,7 @@ class KAGWindow extends Window
             invalidate global.currentDialog;
             global.currentDialog = void;
         }
-	if (this isvalid) kag.setMenuAccessibleAll();
+        if (this isvalid) kag.setMenuAccessibleAll();
     }
     
     function openDialog(dialog) {
@@ -1235,7 +1235,7 @@ class KAGWindow extends Window
             rightClickMenuItem.enabled = inStable && !historyLayer.visible && !currentDialog;
 
 		if(typeof this.showHistoryMenuItem != "undefined")
-            showHistoryMenuItem.enabled = inStable && !messageLayerHiding && global.currentDialog===void &&
+            showHistoryMenuItem.enabled = inStable && !messageLayerHiding && !mapSelectShowing && global.currentDialog===void &&
 				historyEnabled;
 
         var canAuto = !modal && (inStable || autoMode) && !inSleep && !skipMode;
@@ -2807,11 +2807,13 @@ class KAGWindow extends Window
 	{
         selectLayer.start(fore.base, 1000000);
         selectShowing = true;
+        setMenuAccessibleAll();
 	}
 
     function hideSelect() {
         selectLayer.done();
         selectShowing = false;
+        setMenuAccessibleAll();
     }
     
     function afterSelect() {
@@ -2878,18 +2880,21 @@ class KAGWindow extends Window
 	{
         mapSelectLayer.start(fore.base, 1000000);
         mapSelectShowing = true;
+        setMenuAccessibleAll();
 	}
 
     function hideMapSelect()
 	{
         mapSelectLayer.done();
         mapSelectShowing = false;
+        setMenuAccessibleAll();
     }
     
     function doneMapSelect()
 	{
         hideMapSelect();
         afterSelect();
+        setMenuAccessibleAll();
     }
     
 	//-------------------------------------------------------------- process --
@@ -4460,8 +4465,8 @@ class KAGWindow extends Window
 		if(typeof this.autoModeMenuItem !== "undefined")
 			autoModeMenuItem.checked = true;
         //if(inStable)
-			onPrimaryClick();
-		autoMode = true;
+            onPrimaryClick();
+        autoMode = true;
 	}
 
 	//--------------------------------------------------------- ウェイト関連 --
@@ -7386,12 +7391,15 @@ class KAGWindow extends Window
 
         if (skipMode == 1 || skipMode == 2) cancelSkip();
         if (skipMode == 4 && !skipKeyPressing()) cancelSkip();
+
+        selectPrevSkipMode = skipMode;
+        selectPrevAutoMode = autoMode;
+        cancelAutoMode();
+        cancelSkip();
         
         stablePosibility = true;
         notifyStable();
         
-        selectPrevSkipMode = skipMode;
-        selectPrevAutoMode = autoMode;
 
         showSelect();
 
@@ -7443,16 +7451,17 @@ class KAGWindow extends Window
         if (recordHistoryOfStore == 3) // 2 : 選択肢 ( @s タグ ) ごと
             setToRecordHistory();
 
+        
         if (skipMode == 1 || skipMode == 2) cancelSkip();
         if (skipMode == 4 && !skipKeyPressing()) cancelSkip();
-        if (!afterauto) cancelAutoMode();
-        if (!afterskip) cancelSkip();
+
+        selectPrevSkipMode = skipMode;
+        selectPrevAutoMode = autoMode;
+        cancelAutoMode();
+        cancelSkip();
 
         stablePosibility = true;
         notifyStable();
-        
-        selectPrevSkipMode = skipMode;
-        selectPrevAutoMode = autoMode;
 
         showMapSelect();
 
