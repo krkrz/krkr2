@@ -151,9 +151,6 @@ tTVPWaveLoopManager::tTVPWaveLoopManager()
 	Decoder = NULL;
 	IgnoreLinks = false;
 	Looping = false;
-#ifndef TVP_IN_LOOP_TUNER
-	PhaseVocoder = NULL;
-#endif
 
 	Format = new tTVPWaveFormat;
 	memset(Format, 0, sizeof(*Format));
@@ -166,9 +163,6 @@ tTVPWaveLoopManager::~tTVPWaveLoopManager()
 {
 	ClearCrossFadeInformation();
 	delete Format;
-#ifndef TVP_IN_LOOP_TUNER
-	if(PhaseVocoder) delete PhaseVocoder;
-#endif
 }
 //---------------------------------------------------------------------------
 void tTVPWaveLoopManager::SetDecoder(tTVPWaveDecoder * decoder)
@@ -181,13 +175,6 @@ void tTVPWaveLoopManager::SetDecoder(tTVPWaveDecoder * decoder)
 		memset(Format, 0, sizeof(*Format));
 	ShortCrossFadeHalfSamples =
 		Format->SamplesPerSec * TVP_WL_SMOOTH_TIME_HALF / 1000;
-
-
-#ifndef TVP_IN_LOOP_TUNER
-	// setup phasevocode for test
-	PhaseVocoder = new tRisaPhaseVocoderDSP(4096, 16, Format->SamplesPerSec, Format->Channels);
-	PhaseVocoder->SetTimeScale(1.5);
-#endif
 }
 //---------------------------------------------------------------------------
 int tTVPWaveLoopManager::GetFlag(tjs_int index)
@@ -291,7 +278,7 @@ void tTVPWaveLoopManager::SetPosition(tjs_int64 pos)
 	Decoder->SetPosition(pos);
 }
 //---------------------------------------------------------------------------
-void tTVPWaveLoopManager::InternalDecode(void *dest, tjs_uint samples, tjs_uint &written,
+void tTVPWaveLoopManager::Decode(void *dest, tjs_uint samples, tjs_uint &written,
 		std::vector<tTVPWaveLoopSegment> &segments,
 		std::vector<tTVPWaveLabel> &labels)
 {
@@ -515,52 +502,6 @@ void tTVPWaveLoopManager::InternalDecode(void *dest, tjs_uint samples, tjs_uint 
 			}
 		}
 	}	// while 
-}
-//---------------------------------------------------------------------------
-void tTVPWaveLoopManager::Decode(void *dest, tjs_uint samples, tjs_uint &written,
-	std::vector<tTVPWaveLoopSegment> &segments,
-	std::vector<tTVPWaveLabel> &labels)
-{
-	float * dest_buf = (float*) dest;
-	written = 0;
-	while(samples > 0)
-	{
-		size_t inputfree = PhaseVocoder->GetInputFreeSize();
-		if(inputfree > 0)
-		{
-			// 入力にデータを流し込む
-			float *p1, *p2;
-			size_t p1len, p2len;
-			PhaseVocoder->GetInputBuffer(inputfree, p1, p1len, p2, p2len);
-			tjs_uint filled = 0;
-			tjs_uint total = 0;
-			InternalDecode       (p1, p1len, filled, segments, labels), total += filled;
-			if(p2) InternalDecode(p2, p2len, filled, segments, labels), total += filled;
-			if(total == 0) {written = 0; return ; } // もうデータがない
-		}
-
-		// PhaseVocoderの処理を行う
-		PhaseVocoder->Process();
-
-		// 入力にデータを流し込んでおいて出力が無いことはないが
-		// 要求したサイズよりも小さい場合はある
-		size_t output_ready = PhaseVocoder->GetOutputReadySize();
-		if(output_ready > 0)
-		{
-			// PhaseVocoder の出力から dest にコピーする
-			if(output_ready > samples) output_ready = samples;
-			const float *p1, *p2;
-			size_t p1len, p2len;
-			PhaseVocoder->GetOutputBuffer(output_ready, p1, p1len, p2, p2len);
-			memcpy(dest_buf, p1, p1len * sizeof(float)*Format->Channels);
-			if(p2) memcpy(dest_buf + p1len * Format->Channels, p2,
-							p2len * sizeof(float)*Format->Channels);
-
-			samples  -= output_ready;
-			written  += output_ready;
-			dest_buf += output_ready * Format->Channels;
-		}
-	}
 }
 //---------------------------------------------------------------------------
 bool tTVPWaveLoopManager::GetNearestEvent(tjs_int64 current,
