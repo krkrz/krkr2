@@ -153,6 +153,9 @@ USEUNIT("..\..\..\tools\win32\krdevui\ConfSettingsUnit.cpp");
 USEFORM("..\..\..\tools\win32\krdevui\ConfMainFrameUnit.cpp", ConfMainFrame); /* TFrame: File Type */
 USEUNIT("..\..\base\CharacterSet.cpp");
 USEUNIT("..\..\sound\WaveLoopManager.cpp");
+USEUNIT("..\..\sound\PhaseVocoderDSP.cpp");
+USEOBJ("..\..\sound\cpu\pv_sse.obj");
+USEOBJ("..\..\sound\cpu\pv_def.obj");
 //---------------------------------------------------------------------------
 #ifdef TVP_SUPPORT_ERI
 #	pragma link "../../../../Lib/liberina.lib"
