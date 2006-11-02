@@ -65,7 +65,11 @@ extern void TVPConvertPCMTo16bits(tjs_int16 *output, const void *input,
 extern void TVPConvertPCMTo16bits(tjs_int16 *output, const void *input,
 	tjs_int channels, tjs_int bytespersample, tjs_int bitspersample, bool isfloat,
 	tjs_int count, bool downmix);
-
+extern void TVPConvertPCMToFloat(tjs_int16 *output, const void *input,
+	tjs_int channels, tjs_int bytespersample, tjs_int bitspersample, bool isfloat,
+	tjs_int count);
+extern void TVPConvertPCMToFloat(tjs_int16 *output, const void *input,
+	const tTVPWaveFormat &format, tjs_int count);
 //---------------------------------------------------------------------------
 
 
@@ -122,6 +126,18 @@ extern tTVPWaveDecoder *  TVPCreateWaveDecoder(const ttstr & storagename);
 //---------------------------------------------------------------------------
 
 
+//---------------------------------------------------------------------------
+// interface for basic filter management
+//---------------------------------------------------------------------------
+class tTVPSampleAndLabelSource;
+class iTVPBasicWaveFilter
+{
+public:
+	// recreate filter. filter will remain owned by the each filter instance.
+	virtual tTVPSampleAndLabelSource * Recreate(tTVPSampleAndLabelSource * source) = 0;
+	virtual void Clear(void) = 0;
+};
+//---------------------------------------------------------------------------
 
 
 //---------------------------------------------------------------------------
@@ -137,6 +153,8 @@ class tTJSNI_BaseWaveSoundBuffer : public tTJSNI_SoundBuffer
 
 protected:
 	tTVPWaveLoopManager * LoopManager; // will be set by tTJSNI_WaveSoundBuffer
+	tTVPSampleAndLabelSource * FilterOutput; // filter output
+	iTJSDispatch2 * Filters; // wave filters array (TJS2 array object)
 
 public:
 	tTJSNI_BaseWaveSoundBuffer();
@@ -148,11 +166,14 @@ public:
 protected:
 	void InvokeLabelEvent(const ttstr & name);
 	void RecreateWaveLabelsObject();
+	void RebuildFilterChain();
+	void ClearFilterChain();
 
 public:
 	iTJSDispatch2 * GetWaveFlagsObjectNoAddRef();
 	iTJSDispatch2 * GetWaveLabelsObjectNoAddRef();
 	tTVPWaveLoopManager * GetWaveLoopManager() const { return LoopManager; }
+	iTJSDispatch2 * GetFiltersNoAddRef() { return Filters; }
 };
 //---------------------------------------------------------------------------
 
