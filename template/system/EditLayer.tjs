@@ -263,8 +263,56 @@ class EditLayer extends KAGLayer
 	{
 		if(Edit_mouseDown)
 		{
-			// 手抜き
-			onMouseDown(x, y, button, ssShift);
+			// ここでの移動はアンカーは絶対に移動しない
+
+			if(Edit_vertical)
+			{
+				if(y >= 3 && y < (imageHeight - 3))
+				{
+					var oldStart = Edit_selStart;
+
+					Edit_selStart = getCaretPosFromX(y);
+
+					// 更新の必要があれば更新する
+					if(oldStart != Edit_selStart)
+						update();
+
+					ensureCaretVisible();
+					showCaret();
+				}
+				else
+				{
+					if(y <= 3)
+						stepLeft(true);
+					else
+					if(y > (imageHeight - 3))
+						stepRight(true);
+				}
+			}
+			else
+			{
+				if(x >= 3 && x < (imageWidth - 3))
+				{
+					var oldStart = Edit_selStart;
+
+					Edit_selStart = getCaretPosFromX(x);
+
+					// 更新の必要があれば更新する
+					if(oldStart != Edit_selStart)
+						update();
+
+					ensureCaretVisible();
+					showCaret();
+				}
+				else
+				{
+					if(x <= 3)
+						stepLeft(true);
+					else
+					if(x > (imageWidth - 3))
+						stepRight(true);
+				}
+			}
 		}
 
 		super.onMouseMove(...);
