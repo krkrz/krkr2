@@ -36,6 +36,7 @@
 #include "Random.h"
 #include "tjsRandomGenerator.h"
 #include "SysInitIntf.h"
+#include "PhaseVocoderFilter.h"
 
 //---------------------------------------------------------------------------
 // Script system initialization script
@@ -460,7 +461,6 @@ void TVPInitScriptEngine()
 	REGISTER_OBJECT(Layer, TVPCreateNativeClass_Layer());
 	REGISTER_OBJECT(CDDASoundBuffer, TVPCreateNativeClass_CDDASoundBuffer());
 	REGISTER_OBJECT(MIDISoundBuffer, TVPCreateNativeClass_MIDISoundBuffer());
-	REGISTER_OBJECT(WaveSoundBuffer, TVPCreateNativeClass_WaveSoundBuffer());
 	REGISTER_OBJECT(Timer, TVPCreateNativeClass_Timer());
 	REGISTER_OBJECT(AsyncTrigger, TVPCreateNativeClass_AsyncTrigger());
 	REGISTER_OBJECT(System, TVPCreateNativeClass_System());
@@ -474,6 +474,15 @@ void TVPInitScriptEngine()
 
 	/* KAG special support */
 	REGISTER_OBJECT(KAGParser, new tTJSNC_KAGParser());
+
+	/* WaveSoundBuffer and its filters */
+	iTJSDispatch2 * waveclass = NULL;
+	REGISTER_OBJECT(WaveSoundBuffer, (waveclass = TVPCreateNativeClass_WaveSoundBuffer()));
+	dsp = new tTJSNC_PhaseVocoder();
+	val = tTJSVariant(dsp);
+	dsp->Release();
+	waveclass->PropSet(TJS_MEMBERENSURE|TJS_IGNOREPROP|TJS_STATICMEMBER,
+		TJS_W("PhaseVocoder"), NULL, &val, waveclass);
 
 	// Garbage Collection Hook
 	TVPAddCompactEventHook(&TVPTJSGCCallback);

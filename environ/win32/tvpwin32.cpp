@@ -156,6 +156,7 @@ USEUNIT("..\..\sound\WaveLoopManager.cpp");
 USEUNIT("..\..\sound\PhaseVocoderDSP.cpp");
 USEOBJ("..\..\sound\cpu\pv_sse.obj");
 USEOBJ("..\..\sound\cpu\pv_def.obj");
+USEUNIT("..\..\SOUND\PhaseVocoderFilter.cpp");
 //---------------------------------------------------------------------------
 #ifdef TVP_SUPPORT_ERI
 #	pragma link "../../../../Lib/liberina.lib"

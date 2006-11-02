@@ -258,6 +258,8 @@ public:
 		std::vector<tTVPWaveLabel> &labels) = 0;
 
 	virtual const tTVPWaveFormat & GetFormat() const  = 0;
+
+	virtual ~ tTVPSampleAndLabelSource() { }
 };
 //---------------------------------------------------------------------------
 
@@ -275,10 +277,6 @@ class tTVPWaveLoopManager : public tTVPSampleAndLabelSource
 	tTJSCriticalSection DataCS; // CS to protect other members
 	tTVPWaveFormat * Format;
 	tTVPWaveDecoder * Decoder;
-
-#ifndef TVP_IN_LOOP_TUNER
-	tRisaPhaseVocoderDSP * PhaseVocoder; // Phase Vocoder DSP instance
-#endif
 
 	tjs_int ShortCrossFadeHalfSamples;
 		// TVP_WL_SMOOTH_TIME_HALF in sample unit
@@ -324,12 +322,6 @@ public:
 	bool GetLooping() const { return Looping; }
 	void SetLooping(bool b) { Looping = b; }
 
-private:
-	void InternalDecode(void *dest, tjs_uint samples, tjs_uint &written,
-		std::vector<tTVPWaveLoopSegment> &segments,
-		std::vector<tTVPWaveLabel> &labels); // from tTVPSampleAndLabelSource
-
-public:
 	void Decode(void *dest, tjs_uint samples, tjs_uint &written,
 		std::vector<tTVPWaveLoopSegment> &segments,
 		std::vector<tTVPWaveLabel> &labels); // from tTVPSampleAndLabelSource

@@ -1939,9 +1939,10 @@ tTJSNI_WaveSoundBuffer::Construct(tjs_int numparams, tTJSVariant **param,
 //---------------------------------------------------------------------------
 void TJS_INTF_METHOD tTJSNI_WaveSoundBuffer::Invalidate()
 {
+	Clear();
+
 	inherited::Invalidate();
 
-	Clear();
 	DestroySoundBuffer();
 
 	if(Thread) delete Thread, Thread = NULL;
@@ -2336,6 +2337,7 @@ void tTJSNI_WaveSoundBuffer::Clear()
 	TVPCheckSoundBufferAllSleep();
 	Thread->Interrupt();
 	if(LoopManager) delete LoopManager, LoopManager = NULL;
+	ClearFilterChain();
 	if(Decoder) delete Decoder, Decoder = NULL;
 	BufferPlaying = false;
 	DSBufferPlaying = false;
@@ -2356,7 +2358,7 @@ tjs_uint tTJSNI_WaveSoundBuffer::Decode(void *buffer, tjs_uint bufsamplelen,
 	try
 	{
 		// decode
-		LoopManager->Decode((tjs_uint8*)buffer, bufsamplelen, w, segments, labels);
+		FilterOutput->Decode((tjs_uint8*)buffer, bufsamplelen, w, segments, labels);
 	}
 	catch(...)
 	{
@@ -2927,10 +2929,18 @@ void tTJSNI_WaveSoundBuffer::Open(const ttstr & storagename)
 
 	Decoder = TVPCreateWaveDecoder(storagename);
 
-	// retrieve format
 	try
 	{
-		Decoder->GetFormat(InputFormat);
+		// make manager
+		LoopManager = new tTVPWaveLoopManager();
+		LoopManager->SetDecoder(Decoder);
+		LoopManager->SetLooping(Looping);
+
+		// build filter chain
+		RebuildFilterChain();
+
+		// retrieve format
+		InputFormat = FilterOutput->GetFormat();
 		Frequency = InputFormat.SamplesPerSec;
 	}
 	catch(...)
@@ -2938,11 +2948,6 @@ void tTJSNI_WaveSoundBuffer::Open(const ttstr & storagename)
 		Clear();
 		throw;
 	}
-
-	// make manager
-	LoopManager = new tTVPWaveLoopManager();
-	LoopManager->SetDecoder(Decoder);
-	LoopManager->SetLooping(Looping);
 
 	// open loop information file
 	ttstr sliname = storagename + TJS_W(".sli");
