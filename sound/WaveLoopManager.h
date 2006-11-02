@@ -30,6 +30,10 @@
 	#include "WaveReader.h"
 #endif
 
+#ifndef TVP_IN_LOOP_TUNER
+	#include "PhaseVocoderDSP.h"
+#endif
+
 //---------------------------------------------------------------------------
 #ifdef TVP_IN_LOOP_TUNER
 	typedef AnsiString tTVPLabelStringType;
@@ -241,13 +245,27 @@ struct tTVPWaveLoopSegment
 //---------------------------------------------------------------------------
 
 
+//---------------------------------------------------------------------------
+// tTVPSampleAndLabelSource : source interface for sound sample and its label info
+//---------------------------------------------------------------------------
+class tTVPWaveDecoder;
+class tTVPWaveFormat;
+class tTVPSampleAndLabelSource
+{
+public:
+	virtual void Decode(void *dest, tjs_uint samples, tjs_uint &written,
+		std::vector<tTVPWaveLoopSegment> &segments,
+		std::vector<tTVPWaveLabel> &labels) = 0;
+
+	virtual const tTVPWaveFormat & GetFormat() const  = 0;
+};
+//---------------------------------------------------------------------------
+
 
 //---------------------------------------------------------------------------
 // tTVPWaveLoopManager : wave loop manager
 //---------------------------------------------------------------------------
-class tTVPWaveDecoder;
-class tTVPWaveFormat;
-class tTVPWaveLoopManager
+class tTVPWaveLoopManager : public tTVPSampleAndLabelSource
 {
 	tTJSCriticalSection FlagsCS; // CS to protect flags/links/labels
 	int Flags[TVP_WL_MAX_FLAGS];
@@ -257,6 +275,10 @@ class tTVPWaveLoopManager
 	tTJSCriticalSection DataCS; // CS to protect other members
 	tTVPWaveFormat * Format;
 	tTVPWaveDecoder * Decoder;
+
+#ifndef TVP_IN_LOOP_TUNER
+	tRisaPhaseVocoderDSP * PhaseVocoder; // Phase Vocoder DSP instance
+#endif
 
 	tjs_int ShortCrossFadeHalfSamples;
 		// TVP_WL_SMOOTH_TIME_HALF in sample unit
@@ -302,11 +324,18 @@ public:
 	bool GetLooping() const { return Looping; }
 	void SetLooping(bool b) { Looping = b; }
 
+private:
+	void InternalDecode(void *dest, tjs_uint samples, tjs_uint &written,
+		std::vector<tTVPWaveLoopSegment> &segments,
+		std::vector<tTVPWaveLabel> &labels); // from tTVPSampleAndLabelSource
+
+public:
 	void Decode(void *dest, tjs_uint samples, tjs_uint &written,
 		std::vector<tTVPWaveLoopSegment> &segments,
-		std::vector<tTVPWaveLabel> &labels);
+		std::vector<tTVPWaveLabel> &labels); // from tTVPSampleAndLabelSource
 
 	const tTVPWaveFormat & GetFormat() const { return *Format; }
+			// from tTVPSampleAndLabelSource
 
 private:
 	bool GetNearestEvent(tjs_int64 current,
