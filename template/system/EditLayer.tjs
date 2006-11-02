@@ -12,6 +12,7 @@ class EditLayer extends KAGLayer
 	var Edit_text = ""; // 編集中のテキスト
 	var Edit_selStart = 0; // カーソル位置
 	var Edit_selLength = 0; // 選択長さ
+	var Edit_selAnchor = 0; // 範囲選択アンカー位置
 	var Edit_scrollPos = 0; // 表示されている左端の文字位置
 	var Edit_caretLayer; // キャレット用レイヤ
 	var Edit_color = clWindow; // 背景色
@@ -21,6 +22,7 @@ class EditLayer extends KAGLayer
 	var Edit_textColor = clWindowText;
 	var Edit_blinkTimer;
 	var Edit_vertical = false;
+	var Edit_mouseDown = false;
 
 	function EditLayer(win, par, vert = false)
 	{
@@ -61,6 +63,7 @@ class EditLayer extends KAGLayer
 		Edit_text = src.Edit_text;
 		Edit_selStart = src.Edit_selStart;
 		Edit_selLength = src.Edit_selLength;
+		Edit_selAnchor = src.Edit_selAnchor;
 		Edit_scrollPos = src.Edit_scrollPos;
 		Edit_color = src.Edit_color;
 		Edit_textColor = src.Edit_textColor;
@@ -166,19 +169,29 @@ class EditLayer extends KAGLayer
 		Edit_caretLayer.visible = ! Edit_caretLayer.visible;
 	}
 
-	function stepLeft()
+	function stepLeft(keepAnchor = false)
 	{
+		var oldAnchor = Edit_selAnchor;
+
 		// キャレットを左へ
 		if(Edit_selLength) Edit_selLength = 0, update();
 		if(Edit_selStart > 0) Edit_selStart --, ensureCaretVisible(3);
+		if(!keepAnchor) Edit_selAnchor = Edit_selStart;
+		if(keepAnchor || oldAnchor != Edit_selAnchor)
+			update();
 		showCaret();
 	}
 
-	function stepRight()
+	function stepRight(keepAnchor = false)
 	{
+		var oldAnchor = Edit_selAnchor;
+
 		// キャレットを右へ
 		if(Edit_selLength) Edit_selLength = 0, update();
 		if(Edit_selStart < Edit_text.length) Edit_selStart ++, ensureCaretVisible(3);
+		if(!keepAnchor) Edit_selAnchor = Edit_selStart;
+		if(keepAnchor || oldAnchor != Edit_selAnchor)
+			update();
 		showCaret();
 	}
 
@@ -208,15 +221,29 @@ class EditLayer extends KAGLayer
 		}
 	}
 
-	function onMouseDown(x, y)
+	function onMouseDown(x, y, button, shift)
 	{
+		Edit_mouseDown = true;
+
 		// クリックされた
 		if(x >= 3 && y >= 3 && x < imageWidth -3 && y < imageHeight - 3)
 		{
+			var oldStart = Edit_selStart;
+			var oldAnchor = Edit_selAnchor;
+
 			if(Edit_vertical)
 				Edit_selStart = getCaretPosFromX(y);
 			else
 				Edit_selStart = getCaretPosFromX(x);
+
+			// Shift キーが押されていないのであればアンカーも更新する
+			if((shift & ssShift) != ssShift)
+				Edit_selAnchor = Edit_selStart;
+
+			// 更新の必要があれば更新する
+			if(oldStart != Edit_selStart || oldAnchor != Edit_selAnchor)
+				update();
+
 			ensureCaretVisible();
 			showCaret();
 		}
@@ -225,13 +252,147 @@ class EditLayer extends KAGLayer
 		super.onMouseDown(...);
 	}
 
+	function onMouseUp()
+	{
+		Edit_mouseDown = false;
+
+		super.onMouseUp(...);
+	}
+
+	function onMouseMove(x, y, button)
+	{
+		if(Edit_mouseDown)
+		{
+			// 手抜き
+			onMouseDown(x, y, button, ssShift);
+		}
+
+		super.onMouseMove(...);
+	}
+
+	/*
+	 選択範囲に含まれる文字を全て削除する
+	 削除したのであれば true を、そうでなければ false を返す
+	*/
+	function deleteSelectRange()
+	{
+		if(Edit_selStart == Edit_selAnchor)
+			return false;
+
+		var sp, ep;
+
+		if(Edit_selStart > Edit_selAnchor)
+		{
+			sp = Edit_selAnchor;
+			ep = Edit_selStart;
+			Edit_selStart = Edit_selAnchor;
+		}
+		else
+		{
+			sp = Edit_selStart;
+			ep = Edit_selAnchor;
+			Edit_selAnchor = Edit_selStart;
+		}
+
+		Edit_text = Edit_text.substring(0, sp) + Edit_text.substring(ep);
+
+		ensureCaretVisible();
+		showCaret();
+		update();
+
+		return true;
+	}
+
+	/*
+	 pos の位置にある文字が選択範囲に含まれているかどうか調べる
+	*/
+	function isSelected(pos)
+	{
+		if(Edit_selStart == Edit_selAnchor)
+			return false;
+
+		if(Edit_selStart > Edit_selAnchor)
+			return ((Edit_selAnchor <= pos && Edit_selStart > pos) ? true : false);
+		else
+			return ((Edit_selAnchor > pos && Edit_selStart <= pos) ? true : false);
+
+		return true;/* dead code */
+	}
+
+	/* 全選択操作 */
+	function operationAllSelection()
+	{
+		Edit_selAnchor = 0;
+		Edit_selStart = Edit_text.length;
+		ensureCaretVisible();
+		showCaret();
+		update();
+	}
+
+	/* コピー操作 */
+	function operationCopy()
+	{
+		if(Edit_selAnchor == Edit_selStart)
+			return;
+
+		var start, len;
+		var text = "";
+
+		if(Edit_selStart > Edit_selAnchor)
+		{
+			start = Edit_selAnchor;
+			len = Edit_selStart - start;
+		}
+		else
+		{
+			start = Edit_selStart;
+			len = Edit_selAnchor - start;
+		}
+
+		Clipboard.asText = Edit_text.substring(start, len);
+	}
+
+	/* ペースト操作 */
+	function operationPaste()
+	{
+		// テキストが無ければもちろん何もしない
+		if(Clipboard.hasFormat(cbfText))
+		{
+			var text = Clipboard.asText;
+
+			// そんなにおっきぃの入らないよぅ
+			if(Edit_maxChars)
+			{
+				var acceptLen = Edit_maxChars - Edit_text.length;
+				text = text.substring(0, acceptLen);
+
+				// むりぽ
+				if(text == "")
+					return;
+			}
+
+			insertCharacter(text);
+		}
+	}
+
+	/* カット操作 */
+	function operationCut()
+	{
+		operationCopy();
+		deleteSelectRange();
+	}
+
 	function insertCharacter(ch)
 	{
+		// 選択範囲のテキストを削除する
+		deleteSelectRange();
+
 		// ch をカーソル位置に挿入
 		var bcr = Edit_text.substring(0, Edit_selStart); // 選択領域以前
 		var acr = Edit_text.substring(Edit_selStart + Edit_selLength); // 選択領域以後
 		Edit_text = bcr + ch + acr;
 		Edit_selStart += ch.length;
+		Edit_selAnchor = Edit_selStart;
 		ensureCaretVisible();
 		showCaret();
 		update();
@@ -240,13 +401,13 @@ class EditLayer extends KAGLayer
 	function deleteBeforeCaret()
 	{
 		// キャレットの手前の文字を一文字削除する
-		if(Edit_selLength) return deleteSelection();
-		if(Edit_selStart > 0)
+		if(!deleteSelectRange() && Edit_selStart > 0)
 		{
 			var bcr = Edit_text.substring(0, Edit_selStart-1);
 			var acr = Edit_text.substring(Edit_selStart + Edit_selLength);
 			Edit_text = bcr + acr;
 			Edit_selStart --;
+			Edit_selAnchor = Edit_selStart;
 			ensureCaretVisible(5);
 			showCaret();
 			update();
@@ -256,8 +417,7 @@ class EditLayer extends KAGLayer
 	function deleteAfterCaret()
 	{
 		// キャレットの次の一文字を削除する
-		if(Edit_selLength) return deleteSelection();
-		if(Edit_selStart < Edit_text.length)
+		if(!deleteSelectRange() && Edit_selStart < Edit_text.length)
 		{
 			var bcr = Edit_text.substring(0, Edit_selStart);
 			var acr = Edit_text.substring(Edit_selStart + Edit_selLength + 1);
@@ -282,10 +442,22 @@ class EditLayer extends KAGLayer
 		else super.onKeyPress(...);
 	}
 
-	function onKeyDown(key)
+	function onKeyDown(key, shift)
 	{
-		if(key == (Edit_vertical?VK_UP:VK_LEFT)) stepLeft();
-		else if(key == (Edit_vertical?VK_DOWN:VK_RIGHT)) stepRight();
+		// 特殊なオペレーション
+		if(shift & ssCtrl)
+		{
+			switch(key)
+			{
+			case VK_A:	operationAllSelection(); return;
+			case VK_C:	operationCopy(); return;
+			case VK_X:	operationCut(); return;
+			case VK_V:	operationPaste(); return;
+			}
+		}
+
+		if(key == (Edit_vertical?VK_UP:VK_LEFT)) stepLeft((shift & ssShift) == ssShift);
+		else if(key == (Edit_vertical?VK_DOWN:VK_RIGHT)) stepRight((shift & ssShift) == ssShift);
 		else if(key == VK_DELETE) deleteAfterCaret();
 		else if(key == VK_BACK) deleteBeforeCaret();
 		else super.onKeyDown(...);
@@ -340,9 +512,9 @@ class EditLayer extends KAGLayer
 				y = 3 + font.getTextWidth(tx);
 				if(y > imwidth) break;
 				if(chpos >= textlen) break;
-				var ch = text[chpos++];
+				var ch = text[chpos];
 				var chw = font.getTextWidth(ch);
-				if(chpos >= selstart && chpos < selend)
+				if(isSelected(chpos++))
 				{
 					// 選択領域内
 					// 背景を塗る
@@ -365,9 +537,9 @@ class EditLayer extends KAGLayer
 				x = 3 + font.getTextWidth(tx);
 				if(x > imwidth) break;
 				if(chpos >= textlen) break;
-				var ch = text[chpos++];
+				var ch = text[chpos];
 				var chw = font.getTextWidth(ch);
-				if(chpos >= selstart && chpos < selend)
+				if(isSelected(chpos++))
 				{
 					// 背景を塗る
 					fillRect(x, y, chw, h, highlightbg);
@@ -408,6 +580,7 @@ class EditLayer extends KAGLayer
 			Edit_text = string x;
 			Edit_selStart = 0;
 			Edit_selLength = 0;
+			Edit_selAnchor = 0;
 			Edit_scrollPos = 0;
 			setCaretLayerPos();
 			update();
@@ -425,6 +598,7 @@ class EditLayer extends KAGLayer
 			Edit_maxChars = int x;
 			Edit_selStart = 0;
 			Edit_selLength = 0;
+			Edit_selAnchor = 0;
 			Edit_scrollPos = 0;
 			if(Edit_maxChars && Edit_text.length >= Edit_maxChars)
 				Edit_text = Edit_text.substring(0, Edit_maxChars);
