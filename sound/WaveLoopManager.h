@@ -164,7 +164,7 @@ bool inline operator < (const tTVPWaveLoopLink & lhs, const tTVPWaveLoopLink & r
 
 
 //---------------------------------------------------------------------------
-// tTVPWaveLoopLink : label structure
+// tTVPWaveLabel : label structure
 //---------------------------------------------------------------------------
 struct tTVPWaveLabel
 {
