@@ -301,6 +301,120 @@ void TVPConvertPCMTo16bits(tjs_int16 *output, const void *input,
 
 
 
+//---------------------------------------------------------------------------
+static void TVPConvertFloatPCMToFloat(tjs_int16 *output, const float *input,
+	tjs_int channels, tjs_int count)
+{
+	// convert 32bit float to float
+
+	// yes, acctually, this does nothing.
+	memcpy(output, input, sizeof(float)*channels * count);
+}
+//---------------------------------------------------------------------------
+static void TVPConvertIntegerPCMToFloat(tjs_int16 *output, const void *input,
+	tjs_int bytespersample,
+	tjs_int validbits, tjs_int channels, tjs_int count)
+{
+	// convert integer PCMs to float PCM
+
+#ifdef TJS_HOST_IS_BIG_ENDIAN
+	#undef TJS_HOST_IS_BIG_ENDIAN
+#endif
+#if TJS_HOST_IS_BIG_ENDIAN
+	#define GET_24BIT(p) (p[2] + (p[1] << 8) + (p[0] << 16))
+#else
+	#define GET_24BIT(p) (p[0] + (p[1] << 8) + (p[2] << 16))
+#endif
+
+	if(bytespersample == 1)
+	{
+		// here assumes that the input 8bit PCM has always 8bit valid data
+		const tjs_int8 *p = (tjs_int8 *)input;
+		tjs_int total = channels * count;
+		while(total--)
+			*(output++) = (float)( ((tjs_int)*(p++)- 0x80) * (1.0 / 128) );
+	}
+	else if(bytespersample == 2)
+	{
+		const tjs_int16 *p = (const tjs_int16 *)input;
+		tjs_int total = channels * count;
+
+		if(validbits == 16)
+		{
+			// most popular
+			tjs_int n = 0;
+			total -= 3;
+			for(   ; n < total; n += 4)
+			{
+				output[n  ] = (float)(p[n  ] * (1.0 / 32768));
+				output[n+1] = (float)(p[n+1] * (1.0 / 32768));
+				output[n+2] = (float)(p[n+2] * (1.0 / 32768));
+				output[n+3] = (float)(p[n+3] * (1.0 / 32768));
+			}
+			total += 3;
+			for(   ; n < total; n ++)
+			{
+				output[n  ] = (float)(p[n  ] * (1.0 / 32768));
+			}
+		}
+		else
+		{
+			// generic
+			tjs_uint16 mask =  ~( (1 << (16 - validbits)) - 1);
+
+			while(total--) *(output++) = (float)((*(p++) & mask) * (1.0 / 32768));
+		}
+	}
+	else if(bytespersample == 3)
+	{
+		tjs_uint32 mask = ~( (1 << (24 - validbits)) - 1);
+		const tjs_uint8 *p = (const tjs_uint8 *)input;
+
+		tjs_int total = channels * count;
+		while(total--)
+		{
+			tjs_int32 t = GET_24BIT(p);
+			p += 3;
+			t |= -(t&0x800000); // extend sign
+			t &= mask; // apply mask
+			*(output++) = (float)(t * (1.0 / (1<<23)));
+		}
+	}
+	else if(bytespersample == 4)
+	{
+		tjs_int32 mask = ~( (1 << (32 - validbits)) - 1);
+		const tjs_uint32 *p = (const tjs_uint32 *)input;
+		tjs_int total = channels * count;
+		while(total--)
+			*(output++) = (float)(((*(p++) & mask) >> 8) * (1.0 / (1<<23)));
+	}
+}
+//---------------------------------------------------------------------------
+void TVPConvertPCMToFloat(tjs_int16 *output, const void *input,
+	tjs_int channels, tjs_int bytespersample, tjs_int bitspersample, bool isfloat,
+	tjs_int count)
+{
+	// cconvert specified format to 16bit PCM
+
+	if(isfloat)
+		TVPConvertFloatPCMToFloat(output, (const float *)input, channels, count);
+	else
+		TVPConvertIntegerPCMToFloat(output, input,
+			bytespersample, bitspersample, channels, count);
+}
+//---------------------------------------------------------------------------
+void TVPConvertPCMToFloat(tjs_int16 *output, const void *input,
+	const tTVPWaveFormat &format, tjs_int count)
+{
+	// cconvert specified format to 16bit PCM
+	TVPConvertPCMToFloat(output, input, format.Channels, format.BytesPerSample,
+		format.BitsPerSample, format.IsFloat, count);
+}
+//---------------------------------------------------------------------------
+
+
+
+
 
 //---------------------------------------------------------------------------
 // tTVPWD_RIFFWave
@@ -690,6 +804,7 @@ tTJSNI_BaseWaveSoundBuffer::tTJSNI_BaseWaveSoundBuffer()
 	LoopManager = NULL;
 	WaveFlagsObject = NULL;
 	WaveLabelsObject = NULL;
+	Filters = TJSCreateArrayObject();
 }
 //---------------------------------------------------------------------------
 tjs_error TJS_INTF_METHOD
@@ -705,14 +820,10 @@ tjs_error TJS_INTF_METHOD
 void TJS_INTF_METHOD tTJSNI_BaseWaveSoundBuffer::Invalidate()
 {
 	// invalidate wave flags object
-	if(WaveFlagsObject)
-	{
-		WaveFlagsObject->Invalidate(0, NULL, NULL, WaveFlagsObject);
-		WaveFlagsObject->Release();
-		WaveFlagsObject = NULL;
-	}
-
 	RecreateWaveLabelsObject();
+
+	// release filter arrays
+	if(Filters) Filters->Release(), Filters = NULL;
 
 	inherited::Invalidate();
 }
@@ -743,6 +854,66 @@ void tTJSNI_BaseWaveSoundBuffer::RecreateWaveLabelsObject()
 	}
 }
 //---------------------------------------------------------------------------
+void tTJSNI_BaseWaveSoundBuffer::RebuildFilterChain()
+{
+	// rebuild filter array
+
+	// get filter count
+	tTJSVariant v;
+	tjs_int count = 0;
+	Filters->PropGet(0, TJS_W("count"), NULL, &v, Filters);
+	count = v;
+
+	// reset filter output
+	FilterOutput = LoopManager;
+
+	// for each filter ...
+	for(int i = 0; i < count; i++)
+	{
+		Filters->PropGetByNum(0, i, &v, Filters);
+
+		// get iTVPBasicWaveFilter interface
+		tTJSVariantClosure clo = v.AsObjectClosureNoAddRef();
+		tTJSVariant iface_v;
+		if(TJS_FAILED(clo.PropGet(0, TJS_W("interface"), NULL, &iface_v, NULL))) continue;
+		iTVPBasicWaveFilter * filter =
+			reinterpret_cast<iTVPBasicWaveFilter *>((long)(tjs_int64)iface_v);
+
+		// recreate filter
+		FilterOutput = filter->Recreate(FilterOutput);
+	}
+}
+//---------------------------------------------------------------------------
+void tTJSNI_BaseWaveSoundBuffer::ClearFilterChain()
+{
+	// delete object which is created from this filter array
+
+	// get filter count
+	tTJSVariant v;
+	tjs_int count = 0;
+	Filters->PropGet(0, TJS_W("count"), NULL, &v, Filters);
+	count = v;
+
+	// reset filter output
+	FilterOutput = NULL;
+
+	// for each filter ...
+	for(int i = 0; i < count; i++)
+	{
+		Filters->PropGetByNum(0, i, &v, Filters);
+
+		// get iTVPBasicWaveFilter interface
+		tTJSVariantClosure clo = v.AsObjectClosureNoAddRef();
+		tTJSVariant iface_v;
+		if(TJS_FAILED(clo.PropGet(0, TJS_W("interface"), NULL, &iface_v, NULL))) continue;
+		iTVPBasicWaveFilter * filter =
+			reinterpret_cast<iTVPBasicWaveFilter *>((long)(tjs_int64)iface_v);
+
+		// delete filter
+		filter->Clear();
+	}
+}
+//---------------------------------------------------------------------------
 iTJSDispatch2 * tTJSNI_BaseWaveSoundBuffer::GetWaveFlagsObjectNoAddRef()
 {
 	if(WaveFlagsObject) return WaveFlagsObject;
@@ -765,7 +936,7 @@ iTJSDispatch2 * tTJSNI_BaseWaveSoundBuffer::GetWaveLabelsObjectNoAddRef()
 	{
 		const std::vector<tTVPWaveLabel> & labels = LoopManager->GetLabels();
 
-		int freq = LoopManager->GetFormat().SamplesPerSec;
+		int freq = FilterOutput->GetFormat().SamplesPerSec;
 
 		int count = 0;
 		for(std::vector<tTVPWaveLabel>::const_iterator i = labels.begin();
@@ -1335,6 +1506,22 @@ TJS_BEGIN_NATIVE_PROP_DECL(labels)
 	TJS_DENY_NATIVE_PROP_SETTER
 }
 TJS_END_NATIVE_PROP_DECL(labels)
+//----------------------------------------------------------------------
+TJS_BEGIN_NATIVE_PROP_DECL(filters)
+{
+	TJS_BEGIN_NATIVE_PROP_GETTER
+	{
+		TJS_GET_NATIVE_INSTANCE(/*var. name*/_this, /*var. type*/tTJSNI_WaveSoundBuffer);
+
+		iTJSDispatch2 * dsp = _this->GetFiltersNoAddRef();
+		*result = tTJSVariant(dsp, dsp);
+		return TJS_S_OK;
+	}
+	TJS_END_NATIVE_PROP_GETTER
+
+	TJS_DENY_NATIVE_PROP_SETTER
+}
+TJS_END_NATIVE_PROP_DECL(filters)
 //----------------------------------------------------------------------
 TJS_BEGIN_NATIVE_PROP_DECL(globalVolume)
 {

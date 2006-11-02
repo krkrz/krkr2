@@ -62,7 +62,7 @@
       intermediate\ConfSettingsUnit.obj intermediate\ConfMainFrameUnit.obj 
       intermediate\CharacterSet.obj intermediate\WaveLoopManager.obj 
       intermediate\PhaseVocoderDSP.obj ..\..\sound\cpu\pv_sse.obj 
-      ..\..\sound\cpu\pv_def.obj"/>
+      ..\..\sound\cpu\pv_def.obj intermediate\PhaseVocoderFilter.obj"/>
     <RESFILES value="tvpwin32.res HBeamCur.res"/>
     <DEFFILE value="tvpwin32.def"/>
     <RESDEPEN value="$(RESFILES) HaltWarnFormUnit.dfm ..\..\utils\win32\ConsoleFormUnit.dfm 
@@ -96,7 +96,7 @@
     <PFLAGS value="-N2intermediate -N0intermediate -$Y+ -$W -$O- -v -JPHNE -M"/>
     <RFLAGS value=""/>
     <AFLAGS value="/mx /mv64 /m5 /w2 /zi /l /z"/>
-    <LFLAGS value="-dWINSPOOL.DRV -dWINMM.DLL -dMSVFW32.DLL -dCOMDLG32.DLL -Iintermediate 
+    <LFLAGS value="-Iintermediate -dWINSPOOL.DRV -dWINMM.DLL -dMSVFW32.DLL -dCOMDLG32.DLL 
       -D&quot;&quot; -GC&quot;TVP(kirikiri) for win32&quot; -Rr -H:0x10000 -aa -Tpe -GD -x -Gn -v"/>
   </OPTIONS>
   <LINKER>
@@ -111,7 +111,7 @@ AutoIncBuild=1
 MajorVer=2
 MinorVer=27
 Release=2006
-Build=813
+Build=815
 Debug=0
 PreRelease=0
 Special=0
@@ -123,7 +123,7 @@ CodePage=932
 [Version Info Keys]
 CompanyName=
 FileDescription=TVP(KIRIKIRI) 2 core / Scripting Platform for Win32
-FileVersion=2.27.2006.813
+FileVersion=2.27.2006.815
 InternalName=tvp2/win32
 LegalCopyright=(KIRIKIRI core) (C) '97-'05 W.Dee and Contributors All Rights Reserved. This software is based in part on the work of Independent JPEG Group. For details: Run this program with '-about' option.
 LegalTrademarks=
@@ -147,9 +147,10 @@ Item1=..\..\..\tools\win32\krdevui;krdevui;..\..\visual\IA32;..\..\..\..\Bin;..\
 Item2=krdevui;..\..\visual\IA32;..\..\..\..\Bin;..\..\sound;..\..\sound\win32;..\..\msg\win32;..\..\visual\win32;$(BCB)\Projects\Lib;..\..\visual;..\..\base\win32;..\..\base;..\..\base\storage\win32;..\..\msg;..\..\utils\win32;..\..\utils;..\..\base\storage;..\..\tjs2;..\..\visual\window;..\..\..;$(BCB)\lib\obj;$(BCB)\lib
 
 [HistoryLists\hlDebugSourcePath]
-Count=2
-Item0=C:\Program Files\Borland\CBuilder5\Projects\tvp2win32\visual\IA32\;C:\Program Files\Borland\CBuilder5\Projects\comps\o\erinalib\library\common\;C:\Program Files\Borland\CBuilder5\Projects\tvp2win32\kirikiri2\src\core\visual\IA32\
-Item1=C:\Program Files\Borland\CBuilder5\Projects\tvp2win32\visual\IA32\;C:\Program Files\Borland\CBuilder5\Projects\comps\o\erinalib\library\common\
+Count=3
+Item0=C:\Program Files\Borland\CBuilder5\Projects\tvp2win32\visual\IA32\;C:\Program Files\Borland\CBuilder5\Projects\comps\o\erinalib\library\common\;C:\Program Files\Borland\CBuilder5\Projects\tvp2win32\kirikiri2\src\core\visual\IA32\;C:\Program Files\Borland\CBuilder5\Projects\tvp2win32\kirikiri2\src\core\sound\cpu\
+Item1=C:\Program Files\Borland\CBuilder5\Projects\tvp2win32\visual\IA32\;C:\Program Files\Borland\CBuilder5\Projects\comps\o\erinalib\library\common\;C:\Program Files\Borland\CBuilder5\Projects\tvp2win32\kirikiri2\src\core\visual\IA32\
+Item2=C:\Program Files\Borland\CBuilder5\Projects\tvp2win32\visual\IA32\;C:\Program Files\Borland\CBuilder5\Projects\comps\o\erinalib\library\common\
 
 [HistoryLists\hlConditionals]
 Count=6
