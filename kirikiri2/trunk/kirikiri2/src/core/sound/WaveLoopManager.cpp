@@ -279,21 +279,25 @@ void tTVPWaveLoopManager::SetPosition(tjs_int64 pos)
 }
 //---------------------------------------------------------------------------
 void tTVPWaveLoopManager::Decode(void *dest, tjs_uint samples, tjs_uint &written,
-		std::vector<tTVPWaveLoopSegment> &segments,
-		std::vector<tTVPWaveLabel> &labels)
+		tTVPWaveSegmentQueue & segments)
 {
 	// decode from current position
+	// note that segements will not be cleared
 	volatile tTJSCriticalSectionHolder CS(DataCS);
 
-	segments.clear();
-	labels.clear();
+//	segments.clear();  ///!!! NOT CLEARED !!!!
 	written = 0;
 	tjs_uint8 *d = (tjs_uint8*)dest;
 
 	tjs_int give_up_count = 0;
 
+	std::deque<tTVPWaveLabel> labels;
+
 	while(written != samples/* && Position < Format->TotalSamples*/)
 	{
+		// clear labels
+		labels.clear();
+
 		// decide next operation
 		tjs_int64 next_event_pos;
 		bool next_not_found = false;
@@ -437,14 +441,12 @@ void tTVPWaveLoopManager::Decode(void *dest, tjs_uint samples, tjs_uint &written
 			if(one_unit > CrossFadeLen - CrossFadePosition)
 				one_unit = CrossFadeLen - CrossFadePosition;
 		}
-		segments.push_back(tTVPWaveLoopSegment(Position, one_unit));
 
 		if(one_unit > 0) give_up_count = 0; // reset give up count
 
 		// evaluate each label
-		tjs_uint label_base = labels.size();
 		GetLabelAt(Position, Position + one_unit, labels);
-		for(std::vector<tTVPWaveLabel>::iterator i = labels.begin() + label_base;
+		for(std::deque<tTVPWaveLabel>::iterator i = labels.begin();
 			i != labels.end(); i++)
 		{
 			if(i->Name.c_str()[0] == ':')
@@ -455,9 +457,23 @@ void tTVPWaveLoopManager::Decode(void *dest, tjs_uint samples, tjs_uint &written
 		}
 
 		// calculate each label offset
-		for(std::vector<tTVPWaveLabel>::iterator i = labels.begin() + label_base;
+		for(std::deque<tTVPWaveLabel>::iterator i = labels.begin();
 			i != labels.end(); i++)
+		{
+			char tmp[256];
+			sprintf(tmp, "inserting i->Position:%d, Position:%d, written:%d, "
+					"(i->Position - Position) + written:%d",
+				(int)i->Position, (int)Position,
+				(int)written, (int)((i->Position - Position) + written));
+			OutputDebugString(tmp);
 			i->Offset = (tjs_int)(i->Position - Position) + written;
+		}
+
+		// enqueue labels
+		segments.Enqueue(labels);
+
+		// enqueue segment
+		segments.Enqueue(tTVPWaveSegment(Position, one_unit));
 
 		// decode or copy
 		if(!CrossFadeSamples)
@@ -604,7 +620,7 @@ bool tTVPWaveLoopManager::GetNearestEvent(tjs_int64 current,
 }
 //---------------------------------------------------------------------------
 void tTVPWaveLoopManager::GetLabelAt(tjs_int64 from, tjs_int64 to,
-		std::vector<tTVPWaveLabel> & labels)
+		std::deque<tTVPWaveLabel> & labels)
 {
 	volatile tTJSCriticalSectionHolder CS(FlagsCS);
 

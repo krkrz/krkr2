@@ -45,13 +45,12 @@ tTVPPhaseVocoderFilter::~tTVPPhaseVocoderFilter()
 
 //---------------------------------------------------------------------------
 void tTVPPhaseVocoderFilter::Fill(float * dest, tjs_uint samples, tjs_uint &written,
-		std::vector<tTVPWaveLoopSegment> &segments,
-		std::vector<tTVPWaveLabel> &labels)
+		tTVPWaveSegmentQueue & segments)
 {
 	if(InputFormat.IsFloat && InputFormat.BitsPerSample == 32 && InputFormat.BytesPerSample == 4)
 	{
 		// 入力も32bitフロートなので変換の必要はない
-		Source->Decode(dest, samples, written, segments, labels);
+		Source->Decode(dest, samples, written, segments);
 	}
 	else
 	{
@@ -66,7 +65,7 @@ void tTVPPhaseVocoderFilter::Fill(float * dest, tjs_uint samples, tjs_uint &writ
 			FormatConvertBufferSize = buf_size;
 		}
 		// バッファにデコードを行う
-		Source->Decode(FormatConvertBuffer, samples, written, segments, labels);
+		Source->Decode(FormatConvertBuffer, samples, written, segments);
 		// 変換を行う
 		TVPConvertPCMToFloat(dest, FormatConvertBuffer, InputFormat, written);
 	}
@@ -76,8 +75,7 @@ void tTVPPhaseVocoderFilter::Fill(float * dest, tjs_uint samples, tjs_uint &writ
 
 //---------------------------------------------------------------------------
 void tTVPPhaseVocoderFilter::Decode(void *dest, tjs_uint samples, tjs_uint &written,
-	std::vector<tTVPWaveLoopSegment> &segments,
-	std::vector<tTVPWaveLabel> &labels)
+	tTVPWaveSegmentQueue & segments)
 {
 	float * dest_buf = (float*) dest;
 	written = 0;
@@ -92,8 +90,8 @@ void tTVPPhaseVocoderFilter::Decode(void *dest, tjs_uint samples, tjs_uint &writ
 			PhaseVocoder->GetInputBuffer(inputfree, p1, p1len, p2, p2len);
 			tjs_uint filled = 0;
 			tjs_uint total = 0;
-			Fill       (p1, p1len, filled, segments, labels), total += filled;
-			if(p2) Fill(p2, p2len, filled, segments, labels), total += filled;
+			Fill       (p1, p1len, filled, segments), total += filled;
+			if(p2) Fill(p2, p2len, filled, segments), total += filled;
 			if(total == 0) {written = 0; return ; } // もうデータがない
 		}
 
