@@ -143,12 +143,10 @@ private:
 	bool L2BufferEnded;
 	tjs_uint8 *VisBuffer; // buffer for visualization
 	tjs_int *L2BufferDecodedSamplesInUnit;
-	std::vector<tTVPWaveLoopSegment> *L1BufferSegments;
-	std::vector<tTVPWaveLabel> *L1BufferLabels;
+	tTVPWaveSegmentQueue *L1BufferSegmentQueues;
 	std::vector<tTVPWaveLabel> LabelEventQueue;
 	tjs_int64 *L1BufferDecodeSamplePos;
-	std::vector<tTVPWaveLoopSegment> *L2BufferSegments;
-	std::vector<tTVPWaveLabel> *L2BufferLabels;
+	tTVPWaveSegmentQueue *L2BufferSegmentQueues;
 
 	tjs_int64 DecodePos; // decoded samples from directsound buffer play
 	tjs_int64 LastCheckedDecodePos; // last sured position (-1 for not checked) and 
@@ -159,8 +157,7 @@ private:
 	void Clear();
 
 	tjs_uint Decode(void *buffer, tjs_uint bufsamplelen,
-		std::vector<tTVPWaveLoopSegment> & segments,
-		std::vector<tTVPWaveLabel> & labels);
+		tTVPWaveSegmentQueue & segments);
 
 public:
 	bool FillL2Buffer(bool firstwrite, bool fromdecodethread);
@@ -168,12 +165,10 @@ public:
 private:
 	void PrepareToReadL2Buffer(bool firstread);
 	tjs_uint ReadL2Buffer(void *buffer,
-		std::vector<tTVPWaveLoopSegment> & segments,
-		std::vector<tTVPWaveLabel> & labels);
+		tTVPWaveSegmentQueue & segments);
 
 	void FillDSBuffer(tjs_int writepos,
-		std::vector<tTVPWaveLoopSegment> & segments,
-		std::vector<tTVPWaveLabel> & labels);
+		tTVPWaveSegmentQueue & segments);
 public:
 	bool FillBuffer(bool firstwrite = false, bool allowpause = true);
 

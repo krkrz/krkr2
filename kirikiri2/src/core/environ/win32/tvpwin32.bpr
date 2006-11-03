@@ -62,7 +62,8 @@
       intermediate\ConfSettingsUnit.obj intermediate\ConfMainFrameUnit.obj 
       intermediate\CharacterSet.obj intermediate\WaveLoopManager.obj 
       intermediate\PhaseVocoderDSP.obj ..\..\sound\cpu\pv_sse.obj 
-      ..\..\sound\cpu\pv_def.obj intermediate\PhaseVocoderFilter.obj"/>
+      ..\..\sound\cpu\pv_def.obj intermediate\PhaseVocoderFilter.obj 
+      intermediate\WaveSegmentQueue.obj"/>
     <RESFILES value="tvpwin32.res HBeamCur.res"/>
     <DEFFILE value="tvpwin32.def"/>
     <RESDEPEN value="$(RESFILES) HaltWarnFormUnit.dfm ..\..\utils\win32\ConsoleFormUnit.dfm 
