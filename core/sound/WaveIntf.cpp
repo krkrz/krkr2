@@ -249,7 +249,7 @@ static void TVPConvertIntegerPCMTo16bits(tjs_int16 *output, const void *input,
 	else if(bytespersample == 4)
 	{
 		tjs_int32 mask = ~( (1 << (32 - validbits)) - 1);
-		const tjs_uint32 *p = (const tjs_uint32 *)input;
+		const tjs_int32 *p = (const tjs_int32 *)input;
 		if(!downmix || channels == 1)
 		{
 			tjs_int total = channels * count;
