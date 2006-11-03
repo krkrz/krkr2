@@ -1883,6 +1883,10 @@ extern void * TVPImportFuncPtrf923750e0fdb51a6fc6c304832cb3dd3;
 extern void * TVPImportFuncPtrbc77a1e312ff7827d90387fb92f0f5b0;
 extern void * TVPImportFuncPtr2090afd7ae8bcb021ec4d04947d0d845;
 extern void * TVPImportFuncPtr3a0f858bdf86199dc2d00b583a3b915f;
+extern void * TVPImportFuncPtr0d316a141f7a502ff8d9ffe2d38d25a8;
+extern void * TVPImportFuncPtrb31ff64ae2d8f93dbf28161d5080b295;
+extern void * TVPImportFuncPtrd9b1c73516daea6a9c6564e2b731615a;
+extern void * TVPImportFuncPtr003f9d3de568fcd71dd532f33d38839c;
 extern void * TVPImportFuncPtr5da29a19bbe279a89be00e16c59d7641;
 extern void * TVPImportFuncPtrc1b52e8f3578d11f369552a887e13c5b;
 extern void * TVPImportFuncPtrdcd6ba3960e3e2cf6dbe585b1f67b0ac;
@@ -4607,6 +4611,27 @@ enum tTVPSoundGlobalFocusMode
 
 
 //---------------------------------------------------------------------------
+// PCM data format (internal use)
+//---------------------------------------------------------------------------
+struct tTVPWaveFormat
+{
+	tjs_uint SamplesPerSec; // sample granule per sec
+	tjs_uint Channels;
+	tjs_uint BitsPerSample; // per one sample
+	tjs_uint BytesPerSample; // per one sample
+	tjs_uint64 TotalSamples; // in sample granule; unknown for zero
+	tjs_uint64 TotalTime; // in ms; unknown for zero
+	tjs_uint32 SpeakerConfig; // bitwise OR of SPEAKER_* constants
+	bool IsFloat; // true if the data is IEEE floating point
+	bool Seekable;
+};
+//---------------------------------------------------------------------------
+
+
+
+
+
+//---------------------------------------------------------------------------
 // IDirectSound former declaration
 //---------------------------------------------------------------------------
 #ifndef __DSOUND_INCLUDED__
@@ -6955,6 +6980,46 @@ inline void TVPGetTJSVersion(tjs_int & major , tjs_int & minor , tjs_int & relea
 	}
 	typedef void (__stdcall * __functype)(tjs_int &, tjs_int &, tjs_int &);
 	((__functype)(TVPImportFuncPtr3a0f858bdf86199dc2d00b583a3b915f))(major, minor, release);
+}
+inline void TVPConvertPCMTo16bits(tjs_int16 * output , const void * input , const tTVPWaveFormat & format , tjs_int count , bool downmix)
+{
+	if(!TVPImportFuncPtr0d316a141f7a502ff8d9ffe2d38d25a8)
+	{
+		static char funcname[] = "void ::TVPConvertPCMTo16bits(tjs_int16 *,const void *,const tTVPWaveFormat &,tjs_int,bool)";
+		TVPImportFuncPtr0d316a141f7a502ff8d9ffe2d38d25a8 = TVPGetImportFuncPtr(funcname);
+	}
+	typedef void (__stdcall * __functype)(tjs_int16 *, const void *, const tTVPWaveFormat &, tjs_int , bool);
+	((__functype)(TVPImportFuncPtr0d316a141f7a502ff8d9ffe2d38d25a8))(output, input, format, count, downmix);
+}
+inline void TVPConvertPCMTo16bits(tjs_int16 * output , const void * input , tjs_int channels , tjs_int bytespersample , tjs_int bitspersample , bool isfloat , tjs_int count , bool downmix)
+{
+	if(!TVPImportFuncPtrb31ff64ae2d8f93dbf28161d5080b295)
+	{
+		static char funcname[] = "void ::TVPConvertPCMTo16bits(tjs_int16 *,const void *,tjs_int,tjs_int,tjs_int,bool,tjs_int,bool)";
+		TVPImportFuncPtrb31ff64ae2d8f93dbf28161d5080b295 = TVPGetImportFuncPtr(funcname);
+	}
+	typedef void (__stdcall * __functype)(tjs_int16 *, const void *, tjs_int , tjs_int , tjs_int , bool , tjs_int , bool);
+	((__functype)(TVPImportFuncPtrb31ff64ae2d8f93dbf28161d5080b295))(output, input, channels, bytespersample, bitspersample, isfloat, count, downmix);
+}
+inline void TVPConvertPCMToFloat(float * output , const void * input , tjs_int channels , tjs_int bytespersample , tjs_int bitspersample , bool isfloat , tjs_int count)
+{
+	if(!TVPImportFuncPtrd9b1c73516daea6a9c6564e2b731615a)
+	{
+		static char funcname[] = "void ::TVPConvertPCMToFloat(float *,const void *,tjs_int,tjs_int,tjs_int,bool,tjs_int)";
+		TVPImportFuncPtrd9b1c73516daea6a9c6564e2b731615a = TVPGetImportFuncPtr(funcname);
+	}
+	typedef void (__stdcall * __functype)(float *, const void *, tjs_int , tjs_int , tjs_int , bool , tjs_int);
+	((__functype)(TVPImportFuncPtrd9b1c73516daea6a9c6564e2b731615a))(output, input, channels, bytespersample, bitspersample, isfloat, count);
+}
+inline void TVPConvertPCMToFloat(float * output , const void * input , const tTVPWaveFormat & format , tjs_int count)
+{
+	if(!TVPImportFuncPtr003f9d3de568fcd71dd532f33d38839c)
+	{
+		static char funcname[] = "void ::TVPConvertPCMToFloat(float *,const void *,const tTVPWaveFormat &,tjs_int)";
+		TVPImportFuncPtr003f9d3de568fcd71dd532f33d38839c = TVPGetImportFuncPtr(funcname);
+	}
+	typedef void (__stdcall * __functype)(float *, const void *, const tTVPWaveFormat &, tjs_int);
+	((__functype)(TVPImportFuncPtr003f9d3de568fcd71dd532f33d38839c))(output, input, format, count);
 }
 inline void TVPReleaseDirectSound()
 {
