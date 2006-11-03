@@ -28,7 +28,7 @@ class tTVPPhaseVocoderFilter : public tTVPSampleAndLabelSource
 	tTVPSampleAndLabelSource * Source; // source filter
 
 	tRisaPhaseVocoderDSP * PhaseVocoder; // Phase Vocoder DSP instance
-	void * FormatConvertBuffer; // buffer for converting PCM formats internally
+	char * FormatConvertBuffer; // buffer for converting PCM formats internally
 	size_t FormatConvertBufferSize;
 
 	tTVPWaveFormat InputFormat;
@@ -37,6 +37,11 @@ class tTVPPhaseVocoderFilter : public tTVPSampleAndLabelSource
 public:
 	tTVPPhaseVocoderFilter(tTVPSampleAndLabelSource * source);
 	~tTVPPhaseVocoderFilter();
+
+private:
+	void Fill(float * dest, tjs_uint samples, tjs_uint &written,
+		std::vector<tTVPWaveLoopSegment> &segments,
+		std::vector<tTVPWaveLabel> &labels);
 
 	void Decode(void *dest, tjs_uint samples, tjs_uint &written,
 		std::vector<tTVPWaveLoopSegment> &segments,

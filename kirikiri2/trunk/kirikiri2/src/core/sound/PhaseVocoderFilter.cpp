@@ -12,6 +12,7 @@
 #include "tjsCommHead.h"
 #include "PhaseVocoderDSP.h"
 #include "PhaseVocoderFilter.h"
+#include "WaveIntf.h"
 
 
 //---------------------------------------------------------------------------
@@ -43,6 +44,37 @@ tTVPPhaseVocoderFilter::~tTVPPhaseVocoderFilter()
 
 
 //---------------------------------------------------------------------------
+void tTVPPhaseVocoderFilter::Fill(float * dest, tjs_uint samples, tjs_uint &written,
+		std::vector<tTVPWaveLoopSegment> &segments,
+		std::vector<tTVPWaveLabel> &labels)
+{
+	if(InputFormat.IsFloat && InputFormat.BitsPerSample == 32 && InputFormat.BytesPerSample == 4)
+	{
+		// 入力も32bitフロートなので変換の必要はない
+		Source->Decode(dest, samples, written, segments, labels);
+	}
+	else
+	{
+		// 入力が32bitフロートではないので変換の必要がある
+		// いったん変換バッファにためる
+		tjs_uint buf_size = samples * InputFormat.BytesPerSample * InputFormat.Channels;
+		if(FormatConvertBufferSize < buf_size)
+		{
+			// バッファを再確保
+			if(FormatConvertBuffer) delete [] FormatConvertBuffer, FormatConvertBuffer = NULL;
+			FormatConvertBuffer = new char[buf_size];
+			FormatConvertBufferSize = buf_size;
+		}
+		// バッファにデコードを行う
+		Source->Decode(FormatConvertBuffer, samples, written, segments, labels);
+		// 変換を行う
+		TVPConvertPCMToFloat(dest, FormatConvertBuffer, InputFormat, written);
+	}
+}
+//---------------------------------------------------------------------------
+
+
+//---------------------------------------------------------------------------
 void tTVPPhaseVocoderFilter::Decode(void *dest, tjs_uint samples, tjs_uint &written,
 	std::vector<tTVPWaveLoopSegment> &segments,
 	std::vector<tTVPWaveLabel> &labels)
@@ -60,8 +92,8 @@ void tTVPPhaseVocoderFilter::Decode(void *dest, tjs_uint samples, tjs_uint &writ
 			PhaseVocoder->GetInputBuffer(inputfree, p1, p1len, p2, p2len);
 			tjs_uint filled = 0;
 			tjs_uint total = 0;
-			Source->Decode       (p1, p1len, filled, segments, labels), total += filled;
-			if(p2) Source->Decode(p2, p2len, filled, segments, labels), total += filled;
+			Fill       (p1, p1len, filled, segments, labels), total += filled;
+			if(p2) Fill(p2, p2len, filled, segments, labels), total += filled;
 			if(total == 0) {written = 0; return ; } // もうデータがない
 		}
 
