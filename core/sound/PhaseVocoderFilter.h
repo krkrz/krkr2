@@ -40,12 +40,10 @@ public:
 
 private:
 	void Fill(float * dest, tjs_uint samples, tjs_uint &written,
-		std::vector<tTVPWaveLoopSegment> &segments,
-		std::vector<tTVPWaveLabel> &labels);
+		tTVPWaveSegmentQueue & segments);
 
 	void Decode(void *dest, tjs_uint samples, tjs_uint &written,
-		std::vector<tTVPWaveLoopSegment> &segments,
-		std::vector<tTVPWaveLabel> &labels); // from tTVPSampleAndLabelSource
+		tTVPWaveSegmentQueue & segments); // from tTVPSampleAndLabelSource
 
 	const tTVPWaveFormat & GetFormat() const { return OutputFormat; }
 			// from tTVPSampleAndLabelSource
