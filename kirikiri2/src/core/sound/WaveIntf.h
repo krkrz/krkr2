@@ -38,6 +38,7 @@ extern tjs_uint8 TVP_GUID_KSDATAFORMAT_SUBTYPE_IEEE_FLOAT[16];
 //---------------------------------------------------------------------------
 
 
+/*[*/
 //---------------------------------------------------------------------------
 // PCM data format (internal use)
 //---------------------------------------------------------------------------
@@ -57,19 +58,14 @@ struct tTVPWaveFormat
 
 
 
+/*]*/
 //---------------------------------------------------------------------------
 // PCM bit depth converter
 //---------------------------------------------------------------------------
-extern void TVPConvertPCMTo16bits(tjs_int16 *output, const void *input,
-	const tTVPWaveFormat &format, tjs_int count, bool downmix);
-extern void TVPConvertPCMTo16bits(tjs_int16 *output, const void *input,
-	tjs_int channels, tjs_int bytespersample, tjs_int bitspersample, bool isfloat,
-	tjs_int count, bool downmix);
-extern void TVPConvertPCMToFloat(float *output, const void *input,
-	tjs_int channels, tjs_int bytespersample, tjs_int bitspersample, bool isfloat,
-	tjs_int count);
-extern void TVPConvertPCMToFloat(float *output, const void *input,
-	const tTVPWaveFormat &format, tjs_int count);
+TJS_EXP_FUNC_DEF(void, TVPConvertPCMTo16bits, (tjs_int16 *output, const void *input, const tTVPWaveFormat &format, tjs_int count, bool downmix));
+TJS_EXP_FUNC_DEF(void, TVPConvertPCMTo16bits, (tjs_int16 *output, const void *input, tjs_int channels, tjs_int bytespersample, tjs_int bitspersample, bool isfloat, tjs_int count, bool downmix));
+TJS_EXP_FUNC_DEF(void, TVPConvertPCMToFloat, (float *output, const void *input, tjs_int channels, tjs_int bytespersample, tjs_int bitspersample, bool isfloat, tjs_int count));
+TJS_EXP_FUNC_DEF(void, TVPConvertPCMToFloat, (float *output, const void *input, const tTVPWaveFormat &format, tjs_int count));
 //---------------------------------------------------------------------------
 
 
