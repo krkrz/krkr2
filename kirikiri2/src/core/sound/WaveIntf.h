@@ -65,10 +65,10 @@ extern void TVPConvertPCMTo16bits(tjs_int16 *output, const void *input,
 extern void TVPConvertPCMTo16bits(tjs_int16 *output, const void *input,
 	tjs_int channels, tjs_int bytespersample, tjs_int bitspersample, bool isfloat,
 	tjs_int count, bool downmix);
-extern void TVPConvertPCMToFloat(tjs_int16 *output, const void *input,
+extern void TVPConvertPCMToFloat(float *output, const void *input,
 	tjs_int channels, tjs_int bytespersample, tjs_int bitspersample, bool isfloat,
 	tjs_int count);
-extern void TVPConvertPCMToFloat(tjs_int16 *output, const void *input,
+extern void TVPConvertPCMToFloat(float *output, const void *input,
 	const tTVPWaveFormat &format, tjs_int count);
 //---------------------------------------------------------------------------
 
