@@ -302,7 +302,7 @@ void TVPConvertPCMTo16bits(tjs_int16 *output, const void *input,
 
 
 //---------------------------------------------------------------------------
-static void TVPConvertFloatPCMToFloat(tjs_int16 *output, const float *input,
+static void TVPConvertFloatPCMToFloat(float *output, const float *input,
 	tjs_int channels, tjs_int count)
 {
 	// convert 32bit float to float
@@ -311,7 +311,7 @@ static void TVPConvertFloatPCMToFloat(tjs_int16 *output, const float *input,
 	memcpy(output, input, sizeof(float)*channels * count);
 }
 //---------------------------------------------------------------------------
-static void TVPConvertIntegerPCMToFloat(tjs_int16 *output, const void *input,
+static void TVPConvertIntegerPCMToFloat(float *output, const void *input,
 	tjs_int bytespersample,
 	tjs_int validbits, tjs_int channels, tjs_int count)
 {
@@ -383,14 +383,14 @@ static void TVPConvertIntegerPCMToFloat(tjs_int16 *output, const void *input,
 	else if(bytespersample == 4)
 	{
 		tjs_int32 mask = ~( (1 << (32 - validbits)) - 1);
-		const tjs_uint32 *p = (const tjs_uint32 *)input;
+		const tjs_int32 *p = (const tjs_int32 *)input;
 		tjs_int total = channels * count;
 		while(total--)
-			*(output++) = (float)(((*(p++) & mask) >> 8) * (1.0 / (1<<23)));
+			*(output++) = (float)(((*(p++) & mask) >> 0) * (1.0 / (1<<31)));
 	}
 }
 //---------------------------------------------------------------------------
-void TVPConvertPCMToFloat(tjs_int16 *output, const void *input,
+void TVPConvertPCMToFloat(float *output, const void *input,
 	tjs_int channels, tjs_int bytespersample, tjs_int bitspersample, bool isfloat,
 	tjs_int count)
 {
@@ -403,7 +403,7 @@ void TVPConvertPCMToFloat(tjs_int16 *output, const void *input,
 			bytespersample, bitspersample, channels, count);
 }
 //---------------------------------------------------------------------------
-void TVPConvertPCMToFloat(tjs_int16 *output, const void *input,
+void TVPConvertPCMToFloat(float *output, const void *input,
 	const tTVPWaveFormat &format, tjs_int count)
 {
 	// cconvert specified format to 16bit PCM
