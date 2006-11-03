@@ -16,6 +16,7 @@
 #include "tjsTypes.h"
 #include <vector>
 #include <string>
+#include "WaveSegmentQueue.h"
 
 #define TVP_WL_MAX_FLAGS 16
 
@@ -167,83 +168,6 @@ bool inline operator < (const tTVPWaveLoopLink & lhs, const tTVPWaveLoopLink & r
 //---------------------------------------------------------------------------
 
 
-//---------------------------------------------------------------------------
-// tTVPWaveLabel : label structure
-//---------------------------------------------------------------------------
-struct tTVPWaveLabel
-{
-	tjs_int64 Position; // label position
-	tTVPLabelStringType Name; // label name
-	tjs_int Offset;
-		/*
-			This member will be set in tTVPWaveLoopManager::Decode,
-			and will contain the sample granule offset from first decoding
-			point at call of tTVPWaveLoopManager::Decode().
-		*/
-#ifdef TVP_IN_LOOP_TUNER
-	// these are only used by the loop tuner
-	tjs_int NameWidth; // display name width
-	tjs_int Index; // index
-#endif
-
-	struct tSortByPositionFuncObj
-	{
-		bool operator()(
-			const tTVPWaveLabel &lhs,
-			const tTVPWaveLabel &rhs) const
-		{
-			return lhs.Position < rhs.Position;
-		}
-	};
-
-	struct tSortByOffsetFuncObj
-	{
-		bool operator()(
-			const tTVPWaveLabel &lhs,
-			const tTVPWaveLabel &rhs) const
-		{
-			return lhs.Offset < rhs.Offset;
-		}
-	};
-
-#ifdef TVP_IN_LOOP_TUNER
-	struct tSortByIndexFuncObj
-	{
-		bool operator()(
-			const tTVPWaveLabel &lhs,
-			const tTVPWaveLabel &rhs) const
-		{
-			return lhs.Index < rhs.Index;
-		}
-	};
-#endif
-
-	tTVPWaveLabel()
-	{
-		Position = 0;
-		Offset = 0;
-#ifdef TVP_IN_LOOP_TUNER
-		NameWidth = 0;
-		Index = 0;
-#endif
-	}
-};
-//---------------------------------------------------------------------------
-bool inline operator < (const tTVPWaveLabel & lhs, const tTVPWaveLabel & rhs)
-{
-	return lhs.Position < rhs.Position;
-}
-
-//---------------------------------------------------------------------------
-struct tTVPWaveLoopSegment
-{
-	tTVPWaveLoopSegment(tjs_int64 start, tjs_int64 length)
-		{ Start = start; Length = length; }
-	tjs_int64 Start;
-	tjs_int64 Length;
-};
-//---------------------------------------------------------------------------
-
 
 //---------------------------------------------------------------------------
 // tTVPSampleAndLabelSource : source interface for sound sample and its label info
@@ -254,8 +178,7 @@ class tTVPSampleAndLabelSource
 {
 public:
 	virtual void Decode(void *dest, tjs_uint samples, tjs_uint &written,
-		std::vector<tTVPWaveLoopSegment> &segments,
-		std::vector<tTVPWaveLabel> &labels) = 0;
+		tTVPWaveSegmentQueue &segments) = 0;
 
 	virtual const tTVPWaveFormat & GetFormat() const  = 0;
 
@@ -323,8 +246,7 @@ public:
 	void SetLooping(bool b) { Looping = b; }
 
 	void Decode(void *dest, tjs_uint samples, tjs_uint &written,
-		std::vector<tTVPWaveLoopSegment> &segments,
-		std::vector<tTVPWaveLabel> &labels); // from tTVPSampleAndLabelSource
+		tTVPWaveSegmentQueue & segments); // from tTVPSampleAndLabelSource
 
 	const tTVPWaveFormat & GetFormat() const { return *Format; }
 			// from tTVPSampleAndLabelSource
@@ -334,7 +256,7 @@ private:
 		tTVPWaveLoopLink & link, bool ignore_conditions);
 
 	void GetLabelAt(tjs_int64 from, tjs_int64 to,
-		std::vector<tTVPWaveLabel> & labels);
+		std::deque<tTVPWaveLabel> & labels);
 
 	void DoCrossFade(void *dest, void *src1, void *src2, tjs_int samples,
 		tjs_int ratiostart, tjs_int ratioend);
