@@ -459,15 +459,7 @@ void tTVPWaveLoopManager::Decode(void *dest, tjs_uint samples, tjs_uint &written
 		// calculate each label offset
 		for(std::deque<tTVPWaveLabel>::iterator i = labels.begin();
 			i != labels.end(); i++)
-		{
-			char tmp[256];
-			sprintf(tmp, "inserting i->Position:%d, Position:%d, written:%d, "
-					"(i->Position - Position) + written:%d",
-				(int)i->Position, (int)Position,
-				(int)written, (int)((i->Position - Position) + written));
-			OutputDebugString(tmp);
 			i->Offset = (tjs_int)(i->Position - Position) + written;
-		}
 
 		// enqueue labels
 		segments.Enqueue(labels);
