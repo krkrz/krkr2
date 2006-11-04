@@ -2379,6 +2379,7 @@ bool tTJSNI_WaveSoundBuffer::FillL2Buffer(bool firstwrite, bool fromdecodethread
 			tTJSCriticalSectionHolder holder(L2BufferRemainCS);
 			if(L2BufferRemain == L2BufferUnits) retflag = true;
 		}
+		if(!retflag) UpdateFilterChain(); // if the buffer is not full, update filter internal state
 		if(Thread->GetRunning()) Thread->SetPriority(ttpbefore);
 		if(retflag) return false; // buffer is full
 	}

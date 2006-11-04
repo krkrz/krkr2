@@ -35,8 +35,12 @@ class tTVPPhaseVocoderFilter : public tTVPSampleAndLabelSource
 	tTVPWaveFormat OutputFormat;
 
 public:
-	tTVPPhaseVocoderFilter(tTVPSampleAndLabelSource * source);
+	tTVPPhaseVocoderFilter(tTVPSampleAndLabelSource * source,
+				int window, int overlap, float pitch, float time);
 	~tTVPPhaseVocoderFilter();
+
+	void SetTime(float time);
+	void SetPitch(float pitch);
 
 private:
 	void Fill(float * dest, tjs_uint samples, tjs_uint &written,
@@ -69,11 +73,27 @@ public:
 private:
 	tTVPPhaseVocoderFilter * Filter; // phase vocoder filter
 
+	int Window; // window size
+	int Overlap; // overlap scale
+	float Pitch; // pitch scale
+	float Time; // time scale
+
+public:
+	int GetWindow() const { return Window; }
+	void SetWindow(int window) { Window = window; }
+	int GetOverlap() const { return Overlap; }
+	void SetOverlap(int overlap) { Overlap = overlap; }
+	float GetPitch() const { return Pitch; }
+	void SetPitch(float pitch) { Pitch = pitch; }
+	float GetTime() const { return Time; }
+	void SetTime(float time) { Time = time; }
+
+
 private:
 	tTVPSampleAndLabelSource * Recreate(tTVPSampleAndLabelSource * source);
 		 // from iTVPBasicWaveFilter
 	void Clear(void); // from iTVPBasicWaveFilter
-
+	void Update(void); // from iTVPBasicWaveFilter
 };
 //---------------------------------------------------------------------------
 

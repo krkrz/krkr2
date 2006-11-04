@@ -822,6 +822,9 @@ void TJS_INTF_METHOD tTJSNI_BaseWaveSoundBuffer::Invalidate()
 	// invalidate wave flags object
 	RecreateWaveLabelsObject();
 
+	// clear filter chain
+	ClearFilterChain();
+
 	// release filter arrays
 	if(Filters) Filters->Release(), Filters = NULL;
 
@@ -857,6 +860,7 @@ void tTJSNI_BaseWaveSoundBuffer::RecreateWaveLabelsObject()
 void tTJSNI_BaseWaveSoundBuffer::RebuildFilterChain()
 {
 	// rebuild filter array
+	FilterInterfaces.clear();
 
 	// get filter count
 	tTJSVariant v;
@@ -879,8 +883,19 @@ void tTJSNI_BaseWaveSoundBuffer::RebuildFilterChain()
 		iTVPBasicWaveFilter * filter =
 			reinterpret_cast<iTVPBasicWaveFilter *>((long)(tjs_int64)iface_v);
 
+		// save to the backupped array
+		FilterInterfaces.push_back(tFilterObjectAndInterface(v, filter));
+	}
+
+	// reset filter output
+	FilterOutput = LoopManager;
+
+	// for each filter ...
+	for(std::vector<tFilterObjectAndInterface>::iterator i = FilterInterfaces.begin();
+		i != FilterInterfaces.end(); i++)
+	{
 		// recreate filter
-		FilterOutput = filter->Recreate(FilterOutput);
+		FilterOutput = i->Interface->Recreate(FilterOutput);
 	}
 }
 //---------------------------------------------------------------------------
@@ -888,29 +903,34 @@ void tTJSNI_BaseWaveSoundBuffer::ClearFilterChain()
 {
 	// delete object which is created from this filter array
 
-	// get filter count
-	tTJSVariant v;
-	tjs_int count = 0;
-	Filters->PropGet(0, TJS_W("count"), NULL, &v, Filters);
-	count = v;
-
 	// reset filter output
 	FilterOutput = NULL;
 
-	// for each filter ...
-	for(int i = 0; i < count; i++)
+	for(std::vector<tFilterObjectAndInterface>::iterator i = FilterInterfaces.begin();
+		i != FilterInterfaces.end(); i++)
 	{
-		Filters->PropGetByNum(0, i, &v, Filters);
+		// recreate filter
+		i->Interface->Clear();
+	}
 
-		// get iTVPBasicWaveFilter interface
-		tTJSVariantClosure clo = v.AsObjectClosureNoAddRef();
-		tTJSVariant iface_v;
-		if(TJS_FAILED(clo.PropGet(0, TJS_W("interface"), NULL, &iface_v, NULL))) continue;
-		iTVPBasicWaveFilter * filter =
-			reinterpret_cast<iTVPBasicWaveFilter *>((long)(tjs_int64)iface_v);
-
-		// delete filter
-		filter->Clear();
+	// clear backupped filter array
+	FilterInterfaces.clear();
+}
+//---------------------------------------------------------------------------
+void tTJSNI_BaseWaveSoundBuffer::UpdateFilterChain()
+{
+	// Update filter chain.
+	// This method is called before that the player is about to decode a small 
+	// PCM unit (typically piece of 125ms of sound).
+	// Note that this method may be called by decoding thread,
+	// but it's guaranteed that the call is never overlapped with
+	// UpdateFilterChain self and ClearFilterChain and RebuildFilterChain.
+	// so we does not need to protect this call by CriticalSection.
+	for(std::vector<tFilterObjectAndInterface>::iterator i = FilterInterfaces.begin();
+		i != FilterInterfaces.end(); i++)
+	{
+		// recreate filter
+		i->Interface->Update();
 	}
 }
 //---------------------------------------------------------------------------
