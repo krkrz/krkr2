@@ -3128,6 +3128,9 @@ class KAGEnvironment extends KAGEnvImage {
         
         // KAG に自分をコマンドとして登録
         kag.tagHandlers["env"]        = this.tagfunc;
+        kag.tagHandlers["allchar"]   = this.allchar;
+        kag.tagHandlers["alllayer"]   = this.alllayer;
+
         kag.tagHandlers["begintrans"] = this.beginTrans;
         kag.tagHandlers["endtrans"]   = this.endTrans;
         kag.tagHandlers["newlay"]     = this.newLayer;
@@ -3870,6 +3873,34 @@ class KAGEnvironment extends KAGEnvImage {
     }
 
     /**
+     * 全キャラにコマンド実行
+     * @param elm 引数
+     */
+    function allchar(elm) {
+        ret = void;
+        var names = [];
+        names.assign(characters);
+        for (var i=0; i<names.count; i+= 2) {
+            ret = names[i+1].tagfunc(elm);
+        }
+        return ret;
+    }
+
+    /**
+     * 全レイヤにコマンド実行
+     * @param elm 引数
+     */
+    function alllayer(elm) {
+        ret = void;
+        var names = [];
+        names.assign(layers);
+        for (var i=0; i<names.count; i+= 2) {
+            ret = names[i+1].tagfunc(elm);
+        }
+        return ret;
+    }
+
+    /**
      * 新規にレイヤID を取得する
      * @param layerId 指定されたレイヤID
      */
@@ -3950,7 +3981,6 @@ class KAGEnvironment extends KAGEnvImage {
         }
     }
 
-
     function quake(elm) {
         // 揺れをのっとる
         if (!isSkip()) {
@@ -3965,7 +3995,7 @@ class KAGEnvironment extends KAGEnvImage {
     function endline(elm) {
         if (kag.historyWriteEnabled) {
             kag.historyLayer.clearAction();
-//          kag.historyLayer.reline();
+            kag.historyLayer.reline(); // XXX 要検討
         }
     }
 

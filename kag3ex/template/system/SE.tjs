@@ -142,7 +142,8 @@ class SESoundBuffer extends WaveSoundBuffer
 	function fadeOut(elm)
 	{
 		// フェードアウト後停止
-		inFading = true;
+		currentStorage = ""; // 状態としては停止扱い
+        inFading = true;
 		inFadeAndStop = true;
 		var time = elm.time === void ? 5000 : +elm.time;
 		try
