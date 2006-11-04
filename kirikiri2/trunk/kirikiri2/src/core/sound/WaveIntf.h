@@ -13,6 +13,7 @@
 
 #include "tjsNative.h"
 #include "SoundBufferBaseIntf.h"
+#include "tjsUtils.h"
 
 
 /*[*/
@@ -132,8 +133,10 @@ public:
 	// recreate filter. filter will remain owned by the each filter instance.
 	virtual tTVPSampleAndLabelSource * Recreate(tTVPSampleAndLabelSource * source) = 0;
 	virtual void Clear(void) = 0;
+	virtual void Update(void) = 0;
 };
 //---------------------------------------------------------------------------
+
 
 
 //---------------------------------------------------------------------------
@@ -147,11 +150,21 @@ class tTJSNI_BaseWaveSoundBuffer : public tTJSNI_SoundBuffer
 	iTJSDispatch2 * WaveFlagsObject;
 	iTJSDispatch2 * WaveLabelsObject;
 
+	struct tFilterObjectAndInterface
+	{
+		tTJSVariant Filter; // filter object
+		iTVPBasicWaveFilter * Interface; // filter interface
+		tFilterObjectAndInterface(
+			const tTJSVariant & filter,
+			iTVPBasicWaveFilter * interf) :
+			Filter(filter), Interface(interf) {;}
+	};
+	std::vector<tFilterObjectAndInterface> FilterInterfaces; // backupped filter interface array
+
 protected:
 	tTVPWaveLoopManager * LoopManager; // will be set by tTJSNI_WaveSoundBuffer
 	tTVPSampleAndLabelSource * FilterOutput; // filter output
 	iTJSDispatch2 * Filters; // wave filters array (TJS2 array object)
-
 public:
 	tTJSNI_BaseWaveSoundBuffer();
 	tjs_error TJS_INTF_METHOD
@@ -164,6 +177,7 @@ protected:
 	void RecreateWaveLabelsObject();
 	void RebuildFilterChain();
 	void ClearFilterChain();
+	void UpdateFilterChain();
 
 public:
 	iTJSDispatch2 * GetWaveFlagsObjectNoAddRef();

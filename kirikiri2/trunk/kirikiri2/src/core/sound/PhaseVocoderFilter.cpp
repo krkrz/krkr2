@@ -16,7 +16,8 @@
 
 
 //---------------------------------------------------------------------------
-tTVPPhaseVocoderFilter::tTVPPhaseVocoderFilter(tTVPSampleAndLabelSource * source)
+tTVPPhaseVocoderFilter::tTVPPhaseVocoderFilter(tTVPSampleAndLabelSource * source,
+	int window, int overlap, float pitch, float time)
 {
 	Source = source;
 	FormatConvertBuffer = NULL;
@@ -30,15 +31,26 @@ tTVPPhaseVocoderFilter::tTVPPhaseVocoderFilter(tTVPSampleAndLabelSource * source
 	OutputFormat.BytesPerSample = 4;
 
 	// PhaseVocoder ‚ðì¬
-	PhaseVocoder = new tRisaPhaseVocoderDSP(4096, 16,
+	PhaseVocoder = new tRisaPhaseVocoderDSP(window, overlap,
 				InputFormat.SamplesPerSec, InputFormat.Channels);
-	PhaseVocoder->SetTimeScale(1.5);
+	PhaseVocoder->SetFrequencyScale(pitch);
+	PhaseVocoder->SetTimeScale(time);
 }
 //---------------------------------------------------------------------------
 tTVPPhaseVocoderFilter::~tTVPPhaseVocoderFilter()
 {
 	if(PhaseVocoder) delete PhaseVocoder, PhaseVocoder = NULL;
 	if(FormatConvertBuffer) delete [] FormatConvertBuffer, FormatConvertBuffer = NULL;
+}
+//---------------------------------------------------------------------------
+void tTVPPhaseVocoderFilter::SetTime(float time)
+{
+	PhaseVocoder->SetTimeScale(time);
+}
+//---------------------------------------------------------------------------
+void tTVPPhaseVocoderFilter::SetPitch(float pitch)
+{
+	PhaseVocoder->SetFrequencyScale(pitch);
 }
 //---------------------------------------------------------------------------
 
@@ -179,6 +191,86 @@ TJS_BEGIN_NATIVE_PROP_DECL(interface)
 	TJS_DENY_NATIVE_PROP_SETTER
 }
 TJS_END_NATIVE_PROP_DECL(interface)
+//----------------------------------------------------------------------
+TJS_BEGIN_NATIVE_PROP_DECL(window)
+{
+	TJS_BEGIN_NATIVE_PROP_GETTER
+	{
+		TJS_GET_NATIVE_INSTANCE(/*var. name*/_this, /*var. type*/tTJSNI_PhaseVocoder);
+		*result = (tjs_int64)(_this->GetWindow());
+		return TJS_S_OK;
+	}
+	TJS_END_NATIVE_PROP_GETTER
+
+	TJS_BEGIN_NATIVE_PROP_SETTER
+	{
+		TJS_GET_NATIVE_INSTANCE(/*var. name*/_this, /*var. type*/tTJSNI_PhaseVocoder);
+		_this->SetWindow(*param);
+		return TJS_S_OK;
+	}
+	TJS_END_NATIVE_PROP_SETTER
+}
+TJS_END_NATIVE_PROP_DECL(window)
+//----------------------------------------------------------------------
+TJS_BEGIN_NATIVE_PROP_DECL(overlap)
+{
+	TJS_BEGIN_NATIVE_PROP_GETTER
+	{
+		TJS_GET_NATIVE_INSTANCE(/*var. name*/_this, /*var. type*/tTJSNI_PhaseVocoder);
+		*result = (tjs_int64)(_this->GetOverlap());
+		return TJS_S_OK;
+	}
+	TJS_END_NATIVE_PROP_GETTER
+
+	TJS_BEGIN_NATIVE_PROP_SETTER
+	{
+		TJS_GET_NATIVE_INSTANCE(/*var. name*/_this, /*var. type*/tTJSNI_PhaseVocoder);
+		_this->SetOverlap(*param);
+		return TJS_S_OK;
+	}
+	TJS_END_NATIVE_PROP_SETTER
+}
+TJS_END_NATIVE_PROP_DECL(overlap)
+//----------------------------------------------------------------------
+TJS_BEGIN_NATIVE_PROP_DECL(pitch)
+{
+	TJS_BEGIN_NATIVE_PROP_GETTER
+	{
+		TJS_GET_NATIVE_INSTANCE(/*var. name*/_this, /*var. type*/tTJSNI_PhaseVocoder);
+		*result = (double)_this->GetPitch();
+		return TJS_S_OK;
+	}
+	TJS_END_NATIVE_PROP_GETTER
+
+	TJS_BEGIN_NATIVE_PROP_SETTER
+	{
+		TJS_GET_NATIVE_INSTANCE(/*var. name*/_this, /*var. type*/tTJSNI_PhaseVocoder);
+		_this->SetPitch((float)(double)*param);
+		return TJS_S_OK;
+	}
+	TJS_END_NATIVE_PROP_SETTER
+}
+TJS_END_NATIVE_PROP_DECL(pitch)
+//----------------------------------------------------------------------
+TJS_BEGIN_NATIVE_PROP_DECL(time)
+{
+	TJS_BEGIN_NATIVE_PROP_GETTER
+	{
+		TJS_GET_NATIVE_INSTANCE(/*var. name*/_this, /*var. type*/tTJSNI_PhaseVocoder);
+		*result = (double)_this->GetTime();
+		return TJS_S_OK;
+	}
+	TJS_END_NATIVE_PROP_GETTER
+
+	TJS_BEGIN_NATIVE_PROP_SETTER
+	{
+		TJS_GET_NATIVE_INSTANCE(/*var. name*/_this, /*var. type*/tTJSNI_PhaseVocoder);
+		_this->SetTime((float)(double)*param);
+		return TJS_S_OK;
+	}
+	TJS_END_NATIVE_PROP_SETTER
+}
+TJS_END_NATIVE_PROP_DECL(time)
 //---------------------------------------------------------------------------
 
 //----------------------------------------------------------------------
@@ -199,6 +291,10 @@ iTJSNativeInstance *tTJSNC_PhaseVocoder::CreateNativeInstance()
 tTJSNI_PhaseVocoder::tTJSNI_PhaseVocoder()
 {
 	Filter = NULL;
+	Window = 4096;
+	Overlap = 8;
+	Pitch = 1.0;
+	Time = 1.0;
 }
 //---------------------------------------------------------------------------
 tjs_error TJS_INTF_METHOD
@@ -217,13 +313,28 @@ tTVPSampleAndLabelSource * tTJSNI_PhaseVocoder::Recreate(tTVPSampleAndLabelSourc
 {
 	if(Filter) delete Filter, Filter = NULL;
 
-	Filter = new tTVPPhaseVocoderFilter(source);
+	Filter = new tTVPPhaseVocoderFilter(source, Window, Overlap, Pitch, Time);
 	return Filter;
 }
 //---------------------------------------------------------------------------
 void tTJSNI_PhaseVocoder::Clear(void)
 {
 	if(Filter) delete Filter, Filter = NULL;
+}
+//---------------------------------------------------------------------------
+void tTJSNI_PhaseVocoder::Update(void)
+{
+	// Update filter internal state.
+	// Note that this method may be called by non-main thread (decoding thread)
+	// and setting Pitch and Time may be called from main thread, and these may
+	// be simultaneous.
+	// We do not care about that because typically writing size of float is atomic
+	// on most platform. (I don't know any platform which does not guarantee that).
+	if(Filter)
+	{
+		Filter->SetPitch(Pitch);
+		Filter->SetTime(Time);
+	}
 }
 //---------------------------------------------------------------------------
 
