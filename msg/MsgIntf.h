@@ -329,6 +329,9 @@ TVP_MSG_DECL(TVPTransitionMutualSource,
 TVP_MSG_DECL(TVPHoldDestinationAlphaParameterIsNowDeprecated,
 	TJS_W("警告 : メソッド %1 の %2 番目に渡された hda パラメータは、吉里吉里２ 2.23 beta 2 より無視されるようになりました。代わりに Layer.holdAlpha プロパティを用いてください。"));
 
+TVP_MSG_DECL(TVPCannotConnectMultipleWaveSoundBufferAtOnce,
+	TJS_W("複数の WaveSoundBuffer を一つのフィルタで同時に使用することはできません"));
+
 TVP_MSG_DECL(TVPKAGNoLine,
 	TJS_W("読み込もうとしたシナリオファイル %1 は空です"));
 
