@@ -332,6 +332,12 @@ TVP_MSG_DECL(TVPHoldDestinationAlphaParameterIsNowDeprecated,
 TVP_MSG_DECL(TVPCannotConnectMultipleWaveSoundBufferAtOnce,
 	TJS_W("複数の WaveSoundBuffer を一つのフィルタで同時に使用することはできません"));
 
+TVP_MSG_DECL(TVPInvalidWindowSizeMustBeIn64to32768,
+	TJS_W("window は 64～32768 の範囲の 2 の累乗で無ければなりません"));
+
+TVP_MSG_DECL(TVPInvalidOverlapCountMustBeIn2to32,
+	TJS_W("overlap は 2～32 の範囲の 2 の累乗で無ければなりません"));
+
 TVP_MSG_DECL(TVPKAGNoLine,
 	TJS_W("読み込もうとしたシナリオファイル %1 は空です"));
 

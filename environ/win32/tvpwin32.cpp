@@ -130,6 +130,12 @@ USEUNIT("..\..\sound\win32\MIDIImpl.cpp");
 USEUNIT("..\..\sound\WaveIntf.cpp");
 USEUNIT("..\..\sound\win32\WaveImpl.cpp");
 USEUNIT("..\..\sound\win32\tvpsnd.c");
+USEUNIT("..\..\sound\WaveLoopManager.cpp");
+USEUNIT("..\..\sound\PhaseVocoderDSP.cpp");
+USEUNIT("..\..\sound\PhaseVocoderFilter.cpp");
+USEUNIT("..\..\sound\WaveSegmentQueue.cpp");
+USEOBJ("..\..\sound\cpu\pv_sse.obj");
+USEOBJ("..\..\sound\cpu\pv_def.obj");
 USEUNIT("EmergencyExit.cpp");
 USEUNIT("HintWindow.cpp");
 USEUNIT("..\..\utils\win32\TLogViewer.cpp");
@@ -152,12 +158,6 @@ USE("..\..\utils\ObjectList.h", File);
 USEUNIT("..\..\..\tools\win32\krdevui\ConfSettingsUnit.cpp");
 USEFORM("..\..\..\tools\win32\krdevui\ConfMainFrameUnit.cpp", ConfMainFrame); /* TFrame: File Type */
 USEUNIT("..\..\base\CharacterSet.cpp");
-USEUNIT("..\..\sound\WaveLoopManager.cpp");
-USEUNIT("..\..\sound\PhaseVocoderDSP.cpp");
-USEOBJ("..\..\sound\cpu\pv_sse.obj");
-USEOBJ("..\..\sound\cpu\pv_def.obj");
-USEUNIT("..\..\SOUND\PhaseVocoderFilter.cpp");
-USEUNIT("..\..\sound\WaveSegmentQueue.cpp");
 //---------------------------------------------------------------------------
 #ifdef TVP_SUPPORT_ERI
 #	pragma link "../../../../Lib/liberina.lib"
