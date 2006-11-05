@@ -79,7 +79,7 @@ public:
 	//! @param		frequency		入力PCMのサンプリングレート
 	//! @param		channels		入力PCMのチャンネル数
 	//! @note		音楽用ではframesize=4096,oversamp=16ぐらいがよく、
-	//! @note		ボイス用ではframesize=128,oversamp=4ぐらいがよい。
+	//! @note		ボイス用ではframesize=256,oversamp=8ぐらいがよい。
 	tRisaPhaseVocoderDSP(unsigned int framesize, unsigned int oversamp,
 					unsigned int frequency, unsigned int channels);
 
