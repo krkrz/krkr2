@@ -154,6 +154,12 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 </dd>
 
 
+<dt>Ogg Vorbis 高速化プロジェクト</dt>
+<dd>
+吉里吉里２は、blacksword 氏による Ogg Vorbis 高速化プロジェクトで公開されている、 SSE 対応の FFT 演算コードを Phase Vocoder の内部で使用しています。
+<at target="_top" href="http://homepage3.nifty.com/blacksword/">http://homepage3.nifty.com/blacksword/</at><r/>
+</dd>
+
 <dt>A C-program for MT19937 (Makoto Matsumoto and Takuji Nishimura)</dt>
 <dd>
     <at target="_top"  href="http://www.math.keio.ac.jp/matumoto/emt.html">http://www.math.keio.ac.jp/matumoto/emt.html</at><r/>
