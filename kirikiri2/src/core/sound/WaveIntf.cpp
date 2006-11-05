@@ -917,6 +917,14 @@ void tTJSNI_BaseWaveSoundBuffer::ClearFilterChain()
 	FilterInterfaces.clear();
 }
 //---------------------------------------------------------------------------
+void tTJSNI_BaseWaveSoundBuffer::ResetFilterChain()
+{
+	// Reset filter chain.
+	for(std::vector<tFilterObjectAndInterface>::iterator i = FilterInterfaces.begin();
+		i != FilterInterfaces.end(); i++)
+		i->Interface->Reset();
+}
+//---------------------------------------------------------------------------
 void tTJSNI_BaseWaveSoundBuffer::UpdateFilterChain()
 {
 	// Update filter chain.
@@ -928,10 +936,7 @@ void tTJSNI_BaseWaveSoundBuffer::UpdateFilterChain()
 	// so we does not need to protect this call by CriticalSection.
 	for(std::vector<tFilterObjectAndInterface>::iterator i = FilterInterfaces.begin();
 		i != FilterInterfaces.end(); i++)
-	{
-		// recreate filter
 		i->Interface->Update();
-	}
 }
 //---------------------------------------------------------------------------
 iTJSDispatch2 * tTJSNI_BaseWaveSoundBuffer::GetWaveFlagsObjectNoAddRef()

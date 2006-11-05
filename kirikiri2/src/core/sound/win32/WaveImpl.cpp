@@ -2795,6 +2795,9 @@ void tTJSNI_WaveSoundBuffer::StartPlay()
 
 		CreateSoundBuffer();
 
+		// reset filter chain
+		ResetFilterChain();
+
 		// fill sound buffer with some first samples
 		BufferPlaying = true;
 		FillL2Buffer(true, false);
