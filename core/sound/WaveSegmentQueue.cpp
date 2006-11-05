@@ -129,9 +129,10 @@ void tTVPWaveSegmentQueue::Dequeue(tTVPWaveSegmentQueue & dest, tjs_int64 length
 			if(newlength > 0)
 				dest.Enqueue(tTVPWaveSegment(Segments.front().Start, newlength, remain));
 
-			// Segments.front() ‚Ì Length ‚Æ FilteredLength ‚ğC³
-			Segments.front().Length -= remain;
-			Segments.front().FilteredLength -= newlength;
+			// Segments.front() ‚Ì Start, Length ‚Æ FilteredLength ‚ğC³
+			Segments.front().Start += newlength;
+			Segments.front().Length -= newlength;
+			Segments.front().FilteredLength -= remain;
 			if(Segments.front().Length == 0 || Segments.front().FilteredLength == 0)
 			{
 				// ‚Ô‚Á‚½Ø‚Á‚½Œ‹‰Ê (üŒ`•âŠ®‚µ‚½Œ‹‰Ê‚ÌŒë·‚Å)
