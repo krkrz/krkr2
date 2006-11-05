@@ -46,9 +46,9 @@ private:
 
 public:
 	int GetWindow() const { return Window; }
-	void SetWindow(int window) { Window = window; }
+	void SetWindow(int window);
 	int GetOverlap() const { return Overlap; }
-	void SetOverlap(int overlap) { Overlap = overlap; }
+	void SetOverlap(int overlap);
 	float GetPitch() const { return Pitch; }
 	void SetPitch(float pitch) { Pitch = pitch; }
 	float GetTime() const { return Time; }
@@ -71,6 +71,9 @@ private:
 
 	tTVPWaveFormat InputFormat;
 	tTVPWaveFormat OutputFormat;
+
+	tTVPWaveSegmentQueue InputSegments;
+	tTVPWaveSegmentQueue OutputSegments;
 
 	void Fill(float * dest, tjs_uint samples, tjs_uint &written,
 		tTVPWaveSegmentQueue & segments);
