@@ -134,6 +134,7 @@ public:
 	virtual tTVPSampleAndLabelSource * Recreate(tTVPSampleAndLabelSource * source) = 0;
 	virtual void Clear(void) = 0;
 	virtual void Update(void) = 0;
+	virtual void Reset(void) = 0;
 };
 //---------------------------------------------------------------------------
 
@@ -177,6 +178,7 @@ protected:
 	void RecreateWaveLabelsObject();
 	void RebuildFilterChain();
 	void ClearFilterChain();
+	void ResetFilterChain();
 	void UpdateFilterChain();
 
 public:
