@@ -164,15 +164,18 @@ tRisaPhaseVocoderDSP::~tRisaPhaseVocoderDSP()
 //---------------------------------------------------------------------------
 void tRisaPhaseVocoderDSP::SetTimeScale(float v)
 {
-	TimeScale = v;
-	if(TimeScale < RISA_PV_MIN_TIME_SCALE) TimeScale = RISA_PV_MIN_TIME_SCALE;
-	else if(TimeScale > RISA_PV_MAX_TIME_SCALE) TimeScale = RISA_PV_MAX_TIME_SCALE;
-	RebuildParams = true;
-	OutputHopSize = static_cast<unsigned int>(InputHopSize * TimeScale) & ~1;
-		// ↑ 偶数にアライン(重要)
-		// 複素数 re,im, re,im, ... の配列が逆FFTにより同数の(複素数の個数×2の)
-		// PCMサンプルに変換されるため、PCMサンプルも２個ずつで扱わないとならない.
-		// この実際の OutputHopSize に従って ExactTimeScale が計算される.
+	if(TimeScale != v)
+	{
+		TimeScale = v;
+		if(TimeScale < RISA_PV_MIN_TIME_SCALE) TimeScale = RISA_PV_MIN_TIME_SCALE;
+		else if(TimeScale > RISA_PV_MAX_TIME_SCALE) TimeScale = RISA_PV_MAX_TIME_SCALE;
+		RebuildParams = true;
+		OutputHopSize = static_cast<unsigned int>(InputHopSize * TimeScale) & ~1;
+			// ↑ 偶数にアライン(重要)
+			// 複素数 re,im, re,im, ... の配列が逆FFTにより同数の(複素数の個数×2の)
+			// PCMサンプルに変換されるため、PCMサンプルも２個ずつで扱わないとならない.
+			// この実際の OutputHopSize に従って ExactTimeScale が計算される.
+	}
 }
 //---------------------------------------------------------------------------
 
@@ -180,8 +183,11 @@ void tRisaPhaseVocoderDSP::SetTimeScale(float v)
 //---------------------------------------------------------------------------
 void tRisaPhaseVocoderDSP::SetFrequencyScale(float v)
 {
-	FrequencyScale = v;
-	RebuildParams = true;
+	if(FrequencyScale != v)
+	{
+		FrequencyScale = v;
+		RebuildParams = true;
+	}
 }
 //---------------------------------------------------------------------------
 
