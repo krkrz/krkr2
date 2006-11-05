@@ -532,6 +532,29 @@ debug.message(buf.labels['start'].samplePosition); // 'start' というラベル名の位
 </member>
 </wave>
 
+<wave>
+<member>
+	<name>filters</name>
+	<type>property</type>
+	<shortdesc>フィルタ配列</shortdesc>
+	<access>r</access>
+	<desc>
+		　インサーションフィルタオブジェクトを保持している配列(Arrayクラスのインスタンス)です。<r/>
+		　この配列にフィルタオブジェクトを登録することにより、再生中にリアルタイムで音声に対して
+		様々な効果をかけることができます。<r/>
+		　フィルタ配列への変更が反映されるのは、<ref>WaveSoundBuffer.open</ref>メソッドが実行された
+		時だけです。それまでは、この配列への変更を行っても反映はされません。<r/>
+<example>
+var buf = new WaveSoundBuffer(window);<r/>
+(略)<r/>
+buf.filters.clear(); // フィルタ配列をクリア<r/>
+buf.filters.add(new WaveSoundBuffer.PhaseVocoder()); // PhaseVocoderフィルタを追加<r/>
+buf.filters[0].time = 0.5; // 倍速再生<r/>
+</example>
+	</desc>
+</member>
+</wave>
+
 
 
 </doc>

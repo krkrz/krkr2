@@ -46,6 +46,7 @@
 <at href="f_Font.html">Font クラス</at><r/>
 <at href="f_Clipboard.html">Clipboard クラス</at><r/>
 <at href="f_WaveSoundBuffer.html">WaveSoundBuffer クラス</at><r/>
+<at href="f_WaveSoundBuffer.PhaseVocoder.html">WaveSoundBuffer.PhaseVocoder クラス</at><r/>
 <at href="f_MIDISoundBuffer.html">MIDISoundBuffer クラス</at><r/>
 <at href="f_CDDASoundBuffer.html">CDDASoundBuffer クラス</at><r/>
 <at href="f_VideoOverlay.html">VideoOverlay クラス</at><r/>

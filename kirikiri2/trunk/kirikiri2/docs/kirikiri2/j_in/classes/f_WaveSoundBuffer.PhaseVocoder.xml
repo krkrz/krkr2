@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="Shift_JIS" ?>
+<doc>
+<title>WaveSoundBuffer.PhaseVocoder</title>
+<desc>
+　WaveSoundBuffer.PhaseVocoder クラスは、このインスタンスを <ref>WaveSoundBuffer.filters</ref> に登録して使用するためのフィルタで、Phase Vocoder (位相ボコーダ) の機能を提供します。<r/>
+　Phase Vocoder では、再生速度を保ったままでの音程の変更 (ピッチ・シフタ) や、音程を保ったままでの再生速度の変更 (タイム・シフタ) を行うことができます。<r/>
+</desc>
+
+
+<member>
+	<name>PhaseVocoder</name>
+	<type>constructor</type>
+	<shortdesc>PhaseVocoder オブジェクトの構築</shortdesc>
+	<arg>
+	</arg>
+	<result></result>
+	<desc>
+		　WaveSoundBuffer.PhaseVocoder クラスのオブジェクトを構築します。<r/>
+		　作成したインスタンスは <ref>WaveSoundBuffer.filters</ref> で WaveSoundBuffer の
+		インスタンスに登録してください。
+	</desc>
+</member>
+
+
+<member>
+	<name>interface</name>
+	<type>property</type>
+	<shortdesc>インターフェースオブジェクトを取得</shortdesc>
+	<access>r/w</access>
+	<desc>
+		　内部的に使用されます。スクリプトからは使用しないでください。
+	</desc>
+</member>
+
+<member>
+	<name>time</name>
+	<type>property</type>
+	<shortdesc>時間軸方向のスケール</shortdesc>
+	<access>r/w</access>
+	<desc>
+		　時間軸方向のスケールを表します。値を設定することもできます。<r/>
+		　指定可能な数値は 0.25 ～ 1.95 です。<r/>
+		　1.0 を指定すると 時間軸方向のスケールは変わりません(再生速度は変わりません)。<r/>
+		　たとえば 1.5 を指定すると、時間軸方向のスケールが1.5倍になり、遅く再生されます (再生に1.5倍の時間がかかるようになります)。<r/>
+		　たとえば 0.5 を指定すると、時間軸方向のスケールが0.5倍になり、速く再生されます (倍速で再生されます)。
+		　time プロパティも pitch プロパティも 1 の場合でも Phase Vocoder フィルタは動作し、音質は多少劣化し、CPU 時間も使用します。両方とも 1 のまま使うのであれば、フィルタ配列からこのフィルタをはずしておいたほうがよいでしょう。<r/>
+		　このプロパティへの変更はリアルタイムに反映されますが、バッファリングの関係で、実際にそれが再生されるまでに2秒程度の時間がかかります。
+	</desc>
+</member>
+
+<member>
+	<name>pitch</name>
+	<type>property</type>
+	<shortdesc>周波数軸方向のスケール</shortdesc>
+	<access>r/w</access>
+	<desc>
+		　周波数軸方向のスケールを表します。値を設定することもできます。<r/>
+		　指定可能な数値は 0.0 を超える数値です。<r/>
+		　1.0 を指定すると 周波数軸方向のスケールは変わりません(音程は変わりません)。<r/>
+		　たとえば 1.0594630943593 を指定すると、半音分、音程があがります。<r/>
+		　たとえば 0.9438743126817 を指定すると、半音分、音程が下がります。<r/>
+		　time プロパティも pitch プロパティも 1 の場合でも Phase Vocoder フィルタは動作し、音質は多少劣化し、CPU 時間も使用します。両方とも 1 のまま使うのであれば、フィルタ配列からこのフィルタをはずしておいたほうがよいでしょう。<r/>
+		　このプロパティへの変更はリアルタイムに反映されますが、バッファリングの関係で、実際にそれが再生されるまでに2秒程度の時間がかかります。
+	</desc>
+</member>
+
+
+<member>
+	<name>window</name>
+	<type>property</type>
+	<shortdesc>ウィンドウサイズ</shortdesc>
+	<access>r/w</access>
+	<desc>
+		　PhaseVocoder内部で使用している FFT (高速フーリエ変換) のウィンドウサイズ(フレームサイズ)を表します。
+		　64～32768の間の2の累乗で指定してください。デフォルトは4096です。<r/>
+		　この数値を大きくすると、周波数軸方向の分解能は高くなります(音程が狂いにくくなります)が、時間軸方向の分解能が低くなります(音のアタックがにぶくなります)。<r/>
+		　値を大きくするとCPUをより使用するようになります。音質を落とさずにすむ、最低の値を探してください。<r/>
+		　44.1KHzの音声ではウィンドウサイズ=256 で overlap=8ぐらいがよいでしょう。楽曲ではウィンドウサイズ=4096でoverlap=16ぐらいが良いでしょう。<r/>
+		　このプロパティへの変更は、<ref>WaveSoundBuffer.open</ref>メソッドが実行されたときに反映されます。<r/>
+	</desc>
+</member>
+
+<member>
+	<name>overlap</name>
+	<type>property</type>
+	<shortdesc>オーバーラップカウント</shortdesc>
+	<access>r/w</access>
+	<desc>
+		　オーバーラップカウント (オーバーサンプリング係数) を表します。
+		　2～32の間の2の累乗で指定してください。デフォルトは16です。<r/>
+		　この数値を大きくすると、時間軸方向の分解能が高くなります。とくに再生速度を遅くする場合は多めの数値をしていすると良いでしょう。<r/>
+		　値を大きくするとCPUをより使用するようになります。音質を落とさずにすむ、最低の値を探してください。<r/>
+		　このプロパティへの変更は、<ref>WaveSoundBuffer.open</ref>メソッドが実行されたときに反映されます。<r/>
+	</desc>
+</member>
+
+
+</doc>
