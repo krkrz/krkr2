@@ -16,128 +16,6 @@
 
 
 //---------------------------------------------------------------------------
-tTVPPhaseVocoderFilter::tTVPPhaseVocoderFilter(tTVPSampleAndLabelSource * source,
-	int window, int overlap, float pitch, float time)
-{
-	Source = source;
-	FormatConvertBuffer = NULL;
-	FormatConvertBufferSize = 0;
-
-	// output format を設定
-	InputFormat = source->GetFormat();
-	OutputFormat = InputFormat;
-	OutputFormat.IsFloat = true; // 出力は float
-	OutputFormat.BitsPerSample = 32; // ビットは 32 ビット
-	OutputFormat.BytesPerSample = 4;
-
-	// PhaseVocoder を作成
-	PhaseVocoder = new tRisaPhaseVocoderDSP(window, overlap,
-				InputFormat.SamplesPerSec, InputFormat.Channels);
-	PhaseVocoder->SetFrequencyScale(pitch);
-	PhaseVocoder->SetTimeScale(time);
-}
-//---------------------------------------------------------------------------
-tTVPPhaseVocoderFilter::~tTVPPhaseVocoderFilter()
-{
-	if(PhaseVocoder) delete PhaseVocoder, PhaseVocoder = NULL;
-	if(FormatConvertBuffer) delete [] FormatConvertBuffer, FormatConvertBuffer = NULL;
-}
-//---------------------------------------------------------------------------
-void tTVPPhaseVocoderFilter::SetTime(float time)
-{
-	PhaseVocoder->SetTimeScale(time);
-}
-//---------------------------------------------------------------------------
-void tTVPPhaseVocoderFilter::SetPitch(float pitch)
-{
-	PhaseVocoder->SetFrequencyScale(pitch);
-}
-//---------------------------------------------------------------------------
-
-
-//---------------------------------------------------------------------------
-void tTVPPhaseVocoderFilter::Fill(float * dest, tjs_uint samples, tjs_uint &written,
-		tTVPWaveSegmentQueue & segments)
-{
-	if(InputFormat.IsFloat && InputFormat.BitsPerSample == 32 && InputFormat.BytesPerSample == 4)
-	{
-		// 入力も32bitフロートなので変換の必要はない
-		Source->Decode(dest, samples, written, segments);
-	}
-	else
-	{
-		// 入力が32bitフロートではないので変換の必要がある
-		// いったん変換バッファにためる
-		tjs_uint buf_size = samples * InputFormat.BytesPerSample * InputFormat.Channels;
-		if(FormatConvertBufferSize < buf_size)
-		{
-			// バッファを再確保
-			if(FormatConvertBuffer) delete [] FormatConvertBuffer, FormatConvertBuffer = NULL;
-			FormatConvertBuffer = new char[buf_size];
-			FormatConvertBufferSize = buf_size;
-		}
-		// バッファにデコードを行う
-		Source->Decode(FormatConvertBuffer, samples, written, segments);
-		// 変換を行う
-		TVPConvertPCMToFloat(dest, FormatConvertBuffer, InputFormat, written);
-	}
-}
-//---------------------------------------------------------------------------
-
-
-//---------------------------------------------------------------------------
-void tTVPPhaseVocoderFilter::Decode(void *dest, tjs_uint samples, tjs_uint &written,
-	tTVPWaveSegmentQueue & segments)
-{
-	float * dest_buf = (float*) dest;
-	written = 0;
-	while(samples > 0)
-	{
-		size_t inputfree = PhaseVocoder->GetInputFreeSize();
-		if(inputfree > 0)
-		{
-			// 入力にデータを流し込む
-			float *p1, *p2;
-			size_t p1len, p2len;
-			PhaseVocoder->GetInputBuffer(inputfree, p1, p1len, p2, p2len);
-			tjs_uint filled = 0;
-			tjs_uint total = 0;
-			Fill       (p1, p1len, filled, segments), total += filled;
-			if(p2) Fill(p2, p2len, filled, segments), total += filled;
-			if(total == 0) {written = 0; return ; } // もうデータがない
-		}
-
-		// PhaseVocoderの処理を行う
-		PhaseVocoder->Process();
-
-		// 入力にデータを流し込んでおいて出力が無いことはないが
-		// 要求したサイズよりも小さい場合はある
-		size_t output_ready = PhaseVocoder->GetOutputReadySize();
-		if(output_ready > 0)
-		{
-			// PhaseVocoder の出力から dest にコピーする
-			if(output_ready > samples) output_ready = samples;
-			const float *p1, *p2;
-			size_t p1len, p2len;
-			PhaseVocoder->GetOutputBuffer(output_ready, p1, p1len, p2, p2len);
-			memcpy(dest_buf, p1, p1len * sizeof(float)*OutputFormat.Channels);
-			if(p2) memcpy(dest_buf + p1len * OutputFormat.Channels, p2,
-							p2len * sizeof(float)*OutputFormat.Channels);
-
-			samples  -= output_ready;
-			written  += output_ready;
-			dest_buf += output_ready * OutputFormat.Channels;
-		}
-	}
-}
-//---------------------------------------------------------------------------
-
-
-
-
-
-
-//---------------------------------------------------------------------------
 // tTJSNC_PhaseVocoder : PhaseVocoder TJS native class
 //---------------------------------------------------------------------------
 tjs_uint32 tTJSNC_PhaseVocoder::ClassID = (tjs_uint32)-1;
@@ -290,11 +168,22 @@ iTJSNativeInstance *tTJSNC_PhaseVocoder::CreateNativeInstance()
 //---------------------------------------------------------------------------
 tTJSNI_PhaseVocoder::tTJSNI_PhaseVocoder()
 {
-	Filter = NULL;
 	Window = 4096;
 	Overlap = 8;
 	Pitch = 1.0;
 	Time = 1.0;
+
+	Source = NULL;
+	PhaseVocoder = NULL;
+	FormatConvertBuffer = NULL;
+	FormatConvertBufferSize = 0;
+
+}
+//---------------------------------------------------------------------------
+tTJSNI_PhaseVocoder::~tTJSNI_PhaseVocoder()
+{
+	if(PhaseVocoder) delete PhaseVocoder, PhaseVocoder = NULL;
+	if(FormatConvertBuffer) delete [] FormatConvertBuffer, FormatConvertBuffer = NULL, FormatConvertBufferSize = 0;
 }
 //---------------------------------------------------------------------------
 tjs_error TJS_INTF_METHOD
@@ -306,20 +195,32 @@ tjs_error TJS_INTF_METHOD
 //---------------------------------------------------------------------------
 void TJS_INTF_METHOD tTJSNI_PhaseVocoder::Invalidate()
 {
-	if(Filter) delete Filter, Filter = NULL;
 }
 //---------------------------------------------------------------------------
 tTVPSampleAndLabelSource * tTJSNI_PhaseVocoder::Recreate(tTVPSampleAndLabelSource * source)
 {
-	if(Filter) delete Filter, Filter = NULL;
+	if(PhaseVocoder) delete PhaseVocoder, PhaseVocoder = NULL;
 
-	Filter = new tTVPPhaseVocoderFilter(source, Window, Overlap, Pitch, Time);
-	return Filter;
+	Source = source;
+	InputFormat = Source->GetFormat();
+	OutputFormat = InputFormat;
+	OutputFormat.IsFloat = true; // 出力は float
+	OutputFormat.BitsPerSample = 32; // ビットは 32 ビット
+	OutputFormat.BytesPerSample = 4;
+
+	return this;
+}
+//---------------------------------------------------------------------------
+void tTJSNI_PhaseVocoder::Reset(void)
+{
+	if(PhaseVocoder) delete PhaseVocoder, PhaseVocoder = NULL;
 }
 //---------------------------------------------------------------------------
 void tTJSNI_PhaseVocoder::Clear(void)
 {
-	if(Filter) delete Filter, Filter = NULL;
+	Source = NULL;
+	if(PhaseVocoder) delete PhaseVocoder, PhaseVocoder = NULL;
+	if(FormatConvertBuffer) delete [] FormatConvertBuffer, FormatConvertBuffer = NULL, FormatConvertBufferSize = 0;
 }
 //---------------------------------------------------------------------------
 void tTJSNI_PhaseVocoder::Update(void)
@@ -330,13 +231,96 @@ void tTJSNI_PhaseVocoder::Update(void)
 	// be simultaneous.
 	// We do not care about that because typically writing size of float is atomic
 	// on most platform. (I don't know any platform which does not guarantee that).
-	if(Filter)
+	if(PhaseVocoder)
 	{
-		Filter->SetPitch(Pitch);
-		Filter->SetTime(Time);
+		PhaseVocoder->SetFrequencyScale(Pitch);
+		PhaseVocoder->SetTimeScale(Time);
 	}
 }
 //---------------------------------------------------------------------------
+void tTJSNI_PhaseVocoder::Fill(float * dest, tjs_uint samples, tjs_uint &written,
+		tTVPWaveSegmentQueue & segments)
+{
+	if(InputFormat.IsFloat && InputFormat.BitsPerSample == 32 && InputFormat.BytesPerSample == 4)
+	{
+		// 入力も32bitフロートなので変換の必要はない
+		Source->Decode(dest, samples, written, segments);
+	}
+	else
+	{
+		// 入力が32bitフロートではないので変換の必要がある
+		// いったん変換バッファにためる
+		tjs_uint buf_size = samples * InputFormat.BytesPerSample * InputFormat.Channels;
+		if(FormatConvertBufferSize < buf_size)
+		{
+			// バッファを再確保
+			if(FormatConvertBuffer) delete [] FormatConvertBuffer, FormatConvertBuffer = NULL;
+			FormatConvertBuffer = new char[buf_size];
+			FormatConvertBufferSize = buf_size;
+		}
+		// バッファにデコードを行う
+		Source->Decode(FormatConvertBuffer, samples, written, segments);
+		// 変換を行う
+		TVPConvertPCMToFloat(dest, FormatConvertBuffer, InputFormat, written);
+	}
+}
+//---------------------------------------------------------------------------
+void tTJSNI_PhaseVocoder::Decode(void *dest, tjs_uint samples, tjs_uint &written,
+	tTVPWaveSegmentQueue & segments)
+{
+	if(!PhaseVocoder)
+	{
+		// PhaseVocoder を作成
+		tRisaPhaseVocoderDSP * pv = new tRisaPhaseVocoderDSP(Window, Overlap,
+					InputFormat.SamplesPerSec, InputFormat.Channels);
+		pv->SetFrequencyScale(Pitch);
+		pv->SetTimeScale(Time);
+		PhaseVocoder = pv; // now visible from other function
+	}
+
+	float * dest_buf = (float*) dest;
+	written = 0;
+	while(samples > 0)
+	{
+		size_t inputfree = PhaseVocoder->GetInputFreeSize();
+		if(inputfree > 0)
+		{
+			// 入力にデータを流し込む
+			float *p1, *p2;
+			size_t p1len, p2len;
+			PhaseVocoder->GetInputBuffer(inputfree, p1, p1len, p2, p2len);
+			tjs_uint filled = 0;
+			tjs_uint total = 0;
+			Fill       (p1, p1len, filled, segments), total += filled;
+			if(p2) Fill(p2, p2len, filled, segments), total += filled;
+			if(total == 0) {written = 0; return ; } // もうデータがない
+		}
+
+		// PhaseVocoderの処理を行う
+		PhaseVocoder->Process();
+
+		// 入力にデータを流し込んでおいて出力が無いことはないが
+		// 要求したサイズよりも小さい場合はある
+		size_t output_ready = PhaseVocoder->GetOutputReadySize();
+		if(output_ready > 0)
+		{
+			// PhaseVocoder の出力から dest にコピーする
+			if(output_ready > samples) output_ready = samples;
+			const float *p1, *p2;
+			size_t p1len, p2len;
+			PhaseVocoder->GetOutputBuffer(output_ready, p1, p1len, p2, p2len);
+			memcpy(dest_buf, p1, p1len * sizeof(float)*OutputFormat.Channels);
+			if(p2) memcpy(dest_buf + p1len * OutputFormat.Channels, p2,
+							p2len * sizeof(float)*OutputFormat.Channels);
+
+			samples  -= output_ready;
+			written  += output_ready;
+			dest_buf += output_ready * OutputFormat.Channels;
+		}
+	}
+}
+//---------------------------------------------------------------------------
+
 
 
 
