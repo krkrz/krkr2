@@ -50,7 +50,10 @@
       intermediate\CDDAIntf.obj intermediate\CDDAImpl.obj 
       intermediate\MIDIIntf.obj intermediate\MIDIImpl.obj 
       intermediate\WaveIntf.obj intermediate\WaveImpl.obj 
-      intermediate\tvpsnd.obj intermediate\EmergencyExit.obj 
+      intermediate\tvpsnd.obj intermediate\WaveLoopManager.obj 
+      intermediate\PhaseVocoderDSP.obj intermediate\PhaseVocoderFilter.obj 
+      intermediate\WaveSegmentQueue.obj ..\..\sound\cpu\pv_sse.obj 
+      ..\..\sound\cpu\pv_def.obj intermediate\EmergencyExit.obj 
       intermediate\HintWindow.obj intermediate\TLogViewer.obj 
       intermediate\HaltWarnFormUnit.obj intermediate\ConsoleFormUnit.obj 
       intermediate\PadFormUnit.obj intermediate\MainFormUnit.obj 
@@ -60,10 +63,7 @@
       intermediate\MsgImpl.obj intermediate\ScriptMgnIntf.obj 
       intermediate\FuncStubs.obj intermediate\OptionsDesc.obj 
       intermediate\ConfSettingsUnit.obj intermediate\ConfMainFrameUnit.obj 
-      intermediate\CharacterSet.obj intermediate\WaveLoopManager.obj 
-      intermediate\PhaseVocoderDSP.obj ..\..\sound\cpu\pv_sse.obj 
-      ..\..\sound\cpu\pv_def.obj intermediate\PhaseVocoderFilter.obj 
-      intermediate\WaveSegmentQueue.obj"/>
+      intermediate\CharacterSet.obj"/>
     <RESFILES value="tvpwin32.res HBeamCur.res"/>
     <DEFFILE value="tvpwin32.def"/>
     <RESDEPEN value="$(RESFILES) HaltWarnFormUnit.dfm ..\..\utils\win32\ConsoleFormUnit.dfm 
@@ -77,7 +77,7 @@
     <LIBRARIES value="VCLX50.lib Vcl50.lib"/>
     <SPARELIBS value="Vcl50.lib VCLX50.lib"/>
     <PACKAGES value="Vcl50.bpi Vclx50.bpi"/>
-    <PATHCPP value=".;..\..\tjs2;..\..\visual;..\..\visual\win32;..\..\visual\IA32;..\..\utils;..\..\utils\win32;..\..\base;..\..\base\win32;..\..\sound;..\..\sound\win32;..\..\msg;..\..\msg\win32;..\..\..\tools\win32\krdevui;..\..\sound\cpu"/>
+    <PATHCPP value=".;..\..\tjs2;..\..\visual;..\..\visual\win32;..\..\visual\IA32;..\..\utils;..\..\utils\win32;..\..\base;..\..\base\win32;..\..\sound;..\..\sound\win32;..\..\sound\cpu;..\..\msg;..\..\msg\win32;..\..\..\tools\win32\krdevui"/>
     <PATHPAS value=".;"/>
     <PATHRC value=".;"/>
     <PATHASM value=".;"/>
@@ -87,8 +87,8 @@
     <USERDEFINES value="TJS_SUPPORT_VCL;TJS_TEXT_OUT_CRLF;TJS_JP_LOCALIZED;TJS_NO_DEBUG_PROFILE_TIME;TVP_NO_CHECK_WIDE_CHAR_SIZE;TVP_REPORT_HW_EXCEPTION;TVP_SUPPORT_ERI;TVP_SUPPORT_KPI;TVP_SUPPORT_OLD_WAVEUNPACKER;TVP_ENVIRON;TVP_NO_USE_PAD_ALPHABLEND;TJS_DEBUG_DUMP_STRING;_DEBUG"/>
     <SYSDEFINES value="NO_STRICT"/>
     <MAINSOURCE value="tvpwin32.cpp"/>
-    <INCLUDEPATH value="..\..\tj2;..\..\t2;..\..\..\tools\win32\krdevui;krdevui;..\..\..\..\Bin;..\..\sound;..\..\sound\win32;..\..\msg\win32;..\..\visual\win32;..\..\visual;..\..\base\win32;..\..\base;..\..\msg;..\..\utils\win32;..\..\utils;..\..\base\storage;..\..\tjs2;..\..\visual\window;..\..\..;..\..\visual\IA32;$(BCB)\include;$(BCB)\include\vcl;$(BCB)\include\libjpeg2;$(BCB)\include\libpng;$(BCB)\include\erina"/>
-    <LIBPATH value="..\..\tj2;..\..\t2;..\..\..\tools\win32\krdevui;krdevui;..\..\visual\IA32;..\..\..\..\Bin;..\..\sound;..\..\sound\win32;..\..\msg\win32;..\..\visual\win32;$(BCB)\Projects\Lib;..\..\visual;..\..\base\win32;..\..\base;..\..\base\storage\win32;..\..\msg;..\..\utils\win32;..\..\utils;..\..\base\storage;..\..\tjs2;..\..\visual\window;..\..\..;$(BCB)\lib\obj;$(BCB)\lib"/>
+    <INCLUDEPATH value="..\..\sou;..\..\so;..\..\s;..\..\tj2;..\..\t2;..\..\..\tools\win32\krdevui;krdevui;..\..\..\..\Bin;..\..\sound;..\..\sound\win32;..\..\msg\win32;..\..\visual\win32;..\..\visual;..\..\base\win32;..\..\base;..\..\msg;..\..\utils\win32;..\..\utils;..\..\base\storage;..\..\tjs2;..\..\visual\window;..\..\..;..\..\visual\IA32;$(BCB)\include;$(BCB)\include\vcl;$(BCB)\include\libjpeg2;$(BCB)\include\libpng;$(BCB)\include\erina"/>
+    <LIBPATH value="..\..\sou;..\..\so;..\..\s;..\..\tj2;..\..\t2;..\..\..\tools\win32\krdevui;krdevui;..\..\visual\IA32;..\..\..\..\Bin;..\..\sound;..\..\sound\win32;..\..\msg\win32;..\..\visual\win32;$(BCB)\Projects\Lib;..\..\visual;..\..\base\win32;..\..\base;..\..\base\storage\win32;..\..\msg;..\..\utils\win32;..\..\utils;..\..\base\storage;..\..\tjs2;..\..\visual\window;..\..\..;$(BCB)\lib\obj;$(BCB)\lib"/>
     <WARNINGS value="-wprc -wucp -w-par -w-8027 -w-8026 -wdef -wcln -wamp -wamb"/>
   </MACROS>
   <OPTIONS>
@@ -112,7 +112,7 @@ AutoIncBuild=1
 MajorVer=2
 MinorVer=27
 Release=2006
-Build=815
+Build=817
 Debug=0
 PreRelease=0
 Special=0
@@ -124,7 +124,7 @@ CodePage=932
 [Version Info Keys]
 CompanyName=
 FileDescription=TVP(KIRIKIRI) 2 core / Scripting Platform for Win32
-FileVersion=2.27.2006.815
+FileVersion=2.27.2006.817
 InternalName=tvp2/win32
 LegalCopyright=(KIRIKIRI core) (C) '97-'05 W.Dee and Contributors All Rights Reserved. This software is based in part on the work of Independent JPEG Group. For details: Run this program with '-about' option.
 LegalTrademarks=
