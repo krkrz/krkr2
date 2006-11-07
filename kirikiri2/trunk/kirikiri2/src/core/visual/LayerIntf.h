@@ -905,6 +905,8 @@ private:
 	bool TransSelfUpdate; // is transition update performed by user code ?
 
 	tjs_uint64 TransTick; // current tick count
+	bool UseTransTickCallback; // whether to use tick source callback function
+	tTJSVariantClosure TransTickCallback; // tick callback function
 
 	tTVPTransType TransType; // current transition type
 	tTVPTransUpdateType TransUpdateType; // current transition update type
@@ -967,6 +969,8 @@ private:
 		// from tTVPIdleEventCallbackIntf
 	} TransIdleCallback;
 	friend class tTransIdleCallback;
+
+	tjs_uint64 GetTransTick();
 
 };
 //---------------------------------------------------------------------------
