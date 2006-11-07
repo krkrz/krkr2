@@ -381,6 +381,8 @@ tTJSNI_BaseLayer::tTJSNI_BaseLayer()
 	DestSLP = NULL;
 	SrcSLP = NULL;
 	TransCompEventPrevented = false;
+	UseTransTickCallback = false;
+	TransTickCallback = tTJSVariantClosure(NULL, NULL);
 
 	// allocate the default image
 	AllocateDefaultImage();
@@ -5150,7 +5152,7 @@ void tTJSNI_BaseLayer::BeforeCompletion()
 				// set TransTick here if the transition is performed by user code;
 				// otherwise the TransTick is to be set at
 				// tTJSNI_BaseLayer::InvokeTransition
-				TransTick = TVPGetTickCount();
+				TransTick = GetTransTick();
 			}
 			er = DivisibleTransHandler->StartProcess(TransTick);
 			if(er != TJS_S_TRUE) StopTransitionByHandler();
@@ -6286,16 +6288,29 @@ void tTJSNI_BaseLayer::StartTransition(const ttstr &name, bool withchildren,
 
 		// check selfupdate member of 'options'
 		tTJSVariant var;
+		TransSelfUpdate = false;
 		static ttstr selfupdate_name(TJS_W("selfupdate"));
 		if(TJS_SUCCEEDED(options.PropGet(0, selfupdate_name.c_str(),
 			selfupdate_name.GetHint(), &var, NULL)))
 		{
-			// selfupdate member found
-			TransSelfUpdate = (bool)(tjs_int)var;
+			if(var.Type() != tvtVoid)
+				TransSelfUpdate = (bool)(tjs_int)var;
+					// selfupdate member found
 		}
-		else
+
+		// check callback member of 'options'
+		TransTickCallback = tTJSVariantClosure(NULL, NULL);
+		static ttstr callback_name(TJS_W("callback"));
+		UseTransTickCallback = false;
+		if(TJS_SUCCEEDED(options.PropGet(0, callback_name.c_str(),
+			callback_name.GetHint(), &var, NULL)))
 		{
-			TransSelfUpdate = false;
+			// selfupdate member found
+			if(var.Type() != tvtVoid)
+			{
+				TransTickCallback = var.AsObjectClosure(); // AddRef() is performed here
+				UseTransTickCallback = true;
+			}
 		}
 
 
@@ -6376,7 +6391,27 @@ void tTJSNI_BaseLayer::StartTransition(const ttstr &name, bool withchildren,
 
 		// initial tick count
 		TVPStartTickCount();
-		TransTick = TVPGetTickCount();
+		if(UseTransTickCallback)
+		{
+			TransTick = 0;
+			// initially 0
+			// dummy calling StartProcess/EndProcess to notify initial tick count;
+			// for first call with TransTick = 0, these method should not
+			// return any error status here.
+			if(DivisibleTransHandler)
+			{
+				DivisibleTransHandler->StartProcess(TransTick);
+				DivisibleTransHandler->EndProcess();
+			}
+			else if(GiveUpdateTransHandler)
+			{
+				;// not yet implemented
+			}
+		}
+		else
+		{
+			TransTick = GetTransTick();
+		}
 
 		// set flag
 		InTransition = true;
@@ -6472,6 +6507,9 @@ void tTJSNI_BaseLayer::InternalStopTransition()
 		// release destination and source objects
 		if(TransDestObj) TransDestObj->Release(), TransDestObj = NULL;
 		if(TransSrcObj) TransSrcObj->Release(), TransSrcObj = NULL;
+
+		// release TransTickCallback
+		TransTickCallback.Release(), TransTickCallback = tTJSVariantClosure(NULL, NULL);
 	}
 
 }
@@ -6501,7 +6539,10 @@ void tTJSNI_BaseLayer::InvokeTransition(tjs_uint64 tick)
 {
 	if(!TransCompEventPrevented)
 	{
-		TransTick = tick;
+		if(UseTransTickCallback)
+			TransTick = GetTransTick();
+		else
+			TransTick = tick;
 		if(!GetNodeVisible())
 		{
 			StopTransitionByHandler();
@@ -6720,6 +6761,22 @@ void tTJSNI_BaseLayer::tTransDrawable::DrawCompleted(const tTVPRect &destrect,
 	}
 
 	if(tempalloc) tTVPTempBitmapHolder::FreeTemp();
+}
+//---------------------------------------------------------------------------
+tjs_uint64 tTJSNI_BaseLayer::GetTransTick()
+{
+	if(!UseTransTickCallback)
+	{
+		// just use TVPGetTickCount() as a source
+		return TVPGetTickCount();
+	}
+	else
+	{
+		// call TransTickCallback to receive result
+		tTJSVariant res;
+		TransTickCallback.FuncCall(0, NULL, NULL, &res, 0, NULL, NULL);
+		return (tjs_uint64)(tjs_int64)res;
+	}
 }
 //---------------------------------------------------------------------------
 
