@@ -24,6 +24,7 @@ globaldef sse_PCS_NRNR
 globaldef sse_PCS_NNNR
 globaldef sse_RISA_V_I32_1
 globaldef sse__Z32RisaDeinterleaveApplyingWindow_rPPfPKfS_ijj
+globaldef sse__Z32RisaPCMConvertLoopFloat32ToInt16PvPKvj
 globaldef sse_PCS_NRNN
 globaldef sse_PENDEDGEM2
 globaldef sse_PCS_NRRR
@@ -31,20 +32,25 @@ globaldef sse_RISA_VFASTATAN2_C2
 globaldef sse_PSTARTEDGEM3
 globaldef sse__ZN35tRisaPhaseVocoderDSP_SSE_Trampoline13__ProcessCoreEi
 globaldef sse_RISA_VFASTATAN2_C1
+globaldef sse__Z34RisaPCMConvertLoopFloat32ToInt16_rPvPKvj
 globaldef sse__Z6rdft_riiPfPiS_
 globaldef sse_PCS_NNRN
 globaldef sse_PCS_RNRR
 globaldef sse_RISA_VFASTSINCOS_SS2
+globaldef sse__Z32RisaPCMConvertLoopInt16ToFloat32PvPKvj
 globaldef sse_PENDEDGEM3
 globaldef sse_RISA_VFASTSINCOS_SS3
 globaldef sse_RISA_VFASTSINCOS_CC3
 globaldef sse_PSTARTEDGEM2
 globaldef sse_RISA_VFASTSINCOS_CC1
 globaldef sse_PFV_4
+globaldef sse__Z33_RisaPCMConvertLoopFloat32ToInt16PvPKvj
 globaldef sse__Z4rdftiiPfPiS_
+globaldef sse__Z34RisaPCMConvertLoopInt16ToFloat32_rPvPKvj
 globaldef sse_RISA_V_PI
 globaldef sse_PFV_INIT
 globaldef sse__Z6makewtiPiPf
+globaldef sse__Z33_RisaPCMConvertLoopInt16ToFloat32PvPKvj
 globaldef sse__ZN35tRisaPhaseVocoderDSP_SSE_Trampoline12_ProcessCoreEi
 globaldef sse_RISA_VFASTSINCOS_SS4
 globaldef sse_PFV_8
@@ -377,6 +383,18 @@ sse_PCS_NNRN:
 	DD 0
 	DD 0
 align 16
+RISA_V_VEC_MAGNIFY:
+	DD 1191181824
+	DD 1191181824
+	DD 1191181824
+	DD 1191181824
+align 16
+RISA_V_VEC_REDUCE:
+	DD 939524352
+	DD 939524352
+	DD 939524352
+	DD 939524352
+align 16
 segment_code
 align 2
 align 16
@@ -434,6 +452,332 @@ _Z23RisaVFast_sincos_F4_SSEU8__vectorfRS_S0_:
 	movaps	  [eax], xmm1
 	emms
 	pop	ebp
+	ret
+segment_data_aligned
+align 16
+align 4
+LC1:
+	DD 939524352
+align 16
+segment_code
+align 2
+align 16
+sse__Z33_RisaPCMConvertLoopInt16ToFloat32PvPKvj:
+	push	ebp
+	xor	eax, eax
+	mov	ebp, esp
+	push	esi
+	mov	esi, DWORD  [ebp+16]
+	mov	ecx, DWORD  [ebp+8]
+	push	ebx
+	cmp	eax, esi
+	mov	ebx, DWORD  [ebp+12]
+	jae	L43
+	test	cl, 15
+	je	L43
+	fld	DWORD [LC1]
+	mov	edx, ecx
+align 16
+L46:
+	fild	WORD  [ebx+eax*2]
+	add	edx, 4
+	fmul	st0, st1
+	fstp	DWORD  [ecx+eax*4]
+	inc	eax
+	cmp	eax, esi
+	jae	L64
+	test	dl, 15
+	jne	L46
+L64:
+	fstp	st0
+L43:
+	lea	edx, [esi-7]
+	cmp	edx, eax
+	jbe	L60
+	pxor	mm3, mm3
+	xorps	xmm1, xmm1
+align 16
+L52:
+	movq	mm0, QWORD  [ebx+eax*2]
+	movq	mm1, mm3
+	movaps	xmm0, xmm1
+	pcmpgtw	mm1, mm0
+	movq	mm2, mm0
+	punpckhwd	mm2, mm1
+	cvtpi2ps	xmm0, mm2
+	punpcklwd	mm0, mm1
+	movlhps	xmm0, xmm0
+	cvtpi2ps	xmm0, mm0
+	movq	mm0, QWORD  [ebx+8+eax*2]
+	movq	mm1, mm3
+	mulps	xmm0,  [RISA_V_VEC_REDUCE]
+	pcmpgtw	mm1, mm0
+	movq	mm2, mm0
+	punpckhwd	mm2, mm1
+	punpcklwd	mm0, mm1
+	movaps	  [ecx+eax*4], xmm0
+	movaps	xmm0, xmm1
+	cvtpi2ps	xmm0, mm2
+	movlhps	xmm0, xmm0
+	cvtpi2ps	xmm0, mm0
+	mulps	xmm0,  [RISA_V_VEC_REDUCE]
+	movaps	  [ecx+16+eax*4], xmm0
+	add	eax, 8
+	cmp	edx, eax
+	ja	L52
+L60:
+	emms
+	cmp	eax, esi
+	jae	L62
+	fld	DWORD [LC1]
+align 16
+L57:
+	fild	WORD  [ebx+eax*2]
+	fmul	st0, st1
+	fstp	DWORD  [ecx+eax*4]
+	inc	eax
+	cmp	eax, esi
+	jb	L57
+	fstp	st0
+L62:
+	pop	ebx
+	pop	esi
+	pop	ebp
+	ret
+align 2
+align 16
+sse__Z34RisaPCMConvertLoopInt16ToFloat32_rPvPKvj:
+	push	ebp
+	mov	ebp, esp
+	pop	ebp
+	jmp	sse__Z33_RisaPCMConvertLoopInt16ToFloat32PvPKvj
+align 2
+align 16
+sse__Z32RisaPCMConvertLoopInt16ToFloat32PvPKvj:
+	push	ebp
+	mov	ebp, esp
+	sub	esp, 40
+	and esp, -16
+	mov	eax, DWORD  [ebp+16]
+	mov	DWORD  [esp+8], eax
+	mov	eax, DWORD  [ebp+12]
+	mov	DWORD  [esp+4], eax
+	mov	eax, DWORD  [ebp+8]
+	mov	DWORD  [esp], eax
+	call	sse__Z34RisaPCMConvertLoopInt16ToFloat32_rPvPKvj
+	leave
+	ret
+segment_data_aligned
+align 16
+align 4
+LC3:
+	DD 1191181824
+align 4
+LC4:
+	DD -956301312
+align 4
+LC6:
+	DD 1056964608
+align 16
+segment_code
+align 2
+align 16
+sse__Z33_RisaPCMConvertLoopFloat32ToInt16PvPKvj:
+	push	ebp
+	xor	edx, edx
+	mov	ebp, esp
+	push	edi
+	push	esi
+	push	ebx
+	sub	esp, 12
+	mov	edi, DWORD  [ebp+16]
+	mov	esi, DWORD  [ebp+8]
+	mov	ebx, DWORD  [ebp+12]
+	cmp	edx, edi
+	jae	L69
+	test	bl, 15
+	je	L69
+	fld	DWORD [LC3]
+	mov	ecx, ebx
+	fldz
+	fld	DWORD [LC4]
+	fld	DWORD [LC6]
+	jmp	L81
+align 8
+L136:
+	fxch	st2
+	fucomi	st0, st2
+	mov	eax, -32768
+	ja	L132
+	fxch	st3
+	fucomi	st0, st2
+	ja	L127
+	fxch	st2
+	fadd	st0, st1
+L125:
+	fnstcw	WORD  [ebp-18]
+	movzx	eax, WORD  [ebp-18]
+	or	ax, 3072
+	mov	WORD  [ebp-20], ax
+	fldcw	WORD  [ebp-20]
+	fistp	WORD  [ebp-22]
+	fldcw	WORD  [ebp-18]
+	fxch	st1
+	fxch	st2
+	fxch	st1
+	movzx	eax, WORD  [ebp-22]
+L73:
+	mov	WORD  [esi+edx*2], ax
+	inc	edx
+	add	ecx, 4
+	cmp	edx, edi
+	jae	L130
+L137:
+	test	cl, 15
+	je	L130
+L81:
+	fld	DWORD  [ebx+edx*4]
+	mov	eax, 32767
+	fmul	st0, st4
+	fucomi	st0, st4
+	jbe	L136
+	fstp	st0
+	mov	WORD  [esi+edx*2], ax
+	inc	edx
+	add	ecx, 4
+	cmp	edx, edi
+	jb	L137
+L130:
+	fstp	st0
+	fstp	st0
+	fstp	st0
+	fstp	st0
+L69:
+	stmxcsr	DWORD  [ebp-16]
+	and	DWORD  [ebp-16], -24577
+	ldmxcsr	DWORD  [ebp-16]
+	lea	eax, [edi-7]
+	cmp	eax, edx
+	jbe	L122
+	movaps	xmm1,  [RISA_V_VEC_MAGNIFY]
+align 16
+L105:
+	movaps	xmm0, xmm1
+	mulps	xmm0,   [ebx+edx*4]
+	cvtps2pi	mm1, xmm0
+	movhlps	xmm0, xmm0
+	cvtps2pi	mm0, xmm0
+	movaps	xmm0, xmm1
+	packssdw	mm1, mm0
+	mulps	xmm0,   [ebx+16+edx*4]
+	movq	QWORD  [esi+edx*2], mm1
+	cvtps2pi	mm1, xmm0
+	movhlps	xmm0, xmm0
+	cvtps2pi	mm0, xmm0
+	packssdw	mm1, mm0
+	movq	QWORD  [esi+8+edx*2], mm1
+	add	edx, 8
+	cmp	eax, edx
+	ja	L105
+L122:
+	emms
+	cmp	edx, edi
+	jae	L124
+	fld	DWORD [LC3]
+	fldz
+	fld	DWORD [LC4]
+	fld	DWORD [LC6]
+	jmp	L119
+align 8
+L138:
+	fxch	st2
+	fucomi	st0, st2
+	mov	eax, -32768
+	ja	L135
+	fxch	st3
+	fucomi	st0, st2
+	ja	L128
+	fxch	st2
+	fadd	st0, st1
+L126:
+	fnstcw	WORD  [ebp-18]
+	movzx	eax, WORD  [ebp-18]
+	or	ax, 3072
+	mov	WORD  [ebp-20], ax
+	fldcw	WORD  [ebp-20]
+	fistp	WORD  [ebp-22]
+	fldcw	WORD  [ebp-18]
+	fxch	st1
+	fxch	st2
+	fxch	st1
+	movzx	eax, WORD  [ebp-22]
+L111:
+	mov	WORD  [esi+edx*2], ax
+	inc	edx
+	cmp	edx, edi
+	jae	L133
+L119:
+	fld	DWORD  [ebx+edx*4]
+	mov	eax, 32767
+	fmul	st0, st4
+	fucomi	st0, st4
+	jbe	L138
+	fstp	st0
+	mov	WORD  [esi+edx*2], ax
+	inc	edx
+	cmp	edx, edi
+	jb	L119
+L133:
+	fstp	st0
+	fstp	st0
+	fstp	st0
+	fstp	st0
+L124:
+	add	esp, 12
+	pop	ebx
+	pop	esi
+	pop	edi
+	pop	ebp
+	ret
+align 8
+L135:
+	fstp	st2
+	jmp	L111
+align 8
+L128:
+	fxch	st2
+	fsub	st0, st1
+	jmp	L126
+align 8
+L132:
+	fstp	st2
+	jmp	L73
+L127:
+	fxch	st2
+	fsub	st0, st1
+	jmp	L125
+align 2
+align 16
+sse__Z34RisaPCMConvertLoopFloat32ToInt16_rPvPKvj:
+	push	ebp
+	mov	ebp, esp
+	pop	ebp
+	jmp	sse__Z33_RisaPCMConvertLoopFloat32ToInt16PvPKvj
+align 2
+align 16
+sse__Z32RisaPCMConvertLoopFloat32ToInt16PvPKvj:
+	push	ebp
+	mov	ebp, esp
+	sub	esp, 40
+	and esp, -16
+	mov	eax, DWORD  [ebp+16]
+	mov	DWORD  [esp+8], eax
+	mov	eax, DWORD  [ebp+12]
+	mov	DWORD  [esp+4], eax
+	mov	eax, DWORD  [ebp+8]
+	mov	DWORD  [esp], eax
+	call	sse__Z34RisaPCMConvertLoopFloat32ToInt16_rPvPKvj
+	leave
 	ret
 align 2
 align 16
@@ -499,11 +843,11 @@ _Z6cft1stiPfS_:
 	mulps	xmm5, xmm4
 	movlps	  [edx+40], xmm5
 	movhps	  [edx+56], xmm5
-	jge	L146
+	jge	L246
 	add	edx, 64
 	mov	eax, ecx
 align 16
-L144:
+L244:
 	add	eax, 8
 	add	ecx, 16
 	movaps	xmm2, xmm7
@@ -619,8 +963,8 @@ L144:
 	movhps	  [edx+56], xmm5
 	add	edx, 64
 	cmp	ebx, esi
-	jl	L144
-L146:
+	jl	L244
+L246:
 	pop	ebx
 	pop	esi
 	pop	ebp
@@ -641,11 +985,11 @@ _Z6cftmdliiPfS_:
 	mov	DWORD  [ebp-80], eax
 	lea	eax, [0+edx*4]
 	mov	DWORD  [ebp-96], eax
-	jge	L282
+	jge	L381
 	mov	edx, ecx
 	lea	eax, [edi+edi*2]
 align 16
-L167:
+L266:
 	movaps	xmm2,   [edx]
 	movaps	xmm1,   [edx+edi*4]
 	movaps	xmm0,   [edx+edi*8]
@@ -672,8 +1016,8 @@ L167:
 	movaps	  [esi+eax*4], xmm2
 	lea	eax, [eax+4]
 	cmp	DWORD  [ebp-84], edi
-	jl	L167
-L282:
+	jl	L266
+L381:
 	mov	edx, DWORD  [ebp+8]
 	mov	ecx, DWORD  [ebp-96]
 	mov	eax, DWORD  [edx+8]
@@ -683,13 +1027,13 @@ L282:
 	movss	xmm6,[ebp-28]
 	cmp	ecx, DWORD  [ebp-84]
 	shufps	xmm6, xmm6, 0
-	jle	L284
+	jle	L383
 	mov	ebx, DWORD  [ebp-84]
 	lea	eax, [edi+edi*2]
 	lea	edx, [esi+ebx*4]
 	add	eax, ebx
 align 16
-L194:
+L293:
 	movaps	xmm3,   [edx]
 	movaps	xmm0,   [edx+edi*4]
 	movaps	xmm2,   [edx+edi*8]
@@ -735,8 +1079,8 @@ L194:
 	movaps	  [esi+eax*4], xmm0
 	lea	eax, [eax+4]
 	cmp	ecx, DWORD  [ebp-84]
-	jg	L194
-L284:
+	jg	L293
+L383:
 	mov	DWORD  [ebp-92], 0
 	mov	eax, DWORD  [ebp-96]
 	mov	edx, DWORD  [ebp-80]
@@ -744,13 +1088,13 @@ L284:
 	cmp	eax, edx
 	mov	DWORD  [ebp-188], eax
 	mov	DWORD  [ebp-88], eax
-	jge	L286
+	jge	L385
 	lea	ecx, [edi+edi*2]
 	add	eax, edi
 	mov	DWORD  [ebp-196], ecx
 	mov	DWORD  [ebp-200], eax
 align 16
-L280:
+L379:
 	add	DWORD  [ebp-92], 2
 	mov	edx, DWORD  [ebp+8]
 	mov	eax, DWORD  [ebp-92]
@@ -810,12 +1154,12 @@ L280:
 	movaps	  [ebp-168], xmm1
 	mov	DWORD  [ebp-84], eax
 	cmp	DWORD  [ebp-200], eax
-	jle	L288
+	jle	L387
 	mov	ecx, DWORD  [ebp-196]
 	lea	edx, [esi+eax*4]
 	lea	eax, [ecx+eax]
 align 16
-L238:
+L337:
 	movaps	xmm3,   [edx]
 	movaps	xmm0,   [edx+edi*4]
 	movaps	xmm4,   [edx+edi*8]
@@ -865,9 +1209,9 @@ L238:
 	lea	eax, [eax+4]
 	mov	ebx, DWORD  [ebp-84]
 	cmp	DWORD  [ebp-200], ebx
-	jg	L238
+	jg	L337
 	movaps	xmm0,  [sse_PCS_NRNR]
-L288:
+L387:
 	mov	eax, DWORD  [ebp-208]
 	fld	st1
 	mov	edx, DWORD  [ebp+8]
@@ -925,13 +1269,13 @@ L288:
 	movaps	xmm1,   [ebp-152]
 	xorps	xmm1, xmm0
 	movaps	  [ebp-152], xmm1
-	jg	L279
-	jmp	L290
+	jg	L378
+	jmp	L389
 align 8
-L291:
+L390:
 	mov	edx, DWORD  [ebp-84]
 	lea	ecx, [edx+edi]
-L279:
+L378:
 	movaps	xmm0,   [esi+ecx*4]
 	lea	ebx, [ecx+edi]
 	mov	eax, DWORD  [ebp-84]
@@ -987,15 +1331,15 @@ L279:
 	movaps	  [esi+ecx*4], xmm0
 	addps	xmm3, xmm5
 	movaps	  [esi+ebx*4], xmm3
-	jg	L291
-L290:
+	jg	L390
+L389:
 	mov	ecx, DWORD  [ebp-188]
 	mov	ebx, DWORD  [ebp-80]
 	add	DWORD  [ebp-88], ecx
 	add	DWORD  [ebp-200], ecx
 	cmp	DWORD  [ebp-88], ebx
-	jl	L280
-L286:
+	jl	L379
+L385:
 	add	esp, 204
 	pop	ebx
 	pop	esi
@@ -1017,17 +1361,17 @@ _Z6bitrv2iPiPf:
 	mov	DWORD  [ebp-16], edx
 	mov	DWORD  [edx], 0
 	mov	DWORD  [ebp-32], 1
-	jle	L343
+	jle	L442
 align 16
-L299:
+L398:
 	mov	DWORD  [ebp-24], 0
 	mov	eax, DWORD  [ebp-32]
 	sar	ecx, 1
 	cmp	DWORD  [ebp-24], eax
-	jge	L345
+	jge	L444
 	mov	edx, DWORD  [ebp-16]
 align 16
-L298:
+L397:
 	inc	DWORD  [ebp-24]
 	mov	eax, DWORD  [edx]
 	mov	ebx, DWORD  [ebp-32]
@@ -1035,35 +1379,35 @@ L298:
 	mov	DWORD  [edx+ebx*4], eax
 	add	edx, 4
 	cmp	DWORD  [ebp-24], ebx
-	jl	L298
-L345:
+	jl	L397
+L444:
 	sal	DWORD  [ebp-32], 1
 	mov	eax, DWORD  [ebp-32]
 	sal	eax, 3
 	cmp	eax, ecx
-	jl	L299
-L343:
+	jl	L398
+L442:
 	mov	eax, DWORD  [ebp-32]
 	mov	esi, DWORD  [ebp-32]
 	sal	eax, 3
 	add	esi, esi
 	cmp	eax, ecx
 	mov	DWORD  [ebp-36], esi
-	je	L354
+	je	L453
 	mov	DWORD  [ebp-28], 1
 	mov	ecx, DWORD  [ebp-32]
 	cmp	DWORD  [ebp-28], ecx
-	jge	L357
+	jge	L456
 align 16
-L358:
+L457:
 	mov	DWORD  [ebp-24], 0
 	mov	ebx, DWORD  [ebp-28]
 	cmp	DWORD  [ebp-24], ebx
-	jge	L352
+	jge	L451
 	add	ebx, ebx
 	mov	DWORD  [ebp-68], ebx
 align 16
-L340:
+L439:
 	mov	esi, DWORD  [ebp-28]
 	mov	edi, DWORD  [ebp-16]
 	mov	edx, DWORD  [ebp-24]
@@ -1093,32 +1437,32 @@ L340:
 	mov	eax, DWORD  [ebp-28]
 	inc	DWORD  [ebp-24]
 	cmp	DWORD  [ebp-24], eax
-	jl	L340
-L352:
+	jl	L439
+L451:
 	inc	DWORD  [ebp-28]
 	mov	edx, DWORD  [ebp-32]
 	cmp	DWORD  [ebp-28], edx
-	jl	L358
-L357:
+	jl	L457
+L456:
 	add	esp, 64
 	pop	ebx
 	pop	esi
 	pop	edi
 	pop	ebp
 	ret
-L354:
+L453:
 	mov	DWORD  [ebp-28], 0
 	mov	edi, DWORD  [ebp-32]
 	cmp	DWORD  [ebp-28], edi
-	jge	L357
+	jge	L456
 	mov	DWORD  [ebp-76], esi
 	sal	edi, 2
 	mov	DWORD  [ebp-72], edi
-L324:
+L423:
 	mov	DWORD  [ebp-24], 0
 	mov	eax, DWORD  [ebp-28]
 	cmp	DWORD  [ebp-24], eax
-	jge	L349
+	jge	L448
 	mov	edx, DWORD  [ebp-72]
 	add	eax, eax
 	mov	ecx, DWORD  [ebp-36]
@@ -1126,7 +1470,7 @@ L324:
 	add	edx, ecx
 	mov	DWORD  [ebp-64], edx
 align 16
-L323:
+L422:
 	mov	ebx, DWORD  [ebp-16]
 	mov	ecx, DWORD  [ebp-28]
 	mov	esi, DWORD  [ebp-24]
@@ -1187,8 +1531,8 @@ L323:
 	mov	edi, DWORD  [ebp-28]
 	inc	DWORD  [ebp-24]
 	cmp	DWORD  [ebp-24], edi
-	jl	L323
-L349:
+	jl	L422
+L448:
 	mov	eax, DWORD  [ebp-28]
 	mov	edx, DWORD  [ebp-16]
 	mov	edi, DWORD  [ebp-76]
@@ -1210,7 +1554,7 @@ L349:
 	fstp	DWORD  [eax+edi*4]
 	mov	DWORD  [eax+esi*4], ecx
 	mov	DWORD  [eax+4+esi*4], ebx
-	jl	L324
+	jl	L423
 	add	esp, 64
 	pop	ebx
 	pop	esi
@@ -1231,17 +1575,17 @@ _Z7cftfsubiPfS_:
 	cmp	eax, 8
 	mov	DWORD  [ebp-16], ecx
 	mov	ebx, 2
-	jg	L404
-L360:
+	jg	L503
+L459:
 	lea	eax, [0+ebx*4]
 	cmp	eax, esi
-	je	L405
+	je	L504
 	xor	ecx, ecx
 	cmp	ecx, ebx
-	jge	L359
+	jge	L458
 	mov	edx, edi
 align 16
-L398:
+L497:
 	movaps	xmm0,   [edx]
 	add	ecx, 8
 	movaps	xmm1,   [edx+16]
@@ -1259,21 +1603,21 @@ L398:
 	movaps	  [edx+16+ebx*4], xmm1
 	add	edx, 32
 	cmp	ecx, ebx
-	jl	L398
-L359:
+	jl	L497
+L458:
 	add	esp, 12
 	pop	ebx
 	pop	esi
 	pop	edi
 	pop	ebp
 	ret
-L404:
+L503:
 	call	_Z6cft1stiPfS_
 	cmp	esi, 32
 	mov	ebx, 8
-	jle	L360
+	jle	L459
 align 16
-L363:
+L462:
 	mov	eax, DWORD  [ebp-16]
 	mov	edx, ebx
 	mov	ecx, edi
@@ -1283,7 +1627,7 @@ L363:
 	call	_Z6cftmdliiPfS_
 	lea	eax, [0+ebx*4]
 	cmp	eax, esi
-	jge	L360
+	jge	L459
 	mov	eax, DWORD  [ebp-16]
 	mov	edx, ebx
 	mov	ecx, edi
@@ -1293,16 +1637,16 @@ L363:
 	call	_Z6cftmdliiPfS_
 	lea	eax, [0+ebx*4]
 	cmp	eax, esi
-	jl	L363
-	jmp	L360
-L405:
+	jl	L462
+	jmp	L459
+L504:
 	xor	ecx, ecx
 	cmp	ecx, ebx
-	jge	L359
+	jge	L458
 	mov	eax, edi
 	lea	edx, [ebx+ebx*2]
 align 16
-L383:
+L482:
 	movaps	xmm2,   [eax]
 	add	ecx, 4
 	movaps	xmm1,   [eax+ebx*4]
@@ -1329,7 +1673,7 @@ L383:
 	movaps	  [edi+edx*4], xmm2
 	add	edx, 4
 	cmp	ecx, ebx
-	jl	L383
+	jl	L482
 	add	esp, 12
 	pop	ebx
 	pop	esi
@@ -1339,7 +1683,7 @@ L383:
 segment_data_aligned
 align 16
 align 8
-LC3:
+LC10:
 	DD 1413754136
 	DD 1072243195
 align 16
@@ -1359,13 +1703,13 @@ sse__Z6makewtiPiPf:
 	cmp	edx, 2
 	mov	DWORD  [eax], edx
 	mov	DWORD  [eax+4], 1
-	jle	L406
+	jle	L505
 	sar	edx, 1
 	mov	eax, 0x3f800000
 	cvtsi2ss	xmm0, edx
 	mov	DWORD  [ebp-32], edx
 	fild	DWORD  [ebp-32]
-	fdivr	QWORD [LC3]
+	fdivr	QWORD [LC10]
 	mov	DWORD  [edi], eax
 	mov	eax, 0x00000000
 	mov	DWORD  [edi+4], eax
@@ -1381,12 +1725,12 @@ sse__Z6makewtiPiPf:
 	cmp	edx, 2
 	mov	DWORD  [edi+edx*4], eax
 	mov	DWORD  [edi+4+edx*4], eax
-	jle	L406
+	jle	L505
 	mov	esi, 2
 	cmp	esi, edx
-	jmp	L415
+	jmp	L514
 align 8
-L416:
+L515:
 	cvtsi2ss	xmm0, esi
 	movss	[ebp-60],xmm0
 	fld	DWORD  [ebp-60]
@@ -1410,15 +1754,15 @@ L416:
 	cmp	esi, DWORD  [ebp-32]
 	mov	DWORD  [edi+eax*4], edx
 	mov	DWORD  [edi+4+eax*4], ebx
-L415:
-	jl	L416
+L514:
+	jl	L515
 	mov	edx, DWORD  [ebp+12]
 	mov	ecx, edi
 	mov	eax, DWORD  [ebp+8]
 	add	edx, 8
 	call	_Z6bitrv2iPiPf
 align 16
-L406:
+L505:
 	add	esp, 76
 	pop	ebx
 	pop	esi
@@ -1428,14 +1772,14 @@ L406:
 segment_data_aligned
 align 16
 align 8
-LC7:
+LC14:
 	DD 1413754136
 	DD 1072243195
 align 4
-LC8:
+LC15:
 	DD 1056964608
 align 8
-LC9:
+LC16:
 	DD 0
 	DD 1071644672
 align 16
@@ -1453,7 +1797,7 @@ sse__Z6makectiPiPf:
 	mov	eax, DWORD  [ebp+12]
 	cmp	ebx, 1
 	mov	DWORD  [eax+4], ebx
-	jle	L417
+	jle	L516
 	mov	edi, ebx
 	mov	esi, 1
 	sar	edi, 1
@@ -1461,7 +1805,7 @@ sse__Z6makectiPiPf:
 	cvtsi2ss	xmm0, edi
 	fild	DWORD  [esp]
 	add	esp, 4
-	fdivr	QWORD [LC7]
+	fdivr	QWORD [LC14]
 	movss	[ebp-60],xmm0
 	fstp	DWORD  [ebp-32]
 	fld	DWORD  [ebp-60]
@@ -1473,12 +1817,12 @@ sse__Z6makectiPiPf:
 	cmp	esi, edi
 	fld	DWORD  [ebp-28]
 	fst	DWORD  [eax]
-	fmul	DWORD [LC8]
+	fmul	DWORD [LC15]
 	fstp	DWORD  [eax+edi*4]
-	jge	L417
+	jge	L516
 	lea	ebx, [eax-4+ebx*4]
 align 16
-L422:
+L521:
 	cvtsi2ss	xmm0, esi
 	movss	[ebp-60],xmm0
 	fld	DWORD  [ebp-60]
@@ -1486,7 +1830,7 @@ L422:
 	fst	QWORD  [esp]
 	fstp	DWORD  [ebp-56]
 	call	cos
-	fmul	QWORD [LC9]
+	fmul	QWORD [LC16]
 	mov	eax, DWORD  [ebp+16]
 	fld	DWORD  [ebp-56]
 	fxch	st1
@@ -1494,13 +1838,13 @@ L422:
 	inc	esi
 	fstp	QWORD  [esp]
 	call	sin
-	fmul	QWORD [LC9]
+	fmul	QWORD [LC16]
 	fstp	DWORD  [ebx]
 	sub	ebx, 4
 	cmp	esi, edi
-	jl	L422
+	jl	L521
 align 16
-L417:
+L516:
 	add	esp, 76
 	pop	ebx
 	pop	esi
@@ -1510,7 +1854,7 @@ L417:
 segment_data_aligned
 align 16
 align 4
-LC11:
+LC18:
 	DD 1056964608
 align 16
 segment_code
@@ -1534,23 +1878,23 @@ sse__Z6rdft_riiPfPiS_:
 	lea	eax, [0+edi*4]
 	cmp	eax, esi
 	mov	DWORD  [ebp-32], edx
-	jl	L511
-L425:
+	jl	L610
+L524:
 	mov	edx, DWORD  [ebp-32]
 	mov	edx, DWORD  [edx+4]
 	mov	eax, edx
 	mov	DWORD  [ebp-40], edx
 	sal	eax, 2
 	cmp	eax, esi
-	jl	L512
+	jl	L611
 	mov	eax, DWORD  [ebp-28]
 	test	eax, eax
-	js	L427
-L521:
+	js	L526
+L620:
 	cmp	esi, 4
-	jg	L513
-	je	L514
-L456:
+	jg	L612
+	je	L613
+L555:
 	fld	DWORD  [ebx]
 	fld	DWORD  [ebx+4]
 	fld	st1
@@ -1560,7 +1904,7 @@ L456:
 	fxch	st1
 	fstp	DWORD  [ebx+4]
 	fstp	DWORD  [ebx]
-L520:
+L619:
 	add	esp, 156
 	pop	ebx
 	pop	esi
@@ -1568,7 +1912,7 @@ L520:
 	pop	ebp
 	ret
 align 8
-L512:
+L611:
 	mov	edx, DWORD  [ebp-36]
 	mov	eax, esi
 	sar	eax, 2
@@ -1582,18 +1926,18 @@ L512:
 	call	sse__Z6makectiPiPf
 	mov	eax, DWORD  [ebp-28]
 	test	eax, eax
-	jns	L521
+	jns	L620
 align 16
-L427:
+L526:
 	fld	DWORD  [ebx]
 	cmp	esi, 4
 	fld	st0
 	fsub	DWORD  [ebx+4]
-	fmul	DWORD [LC11]
+	fmul	DWORD [LC18]
 	fsub	st1, st0
 	fxch	st1
 	fstp	DWORD  [ebx]
-	jle	L459
+	jle	L558
 	fchs
 	mov	edx, esi
 	mov	eax, DWORD  [ebp-36]
@@ -1612,17 +1956,17 @@ L427:
 	xor	eax, eax
 	cmp	ecx, DWORD  [ebp-92]
 	mov	DWORD  [ebp-140], eax
-	jge	L503
+	jge	L602
 	lea	edx, [ebx-8+esi*4]
 align 16
-L463:
+L562:
 	fld	DWORD  [ebx+ecx*4]
 	mov	edi, DWORD  [ebp-96]
 	mov	eax, DWORD  [ebp-40]
 	add	DWORD  [ebp-140], edi
 	fld	st0
 	fld	DWORD  [ebx+4+ecx*4]
-	fld	DWORD [LC11]
+	fld	DWORD [LC18]
 	mov	edi, DWORD  [ebp-140]
 	fld	st1
 	fxch	st3
@@ -1665,8 +2009,8 @@ L463:
 	fstp	DWORD  [edx+4]
 	sub	edx, 8
 	cmp	ecx, DWORD  [ebp-92]
-	jl	L463
-L503:
+	jl	L562
+L602:
 	mov	edx, DWORD  [ebp-92]
 	mov	ecx, ebx
 	mov	eax, esi
@@ -1676,17 +2020,17 @@ L503:
 	call	_Z6bitrv2iPiPf
 	mov	DWORD  [ebp-100], 2
 	cmp	esi, 8
-	jg	L516
-L465:
+	jg	L615
+L564:
 	mov	eax, DWORD  [ebp-100]
 	sal	eax, 2
 	cmp	eax, esi
-	je	L517
+	je	L616
 	xor	ecx, ecx
 	cmp	ecx, DWORD  [ebp-100]
-	jmp	L509
+	jmp	L608
 align 8
-L518:
+L617:
 	fld	DWORD  [ebx+ecx*4]
 	mov	edx, DWORD  [ebp-100]
 	fld	DWORD  [ebx+4+ecx*4]
@@ -1711,8 +2055,8 @@ L518:
 	cmp	ecx, edx
 	fstp	DWORD  [ebx+eax*4]
 	fstp	DWORD  [ebx+4+eax*4]
-L509:
-	jl	L518
+L608:
+	jl	L617
 	add	esp, 156
 	pop	ebx
 	pop	esi
@@ -1720,7 +2064,7 @@ L509:
 	pop	ebp
 	ret
 align 8
-L511:
+L610:
 	mov	eax, DWORD  [ebp-36]
 	mov	edi, esi
 	sar	edi, 2
@@ -1728,9 +2072,9 @@ L511:
 	mov	DWORD  [esp+8], eax
 	mov	DWORD  [esp], edi
 	call	sse__Z6makewtiPiPf
-	jmp	L425
+	jmp	L524
 align 8
-L513:
+L612:
 	mov	edx, DWORD  [ebp-32]
 	mov	eax, esi
 	mov	ecx, ebx
@@ -1751,7 +2095,7 @@ L513:
 	fld	DWORD  [ebx+12]
 	lea	ecx, [eax+edi*4]
 	add	edx, edx
-	fld	DWORD [LC11]
+	fld	DWORD [LC18]
 	mov	eax, edx
 	cdq
 	idiv	DWORD  [ebp-48]
@@ -1801,7 +2145,7 @@ L513:
 	fxch	st1
 	fstp	DWORD  [ebx+edx*4]
 	fstp	DWORD  [ebx+4+edx*4]
-	jge	L456
+	jge	L555
 	mov	edi, DWORD  [ebp-40]
 	lea	esi, [ebx+16]
 	mov	eax, DWORD  [ebp-52]
@@ -1815,7 +2159,7 @@ L513:
 	lea	ecx, [ecx+edi*4]
 	mov	DWORD  [ebp-84], edi
 align 16
-L454:
+L553:
 	movss	xmm1,[sse_PFV_0P5]
 	mov	eax, DWORD  [ebp-52]
 	mov	edi, DWORD  [ebp-140]
@@ -1863,11 +2207,11 @@ L454:
 	lea	ecx, [ecx+eax*4]
 	add	DWORD  [ebp-140], eax
 	cmp	DWORD  [ebp-44], edi
-	jl	L454
-	jmp	L456
-L459:
+	jl	L553
+	jmp	L555
+L558:
 	fstp	DWORD  [ebx+4]
-	jne	L520
+	jne	L619
 	mov	ecx, DWORD  [ebp-36]
 	add	esp, 156
 	mov	edx, ebx
@@ -1877,21 +2221,21 @@ L459:
 	pop	edi
 	pop	ebp
 	jmp	_Z7cftfsubiPfS_
-L514:
+L613:
 	mov	ecx, DWORD  [ebp-36]
 	mov	edx, ebx
 	mov	eax, 4
 	call	_Z7cftfsubiPfS_
-	jmp	L456
-L516:
+	jmp	L555
+L615:
 	mov	ecx, DWORD  [ebp-36]
 	mov	edx, ebx
 	mov	eax, esi
 	call	_Z6cft1stiPfS_
 	mov	DWORD  [ebp-100], 8
 	cmp	esi, 32
-	jle	L465
-L468:
+	jle	L564
+L567:
 	mov	edi, DWORD  [ebp-36]
 	mov	eax, esi
 	mov	ecx, ebx
@@ -1902,12 +2246,12 @@ L468:
 	mov	eax, DWORD  [ebp-100]
 	sal	eax, 2
 	cmp	eax, esi
-	jl	L468
-	jmp	L465
-L517:
+	jl	L567
+	jmp	L564
+L616:
 	xor	ecx, ecx
 	cmp	ecx, DWORD  [ebp-100]
-	jge	L520
+	jge	L619
 	mov	edx, DWORD  [ebp-100]
 	lea	eax, [edx+edx*2]
 	lea	edi, [ebx+eax*4]
@@ -1915,7 +2259,7 @@ L517:
 	lea	esi, [ebx+edx*8]
 	mov	edx, ebx
 align 16
-L490:
+L589:
 	movaps	xmm0,   [ebp-120]
 	add	ecx, 2
 	movlps	xmm0,   [edx]
@@ -1953,8 +2297,8 @@ L490:
 	movhps	  [edi], xmm2
 	add	edi, 8
 	cmp	ecx, DWORD  [ebp-100]
-	jl	L490
-	jmp	L520
+	jl	L589
+	jmp	L619
 align 2
 align 16
 sse__Z4rdftiiPfPiS_:
@@ -2020,9 +2364,9 @@ sse__ZN35tRisaPhaseVocoderDSP_SSE_Trampoline13__ProcessCoreEi:
 	movss	xmm1,[ecx+64]
 	shufps	xmm1, xmm1, 0
 	movaps	  [ebp-168], xmm1
-	jp	L665
-	je	L530
-L665:
+	jp	L764
+	je	L629
+L764:
 	movss	xmm0,[ecx+68]
 	xor	edx, edx
 	cmp	edx, DWORD  [ebp-128]
@@ -2034,7 +2378,7 @@ L665:
 	movss	xmm0,[ecx+76]
 	shufps	xmm0, xmm0, 0
 	movaps	  [ebp-216], xmm0
-	jae	L658
+	jae	L757
 	fstp	st0
 	movq	mm1, QWORD [sse_RISA_V_I32_1]
 	pxor	mm0, mm0
@@ -2044,7 +2388,7 @@ L665:
 	movq	QWORD  [ebp-328], mm1
 	mov	eax, DWORD  [eax+ecx*4]
 align 16
-L587:
+L686:
 	movaps	xmm0,   [esi+16+edx*8]
 	movaps	xmm4,   [esi+edx*8]
 	movaps	xmm6,  [sse_PCS_RRRR]
@@ -2143,26 +2487,26 @@ L587:
 	movaps	  [esi+16+edx*8], xmm2
 	add	edx, 4
 	cmp	edx, DWORD  [ebp-128]
-	jb	L587
+	jb	L686
 	mov	eax, DWORD  [ebp-124]
 	fld	DWORD  [eax+60]
-L658:
+L757:
 	xor	edi, edi
 	fld1
 	fdivrp	st1, st0
 	cmp	edi, DWORD  [ebp-128]
-	jae	L670
+	jae	L769
 	fnstcw	WORD  [ebp-106]
 	mov	ebx, DWORD  [ebp-132]
 	movzx	eax, WORD  [ebp-106]
 	or	ax, 3072
 	mov	WORD  [ebp-108], ax
-	jmp	L595
+	jmp	L694
 align 8
-L673:
+L772:
 	fstp	st0
 	cmp	ecx, DWORD  [ebp-128]
-	jae	L593
+	jae	L692
 	mov	eax, DWORD  [esi+ecx*8]
 	inc	edi
 	mov	edx, DWORD  [ebp-124]
@@ -2172,9 +2516,9 @@ L673:
 	fstp	DWORD  [ebx+4]
 	add	ebx, 8
 	cmp	edi, DWORD  [ebp-128]
-	jae	L670
+	jae	L769
 align 16
-L595:
+L694:
 	xor	edx, edx
 	push	edx
 	xor	edx, edx
@@ -2195,7 +2539,7 @@ L595:
 	add	esp, 8
 	cmp	eax, DWORD  [ebp-128]
 	fsubp	st1, st0
-	jae	L673
+	jae	L772
 	fld	DWORD  [esi+ecx*8]
 	mov	eax, DWORD  [ebp-124]
 	fld	DWORD  [esi+8+ecx*8]
@@ -2211,17 +2555,17 @@ L595:
 	fmul	DWORD  [eax+60]
 	fstp	DWORD  [ebx+4]
 	inc	edi
-L675:
+L774:
 	add	ebx, 8
 	cmp	edi, DWORD  [ebp-128]
-	jb	L595
-L670:
+	jb	L694
+L769:
 	fstp	st0
 	xor	ebx, ebx
 	cmp	ebx, DWORD  [ebp-128]
-	jae	L603
+	jae	L702
 align 16
-L674:
+L773:
 	mov	ecx, DWORD  [ebp-132]
 	mov	edx, DWORD  [ebp-124]
 	movaps	xmm0,   [ecx+ebx*8]
@@ -2265,8 +2609,8 @@ L674:
 	movaps	  [eax+16+ebx*8], xmm2
 	add	ebx, 4
 	cmp	ebx, DWORD  [ebp-128]
-	jb	L674
-L603:
+	jb	L773
+L702:
 	mov	edx, DWORD  [ebp-124]
 	mov	ecx, DWORD  [ebp+12]
 	mov	eax, DWORD  [edx+20]
@@ -2288,15 +2632,15 @@ L603:
 	pop	ebp
 	ret
 align 8
-L530:
+L629:
 	fstp	st0
 	xor	ebx, ebx
 	cmp	ebx, DWORD  [ebp-128]
-	jae	L603
+	jae	L702
 	pxor	mm0, mm0
 	movq	QWORD  [ebp-320], mm0
 align 16
-L656:
+L755:
 	movaps	xmm0,   [esi+16+ebx*8]
 	mov	edx, DWORD  [ebp-124]
 	mov	ecx, DWORD  [ebp+12]
@@ -2412,14 +2756,14 @@ L656:
 	movaps	  [eax+16+ebx*8], xmm1
 	add	ebx, 4
 	cmp	ebx, DWORD  [ebp-128]
-	jb	L656
-	jmp	L603
+	jb	L755
+	jmp	L702
 align 8
-L593:
+L692:
 	mov	DWORD  [ebx], 0x00000000
 	mov	DWORD  [ebx+4], 0x00000000
 	inc	edi
-	jmp	L675
+	jmp	L774
 align 16
 segment_code
 align 2
@@ -2466,24 +2810,24 @@ sse__Z32RisaDeinterleaveApplyingWindow_rPPfPKfS_ijj:
 	mov	esi, DWORD  [ebp+20]
 	mov	ecx, DWORD  [ebp+12]
 	cmp	esi, 1
-	je	L681
+	je	L780
 	cmp	esi, 2
-	je	L802
+	je	L901
 	mov	DWORD  [ebp-16], 0
 	mov	edx, DWORD  [ebp+28]
 	cmp	DWORD  [ebp-16], edx
-	jae	L974
+	jae	L1073
 align 16
-L975:
+L1074:
 	xor	edx, edx
 	cmp	edx, esi
-	jge	L962
+	jge	L1061
 	mov	ebx, DWORD  [ebp+24]
 	mov	edi, DWORD  [ebp-16]
 	add	ebx, edi
 	mov	DWORD  [ebp-20], ebx
 align 16
-L923:
+L1022:
 	mov	ebx, DWORD  [ebp+8]
 	mov	edi, DWORD  [ebp-16]
 	mov	eax, DWORD  [ebx+edx*4]
@@ -2495,20 +2839,20 @@ L923:
 	add	ecx, 4
 	cmp	edx, esi
 	fstp	DWORD  [eax+edi*4]
-	jl	L923
-L962:
+	jl	L1022
+L1061:
 	inc	DWORD  [ebp-16]
 	mov	eax, DWORD  [ebp+28]
 	cmp	DWORD  [ebp-16], eax
-	jb	L975
-L974:
+	jb	L1074
+L1073:
 	add	esp, 8
 	pop	ebx
 	pop	esi
 	pop	edi
 	pop	ebp
 	ret
-L681:
+L780:
 	mov	edx, DWORD  [ebp+8]
 	mov	edi, DWORD  [ebp+24]
 	mov	eax, DWORD  [edx]
@@ -2530,12 +2874,12 @@ L681:
 	mov	eax, edx
 	cmove	eax, ecx
 	cmp	DWORD  [ebp+28], 7
-	ja	L969
-L691:
+	ja	L1068
+L790:
 	mov	eax, DWORD  [ebp+28]
 	cmp	DWORD  [ebp-16], eax
-	jmp	L963
-L970:
+	jmp	L1062
+L1069:
 	mov	edx, DWORD  [ebp-16]
 	mov	ecx, DWORD  [ebp+16]
 	mov	edi, DWORD  [ebp+12]
@@ -2547,15 +2891,15 @@ L970:
 	inc	edx
 	cmp	edx, eax
 	mov	DWORD  [ebp-16], edx
-L963:
-	jb	L970
+L1062:
+	jb	L1069
 	add	esp, 8
 	pop	ebx
 	pop	esi
 	pop	edi
 	pop	ebp
 	ret
-L802:
+L901:
 	mov	edx, DWORD  [ebp+8]
 	mov	eax, DWORD  [ebp+24]
 	mov	esi, DWORD  [edx]
@@ -2565,10 +2909,10 @@ L802:
 	mov	eax, DWORD  [edx+4]
 	add	ebx, eax
 	test	esi, 15
-	je	L971
-L803:
+	je	L1070
+L902:
 	mov	ecx, 4
-L804:
+L903:
 	test	BYTE  [ebp+12], 15
 	lea	eax, [ecx+2]
 	sete	dl
@@ -2580,55 +2924,55 @@ L804:
 	test	dl, dl
 	cmove	eax, ecx
 	cmp	DWORD  [ebp+28], 3
-	jbe	L813
+	jbe	L912
 	cmp	eax, 7
-	ja	L813
-	jmp	DWORD [L911+eax*4]
+	ja	L912
+	jmp	DWORD [L1010+eax*4]
 segment_data_aligned
 align 16
 align 4
-L911:
-	DD L815
-	DD L827
-	DD L839
-	DD L851
-	DD L863
-	DD L875
-	DD L887
-	DD L899
+L1010:
+	DD L914
+	DD L926
+	DD L938
+	DD L950
+	DD L962
+	DD L974
+	DD L986
+	DD L998
 align 16
 segment_code
-L969:
+L1068:
 	cmp	eax, 7
-	ja	L691
-	jmp	DWORD [L797+eax*4]
+	ja	L790
+	jmp	DWORD [L896+eax*4]
 segment_data_aligned
 align 16
 align 4
-L797:
-	DD L693
-	DD L706
-	DD L719
-	DD L732
-	DD L745
-	DD L758
-	DD L771
-	DD L784
+L896:
+	DD L792
+	DD L805
+	DD L818
+	DD L831
+	DD L844
+	DD L857
+	DD L870
+	DD L883
 align 16
 segment_code
-L971:
+L1070:
 	xor	ecx, ecx
 	test	bl, 15
-	je	L804
-	jmp	L803
-L815:
+	je	L903
+	jmp	L902
+L914:
 	mov	DWORD  [ebp-16], 0
 	mov	edx, DWORD  [ebp+28]
 	sub	edx, 3
 	cmp	edx, 0
-	jbe	L813
+	jbe	L912
 	xor	eax, eax
-L826:
+L925:
 	mov	ecx, DWORD  [ebp+16]
 	mov	edi, DWORD  [ebp+12]
 	movaps	xmm1,   [eax+ecx]
@@ -2647,12 +2991,12 @@ L826:
 	add	eax, 16
 	add	DWORD  [ebp-16], 4
 	cmp	edx, DWORD  [ebp-16]
-	ja	L826
-L813:
+	ja	L925
+L912:
 	mov	eax, DWORD  [ebp+28]
 	cmp	DWORD  [ebp-16], eax
-	jmp	L964
-L972:
+	jmp	L1063
+L1071:
 	mov	edx, DWORD  [ebp-16]
 	mov	ecx, DWORD  [ebp+16]
 	mov	edi, DWORD  [ebp+12]
@@ -2666,22 +3010,22 @@ L972:
 	inc	edx
 	cmp	edx, eax
 	mov	DWORD  [ebp-16], edx
-L964:
-	jb	L972
+L1063:
+	jb	L1071
 	add	esp, 8
 	pop	ebx
 	pop	esi
 	pop	edi
 	pop	ebp
 	ret
-L784:
+L883:
 	mov	DWORD  [ebp-16], 0
 	mov	edx, DWORD  [ebp+28]
 	sub	edx, 7
 	cmp	edx, 0
-	jbe	L691
+	jbe	L790
 	xor	eax, eax
-L796:
+L895:
 	mov	ecx, DWORD  [ebp+12]
 	mov	edi, DWORD  [ebp+16]
 	movups	xmm0,   [eax+ecx]
@@ -2695,16 +3039,16 @@ L796:
 	add	eax, 32
 	add	DWORD  [ebp-16], 8
 	cmp	edx, DWORD  [ebp-16]
-	ja	L796
-	jmp	L691
-L771:
+	ja	L895
+	jmp	L790
+L870:
 	mov	DWORD  [ebp-16], 0
 	mov	edx, DWORD  [ebp+28]
 	sub	edx, 7
 	cmp	edx, 0
-	jbe	L691
+	jbe	L790
 	xor	eax, eax
-L783:
+L882:
 	mov	ecx, DWORD  [ebp+12]
 	mov	edi, DWORD  [ebp+16]
 	movups	xmm0,   [eax+ecx]
@@ -2718,16 +3062,16 @@ L783:
 	add	eax, 32
 	add	DWORD  [ebp-16], 8
 	cmp	edx, DWORD  [ebp-16]
-	ja	L783
-	jmp	L691
-L758:
+	ja	L882
+	jmp	L790
+L857:
 	mov	DWORD  [ebp-16], 0
 	mov	edx, DWORD  [ebp+28]
 	sub	edx, 7
 	cmp	edx, 0
-	jbe	L691
+	jbe	L790
 	xor	eax, eax
-L770:
+L869:
 	mov	ecx, DWORD  [ebp+12]
 	mov	edi, DWORD  [ebp+16]
 	movaps	xmm0,   [eax+ecx]
@@ -2741,16 +3085,16 @@ L770:
 	add	eax, 32
 	add	DWORD  [ebp-16], 8
 	cmp	edx, DWORD  [ebp-16]
-	ja	L770
-	jmp	L691
-L745:
+	ja	L869
+	jmp	L790
+L844:
 	mov	DWORD  [ebp-16], 0
 	mov	edx, DWORD  [ebp+28]
 	sub	edx, 7
 	cmp	edx, 0
-	jbe	L691
+	jbe	L790
 	xor	eax, eax
-L757:
+L856:
 	mov	ecx, DWORD  [ebp+12]
 	mov	edi, DWORD  [ebp+16]
 	movaps	xmm0,   [eax+ecx]
@@ -2764,16 +3108,16 @@ L757:
 	add	eax, 32
 	add	DWORD  [ebp-16], 8
 	cmp	edx, DWORD  [ebp-16]
-	ja	L757
-	jmp	L691
-L732:
+	ja	L856
+	jmp	L790
+L831:
 	mov	DWORD  [ebp-16], 0
 	mov	edx, DWORD  [ebp+28]
 	sub	edx, 7
 	cmp	edx, 0
-	jbe	L691
+	jbe	L790
 	xor	eax, eax
-L744:
+L843:
 	mov	ecx, DWORD  [ebp+12]
 	mov	edi, DWORD  [ebp+16]
 	movups	xmm0,   [eax+ecx]
@@ -2787,16 +3131,16 @@ L744:
 	add	eax, 32
 	add	DWORD  [ebp-16], 8
 	cmp	edx, DWORD  [ebp-16]
-	ja	L744
-	jmp	L691
-L719:
+	ja	L843
+	jmp	L790
+L818:
 	mov	DWORD  [ebp-16], 0
 	mov	edx, DWORD  [ebp+28]
 	sub	edx, 7
 	cmp	edx, 0
-	jbe	L691
+	jbe	L790
 	xor	eax, eax
-L731:
+L830:
 	mov	ecx, DWORD  [ebp+12]
 	mov	edi, DWORD  [ebp+16]
 	movups	xmm0,   [eax+ecx]
@@ -2810,16 +3154,16 @@ L731:
 	add	eax, 32
 	add	DWORD  [ebp-16], 8
 	cmp	edx, DWORD  [ebp-16]
-	ja	L731
-	jmp	L691
-L706:
+	ja	L830
+	jmp	L790
+L805:
 	mov	DWORD  [ebp-16], 0
 	mov	edx, DWORD  [ebp+28]
 	sub	edx, 7
 	cmp	edx, 0
-	jbe	L691
+	jbe	L790
 	xor	eax, eax
-L718:
+L817:
 	mov	ecx, DWORD  [ebp+12]
 	mov	edi, DWORD  [ebp+16]
 	movaps	xmm0,   [eax+ecx]
@@ -2833,16 +3177,16 @@ L718:
 	add	eax, 32
 	add	DWORD  [ebp-16], 8
 	cmp	edx, DWORD  [ebp-16]
-	ja	L718
-	jmp	L691
-L693:
+	ja	L817
+	jmp	L790
+L792:
 	mov	DWORD  [ebp-16], 0
 	mov	edx, DWORD  [ebp+28]
 	sub	edx, 7
 	cmp	edx, 0
-	jbe	L691
+	jbe	L790
 	xor	eax, eax
-L705:
+L804:
 	mov	ecx, DWORD  [ebp+12]
 	mov	edi, DWORD  [ebp+16]
 	movaps	xmm0,   [eax+ecx]
@@ -2856,16 +3200,16 @@ L705:
 	add	eax, 32
 	add	DWORD  [ebp-16], 8
 	cmp	edx, DWORD  [ebp-16]
-	ja	L705
-	jmp	L691
-L899:
+	ja	L804
+	jmp	L790
+L998:
 	mov	DWORD  [ebp-16], 0
 	mov	edx, DWORD  [ebp+28]
 	sub	edx, 3
 	cmp	edx, 0
-	jbe	L813
+	jbe	L912
 	xor	eax, eax
-L910:
+L1009:
 	mov	ecx, DWORD  [ebp+16]
 	mov	edi, DWORD  [ebp+12]
 	movups	xmm1,   [eax+ecx]
@@ -2884,16 +3228,16 @@ L910:
 	add	eax, 16
 	add	DWORD  [ebp-16], 4
 	cmp	edx, DWORD  [ebp-16]
-	ja	L910
-	jmp	L813
-L887:
+	ja	L1009
+	jmp	L912
+L986:
 	mov	DWORD  [ebp-16], 0
 	mov	edx, DWORD  [ebp+28]
 	sub	edx, 3
 	cmp	edx, 0
-	jbe	L813
+	jbe	L912
 	xor	eax, eax
-L898:
+L997:
 	mov	ecx, DWORD  [ebp+16]
 	mov	edi, DWORD  [ebp+12]
 	movaps	xmm1,   [eax+ecx]
@@ -2912,16 +3256,16 @@ L898:
 	add	eax, 16
 	add	DWORD  [ebp-16], 4
 	cmp	edx, DWORD  [ebp-16]
-	ja	L898
-	jmp	L813
-L875:
+	ja	L997
+	jmp	L912
+L974:
 	mov	DWORD  [ebp-16], 0
 	mov	edx, DWORD  [ebp+28]
 	sub	edx, 3
 	cmp	edx, 0
-	jbe	L813
+	jbe	L912
 	xor	eax, eax
-L886:
+L985:
 	mov	ecx, DWORD  [ebp+16]
 	mov	edi, DWORD  [ebp+12]
 	movups	xmm1,   [eax+ecx]
@@ -2940,16 +3284,16 @@ L886:
 	add	eax, 16
 	add	DWORD  [ebp-16], 4
 	cmp	edx, DWORD  [ebp-16]
-	ja	L886
-	jmp	L813
-L863:
+	ja	L985
+	jmp	L912
+L962:
 	mov	DWORD  [ebp-16], 0
 	mov	edx, DWORD  [ebp+28]
 	sub	edx, 3
 	cmp	edx, 0
-	jbe	L813
+	jbe	L912
 	xor	eax, eax
-L874:
+L973:
 	mov	ecx, DWORD  [ebp+16]
 	mov	edi, DWORD  [ebp+12]
 	movaps	xmm1,   [eax+ecx]
@@ -2968,16 +3312,16 @@ L874:
 	add	eax, 16
 	add	DWORD  [ebp-16], 4
 	cmp	edx, DWORD  [ebp-16]
-	ja	L874
-	jmp	L813
-L851:
+	ja	L973
+	jmp	L912
+L950:
 	mov	DWORD  [ebp-16], 0
 	mov	edx, DWORD  [ebp+28]
 	sub	edx, 3
 	cmp	edx, 0
-	jbe	L813
+	jbe	L912
 	xor	eax, eax
-L862:
+L961:
 	mov	ecx, DWORD  [ebp+16]
 	mov	edi, DWORD  [ebp+12]
 	movups	xmm1,   [eax+ecx]
@@ -2996,16 +3340,16 @@ L862:
 	add	eax, 16
 	add	DWORD  [ebp-16], 4
 	cmp	edx, DWORD  [ebp-16]
-	ja	L862
-	jmp	L813
-L839:
+	ja	L961
+	jmp	L912
+L938:
 	mov	DWORD  [ebp-16], 0
 	mov	edx, DWORD  [ebp+28]
 	sub	edx, 3
 	cmp	edx, 0
-	jbe	L813
+	jbe	L912
 	xor	eax, eax
-L850:
+L949:
 	mov	ecx, DWORD  [ebp+16]
 	mov	edi, DWORD  [ebp+12]
 	movaps	xmm1,   [eax+ecx]
@@ -3024,16 +3368,16 @@ L850:
 	add	eax, 16
 	add	DWORD  [ebp-16], 4
 	cmp	edx, DWORD  [ebp-16]
-	ja	L850
-	jmp	L813
-L827:
+	ja	L949
+	jmp	L912
+L926:
 	mov	DWORD  [ebp-16], 0
 	mov	edx, DWORD  [ebp+28]
 	sub	edx, 3
 	cmp	edx, 0
-	jbe	L813
+	jbe	L912
 	xor	eax, eax
-L838:
+L937:
 	mov	ecx, DWORD  [ebp+16]
 	mov	edi, DWORD  [ebp+12]
 	movups	xmm1,   [eax+ecx]
@@ -3052,8 +3396,8 @@ L838:
 	add	eax, 16
 	add	DWORD  [ebp-16], 4
 	cmp	edx, DWORD  [ebp-16]
-	ja	L838
-	jmp	L813
+	ja	L937
+	jmp	L912
 align 2
 align 16
 sse__Z30RisaDeinterleaveApplyingWindowPPfPKfS_ijj:
@@ -3089,24 +3433,24 @@ sse__Z33RisaInterleaveOverlappingWindow_rPfPKPKfS_ijj:
 	mov	ebx, DWORD  [ebp+8]
 	cmp	esi, 1
 	mov	ecx, ebx
-	je	L979
+	je	L1078
 	cmp	esi, 2
-	je	L1132
+	je	L1231
 	mov	DWORD  [ebp-16], 0
 	mov	eax, DWORD  [ebp+28]
 	cmp	DWORD  [ebp-16], eax
-	jae	L1336
+	jae	L1435
 align 16
-L1337:
+L1436:
 	xor	edx, edx
 	cmp	edx, esi
-	jge	L1324
+	jge	L1423
 	mov	ebx, DWORD  [ebp+24]
 	mov	edi, DWORD  [ebp-16]
 	add	ebx, edi
 	mov	DWORD  [ebp-24], ebx
 align 16
-L1285:
+L1384:
 	mov	ebx, DWORD  [ebp+12]
 	mov	edi, DWORD  [ebp-16]
 	mov	eax, DWORD  [ebx+edx*4]
@@ -3119,20 +3463,20 @@ L1285:
 	fstp	DWORD  [ecx]
 	add	ecx, 4
 	cmp	edx, esi
-	jl	L1285
-L1324:
+	jl	L1384
+L1423:
 	inc	DWORD  [ebp-16]
 	mov	eax, DWORD  [ebp+28]
 	cmp	DWORD  [ebp-16], eax
-	jb	L1337
-L1336:
+	jb	L1436
+L1435:
 	add	esp, 12
 	pop	ebx
 	pop	esi
 	pop	edi
 	pop	ebp
 	ret
-L979:
+L1078:
 	mov	edx, DWORD  [ebp+12]
 	test	bl, 15
 	mov	edi, DWORD  [ebp+24]
@@ -3154,12 +3498,12 @@ L979:
 	mov	eax, edx
 	cmove	eax, ecx
 	cmp	DWORD  [ebp+28], 7
-	ja	L1331
-L989:
+	ja	L1430
+L1088:
 	mov	eax, DWORD  [ebp+28]
 	cmp	DWORD  [ebp-16], eax
-	jmp	L1325
-L1332:
+	jmp	L1424
+L1431:
 	mov	edx, DWORD  [ebp-16]
 	mov	ecx, DWORD  [ebp+16]
 	mov	edi, DWORD  [ebp+28]
@@ -3170,15 +3514,15 @@ L1332:
 	inc	edx
 	cmp	edx, edi
 	mov	DWORD  [ebp-16], edx
-L1325:
-	jb	L1332
+L1424:
+	jb	L1431
 	add	esp, 12
 	pop	ebx
 	pop	esi
 	pop	edi
 	pop	ebp
 	ret
-L1132:
+L1231:
 	mov	edx, DWORD  [ebp+12]
 	mov	eax, DWORD  [ebp+24]
 	mov	esi, DWORD  [edx]
@@ -3194,10 +3538,10 @@ L1132:
 	sbb	eax, eax
 	and	eax, 4
 	test	BYTE  [ebp-20], 15
-	je	L1333
-L1136:
+	je	L1432
+L1235:
 	lea	ecx, [eax+2]
-L1137:
+L1236:
 	test	BYTE  [ebp+16], 15
 	lea	edx, [ecx+1]
 	sete	al
@@ -3205,55 +3549,55 @@ L1137:
 	mov	eax, ecx
 	cmove	eax, edx
 	cmp	DWORD  [ebp+28], 3
-	jbe	L1143
+	jbe	L1242
 	cmp	eax, 7
-	ja	L1143
-	jmp	DWORD [L1273+eax*4]
+	ja	L1242
+	jmp	DWORD [L1372+eax*4]
 segment_data_aligned
 align 16
 align 4
-L1273:
-	DD L1145
-	DD L1161
-	DD L1177
-	DD L1193
+L1372:
+	DD L1244
+	DD L1260
+	DD L1276
+	DD L1292
+	DD L1308
+	DD L1324
+	DD L1340
+	DD L1356
+align 16
+segment_code
+L1430:
+	cmp	eax, 7
+	ja	L1088
+	jmp	DWORD [L1226+eax*4]
+segment_data_aligned
+align 16
+align 4
+L1226:
+	DD L1090
+	DD L1107
+	DD L1124
+	DD L1141
+	DD L1158
+	DD L1175
+	DD L1192
 	DD L1209
-	DD L1225
-	DD L1241
-	DD L1257
 align 16
 segment_code
-L1331:
-	cmp	eax, 7
-	ja	L989
-	jmp	DWORD [L1127+eax*4]
-segment_data_aligned
-align 16
-align 4
-L1127:
-	DD L991
-	DD L1008
-	DD L1025
-	DD L1042
-	DD L1059
-	DD L1076
-	DD L1093
-	DD L1110
-align 16
-segment_code
-L1333:
+L1432:
 	test	esi, 15
 	mov	ecx, eax
-	je	L1137
-	jmp	L1136
-L1145:
+	je	L1236
+	jmp	L1235
+L1244:
 	mov	DWORD  [ebp-16], 0
 	mov	edx, DWORD  [ebp+28]
 	sub	edx, 3
 	cmp	edx, 0
-	jbe	L1143
+	jbe	L1242
 	xor	eax, eax
-L1160:
+L1259:
 	movaps	xmm0,   [eax+esi]
 	mov	edi, DWORD  [ebp-20]
 	mov	ecx, DWORD  [ebp+16]
@@ -3275,12 +3619,12 @@ L1160:
 	add	eax, 16
 	add	DWORD  [ebp-16], 4
 	cmp	edx, DWORD  [ebp-16]
-	ja	L1160
-L1143:
+	ja	L1259
+L1242:
 	mov	edi, DWORD  [ebp+28]
 	cmp	DWORD  [ebp-16], edi
-	jmp	L1326
-L1334:
+	jmp	L1425
+L1433:
 	mov	eax, DWORD  [ebp-16]
 	mov	edx, DWORD  [ebp+16]
 	mov	ecx, DWORD  [ebp-20]
@@ -3296,323 +3640,323 @@ L1334:
 	inc	eax
 	cmp	eax, edi
 	mov	DWORD  [ebp-16], eax
-L1326:
-	jb	L1334
+L1425:
+	jb	L1433
 	add	esp, 12
 	pop	ebx
 	pop	esi
 	pop	edi
 	pop	ebp
 	ret
-L1110:
-	mov	DWORD  [ebp-16], 0
-	mov	edx, DWORD  [ebp+28]
-	sub	edx, 7
-	cmp	edx, 0
-	jbe	L989
-	xor	eax, eax
-L1126:
-	movups	xmm0,   [eax+esi]
-	mov	edi, DWORD  [ebp+16]
-	movups	xmm1,   [eax+edi]
-	mulps	xmm0, xmm1
-	movups	xmm1,   [eax+ebx]
-	addps	xmm0, xmm1
-	movups	  [eax+ebx], xmm0
-	movups	xmm1,   [eax+16+edi]
-	movups	xmm0,   [eax+16+esi]
-	mulps	xmm0, xmm1
-	movups	xmm1,   [eax+16+ebx]
-	addps	xmm0, xmm1
-	movups	  [eax+16+ebx], xmm0
-	add	eax, 32
-	add	DWORD  [ebp-16], 8
-	cmp	edx, DWORD  [ebp-16]
-	ja	L1126
-	jmp	L989
-L1093:
-	mov	DWORD  [ebp-16], 0
-	mov	edx, DWORD  [ebp+28]
-	sub	edx, 7
-	cmp	edx, 0
-	jbe	L989
-	xor	eax, eax
-L1109:
-	movups	xmm0,   [eax+esi]
-	mov	ecx, DWORD  [ebp+16]
-	movaps	xmm1,   [eax+ecx]
-	mulps	xmm0, xmm1
-	movups	xmm1,   [eax+ebx]
-	addps	xmm0, xmm1
-	movups	  [eax+ebx], xmm0
-	movaps	xmm1,   [eax+16+ecx]
-	movups	xmm0,   [eax+16+esi]
-	mulps	xmm0, xmm1
-	movups	xmm1,   [eax+16+ebx]
-	addps	xmm0, xmm1
-	movups	  [eax+16+ebx], xmm0
-	add	eax, 32
-	add	DWORD  [ebp-16], 8
-	cmp	edx, DWORD  [ebp-16]
-	ja	L1109
-	jmp	L989
-L1076:
-	mov	DWORD  [ebp-16], 0
-	mov	edx, DWORD  [ebp+28]
-	sub	edx, 7
-	cmp	edx, 0
-	jbe	L989
-	xor	eax, eax
-L1092:
-	movaps	xmm0,   [eax+esi]
-	mov	edi, DWORD  [ebp+16]
-	movups	xmm1,   [eax+edi]
-	mulps	xmm0, xmm1
-	movups	xmm1,   [eax+ebx]
-	addps	xmm0, xmm1
-	movups	  [eax+ebx], xmm0
-	movups	xmm1,   [eax+16+edi]
-	movaps	xmm0,   [eax+16+esi]
-	mulps	xmm0, xmm1
-	movups	xmm1,   [eax+16+ebx]
-	addps	xmm0, xmm1
-	movups	  [eax+16+ebx], xmm0
-	add	eax, 32
-	add	DWORD  [ebp-16], 8
-	cmp	edx, DWORD  [ebp-16]
-	ja	L1092
-	jmp	L989
-L1059:
-	mov	DWORD  [ebp-16], 0
-	mov	edx, DWORD  [ebp+28]
-	sub	edx, 7
-	cmp	edx, 0
-	jbe	L989
-	xor	eax, eax
-L1075:
-	movaps	xmm0,   [eax+esi]
-	mov	ecx, DWORD  [ebp+16]
-	movaps	xmm1,   [eax+ecx]
-	mulps	xmm0, xmm1
-	movups	xmm1,   [eax+ebx]
-	addps	xmm0, xmm1
-	movups	  [eax+ebx], xmm0
-	movaps	xmm1,   [eax+16+ecx]
-	movaps	xmm0,   [eax+16+esi]
-	mulps	xmm0, xmm1
-	movups	xmm1,   [eax+16+ebx]
-	addps	xmm0, xmm1
-	movups	  [eax+16+ebx], xmm0
-	add	eax, 32
-	add	DWORD  [ebp-16], 8
-	cmp	edx, DWORD  [ebp-16]
-	ja	L1075
-	jmp	L989
-L1042:
-	mov	DWORD  [ebp-16], 0
-	mov	edx, DWORD  [ebp+28]
-	sub	edx, 7
-	cmp	edx, 0
-	jbe	L989
-	xor	eax, eax
-L1058:
-	movups	xmm0,   [eax+esi]
-	mov	edi, DWORD  [ebp+16]
-	movups	xmm1,   [eax+edi]
-	mulps	xmm0, xmm1
-	movaps	xmm1,   [eax+ebx]
-	addps	xmm0, xmm1
-	movaps	  [eax+ebx], xmm0
-	movups	xmm1,   [eax+16+edi]
-	movups	xmm0,   [eax+16+esi]
-	mulps	xmm0, xmm1
-	movaps	xmm1,   [eax+16+ebx]
-	addps	xmm0, xmm1
-	movaps	  [eax+16+ebx], xmm0
-	add	eax, 32
-	add	DWORD  [ebp-16], 8
-	cmp	edx, DWORD  [ebp-16]
-	ja	L1058
-	jmp	L989
-L1025:
-	mov	DWORD  [ebp-16], 0
-	mov	edx, DWORD  [ebp+28]
-	sub	edx, 7
-	cmp	edx, 0
-	jbe	L989
-	xor	eax, eax
-L1041:
-	movups	xmm0,   [eax+esi]
-	mov	ecx, DWORD  [ebp+16]
-	movaps	xmm1,   [eax+ecx]
-	mulps	xmm0, xmm1
-	movaps	xmm1,   [eax+ebx]
-	addps	xmm0, xmm1
-	movaps	  [eax+ebx], xmm0
-	movaps	xmm1,   [eax+16+ecx]
-	movups	xmm0,   [eax+16+esi]
-	mulps	xmm0, xmm1
-	movaps	xmm1,   [eax+16+ebx]
-	addps	xmm0, xmm1
-	movaps	  [eax+16+ebx], xmm0
-	add	eax, 32
-	add	DWORD  [ebp-16], 8
-	cmp	edx, DWORD  [ebp-16]
-	ja	L1041
-	jmp	L989
-L1008:
-	mov	DWORD  [ebp-16], 0
-	mov	edx, DWORD  [ebp+28]
-	sub	edx, 7
-	cmp	edx, 0
-	jbe	L989
-	xor	eax, eax
-L1024:
-	movaps	xmm0,   [eax+esi]
-	mov	edi, DWORD  [ebp+16]
-	movups	xmm1,   [eax+edi]
-	mulps	xmm0, xmm1
-	movaps	xmm1,   [eax+ebx]
-	addps	xmm0, xmm1
-	movaps	  [eax+ebx], xmm0
-	movups	xmm1,   [eax+16+edi]
-	movaps	xmm0,   [eax+16+esi]
-	mulps	xmm0, xmm1
-	movaps	xmm1,   [eax+16+ebx]
-	addps	xmm0, xmm1
-	movaps	  [eax+16+ebx], xmm0
-	add	eax, 32
-	add	DWORD  [ebp-16], 8
-	cmp	edx, DWORD  [ebp-16]
-	ja	L1024
-	jmp	L989
-L991:
-	mov	DWORD  [ebp-16], 0
-	mov	edx, DWORD  [ebp+28]
-	sub	edx, 7
-	cmp	edx, 0
-	jbe	L989
-	xor	eax, eax
-L1007:
-	movaps	xmm0,   [eax+esi]
-	mov	ecx, DWORD  [ebp+16]
-	movaps	xmm1,   [eax+ecx]
-	mulps	xmm0, xmm1
-	movaps	xmm1,   [eax+ebx]
-	addps	xmm0, xmm1
-	movaps	  [eax+ebx], xmm0
-	movaps	xmm1,   [eax+16+ecx]
-	movaps	xmm0,   [eax+16+esi]
-	mulps	xmm0, xmm1
-	movaps	xmm1,   [eax+16+ebx]
-	addps	xmm0, xmm1
-	movaps	  [eax+16+ebx], xmm0
-	add	eax, 32
-	add	DWORD  [ebp-16], 8
-	cmp	edx, DWORD  [ebp-16]
-	ja	L1007
-	jmp	L989
-L1257:
-	mov	DWORD  [ebp-16], 0
-	mov	edx, DWORD  [ebp+28]
-	sub	edx, 3
-	cmp	edx, 0
-	jbe	L1143
-	xor	eax, eax
-L1272:
-	movups	xmm0,   [eax+esi]
-	mov	edi, DWORD  [ebp-20]
-	mov	ecx, DWORD  [ebp+16]
-	movups	xmm1,   [eax+edi]
-	movups	xmm2,   [eax+ecx]
-	mulps	xmm1, xmm2
-	mulps	xmm0, xmm2
-	movaps	xmm2, xmm1
-	movlhps	xmm2, xmm0
-	movhlps	xmm1, xmm0
-	movups	xmm0,   [ebx+eax*2]
-	shufps	xmm2, xmm2, 216
-	shufps	xmm1, xmm1, 114
-	addps	xmm0, xmm2
-	movups	  [ebx+eax*2], xmm0
-	movups	xmm0,   [ebx+16+eax*2]
-	addps	xmm0, xmm1
-	movups	  [ebx+16+eax*2], xmm0
-	add	eax, 16
-	add	DWORD  [ebp-16], 4
-	cmp	edx, DWORD  [ebp-16]
-	ja	L1272
-	jmp	L1143
-L1241:
-	mov	DWORD  [ebp-16], 0
-	mov	edx, DWORD  [ebp+28]
-	sub	edx, 3
-	cmp	edx, 0
-	jbe	L1143
-	xor	eax, eax
-L1256:
-	movups	xmm0,   [eax+esi]
-	mov	edi, DWORD  [ebp-20]
-	mov	ecx, DWORD  [ebp+16]
-	movups	xmm1,   [eax+edi]
-	movaps	xmm2,   [eax+ecx]
-	mulps	xmm1, xmm2
-	mulps	xmm0, xmm2
-	movaps	xmm2, xmm1
-	movlhps	xmm2, xmm0
-	movhlps	xmm1, xmm0
-	movups	xmm0,   [ebx+eax*2]
-	shufps	xmm2, xmm2, 216
-	shufps	xmm1, xmm1, 114
-	addps	xmm0, xmm2
-	movups	  [ebx+eax*2], xmm0
-	movups	xmm0,   [ebx+16+eax*2]
-	addps	xmm0, xmm1
-	movups	  [ebx+16+eax*2], xmm0
-	add	eax, 16
-	add	DWORD  [ebp-16], 4
-	cmp	edx, DWORD  [ebp-16]
-	ja	L1256
-	jmp	L1143
-L1225:
-	mov	DWORD  [ebp-16], 0
-	mov	edx, DWORD  [ebp+28]
-	sub	edx, 3
-	cmp	edx, 0
-	jbe	L1143
-	xor	eax, eax
-L1240:
-	movaps	xmm0,   [eax+esi]
-	mov	edi, DWORD  [ebp-20]
-	mov	ecx, DWORD  [ebp+16]
-	movaps	xmm1,   [eax+edi]
-	movups	xmm2,   [eax+ecx]
-	mulps	xmm1, xmm2
-	mulps	xmm0, xmm2
-	movaps	xmm2, xmm1
-	movlhps	xmm2, xmm0
-	movhlps	xmm1, xmm0
-	movups	xmm0,   [ebx+eax*2]
-	shufps	xmm2, xmm2, 216
-	shufps	xmm1, xmm1, 114
-	addps	xmm0, xmm2
-	movups	  [ebx+eax*2], xmm0
-	movups	xmm0,   [ebx+16+eax*2]
-	addps	xmm0, xmm1
-	movups	  [ebx+16+eax*2], xmm0
-	add	eax, 16
-	add	DWORD  [ebp-16], 4
-	cmp	edx, DWORD  [ebp-16]
-	ja	L1240
-	jmp	L1143
 L1209:
 	mov	DWORD  [ebp-16], 0
 	mov	edx, DWORD  [ebp+28]
+	sub	edx, 7
+	cmp	edx, 0
+	jbe	L1088
+	xor	eax, eax
+L1225:
+	movups	xmm0,   [eax+esi]
+	mov	edi, DWORD  [ebp+16]
+	movups	xmm1,   [eax+edi]
+	mulps	xmm0, xmm1
+	movups	xmm1,   [eax+ebx]
+	addps	xmm0, xmm1
+	movups	  [eax+ebx], xmm0
+	movups	xmm1,   [eax+16+edi]
+	movups	xmm0,   [eax+16+esi]
+	mulps	xmm0, xmm1
+	movups	xmm1,   [eax+16+ebx]
+	addps	xmm0, xmm1
+	movups	  [eax+16+ebx], xmm0
+	add	eax, 32
+	add	DWORD  [ebp-16], 8
+	cmp	edx, DWORD  [ebp-16]
+	ja	L1225
+	jmp	L1088
+L1192:
+	mov	DWORD  [ebp-16], 0
+	mov	edx, DWORD  [ebp+28]
+	sub	edx, 7
+	cmp	edx, 0
+	jbe	L1088
+	xor	eax, eax
+L1208:
+	movups	xmm0,   [eax+esi]
+	mov	ecx, DWORD  [ebp+16]
+	movaps	xmm1,   [eax+ecx]
+	mulps	xmm0, xmm1
+	movups	xmm1,   [eax+ebx]
+	addps	xmm0, xmm1
+	movups	  [eax+ebx], xmm0
+	movaps	xmm1,   [eax+16+ecx]
+	movups	xmm0,   [eax+16+esi]
+	mulps	xmm0, xmm1
+	movups	xmm1,   [eax+16+ebx]
+	addps	xmm0, xmm1
+	movups	  [eax+16+ebx], xmm0
+	add	eax, 32
+	add	DWORD  [ebp-16], 8
+	cmp	edx, DWORD  [ebp-16]
+	ja	L1208
+	jmp	L1088
+L1175:
+	mov	DWORD  [ebp-16], 0
+	mov	edx, DWORD  [ebp+28]
+	sub	edx, 7
+	cmp	edx, 0
+	jbe	L1088
+	xor	eax, eax
+L1191:
+	movaps	xmm0,   [eax+esi]
+	mov	edi, DWORD  [ebp+16]
+	movups	xmm1,   [eax+edi]
+	mulps	xmm0, xmm1
+	movups	xmm1,   [eax+ebx]
+	addps	xmm0, xmm1
+	movups	  [eax+ebx], xmm0
+	movups	xmm1,   [eax+16+edi]
+	movaps	xmm0,   [eax+16+esi]
+	mulps	xmm0, xmm1
+	movups	xmm1,   [eax+16+ebx]
+	addps	xmm0, xmm1
+	movups	  [eax+16+ebx], xmm0
+	add	eax, 32
+	add	DWORD  [ebp-16], 8
+	cmp	edx, DWORD  [ebp-16]
+	ja	L1191
+	jmp	L1088
+L1158:
+	mov	DWORD  [ebp-16], 0
+	mov	edx, DWORD  [ebp+28]
+	sub	edx, 7
+	cmp	edx, 0
+	jbe	L1088
+	xor	eax, eax
+L1174:
+	movaps	xmm0,   [eax+esi]
+	mov	ecx, DWORD  [ebp+16]
+	movaps	xmm1,   [eax+ecx]
+	mulps	xmm0, xmm1
+	movups	xmm1,   [eax+ebx]
+	addps	xmm0, xmm1
+	movups	  [eax+ebx], xmm0
+	movaps	xmm1,   [eax+16+ecx]
+	movaps	xmm0,   [eax+16+esi]
+	mulps	xmm0, xmm1
+	movups	xmm1,   [eax+16+ebx]
+	addps	xmm0, xmm1
+	movups	  [eax+16+ebx], xmm0
+	add	eax, 32
+	add	DWORD  [ebp-16], 8
+	cmp	edx, DWORD  [ebp-16]
+	ja	L1174
+	jmp	L1088
+L1141:
+	mov	DWORD  [ebp-16], 0
+	mov	edx, DWORD  [ebp+28]
+	sub	edx, 7
+	cmp	edx, 0
+	jbe	L1088
+	xor	eax, eax
+L1157:
+	movups	xmm0,   [eax+esi]
+	mov	edi, DWORD  [ebp+16]
+	movups	xmm1,   [eax+edi]
+	mulps	xmm0, xmm1
+	movaps	xmm1,   [eax+ebx]
+	addps	xmm0, xmm1
+	movaps	  [eax+ebx], xmm0
+	movups	xmm1,   [eax+16+edi]
+	movups	xmm0,   [eax+16+esi]
+	mulps	xmm0, xmm1
+	movaps	xmm1,   [eax+16+ebx]
+	addps	xmm0, xmm1
+	movaps	  [eax+16+ebx], xmm0
+	add	eax, 32
+	add	DWORD  [ebp-16], 8
+	cmp	edx, DWORD  [ebp-16]
+	ja	L1157
+	jmp	L1088
+L1124:
+	mov	DWORD  [ebp-16], 0
+	mov	edx, DWORD  [ebp+28]
+	sub	edx, 7
+	cmp	edx, 0
+	jbe	L1088
+	xor	eax, eax
+L1140:
+	movups	xmm0,   [eax+esi]
+	mov	ecx, DWORD  [ebp+16]
+	movaps	xmm1,   [eax+ecx]
+	mulps	xmm0, xmm1
+	movaps	xmm1,   [eax+ebx]
+	addps	xmm0, xmm1
+	movaps	  [eax+ebx], xmm0
+	movaps	xmm1,   [eax+16+ecx]
+	movups	xmm0,   [eax+16+esi]
+	mulps	xmm0, xmm1
+	movaps	xmm1,   [eax+16+ebx]
+	addps	xmm0, xmm1
+	movaps	  [eax+16+ebx], xmm0
+	add	eax, 32
+	add	DWORD  [ebp-16], 8
+	cmp	edx, DWORD  [ebp-16]
+	ja	L1140
+	jmp	L1088
+L1107:
+	mov	DWORD  [ebp-16], 0
+	mov	edx, DWORD  [ebp+28]
+	sub	edx, 7
+	cmp	edx, 0
+	jbe	L1088
+	xor	eax, eax
+L1123:
+	movaps	xmm0,   [eax+esi]
+	mov	edi, DWORD  [ebp+16]
+	movups	xmm1,   [eax+edi]
+	mulps	xmm0, xmm1
+	movaps	xmm1,   [eax+ebx]
+	addps	xmm0, xmm1
+	movaps	  [eax+ebx], xmm0
+	movups	xmm1,   [eax+16+edi]
+	movaps	xmm0,   [eax+16+esi]
+	mulps	xmm0, xmm1
+	movaps	xmm1,   [eax+16+ebx]
+	addps	xmm0, xmm1
+	movaps	  [eax+16+ebx], xmm0
+	add	eax, 32
+	add	DWORD  [ebp-16], 8
+	cmp	edx, DWORD  [ebp-16]
+	ja	L1123
+	jmp	L1088
+L1090:
+	mov	DWORD  [ebp-16], 0
+	mov	edx, DWORD  [ebp+28]
+	sub	edx, 7
+	cmp	edx, 0
+	jbe	L1088
+	xor	eax, eax
+L1106:
+	movaps	xmm0,   [eax+esi]
+	mov	ecx, DWORD  [ebp+16]
+	movaps	xmm1,   [eax+ecx]
+	mulps	xmm0, xmm1
+	movaps	xmm1,   [eax+ebx]
+	addps	xmm0, xmm1
+	movaps	  [eax+ebx], xmm0
+	movaps	xmm1,   [eax+16+ecx]
+	movaps	xmm0,   [eax+16+esi]
+	mulps	xmm0, xmm1
+	movaps	xmm1,   [eax+16+ebx]
+	addps	xmm0, xmm1
+	movaps	  [eax+16+ebx], xmm0
+	add	eax, 32
+	add	DWORD  [ebp-16], 8
+	cmp	edx, DWORD  [ebp-16]
+	ja	L1106
+	jmp	L1088
+L1356:
+	mov	DWORD  [ebp-16], 0
+	mov	edx, DWORD  [ebp+28]
 	sub	edx, 3
 	cmp	edx, 0
-	jbe	L1143
+	jbe	L1242
 	xor	eax, eax
-L1224:
+L1371:
+	movups	xmm0,   [eax+esi]
+	mov	edi, DWORD  [ebp-20]
+	mov	ecx, DWORD  [ebp+16]
+	movups	xmm1,   [eax+edi]
+	movups	xmm2,   [eax+ecx]
+	mulps	xmm1, xmm2
+	mulps	xmm0, xmm2
+	movaps	xmm2, xmm1
+	movlhps	xmm2, xmm0
+	movhlps	xmm1, xmm0
+	movups	xmm0,   [ebx+eax*2]
+	shufps	xmm2, xmm2, 216
+	shufps	xmm1, xmm1, 114
+	addps	xmm0, xmm2
+	movups	  [ebx+eax*2], xmm0
+	movups	xmm0,   [ebx+16+eax*2]
+	addps	xmm0, xmm1
+	movups	  [ebx+16+eax*2], xmm0
+	add	eax, 16
+	add	DWORD  [ebp-16], 4
+	cmp	edx, DWORD  [ebp-16]
+	ja	L1371
+	jmp	L1242
+L1340:
+	mov	DWORD  [ebp-16], 0
+	mov	edx, DWORD  [ebp+28]
+	sub	edx, 3
+	cmp	edx, 0
+	jbe	L1242
+	xor	eax, eax
+L1355:
+	movups	xmm0,   [eax+esi]
+	mov	edi, DWORD  [ebp-20]
+	mov	ecx, DWORD  [ebp+16]
+	movups	xmm1,   [eax+edi]
+	movaps	xmm2,   [eax+ecx]
+	mulps	xmm1, xmm2
+	mulps	xmm0, xmm2
+	movaps	xmm2, xmm1
+	movlhps	xmm2, xmm0
+	movhlps	xmm1, xmm0
+	movups	xmm0,   [ebx+eax*2]
+	shufps	xmm2, xmm2, 216
+	shufps	xmm1, xmm1, 114
+	addps	xmm0, xmm2
+	movups	  [ebx+eax*2], xmm0
+	movups	xmm0,   [ebx+16+eax*2]
+	addps	xmm0, xmm1
+	movups	  [ebx+16+eax*2], xmm0
+	add	eax, 16
+	add	DWORD  [ebp-16], 4
+	cmp	edx, DWORD  [ebp-16]
+	ja	L1355
+	jmp	L1242
+L1324:
+	mov	DWORD  [ebp-16], 0
+	mov	edx, DWORD  [ebp+28]
+	sub	edx, 3
+	cmp	edx, 0
+	jbe	L1242
+	xor	eax, eax
+L1339:
+	movaps	xmm0,   [eax+esi]
+	mov	edi, DWORD  [ebp-20]
+	mov	ecx, DWORD  [ebp+16]
+	movaps	xmm1,   [eax+edi]
+	movups	xmm2,   [eax+ecx]
+	mulps	xmm1, xmm2
+	mulps	xmm0, xmm2
+	movaps	xmm2, xmm1
+	movlhps	xmm2, xmm0
+	movhlps	xmm1, xmm0
+	movups	xmm0,   [ebx+eax*2]
+	shufps	xmm2, xmm2, 216
+	shufps	xmm1, xmm1, 114
+	addps	xmm0, xmm2
+	movups	  [ebx+eax*2], xmm0
+	movups	xmm0,   [ebx+16+eax*2]
+	addps	xmm0, xmm1
+	movups	  [ebx+16+eax*2], xmm0
+	add	eax, 16
+	add	DWORD  [ebp-16], 4
+	cmp	edx, DWORD  [ebp-16]
+	ja	L1339
+	jmp	L1242
+L1308:
+	mov	DWORD  [ebp-16], 0
+	mov	edx, DWORD  [ebp+28]
+	sub	edx, 3
+	cmp	edx, 0
+	jbe	L1242
+	xor	eax, eax
+L1323:
 	movaps	xmm0,   [eax+esi]
 	mov	edi, DWORD  [ebp-20]
 	mov	ecx, DWORD  [ebp+16]
@@ -3634,16 +3978,16 @@ L1224:
 	add	eax, 16
 	add	DWORD  [ebp-16], 4
 	cmp	edx, DWORD  [ebp-16]
-	ja	L1224
-	jmp	L1143
-L1193:
+	ja	L1323
+	jmp	L1242
+L1292:
 	mov	DWORD  [ebp-16], 0
 	mov	edx, DWORD  [ebp+28]
 	sub	edx, 3
 	cmp	edx, 0
-	jbe	L1143
+	jbe	L1242
 	xor	eax, eax
-L1208:
+L1307:
 	movups	xmm0,   [eax+esi]
 	mov	edi, DWORD  [ebp-20]
 	mov	ecx, DWORD  [ebp+16]
@@ -3665,16 +4009,16 @@ L1208:
 	add	eax, 16
 	add	DWORD  [ebp-16], 4
 	cmp	edx, DWORD  [ebp-16]
-	ja	L1208
-	jmp	L1143
-L1177:
+	ja	L1307
+	jmp	L1242
+L1276:
 	mov	DWORD  [ebp-16], 0
 	mov	edx, DWORD  [ebp+28]
 	sub	edx, 3
 	cmp	edx, 0
-	jbe	L1143
+	jbe	L1242
 	xor	eax, eax
-L1192:
+L1291:
 	movups	xmm0,   [eax+esi]
 	mov	edi, DWORD  [ebp-20]
 	mov	ecx, DWORD  [ebp+16]
@@ -3696,16 +4040,16 @@ L1192:
 	add	eax, 16
 	add	DWORD  [ebp-16], 4
 	cmp	edx, DWORD  [ebp-16]
-	ja	L1192
-	jmp	L1143
-L1161:
+	ja	L1291
+	jmp	L1242
+L1260:
 	mov	DWORD  [ebp-16], 0
 	mov	edx, DWORD  [ebp+28]
 	sub	edx, 3
 	cmp	edx, 0
-	jbe	L1143
+	jbe	L1242
 	xor	eax, eax
-L1176:
+L1275:
 	movaps	xmm0,   [eax+esi]
 	mov	edi, DWORD  [ebp-20]
 	mov	ecx, DWORD  [ebp+16]
@@ -3727,8 +4071,8 @@ L1176:
 	add	eax, 16
 	add	DWORD  [ebp-16], 4
 	cmp	edx, DWORD  [ebp-16]
-	ja	L1176
-	jmp	L1143
+	ja	L1275
+	jmp	L1242
 align 2
 align 16
 sse__Z31RisaInterleaveOverlappingWindowPfPKPKfS_ijj:
