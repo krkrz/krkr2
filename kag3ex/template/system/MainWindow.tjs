@@ -5095,7 +5095,7 @@ class KAGWindow extends Window
             if (wait <= 0) {
                 wait = 1;
             }
-            return wait;
+            return waitTime(wait, true);
         }
 
 		current.showPageBreakGlyph(pageBreak);
