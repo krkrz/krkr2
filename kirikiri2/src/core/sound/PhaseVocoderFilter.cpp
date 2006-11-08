@@ -205,7 +205,7 @@ void tTJSNI_PhaseVocoder::SetWindow(int window)
 	{
 	case 64: case 128: case 256: case 512: case 1024: case 2048: case 4096: case 8192:
 	case 16384: case 32768:
-		;
+		break;
 	default:
 		TVPThrowExceptionMessage(TVPInvalidWindowSizeMustBeIn64to32768);
 	}
@@ -218,7 +218,7 @@ void tTJSNI_PhaseVocoder::SetOverlap(int overlap)
 	switch(overlap)
 	{
 	case 2: case 4: case 8: case 16: case 32:
-		;
+		break;
 	default:
 		TVPThrowExceptionMessage(TVPInvalidOverlapCountMustBeIn2to32);
 	}
