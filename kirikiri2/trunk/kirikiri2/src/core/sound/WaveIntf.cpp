@@ -77,6 +77,25 @@ tjs_uint8 TVP_GUID_KSDATAFORMAT_SUBTYPE_IEEE_FLOAT[16] =
 
 
 
+
+//---------------------------------------------------------------------------
+// CPU specific optimized routine prototypes
+//---------------------------------------------------------------------------
+extern "C"
+{
+#ifdef _WIN32
+#define TVP_CDECL __cdecl
+#endif
+void TVP_CDECL sse__Z32RisaPCMConvertLoopInt16ToFloat32PvPKvj(void * dest, const void * src, size_t numsamples);
+void TVP_CDECL def__Z32RisaPCMConvertLoopInt16ToFloat32PvPKvj(void * dest, const void * src, size_t numsamples);
+void TVP_CDECL sse__Z32RisaPCMConvertLoopFloat32ToInt16PvPKvj(void * dest, const void * src, size_t numsamples);
+void TVP_CDECL def__Z32RisaPCMConvertLoopFloat32ToInt16PvPKvj(void * dest, const void * src, size_t numsamples);
+}
+extern tjs_uint32 TVPCPUType;
+#include "tvpgl_ia32_intf.h"
+
+
+
 //---------------------------------------------------------------------------
 // Wave format convertion routines
 //---------------------------------------------------------------------------
@@ -91,22 +110,15 @@ static void TVPConvertFloatPCMTo16bits(tjs_int16 *output, const float *input,
 	if(!downmix)
 	{
 		tjs_int total = channels * count;
-		while(total--)
-		{
-			float t = *(input ++) * 32768.0;
-			if(t > 0)
-			{
-				int i = (int)(t + 0.5);
-				if(i > 32767) i = 32767;
-				*(output++) = (tjs_int16)i;
-			}
-			else
-			{
-				int i = (int)(t - 0.5);
-				if(i < -32768) i = -32768;
-				*(output++) = (tjs_int16)i;
-			}
-		}
+		bool use_sse =
+				(TVPCPUType & TVP_CPU_HAS_MMX) &&
+				(TVPCPUType & TVP_CPU_HAS_SSE) &&
+				(TVPCPUType & TVP_CPU_HAS_CMOV);
+
+		if(use_sse)
+			sse__Z32RisaPCMConvertLoopFloat32ToInt16PvPKvj(output, input, total);
+		else
+			def__Z32RisaPCMConvertLoopFloat32ToInt16PvPKvj(output, input, total);
 	}
 	else
 	{
@@ -342,20 +354,15 @@ static void TVPConvertIntegerPCMToFloat(float *output, const void *input,
 		if(validbits == 16)
 		{
 			// most popular
-			tjs_int n = 0;
-			total -= 3;
-			for(   ; n < total; n += 4)
-			{
-				output[n  ] = (float)(p[n  ] * (1.0 / 32768));
-				output[n+1] = (float)(p[n+1] * (1.0 / 32768));
-				output[n+2] = (float)(p[n+2] * (1.0 / 32768));
-				output[n+3] = (float)(p[n+3] * (1.0 / 32768));
-			}
-			total += 3;
-			for(   ; n < total; n ++)
-			{
-				output[n  ] = (float)(p[n  ] * (1.0 / 32768));
-			}
+			bool use_sse =
+					(TVPCPUType & TVP_CPU_HAS_MMX) &&
+					(TVPCPUType & TVP_CPU_HAS_SSE) &&
+					(TVPCPUType & TVP_CPU_HAS_CMOV);
+
+			if(use_sse)
+				sse__Z32RisaPCMConvertLoopInt16ToFloat32PvPKvj(output, p, total);
+			else
+				def__Z32RisaPCMConvertLoopInt16ToFloat32PvPKvj(output, p, total);
 		}
 		else
 		{
