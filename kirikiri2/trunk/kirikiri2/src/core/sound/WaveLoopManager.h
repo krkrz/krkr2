@@ -31,10 +31,6 @@
 	#include "WaveReader.h"
 #endif
 
-#ifndef TVP_IN_LOOP_TUNER
-	#include "PhaseVocoderDSP.h"
-#endif
-
 //---------------------------------------------------------------------------
 #ifdef TVP_IN_LOOP_TUNER
 	typedef AnsiString tTVPLabelStringType;
