@@ -170,7 +170,7 @@ iTJSNativeInstance *tTJSNC_PhaseVocoder::CreateNativeInstance()
 tTJSNI_PhaseVocoder::tTJSNI_PhaseVocoder()
 {
 	Window = 4096;
-	Overlap = 8;
+	Overlap = 0;
 	Pitch = 1.0;
 	Time = 1.0;
 
@@ -270,6 +270,7 @@ void tTJSNI_PhaseVocoder::Update(void)
 	{
 		PhaseVocoder->SetFrequencyScale(Pitch);
 		PhaseVocoder->SetTimeScale(Time);
+		PhaseVocoder->SetOverSampling(Overlap);
 	}
 }
 //---------------------------------------------------------------------------
@@ -313,10 +314,11 @@ void tTJSNI_PhaseVocoder::Decode(void *dest, tjs_uint samples, tjs_uint &written
 	if(!PhaseVocoder)
 	{
 		// PhaseVocoder ‚ðì¬
-		tRisaPhaseVocoderDSP * pv = new tRisaPhaseVocoderDSP(Window, Overlap,
+		tRisaPhaseVocoderDSP * pv = new tRisaPhaseVocoderDSP(Window,
 					InputFormat.SamplesPerSec, InputFormat.Channels);
 		pv->SetFrequencyScale(Pitch);
 		pv->SetTimeScale(Time);
+		pv->SetOverSampling(Overlap);
 		PhaseVocoder = pv; // now visible from other function
 	}
 
