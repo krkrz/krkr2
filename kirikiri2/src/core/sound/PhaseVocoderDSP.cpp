@@ -300,12 +300,15 @@ tRisaPhaseVocoderDSP::tStatus tRisaPhaseVocoderDSP::Process()
 	// パラメータの再計算の必要がある場合は再計算をする
 	if(RebuildParams)
 	{
-		// 窓関数の計算(ここではHamming窓)
-		float output_volume = 
-			TimeScale / FrameSize  / sqrt(FrequencyScale) / OverSampling * 4;
+		// 窓関数の計算(ここではHanning窓)
+		float output_volume =
+			TimeScale / FrameSize  / sqrt(FrequencyScale) / OverSampling * 2 * (8.0/3.0);
+				//         1            1
+				// 8/3 =  ∫  1dx  /   ∫   hanning(x)dx
+				//         0            0
 		for(unsigned int i = 0; i < FrameSize; i++)
 		{
-			double window = cos(2.0*M_PI*((double)i+0.5)/FrameSize) * -0.46 + 0.54;
+			double window = cos(2.0*M_PI*((double)i+0.5)/FrameSize) * -0.5 + 0.5;
 			InputWindow[i]  = (float)(window);
 			OutputWindow[i] = (float)(window *output_volume);
 		}
