@@ -53,9 +53,6 @@ protected:
 	tRisaRingBuffer<float> InputBuffer; //!< 入力用リングバッファ
 	tRisaRingBuffer<float> OutputBuffer; //!< 出力用リングバッファ
 
-#define RISA_PV_MAX_TIME_SCALE  1.95 //!< 最大の time scale 値
-#define RISA_PV_MIN_TIME_SCALE  0.25 //!< 最小の time scale 値
-
 	bool	RebuildParams; //!< 内部的なパラメータなどを再構築しなければならないときに真
 
 	unsigned long LastSynthPhaseAdjustCounter; //!< LastSynthPhase を補正する周期をはかるためのカウンタ
