@@ -217,6 +217,7 @@ void tTJSNI_PhaseVocoder::SetOverlap(int overlap)
 	// 値をチェック
 	switch(overlap)
 	{
+	case 0:
 	case 2: case 4: case 8: case 16: case 32:
 		break;
 	default:
