@@ -167,8 +167,6 @@ void tRisaPhaseVocoderDSP::SetTimeScale(float v)
 	if(TimeScale != v)
 	{
 		TimeScale = v;
-		if(TimeScale < RISA_PV_MIN_TIME_SCALE) TimeScale = RISA_PV_MIN_TIME_SCALE;
-		else if(TimeScale > RISA_PV_MAX_TIME_SCALE) TimeScale = RISA_PV_MAX_TIME_SCALE;
 		RebuildParams = true;
 		OutputHopSize = static_cast<unsigned int>(InputHopSize * TimeScale) & ~1;
 			// ↑ 偶数にアライン(重要)
@@ -300,15 +298,19 @@ tRisaPhaseVocoderDSP::tStatus tRisaPhaseVocoderDSP::Process()
 	// パラメータの再計算の必要がある場合は再計算をする
 	if(RebuildParams)
 	{
-		// 窓関数の計算(ここではHanning窓)
-		float output_volume =
-			TimeScale / FrameSize  / sqrt(FrequencyScale) / OverSampling * 2 * (8.0/3.0);
-				//         1            1
-				// 8/3 =  ∫  1dx  /   ∫   hanning(x)dx
+		// 窓関数の計算(ここではVorbis I 窓)
+		float recovery_of_loss_of_vorbis_window = 2.0;
+				//         1            1         2
+				//  2  =  ∫  1dx  /   ∫   vorbis (x) dx
 				//         0            0
+				// where vobis = vorbis I window function
+		float output_volume =
+			TimeScale / FrameSize  / sqrt(FrequencyScale) / OverSampling * 2 *
+											recovery_of_loss_of_vorbis_window;
 		for(unsigned int i = 0; i < FrameSize; i++)
 		{
-			double window = cos(2.0*M_PI*((double)i+0.5)/FrameSize) * -0.5 + 0.5;
+			double x = ((double)i+0.5)/FrameSize;
+			double window = sin(M_PI/2*sin(M_PI*x)*sin(M_PI*x));
 			InputWindow[i]  = (float)(window);
 			OutputWindow[i] = (float)(window *output_volume);
 		}
