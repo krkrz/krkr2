@@ -72,12 +72,11 @@ public:
 public:
 	//! @brief		コンストラクタ
 	//! @param		framesize		フレームサイズ(2の累乗, 16～)
-	//! @param		oversamp		オーバーサンプリング係数(2の累乗, 2～)
 	//! @param		frequency		入力PCMのサンプリングレート
 	//! @param		channels		入力PCMのチャンネル数
 	//! @note		音楽用ではframesize=4096,oversamp=16ぐらいがよく、
 	//! @note		ボイス用ではframesize=256,oversamp=8ぐらいがよい。
-	tRisaPhaseVocoderDSP(unsigned int framesize, unsigned int oversamp,
+	tRisaPhaseVocoderDSP(unsigned int framesize,
 					unsigned int frequency, unsigned int channels);
 
 	//! @brief		デストラクタ
@@ -94,6 +93,14 @@ public:
 	//! @brief		周波数軸方向のスケールを設定する
 	//! @param		v     スケール
 	void SetFrequencyScale(float v);
+
+	//! @brief		オーバーサンプリング係数を取得する
+	//! @return		オーバーサンプリング係数
+	unsigned int GetOverSampling() const { return OverSampling; }
+
+	//! @brief		オーバーサンプリング係数を設定する
+	//! @param		v		係数 ( 0 = 時間軸方向のスケールに従って自動的に設定 )
+	void SetOverSampling(unsigned int v);
 
 	unsigned int GetInputHopSize() const { return InputHopSize; } //!< InputHopSizeを得る
 	unsigned int GetOutputHopSize() const { return OutputHopSize; } //!< OutputHopSize を得る

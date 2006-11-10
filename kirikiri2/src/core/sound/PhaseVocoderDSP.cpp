@@ -60,7 +60,7 @@ void TVP_CDECL def__Z30RisaDeinterleaveApplyingWindowPPfPKfS_ijj(float * dest[],
 
 //---------------------------------------------------------------------------
 tRisaPhaseVocoderDSP::tRisaPhaseVocoderDSP(
-				unsigned int framesize, unsigned int oversamp,
+				unsigned int framesize,
 				unsigned int frequency, unsigned int channels) :
 					InputBuffer(framesize * 4 * channels),
 					OutputBuffer(framesize * 4 * channels)
@@ -80,7 +80,7 @@ tRisaPhaseVocoderDSP::tRisaPhaseVocoderDSP(
 	LastSynthPhase = NULL;
 
 	FrameSize = framesize;
-	OverSampling = oversamp;
+	OverSampling = 8;
 	Frequency = frequency;
 	Channels = channels;
 	InputHopSize = OutputHopSize = FrameSize / OverSampling;
@@ -168,6 +168,7 @@ void tRisaPhaseVocoderDSP::SetTimeScale(float v)
 	{
 		TimeScale = v;
 		RebuildParams = true;
+		InputHopSize = OutputHopSize = FrameSize / OverSampling;
 		OutputHopSize = static_cast<unsigned int>(InputHopSize * TimeScale) & ~1;
 			// ↑ 偶数にアライン(重要)
 			// 複素数 re,im, re,im, ... の配列が逆FFTにより同数の(複素数の個数×2の)
@@ -184,6 +185,32 @@ void tRisaPhaseVocoderDSP::SetFrequencyScale(float v)
 	if(FrequencyScale != v)
 	{
 		FrequencyScale = v;
+		RebuildParams = true;
+	}
+}
+//---------------------------------------------------------------------------
+
+
+//---------------------------------------------------------------------------
+void tRisaPhaseVocoderDSP::SetOverSampling(unsigned int v)
+{
+	if(v == 0)
+	{
+		// TimeScale に従って値を設定
+		// これらの閾値は実際のリスニングにより決定された数値であり、
+		// 論理的な根拠はない。
+		if(TimeScale <= 0.2) v = 2;
+		else if(TimeScale <= 1.2) v = 4;
+		else v = 8;
+	}
+
+	if(OverSampling != v)
+	{
+		OverSampling = v;
+		InputHopSize = OutputHopSize = FrameSize / OverSampling;
+		OutputHopSize = static_cast<unsigned int>(InputHopSize * TimeScale) & ~1;
+		// ここのOutputHopSizeの計算については tRisaPhaseVocoderDSP::SetTimeScale
+		// も参照のこと
 		RebuildParams = true;
 	}
 }
