@@ -471,13 +471,13 @@ sse__Z33_RisaPCMConvertLoopInt16ToFloat32PvPKvj:
 	cmp	edx, edi
 	push	ebx
 	mov	ebx, DWORD  [ebp+8]
-	jae	tmTLCCQq
+	jae	zsTGDHiV
 	test	bl, 15
-	je	tmTLCCQq
+	je	zsTGDHiV
 	movss	xmm1,   [HocIkmZw]
 	mov	ecx, ebx
 align 16
-CTCoDgYp:
+fdfjAMiY:
 	movsx	eax, WORD  [esi+edx*2]
 	add	ecx, 4
 	cvtsi2ss	xmm0, eax
@@ -485,18 +485,20 @@ CTCoDgYp:
 	movss	   [ebx+edx*4], xmm0
 	inc	edx
 	cmp	edx, edi
-	jae	tmTLCCQq
+	jae	zsTGDHiV
 	test	cl, 15
-	jne	CTCoDgYp
+	jne	fdfjAMiY
 align 16
-tmTLCCQq:
+zsTGDHiV:
+	cmp	edi, 7
+	jbe	LRoZftGP
 	lea	eax, [edi-7]
 	cmp	eax, edx
-	jbe	OnQMUDQj
+	jbe	OnQNUDqh
 	pxor	mm3, mm3
 	xorps	xmm1, xmm1
 align 16
-KSOJhgTg:
+KSOJhgRg:
 	movq	mm0, QWORD  [esi+edx*2]
 	movq	mm1, mm3
 	movaps	xmm0, xmm1
@@ -523,22 +525,23 @@ KSOJhgTg:
 	movaps	  [ebx+16+edx*4], xmm0
 	add	edx, 8
 	cmp	eax, edx
-	ja	KSOJhgTg
-OnQMUDQj:
+	ja	KSOJhgRg
+OnQNUDqh:
 	emms
+LRoZftGP:
 	cmp	edx, edi
-	jae	oIgCqRJX
+	jae	oIgCqRKX
 	movss	xmm1,   [HocIkmZw]
 align 16
-xwYEHetH:
+xwYWHrtH:
 	movsx	eax, WORD  [esi+edx*2]
 	cvtsi2ss	xmm0, eax
 	mulss	xmm0, xmm1
 	movss	   [ebx+edx*4], xmm0
 	inc	edx
 	cmp	edx, edi
-	jb	xwYEHetH
-oIgCqRJX:
+	jb	xwYWHrtH
+oIgCqRKX:
 	pop	ebx
 	pop	esi
 	pop	edi
@@ -576,7 +579,7 @@ align 4
 iADDDJSn:
 	DD -956301312
 align 4
-bvRaeqxC:
+bvEaeqxC:
 	DD 1056964608
 align 16
 segment_code
@@ -594,22 +597,22 @@ sse__Z33_RisaPCMConvertLoopFloat32ToInt16PvPKvj:
 	mov	esi, DWORD  [ebp+8]
 	mov	ebx, DWORD  [ebp+12]
 	cmp	edx, edi
-	jae	lFFUbYAx
+	jae	mOVPPPZW
 	test	bl, 15
-	je	lFFUbYAx
+	je	mOVPPPZW
 	movss	xmm0,   [pmTimEhK]
 	xorps	xmm2, xmm2
 	mov	ecx, ebx
 	movss	xmm1,   [iADDDJSn]
-	fld	DWORD [bvRaeqxC]
-	jmp	PsViUjxU
+	fld	DWORD [bvEaeqxC]
+	jmp	EfEVdist
 align 8
-qtFHRHWQ:
+qtFKRHQQ:
 	movss	   [ebp-28], xmm1
 	mov	eax, -32768
 	fld	DWORD  [ebp-28]
 	fcomip	st0, st1
-	ja	XpiUBsWR
+	ja	YtmcfpsV
 	fnstcw	WORD  [ebp-18]
 	fld	st1
 	fsubr	st0, st1
@@ -623,7 +626,7 @@ qtFHRHWQ:
 	fld	DWORD  [ebp-28]
 	movzx	eax, WORD  [ebp-22]
 	fcomip	st0, st1
-	ja	XpiUBsWR
+	ja	YtmcfpsV
 	fld	st1
 	faddp	st1, st0
 	fldcw	WORD  [ebp-20]
@@ -634,38 +637,40 @@ qtFHRHWQ:
 	inc	edx
 	add	ecx, 4
 	cmp	edx, edi
-	jae	beywJpIk
+	jae	sPPnwazs
 align 16
-kquMXoPO:
+kKuqIIAh:
 	test	cl, 15
-	je	beywJpIk
-PsViUjxU:
+	je	sPPnwazs
+EfEVdist:
 	movss	   [ebp-28], xmm0
 	mov	eax, 32767
 	fld	DWORD  [ebp-28]
 	fmul	DWORD  [ebx+edx*4]
 	fld	DWORD  [ebp-28]
 	fcomip	st0, st1
-	jae	qtFHRHWQ
-XpiUBsWR:
+	jae	qtFKRHQQ
+YtmcfpsV:
 	fstp	st0
 	mov	WORD  [esi+edx*2], ax
 	inc	edx
 	add	ecx, 4
 	cmp	edx, edi
-	jb	kquMXoPO
-beywJpIk:
+	jb	kKuqIIAh
+sPPnwazs:
 	fstp	st0
-lFFUbYAx:
+mOVPPPZW:
+	cmp	edi, 7
+	jbe	xOIggKzU
 	stmxcsr	DWORD  [ebp-16]
 	and	DWORD  [ebp-16], -24577
 	ldmxcsr	DWORD  [ebp-16]
 	lea	eax, [edi-7]
 	cmp	eax, edx
-	jbe	KhernfxC
+	jbe	KgYrMfvZ
 	movaps	xmm2,  [RISA_V_VEC_MAGNIFY]
 align 16
-UnVLflnT:
+UnVOflnT:
 	movaps	xmm0,   [ebx+edx*4]
 	mulps	xmm0, xmm2
 	movaps	xmm1, xmm0
@@ -684,23 +689,24 @@ UnVLflnT:
 	movq	QWORD  [esi+8+edx*2], mm1
 	add	edx, 8
 	cmp	eax, edx
-	ja	UnVLflnT
-KhernfxC:
+	ja	UnVOflnT
+KgYrMfvZ:
 	emms
+xOIggKzU:
 	cmp	edx, edi
-	jae	oGJWwgYi
+	jae	lGJWwgYi
 	movss	xmm0,   [pmTimEhK]
 	xorps	xmm2, xmm2
 	movss	xmm1,   [iADDDJSn]
-	fld	DWORD [bvRaeqxC]
-	jmp	QoYGbvKS
+	fld	DWORD [bvEaeqxC]
+	jmp	OoYGbvKJ
 align 8
-sSDCuLOk:
+zSDCuLOh:
 	movss	   [ebp-28], xmm1
 	mov	eax, -32768
 	fld	DWORD  [ebp-28]
 	fcomip	st0, st1
-	ja	vLiWUstY
+	ja	MLiWUstY
 	fnstcw	WORD  [ebp-18]
 	fld	st1
 	fsubr	st0, st1
@@ -714,7 +720,7 @@ sSDCuLOk:
 	fld	DWORD  [ebp-28]
 	movzx	eax, WORD  [ebp-22]
 	fcomip	st0, st1
-	ja	vLiWUstY
+	ja	MLiWUstY
 	fld	st1
 	faddp	st1, st0
 	fldcw	WORD  [ebp-20]
@@ -724,25 +730,25 @@ sSDCuLOk:
 	mov	WORD  [esi+edx*2], ax
 	inc	edx
 	cmp	edx, edi
-	jae	iaSSwrMm
+	jae	iaSSwrMN
 align 16
-QoYGbvKS:
+OoYGbvKJ:
 	movss	   [ebp-28], xmm0
 	mov	eax, 32767
 	fld	DWORD  [ebp-28]
 	fmul	DWORD  [ebx+edx*4]
 	fld	DWORD  [ebp-28]
 	fcomip	st0, st1
-	jae	sSDCuLOk
-vLiWUstY:
+	jae	zSDCuLOh
+MLiWUstY:
 	fstp	st0
 	mov	WORD  [esi+edx*2], ax
 	inc	edx
 	cmp	edx, edi
-	jb	QoYGbvKS
-iaSSwrMm:
+	jb	OoYGbvKJ
+iaSSwrMN:
 	fstp	st0
-oGJWwgYi:
+lGJWwgYi:
 	add	esp, 16
 	pop	ebx
 	pop	esi
@@ -836,11 +842,11 @@ _Z6cft1stiPfS_:
 	mulps	xmm5, xmm4
 	movlps	  [edx+40], xmm5
 	movhps	  [edx+56], xmm5
-	jge	EUXKuAGF
+	jge	EUXKuAGH
 	add	edx, 64
 	mov	eax, ecx
 align 16
-QxhRlsnm:
+qjhRlsnm:
 	add	eax, 8
 	add	ecx, 16
 	movaps	xmm2, xmm7
@@ -956,8 +962,8 @@ QxhRlsnm:
 	movhps	  [edx+56], xmm5
 	add	edx, 64
 	cmp	ebx, esi
-	jl	QxhRlsnm
-EUXKuAGF:
+	jl	qjhRlsnm
+EUXKuAGH:
 	pop	ebx
 	pop	esi
 	pop	ebp
@@ -978,11 +984,11 @@ _Z6cftmdliiPfS_:
 	mov	DWORD  [ebp-80], eax
 	lea	eax, [0+edx*4]
 	mov	DWORD  [ebp-96], eax
-	jge	iMkApxdJ
+	jge	pMkApxsX
 	mov	edx, ecx
 	lea	eax, [edi+edi*2]
 align 16
-egGhrjqL:
+egJhrjqL:
 	movaps	xmm2,   [edx]
 	movaps	xmm1,   [edx+edi*4]
 	movaps	xmm0,   [edx+edi*8]
@@ -1009,8 +1015,8 @@ egGhrjqL:
 	movaps	  [esi+eax*4], xmm2
 	lea	eax, [eax+4]
 	cmp	DWORD  [ebp-84], edi
-	jl	egGhrjqL
-iMkApxdJ:
+	jl	egJhrjqL
+pMkApxsX:
 	mov	edx, DWORD  [ebp+8]
 	mov	ecx, DWORD  [ebp-96]
 	mov	eax, DWORD  [edx+8]
@@ -1020,7 +1026,7 @@ iMkApxdJ:
 	movss	xmm6,    [ebp-28]
 	cmp	ecx, DWORD  [ebp-84]
 	shufps	xmm6, xmm6, 0
-	jle	UFjLiNVV
+	jle	UFjLpNVX
 	mov	ebx, DWORD  [ebp-84]
 	lea	eax, [edi+edi*2]
 	lea	edx, [esi+ebx*4]
@@ -1073,7 +1079,7 @@ nGoObRWa:
 	lea	eax, [eax+4]
 	cmp	ecx, DWORD  [ebp-84]
 	jg	nGoObRWa
-UFjLiNVV:
+UFjLpNVX:
 	mov	DWORD  [ebp-92], 0
 	mov	eax, DWORD  [ebp-96]
 	mov	edx, DWORD  [ebp-80]
@@ -1081,7 +1087,7 @@ UFjLiNVV:
 	cmp	eax, edx
 	mov	DWORD  [ebp-188], eax
 	mov	DWORD  [ebp-88], eax
-	jge	ZFzXkrMz
+	jge	ZFzXkrMc
 	lea	ecx, [edi+edi*2]
 	add	eax, edi
 	mov	DWORD  [ebp-196], ecx
@@ -1148,12 +1154,12 @@ LVyLHPAK:
 	movaps	  [ebp-168], xmm3
 	xorps	xmm7, xmm1
 	mov	DWORD  [ebp-84], eax
-	jle	cQEuDyBe
+	jle	cQEiNyBe
 	mov	ecx, DWORD  [ebp-196]
 	lea	edx, [esi+eax*4]
 	lea	eax, [ecx+eax]
 align 16
-VdOUsvFN:
+VsDUsvFN:
 	movaps	xmm3,   [edx]
 	movaps	xmm0,   [edx+edi*4]
 	movaps	xmm4,   [edx+edi*8]
@@ -1203,9 +1209,9 @@ VdOUsvFN:
 	lea	eax, [eax+4]
 	mov	ebx, DWORD  [ebp-84]
 	cmp	DWORD  [ebp-200], ebx
-	jg	VdOUsvFN
+	jg	VsDUsvFN
 	movaps	xmm1,  [sse_PCS_NRNR]
-cQEuDyBe:
+cQEiNyBe:
 	mov	eax, DWORD  [ebp-212]
 	mov	edx, DWORD  [ebp+8]
 	movss	xmm2,    [edx+12+eax*4]
@@ -1266,13 +1272,13 @@ cQEuDyBe:
 	movaps	  [ebp-152], xmm2
 	mov	DWORD  [ebp-84], eax
 	mov	DWORD  [ebp-192], ecx
-	jg	oeaeQjUZ
-	jmp	vBlxQwTf
+	jg	oeauQjUZ
+	jmp	vBlxQwEs
 align 8
-BRpCrvaR:
+BRpCrvaq:
 	mov	edx, DWORD  [ebp-84]
 	lea	ecx, [edx+edi]
-oeaeQjUZ:
+oeauQjUZ:
 	movaps	xmm0,   [esi+ecx*4]
 	lea	ebx, [ecx+edi]
 	mov	eax, DWORD  [ebp-84]
@@ -1328,15 +1334,15 @@ oeaeQjUZ:
 	movaps	  [esi+ecx*4], xmm0
 	addps	xmm3, xmm5
 	movaps	  [esi+ebx*4], xmm3
-	jg	BRpCrvaR
-vBlxQwTf:
+	jg	BRpCrvaq
+vBlxQwEs:
 	mov	ecx, DWORD  [ebp-188]
 	mov	ebx, DWORD  [ebp-80]
 	add	DWORD  [ebp-88], ecx
 	add	DWORD  [ebp-200], ecx
 	cmp	DWORD  [ebp-88], ebx
 	jl	LVyLHPAK
-ZFzXkrMz:
+ZFzXkrMc:
 	add	esp, 204
 	pop	ebx
 	pop	esi
@@ -1358,17 +1364,17 @@ _Z6bitrv2iPiPf:
 	mov	DWORD  [ebp-16], edx
 	mov	DWORD  [edx], 0
 	mov	DWORD  [ebp-32], 1
-	jle	fWevxzxY
+	jle	fqenxzxW
 align 16
-QhEGvjvh:
+wdLGvjvh:
 	mov	DWORD  [ebp-24], 0
 	mov	eax, DWORD  [ebp-32]
 	sar	ecx, 1
 	cmp	DWORD  [ebp-24], eax
-	jge	WPidVxLf
+	jge	WPidAxIi
 	mov	edx, DWORD  [ebp-16]
 align 16
-GwrWeMtD:
+GrrWrxtD:
 	inc	DWORD  [ebp-24]
 	mov	eax, DWORD  [edx]
 	mov	ebx, DWORD  [ebp-32]
@@ -1376,35 +1382,35 @@ GwrWeMtD:
 	mov	DWORD  [edx+ebx*4], eax
 	add	edx, 4
 	cmp	DWORD  [ebp-24], ebx
-	jl	GwrWeMtD
-WPidVxLf:
+	jl	GrrWrxtD
+WPidAxIi:
 	sal	DWORD  [ebp-32], 1
 	mov	eax, DWORD  [ebp-32]
 	sal	eax, 3
 	cmp	eax, ecx
-	jl	QhEGvjvh
-fWevxzxY:
+	jl	wdLGvjvh
+fqenxzxW:
 	mov	eax, DWORD  [ebp-32]
 	mov	esi, DWORD  [ebp-32]
 	sal	eax, 3
 	add	esi, esi
 	cmp	eax, ecx
 	mov	DWORD  [ebp-36], esi
-	je	DsjdTHGu
+	je	DsjdEKGu
 	mov	DWORD  [ebp-28], 1
 	mov	ecx, DWORD  [ebp-32]
 	cmp	DWORD  [ebp-28], ecx
-	jge	TVfSrcMF
+	jge	TVfSrbBK
 align 16
-fkpxOgsG:
+skpvOgsG:
 	mov	DWORD  [ebp-24], 0
 	mov	ebx, DWORD  [ebp-28]
 	cmp	DWORD  [ebp-24], ebx
-	jge	egkXJnGh
+	jge	tghXJnGf
 	add	ebx, ebx
 	mov	DWORD  [ebp-68], ebx
 align 16
-vFlkhHaL:
+vFlkhHxL:
 	mov	esi, DWORD  [ebp-28]
 	mov	edi, DWORD  [ebp-16]
 	mov	edx, DWORD  [ebp-24]
@@ -1434,32 +1440,32 @@ vFlkhHaL:
 	mov	eax, DWORD  [ebp-28]
 	inc	DWORD  [ebp-24]
 	cmp	DWORD  [ebp-24], eax
-	jl	vFlkhHaL
-egkXJnGh:
+	jl	vFlkhHxL
+tghXJnGf:
 	inc	DWORD  [ebp-28]
 	mov	edx, DWORD  [ebp-32]
 	cmp	DWORD  [ebp-28], edx
-	jl	fkpxOgsG
-TVfSrcMF:
+	jl	skpvOgsG
+TVfSrbBK:
 	add	esp, 64
 	pop	ebx
 	pop	esi
 	pop	edi
 	pop	ebp
 	ret
-DsjdTHGu:
+DsjdEKGu:
 	mov	DWORD  [ebp-28], 0
 	mov	edi, DWORD  [ebp-32]
 	cmp	DWORD  [ebp-28], edi
-	jge	TVfSrcMF
+	jge	TVfSrbBK
 	mov	DWORD  [ebp-76], esi
 	sal	edi, 2
 	mov	DWORD  [ebp-72], edi
-wbTLobrN:
+rbTLomrN:
 	mov	DWORD  [ebp-24], 0
 	mov	eax, DWORD  [ebp-28]
 	cmp	DWORD  [ebp-24], eax
-	jge	KzNuBqtY
+	jge	KzNuBqtR
 	mov	edx, DWORD  [ebp-72]
 	add	eax, eax
 	mov	ecx, DWORD  [ebp-36]
@@ -1529,7 +1535,7 @@ oxMpHekI:
 	inc	DWORD  [ebp-24]
 	cmp	DWORD  [ebp-24], edi
 	jl	oxMpHekI
-KzNuBqtY:
+KzNuBqtR:
 	mov	eax, DWORD  [ebp-28]
 	mov	edx, DWORD  [ebp-16]
 	mov	edi, DWORD  [ebp-76]
@@ -1551,7 +1557,7 @@ KzNuBqtY:
 	movss	   [eax+edi*4], xmm4
 	mov	DWORD  [eax+esi*4], ecx
 	mov	DWORD  [eax+4+esi*4], ebx
-	jl	wbTLobrN
+	jl	rbTLomrN
 	add	esp, 64
 	pop	ebx
 	pop	esi
@@ -1572,17 +1578,17 @@ _Z7cftfsubiPfS_:
 	cmp	eax, 8
 	mov	DWORD  [ebp-16], ecx
 	mov	ebx, 2
-	jg	mVWUeTLi
-ulTNYwqd:
+	jg	mVWUeRSQ
+ulENYrqa:
 	lea	eax, [0+ebx*4]
 	cmp	eax, esi
-	je	NEpSFlmx
+	je	bEpSFlmc
 	xor	ecx, ecx
 	cmp	ecx, ebx
-	jge	zUlNodfz
+	jge	zUlNpofc
 	mov	edx, edi
 align 16
-SklyJyvb:
+SklyJivm:
 	movaps	xmm0,   [edx]
 	add	ecx, 8
 	movaps	xmm1,   [edx+16]
@@ -1600,21 +1606,21 @@ SklyJyvb:
 	movaps	  [edx+16+ebx*4], xmm1
 	add	edx, 32
 	cmp	ecx, ebx
-	jl	SklyJyvb
-zUlNodfz:
+	jl	SklyJivm
+zUlNpofc:
 	add	esp, 12
 	pop	ebx
 	pop	esi
 	pop	edi
 	pop	ebp
 	ret
-mVWUeTLi:
+mVWUeRSQ:
 	call	_Z6cft1stiPfS_
 	cmp	esi, 32
 	mov	ebx, 8
-	jle	ulTNYwqd
+	jle	ulENYrqa
 align 16
-qGvOKrGW:
+IHgOKrGQ:
 	mov	eax, DWORD  [ebp-16]
 	mov	edx, ebx
 	mov	ecx, edi
@@ -1624,7 +1630,7 @@ qGvOKrGW:
 	call	_Z6cftmdliiPfS_
 	lea	eax, [0+ebx*4]
 	cmp	eax, esi
-	jge	ulTNYwqd
+	jge	ulENYrqa
 	mov	eax, DWORD  [ebp-16]
 	mov	edx, ebx
 	mov	ecx, edi
@@ -1634,16 +1640,16 @@ qGvOKrGW:
 	call	_Z6cftmdliiPfS_
 	lea	eax, [0+ebx*4]
 	cmp	eax, esi
-	jl	qGvOKrGW
-	jmp	ulTNYwqd
-NEpSFlmx:
+	jl	IHgOKrGQ
+	jmp	ulENYrqa
+bEpSFlmc:
 	xor	ecx, ecx
 	cmp	ecx, ebx
-	jge	zUlNodfz
+	jge	zUlNpofc
 	mov	eax, edi
 	lea	edx, [ebx+ebx*2]
 align 16
-ALHChOEf:
+ALKChOEf:
 	movaps	xmm2,   [eax]
 	add	ecx, 4
 	movaps	xmm1,   [eax+ebx*4]
@@ -1670,7 +1676,7 @@ ALHChOEf:
 	movaps	  [edi+edx*4], xmm2
 	add	edx, 4
 	cmp	ecx, ebx
-	jl	ALHChOEf
+	jl	ALKChOEf
 	add	esp, 12
 	pop	ebx
 	pop	esi
@@ -1726,9 +1732,9 @@ sse__Z6makewtiPiPf:
 	mov	DWORD  [esi+4+edi*4], eax
 	jle	lzKeueOW
 	mov	ebx, 2
-	jmp	dXNFJLbn
+	jmp	dXNHJLbn
 align 8
-DdfnFCmX:
+DdfMFCmA:
 	push	ebx
 	mov	eax, DWORD  [ebp+8]
 	fild	DWORD  [esp]
@@ -1751,9 +1757,9 @@ DdfnFCmX:
 	add	ebx, 2
 	mov	DWORD  [esi+eax*4], edx
 	mov	DWORD  [esi+4+eax*4], ecx
-dXNFJLbn:
+dXNHJLbn:
 	cmp	ebx, edi
-	jl	DdfnFCmX
+	jl	DdfMFCmA
 	mov	edx, DWORD  [ebp+12]
 	mov	ecx, esi
 	mov	eax, DWORD  [ebp+8]
@@ -1774,7 +1780,7 @@ fAQnqdaG:
 	DD 1413754136
 	DD 1072243195
 align 4
-dgAYBxta:
+dgARBxta:
 	DD 1056964608
 align 16
 segment_code
@@ -1791,7 +1797,7 @@ sse__Z6makectiPiPf:
 	mov	esi, DWORD  [ebp+16]
 	cmp	ebx, 1
 	mov	DWORD  [eax+4], ebx
-	jle	qxdgnflM
+	jle	exdgnflM
 	mov	ecx, ebx
 	mov	edx, 1
 	sar	ecx, 1
@@ -1811,13 +1817,13 @@ sse__Z6makectiPiPf:
 	fstp	DWORD  [ebp-12]
 	movss	xmm0,    [ebp-12]
 	movss	   [esi], xmm0
-	mulss	xmm0,   [dgAYBxta]
+	mulss	xmm0,   [dgARBxta]
 	movss	   [esi+ecx*4], xmm0
-	jge	qxdgnflM
-	fld	DWORD [dgAYBxta]
+	jge	exdgnflM
+	fld	DWORD [dgARBxta]
 	lea	eax, [esi-4+ebx*4]
 align 16
-BFnzyxRD:
+CFnzyxRD:
 	push	edx
 	fild	DWORD  [esp]
 	add	esp, 4
@@ -1838,10 +1844,10 @@ BFnzyxRD:
 	fstp	DWORD  [eax]
 	sub	eax, 4
 	cmp	edx, ecx
-	jl	BFnzyxRD
+	jl	CFnzyxRD
 	fstp	st0
 align 16
-qxdgnflM:
+exdgnflM:
 	add	esp, 8
 	pop	ebx
 	pop	esi
@@ -1880,23 +1886,23 @@ sse__Z6rdft_riiPfPiS_:
 	lea	eax, [0+edi*4]
 	cmp	eax, esi
 	mov	DWORD  [ebp-32], edx
-	jl	CUYaRitU
-RDLSBqVr:
+	jl	CUYaRitQ
+KFDSBqVo:
 	mov	edx, DWORD  [ebp-32]
 	mov	edx, DWORD  [edx+4]
 	mov	eax, edx
 	mov	DWORD  [ebp-40], edx
 	sal	eax, 2
 	cmp	eax, esi
-	jl	eIGnxCVR
+	jl	eYGnxCVR
 	mov	eax, DWORD  [ebp-28]
 	test	eax, eax
-	js	mcykguQI
-FBTxTYIz:
+	js	NcykgoQI
+FBTxTRCc:
 	cmp	esi, 4
-	jg	zjtKlFLh
-	je	GGRglxer
-ZPwXXMeA:
+	jg	zjtKlFLf
+	je	GJRglver
+ZPrXXMrN:
 	movss	xmm0,    [ebx]
 	movss	xmm1,    [ebx+4]
 	movaps	xmm2, xmm0
@@ -1912,7 +1918,7 @@ BVPfboCt:
 	pop	ebp
 	ret
 align 8
-eIGnxCVR:
+eYGnxCVR:
 	mov	edx, DWORD  [ebp-36]
 	mov	eax, esi
 	sar	eax, 2
@@ -1926,9 +1932,9 @@ eIGnxCVR:
 	call	sse__Z6makectiPiPf
 	mov	eax, DWORD  [ebp-28]
 	test	eax, eax
-	jns	FBTxTYIz
+	jns	FBTxTRCc
 align 16
-mcykguQI:
+NcykgoQI:
 	movss	xmm0,    [ebx]
 	cmp	esi, 4
 	movss	xmm7,   [RHMIZrvK]
@@ -1937,7 +1943,7 @@ mcykguQI:
 	mulss	xmm1, xmm7
 	subss	xmm0, xmm1
 	movss	   [ebx], xmm0
-	jle	sLnQqLfX
+	jle	bOnQqLfX
 	movss	xmm6,   [khRRfHFa]
 	mov	edx, esi
 	sar	edx, 1
@@ -1957,10 +1963,10 @@ mcykguQI:
 	xor	eax, eax
 	cmp	ecx, DWORD  [ebp-92]
 	mov	DWORD  [ebp-144], eax
-	jge	beVhWAEy
+	jge	meAhWAEi
 	lea	edx, [ebx-8+esi*4]
 align 16
-yYqWRbSn:
+yYqWRbSM:
 	movss	xmm2,    [ebx+ecx*4]
 	movaps	xmm5, xmm7
 	mov	edi, DWORD  [ebp-96]
@@ -2006,8 +2012,8 @@ yYqWRbSn:
 	movss	   [edx], xmm1
 	sub	edx, 8
 	cmp	ecx, DWORD  [ebp-92]
-	jl	yYqWRbSn
-beVhWAEy:
+	jl	yYqWRbSM
+meAhWAEi:
 	mov	eax, DWORD  [ebp-92]
 	mov	ecx, ebx
 	mov	edx, DWORD  [ebp-32]
@@ -2017,18 +2023,18 @@ beVhWAEy:
 	call	_Z6bitrv2iPiPf
 	mov	DWORD  [ebp-100], 2
 	cmp	esi, 8
-	jg	eyIKChxy
-IpsmYQns:
+	jg	tyYKZhxy
+IpsmYrnz:
 	mov	eax, DWORD  [ebp-100]
 	sal	eax, 2
 	cmp	eax, esi
-	je	gGXnYNVZ
+	je	aGAnYNVZ
 	xor	ecx, ecx
 	cmp	ecx, DWORD  [ebp-100]
 	jge	BVPfboCt
 	movss	xmm6,   [khRRfHFa]
 align 16
-vHdJkhEr:
+vHdJkfEr:
 	movss	xmm1,    [ebx+ecx*4]
 	mov	edx, DWORD  [ebp-100]
 	movss	xmm0,    [ebx+4+ecx*4]
@@ -2047,10 +2053,10 @@ vHdJkhEr:
 	cmp	ecx, edx
 	movss	   [ebx+eax*4], xmm4
 	movss	   [ebx+4+eax*4], xmm3
-	jl	vHdJkhEr
+	jl	vHdJkfEr
 	jmp	BVPfboCt
 align 8
-CUYaRitU:
+CUYaRitQ:
 	mov	eax, DWORD  [ebp-36]
 	mov	edi, esi
 	sar	edi, 2
@@ -2058,9 +2064,9 @@ CUYaRitU:
 	mov	DWORD  [esp+8], eax
 	mov	DWORD  [esp], edi
 	call	sse__Z6makewtiPiPf
-	jmp	RDLSBqVr
+	jmp	KFDSBqVo
 align 8
-zjtKlFLh:
+zjtKlFLf:
 	mov	edx, DWORD  [ebp-32]
 	mov	eax, esi
 	mov	ecx, ebx
@@ -2123,7 +2129,7 @@ zjtKlFLh:
 	addss	xmm1,    [ebx+edx*4]
 	fstp	DWORD  [ebx+4+edx*4]
 	movss	   [ebx+edx*4], xmm1
-	jge	ZPwXXMeA
+	jge	ZPrXXMrN
 	mov	edi, DWORD  [ebp-40]
 	lea	esi, [ebx+16]
 	mov	eax, DWORD  [ebp-52]
@@ -2186,8 +2192,8 @@ kpayQkcF:
 	add	DWORD  [ebp-144], eax
 	cmp	DWORD  [ebp-44], edi
 	jl	kpayQkcF
-	jmp	ZPwXXMeA
-sLnQqLfX:
+	jmp	ZPrXXMrN
+bOnQqLfX:
 	movss	   [ebx+4], xmm1
 	jne	BVPfboCt
 	mov	ecx, DWORD  [ebp-36]
@@ -2199,21 +2205,21 @@ sLnQqLfX:
 	pop	edi
 	pop	ebp
 	jmp	_Z7cftfsubiPfS_
-GGRglxer:
+GJRglver:
 	mov	ecx, DWORD  [ebp-36]
 	mov	edx, ebx
 	mov	eax, 4
 	call	_Z7cftfsubiPfS_
-	jmp	ZPwXXMeA
-eyIKChxy:
+	jmp	ZPrXXMrN
+tyYKZhxy:
 	mov	ecx, DWORD  [ebp-36]
 	mov	edx, ebx
 	mov	eax, esi
 	call	_Z6cft1stiPfS_
 	mov	DWORD  [ebp-100], 8
 	cmp	esi, 32
-	jle	IpsmYQns
-hcuoRSlP:
+	jle	IpsmYrnz
+zcuoRSlI:
 	mov	edx, DWORD  [ebp-36]
 	mov	eax, esi
 	mov	ecx, ebx
@@ -2224,9 +2230,9 @@ hcuoRSlP:
 	mov	eax, DWORD  [ebp-100]
 	sal	eax, 2
 	cmp	eax, esi
-	jl	hcuoRSlP
-	jmp	IpsmYQns
-gGXnYNVZ:
+	jl	zcuoRSlI
+	jmp	IpsmYrnz
+aGAnYNVZ:
 	xor	ecx, ecx
 	cmp	ecx, DWORD  [ebp-100]
 	jge	BVPfboCt
@@ -2348,7 +2354,7 @@ sse__ZN35tRisaPhaseVocoderDSP_SSE_Trampoline13__ProcessCoreEi:
 	comiss	xmm0,   [iPyYklYT]
 	shufps	xmm1, xmm1, 0
 	movaps	  [ebp-168], xmm1
-	je	tmGOrRax
+	je	tmJOrRax
 	movss	xmm1,    [ecx+68]
 	xor	edx, edx
 	cmp	edx, DWORD  [ebp-128]
@@ -2360,7 +2366,7 @@ sse__ZN35tRisaPhaseVocoderDSP_SSE_Trampoline13__ProcessCoreEi:
 	movss	xmm1,    [ecx+76]
 	shufps	xmm1, xmm1, 0
 	movaps	  [ebp-216], xmm1
-	jae	sPsSRanV
+	jae	sIaMWaMV
 	movq	mm1, QWORD [sse_RISA_V_I32_1]
 	pxor	mm0, mm0
 	mov	eax, DWORD  [ecx+8]
@@ -2471,24 +2477,24 @@ zNcddEIl:
 	jb	zNcddEIl
 	mov	eax, DWORD  [ebp-124]
 	movss	xmm0,    [eax+60]
-sPsSRanV:
+sIaMWaMV:
 	fld1
 	xor	esi, esi
 	cmp	esi, DWORD  [ebp-128]
 	fstp	DWORD  [ebp-364]
 	movss	xmm3,    [ebp-364]
 	divss	xmm3, xmm0
-	jae	ImxmcsJF
+	jae	ImxNcsJH
 	fnstcw	WORD  [ebp-106]
 	mov	ebx, DWORD  [ebp-132]
 	movzx	eax, WORD  [ebp-106]
 	or	ax, 3072
 	mov	WORD  [ebp-108], ax
-	jmp	ITUsbFxx
+	jmp	FTUsbHxb
 align 8
-WyUQwxAs:
+qiUQwxSk:
 	cmp	ecx, DWORD  [ebp-128]
-	jae	MFpcbSnO
+	jae	MHpvfSnT
 	mov	eax, DWORD  [edi+ecx*8]
 	inc	esi
 	mov	edx, DWORD  [ebp-124]
@@ -2498,13 +2504,13 @@ WyUQwxAs:
 	movss	   [ebx+4], xmm0
 	add	ebx, 8
 	cmp	esi, DWORD  [ebp-128]
-	jae	ImxmcsJF
+	jae	ImxNcsJH
 align 16
-ITUsbFxx:
+FTUsbHxb:
 	test	esi, esi
 	cvtsi2ss	xmm0, esi
-	js	YfZsvUug
-aJEvXZNA:
+	js	RfZsvUiu
+zXEnXZBN:
 	mulss	xmm0, xmm3
 	movss	   [ebp-364], xmm0
 	fld	DWORD  [ebp-364]
@@ -2516,14 +2522,14 @@ aJEvXZNA:
 	test	eax, eax
 	mov	ecx, eax
 	cvtsi2ss	xmm0, eax
-	js	JMOyecze
-KFRmRQgi:
+	js	JMOyecxW
+KFEsRQgp:
 	fstp	DWORD  [ebp-364]
 	lea	eax, [ecx+1]
 	movss	xmm2,    [ebp-364]
 	cmp	eax, DWORD  [ebp-128]
 	subss	xmm2, xmm0
-	jae	WyUQwxAs
+	jae	qiUQwxSk
 	movss	xmm1,    [edi+ecx*8]
 	mov	eax, DWORD  [ebp-124]
 	movss	xmm0,    [edi+8+ecx*8]
@@ -2539,16 +2545,16 @@ KFRmRQgi:
 	mulss	xmm1,    [eax+60]
 	movss	   [ebx+4], xmm1
 	inc	esi
-KBirJsyF:
+KBirJcyF:
 	add	ebx, 8
 	cmp	esi, DWORD  [ebp-128]
-	jb	ITUsbFxx
-ImxmcsJF:
+	jb	FTUsbHxb
+ImxNcsJH:
 	xor	ebx, ebx
 	cmp	ebx, DWORD  [ebp-128]
-	jae	SIyYjmjI
+	jae	SIyYjmjY
 align 16
-uqXBLQsG:
+oqXBLQsJ:
 	mov	ecx, DWORD  [ebp-132]
 	mov	edx, DWORD  [ebp-124]
 	movaps	xmm0,   [ecx+ebx*8]
@@ -2592,8 +2598,8 @@ uqXBLQsG:
 	movaps	  [eax+16+ebx*8], xmm2
 	add	ebx, 4
 	cmp	ebx, DWORD  [ebp-128]
-	jb	uqXBLQsG
-SIyYjmjI:
+	jb	oqXBLQsJ
+SIyYjmjY:
 	mov	edx, DWORD  [ebp-124]
 	mov	ecx, DWORD  [ebp+12]
 	mov	eax, DWORD  [edx+20]
@@ -2615,14 +2621,14 @@ SIyYjmjI:
 	pop	ebp
 	ret
 align 8
-tmGOrRax:
+tmJOrRax:
 	xor	ebx, ebx
 	cmp	ebx, DWORD  [ebp-128]
-	jae	SIyYjmjI
+	jae	SIyYjmjY
 	pxor	mm0, mm0
 	movq	QWORD  [ebp-320], mm0
 align 16
-IZCusVWH:
+ISCusVWH:
 	movaps	xmm0,   [edi+16+ebx*8]
 	mov	edx, DWORD  [ebp-124]
 	mov	ecx, DWORD  [ebp+12]
@@ -2738,25 +2744,25 @@ IZCusVWH:
 	movaps	  [eax+16+ebx*8], xmm1
 	add	ebx, 4
 	cmp	ebx, DWORD  [ebp-128]
-	jb	IZCusVWH
-	jmp	SIyYjmjI
+	jb	ISCusVWH
+	jmp	SIyYjmjY
 align 8
-MFpcbSnO:
+MHpvfSnT:
 	mov	DWORD  [ebx], 0x00000000
 	mov	DWORD  [ebx+4], 0x00000000
 	inc	esi
-	jmp	KBirJsyF
+	jmp	KBirJcyF
 align 8
-JMOyecze:
+JMOyecxW:
 	mov	edx, ecx
 	shr	eax, 1
 	and	edx, 1
 	or	eax, edx
 	cvtsi2ss	xmm0, eax
 	addss	xmm0, xmm0
-	jmp	KFRmRQgi
+	jmp	KFEsRQgp
 align 8
-YfZsvUug:
+RfZsvUiu:
 	mov	eax, esi
 	mov	edx, esi
 	shr	eax, 1
@@ -2764,7 +2770,7 @@ YfZsvUug:
 	or	eax, edx
 	cvtsi2ss	xmm0, eax
 	addss	xmm0, xmm0
-	jmp	aJEvXZNA
+	jmp	zXEnXZBN
 align 16
 segment_code
 align 2
@@ -2813,22 +2819,22 @@ sse__Z32RisaDeinterleaveApplyingWindow_rPPfPKfS_ijj:
 	cmp	esi, 1
 	je	YOImYZCp
 	cmp	esi, 2
-	je	nMZmiVmA
+	je	nMSmiVmA
 	mov	DWORD  [ebp-16], 0
 	mov	edx, DWORD  [ebp+28]
 	cmp	DWORD  [ebp-16], edx
-	jae	GnZJQtRg
+	jae	MppKTbBK
 align 16
-NUKFHAFi:
+VUKFJmFi:
 	xor	edx, edx
 	cmp	edx, esi
-	jge	egAuJKtJ
+	jge	KTdHcjXE
 	mov	ebx, DWORD  [ebp+24]
 	mov	edi, DWORD  [ebp-16]
 	add	ebx, edi
 	mov	DWORD  [ebp-20], ebx
 align 16
-LhiZPuFf:
+wnrwazYw:
 	mov	ebx, DWORD  [ebp+8]
 	mov	edi, DWORD  [ebp-16]
 	mov	eax, DWORD  [ebx+edx*4]
@@ -2840,13 +2846,13 @@ LhiZPuFf:
 	add	ecx, 4
 	cmp	edx, esi
 	movss	   [eax+edi*4], xmm0
-	jl	LhiZPuFf
-egAuJKtJ:
+	jl	wnrwazYw
+KTdHcjXE:
 	inc	DWORD  [ebp-16]
 	mov	eax, DWORD  [ebp+28]
 	cmp	DWORD  [ebp-16], eax
-	jb	NUKFHAFi
-GnZJQtRg:
+	jb	VUKFJmFi
+MppKTbBK:
 	add	esp, 8
 	pop	ebx
 	pop	esi
@@ -2875,12 +2881,12 @@ YOImYZCp:
 	mov	eax, edx
 	cmove	eax, ecx
 	cmp	DWORD  [ebp+28], 7
-	ja	ikfMgqDh
-AYCgAHvp:
+	ja	rkfZgqJf
+DYAuAHvp:
 	mov	eax, DWORD  [ebp+28]
 	cmp	DWORD  [ebp-16], eax
-	jmp	AjixFabi
-uVqNqxWb:
+	jmp	AjpxHabi
+iceNexWb:
 	mov	edx, DWORD  [ebp-16]
 	mov	ecx, DWORD  [ebp+16]
 	mov	edi, DWORD  [ebp+12]
@@ -2892,15 +2898,15 @@ uVqNqxWb:
 	inc	edx
 	cmp	edx, eax
 	mov	DWORD  [ebp-16], edx
-AjixFabi:
-	jb	uVqNqxWb
+AjpxHabi:
+	jb	iceNexWb
 	add	esp, 8
 	pop	ebx
 	pop	esi
 	pop	edi
 	pop	ebp
 	ret
-nMZmiVmA:
+nMSmiVmA:
 	mov	edx, DWORD  [ebp+8]
 	mov	eax, DWORD  [ebp+24]
 	mov	esi, DWORD  [edx]
@@ -2910,10 +2916,10 @@ nMZmiVmA:
 	mov	eax, DWORD  [edx+4]
 	add	ebx, eax
 	test	esi, 15
-	je	ztslkXve
-dQzrbsVv:
+	je	ztssubve
+aQxTbabv:
 	mov	ecx, 4
-NFxZjwJu:
+BCxSjeXu:
 	test	BYTE  [ebp+12], 15
 	lea	eax, [ecx+2]
 	sete	dl
@@ -2925,55 +2931,55 @@ NFxZjwJu:
 	test	dl, dl
 	cmove	eax, ecx
 	cmp	DWORD  [ebp+28], 3
-	jbe	YUlQxMRb
+	jbe	RUlQxMEs
 	cmp	eax, 7
-	ja	YUlQxMRb
-	jmp	DWORD [GWSJZNaL+eax*4]
+	ja	RUlQxMEs
+	jmp	DWORD [OECJZNaL+eax*4]
 segment_data_aligned
 align 16
 align 4
-GWSJZNaL:
-	DD ENjhXFBA
-	DD QNjhXFBe
-	DD cNjAXFBD
-	DD hNjAXFBy
-	DD TNjhXFBH
-	DD QNjhXFBo
-	DD dKjFtkZm
-	DD dNjDNFmu
+OECJZNaL:
+	DD ONhyXFBS
+	DD UNhyXFBr
+	DD yNhmXFBG
+	DD iNhmXFBu
+	DD LNhyXFBJ
+	DD UNhyXFBp
+	DD lKjGRkZM
+	DD xNhNNFmu
 align 16
 segment_code
-ikfMgqDh:
+rkfZgqJf:
 	cmp	eax, 7
-	ja	AYCgAHvp
-	jmp	DWORD [EgWuaRyE+eax*4]
+	ja	DYAuAHvp
+	jmp	DWORD [QjquaRoL+eax*4]
 segment_data_aligned
 align 16
 align 4
-EgWuaRyE:
-	DD gAkspfen
-	DD GAkspfrD
-	DD lAkGpfrG
-	DD AAkGpfru
-	DD dAXsVfrz
-	DD JAXsVfrK
-	DD jAXGVfrP
-	DD prpKGbHi
+QjquaRoL:
+	DD aAkzpfen
+	DD LAkzpfrD
+	DD gAkJpfrG
+	DD GAkJpfru
+	DD xAXzVfrz
+	DD AAXzVfrL
+	DD dAXJVfrP
+	DD prkKGbHi
 align 16
 segment_code
-ztslkXve:
+ztssubve:
 	xor	ecx, ecx
 	test	bl, 15
-	je	NFxZjwJu
-	jmp	dQzrbsVv
-dKjFtkZm:
+	je	BCxSjeXu
+	jmp	aQxTbabv
+lKjGRkZM:
 	mov	DWORD  [ebp-16], 0
 	mov	edx, DWORD  [ebp+28]
 	sub	edx, 3
 	cmp	edx, 0
-	jbe	YUlQxMRb
+	jbe	RUlQxMEs
 	xor	eax, eax
-lctrJGwE:
+lctrKVwE:
 	mov	ecx, DWORD  [ebp+16]
 	mov	edi, DWORD  [ebp+12]
 	movaps	xmm1,   [eax+ecx]
@@ -2992,12 +2998,12 @@ lctrJGwE:
 	add	eax, 16
 	add	DWORD  [ebp-16], 4
 	cmp	edx, DWORD  [ebp-16]
-	ja	lctrJGwE
-YUlQxMRb:
+	ja	lctrKVwE
+RUlQxMEs:
 	mov	eax, DWORD  [ebp+28]
 	cmp	DWORD  [ebp-16], eax
-	jmp	DtpwHvdC
-KTFriRFk:
+	jmp	DtpwKboC
+KEGEiRFk:
 	mov	edx, DWORD  [ebp-16]
 	mov	ecx, DWORD  [ebp+16]
 	mov	edi, DWORD  [ebp+12]
@@ -3011,22 +3017,22 @@ KTFriRFk:
 	inc	edx
 	cmp	edx, eax
 	mov	DWORD  [ebp-16], edx
-DtpwHvdC:
-	jb	KTFriRFk
+DtpwKboC:
+	jb	KEGEiRFk
 	add	esp, 8
 	pop	ebx
 	pop	esi
 	pop	edi
 	pop	ebp
 	ret
-prpKGbHi:
+prkKGbHi:
 	mov	DWORD  [ebp-16], 0
 	mov	edx, DWORD  [ebp+28]
 	sub	edx, 7
 	cmp	edx, 0
-	jbe	AYCgAHvp
+	jbe	DYAuAHvp
 	xor	eax, eax
-WLiRQiSL:
+WLiWwpSL:
 	mov	ecx, DWORD  [ebp+12]
 	mov	edi, DWORD  [ebp+16]
 	movups	xmm0,   [eax+ecx]
@@ -3040,16 +3046,16 @@ WLiRQiSL:
 	add	eax, 32
 	add	DWORD  [ebp-16], 8
 	cmp	edx, DWORD  [ebp-16]
-	ja	WLiRQiSL
-	jmp	AYCgAHvp
-jAXGVfrP:
+	ja	WLiWwpSL
+	jmp	DYAuAHvp
+dAXJVfrP:
 	mov	DWORD  [ebp-16], 0
 	mov	edx, DWORD  [ebp+28]
 	sub	edx, 7
 	cmp	edx, 0
-	jbe	AYCgAHvp
+	jbe	DYAuAHvp
 	xor	eax, eax
-WLyDXiSL:
+WLuNApSL:
 	mov	ecx, DWORD  [ebp+12]
 	mov	edi, DWORD  [ebp+16]
 	movups	xmm0,   [eax+ecx]
@@ -3063,16 +3069,16 @@ WLyDXiSL:
 	add	eax, 32
 	add	DWORD  [ebp-16], 8
 	cmp	edx, DWORD  [ebp-16]
-	ja	WLyDXiSL
-	jmp	AYCgAHvp
-JAXsVfrK:
+	ja	WLuNApSL
+	jmp	DYAuAHvp
+AAXzVfrL:
 	mov	DWORD  [ebp-16], 0
 	mov	edx, DWORD  [ebp+28]
 	sub	edx, 7
 	cmp	edx, 0
-	jbe	AYCgAHvp
+	jbe	DYAuAHvp
 	xor	eax, eax
-WLtZQiSc:
+WLtSwpSc:
 	mov	ecx, DWORD  [ebp+12]
 	mov	edi, DWORD  [ebp+16]
 	movaps	xmm0,   [eax+ecx]
@@ -3086,16 +3092,16 @@ WLtZQiSc:
 	add	eax, 32
 	add	DWORD  [ebp-16], 8
 	cmp	edx, DWORD  [ebp-16]
-	ja	WLtZQiSc
-	jmp	AYCgAHvp
-dAXsVfrz:
+	ja	WLtSwpSc
+	jmp	DYAuAHvp
+xAXzVfrz:
 	mov	DWORD  [ebp-16], 0
 	mov	edx, DWORD  [ebp+28]
 	sub	edx, 7
 	cmp	edx, 0
-	jbe	AYCgAHvp
+	jbe	DYAuAHvp
 	xor	eax, eax
-WLrpXiSc:
+WLrkApSc:
 	mov	ecx, DWORD  [ebp+12]
 	mov	edi, DWORD  [ebp+16]
 	movaps	xmm0,   [eax+ecx]
@@ -3109,16 +3115,16 @@ WLrpXiSc:
 	add	eax, 32
 	add	DWORD  [ebp-16], 8
 	cmp	edx, DWORD  [ebp-16]
-	ja	WLrpXiSc
-	jmp	AYCgAHvp
-AAkGpfru:
+	ja	WLrkApSc
+	jmp	DYAuAHvp
+GAkJpfru:
 	mov	DWORD  [ebp-16], 0
 	mov	edx, DWORD  [ebp+28]
 	sub	edx, 7
 	cmp	edx, 0
-	jbe	AYCgAHvp
+	jbe	DYAuAHvp
 	xor	eax, eax
-CLeYQigL:
+CLeRwpgL:
 	mov	ecx, DWORD  [ebp+12]
 	mov	edi, DWORD  [ebp+16]
 	movups	xmm0,   [eax+ecx]
@@ -3132,16 +3138,16 @@ CLeYQigL:
 	add	eax, 32
 	add	DWORD  [ebp-16], 8
 	cmp	edx, DWORD  [ebp-16]
-	ja	CLeYQigL
-	jmp	AYCgAHvp
-lAkGpfrG:
+	ja	CLeRwpgL
+	jmp	DYAuAHvp
+gAkJpfrG:
 	mov	DWORD  [ebp-16], 0
 	mov	edx, DWORD  [ebp+28]
 	sub	edx, 7
 	cmp	edx, 0
-	jbe	AYCgAHvp
+	jbe	DYAuAHvp
 	xor	eax, eax
-CLqAXigL:
+CLqDApgL:
 	mov	ecx, DWORD  [ebp+12]
 	mov	edi, DWORD  [ebp+16]
 	movups	xmm0,   [eax+ecx]
@@ -3155,16 +3161,16 @@ CLqAXigL:
 	add	eax, 32
 	add	DWORD  [ebp-16], 8
 	cmp	edx, DWORD  [ebp-16]
-	ja	CLqAXigL
-	jmp	AYCgAHvp
-GAkspfrD:
+	ja	CLqDApgL
+	jmp	DYAuAHvp
+LAkzpfrD:
 	mov	DWORD  [ebp-16], 0
 	mov	edx, DWORD  [ebp+28]
 	sub	edx, 7
 	cmp	edx, 0
-	jbe	AYCgAHvp
+	jbe	DYAuAHvp
 	xor	eax, eax
-CKpCQigc:
+CKpZwpgc:
 	mov	ecx, DWORD  [ebp+12]
 	mov	edi, DWORD  [ebp+16]
 	movaps	xmm0,   [eax+ecx]
@@ -3178,16 +3184,16 @@ CKpCQigc:
 	add	eax, 32
 	add	DWORD  [ebp-16], 8
 	cmp	edx, DWORD  [ebp-16]
-	ja	CKpCQigc
-	jmp	AYCgAHvp
-gAkspfen:
+	ja	CKpZwpgc
+	jmp	DYAuAHvp
+aAkzpfen:
 	mov	DWORD  [ebp-16], 0
 	mov	edx, DWORD  [ebp+28]
 	sub	edx, 7
 	cmp	edx, 0
-	jbe	AYCgAHvp
+	jbe	DYAuAHvp
 	xor	eax, eax
-CKoiXigs:
+CKopApgs:
 	mov	ecx, DWORD  [ebp+12]
 	mov	edi, DWORD  [ebp+16]
 	movaps	xmm0,   [eax+ecx]
@@ -3201,16 +3207,16 @@ CKoiXigs:
 	add	eax, 32
 	add	DWORD  [ebp-16], 8
 	cmp	edx, DWORD  [ebp-16]
-	ja	CKoiXigs
-	jmp	AYCgAHvp
-dNjDNFmu:
+	ja	CKopApgs
+	jmp	DYAuAHvp
+xNhNNFmu:
 	mov	DWORD  [ebp-16], 0
 	mov	edx, DWORD  [ebp+28]
 	sub	edx, 3
 	cmp	edx, 0
-	jbe	YUlQxMRb
+	jbe	RUlQxMEs
 	xor	eax, eax
-lctbJGwE:
+lctbKVwE:
 	mov	ecx, DWORD  [ebp+16]
 	mov	edi, DWORD  [ebp+12]
 	movups	xmm1,   [eax+ecx]
@@ -3229,16 +3235,16 @@ lctbJGwE:
 	add	eax, 16
 	add	DWORD  [ebp-16], 4
 	cmp	edx, DWORD  [ebp-16]
-	ja	lctbJGwE
-	jmp	YUlQxMRb
-QNjhXFBo:
+	ja	lctbKVwE
+	jmp	RUlQxMEs
+UNhyXFBp:
 	mov	DWORD  [ebp-16], 0
 	mov	edx, DWORD  [ebp+28]
 	sub	edx, 3
 	cmp	edx, 0
-	jbe	YUlQxMRb
+	jbe	RUlQxMEs
 	xor	eax, eax
-lctbzGwV:
+lctbxVwV:
 	mov	ecx, DWORD  [ebp+16]
 	mov	edi, DWORD  [ebp+12]
 	movups	xmm1,   [eax+ecx]
@@ -3257,16 +3263,16 @@ lctbzGwV:
 	add	eax, 16
 	add	DWORD  [ebp-16], 4
 	cmp	edx, DWORD  [ebp-16]
-	ja	lctbzGwV
-	jmp	YUlQxMRb
-TNjhXFBH:
+	ja	lctbxVwV
+	jmp	RUlQxMEs
+LNhyXFBJ:
 	mov	DWORD  [ebp-16], 0
 	mov	edx, DWORD  [ebp+28]
 	sub	edx, 3
 	cmp	edx, 0
-	jbe	YUlQxMRb
+	jbe	RUlQxMEs
 	xor	eax, eax
-lctrzGwV:
+lctrxVwV:
 	mov	ecx, DWORD  [ebp+16]
 	mov	edi, DWORD  [ebp+12]
 	movaps	xmm1,   [eax+ecx]
@@ -3285,16 +3291,16 @@ lctrzGwV:
 	add	eax, 16
 	add	DWORD  [ebp-16], 4
 	cmp	edx, DWORD  [ebp-16]
-	ja	lctrzGwV
-	jmp	YUlQxMRb
-hNjAXFBy:
+	ja	lctrxVwV
+	jmp	RUlQxMEs
+iNhmXFBu:
 	mov	DWORD  [ebp-16], 0
 	mov	edx, DWORD  [ebp+28]
 	sub	edx, 3
 	cmp	edx, 0
-	jbe	YUlQxMRb
+	jbe	RUlQxMEs
 	xor	eax, eax
-lctbJGAV:
+lctbKVAV:
 	mov	ecx, DWORD  [ebp+16]
 	mov	edi, DWORD  [ebp+12]
 	movups	xmm1,   [eax+ecx]
@@ -3313,16 +3319,16 @@ lctbJGAV:
 	add	eax, 16
 	add	DWORD  [ebp-16], 4
 	cmp	edx, DWORD  [ebp-16]
-	ja	lctbJGAV
-	jmp	YUlQxMRb
-cNjAXFBD:
+	ja	lctbKVAV
+	jmp	RUlQxMEs
+yNhmXFBG:
 	mov	DWORD  [ebp-16], 0
 	mov	edx, DWORD  [ebp+28]
 	sub	edx, 3
 	cmp	edx, 0
-	jbe	YUlQxMRb
+	jbe	RUlQxMEs
 	xor	eax, eax
-lctrJGAV:
+lctrKVAV:
 	mov	ecx, DWORD  [ebp+16]
 	mov	edi, DWORD  [ebp+12]
 	movaps	xmm1,   [eax+ecx]
@@ -3341,16 +3347,16 @@ lctrJGAV:
 	add	eax, 16
 	add	DWORD  [ebp-16], 4
 	cmp	edx, DWORD  [ebp-16]
-	ja	lctrJGAV
-	jmp	YUlQxMRb
-QNjhXFBe:
+	ja	lctrKVAV
+	jmp	RUlQxMEs
+UNhyXFBr:
 	mov	DWORD  [ebp-16], 0
 	mov	edx, DWORD  [ebp+28]
 	sub	edx, 3
 	cmp	edx, 0
-	jbe	YUlQxMRb
+	jbe	RUlQxMEs
 	xor	eax, eax
-lctbzGAp:
+lctbxVAp:
 	mov	ecx, DWORD  [ebp+16]
 	mov	edi, DWORD  [ebp+12]
 	movups	xmm1,   [eax+ecx]
@@ -3369,16 +3375,16 @@ lctbzGAp:
 	add	eax, 16
 	add	DWORD  [ebp-16], 4
 	cmp	edx, DWORD  [ebp-16]
-	ja	lctbzGAp
-	jmp	YUlQxMRb
-ENjhXFBA:
+	ja	lctbxVAp
+	jmp	RUlQxMEs
+ONhyXFBS:
 	mov	DWORD  [ebp-16], 0
 	mov	edx, DWORD  [ebp+28]
 	sub	edx, 3
 	cmp	edx, 0
-	jbe	YUlQxMRb
+	jbe	RUlQxMEs
 	xor	eax, eax
-lctrzGAp:
+lctrxVAp:
 	mov	ecx, DWORD  [ebp+16]
 	mov	edi, DWORD  [ebp+12]
 	movaps	xmm1,   [eax+ecx]
@@ -3397,8 +3403,8 @@ lctrzGAp:
 	add	eax, 16
 	add	DWORD  [ebp-16], 4
 	cmp	edx, DWORD  [ebp-16]
-	ja	lctrzGAp
-	jmp	YUlQxMRb
+	ja	lctrxVAp
+	jmp	RUlQxMEs
 align 2
 align 16
 sse__Z30RisaDeinterleaveApplyingWindowPPfPKfS_ijj:
@@ -3436,22 +3442,22 @@ sse__Z33RisaInterleaveOverlappingWindow_rPfPKPKfS_ijj:
 	mov	ecx, ebx
 	je	gvwUxdTp
 	cmp	esi, 2
-	je	akVXadbr
+	je	akVXaabr
 	mov	DWORD  [ebp-16], 0
 	mov	eax, DWORD  [ebp+28]
 	cmp	DWORD  [ebp-16], eax
-	jae	dcfEkdcN
+	jae	acfEkdvz
 align 16
-xoGhsmhd:
+xlGhsmfd:
 	xor	edx, edx
 	cmp	edx, esi
-	jge	DVPxihdM
+	jge	NXPxihdN
 	mov	ebx, DWORD  [ebp+24]
 	mov	edi, DWORD  [ebp-16]
 	add	ebx, edi
 	mov	DWORD  [ebp-24], ebx
 align 16
-bfroVkai:
+ffroVkal:
 	mov	ebx, DWORD  [ebp+12]
 	mov	edi, DWORD  [ebp-16]
 	mov	eax, DWORD  [ebx+edx*4]
@@ -3464,13 +3470,13 @@ bfroVkai:
 	movss	   [ecx], xmm0
 	add	ecx, 4
 	cmp	edx, esi
-	jl	bfroVkai
-DVPxihdM:
+	jl	ffroVkal
+NXPxihdN:
 	inc	DWORD  [ebp-16]
 	mov	eax, DWORD  [ebp+28]
 	cmp	DWORD  [ebp-16], eax
-	jb	xoGhsmhd
-dcfEkdcN:
+	jb	xlGhsmfd
+acfEkdvz:
 	add	esp, 12
 	pop	ebx
 	pop	esi
@@ -3499,12 +3505,12 @@ gvwUxdTp:
 	mov	eax, edx
 	cmove	eax, ecx
 	cmp	DWORD  [ebp+28], 7
-	ja	XESxnjRC
-UhOlFFvK:
+	ja	bQJgViOb
+TdSeFFvK:
 	mov	eax, DWORD  [ebp+28]
 	cmp	DWORD  [ebp-16], eax
-	jmp	PdGHkJJP
-NCnTMoVz:
+	jmp	PdGHhJJP
+annTBoVx:
 	mov	edx, DWORD  [ebp-16]
 	mov	ecx, DWORD  [ebp+16]
 	mov	edi, DWORD  [ebp+28]
@@ -3515,15 +3521,15 @@ NCnTMoVz:
 	inc	edx
 	cmp	edx, edi
 	mov	DWORD  [ebp-16], edx
-PdGHkJJP:
-	jb	NCnTMoVz
+PdGHhJJP:
+	jb	annTBoVx
 	add	esp, 12
 	pop	ebx
 	pop	esi
 	pop	edi
 	pop	ebp
 	ret
-akVXadbr:
+akVXaabr:
 	mov	edx, DWORD  [ebp+12]
 	mov	eax, DWORD  [ebp+24]
 	mov	esi, DWORD  [edx]
@@ -3539,10 +3545,10 @@ akVXadbr:
 	sbb	eax, eax
 	and	eax, 4
 	test	BYTE  [ebp-20], 15
-	je	rcODdrGd
-GlkLNJnu:
+	je	rbIVauVd
+JjhLBAMo:
 	lea	ecx, [eax+2]
-eqnDzDby:
+temVcGmi:
 	test	BYTE  [ebp+16], 15
 	lea	edx, [ecx+1]
 	sete	al
@@ -3550,55 +3556,55 @@ eqnDzDby:
 	mov	eax, ecx
 	cmove	eax, edx
 	cmp	DWORD  [ebp+28], 3
-	jbe	hTnjkIgH
+	jbe	yTnjjDuJ
 	cmp	eax, 7
-	ja	hTnjkIgH
-	jmp	DWORD [XSoKzsjq+eax*4]
+	ja	yTnjjDuJ
+	jmp	DWORD [MMlEhzgy+eax*4]
 segment_data_aligned
 align 16
 align 4
-XSoKzsjq:
-	DD skCPSEqA
-	DD shMPeEqA
-	DD GfvlSEqA
-	DD GdBleEqA
-	DD aonPSEqw
-	DD akMPeEqw
-	DD CKGOfYPm
-	DD KkmleQRQ
+MMlEhzgy:
+	DD sgvPSEeA
+	DD sfBPeEeA
+	DD GsnlSEeA
+	DD GaCleEeA
+	DD alMPSEew
+	DD ahBPeEew
+	DD AZJOfYPm
+	DD KhNleQWQ
 align 16
 segment_code
-XESxnjRC:
+bQJgViOb:
 	cmp	eax, 7
-	ja	UhOlFFvK
-	jmp	DWORD [PDJeROgG+eax*4]
+	ja	TdSeFFvK
+	jmp	DWORD [UNOpOFuJ+eax*4]
 segment_data_aligned
 align 16
 align 4
-PDJeROgG:
-	DD ukFDxtBG
-	DD irwFiMBy
-	DD NyCrxtBG
-	DD NuytiMBy
-	DD NoSDKtRG
-	DD NlQFNMRy
-	DD TkHrKtRG
-	DD AtatCgJn
+UNOpOFuJ:
+	DD uhHDxtCG
+	DD iyrFiMCy
+	DD NiZrxtCG
+	DD NpEtiMCy
+	DD NlFDKtWG
+	DD NjwFNMWy
+	DD RtCrKtWG
+	DD AtauCgJn
 align 16
 segment_code
-rcODdrGd:
+rbIVauVd:
 	test	esi, 15
 	mov	ecx, eax
-	je	eqnDzDby
-	jmp	GlkLNJnu
-CKGOfYPm:
+	je	temVcGmi
+	jmp	JjhLBAMo
+AZJOfYPm:
 	mov	DWORD  [ebp-16], 0
 	mov	edx, DWORD  [ebp+28]
 	sub	edx, 3
 	cmp	edx, 0
-	jbe	hTnjkIgH
+	jbe	yTnjjDuJ
 	xor	eax, eax
-PDpuGYmp:
+PDpuGYNp:
 	movups	xmm0,   [eax+esi]
 	mov	edi, DWORD  [ebp-20]
 	mov	ecx, DWORD  [ebp+16]
@@ -3620,12 +3626,12 @@ PDpuGYmp:
 	add	eax, 16
 	add	DWORD  [ebp-16], 4
 	cmp	edx, DWORD  [ebp-16]
-	ja	PDpuGYmp
-hTnjkIgH:
+	ja	PDpuGYNp
+yTnjjDuJ:
 	mov	edi, DWORD  [ebp+28]
 	cmp	DWORD  [ebp-16], edi
-	jmp	ONGEOVNv
-RzDSjvkI:
+	jmp	TNGEOVNv
+JkDDuvkU:
 	mov	eax, DWORD  [ebp-16]
 	mov	edx, DWORD  [ebp+16]
 	mov	ecx, DWORD  [ebp-20]
@@ -3641,22 +3647,22 @@ RzDSjvkI:
 	inc	eax
 	cmp	eax, edi
 	mov	DWORD  [ebp-16], eax
-ONGEOVNv:
-	jb	RzDSjvkI
+TNGEOVNv:
+	jb	JkDDuvkU
 	add	esp, 12
 	pop	ebx
 	pop	esi
 	pop	edi
 	pop	ebp
 	ret
-AtatCgJn:
+AtauCgJn:
 	mov	DWORD  [ebp-16], 0
 	mov	edx, DWORD  [ebp+28]
 	sub	edx, 7
 	cmp	edx, 0
-	jbe	UhOlFFvK
+	jbe	TdSeFFvK
 	xor	eax, eax
-CqudIUPZ:
+CwEoITIZ:
 	movups	xmm0,   [eax+esi]
 	mov	edi, DWORD  [ebp+16]
 	movups	xmm1,   [eax+edi]
@@ -3673,16 +3679,16 @@ CqudIUPZ:
 	add	eax, 32
 	add	DWORD  [ebp-16], 8
 	cmp	edx, DWORD  [ebp-16]
-	ja	CqudIUPZ
-	jmp	UhOlFFvK
-TkHrKtRG:
+	ja	CwEoITIZ
+	jmp	TdSeFFvK
+RtCrKtWG:
 	mov	DWORD  [ebp-16], 0
 	mov	edx, DWORD  [ebp+28]
 	sub	edx, 7
 	cmp	edx, 0
-	jbe	UhOlFFvK
+	jbe	TdSeFFvK
 	xor	eax, eax
-CZypnIrl:
+CZyknYyl:
 	movups	xmm0,   [eax+esi]
 	mov	ecx, DWORD  [ebp+16]
 	movaps	xmm1,   [eax+ecx]
@@ -3699,16 +3705,16 @@ CZypnIrl:
 	add	eax, 32
 	add	DWORD  [ebp-16], 8
 	cmp	edx, DWORD  [ebp-16]
-	ja	CZypnIrl
-	jmp	UhOlFFvK
-NlQFNMRy:
+	ja	CZyknYyl
+	jmp	TdSeFFvK
+NjwFNMWy:
 	mov	DWORD  [ebp-16], 0
 	mov	edx, DWORD  [ebp+28]
 	sub	edx, 7
 	cmp	edx, 0
-	jbe	UhOlFFvK
+	jbe	TdSeFFvK
 	xor	eax, eax
-CqDjImPZ:
+CqDgINIZ:
 	movaps	xmm0,   [eax+esi]
 	mov	edi, DWORD  [ebp+16]
 	movups	xmm1,   [eax+edi]
@@ -3725,16 +3731,16 @@ CqDjImPZ:
 	add	eax, 32
 	add	DWORD  [ebp-16], 8
 	cmp	edx, DWORD  [ebp-16]
-	ja	CqDjImPZ
-	jmp	UhOlFFvK
-NoSDKtRG:
+	ja	CqDgINIZ
+	jmp	TdSeFFvK
+NlFDKtWG:
 	mov	DWORD  [ebp-16], 0
 	mov	edx, DWORD  [ebp+28]
 	sub	edx, 7
 	cmp	edx, 0
-	jbe	UhOlFFvK
+	jbe	TdSeFFvK
 	xor	eax, eax
-CZAfnnrl:
+CZSinMyl:
 	movaps	xmm0,   [eax+esi]
 	mov	ecx, DWORD  [ebp+16]
 	movaps	xmm1,   [eax+ecx]
@@ -3751,16 +3757,16 @@ CZAfnnrl:
 	add	eax, 32
 	add	DWORD  [ebp-16], 8
 	cmp	edx, DWORD  [ebp-16]
-	ja	CZAfnnrl
-	jmp	UhOlFFvK
-NuytiMBy:
+	ja	CZSinMyl
+	jmp	TdSeFFvK
+NpEtiMCy:
 	mov	DWORD  [ebp-16], 0
 	mov	edx, DWORD  [ebp+28]
 	sub	edx, 7
 	cmp	edx, 0
-	jbe	UhOlFFvK
+	jbe	TdSeFFvK
 	xor	eax, eax
-lqZoIUvj:
+lqZlITnj:
 	movups	xmm0,   [eax+esi]
 	mov	edi, DWORD  [ebp+16]
 	movups	xmm1,   [eax+edi]
@@ -3777,16 +3783,16 @@ lqZoIUvj:
 	add	eax, 32
 	add	DWORD  [ebp-16], 8
 	cmp	edx, DWORD  [ebp-16]
-	ja	lqZoIUvj
-	jmp	UhOlFFvK
-NyCrxtBG:
+	ja	lqZlITnj
+	jmp	TdSeFFvK
+NiZrxtCG:
 	mov	DWORD  [ebp-16], 0
 	mov	edx, DWORD  [ebp+28]
 	sub	edx, 7
 	cmp	edx, 0
-	jbe	UhOlFFvK
+	jbe	TdSeFFvK
 	xor	eax, eax
-lZCknIDP:
+lZChnYGP:
 	movups	xmm0,   [eax+esi]
 	mov	ecx, DWORD  [ebp+16]
 	movaps	xmm1,   [eax+ecx]
@@ -3803,16 +3809,16 @@ lZCknIDP:
 	add	eax, 32
 	add	DWORD  [ebp-16], 8
 	cmp	edx, DWORD  [ebp-16]
-	ja	lZCknIDP
-	jmp	UhOlFFvK
-irwFiMBy:
+	ja	lZChnYGP
+	jmp	TdSeFFvK
+iyrFiMCy:
 	mov	DWORD  [ebp-16], 0
 	mov	edx, DWORD  [ebp+28]
 	sub	edx, 7
 	cmp	edx, 0
-	jbe	UhOlFFvK
+	jbe	TdSeFFvK
 	xor	eax, eax
-lQagImvj:
+lQadINnj:
 	movaps	xmm0,   [eax+esi]
 	mov	edi, DWORD  [ebp+16]
 	movups	xmm1,   [eax+edi]
@@ -3829,16 +3835,16 @@ lQagImvj:
 	add	eax, 32
 	add	DWORD  [ebp-16], 8
 	cmp	edx, DWORD  [ebp-16]
-	ja	lQagImvj
-	jmp	UhOlFFvK
-ukFDxtBG:
+	ja	lQadINnj
+	jmp	TdSeFFvK
+uhHDxtCG:
 	mov	DWORD  [ebp-16], 0
 	mov	edx, DWORD  [ebp+28]
 	sub	edx, 7
 	cmp	edx, 0
-	jbe	UhOlFFvK
+	jbe	TdSeFFvK
 	xor	eax, eax
-lXsinnDP:
+lXspnMGP:
 	movaps	xmm0,   [eax+esi]
 	mov	ecx, DWORD  [ebp+16]
 	movaps	xmm1,   [eax+ecx]
@@ -3855,16 +3861,16 @@ lXsinnDP:
 	add	eax, 32
 	add	DWORD  [ebp-16], 8
 	cmp	edx, DWORD  [ebp-16]
-	ja	lXsinnDP
-	jmp	UhOlFFvK
-KkmleQRQ:
+	ja	lXspnMGP
+	jmp	TdSeFFvK
+KhNleQWQ:
 	mov	DWORD  [ebp-16], 0
 	mov	edx, DWORD  [ebp+28]
 	sub	edx, 3
 	cmp	edx, 0
-	jbe	hTnjkIgH
+	jbe	yTnjjDuJ
 	xor	eax, eax
-PDpuGYUp:
+PDpuGYTp:
 	movups	xmm0,   [eax+esi]
 	mov	edi, DWORD  [ebp-20]
 	mov	ecx, DWORD  [ebp+16]
@@ -3886,16 +3892,16 @@ PDpuGYUp:
 	add	eax, 16
 	add	DWORD  [ebp-16], 4
 	cmp	edx, DWORD  [ebp-16]
-	ja	PDpuGYUp
-	jmp	hTnjkIgH
-akMPeEqw:
+	ja	PDpuGYTp
+	jmp	yTnjjDuJ
+ahBPeEew:
 	mov	DWORD  [ebp-16], 0
 	mov	edx, DWORD  [ebp+28]
 	sub	edx, 3
 	cmp	edx, 0
-	jbe	hTnjkIgH
+	jbe	yTnjjDuJ
 	xor	eax, eax
-PDLuGMUp:
+PDLuGMTp:
 	movaps	xmm0,   [eax+esi]
 	mov	edi, DWORD  [ebp-20]
 	mov	ecx, DWORD  [ebp+16]
@@ -3917,16 +3923,16 @@ PDLuGMUp:
 	add	eax, 16
 	add	DWORD  [ebp-16], 4
 	cmp	edx, DWORD  [ebp-16]
-	ja	PDLuGMUp
-	jmp	hTnjkIgH
-aonPSEqw:
+	ja	PDLuGMTp
+	jmp	yTnjjDuJ
+alMPSEew:
 	mov	DWORD  [ebp-16], 0
 	mov	edx, DWORD  [ebp+28]
 	sub	edx, 3
 	cmp	edx, 0
-	jbe	hTnjkIgH
+	jbe	yTnjjDuJ
 	xor	eax, eax
-PDLuGMmp:
+PDLuGMNp:
 	movaps	xmm0,   [eax+esi]
 	mov	edi, DWORD  [ebp-20]
 	mov	ecx, DWORD  [ebp+16]
@@ -3948,16 +3954,16 @@ PDLuGMmp:
 	add	eax, 16
 	add	DWORD  [ebp-16], 4
 	cmp	edx, DWORD  [ebp-16]
-	ja	PDLuGMmp
-	jmp	hTnjkIgH
-GdBleEqA:
+	ja	PDLuGMNp
+	jmp	yTnjjDuJ
+GaCleEeA:
 	mov	DWORD  [ebp-16], 0
 	mov	edx, DWORD  [ebp+28]
 	sub	edx, 3
 	cmp	edx, 0
-	jbe	hTnjkIgH
+	jbe	yTnjjDuJ
 	xor	eax, eax
-PfpHGMmp:
+PfpHGMNp:
 	movups	xmm0,   [eax+esi]
 	mov	edi, DWORD  [ebp-20]
 	mov	ecx, DWORD  [ebp+16]
@@ -3979,16 +3985,16 @@ PfpHGMmp:
 	add	eax, 16
 	add	DWORD  [ebp-16], 4
 	cmp	edx, DWORD  [ebp-16]
-	ja	PfpHGMmp
-	jmp	hTnjkIgH
-GfvlSEqA:
+	ja	PfpHGMNp
+	jmp	yTnjjDuJ
+GsnlSEeA:
 	mov	DWORD  [ebp-16], 0
 	mov	edx, DWORD  [ebp+28]
 	sub	edx, 3
 	cmp	edx, 0
-	jbe	hTnjkIgH
+	jbe	yTnjjDuJ
 	xor	eax, eax
-PfpHGMyp:
+PfpHGMip:
 	movups	xmm0,   [eax+esi]
 	mov	edi, DWORD  [ebp-20]
 	mov	ecx, DWORD  [ebp+16]
@@ -4010,16 +4016,16 @@ PfpHGMyp:
 	add	eax, 16
 	add	DWORD  [ebp-16], 4
 	cmp	edx, DWORD  [ebp-16]
-	ja	PfpHGMyp
-	jmp	hTnjkIgH
-shMPeEqA:
+	ja	PfpHGMip
+	jmp	yTnjjDuJ
+sfBPeEeA:
 	mov	DWORD  [ebp-16], 0
 	mov	edx, DWORD  [ebp+28]
 	sub	edx, 3
 	cmp	edx, 0
-	jbe	hTnjkIgH
+	jbe	yTnjjDuJ
 	xor	eax, eax
-PfLHGump:
+PfLHGuNp:
 	movaps	xmm0,   [eax+esi]
 	mov	edi, DWORD  [ebp-20]
 	mov	ecx, DWORD  [ebp+16]
@@ -4041,16 +4047,16 @@ PfLHGump:
 	add	eax, 16
 	add	DWORD  [ebp-16], 4
 	cmp	edx, DWORD  [ebp-16]
-	ja	PfLHGump
-	jmp	hTnjkIgH
-skCPSEqA:
+	ja	PfLHGuNp
+	jmp	yTnjjDuJ
+sgvPSEeA:
 	mov	DWORD  [ebp-16], 0
 	mov	edx, DWORD  [ebp+28]
 	sub	edx, 3
 	cmp	edx, 0
-	jbe	hTnjkIgH
+	jbe	yTnjjDuJ
 	xor	eax, eax
-PfLHGuyp:
+PfLHGuip:
 	movaps	xmm0,   [eax+esi]
 	mov	edi, DWORD  [ebp-20]
 	mov	ecx, DWORD  [ebp+16]
@@ -4072,8 +4078,8 @@ PfLHGuyp:
 	add	eax, 16
 	add	DWORD  [ebp-16], 4
 	cmp	edx, DWORD  [ebp-16]
-	ja	PfLHGuyp
-	jmp	hTnjkIgH
+	ja	PfLHGuip
+	jmp	yTnjjDuJ
 align 2
 align 16
 sse__Z31RisaInterleaveOverlappingWindowPfPKPKfS_ijj:
