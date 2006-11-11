@@ -2098,83 +2098,85 @@ def__ZN20tRisaPhaseVocoderDSP11ProcessCoreEi:
 	mov	DWORD  [esp], eax
 	call	def__Z4rdftiiPfPiS_
 	mov	eax, DWORD  [ebp-60]
+	fldz
 	fld1
+	fxch	st1
+	fst	DWORD  [esi+4]
 	fld	DWORD  [eax+60]
-	fucom	st1
+	fucom	st2
 	fnstsw	ax
-	fstp	st1
+	fstp	st2
 	sahf
-	jp	lMByVago
-	je	YxNyWEwI
-lMByVago:
+	jp	ypIVJApz
+	je	SmhBXwza
+ypIVJApz:
 	xor	ecx, ecx
 	cmp	ecx, DWORD  [ebp-64]
-	jae	oQGfnSez
-	fstp	st0
+	jae	gRcOZUFK
+	fstp	st1
 	fld	DWORD [TSVqnfks]
 	mov	eax, DWORD  [ebp-60]
-	fldz
 	fld	DWORD [EVmIgaHP]
 	mov	edi, DWORD  [eax+8]
 	fnstcw	WORD  [ebp-38]
 	movzx	eax, WORD  [ebp-38]
 	or	ax, 3072
 	mov	WORD  [ebp-40], ax
-	jmp	gWjHWZjX
+	jmp	fWjHWAjX
 align 8
-ZFFKsICI:
+ZFFKaIXI:
 	fld	st2
 	fadd	st0, st1
 	fxch	st1
 	fsubrp	st3, st0
 	fdivrp	st2, st0
 	fxch	st1
-	fmul	st0, st4
+	fmul	st0, st3
 	fsubr	st0, st2
-xnKxCfju:
-	fxch	st3
+cnPxCfhu:
+	fxch	st4
 	fucom	st1
 	fnstsw	ax
 	fstp	st1
 	sahf
-	jbe	AaryddvU
-	fxch	st2
+	jbe	FaruddnU
+	fxch	st3
 	fchs
-	fxch	st2
-AaryddvU:
+	fxch	st3
+FaruddnU:
 	mov	edx, DWORD  [ebp+12]
 	mov	eax, DWORD  [edi+edx*4]
 	xor	edx, edx
 	fld	DWORD  [eax+ecx*4]
-	fxch	st3
+	fxch	st4
 	fst	DWORD  [eax+ecx*4]
 	mov	eax, DWORD  [ebp-60]
-	fsubp	st3, st0
+	fsubp	st4, st0
 	push	edx
 	push	ecx
 	fild	QWORD  [esp]
 	add	esp, 8
 	fmul	DWORD  [eax+64]
-	fsubp	st3, st0
-	fld	st2
+	fsubp	st4, st0
+	fld	st3
 	fmul	QWORD [UkrRahaV]
 	fldcw	WORD  [ebp-40]
 	fistp	DWORD  [ebp-44]
 	fldcw	WORD  [ebp-38]
 	mov	edx, DWORD  [ebp-44]
 	test	edx, edx
-	js	RUyzXbRP
+	js	KzcIqNCc
 	mov	eax, edx
 	and	eax, 1
 	add	edx, eax
-kqYkVdjh:
+kwYjVdjh:
 	push	edx
 	mov	edx, DWORD  [ebp-60]
 	mov	eax, DWORD  [ebp-60]
 	fild	DWORD  [esp]
 	fmul	QWORD [MRJeXKPq]
-	fsubp	st3, st0
-	fxch	st2
+	fsubp	st4, st0
+	fxch	st3
 	fstp	DWORD  [ebp-20]
 	fld	DWORD  [ebp-20]
 	fmul	DWORD  [edx+68]
@@ -2189,15 +2191,15 @@ kqYkVdjh:
 	fstp	DWORD  [esi+4+ecx*8]
 	inc	ecx
 	cmp	ecx, DWORD  [ebp-64]
-	jae	KJGKiFMC
-gWjHWZjX:
+	jae	lNMUqiNC
+fWjHWAjX:
 	fld	DWORD  [esi+ecx*8]
 	fld	DWORD  [esi+4+ecx*8]
 	fld	st1
 	fld	st1
 	fmul	st0, st2
 	fxch	st3
-	fucom	st5
+	fucom	st6
 	fnstsw	ax
 	sahf
 	fmul	st1, st0
@@ -2214,51 +2216,50 @@ gWjHWZjX:
 	fxch	st2
 	fstp	DWORD  [ebp-20]
 	fld	DWORD  [ebp-20]
-	jb	ZFFKsICI
+	jb	ZFFKaIXI
 	fld	st2
 	fsub	st0, st1
 	fxch	st3
 	faddp	st1, st0
 	fdivp	st2, st0
 	fxch	st1
-	fmul	st0, st4
-	fsubr	st0, st4
-	jmp	xnKxCfju
+	fmul	st0, st3
+	fsubr	st0, st3
+	jmp	cnPxCfhu
 align 8
-YxNyWEwI:
-	fstp	st0
+SmhBXwza:
+	fstp	st1
 	xor	ecx, ecx
 	cmp	ecx, DWORD  [ebp-64]
-	jae	wCvADRVm
+	jae	zffdgnhS
 	fld	DWORD [TSVqnfks]
 	mov	edx, DWORD  [ebp-60]
-	fldz
 	mov	edi, DWORD  [edx+8]
 	mov	ebx, DWORD  [edx+12]
 	fnstcw	WORD  [ebp-38]
 	movzx	eax, WORD  [ebp-38]
 	or	ax, 3072
 	mov	WORD  [ebp-40], ax
-	jmp	VSSAqeVa
+	jmp	cDSAqeCz
 align 8
-wczIXgfD:
+eczIXgdD:
 	fld	st1
 	fadd	st0, st1
 	fxch	st1
 	fsubrp	st2, st0
-	fxch	st4
+	fxch	st5
 	fucom	st2
 	fnstsw	ax
 	fstp	st2
 	sahf
-	fdivp	st3, st0
-	fxch	st2
-	fmul	st0, st3
+	fdivp	st4, st0
+	fxch	st3
+	fmul	st0, st2
 	fsubr	DWORD [EVmIgaHP]
-qEdIphod:
-	jbe	MVMWnXjt
+QWdUphod:
+	jbe	MVMWnXky
 	fchs
-MVMWnXjt:
+MVMWnXky:
 	mov	edx, DWORD  [ebp+12]
 	mov	eax, DWORD  [edi+edx*4]
 	xor	edx, edx
@@ -2280,7 +2281,7 @@ MVMWnXjt:
 	fldcw	WORD  [ebp-38]
 	mov	edx, DWORD  [ebp-44]
 	test	edx, edx
-	js	jLfGXEAg
+	js	AnltiOeY
 	mov	eax, edx
 	and	eax, 1
 	add	edx, eax
@@ -2303,14 +2304,14 @@ jfivOPet:
 	fmul	DWORD [jhnxUjoX]
 	fxch	st1
 	fstp	DWORD  [eax+ecx*4]
-	fadd	st0, st2
-	fucom	st2
+	fadd	st0, st3
+	fucom	st3
 	fnstsw	ax
 	sahf
-	jbe	aMtRArgH
+	jbe	kdmIoMDb
 	fld	QWORD [HRxzOkFS]
 	fadd	st0, st1
-ycFDFmTE:
+ycFDFmTW:
 	fldcw	WORD  [ebp-40]
 	fistp	DWORD  [ebp-44]
 	fldcw	WORD  [ebp-38]
@@ -2323,7 +2324,7 @@ ycFDFmTE:
 	fchs
 	fld	st0
 	fmul	st0, st1
-	fadd	st0, st3
+	fadd	st0, st4
 	fld	st0
 	fmul	DWORD [AnnjUyfk]
 	fadd	DWORD [NEqDclkH]
@@ -2335,7 +2336,7 @@ ycFDFmTE:
 	fld	st0
 	fmul	DWORD [IJKqgJYD]
 	fxch	st2
-	fadd	st0, st4
+	fadd	st0, st5
 	fxch	st2
 	fadd	DWORD [cjTpLqeV]
 	fmul	st0, st1
@@ -2350,9 +2351,9 @@ ycFDFmTE:
 	fxch	st3
 	fmulp	st2, st0
 	fxch	st2
-	fadd	st0, st4
+	fadd	st0, st5
 	fxch	st1
-	fadd	st0, st4
+	fadd	st0, st5
 	fxch	st2
 	fsubrp	st1, st0
 	fxch	st1
@@ -2360,7 +2361,7 @@ ycFDFmTE:
 	fxch	st1
 	fchs
 	fxch	st1
-	fadd	st0, st3
+	fadd	st0, st4
 	fld	st1
 	fmul	st0, st2
 	fld	st1
@@ -2369,12 +2370,12 @@ ycFDFmTE:
 	fxch	st4
 	fmulp	st3, st0
 	fxch	st1
-	fadd	st0, st5
+	fadd	st0, st6
 	fxch	st3
 	fsub	DWORD [krlilhfO]
 	fld	st4
 	fxch	st3
-	fadd	st0, st6
+	fadd	st0, st7
 	fxch	st1
 	fadd	st0, st2
 	fxch	st2
@@ -2383,15 +2384,15 @@ ycFDFmTE:
 	fxch	st1
 	fchs
 	fxch	st1
-	fadd	st0, st5
+	fadd	st0, st6
 	fxch	st3
 	fmul	st0, st1
 	fxch	st3
 	fmulp	st1, st0
 	fxch	st2
-	fsubr	st0, st4
+	fsubr	st0, st5
 	fxch	st2
-	fadd	st0, st4
+	fadd	st0, st5
 	fxch	st1
 	fmul	st0, st2
 	fxch	st2
@@ -2402,15 +2403,15 @@ ycFDFmTE:
 	fstp	DWORD  [eax+4+ecx*8]
 	inc	ecx
 	cmp	ecx, DWORD  [ebp-64]
-	jae	mrrCGemT
-VSSAqeVa:
+	jae	qvntkCAk
+cDSAqeCz:
 	fld	DWORD  [esi+ecx*8]
 	fld	DWORD  [esi+4+ecx*8]
 	fld	st1
 	fld	st1
 	fmul	st0, st2
 	fxch	st3
-	fucom	st4
+	fucom	st5
 	fnstsw	ax
 	sahf
 	fmul	st1, st0
@@ -2428,26 +2429,28 @@ VSSAqeVa:
 	fxch	st3
 	fstp	DWORD  [ebp-20]
 	fld	DWORD  [ebp-20]
-	jb	wczIXgfD
+	jb	eczIXgdD
 	fld	st1
 	fsub	st0, st1
-	fxch	st5
+	fxch	st6
 	fucom	st3
 	fnstsw	ax
 	fstp	st3
 	faddp	st1, st0
 	sahf
-	fdivp	st3, st0
-	fxch	st2
-	fmul	st0, st3
-	fsubr	st0, st3
-	jmp	qEdIphod
+	fdivp	st4, st0
+	fxch	st3
+	fmul	st0, st2
+	fsubr	st0, st2
+	jmp	QWdUphod
 align 8
-mrrCGemT:
+qvntkCAk:
 	fstp	st0
-mvwNryPT:
+align 16
+zffdgnhS:
 	fstp	st0
-wCvADRVm:
+	mov	edx, DWORD  [ebp-68]
+	mov	DWORD  [edx+4], 0x00000000
 	mov	edx, DWORD  [ebp-60]
 	mov	eax, DWORD  [edx+20]
 	mov	DWORD  [esp+16], eax
@@ -2470,29 +2473,37 @@ wCvADRVm:
 	pop	ebp
 	ret
 align 8
-KJGKiFMC:
-	fstp	st0
-	fstp	st0
-	fstp	st0
-	fld	DWORD  [eax+60]
-oQGfnSez:
+kdmIoMDb:
+	fld	QWORD [HRxzOkFS]
+	fsubr	st0, st1
+	jmp	ycFDFmTW
+align 8
+KzcIqNCc:
+	and	edx, -2
+	jmp	kwYjVdjh
+align 8
+AnltiOeY:
+	and	edx, -2
+	jmp	jfivOPet
+gRcOZUFK:
+	fxch	st1
+tFgYAYVy:
 	xor	edi, edi
 	fld1
 	fdivrp	st1, st0
 	cmp	edi, DWORD  [ebp-64]
-	jae	dBIRyxxA
+	jae	sJdnSaZI
 	fnstcw	WORD  [ebp-38]
 	mov	ebx, DWORD  [ebp-68]
-	fldz
 	movzx	eax, WORD  [ebp-38]
 	or	ax, 3072
 	mov	WORD  [ebp-40], ax
-	jmp	CdvUOZpf
+	jmp	XdvUOZpf
 align 8
-cIPqeZBM:
+cYPqeZBM:
 	fstp	st0
 	cmp	ecx, DWORD  [ebp-64]
-	jae	ektPNsXZ
+	jae	gzPLBcYy
 	mov	eax, DWORD  [esi+ecx*8]
 	inc	edi
 	mov	edx, DWORD  [ebp-60]
@@ -2502,9 +2513,9 @@ cIPqeZBM:
 	fstp	DWORD  [ebx+4]
 	add	ebx, 8
 	cmp	edi, DWORD  [ebp-64]
-	jae	autoJdJH
+	jae	sJdnSaZI
 align 16
-CdvUOZpf:
+XdvUOZpf:
 	xor	edx, edx
 	push	edx
 	xor	edx, edx
@@ -2512,7 +2523,7 @@ CdvUOZpf:
 	fild	QWORD  [esp]
 	add	esp, 8
 	push	edx
-	fmul	st0, st2
+	fmul	st0, st1
 	fld	st0
 	fldcw	WORD  [ebp-40]
 	fistp	QWORD  [ebp-56]
@@ -2525,7 +2536,7 @@ CdvUOZpf:
 	add	esp, 8
 	cmp	eax, DWORD  [ebp-64]
 	fsubp	st1, st0
-	jae	cIPqeZBM
+	jae	cYPqeZBM
 	fld	DWORD  [esi+ecx*8]
 	mov	eax, DWORD  [ebp-60]
 	fld	DWORD  [esi+8+ecx*8]
@@ -2541,29 +2552,26 @@ CdvUOZpf:
 	fmul	DWORD  [eax+60]
 	fstp	DWORD  [ebx+4]
 	inc	edi
-qzeJGvQl:
+AfsyTpzy:
 	add	ebx, 8
 	cmp	edi, DWORD  [ebp-64]
-	jb	CdvUOZpf
-autoJdJH:
-	fstp	st0
-dBIRyxxA:
+	jb	XdvUOZpf
+sJdnSaZI:
 	fstp	st0
 	xor	ecx, ecx
 	cmp	ecx, DWORD  [ebp-64]
-	jae	wCvADRVm
+	jae	zffdgnhS
 	mov	eax, DWORD  [ebp-60]
-	fldz
-	mov	edx, DWORD  [ebp+12]
 	lea	edi, [ebp-24]
-	mov	ebx, DWORD  [eax+12]
+	mov	edx, DWORD  [ebp+12]
 	lea	esi, [ebp-28]
+	mov	ebx, DWORD  [eax+12]
 	mov	ebx, DWORD  [ebx+edx*4]
 	fnstcw	WORD  [ebp-38]
 	movzx	eax, WORD  [ebp-38]
 	or	ax, 3072
 	mov	WORD  [ebp-40], ax
-	jmp	kkWfjIge
+	jmp	gkWfjIge
 align 8
 GIeyGxjp:
 	fld	QWORD [HRxzOkFS]
@@ -2656,8 +2664,8 @@ EQqJBOPX:
 	fstp	DWORD  [eax+4+ecx*8]
 	inc	ecx
 	cmp	ecx, DWORD  [ebp-64]
-	jae	mvwNryPT
-kkWfjIge:
+	jae	zffdgnhS
+gkWfjIge:
 	mov	edx, DWORD  [ebp-60]
 	mov	eax, DWORD  [ebp-68]
 	fld	DWORD  [edx+76]
@@ -2693,24 +2701,17 @@ kkWfjIge:
 	fadd	st0, st1
 	jmp	EQqJBOPX
 align 8
-aMtRArgH:
-	fld	QWORD [HRxzOkFS]
-	fsubr	st0, st1
-	jmp	ycFDFmTE
-align 8
-ektPNsXZ:
-	fst	DWORD  [ebx]
-	fst	DWORD  [ebx+4]
+gzPLBcYy:
+	mov	DWORD  [ebx], 0x00000000
+	mov	DWORD  [ebx+4], 0x00000000
 	inc	edi
-	jmp	qzeJGvQl
+	jmp	AfsyTpzy
 align 8
-jLfGXEAg:
-	and	edx, -2
-	jmp	jfivOPet
-align 8
-RUyzXbRP:
-	and	edx, -2
-	jmp	kqYkVdjh
+lNMUqiNC:
+	fstp	st0
+	fstp	st0
+	fld	DWORD  [eax+60]
+	jmp	tFgYAYVy
 align 2
 align 16
 def__Z30RisaDeinterleaveApplyingWindowPPfPKfS_ijj:
@@ -2723,22 +2724,22 @@ def__Z30RisaDeinterleaveApplyingWindowPPfPKfS_ijj:
 	mov	edi, DWORD  [ebp+20]
 	mov	esi, DWORD  [ebp+12]
 	cmp	edi, 1
-	je	NVoFYaYQ
+	je	NVoFTlRQ
 	cmp	edi, 2
-	je	jHcbRtHZ
+	je	jHcbERHZ
 	xor	ecx, ecx
 	cmp	ecx, DWORD  [ebp+28]
-	jae	nBSNJcMX
+	jae	dBSNJbpn
 align 16
-HHIXFJto:
+KKIXFJiq:
 	xor	edx, edx
 	cmp	edx, edi
-	jge	OBtmCQKs
+	jge	FzRmCQLl
 	mov	eax, DWORD  [ebp+24]
 	add	eax, ecx
 	mov	DWORD  [ebp-16], eax
 align 16
-zluWozNR:
+zluWoclP:
 	mov	ebx, DWORD  [ebp+8]
 	mov	eax, DWORD  [ebx+edx*4]
 	mov	ebx, DWORD  [ebp+16]
@@ -2749,41 +2750,41 @@ zluWozNR:
 	add	esi, 4
 	cmp	edx, edi
 	fstp	DWORD  [eax+ebx*4]
-	jl	zluWozNR
-OBtmCQKs:
+	jl	zluWoclP
+FzRmCQLl:
 	inc	ecx
 	cmp	ecx, DWORD  [ebp+28]
-	jb	HHIXFJto
-nBSNJcMX:
+	jb	KKIXFJiq
+dBSNJbpn:
 	pop	eax
 	pop	ebx
 	pop	esi
 	pop	edi
 	pop	ebp
 	ret
-NVoFYaYQ:
+NVoFTlRQ:
 	mov	edx, DWORD  [ebp+8]
 	mov	ecx, DWORD  [ebp+24]
 	mov	eax, DWORD  [edx]
 	lea	eax, [eax+ecx*4]
 	xor	ecx, ecx
-	jmp	AjEeWPFG
-GyPXUjBC:
+	jmp	DjEeWOBG
+VyIXUjBX:
 	mov	ebx, DWORD  [ebp+16]
 	fld	DWORD  [ebx+ecx*4]
 	fmul	DWORD  [esi+ecx*4]
 	fstp	DWORD  [eax+ecx*4]
 	inc	ecx
-AjEeWPFG:
+DjEeWOBG:
 	cmp	ecx, DWORD  [ebp+28]
-	jb	GyPXUjBC
+	jb	VyIXUjBX
 	pop	eax
 	pop	ebx
 	pop	esi
 	pop	edi
 	pop	ebp
 	ret
-jHcbRtHZ:
+jHcbERHZ:
 	mov	ecx, DWORD  [ebp+8]
 	mov	eax, DWORD  [ebp+24]
 	mov	edx, DWORD  [ecx]
@@ -2792,8 +2793,8 @@ jHcbRtHZ:
 	xor	ecx, ecx
 	add	edx, eax
 	add	eax, ebx
-	jmp	ssEEUMLC
-YUfhTVPc:
+	jmp	szEEUMLC
+HUfhEVPv:
 	mov	ebx, DWORD  [ebp+16]
 	fld	DWORD  [ebx+ecx*4]
 	fmul	DWORD  [esi+ecx*8]
@@ -2802,9 +2803,9 @@ YUfhTVPc:
 	fmul	DWORD  [esi+4+ecx*8]
 	fstp	DWORD  [eax+ecx*4]
 	inc	ecx
-ssEEUMLC:
+szEEUMLC:
 	cmp	ecx, DWORD  [ebp+28]
-	jb	YUfhTVPc
+	jb	HUfhEVPv
 	pop	eax
 	pop	ebx
 	pop	esi
@@ -2823,22 +2824,22 @@ def__Z31RisaInterleaveOverlappingWindowPfPKPKfS_ijj:
 	mov	edi, DWORD  [ebp+20]
 	mov	ecx, DWORD  [ebp+8]
 	cmp	edi, 1
-	je	btMfTiZR
+	je	btMfTiSW
 	cmp	edi, 2
-	je	IOjnKeja
+	je	IOjnKrta
 	xor	ebx, ebx
 	cmp	ebx, DWORD  [ebp+28]
-	jae	vXxvbjMY
+	jae	gXxvmjME
 align 16
-tidZObTu:
+updZObEu:
 	xor	edx, edx
 	cmp	edx, edi
-	jge	xVBVbZwx
+	jge	xVBXmZej
 	mov	eax, DWORD  [ebp+24]
 	add	eax, ebx
 	mov	DWORD  [ebp-16], eax
 align 16
-bkgfVmda:
+nrdfVmdx:
 	mov	esi, DWORD  [ebp+12]
 	mov	eax, DWORD  [esi+edx*4]
 	mov	esi, DWORD  [ebp+16]
@@ -2850,42 +2851,42 @@ bkgfVmda:
 	fstp	DWORD  [ecx]
 	add	ecx, 4
 	cmp	edx, edi
-	jl	bkgfVmda
-xVBVbZwx:
+	jl	nrdfVmdx
+xVBXmZej:
 	inc	ebx
 	cmp	ebx, DWORD  [ebp+28]
-	jb	tidZObTu
-vXxvbjMY:
+	jb	updZObEu
+gXxvmjME:
 	pop	esi
 	pop	ebx
 	pop	esi
 	pop	edi
 	pop	ebp
 	ret
-btMfTiZR:
+btMfTiSW:
 	mov	edx, DWORD  [ebp+12]
 	mov	ebx, DWORD  [ebp+24]
 	mov	eax, DWORD  [edx]
 	lea	eax, [eax+ebx*4]
 	xor	ebx, ebx
-	jmp	HVYFYsiB
-JiLlCVZy:
+	jmp	HVYFYaQC
+LiOlCVZy:
 	mov	esi, DWORD  [ebp+16]
 	fld	DWORD  [esi+ebx*4]
 	fmul	DWORD  [eax+ebx*4]
 	fadd	DWORD  [ecx+ebx*4]
 	fstp	DWORD  [ecx+ebx*4]
 	inc	ebx
-HVYFYsiB:
+HVYFYaQC:
 	cmp	ebx, DWORD  [ebp+28]
-	jb	JiLlCVZy
+	jb	LiOlCVZy
 	pop	esi
 	pop	ebx
 	pop	esi
 	pop	edi
 	pop	ebp
 	ret
-IOjnKeja:
+IOjnKrta:
 	mov	ebx, DWORD  [ebp+12]
 	mov	eax, DWORD  [ebp+24]
 	mov	edx, DWORD  [ebx]
@@ -2894,8 +2895,8 @@ IOjnKeja:
 	xor	ebx, ebx
 	add	edx, eax
 	add	eax, edi
-	jmp	tmJNjSqo
-YmwuHJpo:
+	jmp	tmJVjSqo
+HmwuHJkp:
 	mov	esi, DWORD  [ebp+16]
 	fld	DWORD  [esi+ebx*4]
 	fmul	DWORD  [edx+ebx*4]
@@ -2906,9 +2907,9 @@ YmwuHJpo:
 	fadd	DWORD  [ecx+4+ebx*8]
 	fstp	DWORD  [ecx+4+ebx*8]
 	inc	ebx
-tmJNjSqo:
+tmJVjSqo:
 	cmp	ebx, DWORD  [ebp+28]
-	jb	YmwuHJpo
+	jb	HmwuHJkp
 	pop	esi
 	pop	ebx
 	pop	esi
