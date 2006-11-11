@@ -2834,7 +2834,7 @@ class KAGEnvSE {
         if (e.canskip === void) {
             e.canskip = true;
         }
-        ret = kag.waitSEStop(e);
+        ret = kag.waitSEFade(e);
     }
 
     var secommands = %[
