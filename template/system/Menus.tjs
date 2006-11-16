@@ -144,6 +144,22 @@ function KAGWindow_createMenus()
 		debugMenu.add(this.showControllerMenuItem = new KAGMenuItem(this, "ÉRÉìÉgÉçÅ[Éâ(&S)\tShift+F1", 1,
 			onShowContollerMenuItemClick, false));
 
+		debugMenu.add(this.voiceSpeedMenu = new KAGMenuItem(this, "É{ÉCÉXë¨ìx(&V)", 0, void, false));
+			voiceSpeedMenu.add(this.voiceNormalSpeedMenuItem = new KAGMenuItem(this, "í èÌ(&N)", 1,
+				onVoiceSpeedMenuItemClick, false));
+			voiceNormalSpeedMenuItem.speed = 1.0;
+			voiceSpeedMenu.add(this.voiceOneHalfSpeedMenuItem = new KAGMenuItem(this, "1.5î{ë¨(&F)", 1,
+				onVoiceSpeedMenuItemClick, false));
+			voiceOneHalfSpeedMenuItem.speed = 1.5;
+			voiceSpeedMenu.add(this.voiceDoubleSpeedMenuItem = new KAGMenuItem(this, "2î{ë¨(&D)", 1,
+				onVoiceSpeedMenuItemClick, false));
+			voiceDoubleSpeedMenuItem.speed = 2.0;
+			voiceSpeedMenu.add(this.voiceDoubleHalfSpeedMenuItem = new KAGMenuItem(this, "2.5î{ë¨(&E)", 1,
+				onVoiceSpeedMenuItemClick, false));
+			voiceDoubleHalfSpeedMenuItem.speed = 2.5;
+			voiceSpeedMenu.add(this.voiceTripleSpeedMenuItem = new KAGMenuItem(this, "3î{ë¨(&T)", 1,
+				onVoiceSpeedMenuItemClick, false));
+			voiceTripleSpeedMenuItem.speed = 3.0;
 }
 
 
