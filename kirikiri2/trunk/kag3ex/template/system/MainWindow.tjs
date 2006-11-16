@@ -1443,7 +1443,19 @@ class KAGWindow extends Window
 		{
 			se[i].restoreSystemState(scflags);
 		}
-	}
+
+        // ボイス用速度制御用メニュー
+        if(typeof this.voiceSpeedMenu !== "undefined") {
+            var children = voiceSpeedMenu.children;
+            for (var i = children.count-1; i >= 0; i--) {
+                var item = children[i];
+                if (typeof item.speed !== "undefined" && item.speed == voicespeed) {
+                    item.checked = true;
+                    break;
+                }
+            }
+		}
+    }
 
 	function clearSystemVariables()
 	{
@@ -7792,7 +7804,33 @@ class KAGWindow extends Window
             }
         }
     }
+
+    /**
+     * ボイスの再生倍速
+     */
+    property voicespeed {
+        getter() {
+            if (scflags.voicespeed === void) {
+                return 1.0;
+            }
+            return scflags.voicespeed;
+        }
+        setter(v) {
+            scflags.voicespeed = v;
+        }
+    }
+    
+	function onVoiceSpeedMenuItemClick(sender)
+	{
+		sender.checked = true;
+        voicespeed = sender.speed;
+        if (typeof updateVoice !== "undefined") {
+            updateVoice();
+        }
+    }
 }
+
+
 
 
 
