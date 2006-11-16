@@ -692,6 +692,7 @@ class KAGEnvImage {
      */
     function updateLayer(layer) {
         if (resetFlag) {
+            layer.visible = isShowBU();
             layer.reset();
             _type    = void;
             _opacity = void;
@@ -724,7 +725,9 @@ class KAGEnvImage {
                         opacity     = 0 if opacity === void;
                         opacityTime = fadeTime > 1 ? fadeTime : fadeValue;
                     } else {
-                        layer.visible = false;
+                        if (opacityTime === void) {
+                            layer.visible = false;
+                        }
                     }
                 }
             }
@@ -927,7 +930,7 @@ class KAGEnvImage {
         yposFrom  = void;
         moveTime  = void;
         moveAccel = void;
-        reposition = true;
+        reposition = false;
 
         _grayscale = f.grayscale;
         _rgamma    = f.rgamma;
@@ -1021,8 +1024,8 @@ class KAGEnvImage {
                 var layer = getLayer(kag.back);
                 if (isShowBU()) {
                     drawLayer(layer);
-                    calcPosition(layer);
                 }
+                calcPosition(layer);
                 updateLayer(layer);
                 beginTransition(trans);
                 
@@ -1048,8 +1051,8 @@ class KAGEnvImage {
                     layer = getLayer(kag.back);
                     if (isShowBU()) {
                         drawLayer(layer);
-                        calcPosition(layer);
                     }
+                    calcPosition(layer);
                     updateLayer(layer);
                     beginTransition(trans);
 
@@ -1058,8 +1061,8 @@ class KAGEnvImage {
                     //dm("フェードを opacity 処理で実現");
                     if (isShowBU()) {
                         drawLayer(layer);
-                        calcPosition(layer);
                     }
+                    calcPosition(layer);
                     updateLayer(layer);
                 }
             }
@@ -2459,8 +2462,13 @@ class KAGEnvCharacter extends KAGEnvLevelLayer, KAGEnvImage {
         return strVoice == "ignore" ? void : getVoice(strVoice !== void ? strVoice : voice);
     }
 
+    var initSound;
     var soundBuffer;
     var voiceEndTime;
+
+    function updateVoice() {
+        initSound = true;
+    }
     
     /**
      * ボイス開始時処理
@@ -2509,7 +2517,14 @@ class KAGEnvCharacter extends KAGEnvLevelLayer, KAGEnvImage {
             if (!kag.skipMode && kag.voiceenable) {
                 //dm("再生処理:" + voicename);
                 // 再生処理実行
-                if (soundBuffer == void) {
+                if (initSound) {
+                    if (soundBuffer !== void) {
+                        invalidate soundBuffer;
+                        soundBuffer = void;
+                    }
+                    initSound = false;
+                }
+                if (soundBuffer === void) {
                     soundBuffer = new VoiceTrack(this);
                 }
                 // ボリューム補正
@@ -2524,9 +2539,15 @@ class KAGEnvCharacter extends KAGEnvLevelLayer, KAGEnvImage {
                         else if(test = voicename + ".ogg", Storages.isExistentStorage(test))
                             voicename = test;
                     }
+                    if (kag.voicespeed != 1.0 && typeof soundBuffer.filters != "undefined") {
+                        soundBuffer.filters.clear();
+                        soundBuffer.filters.add(new WaveSoundBuffer.PhaseVocoder());
+                        soundBuffer.filters[0].window = 256;
+                        soundBuffer.filters[0].time = 1.0 / kag.voicespeed;
+                    }
                     soundBuffer.open(voicename);
                     soundBuffer.play();
-                    ret = soundBuffer.totalTime;
+                    ret = (int)(soundBuffer.totalTime / kag.voicespeed);
                 } catch (e) {
                     dm("ボイス再生に失敗しました ファイル名:" + voicename);
                 }
@@ -2560,6 +2581,9 @@ class KAGEnvCharacter extends KAGEnvLevelLayer, KAGEnvImage {
         voiceEndTime = void;
         if (soundBuffer !== void) {
             soundBuffer.stop();
+            if (typeof soundBuffer.filters != "undefined") {
+                soundBuffer.filters.clear();
+            }
         }
     }
 
@@ -3150,6 +3174,8 @@ class KAGEnvironment extends KAGEnvImage {
         kag.unknownHandler         = this.unknown;
         kag.seStopHandler          = this.onSeStop;
         kag.stopActionHandler      = this.onStopAction;
+
+        kag.updateVoice            = this.updateVoice;
         
         dm("環境初期化完了");
     }
@@ -4478,6 +4504,15 @@ class KAGEnvironment extends KAGEnvImage {
         });
     }
 
+    /**
+     * ボイス更新
+     */
+    function updateVoice() {
+        foreach(characters, function(name, value, dict) {
+            value.updateVoice();
+        });
+    }
+    
 };
 
 KAGEnvironment.XPOSITION    = 1;
