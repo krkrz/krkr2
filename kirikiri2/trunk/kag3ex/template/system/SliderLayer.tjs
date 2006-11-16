@@ -29,6 +29,7 @@ class SliderLayer extends KAGLayer
     var Slider_opacity = 192; // 不透明度
 
     var nohilight; // ハイライトしない
+    var jumpMode = false; // クリックしたときにそこにジャンプする
     
     /**
      * コンストラクタ
@@ -203,6 +204,20 @@ class SliderLayer extends KAGLayer
             position = Slider_position + int((Slider_max - Slider_min) / (Slider_tabWidth-2));
         }
     }
+
+    function toPosition(x, y) {
+        if (vertical) {
+            // タブをドラッグ
+            position = int(
+                (y - Slider_dragOriginY - (Slider_tabHeight >> 1)) * (Slider_max - Slider_min) /
+                (imageHeight - Slider_tabHeight - 2) + Slider_min);
+        } else {
+            // タブをドラッグ
+            position = int(
+                (x - Slider_dragOriginX - (Slider_tabWidth >> 1)) * (Slider_max - Slider_min) /
+                (imageWidth - Slider_tabWidth - 2) + Slider_min);
+        }
+    }
     
 	function onKeyDown(key, shift, process)
 	{
@@ -254,10 +269,18 @@ class SliderLayer extends KAGLayer
                     htabh + 1;
                 if(pos_y - htabh > y) {
                     // タブより下
-                    position = Slider_position - int((Slider_max - Slider_min)/ (tabh-2));
+                    if (jumpMode) {
+                        toPosition(x, y);
+                    } else {
+                        toLeft();
+                    }
                 } else if(pos_y + htabh < y) {
                     // タブより上
-                    position = Slider_position + int((Slider_max - Slider_min)/ (tabh-2));
+                    if (jumpMode) {
+                        position = Slider_position + int((Slider_max - Slider_min)/ (tabh-2));
+                    } else {
+                        toRight();
+                    }
                 } else {
                     // タブ
                     // タブのドラッグを開始
@@ -272,10 +295,18 @@ class SliderLayer extends KAGLayer
                     htabw + 1;
                 if(pos_x - htabw > x) {
                     // タブより左
-                    position = Slider_position - int((Slider_max - Slider_min)/ (tabw-2));
+                    if (jumpMode) {
+                        toPosition(x, y);
+                    } else {
+                        toLeft();
+                    }
                 } else if(pos_x + htabw < x) {
                     // タブより右
-                    position = Slider_position + int((Slider_max - Slider_min)/ (tabw-2));
+                    if (jumpMode) {
+                        toPosition(x, y);
+                    } else {
+                        toRight();
+                    }
                 } else {
                     // タブ
                     // タブのドラッグを開始
@@ -303,18 +334,8 @@ class SliderLayer extends KAGLayer
 
 		if(Slider_dragging)
 		{
-            if (vertical) {
-                // タブをドラッグ
-                position = int(
-                    (y - Slider_dragOriginY - (Slider_tabHeight >> 1)) * (Slider_max - Slider_min) /
-                    (imageHeight - Slider_tabHeight - 2) + Slider_min);
-            } else {
-                // タブをドラッグ
-                position = int(
-                    (x - Slider_dragOriginX - (Slider_tabWidth >> 1)) * (Slider_max - Slider_min) /
-                    (imageWidth - Slider_tabWidth - 2) + Slider_min);
-            }
-		}
+            toPosition(x, y);
+        }
 	}
 
 	function onMouseEnter()
