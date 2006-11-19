@@ -184,8 +184,12 @@ stage / event および 前景レイヤに対して、
 	value		連動変数名。指定されると、
 				(1)指定された変数を初期値として参照
 				(2)変更時に指定された変数に値を代入
+                を行う。これを指定すると onchange, onchangefunc は無効
 	position	初期値
 	onchange	変更値を代入する変数名
+    onchangefunc 変更したとき呼び出される関数を指定
+                 func(position, dragging); の形で呼び出される
+　　　　　　　　 指定すると onchange は無効
 
 	base		背景画像名。
 				指定した場合は width と height は背景画像のサイズになる
@@ -195,6 +199,9 @@ stage / event および 前景レイヤに対して、
 	normal		タブ画像通常（分離）
 	over		タブ画像マウスオーバー（分離）
 	on			タブ画像プッシュダウン時（分離）
+
+	nohighlicht ハイライトしない
+    jumpmode    ジャンプモード（スライダーのベースをクリックするとそこに移動）
 
 ◆sysbutton (新規)
 
