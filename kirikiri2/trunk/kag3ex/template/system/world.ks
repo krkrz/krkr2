@@ -1898,7 +1898,6 @@ class KAGEnvCharacter extends KAGEnvLevelLayer, KAGEnvImage {
     }
     
     var charCommands = %[
-    pose    : this.setPose incontextof this,
     dress   : this.setDress incontextof this,
     face    : function(cmd,elm) {
         if (facePoseMap !== void) {
@@ -1929,6 +1928,38 @@ class KAGEnvCharacter extends KAGEnvLevelLayer, KAGEnvImage {
         ];
 
     /**
+     * ポーズ指定を優先処理する
+     */
+    function doPoseCommand(cmd, param, elm) {
+
+        // ポーズコマンド
+        if (cmd == "pose") {
+            setPose(param, elm);
+            return true;
+        }
+
+        // 顔ポーズマップが存在する場合
+        if (facePoseMap !== void) {
+            var p;
+            if ((p = facePoseMap[cmd]) !== void) {
+                setPose(p,elm);
+                setFace(cmd,elm);
+                return true;
+            }
+        }
+        
+        // ポーズ指定
+        if (poses !== void) {
+            if (poses[cmd] !== void) {
+                setPose(cmd,elm);
+                return true;
+            }
+        }
+        
+        return false;
+    }
+    
+    /**
      * コマンドの実行
      * @param cmd コマンド
      * @param param パラメータ
@@ -1952,37 +1983,22 @@ class KAGEnvCharacter extends KAGEnvLevelLayer, KAGEnvImage {
         var info;
         var find = false;
 
-        // 顔ポーズマップが存在する場合
-        if (facePoseMap !== void) {
-            var p;
-            if ((p = facePoseMap[cmd]) !== void) {
-                setPose(p,elm);
-                setFace(cmd,elm);
-                find = true;
-            }
-        }
-
         if (!find && poses !== void) {
-            if (poses[cmd] !== void) {
-                find = true;
-                setPose(cmd,elm);
-            } else {
-                var poseInfo;
-                if ((poseInfo = poses[pose]) !== void) {
-                    var dresses       = poseInfo.dresses;
-                    var faces         = poseInfo.faces;
-                    if (dresses !== void && dresses[cmd] !== void) {
-                        //dm("服装を設定");
-                        find = true;
-                        setDress(cmd,elm);
-                    } else if (faces !== void && faces[cmd] !== void) {
-                        //dm("表情を設定");
-                        find = true;
-                        setFace(cmd,elm);
-                    }
-                } else {
-                    dm("ポーズ情報がありません:" + pose + ":" + cmd);
+            var poseInfo;
+            if ((poseInfo = poses[pose]) !== void) {
+                var dresses       = poseInfo.dresses;
+                var faces         = poseInfo.faces;
+                if (dresses !== void && dresses[cmd] !== void) {
+                    //dm("服装を設定");
+                    find = true;
+                    setDress(cmd,elm);
+                } else if (faces !== void && faces[cmd] !== void) {
+                    //dm("表情を設定");
+                    find = true;
+                    setFace(cmd,elm);
                 }
+            } else {
+                dm("ポーズ情報がありません:" + pose + ":" + cmd);
             }
         }
 
@@ -2177,11 +2193,11 @@ class KAGEnvCharacter extends KAGEnvLevelLayer, KAGEnvImage {
     function _drawLayer(layer, levelName) {
 
         if (!_drawLayerPose(layer, levelName, pose)) {
-            dm("立ち絵がロードできませんでした:" + pose);
+            dm("立ち絵がロードできませんでした:" + levelName + ":" + pose);
             if (pose !== init.defaultPose) {
                 dm("デフォルトのポーズを試用します:" + init.defaultPose);
                 if (!_drawLayerPose(layer, levelName, init.defaultPose)) {
-                    dm("立ち絵がロードできませんでした:" + init.defaultPose);
+                    dm("立ち絵がロードできませんでした:" + levelName + ":" + init.defaultPose);
                     return false;
                 }
             } else {
@@ -2376,7 +2392,20 @@ class KAGEnvCharacter extends KAGEnvLevelLayer, KAGEnvImage {
     function tagfunc(elm) {
         //dm("キャラクタタグの呼び出し:" + name);
         ret = void;
-        foreach(elm, doCommand);
+
+        {
+            var e = %[];
+            (Dictionary.assign incontextof e)(elm); 
+            var names = [];
+            names.assign(e);
+            // ポーズ指定コマンドは優先処理する
+            for (var i=0; i<names.count; i+= 2) {
+                if (doPoseCommand(names[i], names[i+1], e)) {
+                    delete e[names[i]];
+                }
+            }
+            foreach(e, doCommand);
+        }
         hideMessage();
         updateImage();
         return ret;
