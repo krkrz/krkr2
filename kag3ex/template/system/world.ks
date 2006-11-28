@@ -32,7 +32,7 @@ function showKeys(name, dict) {
             if (i != 0) {
                 name += ",";
             }
-            name += array[i];
+            name += (array[i] + ":" + array[i+1]);
         }
         dm(name);
     }
@@ -619,6 +619,7 @@ class KAGEnvImage {
             // パラメータのコピー
             foreach(elm, function(name, value, elm, tr) {
                 if (transitionParam[name] !== void) {
+					dm("パラメータコピー:" + name + ":" + value);
                     tr[name] = value;
                 }
             }, tr);
@@ -640,15 +641,14 @@ class KAGEnvImage {
      * @param name トランジション名
      */
     function _setTrans(name, elm) {
+        //dm("トランジション設定:" + name);
         var tr = getTrans(name, elm);
         if (tr.method !== void) {
-            if (trans === void) {
-                if (!env.transMode && !isSkip()) {
-                    trans = tr;
-                } else {
-                    // 無効なトランジションを指定
-                    trans = %[];
-                }
+            if (!env.transMode && !isSkip()) {
+                trans = tr;
+            } else {
+                // 無効なトランジションを指定
+                trans = %[];
             }
             redraw = true;
             return true;
@@ -670,7 +670,7 @@ class KAGEnvImage {
      * @return 設定した場合ｈ
      */
     function setTrans2(param) {
-        if (trans == void) {
+        if (trans === void) {
             //dm("トランジション設定2:" + param);
             if (param === void) {
                 return false;
@@ -1024,8 +1024,8 @@ class KAGEnvImage {
                 var layer = getLayer(kag.back);
                 if (isShowBU()) {
                     drawLayer(layer);
+	                calcPosition(layer);
                 }
-                calcPosition(layer);
                 updateLayer(layer);
                 beginTransition(trans);
                 
@@ -1051,8 +1051,8 @@ class KAGEnvImage {
                     layer = getLayer(kag.back);
                     if (isShowBU()) {
                         drawLayer(layer);
+	                    calcPosition(layer);
                     }
-                    calcPosition(layer);
                     updateLayer(layer);
                     beginTransition(trans);
 
@@ -1061,8 +1061,8 @@ class KAGEnvImage {
                     //dm("フェードを opacity 処理で実現");
                     if (isShowBU()) {
                         drawLayer(layer);
+	                    calcPosition(layer);
                     }
-                    calcPosition(layer);
                     updateLayer(layer);
                 }
             }
@@ -4470,7 +4470,7 @@ class KAGEnvironment extends KAGEnvImage {
             ret = void;
             elm.tagname = "env";
             foreach(elm, doCommand);
-            showKeys("trans", trans);
+            //showKeys("trans", trans);
             hideMessage();
             updateImage();
             return ret;
