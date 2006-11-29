@@ -301,6 +301,8 @@ class KAGWindow extends Window
     var bookMarkStorages = []; // 栞のシナリオ名
 	var bookMarkDates = []; // 栞の日付
     var bookMarkProtectedStates = []; // 栞が保護されているかの情報
+	var bookMarkPlayTimes = []; // 栞のプレイ時間
+	var bookMarkGameDates = []; // 栞のゲーム内日付
 
 	var showFixedPitchOnlyInFontSelector = false; // フォント選択で固定ピットフォントのみを表示するか
 
@@ -730,6 +732,9 @@ class KAGWindow extends Window
 	{
 		// finalize メソッド
 
+        clearBgmStop();
+        clearBgmLabel();
+        
 		// プラグインの無効化
 		for(var i = 0; i < kagPlugins.count; i++) invalidate kagPlugins[i];
 
@@ -1414,6 +1419,8 @@ class KAGWindow extends Window
 		bookMarkStorages = scflags.bookMarkStorages if scflags.bookMarkStorages !== void;
 		bookMarkDates = scflags.bookMarkDates if scflags.bookMarkDates !== void;
 		bookMarkProtectedStates = scflags.bookMarkProtectedStates if scflags.bookMarkProtectedStates !== void;
+		bookMarkPlayTimes = scflags.bookMarkPlayTimes if scflags.bookMarkPlayTimes !== void;
+		bookMarkGameDates = scflags.bookMarkGameDates if scflags.bookMarkGameDates !== void;
 
 		autoModePageWait = scflags.autoModePageWait if scflags.autoModePageWait !== void;
 		autoModeLineWait = scflags.autoModeLineWait if scflags.autoModeLineWait !== void;
@@ -1489,6 +1496,8 @@ class KAGWindow extends Window
 		scflags.bookMarkNames = bookMarkNames; // (コピーではなくて)参照で十分
         scflags.bookMarkStorages = bookMarkStorages;
         scflags.bookMarkDates = bookMarkDates;
+        scflags.bookMarkPlayTimes = bookMarkPlayTimes;
+        scflags.bookMarkGameDates = bookMarkGameDates;
 		scflags.bookMarkProtectedStates = bookMarkProtectedStates;
 
 		scflags.lastSaveDataNameGlobal = lastSaveDataNameGlobal;
@@ -2154,7 +2163,22 @@ class KAGWindow extends Window
 		return "";
 	}
 
-    
+	function getBookMarkPlayTime(num)
+	{
+        // 栞番号 num のプレイ時間を得る
+        if(bookMarkPlayTimes[num] != '') // 空文字列の場合は栞がないということ
+            return bookMarkPlayTimes[num];
+		return "";
+	}
+
+	function getBookMarkGameDate(num)
+	{
+        // 栞番号 num のプレイ時間を得る
+        if(bookMarkGameDates[num] != '') // 空文字列の場合は栞がないということ
+            return bookMarkGameDates[num];
+		return "";
+	}
+
 	function getBookMarkDate(num)
 	{
 		// 栞番号 num の日付を得る
@@ -2337,6 +2361,16 @@ class KAGWindow extends Window
             bookMarkNames[num] = dic.currentPageName;
 			var date = new Date();
 			date.setTime(dic.storeTime);
+
+			
+			tf.playtime2 = System.getTickCount();
+			sf.playtime += tf.playtime2 - tf.playtime1;
+			bookMarkPlayTimes[num] = sf.playtime;
+			tf.playtime1 = tf.playtime2;
+
+        		bookMarkGameDates[num] = tf.gamedate;
+			
+
             if (bookMarkDateSecond) {
                 date = "%04d/%02d/%02d %02d:%02d:%02d".sprintf(
                     date.getYear(), date.getMonth() + 1, date.getDate(),
@@ -5244,14 +5278,16 @@ class KAGWindow extends Window
 	function onBGMStop()
 	{
         // BGM が停止した
-        conductor.trigger('bgmstop');
-        if (bgmStopHandler !== void) {
-            bgmStopHandler();
-        }
-        if (bgmStopExp !== void || bgmStopStorage !== void || bgmStopTarget !== void) {
-            global.stopBgmTrigger = new AsyncTrigger(handleBgmStop, '');
-            global.stopBgmTrigger.cached = true;
+        if (this isvalid && conductor isvalid) {
+            conductor.trigger('bgmstop');
+            if (bgmStopHandler !== void) {
+                bgmStopHandler();
+            }
+            if (bgmStopExp !== void || bgmStopStorage !== void || bgmStopTarget !== void) {
+                global.stopBgmTrigger = new AsyncTrigger(handleBgmStop, '');
+                global.stopBgmTrigger.cached = true;
             global.stopBgmTrigger.trigger();
+            }
         }
     }
 
@@ -5402,9 +5438,11 @@ class KAGWindow extends Window
     function onSESoundBufferStop(id)
 	{
 		// 効果音の再生が終了した
-        conductor.trigger('sestop' + id);
-        if (seStopHandler !== void) {
-            seStopHandler(id);
+        if (this isvalid && conductor isvalid) {
+            conductor.trigger('sestop' + id);
+            if (seStopHandler !== void) {
+                seStopHandler(id);
+            }
         }
 	}
 
