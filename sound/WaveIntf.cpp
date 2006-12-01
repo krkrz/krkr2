@@ -829,9 +829,6 @@ void TJS_INTF_METHOD tTJSNI_BaseWaveSoundBuffer::Invalidate()
 	// invalidate wave flags object
 	RecreateWaveLabelsObject();
 
-	// clear filter chain
-	ClearFilterChain();
-
 	// release filter arrays
 	if(Filters) Filters->Release(), Filters = NULL;
 
