@@ -1937,9 +1937,9 @@ tTJSNI_WaveSoundBuffer::Construct(tjs_int numparams, tTJSVariant **param,
 //---------------------------------------------------------------------------
 void TJS_INTF_METHOD tTJSNI_WaveSoundBuffer::Invalidate()
 {
-	Clear();
-
 	inherited::Invalidate();
+
+	Clear();
 
 	DestroySoundBuffer();
 
