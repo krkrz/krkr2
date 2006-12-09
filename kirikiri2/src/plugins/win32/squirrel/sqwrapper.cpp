@@ -8,6 +8,8 @@ void store(tTJSVariant &result, HSQOBJECT &obj);
 void store(tTJSVariant &result, HSQUIRRELVM v, int idx=-1);
 void store(tTJSVariant &result, SquirrelObject &obj);
 
+static const SQUserPointer TJSTYPETAG = (SQUserPointer)"TJSTYPETAG";
+
 /**
  * IDispatch 用 iTJSDispatch2 ラッパー
  */
@@ -227,7 +229,7 @@ static SQInteger
 get(HSQUIRRELVM v)
 {
 	StackHandler stack(v);
-	SQUserPointer up = stack.GetUserData(1);
+	SQUserPointer up = stack.GetUserData(1, TJSTYPETAG);
 	if (up) {
 		iTJSDispatch2 *dispatch	= *((iTJSDispatch2**)up);
 		tTJSVariant result;
@@ -247,7 +249,7 @@ static SQInteger
 set(HSQUIRRELVM v)
 {
 	StackHandler stack(v);
-	SQUserPointer up = stack.GetUserData(1);
+	SQUserPointer up = stack.GetUserData(1, TJSTYPETAG);
 	if (up) {
 		iTJSDispatch2 *dispatch	= *((iTJSDispatch2**)up);
 		tTJSVariant result;
@@ -269,14 +271,14 @@ call(HSQUIRRELVM v)
 	// param3 ～ 本来の引数ぽ
 
 	StackHandler stack(v);
-	SQUserPointer up = stack.GetUserData(1);
+	SQUserPointer up = stack.GetUserData(1, TJSTYPETAG);
 	int ret = 0;
 	if (up) {
 		iTJSDispatch2 *dispatch	= *((iTJSDispatch2**)up);
 
 		// this を取得
 		iTJSDispatch2 *thisobj = NULL;
-		up = stack.GetUserData(2);
+		up = stack.GetUserData(2, TJSTYPETAG);
 		if (up) {
 			thisobj = *((iTJSDispatch2**)up);
 		}
@@ -329,6 +331,9 @@ store(HSQUIRRELVM v, iTJSDispatch2 *dispatch)
 		dispatch->AddRef();
 		SQUserPointer up = sq_newuserdata(v, sizeof(iTJSDispatch2*));
 		*((iTJSDispatch2**)up) = dispatch;
+
+		// タグ登録
+		sq_settypetag(v, -1, TJSTYPETAG);
 		
 		// 開放ロジックを追加
 		sq_setreleasehook(v, -1, tjsDispatchRelease);
@@ -413,11 +418,13 @@ store(tTJSVariant &result, HSQOBJECT &obj)
 		break;
 	case OT_USERDATA:
 		{
-		// XXX 型判定がいるのではないか？
-			void *up = sq_objtouserdata(&obj);
-			if (up) {
-				result = *((iTJSDispatch2**)up);
+			sq_pushobject(SquirrelVM::GetVMPtr(), obj);
+			SQUserPointer data, typetag;
+			sq_getuserdata(SquirrelVM::GetVMPtr(), -1, &data, &typetag);
+			if (data && typetag == TJSTYPETAG) {
+				result = *((iTJSDispatch2**)data);
 			}
+			sq_pop(SquirrelVM::GetVMPtr(), 1);
 		}
 		break;
 	case OT_TABLE:
