@@ -29,7 +29,7 @@ Scripts.execStorageSQ("filename.nut");		// Squirrel スクリプトファイルの実行
 ●コンパイル
 
 プラグインのコンパイルには以下のライブラリが必要になります。
-フォルダに展開してください。
+フォルダに展開してください。※フォルダ名は sqplus にリネームしてください
 
 ・sqplus (Squirrel の C++ バインド)
 
