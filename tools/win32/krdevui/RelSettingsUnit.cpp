@@ -116,6 +116,7 @@ void __fastcall TRelSettingsForm::SetExtList(TStringList *list)
 			!ext.AnsiCompareIC(".aue") ||
 			!ext.AnsiCompareIC(".rpf") ||
 			!ext.AnsiCompareIC(".bak") ||
+			!ext.AnsiCompareIC(".log") ||
 			!ext.AnsiCompareIC(".kep") ||
 			ext == "" || !strncmp(ext.c_str(), ".~", 2))
 		{
