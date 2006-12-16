@@ -284,6 +284,9 @@ class KAGWindow extends Window
 		if(saveDataLocation.indexOf(":") == -1)
 			saveDataLocation = System.exePath + saveDataLocation;
 
+		// ログの出力先を saveDataLocation にする
+		if(ismain) Debug.logLocation = saveDataLocation;
+
 		// メニューアイテムの作成
 		if(ismain) (KAGWindow_createMenus incontextof this)();
 		if(typeof this.rightClickMenuItem != "undefined")
