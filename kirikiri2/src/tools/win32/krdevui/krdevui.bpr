@@ -23,8 +23,8 @@
       intermediate\looptune.obj intermediate\LoopTunerMainUnit.obj 
       intermediate\RIFFWaveContext.obj intermediate\TSSWaveContext.obj 
       intermediate\WaveReader.obj intermediate\WaveView.obj 
-      intermediate\CharacterSet.obj intermediate\WaveLoopManager.obj 
-      intermediate\tvpsnd.obj intermediate\TotalView.obj"/>
+      intermediate\CharacterSet.obj intermediate\tvpsnd.obj 
+      intermediate\TotalView.obj intermediate\WaveLoopManager.obj"/>
     <RESFILES value="krdevui.res"/>
     <DEFFILE value=""/>
     <RESDEPEN value="$(RESFILES) FolderSelectorUnit.dfm ConfSettingsUnit.dfm 
@@ -40,7 +40,7 @@
     <LIBRARIES value="shlbpk.lib VCLX50.lib shlibbpk.lib Vcl50.lib"/>
     <SPARELIBS value="Vcl50.lib shlibbpk.lib VCLX50.lib shlbpk.lib"/>
     <PACKAGES value="Vcl50.bpi Vclx50.bpi shlbpk.bpi"/>
-    <PATHCPP value=".;tpc;tpc\png;tpc\psd;tpc\tlg5;tpc\tlg6;looptuner2;..\..\..\core\base;..\..\..\core\sound;..\..\..\core\sound\win32"/>
+    <PATHCPP value=".;tpc;tpc\png;tpc\psd;tpc\tlg5;tpc\tlg6;looptuner2;..\..\..\core\base;..\..\..\core\sound\win32"/>
     <PATHPAS value=".;"/>
     <PATHRC value=".;"/>
     <PATHASM value=".;"/>
@@ -50,7 +50,7 @@
     <USERDEFINES value="NO_WIN32_LEAN_AND_MEAN;TVP_IN_LOOP_TUNER"/>
     <SYSDEFINES value="NO_STRICT"/>
     <MAINSOURCE value="krdevui.bpf"/>
-    <INCLUDEPATH value="$(BCB)\include\tomcrypt1;$(BCB)\include\vcl;$(BCB)\projects\comps\o\shlib;$(BCB)\include;..\..\..\core\sound;..\..\..\core\base;looptuner2;..\..\..\sound\win32;..\..\..\core\sound\win32;looptune;tpc\tlg6;tpc\tlg5;tpc\psd;tpc\png;tpc;..\..\..\..\..\Bin;..\..\..\..;..\..\..\core\tjs2"/>
+    <INCLUDEPATH value="..\..\..\core\sound\win32;$(BCB)\include\tomcrypt1;$(BCB)\include\vcl;$(BCB)\projects\comps\o\shlib;$(BCB)\include;..\..\..\core\sound;..\..\..\core\base;looptuner2;looptune;tpc\tlg6;tpc\tlg5;tpc\psd;tpc\png;tpc;..\..\..\..\..\Bin;..\..\..\..;..\..\..\core\tjs2"/>
     <LIBPATH value="..\..\..\core\sound;..\..\..\core\base;looptuner2;..\..\..\core\sound\win32;..\..\..\sound\win32;looptune;tpc\tlg6;tpc\tlg5;tpc\psd;tpc\png;tpc;..\fgconvert\psd;..\fgconvert\png;..\..\..\..\..\Bin;$(BCB)\Projects\Lib;$(BCB)\projects\comps\o\shlib;..\..\..\..;$(BCB)\lib\obj;$(BCB)\lib"/>
     <WARNINGS value="-w-par"/>
   </MACROS>
@@ -113,22 +113,23 @@ $(BCB)\Bin\bcb2kaxserver50.bpl=Borland C++Builder COM Server Components Sample P
 $(BCB)\Bin\dclite50.bpl=Borland Integrated Translation Environment
 
 [HistoryLists\hlIncludePath]
-Count=15
-Item0=$(BCB)\include\tomcrypt1;$(BCB)\include\vcl;$(BCB)\projects\comps\o\shlib;$(BCB)\include;..\..\..\core\sound;..\..\..\core\base;looptuner2;..\..\..\sound\win32;..\..\..\core\sound\win32;looptune;tpc\tlg6;tpc\tlg5;tpc\psd;tpc\png;tpc;..\..\..\..\..\Bin;..\..\..\..;..\..\..\core\tjs2
-Item1=$(BCB)\include\tomcrypt;$(BCB)\include\vcl;$(BCB)\projects\comps\o\shlib;$(BCB)\include;..\..\..\core\sound;..\..\..\core\base;looptuner2;..\..\..\sound\win32;..\..\..\core\sound\win32;looptune;tpc\tlg6;tpc\tlg5;tpc\psd;tpc\png;tpc;..\..\..\..\..\Bin;..\..\..\..;..\..\..\core\tjs2
-Item2=..\..\..\core\sound;..\..\..\core\base;looptuner2;..\..\..\sound\win32;..\..\..\core\sound\win32;looptune;tpc\tlg6;tpc\tlg5;tpc\psd;tpc\png;tpc;..\..\..\..\..\Bin;$(BCB)\projects\comps\o\shlib;..\..\..\..;$(BCB)\include;$(BCB)\include\vcl;$(BCB)\include\tomcrypt;..\..\..\core\tjs2
-Item3=..\..\..\core\sound;..\..\..\core\base;looptuner2;..\..\..\sound\win32;..\..\..\core\sound\win32;looptune;tpc\tlg6;tpc\tlg5;tpc\psd;tpc\png;tpc;..\fgconvert\psd;..\fgconvert\png;..\..\..\..\..\Bin;$(BCB)\projects\comps\o\shlib;..\..\..\..;$(BCB)\include;$(BCB)\include\vcl;$(BCB)\include\tomcrypt;..\..\..\core\tjs
-Item4=..\..\..\core\sound;..\..\..\core\base;looptuner2;..\..\..\sound\win32;..\..\..\core\sound\win32;looptune;tpc\tlg6;tpc\tlg5;tpc\psd;tpc\png;tpc;..\fgconvert\psd;..\fgconvert\png;..\..\..\..\..\Bin;$(BCB)\projects\comps\o\shlib;..\..\..\..;$(BCB)\include;$(BCB)\include\vcl;$(BCB)\include\tomcrypt
-Item5=..\..\..\sound\win32;..\..\..\core\sound\win32;looptune;tpc\tlg6;tpc\tlg5;tpc\psd;tpc\png;tpc;..\fgconvert\psd;..\fgconvert\png;..\..\..\..\..\Bin;$(BCB)\projects\comps\o\shlib;..\..\..\..;$(BCB)\include;$(BCB)\include\vcl;$(BCB)\include\tomcrypt
-Item6=..\..\..\core\sound\win32;looptune;tpc\tlg6;tpc\tlg5;tpc\psd;tpc\png;tpc;..\fgconvert\psd;..\fgconvert\png;..\..\..\..\..\Bin;$(BCB)\projects\comps\o\shlib;..\..\..\..;$(BCB)\include;$(BCB)\include\vcl;$(BCB)\include\tomcrypt
-Item7=..\..\..\sound\win32;looptune;tpc\tlg6;tpc\tlg5;tpc\psd;tpc\png;tpc;..\fgconvert\psd;..\fgconvert\png;..\..\..\..\..\Bin;$(BCB)\projects\comps\o\shlib;..\..\..\..;$(BCB)\include;$(BCB)\include\vcl;$(BCB)\include\tomcrypt
-Item8=tpc\tlg5;tpc\psd;tpc\png;tpc;..\fgconvert\psd;..\fgconvert\png;..\..\..\..\..\Bin;$(BCB)\projects\comps\o\shlib;..\..\..\..;$(BCB)\include;$(BCB)\include\vcl;$(BCB)\include\tomcrypt
-Item9=tpc\tlg5;tpc\psd;tpc\png;tpc;..\fgconvert\psd;..\fgconvert\png;..\..\..\..\..\Bin;$(BCB)\projects\comps\o\shlib;..\..\..\..;$(BCB)\include;$(BCB)\include\vcl
-Item10=..\fgconvert\psd;..\fgconvert\png;..\..\..\..\..\Bin;$(BCB)\projects\comps\o\shlib;..\..\..\..;$(BCB)\include;$(BCB)\include\vcl
-Item11=..\..\..\..\..\Bin;$(BCB)\projects\comps\o\shlib;..\..\..\..;$(BCB)\include;$(BCB)\include\vcl
-Item12=$(BCB)\projects\comps\o\shlib;..\..\..\..;$(BCB)\include;$(BCB)\include\vcl
-Item13=;;$(BCB)\projects\comps\o\shlib;..\..\..\..;$(BCB)\include;$(BCB)\include\vcl
-Item14=$(BCB)\include;$(BCB)\include\vcl
+Count=16
+Item0=$(BCB)\include\tomcrypt1;$(BCB)\include\vcl;$(BCB)\projects\comps\o\shlib;$(BCB)\include;..\..\..\core\sound;..\..\..\core\base;looptuner2;looptune;tpc\tlg6;tpc\tlg5;tpc\psd;tpc\png;tpc;..\..\..\..\..\Bin;..\..\..\..;..\..\..\core\tjs2
+Item1=$(BCB)\include\tomcrypt1;$(BCB)\include\vcl;$(BCB)\projects\comps\o\shlib;$(BCB)\include;..\..\..\core\sound;..\..\..\core\base;looptuner2;..\..\..\sound\win32;..\..\..\core\sound\win32;looptune;tpc\tlg6;tpc\tlg5;tpc\psd;tpc\png;tpc;..\..\..\..\..\Bin;..\..\..\..;..\..\..\core\tjs2
+Item2=$(BCB)\include\tomcrypt;$(BCB)\include\vcl;$(BCB)\projects\comps\o\shlib;$(BCB)\include;..\..\..\core\sound;..\..\..\core\base;looptuner2;..\..\..\sound\win32;..\..\..\core\sound\win32;looptune;tpc\tlg6;tpc\tlg5;tpc\psd;tpc\png;tpc;..\..\..\..\..\Bin;..\..\..\..;..\..\..\core\tjs2
+Item3=..\..\..\core\sound;..\..\..\core\base;looptuner2;..\..\..\sound\win32;..\..\..\core\sound\win32;looptune;tpc\tlg6;tpc\tlg5;tpc\psd;tpc\png;tpc;..\..\..\..\..\Bin;$(BCB)\projects\comps\o\shlib;..\..\..\..;$(BCB)\include;$(BCB)\include\vcl;$(BCB)\include\tomcrypt;..\..\..\core\tjs2
+Item4=..\..\..\core\sound;..\..\..\core\base;looptuner2;..\..\..\sound\win32;..\..\..\core\sound\win32;looptune;tpc\tlg6;tpc\tlg5;tpc\psd;tpc\png;tpc;..\fgconvert\psd;..\fgconvert\png;..\..\..\..\..\Bin;$(BCB)\projects\comps\o\shlib;..\..\..\..;$(BCB)\include;$(BCB)\include\vcl;$(BCB)\include\tomcrypt;..\..\..\core\tjs
+Item5=..\..\..\core\sound;..\..\..\core\base;looptuner2;..\..\..\sound\win32;..\..\..\core\sound\win32;looptune;tpc\tlg6;tpc\tlg5;tpc\psd;tpc\png;tpc;..\fgconvert\psd;..\fgconvert\png;..\..\..\..\..\Bin;$(BCB)\projects\comps\o\shlib;..\..\..\..;$(BCB)\include;$(BCB)\include\vcl;$(BCB)\include\tomcrypt
+Item6=..\..\..\sound\win32;..\..\..\core\sound\win32;looptune;tpc\tlg6;tpc\tlg5;tpc\psd;tpc\png;tpc;..\fgconvert\psd;..\fgconvert\png;..\..\..\..\..\Bin;$(BCB)\projects\comps\o\shlib;..\..\..\..;$(BCB)\include;$(BCB)\include\vcl;$(BCB)\include\tomcrypt
+Item7=..\..\..\core\sound\win32;looptune;tpc\tlg6;tpc\tlg5;tpc\psd;tpc\png;tpc;..\fgconvert\psd;..\fgconvert\png;..\..\..\..\..\Bin;$(BCB)\projects\comps\o\shlib;..\..\..\..;$(BCB)\include;$(BCB)\include\vcl;$(BCB)\include\tomcrypt
+Item8=..\..\..\sound\win32;looptune;tpc\tlg6;tpc\tlg5;tpc\psd;tpc\png;tpc;..\fgconvert\psd;..\fgconvert\png;..\..\..\..\..\Bin;$(BCB)\projects\comps\o\shlib;..\..\..\..;$(BCB)\include;$(BCB)\include\vcl;$(BCB)\include\tomcrypt
+Item9=tpc\tlg5;tpc\psd;tpc\png;tpc;..\fgconvert\psd;..\fgconvert\png;..\..\..\..\..\Bin;$(BCB)\projects\comps\o\shlib;..\..\..\..;$(BCB)\include;$(BCB)\include\vcl;$(BCB)\include\tomcrypt
+Item10=tpc\tlg5;tpc\psd;tpc\png;tpc;..\fgconvert\psd;..\fgconvert\png;..\..\..\..\..\Bin;$(BCB)\projects\comps\o\shlib;..\..\..\..;$(BCB)\include;$(BCB)\include\vcl
+Item11=..\fgconvert\psd;..\fgconvert\png;..\..\..\..\..\Bin;$(BCB)\projects\comps\o\shlib;..\..\..\..;$(BCB)\include;$(BCB)\include\vcl
+Item12=..\..\..\..\..\Bin;$(BCB)\projects\comps\o\shlib;..\..\..\..;$(BCB)\include;$(BCB)\include\vcl
+Item13=$(BCB)\projects\comps\o\shlib;..\..\..\..;$(BCB)\include;$(BCB)\include\vcl
+Item14=;;$(BCB)\projects\comps\o\shlib;..\..\..\..;$(BCB)\include;$(BCB)\include\vcl
+Item15=$(BCB)\include;$(BCB)\include\vcl
 
 [HistoryLists\hlLibraryPath]
 Count=9
