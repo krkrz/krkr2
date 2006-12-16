@@ -219,9 +219,13 @@ static tTVPHWExceptionData TVPLastHWExceptionData;
 
 HANDLE TVPHWExceptionLogHandle = NULL;
 //---------------------------------------------------------------------------
+static char TVPHWExceptionLogFilename[MAX_PATH];
+
 static void TVPWriteHWELogFile()
 {
-	TVPHWExceptionLogHandle = CreateFile("hwexcept.log", GENERIC_WRITE,
+	TJS_nstrcpy(TVPHWExceptionLogFilename, TVPNativeLogLocation);
+	TJS_nstrcat(TVPHWExceptionLogFilename, "hwexcept.log");
+	TVPHWExceptionLogHandle = CreateFile(TVPHWExceptionLogFilename, GENERIC_WRITE,
 		FILE_SHARE_READ, NULL, OPEN_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
 
 	if(TVPHWExceptionLogHandle == INVALID_HANDLE_VALUE) return;
@@ -1086,6 +1090,40 @@ void TVPBeforeSystemInit()
 		TVPAddImportantLog(TJS_W("(info) Selected project directory : ") +
 			TVPProjectDir);
 	}
+
+	// set log output directory
+	ttstr local_proj = TVPGetLocallyAccessibleName(TVPProjectDir);
+	if(!local_proj.IsEmpty()) TVPSetLogLocation(TVPProjectDir);
+
+	// check force logging option
+	tTJSVariant val;
+	if(TVPGetCommandLine(TJS_W("-forcelog"), &val) )
+	{
+		ttstr str(val);
+		if(str == TJS_W("yes"))
+		{
+			TVPStartLogToFile(false);
+		}
+		else if(str == TJS_W("clear"))
+		{
+			TVPStartLogToFile(true);
+		}
+	}
+	if(TVPGetCommandLine(TJS_W("-logerror"), &val) )
+	{
+		ttstr str(val);
+		if(str == TJS_W("no"))
+		{
+			TVPAutoClearLogOnError = false;
+			TVPAutoLogToFileOnError = false;
+		}
+		else if(str == TJS_W("clear"))
+		{
+			TVPAutoClearLogOnError = true;
+			TVPAutoLogToFileOnError = true;
+		}
+	}
+
 }
 //---------------------------------------------------------------------------
 static void TVPDumpOptions();

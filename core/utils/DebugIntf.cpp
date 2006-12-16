@@ -34,11 +34,13 @@ struct tTVPLogItem
 static std::deque<tTVPLogItem> *TVPLogDeque = NULL;
 static tjs_uint TVPLogMaxLines = 2048;
 
-static bool TVPAutoLogToFileOnError = true;
-static bool TVPAutoClearLogOnError = false;
-static bool TVPLoggingToFile = false;
+bool TVPAutoLogToFileOnError = true;
+bool TVPAutoClearLogOnError = false;
+bool TVPLoggingToFile = false;
 static tjs_uint TVPLogToFileRollBack = 100;
 static ttstr *TVPImportantLogs = NULL;
+static ttstr TVPLogLocation;
+tjs_nchar TVPNativeLogLocation[MAX_PATH];
 //---------------------------------------------------------------------------
 
 
@@ -104,6 +106,8 @@ public:
 	void Clear(); // clear log stream
 	void Log(const ttstr & text); // log given text
 
+	void Reopen() { if(Stream) fclose(Stream); Stream = NULL; Alive = false; OpenFailed = false; } // reopen log stream
+
 } static TVPLogStreamHolder;
 //---------------------------------------------------------------------------
 void tTVPLogStreamHolder::Open(const tjs_nchar *mode)
@@ -113,10 +117,19 @@ void tTVPLogStreamHolder::Open(const tjs_nchar *mode)
 	try
 	{
 		tjs_nchar filename[MAX_PATH];
-		TJS_nstrcpy(filename, _argv[0]);
-		TJS_nstrcat(filename, TJS_N(".console.log"));
-		Stream = fopen(filename, mode);
-		if(!Stream) OpenFailed = true;
+		if(TVPLogLocation.GetLen() == 0)
+		{
+			Stream = NULL;
+			OpenFailed = true;
+		}
+		else
+		{
+			// no log location specified
+			TJS_nstrcpy(filename, TVPNativeLogLocation);
+			TJS_nstrcat(filename, TJS_N("\\krkr.console.log"));
+			Stream = fopen(filename, mode);
+			if(!Stream) OpenFailed = true;
+		}
 
 		if(Stream)
 		{
@@ -397,6 +410,27 @@ void TVPOnError()
 
 
 
+//---------------------------------------------------------------------------
+// TVPSetLogLocation
+//---------------------------------------------------------------------------
+void TVPSetLogLocation(const ttstr &loc)
+{
+	TVPLogLocation = TVPNormalizeStorageName(loc);
+
+	ttstr native = TVPGetLocallyAccessibleName(TVPLogLocation);
+	if(native.IsEmpty())
+	{
+		TVPNativeLogLocation[0] = 0;
+	}
+	else
+	{
+		TJS_nstrcpy(TVPNativeLogLocation, native.AsAnsiString().c_str());
+		if(TVPNativeLogLocation[TJS_nstrlen(TVPNativeLogLocation)-1] != '\\')
+			TJS_nstrcat(TVPNativeLogLocation, "\\");
+	}
+}
+//---------------------------------------------------------------------------
+
 
 
 //---------------------------------------------------------------------------
@@ -491,6 +525,24 @@ TJS_END_NATIVE_METHOD_DECL(/*func. name*/logAsError)
 //-- properies
 
 //----------------------------------------------------------------------
+TJS_BEGIN_NATIVE_PROP_DECL(logLocation)
+{
+	TJS_BEGIN_NATIVE_PROP_GETTER
+	{
+		*result = TVPLogLocation;
+		return TJS_S_OK;
+	}
+	TJS_END_NATIVE_PROP_GETTER
+
+	TJS_BEGIN_NATIVE_PROP_SETTER
+	{
+		TVPSetLogLocation(*param);
+		return TJS_S_OK;
+	}
+	TJS_END_NATIVE_PROP_SETTER
+}
+TJS_END_NATIVE_PROP_DECL(logLocation)
+//----------------------------------------------------------------------
 TJS_BEGIN_NATIVE_PROP_DECL(logToFileOnError)
 {
 	TJS_BEGIN_NATIVE_PROP_GETTER
@@ -534,36 +586,6 @@ TJS_END_NATIVE_PROP_DECL(clearLogFileOnError)
 	// put version information to DMS
 	TVPAddImportantLog(TVPGetVersionInformation());
 	TVPAddImportantLog(ttstr(TVPVersionInformation2));
-
-	// check force logging option
-	tTJSVariant val;
-	if(TVPGetCommandLine(TJS_W("-forcelog"), &val) )
-	{
-		ttstr str(val);
-		if(str == TJS_W("yes"))
-		{
-			TVPStartLogToFile(false);
-		}
-		else if(str == TJS_W("clear"))
-		{
-			TVPStartLogToFile(true);
-		}
-	}
-	if(TVPGetCommandLine(TJS_W("-logerror"), &val) )
-	{
-		ttstr str(val);
-		if(str == TJS_W("no"))
-		{
-			TVPAutoClearLogOnError = false;
-			TVPAutoLogToFileOnError = false;
-		}
-		else if(str == TJS_W("clear"))
-		{
-			TVPAutoClearLogOnError = true;
-			TVPAutoLogToFileOnError = true;
-		}
-	}
-
 } // end of tTJSNC_Debug::tTJSNC_Debug
 //---------------------------------------------------------------------------
 
