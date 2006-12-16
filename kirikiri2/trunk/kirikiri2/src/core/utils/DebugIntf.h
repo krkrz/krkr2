@@ -16,6 +16,9 @@
 //---------------------------------------------------------------------------
 // global definitions
 //---------------------------------------------------------------------------
+extern bool TVPAutoLogToFileOnError;
+extern bool TVPAutoClearLogOnError;
+extern bool TVPLoggingToFile;
 extern void TVPSetOnLog(void (*func)(const ttstr & line));
 TJS_EXP_FUNC_DEF(void, TVPAddLog, (const ttstr &line));
 TJS_EXP_FUNC_DEF(void, TVPAddImportantLog, (const ttstr &line));
@@ -26,6 +29,9 @@ extern void TVPTJS2StartDump();
 extern void TVPTJS2EndDump();
 extern void TVPOnError();
 extern ttstr TVPGetImportantLog();
+extern void TVPSetLogLocation(const ttstr &loc);
+extern tjs_nchar TVPNativeLogLocation[MAX_PATH];
+extern void TVPStartLogToFile(bool clear);
 //---------------------------------------------------------------------------
 
 
