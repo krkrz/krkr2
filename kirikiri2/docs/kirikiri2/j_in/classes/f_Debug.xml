@@ -3,6 +3,9 @@
 <title>Debug</title>
 <desc>
 　Debug クラスは 吉里吉里のデバッグに関する機能を提供するクラスです。このクラスからオブジェクトを作成することはできません。<r/>
+　吉里吉里のコンソールのログの名前は krkr.console.log になります。また、ハードウェア例外が発生したときに作成されるファイルは hwexcept.log となります。<r/>
+　これらのログファイルは、デフォルトではプロジェクトディレクトリになります。ただし、プロジェクトディレクトリがアーカイブなど、書き込みができないディレクトリの場合は出力されません。<r/>
+　ログファイルの出力先は logLocation プロパティで変更することができます (KAGの場合は栞データの保存先に設定されます)。<r/>
 </desc>
 
 <member>
@@ -89,6 +92,19 @@
 	<ref>Debug.clearLogFileOnError</ref>
 </member>
 
+
+<member>
+	<name>logLocation</name>
+	<type>property</type>
+	<shortdesc>ログファイルの出力先</shortdesc>
+	<access>r/w</access>
+	<desc>
+		　ログファイルの出力先ディレクトリを表します。値を書き込むこともできます。<r/>
+		　デフォルトではプロジェクトディレクトリに設定されています。<r/>
+		　この値を変更すると、以降のログはそのディレクトリ下の krkr.console.log として
+		出力されるようになります。<r/>
+	</desc>
+</member>
 
 <member>
 	<name>logToFileOnError</name>
