@@ -6,6 +6,9 @@
 <para>
 <ptitle>栞の保存場所</ptitle>
 　KAGの栞の保存場所は Config.tjs の <tt>saveDataLocation</tt> で指定します。吉里吉里本体の実行可能ファイルと同じフォルダに保存する方法と、(マルチユーザ環境下において) ユーザごとのフォルダに保存する方法があります。いずれの場合も該当するサブフォルダがなかった場合は自動的に作成されます。<r/>
+<note>
+吉里吉里の出力するコンソールのログファイル(krkr.console.log)や、ハードウェア例外発生時のログ(hwexcept.log)も栞の保存場所に保存されます。
+</note>
 <r/>
 <bq>
 ;saveDataLocation = "savedata";<r/>
