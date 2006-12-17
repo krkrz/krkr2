@@ -230,6 +230,40 @@ static void __fastcall DeePNG_read_row_callback(png_structp png_ptr, png_uint_32
 
 }
 //---------------------------------------------------------------------------
+// read_chunk_callback
+static int __fastcall PNG_read_chunk_callback(png_structp png_ptr,png_unknown_chunkp chunk)
+{
+	// handle vpAg chunk (this will contain the virtual page size of the image)
+	// vpAg chunk can be embeded by ImageMagick -trim option etc.
+	// we don't care about how the chunk bit properties are being provided.
+	if(	(chunk->name[0] == 0x76/*'v'*/ || chunk->name[0] == 0x56/*'V'*/) &&
+		(chunk->name[1] == 0x70/*'p'*/ || chunk->name[1] == 0x50/*'P'*/) &&
+		(chunk->name[2] == 0x61/*'a'*/ || chunk->name[2] == 0x41/*'A'*/) &&
+		(chunk->name[3] == 0x67/*'g'*/ || chunk->name[3] == 0x47/*'G'*/) && chunk->size >= 9)
+	{
+		TDeePNG * deepng =
+			reinterpret_cast<TDeePNG *>(png_get_user_chunk_ptr(png_ptr));
+		// vpAg found
+		/*
+			uint32 width
+			uint32 height
+			uchar unit
+		*/
+		// be careful because the integers are stored in network byte order
+		#define PNG_read_be32(a) (((unsigned long)(a)[0]<<24)+\
+			((unsigned long)(a)[1]<<16)+((unsigned long)(a)[2]<<8)+\
+			((unsigned long)(a)[3]))
+		unsigned long width  = PNG_read_be32(chunk->data+0);
+		unsigned long height = PNG_read_be32(chunk->data+4);
+		unsigned char unit   = chunk->data[8];
+
+		// set vpag information
+		deepng->SetVirtualPage(width, height, unit);
+
+		return 1; // chunk read success
+	}
+	return 0; // did not recognize
+}
 
 
 //---------------------------------------------------------------------------
@@ -265,6 +299,13 @@ void __fastcall TDeePNG::LoadFromStream(Classes::TStream * Stream)
 		png_ptr = png_create_read_struct_2(PNG_LIBPNG_VER_STRING,
 			(png_voidp)this, DeePNG_error, DeePNG_warning,
 			(png_voidp)this, DeePNG_malloc, DeePNG_free);
+
+		// set read_chunk_callback
+		png_set_read_user_chunk_fn(png_ptr,
+			reinterpret_cast<void*>(this),
+			PNG_read_chunk_callback);
+		png_set_keep_unknown_chunks(png_ptr, 2, NULL, 0);
+			// keep only if safe-to-copy chunks, for all unknown chunks
 
 		// create png_info
 		info_ptr = png_create_info_struct(png_ptr);
@@ -522,6 +563,22 @@ void __fastcall TDeePNG::SaveToStream(Classes::TStream * Stream)
 		// write info
 		png_write_info(png_ptr, info_ptr);
 
+		// write vpAg private chunk
+		if(vpag_set)
+		{
+			png_byte png_vpAg[5] = {118, 112,  65, 103, '\0'};
+			unsigned char vpag_chunk_data[9];
+		#define PNG_write_be32(p, a) (\
+			((unsigned char *)(p))[0] = (unsigned char)(((a) >>24) & 0xff), \
+			((unsigned char *)(p))[1] = (unsigned char)(((a) >>16) & 0xff), \
+			((unsigned char *)(p))[2] = (unsigned char)(((a) >> 8) & 0xff), \
+			((unsigned char *)(p))[3] = (unsigned char)(((a)     ) & 0xff)  )
+			PNG_write_be32(vpag_chunk_data,     vpag_w);
+			PNG_write_be32(vpag_chunk_data + 4, vpag_h);
+			vpag_chunk_data[8] = (unsigned char)vpag_unit;
+			png_write_chunk(png_ptr, png_vpAg, vpag_chunk_data, 9);
+		}
+
 /*
 		// change RGB order
 		if(color_type = PNG_COLOR_TYPE_RGB || color_type == PNG_COLOR_TYPE_RGB_ALPHA)
@@ -629,6 +686,23 @@ void TDeePNG::SetTags(TStringList *tags)
 			SetOffset(offs_x.ToInt(), offs_y.ToInt(), unit);
 		}
 	}
+
+	if(tags)
+	{
+		AnsiString vpag_w = tags->Values["vpag_w"];
+		AnsiString vpag_h = tags->Values["vpag_h"];
+		AnsiString vpag_unit = tags->Values["vpag_unit"];
+		if(vpag_w != "" && vpag_h != "" &&
+			(vpag_unit == "pixel" || vpag_unit == "micrometer"))
+		{
+			int unit ;
+			if(vpag_unit == "pixel")
+				unit = PNG_OFFSET_PIXEL;
+			else if(vpag_unit == "micrometer")
+				unit = PNG_OFFSET_MICROMETER;
+			SetVirtualPage(vpag_w.ToInt(), vpag_h.ToInt(), unit);
+		}
+	}
 }
 //---------------------------------------------------------------------------
 void TDeePNG::AppendTags(TStringList *tags)
@@ -647,6 +721,24 @@ void TDeePNG::AppendTags(TStringList *tags)
 			break;
 		default:
 			tags->Append("offs_unit=unknown");
+			break;
+		}
+	}
+
+	if(tags && vpag_set)
+	{
+		tags->Append("vpag_w=" + AnsiString(vpag_w));
+		tags->Append("vpag_h=" + AnsiString(vpag_h));
+		switch(vpag_unit)
+		{
+		case PNG_OFFSET_PIXEL:
+			tags->Append("vpag_unit=pixel");
+			break;
+		case PNG_OFFSET_MICROMETER:
+			tags->Append("vpag_unit=micrometer");
+			break;
+		default:
+			tags->Append("vpag_unit=unknown");
 			break;
 		}
 	}
