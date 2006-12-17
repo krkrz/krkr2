@@ -188,6 +188,13 @@ global.imageTagLayerType = %[<r/>
 　これらは、変換元がPNGで、そのPNGがその画像の左上隅からのオフセット(oFFsチャンク)の情報を含んでいる場合のみに出力されます。<r/>
 　offs_x は横位置の左端からの距離、offs_y は縦位置の上端からの距離です。offs_unit は <kw>pixel</kw> か <kw>micrometer</kw> のどちらかになり、距離の単位を示します。<r/>
 </dd>
+
+<dt><kw>vpag_w</kw> <kw>vpag_h</kw> <kw>vpag_unit</kw> (TLG, PNG)</dt>
+<dd>
+　これらは、変換元がPNGで、そのPNGが Virtual PAGe、つまり画像全体のサイズ(vpAgチャンク)の情報を含んでいる場合のみに出力されます。<r/>
+　この情報を PNG に出力するソフトウェアとして <at target="_top"  href="http://www.imagemagick.org/">ImageMagick</at>ユーティリティがありますが、この <kw>ImageMagick</kw> で trim (トリム)を行った際に、トリム前の画像サイズとしてこの情報が出力されます。<r/>
+　vpag_w は画像全体の横のサイズ、vpag_h は画像全体の縦のサイズ、offs_unit は <kw>pixel</kw> か <kw>micrometer</kw> のどちらかになり、サイズの単位を示します。<r/>
+</dd>
 </dl>
 
 </para>
