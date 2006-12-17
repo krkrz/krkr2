@@ -50,6 +50,10 @@ protected:
 	int ofs_x;
 	int ofs_y;
 	int ofs_unit;
+	bool vpag_set;
+	int vpag_w;
+	int vpag_h;
+	int vpag_unit;
 
 public:
 	// コンストラクタとデストラクタ
@@ -74,6 +78,22 @@ public:
 		ofs_x = this->ofs_x;
 		ofs_y = this->ofs_y;
 		ofs_unit = this->ofs_unit;
+		return true;
+	}
+	// 仮想ページサイズ
+	void SetVirtualPage(int vpag_w, int vpag_h, int vpag_unit)
+	{
+		this->vpag_w = vpag_w;
+		this->vpag_h = vpag_h;
+		this->vpag_unit = vpag_unit;
+		this->vpag_set = true;
+	}
+	bool GetVirtualPage(int &vpag_w, int &vpag_h, int &vpag_unit)
+	{
+		if(!this->vpag_set) return false;
+		vpag_w = this->vpag_w;
+		vpag_h = this->vpag_h;
+		vpag_unit = this->vpag_unit;
 		return true;
 	}
 	// タグ

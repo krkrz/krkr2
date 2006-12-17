@@ -967,6 +967,23 @@ void TVPLoadJPEG(void* formatdata, void *callbackdata, tTVPGraphicSizeCallback s
 //---------------------------------------------------------------------------
 // PNG loading handler
 //---------------------------------------------------------------------------
+static ttstr PNG_tag_offs_x(TJS_W("offs_x"));
+static ttstr PNG_tag_offs_y(TJS_W("offs_y"));
+static ttstr PNG_tag_offs_unit(TJS_W("offs_unit"));
+static ttstr PNG_tag_vpag_w(TJS_W("vpag_w"));
+static ttstr PNG_tag_vpag_h(TJS_W("vpag_h"));
+static ttstr PNG_tag_vpag_unit(TJS_W("vpag_unit"));
+static ttstr PNG_tag_pixel(TJS_W("pixel"));
+static ttstr PNG_tag_micrometer(TJS_W("micrometer"));
+static ttstr PNG_tag_unknown(TJS_W("unknown"));
+//---------------------------------------------------------------------------
+// meta callback information structure used by  PNG_read_chunk_callback
+struct PNG_read_chunk_callback_user_struct
+{
+	void * callbackdata;
+    tTVPMetaInfoPushCallback metainfopushcallback;
+};
+//---------------------------------------------------------------------------
 // user_malloc_fn
 static png_voidp __fastcall PNG_malloc(png_structp ps, png_size_t size)
 {
@@ -996,12 +1013,58 @@ static void __fastcall PNG_read_data(png_structp png_ptr,png_bytep data,png_size
 {
 	((tTJSBinaryStream *)png_get_io_ptr(png_ptr))->ReadBuffer((void*)data, length);
 }
-
 //---------------------------------------------------------------------------
 // read_row_callback
 static void __fastcall PNG_read_row_callback(png_structp png_ptr,png_uint_32 row,int pass)
 {
 
+}
+//---------------------------------------------------------------------------
+// read_chunk_callback
+static int __fastcall PNG_read_chunk_callback(png_structp png_ptr,png_unknown_chunkp chunk)
+{
+	// handle vpAg chunk (this will contain the virtual page size of the image)
+	// vpAg chunk can be embeded by ImageMagick -trim option etc.
+	// we don't care about how the chunk bit properties are being provided.
+	if(	(chunk->name[0] == 0x76/*'v'*/ || chunk->name[0] == 0x56/*'V'*/) &&
+		(chunk->name[1] == 0x70/*'p'*/ || chunk->name[1] == 0x50/*'P'*/) &&
+		(chunk->name[2] == 0x61/*'a'*/ || chunk->name[2] == 0x41/*'A'*/) &&
+		(chunk->name[3] == 0x67/*'g'*/ || chunk->name[3] == 0x47/*'G'*/) && chunk->size >= 9)
+	{
+		PNG_read_chunk_callback_user_struct * user_struct =
+			reinterpret_cast<PNG_read_chunk_callback_user_struct *>(png_get_user_chunk_ptr(png_ptr));
+		// vpAg found
+		/*
+			uint32 width
+			uint32 height
+			uchar unit
+		*/
+		// be careful because the integers are stored in network byte order
+		#define PNG_read_be32(a) (((tjs_uint32)(a)[0]<<24)+\
+			((tjs_uint32)(a)[1]<<16)+((tjs_uint32)(a)[2]<<8)+\
+			((tjs_uint32)(a)[3]))
+		tjs_uint32 width  = PNG_read_be32(chunk->data+0);
+		tjs_uint32 height = PNG_read_be32(chunk->data+4);
+		tjs_uint8  unit   = chunk->data[8];
+
+		// push information into meta-info
+		user_struct->metainfopushcallback(user_struct->callbackdata, PNG_tag_vpag_w, ttstr((tjs_int)width));
+		user_struct->metainfopushcallback(user_struct->callbackdata, PNG_tag_vpag_h, ttstr((tjs_int)height));
+		switch(unit)
+		{
+		case PNG_OFFSET_PIXEL:
+			user_struct->metainfopushcallback(user_struct->callbackdata, PNG_tag_vpag_unit, PNG_tag_pixel);
+			break;
+		case PNG_OFFSET_MICROMETER:
+			user_struct->metainfopushcallback(user_struct->callbackdata, PNG_tag_vpag_unit, PNG_tag_micrometer);
+			break;
+		default:
+			user_struct->metainfopushcallback(user_struct->callbackdata, PNG_tag_vpag_unit, PNG_tag_unknown);
+			break;
+		}
+		return 1; // chunk read success
+	}
+	return 0; // did not recognize
 }
 //---------------------------------------------------------------------------
 void TVPLoadPNG(void* formatdata, void *callbackdata, tTVPGraphicSizeCallback sizecallback,
@@ -1024,6 +1087,16 @@ void TVPLoadPNG(void* formatdata, void *callbackdata, tTVPGraphicSizeCallback si
 		png_ptr=png_create_read_struct_2(PNG_LIBPNG_VER_STRING,
 			(png_voidp)NULL, PNG_error, PNG_warning,
 			(png_voidp)NULL, PNG_malloc, PNG_free);
+
+		// set read_chunk_callback
+		PNG_read_chunk_callback_user_struct read_chunk_callback_user_struct;
+		read_chunk_callback_user_struct.callbackdata = callbackdata;
+		read_chunk_callback_user_struct.metainfopushcallback = metainfopushcallback;
+		png_set_read_user_chunk_fn(png_ptr,
+			reinterpret_cast<void*>(&read_chunk_callback_user_struct),
+			PNG_read_chunk_callback);
+		png_set_keep_unknown_chunks(png_ptr, 2, NULL, 0);
+			// keep only if safe-to-copy chunks, for all unknown chunks
 
 		// create png_info
 		info_ptr=png_create_info_struct(png_ptr);
@@ -1055,24 +1128,18 @@ void TVPLoadPNG(void* formatdata, void *callbackdata, tTVPGraphicSizeCallback si
 			png_get_oFFs(png_ptr, info_ptr, &offset_x, &offset_y, &offset_unit_type))
 		{
 			// push offset information into metainfo data
-			static ttstr offs_x(TJS_W("offs_x"));
-			static ttstr offs_y(TJS_W("offs_y"));
-			static ttstr offs_unit(TJS_W("offs_unit"));
-			static ttstr pixel(TJS_W("pixel"));
-			static ttstr micrometer(TJS_W("micrometer"));
-			static ttstr unknown(TJS_W("unknown"));
-			metainfopushcallback(callbackdata, offs_x, ttstr((tjs_int)offset_x));
-			metainfopushcallback(callbackdata, offs_y, ttstr((tjs_int)offset_y));
+			metainfopushcallback(callbackdata, PNG_tag_offs_x, ttstr((tjs_int)offset_x));
+			metainfopushcallback(callbackdata, PNG_tag_offs_y, ttstr((tjs_int)offset_y));
 			switch(offset_unit_type)
 			{
 			case PNG_OFFSET_PIXEL:
-				metainfopushcallback(callbackdata, offs_unit, pixel);
+				metainfopushcallback(callbackdata, PNG_tag_offs_unit, PNG_tag_pixel);
 				break;
 			case PNG_OFFSET_MICROMETER:
-				metainfopushcallback(callbackdata, offs_unit, micrometer);
+				metainfopushcallback(callbackdata, PNG_tag_offs_unit, PNG_tag_micrometer);
 				break;
 			default:
-				metainfopushcallback(callbackdata, offs_unit, unknown);
+				metainfopushcallback(callbackdata, PNG_tag_offs_unit, PNG_tag_unknown);
 				break;
 			}
 		}
