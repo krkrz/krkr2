@@ -273,6 +273,7 @@ __fastcall TDeePNG::TDeePNG(void)
 {
 	// constructor
 	ofs_set = false;
+	vpag_set = false;
 }
 //---------------------------------------------------------------------------
 __fastcall TDeePNG::~TDeePNG(void)
