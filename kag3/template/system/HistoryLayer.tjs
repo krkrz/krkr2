@@ -20,11 +20,11 @@ class LButtonLayer extends ButtonLayer
 		super.onClick(...);
 	}
 
-	function onMouseUp(x, y, button, shift)
+	function onExecute(x, y, button, shift)
 	{
 		if(enabled && button == mbLeft)
 			parent.onButtonClick(this);
-		super.onMouseUp(...);
+		super.onExecute(...);
 	}
 
 }
