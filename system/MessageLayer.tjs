@@ -300,6 +300,8 @@ class MessageLayer extends KAGLayer
 
 	/*CS*/var edgeExtent = 1; // 袋文字のふとさ
 	/*CS*/var edgeEmphasis = 512; // 袋文字の強調度
+	/*CS*/var shadowOffsetX = 2; // 影のオフセット
+	/*CS*/var shadowOffsetY = 2; // 影のオフセット
 
 	/*C*/var sizeChanged = false; // フォントサイズが変更されると true
 
@@ -1151,7 +1153,7 @@ class MessageLayer extends KAGLayer
 		if(edge)
 			ll.drawText(dx, dy, ch, chColor, 255, antialiased, edgeEmphasis, edgeColor, edgeExtent, 0, 0); // 文字
 		else if(shadow)
-			ll.drawText(dx, dy, ch, chColor, 255, antialiased, 255, shadowColor, 0, 2, 2); // 文字
+			ll.drawText(dx, dy, ch, chColor, 255, antialiased, 255, shadowColor, 0, shadowOffsetX, shadowOffsetY); // 文字
 		else
 			ll.drawText(dx, dy, ch, chColor, 255, antialiased); // 文字
 
@@ -1177,7 +1179,7 @@ class MessageLayer extends KAGLayer
 			if(edge)
 				ll.drawText(rx, ry, currentRuby, chColor, 255, antialiased, edgeEmphasis, edgeColor, edgeExtent, 0, 0); // 文字
 			else if(shadow)
-				ll.drawText(rx, ry, currentRuby, chColor, 255, antialiased, 255, shadowColor, 0, 2, 2); // 文字
+				ll.drawText(rx, ry, currentRuby, chColor, 255, antialiased, 255, shadowColor, 0, shadowOffsetX, shadowOffsetY); // 文字
 			else
 				ll.drawText(rx, ry, currentRuby, chColor, 255, antialiased); // 文字
 
@@ -1388,7 +1390,7 @@ class MessageLayer extends KAGLayer
 		if(edge)
 			ll.drawText(dx, dy, text, chColor, 255, antialiased, 512, edgeColor, 1, 0, 0); // 文字
 		else if(shadow)
-			ll.drawText(dx, dy, text, chColor, 255, antialiased, 255, shadowColor, 0, 2, 2); // 文字
+			ll.drawText(dx, dy, text, chColor, 255, antialiased, 255, shadowColor, 0, shadowOffsetX, shadowOffsetY); // 文字
 		else
 			ll.drawText(dx, dy, text, chColor, 255, antialiased); // 文字
 
@@ -2599,6 +2601,8 @@ class MessageLayer extends KAGLayer
 		lastDrawnCh = src.lastDrawnCh;
 		edgeExtent = src.edgeExtent;
 		edgeEmphasis = src.edgeEmphasis;
+		shadowOffsetX = src.shadowOffsetX;
+		shadowOffsetY = src.shadowOffsetY;
 		sizeChanged = src.sizeChanged;
 		nextClearFlag = src.nextClearFlag;
 		lineLayerBase = src.lineLayerBase;
@@ -2662,6 +2666,8 @@ class MessageLayer extends KAGLayer
 		dic.vertical = vertical;
 		dic.edgeExtent = edgeExtent;
 		dic.edgeEmphasis = edgeEmphasis;
+		dic.shadowOffsetX = shadowOffsetX;
+		dic.shadowOffsetY = shadowOffsetY;
 		dic.defaultAutoReturn = defaultAutoReturn;
 		dic.lineBreakGlyph = lineBreakGlyph;
 		dic.lineBreakGlyphKey = lineBreakGlyphKey;
@@ -2709,6 +2715,8 @@ class MessageLayer extends KAGLayer
 		vertical = dic.vertical if dic.vertical !== void;
 		edgeExtent = dic.edgeExtent if dic.edgeExtent !== void;
 		edgeEmphasis = dic.edgeEmphasis if dic.edgeEmphasis !== void;
+		shadowOffsetX = dic.shadowOffsetX if dic.shadowOffsetX !== void;
+		shadowOffsetY = dic.shadowOffsetY if dic.shadowOffsetY !== void;
 		defaultAutoReturn = dic.defaultAutoReturn if dic.defaultAutoReturn !== void;
 		lineBreakGlyph = dic.lineBreakGlyph if dic.lineBreakGlyph !== void;
 		lineBreakGlyphKey = dic.lineBreakGlyphKey if dic.lineBreakGlyphKey !== void;
