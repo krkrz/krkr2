@@ -1095,35 +1095,6 @@ void TVPBeforeSystemInit()
 	ttstr local_proj = TVPGetLocallyAccessibleName(TVPProjectDir);
 	if(!local_proj.IsEmpty()) TVPSetLogLocation(TVPProjectDir);
 
-	// check force logging option
-	tTJSVariant val;
-	if(TVPGetCommandLine(TJS_W("-forcelog"), &val) )
-	{
-		ttstr str(val);
-		if(str == TJS_W("yes"))
-		{
-			TVPStartLogToFile(false);
-		}
-		else if(str == TJS_W("clear"))
-		{
-			TVPStartLogToFile(true);
-		}
-	}
-	if(TVPGetCommandLine(TJS_W("-logerror"), &val) )
-	{
-		ttstr str(val);
-		if(str == TJS_W("no"))
-		{
-			TVPAutoClearLogOnError = false;
-			TVPAutoLogToFileOnError = false;
-		}
-		else if(str == TJS_W("clear"))
-		{
-			TVPAutoClearLogOnError = true;
-			TVPAutoLogToFileOnError = true;
-		}
-	}
-
 }
 //---------------------------------------------------------------------------
 static void TVPDumpOptions();
