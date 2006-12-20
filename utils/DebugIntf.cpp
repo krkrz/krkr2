@@ -421,12 +421,46 @@ void TVPSetLogLocation(const ttstr &loc)
 	if(native.IsEmpty())
 	{
 		TVPNativeLogLocation[0] = 0;
+		TVPLogLocation.Clear();
 	}
 	else
 	{
 		TJS_nstrcpy(TVPNativeLogLocation, native.AsAnsiString().c_str());
 		if(TVPNativeLogLocation[TJS_nstrlen(TVPNativeLogLocation)-1] != '\\')
 			TJS_nstrcat(TVPNativeLogLocation, "\\");
+	}
+
+	TVPLogStreamHolder.Reopen();
+
+	// check force logging option
+	tTJSVariant val;
+	if(TVPGetCommandLine(TJS_W("-forcelog"), &val) )
+	{
+		ttstr str(val);
+		if(str == TJS_W("yes"))
+		{
+			TVPLoggingToFile = false;
+			TVPStartLogToFile(false);
+		}
+		else if(str == TJS_W("clear"))
+		{
+			TVPLoggingToFile = false;
+			TVPStartLogToFile(true);
+		}
+	}
+	if(TVPGetCommandLine(TJS_W("-logerror"), &val) )
+	{
+		ttstr str(val);
+		if(str == TJS_W("no"))
+		{
+			TVPAutoClearLogOnError = false;
+			TVPAutoLogToFileOnError = false;
+		}
+		else if(str == TJS_W("clear"))
+		{
+			TVPAutoClearLogOnError = true;
+			TVPAutoLogToFileOnError = true;
+		}
 	}
 }
 //---------------------------------------------------------------------------
