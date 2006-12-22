@@ -506,9 +506,6 @@ class KAGWindow extends Window
 		if(saveDataLocation.indexOf(":") == -1)
 			saveDataLocation = System.exePath + saveDataLocation;
 
-		// ログの出力先を saveDataLocation にする
-		if(ismain) Debug.logLocation = saveDataLocation;
-
 		// メニューアイテムの作成
 		if(ismain) (KAGWindow_createMenus incontextof this)();
 		if(typeof this.rightClickMenuItem != "undefined")
@@ -5138,14 +5135,6 @@ class KAGWindow extends Window
 		if(skipMode == 1 || skipMode == 2) cancelSkip();
 		if(skipMode == 4 && !skipKeyPressing()) cancelSkip();
 		if(skipMode) return -4; // いったんイベントを処理
-		if(autoMode)
-		{
-            var wait = calcAutoModePageWait();
-            if (wait <= 0) {
-                wait = 1;
-            }
-            return waitTime(wait, true);
-        }
 
 		current.showPageBreakGlyph(pageBreak);
 		storeClickGlyphState("page");
@@ -5281,7 +5270,6 @@ class KAGWindow extends Window
 	function onBGMStop()
 	{
         // BGM が停止した
-        if (this isvalid && conductor isvalid) {
             conductor.trigger('bgmstop');
             if (bgmStopHandler !== void) {
                 bgmStopHandler();
@@ -5292,7 +5280,6 @@ class KAGWindow extends Window
             global.stopBgmTrigger.trigger();
             }
         }
-    }
 
     // ------------------------------------------
     
@@ -5441,13 +5428,11 @@ class KAGWindow extends Window
     function onSESoundBufferStop(id)
 	{
 		// 効果音の再生が終了した
-        if (this isvalid && conductor isvalid) {
             conductor.trigger('sestop' + id);
             if (seStopHandler !== void) {
                 seStopHandler(id);
             }
         }
-	}
 
 	function waitSEFade(elm)
 	{
@@ -5984,12 +5969,6 @@ class KAGWindow extends Window
 
     } incontextof this,
 
-    endline : function(elm)
-    {
-        // ラインモードで行終了時に呼び出される処理
-        return 0;
-    } incontextof this,
-                  
     dispname : function(elm)
     {
         if (elm !== void) {
@@ -6094,12 +6073,6 @@ class KAGWindow extends Window
 
         if (noCrOnce) {
             noCrOnce = false;
-            // 強制ヒストリ改行
-            if(historyWriteEnabled) historyLayer.reline();
-            // ヒストリの登録アクションの消去
-            if (tagHandlers.endline !== void) {
-                tagHandlers.endline();
-            }
             prevEmptyLine = emptyLine;
             emptyLine = true;
             return 0;
@@ -6119,10 +6092,6 @@ class KAGWindow extends Window
 
                 // 名前の直後の改行は無視する
                 if (!(crAfterName && afterName)) {
-                    // ヒストリの登録アクションの消去
-                    if (tagHandlers.endline !== void) {
-                        tagHandlers.endline();
-                    }
                     prevEmptyLine = emptyLine;
                     emptyLine = true;
                     return tagHandlers.p(elm);
@@ -6139,10 +6108,6 @@ class KAGWindow extends Window
 
                 // 名前の直後の改行は無視する
                 if (!(crAfterName && afterName)) {
-                    // ヒストリの登録アクションの消去
-                    if (tagHandlers.endline !== void) {
-                        tagHandlers.endline();
-                    }
                     prevEmptyLine = emptyLine;
                     emptyLine = true;
                     return tagHandlers.l(elm);
@@ -6155,12 +6120,6 @@ class KAGWindow extends Window
             if (emptyLine) {
                 if (!prevEmptyLine) {
                     // 最初の空行で改ページ
-
-                    // ヒストリの登録アクションの消去
-                    if (tagHandlers.endline !== void) {
-                        tagHandlers.endline();
-                    }
-                    // 改行
                     prevEmptyLine = emptyLine;
                     return tagHandlers.p(elm);
                 } else {
@@ -6185,12 +6144,6 @@ class KAGWindow extends Window
             if (emptyLine) {
                 if (!prevEmptyLine) {
                     // 最初の空行で改ページ
-
-                    // ヒストリの登録アクションの消去
-                    if (tagHandlers.endline !== void) {
-                        tagHandlers.endline();
-                    }
-                    // 改行
                     prevEmptyLine = emptyLine;
                     return tagHandlers.p(elm);
                 } else {
