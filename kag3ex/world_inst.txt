@@ -66,6 +66,9 @@ envinit.tjs 自体は TJS2 のディクショナリで構成されています。
 //                    "image"     => "akari_0_DRESS_0",
 //                    "faceImage" => "akari_0_0_FACE",
 
+					// 立ち絵オフセット
+					yoffset : 300
+
                     // 服装バリエーション
                     "dresses" => %[
                         "制服"     => "0",
