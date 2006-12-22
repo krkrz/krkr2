@@ -622,10 +622,11 @@ function MessageLayer_config()
 
 // 行末クリック待ちグリフ
 ;lineBreakGlyph = "LineBreak";  // glyph タグの line 属性に相当
-
+;lineBreakBaseLine = 0;
 
 // ページ末クリック待ちグリフ
 ;pageBreakGlyph = "PageBreak";  // glyph タグの page 属性に相当
+;pageBreakBaseLine = 0;
 
 
 // ◆ クリック待ちグリフを固定した場所に表示するかどうか
