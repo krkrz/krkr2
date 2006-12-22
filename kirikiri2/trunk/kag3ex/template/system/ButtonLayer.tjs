@@ -14,7 +14,7 @@
 */
 
 
-class ButtonLayer extends KAGLayer
+class ButtonLayer extends AnimKAGLayer
 {
 	var Butt_imageLoaded = false; // 画像が読み込まれたか
 	var Butt_mouseOn = false; // レイヤ内にマウスがあるか
@@ -27,7 +27,7 @@ class ButtonLayer extends KAGLayer
 
 	function ButtonLayer(win, par)
 	{
-		super.KAGLayer(win, par);
+        super.AnimKAGLayer(win, par);
 
 		if(typeof win.cursorPointed !== "undefined")
 			cursor = win.cursorPointed;
@@ -39,7 +39,7 @@ class ButtonLayer extends KAGLayer
 
 	function finalize()
 	{
-		super.finalize(...);
+        super.finalize(...);
 	}
 
 	function assign(src)
@@ -68,10 +68,10 @@ class ButtonLayer extends KAGLayer
 
 		if(Butt_imageLoaded)
 		{
-			// ボタンイメージが読み込まれている
-			// TODO: keyboard focus
-			imageLeft = -s * width;
-		}
+            // ボタンイメージが読み込まれている
+            // TODO: keyboard focus
+            imageLeft = -s * width;
+        }
 		else
 		{
 			if(Butt_keyPressed) s = 1; // 押されている
@@ -122,20 +122,19 @@ class ButtonLayer extends KAGLayer
 		}
 	}
 
-	function loadImages(storage, key)
+	function loadImages(storage, key, count, time)
 	{
 		// 画像を読み込む
-		super.loadImages(storage, key);
-		super.width = imageWidth \ (Butt_showFocusImage ? 4 : 3);
-		super.height = imageHeight;
-		callOnPaint = true;
-		Butt_imageLoaded = true;
-	}
+        super.loadImages(storage, key, count, time);
+        super.width = imageWidth \ (Butt_showFocusImage ? 4 : 3);
+        callOnPaint = true;
+        Butt_imageLoaded = true;
+    }
 
     /**
      * 分離ボタン画像の読み込み
      */
-    function loadButtons(normal, over, on, focus) {
+    function loadButtons(normal, over, on, focus, count, time) {
         var temp = window.temporaryLayer;
         
         if (focus !== void) {
@@ -174,14 +173,16 @@ class ButtonLayer extends KAGLayer
             }
             copyRect(w*3, 0, temp, 0, 0, w, h);
         }
+        animStart(count, time);
     }
-    
+
 	function discardImage()
 	{
 		// 画像を破棄し、文字ボタンレイヤとして動作するようにする
 		Butt_imageLoaded = false;
 		imageLeft = imageTop = 0;
-		update();
+        animStop();
+        update();
 	}
 
 	function onMouseDown(x, y, button)

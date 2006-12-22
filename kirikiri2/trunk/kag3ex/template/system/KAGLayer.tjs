@@ -339,3 +339,87 @@ class KAGLayer extends Layer
 	}
 }
 
+/**
+ * 簡易アニメーション処理つき KAGLayer
+ */
+class AnimKAGLayer extends KAGLayer {
+
+    function AnimKAGLayer() {
+        super.KAGLayer(...);
+    }
+
+    function finalize() {
+        animStop();
+        super.finalize(...);
+    }
+
+    var animCount; // アニメーション処理用カウント
+    var animTime;  // アニメーション処理用フリップ時間
+    var animStartTime; // アニメ起動時間
+    var animTimer; // アニメーション処理用タイマ
+
+    function animStop() {
+        animCount = void;
+        animTime  = void;
+        animStartTime  =void;
+        callOnPaint = false;
+        if (animTimer !== void) {
+            invalidate animTimer;
+            animTimer = void;
+        }
+    }
+
+    function animHandler() {
+        if (visible) {
+            update();
+        }
+    }
+
+    function animStart(count, time) {
+        if (count === void || count == 0) {
+            animStop();
+            super.height = imageHeight;
+        } else {
+            super.height = imageHeight / count;
+            animCount = count;
+            animTime  = time === void ? (1000 / count) : time;
+            animStartTime = System.getTickCount();
+            animTimer = new Timer(animHandler, '');
+            animTimer.capacity = 1;
+            animTimer.interval = animTime;
+            animTimer.enabled  = true;
+            callOnPaint = true;
+        }
+    }
+
+    function onPaint() {
+        super.onPaint(...);
+        if (animCount !== void) {
+            var now = System.getTickCount() - animStartTime;
+            imageTop = -((now / animTime) % animCount) * imageHeight / animCount;
+        }
+    }
+
+    function loadImages(storage, key, count, time) {
+        animStop();
+        super.loadImages(storage, key);
+        animStart(count, time);
+    }
+
+    function setSizeToImageSize() {
+        if (animCount === void) {
+            super.setSizeToImageSize();
+        } else {
+            super.width  = imageWidth;
+            super.height = imageHeight / animCount;
+        }
+    }
+
+    function assignImages(src, copyvisiblestate = false) {
+        animStop();
+        super.assignImages(src, copyvisiblestate);
+        if (src instanceof "AnimKAGLayer") {
+            animStart(src.animCount, src.animTime);
+        }
+    }
+}
