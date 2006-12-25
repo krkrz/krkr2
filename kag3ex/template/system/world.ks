@@ -1987,7 +1987,7 @@ class KAGEnvCharacter extends KAGEnvLevelLayer, KAGEnvImage {
     level   : this.setLevel incontextof this,
     voice   : this.setVoice incontextof this,
     nextvoice : this.setNextVoice incontextof this,
-    clearVoice : this.clearVoice incontextof this,
+    clearvoice : this.clearVoice incontextof this,
     playvoice : this.playVoice2 incontextof this,
     waitvoice : this.waitVoice incontextof this,
     facewin : function(param) { disp = FACE; } incontextof this,
@@ -4219,11 +4219,13 @@ class KAGEnvironment extends KAGEnvImage {
         if (faceLevelName !== void) {
             if (ch !== void) {
                 var layer = getFaceLayer(base);
-                if (ch.isShowFace()) {
-                    ch.drawFace(layer, faceLevelName);
-                } else {
-                    layer.visible = false;
-                }
+				if (layer !== void) {
+	                if (ch.isShowFace()) {
+    	                ch.drawFace(layer, faceLevelName);
+        	        } else {
+            	        layer.visible = false;
+                	}
+				}
             } else {
                 clearFacePage(base);
             }
@@ -4364,7 +4366,7 @@ class KAGEnvironment extends KAGEnvImage {
             elm.dispName = dispName;
             
             // è¡ãéèÛë‘Ç»ÇÁäÁï\é¶èÛë‘Ç…Ç∑ÇÈ
-            if (ch !== void && ch.disp == CLEAR && ch.poses) {
+            if (faceLevelName !== void && ch !== void && ch.disp == CLEAR && ch.poses) {
                 ch.disp = FACE;
             }
             
