@@ -1071,7 +1071,6 @@ class MessageLayer extends AnimKAGLayer
     }
 
     function clearSystemButtons() {
-        // ボタン情報の破棄
         foreach(buttons, function(name,value,dict) {
             invalidate value;
             delete dict[name];
@@ -3688,13 +3687,12 @@ class MessageLayer extends AnimKAGLayer
         
         // システムボタンのコピー処理
         clearSystemButtons();
-        foreach(src.buttons, function(name,value,srcbuttons,self) {
-            // クローン処理
-            var b = new SystemButtonLayer(self.window, self);
-            b.assign(value);
-            self.buttons[name] = b;
-        }, this);
-        
+        var bt = src.buttons_save;
+        if (bt !== void) {
+            for (var i=0;i<bt.count;i++) {
+                addSystemButton(bt[i]);
+            }
+        }
     }
 
 	function assign(src)
