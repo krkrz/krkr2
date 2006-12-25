@@ -139,8 +139,9 @@
         ],
     
     "defaultLevel" => 1,
-    // 表情窓用のレベル指定
-    "faceLevelName" => "f",
+
+    // 表情窓用のレベル指定。表情窓を使わない場合は void
+    "faceLevelName" => void,
     
     "actions" => %[
         "おじぎ" => %[
@@ -210,7 +211,8 @@
                     ],
                 ],
             "defaultPose" => "通常",
-            "voiceFile" => "ch%06d",
+            "voiceFile" => "ai%s%06d.ogg",
+            "voiceName" => "voice0"
             ],
         ],
     ];
