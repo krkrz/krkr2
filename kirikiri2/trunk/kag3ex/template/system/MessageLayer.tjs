@@ -382,6 +382,13 @@ class SystemButtonLayer extends ButtonLayer
     var onenter; // マウスが入ってきたときに実行するもの
     var onleave; // マウスが出ていったときに実行するもの
 
+    /**
+     * コンストラクタ
+     * @param window ウインドウ
+     * @param parent メッセージレイヤ
+     * @param init 生成時情報（復帰用に保持）
+     */
+    
 	function SystemButtonLayer(window, parent)
 	{
 		super.ButtonLayer(window, parent);
@@ -391,7 +398,7 @@ class SystemButtonLayer extends ButtonLayer
         onleave = void;
         onclick = void;
         noStable = void;
-	}
+    }
 
 	function finalize()
 	{
@@ -776,8 +783,9 @@ class MessageLayer extends AnimKAGLayer
 	/*C*/var relinexpos; // 改行すべき最終右(縦書きの場合は下)位置
 	/*C*/var isLastLine; // ページ最終行を描画中
 	/*C*/var indentxpos; // インデント左(縦書きの場合は上)位置
-	var links = []; // リンク
-	/*C*/var linkFilled; // リンク領域画像を塗りつぶしたかどうか
+	var links = [];  // リンク
+    var names = %[]; // リンクの名前での参照
+    /*C*/var linkFilled; // リンク領域画像を塗りつぶしたかどうか
 	/*C*/var numLinks = 0; // レイヤ内のリンクの数
 
 	var lastLink = -1; // 最後に選択したリンク番号
@@ -894,6 +902,7 @@ class MessageLayer extends AnimKAGLayer
 
     // システムボタンレイヤ
     var buttons = %[];
+    var buttons_save = [];
 
     // タイムアウト処理用
     var timeoutTimer;
@@ -1067,6 +1076,7 @@ class MessageLayer extends AnimKAGLayer
             invalidate value;
             delete dict[name];
         });
+        buttons_save = [];
     }
 
     function initNameLayer() {
@@ -1163,8 +1173,10 @@ class MessageLayer extends AnimKAGLayer
 		invalidateLinkObjects(); // リンクに関連づけられたオブジェクトを無効化
 
 		focusable = false;
-		links.clear();
-		numLinks = 0;
+        links.clear();
+        (Dictionary.clear incontextof names)();
+        
+        numLinks = 0;
 		inLink = -1;
 		highlightLink(lastLink, false); // ハイライトを消す
 		highlightLayer.visible = false;
@@ -2365,15 +2377,43 @@ class MessageLayer extends AnimKAGLayer
 		return -1;
 	}
 
+    function getExistName(storage) {
+        var test;
+        if(!Storages.isExistentStorage(storage)) {
+            if (test = storage + ".png", Storages.isExistentStorage(test))
+                storage = test;
+            else if (test = storage + ".tlg5", Storages.isExistentStorage(test))
+                storage = test;
+            else if (test = storage + ".tlg6", Storages.isExistentStorage(test))
+                storage = test;
+            else if (test = storage + ".bmp", Storages.isExistentStorage(test))
+                storage = test;
+            else
+                storage = void;
+        }
+        return storage;
+    }
+    
 	function addButton(elm)
 	{
 		// グラフィカルボタンを配置
-		var object = new LinkButtonLayer(window, this);
-        object.name =  "button" + numLinks;
+        var object = new LinkButtonLayer(window, this);
+        object.name =  elm.name !== void ? elm.name : "button" + numLinks;
         if (elm.normal !== void) {
-            object.loadButtons(elm.normal, elm.over, elm.on, elm.focus, elm.animcount, elm.animtime);
+            var over   = elm.over !== void ? elm.over  : getExistName(elm.normal.replace(/_normal/, "_over"));
+            var on     = elm.on   !== void ? elm.on    : getExistName(elm.normal.replace(/_normal/, "_on"));
+            var focus  = elm.over !== void ? elm.focus : getExistName(elm.normal.replace(/_normal/, "_focus"));
+            object.loadButtons(elm.normal, over, on, focus, elm.animcount, elm.animtime);
         } else {
-            object.loadImages(elm.graphic, elm.graphickey, elm.animcount, elm.animtime);
+            if (elm.name !== void) {
+                var normal = elm.name + "_normal";
+                var over   = elm.over !== void ? elm.over  : getExistName(elm.name + "_over");
+                var on     = elm.on   !== void ? elm.on    : getExistName(elm.name + "_on");
+                var focus  = elm.over !== void ? elm.focus : getExistName(elm.name + "_focus");
+                object.loadButtons(normal, over, on, focus, elm.animcount, elm.animtime);
+            } else {
+                object.loadImages(elm.graphic, elm.graphickey, elm.animcount, elm.animtime);
+            }
         }
         object.linkNum = numLinks;
         object.setPos(x, y);
@@ -2406,6 +2446,7 @@ class MessageLayer extends AnimKAGLayer
 			fixed :			[true],
 			lineCount :		1
 			];
+        names[object.name] = object;
 
 		numLinks++;
 		focusable = true; // フォーカスを受け取れるように
@@ -2418,7 +2459,7 @@ class MessageLayer extends AnimKAGLayer
 		// 単一行エディットを配置
 		changeLineSize() if sizeChanged;
 		var object = new LinkEditLayer(window, this, vertical);
-        object.name =  "edit" + numLinks;
+        object.name = elm.name !== void ? elm.name : "edit" + numLinks;
 		var of = object.font;
 		var lf = lineLayer.font;
 		of.face = lf.face;
@@ -2468,6 +2509,7 @@ class MessageLayer extends AnimKAGLayer
 			fixed :			[true],
 			lineCount :		1
 			];
+        names[object.name] = object;
 
 		numLinks ++;
 		focusable = true;
@@ -2478,7 +2520,7 @@ class MessageLayer extends AnimKAGLayer
 	function addCheckBox(elm)
 	{
 		var object = new LinkCheckBoxLayer(window, this, vertical);
-        object.name = "check" + numLinks;
+        object.name = elm.name !== void ? elm.name : "check" + numLinks;
         object.linkNum = numLinks;
 		object.vertical = vertical;
 		object.checked = Scripts.eval(elm.name);
@@ -2539,6 +2581,7 @@ class MessageLayer extends AnimKAGLayer
 			fixed :			[true], // 固定!!!
 			lineCount :		1
 			];
+        names[object.name] = object;
 
 		numLinks ++;
 		focusable = true;
@@ -2549,6 +2592,7 @@ class MessageLayer extends AnimKAGLayer
 	function addSlider(elm)
 	{
         var object = new LinkSliderLayer(window, this, vertical);
+        object.name = elm.name !== void ? elm.name : "slider" + numLinks;
         object.linkNum = numLinks;
         object.exp     = elm.name;
         object.color = elm.bgcolor if elm.bgcolor !== void; // color でない事に注意
@@ -2630,6 +2674,7 @@ class MessageLayer extends AnimKAGLayer
 			fixed :			[true], // 固定!!!
 			lineCount :		1
 			];
+        names[object.name] = object;
 
         numLinks ++;
         focusable = true;
@@ -2642,11 +2687,22 @@ class MessageLayer extends AnimKAGLayer
      */
     function addSystemButton(elm) {
         var object = new SystemButtonLayer(window, this);
-        object.name = elm.name;
+        object.name =  elm.name !== void ? elm.name : "sysbutton" + numLinks;
         if (elm.normal !== void) {
-            object.loadButtons(elm.normal, elm.over, elm.on, elm.focus, elm.animcount, elm.animtime);
+            var over   = elm.over !== void ? elm.over  : getExistName(elm.normal.replace(/_normal/, "_over"));
+            var on     = elm.on   !== void ? elm.on    : getExistName(elm.normal.replace(/_normal/, "_on"));
+            var focus  = elm.over !== void ? elm.focus : getExistName(elm.normal.replace(/_normal/, "_focus"));
+            object.loadButtons(elm.normal, over, on, focus, elm.animcount, elm.animtime);
         } else {
-            object.loadImages(elm.graphic, elm.graphickey, elm.animcount, elm.animtime);
+            if (elm.name !== void) {
+                var normal = elm.name + "_normal";
+                var over   = elm.over !== void ? elm.over  : getExistName(elm.name + "_over");
+                var on     = elm.on   !== void ? elm.on    : getExistName(elm.name + "_on");
+                var focus  = elm.over !== void ? elm.focus : getExistName(elm.name + "_focus");
+                object.loadButtons(normal, over, on, focus, elm.animcount, elm.animtime);
+            } else {
+                object.loadImages(elm.graphic, elm.graphickey, elm.animcount, elm.animtime);
+            }
         }
         object.setPos(elm.x, elm.y);
         object.hint = elm.hint;
@@ -2661,7 +2717,12 @@ class MessageLayer extends AnimKAGLayer
             object.enabled = false;
         }
         object.noStable = elm.nostable;
-        buttons[elm.name] = object;
+        buttons[object.name] = object;
+
+        // 情報保存
+        var init = %[];
+        (Dictionary.assign incontextof init)(elm, false); 
+        buttons_save.add(init);
     }
     
 	function highlightLink(n, b = false)
@@ -3687,10 +3748,11 @@ class MessageLayer extends AnimKAGLayer
 		dic.glyphFixedTop = glyphFixedTop;
         dic.draggable = draggable;
         dic.eventTransparent = eventTransparent;
+        // [end_store_vars]
         dic.faceLayer = faceLayer.store() if faceLayer !== void;
         dic.nameLayer = nameLayer.store() if nameLayer !== void;
-        // [end_store_vars]
-		return dic;
+        dic.buttons = buttons_save;
+        return dic;
 	}
 
 	function restore(dic)
@@ -3739,6 +3801,7 @@ class MessageLayer extends AnimKAGLayer
 		glyphFixedTop = dic.glyphFixedTop if dic.glyphFixedTop !== void;
 		draggable = dic.draggable if dic.draggable !== void;
         eventTransparent = dic.eventTransparent if dic.eventTransparent !== void;
+        // [end_restore_vars]
         if (dic.faceLayer !== void) {
             initFaceLayer();
             faceLayer.restore(dic.faceLayer);
@@ -3751,8 +3814,15 @@ class MessageLayer extends AnimKAGLayer
         } else {
             invalidateNameLayer();
         }
-        // [end_restore_vars]
-		super.restore(dic);
+        // システムボタン復帰処理
+        clearSystemButtons();
+        var bt = dic.buttons;
+        if (bt !== void) {
+            for (var i=0;i<bt.count;i++) {
+                addSystemButton(bt[i]);
+            }
+        }
+        super.restore(dic);
 	}
 
 	function atEndOfTransition(src, withchildren, exchange)
