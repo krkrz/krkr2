@@ -472,23 +472,23 @@ class KAGEnvImage {
     }
 
     function setXPos(cmd, elm) {
-        xposFrom = getFrom(cmd);
-        xpos     = getTo(cmd);
-        if (moveTime === void) {
+        if (xpos !== void && moveTime === void) {
             moveTime  = elm.time;
             moveAccel = elm.accel;
         }
+        xposFrom = getFrom(cmd);
+        xpos     = getTo(cmd);
         //dm("X位置指定:", xpos, xposFrom, moveTime);
         reposition = true;
     } 
 
     function setYPos(cmd, elm) {
-        yposFrom = getFrom(cmd);
-        ypos     = getTo(cmd);
-        if (moveTime === void) {
+        if (ypos !== void && moveTime === void) {
             moveTime  = elm.time;
             moveAccel = elm.accel;
         }
+        yposFrom = getFrom(cmd);
+        ypos     = getTo(cmd);
         //dm("Y位置指定:", ypos, yposFrom, moveTime);
         reposition = true;
     }
@@ -1885,6 +1885,9 @@ class KAGEnvCharacter extends KAGEnvLevelLayer, KAGEnvImage {
                 xposFrom   = fromInfo.xpos;
                 reposition = true;
             } else {
+                if (xpos === void && moveTime !== void) {
+                    moveTime = 0;
+                }
                 xpos = info.xpos;
                 reposition = true;
                 if (moveTime === void) {
@@ -1906,6 +1909,9 @@ class KAGEnvCharacter extends KAGEnvLevelLayer, KAGEnvImage {
                 yposFrom   = fromInfo.ypos;
                 reposition = true;
             } else {
+                if (ypos === void && moveTime !== void) {
+                    moveTime = 0;
+                }
                 ypos = info.ypos;
                 reposition = true;
                 if (moveTime === void) {
