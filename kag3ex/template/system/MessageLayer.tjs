@@ -3751,7 +3751,8 @@ class MessageLayer extends AnimKAGLayer
         // [end_store_vars]
         dic.faceLayer = faceLayer.store() if faceLayer !== void;
         dic.nameLayer = nameLayer.store() if nameLayer !== void;
-        dic.buttons = buttons_save;
+        dic.buttons = [];
+        dic.buttons.assign(buttons_save);
         return dic;
 	}
 
