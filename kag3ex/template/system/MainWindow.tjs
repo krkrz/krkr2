@@ -221,6 +221,21 @@ class KAGWindow extends Window
         }
         return autoModePageWait;
     }
+
+    /**
+     * 自動待ち時間の計算を行う
+     */
+    function calcAutoModeLineWait() {
+        if (autoModeAddWait !== void) {
+            var waittime = autoModeAddWait - System.getTickCount();
+            autoModeAddWait = void;
+            if (waittime > 0) {
+                return autoModeLineWait + waittime;
+            }
+        }
+        return autoModeLineWait;
+    }
+
     
 	var skipKeyRepressed = false; // return あるいは space キー ( f キーなどではない )
 								// が押されると true になる ( スキップ解除時に false
@@ -1511,13 +1526,17 @@ class KAGWindow extends Window
 		// ファイルに書き込む
 		if(!readOnlyMode)
 		{
-			var fn = saveDataLocation + "/" + dataName +
+            try {
+            var fn = saveDataLocation + "/" + dataName +
 				"sc.ksd";
 			(Dictionary.saveStruct incontextof scflags)(fn, saveDataMode);
 
 			var fn = saveDataLocation + "/" + dataName +
 				"su.ksd";
 			(Dictionary.saveStruct incontextof sflags)(fn, saveDataMode);
+            } catch (e) {
+                readOnlyMode = true;
+            }
 		}
 	}
 
@@ -2301,6 +2320,7 @@ class KAGWindow extends Window
 						unlockSnapshot();
 						System.inform("ファイルに保存できません (ファイルを開けないか、"
 							"書き込み禁止です)");
+                        readOnlyMode = true;
 						return false;
 					}
 				}
@@ -2329,7 +2349,8 @@ class KAGWindow extends Window
 			{
 				System.inform("ファイルに保存できません (ファイルを開けないか、"
 					"書き込み禁止です)");
-				return false;
+                readOnlyMode = true;
+                return false;
 			}
 		}
 
@@ -3411,7 +3432,7 @@ class KAGWindow extends Window
 		{
 			if(getKeyState(VK_LBUTTON))
 			{
-				enterAutoMode();
+//				enterAutoMode();
 				return;
 			}
 			if(!rightClickEnabled) return;
@@ -4484,7 +4505,7 @@ class KAGWindow extends Window
 
 	function cancelAutoMode()
 	{
-		// 自動読みすすみモードのキャンセル
+        // 自動読みすすみモードのキャンセル
 		if(autoMode)
 		{
 			autoMode = false;
@@ -4588,6 +4609,9 @@ class KAGWindow extends Window
 		
 	}
 
+
+
+    
 	function doWait(elm)
 	{
 		// wait タグの処理
@@ -5081,6 +5105,29 @@ class KAGWindow extends Window
 		return chNonStopToPageBreak || (getCurrentRead() && ch2ndNonStopToPageBreak);
 	}
 
+    function waitAuto(waittime) {
+        if (skipMode) return 0;
+        if (waittime <= 0) {
+            waittime = 1;
+        }
+        conductor.waitWithTimeOut(%[
+            click : function
+            {
+				clickWaiting = false;
+				fore.base.cursor = cursorDefault;
+                hideClickGlyphs();
+                autoMode = false;
+            } incontextof this,
+            timeout : function
+            {
+				clickWaiting = false;
+				fore.base.cursor = cursorDefault;
+                hideClickGlyphs();
+            } incontextof this
+                ], waittime);
+        return -2; // break
+	}
+    
 	function showLineBreak(elm)
 	{
 		// 現在のメッセージレイヤに行待ち記号を表示する
@@ -5091,10 +5138,11 @@ class KAGWindow extends Window
 			if(elm.canskip === void || !+elm.canskip)
 				return (skipMode==3 || skipMode==4) ? 0 : -4;
 		}
-		if(autoMode)
-		{
-			// 自動読みすすみの場合
-			return autoModeLineWait;
+
+        if(autoMode) {
+            current.showLineBreakGlyph(lineBreak);
+            storeClickGlyphState("line");
+            return waitAuto(elm.voicewait ? calcAutoModeLineWait() : autoModeLineWait);
 		}
 		if(skipMode == 1) cancelSkip();
 		if(skipMode == 4 && !skipKeyPressing()) cancelSkip();
@@ -5103,9 +5151,9 @@ class KAGWindow extends Window
 			// スキップ中(スキップをキャンセルするようなキーがあればスキップ解除
 			// のためのイベント処理の機会を与える)
 
-		current.showLineBreakGlyph(lineBreak);
-		storeClickGlyphState("line");
-
+        current.showLineBreakGlyph(lineBreak);
+        storeClickGlyphState("line");
+        
 		if(!current.nodeVisible)
 		{
 			dm("警告 : 非表示になっている" +
@@ -5120,7 +5168,8 @@ class KAGWindow extends Window
 				clickWaiting = false;
 				fore.base.cursor = cursorDefault;
 				notifyRun();
-			} incontextof this
+                hideClickGlyphs();
+            } incontextof this
 			]);
 		clickWaiting = true;
 		fore.base.cursor = cursorWaitingClick;
@@ -5136,8 +5185,12 @@ class KAGWindow extends Window
 		if(skipMode == 4 && !skipKeyPressing()) cancelSkip();
 		if(skipMode) return -4; // いったんイベントを処理
 
-		current.showPageBreakGlyph(pageBreak);
+        current.showPageBreakGlyph(pageBreak);
 		storeClickGlyphState("page");
+        
+        if(autoMode) {
+            return waitAuto(calcAutoModePageWait());
+        }
 
 		if(!current.nodeVisible)
 		{
@@ -5153,6 +5206,7 @@ class KAGWindow extends Window
 				clickWaiting = false;
 				fore.base.cursor = cursorDefault;
 				notifyRun();
+                hideClickGlyphs();
 			} incontextof this
 			]);
 		clickWaiting = true;
@@ -5270,16 +5324,16 @@ class KAGWindow extends Window
 	function onBGMStop()
 	{
         // BGM が停止した
-            conductor.trigger('bgmstop');
-            if (bgmStopHandler !== void) {
-                bgmStopHandler();
-            }
-            if (bgmStopExp !== void || bgmStopStorage !== void || bgmStopTarget !== void) {
-                global.stopBgmTrigger = new AsyncTrigger(handleBgmStop, '');
-                global.stopBgmTrigger.cached = true;
-            global.stopBgmTrigger.trigger();
-            }
+        conductor.trigger('bgmstop');
+        if (bgmStopHandler !== void) {
+            bgmStopHandler();
         }
+        if (bgmStopExp !== void || bgmStopStorage !== void || bgmStopTarget !== void) {
+            global.stopBgmTrigger = new AsyncTrigger(handleBgmStop, '');
+            global.stopBgmTrigger.cached = true;
+            global.stopBgmTrigger.trigger();
+        }
+    }
 
     // ------------------------------------------
     
@@ -5428,11 +5482,11 @@ class KAGWindow extends Window
     function onSESoundBufferStop(id)
 	{
 		// 効果音の再生が終了した
-            conductor.trigger('sestop' + id);
-            if (seStopHandler !== void) {
-                seStopHandler(id);
-            }
+        conductor.trigger('sestop' + id);
+        if (seStopHandler !== void) {
+            seStopHandler(id);
         }
+	}
 
 	function waitSEFade(elm)
 	{
@@ -6071,6 +6125,7 @@ class KAGWindow extends Window
             return tagHandlers.origr(elm);
         }
 
+        // 改行効果を一度だけ無視させる
         if (noCrOnce) {
             noCrOnce = false;
             prevEmptyLine = emptyLine;
@@ -6110,6 +6165,9 @@ class KAGWindow extends Window
                 if (!(crAfterName && afterName)) {
                     prevEmptyLine = emptyLine;
                     emptyLine = true;
+                    // ボイス待ちする [l] + 行終了後処理呼び出し
+                    conductor.pendings.insert(0, %[tagname: "afterline"]);
+                    elm.voicewait = true;
                     return tagHandlers.l(elm);
                 }
             }
@@ -6132,6 +6190,9 @@ class KAGWindow extends Window
                 if (!(crAfterName && afterName)) {
                     prevEmptyLine = emptyLine;
                     emptyLine = true;
+                    // ボイス待ちする [l] + 行終了後処理呼び出し
+                    conductor.pendings.insert(0, %[tagname: "afterline"]);
+                    elm.voicewait = true;
                     return tagHandlers.l(elm);
                 }
             }
@@ -6311,7 +6372,12 @@ class KAGWindow extends Window
         return 0;
     } incontextof this,
 
-                  
+    afterline : function(elm)
+    {
+        // ラインモードで行終了時に呼び出される処理
+        return 0;
+    } incontextof this,
+
 	l : function(elm)
 	{
 		// 行クリック待ち
@@ -6322,7 +6388,7 @@ class KAGWindow extends Window
         // ページ処理完了後ハンドラ
         return 0;
     } incontextof this,
-                  
+
 	p : function(elm)
 	{
         // 自動ラベルモードは p タグにおいて有効
