@@ -1,11 +1,16 @@
 *start|スタート
 
+; ワールド拡張の特殊環境は解除しておく
+[linemode]
+[csysbutton]
+[autolabelmode mode=false]
+
 [layopt layer=message0 visible]
-レイヤテスト
+KAGEX のレイヤ拡張機能のサンプルです。レイヤに対して回転・拡大縮小の制御ができます。
 [l][r]
 
-[image storage="bg01_01" page=fore layer=stage visible=true]
-[image layer=0 page=fore storage="ch_0_0_1" visible=true left=300 top=50]
+[image layer=stage page=fore storage="bg01_01"  visible=true left=0 top=0]
+[image layer=0     page=fore storage="ch_0_0_1" visible=true left=300 top=50]
 [cm]
 
 スタート
@@ -134,4 +139,4 @@ X拡大
 フェード点滅
 [l][r]
 
-[jump storage=first.ks target=*start]
+[jump storage=s0001.ks]

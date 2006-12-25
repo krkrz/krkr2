@@ -14,7 +14,7 @@
 // ◆ タイトル
 // ウィンドウのキャプション(タイトル)および
 // タスクバーに表示されるものです。
-;System.title = "KAGEXサンプルぷろぐらむ";
+;System.title = "KAGEXサンプル";
 
 
 // ◆ シナリオ解析モード
@@ -76,7 +76,7 @@ function KAGWindow_config()
 // ログボックスが開き、栞を個別のファイルとして保存するモードになります。
 // この場合は 保存可能な栞の個数に制限はありません。また、
 // エクスプローラなどによる栞の管理が容易になります。
-;freeSaveDataMode = false;
+;freeSaveDataMode = true;
 
 
 // ◆サムネイルを保存するか
@@ -85,7 +85,7 @@ function KAGWindow_config()
 // true を指定すると、セーブデータの拡張子は .bmp になり、エクスプローラや
 // 「開く」ダイアログボックスの「縮小版」表示でセーブ時点でのサムネイルを
 // 表示することができるようになります。
-;saveThumbnail = false;
+;saveThumbnail = true;
 
 
 // ◆サムネイルの保存サイズ
@@ -93,7 +93,7 @@ function KAGWindow_config()
 // 設定は意味がありません。
 // 横幅はピクセル単位で指定してください。たて幅は scWidth と scHeight の
 // 比と同じ比で自動的に計算されます。
-;thumbnailWidth = 133;
+;thumbnailWidth = 110;
 
 // ◆サムネイルの保存モード
 // サムネイルの保存モードを指定します。saveThumbnail を true に設定しないとこの
@@ -102,7 +102,7 @@ function KAGWindow_config()
 // 24 を指定すると 24bitフルカラービットマップで保存されます。
 // 256色ビットマップの方がファイルサイズを小さく抑えることができますが、
 // 画質は悪くなります。
-;thumbnailDepth = 8;
+;thumbnailDepth = 24;
 
 
 // ◆ セーブデータ保存場所
@@ -143,7 +143,7 @@ function KAGWindow_config()
 //       ( 先頭の // は含まず )
 // と入力して Enter キーを押しても取得することができます。
 // ( 例 : "371a6289-a084-ee18-2885-66314a0aa19d" )
-;saveDataID = "00000000-0000-0000-0000-000000000000";
+;saveDataID = "5695173f-89f4-41c4-9f44-52addcd4c556"
 
 
 // ◆ 保存モード
@@ -165,7 +165,7 @@ function KAGWindow_config()
 // 特に 毎回マクロ定義を 作品のはじめで行うような用途では、古いマクロの情報
 // が栞の読み込みによって新しいマクロの情報に上書きされてしまうことが開発の
 // 妨げになるため、false を指定した方がよいでしょう。
-;saveMacros = true;
+;saveMacros = false;
 
 
 
@@ -176,11 +176,11 @@ function KAGWindow_config()
 
 
 // ◆ 自動的に読み進むウェイト ページ末ウェイトの設定値 (ミリ秒)
-;autoModePageWaits.fast = 400; // 「短い」
-;autoModePageWaits.faster = 700; // 「やや短い」
-;autoModePageWaits.medium = 1000; // 「普通」
-;autoModePageWaits.slower = 1300; // 「やや遅い」
-;autoModePageWaits.slow = 2000; // 「遅い」
+;autoModePageWaits.fast = 800; // 「短い」
+;autoModePageWaits.faster = 1400; // 「やや短い」
+;autoModePageWaits.medium = 2000; // 「普通」
+;autoModePageWaits.slower = 2600; // 「やや遅い」
+;autoModePageWaits.slow = 4000; // 「遅い」
 
 
 // ◆ 自動的に読み進むウェイト [l] ウェイトの設定値 (ミリ秒)
@@ -238,13 +238,13 @@ function KAGWindow_config()
 // 1 を指定すると 保存可能なラベルを通過するごとに自動的に通過記録を行いま
 //   す。
 // 2 を指定すると選択肢 ( s タグで停止 ) ごとに通過記録を行います。
-;recordHistoryOfStore = 0;
+;recordHistoryOfStore = 3;
 
 
 // ◆ 通過記録の最大数
 // 通過記録の最大数を指定します。最大、ここで指定した回数、前に戻る事ができ
 // ます。大きくするとセーブデータも大きくなります。
-;maxHistoryOfStore = 5;
+;maxHistoryOfStore = 1;
 
 
 // ◆ quake の time 属性値
@@ -258,7 +258,7 @@ function KAGWindow_config()
 // 利用可能な効果音バッファの最大値を指定します。つまり、ここで指定した数の
 // 分だけ効果音を同時に再生できます。効果音を使用しない場合は 0 を指定して
 // かまいません。
-;numSEBuffers = 3;
+;numSEBuffers = 9;
 
 
 // ◆ ムービーオブジェクトの数
@@ -311,7 +311,7 @@ function KAGWindow_config()
 // true を指定するとメッセージレイヤ0が初期状態で表示状態になりますが、
 // false を指定すると初期状態ではすべてのメッセージレイヤは初期状態で非表示
 // になります。
-;initialMessageLayerVisible = true;
+;initialMessageLayerVisible = false;
 
 
 // ◆ 利用可能な栞の数
@@ -320,13 +320,16 @@ function KAGWindow_config()
 // メニューによる栞の管理を行わない場合 ( ゲーム画面中で全部栞の管理などを
 // 行う場合など ) は、numBookMarks は必要な数に設定し、restoreMenu.visible と
 // storeMenu.visible を false に設定してください。
-;numBookMarks = 10;
+;numBookMarks = 91;
 
 
 // ◆ 栞に日付を併記するか
 // true に設定すると、栞メニューの項目の横に YY/MM/DD HH:MMの形式で栞を保存
 // した日付・時刻が表示されます。
 ;showBookMarkDate = true;
+
+// 日付に秒まで含める
+;bookMarkDateSecond = true;
 
 
 // ◆ フォント選択で固定ピッチフォントのみを表示するか
@@ -338,7 +341,7 @@ function KAGWindow_config()
 // ◆ 「ヘルプ > 目次」を選択したときに実行するファイル
 // ここで指定するファイルは吉里吉里実行可能ファイルと同じ場所に設置されてい
 // なければなりません。
-;helpFile = "readme.txt";
+;helpFile = "manual.txt";
 
 
 // ◆ 「ヘルプ > このソフトについて」を選択したときにでる
@@ -380,27 +383,27 @@ function Menu_visible_config()
 // ◆ 「システム > メッセージを消す」
 // このメニュー項目を非表示にしてもマウスの右クリックでのメッセージの
 // 非表示は引き続き有効です。
-;rightClickMenuItem.visible = true;
+;rightClickMenuItem.visible = false;
 
 
 // ◆ 「システム > メッセージ履歴の表示」
-;showHistoryMenuItem.visible = true;
+//;showHistoryMenuItem.visible = true;
 
 
 // ◆ 「システム > 次の選択肢/未読まで進む」または「次の選択肢まで進む」
-;skipToNextStopMenuItem.visible = true;
+//;skipToNextStopMenuItem.visible = true;
 
 
 // ◆ 「システム > 自動的に読み進む」
-;autoModeMenuItem.visible = true;
+//;autoModeMenuItem.visible = true;
 
 
 // ◆ 「システム > 自動的に読み進むウェイト」
-;autoModeWaitMenu.visible = true;
+//;autoModeWaitMenu.visible = false;
 
 
 // ◆ 「システム > 前に戻る」
-;goBackMenuItem.visible = true;
+//;goBackMenuItem.visible = true;
 
 
 // ◆ 「システム > 最初に戻る」
@@ -408,37 +411,37 @@ function Menu_visible_config()
 
 
 // ◆ 「文字表示」
-;characterMenu.visible = true;
+//;characterMenu.visible = true;
 
 
 // ◆ 「文字表示 > 表示速度 > ページ末まで一気に」
 // ユーザがこのメニュー項目をチェックすると、
 // l タグが無視されるようになります。
-;chNonStopToPageBreakItem.visible = true;
+//;chNonStopToPageBreakItem.visible = true;
 
 
 // ◆ 「文字表示 > 一度読んだところは」
-;ch2ndSpeedMenu.visible = true;
+//;ch2ndSpeedMenu.visible = true;
 
 
 // ◆ 「文字表示 > 一度読んだところは > ページ末まで一気に」
-;ch2ndNonStopToPageBreakItem.visible = true;
+//;ch2ndNonStopToPageBreakItem.visible = true;
 
 
 // ◆ 「文字表示 > アンチエイリアス」
-;chAntialiasMenuItem.visible = true;
+//;chAntialiasMenuItem.visible = true;
 
 
 // ◆ 「文字表示 > フォント」
-;chChangeFontMenuItem.visible = true;
+//;chChangeFontMenuItem.visible = true;
 
 
 // ◆ 「栞をたどる」
-;restoreMenu.visible = true;
+//;restoreMenu.visible = true;
 
 
 // ◆ 「栞をはさむ」
-;storeMenu.visible = true;
+//;storeMenu.visible = true;
 
 
 // ◆ 「画面」
@@ -450,15 +453,15 @@ function Menu_visible_config()
 
 
 // ◆ 「ヘルプ > 目次 ...」
-;helpIndexMenuItem.visible = false;
+//;helpIndexMenuItem.visible = false;
 
 
 // ◆ 「ヘルプ > このソフトについて ...」
-;helpAboutMenuItem.visible = false;
+;helpAboutMenuItem.visible = true;
 
 
 // ◆ 「デバッグ」
-;debugMenu.visible = false;
+;debugMenu.visible = true;
 
 
 // ◆ メニュー 追加の設定
@@ -542,12 +545,12 @@ function MessageLayer_config()
 
 // ◆ 文字の大きさ
 // デフォルトの文字の大きさ ( 高さ ) を pixel 単位で指定します。
-;defaultFontSize = 24;  // deffont タグの size 属性に相当
+;defaultFontSize = 26;  // deffont タグの size 属性に相当
 
 
 // ◆ 行間
 // 行間を pixel 単位で指定します。
-;defaultLineSpacing = 6; // defstyle タグの linespacing 属性に相当
+;defaultLineSpacing = 3; // defstyle タグの linespacing 属性に相当
 
 // ◆ 字間
 // 字間を pixel 単位で指定します。
@@ -564,7 +567,7 @@ function MessageLayer_config()
 // ?????sc.kdt の "chdefaultFace" => の行を削除してください。
 // カンマで区切って複数のフォントを指定することができます。その場合は、最初
 // の方に書いたフォントが存在すれば、優先されます。
-;userFace = "ＭＳ Ｐ明朝"; // deffont タグの face 属性に相当
+;userFace = "ＭＳ ゴシック"; // deffont タグの face 属性に相当
 
 
 // ◆ 文字の色
@@ -637,8 +640,8 @@ function MessageLayer_config()
 // ◆ クリック待ちグリフを固定した場所に表示するときの位置
 // glyphFixedLeft にはグリフを表示する左端位置を、glyphFixedTop にはグリフ
 // を表示する上端位置を指定してください。
-;glyphFixedLeft = 0;  // glyph タグの left 属性に相当
-;glyphFixedTop = 0;  // glyph タグの top 属性に相当
+;glyphFixedLeft = 740;  // glyph タグの left 属性に相当
+;glyphFixedTop = 145;  // glyph タグの top 属性に相当
 
 
 // ◆ リンクの強調色
@@ -691,7 +694,7 @@ function BGM_config()
 // "Wave"  : WaveSoundBuffer ( wav等(プラグインで再生できる物も含む) )
 // "MIDI"  : MIDISoundBuffer ( mid,smf )
 // "CDDA"  : CDDASoundBuffer ( cda )
-;type = "MIDI";
+;type = "Wave";
 
 
 // ◆ CDDA再生ボリュームラベル
@@ -747,7 +750,7 @@ function HistoryLayer_config()
 
 
 // ◆ フォント名
-;fontName = "ＭＳ Ｐ明朝";
+;fontName = "ＭＳ ゴシック";
 
 
 // ◆ フォントを太字にするか
@@ -759,7 +762,7 @@ function HistoryLayer_config()
 
 
 // ◆ ラインの高さ
-;lineHeight = 26;
+;lineHeight = 28;
 
 
 // ◆ 縦書きの場合は true
@@ -800,6 +803,11 @@ function HistoryLayer_config()
 
 //[start-historylayer-additionals]
 
+marginL = 100;
+marginR = 100;
+marginT = 40;
+marginB = 40;
+    
 //[end-historylayer-additionals]
 
 }
