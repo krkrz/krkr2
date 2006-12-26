@@ -10,7 +10,6 @@
 [rclick enabled=true jump=false]
 [position layer=message0 frame="messagewindow" opacity=255 left=25 top=360 width=750 height=220 marginL=16 marginT=40 marginR=16 marginB=16 nameLeft=32 nameTop=8 nameWidth=150 nameHeight=40 visible=false]
 [current layer=message0]
-[csysbutton]
 [if exp="tf.recollect"]
 [sysbutton name=msg_exit   x=358 y=0 exp="kag.process('title.ks','*start')"]
 [sysbutton name=msg_skip   x=486 y=0 exp="kag.onSkipToNextStopMenuItemClick()" nostable]
