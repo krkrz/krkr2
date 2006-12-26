@@ -12,7 +12,6 @@
 [history enabled=false]
 [stoprecollection]
 [clearhistory]
-[csysbutton]
 
 *dispstart
 
@@ -31,7 +30,6 @@
 [position page=fore layer=message1 frame="" left=0 top=0 width=8 height=8 visible=false]
 [position page=fore layer=message0 frame="" opacity=0 left=0 top=0 width=800 height=600 marginT=0 marginL=0 marginR=0 marginB=0 visible=false]
 [current page=fore layer=message0]
-[csysbutton]
 [jump storage="replay.ks"]
 [endif]
 
@@ -42,7 +40,6 @@
 [position page=back layer=message1 frame="" left=0 top=0 width=800 height=600 visible=false]
 [position page=back layer=message0 frame="title" opacity=0 left=0 top=0 width=800 height=600 marginT=0 marginL=0 marginR=0 marginB=0 visible=true]
 [current page=back layer=message0]
-[csysbutton]
 
 ; ボタンの配置
 [locate x=254 y=336]
