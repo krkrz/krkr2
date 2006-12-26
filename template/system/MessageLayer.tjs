@@ -448,7 +448,7 @@ class SystemButtonLayer extends ButtonLayer
 /**
  * 表示状態と表示レベルについてあるレイヤと相対同期するレイヤ
  */
-class RelativeLayer extends KAGLayer
+class RelativeLayer extends AnimKAGLayer
 {
     var owner;
     
@@ -565,8 +565,7 @@ class RelativeLayer extends KAGLayer
 
 	function loadImages(storage, key)
 	{
-        var ret = super.loadImages(storage, key);
-        setSizeToImageSize();
+        var ret = super.loadImages(...);
         top  = top;
         left = left;
 	}
@@ -588,6 +587,62 @@ class RelativeLayer extends KAGLayer
         setPos(0,0,8,8);
         absolute = 1;
         visible = false;
+    }
+}
+
+class NameLayer extends RelativeLayer
+{
+    function NameLayer(owner) {
+        super.RelativeLayer(...);
+    }
+
+    /**
+     * 文字描画
+     * @param x X座標
+     * @param y Y座標
+     * @param text 表示テキスト
+     */
+    function draw(x, y, text) {
+        if (owner.edge) {
+            drawText(x, y, text, owner.chColor, 255, owner.antialiased, 512, owner.edgeColor, 1, 0, 0); // 文字
+        } else if(owner.shadow) {
+            drawText(x, y, text, owner.chColor, 255, owner.antialiased, 255, owner.shadowColor, 0, 2, 2); // 文字
+        } else {
+            drawText(x, y, text, owner.chColor, 255, owner.antialiased); // 文字
+        }
+    }
+    
+    /**
+     * 名前処理
+     */
+    function processName(text) {
+        if (owner.nameImageMap !== void ) {
+            if (text != "") {
+                var image = owner.nameImageMap[text];
+                if (image === void) {
+                    image = owner.defaultNameImage;
+                }
+                loadImages(image);
+                visible = true;
+            } else {
+                visible = false;
+            }
+        } else {
+            if (text != "") {
+                fillRect(0, 0, width, height, 0);
+                draw(0, 0, text);
+                visible = true;
+            } else {
+                visible = false;
+            }
+        }
+    }
+}
+
+class FaceLayer extends RelativeLayer
+{
+    function FaceLayer(owner) {
+        super.RelativeLayer(...);
     }
 }
 
@@ -1080,7 +1135,7 @@ class MessageLayer extends AnimKAGLayer
 
     function initNameLayer() {
         if (nameLayer === void) {
-            nameLayer = new RelativeLayer(this);
+            nameLayer = new NameLayer(this);
             nameLayer.type = layerType;
             nameLayer.name = name + ":名前";
             nameLayer.hitType = htProvince;
@@ -1097,7 +1152,7 @@ class MessageLayer extends AnimKAGLayer
 
     function initFaceLayer() {
         if (faceLayer === void) {
-            faceLayer = new RelativeLayer(this);
+            faceLayer = new FaceLayer(this);
             faceLayer.type = ltAlpha;
             faceLayer.name = name + ":表情";
             faceLayer.hitType = htProvince;
@@ -1235,6 +1290,8 @@ class MessageLayer extends AnimKAGLayer
             nameLayer.height   = +elm.nameheight if elm.nameheight !== void;
             nameLayer.absolute = +elm.nameabsolute if elm.nameabsolute !== void;
             nameLayer.originMode = +elm.nameorigin if elm.nameorigin !== void;
+        } else {
+            invalidateNameLayer();
         }
         
         // 表情窓
@@ -1246,8 +1303,14 @@ class MessageLayer extends AnimKAGLayer
             faceLayer.height   = +elm.faceheight if elm.faceheight !== void;
             faceLayer.absolute = +elm.faceabsolute if elm.faceabsolute !== void;
             faceLayer.originMode = +elm.faceorigin if elm.faceorigin !== void;
+        } else {
+            invalidateFaceLayer();
         }
         
+        // メッセージボタン消去
+        clearSystemButtons();
+
+        // 消去
         clear(true);
     }
 
@@ -2201,33 +2264,8 @@ class MessageLayer extends AnimKAGLayer
      * 名前の描画
      */
     function processName(text="") {
-        if (nameLayer === void) {
-            return;
-        }
-        if (nameImageMap !== void ) {
-            if (text != "") {
-                var image = nameImageMap[text];
-                if (image === void) {
-                    image = defaultNameImage;
-                }
-                nameLayer.loadImages(image);
-                nameLayer.visible = true;
-            } else {
-                nameLayer.visible = false;
-            }
-        } else {
-            if (text != "") {
-                    nameLayer.fillRect(0,0,nameLayer.width,nameLayer.height,0);
-                if(edge)
-                    nameLayer.drawText(0, 0, text, chColor, 255, antialiased, 512, edgeColor, 1, 0, 0); // 文字
-                else if(shadow)
-                    nameLayer.drawText(0, 0, text, chColor, 255, antialiased, 255, shadowColor, 0, 2, 2); // 文字
-                else
-                    nameLayer.drawText(0, 0, text, chColor, 255, antialiased); // 文字
-                nameLayer.visible = true;
-            } else {
-                nameLayer.visible = false;
-            }
+        if (nameLayer !== void) {
+            nameLayer.processName(text);
         }
     }
 
