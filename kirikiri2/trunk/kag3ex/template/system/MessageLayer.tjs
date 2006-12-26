@@ -3687,12 +3687,14 @@ class MessageLayer extends AnimKAGLayer
         
         // システムボタンのコピー処理
         clearSystemButtons();
-        var bt = src.buttons_save;
-        if (bt !== void) {
-            for (var i=0;i<bt.count;i++) {
-                addSystemButton(bt[i]);
-            }
-        }
+        foreach(src.buttons, function(name,value,srcbuttons,self) {
+            // クローン処理
+            var b = new SystemButtonLayer(self.window, self);
+            b.assign(value);
+            self.buttons[name] = b;
+        }, this);
+        // 生成情報をコピー
+        buttons_save.assign(src.buttons_save);
     }
 
 	function assign(src)
