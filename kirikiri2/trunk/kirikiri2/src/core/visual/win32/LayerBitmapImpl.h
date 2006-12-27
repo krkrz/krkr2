@@ -36,6 +36,8 @@ class tTVPBitmap
 
 	tjs_int PitchBytes; // bytes required in a line
 	tjs_int PitchStep; // step bytes to next(below) line
+	tjs_int Width; // actual width
+	tjs_int Height; // actual height
 
 	HDC BitmapDC; // for DIBSection
 	HBITMAP BitmapHandle, OldBitmapHandle; // for DIBSection
@@ -63,8 +65,8 @@ public:
 			RefCount--;
 	}
 
-	tjs_uint GetWidth() const { return BitmapInfo->bmiHeader.biWidth; }
-	tjs_uint GetHeight() const { return BitmapInfo->bmiHeader.biHeight; }
+	tjs_uint GetWidth() const { return Width; }
+	tjs_uint GetHeight() const { return Height; }
 
 	tjs_uint GetBPP() const { return BitmapInfo->bmiHeader.biBitCount; }
 	bool Is32bit() const { return BitmapInfo->bmiHeader.biBitCount == 32; }
