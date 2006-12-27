@@ -60,7 +60,10 @@
       intermediate\ConfMainFrameUnit.obj intermediate\tjsGlobalStringMap.obj 
       intermediate\ClipboardIntf.obj intermediate\ClipboardImpl.obj 
       intermediate\tjsDisassemble.obj intermediate\tjsDebug.obj 
-      intermediate\CharacterSet.obj intermediate\WaveLoopManager.obj"/>
+      intermediate\CharacterSet.obj intermediate\WaveLoopManager.obj 
+      intermediate\WaveSegmentQueue.obj ..\..\..\sound\cpu\pv_sse.obj 
+      ..\..\..\sound\cpu\pv_def.obj intermediate\PhaseVocoderDSP.obj 
+      intermediate\PhaseVocoderFilter.obj"/>
     <RESFILES value="tvpwin32.res ..\HBeamCur.res"/>
     <DEFFILE value="..\tvpwin32.def"/>
     <RESDEPEN value="$(RESFILES) ..\HaltWarnFormUnit.dfm 
@@ -236,6 +239,11 @@
       <FILE FILENAME="..\..\..\tjs2\tjsDebug.cpp" FORMNAME="" UNITNAME="tjsDebug" CONTAINERID="C/C++ コンパイラ" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\base\CharacterSet.cpp" FORMNAME="" UNITNAME="CharacterSet" CONTAINERID="C/C++ コンパイラ" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\sound\WaveLoopManager.cpp" FORMNAME="" UNITNAME="WaveLoopManager" CONTAINERID="C/C++ コンパイラ" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\..\sound\WaveSegmentQueue.cpp" FORMNAME="" UNITNAME="WaveSegmentQueue" CONTAINERID="C/C++ コンパイラ" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\..\sound\cpu\pv_sse.obj" FORMNAME="" UNITNAME="pv_sse.obj" CONTAINERID="OBJTool" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\..\sound\cpu\pv_def.obj" FORMNAME="" UNITNAME="pv_def.obj" CONTAINERID="OBJTool" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\..\sound\PhaseVocoderDSP.cpp" FORMNAME="" UNITNAME="PhaseVocoderDSP.cpp" CONTAINERID="C/C++ コンパイラ" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\..\sound\PhaseVocoderFilter.cpp" FORMNAME="" UNITNAME="PhaseVocoderFilter.cpp" CONTAINERID="C/C++ コンパイラ" DESIGNCLASS="" LOCALCOMMAND=""/>
   </FILELIST>
   <BUILDTOOLS>
   </BUILDTOOLS>

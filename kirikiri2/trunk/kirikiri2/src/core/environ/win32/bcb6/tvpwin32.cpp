@@ -73,7 +73,7 @@ WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
 		Application->Title = "‹g—¢‹g—¢";
 		Application->CreateForm(__classid(TTVPMainForm), &TVPMainForm);
-		TVPLoadPluigins(); // load plugin module *.tpm
+                 TVPLoadPluigins(); // load plugin module *.tpm
 		if(TVPProjectDirSelected) TVPInitializeStartupScript();
 
 		Application->Run();
