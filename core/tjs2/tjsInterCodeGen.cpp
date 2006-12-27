@@ -967,6 +967,8 @@ static bool inline TJSIsModifySubType(tTJSSubType type)
 	{ return type != stNone; }
 static bool inline TJSIsCondFlagRetValue(tjs_int r)
 	{ return r == TJS_GNC_CFLAG || r == TJS_GNC_CFLAG_I; }
+static bool inline TJSIsFrame(tjs_int r)
+	{ return r > 0; }
 #ifdef TJS_DEBUG_PROFILE_TIME
 tjs_uint time_this_proxy = 0;
 #endif
@@ -1038,7 +1040,7 @@ tjs_int tTJSInterCodeContext::GenNodeCode(tjs_int & frame, tTJSExprNode *node,
 		tjs_int resaddr1, resaddr2;
 		resaddr1 = _GenNodeCode(frame, (*node)[0], TJS_RT_NEEDED, 0, param);
 		resaddr2 = _GenNodeCode(frame, (*node)[1], TJS_RT_NEEDED, 0, tSubParam());
-		if(resaddr1 < 0)
+		if(!TJSIsFrame(resaddr1))
 		{
 			PutCode(VM_CP, node_pos);
 			PutCode(TJS_TO_VM_REG_ADDR(frame), node_pos);
@@ -1068,7 +1070,7 @@ tjs_int tTJSInterCodeContext::GenNodeCode(tjs_int & frame, tTJSExprNode *node,
 		tjs_int resaddr1 = _GenNodeCode(frame, (*node)[0], TJS_RT_NEEDED, 0,
 			tSubParam());
 
-		if(resaddr1 < 0)
+		if(!TJSIsFrame(resaddr1))
 		{
 			PutCode(VM_CP, node_pos);
 			PutCode(TJS_TO_VM_REG_ADDR(frame), node_pos);
@@ -1196,7 +1198,7 @@ tjs_int tTJSInterCodeContext::GenNodeCode(tjs_int & frame, tTJSExprNode *node,
 		else
 		{
 			if((restype & TJS_RT_NEEDED) &&
-					!TJSIsCondFlagRetValue(resaddr1) && resaddr1 < 0)
+					!TJSIsCondFlagRetValue(resaddr1) && !TJSIsFrame(resaddr1))
 			{
 				PutCode(VM_CP, node_pos);
 				PutCode(TJS_TO_VM_REG_ADDR(frame), node_pos);
@@ -1286,7 +1288,7 @@ tjs_int tTJSInterCodeContext::GenNodeCode(tjs_int & frame, tTJSExprNode *node,
 		if(!(restype & TJS_RT_CFLAG))
 		{
 			// requested result type is not condition flag
-			if(TJSIsCondFlagRetValue(resaddr1) || resaddr1 < 0)
+			if(TJSIsCondFlagRetValue(resaddr1) || !TJSIsFrame(resaddr1))
 			{
 				PutCode(inv?VM_SETNF:VM_SETF, node_pos);
 				PutCode(TJS_TO_VM_REG_ADDR(frame), node_pos);
@@ -1308,7 +1310,7 @@ tjs_int tTJSInterCodeContext::GenNodeCode(tjs_int & frame, tTJSExprNode *node,
 		// instanceof operator
 		tjs_int resaddr1, resaddr2;
 		resaddr1 = _GenNodeCode(frame, (*node)[0], TJS_RT_NEEDED, 0, tSubParam());
-		if(resaddr1 < 0)
+		if(!TJSIsFrame(resaddr1))
 		{
 			PutCode(VM_CP, node_pos);
 			PutCode(TJS_TO_VM_REG_ADDR(frame), node_pos);
@@ -1340,7 +1342,7 @@ tjs_int tTJSInterCodeContext::GenNodeCode(tjs_int & frame, tTJSExprNode *node,
 		tjs_int resaddr1, resaddr2;
 		if(TJSIsModifySubType(param.SubType)) _yyerror(TJSCannotModifyLHS, Block);
 		resaddr1 = _GenNodeCode(frame, (*node)[0], TJS_RT_NEEDED, 0, tSubParam());
-		if(resaddr1 < 0)
+		if(!TJSIsFrame(resaddr1))
 		{
 			PutCode(VM_CP, node_pos);
 			PutCode(TJS_TO_VM_REG_ADDR(frame), node_pos);
@@ -1387,7 +1389,7 @@ tjs_int tTJSInterCodeContext::GenNodeCode(tjs_int & frame, tTJSExprNode *node,
 		resaddr1 = _GenNodeCode(frame, (*node)[0], TJS_RT_NEEDED, 0, tSubParam());
 		if(!(restype & TJS_RT_CFLAG))
 		{
-			if(resaddr1 < 0)
+			if(!TJSIsFrame(resaddr1))
 			{
 				PutCode(VM_CP, node_pos);
 				PutCode(TJS_TO_VM_REG_ADDR(frame), node_pos);
@@ -1432,7 +1434,7 @@ tjs_int tTJSInterCodeContext::GenNodeCode(tjs_int & frame, tTJSExprNode *node,
 		if(!(restype & TJS_RT_CFLAG))
 		{
 			// value as return value required
-			if(resaddr < 0)
+			if(!TJSIsFrame(resaddr))
 			{
 				PutCode(VM_CP, node_pos);
 				PutCode(TJS_TO_VM_REG_ADDR(frame), node_pos);
@@ -1476,7 +1478,7 @@ tjs_int tTJSInterCodeContext::GenNodeCode(tjs_int & frame, tTJSExprNode *node,
 		// general unary operators
 		if(TJSIsModifySubType(param.SubType)) _yyerror(TJSCannotModifyLHS, Block);
 		resaddr = _GenNodeCode(frame, (*node)[0], TJS_RT_NEEDED, 0, tSubParam());
-		if(resaddr < 0)
+		if(!TJSIsFrame(resaddr))
 		{
 			PutCode(VM_CP, node_pos);
 			PutCode(TJS_TO_VM_REG_ADDR(frame), node_pos);
@@ -1542,7 +1544,7 @@ tjs_int tTJSInterCodeContext::GenNodeCode(tjs_int & frame, tTJSExprNode *node,
 			// normal operation
 			resaddr = _GenNodeCode(frame, cnode, TJS_RT_NEEDED, 0, tSubParam());
 
-			if(resaddr < 0)
+			if(!TJSIsFrame(resaddr))
 			{
 				PutCode(VM_CP, node_pos);
 				PutCode(TJS_TO_VM_REG_ADDR(frame), node_pos);
