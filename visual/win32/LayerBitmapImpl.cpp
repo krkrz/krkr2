@@ -1378,15 +1378,30 @@ void tTVPBitmap::Allocate(tjs_uint width, tjs_uint height, tjs_uint bpp)
 	if(!BitmapInfo) TVPThrowExceptionMessage(TVPCannotAllocateBitmapBits,
 		TJS_W("allocating BITMAPINFOHEADER"), ttstr((tjs_int)BitmapInfoSize));
 
+	Width = width;
+	Height = height;
+
+	tjs_uint bitmap_width = width;
+		// note that the allocated bitmap size can be bigger than the
+		// original size because the horizontal pitch of the bitmap
+		// is aligned to a paragraph (16bytes)
+
 	if(bpp == 8)
-		PitchBytes = (((width-1) >> 2)+1) <<2;
+	{
+		bitmap_width = (((bitmap_width-1) / 16)+1) *16; // align to a paragraph
+		PitchBytes = (((bitmap_width-1) >> 2)+1) <<2;
+	}
 	else
-		PitchBytes = width * 4;
+	{
+		bitmap_width = (((bitmap_width-1) / 4)+1) *4; // align to a paragraph
+		PitchBytes = bitmap_width * 4;
+	}
+
 	PitchStep = -PitchBytes;
 
 
 	BitmapInfo->bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
-	BitmapInfo->bmiHeader.biWidth = width;
+	BitmapInfo->bmiHeader.biWidth = bitmap_width;
 	BitmapInfo->bmiHeader.biHeight = height;
 	BitmapInfo->bmiHeader.biPlanes = 1;
 	BitmapInfo->bmiHeader.biBitCount = bpp;
