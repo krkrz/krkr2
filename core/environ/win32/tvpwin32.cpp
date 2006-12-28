@@ -200,7 +200,14 @@ WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
 		Application->Run();
 
-		TVPSystemUninit();
+		try
+		{
+			TVPSystemUninit();
+		}
+		catch(...)
+		{
+			// ignore errors
+		}
 	}
 	catch (EAbort &e)
 	{
