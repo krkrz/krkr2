@@ -62,7 +62,14 @@ void TVPSystemUninit(void)
 
 	TVPUninitTVPGL();
 
-	TVPUninitScriptEngine();
+	try
+	{
+		TVPUninitScriptEngine();
+	}
+	catch(...)
+	{
+		// ignore errors
+	}
 
 	TVPAfterSystemUninit();
 
