@@ -1,0 +1,210 @@
+Title: 吉里吉里プラグイン向けネイティブクラスバインダ
+Author: miahmie
+
+
+●これは何か？
+
+既存の C++ ライブラリを TJS で扱うためのプラグインを
+簡単に作ることができるようにするための C++ テンプレートです。
+
+従来のプラグインソースでは引数の受け渡し部分のラッパを
+tp_stub.h のマクロを使いつつ手で書かなければならなかったのですが，
+テンプレートによりこれをほとんどコンパイラに任せることができます。
+
+gcc 3.4 系列と VC++2005 Express で動作確認しています。
+テンプレート実装の関係で VC++6 ではコンパイルすら無理だと思います。
+VC++2003 や他のコンパイラは未確認なのでどうなるかわかりません。
+
+
+●簡単な説明
+
+マクロで登録したいクラスの定義を記述するだけです。
+
+#include "ncbind.hpp"
+#include "既存ライブラリのヘッダ等"
+
+NCB_REGISTER_CLASS(登録するクラス名) {
+  NCB_CONSTRUCTOR((コンストラクタの引数の型 ...));
+  NCB_METHOD(登録するメソッド1);
+  NCB_METHOD(登録するメソッド2);
+     :
+  NCB_METHOD(登録するメソッドn);
+}
+
+詳しくは testbind.cpp のソースを見るなどしてください。
+
+
+●ファイル構成
+
+  ncbind.hpp		メインテンプレート
+  ncbind.cpp		V2Link/V2Unlink 定義
+  ncbind.def		gcc用エクスポートファイル
+			VC++では /EXPORT:V2Link /EXPORT:V2Unlink してください
+  ncb_invoke.hpp	任意のメソッドを呼ぶためのテンプレート
+  ncb_foreach.h		マクロを任意個数展開するためのincludeマクロ
+
+  testbind.*		テスト用のプロジェクト
+
+
+●詳細
+
+
+　▼NCB_REGISTER_CLASS(Class) { ... }
+
+Class を TJSグローバル空間に登録します。
+Class がそのままグローバル空間上での名前となります。
+別名にしたい場合はあらかじめ typedef で別名にしてから登録します。
+同じクラスの多重登録はエラーになります。
+
+
+
+以下の NCB_{ CONSTRUCTOR, METHOD*, PROPERTY* }マクロは
+この NCB_REGISTER_CLASS ブロック内でしか使えません。
+
+
+　　▼NCB_CONSTRUCTOR((arg1, arg2, ...))
+
+引数の型のリスト (arg1, arg2, ...) を渡してコンストラクタを登録します。
+型の一致したコンストラクタが TJS から new するときに呼ばれます。
+登録しない場合はそのクラスを new するとエラーになります。（※まだ未実装）
+また，オーバーロードされた複数コンストラクタの登録はできません。
+最初に登録されたものが有効となります。（実行時に警告メッセージが出ます）
+
+
+　　▼NCB_METHOD(Method)
+
+クラスメソッド Method を登録します。
+Method がそのままクラスメソッド名となります。
+オーバーロード等で同じ前のメソッドが複数ある場合は
+メソッド型の自動判定に失敗するので NCB_METHOD_DETAIL を使ってください。
+
+
+　　▼NCB_METHOD_DIFFER(Name, Method)
+
+Name という名前でクラスメソッド Method を登録します。
+NCB_METHOD(Method) は NCB_METHOD_DIFFER(Method, Method) と等価です。
+
+
+　　▼NCB_METHOD_DETAIL(Name, Type, ReturnType, Method, (arg1,arg2, ...))
+
+引数や返り値を指定してクラスメソッド Method を Name という名前で登録します。
+Type はクラスメソッドのタイプで，
+	Class	普通のクラスメソッド
+	Const	const なクラスメソッド（ReturnType Method(arg...) const;）
+	Static	static なクラスメソッド
+の 3つのうちどれかを記述します。
+
+
+　　▼NCB_METHOD_RAW_CALLBACK(Name, Callback, Flag)
+
+コールバックを指定して Name という名前でメソッドを登録します。
+Callback は tTJSNativeClassMethodCallback 型の static 関数ポインタか，
+または，tTJSNativeClassMethodCallback の引数の iTJSDispatch2 *objthis を
+このクラスのインスタンスのポインタにしたものが使えます。
+（この場合，実際のネイティブインスタンスへのポインタが引数として渡ります）
+
+Flag は，
+	0		 (通常クラスメソッド時)
+	TJS_STATICMEMBER (staticメソッド時) 
+のどちらかが指定できます。
+
+
+　　▼NCB_PROPERTY   (Property, GetterMethod, SetterMethod)
+　　▼NCB_PROPERTY_RO(Property, GetterMethod)
+　　▼NCB_PROPERTY_WO(Property, SetterMethod)
+
+Property という名前でプロパティを登録します。
+GetterMethod, SetterMethod はそれぞれ
+プロパティ取得，プロパティ設定メソッドです。
+_RO, _WO は読み込み専用，書き込み専用プロパティを作るときに使います。
+
+Setter/Getterのメソッド型のチェックが甘いので
+指定するメソッドには注意してください。
+
+
+
+
+
+　▼NCB_REGISTER_FUNCTION(Name, Function)
+
+TJS グローバル空間に Name という名前で Function という関数を登録します。
+
+　▼NCB_REGISTER_INSTANCE() //※まだ未実装
+
+
+
+
+
+　▼NCB_TYPECONV_CAST(Type, CastType)
+
+引数の型が Type の場合，キャスト CastType を指定して
+tTJSVariant と相互変換するように登録します。
+
+　▼NCB_SET_CONVERTOR(Type, Convertor)
+
+引数の型 Type を変換するクラスを登録します。
+詳しくは ncbind.hpp のコメント等を参照してください。
+
+
+
+●制限
+
+・継承関係はサポートしていない
+　⇒継承関係にあるクラス同士を登録した場合，別のクラス扱いになる
+	・instanceof で派生クラスインスタンスのチェックができない
+	・引数に派生クラスインスタンスを渡した場合は
+	　インスタンスポインタが取得できずにエラーとなる
+
+・引数の省略によるデフォルト値をサポートしていない
+　⇒TJSから渡す引数の個数はメソッドの引数の個数以上であること
+　　余分に渡された引数は無視され，足りない場合は TJS_E_BADPARAMCOUNT が返る
+　⇒可変長引数をサポートする場合は RawCallback で自力実装すること
+
+・namespace 内でのクラス登録は考えられていないので namespace 外で行うこと
+　⇒namespace 内のクラスを登録する場合は typedef するなどで
+　　必ず namespace の外で行う (:: を含むとエラーになる)
+
+  ex.
+	typedef ::Foo::Bar::TargetClass TargetClass;
+
+	NCB_REGISTER_CLASS(TargetClass) { ... }
+
+
+・コンストラクタは１つしか記述できない
+　⇒インスタンスを生成する static なメソッドを書くなどして解決する
+
+・static な既存のインスタンスなどを返り値で渡してはいけない
+　（TJS側で invalidate されるときにインスタンスが delete されるため）
+
+・参照で値を書き換えて返すようなメソッドには対応できない
+　⇒適当なRawCallback関数を書くなどして対処すること
+
+・TJSCreateNativeClassMethod を使わずにメソッド呼び出しを独自実装
+　しているため，将来にわたりソース互換が保てるという保証がない
+　⇒吉里吉里２自体もうメンテフェーズだから別にいい…よね？
+
+
+●独り言
+
+・テンプレートは Modern C++ Design 書籍を読んだくらいで，Boostとかｼﾗﾈ
+　ncb_invokeの前身バージョンでTypeListで実装したやつもあったけど
+　そこまでするような物ではないと悟ったので今回は力業で実現
+
+・tTJSVariantType tTJSVariant::Type() は何故 const メソッドでないのか
+　const_cast使うハメになって敗北気分
+
+
+
+
+
+●TODOメモ
+
+・PROPERTY 動作チェック
+・RAW_CALLBACK チェック
+・deleteされないアダプタと REGISTER_INSTANCE
+・コンストラクタがないときにnewされるとエラーになるようにする
+
+
+
+
+
