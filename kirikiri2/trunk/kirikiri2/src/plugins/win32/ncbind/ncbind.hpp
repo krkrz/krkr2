@@ -9,9 +9,12 @@
 #if (defined(DEBUG) || defined(_DEBUG))
 #define NCB_LOG(n)     TVPAddLog(ttstr(n))
 #define NCB_LOG_W(log) NCB_LOG(TJS_W(log))
+#define NCB_LOG_2(a,b) TVPAddLog(ttstr(a) + ttstr(b))
 #else
-#define NCB_LOG(n)     ((void)0)
-#define NCB_LOG_W(log) ((void)0)
+#define NCB_LOG_VOID   ((void)0)
+#define NCB_LOG(n)     NCB_LOG_VOID
+#define NCB_LOG_W(log) NCB_LOG_VOID
+#define NCB_LOG_2(a,b) NCB_LOG_VOID
 #endif
 ////////////////////////////////////////
 /// NativeClass 名前/ID/クラスオブジェクト保持用
@@ -960,21 +963,34 @@ private:
 };
 
 
-
-/// 自動レジストクラス（スレッドアンセーフなので必要なら適当に修正のこと）
+////////////////////////////////////////
+/// TJSクラス自動レジストクラス（スレッドアンセーフなので必要なら適当に修正のこと）
 // 基本的に static const なインスタンスしか使用されないのでこれで十分な気はする
 struct ncbAutoRegister {
 	typedef ncbAutoRegister ThisClassT;
+	typedef void (*CallBackT)();
 
-	ncbAutoRegister() : _next(_top) { _top = this; }
-	static void AllRegist()   { NCB_LOG_W("AllRegist");   for (ThisClassT const* p = _top; p; p = p->_next) p->Regist();   }
-	static void AllUnregist() { NCB_LOG_W("AllUnregist"); for (ThisClassT const* p = _top; p; p = p->_next) p->Unregist(); }
+	enum LineT {
+		PreRegist = 0,
+		ClassRegist,
+		PostRegist,
+		LINE_COUNT };
+#define NCB_INNER_AUTOREGISTER_LINES_INSTANCE { 0, 0, 0 }
+
+	ncbAutoRegister(LineT line) : _next(_top[line]) { _top[line] = this; }
+
+	static void AllRegist(  LineT line) { NCB_LOG_2(TJS_W("AllRegist:"),   line); for (ThisClassT const* p = _top[line]; p; p = p->_next) p->Regist();   }
+	static void AllUnregist(LineT line) { NCB_LOG_2(TJS_W("AllUnregist:"), line); for (ThisClassT const* p = _top[line]; p; p = p->_next) p->Unregist(); }
+
+	static void AllRegist()   { for (int line = 0; line < LINE_COUNT; line++) AllRegist(  static_cast<LineT>(line)); }
+	static void AllUnregist() { for (int line = 0; line < LINE_COUNT; line++) AllUnregist(static_cast<LineT>(line)); }
 protected:
 	virtual void Regist()   const = 0;
 	virtual void Unregist() const = 0;
 private:
+	ncbAutoRegister();
 	/****/ ThisClassT const* _next;
-	static ThisClassT const* _top;
+	static ThisClassT const* _top[LINE_COUNT];
 
 protected:
 	/// NCB_METHOD_DETAILでメソッド詳細のタイプを決定するために使用
@@ -1002,7 +1018,7 @@ struct ncbClassAutoRegister : public ncbAutoRegister {
 	typedef ncbClassAutoRegister<ClassT> ThisClassT;
 	typedef const tjs_char *NameT;
 
-	ncbClassAutoRegister(NameT n) : _name(n), ncbAutoRegister()  {}
+	ncbClassAutoRegister(NameT n) : _name(n), ncbAutoRegister(ClassRegist)  {}
 protected:
 	void Regist()   const { RegistT r(_name); _Regist(r); }
 	void Unregist() const { ncbCreateClass<T>::Release(); }
@@ -1067,6 +1083,9 @@ NCB_REGISTER_CLASS(クラス) {
  */
 
 
+////////////////////////////////////////
+/// TJSファンクション自動レジストクラス
+
 template <typename METHOD>
 struct ncbNativeFunction : public ncbNativeClassMethodBase {
 	typedef METHOD MethodT;
@@ -1094,6 +1113,8 @@ private:
 
 struct ncbFunctionAutoRegister : public ncbAutoRegister {
 	typedef tjs_char const*           NameT;
+
+	ncbFunctionAutoRegister() : ncbAutoRegister(ClassRegist)  {}
 protected:
 	void Regist()   const {}
 	void Unregist() const {}
@@ -1133,6 +1154,27 @@ struct ncbFunctionAutoRegisterTempl;
 	static ncbFunctionAutoRegisterTempl<ncbFunctionTag_ ## name> ncbFunctionAutoRegister_ ## name
 
 
+
+
+////////////////////////////////////////
+/// レジスト前後のコールバック登録
+struct ncbCallbackAutoRegister : public ncbAutoRegister {
+	typedef void (*CallbackT)();
+
+	ncbCallbackAutoRegister(LineT line, CallbackT init, CallbackT term)
+		: _init(init), _term(term), ncbAutoRegister(line)  {}
+protected:
+	void Regist()   const { if (_init) _init(); }
+	void Unregist() const { if (_term) _term(); }
+private:
+	CallbackT _init, _term;
+};
+
+#define NCB_REGISTER_CALLBACK(pos, init, term, tag) static ncbCallbackAutoRegister ncbCallbackAutoRegister_ ## pos ## _ ## tag (ncbAutoRegister::pos, init, term)
+#define NCB_PRE_REGIST_CALLBACK(cb)    NCB_REGISTER_CALLBACK(PreRegist,  &cb, 0, cb ## _0)
+#define NCB_POST_REGIST_CALLBACK(cb)   NCB_REGISTER_CALLBACK(PostRegist, &cb, 0, cb ## _0)
+#define NCB_PRE_UNREGIST_CALLBACK(cb)  NCB_REGISTER_CALLBACK(PreRegist,  0, &cb, 0_ ## cb)
+#define NCB_POST_UNREGIST_CALLBACK(cb) NCB_REGISTER_CALLBACK(PostRegist, 0, &cb, 0_ ## cb)
 
 
 #endif

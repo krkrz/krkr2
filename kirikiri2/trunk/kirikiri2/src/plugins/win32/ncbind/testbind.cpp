@@ -54,6 +54,7 @@ template <> struct ttstrWrap<double> : public ttstrFormat { ttstrWrap() : ttstrF
 #include FOREACH_INCLUDE
 
 
+////////////////////////////////////////
 
 struct TypeConvChecker {
 	TypeConvChecker() : _name(TJS_W("TypeConvChecker")) {
@@ -130,6 +131,7 @@ NCB_REGISTER_CLASS(OverloadTest) {
 
 
 
+////////////////////////////////////////
 
 struct PropertyTest {
 	PropertyTest() {}
@@ -155,4 +157,23 @@ NCB_REGISTER_CLASS(PropertyTest) {
 //	NCB_PROPERTY_RO(StaticPropRO, StaticGet);
 //	NCB_PROPERTY_WO(StaticPropWO, StaticSet);
 }
+
+
+
+
+
+////////////////////////////////////////
+
+void PreRegistCallbackTest()    { mes("PreRegistCallbackTest"); }
+void PostRegistCallbackTest()   { mes("PostRegistCallbackTest"); }
+void PreUnregistCallbackTest()  { mes("PreUnregistCallbackTest"); }
+void PostUnregistCallbackTest() { mes("PostUnregistCallbackTest"); }
+
+NCB_PRE_REGIST_CALLBACK(   PreRegistCallbackTest);
+NCB_POST_REGIST_CALLBACK(  PostRegistCallbackTest);
+NCB_PRE_UNREGIST_CALLBACK( PreUnregistCallbackTest);
+NCB_POST_UNREGIST_CALLBACK(PostUnregistCallbackTest);
+
+
+
 
