@@ -72,5 +72,5 @@ EXPORT(HRESULT) V2Unlink()
 
 // auto register æ“ªƒ|ƒCƒ“ƒ^
 ncbAutoRegister::ThisClassT const*
-ncbAutoRegister::_top = 0;
+ncbAutoRegister::_top[ncbAutoRegister::LINE_COUNT] = NCB_INNER_AUTOREGISTER_LINES_INSTANCE;
 

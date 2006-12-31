@@ -62,7 +62,7 @@ Class がそのままグローバル空間上での名前となります。
 この NCB_REGISTER_CLASS ブロック内でしか使えません。
 
 
-　　▼NCB_CONSTRUCTOR((arg1, arg2, ...))
+　　▼NCB_CONSTRUCTOR((arg1, arg2, ...));
 
 引数の型のリスト (arg1, arg2, ...) を渡してコンストラクタを登録します。
 型の一致したコンストラクタが TJS から new するときに呼ばれます。
@@ -71,7 +71,7 @@ Class がそのままグローバル空間上での名前となります。
 最初に登録されたものが有効となります。（実行時に警告メッセージが出ます）
 
 
-　　▼NCB_METHOD(Method)
+　　▼NCB_METHOD(Method);
 
 クラスメソッド Method を登録します。
 Method がそのままクラスメソッド名となります。
@@ -79,13 +79,13 @@ Method がそのままクラスメソッド名となります。
 メソッド型の自動判定に失敗するので NCB_METHOD_DETAIL を使ってください。
 
 
-　　▼NCB_METHOD_DIFFER(Name, Method)
+　　▼NCB_METHOD_DIFFER(Name, Method);
 
 Name という名前でクラスメソッド Method を登録します。
 NCB_METHOD(Method) は NCB_METHOD_DIFFER(Method, Method) と等価です。
 
 
-　　▼NCB_METHOD_DETAIL(Name, Type, ReturnType, Method, (arg1,arg2, ...))
+　　▼NCB_METHOD_DETAIL(Name, Type, ReturnType, Method, (arg1,arg2, ...));
 
 引数や返り値を指定してクラスメソッド Method を Name という名前で登録します。
 Type はクラスメソッドのタイプで，
@@ -95,7 +95,7 @@ Type はクラスメソッドのタイプで，
 の 3つのうちどれかを記述します。
 
 
-　　▼NCB_METHOD_RAW_CALLBACK(Name, Callback, Flag)
+　　▼NCB_METHOD_RAW_CALLBACK(Name, Callback, Flag);
 
 コールバックを指定して Name という名前でメソッドを登録します。
 Callback は tTJSNativeClassMethodCallback 型の static 関数ポインタか，
@@ -109,9 +109,9 @@ Flag は，
 のどちらかが指定できます。
 
 
-　　▼NCB_PROPERTY   (Property, GetterMethod, SetterMethod)
-　　▼NCB_PROPERTY_RO(Property, GetterMethod)
-　　▼NCB_PROPERTY_WO(Property, SetterMethod)
+　　▼NCB_PROPERTY   (Property, GetterMethod, SetterMethod);
+　　▼NCB_PROPERTY_RO(Property, GetterMethod);
+　　▼NCB_PROPERTY_WO(Property, SetterMethod);
 
 Property という名前でプロパティを登録します。
 GetterMethod, SetterMethod はそれぞれ
@@ -125,25 +125,46 @@ Setter/Getterのメソッド型のチェックが甘いので
 
 
 
-　▼NCB_REGISTER_FUNCTION(Name, Function)
+　▼NCB_REGISTER_FUNCTION(Name, Function);
 
 TJS グローバル空間に Name という名前で Function という関数を登録します。
 
-　▼NCB_REGISTER_INSTANCE() //※まだ未実装
+　▼NCB_REGISTER_INSTANCE(...); //※まだ未実装
 
 
 
 
 
-　▼NCB_TYPECONV_CAST(Type, CastType)
+　▼NCB_TYPECONV_CAST(Type, CastType);
 
 引数の型が Type の場合，キャスト CastType を指定して
 tTJSVariant と相互変換するように登録します。
 
-　▼NCB_SET_CONVERTOR(Type, Convertor)
+　▼NCB_SET_CONVERTOR(Type, Convertor);
 
 引数の型 Type を変換するクラスを登録します。
 詳しくは ncbind.hpp のコメント等を参照してください。
+
+
+
+　▼NCB_PRE_REGIST_CALLBACK(Callback);
+　▼NCB_POST_REGIST_CALLBACK(Callback);
+　▼NCB_PRE_UNREGIST_CALLBACK(Callback);
+　▼NCB_POST_UNREGIST_CALLBACK(Callback);
+
+クラスを登録・開放する前後に呼ばれるコールバック void Callback() を
+登録します。呼ばれる順番は以下のとおりです。
+
+V2Link時：
+	PRE_REGIST_CALLBACK
+	クラス登録
+	POST_REGIST_CALLBACK
+V2Unlink時：
+	PRE_UNREGIST_CALLBACK
+	クラス開放
+	POST_UNREGIST_CALLBACK
+
+同じ種類のコールバックが複数登録された場合の順番の保証はありません。
 
 
 
