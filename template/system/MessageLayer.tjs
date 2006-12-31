@@ -804,7 +804,7 @@ class MessageLayer extends AnimKAGLayer
     }
     
     var wwFollowing = "%),:;]}｡｣ﾞﾟ。，、．：；゛゜ヽヾゝ"
-                "ゞ々’”）〕］｝〉》」』】°′″℃￠％‰"; // 行頭禁則文字
+                "ゞ々’”）〕］｝〉》」』】°′″℃￠％‰　"; // 行頭禁則文字
 	var wwFollowingWeak="!.?､･ｧｨｩｪｫｬｭｮｯｰ・？！ーぁぃぅぇぉっゃゅょゎァィ"
                 "ゥェォッャュョヮヵヶ"; // 行頭(弱)禁則文字
 	var wwLeading="\\$([{｢‘“（〔［｛〈《「『【￥＄￡"; // 行末禁則文字
@@ -975,13 +975,14 @@ class MessageLayer extends AnimKAGLayer
     }
     
     function timeoutHandler() {
-        // 実行
-        Scripts.eval(timeoutExp) if timeoutExp != '';
-        if (timeoutStorage != '' || timeoutTarget != '') {
-            window.lockMessageLayerSelProcess(); // 選択をロック
-            window.process(timeoutStorage, timeoutTarget);
+        if (!selProcessLock) {
+            Scripts.eval(timeoutExp) if timeoutExp != '';
+            if (timeoutStorage != '' || timeoutTarget != '') {
+                window.lockMessageLayerSelProcess(); // 選択をロック
+                window.process(timeoutStorage, timeoutTarget);
+                clearTimeout();
+            }
         }
-        clearTimeout();
     }
 
     function addTimeout(elm) {
@@ -1046,9 +1047,50 @@ class MessageLayer extends AnimKAGLayer
                 window.hideMouseCursor();
             // キーボードによる操作の場合はマウスカーソルを隠す
             window.process(clickStorage, clickTarget);
+            clearClick();
         }
         selClickLock = false;
-        clearClick();
+    }
+
+    var wheelExp;
+    var wheelFunc;
+    var wheelStorage;
+    var wheelTarget;
+
+    function clearWheel() {
+        wheelStorage = void;
+        wheelTarget  = void;
+        wheelExp     = void;
+        wheelFunc    = void;
+    }
+
+    function addWheel(elm) {
+        wheelStorage = elm.storage;
+        wheelTarget  = elm.target;
+        wheelFunc    = elm.func;
+        if (elm.exp !== void) {
+            wheelExp = createSoundExpression(elm.exp, elm.wheelse, elm.wheelsebuf);
+        }
+        focusable = true; // フォーカスを受け取れるように
+        setSelProcessLock(false); // 選択ロック解除
+        //comp.setSelProcessLock(false); // 選択ロック解除
+    }
+
+    function hasWheel() {
+        return wheelFunc !== void || wheelExp !== void || wheelStorage !== void || wheelTarget !== void;
+    }
+    
+    function processWheel(shift, delta, x, y) {
+        dm("ホイール処理:" + delta);
+        if (!selProcessLock) {
+            Scripts.eval(wheelFunc)(shift, delta, x, y) if wheelFunc != void;
+            Scripts.eval(wheelExp) if wheelExp != '';
+            if(wheelStorage != '' || wheelTarget != '') {
+                window.lockMessageLayerSelProcess(); // 選択をロック
+                window.process(wheelStorage, wheelTarget);
+                clearWheel();
+            }
+        }
     }
     
     function MessageLayer(owner, parent, name, id, do_config)
@@ -1239,7 +1281,7 @@ class MessageLayer extends AnimKAGLayer
 		linkFilled = false;
 		lastDrawnCh = ""; // 最後に描画した文字
 		isLastLine = false; // 最終行か
-		selClickLock = true;
+        selClickLock = true;
 		lastMouseX = cursorX;
 		lastMouseY = cursorY;
 		initLineLayer();
@@ -1341,6 +1383,7 @@ class MessageLayer extends AnimKAGLayer
 
         clearTimeout();
         clearClick();
+        clearWheel();
     }
 
 	function clear2(all=false)

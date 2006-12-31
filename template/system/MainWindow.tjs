@@ -5033,6 +5033,11 @@ class KAGWindow extends Window
         if (currentDialog !== void) {
             return;
         }
+        // メッセージ窓のホイール処理
+        if (inSleep && current.hasWheel()) {
+            current.processWheel(shift, delta, x, y);
+            return;
+        }
         if(!historyLayer.visible)
 		{
 			if(delta > 0)
@@ -6362,6 +6367,20 @@ class KAGWindow extends Window
     {
         // タイムアウト処理の解除（カレントのみ）
         current.clearTimeout();
+        return 0;
+    } incontextof this,
+
+    wheel : function(elm)
+    {
+        // ホイール処理の登録(カレントのみ)
+        current.addWheel(elm);
+        return 0;
+    } incontextof this,
+
+    cwheel : function(elm)
+    {
+        // ホイール処理の解除（カレントのみ）
+        current.clearWheel();
         return 0;
     } incontextof this,
                   
