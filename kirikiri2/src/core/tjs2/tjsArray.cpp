@@ -807,6 +807,74 @@ TJS_BEGIN_NATIVE_METHOD_DECL(/* func.name */add)
 }
 TJS_END_NATIVE_METHOD_DECL(/* func.name */add)
 //----------------------------------------------------------------------
+TJS_BEGIN_NATIVE_METHOD_DECL(/* func.name */push)
+{
+	// add item(s) at last
+
+	TJS_GET_NATIVE_INSTANCE(/* var. name */ni, /* var. type */tTJSArrayNI);
+
+	((tTJSArrayObject*)objthis)->Insert(ni, param, numparams, ni->Items.size());
+
+	if(result) *result = (tTVInteger)(ni->Items.size());
+
+	return TJS_S_OK;
+}
+TJS_END_NATIVE_METHOD_DECL(/* func.name */push)
+//----------------------------------------------------------------------
+TJS_BEGIN_NATIVE_METHOD_DECL(/* func.name */pop)
+{
+	// pop item from last
+
+	TJS_GET_NATIVE_INSTANCE(/* var. name */ni, /* var. type */tTJSArrayNI);
+
+	if(ni->Items.empty())
+	{
+		if(result) result->Clear();
+	}
+	else
+	{
+		if(result) *result = ni->Items[ni->Items.size() - 1];
+		((tTJSArrayObject*)objthis)->Erase(ni, ni->Items.size() - 1);
+	}
+
+	return TJS_S_OK;
+}
+TJS_END_NATIVE_METHOD_DECL(/* func.name */pop)
+//----------------------------------------------------------------------
+TJS_BEGIN_NATIVE_METHOD_DECL(/* func.name */shift)
+{
+	// shift item at head
+
+	TJS_GET_NATIVE_INSTANCE(/* var. name */ni, /* var. type */tTJSArrayNI);
+
+	if(ni->Items.empty())
+	{
+		if(result) result->Clear();
+	}
+	else
+	{
+		if(result) *result = ni->Items[0];
+		((tTJSArrayObject*)objthis)->Erase(ni, 0);
+	}
+
+	return TJS_S_OK;
+}
+TJS_END_NATIVE_METHOD_DECL(/* func.name */shift)
+//----------------------------------------------------------------------
+TJS_BEGIN_NATIVE_METHOD_DECL(/* func.name */unshift)
+{
+	// add item(s) at head
+
+	TJS_GET_NATIVE_INSTANCE(/* var. name */ni, /* var. type */tTJSArrayNI);
+
+	((tTJSArrayObject*)objthis)->Insert(ni, param, numparams, 0);
+
+	if(result) *result = (tTVInteger)(ni->Items.size());
+
+	return TJS_S_OK;
+}
+TJS_END_NATIVE_METHOD_DECL(/* func.name */unshift)
+//----------------------------------------------------------------------
 TJS_BEGIN_NATIVE_METHOD_DECL(/* func.name */find)
 {
 	// find item in the array,
@@ -861,6 +929,27 @@ TJS_BEGIN_NATIVE_PROP_DECL(count)
 	TJS_END_NATIVE_PROP_SETTER
 }
 TJS_END_NATIVE_PROP_DECL(count)
+//----------------------------------------------------------------------
+// same as count
+TJS_BEGIN_NATIVE_PROP_DECL(length)
+{
+	TJS_BEGIN_NATIVE_PROP_GETTER
+	{
+		TJS_GET_NATIVE_INSTANCE(/* var. name */ni, /* var. type */tTJSArrayNI);
+		if(result) *result = (tTVInteger)(ni->Items.size());
+		return TJS_S_OK;
+	}
+	TJS_END_NATIVE_PROP_GETTER
+
+	TJS_BEGIN_NATIVE_PROP_SETTER
+	{
+		TJS_GET_NATIVE_INSTANCE(/* var. name */ni, /* var. type */tTJSArrayNI);
+		ni->Items.resize((tjs_uint)(tTVInteger)*param);
+		return TJS_S_OK;
+	}
+	TJS_END_NATIVE_PROP_SETTER
+}
+TJS_END_NATIVE_PROP_DECL(length)
 //----------------------------------------------------------------------
 
 	ClassID_Array = TJS_NCM_CLASSID;
@@ -1340,11 +1429,25 @@ void tTJSArrayObject::Insert(tTJSArrayNI *ni, const tTJSVariant &val, tjs_int nu
 	tjs_int count = (tjs_int)ni->Items.size();
 	if(num > count) TJS_eTJSError(TJSRangeError);
 
-	if(num == count)
-		ni->Items.push_back(val);
-	else
-		ni->Items.insert(ni->Items.begin() + num, val);
+	ni->Items.insert(ni->Items.begin() + num, val);
 	CheckObjectClosureAdd(val);
+}
+//---------------------------------------------------------------------------
+void tTJSArrayObject::Insert(tTJSArrayNI *ni, tTJSVariant *const *val, tjs_int numvals, tjs_int num)
+{
+	if(num < 0) num += ni->Items.size();
+	if(num < 0) TJS_eTJSError(TJSRangeError);
+	tjs_int count = (tjs_int)ni->Items.size();
+	if(num > count) TJS_eTJSError(TJSRangeError);
+
+	// first initialize specified position as void, then
+	// overwrite items.
+	ni->Items.insert(ni->Items.begin() + num, numvals, tTJSVariant());
+	for(tjs_int i = 0; i < numvals; i++)
+	{
+		ni->Items[num + i] = *val[i];
+		CheckObjectClosureAdd(*val[i]);
+	}
 }
 //---------------------------------------------------------------------------
 tjs_error TJS_INTF_METHOD
@@ -1687,5 +1790,6 @@ tjs_int TJSCopyArrayElementTo(iTJSDispatch2 * dsp,
 
 
 } // namespace TJS
+
 
 
