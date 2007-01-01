@@ -159,6 +159,7 @@ public:
 	tjs_int Remove(tTJSArrayNI *ni, const tTJSVariant &ref, bool removeall);
 	void Erase(tTJSArrayNI *ni, tjs_int num);
 	void Insert(tTJSArrayNI *ni, const tTJSVariant &val, tjs_int num);
+	void Insert(tTJSArrayNI *ni, tTJSVariant *const *val, tjs_int numvals, tjs_int num);
 
 public:
 	tjs_error TJS_INTF_METHOD
