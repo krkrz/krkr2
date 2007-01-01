@@ -1,5 +1,5 @@
 /**
- * copyright (c) 2006 Go Watanabe
+ * copyright (c) 2007 Go Watanabe
  */
 
 #include <windows.h>

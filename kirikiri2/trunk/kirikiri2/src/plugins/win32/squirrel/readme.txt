@@ -41,7 +41,7 @@ Scripts.execStorageSQ("filename.nut");		// Squirrel スクリプトファイルの実行
 
 Squirrel は いわゆる zlib/libpngスタイルライセンスです。
 
-Copyright (c) 2003-2006 Alberto Demichelis
+Copyright (c) 2003-2007 Alberto Demichelis
 
 This software is provided 'as-is', without any 
 express or implied warranty. In no event will the 

@@ -1,7 +1,7 @@
 //---------------------------------------------------------------------------
 /*
 	TVP2 ( T Visual Presenter 2 )  A script authoring tool
-	Copyright (C) 2000-2006 W.Dee <dee@kikyou.info> and contributors
+	Copyright (C) 2000-2007 W.Dee <dee@kikyou.info> and contributors
 
 	See details of license at "license.txt"
 */
@@ -29,7 +29,7 @@ TVP_MSG_DECL_CONST(TVPAboutString,
 	
 TJS_W("吉里吉里[きりきり] 2 実行コア version %1 ( TJS version %2 )\n")
 TJS_W("Compiled on ") __DATE__ TJS_W(" ") __TIME__ TJS_W("\n")
-TJS_W("Copyright (C) 1997-2006 W.Dee and contributors All rights reserved.\n")
+TJS_W("Copyright (C) 1997-2007 W.Dee and contributors All rights reserved.\n")
 TJS_W("Contributors in alphabetical order:\n")
 TJS_W("  Go Watanabe, Kenjo, Kiyobee, Kouhei Yanagita, mey, MIK, Takenori Imoto, yun\n")
 TJS_W("吉里吉里実行コアの使用/配布/改変は、\n")
@@ -80,7 +80,7 @@ TVP_MSG_DECL_CONST(TVPVersionInformation,
 	
 TJS_W("吉里吉里[きりきり] 2 実行コア/%1 ")
 TJS_W("(Compiled on ") __DATE__ TJS_W(" ") __TIME__ TJS_W(") TJS2/%2 ")
-TJS_W("Copyright (C) 1997-2006 W.Dee and contributors All rights reserved."));
+TJS_W("Copyright (C) 1997-2007 W.Dee and contributors All rights reserved."));
 
 TVP_MSG_DECL_CONST(TVPVersionInformation2,
 	TJS_W("バージョン情報の詳細は Ctrl + F12 で閲覧できます"));
