@@ -67,12 +67,21 @@ function getFrom(value) {
     }
 }
 
-function toNumber(value)
-{
-    if (value === void || value === null) {
+/**
+ * 相対位置指定の判定。指定値が "+" "-" ではじまっていたら基準値への相対とみなす
+ * @param base  基準値
+ * @param value 指定値
+ */
+function calcRelative(base, value) {
+    if (value === void) {
         return value;
     } else {
-        return +value;
+        if (typeof value == "String") {
+            if (value.charAt(0) == '+' || value.charAt(0) == '-') {
+                return (int)base + (int)value;
+            }
+        }
+        return (int)value;
     }
 }
 
@@ -476,8 +485,8 @@ class KAGEnvImage {
             moveTime  = elm.time;
             moveAccel = elm.accel;
         }
-        xposFrom = getFrom(cmd);
-        xpos     = getTo(cmd);
+        xposFrom = calcRelative(xpos, getFrom(cmd));
+        xpos     = calcRelative(xpos, getTo(cmd));
         //dm("X位置指定:", xpos, xposFrom, moveTime);
         reposition = true;
     } 
@@ -487,8 +496,8 @@ class KAGEnvImage {
             moveTime  = elm.time;
             moveAccel = elm.accel;
         }
-        yposFrom = getFrom(cmd);
-        ypos     = getTo(cmd);
+        yposFrom = calcRelative(ypos, getFrom(cmd));
+        ypos     = calcRelative(ypos, getTo(cmd));
         //dm("Y位置指定:", ypos, yposFrom, moveTime);
         reposition = true;
     }
@@ -817,19 +826,19 @@ class KAGEnvImage {
         type =  global[param];
     } incontextof this,
     opacity : function(param, elm) {
-        opacityFrom = toNumber(getFrom(param));
-        opacity     = toNumber(getTo(param));
+        opacityFrom = calcRelative(opacity, getFrom(param));
+        opacity     = calcRelative(opacity, getTo(param));
         opacityTime = isSkip() ? 0 : elm.time;
     } incontextof this,
     fade :  setFade incontextof this,
     rotate : function(param, elm) {
-        rotateFrom = toNumber(getFrom(param));
-        rotate     = toNumber(getTo(param));
+        rotateFrom = calcRelative(rotate, getFrom(param));
+        rotate     = calcRelative(rotate, getTo(param));
         rotateTime = isSkip() ? 0 : elm.time;
     } incontextof this,
     zoom : function(param, elm) {
-        zoomFrom = toNumber(getFrom(param));
-        zoom     = toNumber(getTo(param));
+        zoomFrom = calcRelative(zoom, getFrom(param));
+        zoom     = calcRelative(zoom, getTo(param));
         zoomTime = isSkip() ? 0 : elm.time;
     } incontextof this,
     afx : function(param, elm) {
@@ -1859,7 +1868,7 @@ class KAGEnvCharacter extends KAGEnvLevelLayer, KAGEnvImage {
             }
         }
     }
-    
+
     /**
      * 表示位置の設定
      */
@@ -1881,14 +1890,14 @@ class KAGEnvCharacter extends KAGEnvLevelLayer, KAGEnvImage {
             var posFrom = getFrom(cmd);
             var fromInfo;
             if (posFrom !== void && (fromInfo = env.positions[posFrom]) !== void) {
-                xpos       = info.xpos;
-                xposFrom   = fromInfo.xpos;
+                xposFrom   = calcRelative(xpos, fromInfo.xpos);
+                xpos       = calcRelative(xpos, info.xpos);
                 reposition = true;
             } else {
                 if (xpos === void && moveTime !== void) {
                     moveTime = 0;
                 }
-                xpos = info.xpos;
+                xpos = calcRelative(xpos, info.xpos);
                 reposition = true;
                 if (moveTime === void) {
                     setPositionTrans(info);
@@ -1905,14 +1914,14 @@ class KAGEnvCharacter extends KAGEnvLevelLayer, KAGEnvImage {
             var posFrom = getFrom(cmd);
             var fromInfo;
             if (posFrom !== void && (fromInfo = env.positions[posFrom]) !== void) {
-                ypos       = info.ypos;
-                yposFrom   = fromInfo.ypos;
+                yposFrom   = calcRelative(ypos, fromInfo.ypos);
+                ypos       = calcRelative(ypos, info.ypos);
                 reposition = true;
             } else {
                 if (ypos === void && moveTime !== void) {
                     moveTime = 0;
                 }
-                ypos = info.ypos;
+                ypos = calcRelative(ypos, info.ypos);
                 reposition = true;
                 if (moveTime === void) {
                     setPositionTrans(info);
