@@ -177,7 +177,7 @@ public:
 private:
 
 	enum tNestType { ntBlock, ntWhile, ntDoWhile, ntFor,
-		ntSwitch, ntIf, ntElse, ntTry, ntWith };
+		ntSwitch, ntIf, ntElse, ntTry, ntCatch, ntWith };
 
 	struct tNestData
 	{

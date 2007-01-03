@@ -3232,6 +3232,10 @@ void tTJSInterCodeContext::EnterCatchCode(const tjs_char *name)
 	tjs_int base = name ? FrameBase+1 : FrameBase;
 	ClearFrame(fr, base);
 
+	// change nest type to ntCatch
+	NestVector.back().Type = ntCatch;
+
+	// create variable if the catch clause has a receiver variable name
 	if(name)
 	{
 		NestVector.back().VariableCreated = true;
@@ -3247,7 +3251,7 @@ void tTJSInterCodeContext::ExitTryCode()
 	// exit from "try"
 	if(NestVector.size() >= 2)
 	{
-		if(NestVector[NestVector.size()-2].Type == ntTry)
+		if(NestVector[NestVector.size()-2].Type == ntCatch)
 		{
 			if(NestVector[NestVector.size()-2].VariableCreated)
 			{
@@ -3261,7 +3265,7 @@ void tTJSInterCodeContext::ExitTryCode()
 		_yyerror(TJSSyntaxError, Block);
 		return;
 	}
-	if(NestVector.back().Type != ntTry)
+	if(NestVector.back().Type != ntCatch)
 	{
 		_yyerror(TJSSyntaxError, Block);
 		return;
