@@ -708,7 +708,7 @@ void tTJSInterCodeContext::FixCode(void)
 		for(;;)
 		{
 			if(CodeArea[addr] == VM_JMP ||
-				CodeArea[addr] == jumpcode)
+				(CodeArea[addr] == jumpcode && (jumpcode == VM_JF || jumpcode == VM_JNF)))
 			{
 				// simple jump code or
 				// JF after JF or JNF after JNF
