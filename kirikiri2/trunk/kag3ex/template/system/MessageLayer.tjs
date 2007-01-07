@@ -495,17 +495,17 @@ class RelativeLayer extends AnimKAGLayer
             case 0:
             case 6:
             case 7:
-                super.left = owner.left + _left;
+                super.left = owner.left + owner.diffx + _left;
                 break;
             case 1:
             case 5:
             case 8:
-                super.left = owner.left + _left - width / 2;
+                super.left = owner.left + owner.diffx + _left - width / 2;
                 break;
             case 2:
             case 3:
             case 4:
-                super.left = owner.left + _left - width;
+                super.left = owner.left + owner.diffx + _left - width;
                 break;
             }
         }
@@ -522,17 +522,17 @@ class RelativeLayer extends AnimKAGLayer
             case 0:
             case 1:
             case 2:
-                super.top = owner.top + _top;
+                super.top = owner.top + owner.diffy + _top;
                 break;
             case 3:
             case 7:
             case 8:
-                super.top = owner.top + _top - height / 2;
+                super.top = owner.top + owner.diffy + _top - height / 2;
                 break;
             case 4:
             case 5:
             case 6:
-                super.top = owner.top + _top - height;
+                super.top = owner.top + owner.diffy + _top - height;
                 break;
             }
         }
@@ -658,6 +658,14 @@ class MessageLayer extends AnimKAGLayer
         this.diffy = (int)diffy;
         super.left = myleft + this.diffx;
         super.top  = mytop  + this.diffy;
+        if (faceLayer !== void) {
+            faceLayer.left = faceLayer.left;
+            faceLayer.top  = faceLayer.top;
+        }
+        if (nameLayer !== void) {
+            nameLayer.left = nameLayer.left;
+            nameLayer.top  = nameLayer.top;
+        }
     }
 
     property left {
@@ -976,12 +984,12 @@ class MessageLayer extends AnimKAGLayer
     
     function timeoutHandler() {
         if (!selProcessLock) {
-            Scripts.eval(timeoutExp) if timeoutExp != '';
-            if (timeoutStorage != '' || timeoutTarget != '') {
-                window.lockMessageLayerSelProcess(); // 選択をロック
-                window.process(timeoutStorage, timeoutTarget);
-                clearTimeout();
-            }
+        Scripts.eval(timeoutExp) if timeoutExp != '';
+        if (timeoutStorage != '' || timeoutTarget != '') {
+            window.lockMessageLayerSelProcess(); // 選択をロック
+            window.process(timeoutStorage, timeoutTarget);
+        clearTimeout();
+    }
         }
     }
 
@@ -1051,7 +1059,7 @@ class MessageLayer extends AnimKAGLayer
         }
         selClickLock = false;
     }
-
+    
     var wheelExp;
     var wheelFunc;
     var wheelStorage;
@@ -1281,7 +1289,7 @@ class MessageLayer extends AnimKAGLayer
 		linkFilled = false;
 		lastDrawnCh = ""; // 最後に描画した文字
 		isLastLine = false; // 最終行か
-        selClickLock = true;
+		selClickLock = true;
 		lastMouseX = cursorX;
 		lastMouseY = cursorY;
 		initLineLayer();
