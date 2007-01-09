@@ -37,7 +37,7 @@
 <dt>型情報追跡機能</dt>
 <dd>
 　TJS2のオブジェクトに関する情報が強化されます。<r/>
-　デバッグモードではない場合は、たとえば KAG で kag.saveSystemVariables の情報を得ようとしてコンソールに <tt>kag</tt> と入力しても
+　デバッグモードではない場合は、たとえば KAG で kag.saveSystemVariables の情報を得ようとしてコンソールに <tt>kag.saveSystemVariables</tt> と入力しても
 <bq>
 コンソール : kag.saveSystemVariables = (object)(object 0x0279E130:0x01EB0BD4)
 </bq>
