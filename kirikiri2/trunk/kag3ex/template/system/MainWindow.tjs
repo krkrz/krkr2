@@ -3706,6 +3706,7 @@ class KAGWindow extends Window
 				// ‚â‚é‚±‚Æ‚È‚µ
 			} incontextof this
 			]);
+        notifyStable();
 		return -2; // break
 	}
 
@@ -5363,7 +5364,7 @@ class KAGWindow extends Window
         // BGM ‚Ìƒ‰ƒxƒ‹’Ê‰ßˆ—
         conductor.trigger('bgmlabel_' + label);
         if (bgmLabelHandler !== void) {
-            bgmLabelHandler();
+            bgmLabelHandler(label);
         }
         var obj = bgmLabelInfos[label];
         if (obj !== void) {
