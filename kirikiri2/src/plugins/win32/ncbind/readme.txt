@@ -123,16 +123,45 @@ Setter/Getterのメソッド型のチェックが甘いので
 
 
 
+　▼NCB_ATTACH_CLASS(          Class, TJS2Class) { ... }
+　▼NCB_ATTACH_CLASS_WITH_HOOK(Class, TJS2Class) { ... }
+
+吉里吉里２の既存のクラス TJS2Class に Class を付加します。
+{ ... } スコープ内は NCB_REGISTER_CLASS と同じように定義します。
+ただし，コンストラクタ定義 NCB_CONSTRUCTOR は使えません。
+
+NCB_ATTACH_CLASS で登録した場合，Class のインスタンスは
+登録された Class のメソッドが初めて呼ばれたときに
+引数なしのコンストラクタで new され，メソッドが呼ばれます。
+
+NCB_ATTACH_CLASS_WITH_HOOK で登録する場合は，あらかじめ後述の
+NCB_GET_INSTANCE_HOOK が定義済みでなければなりません。
+Class インスタンスの生成はフック用クラスに一任されます。
+
+
+　▼NCB_GET_INSTANCE_HOOK(Class) { ... };
+　　▼NCB_GET_INSTANCE_HOOK_CLASS
+　　▼NCB_INSTANCE_GETTER(ObjThis)
+
+TJS からネイティブクラス Class のメソッドを呼び出す時の
+インスタンスを取得する関数をフック（というか再定義）します。
+詳しくは testbind.cpp ソースを参照してください。
+
+NCB_ATTACH_CLASS だけでなく，NCB_REGISTER_CLASS で
+登録したクラスにも適用されます。
+
+また，すべてのクラスメソッドに適用されるため，
+指定の個別メソッドにフックする等はできません。
+　⇒要望があれば実装します
+
 
 
 　▼NCB_REGISTER_FUNCTION(Name, Function);
 
 TJS グローバル空間に Name という名前で Function という関数を登録します。
 
+
 　▼NCB_REGISTER_INSTANCE(...); //※まだ未実装
-
-
-
 
 
 　▼NCB_TYPECONV_CAST(Type, CastType);
@@ -220,12 +249,8 @@ V2Unlink時：
 
 ●TODOメモ
 
-・PROPERTY 動作チェック
-・RAW_CALLBACK チェック
+・ncibind.hpp 古いコメントの整理
+・NCB_SET_CONVERTOR テスト
 ・deleteされないアダプタと REGISTER_INSTANCE
-・コンストラクタがないときにnewされるとエラーになるようにする
-
-
-
-
+・Attach時に既存のメソッドがあった場合の処理
 
