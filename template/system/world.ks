@@ -195,6 +195,10 @@ class KAGEnvImage {
         return _disp == BOTH || _disp == FACE;
     }
 
+    function isShow() {
+        return _disp <= FACE;
+    }
+    
     property disp {
         getter() {
             return _disp;
@@ -689,6 +693,27 @@ class KAGEnvImage {
             _setTrans(name, elm);
         }
     }
+
+    /**
+     * 自動トランジション処理
+     */
+    function setAutoTrans(elm) {
+        // 未定義
+    }
+    
+    /**
+     * 表示状態の変更
+     */
+    function setShow(show, elm) {
+        if (show) {
+            disp = BOTH;
+        } else {
+            disp = CLEAR;
+        }
+        if (elm.fade === void) {
+            setAutoTrans(elm);
+        }
+    }
     
     /**
      * トランジションを設定
@@ -750,8 +775,8 @@ class KAGEnvImage {
                         opacityFrom = void;
                         opacity     = 0;
                         opacityTime = fadeTime > 1 ? fadeTime : fadeValue;
-                    }
-                    if (!doOpacity) {
+                        layer.hide = true;
+                    } else {
                         layer.visible = false;
                     }
                 }
@@ -764,7 +789,7 @@ class KAGEnvImage {
                 doAffine = false;
             }
             if (doOpacity) {
-                //dm("透明度変更:" + opacity + ":" + opacityTime); 
+                dm("透明度変更:" + opacity + ":" + opacityTime); 
                 if (opacityFrom !== void) {
                     layer.opacity = opacityFrom;
                     opacityFrom = void;
@@ -814,7 +839,7 @@ class KAGEnvImage {
         }
         if (syncMode) {
             ret = kag._waitLayerAction(layer);
-            //dm("アクション待ち:" + ret);
+            dm("アクション待ち:" + ret);
             syncMode = false;
         }
     }
@@ -869,8 +894,8 @@ class KAGEnvImage {
 
     sync : function(param) { if (param) { syncMode = true; } } incontextof this,
 
-    show : function(param) { disp = BOTH;   } incontextof this,
-    hide : function(param) { disp = CLEAR; } incontextof this,
+    show : function(param, elm) { setShow(true, elm); } incontextof this,
+    hide : function(param, elm) { setShow(false, elm); } incontextof this,
     visible : function(param) { disp = param ? BOTH : CLEAR; }  incontextof this,
     xpos : this.setXPos incontextof this,
     ypos : this.setYPos incontextof this,
@@ -1021,10 +1046,7 @@ class KAGEnvImage {
      */
     function hideMessage() {
         if (trans !== void && trans.msgoff) {
-            kag.conductor.pendings.insert(0, %[ tagname : "er", all:true]);
-            if (kag.setCurrentMessageLayerVisible(false)) {
-                ret = -2;
-            }
+            kag.conductor.pendings.insert(0, %[tagname : "msgoff"]);
         }
     }
     
@@ -1032,6 +1054,7 @@ class KAGEnvImage {
      * 画像の描画
      */
     function updateImage(base) {
+
         kag.updateBeforeCh = 1;
         // 描画更新が必要な場合
         if (redraw) {
@@ -1105,6 +1128,7 @@ class KAGEnvImage {
             calcPosition(layer);
             updateLayer(layer);
         }
+        hideMessage();
         trans = void;
     }
 }
@@ -1243,7 +1267,6 @@ class KAGEnvLayer extends KAGEnvImage {
         //dm("レイヤタグがよばれたよ");
         ret = void;
         foreach(elm, doCommand);
-        hideMessage();
         updateImage();
         return ret;
     }
@@ -1278,6 +1301,12 @@ class KAGEnvBaseLayer extends KAGEnvLayer {
         this.name = name;
     }
 
+    function setAutoTrans(elm) {
+        if (!setTrans2(env.envinfo.eventTrans)) {
+            setTrans2(env.envinfo.envTrans);
+        }
+    }
+    
     function setImageFile(file, elm) {
 
         var eventTrans;
@@ -1307,10 +1336,10 @@ class KAGEnvBaseLayer extends KAGEnvLayer {
             // 記録
             kag.sflags["cg_" + (file.toUpperCase())] = true;
             
-            // トランジション指定
-            if (!setTrans2(eventTrans)) {
-                if (!setTrans2(env.envinfo.eventTrans)) {
-                    setTrans2(env.envinfo.envTrans);
+            // 自動トランジション指定は表示される場合のみ
+            if (isShowBU() && elm.fade === void) {
+                if (!setTrans2(eventTrans)) {
+                    setAutoTrans();
                 }
             }
 
@@ -1721,6 +1750,16 @@ class KAGEnvCharacter extends KAGEnvLevelLayer, KAGEnvImage {
     // 表情描画処理を行う
     var redrawFace;
 
+    function setAutoTrans(elm) {
+        if (!setTrans2(init.poseTrans)) {
+            if (!setTrans2(init.charTrans)) {
+                if (!setTrans2(env.envinfo.poseTrans)) {
+                    setTrans2(env.envinfo.charTrans);
+                }
+            }
+        }
+    }
+    
     /**
      * 直接画像指定
      */
@@ -1734,15 +1773,9 @@ class KAGEnvCharacter extends KAGEnvLevelLayer, KAGEnvImage {
             }
             redraw = true;
             
-            // トランジション指定
-            if (isShowBU()) {
-                if (!setTrans2(init.poseTrans)) {
-                    if (!setTrans2(init.charTrans)) {
-                        if (!setTrans2(env.envinfo.poseTrans)) {
-                            setTrans2(env.envinfo.charTrans);
-                        }
-                    }
-                }
+            // 自動トランジション指定は表示される場合のみ
+            if (isShowBU() && elm.fade === void) {
+                setAutoTrans();
             }
         }
     }
@@ -1762,16 +1795,10 @@ class KAGEnvCharacter extends KAGEnvLevelLayer, KAGEnvImage {
                 }
                 redraw = true;
                 
-                // トランジション指定
-                if (isShowBU()) {
+                // 自動トランジション指定は表示される場合のみ
+                if (isShowBU() && elm.fade === void) {
                     if (!setTrans2(info.trans)) {
-                        if (!setTrans2(init.poseTrans)) {
-                            if (!setTrans2(init.charTrans)) {
-                                if (!setTrans2(env.envinfo.poseTrans)) {
-                                    setTrans2(env.envinfo.charTrans);
-                                }
-                            }
-                        }
+                        setAutoTrans();
                     }
                 }
                 
@@ -1810,8 +1837,9 @@ class KAGEnvCharacter extends KAGEnvLevelLayer, KAGEnvImage {
                 reposition = true;
             }
             redraw = true;
-            // トランジション指定
-            if (isShowBU()) {
+
+            // 自動トランジション指定は表示される場合のみ
+            if (isShowBU() && elm.fade === void) {
                 if (!setTrans2(init.dressTrans)) {
                     if (!setTrans2(init.charTrans)) {
                         if (!setTrans2(env.envinfo.dressTrans)) {
@@ -1838,8 +1866,9 @@ class KAGEnvCharacter extends KAGEnvLevelLayer, KAGEnvImage {
                 reposition = true;
             }
             redraw = true;
-            // トランジション指定
-            if (isShowBU()) {
+
+            // 自動トランジション指定は表示される場合のみ
+            if (isShowBU() && elm.fade === void) {
                 if (!setTrans2(init.faceTrans)) {
                     if (!setTrans2(init.charTrans)) {
                         if (!setTrans2(env.envinfo.faceTrans)) {
@@ -2499,7 +2528,6 @@ class KAGEnvCharacter extends KAGEnvLevelLayer, KAGEnvImage {
             }
             foreach(e, doCommand);
         }
-        hideMessage();
         updateImage();
         return ret;
     }
@@ -2739,6 +2767,9 @@ class KAGEnvBgm {
 
     var env;
 
+    var wait;
+    var waitFade;
+    
     /**
      * コンストラクタ
      */
@@ -2816,28 +2847,25 @@ class KAGEnvBgm {
      * 終了まち
      * @param param フェード時間
      */
-    function wait(param, elm) {
-        var e = %[];
-        (Dictionary.assign incontextof e)(elm, false);
-        if (e.canskip === void) {
-            e.canskip = true;
+    function setWait(param, elm) {
+        wait = %[];
+        (Dictionary.assign incontextof wait)(elm, false);
+        if (wait.canskip === void) {
+            wait.canskip = true;
         }
-        ret = kag.waitBGMStop(e);
     }
 
     /**
      * 終了まち
      * @param param フェード時間
      */
-    function waitFade(param, elm) {
-        var e = %[];
-        (Dictionary.assign incontextof e)(elm, false);
-        if (e.canskip === void) {
-            e.canskip = true;
+    function setWaitFade(param, elm) {
+        waitFade = %[];
+        (Dictionary.assign incontextof waitFade)(elm, false);
+        if (waitFade.canskip === void) {
+            waitFade.canskip = true;
         }
-        ret = kag.waitBGMFade(e);
     }
-
 
     var bgmcommands = %[
     tagname : null, 
@@ -2846,8 +2874,8 @@ class KAGEnvBgm {
     pause : pause incontextof this,
     resume : resume incontextof this,
     fade : fade incontextof this,
-    wait : wait incontextof this,
-    waitfade : waitFade incontextof this,
+    wait : setWait incontextof this,
+    waitfade : setWaitFade incontextof this,
     noxchg : null,
     loop : null,
     time : null,
@@ -2883,22 +2911,26 @@ class KAGEnvBgm {
         return true;
     }
 
-    var ret;
-
     /**
      * KAG タグ処理
      * @param elm 引数
      */
     function tagfunc(elm) {
         //dm("BGM 用ファンクション呼び出し!");
-        ret = 0;
         doflag = false;
+        wait = void;
+        waitFade = void;
         foreach(elm, doCommand);
         // 何もしなかった場合、かつ、タグ名が bgm でなければそれを再生する
         if (!doflag && elm.tagname != "bgm") {
             play(elm.tagname, elm);
         }
-        return ret;
+        if (waitFade !== void) {
+            return kag.waitBGMFade(waitFade);
+        } else  if (wait !== void) {
+            return kag.waitBGMStop(wait);
+        }
+        return 0;
     }
     
 };
@@ -2912,6 +2944,9 @@ class KAGEnvSE {
     var id;
     var name;  // 参照しているファイル名
     var count; // 参照されたカウント値
+
+    var wait;
+    var waitFade;
     
     /**
      * コンストラクタ
@@ -2960,27 +2995,25 @@ class KAGEnvSE {
     /**
      * 終了待ち
      */
-    function wait(param, elm) {
-        var e = %[];
-        (Dictionary.assign incontextof e)(elm, false);
-        e.buf = id;
-        if (e.canskip === void) {
-            e.canskip = true;
+    function setWait(param, elm) {
+        wait = %[];
+        (Dictionary.assign incontextof wait)(elm, false);
+        wait.buf = id;
+        if (wait.canskip === void) {
+            wait.canskip = true;
         }
-        ret = kag.waitSEStop(e);
     }
 
     /**
      * フェード終了待ち
      */
-    function waitFade(param, elm) {
-        var e = %[];
-        (Dictionary.assign incontextof e)(elm, false);
-        e.buf = id;
-        if (e.canskip === void) {
-            e.canskip = true;
+    function setWaitFade(param, elm) {
+        waitFade = %[];
+        (Dictionary.assign incontextof waitFade)(elm, false);
+        waitFade.buf = id;
+        if (waitFade.canskip === void) {
+            waitFade.canskip = true;
         }
-        ret = kag.waitSEFade(e);
     }
 
     var secommands = %[
@@ -2988,13 +3021,14 @@ class KAGEnvSE {
     play : play incontextof this,
     stop : stop incontextof this,
     fade : fade incontextof this,
-    wait : wait incontextof this,
-    waitfade : waitFade incontextof this,
+    wait : setWait incontextof this,
+    waitfade : setWaitFade incontextof this,
     loop : null,
     time : null,
     start : null,
     canskip : null,
-    buf : null
+    buf : null,
+    name : null,
         ];
 
     var doflag;
@@ -3021,22 +3055,26 @@ class KAGEnvSE {
         return true;
     }
 
-    var ret;
-    
     /**
      * KAG タグ処理
      * @param elm 引数
      */
     function tagfunc(elm) {
         // dm("SE 用ファンクション呼び出し!");
-        ret = 0;
+        wait = void;
+        waitFade = void;
         doflag = false;
         foreach(elm, doCommand);
         // 何もしなかった場合、かつ、タグ名が se でなければそれを再生する
         if (!doflag && elm.tagname != "se") {
             play(elm.tagname, elm);
         }
-        return ret;
+        if (waitFade !== void) {
+            return kag.waitSEFade(waitFade);
+        } else if (wait !== void) {
+            return kag.waitSEStop(wait);
+        }
+        return 0;
     }
 };
 
@@ -3529,6 +3567,12 @@ class KAGEnvironment extends KAGEnvImage {
         hideCharacters(param, elm);
         hideLayers(param, elm);
     }
+
+    function setAutoTrans(elm) {
+        if (!setTrans2(env.envinfo.stageTrans)) {
+            setTrans2(env.envinfo.envTrans);
+        }
+    }
     
     /**
      * 舞台を設定する
@@ -3536,11 +3580,11 @@ class KAGEnvironment extends KAGEnvImage {
      * @param elm コマンドのほかの要素
      */
     function setStage(stageName, elm) {
-        if (stageName != stage || disp == CLEAR) {
+        if (stageName != stage || disp == CLEAR || event.disp != CLEAR) {
 
             stage = stageName;
             disp = BOTH;
-
+            
             // 背景指定時に座標指定がなければ場所情報を初期化する
             if (elm.xpos === void) {
                 xpos = void;
@@ -3555,18 +3599,15 @@ class KAGEnvironment extends KAGEnvImage {
                 global.setStageHook(stageName, elm);
             }
 
-            // トランジション指定
-            if (!setTrans2(stages[stage].trans)) {
-                if (!setTrans2(env.envinfo.stageTrans)) {
-                    setTrans2(env.envinfo.envTrans);
-                }
+            // イベント絵は消去
+            if (event.disp != CLEAR) {
+                event.disp = CLEAR;
             }
-
-        }
-        // イベント絵は消去
-        if (event.disp != CLEAR) {
-            event.disp = CLEAR;
-            redraw = true;
+            
+            // トランジション指定
+            if (elm.fade === void) {
+                setAutoTrans();
+            }
         }
     }
 
@@ -3591,9 +3632,11 @@ class KAGEnvironment extends KAGEnvImage {
             });
 
             // トランジション指定
-            if (!setTrans2(times[time].trans)) {
-                if (!setTrans2(env.envinfo.timeTrans)) {
-                    setTrans2(env.envinfo.envTrans);
+            if (elm.fade === void) {
+                if (!setTrans2(times[time].trans)) {
+                    if (!setTrans2(env.envinfo.timeTrans)) {
+                        setAutoTrans();
+                    }
                 }
             }
         }
@@ -3645,12 +3688,12 @@ class KAGEnvironment extends KAGEnvImage {
         foreach(elm, checkTrans);
         // 未指定時
         if (trans !== void && trans.method !== void) {
-            hideMessage();
             beginTransition(trans);
         } else {
             // 裏画面から書き戻す
             kag.backupLayer(EMPTY, false);
         }
+        hideMessage();
         trans = void;
         return ret;
     }
@@ -3693,9 +3736,6 @@ class KAGEnvironment extends KAGEnvImage {
      */
     function msgonoff(elm, v) {
         ret = void;
-        if (!v) {
-            kag.conductor.pendings.insert(0, %[ tagname : "er", all:true]);
-        }
         if (!transMode && !isSkip() && elm.nofade === void) {
             foreach(elm, checkTrans);
             if (trans !== void && trans.method !== void) {
@@ -3706,7 +3746,8 @@ class KAGEnvironment extends KAGEnvImage {
                 beginTransition(trans);
                 return ret;
             } else {
-                return kag.setCurrentMessageLayerVisible(v) ? -2 : 0;
+                var ret = kag.setCurrentMessageLayerVisible(v) ? -2 : 0;
+                return ret;
             }
         }
         kag.setCurrentMessageLayerVisibleFast(transMode ? 1: 0, v);
@@ -3721,7 +3762,6 @@ class KAGEnvironment extends KAGEnvImage {
      */
     function clear(elm) {
         ret = void;
-        kag.conductor.pendings.insert(0, %[ tagname : "er", all:true]);
         hideAll();
         if (!transMode && !isSkip()) {
             foreach(elm, checkTrans);
@@ -3967,11 +4007,14 @@ class KAGEnvironment extends KAGEnvImage {
     function updateImage() {
 
         if (trans !== void && trans.charoff) {
-            hideCharacters(void);
+            // キャラクタ強制消去
+            foreach(characters, function(name,value,dict) {
+                value.disp = CLEAR;
+            } incontextof this);
+            currentNameTarget = void;
         }
-        
-        kag.updateBeforeCh = 1;
 
+        kag.updateBeforeCh = 1;
         // 描画更新が必要な場合
         if (redraw) {
             
@@ -4008,7 +4051,7 @@ class KAGEnvironment extends KAGEnvImage {
 
                 var layer = getLayer();
                 if (fadeTime !== void && fadeTime > 0  && isShowBU() && layer.visible) {
-                    
+
                     kag.fore.base.stopTransition();
                     var trans = %[ "method" => "crossfade",
                                    "children" => true,
@@ -4030,7 +4073,6 @@ class KAGEnvironment extends KAGEnvImage {
             }
             redraw = false;
         } else {
-
             // 子要素の再描画
             foreach(characters, function(name, value, dict) {
                 value.updateImage();
@@ -4044,6 +4086,7 @@ class KAGEnvironment extends KAGEnvImage {
             updateLayer(layer);
             calcPosition(layer);
         }
+        hideMessage();
         trans = void;
     }
 
@@ -4055,7 +4098,6 @@ class KAGEnvironment extends KAGEnvImage {
         //dm("環境タグがよばれたよ");
         ret = void;
         foreach(elm, doCommand);
-        hideMessage();
         updateImage();
 
         // カレントオブジェクトの解除 XXX ここでいいのか？
@@ -4259,10 +4301,22 @@ class KAGEnvironment extends KAGEnvImage {
      * 名前の表示
      */
     function drawName(name = "") {
+        dm("名前描画:" + name);
         if (!transMode) {
             drawNamePage(kag.fore, name);
         }
         drawNamePage(kag.back, name);
+
+        // ヒストリ用
+        if (kag.historyWriteEnabled) {
+            if (typeof kag.historyLayer.storeName !== 'undefined') {
+                kag.historyLayer.storeName(name);
+            } else {
+                if (name != "") {
+                    kag.historyLayer.store(name + " ");
+                }
+            }
+        }
     }
 
     var voiceCharacters = [];
@@ -4477,15 +4531,6 @@ class KAGEnvironment extends KAGEnvImage {
             if (typeof global.dispNameFilter !== 'undefined') {
                 dispName = global.dispNameFilter(dispName);
             }
-            // ヒストリ用
-            if (kag.historyWriteEnabled) {
-                if (typeof kag.historyLayer.storeName !== 'undefined') {
-                    kag.historyLayer.storeName(dispName);
-                } else {
-                    kag.historyLayer.store(dispName + " ");
-                }
-            }
-
             drawName(dispName);
         }
 
@@ -4618,7 +4663,6 @@ class KAGEnvironment extends KAGEnvImage {
             ret = void;
             elm.tagname = "env";
             foreach(elm, doCommand);
-            hideMessage();
             updateImage();
             return ret;
         }
@@ -4641,7 +4685,11 @@ class KAGEnvironment extends KAGEnvImage {
 
         // SE 処理用
         if (tagName == "se") {
-            return getSe(getSeId(elm.buf)).tagfunc(elm);
+            if (elm.name !== void) {
+                return getSe(getSeIdFromName(elm.name)).tagfunc(elm);
+            } else {
+                return getSe(getSeId(elm.buf)).tagfunc(elm);
+            }
         } else if (tagName.substring(0,2) == "se") {
             var se = getSe(getSeIdFromName(tagName));
             return se.tagfunc(elm);

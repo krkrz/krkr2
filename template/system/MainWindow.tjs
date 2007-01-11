@@ -3712,12 +3712,16 @@ class KAGWindow extends Window
 
     function setCurrentMessageLayerVisibleFast(page, visible) {
         var base = page == 0 ? fore : back;
-        base.messages[currentNum].visible = visible;
+        var msg = base.messages[currentNum];
+        msg.visible = visible;
+        if (!visible) {
+            msg.clear(true);
+        }
         forEachEventHook('onCurrentMessageVisibleChanged',
                          function(handler, f) { handler(f.hidden, f.page); } incontextof this,
                          %[hidden:!visible, page:page]);
     }
-    
+
     /**
      * 現在のメッセージ窓の表示状態の変更
      * @param visible
@@ -3733,22 +3737,40 @@ class KAGWindow extends Window
                 // 裏は先に消しておく。そうしないと msgvisible がとんでしまって
                 // せっかくの待ちが解除される
                 back.messages[currentNum].visible = visible;
+                if (!visible) {
+                    back.messages[currentNum].clear(true);
+                }
                 
                 // 処理待ち
                 var layer = fore.messages[currentNum];
                 layer.setVisibleTime(visible, fadeTime);
 
-                conductor.wait(%[
-                click : function(layer) {
-                    updateBeforeCh = 1;
-                    layer.fadeDone();
-                } incontextof this,
-                'click_arg' => layer,
-                msgvisible : function() {
-                    updateBeforeCh = 1;
-                } incontextof this
-                    ]);
-
+                if (visible) {
+                    conductor.wait(%[
+                    click : function(layer) {
+                        updateBeforeCh = 1;
+                        layer.fadeDone();
+                    } incontextof this,
+                    'click_arg' => layer,
+                    msgvisible : function() {
+                        updateBeforeCh = 1;
+                    } incontextof this
+                        ]);
+                } else {
+                    conductor.wait(%[
+                    click : function(layer) {
+                        updateBeforeCh = 1;
+                        layer.fadeDone();
+                        layer.clear(true);
+                    } incontextof this,
+                    'click_arg' => layer,
+                    msgvisible : function(layer) {
+                        updateBeforeCh = 1;
+                        layer.clear(true);
+                    } incontextof this,
+                    'msgvisible_arg' => layer,
+                        ]);
+                }
                 forEachEventHook('onCurrentMessageVisibleChanged',
                                  function(handler, f) { handler(f.hidden, f.page); } incontextof this,
                                  %[hidden:!visible, page:0]);
@@ -3756,10 +3778,14 @@ class KAGWindow extends Window
                 return true;
             } else {
                 fore.messages[currentNum].visible = visible;
+                back.messages[currentNum].visible = visible;
                 forEachEventHook('onCurrentMessageVisibleChanged',
                                  function(handler, f) { handler(f.hidden, f.page); } incontextof this,
                                  %[hidden:!visible, page:0]);
-                back.messages[currentNum].visible = visible;
+                if (!visible) {
+                    fore.messages[currentNum].clear(true);
+                    back.messages[currentNum].clear(true);
+                }
             }
         }
         return false;
@@ -7065,7 +7091,7 @@ class KAGWindow extends Window
 
 	wt : function(elm)
 	{
-		// トランジションを待つ
+        // トランジションを待つ
 		return waitTransition(elm);
 	} incontextof this,
 

@@ -8,7 +8,8 @@ class ActionLayer extends AffineLayer {
     var _modules;        ///< モジュール保持用配列
     var _actionTimer;    ///< アクション駆動用タイマ
     var _params =%[];    ///< モジュール用パラメータ
-    
+    var hide;            ///< 完了後消去フラグ
+
     /**
      * コンストラクタ
      */
@@ -29,6 +30,15 @@ class ActionLayer extends AffineLayer {
         invalidate _actionTimer;
         invalidate _modules;
         super.finalize();
+    }
+
+    property visible {
+        setter(v) {
+            super.visible = v;
+        }
+        getter() {
+            return super.visible;
+        }
     }
 
     /**
@@ -57,6 +67,7 @@ class ActionLayer extends AffineLayer {
      * 初期化処理
      */
     function reset() {
+        hide = false;
         stopAction();
         super.reset();
     }
@@ -96,6 +107,9 @@ class ActionLayer extends AffineLayer {
                 invalidate _modules;
                 _modules = new Array();
                 onActionCompleted();
+            }
+            if (hide) {
+                visible = false;
             }
         }
     }
