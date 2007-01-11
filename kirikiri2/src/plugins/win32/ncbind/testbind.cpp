@@ -70,21 +70,49 @@ void setlog(ttstr const &log) {
 
 
 ////////////////////////////////////////
-// レジスト後にスクリプトを実行してチェックするためのマクロ
+// レジスト後にスクリプトを実行してチェックする
+
+struct checker {
+	typedef void (*CallbackT)();
+	checker(CallbackT cb) : _callback(cb), _next(0) {
+		if (!_top) _top = this;
+		if (_last) _last->_next = this;
+		_last = this;
+	}
+	static void Check() {for (checker const* p = _top; p; p = p->_next) p->_callback(); }
+	static bool Result;
+private:
+	CallbackT const _callback;
+	/****/ checker const* _next;
+	static checker const* _top;
+	static checker      * _last;
+};
+checker const* checker::_top  = 0;
+checker      * checker::_last = 0;
+bool checker::Result = true;
+
+static void checker_Check() {
+	checker::Check();
+	TVPAddImportantLog(ttstr("###### ") + ttstr(checker::Result ? "All OK" : "Some NG(s)") + ttstr(" ######"));
+	TVPAddLog(TJS_W("")); \
+}
+NCB_POST_REGIST_CALLBACK(checker_Check);
 
 #define CHECK(tag, script) \
 	void AutoCheck_ ## tag() { \
 		TVPAddLog(TJS_W("   --- CHECK(") TJS_W(#tag) TJS_W(")")); \
 		tTJSVariant var; TVPExecuteScript(ttstr(script), &var); \
+		bool result = var.AsInteger() ? true : false; \
 		TVPAddLog(TJS_W("")); \
-		TVPAddImportantLog(ttstr("   ### RESULT(" #tag "): ") + ttstr(var.AsInteger() ? "OK" : "NG")); \
+		TVPAddImportantLog(ttstr("   ### ") + ttstr(result ? "OK" : "NG") + ttstr(" : CHECK(" #tag ")")); \
 		TVPAddLog(TJS_W("")); \
-	} NCB_POST_REGIST_CALLBACK(AutoCheck_ ## tag)
+		checker::Result &= result; \
+	} static checker checker_## tag (AutoCheck_ ## tag)
 
 #define SCRIPT_BEGIN "var _t, _f = true; try {\n"
 #define SCRIPT_END   "} catch { _f = false; } return _f;\n"
 #define SCRIPT_OUT(mark, str) \
-	"Debug.message(' " #mark " ' + \"" str "\" + ': ' + (_t ? 'OK' : 'NG'));\n"
+	"Debug.message(' " #mark " ' + (_t ? 'OK' : 'NG') + ' : ' + \"" str "\");\n"
 
 #define SCRIPT_EVAL(str) \
 	"_t = (" str "); _f &= _t;\n" \
@@ -347,13 +375,33 @@ NCB_ATTACH_CLASS_WITH_HOOK(PadAttachTest2, Pad) {
 	NCB_METHOD(Test2);
 }
 
+//--------------------------------------
+// attach function テスト
+static void AttachFunctionTest1(int d) {
+	mes("AttachFunctionTest1(", d, ")");
+}
+static tjs_error TJS_INTF_METHOD
+AttachFunctionTest2(tTJSVariant *result,tjs_int numparams, tTJSVariant **param, iTJSDispatch2 *objthis) {
+	mes("AttachFunctionTest2: ", numparams);
+	return TJS_S_OK;
+}
+
+NCB_ATTACH_FUNCTION(Func1, Pad, AttachFunctionTest1);
+NCB_ATTACH_FUNCTION(Func2, Pad, AttachFunctionTest2);
+
+
 CHECK(PadAttachTest,
 	  SCRIPT_BEGIN
 	  "var inst = new Pad();"
 	  SCRIPT_LOG_CHECK("inst.Test1()", "PadAttachTest1::Test")
 	  SCRIPT_LOG_CHECK("inst.Test2()", "PadAttachTest2::Hooked")
+
+	  SCRIPT_LOG_CHECK("inst.Func1(321)",   "AttachFunctionTest1(321)")
+	  SCRIPT_LOG_CHECK("inst.Func2(1,2,3)", "AttachFunctionTest2: 3")
+
 	  "invalidate inst;"
 	  SCRIPT_END);
+
 
 
 

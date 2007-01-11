@@ -173,7 +173,7 @@ public:
 		iTJSDispatch2 *global = TVPGetScriptDispatch(), *obj = 0;
 		tTJSVariant dummy, *param = &dummy;
 		// 引数が1つでかつvoidであれば実インスタンスをnewしない動作になる
-		tjs_error r = clsobj->CreateNew(0, NULL, NULL, &obj, 1, &param, global);
+		tjs_error r = clsobj->CreateNew(0, 0, 0, &obj, 1, &param, global);
 		if (global) global->Release();
 
 		if (TJS_FAILED(r) || !obj) {
@@ -956,14 +956,34 @@ private:
 
 
 ////////////////////////////////////////
+/// 単体のネイティブファンクション
+
+// 場合わけ用ベース
+template <typename MethodT>
+struct ncbNativeFunctionBase : public ncbNativeClassMethodBase {
+	ncbNativeFunctionBase() : ncbNativeClassMethodBase(TJS_W("Function")) {}
+protected:
+	static inline tjs_error invokeSelect(MethodT m, tTJSVariant *result, tjs_int numparams, tTJSVariant **param, iTJSDispatch2 *objthis) {
+		return Invoke(m, objthis, result, numparams, param);
+	}
+};
+// tTJSNativeClassMethodCallback なら直で呼ぶ
+template <>
+struct ncbNativeFunctionBase<tTJSNativeClassMethodCallback> : public ncbNativeClassMethodBase {
+	ncbNativeFunctionBase() : ncbNativeClassMethodBase(TJS_W("Function")) {}
+protected:
+	static inline tjs_error invokeSelect(tTJSNativeClassMethodCallback m, tTJSVariant *result, tjs_int numparams, tTJSVariant **param, iTJSDispatch2 *objthis) {
+		return m(result, numparams, param,  objthis);
+	}
+};
+
+// ネイティブファンクションオブジェクト本体
 template <typename METHOD>
-struct ncbNativeFunction : public ncbNativeClassMethodBase {
+struct ncbNativeFunction : ncbNativeFunctionBase<METHOD> {
+	typedef ncbNativeClassMethodBase BaseT;
 	typedef METHOD MethodT;
 	/// constructor
-	ncbNativeFunction(MethodT m)
-		: ncbNativeClassMethodBase(TJS_W("Function")), // TJSオブジェクト的には Function
-		  _method(m)
-	{
+	ncbNativeFunction(MethodT m, bool hasMember = false) : _method(m), _hasMember(hasMember) {
 		if (!_method) TVPThrowExceptionMessage(TJS_W("No function pointer."));
 	}
 	/// FuncCall実装
@@ -971,14 +991,20 @@ struct ncbNativeFunction : public ncbNativeClassMethodBase {
 		tjs_uint32 flag, const tjs_char * membername, tjs_uint32 *hint, 
 		tTJSVariant *result, tjs_int numparams, tTJSVariant **param, iTJSDispatch2 *objthis)
 	{
-		// 自分自身が呼ばれたのではない場合はエラー
-		if (membername) return TJS_E_MEMBERNOTFOUND;
+		// 自分自身が呼ばれたのではない場合はエラーか丸投げ
+		if (membername) return !_hasMember ? TJS_E_MEMBERNOTFOUND
+			: BaseT::FuncCall(flag, membername, hint, result, numparams, param, objthis);
+
 		// メソッド呼び出し
-		return Invoke(_method, objthis, result, numparams, param);
+		return invokeSelect(_method, result, numparams, param, objthis);
 	}
+
 private:
 	MethodT const _method;
+	bool const _hasMember;
 };
+
+
 
 
 ////////////////////////////////////////
@@ -1144,7 +1170,7 @@ struct ncbRegistNativeClass : public ncbRegistClassBase<ncbRegistNativeClassSele
 		global->PropSet(
 			TJS_MEMBERENSURE, // メンバがなかった場合には作成するようにするフラグ
 			className, // メンバ名
-			NULL, // ヒント ( 本来はメンバ名のハッシュ値だが、NULL でもよい )
+			0, // ヒント ( 本来はメンバ名のハッシュ値だが、NULL でもよい )
 			&val, // 登録する値
 			global // コンテキスト ( global でよい )
 			);
@@ -1226,10 +1252,10 @@ struct ncbAttachTJS2Class : public ncbRegistClassBase<ncbAttachTJS2ClassSelector
 		NCB_LOG_2(TJS_W("  RegistItem: "), name);
 		if (!item) return;
 		iTJSDispatch2 *dsp = item->GetDispatch();
-		tTJSVariant var = tTJSVariant(dsp);
-		FlagsT flg = item->GetFlags();
-		_tjs2ClassObj->PropSet(TJS_MEMBERENSURE | flg, name, NULL, &var, ((flg & TJS_STATICMEMBER) ? _global : _tjs2ClassObj));
+		tTJSVariant val(dsp);
 		dsp->Release();
+		FlagsT flg = item->GetFlags();
+		_tjs2ClassObj->PropSet(TJS_MEMBERENSURE | flg, name, 0, &val, ((flg & TJS_STATICMEMBER) ? _global : _tjs2ClassObj));
 		item->Release();
 	}
 
@@ -1237,6 +1263,7 @@ struct ncbAttachTJS2Class : public ncbRegistClassBase<ncbAttachTJS2ClassSelector
 		NCB_LOG_2(TJS_W("EndAttachClass: "), GetName());
 		if (_global) _global->Release();
 		_global = 0;
+		// _tjs2ClassObj は NoAddRef なので Release 不要
 	}
 
 	void UnregistBegin() {
@@ -1246,10 +1273,11 @@ struct ncbAttachTJS2Class : public ncbRegistClassBase<ncbAttachTJS2ClassSelector
 		if (global) global->Release();
 	}
 	void UnregistItem(NameT name) {
-		_tjs2ClassObj->DeleteMember(0, name, NULL, _tjs2ClassObj);
+		_tjs2ClassObj->DeleteMember(0, name, 0, _tjs2ClassObj);
 	}
 	void UnregistEnd() {
 		ClassInfoT::Clear();
+		// _tjs2ClassObj は NoAddRef なので Release 不要
 	}
 protected:
 	NameT const    _tjs2ClassName;
@@ -1258,13 +1286,13 @@ protected:
 
 	// クラスオブジェクトを取得
 	static iTJSDispatch2* GetGlobalObject(NameT name, iTJSDispatch2 *global) {
-		tTJSVariant var;
-		if (global) global->PropGet(0, name, NULL, &var, global);
+		tTJSVariant val;
+		if (global) global->PropGet(0, name, 0, &val, global);
 		else {
 			NCB_WARN_W("No Global Dispatch.");
-			TVPExecuteExpression(name, &var);
+			TVPExecuteExpression(name, &val);
 		}
-		return var.AsObjectNoAddRef();
+		return val.AsObjectNoAddRef();
 	}
 };
 
@@ -1406,37 +1434,53 @@ struct  ncbNativeFunctionAutoRegister : public ncbAutoRegister {
 	ncbNativeFunctionAutoRegister() : ncbAutoRegister(ClassRegist) {}
 protected:
 	template <typename MethodT>
-	static void RegistFunction(NameT name, MethodT m) {
+	static void RegistFunction(NameT name, NameT attach, MethodT m) {
 		typedef ncbNativeFunction<MethodT> MethodObjectT;
-
-		iTJSDispatch2 * global = TVPGetScriptDispatch();
-		if (!global) return;
-
+		iTJSDispatch2 *dsp = GetDispatch(attach);
+		if (!dsp) return;
 		MethodObjectT *mobj = new MethodObjectT(m);
 		if (mobj) {
 			tTJSVariant val(mobj);
 			mobj->Release();
-			global->PropSet(TJS_MEMBERENSURE, name, 0, &val, global);
+			dsp->PropSet(TJS_MEMBERENSURE, name, 0, &val, dsp);
 		}
-		global->Release();
+		dsp->Release();
 	}
 
-	static void UnregistFunction(NameT name) {
-		iTJSDispatch2 * global = TVPGetScriptDispatch();
-		if (!global) return;
-		global->DeleteMember(0, name, 0, global);
-		global->Release();
+	static void UnregistFunction(NameT name, NameT attach) {
+		iTJSDispatch2 *dsp = GetDispatch(attach);
+		if (!dsp) return;
+		dsp->DeleteMember(0, name, 0, dsp);
+		dsp->Release();
+	}
+
+private:
+	static iTJSDispatch2* GetDispatch(NameT attach) {
+		iTJSDispatch2 *ret, *global = TVPGetScriptDispatch();
+		if (!global) return 0;
+
+		if (!attach) ret = global;
+		else {
+			tTJSVariant val;
+			global->PropGet(0, attach, 0, &val, global);
+			global->Release();
+			ret = val.AsObject();
+		}
+		return ret;
 	}
 };
 template <typename DUMMY>
 struct ncbNativeFunctionAutoRegisterTempl;
 
-#define NCB_REGISTER_FUNCTION(name, function) \
+#define NCB_REGISTER_FUNCTION_COMMON(name, attach, function) \
 	struct ncbFunctionTag_ ## name {}; \
 	template <> struct ncbNativeFunctionAutoRegisterTempl<ncbFunctionTag_ ## name> : public ncbNativeFunctionAutoRegister \
-	{	void Regist()   const { RegistFunction(TJS_W(# name), function); } \
-		void Unregist() const { UnregistFunction(TJS_W(# name)); } }; \
+	{	void Regist()   const { RegistFunction(TJS_W(# name), attach, &function); } \
+		void Unregist() const { UnregistFunction(TJS_W(# name), attach); } }; \
 	static ncbNativeFunctionAutoRegisterTempl<ncbFunctionTag_ ## name> ncbFunctionAutoRegister_ ## name
+
+#define NCB_REGISTER_FUNCTION(name, function)       NCB_REGISTER_FUNCTION_COMMON(name, 0, function)
+#define NCB_ATTACH_FUNCTION(name, attach, function) NCB_REGISTER_FUNCTION_COMMON(name, TJS_W(# attach), function)
 
 
 
