@@ -583,7 +583,7 @@ class RelativeLayer extends AnimKAGLayer
     
     function RelativeLayer(owner) {
         this.owner = owner;
-        super.KAGLayer(owner.window, owner.parent);
+        super.AnimKAGLayer(owner.window, owner.parent);
         setPos(0,0,8,8);
         absolute = 1;
         visible = false;
@@ -1263,7 +1263,7 @@ class MessageLayer extends AnimKAGLayer
 			}
 			else
 			{
-                loadImages(frameGraphic, frameKey, frameAnimCount, frameAnimTime);
+                loadImages(frameGraphic, frameKey, frameAnimCount, sf.frameanimation === void || sf.frameanimation ? frameAnimTime : 0);
                 setSizeToImageSize();
 			}
 
