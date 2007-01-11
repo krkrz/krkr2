@@ -173,7 +173,9 @@ class ButtonLayer extends AnimKAGLayer
             }
             copyRect(w*3, 0, temp, 0, 0, w, h);
         }
-        animStart(count, time);
+        if (time > 0) {
+            animStart(count, time);
+        }
     }
 
 	function discardImage()
