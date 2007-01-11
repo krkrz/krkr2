@@ -161,6 +161,19 @@ NCB_ATTACH_CLASS だけでなく，NCB_REGISTER_CLASS で
 TJS グローバル空間に Name という名前で Function という関数を登録します。
 
 
+　▼NCB_ATTACH_FUNCTION(Name, TJS2Class, Function);
+
+吉里吉里２の既存のクラス TJS2Class に Name という名前で
+Function を付加します。Function が tTJSNativeClassMethodCallback 型の場合は
+そのままメソッドの RawCallback と同じように動作します。
+
+このマクロでは，非 static な関数しか付加できません。static なメソッドとして
+登録したい場合は，ダミーの static メソッドしか存在しないクラスを作り，
+NCB_ATTACH_CLASS で登録してください。（static メソッドの呼び出しであれば
+ネイティブインスタンスは生成されません）
+
+
+
 　▼NCB_REGISTER_INSTANCE(...); //※まだ未実装
 
 
