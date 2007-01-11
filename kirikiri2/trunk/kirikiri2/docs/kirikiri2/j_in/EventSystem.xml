@@ -51,7 +51,7 @@ class MyTimer extends Timer<r/>
 　<at href="f_Layer.html">Layer</at> クラスや <at href="f_WaveSoundBuffer.html">WaveSoundBuffer</at> クラスなどは、コンストラクタに指定したオーナーの action メソッドにイベントを発生する機能があります。<r/>
 　action メソッドには辞書配列オブジェクトの引数が一つ渡され、ここにイベントの情報が入っています。<r/>
 　辞書配列のメンバのうち、 target はイベントの発生元オブジェクトを表しています。type はイベント名を表しています。<r/>
-　その他のメンバはイベントによって異なります。たとえば、<at href="f_Layer_onClick">Layer.onClick</at> イベントならば、x と y というメンバがあり、レイヤ上をクリックされた場所を表します。<r/>
+　その他のメンバはイベントによって異なります。たとえば、<at href="f_Layer_onClick.html">Layer.onClick</at> イベントならば、x と y というメンバがあり、レイヤ上をクリックされた場所を表します。<r/>
 <bq>
 例:<r/>
 class MyWindow extends Window<r/>
