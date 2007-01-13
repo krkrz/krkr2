@@ -237,6 +237,11 @@ WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	}
 
 	if(engine_init) TVPUninitScriptEngine();
+
+	// delete application and exit forcely
+	// this prevents ugly exception message on exit
+	delete Application;
+	ExitProcess(0);
 	return 0;
 }
 //---------------------------------------------------------------------------
