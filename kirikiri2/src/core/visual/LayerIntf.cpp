@@ -9141,7 +9141,7 @@ TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/onKeyUp)
 		TVP_ACTION_INVOKE_MEMBER("key");
 		TVP_ACTION_INVOKE_MEMBER("shift");
 		TVP_ACTION_INVOKE_MEMBER("process");
-		TVP_ACTION_INVOKE_END(tTJSVariantClosure(objthis, objthis));
+		TVP_ACTION_INVOKE_END(obj);
 	}
 
 	// call default key up behavior handler
@@ -9162,7 +9162,7 @@ TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/onKeyPress)
 		TVP_ACTION_INVOKE_BEGIN(2, "onKeyPress", objthis);
 		TVP_ACTION_INVOKE_MEMBER("key");
 		TVP_ACTION_INVOKE_MEMBER("process");
-		TVP_ACTION_INVOKE_END(tTJSVariantClosure(objthis, objthis));
+		TVP_ACTION_INVOKE_END(obj);
 	}
 
 	// call default key down behavior handler
@@ -9190,7 +9190,7 @@ TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/onMouseWheel)
 		TVP_ACTION_INVOKE_MEMBER("delta");
 		TVP_ACTION_INVOKE_MEMBER("x");
 		TVP_ACTION_INVOKE_MEMBER("y");
-		TVP_ACTION_INVOKE_END(tTJSVariantClosure(objthis, objthis));
+		TVP_ACTION_INVOKE_END(obj);
 	}
 
 	return TJS_S_OK;
@@ -9206,7 +9206,7 @@ TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/onSearchPrevFocusable)
 	{
 		TVP_ACTION_INVOKE_BEGIN(1, "onSearchPrevFocusable", objthis);
 		TVP_ACTION_INVOKE_MEMBER("layer");
-		TVP_ACTION_INVOKE_END(tTJSVariantClosure(objthis, objthis));
+		TVP_ACTION_INVOKE_END(obj);
 	}
 
 	// set focusable layer back
@@ -9248,7 +9248,7 @@ TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/onSearchNextFocusable)
 	{
 		TVP_ACTION_INVOKE_BEGIN(1, "onSearchNextFocusable", objthis);
 		TVP_ACTION_INVOKE_MEMBER("layer");
-		TVP_ACTION_INVOKE_END(tTJSVariantClosure(objthis, objthis));
+		TVP_ACTION_INVOKE_END(obj);
 	}
 
 	// set focusable layer back
@@ -9292,7 +9292,7 @@ TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/onBeforeFocus)
 		TVP_ACTION_INVOKE_MEMBER("layer");
 		TVP_ACTION_INVOKE_MEMBER("blurred");
 		TVP_ACTION_INVOKE_MEMBER("direction");
-		TVP_ACTION_INVOKE_END(tTJSVariantClosure(objthis, objthis));
+		TVP_ACTION_INVOKE_END(obj);
 	}
 
 	// set focusable layer back
