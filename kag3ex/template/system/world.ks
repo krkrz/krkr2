@@ -789,7 +789,7 @@ class KAGEnvImage {
                 doAffine = false;
             }
             if (doOpacity) {
-                dm("透明度変更:" + opacity + ":" + opacityTime); 
+                //dm("透明度変更:" + opacity + ":" + opacityTime); 
                 if (opacityFrom !== void) {
                     layer.opacity = opacityFrom;
                     opacityFrom = void;

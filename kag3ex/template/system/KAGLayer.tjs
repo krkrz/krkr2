@@ -376,19 +376,21 @@ class AnimKAGLayer extends KAGLayer {
     }
 
     function animStart(count, time) {
-        if (count === void || count == 0) {
+        if (count === void || count <= 1) {
             animStop();
             super.height = imageHeight;
         } else {
             super.height = imageHeight / count;
             animCount = count;
-            animTime  = time === void ? (1000 / count) : time;
-            animStartTime = System.getTickCount();
-            animTimer = new Timer(animHandler, '');
-            animTimer.capacity = 1;
-            animTimer.interval = animTime;
-            animTimer.enabled  = true;
-            callOnPaint = true;
+            if (time > 0) {
+                animTime  = time === void ? (1000 / count) : time;
+                animStartTime = System.getTickCount();
+                animTimer = new Timer(animHandler, '');
+                animTimer.capacity = 1;
+                animTimer.interval = animTime;
+                animTimer.enabled  = true;
+                callOnPaint = true;
+            }
         }
     }
 
@@ -396,7 +398,10 @@ class AnimKAGLayer extends KAGLayer {
         super.onPaint(...);
         if (animCount !== void && animCount > 0 && animTime > 0) {
             var now = System.getTickCount() - animStartTime;
-            imageTop = -((now / animTime) % animCount) * imageHeight / animCount;
+            var t = ((now / animTime) % animCount) * imageHeight / animCount;
+            if (t < imageHeight - height) {
+                imageTop = -t;
+            }
         }
     }
 
