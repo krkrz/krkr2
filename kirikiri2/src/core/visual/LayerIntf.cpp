@@ -2004,7 +2004,7 @@ void tTJSNI_BaseLayer::ChangeImageSize(tjs_uint width, tjs_uint height)
 	if(MainImage) MainImage->SetSizeWithFill(width, height, NeutralColor);
 	if(ProvinceImage) ProvinceImage->SetSizeWithFill(width, height, 0);
 
-	ResetClip();  // cliprect is reset
+	if(MainImage) ResetClip();  // cliprect is reset
 
 	ImageModified = true;
 
@@ -2022,7 +2022,7 @@ void tTJSNI_BaseLayer::AllocateImage()
 		MainImage->SetFont(Font); // set font
 	}
 
-	ResetClip();  // cliprect is reset
+	if(MainImage) ResetClip();  // cliprect is reset
 
 	if(ProvinceImage)
 	{
@@ -2117,7 +2117,7 @@ void tTJSNI_BaseLayer::AssignImages(tTJSNI_BaseLayer *src)
 
 	ImageModified = true;
 
-	ResetClip();  // cliprect is reset
+	if(MainImage) ResetClip();  // cliprect is reset
 
 	if(main_changed) Update(false); // update
 }
@@ -3510,6 +3510,8 @@ void tTJSNI_BaseLayer::SetCached(bool b)
 //---------------------------------------------------------------------------
 void tTJSNI_BaseLayer::ResetClip()
 {
+	if(!MainImage) TVPThrowExceptionMessage(TVPNotDrawableLayerType);
+
 	ClipRect.left = ClipRect.top = 0;
 	ClipRect.right = MainImage->GetWidth();
 	ClipRect.bottom = MainImage->GetHeight();
