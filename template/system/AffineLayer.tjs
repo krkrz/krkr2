@@ -453,6 +453,11 @@ class AffineLayer extends KAGLayer {
         return ret;
     }
 
+    function loadProvinceImage() {
+        onPaint();
+        super.loadProvinceImage(...);
+    }
+    
     function operateAffine(src, sleft, stop, swidth, sheight, affine, A, B, C, D, E, F, mode=omAuto, opa=255, type=stNearest) {
         _image.operateAffine(...);
         calcAffine();

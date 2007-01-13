@@ -4874,6 +4874,7 @@ class KAGWindow extends Window
 			click : function
 			{
 			} incontextof this]);
+        notifyStable();
 		return -2;
 	}
 

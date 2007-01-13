@@ -68,7 +68,8 @@ class LinkButtonLayer extends ButtonLayer
 	function assign(src)
 	{
 		super.assign(src);
-		linkNum = src.linkNum;
+        name = src.name;
+        linkNum = src.linkNum;
 		onenter = src.onenter;
 		onleave = src.onleave;
 		hint = src.hint;
@@ -158,6 +159,7 @@ class LinkCheckBoxLayer extends CheckBoxLayer
 	function assign(src)
 	{
 		super.assign(src);
+        name = src.name;
 		linkNum = src.linkNum;
 		vertical = src.vertical;
 		hint = src.hint;
@@ -247,6 +249,7 @@ class LinkEditLayer extends EditLayer
 	function assign(src)
 	{
 		super.assign(src);
+        name = src.name;
 		linkNum = src.linkNum;
 		exp = src.exp;
 	}
@@ -319,6 +322,7 @@ class LinkSliderLayer extends SliderLayer
 	function assign(src)
 	{
 		super.assign(src);
+        name = src.name;
 		linkNum = src.linkNum;
 		exp = src.exp;
         changefuncdata = src.changefuncdata;
@@ -437,6 +441,7 @@ class SystemButtonLayer extends ButtonLayer
     
     function assign(src) {
         super.assign(src);
+        name = src.name;
         onclick = src.onclick;
         onenter = src.onenter;
         onleave = src.onleave;
@@ -1167,6 +1172,7 @@ class MessageLayer extends AnimKAGLayer
 		highlightLayer.type = layerType;
 		highlightLayer.face = dfAuto;
 		highlightLayer.hitType = htProvince;
+        highlightLayer.name = "ハイライト用レイヤ";
         // 領域画像で当たり判定を行う
 
         _fadeTimer = new Timer(fadeHandler, '');
@@ -1278,7 +1284,6 @@ class MessageLayer extends AnimKAGLayer
 
 		focusable = false;
         links.clear();
-        (Dictionary.clear incontextof names)();
         
         numLinks = 0;
 		inLink = -1;
@@ -2334,6 +2339,7 @@ class MessageLayer extends AnimKAGLayer
 				invalidate links[i].object;
 			links[i].type = 0;
 		}
+        (Dictionary.clear incontextof names)(); 
 	}
 
 	function beginLinkLine()
@@ -3602,6 +3608,7 @@ class MessageLayer extends AnimKAGLayer
 						// object は再作成
 					object.assign(sl_d_object);
 					tl_d.object = object;
+                    names[object.name] = object;
 				}
 				else if(type == ltEdit)
 				{
@@ -3611,6 +3618,7 @@ class MessageLayer extends AnimKAGLayer
 						// object は再作成
 					object.assign(sl_d_object);
 					tl_d.object = object;
+                    names[object.name] = object;
 				}
 				else if(type == ltCheckBox)
 				{
@@ -3620,6 +3628,7 @@ class MessageLayer extends AnimKAGLayer
 						// object は再作成
 					object.assign(sl_d_object);
 					tl_d.object = object;
+                    names[object.name] = object;
                 }else if(type == ltSlider)
 				{
 					// チェックボックス
@@ -3628,6 +3637,7 @@ class MessageLayer extends AnimKAGLayer
 						// object は再作成
 					object.assign(sl_d_object);
 					tl_d.object = object;
+                    names[object.name] = object;
                 }
 			}
 		}
