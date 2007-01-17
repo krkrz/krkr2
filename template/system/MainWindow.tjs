@@ -127,7 +127,8 @@ class KAGWindow extends Window
 	/*C*/var currentNum; // 現在操作中のメッセージレイヤ番号
 	/*C*/var currentPage; // 現在操作中のメッセージレイヤのページ(表0/裏1)
 	/*C*/var currentWithBack = false; // 裏画面にも文字を描画するかどうか
-
+    var currentVoiceScript; // 現在有効なボイス
+    
 	var bgm; // BGM オブジェクト
 
     var numSEBuffers = 1; // 効果音バッファの数

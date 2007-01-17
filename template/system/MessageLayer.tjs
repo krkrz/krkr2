@@ -1018,7 +1018,7 @@ class MessageLayer extends AnimKAGLayer
     }
     
     function startTimeout() {
-        if (timeoutTime > 0 && (timeoutStorage !== void || timeoutTarget !== void)) {
+        if (timeoutTime > 0 && (timeoutStorage !== void || timeoutTarget !== void || timeoutExp !== void)) {
             timeoutTimer = new Timer(timeoutHandler, '');
             timeoutTimer.capacity = 1;
             timeoutTimer.interval = timeoutTime;
