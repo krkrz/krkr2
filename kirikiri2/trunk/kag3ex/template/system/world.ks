@@ -4300,8 +4300,12 @@ class KAGEnvironment extends KAGEnvImage {
     /**
      * 名前の表示
      */
-    function drawName(name = "") {
-        dm("名前描画:" + name);
+    function drawName(name = "", nextVoice= "") {
+
+        // ボイス状態の更新
+        kag.currentVoiceScript = nextVoice;
+
+        //dm("名前描画:" + name);
         if (!transMode) {
             drawNamePage(kag.fore, name);
         }
@@ -4524,14 +4528,15 @@ class KAGEnvironment extends KAGEnvImage {
             // ボイスの登録
             var nextVoice;
             if (kag.historyWriteEnabled && (nextVoice = getNextVoiceScript() + getVoicePlayingScript(ch)) != "") {
-                kag.historyLayer.setNewAction("global.world_object.env.stopAllVoice();" + nextVoice);
+                nextVoice = "global.world_object.env.stopAllVoice();" + nextVoice;
+                kag.historyLayer.setNewAction(nextVoice);
             }
 
             // 名前加工処理
             if (typeof global.dispNameFilter !== 'undefined') {
                 dispName = global.dispNameFilter(dispName);
             }
-            drawName(dispName);
+            drawName(dispName, nextVoice);
         }
 
         // -------  ボイス再生
