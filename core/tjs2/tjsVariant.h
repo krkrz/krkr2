@@ -646,7 +646,8 @@ public:
 
 	//---- type -------------------------------------------------------------
 
-	TJS_METHOD_DEF(tTJSVariantType, Type, ()) const { return vt; }
+	TJS_METHOD_DEF(tTJSVariantType, Type, ()) { return vt; } /* for plug-in compatibility */
+	TJS_CONST_METHOD_DEF(tTJSVariantType, Type, ()) { return vt; }
 
 	//---- compare ----------------------------------------------------------
 

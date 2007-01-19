@@ -1595,6 +1595,7 @@ extern void * TVPImportFuncPtr3a4d2602c392a8d1f4c38d537a8c95e0;
 extern void * TVPImportFuncPtr8d915d35ef8e857f245c5d46798618e4;
 extern void * TVPImportFuncPtr1e463482afa8ca30f5fa7bea4fa5741d;
 extern void * TVPImportFuncPtrfdf270e4080c986abd1649fa9fffdeab;
+extern void * TVPImportFuncPtr972e0f9a6ec4648a9fb82bcf5d9095ff;
 extern void * TVPImportFuncPtr9d76731c37c4664d654db026644c64b4;
 extern void * TVPImportFuncPtr4f1620cb699874b9c8cedf6e321c606e;
 extern void * TVPImportFuncPtref1c6b2b601d1b0ff70272a4d447aa3c;
@@ -3118,6 +3119,17 @@ public:
 		}
 		typedef void(__stdcall * __functype)(tTJSVariant *, const tTJSVariant &);
 		((__functype)(TVPImportFuncPtrfdf270e4080c986abd1649fa9fffdeab))(this, rhs);
+	}
+
+	tTJSVariantType Type() const
+	{
+		if(!TVPImportFuncPtr972e0f9a6ec4648a9fb82bcf5d9095ff)
+		{
+			static char funcname[] = "tTJSVariantType tTJSVariant::Type() const";
+			TVPImportFuncPtr972e0f9a6ec4648a9fb82bcf5d9095ff = TVPGetImportFuncPtr(funcname);
+		}
+		typedef tTJSVariantType(__stdcall * __functype)(const tTJSVariant *);
+		return ((__functype)(TVPImportFuncPtr972e0f9a6ec4648a9fb82bcf5d9095ff))(this);
 	}
 
 	bool NormalCompare(const tTJSVariant & val2) const
