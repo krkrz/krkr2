@@ -236,10 +236,10 @@ TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/max)
 			else if(*ui64 == 0)
 			{
 				// v is positive-zero
-				// check r is negative zero
+				// check r is negative
 				if(TJS_IEEE_D_GET_SIGN(*(tjs_uint64*)(&r))) // true if negative
 				{
-					// r is negative-zero and v is positive-zero
+					// r is negative and v is positive-zero
 					r = v;
 				}
 			}
@@ -279,10 +279,10 @@ TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/min)
 			{
 				// v is nagative-zero
 				// note that 0|TJS_IEEE_D_SIGN_MASK is a presentation value of nagative-zero.
-				// check r is positive zero
+				// check r is positive
 				if(! TJS_IEEE_D_GET_SIGN(*(tjs_uint64*)(&r))) // false if positive
 				{
-					// v is negative-zero and r is positive-zero
+					// v is negative-zero and r is positive
 					r = v;
 				}
 			}
