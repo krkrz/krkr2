@@ -1269,7 +1269,8 @@ class MessageLayer extends AnimKAGLayer
 			}
 			else
 			{
-                loadImages(frameGraphic, frameKey, frameAnimCount, sf.frameanimation === void || sf.frameanimation ? frameAnimTime : 0);
+                var anim = sf === void || sf.frameanimation === void || sf.frameanimation;
+                loadImages(frameGraphic, frameKey, frameAnimCount, anim ? frameAnimTime : 0);
                 setSizeToImageSize();
 			}
 
