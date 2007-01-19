@@ -216,16 +216,40 @@ TJS_END_NATIVE_METHOD_DECL(/*func. name*/pow)
 //----------------------------------------------------------------------
 TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/max)
 {
-	if(numparams<2) return TJS_E_BADPARAMCOUNT;
-
-	TJSSetFPUE();
-	tTVReal a = param[0]->AsReal();
-	tTVReal b = param[1]->AsReal();
-
 	if(result)
 	{
 		TJSSetFPUE();
-		*result = std::max<tTVReal>(a,b);
+
+		tjs_real r;
+		*(tjs_uint64*)&r = TJS_IEEE_D_N_INF;
+		for(tjs_int i = 0; i < numparams; ++i)
+		{
+			tTVReal v = param[i]->AsReal();
+			tjs_uint64 *ui64 = (tjs_uint64*)&v;
+			if(TJS_IEEE_D_IS_NaN(*ui64))
+			{
+				tjs_real d;
+				*(tjs_uint64*)&d = TJS_IEEE_D_P_NaN;
+				*result = d;
+				return TJS_S_OK;
+			}
+			else if(*ui64 == 0)
+			{
+				// v is positive-zero
+				// check r is negative zero
+				if(TJS_IEEE_D_GET_SIGN(*(tjs_uint64*)(&r))) // true if negative
+				{
+					// r is negative-zero and v is positive-zero
+					r = v;
+				}
+			}
+			else if(r < v)
+			{
+				r = v;
+			}
+		}
+
+		*result = r;
 	}
 
 	return TJS_S_OK;
@@ -234,14 +258,42 @@ TJS_END_NATIVE_METHOD_DECL(/*func. name*/max)
 //----------------------------------------------------------------------
 TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/min)
 {
-	if(numparams<2) return TJS_E_BADPARAMCOUNT;
+	if(result)
+	{
+		TJSSetFPUE();
 
-	TJSSetFPUE();
+		tjs_real r;
+		*(tjs_uint64*)&r = TJS_IEEE_D_P_INF;
+		for(tjs_int i = 0; i < numparams; ++i)
+		{
+			tTVReal v = param[i]->AsReal();
+			tjs_uint64 *ui64 = (tjs_uint64*)&v;
+			if(TJS_IEEE_D_IS_NaN(*ui64))
+			{
+				tjs_real d;
+				*(tjs_uint64*)&d = TJS_IEEE_D_P_NaN;
+				*result = d;
+				return TJS_S_OK;
+			}
+			else if(*ui64 == (0|TJS_IEEE_D_SIGN_MASK) )
+			{
+				// v is nagative-zero
+				// note that 0|TJS_IEEE_D_SIGN_MASK is a presentation value of nagative-zero.
+				// check r is positive zero
+				if(! TJS_IEEE_D_GET_SIGN(*(tjs_uint64*)(&r))) // false if positive
+				{
+					// v is negative-zero and r is positive-zero
+					r = v;
+				}
+			}
+			else if(v < r)
+			{
+				r = v;
+			}
+		}
 
-	tTVReal a = param[0]->AsReal();
-	tTVReal b = param[1]->AsReal();
-
-	if(result) *result = std::min<tTVReal>(a,b);
+		*result = r;
+	}
 
 	return TJS_S_OK;
 }
@@ -437,5 +489,6 @@ TJS_END_NATIVE_PROP_DECL(SQRT2)
 } // tTJSNC_Math::tTJSNC_Math()
 //---------------------------------------------------------------------------
 }  // namespace TJS
+
 
 
