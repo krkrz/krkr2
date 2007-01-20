@@ -6051,6 +6051,10 @@ void tTJSNI_BaseLayer::InternalComplete2(tTVPComplexRect & updateregion,
 	{
 		tTVPRect r(*it);
 
+		// Add layer offset because Draw() accepts the position in
+		// *parent* 's coordinates.
+		r.add_offsets(Rect.left, Rect.top);
+
 		if(TVPGraphicSplitOperationType != gsotNone)
 		{
 			// compute optimum height of the stripe
