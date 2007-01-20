@@ -134,17 +134,23 @@ bool eTJSScriptError::AddTrace(const ttstr & data)
 static void TJSReportExceptionSource(const ttstr &msg, tTJSScriptBlock *block,
 	tjs_int srcpos)
 {
-	tTJS *tjs = block->GetTJS();
-	tjs->OutputExceptionToConsole((msg + TJS_W(" at ") +
-		block->GetLineDescriptionString(srcpos)).c_str());
+	if(TJSEnableDebugMode)
+	{
+		tTJS *tjs = block->GetTJS();
+		tjs->OutputExceptionToConsole((msg + TJS_W(" at ") +
+			block->GetLineDescriptionString(srcpos)).c_str());
+	}
 }
 //---------------------------------------------------------------------------
 static void TJSReportExceptionSource(const ttstr &msg,
 	tTJSInterCodeContext *context, tjs_int codepos)
 {
-	tTJS *tjs = context->GetBlock()->GetTJS();
-	tjs->OutputExceptionToConsole((msg + TJS_W(" at ") +
-		context->GetPositionDescriptionString(codepos)).c_str());
+	if(TJSEnableDebugMode)
+	{
+		tTJS *tjs = context->GetBlock()->GetTJS();
+		tjs->OutputExceptionToConsole((msg + TJS_W(" at ") +
+			context->GetPositionDescriptionString(codepos)).c_str());
+	}
 }
 //---------------------------------------------------------------------------
 void TJS_eTJS() { throw eTJS(); }
