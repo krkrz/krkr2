@@ -2525,7 +2525,7 @@ void tTJSInterCodeContext::AddLocalVariable(const tjs_char *name, tjs_int init)
 	{
 		// create member on this
 		tjs_int	dp = PutData(tTJSVariant(name));
-		PutCode(VM_SPDE, LEX_POS);
+		PutCode(VM_SPDS, LEX_POS);
 		PutCode(TJS_TO_VM_REG_ADDR(-1), LEX_POS);
 		PutCode(TJS_TO_VM_REG_ADDR(dp), LEX_POS);
 		PutCode(TJS_TO_VM_REG_ADDR(init), LEX_POS);
