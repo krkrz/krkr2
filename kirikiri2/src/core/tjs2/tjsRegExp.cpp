@@ -392,7 +392,7 @@ TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/test)
 	match_results<const tjs_char *> what;
 	bool matched = tTJSNC_RegExp::Exec(what, target, _this);
 
-	tTJSNC_RegExp::LastRegExp = objthis;
+	tTJSNC_RegExp::LastRegExp = tTJSVariant(objthis, objthis);
 
 	if(result)
 	{
@@ -452,7 +452,7 @@ TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/exec)
 	match_results<const tjs_char *> what;
 	tTJSNC_RegExp::Exec(what, target, _this);
 
-	tTJSNC_RegExp::LastRegExp = objthis;
+	tTJSNC_RegExp::LastRegExp = tTJSVariant(objthis, objthis);
 
 	if(result)
 	{
@@ -676,7 +676,6 @@ TJS_BEGIN_NATIVE_PROP_DECL(last)
 {
 	TJS_BEGIN_NATIVE_PROP_GETTER
 	{
-		TJS_GET_NATIVE_INSTANCE(/*var. name*/_this, /*var. type*/tTJSNI_RegExp);
 		*result = tTJSNC_RegExp::LastRegExp;;
 		return TJS_S_OK;
 	}
@@ -684,7 +683,7 @@ TJS_BEGIN_NATIVE_PROP_DECL(last)
 
 	TJS_DENY_NATIVE_PROP_SETTER
 }
-TJS_END_NATIVE_PROP_DECL(last)
+TJS_END_NATIVE_STATIC_PROP_DECL(last)
 //---------------------------------------------------------------------------
 	TJS_END_NATIVE_MEMBERS
 }
