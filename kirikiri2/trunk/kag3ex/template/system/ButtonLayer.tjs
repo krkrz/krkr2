@@ -131,6 +131,21 @@ class ButtonLayer extends AnimKAGLayer
         Butt_imageLoaded = true;
     }
 
+	// offsを考慮してボタンをコピーする
+	function _copyButton(w, h, num, temp, info) {
+		var ox = 0, oy = 0, cw = temp.imageWidth, ch = temp.imageHeight;
+		// oFFs チャンクがあればずらす
+        if (sf && sf.offsetimage && info) {
+            if (info.offs_x !== void) ox = (int)info.offs_x;
+            if (info.offs_y !== void) oy = (int)info.offs_y;
+		}
+		// 隣にハミ出さないように調整
+		if (ox + cw > w) cw = w - ox;
+		if (oy + ch > h) cw = h - oy;
+		// コピーする
+		copyRect(w*num + ox, oy, temp, 0, 0, cw, ch);
+	}
+
     /**
      * 分離ボタン画像の読み込み
      */
@@ -140,38 +155,44 @@ class ButtonLayer extends AnimKAGLayer
         if (focus !== void) {
             Butt_showFocusImage = true;
         }
-        temp.loadImages(normal);
+        var info = temp.loadImages(normal);
         var w = temp.imageWidth;
         var h = temp.imageHeight;
+        // vpAg チャンクがあればそちらが真のサイズ
+        if (sf && sf.offsetimage && info) {
+            if (info.vpag_w !== void) w = (int)info.vpag_w;
+            if (info.vpag_h !== void) h = (int)info.vpag_h;
+        }
         super.width  = w;
         super.height = h;
         imageWidth  = w * (Butt_showFocusImage ? 4 : 3);
         imageHeight = h;
         callOnPaint = true;
         Butt_imageLoaded = true;
-        
-        copyRect(0, 0, temp, 0, 0, w, h);
+
+        fillRect(0, 0, imageWidth, imageHeight, 0);
+        _copyButton(w, h, 0, temp, info);
         if (over !== void) {
-            temp.loadImages(over);
+            info = temp.loadImages(over);
         }
-        copyRect(w*2, 0, temp, 0, 0, w, h);
+        _copyButton(w, h, 2, temp, info);
 
         if (on !== void) {
-            temp.loadImages(on);
+            info = temp.loadImages(on);
         }
-        copyRect(w, 0, temp, 0, 0, w, h);
+        _copyButton(w, h, 1, temp, info);
         
         if (Butt_showFocusImage) {
             if (focus !== void) {
-                temp.loadImages(focus);
+                info = temp.loadImages(focus);
             } else if (over !== void) {
-                temp.loadImages(over);
+                info = temp.loadImages(over);
             } else if (on !== void) {
-                temp.loadImages(on);
+                info = temp.loadImages(on);
             } else {
-                temp.loadImages(normal);
+                info = temp.loadImages(normal);
             }
-            copyRect(w*3, 0, temp, 0, 0, w, h);
+            _copyButton(w, h, 3, temp, info);
         }
         if (time > 0) {
             animStart(count, time);

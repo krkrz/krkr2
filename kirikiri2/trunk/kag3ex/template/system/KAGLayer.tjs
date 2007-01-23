@@ -407,8 +407,9 @@ class AnimKAGLayer extends KAGLayer {
 
     function loadImages(storage, key, count, time) {
         animStop();
-        super.loadImages(storage, key);
+        var ret = super.loadImages(storage, key);
         animStart(count, time);
+        return ret;
     }
 
     function setSizeToImageSize() {
