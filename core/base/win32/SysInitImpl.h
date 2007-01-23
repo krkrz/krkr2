@@ -27,6 +27,7 @@ extern bool TVPExecuteUserConfig2();
 extern bool TVPExecuteUserConfig3();
 
 extern bool TVPTerminated;
+extern bool TVPTerminateOnWindowClose;
 
 //---------------------------------------------------------------------------
 
