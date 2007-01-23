@@ -54,6 +54,7 @@ __published:	// IDE 管理のコンポーネント
 	TMenuItem *ShowOnTopMenuItem;
 	TMenuItem *N4;
 	TMenuItem *ShowControllerMenuItem;
+	TMenuItem *RestartScriptEngineMenuItem;
 	void __fastcall ShowScriptEditorButtonClick(TObject *Sender);
 	void __fastcall ExitButtonClick(TObject *Sender);
 	void __fastcall ShowConsoleButtonClick(TObject *Sender);
@@ -70,6 +71,7 @@ __published:	// IDE 管理のコンポーネント
 	void __fastcall CreateMessageMapFileMenuItemClick(TObject *Sender);
 	void __fastcall ShowOnTopMenuItemClick(TObject *Sender);
 	void __fastcall ShowControllerMenuItemClick(TObject *Sender);
+	void __fastcall RestartScriptEngineMenuItemClick(TObject *Sender);
 
 private:	// ユーザー宣言
 	bool DeliverEventsOnIdle;
