@@ -406,7 +406,7 @@ tjs_error TJS_INTF_METHOD
 tTJSNI_BaseLayer::Construct(tjs_int numparams, tTJSVariant **param,
 		iTJSDispatch2 *tjs_obj)
 {
-	if(numparams < 2) return TJS_E_INVALIDPARAM;
+	if(numparams < 2) return TJS_E_BADPARAMCOUNT;
 
 	Owner = tjs_obj; // no addref
 
