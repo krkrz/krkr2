@@ -662,6 +662,17 @@
 </member>
 
 <member>
+	<name>exitOnWindowClose</name>
+	<type>property</type>
+	<shortdesc>メインウィンドウが閉じたときに終了するかどうか</shortdesc>
+	<access>r/w</access>
+	<desc>
+		　メインウィンドウ(一番最初に作成したWindowクラスのインスタンス)が閉じたときに終了するかどうかを表します。値を設定することもできます。デフォルトは真です。<r/>
+		　メインウィンドウが閉じ、ほかのデバッグ関連ウィンドウも表示していない場合は吉里吉里は終了すること無くシステムに残り、制御不能に陥る可能性がありますので注意してください(タスクマネージャからプロセスを終了させるしか無くなる可能性があります)。
+	</desc>
+</member>
+
+<member>
 	<name>exceptionHandler</name>
 	<type>property</type>
 	<shortdesc>捕捉されなかった例外のためのハンドラ関数</shortdesc>

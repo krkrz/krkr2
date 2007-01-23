@@ -1265,6 +1265,7 @@ void TVPAfterSystemUninit()
 
 //---------------------------------------------------------------------------
 bool TVPTerminated = false;
+bool TVPTerminateOnWindowClose = true;
 //---------------------------------------------------------------------------
 void TVPTerminateAsync()
 {
@@ -1291,7 +1292,7 @@ void TVPTerminateSync()
 void TVPMainWindowClosed()
 {
 	// called from WindowIntf.cpp, caused by closing all window.
-	if(TVPMainForm && !TVPMainForm->Visible) TVPTerminateAsync();
+	if(TVPMainForm && !TVPMainForm->Visible && TVPTerminateOnWindowClose) TVPTerminateAsync();
 }
 //---------------------------------------------------------------------------
 
