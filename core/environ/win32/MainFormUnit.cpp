@@ -504,6 +504,11 @@ void __fastcall TTVPMainForm::CreateMessageMapFileMenuItemClick(
 	}
 }
 //---------------------------------------------------------------------------
+void __fastcall TTVPMainForm::RestartScriptEngineMenuItemClick(TObject *Sender)
+{
+	TVPRestartScriptEngine();
+}
+//---------------------------------------------------------------------------
 void TTVPMainForm::InvokeEvents()
 {
 	CallDeliverAllEventsOnIdle();
