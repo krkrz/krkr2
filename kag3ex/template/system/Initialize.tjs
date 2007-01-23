@@ -66,6 +66,8 @@ Storages.addAutoPath("image/"); // そのほかの画像フォルダ
 Storages.addAutoPath("system/"); // システムフォルダ
 Storages.addAutoPath("voice/");  // ボイスフォルダ
 Storages.addAutoPath("face/");   // フェイスフォルダ
+Storages.addAutoPath("init/");   // 初期化用フォルダ
+Storages.addAutoPath("sysscn/"); // システム用シナリオ
 
 // パッチアーカイブの検索と使用
 // もしこれらの名前を持ったアーカイブが実行可能ファイルと
@@ -82,6 +84,8 @@ useArchiveIfExists("image.xp3");
 useArchiveIfExists("system.xp3");
 useArchiveIfExists("voice.xp3");
 useArchiveIfExists("face.xp3");
+useArchiveIfExists("init.xp3");
+useArchiveIfExists("sysscn.xp3");
 
 if(Storages.isExistentStorage("Storages.tjs"))
 	Scripts.execStorage("Storages.tjs");

@@ -1772,6 +1772,7 @@ class KAGEnvCharacter extends KAGEnvLevelLayer, KAGEnvImage {
                 reposition = true;
             }
             redraw = true;
+            reposition = true;
             
             // 自動トランジション指定は表示される場合のみ
             if (isShowBU() && elm.fade === void) {
@@ -1794,6 +1795,7 @@ class KAGEnvCharacter extends KAGEnvLevelLayer, KAGEnvImage {
                     reposition = true;
                 }
                 redraw = true;
+                reposition = true;
                 
                 // 自動トランジション指定は表示される場合のみ
                 if (isShowBU() && elm.fade === void) {
@@ -1837,6 +1839,7 @@ class KAGEnvCharacter extends KAGEnvLevelLayer, KAGEnvImage {
                 reposition = true;
             }
             redraw = true;
+            reposition = true;
 
             // 自動トランジション指定は表示される場合のみ
             if (isShowBU() && elm.fade === void) {
@@ -1866,6 +1869,7 @@ class KAGEnvCharacter extends KAGEnvLevelLayer, KAGEnvImage {
                 reposition = true;
             }
             redraw = true;
+            reposition = true;
 
             // 自動トランジション指定は表示される場合のみ
             if (isShowBU() && elm.fade === void) {
@@ -1914,22 +1918,27 @@ class KAGEnvCharacter extends KAGEnvLevelLayer, KAGEnvImage {
             if (disp == CLEAR) {
                 disp = init.noPose ? FACE : BOTH;
             }
-            moveTime = isSkip() ? 0 : elm.time;
-            moveAccel = (elm.accel === void) ? 0 : +elm.accel;
             var posFrom = getFrom(cmd);
             var fromInfo;
             if (posFrom !== void && (fromInfo = env.positions[posFrom]) !== void) {
+                moveTime = isSkip() ? 0 : elm.time;
+                moveAccel = (elm.accel === void) ? 0 : +elm.accel;
                 xposFrom   = calcRelative(xpos, fromInfo.xpos);
                 xpos       = calcRelative(xpos, info.xpos);
                 reposition = true;
             } else {
-                if (xpos === void && moveTime !== void) {
-                    moveTime = 0;
-                }
-                xpos = calcRelative(xpos, info.xpos);
-                reposition = true;
-                if (moveTime === void) {
-                    setPositionTrans(info);
+                var newxpos = calcRelative(xpos, info.xpos);
+                if (xpos != newxpos) {
+                    moveTime = isSkip() ? 0 : elm.time;
+                    if (moveTime !== void && xpos == void) {
+                        moveTime = 0;
+                    }
+                    moveAccel = (elm.accel === void) ? 0 : +elm.accel;
+                    xpos = newxpos;
+                    reposition = true;
+                    if (moveTime === void) {
+                        setPositionTrans(info);
+                    }
                 }
             }
             break;
@@ -1938,22 +1947,27 @@ class KAGEnvCharacter extends KAGEnvLevelLayer, KAGEnvImage {
             if (disp == CLEAR) {
                 disp = init.noPose ? FACE : BOTH;
             }
-            moveTime = isSkip() ? 0 : elm.time;
-            moveAccel = (elm.accel === void) ? 0 : +elm.accel;
             var posFrom = getFrom(cmd);
             var fromInfo;
             if (posFrom !== void && (fromInfo = env.positions[posFrom]) !== void) {
+                moveTime = isSkip() ? 0 : elm.time;
+                moveAccel = (elm.accel === void) ? 0 : +elm.accel;
                 yposFrom   = calcRelative(ypos, fromInfo.ypos);
                 ypos       = calcRelative(ypos, info.ypos);
                 reposition = true;
             } else {
-                if (ypos === void && moveTime !== void) {
-                    moveTime = 0;
-                }
-                ypos = calcRelative(ypos, info.ypos);
-                reposition = true;
-                if (moveTime === void) {
-                    setPositionTrans(info);
+                var newypos = calcRelative(ypos, info.ypos);
+                if (ypos != newypos) {
+                    moveTime = isSkip() ? 0 : elm.time;
+                    if (moveTime !== void && ypos == void) {
+                        moveTime = 0;
+                    }
+                    moveAccel = (elm.accel === void) ? 0 : +elm.accel;
+                    ypos = newypos;
+                    reposition = true;
+                    if (moveTime === void) {
+                        setPositionTrans(info);
+                    }
                 }
             }
             break;
@@ -2425,6 +2439,8 @@ class KAGEnvCharacter extends KAGEnvLevelLayer, KAGEnvImage {
                 levelYoffset = 0;
             }
             
+            dm("キャラ移動処理:", xpos, ypos, xposFrom, yposFrom);
+            
             var l = kag.scWidth  / 2 + ((int)xpos * zoom / 100) - layer.imageWidth / 2;
             var t = kag.scHeight / 2 + ((yoff - (int)ypos) * zoom / 100) - layer.imageHeight + levelYoffset;
             if (moveTime) {
@@ -2433,6 +2449,7 @@ class KAGEnvCharacter extends KAGEnvLevelLayer, KAGEnvImage {
                     var ft = yposFrom !== void ? kag.scHeight / 2 + ((yoff - (int)yposFrom) * zoom / 100) - layer.imageHeight + levelYoffset: t;
                     layer.setPos(fl, ft);
                 } 
+                dm("layer位置", layer.left, layer.top, l, t);
                 layer.setMove(l, t, moveAccel, moveTime);
             } else {
                 layer.setMove(l, t);
