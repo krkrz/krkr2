@@ -730,25 +730,18 @@ bool tTJSNC_RegExp::Match(match_results<const tjs_char *>& what,
 
 	tjs_uint searchstart;
 
-	if(_this->Flags & globalsearch)
+	tjs_uint targlen = target.GetLen();
+	if(_this->Start == targlen)
 	{
-		tjs_uint targlen = target.GetLen();
-		if(_this->Start == targlen)
-		{
-			// Start already reached at end
-			return _this->RegEx.empty();  // returns true if empty
-		}
-		else if(_this->Start > targlen)
-		{
-			// Start exceeds target's length
-			return false;
-		}
-		searchstart = _this->Start;
+		// Start already reached at end
+		return _this->RegEx.empty();  // returns true if empty
 	}
-	else
+	else if(_this->Start > targlen)
 	{
-		searchstart = 0;
+		// Start exceeds target's length
+		return false;
 	}
+	searchstart = _this->Start;
 
 	return regex_search(target.c_str()+searchstart,
 		what, _this->RegEx, flags);
