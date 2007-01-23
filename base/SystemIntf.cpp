@@ -13,6 +13,7 @@
 #include "tjsMessage.h"
 #include "SystemIntf.h"
 #include "SysInitIntf.h"
+#include "SysInitImpl.h"
 #include "MsgIntf.h"
 #include "GraphicsLoaderIntf.h"
 #include "EventIntf.h"
@@ -375,6 +376,24 @@ TJS_BEGIN_NATIVE_PROP_DECL(osName)
 	TJS_DENY_NATIVE_PROP_SETTER
 }
 TJS_END_NATIVE_PROP_DECL(osName)
+//----------------------------------------------------------------------
+TJS_BEGIN_NATIVE_PROP_DECL(exitOnWindowClose)
+{
+	TJS_BEGIN_NATIVE_PROP_GETTER
+	{
+		*result = TVPTerminateOnWindowClose;
+		return TJS_S_OK;
+	}
+	TJS_END_NATIVE_PROP_GETTER
+
+	TJS_BEGIN_NATIVE_PROP_SETTER
+	{
+		TVPTerminateOnWindowClose = (tjs_int)*param;
+		return TJS_S_OK;
+	}
+	TJS_END_NATIVE_PROP_SETTER
+}
+TJS_END_NATIVE_PROP_DECL(exitOnWindowClose)
 //----------------------------------------------------------------------
 
 //----------------------------------------------------------------------
