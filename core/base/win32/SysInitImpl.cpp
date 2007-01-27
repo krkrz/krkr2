@@ -1642,6 +1642,17 @@ static bool TVPWaitWritePermit(AnsiString fn)
 
 
 
+//---------------------------------------------------------------------------
+// TVPShowUserConfig
+//---------------------------------------------------------------------------
+static void TVPShowUserConfig(AnsiString orgexe)
+{
+	Application->Title = ChangeFileExt(ExtractFileName(orgexe), "");
+	TConfSettingsForm *form = new TConfSettingsForm(Application);
+	form->ShowUserConfig(orgexe);
+	delete form;
+}
+//---------------------------------------------------------------------------
 
 
 
@@ -1653,6 +1664,7 @@ bool TVPExecuteUserConfig1()
 	// execute user config mode
 
 	// this does:
+	//  0. check tof file existence
 	//  1. copy self to the temporary
 	//  2. execute it with "-@execconf" option
 	//  3. exit
@@ -1667,6 +1679,14 @@ bool TVPExecuteUserConfig1()
 	}
 
 	if(!process) return false;
+
+	// check tof file existence
+	AnsiString conffilename = ChangeFileExt(ParamStr(0), ".tof");
+	if(FileExists(conffilename))
+	{
+		TVPShowUserConfig(ParamStr(0));
+		return true;
+	}
 
 	// copy self to the temporary directory
 	AnsiString tempfn = (TVPGetTemporaryName() + TJS_W("_temp.exe")).AsAnsiString();
@@ -1748,10 +1768,7 @@ bool TVPExecuteUserConfig2()
 	// show config dialog
 	if(!error)
 	{
-		Application->Title = ChangeFileExt(ExtractFileName(orgexe), "");
-		TConfSettingsForm *form = new TConfSettingsForm(Application);
-		form->ShowUserConfig(orgexe);
-		delete form;
+		TVPShowUserConfig(orgexe);
 	}
 
 

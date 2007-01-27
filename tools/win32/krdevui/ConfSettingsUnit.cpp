@@ -63,16 +63,20 @@ bool __fastcall TConfSettingsForm::ProcessFile(AnsiString filename)
 	}
 
 	// ensure the program is not runnning
-	try
+	AnsiString conffilename = ChangeFileExt(filename, ".tof");
+	if(!FileExists(conffilename))
 	{
-		delete new TFileStream(filename, fmOpenReadWrite|
-			fmShareDenyWrite);
-	}
-	catch(...)
-	{
-		Application->MessageBox(ProgramMayRunningLabel->Caption.c_str(),
-			Caption.c_str(), MB_OK|MB_ICONSTOP);
-		return false;
+		try
+		{
+			delete new TFileStream(filename, fmOpenReadWrite|
+				fmShareDenyWrite);
+		}
+		catch(...)
+		{
+			Application->MessageBox(ProgramMayRunningLabel->Caption.c_str(),
+				Caption.c_str(), MB_OK|MB_ICONSTOP);
+			return false;
+		}
 	}
 
 	// load options and option information
