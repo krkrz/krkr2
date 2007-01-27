@@ -1486,8 +1486,23 @@ void __fastcall TConfMainFrame::SetSecurityOptionToExe(AnsiString exe)
 			}
 		}
 		delete stream; stream = NULL;
-		stream = new TFileStream(exe, fmOpenWrite|fmShareDenyWrite);
-		stream->WriteBuffer(buf, read_size);
+		try
+		{
+			stream = new TFileStream(exe, fmOpenWrite|fmShareDenyWrite);
+			stream->WriteBuffer(buf, read_size);
+		}
+		catch(...)
+		{
+			// ignore open errors;
+			// this may occur if the config is to be stored in tof file
+			// (we should open the file if exe file embedding are enebled, because
+			//  the exe file write permittion checking is already done)
+			// anyway we can not embed the security options into
+			// tof file
+			delete [] buf;
+			delete stream; stream = NULL;
+			return;
+		}
 	}
 	catch(...)
 	{
