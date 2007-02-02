@@ -393,20 +393,19 @@ public:
 	bool getNextLine(tTJSVariant *result = NULL) {
 		bool ret = false;
 		if (file) {
-			iTJSDispatch2 *fields = TJSCreateArrayObject();
 			line = L"";
-			addline();
-			split(fields);
-			if (line.length() > 0) {
+			if (addline()) {
 				lineNo++;
+				iTJSDispatch2 *fields = TJSCreateArrayObject();
+				split(fields);
 				if (result) {
 					*result = tTJSVariant(fields,fields);
 				}
+				fields->Release();
 				ret = true;
 			} else {
 				clear();
 			}
-			fields->Release();
 		}
 		return ret;
 	}
@@ -426,7 +425,6 @@ public:
 		iTJSDispatch2 *target = this->target ? this->target : objthis;
 		if (file && isValidMember(target, L"doLine")) {
 			iTJSDispatch2 *method = getMember(target, L"doLine");
-
 			tTJSVariant result;
 			while (getNextLine(&result)) {
 				tTJSVariant var2 = tTJSVariant(lineNo);
@@ -435,8 +433,8 @@ public:
 				vars[1] = &var2;
 				method->FuncCall(0, NULL, NULL, NULL, 2, vars, target);
 			}
-			method->Release();
 			clear();
+			method->Release();
 		}
 	}
 
