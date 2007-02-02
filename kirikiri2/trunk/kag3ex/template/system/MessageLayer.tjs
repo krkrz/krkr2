@@ -278,7 +278,7 @@ class LinkEditLayer extends EditLayer
 	function onFocus(prevfocused, direction)
 	{
 		parent.keyLink = linkNum;
-		super.onFocus(...);
+        super.onFocus(...);
 	}
 
 	function commit()
@@ -986,15 +986,15 @@ class MessageLayer extends AnimKAGLayer
         timeoutTarget  = void;
         timeoutExp     = void;
     }
-    
+
     function timeoutHandler() {
         if (!selProcessLock) {
-        Scripts.eval(timeoutExp) if timeoutExp != '';
-        if (timeoutStorage != '' || timeoutTarget != '') {
-            window.lockMessageLayerSelProcess(); // 選択をロック
-            window.process(timeoutStorage, timeoutTarget);
-        clearTimeout();
-    }
+            Scripts.eval(timeoutExp) if timeoutExp != '';
+            if (timeoutStorage != '' || timeoutTarget != '') {
+                window.lockMessageLayerSelProcess(); // 選択をロック
+                window.process(timeoutStorage, timeoutTarget);
+                clearTimeout();
+            }
         }
     }
 
@@ -1005,7 +1005,6 @@ class MessageLayer extends AnimKAGLayer
         if (elm.exp !== void) {
             timeoutExp = createSoundExpression(elm.exp, elm.clickse, elm.clicksebuf);
         }
-        focusable = true; // フォーカスを受け取れるように
         setSelProcessLock(false); // 選択ロック解除
         //comp.setSelProcessLock(false); // 選択ロック解除
     }
@@ -1094,7 +1093,6 @@ class MessageLayer extends AnimKAGLayer
     }
     
     function processWheel(shift, delta, x, y) {
-        dm("ホイール処理:" + delta);
         if (!selProcessLock) {
             Scripts.eval(wheelFunc)(shift, delta, x, y) if wheelFunc != void;
             Scripts.eval(wheelExp) if wheelExp != '';
@@ -2590,7 +2588,8 @@ class MessageLayer extends AnimKAGLayer
 			x += len;
 		}
 		object.visible = true;
-		lineLayerPos += len;
+
+        lineLayerPos += len;
 		lineLayerLength += len;
 
 		links[numLinks] = %[
@@ -3002,9 +3001,16 @@ class MessageLayer extends AnimKAGLayer
 				var type = item.type;
 				if(type == ltButton) item.object.eventTransparent = b;
                 else if(type == ltEdit || type == ltCheckBox || type == ltSlider) item.object.enabled = !b;
-			}
-		}
-	}
+            }
+        }
+        if (selProcessLock) {
+            focusable = false;
+        } else {
+            if (numLinks > 0 || hasWheel() || hasClick()) {
+                focusable = true;
+            }
+        }
+    }
 
 	function storeSelProcessLock()
 	{
@@ -3215,7 +3221,7 @@ class MessageLayer extends AnimKAGLayer
 
 	function setFocusToLink(n, force = false)
 	{
-		// マウスカーソルを リンク番号 n の位置に移動させたり、
+        // マウスカーソルを リンク番号 n の位置に移動させたり、
 		// フォーカスを与えたりする
 		// force=false の場合はキーボード操作が行われた場合のみ
 		// マウスカーソルを移動するが、force=true のばあいはキーボードの状態に
@@ -3257,7 +3263,7 @@ class MessageLayer extends AnimKAGLayer
 		// 移動させるため、該当するキーが押されているかチェックを行う
 		var sgks = window.getKeyState;
 		var process = force || sgks(VK_LEFT) || sgks(VK_UP) || sgks(VK_RIGHT) ||
-			sgks(VK_DOWN) || sgks(VK_TAB);
+			sgks(VK_DOWN) || sgks(VK_TAB) || sgks(VK_RETURN);
 		if(process)
 		{
 			selClickLock = false;
@@ -3276,6 +3282,63 @@ class MessageLayer extends AnimKAGLayer
 		return void;
 	}
 
+    function checkFocus(link, direction) {
+        var firstLink = link;
+        do {
+            var target = links[link].object;
+            if (target == void || (target.visible && target.enabled)) {
+                return link;
+            }
+            if (direction > 0) {
+                link++;
+                if (link >= numLinks) {
+                    link = 0;
+                }
+            } else {
+                link--;
+                if (link < 0) {
+                    link = numLinks - 1;
+                }
+            }
+        } while (link != firstLink);
+        return link;
+    }
+
+    function tabPrev() {
+			selClickLock = false;
+			if(keyLink == -1 || keyLink == 0)
+			{
+//				var l = focusPrev();
+//				if(l !== null) return;
+				keyLink = numLinks - 1;
+			}
+			else
+			{
+				keyLink--;
+			}
+            keyLink = checkFocus(keyLink, -1);
+            var obj = setFocusToLink(keyLink);
+			if(obj !== void) obj.focus();
+    }
+    
+    function tabNext() {
+        selClickLock = false;
+			if(keyLink == -1 || keyLink == numLinks -1)
+			{
+//				var l = focusNext();
+//				if(l !== null) return;
+				keyLink = 0;
+			}
+			else
+			{
+				keyLink ++;
+			}
+            keyLink = checkFocus(keyLink, 1);
+            var obj = setFocusToLink(keyLink);
+            if(obj !== void) obj.focus();
+    }
+
+    
 	function onKeyDown(key, shift)
 	{
 		// キーが押された
@@ -3295,38 +3358,13 @@ class MessageLayer extends AnimKAGLayer
 			r=VK_RIGHT;
 		}
 
-		if(!selProcessLock && ((key == VK_UP && !(shift & ssShift)) || key == l ||
-			(key == VK_TAB && (shift & ssShift))))
+		if(!selProcessLock && ((key == VK_UP && !(shift & ssShift)) || key == l || (key == VK_TAB && (shift & ssShift))))
 		{
-			selClickLock = false;
-			if(keyLink == -1 || keyLink == 0)
-			{
-				var l = focusPrev();
-				if(l !== null) return;
-				keyLink = numLinks - 1;
-			}
-			else
-			{
-				keyLink--;
-			}
-			var obj = setFocusToLink(keyLink);
-			if(obj !== void) obj.focus();
-		}
+            tabPrev();
+        }
 		else if(!selProcessLock && (key == VK_DOWN || key == r || (key == VK_TAB && !(shift & ssShift))))
 		{
-			selClickLock = false;
-			if(keyLink == -1 || keyLink == numLinks -1)
-			{
-				var l = focusNext();
-				if(l !== null) return;
-				keyLink = 0;
-			}
-			else
-			{
-				keyLink ++;
-			}
-			var obj = setFocusToLink(keyLink);
-			if(obj !== void) obj.focus();
+            tabNext();
 		}
 		else if(key == VK_SPACE || key == VK_RETURN)
 		{
@@ -3337,8 +3375,13 @@ class MessageLayer extends AnimKAGLayer
                 } else {
                     window.checkProceedingKey(key, shift);
                 }
-            } else
-				processLink(keyLink);
+            } else {
+                if (keyLink != -1 && links[keyLink].type == ltEdit) {
+                    tabNext();
+                } else {
+                    processLink(keyLink);
+                }
+            }
 		}
 		else
 		{
@@ -3358,7 +3401,7 @@ class MessageLayer extends AnimKAGLayer
 
 	function onBeforeFocus(layer, blured, direction)
 	{
-		// フォーカスを得る前に呼ばれる
+        // フォーカスを得る前に呼ばれる
 		// 最初のリンクまでカーソルを移動させる
 
 		if(!selProcessLock)
