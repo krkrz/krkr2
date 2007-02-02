@@ -97,8 +97,15 @@ class SelectButtonLayer extends ButtonLayer
         if(onleave !== void) Scripts.eval(onleave);
         super.onMouseLeave(...);
 	}
+
+	function onMouseDown(x, y, button, shift)	{
+        if (button == mbRight) {
+            window.onPrimaryRightClick();
+        }
+        if (this isvalid) super.onMouseUp(...);
+    }
     
-	function onMouseUp(x, y, button, shift)	{
+    function onMouseUp(x, y, button, shift)	{
         if (enabled && button == mbLeft) {
             owner.onButtonClick(this);
         }
@@ -182,6 +189,11 @@ class SelectLayer {
     var enterse;
     var leavese;
     var clickse;
+
+    var opense;
+    var closese;
+    var opensebuf;
+    var closesebuf;
     
 	function setOptions(elm) {
 
@@ -219,6 +231,11 @@ class SelectLayer {
         leavese = elm.leavese if elm.leavese !== void;
         clickse = elm.clickse if elm.clickse !== void;
 
+        opense = elm.opense if elm.opense !== void;
+        opensebuf = elm.opensebuf !== void ? elm.opensebuf : kag.numSEBuffers - 1;
+        closese = elm.closese if elm.closese !== void;
+        closesebuf = elm.closesebuf !== void ? elm.closesebuf : kag.numSEBuffers - 1;
+        
         // メッセージ窓を消去するかどうか
         msgoff = elm.msgoff if elm.msgoff !== void;
 
@@ -369,9 +386,9 @@ class SelectLayer {
      */
     function addSelect(elm) {
 
-        var enterse    = elm.enterse !== void ? elm.enterse : enterse;
-        var leavese    = elm.leavese !== void ? elm.leavese : leavese;
-        var clickse    = elm.clickse !== void ? elm.clickse : clickse;
+        var enterse    = elm.enterse !== void ? elm.enterse : this.enterse;
+        var leavese    = elm.leavese !== void ? elm.leavese : this.leavese;
+        var clickse    = elm.clickse !== void ? elm.clickse : this.clickse;
         var entersebuf = elm.entersebuf !== void ? elm.entersebuf : kag.numSEBuffers - 2;
         var leavesebuf = elm.leavesebuf !== void ? elm.leavesebuf : kag.numSEBuffers - 2;
         var clicksebuf = elm.clicksebuf !== void ? elm.clicksebuf : kag.numSEBuffers - 1;
@@ -412,11 +429,14 @@ class SelectLayer {
             select.setPos(left + width/2 - select.width / 2, top  + y - select.height / 2);
             y += h;
         }
-//        dm("フェード時間" + fadeTime);
         if (fadeTime > 0) {
             setVisibleTime(true, fadeTime);
         } else {
             visible = true;
+        }
+
+        if (opense !== void) {
+            kag.se[opensebuf].play(%[storage:opense]);
         }
     }
 
@@ -431,6 +451,9 @@ class SelectLayer {
             visible = false;
             clearButtons();
 //        }
+        if (closese !== void) {
+            kag.se[closesebuf].play(%[storage:closese]);
+        }
     }
     
     /**

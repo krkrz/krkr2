@@ -48,8 +48,10 @@ class SESoundBuffer extends WaveSoundBuffer
 			else
 				found = false;
 		}
-		if(!found)
-			throw new Exception("効果音 " + storage + " が見つかりません");
+        if (!found) {
+            kag.errorSound(storage + ":効果音ファイルがありません");
+            return;
+        }
 		var loop = elm.loop === void ? false : +elm.loop;
 		looping = loop;
 		if(loop)
@@ -71,7 +73,7 @@ class SESoundBuffer extends WaveSoundBuffer
 		}
 		catch(e)
 		{
-			dm("効果音の再生に失敗しました(実行は続行できます) : " + e.message);
+            kag.errorSound(storage + ":効果音が再生できません : " + e.message);
 		}
 	}
 

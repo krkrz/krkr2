@@ -345,7 +345,8 @@ class EditLayer extends KAGLayer
 		}
 
 		Edit_text = Edit_text.substring(0, sp) + Edit_text.substring(ep);
-
+        Edit_selLength = 0;
+        
 		ensureCaretVisible();
 		showCaret();
 		update();
@@ -372,13 +373,22 @@ class EditLayer extends KAGLayer
 	/* 全選択操作 */
 	function operationAllSelection()
 	{
-		Edit_selAnchor = 0;
-		Edit_selStart = Edit_text.length;
+        Edit_selAnchor = 0;
+        Edit_selStart = Edit_text.length;
+        Edit_selLength = Edit_text.length;
 		ensureCaretVisible();
 		showCaret();
 		update();
 	}
 
+    function operationNoSelection() {
+        Edit_selAnchor = 0;
+        Edit_selStart = 0;
+        Edit_selLength = 0;
+        hideCaret();
+        update();
+    }
+    
 	/* コピー操作 */
 	function operationCopy()
 	{
@@ -413,7 +423,7 @@ class EditLayer extends KAGLayer
 			// そんなにおっきぃの入らないよぅ
 			if(Edit_maxChars)
 			{
-				var acceptLen = Edit_maxChars - Edit_text.length;
+				var acceptLen = Edit_maxChars - (Edit_text.length - Edit_selLength);
 				text = text.substring(0, acceptLen);
 
 				// むりぽ
@@ -480,11 +490,11 @@ class EditLayer extends KAGLayer
 
 	function onKeyPress(key)
 	{
-		// キーが押された
+        // キーが押された
 		if(#key >= 32)
 		{
 			// 普通の文字
-			if(!Edit_maxChars || Edit_text.length < Edit_maxChars)
+			if(!Edit_maxChars || (Edit_text.length - Edit_selLength) < Edit_maxChars)
 				insertCharacter(key);
 			// マウスカーソルを一時的に非表示にする
 			window.hideMouseCursor();
@@ -518,14 +528,16 @@ class EditLayer extends KAGLayer
 	{
 		// フォーカスを得た
 		super.onFocus(...);
-		showCaret();
+        operationAllSelection();
+        //showCaret();
 	}
 
 	function onBlur()
 	{
 		// フォーカスを失った
 		super.onBlur(...);
-		hideCaret();
+        operationNoSelection();
+        //hideCaret();
 	}
 
 
