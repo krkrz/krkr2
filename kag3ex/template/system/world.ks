@@ -24,17 +24,19 @@ var EMPTY = %[];
  * @param dict 辞書オブジェクト
  */
 function showKeys(name, dict) {
-    name += ":";
-    if (dict) {
-        var array = [];
-        array.assign(dict);
-        for (var i=0; i<array.count; i+= 2) {
-            if (i != 0) {
-                name += ",";
+    if (kag.debugLevel >= tkdlVerbose) {
+        name += ":";
+        if (dict) {
+            var array = [];
+            array.assign(dict);
+            for (var i=0; i<array.count; i+= 2) {
+                if (i != 0) {
+                    name += ",";
+                }
+                name += (array[i] + ":" + array[i+1]);
             }
-            name += (array[i] + ":" + array[i+1]);
+            dm(name);
         }
-        dm(name);
     }
 }
 
@@ -154,6 +156,12 @@ var actionParam = %[
  */
 class KAGEnvImage {
 
+    function dm(msg) {
+        if (kag.debugLevel >= tkdlSimple) {
+            global.dm(msg);
+        }
+    }
+    
     var _ret;
     property ret {
         getter() {
@@ -405,6 +413,8 @@ class KAGEnvImage {
     
     // 画面更新設定
     var trans;
+	var msgoff;
+	var charoff;
     
     // フェード指定のデフォルト値
     property fadeValue {
@@ -673,6 +683,8 @@ class KAGEnvImage {
     function _setTrans(name, elm) {
         //dm("トランジション設定:" + name);
         var tr = getTrans(name, elm);
+        msgoff  = tr.msgoff  if tr.msgoff  !== void;
+        charoff = tr.charoff if tr.charoff !== void;
         if (tr.method !== void) {
             if (!env.transMode && !isSkip()) {
                 trans = tr;
@@ -839,7 +851,7 @@ class KAGEnvImage {
         }
         if (syncMode) {
             ret = kag._waitLayerAction(layer);
-            dm("アクション待ち:" + ret);
+            //dm("アクション待ち:" + ret);
             syncMode = false;
         }
     }
@@ -1045,7 +1057,7 @@ class KAGEnvImage {
      * メッセージ窓消去処理
      */
     function hideMessage() {
-        if (trans !== void && trans.msgoff) {
+        if (msgoff) {
             kag.conductor.pendings.insert(0, %[tagname : "msgoff"]);
         }
     }
@@ -1130,6 +1142,8 @@ class KAGEnvImage {
         }
         hideMessage();
         trans = void;
+        msgoff = void;
+        charoff = void;
     }
 }
 
@@ -1246,7 +1260,7 @@ class KAGEnvLayer extends KAGEnvImage {
             try {
                 layer.loadImages(%[ "storage" => imageFile]);
             } catch (e) {
-                dm("画像の読み込みに失敗しました:" + imageFile);
+                kag.errorImage(imageFile + ":画像がロードできません");
             }
         }
         if (grayscale) {
@@ -1894,7 +1908,7 @@ class KAGEnvCharacter extends KAGEnvLevelLayer, KAGEnvImage {
      * 場所表示用トランジション設定
      */
     function setPositionTrans(info, force=false) {
-        dm("場所トランジション指定");
+        //dm("場所トランジション指定");
         if (force || isShowBU()) {
             if (!setTrans2(info.trans)) {
                 setTrans2(env.envinfo.positionTrans);
@@ -2152,6 +2166,8 @@ class KAGEnvCharacter extends KAGEnvLevelLayer, KAGEnvImage {
         return find;
     };
 
+    var imageFile;
+
     /**
      * 立ち絵の描画
      * @param layer 描画対象レイヤ
@@ -2162,7 +2178,6 @@ class KAGEnvCharacter extends KAGEnvLevelLayer, KAGEnvImage {
      */
     function _drawLayerPose(layer, levelName, pose) {
 
-        var imageName;
         var poseInfo;
         if (poses !== void && (poseInfo = poses[pose]) !== void) {
 
@@ -2195,7 +2210,7 @@ class KAGEnvCharacter extends KAGEnvLevelLayer, KAGEnvImage {
                 // 顔分離型立ち絵
 
                 // ベース部分
-                var imageFile = imageName.replace(/DRESS/, dressName);
+                imageFile = imageName.replace(/DRESS/, dressName);
 
                 // ベース画像のロード
                 if (baseImageName != imageFile) {
@@ -2208,16 +2223,14 @@ class KAGEnvCharacter extends KAGEnvLevelLayer, KAGEnvImage {
                     try {
                         baseImage.loadImages(imageFile);
                     } catch (e) {
-                        dm("立ち絵ベース画像の読み込みに失敗しました:" + imageFile);
-                        if (dressName !== poseInfo.defaultDress) {
-                            dm("デフォルトの服装を試用します:" + poseInfo.defaultDress);
+                        if (dressName != poseInfo.defaultDress) {
+                            // デフォルトの服装におとしこむ
                             dressName = poseInfo.defaultDress;
                             imageFile = imageName.replace(/DRESS/, dressName);
                             baseImageName = imageFile;
                             try {
                                 baseImage.loadImages(imageFile);
                             } catch (e) {
-                                dm("立ち絵ベース画像の読み込みに失敗しました:" + imageFile);
                                 return false;
                             }
                         } else {
@@ -2260,17 +2273,18 @@ class KAGEnvCharacter extends KAGEnvLevelLayer, KAGEnvImage {
                             }
                         }
                         if (!succeeded) {
-                            dm("表情画像の読み込みに失敗しました:" + imageFile);
                             if (faceName != poseInfo.defaultFace) {
-                                dm("デフォルトの表情を試用します:" + poseInfo.defaultFace);
+                                // デフォルトの表情におとしこむ
                                 faceName = poseInfo.defaultFace;
                                 imageFile = faceImageName.replace(/DRESS/, dressName);
                                 imageFile = imageFile.replace(/FACE/, faceName);
                                 try {
                                     imageInfo = faceImage.loadImages(imageFile);
                                 } catch (e) {
-                                    dm("表情画像の読み込みに失敗しました:" + imageFile);
+                                    return false;
                                 }
+                            } else {
+                                return false;
                             }
                         }
                     }
@@ -2287,26 +2301,23 @@ class KAGEnvCharacter extends KAGEnvLevelLayer, KAGEnvImage {
                 // 顔合成型立ち絵
                 // 服装情報で上書き
                 if (dressName !== void) {
-                    imageName = imageName.replace(/DRESS/, dressName);
+                    imageFile = imageName.replace(/DRESS/, dressName);
                 }
                 // 表情で上書き
                 if (faceName !== void) {
-                    imageName = imageName.replace(/FACE/, faceName);
+                    imageFile = imageFile.replace(/FACE/, faceName);
                 }
-                //dm("imageName", imageName);
                 try {
                     if (layer instanceof "AnimationLayer") {
-                        layer.loadImages(%[ "storage" => imageName]);
+                        layer.loadImages(%[ "storage" => imageFile]);
                     } else {
-                        layer.loadImages(imageName);
+                        layer.loadImages(imageFile);
                     }
-                    return true;
                 } catch (e) {
-                    dm("ERROR:画像ファイルの読み込みに失敗しました:" + imageName);
+                    return false;
                 }
+                return true;
             }
-        } else {
-            dm("立ち絵情報がありません:" + pose);
         }
         return false;
     }
@@ -2318,6 +2329,7 @@ class KAGEnvCharacter extends KAGEnvLevelLayer, KAGEnvImage {
      */
     function _drawLayer(layer, levelName) {
 
+        imageFile = "";
         if (image !== void) {
             var imageName = image.replace(/LEVEL/, levelName);
             try {
@@ -2327,21 +2339,14 @@ class KAGEnvCharacter extends KAGEnvLevelLayer, KAGEnvImage {
                     layer.loadImages(image);
                 }
             } catch (e) {
-                dm("ERROR:画像ファイルの読み込みに失敗しました:" + image);
-                return false;
+                kag.errorImage(image+ ":立ち絵画像がロードできません");
+                return;
             }
         } else {
-            if (!_drawLayerPose(layer, levelName, pose)) {
-                dm("立ち絵がロードできませんでした:" + levelName + ":" + pose);
-                if (pose !== init.defaultPose) {
-                    dm("デフォルトのポーズを試用します:" + init.defaultPose);
-                    if (!_drawLayerPose(layer, levelName, init.defaultPose)) {
-                        dm("立ち絵がロードできませんでした:" + levelName + ":" + init.defaultPose);
-                        return false;
-                    }
-                } else {
-                    return false;
-                }
+            if (!_drawLayerPose(layer, levelName, pose) &&
+                !(pose != init.defaultPose && _drawLayerPose(layer, levelName, init.defaultPose))) {
+                kag.errorImage(imageFile + ":立ち絵画像がロードできません pose:" + pose + " dress:" + dress + " face:" + face);
+                return;
             }
         }
 
@@ -2365,10 +2370,13 @@ class KAGEnvCharacter extends KAGEnvLevelLayer, KAGEnvImage {
                             timeInfo.charContrast);
             }
         }
-        
+
+        // グレー補正
         if (grayscale) {
             layer.doGrayScale();
         }
+
+        // ガンマ補正
         if (rgamma != void || ggamma != void || bgamma != void) {
             layer.adjustGamma(rgamma == void ? 1.0 : rgamma, 0, 255,
                               ggamma == void ? 1.0 : ggamma, 0, 255,
@@ -2390,7 +2398,7 @@ class KAGEnvCharacter extends KAGEnvLevelLayer, KAGEnvImage {
         if (levelName === void) {
             levelName = level;
         }
-        return _drawLayer(layer, levelName);
+        _drawLayer(layer, levelName);
     }
 
     /**
@@ -2439,7 +2447,7 @@ class KAGEnvCharacter extends KAGEnvLevelLayer, KAGEnvImage {
                 levelYoffset = 0;
             }
             
-            dm("キャラ移動処理:", xpos, ypos, xposFrom, yposFrom);
+            //dm("キャラ移動処理:", xpos, ypos, xposFrom, yposFrom);
             
             var l = kag.scWidth  / 2 + ((int)xpos * zoom / 100) - layer.imageWidth / 2;
             var t = kag.scHeight / 2 + ((yoff - (int)ypos) * zoom / 100) - layer.imageHeight + levelYoffset;
@@ -2449,7 +2457,7 @@ class KAGEnvCharacter extends KAGEnvLevelLayer, KAGEnvImage {
                     var ft = yposFrom !== void ? kag.scHeight / 2 + ((yoff - (int)yposFrom) * zoom / 100) - layer.imageHeight + levelYoffset: t;
                     layer.setPos(fl, ft);
                 } 
-                dm("layer位置", layer.left, layer.top, l, t);
+                //dm("layer位置", layer.left, layer.top, l, t);
                 layer.setMove(l, t, moveAccel, moveTime);
             } else {
                 layer.setMove(l, t);
@@ -2625,8 +2633,24 @@ class KAGEnvCharacter extends KAGEnvLevelLayer, KAGEnvImage {
         return void;
     }
 
-    function getCurrentVoice() {
-        return strVoice == "ignore" ? void : getVoice(strVoice !== void ? strVoice : voice);
+    function getCurrentVoice(check=false) {
+        var voicename = strVoice == "ignore" ? void : getVoice(strVoice !== void ? strVoice : voice);
+        if (check) {
+            if (voicename !== void) {
+                if (!Storages.isExistentStorage(voicename)) {
+                    var test;
+                    if (test = voicename + ".wav", Storages.isExistentStorage(test)) {
+                        voicename = test;
+                    } else if(test = voicename + ".ogg", Storages.isExistentStorage(test)) {
+                        voicename = test;
+                    } else {
+                        kag.errorVoice(voicename + ":ボイスがロードできません name:" + name);
+                        voicename = void;
+                    }
+                }
+            }
+        }
+        return voicename;
     }
 
     var initSound;
@@ -2680,10 +2704,22 @@ class KAGEnvCharacter extends KAGEnvLevelLayer, KAGEnvImage {
             strVoice   = void;
         }
 
-        if (voicename !== void && kag.getVoiceOn(init.voiceName)) {
-            if (!kag.skipMode && kag.voiceenable) {
-                //dm("再生処理:" + voicename);
-                // 再生処理実行
+        if (voicename !== void && voicename != ""){
+            //dm("再生処理:" + voicename);
+
+            // 拡張子補完処理
+            if (!Storages.isExistentStorage(voicename)) {
+                var test;
+                if (test = voicename + ".wav", Storages.isExistentStorage(test)) {
+                    voicename = test;
+                } else if(test = voicename + ".ogg", Storages.isExistentStorage(test)) {
+                    voicename = test;
+                } else {
+                    kag.errorVoice(voicename + ":ボイスがロードできません name:" + name);
+                    voicename = void;
+                }
+            }
+            if (voicename !== void && kag.getVoiceOn(init.voiceName) && !kag.skipMode && kag.voiceenable) {
                 if (initSound) {
                     if (soundBuffer !== void) {
                         invalidate soundBuffer;
@@ -2694,29 +2730,23 @@ class KAGEnvCharacter extends KAGEnvLevelLayer, KAGEnvImage {
                 if (soundBuffer === void) {
                     soundBuffer = new VoiceTrack(this);
                 }
-                // ボリューム補正
                 //dm("ボイスボリューム" + kag.voicevolume);
                 soundBuffer.volume2 = kag.getVoiceVolume(init.voiceName) * 1000;
                 try {
-                    // 拡張子補完処理
-                    if (!Storages.isExistentStorage(voicename)) {
-                        var test;
-                        if(test = voicename + ".wav", Storages.isExistentStorage(test))
-                            voicename = test;
-                        else if(test = voicename + ".ogg", Storages.isExistentStorage(test))
-                            voicename = test;
-                    }
                     if (kag.voicespeed != 1.0 && typeof soundBuffer.filters != "undefined") {
                         soundBuffer.filters.clear();
                         soundBuffer.filters.add(new WaveSoundBuffer.PhaseVocoder());
                         soundBuffer.filters[0].window = 256;
                         soundBuffer.filters[0].time = 1.0 / kag.voicespeed;
+                        soundBuffer.open(voicename);
+                        soundBuffer.play();
+                        ret = (int)(soundBuffer.totalTime / kag.voicespeed);
+                    } else {
+                        soundBuffer.open(voicename);
+                        soundBuffer.play();
+                        ret = soundBuffer.totalTime;
                     }
-                    soundBuffer.open(voicename);
-                    soundBuffer.play();
-                    ret = (int)(soundBuffer.totalTime / kag.voicespeed);
                 } catch (e) {
-                    dm("ボイス再生に失敗しました ファイル名:" + voicename);
                 }
             }
         }
@@ -2980,11 +3010,13 @@ class KAGEnvSE {
     function play(param, elm) {
         if (param !== void) {
             name = param;
-            var time = +elm.time;
-            if (time > 0)  {
-                kag.se[id].fadeIn(%[ storage:param, loop:elm.loop, time:time, start:elm.start]);
-            } else {
-                kag.se[id].play(%[ storage:param, loop:elm.loop, start:elm.start]);
+            if (kag.skipMode<3 || elm.loop || !sf.nosewhenskip) {
+                var time = +elm.time;
+                if (time > 0)  {
+                    kag.se[id].fadeIn(%[ storage:param, loop:elm.loop, time:time, start:elm.start]);
+                } else {
+                    kag.se[id].play(%[ storage:param, loop:elm.loop, start:elm.start]);
+                }
             }
         }
     }
@@ -2994,7 +3026,7 @@ class KAGEnvSE {
      * @param param フェードアウト時間
      */
     function stop(param, elm) {
-        if (+param > 0) {
+        if (kag.skipMode == 0 && +param > 0) {
             kag.se[id].fadeOut(%[ time: +param]);
         } else {
             kag.se[id].stop();
@@ -3400,6 +3432,14 @@ class KAGEnvironment extends KAGEnvImage {
         f.event = %[];
         event.onStore(f.event);
 
+        f.ses = [];
+        for (var i=0;i<ses.count;i++) {
+            f.ses[i] = %[];
+            f.ses[i].name  = ses[i].name;
+            f.ses[i].id    = ses[i].id;
+            f.ses[i].count = ses[i].count;
+        }
+        
         f.colorall = colorall;
     }
 
@@ -3431,6 +3471,14 @@ class KAGEnvironment extends KAGEnvImage {
         }
         super.onRestore(f);
 
+        if (f.ses) {
+            for (var i=0;i<ses.count;i++) {
+                ses[i].name = f.ses[i].name;
+                ses[i].id   = f.ses[i].id;
+                ses[i].cout = f.ses[i].count;
+            }
+        }
+        
         colorall = f.colorall;
         if (colorall) {
             setColorAll(colorall);
@@ -3712,6 +3760,8 @@ class KAGEnvironment extends KAGEnvImage {
         }
         hideMessage();
         trans = void;
+        msgoff = void;
+        charoff = void;
         return ret;
     }
 
@@ -3872,12 +3922,10 @@ class KAGEnvironment extends KAGEnvImage {
         if (stage !== void) {
             image = stages[stage].image;
             // 時間情報で上書き
-            if (time === void) {
-                dm("時間の指定がありません");
-                time = defaultTime;
-            }
+            time = defaultTime if time === void;
             if (time !== void) {
                 image = image.replace(/TIME/, times[time].prefix);
+
                 // 画像のロードと座標補正処理
                 try {
                     layer.loadImages(%[ "storage" => image ]);
@@ -3927,12 +3975,9 @@ class KAGEnvironment extends KAGEnvImage {
                         }
                         
                     } catch (e) {
-                        dm("背景画像がロードできません" + image);
+                        kag.errorImage(image + ":背景画像がロードできません stage:" + stage + " time:" + time);
                     }
                 }
-
-            } else {
-                dm("時間のデフォルト指定が存在していません");
             }
 
 
@@ -4023,7 +4068,7 @@ class KAGEnvironment extends KAGEnvImage {
      */
     function updateImage() {
 
-        if (trans !== void && trans.charoff) {
+        if (charoff) {
             // キャラクタ強制消去
             foreach(characters, function(name,value,dict) {
                 value.disp = CLEAR;
@@ -4105,6 +4150,8 @@ class KAGEnvironment extends KAGEnvImage {
         }
         hideMessage();
         trans = void;
+        msgoff = void;
+        charoff = void;
     }
 
     /**
@@ -4258,7 +4305,7 @@ class KAGEnvironment extends KAGEnvImage {
             try {
                 faceLayer.loadImages(name);
             } catch (e) {
-                dm("表情画像のロードに失敗しました:" + name);
+                kag.errorImage(name + ":表情画像がロードできません");
             }
             faceLayer.visible = true;
         }
@@ -4344,7 +4391,7 @@ class KAGEnvironment extends KAGEnvImage {
 
     function getVoicePlayingScript(ch) {
         var voice;
-        if (ch !== void && (voice = ch.getCurrentVoice()) !== void) {
+        if (ch !== void && (voice = ch.getCurrentVoice(true)) !== void) {
             return "global.world_object.env.playVoice(\"" + ch.name + "\",\"" + voice + "\");";
         } else {
             return "";
@@ -4806,7 +4853,9 @@ class KAGWorldPlugin extends KAGPlugin
 
 kag.addPlugin(global.world_object = new KAGWorldPlugin(kag));
 
-dm("ワールド環境設定完了");
+if (kag.debugLevel >= tkdlSimple) {
+    dm("ワールド環境設定完了");
+}
 
 @endscript
 @endif

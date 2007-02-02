@@ -291,8 +291,8 @@ class BGM
 		{
 			if(!found)
 			{
-				dm("BGM " + storage + " ‚ªŒ©‚Â‚©‚è‚Ü‚¹‚ñ");
-				return;
+                kag.errorSound(storage + ":BGMƒtƒ@ƒCƒ‹‚ª‚ ‚è‚Ü‚¹‚ñ");
+                return;
 			}
 
 			try
@@ -311,8 +311,8 @@ class BGM
 			}
 			catch(e)
 			{
-				dm("BGM " + storage +" ‚ğÄ¶‚Å‚«‚Ü‚¹‚ñ : " + e.message);
-				return;
+                kag.errorSound(storage + ":BGM‚ªÄ¶‚Å‚«‚Ü‚¹‚ñ : " + e.message);
+                return;
 			}
 		}
 		currentBuffer = buf;

@@ -347,7 +347,6 @@ function KAGWindow_config()
 ;aboutWidth = 320; // 幅
 ;aboutHeight = 200; // 高さ
 
-
 // ◆ ウィンドウや動作の追加の設定
 // 追加の設定項目がある場合は
 // [start-window-additionals] と [end-window-additionals] で囲まれた
