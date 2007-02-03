@@ -77,6 +77,7 @@ __fastcall TTVPFontSelectForm::TTVPFontSelectForm(TComponent* Owner, TCanvas *Re
 	{
 		ListBox->ItemIndex = n;
 	}
+	ListBoxClick(this);
 
 	TVPCurrentFontSelectForm = this;
 		// the application won't have multiple instance of this class
