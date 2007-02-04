@@ -531,6 +531,9 @@ class KAGWindow extends Window
 		if(saveDataLocation.indexOf(":") == -1)
 			saveDataLocation = System.exePath + saveDataLocation;
 
+        // セーブ可能かどうかの確認
+        checkSave();
+        
 		// ログの出力先を saveDataLocation にする
 		if(ismain) Debug.logLocation = saveDataLocation;
         
@@ -1362,6 +1365,24 @@ class KAGWindow extends Window
 
 	//----------------------------------------------------- システム変数関連 --
 
+    /**
+     * 書き込みテストを行う
+     */
+    function checkSave()
+    {
+        if(!readOnlyMode) {
+            var dummy = ["test"];
+            var fn = saveDataLocation + "/" + "savecheck";
+            try {
+                (Array.saveStruct incontextof dummy)(fn);
+            } catch(e) {
+                saveDataLocation = System.personalPath + System.title;
+                System.inform("書き込み権限がなくファイル保存できません。MyDocument以下にデータを保存します");
+            }
+        }
+    }
+
+    
 	function loadSystemVariables()
 	{
 		// システム変数の読み込み

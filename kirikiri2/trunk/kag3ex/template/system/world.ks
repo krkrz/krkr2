@@ -2302,6 +2302,8 @@ class KAGEnvCharacter extends KAGEnvLevelLayer, KAGEnvImage {
                 // •‘•î•ñ‚Åã‘‚«
                 if (dressName !== void) {
                     imageFile = imageName.replace(/DRESS/, dressName);
+                } else {
+                    imageFile = imageName;
                 }
                 // •\î‚Åã‘‚«
                 if (faceName !== void) {

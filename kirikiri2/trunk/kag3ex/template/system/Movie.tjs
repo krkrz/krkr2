@@ -245,10 +245,23 @@ class Movie extends VideoOverlay
 		frame = +elm.frame if elm.frame !== void;
 		if( elm.mode !== void )
 		{
-			if( elm.mode == "layer" )
+            if( elm.mode == "layer" ) {
 				mode = vomLayer;
-			else
+            } else if (elm.mode == "mixer") {
+                try {
+                    mode = vomMixer;
+                    dm("video mode:mixer");
+                } catch (e) {
+                    try {
+                        mode = vomOverlay;
+                        dm("video mode:overlay");
+                    } catch (e) {
+                        mode = vomLayer;
+                    }
+                }
+            } else {
 				mode = vomOverlay;
+            }
 		}
 		playRate = +elm.playrate if elm.playrate !== void;
 		audioVolume = +elm.volume * 1000 if elm.volume !== void;
