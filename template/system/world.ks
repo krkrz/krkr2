@@ -1180,7 +1180,10 @@ class KAGEnvLayer extends KAGEnvImage {
     function setImageFile(file, elm) {
 
         imageFile = file;
-        disp = BOTH;
+        // 消去指定がなければ表示
+        if (elm.hide === void) {
+            disp = BOTH;
+        }
 
         // 背景指定時に座標指定がなければ場所情報を初期化する
         if (elm.xpos === void) {
@@ -1344,8 +1347,10 @@ class KAGEnvBaseLayer extends KAGEnvLayer {
                 reposition = true;
             }
 
-            disp = BOTH;
-            reposition = true;
+            if (elm.hide === void) {
+                disp = BOTH;
+                reposition = true;
+            }
             
             // 記録
             kag.sflags["cg_" + (file.toUpperCase())] = true;
