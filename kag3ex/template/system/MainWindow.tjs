@@ -4678,7 +4678,20 @@ class KAGWindow extends Window
         // 自動読みすすみモードに入る
         if(typeof this.autoModeMenuItem !== "undefined")
             autoModeMenuItem.checked = true;
-        onPrimaryClick();
+        // クリック待ちの場合の挙動
+        if (clickWaiting) {
+            onPrimaryClick();
+            // ボイス待ちが残ってるばあいはもうすこしまつ
+            if (autoModeAddWait !== void && autoModeAddWait - System.getTickCount() > 0) {
+                var t = conductor.lastTagName;
+                if (t == 'p'){
+                    insertTag("p");
+                }
+                else if(t == 'l'){
+                    insertTag("l");
+                }
+            }
+        }
         autoMode = true;
     }
         
@@ -8037,7 +8050,6 @@ class KAGWindow extends Window
         setter(v) {
             autoModePageWait = (int)((10 - v) * (autoModePageWaits.slow / 10));
             autoModeLineWait = (int)((10 - v) * (autoModeLineWaits.slow / 10));
-            dm("v: " + v + " autoModePageWait:" + autoModePageWait);
             if (autoModePageWait <= autoModePageWaits.fast) {
                 if (typeof this.autoModeFastMenuItem != "undefined") {
                     this.autoModeFastMenuItem.checked = true;
