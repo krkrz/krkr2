@@ -178,10 +178,11 @@ class BaseConductor extends KAGParser
 			inProcessing = false;
 
             if (e.message.substring(0,17) == "シナリオファイルに変更があったため") {
-
-                System.inform("シナリオファイルの変更により、このセーブデータは不整合になりました。\r\n申し訳ありませんが、タイトルに戻ります。");
-                kag.goToStart();
-
+                askYesNo("シナリオの変更によりこのセーブデータは不整合になりました。正常動作は保障されませんが、該当シナリオの冒頭から再開しますか？",
+                         "確認", function(param) {kag.process(param);}, function(param) { kag.goToStart(); }, curStorage);
+                //System.inform("シナリオファイルの変更により、このセーブデータは不整合になりました。\r\n申し訳ありませんが、タイトルに戻ります。");
+                //kag.process(curStorage);
+                //kag.goToStart();
             } else {
                 var msg = "エラーが発生しました\n"
                     "ファイル : " + curStorage + "   行 : " + (curLine+1) + "\n"
