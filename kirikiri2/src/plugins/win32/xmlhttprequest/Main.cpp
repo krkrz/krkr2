@@ -83,6 +83,7 @@ public:
 
     void Initialize(void) {
         _responseData.clear();
+        _responseBody.clear();
         _responseStatus = 0;
         _requestHeaders.clear();
         _aborted = false;
@@ -144,7 +145,7 @@ public:
     const std::vector<char>* GetResponseText(void) const {
         RaiseExceptionIfNotResponsed();
 
-        return &_responseData;
+        return &_responseBody;
     }
 
     void Open(const ttstr &method, const ttstr &uri, bool async, const ttstr &username, const ttstr &password)
@@ -187,9 +188,9 @@ public:
 
         if (IsValidUserInfo(username, password)) {
             std::string authKey = "";
-            copy(username.c_str(), username.c_str() + username.length(), std::back_inserter(authKey));
+            std::copy(username.c_str(), username.c_str() + username.length(), std::back_inserter(authKey));
             authKey.append(":");
-            copy(password.c_str(), password.c_str() + password.length(), std::back_inserter(authKey));
+            std::copy(password.c_str(), password.c_str() + password.length(), std::back_inserter(authKey));
 
             _requestHeaders.insert(std::pair<std::string, std::string>("Authorization", std::string("Basic ") + EncodeBase64(authKey)));
         }
@@ -361,8 +362,8 @@ public:
 
         std::string sheader;
         std::string svalue;
-        copy(header.c_str(), header.c_str() + header.length(), std::back_inserter(sheader));
-        copy(value.c_str(), value.c_str() + value.length(), std::back_inserter(svalue));
+        std::copy(header.c_str(), header.c_str() + header.length(), std::back_inserter(sheader));
+        std::copy(value.c_str(), value.c_str() + value.length(), std::back_inserter(svalue));
 
         _requestHeaders.erase(sheader);
         _requestHeaders.insert(std::pair<std::string, std::string>(sheader, svalue));
@@ -451,7 +452,15 @@ private:
 
         if (matched) {
             _responseStatus = TJSStringToInteger(ttstr(what[1].first, what[1].second - what[1].first).c_str());
-        }        
+        }
+
+        boost::reg_expression<char> re2("\r\n\r\n",
+                                       boost::regbase::normal|boost::regbase::use_except|boost::regbase::nocollate);
+        _responseBody.clear();
+        if (boost::regex_search(_responseData.begin(), what, re2, boost::match_default)) {
+            _responseBody.resize(_responseData.end() - what[0].second);
+            std::copy(const_cast<char*>(what[0].second), _responseData.end(), _responseBody.begin());
+        }
     }
 
     std::string EncodeBase64(const std::string target)
@@ -509,6 +518,7 @@ private:
     std::string _host;
     std::string _path;
     std::vector<char> _responseData;
+    std::vector<char> _responseBody;
     int _responseStatus;
 
     typedef std::map<std::string, std::string> header_container;
