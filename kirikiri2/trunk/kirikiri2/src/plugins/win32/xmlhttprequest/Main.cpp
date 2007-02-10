@@ -67,6 +67,7 @@ public:
             ÇÃèâä˙ílÇ∆ÇµÇƒê›íËÇµÇƒÇ¢Ç‹Ç∑ÅB
         */
         Initialize();
+        _target = tjs_obj;
 
         return S_OK;
     }
@@ -90,6 +91,7 @@ public:
     }
 
     tjs_int GetReadyState(void) const { return _readyState; }
+    void SetReadyState(tjs_int v) { _readyState = v; OnReadyStateChange(); }
 
     tjs_int GetResponseStatus(void) const {
         RaiseExceptionIfNotResponsed();
@@ -199,7 +201,7 @@ public:
             return;
         }
 
-        _readyState = 1;
+        SetReadyState(1);
     }
 
     void Send()
@@ -224,7 +226,7 @@ public:
         }
     }
 
-    void _Send()
+    void _Send(void)
     {
         _responseData.clear();
 
@@ -291,13 +293,13 @@ public:
         req << "\r\n";
 
         n = send(sock, req.str().c_str(), req.str().length(), 0);
-        _readyState = 2;
+        SetReadyState(2);
         if (n < 0) {
             OnErrorOnSending();
             return;
         }
 
-        _readyState = 3;
+        SetReadyState(3);
 
         fd_set fds, readfds;
         FD_ZERO(&readfds);
@@ -322,11 +324,6 @@ public:
             }
         }
 
-        if (!_aborted) {
-            _readyState = 4;
-            ParseResponse();
-        }
-
     onaborted:
         closesocket(sock);
         WSACleanup();
@@ -335,7 +332,27 @@ public:
             CloseHandle(_hThread);
         }
         _hThread = NULL;
+
+        if (!_aborted) {
+            ParseResponse();
+            SetReadyState(4);
+        }
     }
+
+    void OnReadyStateChange() {
+        if (_async && _target->IsValid(TJS_IGNOREPROP, L"onreadystatechange", NULL, _target) == TJS_S_TRUE) {
+            tTJSVariant val;
+            if (_target->PropGet(TJS_IGNOREPROP, L"onreadystatechange", NULL, &val, _target) < 0) {
+                ttstr msg = TJS_W("can't get member: onreadystatechange");
+                TVPThrowExceptionMessage(msg.c_str());
+            }
+
+            iTJSDispatch2 *method = val.AsObject();
+            method->FuncCall(0, NULL, NULL, NULL, 0, NULL, _target);
+            method->Release();
+        }
+    }
+
 
     static unsigned __stdcall StartProc(void *arg)
     {
@@ -525,6 +542,7 @@ private:
     header_container _requestHeaders;
     HANDLE _hThread;
     bool _aborted;
+    iTJSDispatch2 *_target;
 };
 //---------------------------------------------------------------------------
 /*
@@ -721,7 +739,6 @@ static iTJSDispatch2 * Create_NC_XMLHttpRequest()
         TJS_END_NATIVE_PROP_DECL(readyState)
 
 
-
         TJS_BEGIN_NATIVE_PROP_DECL(responseText)
         {
             TJS_BEGIN_NATIVE_PROP_GETTER
@@ -731,9 +748,10 @@ static iTJSDispatch2 * Create_NC_XMLHttpRequest()
 
                 if (result) {
                     const std::vector<char>* data = _this->GetResponseText();
-                    std::vector<tjs_uint8> d(data->size(), 0);
-                    std::copy(data->begin(), data->end(), d.begin());
-                    *result = TJSAllocVariantOctet(&d[0], d.size());
+                    tjs_uint8 *d = new tjs_uint8[data->size()];
+                    std::copy(data->begin(), data->end(), d);
+                    *result = TJSAllocVariantOctet(d, data->size());
+                    delete[] d;
                 }
 
                 return TJS_S_OK;
