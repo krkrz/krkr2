@@ -147,7 +147,7 @@ public:
         return &_responseData;
     }
 
-    void Open(const ttstr &method, const ttstr &uri, bool async = true)
+    void Open(const ttstr &method, const ttstr &uri, bool async, const ttstr &username, const ttstr &password)
     {
         Initialize();
 
@@ -184,7 +184,19 @@ public:
         
         _path = "";
         _path.append(what[3].first, what[3].second);
-        TVPAddLog(ttstr(_path.c_str()));
+
+        if (IsValidUserInfo(username, password)) {
+            std::string authKey = "";
+            copy(username.c_str(), username.c_str() + username.length(), std::back_inserter(authKey));
+            authKey.append(":");
+            copy(password.c_str(), password.c_str() + password.length(), std::back_inserter(authKey));
+
+            _requestHeaders.insert(std::pair<std::string, std::string>("Authorization", std::string("Basic ") + EncodeBase64(authKey)));
+        }
+        else {
+            TVPThrowExceptionMessage(TJS_W("Wrong UserInfo"));
+            return;
+        }
 
         _readyState = 1;
     }
@@ -388,6 +400,23 @@ private:
         }
     }
 
+    bool IsValidUserInfo(const ttstr &username, const ttstr &password)
+    {
+        if (username.length() == 0 || password.length() == 0) {
+            return true;
+        }
+
+        return std::find_if(username.c_str(), username.c_str() + username.length(), NI_XMLHttpRequest::IsInvalidUserInfoCharacter) ==
+            username.c_str() + username.length() &&
+            std::find_if(password.c_str(), password.c_str() + password.length(), NI_XMLHttpRequest::IsInvalidUserInfoCharacter) ==
+            password.c_str() + password.length();
+    }
+
+    static bool IsInvalidUserInfoCharacter(tjs_char c)
+    {
+        return c > 127; // non US-ASCII character
+    }
+
     bool IsValidHeaderName(const ttstr &header)
     {
         return header.length() > 0 &&
@@ -423,6 +452,54 @@ private:
         if (matched) {
             _responseStatus = TJSStringToInteger(ttstr(what[1].first, what[1].second - what[1].first).c_str());
         }        
+    }
+
+    std::string EncodeBase64(const std::string target)
+    {
+        std::string result = "";
+        std::vector<char> r;
+
+        int len, restlen;
+        len = restlen = target.length();
+
+        while (restlen >= 3) {
+            char t1 = target[len - restlen];
+            char t2 = target[len - restlen + 1];
+            char t3 = target[len - restlen + 2];
+
+            r.push_back(t1 >> 2);
+            r.push_back(((t1 & 3) << 4) | (t2 >> 4));
+            r.push_back(((t2 & 0x0f) << 2) | (t3 >> 6));
+            r.push_back(t3 & 0x3f);
+
+            restlen -= 3;
+        }
+
+        if (restlen == 1) {
+            char t1 = target[len - restlen];
+            char t2 = '\0';
+            r.push_back(t1 >> 2);
+            r.push_back(((t1 & 3) << 4) | (t2 >> 4));
+
+        }
+        else if (restlen == 2) {
+            char t1 = target[len - restlen];
+            char t2 = target[len - restlen + 1];
+            char t3 = '\0';
+            r.push_back(t1 >> 2);
+            r.push_back(((t1 & 3) << 4) | (t2 >> 4));
+            r.push_back(((t2 & 0x0f) << 2) | (t3 >> 6));
+        }
+
+        for (std::vector<char>::const_iterator p = r.begin(); p != r.end(); ++p) {
+            result.append(1, "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"[*p]);
+        }
+
+        if (restlen > 0) {
+            result.append(3 - restlen, '=');
+        }
+
+        return result;
     }
 private:
     tjs_int _readyState;
@@ -517,7 +594,33 @@ static iTJSDispatch2 * Create_NC_XMLHttpRequest()
                 async = (bool)*param[2];
             }
 
-            _this->Open(ttstr(*param[0]), ttstr(*param[1]), async);
+            ttstr username;
+            if (numparams < 4) {
+                username = "";
+            }
+            else {
+                if (param[3]->Type() == tvtString) {
+                    username = *param[3];
+                }
+                else {
+                    return TJS_E_INVALIDPARAM;
+                }
+            }
+
+            ttstr password;
+            if (numparams < 5) {
+                password = "";
+            }
+            else {
+                if (param[4]->Type() == tvtString) {
+                    password = *param[4];
+                }
+                else {
+                    return TJS_E_INVALIDPARAM;
+                }
+            }
+
+            _this->Open(ttstr(*param[0]), ttstr(*param[1]), async, username, password);
 
             return TJS_S_OK;
         }
