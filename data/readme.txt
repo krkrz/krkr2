@@ -4,6 +4,6 @@ KAGEX サンプル
  layerExImage.dll
  extrans.dll
  csvparser.dll
- wuvorbis.dll			※サンプルではつかってないけど読み込んでます
+ wuvorbis.dll
 
 ../template/system を読み込んでいますので注意してください
