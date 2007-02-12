@@ -200,7 +200,7 @@ class KAGEnvImage {
     }
 
     function isShowFace() {
-        return _disp == BOTH || _disp == FACE;
+        return (_disp == BOTH && env.bothFace)|| _disp == FACE;
     }
 
     function isShow() {
@@ -712,13 +712,21 @@ class KAGEnvImage {
     function setAutoTrans(elm) {
         // 未定義
     }
+
+    var init;
     
     /**
      * 表示状態の変更
      */
     function setShow(show, elm) {
         if (show) {
-            disp = BOTH;
+            if (!isShow()) {
+                if (init !== void) {
+                    disp = init.noPose ? FACE : BOTH;
+                } else {
+                    disp = BOTH;
+                }
+            } 
         } else {
             disp = CLEAR;
         }
@@ -1184,7 +1192,6 @@ class KAGEnvLayer extends KAGEnvImage {
         if (elm.hide === void) {
             disp = BOTH;
         }
-
         // 背景指定時に座標指定がなければ場所情報を初期化する
         if (elm.xpos === void) {
             xpos = void;
@@ -1630,7 +1637,6 @@ class KAGEnvCharacter extends KAGEnvLevelLayer, KAGEnvImage {
     var initName;
 
     /// 初期化情報
-    var init;
     var poses;
 
     // 画像ファイル直接指定
@@ -3215,6 +3221,9 @@ class KAGEnvironment extends KAGEnvImage {
     // 表情のフェード指定
     var faceFadeTime;
 
+    // 表情表示を立ち絵同時可能に
+    var bothFace;
+    
     // 全カラー制御
     var colorall;
 
@@ -3343,7 +3352,7 @@ class KAGEnvironment extends KAGEnvImage {
             faceLevelName = envinfo.faceLevelName;
             showFaceMode  = envinfo.showFaceMode;
             faceFadeTime  = envinfo.faceFadeTime;
-
+            bothFace = envinfo.bothFace !== void ? envinfo.bothFace : true;
         
             // キャラクタ情報初期化処理
             if (envinfo.characters !== void) {
@@ -3374,7 +3383,9 @@ class KAGEnvironment extends KAGEnvImage {
         kag.tagHandlers["begintrans"] = this.beginTrans;
         kag.tagHandlers["endtrans"]   = this.endTrans;
         kag.tagHandlers["newlay"]     = this.newLayer;
+        kag.tagHandlers["dellay"]     = this.delLayer;
         kag.tagHandlers["newchar"]    = this.newCharacter;
+        kag.tagHandlers["delchar"]    = this.delCharacter;
 
         kag.tagHandlers["msgoff"]     = this.msgoff;
         kag.tagHandlers["msgon"]      = this.msgon;
@@ -3776,6 +3787,9 @@ class KAGEnvironment extends KAGEnvImage {
      * 新規レイヤ生成
      */
     function newLayer(elm) {
+        // 既存データは廃棄
+        delLayer(elm);
+        // 新規生成
         var lay = getEnvLayer(elm.name, true);
         if (lay != null) {
             delete elm.tagname;
@@ -3786,14 +3800,22 @@ class KAGEnvironment extends KAGEnvImage {
     }
 
     /**
+     * 新規レイヤ生成
+     */
+    function delLayer(elm) {
+        if (layers[elm.name] !== void) {
+            invalidate layers[elm.name];
+            delete layers[elm.name];
+        }
+        return 0;
+    }
+    
+    /**
      * 新規キャラクタ生成
      */
     function newCharacter(elm) {
         // 既存データは廃棄
-        if (characters[elm.name] !== void) {
-            invalidate characters[elm.name];
-            delete characters[elm.name];
-        }
+        delCharacter(elm);
         // 新規生成
         var ch = getCharacter(elm.name, elm.initname);
         if (ch != null) {
@@ -3805,6 +3827,15 @@ class KAGEnvironment extends KAGEnvImage {
         return 0;
     }        
 
+    function delCharacter(elm) {
+        if (characters[elm.name] !== void) {
+            invalidate characters[elm.name];
+            delete characters[elm.name];
+        }
+        return 0;
+    }
+
+    
     /**
      * メッセージ窓のトランジション処理をくみこんだ ON/OFF
      */
@@ -4510,9 +4541,9 @@ class KAGEnvironment extends KAGEnvImage {
             elm.dispName = dispName;
             
             // 消去状態なら顔表示状態にする
-            if (faceLevelName !== void && ch !== void && ch.disp == CLEAR && ch.poses) {
-                ch.disp = FACE;
-            }
+//            if (faceLevelName !== void && ch !== void && ch.disp == CLEAR && ch.poses) {
+//                ch.disp = FACE;
+//            }
             
             // 表情変更処理
             if (faceLevelName !== void && currentNameTarget != ch &&
@@ -4823,8 +4854,8 @@ KAGEnvironment.YPOSITION    = 4;
 
 KAGEnvImage.BOTH      = 1;
 KAGEnvImage.BU        = 2;
-KAGEnvImage.CLEAR     = 3;
-KAGEnvImage.FACE      = 4;
+KAGEnvImage.FACE      = 3;
+KAGEnvImage.CLEAR     = 4;
 KAGEnvImage.INVISIBLE = 5;
 
 /**
