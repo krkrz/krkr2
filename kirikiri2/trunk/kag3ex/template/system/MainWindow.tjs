@@ -6078,6 +6078,13 @@ class KAGWindow extends Window
 
     origch : function(elm)
     {
+        if (lineMode) {
+            // 表示処理
+            if (setCurrentMessageLayerVisible(true)) {
+                return -3;
+            }
+        }
+
         // 文字表示
 		var acs = actualChSpeed;
 		if(updateBeforeCh)
@@ -6108,11 +6115,6 @@ class KAGWindow extends Window
         // ラインモード処理
         if (lineMode) {
 
-            // 表示処理
-            if (setCurrentMessageLayerVisible(true)) {
-                return -3;
-            }
-            
             // テキストクリア処理
             switch (lineMode) {
             case 1:
@@ -6195,7 +6197,8 @@ class KAGWindow extends Window
             }
         }
         afterName = false;
-        return tagHandlers.origch(elm);
+        insertTag("origch", elm);
+        return 0;
 
     } incontextof this,
 
@@ -6204,7 +6207,7 @@ class KAGWindow extends Window
         if (elm !== void) {
             var name = elm.disp !== void ? elm.disp : elm.name;
             if (name !== void) {
-                return tagHandlers.origch(%["text" => "【" + elm.name + "】"]);
+                insertTag("origch", %["text" => "【" + elm.name + "】"]);
             }
         }
         return 0;
