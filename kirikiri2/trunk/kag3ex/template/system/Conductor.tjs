@@ -22,6 +22,10 @@ class BaseConductor extends KAGParser
 	var reentered = false; // timerCallback 中に 再入したか
 	var nextTimerTick = 0; // 次にタイマーが発動されるはずの tick
 
+    var targetLabel = void; // 再開位置ラベル
+    var targetLine = void; // 強制処理すっとばし用フラグ
+    var curLabelLine = 0;  // 最後に通過したラベルの行番号
+    
 	function BaseConductor()
 	{
 		// コンストラクタ
@@ -52,7 +56,7 @@ class BaseConductor extends KAGParser
 		super.clear();
 	}
 
-	function timerCallback()
+    function timerCallback()
 	{
 		// 次の要素を得る
 		nextTimerTick = timer.interval + System.getTickCount();
@@ -66,7 +70,8 @@ class BaseConductor extends KAGParser
 				timer.interval = 0;
 				return;
 			}
-			inProcessing = true;
+            kag.updateDebugInfo();
+            inProcessing = true;
 			for(;;)
 			{
 				if(pendings.count > 0)
@@ -80,6 +85,16 @@ class BaseConductor extends KAGParser
 					// 後回しにされたタグがないので次のタグを得る
 					obj = getNextTag(); // 次のタグを得る
 
+                    if (targetLine !== void) {
+                        if (curLine < targetLine) {
+                            continue;
+                        } else {
+                            pendings.insert(0, %[tagname:"autolabel"]);
+                            targetLabel = void;
+                            targetLine = void;
+                        }
+                    }
+                    
 					// getNextTag() の中で、pendings に追加された (iscript など)
 					if(pendings.count > 0)
 					{
@@ -168,7 +183,7 @@ class BaseConductor extends KAGParser
 			}
 			inProcessing = false;
 			reentered = false;
-		}
+        }
 		catch(e)
 		{
             //			Debug.logAsError();
@@ -178,21 +193,19 @@ class BaseConductor extends KAGParser
 			inProcessing = false;
 
             if (e.message.substring(0,17) == "シナリオファイルに変更があったため") {
-                askYesNo("シナリオの変更によりこのセーブデータは不整合になりました。正常動作は保障されませんが、該当シナリオの冒頭から再開しますか？",
+                askYesNo("セーブデータの不整合が検出されました。正常動作は保障されませんが、該当シナリオの冒頭から再開しますか？",
                          "確認", function(param) {kag.process(param);}, function(param) { kag.goToStart(); }, curStorage);
-                //System.inform("シナリオファイルの変更により、このセーブデータは不整合になりました。\r\n申し訳ありませんが、タイトルに戻ります。");
-                //kag.process(curStorage);
-                //kag.goToStart();
             } else {
-                var msg = "エラーが発生しました\n"
+                var msg = "ロード処理中に致命的なエラーが発生しました。タイトルに戻ります\n"
                     "ファイル : " + curStorage + "   行 : " + (curLine+1) + "\n"
                         "タグ : " + (obj === void ? "不明" : obj.tagname)
                             + " ( ← エラーの発生した前後のタグを示している場合もあります )\n"
                                 + e.message;
                 if((typeof e.trace) != "undefined") dm("trace : " + e.trace);
                 dm(msg);
-                throw new ConductorException(msg);
-                //			System.inform(msg, "エラー");
+                //throw new ConductorException(msg);
+                System.inform(msg, "エラー");
+                kag.goToStart();
             }
 		}
 	}
@@ -306,28 +319,48 @@ class BaseConductor extends KAGParser
 	function store()
 	{
 		// store オーバーライド
-		return super.store(...);
+        var ret = super.store(...);
+        ret.curLabelLine = curLabelLine;
+        return ret;
 	}
 
 	function restore(dic)
 	{
-		// restore オーバーライド
-		super.restore(...);
-		pendings.clear();
+        if (dic.lineMode) {
+            clear();
+            loadScenario(dic.storageName);
+            goToLabel(dic.curLabel);
+            if (curLine != dic.curLabelLine) {
+                askYesNo("シナリオのラベル位置変更が検出されました。不整合の可能性がありますがそのまま再開しますか？",
+                         "確認", function(param) {}, function(param) { kag.goToStart(); });
+            }
+            targetLabel = dic.curLabel;
+            targetLine  = curLine + dic.curLine - dic.curLabelLine;
+        } else {
+            // restore オーバーライド
+            super.restore(...);
+            pendings.clear();
+        }
 	}
 
 	function loadScenario()
 	{
 		// loadScenario オーバーライド
-		pendings.clear();
-		super.loadScenario(...);
-	}
+        curLabelLine = 0;
+        pendings.clear();
+        super.loadScenario(...);
+        targetLabel = void;
+        targetLine = void;
+    }
 
 	function goToLabel()
 	{
 		// goToLabel オーバーライド
+        curLabelLine = 0;
 		pendings.clear();
 		super.goToLabel(...);
+        targetLabel = void;
+        targetLine = void;
 	}
 
 	function enqueueTag(tag)
@@ -492,47 +525,59 @@ class Conductor extends BaseConductor
 
 	function onScenarioLoad()
 	{
-		return owner.onConductorScenarioLoad(...);
+        return targetLine === void ? owner.onConductorScenarioLoad(...) : true;
 	}
 
 	function onScenarioLoaded()
 	{
-		return owner.onConductorScenarioLoaded(...);
+        return targetLine === void ? owner.onConductorScenarioLoaded(...) : true;
 	}
 
-	function onLabel()
+	function onLabel(label)
 	{
-		return owner.onConductorLabel(...);
+        if (targetLine !== void) {
+            if (label == targetLabel) {
+                curLabelLine = curLine;
+            } else {
+                targetLabel = void;
+                targetLine  = void;
+                askYesNo("シナリオのラベル不整合が検出されました。正常動作は保障されませんが、該当シナリオの冒頭から再開しますか？",
+                         "確認", function(param) { kag.process(param);}, function(param) { kag.goToStart(); }, curStorage);
+            }
+        } else {
+            curLabelLine = curLine;
+            return targetLine === void ? owner.onConductorLabel(...) : true;
+        }
 	}
 
 	function onJump()
 	{
-		return owner.onConductorJump(...);
+        return targetLine === void ? owner.onConductorJump(...) : true;
 	}
 
 	function onCall()
 	{
-		return owner.onConductorCall(...);
+        return targetLine === void ? owner.onConductorCall(...) : true;
 	}
 
 	function onReturn()
 	{
-		return owner.onConductorReturn(...);
+        return targetLine === void ? owner.onConductorReturn(...) : true;
 	}
 
 	function onAfterReturn()
 	{
-		return owner.onConductorAfterReturn(...);
+        return targetLine === void ? owner.onConductorAfterReturn(...) : true;
 	}
 
 	function onScript()
 	{
-		return owner.onConductorScript(...);
+        return targetLine === void ? owner.onConductorScript(...) : true;
 	}
 
 	function onUnknownTag()
 	{
-		return owner.onConductorUnknownTag(...);
+		return targetLine === void ? owner.onConductorUnknownTag(...) : true;
 	}
 
 }

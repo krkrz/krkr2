@@ -163,6 +163,42 @@ function KAGWindow_createMenus()
 		debugMenu.add(this.showControllerMenuItem = new KAGMenuItem(this, "コントローラ(&S)\tShift+F1", 1,
 			onShowContollerMenuItemClick, false));
 
+        debugMenu.add(new MenuItem(this, "-"));
+
+		debugMenu.add(this.debugLevelNoneMenuItem = new KAGMenuItem(this, "デバッグレベル:なし", 2,
+			onDebugLevelNoneMenuItemClick, false));
+		debugMenu.add(this.debugLevelSimpleMenuItem = new KAGMenuItem(this, "デバッグレベル:シンプル", 2,
+			onDebugLevelSimpleMenuItemClick, false));
+		debugMenu.add(this.debugLevelVerboseMenuItem = new KAGMenuItem(this, "デバッグレベル:詳細", 2,
+			onDebugLevelVerboseMenuItemClick, false));
+
+        debugMenu.add(new MenuItem(this, "-"));
+
+		debugMenu.add(this.debugWinMenuItem = new KAGMenuItem(this, "デバッグ窓表示", 0,
+			onDebugWinMenuItemClick, false));
+    
+        debugMenu.add(new MenuItem(this, "-"));
+
+        debugMenu.add(this.autoLabelSaveModeMenuItem = new KAGMenuItem(this, "自動ラベルセーブ", 0,
+			onAutoLabelSaveModeMenuItemClick, false));
+
+		debugMenu.add(this.skipToPrevLabelMenuItem = new KAGMenuItem(this, "前のラベルに戻る\tAlt+←", 0,
+			onSkipToPrevLabelMenuItemClick, false));
+    
+		debugMenu.add(this.skipToNextLabelMenuItem = new KAGMenuItem(this, "次のラベルに進む\tAlt+→", 0,
+			onSkipToNextLabelMenuItemClick, false));
+
+        debugMenu.add(new MenuItem(this, "-"));
+
+    
+		debugMenu.add(this.chDebugLogMenuItem = new KAGMenuItem(this, "KAGEXログモード", 0,
+			onChDebugLogMenuItemClick, false));
+
+        debugMenu.add(this.outputDebugLogMenuItem = new KAGMenuItem(this, "KAGEXログを出力する", 0,
+			onOutputDebugLogMenuItemClick, false));
+
+        debugMenu.add(new MenuItem(this, "-"));
+    
 		debugMenu.add(this.voiceSpeedMenu = new KAGMenuItem(this, "ボイス速度(&V)", 0, void, false));
 			voiceSpeedMenu.add(this.voiceNormalSpeedMenuItem = new KAGMenuItem(this, "通常(&N)", 1,
 				onVoiceSpeedMenuItemClick, false));
