@@ -347,7 +347,18 @@ function KAGWindow_config()
 ;aboutWidth = 320; // 幅
 ;aboutHeight = 200; // 高さ
 
-// ◆ ウィンドウや動作の追加の設定
+
+// ◆ 自動ラベル処理
+;autoLabelMode = false; // true:自動ラベルモード
+;autoLabelType = 0;     // 0:間接ラベルロード 1:行番号指定ロード
+
+
+// ◆ ワールド拡張がボイス切り替えようにデフォルト名の判定に利用する名前を指定
+;defaultName   = "名前"; // デフォルトの名前
+;defaultFamily = "苗字"; // デフォルトの苗字
+
+
+//  ウィンドウや動作の追加の設定
 // 追加の設定項目がある場合は
 // [start-window-additionals] と [end-window-additionals] で囲まれた
 // 部分に設定を記述してください

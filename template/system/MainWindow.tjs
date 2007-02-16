@@ -4,11 +4,6 @@
 
 // このスクリプトは有効な perl5 スクリプトでもある
 
-// メニュー変更処理用
-var onModeChange;
-
-var currentDialog;
-
 class KAGWindow extends Window
 {
 	// KAG のウィンドウ クラス
@@ -23,6 +18,9 @@ class KAGWindow extends Window
 	var aboutWidth = 320; // 「このソフトについて」ウィンドウの横幅
 	var aboutHeight = 200; // 同縦幅
 
+    var defaultName   = "名前"; // 標準名    ワールド拡張がボイス切り替えに利用
+    var defaultFamily = "苗字"; // 標準苗字  ワールド拡張がボイス切り替えに利用
+    
 	var isFirstProcess = true; // 一番最初の process の呼び出しかどうか
 
 	var freeSaveDataMode = false; // 栞をメニューバーなどで管理せずに、個別のファイルとして管理する
@@ -57,7 +55,7 @@ class KAGWindow extends Window
 	var historyOfStore = []; // 通過履歴データ
 	var nextRecordHistory = false;
 		// 次の保存可能なラベル通過時に現在の情報を保存するかどうか
-
+    
 	var stablePosibility = false;
 		// 栞を保存可能なラベル間で stable になる可能性があるかどうか
 
@@ -100,6 +98,9 @@ class KAGWindow extends Window
 	/*C*/var numMessageLayers = 1; // メッセージレイヤの数
 
     /*C*/var messageFadeTime = 500; // メッセージレイヤの表示ON/OFF の時間
+
+    var sysbase;  // ベースレイヤ
+    var debugwin; // デバッグ表示用レイヤ
     
     var fore = %[]; // 表レイヤ
 	var back = %[]; // 裏レイヤ
@@ -152,6 +153,13 @@ class KAGWindow extends Window
         }
         return false;
     }
+
+    // 次のテキスト表示の前に全ボイスをカット
+    /*C*/var voicecut = false;
+    // ボイスをカットのタイミングはページ消去時
+    /*C*/var voicecutpage = false;
+    // ボイス再生時に bgm をダウンさせる
+    /*C*/var bgmdown = false;
     
 	var transCount; // 現在進行中のトランジションの数
 	var moveCount; // 現在進行中の自動移動の数
@@ -180,10 +188,11 @@ class KAGWindow extends Window
     /*C*/var allskip   = false; // 0:既読のみスキップ 1:全てスキップ
     /*C*/var afterauto = false; // 選択後オート   1:継続 0:解除
     /*C*/var afterskip = false; // 選択後スキップ 1:継続 0:解除
+    /*C*/var nosewhenskip = false; // 1:スキップ時はSEをならさない
     
     var skipMode = 0; // スキップのモード
 		// 0=スキップなし, 1=クリック待ち記号まで, 2=改ページ待ち記号まで, 3=次の停止まで
-		// 4=早送り 5==特殊スキップ処理中
+		// 4=早送り 5=次のラベルまで強制スキップ 6=次のスキップ解除まで強制スキップ
 
     // beginskip 中のスキップモード
     var prevSkipMode;
@@ -362,9 +371,11 @@ class KAGWindow extends Window
 
     // ------------------------------------------------------ 自動ラベル処理
 
-    var autoLabelMode;   // 自動ラベルモード
+    var autoLabelMode; // true:自動ラベルモード
+    var autoLabelType; // 0:間接ラベルロード 1:行番号指定ロード
     var autoLabelCount;  // 自動ラベルカウンタ
-
+    var autoLabelSaveMode; // ラベルで自動的にセーブ処理を実行するモード
+    
     // ------------------------------------------------------ 回想再生処理
 
     var recollectionBookmark = 5000; 
@@ -445,48 +456,54 @@ class KAGWindow extends Window
     
 	//------------------------------------------------------ ダイアログレイヤ処理 --
 
+    var currentDialog;
+    
     function handleOpenDialog() {
-        if (global.currentDialog !== void) {
+        if (currentDialog !== void) {
             stopAllTransitions();
             cancelSkip();
-            global.currentDialog.parent = fore.base;
-            global.currentDialog.absolute = 9000000;
-            global.currentDialog.visible = true;
-            global.currentDialog.setMode();
-            global.currentDialog.focus();
-            global.currentDialog.onOpen();
+            currentDialog.parent   = primaryLayer;
+            currentDialog.absolute = 9000000;
+            currentDialog.visible = true;
+            currentDialog.setMode();
+            currentDialog.focus();
+            currentDialog.onOpen();
         }
         setMenuAccessibleAll();
     }
 
     function handleCloseDialog() {
-        if (global.currentDialog !== void) {
-            global.currentDialog.visible = false;
-            global.currentDialog.removeMode();
-            invalidate global.currentDialog;
-            global.currentDialog = void;
+        if (this isvalid) {
+            if (currentDialog !== void) {
+                currentDialog.visible = false;
+                currentDialog.removeMode();
+                invalidate currentDialog;
+                currentDialog = void;
+            }
+            if (this isvalid) {
+                kag.setMenuAccessibleAll();
+            }
         }
-        if (this isvalid) kag.setMenuAccessibleAll();
     }
     
     function openDialog(dialog) {
-        if (global.currentDialog !== void &&
-            global.currentDialog !== dialog) {
-            invalidate global.currentDialog;
+        if (currentDialog !== void &&
+            currentDialog !== dialog) {
+            invalidate currentDialog;
         }
 
         mainConductor.interrupted = true;
         extraConductor.interrupted = true;
         setMenuAccessibleAll();
 
-        global.currentDialog = dialog;
+        currentDialog = dialog;
         global.openDialogTrigger = new AsyncTrigger(handleOpenDialog, '');
         global.openDialogTrigger.cached = true;
         global.openDialogTrigger.trigger();
     }
 
     function closeDialog(dialog=void) {
-        if (global.currentDialog !== void && (dialog === void || global.currentDialog === dialog)) {
+        if (currentDialog !== void && (dialog === void || currentDialog === dialog)) {
             if (mainConductor.interrupted) {
                 mainConductor.interrupted  = false;
             }
@@ -495,7 +512,7 @@ class KAGWindow extends Window
             }
             setMenuAccessibleAll();
             
-            if (global.currentDialog !== void) {
+            if (currentDialog !== void) {
                 global.closeDialogTrigger = new AsyncTrigger(handleCloseDialog, '');
                 global.closeDialogTrigger.cached = true;
                 global.closeDialogTrigger.trigger();
@@ -586,19 +603,33 @@ class KAGWindow extends Window
 		add(quakeTimer);
 		quakeTimer.interval = 50;
 
-		// 背景レイヤの作成
+        // ベースになるレイヤ
+        sysbase = new Layer(this, null);
+        sysbase.setSize(scWidth, scHeight);
+        sysbase.hasImage = false;
+        add(sysbase);
+
+        // 背景レイヤの作成
 		fore.messages = [];
 		back.messages = [];
 		fore.layers = [];
 		back.layers = [];
-        fore.base = new BaseLayer(this, null, "表-背景");
+        fore.base = new BaseLayer(this, sysbase, "表-背景");
         add(fore.base);
         fore.base.setImageSize(scWidth, scHeight);
         fore.base.setSizeToImageSize();
-        back.base = new BaseLayer(this, fore.base, "裏-背景");
+        fore.base.visible = true;
+        back.base = new BaseLayer(this, sysbase, "裏-背景");
         add(back.base);
         back.base.setImageSize(scWidth, scHeight);
 		back.base.setSizeToImageSize();
+
+        // デバッグ表示用
+        debugwin = new Layer(this, sysbase);
+        debugwin.setSize(scWidth, 50);
+        debugwin.setPos(0, scHeight - 50);
+        debugwin.visible = false;
+
         fore.base.setCompLayer(back.base);
 		back.base.setCompLayer(fore.base);
 		fore.base.freeImage();
@@ -766,6 +797,10 @@ class KAGWindow extends Window
 	{
 		// finalize メソッド
 
+        if (debugControl) {
+            wmrStop(this);
+        }
+        
         clearBgmStop();
         clearBgmLabel();
         
@@ -804,7 +839,7 @@ class KAGWindow extends Window
 	{
 		saveSystemVariables();
         if(!askOnClose) { super.onCloseQuery(true); return; }
-        if (global.currentDialog === void) {
+        if (currentDialog === void) {
             askYesNo("終了しますか？", "確認", onCloseYes);
         }
         super.onCloseQuery(false);
@@ -1061,6 +1096,42 @@ class KAGWindow extends Window
         setMenuAccessibleAll();
 	}
 
+
+    function onAutoLabelSaveModeMenuItemClick(sender)
+    {
+        autoLabelSaveMode = !autoLabelSaveMode;
+        if (autoLabelSaveMode) {
+            canDebugControl();
+        } 
+        if (typeof this.autoLabelSaveModeMenuItem != "undefined") {
+            autoLabelSaveModeMenuItem.checked = autoLabelSaveMode;
+        }
+        if (typeof this.skipToPrevLabelMenuItem != "undefined") {
+            skipToPrevLabelMenuItem.enabled = autoLabelSaveMode;
+        }
+    }
+
+    
+	function onSkipToNextLabelMenuItemClick(sender)
+	{
+        if (skipMode) cancelSkip(); else skipToLabel();
+        setMenuAccessibleAll();
+	}
+
+	function onSkipToPrevLabelMenuItemClick(sender)
+	{
+        if (autoLabelSaveMode) {
+            // 外部シナリオに頼る
+            var exefile = "%ssearchprev.exe".sprintf(
+                Storages.getLocalName(System.exePath));
+            var param = "\"%s\" \"%s\" %d".sprintf(
+                Storages.getLocalName(System.exeName),
+                Storages.getLocalName(Storages.getPlacedPath(pcflags.mainConductor.storageName)),
+                pcflags.mainConductor.curLine);
+            System.shellExecute(exefile, param);
+        }
+    }
+    
 	function onAutoModeMenuItemClick(sender)
 	{
         if(autoMode) {
@@ -1300,7 +1371,7 @@ class KAGWindow extends Window
             rightClickMenuItem.enabled = inStable && !historyLayer.visible && !currentDialog;
 
 		if(typeof this.showHistoryMenuItem != "undefined")
-            showHistoryMenuItem.enabled = inStable && !messageLayerHiding && !mapSelectShowing && global.currentDialog===void &&
+            showHistoryMenuItem.enabled = inStable && !messageLayerHiding && !mapSelectShowing && currentDialog===void &&
 				historyEnabled;
 
         var canAuto = !modal && (inStable || autoMode) && !inSleep && !skipMode && !selectShowing && !mapSelectShowing;
@@ -1338,7 +1409,7 @@ class KAGWindow extends Window
 		}
 
         // 全制御
-        if (this == global.Window.mainWindow && global.onModeChange !== void) {
+        if (this == global.Window.mainWindow && typeof global.onModeChange !== "undefined") {
             global.onModeChange(this, autoMode, skipMode, canAuto, canSkip, selectShowing || mapSelectShowing, modal);
         }
     }
@@ -1488,8 +1559,13 @@ class KAGWindow extends Window
             }
         }
 
+        voicecut = scflags.voicecut if scflags.voicecut !== void;
+        voicecutpage = scflags.voicecutpage if scflags.voicecutpage !== void;
+        bgmdown = scflags.bgmdown if scflags.bgmdown !== void;
+        
         afterauto = scflags.afterauto if scflags.afterauto !== void;
         afterskip = scflags.afterskip if scflags.afterskip !== void;
+        nosewhenskip = scflags.nosewhenskip if scflags.nosewhenskip !== void;
         
 		lastSaveDataNameGlobal = scflags.lastSaveDataNameGlobal if scflags.lastSaveDataNameGlobal !== void;
 
@@ -1565,6 +1641,26 @@ class KAGWindow extends Window
                 debugLevelVerboseMenuItem.checked = true;
             break;
         }
+
+        if (scflags.debugwin !== void) {
+            debugwin.visible = scflags.debugwin;
+        }
+        if (typeof this.debugWinMenuItem != "undefined") {
+            debugWinMenuItem.checked = debugwin.visible;
+        }
+
+        if (scflags.autoLabelSaveMode !== void) {
+            autoLabelSaveMode = scflags.autoLabelSaveMode;
+            if (autoLabelSaveMode) {
+                canDebugControl();
+            } 
+        }
+        if (typeof this.autoLabelSaveModeMenuItem != "undefined") {
+            autoLabelSaveModeMenuItem.checked = autoLabelSaveMode;
+        }
+        if (typeof this.skipToPrevLabelMenuItem != "undefined") {
+            skipToPrevLabelMenuItem.enabled = autoLabelSaveMode;
+        }
     }
 
 	function clearSystemVariables()
@@ -1605,14 +1701,22 @@ class KAGWindow extends Window
 
 		scflags.lastSaveDataNameGlobal = lastSaveDataNameGlobal;
 
+        // ボイスカット処理設定
+        scflags.voicecut = voicecut;
+        scflags.voicecutpage = voicecutpage;
+        scflags.bgmdown = bgmdown;
+        
         // 全てスキップ
         scflags.allskip = allskip;
-
+        
         scflags.afterauto = afterauto;
         scflags.afterskip = afterskip;
+        scflags.nosewhenskip = nosewhenskip;
 
         scflags.logMode = logMode;
         scflags.debugLevel = debugLevel;
+        scflags.debugwin = debugwin.visible;
+        scflags.autoLabelSaveMode = autoLabelSaveMode;
         
 		// ファイルに書き込む
 		if(!readOnlyMode)
@@ -1633,7 +1737,11 @@ class KAGWindow extends Window
 
 	//------------------------------------------------------- ゲーム変数関連 --
 
-	function internalStoreFlags(f)
+    /**
+     * 内部保存処理
+     * @param f 記録先 loadFromLine 行番号ジャンプ指定
+     */
+	function internalStoreFlags(f, loadFromLine)
 	{
 		// f に現在の状態を記録する
 
@@ -1733,8 +1841,9 @@ class KAGWindow extends Window
 		f.caption = caption;
 
 		// コンダクタ
-		f.mainConductor = mainConductor.store();
-		if(!saveMacros) f.mainConductor.macros = void;
+        f.mainConductor = mainConductor.store();
+        f.mainConductor.lineMode = true if loadFromLine;
+        if(!saveMacros) f.mainConductor.macros = void;
 			// マクロ情報を void で上書きすると栞中のマクロ情報は無効になる
 
 		// メッセージ履歴
@@ -1757,7 +1866,6 @@ class KAGWindow extends Window
         f.noCrOnce = noCrOnce;
         f.noErOnce = noErOnce;
         f.autoIndent = autoIndent;
-        f.autoLabelMode = autoLabelMode;
         f.autoLabelCount = autoLabelCount;
         f.afterPage = afterPage;
         f.emptyLine = emptyLine;
@@ -1769,14 +1877,14 @@ class KAGWindow extends Window
 			%[flags:f, options:void]);
 	}
 
-	function storeFlags()
+	function storeFlags(loadFromLine=false)
 	{
 		// pcflags, pflags に値を書き込む
 
 		// flags -> pflags
 		(Dictionary.assignStruct incontextof pflags)(flags);
 
-		internalStoreFlags(pcflags);
+		internalStoreFlags(pcflags, loadFromLine);
 	}
 
 	function internalRestoreFlags(f, clear = true, elm = void)
@@ -1863,7 +1971,6 @@ class KAGWindow extends Window
         noCrOnce    = f.noCrOnce;
         noErOnce    = f.noErOnce;
         autoIndent = f.autoIndent;
-        autoLabelMode = f.autoLabelMode;
         autoLabelCount = f.autoLabelCount;
         afterPage = f.afterPage;
         emptyLine = f.emptyLine;
@@ -2046,7 +2153,7 @@ class KAGWindow extends Window
 		// 読み込み
 		internalRestoreFlags(pcflags);
 
-		// メニュー関連
+        // メニュー関連
 		setMenuAccessibleAll();
 
         // 回想中止
@@ -2054,7 +2161,7 @@ class KAGWindow extends Window
         
 		// 実行開始
 		processGo();
-	}
+    }
 
 	function clearVariables()
 	{
@@ -2816,6 +2923,20 @@ class KAGWindow extends Window
 
 	//------------------------------------------------- 未読/既読/ラベル記録 --
 
+    function getRecordLabel(storage, label) {
+        if(label != '')	{
+            if(label[0] == '*') label = label.substring(1);
+        }
+        return Storages.chopStorageExt(Storages.extractStorageName(storage)) + '_' + label;
+    }
+
+    function getBookMarkFileNameAtLabel(storage, label) {
+        var name = saveDataLocation + "/" + "auto_" + getRecordLabel(storage, label) + ".ksd";
+        dm("保存ファイル名:" + name);
+        return name;
+    }
+
+    
 	function setRecordLabel(storage, label)
 	{
 		// 現在のラベルを設定する
@@ -3181,6 +3302,9 @@ class KAGWindow extends Window
 
 	function onConductorLabel(label, page)
 	{
+        if (skipMode == 5) {
+            cancelSkip();
+        }
         // コンダクタがラベルを通過した
 		if(!usingExtraConductor)
 		{
@@ -3194,7 +3318,7 @@ class KAGWindow extends Window
 		if(!usingExtraConductor)
 		{
             if (label !== "*autoLabelLabel") {
-                if(!(allskip || getCurrentRead()) && skipMode != 4)
+                if(!(allskip || getCurrentRead()) && skipMode < 4)
                     cancelSkip(); // 未読なのでスキップを停止
                 currentStorage = conductor.curStorage;
             }
@@ -3217,7 +3341,12 @@ class KAGWindow extends Window
 			storeFlags(), storeLabelPassed = true, setMenuAccessibleAll();
 			if(recordHistoryOfStore == 1) // 1 : 保存可能なラベルごと
 				setToRecordHistory();
-		}
+
+            if (autoLabelSaveMode) {
+                saveBookMarkToFile(getBookMarkFileNameAtLabel(conductor.curStorage, label));
+            }
+
+        }
 
         if (label.substring(0,12) == "*kaisouBegin") {
 
@@ -3326,7 +3455,7 @@ class KAGWindow extends Window
 		setUserSpeed();
 		if(!usingExtraConductor)
 		{
-            if(!(allskip || getCurrentRead()) && skipMode != 4)
+            if(!(allskip || getCurrentRead()) && skipMode < 4)
                 cancelSkip(); // 未読なのでスキップを停止
 		}
     }
@@ -4308,6 +4437,10 @@ class KAGWindow extends Window
         if (mapSelectShowing) {
             mapSelectLayer.setParent(fore.base, 1000000);
         }
+
+        // 強制表示変更
+        fore.base.visible = true;
+        back.base.visible = false;
     }
 
 	function swapBaseLayer()
@@ -4631,6 +4764,14 @@ class KAGWindow extends Window
 		actualChSpeed = 0;
 	}
 
+    function skipToLabel()
+    {
+        // デバッグ用: 次のラベルまで強制スキップ
+        onPrimaryClick();
+		skipMode = 5;
+		actualChSpeed = 0;
+    }
+    
 	function cancelSkip()
 	{
 		// スキップ動作をキャンセル
@@ -4949,7 +5090,7 @@ class KAGWindow extends Window
 				var runst = conductor.mRun;
 				var stopst = conductor.mStop;
 
-                if(st != stopst && canCancelSkipByClick && skipMode && skipMode != 4 && skipMode != 5)
+                if(st != stopst && canCancelSkipByClick && skipMode && skipMode < 4)
 				{
 					// クリックによるスキップの解除が可能
 					cancelSkip();
@@ -4965,7 +5106,7 @@ class KAGWindow extends Window
 					{
                         // ハンドラが見つからないなど、処理されなかった場合
                         if (prevSkipMode !== void) {
-                            skipMode = 5;
+                            skipMode = 6;
                         } else {
                             if(st == runst && clickSkipEnabled && skipMode == 0)
   						    {
@@ -4975,7 +5116,7 @@ class KAGWindow extends Window
                         }
                     } else {
                         if (prevSkipMode !== void) {
-                            skipMode = 5;
+                            skipMode = 6;
                         }
                     }
 				}
@@ -5019,11 +5160,19 @@ class KAGWindow extends Window
 
 	function processKeys(key, shift)
 	{
+        if (shift == ssAlt && key == VK_LEFT) {
+            onSkipToPrevLabelMenuItemClick();
+            return;
+        } else if (shift == ssAlt && key == VK_RIGHT) {
+            onSkipToNextLabelMenuItemClick();
+            return;
+        }
+
         // CONTROL によるスキップ処理
         if(key == VK_CONTROL) {
             var sg = getKeyState;
             if(sg(VK_CONTROL)){
-                if (conductor.status != conductor.mStop && clickSkipEnabled && skipMode != 4) {
+                if (conductor.status != conductor.mStop && clickSkipEnabled && skipMode < 4) {
                     skipToStop2(); // まだskipMode 4に入っていない場合は早送りモードに入る
                 }
             }
@@ -5116,7 +5265,7 @@ class KAGWindow extends Window
 				if((shift & ssRepeat) && clickSkipEnabled)
 				{
 					// キーリピート
-					if(skipMode != 4 && skipKeyRepressed)
+					if(skipMode < 4 && skipKeyRepressed)
 						skipToStop2(); // まだskipMode 4に入っていない場合は早送りモードに入る
 					// skipKeyRepressed をチェックするのは
 					// 連続してキーリピートが発生しているときに
@@ -5931,9 +6080,10 @@ class KAGWindow extends Window
     var noErOnce;    // 画面消去処理を１回なしにする
     var autoIndent;  // 「『で自動的にインデントする
     var afterPage;   // 改ページ直後
-    var emptyLine;   // まだ行が空
-    var prevEmptyLine;   // 前の空行状態
-    var nameMode;    // 名前処理モード ※行単位で完結するので保存の必要なし
+    var emptyLine;     // まだ行が空
+    var prevEmptyLine; // 前の空行状態
+
+    var nameMode;    // 名前処理モード
     var afterName;   // 名前処理の直後
     var nameStr;     // 現在の名前
     var nameDisp;    // 現在の表示名
@@ -6038,6 +6188,9 @@ class KAGWindow extends Window
         }
     }
 
+    /**
+     * 画面消去処理の挿入
+     */
     function entryEr() {
         if (emptyLine && !erAfterPage) {
             if (!noErOnce) {
@@ -6047,6 +6200,9 @@ class KAGWindow extends Window
         }
     }
 
+    /**
+     * 指定したタグを次回に割り込み実行させる
+     */
     function insertTag(name, elm) {
         var e = %[];
         if (elm !== void) {
@@ -6281,6 +6437,7 @@ class KAGWindow extends Window
                   
     autolabelmode : function(elm) {
         autoLabelMode = elm.mode;
+        autoLabelType = elm.type;
         return 0;
     } incontextof this,
 
@@ -7771,7 +7928,7 @@ class KAGWindow extends Window
             prevSkipMode = skipMode;
             if (skipMode) {
                 // 既にスキップしてた場合は停止できないスキップ状態にする
-                skipMode = 5;
+                skipMode = 6;
             }
         }
         return 0;
@@ -7793,14 +7950,23 @@ class KAGWindow extends Window
     autolabel : function(elm)
 	{
         // 自動ラベル処理用特殊タグ
-        // 通常の KAG からよぶことはない。pending 処理をつかって
-        // 行頭に擬似的に挿入される
-
-        // 今のスタックをつむ
-        conductor.callLabel("");
-        // 自動ラベル用のシナリオの強制呼び出し
-        conductor.loadScenario("autolabel.ks");
-        conductor.goToLabel("*autoLabelLabel");
+        // 通常の KAG からよぶことはない。
+        // 改ページ処理によって行頭に擬似的に挿入される
+        switch (autoLabelType) {
+        case 0:
+            // 間接ラベル方式で保存
+            conductor.callLabel("");
+            conductor.loadScenario("autolabel.ks");
+            conductor.goToLabel("*autoLabelLabel");
+            break;
+        case 1:
+            // 行指定モードで保存処理
+            pushHistoryOfStore();
+            storeFlags(true);
+            storeLabelPassed = true;
+            setMenuAccessibleAll();
+            break;
+        }
         return 0;
 	} incontextof this,
 
@@ -8237,10 +8403,79 @@ class KAGWindow extends Window
             initLog();
         }
     }
+
+    // -------------------------------------------------------------
+    
+    /**
+     * デバッグ窓表示内容の更新
+     */
+    function updateDebugInfo() {
+        if (debugwin.visible) {
+            var title = "%06d:%s %s".sprintf(conductor.curLine, conductor.curStorage, conductor.curLabel);
+            debugwin.fillRect(0, 0, debugwin.width, debugwin.height, 0xa0000000);
+            debugwin.drawText(10, 10, title , 0xffffff);
+            debugwin.drawText(10, 30, conductor.curLineStr, 0xffffff);
+        }
+    }
+
+    /**
+     * デバッグ窓の ON/OFF
+     */
+    function onDebugWinMenuItemClick(sender)
+	{
+        debugwin.visible = !debugwin.visible;
+        if(typeof this.debugWinMenuItem != "undefined")
+            debugWinMenuItem.checked = debugwin.visible;
+        if (debugwin.visible) {
+            updateDebugInfo();
+        }
+        saveSystemVariables();
+	}
+
+    // -------------------------------------------------------------
+
+    // 外部制御機構
+    var debugControl;
+
+    // デバッグ制御可能かどうかの判定
+    function canDebugControl() {
+        if (debugControl === void) {
+            if (typeof global.wmrStart != "undefined") {
+                wmrStart(this);
+                debugControl = true;
+            } else {
+                debugControl = false;
+            }
+        }
+        dm("デバッグ制御判定:" + debugControl);
+        return debugControl;
+    }
+
+    // 外部制御
+    function onCopyData(msg) {
+        if (debugControl) {
+            // タブ区切り
+            var args = msg.split("\t");
+            if (autoLabelSaveMode) {
+                if (args[0] == "jump") {
+                    try {
+                        loadBookMarkFromFile(getBookMarkFileNameAtLabel(args[1], args[2]));
+                        if (args[3] == "next") {
+                            skipToLabel();
+                        }
+                    } catch (e) {
+                        System.inform("該当ファイル＆ラベルはロードできませんでした " + args[1] + ":" + args[2]);
+                    }
+                }
+            }
+        }
+    }
+    
+    // -------------------------------------------------------------
+    
+    // 全鑑賞モード （一部システムがフラグとしてのみ利用）
+    var allseen = false;
 }
-
-
-
 
 
 // TJS スクリプトはここで終わり
