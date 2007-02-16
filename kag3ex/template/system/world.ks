@@ -413,8 +413,8 @@ class KAGEnvImage {
     
     // 画面更新設定
     var trans;
-	var msgoff;
-	var charoff;
+	var msgoff;  // メッセージ窓消去指定
+    var charoff; // キャラクタ表示消去指定
     
     // フェード指定のデフォルト値
     property fadeValue {
@@ -721,7 +721,7 @@ class KAGEnvImage {
     function setShow(show, elm) {
         if (show) {
             if (!isShow()) {
-                if (init !== void) {
+                if (init !== void && init.noPose !== void) {
                     disp = init.noPose ? FACE : BOTH;
                 } else {
                     disp = BOTH;
@@ -1050,23 +1050,26 @@ class KAGEnvImage {
             trans.time = 0;
         }
         trans.children = true;
-        // 処理を割り込ませる
-        trans.tagname = "trans";
-        kag.conductor.pendings.insert(0, %[ tagname : "syncmsg" ]);
+        // メッセージ窓状態同期
+        kag.insertTag("syncmsg");
         if (trans.transwait !== void) {
-            kag.conductor.pendings.insert(0, %[ tagname : "wait", time : (int)trans.time + (int)trans.transwait, trans:true ]);
+            // 時間待ち
+            kag.insertTag("wait", %[ time : (int)trans.time + (int)trans.transwait, trans:true ]);
         } else {
-            kag.conductor.pendings.insert(0, %[ tagname : "wt" ]);
+            // トランジション待ち
+            kag.insertTag("wt");
         }
-        kag.conductor.pendings.insert(0, trans);
+        // 実際のトランジション実行
+        kag.insertTag("trans", trans);
     }
 
     /**
-     * メッセージ窓消去処理
+     * トランジション前のメッセージ窓消去処理（トランジションが実行されない場合も呼び出す必要がある）
      */
     function hideMessage() {
         if (msgoff) {
-            kag.conductor.pendings.insert(0, %[tagname : "msgoff"]);
+            kag.insertTag("msgoff");
+            msgoff = void;
         }
     }
     
@@ -1150,7 +1153,6 @@ class KAGEnvImage {
         }
         hideMessage();
         trans = void;
-        msgoff = void;
         charoff = void;
     }
 }
@@ -2630,9 +2632,9 @@ class KAGEnvCharacter extends KAGEnvLevelLayer, KAGEnvImage {
             if (init.voiceFile === void) {
                 return void;
             }
-            var voiceBase = f.voiceBase !== void ? f.voiceBase : "";
-            if (f.name != sf.defaultName || f.family != sf.defaultFamily) {
-                // デフォルト以外の名前の場合
+            var voiceBase = kag.flags.voiceBase !== void ? kag.flags.voiceBase : "";
+            // 名前指定がある場合でデフォルト名でない場合は Nつきのファイル名で参照する
+            if (kag.flags.name !== void && (kag.flags.name != kag.defaultName || kag.flags.family != kag.defaultFamily)) {
                 var name = init.voiceFile.sprintf(voiceBase, voice, "N");
                 if (Storages.isExistentStorage(name)) {
                     return name;
@@ -2679,7 +2681,7 @@ class KAGEnvCharacter extends KAGEnvLevelLayer, KAGEnvImage {
      */
     function onStartVoice() {
         //dm("ボイス開始ボリューム制御開始");
-        if (kag.sflags.bgmdown && !env.kag.skipMode) {
+        if (kag.bgmdown && !env.kag.skipMode) {
             kag.bgm.voldown = true;
         }
     }
@@ -3023,7 +3025,7 @@ class KAGEnvSE {
     function play(param, elm) {
         if (param !== void) {
             name = param;
-            if (kag.skipMode<3 || elm.loop || !sf.nosewhenskip) {
+            if (kag.skipMode<3 || elm.loop || !kag.nosewhenskip) {
                 var time = +elm.time;
                 if (time > 0)  {
                     kag.se[id].fadeIn(%[ storage:param, loop:elm.loop, time:time, start:elm.start]);
@@ -3377,8 +3379,9 @@ class KAGEnvironment extends KAGEnvImage {
         
         // KAG に自分をコマンドとして登録
         kag.tagHandlers["env"]        = this.tagfunc;
-        kag.tagHandlers["allchar"]   = this.allchar;
+        kag.tagHandlers["allchar"]    = this.allchar;
         kag.tagHandlers["alllayer"]   = this.alllayer;
+        kag.tagHandlers["allse"]      = this.allse;
 
         kag.tagHandlers["begintrans"] = this.beginTrans;
         kag.tagHandlers["endtrans"]   = this.endTrans;
@@ -3778,7 +3781,6 @@ class KAGEnvironment extends KAGEnvImage {
         }
         hideMessage();
         trans = void;
-        msgoff = void;
         charoff = void;
         return ret;
     }
@@ -4188,7 +4190,6 @@ class KAGEnvironment extends KAGEnvImage {
         }
         hideMessage();
         trans = void;
-        msgoff = void;
         charoff = void;
     }
 
@@ -4230,6 +4231,20 @@ class KAGEnvironment extends KAGEnvImage {
         names.assign(layers);
         for (var i=0; i<names.count; i+= 2) {
             ret = names[i+1].tagfunc(elm);
+        }
+        return ret;
+    }
+
+    /**
+     * 全SEにコマンド実行
+     * @param elm 引数
+     */
+    function allse(elm) {
+        ret = void;
+        for (var i=0;i<ses.count;i++) {
+            if (ses[i].name !== void) {
+                ret = ses[i].tagfunc(elm);
+            }
         }
         return ret;
     }
@@ -4490,7 +4505,7 @@ class KAGEnvironment extends KAGEnvImage {
 
         ret = void;
         
-        if (kag.sflags.voicecut) {
+        if (kag.voicecut && !kag.voicecutpage) {
             stopAllVoice();
         }
 
@@ -4570,11 +4585,9 @@ class KAGEnvironment extends KAGEnvImage {
                 }
 
                 // ボイス再生処理の先送り
-                var e = %[];
-                (Dictionary.assign incontextof e)(elm, false);
-                e.tagname = "dispnameVoice";
-                kag.conductor.pendings.insert(0, e);
+                kag.insertTag("dispNameVoice", elm);
 
+                // 表情変更用トランジション導入
                 beginTransition(%[ method: "crossfade", time: faceFadeTime]);
 
             } else {
@@ -4674,9 +4687,6 @@ class KAGEnvironment extends KAGEnvImage {
      * 行待ち終了後に呼び出される処理
      */
     function afterline(elm) {
-        if (kag.sflags.voicecutpage) {
-            stopAllVoice();
-        }
         if (kag.historyWriteEnabled) {
             kag.historyLayer.clearAction();
         }
@@ -4687,7 +4697,7 @@ class KAGEnvironment extends KAGEnvImage {
      * ページ処理後に呼び出される処理
      */
     function afterpage(elm) {
-        if (kag.sflags.voicecutpage) {
+        if (kag.voicecut && kag.voicecutpage) {
             stopAllVoice();
         }
         if (kag.historyWriteEnabled) {
