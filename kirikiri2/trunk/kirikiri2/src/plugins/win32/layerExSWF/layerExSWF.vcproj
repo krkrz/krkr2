@@ -40,7 +40,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..;..\ncbind;cairo\src"
+				AdditionalIncludeDirectories="..;..\ncbind;cairo\src;tu-testbed"
 				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;LAYEREXSWF_EXPORTS"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -118,7 +118,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalIncludeDirectories="..;..\ncbind;cairo\src"
+				AdditionalIncludeDirectories="..;..\ncbind;cairo\src;tu-testbed"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;LAYEREXSWF_EXPORTS"
 				RuntimeLibrary="2"
 				UsePrecompiledHeader="0"
@@ -181,11 +181,11 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
-				RelativePath=".\layerExSWF.def"
+				RelativePath=".\layerExSWF.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\layerExSWF.cpp"
+				RelativePath=".\layerExSWF.def"
 				>
 			</File>
 			<File
