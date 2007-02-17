@@ -30,6 +30,26 @@ public:
 	 * •`‰æƒeƒXƒg
 	 */
 	void drawTest(double x, double y, double w, double h);
+
+	// --------------------------------------------------
+	// SWF ŠÖŒWî•ñ
+	// --------------------------------------------------
+	
+	float	s_scale;
+	bool	s_antialiased;
+	int	    s_bit_depth;
+	bool	s_background;
+	bool	s_measure_performance;
+	bool	s_event_thread;
+
+	int s_total_tags;
+	int s_loaded_tags;
+	
+	int movie_version;
+	int movie_width;
+	int movie_height;
+	float movie_fps;
+	
 };
 
 #endif
