@@ -2,9 +2,9 @@
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="8.00"
-	Name="layerExSWF"
+	Name="gameswf"
 	ProjectGUID="{CFCFDE56-5A0B-40CC-BD8C-23FD79E53E47}"
-	RootNamespace="layerExSWF"
+	RootNamespace="gameswf"
 	Keyword="Win32Proj"
 	>
 	<Platforms>
@@ -63,7 +63,7 @@
 				Name="VCLinkerTool"
 				OutputFile=".\..\..\..\..\bin\win32\plugin\$(ProjectName).dll"
 				LinkIncremental="2"
-				ModuleDefinitionFile="layerExSWF.def"
+				ModuleDefinitionFile="gameswf.def"
 				GenerateDebugInformation="true"
 				SubSystem="0"
 				TargetMachine="1"
@@ -139,7 +139,7 @@
 				Name="VCLinkerTool"
 				OutputFile=".\..\..\..\..\bin\win32\plugin\$(ProjectName).dll"
 				LinkIncremental="1"
-				ModuleDefinitionFile="layerExSWF.def"
+				ModuleDefinitionFile="gameswf.def"
 				GenerateDebugInformation="true"
 				SubSystem="2"
 				OptimizeReferences="2"
@@ -181,15 +181,23 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
-				RelativePath=".\layerExSWF.cpp"
+				RelativePath=".\gameswf.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\layerExSWF.def"
+				RelativePath=".\gameswf.def"
+				>
+			</File>
+			<File
+				RelativePath=".\layerExCairo.cpp"
 				>
 			</File>
 			<File
 				RelativePath="..\ncbind\ncbind.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\SWFMovie.cpp"
 				>
 			</File>
 			<File
@@ -203,7 +211,19 @@
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
 			<File
+				RelativePath=".\layerExBase.hpp"
+				>
+			</File>
+			<File
+				RelativePath=".\layerExCairo.hpp"
+				>
+			</File>
+			<File
 				RelativePath="..\ncbind\ncbind.hpp"
+				>
+			</File>
+			<File
+				RelativePath=".\SWFMovie.hpp"
 				>
 			</File>
 		</Filter>
