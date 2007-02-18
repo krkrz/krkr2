@@ -50,12 +50,11 @@ NCB_REGISTER_CLASS(登録するクラス名) {
 
 
 　▼NCB_REGISTER_CLASS(Class) { ... }
+　▼NCB_REGISTER_CLASS_DIFFER(Name, Class) { ... }
 
-Class を TJSグローバル空間に登録します。
-Class がそのままグローバル空間上での名前となります。
-別名にしたい場合はあらかじめ typedef で別名にしてから登録します。
-同じクラスの多重登録はエラーになります。
-
+Class を TJSグローバル空間(Name or Class)に登録します。
+NCB_REGISTER_CLASS では Class が，NCB_REGISTER_CLASS_DIFFERでは Name が
+グローバル空間上での名前となります。同じクラスの多重登録はエラーになります。
 
 
 以下の NCB_{ CONSTRUCTOR, METHOD*, PROPERTY* }マクロは
@@ -87,12 +86,26 @@ NCB_METHOD(Method) は NCB_METHOD_DIFFER(Method, Method) と等価です。
 
 　　▼NCB_METHOD_DETAIL(Name, Type, ReturnType, Method, (arg1,arg2, ...));
 
-引数や返り値を指定してクラスメソッド Method を Name という名前で登録します。
+引数や返り値を指定してメソッド Method を Name という名前で登録します。
+対象クラス内のメソッドである場合は ClassT::Method と記述して渡してください。
+（Method は対象クラス外の static なメソッドも渡せます。）
+
 Type はクラスメソッドのタイプで，
 	Class	普通のクラスメソッド
 	Const	const なクラスメソッド（ReturnType Method(arg...) const;）
 	Static	static なクラスメソッド
 の 3つのうちどれかを記述します。
+
+
+　　▼NCB_METHOD_PROXY(Name, Method);
+　　▼NCB_METHOD_PROXY_DETAIL(Name, ...); // METHOD_DETAILと同じ
+
+クラス外のstatic関数をクラスメソッドとして振舞わせるよう登録します。
+その関数の一番目の引数は必ずそのクラスのインスタンスポインタ型にします。
+これに this 相当の値が渡り，TJSから渡される残りの引数はその後に並べます。
+
+既存のライブラリを登録するときに，ライブラリに手を加えず
+何らかの特殊な処理を入れたいなどの場合で有効です。
 
 
 　　▼NCB_METHOD_RAW_CALLBACK(Name, Callback, Flag);
@@ -120,6 +133,18 @@ _RO, _WO は読み込み専用，書き込み専用プロパティを作るときに使います。
 
 Setter/Getterのメソッド型のチェックが甘いので
 指定するメソッドには注意してください。
+
+　　▼NCB_PROPERTY_DETAIL   (Name, Type, ReturnType, Method, (args, ...),
+　　                               Type, ReturnType, Method, (args, ...));
+　　▼NCB_PROPERTY_DETAIL_RO(Name, Type, ReturnType, Method, (args, ...));
+　　▼NCB_PROPERTY_DETAIL_RW(Name, Type, ReturnType, Method, (args, ...));
+
+関数の型を指定してプロパティを登録します。
+
+　　▼NCB_PROPERTY_PROXY,_RO,_WO
+　　▼NCB_PROPERTY_PROXY_DETAIL,_RO,_WO
+
+NCB_METHOD_PROXY のプロパティ版です。
 
 
 
@@ -255,8 +280,7 @@ V2Unlink時：
 
 ・tTJSVariantType tTJSVariant::Type() は何故 const メソッドでないのか
 　const_cast使うハメになって敗北気分
-
-
+	⇒修正されましたが，従来互換重視のため結局使えない（涙）
 
 
 
@@ -266,4 +290,6 @@ V2Unlink時：
 ・NCB_SET_CONVERTOR テスト
 ・deleteされないアダプタと REGISTER_INSTANCE
 ・Attach時に既存のメソッドがあった場合の処理
-
+・オーバーロードと引数の省略をサポートするか？
+・メソッドが呼ばれる前後のフックを記述するマクロ
+	⇒ncbNativeClassMethodBase::invokeHookClass, invokeHookAll

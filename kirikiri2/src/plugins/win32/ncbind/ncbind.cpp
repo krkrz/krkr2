@@ -6,7 +6,7 @@
 
 //--------------------------------------
 int WINAPI
-DllEntryPoint(HINSTANCE hinst, unsigned long reason, void* lpReserved)
+DllEntryPoint(HINSTANCE /*hinst*/, unsigned long /*reason*/, void* /*lpReserved*/)
 {
 	return 1;
 }
