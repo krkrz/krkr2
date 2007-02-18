@@ -1,0 +1,53 @@
+Debug.controller.visible = true;
+Debug.console.visible = true;
+var dm = Debug.message;
+
+Plugins.link("Magick++.dll");
+
+// バージョン
+dm(MagickPP.version);
+
+// サポートされるフォーマット
+var info = MagickPP.supports;
+for (var i = 0; i < info.count; i++) {
+	var c = info[i];
+	dm("%03d:".sprintf(i+1) +
+	   (c.isReadable   ? "R" : "r") +
+	   (c.isWritable   ? "W" : "w") +
+	   (c.isMultiFrame ? "M" : "m") +
+	   ": " + c.name + " : " + c.description);
+}
+invalidate info;
+
+// Geometry
+var geom = new MagickPP_Geometry("10x10!");
+dm(geom.width + "x" + geom.height + 
+   (geom.xNegative ? "-" : "+") + geom.xOff +
+   (geom.yNegative ? "-" : "+") + geom.yOff);
+dm(geom.string);
+
+// Color
+var col = new MagickPP_Color();
+col.redQuantum = 127;
+col.blueQuantum = 0;
+col.greenQuantum = 0;
+dm(col.string);
+col.red = 21.0;
+col.blue = 1.0;
+col.green = 1.0;
+dm(col.red, col.green, col.blue);
+dm(col.string);
+//col.red = 1.0;
+//col.ble = 0.5;
+//col.green = 0.25;
+//dm(col.string);
+
+
+
+
+/*
+var img = new MagickPP_Image();
+img.read(@"C:/hoge.jpg");
+img.resize(geom);
+img.write(@"C:/hoge.png");
+*/
