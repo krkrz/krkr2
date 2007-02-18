@@ -123,7 +123,7 @@ template <>           struct MC::tMethodHasResult<void> { enum { HasResult = fal
 #define INSTANCEFACTORY_IMPL \
 	template <class FncT                                 , class ClassT/**/ FOREACH_COMMA /**/ FOREACH_COMMA_EXT(MCIMPL_TMPL_ARGS_EXT) >                 \
 		struct MC::tInstanceFactoryImpl<                         ClassT,     MC::tMethodArgs < FOREACH_COMMA_EXT(MCIMPL_METH_ARGS_EXT) >, FncT > {       \
-			static inline ClassT* Factory(FncT io) { return new ClassT                     (   FOREACH_COMMA_EXT(MCIMPL_READ_ARGS_EXT)); }               \
+			static inline ClassT* Factory(FncT io) { (void)io; return new ClassT           (   FOREACH_COMMA_EXT(MCIMPL_READ_ARGS_EXT)); }               \
 		}
 #define METHODRESOLVER_SPECIALIZATION(cls, cnst) \
 	template <         typename ResultT /**/               cls ## _DEF /**/ FOREACH_COMMA /**/ FOREACH_COMMA_EXT(MCIMPL_TMPL_ARGS_EXT) >                     \
@@ -146,7 +146,7 @@ template <>           struct MC::tMethodHasResult<void> { enum { HasResult = fal
 
 #define MCIMPL_VOID_DEF
 #define MCIMPL_VOID_REF /*                 */void
-#define MCIMPL_VOID_RESULT(io)
+#define MCIMPL_VOID_RESULT(io) /*          */(void)io;
 #define MCIMPL_NONVOID_DEF /*              */,typename ResultT
 #define MCIMPL_NONVOID_REF /*              */ResultT
 #define MCIMPL_NONVOID_RESULT(io) /*       */io = 

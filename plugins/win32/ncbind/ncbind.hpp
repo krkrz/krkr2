@@ -36,7 +36,29 @@ struct ncbTypedefs {
 	typedef tTJSNativeClassForPlugin  ClassObjectT;
 
 	/// 型の受け渡しで使用
-	template <typename T> struct Tag {};
+	template <typename T> struct Tag { typedef T Type; };
+
+	/// 場合わけで使用
+	template <int  N> struct NumTag  { enum { n = N }; };
+	template <bool B> struct BoolTag { enum { b = B }; };
+
+	// tTJSVariant::Type() ラッパ (ここでいいのか微妙だけど)
+	static inline tTJSVariantType GetVariantType(tTJSVariant const &var) { return (const_cast<tTJSVariant*>(&var))->Type(); }
+//	static inline tTJSVariantType GetVariantType(tTJSVariant &var)       { return var.Type(); }
+
+	// コールバック型
+	typedef tTJSNativeClassMethodCallback CallbackT;
+
+	// インスタンスに変換して渡すコールバック
+	template <class T> 
+	struct CallbackWithInstance {
+		typedef tjs_error (TJS_INTF_METHOD    *Type)(tTJSVariant *result, tjs_int numparams, tTJSVariant **param, T *nativeInstance);
+	};
+
+	template <class A, class B> struct TypeEqual      { enum { NotEqual, Result = false }; };
+	template <class A>          struct TypeEqual<A,A> { enum {    Equal, Result = true  }; };
+	template <bool F, typename ERR> struct TypeAssert            { typedef void Result; };
+	template <typename ERR>         struct TypeAssert<true, ERR> { typedef typename ERR::CompileError Result; };
 };
 
 ////////////////////////////////////////
@@ -232,10 +254,19 @@ struct ncbTypeConvertor {
 	template <typename T> struct ToPointer<T const*>  { static T* Get(T const *t) { return const_cast<T*>( t); } };
 
 	/// ポインタ⇒修飾子変換
-	template <typename T> struct ToTarget             { static T  Get(T *t) { return T(*t); } };
-	template <typename T> struct ToTarget<T&>         { static T& Get(T *t) { return   *t; } };
-	template <typename T> struct ToTarget<T*>         { static T* Get(T *t) { return    t; } };
+	template <typename T> struct ToTarget             { static T& Get(T *t) { return *t; } };
+	template <typename T> struct ToTarget<T&>         { static T& Get(T *t) { return *t; } };
+	template <typename T> struct ToTarget<T*>         { static T* Get(T *t) { return  t; } };
 
+	/// const外し
+	template <typename T> struct NonConst             { typedef T  Type; };
+	template <typename T> struct NonConst<const T>    { typedef T  Type; };
+	template <typename T> struct NonConst<const T&>   { typedef T& Type; };
+	template <typename T> struct NonConst<const T*>   { typedef T* Type; };
+
+	/// reference 外し
+	template <typename T> struct NonReference         { typedef T Type; };
+	template <typename T> struct NonReference<T&>     { typedef T Type; };
 
 	// 直コピー動作
 	struct DirectCopy {
@@ -323,6 +354,11 @@ struct ncbTypeConvertor {
 #define NCB_TYPECONV_SRCMAP_SET(type, conv, mod) NCB_TYPECONV_MAPSET(true,  type, conv, mod)
 #define NCB_TYPECONV_DSTMAP_SET(type, conv, mod) NCB_TYPECONV_MAPSET(false, type, conv, mod)
 
+/// DirectCopy動作としてマップに登録
+#define NCB_TYPECONV_DIRECT(type) \
+	NCB_TYPECONV_SRCMAP_SET(type, ncbTypeConvertor::DirectCopy, false); \
+	NCB_TYPECONV_DSTMAP_SET(type, ncbTypeConvertor::DirectCopy, false)
+
 /// Cast動作としてマップに登録
 #define NCB_TYPECONV_CAST(type, cast) \
 	NCB_TYPECONV_SRCMAP_SET(type, ncbTypeConvertor::CastCopy<cast>, false); \
@@ -360,7 +396,7 @@ struct ncbVariatToNChar {
 	template <typename DST>
 	inline void operator()(DST &dst, tTJSVariant const &src) {
 		// なぜ tTJSVariant::Type() は const メソッドでないのか…
-		if ((const_cast<tTJSVariant*>(&src))->Type() == tvtString) {
+		if (ncbTypedefs::GetVariantType(src) == tvtString) {
 			tTJSString s(src.AsStringNoAddRef());
 			tjs_int len = s.GetNarrowStrLen();
 
@@ -384,6 +420,40 @@ NCB_TYPECONV_NARROW_STRING(         char const*);
 NCB_TYPECONV_NARROW_STRING(  signed char const*);
 NCB_TYPECONV_NARROW_STRING(unsigned char const*);
 
+/// std::stringなどを c_str() で受け渡す
+template <class StringT>
+struct ncbStringConvertor {
+	typedef ncbTypedefs      DefsT;
+	typedef ncbTypeConvertor ConvT;
+	typedef DefsT::NumTag<sizeof(typename StringT::value_type)> SizeTagT;
+
+	template <class STR>
+	inline void operator()(tTJSVariant &dst, STR const &src) const {
+		dst = (ConvT::ToPointer<STR const&>::Get(src))->c_str();
+	}
+	template <class STR>
+	inline void operator()(STR &dst, tTJSVariant const &src) {
+		if (ncbTypedefs::GetVariantType(src) == tvtString) {
+			tTJSString str(src.AsStringNoAddRef());
+			set(str, SizeTagT());
+		}
+		dst = ConvT::ToTarget<STR>::Get(&_temp);
+	}
+	inline void set(tTJSString const &str, DefsT::NumTag<sizeof(tjs_nchar)>) { // for Narrow char
+		tjs_int len = str.GetNarrowStrLen();
+		tjs_nchar tmp[len+1];
+		str.ToNarrowStr(tmp, len+1);
+		_temp.assign(tmp, len);
+	}
+	inline void set(tTJSString const &str, DefsT::NumTag<sizeof(tjs_char)>) { // for Wide char
+		_temp = str.c_str();
+	}
+private:
+	StringT _temp;
+};
+#define NCB_TYPECONV_STL_STRING(type) \
+	NCB_TYPECONV_SRCMAP_SET(type, ncbStringConvertor<type>, true); \
+	NCB_TYPECONV_DSTMAP_SET(type, ncbStringConvertor<type>, true)
 
 
 /// ネイティブインスタンスアダプタで Boxing/Unboxing する
@@ -393,7 +463,7 @@ struct ncbNativeObjectBoxing {
 	/// Boxing
 	struct Boxing {
 		template <typename SRC>
-		inline void operator ()(VarT &dst, SRC const &src) const {
+		inline void operator ()(VarT &dst, SRC &src) const {
 			typedef SRC                                     TargetT;
 			typedef typename ConvT::Stripper<TargetT>::Type ClassT;
 			typedef ncbInstanceAdaptor<ClassT>              AdaptorT;
@@ -441,6 +511,15 @@ struct ncbNativeObjectBoxing {
 /// 返り値なしの場合のダミーの TOVARIANT を登録
 NCB_SET_TOVARIANT_CONVERTOR(void, struct {});
 
+// iTJSDispatch2*を返り値にする場合
+struct ncbDispatchToVariant {
+	inline void operator ()(tTJSVariant &dst, iTJSDispatch2* &src) const {
+		dst = tTJSVariant(src, src);
+		src->Release();
+	}
+};
+NCB_SET_TOVARIANT_CONVERTOR(iTJSDispatch2*, ncbDispatchToVariant);
+
 
 /*
 	型変換を直で書きたい時は
@@ -478,9 +557,18 @@ struct ncbNativeClassMethodBase : public tTJSDispatch {
 	typedef DefsT::FlagsT            FlagsT;
 	typedef DefsT::InstanceTypeT     TypesT;
 	typedef ncbIMethodObject const*  iMethodT;
+	typedef tTJSNativeInstanceType   MethodTypeT;
 
 	/// constructor
-	ncbNativeClassMethodBase(NameT n) : _name(n) { _imethod = this; } //< クラス名を_nameに保持 (Function or Property)
+	ncbNativeClassMethodBase(MethodTypeT t) : _type(t), _name(0) {
+		_imethod = this;
+		switch (t) { // タイプ名を設定
+//		case nitClass:    _name = TJS_W("Class");    break; // クラスになることはありえない
+		case nitMethod:   _name = TJS_W("Function"); break;
+		case nitProperty: _name = TJS_W("Property"); break;
+		default: break;
+		}
+	}
 	~ncbNativeClassMethodBase() {}
 
 	/// IsInstanceOf 実装
@@ -489,11 +577,12 @@ struct ncbNativeClassMethodBase : public tTJSDispatch {
 		const tjs_char *classname, iTJSDispatch2 *objthis)
 	{
 		// 自分自身(membername==0)で比較クラス名が_nameならTRUE，それ以外は丸投げ
-		return (!membername && !TJS_stricmp(classname, _name)) ? TJS_S_TRUE
+		return (!membername && _name && !TJS_stricmp(classname, _name)) ? TJS_S_TRUE
 			: BaseT::IsInstanceOf(flag, membername, hint, classname, objthis);
 	}
 
 private:
+	MethodTypeT const _type;
 	NameT _name;
 
 	// privateで隠蔽してみる
@@ -501,7 +590,7 @@ private:
 
 	//--------------------------------------
 	/// TJSNativeClassRegisterNCM に渡すタイプ
-	virtual TypesT GetType() const { return nitMethod; }
+	virtual TypesT GetType() const { return _type; }
 
 	/// TJSNativeClassRegisterNCM に渡すフラグ
 	virtual FlagsT GetFlags() const { return 0; }
@@ -546,7 +635,7 @@ private:
 
 protected:
 	template <typename T> 
-	struct flags { enum { Flags = flagsSelector<typename traits<T>::ClassT>::Flags }; };
+	struct methodFlags { enum { Flags = flagsSelector<typename traits<T>::ClassT>::Flags }; };
 
 
 	//--------------------------------------
@@ -558,7 +647,11 @@ private:
 		typedef ncbTypeConvertor ConvT;
 		typedef typename     ConvT::SelectConvertorType<RES, VariantT>::Type ResultConvT;
 
-		template <typename T> struct ArgsExtor { typedef typename ConvT::SelectConvertorType<VariantT, T>::Type Type; };
+		template <typename T> struct TypeWrap           { typedef T        Type; static inline T        Restore(Type t) { return  t; } };
+		template <typename T> struct TypeWrap<T&>       { typedef T*       Type; static inline T&       Restore(Type t) { return *t; } };
+		template <typename T> struct TypeWrap<T const&> { typedef T const* Type; static inline T const& Restore(Type t) { return *t; } };
+
+		template <typename T> struct ArgsExtor { typedef typename ConvT::SelectConvertorType<VariantT, typename TypeWrap<T>::Type>::Type Type; };
 		typedef CallerT::tArgsExtract<ArgsExtor, ARGS, ARGC> ArgsConvT;
 		/* ArgsConvT は以下のように展開される：
 			struct ArgsConvT {
@@ -569,15 +662,16 @@ private:
 			}; */
 
 		/// constructor
-		paramsFunctor(VariantT *r, tjs_int n, VariantT const *const *p) : _result(r), _numparams(n), _param(p) {}
+		paramsFunctor(VariantT *r, tjs_int n, VariantT const *const *p) : _numparams(n), _result(r),_param(p) {}
 
 		/// 引数を NativeClassMethod へ引渡し
 		template <int N, typename T>
-		inline T operator ()(CallerT::tNumTag<N> const &index, CallerT::tTypeTag<T> const &type) {
-			T ret;
+		inline T operator ()(CallerT::tNumTag<N> const& /*index*/, CallerT::tTypeTag<T> const& /*type*/) {
+			typedef typename TypeWrap<T>::Type ParamT;
+			ParamT ret;
 			// N番目の ncbToValueConvertor を取り出して変換
-			(CallerT::tArgsSelect<ArgsConvT, N>::Get(_aconv))(ret, (_numparams >= N) ? *(_param[N-1]) : VariantT());
-			return ret;
+			(CallerT::tArgsSelect<ArgsConvT, N>::Get(_aconv))(ret, (_numparams >= N) ? *(_param[N - 1]) : VariantT());
+			return TypeWrap<T>::Restore(ret);
 		}
 
 		/// NativeClassMethod の返り値をresultへ格納
@@ -596,61 +690,22 @@ private:
 		VariantT             * _result;
 		VariantT const *const* _param;
 	};
-	/// メソッド型から paramsFunctor 型を決定するテンプレート
-	template <typename METHOD>
-	struct functor {
-		typedef paramsFunctor<
-			typename traits<METHOD>::ResultT,
-		/**/typename traits<METHOD>::ArgsT,
-		/**/traits<METHOD>::ArgsCount
-			> FunctorT;
+
+	// 先頭にインスタンスポインタを渡すPROXY METHODのファンクタ
+	template <class CLASS, typename RES, class ARGS, int ARGC>
+	struct paramsFunctorWithInstance : public paramsFunctor<RES, ARGS, ARGC> {
+		typedef                               paramsFunctor<RES, ARGS, ARGC> BaseT;
+		typedef CLASS            ClassT;
+		typedef tTJSVariant      VariantT;
+		paramsFunctorWithInstance(ClassT *inst, VariantT *r, tjs_int n, VariantT const *const *p) : BaseT(r, n+1, p-1), _inst(inst) {}
+		template <int N, typename T> inline T operator ()(CallerT::tNumTag<N> const &idx, CallerT::tTypeTag<T> const &tag) { return BaseT::operator ()(idx, tag); }
+		template <       typename T> inline T operator ()(CallerT::tNumTag<1> const &,    CallerT::tTypeTag<T> const &   ) { return _inst; }
+		template <typename ResultT>  inline void operator = (ResultT r) { return BaseT::operator =(r); }
+	private:
+		ClassT *_inst;
 	};
 
-	//--------------------------------------
-protected:
-	/// コンストラクタメイン実装
-	template <typename METHOD>
-	static inline tjs_error Constructor(DefsT::Tag<METHOD> const&, iTJSDispatch2 *objthis, tTJSVariant *result, tjs_int numparams, tTJSVariant const *const *param) {
-		typedef typename traits<METHOD>::ClassT ClassT;
-		typedef ncbInstanceAdaptor<ClassT> AdaptorT;
 
-		if (result) result->Clear();
-
-		// 引き数がひとつでかつvoidの場合はインスタンスを設定しない
-		if (numparams == 1 && const_cast<tTJSVariant*>(param[0])->Type() == tvtVoid) {
-			NCB_LOG_W("Constructor(void)");
-			return TJS_S_OK;
-		}
-		// 引き数の個数が少ない場合はエラー
-		if (numparams < traits<METHOD>::ArgsCount)
-			return TJS_E_BADPARAMCOUNT;
-
-		ClassT* instance;
-		{
-			// 引数受け渡しファンクタ
-			typename functor<METHOD>::FunctorT fnct(result, numparams, param);
-			// MethodCaller::Factory 呼び出し(ClassTのインスタンス作成)
-			instance = CallerT::Factory(fnct, CallerT::tTypeTag<METHOD>());
-			// paramsFunctor消滅させる
-		}
-		if (!instance) {
-			TVPThrowExceptionMessage(TJS_W("NativeClassInstance creation faild."));
-			return TJS_E_FAIL;
-		}
-
-		// エラー処理がどうなるのかよくわからんけど適当に（ぉ
-		tjs_error r = TJS_S_OK;
-		try {
-			if (!AdaptorT::SetNativeInstance(objthis, instance)) {
-				r = TJS_E_NATIVECLASSCRASH;
-				delete instance;
-			}
-		} catch (...) {
-			if (instance) delete instance;
-			throw;
-		}
-		return r;
-	}
 	//--------------------------------------
 private:
 	/// ネイティブインスタンスを取得するためのテンプレート（特殊化で上書きできるようにするため
@@ -685,52 +740,226 @@ private:
 	template <class T>
 	struct nativeInstanceGetter : public nativeInstanceGetterBase<T> {};
 
+	//--------------------------------------
+protected:
+	/// メソッド/コンストラクタ呼び出しにtry/catchを挟み込むためのヘルパテンプレート
+	template <bool  IsAny>  struct invokeHookAll   { template <typename T> static inline typename T::ResultT Do(T &t) { return t(); } };
+	template <class ClassT> struct invokeHookClass { template <typename T> static inline typename T::ResultT Do(T &t) { return invokeHookAll<T::Hook>::Do(t); } };
 
-	/// static/非staticの場合わけInvokeのためのテンプレート
-	template <class T>
-	struct invokeImpl {
-		/// 非staticの場合
+	//--------------------------------------
+protected:
+	// フックの引き数に渡すファンクタのベース（パラメータ保持）
+	struct doInvokeBase {
+		typedef tjs_error ResultT;
+		enum { Hook = true };
+
+		typedef tTJSVariant  * RetT;
+		typedef tjs_int        NumT;
+		typedef tTJSVariant ** ArgsT;
+		typedef iTJSDispatch2            *ObjT;
+		doInvokeBase(RetT r, NumT n, ArgsT p, ObjT o)
+			: _result(r), _numparams(n), _param(p), _objthis(o) { if (r) r->Clear(); }
+	protected:
+		RetT  const _result;
+		NumT  const _numparams;
+		ArgsT const _param;
+		ObjT  const _objthis;
+
+		/// メソッド型から paramsFunctor 型を決定するテンプレート
 		template <typename METHOD>
-		static inline tjs_error Invoke(METHOD const &m, iTJSDispatch2 *objthis, tTJSVariant *result, tjs_int numparams, tTJSVariant const *const *param) {
-			typedef T  ClassT;
-			typedef typename functor<METHOD>::FunctorT FunctorT;
-			typedef nativeInstanceGetter<ClassT> InstanceGetterT;
-
-			InstanceGetterT g;
-			ClassT *obj = g.Get(objthis);
-			if (TJS_SUCCEEDED(g.GetError())) {
-				// インスタンスを渡してクラスメソッドを実行
-				FunctorT fnct(result, numparams, param);
-				g.SetError(CallerT::Invoke(fnct, m, obj) ? TJS_S_OK : TJS_E_FAIL);
-			}
-			return g.GetError();
-		}
+		struct methodUtil {
+			typedef traits<METHOD>           TraitsT;
+			typedef typename TraitsT::ClassT ClassT;
+			enum {      ArgsCount = TraitsT::ArgsCount };
+			typedef paramsFunctor<
+				typename TraitsT::ResultT,
+			/**/typename TraitsT::ArgsT, ArgsCount > FunctorT;
+		};
 	};
+	// クラスメソッド呼び出しファンクタ
+	template <class REFCLASS, typename METHOD, typename METHODCLASS>
+	struct doInvoke : public doInvokeBase {
+		typedef METHOD MethodT;
+		typedef methodUtil<MethodT> UtilT;
+		typedef REFCLASS RefClassT;
+
+		typedef typename UtilT::ClassT ClassT;
+		typedef nativeInstanceGetter<ClassT> InstanceGetterT;
+
+		doInvoke(MethodT const &m, RetT r, NumT n, ArgsT p, ObjT o) : doInvokeBase(r, n, p, o), _m(m) {}
+		inline ResultT operator()() const {
+			// 引き数の個数が少ない場合はエラー
+			if (_numparams < UtilT::ArgsCount) return TJS_E_BADPARAMCOUNT;
+
+			// インスタンスポインタを取得
+			InstanceGetterT g;
+			ClassT *obj = g.Get(_objthis);
+			ResultT   r = g.GetError();
+			if (TJS_FAILED(r)) return r;
+
+			// インスタンスを渡してクラスメソッドを実行
+			typename UtilT::FunctorT fnct(_result, _numparams, _param);
+			return CallerT::Invoke(fnct, _m, obj) ? TJS_S_OK : TJS_E_FAIL;
+		}
+	private:
+		MethodT const &_m;
+	};
+	// staticメソッド呼び出しファンクタ
+	template <class REFCLASS, typename METHOD>
+	struct doInvoke<REFCLASS, METHOD, void> : public doInvokeBase {
+		typedef METHOD MethodT;
+		typedef methodUtil<MethodT> UtilT;
+		typedef REFCLASS RefClassT;
+
+		doInvoke(MethodT const &m, RetT r, NumT n, ArgsT p, ObjT o) : doInvokeBase(r, n, p, o), _m(m) {}
+		inline ResultT operator()() const {
+			// 引き数の個数が少ない場合はエラー
+			if (_numparams < UtilT::ArgsCount) return TJS_E_BADPARAMCOUNT;
+
+			typename UtilT::FunctorT fnct(_result, _numparams, _param);
+			return CallerT::Invoke(fnct, _m) ? TJS_S_OK : TJS_E_FAIL;
+		}
+	private:
+		MethodT const &_m;
+	};
+
+	// tTJSNativeClassMethodCallback な場合のファンクタ
+	template <class REFCLASS>
+	struct doInvoke<REFCLASS, tTJSNativeClassMethodCallback, void> : public doInvokeBase {
+		typedef tTJSNativeClassMethodCallback MethodT;
+		typedef REFCLASS RefClassT;
+
+		doInvoke(MethodT const &m, RetT r, NumT n, ArgsT p, ObjT o) : doInvokeBase(r, n, p, o), _m(m) {}
+		inline ResultT operator()() const {
+			return _m(_result, _numparams, _param, _objthis);
+		}
+	private:
+		MethodT const &_m;
+	};
+#if 0 //とりあえず保留
+	// インスタンスに変換つきコールバック な場合のファンクタ
+	template <class CLASS>
+	struct doInvoke<CLASS, typename DefsT::CallbackWithInstance<REFCLASS>::Type> : public doInvokeBase {
+		typedef /*          */typename DefsT::CallbackWithInstance<REFCLASS>::Type MethodT;
+		typedef tjs_error ResultT;
+		typedef CLASS     ClassT;
+		typedef ClassT RefClassT;
+		typedef nativeInstanceGetter<ClassT> InstanceGetterT;
+
+		doInvoke(MethodT const &m, RetT r, NumT n, ArgsT p, ObjT o) : doInvokeBase(r, n, p, o), _m(m) {}
+		inline ResultT operator()() const {
+			// インスタンスポインタを取得
+			InstanceGetterT g;
+			ClassT *obj = g.Get(_objthis);
+			ResultT   r = g.GetError();
+			if (TJS_FAILED(r)) return r;
+
+			return _m(_result, _numparams, _param, _objthis);
+		}
+	private:
+		MethodT const &_m;
+	};
+#endif
+
+	//////
+	// メソッドProxy呼び出しファンクタ
+	template <class REFCLASS, typename METHOD>
+	struct doProxy : public doInvokeBase {
+		typedef METHOD MethodT;
+		typedef methodUtil<MethodT> UtilT;
+		typedef REFCLASS RefClassT;
+		typedef REFCLASS ClassT;
+		typedef paramsFunctorWithInstance<ClassT,
+		/**/typename UtilT::TraitsT::ResultT,
+		/**/typename UtilT::TraitsT::ArgsT, UtilT::ArgsCount > FunctorT;
+
+		struct MustBeStaticMethod;
+		typedef typename DefsT::TypeAssert<!DefsT::TypeEqual<void, typename UtilT::ClassT>::Result, MustBeStaticMethod>::Result MethodCheck;
+
+		typedef nativeInstanceGetter<ClassT> InstanceGetterT;
+
+		doProxy(MethodT const &m, RetT r, NumT n, ArgsT p, ObjT o) : doInvokeBase(r, n, p, o), _m(m) {}
+		inline ResultT operator()() const {
+			// 引き数の個数が少ない場合はエラー
+			if (_numparams < UtilT::ArgsCount -1) return TJS_E_BADPARAMCOUNT;
+
+			// インスタンスポインタを取得
+			InstanceGetterT g;
+			ClassT *obj = g.Get(_objthis);
+			ResultT   r = g.GetError();
+			if (TJS_FAILED(r)) return r;
+
+			// インスタンスを渡してクラスメソッドを実行
+			FunctorT fnct(obj, _result, _numparams, _param);
+			return CallerT::Invoke(fnct, _m) ? TJS_S_OK : TJS_E_FAIL;
+		}
+	private:
+		MethodT const &_m;
+	};
+
+	//--------------------------------------
 protected:
 	/// メソッド呼び出し入り口
-	template <typename METHOD>
-	static inline tjs_error Invoke(METHOD const &m, iTJSDispatch2 *objthis, tTJSVariant *result, tjs_int numparams, tTJSVariant const *const *param) {
-		// 引き数の個数が少ない場合はエラー
-		if (numparams < traits<METHOD>::ArgsCount)
-			return TJS_E_BADPARAMCOUNT;
-
-		if (result) result->Clear();
-
-		// MethodCaller::Invoke 呼び出し(static/非static で場合わけ)
-		return invokeImpl<typename traits<METHOD>::ClassT>::Invoke(m, objthis, result, numparams, param);
+	template <typename InvokeT>
+	static inline tjs_error Invoke(InvokeT const &invoker) {
+		// メソッド呼び出し
+		return invokeHookClass<typename InvokeT::RefClassT>::Do(invoker);
 	}
-};
-/// invokeImpl 特殊化（ClassType が void なら static メソッド (MethodCaller仕様)
-template <>
-struct ncbNativeClassMethodBase::invokeImpl<void> {
-	/// staticメソッドをInvokeする場合
-	template <typename METHOD>
-	static tjs_error Invoke(METHOD const &m, iTJSDispatch2 *objthis, tTJSVariant *result, tjs_int numparams, tTJSVariant const *const *param) {
-		typename functor<METHOD>::FunctorT fnct(result, numparams, param);
-		return CallerT::Invoke(fnct, m) ? TJS_S_OK : TJS_E_FAIL; // 直呼びでOK
-	}
-};
+	template <class RefClassT, typename MethodT>
+	struct invokeSelector {
+		typedef doInvoke<RefClassT, MethodT, typename traits<MethodT>::ClassT> Type;
+		static inline FlagsT GetFlags() { return methodFlags<MethodT>::Flags; }
+	};
+	template <class RefClassT, typename MethodT>
+	struct proxySelector {
+		typedef doProxy< RefClassT, MethodT> Type;
+		static inline FlagsT GetFlags() { return 0; }
+	};
 
+
+	//////
+	// コンストラクタ呼び出しファンクタ
+	template <typename METHOD>
+	struct doConstruct : public doInvokeBase {
+		typedef METHOD MethodT;
+		typedef methodUtil<MethodT> UtilT;
+
+		typedef typename UtilT::ClassT ClassT;
+		typedef ClassT* ResultT;
+		typedef ncbInstanceAdaptor<ClassT> AdaptorT;
+		enum { ArgsCount = traits<MethodT>::ArgsCount };
+
+		doConstruct(RetT r, NumT n, ArgsT p, ObjT o) : doInvokeBase(r, n, p, o) {}
+		inline ResultT operator ()() const {
+			typename UtilT::FunctorT fnct(_result, _numparams, _param);
+			return CallerT::Factory(fnct, CallerT::tTypeTag<MethodT>());
+		}
+		inline tjs_error Construct() const {
+			// 引き数の個数が少ない場合はエラー
+			if (_numparams < UtilT::ArgsCount) return TJS_E_BADPARAMCOUNT;
+
+			// 自分自身のファンクタ呼び出し
+			ClassT* instance = 0;
+			if (!(instance = invokeHookClass<ClassT>::Do(*this))) {
+				TVPThrowExceptionMessage(TJS_W("NativeClassInstance creation faild."));
+				return TJS_E_FAIL;
+			}
+
+			// エラー処理がどうなるのかよくわからんけど適当に（ぉ
+			tjs_error r = TJS_S_OK;
+			try {
+				if (!AdaptorT::SetNativeInstance(_objthis, instance)) {
+					r = TJS_E_NATIVECLASSCRASH;
+					delete instance;
+				}
+			} catch (...) {
+				if (instance) delete instance;
+				throw;
+			}
+			return r;
+		}
+	};
+};
 /// ncbNativeClassMethodBase::flagsSelector特殊化(特殊化はクラス定義内には記述できないらしい)
        NCB_INNER_FLAGSELECTOR_SPECIALIZATION
 #undef NCB_INNER_FLAGSELECTOR_SPECIALIZATION
@@ -741,16 +970,15 @@ struct ncbNativeClassMethodBase::invokeImpl<void> {
 /// メソッド呼び出しクラステンプレート
 // 本来は TJSCreateNativeClassMethod（及び吉里吉里内のtTJSNativeClassMethod）を使用するところを
 // 自前で実装する(TJSCreateNativeClassMethodではstaticな関数しか呼べないのでメソッドへのポインタの保持が困難なため)
-template <typename METHOD>
+template <class RefClassT, typename METHOD,
+/*      */template <class, typename> class SELECTOR = ncbNativeClassMethodBase::invokeSelector> // doInvoke / doProxy の選択
 struct ncbNativeClassMethod : public ncbNativeClassMethodBase { 
 	typedef ncbNativeClassMethod ThisClassT;
 	typedef METHOD MethodT;
+	typedef SELECTOR<RefClassT, MethodT> SelectorT;
 
 	/// constructor
-	ncbNativeClassMethod(MethodT m)
-		: ncbNativeClassMethodBase(TJS_W("Function")), // TJSオブジェクト的には Function
-		  _method(m)
-	{
+	ncbNativeClassMethod(MethodT m) : ncbNativeClassMethodBase(nitMethod), _method(m) {
 		if (!_method) TVPThrowExceptionMessage(TJS_W("No method pointer."));
 	} 
 
@@ -766,7 +994,9 @@ struct ncbNativeClassMethod : public ncbNativeClassMethodBase {
 		if (!objthis) return TJS_E_NATIVECLASSCRASH;
 
 		// メソッド呼び出し
-		return Invoke(_method, objthis, result, numparams, param);
+		typedef typename SelectorT::Type InvokeT;
+		InvokeT const invoker(_method, result, numparams, param, objthis);
+		return Invoke(invoker);
 	}
 	/// factory
 	static iMethodT Create(MethodT m) { return (new ThisClassT(m))->GetIMethod(); }
@@ -776,7 +1006,12 @@ protected:
 
 private:
 	/// TJSNativeClassRegisterNCMフラグ
-	FlagsT GetFlags() const { return flags<MethodT>::Flags; }
+	FlagsT GetFlags() const { return SelectorT::GetFlags(); }
+};
+
+template <class RefClassT, typename METHOD>
+struct ncbNativeClassMethodProxyType {
+	typedef ncbNativeClassMethod<RefClassT, METHOD, ncbNativeClassMethodBase::proxySelector> Type;
 };
 
 ////////////////////////////////////////
@@ -787,8 +1022,7 @@ struct ncbNativeClassConstructor : public ncbNativeClassMethodBase {
 	typedef METHOD MethodT;
 
 	/// constructor
-	ncbNativeClassConstructor()
-		: ncbNativeClassMethodBase(TJS_W("Function")) {} // TJSオブジェクト的には Function
+	ncbNativeClassConstructor() : ncbNativeClassMethodBase(nitMethod) {}
 
 	/// FuncCall実装
 	tjs_error  TJS_INTF_METHOD FuncCall(
@@ -798,30 +1032,34 @@ struct ncbNativeClassConstructor : public ncbNativeClassMethodBase {
 		// 自分自身が呼ばれたのではない場合は丸投げ
 		if (membername) return BaseT::FuncCall(flag, membername, hint, result, numparams, param, objthis);
 
-		// コンストラクタ呼び出し
-		return Constructor(DefsT::Tag<MethodT>(), objthis, result, numparams, param); 
+		// 引き数がひとつでかつvoidの場合はインスタンスを設定しない
+		if ((numparams == 1) && (ncbTypedefs::GetVariantType(*param[0]) == tvtVoid)) {
+			NCB_LOG_W("Constructor(void)");
+			return TJS_S_OK;
+		}
+		// ネイティブインスタンス生成
+		doConstruct<MethodT> const factory(result, numparams, param, objthis);
+		return factory.Construct();
 	}
 
-	/// factory
+	/// iMethod factory
 	static iMethodT Create() { return (new ThisClassT())->GetIMethod(); }
-
-	/// TJSNativeClassRegisterNCMフラグ
-//	FlagsT GetFlags() const { return 0; }
-}; 
+};
 
 
 ////////////////////////////////////////
 
-template <typename GETTER, typename SETTER>
+template <class RefClassT, typename GETTER, typename SETTER,
+/*      */template <class, typename> class SELECTOR = ncbNativeClassMethodBase::invokeSelector> // doInvoke / doProxy の選択
 struct ncbNativeClassProperty : public ncbNativeClassMethodBase {
 	typedef ncbNativeClassProperty ThisClassT;
 	typedef GETTER GetterT;
 	typedef SETTER SetterT;
+	typedef SELECTOR<RefClassT, GetterT> GetterSelT;
+	typedef SELECTOR<RefClassT, SetterT> SetterSelT;
 
 	/// constructor
-	ncbNativeClassProperty(GetterT get, SetterT set)
-		: ncbNativeClassMethodBase(TJS_W("Property")), // TJSオブジェクト的には Property
-		  _getter(get), _setter(set) {} 
+	ncbNativeClassProperty(GetterT get, SetterT set) : ncbNativeClassMethodBase(nitProperty), _getter(get), _setter(set) {}
 
 	/// PropGet 実装
 	tjs_error TJS_INTF_METHOD PropGet(
@@ -836,7 +1074,9 @@ struct ncbNativeClassProperty : public ncbNativeClassMethodBase {
 		if (!objthis) return TJS_E_NATIVECLASSCRASH;
 
 		// メソッド呼び出し
-		return Invoke(_getter, objthis, result, 0, 0);
+		typedef typename GetterSelT::Type InvokeT;
+		InvokeT const get(_getter, result, 0, 0, objthis);
+		return Invoke(get);
 	}
 
 	/// PropSet 実装
@@ -853,7 +1093,9 @@ struct ncbNativeClassProperty : public ncbNativeClassMethodBase {
 		if (!param)   return TJS_E_FAIL;
 
 		// メソッド呼び出し
-		return Invoke(_setter, objthis, 0, 1, &param);
+		typedef typename SetterSelT::Type InvokeT;
+		InvokeT const set(_setter, 0, 1, const_cast<tTJSVariant**>(&param), objthis);
+		return Invoke(set);
 	}
 
 	/// factory
@@ -861,16 +1103,13 @@ struct ncbNativeClassProperty : public ncbNativeClassMethodBase {
 
 private:
 	/// Getter と Setter が同じクラスのメソッドかどうかを判定（違う場合はコンパイルエラー）
-	template <class T1, class T2> struct sameClassChecker;
-	template <class T>            struct sameClassChecker<T, T> { enum { OK }; };
-	enum { ClassCheck = sameClassChecker<
+	enum { COMPILE_ERROR_PropertyMethodMustBeSameClass = DefsT::TypeEqual<
 		typename traits<GetterT>::ClassT,
-		typename traits<SetterT>::ClassT >::OK
+		typename traits<SetterT>::ClassT >::Equal
 	};
 
 	/// TJSNativeClassRegisterNCMフラグ
-	FlagsT GetFlags() const { return flags<GetterT>::Flags; }
-	TypesT GetType()  const { return nitProperty; }
+	FlagsT GetFlags() const { return GetterSelT::GetFlags(); }
 
 protected:
 	/// プロパティメソッドへのポインタ
@@ -878,6 +1117,10 @@ protected:
 	SetterT const _setter;
 };
 
+template <class RefClassT, typename GETTER, typename SETTER>
+struct ncbNativeClassPropertyProxyType {
+	typedef ncbNativeClassProperty<RefClassT, GETTER, SETTER, ncbNativeClassMethodBase::proxySelector> Type;
+};
 
 ////////////////////////////////////////
 /// 生コールバック用
@@ -895,7 +1138,7 @@ struct ncbRawCallbackMethod<
 
 	/// constructor
 	ncbRawCallbackMethod(CallbackT m, FlagsT f)
-		: ncbNativeClassMethodBase(TJS_W("Function")), // TJSオブジェクト的には Function
+		: ncbNativeClassMethodBase(nitMethod), // TJSオブジェクト的には Function
 		  _callback(m), _flag(f)
 	{
 		if (!_callback) TVPThrowExceptionMessage(TJS_W("No callback pointer."));
@@ -931,6 +1174,9 @@ struct ncbRawCallbackMethod<
 protected:
 	CallbackT const _callback;
 	FlagsT    const _flag;
+
+private:
+	FlagsT    GetFlags()    const { return _flag; }
 };
 
 /// 従来の TJSCreateNativeClassMethod用 ncbIMethodObjectラッパ
@@ -956,170 +1202,200 @@ private:
 
 
 ////////////////////////////////////////
-/// 単体のネイティブファンクション
+/// プロパティ用 RawCallback
 
-// 場合わけ用ベース
-template <typename MethodT>
-struct ncbNativeFunctionBase : public ncbNativeClassMethodBase {
-	ncbNativeFunctionBase() : ncbNativeClassMethodBase(TJS_W("Function")) {}
-protected:
-	static inline tjs_error invokeSelect(MethodT m, tTJSVariant *result, tjs_int numparams, tTJSVariant **param, iTJSDispatch2 *objthis) {
-		return Invoke(m, objthis, result, numparams, param);
-	}
+// ncbRawCallbackMethod と AccessDenied を返すダミー型のセレクタ
+template <typename CallbackT>
+struct ncbRawCallbackPropertySelector {
+	typedef ncbRawCallbackMethod<CallbackT> Type;
 };
-// tTJSNativeClassMethodCallback なら直で呼ぶ
 template <>
-struct ncbNativeFunctionBase<tTJSNativeClassMethodCallback> : public ncbNativeClassMethodBase {
-	ncbNativeFunctionBase() : ncbNativeClassMethodBase(TJS_W("Function")) {}
-protected:
-	static inline tjs_error invokeSelect(tTJSNativeClassMethodCallback m, tTJSVariant *result, tjs_int numparams, tTJSVariant **param, iTJSDispatch2 *objthis) {
-		return m(result, numparams, param,  objthis);
-	}
+struct ncbRawCallbackPropertySelector<int> {
+	typedef struct AccessDenied {
+		AccessDenied(int, ncbNativeClassMethodBase::FlagsT) {}
+		tjs_error  TJS_INTF_METHOD FuncCall(
+			tjs_uint32 flag, const tjs_char * membername, tjs_uint32 *hint, 
+			tTJSVariant *result, tjs_int numparams, tTJSVariant **param, iTJSDispatch2 *objthis)
+		{
+			return TJS_E_ACCESSDENYED;
+		}
+	} Type;
 };
 
-// ネイティブファンクションオブジェクト本体
-template <typename METHOD>
-struct ncbNativeFunction : ncbNativeFunctionBase<METHOD> {
-	typedef ncbNativeClassMethodBase BaseT;
-	typedef METHOD MethodT;
+// ncbRawCallbackMethod を二つ束ねて実装
+template <typename GETTER, typename SETTER>
+struct ncbRawCallbackProperty : public ncbNativeClassMethodBase {
+	typedef ncbRawCallbackProperty ThisClassT;
+	typedef GETTER GetCallbackT;
+	typedef SETTER SetCallbackT;
+	typedef typename ncbRawCallbackPropertySelector<GetCallbackT>::Type GetterT;
+	typedef typename ncbRawCallbackPropertySelector<SetCallbackT>::Type SetterT;
+
 	/// constructor
-	ncbNativeFunction(MethodT m, bool hasMember = false) : _method(m), _hasMember(hasMember) {
-		if (!_method) TVPThrowExceptionMessage(TJS_W("No function pointer."));
-	}
-	/// FuncCall実装
-	tjs_error  TJS_INTF_METHOD FuncCall(
+	ncbRawCallbackProperty(GetCallbackT get, SetCallbackT set, FlagsT f)
+		: ncbNativeClassMethodBase(nitProperty), // TJSオブジェクト的には Property
+		  _getter(get, f), _setter(set, f), _flag(f) {} 
+
+	/// PropGet 実装
+	tjs_error TJS_INTF_METHOD PropGet(
 		tjs_uint32 flag, const tjs_char * membername, tjs_uint32 *hint, 
-		tTJSVariant *result, tjs_int numparams, tTJSVariant **param, iTJSDispatch2 *objthis)
+		tTJSVariant *result, iTJSDispatch2 *objthis)
 	{
-		// 自分自身が呼ばれたのではない場合はエラーか丸投げ
-		if (membername) return !_hasMember ? TJS_E_MEMBERNOTFOUND
-			: BaseT::FuncCall(flag, membername, hint, result, numparams, param, objthis);
-
+		// 自分自身が呼ばれたのではない場合は丸投げ
+		if (membername) return BaseT::PropGet(flag, membername, hint, result, objthis);
 		// メソッド呼び出し
-		return invokeSelect(_method, result, numparams, param, objthis);
+		return _getter.FuncCall(flag, membername, hint, result, 0, 0, objthis);
 	}
 
-private:
-	MethodT const _method;
-	bool const _hasMember;
+	/// PropSet 実装
+	tjs_error TJS_INTF_METHOD PropSet(
+		tjs_uint32 flag, const tjs_char *membername, tjs_uint32 *hint, 
+		const tTJSVariant *param, iTJSDispatch2 *objthis)
+	{
+		// 自分自身が呼ばれたのではない場合は丸投げ
+		if (membername) return BaseT::PropSet(flag, membername, hint, param, objthis);
+		// メソッド呼び出し
+		return _setter.FuncCall(flag, membername, hint, 0, 1, &param, objthis);
+	}
+
+	/// TJSNativeClassRegisterNCMフラグ
+	FlagsT GetFlags() const { return _flag; }
+
+	/// factory
+	static iMethodT Create(GetCallbackT get, SetCallbackT set, FlagsT f) { return (new ThisClassT(get, set, f))->GetIMethod(); }
+protected:
+	GetterT _getter;
+	SetterT _setter;
+	FlagsT _flag;
 };
-
-
 
 
 ////////////////////////////////////////
-/// NativeClass クラスオブジェクト登録ベース
-struct ncbRegistBase {
-	typedef ncbTypedefs::NameT        NameT;
+/// NativeClass クラスオブジェクト登録テンプレート
 
-	/**/ ncbRegistBase(NameT n, bool r) : _name(n), _isRegist(r) {}
-	virtual ~ncbRegistBase() {}
+template <class DELG>
+struct ncbRegistClass {
+	typedef ncbTypedefs DefsT;
+	typedef DELG DelegateT;
+	typedef typename DelegateT::NameT  NameT;
+	typedef typename DelegateT::FlagsT FlagsT;
+	typedef typename DelegateT::ItemT  ItemT;
 
-	void Begin() { if (_isRegist) RegistBegin(); else UnregistBegin(); }
-	void End()   { if (_isRegist) RegistEnd();   else UnregistEnd(); }
-
-	virtual void   RegistBegin() {}
-	virtual void UnregistBegin() {}
-	virtual void   RegistEnd()   {}
-	virtual void UnregistEnd()   {}
-
-protected:
+	ncbRegistClass(DelegateT &d, bool r) : _delegator(d), _isRegist(r), _emptyItem(DelegateT::GetEmptyItem()) { Begin(); }
+	~ncbRegistClass() { End(); }
+private:
+	DelegateT &_delegator;
 	bool  const _isRegist;
-	NameT const _name;
-	NameT GetName() const { return _name; }
+	ItemT const _emptyItem;
 
-	/// 空のメソッド(finalize Callback用)
-	static tjs_error TJS_INTF_METHOD EmptyCallback(  tTJSVariant *result, tjs_int numparams, tTJSVariant **param, iTJSDispatch2 *objthis) { return TJS_S_OK; }
+	typedef DefsT::BoolTag<false> NonProxyT;
 
-	/// エラーを返すメソッド(empty Constructor用)
-	static tjs_error TJS_INTF_METHOD NotImplCallback(tTJSVariant *result, tjs_int numparams, tTJSVariant **param, iTJSDispatch2 *objthis) { return TJS_E_NOTIMPL; }
-};
-
-template <typename T>
-struct ncbRegistClassBase : public ncbRegistBase {
-	typedef T                         SelectorT;
-	typedef typename SelectorT::ItemT ItemT;
-	typedef ncbTypedefs::FlagsT       FlagsT;
-
-	virtual void   RegistItem(NameT, ItemT) {}
-	virtual void UnregistItem(NameT)        {}
-
-	ncbRegistClassBase(NameT n, bool r) : ncbRegistBase(n, r) {}
+public:
+	void Begin()					{ if (_isRegist) _delegator.RegistBegin();    else _delegator.UnregistBegin(); }
+	void End()						{ if (_isRegist) _delegator.RegistEnd();      else _delegator.UnregistEnd(); }
+	void DoItem(NameT n, ItemT t)	{ if (_isRegist) _delegator.RegistItem(n, t); else _delegator.UnregistItem(n); }
+	NameT GetName() const			{ return _delegator.GetName(); }
 
 	/// メソッドを登録する
-	template <typename MethodT>
-	void Method(NameT name, MethodT m) {
-		typedef typename SelectorT::template Method<MethodT> TargetT;
-		if (_isRegist) RegistItem(name, TargetT::Type::Create(m));
-		else         UnregistItem(name);
+	template <typename MethodT, bool IsProxy>
+	void Method(NameT name, MethodT m, DefsT::BoolTag<IsProxy>) {
+		typedef typename DelegateT::template Method<MethodT, IsProxy>::Type TargetT;
+		DoItem(name, _isRegist ? TargetT::Create(m) : _emptyItem);
 	}
+	// defaults (non-proxy)
+	template <typename MethodT> void Method(NameT name, MethodT m) { Method(name, m, NonProxyT()); }
 
 	/// コンストラクタを登録する
 	template <typename MethodT>
 	void Constructor(ncbTypedefs::Tag<MethodT>) {
-		typedef typename SelectorT::template Constructor<MethodT> TargetT;
-		if (_isRegist) RegistItem(GetName(), TargetT::Type::Create());
-		else         UnregistItem(GetName());
+		typedef typename DelegateT::template Constructor<MethodT>::Type TargetT;
+		DoItem(GetName(), _isRegist ? TargetT::Create() : _emptyItem);
 	}
 
 	/// プロパティを登録する
-	template <typename GetterT, typename SetterT>
-	void Property(NameT name, GetterT g, SetterT s) {
-		typedef typename SelectorT::template Property<GetterT, SetterT> TargetT;
-		if (_isRegist) RegistItem(name, TargetT::Type::Create(g, s));
-		else         UnregistItem(name);
+	template <typename GetterT, typename SetterT, bool IsProxy>
+	void Property(NameT name, GetterT g, SetterT s, DefsT::BoolTag<IsProxy>) {
+		typedef typename DelegateT::template Property<GetterT, SetterT, IsProxy>::Type TargetT;
+		DoItem(name, _isRegist ? TargetT::Create(g, s) : _emptyItem);
 	}
 	// ReadOnly / WriteOnly Properties.
-	template <typename GetterT> void Property(NameT name, GetterT g, int) { Property(name, g, static_cast<GetterT>(0)); }
-	template <typename SetterT> void Property(NameT name, int, SetterT s) { Property(name, static_cast<SetterT>(0), s); }
+	template <typename GetterT, bool IsProxy> void Property(NameT name, GetterT g, int, DefsT::BoolTag<IsProxy> const &tag) { Property(name, g, static_cast<GetterT>(0), tag); }
+	template <typename SetterT, bool IsProxy> void Property(NameT name, int, SetterT s, DefsT::BoolTag<IsProxy> const &tag) { Property(name, static_cast<SetterT>(0), s, tag); }
+	// defaults (non-proxy)
+	template <typename GetterT, typename SetterT> void Property(NameT name, GetterT g, SetterT s) { Property(name, g, s, NonProxyT()); }
+	template <typename GetterT>                   void Property(NameT name, GetterT g, int s)     { Property(name, g, s, NonProxyT()); }
+	template <typename SetterT>                   void Property(NameT name, int g, SetterT s)     { Property(name, g, s, NonProxyT()); }
 
-	/// RawCallback
+	/// RawCallback Method
 	template <typename MethodT>
-	void MethodRawCallback(NameT name, MethodT m, ncbNativeClassMethodBase::FlagsT flags) {
-		typedef typename SelectorT::template RawCallback<MethodT> TargetT;
-		if (_isRegist) RegistItem(name, TargetT::Type::Create(m, flags));
-		else         UnregistItem(name);
+	void MethodRawCallback(NameT name, MethodT m, FlagsT flags) {
+		typedef typename DelegateT::template RawCallback<MethodT>::Type TargetT;
+		DoItem(name, _isRegist ? TargetT::Create(m, flags) : _emptyItem);
+	}
+
+	/// RawCallback Property
+	template <typename GetterT, typename SetterT>
+	void PropertyRawCallback(NameT name, GetterT g, SetterT s, FlagsT flags) {
+		typedef typename DelegateT::template RcbProperty<GetterT, SetterT>::Type TargetT;
+		DoItem(name, _isRegist ? TargetT::Create(g, s, flags) : _emptyItem);
 	}
 };
 
 ////////////////////////////////////////
 
-struct ncbRegistNativeClassSelector {
-	typedef ncbNativeClassMethodBase::iMethodT ItemT;
+struct ncbRegistNativeClassBase {
+	typedef ncbNativeClassMethodBase::NameT      NameT;
+	typedef ncbNativeClassMethodBase::iMethodT   ItemT;
+	typedef ncbNativeClassMethodBase::FlagsT     FlagsT;
+	ncbRegistNativeClassBase(NameT name) : _className(name) {}
 
-	template <typename T>             struct Method      { typedef ncbNativeClassMethod<T>        Type; };
-	template <typename T>             struct Constructor { typedef ncbNativeClassConstructor<T>   Type; };
-	template <typename G, typename S> struct Property    { typedef ncbNativeClassProperty<G, S>   Type; };
-	template <typename T>             struct RawCallback { typedef ncbRawCallbackMethod<T>        Type; };
+	void   RegistBegin()			{}
+	void   RegistItem(NameT, ItemT)	{}
+	void   RegistEnd()				{}
+	void UnregistBegin()			{}
+	void UnregistItem(NameT)		{}
+	void UnregistEnd()				{}
+
+	NameT  GetName() const {return _className; }
+	static inline ItemT GetEmptyItem() { return 0; }
+protected:
+	NameT const _className;
 };
 
-template <class T>
-struct ncbRegistNativeClass : public ncbRegistClassBase<ncbRegistNativeClassSelector> {
-	typedef /*                     */ncbRegistClassBase<ncbRegistNativeClassSelector> BaseT;
-	typedef T                                    NativeClassT;
+template <class CLASS>
+struct ncbRegistNativeClass : public ncbRegistNativeClassBase {
+	typedef                          ncbRegistNativeClassBase BaseT;
+	typedef CLASS                                NativeClassT;
 	typedef ncbInstanceAdaptor<NativeClassT>     AdaptorT;
 
 	typedef ncbClassInfo<NativeClassT>           ClassInfoT;
 	typedef typename ClassInfoT::IdentT          IdentT;
 	typedef typename ClassInfoT::ClassObjectT    ClassObjectT;
 
-	ncbRegistNativeClass(NameT n, bool b) : BaseT(n, b), _hasCtor(false), _classobj(0) {}
+	/// 登録に対応する型を導出するテンプレート群
+	template <typename T>                      struct Constructor  { typedef ncbNativeClassConstructor<T>               Type; };
+	template <typename T, bool PX>             struct Method       { typedef ncbNativeClassMethod<NativeClassT, T>      Type; };
+	template <typename G, typename S, bool PX> struct Property     { typedef ncbNativeClassProperty<NativeClassT, G, S> Type; };
+	template <typename T>                      struct RawCallback  { typedef ncbRawCallbackMethod<T>                    Type; };
+	template <typename G, typename S>          struct RcbProperty  { typedef ncbRawCallbackProperty<G, S>               Type; };
+	// proxy type
+	template <typename T>             struct Method<T, true>      { typedef typename ncbNativeClassMethodProxyType<  NativeClassT, T   >::Type Type; };
+	template <typename G, typename S> struct Property<G, S, true> { typedef typename ncbNativeClassPropertyProxyType<NativeClassT, G, S>::Type Type; };
+
+	ncbRegistNativeClass(NameT n) : BaseT(n), _classobj(0), _hasCtor(false) {}
 
 	void RegistBegin() {
-		NameT const className = GetName();
-
-		NCB_LOG_2(TJS_W("BeginRegistClass: "), className);
+		NCB_LOG_2(TJS_W("BeginRegistClass: "), _className);
 
 		// クラスオブジェクトを生成
-		_classobj = TJSCreateNativeClassForPlugin(className, AdaptorT::CreateEmptyAdaptor);
+		_classobj = TJSCreateNativeClassForPlugin(_className, AdaptorT::CreateEmptyAdaptor);
 
 		// クラスIDを生成
-		IdentT id  = TJSRegisterNativeClass(className);
+		IdentT id  = TJSRegisterNativeClass(_className);
 
 		// ncbClassInfoに登録
-		if (!ClassInfoT::Set(className, id, _classobj)) {
+		if (!ClassInfoT::Set(_className, id, _classobj))
 			TVPThrowExceptionMessage(TJS_W("Already registerd class."));
-		}
 
 		// クラスオブジェクトにIDを設定
 		TJSNativeClassSetClassID(_classobj, id);
@@ -1127,29 +1403,26 @@ struct ncbRegistNativeClass : public ncbRegistClassBase<ncbRegistNativeClassSele
 		// 空のfinalizeメソッドを追加
 		TJSNativeClassRegisterNCM(_classobj, TJS_W("finalize"),
 								  TJSCreateNativeClassMethod(EmptyCallback),
-								  className, nitMethod);
+								  _className, nitMethod);
 	}
 
-	void RegistItem(NameT name, typename SelectorT::ItemT item) {
+	void RegistItem(NameT name, ItemT item) {
 		NCB_LOG_2(TJS_W("  RegistItem: "), name);
-		NameT const className = GetName();
-		if (name == className) {
-			if (_hasCtor) TVPAddLog(ttstr(TJS_W("Multiple constructors.(")) + className + TJS_W(")"));
+		if (name == _className) {
+			if (_hasCtor) TVPAddLog(tTJSString(TJS_W("Multiple constructors.(")) + _className + TJS_W(")"));
 			_hasCtor = true;
 		}
 		if (item) {
-			TJSNativeClassRegisterNCM(_classobj, name, item->GetDispatch(), className, item->GetType(), item->GetFlags());
+			TJSNativeClassRegisterNCM(_classobj, name, item->GetDispatch(), _className, item->GetType(), item->GetFlags());
 			item->Release();
 		}
 	}
 
 	void RegistEnd() {
-		NameT const className = GetName();
-
 		// コンストラクタがない場合はエラーを返すコンストラクタを追加する
-		if (!_hasCtor) TJSNativeClassRegisterNCM(_classobj, className,
+		if (!_hasCtor) TJSNativeClassRegisterNCM(_classobj, _className,
 												 TJSCreateNativeClassMethod(NotImplCallback),
-												 className, nitMethod);
+												 _className, nitMethod);
 
 		// TJS のグローバルオブジェクトを取得する
 		iTJSDispatch2 *global = TVPGetScriptDispatch();
@@ -1169,7 +1442,7 @@ struct ncbRegistNativeClass : public ncbRegistClassBase<ncbRegistNativeClassSele
 		// 4 global の PropSet メソッドを用い、オブジェクトを登録する
 		global->PropSet(
 			TJS_MEMBERENSURE, // メンバがなかった場合には作成するようにするフラグ
-			className, // メンバ名
+			_className, // メンバ名
 			0, // ヒント ( 本来はメンバ名のハッシュ値だが、NULL でもよい )
 			&val, // 登録する値
 			global // コンテキスト ( global でよい )
@@ -1184,7 +1457,7 @@ struct ncbRegistNativeClass : public ncbRegistClassBase<ncbRegistNativeClassSele
 		//val.Clear();
 		// …のだがローカルスコープで自動的に消去されるので必要ない
 
-		NCB_LOG_2(TJS_W("EndRegistClass: "), className);
+		NCB_LOG_2(TJS_W("EndRegistClass: "), _className);
 	}
 
 	/// プラグイン開放時にクラスオブジェクトをリリースする
@@ -1193,7 +1466,7 @@ struct ncbRegistNativeClass : public ncbRegistClassBase<ncbRegistNativeClassSele
 		typename ClassInfoT::ClassObjectT *obj = ClassInfoT::GetClassObject();
 
 		if (global) {
-			global->DeleteMember(0, GetName(), 0, global);
+			global->DeleteMember(0, _className, 0, global);
 			global->Release();
 		}
 		if (obj) obj->Release();
@@ -1201,54 +1474,60 @@ struct ncbRegistNativeClass : public ncbRegistClassBase<ncbRegistNativeClassSele
 		ClassInfoT::Clear();
 	}
 
-protected:
-	bool          _hasCtor;		//< コンストラクタを登録したか
+private:
 	ClassObjectT *_classobj;	//< クラスオブジェクト
+	bool          _hasCtor;		//< コンストラクタを登録したか
+
+	/// 空のメソッド(finalize Callback用)
+	static tjs_error TJS_INTF_METHOD EmptyCallback(  tTJSVariant *result, tjs_int numparams, tTJSVariant **param, iTJSDispatch2 *objthis) { return TJS_S_OK; }
+
+	/// エラーを返すメソッド(empty Constructor用)
+	static tjs_error TJS_INTF_METHOD NotImplCallback(tTJSVariant *result, tjs_int numparams, tTJSVariant **param, iTJSDispatch2 *objthis) { return TJS_E_NOTIMPL; }
 };
 
 ////////////////////////////////////////
 /// 既存クラスオブジェクトを変更する
 
-struct ncbAttachTJS2ClassSelector {
-	typedef ncbNativeClassMethodBase::iMethodT ItemT;
-
-	template <typename T>             struct Method      { typedef ncbNativeClassMethod<T>        Type; };
-	template <typename G, typename S> struct Property    { typedef ncbNativeClassProperty<G, S>   Type; };
-	template <typename T>             struct RawCallback { typedef ncbRawCallbackMethod<T>        Type; };
-
-	struct NCB_COMPILE_ERROR_CantSetConstructor;
-	template <typename T>             struct Constructor { typedef NCB_COMPILE_ERROR_CantSetConstructor Type; };
-};
-template <class T>
-struct ncbAttachTJS2Class : public ncbRegistClassBase<ncbAttachTJS2ClassSelector> {
-	typedef /*                   */ncbRegistClassBase<ncbAttachTJS2ClassSelector> BaseT;
-	typedef T                                    NativeClassT;
+template <class CLASS>
+struct ncbAttachTJS2Class : public ncbRegistNativeClassBase {
+	typedef                        ncbRegistNativeClassBase BaseT;
+	typedef CLASS                                NativeClassT;
 	typedef ncbClassInfo<NativeClassT>           ClassInfoT;
 	typedef typename ClassInfoT::IdentT          IdentT;
 	typedef typename ClassInfoT::ClassObjectT    ClassObjectT;
 
-	ncbAttachTJS2Class(NameT nativeClass, NameT tjs2Class, bool b) : BaseT(nativeClass, b), _tjs2ClassName(tjs2Class) {}
+	/// 登録に対応する型を導出するテンプレート群
+	struct NCB_COMPILE_ERROR_CantSetConstructor; // コンストラクタは存在できないのでコンパイルエラーを出す
+	template <typename T>                      struct Constructor  { typedef NCB_COMPILE_ERROR_CantSetConstructor       Type; };
+
+	template <typename T, bool PX>             struct Method       { typedef ncbNativeClassMethod<NativeClassT, T>      Type; };
+	template <typename G, typename S, bool PX> struct Property     { typedef ncbNativeClassProperty<NativeClassT, G, S> Type; };
+	template <typename T>                      struct RawCallback  { typedef ncbRawCallbackMethod<T>                    Type; };
+	template <typename G, typename S>          struct RcbProperty  { typedef ncbRawCallbackProperty<G, S>               Type; };
+	// proxy type
+	template <typename T>             struct Method<T, true>      { typedef typename ncbNativeClassMethodProxyType<  NativeClassT, T   >::Type Type; };
+	template <typename G, typename S> struct Property<G, S, true> { typedef typename ncbNativeClassPropertyProxyType<NativeClassT, G, S>::Type Type; };
+
+	ncbAttachTJS2Class(NameT nativeClass, NameT tjs2Class) : BaseT(nativeClass), _tjs2ClassName(tjs2Class) {}
 
 	void RegistBegin() {
-		NameT const nativeClassName = GetName();
-
-		NCB_LOG_2(TJS_W("BeginAttachTJS2Class: "), nativeClassName);
+		NCB_LOG_2(TJS_W("BeginAttachTJS2Class: "), _className);
 
 		// TJS のグローバルオブジェクトを取得する
 		_global = TVPGetScriptDispatch();
 		_tjs2ClassObj = GetGlobalObject(_tjs2ClassName, _global);
 
 		// クラスIDを生成
-		IdentT id  = TJSRegisterNativeClass(nativeClassName);
+		IdentT id  = TJSRegisterNativeClass(_className);
 		NCB_LOG_2(TJS_W("  ID: "), (tjs_int)id);
 
 		// ncbClassInfoに登録
-		if (!ClassInfoT::Set(nativeClassName, id, 0)) {
+		if (!ClassInfoT::Set(_className, id, 0)) {
 			TVPThrowExceptionMessage(TJS_W("Already registerd class."));
 		}
 	}
 
-	void RegistItem(NameT name, typename SelectorT::ItemT item) {
+	void RegistItem(NameT name, ItemT item) {
 		NCB_LOG_2(TJS_W("  RegistItem: "), name);
 		if (!item) return;
 		iTJSDispatch2 *dsp = item->GetDispatch();
@@ -1260,7 +1539,7 @@ struct ncbAttachTJS2Class : public ncbRegistClassBase<ncbAttachTJS2ClassSelector
 	}
 
 	void RegistEnd() {
-		NCB_LOG_2(TJS_W("EndAttachClass: "), GetName());
+		NCB_LOG_2(TJS_W("EndAttachClass: "), _className);
 		if (_global) _global->Release();
 		_global = 0;
 		// _tjs2ClassObj は NoAddRef なので Release 不要
@@ -1306,6 +1585,8 @@ struct ncbAutoRegister {
 	typedef ncbAutoRegister ThisClassT;
 	typedef void (*CallBackT)();
 	typedef ncbTypedefs::NameT NameT;
+	typedef ncbTypedefs::BoolTag<true>  TrueTagT;
+	typedef ncbTypedefs::BoolTag<false> FalseTagT;
 
 	enum LineT {
 		PreRegist = 0,
@@ -1351,16 +1632,18 @@ protected:
 ////////////////////////////////////////
 template <class T>
 struct  ncbNativeClassAutoRegister : public ncbAutoRegister {
-	/**/ncbNativeClassAutoRegister(NameT n) : _name(n), ncbAutoRegister(ClassRegist)  {}
+	/**/ncbNativeClassAutoRegister(NameT n) : ncbAutoRegister(ClassRegist), _name(n) {}
 private:
 	typedef T ClassT;
-	typedef ncbRegistNativeClass<T> RegistT;
+	typedef T Class;
+	typedef ncbRegistNativeClass<T> DelegateT;
+	typedef ncbRegistClass<DelegateT> RegistT;
 
 	NameT const _name;
 	static void _Regist(RegistT &);
 protected:
-	void Regist()   const { RegistT r(_name, true);  r.Begin(); _Regist(r); r.End(); }
-	void Unregist() const { RegistT r(_name, false); r.Begin(); _Regist(r); r.End(); }
+	void Regist()   const { DelegateT d(_name); { RegistT r(d, true);  _Regist(r); } }
+	void Unregist() const { DelegateT d(_name); { RegistT r(d, false); _Regist(r); } }
 };
 
 #define NCB_REGISTER_CLASS_COMMON(cls, tmpl, init) \
@@ -1369,19 +1652,26 @@ protected:
 	static tmpl<cls> tmpl ## _ ## cls init; \
 	void   tmpl<cls>::_Regist (RegistT &_r_)
 
-#define NCB_REGISTER_CLASS(cls) \
+#define NCB_REGISTER_CLASS_DELAY(name, cls) \
+	NCB_REGISTER_CLASS_COMMON(cls, ncbNativeClassAutoRegister, (TJS_W(# name)))
+
+#define NCB_REGISTER_CLASS(cls) NCB_REGISTER_CLASS_DIFFER(cls, cls)
+#define NCB_REGISTER_CLASS_DIFFER(name, cls) \
 	NCB_TYPECONV_BOXING(cls); \
-	NCB_REGISTER_CLASS_COMMON(cls, ncbNativeClassAutoRegister, (TJS_W(# cls)))
+	NCB_REGISTER_CLASS_COMMON(cls, ncbNativeClassAutoRegister, (TJS_W(# name)))
 
 ////////////////////////////////////////
 template <class T>
 struct  ncbAttachTJS2ClassAutoRegister : public ncbAutoRegister {
-	/**/ncbAttachTJS2ClassAutoRegister(NameT ncn, NameT tjscn) : _nativeClassName(ncn), _tjs2ClassName(tjscn), ncbAutoRegister(ClassRegist) {}
+	/**/ncbAttachTJS2ClassAutoRegister(NameT ncn, NameT tjscn) : ncbAutoRegister(ClassRegist), _nativeClassName(ncn), _tjs2ClassName(tjscn) {}
 protected:
 	typedef T ClassT;
-	typedef ncbAttachTJS2Class<T> RegistT;
-	void Regist()   const { RegistT r(_nativeClassName, _tjs2ClassName, true);  r.Begin(); _Regist(r); r.End(); }
-	void Unregist() const { RegistT r(_nativeClassName, _tjs2ClassName, false); r.Begin(); _Regist(r); r.End(); }
+	typedef T Class;
+	typedef ncbAttachTJS2Class<T>     DelegateT;
+	typedef ncbRegistClass<DelegateT> RegistT;
+
+	void Regist()   const { DelegateT d(_nativeClassName, _tjs2ClassName); { RegistT r(d, true);  _Regist(r); } }
+	void Unregist() const { DelegateT d(_nativeClassName, _tjs2ClassName); { RegistT r(d, false); _Regist(r); } }
 private:
 	NameT const _nativeClassName;
 	NameT const _tjs2ClassName;
@@ -1416,9 +1706,12 @@ private:
 #define NCB_METHOD_DIFFER(name, method) _r_.Method(TJS_W(# name), &ClassT::method)
 #define NCB_METHOD(method) NCB_METHOD_DIFFER(method, method)
 
+#define NCB_METHOD_CAST(tag, result, method, args) \
+	static_cast<MethodType<Tag ## tag ## Method, result (ClassT::*) args >::Type >(&method)
+
 // tag = { Class, Const, Statc }
 #define NCB_METHOD_DETAIL(name, tag, result, method, args) \
-	_r_.Method(TJS_W(# name), static_cast<MethodType<Tag ## tag ## Method, result (ClassT::*) args >::Type >(&ClassT::method))
+	_r_.Method(TJS_W(# name), NCB_METHOD_CAST(tag, result, method, args))
 
 #define NCB_METHOD_RAW_CALLBACK(name, cb, flag) _r_.MethodRawCallback(TJS_W(# name), cb, flag)
 
@@ -1426,6 +1719,26 @@ private:
 #define NCB_PROPERTY_RO(name,get)  _r_.Property(TJS_W(# name), &ClassT::get, (int)0)
 #define NCB_PROPERTY_WO(name,set)  _r_.Property(TJS_W(# name), (int)0, &ClassT::set)
 
+#define NCB_PROPERTY_DETAIL(name, r_tag, r_result, r_method, r_args, w_tag, w_result, w_method, w_args) \
+	_r_.Property(TJS_W(# name), NCB_METHOD_CAST(r_tag, r_result, r_method, r_args), NCB_METHOD_CAST(w_tag, w_result, w_method, w_args))
+
+#define NCB_PROPERTY_DETAIL_RO(name, tag, result, method, args) _r_.Property(TJS_W(# name), NCB_METHOD_CAST(tag, result, method, args), (int)0)
+#define NCB_PROPERTY_DETAIL_WO(name, tag, result, method, args) _r_.Property(TJS_W(# name), (int)0, NCB_METHOD_CAST(tag, result, method, args))
+
+#define NCB_PROPRETY_RAW_CALLBACK(name, get, set, flag) _r_.PropertyRawCallback(TJS_W(# name), get,    set, flag)
+#define NCB_PROPRETY_RAW_CALLBACK_RO(name, get, flag)   _r_.PropertyRawCallback(TJS_W(# name), get, (int)0, flag)
+#define NCB_PROPRETY_RAW_CALLBACK_WO(name, set, flag)   _r_.PropertyRawCallback(TJS_W(# name), (int)0, set, flag)
+
+// さあ何がなんだかわかんなくなってきました（汗
+#define NCB_METHOD_PROXY(name, method) /*                      */_r_.Method(TJS_W(# name), &method, TrueTagT())
+#define NCB_METHOD_PROXY_DETAIL(name, tag, result, method, args) _r_.Method(TJS_W(# name), NCB_METHOD_CAST(tag, result, method, args), TrueTagT())
+#define NCB_PROPERTY_PROXY(name,get,set) /*                    */_r_.Property(TJS_W(# name), &get, &set, TrueTagT())
+#define NCB_PROPERTY_PROXY_RO(name,get) /*                     */_r_.Property(TJS_W(# name), &ClassT::get, (int)0, TrueTagT())
+#define NCB_PROPERTY_PROXY_WO(name,set) /*                     */_r_.Property(TJS_W(# name), (int)0, &ClassT::set, TrueTagT())
+#define NCB_PROPERTY_PROXY_DETAIL(name, r_tag, r_result, r_method, r_args, w_tag, w_result, w_method, w_args) \
+	_r_.Property(TJS_W(# name), NCB_METHOD_CAST(r_tag, r_result, r_method, r_args), NCB_METHOD_CAST(w_tag, w_result, w_method, w_args), TrueTagT())
+#define NCB_PROPERTY_PROXY_DETAIL_RO(name, tag, result, method, args) _r_.Property(TJS_W(# name), NCB_METHOD_CAST(tag, result, method, args), (int)0, TrueTagT())
+#define NCB_PROPERTY_PROXY_DETAIL_WO(name, tag, result, method, args) _r_.Property(TJS_W(# name), (int)0, NCB_METHOD_CAST(tag, result, method, args), TrueTagT())
 
 ////////////////////////////////////////
 /// TJSファンクション自動レジストクラス
@@ -1435,7 +1748,7 @@ struct  ncbNativeFunctionAutoRegister : public ncbAutoRegister {
 protected:
 	template <typename MethodT>
 	static void RegistFunction(NameT name, NameT attach, MethodT m) {
-		typedef ncbNativeFunction<MethodT> MethodObjectT;
+		typedef ncbNativeClassMethod<void, MethodT> MethodObjectT;
 		iTJSDispatch2 *dsp = GetDispatch(attach);
 		if (!dsp) return;
 		MethodObjectT *mobj = new MethodObjectT(m);
@@ -1491,7 +1804,7 @@ struct ncbCallbackAutoRegister : public ncbAutoRegister {
 	typedef void (*CallbackT)();
 
 	ncbCallbackAutoRegister(LineT line, CallbackT init, CallbackT term)
-		: _init(init), _term(term), ncbAutoRegister(line)  {}
+		: ncbAutoRegister(line), _init(init), _term(term) {}
 protected:
 	void Regist()   const { if (_init) _init(); }
 	void Unregist() const { if (_term) _term(); }

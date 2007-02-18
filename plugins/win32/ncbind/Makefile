@@ -21,8 +21,15 @@ testbind.o: testbind.cpp ncbind.hpp
 clean:
 	rm -f $(TARGET) $(OBJS)
 
-test:
-	cp $(TARGET) $(KIRIKIRI_DIR)
-	$(KIRIKIRI) $(KIRIKIRI_OPT)
+
+
+KRKR_PLUGINS = ../../../../bin/win32/plugin/
+KRKR_EXE     = ../../../../bin/win32/krkr.exe
+TEST_DIR     = ../../../../tests/ncbind
+KRKR_OPT     = -debug  `pwd -P`/$(TEST_DIR)
+
+test: $(TARGET)
+	cp $(TARGET) $(KRKR_PLUGINS)
+	$(KRKR_EXE) $(KRKR_OPT)
 
 
