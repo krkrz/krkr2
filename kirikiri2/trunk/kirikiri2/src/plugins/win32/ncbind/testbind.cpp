@@ -217,8 +217,8 @@ struct OverloadTest {
 };
 
 NCB_REGISTER_CLASS(OverloadTest) {
-	NCB_METHOD_DETAIL(Method1, Static, void, Method, (int, int));
-	NCB_METHOD_DETAIL(Method2, Static, void, Method, (char const*));
+	NCB_METHOD_DETAIL(Method1, Static, void, ClassT::Method, (int, int));
+	NCB_METHOD_DETAIL(Method2, Static, void, ClassT::Method, (char const*));
 }
 
 CHECK(OverloadTest,
