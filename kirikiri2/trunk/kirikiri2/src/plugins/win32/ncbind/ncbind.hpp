@@ -511,14 +511,22 @@ struct ncbNativeObjectBoxing {
 /// 返り値なしの場合のダミーの TOVARIANT を登録
 NCB_SET_TOVARIANT_CONVERTOR(void, struct {});
 
-// iTJSDispatch2*を返り値にする場合
-struct ncbDispatchToVariant {
+// iTJSDispatch2*を引き数・返り値にする場合
+struct ncbDispatchConvertor {
 	inline void operator ()(tTJSVariant &dst, iTJSDispatch2* &src) const {
 		dst = tTJSVariant(src, src);
 		src->Release();
 	}
+	inline void operator ()(iTJSDispatch2* &dst, tTJSVariant const &src) const {
+		dst = src.AsObjectNoAddRef();
+	}
+	inline void operator ()(iTJSDispatch2 const* &dst, tTJSVariant const &src) const {
+		dst = src.AsObjectNoAddRef();
+	}
 };
-NCB_SET_TOVARIANT_CONVERTOR(iTJSDispatch2*, ncbDispatchToVariant);
+NCB_SET_TOVARIANT_CONVERTOR(iTJSDispatch2*,       ncbDispatchConvertor);
+NCB_SET_TOVALUE_CONVERTOR(  iTJSDispatch2*,       ncbDispatchConvertor);
+NCB_SET_TOVALUE_CONVERTOR(  iTJSDispatch2 const*, ncbDispatchConvertor);
 
 
 /*
