@@ -1,5 +1,67 @@
 #include "magickpp.hpp"
 
+// imageをレイヤに描画する
+static void Image_display(Magick::Image const *image, iTJSDispatch2* lay) {
+	unsigned int w, h;
+	unsigned char *p;
+	long s;
+	if (!lay || TJS_FAILED(lay->IsInstanceOf(0, 0, 0, TJS_W("Layer"), lay)))
+		TVPThrowExceptionMessage(TJS_W("Magick::Image: display method needs Layer-instance param."));
+
+	// レイヤサイズ変更
+	tTJSVariant tmp[4], *args[4] = { tmp, tmp+1, tmp+2, tmp+3 };
+	tmp[0] = true;
+	if (TJS_FAILED(lay->PropSet(0, TJS_W("hasImage"), 0, tmp, lay))) goto error;
+	tmp[0] = tTVInteger((w = image->columns()));
+	tmp[1] = tTVInteger((h = image->rows()));
+	if (TJS_FAILED(lay->FuncCall(0, TJS_W("setSize"),      0, 0, 2, args, lay))) goto error;
+	if (TJS_FAILED(lay->FuncCall(0, TJS_W("setImageSize"), 0, 0, 2, args, lay))) goto error;
+
+	// バッファ取得
+	lay->PropGet(0, TJS_W("mainImageBufferForWrite"), 0, &tmp[0], lay);
+	lay->PropGet(0, TJS_W("mainImageBufferPitch"),    0, &tmp[1], lay);
+	p = reinterpret_cast<unsigned char*>((tTVInteger)tmp[0]);
+	s = static_cast<long               >((tTVInteger)tmp[1]);
+
+	// コピー
+	typedef Magick::PixelPacket PixelT;
+	if (sizeof(Magick::Quantum) == 1) {
+		// 8bit quantum 専用
+		for (int y = 0; y < h; y++, p+=s) {
+			PixelT const *px = image->getConstPixels(0, y, w, 1);
+			unsigned char *cp = p;
+			for (int i = w; i > 0; i--, px++) {
+				*cp++ = static_cast<unsigned char>(px->blue);		// B
+				*cp++ = static_cast<unsigned char>(px->green);	// G
+				*cp++ = static_cast<unsigned char>(px->red);		// R
+				*cp++ = static_cast<unsigned char>(px->opacity);	// A
+			}
+		}
+	} else {
+		// それ以外はdouble経由なので重い
+		for (int y = 0; y < h; y++, p+=s) {
+			PixelT const *px = image->getConstPixels(0, y, w, 1);
+			unsigned char *cp = p;
+			for (int i = w; i > 0; i--, px++) {
+				Magick::ColorRGB col(*px);
+				*cp++ = static_cast<unsigned char>(col.blue()  * 255);	// B
+				*cp++ = static_cast<unsigned char>(col.green() * 255);	// G
+				*cp++ = static_cast<unsigned char>(col.red()   * 255);	// R
+				*cp++ = static_cast<unsigned char>(col.alpha() * 255);	// A
+			}
+		}
+	}
+
+	// アップデート
+	tmp[0] = tTVInteger(0), tmp[1] = tTVInteger(0);
+	tmp[2] = tTVInteger(w), tmp[3] = tTVInteger(h);
+	if (TJS_FAILED(lay->FuncCall(0, TJS_W("update"), 0, 0, 4, args, lay))) goto error;
+	return;
+error:
+	TVPThrowExceptionMessage(TJS_W("MagickPP_Image.display failed."));
+}
+
+
 // Image
 MAGICK_CLASS(Image) {
 	NCB_CONSTRUCTOR(());
@@ -140,6 +202,7 @@ MAGICK_CLASS(Image) {
 
 	// Display image on screen
 //	void            display ( void );
+	NCB_METHOD_PROXY(display, Image_display);
 
 	// Draw on image using a single drawable
 //	NCB_METHOD_DETAIL(draw, Class, void, draw, (Drawable const&));

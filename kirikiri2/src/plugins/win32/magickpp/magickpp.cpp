@@ -71,5 +71,6 @@ struct MagickPP {
 NCB_REGISTER_CLASS(MagickPP) {
 	PROP_RO(version);
 	PROP_RO(supports);
+	NCB_METHOD(readImages);
 }
 
