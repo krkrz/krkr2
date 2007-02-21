@@ -25,6 +25,37 @@ MagickPP_クラス名 (Image, Geometry, Color, etc.)
 現状では詳しくはソース見てください状態です。（すみません）
 
 
+あと，問題点として，
+重い処理中（PSDの読み込み等）は完全に吉里吉里の反応が止まります。
+シングルスレッド仕様なので現状で回避方法はありません。
+
+重い処理中のメッセージや，ウィンドウなどを表示したいときは，
+System.inform で処理前にクリック待ちを促すか，
+AsyncTrigger を使用して，一度メッセージ処理を完遂してから
+トリガファンクション内で重い処理を行うと良いでしょう。
+
+	// これだとコンソールにメッセージが表示される前に
+	// ロード処理で固まってしまい，メッセージが見えない
+	Debug.message("ロード中です");
+	image.read(filename);
+
+	// クリック待ちがあっても良いなら
+	// モーダルダイアログで注意を促す
+	System.inform("ロードします" + filename);
+	image.read(filename);
+
+	// クリック待ちなしで単に表示したいならこんな感じ
+	Debug.message("ロード中です");
+	(new AsyncTrigger(function() {
+	  image.read(filename);
+	  load_finished(image);
+	}, "")).trigger();
+	// ただしここの行を処理する段階ではまだ読み込みが
+	// 完了してないので，トリガファンクションに
+	// すべての処理を記述する必要がある
+	return;
+
+
 ● 実装状況
 
 元のライブラリが巨大なので ncbind をもってしても
@@ -64,6 +95,11 @@ MagickPP_クラス名 (Image, Geometry, Color, etc.)
 	strokeDashArray		⇒ double * を渡すので保留
 	convolve		⇒ double * を渡すので保留
 
+
+	display() メソッドは display(layer) メソッドに変更
+	表示ではなくレイヤにイメージをコピーする処理にしてある
+
+
 ・CoderInfo
 	完了。MagickPP.support で使用
 
@@ -79,7 +115,7 @@ MagickPP_クラス名 (Image, Geometry, Color, etc.)
 		version プロパティ ⇒ バージョン文字列を返す
 		support プロパティ ⇒ サポートされるCoderInfoの配列を返す
 
-		loadImages(string) ⇒ Magick::loadImages
+		readImages(string) ⇒ Magick::readImages
 					読み込んだ Image の配列を返す
 
 	が存在する。
