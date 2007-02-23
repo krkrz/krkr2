@@ -528,7 +528,7 @@ tTVPXP3Archive::tTVPXP3Archive(const ttstr & name) : tTVPArchive(name)
 	{
 		if(indexdata) delete [] indexdata;
 		delete st;
-		TVPAddLog(TJS_W("(info) Falied."));
+		TVPAddLog(TJS_W("(info) Failed."));
 		throw;
 	}
 	if(indexdata) delete [] indexdata;
