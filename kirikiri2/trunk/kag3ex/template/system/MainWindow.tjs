@@ -79,20 +79,58 @@ class KAGWindow extends Window
 	var chDefaultFace; // 文字のデフォルトのフォント
     var initialMessageLayerVisible = true;
 
-	var historyLayer; // メッセージ履歴レイヤ
-	/*C*/var historyWriteEnabled = true; // メッセージレイヤに文字を出力するか
+    var historyLayer; // メッセージ履歴レイヤ
+    /*C*/var historyWriteEnabled = true; // メッセージレイヤに文字を出力するか
 	/*C*/var historyEnabled = true; // メッセージ履歴レイヤを表示可能か
-	var historyShowing = false; // メッセージ履歴レイヤを表示中か
+    var historyShowing = false; // メッセージ履歴レイヤを表示中か
 	var lastHistoryHiddenTick = 0; // 最後に履歴レイヤが非表示になったときの tick
 
     var selectPrevSkipMode;
     var selectPrevAutoMode;
     
-    var selectLayer;           // 選択肢レイヤ
+    var _selectLayer;           // 選択肢レイヤ
     var selectShowing = false; // 選択肢レイヤが表示中か
 
-    var mapSelectLayer;           // マップ選択肢レイヤ
+    property selectLayer {
+        getter() {
+            if (_selectLayer === void) {
+                // 選択肢レイヤの作成
+                _selectLayer = new SelectLayer(this, fore.base);
+                _selectLayer.name = "選択肢レイヤ";
+                add(_selectLayer);
+            }
+            return _selectLayer;
+        }
+    }
+    
+    var _mapSelectLayer;           // マップ選択肢レイヤ
     var mapSelectShowing = false; // マップ選択肢レイヤが表示中か
+
+    property mapSelectLayer {
+        getter() {
+            if (_mapSelectLayer === void) {
+                // マップ選択肢レイヤの作成
+                _mapSelectLayer = new MapSelectLayer(this, fore.base);
+                _mapSelectLayer.name = "マップ選択肢レイヤ";
+                add(_mapSelectLayer);
+            }
+            return _mapSelectLayer;
+        }
+    }
+    
+    var _transLayer; // 画面切り替え処理用レイヤ
+    var transShowing = false; // 画面切り替えレイヤが表示中か
+
+    property transLayer {
+        getter() {
+            if (_transLayer === void) {
+                _transLayer = new TransLayer(this);
+                _transLayer.name = "画面切り替えレイヤ";
+                add(_transLayer);
+            }
+            return _transLayer;
+        }
+    }
     
 	/*C*/var numCharacterLayers = 0; // 前景レイヤの数
 	/*C*/var numMessageLayers = 1; // メッセージレイヤの数
@@ -100,7 +138,21 @@ class KAGWindow extends Window
     /*C*/var messageFadeTime = 500; // メッセージレイヤの表示ON/OFF の時間
 
     var sysbase;  // ベースレイヤ
-    var debugwin; // デバッグ表示用レイヤ
+    var _debugwin; // デバッグ表示用レイヤ
+
+    property debugwin {
+        getter() {
+            if (_debugwin === void) {
+                // デバッグ表示用
+                _debugwin = new Layer(this, primaryLayer);
+                _debugwin.name = "デバッグ情報レイヤ";
+                _debugwin.setSize(scWidth, 50);
+                _debugwin.setPos(0, scHeight - 50);
+                _debugwin.visible = false;
+            }
+            return _debugwin;
+        }
+    }
     
     var fore = %[]; // 表レイヤ
 	var back = %[]; // 裏レイヤ
@@ -625,12 +677,6 @@ class KAGWindow extends Window
         back.base.setImageSize(scWidth, scHeight);
 		back.base.setSizeToImageSize();
 
-        // デバッグ表示用
-        debugwin = new Layer(this, sysbase);
-        debugwin.setSize(scWidth, 50);
-        debugwin.setPos(0, scHeight - 50);
-        debugwin.visible = false;
-
         fore.base.setCompLayer(back.base);
 		back.base.setCompLayer(fore.base);
 		fore.base.freeImage();
@@ -676,16 +722,6 @@ class KAGWindow extends Window
         historyLayer.name = "履歴レイヤ";
 		add(historyLayer);
 
-        // 選択肢レイヤの作成
-        selectLayer = new SelectLayer(this, fore.base);
-        selectLayer.name = "選択肢レイヤ";
-        add(selectLayer);
-
-        // マップ選択肢レイヤの作成
-        mapSelectLayer = new MapSelectLayer(this, fore.base);
-        mapSelectLayer.name = "マップ選択肢レイヤ";
-        add(mapSelectLayer);
-        
 		// 前景レイヤの作成
 		allocateCharacterLayers(numCharacterLayers);
 
@@ -1363,7 +1399,7 @@ class KAGWindow extends Window
         internalSetMenuAccessibleAll(menu, state);
 
         // その他のメニューの使用可/不可
-        var canSkip = !modal && (inStable || skipMode) && !inSleep && nextSkipEnabled && (allskip || getCurrentRead()) && !selectShowing && !mapSelectShowing;
+        var canSkip = !modal && (inStable || skipMode) && !inSleep && nextSkipEnabled && (allskip || getCurrentRead()) && !selectShowing && !mapSelectShowing && !transShowing;
         //dm("canSkip:" + canSkip);
         if(typeof this.skipToNextStopMenuItem != "undefined")
             skipToNextStopMenuItem.enabled = canSkip;
@@ -1372,10 +1408,10 @@ class KAGWindow extends Window
             rightClickMenuItem.enabled = inStable && !historyLayer.visible && !currentDialog;
 
 		if(typeof this.showHistoryMenuItem != "undefined")
-            showHistoryMenuItem.enabled = inStable && !messageLayerHiding && !mapSelectShowing && currentDialog===void &&
+            showHistoryMenuItem.enabled = inStable && !messageLayerHiding && !mapSelectShowing && !transShowing && currentDialog===void &&
 				historyEnabled;
 
-        var canAuto = !modal && (inStable || autoMode) && !inSleep && !skipMode && !selectShowing && !mapSelectShowing;
+        var canAuto = !modal && (inStable || autoMode) && !inSleep && !skipMode && !selectShowing && !mapSelectShowing && !transShowing;
         if(typeof this.autoModeMenuItem != "undefined")
             autoModeMenuItem.enabled = canAuto;
 
@@ -1411,7 +1447,7 @@ class KAGWindow extends Window
 
         // 全制御
         if (this == global.Window.mainWindow && typeof global.onModeChange !== "undefined") {
-            global.onModeChange(this, autoMode, skipMode, canAuto, canSkip, selectShowing || mapSelectShowing, modal);
+            global.onModeChange(this, autoMode, skipMode, canAuto, canSkip, selectShowing || mapSelectShowing || transShowing, modal);
         }
     }
 
@@ -1643,10 +1679,10 @@ class KAGWindow extends Window
             break;
         }
 
-        if (scflags.debugwin !== void) {
-            debugwin.visible = scflags.debugwin;
+        if (scflags.debugwin !== void && scflags.debugwin) {
+            debugwin.visible = true;
         }
-        if (typeof this.debugWinMenuItem != "undefined") {
+        if (typeof this.debugWinMenuItem != "undefined" && _debugwin !== void) {
             debugWinMenuItem.checked = debugwin.visible;
         }
 
@@ -1716,7 +1752,7 @@ class KAGWindow extends Window
 
         scflags.logMode = logMode;
         scflags.debugLevel = debugLevel;
-        scflags.debugwin = debugwin.visible;
+        scflags.debugwin = _debugwin !== void && debugwin.visible;
         scflags.autoLabelSaveMode = autoLabelSaveMode;
         
 		// ファイルに書き込む
@@ -2133,6 +2169,7 @@ class KAGWindow extends Window
         // 選択肢を隠す
         hideSelect();
         hideMapSelect();
+        hideTransLayer();
         
 		// スキップのキャンセル
         if (skipMode < 7) {
@@ -3121,9 +3158,11 @@ class KAGWindow extends Window
 	}
 
     function hideSelect() {
-        selectLayer.done();
-        selectShowing = false;
-        setMenuAccessibleAll();
+        if (_selectLayer !== void) {
+            selectLayer.done();
+            selectShowing = false;
+            setMenuAccessibleAll();
+        }
     }
     
     function afterSelect() {
@@ -3203,9 +3242,11 @@ class KAGWindow extends Window
 
     function hideMapSelect()
 	{
-        mapSelectLayer.done();
-        mapSelectShowing = false;
-        setMenuAccessibleAll();
+        if (_mapSelectLayer !== void) {
+            mapSelectLayer.done();
+            mapSelectShowing = false;
+            setMenuAccessibleAll();
+        }
     }
     
     function doneMapSelect()
@@ -3213,6 +3254,63 @@ class KAGWindow extends Window
         hideMapSelect();
         afterSelect();
         setMenuAccessibleAll();
+    }
+    
+    //------------------------------------------------------- 画面切り替え特殊レイヤ --
+
+    function hideTransLayer() {
+        if (_transLayer !== void) {
+            transLayer.stop();
+            transShowing = false;
+        }
+    }
+    
+    function layerTransBegin(elm)
+	{
+        hideTransLayer();
+        var time = elm.time !== void ? +elm.time : 1000;
+        var type = elm.type !== void ? elm.type : "wipeltor";
+        var waitParam  = %[];
+        var waitTime = void;
+        if((elm.canskip === void || +elm.canskip) && clickSkipEnabled) {
+            if(skipMode) {
+                return 0; // すぐに返る
+            }
+            waitParam.click = function() {hideTransLayer();} incontextof this;
+		}
+        if (elm.wait !== void) {
+            waitTime = time + +elm.wait;
+            dm("waitTime:" + waitTime);
+            waitParam.timeout = function() {} incontextof this;
+        } else {
+            waitParam.layertrans = function() {} incontextof this;
+        }
+        transLayer.start(elm, type, time, elm.color !== void ? +elm.color : 0x000000);
+        transShowing = true;
+        if (waitTime > 0) {
+            conductor.waitWithTimeOut(waitParam, waitTime);
+        } else {
+            conductor.wait(waitParam, waitTime);
+        }
+        return -2;
+	}
+
+    function layerTransEnd(elm) {
+        if (!transShowing) {
+            return 0;
+        }
+        var waitParam  = %[];
+        if((elm.canskip === void || +elm.canskip) && clickSkipEnabled) {
+            if(skipMode) {
+                hideTransLayer();
+                return 0; // すぐに返る
+            }
+            waitParam.click = function() {hideTransLayer();} incontextof this;
+        }
+        waitParam.layertrans = function() {hideTransLayer();} incontextof this;
+        transLayer.start(elm, elm.type, elm.time);
+        conductor.wait(waitParam);
+        return -2;
     }
     
 	//-------------------------------------------------------------- process --
@@ -7278,6 +7376,7 @@ class KAGWindow extends Window
         // 選択肢窓消去
         hideSelect();
         hideMapSelect();
+        hideTransLayer();
         return 0;
     } incontextof this,
 
@@ -7995,6 +8094,18 @@ class KAGWindow extends Window
 	{
         return endRecollection();
 	} incontextof this,
+
+	//----------------------------------------------- レイヤトランジション --
+
+	ltbegin : function(elm)
+	{
+		return layerTransBegin(elm);
+	} incontextof this,
+
+	ltend : function(elm)
+	{
+		return layerTransEnd(elm);
+	} incontextof this,
                   
 	//----------------------------------------------- タグハンドラ群の終わり --
 
@@ -8417,7 +8528,7 @@ class KAGWindow extends Window
      * デバッグ窓表示内容の更新
      */
     function updateDebugInfo() {
-        if (debugwin.visible) {
+        if (_debugwin !== void && debugwin.visible) {
             var title = "%06d:%s %s".sprintf(conductor.curLine, conductor.curStorage, conductor.curLabel);
             debugwin.fillRect(0, 0, debugwin.width, debugwin.height, 0xa0000000);
             debugwin.drawText(10, 10, title , 0xffffff);
