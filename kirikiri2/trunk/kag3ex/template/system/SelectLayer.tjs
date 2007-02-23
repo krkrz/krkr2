@@ -77,6 +77,7 @@ class SelectButtonLayer extends ButtonLayer
             width        = owner.selectWidth;
             height       = owner.selectHeight;
             captionColor = owner.selectColor;
+            color        = owner.selectBaseColor;
             caption      = message;
         }
     }
@@ -163,6 +164,7 @@ class SelectLayer {
     var selectWidth  = 400;
     var selectHeight = 50;
     var selectColor  = 0xffffff;
+    var selectBaseColor = 0x888888;
     var fontSize     = 24;
 
     // 画像データ
@@ -212,19 +214,21 @@ class SelectLayer {
         graphickey  = elm.graphickey if elm.graphickey !== void;
 
         // サイズ指定
-        selectWidth  = +elm.selectWidth  if elm.selectWidth  !== void;
-        selectHeight = +elm.selectHeight if elm.selectHeight !== void;
+        selectWidth  = +elm.selectwidth  if elm.selectwidth  !== void;
+        selectHeight = +elm.selectheight if elm.selectheight !== void;
+        selectColor = +elm.selectcolor if elm.selectcolor !== void;
+        selectBaseColor = +elm.selectbasecolor if elm.selectbasecolor !== void;
 
         // フォント指定
-        fontFace   = elm.fontFace if elm.fontFace !== void;
+        fontFace   = elm.fontface if elm.fontface !== void;
         fontSize   = elm.size if elm.size !== void;
         fontColor  = elm.color if elm.color !== void;
         fontItalic = elm.italic if elm.italic !== void;
         fontShadow = elm.shadow if elm.shadow !== void;
         fontEdge   = elm.edge   if elm.edge   !== void;
         fontBold   = elm.bold   if elm.bold   !== void;
-        fontEdgeColor = elm.edgeColor     if elm.edgeColor !== void;
-        fontShadowColor = elm.shadowColor if elm.shadowColor !== void;
+        fontEdgeColor = elm.edgecolor     if elm.edgecolor !== void;
+        fontShadowColor = elm.shadowcolor if elm.shadowcolor !== void;
 
         // 効果音指定
         enterse = elm.enterse if elm.enterse !== void;
