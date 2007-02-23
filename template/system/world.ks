@@ -3725,6 +3725,7 @@ class KAGEnvironment extends KAGEnvImage {
         if (timeName != time || disp == CLEAR) {
             time = timeName;
             disp = BOTH;
+            redraw = true;
 
             // 時間変更時フック
             if (global.setTimeHook !== void) {
