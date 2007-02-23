@@ -213,6 +213,7 @@ KAGLoadScript("KAGLayer.tjs");
 
 KAGLoadScript("ButtonLayer.tjs");
 
+KAGLoadScript("TransLayer.tjs");
 KAGLoadScript("SelectLayer.tjs");
 KAGLoadScript("MapSelectLayer.tjs");
 KAGLoadScript("DialogLayer.tjs");

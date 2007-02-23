@@ -1,0 +1,143 @@
+// 画面切り替え処理用レイヤ
+
+/**
+ * 画面切り替え処理用レイヤ
+ */
+class TransLayer extends Layer
+{
+    var owner; //< 親ウインドウ(kag)
+    var timer; //< タイマ
+
+    /**
+     * コンストラクタ
+     */
+    function TransLayer(owner) {
+        this.owner = owner;
+        super.Layer(owner, owner.primaryLayer);
+        timer = new Timer(onTimer, "");
+        timer.capacity = 1;
+        timer.interval = 10;
+        width = owner.scWidth;
+        height = owner.scHeight;
+        hitType = htMask;
+        hitThreshold = 256; // 全域透過
+    }
+
+    // ワイプの幅を指定
+    var wipe_size;
+    
+    function initWipeLR(elm) {
+        wipe_size = elm.size !== void ? +elm.size : 16;
+        maxCount  = ((width+wipe_size-1)/wipe_size)+wipe_size-1;
+    }
+
+    var types = %[
+      // 左から右にワイプ
+      wipeltor : %[
+        init : function(elm) {
+            initWipeLR(elm);
+        } incontextof this,
+        effect : function(count) {
+            var cnt = count;
+            for (var x=0; x<width; x+=wipe_size) {
+                var size = (cnt > wipe_size) ? wipe_size : (cnt < 0) ? 0 : cnt;
+                fillRect(x, 0, size, height, color);
+                cnt--;
+            }
+        } incontextof this
+      ],
+
+      // 右から左にワイプ
+      wipertol : %[
+        init : function(elm) {
+            initWipeLR(elm);
+        } incontextof this,
+        effect : function(count) {
+            var cnt = count;
+            for (var x=width; x>0; x-=wipe_size) {
+                var size = (cnt > wipe_size) ? wipe_size : (cnt < 0) ? 0 : cnt;
+                fillRect(x-size, 0, size, height, color);
+                cnt--;
+            }
+        } incontextof this
+      ],
+    ];
+    
+    var info;   //< 種別情報
+    var time;   //< 切り替えにかかる時間
+    var color;  //< 塗りつぶし色
+
+    var first;     //< 初回フラグ
+    var startTime; //< 開始時刻
+    var count;     //< 現在のカウント
+    var maxCount;  //< 最大カウント
+
+    /**
+     * タイマ駆動部
+     */
+    function onTimer() {
+        var now = System.getTickCount();
+        if (first) {
+            count = -1;
+            startTime = now;
+            first = false;
+        }
+        now -= startTime;
+
+        // 描画処理
+        var newcount;
+        if ((newcount = (now * maxCount)/time) > count) {
+            if (newcount >= maxCount) {
+                newcount = maxCount;
+            }
+            info.effect(newcount);
+            count = newcount;
+        } 
+
+        // 終了処理
+        if (count >= maxCount) {
+            done();
+            owner.trigger("layertrans");
+        }
+    }
+
+    /**
+     * 描画処理
+     */
+    function start(elm, type, time, color) {
+        parent = owner.primaryLayer;
+        this.time = time if time !== void;
+        if (color !== void) {
+            fillRect(0,0,width,height,neutralColor);
+            this.color = 0xff000000 | color;
+        } else {
+            // 消去
+            this.color = 0;
+        }
+        info = types[type] if type !== void;
+        if (info === void) {
+            info = types["wipeltor"];
+        }
+        info.init(elm);
+        visible = true;
+        timer.enabled = true;
+        first = true;
+    }
+
+    /**
+     * 終了
+     */
+    function done() {
+        timer.enabled = false;
+        fillRect(0,0,width,height,color);
+    }
+
+    /**
+     * 強制終了
+     */
+    function stop() {
+        done();
+        visible = false;
+    }
+
+};
