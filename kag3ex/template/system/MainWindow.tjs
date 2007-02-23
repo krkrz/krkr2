@@ -193,6 +193,7 @@ class KAGWindow extends Window
     var skipMode = 0; // スキップのモード
 		// 0=スキップなし, 1=クリック待ち記号まで, 2=改ページ待ち記号まで, 3=次の停止まで
 		// 4=早送り 5=次のラベルまで強制スキップ 6=次のスキップ解除まで強制スキップ
+        // 7=強制処理用
 
     // beginskip 中のスキップモード
     var prevSkipMode;
@@ -1122,7 +1123,7 @@ class KAGWindow extends Window
 	{
         if (autoLabelSaveMode) {
             // 外部シナリオに頼る
-            var exefile = "%ssearchprev.exe".sprintf(
+            var exefile = "%stools\\searchprev.exe".sprintf(
                 Storages.getLocalName(System.exePath));
             var param = "\"%s\" \"%s\" %d".sprintf(
                 Storages.getLocalName(System.exeName),
@@ -2134,7 +2135,9 @@ class KAGWindow extends Window
         hideMapSelect();
         
 		// スキップのキャンセル
-		cancelSkip();
+        if (skipMode < 7) {
+            cancelSkip();
+        }
 
 		// pflags -> flags
 		(Dictionary.assignStruct incontextof flags)(pflags);
@@ -5461,7 +5464,7 @@ class KAGWindow extends Window
 		}
 		if(skipMode == 1) cancelSkip();
 		if(skipMode == 4 && !skipKeyPressing()) cancelSkip();
-		if(skipMode == 4) return -4;
+		if(skipMode >= 4) return -4;
 		if(skipMode) return skipCancelKeyPressing()?-4:0;
 			// スキップ中(スキップをキャンセルするようなキーがあればスキップ解除
 			// のためのイベント処理の機会を与える)
@@ -7838,7 +7841,9 @@ class KAGWindow extends Window
 
         selectPrevAutoMode = autoMode;
         selectPrevSkipMode = skipMode;
-        cancelSkip();
+        if (skipMode < 7) {
+            cancelSkip();
+        }
         cancelAutoMode();
         
         stablePosibility = true;
@@ -7897,7 +7902,9 @@ class KAGWindow extends Window
 
         selectPrevAutoMode = autoMode;
         selectPrevSkipMode = skipMode;
-        cancelSkip();
+        if (skipMode < 7) {
+            cancelSkip();
+        }
         cancelAutoMode();
 
         stablePosibility = true;
