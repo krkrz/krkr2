@@ -70,17 +70,31 @@ function getFrom(value) {
 }
 
 /**
- * 相対位置指定の判定。指定値が "+" "-" ではじまっていたら基準値への相対とみなす
- * @param base  基準値
+ * 相対位置指定の判定。
+ * 指定値が "%" で終わっていたら最大値への相対での指定とみなす
+ * 指定値が "@" ではじまっていたら現在値への相対の指定とみなす
+ * @param base  現在値
  * @param value 指定値
+ * @param valueBase 指定の最大値
  */
-function calcRelative(base, value) {
+function calcRelative(base, value, valueBase) {
     if (value === void) {
         return value;
     } else {
         if (typeof value == "String") {
-            if (value.charAt(0) == '+' || value.charAt(0) == '-') {
+            // 相対指定の場合
+            if (value.charAt(0) == '@') {
+                value = value.substring(1);
+                // %指定の場合
+                if (valueBase !== void && value.charAt(-1) == '%') {
+                    value = valueBase * (int)value.substring(0,value.length - 1) / 100;
+                }
                 return (int)base + (int)value;
+            } else {
+                // %指定の場合
+                if (valueBase !== void && value.charAt(-1) == '%') {
+                    value = valueBase * (int)value.substring(0,value.length - 1) / 100;
+                }
             }
         }
         return (int)value;
@@ -180,7 +194,7 @@ class KAGEnvImage {
 
     // スキップ状態か
     function isSkip() {
-        return env.kag.skipMode || env.kag.noeffect;
+        return env.kag.skipMode != 7 && (env.kag.skipMode || env.kag.noeffect);
     }
 
     // 各種情報を保持する環境
@@ -212,11 +226,12 @@ class KAGEnvImage {
             return _disp;
         }
         setter(v) {
-            if (v !== void) {
+            if (v !== void && v != _disp) {
                 if (v < CLEAR && (_disp >= CLEAR)) {
                     if (opacity === void) {
                         // 非表示状態から表示に切り替わるときは不透明度を制御
                         opacity = 255;
+                        reposition = true;
                     }
                 }
                 _disp = v;
@@ -499,8 +514,8 @@ class KAGEnvImage {
             moveTime  = elm.time;
             moveAccel = elm.accel;
         }
-        xposFrom = calcRelative(xpos, getFrom(cmd));
-        xpos     = calcRelative(xpos, getTo(cmd));
+        xposFrom = calcRelative(xpos, getFrom(cmd), env.xmax);
+        xpos     = calcRelative(xpos, getTo(cmd), env.xmax);
         //dm("X位置指定:", xpos, xposFrom, moveTime);
         reposition = true;
     } 
@@ -510,8 +525,8 @@ class KAGEnvImage {
             moveTime  = elm.time;
             moveAccel = elm.accel;
         }
-        yposFrom = calcRelative(ypos, getFrom(cmd));
-        ypos     = calcRelative(ypos, getTo(cmd));
+        yposFrom = calcRelative(ypos, getFrom(cmd), env.ymax);
+        ypos     = calcRelative(ypos, getTo(cmd), env.ymax);
         //dm("Y位置指定:", ypos, yposFrom, moveTime);
         reposition = true;
     }
@@ -871,20 +886,20 @@ class KAGEnvImage {
         type =  global[param];
     } incontextof this,
     opacity : function(param, elm) {
-        opacityFrom = calcRelative(opacity, getFrom(param));
-        opacity     = calcRelative(opacity, getTo(param));
-        opacityTime = isSkip() ? 0 : elm.time;
+        opacityFrom = calcRelative(opacity, getFrom(param), 100);
+        opacity     = calcRelative(opacity, getTo(param), 100);
+        opacityTime = isSkip() ? 0 : +elm.time;
     } incontextof this,
     fade :  setFade incontextof this,
     rotate : function(param, elm) {
-        rotateFrom = calcRelative(rotate, getFrom(param));
-        rotate     = calcRelative(rotate, getTo(param));
-        rotateTime = isSkip() ? 0 : elm.time;
+        rotateFrom = calcRelative(rotate, getFrom(param), 360);
+        rotate     = calcRelative(rotate, getTo(param), 360);
+        rotateTime = isSkip() ? 0 : +elm.time;
     } incontextof this,
     zoom : function(param, elm) {
-        zoomFrom = calcRelative(zoom, getFrom(param));
-        zoom     = calcRelative(zoom, getTo(param));
-        zoomTime = isSkip() ? 0 : elm.time;
+        zoomFrom = calcRelative(zoom, getFrom(param), 100);
+        zoom     = calcRelative(zoom, getTo(param), 100);
+        zoomTime = isSkip() ? 0 : +elm.time;
     } incontextof this,
     afx : function(param, elm) {
         afx = param;
@@ -992,13 +1007,17 @@ class KAGEnvImage {
                 //dm("アクション復帰:" + f.actionList[i].module);
             }
         }
+        disp = f.disp;
         xpos      = f.xpos;
         xposFrom  = void;
         ypos      = f.ypos;
         yposFrom  = void;
         moveTime  = void;
         moveAccel = void;
-        reposition = true;
+
+        if (isShowBU()) {
+            reposition = true;
+        }
 
         _grayscale = f.grayscale;
         _rgamma    = f.rgamma;
@@ -1011,7 +1030,6 @@ class KAGEnvImage {
             redraw = true;
         }
         
-        disp = f.disp;
     }
 
     // このメソッドを実装する
@@ -1046,9 +1064,6 @@ class KAGEnvImage {
 
     // トランジション実行
     function beginTransition(trans) {
-        if (trans.time === void || isSkip()) {
-            trans.time = 0;
-        }
         trans.children = true;
         // メッセージ窓状態同期
         kag.insertTag("syncmsg");
@@ -1086,7 +1101,7 @@ class KAGEnvImage {
 
                 fadeTime = void;
 
-                if (trans.method !== void) {
+                if (trans.method !== void && !isSkip()) {
                     kag.fore.base.stopTransition();
                     // 全レイヤをバックアップ
                     kag.backupLayer(EMPTY, true);
@@ -1541,12 +1556,12 @@ class KAGEnvSimpleLayer extends KAGEnvLevelLayer, KAGEnvLayer {
     function calcPosition(layer) {
         if (reposition) {
             //dm("位置指定2");
-            var l = kag.scWidth / 2 + (int)xpos - layer.imageWidth / 2;
-            var t = kag.scHeight/ 2 + (int)ypos - layer.imageHeight / 2;
+            var l = env.xmax + (int)xpos - layer.imageWidth / 2;
+            var t = env.ymax + (int)ypos - layer.imageHeight / 2;
             if (moveTime !== void && moveTime > 0) {
                 if (xposFrom !== void || yposFrom !== void) {
-                    var fl = xposFrom !== void ? kag.scWidth  / 2 + (int)xposFrom - layer.imageWidth / 2 : l;
-                    var ft = yposFrom !== void ? kag.scHeight / 2 + (int)yposFrom - layer.imageHeight / 2 : t;
+                    var fl = xposFrom !== void ? env.xmax + (int)xposFrom - layer.imageWidth / 2 : l;
+                    var ft = yposFrom !== void ? env.ymax + (int)yposFrom - layer.imageHeight / 2 : t;
                     layer.setPos(fl, ft);
                 }
                 layer.setMove(l, t, moveAccel, moveTime);
@@ -1796,7 +1811,6 @@ class KAGEnvCharacter extends KAGEnvLevelLayer, KAGEnvImage {
             yoffset = elm.yoffset;
             if (disp == CLEAR) {
                 disp = init.noimage ? FACE : BOTH;
-                reposition = true;
             }
             redraw = true;
             reposition = true;
@@ -1819,7 +1833,6 @@ class KAGEnvCharacter extends KAGEnvLevelLayer, KAGEnvImage {
                 yoffset = info.yoffset;
                 if (disp == CLEAR) {
                     disp = init.noPose ? FACE : BOTH;
-                    reposition = true;
                 }
                 redraw = true;
                 reposition = true;
@@ -1863,7 +1876,6 @@ class KAGEnvCharacter extends KAGEnvLevelLayer, KAGEnvImage {
             dress = dressName;
             if (disp == CLEAR) {
                 disp = init.noPose ? FACE : BOTH;
-                reposition = true;
             }
             redraw = true;
             reposition = true;
@@ -1893,7 +1905,6 @@ class KAGEnvCharacter extends KAGEnvLevelLayer, KAGEnvImage {
             face = faceName;
             if (disp == CLEAR) {
                 disp = init.noPose ? FACE : BOTH;
-                reposition = true;
             }
             redraw = true;
             reposition = true;
@@ -1950,14 +1961,14 @@ class KAGEnvCharacter extends KAGEnvLevelLayer, KAGEnvImage {
             if (posFrom !== void && (fromInfo = env.positions[posFrom]) !== void) {
                 moveTime = isSkip() ? 0 : elm.time;
                 moveAccel = (elm.accel === void) ? 0 : +elm.accel;
-                xposFrom   = calcRelative(xpos, fromInfo.xpos);
-                xpos       = calcRelative(xpos, info.xpos);
+                xposFrom   = calcRelative(xpos, fromInfo.xpos, env.xmax);
+                xpos       = calcRelative(xpos, info.xpos, env.xmax);
                 reposition = true;
             } else {
-                var newxpos = calcRelative(xpos, info.xpos);
-                if (xpos != newxpos) {
+                var newxpos = calcRelative(xpos, info.xpos, env.xmax);
+                if (xpos == void || xpos != newxpos) {
                     moveTime = isSkip() ? 0 : elm.time;
-                    if (moveTime !== void && xpos == void) {
+                    if (moveTime !== void && xpos === void) {
                         moveTime = 0;
                     }
                     moveAccel = (elm.accel === void) ? 0 : +elm.accel;
@@ -1979,14 +1990,14 @@ class KAGEnvCharacter extends KAGEnvLevelLayer, KAGEnvImage {
             if (posFrom !== void && (fromInfo = env.positions[posFrom]) !== void) {
                 moveTime = isSkip() ? 0 : elm.time;
                 moveAccel = (elm.accel === void) ? 0 : +elm.accel;
-                yposFrom   = calcRelative(ypos, fromInfo.ypos);
-                ypos       = calcRelative(ypos, info.ypos);
+                yposFrom   = calcRelative(ypos, fromInfo.ypos, env.ymax);
+                ypos       = calcRelative(ypos, info.ypos, env.ymax);
                 reposition = true;
             } else {
-                var newypos = calcRelative(ypos, info.ypos);
-                if (ypos != newypos) {
+                var newypos = calcRelative(ypos, info.ypos, env.ymax);
+                if (ypos == void || ypos != newypos) {
                     moveTime = isSkip() ? 0 : elm.time;
-                    if (moveTime !== void && ypos == void) {
+                    if (moveTime !== void && ypos === void) {
                         moveTime = 0;
                     }
                     moveAccel = (elm.accel === void) ? 0 : +elm.accel;
@@ -2464,12 +2475,12 @@ class KAGEnvCharacter extends KAGEnvLevelLayer, KAGEnvImage {
             
             //dm("キャラ移動処理:", xpos, ypos, xposFrom, yposFrom);
             
-            var l = kag.scWidth  / 2 + ((int)xpos * zoom / 100) - layer.imageWidth / 2;
-            var t = kag.scHeight / 2 + ((yoff - (int)ypos) * zoom / 100) - layer.imageHeight + levelYoffset;
+            var l = env.xmax + ((int)xpos * zoom / 100) - layer.imageWidth / 2;
+            var t = env.ymax + ((yoff - (int)ypos) * zoom / 100) - layer.imageHeight + levelYoffset;
             if (moveTime) {
                 if (xposFrom !== void || yposFrom !== void) {
-                    var fl = xposFrom !== void ? kag.scWidth  / 2 + ((int)xposFrom * zoom / 100) - layer.imageWidth / 2 : l;
-                    var ft = yposFrom !== void ? kag.scHeight / 2 + ((yoff - (int)yposFrom) * zoom / 100) - layer.imageHeight + levelYoffset: t;
+                    var fl = xposFrom !== void ? env.xmax + ((int)xposFrom * zoom / 100) - layer.imageWidth / 2 : l;
+                    var ft = yposFrom !== void ? env.ymax + ((yoff - (int)yposFrom) * zoom / 100) - layer.imageHeight + levelYoffset: t;
                     layer.setPos(fl, ft);
                 } 
                 //dm("layer位置", layer.left, layer.top, l, t);
@@ -3150,6 +3161,8 @@ class KAGEnvironment extends KAGEnvImage {
 
     /// KAG本体の参照
     var kag;
+    var xmax;
+    var ymax;
 
     // フェード指定のデフォルト値
     // envinit.tjs で定義するか、システムのデフォルトを使う
@@ -3317,6 +3330,9 @@ class KAGEnvironment extends KAGEnvImage {
         super.KAGEnvImage(this);
         
         this.kag = kag;
+        xmax = kag.scWidth / 2;
+        ymax = kag.scHeight / 2;
+
         characters = %[];
         characterInits = %[];
         layers = %[];
@@ -3773,7 +3789,7 @@ class KAGEnvironment extends KAGEnvImage {
         ret = void;
         foreach(elm, checkTrans);
         // 未指定時
-        if (trans !== void && trans.method !== void) {
+        if (trans !== void && trans.method !== void && !isSkip()) {
             beginTransition(trans);
         } else {
             // 裏画面から書き戻す
@@ -3845,7 +3861,7 @@ class KAGEnvironment extends KAGEnvImage {
         ret = void;
         if (!transMode && !isSkip() && elm.nofade === void) {
             foreach(elm, checkTrans);
-            if (trans !== void && trans.method !== void) {
+            if (trans !== void && trans.method !== void && !isSkip()) {
                 kag.updateBeforeCh = 1;
                 kag.fore.base.stopTransition();
                 kag.backupLayer(EMPTY, true);
@@ -3872,7 +3888,7 @@ class KAGEnvironment extends KAGEnvImage {
         hideAll();
         if (!transMode && !isSkip()) {
             foreach(elm, checkTrans);
-            if (trans !== void && trans.method !== void) {
+            if (trans !== void && trans.method !== void && !isSkip()) {
                 kag.updateBeforeCh = 1;
                 kag.fore.base.stopTransition();
                 kag.backupLayer(EMPTY, true);
@@ -4084,12 +4100,12 @@ class KAGEnvironment extends KAGEnvImage {
     function calcPosition(layer) {
         if (reposition) { 
             //dm("位置指定2");
-            var l = kag.scWidth / 2 + (int)xpos - layer.imageWidth / 2;
-            var t = kag.scHeight/ 2 + (int)ypos - layer.imageHeight / 2;
+            var l = env.xmax + (int)xpos - layer.imageWidth / 2;
+            var t = env.ymax + (int)ypos - layer.imageHeight / 2;
             if (moveTime !== void && moveTime > 0) {
                 if (xposFrom !== void || yposFrom !== void) {
-                    var fl = xposFrom !== void ? kag.scWidth  / 2 + (int)xposFrom - layer.imageWidth / 2 : l;
-                    var ft = yposFrom !== void ? kag.scHeight / 2 + (int)yposFrom - layer.imageHeight / 2 : t;
+                    var fl = xposFrom !== void ? env.xmax + (int)xposFrom - layer.imageWidth / 2 : l;
+                    var ft = yposFrom !== void ? env.ymax + (int)yposFrom - layer.imageHeight / 2 : t;
                     layer.setPos(fl, ft);
                 }
                 layer.setMove(l, t, moveAccel, moveTime);
@@ -4124,7 +4140,7 @@ class KAGEnvironment extends KAGEnvImage {
 
                 fadeTime = void;
 
-                if (trans.method !== void) {
+                if (trans.method !== void && !isSkip()) {
                     kag.fore.base.stopTransition();
                     
                     // 更新処理を走らせる場合
