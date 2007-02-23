@@ -3584,6 +3584,9 @@ class KAGEnvironment extends KAGEnvImage {
 
         // SE ‰Šú‰»
         for (var i=0;i<ses.count;i++) {
+            if (ses[i].name !== void) {
+                ses[i].stop();
+            }
             ses[i].name  = void;
             ses[i].count = 0;
         }
