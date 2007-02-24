@@ -13,12 +13,23 @@ private:
 	int movie_width;
 	int movie_height;
 	float movie_fps;
+	int lastFrame;
 public:
 	SWFMovie();
 	~SWFMovie();
+	void draw(cairo_t *cairo, bool reset, int width, int height);
+	
 	void load(const char *name);
-	void setFrame(int frame);
-	void draw(cairo_t *cairo);
+	
+	void update(int advance);
+	void notifyMouse(int x, int y, int buttons);
+	
+	void play();
+	void stop();
+	void restart();
+	void back();
+	void next();
+	void gotoFrame(int frame);
 };
 
 #endif

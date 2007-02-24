@@ -14,8 +14,12 @@ layerExSWF::~layerExSWF()
 {
 }
 
+/**
+ * @param swf ムービー
+ * @param advance 経過時間(ms)
+ */
 void
 layerExSWF::drawSWF(SWFMovie *swf)
 {
-	swf->draw(cairo);
+	swf->draw(cairo, reseted, _width, _height);
 }
