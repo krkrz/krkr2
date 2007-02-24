@@ -30,18 +30,18 @@ layerExCairo::reset()
 {
 	// 基本処理
 	layerExBase::reset();
-	
-	// レイヤの情報変更があったか判定
-	if (width != _width ||
-		height != _height ||
-		buffer != _buffer ||
-		pitch != _pitch) {
 
+	// レイヤの情報変更があったかどうか
+	reseted = (width  != _width ||
+			   height != _height ||
+			   buffer != _buffer ||
+			   pitch  != _pitch);
+
+	if (reseted) {
 		width  = _width;
 		height = _height;
 		buffer = _buffer;
 		pitch  = _pitch;
-		
 		// cairo 用コンテキストの再生成
 		cairo_destroy(cairo);
 		cairo_surface_destroy(surface);

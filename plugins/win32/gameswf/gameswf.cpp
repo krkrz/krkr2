@@ -1,13 +1,12 @@
-#include "LayerExSWF.hpp"
-#include "SWFMovie.hpp"
+#include <stdio.h>
+#include <stdarg.h>
+#include <windows.h>
+#include "tp_stub.h"
 
-#include "gameswf/gameswf.h"
-#include "base/utility.h"
-#include "base/container.h"
-#include "base/tu_file.h"
-#include "base/tu_types.h"
-
-static void
+/**
+ * ログ出力用
+ */
+void
 message_log(const char* format, ...)
 {
 	va_list args;
@@ -19,39 +18,21 @@ message_log(const char* format, ...)
 }
 
 /**
- * ログ処理呼び出し
+ * エラーログ出力用
  */
-static void
-log_callback(bool error, const char* message)
+void
+error_log(const char* format, ...)
 {
-	if (error) {
-		TVPAddImportantLog(ttstr(message));
-	} else {
-		message_log(message);
-	}
+	va_list args;
+	va_start(args, format);
+	char msg[1024];
+	_vsnprintf(msg, 1024, format, args);
+	TVPAddImportantLog(ttstr(msg));
+	va_end(args);
 }
 
-static tu_file*	file_opener(const char* url)
-{
-	return new tu_file(url, "rb");
-}
-
-static void	fs_callback(gameswf::movie_interface* movie, const char* command, const char* args)
-{
-	// FS コマンド用
-	// 最終的に TJS 呼び出しに置換するべし
-	message_log("fs_callback: '");
-	message_log(command);
-	message_log("' '");
-	message_log(args);
-	message_log("'\n");
-}
-
-static void	test_progress_callback(unsigned int loaded_tags, unsigned int total_tags)
-{
-	// プログレスバー表示用
-	// 最終的に TJS の固有メソッド呼び出しを入れる
-}
+#include "LayerExSWF.hpp"
+#include "SWFMovie.hpp"
 
 ////////////////////////////////////////////////////////////////////////////////
 /// ncBind 用マクロ
@@ -61,6 +42,14 @@ static void	test_progress_callback(unsigned int loaded_tags, unsigned int total_
 NCB_REGISTER_CLASS(SWFMovie) {
 	NCB_CONSTRUCTOR(());
 	NCB_METHOD(load);
+	NCB_METHOD(update);
+	NCB_METHOD(notifyMouse);
+	NCB_METHOD(play);
+	NCB_METHOD(stop);
+	NCB_METHOD(restart);
+	NCB_METHOD(back);
+	NCB_METHOD(next);
+	NCB_METHOD(gotoFrame);
 }
 
 NCB_GET_INSTANCE_HOOK(layerExSWF)
@@ -91,27 +80,8 @@ NCB_ATTACH_CLASS_WITH_HOOK(layerExSWF, Layer) {
 	NCB_METHOD(drawSWF);
 }
 
-void PreRegistCallbackTest()
-{
-}
+extern void initSWFMovie();
+extern void destroySWFMovie();
 
-void PostRegistCallbackTest()
-{
-	gameswf::register_file_opener_callback(file_opener);
-	gameswf::register_fscommand_callback(fs_callback);
-	gameswf::register_log_callback(log_callback);
-}
-
-void PreUnregistCallbackTest()
-{
-	gameswf::clear();
-}
-
-void PostUnregistCallbackTest()
-{
-}
-
-NCB_PRE_REGIST_CALLBACK(   PreRegistCallbackTest);
-NCB_POST_REGIST_CALLBACK(  PostRegistCallbackTest);
-NCB_PRE_UNREGIST_CALLBACK( PreUnregistCallbackTest);
-NCB_POST_UNREGIST_CALLBACK(PostUnregistCallbackTest);
+NCB_POST_REGIST_CALLBACK(initSWFMovie);
+NCB_PRE_UNREGIST_CALLBACK(destroySWFMovie);

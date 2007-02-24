@@ -17,7 +17,8 @@ protected:
 	PitchT pitch;
 	cairo_surface_t *surface;
 	cairo_t * cairo;
-
+	bool reseted; //< ƒŠƒZƒbƒgˆ—‚³‚ê‚½‚©‚Ç‚¤‚©
+	
 public:
 	layerExCairo(DispatchT obj);
 	~layerExCairo();
