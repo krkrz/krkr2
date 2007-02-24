@@ -40,7 +40,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..;..\ncbind;cairo\src;tu-testbed"
+				AdditionalIncludeDirectories="..;..\ncbind;..\layerExCairo;..\layerExCairo\zlib;..\layerExCairo\cairo\src;tu-testbed"
 				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;LAYEREXSWF_EXPORTS"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -118,7 +118,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalIncludeDirectories="..;..\ncbind;cairo\src;tu-testbed"
+				AdditionalIncludeDirectories="..;..\ncbind;..\layerExCairo;..\layerExCairo\zlib;..\layerExCairo\cairo\src;tu-testbed"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;LAYEREXSWF_EXPORTS"
 				RuntimeLibrary="2"
 				UsePrecompiledHeader="0"
@@ -189,7 +189,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\layerExCairo.cpp"
+				RelativePath="..\layerExCairo\layerExCairo.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\layerExSWF.cpp"
 				>
 			</File>
 			<File
@@ -211,11 +215,15 @@
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
 			<File
-				RelativePath=".\layerExBase.hpp"
+				RelativePath="..\layerExCairo\layerExBase.hpp"
 				>
 			</File>
 			<File
-				RelativePath=".\layerExCairo.hpp"
+				RelativePath="..\layerExCairo\layerExCairo.hpp"
+				>
+			</File>
+			<File
+				RelativePath=".\layerExSWF.hpp"
 				>
 			</File>
 			<File

@@ -1,4 +1,4 @@
-#include "LayerExCairo.hpp"
+#include "LayerExSWF.hpp"
 #include "SWFMovie.hpp"
 
 #include "gameswf/gameswf.h"
@@ -53,10 +53,6 @@ static void	test_progress_callback(unsigned int loaded_tags, unsigned int total_
 	// 最終的に TJS の固有メソッド呼び出しを入れる
 }
 
-// --------------------------------------------------
-// SWF 関係情報
-// --------------------------------------------------
-
 ////////////////////////////////////////////////////////////////////////////////
 /// ncBind 用マクロ
 
@@ -67,7 +63,7 @@ NCB_REGISTER_CLASS(SWFMovie) {
 	NCB_METHOD(load);
 }
 
-NCB_GET_INSTANCE_HOOK(layerExCairo)
+NCB_GET_INSTANCE_HOOK(layerExSWF)
 {
 	// インスタンスゲッタ
 	NCB_INSTANCE_GETTER(objthis) { // objthis を iTJSDispatch2* 型の引数とする
@@ -91,8 +87,8 @@ private:
 }; // 実体は class 定義なので ; を忘れないでね
 
 // フックつきアタッチ
-NCB_ATTACH_CLASS_WITH_HOOK(layerExCairo, Layer) {
-	NCB_METHOD(drawTest);
+NCB_ATTACH_CLASS_WITH_HOOK(layerExSWF, Layer) {
+	NCB_METHOD(drawSWF);
 }
 
 void PreRegistCallbackTest()
