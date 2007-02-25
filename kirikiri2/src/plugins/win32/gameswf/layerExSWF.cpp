@@ -1,3 +1,7 @@
+// ---------------------------------------------------------------
+// SWF ムービー描画レイヤ
+// ---------------------------------------------------------------
+
 #include "layerExSWF.hpp"
 
 /**
@@ -14,6 +18,10 @@ layerExSWF::~layerExSWF()
 {
 }
 
+// 描画ターゲット
+extern cairo_t *ctarget;
+
+
 /**
  * @param swf ムービー
  * @param advance 経過時間(ms)
@@ -21,5 +29,6 @@ layerExSWF::~layerExSWF()
 void
 layerExSWF::drawSWF(SWFMovie *swf)
 {
-	swf->draw(cairo, reseted, _width, _height);
+	ctarget = cairo;
+	swf->draw(reseted, _width, _height);
 }
