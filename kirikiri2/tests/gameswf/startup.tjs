@@ -1,0 +1,66 @@
+Scripts.execStorage("SWFLayer.tjs");
+
+var WIDTH=640;
+var HEIGHT=480;
+
+class MyWindow extends Window
+{
+    //  メニュ
+    var filemenu;
+    var exitmenu;
+    
+    var base;   // ベースレイヤ
+    var layer;  // 表示レイヤ
+    
+    function MyWindow() {
+
+        super.Window();
+
+        caption = "GAMWSWF拡張";
+        
+        menu.add(filemenu = new MenuItem(this, "ファイル(&F)"));
+        filemenu.add(exitmenu = new MenuItem(this, "終了(&X)"));
+
+        // ベースレイヤ
+        base = new Layer(this,null);
+        base.visible=true;
+        base.setSize(WIDTH,HEIGHT);
+        base.fillRect(0,0,WIDTH,HEIGHT,0x888888);
+        setInnerSize(base.width, base.height);
+        add(base);
+        
+        layer = new SWFLayer(this, base);
+        layer.setSize(base.width, base.height);
+        layer.visible = true;
+        add(layer);
+    }
+
+    function finalize() {
+        invalidate layer;
+        super.finalize();
+    }
+    
+	function action(ev)
+	{
+        if(ev.type == "onClick" && ev.target == exitmenu) {
+            close();
+        }
+	}
+
+    // --------------------------------------------
+    
+    /**
+     * 再生開始
+     * @param filename ファイル名
+     */
+    function start(filename) {
+        layer.load(filename);
+    }
+}
+
+// 窓
+var win = new MyWindow();
+win.visible=true;
+
+//win.start("gameswf\\test_fill1.swf");
+win.start("gameswf\\test_shape_tweening.swf");
