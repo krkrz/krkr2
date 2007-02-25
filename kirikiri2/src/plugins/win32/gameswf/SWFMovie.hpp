@@ -17,11 +17,10 @@ private:
 	int movie_height;
 	float movie_fps;
 	int lastFrame;
-	bool updated;
 public:
 	SWFMovie();
 	~SWFMovie();
-	void draw(bool reset, int width, int height);
+	void draw(int width, int height);
 	
 	void load(const char *name);
 	
