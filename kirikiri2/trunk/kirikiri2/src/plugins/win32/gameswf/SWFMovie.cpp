@@ -49,21 +49,19 @@ SWFMovie::load(const char *name)
 }
 
 void
-SWFMovie::draw(bool reseted, int width, int height)
+SWFMovie::draw(int width, int height)
 {
 	if (m) {
-		if (updated || reseted) {
-			m->set_display_viewport(0, 0, width, height);
-			//m->set_background_alpha(s_background ? 1.0f : 0.05f);
-			m->display();
-		}
-		updated = false;
+		m->set_display_viewport(0, 0, width, height);
+		//m->set_background_alpha(s_background ? 1.0f : 0.05f);
+		m->display();
 	}
 }
 
 bool
 SWFMovie::update(int advance)
 {
+	bool updated = false;
 	if (m) {
 		if (advance > 0) {
 			m->advance(advance / 1000.0f);
