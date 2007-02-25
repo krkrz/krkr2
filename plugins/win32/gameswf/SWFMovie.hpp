@@ -1,7 +1,10 @@
+// ---------------------------------------------------------------
+// SWF ムービー情報処理クラス
+// ---------------------------------------------------------------
+
 #ifndef _swfMovie_hpp_
 #define _swfMovie_hpp_
 
-#include "cairo.h"
 #include "gameswf/gameswf.h"
 
 class SWFMovie
@@ -14,14 +17,15 @@ private:
 	int movie_height;
 	float movie_fps;
 	int lastFrame;
+	bool updated;
 public:
 	SWFMovie();
 	~SWFMovie();
-	void draw(cairo_t *cairo, bool reset, int width, int height);
+	void draw(bool reset, int width, int height);
 	
 	void load(const char *name);
 	
-	void update(int advance);
+	bool update(int advance);
 	void notifyMouse(int x, int y, int buttons);
 	
 	void play();
