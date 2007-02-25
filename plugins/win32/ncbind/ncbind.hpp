@@ -906,7 +906,7 @@ protected:
 	};
 
 	//--------------------------------------
-protected:
+public:
 	/// メソッド呼び出し入り口
 	template <typename InvokeT>
 	static inline tjs_error Invoke(InvokeT const &invoker) {
