@@ -39,9 +39,23 @@ error_log(const char* format, ...)
 
 #include "ncbind/ncbind.hpp"
 
+/**
+ * ファイル名変換用 proxy
+ */
+void swfload(SWFMovie *swf, const char *name)
+{
+	ttstr path(name);
+	TVPGetLocalName(path);
+	int len = path.GetNarrowStrLen() + 1;
+	char *filename = new char[len];
+	path.ToNarrowStr(filename, len);
+	swf->load(filename);
+	delete filename;
+}
+
 NCB_REGISTER_CLASS(SWFMovie) {
 	NCB_CONSTRUCTOR(());
-	NCB_METHOD(load);
+	NCB_METHOD_PROXY(load, swfload);
 	NCB_METHOD(update);
 	NCB_METHOD(notifyMouse);
 	NCB_METHOD(play);
