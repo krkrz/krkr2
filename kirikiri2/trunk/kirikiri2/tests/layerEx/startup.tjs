@@ -1,0 +1,127 @@
+Plugins.link("win32ole.dll");
+Scripts.execStorage("layerEx.tjs");
+Scripts.execStorage("AffineLayer.tjs");
+Scripts.execStorage("ActionLayer.tjs");
+
+var WIDTH=800;
+var HEIGHT=600;
+
+class MyWindow extends Window
+{
+    //  メニュ
+    var filemenu;
+    var exitmenu;
+    
+    // ベースレイヤ
+    var base;
+    // タイルレイヤ
+    var tile;
+    // 名前
+    var name;
+
+    // レイヤ
+    var layers = [];
+    
+    // 表示レイヤ
+    property layer {
+        getter() {
+            return layers[layers.count-1];
+        }
+    }
+
+    function addLayer() {
+        var newlayer =new ActionLayer(this, base);
+        newlayer.visible = true;
+        layers[layers.count] = newlayer;
+        init();
+    }
+
+    function initAll() {
+        for (var i=0;i<layers.count;i++) {
+            layers[i].visible = false;
+            invalidate layers[i];
+        }
+        invalidate layers;
+        layers = [];
+        addLayer();
+    }
+    
+    function init() {
+        layer.loadImages(name);
+        layer.setSizeToImageSize();
+        layer.drawText(0,0,"てすとテキスト",0);
+        layer.setPos((WIDTH - layer.width) / 2, (HEIGHT - layer.height) / 2);
+    }
+
+    var baseTime;
+    var currentTime;
+    var shiftTimer;
+    
+    function MyWindow(tileName, name) {
+
+        super.Window();
+
+        caption = "レイヤ拡張";
+        
+        menu.add(filemenu = new MenuItem(this, "ファイル(&F)"));
+        filemenu.add(exitmenu = new MenuItem(this, "終了(&X)"));
+
+        // ベースレイヤ
+        base = new Layer(this,null);
+
+        base.visible=true;
+        base.setSize(WIDTH,HEIGHT);
+        //base.fillRect(0,0,WIDTH,HEIGHT,0xffffff);
+        setInnerSize(base.width, base.height);
+
+        // タイル
+        tile = new Layer(this, base);
+        tile.loadImages(tileName);
+
+        this.name = name;
+        addLayer();
+
+        // タイル移動
+        currentTime = System.getTickCount();
+        shiftTimer = new Timer(shift, '');
+        shiftTimer.capacity = 1;
+        shiftTimer.interval = 10;
+        shiftTimer.enabled = true;
+    }
+
+    function finalize() {
+        invalidate shiftTimer;
+        invalidate tile;
+        invalidate layers;
+        invalidate base;
+        super.finalize();
+    }
+    
+	function action(ev)
+	{
+        if(ev.type == "onClick" && ev.target == exitmenu) {
+            close();
+        }
+	}
+    
+    function shift() {
+        var newTime = System.getTickCount();
+        var diff = newTime - currentTime;
+        currentTime = newTime;
+        baseTime += diff;
+        var x = -50 * baseTime / 1000 % tile.imageWidth;
+        var y = 50 * baseTime / 1000 % tile.imageHeight;
+        base.tileRect(20,20,WIDTH-40,HEIGHT-40,tile, x, y);
+    }
+
+}
+
+// 窓
+var win = new MyWindow("tile.png", "test.png");
+win.visible=true;
+
+// IE窓
+var ie = new ActiveX("Shell.Explorer.2");
+ie.setSize(650, 650);
+ie.Navigate2("krkr:control.html");
+ie.visible = true;

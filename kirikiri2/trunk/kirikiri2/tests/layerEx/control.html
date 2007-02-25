@@ -1,0 +1,186 @@
+<html>
+<head>
+<title>制御パネル</title>
+</head>
+<script>
+var win = window.external.win;
+var global = window.external;
+
+var mode =  [
+	global.ltPsNormal,
+	global.ltPsAdditive,
+	global.ltPsMultiplicative,
+	global.ltPsSubtractive,
+	global.ltPsScreen,
+	global.ltPsOverlay,
+	global.ltPsHardLight,
+	global.ltPsSoftLight,
+	global.ltPsColorDodge,
+	global.ltPsColorBurn,
+	global.ltPsLighten,
+	global.ltPsDarken,
+	global.ltPsDifference,
+	global.ltPsExclusion
+];
+
+function parseIntDefault(param, defaultValue)
+{
+    var ret = parseInt(param);
+    return isNaN(ret) ? defaultValue : ret;
+}
+
+function parseFloatDefault(param, defaultValue)
+{
+    var ret = parseFloat(param);
+    return isNaN(ret) ? defaultValue : ret;
+}
+
+function getInt(name, defaultValue) {
+    return parseIntDefault(document.getElementById(name).value, defaultValue);
+}
+
+function getFloat(name, defaultValue) {
+    return parseFloatDefault(document.getElementById(name).value, defaultValue);
+}
+
+function modeChange() {
+    win.layer.type = mode[getInt("mode1",0)];
+	win.layer.opacity = getInt("opacity", 255);
+}
+
+function light() {
+    win.layer.light(getInt("brightness", 0), getInt("contrast", 0));
+}
+
+function colorize() {
+    win.layer.colorize(getInt("hue", 0), getInt("saturation", 128), getFloat("colorizeBlend", 1.0));
+}
+
+function noise() {
+    win.layer.noise(getInt("noise", 0));
+}
+
+function fillOperateRect() {
+	win.layer.holdAlpha = true;
+    win.layer.fillOperateRect(0,0,win.layer.width, win.layer.height, getInt("rgb", 0xff0000) | 0xff000000, mode[getInt("mode2",0)]);
+}
+
+function dropShadow() {
+    win.layer.doDropShadow();
+}
+
+function blurLight() {
+    win.layer.doBlurLight();
+}
+
+function affine() {
+	win.layer.rotate = getInt("rotate",0);
+	win.layer.zoom   = getFloat("zoom", 100);
+}
+
+function rotate() {
+  var options = new Object();
+  options.time  = null;
+  options.delay = null;
+  options.angvel = getInt("angvel", 0);
+  win.layer.beginAction(global.LayerNormalRotateModule, options);
+}
+
+function vibrate() {
+  var options = new Object();
+  options.time  = null;
+  options.delay = null;
+  options.vibration = getInt("vibration", 0);
+  options.waitTime  = getInt("waitTime", 100);
+  win.layer.beginAction(global.LayerVibrateActionModule, options);
+}
+
+function jump() {
+  var options = new Object();
+  options.time  = null;
+  options.delay = null;
+  options.vibration = getInt("vibration2", 0);
+  options.cycle     = getInt("cycle", 1000);
+  win.layer.beginAction(global.LayerJumpActionModule, options);
+}
+
+function zoom() {
+  var options = new Object();
+  options.delay = null;
+  options.time = getInt("zoomTime", 1000);
+  options.zoom = getInt("zoomValue", 100);
+  win.layer.beginAction(global.LayerNormalZoomModule, options);
+}
+
+function stop() {
+  win.layer.stopAction();
+}
+
+</script>
+</head>
+<body>
+
+<p>
+<button onclick='win.init()'>初期化</button>
+<button onclick='win.addLayer()'>追加</button>
+<button onclick='win.initAll()'>消去</button>
+
+<pre>
+レイヤ基本機能
+モード:<select id=mode1>
+<option value=0>通常
+<option value=1>覆い焼き（リニア）
+<option value=2>焼きこみ（リニア）
+<option value=3>乗算
+<option value=4>スクリーン
+<option value=5>オーバレイ
+<option value=6>ハードライト
+<option value=7>ソフトライト
+<option value=8>覆い焼きカラー
+<option value=9>焼きこみカラー
+<option value=10>比較（明）
+<option value=11>比較（暗）
+<option value=12>差の絶対値
+<option value=13>除外
+</select> 不透明度:<input size=4 id=opacity value=255> <button onclick='modeChange()'>モード</button>
+</pre>
+<hr>
+<pre>
+レイヤ機能拡張
+明度:<input size=4 id=brightness value=-50> コントラスト:<input size=4 id=contrast value=50> <button onclick='light()'>光補正</button>
+色相:<input size=4 id=hue value=0> 彩度:<input size=4 id=saturation value=128> ブレンド:<input size=4 id=colorizeBlend value=1.0> <button onclick='colorize()'>カラーライズ</button>
+ノイズレベル:<input size=4 id=noise value=100> <button onclick='noise()'>ノイズ</button>
+RGB:<input size=10 id=rgb value="0xaaaa88"> モード:<select id=mode2>
+<option value=0>通常
+<option value=1>覆い焼き（リニア）
+<option value=2>焼きこみ（リニア）
+<option value=3>乗算
+<option value=4>スクリーン
+<option value=5 selected>オーバレイ
+<option value=6>ハードライト
+<option value=7>ソフトライト
+<option value=8>覆い焼きカラー
+<option value=9>焼きこみカラー
+<option value=10>比較（明）
+<option value=11>比較（暗）
+<option value=12>差の絶対値
+<option value=13>除外
+</select><button onclick='fillOperateRect()'>モードつき上書き塗りつぶし</button>
+<button onclick='blurLight()'>ぼかしライト</button> <button onclick='dropShadow()'>影付け</button>
+</pre>
+<hr>
+<pre>
+アフィンレイヤ:回転角と拡大率を保持できるレイヤ
+回転角:<input size=4 id=rotate value=45> 拡大率:<input size=4 id=zoom value=120> <button onclick='affine()'>アフィン変形</button>
+</pre>
+<hr>
+<pre>
+アクションレイヤ:アクションを自動処理するレイヤ
+角速度:<input size=4 id=angvel value=20>  <button onclick='rotate()'>回転</button>
+振動量<input size=4 id=vibration value=10> 振動間時間:<input size=4 id=waitTime value=100> <button onclick='vibrate()'>振動</button>
+振動量<input size=4 id=vibration2 value=20> 周期:<input size=4 id=cycle value=1000> <button onclick='jump()'>縦振動</button>
+ズーム<input size=4 id=zoomValue value=10> 時間:<input size=4 id=zoomTime value=1000> <button onclick='zoom()'>単純ズーム</button>
+<button onclick='stop()'>停止</button>
+</pre>
+</body>
+</html>

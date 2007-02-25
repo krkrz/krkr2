@@ -1,5 +1,27 @@
 Scripts.execStorage("SWFLayer.tjs");
 
+class CommandMenuItem extends MenuItem
+{
+	var command = null;
+
+	function CommandMenuItem(window, caption, cmd)
+	{
+		super.MenuItem(window, caption);
+		command = cmd;
+	}
+
+	function finalize()
+	{
+		super.finalize(...);
+	}
+
+	function onClick()
+	{
+		super.onClick(...);
+		if(command !== null) command(this);
+	}
+}
+
 var WIDTH=640;
 var HEIGHT=480;
 
@@ -19,6 +41,7 @@ class MyWindow extends Window
         caption = "GAMWSWF拡張";
         
         menu.add(filemenu = new MenuItem(this, "ファイル(&F)"));
+		filemenu.add(this.openMenuItem = new CommandMenuItem(this, "開く(&O) ...", openFile));
         filemenu.add(exitmenu = new MenuItem(this, "終了(&X)"));
 
         // ベースレイヤ
@@ -48,6 +71,20 @@ class MyWindow extends Window
 	}
 
     // --------------------------------------------
+
+	function openFile(fn)
+	{
+		var params = %[
+			filter : [ "SWFファイル(*.swf)|*.swf" ],
+			filterIndex : 1,
+			name : "",
+			title : "ファイルを開く",
+			save : false,
+            ];
+        if (Storages.selectFile(params)) {
+            start(params.name);
+        }
+	}
     
     /**
      * 再生開始
@@ -61,6 +98,3 @@ class MyWindow extends Window
 // 窓
 var win = new MyWindow();
 win.visible=true;
-
-//win.start("gameswf\\test_fill1.swf");
-win.start("gameswf\\test_shape_tweening.swf");
