@@ -30,5 +30,5 @@ void
 layerExSWF::drawSWF(SWFMovie *swf)
 {
 	ctarget = cairo;
-	swf->draw(reseted, _width, _height);
+	swf->draw(_width, _height);
 }
