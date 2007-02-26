@@ -54,7 +54,7 @@ struct render_handler_cairo : public gameswf::render_handler
 	float	m_display_width;
 	float	m_display_height;
 	
-	gameswf::matrix	m_current_matrix;
+	cairo_matrix_t m_current_matrix;
 	gameswf::cxform	m_current_cxform;
 
 	~render_handler_cairo() {}
@@ -105,7 +105,8 @@ struct render_handler_cairo : public gameswf::render_handler
 			// ビューポート補正
 			double sx = (double)viewport_width / m_display_width;
 			double sy = (double)viewport_height / m_display_height;
-			cairo_matrix_init_scale(&viewport, sx, sy);
+			double scale = sx < sy ? sx : sy;
+			cairo_matrix_init_scale(&viewport, scale, scale);
 			cairo_matrix_translate(&viewport, viewport_x0 - x0 * sx, viewport_y0 - y0 * sy);
 			cairo_set_matrix(ctarget, &viewport);
 
@@ -125,13 +126,20 @@ struct render_handler_cairo : public gameswf::render_handler
 	
 	// Geometric and color transforms for mesh and line_strip rendering.
 	virtual void	set_matrix(const matrix& m) {
-		m_current_matrix = m;
+		cairo_matrix_init(&m_current_matrix,
+						  m.m_[0][0],
+						  m.m_[1][0],
+						  m.m_[0][1],
+						  m.m_[1][1],
+						  m.m_[0][2],
+						  m.m_[1][2]);
 	}
 	
 	virtual void	set_cxform(const cxform& cx) {
 		m_current_cxform = cx;
 	}
-		
+
+	
 	// Draw triangles using the current fill-style 0.
 	// Clears the style list after rendering.
 	//
@@ -142,6 +150,8 @@ struct render_handler_cairo : public gameswf::render_handler
 		if (ctarget) {
 			Sint16 *c = (Sint16*)coords;
 			int i = 0;
+			cairo_save(ctarget);
+			cairo_transform(ctarget, &m_current_matrix);
 			cairo_new_path(ctarget);
 			while (i < vertex_count) {
 				int n = i*2;
@@ -152,6 +162,7 @@ struct render_handler_cairo : public gameswf::render_handler
 				i++;
 			}
 			cairo_fill (ctarget);
+			cairo_restore(ctarget);
 		}
 	}
 
@@ -159,8 +170,10 @@ struct render_handler_cairo : public gameswf::render_handler
 	virtual void	draw_triangle_list(const void *coords, int vertex_count) {
 		if (ctarget) {
 			Sint16 *c = (Sint16*)coords;
-			int i = 0;
+			cairo_save(ctarget);
+			cairo_transform(ctarget, &m_current_matrix);
 			cairo_new_path(ctarget);
+			int i = 0;
 			while (i < vertex_count) {
 				int n = i*2;
 				cairo_move_to(ctarget, c[n  ], c[n+1]);
@@ -170,6 +183,7 @@ struct render_handler_cairo : public gameswf::render_handler
 				i += 3;
 			}
 			cairo_fill (ctarget);
+			cairo_restore(ctarget);
 		}
 	}
 		
@@ -181,6 +195,8 @@ struct render_handler_cairo : public gameswf::render_handler
 	virtual void	draw_line_strip(const void* coords, int vertex_count) {
 		if (ctarget) {
 			Sint16 *c = (Sint16*)coords;
+			cairo_save(ctarget);
+			cairo_transform(ctarget, &m_current_matrix);
 			cairo_new_path(ctarget);
 			cairo_move_to(ctarget, c[0], c[1]);
 			int i = 1;
@@ -190,6 +206,7 @@ struct render_handler_cairo : public gameswf::render_handler
 				i++;
 			}
 			cairo_stroke(ctarget);
+			cairo_restore(ctarget);
 		}
 	}
 		
