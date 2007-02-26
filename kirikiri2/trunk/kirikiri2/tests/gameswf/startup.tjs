@@ -22,8 +22,8 @@ class CommandMenuItem extends MenuItem
 	}
 }
 
-var WIDTH=640;
-var HEIGHT=480;
+var WIDTH=300;
+var HEIGHT=300;
 
 class MyWindow extends Window
 {

@@ -21,8 +21,9 @@ class SWFLayer extends Layer
         super.finalize();
     }
 
-    var tick;   //< 再生表示用 tick
-    var first;  //< 初回描画フラグ
+    var tick;    //< 再生表示用 tick
+    var first;   //< 初回描画フラグ
+    var updated; //< 描画更新フラグ
     
     function _start() {
         first = true;
@@ -46,14 +47,18 @@ class SWFLayer extends Layer
      */
     function onTimer(now) {
         if (first) {
-            update();
+            updated = true;
             first = false;
+            update();
         } else {
             if (swf.update(now - tick)) {
+                updated = true;
                 update();
             }
         }
         tick = now;
+        // 描画終了判定が必要
+        // XXX_stop();
     }
 
     /**
@@ -61,11 +66,10 @@ class SWFLayer extends Layer
      */
     function onPaint() {
         super.onPaint(...);
-        fillRect(0,0,width,height,0);
-        if (drawSWF(swf)) {
-            // 描画終了
-            _stop();
-        } else {
+        if (updated) {
+            fillRect(0,0,width,height,0);
+            drawSWF(swf);
+            updated = false;
         }
     }
 
