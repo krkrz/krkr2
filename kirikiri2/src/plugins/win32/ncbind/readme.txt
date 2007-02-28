@@ -24,11 +24,11 @@ VC++2003 や他のコンパイラは未確認なのでどうなるかわかりません。
 #include "既存ライブラリのヘッダ等"
 
 NCB_REGISTER_CLASS(登録するクラス名) {
-  NCB_CONSTRUCTOR((コンストラクタの引数の型 ...));
-  NCB_METHOD(登録するメソッド1);
-  NCB_METHOD(登録するメソッド2);
+  Constructor<コンストラクタの引数の型, ...>(0);
+  Method("登録するメソッド名1", &Class::登録するメソッド1);
+  Method("登録するメソッド名2", &Class::登録するメソッド2);
      :
-  NCB_METHOD(登録するメソッドn);
+  Method("登録するメソッド名n", &Class::登録するメソッドn);
 }
 
 詳しくは testbind.cpp のソースを見るなどしてください。
@@ -57,48 +57,50 @@ NCB_REGISTER_CLASS では Class が，NCB_REGISTER_CLASS_DIFFERでは Name が
 グローバル空間上での名前となります。同じクラスの多重登録はエラーになります。
 
 
-以下の NCB_{ CONSTRUCTOR, METHOD*, PROPERTY* }マクロは
-この NCB_REGISTER_CLASS ブロック内でしか使えません。
+※ 以前のバージョンの NCB_{ CONSTRUCTOR, METHOD*, PROPERTY* } マクロも
+　使用できますが，Bridge用のマクロは用意されていません。
 
-
-　　▼NCB_CONSTRUCTOR((arg1, arg2, ...));
+----------------------------------------------------------------
+　　▽Constructor();
+　　▽Constructor<arg1, arg2, ...>(0);
 
 引数の型のリスト (arg1, arg2, ...) を渡してコンストラクタを登録します。
+直後の (0) は Constructor のオーバーロード用のシグネチャとして必要です。
+デフォルトコンストラクタ（引数なし）を登録する場合はその限りではありません。
+
 型の一致したコンストラクタが TJS から new するときに呼ばれます。
 登録しない場合はそのクラスを new するとエラーになります。（※まだ未実装）
 また，オーバーロードされた複数コンストラクタの登録はできません。
 最初に登録されたものが有効となります。（実行時に警告メッセージが出ます）
 
 
-　　▼NCB_METHOD(Method);
+----------------------------------------------------------------
+　　▽Method(Name, &Class::Method);
 
-クラスメソッド Method を登録します。
-Method がそのままクラスメソッド名となります。
-オーバーロード等で同じ前のメソッドが複数ある場合は
-メソッド型の自動判定に失敗するので NCB_METHOD_DETAIL を使ってください。
+クラスメソッド Method を登録します。Class は NCB_REGISTER_CLASS にて
+渡されたクラスが typedef されています。
+Name は TJS_W() 経由のワイド文字でも，直記述のナロー文字列でもかまいません。
+（ナローの場合は登録時に自動的に変換がかかります）
 
+オーバーロード等で同じ名前のメソッドが複数ある場合は
+メソッド型の自動判定に失敗するので static_cast または method_cast を
+使用してください。
 
-　　▼NCB_METHOD_DIFFER(Name, Method);
+　　static_cast<ReturnType (Class::*)(arg1, ... argN) [const]>(&Class::Method)
+　　method_cast<ReturnType, Type, arg1, ... argN>(&Class::Method)
 
-Name という名前でクラスメソッド Method を登録します。
-NCB_METHOD(Method) は NCB_METHOD_DIFFER(Method, Method) と等価です。
-
-
-　　▼NCB_METHOD_DETAIL(Name, Type, ReturnType, Method, (arg1,arg2, ...));
-
-引数や返り値を指定してメソッド Method を Name という名前で登録します。
-対象クラス内のメソッドである場合は ClassT::Method と記述して渡してください。
-（Method は対象クラス外の static なメソッドも渡せます。）
-
+ReturnType は メソッドの帰り値の型です。
 Type はクラスメソッドのタイプで，
 	Class	普通のクラスメソッド
 	Const	const なクラスメソッド（ReturnType Method(arg...) const;）
 	Static	static なクラスメソッド
 の 3つのうちどれかを記述します。
+arg1, ... argN は引数の型を指定します。
 
 
-　　▼NCB_METHOD_PROXY(Name, Method);
-　　▼NCB_METHOD_PROXY_DETAIL(Name, ...); // METHOD_DETAILと同じ
+
+----------------------------------------------------------------
+　　▽Method(Name, &Method, Proxy);
 
 クラス外のstatic関数をクラスメソッドとして振舞わせるよう登録します。
 その関数の一番目の引数は必ずそのクラスのインスタンスポインタ型にします。
@@ -108,7 +110,58 @@ Type はクラスメソッドのタイプで，
 何らかの特殊な処理を入れたいなどの場合で有効です。
 
 
-　　▼NCB_METHOD_RAW_CALLBACK(Name, Callback, Flag);
+----------------------------------------------------------------
+　　▽Method(Name, &Method, Bridge<BridgeFunctor>());
+
+ブリッジファンクタを指定して，そのクラス内から別のクラスインスタンスに
+処理を委譲するメソッドを登録します。
+ファンクタは以下のような形式です。
+
+struct BridgeFunctor { 
+  BridgeClass* operator()(Class* p) const {
+    return p->BridgeInstance;
+  }
+};
+	Class          : 登録中のクラス
+	BridgeClass    : 処理を委譲するクラス
+	BridgeInstance : Class内に保持されている BridgeClass のインスタンス
+
+Methodは委譲先のクラスのメソッドを記述します。
+&Class::Method ではなく，&BridgeClass::Method という表記になります。
+
+
+----------------------------------------------------------------
+　　▽Method(Name, &Method, ProxyBridge<BridgeFunctor>());
+　　▽Method(Name, &Method, BridgeProxy<BridgeFunctor>());
+
+Proxyつきのブリッジ登録です。
+
+
+----------------------------------------------------------------
+　　▽Property(Property, GetterMethod, SetterMethod);
+
+Property という名前でプロパティを登録します。
+GetterMethod, SetterMethod はそれぞれ
+プロパティ取得，プロパティ設定メソッドです。
+SetterMethod または GetterMethod に 0 を渡すと，
+それぞれ は読み込み専用，書き込み専用プロパティになります。
+
+Setter/Getterのメソッド型のチェックが甘いので
+指定するメソッドには注意してください。
+
+----------------------------------------------------------------
+　　▽Property(Property, GetterMethod, SetterMethod, Proxy);
+　　▽Property(Property, GetterMethod, SetterMethod, Bridge<Functor>());
+　　▽Property(Property, GetterMethod, SetterMethod, ProxyBridge<Functor>());
+　　▽Property(Property, GetterMethod, SetterMethod, BridgeProxy<Functor>());
+
+Proxy/Bridgeつきのプロパティを登録します。
+詳細は Method 項目を参照してください。
+
+
+
+----------------------------------------------------------------
+　　▽RawCallback(Name, &Callback, Flag);
 
 コールバックを指定して Name という名前でメソッドを登録します。
 Callback は tTJSNativeClassMethodCallback 型の static 関数ポインタか，
@@ -121,31 +174,16 @@ Flag は，
 	TJS_STATICMEMBER (staticメソッド時) 
 のどちらかが指定できます。
 
+----------------------------------------------------------------
+　　▽RawCallback(Name, &GetterCallback, &SetterCallback, Flag);
 
-　　▼NCB_PROPERTY   (Property, GetterMethod, SetterMethod);
-　　▼NCB_PROPERTY_RO(Property, GetterMethod);
-　　▼NCB_PROPERTY_WO(Property, SetterMethod);
+コールバック指定のプロパティ登録です。
 
-Property という名前でプロパティを登録します。
-GetterMethod, SetterMethod はそれぞれ
-プロパティ取得，プロパティ設定メソッドです。
-_RO, _WO は読み込み専用，書き込み専用プロパティを作るときに使います。
 
-Setter/Getterのメソッド型のチェックが甘いので
-指定するメソッドには注意してください。
 
-　　▼NCB_PROPERTY_DETAIL   (Name, Type, ReturnType, Method, (args, ...),
-　　                               Type, ReturnType, Method, (args, ...));
-　　▼NCB_PROPERTY_DETAIL_RO(Name, Type, ReturnType, Method, (args, ...));
-　　▼NCB_PROPERTY_DETAIL_RW(Name, Type, ReturnType, Method, (args, ...));
+----------------------------------------------------------------
 
-関数の型を指定してプロパティを登録します。
-
-　　▼NCB_PROPERTY_PROXY,_RO,_WO
-　　▼NCB_PROPERTY_PROXY_DETAIL,_RO,_WO
-
-NCB_METHOD_PROXY のプロパティ版です。
-
+マクロ説明の続き：
 
 
 　▼NCB_ATTACH_CLASS(          Class, TJS2Class) { ... }

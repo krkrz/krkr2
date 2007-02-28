@@ -55,6 +55,7 @@ private:
 
 	template <typename T> struct tMethodHasResult;
 
+public:
 #define FOREACH_INCLUDE "ncb_foreach.h"
 #undef  FOREACH_START
 #define FOREACH_START FOREACH_MAX
@@ -62,17 +63,19 @@ private:
 #define FOREACH_END   FOREACH_MAX
 
 #define MARGS_DEF_EXT(n) typename T ## n = void
+#define MARGS_PRM_EXT(n) typename T ## n
 #define MARGS_ARG_EXT(n)          T ## n
 #define MARGS_REF_EXT(n) typedef  T ## n Arg ## n ## Type;
 #undef  FOREACH
 #define FOREACH \
-public: \
 	template <                                   FOREACH_COMMA_EXT(MARGS_DEF_EXT)> struct tMethodArgs { FOREACH_SPACE_EXT(MARGS_REF_EXT) }; \
 	template <typename ResultT, typename ClassT, FOREACH_COMMA_EXT(MARGS_DEF_EXT) > \
 	struct tMethodType { typedef typename tMethodResolver<ResultT, ClassT, tMethodArgs<FOREACH_COMMA_EXT(MARGS_ARG_EXT)> >::MethodType Type; };
 #include FOREACH_INCLUDE
 #undef  MARGS_DEF_EXT
+#undef  MARGS_PRM_EXT
 #undef  MARGS_ARG_EXT
+#undef  MARGS_REF_EXT
 
 //--------------------------------------
 // main template
@@ -87,9 +90,13 @@ public: \
 	static bool Invoke(FncT io, MethodT const &m) {
 		return MCIMPL_TEMPL::Invoke(io, m);
 	}
+private:
+	template <class FncT, typename MethodT>               static inline bool invokeSelect(FncT io, MethodT const &m, void*)        { return Invoke(io, m); } // for static method
+	template <class FncT, typename MethodT, class ClassT> static inline bool invokeSelect(FncT io, MethodT const &m, ClassT *inst) { return (inst != 0) && MCIMPL_TEMPL::Invoke(io, m, inst); } // for class method
+public:
 	template <class FncT, typename MethodT> 
 	static bool Invoke(FncT io, MethodT const &m, typename tMethodTraits<MethodT>::ClassWithConstType *inst) {
-		return (inst != 0) && MCIMPL_TEMPL::Invoke(io, m, inst);
+		return invokeSelect(io, m, inst);
 	}
 	template <class FncT, typename MethodT>
 	static bool Invoke(FncT io, MethodT const &m, typename tMethodTraits<MethodT>::ClassWithConstType &inst) {
@@ -101,6 +108,10 @@ public: \
 				typename tMethodTraits<MethodT>::ClassType, 
 				typename tMethodTraits<MethodT>::ArgsType,
 				FncT>::Factory(io));
+	}
+	template <class FncT, typename ClassT, typename ArgsT>
+	static ClassT* Factory(FncT io, tTypeTag<ClassT>, tTypeTag<ArgsT>) {
+		return (tInstanceFactoryImpl<ClassT, ArgsT, FncT>::Factory(io));
 	}
 };
 
@@ -257,5 +268,23 @@ template <>           struct MC::tMethodHasResult<void> { enum { HasResult = fal
 #define MCCAST_2( MM, MR, MC, T1, T2                                                                                   ) static_cast<MethodCaller::tMethodType<MR, MC, T1, T2                                                                                   >::Type>(MM)
 #define MCCAST_1( MM, MR, MC, T1                                                                                       ) static_cast<MethodCaller::tMethodType<MR, MC, T1                                                                                       >::Type>(MM)
 #define MCCAST_0( MM, MR, MC                                                                                           ) static_cast<MethodCaller::tMethodType<MR, MC                                                                                           >::Type>(MM)
+
+
+#undef  FOREACH_START
+#define FOREACH_START 0
+#undef  FOREACH_END
+#define FOREACH_END   FOREACH_MAX
+#define MCAST_PRM_EXT(n) typename T ## n
+#define MCAST_ARG_EXT(n)          T ## n
+#undef  FOREACH
+#define FOREACH \
+	template <             typename ResultT, typename ClassT /**/ FOREACH_COMMA /**/ FOREACH_COMMA_EXT(MCAST_PRM_EXT) > \
+		static inline   typename MethodCaller::tMethodType<ResultT, ClassT /**/ FOREACH_COMMA /**/ FOREACH_COMMA_EXT(MCAST_ARG_EXT)>::Type \
+			method_cast(typename MethodCaller::tMethodType<ResultT, ClassT /**/ FOREACH_COMMA /**/ FOREACH_COMMA_EXT(MCAST_ARG_EXT)>::Type method) { return method; }
+#include FOREACH_INCLUDE
+#undef  MCAST_PRM_EXT
+#undef  MCAST_ARG_EXT
+
+template <typename T> static inline T method_cast(T method) { return method; }
 
 #endif

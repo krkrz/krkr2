@@ -4,7 +4,7 @@ KIRIKIRI = $(KIRIKIRI_DIR)/krkr.exe
 
 TARGET = testbind.dll
 OBJS = ../tp_stub.o ncbind.o testbind.o
-CXXFLAGS += -O2 -I.. -DDEBUG
+CXXFLAGS += -O2 -I.. -DDEBUG -Wall -Wno-unused-parameter
 
 
 
