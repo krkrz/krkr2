@@ -117,7 +117,7 @@ struct ncbInstanceAdaptor : public tTJSNativeInstance {
 	typedef ncbInstanceAdaptor<NativeClassT> AdaptorT;
 	typedef ncbClassInfo<NativeClassT>       ClassInfoT;
 
-	/*constructor*/ ncbInstanceAdaptor() : _instance(0) {}
+	/*constructor*/ ncbInstanceAdaptor() : _instance(0), _sticky(false) {}
 	/*destructor*/ ~ncbInstanceAdaptor() { _deleteInstance(); }
 
 	// TJS2 オブジェクトが作成されるときに呼ばれる
@@ -132,15 +132,21 @@ private:
 	/// 実インスタンスへのポインタ
 	NativeClassT *_instance;
 
+	/// deleteしないフラグ
+	bool _sticky;
+
 	/// 実インスタンス破棄
 	void _deleteInstance() {
-		if (_instance) delete _instance;
+		if (_instance && !_sticky) delete _instance;
 		_instance = 0;
+		_sticky   = false;
 	}
+
+public:
+	void setSticky() { _sticky = true; }
 
 	//--------------------------------------
 	// staticヘルパ関数
-public:
 
 	/// iTJSDispatch2 から Adaptor を取得
 	static AdaptorT *GetAdaptor(iTJSDispatch2 *obj, bool err = false) {
@@ -189,7 +195,7 @@ public:
 	}
 
 	/// クラスオブジェクトからAdaptorインスタンスを生成してinstanceを代入
-	static iTJSDispatch2* CreateAdaptor(NativeClassT *inst, bool err = false) {
+	static iTJSDispatch2* CreateAdaptor(NativeClassT *inst, bool sticky = false, bool err = false) {
 		typename ClassInfoT::ClassObjectT *clsobj = ClassInfoT::GetClassObject();
 		if (!clsobj) {
 			if (err) TVPThrowExceptionMessage(TJS_W("No class object."));
@@ -207,7 +213,10 @@ public:
 			return 0;
 		}
 		AdaptorT *adp = GetAdaptor(obj, err);
-		if (adp) adp->_instance = inst;
+		if (adp) {
+			adp->_instance = inst;
+			if (sticky) adp->setSticky();
+		}
 		return obj;
 	}
 
@@ -474,14 +483,21 @@ struct ncbNativeObjectBoxing {
 	typedef ncbTypeConvertor ConvT;
 	/// Boxing
 	struct Boxing {
+		template <typename T> struct box            { static T* Get(T const &t) { return           new T(t); } enum { Sticky = false }; };
+		template <typename T> struct box<T&>        { static T* Get(T       &t) { return                &t ; } enum { Sticky = true  }; };
+		template <typename T> struct box<T const&>  { static T* Get(T const &t) { return const_cast<T*>(&t); } enum { Sticky = true  }; };
+		template <typename T> struct box<T*>        { static T* Get(T       *t) { return                 t ; } enum { Sticky = false }; };
+		template <typename T> struct box<T const*>  { static T* Get(T const *t) { return const_cast<T*>( t); } enum { Sticky = false }; };
+
 		template <typename SRC>
-		inline void operator ()(VarT &dst, SRC &src) const {
+		inline void operator ()(VarT &dst, SRC src) const {
 			typedef SRC                                     TargetT;
 			typedef typename ConvT::Stripper<TargetT>::Type ClassT;
 			typedef ncbInstanceAdaptor<ClassT>              AdaptorT;
 
-			ClassT *p = ConvT::ToPointer<TargetT>::Get(src);		//< 実インスタンスポインタ
-			iTJSDispatch2 *adpobj = AdaptorT::CreateAdaptor(p);		//< アダプタTJSオブジェクト生成
+			ClassT *p = box<TargetT>::Get(src);						//< コピー/参照/ポインタ場合分け
+			bool const s = box<TargetT>::Sticky;					//< sticky フラグ
+			iTJSDispatch2 *adpobj = AdaptorT::CreateAdaptor(p, s);	//< アダプタTJSオブジェクト生成
 			dst = adpobj;											//< Variantにコピー
 			adpobj->Release();										//< コピー済みなのでadaptorは不要
 		}

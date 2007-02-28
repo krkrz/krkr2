@@ -89,7 +89,7 @@ Name は TJS_W() 経由のワイド文字でも，直記述のナロー文字列でもかまいません。
 　　static_cast<ReturnType (Class::*)(arg1, ... argN) [const]>(&Class::Method)
 　　method_cast<ReturnType, Type, arg1, ... argN>(&Class::Method)
 
-ReturnType は メソッドの帰り値の型です。
+ReturnType は メソッドの返り値の型です。
 Type はクラスメソッドのタイプで，
 	Class	普通のクラスメソッド
 	Const	const なクラスメソッド（ReturnType Method(arg...) const;）
@@ -237,7 +237,9 @@ NCB_ATTACH_CLASS で登録してください。（static メソッドの呼び出しであれば
 
 
 
-　▼NCB_REGISTER_INSTANCE(...); //※まだ未実装
+　▼NCB_REGISTER_INSTANCE(...); // 未実装
+
+　　⇒ 参照を返す function / property で代用できます
 
 
 　▼NCB_TYPECONV_CAST(Type, CastType);
@@ -299,8 +301,15 @@ V2Unlink時：
 ・コンストラクタは１つしか記述できない
 　⇒インスタンスを生成する static なメソッドを書くなどして解決する
 
-・static な既存のインスタンスなどを返り値で渡してはいけない
-　（TJS側で invalidate されるときにインスタンスが delete されるため）
+・登録したクラスのインスタンスをメソッドの返り値で返す時には注意が必要
+　⇒インスタンスの多重 delete や，既に delete されている無効な
+　　インスタンスが使用される可能性がある
+
+コピーで返す　：コピーコンストラクタで新たなインスタンスが生成されTJS側へ返る
+参照で返す　　：そのままTJS側へ返され，invalidate 時に delete されない
+ポインタで返す：そのままTJS側へ渡され，invalidate 時に delete される
+const の参照/ポインタは強制的に const 解除される
+
 
 ・参照で値を書き換えて返すようなメソッドには対応できない
 　⇒適当なRawCallback関数を書くなどして対処すること
@@ -326,8 +335,5 @@ V2Unlink時：
 
 ・ncibind.hpp 古いコメントの整理
 ・NCB_SET_CONVERTOR テスト
-・deleteされないアダプタと REGISTER_INSTANCE
 ・Attach時に既存のメソッドがあった場合の処理
 ・オーバーロードと引数の省略をサポートするか？
-・メソッドが呼ばれる前後のフックを記述するマクロ
-	⇒ncbNativeClassMethodBase::invokeHookClass, invokeHookAll
