@@ -154,8 +154,8 @@ struct TypeConvChecker {
 	double         Double(        double d) const { mes(_name, "::Double(", d, ")"); return d; }
 
 	char const*    ConstCharP(char const *p)const { mes(_name, "::ConstCharP(", p, ")"); return p; }
-
-//private:
+	tjs_char const*GetName()                const { return _name; }
+private:
 	tjs_char const *_name;
 };
 
@@ -168,15 +168,15 @@ RawCallback1(tTJSVariant *result, tjs_int numparams,
 static tjs_error TJS_INTF_METHOD
 RawCallback2(tTJSVariant *result, tjs_int numparams,
 			 tTJSVariant **param, TypeConvChecker *objthis) {
-	mes("RawCallback2:", objthis->_name);
+	mes("RawCallback2:", objthis->GetName());
 	return TJS_S_OK;
 }
 
 
 NCB_REGISTER_CLASS(TypeConvChecker) {
-	NCB_CONSTRUCTOR(());
+	Constructor(); //NCB_CONSTRUCTOR(());
 
-	NCB_METHOD(Bool);
+	Method("Bool", &Class::Bool); //NCB_METHOD(Bool);
 
 	NCB_METHOD(SChar);
 	NCB_METHOD(SShort);
@@ -192,8 +192,10 @@ NCB_REGISTER_CLASS(TypeConvChecker) {
 	NCB_METHOD(Double);
 	NCB_METHOD(ConstCharP);
 
-	NCB_METHOD_RAW_CALLBACK(Raw1, RawCallback1, 0);
-	NCB_METHOD_RAW_CALLBACK(Raw2, RawCallback2, 0);
+	NCB_PROPERTY_RO(Name, GetName);
+
+	RawCallback("Raw1", &RawCallback1, 0); //NCB_METHOD_RAW_CALLBACK(Raw1, RawCallback1, 0);
+	RawCallback("Raw2", &RawCallback2, 0); //NCB_METHOD_RAW_CALLBACK(Raw2, RawCallback2, 0);
 }
 
 CHECK(TypeConvChecker,
@@ -202,6 +204,9 @@ CHECK(TypeConvChecker,
 
 	  SCRIPT_EVAL_LOG("inst.Bool(true)  == true",   "TypeConvChecker::Bool(True)")
 	  SCRIPT_EVAL_LOG("inst.Bool(false) == false",  "TypeConvChecker::Bool(False)")
+
+	  SCRIPT_EVAL_LOG("inst.ConstCharP('Hoge') == 'Hoge'", "TypeConvChecker::ConstCharP(Hoge)")
+	  SCRIPT_EVAL(     "inst.Name == 'TypeConvChecker'")
 
 	  SCRIPT_LOG_CHECK("inst.Raw1()", "RawCallback1")
 	  SCRIPT_LOG_CHECK("inst.Raw2()", "RawCallback2:TypeConvChecker")
@@ -217,8 +222,8 @@ struct OverloadTest {
 };
 
 NCB_REGISTER_CLASS(OverloadTest) {
-	NCB_METHOD_DETAIL(Method1, Static, void, ClassT::Method, (int, int));
-	NCB_METHOD_DETAIL(Method2, Static, void, ClassT::Method, (char const*));
+	Method("Method1", method_cast<void, Static, int, int>(   &Class::Method));
+	Method("Method2", method_cast<void, Static, char const*>(&Class::Method));
 }
 
 CHECK(OverloadTest,
@@ -247,15 +252,15 @@ private:
 int PropertyTest::s = 0;
 
 NCB_REGISTER_CLASS(PropertyTest) {
-	NCB_CONSTRUCTOR(());
+	Constructor();									//NCB_CONSTRUCTOR(());
 
-	NCB_PROPERTY(   Prop,   Get, Set);
-	NCB_PROPERTY_RO(PropRO, Get);
-	NCB_PROPERTY_WO(PropWO, Set);
+	Property("Prop",   &Class::Get, &Class::Set);	//NCB_PROPERTY(   Prop,   Get, Set);
+	Property("PropRO", &Class::Get, 0);				//NCB_PROPERTY_RO(PropRO, Get);
+	Property("PropWO", 0, &Class::Set);				//NCB_PROPERTY_WO(PropWO, Set);
 
-	NCB_PROPERTY(   StaticProp,   StaticGet, StaticSet);
-	NCB_PROPERTY_RO(StaticPropRO, StaticGet);
-	NCB_PROPERTY_WO(StaticPropWO, StaticSet);
+	Property("StaticProp",   &Class::StaticGet, &Class::StaticSet);	//NCB_PROPERTY(   StaticProp,   StaticGet, StaticSet);
+	Property("StaticPropRO", &Class::StaticGet, 0);					//NCB_PROPERTY_RO(StaticPropRO, StaticGet);
+	Property("StaticPropWO", 0, &Class::StaticSet);					//NCB_PROPERTY_WO(StaticPropWO, StaticSet);
 }
 
 CHECK(PropertyTest,
@@ -367,12 +372,12 @@ private:
 
 /// 通常アタッチ（インスタンスはメソッドが初めて呼ばれる時にnewされる）
 NCB_ATTACH_CLASS(PadAttachTest1, Pad) {
-	NCB_METHOD(Test1);
+	Method("Test1", &Class::Test1); //NCB_METHOD(Test1);
 }
 
 // フックつきアタッチ（あらかじめ NCB_GET_INSTANCE_HOOK が定義されていること：ない場合はコンパイルエラー）
 NCB_ATTACH_CLASS_WITH_HOOK(PadAttachTest2, Pad) {
-	NCB_METHOD(Test2);
+	Method("Test2", &Class::Test2); //NCB_METHOD(Test2);
 }
 
 //--------------------------------------
@@ -383,6 +388,7 @@ static void AttachFunctionTest1(int d) {
 static tjs_error TJS_INTF_METHOD
 AttachFunctionTest2(tTJSVariant *result,tjs_int numparams, tTJSVariant **param, iTJSDispatch2 *objthis) {
 	mes("AttachFunctionTest2: ", numparams);
+
 	return TJS_S_OK;
 }
 
@@ -401,6 +407,72 @@ CHECK(PadAttachTest,
 
 	  "invalidate inst;"
 	  SCRIPT_END);
+
+
+
+////////////////////////////////////////
+// Proxy / Bridge テスト
+
+#include <string>
+struct ProxyTest {
+	ProxyTest(char const* tag) : _tag(tag) { mes("construct: ", tag); }
+	char const* GetTag() const { mes("gettag: ", _tag.c_str()); return _tag.c_str(); }
+
+	PropertyTest prop;
+	TypeConvChecker tc;
+private:
+	::std::string _tag;
+};
+
+static ttstr GetTagProxy(ProxyTest *px) {
+	return ttstr("Proxy:") + px->GetTag();
+}
+struct BridgeToProp     { PropertyTest*    operator()(ProxyTest* p) const { mes("Bridge->PropertyTest");    return &(p->prop); } };
+struct BridgeToTypeConv { TypeConvChecker* operator()(ProxyTest* p) const { mes("Bridge->TypeConvChecker"); return &(p->tc);   } };
+
+static signed int SIntProxy(TypeConvChecker* tc, signed int n) {
+	mes("ProxySInt:", n);
+	return tc->SInt(n);
+}
+
+static int PropGetProxy(PropertyTest* pt) {
+	mes("ProxyPropGet:");
+	return pt->Get();
+}
+static void PropSetProxy(PropertyTest* pt, int n) {
+	mes("ProxyPropSet:", n);
+	pt->Set(n);
+}
+
+
+NCB_REGISTER_CLASS(ProxyTest) {
+	Constructor<char const*>(0);				//NCB_CONSTRUCTOR((char const*));
+	Method("GetTag", &Class::GetTag);			//NCB_METHOD(GetTag);
+	Method("GetTagProxy", &GetTagProxy, Proxy);	//NCB_METHOD_PROXY(GetTagProxy, GetTagProxy);
+
+	Method("BridgeSInt",      &TypeConvChecker::SInt, Bridge<BridgeToTypeConv>());
+	Method("BridgeSIntProxy", &SIntProxy,        ProxyBridge<BridgeToTypeConv>());
+
+	Property("BridgeProp",      &PropertyTest::Get, &PropertyTest::Set, Bridge<BridgeToProp>());
+	Property("BridgePropProxy", &PropGetProxy,      &PropSetProxy, ProxyBridge<BridgeToProp>());
+}
+
+
+CHECK(ProxyTest,
+	  SCRIPT_BEGIN
+	  "var inst = new ProxyTest('ProxyCheck');"
+	  SCRIPT_EVAL("inst.GetTag() === 'ProxyCheck'")
+	  SCRIPT_EVAL("inst.GetTagProxy() === 'Proxy:ProxyCheck'")
+
+	  SCRIPT_EVAL("inst.BridgeSInt(-1234) === -1234")
+	  SCRIPT_EVAL("inst.BridgeSIntProxy(8765) === 8765")
+
+	  SCRIPT_EVAL("inst.BridgeProp      = 999, inst.BridgeProp      === 999")
+	  SCRIPT_EVAL("inst.BridgePropProxy = 111, inst.BridgePropProxy === 111")
+
+	  "invalidate inst;"
+	  SCRIPT_END);
+
 
 
 
