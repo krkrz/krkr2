@@ -20,14 +20,14 @@ for (var i = 0; i < info.count; i++) {
 invalidate info;
 
 // Geometry
-var geom = new MagickPP_Geometry("10x10!");
+var geom = new MagickPP.Geometry("10x10!");
 dm(geom.width + "x" + geom.height + 
    (geom.xNegative ? "-" : "+") + geom.xOff +
    (geom.yNegative ? "-" : "+") + geom.yOff);
 dm(geom.string);
 
 // Color
-var col = new MagickPP_Color();
+var col = new MagickPP.Color();
 col.redQuantum = 127;
 col.blueQuantum = 0;
 col.greenQuantum = 0;
@@ -45,9 +45,8 @@ dm(col.string);
 
 
 
-/*
-var img = new MagickPP_Image();
-img.read(@"C:/hoge.jpg");
-img.resize(geom);
-img.write(@"C:/hoge.png");
-*/
+var img = new MagickPP.Image();
+img.page = new MagickPP.Geometry("320x240");
+dm(img.page.string); ///img.resize(geom);
+//img.write(@"C:/hoge.png");
+

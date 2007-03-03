@@ -15,12 +15,17 @@ ImageMagick の Magick++ を TJS で使えるようになるかもしれません。
 ● 使用方法
 
 MagickPP
-MagickPP_クラス名 (Image, Geometry, Color, etc.)
+MagickPP.クラス名 (MagickPP.Image, MagickPP.Geometry, MagickPP.Color, etc.)
+MagickPP.Enum型.Enum値 (MagickPP.ColorspaceType.RGBColorspace, etc.)
 
 あたりが拡張されます。※【注意】名前は将来変更される可能性があります。
 
 メソッド名やプロパティはほぼ Magick++ 準拠ですが言語仕様により
 別名が割り振られている場合があります。
+
+enum 値はそれ専用の型を持っているわけではなく，
+intにキャストされた値を返します。
+
 
 現状では詳しくはソース見てください状態です。（すみません）
 
@@ -105,7 +110,8 @@ AsyncTrigger を使用して，一度メッセージ処理を完遂してから
 
 ・その他
 	インスタンスのラッパは存在するがメソッドの口は用意されていない
-
+	enum 値はヘッダに用意されているものはすべて登録したつもり
+	(Magick++で使用されないPreviewTypeを除く)
 
 ・MagickPP
 	STL関連の単体メソッドや enum などを集約する予定
