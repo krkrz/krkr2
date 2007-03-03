@@ -65,6 +65,10 @@ struct ncbTypedefs {
 	template <        typename ERR> struct TypeAssert<true, ERR> { typedef typename ERR::CompileError Result; };
 };
 
+/// サブクラスフラグ
+template <class T>
+struct ncbSubClassCheck { enum { IsSubClass = false }; };
+
 ////////////////////////////////////////
 /// NativeClass 名前/ID/クラスオブジェクト保持用
 template <class T>
@@ -79,6 +83,7 @@ struct ncbClassInfo {
 	static inline NameT         GetName()        { return _info.name; }
 	static inline IdentT        GetID()          { return _info.id; }
 	static inline ClassObjectT *GetClassObject() { return _info.obj; }
+	static inline bool          IsSubClass()     { return ncbSubClassCheck<NativeClassT>::IsSubClass; }
 
 	/// イニシャライザ
 	static inline bool Set(NameT name, IdentT id, ClassObjectT *obj) {
@@ -1260,6 +1265,11 @@ protected:
 };
 
 
+/// サブクラス登録用
+template <class T>
+struct ncbSubClassItem;
+
+
 ////////////////////////////////////////
 /// NativeClass クラスオブジェクト登録テンプレート
 
@@ -1300,6 +1310,9 @@ private:
 			typename _DefsT::CallerT::tMethodTraits<METHOD>::ResultType, BASE,
 		/**/typename _DefsT::CallerT::tMethodTraits<METHOD>::ArgsType>::Type Type;
 	};
+
+	template <typename T>
+	struct TypeWrap { typedef T Type; };
 public:
 	_NameT   GetName() const			{ return _impl.GetName(); }
 	_NameT   GetName(_NameT  n) const	{ return n; }
@@ -1340,11 +1353,11 @@ public:
 
 	/// コンストラクタを登録する
 	template <typename MethodT>
-	void Constructor(_DefsT::Tag<MethodT>) {
+	void Constructor(TypeWrap<MethodT>) {
 		DoItem(GetName(), ncbNativeClassConstructor< InvokeCommand<ClassT, MethodT, ivtCtor> >::Create(_isRegist));
 	}
 	// デフォルトコンストラクタの登録
-	void Constructor(int dummy = 0) { Constructor(_DefsT::Tag<void (_ClassT::*)()>()); }
+	void Constructor(int dummy = 0) { Constructor(TypeWrap<void (_ClassT::*)()>()); }
 #undef  FOREACH_START
 #define FOREACH_START 1
 #undef  FOREACH_END
@@ -1356,8 +1369,8 @@ public:
 #undef  FOREACH
 #define FOREACH \
 	template <FOREACH_COMMA_EXT(CTOR_PRM_EXT) > \
-		void    Constructor(            typename _DefsT::CallerT::tMethodType<void, _ClassT, FOREACH_COMMA_EXT(CTOR_ARG_EXT)>::Type) { \
-			/**/Constructor(_DefsT::Tag<typename _DefsT::CallerT::tMethodType<void, _ClassT, FOREACH_COMMA_EXT(CTOR_ARG_EXT)>::Type>()); \
+		void    Constructor(         typename _DefsT::CallerT::tMethodType<void, _ClassT, FOREACH_COMMA_EXT(CTOR_ARG_EXT)>::Type) { \
+			/**/Constructor(TypeWrap<typename _DefsT::CallerT::tMethodType<void, _ClassT, FOREACH_COMMA_EXT(CTOR_ARG_EXT)>::Type>()); \
 		}
 #include FOREACH_INCLUDE
 #undef  CTOR_PRM_EXT
@@ -1373,6 +1386,15 @@ public:
 	template <typename NAME, typename GetterT, typename SetterT>
 	void RawCallback(NAME n, GetterT g, SetterT s, _FlagsT flags) {
 		DoItem(GetName(n), ncbRawCallbackProperty<GetterT, SetterT>::Create(g, s, flags, _isRegist));
+	}
+
+	/// サブクラスを登録する
+	template <typename NAME, typename CLASS>
+	void SubClass(NAME n, TypeWrap<CLASS>) {
+		typedef ncbSubClassItem<CLASS> SubClassT;
+		if (!SubClassT::Setup(GetName(n), _isRegist))
+			TVPThrowExceptionMessage(TJS_W("SubClass registration failed."));
+		DoItem(GetName(n), SubClassT::Create(_isRegist));
 	}
 
 	void Regist();
@@ -1447,9 +1469,7 @@ struct ncbRegistNativeClass : public ncbRegistNativeClassBase {
 
 	void RegistEnd() {
 		// コンストラクタがない場合はエラーを返すコンストラクタを追加する
-		if (!_hasCtor) TJSNativeClassRegisterNCM(_classobj, _className,
-												 TJSCreateNativeClassMethod(NotImplCallback),
-												 _className, nitMethod);
+		_AddDummyConstructor();
 
 		// TJS のグローバルオブジェクトを取得する
 		iTJSDispatch2 *global = TVPGetScriptDispatch();
@@ -1490,15 +1510,11 @@ struct ncbRegistNativeClass : public ncbRegistNativeClassBase {
 	/// プラグイン開放時にクラスオブジェクトをリリースする
 	void UnregistBegin() {
 		iTJSDispatch2 *global = TVPGetScriptDispatch();
-		typename ClassInfoT::ClassObjectT *obj = ClassInfoT::GetClassObject();
-
 		if (global) {
 			global->DeleteMember(0, _className, 0, global);
 			global->Release();
 		}
-		if (obj) obj->Release();
-
-		ClassInfoT::Clear();
+		_RemoveClassInfo();
 	}
 
 private:
@@ -1510,7 +1526,62 @@ private:
 
 	/// エラーを返すメソッド(empty Constructor用)
 	static tjs_error TJS_INTF_METHOD NotImplCallback(tTJSVariant *, tjs_int, tTJSVariant **, iTJSDispatch2 *) { return TJS_E_NOTIMPL; }
+
+protected:
+	void _AddDummyConstructor() const {
+		if (!_hasCtor) TJSNativeClassRegisterNCM(_classobj, _className,
+												 TJSCreateNativeClassMethod(NotImplCallback),
+												 _className, nitMethod);
+	}
+	void _RemoveClassInfo() const {
+		typename ClassInfoT::ClassObjectT *obj = ClassInfoT::GetClassObject();
+		if (obj) obj->Release();
+		ClassInfoT::Clear();
+	}
 };
+
+////////////////////////////////////////
+template <class CLASS>
+struct ncbRegistSubClass : public ncbRegistNativeClass<CLASS> {
+	typedef                       ncbRegistNativeClass<CLASS> BaseT;
+	ncbRegistSubClass(typename BaseT::NameT n) : BaseT(n) {}
+	void RegistEnd() {
+		BaseT::_AddDummyConstructor();
+		NCB_LOG_2(TJS_W("EndSubClass: "), BaseT::_className);
+	}
+	void UnregistBegin() {
+		BaseT::_RemoveClassInfo();
+	}
+};
+
+template <class T>
+struct ncbSubClassItem : public ncbIMethodObject {
+	typedef ncbSubClassItem ThisClassT;
+	typedef ncbNativeClassMethodBase::iMethodT iMethodT;
+	typedef ncbClassInfo<T> ClassInfoT;
+
+	DispatchT GetDispatch() const { return static_cast<DispatchT>(ClassInfoT::GetClassObject()); }
+	FlagsT    GetFlags()    const { return TJS_STATICMEMBER; }
+	TypesT    GetType()     const { return nitClass; }
+	void      Release()     const { delete this; }
+
+	/// factory
+	static iMethodT Create(bool create = true) { return !create ? 0 : (new ThisClassT()); }
+
+	static bool Setup(ncbTypedefs::NameT name, bool isRegist) {
+		typedef ncbRegistSubClass<T> DelegateT;
+		typedef ncbRegistClass<DelegateT> RegistT;
+
+		if (isRegist && ClassInfoT::GetClassObject()) return false;
+		DelegateT d(name);
+		{
+			RegistT r(d, isRegist);
+			r.Regist();
+		}
+		return (ClassInfoT::GetClassObject() != 0);
+	}
+};
+
 
 ////////////////////////////////////////
 /// 既存クラスオブジェクトを変更する
@@ -1658,6 +1729,16 @@ protected:
 	NCB_TYPECONV_BOXING(cls); \
 	NCB_REGISTER_CLASS_COMMON(cls, ncbNativeClassAutoRegister, (TJS_W(# name)))
 
+#define NCB_REGISTER_SUBCLASS_DELAY(cls) \
+	template <> struct ncbSubClassCheck<cls> { enum { IsSubClass = true }; }; \
+	template    struct ncbClassInfo<cls>; \
+	template <>        ncbClassInfo<cls>::InfoT ncbClassInfo<cls>::_info; \
+	void   ncbRegistClass<ncbRegistSubClass<cls> >::Regist()
+
+#define NCB_REGISTER_SUBCLASS(cls) \
+	NCB_TYPECONV_BOXING(cls); \
+	NCB_REGISTER_SUBCLASS_DELAY(cls)
+
 ////////////////////////////////////////
 template <class T>
 struct  ncbAttachTJS2ClassAutoRegister : public ncbAutoRegister {
@@ -1701,7 +1782,7 @@ private:
 #define NCB_PROPRETY_RAW_CALLBACK_RO(name, get, flag)   RawCallback(TJS_W(# name), get, (int)0, flag)
 #define NCB_PROPRETY_RAW_CALLBACK_WO(name, set, flag)   RawCallback(TJS_W(# name), (int)0, set, flag)
 
-#define NCB_CONSTRUCTOR(cargs)                          Constructor(ncbTypedefs::Tag<void (Class::*) cargs >())
+#define NCB_CONSTRUCTOR(cargs)                          Constructor(TypeWrap<void (Class::*) cargs >())
 
 #define NCB_METHOD_DIFFER(name, method)                 Method(TJS_W(# name), &Class::method)
 #define NCB_METHOD(method)                              NCB_METHOD_DIFFER(method, method)
@@ -1727,6 +1808,9 @@ private:
 	/*                                                */Property(TJS_W(# N),    NCB_METHOD_CAST(RT,RR,RM,RA), NCB_METHOD_CAST(WT,WR,WM,WA)), Proxy)
 #define NCB_PROPERTY_PROXY_DETAIL_RO(name, RT,RR,RM,RA) Property(TJS_W(# name), NCB_METHOD_CAST(RT,RR,RM,RA), (int)0,                        Proxy)
 #define NCB_PROPERTY_PROXY_DETAIL_WO(name, WT,WR,WM,WA) Property(TJS_W(# name), (int)0,                       NCB_METHOD_CAST(WT,WR,WM,WA)), Proxy)
+
+#define NCB_SUBCLASS(name, cls)                         SubClass(TJS_W(# name), TypeWrap<cls>())
+
 
 ////////////////////////////////////////
 /// TJSファンクション自動レジストクラス

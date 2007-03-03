@@ -218,6 +218,13 @@ NCB_ATTACH_CLASS だけでなく，NCB_REGISTER_CLASS で
 　⇒要望があれば実装します
 
 
+　▼NCB_REGISTER_SUBCLASS(Class)
+　　▽SubClass(Name, TypeWrap<Class>());
+
+サブクラスの定義と登録です。クラス中にstaticとしてサブクラスが置かれます。
+これを使うことで名前空間を汚さずに階層構造をとることができます。
+※実験中コードにつき不具合があるかもしれません
+
 
 　▼NCB_REGISTER_FUNCTION(Name, Function);
 
