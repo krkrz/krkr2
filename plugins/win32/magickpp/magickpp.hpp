@@ -31,31 +31,35 @@ struct ncbNativeClassMethodBase::invokeHookAll<true> {
 NCB_TYPECONV_STL_STRING(StringT);
 
 // 引き数と返り値に enum をサポート（面倒なので数値変換）
-#define MAGICK_ENUM(e) NCB_TYPECONV_CAST_INTEGER(Magick::e)
-MAGICK_ENUM(ChannelType); //##
-MAGICK_ENUM(ClassType); //##
-MAGICK_ENUM(ColorspaceType); //##
-MAGICK_ENUM(CompositeOperator); //##
-MAGICK_ENUM(CompressionType); //##
-MAGICK_ENUM(DecorationType);
-MAGICK_ENUM(EndianType); //##
-MAGICK_ENUM(FillRule); //## 保留
-MAGICK_ENUM(FilterTypes); //##
-MAGICK_ENUM(GravityType);
-MAGICK_ENUM(ImageType); //##
-MAGICK_ENUM(InterlaceType); //##
-MAGICK_ENUM(LineCap); //##
-MAGICK_ENUM(LineJoin); //##
-MAGICK_ENUM(NoiseType);
-MAGICK_ENUM(OrientationType); //##
-MAGICK_ENUM(PaintMethod); //##
-MAGICK_ENUM(RenderingIntent); //##
-MAGICK_ENUM(ResolutionType); //##
-MAGICK_ENUM(StorageType);
-MAGICK_ENUM(StretchType);
-MAGICK_ENUM(StyleType);
-//NCB_TYPECONV_CAST_INTEGER(QuantumTypes); // magick/quantum.h
-//NCB_TYPECONV_CAST_INTEGER(ChannelType);  // magick/magick-type.h
+#define MAGICK_INTEGER(e) using Magick::e; NCB_TYPECONV_CAST_INTEGER(e)
+MAGICK_INTEGER(ChannelType); //##
+MAGICK_INTEGER(ClassType); //##
+MAGICK_INTEGER(ColorspaceType); //##
+MAGICK_INTEGER(CompositeOperator); //##
+MAGICK_INTEGER(CompressionType); //##
+MAGICK_INTEGER(EndianType); //##
+MAGICK_INTEGER(FillRule); //## 保留
+MAGICK_INTEGER(FilterTypes); //##
+MAGICK_INTEGER(ImageType); //##
+MAGICK_INTEGER(InterlaceType); //##
+MAGICK_INTEGER(LineCap); //##
+MAGICK_INTEGER(LineJoin); //##
+MAGICK_INTEGER(OrientationType); //##
+MAGICK_INTEGER(PaintMethod); //##
+MAGICK_INTEGER(RenderingIntent); //##
+MAGICK_INTEGER(ResolutionType); //##
+
+MAGICK_INTEGER(DecorationType);
+MAGICK_INTEGER(DisposeType);
+MAGICK_INTEGER(GravityType);
+MAGICK_INTEGER(NoiseType);
+MAGICK_INTEGER(StorageType);
+MAGICK_INTEGER(StretchType);
+MAGICK_INTEGER(StyleType);
+
+MAGICK_INTEGER(QuantumType); // magick/quantum.h
+MAGICK_INTEGER(MagickEvaluateOperator);
+//MAGICK_INTEGER(ChannelType);  // magick/magick-type.h
 
 #define MAGICK_OBJECT(obj) using Magick::obj; NCB_TYPECONV_BOXING(obj)
 MAGICK_OBJECT(Blob);
@@ -66,8 +70,14 @@ MAGICK_OBJECT(Geometry);
 MAGICK_OBJECT(Image);
 MAGICK_OBJECT(TypeMetric);
 
-#define MAGICK_CLASS(cls) \
-	NCB_REGISTER_CLASS_DELAY(MagickPP_ ## cls, cls)
+#define MAGICK_SUBCLASS(cls) \
+	NCB_REGISTER_SUBCLASS_DELAY(cls)
+
+#define MAGICK_ENUM(e) \
+	NCB_REGISTER_SUBCLASS_DELAY(e)
+
+#define ENUM(n) struct prop ## n { static Class Get() { return n; } }; Property(TJS_W(# n), & prop ## n::Get, 0)
+
 
 // 読み取り専用プロパティ短縮用
 #define PROP_RO(prop) NCB_PROPERTY_RO(prop, prop)
@@ -87,5 +97,8 @@ MAGICK_OBJECT(TypeMetric);
 #define PROP_GEOMETRY(prop) PROP_RW_TYPE(Geometry, prop)
 #define PROP_IMAGE(prop)    PROP_RW_TYPE(Image,    prop)
 #define PROP_STRING(prop)   PROP_RW_TYPE(StringT,  prop)
+
+#define SUBCLASS(cls) \
+	NCB_SUBCLASS(cls, cls);
 
 #endif

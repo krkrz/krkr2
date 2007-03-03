@@ -3,7 +3,7 @@ TARGET = Magick++.dll
 STUB   = ../tp_stub
 NCBIND = ../ncbind/ncbind
 RES    = xmlres
-MGOBJS = magickpp.o image.o color.o misc.o
+MGOBJS = magickpp.o image.o color.o misc.o enums.o
 OBJS   = $(STUB).o $(NCBIND).o $(RES).o $(MGOBJS)
 
 EXPORTS = exports_for_gcc.def
@@ -13,9 +13,9 @@ XMLS = colors.xml configure.xml delegates.xml english.xml locale.xml type.xml ty
 MGCONF    = Magick++-config
 MGPREFIX  = `$(MGCONF) --prefix`
 MGVER     = `$(MGCONF) --version`
-MGCXXFLGS = `$(MGCONF) --cxxflags`
+MGCXXFLGS = `$(MGCONF) --cxxflags` 
 
-CXXFLAGS += -O2 -I.. -I../ncbind -DDEBUG
+CXXFLAGS += -O2 -I.. -I../ncbind -DDEBUG -Wall -Wno-unused-parameter
 LDFLAGS  += `$(MGCONF) --ldflags` `$(MGCONF) --libs`
 
 DLLWRAP = dllwrap
@@ -23,7 +23,7 @@ DWFLAGS = -k -def $(EXPORTS)
 
 all: $(TARGET)
 
-$(MGOBJS): CXXFLAGS += $(MGCXXFLGS) --no-warn
+$(MGOBJS): CXXFLAGS = $(MGCXXFLGS) $(CXXFLAGS) #--no-warn
 
 $(XMLS):
 	cp $(MGPREFIX)/lib/ImageMagick-$(MGVER)/config/$@ .

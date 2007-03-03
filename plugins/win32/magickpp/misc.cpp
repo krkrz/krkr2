@@ -1,14 +1,14 @@
 #include "magickpp.hpp"
 
 // Blob
-MAGICK_CLASS(Blob) {
+MAGICK_SUBCLASS(Blob) {
 	NCB_CONSTRUCTOR(());
 	PROP_RO(length);
 	// 
 }
 
 // CoderInfo
-MAGICK_CLASS(CoderInfo) {
+MAGICK_SUBCLASS(CoderInfo) {
 	NCB_CONSTRUCTOR((StringT const&));
 
 	PROP_RO(name);
@@ -19,13 +19,13 @@ MAGICK_CLASS(CoderInfo) {
 }
 
 // Drawable
-MAGICK_CLASS(Drawable) {
+MAGICK_SUBCLASS(Drawable) {
 	NCB_CONSTRUCTOR(());
 	// ...
 }
 
 // Geometry
-MAGICK_CLASS(Geometry) {
+MAGICK_SUBCLASS(Geometry) {
 	NCB_CONSTRUCTOR((StringT const&));
 
 	PROP_RW(unsigned int, width);
@@ -44,8 +44,14 @@ MAGICK_CLASS(Geometry) {
 }
 
 // TypeMetric
-MAGICK_CLASS(TypeMetric) {
+MAGICK_SUBCLASS(TypeMetric) {
 	NCB_CONSTRUCTOR(());
+
+	PROP_RO(ascent);
+	PROP_RO(descent);
+	PROP_RO(textWidth);
+	PROP_RO(textHeight);
+	PROP_RO(maxHorizontalAdvance);
 }
 
 
