@@ -51,7 +51,7 @@ struct MagickPP {
 		iTJSDispatch2 *array = TJSCreateArrayObject();
 		tjs_uint32 hint = 0;
 
-		ttstr exp(TJS_W("new MagickPP_CoderInfo('"));
+		ttstr exp(TJS_W("new MagickPP.CoderInfo('"));
 		for (CoderListT::const_iterator it = cl.begin(); it != cl.end(); it++) {
 			tTJSVariant var, *param = &var;
 			TVPExecuteExpression(exp + ttstr(it->name().c_str()) + TJS_W("')"), &var);
@@ -68,7 +68,45 @@ struct MagickPP {
 };
 
 
-NCB_REGISTER_CLASS(MagickPP) {
+NCB_REGISTER_CLASS(MagickPP)
+{
+	// magick++ classes
+	SUBCLASS(Blob);
+	SUBCLASS(CoderInfo);
+	SUBCLASS(Color);
+	SUBCLASS(Drawable);
+	SUBCLASS(Geometry);
+	SUBCLASS(Image);
+	SUBCLASS(TypeMetric);
+
+	// enums
+	SUBCLASS(ClassType);
+	SUBCLASS(ChannelType);
+	SUBCLASS(ColorspaceType);
+	SUBCLASS(CompositeOperator);
+	SUBCLASS(CompressionType);
+	SUBCLASS(DisposeType);
+	SUBCLASS(EndianType);
+	SUBCLASS(MagickEvaluateOperator);
+	SUBCLASS(FillRule);
+	SUBCLASS(FilterTypes);
+	SUBCLASS(GravityType);
+	SUBCLASS(ImageType);
+	SUBCLASS(InterlaceType);
+	SUBCLASS(LineCap);
+	SUBCLASS(LineJoin);
+	SUBCLASS(NoiseType);
+	SUBCLASS(OrientationType);
+	SUBCLASS(PaintMethod);
+	SUBCLASS(QuantumType);
+	SUBCLASS(RenderingIntent);
+	SUBCLASS(ResolutionType);
+	SUBCLASS(StorageType);
+	SUBCLASS(StretchType);
+	SUBCLASS(StyleType);
+	SUBCLASS(DecorationType);
+
+	// special
 	PROP_RO(version);
 	PROP_RO(supports);
 	NCB_METHOD(readImages);

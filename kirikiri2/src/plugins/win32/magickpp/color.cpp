@@ -30,7 +30,7 @@ struct ColorProxy {
 
 
 // Color
-MAGICK_CLASS(Color) {
+MAGICK_SUBCLASS(Color) {
 	NCB_CONSTRUCTOR(());
 	typedef Magick::Quantum Quantum;
 	PROP_RW(Quantum, redQuantum);

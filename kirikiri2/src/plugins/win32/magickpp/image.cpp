@@ -27,19 +27,19 @@ static void Image_display(Magick::Image const *image, iTJSDispatch2* lay) {
 	typedef Magick::PixelPacket PixelT;
 	if (sizeof(Magick::Quantum) == 1) {
 		// 8bit quantum 専用
-		for (int y = 0; y < h; y++, p+=s) {
+		for (unsigned int y = 0; y < h; y++, p+=s) {
 			PixelT const *px = image->getConstPixels(0, y, w, 1);
 			unsigned char *cp = p;
 			for (int i = w; i > 0; i--, px++) {
 				*cp++ = static_cast<unsigned char>(px->blue);		// B
-				*cp++ = static_cast<unsigned char>(px->green);	// G
+				*cp++ = static_cast<unsigned char>(px->green);		// G
 				*cp++ = static_cast<unsigned char>(px->red);		// R
 				*cp++ = static_cast<unsigned char>(px->opacity);	// A
 			}
 		}
 	} else {
 		// それ以外はdouble経由なので重い
-		for (int y = 0; y < h; y++, p+=s) {
+		for (unsigned int y = 0; y < h; y++, p+=s) {
 			PixelT const *px = image->getConstPixels(0, y, w, 1);
 			unsigned char *cp = p;
 			for (int i = w; i > 0; i--, px++) {
@@ -63,7 +63,7 @@ error:
 
 
 // Image
-MAGICK_CLASS(Image) {
+MAGICK_SUBCLASS(Image) {
 	NCB_CONSTRUCTOR(());
 
 	//////////////////////////////////////////////////////////////////////
@@ -828,7 +828,7 @@ MAGICK_CLASS(Image) {
 
     // Get/set pixel color at location x & y.
 	NCB_METHOD_DETAIL(getPixelColor, Const, Color, Class::pixelColor, (unsigned int, unsigned int));
-	NCB_METHOD_DETAIL(setPixelColor, Class, void,           Class::pixelColor, (unsigned int, unsigned int, Color const&));
+	NCB_METHOD_DETAIL(setPixelColor, Class, void,  Class::pixelColor, (unsigned int, unsigned int, Color const&));
 
 	// Add or remove a named profile to/from the image. Remove the
 	// profile by passing an empty Blob (e.g. Blob()). Valid names are
