@@ -3402,7 +3402,9 @@ class KAGEnvironment extends KAGEnvImage {
         kag.tagHandlers["begintrans"] = this.beginTrans;
         kag.tagHandlers["endtrans"]   = this.endTrans;
         kag.tagHandlers["newlay"]     = this.newLayer;
+        kag.tagHandlers["newlayer"]   = this.newLayer;
         kag.tagHandlers["dellay"]     = this.delLayer;
+        kag.tagHandlers["dellayer"]   = this.delLayer;
         kag.tagHandlers["newchar"]    = this.newCharacter;
         kag.tagHandlers["delchar"]    = this.delCharacter;
 
@@ -3849,6 +3851,9 @@ class KAGEnvironment extends KAGEnvImage {
         return 0;
     }        
 
+	/**
+     * キャラクタ操作
+     */
     function delCharacter(elm) {
         if (characters[elm.name] !== void) {
             invalidate characters[elm.name];
@@ -4832,12 +4837,26 @@ class KAGEnvironment extends KAGEnvImage {
             return se.tagfunc(elm);
         }
         
-        // 該当キャラクタが存在するか？
+        // キャラクタ
+        if (tagName == "char") {
+            var ch = getCharacter(elm.name);
+            if (ch !== void) {
+                return ch.tagfunc(elm);
+            }
+        }
+
         var ch = getCharacter(tagName);
         if (ch !== void) {
             return ch.tagfunc(elm);
         }
 
+        if (tagName == "layer") {
+            var lay = getEnvLayer(elm.name);
+            if (lay !== void) {
+                return lay.tagfunc(elm);
+            }
+        }
+            
         // 該当レイヤが存在するか？
         var lay = getEnvLayer(tagName);
         if (lay !== void) {

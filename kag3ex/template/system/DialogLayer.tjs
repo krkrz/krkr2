@@ -249,12 +249,16 @@ class DialogLayer extends KAGLayer
 {
     var layerType = ltAlpha; // レイヤタイプ
 
+    var backColor;   // 背景色
+    var backOpacity; // 背景の透明度
+    
     var frameGraphic = ""; // フレーム画像ファイル名
 	var frameKey = clNone; // フレーム画像キー
 	var frameColor = 0x000000; // フレームの色
     var frameOpacity = 128; // フレームの不透明度
     
     var links = []; // リンク
+    var names = %[]; // リンクの名前での参照
     var numLinks = 0; // レイヤ内のリンクの数
 
 	var lastLink = -1; // 最後に選択したリンク番号
@@ -278,17 +282,11 @@ class DialogLayer extends KAGLayer
      */
     function DialogLayer(window, parent, name) {
         
-        // DialogLayer コンストラクタ
-        // owner : オーナー KAG Window
-		// parent : 親レイヤ
-        // name 名前
-        // left, top, width, height : 初期位置
-		// do_config : コンフィギュレーションを行うか
         super.KAGLayer(...);
-		this.name = name;
+        this.name = name;
 
         // レイヤタイプの設定
-		type = layerType;
+        type = layerType;
 
         // 当たり判定初期化
         hitType = htMask;
@@ -296,6 +294,13 @@ class DialogLayer extends KAGLayer
         
         // サイズはデフォルトで決定する
 		imageModified = true;
+
+        left = 0;
+        top  = 0;
+        if (parent != null) {
+            width  = parent.width;
+            height = parent.height;
+        }
     }
 
     function finalize()
@@ -333,22 +338,25 @@ class DialogLayer extends KAGLayer
 	{
         if(imageModified) {
 
+            fillRect(0, 0, width, height, (backOpacity << 24) + backColor); // 背景塗りつぶし
+
             if (frameGraphic == "") {
                 // フレーム画像が指定されていない場合
                 face = dfAuto;
                 if(type == ltAddAlpha) {
-                    fillRect(0, 0, imageWidth, imageHeight, (frameOpacity << 24) +
+                    fillRect(baseleft, basetop, basewidth, baseheight, (frameOpacity << 24) +
                              ((int)((((frameColor&0xff0000)>>16) * frameOpacity) / 255)<<16 ) +
                              ((int)((((frameColor&0x00ff00)>> 8) * frameOpacity) / 255)<< 8 ) +
                              ((int)((((frameColor&0x0000ff)    ) * frameOpacity) / 255)     ) );
                 } else {
-                    fillRect(0, 0, imageWidth, imageHeight, (frameOpacity << 24) + frameColor);
+                    fillRect(baseleft, basetop, basewidth, baseheight, (frameOpacity << 24) + frameColor);
 				}
 
             } else {
-                // センタリング表示
-                loadImages(frameGraphic, frameKey);
-                setSizeToImageSize();
+                // 画像配置
+                var temp = window.temporaryLayer;
+                temp.loadImages(frameGraphic, frameKey);
+                operateRect(baseleft, basetop, temp, 0, 0, basewidth, baseheight);
 			}
             face = dfProvince;
             colorRect(0, 0, imageWidth, imageHeight, 0); // 領域もクリア
@@ -366,25 +374,43 @@ class DialogLayer extends KAGLayer
 		keyLink = -1;
 
         // 場所の初期化
-        setPos(((parent.width  - width)>>1), ((parent.height - height)>>1));
+        //setPos(((parent.width  - width)>>1), ((parent.height - height)>>1));
 
         xpos = 0;
         ypos = 0;
     }
 
+	function setPosition() { setOption(...); }
+
+    var baseleft;
+    var basetop;
+    var basewidth;
+    var baseheight;
+    
     function setOption(elm)
 	{
-        left        = elm.left   if elm.left !== void;
-		top         = elm.top    if elm.top !== void;
-        imageWidth  = elm.width  if elm.width !== void;
-        imageHeight = elm.height if elm.height !== void;
-        setSizeToImageSize();
+        if (parent == null) {
+            width  = elm.width  if elm.width !== void;
+            height = elm.height if elm.height !== void;
+            baseleft   = 0;
+            basetop    = 0;
+            basewidth  = width;
+            baseheight = height;
+        } else {
+            baseleft   = elm.left   if elm.left !== void;
+            basetop    = elm.top    if elm.top !== void;
+            basewidth  = elm.width  if elm.width !== void;
+            baseheight = elm.height if elm.height !== void;
+        }
 
 		frameGraphic  = elm.frame    if elm.frame !== void;
 		frameKey      = elm.framekey if elm.framekey !== void;
 		frameColor    = +elm.color   if elm.color !== void;
         frameOpacity  = +elm.opacity if elm.opacity !== void;
 
+        backColor    = +elm.bgcolor   if elm.bgcolor !== void;
+        backOpacity  = +elm.bgopacity if elm.bgopacity !== void;
+        
         vertical = +elm.vertical if elm.vertical !== void;
 
         imageModified = true; // 強制的にメッセージレイヤをクリアするために
@@ -399,6 +425,7 @@ class DialogLayer extends KAGLayer
 				invalidate links[i].object;
 			links[i].type = 0;
 		}
+        (Dictionary.clear incontextof names)(); 
 	}
 
 	function createSoundExpression(exp, storage, buf)
@@ -419,24 +446,29 @@ class DialogLayer extends KAGLayer
     /**
      * 配置座標指定
      */
-    function locate(elm) {
-        xpos = elm.x if elm.x !== void;
-        ypos = elm.y if elm.y !== void;
+    function locateElm(elm) {
+        xpos = baseleft +elm.x if elm.x !== void;
+        ypos = basetop  +elm.y if elm.y !== void;
     }
-
+    function locate(x, y) {
+        xpos = baseleft +x if x !== void;
+        ypos = basetop  +y if y !== void;
+    }
     
     /**
      * ボタンの配置
      */
     function addButton(elm)	{
 
-        var x = elm.x !== void ? elm.x : xpos;
-        var y = elm.y !== void ? elm.y : ypos;
+        var x = xpos; //elm.x !== void ? elm.x : xpos;
+        var y = ypos; //elm.y !== void ? elm.y : ypos;
 
         // グラフィカルボタンを配置
         var object = new DialogButtonLayer(window, this);
-        object.name =  "button" + numLinks;
-        if (elm.normal !== void) {
+        object.name =  elm.name !== void ? elm.name : "button" + numLinks;
+        if (elm.uistates !== void) {
+            object.loadUIInfo(elm);
+        } else if (elm.normal !== void) {
             object.loadButtons(elm.normal, elm.over, elm.on, elm.focus);
         } else if (elm.graphic !== void) {
             object.loadImages(elm.graphic, elm.graphickey);
@@ -456,6 +488,7 @@ class DialogLayer extends KAGLayer
         } else if (elm.disabled !== void && elm.disabled) {
             object.enabled = false;
         }
+        object.halftone = elm.halftone if elm.halftone !== void;
 
 		links[numLinks] = %[
 			type :			ltButton,
@@ -473,6 +506,7 @@ class DialogLayer extends KAGLayer
 			w :				[object.width],
 			h :				[object.height],
 			];
+        names[object.name] = object;
 
 		numLinks++;
 		focusable = true; // フォーカスを受け取れるように
@@ -483,11 +517,11 @@ class DialogLayer extends KAGLayer
      */
 	function addEdit(elm) {
 
-        var x = elm.x !== void ? elm.x : xpos;
-        var y = elm.y !== void ? elm.y : ypos;
+        var x = xpos; //elm.x !== void ? elm.x : xpos;
+        var y = ypos; //elm.y !== void ? elm.y : ypos;
 
 		var object = new DialogEditLayer(window, this, vertical);
-        object.name =  "edit" + numLinks;
+        object.name = elm.name !== void ? elm.name : "edit" + numLinks;
 		var of = object.font;
 
         //var lf = lineLayer.font;
@@ -528,6 +562,7 @@ class DialogLayer extends KAGLayer
 			w :				[object.width],
 			h :				[object.height],
 			];
+        names[object.name] = object;
 
 		numLinks ++;
         focusable = true;
@@ -538,11 +573,11 @@ class DialogLayer extends KAGLayer
      */
 	function addCheckBox(elm) {
 
-        var x = elm.x !== void ? elm.x : xpos;
-        var y = elm.y !== void ? elm.y : ypos;
+        var x = xpos; //elm.x !== void ? elm.x : xpos;
+        var y = ypos; //elm.y !== void ? elm.y : ypos;
 
         var object = new DialogCheckBoxLayer(window, this, vertical);
-        object.name = "check" + numLinks;
+        object.name = elm.name !== void ? elm.name : "check" + numLinks;
         object.linkNum = numLinks;
 		object.vertical = vertical;
 		object.checked = Scripts.eval(elm.name);
@@ -564,6 +599,7 @@ class DialogLayer extends KAGLayer
 			w :				[object.width],
 			h :				[object.height],
 			];
+        names[object.name] = object;
 
 		numLinks ++;
 		focusable = true;
@@ -574,10 +610,11 @@ class DialogLayer extends KAGLayer
      */
 	function addSlider(elm)	{
 
-        var x = elm.x !== void ? elm.x : xpos;
-        var y = elm.y !== void ? elm.y : ypos;
+        var x = xpos; //elm.x !== void ? elm.x : xpos;
+        var y = ypos; //elm.y !== void ? elm.y : ypos;
 
         var object = new LinkSliderLayer(window, this, vertical);
+        object.name = elm.name !== void ? elm.name : "slider" + numLinks;
         object.linkNum = numLinks;
         object.exp     = elm.name;
         object.color = elm.bgcolor if elm.bgcolor !== void; // color でない事に注意
@@ -619,6 +656,7 @@ class DialogLayer extends KAGLayer
 			w :				[object.width],
 			h :				[object.height],
 			];
+        names[object.name] = object;
 
         numLinks ++;
         focusable = true;
@@ -853,7 +891,7 @@ class DialogLayer extends KAGLayer
 
     var handlers = %[
     option   : setOption incontextof this,
-    locate   : locate incontextof this,
+    locate   : locateElm incontextof this,
     button   : addButton incontextof this,
 	edit     : addEdit incontextof this,
 	checkbox : addCheckBox incontextof this,
@@ -878,4 +916,9 @@ class DialogLayer extends KAGLayer
             }
         }
     }
+
+    function uiload(elm) {
+        global.uiload(this, elm);
+    }
+
 }
