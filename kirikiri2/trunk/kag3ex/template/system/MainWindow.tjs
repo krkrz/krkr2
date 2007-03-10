@@ -150,6 +150,7 @@ class KAGWindow extends Window
                 _debugwin.setSize(scWidth, 50);
                 _debugwin.setPos(0, scHeight - 50);
                 _debugwin.visible = false;
+                _debugwin.hitThreshold = 256;
             }
             return _debugwin;
         }

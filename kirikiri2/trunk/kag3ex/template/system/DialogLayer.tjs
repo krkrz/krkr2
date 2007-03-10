@@ -353,10 +353,11 @@ class DialogLayer extends KAGLayer
 				}
 
             } else {
+                dm("画像配置:" + frameGraphic);
                 // 画像配置
                 var temp = window.temporaryLayer;
                 temp.loadImages(frameGraphic, frameKey);
-                operateRect(baseleft, basetop, temp, 0, 0, basewidth, baseheight);
+                operateRect(baseleft, basetop, temp, 0, 0, temp.imageWidth, temp.imageHeight);
 			}
             face = dfProvince;
             colorRect(0, 0, imageWidth, imageHeight, 0); // 領域もクリア
@@ -460,8 +461,8 @@ class DialogLayer extends KAGLayer
      */
     function addButton(elm)	{
 
-        var x = xpos; //elm.x !== void ? elm.x : xpos;
-        var y = ypos; //elm.y !== void ? elm.y : ypos;
+        var x = elm.x !== void ? baseleft + elm.x : xpos;
+        var y = elm.y !== void ? basetop  + elm.y : ypos;
 
         // グラフィカルボタンを配置
         var object = new DialogButtonLayer(window, this);
@@ -517,8 +518,8 @@ class DialogLayer extends KAGLayer
      */
 	function addEdit(elm) {
 
-        var x = xpos; //elm.x !== void ? elm.x : xpos;
-        var y = ypos; //elm.y !== void ? elm.y : ypos;
+        var x = elm.x !== void ? baseleft + elm.x : xpos;
+        var y = elm.y !== void ? basetop  + elm.y : ypos;
 
 		var object = new DialogEditLayer(window, this, vertical);
         object.name = elm.name !== void ? elm.name : "edit" + numLinks;
@@ -573,8 +574,8 @@ class DialogLayer extends KAGLayer
      */
 	function addCheckBox(elm) {
 
-        var x = xpos; //elm.x !== void ? elm.x : xpos;
-        var y = ypos; //elm.y !== void ? elm.y : ypos;
+        var x = elm.x !== void ? baseleft + elm.x : xpos;
+        var y = elm.y !== void ? basetop  + elm.y : ypos;
 
         var object = new DialogCheckBoxLayer(window, this, vertical);
         object.name = elm.name !== void ? elm.name : "check" + numLinks;
@@ -610,8 +611,8 @@ class DialogLayer extends KAGLayer
      */
 	function addSlider(elm)	{
 
-        var x = xpos; //elm.x !== void ? elm.x : xpos;
-        var y = ypos; //elm.y !== void ? elm.y : ypos;
+        var x = elm.x !== void ? baseleft + elm.x : xpos;
+        var y = elm.y !== void ? basetop  + elm.y : ypos;
 
         var object = new LinkSliderLayer(window, this, vertical);
         object.name = elm.name !== void ? elm.name : "slider" + numLinks;
