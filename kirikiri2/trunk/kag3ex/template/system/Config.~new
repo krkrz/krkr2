@@ -253,6 +253,9 @@ function KAGWindow_config()
 // になります。KAG 2.x 互換にするには true を指定してください。
 ;defaultQuakeTimeInChUnit = false;
 
+// ◆ メッセージレイヤを quake 対象にするか
+// true とすると メッセージレイヤも quake します
+;quakeMessageLayer = false;
 
 // ◆ 利用可能な効果音バッファの数
 // 利用可能な効果音バッファの最大値を指定します。つまり、ここで指定した数の

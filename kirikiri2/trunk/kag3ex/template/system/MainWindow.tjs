@@ -69,7 +69,8 @@ class KAGWindow extends Window
 
 	var quakeTimer; // quake 用のタイマ
 	var defaultQuakeTimeInChUnit = false;
-	/*C*/var quaking = false; // 揺れているか
+    var quakeMessageLayer = false; // メッセージレイヤを quake対象にするか
+    /*C*/var quaking = false; // 揺れているか
 	/*C*/var quakeEndTick = 0; // 揺れを終了させる tick
 	/*C*/var quakeHorzMax = 0; // 横振幅
 	/*C*/var quakeVertMax = 0; // 縦振幅
@@ -3668,8 +3669,12 @@ class KAGWindow extends Window
 		onExtraConductorReturn = onreturn;
 		inSleepBeforeExtraConductor = inSleep; // inSleep 保存
 		storeMessageLayerSelProcessLock(); // メッセージレイヤの storeSelProcessLock を呼ぶ
-        selectLayer.lockFocus();
-        mapSelectLayer.lockFocus();
+        if (_selectLayer !== void) {
+            selectLayer.lockFocus();
+        }
+        if (_mapSelectLayer !== void) {
+            mapSelectLayer.lockFocus();
+        }
         conductor = extraConductor; // コンダクタを切り替える
 		(Dictionary.assign incontextof extraConductor.macros)(mainConductor.macros);
 			// マクロはコピー
@@ -3703,8 +3708,12 @@ class KAGWindow extends Window
 			inSleep = inSleepBeforeExtraConductor; // inSleep 復帰
 			notifyStable();
 		}
-        mapSelectLayer.unlockFocus();
-        selectLayer.unlockFocus();
+        if (_mapSelectLayer !== void) {
+            mapSelectLayer.unlockFocus();
+        }
+        if (_selectLayer !== void) {
+            selectLayer.unlockFocus();
+        }
         restoreMessageLayerSelProcessLock(); // メッセージレイヤの restoreSelProcessLock を呼ぶ
 		setMenuAccessibleAll();
 		cancelSkip();
@@ -5087,8 +5096,10 @@ class KAGWindow extends Window
      */
     function setLayerPos(x, y) {
         super.setLayerPos(x, y);
-        for(var i = 0; i< fore.messages.count; i++) fore.messages[i].setDiff(-x, -y);
-        for(var i = 0; i< back.messages.count; i++) back.messages[i].setDiff(-x, -y);
+        if (!quakeMessageLayer) {
+            for(var i = 0; i< fore.messages.count; i++) fore.messages[i].setDiff(-x, -y);
+            for(var i = 0; i< back.messages.count; i++) back.messages[i].setDiff(-x, -y);
+        }
     }
 
     
@@ -6905,6 +6916,28 @@ class KAGWindow extends Window
 		return 0;
 	} incontextof this,
 
+	uiload : function(elm)
+	{
+		// メッセージレイヤにUIパーツを一括で読み込む
+        if (elm.storage !== void) {
+            global.uiload(getMessageLayerObjectFromElm(elm), elm);
+        } else {
+            error("uiload:ファイルが指定されていません");
+        }
+		return 0;
+	} incontextof this,
+
+	sysuiload : function(elm)
+	{
+		// メッセージレイヤにUIパーツを一括で読み込む
+        if (elm.storage !== void) {
+            global.uiloadSystem(getMessageLayerObjectFromElm(elm), elm);
+        } else {
+            error("uiload:ファイルが指定されていません");
+        }
+		return 0;
+	} incontextof this,
+
 	ct : function(elm)
 	{
 		// メッセージレイヤのリセット(すべてのメッセージレイヤのクリアと
@@ -7881,8 +7914,28 @@ class KAGWindow extends Window
 		// 式のトレース表示
 		var exp = elm.exp;
 		var result = Scripts.eval(exp);
-		dm("▼[trace] expression=\"" + exp + "\" type of result=" + typeof result + 
-			" result=" + result);
+        
+        if (result instanceof "Dictionary") {
+            dm("▼[trace] expression=\"" + exp + "\"");
+            var names = [];
+            names.assign(result);
+            for (var i=0; i<names.count; i+= 2) {
+                var name = names[i];
+                var value = names[i+1];
+                dm("▼[trace] name=\"" + name + "\" type of value=" + typeof value + 
+                   " value=" + value);
+            }
+        } else if (result instanceof "Array") {
+            dm("▼[trace] expression=\"" + exp +  "\"");
+            for (var i=0; i<result.count; i++) {
+                var value = result[i];
+                dm("▼[trace] idx=\"" + i + "\" type of value=" + typeof value + 
+                   " value=" + value);
+            }
+        } else {
+            dm("▼[trace] expression=\"" + exp + "\" type of result=" + typeof result + 
+               " result=" + result);
+        }
 		return 0;
 	} incontextof this,
 
@@ -8473,6 +8526,10 @@ class KAGWindow extends Window
     var soundLog = [];
     var voiceLog = [];
 
+    function error(msg) {
+        if (debugLevel >= tkdlSimple) dm(msg);
+    }
+    
     function errorLine(target, msg) {
         if (debugLevel >= tkdlSimple) dm(msg);
         if (logMode) {

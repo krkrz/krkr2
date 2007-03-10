@@ -485,6 +485,35 @@ class SliderLayer extends KAGLayer
 	}
 
     /**
+     * スライダ画像UI情報の読み込み
+     */
+    function loadUIInfo(uiinfo) {
+        var temp = window.temporaryLayer;
+        var states = uiinfo.uistates;
+        if (states === void) {
+            throw new Exception("画像情報不正です:" + uiinfo.name);
+        }
+
+        width  = uiinfo.width;
+        height = uiinfo.height;
+		var base = states.base;
+		base = states.rail if (base === void);
+        if (base !== void) {
+            temp.loadImages(base.storage);
+            baseImage = new global.Layer(window, parent);
+            baseImage.setSize(uiinfo.width, uiinfo.height);
+            baseImage.copyRect(base.ox, base.oy, temp, 0, 0, temp.imageWidth, temp.imageHeight);
+        }
+
+        var normal = states.normal;
+        if (normal !== void) {
+            var over = states.over !== void ? states.over.storage : void;
+            var on   = states.on   !== void ? states.on.storage   : void;
+            loadTabs(normal.storage, over, on);
+        }
+    }
+    
+    /**
      * ベース画像を読み込む
      * @param storage 画像。このサイズのボタンになる
      */

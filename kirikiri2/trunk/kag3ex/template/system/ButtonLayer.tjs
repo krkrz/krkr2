@@ -16,25 +16,41 @@
 
 class ButtonLayer extends AnimKAGLayer
 {
-	var Butt_imageLoaded = false; // 画像が読み込まれたか
+    var toggleButton; // トグルボタンとして初期化されてる
+    var _toggle;      // トグル状態
+
+    var groupName;    // ラジオボタンの場合のグループ指定
+    var halftone;     // disable 時に半透明にする
+    
+    property toggle {
+        getter() { return _toggle; }
+        setter(v) {
+            _toggle = v;
+            update();
+        }
+    }
+
+    var Butt_imageLoaded = false; // 画像が読み込まれたか
 	var Butt_mouseOn = false; // レイヤ内にマウスがあるか
 	var Butt_mouseDown = false; // マウスボタンが押されているか
 	var Butt_color = clNone;
+    var Butt_oncolor = clNone;
 	var Butt_caption = ''; // ボタンのキャプション
 	var Butt_captionColor = 0x000000; // キャプションの色
 	var Butt_keyPressed = false;
 	var Butt_showFocusImage = false;
 
-	function ButtonLayer(win, par)
+	function ButtonLayer(win, par, toggle=false)
 	{
         super.AnimKAGLayer(win, par);
 
 		if(typeof win.cursorPointed !== "undefined")
 			cursor = win.cursorPointed;
 
-		hitType = htMask;
-		hitThreshold = 0;
+        hitType = htMask;
+        hitThreshold = 0;
 		focusable = true; // フォーカスを得られる
+        toggleButton = toggle; // トグルボタンかどうか
 	}
 
 	function finalize()
@@ -47,10 +63,15 @@ class ButtonLayer extends AnimKAGLayer
 		// src の情報をこのボタンレイヤにコピー
 		assignImages(src, true);
 		Butt_imageLoaded = src.Butt_imageLoaded;
-		Butt_color = src.Butt_color;
+        Butt_color = src.Butt_color;
+        Butt_oncolor = src.Butt_oncolor;
 		Butt_caption = src.Butt_caption;
 		Butt_captionColor = src.Butt_captionColor;
 		hitThreshold = src.hitThreshold;
+        toggleButton = src.toggleButton;
+        toggle = src.toggle;
+        groupName = src.groupName;
+        halftone = src.halftone;
 		update();
 	}
 
@@ -63,14 +84,17 @@ class ButtonLayer extends AnimKAGLayer
 		//     (3): フォーカスがある場合
 		if(!enabled)
 		{
-			s = 0; // 無効状態
-		}
+            s = 0; // 無効状態
+        }
 
 		if(Butt_imageLoaded)
 		{
+            if (halftone) {
+                opacity = enabled ? 255 : 128;
+            }
             // ボタンイメージが読み込まれている
             // TODO: keyboard focus
-            imageLeft = -s * width;
+            imageLeft = -s * width - (toggle ? imageWidth / 2: 0);
         }
 		else
 		{
@@ -81,8 +105,15 @@ class ButtonLayer extends AnimKAGLayer
 			face = dfAlpha;
 			colorRect(0, 0, width, height, 0, -255);
 			// 下地を塗る
-			if(Butt_color != clNone)
-				colorRect(0, 0, width, height, Butt_color, 128);
+            if (toggle) {
+                if(Butt_oncolor != clNone)
+                    colorRect(0, 0, width, height, Butt_oncolor, 128);
+                else
+                    colorRect(0, 0, width, height, 0xff0000, 128);
+            } else {
+                if(Butt_color != clNone)
+                    colorRect(0, 0, width, height, Butt_color, 128);
+            }
 			// 文字のサイズを得る
 			var tw, th;
 			tw = font.getTextWidth(Butt_caption);
@@ -122,13 +153,25 @@ class ButtonLayer extends AnimKAGLayer
 		}
 	}
 
-	function loadImages(storage, key, count, time)
+    function loadImages(storage, key, count, time, toggle=false)
 	{
-		// 画像を読み込む
-        super.loadImages(storage, key, count, time);
-        super.width = imageWidth \ (Butt_showFocusImage ? 4 : 3);
+        if (toggle) {
+            toggleButton = true;
+        }
+        // 画像を読み込む
+        var temp = window.temporaryLayer;
+        temp.loadImages(storage, key);
+
+        var w = temp.imageWidth;
+        super.width = w \ (Butt_showFocusImage ? 4 : 3);
+        imageWidth  = toggleButton ? w * 2 : w;
+        copyRect(toggle ? 2 : 0, 0, temp, 0, 0, temp.imageWidth, temp.imageHeight);
+        
         callOnPaint = true;
         Butt_imageLoaded = true;
+        if (time > 0) {
+            animStart(count, time);
+        }
     }
 
 	// offsを考慮してボタンをコピーする
@@ -149,8 +192,12 @@ class ButtonLayer extends AnimKAGLayer
     /**
      * 分離ボタン画像の読み込み
      */
-    function loadButtons(normal, over, on, focus, count, time) {
+    function loadButtons(normal, over, on, focus, count, time, toggle=false) {
         var temp = window.temporaryLayer;
+
+        if (toggle) {
+            toggleButton = true;
+        }
         
         if (focus !== void) {
             Butt_showFocusImage = true;
@@ -165,22 +212,23 @@ class ButtonLayer extends AnimKAGLayer
         }
         super.width  = w;
         super.height = h;
-        imageWidth  = w * (Butt_showFocusImage ? 4 : 3);
+        imageWidth  = w * (Butt_showFocusImage ? 4 : 3) * (toggleButton ? 2:1);
         imageHeight = h;
         callOnPaint = true;
         Butt_imageLoaded = true;
-
+        var base = toggleButton ? (Butt_showFocusImage ? 4 : 3) : 0;
+        
         fillRect(0, 0, imageWidth, imageHeight, 0);
-        _copyButton(w, h, 0, temp, info);
+        _copyButton(w, h, base + 0, temp, info);
         if (over !== void) {
             info = temp.loadImages(over);
         }
-        _copyButton(w, h, 2, temp, info);
+        _copyButton(w, h, base + 2, temp, info);
 
         if (on !== void) {
             info = temp.loadImages(on);
         }
-        _copyButton(w, h, 1, temp, info);
+        _copyButton(w, h, base + 1, temp, info);
         
         if (Butt_showFocusImage) {
             if (focus !== void) {
@@ -192,13 +240,145 @@ class ButtonLayer extends AnimKAGLayer
             } else {
                 info = temp.loadImages(normal);
             }
-            _copyButton(w, h, 3, temp, info);
+            _copyButton(w, h, base + 3, temp, info);
         }
         if (time > 0) {
             animStart(count, time);
         }
     }
 
+	// offsを考慮してボタンをコピーする
+    function _copyButton2(w, h, num, temp, ox, oy) {
+        var cw = temp.imageWidth, ch = temp.imageHeight;
+        // 隣にハミ出さないように調整
+		if (ox + cw > w) cw = w - ox;
+		if (oy + ch > h) cw = h - oy;
+		// コピーする
+		copyRect(w*num + ox, oy, temp, 0, 0, cw, ch);
+	}
+
+    /**
+     * ボタン画像UI情報の読み込み
+     */
+    function loadUIInfo(uiinfo) {
+        var temp = window.temporaryLayer;
+        var states = uiinfo.uistates;
+        
+        if (states === void) {
+            throw new Exception("画像情報不正です:" + uiinfo.name);
+        }
+
+        // トグルボタン用
+        if (uiinfo.class == "toggle" || uiinfo.groupName != "") {
+            toggleButton = true;
+        }
+        
+        // ラジオボタン用
+        groupName = uiinfo.groupName;
+        
+        if (states.focus !== void) {
+            Butt_showFocusImage = true;
+        }
+
+        var w = uiinfo.width;
+        var h = uiinfo.height;
+        super.width  = w;
+        super.height = h;
+        imageWidth  = w * (Butt_showFocusImage ? 4 : 3) *( toggleButton ? 2: 1);
+        imageHeight = h;
+        callOnPaint = true;
+        Butt_imageLoaded = true;
+        fillRect(0, 0, imageWidth, imageHeight, 0);
+
+        var normal;
+        if (states.off !== void) {
+            normal = states.off;
+        } else if (states.normal !== void) {
+            normal = states.normal;
+        }
+        if (normal) {
+            temp.loadImages(normal.storage);
+            _copyButton2(w, h, 0, temp, normal.ox, normal.oy);
+
+            var over = normal;
+            if (states.over_off !== void) {
+                over = states.over_off;
+            } else if (states.over !== void) {
+                over = states.over;
+            }
+            temp.loadImages(over.storage);
+            _copyButton2(w, h, 2, temp, over.ox, over.oy);
+            
+            var on = over;
+            if (states.on_off !== void) {
+                on = states.on_off;
+            } else if (states.on !== void) {
+                on = states.on;
+            }
+            temp.loadImages(on.storage);
+            _copyButton2(w, h, 1, temp, on.ox, on.oy);
+            
+            if (Butt_showFocusImage) {
+                var focus = over;
+                if (states.focus !== void) {
+                    focus = states.focus;
+                }
+                temp.loadImages(focus.storage);
+                _copyButton2(w, h, 3, temp, focus.ox, focus.oy);
+            }
+        }
+
+        // トグルボタン用
+        if (toggleButton) {
+
+            var base = toggleButton ? (Butt_showFocusImage ? 4 : 3) : 0;
+            var normal;
+            if (states.normal_on !== void) {
+                normal = states.normal_on;
+            } else if (states.on !== void) {
+                normal = states.on;
+            } else if (states.normal) {
+                normal = states.normal;
+            }
+            
+            if (normal) {
+                temp.loadImages(normal.storage);
+                _copyButton2(w, h, base, temp, normal.ox, normal.oy);
+                
+                var over = normal;
+                if (states.over_on !== void) {
+                    over = states.over_on;
+                } else if (states.over !== void) {
+                    over = states.over;
+                }
+                temp.loadImages(over.storage);
+                _copyButton2(w, h, base+2, temp, over.ox, over.oy);
+                
+                var on = over;
+                if (states.on_on !== void) {
+                    on = states.on_on;
+                } else if (states.on !== void) {
+                    on = states.on;
+                }
+                temp.loadImages(on.storage);
+                _copyButton2(w, h, base+1, temp, on.ox, on.oy);
+                
+                if (Butt_showFocusImage) {
+                    var focus = over;
+                    if (states.focus !== void) {
+                        focus = states.focus;
+                    }
+                    temp.loadImages(focus.storage);
+                    _copyButton2(w, h, base+3, temp, focus.ox, focus.oy);
+                }
+            }
+        }
+
+        if (uiinfo.time > 0) {
+            animStart(uiinfo.count, uiinfo.time);
+        }
+    }
+    
 	function discardImage()
 	{
 		// 画像を破棄し、文字ボタンレイヤとして動作するようにする
@@ -222,8 +402,8 @@ class ButtonLayer extends AnimKAGLayer
 	function onMouseUp()
 	{
 		// onMouseUp イベントハンドラ
-		Butt_mouseDown = false;
-		update();
+        Butt_mouseDown = false;
+        update();
 		super.onMouseUp(...);
 	}
 
@@ -253,7 +433,7 @@ class ButtonLayer extends AnimKAGLayer
 	{
 		// マウスがレイヤ領域内に入った
         update();
-		Butt_mouseOn = true;
+        Butt_mouseOn = true;
 		super.onMouseEnter(...);
 	}
 
@@ -415,6 +595,19 @@ class ButtonLayer extends AnimKAGLayer
 		}
 	}
 
+	property oncolor
+	{
+		setter(x)
+		{
+			Butt_oncolor = int x;
+			update();
+		}
+		getter
+		{
+			return Butt_oncolor;
+		}
+	}
+    
 	property captionColor
 	{
 		setter(x)

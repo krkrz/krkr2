@@ -44,7 +44,7 @@ class LinkButtonLayer extends ButtonLayer
         if(this isvalid) super.onMouseUp(...);
 	}
 
-	function onMouseDown(x, y, button)
+    function onMouseDown(x, y, button)
 	{
 		super.onMouseDown(...);
         if (button == mbRight) {
@@ -128,7 +128,17 @@ class LinkButtonLayer extends ButtonLayer
 		}
 	}
 
-
+    property toggle {
+        getter() {
+            return super.toggle;
+        }
+        setter(v) {
+            super.toggle = v;
+            if (v && groupName != "") {
+                parent.updateRadio(this);
+            }
+        }
+    }
 }
 
 class LinkCheckBoxLayer extends CheckBoxLayer
@@ -300,6 +310,9 @@ class LinkSliderLayer extends SliderLayer
 {
     // メッセージレイヤに「スライダ」として管理されるためのスライダ
 	var linkNum; // リンク番号
+	var onenter; // マウスが入ってきたときに実行するもの
+	var onleave; // マウスが出ていったときに実行するもの
+
     var exp; // 式
     var changefuncdata;
     var changefunc; // 変更関数
@@ -324,6 +337,8 @@ class LinkSliderLayer extends SliderLayer
 		super.assign(src);
         name = src.name;
 		linkNum = src.linkNum;
+		onenter = src.onenter;
+		onleave = src.onleave;
 		exp = src.exp;
         changefuncdata = src.changefuncdata;
         changefunc = src.changefunc;
@@ -366,6 +381,19 @@ class LinkSliderLayer extends SliderLayer
         }
     }
 
+	function onMouseEnter()
+	{
+        parent.keyLink = linkNum;
+        if(!parent.selProcessLock && onenter !== void) Scripts.eval(onenter);
+        super.onMouseEnter(...);
+	}
+
+	function onMouseLeave()
+	{
+		if(!parent.selProcessLock && onleave !== void) Scripts.eval(onleave);
+		super.onMouseLeave(...);
+	}
+    
 	function onMouseDown(x, y, button)
 	{
 		super.onMouseDown(...);
@@ -2492,11 +2520,17 @@ class MessageLayer extends AnimKAGLayer
 		// グラフィカルボタンを配置
         var object = new LinkButtonLayer(window, this);
         object.name =  elm.name !== void ? elm.name : "button" + numLinks;
-        if (elm.normal !== void) {
+        if (elm.uistates !== void) {
+            object.loadUIInfo(elm);
+        } else if (elm.normal !== void) {
             var over   = elm.over !== void ? elm.over  : getExistName(elm.normal.replace(/_normal/, "_over"));
             var on     = elm.on   !== void ? elm.on    : getExistName(elm.normal.replace(/_normal/, "_on"));
             var focus  = elm.over !== void ? elm.focus : getExistName(elm.normal.replace(/_normal/, "_focus"));
             object.loadButtons(elm.normal, over, on, focus, elm.animcount, elm.animtime);
+            if (elm.trigger || elm.group) {
+                object.loadButtons(elm.on, over, on, focus, elm.animcount, elm.animtime, true);
+                object.groupName = elm.group;
+            }
         } else {
             if (elm.name !== void) {
                 var normal = elm.name + "_normal";
@@ -2504,14 +2538,22 @@ class MessageLayer extends AnimKAGLayer
                 var on     = elm.on   !== void ? elm.on    : getExistName(elm.name + "_on");
                 var focus  = elm.over !== void ? elm.focus : getExistName(elm.name + "_focus");
                 object.loadButtons(normal, over, on, focus, elm.animcount, elm.animtime);
+                if (elm.trigger || elm.group) {
+                    object.loadButtons(elm.on, over, on, focus, elm.animcount, elm.animtime, true);
+                    object.groupName = elm.group;
+                }
             } else {
                 object.loadImages(elm.graphic, elm.graphickey, elm.animcount, elm.animtime);
+                if (elm.trigger || elm.group) {
+                    object.loadImages(elm.graphicon, elm.graphickey, elm.animcount, elm.animtime, true);
+                    object.groupName = elm.group;
+                }
             }
         }
         object.linkNum = numLinks;
         object.setPos(x, y);
 		object.hint = elm.hint;
-        object.visible = true;
+        object.visible = (elm.visible !== void) ? elm.visible : true;
 		object.onenter = createSoundExpression(elm.onenter, elm.enterse, elm.entersebuf);
 		object.onleave = createSoundExpression(elm.onleave, elm.leavese, elm.leavesebuf);
         object.hitThreshold = (elm.recthit === void || +elm.recthit) ? 0 : 64;
@@ -2520,6 +2562,7 @@ class MessageLayer extends AnimKAGLayer
         } else if (elm.disabled !== void && elm.disabled) {
             object.enabled = false;
         }
+        object.halftone = elm.halftone if elm.halftone !== void;
 
 		links[numLinks] = %[
 			type :			ltButton,
@@ -2587,7 +2630,7 @@ class MessageLayer extends AnimKAGLayer
 			object.height = lf.height + 6;
 			x += len;
 		}
-		object.visible = true;
+		object.visible = (elm.visible !== void) ? elm.visible : true;
 
         lineLayerPos += len;
 		lineLayerLength += len;
@@ -2662,7 +2705,7 @@ class MessageLayer extends AnimKAGLayer
 		lineLayerPos += cw;
 		lineLayerLength += cw;
 
-		object.visible = true;
+		object.visible = (elm.visible !== void) ? elm.visible : true;
 
 		links[numLinks] = %[
 			type :			ltCheckBox,
@@ -2688,6 +2731,8 @@ class MessageLayer extends AnimKAGLayer
         var object = new LinkSliderLayer(window, this, vertical);
         object.name = elm.name !== void ? elm.name : "slider" + numLinks;
         object.linkNum = numLinks;
+		object.onenter = createSoundExpression(elm.onenter, elm.enterse, elm.entersebuf);
+		object.onleave = createSoundExpression(elm.onleave, elm.leavese, elm.leavesebuf);
         object.exp     = elm.name;
         object.color = elm.bgcolor if elm.bgcolor !== void; // color でない事に注意
         object.bgOpacity = elm.opacity if elm.opacity !== void;
@@ -2705,19 +2750,23 @@ class MessageLayer extends AnimKAGLayer
             object.change = elm.onchange if elm.onchange !== void;
         }
         object.changese = createSoundExpression(void, elm.changese, elm.changesebuf);
-        
-        // ベースの指定
-        if (elm.base !== void) {
-            object.loadBase(elm.base);
+
+        if (elm.uistates !== void) {
+            object.loadUIInfo(elm);
         } else {
-            object.width   = elm.width  === void ? 200 : +elm.width;
-            object.height  = elm.height === void ? 30  : +elm.height;
-        }
-        // タブの指定
-        if (elm.normal !== void) {
-            object.loadTabs(elm.normal, elm.over, elm.on);
-        } else if (elm.tab !== void) {
-            object.loadTab(elm.tab);
+            // ベースの指定
+            if (elm.base !== void) {
+                object.loadBase(elm.base);
+            } else {
+                object.width   = elm.width  === void ? 200 : +elm.width;
+                object.height  = elm.height === void ? 30  : +elm.height;
+            }
+            // タブの指定
+            if (elm.normal !== void) {
+                object.loadTabs(elm.normal, elm.over, elm.on);
+            } else if (elm.tab !== void) {
+                object.loadTab(elm.tab);
+            }
         }
         
         var cw;
@@ -2748,6 +2797,9 @@ class MessageLayer extends AnimKAGLayer
 			cy = lineLayerBase - lh;
 		}
 
+		cx += +elm.ox if elm.ox !== void;
+		cy += +elm.oy if elm.oy !== void;
+
         object.setPos(cx + lineLayerOriginX + getLineLayerLeftOffset(),
                       cy + lineLayerOriginY + getLineLayerTopOffset());
 
@@ -2755,12 +2807,14 @@ class MessageLayer extends AnimKAGLayer
         lineLayerPos += cw;
         lineLayerLength += cw;
 
-        object.visible = true;
+        object.visible = (elm.visible !== void) ? elm.visible : true;
 
         links[numLinks] = %[
 			type :			ltSlider,
 			exp :			elm.name,
 			object :		object,
+			onenter :		object.onenter,
+			onleave :		object.onleave,
 			x :				[object.left],
 			y :				[object.top],
 			w :				[object.width],
@@ -2782,7 +2836,9 @@ class MessageLayer extends AnimKAGLayer
     function addSystemButton(elm) {
         var object = new SystemButtonLayer(window, this);
         object.name =  elm.name !== void ? elm.name : "sysbutton" + numLinks;
-        if (elm.normal !== void) {
+        if (elm.uistates !== void) {
+            object.loadUIInfo(elm);
+        } else if (elm.normal !== void) {
             var over   = elm.over !== void ? elm.over  : getExistName(elm.normal.replace(/_normal/, "_over"));
             var on     = elm.on   !== void ? elm.on    : getExistName(elm.normal.replace(/_normal/, "_on"));
             var focus  = elm.over !== void ? elm.focus : getExistName(elm.normal.replace(/_normal/, "_focus"));
@@ -2800,7 +2856,7 @@ class MessageLayer extends AnimKAGLayer
         }
         object.setPos(elm.x, elm.y);
         object.hint = elm.hint;
-        object.visible = true;
+        object.visible = (elm.visible !== void) ? elm.visible : true;
         object.onclick = createSoundExpression(elm.exp, elm.clickse, elm.clicksebuf);
 		object.onenter = createSoundExpression(elm.onenter, elm.enterse, elm.entersebuf);
         object.onleave = createSoundExpression(elm.onleave, elm.leavese, elm.leavesebuf);
@@ -2948,6 +3004,15 @@ class MessageLayer extends AnimKAGLayer
 		}
 	}
 
+    function updateRadio(button) {
+        for(var i = links.count-1; i>=0; i--) {
+            var l = links[i];
+            if (l.type == ltButton && l.object !== button && l.object.groupName == button.groupName) {
+                l.object.toggle = false;
+            }
+        }
+    }
+    
 	function processLink(n)
 	{
         // タイムアウト処理は停止
@@ -2961,11 +3026,20 @@ class MessageLayer extends AnimKAGLayer
         if (ln.object !== void && !ln.object.enabled) {
             return;
         }
-        
-		// 裏画面のハイライトを非表示
+
+        // ボタンの場合の特殊処理
+        if (ln.type == ltButton) {
+            var button = ln.object;
+            if (button.groupName != "") {
+                button.toggle = true;
+            } else if (button.toggleButton) {
+                button.toggle = !button.toggle;
+            }
+        }
+
+        // 裏画面のハイライトを非表示
 		if(comp !== void) comp.highlightLayer.visible = false;
-        
-        
+
 		// 実行
 		Scripts.eval(ln.exp) if ln.exp != '';
 
@@ -2981,9 +3055,9 @@ class MessageLayer extends AnimKAGLayer
 
 	function onButtonClick(num)
 	{
-		// 番号 num のグラフィカルボタンがクリックされた
+        // 番号 num のグラフィカルボタンがクリックされた
 		processLink(num);
-	}
+    }
 
 
 	function setSelProcessLock(b)

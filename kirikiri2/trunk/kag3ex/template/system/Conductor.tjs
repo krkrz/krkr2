@@ -205,7 +205,9 @@ class BaseConductor extends KAGParser
                 dm(msg);
                 //throw new ConductorException(msg);
                 System.inform(msg, "ÉGÉâÅ[");
-                kag.goToStart();
+                if (curStorage != "title.ks") {
+                    kag.goToStart();
+                }
             }
 		}
 	}
