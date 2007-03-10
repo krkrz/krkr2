@@ -199,6 +199,8 @@ property EditLayer { getter() { KAGLoadScript("EditLayer.tjs"); return global.Ed
 property SliderLayer { getter() { KAGLoadScript("SliderLayer.tjs"); return global.SliderLayer; } }
 property KAGPlugin { getter() { KAGLoadScript("Plugin.tjs"); return global.KAGPlugin; } }
 property execDialog { getter() { KAGLoadScript("ExecDialog.tjs"); return global.execDialog; } }
+property uiload { getter() { KAGLoadScript("UILoader.tjs"); return global.uiload; } }
+property uiloadSystem { getter() { KAGLoadScript("UILoader.tjs"); return global.uiloadSystem; } }
 
 /*
 	各システム読み込み
@@ -239,7 +241,6 @@ if(Storages.isExistentStorage("Override.tjs"))
 	KAGLoadScript("Override.tjs");
 if(Storages.isExistentStorage(System.exePath + "Override2.tjs"))
 	KAGLoadScript(System.exePath + "Override2.tjs");
-
 
 /*
 	( デバッグ ) 時間計測
