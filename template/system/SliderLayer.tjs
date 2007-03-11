@@ -188,20 +188,24 @@ class SliderLayer extends KAGLayer
     function toMin() {
         position = Slider_position = Slider_min;
     }
+
+    function checkOne(value) {
+        return value < 1 ? 1 : value;
+    }
     
     function toLeft() {
         if (vertical) {
-            position = Slider_position - int((Slider_max - Slider_min)/ (Slider_tabHeight-2) );
+            position = Slider_position - checkOne(int((Slider_max - Slider_min)/ (Slider_tabHeight-2) ));
         } else {
-            position = Slider_position - int((Slider_max - Slider_min)/ (Slider_tabWidth-2));
+            position = Slider_position - checkOne(int((Slider_max - Slider_min)/ (Slider_tabWidth-2)));
         }
     }
 
     function toRight() {
         if (vertical) {
-            position = Slider_position + int((Slider_max - Slider_min) / (Slider_tabHeight-2));
+            position = Slider_position + checkOne(int((Slider_max - Slider_min) / (Slider_tabHeight-2)));
         } else {
-            position = Slider_position + int((Slider_max - Slider_min) / (Slider_tabWidth-2));
+            position = Slider_position + checkOne(int((Slider_max - Slider_min) / (Slider_tabWidth-2)));
         }
     }
 

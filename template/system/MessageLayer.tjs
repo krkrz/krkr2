@@ -3411,7 +3411,6 @@ class MessageLayer extends AnimKAGLayer
             var obj = setFocusToLink(keyLink);
             if(obj !== void) obj.focus();
     }
-
     
 	function onKeyDown(key, shift)
 	{
@@ -3465,7 +3464,7 @@ class MessageLayer extends AnimKAGLayer
 
 	function findPrevFocusable(control, layer)
 	{
-		if(control.linkNum != 0) return this; else return prevFocusable;
+        if(control.linkNum != 0) return this; else return prevFocusable;
 	}
 
 	function findNextFocusable(control, layer)
@@ -3498,7 +3497,8 @@ class MessageLayer extends AnimKAGLayer
 					// backward
 					keyLink = numLinks-1;
 				}
-				var obj = setFocusToLink(keyLink);
+                keyLink = checkFocus(keyLink, direction ? 1 : -1);
+                var obj = setFocusToLink(keyLink);
 				if(obj !== void)
 				{
 					super.onBeforeFocus(obj, blured, direction);
@@ -3522,7 +3522,7 @@ class MessageLayer extends AnimKAGLayer
 					else
 						keyLink--;
 				}
-
+                keyLink = checkFocus(keyLink, direction ? 1 : -1);
 				var obj = setFocusToLink(keyLink);
 				if(obj !== void)
 				{

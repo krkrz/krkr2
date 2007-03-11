@@ -16,6 +16,7 @@ class UIListParser extends CSVParser {
 
     // パース結果格納用
     var result;
+    var names;
     var check;
 
     /**
@@ -35,6 +36,7 @@ class UIListParser extends CSVParser {
                 info = %[];
                 info.name = name;
                 info.uistates = %[];
+                names.add(name);
                 result[name] = info;
             }
             if (type == "type") {
@@ -125,12 +127,14 @@ class UIListParser extends CSVParser {
 
     function clear() {
         result = %[];
+        names = [];
     }
 };
 
-function uiloadParse(baseName)
+function uiloadParse(layer, elm, funcTable)
 {
     var separator = #',';
+    var baseName = elm.storage;
     
     if (!Storages.isExistentStorage(baseName)) {
         if (Storages.isExistentStorage(baseName + ".csv")) {
@@ -143,45 +147,47 @@ function uiloadParse(baseName)
             return;
         }
     }
-    
     var parser = new UIListParser(null, separator);
 
     parser.parseStorage(baseName);
-    var funcName = Storages.chopStorageExt(baseName) + ".func";
+    var funcName = elm.func !== void ? elm.func : Storages.chopStorageExt(baseName) + ".func";
+    if (!Storages.isExistentStorage(funcName)) {
+        if (Storages.isExistentStorage(funcName + ".func")) {
+            funcName += ".func";
+        }
+    }
     if (Storages.isExistentStorage(funcName)) {
         parser.parseStorage(funcName);
     }
 
-    // 描画処理開始
-    var names = [];
-    names.assign(parser.result);
-    invalidate parser;
-    return names;
+    uiloadEntry(layer, parser.names, parser.result, elm, funcTable);
 }
 
-function uiloadEntry(layer, names, elm, table)
+function uiloadEntry(layer, names, dic, elm, table)
 {
 	var basex = 0, basey = 0;
     // 背景だけ特殊処理
-    for (var i=0; i<names.count; i+= 2) {
-        var value = names[i+1];
-        if (value.class == "base") {
+    for (var i=0; i<names.count; i++) {
+        var value = dic[names[i]];
+        if (value !== void && value.class == "base") {
             table[value.class](layer, names[i], value, elm);
 			basex = value.x;
 			basey = value.y;
             break;
         }
     }
-    for (var i=0; i<names.count; i+= 2) {
-        var value = names[i+1];
-        if (value.class === void) {
-            kag.error("クラスが指定されていません:" + names[i]);
-        } else if (value.class !== "base") {
-            var func = table[value.class];
-            if (func !== void) {
-				value.x -= basex;
-				value.y -= basey;
-                func(layer, names[i], value, elm);
+    for (var i=0; i<names.count; i++) {
+        var value = dic[names[i]];
+        if (value !== void) {
+            if (value.class === void) {
+                kag.error("クラスが指定されていません:" + names[i]);
+            } else if (value.class !== "base") {
+                var func = table[value.class];
+                if (func !== void) {
+                    value.x -= basex;
+                    value.y -= basey;
+                    func(layer, names[i], value, elm);
+                }
             }
         }
     }
@@ -228,9 +234,7 @@ slider: uiEntrySlider,
  */
 function uiload(layer, elm)
 {
-    var names = uiloadParse(elm.storage);
-    if (names === void) return;
-    uiloadEntry(layer, names, elm, uiEntryFuncs);
+    uiloadParse(layer, elm, uiEntryFuncs);
 }
 
 function uiEntrySystemButton(layer, name, value) {
@@ -249,7 +253,5 @@ radio:  uiEntrySystemButton
  */
 function uiloadSystem(layer, elm)
 {
-    var names = uiloadParse(elm.storage);
-    if (names === void) return;
-    uiloadEntry(layer, names, elm, uiEntrySystemFuncs);
+    uiloadParse(layer, elm, uiEntrySystemFuncs);
 }
