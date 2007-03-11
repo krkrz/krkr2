@@ -35,7 +35,7 @@ class DialogButtonLayer extends ButtonLayer
 
 	function onMouseEnter()
 	{
-		parent.keyLink = linkNum;
+        parent.keyLink = linkNum;
 		if(!parent.selProcessLock && onenter !== void) Scripts.eval(onenter);
 		super.onMouseEnter(...);
 	}
@@ -353,7 +353,6 @@ class DialogLayer extends KAGLayer
 				}
 
             } else {
-                dm("画像配置:" + frameGraphic);
                 // 画像配置
                 var temp = window.temporaryLayer;
                 temp.loadImages(frameGraphic, frameKey);
@@ -751,51 +750,87 @@ class DialogLayer extends KAGLayer
 		return void;
 	}
 
-	function onKeyDown(key, shift)
-	{
-        if(!focusable || !numLinks) { return super.onKeyDown(...); }
+    function checkFocus(link, direction) {
+        var firstLink = link;
+        do {
+            var target = links[link].object;
+            if (target == void || (target.visible && target.enabled)) {
+                return link;
+            }
+            if (direction > 0) {
+                link++;
+                if (link >= numLinks) {
+                    link = 0;
+                }
+            } else {
+                link--;
+                if (link < 0) {
+                    link = numLinks - 1;
+                }
+            }
+        } while (link != firstLink);
+        return link;
+    }
 
-		var l, r;
-        l=VK_LEFT;
-        r=VK_RIGHT;
-
-		if(!selProcessLock && ((key == VK_UP && !(shift & ssShift)) || key == l ||
-			(key == VK_TAB && (shift & ssShift))))
-		{
-            if(keyLink == -1 || keyLink == 0)
+    function tabPrev() {
+			if(keyLink == -1 || keyLink == 0)
 			{
-				var l = focusPrev();
-				if(l !== null) return;
+//				var l = focusPrev();
+//				if(l !== null) return;
 				keyLink = numLinks - 1;
 			}
 			else
 			{
 				keyLink--;
 			}
-			var obj = setFocusToLink(keyLink);
+            keyLink = checkFocus(keyLink, -1);
+            var obj = setFocusToLink(keyLink);
 			if(obj !== void) obj.focus();
-		}
-		else if(!selProcessLock && (key == VK_DOWN || key == r || (key == VK_TAB && !(shift & ssShift))))
-		{
+    }
+    
+    function tabNext() {
 			if(keyLink == -1 || keyLink == numLinks -1)
 			{
-				var l = focusNext();
-				if(l !== null) return;
+//				var l = focusNext();
+//				if(l !== null) return;
 				keyLink = 0;
 			}
 			else
 			{
 				keyLink ++;
 			}
-			var obj = setFocusToLink(keyLink);
-			if(obj !== void) obj.focus();
+            keyLink = checkFocus(keyLink, 1);
+            var obj = setFocusToLink(keyLink);
+            if(obj !== void) obj.focus();
+    }
+    
+	function onKeyDown(key, shift)
+	{
+        if(!focusable || !numLinks) { return super.onKeyDown(...); }
+
+        var l, r;
+        l=VK_LEFT;
+        r=VK_RIGHT;
+
+		if(!selProcessLock && ((key == VK_UP && !(shift & ssShift)) || key == l || (key == VK_TAB && (shift & ssShift))))
+		{
+            tabPrev();
+		}
+		else if(!selProcessLock && (key == VK_DOWN || key == r || (key == VK_TAB && !(shift & ssShift))))
+		{
+            tabNext();
 		}
 		else if(key == VK_SPACE || key == VK_RETURN)
 		{
             if(selProcessLock || keyLink == -1) {
                 window.checkProceedingKey(key, shift);
-            } else
-				processLink(keyLink);
+            } else {
+                if (keyLink != -1 && links[keyLink].type == ltEdit) {
+                    tabNext();
+                } else {
+                    processLink(keyLink);
+                }
+            }
 		}
         else if(key == VK_ESCAPE)
 		{
@@ -843,6 +878,7 @@ class DialogLayer extends KAGLayer
 					// backward
 					keyLink = numLinks-1;
 				}
+                keyLink = checkFocus(keyLink, direction ? 1 : -1);
 				var obj = setFocusToLink(keyLink);
 				if(obj !== void)
 				{
@@ -867,7 +903,7 @@ class DialogLayer extends KAGLayer
 					else
 						keyLink--;
 				}
-
+                keyLink = checkFocus(keyLink, direction ? 1 : -1);
 				var obj = setFocusToLink(keyLink);
 				if(obj !== void)
 				{
