@@ -103,14 +103,14 @@ class SelectButtonLayer extends ButtonLayer
         if (button == mbRight) {
             window.onPrimaryRightClick();
         }
-        if (this isvalid) super.onMouseUp(...);
+        if (this isvalid) super.onMouseDown(...);
     }
     
-    function onMouseUp(x, y, button, shift)	{
+    function onExecute(x, y, button, shift)	{
         if (enabled && button == mbLeft) {
             owner.onButtonClick(this);
         }
-        if (this isvalid) super.onMouseUp(...);
+        if (this isvalid) super.onExecute(...);
 	}
 
 	function onKeyDown(key, shift, process)
