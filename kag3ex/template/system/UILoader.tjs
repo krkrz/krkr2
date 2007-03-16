@@ -39,86 +39,114 @@ class UIListParser extends CSVParser {
                 names.add(name);
                 result[name] = info;
             }
-            if (type == "type") {
-                check = true;
-                // 種類指定
-                info.class  = columns[2];
-                info.x      = +columns[3];
-                info.y      = +columns[4];
-                info.width  = +columns[5];
-                info.height = +columns[6];
-            } else if (type == "file") {
-                check = true;
-                // ファイル指定
-                if (info.class == "base") {
-                    info.storage =columns[2];
-                } else {
-                    var stateName = columns[7];
-                    for (var i=8;i<columns.count;i++) {
-                        var state = columns[i];
-                        if (buttonStateNames[state] !== void) {
-                            stateName += "_";
-                            stateName += state;
-                        } else {
-                            if (info.class == "radio") {
-                                if (state != "") {
-                                    info.groupName = state;
-                                }
-                            }
-                        }
-                    }
-                    if (stateName != "") {
-                        var state = info.uistates[stateName];
-                        if (state === void) {
-                            state = %[];
-                            info.uistates[stateName] = state;
-                        }
-                        state.storage = columns[2];
-                        state.ox = +columns[3];
-                        state.oy = +columns[4];
-                        state.w  = +columns[5];
-                        state.h  = +columns[6];
-                    }
-                }
-            } else if (type == "func") {
-                check = true;
-				for (var i=2; i<columns.count; i+=2) {
-					var tag = columns[i];
-					var val = columns[i+1];
-					val = true if (val === void);
-					if (tag !==void && tag.length > 0) {
-						try {
-							info[tag] = val;
-						} catch(e) {
-							dm("指定された処理は評価できません:" + val);
-						}
-					}
-				}
-            }
+			var knownType = true;
+			switch (type) {
+			case "type": doType(info, columns);
+			case "file": doFile(info, columns);
+			case "func": doFunc(info, columns);
+			case "part": doPart(info, columns);
+			default: knownType = false; break;
+			}
+			check = true if (knownType);
         }
     }
 
-    function parseStorage(filename,utf8=false) {
-		check = false;
-		super.parseStorage(...);
-		if (!check) {
-//			dm("reload: " + filename);
-			// １行も読まれなかったらとりあえずエンコードを変えて読み直し
-			super.parseStorage(filename, !utf8);
-			if (!check) {
-//				dm("arrayload: " + filename);
-				// それでもダメだったらArrayで読み直す
-				var temp = [];
-				temp.load(filename);
-				for (var i = 0; i < temp.count; i++) {
-					var line = [];
-					line.split(",\t", temp[i]);
-					doLine(line, i+1) if (line.count > 0);
+	// 種類指定
+	function doType(info, columns) {
+		info.class  = columns[2];
+		info.x      = +columns[3];
+		info.y      = +columns[4];
+		info.width  = +columns[5];
+		info.height = +columns[6];
+	}
+
+	// ファイル指定
+	function doFile(info, columns) {
+		switch (info.class) {
+		case "base":
+		case "layer":
+			info.storage =columns[2];
+			break;
+		case "copy":
+			info.copy = columns[7];
+			break;
+		default:
+			var stateName = columns[7];
+			for (var i=8;i<columns.count;i++) {
+				var state = columns[i];
+				if (buttonStateNames[state] !== void) {
+					stateName += "_";
+					stateName += state;
+				} else {
+					if (info.class == "radio") {
+						if (state != "") {
+							info.groupName = state;
+						}
+					}
+				}
+			}
+			if (stateName != "") {
+				var state = info.uistates[stateName];
+				if (state === void) {
+					state = %[];
+					info.uistates[stateName] = state;
+				}
+				state.storage = columns[2];
+				state.ox = +columns[3];
+				state.oy = +columns[4];
+				state.w  = +columns[5];
+				state.h  = +columns[6];
+			}
+			break;
+		}
+	}
+
+	// func (elm) 指定
+	function doFunc(info, columns) {
+		for (var i=2; i<columns.count; i+=2) {
+			var tag = columns[i];
+			var val = columns[i+1];
+			val = true if (val === void);
+			if (tag !==void && tag.length > 0) {
+				try {
+					info[tag] = val;
+				} catch(e) {
+					dm("指定された処理は評価できません:" + val);
 				}
 			}
 		}
-        return result;
-    } 
+	}
+
+	// パート指定
+	function doPart(info, columns) {
+		if (     info.class === void)   info.class = "part";
+		else if (info.class !== "part") kag.error("part名に実体が存在します:" + info.name);
+		info.part = [] if (info.part === void);
+		var part = info.part;
+		for (var i=2; i<columns.count; i++) part.add(columns[i]);
+	}
+
+	function parseStorage(filename,utf8=false) {
+		check = false;
+		super.parseStorage(...);
+		if (check) return result;
+
+//		dm("reload: " + filename);
+		// １行も読まれなかったらとりあえずエンコードを変えて読み直し
+		super.parseStorage(filename, !utf8);
+		if (check) return result;
+
+//		dm("arrayload: " + filename);
+		// それでもダメだったらArrayで読み直す
+		var temp = [];
+		temp.load(filename);
+		for (var i = 0; i < temp.count; i++) {
+			var line = [];
+			line.split(",\t", temp[i]);
+			doLine(line, i+1) if (line.count > 0);
+		}
+		return result;
+	}
 
     function UIListParser() {
         super.CSVParser(...);
@@ -131,7 +159,7 @@ class UIListParser extends CSVParser {
     }
 };
 
-function uiloadParse(layer, elm, funcTable)
+function uiloadParse(elm)
 {
     var separator = #',';
     var baseName = elm.storage;
@@ -150,7 +178,7 @@ function uiloadParse(layer, elm, funcTable)
     var parser = new UIListParser(null, separator);
 
     parser.parseStorage(baseName);
-    var funcName = elm.func !== void ? elm.func : Storages.chopStorageExt(baseName) + ".func";
+    var funcName = (elm.func !== void) ? elm.func : Storages.chopStorageExt(baseName) + ".func";
     if (!Storages.isExistentStorage(funcName)) {
         if (Storages.isExistentStorage(funcName + ".func")) {
             funcName += ".func";
@@ -160,12 +188,53 @@ function uiloadParse(layer, elm, funcTable)
         parser.parseStorage(funcName);
     }
 
-    uiloadEntry(layer, parser.names, parser.result, elm, funcTable);
+	return %[names: parser.names, result:parser.result];
 }
 
 function uiloadEntry(layer, names, dic, elm, table)
 {
 	var basex = 0, basey = 0;
+
+	// part除外処理
+	var pr = (typeof elm.partremove === "String");
+	var pe = (typeof elm.partexcept === "String");
+	if (pr || pe) {
+		var temp = [];
+		temp.assign(names);
+
+		// 指定part削除動作
+		var parts = [];
+		parts.split(",",elm.partremove,,true) if pr;
+		for (var i = 0; i < parts.count; i++) {
+			var part = dic[parts[i].trim()];
+			if (part === void) dm("partが見つかりません:" + parts[i]);
+			else if (part.class == "part") {
+				part = part.part;
+				for (var j = 0; j < part.count; j++) temp.remove(part[j], true);
+			} else                                   temp.remove(part.name, true);
+		}
+
+		// 指定part以外削除動作
+		parts.clear();
+		parts.split(",",elm.partexcept,,true) if pe;
+		for (var i = 0; i < parts.count; i++) {
+			var part = dic[parts[i].trim()];
+			if (part === void) dm("partが見つかりません:" + parts[i]);
+			else if (part.class == "part") {
+				part = part.part;
+				for (var j = 0; j < temp.count; j++) if (part.find(temp[j]) >= 0) temp[j] = void;
+				temp.remove(void, true);
+			} else {
+				var hasPart = (temp.find(part.name) >= 0);
+				temp.clear();
+				temp.add(part.name) if hasPart;
+			}
+		}
+
+		// 結果差し替え
+		names = temp;
+	}
+
     // 背景だけ特殊処理
     for (var i=0; i<names.count; i++) {
         var value = dic[names[i]];
@@ -176,22 +245,51 @@ function uiloadEntry(layer, names, dic, elm, table)
             break;
         }
     }
-    for (var i=0; i<names.count; i++) {
-        var value = dic[names[i]];
-        if (value !== void) {
-            if (value.class === void) {
-                kag.error("クラスが指定されていません:" + names[i]);
-            } else if (value.class !== "base") {
-                var func = table[value.class];
-                if (func !== void) {
-                    value.x -= basex;
-                    value.y -= basey;
-                    func(layer, names[i], value, elm);
-                }
-            }
-        }
-    }
+
+	for (var i=0; i<names.count; i++) {
+		var name  = names[i];
+		var value = dic[name];
+		if (value !== void) {
+			switch (value.class) {
+			case void:
+				kag.error("クラスが指定されていません:" + name);
+				break;
+			case "base":
+			case "part":
+				break;
+			case "copy":
+				var target;
+				try { target = dic[value.copy]; } catch {}
+				if (target === void) {
+					kag.error("コピー対象がありません:" + name);
+					break;
+				}
+				var temp = %[];
+				(global.Dictionary.assign incontextof temp)(target, true);
+				(global.Dictionary.assign incontextof temp)(value,  false); 
+				temp.class = target.class;
+				temp.uistates = target.uistates;
+				value = temp;
+				/* not break */
+			default:
+				var func = table[value.class];
+				if (func !== void) {
+					value.x -= basex;
+					value.y -= basey;
+					func(layer, name, value, elm);
+				}
+				break;
+			}
+		}
+	}
 }
+
+function uiloadWithFuncTable(layer, elm, funcTable) {
+	var parse = uiloadParse(elm);
+	uiloadEntry(layer, parse.names, parse.result, elm, funcTable);
+	return parse.result;
+}
+
 
 
 function uiEntryBase(layer, name, value, elm) {
@@ -218,6 +316,21 @@ function uiEntrySlider(layer, name, value) {
     layer.locate(value.x, value.y);
     layer.addSlider(value);
 }
+function uiEntryLayer(layer, name, value) {
+	layer.locate(value.x, value.y);
+	value.normal = value.storage;
+	value.uistates = void;
+	layer.addButton(value);
+	layer.names[value.name].enabled = false;
+}
+function uiEntryCopy(layer, name, value) {
+	layer.locate(value.x, value.y);
+	value.normal = value.storage;
+	value.uistates = void;
+	layer.addButton(value);
+	layer.names[name].enabled = false;
+}
+
 
 var uiEntryFuncs = %[
 base:   uiEntryBase,
@@ -225,6 +338,7 @@ button: uiEntryButton,
 toggle: uiEntryButton,
 radio:  uiEntryButton,
 slider: uiEntrySlider,
+layer:  uiEntryLayer,
 ];
 
 /**
@@ -234,7 +348,7 @@ slider: uiEntrySlider,
  */
 function uiload(layer, elm)
 {
-    uiloadParse(layer, elm, uiEntryFuncs);
+	return uiloadWithFuncTable(layer, elm, uiEntryFuncs);
 }
 
 function uiEntrySystemButton(layer, name, value) {
@@ -244,7 +358,7 @@ var uiEntrySystemFuncs = %[
 base:   uiEntryBase,
 button: uiEntrySystemButton,
 toggle: uiEntrySystemButton,
-radio:  uiEntrySystemButton
+radio:  uiEntrySystemButton,
 ];
 /**
  * UIのロード処理
@@ -253,5 +367,5 @@ radio:  uiEntrySystemButton
  */
 function uiloadSystem(layer, elm)
 {
-    uiloadParse(layer, elm, uiEntrySystemFuncs);
+	return uiloadWithFuncTable(layer, elm, uiEntrySystemFuncs);
 }
