@@ -388,6 +388,14 @@ class ButtonLayer extends AnimKAGLayer
         update();
 	}
 
+	function onExecute(x, y, button, shift)
+	{
+		// マウスボタンが押されて、放されたときに呼ばれる
+		// 何かこのボタンが押されたことによりコマンドなどを実装したい場合は
+		// onMouseUp や onClick をオーバーライドするよりも
+		// このメソッドをオーバーライドすることを推奨する
+	}
+    
 	function onMouseDown(x, y, button)
 	{
 		// onMouseDown イベントハンドラ
@@ -402,6 +410,7 @@ class ButtonLayer extends AnimKAGLayer
 	function onMouseUp()
 	{
 		// onMouseUp イベントハンドラ
+		if(Butt_mouseDown) onExecute(...);
         Butt_mouseDown = false;
         update();
 		super.onMouseUp(...);
