@@ -21,6 +21,7 @@
 #include "LayerIntf.h"
 #include "SysInitIntf.h"
 #include "VideoOvlIntf.h"
+#include "LayerManager.h"
 
 
 //---------------------------------------------------------------------------
