@@ -410,9 +410,6 @@ tTJSNI_BaseLayer::Construct(tjs_int numparams, tTJSVariant **param,
 		TVPThrowExceptionMessage(TVPSpecifyWindow);
 	if(!win) TVPThrowExceptionMessage(TVPSpecifyWindow);
 
-	// retrieve manager
-	Manager = win->GetLayerManager();
-
 	// get the layer native instance
 	clo = param[1]->AsObjectClosureNoAddRef();
 	tTJSNI_Layer *lay = NULL;
@@ -423,16 +420,22 @@ tTJSNI_BaseLayer::Construct(tjs_int numparams, tTJSVariant **param,
 			TVPThrowExceptionMessage(TVPSpecifyLayer);
 	}
 
+	// retrieve manager
+	// layer manager is the same as the parent, if the parent is given
+	if(lay)
+		Manager = lay->GetManager();
+
 	// register to parent layer
 	if(lay) Join(lay);
 
 	// is primarylayer ?
+	// ask window to create layer manager 
 	if(!lay)
 	{
-		if(Manager->IsPrimaryLayerAttached())
-			TVPThrowExceptionMessage(TVPWindowHasAlreadyPrimaryLayer);
-//		SetWindow(win);
+		Manager = new tTVPLayerManager(win);
 		Manager->AttachPrimary(this);
+//		Manager->RegisterSelfToWindow();
+
 		Type = DisplayType = ltOpaque; // initially ltOpaque
 		NeutralColor = TransparentColor = TVP_RGBA2COLOR(255, 255, 255, 255);
 		UpdateDrawFace();
@@ -463,8 +466,8 @@ tTJSNI_BaseLayer::Invalidate()
 	if(IsPrimary())
 	{
 		if(Manager) Manager->DetachPrimary();
-//		SetFocusTo(NULL);
-//		ReleaseAllModalLayer();
+		// also detach from draw device
+//		Manager->UnregisterSelfFromWindow();
 	}
 
 

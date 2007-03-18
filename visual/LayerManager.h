@@ -27,6 +27,11 @@ public:
 //-- layer metrics
 	virtual bool TJS_INTF_METHOD GetPrimaryLayerSize(tjs_int &w, tjs_int &h) const = 0;
 
+//-- layer structure information
+	virtual tTJSNI_BaseLayer * TJS_INTF_METHOD GetPrimaryLayer() const = 0;
+	virtual tTJSNI_BaseLayer * TJS_INTF_METHOD GetFocusedLayer() const = 0;
+	virtual void TJS_INTF_METHOD SetFocusedLayer(tTJSNI_BaseLayer * layer) = 0;
+
 //-- HID releted
 	virtual void TJS_INTF_METHOD NotifyClick(tjs_int x, tjs_int y) = 0;
 	virtual void TJS_INTF_METHOD NotifyDoubleClick(tjs_int x, tjs_int y) = 0;
@@ -83,6 +88,7 @@ class tTVPLayerManager : public iTVPLayerManager
 
 public:
 	tTVPLayerManager(tTJSNI_BaseWindow *window);
+
 private:
 	virtual ~tTVPLayerManager();
 public:
@@ -93,7 +99,7 @@ public:
 	void AttachPrimary(tTJSNI_BaseLayer *pri); // attach primary layer to the manager
 	void DetachPrimary(); // detach primary layer from the manager
 
-	tTJSNI_BaseLayer * GetPrimaryLayer() const { return Primary; }
+	virtual tTJSNI_BaseLayer * TJS_INTF_METHOD GetPrimaryLayer() const { return Primary; }
 	bool IsPrimaryLayerAttached() const { return Primary != NULL; } 
 
 	virtual bool TJS_INTF_METHOD GetPrimaryLayerSize(tjs_int &w, tjs_int &h) const;
@@ -181,11 +187,12 @@ public:
 	tTJSNI_BaseLayer *SearchFirstFocusable(bool ignore_chain_focusable = true); // search first focusable layer
 
 
-	tTJSNI_BaseLayer *GetFocusedLayer() const { return FocusedLayer; }
+	virtual tTJSNI_BaseLayer * TJS_INTF_METHOD GetFocusedLayer() const { return FocusedLayer; }
 	void CheckTreeFocusableState(tTJSNI_BaseLayer *root);
 		// check newly added tree's focusable state
 	bool SetFocusTo(tTJSNI_BaseLayer *layer, bool direction = true);
 		// set focus to layer
+	void TJS_INTF_METHOD SetFocusedLayer(tTJSNI_BaseLayer * layer) { SetFocusTo(layer, false); }
 	tTJSNI_BaseLayer *FocusPrev(); // focus to previous layer
 	tTJSNI_BaseLayer *FocusNext(); // focus to next layer
 	void ReleaseAllModalLayer(); // release all modal layer on invalidation
