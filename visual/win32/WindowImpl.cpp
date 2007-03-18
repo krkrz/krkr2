@@ -24,6 +24,7 @@
 #include "VideoOvlIntf.h"
 #include "DebugIntf.h"
 #include "PluginImpl.h"
+#include "PassThroughDrawDevice.h"
 
 
 //---------------------------------------------------------------------------
@@ -870,6 +871,7 @@ HWND TVPGetModalWindowOwnerHandle()
 tTJSNI_Window::tTJSNI_Window()
 {
 	Form = NULL;
+	DrawDevice = NULL;
 }
 //---------------------------------------------------------------------------
 tjs_error TJS_INTF_METHOD
@@ -879,6 +881,28 @@ tTJSNI_Window::Construct(tjs_int numparams, tTJSVariant **param,
 	tjs_error hr = tTJSNI_BaseWindow::Construct(numparams, param, tjs_obj);
 	if(TJS_FAILED(hr)) return hr;
 	Form = new TTVPWindowForm(Application, this);
+
+	// set default draw device object "PassThrough"
+	{
+		iTJSDispatch2 * cls = NULL;
+		iTJSDispatch2 * newobj = NULL;
+		try
+		{
+			cls = new tTJSNC_PassThroughDrawDevice();
+			if(TJS_FAILED(cls->CreateNew(0, NULL, NULL, &newobj, 0, NULL, cls)))
+				TVPThrowExceptionMessage(TVPInternalError,
+					TJS_W("tTJSNI_Window::Construct"));
+			SetDrawDeviceObject(tTJSVariant(newobj, newobj));
+		}
+		catch(...)
+		{
+			if(cls) cls->Release();
+			if(newobj) newobj->Release();
+			throw;
+		}
+		if(cls) cls->Release();
+		if(newobj) newobj->Release();
+	}
 
 	return TJS_S_OK;
 }
@@ -891,6 +915,9 @@ void TJS_INTF_METHOD tTJSNI_Window::Invalidate()
 		Form->InvalidateClose();
 		Form = NULL;
 	}
+
+	// release draw device
+	SetDrawDeviceObject(tTJSVariant());
 
 	// remove all events
 	TVPCancelSourceEvents(Owner);
@@ -921,7 +948,30 @@ void tTJSNI_Window::TickBeat()
 bool tTJSNI_Window::GetWindowActive()
 {
 	if(Form) return Form->GetWindowActive();
-	return false;	
+	return false;
+}
+//---------------------------------------------------------------------------
+void tTJSNI_Window::SetDrawDeviceObject(const tTJSVariant & val)
+{
+	// invalidate existing draw device
+	if(DrawDeviceObject.Type() == vtObject)
+		DrawDeviceObject.AsObjectClosureNoAddRef().Invalidate(0, NULL, NULL, val.AsObjectNoAddRef());
+
+	// assign new device
+	DrawDeviceObject = val;
+	DrawDevice = NULL;
+
+	// extract interface
+	if(DrawDeviceObject.Type() == vtObject)
+	{
+		tTJSVariantClosure clo = DrawDeviceObject.AsObjectClosureNoAddRef();
+		tTJSVariant iface_v;
+		if(TJS_FAILED(clo.PropGet(0, TJS_W("interface"), NULL, &iface_v, NULL)))
+			TVPThrowExceptionMessage(TJS_W("Could not retrive interface from given draw device")); // TODO: i18n
+		DrawDevice =
+			reinterpret_cast<iTVPDrawDevice *>((long)(tjs_int64)iface_v);
+
+	}
 }
 //---------------------------------------------------------------------------
 void tTJSNI_Window::PostInputEvent(const ttstr &name, iTJSDispatch2 * params)
@@ -1628,6 +1678,26 @@ TJS_BEGIN_NATIVE_PROP_DECL(HWND)
 	TJS_DENY_NATIVE_PROP_SETTER
 }
 TJS_END_NATIVE_PROP_DECL_OUTER(cls, HWND)
+//---------------------------------------------------------------------------
+TJS_BEGIN_NATIVE_PROP_DECL(drawDevice)
+{
+	TJS_BEGIN_NATIVE_PROP_GETTER
+	{
+		TJS_GET_NATIVE_INSTANCE(/*var. name*/_this, /*var. type*/tTJSNI_Window);
+		*result = _this->GetDrawDeviceObject();
+		return TJS_S_OK;
+	}
+	TJS_END_NATIVE_PROP_GETTER
+
+	TJS_BEGIN_NATIVE_PROP_SETTER
+	{
+		TJS_GET_NATIVE_INSTANCE(/*var. name*/_this, /*var. type*/tTJSNI_Window);
+		_this->SetDrawDeviceObject(*param);
+		return TJS_S_OK;
+	}
+	TJS_END_NATIVE_PROP_SETTER
+}
+TJS_END_NATIVE_PROP_DECL_OUTER(cls, drawDevice)
 //---------------------------------------------------------------------------
 
 	TVPGetDisplayColorFormat(); // this will be ran only once here

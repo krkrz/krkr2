@@ -37,6 +37,7 @@
 #include "tjsRandomGenerator.h"
 #include "SysInitIntf.h"
 #include "PhaseVocoderFilter.h"
+#include "PassThroughDrawDevice.h"
 
 //---------------------------------------------------------------------------
 // Script system initialization script
@@ -457,7 +458,6 @@ void TVPInitScriptEngine()
 
 	/* classes */
 	REGISTER_OBJECT(Debug, TVPCreateNativeClass_Debug());
-	REGISTER_OBJECT(Window, TVPCreateNativeClass_Window());
 	REGISTER_OBJECT(Layer, TVPCreateNativeClass_Layer());
 	REGISTER_OBJECT(CDDASoundBuffer, TVPCreateNativeClass_CDDASoundBuffer());
 	REGISTER_OBJECT(MIDISoundBuffer, TVPCreateNativeClass_MIDISoundBuffer());
@@ -484,10 +484,17 @@ void TVPInitScriptEngine()
 	waveclass->PropSet(TJS_MEMBERENSURE|TJS_IGNOREPROP|TJS_STATICMEMBER,
 		TJS_W("PhaseVocoder"), NULL, &val, waveclass);
 
+	/* Window and its drawdevices */
+	iTJSDispatch2 * windowclass = NULL;
+	REGISTER_OBJECT(Window, (windowclass = TVPCreateNativeClass_Window()));
+	dsp = new tTJSNC_PassThroughDrawDevice();
+	val = tTJSVariant(dsp);
+	dsp->Release();
+	windowclass->PropSet(TJS_MEMBERENSURE|TJS_IGNOREPROP|TJS_STATICMEMBER,
+		TJS_W("PassThroughDrawDevice"), NULL, &val, windowclass);
+
 	// Garbage Collection Hook
 	TVPAddCompactEventHook(&TVPTJSGCCallback);
-
-
 }
 //---------------------------------------------------------------------------
 

@@ -1,0 +1,89 @@
+//---------------------------------------------------------------------------
+/*
+	TVP2 ( T Visual Presenter 2 )  A script authoring tool
+	Copyright (C) 2000-2007 W.Dee <dee@kikyou.info> and contributors
+
+	See details of license at "license.txt"
+*/
+//---------------------------------------------------------------------------
+//!@file "PassThrough" 描画デバイス管理
+//---------------------------------------------------------------------------
+#ifndef PASSTHROUGHDRAWDEVICE_H
+#define PASSTHROUGHDRAWDEVICE_H
+
+#include "DrawDevice.h"
+
+//---------------------------------------------------------------------------
+//! @brief		「Pass Through」デバイス(もっとも基本的な描画を行うのみのデバイス)
+//---------------------------------------------------------------------------
+class tTVPPassThroughDrawDevice : public tTVPDrawDevice
+{
+	typedef tTVPDrawDevice inherited;
+
+	HWND TargetWindow; // ターゲットウィンドウ
+	HDC TargetDC; // ターゲットウィンドウの描画用DC
+
+public:
+	tTVPPassThroughDrawDevice(); //!< コンストラクタ
+private:
+	~tTVPPassThroughDrawDevice(); //!< デストラクタ
+public:
+
+//---- 描画位置・サイズ関連
+	virtual void TJS_INTF_METHOD SetTargetWindow(HWND wnd);
+
+//---- LayerManager の管理関連
+	virtual void TJS_INTF_METHOD AddLayerManager(tTVPLayerManager * manager);
+
+//---- LayerManager からの画像受け渡し関連
+	virtual void TJS_INTF_METHOD StartBitmapCompletion(tTVPLayerManager * manager);
+	virtual tTVPLayerType TJS_INTF_METHOD GetDesiredLayerType();
+	virtual void TJS_INTF_METHOD NotifyBitmapCompleted(const tTVPRect &destrect,
+		void * bits, BITMAPINFO * bitmapinfo, const tTVPRect &cliprect,
+		tTVPLayerType type, tjs_int opacity);
+	virtual void TJS_INTF_METHOD EndBitmapCompletion();
+
+};
+//---------------------------------------------------------------------------
+
+
+//---------------------------------------------------------------------------
+// tTJSNI_PassThroughDrawDevice
+//---------------------------------------------------------------------------
+class tTJSNI_PassThroughDrawDevice :
+	public tTJSNativeInstance
+{
+	typedef tTJSNativeInstance inherited;
+
+	tTVPPassThroughDrawDevice * Device;
+
+public:
+	tTJSNI_PassThroughDrawDevice();
+	~tTJSNI_PassThroughDrawDevice();
+	tjs_error TJS_INTF_METHOD
+		Construct(tjs_int numparams, tTJSVariant **param,
+			iTJSDispatch2 *tjs_obj);
+	void TJS_INTF_METHOD Invalidate();
+
+};
+//---------------------------------------------------------------------------
+
+
+
+//---------------------------------------------------------------------------
+// tTJSNC_PassThroughDrawDevice
+//---------------------------------------------------------------------------
+class tTJSNC_PassThroughDrawDevice : public tTJSNativeClass
+{
+public:
+	tTJSNC_PassThroughDrawDevice();
+
+	static tjs_uint32 ClassID;
+
+private:
+	iTJSNativeInstance *CreateNativeInstance();
+};
+//---------------------------------------------------------------------------
+
+
+#endif

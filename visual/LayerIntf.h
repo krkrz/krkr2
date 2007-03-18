@@ -984,6 +984,7 @@ private:
 //---------------------------------------------------------------------------
 class tTVPLayerManager
 {
+	tjs_int RefCount; //!< reference count
 	tTJSNI_BaseWindow * Window;
 
 	tTJSNI_BaseLayer * CaptureOwner;
@@ -1014,8 +1015,11 @@ class tTVPLayerManager
 
 public:
 	tTVPLayerManager(tTJSNI_BaseWindow *window);
-	~tTVPLayerManager();
-
+private:
+	virtual ~tTVPLayerManager();
+public:
+	virtual void TJS_INTF_METHOD AddRef();
+	virtual void TJS_INTF_METHOD Release();
 
 public:
 	void AttachPrimary(tTJSNI_BaseLayer *pri); // attach primary layer to the manager
@@ -1023,6 +1027,8 @@ public:
 
 	tTJSNI_BaseLayer * GetPrimaryLayer() const { return Primary; }
 	bool IsPrimaryLayerAttached() const { return Primary != NULL; } 
+
+	bool GetPrimaryLayerSize(tjs_int &w, tjs_int &h) const;
 
 	void NotifyPart(tTJSNI_BaseLayer *lay); // notifies layer parting from its parent
 
