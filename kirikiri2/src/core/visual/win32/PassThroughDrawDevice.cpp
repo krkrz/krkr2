@@ -61,6 +61,7 @@ void TJS_INTF_METHOD tTVPPassThroughDrawDevice::AddLayerManager(iTVPLayerManager
 		TVPThrowExceptionMessage(TJS_W("\"passthrough\" device does not support layer manager more than 1"));
 			// TODO: i18n
 	}
+	inherited::AddLayerManager(manager);
 }
 //---------------------------------------------------------------------------
 

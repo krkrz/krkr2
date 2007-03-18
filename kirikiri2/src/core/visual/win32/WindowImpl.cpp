@@ -1011,13 +1011,13 @@ void tTJSNI_Window::PostInputEvent(const ttstr &name, iTJSDispatch2 * params)
 void tTJSNI_Window::NotifyLayerResize()
 {
 	tTJSNI_BaseWindow::NotifyLayerResize();
-/*
+
 	// is called from primary layer
 	// ( or from TWindowForm to reset paint box's size )
-	tTJSNI_BaseLayer *lay = LayerManager->GetPrimaryLayer();
-	if(Form && lay)
-		Form->SetPaintBoxSize(lay->GetWidth(), lay->GetHeight());
-*/
+	tjs_int w, h;
+	DrawDevice->GetSrcSize(w, h);
+	if(Form)
+		Form->SetPaintBoxSize(w, h);
 }
 //---------------------------------------------------------------------------
 void tTJSNI_Window::SetDefaultMouseCursor()
