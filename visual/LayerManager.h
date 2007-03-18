@@ -13,6 +13,7 @@
 
 
 #include "LayerIntf.h"
+#include "drawable.h"
 
 //---------------------------------------------------------------------------
 // abstract class of Layer Manager 
@@ -45,6 +46,10 @@ public:
 	virtual void TJS_INTF_METHOD NotifyKeyPress(tjs_char key) = 0;
 	virtual void TJS_INTF_METHOD NotifyMouseWheel(tjs_uint32 shift, tjs_int delta, tjs_int x, tjs_int y) = 0;
 
+//-- invalidation/update
+	virtual void RequestInvalidation(const tTVPRect &r) = 0; // draw device -> layer
+	virtual void UpdateToDrawDevice() = 0;
+
 };
 //---------------------------------------------------------------------------
 
@@ -55,10 +60,12 @@ public:
 //---------------------------------------------------------------------------
 // layer mamager which is to be connected to draw device
 //---------------------------------------------------------------------------
-class tTVPLayerManager : public iTVPLayerManager
+class tTVPLayerManager : public iTVPLayerManager, public tTVPDrawable
 {
 	tjs_int RefCount; //!< reference count
 	tTJSNI_BaseWindow * Window;
+
+	tTVPBaseBitmap * DrawBuffer;
 
 	tTJSNI_BaseLayer * CaptureOwner;
 	tTJSNI_BaseLayer * LastMouseMoveSent;
@@ -98,6 +105,16 @@ public:
 public:
 	void RegisterSelfToWindow();
 	void UnregisterSelfFromWindow();
+
+public: // methods from tTVPDrawable
+	virtual tTVPBaseBitmap * GetDrawTargetBitmap(const tTVPRect &rect,
+		tTVPRect &cliprect);
+
+	virtual tTVPLayerType GetTargetLayerType();
+
+	virtual void DrawCompleted(const tTVPRect &destrect,
+		tTVPBaseBitmap *bmp, const tTVPRect &cliprect,
+		tTVPLayerType type, tjs_int opacity);
 
 public:
 	void AttachPrimary(tTJSNI_BaseLayer *pri); // attach primary layer to the manager
@@ -147,8 +164,8 @@ public:
 public:
 	tTJSNI_BaseWindow * GetWindow() const { return Window; }
 	void SetWindow(tTJSNI_BaseWindow *window);
-	void NotifyResizeFromWindow(tjs_uint w, tjs_uint h); // window -> layer
-	void NotifyInvalidationFromWindow(const tTVPRect &r); // window -> layer
+	void NotifyResizeFromWindow(tjs_uint w, tjs_uint h); // draw device -> layer
+	virtual void RequestInvalidation(const tTVPRect &r); // draw device -> layer
 
 	virtual void TJS_INTF_METHOD NotifyClick(tjs_int x, tjs_int y) { PrimaryClick(x, y); }
 	virtual void TJS_INTF_METHOD NotifyDoubleClick(tjs_int x, tjs_int y) { PrimaryDoubleClick(x, y); }
@@ -234,7 +251,7 @@ public:
 	void AddUpdateRegion(const tTVPComplexRect &rects);
 	void AddUpdateRegion(const tTVPRect & rect);
 	void PrimaryUpdateByWindow(const tTVPRect &rect);
-	void UpdateToWindow();
+	virtual void UpdateToDrawDevice();
 	void NotifyUpdateRegionFixed();
 
 public:

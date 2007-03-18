@@ -1101,15 +1101,6 @@ void tTJSNI_Window::ResetImeMode()
 	if(Form) Form->ResetImeMode();
 }
 //---------------------------------------------------------------------------
-void tTJSNI_Window::DrawCompleted(const tTVPRect &destrect,
-	tTVPBaseBitmap *bmp, const tTVPRect &cliprect, tTVPLayerType, tjs_int)
-{
-	// is called from the layer
-	// transfer the image to the PaintBox;
-
-	if(Form) Form->DrawLayerImage(destrect, bmp, cliprect);
-}
-//---------------------------------------------------------------------------
 void tTJSNI_Window::BeginUpdate(const tTVPComplexRect &rects)
 {
 	tTJSNI_BaseWindow::BeginUpdate(rects);

@@ -32,6 +32,7 @@ tTVPLayerManager::tTVPLayerManager(tTJSNI_BaseWindow *window)
 {
 	RefCount = 1;
 	Window = window;
+	DrawBuffer = NULL;
 
 	CaptureOwner = NULL;
 	LastMouseMoveSent = NULL;
@@ -48,6 +49,7 @@ tTVPLayerManager::tTVPLayerManager(tTJSNI_BaseWindow *window)
 //---------------------------------------------------------------------------
 tTVPLayerManager::~tTVPLayerManager()
 {
+	if(DrawBuffer) delete DrawBuffer;
 }
 //---------------------------------------------------------------------------
 void TJS_INTF_METHOD tTVPLayerManager::AddRef()
@@ -71,6 +73,52 @@ void tTVPLayerManager::RegisterSelfToWindow()
 void tTVPLayerManager::UnregisterSelfFromWindow()
 {
 	Window->UnregisterLayerManager(this);
+}
+//---------------------------------------------------------------------------
+tTVPBaseBitmap * tTVPLayerManager::GetDrawTargetBitmap(const tTVPRect &rect,
+	tTVPRect &cliprect)
+{
+	// retrieve draw target bitmap
+	tjs_int w = rect.get_width();
+	tjs_int h = rect.get_height();
+
+	if(!DrawBuffer)
+	{
+		// create draw buffer
+		DrawBuffer = new tTVPBaseBitmap(w, h, 32);
+	}
+	else
+	{
+		tjs_int bw = DrawBuffer->GetWidth();
+		tjs_int bh = DrawBuffer->GetHeight();
+		if(bw < w || bh  < h)
+		{
+			// insufficient size; resize the draw buffer
+			tjs_uint neww = bw > w ? bw:w;
+			neww += (neww & 1); // align to even
+			DrawBuffer->SetSize(neww, bh > h ? bh:h);
+		}
+	}
+
+	cliprect.left = 0;
+	cliprect.top = 0;
+	cliprect.right = w;
+	cliprect.bottom = h;
+	return DrawBuffer;
+}
+//---------------------------------------------------------------------------
+tTVPLayerType tTVPLayerManager::GetTargetLayerType()
+{
+	return Window->GetDrawDevice()->GetDesiredLayerType();
+}
+//---------------------------------------------------------------------------
+void tTVPLayerManager::DrawCompleted(const tTVPRect &destrect,
+		tTVPBaseBitmap *bmp, const tTVPRect &cliprect,
+		tTVPLayerType type, tjs_int opacity)
+{
+	// TODO: cross platform
+	Window->GetDrawDevice()->NotifyBitmapCompleted(destrect, 
+		bmp->GetBitmap()->GetBits(), bmp->GetBitmap()->GetBITMAPINFO(), cliprect, type, opacity);
 }
 //---------------------------------------------------------------------------
 void tTVPLayerManager::AttachPrimary(tTJSNI_BaseLayer *pri)
@@ -882,13 +930,12 @@ void tTVPLayerManager::AddUpdateRegion(const tTVPRect &rect)
 	NotifyWindowInvalidation();
 }
 //---------------------------------------------------------------------------
-void tTVPLayerManager::UpdateToWindow()
+void tTVPLayerManager::UpdateToDrawDevice()
 {
-	// window -> layer
-	// this function is called from the window, the callee is primary layer only.
+	// drawdevice -> layer
 	if(!Primary) return;
 
-	Primary->CompleteForWindow(Window->GetDrawable());
+	Primary->CompleteForWindow(this);
 }
 //---------------------------------------------------------------------------
 void tTVPLayerManager::NotifyUpdateRegionFixed()
@@ -897,7 +944,7 @@ void tTVPLayerManager::NotifyUpdateRegionFixed()
 	Window->NotifyUpdateRegionFixed(UpdateRegion);
 }
 //---------------------------------------------------------------------------
-void tTVPLayerManager::NotifyInvalidationFromWindow(const tTVPRect &r)
+void tTVPLayerManager::RequestInvalidation(const tTVPRect &r)
 {
 	// called by the owner window to notify window surface is invalidated by
 	// the system or user.
