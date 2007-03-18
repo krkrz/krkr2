@@ -43,6 +43,11 @@ public:
 	virtual void TJS_INTF_METHOD OnKeyPress(tjs_char key) = 0;
 	virtual void TJS_INTF_METHOD OnMouseWheel(tjs_uint32 shift, tjs_int delta, tjs_int x, tjs_int y) = 0;
 
+//---- プライマリレイヤ関連
+	virtual tTJSNI_BaseLayer * TJS_INTF_METHOD GetPrimaryLayer() = 0;
+	virtual tTJSNI_BaseLayer * TJS_INTF_METHOD GetFocusedLayer() = 0;
+	virtual void TJS_INTF_METHOD SetFocusedLayer(tTJSNI_BaseLayer * layer) = 0;
+
 //---- LayerManager の管理関連
 	virtual void TJS_INTF_METHOD AddLayerManager(iTVPLayerManager * manager) = 0;
 	virtual void TJS_INTF_METHOD RemoveLayerManager(iTVPLayerManager * manager) = 0;
@@ -111,6 +116,11 @@ public:
 	virtual void TJS_INTF_METHOD OnKeyUp(tjs_uint key, tjs_uint32 shift);
 	virtual void TJS_INTF_METHOD OnKeyPress(tjs_char key);
 	virtual void TJS_INTF_METHOD OnMouseWheel(tjs_uint32 shift, tjs_int delta, tjs_int x, tjs_int y);
+
+//---- プライマリレイヤ関連
+	virtual tTJSNI_BaseLayer * TJS_INTF_METHOD GetPrimaryLayer();
+	virtual tTJSNI_BaseLayer * TJS_INTF_METHOD GetFocusedLayer();
+	virtual void TJS_INTF_METHOD SetFocusedLayer(tTJSNI_BaseLayer * layer);
 
 //---- LayerManager の管理関連
 	virtual void TJS_INTF_METHOD AddLayerManager(iTVPLayerManager * manager);

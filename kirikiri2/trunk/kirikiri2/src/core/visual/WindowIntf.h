@@ -17,6 +17,7 @@
 #include "tvpinputdefs.h"
 #include "EventIntf.h"
 #include "ObjectList.h"
+#include "DrawDevice.h"
 
 
 
@@ -64,7 +65,6 @@ enum tTVPMouseCursorState
 class tTVPBaseBitmap;
 class tTJSNI_BaseLayer;
 class tTJSNI_BaseVideoOverlay;
-class tTVPLayerManager;
 class tTJSNI_BaseWindow : public tTJSNativeInstance, public tTVPDrawable
 {
 	typedef tTJSNativeInstance inherited;
@@ -89,6 +89,15 @@ public:
 	bool IsMainWindow() const;
 	virtual bool GetWindowActive() = 0;
 	void FireOnActivate(bool activate_or_deactivate);
+
+
+	//-- interface to draw device
+public:
+	tTJSVariant DrawDeviceObject; //!< Current Draw Device TJS2 Object
+	iTVPDrawDevice * DrawDevice; //!< Current Draw Device
+	void SetDrawDeviceObject(const tTJSVariant & val);
+	const tTJSVariant & GetDrawDeviceObject() const { return DrawDeviceObject; }
+	iTVPDrawDevice * GetDrawDevice() const { return DrawDevice ; }
 
 	//----- event dispatching
 public:
@@ -131,13 +140,10 @@ protected:
 //	void DrawCompleted();
 		// DrawCompleted is implemented in each platform to
 		// transfer the image to the display
-	tTVPLayerManager * LayerManager;
 
 	bool WindowUpdating; // window is in updating
 
 public:
-	tTVPLayerManager * GetLayerManager() const { return LayerManager; }
-
 	void NotifyWindowExposureToLayer(const tTVPRect &cliprect);
 
 public:
