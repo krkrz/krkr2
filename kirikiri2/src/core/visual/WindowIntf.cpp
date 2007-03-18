@@ -128,7 +128,7 @@ tTJSNI_BaseWindow::tTJSNI_BaseWindow()
 tTJSNI_BaseWindow::~tTJSNI_BaseWindow()
 {
 	TVPUnregisterWindowToList(static_cast<tTJSNI_Window*>(this));  // making sure...
-	if(LayerManager) delete LayerManager;
+	if(LayerManager) LayerManager->Release();
 }
 //---------------------------------------------------------------------------
 tjs_error TJS_INTF_METHOD
