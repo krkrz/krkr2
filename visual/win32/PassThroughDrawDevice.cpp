@@ -53,7 +53,7 @@ void TJS_INTF_METHOD tTVPPassThroughDrawDevice::SetTargetWindow(HWND wnd)
 
 
 //---------------------------------------------------------------------------
-void TJS_INTF_METHOD tTVPPassThroughDrawDevice::AddLayerManager(tTVPLayerManager * manager)
+void TJS_INTF_METHOD tTVPPassThroughDrawDevice::AddLayerManager(iTVPLayerManager * manager)
 {
 	if(inherited::Managers.size() > 0)
 	{
@@ -66,7 +66,7 @@ void TJS_INTF_METHOD tTVPPassThroughDrawDevice::AddLayerManager(tTVPLayerManager
 
 
 //---------------------------------------------------------------------------
-void TJS_INTF_METHOD tTVPPassThroughDrawDevice::StartBitmapCompletion(tTVPLayerManager * manager)
+void TJS_INTF_METHOD tTVPPassThroughDrawDevice::StartBitmapCompletion(iTVPLayerManager * manager)
 {
 	// “Á‚É‚â‚é‚±‚Æ‚È‚µ
 }
@@ -153,7 +153,7 @@ TJS_BEGIN_NATIVE_PROP_DECL(interface)
 	TJS_BEGIN_NATIVE_PROP_GETTER
 	{
 		TJS_GET_NATIVE_INSTANCE(/*var. name*/_this, /*var. type*/tTJSNI_PassThroughDrawDevice);
-		*result = reinterpret_cast<tjs_int64>((iTVPDrawDevice*)_this);
+		*result = reinterpret_cast<tjs_int64>(_this->GetDevice());
 		return TJS_S_OK;
 	}
 	TJS_END_NATIVE_PROP_GETTER

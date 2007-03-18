@@ -11,7 +11,9 @@
 
 #include "tjsCommHead.h"
 #include "DrawDevice.h"
+#include "MsgIntf.h"
 #include "LayerIntf.h"
+#include "LayerManager.h"
 
 
 //---------------------------------------------------------------------------
@@ -28,7 +30,7 @@ tTVPDrawDevice::tTVPDrawDevice()
 tTVPDrawDevice::~tTVPDrawDevice()
 {
 	// すべての managers を開放する
-	for(std::vector<tTVPLayerManager *>::iterator i = Managers.begin(); i != Managers.end(); i++)
+	for(std::vector<iTVPLayerManager *>::iterator i = Managers.begin(); i != Managers.end(); i++)
 		(*i)->Release();
 }
 //---------------------------------------------------------------------------
@@ -37,7 +39,7 @@ tTVPDrawDevice::~tTVPDrawDevice()
 //---------------------------------------------------------------------------
 bool tTVPDrawDevice::TransformToPrimaryLayerManager(tjs_int &x, tjs_int &y)
 {
-	tTVPLayerManager * manager = GetLayerManagerAt(PrimaryLayerManagerIndex);
+	iTVPLayerManager * manager = GetLayerManagerAt(PrimaryLayerManagerIndex);
 	if(!manager) return false;
 
 	// プライマリレイヤマネージャのプライマリレイヤのサイズを得る
@@ -73,7 +75,7 @@ void TJS_INTF_METHOD tTVPDrawDevice::SetDestRectangle(const tTVPRect & rect)
 void TJS_INTF_METHOD tTVPDrawDevice::OnClick(tjs_int x, tjs_int y)
 {
 	if(!TransformToPrimaryLayerManager(x, y)) return;
-	tTVPLayerManager * manager = GetLayerManagerAt(PrimaryLayerManagerIndex);
+	iTVPLayerManager * manager = GetLayerManagerAt(PrimaryLayerManagerIndex);
 	if(!manager) return;
 
 	manager->NotifyClick(x, y);
@@ -85,7 +87,7 @@ void TJS_INTF_METHOD tTVPDrawDevice::OnClick(tjs_int x, tjs_int y)
 void TJS_INTF_METHOD tTVPDrawDevice::OnDoubleClick(tjs_int x, tjs_int y)
 {
 	if(!TransformToPrimaryLayerManager(x, y)) return;
-	tTVPLayerManager * manager = GetLayerManagerAt(PrimaryLayerManagerIndex);
+	iTVPLayerManager * manager = GetLayerManagerAt(PrimaryLayerManagerIndex);
 	if(!manager) return;
 
 	manager->NotifyDoubleClick(x, y);
@@ -97,10 +99,10 @@ void TJS_INTF_METHOD tTVPDrawDevice::OnDoubleClick(tjs_int x, tjs_int y)
 void TJS_INTF_METHOD tTVPDrawDevice::OnMouseDown(tjs_int x, tjs_int y, tTVPMouseButton mb, tjs_uint32 flags)
 {
 	if(!TransformToPrimaryLayerManager(x, y)) return;
-	tTVPLayerManager * manager = GetLayerManagerAt(PrimaryLayerManagerIndex);
+	iTVPLayerManager * manager = GetLayerManagerAt(PrimaryLayerManagerIndex);
 	if(!manager) return;
 
-	manager->NotifyDoubleClick(x, y);
+	manager->NotifyMouseDown(x, y, mb, flags);
 }
 //---------------------------------------------------------------------------
 
@@ -109,7 +111,7 @@ void TJS_INTF_METHOD tTVPDrawDevice::OnMouseDown(tjs_int x, tjs_int y, tTVPMouse
 void TJS_INTF_METHOD tTVPDrawDevice::OnMouseUp(tjs_int x, tjs_int y, tTVPMouseButton mb, tjs_uint32 flags)
 {
 	if(!TransformToPrimaryLayerManager(x, y)) return;
-	tTVPLayerManager * manager = GetLayerManagerAt(PrimaryLayerManagerIndex);
+	iTVPLayerManager * manager = GetLayerManagerAt(PrimaryLayerManagerIndex);
 	if(!manager) return;
 
 	manager->NotifyMouseUp(x, y, mb, flags);
@@ -121,7 +123,7 @@ void TJS_INTF_METHOD tTVPDrawDevice::OnMouseUp(tjs_int x, tjs_int y, tTVPMouseBu
 void TJS_INTF_METHOD tTVPDrawDevice::OnMouseMove(tjs_int x, tjs_int y, tjs_uint32 flags)
 {
 	if(!TransformToPrimaryLayerManager(x, y)) return;
-	tTVPLayerManager * manager = GetLayerManagerAt(PrimaryLayerManagerIndex);
+	iTVPLayerManager * manager = GetLayerManagerAt(PrimaryLayerManagerIndex);
 	if(!manager) return;
 
 	manager->NotifyMouseMove(x, y, flags);
@@ -132,7 +134,7 @@ void TJS_INTF_METHOD tTVPDrawDevice::OnMouseMove(tjs_int x, tjs_int y, tjs_uint3
 //---------------------------------------------------------------------------
 void TJS_INTF_METHOD tTVPDrawDevice::OnReleaseCapture()
 {
-	tTVPLayerManager * manager = GetLayerManagerAt(PrimaryLayerManagerIndex);
+	iTVPLayerManager * manager = GetLayerManagerAt(PrimaryLayerManagerIndex);
 	if(!manager) return;
 
 	manager->ReleaseCapture();
@@ -143,7 +145,7 @@ void TJS_INTF_METHOD tTVPDrawDevice::OnReleaseCapture()
 //---------------------------------------------------------------------------
 void TJS_INTF_METHOD tTVPDrawDevice::OnMouseOutOfWindow()
 {
-	tTVPLayerManager * manager = GetLayerManagerAt(PrimaryLayerManagerIndex);
+	iTVPLayerManager * manager = GetLayerManagerAt(PrimaryLayerManagerIndex);
 	if(!manager) return;
 
 	manager->NotifyMouseOutOfWindow();
@@ -154,7 +156,7 @@ void TJS_INTF_METHOD tTVPDrawDevice::OnMouseOutOfWindow()
 //---------------------------------------------------------------------------
 void TJS_INTF_METHOD tTVPDrawDevice::OnKeyDown(tjs_uint key, tjs_uint32 shift)
 {
-	tTVPLayerManager * manager = GetLayerManagerAt(PrimaryLayerManagerIndex);
+	iTVPLayerManager * manager = GetLayerManagerAt(PrimaryLayerManagerIndex);
 	if(!manager) return;
 
 	manager->NotifyKeyDown(key, shift);
@@ -165,7 +167,7 @@ void TJS_INTF_METHOD tTVPDrawDevice::OnKeyDown(tjs_uint key, tjs_uint32 shift)
 //---------------------------------------------------------------------------
 void TJS_INTF_METHOD tTVPDrawDevice::OnKeyUp(tjs_uint key, tjs_uint32 shift)
 {
-	tTVPLayerManager * manager = GetLayerManagerAt(PrimaryLayerManagerIndex);
+	iTVPLayerManager * manager = GetLayerManagerAt(PrimaryLayerManagerIndex);
 	if(!manager) return;
 
 	manager->NotifyKeyUp(key, shift);
@@ -176,7 +178,7 @@ void TJS_INTF_METHOD tTVPDrawDevice::OnKeyUp(tjs_uint key, tjs_uint32 shift)
 //---------------------------------------------------------------------------
 void TJS_INTF_METHOD tTVPDrawDevice::OnKeyPress(tjs_char key)
 {
-	tTVPLayerManager * manager = GetLayerManagerAt(PrimaryLayerManagerIndex);
+	iTVPLayerManager * manager = GetLayerManagerAt(PrimaryLayerManagerIndex);
 	if(!manager) return;
 
 	manager->NotifyKeyPress(key);
@@ -188,7 +190,7 @@ void TJS_INTF_METHOD tTVPDrawDevice::OnKeyPress(tjs_char key)
 void TJS_INTF_METHOD tTVPDrawDevice::OnMouseWheel(tjs_uint32 shift, tjs_int delta, tjs_int x, tjs_int y)
 {
 	if(!TransformToPrimaryLayerManager(x, y)) return;
-	tTVPLayerManager * manager = GetLayerManagerAt(PrimaryLayerManagerIndex);
+	iTVPLayerManager * manager = GetLayerManagerAt(PrimaryLayerManagerIndex);
 	if(!manager) return;
 
 	manager->NotifyMouseWheel(shift, delta, x, y);
@@ -197,11 +199,24 @@ void TJS_INTF_METHOD tTVPDrawDevice::OnMouseWheel(tjs_uint32 shift, tjs_int delt
 
 
 //---------------------------------------------------------------------------
-void TJS_INTF_METHOD tTVPDrawDevice::AddLayerManager(tTVPLayerManager * manager)
+void TJS_INTF_METHOD tTVPDrawDevice::AddLayerManager(iTVPLayerManager * manager)
 {
 	// Managers に manager を push する。AddRefするのを忘れないこと。
 	Managers.push_back(manager);
 	manager->AddRef();
+}
+//---------------------------------------------------------------------------
+
+
+//---------------------------------------------------------------------------
+void TJS_INTF_METHOD tTVPDrawDevice::RemoveLayerManager(iTVPLayerManager * manager)
+{
+	// Managers から manager を削除する。Releaseする。
+	std::vector<iTVPLayerManager *>::iterator i = std::find(Managers.begin(), Managers.end(), manager);
+	if(i == Managers.end())
+		TVPThrowInternalError;
+	(*i)->Release();
+	Managers.erase(i);
 }
 //---------------------------------------------------------------------------
 

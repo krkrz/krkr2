@@ -33,10 +33,10 @@ public:
 	virtual void TJS_INTF_METHOD SetTargetWindow(HWND wnd);
 
 //---- LayerManager ÇÃä«óùä÷òA
-	virtual void TJS_INTF_METHOD AddLayerManager(tTVPLayerManager * manager);
+	virtual void TJS_INTF_METHOD AddLayerManager(iTVPLayerManager * manager);
 
 //---- LayerManager Ç©ÇÁÇÃâÊëúéÛÇØìnÇµä÷òA
-	virtual void TJS_INTF_METHOD StartBitmapCompletion(tTVPLayerManager * manager);
+	virtual void TJS_INTF_METHOD StartBitmapCompletion(iTVPLayerManager * manager);
 	virtual tTVPLayerType TJS_INTF_METHOD GetDesiredLayerType();
 	virtual void TJS_INTF_METHOD NotifyBitmapCompleted(const tTVPRect &destrect,
 		void * bits, BITMAPINFO * bitmapinfo, const tTVPRect &cliprect,
@@ -64,6 +64,9 @@ public:
 		Construct(tjs_int numparams, tTJSVariant **param,
 			iTJSDispatch2 *tjs_obj);
 	void TJS_INTF_METHOD Invalidate();
+
+public:
+	tTVPPassThroughDrawDevice * GetDevice() const { return Device; }
 
 };
 //---------------------------------------------------------------------------
