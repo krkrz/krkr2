@@ -181,9 +181,6 @@ tTJSNI_BaseWindow::Invalidate()
 	// sever the primarylayer
 //	if(LayerManager) LayerManager->DetachPrimary();
 
-	// release draw device
-	SetDrawDeviceObject(tTJSVariant());
-
 	// free DrawBuffer
 	if(DrawBuffer) delete DrawBuffer;
 
@@ -238,6 +235,10 @@ tTJSNI_BaseWindow::Invalidate()
 	// clear all window update events (again)
 	TVPRemoveWindowUpdate((tTJSNI_Window*)this);
 
+	// release draw device
+	SetDrawDeviceObject(tTJSVariant());
+
+
 	inherited::Invalidate();
 }
 //---------------------------------------------------------------------------
@@ -291,7 +292,7 @@ void tTJSNI_BaseWindow::SetDrawDeviceObject(const tTJSVariant & val)
 {
 	// invalidate existing draw device
 	if(DrawDeviceObject.Type() == tvtObject)
-		DrawDeviceObject.AsObjectClosureNoAddRef().Invalidate(0, NULL, NULL, val.AsObjectNoAddRef());
+		DrawDeviceObject.AsObjectClosureNoAddRef().Invalidate(0, NULL, NULL, DrawDeviceObject.AsObjectNoAddRef());
 
 	// assign new device
 	DrawDeviceObject = val;
@@ -526,6 +527,16 @@ void tTJSNI_BaseWindow::PostReleaseCaptureEvent()
 {
 	TVPPostInputEvent(
 		new tTVPOnReleaseCaptureInputEvent(this));
+}
+//---------------------------------------------------------------------------
+void tTJSNI_BaseWindow::RegisterLayerManager(iTVPLayerManager * manager)
+{
+	DrawDevice->AddLayerManager(manager);
+}
+//---------------------------------------------------------------------------
+void tTJSNI_BaseWindow::UnregisterLayerManager(iTVPLayerManager * manager)
+{
+	DrawDevice->RemoveLayerManager(manager);
 }
 //---------------------------------------------------------------------------
 void tTJSNI_BaseWindow::NotifyWindowExposureToLayer(const tTVPRect &cliprect)

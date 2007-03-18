@@ -130,6 +130,11 @@ public:
 	void PostReleaseCaptureEvent();
 
 	//----- layer managermant
+public:
+	void RegisterLayerManager(iTVPLayerManager * manager);
+	void UnregisterLayerManager(iTVPLayerManager * manager);
+
+
 protected:
 	tTVPRect WindowExposedRegion;
 	tTVPBaseBitmap * DrawBuffer;

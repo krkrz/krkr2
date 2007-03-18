@@ -29,6 +29,7 @@ public:
 	// null を指定される場合がある。
 	virtual void TJS_INTF_METHOD SetTargetWindow(HWND wnd) = 0;
 	virtual void TJS_INTF_METHOD SetDestRectangle(const tTVPRect & rect) = 0;
+	virtual void TJS_INTF_METHOD GetSrcSize(tjs_int &w, tjs_int &h) = 0;
 
 //---- HIDインターフェース関連
 	virtual void TJS_INTF_METHOD OnClick(tjs_int x, tjs_int y) = 0;
@@ -103,6 +104,7 @@ public:
 
 //---- 描画位置・サイズ関連
 	virtual void TJS_INTF_METHOD SetDestRectangle(const tTVPRect & rect);
+	virtual void TJS_INTF_METHOD GetSrcSize(tjs_int &w, tjs_int &h);
 
 //---- HIDインターフェース関連
 	virtual void TJS_INTF_METHOD OnClick(tjs_int x, tjs_int y);

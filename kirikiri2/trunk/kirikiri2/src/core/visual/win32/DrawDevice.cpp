@@ -77,6 +77,20 @@ void TJS_INTF_METHOD tTVPDrawDevice::SetDestRectangle(const tTVPRect & rect)
 
 
 //---------------------------------------------------------------------------
+void TJS_INTF_METHOD tTVPDrawDevice::GetSrcSize(tjs_int &w, tjs_int &h)
+{
+	iTVPLayerManager * manager = GetLayerManagerAt(PrimaryLayerManagerIndex);
+	if(!manager) return;
+	if(!manager->GetPrimaryLayerSize(w, h))
+	{
+		w = 0;
+		h = 0;
+	}
+}
+//---------------------------------------------------------------------------
+
+
+//---------------------------------------------------------------------------
 void TJS_INTF_METHOD tTVPDrawDevice::OnClick(tjs_int x, tjs_int y)
 {
 	if(!TransformToPrimaryLayerManager(x, y)) return;
