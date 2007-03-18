@@ -872,7 +872,6 @@ HWND TVPGetModalWindowOwnerHandle()
 tTJSNI_Window::tTJSNI_Window()
 {
 	Form = NULL;
-	DrawDevice = NULL;
 }
 //---------------------------------------------------------------------------
 tjs_error TJS_INTF_METHOD
@@ -882,29 +881,6 @@ tTJSNI_Window::Construct(tjs_int numparams, tTJSVariant **param,
 	tjs_error hr = tTJSNI_BaseWindow::Construct(numparams, param, tjs_obj);
 	if(TJS_FAILED(hr)) return hr;
 	Form = new TTVPWindowForm(Application, this);
-
-	// set default draw device object "PassThrough"
-	{
-		iTJSDispatch2 * cls = NULL;
-		iTJSDispatch2 * newobj = NULL;
-		try
-		{
-			cls = new tTJSNC_PassThroughDrawDevice();
-			if(TJS_FAILED(cls->CreateNew(0, NULL, NULL, &newobj, 0, NULL, cls)))
-				TVPThrowExceptionMessage(TVPInternalError,
-					TJS_W("tTJSNI_Window::Construct"));
-			SetDrawDeviceObject(tTJSVariant(newobj, newobj));
-		}
-		catch(...)
-		{
-			if(cls) cls->Release();
-			if(newobj) newobj->Release();
-			throw;
-		}
-		if(cls) cls->Release();
-		if(newobj) newobj->Release();
-	}
-
 	return TJS_S_OK;
 }
 //---------------------------------------------------------------------------
@@ -916,9 +892,6 @@ void TJS_INTF_METHOD tTJSNI_Window::Invalidate()
 		Form->InvalidateClose();
 		Form = NULL;
 	}
-
-	// release draw device
-	SetDrawDeviceObject(tTJSVariant());
 
 	// remove all events
 	TVPCancelSourceEvents(Owner);
@@ -950,29 +923,6 @@ bool tTJSNI_Window::GetWindowActive()
 {
 	if(Form) return Form->GetWindowActive();
 	return false;
-}
-//---------------------------------------------------------------------------
-void tTJSNI_Window::SetDrawDeviceObject(const tTJSVariant & val)
-{
-	// invalidate existing draw device
-	if(DrawDeviceObject.Type() == vtObject)
-		DrawDeviceObject.AsObjectClosureNoAddRef().Invalidate(0, NULL, NULL, val.AsObjectNoAddRef());
-
-	// assign new device
-	DrawDeviceObject = val;
-	DrawDevice = NULL;
-
-	// extract interface
-	if(DrawDeviceObject.Type() == vtObject)
-	{
-		tTJSVariantClosure clo = DrawDeviceObject.AsObjectClosureNoAddRef();
-		tTJSVariant iface_v;
-		if(TJS_FAILED(clo.PropGet(0, TJS_W("interface"), NULL, &iface_v, NULL)))
-			TVPThrowExceptionMessage(TJS_W("Could not retrive interface from given draw device")); // TODO: i18n
-		DrawDevice =
-			reinterpret_cast<iTVPDrawDevice *>((long)(tjs_int64)iface_v);
-
-	}
 }
 //---------------------------------------------------------------------------
 void tTJSNI_Window::PostInputEvent(const ttstr &name, iTJSDispatch2 * params)
@@ -1061,12 +1011,13 @@ void tTJSNI_Window::PostInputEvent(const ttstr &name, iTJSDispatch2 * params)
 void tTJSNI_Window::NotifyLayerResize()
 {
 	tTJSNI_BaseWindow::NotifyLayerResize();
-
+/*
 	// is called from primary layer
 	// ( or from TWindowForm to reset paint box's size )
 	tTJSNI_BaseLayer *lay = LayerManager->GetPrimaryLayer();
 	if(Form && lay)
 		Form->SetPaintBoxSize(lay->GetWidth(), lay->GetHeight());
+*/
 }
 //---------------------------------------------------------------------------
 void tTJSNI_Window::SetDefaultMouseCursor()
@@ -1134,7 +1085,7 @@ void tTJSNI_Window::SetDefaultImeMode(tTVPImeMode mode)
 	// set default ime mode
 	if(Form)
 	{
-		Form->SetDefaultImeMode(mode, LayerManager->GetFocusedLayer() == NULL);
+//		Form->SetDefaultImeMode(mode, LayerManager->GetFocusedLayer() == NULL);
 	}
 }
 //---------------------------------------------------------------------------
@@ -1558,10 +1509,12 @@ bool tTJSNI_Window::GetTrapKey() const
 void tTJSNI_Window::SetMaskRegion(tjs_int threshold)
 {
 	if(!Form) return;
+/*
 	if(!LayerManager) TVPThrowExceptionMessage(TVPWindowHasNoLayer);
 	tTJSNI_BaseLayer *lay = LayerManager->GetPrimaryLayer();
 	if(!lay) TVPThrowExceptionMessage(TVPWindowHasNoLayer);
 	Form->SetMaskRegion(((tTJSNI_Layer*)lay)->CreateMaskRgn((tjs_uint)threshold));
+*/
 }
 //---------------------------------------------------------------------------
 void tTJSNI_Window::RemoveMaskRegion()

@@ -30,7 +30,12 @@ tTVPDrawDevice::tTVPDrawDevice()
 tTVPDrawDevice::~tTVPDrawDevice()
 {
 	// すべての managers を開放する
-	for(std::vector<iTVPLayerManager *>::iterator i = Managers.begin(); i != Managers.end(); i++)
+	// managers は 開放される際、自身の登録解除を行うために
+	// RemoveLayerManager() を呼ぶかもしれないので注意。
+	// そのため、ここではいったん配列をコピーしてからそれぞれの
+	// Release() を呼ぶ。
+	std::vector<iTVPLayerManager *> backup = Managers;
+	for(std::vector<iTVPLayerManager *>::iterator i = backup.begin(); i != backup.end(); i++)
 		(*i)->Release();
 }
 //---------------------------------------------------------------------------
@@ -194,6 +199,36 @@ void TJS_INTF_METHOD tTVPDrawDevice::OnMouseWheel(tjs_uint32 shift, tjs_int delt
 	if(!manager) return;
 
 	manager->NotifyMouseWheel(shift, delta, x, y);
+}
+//---------------------------------------------------------------------------
+
+
+//---------------------------------------------------------------------------
+tTJSNI_BaseLayer * TJS_INTF_METHOD tTVPDrawDevice::GetPrimaryLayer()
+{
+	iTVPLayerManager * manager = GetLayerManagerAt(PrimaryLayerManagerIndex);
+	if(!manager) return NULL;
+	return manager->GetPrimaryLayer();
+}
+//---------------------------------------------------------------------------
+
+
+//---------------------------------------------------------------------------
+tTJSNI_BaseLayer * TJS_INTF_METHOD tTVPDrawDevice::GetFocusedLayer()
+{
+	iTVPLayerManager * manager = GetLayerManagerAt(PrimaryLayerManagerIndex);
+	if(!manager) return NULL;
+	return manager->GetFocusedLayer();
+}
+//---------------------------------------------------------------------------
+
+
+//---------------------------------------------------------------------------
+void TJS_INTF_METHOD tTVPDrawDevice::SetFocusedLayer(tTJSNI_BaseLayer * layer)
+{
+	iTVPLayerManager * manager = GetLayerManagerAt(PrimaryLayerManagerIndex);
+	if(!manager) return;
+	manager->SetFocusedLayer(layer);
 }
 //---------------------------------------------------------------------------
 

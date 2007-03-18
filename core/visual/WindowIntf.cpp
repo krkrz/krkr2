@@ -22,6 +22,7 @@
 #include "SysInitIntf.h"
 #include "VideoOvlIntf.h"
 #include "LayerManager.h"
+#include "PassThroughDrawDevice.h"
 
 
 //---------------------------------------------------------------------------
@@ -121,15 +122,14 @@ tTJSNI_BaseWindow::tTJSNI_BaseWindow()
 	ObjectVectorLocked = false;
 	DrawBuffer = NULL;
 	MenuItemObject = NULL;
-	LayerManager = new tTVPLayerManager(this);
 	WindowExposedRegion.clear();
 	WindowUpdating = false;
+	DrawDevice = NULL;
 }
 //---------------------------------------------------------------------------
 tTJSNI_BaseWindow::~tTJSNI_BaseWindow()
 {
 	TVPUnregisterWindowToList(static_cast<tTJSNI_Window*>(this));  // making sure...
-	if(LayerManager) LayerManager->Release();
 }
 //---------------------------------------------------------------------------
 tjs_error TJS_INTF_METHOD
@@ -138,6 +138,30 @@ tTJSNI_BaseWindow::Construct(tjs_int numparams, tTJSVariant **param,
 {
 	Owner = tjs_obj; // no addref
 	TVPRegisterWindowToList(static_cast<tTJSNI_Window*>(this));
+
+	// set default draw device object "PassThrough"
+	{
+		iTJSDispatch2 * cls = NULL;
+		iTJSDispatch2 * newobj = NULL;
+		try
+		{
+			cls = new tTJSNC_PassThroughDrawDevice();
+			if(TJS_FAILED(cls->CreateNew(0, NULL, NULL, &newobj, 0, NULL, cls)))
+				TVPThrowExceptionMessage(TVPInternalError,
+					TJS_W("tTJSNI_Window::Construct"));
+			SetDrawDeviceObject(tTJSVariant(newobj, newobj));
+		}
+		catch(...)
+		{
+			if(cls) cls->Release();
+			if(newobj) newobj->Release();
+			throw;
+		}
+		if(cls) cls->Release();
+		if(newobj) newobj->Release();
+	}
+
+
 	return TJS_S_OK;
 }
 //---------------------------------------------------------------------------
@@ -155,7 +179,10 @@ tTJSNI_BaseWindow::Invalidate()
 	TVPRemoveWindowUpdate((tTJSNI_Window*)this);
 
 	// sever the primarylayer
-	if(LayerManager) LayerManager->DetachPrimary();
+//	if(LayerManager) LayerManager->DetachPrimary();
+
+	// release draw device
+	SetDrawDeviceObject(tTJSVariant());
 
 	// free DrawBuffer
 	if(DrawBuffer) delete DrawBuffer;
@@ -206,7 +233,7 @@ tTJSNI_BaseWindow::Invalidate()
 	TVPCancelInputEvents(this);
 
 	// notify that the window is no longer available
-	if(LayerManager) LayerManager->SetWindow(NULL);
+//	if(LayerManager) LayerManager->SetWindow(NULL);
 
 	// clear all window update events (again)
 	TVPRemoveWindowUpdate((tTJSNI_Window*)this);
@@ -260,6 +287,29 @@ tTVPBaseBitmap * tTJSNI_BaseWindow::GetDrawTargetBitmap(const tTVPRect &rect,
 	return DrawBuffer;
 }
 //---------------------------------------------------------------------------
+void tTJSNI_BaseWindow::SetDrawDeviceObject(const tTJSVariant & val)
+{
+	// invalidate existing draw device
+	if(DrawDeviceObject.Type() == tvtObject)
+		DrawDeviceObject.AsObjectClosureNoAddRef().Invalidate(0, NULL, NULL, val.AsObjectNoAddRef());
+
+	// assign new device
+	DrawDeviceObject = val;
+	DrawDevice = NULL;
+
+	// extract interface
+	if(DrawDeviceObject.Type() == tvtObject)
+	{
+		tTJSVariantClosure clo = DrawDeviceObject.AsObjectClosureNoAddRef();
+		tTJSVariant iface_v;
+		if(TJS_FAILED(clo.PropGet(0, TJS_W("interface"), NULL, &iface_v, NULL)))
+			TVPThrowExceptionMessage(TJS_W("Could not retrive interface from given draw device")); // TODO: i18n
+		DrawDevice =
+			reinterpret_cast<iTVPDrawDevice *>((long)(tjs_int64)iface_v);
+
+	}
+}
+//---------------------------------------------------------------------------
 void tTJSNI_BaseWindow::OnClose()
 {
 	if(!CanDeliverEvents()) return;
@@ -290,7 +340,7 @@ void tTJSNI_BaseWindow::OnClick(tjs_int x, tjs_int y)
 		static ttstr eventname(TJS_W("onClick"));
 		TVPPostEvent(Owner, Owner, eventname, 0, TVP_EPT_IMMEDIATE, 2, arg);
 	}
-	if(LayerManager) LayerManager->NotifyClick(x, y);
+	if(DrawDevice) DrawDevice->OnClick(x, y);
 }
 //---------------------------------------------------------------------------
 void tTJSNI_BaseWindow::OnDoubleClick(tjs_int x, tjs_int y)
@@ -302,7 +352,7 @@ void tTJSNI_BaseWindow::OnDoubleClick(tjs_int x, tjs_int y)
 		static ttstr eventname(TJS_W("onDoubleClick"));
 		TVPPostEvent(Owner, Owner, eventname, 0, TVP_EPT_IMMEDIATE, 2, arg);
 	}
-	if(LayerManager) LayerManager->NotifyDoubleClick(x, y);
+	if(DrawDevice) DrawDevice->OnDoubleClick(x, y);
 }
 //---------------------------------------------------------------------------
 void tTJSNI_BaseWindow::OnMouseDown(tjs_int x, tjs_int y, tTVPMouseButton mb,
@@ -315,7 +365,7 @@ void tTJSNI_BaseWindow::OnMouseDown(tjs_int x, tjs_int y, tTVPMouseButton mb,
 		static ttstr eventname(TJS_W("onMouseDown"));
 		TVPPostEvent(Owner, Owner, eventname, 0, TVP_EPT_IMMEDIATE, 4, arg);
 	}
-	if(LayerManager) LayerManager->NotifyMouseDown(x, y, mb, flags);
+	if(DrawDevice) DrawDevice->OnMouseDown(x, y, mb, flags);
 }
 //---------------------------------------------------------------------------
 void tTJSNI_BaseWindow::OnMouseUp(tjs_int x, tjs_int y, tTVPMouseButton mb,
@@ -328,7 +378,7 @@ void tTJSNI_BaseWindow::OnMouseUp(tjs_int x, tjs_int y, tTVPMouseButton mb,
 		static ttstr eventname(TJS_W("onMouseUp"));
 		TVPPostEvent(Owner, Owner, eventname, 0, TVP_EPT_IMMEDIATE, 4, arg);
 	}
-	if(LayerManager) LayerManager->NotifyMouseUp(x, y, mb, flags);
+	if(DrawDevice) DrawDevice->OnMouseUp(x, y, mb, flags);
 }
 //---------------------------------------------------------------------------
 void tTJSNI_BaseWindow::OnMouseMove(tjs_int x, tjs_int y, tjs_uint32 flags)
@@ -342,20 +392,19 @@ void tTJSNI_BaseWindow::OnMouseMove(tjs_int x, tjs_int y, tjs_uint32 flags)
 			/*discardable!!*/,
 			3, arg);
 	}
-	if(LayerManager) LayerManager->NotifyMouseMove(x, y, flags);
+	if(DrawDevice) DrawDevice->OnMouseMove(x, y, flags);
 }
 //---------------------------------------------------------------------------
 void tTJSNI_BaseWindow::OnReleaseCapture()
 {
 	if(!CanDeliverEvents()) return;
-	if(LayerManager)
-		LayerManager->ReleaseCapture();
+	if(DrawDevice) DrawDevice->OnReleaseCapture();
 }
 //---------------------------------------------------------------------------
 void tTJSNI_BaseWindow::OnMouseOutOfWindow()
 {
 	if(!CanDeliverEvents()) return;
-	if(LayerManager) LayerManager->NotifyMouseOutOfWindow();
+	if(DrawDevice) DrawDevice->OnMouseOutOfWindow();
 }
 //---------------------------------------------------------------------------
 void tTJSNI_BaseWindow::OnMouseEnter()
@@ -387,7 +436,7 @@ void tTJSNI_BaseWindow::OnKeyDown(tjs_uint key, tjs_uint32 shift)
 		static ttstr eventname(TJS_W("onKeyDown"));
 		TVPPostEvent(Owner, Owner, eventname, 0, TVP_EPT_IMMEDIATE, 2, arg);
 	}
-	if(LayerManager) LayerManager->NotifyKeyDown(key, shift);
+	if(DrawDevice) DrawDevice->OnKeyDown(key, shift);
 }
 //---------------------------------------------------------------------------
 void tTJSNI_BaseWindow::OnKeyUp(tjs_uint key, tjs_uint32 shift)
@@ -399,7 +448,7 @@ void tTJSNI_BaseWindow::OnKeyUp(tjs_uint key, tjs_uint32 shift)
 		static ttstr eventname(TJS_W("onKeyUp"));
 		TVPPostEvent(Owner, Owner, eventname, 0, TVP_EPT_IMMEDIATE, 2, arg);
 	}
-	if(LayerManager) LayerManager->NotifyKeyUp(key, shift);
+	if(DrawDevice) DrawDevice->OnKeyUp(key, shift);
 }
 //---------------------------------------------------------------------------
 void tTJSNI_BaseWindow::OnKeyPress(tjs_char key)
@@ -414,7 +463,7 @@ void tTJSNI_BaseWindow::OnKeyPress(tjs_char key)
 		static ttstr eventname(TJS_W("onKeyPress"));
 		TVPPostEvent(Owner, Owner, eventname, 0, TVP_EPT_IMMEDIATE, 1, arg);
 	}
-	if(LayerManager) LayerManager->NotifyKeyPress(key);
+	if(DrawDevice) DrawDevice->OnKeyPress(key);
 }
 //---------------------------------------------------------------------------
 void tTJSNI_BaseWindow::OnFileDrop(const tTJSVariant &array)
@@ -438,7 +487,7 @@ void tTJSNI_BaseWindow::OnMouseWheel(tjs_uint32 shift, tjs_int delta,
 		static ttstr eventname(TJS_W("onMouseWheel"));
 		TVPPostEvent(Owner, Owner, eventname, 0, TVP_EPT_IMMEDIATE, 4, arg);
 	}
-	if(LayerManager) LayerManager->NotifyMouseWheel(shift, delta, x, y);
+	if(DrawDevice) DrawDevice->OnMouseWheel(shift, delta, x, y);
 }
 //---------------------------------------------------------------------------
 void tTJSNI_BaseWindow::OnPopupHide()
@@ -481,8 +530,7 @@ void tTJSNI_BaseWindow::PostReleaseCaptureEvent()
 //---------------------------------------------------------------------------
 void tTJSNI_BaseWindow::NotifyWindowExposureToLayer(const tTVPRect &cliprect)
 {
-	if(LayerManager)
-		LayerManager->NotifyInvalidationFromWindow(cliprect);
+//	if(LayerManager) LayerManager->NotifyInvalidationFromWindow(cliprect);
 }
 //---------------------------------------------------------------------------
 void tTJSNI_BaseWindow::NotifyUpdateRegionFixed(const tTVPComplexRect &updaterects)
@@ -494,7 +542,7 @@ void tTJSNI_BaseWindow::NotifyUpdateRegionFixed(const tTVPComplexRect &updaterec
 void tTJSNI_BaseWindow::UpdateContent()
 {
 	// is called from event dispatcher
-	if(LayerManager) LayerManager->UpdateToWindow();
+//	if(LayerManager) LayerManager->UpdateToWindow();
 
  	EndUpdate();
 }
@@ -511,13 +559,13 @@ void tTJSNI_BaseWindow::EndUpdate()
 //---------------------------------------------------------------------------
 void tTJSNI_BaseWindow::DumpPrimaryLayerStructure()
 {
-	if(LayerManager) LayerManager->DumpPrimaryStructure();
+//	if(LayerManager) LayerManager->DumpPrimaryStructure();
 }
 //---------------------------------------------------------------------------
 void tTJSNI_BaseWindow::TimerBeat()
 {
 	// slow timer tick (about 1 sec interval, inaccurate)
-	if(LayerManager) LayerManager->TimerBeat();
+//	if(LayerManager) LayerManager->TimerBeat();
 }
 //---------------------------------------------------------------------------
 void tTJSNI_BaseWindow::NotifyWindowInvalidation()
@@ -1471,7 +1519,7 @@ TJS_BEGIN_NATIVE_PROP_DECL(focusedLayer)
 	TJS_BEGIN_NATIVE_PROP_GETTER
 	{
 		TJS_GET_NATIVE_INSTANCE(/*var. name*/_this, /*var. type*/tTJSNI_Window);
-		tTJSNI_BaseLayer *lay = _this->GetLayerManager()->GetFocusedLayer();
+		tTJSNI_BaseLayer *lay = _this->GetDrawDevice()->GetFocusedLayer();
 		if(lay && lay->GetOwnerNoAddRef())
 			*result = tTJSVariant(lay->GetOwnerNoAddRef(), lay->GetOwnerNoAddRef());
 		else
@@ -1497,7 +1545,7 @@ TJS_BEGIN_NATIVE_PROP_DECL(focusedLayer)
 			}
 		}
 
-		_this->GetLayerManager()->SetFocusTo(to);
+		_this->GetDrawDevice()->SetFocusedLayer(to);
 
 		return TJS_S_OK;
 	}
@@ -1510,7 +1558,7 @@ TJS_BEGIN_NATIVE_PROP_DECL(primaryLayer)
 	TJS_BEGIN_NATIVE_PROP_GETTER
 	{
 		TJS_GET_NATIVE_INSTANCE(/*var. name*/_this, /*var. type*/tTJSNI_Window);
-		tTJSNI_BaseLayer *pri = _this->GetLayerManager()->GetPrimaryLayer();
+		tTJSNI_BaseLayer *pri = _this->GetDrawDevice()->GetPrimaryLayer();
 		if(!pri) TVPThrowExceptionMessage(TVPWindowHasNoLayer);
 
 		if(pri && pri->GetOwnerNoAddRef())
