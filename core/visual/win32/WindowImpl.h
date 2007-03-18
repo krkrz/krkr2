@@ -148,12 +148,6 @@ public:
 	tTVPImeMode GetDefaultImeMode() const;
 	void ResetImeMode();
 
-
-//-- methods from tTVPDrawable
-	void DrawCompleted(const tTVPRect &destrect,
-		tTVPBaseBitmap *bmp, const tTVPRect &cliprect,
-		tTVPLayerType type, tjs_int opacity);
-
 //-- update managment
 	void BeginUpdate(const tTVPComplexRect &rects);
 	void EndUpdate();
