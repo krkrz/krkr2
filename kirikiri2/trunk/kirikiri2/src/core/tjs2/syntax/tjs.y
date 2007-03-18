@@ -18,7 +18,10 @@
 #include "tjsScriptBlock.h"
 #include "tjsError.h"
 
-#define YYERROR_VERBOSE 1
+
+#define YYMALLOC	::malloc
+#define YYREALLOC	::realloc
+#define YYFREE		::free
 
 /* param */
 #define YYPARSE_PARAM pm

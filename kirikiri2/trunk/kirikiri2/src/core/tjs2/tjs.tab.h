@@ -1,8 +1,8 @@
 namespace TJS {
-/* A Bison parser, made by GNU Bison 1.875b.  */
+/* A Bison parser, made by GNU Bison 2.1.  */
 
 /* Skeleton parser for Yacc-like parsing with Bison,
-   Copyright (C) 1984, 1989, 1990, 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
+   Copyright (C) 1984, 1989, 1990, 2000, 2001, 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -16,8 +16,8 @@ namespace TJS {
 
    You should have received a copy of the GNU General Public License
    along with this program; if not, write to the Free Software
-   Foundation, Inc., 59 Temple Place - Suite 330,
-   Boston, MA 02111-1307, USA.  */
+   Foundation, Inc., 51 Franklin Street, Fifth Floor,
+   Boston, MA 02110-1301, USA.  */
 
 /* As a special exception, when this file is copied by Bison into a
    Bison output file, you may use that output file without restriction.
@@ -162,6 +162,7 @@ namespace TJS {
      T_CONSTVAL = 387
    };
 #endif
+/* Tokens.  */
 #define T_COMMA 258
 #define T_EQUAL 259
 #define T_AMPERSANDEQUAL 260
@@ -297,13 +298,13 @@ namespace TJS {
 
 
 #if ! defined (YYSTYPE) && ! defined (YYSTYPE_IS_DECLARED)
-#line 56 "tjs.y"
+#line 59 "tjs.y"
 typedef union YYSTYPE {
 	tjs_int			num;
 	tTJSExprNode *		np;
 } YYSTYPE;
-/* Line 1252 of yacc.c.  */
-#line 306 "tjs.tab.h"
+/* Line 1447 of yacc.c.  */
+#line 307 "tjs.tab.h"
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */
 # define YYSTYPE_IS_DECLARED 1
 # define YYSTYPE_IS_TRIVIAL 1

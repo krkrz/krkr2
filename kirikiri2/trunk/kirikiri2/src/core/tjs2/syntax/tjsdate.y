@@ -15,6 +15,11 @@
 #include "tjsTypes.h"
 #include "tjsDateParser.h"
 
+#define YYMALLOC	::malloc
+#define YYREALLOC	::realloc
+#define YYFREE		::free
+
+
 /* param */
 #define YYPARSE_PARAM pm
 #define YYLEX_PARAM pm

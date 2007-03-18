@@ -219,9 +219,9 @@ void tTJSNI_BaseMenuItem::OnClick(void)
 	TVPPostEvent(Owner, Owner, eventname, 0, TVP_EPT_IMMEDIATE, 0, NULL);
 }
 //---------------------------------------------------------------------------
-tTJSNI_BaseMenuItem * tTJSNI_BaseMenuItem::GetRootMenuItem()
+tTJSNI_BaseMenuItem * tTJSNI_BaseMenuItem::GetRootMenuItem() const
 {
-	tTJSNI_BaseMenuItem * current = this;
+	tTJSNI_BaseMenuItem * current = const_cast<tTJSNI_BaseMenuItem*>(this);
 	tTJSNI_BaseMenuItem * parent = current->GetParent();
 	while (parent)
 	{
