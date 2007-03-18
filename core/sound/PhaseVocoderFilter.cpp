@@ -37,17 +37,6 @@ TJS_BEGIN_NATIVE_CONSTRUCTOR_DECL(/*var.name*/_this, /*var.type*/tTJSNI_PhaseVoc
 }
 TJS_END_NATIVE_CONSTRUCTOR_DECL(/*TJS class name*/PhaseVocoder)
 //----------------------------------------------------------------------
-#if 0
-TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/loadScenario)
-{
-	TJS_GET_NATIVE_INSTANCE(/*var. name*/_this, /*var. type*/tTJSNI_PhaseVocoder);
-	if(numparams < 1) return TJS_E_BADPARAMCOUNT;
-	_this->LoadScenario(*param[0]);
-	return TJS_S_OK;
-}
-TJS_END_NATIVE_METHOD_DECL(/*func. name*/loadScenario)
-#endif
-//----------------------------------------------------------------------
 
 //---------------------------------------------------------------------------
 
