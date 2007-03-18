@@ -15,6 +15,11 @@
 #include "tjs.h"
 #include "tjsCompileControl.h"
 
+#define YYMALLOC	::malloc
+#define YYREALLOC	::realloc
+#define YYFREE		::free
+
+
 /* param */
 #define YYPARSE_PARAM pm
 #define YYLEX_PARAM pm
@@ -26,6 +31,8 @@ NS_TJS_START
 
 int _pperror(char * msg, void *pm)
 {
+	(void)msg;
+	(void)pm;
     return 0;
 }
 
