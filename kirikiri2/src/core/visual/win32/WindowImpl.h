@@ -128,12 +128,6 @@ private:
 	bool GetWindowActive();
 
 public:
-//-- interface to draw device
-	tTJSVariant DrawDeviceObject; //!< Current Draw Device TJS2 Object
-	iTVPDrawDevice * DrawDevice; //!< Current Draw Device
-	void SetDrawDeviceObject(const tTJSVariant & val);
-	const tTJSVariant & GetDrawDeviceObject() const { return DrawDeviceObject; }
-	iTVPDrawDevice * GetDrawDevice() const { return DrawDevice ; }
 
 //-- event control
 	virtual void PostInputEvent(const ttstr &name, iTJSDispatch2 * params);  // override
