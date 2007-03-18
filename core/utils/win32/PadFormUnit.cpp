@@ -248,7 +248,7 @@ void __fastcall TTVPPadForm::SetEditColor(tjs_uint32 color)
 	// from TVP expects.
 	color = ((color & 0xff0000) >> 16) + (color & 0x00ff00) + ((color & 0x0000ff) << 16);
 
-	Memo->Color = color;
+	Memo->Color = (TColor)color;
 }
 //---------------------------------------------------------------------------
 tjs_uint32 TTVPPadForm::GetEditColor() const
@@ -305,7 +305,7 @@ void __fastcall TTVPPadForm::SetFontSize(tjs_int t)
 //---------------------------------------------------------------------------
 static enum TFontStyle TVPFontStyleToVCLFontStyle(tjs_int style)
 {
-	enum TFontStyle fs = 0;
+	enum TFontStyle fs = (TFontStyle)0;
 	switch (style) {
 	case TVP_TF_ITALIC    : fs = fsItalic; break;
 	case TVP_TF_BOLD      : fs = fsBold; break;
@@ -350,7 +350,7 @@ void __fastcall TTVPPadForm::SetFontColor(tjs_uint32 color)
 	color = TVPToActualColor(color);
 	color = ((color & 0xff0000) >> 16) + (color & 0x00ff00) + ((color & 0x0000ff) << 16);
 
-	Memo->Font->Color = color;
+	Memo->Font->Color = (TColor)color;
 }
 //---------------------------------------------------------------------------
 tjs_uint32 TTVPPadForm::GetFontColor() const
