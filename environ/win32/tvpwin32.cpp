@@ -74,6 +74,7 @@ USELIB("..\..\visual\IA32\tvpgl_ia32.lib");
 USEUNIT("..\..\visual\LayerBitmapIntf.cpp");
 USEUNIT("..\..\visual\win32\LayerBitmapImpl.cpp");
 USEUNIT("..\..\visual\LayerIntf.cpp");
+USEUNIT("..\..\visual\LayerManager.cpp");
 USEUNIT("..\..\visual\win32\LayerImpl.cpp");
 USEUNIT("..\..\visual\win32\DInputMgn.cpp");
 USEUNIT("..\..\visual\WindowIntf.cpp");
@@ -91,6 +92,8 @@ USEUNIT("..\..\visual\win32\VideoOvlImpl.cpp");
 USEUNIT("..\..\visual\Resampler.cpp");
 USEUNIT("..\..\visual\tvpgl.c");
 USEUNIT("..\..\visual\IA32\tvpgl_ia32_intf.c");
+USEUNIT("..\..\visual\win32\PassThroughDrawDevice.cpp");
+USEUNIT("..\..\visual\win32\DrawDevice.cpp");
 USEUNIT("..\..\utils\DebugIntf.cpp");
 USEUNIT("..\..\utils\win32\DebugImpl.cpp");
 USEUNIT("..\..\utils\PadIntf.cpp");
@@ -158,8 +161,6 @@ USE("..\..\utils\ObjectList.h", File);
 USEUNIT("..\..\..\tools\win32\krdevui\ConfSettingsUnit.cpp");
 USEFORM("..\..\..\tools\win32\krdevui\ConfMainFrameUnit.cpp", ConfMainFrame); /* TFrame: File Type */
 USEUNIT("..\..\base\CharacterSet.cpp");
-USEUNIT("..\..\visual\win32\PassThroughDrawDevice.cpp");
-USEUNIT("..\..\visual\win32\DrawDevice.cpp");
 //---------------------------------------------------------------------------
 #ifdef TVP_SUPPORT_ERI
 #	pragma link "../../../../Lib/liberina.lib"
