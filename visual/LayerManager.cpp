@@ -63,6 +63,16 @@ void TJS_INTF_METHOD tTVPLayerManager::Release()
 		RefCount --;
 }
 //---------------------------------------------------------------------------
+void tTVPLayerManager::RegisterSelfToWindow()
+{
+	Window->RegisterLayerManager(this);
+}
+//---------------------------------------------------------------------------
+void tTVPLayerManager::UnregisterSelfFromWindow()
+{
+	Window->UnregisterLayerManager(this);
+}
+//---------------------------------------------------------------------------
 void tTVPLayerManager::AttachPrimary(tTJSNI_BaseLayer *pri)
 {
 	// attach primary layer to the manager

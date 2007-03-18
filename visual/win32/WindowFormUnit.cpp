@@ -1108,6 +1108,8 @@ void __fastcall TTVPWindowForm::FirePopupHide()
 //---------------------------------------------------------------------------
 void TTVPWindowForm::CallWindowDetach(bool close)
 {
+	if(TJSNativeInstance) TJSNativeInstance->GetDrawDevice()->SetTargetWindow(NULL);
+
 	tTVPWindowMessage msg;
 	msg.Msg = TVP_WM_DETACH;
 	msg.LParam = 0;
@@ -1119,6 +1121,8 @@ void TTVPWindowForm::CallWindowDetach(bool close)
 //---------------------------------------------------------------------------
 void TTVPWindowForm::CallWindowAttach()
 {
+	if(TJSNativeInstance) TJSNativeInstance->GetDrawDevice()->SetTargetWindow(PaintBox->Parent->Handle);
+
 	tTVPWindowMessage msg;
 	msg.Msg = TVP_WM_ATTACH;
 	msg.LParam = reinterpret_cast<int>(GetWindowHandleForPlugin());
@@ -1831,6 +1835,7 @@ void __fastcall TTVPWindowForm::InternalSetPaintBoxSize()
 	tjs_int w = MulDiv(LayerWidth,  ActualZoomNumer, ActualZoomDenom);
 	tjs_int h = MulDiv(LayerHeight, ActualZoomNumer, ActualZoomDenom);
 	PaintBox->SetBounds(l, t, w, h);
+	if(TJSNativeInstance) TJSNativeInstance->GetDrawDevice()->SetDestRectangle(tTVPRect(l, t, w, h));
 }
 //---------------------------------------------------------------------------
 void __fastcall TTVPWindowForm::SetPaintBoxSize(tjs_int w, tjs_int h)
