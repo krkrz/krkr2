@@ -92,7 +92,7 @@ void tTVPLayerManager::DetachPrimary()
 	}
 }
 //---------------------------------------------------------------------------
-bool tTVPLayerManager::GetPrimaryLayerSize(tjs_int &w, tjs_int &h) const
+bool TJS_INTF_METHOD tTVPLayerManager::GetPrimaryLayerSize(tjs_int &w, tjs_int &h) const
 {
 	if(IsPrimaryLayerAttached())
 	{
@@ -483,7 +483,7 @@ void tTVPLayerManager::LeaveMouseFromTree(tTJSNI_BaseLayer *root)
 	}
 }
 //---------------------------------------------------------------------------
-void tTVPLayerManager::ReleaseCapture()
+void TJS_INTF_METHOD tTVPLayerManager::ReleaseCapture()
 {
 	// release capture state
 	ReleaseCaptureCalled = true;

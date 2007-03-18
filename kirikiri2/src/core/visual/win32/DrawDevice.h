@@ -12,6 +12,7 @@
 #define DRAWDEVICE_H
 
 #include "LayerIntf.h"
+#include "LayerManager.h"
 #include "ComplexRect.h"
 
 //---------------------------------------------------------------------------
@@ -43,10 +44,11 @@ public:
 	virtual void TJS_INTF_METHOD OnMouseWheel(tjs_uint32 shift, tjs_int delta, tjs_int x, tjs_int y) = 0;
 
 //---- LayerManager の管理関連
-	virtual void TJS_INTF_METHOD AddLayerManager(tTVPLayerManager * manager) = 0;
+	virtual void TJS_INTF_METHOD AddLayerManager(iTVPLayerManager * manager) = 0;
+	virtual void TJS_INTF_METHOD RemoveLayerManager(iTVPLayerManager * manager) = 0;
 
 //---- LayerManager からの画像受け渡し関連
-	virtual void TJS_INTF_METHOD StartBitmapCompletion(tTVPLayerManager * manager) = 0;
+	virtual void TJS_INTF_METHOD StartBitmapCompletion(iTVPLayerManager * manager) = 0;
 	virtual tTVPLayerType TJS_INTF_METHOD GetDesiredLayerType() = 0;
 	virtual void TJS_INTF_METHOD NotifyBitmapCompleted(const tTVPRect &destrect,
 		void * bits, BITMAPINFO * bitmapinfo, const tTVPRect &cliprect,
@@ -64,7 +66,7 @@ class tTVPDrawDevice : public iTVPDrawDevice
 {
 protected:
 	size_t PrimaryLayerManagerIndex; //!< HID情報を渡すレイヤマネージャ
-	std::vector<tTVPLayerManager *> Managers; //!< レイヤマネージャの配列
+	std::vector<iTVPLayerManager *> Managers; //!< レイヤマネージャの配列
 	tTVPRect DestRect; //!< 描画先位置
 
 protected:
@@ -77,7 +79,7 @@ public:
 	//! @param		index		インデックス(0～)
 	//! @return		指定位置にあるレイヤマネージャ(AddRefされないので注意)。
 	//!				指定位置にレイヤマネージャがなければNULLが返る
-	tTVPLayerManager * GetLayerManagerAt(size_t index)
+	iTVPLayerManager * GetLayerManagerAt(size_t index)
 	{
 		if(Managers.size() <= index) return NULL;
 		return Managers[index];
@@ -111,7 +113,8 @@ public:
 	virtual void TJS_INTF_METHOD OnMouseWheel(tjs_uint32 shift, tjs_int delta, tjs_int x, tjs_int y);
 
 //---- LayerManager の管理関連
-	virtual void TJS_INTF_METHOD AddLayerManager(tTVPLayerManager * manager);
+	virtual void TJS_INTF_METHOD AddLayerManager(iTVPLayerManager * manager);
+	virtual void TJS_INTF_METHOD RemoveLayerManager(iTVPLayerManager * manager);
 
 
 // ほかのメソッドについては実装しない

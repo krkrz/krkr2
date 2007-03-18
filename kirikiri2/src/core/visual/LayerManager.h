@@ -14,14 +14,43 @@
 
 #include "LayerIntf.h"
 
+//---------------------------------------------------------------------------
+// abstract class of Layer Manager 
+//---------------------------------------------------------------------------
+class iTVPLayerManager
+{
+public:
+//-- object lifetime management
+	virtual void TJS_INTF_METHOD AddRef() = 0;
+	virtual void TJS_INTF_METHOD Release() = 0;
+
+//-- layer metrics
+	virtual bool TJS_INTF_METHOD GetPrimaryLayerSize(tjs_int &w, tjs_int &h) const = 0;
+
+//-- HID releted
+	virtual void TJS_INTF_METHOD NotifyClick(tjs_int x, tjs_int y) = 0;
+	virtual void TJS_INTF_METHOD NotifyDoubleClick(tjs_int x, tjs_int y) = 0;
+	virtual void TJS_INTF_METHOD NotifyMouseDown(tjs_int x, tjs_int y, tTVPMouseButton mb, tjs_uint32 flags) = 0;
+	virtual void TJS_INTF_METHOD NotifyMouseUp(tjs_int x, tjs_int y, tTVPMouseButton mb, tjs_uint32 flags) = 0;
+	virtual void TJS_INTF_METHOD NotifyMouseMove(tjs_int x, tjs_int y, tjs_uint32 flags) = 0;
+	virtual void TJS_INTF_METHOD ReleaseCapture() = 0;
+	virtual void TJS_INTF_METHOD NotifyMouseOutOfWindow() = 0;
+	virtual void TJS_INTF_METHOD NotifyKeyDown(tjs_uint key, tjs_uint32 shift) = 0;
+	virtual void TJS_INTF_METHOD NotifyKeyUp(tjs_uint key, tjs_uint32 shift) = 0;
+	virtual void TJS_INTF_METHOD NotifyKeyPress(tjs_char key) = 0;
+	virtual void TJS_INTF_METHOD NotifyMouseWheel(tjs_uint32 shift, tjs_int delta, tjs_int x, tjs_int y) = 0;
+
+};
+//---------------------------------------------------------------------------
+
 
 
 //---------------------------------------------------------------------------
 // tTVPLayerManager
 //---------------------------------------------------------------------------
-// layer mamager which is created in window's context
+// layer mamager which is to be connected to draw device
 //---------------------------------------------------------------------------
-class tTVPLayerManager
+class tTVPLayerManager : public iTVPLayerManager
 {
 	tjs_int RefCount; //!< reference count
 	tTJSNI_BaseWindow * Window;
@@ -67,7 +96,7 @@ public:
 	tTJSNI_BaseLayer * GetPrimaryLayer() const { return Primary; }
 	bool IsPrimaryLayerAttached() const { return Primary != NULL; } 
 
-	bool GetPrimaryLayerSize(tjs_int &w, tjs_int &h) const;
+	virtual bool TJS_INTF_METHOD GetPrimaryLayerSize(tjs_int &w, tjs_int &h) const;
 
 	void NotifyPart(tTJSNI_BaseLayer *lay); // notifies layer parting from its parent
 
@@ -111,23 +140,23 @@ public:
 	void NotifyResizeFromWindow(tjs_uint w, tjs_uint h); // window -> layer
 	void NotifyInvalidationFromWindow(const tTVPRect &r); // window -> layer
 
-	void NotifyClick(tjs_int x, tjs_int y) { PrimaryClick(x, y); }
-	void NotifyDoubleClick(tjs_int x, tjs_int y) { PrimaryDoubleClick(x, y); }
-	void NotifyMouseDown(tjs_int x, tjs_int y, tTVPMouseButton mb, tjs_uint32 flags)
+	virtual void TJS_INTF_METHOD NotifyClick(tjs_int x, tjs_int y) { PrimaryClick(x, y); }
+	virtual void TJS_INTF_METHOD NotifyDoubleClick(tjs_int x, tjs_int y) { PrimaryDoubleClick(x, y); }
+	virtual void TJS_INTF_METHOD NotifyMouseDown(tjs_int x, tjs_int y, tTVPMouseButton mb, tjs_uint32 flags)
 		{ PrimaryMouseDown(x, y, mb, flags); }
-	void NotifyMouseUp(tjs_int x, tjs_int y, tTVPMouseButton mb, tjs_uint32 flags)
+	virtual void TJS_INTF_METHOD NotifyMouseUp(tjs_int x, tjs_int y, tTVPMouseButton mb, tjs_uint32 flags)
 		{ PrimaryMouseUp(x, y, mb, flags); }
-	void NotifyMouseMove(tjs_int x, tjs_int y, tjs_uint32 flags)
+	virtual void TJS_INTF_METHOD NotifyMouseMove(tjs_int x, tjs_int y, tjs_uint32 flags)
 		{ PrimaryMouseMove(x, y, flags); }
-	void NotifyMouseOutOfWindow()
+	virtual void TJS_INTF_METHOD NotifyMouseOutOfWindow()
 		{ MouseOutOfWindow(); }
-	void NotifyKeyDown(tjs_uint key, tjs_uint32 shift)
+	virtual void TJS_INTF_METHOD NotifyKeyDown(tjs_uint key, tjs_uint32 shift)
 		{ PrimaryKeyDown(key, shift); }
-	void NotifyKeyUp(tjs_uint key, tjs_uint32 shift)
+	virtual void TJS_INTF_METHOD NotifyKeyUp(tjs_uint key, tjs_uint32 shift)
 		{ PrimaryKeyUp(key, shift); }
-	void NotifyKeyPress(tjs_char key)
+	virtual void TJS_INTF_METHOD NotifyKeyPress(tjs_char key)
 		{ PrimaryKeyPress(key); }
-	void NotifyMouseWheel(tjs_uint32 shift, tjs_int delta, tjs_int x, tjs_int y)
+	virtual void TJS_INTF_METHOD NotifyMouseWheel(tjs_uint32 shift, tjs_int delta, tjs_int x, tjs_int y)
 		{ PrimaryMouseWheel(shift, delta, x, y); }
 
 	tTJSNI_BaseLayer * GetMostFrontChildAt(tjs_int x, tjs_int y,
@@ -145,7 +174,7 @@ public:
 	void MouseOutOfWindow();
 	void LeaveMouseFromTree(tTJSNI_BaseLayer *root); // force to leave mouse
 
-	void ReleaseCapture();
+	virtual void TJS_INTF_METHOD ReleaseCapture();
 	void ReleaseCaptureFromTree(tTJSNI_BaseLayer * layer);
 
 	bool BlurTree(tTJSNI_BaseLayer *root); // remove focus from "root"
