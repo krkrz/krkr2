@@ -6794,6 +6794,7 @@ tjs_uint64 tTJSNI_BaseLayer::GetTransTick()
 //---------------------------------------------------------------------------
 tTVPLayerManager::tTVPLayerManager(tTJSNI_BaseWindow *window)
 {
+	RefCount = 1;
 	Window = window;
 
 	CaptureOwner = NULL;
@@ -6811,6 +6812,19 @@ tTVPLayerManager::tTVPLayerManager(tTJSNI_BaseWindow *window)
 //---------------------------------------------------------------------------
 tTVPLayerManager::~tTVPLayerManager()
 {
+}
+//---------------------------------------------------------------------------
+void TJS_INTF_METHOD tTVPLayerManager::AddRef()
+{
+	RefCount ++;
+}
+//---------------------------------------------------------------------------
+void TJS_INTF_METHOD tTVPLayerManager::Release()
+{
+	if(RefCount == 1)
+		delete this;
+	else
+		RefCount --;
 }
 //---------------------------------------------------------------------------
 void tTVPLayerManager::AttachPrimary(tTJSNI_BaseLayer *pri)
@@ -6839,6 +6853,20 @@ void tTVPLayerManager::DetachPrimary()
 		ForceMouseLeave();
 		NotifyPart(Primary);
 		Primary = NULL;
+	}
+}
+//---------------------------------------------------------------------------
+bool tTVPLayerManager::GetPrimaryLayerSize(tjs_int &w, tjs_int &h) const
+{
+	if(IsPrimaryLayerAttached())
+	{
+		w = Primary->GetWidth();
+		h = Primary->GetHeight();
+		return true;
+	}
+	else
+	{
+		return false;
 	}
 }
 //---------------------------------------------------------------------------
