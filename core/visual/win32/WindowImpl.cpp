@@ -24,6 +24,7 @@
 #include "VideoOvlIntf.h"
 #include "DebugIntf.h"
 #include "PluginImpl.h"
+#include "LayerManager.h"
 #include "PassThroughDrawDevice.h"
 
 
