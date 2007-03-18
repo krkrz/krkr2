@@ -53,11 +53,15 @@ public:
 	virtual void TJS_INTF_METHOD AddLayerManager(iTVPLayerManager * manager) = 0;
 	virtual void TJS_INTF_METHOD RemoveLayerManager(iTVPLayerManager * manager) = 0;
 
+//---- 再描画関連
+	virtual void TJS_INTF_METHOD RequestInvalidation(const tTVPRect & rect) = 0;
+	virtual void TJS_INTF_METHOD Update() = 0;
+
 //---- LayerManager からの画像受け渡し関連
 	virtual void TJS_INTF_METHOD StartBitmapCompletion(iTVPLayerManager * manager) = 0;
 	virtual tTVPLayerType TJS_INTF_METHOD GetDesiredLayerType() = 0;
 	virtual void TJS_INTF_METHOD NotifyBitmapCompleted(const tTVPRect &destrect,
-		void * bits, BITMAPINFO * bitmapinfo, const tTVPRect &cliprect,
+		const void * bits, const BITMAPINFO * bitmapinfo, const tTVPRect &cliprect,
 		tTVPLayerType type, tjs_int opacity) = 0;
 	virtual void TJS_INTF_METHOD EndBitmapCompletion() = 0;
 
@@ -71,7 +75,7 @@ public:
 class tTVPDrawDevice : public iTVPDrawDevice
 {
 protected:
-	size_t PrimaryLayerManagerIndex; //!< HID情報を渡すレイヤマネージャ
+	size_t PrimaryLayerManagerIndex; //!< プライマリレイヤマネージャ
 	std::vector<iTVPLayerManager *> Managers; //!< レイヤマネージャの配列
 	tTVPRect DestRect; //!< 描画先位置
 
@@ -128,6 +132,9 @@ public:
 	virtual void TJS_INTF_METHOD AddLayerManager(iTVPLayerManager * manager);
 	virtual void TJS_INTF_METHOD RemoveLayerManager(iTVPLayerManager * manager);
 
+//---- 再描画関連
+	virtual void TJS_INTF_METHOD RequestInvalidation(const tTVPRect & rect);
+	virtual void TJS_INTF_METHOD Update();
 
 // ほかのメソッドについては実装しない
 };
