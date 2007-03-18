@@ -68,7 +68,7 @@ public:
 
 	tTJSNI_BaseMenuItem * GetParent() const { return Parent; }
 
-	tTJSNI_BaseMenuItem * GetRootMenuItem();
+	tTJSNI_BaseMenuItem * GetRootMenuItem() const;
 
 	tTJSNI_Window * GetWindow() const { return Window; }
 

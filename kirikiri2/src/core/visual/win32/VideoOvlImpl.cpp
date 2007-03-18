@@ -703,16 +703,16 @@ void __fastcall tTJSNI_VideoOverlay::WndProc(Messages::TMessage &Msg)
 							// Check layer image size
 							if( l1 != NULL )
 							{
-								if( l1->GetImageWidth() != width || l1->GetImageHeight() != height )
+								if( (long)l1->GetImageWidth() != width || (long)l1->GetImageHeight() != height )
 									l1->SetImageSize( width, height );
-								if( l1->GetWidth() != width || l1->GetHeight() != height )
+								if( (long)l1->GetWidth() != width || (long)l1->GetHeight() != height )
 									l1->SetSize( width, height );
 							}
 							if( l2 != NULL )
 							{
-								if( l2->GetImageWidth() != width || l2->GetImageHeight() != height )
+								if( (long)l2->GetImageWidth() != width || (long)l2->GetImageHeight() != height )
 									l2->SetImageSize( width, height );
-								if( l2->GetWidth() != width || l2->GetHeight() != height )
+								if( (long)l2->GetWidth() != width || (long)l2->GetHeight() != height )
 									l2->SetSize( width, height );
 							}
 							BYTE *buff;
@@ -1014,7 +1014,7 @@ void tTJSNI_VideoOverlay::SetMixingLayer( tTJSNI_BaseLayer *l )
 				if( bmp )
 				{
 					HDC hdc;
-					if( hdc = bmp->GetBitmapDC() )
+					if( (hdc = bmp->GetBitmapDC()) != NULL )
 					{	// ‚·‚Å‚ÉHDC‚ª‚ ‚é‚Ì‚Å‚»‚ê‚ðŽg‚¤
 						VideoOverlay->SetMixingBitmap( hdc, &dest, alpha );
 					}
