@@ -434,7 +434,7 @@ tTJSNI_BaseLayer::Construct(tjs_int numparams, tTJSVariant **param,
 	{
 		Manager = new tTVPLayerManager(win);
 		Manager->AttachPrimary(this);
-//		Manager->RegisterSelfToWindow();
+		Manager->RegisterSelfToWindow();
 
 		Type = DisplayType = ltOpaque; // initially ltOpaque
 		NeutralColor = TransparentColor = TVP_RGBA2COLOR(255, 255, 255, 255);
@@ -467,7 +467,7 @@ tTJSNI_BaseLayer::Invalidate()
 	{
 		if(Manager) Manager->DetachPrimary();
 		// also detach from draw device
-//		Manager->UnregisterSelfFromWindow();
+		Manager->UnregisterSelfFromWindow();
 	}
 
 

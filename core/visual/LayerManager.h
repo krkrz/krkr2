@@ -96,6 +96,10 @@ public:
 	virtual void TJS_INTF_METHOD Release();
 
 public:
+	void RegisterSelfToWindow();
+	void UnregisterSelfFromWindow();
+
+public:
 	void AttachPrimary(tTJSNI_BaseLayer *pri); // attach primary layer to the manager
 	void DetachPrimary(); // detach primary layer from the manager
 
