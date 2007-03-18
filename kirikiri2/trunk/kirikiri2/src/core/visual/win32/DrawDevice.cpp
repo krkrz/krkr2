@@ -269,3 +269,30 @@ void TJS_INTF_METHOD tTVPDrawDevice::RemoveLayerManager(iTVPLayerManager * manag
 }
 //---------------------------------------------------------------------------
 
+
+//---------------------------------------------------------------------------
+void TJS_INTF_METHOD tTVPDrawDevice::RequestInvalidation(const tTVPRect & rect)
+{
+	tjs_int l = rect.left, t = rect.top, r = rect.right, b = rect.bottom;
+	if(!TransformToPrimaryLayerManager(l, t)) return;
+	if(!TransformToPrimaryLayerManager(r, b)) return;
+	r ++; // Œë·‚Ì‹zŽû(–{“–‚Í‚à‚¤‚¿‚å‚Á‚ÆŒµ–§‚É‚â‚ç‚È‚¢‚Æ‚È‚ç‚È‚¢‚ª‚»‚ê‚ª–â‘è‚É‚È‚é‚±‚Æ‚Í‚È‚¢)
+	b ++;
+
+	iTVPLayerManager * manager = GetLayerManagerAt(PrimaryLayerManagerIndex);
+	if(!manager) return;
+	manager->RequestInvalidation(tTVPRect(l, t, r, b));
+}
+//---------------------------------------------------------------------------
+
+
+//---------------------------------------------------------------------------
+void TJS_INTF_METHOD tTVPDrawDevice::Update()
+{
+	// ‚·‚×‚Ä‚Ì layer manager ‚Ì UpdateToDrawDevice ‚ðŒÄ‚Ô
+	for(std::vector<iTVPLayerManager *>::iterator i = Managers.begin(); i != Managers.end(); i++)
+	{
+		(*i)->UpdateToDrawDevice();
+	}
+}
+//---------------------------------------------------------------------------

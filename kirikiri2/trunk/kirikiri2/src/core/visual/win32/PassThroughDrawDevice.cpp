@@ -84,7 +84,7 @@ tTVPLayerType TJS_INTF_METHOD tTVPPassThroughDrawDevice::GetDesiredLayerType()
 
 //---------------------------------------------------------------------------
 void TJS_INTF_METHOD tTVPPassThroughDrawDevice::NotifyBitmapCompleted(const tTVPRect &destrect,
-					void * bits, BITMAPINFO * bitmapinfo, const tTVPRect &cliprect,
+					const void * bits, const BITMAPINFO * bitmapinfo, const tTVPRect &cliprect,
 					tTVPLayerType type, tjs_int opacity)
 {
 	// bits, bitmapinfo で表されるビットマップの cliprect の領域を、destrect に描画

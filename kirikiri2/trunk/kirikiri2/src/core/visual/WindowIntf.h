@@ -65,7 +65,7 @@ enum tTVPMouseCursorState
 class tTVPBaseBitmap;
 class tTJSNI_BaseLayer;
 class tTJSNI_BaseVideoOverlay;
-class tTJSNI_BaseWindow : public tTJSNativeInstance, public tTVPDrawable
+class tTJSNI_BaseWindow : public tTJSNativeInstance
 {
 	typedef tTJSNativeInstance inherited;
 
@@ -138,13 +138,6 @@ public:
 protected:
 	tTVPRect WindowExposedRegion;
 	tTVPBaseBitmap * DrawBuffer;
-	// methods from tTVPDrawable
-	tTVPBaseBitmap * GetDrawTargetBitmap(const tTVPRect &rect,
-		tTVPRect &cliprect);
-	tTVPLayerType GetTargetLayerType() { return ltOpaque; }
-//	void DrawCompleted();
-		// DrawCompleted is implemented in each platform to
-		// transfer the image to the display
 
 	bool WindowUpdating; // window is in updating
 
@@ -152,7 +145,6 @@ public:
 	void NotifyWindowExposureToLayer(const tTVPRect &cliprect);
 
 public:
-	tTVPDrawable * GetDrawable() { return (tTVPDrawable *)this; } ;
 	void NotifyUpdateRegionFixed(const tTVPComplexRect &updaterects); // is called by layer manager
 	void UpdateContent(); // is called from event dispatcher
 	virtual void BeginUpdate(const tTVPComplexRect & rects);
