@@ -1008,7 +1008,7 @@ void tTJSNI_Window::PostInputEvent(const ttstr &name, iTJSDispatch2 * params)
 }
 
 //---------------------------------------------------------------------------
-void tTJSNI_Window::NotifyLayerResize()
+void TJS_INTF_METHOD tTJSNI_Window::NotifyLayerResize()
 {
 	tTJSNI_BaseWindow::NotifyLayerResize();
 

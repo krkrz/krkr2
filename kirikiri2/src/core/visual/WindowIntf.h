@@ -56,6 +56,16 @@ enum tTVPMouseCursorState
 //---------------------------------------------------------------------------
 /*]*/
 
+//---------------------------------------------------------------------------
+// Window basic interface
+//---------------------------------------------------------------------------
+class iTVPWindow
+{
+public:
+	virtual void TJS_INTF_METHOD NotifyLayerResize() = 0;
+
+};
+//---------------------------------------------------------------------------
 
 
 
@@ -65,7 +75,7 @@ enum tTVPMouseCursorState
 class tTVPBaseBitmap;
 class tTJSNI_BaseLayer;
 class tTJSNI_BaseVideoOverlay;
-class tTJSNI_BaseWindow : public tTJSNativeInstance
+class tTJSNI_BaseWindow : public tTJSNativeInstance, public iTVPWindow
 {
 	typedef tTJSNativeInstance inherited;
 
@@ -150,7 +160,7 @@ public:
 	virtual void BeginUpdate(const tTVPComplexRect & rects);
 	virtual void EndUpdate();
 	virtual void NotifyWindowInvalidation(); // is called from primary layer
-	virtual void NotifyLayerResize(); // is called from primary layer
+	virtual void TJS_INTF_METHOD NotifyLayerResize(); // is called from primary layer
 	virtual void SetDefaultMouseCursor() = 0; // set window mouse cursor to default
 	virtual void SetMouseCursor(tjs_int cursor) = 0; // set window mouse cursor
 	virtual void GetCursorPos(tjs_int &x, tjs_int &y) = 0;

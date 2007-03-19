@@ -293,7 +293,7 @@ void tTVPLayerManager::NotifyLayerResize()
 	// notifies layer resizing to the window
 	if(!Window) return;
 
-	Window->NotifyLayerResize();
+	Window->GetDrawDevice()->NotifyLayerResize(this);
 }
 //---------------------------------------------------------------------------
 void tTVPLayerManager::NotifyWindowInvalidation()
