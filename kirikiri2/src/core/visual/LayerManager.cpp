@@ -239,21 +239,21 @@ void tTVPLayerManager::SetMouseCursor(tjs_int cursor)
 	if(!Window) return;
 
 	if(cursor == 0)
-		Window->SetDefaultMouseCursor();
+		Window->GetDrawDevice()->SetDefaultMouseCursor(this);
 	else
-		Window->SetMouseCursor(cursor);
+		Window->GetDrawDevice()->SetMouseCursor(this, cursor);
 }
 //---------------------------------------------------------------------------
 void tTVPLayerManager::GetCursorPos(tjs_int &x, tjs_int &y)
 {
 	if(!Window) return;
-	Window->GetCursorPos(x, y);
+	Window->GetDrawDevice()->GetCursorPos(this, x, y);
 }
 //---------------------------------------------------------------------------
 void tTVPLayerManager::SetCursorPos(tjs_int x, tjs_int y)
 {
 	if(!Window) return;
-	Window->SetCursorPos(x, y);
+	Window->GetDrawDevice()->SetCursorPos(this, x, y);
 }
 //---------------------------------------------------------------------------
 void tTVPLayerManager::NotifyHintChange(tTJSNI_BaseLayer *layer, const ttstr & hint)
