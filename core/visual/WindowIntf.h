@@ -63,6 +63,12 @@ class iTVPWindow
 {
 public:
 	virtual void TJS_INTF_METHOD NotifyLayerResize() = 0;
+	virtual void TJS_INTF_METHOD SetDefaultMouseCursor() = 0; // set window mouse cursor to default
+	virtual void TJS_INTF_METHOD SetMouseCursor(tjs_int cursor) = 0; // set window mouse cursor
+	virtual void TJS_INTF_METHOD GetCursorPos(tjs_int &x, tjs_int &y) = 0;
+		// get mouse cursor position in primary layer's coordinates
+	virtual void TJS_INTF_METHOD SetCursorPos(tjs_int x, tjs_int y) = 0;
+		// set mosue cursor position
 
 };
 //---------------------------------------------------------------------------
@@ -161,12 +167,6 @@ public:
 	virtual void EndUpdate();
 	virtual void NotifyWindowInvalidation(); // is called from primary layer
 	virtual void TJS_INTF_METHOD NotifyLayerResize(); // is called from primary layer
-	virtual void SetDefaultMouseCursor() = 0; // set window mouse cursor to default
-	virtual void SetMouseCursor(tjs_int cursor) = 0; // set window mouse cursor
-	virtual void GetCursorPos(tjs_int &x, tjs_int &y) = 0;
-		// get mouse cursor position in primary layer's coordinates
-	virtual void SetCursorPos(tjs_int x, tjs_int y) = 0;
-		// set mosue cursor position
 	virtual void SetHintText(const ttstr & text) = 0; // set hint
 	virtual void SetAttentionPoint(tTJSNI_BaseLayer *layer,
 		tjs_int l, tjs_int t) = 0;
