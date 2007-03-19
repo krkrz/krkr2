@@ -29,11 +29,11 @@ private:
 	~tTVPPassThroughDrawDevice(); //!< デストラクタ
 public:
 
-//---- 描画位置・サイズ関連
-	virtual void TJS_INTF_METHOD SetTargetWindow(HWND wnd);
-
 //---- LayerManager の管理関連
 	virtual void TJS_INTF_METHOD AddLayerManager(iTVPLayerManager * manager);
+
+//---- 描画位置・サイズ関連
+	virtual void TJS_INTF_METHOD SetTargetWindow(HWND wnd);
 
 //---- LayerManager からの画像受け渡し関連
 	virtual void TJS_INTF_METHOD StartBitmapCompletion(iTVPLayerManager * manager);

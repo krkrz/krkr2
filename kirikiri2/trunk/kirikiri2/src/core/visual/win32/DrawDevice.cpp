@@ -14,12 +14,14 @@
 #include "MsgIntf.h"
 #include "LayerIntf.h"
 #include "LayerManager.h"
+#include "WindowIntf.h"
 
 
 //---------------------------------------------------------------------------
 tTVPDrawDevice::tTVPDrawDevice()
 {
 	// コンストラクタ
+	Window = NULL;
 	PrimaryLayerManagerIndex = 0;
 	DestRect.clear();
 }
@@ -69,6 +71,37 @@ void TJS_INTF_METHOD tTVPDrawDevice::Destruct()
 
 
 //---------------------------------------------------------------------------
+void TJS_INTF_METHOD tTVPDrawDevice::SetWindowInterface(iTVPWindow * window)
+{
+	Window = window;
+}
+//---------------------------------------------------------------------------
+
+
+//---------------------------------------------------------------------------
+void TJS_INTF_METHOD tTVPDrawDevice::AddLayerManager(iTVPLayerManager * manager)
+{
+	// Managers に manager を push する。AddRefするのを忘れないこと。
+	Managers.push_back(manager);
+	manager->AddRef();
+}
+//---------------------------------------------------------------------------
+
+
+//---------------------------------------------------------------------------
+void TJS_INTF_METHOD tTVPDrawDevice::RemoveLayerManager(iTVPLayerManager * manager)
+{
+	// Managers から manager を削除する。Releaseする。
+	std::vector<iTVPLayerManager *>::iterator i = std::find(Managers.begin(), Managers.end(), manager);
+	if(i == Managers.end())
+		TVPThrowInternalError;
+	(*i)->Release();
+	Managers.erase(i);
+}
+//---------------------------------------------------------------------------
+
+
+//---------------------------------------------------------------------------
 void TJS_INTF_METHOD tTVPDrawDevice::SetDestRectangle(const tTVPRect & rect)
 {
 	DestRect = rect;
@@ -86,6 +119,16 @@ void TJS_INTF_METHOD tTVPDrawDevice::GetSrcSize(tjs_int &w, tjs_int &h)
 		w = 0;
 		h = 0;
 	}
+}
+//---------------------------------------------------------------------------
+
+
+//---------------------------------------------------------------------------
+void TJS_INTF_METHOD tTVPDrawDevice::NotifyLayerResize(iTVPLayerManager * manager)
+{
+	iTVPLayerManager * primary_manager = GetLayerManagerAt(PrimaryLayerManagerIndex);
+	if(primary_manager == manager)
+		Window->NotifyLayerResize();
 }
 //---------------------------------------------------------------------------
 
@@ -243,29 +286,6 @@ void TJS_INTF_METHOD tTVPDrawDevice::SetFocusedLayer(tTJSNI_BaseLayer * layer)
 	iTVPLayerManager * manager = GetLayerManagerAt(PrimaryLayerManagerIndex);
 	if(!manager) return;
 	manager->SetFocusedLayer(layer);
-}
-//---------------------------------------------------------------------------
-
-
-//---------------------------------------------------------------------------
-void TJS_INTF_METHOD tTVPDrawDevice::AddLayerManager(iTVPLayerManager * manager)
-{
-	// Managers に manager を push する。AddRefするのを忘れないこと。
-	Managers.push_back(manager);
-	manager->AddRef();
-}
-//---------------------------------------------------------------------------
-
-
-//---------------------------------------------------------------------------
-void TJS_INTF_METHOD tTVPDrawDevice::RemoveLayerManager(iTVPLayerManager * manager)
-{
-	// Managers から manager を削除する。Releaseする。
-	std::vector<iTVPLayerManager *>::iterator i = std::find(Managers.begin(), Managers.end(), manager);
-	if(i == Managers.end())
-		TVPThrowInternalError;
-	(*i)->Release();
-	Managers.erase(i);
 }
 //---------------------------------------------------------------------------
 
