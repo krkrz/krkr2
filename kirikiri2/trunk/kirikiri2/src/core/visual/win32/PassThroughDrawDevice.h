@@ -37,11 +37,10 @@ public:
 
 //---- LayerManager ‚©‚ç‚Ì‰æ‘œŽó‚¯“n‚µŠÖ˜A
 	virtual void TJS_INTF_METHOD StartBitmapCompletion(iTVPLayerManager * manager);
-	virtual tTVPLayerType TJS_INTF_METHOD GetDesiredLayerType();
-	virtual void TJS_INTF_METHOD NotifyBitmapCompleted(const tTVPRect &destrect,
-		const void * bits, const BITMAPINFO * bitmapinfo, const tTVPRect &cliprect,
-		tTVPLayerType type, tjs_int opacity);
-	virtual void TJS_INTF_METHOD EndBitmapCompletion();
+	virtual void TJS_INTF_METHOD NotifyBitmapCompleted(iTVPLayerManager * manager,
+		const tTVPRect &destrect, const void * bits, const BITMAPINFO * bitmapinfo,
+		const tTVPRect &cliprect, tTVPLayerType type, tjs_int opacity);
+	virtual void TJS_INTF_METHOD EndBitmapCompletion(iTVPLayerManager * manager);
 
 };
 //---------------------------------------------------------------------------
