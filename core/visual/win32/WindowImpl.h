@@ -133,7 +133,7 @@ public:
 	virtual void PostInputEvent(const ttstr &name, iTJSDispatch2 * params);  // override
 
 //-- interface to layer manager
-	void NotifyLayerResize(); // is called from primary layer
+	void TJS_INTF_METHOD NotifyLayerResize(); // is called from primary layer
 
 	void SetDefaultMouseCursor(); // set window mouse cursor to default
 	void SetMouseCursor(tjs_int cursor); // set window mouse cursor

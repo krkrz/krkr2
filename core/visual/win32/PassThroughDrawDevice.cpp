@@ -34,6 +34,22 @@ tTVPPassThroughDrawDevice::~tTVPPassThroughDrawDevice()
 
 
 //---------------------------------------------------------------------------
+void TJS_INTF_METHOD tTVPPassThroughDrawDevice::AddLayerManager(iTVPLayerManager * manager)
+{
+	if(inherited::Managers.size() > 0)
+	{
+		// "Pass Through" デバイスでは２つ以上のLayer Managerを登録できない
+		TVPThrowExceptionMessage(TJS_W("\"passthrough\" device does not support layer manager more than 1"));
+			// TODO: i18n
+	}
+	inherited::AddLayerManager(manager);
+
+	manager->SetDesiredLayerType(ltOpaque); // ltOpaque な出力を受け取りたい
+}
+//---------------------------------------------------------------------------
+
+
+//---------------------------------------------------------------------------
 void TJS_INTF_METHOD tTVPPassThroughDrawDevice::SetTargetWindow(HWND wnd)
 {
 	if(wnd)
@@ -48,22 +64,6 @@ void TJS_INTF_METHOD tTVPPassThroughDrawDevice::SetTargetWindow(HWND wnd)
 	}
 
 	TargetWindow = wnd;
-}
-//---------------------------------------------------------------------------
-
-
-//---------------------------------------------------------------------------
-void TJS_INTF_METHOD tTVPPassThroughDrawDevice::AddLayerManager(iTVPLayerManager * manager)
-{
-	if(inherited::Managers.size() > 0)
-	{
-		// "Pass Through" デバイスでは２つ以上のLayer Managerを登録できない
-		TVPThrowExceptionMessage(TJS_W("\"passthrough\" device does not support layer manager more than 1"));
-			// TODO: i18n
-	}
-	inherited::AddLayerManager(manager);
-
-	manager->SetDesiredLayerType(ltOpaque); // ltOpaque な出力を受け取りたい
 }
 //---------------------------------------------------------------------------
 
