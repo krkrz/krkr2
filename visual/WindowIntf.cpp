@@ -275,7 +275,7 @@ void tTJSNI_BaseWindow::SetDrawDeviceObject(const tTJSVariant & val)
 			TVPThrowExceptionMessage(TJS_W("Could not retrive interface from given draw device")); // TODO: i18n
 		DrawDevice =
 			reinterpret_cast<iTVPDrawDevice *>((long)(tjs_int64)iface_v);
-
+		DrawDevice->SetWindowInterface(const_cast<tTJSNI_BaseWindow*>(this));
 	}
 }
 //---------------------------------------------------------------------------
@@ -555,7 +555,7 @@ void tTJSNI_BaseWindow::NotifyWindowInvalidation()
 	TVPPostWindowUpdate((tTJSNI_Window*)this);
 }
 //---------------------------------------------------------------------------
-void tTJSNI_BaseWindow::NotifyLayerResize()
+void TJS_INTF_METHOD tTJSNI_BaseWindow::NotifyLayerResize()
 {
 	// is called from primary layer
 	if(WindowUpdating)

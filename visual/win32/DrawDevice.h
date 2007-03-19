@@ -15,6 +15,8 @@
 #include "LayerManager.h"
 #include "ComplexRect.h"
 
+class iTVPWindow;
+
 //---------------------------------------------------------------------------
 //! @brief		描画デバイスインターフェース
 //---------------------------------------------------------------------------
@@ -24,12 +26,20 @@ public:
 //---- オブジェクト生存期間制御
 	virtual void TJS_INTF_METHOD Destruct() = 0;
 
+//---- window interface 関連
+	virtual void TJS_INTF_METHOD SetWindowInterface(iTVPWindow * window) = 0;
+
+//---- LayerManager の管理関連
+	virtual void TJS_INTF_METHOD AddLayerManager(iTVPLayerManager * manager) = 0;
+	virtual void TJS_INTF_METHOD RemoveLayerManager(iTVPLayerManager * manager) = 0;
+
 //---- 描画位置・サイズ関連
 	//
 	// null を指定される場合がある。
 	virtual void TJS_INTF_METHOD SetTargetWindow(HWND wnd) = 0;
 	virtual void TJS_INTF_METHOD SetDestRectangle(const tTVPRect & rect) = 0;
 	virtual void TJS_INTF_METHOD GetSrcSize(tjs_int &w, tjs_int &h) = 0;
+	virtual void TJS_INTF_METHOD NotifyLayerResize(iTVPLayerManager * manager) = 0;
 
 //---- HIDインターフェース関連
 	virtual void TJS_INTF_METHOD OnClick(tjs_int x, tjs_int y) = 0;
@@ -49,9 +59,6 @@ public:
 	virtual tTJSNI_BaseLayer * TJS_INTF_METHOD GetFocusedLayer() = 0;
 	virtual void TJS_INTF_METHOD SetFocusedLayer(tTJSNI_BaseLayer * layer) = 0;
 
-//---- LayerManager の管理関連
-	virtual void TJS_INTF_METHOD AddLayerManager(iTVPLayerManager * manager) = 0;
-	virtual void TJS_INTF_METHOD RemoveLayerManager(iTVPLayerManager * manager) = 0;
 
 //---- 再描画関連
 	virtual void TJS_INTF_METHOD RequestInvalidation(const tTVPRect & rect) = 0;
@@ -74,6 +81,7 @@ public:
 class tTVPDrawDevice : public iTVPDrawDevice
 {
 protected:
+	iTVPWindow * Window;
 	size_t PrimaryLayerManagerIndex; //!< プライマリレイヤマネージャ
 	std::vector<iTVPLayerManager *> Managers; //!< レイヤマネージャの配列
 	tTVPRect DestRect; //!< 描画先位置
@@ -105,9 +113,17 @@ public:
 //---- オブジェクト生存期間制御
 	virtual void TJS_INTF_METHOD Destruct();
 
+//---- window interface 関連
+	virtual void TJS_INTF_METHOD SetWindowInterface(iTVPWindow * window);
+
+//---- LayerManager の管理関連
+	virtual void TJS_INTF_METHOD AddLayerManager(iTVPLayerManager * manager);
+	virtual void TJS_INTF_METHOD RemoveLayerManager(iTVPLayerManager * manager);
+
 //---- 描画位置・サイズ関連
 	virtual void TJS_INTF_METHOD SetDestRectangle(const tTVPRect & rect);
 	virtual void TJS_INTF_METHOD GetSrcSize(tjs_int &w, tjs_int &h);
+	virtual void TJS_INTF_METHOD NotifyLayerResize(iTVPLayerManager * manager);
 
 //---- HIDインターフェース関連
 	virtual void TJS_INTF_METHOD OnClick(tjs_int x, tjs_int y);
@@ -126,10 +142,6 @@ public:
 	virtual tTJSNI_BaseLayer * TJS_INTF_METHOD GetPrimaryLayer();
 	virtual tTJSNI_BaseLayer * TJS_INTF_METHOD GetFocusedLayer();
 	virtual void TJS_INTF_METHOD SetFocusedLayer(tTJSNI_BaseLayer * layer);
-
-//---- LayerManager の管理関連
-	virtual void TJS_INTF_METHOD AddLayerManager(iTVPLayerManager * manager);
-	virtual void TJS_INTF_METHOD RemoveLayerManager(iTVPLayerManager * manager);
 
 //---- 再描画関連
 	virtual void TJS_INTF_METHOD RequestInvalidation(const tTVPRect & rect);
