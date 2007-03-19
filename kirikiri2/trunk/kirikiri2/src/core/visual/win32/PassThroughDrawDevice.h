@@ -38,7 +38,7 @@ public:
 //---- LayerManager ‚©‚ç‚Ì‰æ‘œŽó‚¯“n‚µŠÖ˜A
 	virtual void TJS_INTF_METHOD StartBitmapCompletion(iTVPLayerManager * manager);
 	virtual void TJS_INTF_METHOD NotifyBitmapCompleted(iTVPLayerManager * manager,
-		const tTVPRect &destrect, const void * bits, const BITMAPINFO * bitmapinfo,
+		tjs_int x, tjs_int y, const void * bits, const BITMAPINFO * bitmapinfo,
 		const tTVPRect &cliprect, tTVPLayerType type, tjs_int opacity);
 	virtual void TJS_INTF_METHOD EndBitmapCompletion(iTVPLayerManager * manager);
 
