@@ -63,6 +63,25 @@ bool tTVPDrawDevice::TransformToPrimaryLayerManager(tjs_int &x, tjs_int &y)
 
 
 //---------------------------------------------------------------------------
+bool tTVPDrawDevice::TransformFromPrimaryLayerManager(tjs_int &x, tjs_int &y)
+{
+	iTVPLayerManager * manager = GetLayerManagerAt(PrimaryLayerManagerIndex);
+	if(!manager) return false;
+
+	// プライマリレイヤマネージャのプライマリレイヤのサイズを得る
+	tjs_int pl_w, pl_h;
+	if(!manager->GetPrimaryLayerSize(pl_w, pl_h)) return false;
+
+	// x , y は DestRect の 0, 0 を原点とした座標として渡されてきている
+	x = x * DestRect.get_width() / pl_w;
+	y = y * DestRect.get_height() / pl_h;
+
+	return true;
+}
+//---------------------------------------------------------------------------
+
+
+//---------------------------------------------------------------------------
 void TJS_INTF_METHOD tTVPDrawDevice::Destruct()
 {
 	delete this;
@@ -256,6 +275,62 @@ void TJS_INTF_METHOD tTVPDrawDevice::OnMouseWheel(tjs_uint32 shift, tjs_int delt
 	if(!manager) return;
 
 	manager->NotifyMouseWheel(shift, delta, x, y);
+}
+//---------------------------------------------------------------------------
+
+
+//---------------------------------------------------------------------------
+void TJS_INTF_METHOD tTVPDrawDevice::SetDefaultMouseCursor(iTVPLayerManager * manager)
+{
+	iTVPLayerManager * primary_manager = GetLayerManagerAt(PrimaryLayerManagerIndex);
+	if(!primary_manager) return;
+	if(primary_manager == manager)
+	{
+		Window->SetDefaultMouseCursor();
+	}
+}
+//---------------------------------------------------------------------------
+
+
+//---------------------------------------------------------------------------
+void TJS_INTF_METHOD tTVPDrawDevice::SetMouseCursor(iTVPLayerManager * manager, tjs_int cursor)
+{
+	iTVPLayerManager * primary_manager = GetLayerManagerAt(PrimaryLayerManagerIndex);
+	if(!primary_manager) return;
+	if(primary_manager == manager)
+	{
+		Window->SetMouseCursor(cursor);
+	}
+}
+//---------------------------------------------------------------------------
+
+
+//---------------------------------------------------------------------------
+void TJS_INTF_METHOD tTVPDrawDevice::GetCursorPos(iTVPLayerManager * manager, tjs_int &x, tjs_int &y)
+{
+	iTVPLayerManager * primary_manager = GetLayerManagerAt(PrimaryLayerManagerIndex);
+	if(!primary_manager) return;
+	Window->GetCursorPos(x, y);
+	if(primary_manager != manager || !TransformToPrimaryLayerManager(x, y))
+	{
+		// プライマリレイヤマネージャ以外には座標 0,0 で渡しておく
+		 x = 0;
+		 y = 0;
+	}
+}
+//---------------------------------------------------------------------------
+
+
+//---------------------------------------------------------------------------
+void TJS_INTF_METHOD tTVPDrawDevice::SetCursorPos(iTVPLayerManager * manager, tjs_int x, tjs_int y)
+{
+	iTVPLayerManager * primary_manager = GetLayerManagerAt(PrimaryLayerManagerIndex);
+	if(!primary_manager) return;
+	if(primary_manager == manager)
+	{
+		if(TransformFromPrimaryLayerManager(x, y))
+			Window->SetCursorPos(x, y);
+	}
 }
 //---------------------------------------------------------------------------
 

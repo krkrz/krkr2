@@ -1020,25 +1020,25 @@ void TJS_INTF_METHOD tTJSNI_Window::NotifyLayerResize()
 		Form->SetPaintBoxSize(w, h);
 }
 //---------------------------------------------------------------------------
-void tTJSNI_Window::SetDefaultMouseCursor()
+void TJS_INTF_METHOD tTJSNI_Window::SetDefaultMouseCursor()
 {
 	// set window mouse cursor to default
 	if(Form) Form->SetDefaultMouseCursor();
 }
 //---------------------------------------------------------------------------
-void tTJSNI_Window::SetMouseCursor(tjs_int handle)
+void TJS_INTF_METHOD tTJSNI_Window::SetMouseCursor(tjs_int handle)
 {
 	// set window mouse cursor
 	if(Form) Form->SetMouseCursor(handle);
 }
 //---------------------------------------------------------------------------
-void tTJSNI_Window::GetCursorPos(tjs_int &x, tjs_int &y)
+void TJS_INTF_METHOD tTJSNI_Window::GetCursorPos(tjs_int &x, tjs_int &y)
 {
 	// get cursor pos in primary layer's coordinates
 	if(Form) Form->GetCursorPos(x, y);
 }
 //---------------------------------------------------------------------------
-void tTJSNI_Window::SetCursorPos(tjs_int x, tjs_int y)
+void TJS_INTF_METHOD tTJSNI_Window::SetCursorPos(tjs_int x, tjs_int y)
 {
 	// set cursor pos in primar layer's coordinates
 	if(Form) Form->SetCursorPos(x, y);

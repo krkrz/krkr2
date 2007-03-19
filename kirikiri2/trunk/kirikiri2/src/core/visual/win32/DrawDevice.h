@@ -42,6 +42,7 @@ public:
 	virtual void TJS_INTF_METHOD NotifyLayerResize(iTVPLayerManager * manager) = 0;
 
 //---- HIDインターフェース関連
+	// window -> drawdevice
 	virtual void TJS_INTF_METHOD OnClick(tjs_int x, tjs_int y) = 0;
 	virtual void TJS_INTF_METHOD OnDoubleClick(tjs_int x, tjs_int y) = 0;
 	virtual void TJS_INTF_METHOD OnMouseDown(tjs_int x, tjs_int y, tTVPMouseButton mb, tjs_uint32 flags) = 0;
@@ -53,6 +54,13 @@ public:
 	virtual void TJS_INTF_METHOD OnKeyUp(tjs_uint key, tjs_uint32 shift) = 0;
 	virtual void TJS_INTF_METHOD OnKeyPress(tjs_char key) = 0;
 	virtual void TJS_INTF_METHOD OnMouseWheel(tjs_uint32 shift, tjs_int delta, tjs_int x, tjs_int y) = 0;
+
+	// layer manager -> drawdevice
+	virtual void TJS_INTF_METHOD SetDefaultMouseCursor(iTVPLayerManager * manager) = 0;
+	virtual void TJS_INTF_METHOD SetMouseCursor(iTVPLayerManager * manager, tjs_int cursor) = 0;
+
+	virtual void TJS_INTF_METHOD GetCursorPos(iTVPLayerManager * manager, tjs_int &x, tjs_int &y) = 0;
+	virtual void TJS_INTF_METHOD SetCursorPos(iTVPLayerManager * manager, tjs_int x, tjs_int y) = 0;
 
 //---- プライマリレイヤ関連
 	virtual tTJSNI_BaseLayer * TJS_INTF_METHOD GetPrimaryLayer() = 0;
@@ -110,6 +118,14 @@ public:
 	//! @note		x, y は DestRectの (0,0) を原点とする座標として渡されると見なす
 	bool TransformToPrimaryLayerManager(tjs_int &x, tjs_int &y);
 
+	//! @brief		LayerManager->Device方向の座標の変換を行う
+	//! @param		x		X位置
+	//! @param		y		Y位置
+	//! @return		変換に成功すれば真。さもなければ偽。PrimaryLayerManagerIndexに該当する
+	//!				レイヤマネージャがなければ偽が返る
+	//! @note		x, y は レイヤの (0,0) を原点とする座標として渡されると見なす
+	bool TransformFromPrimaryLayerManager(tjs_int &x, tjs_int &y);
+
 //---- オブジェクト生存期間制御
 	virtual void TJS_INTF_METHOD Destruct();
 
@@ -126,6 +142,7 @@ public:
 	virtual void TJS_INTF_METHOD NotifyLayerResize(iTVPLayerManager * manager);
 
 //---- HIDインターフェース関連
+	// window -> drawdevice
 	virtual void TJS_INTF_METHOD OnClick(tjs_int x, tjs_int y);
 	virtual void TJS_INTF_METHOD OnDoubleClick(tjs_int x, tjs_int y);
 	virtual void TJS_INTF_METHOD OnMouseDown(tjs_int x, tjs_int y, tTVPMouseButton mb, tjs_uint32 flags);
@@ -137,6 +154,12 @@ public:
 	virtual void TJS_INTF_METHOD OnKeyUp(tjs_uint key, tjs_uint32 shift);
 	virtual void TJS_INTF_METHOD OnKeyPress(tjs_char key);
 	virtual void TJS_INTF_METHOD OnMouseWheel(tjs_uint32 shift, tjs_int delta, tjs_int x, tjs_int y);
+
+	// layer manager -> drawdevice
+	virtual void TJS_INTF_METHOD SetDefaultMouseCursor(iTVPLayerManager * manager);
+	virtual void TJS_INTF_METHOD SetMouseCursor(iTVPLayerManager * manager, tjs_int cursor);
+	virtual void TJS_INTF_METHOD GetCursorPos(iTVPLayerManager * manager, tjs_int &x, tjs_int &y);
+	virtual void TJS_INTF_METHOD SetCursorPos(iTVPLayerManager * manager, tjs_int x, tjs_int y);
 
 //---- プライマリレイヤ関連
 	virtual tTJSNI_BaseLayer * TJS_INTF_METHOD GetPrimaryLayer();

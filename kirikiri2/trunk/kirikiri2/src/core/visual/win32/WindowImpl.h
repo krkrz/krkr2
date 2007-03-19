@@ -135,10 +135,10 @@ public:
 //-- interface to layer manager
 	void TJS_INTF_METHOD NotifyLayerResize(); // is called from primary layer
 
-	void SetDefaultMouseCursor(); // set window mouse cursor to default
-	void SetMouseCursor(tjs_int cursor); // set window mouse cursor
-	void GetCursorPos(tjs_int &x, tjs_int &y);
-	void SetCursorPos(tjs_int x, tjs_int y);
+	void TJS_INTF_METHOD SetDefaultMouseCursor(); // set window mouse cursor to default
+	void TJS_INTF_METHOD SetMouseCursor(tjs_int cursor); // set window mouse cursor
+	void TJS_INTF_METHOD GetCursorPos(tjs_int &x, tjs_int &y);
+	void TJS_INTF_METHOD SetCursorPos(tjs_int x, tjs_int y);
 	void SetHintText(const ttstr & text);
 	void SetAttentionPoint(tTJSNI_BaseLayer *layer,
 		tjs_int l, tjs_int t);
