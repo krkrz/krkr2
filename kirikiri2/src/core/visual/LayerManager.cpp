@@ -119,7 +119,7 @@ void tTVPLayerManager::DrawCompleted(const tTVPRect &destrect,
 		tTVPLayerType type, tjs_int opacity)
 {
 	// TODO: cross platform
-	Window->GetDrawDevice()->NotifyBitmapCompleted(this, destrect,
+	Window->GetDrawDevice()->NotifyBitmapCompleted(this, destrect.left, destrect.top,
 		bmp->GetBitmap()->GetBits(), bmp->GetBitmap()->GetBITMAPINFO(), cliprect, type, opacity);
 }
 //---------------------------------------------------------------------------
