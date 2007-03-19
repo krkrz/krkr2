@@ -78,18 +78,18 @@ void TJS_INTF_METHOD tTVPPassThroughDrawDevice::StartBitmapCompletion(iTVPLayerM
 
 //---------------------------------------------------------------------------
 void TJS_INTF_METHOD tTVPPassThroughDrawDevice::NotifyBitmapCompleted(iTVPLayerManager * manager,
-	const tTVPRect &destrect, const void * bits, const BITMAPINFO * bitmapinfo,
+	tjs_int x, tjs_int y, const void * bits, const BITMAPINFO * bitmapinfo,
 	const tTVPRect &cliprect, tTVPLayerType type, tjs_int opacity)
 {
-	// bits, bitmapinfo で表されるビットマップの cliprect の領域を、destrect に描画
-	// する。destrect の 幅と高さは無視してよい (cliprect の幅と高さと同一とみなせる)
+	// bits, bitmapinfo で表されるビットマップの cliprect の領域を、x, y に描画
+	// する。
 	// opacity と type は無視するしかないので無視する
 	StretchDIBits(
 		TargetDC,
-		destrect.left + DestRect.left,
-		destrect.top  + DestRect.top,
-		destrect.get_width(),
-		destrect.get_height(),
+		x + DestRect.left,
+		y + DestRect.top,
+		cliprect.get_width(),
+		cliprect.get_height(),
 		cliprect.left,
 		bitmapinfo->bmiHeader.biHeight - cliprect.get_height() - cliprect.top,
 		cliprect.get_width(),
