@@ -32,7 +32,9 @@ tTVPLayerManager::tTVPLayerManager(tTJSNI_BaseWindow *window)
 {
 	RefCount = 1;
 	Window = window;
+	DrawDeviceData = NULL;
 	DrawBuffer = NULL;
+	DesiredLayerType = ltOpaque;
 
 	CaptureOwner = NULL;
 	LastMouseMoveSent = NULL;
@@ -109,7 +111,7 @@ tTVPBaseBitmap * tTVPLayerManager::GetDrawTargetBitmap(const tTVPRect &rect,
 //---------------------------------------------------------------------------
 tTVPLayerType tTVPLayerManager::GetTargetLayerType()
 {
-	return Window->GetDrawDevice()->GetDesiredLayerType();
+	return DesiredLayerType;
 }
 //---------------------------------------------------------------------------
 void tTVPLayerManager::DrawCompleted(const tTVPRect &destrect,
@@ -117,7 +119,7 @@ void tTVPLayerManager::DrawCompleted(const tTVPRect &destrect,
 		tTVPLayerType type, tjs_int opacity)
 {
 	// TODO: cross platform
-	Window->GetDrawDevice()->NotifyBitmapCompleted(destrect, 
+	Window->GetDrawDevice()->NotifyBitmapCompleted(this, destrect,
 		bmp->GetBitmap()->GetBits(), bmp->GetBitmap()->GetBITMAPINFO(), cliprect, type, opacity);
 }
 //---------------------------------------------------------------------------
@@ -930,12 +932,14 @@ void tTVPLayerManager::AddUpdateRegion(const tTVPRect &rect)
 	NotifyWindowInvalidation();
 }
 //---------------------------------------------------------------------------
-void tTVPLayerManager::UpdateToDrawDevice()
+void TJS_INTF_METHOD tTVPLayerManager::UpdateToDrawDevice()
 {
 	// drawdevice -> layer
 	if(!Primary) return;
 
+	Window->GetDrawDevice()->StartBitmapCompletion(this);
 	Primary->CompleteForWindow(this);
+	Window->GetDrawDevice()->EndBitmapCompletion(this);
 }
 //---------------------------------------------------------------------------
 void tTVPLayerManager::NotifyUpdateRegionFixed()
@@ -944,7 +948,7 @@ void tTVPLayerManager::NotifyUpdateRegionFixed()
 	Window->NotifyUpdateRegionFixed(UpdateRegion);
 }
 //---------------------------------------------------------------------------
-void tTVPLayerManager::RequestInvalidation(const tTVPRect &r)
+void TJS_INTF_METHOD tTVPLayerManager::RequestInvalidation(const tTVPRect &r)
 {
 	// called by the owner window to notify window surface is invalidated by
 	// the system or user.

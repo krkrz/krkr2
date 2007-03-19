@@ -25,6 +25,10 @@ public:
 	virtual void TJS_INTF_METHOD AddRef() = 0;
 	virtual void TJS_INTF_METHOD Release() = 0;
 
+//-- draw device specific information
+	virtual void TJS_INTF_METHOD SetDrawDeviceData(void * data) = 0;
+	virtual void * TJS_INTF_METHOD GetDrawDeviceData() const = 0;
+
 //-- layer metrics
 	virtual bool TJS_INTF_METHOD GetPrimaryLayerSize(tjs_int &w, tjs_int &h) const = 0;
 
@@ -47,8 +51,9 @@ public:
 	virtual void TJS_INTF_METHOD NotifyMouseWheel(tjs_uint32 shift, tjs_int delta, tjs_int x, tjs_int y) = 0;
 
 //-- invalidation/update
-	virtual void RequestInvalidation(const tTVPRect &r) = 0; // draw device -> layer
-	virtual void UpdateToDrawDevice() = 0;
+	virtual void TJS_INTF_METHOD SetDesiredLayerType(tTVPLayerType type) = 0;
+	virtual void TJS_INTF_METHOD RequestInvalidation(const tTVPRect &r) = 0; // draw device -> layer
+	virtual void TJS_INTF_METHOD UpdateToDrawDevice() = 0;
 
 };
 //---------------------------------------------------------------------------
@@ -65,7 +70,10 @@ class tTVPLayerManager : public iTVPLayerManager, public tTVPDrawable
 	tjs_int RefCount; //!< reference count
 	tTJSNI_BaseWindow * Window;
 
+	void * DrawDeviceData; //!< draw device specific information
+
 	tTVPBaseBitmap * DrawBuffer;
+	tTVPLayerType DesiredLayerType; //!< desired layer type by the draw device for this layer manager
 
 	tTJSNI_BaseLayer * CaptureOwner;
 	tTJSNI_BaseLayer * LastMouseMoveSent;
@@ -102,9 +110,15 @@ public:
 	virtual void TJS_INTF_METHOD AddRef();
 	virtual void TJS_INTF_METHOD Release();
 
+	virtual void TJS_INTF_METHOD SetDrawDeviceData(void * data) { DrawDeviceData = data; }
+	virtual void * TJS_INTF_METHOD GetDrawDeviceData() const { return DrawDeviceData; }
+
 public:
 	void RegisterSelfToWindow();
 	void UnregisterSelfFromWindow();
+
+public:
+	virtual void TJS_INTF_METHOD SetDesiredLayerType(tTVPLayerType type) { DesiredLayerType = type; }
 
 public: // methods from tTVPDrawable
 	virtual tTVPBaseBitmap * GetDrawTargetBitmap(const tTVPRect &rect,
@@ -165,7 +179,7 @@ public:
 	tTJSNI_BaseWindow * GetWindow() const { return Window; }
 	void SetWindow(tTJSNI_BaseWindow *window);
 	void NotifyResizeFromWindow(tjs_uint w, tjs_uint h); // draw device -> layer
-	virtual void RequestInvalidation(const tTVPRect &r); // draw device -> layer
+	virtual void TJS_INTF_METHOD RequestInvalidation(const tTVPRect &r); // draw device -> layer
 
 	virtual void TJS_INTF_METHOD NotifyClick(tjs_int x, tjs_int y) { PrimaryClick(x, y); }
 	virtual void TJS_INTF_METHOD NotifyDoubleClick(tjs_int x, tjs_int y) { PrimaryDoubleClick(x, y); }
@@ -251,7 +265,7 @@ public:
 	void AddUpdateRegion(const tTVPComplexRect &rects);
 	void AddUpdateRegion(const tTVPRect & rect);
 	void PrimaryUpdateByWindow(const tTVPRect &rect);
-	virtual void UpdateToDrawDevice();
+	virtual void TJS_INTF_METHOD UpdateToDrawDevice();
 	void NotifyUpdateRegionFixed();
 
 public:
