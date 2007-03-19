@@ -62,6 +62,8 @@ void TJS_INTF_METHOD tTVPPassThroughDrawDevice::AddLayerManager(iTVPLayerManager
 			// TODO: i18n
 	}
 	inherited::AddLayerManager(manager);
+
+	manager->SetDesiredLayerType(ltOpaque); // ltOpaque な出力を受け取りたい
 }
 //---------------------------------------------------------------------------
 
@@ -75,17 +77,9 @@ void TJS_INTF_METHOD tTVPPassThroughDrawDevice::StartBitmapCompletion(iTVPLayerM
 
 
 //---------------------------------------------------------------------------
-tTVPLayerType TJS_INTF_METHOD tTVPPassThroughDrawDevice::GetDesiredLayerType()
-{
-	return ltOpaque; // 不透明なウィンドウに直接描画するので ltOpaque で十分
-}
-//---------------------------------------------------------------------------
-
-
-//---------------------------------------------------------------------------
-void TJS_INTF_METHOD tTVPPassThroughDrawDevice::NotifyBitmapCompleted(const tTVPRect &destrect,
-					const void * bits, const BITMAPINFO * bitmapinfo, const tTVPRect &cliprect,
-					tTVPLayerType type, tjs_int opacity)
+void TJS_INTF_METHOD tTVPPassThroughDrawDevice::NotifyBitmapCompleted(iTVPLayerManager * manager,
+	const tTVPRect &destrect, const void * bits, const BITMAPINFO * bitmapinfo,
+	const tTVPRect &cliprect, tTVPLayerType type, tjs_int opacity)
 {
 	// bits, bitmapinfo で表されるビットマップの cliprect の領域を、destrect に描画
 	// する。destrect の 幅と高さは無視してよい (cliprect の幅と高さと同一とみなせる)
@@ -109,7 +103,7 @@ void TJS_INTF_METHOD tTVPPassThroughDrawDevice::NotifyBitmapCompleted(const tTVP
 
 
 //---------------------------------------------------------------------------
-void TJS_INTF_METHOD tTVPPassThroughDrawDevice::EndBitmapCompletion()
+void TJS_INTF_METHOD tTVPPassThroughDrawDevice::EndBitmapCompletion(iTVPLayerManager * manager)
 {
 	// 特にやることなし
 }
