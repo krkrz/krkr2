@@ -27,6 +27,7 @@ static iTJSDispatch2 *ArrayClearMethod   = NULL;   // Array.clear
 
 class IFile {
 public:
+	virtual ~IFile() {};
 	virtual bool addNextLine(ttstr &str) = 0;
 };
 

@@ -22,6 +22,7 @@ static void log(const tjs_char *format, ...)
 
 class IFile {
 public:
+	virtual ~IFile() {};
 	virtual bool getNextLine(ttstr &str) = 0;
 };
 
