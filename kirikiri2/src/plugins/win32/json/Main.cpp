@@ -41,6 +41,8 @@ public:
 		isError = false;
 	}
 
+	virtual ~IReader() {};
+	
 	/**
 	 * ƒGƒ‰[ˆ—
 	 */
@@ -481,6 +483,7 @@ public:
 	IWriter() {
 		indent = 0;
 	}
+	virtual ~IWriter(){};
 	virtual void write(const tjs_char *str) = 0;
 	virtual void write(tjs_char ch) = 0;
 	virtual void write(tTVReal) = 0;
