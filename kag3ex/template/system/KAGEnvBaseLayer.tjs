@@ -39,6 +39,11 @@ class KAGEnvBaseLayer extends KAGEnvLayer {
         
         if (file !== void) {
 
+            // è¡ãééwíËÇ™Ç»ÇØÇÍÇŒï\é¶
+            if (elm.hide === void) {
+                disp = BOTH;
+            }
+            
             var eventInfo;
             if (env.events !== void) {
                 eventInfo = env.events[file];
@@ -48,18 +53,13 @@ class KAGEnvBaseLayer extends KAGEnvLayer {
                 imageFile = eventInfo.image !== void ? eventInfo.image : v;
                 xpos = elm.xpos !== void ? (int)elm.xpos : eventInfo.xoff;
                 ypos = elm.ypos !== void ? (int)elm.ypos : eventInfo.yoff;
-                reposition = true;
             } else {
                 imageFile = file;
                 xpos = elm.xpos !== void ? (int)elm.xpos : void;
                 ypos = elm.ypos !== void ? (int)elm.ypos : void;
-                reposition = true;
             }
-
-            if (elm.hide === void) {
-                disp = BOTH;
-                reposition = true;
-            }
+            redraw = true;
+            reposition = true;
             
             // ãLò^
             kag.sflags["cg_" + (file.toUpperCase())] = true;

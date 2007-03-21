@@ -42,6 +42,7 @@ class KAGEnvLayer extends KAGEnvImage {
         if (elm.ypos === void) {
             ypos = void;
         }
+        redraw = true;
         reposition = true;
 
         // ‹L˜^
