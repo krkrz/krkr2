@@ -153,12 +153,21 @@ class ButtonLayer extends AnimKAGLayer
 		}
 	}
 
+    function initTemp() {
+        if (typeof window.temporaryLayer == "undefined") {
+            window.temporaryLayer = new KAGLayer(window, window.primaryLayer);
+            window.add(window.temporaryLayer);
+        }
+    }
+    
     function loadImages(storage, key, count, time, toggle=false)
 	{
         if (toggle) {
             toggleButton = true;
         }
+
         // ‰æ‘œ‚ğ“Ç‚İ‚Ş
+        initTemp();
         var temp = window.temporaryLayer;
         temp.loadImages(storage, key);
 
@@ -193,6 +202,8 @@ class ButtonLayer extends AnimKAGLayer
      * •ª—£ƒ{ƒ^ƒ“‰æ‘œ‚Ì“Ç‚İ‚İ
      */
     function loadButtons(normal, over, on, focus, count, time, toggle=false) {
+
+        initTemp();
         var temp = window.temporaryLayer;
 
         if (toggle) {
