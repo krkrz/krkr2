@@ -153,29 +153,30 @@ class ButtonLayer extends AnimKAGLayer
 		}
 	}
 
-    function initTemp() {
+    function getTemporary() {
         if (typeof window.temporaryLayer == "undefined") {
-            window.temporaryLayer = new KAGLayer(window, window.primaryLayer);
+            window.temporaryLayer = new global.KAGLayer(window, window.primaryLayer);
             window.add(window.temporaryLayer);
         }
+        return window.temporaryLayer;
     }
     
     function loadImages(storage, key, count, time, toggle=false)
 	{
         if (toggle) {
             toggleButton = true;
+            var temp = getTemporary();
+            temp.loadImages(storage, key);
+            var w = temp.imageWidth;
+            super.width  = w \ (Butt_showFocusImage ? 4 : 3);
+            super.height = temp.imageHeight;
+            imageWidth   = w * 2;
+            copyRect(toggle ? 2 : 0, 0, temp, 0, 0, temp.imageWidth, temp.imageHeight);
+        } else {
+            super.loadImages(storage, key);
+            super.width = imageWidth \ (Butt_showFocusImage ? 4 : 3);
+            super.height = imageHeight;
         }
-
-        // ‰æ‘œ‚ð“Ç‚Ýž‚Þ
-        initTemp();
-        var temp = window.temporaryLayer;
-        temp.loadImages(storage, key);
-
-        var w = temp.imageWidth;
-        super.width = w \ (Butt_showFocusImage ? 4 : 3);
-        imageWidth  = toggleButton ? w * 2 : w;
-        copyRect(toggle ? 2 : 0, 0, temp, 0, 0, temp.imageWidth, temp.imageHeight);
-        
         callOnPaint = true;
         Butt_imageLoaded = true;
         if (time > 0) {
@@ -203,8 +204,7 @@ class ButtonLayer extends AnimKAGLayer
      */
     function loadButtons(normal, over, on, focus, count, time, toggle=false) {
 
-        initTemp();
-        var temp = window.temporaryLayer;
+        var temp = getTemporary();
 
         if (toggle) {
             toggleButton = true;
