@@ -71,6 +71,12 @@ public:
 		// set mosue cursor position
 	virtual void TJS_INTF_METHOD SetHintText(const ttstr & text) = 0;
 	virtual void TJS_INTF_METHOD RequestUpdate() = 0;
+
+	virtual void TJS_INTF_METHOD SetAttentionPoint(tTJSNI_BaseLayer *layer,
+		tjs_int l, tjs_int t) = 0;
+	virtual void TJS_INTF_METHOD DisableAttentionPoint() = 0;
+	virtual void TJS_INTF_METHOD SetImeMode(tTVPImeMode mode) = 0;
+	virtual void TJS_INTF_METHOD ResetImeMode() = 0;
 };
 //---------------------------------------------------------------------------
 
@@ -168,13 +174,7 @@ public:
 	virtual void EndUpdate();
 	virtual void TJS_INTF_METHOD RequestUpdate();
 	virtual void TJS_INTF_METHOD NotifyLayerResize(); // is called from primary layer
-	virtual void SetAttentionPoint(tTJSNI_BaseLayer *layer,
-		tjs_int l, tjs_int t) = 0;
-	virtual void DisableAttentionPoint() = 0;
-	virtual void SetImeMode(tTVPImeMode mode) = 0;
-	virtual void SetDefaultImeMode(tTVPImeMode mode) = 0;
 	virtual tTVPImeMode GetDefaultImeMode() const = 0;
-	virtual void ResetImeMode() = 0;
 
 	void DumpPrimaryLayerStructure();
 

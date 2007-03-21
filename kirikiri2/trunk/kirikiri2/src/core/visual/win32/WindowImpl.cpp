@@ -1050,7 +1050,7 @@ void TJS_INTF_METHOD tTJSNI_Window::SetHintText(const ttstr & text)
 	if(Form) Form->SetHintText(text);
 }
 //---------------------------------------------------------------------------
-void tTJSNI_Window::SetAttentionPoint(tTJSNI_BaseLayer *layer,
+void TJS_INTF_METHOD tTJSNI_Window::SetAttentionPoint(tTJSNI_BaseLayer *layer,
 	tjs_int l, tjs_int t)
 {
 	// set attention point to window
@@ -1068,13 +1068,13 @@ void tTJSNI_Window::SetAttentionPoint(tTJSNI_BaseLayer *layer,
 	}
 }
 //---------------------------------------------------------------------------
-void tTJSNI_Window::DisableAttentionPoint()
+void TJS_INTF_METHOD tTJSNI_Window::DisableAttentionPoint()
 {
 	// disable attention point
 	if(Form) Form->DisableAttentionPoint();
 }
 //---------------------------------------------------------------------------
-void tTJSNI_Window::SetImeMode(tTVPImeMode mode)
+void TJS_INTF_METHOD tTJSNI_Window::SetImeMode(tTVPImeMode mode)
 {
 	// set ime mode
 	if(Form) Form->SetImeMode(mode);
@@ -1095,7 +1095,7 @@ tTVPImeMode tTJSNI_Window::GetDefaultImeMode() const
 	return ::imDisable;
 }
 //---------------------------------------------------------------------------
-void tTJSNI_Window::ResetImeMode()
+void TJS_INTF_METHOD tTJSNI_Window::ResetImeMode()
 {
 	// set default ime mode ( default mode is imDisable; IME is disabled )
 	if(Form) Form->ResetImeMode();
