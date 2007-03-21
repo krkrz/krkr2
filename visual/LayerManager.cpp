@@ -831,14 +831,14 @@ void tTVPLayerManager::SetAttentionPointOf(tTJSNI_BaseLayer *layer)
 	if(!Window) return;
 	tjs_int x, y;
 	if(SearchAttentionPoint(layer, x, y))
-		Window->SetAttentionPoint(layer, x, y);
+		Window->GetDrawDevice()->SetAttentionPoint(this, layer, x, y);
 	else
-		Window->DisableAttentionPoint();
+		Window->GetDrawDevice()->DisableAttentionPoint(this);
 }
 //---------------------------------------------------------------------------
 void tTVPLayerManager::DisableAttentionPoint()
 {
-	if(Window) Window->DisableAttentionPoint();
+	if(Window) Window->GetDrawDevice()->DisableAttentionPoint(this);
 }
 //---------------------------------------------------------------------------
 void tTVPLayerManager::NotifyAttentionStateChanged(tTJSNI_BaseLayer *from)
@@ -852,12 +852,12 @@ void tTVPLayerManager::NotifyAttentionStateChanged(tTJSNI_BaseLayer *from)
 void tTVPLayerManager::SetImeModeOf(tTJSNI_BaseLayer *layer)
 {
 	if(!Window) return;
-	Window->SetImeMode(layer->ImeMode);
+	Window->GetDrawDevice()->SetImeMode(this, layer->ImeMode);
 }
 //---------------------------------------------------------------------------
 void tTVPLayerManager::ResetImeMode()
 {
-	Window->ResetImeMode();
+	Window->GetDrawDevice()->ResetImeMode(this);
 }
 //---------------------------------------------------------------------------
 void tTVPLayerManager::NotifyImeModeChanged(tTJSNI_BaseLayer *from)
