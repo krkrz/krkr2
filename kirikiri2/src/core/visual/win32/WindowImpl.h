@@ -102,6 +102,7 @@ extern void TVPRestoreFullScreenWindowAtActivation();
 //---------------------------------------------------------------------------
 class TTVPWindowForm;
 class iTVPDrawDevice;
+class tTJSNI_BaseLayer;
 class tTJSNI_Window : public tTJSNI_BaseWindow
 {
 	TTVPWindowForm *Form;
@@ -140,13 +141,13 @@ public:
 	void TJS_INTF_METHOD GetCursorPos(tjs_int &x, tjs_int &y);
 	void TJS_INTF_METHOD SetCursorPos(tjs_int x, tjs_int y);
 	void TJS_INTF_METHOD SetHintText(const ttstr & text);
-	void SetAttentionPoint(tTJSNI_BaseLayer *layer,
+	void TJS_INTF_METHOD SetAttentionPoint(tTJSNI_BaseLayer *layer,
 		tjs_int l, tjs_int t);
-	void DisableAttentionPoint();
-	void SetImeMode(tTVPImeMode mode);
+	void TJS_INTF_METHOD DisableAttentionPoint();
+	void TJS_INTF_METHOD SetImeMode(tTVPImeMode mode);
 	void SetDefaultImeMode(tTVPImeMode mode);
 	tTVPImeMode GetDefaultImeMode() const;
-	void ResetImeMode();
+	void TJS_INTF_METHOD ResetImeMode();
 
 //-- update managment
 	void BeginUpdate(const tTVPComplexRect &rects);

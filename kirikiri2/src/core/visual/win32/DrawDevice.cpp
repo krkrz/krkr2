@@ -359,6 +359,60 @@ void TJS_INTF_METHOD tTVPDrawDevice::SetHintText(iTVPLayerManager * manager, con
 
 
 //---------------------------------------------------------------------------
+void TJS_INTF_METHOD tTVPDrawDevice::SetAttentionPoint(iTVPLayerManager * manager, tTJSNI_BaseLayer *layer,
+				tjs_int l, tjs_int t)
+{
+	iTVPLayerManager * primary_manager = GetLayerManagerAt(PrimaryLayerManagerIndex);
+	if(!primary_manager) return;
+	if(primary_manager == manager)
+	{
+		if(TransformFromPrimaryLayerManager(l, t))
+			Window->SetAttentionPoint(layer, l, t);
+	}
+}
+//---------------------------------------------------------------------------
+
+
+//---------------------------------------------------------------------------
+void TJS_INTF_METHOD tTVPDrawDevice::DisableAttentionPoint(iTVPLayerManager * manager)
+{
+	iTVPLayerManager * primary_manager = GetLayerManagerAt(PrimaryLayerManagerIndex);
+	if(!primary_manager) return;
+	if(primary_manager == manager)
+	{
+		Window->DisableAttentionPoint();
+	}
+}
+//---------------------------------------------------------------------------
+
+
+//---------------------------------------------------------------------------
+void TJS_INTF_METHOD tTVPDrawDevice::SetImeMode(iTVPLayerManager * manager, tTVPImeMode mode)
+{
+	iTVPLayerManager * primary_manager = GetLayerManagerAt(PrimaryLayerManagerIndex);
+	if(!primary_manager) return;
+	if(primary_manager == manager)
+	{
+		Window->SetImeMode(mode);
+	}
+}
+//---------------------------------------------------------------------------
+
+
+//---------------------------------------------------------------------------
+void TJS_INTF_METHOD tTVPDrawDevice::ResetImeMode(iTVPLayerManager * manager)
+{
+	iTVPLayerManager * primary_manager = GetLayerManagerAt(PrimaryLayerManagerIndex);
+	if(!primary_manager) return;
+	if(primary_manager == manager)
+	{
+		Window->ResetImeMode();
+	}
+}
+//---------------------------------------------------------------------------
+
+
+//---------------------------------------------------------------------------
 tTJSNI_BaseLayer * TJS_INTF_METHOD tTVPDrawDevice::GetPrimaryLayer()
 {
 	iTVPLayerManager * manager = GetLayerManagerAt(PrimaryLayerManagerIndex);

@@ -16,6 +16,7 @@
 #include "ComplexRect.h"
 
 class iTVPWindow;
+class tTJSNI_BaseLayer;
 
 //---------------------------------------------------------------------------
 //! @brief		描画デバイスインターフェース
@@ -64,6 +65,12 @@ public:
 	virtual void TJS_INTF_METHOD SetCursorPos(iTVPLayerManager * manager, tjs_int x, tjs_int y) = 0;
 
 	virtual void TJS_INTF_METHOD SetHintText(iTVPLayerManager * manager, const ttstr & text) = 0;
+
+	virtual void TJS_INTF_METHOD SetAttentionPoint(iTVPLayerManager * manager, tTJSNI_BaseLayer *layer,
+							tjs_int l, tjs_int t) = 0;
+	virtual void TJS_INTF_METHOD DisableAttentionPoint(iTVPLayerManager * manager) = 0;
+	virtual void TJS_INTF_METHOD SetImeMode(iTVPLayerManager * manager, tTVPImeMode mode) = 0;
+	virtual void TJS_INTF_METHOD ResetImeMode(iTVPLayerManager * manager) = 0;
 
 //---- プライマリレイヤ関連
 	virtual tTJSNI_BaseLayer * TJS_INTF_METHOD GetPrimaryLayer() = 0;
@@ -165,6 +172,12 @@ public:
 	virtual void TJS_INTF_METHOD GetCursorPos(iTVPLayerManager * manager, tjs_int &x, tjs_int &y);
 	virtual void TJS_INTF_METHOD SetCursorPos(iTVPLayerManager * manager, tjs_int x, tjs_int y);
 	virtual void TJS_INTF_METHOD SetHintText(iTVPLayerManager * manager, const ttstr & text);
+
+	virtual void TJS_INTF_METHOD SetAttentionPoint(iTVPLayerManager * manager, tTJSNI_BaseLayer *layer,
+							tjs_int l, tjs_int t);
+	virtual void TJS_INTF_METHOD DisableAttentionPoint(iTVPLayerManager * manager);
+	virtual void TJS_INTF_METHOD SetImeMode(iTVPLayerManager * manager, tTVPImeMode mode);
+	virtual void TJS_INTF_METHOD ResetImeMode(iTVPLayerManager * manager);
 
 //---- プライマリレイヤ関連
 	virtual tTJSNI_BaseLayer * TJS_INTF_METHOD GetPrimaryLayer();
