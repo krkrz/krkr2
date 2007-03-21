@@ -40,8 +40,9 @@ public:
 	virtual void TJS_INTF_METHOD SetDestRectangle(const tTVPRect & rect) = 0;
 	virtual void TJS_INTF_METHOD GetSrcSize(tjs_int &w, tjs_int &h) = 0;
 	virtual void TJS_INTF_METHOD NotifyLayerResize(iTVPLayerManager * manager) = 0;
+	virtual void TJS_INTF_METHOD NotifyLayerImageChange(iTVPLayerManager * manager) = 0;
 
-//---- HIDインターフェース関連
+//---- ユーザーインターフェース関連
 	// window -> drawdevice
 	virtual void TJS_INTF_METHOD OnClick(tjs_int x, tjs_int y) = 0;
 	virtual void TJS_INTF_METHOD OnDoubleClick(tjs_int x, tjs_int y) = 0;
@@ -61,6 +62,8 @@ public:
 
 	virtual void TJS_INTF_METHOD GetCursorPos(iTVPLayerManager * manager, tjs_int &x, tjs_int &y) = 0;
 	virtual void TJS_INTF_METHOD SetCursorPos(iTVPLayerManager * manager, tjs_int x, tjs_int y) = 0;
+
+	virtual void TJS_INTF_METHOD SetHintText(iTVPLayerManager * manager, const ttstr & text) = 0;
 
 //---- プライマリレイヤ関連
 	virtual tTJSNI_BaseLayer * TJS_INTF_METHOD GetPrimaryLayer() = 0;
@@ -140,8 +143,9 @@ public:
 	virtual void TJS_INTF_METHOD SetDestRectangle(const tTVPRect & rect);
 	virtual void TJS_INTF_METHOD GetSrcSize(tjs_int &w, tjs_int &h);
 	virtual void TJS_INTF_METHOD NotifyLayerResize(iTVPLayerManager * manager);
+	virtual void TJS_INTF_METHOD NotifyLayerImageChange(iTVPLayerManager * manager);
 
-//---- HIDインターフェース関連
+//---- ユーザーインターフェース関連
 	// window -> drawdevice
 	virtual void TJS_INTF_METHOD OnClick(tjs_int x, tjs_int y);
 	virtual void TJS_INTF_METHOD OnDoubleClick(tjs_int x, tjs_int y);
@@ -160,6 +164,7 @@ public:
 	virtual void TJS_INTF_METHOD SetMouseCursor(iTVPLayerManager * manager, tjs_int cursor);
 	virtual void TJS_INTF_METHOD GetCursorPos(iTVPLayerManager * manager, tjs_int &x, tjs_int &y);
 	virtual void TJS_INTF_METHOD SetCursorPos(iTVPLayerManager * manager, tjs_int x, tjs_int y);
+	virtual void TJS_INTF_METHOD SetHintText(iTVPLayerManager * manager, const ttstr & text);
 
 //---- プライマリレイヤ関連
 	virtual tTJSNI_BaseLayer * TJS_INTF_METHOD GetPrimaryLayer();

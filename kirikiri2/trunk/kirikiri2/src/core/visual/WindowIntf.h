@@ -69,7 +69,8 @@ public:
 		// get mouse cursor position in primary layer's coordinates
 	virtual void TJS_INTF_METHOD SetCursorPos(tjs_int x, tjs_int y) = 0;
 		// set mosue cursor position
-
+	virtual void TJS_INTF_METHOD SetHintText(const ttstr & text) = 0;
+	virtual void TJS_INTF_METHOD RequestUpdate() = 0;
 };
 //---------------------------------------------------------------------------
 
@@ -165,9 +166,8 @@ public:
 	void UpdateContent(); // is called from event dispatcher
 	virtual void BeginUpdate(const tTVPComplexRect & rects);
 	virtual void EndUpdate();
-	virtual void NotifyWindowInvalidation(); // is called from primary layer
+	virtual void TJS_INTF_METHOD RequestUpdate();
 	virtual void TJS_INTF_METHOD NotifyLayerResize(); // is called from primary layer
-	virtual void SetHintText(const ttstr & text) = 0; // set hint
 	virtual void SetAttentionPoint(tTJSNI_BaseLayer *layer,
 		tjs_int l, tjs_int t) = 0;
 	virtual void DisableAttentionPoint() = 0;
