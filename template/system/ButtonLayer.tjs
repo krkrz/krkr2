@@ -169,13 +169,11 @@ class ButtonLayer extends AnimKAGLayer
             temp.loadImages(storage, key);
             var w = temp.imageWidth;
             super.width  = w \ (Butt_showFocusImage ? 4 : 3);
-            super.height = temp.imageHeight;
             imageWidth   = w * 2;
             copyRect(toggle ? 2 : 0, 0, temp, 0, 0, temp.imageWidth, temp.imageHeight);
         } else {
             super.loadImages(storage, key);
             super.width = imageWidth \ (Butt_showFocusImage ? 4 : 3);
-            super.height = imageHeight;
         }
         callOnPaint = true;
         Butt_imageLoaded = true;
