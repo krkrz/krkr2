@@ -57,7 +57,7 @@ Author: 渡邊剛
 
 この機能を使う場合は
 
-・plugin/msgreceiver.dll
+・msgreceiver.dll
 ・searchprev.exe
 
 が必要になるのでご注意ください。
