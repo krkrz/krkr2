@@ -153,6 +153,16 @@ void TJS_INTF_METHOD tTVPDrawDevice::NotifyLayerResize(iTVPLayerManager * manage
 
 
 //---------------------------------------------------------------------------
+void TJS_INTF_METHOD tTVPDrawDevice::NotifyLayerImageChange(iTVPLayerManager * manager)
+{
+	iTVPLayerManager * primary_manager = GetLayerManagerAt(PrimaryLayerManagerIndex);
+	if(primary_manager == manager)
+		Window->RequestUpdate();
+}
+//---------------------------------------------------------------------------
+
+
+//---------------------------------------------------------------------------
 void TJS_INTF_METHOD tTVPDrawDevice::OnClick(tjs_int x, tjs_int y)
 {
 	if(!TransformToPrimaryLayerManager(x, y)) return;
@@ -330,6 +340,19 @@ void TJS_INTF_METHOD tTVPDrawDevice::SetCursorPos(iTVPLayerManager * manager, tj
 	{
 		if(TransformFromPrimaryLayerManager(x, y))
 			Window->SetCursorPos(x, y);
+	}
+}
+//---------------------------------------------------------------------------
+
+
+//---------------------------------------------------------------------------
+void TJS_INTF_METHOD tTVPDrawDevice::SetHintText(iTVPLayerManager * manager, const ttstr & text)
+{
+	iTVPLayerManager * primary_manager = GetLayerManagerAt(PrimaryLayerManagerIndex);
+	if(!primary_manager) return;
+	if(primary_manager == manager)
+	{
+		Window->SetHintText(text);
 	}
 }
 //---------------------------------------------------------------------------
