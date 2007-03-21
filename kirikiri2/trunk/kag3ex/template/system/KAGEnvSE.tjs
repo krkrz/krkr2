@@ -1,0 +1,144 @@
+/**
+ * 環境BGMオブジェクト
+ */
+class KAGEnvSE {
+
+    var env;
+    var id;
+    var name;  // 参照しているファイル名
+    var count; // 参照されたカウント値
+
+    var wait;
+    var waitFade;
+    
+    /**
+     * コンストラクタ
+     */
+    function KAGEnvSE(env, id) {
+        this.env = env;
+        this.id = id;
+    }
+
+    /**
+     * 再生処理
+     * @param param 再生対象ファイル
+     */
+    function play(param, elm) {
+        if (param !== void) {
+            name = param;
+            if (kag.skipMode<3 || elm.loop || !kag.nosewhenskip) {
+                var time = +elm.time;
+                if (time > 0)  {
+                    kag.se[id].fadeIn(%[ storage:param, loop:elm.loop, time:time, start:elm.start]);
+                } else {
+                    kag.se[id].play(%[ storage:param, loop:elm.loop, start:elm.start]);
+                }
+            }
+        }
+    }
+
+    /**
+     * 停止処理
+     * @param param フェードアウト時間
+     */
+    function stop(param, elm) {
+        if (kag.skipMode == 0 && +param > 0) {
+            kag.se[id].fadeOut(%[ time: +param]);
+        } else {
+            kag.se[id].stop();
+        }
+    }
+
+    /**
+     * 音量フェード
+     * @param param フェード時間
+     */
+    function fade(param, elm) {
+        kag.se[id].fade(%[ time:elm.time, volume:param ]);
+    }
+
+    /**
+     * 終了待ち
+     */
+    function setWait(param, elm) {
+        wait = %[];
+        (Dictionary.assign incontextof wait)(elm, false);
+        wait.buf = id;
+        if (wait.canskip === void) {
+            wait.canskip = true;
+        }
+    }
+
+    /**
+     * フェード終了待ち
+     */
+    function setWaitFade(param, elm) {
+        waitFade = %[];
+        (Dictionary.assign incontextof waitFade)(elm, false);
+        waitFade.buf = id;
+        if (waitFade.canskip === void) {
+            waitFade.canskip = true;
+        }
+    }
+
+    var secommands = %[
+    tagname : null, 
+    play : play incontextof this,
+    stop : stop incontextof this,
+    fade : fade incontextof this,
+    wait : setWait incontextof this,
+    waitfade : setWaitFade incontextof this,
+    loop : null,
+    time : null,
+    start : null,
+    canskip : null,
+    buf : null,
+    name : null,
+        ];
+
+    var doflag;
+
+    /**
+     * コマンドの実行
+     * @param cmd コマンド
+     * @param param パラメータ
+     * @param elm 他のコマンドも含む全パラメータ
+     * @return 実行が行われた場合 true
+     */
+    function doCommand(cmd, param, elm) {
+        var func;
+        if ((func = secommands[cmd]) !== void) {
+            if (func != null) {
+                func(param, elm);
+                doflag = true;
+            }
+            return true;
+        }
+        // 再生コマンドとみなす
+        play(cmd, elm);
+        doflag = true;
+        return true;
+    }
+
+    /**
+     * KAG タグ処理
+     * @param elm 引数
+     */
+    function tagfunc(elm) {
+        // dm("SE 用ファンクション呼び出し!");
+        wait = void;
+        waitFade = void;
+        doflag = false;
+        foreach(elm, doCommand);
+        // 何もしなかった場合、かつ、タグ名が se でなければそれを再生する
+        if (!doflag && elm.tagname != "se") {
+            play(elm.tagname, elm);
+        }
+        if (waitFade !== void) {
+            return kag.waitSEFade(waitFade);
+        } else if (wait !== void) {
+            return kag.waitSEStop(wait);
+        }
+        return 0;
+    }
+};

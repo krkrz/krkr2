@@ -1,0 +1,93 @@
+/**
+ * ベースになっているレイヤ
+ * event レイヤの参照に用いる
+ */
+class KAGEnvBaseLayer extends KAGEnvLayer {
+
+    var name;
+
+    /**
+     * 時間用最初期化処理
+     */
+    function setRedraw() {
+        // 表示中の場合は再描画処理
+        var layer = kag.fore[name];
+        if (layer.visible) {
+            redraw = true;
+        }
+    }
+    
+    /**
+     * コンストラクタ
+     * @param env 環境
+     * @param name 環境のレイヤ名
+     */
+    function KAGEnvBaseLayer(env, name) {
+        super.KAGEnvLayer(env);
+        this.name = name;
+    }
+
+    function setAutoTrans(elm) {
+        if (!setTrans2(env.envinfo.eventTrans)) {
+            setTrans2(env.envinfo.envTrans);
+        }
+    }
+    
+    function setImageFile(file, elm) {
+
+        var eventTrans;
+        
+        if (file !== void) {
+
+            var eventInfo;
+            if (env.events !== void) {
+                eventInfo = env.events[file];
+            }
+            if (eventInfo !== void) {
+                eventTrans = eventInfo.trans;
+                imageFile = eventInfo.image !== void ? eventInfo.image : v;
+                xpos = elm.xpos !== void ? (int)elm.xpos : eventInfo.xoff;
+                ypos = elm.ypos !== void ? (int)elm.ypos : eventInfo.yoff;
+                reposition = true;
+            } else {
+                imageFile = file;
+                xpos = elm.xpos !== void ? (int)elm.xpos : void;
+                ypos = elm.ypos !== void ? (int)elm.ypos : void;
+                reposition = true;
+            }
+
+            if (elm.hide === void) {
+                disp = BOTH;
+                reposition = true;
+            }
+            
+            // 記録
+            kag.sflags["cg_" + (file.toUpperCase())] = true;
+            
+            // 自動トランジション指定は表示される場合のみ
+            if (isShowBU() && elm.fade === void) {
+                if (!setTrans2(eventTrans)) {
+                    setAutoTrans(elm);
+                }
+            }
+
+        } else {
+            imageFile = void;
+            disp = CLEAR;
+            xpos = elm.xpos !== void ? (int)elm.xpos : void;
+            ypos = elm.ypos !== void ? (int)elm.ypos : void;
+            reposition = true;
+        }
+
+        return true;
+    }
+
+    function getLayer(base) {
+        if (base === void) {
+            base = env.transMode ? kag.back : kag.fore;
+        }
+        return base[name];
+    }
+
+    var layerCommands = %[];
+}

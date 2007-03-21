@@ -1,0 +1,1246 @@
+/**
+ * ボイス再生用トラック
+ */
+class VoiceTrack extends WaveSoundBuffer {
+
+    var owner;
+    
+    function VoiceTrack(owner) {
+        this.owner = owner;
+        super.WaveSoundBuffer(owner);
+    }
+
+    function play() {
+        owner.onStartVoice();
+        super.play(...);
+    }
+
+    var prevstatus = "unload"; // 直前のステータス
+
+    function onStatusChanged() {
+        super.onStatusChanged(...);
+        var ps = prevstatus;
+        var cs = status;
+        prevstatus = cs;
+        if(ps == "play" && cs == "stop") {
+            owner.onStopVoice();
+        }
+    }
+}
+
+
+/**
+ * キャラクタプラグイン
+ */
+class KAGEnvCharacter extends KAGEnvLevelLayer, KAGEnvImage {
+
+    // kag の参照
+    property kag {
+        getter() {
+            return env.kag;
+        }
+    }
+
+    // フェード指定のデフォルト
+    property fadeValue {
+        getter() {
+            if (init !== void && init.fadeValue !== void) {
+                return init.fadeValue;
+            } else {
+                if (env.envinfo !== void && env.envinfo.charFadeValue !== void) {
+                    return env.envinfo.charFadeValue;
+                } else {
+                    return env.fadeValue;
+                }
+            }
+        }
+    }
+
+    /// 名前
+    var name;
+    /// 初期化名
+    var initName;
+
+    /// 初期化情報
+    var poses;
+
+    // 画像ファイル直接指定
+    var image;
+    // 個別オフセット補正
+    var yoffset;
+    
+    /// ポーズ
+    var _pose;
+    property pose {
+        getter() {
+            if (_pose !== void) {
+                return _pose;
+            }
+            if (init.defaultPose !== void) {
+                return init.defaultPose;
+            }
+            return "通常";
+        }
+        setter(v) {
+            _pose = v;
+        }
+    };
+
+    /// 服装
+    var dress;
+    /// 表情
+    var face;
+
+    var facePoseMap;
+    
+    /// ボイス情報
+    var voice;
+    var strVoice;
+    var incVoice;   // true なら文字列指定時もカウントする
+    var noincVoice; // true ならカウントしない
+    
+    // ベース画像名
+    var baseImageName;
+    // ベース画像
+    var baseImage;
+    // 顔画像
+    var faceImage;
+
+    // エモーション
+    var newEmotionFlag;
+    var emotion;
+    var emotionLayer;
+
+    /**
+     * コンストラクタ
+     * @param env 環境オブジェクト
+     * @param layerId 描画対象レイヤ番号
+     * @param name キャラクタ名
+     * @param init キャラクタ初期化データ
+     */
+    function KAGEnvCharacter(env, layerId, name, initName, init) {
+
+        global.KAGEnvImage.KAGEnvImage(env);
+        global.KAGEnvLevelLayer.KAGEnvLevelLayer(layerId);
+        
+        //dm("キャラクタ登録:" + name + " layerId:" + layerId); 
+
+        this.name     = name;
+        this.initName = initName;
+        this.init     = init;
+        if (init) {
+            poses = init.poses; //showKeys("poses", poses);
+            
+            // 表情ポーズ同期機能
+            if (init.facePose) {
+                // 表情からポーズに対するマップを作成する
+                facePoseMap = %[];
+                foreach(poses, function(name, value, dict, facePoseMap) {
+                    var faces = [];
+                    faces.assign(value.faces);
+                    for (var i=0; i<faces.count; i+= 2) {
+                        facePoseMap[faces[i]] = name;
+                    }
+                }, facePoseMap);
+            }
+
+        }
+    }
+    
+    function finalize() {
+        if (baseImage !== void) {
+            invalidate baseImage;
+        }
+        if (faceImage !== void) {
+            invalidate faceImage;
+        }
+        if (soundBuffer !== void) {
+            invalidate soundBuffer;
+        }
+        if (emotionLayer !== void) {
+            invalidate emotionLayer;
+        }
+        // 順番変更不可注意
+        global.KAGEnvLevelLayer.finalize();
+        global.KAGEnvImage.finalize();
+    }
+
+    /**
+     * セーブ処理
+     */
+    function onStore(f) {
+        global.KAGEnvImage.onStore(f);
+        global.KAGEnvLevelLayer.onStore(f);
+        f.name = name;
+        f.initName = initName;
+        f.image = image;
+        f.yoffset = yoffset;
+        f.pose = pose;
+        f.dress = dress;
+        f.face = face;
+        f.voice = voice;
+        f.strVoice = strVoice;
+    }
+
+    /**
+     * ロード処理
+     */
+    function onRestore(f) {
+        image = f.image;
+        yoffset = f.yoffset;
+        pose  = f.pose;
+        dress = f.dress;
+        face  = f.face;
+        voice = f.voice;
+        strVoice = f.strVoice;
+        global.KAGEnvLevelLayer.onRestore(f);
+        global.KAGEnvImage.onRestore(f);
+    }
+
+    // 表情描画処理を行う
+    var redrawFace;
+
+    function setAutoTrans(elm) {
+        if (!setTrans2(init.poseTrans)) {
+            if (!setTrans2(init.charTrans)) {
+                if (!setTrans2(env.envinfo.poseTrans)) {
+                    setTrans2(env.envinfo.charTrans);
+                }
+            }
+        }
+    }
+    
+    /**
+     * 直接画像指定
+     */
+    function setImage(imageName, elm) {
+        if (imageName != image || disp == CLEAR) {
+            image = imageName;
+            yoffset = elm.yoffset;
+            if (disp == CLEAR) {
+                disp = init.noimage ? FACE : BOTH;
+            }
+            redraw = true;
+            reposition = true;
+            
+            // 自動トランジション指定は表示される場合のみ
+            if (isShowBU() && elm.fade === void) {
+                setAutoTrans(elm);
+            }
+        }
+    }
+    
+    /**
+     * ポーズの設定
+     */
+    function setPose(poseName, elm) {
+        var info = poses[poseName];
+        if (info !== void) {
+            if (poseName != pose || disp == CLEAR) {
+                pose = poseName;
+                yoffset = info.yoffset;
+                if (disp == CLEAR) {
+                    disp = init.noPose ? FACE : BOTH;
+                }
+                redraw = true;
+                reposition = true;
+                
+                // 自動トランジション指定は表示される場合のみ
+                if (isShowBU() && elm.fade === void) {
+                    if (!setTrans2(info.trans)) {
+                        setAutoTrans(elm);
+                    }
+                }
+                
+                // 表情表示取得
+                if (isShowFace() && (elm.faceon || env.showFaceMode) && !elm.faceoff) {
+                    redrawFace = true;
+                }
+            }
+            // 服装初期化処理
+            if (dress !== void && (info.dresses == void || info.dresses[dress] == void)) {
+                dress = void;
+            }
+            // 表情初期化処理
+            if (face !== void && (info.faces == void || info.faces[face] == void)) {
+                face = void;
+            }
+        }
+
+        // イメージを破棄
+        image = void;
+        // ypos はポーズ設定したときに0に戻す
+        ypos = 0;
+        // エモーションクリア
+        setEmotion();
+
+    }
+
+    /**
+     * 服装の設定
+     */
+    function setDress(dressName, elm) {
+        if (dressName != dress || disp == CLEAR) {
+            dress = dressName;
+            if (disp == CLEAR) {
+                disp = init.noPose ? FACE : BOTH;
+            }
+            redraw = true;
+            reposition = true;
+
+            // 自動トランジション指定は表示される場合のみ
+            if (isShowBU() && elm.fade === void) {
+                if (!setTrans2(init.dressTrans)) {
+                    if (!setTrans2(init.charTrans)) {
+                        if (!setTrans2(env.envinfo.dressTrans)) {
+                            setTrans2(env.envinfo.charTrans);
+                        }
+                    }
+                }
+            }
+            // 表情表示取得
+            if (isShowFace() && (elm.faceon || env.showFaceMode) && !elm.faceoff) {
+                redrawFace = true;
+            }
+        }
+        image = void;
+    }
+    /**
+     * 表情の設定
+      */
+    function setFace(faceName, elm) {
+        if (faceName != face || disp == CLEAR) {
+            face = faceName;
+            if (disp == CLEAR) {
+                disp = init.noPose ? FACE : BOTH;
+            }
+            redraw = true;
+            reposition = true;
+
+            // 自動トランジション指定は表示される場合のみ
+            if (isShowBU() && elm.fade === void) {
+                if (!setTrans2(init.faceTrans)) {
+                    if (!setTrans2(init.charTrans)) {
+                        if (!setTrans2(env.envinfo.faceTrans)) {
+                            setTrans2(env.envinfo.charTrans);
+                        }
+                    }
+                }
+            }
+
+            // 表情表示取得
+            if (isShowFace() && (elm.faceon || env.showFaceMode) && !elm.faceoff) {
+                redrawFace = true;
+            }
+        }
+        image = void;
+    }
+
+    /**
+     * 場所表示用トランジション設定
+     */
+    function setPositionTrans(info, force=false) {
+        //dm("場所トランジション指定");
+        if (force || isShowBU()) {
+            if (!setTrans2(info.trans)) {
+                setTrans2(env.envinfo.positionTrans);
+            }
+        }
+    }
+
+    /**
+     * 表示位置の設定
+     */
+    function setPosition(cmd, elm) {
+
+        var posName = getTo(cmd);
+        var info;
+        if (env.positions === void || (info = env.positions[posName]) === void) {
+            return;
+        }
+        
+        switch (info.type) {
+        case global.KAGEnvironment.XPOSITION:
+            if (disp == CLEAR) {
+                disp = init.noPose ? FACE : BOTH;
+            }
+            var posFrom = getFrom(cmd);
+            var fromInfo;
+            if (posFrom !== void && (fromInfo = env.positions[posFrom]) !== void) {
+                moveTime = isSkip() ? 0 : elm.time;
+                moveAccel = (elm.accel === void) ? 0 : +elm.accel;
+                xposFrom   = calcRelative(xpos, fromInfo.xpos, env.xmax);
+                xpos       = calcRelative(xpos, info.xpos, env.xmax);
+                reposition = true;
+            } else {
+                var newxpos = calcRelative(xpos, info.xpos, env.xmax);
+                if (xpos == void || xpos != newxpos) {
+                    moveTime = isSkip() ? 0 : elm.time;
+                    if (moveTime !== void && xpos === void) {
+                        moveTime = 0;
+                    }
+                    moveAccel = (elm.accel === void) ? 0 : +elm.accel;
+                    xpos = newxpos;
+                    reposition = true;
+                    if (moveTime === void && elm.fade === void) {
+                        setPositionTrans(info);
+                    }
+                }
+            }
+            break;
+
+        case global.KAGEnvironment.YPOSITION:
+            if (disp == CLEAR) {
+                disp = init.noPose ? FACE : BOTH;
+            }
+            var posFrom = getFrom(cmd);
+            var fromInfo;
+            if (posFrom !== void && (fromInfo = env.positions[posFrom]) !== void) {
+                moveTime = isSkip() ? 0 : elm.time;
+                moveAccel = (elm.accel === void) ? 0 : +elm.accel;
+                yposFrom   = calcRelative(ypos, fromInfo.ypos, env.ymax);
+                ypos       = calcRelative(ypos, info.ypos, env.ymax);
+                reposition = true;
+            } else {
+                var newypos = calcRelative(ypos, info.ypos, env.ymax);
+                if (ypos == void || ypos != newypos) {
+                    moveTime = isSkip() ? 0 : elm.time;
+                    if (moveTime !== void && ypos === void) {
+                        moveTime = 0;
+                    }
+                    moveAccel = (elm.accel === void) ? 0 : +elm.accel;
+                    ypos = newypos;
+                    reposition = true;
+                    if (moveTime === void && elm.fade === void) {
+                        setPositionTrans(info);
+                    }
+                }
+            }
+            break;
+
+        case global.KAGEnvironment.DISPPOSITION:
+            disp = info.disp;
+            redraw = true;
+            reposition = true;
+            if (elm.fade === void) {
+                setPositionTrans(info, true);
+            }
+            break;
+
+        case global.KAGEnvironment.LEVEL:
+            //dm("レベル:" + info.level);
+            level = info.level;
+            redraw = true;
+            reposition = true;
+            if (disp > CLEAR) {
+                redraw = true;
+            }
+            if (elm.fade === void) {
+                setPositionTrans(info);
+            }
+            break;
+        }
+    }
+
+    /**
+     * エモーションの設定
+     */
+    function setEmotion(name, elm) {
+        if (name !== void) {
+            if (env.emotions !== void) {
+                var info;
+                if ((info = env.emotions[name]) !== void) {
+                    emotion = %[];
+                    (Dictionary.assign incontextof emotion)(info, false);
+                    newEmotionFlag = true;
+                    emotion.time = elm.time if elm.time !== void;
+                    return true;
+                }
+            }
+            return false;
+        } else {
+            // エモーション解除
+            newEmotionFlag = false;
+            if (emotion !== void) {
+                invalidate emotion;
+                emotion = void;
+            }
+            if (emotionLayer !== void) {
+                invalidate emotionLayer;
+                emotionLayer = void;
+            }
+        }
+    }
+    
+    var charCommands = %[
+    image   : this.setImage incontextof this,
+    dress   : this.setDress incontextof this,
+    face    : function(cmd,elm) {
+        if (facePoseMap !== void) {
+            var p;
+            if ((p = facePoseMap[cmd]) !== void) {
+                setPose(p,elm);
+                setFace(cmd,elm);
+            }
+        } else {
+            setFace(cmd,elm);
+        }
+    }incontextof this,
+    pos     : this.setPosition incontextof this,
+    emotion : this.setEmotion incontextof this,
+    xpos    : this.setXPos incontextof this,
+    ypos    : this.setYPos incontextof this,
+    front   : this.setFront incontextof this,
+    back    : this.setBack incontextof this,
+    level   : this.setLevel incontextof this,
+    voice   : this.setVoice incontextof this,
+    nextvoice : this.setNextVoice incontextof this,
+    clearvoice : this.clearVoice incontextof this,
+    playvoice : this.playVoice2 incontextof this,
+    waitvoice : this.waitVoice incontextof this,
+    facewin : function(param) { disp = FACE; } incontextof this,
+    faceon : null,
+    faceoff : null,
+        ];
+
+    /**
+     * ポーズ指定を優先処理する
+     */
+    function doPoseCommand(cmd, param, elm) {
+
+        // ポーズコマンド
+        if (cmd == "pose") {
+            setPose(param, elm);
+            return true;
+        }
+
+        // 顔ポーズマップが存在する場合
+        if (facePoseMap !== void) {
+            var p;
+            if ((p = facePoseMap[cmd]) !== void) {
+                setPose(p,elm);
+                setFace(cmd,elm);
+                return true;
+            }
+        }
+        
+        // ポーズ指定
+        if (poses !== void) {
+            if (poses[cmd] !== void) {
+                setPose(cmd,elm);
+                return true;
+            }
+        }
+        
+        return false;
+    }
+    
+    /**
+     * コマンドの実行
+     * @param cmd コマンド
+     * @param param パラメータ
+     * @param elm 他のコマンドも含む全パラメータ
+     * @return 実行が行われた場合 true
+     */
+    function doCommand(cmd, param, elm) {
+
+        if (global.KAGEnvImage.doCommand(cmd, param, elm)) {
+            return true;
+        }
+
+        var func;
+        if ((func = charCommands[cmd]) !== void) {
+            if (func != null) {
+                func(param, elm);
+            }
+            return true;
+        }
+        
+        var info;
+        var find = false;
+
+        if (!find && poses !== void && pose !== void && image === void) {
+            var poseInfo;
+            if ((poseInfo = poses[pose]) !== void) {
+                var dresses       = poseInfo.dresses;
+                var faces         = poseInfo.faces;
+                if (dresses !== void && dresses[cmd] !== void) {
+                    //dm("服装を設定");
+                    find = true;
+                    setDress(cmd,elm);
+                } else if (faces !== void && faces[cmd] !== void) {
+                    //dm("表情を設定");
+                    find = true;
+                    setFace(cmd,elm);
+                }
+            } else {
+                dm("ポーズ情報がありません:" + pose + ":" + cmd);
+            }
+        }
+
+        var posName = getTo(cmd);
+        if (!find && env.positions !== void && env.positions[posName] !== void) {
+            setPosition(cmd, elm);
+            find = true;
+        }            
+
+        // アクション
+        if (!find) {
+            find = setAction(cmd, elm);
+        }
+
+        // エモーション
+        if (!find) {
+            find = setEmotion(cmd, elm);
+        }
+        
+        // 更新
+        if (!find) {
+            find = _setTrans(cmd, elm);
+        }
+        
+        return find;
+    };
+
+    var imageFile;
+
+    /**
+     * 立ち絵の描画
+     * @param layer 描画対象レイヤ
+     * @param levelName レベル名
+     * @param pose ポーズ指定
+     * @oaram face 顔描画を示すフラグ
+     * @return 成功したら true
+     */
+    function _drawLayerPose(layer, levelName, pose) {
+
+        var poseInfo;
+        if (poses !== void && (poseInfo = poses[pose]) !== void) {
+
+            // 顔描画の場合は msgImage / msgFaceImage を優先
+            var imageName     = (levelName == env.faceLevelName && poseInfo.msgImage !== void)     ? poseInfo.msgImage : poseInfo.image;
+            var faceImageName = (levelName == env.faceLevelName && poseInfo.msgFaceImage !== void) ? poseInfo.msgFaceImage : poseInfo.faceImage;
+            var dresses       = poseInfo.dresses;
+            var faces         = poseInfo.faces;
+
+            imageName = imageName.replace(/LEVEL/, levelName);
+
+            // 服装指定が無い場合はデフォルトを参照
+            var dressName;
+            if (dress !== void) {
+                dressName = dresses[dress];
+            } 
+            dressName = poseInfo.defaultDress if dressName === void;
+
+            // 表情指定が無い場合はデフォルトを参照
+            var faceName;
+            if (face !== void) {
+                faceName = faces[face];
+            }
+            faceName = poseInfo.defaultFace if faceName === void;
+
+            //dm("dress:", dressName, "face:", faceName);
+            
+            if (faceImageName !== void) {
+                
+                // 顔分離型立ち絵
+
+                // ベース部分
+                imageFile = imageName.replace(/DRESS/, dressName);
+
+                // ベース画像のロード
+                if (baseImageName != imageFile) {
+                    baseImageName = imageFile;
+                    // 画像ベースのキャッシュ用
+                    if (baseImage === void) {
+                        baseImage = new global.Layer(kag, kag.fore.base);
+                        baseImage.name = "立ち絵画像キャッシュ:" + name;
+                    }
+                    try {
+                        baseImage.loadImages(imageFile);
+                    } catch (e) {
+                        if (dressName != poseInfo.defaultDress) {
+                            // デフォルトの服装におとしこむ
+                            dressName = poseInfo.defaultDress;
+                            imageFile = imageName.replace(/DRESS/, dressName);
+                            baseImageName = imageFile;
+                            try {
+                                baseImage.loadImages(imageFile);
+                            } catch (e) {
+                                return false;
+                            }
+                        } else {
+                            return false;
+                        }
+                    } 
+                }
+                
+                // 画像をレイヤに割り当てる
+                layer.assignImages(baseImage);
+                // 初期化処理XXX ちょっと再検討必要かも
+                layer.type    = layer._initType    = baseImage.type;
+                layer.opacity = layer._initOpacity = baseImage.opacity;
+
+                // レベル用調整処理
+                faceImageName = faceImageName.replace(/LEVEL/, levelName);
+                
+                //　表情指定
+                if (faceName !== void) {
+                    imageFile = faceImageName.replace(/DRESS/, dressName);
+                    imageFile = imageFile.replace(/FACE/, faceName);
+                    var imageInfo;
+                    if (faceImage === void) {
+                        faceImage = new global.Layer(kag, kag.fore.base);
+                        faceImage.name = "立ち絵顔画像処理用:" + name;
+                    }
+                    try {
+                        imageInfo = faceImage.loadImages(imageFile);
+                    } catch (e) {
+                        var succeeded = false;
+                        // 服装のデフォルトおとしこみはエラー扱いではない
+                        if (dressName != poseInfo.defaultDress) {
+                            dressName = poseInfo.defaultDress;
+                            imageFile = faceImageName.replace(/DRESS/, dressName);
+                            imageFile = imageFile.replace(/FACE/, faceName);
+                            try {
+                                imageInfo = faceImage.loadImages(imageFile);
+                                succeeded = true;
+                            } catch (e) {
+                            }
+                        }
+                        if (!succeeded) {
+                            if (faceName != poseInfo.defaultFace) {
+                                // デフォルトの表情におとしこむ
+                                faceName = poseInfo.defaultFace;
+                                imageFile = faceImageName.replace(/DRESS/, dressName);
+                                imageFile = imageFile.replace(/FACE/, faceName);
+                                try {
+                                    imageInfo = faceImage.loadImages(imageFile);
+                                } catch (e) {
+                                    return false;
+                                }
+                            } else {
+                                return false;
+                            }
+                        }
+                    }
+                    if (imageInfo && imageInfo.offs_x !== void) {
+                        layer.operateRect(imageInfo.offs_x, imageInfo.offs_y,
+                                          faceImage, 0, 0, faceImage.imageWidth, faceImage.imageHeight);
+                    } else {
+                        layer.operateRect(0,0,faceImage,0,0,faceImage.imageWidth, faceImage.imageHeight);
+                    }
+                }
+                return true;
+                
+            } else {
+                // 顔合成型立ち絵
+                // 服装情報で上書き
+                if (dressName !== void) {
+                    imageFile = imageName.replace(/DRESS/, dressName);
+                } else {
+                    imageFile = imageName;
+                }
+                // 表情で上書き
+                if (faceName !== void) {
+                    imageFile = imageFile.replace(/FACE/, faceName);
+                }
+                try {
+                    if (layer instanceof "AnimationLayer") {
+                        layer.loadImages(%[ "storage" => imageFile]);
+                    } else {
+                        layer.loadImages(imageFile);
+                    }
+                } catch (e) {
+                    return false;
+                }
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * 現在の立ち絵の描画
+     * @param layer 描画対象レイヤ
+     * @param levelName レベル名
+     */
+    function _drawLayer(layer, levelName) {
+
+        imageFile = "";
+        if (image !== void) {
+            var imageName = image.replace(/LEVEL/, levelName);
+            try {
+                if (layer instanceof "AnimationLayer") {
+                    layer.loadImages(%[ "storage" => image]);
+                } else {
+                    layer.loadImages(image);
+                }
+            } catch (e) {
+                kag.errorImage(image+ ":立ち絵画像がロードできません");
+                return;
+            }
+        } else {
+            if (!_drawLayerPose(layer, levelName, pose) &&
+                !(pose != init.defaultPose && _drawLayerPose(layer, levelName, init.defaultPose))) {
+                kag.errorImage(imageFile + ":立ち絵画像がロードできません pose:" + pose + " dress:" + dress + " face:" + face);
+                return;
+            }
+        }
+
+        // サイズ補正
+        layer.setSizeToImageSize();
+        
+        // 色補正処理
+        var timeInfo;
+        if ((timeInfo = env.currentTime) !== void) {
+            // レイヤ合成
+            if (timeInfo.charLightColor !== void) {
+                layer.holdAlpha = true;
+                layer.fillOperateRect(0,0,
+                                      layer.width,layer.height,
+                                      timeInfo.charLightColor,
+                                      timeInfo.charLightType);
+            }
+            // 明度補正
+            if (timeInfo.charBrightness !== void) {
+                layer.light(timeInfo.charBrightness,
+                            timeInfo.charContrast);
+            }
+        }
+
+        // グレー補正
+        if (grayscale) {
+            layer.doGrayScale();
+        }
+
+        // ガンマ補正
+        if (rgamma != void || ggamma != void || bgamma != void) {
+            layer.adjustGamma(rgamma == void ? 1.0 : rgamma, 0, 255,
+                              ggamma == void ? 1.0 : ggamma, 0, 255,
+                              bgamma == void ? 1.0 : bgamma, 0, 255);
+        }
+    }
+
+    /**
+     * 現在の立ち絵の描画
+     * @param layer 描画対象レイヤ
+     */
+    function drawLayer(layer) {
+        initLayer(layer);
+        var levelName;
+        var levelInfo = env.levels[level];
+        if (levelInfo !== void) {
+            levelName = levelInfo.name;
+        }
+        if (levelName === void) {
+            levelName = level;
+        }
+        _drawLayer(layer, levelName);
+    }
+
+    /**
+     * 表情を描画する
+     */
+    function drawFace(layer, faceLevelName) {
+        //dm("表情描画:" + name + " face:" + face + " layer:" + layer.name + " level:" + faceLevelName);
+        if (faceLevelName !== void && poses !== void) {
+            _drawLayer(layer, faceLevelName);
+            layer.visible = true;
+        } else {
+            layer.visible = false;
+        }
+    }
+
+    /**
+     * レイヤ配置処理(キャラクタ用)：中央原点＋レベル補正
+     * @param layer 処理対象レイヤ
+     */
+    function calcPosition(layer) {
+        if (reposition) {
+            //dm("位置指定3");
+
+            // 未初期化時デフォルト
+            if (xpos === void) {
+                xpos = env.defaultXpos;
+            }
+            if (ypos === void) {
+                ypos = env.defaultYpos;
+            }
+
+            var yoff = yoffset !== void ? +yoffset : init.yoffset !== void ? +init.yoffset : +env.yoffset;
+            
+            // レベル別座標補正処理。とりあえず適当で画面中央に向かって縮小処理してある
+            var zoom;
+            var levelYoffset = 0;
+            var levelInfo = env.levels[level];
+            if (levelInfo !== void) {
+                zoom         = (int)levelInfo.zoom;
+                levelYoffset = (int)levelInfo.yoffset;
+            }
+            if (zoom === void) {
+                zoom = 100;
+            }
+            if (levelYoffset === void) {
+                levelYoffset = 0;
+            }
+            
+            //dm("キャラ移動処理:", xpos, ypos, xposFrom, yposFrom);
+            
+            var l = env.xmax + ((int)xpos * zoom / 100) - layer.imageWidth / 2;
+            var t = env.ymax + ((yoff - (int)ypos) * zoom / 100) - layer.imageHeight + levelYoffset;
+            if (moveTime) {
+                if (xposFrom !== void || yposFrom !== void) {
+                    var fl = xposFrom !== void ? env.xmax + ((int)xposFrom * zoom / 100) - layer.imageWidth / 2 : l;
+                    var ft = yposFrom !== void ? env.ymax + ((yoff - (int)yposFrom) * zoom / 100) - layer.imageHeight + levelYoffset: t;
+                    layer.setPos(fl, ft);
+                } 
+                //dm("layer位置", layer.left, layer.top, l, t);
+                layer.setMove(l, t, moveAccel, moveTime);
+            } else {
+                layer.setMove(l, t);
+            }
+            xposFrom = void;
+            yposFrom = void;
+            moveTime = void;
+            reposition = false;
+        }
+    }
+    
+    /**
+     * レイヤ状態更新処理
+     * エモーション処理を追加
+     */
+    function updateLayer(layer) {
+        global.KAGEnvImage.updateLayer(...);
+
+        // 表情描画
+        if (redrawFace) {
+            if (env.currentNameTarget != this) {
+                env.drawName();
+            }
+            env.drawFacePage(layer.parent === kag.fore.base ? kag.fore : kag.back, this);
+            env.currentNameTarget = this;
+
+            redrawFace = false;
+        }
+        
+        // キャラクタが表示されてない場合はエモーションは無効
+        if (!isShowBU()) {
+            setEmotion();
+        }
+
+        // 新規エモーション処理
+        if (newEmotionFlag) {
+            // エモーション処理実行
+
+            if (emotion) {
+                var emoX;
+                var emoY;
+                var emoRev;
+
+                // 表示座標
+                emoX    = init.emoX   if init.emoX   !== void;
+                emoY    = init.emoY   if init.emoY   !== void;
+                emoRev  = init.emoRev if init.emoRev !== void;
+
+                // ポーズ別補正
+                var info;
+                if ((info = poses[pose]) !== void) {
+                    emoX   = poseInfo.emoX   if info.emoX   !== void;
+                    emoY   = poseInfo.emoY   if info.emoY   !== void;
+                    emoRev = poseInfo.emoRev if info.emoRev !== void;
+                }
+                
+                // 新規エモーションレイヤ
+                emotionLayer = new global.ActionLayer(layer.window, layer.parent);
+                
+                if (emoRev && emotion.imageRev !== void) {
+                    emoitonLayer.loadImages(emotion.imageRev);
+                } else {
+                    emotionLayer.loadImages(emotion.image);
+                }
+                emotionLayer.setPos(layer.left + layer.width/2 + emoX,
+                                    layer.top  + layer.height  - emoY);
+                emotionLayer.visible = true;
+                emotion.beginAction(emotion.action);
+            }
+            
+            newEmotionFlag = false;
+        }
+    }
+    
+    /**
+     * KAG タグ処理
+     * @param elm 引数
+     */
+    function tagfunc(elm) {
+        //dm("キャラクタタグの呼び出し:" + name);
+        ret = void;
+
+        {
+            var e = %[];
+            (Dictionary.assign incontextof e)(elm); 
+            var names = [];
+            names.assign(e);
+            // ポーズ指定コマンドは優先処理する
+            for (var i=0; i<names.count; i+= 2) {
+                if (doPoseCommand(names[i], names[i+1], e)) {
+                    delete e[names[i]];
+                }
+            }
+            foreach(e, doCommand);
+        }
+        updateImage();
+        return ret;
+    }
+
+    var reNumber = new RegExp("^[0-9][0-9]*$");
+
+    // 加算しないフラグ
+    var noinc;
+    
+    /**
+     * ボイスファイルの指定
+     */
+    function setVoice(param, elm) {
+        if (typeof param == "Integer") {
+            if (elm.once) {
+                strVoice = getVoice(param);
+            } else {
+                voice = param;
+                strVoice = void;
+            }
+        } else if (typeof param == "String") {
+            if (reNumber.test(param)) {
+                if (elm.once) {
+                    strVoice = getVoice((int)param);
+                } else {
+                    voice = (int)param;
+                    strVoice = void;
+                }
+            } else {
+                strVoice = param;
+            }
+        } else {
+            voice = void;
+            strVoice = void;
+        }
+        incVoice   = elm.incvoice;
+        noincVoice = elm.noincvoice;
+        //dm("ボイス設定:" + param + ":" + voice);
+    }
+
+    /**
+     * ボイスファイル指定＋次回再生エントリ
+     */
+    function setNextVoice(param) {
+        env.entryNextVoice(this);
+    }
+    
+    /**
+     * ボイスファイル指定の解除
+     */
+    function clearVoice() {
+        voice = void;
+        strVoice = void;
+    }
+    
+    /**
+     * ボイスファイル名の取得
+     * @param voice パラメータ　数値の場合は書式処理、文字列の場合はそのまま返す
+     */
+    function getVoice(voice) {
+        if (typeof voice == "Integer") {
+            if (init.voiceFile === void) {
+                return void;
+            }
+            var voiceBase = kag.flags.voiceBase !== void ? kag.flags.voiceBase : "";
+            // 名前指定がある場合でデフォルト名でない場合は Nつきのファイル名で参照する
+            if (kag.flags.name !== void && (kag.flags.name != kag.defaultName || kag.flags.family != kag.defaultFamily)) {
+                var name = init.voiceFile.sprintf(voiceBase, voice, "N");
+                if (Storages.isExistentStorage(name)) {
+                    return name;
+                }
+            }
+            // 普通の名前の場合
+            return init.voiceFile.sprintf(voiceBase, voice, "");
+        } else if (typeof voice == "String") {
+            return voice;
+        }
+        return void;
+    }
+
+    function getCurrentVoice(check=false) {
+        var voicename = strVoice == "ignore" ? void : getVoice(strVoice !== void ? strVoice : voice);
+        if (check) {
+            if (voicename !== void) {
+                if (!Storages.isExistentStorage(voicename)) {
+                    var test;
+                    if (test = voicename + ".wav", Storages.isExistentStorage(test)) {
+                        voicename = test;
+                    } else if(test = voicename + ".ogg", Storages.isExistentStorage(test)) {
+                        voicename = test;
+                    } else {
+                        kag.errorVoice(voicename + ":ボイスがロードできません name:" + name);
+                        voicename = void;
+                    }
+                }
+            }
+        }
+        return voicename;
+    }
+
+    var initSound;
+    var soundBuffer;
+    var voiceEndTime;
+
+    function updateVoice() {
+        initSound = true;
+    }
+    
+    /**
+     * ボイス開始時処理
+     */
+    function onStartVoice() {
+        //dm("ボイス開始ボリューム制御開始");
+        if (kag.bgmdown && !env.kag.skipMode) {
+            kag.bgm.voldown = true;
+        }
+    }
+
+    /**
+     * ボイス停止時処理
+     */
+    function onStopVoice() {
+        //dm("ボイス開始ボリューム制御完了");
+        voiceEndTime = void;
+        if (kag.bgm.voldown) {
+            kag.bgm.voldown = false;
+        }
+    }
+
+    /**
+     * ボイスの再生
+     */
+    function playVoice(voicename=void) {
+        voiceEndTime = void;
+        var ret = void;
+        if (voicename === void) {
+            voicename = getCurrentVoice();
+            if (strVoice === void || incVoice) {
+                if (typeof voice == "Integer") {
+                    if (!noincVoice) {
+                        voice++;
+                    }
+                } else {
+                    voice = void;
+                }
+            }
+            incVoice   = void;
+            noincVoice = void;
+            strVoice   = void;
+        }
+
+        if (voicename !== void && voicename != ""){
+            //dm("再生処理:" + voicename);
+
+            // 拡張子補完処理
+            if (!Storages.isExistentStorage(voicename)) {
+                var test;
+                if (test = voicename + ".wav", Storages.isExistentStorage(test)) {
+                    voicename = test;
+                } else if(test = voicename + ".ogg", Storages.isExistentStorage(test)) {
+                    voicename = test;
+                } else {
+                    kag.errorVoice(voicename + ":ボイスがロードできません name:" + name);
+                    voicename = void;
+                }
+            }
+            if (voicename !== void && kag.getVoiceOn(init.voiceName) && !kag.skipMode && kag.voiceenable) {
+                if (initSound) {
+                    if (soundBuffer !== void) {
+                        invalidate soundBuffer;
+                        soundBuffer = void;
+                    }
+                    initSound = false;
+                }
+                if (soundBuffer === void) {
+                    soundBuffer = new VoiceTrack(this);
+                }
+                //dm("ボイスボリューム" + kag.voicevolume);
+                soundBuffer.volume2 = kag.getVoiceVolume(init.voiceName) * 1000;
+                try {
+                    if (kag.voicespeed != 1.0 && typeof soundBuffer.filters != "undefined") {
+                        soundBuffer.filters.clear();
+                        soundBuffer.filters.add(new WaveSoundBuffer.PhaseVocoder());
+                        soundBuffer.filters[0].window = 256;
+                        soundBuffer.filters[0].time = 1.0 / kag.voicespeed;
+                        soundBuffer.open(voicename);
+                        soundBuffer.play();
+                        ret = (int)(soundBuffer.totalTime / kag.voicespeed);
+                    } else {
+                        soundBuffer.open(voicename);
+                        soundBuffer.play();
+                        ret = soundBuffer.totalTime;
+                    }
+                } catch (e) {
+                }
+            }
+        }
+        if (ret) {
+            voiceEndTime = System.getTickCount() + ret;
+        }
+        return ret;
+    }
+
+    /**
+     * ボイスの外部からの再生
+     */
+    function playVoice2(param) {
+        //dm("外部ボイス再生:" + param);
+        if (typeof param == "String") {
+            if (reNumber.test(param)) {
+                param = (int)param;
+            }
+        } else {
+            param = void;
+        }
+        playVoice(getVoice(param));
+    }
+
+    /**
+     * ボイスの停止
+     */
+    function stopVoice() {
+        voiceEndTime = void;
+        if (soundBuffer !== void) {
+            soundBuffer.stop();
+            if (typeof soundBuffer.filters != "undefined") {
+                soundBuffer.filters.clear();
+            }
+        }
+    }
+
+    /**
+     * ボイス待ち
+     * @param true の場合スキップ可能（デフォルト）
+     * @param falseの場合スキップ不可能
+     */
+    function waitVoice(param) {
+        if (voiceEndTime !== void) {
+            var waitTime = voiceEndTime - System.getTickCount();
+            ret = kag.waitTime(waitTime, param == true && kag.clickSkipEnabled);
+        }
+    }
+    
+
+    /**
+     * ボイスのボリュームの再調整
+     */
+    function resetVoiceVolume() {
+        if (soundBuffer !== void) {
+            soundBuffer.volume2 = kag.getVoiceVolume(init.voiceName) * 1000;
+        }
+    }
+};

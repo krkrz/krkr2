@@ -63,13 +63,15 @@ class UIListParser extends CSVParser {
 	// ファイル指定
 	function doFile(info, columns) {
 		switch (info.class) {
-		case "base":
-		case "layer":
-			info.storage =columns[2];
-			break;
 		case "copy":
 			info.copy = columns[7];
 			break;
+		case "base":
+			info.storage =columns[2];
+			break;
+		case "layer":
+			info.storage =columns[2];
+			/* not break */
 		default:
 			var stateName = columns[7];
 			for (var i=8;i<columns.count;i++) {
@@ -222,7 +224,7 @@ function uiloadEntry(layer, names, dic, elm, table)
 			if (part === void) dm("partが見つかりません:" + parts[i]);
 			else if (part.class == "part") {
 				part = part.part;
-				for (var j = 0; j < temp.count; j++) if (part.find(temp[j]) >= 0) temp[j] = void;
+				for (var j = 0; j < temp.count; j++) if (part.find(temp[j]) < 0) temp[j] = void;
 				temp.remove(void, true);
 			} else {
 				var hasPart = (temp.find(part.name) >= 0);

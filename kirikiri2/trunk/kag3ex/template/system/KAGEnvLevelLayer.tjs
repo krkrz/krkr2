@@ -1,0 +1,114 @@
+/**
+ * KAG 前景レイヤのレベル制御用
+ */
+class KAGEnvLevelLayer {
+
+    // 利用レイヤ
+    var layerId;
+    /// 表示レベル
+    var level;
+    /// 表示絶対レベル
+    var absolute;
+
+    /// 位置変更
+    var front;
+    var back;
+
+    /**
+     * 時間用最初期化処理
+     */
+    function setRedraw() {
+        // 表示中の場合は再描画処理
+        var layer = kag.fore.layers[env.initLayerCount + layerId];
+        if (layer.visible) {
+            redraw = true;
+        }
+    }
+    
+    /**
+     * コンストラクタ
+     * @param layerId 前景レイヤID
+     */
+    function KAGEnvLevelLayer(layerId) {
+        this.layerId = layerId;
+        level = void;
+    }
+
+    function finalize() {
+        // 使っていたレイヤを消去
+        var id = env.initLayerCount + layerId;
+        if (id < kag.fore.layers.count) {
+            kag.fore.layers[id].clearImage();
+            kag.back.layers[id].clearImage();
+        }
+    }
+
+    /**
+     * レイヤ情報の取得
+     * @param base fore / back      
+     * 同時にレベルに応じた front/back の処理も実行する
+     */
+    function getLayer(base) {
+        if (base === void) {
+            base = env.transMode ? kag.back : kag.fore;
+        }
+        if (level === void) {
+            level = env.defaultLevel;
+        }
+        var id = env.initLayerCount + layerId;
+        kag.toLevel(id, level, base);
+        if (front) {
+            kag.toFront(id, base);
+        } else if (back) {
+            kag.toBack(id, base);
+        }
+        front = back = void;
+        absolute = base.layers[id].absolute;
+        return base.layers[id];
+    }
+
+    /**
+     * レベル内最前列
+     */
+    function setFront() {
+        front = true;
+    }
+
+    /**
+     * レベル内最後列
+     */
+    function setBack() {
+        back = true;
+    }
+
+    /**
+     * レベルの指定
+     */
+    function setLevel(cmd, elm) {
+        level = cmd;
+        absolute = void;
+    } 
+
+    function onStore(f) {
+        f.layerId = layerId;
+        f.level = level;
+        f.absolute = absolute;
+    }
+
+    function onRestore(f) {
+        layerId = f.layerId;
+        level = f.level;
+        absolute = f.absolute;
+
+        // レベルの復帰
+        var layer = kag.fore.layers[env.initLayerCount + layerId];
+        if (layer !== void) {
+            if (level !== void) {
+                layer.level = level;
+            }
+            if (absolute !== void) {
+                layer.absolute = absolute;
+            }
+        }
+    }
+}

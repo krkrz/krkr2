@@ -1,0 +1,71 @@
+/**
+ * 単独レイヤ
+ */
+class KAGEnvSimpleLayer extends KAGEnvLevelLayer, KAGEnvLayer {
+
+    // 名前
+    var name;
+    
+    /**
+     * コンストラクタ
+     * @param env
+     * @param layerId
+     * @param name
+     * @param level
+     */
+    function KAGEnvSimpleLayer(env, layerId, name) {
+        global.KAGEnvLayer.KAGEnvLayer(env);
+        global.KAGEnvLevelLayer.KAGEnvLevelLayer(layerId);
+        this.name = name;
+    }
+
+    function finalize() {
+        // 順番変更不可
+        global.KAGEnvLevelLayer.finalize();
+        global.KAGEnvLayer.finalize();
+    }
+    
+    /**
+     * レイヤ配置処理(環境レイヤ用)：中央原点
+     * @param layer 処理対象レイヤ
+     */
+    function calcPosition(layer) {
+        if (reposition) {
+            //dm("位置指定2");
+            var l = env.xmax + (int)xpos - layer.imageWidth / 2;
+            var t = env.ymax + (int)ypos - layer.imageHeight / 2;
+            if (moveTime !== void && moveTime > 0) {
+                if (xposFrom !== void || yposFrom !== void) {
+                    var fl = xposFrom !== void ? env.xmax + (int)xposFrom - layer.imageWidth / 2 : l;
+                    var ft = yposFrom !== void ? env.ymax + (int)yposFrom - layer.imageHeight / 2 : t;
+                    layer.setPos(fl, ft);
+                }
+                layer.setMove(l, t, moveAccel, moveTime);
+            } else {
+                layer.setMove(l, t);
+            }
+            xposFrom = void;
+            yposFrom = void;
+            moveTime = void;
+            reposition = false;
+        }
+    }
+    
+    function onStore(f) {
+        global.KAGEnvLayer.onStore(f);
+        global.KAGEnvLevelLayer.onStore(f);
+        f.name = name;
+    }
+
+    function onRestore(f) {
+        name = name;
+        global.KAGEnvLevelLayer.onRestore(f);
+        global.KAGEnvLayer.onRestore(f);
+    }
+
+    var layerCommands = %[
+    front : this.setFront incontextof this,
+    back : this.setBack incontextof this,
+    level : this.setLevel incontextof this,
+        ];
+}
