@@ -1,4 +1,6 @@
-
+/**
+ * ダイアログ用ボタン
+ */
 class DialogButtonLayer extends ButtonLayer
 {
 	// グラフィカルボタンとして動作するためのレイヤ
@@ -67,6 +69,9 @@ class DialogButtonLayer extends ButtonLayer
 	}
 }
 
+/**
+ * ダイアログ用チェックボックス
+ */
 class DialogCheckBoxLayer extends CheckBoxLayer
 {
 	// メッセージレイヤに「リンク」として管理されるための
@@ -131,7 +136,9 @@ class DialogCheckBoxLayer extends CheckBoxLayer
     }
 }
 
-
+/**
+ * ダイアログ用テキスト入力
+ */
 class DialogEditLayer extends EditLayer
 {
 	// メッセージレイヤに「リンク」として管理されるための
@@ -186,6 +193,9 @@ class DialogEditLayer extends EditLayer
 	}
 }
 
+/**
+ * ダイアログ用スライダ
+ */
 class DialogSliderLayer extends SliderLayer
 {
     // メッセージレイヤに「スライダ」として管理されるためのスライダ
@@ -327,7 +337,6 @@ class DialogLayer extends KAGLayer
      * 閉じる処理
      */
     function close() {
-        visible = false;
         window.closeDialog(this);
     }
 

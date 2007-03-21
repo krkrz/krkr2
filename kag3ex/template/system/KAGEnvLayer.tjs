@@ -1,0 +1,140 @@
+/**
+ * レイヤ系基底クラス
+ */
+class KAGEnvLayer extends KAGEnvImage {
+
+    // kag の参照
+    property kag {
+        getter() {
+            return env.kag;
+        }
+    }
+
+    /// 描画中画像
+    var imageFile;
+
+    function KAGEnvLayer(env) {
+        super.KAGEnvImage(env);
+        redraw = false;
+    }
+
+    function onStore(f) {
+        super.onStore(f);
+        f.imageFile = imageFile;
+    }
+    
+    function onRestore(f) {
+        imageFile = f.imageFile;
+        super.onRestore(f);
+    }
+
+    function setImageFile(file, elm) {
+
+        imageFile = file;
+        // 消去指定がなければ表示
+        if (elm.hide === void) {
+            disp = BOTH;
+        }
+        // 背景指定時に座標指定がなければ場所情報を初期化する
+        if (elm.xpos === void) {
+            xpos = void;
+        }
+        if (elm.ypos === void) {
+            ypos = void;
+        }
+        reposition = true;
+
+        // 記録
+        kag.sflags["cg_" + (file.toUpperCase())] = true;
+
+        return true;
+    }
+
+    var _layerCommands = %[
+    file : function(param, elm) {
+        setImageFile(param, elm);
+    } incontextof this,
+        ];
+
+    /**
+     * コマンドの実行
+     * @param cmd コマンド
+     * @param param パラメータ
+     * @param elm 他のコマンドも含む全パラメータ
+     * @return 実行が行われた場合 true
+     */
+    function doCommand(cmd, param, elm) {
+
+        // 共通コマンド
+        if (super.doCommand(cmd, param, elm)) {
+            return true;
+        }
+        // レイヤ共通コマンド
+        var func;
+        if ((func = _layerCommands[cmd]) !== void) {
+            if (func != null) {
+                func(param, elm);
+            }
+            return true;
+        }
+        // レイヤ拡張コマンド用
+        if ((func = layerCommands[cmd]) !== void) {
+            if (func != null) {
+                func(param, elm);
+            }
+            return true;
+        }
+
+        var find = false;
+        
+        // アクション
+        if (!find) {
+            find = setAction(cmd, elm);
+        }
+
+        // 更新
+        if (!find) {
+            find = _setTrans(cmd, elm);
+        }
+
+        // 画像のロード
+        if (!find) {
+            find = setImageFile(cmd, elm);
+        }
+        return find;
+    }
+
+    // このメソッドを実装する
+    // function getLayer(base);
+    // 
+    function drawLayer(layer) {
+        initLayer(layer);
+        if (imageFile !== void) {
+            try {
+                layer.loadImages(%[ "storage" => imageFile]);
+            } catch (e) {
+                kag.errorImage(imageFile + ":画像がロードできません");
+            }
+        }
+        if (grayscale) {
+            layer.doGrayScale();
+        }
+        if (rgamma != void || ggamma != void || bgamma != void) {
+            layer.adjustGamma(rgamma == void ? 1.0 : rgamma, 0, 255,
+                              ggamma == void ? 1.0 : ggamma, 0, 255,
+                              bgamma == void ? 1.0 : bgamma, 0, 255);
+        }
+    }
+
+    /**
+     * KAG タグ処理
+     * @param elm 引数
+     */
+    function tagfunc(elm) {
+        //dm("レイヤタグがよばれたよ");
+        ret = void;
+        foreach(elm, doCommand);
+        updateImage();
+        return ret;
+    }
+}

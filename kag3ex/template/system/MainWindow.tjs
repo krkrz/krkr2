@@ -540,8 +540,11 @@ class KAGWindow extends Window
             }
         }
     }
-    
-    function openDialog(dialog) {
+
+    /**
+     * ダイアログを開く
+     */
+    function openDialog(dialog, trans) {
         if (currentDialog !== void &&
             currentDialog !== dialog) {
             invalidate currentDialog;
@@ -572,6 +575,8 @@ class KAGWindow extends Window
                 global.closeDialogTrigger.cached = true;
                 global.closeDialogTrigger.trigger();
             }
+        } else if (dialog !== void) {
+            dialog.visible = false;
         }
     }
     
@@ -3190,12 +3195,6 @@ class KAGWindow extends Window
         setMenuAccessibleAll();
     }
 
-    function doneSelect()
-	{
-        hideSelect();
-        afterSelect();
-    }
-
     //------------------------------------------------------- マップ選択肢 --
 
     /**
@@ -3249,13 +3248,6 @@ class KAGWindow extends Window
             mapSelectShowing = false;
             setMenuAccessibleAll();
         }
-    }
-    
-    function doneMapSelect()
-	{
-        hideMapSelect();
-        afterSelect();
-        setMenuAccessibleAll();
     }
     
     //------------------------------------------------------- 画面切り替え特殊レイヤ --
@@ -7745,7 +7737,7 @@ class KAGWindow extends Window
 
 	playse : function(elm)
 	{
-		// 効果音の再生
+        // 効果音の再生
 		se[+elm.buf].play(elm);
 		return 0;
 	} incontextof this,
@@ -8017,6 +8009,14 @@ class KAGWindow extends Window
 		return 0;
 	} incontextof this,
 
+	doneselect : function(elm)
+	{
+        hideSelect();
+        afterSelect();
+        setMenuAccessibleAll();
+		return 0;
+	} incontextof this,
+
 	//----------------------------------------- タグハンドラ群(選択肢) --
 
     mselinit : function(elm)
@@ -8074,6 +8074,14 @@ class KAGWindow extends Window
 	mselopt : function(elm)
 	{
         setMapSelectOptions(elm);
+		return 0;
+	} incontextof this,
+
+	donemapselect : function(elm)
+	{
+        hideMapSelect();
+        afterSelect();
+        setMenuAccessibleAll();
 		return 0;
 	} incontextof this,
                   
