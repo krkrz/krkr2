@@ -409,7 +409,7 @@ class MapSelectLayer extends KAGLayer {
                 } else {
                     window.processGo();
                 }
-                window.doneMapSelect();
+                window.insertTag("donemapselect");
             }
         }
     }

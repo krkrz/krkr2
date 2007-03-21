@@ -472,7 +472,7 @@ class SelectLayer {
                 } else {
                     window.processGo();
                 }
-                window.doneSelect();
+                window.insertTag("doneselect");
             }
         }
     }

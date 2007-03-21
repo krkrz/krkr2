@@ -430,6 +430,7 @@ class SystemButtonLayer extends ButtonLayer
         onleave = void;
         onclick = void;
         noStable = void;
+		hint = "";
     }
 
 	function finalize()
@@ -475,6 +476,7 @@ class SystemButtonLayer extends ButtonLayer
         onleave = src.onleave;
         noStable = src.noStable;
         enabled = src.enabled;
+		hint = src.hint;
     }
 }
 
