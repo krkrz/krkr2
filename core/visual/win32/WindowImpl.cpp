@@ -1044,7 +1044,7 @@ void TJS_INTF_METHOD tTJSNI_Window::SetCursorPos(tjs_int x, tjs_int y)
 	if(Form) Form->SetCursorPos(x, y);
 }
 //---------------------------------------------------------------------------
-void tTJSNI_Window::SetHintText(const ttstr & text)
+void TJS_INTF_METHOD tTJSNI_Window::SetHintText(const ttstr & text)
 {
 	// set hint text to window
 	if(Form) Form->SetHintText(text);

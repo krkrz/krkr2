@@ -547,7 +547,7 @@ void tTJSNI_BaseWindow::TimerBeat()
 //	if(LayerManager) LayerManager->TimerBeat();
 }
 //---------------------------------------------------------------------------
-void tTJSNI_BaseWindow::NotifyWindowInvalidation()
+void TJS_INTF_METHOD tTJSNI_BaseWindow::RequestUpdate()
 {
 	// is called from primary layer
 

@@ -285,7 +285,7 @@ void tTVPLayerManager::NotifyHintChange(tTJSNI_BaseLayer *layer, const ttstr & h
 void tTVPLayerManager::SetHint(const ttstr &hint)
 {
 	if(!Window) return;
-	Window->SetHintText(hint);
+	Window->GetDrawDevice()->SetHintText(this, hint);
 }
 //---------------------------------------------------------------------------
 void tTVPLayerManager::NotifyLayerResize()
@@ -301,7 +301,7 @@ void tTVPLayerManager::NotifyWindowInvalidation()
 	// notifies layer surface is invalidated and should be transfered to window.
 	if(!Window) return;
 
-	Window->NotifyWindowInvalidation();
+	Window->GetDrawDevice()->NotifyLayerImageChange(this);
 }
 //---------------------------------------------------------------------------
 void tTVPLayerManager::SetWindow(tTJSNI_BaseWindow *window)
@@ -945,7 +945,7 @@ void TJS_INTF_METHOD tTVPLayerManager::UpdateToDrawDevice()
 void tTVPLayerManager::NotifyUpdateRegionFixed()
 {
 	// called by primary layer, notifying final update region is fixed
-	Window->NotifyUpdateRegionFixed(UpdateRegion);
+//	Window->NotifyUpdateRegionFixed(UpdateRegion);
 }
 //---------------------------------------------------------------------------
 void TJS_INTF_METHOD tTVPLayerManager::RequestInvalidation(const tTVPRect &r)
