@@ -22,37 +22,124 @@ class iTVPLayerManager
 {
 public:
 //-- object lifetime management
+	//! @brief	参照カウンタをインクリメントする
 	virtual void TJS_INTF_METHOD AddRef() = 0;
+
+	//! @brief	参照カウンタをデクリメントする
 	virtual void TJS_INTF_METHOD Release() = 0;
 
 //-- draw device specific information
+	//! @brief	描画デバイス固有の情報を設定する
+	//! @param	data	描画デバイス固有の情報
+	//! @note	描画デバイス固有の情報をレイヤマネージャに設定する。
+	//!			レイヤマネージャではこの情報の中身については関知しない。
+	//!			描画デバイス側で目印に使ったり、特定の情報と結びつけて管理する。
 	virtual void TJS_INTF_METHOD SetDrawDeviceData(void * data) = 0;
+
+	//! @brief	描画デバイス固有の情報を取得する
+	//! @return	描画デバイス固有の情報
 	virtual void * TJS_INTF_METHOD GetDrawDeviceData() const = 0;
 
 //-- layer metrics
+	//! @brief	プライマリレイヤのサイズを取得する
+	//! @param	w	レイヤの横幅(ピクセル単位)
+	//! @param	h	レイヤの縦幅(ピクセル単位)
+	//! @return	取得に成功すれば真、失敗すれば偽
 	virtual bool TJS_INTF_METHOD GetPrimaryLayerSize(tjs_int &w, tjs_int &h) const = 0;
 
 //-- layer structure information
+	//! @brief	プライマリレイヤの取得
+	//! @return	プライマリレイヤ
 	virtual tTJSNI_BaseLayer * TJS_INTF_METHOD GetPrimaryLayer() const = 0;
+
+	//! @brief	フォーカスのあるレイヤの取得
+	//! @return	フォーカスのあるレイヤ
 	virtual tTJSNI_BaseLayer * TJS_INTF_METHOD GetFocusedLayer() const = 0;
+
+	//! @brief	フォーカスのあるレイヤの設定
+	//! @param	layer	フォーカスのあるレイヤ
 	virtual void TJS_INTF_METHOD SetFocusedLayer(tTJSNI_BaseLayer * layer) = 0;
 
 //-- HID releted
+	//! @brief		クリックされた
+	//! @param		x		プライマリレイヤ座標上における x 位置
+	//! @param		y		プライマリレイヤ座標上における y 位置
 	virtual void TJS_INTF_METHOD NotifyClick(tjs_int x, tjs_int y) = 0;
+
+	//! @brief		ダブルクリックされた
+	//! @param		x		プライマリレイヤ座標上における x 位置
+	//! @param		y		プライマリレイヤ座標上における y 位置
 	virtual void TJS_INTF_METHOD NotifyDoubleClick(tjs_int x, tjs_int y) = 0;
+
+	//! @brief		マウスボタンが押下された
+	//! @param		x		プライマリレイヤ座標上における x 位置
+	//! @param		y		プライマリレイヤ座標上における y 位置
+	//! @param		mb		どのマウスボタンか
+	//! @param		flags	フラグ(TVP_SS_*定数の組み合わせ)
 	virtual void TJS_INTF_METHOD NotifyMouseDown(tjs_int x, tjs_int y, tTVPMouseButton mb, tjs_uint32 flags) = 0;
+
+	//! @brief		マウスボタンが離された
+	//! @param		x		プライマリレイヤ座標上における x 位置
+	//! @param		y		プライマリレイヤ座標上における y 位置
+	//! @param		mb		どのマウスボタンか
+	//! @param		flags	フラグ(TVP_SS_*定数の組み合わせ)
 	virtual void TJS_INTF_METHOD NotifyMouseUp(tjs_int x, tjs_int y, tTVPMouseButton mb, tjs_uint32 flags) = 0;
+
+	//! @brief		マウスが移動した
+	//! @param		x		プライマリレイヤ座標上における x 位置
+	//! @param		y		プライマリレイヤ座標上における y 位置
+	//! @param		flags	フラグ(TVP_SS_*定数の組み合わせ)
 	virtual void TJS_INTF_METHOD NotifyMouseMove(tjs_int x, tjs_int y, tjs_uint32 flags) = 0;
+
+	//! @brief		マウスキャプチャを解放する
+	//! @note		マウスキャプチャを解放すべき場合にウィンドウから呼ばれる。
 	virtual void TJS_INTF_METHOD ReleaseCapture() = 0;
+
+	//! @brief		マウスがプライマリレイヤ外に移動した
 	virtual void TJS_INTF_METHOD NotifyMouseOutOfWindow() = 0;
+
+	//! @brief		キーが押された
+	//! @param		key		仮想キーコード
+	//! @param		shift	シフトキーの状態
 	virtual void TJS_INTF_METHOD NotifyKeyDown(tjs_uint key, tjs_uint32 shift) = 0;
+
+	//! @brief		キーが離された
+	//! @param		key		仮想キーコード
+	//! @param		shift	シフトキーの状態
 	virtual void TJS_INTF_METHOD NotifyKeyUp(tjs_uint key, tjs_uint32 shift) = 0;
+
+	//! @brief		キーによる入力
+	//! @param		key		文字コード
 	virtual void TJS_INTF_METHOD NotifyKeyPress(tjs_char key) = 0;
+
+	//! @brief		マウスホイールが回転した
+	//! @param		shift	シフトキーの状態
+	//! @param		delta	回転角
+	//! @param		x		プライマリレイヤ座標上における x 位置
+	//! @param		y		プライマリレイヤ座標上における y 位置
 	virtual void TJS_INTF_METHOD NotifyMouseWheel(tjs_uint32 shift, tjs_int delta, tjs_int x, tjs_int y) = 0;
 
 //-- invalidation/update
+	//! @brief		描画デバイスが望むレイヤの出力形式を設定する
+	//! @param		type	レイヤ形式
+	//! @note		デフォルトは ltOpaque 。描画デバイスが他の形式の画像を出力として
+	//!				望むならばその形式を指定する。ただし、プライマリレイヤの type
+	//!				プロパティも同様に変更すること。
 	virtual void TJS_INTF_METHOD SetDesiredLayerType(tTVPLayerType type) = 0;
+
+	//! @brief		特定の矩形の再描画を要求する
+	//! @param		r		プライマリレイヤ座標上における矩形
+	//! @note		特定の矩形の再描画をレイヤマネージャに対して要求する。
+	//!				要求は記録されるだけでこのメソッドはすぐに戻る。実際にそれが
+	//!				演算されるのは UpdateToDrawDevice() を呼んだときである。
 	virtual void TJS_INTF_METHOD RequestInvalidation(const tTVPRect &r) = 0; // draw device -> layer
+
+	//! @brief		内容の再描画を行う
+	//! @note		内容の再描画を行う際に呼ぶ。このメソッド内では、レイヤマネージャは
+	//!				iTVPDrawDevice::StartBitmapCompletion()
+	//!				iTVPDrawDevice::NotifyBitmapCompleted()
+	//!				iTVPDrawDevice::EndBitmapCompletion() の各メソッドを用い、
+	//!				いままでに変更が行われた領域などを順次描画デバイスに送る。
 	virtual void TJS_INTF_METHOD UpdateToDrawDevice() = 0;
 
 };

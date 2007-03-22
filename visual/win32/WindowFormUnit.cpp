@@ -2732,7 +2732,7 @@ void __fastcall TTVPWindowForm::CreatePaintBox(TWinControl *owner)
 	PaintBox->Parent = owner;
 	PaintBox->Left = LayerLeft;
 	PaintBox->Top = LayerTop;
-	if(TJSNativeInstance) TJSNativeInstance->NotifyLayerResize(); // to reset size
+	if(TJSNativeInstance) TJSNativeInstance->NotifySrcResize(); // to reset size
 
 	PaintBox->Visible = true;
 
