@@ -555,7 +555,7 @@ void TJS_INTF_METHOD tTJSNI_BaseWindow::RequestUpdate()
 	TVPPostWindowUpdate((tTJSNI_Window*)this);
 }
 //---------------------------------------------------------------------------
-void TJS_INTF_METHOD tTJSNI_BaseWindow::NotifyLayerResize()
+void TJS_INTF_METHOD tTJSNI_BaseWindow::NotifySrcResize()
 {
 	// is called from primary layer
 	if(WindowUpdating)
