@@ -813,6 +813,8 @@ __fastcall TTVPWindowForm::TTVPWindowForm(TComponent* Owner, tTJSNI_Window *ni)
 	// initialize members
 	TJSNativeInstance = ni;
 
+	NextSetWindowHandleToDrawDevice = false;
+
 	InMode = false;
 	ResetStayOnTopStateTick = 0;
 	Focusable = true;
@@ -1121,7 +1123,7 @@ void TTVPWindowForm::CallWindowDetach(bool close)
 //---------------------------------------------------------------------------
 void TTVPWindowForm::CallWindowAttach()
 {
-	if(TJSNativeInstance) TJSNativeInstance->GetDrawDevice()->SetTargetWindow(PaintBox->Parent->Handle);
+	NextSetWindowHandleToDrawDevice = true;
 
 	tTVPWindowMessage msg;
 	msg.Msg = TVP_WM_ATTACH;
@@ -3076,6 +3078,11 @@ void __fastcall TTVPWindowForm::FormResize(TObject *Sender)
 void __fastcall TTVPWindowForm::PaintBoxPaint(TObject *Sender)
 {
 	// a painting event
+	if(NextSetWindowHandleToDrawDevice)
+	{
+		if(TJSNativeInstance) TJSNativeInstance->GetDrawDevice()->SetTargetWindow(PaintBox->Parent->Handle);
+		NextSetWindowHandleToDrawDevice = false;
+	}
 
 	if(TJSNativeInstance)
 	{
