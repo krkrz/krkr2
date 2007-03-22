@@ -1008,9 +1008,9 @@ void tTJSNI_Window::PostInputEvent(const ttstr &name, iTJSDispatch2 * params)
 }
 
 //---------------------------------------------------------------------------
-void TJS_INTF_METHOD tTJSNI_Window::NotifyLayerResize()
+void TJS_INTF_METHOD tTJSNI_Window::NotifySrcResize()
 {
-	tTJSNI_BaseWindow::NotifyLayerResize();
+	tTJSNI_BaseWindow::NotifySrcResize();
 
 	// is called from primary layer
 	// ( or from TWindowForm to reset paint box's size )

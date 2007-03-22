@@ -32,6 +32,7 @@ tTVPDrawDevice::tTVPDrawDevice()
 tTVPDrawDevice::~tTVPDrawDevice()
 {
 	// すべての managers を開放する
+	//TODO: プライマリレイヤ無効化、あるいはウィンドウ破棄時の終了処理が正しいか？
 	// managers は 開放される際、自身の登録解除を行うために
 	// RemoveLayerManager() を呼ぶかもしれないので注意。
 	// そのため、ここではいったん配列をコピーしてからそれぞれの
@@ -147,7 +148,7 @@ void TJS_INTF_METHOD tTVPDrawDevice::NotifyLayerResize(iTVPLayerManager * manage
 {
 	iTVPLayerManager * primary_manager = GetLayerManagerAt(PrimaryLayerManagerIndex);
 	if(primary_manager == manager)
-		Window->NotifyLayerResize();
+		Window->NotifySrcResize();
 }
 //---------------------------------------------------------------------------
 

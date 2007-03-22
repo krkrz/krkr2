@@ -938,7 +938,15 @@ void TJS_INTF_METHOD tTVPLayerManager::UpdateToDrawDevice()
 	if(!Primary) return;
 
 	Window->GetDrawDevice()->StartBitmapCompletion(this);
-	Primary->CompleteForWindow(this);
+	try
+	{
+		Primary->CompleteForWindow(this);
+	}
+	catch(...)
+	{
+		Window->GetDrawDevice()->EndBitmapCompletion(this);
+		throw;
+	}
 	Window->GetDrawDevice()->EndBitmapCompletion(this);
 }
 //---------------------------------------------------------------------------
