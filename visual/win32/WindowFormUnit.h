@@ -217,6 +217,9 @@ public:
 	bool GetWindowActive();
 
 private:
+	//-- drawdevice related
+	bool NextSetWindowHandleToDrawDevice;
+
 	//-- double-buffering related
 	tTVPBaseDoubleBuffer *DoubleBuffer;
 	tTVPDoubleBufferStyle DoubleBufferStyle;
