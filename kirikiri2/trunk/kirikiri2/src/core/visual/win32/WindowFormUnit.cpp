@@ -813,7 +813,7 @@ __fastcall TTVPWindowForm::TTVPWindowForm(TComponent* Owner, tTJSNI_Window *ni)
 	// initialize members
 	TJSNativeInstance = ni;
 
-	NextSetWindowHandleToDrawDevice = false;
+	NextSetWindowHandleToDrawDevice = true;
 
 	InMode = false;
 	ResetStayOnTopStateTick = 0;
