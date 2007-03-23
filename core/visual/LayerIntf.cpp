@@ -423,7 +423,10 @@ tTJSNI_BaseLayer::Construct(tjs_int numparams, tTJSVariant **param,
 	// retrieve manager
 	// layer manager is the same as the parent, if the parent is given
 	if(lay)
+	{
 		Manager = lay->GetManager();
+		Manager->AddRef(); // lock manager
+	}
 
 	// register to parent layer
 	if(lay) Join(lay);
@@ -470,6 +473,11 @@ tTJSNI_BaseLayer::Invalidate()
 		Manager->UnregisterSelfFromWindow();
 	}
 
+	if(Manager)
+	{
+		Manager->Release(); // no longer used in this context
+		Manager = NULL;
+	}
 
 	// part from the parent
 	Part();
@@ -544,6 +552,8 @@ void tTJSNI_BaseLayer::Join(tTJSNI_BaseLayer *parent)
 {
 	if(parent == this)
 		TVPThrowExceptionMessage(TVPCannotSetParentSelf);
+	if(parent && parent->Manager != Manager)
+		TVPThrowExceptionMessage(TVPCannotMoveToUnderOtherPrimaryLayer);
 	if(Parent) Part();
 	Parent = parent;
 	if(Parent) parent->AddChild(this);
