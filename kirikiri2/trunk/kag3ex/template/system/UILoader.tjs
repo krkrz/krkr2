@@ -64,7 +64,8 @@ class UIListParser extends CSVParser {
 	function doFile(info, columns) {
 		switch (info.class) {
 		case "copy":
-			info.copy = columns[7];
+			info.copy   = columns[7];
+			info.subref = columns[8];
 			break;
 		case "base":
 			info.storage =columns[2];
@@ -141,10 +142,11 @@ class UIListParser extends CSVParser {
 //		dm("arrayload: " + filename);
 		// ÇªÇÍÇ≈Ç‡É_ÉÅÇæÇ¡ÇΩÇÁArrayÇ≈ì«Ç›íºÇ∑
 		var temp = [];
+		var sep = (Storages.extractStorageExt(filename).toLowerCase() == ".txt") ? "\t" : ",";
 		temp.load(filename);
 		for (var i = 0; i < temp.count; i++) {
 			var line = [];
-			line.split(",\t", temp[i]);
+			line.split(sep, temp[i]);
 			doLine(line, i+1) if (line.count > 0);
 		}
 		return result;
@@ -270,6 +272,7 @@ function uiloadEntry(layer, names, dic, elm, table)
 				(global.Dictionary.assign incontextof temp)(target, true);
 				(global.Dictionary.assign incontextof temp)(value,  false); 
 				temp.class = target.class;
+				temp.groupName = value.subref if (temp.class == "radio" && value.subref !== void);
 				temp.uistates = target.uistates;
 				value = temp;
 				/* not break */

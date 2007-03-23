@@ -5,6 +5,11 @@ class KAGEnvSimpleLayer extends KAGEnvLevelLayer, KAGEnvLayer {
 
     // 名前
     var name;
+    var viewOriginMode; // 画面原点位置指定
+    var originMode;     // レイヤ原点
+    // 左上1 中上2 右上3
+    // 左  8 中央9   右4
+    // 左下7 中下6 左下5
     
     /**
      * コンストラクタ
@@ -31,13 +36,96 @@ class KAGEnvSimpleLayer extends KAGEnvLevelLayer, KAGEnvLayer {
      */
     function calcPosition(layer) {
         if (reposition) {
+
+            var xdiff;
+            var ydiff;
+            switch (originMode) {
+            case 1:
+                xdiff = 0;
+                ydiff = 0;
+                break;
+            case 2:
+                xdiff = layer.imageWidth / 2;
+                ydiff = 0;
+                break;
+            case 3:
+                xdiff = layer.imageWidth;
+                ydiff = 0;
+                break;
+            case 4:
+                xdiff = layer.imageWidth;
+                ydiff = layer.imageHeight / 2;
+                break;
+            case 5:
+                xdiff = layer.imageWidth;
+                ydiff = layer.imageHeight;
+                break;
+            case 6:
+                xdiff = layer.imageWidth / 2;
+                ydiff = layer.imageHeight;
+                break;
+            case 7:
+                xdiff = 0;
+                ydiff = layer.imageHeight;
+                break;
+            case 8:
+                xdiff = 0;
+                ydiff = layer.imageHeight / 2;
+                break;
+            default:
+                xdiff = layer.imageWidth / 2;
+                ydiff = layer.imageHeight / 2;
+                break;
+            }
+
+            var xbase;
+            var ybase;
+            switch (viewOriginMode) {
+            case 1:
+                xbase = 0;
+                ybase = 0;
+                break;
+            case 2:
+                xbase = kag.scWidth / 2;
+                ybase = 0;
+                break;
+            case 3:
+                xbase = kag.scWidth;
+                ybase = 0;
+                break;
+            case 4:
+                xbase = kag.scWidth;
+                ybase = kag.scHeight / 2;
+                break;
+            case 5:
+                xbase = kag.scWidth;
+                ybase = kag.scHeight;
+                break;
+            case 6:
+                xbase = kag.scWidth / 2;
+                ybase = kag.scHeight;
+                break;
+            case 7:
+                xbase = 0;
+                ybase = kag.scHeight;
+                break;
+            case 8:
+                xbase = 0;
+                ybase = kag.scHeight / 2;
+                break;
+            default:
+                xbase = kag.scWidth / 2;
+                ybase = kag.scHeight / 2;
+                break;
+            }
+
             //dm("位置指定2");
-            var l = env.xmax + (int)xpos - layer.imageWidth / 2;
-            var t = env.ymax + (int)ypos - layer.imageHeight / 2;
+            var l = xbase + (int)xpos - xdiff;
+            var t = ybase + (int)ypos - ydiff;
             if (moveTime !== void && moveTime > 0) {
                 if (xposFrom !== void || yposFrom !== void) {
-                    var fl = xposFrom !== void ? env.xmax + (int)xposFrom - layer.imageWidth / 2 : l;
-                    var ft = yposFrom !== void ? env.ymax + (int)yposFrom - layer.imageHeight / 2 : t;
+                    var fl = xposFrom !== void ? xbase + (int)xposFrom - xdiff : l;
+                    var ft = yposFrom !== void ? ybase + (int)yposFrom - ydiff : t;
                     layer.setPos(fl, ft);
                 }
                 layer.setMove(l, t, moveAccel, moveTime);
@@ -55,15 +143,21 @@ class KAGEnvSimpleLayer extends KAGEnvLevelLayer, KAGEnvLayer {
         global.KAGEnvLayer.onStore(f);
         global.KAGEnvLevelLayer.onStore(f);
         f.name = name;
+        f.originMode = originMode;
+        f.viewOriginMode = viewOriginMode;
     }
 
     function onRestore(f) {
-        name = name;
+        name = f.name;
+        originMode = f.originMode;
+        viewOriginMode = f.viewOriginMode;
         global.KAGEnvLevelLayer.onRestore(f);
         global.KAGEnvLayer.onRestore(f);
     }
 
     var layerCommands = %[
+    origin : function(cmd,elm) { originMode = +cmd; reposition = true; } incontextof this,
+    vorigin : function(cmd,elm) { viewOriginMode = +cmd; reposition = true; } incontextof this,
     front : this.setFront incontextof this,
     back : this.setBack incontextof this,
     level : this.setLevel incontextof this,
