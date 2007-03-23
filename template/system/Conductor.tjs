@@ -196,18 +196,18 @@ class BaseConductor extends KAGParser
                 askYesNo("セーブデータの不整合が検出されました。正常動作は保障されませんが、該当シナリオの冒頭から再開しますか？",
                          "確認", function(param) {kag.process(param);}, function(param) { kag.goToStart(); }, curStorage);
             } else {
-                var msg = "ロード処理中に致命的なエラーが発生しました。タイトルに戻ります\n"
+                var msg = "致命的なエラーが発生しました。\n"
                     "ファイル : " + curStorage + "   行 : " + (curLine+1) + "\n"
                         "タグ : " + (obj === void ? "不明" : obj.tagname)
                             + " ( ← エラーの発生した前後のタグを示している場合もあります )\n"
                                 + e.message;
                 if((typeof e.trace) != "undefined") dm("trace : " + e.trace);
                 dm(msg);
-                //throw new ConductorException(msg);
+                throw new ConductorException(msg);
                 System.inform(msg, "エラー");
-                if (curStorage != "title.ks") {
-                    kag.goToStart();
-                }
+//                if (curStorage != "title.ks") {
+//                    kag.goToStart();
+//                }
             }
 		}
 	}

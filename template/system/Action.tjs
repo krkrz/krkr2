@@ -1,0 +1,560 @@
+//
+// 汎用アクション機能実装用クラス群
+//
+
+/**
+ * 単独プロパティに対するアクション情報
+ * 絶対アクション：ターゲットプロパティの絶対値を指定する　　　　　１つしか使えない
+ * 相対アクション：ターゲットプロパティに対する相対値を指定する　　複数指定できる
+ */
+class PropActionInfo {
+
+    var absolute;      // 絶対アクションハンドラ
+    var relative = []; // 相対アクションハンドラ
+    
+    /**
+     * コンストラクタ
+     */
+    function PropActionInfo() {
+    }
+
+    /**
+     * アクションを追加する
+     * @param handler アクションハンドラ
+     * @param elm 初期化パラメータ
+     */
+    function addAction(handler, elm) {
+        if (typeof handler.AbsoluteActionHandler != "undefined") {
+            // 絶対アクションは１つだけ設定可能
+            absolute = new handler(elm);
+        } else if (typeof handler.RelativeActionHandler != "undefined") {
+            // 相対アクションは複数設定可能
+            relative.add(new handler(elm));
+        }
+    }
+
+    /**
+     * アクション初期化
+     * @param propName プロパティ名
+     * @param target ターゲットオブジェクト
+     */
+    function initAction(target, propName) {
+        // 相対アクションしか指定されてない場合は初期化用アクションを登録
+        if (relative.count > 0 && absolute === void) {
+            absolute = new DefaultAction(%[]);
+        }
+        if (absolute !== void) {
+            absolute.initAction(target, propName);
+        }
+        for (var i=0;i<relative.count;i++) {
+            relative[i].initAction(target, propName);
+        }
+    }
+    
+    /**
+     * アクション処理実行
+     * @param target ターゲットオブジェクト
+     * @param propName プロパティ名
+     * @param now 時間
+     * @param stopFlag 強制終了指定
+     * @return 終了したら true
+     */
+    function doAction(target, propName, now, stopFlag) {
+        var done = true;
+        if (absolute !== void) {
+            if (!absolute.doAction(target, propName, now, stopFlag)) {
+                done = false;
+            }
+        }
+        if (!stopFlag) {
+            for (var i=0;i<relative.count;i++) {
+                if (!relative[i].doAction(target, propName, now)) {
+                    done = false;
+                }
+            }
+        }
+        return done;
+    }
+};
+
+/**
+ * 複数プロパティに対するアクション
+ */
+class ActionInfo {
+
+    var actionDict = %[]; // アクション情報
+    var time;             // 実行時間
+
+    function getPropActionInfo(propName) {
+        var ret = actionDict[propName];
+        if (ret === void) {
+            ret = new PropActionInfo();
+            actionDict[propName] = ret;
+        }
+        return ret;
+    }
+    
+    /**
+     * コンストラクタ
+     */
+    function ActionInfo() {
+    }
+
+    /**
+     * アクションを追加する
+     * @param propName プロパティ名
+     * @param handler アクションハンドラ
+     * @param elm 初期化パラメータ
+     */
+    function addAction(propName, handler, elm) {
+        var info = getPropActionInfo(propName);
+        info.addAction(handler, elm);
+    }
+
+    /**
+     * アクション初期化
+     * @param target ターゲットオブジェクト
+     */
+    function initAction(target) {
+        var names = [];
+        names.assign(actionDict);
+        for (var i=0; i<names.count; i+= 2) {
+            var name = names[i];
+            var info = names[i+1];
+            info.initAction(target, name);
+        }
+    }
+
+    /**
+     * アクション処理実行
+     * @param target ターゲットオブジェクト
+     * @param now 時間
+     * @param stopFlag 強制終了指定
+     * @return 終了したら true
+     */
+    function doAction(target, now, stopFlag) {
+        var done = true;
+        var names = [];
+        names.assign(actionDict);
+        for (var i=0; i<names.count; i+= 2) {
+            if (!names[i+1].doAction(target, names[i], now, stopFlag)) {
+                done = false;
+            }
+        }
+        return done;
+    }
+};
+
+/**
+ * 一連のアクション
+ */
+class ActionSequense {
+
+    var actions = [];
+
+    var target; // 対象オブジェクト
+    var currentAction;   // 現在
+    var startTime; // 開始時刻
+    var first;     // 初期化フラグ
+    var create;    // アクション追加フラグ
+    
+    /**
+     * コンストラクタ
+     */
+    function ActionSequense(target) {
+        currentAction = 0;
+        first = true;
+        this.target = target;
+        create = true;
+    }
+    
+    /**
+     * アクションシーケンスを進める
+     * @param time 時間差分
+     */
+    function next(time) {
+        if (time !== void && actions.count > 1) {
+            actions[actions.count - 1].time = time;
+        }
+        create = true;
+    }
+    
+    /**
+     * アクションを追加する
+     * @param propName プロパティ名
+     * @param handler アクションハンドラ
+     * @param elm 初期化パラメータ
+     */
+    function addAction(propName, handler, elm) {
+        if (typeof target[propName] == "undefined") {
+            dm("指定されたプロパティは存在しません:" + target + ":" + propName);
+        } else {
+            if (create) {
+                actions.add(new ActionInfo());
+                create = false;
+            }
+            var info = actions[actions.count - 1];
+            info.addAction(propName, handler, elm);
+        }
+    }
+
+    /**
+     * 複数のアクションを同時登録する
+     * @param dict アクション情報の入った辞書
+     */
+    function addActions(dict) {
+        var time  = void;
+        var names = [];
+        names.assign(dict);
+        for (var i=0; i<names.count; i+= 2) {
+            var name = names[i];
+            var elm  = names[i+1];
+            if (name == "actionTime") {
+                if (actionTime > time) {
+                    time = actionTime;
+                }
+            } else {
+                if (elm.time !== void && elm.time > time) {
+                    time = elm.time;
+                }
+                addAction(name, elm.handler, elm);
+            }
+        }
+        next(time);
+    }
+
+    // -----------------------------------------------
+    
+    /**
+     * アクション初期化
+     * @param target ターゲットオブジェクト
+     * @param now 現在時刻
+     * @param stopFlag 強制停止指定
+     * @param 終了したら true
+     */
+    function doAction(now, stopFlag) {
+        if (currentAction >= actions.count) {
+            return true;
+        }
+        var info = actions[currentAction];
+        if (first) {
+            now = 0;
+            startTime = now;
+            info.initAction(target);
+            first = false;
+        } else {
+            now -= startTime;
+        }
+        if (info.time !== void && now >= info.time) {
+            info.doAction(target, info.time, true);
+            first = true;
+            currentAction++;
+        } else {
+            if (info.doAction(target, now, stopFlag)) {
+                first = true;
+                currentAction++;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * 強制停止
+     */
+    function stopAction() {
+        while (currentAction < actions.count) {
+            var info = actions[currentAction];
+            info.doAction(target, 0, true);
+            currentAction++;
+        }
+    }
+};
+
+// アクション対象全部
+var allActions = %[];
+
+/**
+ * アクションを登録
+ * @param target ターゲットオブジェクト
+ * @param action アクション情報
+ * @param elm パラメータ
+ * @param completed 終了ハンドラ
+ */
+function beginAction(target, action, elm, completed)
+{
+    var info = allActions[target];
+    if (info === void) {
+        info = new ActionSequense(target);
+        allActions[target] = info;
+    }
+    if (completed !== void) {
+        // 終了ハンドラを登録
+        info.onActionCompleted = completed;
+    }
+
+    // 文字列の場合は評価してしまう
+    if (typeof action == "String") {
+        action = Scripts.eval(action);
+    }
+    
+    if (typeof action == "Object") {
+        if (action instanceof "Dictionary") {
+            // 辞書の場合
+            if (typeof action.module == "Object") {
+                //　モジュールが指定されている場合
+                module(info, action);
+            } else if (typeof action.moduleName == "String") {
+                // moduleName が指定されている場合はアクション定義とみなす
+                var module = global[action.moduleName];
+                if (module !== void) {
+                    module(info, action);
+                }
+            } else {
+                // 複数アクションの同時指定
+                info.addActions(action);
+            }
+        } else if (action instanceof "Array") {
+            // アクションシーケンス
+            for (var i=0;i<action.count;i++) {
+                info.addActions(action[i]);
+            }
+        } else {
+            // ファンクションの場合
+            // アクション定義用関数とみなして処理
+            action(info, elm);
+        }
+    }
+}
+
+/**
+ * アクションを停止
+ * @param target ターゲットオブジェクト
+ */
+function stopAction(target)
+{
+    var info = allActions[target];
+    if (info !== void) {
+        info.stopAction();
+        if (typeof info.onActionCompleted != "undefined") {
+            info.onActionCompleted();
+        }
+        delete allActions[target];
+        invalidate info;
+    }
+}
+
+/**
+ * アクション状態更新
+ * システム全体から呼び出す
+ * @param now 現在時刻
+ */
+function updateAction(now)
+{
+    var names = [];
+    names.assign(allActions);
+    (Dictionary.clear incontextof allActions)();
+    for (var i=0;i<names.count;i+=2) {
+        var target = names[i];
+        var info   = names[i+1];
+        if (info.doAction(now, false)) {
+            // 終了したので登録しない
+            if (typeof info.onActionCompleted != "undefined") {
+                info.onActionCompleted();
+            }
+            invalidate info;
+        } else {
+            // 再登録
+            allActions[target] = info;
+        }
+    }
+}
+
+// ----------------------------------------------------------------
+// ハンドラクラス
+// ----------------------------------------------------------------
+
+/**
+ * アクションハンドラ基底クラス
+ */
+class ActionHandler {
+
+    // 駆動時間
+    var time;
+
+    /**
+     * コンストラクタ
+     * @param elm 初期化パラメータ
+     */
+    function ActionHandler(elm) {
+        this.time = elm.time;
+    }
+    /**
+     * 初期化処理
+     * @param target 対象オブジェクト
+     * @param propName 対象プロパティ
+     */
+    function initAction(target, propName) {
+    }
+
+    /**
+     * アクション実行
+     * @param propName 対象プロパティ
+     * @param target 対象オブジェクト
+     * @param now 駆動時間
+     * @param stopFlag 停止フラグ
+     * @return 終了したら true
+     */
+    function doAction(target, propName, now, stopFlag) {
+        return true;
+    }
+}
+
+/**
+ * 絶対動作アクション基底クラス
+ * 値を維持するアクション
+ */
+class AbsoluteActionHandler extends ActionHandler {
+    function AbsoluteActionHandler(elm) {
+        super.ActionHandler(elm);
+    }
+};
+
+/**
+ * 相対アクション基底クラス
+ */
+class RelativeActionHandler extends ActionHandler {
+    function RelativeActionHandler() {
+        super.ActionHandler(elm);
+    }
+};
+
+/**
+ * 値初期化アクション
+ * 相対アクションのみの場合に値を維持するために使う
+ */
+class DefaultAction extends AbsoluteActionHandler {
+    var initValue;
+    function DefaultAction(elm) {
+        super.AbsoluteActionHandler(elm);
+    }
+    function initAction(target, propName) {
+        initValue = target[propName];
+    }
+    function doAction(target, propName, now, stopFlag) {
+        target[propName] = initValue;
+        return stopFlag;
+    }
+}
+
+/**
+ * 線形移動アクション
+ */
+class LinearMoveAction extends AbsoluteActionHandler {
+
+    var value;
+    var start;
+    var diff;
+    
+    function LinearMoveAction(elm) {
+        super.AbsoluteActionHandler(elm);
+        value = elm.value;
+    }
+
+    function initAction(target, propName) {
+        start = target[propName];
+        if (typeof value == "String" && (value.charAt(0) == "+" || value.charAt(0) == "-")) {
+            diff = +value;
+        } else {
+            diff = +value - start;
+        }
+    }
+    
+    function doAction(target, propName, now, stopFlag) {
+        if (stopFlag || now > time) {
+            target[propName] = start + diff;
+            return true;
+        } else {
+            target[propName] = start + diff * now / time;
+            return false;
+        }
+    }
+}
+
+// ----------------------------------------------------------------
+// 旧版互換用機能
+// ----------------------------------------------------------------
+
+function TestLayerNormalMoveModule(info, elm) {
+    info.addAction("left", LinearMoveAction, %[value:elm.x]);
+    info.addAction("top",  LinearMoveAction, %[value:elm.y]);
+}
+
+function TestLayerAccelMoveModule(info, elm) {
+    info.addAction("left", AccelMoveAction, %[value:elm.x]);
+    info.addAction("top",  AccelMoveAction, %[value:elm.y]);
+}
+
+function TestLayerDecelMoveModule(info, elm) {
+    info.addAction("left", DecelMoveAction, %[value:elm.x]);
+    info.addAction("top",  DecelMoveAction, %[value:elm.y]);
+}
+
+function TestLayerVibrateActionModule(info, elm) {
+    info.addAction("left", RandomAction, %[vibration:elm.vibration, waittime:elm.waittime]);
+    info.addAction("top",  RandomAction, %[vibration:elm.vibration, waittime:elm.waittime]);
+}
+
+function TestLayerJumpActionModule(info, elm) {
+    info.addAction("top", SinAction, %[vibration:elm.vibration, cycle:elm.cycle]);
+}
+
+function TestLayerJumpOnceActionModule(info, elm) {
+    info.addAction("top", SinOnceAction, %[vibration:elm.vibration, cycle:elm.cycle]);
+}
+
+function TestLayerWaveActionModule(info, elm) {
+    info.addAction("left", SinAction, %[vibration:elm.vibration, cycle:elm.cycle]);
+}
+
+function TestLayerWaveOnceActionModule(info, elm) {
+    info.addAction("left", SinOnceAction, %[vibration:elm.vibration, cycle:elm.cycle]);
+}
+
+function TestLayerFallActionModule(info, elm) {
+}
+
+function TestLayerNormalZoomModule(info, elm) {
+}
+
+function TestLayerVRotateZoomModule(info, elm) {
+}
+
+function TestLayerHRotateZoomModule(info, elm) {
+}
+
+function TestLayerHeartBeatZoomModule(info, elm) {
+}
+
+function TestLayerVibrateZoomModule(info, elm) {
+}
+
+function TestLayerNormalRotateModule(info, elm) {
+}
+
+function TestLayerVibrateRotate(info, elm) {
+}
+
+function TestLayerFalldownRotateModule(info, elm) {
+}
+
+function TestLayerToRotateModule(info, elm) {
+}
+
+function TestLayerBlinkModeModule(info, elm) {
+}
+
+function TestLayerFadeModule(info, elm) {
+}
+
+function TestLayerFadeToModule(info, elm) {
+}
