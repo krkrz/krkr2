@@ -227,6 +227,9 @@ TVP_MSG_DECL(TVPCannotMoveNextToSelfOrNotSiblings,
 TVP_MSG_DECL(TVPCannotMovePrimaryOrSiblingless,
 	TJS_W("プライマリレイヤや兄弟の無いレイヤは前後に移動することはできません"));
 
+TVP_MSG_DECL(TVPCannotMoveToUnderOtherPrimaryLayer,
+	TJS_W("別のプライマリレイヤ下にレイヤを移動することはできません"));
+
 TVP_MSG_DECL(TVPInvalidImagePosition,
 	TJS_W("レイヤ領域に画像の無い領域が発生しました"));
 
