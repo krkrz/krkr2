@@ -126,7 +126,6 @@ class KAGWindow extends Window
         getter() {
             if (_transLayer === void) {
                 _transLayer = new TransLayer(this);
-                _transLayer.name = "画面切り替えレイヤ";
                 add(_transLayer);
             }
             return _transLayer;
@@ -579,6 +578,25 @@ class KAGWindow extends Window
             dialog.visible = false;
         }
     }
+
+    //------------------------------------------------------ 特殊タイマ --
+
+    var flipTimer; // 画面更新タイミングのタイマー
+
+    /**
+     * 画面更新処理
+     */
+    function onFlipTimerInterval() {
+        var now = System.getTickCount();
+
+        // アクション更新
+        updateAction(now);
+
+        // 画面切り替えレイヤ更新
+        if (_transLayer !== void) {
+            _transLayer.update(now);
+        }
+    }
     
 	//------------------------------------------------------ コンストラクタ --
 
@@ -663,6 +681,12 @@ class KAGWindow extends Window
 		add(quakeTimer);
 		quakeTimer.interval = 50;
 
+        // 更新処理用タイマの作成
+        flipTimer = new Timer(onFlipTimerInterval, '');
+        add(flipTimer);
+        flipTimer.interval = 10;
+        flipTimer.enabled = true;
+        
         // ベースになるレイヤ
         sysbase = new Layer(this, null);
         sysbase.setSize(scWidth, scHeight);
@@ -3262,8 +3286,8 @@ class KAGWindow extends Window
     function layerTransBegin(elm)
 	{
         hideTransLayer();
-        var time = elm.time !== void ? +elm.time : 1000;
-        var type = elm.type !== void ? elm.type : "wipeltor";
+        if (elm.time === void) { elm.time = 1000; }
+        if (elm.type === void) { elm.type = "wipeltor"; }
         var waitParam  = %[];
         var waitTime = void;
         if((elm.canskip === void || +elm.canskip) && clickSkipEnabled) {
@@ -3273,18 +3297,17 @@ class KAGWindow extends Window
             waitParam.click = function() {hideTransLayer();} incontextof this;
 		}
         if (elm.wait !== void) {
-            waitTime = time + +elm.wait;
-            dm("waitTime:" + waitTime);
+            waitTime = +elm.time + +elm.wait;
             waitParam.timeout = function() {} incontextof this;
         } else {
             waitParam.layertrans = function() {} incontextof this;
         }
-        transLayer.start(elm, type, time, elm.color !== void ? +elm.color : 0x000000);
+        transLayer.start(elm);
         transShowing = true;
         if (waitTime > 0) {
             conductor.waitWithTimeOut(waitParam, waitTime);
         } else {
-            conductor.wait(waitParam, waitTime);
+            conductor.wait(waitParam);
         }
         return -2;
 	}
@@ -3302,7 +3325,7 @@ class KAGWindow extends Window
             waitParam.click = function() {hideTransLayer();} incontextof this;
         }
         waitParam.layertrans = function() {hideTransLayer();} incontextof this;
-        transLayer.start(elm, elm.type, elm.time);
+        transLayer.start(elm, true);
         conductor.wait(waitParam);
         return -2;
     }
@@ -4944,7 +4967,7 @@ class KAGWindow extends Window
 	function resetWait()
 	{
 		// 時間原点のリセット
-		timeOrigin = System.getTickCount();
+        timeOrigin = System.getTickCount();
 	}
 
 	function waitTime(waittime, canskip, trans=false)

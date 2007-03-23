@@ -50,7 +50,7 @@ class KAGEnvLevelLayer {
      */
     function getLayer(base) {
         if (base === void) {
-            base = env.transMode ? kag.back : kag.fore;
+            base = env.transMode == 1 ? kag.back : kag.fore;
         }
         if (level === void) {
             level = env.defaultLevel;

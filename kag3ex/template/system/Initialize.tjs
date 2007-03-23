@@ -237,6 +237,8 @@ KAGLoadScript("Menus.tjs");
 KAGLoadScript("DefaultMover.tjs");
 KAGLoadScript("MainWindow.tjs");
 
+KAGLoadScript("Action.tjs");
+
 if(Storages.isExistentStorage("Override.tjs"))
 	KAGLoadScript("Override.tjs");
 if(Storages.isExistentStorage(System.exePath + "Override2.tjs"))

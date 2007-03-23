@@ -262,6 +262,16 @@ class KAGEnvironment extends KAGEnvImage {
         kag.tagHandlers["afterpage"]       = this.afterpage;
         kag.tagHandlers["afterline"]       = this.afterline;
 
+        // レイヤトランジション処理中は transMode を有効にしておく
+        kag.tagHandlers["ltbegin"] = function(elm) {
+            transMode = 2;
+            return kag.layerTransBegin(elm);
+        } incontextof this;
+        kag.tagHandlers["ltend"] = function(elm) {
+            transMode = 0;
+            return kag.layerTransEnd(elm);
+        } incontextof this;
+        
         // 特殊ハンドラ登録
         kag.unknownHandler         = this.unknown;
         kag.seStopHandler          = this.onSeStop;
@@ -910,7 +920,7 @@ class KAGEnvironment extends KAGEnvImage {
      */
     function getLayer(base) {
         if (base === void) {
-            base = env.transMode ? kag.back : kag.fore;
+            base = env.transMode == 1 ? kag.back : kag.fore;
         }
         return base.stage;
     }
