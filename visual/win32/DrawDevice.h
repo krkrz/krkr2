@@ -73,6 +73,9 @@ public:
 	//!				この矩形は、GetSrcSize で返した値に対し、Window.zoomNumer や Window.zoomDenum
 	//!				プロパティによる拡大率や、Window.layerLeft や Window.layerTop が加味された
 	//!				矩形である。
+	//!				このメソッドによって描画矩形が変わったとしても、このタイミングで
+	//!				描画デバイス側で再描画を行う必要はない(必要があれば別メソッドにより
+	//!				再描画の必要性が通知されるため)。
 	virtual void TJS_INTF_METHOD SetDestRectangle(const tTVPRect & rect) = 0;
 
 	//! @brief		(Window->DrawDevice) 元画像のサイズを得る
