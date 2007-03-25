@@ -419,10 +419,12 @@ class ButtonLayer extends AnimKAGLayer
 	function onMouseUp()
 	{
 		// onMouseUp イベントハンドラ
-		if(Butt_mouseDown) onExecute(...);
-        Butt_mouseDown = false;
-        update();
-		super.onMouseUp(...);
+        if(Butt_mouseDown) onExecute(...);
+        if (isvalid this) {
+            Butt_mouseDown = false;
+            update();
+            super.onMouseUp(...);
+        }
 	}
 
 	function onClick()

@@ -3364,7 +3364,7 @@ class MessageLayer extends AnimKAGLayer
         var firstLink = link;
         do {
             var target = links[link].object;
-            if (target == void || (target.visible && target.enabled)) {
+            if (target === void || !isvalid target || (target.visible && target.enabled)) {
                 return link;
             }
             if (direction > 0) {
@@ -3526,6 +3526,8 @@ class MessageLayer extends AnimKAGLayer
 					else
 						keyLink--;
 				}
+                dm("keyLink:" + keyLink);
+                dm("numLinks:" + numLinks);
                 keyLink = checkFocus(keyLink, direction ? 1 : -1);
 				var obj = setFocusToLink(keyLink);
 				if(obj !== void)
