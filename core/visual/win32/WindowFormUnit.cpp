@@ -814,6 +814,7 @@ __fastcall TTVPWindowForm::TTVPWindowForm(TComponent* Owner, tTJSNI_Window *ni)
 	TJSNativeInstance = ni;
 
 	NextSetWindowHandleToDrawDevice = true;
+	LastSentDrawDeviceDestRect.clear();
 
 	InMode = false;
 	ResetStayOnTopStateTick = 0;
@@ -1124,6 +1125,7 @@ void TTVPWindowForm::CallWindowDetach(bool close)
 void TTVPWindowForm::CallWindowAttach()
 {
 	NextSetWindowHandleToDrawDevice = true;
+	LastSentDrawDeviceDestRect.clear();
 
 	tTVPWindowMessage msg;
 	msg.Msg = TVP_WM_ATTACH;
@@ -1830,6 +1832,22 @@ void __fastcall TTVPWindowForm::ZoomRectangle(
 	bottom = MulDiv(bottom,  ActualZoomNumer, ActualZoomDenom);
 }
 //---------------------------------------------------------------------------
+void __fastcall TTVPWindowForm::SetDrawDeviceDestRect()
+{
+	tjs_int x_ofs = 0;
+	tjs_int y_ofs = 0;
+
+	tTVPRect destrect(PaintBox->Left + x_ofs, PaintBox->Top + y_ofs,
+					PaintBox->Width + PaintBox->Left + x_ofs, PaintBox->Height + PaintBox->Top + y_ofs);
+
+	if(LastSentDrawDeviceDestRect != destrect)
+	{
+		if(TJSNativeInstance)
+			TJSNativeInstance->GetDrawDevice()->SetDestRectangle(destrect);
+		LastSentDrawDeviceDestRect = destrect;
+	}
+}
+//---------------------------------------------------------------------------
 void __fastcall TTVPWindowForm::InternalSetPaintBoxSize()
 {
 	tjs_int l = MulDiv(LayerLeft,   ActualZoomNumer, ActualZoomDenom);
@@ -1837,7 +1855,7 @@ void __fastcall TTVPWindowForm::InternalSetPaintBoxSize()
 	tjs_int w = MulDiv(LayerWidth,  ActualZoomNumer, ActualZoomDenom);
 	tjs_int h = MulDiv(LayerHeight, ActualZoomNumer, ActualZoomDenom);
 	PaintBox->SetBounds(l, t, w, h);
-	if(TJSNativeInstance) TJSNativeInstance->GetDrawDevice()->SetDestRectangle(tTVPRect(l, t, w, h));
+	SetDrawDeviceDestRect();
 }
 //---------------------------------------------------------------------------
 void __fastcall TTVPWindowForm::SetPaintBoxSize(tjs_int w, tjs_int h)
@@ -3083,6 +3101,8 @@ void __fastcall TTVPWindowForm::PaintBoxPaint(TObject *Sender)
 		if(TJSNativeInstance) TJSNativeInstance->GetDrawDevice()->SetTargetWindow(PaintBox->Parent->Handle);
 		NextSetWindowHandleToDrawDevice = false;
 	}
+
+	SetDrawDeviceDestRect();
 
 	if(TJSNativeInstance)
 	{
