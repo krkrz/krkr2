@@ -60,7 +60,7 @@ void TJS_INTF_METHOD tTVPPassThroughDrawDevice::SetTargetWindow(HWND wnd)
 	else
 	{
 		// •`‰æ—p DC ‚ðŠJ•ú‚·‚é
-		ReleaseDC(TargetWindow, TargetDC);
+		if(TargetDC) ReleaseDC(TargetWindow, TargetDC);
 	}
 
 	TargetWindow = wnd;

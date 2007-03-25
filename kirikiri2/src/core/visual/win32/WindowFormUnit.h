@@ -219,6 +219,7 @@ public:
 private:
 	//-- drawdevice related
 	bool NextSetWindowHandleToDrawDevice;
+	tTVPRect LastSentDrawDeviceDestRect;
 
 	//-- double-buffering related
 	tTVPBaseDoubleBuffer *DoubleBuffer;
@@ -379,6 +380,7 @@ public:
 		tjs_int & left, tjs_int & top,
 		tjs_int & right, tjs_int & bottom);
 private:
+	void __fastcall SetDrawDeviceDestRect();
 	void __fastcall InternalSetPaintBoxSize();
 public:
 	void __fastcall SetPaintBoxSize(tjs_int w, tjs_int h);

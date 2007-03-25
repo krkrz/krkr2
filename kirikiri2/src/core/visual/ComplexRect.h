@@ -173,6 +173,11 @@ public: // comparison operators for sorting
 		{ return top < rhs.top || (top == rhs.top && left < rhs.left); }
 	bool operator > (const tTVPRect & rhs) const
 		{ return top > rhs.top || (top == rhs.top && left > rhs.left); }
+
+	// comparison methods
+	bool operator == (const tTVPRect & rhs) const
+		{ return top == rhs.top && left == rhs.left && right == rhs.right && bottom == rhs.bottom; }
+	bool operator != (const tTVPRect & rhs) const { return !this->operator ==(rhs); }
 };
 //---------------------------------------------------------------------------
 
