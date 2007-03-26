@@ -13,15 +13,25 @@
 
 #include "DrawDevice.h"
 
+class tTVPDrawer;
 //---------------------------------------------------------------------------
 //! @brief		「Pass Through」デバイス(もっとも基本的な描画を行うのみのデバイス)
 //---------------------------------------------------------------------------
 class tTVPPassThroughDrawDevice : public tTVPDrawDevice
 {
 	typedef tTVPDrawDevice inherited;
+	HWND TargetWindow;
+	tTVPDrawer * Drawer; //!< 描画を行うもの
 
-	HWND TargetWindow; // ターゲットウィンドウ
-	HDC TargetDC; // ターゲットウィンドウの描画用DC
+	//! @brief	drawerのタイプ
+	enum tDrawerType
+	{
+		dtNone, //!< drawer なし
+		dtDrawDib, //!< もっとも単純なdrawer
+		dtDBGDI, // GDI によるダブルバッファリングを行うdrawer
+		dtDBDD // DirectDraw によるダブルバッファリングを行うdrawer
+	};
+	tDrawerType DrawerType; //!< drawer のタイプ
 
 public:
 	tTVPPassThroughDrawDevice(); //!< コンストラクタ
@@ -29,11 +39,17 @@ private:
 	~tTVPPassThroughDrawDevice(); //!< デストラクタ
 public:
 
+	void DestroyDrawer();
+	void EnsureDrawer(tDrawerType failedtype);
+
 //---- LayerManager の管理関連
 	virtual void TJS_INTF_METHOD AddLayerManager(iTVPLayerManager * manager);
 
 //---- 描画位置・サイズ関連
 	virtual void TJS_INTF_METHOD SetTargetWindow(HWND wnd);
+	virtual void TJS_INTF_METHOD SetDestRectangle(const tTVPRect & rect);
+	virtual void TJS_INTF_METHOD NotifyLayerResize(iTVPLayerManager * manager);
+
 
 //---- LayerManager からの画像受け渡し関連
 	virtual void TJS_INTF_METHOD StartBitmapCompletion(iTVPLayerManager * manager);
