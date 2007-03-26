@@ -54,7 +54,7 @@ extern tjs_int TVPGetCursor(const ttstr & name);
 //---------------------------------------------------------------------------
 // Utility functions
 //---------------------------------------------------------------------------
-tjs_uint32 TVPGetCurrentShiftKeyState();
+TJS_EXP_FUNC_DEF(tjs_uint32, TVPGetCurrentShiftKeyState, ());
 HWND TVPGetModalWindowOwnerHandle();
 //---------------------------------------------------------------------------
 
@@ -79,10 +79,10 @@ class IDirectDrawClipper;
 extern void TVPTestDisplayMode(tjs_int w, tjs_int h, tjs_int & bpp);
 extern void TVPSwitchToFullScreen(HWND window, tjs_int w, tjs_int h);
 extern void TVPRevertFromFullScreen(HWND window);
-extern void TVPEnsureDirectDrawObject();
-extern IDirectDraw2 * TVPGetDirectDrawObjectNoAddRef();
-extern IDirectDrawSurface * TVPGetDDPrimarySurfaceNoAddRef();
-extern void TVPSetDDPrimaryClipper(IDirectDrawClipper * clipper);
+TJS_EXP_FUNC_DEF(void, TVPEnsureDirectDrawObject, ());
+TJS_EXP_FUNC_DEF(IDirectDraw2 *,  TVPGetDirectDrawObjectNoAddRef, ());
+TJS_EXP_FUNC_DEF(IDirectDrawSurface *, TVPGetDDPrimarySurfaceNoAddRef, ());
+TJS_EXP_FUNC_DEF(void, TVPSetDDPrimaryClipper, (IDirectDrawClipper * clipper));
 extern bool TVPUseChangeDisplaySettings;
 extern void TVPMinimizeFullScreenWindowAtInactivation();
 extern void TVPRestoreFullScreenWindowAtActivation();
