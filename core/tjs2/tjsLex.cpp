@@ -1325,6 +1325,8 @@ tjs_int tTJSLexicalAnalyzer::GetToken(tjs_int &n)
 
 re_match:
 
+	PrevPos = Current - Script; // remember current position as "PrevPos"
+
 	switch(*Current)
 	{
 	case TJS_W('>'):
@@ -1774,9 +1776,7 @@ tjs_int tTJSLexicalAnalyzer::GetNext(tjs_int &value)
 			{
 				// normal mode
 				TJSSkipSpace(&Current);
-				const tjs_char *org = Current;
 				n = GetToken(value);
-				PrevPos = org - Script;
 
 				if(tjsEnableDicFuncQuickHack) //----- dicfunc quick-hack
 				{
@@ -1875,9 +1875,7 @@ tjs_int tTJSLexicalAnalyzer::GetNext(tjs_int &value)
 				case evsNextIsExpression:
 				  {
 					TJSSkipSpace(&Current);
-					const tjs_char *org = Current;
 					n = GetToken(value);
-					PrevPos = org - Script;
 
 					if(n == data.WaitingToken && NestLevel == data.WaitingNestLevel)
 					{
