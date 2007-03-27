@@ -17,6 +17,7 @@
 #include "MsgIntf.h"
 #include "SysInitIntf.h"
 #include "WindowIntf.h"
+#include "DebugIntf.h"
 #define DIRECTDRAW_VERSION 0x0300
 #include <ddraw.h>
 
@@ -88,6 +89,8 @@ protected:
 	tTVPRect DestRect;
 	tjs_int SrcWidth;
 	tjs_int SrcHeight;
+	HWND TargetWindow;
+	HDRAWDIB DrawDibHandle;
 public:
 	tTVPDrawer(tTVPPassThroughDrawDevice * device)
 	{
@@ -95,12 +98,22 @@ public:
 		SrcWidth = 0;
 		SrcHeight = 0;
 		DestRect.clear();
+		TargetWindow = NULL;
+		DrawDibHandle = NULL;
 	} 
-	virtual ~tTVPDrawer() {;} //!< デストラクタ
+	virtual ~tTVPDrawer()
+	{
+		if(DrawDibHandle) DrawDibClose(DrawDibHandle), DrawDibHandle = NULL;
+	}
 
 	virtual bool SetDestRectangle(const tTVPRect & rect) { DestRect = rect; return true; }
 	virtual bool NotifyLayerResize(tjs_int w, tjs_int h) { SrcWidth = w; SrcHeight = h; return true; }
-	virtual void SetTargetWindow(HWND wnd) = 0;
+	virtual void SetTargetWindow(HWND wnd)
+	{
+		if(DrawDibHandle) DrawDibClose(DrawDibHandle), DrawDibHandle = NULL;
+		TargetWindow = wnd;
+		DrawDibHandle = DrawDibOpen();
+	}
 	virtual void StartBitmapCompletion() = 0;
 	virtual void NotifyBitmapCompleted(tjs_int x, tjs_int y,
 		const void * bits, const BITMAPINFO * bitmapinfo,
@@ -115,15 +128,14 @@ public:
 //---------------------------------------------------------------------------
 class tTVPDrawer_GDI : public tTVPDrawer
 {
+	typedef tTVPDrawer inherited;
 protected:
-	HWND TargetWindow;
 	HDC TargetDC;
 
 public:
 	//! @brief	コンストラクタ
 	tTVPDrawer_GDI(tTVPPassThroughDrawDevice * device) : tTVPDrawer(device)
 	{
-		TargetWindow = NULL;
 		TargetDC = NULL;
 	}
 
@@ -143,10 +155,11 @@ public:
 		else
 		{
 			// 描画用 DC を開放する
-			if(TargetDC) ReleaseDC(TargetWindow, TargetDC);
+			if(TargetDC) ReleaseDC(TargetWindow, TargetDC), TargetDC = NULL;
 		}
 
-		TargetWindow = wnd;
+		inherited::SetTargetWindow(wnd);
+
 	}
 };
 //---------------------------------------------------------------------------
@@ -159,19 +172,16 @@ public:
 class tTVPDrawer_DrawDibNoBuffering : public tTVPDrawer_GDI
 {
 	typedef tTVPDrawer_GDI inherited;
-	HDRAWDIB DrawDibHandle;
 
 public:
 	//! @brief	コンストラクタ
 	tTVPDrawer_DrawDibNoBuffering(tTVPPassThroughDrawDevice * device) : tTVPDrawer_GDI(device)
 	{
-		DrawDibHandle = NULL;
 	}
 
 	//! @brief	デストラクタ
 	~tTVPDrawer_DrawDibNoBuffering()
 	{
-		if(DrawDibHandle) DrawDibClose(DrawDibHandle), DrawDibHandle = NULL;
 	}
 
 	bool SetDestRectangle(const tTVPRect & rect)
@@ -193,9 +203,7 @@ public:
 
 	void SetTargetWindow(HWND wnd)
 	{
-		if(DrawDibHandle) DrawDibClose(DrawDibHandle), DrawDibHandle = NULL;
 		inherited::SetTargetWindow(wnd);
-		DrawDibHandle = DrawDibOpen();
 	}
 
 	void StartBitmapCompletion()
@@ -207,7 +215,7 @@ public:
 		const tTVPRect &cliprect)
 	{
 		// DrawDibDraw にて TargetDC に描画を行う
-		if(DrawDibHandle)
+		if(DrawDibHandle && TargetDC)
 			DrawDibDraw(DrawDibHandle,
 				TargetDC,
 				x + DestRect.left,
@@ -240,16 +248,14 @@ public:
 class tTVPDrawer_GDIDoubleBuffering : public tTVPDrawer_GDI
 {
 	typedef tTVPDrawer_GDI inherited;
-	HDRAWDIB DrawDibHandle;
 	HBITMAP OffScreenBitmap; //!< オフスクリーンビットマップ
 	HDC OffScreenDC; //!< オフスクリーン DC
-	HDC OldOffScreenBitmap; //!< OffScreenDC に以前選択されていた ビットマップ
+	HBITMAP OldOffScreenBitmap; //!< OffScreenDC に以前選択されていた ビットマップ
 
 public:
 	//! @brief	コンストラクタ
 	tTVPDrawer_GDIDoubleBuffering(tTVPPassThroughDrawDevice * device) : tTVPDrawer_GDI(device)
 	{
-		DrawDibHandle = NULL;
 		OffScreenBitmap = NULL;
 		OffScreenDC = NULL;
 		OldOffScreenBitmap = NULL;
@@ -259,7 +265,6 @@ public:
 	~tTVPDrawer_GDIDoubleBuffering()
 	{
 		DestroyBitmap();
-		if(DrawDibHandle) DrawDibClose(DrawDibHandle), DrawDibHandle = NULL;
 	}
 
 	void DestroyBitmap()
@@ -315,10 +320,8 @@ public:
 
 	void SetTargetWindow(HWND wnd)
 	{
-		if(DrawDibHandle) DrawDibClose(DrawDibHandle), DrawDibHandle = NULL;
 		inherited::SetTargetWindow(wnd);
 		CreateBitmap();
-		DrawDibHandle = DrawDibOpen();
 	}
 
 	void StartBitmapCompletion()
@@ -330,7 +333,7 @@ public:
 		const tTVPRect &cliprect)
 	{
 		// DrawDibDraw にて OffScreenDC に描画を行う
-		if(DrawDibHandle)
+		if(DrawDibHandle && OffScreenDC)
 			DrawDibDraw(DrawDibHandle,
 				OffScreenDC,
 				x + DestRect.left,
@@ -348,24 +351,27 @@ public:
 
 	void EndBitmapCompletion()
 	{
-		// オフスクリーンビットマップを TargetDC に転送する
-		if(TVPZoomInterpolation)
-			SetStretchBltMode(TargetDC, HALFTONE);
-		else
-			SetStretchBltMode(TargetDC, COLORONCOLOR);
-		SetBrushOrgEx(TargetDC, 0, 0, NULL);
+		if(TargetDC)
+		{
+			// オフスクリーンビットマップを TargetDC に転送する
+			if(TVPZoomInterpolation)
+				SetStretchBltMode(TargetDC, HALFTONE);
+			else
+				SetStretchBltMode(TargetDC, COLORONCOLOR);
+			SetBrushOrgEx(TargetDC, 0, 0, NULL);
 
-		StretchBlt(TargetDC,
-			0,
-			0,
-			DestRect.get_width(),
-			DestRect.get_height(),
-			OffScreenDC,
-			0,
-			0,
-			SrcWidth,
-			SrcHeight,
-			SRCCOPY);
+			StretchBlt(TargetDC,
+				0,
+				0,
+				DestRect.get_width(),
+				DestRect.get_height(),
+				OffScreenDC,
+				0,
+				0,
+				SrcWidth,
+				SrcHeight,
+				SRCCOPY);
+		}
 	}
 };
 //---------------------------------------------------------------------------
@@ -381,9 +387,7 @@ public:
 class tTVPDrawer_DDDoubleBuffering : public tTVPDrawer
 {
 	typedef tTVPDrawer inherited;
-	HDRAWDIB DrawDibHandle;
 
-	HWND TargetWindow;
 	HDC OffScreenDC;
 	IDirectDrawSurface * Surface;
 	IDirectDrawClipper * Clipper;
@@ -392,8 +396,7 @@ public:
 	//! @brief	コンストラクタ
 	tTVPDrawer_DDDoubleBuffering(tTVPPassThroughDrawDevice * device) : tTVPDrawer(device)
 	{
-		DrawDibHandle = NULL;
-		TargetWindow = NULL;
+		TVPEnsureDirectDrawObject();
 		OffScreenDC = NULL;
 		Surface = NULL;
 		Clipper = NULL;
@@ -403,14 +406,6 @@ public:
 	~tTVPDrawer_DDDoubleBuffering()
 	{
 		DestroyOffScreenSurface();
-		if(DrawDibHandle) DrawDibClose(DrawDibHandle), DrawDibHandle = NULL;
-	}
-
-	void InvalidateAll()
-	{
-		// レイヤ演算結果をすべてリクエストする
-		// サーフェースが lost した際に内容を再構築する目的で用いる
-		Device->RequestInvalidation(tTVPRect(0, 0, DestRect.get_width(), DestRect.get_height()));
 	}
 
 	void DestroyOffScreenSurface()
@@ -418,6 +413,13 @@ public:
 		if(OffScreenDC && Surface) Surface->ReleaseDC(OffScreenDC);
 		if(Surface) Surface->Release(), Surface = NULL;
 		if(Clipper) Clipper->Release(), Clipper = NULL;
+	}
+
+	void InvalidateAll()
+	{
+		// レイヤ演算結果をすべてリクエストする
+		// サーフェースが lost した際に内容を再構築する目的で用いる
+		Device->RequestInvalidation(tTVPRect(0, 0, DestRect.get_width(), DestRect.get_height()));
 	}
 
 	void CreateOffScreenSurface()
@@ -500,7 +502,20 @@ public:
 	{
 		if(inherited::NotifyLayerResize(w, h))
 		{
-			CreateOffScreenSurface();
+			try
+			{
+				CreateOffScreenSurface();
+			}
+			catch(const eTJS & e)
+			{
+				TVPAddLog(TJS_W("Failed to create DirectDraw off-screen buffer: ") + e.GetMessage());
+				return false;
+			}
+			catch(...)
+			{
+				TVPAddLog(TJS_W("Failed to create DirectDraw off-screen buffer: unknown reason"));
+				return false;
+			}
 			return true;
 		}
 		return false;
@@ -508,38 +523,39 @@ public:
 
 	void SetTargetWindow(HWND wnd)
 	{
-		if(DrawDibHandle) DrawDibClose(DrawDibHandle), DrawDibHandle = NULL;
-		TargetWindow = wnd;
+		inherited::SetTargetWindow(wnd);
 		CreateOffScreenSurface();
-		DrawDibHandle = DrawDibOpen();
 	}
 
 	void StartBitmapCompletion()
 	{
 		// retrieve DC
-		HDC dc;
-		HRESULT hr = Surface->GetDC(&dc);
-		if(hr == DDERR_SURFACELOST)
+		if(Surface)
 		{
-			Surface->Restore();
-			InvalidateAll();  // causes reconstruction of off-screen image
-			hr = Surface->GetDC(&dc);
-		}
+			HDC dc;
+			HRESULT hr = Surface->GetDC(&dc);
+			if(hr == DDERR_SURFACELOST)
+			{
+				Surface->Restore();
+				InvalidateAll();  // causes reconstruction of off-screen image
+				hr = Surface->GetDC(&dc);
+			}
 
-		if(hr != DD_OK)
-		{
-			TVPThrowExceptionMessage(TJS_W("Off-screen surface, IDirectDrawSurface::GetDC failed/HR=%1"),
-				TJSInt32ToHex(hr, 8));
-		}
+			if(hr != DD_OK)
+			{
+				TVPThrowExceptionMessage(TJS_W("Off-screen surface, IDirectDrawSurface::GetDC failed/HR=%1"),
+					TJSInt32ToHex(hr, 8));
+			}
 
-		OffScreenDC = dc;
+			OffScreenDC = dc;
+		}
 	}
 
 	void NotifyBitmapCompleted(tjs_int x, tjs_int y, const void * bits, const BITMAPINFO * bitmapinfo,
 		const tTVPRect &cliprect)
 	{
 		// DrawDibDraw にて OffScreenDC に描画を行う
-		if(DrawDibHandle)
+		if(DrawDibHandle && OffScreenDC)
 			DrawDibDraw(DrawDibHandle,
 				OffScreenDC,
 				x + DestRect.left,
@@ -576,8 +592,8 @@ public:
 
 		// entire of the bitmap is to be transfered (this is not optimal. FIX ME!)
 		RECT drect;
-		drect.left = 0 + origin.x;
-		drect.top = 0 + origin.y;
+		drect.left = DestRect.left + origin.x;
+		drect.top  = DestRect.top  + origin.y;
 		drect.right = drect.left + DestRect.get_width();
 		drect.bottom = drect.top + DestRect.get_height();
 
@@ -685,48 +701,60 @@ void tTVPPassThroughDrawDevice::EnsureDrawer(tDrawerType failedtype)
 			}
 		}
 
-		bool success;
-		do
+		if(newtype != DrawerType)
 		{
-			success = true;
-			try
+			// drawer がない (つまりDrawerType が dtNoneなのでnewtypeに一致しない)
+			// あるいは DrawerType が newtype と違う場合
+			if(Drawer) delete Drawer, Drawer = NULL;
+
+			bool success;
+			do
 			{
-				switch(newtype)
+				success = true;
+				try
 				{
-				case dtNone:
-					break;
-				case dtDrawDib:
-					Drawer = new tTVPDrawer_DrawDibNoBuffering(this);
-					break;
-				case dtDBGDI:
-					Drawer = new tTVPDrawer_GDIDoubleBuffering(this);
-					break;
-				case dtDBDD:
-					Drawer = new tTVPDrawer_DDDoubleBuffering(this);
-					break;
+					switch(newtype)
+					{
+					case dtNone:
+						break;
+					case dtDrawDib:
+						Drawer = new tTVPDrawer_DrawDibNoBuffering(this);
+						break;
+					case dtDBGDI:
+						Drawer = new tTVPDrawer_GDIDoubleBuffering(this);
+						break;
+					case dtDBDD:
+						Drawer = new tTVPDrawer_DDDoubleBuffering(this);
+						break;
+					}
+					Drawer->SetTargetWindow(TargetWindow);
+					if(!Drawer->SetDestRectangle(DestRect))
+						TVPThrowExceptionMessage(
+							TJS_W("Failed to set destination rectangle to draw device drawer"));
+					if(!Drawer->NotifyLayerResize(srcw, srch))
+						TVPThrowExceptionMessage(
+							TJS_W("Failed to set source layer size to draw device drawer"));
 				}
-				Drawer->SetTargetWindow(TargetWindow);
-				if(!Drawer->SetDestRectangle(DestRect))
-					TVPThrowExceptionMessage(
-						TJS_W("Failed to set destination rectangle to draw device drawer"));
-			}
-			catch(...)
-			{
-				// 例外が発生した。
-				if(newtype == dtDBDD)
+				catch(...)
 				{
-					// DirectDraw の場合は GDI に fall back を試みる
-					newtype = dtDBGDI;
-					success = false;
+					// 例外が発生した。
+					if(newtype == dtDBDD)
+					{
+						// DirectDraw の場合は GDI に fall back を試みる
+						newtype = dtDBGDI;
+						success = false;
+					}
+					else
+					{
+						// それ以外は fall back のしようがない
+						throw;
+					}
 				}
-				else
-				{
-					// それ以外は fall back のしようがない
-					throw;
-				}
-			}
-		} while(!success);
-	}
+			} while(!success);
+
+			DrawerType = newtype;
+		} // if(newtype != DrawerType)
+	} // if(TargetWindow)
 
 }
 //---------------------------------------------------------------------------

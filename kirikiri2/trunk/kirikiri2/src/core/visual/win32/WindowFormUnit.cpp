@@ -1902,7 +1902,7 @@ void __fastcall TTVPWindowForm::SetMouseCursor(tjs_int handle)
 //---------------------------------------------------------------------------
 void __fastcall TTVPWindowForm::GetCursorPos(tjs_int &x, tjs_int &y)
 {
-	// get mouse cursor position in primary layer's coordinates
+	// get mouse cursor position in paintbox coordinates
 	if(PaintBox)
 	{
 		TPoint origin;
@@ -1911,8 +1911,8 @@ void __fastcall TTVPWindowForm::GetCursorPos(tjs_int &x, tjs_int &y)
 		POINT mp = {0, 0};
 		::GetCursorPos(&mp);
 
-		x = MulDiv(mp.x - origin.x, ActualZoomDenom, ActualZoomNumer);
-		y = MulDiv(mp.y - origin.y, ActualZoomDenom, ActualZoomNumer);
+		x = mp.x - origin.x;
+		y = mp.y - origin.y;
 	}
 	else
 	{
@@ -1923,14 +1923,11 @@ void __fastcall TTVPWindowForm::GetCursorPos(tjs_int &x, tjs_int &y)
 //---------------------------------------------------------------------------
 void __fastcall TTVPWindowForm::SetCursorPos(tjs_int x, tjs_int y)
 {
-	// set mouse cursor position in primary layer's coordinates
+	// set mouse cursor position in paintbox coordinates
 	if(PaintBox)
 	{
 		TPoint pt;
-		pt = PaintBox->ClientToScreen(
-			TPoint(
-					MulDiv(x, ActualZoomNumer, ActualZoomDenom),
-					MulDiv(y, ActualZoomNumer, ActualZoomDenom)));
+		pt = PaintBox->ClientToScreen(TPoint(x, y));
 		::SetCursorPos(pt.x, pt.y);
 
 		LastMouseScreenX = LastMouseScreenY = -1; // force to display mouse cursor
@@ -2142,9 +2139,6 @@ bool TTVPWindowForm::ProcessTrappedKeyMessage(LRESULT &result, UINT msg, WPARAM 
 void __fastcall TTVPWindowForm::SetAttentionPoint(tjs_int left, tjs_int top,
 	TFont *font)
 {
-	left = MulDiv(left, ActualZoomNumer, ActualZoomDenom);
-	top = MulDiv(top, ActualZoomNumer, ActualZoomDenom);
-
 	if(ScrollBox->BorderStyle == Forms::bsSingle)
 	{
 		// sunken style
@@ -2796,9 +2790,6 @@ void __fastcall TTVPWindowForm::PaintBoxDblClick(TObject *Sender)
 void __fastcall TTVPWindowForm::PaintBoxMouseMove(TObject *Sender,
 	  TShiftState Shift, int X, int Y)
 {
-	X = MulDiv(X, ActualZoomDenom, ActualZoomNumer);
-	Y = MulDiv(Y, ActualZoomDenom, ActualZoomNumer);
-
 	if(TJSNativeInstance)
 	{
 		tjs_uint32 shift = TVP_TShiftState_To_uint32(Shift);
@@ -2823,9 +2814,6 @@ void __fastcall TTVPWindowForm::PaintBoxMouseDown(TObject *Sender,
 {
 	if(!CanSendPopupHide()) DeliverPopupHide();
 
-	X = MulDiv(X, ActualZoomDenom, ActualZoomNumer);
-	Y = MulDiv(Y, ActualZoomDenom, ActualZoomNumer);
-
 	::SetCaptureControl(PaintBox);
 
 	LastMouseDownX = X;
@@ -2845,9 +2833,6 @@ void __fastcall TTVPWindowForm::PaintBoxMouseDown(TObject *Sender,
 void __fastcall TTVPWindowForm::PaintBoxMouseUp(TObject *Sender,
 	  TMouseButton Button, TShiftState Shift, int X, int Y)
 {
-	X = MulDiv(X, ActualZoomDenom, ActualZoomNumer);
-	Y = MulDiv(Y, ActualZoomDenom, ActualZoomNumer);
-
 	::SetCaptureControl(NULL);
 
 	if(TJSNativeInstance)
@@ -3109,10 +3094,10 @@ void __fastcall TTVPWindowForm::PaintBoxPaint(TObject *Sender)
 		tTVPRect r;
 		TRect tr = PaintBox->Canvas->ClipRect;
 
-		r.left = MulDiv(tr.left, ActualZoomDenom, ActualZoomNumer);
-		r.top = MulDiv(tr.top, ActualZoomDenom, ActualZoomNumer);
-		r.right = MulDiv(tr.right, ActualZoomDenom, ActualZoomNumer);
-		r.bottom = MulDiv(tr.bottom, ActualZoomDenom, ActualZoomNumer);
+		r.left   = tr.left;
+		r.top    = tr.top;
+		r.right  = tr.right;
+		r.bottom = tr.bottom;
 
 		TJSNativeInstance->NotifyWindowExposureToLayer(r);
 
@@ -3520,8 +3505,8 @@ void __fastcall TTVPWindowForm::TickBeat()
 				POINT mp = {0, 0};
 				::GetCursorPos(&mp);
 
-				tjs_int x = MulDiv(mp.x - origin.x, ActualZoomDenom, ActualZoomNumer);
-				tjs_int y = MulDiv(mp.y - origin.y, ActualZoomDenom, ActualZoomNumer);
+				tjs_int x = mp.x - origin.x;
+				tjs_int y = mp.y - origin.y;
 
 				TVPPostInputEvent(new tTVPOnMouseWheelInputEvent(TJSNativeInstance,
 						shift, delta, x, y));
