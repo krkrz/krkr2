@@ -336,8 +336,8 @@ public:
 		if(DrawDibHandle && OffScreenDC)
 			DrawDibDraw(DrawDibHandle,
 				OffScreenDC,
-				x + DestRect.left,
-				y + DestRect.top,
+				x,
+				y,
 				cliprect.get_width(),
 				cliprect.get_height(),
 				const_cast<BITMAPINFOHEADER*>(reinterpret_cast<const BITMAPINFOHEADER*>(bitmapinfo)),
@@ -361,8 +361,8 @@ public:
 			SetBrushOrgEx(TargetDC, 0, 0, NULL);
 
 			StretchBlt(TargetDC,
-				0,
-				0,
+				DestRect.left,
+				DestRect.top,
 				DestRect.get_width(),
 				DestRect.get_height(),
 				OffScreenDC,
@@ -456,7 +456,7 @@ public:
 
 			if(hr != DD_OK)
 			{
-				Surface->Release();
+				Surface->Release(), Surface = NULL;
 				TVPThrowExceptionMessage(TJS_W("Cannot get surface description/HR=%1"),
 					TJSInt32ToHex(hr, 8));
 			}
@@ -468,7 +468,7 @@ public:
 			}
 			else
 			{
-				Surface->Release();
+				Surface->Release(), Surface = NULL;
 				TVPThrowExceptionMessage(TJS_W("Cannot allocate the surface on the local video memory"),
 					TJSInt32ToHex(hr, 8));
 			}
@@ -478,15 +478,15 @@ public:
 			hr = object->CreateClipper(0, &Clipper, NULL);
 			if(hr != DD_OK)
 			{
-				Surface->Release();
+				Surface->Release(), Surface = NULL;
 				TVPThrowExceptionMessage(TJS_W("Cannot create a clipper object/HR=%1"),
 					TJSInt32ToHex(hr, 8));
 			}
 			hr = Clipper->SetHWnd(0, TargetWindow);
 			if(hr != DD_OK)
 			{
-				Clipper->Release();
-				Surface->Release();
+				Clipper->Release(), Clipper = NULL;
+				Surface->Release(), Surface = NULL;
 				TVPThrowExceptionMessage(TJS_W("Cannot set the window handle to the clipper object/HR=%1"),
 					TJSInt32ToHex(hr, 8));
 			}
@@ -530,7 +530,7 @@ public:
 	void StartBitmapCompletion()
 	{
 		// retrieve DC
-		if(Surface)
+		if(Surface && TargetWindow)
 		{
 			HDC dc;
 			HRESULT hr = Surface->GetDC(&dc);
@@ -555,11 +555,11 @@ public:
 		const tTVPRect &cliprect)
 	{
 		// DrawDibDraw Ç…Çƒ OffScreenDC Ç…ï`âÊÇçsÇ§
-		if(DrawDibHandle && OffScreenDC)
+		if(DrawDibHandle && OffScreenDC && TargetWindow)
 			DrawDibDraw(DrawDibHandle,
 				OffScreenDC,
-				x + DestRect.left,
-				y + DestRect.top,
+				x,
+				y,
 				cliprect.get_width(),
 				cliprect.get_height(),
 				const_cast<BITMAPINFOHEADER*>(reinterpret_cast<const BITMAPINFOHEADER*>(bitmapinfo)),
@@ -573,6 +573,7 @@ public:
 
 	void EndBitmapCompletion()
 	{
+		if(!TargetWindow) return;
 		if(!Surface) return;
 		if(!OffScreenDC) return;
 
@@ -587,15 +588,15 @@ public:
 		TVPSetDDPrimaryClipper(Clipper);
 
 		// get PaintBox's origin
-		POINT origin; origin.x = 0, origin.y = 0;
+		POINT origin; origin.x = DestRect.left, origin.y = DestRect.top;
 		ClientToScreen(TargetWindow, &origin);
 
 		// entire of the bitmap is to be transfered (this is not optimal. FIX ME!)
 		RECT drect;
-		drect.left = DestRect.left + origin.x;
-		drect.top  = DestRect.top  + origin.y;
-		drect.right = drect.left + DestRect.get_width();
-		drect.bottom = drect.top + DestRect.get_height();
+		drect.left   = origin.x;
+		drect.top    = origin.y;
+		drect.right  = origin.x + DestRect.get_width();
+		drect.bottom = origin.y + DestRect.get_height();
 
 		RECT srect;
 		srect.left = 0;
