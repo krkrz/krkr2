@@ -1104,12 +1104,10 @@ void TJS_INTF_METHOD tTJSNI_Window::ResetImeMode()
 void tTJSNI_Window::BeginUpdate(const tTVPComplexRect &rects)
 {
 	tTJSNI_BaseWindow::BeginUpdate(rects);
-	if(Form) Form->BeginDrawLayerImage(rects);
 }
 //---------------------------------------------------------------------------
 void tTJSNI_Window::EndUpdate()
 {
-	if(Form) Form->EndDrawLayerImage();
 	tTJSNI_BaseWindow::EndUpdate();
 }
 //---------------------------------------------------------------------------
