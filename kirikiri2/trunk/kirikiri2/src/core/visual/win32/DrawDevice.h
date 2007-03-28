@@ -160,6 +160,15 @@ public:
 	//! @param		y		描画矩形内における y 位置(描画矩形の左上が原点)
 	virtual void TJS_INTF_METHOD OnMouseWheel(tjs_uint32 shift, tjs_int delta, tjs_int x, tjs_int y) = 0;
 
+	//! @brief		(Window->DrawDevice) 入力状態のチェック
+	//! @note		ウィンドウから約1秒おきに、レイヤマネージャがユーザからの入力の状態を
+	//!				再チェックするために呼ばれる。レイヤ状態の変化がユーザの入力とは
+	//!				非同期に行われた場合、たとえばマウスカーソルの下にレイヤが出現した
+	//!				のにもかかわらず、マウスカーソルがそのレイヤの指定する形状に変更されない
+	//!				といった状況が発生しうる。このような状況に対処するため、ウィンドウから
+	//!				このメソッドが約1秒おきに呼ばれる。
+	virtual void TJS_INTF_METHOD RecheckInputState() = 0;
+
 	//! @brief		(LayerManager→DrawDevice) マウスカーソルの形状をデフォルトに戻す
 	//! @param		manager		レイヤマネージャ
 	//! @note		マウスカーソルの形状をデフォルトの物に戻したい場合に呼ばれる
@@ -283,6 +292,16 @@ public:
 	//! @param		manager		描画を終了するレイヤマネージャ
 	virtual void TJS_INTF_METHOD EndBitmapCompletion(iTVPLayerManager * manager) = 0;
 
+//---- デバッグ支援
+	//! @brief		(Window->DrawDevice) レイヤ構造をコンソールにダンプする
+	virtual void TJS_INTF_METHOD DumpLayerStructure() = 0;
+
+	//! @brief		(Window->DrawDevice) 更新矩形の表示を行うかどうかを設定する
+	//! @param		b		表示を行うかどうか
+	//! @note		レイヤ表示機構が差分更新を行う際の矩形を表示し、
+	//!				差分更新の最適化に役立てるための支援機能。
+	//!				実装する必要はないが、実装することが望ましい。
+	virtual void TJS_INTF_METHOD SetShowUpdateRect(bool b) = 0;
 };
 //---------------------------------------------------------------------------
 
@@ -359,6 +378,7 @@ public:
 	virtual void TJS_INTF_METHOD OnKeyUp(tjs_uint key, tjs_uint32 shift);
 	virtual void TJS_INTF_METHOD OnKeyPress(tjs_char key);
 	virtual void TJS_INTF_METHOD OnMouseWheel(tjs_uint32 shift, tjs_int delta, tjs_int x, tjs_int y);
+	virtual void TJS_INTF_METHOD RecheckInputState();
 
 	// layer manager → drawdevice
 	virtual void TJS_INTF_METHOD SetDefaultMouseCursor(iTVPLayerManager * manager);
@@ -381,6 +401,10 @@ public:
 //---- 再描画関連
 	virtual void TJS_INTF_METHOD RequestInvalidation(const tTVPRect & rect);
 	virtual void TJS_INTF_METHOD Update();
+
+//---- デバッグ支援
+	virtual void TJS_INTF_METHOD DumpLayerStructure();
+	virtual void TJS_INTF_METHOD SetShowUpdateRect(bool b);
 
 // ほかのメソッドについては実装しない
 };

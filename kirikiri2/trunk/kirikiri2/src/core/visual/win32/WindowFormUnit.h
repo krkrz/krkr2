@@ -28,7 +28,6 @@
 //---------------------------------------------------------------------------
 // Options
 //---------------------------------------------------------------------------
-extern bool TVPUseDIBSection;
 extern void TVPInitWindowOptions();
 extern int TVPFullScreenBPP; // = 0; // 0 for no-change
 //---------------------------------------------------------------------------
@@ -47,86 +46,6 @@ tjs_uint32 TVPGetCurrentShiftKeyState();
 
 
 
-
-
-
-
-//---------------------------------------------------------------------------
-// Double-buffering management
-//---------------------------------------------------------------------------
-enum tTVPDoubleBufferStyle
-{
-	tdbsNone, // not use
-	tdbsAuto, // auto-detect
-	tdbsGDI, // using GDI with Device Dependent Bitmap
-	tdbsDirectDraw // using DirectDraw
-};
-//---------------------------------------------------------------------------
-class tTVPBaseDoubleBuffer
-{
-	// base class for double-buffering
-protected:
-	std::vector<tTVPRect> Rects;
-	tjs_int Area;
-
-public:
-	tTVPBaseDoubleBuffer() : Area(0) {}
-	virtual ~tTVPBaseDoubleBuffer() {}
-
-	void AddRect(const tTVPRect &rect);
-	void AddRect(const tTVPComplexRect &rects);
-	tjs_int GetArea() const { return Area; }
-
-	virtual void Start() = 0; // start buffering
-
-	virtual HDC GetDC() = 0; // retrieve DC
-
-	virtual void ReleaseDC(HDC dc) = 0; // release DC
-
-	virtual void Finish() { Rects.clear(); Area = 0; } // finish buffeering
-};
-//---------------------------------------------------------------------------
-class IDirectDrawSurface;
-class IDirectDrawClipper;
-class tTVPDirectDrawDoubleBuffer : public tTVPBaseDoubleBuffer
-{
-	// double buffering manager for using DirectDraw
-	IDirectDrawSurface * Surface;
-	TPaintBox * Target;
-	IDirectDrawClipper * Clipper;
-	tjs_int BitmapWidth;
-	tjs_int BitmapHeight;
-
-public:
-	tTVPDirectDrawDoubleBuffer(tjs_int w, tjs_int h, TPaintBox *target);
-	~tTVPDirectDrawDoubleBuffer();
-
-	void Start(); // start buffering
-
-	HDC GetDC(); // retrieve DC
-	void ReleaseDC(HDC dc); // release DC
-
-	void Finish();
-};
-//---------------------------------------------------------------------------
-class tTVPGDIDoubleBuffer : public tTVPBaseDoubleBuffer
-{
-	// double buffering manager for using GDI(DDB)
-	Graphics::TBitmap *Bitmap;
-	TPaintBox * Target;
-
-public:
-	tTVPGDIDoubleBuffer(tjs_int w, tjs_int h, TPaintBox *target);
-	~tTVPGDIDoubleBuffer();
-
-	void Start(); // start buffering
-
-	HDC GetDC(); // retrieve DC
-	void ReleaseDC(HDC dc); // release DC
-
-	void Finish();
-};
-//---------------------------------------------------------------------------
 
 
 
@@ -221,11 +140,6 @@ private:
 	bool NextSetWindowHandleToDrawDevice;
 	tTVPRect LastSentDrawDeviceDestRect;
 
-	//-- double-buffering related
-	tTVPBaseDoubleBuffer *DoubleBuffer;
-	tTVPDoubleBufferStyle DoubleBufferStyle;
-	bool NextInvalidate; // invalidate on next tick; bug workaround for DirectDraw
-
 	//-- interface to plugin
 	tObjectList<tTVPMessageReceiverRecord> WindowMessageReceivers;
 
@@ -234,9 +148,6 @@ private:
 	tTVPPadDirectInputDevice *DIPadDevice;
 	bool ReloadDevice;
 	DWORD ReloadDeviceTick;
-
-	//-- dithering related
-	Graphics::TBitmap *DitherTempBitmap;
 
 	//-- TJS object related
 	tTJSNI_Window * TJSNativeInstance;
@@ -352,30 +263,11 @@ private:
 public:
 	bool __fastcall GetFormEnabled();
 
-	//-- double-buffering management
-private:
-	void DeleteDoubleBuffer();
-public:
-	void ShutdownDoubleBuffer();
-
-private:
-	void DetectDoubleBufferingSpeed();
-
 	//-- interface to layer
 private:
-	DWORD LastLayerTickBeatSent;
-public:
-	void __fastcall BeginDrawLayerImage(const tTVPComplexRect & rects);
-	void __fastcall EndDrawLayerImage();
-
-private:
-	void __fastcall DrawLayerImageTo(HDC dc, const tTVPRect &rect,
-		tTVPBaseBitmap *bmp, const tTVPRect &cliprect);
+	DWORD LastRecheckInputStateSent;
 
 public:
-	void __fastcall DrawLayerImage(const tTVPRect &rect,
-		tTVPBaseBitmap *bmp, const tTVPRect &cliprect);
-
 	void __fastcall ZoomRectangle(
 		tjs_int & left, tjs_int & top,
 		tjs_int & right, tjs_int & bottom);
@@ -496,11 +388,6 @@ protected:
 		  int X, int Y);
 	void __fastcall PaintBoxMouseUp(TObject *Sender, TMouseButton Button,
 		  TShiftState Shift, int X, int Y);
-
-private:
-	// DrawDib management
-	HDRAWDIB DrawDibHandle;
-
 
 protected:
 	//-- Windows message mapping

@@ -291,6 +291,17 @@ void TJS_INTF_METHOD tTVPDrawDevice::OnMouseWheel(tjs_uint32 shift, tjs_int delt
 
 
 //---------------------------------------------------------------------------
+void TJS_INTF_METHOD tTVPDrawDevice::RecheckInputState()
+{
+	iTVPLayerManager * manager = GetLayerManagerAt(PrimaryLayerManagerIndex);
+	if(!manager) return;
+
+	manager->RecheckInputState();
+}
+//---------------------------------------------------------------------------
+
+
+//---------------------------------------------------------------------------
 void TJS_INTF_METHOD tTVPDrawDevice::SetDefaultMouseCursor(iTVPLayerManager * manager)
 {
 	iTVPLayerManager * primary_manager = GetLayerManagerAt(PrimaryLayerManagerIndex);
@@ -467,5 +478,24 @@ void TJS_INTF_METHOD tTVPDrawDevice::Update()
 	{
 		(*i)->UpdateToDrawDevice();
 	}
+}
+//---------------------------------------------------------------------------
+
+//---------------------------------------------------------------------------
+void TJS_INTF_METHOD tTVPDrawDevice::DumpLayerStructure()
+{
+	// ‚·‚×‚Ä‚Ì layer manager ‚Ì DumpLayerStructure ‚ðŒÄ‚Ô
+	for(std::vector<iTVPLayerManager *>::iterator i = Managers.begin(); i != Managers.end(); i++)
+	{
+		(*i)->DumpLayerStructure();
+	}
+}
+//---------------------------------------------------------------------------
+
+
+//---------------------------------------------------------------------------
+void TJS_INTF_METHOD tTVPDrawDevice::SetShowUpdateRect(bool b)
+{
+	// ‚È‚É‚à‚µ‚È‚¢
 }
 //---------------------------------------------------------------------------

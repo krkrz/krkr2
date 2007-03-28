@@ -1311,6 +1311,7 @@ static void TVPFreeBitmapBits(void *ptr)
 //---------------------------------------------------------------------------
 // tTVPBitmap : internal bitmap object
 //---------------------------------------------------------------------------
+bool TVPUseDIBSection = false; // always false since 2.29 2007.03.28
 /*
 	important:
 	Note that each lines must be started at tjs_uint32 ( 4bytes ) aligned address.

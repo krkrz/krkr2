@@ -242,16 +242,8 @@ void TVPHideModalAtAppDeactivate()
 //---------------------------------------------------------------------------
 // Window/Bitmap options
 //---------------------------------------------------------------------------
-bool TVPUseDIBSection = false;
-static bool TVPUseDrawDib = true;
-static bool TVPDrawDibUseJustDrawIt = false;
-static bool TVPWaitVSync = false;
 static bool TVPWindowOptionsInit = false;
-static bool TVPUseDither = false;
-static tTVPDoubleBufferStyle TVPDoubleBufferStyle = tdbsNone;
-static tTVPDoubleBufferStyle TVPSelectedDoubleBufferStyle = tdbsNone;
 static int TVPFullScreenBPP = 0; // 0 for no-change
-static bool TVPZoomInterpolation = true;
 static bool TVPFullScreenNoResolutionChange = false;
 static bool TVPControlImeState = true;
 //---------------------------------------------------------------------------
@@ -264,55 +256,6 @@ void TVPInitWindowOptions()
 	bool initddraw = false;
 
 	tTJSVariant val;
-	if(TVPGetCommandLine(TJS_W("-dibtype"), &val))
-	{
-		ttstr str(val);
-		if(str == TJS_W("sdb"))
-		{
-			TVPUseDrawDib = false;
-		}
-		else if(str == TJS_W("drawdib"))
-		{
-			TVPDrawDibUseJustDrawIt = false;
-			TVPUseDrawDib = true;
-		}
-		else if(str == TJS_W("drawdibjdi"))
-		{
-			TVPDrawDibUseJustDrawIt = true;
-			TVPUseDrawDib = true;
-		}
-		else if(str == TJS_W("dibsect"))
-		{
-			TVPUseDrawDib = false;
-			TVPUseDIBSection = true;
-		}
-	}
-
-	HDC dc = GetDC(0);
-	tjs_int bits = GetDeviceCaps(dc, BITSPIXEL);
-
-	if(bits <= 8)
-	{
-		TVPUseDrawDib = false;
-		// dithering via DrawDib is typically very slow in thus kirikiri's usage
-	}
-	ReleaseDC(0, dc);
-
-	if(TVPGetCommandLine(TJS_W("-dither"), &val))
-	{
-		ttstr str(val);
-		if(str == TJS_W("yes")) TVPUseDither = true;
-	}
-
-	if(TVPGetCommandLine(TJS_W("-waitvsync"), &val))
-	{
-		ttstr str(val);
-		if(str == TJS_W("yes"))
-		{
-			TVPWaitVSync = true;
-			initddraw = true;
-		}
-	}
 
 	if(TVPGetCommandLine(TJS_W("-fsbpp"), &val))
 	{
@@ -372,40 +315,6 @@ void TVPInitWindowOptions()
 			TVPUseChangeDisplaySettings = false;
 	}
 
-
-	if(TVPGetCommandLine(TJS_W("-dbstyle"), &val) )
-	{
-		ttstr str(val);
-		if(str == TJS_W("none") || str == TJS_W("no"))
-			TVPDoubleBufferStyle = tdbsNone;
-		if(str == TJS_W("auto"))
-			TVPDoubleBufferStyle = tdbsAuto,
-			initddraw = true;
-		else if(str == TJS_W("gdi"))
-			TVPDoubleBufferStyle = tdbsGDI;
-		else if(str == TJS_W("ddraw"))
-			TVPDoubleBufferStyle = tdbsDirectDraw,
-			initddraw = true;
-		TVPSelectedDoubleBufferStyle = TVPDoubleBufferStyle;
-	}
-
-
-	if(TVPGetCommandLine(TJS_W("-smoothzoom"), &val))
-	{
-		ttstr str(val);
-		if(str == TJS_W("no"))
-		{
-			TVPZoomInterpolation = false;
-			TVPDoubleBufferStyle = tdbsGDI; // Currently only GDI method is enabled
-			TVPSelectedDoubleBufferStyle = TVPDoubleBufferStyle;
-		}
-		else
-		{
-			TVPZoomInterpolation = true;
-		}
-	}
-
-
 	if(TVPGetCommandLine(TJS_W("-controlime"), &val) )
 	{
 		ttstr str(val);
@@ -418,375 +327,6 @@ void TVPInitWindowOptions()
 	TVPWindowOptionsInit = true;
 }
 //---------------------------------------------------------------------------
-
-
-
-
-
-//---------------------------------------------------------------------------
-// Double-buffering management
-//---------------------------------------------------------------------------
-void tTVPBaseDoubleBuffer::AddRect(const tTVPRect &rect)
-{
-	Rects.push_back(rect);
-	Area += rect.get_height() * rect.get_width();	
-}
-//---------------------------------------------------------------------------
-void tTVPBaseDoubleBuffer::AddRect(const tTVPComplexRect &rects)
-{
-	tTVPComplexRect::tIterator it = rects.GetIterator();
-	while(it.Step())
-	{
-		tTVPRect rect(*it);
-		tjs_int r_area = rect.get_height() * rect.get_width();
-		Area += r_area;
-		Rects.push_back(rect);
-	}
-}
-//---------------------------------------------------------------------------
-static void TVPUninitDoubleBuffer()
-{
-	// release all double buffer objects
-
-	for(tjs_int i = 0; i < Screen->FormCount; i++)
-	{
-		TForm *tform = Screen->Forms[i];
-
-		if(AnsiString(tform->ClassName()) == "TTVPWindowForm")
-		{
-			TTVPWindowForm * form = (TTVPWindowForm * )tform;
-			form->ShutdownDoubleBuffer();
-		}
-	}
-}
-//---------------------------------------------------------------------------
-static tTVPAtExit
-	TVPUninitDoubleBufferAtExit(TVP_ATEXIT_PRI_RELEASE - 1, TVPUninitDoubleBuffer);
-		// must called before DirectDraw's uninitialization  (TVP_ATEXIT_PRI_RELEASE - 1)
-//---------------------------------------------------------------------------
-
-
-
-
-
-//---------------------------------------------------------------------------
-// tTVPDirectDrawDoubleBuffer
-//---------------------------------------------------------------------------
-tTVPDirectDrawDoubleBuffer::tTVPDirectDrawDoubleBuffer(tjs_int w, tjs_int h,
-	TPaintBox *target)
-{
-	Surface = NULL;
-	Clipper = NULL;
-
-	IDirectDraw2 *object = TVPGetDirectDrawObjectNoAddRef();
-	if(!object) TVPThrowExceptionMessage(TJS_W("DirectDraw not available"));
-
-	// allocate secondary off-screen buffer
-	BitmapWidth = w;
-	BitmapHeight = h;
-	DDSURFACEDESC ddsd;
-	ZeroMemory(&ddsd, sizeof(ddsd));
-	ddsd.dwSize = sizeof(ddsd);
-	ddsd.dwFlags = DDSD_WIDTH | DDSD_HEIGHT | DDSD_CAPS;
-	ddsd.dwWidth = w;
-	ddsd.dwHeight = h;
-	ddsd.ddsCaps.dwCaps =
-		DDSCAPS_OFFSCREENPLAIN | DDSCAPS_VIDEOMEMORY | DDSCAPS_LOCALVIDMEM;
-	HRESULT hr;
-
-	hr = object->CreateSurface(&ddsd, &Surface, NULL);
-
-	if(hr != DD_OK)
-		TVPThrowExceptionMessage(TJS_W("Cannot allocate off-screen surface/HR=%1"),
-			TJSInt32ToHex(hr, 8));
-
-	// check whether the surface is on video memory
-	ZeroMemory(&ddsd, sizeof(ddsd));
-	ddsd.dwSize = sizeof(ddsd);
-
-	hr = Surface->GetSurfaceDesc(&ddsd);
-
-	if(hr != DD_OK)
-	{
-		Surface->Release();
-		TVPThrowExceptionMessage(TJS_W("Cannot get surface description/HR=%1"),
-			TJSInt32ToHex(hr, 8));
-	}
-
-	if(ddsd.ddsCaps.dwCaps & DDSCAPS_VIDEOMEMORY &&
-		ddsd.ddsCaps.dwCaps & DDSCAPS_LOCALVIDMEM)
-	{
-		// ok
-	}
-	else
-	{
-		Surface->Release();
-		TVPThrowExceptionMessage(TJS_W("Cannot allocate the surface on the local video memory"),
-			TJSInt32ToHex(hr, 8));
-	}
-
-	// set other members
-	Target = target;
-
-
-	// create clipper object
-	hr = object->CreateClipper(0, &Clipper, NULL);
-	if(hr != DD_OK)
-	{
-		Surface->Release();
-		TVPThrowExceptionMessage(TJS_W("Cannot create a clipper object/HR=%1"),
-			TJSInt32ToHex(hr, 8));
-	}
-	hr = Clipper->SetHWnd(0, Target->Parent->Handle);
-	if(hr != DD_OK)
-	{
-		Clipper->Release();
-		Surface->Release();
-		TVPThrowExceptionMessage(TJS_W("Cannot set the window handle to the clipper object/HR=%1"),
-			TJSInt32ToHex(hr, 8));
-	}
-}
-//---------------------------------------------------------------------------
-tTVPDirectDrawDoubleBuffer::~tTVPDirectDrawDoubleBuffer()
-{
-	if(Surface) Surface->Release();
-	if(Clipper) Clipper->Release();
-}
-//---------------------------------------------------------------------------
-void tTVPDirectDrawDoubleBuffer::Start()
-{
-	// start buffering
-}
-//---------------------------------------------------------------------------
-HDC tTVPDirectDrawDoubleBuffer::GetDC()
-{
-	// retrieve DC
-	HDC dc;
-	HRESULT hr = Surface->GetDC(&dc);
-	if(hr == DDERR_SURFACELOST)
-	{
-		Surface->Restore();
-		Target->Invalidate(); // causes reconstruction of off-screen image
-		hr = Surface->GetDC(&dc);
-	}
-
-	if(hr != DD_OK)
-	{
-		TVPThrowExceptionMessage(TJS_W("Off-screen surface, IDirectDrawSurface::GetDC failed/HR=%1"),
-			TJSInt32ToHex(hr, 8));
-	}
-
-	return dc;
-}
-//---------------------------------------------------------------------------
-void tTVPDirectDrawDoubleBuffer::ReleaseDC(HDC dc)
-{
-	// release DC
-	Surface->ReleaseDC(dc);
-}
-//---------------------------------------------------------------------------
-void tTVPDirectDrawDoubleBuffer::Finish()
-{
-	// Blt to the primary surface
-	IDirectDrawSurface *pri = TVPGetDDPrimarySurfaceNoAddRef();
-	if(!pri)
-		TVPThrowExceptionMessage(TJS_W("Cannot retrieve primary surface object"));
-
-	// set clipper
-	TVPSetDDPrimaryClipper(Clipper);
-
-	// get PaintBox's origin
-	TPoint origin(0, 0);
-	origin = Target->ClientToScreen(origin);
-
-	// for each rectangle
-	if(BitmapWidth != Target->Width || BitmapHeight != Target->Height)
-	{
-		// zooming enabled
-		// entire of the bitmap is to be transfered (this is not optimal. FIX ME!)
-		RECT drect;
-		drect.left = 0 + origin.x;
-		drect.top = 0 + origin.y;
-		drect.right = drect.left + Target->Width;
-		drect.bottom = drect.top + Target->Height;
-
-		RECT srect;
-		srect.left = 0;
-		srect.top = 0;
-		srect.right = BitmapWidth;
-		srect.bottom = BitmapHeight;
-
-		HRESULT hr = pri->Blt(&drect, Surface, &srect, DDBLT_WAIT, NULL);
-		if(hr == DDERR_SURFACELOST)
-		{
-			pri->Restore();
-			Surface->Restore();
-			Target->Invalidate(); // causes reconstruction of off-screen image
-		}
-		else if(hr == DDERR_INVALIDRECT)
-		{
-			// ignore this error
-		}
-		else if(hr != DD_OK)
-		{
-			TVPThrowExceptionMessage(TJS_W("Primary surface, IDirectDrawSurface::Blt failed/HR=%1"),
-				TJSInt32ToHex(hr, 8));
-		}
-
-	}
-	else
-	{
-		tTVPRect rect;
-
-		for(std::vector<tTVPRect>::iterator i = Rects.begin();
-			i != Rects.end(); i++)
-		{
-			tjs_int w = i->get_width();
-			tjs_int h = i->get_height();
-
-			if(w && h)
-			{
-
-				RECT drect;
-				drect.left = i->left + origin.x;
-				drect.top = i->top + origin.y;
-				drect.right = drect.left + w;
-				drect.bottom = drect.top + h;
-
-				RECT srect;
-				srect.left = i->left;
-				srect.top = i->top;
-				srect.right = i->right;
-				srect.bottom = i->bottom;
-
-				HRESULT hr = pri->Blt(&drect, Surface, &srect, DDBLT_WAIT, NULL);
-				if(hr == DDERR_SURFACELOST)
-				{
-					pri->Restore();
-					Surface->Restore();
-					Target->Invalidate(); // causes reconstruction of off-screen image
-					break;
-				}
-
-				if(hr == DDERR_INVALIDRECT)
-				{
-					// ignore this error
-				}
-				else if(hr != DD_OK)
-				{
-					TVPThrowExceptionMessage(TJS_W("Primary surface, IDirectDrawSurface::Blt failed/HR=%1"),
-						TJSInt32ToHex(hr, 8));
-				}
-			}
-		}
-	}
-
-	// call inherited::Finish
-	tTVPBaseDoubleBuffer::Finish();
-}
-//---------------------------------------------------------------------------
-
-
-
-
-
-
-
-
-//---------------------------------------------------------------------------
-// tTVPGDIDoubleBuffer
-//---------------------------------------------------------------------------
-tTVPGDIDoubleBuffer::tTVPGDIDoubleBuffer(tjs_int w, tjs_int h, TPaintBox *target)
-{
-	Bitmap = new Graphics::TBitmap();
-	Bitmap->Width = w;
-	Bitmap->Height = h;
-	Bitmap->PixelFormat = pfDevice; // DDB
-	Target = target;
-}
-//---------------------------------------------------------------------------
-
-tTVPGDIDoubleBuffer::~tTVPGDIDoubleBuffer()
-{
-}
-//---------------------------------------------------------------------------
-void tTVPGDIDoubleBuffer::Start()
-{
-	// nothing to do
-}
-//---------------------------------------------------------------------------
-HDC tTVPGDIDoubleBuffer::GetDC()
-{
-	// retrieve DC
-	return Bitmap->Canvas->Handle;
-}
-//---------------------------------------------------------------------------
-void tTVPGDIDoubleBuffer::ReleaseDC(HDC dc)
-{
-	// release DC
-	// nothing to do
-}
-//---------------------------------------------------------------------------
-void tTVPGDIDoubleBuffer::Finish()
-{
-	if(Bitmap->Width != Target->Width || Bitmap->Height != Target->Height)
-	{
-		// zooming enabled
-		// entire of the bitmap is to be transfered (this is not optimal. FIX ME!)
-		if(TVPZoomInterpolation)
-			SetStretchBltMode(Target->Canvas->Handle, HALFTONE);
-		else
-			SetStretchBltMode(Target->Canvas->Handle, COLORONCOLOR);
-		SetBrushOrgEx(Target->Canvas->Handle, 0, 0, NULL);
-
-		StretchBlt(Target->Canvas->Handle,
-			0,
-			0,
-			Target->Width,
-			Target->Height,
-			Bitmap->Canvas->Handle,
-			0,
-			0,
-			Bitmap->Width,
-			Bitmap->Height,
-			SRCCOPY);
-	}
-	else
-	{
-		tTVPRect rect;
-
-		for(std::vector<tTVPRect>::iterator i = Rects.begin();
-			i != Rects.end(); i++)
-		{
-			tjs_int w, h;
-			w = i->get_width();
-			h = i->get_height();
-			if(w && h)
-			{
-				BitBlt(Target->Canvas->Handle,
-					i->left,
-					i->top,
-					w,
-					h,
-					Bitmap->Canvas->Handle,
-					i->left,
-					i->top,
-					SRCCOPY);
-			}
-		}
-	}
-
-	tTVPBaseDoubleBuffer::Finish();
-}
-//---------------------------------------------------------------------------
-
-
-
-
-
-
-
-
 
 
 
@@ -843,10 +383,6 @@ __fastcall TTVPWindowForm::TTVPWindowForm(TComponent* Owner, tTJSNI_Window *ni)
 	::PostMessage(Handle, TVP_WM_ACQUIREIMECONTROL, 0, 0);
 
 
-	DrawDibHandle = NULL;
-
-	DitherTempBitmap = NULL;
-
 	UseMouseKey = false;
 	InMenuLoop = false;
 	TrapKeys = false;
@@ -865,28 +401,17 @@ __fastcall TTVPWindowForm::TTVPWindowForm(TComponent* Owner, tTJSNI_Window *ni)
 	ForceMouseCursorVisible = false;
 	CurrentMouseCursor = crDefault;
 
-	DoubleBuffer = NULL;
-	DoubleBufferStyle = TVPDoubleBufferStyle; // initially TVPDobuleBufferStyle
-
 	DIWheelDevice = NULL;
 	DIPadDevice = NULL;
 	ReloadDevice = false;
 	ReloadDeviceTick = 0;
 
-	if(TVPUseDrawDib) DrawDibHandle = DrawDibOpen();
-
-	LastLayerTickBeatSent = 0;
-
-	NextInvalidate = false;
+	LastRecheckInputStateSent = 0;
 }
 //---------------------------------------------------------------------------
 void __fastcall TTVPWindowForm::FormDestroy(TObject *Sender)
 {
 	CallWindowDetach(true);
-
-	if(DrawDibHandle) DrawDibClose(DrawDibHandle), DrawDibHandle = NULL;
-
-	delete DitherTempBitmap, DitherTempBitmap = NULL;
 
 	TJSNativeInstance = NULL;
 	DestroyMenuContainer();
@@ -894,8 +419,6 @@ void __fastcall TTVPWindowForm::FormDestroy(TObject *Sender)
 	TVPRemoveModalWindow(this);
 
 	FreeDirectInputDevice();
-
-	DeleteDoubleBuffer();
 
 	delete AttentionFont, AttentionFont = NULL;
 
@@ -1269,6 +792,7 @@ void __fastcall TTVPWindowForm::UpdateRectDebugMenuItemClick(
 	  TObject *Sender)
 {
 	UpdateRectDebugMenuItem->Checked = ! UpdateRectDebugMenuItem->Checked;
+	if(TJSNativeInstance) TJSNativeInstance->SetShowUpdateRect(UpdateRectDebugMenuItem->Checked);
 }
 //---------------------------------------------------------------------------
 void __fastcall TTVPWindowForm::DumpLayerStructorMenuItemClick(TObject *Sender)
@@ -1294,532 +818,6 @@ void __fastcall TTVPWindowForm::FormMouseMove(TObject *Sender,
 {
 	RestoreMouseCursor();
 	CheckMenuBarDrop();
-}
-//---------------------------------------------------------------------------
-void TTVPWindowForm::DeleteDoubleBuffer()
-{
-	if(DoubleBuffer) delete DoubleBuffer, DoubleBuffer = NULL;
-}
-//---------------------------------------------------------------------------
-void TTVPWindowForm::ShutdownDoubleBuffer()
-{
-	// called at system's exit.
-	DeleteDoubleBuffer();
-	DoubleBufferStyle = tdbsNone; 
-}
-//---------------------------------------------------------------------------
-#define TVP_DB_PRE_SLEEP 200   // in ms, to wait until the system gets stabled
-#define TVP_DB_DETECT_TIME 400   // in ms, per each method
-#define TVP_DB_DETECT_GDI_WEIGHT 1.08
-	// to use DirectDraw, DirectDraw must be at least TVP_DB_DETECT_GDI_WEIGHT % 
-	// faster than GDI 
-#define TVP_REPORT_DD_ERROR \
-			catch(Exception &e) \
-			{ \
-				TVPAddImportantLog( \
-					TJS_W("(info) Double-buffering failed ... falling back to the basic function.")); \
-				TVPAddImportantLog(ttstr(TJS_W("(info) ")) + e.Message); \
-				DoubleBufferStyle = TVPDoubleBufferStyle = TVPSelectedDoubleBufferStyle = tdbsNone; \
-				if(PaintBox) PaintBox->Invalidate(); \
-				DeleteDoubleBuffer(); \
-			} \
-			catch(eTJS &e) \
-			{ \
-				TVPAddImportantLog( \
-					TJS_W("(info) Double-buffering failed ... falling back to the basic function.")); \
-				TVPAddImportantLog(TJS_W("(info) ") + e.GetMessage()); \
-				DoubleBufferStyle = TVPDoubleBufferStyle = TVPSelectedDoubleBufferStyle = tdbsNone; \
-				if(PaintBox) PaintBox->Invalidate(); \
-				DeleteDoubleBuffer(); \
-			} \
-			catch(...) \
-			{ \
-				TVPAddImportantLog( \
-					TJS_W("(info) Double-buffering failed ... falling back to the basic function.")); \
-				DoubleBufferStyle = TVPDoubleBufferStyle = TVPSelectedDoubleBufferStyle = tdbsNone; \
-				if(PaintBox) PaintBox->Invalidate(); \
-				DeleteDoubleBuffer(); \
-			}
-void TTVPWindowForm::DetectDoubleBufferingSpeed()
-{
-	// do the benchmark to detect that which is faster, DirectDraw or GDI.
-	{
-		tjs_char msg[128];
-		TJS_sprintf(msg, TJS_W("(info) Detecting image transfer speed %dx%d -> %dx%d..."),
-			LayerWidth, LayerHeight, PaintBox->Width, PaintBox->Height);
-		TVPAddImportantLog(msg);
-	}
-
-	TVPEnsureDirectDrawObject();
-
-	Sleep(TVP_DB_PRE_SLEEP);
-
-	tTVPBaseDoubleBuffer * buf = NULL;
-
-	tjs_int count;
-
-	try
-	{
-		// allocate test bitmap
-		tTVPRect rect(0, 0, PaintBox->Width, PaintBox->Height);
-		tTVPBaseBitmap test(LayerWidth, LayerHeight);
-		test.Fill(rect, 0);
-
-
-		DWORD starttime, endtime;
-		double ddspeed = -1.0, gdispeed = -1.0;
-
-		ttstr resmsg;
-
-		try
-		{
-			// DirectDraw
-			buf = new tTVPDirectDrawDoubleBuffer(
-					LayerWidth, LayerHeight, PaintBox);
-
-
-
-			starttime = timeGetTime();
-			count = 0;
-
-			while((endtime = timeGetTime()) - starttime < TVP_DB_DETECT_TIME)
-			{
-				buf->Start();
-				HDC dc = buf->GetDC();
-				DrawLayerImageTo(dc, rect, &test, rect);
-				buf->ReleaseDC(dc);
-				buf->AddRect(rect);
-				buf->Finish();
-				count ++;
-			}
-
-			if(endtime > starttime)
-				ddspeed = (double)count / (double)(endtime - starttime) * 1000.0;
-			else
-            	ddspeed = 0;
-
-			{
-				tjs_char msg[128];
-				TJS_sprintf(msg, TJS_W("DirectDraw : %.2lf count/sec    "), ddspeed);
-				resmsg += msg;
-			}
-
-			delete buf, buf = NULL;
-		}
-		catch(Exception &e)
-		{
-			// any failed
-			if(buf) delete buf, buf = NULL;
-			TVPAddImportantLog(TJS_W("(info) DirectDraw test failed (") +
-				ttstr(e.Message) + TJS_W(")."));
-		}
-		catch(eTJS &e)
-		{
-			// any failed
-			if(buf) delete buf, buf = NULL;
-			TVPAddImportantLog(TJS_W("(info) DirectDraw test failed (") +
-				ttstr(e.GetMessage()) + TJS_W(")."));
-		}
-		catch(...)
-		{
-			// any failed
-			if(buf) delete buf, buf = NULL;
-			TVPAddImportantLog(TJS_W("(info) DirectDraw test failed."));
-		}
-
-		try
-		{
-			// GDI
-			buf = new tTVPGDIDoubleBuffer(
-					LayerWidth, LayerHeight, PaintBox);
-
-
-			starttime = timeGetTime();
-			count = 0;
-
-			while((endtime = timeGetTime()) - starttime < TVP_DB_DETECT_TIME)
-			{
-				buf->Start();
-				HDC dc = buf->GetDC();
-				DrawLayerImageTo(dc, rect, &test, rect);
-				buf->ReleaseDC(dc);
-				buf->AddRect(rect);
-				buf->Finish();
-				count ++;
-			}
-
-			if(endtime > starttime)
-				gdispeed = (double)count / (double)(endtime - starttime) * 1000.0;
-			else
-				gdispeed = 0;
-
-			{
-				tjs_char msg[128];
-				TJS_sprintf(msg, TJS_W("GDI : %.2lf count/sec     "), gdispeed);
-				resmsg += msg;
-			}
-
-			delete buf, buf = NULL;
-		}
-		catch(Exception &e)
-		{
-			// any failed
-			if(buf) delete buf, buf = NULL;
-			TVPAddImportantLog(TJS_W("(info) GDI test failed (") +
-				ttstr(e.Message) + TJS_W(")."));
-		}
-		catch(eTJS &e)
-		{
-			// any failed
-			if(buf) delete buf, buf = NULL;
-			TVPAddImportantLog(TJS_W("(info) GDI test failed (") +
-				ttstr(e.GetMessage()) + TJS_W(")."));
-		}
-		catch(...)
-		{
-			// any failed
-			if(buf) delete buf, buf = NULL;
-			TVPAddImportantLog(TJS_W("(info) GDI test failed."));
-		}
-
-
-		if(ddspeed < 0)
-		{
-			// fault in DirectDraw, most in case, is insufficient video memory.
-			// this will also occurs in GDI.
-			gdispeed = -1.0; // force to set fail this test.
-		}
-
-		// select one of them
-		if(ddspeed < 0 && gdispeed < 0)
-		{
-			// no test succeeded
-			TVPSelectedDoubleBufferStyle = tdbsNone;
-			TVPAddImportantLog(TJS_W("(info) Test failed. Falling back to the basic function."));
-		}
-		else
-		{
-			if(ddspeed  > gdispeed * TVP_DB_DETECT_GDI_WEIGHT )
-			{
-				TVPSelectedDoubleBufferStyle = tdbsDirectDraw;
-				TVPAddImportantLog(TJS_W("(info) ") + resmsg + TJS_W(" DirectDraw selected."));
-			}
-			else
-			{
-				TVPSelectedDoubleBufferStyle = tdbsGDI;
-				TVPAddImportantLog(TJS_W("(info) ") + resmsg + TJS_W(" GDI selected."));
-			}
-		}
-	}
-	TVP_REPORT_DD_ERROR
-}
-//---------------------------------------------------------------------------
-void __fastcall TTVPWindowForm::BeginDrawLayerImage(const tTVPComplexRect & rects)
-{
-	if(!PaintBox) return;
-
-	if(TVPSelectedDoubleBufferStyle == tdbsAuto &&
-		TVPDoubleBufferStyle == tdbsAuto)
-	{
-		// do speed test
-		DetectDoubleBufferingSpeed(); // do the benchmark
-	}
-	else if(TVPSelectedDoubleBufferStyle == tdbsAuto &&
-		TVPDoubleBufferStyle != tdbsNone)
-	{
-		TVPSelectedDoubleBufferStyle = TVPDoubleBufferStyle;
-	}
-
-	if(!DoubleBuffer)
-	{
-		try
-		{
-			bool force_db = ActualZoomNumer != 1 || ActualZoomDenom != 1;
-				// zooming needs double-buffering
-			bool is_main = TJSNativeInstance->IsMainWindow();
-
-			if(force_db)
-			{
-				DoubleBufferStyle = TVPSelectedDoubleBufferStyle;
-				if(DoubleBufferStyle == tdbsNone)
-					DoubleBufferStyle = tdbsDirectDraw;
-				if(!is_main && DoubleBufferStyle == tdbsDirectDraw)
-				{
-					// never select directdraw except for the main window
-					DoubleBufferStyle = tdbsGDI;
-				}
-			}
-			else
-			{
-				if(is_main)
-					DoubleBufferStyle = TVPSelectedDoubleBufferStyle;
-				else
-					DoubleBufferStyle = tdbsNone;
-			}
-
-			if(DoubleBufferStyle == tdbsGDI)
-			{
-				// create new GDI double-buffering object
-				DoubleBuffer =
-					new tTVPGDIDoubleBuffer(
-						LayerWidth, LayerHeight, PaintBox);
-			}
-			else if(DoubleBufferStyle == tdbsDirectDraw)
-			{
-				// create new DirectDraw double-buffering object
-				TVPEnsureDirectDrawObject();
-
-				DoubleBuffer =
-					new tTVPDirectDrawDoubleBuffer(
-						LayerWidth, LayerHeight, PaintBox);
-			}
-		}
-		TVP_REPORT_DD_ERROR
-	}
-
-	if(DoubleBufferStyle == tdbsNone)
-	{
-		if(TVPWaitVSync)
-		{
-			if(rects.GetCount() == 1)
-			{
-				const tTVPRect &rect(rects.GetBound());
-				if(rect.left == 0 && rect.top == 0 &&
-					rect.right == LayerWidth && rect.bottom == LayerHeight)
-				{
-					// when the entire area of the client is to be updated
-					IDirectDraw2 *object = TVPGetDirectDrawObjectNoAddRef();
-					if(object) object->WaitForVerticalBlank(DDWAITVB_BLOCKBEGIN, NULL);
-				}
-			}
-		}
-	}
-	else
-	{
-		try
-		{
-			DoubleBuffer->Start();
-			DoubleBuffer->AddRect(rects);
-		}
-		TVP_REPORT_DD_ERROR
-	}
-}
-//---------------------------------------------------------------------------
-void __fastcall TTVPWindowForm::EndDrawLayerImage()
-{
-	if(!PaintBox) return;
-
-	if(DoubleBufferStyle == tdbsNone)
-	{
-		// nothing to do
-	}
-	else
-	{
-		try
-		{
-			if(DoubleBuffer)
-			{
-				if(TVPWaitVSync && DoubleBuffer->GetArea() >= 170*170)
-				{
-					// only process when the update are is large
-					IDirectDraw2 *object = TVPGetDirectDrawObjectNoAddRef();
-					if(object) object->WaitForVerticalBlank(DDWAITVB_BLOCKBEGIN, NULL);
-				}
-				DoubleBuffer->Finish();
-			}
-		}
-		TVP_REPORT_DD_ERROR
-	}
-}
-//---------------------------------------------------------------------------
-void __fastcall TTVPWindowForm::DrawLayerImageTo(HDC dc, const tTVPRect &rect,
-	tTVPBaseBitmap *bmp, const tTVPRect &cliprect)
-{
-	if(rect.left >= rect.right || rect.top >= rect.bottom ||
-			cliprect.left >= cliprect.right || cliprect.top >= cliprect.bottom) return;
-
-	if(TVPUseDither && TVPDisplayColorFormat != 0)
-	{
-		TPixelFormat pf = TVPDisplayColorFormat == 555 ? pf15bit:pf16bit;
-
-		if(!DitherTempBitmap)
-		{
-			DitherTempBitmap = new Graphics::TBitmap();
-			DitherTempBitmap->PixelFormat = pf;
-		}
-		else if(DitherTempBitmap->PixelFormat != pf)
-		{
-			DitherTempBitmap->PixelFormat = pf;
-		}
-
-
-		// do dithering
-		tjs_int w = rect.get_width();
-		tjs_int h = rect.get_height();
-		if(DitherTempBitmap->Width < w)
-		{
-			DitherTempBitmap->Width = w;
-		}
-		if(DitherTempBitmap->Height < h)
-		{
-			DitherTempBitmap->Height = h;
-		}
-
-		tjs_uint16 *dest;
-		for(tjs_int y = 0; y < h; y++)
-		{
-			if(TVPDisplayColorFormat == 555)
-			{
-				TVPDither32BitTo16Bit555((tjs_uint16*)DitherTempBitmap->ScanLine[y],
-					(tjs_uint32*)bmp->GetScanLine(cliprect.top + y)+cliprect.left,
-					w, rect.left, rect.top+y);
-			}
-			else
-			{
-				TVPDither32BitTo16Bit565((tjs_uint16*)DitherTempBitmap->ScanLine[y],
-					(tjs_uint32*)bmp->GetScanLine(cliprect.top + y)+cliprect.left,
-					w, rect.left, rect.top+y);
-			}
-		}
-
-		BitBlt(dc,
-			rect.left,
-			rect.top,
-			w,
-			h,
-			DitherTempBitmap->Canvas->Handle,
-			0,
-			0,
-			SRCCOPY);
-	}
-	else
-	{
-		if(TVPUseDIBSection)
-		{
-			// DIB section
-			BitBlt(dc,
-				rect.left,
-				rect.top,
-				rect.get_width(),
-				rect.get_height(),
-				bmp->GetBitmap()->GetBitmapDC(),
-				cliprect.left,
-				cliprect.top,
-				SRCCOPY);
-		}
-		else
-		{
-			if(!DrawDibHandle)
-			{
-				tjs_int ch = cliprect.get_height();
-				const void *bits = bmp->GetBitmap()->GetBits();
-				StretchDIBits(
-					dc,
-					rect.left,
-					rect.top,
-					rect.get_width(),
-					rect.get_height(),
-					cliprect.left,
-					bmp->GetHeight() - ch - cliprect.top,
-					cliprect.get_width(),
-					ch,
-					bits,
-					bmp->GetBitmap()->GetBITMAPINFO(),
-					DIB_RGB_COLORS,
-					SRCCOPY);
-			}
-			else
-			{
-				tjs_int ch = cliprect.get_height();
-				const void *bits = bmp->GetBitmap()->GetBits();
-
-				if(TVPDrawDibUseJustDrawIt)
-				{
-					DrawDibBegin(DrawDibHandle,
-						dc,
-						rect.left,
-						rect.top,
-						const_cast<BITMAPINFOHEADER*>(bmp->GetBitmap()->GetBITMAPINFOHEADER()),
-						cliprect.left,
-						ch,
-						DDF_JUSTDRAWIT);
-				}
-
-				DrawDibDraw(DrawDibHandle,
-					dc,
-					rect.left,
-					rect.top,
-					rect.get_width(),
-					rect.get_height(),
-					const_cast<BITMAPINFOHEADER*>(bmp->GetBitmap()->GetBITMAPINFOHEADER()),
-					const_cast<void*>(bits),
-					cliprect.left,
-					cliprect.top,
-					cliprect.get_width(),
-					ch,
-					0);
-			}
-		}
-	}
-//	Sleep(100);
-}
-//---------------------------------------------------------------------------
-
-void __fastcall TTVPWindowForm::DrawLayerImage(const tTVPRect &rect,
-	tTVPBaseBitmap *bmp, const tTVPRect &cliprect)
-{
-	if(!PaintBox) return;
-
-	if(DoubleBufferStyle == tdbsNone)
-	{
-		DrawLayerImageTo(PaintBox->Canvas->Handle, rect, bmp, cliprect);
-
-		if(UpdateRectDebugMenuItem->Checked)
-		{
-			PaintBox->Canvas->Pen->Style = psSolid;
-			PaintBox->Canvas->Pen->Width = 1;
-			TPoint points[5];
-			points[0].x = rect.left;
-			points[0].y = rect.top;
-			points[1].x = rect.right -1;
-			points[1].y = rect.top;
-			points[2].x = rect.right -1;
-			points[2].y = rect.bottom -1;
-			points[3].x = rect.left;
-			points[3].y = rect.bottom -1;
-			points[4] = points[0];
-			PaintBox->Canvas->Pen->Mode = pmNotMask;
-			PaintBox->Canvas->Pen->Color = (TColor)0xff0000;
-			PaintBox->Canvas->Polyline(points, 4);
-			PaintBox->Canvas->Pen->Mode = pmMerge;
-			PaintBox->Canvas->Pen->Color = (TColor)0x00ffff;
-			PaintBox->Canvas->Polyline(points, 4);
-		}
-	}
-	else
-	{
-		if(DoubleBuffer)
-		{
-			try
-			{
-				HDC dc = DoubleBuffer->GetDC();
-				if(dc)
-				{
-					try
-					{
-						DrawLayerImageTo(dc, rect, bmp, cliprect);
-					}
-					catch(...)
-					{
-						DoubleBuffer->ReleaseDC(dc);
-						throw;
-					}
-					DoubleBuffer->ReleaseDC(dc);
-				}
-			}
-			TVP_REPORT_DD_ERROR
-		}
-	}
 }
 //---------------------------------------------------------------------------
 void __fastcall TTVPWindowForm::ZoomRectangle(
@@ -1862,7 +860,6 @@ void __fastcall TTVPWindowForm::SetPaintBoxSize(tjs_int w, tjs_int h)
 {
 	ScrollBox->HorzScrollBar->Position = 0;
 	ScrollBox->VertScrollBar->Position = 0;
-	if(LayerWidth != w || LayerHeight != h) DeleteDoubleBuffer();
 	LayerWidth  = w;
 	LayerHeight = h;
 	InternalSetPaintBoxSize();
@@ -2014,9 +1011,6 @@ void __fastcall TTVPWindowForm::SetZoom(tjs_int numer, tjs_int denom, bool set_l
 		ActualZoomDenom = denom;
 		ActualZoomNumer = numer;
 	}
-	if(TVPDoubleBufferStyle == tdbsAuto)
-		TVPSelectedDoubleBufferStyle = TVPDoubleBufferStyle; // due to recalc speed
-	DeleteDoubleBuffer();
 	InternalSetPaintBoxSize();
 }
 //---------------------------------------------------------------------------
@@ -2261,7 +1255,6 @@ void __fastcall TTVPWindowForm::SetFullScreenMode(bool b)
 		if(TJSNativeInstance) TJSNativeInstance->DetachVideoOverlay();
 		FreeDirectInputDevice();
 			// due to re-create window (but current implementation may not re-create the window)
-		DeleteDoubleBuffer();
 
 		if(b)
 		{
@@ -2596,7 +1589,6 @@ void __fastcall TTVPWindowForm::SetInnerSize(tjs_int w, tjs_int h)
 void __fastcall TTVPWindowForm::SetBorderStyle(tTVPBorderStyle st)
 {
 	CallWindowDetach(false);
-	DeleteDoubleBuffer();
 	FreeDirectInputDevice(); // due to re-create window
 
 	if(st == ::bsSingle)
@@ -2650,7 +1642,6 @@ void __fastcall TTVPWindowForm::RevertMenuBarVisible()
 void __fastcall TTVPWindowForm::SetStayOnTop(bool b)
 {
 	CallWindowDetach(false);
-	DeleteDoubleBuffer();
 	FreeDirectInputDevice(); // due to re-create window
 	FormStyle = b ? fsStayOnTop:fsNormal;
 	CallWindowAttach();
@@ -2730,7 +1721,6 @@ bool __fastcall TTVPWindowForm::GetTrapKey() const
 //---------------------------------------------------------------------------
 void __fastcall TTVPWindowForm::CreatePaintBox(TWinControl *owner)
 {
-	DeleteDoubleBuffer();
 	ReleaseCapture(); // release mouse events which captured by VCL
 	if(TJSNativeInstance)
 	{
@@ -3294,9 +2284,11 @@ void __fastcall TTVPWindowForm::WMExitMenuLoop(TWMExitMenuLoop &Msg)
 {
 	InMenuLoop = false;
 
-	if(DoubleBufferStyle == tdbsDirectDraw) NextInvalidate = true;
-		// bug workaround for DirectDraw driver.
-		// The client area is to be invalidated at next TickBeat call.
+	// bug workaround for directdraw which does not follow update event
+	if(TJSNativeInstance && PaintBox)
+		TJSNativeInstance->GetDrawDevice()->RequestInvalidation(
+			tTVPRect(0, 0, PaintBox->Width, PaintBox->Height));
+
 }
 //---------------------------------------------------------------------------
 void __fastcall TTVPWindowForm::WMKeyDown(TWMKeyDown &Msg)
@@ -3549,20 +2541,12 @@ void __fastcall TTVPWindowForm::TickBeat()
 	}
 
 
-	// check NextInvalidate
-	if(NextInvalidate)
+	// check RecheckInputState
+	if(tickcount - LastRecheckInputStateSent > 1000)
 	{
-		if(PaintBox) PaintBox->Invalidate();
-		NextInvalidate = false;
+		LastRecheckInputStateSent = tickcount;
+		if(TJSNativeInstance) TJSNativeInstance->RecheckInputState();
 	}
-
-	// check LastLayerTickBeatSent
-	if(tickcount - LastLayerTickBeatSent > 1000)
-	{
-		LastLayerTickBeatSent = tickcount;
-		if(TJSNativeInstance) TJSNativeInstance->TimerBeat();
-	}
-
 }
 //---------------------------------------------------------------------------
 #define TVP_MOUSE_MAX_ACCEL 30
