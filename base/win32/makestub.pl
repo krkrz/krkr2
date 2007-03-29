@@ -533,14 +533,23 @@ process_exp_stub("../../visual/LayerBitmapIntf.h");
 print OFH "#include \"drawable.h\"\n";
 process_exp_stub("../../visual/drawable.h");
 
+print OFH "#include \"ComplexRect.h\"\n";
+process_exp_stub("../../visual/ComplexRect.h");
+
 print OFH "#include \"LayerIntf.h\"\n";
 process_exp_stub("../../visual/LayerIntf.h");
+
+print OFH "#include \"LayerManager.h\"\n";
+process_exp_stub("../../visual/LayerManager.h");
 
 print OFH "#include \"WindowIntf.h\"\n";
 process_exp_stub("../../visual/WindowIntf.h");
 
 print OFH "#include \"WindowImpl.h\"\n";
 process_exp_stub("../../visual/win32/WindowImpl.h");
+
+print OFH "#include \"DrawDevice.h\"\n";
+process_exp_stub("../../visual/win32/DrawDevice.h");
 
 print OFH "#include \"voMode.h\"\n";
 process_exp_stub("../../visual/voMode.h");
