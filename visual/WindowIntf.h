@@ -162,6 +162,7 @@ public:
 	void SetDrawDeviceObject(const tTJSVariant & val);
 	const tTJSVariant & GetDrawDeviceObject() const { return DrawDeviceObject; }
 	iTVPDrawDevice * GetDrawDevice() const { return DrawDevice ; }
+	virtual void ResetDrawDevice() = 0;
 
 	//----- event dispatching
 public:
@@ -221,7 +222,9 @@ public:
 
 	void RecheckInputState(); // slow timer tick (about 1 sec interval, inaccurate)
 
-	void SetShowUpdateRect(bool b); 
+	void SetShowUpdateRect(bool b);
+
+
 	//----- methods
 	void Add(tTJSVariantClosure clo);
 	void Remove(tTJSVariantClosure clo);
