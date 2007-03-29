@@ -29,16 +29,18 @@ extern bool TVPUnionRect(tTVPRect *dest, const tTVPRect &src1, const tTVPRect &s
 //---------------------------------------------------------------------------
 
 
-
+/*[*/
 
 //---------------------------------------------------------------------------
 // tTVPRect - simple rectangle structure
 //---------------------------------------------------------------------------
+#pragma pack(push, 4)
 struct tTVPPoint
 {
 	tjs_int x;
 	tjs_int y;
 };
+#pragma pack(pop)
 //---------------------------------------------------------------------------
 struct tTVPPointD
 {
@@ -126,14 +128,14 @@ struct tTVPRect
 		if(bottom < ref.bottom) bottom = ref.bottom;
 		return true;
 	}
-
+#ifndef __TP_STUB_H__
 	bool clip(const tTVPRect &ref)
 	{
 		// Clip (take the intersection of) the rectangle with rectangle. 
 		// returns whether the rectangle remains.
 		return TVPIntersectRect(this, *this, ref);
 	}
-
+#endif
 	bool intersects_with_no_empty_check(const tTVPRect & ref) const
 	{
 		// returns wether this has intersection with "ref"
@@ -181,7 +183,7 @@ public: // comparison operators for sorting
 };
 //---------------------------------------------------------------------------
 
-
+/*]*/
 
 
 //---------------------------------------------------------------------------

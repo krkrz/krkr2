@@ -1894,6 +1894,11 @@ extern void * TVPImportFuncPtrdcd6ba3960e3e2cf6dbe585b1f67b0ac;
 extern void * TVPImportFuncPtr5b1fa785e397e643dd09cb43c2f2f4db;
 extern void * TVPImportFuncPtr29af78765c764c566e6adc77e0ea7041;
 extern void * TVPImportFuncPtr9e0df54e4c24ee28d5517c1743faa3a3;
+extern void * TVPImportFuncPtrb426fbfb6ccb4e89c252b6af566995b8;
+extern void * TVPImportFuncPtr678c2b211f8d8f661f6fdd95c52fbaa8;
+extern void * TVPImportFuncPtr9ec5b02d14238454101dad083b5dfc3b;
+extern void * TVPImportFuncPtrd0bb2c604ee6f0bba72ddc017f6416eb;
+extern void * TVPImportFuncPtr3ab4d4d7b57eea827e7bb7c263afb951;
 extern void * TVPImportFuncPtr9982ebedc12d343cb098e2a7b25bdef1;
 extern void * TVPImportFuncPtr81eeacbed5ee6129bef4b370e28b5d10;
 extern void * TVPImportFuncPtr6ed1088905d99012d2fb5827ea19527e;
@@ -4879,6 +4884,161 @@ static bool inline TVPIsTypeUsingAlphaChannel(tTVPLayerType type)
 
 
 
+
+//---------------------------------------------------------------------------
+// tTVPRect - simple rectangle structure
+//---------------------------------------------------------------------------
+#pragma pack(push, 4)
+struct tTVPPoint
+{
+	tjs_int x;
+	tjs_int y;
+};
+#pragma pack(pop)
+//---------------------------------------------------------------------------
+struct tTVPPointD
+{
+	double x;
+	double y;
+};
+//---------------------------------------------------------------------------
+struct tTVPRect
+{
+	tTVPRect(tjs_int l, tjs_int t, tjs_int r, tjs_int b)
+		{ left = l, top = t, right = r, bottom =b; }
+
+	tTVPRect() {};
+
+	union
+	{
+		struct
+		{
+			tjs_int left;
+			tjs_int top;
+			tjs_int right;
+			tjs_int bottom;
+		};
+
+		struct
+		{
+			// capital style
+			tjs_int Left;
+			tjs_int Top;
+			tjs_int Right;
+			tjs_int Bottom;
+		};
+
+		struct
+		{
+			tTVPPoint upper_left;
+			tTVPPoint bottom_right;
+		};
+	};
+
+	tjs_int get_width() const { return right - left; }
+	tjs_int get_height() const { return bottom - top; }
+
+	void set_width(tjs_int w) { right = left + w; }
+	void set_height(tjs_int h) { bottom = top + h; }
+
+	void add_offsets(tjs_int x, tjs_int y)
+	{
+		left += x; right += x;
+		top += y; bottom += y;
+	}
+
+	void set_offsets(tjs_int x, tjs_int y)
+	{
+		tjs_int w = get_width();
+		tjs_int h = get_height();
+		left = x;
+		top = y;
+		right = x + w;
+		bottom = y + h;
+	}
+
+	void set_size(tjs_int w, tjs_int h)
+	{
+		right = left + w;
+		bottom = top + h;
+	}
+
+	void clear()
+	{
+		left = top = right = bottom = 0;
+	}
+
+	bool is_empty() const
+	{
+		return left >= right || top >= bottom;
+	}
+
+	bool do_union(const tTVPRect & ref)
+	{
+		if(ref.is_empty()) return false;
+		if(left > ref.left) left = ref.left;
+		if(top > ref.top) top = ref.top;
+		if(right < ref.right) right = ref.right;
+		if(bottom < ref.bottom) bottom = ref.bottom;
+		return true;
+	}
+#ifndef __TP_STUB_H__
+	bool clip(const tTVPRect &ref)
+	{
+		// Clip (take the intersection of) the rectangle with rectangle. 
+		// returns whether the rectangle remains.
+		return TVPIntersectRect(this, *this, ref);
+	}
+#endif
+	bool intersects_with_no_empty_check(const tTVPRect & ref) const
+	{
+		// returns wether this has intersection with "ref"
+		return !(
+			left >= ref.right ||
+			top >= ref.bottom ||
+			right <= ref.left ||
+			bottom <= ref.top );
+	}
+
+	bool intersects_with(const tTVPRect & ref) const
+	{
+		// returns wether this has intersection with "ref"
+		if(ref.is_empty() || is_empty()) return false;
+		return intersects_with_no_empty_check(ref);
+	}
+
+	bool included_in_no_empty_check(const tTVPRect & ref) const
+	{
+		// returns wether this is included in "ref"
+		return
+			ref.left <= left &&
+			ref.top <= top &&
+			ref.right >= right &&
+			ref.bottom >= bottom;
+	}
+
+	bool included_in(const tTVPRect & ref) const
+	{
+		// returns wether this is included in "ref"
+		if(ref.is_empty() || is_empty()) return false;
+		return included_in_no_empty_check(ref);
+	}
+
+public: // comparison operators for sorting
+	bool operator < (const tTVPRect & rhs) const
+		{ return top < rhs.top || (top == rhs.top && left < rhs.left); }
+	bool operator > (const tTVPRect & rhs) const
+		{ return top > rhs.top || (top == rhs.top && left > rhs.left); }
+
+	// comparison methods
+	bool operator == (const tTVPRect & rhs) const
+		{ return top == rhs.top && left == rhs.left && right == rhs.right && bottom == rhs.bottom; }
+	bool operator != (const tTVPRect & rhs) const { return !this->operator ==(rhs); }
+};
+//---------------------------------------------------------------------------
+
+
+
 //---------------------------------------------------------------------------
 // drawn face types
 //---------------------------------------------------------------------------
@@ -4954,6 +5114,150 @@ enum tTVPHitType {htMask, htProvince};
 //---------------------------------------------------------------------------
 
 
+class tTJSNI_BaseLayer;
+//---------------------------------------------------------------------------
+// abstract class of Layer Manager 
+//---------------------------------------------------------------------------
+class iTVPLayerManager
+{
+public:
+//-- object lifetime management
+	//! @brief	参照カウンタをインクリメントする
+	virtual void TJS_INTF_METHOD AddRef() = 0;
+
+	//! @brief	参照カウンタをデクリメントする
+	virtual void TJS_INTF_METHOD Release() = 0;
+
+//-- draw device specific information
+	//! @brief	描画デバイス固有の情報を設定する
+	//! @param	data	描画デバイス固有の情報
+	//! @note	描画デバイス固有の情報をレイヤマネージャに設定する。
+	//!			レイヤマネージャではこの情報の中身については関知しない。
+	//!			描画デバイス側で目印に使ったり、特定の情報と結びつけて管理する。
+	virtual void TJS_INTF_METHOD SetDrawDeviceData(void * data) = 0;
+
+	//! @brief	描画デバイス固有の情報を取得する
+	//! @return	描画デバイス固有の情報
+	virtual void * TJS_INTF_METHOD GetDrawDeviceData() const = 0;
+
+//-- layer metrics
+	//! @brief	プライマリレイヤのサイズを取得する
+	//! @param	w	レイヤの横幅(ピクセル単位)
+	//! @param	h	レイヤの縦幅(ピクセル単位)
+	//! @return	取得に成功すれば真、失敗すれば偽
+	virtual bool TJS_INTF_METHOD GetPrimaryLayerSize(tjs_int &w, tjs_int &h) const = 0;
+
+//-- layer structure information
+	//! @brief	プライマリレイヤの取得
+	//! @return	プライマリレイヤ
+	virtual tTJSNI_BaseLayer * TJS_INTF_METHOD GetPrimaryLayer() const = 0;
+
+	//! @brief	フォーカスのあるレイヤの取得
+	//! @return	フォーカスのあるレイヤ
+	virtual tTJSNI_BaseLayer * TJS_INTF_METHOD GetFocusedLayer() const = 0;
+
+	//! @brief	フォーカスのあるレイヤの設定
+	//! @param	layer	フォーカスのあるレイヤ
+	virtual void TJS_INTF_METHOD SetFocusedLayer(tTJSNI_BaseLayer * layer) = 0;
+
+//-- HID releted
+	//! @brief		クリックされた
+	//! @param		x		プライマリレイヤ座標上における x 位置
+	//! @param		y		プライマリレイヤ座標上における y 位置
+	virtual void TJS_INTF_METHOD NotifyClick(tjs_int x, tjs_int y) = 0;
+
+	//! @brief		ダブルクリックされた
+	//! @param		x		プライマリレイヤ座標上における x 位置
+	//! @param		y		プライマリレイヤ座標上における y 位置
+	virtual void TJS_INTF_METHOD NotifyDoubleClick(tjs_int x, tjs_int y) = 0;
+
+	//! @brief		マウスボタンが押下された
+	//! @param		x		プライマリレイヤ座標上における x 位置
+	//! @param		y		プライマリレイヤ座標上における y 位置
+	//! @param		mb		どのマウスボタンか
+	//! @param		flags	フラグ(TVP_SS_*定数の組み合わせ)
+	virtual void TJS_INTF_METHOD NotifyMouseDown(tjs_int x, tjs_int y, tTVPMouseButton mb, tjs_uint32 flags) = 0;
+
+	//! @brief		マウスボタンが離された
+	//! @param		x		プライマリレイヤ座標上における x 位置
+	//! @param		y		プライマリレイヤ座標上における y 位置
+	//! @param		mb		どのマウスボタンか
+	//! @param		flags	フラグ(TVP_SS_*定数の組み合わせ)
+	virtual void TJS_INTF_METHOD NotifyMouseUp(tjs_int x, tjs_int y, tTVPMouseButton mb, tjs_uint32 flags) = 0;
+
+	//! @brief		マウスが移動した
+	//! @param		x		プライマリレイヤ座標上における x 位置
+	//! @param		y		プライマリレイヤ座標上における y 位置
+	//! @param		flags	フラグ(TVP_SS_*定数の組み合わせ)
+	virtual void TJS_INTF_METHOD NotifyMouseMove(tjs_int x, tjs_int y, tjs_uint32 flags) = 0;
+
+	//! @brief		マウスキャプチャを解放する
+	//! @note		マウスキャプチャを解放すべき場合にウィンドウから呼ばれる。
+	virtual void TJS_INTF_METHOD ReleaseCapture() = 0;
+
+	//! @brief		マウスがプライマリレイヤ外に移動した
+	virtual void TJS_INTF_METHOD NotifyMouseOutOfWindow() = 0;
+
+	//! @brief		キーが押された
+	//! @param		key		仮想キーコード
+	//! @param		shift	シフトキーの状態
+	virtual void TJS_INTF_METHOD NotifyKeyDown(tjs_uint key, tjs_uint32 shift) = 0;
+
+	//! @brief		キーが離された
+	//! @param		key		仮想キーコード
+	//! @param		shift	シフトキーの状態
+	virtual void TJS_INTF_METHOD NotifyKeyUp(tjs_uint key, tjs_uint32 shift) = 0;
+
+	//! @brief		キーによる入力
+	//! @param		key		文字コード
+	virtual void TJS_INTF_METHOD NotifyKeyPress(tjs_char key) = 0;
+
+	//! @brief		マウスホイールが回転した
+	//! @param		shift	シフトキーの状態
+	//! @param		delta	回転角
+	//! @param		x		プライマリレイヤ座標上における x 位置
+	//! @param		y		プライマリレイヤ座標上における y 位置
+	virtual void TJS_INTF_METHOD NotifyMouseWheel(tjs_uint32 shift, tjs_int delta, tjs_int x, tjs_int y) = 0;
+
+	//! @brief		入力状態のチェック
+	//! @note		ウィンドウから約1秒おきに、レイヤマネージャがユーザからの入力の状態を
+	//!				再チェックするために呼ばれる。レイヤ状態の変化がユーザの入力とは
+	//!				非同期に行われた場合、たとえばマウスカーソルの下にレイヤが出現した
+	//!				のにもかかわらず、マウスカーソルがそのレイヤの指定する形状に変更されない
+	//!				といった状況が発生しうる。このような状況に対処するため、ウィンドウから
+	//!				このメソッドが約1秒おきに呼ばれる。
+	virtual void TJS_INTF_METHOD RecheckInputState() = 0;
+
+//-- invalidation/update
+	//! @brief		描画デバイスが望むレイヤの出力形式を設定する
+	//! @param		type	レイヤ形式
+	//! @note		デフォルトは ltOpaque 。描画デバイスが他の形式の画像を出力として
+	//!				望むならばその形式を指定する。ただし、プライマリレイヤの type
+	//!				プロパティも同様に変更すること。
+	virtual void TJS_INTF_METHOD SetDesiredLayerType(tTVPLayerType type) = 0;
+
+	//! @brief		特定の矩形の再描画を要求する
+	//! @param		r		プライマリレイヤ座標上における矩形
+	//! @note		特定の矩形の再描画をレイヤマネージャに対して要求する。
+	//!				要求は記録されるだけでこのメソッドはすぐに戻る。実際にそれが
+	//!				演算されるのは UpdateToDrawDevice() を呼んだときである。
+	virtual void TJS_INTF_METHOD RequestInvalidation(const tTVPRect &r) = 0; // draw device -> layer
+
+	//! @brief		内容の再描画を行う
+	//! @note		内容の再描画を行う際に呼ぶ。このメソッド内では、レイヤマネージャは
+	//!				iTVPDrawDevice::StartBitmapCompletion()
+	//!				iTVPDrawDevice::NotifyBitmapCompleted()
+	//!				iTVPDrawDevice::EndBitmapCompletion() の各メソッドを用い、
+	//!				いままでに変更が行われた領域などを順次描画デバイスに送る。
+	virtual void TJS_INTF_METHOD UpdateToDrawDevice() = 0;
+
+//-- debug assist
+	//! @brief		(Window->DrawDevice) レイヤ構造をコンソールにダンプする
+	virtual void TJS_INTF_METHOD DumpLayerStructure() = 0;
+};
+//---------------------------------------------------------------------------
+
+
 //---------------------------------------------------------------------------
 // Window related constants
 //---------------------------------------------------------------------------
@@ -4979,6 +5283,71 @@ enum tTVPMouseCursorState
 
 
 //---------------------------------------------------------------------------
+//! @brief Window basic interface
+//---------------------------------------------------------------------------
+class iTVPWindow
+{
+public:
+	//! @brief	元画像のサイズが変更された
+	//! @note	描画デバイスが、元画像のサイズが変更されたことを通知するために呼ぶ。
+	//!			ウィンドウは iTVPDrawDevice::GetSrcSize() を呼び出して元画像の
+	//!			サイズを取得した後、ズームなどの計算を行ってから 
+	//!			iTVPDrawDevice::SetTargetWindow() を呼び出す。
+	virtual void TJS_INTF_METHOD NotifySrcResize() = 0;
+
+	//! @brief		マウスカーソルの形状をデフォルトに戻す
+	//! @note		マウスカーソルの形状をデフォルトの物に戻したい場合に呼ぶ
+	virtual void TJS_INTF_METHOD SetDefaultMouseCursor() = 0; // set window mouse cursor to default
+
+	//! @brief		マウスカーソルの形状を設定する
+	//! @param		cursor		マウスカーソル形状番号
+	virtual void TJS_INTF_METHOD SetMouseCursor(tjs_int cursor) = 0; // set window mouse cursor
+
+	//! @brief		マウスカーソルの位置を取得する
+	//! @param		x			描画矩形内の座標におけるマウスカーソルのx位置
+	//! @param		y			描画矩形内の座標におけるマウスカーソルのy位置
+	virtual void TJS_INTF_METHOD GetCursorPos(tjs_int &x, tjs_int &y) = 0;
+		// get mouse cursor position in primary layer's coordinates
+
+	//! @brief		マウスカーソルの位置を設定する
+	//! @param		x			描画矩形内の座標におけるマウスカーソルのx位置
+	//! @param		y			描画矩形内の座標におけるマウスカーソルのy位置
+	virtual void TJS_INTF_METHOD SetCursorPos(tjs_int x, tjs_int y) = 0;
+
+	//! @brief		ツールチップヒントを設定する
+	//! @param		text		ヒントテキスト(空文字列の場合はヒントの表示をキャンセルする)
+	virtual void TJS_INTF_METHOD SetHintText(const ttstr & text) = 0;
+
+	//! @brief		注視ポイントの設定
+	//! @param		layer		フォント情報の含まれるレイヤ
+	//! @param		x			描画矩形内の座標における注視ポイントのx位置
+	//! @param		y			描画矩形内の座標における注視ポイントのy位置
+	virtual void TJS_INTF_METHOD SetAttentionPoint(tTJSNI_BaseLayer *layer,
+		tjs_int l, tjs_int t) = 0;
+
+	//! @brief		注視ポイントの解除
+	virtual void TJS_INTF_METHOD DisableAttentionPoint() = 0;
+
+	//! @brief		IMEモードの設定
+	//! @param		mode		IMEモード
+	virtual void TJS_INTF_METHOD SetImeMode(tTVPImeMode mode) = 0;
+
+	//! @brief		IMEモードのリセット
+	virtual void TJS_INTF_METHOD ResetImeMode() = 0;
+
+	//! @brief		iTVPWindow::Update() の呼び出しを要求する
+	//! @note		ウィンドウに対して iTVPWindow::Update() を次の適当なタイミングで
+	//!				呼び出すことを要求する。
+	//!				iTVPWindow::Update() が呼び出されるまでは何回 RequestUpdate() を
+	//!				呼んでも効果は同じである。また、一度 iTVPWindow::Update() が
+	//!				呼び出されると、再び RequestUpdate() を呼ばない限りは
+	//!				iTVPWindow::Update() は呼ばれない。
+	virtual void TJS_INTF_METHOD RequestUpdate() = 0;
+};
+//---------------------------------------------------------------------------
+
+
+//---------------------------------------------------------------------------
 // window message receivers
 //---------------------------------------------------------------------------
 enum tTVPWMRRegMode { wrmRegister=0, wrmUnregister=1 };
@@ -4998,6 +5367,305 @@ typedef bool (__stdcall * tTVPWindowMessageReceiver)
 #define TVP_WM_ATTACH (WM_USER+107)  // after re-generating the window
 
 
+
+
+//---------------------------------------------------------------------------
+// DirectDraw former declaration
+//---------------------------------------------------------------------------
+#ifndef __DDRAW_INCLUDED__
+struct IDirectDraw2;
+struct IDirectDrawSurface;
+struct IDirectDrawClipper;
+#endif
+
+
+
+//---------------------------------------------------------------------------
+//! @brief		描画デバイスインターフェース
+//---------------------------------------------------------------------------
+class iTVPDrawDevice
+{
+public:
+//---- オブジェクト生存期間制御
+	//! @brief		(Window→DrawDevice) 描画デバイスを破棄する
+	//! @note		ウィンドウが破棄されるとき、あるいはほかの描画デバイスが
+	//!				設定されたためにこの描画デバイスが必要なくなった際に呼ばれる。
+	//!				通常、ここでは delete this 実行し、描画デバイスを破棄するが、その前に
+	//!				AddLayerManager() でこの描画デバイスの管理下に入っている
+	//!				レイヤマネージャをすべて Release する。
+	//!				レイヤマネージャの Release 中に RemoveLayerManager() が呼ばれる
+	//!				可能性があることに注意すること。
+	virtual void TJS_INTF_METHOD Destruct() = 0;
+
+//---- window interface 関連
+	//! @brief		(Window→DrawDevice) ウィンドウインターフェースを設定する
+	//! @param		window		ウィンドウインターフェース
+	//! @note		(TJSから) Window.drawDevice プロパティを設定した直後に呼ばれる。
+	virtual void TJS_INTF_METHOD SetWindowInterface(iTVPWindow * window) = 0;
+
+//---- LayerManager の管理関連
+	//! @brief		(Window→DrawDevice) レイヤマネージャを追加する
+	//! @note		プライマリレイヤがウィンドウに追加されると、自動的にレイヤマネージャが
+	//!				作成され、それが描画デバイスにもこのメソッドの呼び出しにて通知される。
+	//!				描画デバイスでは iTVPLayerManager::AddRef() を呼び出して、追加された
+	//!				レイヤマネージャをロックすること。
+	virtual void TJS_INTF_METHOD AddLayerManager(iTVPLayerManager * manager) = 0;
+
+	//! @brief		(Window→DrawDevice) レイヤマネージャを削除する
+	//! @note		プライマリレイヤが invalidate される際に呼び出される。
+	//TODO: プライマリレイヤ無効化、あるいはウィンドウ破棄時の終了処理が正しいか？
+	virtual void TJS_INTF_METHOD RemoveLayerManager(iTVPLayerManager * manager) = 0;
+
+//---- 描画位置・サイズ関連
+	//! @brief		(Window→DrawDevice) 描画先ウィンドウの設定
+	//! @note		ウィンドウから描画先となるウィンドウハンドルを指定するために呼ばれる。
+	//!				しばしば、Window.borderStyle プロパティが変更されたり、フルスクリーンに
+	//!				移行するときやフルスクリーンから戻る時など、ウィンドウが再作成される
+	//!				ことがあるが、そのような場合には、ウィンドウがいったん破棄される直前に
+	//!				wnd = NULL の状態でこのメソッドが呼ばれることに注意。ウィンドウが作成
+	//!				されたあと、再び有効なウィンドウハンドルを伴ってこのメソッドが呼ばれる。
+	//!				このメソッドは、ウィンドウが作成された直後に呼ばれる保証はない。
+	//!				たいてい、一番最初にウィンドウが表示された直後に呼ばれる。
+	virtual void TJS_INTF_METHOD SetTargetWindow(HWND wnd) = 0;
+
+	//! @brief		(Window->DrawDevice) 描画矩形の設定
+	//! @note		ウィンドウから、描画先となる矩形を設定するために呼ばれる。
+	//!				描画デバイスは、SetTargetWindow() で指定されたウィンドウのクライアント領域の、
+	//!				このメソッドで指定された矩形に表示を行う必要がある。
+	//!				この矩形は、GetSrcSize で返した値に対し、Window.zoomNumer や Window.zoomDenum
+	//!				プロパティによる拡大率や、Window.layerLeft や Window.layerTop が加味された
+	//!				矩形である。
+	//!				このメソッドによって描画矩形が変わったとしても、このタイミングで
+	//!				描画デバイス側で再描画を行う必要はない(必要があれば別メソッドにより
+	//!				再描画の必要性が通知されるため)。
+	virtual void TJS_INTF_METHOD SetDestRectangle(const tTVPRect & rect) = 0;
+
+	//! @brief		(Window->DrawDevice) 元画像のサイズを得る
+	//! @note		ウィンドウから、描画矩形のサイズを決定するために元画像のサイズが
+	//!				必要になった際に呼ばれる。ウィンドウはこれをもとに SetDestRectangle()
+	//!				メソッドで描画矩形を通知してくるだけなので、
+	//!				なんらかの意味のあるサイズである必要は必ずしもない。
+	virtual void TJS_INTF_METHOD GetSrcSize(tjs_int &w, tjs_int &h) = 0;
+
+	//! @brief		(LayerManager→DrawDevice) レイヤサイズ変更の通知
+	//! @param		manager		レイヤマネージャ
+	//! @note		レイヤマネージャにアタッチされているプライマリレイヤのサイズが変わった
+	//!				際に呼び出される
+	virtual void TJS_INTF_METHOD NotifyLayerResize(iTVPLayerManager * manager) = 0;
+
+	//! @brief		(LayerManager→DrawDevice) レイヤの画像の変更の通知
+	//! @param		manager		レイヤマネージャ
+	//! @note		レイヤの画像に変化があった際に呼び出される。
+	//!				この通知を受け取った後に iTVPLayerManager::UpdateToDrawDevice()
+	//!				を呼び出せば、該当部分を描画デバイスに対して描画させることができる。
+	//!				この通知を受け取っても無視することは可能。その場合は、
+	//!				次に iTVPLayerManager::UpdateToDrawDevice() を呼んだ際に、
+	//!				それまでの変更分がすべて描画される。
+	virtual void TJS_INTF_METHOD NotifyLayerImageChange(iTVPLayerManager * manager) = 0;
+
+//---- ユーザーインターフェース関連
+	//! @brief		(Window→DrawDevice) クリックされた
+	//! @param		x		描画矩形内における x 位置(描画矩形の左上が原点)
+	//! @param		y		描画矩形内における y 位置(描画矩形の左上が原点)
+	virtual void TJS_INTF_METHOD OnClick(tjs_int x, tjs_int y) = 0;
+
+	//! @brief		(Window→DrawDevice) ダブルクリックされた
+	//! @param		x		描画矩形内における x 位置(描画矩形の左上が原点)
+	//! @param		y		描画矩形内における y 位置(描画矩形の左上が原点)
+	virtual void TJS_INTF_METHOD OnDoubleClick(tjs_int x, tjs_int y) = 0;
+
+	//! @brief		(Window→DrawDevice) マウスボタンが押下された
+	//! @param		x		描画矩形内における x 位置(描画矩形の左上が原点)
+	//! @param		y		描画矩形内における y 位置(描画矩形の左上が原点)
+	//! @param		mb		どのマウスボタンか
+	//! @param		flags	フラグ(TVP_SS_*定数の組み合わせ)
+	virtual void TJS_INTF_METHOD OnMouseDown(tjs_int x, tjs_int y, tTVPMouseButton mb, tjs_uint32 flags) = 0;
+
+	//! @brief		(Window→DrawDevice) マウスボタンが離された
+	//! @param		x		描画矩形内における x 位置(描画矩形の左上が原点)
+	//! @param		y		描画矩形内における y 位置(描画矩形の左上が原点)
+	//! @param		mb		どのマウスボタンか
+	//! @param		flags	フラグ(TVP_SS_*定数の組み合わせ)
+	virtual void TJS_INTF_METHOD OnMouseUp(tjs_int x, tjs_int y, tTVPMouseButton mb, tjs_uint32 flags) = 0;
+
+	//! @brief		(Window→DrawDevice) マウスが移動した
+	//! @param		x		描画矩形内における x 位置(描画矩形の左上が原点)
+	//! @param		y		描画矩形内における y 位置(描画矩形の左上が原点)
+	//! @param		flags	フラグ(TVP_SS_*定数の組み合わせ)
+	virtual void TJS_INTF_METHOD OnMouseMove(tjs_int x, tjs_int y, tjs_uint32 flags) = 0;
+
+	//! @brief		(Window→DrawDevice) マウスキャプチャを解放する
+	//! @note		マウスキャプチャを解放すべき場合にウィンドウから呼ばれる。
+	virtual void TJS_INTF_METHOD OnReleaseCapture() = 0;
+
+	//! @brief		(Window→DrawDevice) マウスが描画矩形外に移動した
+	virtual void TJS_INTF_METHOD OnMouseOutOfWindow() = 0;
+
+	//! @brief		(Window→DrawDevice) キーが押された
+	//! @param		key		仮想キーコード
+	//! @param		shift	シフトキーの状態
+	virtual void TJS_INTF_METHOD OnKeyDown(tjs_uint key, tjs_uint32 shift) = 0;
+
+	//! @brief		(Window→DrawDevice) キーが離された
+	//! @param		key		仮想キーコード
+	//! @param		shift	シフトキーの状態
+	virtual void TJS_INTF_METHOD OnKeyUp(tjs_uint key, tjs_uint32 shift) = 0;
+
+	//! @brief		(Window→DrawDevice) キーによる入力
+	//! @param		key		文字コード
+	virtual void TJS_INTF_METHOD OnKeyPress(tjs_char key) = 0;
+
+	//! @brief		(Window→DrawDevice) マウスホイールが回転した
+	//! @param		shift	シフトキーの状態
+	//! @param		delta	回転角
+	//! @param		x		描画矩形内における x 位置(描画矩形の左上が原点)
+	//! @param		y		描画矩形内における y 位置(描画矩形の左上が原点)
+	virtual void TJS_INTF_METHOD OnMouseWheel(tjs_uint32 shift, tjs_int delta, tjs_int x, tjs_int y) = 0;
+
+	//! @brief		(Window->DrawDevice) 入力状態のチェック
+	//! @note		ウィンドウから約1秒おきに、レイヤマネージャがユーザからの入力の状態を
+	//!				再チェックするために呼ばれる。レイヤ状態の変化がユーザの入力とは
+	//!				非同期に行われた場合、たとえばマウスカーソルの下にレイヤが出現した
+	//!				のにもかかわらず、マウスカーソルがそのレイヤの指定する形状に変更されない
+	//!				といった状況が発生しうる。このような状況に対処するため、ウィンドウから
+	//!				このメソッドが約1秒おきに呼ばれる。
+	virtual void TJS_INTF_METHOD RecheckInputState() = 0;
+
+	//! @brief		(LayerManager→DrawDevice) マウスカーソルの形状をデフォルトに戻す
+	//! @param		manager		レイヤマネージャ
+	//! @note		マウスカーソルの形状をデフォルトの物に戻したい場合に呼ばれる
+	virtual void TJS_INTF_METHOD SetDefaultMouseCursor(iTVPLayerManager * manager) = 0;
+
+	//! @brief		(LayerManager→DrawDevice) マウスカーソルの形状を設定する
+	//! @param		manager		レイヤマネージャ
+	//! @param		cursor		マウスカーソル形状番号
+	virtual void TJS_INTF_METHOD SetMouseCursor(iTVPLayerManager * manager, tjs_int cursor) = 0;
+
+	//! @brief		(LayerManager→DrawDevice) マウスカーソルの位置を取得する
+	//! @param		manager		レイヤマネージャ
+	//! @param		x			プライマリレイヤ上の座標におけるマウスカーソルのx位置
+	//! @param		y			プライマリレイヤ上の座標におけるマウスカーソルのy位置
+	//! @note		座標はプライマリレイヤ上の座標なので、必要ならば変換を行う
+	virtual void TJS_INTF_METHOD GetCursorPos(iTVPLayerManager * manager, tjs_int &x, tjs_int &y) = 0;
+
+	//! @brief		(LayerManager→DrawDevice) マウスカーソルの位置を設定する
+	//! @param		manager		レイヤマネージャ
+	//! @param		x			プライマリレイヤ上の座標におけるマウスカーソルのx位置
+	//! @param		y			プライマリレイヤ上の座標におけるマウスカーソルのy位置
+	//! @note		座標はプライマリレイヤ上の座標なので、必要ならば変換を行う
+	virtual void TJS_INTF_METHOD SetCursorPos(iTVPLayerManager * manager, tjs_int x, tjs_int y) = 0;
+
+	//! @brief		(LayerManager→DrawDevice) ツールチップヒントを設定する
+	//! @param		manager		レイヤマネージャ
+	//! @param		text		ヒントテキスト(空文字列の場合はヒントの表示をキャンセルする)
+	virtual void TJS_INTF_METHOD SetHintText(iTVPLayerManager * manager, const ttstr & text) = 0;
+
+	//! @brief		(LayerManager→DrawDevice) 注視ポイントの設定
+	//! @param		manager		レイヤマネージャ
+	//! @param		layer		フォント情報の含まれるレイヤ
+	//! @param		x			プライマリレイヤ上の座標における注視ポイントのx位置
+	//! @param		y			プライマリレイヤ上の座標における注視ポイントのy位置
+	//! @note		注視ポイントは通常キャレット位置のことで、そこにIMEのコンポジット・ウィンドウが
+	//!				表示されたり、ユーザ補助の拡大鏡がそこを拡大したりする。IMEがコンポジットウィンドウを
+	//!				表示したり、未確定の文字をそこに表示したりする際のフォントは layer パラメータ
+	//!				で示されるレイヤが持つ情報によるが、プラグインからその情報を得たり設定したり
+	//!				するインターフェースは今のところない。
+	//! @note		座標はプライマリレイヤ上の座標なので、必要ならば変換を行う。
+	virtual void TJS_INTF_METHOD SetAttentionPoint(iTVPLayerManager * manager, tTJSNI_BaseLayer *layer,
+							tjs_int l, tjs_int t) = 0;
+
+	//! @brief		(LayerManager→DrawDevice) 注視ポイントの解除
+	//! @param		manager		レイヤマネージャ
+	virtual void TJS_INTF_METHOD DisableAttentionPoint(iTVPLayerManager * manager) = 0;
+
+	//! @brief		(LayerManager→DrawDevice) IMEモードの設定
+	//! @param		manager		レイヤマネージャ
+	//! @param		mode		IMEモード
+	virtual void TJS_INTF_METHOD SetImeMode(iTVPLayerManager * manager, tTVPImeMode mode) = 0;
+
+	//! @brief		(LayerManager→DrawDevice) IMEモードのリセット
+	//! @param		manager		レイヤマネージャ
+	virtual void TJS_INTF_METHOD ResetImeMode(iTVPLayerManager * manager) = 0;
+
+//---- プライマリレイヤ関連
+	//! @brief		(Window→DrawDevice) プライマリレイヤの取得
+	//! @return		プライマリレイヤ
+	//! @note		Window.primaryLayer が読み出された際にこのメソッドが呼ばれる。
+	//!				それ以外に呼ばれることはない。
+	virtual tTJSNI_BaseLayer * TJS_INTF_METHOD GetPrimaryLayer() = 0;
+
+	//! @brief		(Window→DrawDevice) フォーカスのあるレイヤの取得
+	//! @return		フォーカスのあるレイヤ(NULL=フォーカスのあるレイヤがない場合)
+	//! @note		Window.focusedLayer が読み出された際にこのメソッドが呼ばれる。
+	//!				それ以外に呼ばれることはない。
+	virtual tTJSNI_BaseLayer * TJS_INTF_METHOD GetFocusedLayer() = 0;
+
+	//! @brief		(Window→DrawDevice) フォーカスのあるレイヤの設定
+	//! @param		layer		フォーカスのあるレイヤ(NULL=フォーカスのあるレイヤがない状態にしたい場合)
+	//! @note		Window.focusedLayer が書き込まれた際にこのメソッドが呼ばれる。
+	//!				それ以外に呼ばれることはない。
+	virtual void TJS_INTF_METHOD SetFocusedLayer(tTJSNI_BaseLayer * layer) = 0;
+
+
+//---- 再描画関連
+	//! @brief		(Window→DrawDevice) 描画矩形の無効化の通知
+	//! @param		rect		描画矩形内の座標における、無効になった領域
+	//!							(描画矩形の左上が原点)
+	//! @note		描画矩形の一部あるいは全部が無効になった際にウィンドウから通知される。
+	//!				描画デバイスは、なるべく早い時期に無効になった部分を再描画すべきである。
+	virtual void TJS_INTF_METHOD RequestInvalidation(const tTVPRect & rect) = 0;
+
+	//! @brief		(Window→DrawDevice) 更新の要求
+	//! @note		描画矩形の内容を最新の状態に更新すべきタイミングで、ウィンドウから呼ばれる。
+	//!				iTVPWindow::RequestUpdate() を呼んだ後、システムが描画タイミングに入った際に
+	//!				呼ばれる。通常、描画デバイスはこのタイミングを利用して描画矩形に画像を転送する。
+	virtual void TJS_INTF_METHOD Update() = 0;
+
+//---- LayerManager からの画像受け渡し関連
+	//! @brief		(LayerManager->DrawDevice) ビットマップの描画を開始する
+	//! @param		manager		描画を開始するレイヤマネージャ
+	//! @note		レイヤマネージャから描画デバイスへ画像が転送される前に呼ばれる。
+	//!				このあと、NotifyBitmapCompleted() が任意の回数呼ばれ、最後に
+	//!				EndBitmapCompletion() が呼ばれる。
+	//!				必要ならば、このタイミングで描画デバイス側でサーフェースのロックなどを
+	//!				行うこと。
+	virtual void TJS_INTF_METHOD StartBitmapCompletion(iTVPLayerManager * manager) = 0;
+
+	//! @brief		(LayerManager->DrawDevice) ビットマップの描画を通知する
+	//! @param		manager		画像の提供元のレイヤマネージャ
+	//! @param		x			プライマリレイヤ上の座標における画像の左端位置
+	//! @param		y			プライマリレイヤ上の座標における画像の上端位置
+	//! @param		bits		ビットマップデータ
+	//! @param		bitmapinfo	ビットマップの形式情報
+	//! @param		cliprect	bits のうち、どの部分を使って欲しいかの情報
+	//! @param		type		提供される画像が想定する合成モード
+	//! @param		opacity		提供される画像が想定する不透明度(0～255)
+	//! @note		レイヤマネージャが合成を完了し、結果を描画デバイスに描画してもらいたい際に
+	//!				呼ばれる。一つの更新が複数の矩形で構成される場合があるため、このメソッドは
+	//!				StartBitmapCompletion() と EndBitmapCompletion() の間に複数回呼ばれる可能性がある。
+	//!				基本的には、bits と bitmapinfo で表されるビットマップのうち、cliprect で
+	//!				示される矩形を x, y 位置に転送すればよいが、描画矩形の大きさに合わせた
+	//!				拡大や縮小などは描画デバイス側で面倒を見る必要がある。
+	virtual void TJS_INTF_METHOD NotifyBitmapCompleted(iTVPLayerManager * manager,
+		tjs_int x, tjs_int y, const void * bits, const BITMAPINFO * bitmapinfo,
+		const tTVPRect &cliprect, tTVPLayerType type, tjs_int opacity) = 0;
+
+	//! @brief		(LayerManager->DrawDevice) ビットマップの描画を終了する
+	//! @param		manager		描画を終了するレイヤマネージャ
+	virtual void TJS_INTF_METHOD EndBitmapCompletion(iTVPLayerManager * manager) = 0;
+
+//---- デバッグ支援
+	//! @brief		(Window->DrawDevice) レイヤ構造をコンソールにダンプする
+	virtual void TJS_INTF_METHOD DumpLayerStructure() = 0;
+
+	//! @brief		(Window->DrawDevice) 更新矩形の表示を行うかどうかを設定する
+	//! @param		b		表示を行うかどうか
+	//! @note		レイヤ表示機構が差分更新を行う際の矩形を表示し、
+	//!				差分更新の最適化に役立てるための支援機能。
+	//!				実装する必要はないが、実装することが望ましい。
+	virtual void TJS_INTF_METHOD SetShowUpdateRect(bool b) = 0;
+};
+//---------------------------------------------------------------------------
 
 
 //---------------------------------------------------------------------------
@@ -7092,6 +7760,56 @@ inline tjs_uint32 TVPFromActualColor(tjs_uint32 col)
 	}
 	typedef tjs_uint32 (__stdcall * __functype)(tjs_uint32);
 	return ((__functype)(TVPImportFuncPtr9e0df54e4c24ee28d5517c1743faa3a3))(col);
+}
+inline tjs_uint32 TVPGetCurrentShiftKeyState()
+{
+	if(!TVPImportFuncPtrb426fbfb6ccb4e89c252b6af566995b8)
+	{
+		static char funcname[] = "tjs_uint32 ::TVPGetCurrentShiftKeyState()";
+		TVPImportFuncPtrb426fbfb6ccb4e89c252b6af566995b8 = TVPGetImportFuncPtr(funcname);
+	}
+	typedef tjs_uint32 (__stdcall * __functype)();
+	return ((__functype)(TVPImportFuncPtrb426fbfb6ccb4e89c252b6af566995b8))();
+}
+inline void TVPEnsureDirectDrawObject()
+{
+	if(!TVPImportFuncPtr678c2b211f8d8f661f6fdd95c52fbaa8)
+	{
+		static char funcname[] = "void ::TVPEnsureDirectDrawObject()";
+		TVPImportFuncPtr678c2b211f8d8f661f6fdd95c52fbaa8 = TVPGetImportFuncPtr(funcname);
+	}
+	typedef void (__stdcall * __functype)();
+	((__functype)(TVPImportFuncPtr678c2b211f8d8f661f6fdd95c52fbaa8))();
+}
+inline IDirectDraw2 * TVPGetDirectDrawObjectNoAddRef()
+{
+	if(!TVPImportFuncPtr9ec5b02d14238454101dad083b5dfc3b)
+	{
+		static char funcname[] = "IDirectDraw2 * ::TVPGetDirectDrawObjectNoAddRef()";
+		TVPImportFuncPtr9ec5b02d14238454101dad083b5dfc3b = TVPGetImportFuncPtr(funcname);
+	}
+	typedef IDirectDraw2 * (__stdcall * __functype)();
+	return ((__functype)(TVPImportFuncPtr9ec5b02d14238454101dad083b5dfc3b))();
+}
+inline IDirectDrawSurface * TVPGetDDPrimarySurfaceNoAddRef()
+{
+	if(!TVPImportFuncPtrd0bb2c604ee6f0bba72ddc017f6416eb)
+	{
+		static char funcname[] = "IDirectDrawSurface * ::TVPGetDDPrimarySurfaceNoAddRef()";
+		TVPImportFuncPtrd0bb2c604ee6f0bba72ddc017f6416eb = TVPGetImportFuncPtr(funcname);
+	}
+	typedef IDirectDrawSurface * (__stdcall * __functype)();
+	return ((__functype)(TVPImportFuncPtrd0bb2c604ee6f0bba72ddc017f6416eb))();
+}
+inline void TVPSetDDPrimaryClipper(IDirectDrawClipper * clipper)
+{
+	if(!TVPImportFuncPtr3ab4d4d7b57eea827e7bb7c263afb951)
+	{
+		static char funcname[] = "void ::TVPSetDDPrimaryClipper(IDirectDrawClipper *)";
+		TVPImportFuncPtr3ab4d4d7b57eea827e7bb7c263afb951 = TVPGetImportFuncPtr(funcname);
+	}
+	typedef void (__stdcall * __functype)(IDirectDrawClipper *);
+	((__functype)(TVPImportFuncPtr3ab4d4d7b57eea827e7bb7c263afb951))(clipper);
 }
 inline iTVPScanLineProvider * TVPSLPLoadImage(const ttstr & name , tjs_int bpp , tjs_uint32 key , tjs_uint w , tjs_uint h)
 {
