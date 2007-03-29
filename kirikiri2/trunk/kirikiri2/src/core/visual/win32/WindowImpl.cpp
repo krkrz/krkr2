@@ -925,6 +925,11 @@ bool tTJSNI_Window::GetWindowActive()
 	return false;
 }
 //---------------------------------------------------------------------------
+void tTJSNI_Window::ResetDrawDevice()
+{
+	if(Form) Form->ResetDrawDevice();
+}
+//---------------------------------------------------------------------------
 void tTJSNI_Window::PostInputEvent(const ttstr &name, iTJSDispatch2 * params)
 {
 	// posts input event
