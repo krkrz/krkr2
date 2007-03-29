@@ -971,7 +971,7 @@ void TJS_INTF_METHOD tTVPLayerManager::RequestInvalidation(const tTVPRect &r)
 	}
 }
 //---------------------------------------------------------------------------
-void tTVPLayerManager::TimerBeat()
+void TJS_INTF_METHOD tTVPLayerManager::RecheckInputState()
 {
 	// To re-check current layer under current mouse position
 	// and update hint, cursor type and process layer enter/leave.
@@ -979,7 +979,7 @@ void tTVPLayerManager::TimerBeat()
 	ForceMouseRecheck();
 }
 //---------------------------------------------------------------------------
-void tTVPLayerManager::DumpPrimaryStructure()
+void TJS_INTF_METHOD tTVPLayerManager::DumpLayerStructure()
 {
 	if(Primary) Primary->DumpStructure();
 }
