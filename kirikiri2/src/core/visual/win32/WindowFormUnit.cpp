@@ -751,6 +751,14 @@ bool __fastcall TTVPWindowForm::GetFormEnabled()
 	return en;
 }
 //---------------------------------------------------------------------------
+void __fastcall TTVPWindowForm::ResetDrawDevice()
+{
+	NextSetWindowHandleToDrawDevice = true;
+	LastSentDrawDeviceDestRect.clear();
+
+	if(PaintBox) PaintBox->Invalidate();
+}
+//---------------------------------------------------------------------------
 void __fastcall TTVPWindowForm::ShowControllerMenuItemClick(
 	  TObject *Sender)
 {

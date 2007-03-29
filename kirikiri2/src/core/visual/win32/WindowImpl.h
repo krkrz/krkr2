@@ -140,6 +140,8 @@ private:
 	bool GetWindowActive();
 
 public:
+//-- draw device
+	virtual void ResetDrawDevice();
 
 //-- event control
 	virtual void PostInputEvent(const ttstr &name, iTJSDispatch2 * params);  // override

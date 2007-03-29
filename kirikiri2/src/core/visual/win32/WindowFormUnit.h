@@ -263,6 +263,9 @@ private:
 public:
 	bool __fastcall GetFormEnabled();
 
+	//-- draw device
+	void __fastcall ResetDrawDevice();
+
 	//-- interface to layer
 private:
 	DWORD LastRecheckInputStateSent;
