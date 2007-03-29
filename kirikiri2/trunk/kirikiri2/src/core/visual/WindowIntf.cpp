@@ -538,13 +538,19 @@ void tTJSNI_BaseWindow::EndUpdate()
 //---------------------------------------------------------------------------
 void tTJSNI_BaseWindow::DumpPrimaryLayerStructure()
 {
-//	if(LayerManager) LayerManager->DumpPrimaryStructure();
+	DrawDevice->DumpLayerStructure();
 }
 //---------------------------------------------------------------------------
-void tTJSNI_BaseWindow::TimerBeat()
+void tTJSNI_BaseWindow::RecheckInputState()
 {
 	// slow timer tick (about 1 sec interval, inaccurate)
-//	if(LayerManager) LayerManager->TimerBeat();
+	DrawDevice->RecheckInputState();
+}
+//---------------------------------------------------------------------------
+void tTJSNI_BaseWindow::SetShowUpdateRect(bool b)
+{
+	// show update rectangle if possible
+	DrawDevice->SetShowUpdateRect(b);
 }
 //---------------------------------------------------------------------------
 void TJS_INTF_METHOD tTJSNI_BaseWindow::RequestUpdate()

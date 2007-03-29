@@ -119,6 +119,15 @@ public:
 	//! @param		y		プライマリレイヤ座標上における y 位置
 	virtual void TJS_INTF_METHOD NotifyMouseWheel(tjs_uint32 shift, tjs_int delta, tjs_int x, tjs_int y) = 0;
 
+	//! @brief		入力状態のチェック
+	//! @note		ウィンドウから約1秒おきに、レイヤマネージャがユーザからの入力の状態を
+	//!				再チェックするために呼ばれる。レイヤ状態の変化がユーザの入力とは
+	//!				非同期に行われた場合、たとえばマウスカーソルの下にレイヤが出現した
+	//!				のにもかかわらず、マウスカーソルがそのレイヤの指定する形状に変更されない
+	//!				といった状況が発生しうる。このような状況に対処するため、ウィンドウから
+	//!				このメソッドが約1秒おきに呼ばれる。
+	virtual void TJS_INTF_METHOD RecheckInputState() = 0;
+
 //-- invalidation/update
 	//! @brief		描画デバイスが望むレイヤの出力形式を設定する
 	//! @param		type	レイヤ形式
@@ -142,6 +151,9 @@ public:
 	//!				いままでに変更が行われた領域などを順次描画デバイスに送る。
 	virtual void TJS_INTF_METHOD UpdateToDrawDevice() = 0;
 
+//-- debug assist
+	//! @brief		(Window->DrawDevice) レイヤ構造をコンソールにダンプする
+	virtual void TJS_INTF_METHOD DumpLayerStructure() = 0;
 };
 //---------------------------------------------------------------------------
 
@@ -356,13 +368,13 @@ public:
 	void NotifyUpdateRegionFixed();
 
 public:
-	void TimerBeat();
+	void TJS_INTF_METHOD RecheckInputState();
 		// To re-check current layer under current mouse position
 		// and update hint, cursor type and process layer enter/leave.
 		// This can be reasonably slow, about 1 sec interval.
 
 public:
-	void DumpPrimaryStructure();
+	void TJS_INTF_METHOD DumpLayerStructure();
 };
 //---------------------------------------------------------------------------
 

@@ -218,8 +218,9 @@ public:
 
 	void DumpPrimaryLayerStructure();
 
-	void TimerBeat(); // slow timer tick (about 1 sec interval, inaccurate)
+	void RecheckInputState(); // slow timer tick (about 1 sec interval, inaccurate)
 
+	void SetShowUpdateRect(bool b); 
 	//----- methods
 	void Add(tTJSVariantClosure clo);
 	void Remove(tTJSVariantClosure clo);
