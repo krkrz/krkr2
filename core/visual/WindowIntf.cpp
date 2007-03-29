@@ -276,6 +276,7 @@ void tTJSNI_BaseWindow::SetDrawDeviceObject(const tTJSVariant & val)
 		DrawDevice =
 			reinterpret_cast<iTVPDrawDevice *>((long)(tjs_int64)iface_v);
 		DrawDevice->SetWindowInterface(const_cast<tTJSNI_BaseWindow*>(this));
+		ResetDrawDevice();
 	}
 }
 //---------------------------------------------------------------------------
