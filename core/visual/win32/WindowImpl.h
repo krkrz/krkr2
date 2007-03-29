@@ -80,6 +80,17 @@ extern void TVPTestDisplayMode(tjs_int w, tjs_int h, tjs_int & bpp);
 extern void TVPSwitchToFullScreen(HWND window, tjs_int w, tjs_int h);
 extern void TVPRevertFromFullScreen(HWND window);
 TJS_EXP_FUNC_DEF(void, TVPEnsureDirectDrawObject, ());
+/*[*/
+//---------------------------------------------------------------------------
+// DirectDraw former declaration
+//---------------------------------------------------------------------------
+#ifndef __DDRAW_INCLUDED__
+struct IDirectDraw2;
+struct IDirectDrawSurface;
+struct IDirectDrawClipper;
+#endif
+
+/*]*/
 TJS_EXP_FUNC_DEF(IDirectDraw2 *,  TVPGetDirectDrawObjectNoAddRef, ());
 TJS_EXP_FUNC_DEF(IDirectDrawSurface *, TVPGetDDPrimarySurfaceNoAddRef, ());
 TJS_EXP_FUNC_DEF(void, TVPSetDDPrimaryClipper, (IDirectDrawClipper * clipper));
