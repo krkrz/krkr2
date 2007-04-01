@@ -58,6 +58,9 @@ public:
 		const tTVPRect &cliprect, tTVPLayerType type, tjs_int opacity);
 	virtual void TJS_INTF_METHOD EndBitmapCompletion(iTVPLayerManager * manager);
 
+//---- デバッグ支援
+	virtual void TJS_INTF_METHOD SetShowUpdateRect(bool b);
+
 };
 //---------------------------------------------------------------------------
 

@@ -91,6 +91,7 @@ protected:
 	tjs_int SrcHeight;
 	HWND TargetWindow;
 	HDRAWDIB DrawDibHandle;
+	bool DrawUpdateRectangle;
 public:
 	tTVPDrawer(tTVPPassThroughDrawDevice * device)
 	{
@@ -100,6 +101,7 @@ public:
 		DestRect.clear();
 		TargetWindow = NULL;
 		DrawDibHandle = NULL;
+		DrawUpdateRectangle = NULL;
 	} 
 	virtual ~tTVPDrawer()
 	{
@@ -119,6 +121,7 @@ public:
 		const void * bits, const BITMAPINFO * bitmapinfo,
 		const tTVPRect &cliprect) = 0;
 	virtual void EndBitmapCompletion() = 0;
+	virtual void SetShowUpdateRect(bool b)  { DrawUpdateRectangle = b; }
 };
 //---------------------------------------------------------------------------
 
@@ -173,15 +176,22 @@ class tTVPDrawer_DrawDibNoBuffering : public tTVPDrawer_GDI
 {
 	typedef tTVPDrawer_GDI inherited;
 
+	HPEN BluePen;
+	HPEN YellowPen;
+
 public:
 	//! @brief	コンストラクタ
 	tTVPDrawer_DrawDibNoBuffering(tTVPPassThroughDrawDevice * device) : tTVPDrawer_GDI(device)
 	{
+		BluePen = NULL;
+		YellowPen = NULL;
 	}
 
 	//! @brief	デストラクタ
 	~tTVPDrawer_DrawDibNoBuffering()
 	{
+		if(BluePen)   DeleteObject(BluePen);
+		if(YellowPen) DeleteObject(YellowPen);
 	}
 
 	bool SetDestRectangle(const tTVPRect & rect)
@@ -229,6 +239,43 @@ public:
 				cliprect.get_width(),
 				cliprect.get_height(),
 				0);
+
+		// 更新矩形の表示
+		if(DrawUpdateRectangle)
+		{
+			if(!BluePen) BluePen = CreatePen(PS_SOLID, 1, RGB(0, 0, 255));
+			if(!YellowPen) YellowPen = CreatePen(PS_SOLID, 1, RGB(255, 255, 0));
+
+			HPEN oldpen;
+
+			int ROP_save = GetROP2(TargetDC);
+
+			tjs_int rleft   = x + DestRect.left;
+			tjs_int rtop    = y + DestRect.top;
+			tjs_int rright  = rleft + cliprect.get_width();
+			tjs_int rbottom = rtop  + cliprect.get_height();
+
+			POINT points[5];
+			points[0].x = rleft;
+			points[0].y = rtop;
+			points[1].x = rright -1;
+			points[1].y = rtop;
+			points[2].x = rright -1;
+			points[2].y = rbottom -1;
+			points[3].x = rleft;
+			points[3].y = rbottom -1;
+			points[4] = points[0];
+
+			oldpen = SelectObject(TargetDC, BluePen);
+			SetROP2(TargetDC, R2_NOTMASKPEN);
+			Polyline(TargetDC, points, 4);
+
+			SelectObject(TargetDC, YellowPen);
+			SetROP2(TargetDC, R2_MERGEPEN);
+			Polyline(TargetDC, points, 5);
+
+			SelectObject(TargetDC, oldpen);
+		}
 	}
 
 	void EndBitmapCompletion()
@@ -871,6 +918,13 @@ void TJS_INTF_METHOD tTVPPassThroughDrawDevice::EndBitmapCompletion(iTVPLayerMan
 }
 //---------------------------------------------------------------------------
 
+
+//---------------------------------------------------------------------------
+void TJS_INTF_METHOD tTVPPassThroughDrawDevice::SetShowUpdateRect(bool b)
+{
+	if(Drawer) Drawer->SetShowUpdateRect(b);
+}
+//---------------------------------------------------------------------------
 
 
 
