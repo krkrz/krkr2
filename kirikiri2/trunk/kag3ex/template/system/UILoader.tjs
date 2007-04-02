@@ -197,8 +197,6 @@ function uiloadParse(elm)
 
 function uiloadEntry(layer, names, dic, elm, table)
 {
-	var basex = 0, basey = 0;
-
 	// partœŠOˆ—
 	var pr = (typeof elm.partremove === "String");
 	var pe = (typeof elm.partexcept === "String");
@@ -238,6 +236,9 @@ function uiloadEntry(layer, names, dic, elm, table)
 		// Œ‹‰Ê·‚µ‘Ö‚¦
 		names = temp;
 	}
+
+	var basex = 0, basey = 0;
+	var links = layer.numLinks;
 
     // ”wŒi‚¾‚¯“Áêˆ—
     for (var i=0; i<names.count; i++) {
@@ -287,6 +288,13 @@ function uiloadEntry(layer, names, dic, elm, table)
 			}
 		}
 	}
+
+	// —Dæ‡ˆÊ‹t“]
+	var max = layer.numLinks;
+	for (var i = links; i < max; i++) {
+		layer.links[i].object.order = max - i;
+	}
+
 }
 
 function uiloadWithFuncTable(layer, elm, funcTable) {
