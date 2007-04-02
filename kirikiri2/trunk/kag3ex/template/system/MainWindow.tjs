@@ -685,7 +685,7 @@ class KAGWindow extends Window
         flipTimer = new Timer(onFlipTimerInterval, '');
         add(flipTimer);
         flipTimer.interval = 10;
-        flipTimer.enabled = true;
+		//flipTimer.enabled = true;
         
         // ベースになるレイヤ
         sysbase = new Layer(this, null);
