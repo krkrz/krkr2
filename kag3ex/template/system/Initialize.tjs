@@ -225,19 +225,14 @@ KAGLoadScript("SE.tjs");
 KAGLoadScript("Movie.tjs");
 KAGLoadScript("Conductor.tjs");
 
-// add by GoWatanabe
-// AnimationLayer ÇÃâ∫ëwÇ… AffineLayer/ActionLayer ÇédçûÇﬁ
 KAGLoadScript("AffineLayer.tjs");
-KAGLoadScript("ActionLayer.tjs");
-
 KAGLoadScript("AnimationLayer.tjs");
 KAGLoadScript("GraphicLayer.tjs");
 KAGLoadScript("MessageLayer.tjs");
 KAGLoadScript("Menus.tjs");
 KAGLoadScript("DefaultMover.tjs");
-KAGLoadScript("MainWindow.tjs");
-
 KAGLoadScript("Action.tjs");
+KAGLoadScript("MainWindow.tjs");
 
 if(Storages.isExistentStorage("Override.tjs"))
 	KAGLoadScript("Override.tjs");

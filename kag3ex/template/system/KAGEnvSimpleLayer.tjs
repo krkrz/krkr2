@@ -128,7 +128,7 @@ class KAGEnvSimpleLayer extends KAGEnvLevelLayer, KAGEnvLayer {
                     var ft = yposFrom !== void ? ybase + (int)yposFrom - ydiff : t;
                     layer.setPos(fl, ft);
                 }
-                layer.setMove(l, t, moveAccel, moveTime);
+                layer.setMove(l, t, moveTime, moveAccel);
             } else {
                 layer.setMove(l, t);
             }

@@ -487,16 +487,17 @@ class BaseLayer extends GraphicLayer
 
 }
 
+/**
+ * AffineLayer 対応拡張処理
+ */
 class GraphicLayerEx extends GraphicLayer {
     
     function GraphicLayerEx() {
         super.GraphicLayer(...);
     }
 
-    function setOptions(elm)
-	{
+    function setOptions(elm) {
         super.setOptions(elm);
-        // ごう拡張 AffineLayer に対応
         type   = global[elm.type] if elm.type   !== void;
         rotate = +elm.rotate if elm.rotate !== void;
         zoomx  = +elm.zoomx  if elm.zoomx  !== void;
@@ -538,42 +539,90 @@ class GraphicLayerEx extends GraphicLayer {
         afy    = dic.afy    if dic.afy    !== void;
     }
 
-    var doAction;
-    
-    /**
-     * アクション開始処理
-     */
-    function beginAction() {
-        if (!inAction && !doAction) {
-            window.actionCount++;
-            doAction = true;
+    // --------------------------------------------
+    // アクション系拡張
+    // --------------------------------------------
+
+    var hide; // アクション終了時に消去
+
+    function onActionCompleted() {
+        window.conductor.trigger('layact' + name);
+        window.onActionStop();
+        if (hide) {
+            visible = false;
         }
-        super.beginAction(...);
-        //dm("アクションカウント:" + window.actionCount);
     }
     
-    /**
-     * アクション終了時に呼び出されるイベント
-     */
-    function onActionCompleted() {
-        if (doAction) {
-            window.actionCount--;
-            doAction = false;
-            window.onLayerActionStop(this);
-            if (window.actionCount <= 0) {
-                window.onActionStop();
-            }
-        }
-        //dm("アクション終了後カウント:" + window.actionCount);
+    function beginAction(elm) {
+        window.beginAction(this, elm, onActionCompleted);
     }
 
-    function assign(src) {
-        super.assign(src);
-        if (inAction && !doAction) {
-            doAction = true;
-            window.actionCount++;
+    function stopAction() {
+        window.stopAction(this);
+    }
+
+    function reset() {
+        hide = false;
+        stopAction();
+        super.reset();
+    }
+    
+    /**
+     * 不透明度を指定する
+     * @param opacity 不透明度
+     * @time 変更にかかる時間
+     * @accel 加減速指定
+     */
+    function setOpacityTime(o, time, accel=0) {
+        if (time) {
+            beginAction(%[opacity:%[handler:MoveAction, value:o, time:time, accel:accel]]);
+        } else {
+            opacity = o;
         }
-        //dm("アクションカウント:" + window.actionCount);
+    }
+
+    /**
+     * 回転量を指定する
+     * @param r 回転量
+     * @time 変更にかかる時間
+     */
+    function setRotateTime(r, time, accel=0) {
+        if (time) {
+            beginAction(%[rotate:%[handler:MoveAction, value:r, time:time, accel:accel]]);
+        } else {
+            rotate = r;
+        }
+    }
+    
+    /**
+     * ズーム量を指定する
+     * @param zoom 回転量
+     * @time 変更にかかる時間
+     */
+    function setZoomTime(z, time, accel=0) {
+        if (time) {
+            beginAction(%[zoomx:%[handler:MoveAction, value:z, time:time, accel:accel],
+                          zoomy:%[handler:MoveAction, value:z, time:time, accel:accel]]);
+        } else {
+            zoom = z;
+        }
+    }
+
+    /**
+     * 自動移動を指定する
+     * @param x X位置
+     * @param y Y位置
+     * @param accele 負:減速 0:線形 正:加速
+     * @time 変更にかかる時間
+     */
+    function setMove(x, y, time, accel=0) {
+        if (time) {
+            beginAction(%[left:%[handler:MoveAction, value:x, time:time, accel:accel],
+                      top:%[handler:MoveAction, value:y, time:time, accel:accel]]);
+        } else {
+            stopAction();
+            setPos(x, y);
+        }
     }
 
 }

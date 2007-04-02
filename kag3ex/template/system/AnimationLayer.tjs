@@ -323,7 +323,7 @@ class AnimationConductor extends BaseConductor
 }
 
 
-class AnimationLayer extends ActionLayer
+class AnimationLayer extends AffineLayer
 {
 	var Anim_cellLayer; // セルレイヤ
 	var Anim_segments = []; // セグメントごとのコンダクタ
@@ -338,7 +338,7 @@ class AnimationLayer extends ActionLayer
 	function AnimationLayer(win, par)
 	{
 		// AnimationLayer コンストラクタ
-		super.ActionLayer(...); // スーパークラスのコンストラクタを呼ぶ
+		super.AffineLayer(...); // スーパークラスのコンストラクタを呼ぶ
 
 		Anim_defaultFontInfo.face = font.face; // デフォルトのフォント
 		Anim_defaultFontInfo.height = font.height; // デフォルトのフォントサイズ
