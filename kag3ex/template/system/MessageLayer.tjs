@@ -638,15 +638,16 @@ class NameLayer extends RelativeLayer
      * @param text 表示テキスト
      */
     function draw(x, y, text) {
-        if (owner.edge) {
-            drawText(x, y, text, owner.chColor, 255, owner.antialiased, 512, owner.edgeColor, 1, 0, 0); // 文字
-        } else if(owner.shadow) {
-            drawText(x, y, text, owner.chColor, 255, owner.antialiased, 255, owner.shadowColor, 0, 2, 2); // 文字
-        } else {
-            drawText(x, y, text, owner.chColor, 255, owner.antialiased); // 文字
-        }
+		with (owner) {
+			if (.edge)       drawText(x, y, text, .chColor, 255, .antialiased, 512, .edgeColor, .edgeExtent, 0, 0); // 文字
+			else if(.shadow) drawText(x, y, text, .chColor, 255, .antialiased, 255, .shadowColor, 0, .shadowOffsetX, .shadowOffsetY); // 文字
+			else             drawText(x, y, text, .chColor, 255, .antialiased); // 文字
+		}
     }
-    
+
+	// テキストの横方向アライン (-1:左, 0:中央, 1:右
+	var align = -1;
+
     /**
      * 名前処理
      */
@@ -665,7 +666,13 @@ class NameLayer extends RelativeLayer
         } else {
             if (text != "") {
                 fillRect(0, 0, width, height, 0);
-                draw(0, 0, text);
+				var x = 0;
+				if (align >= 0) {
+					var w = font.getTextWidth(text);
+					x = width - w;
+					x \= 2 if (align == 0);
+				}
+                draw(x, 0, text);
                 visible = true;
             } else {
                 visible = false;
@@ -1376,6 +1383,7 @@ class MessageLayer extends AnimKAGLayer
             nameLayer.height   = +elm.nameheight if elm.nameheight !== void;
             nameLayer.absolute = +elm.nameabsolute if elm.nameabsolute !== void;
             nameLayer.originMode = +elm.nameorigin if elm.nameorigin !== void;
+			nameLayer.align    = +elm.namealign  if elm.namealign  !== void;
         } else {
             invalidateNameLayer();
         }
@@ -1457,6 +1465,7 @@ class MessageLayer extends AnimKAGLayer
         if (nameLayer !== void) {
             nameLayer.font.face   = userFace;
             nameLayer.font.height = defaultFontSize;
+			nameLayer.font.bold   = defaultBold;
         }
     }
     
@@ -3889,6 +3898,7 @@ class MessageLayer extends AnimKAGLayer
         if (src.nameLayer !== void) {
             initNameLayer();
             nameLayer.assignImages(src.nameLayer, true);
+			nameLayer.align = src.nameLayer.align;
         } else {
             invalidateNameLayer();
         }

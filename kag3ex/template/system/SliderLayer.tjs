@@ -110,6 +110,7 @@ class SliderLayer extends KAGLayer
                 var tabw = Slider_tabWidth;
                 var tabx = (imw - tabw) / 2;
 
+				if (nodeEnabled) {
                 if (Slider_dragging) {
                     // on
                     operateRect(tabx, x_htabh, tabImage, tabw, 0, tabw, tabh);
@@ -120,7 +121,7 @@ class SliderLayer extends KAGLayer
                     // normal
                     operateRect(tabx, x_htabh, tabImage, 0, 0, tabw, tabh);
                 }
-                
+				}
             } else {
                 fillRect(0, x_htabh, imw, tabh, 0xffffff + (nodeEnabled ? 0 : 0xc0000000));
                 if (Slider_mouseOn) {
@@ -157,6 +158,7 @@ class SliderLayer extends KAGLayer
                 var tabh = Slider_tabHeight;
                 var taby = (imh - tabh) / 2;
                 
+				if (nodeEnabled) {
                 if (Slider_dragging) {
                     // on
                     operateRect(x_htabw, taby, tabImage, tabw, 0, tabw, tabh);
@@ -167,7 +169,7 @@ class SliderLayer extends KAGLayer
                     // normal
                     operateRect(x_htabw, taby, tabImage, 0, 0, tabw, tabh);
                 }
-                
+				}
             } else {
                 fillRect(x_htabw, 0, tabw, imh, 0xffffff + (nodeEnabled ? 0 : 0xc0000000));
                 if (Slider_mouseOn) {

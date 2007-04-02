@@ -15,21 +15,6 @@ class SelectButtonLayer extends ButtonLayer
     var target;  // 処理終了後のジャンプ先
 
     /**
-     * 文字描画処理に細工
-     */
-    function drawText(x, y, text, color, opa=255) {
-        if (owner.fontEdge) {
-            super.drawText(x, y, text, color, opa, true,
-                           owner.fontEdgeEmphasis, owner.fontEdgeColor, owner.fontEdgeExtent, 0, 0);
-        } else if(owner.fontShadow) {
-            super.drawText(x, y, text, color, opa, true,
-                           255, owner.fontShadowColor, 0, 2, 2);
-        } else {
-            super.drawText(x, y, text, color, opa, true);
-        }
-    }
-
-    /**
      * メッセージの描画
      */
     function drawMessage(message) {
@@ -42,7 +27,7 @@ class SelectButtonLayer extends ButtonLayer
         for (var i=0;i<cnt;i++) {
             var x = i*width + dx;
             //dm("メッセージ:" + x);
-            drawText(x, y, message, owner.fontColor, 255);
+            drawText(x, y, message, (owner.getDrawTextArgs(i))*);
         }
     }
     
@@ -184,8 +169,14 @@ class SelectLayer {
     var fontColor       = 0xffffff;
     var fontEdgeColor   = 0x0080ff;
     var fontShadowColor = 0000000;
+	var fontShadowOffsetX = 2;
+	var fontShadowOffsetY = 2;
     var fontEdgeEmphasis = 512;
     var fontEdgeExtent = 0;
+	// 選択時にフォントの色を変更する場合の値(voidなら変更しない)
+	var otherFontColors       = %[];
+	var otherFontEdgeColors   = %[];
+	var otherFontShadowColors = %[];
 
     // 効果音
     var enterse;
@@ -220,15 +211,31 @@ class SelectLayer {
         selectBaseColor = +elm.selectbasecolor if elm.selectbasecolor !== void;
 
         // フォント指定
-        fontFace   = elm.fontface if elm.fontface !== void;
-        fontSize   = elm.size if elm.size !== void;
-        fontColor  = elm.color if elm.color !== void;
-        fontItalic = elm.italic if elm.italic !== void;
-        fontShadow = elm.shadow if elm.shadow !== void;
-        fontEdge   = elm.edge   if elm.edge   !== void;
-        fontBold   = elm.bold   if elm.bold   !== void;
-        fontEdgeColor = elm.edgecolor     if elm.edgecolor !== void;
-        fontShadowColor = elm.shadowcolor if elm.shadowcolor !== void;
+        fontFace   =  elm.fontface if elm.fontface !== void;
+        fontSize   = +elm.size if elm.size !== void;
+        fontColor  = +elm.color if elm.color !== void;
+        fontItalic = +elm.italic if elm.italic !== void;
+        fontShadow = +elm.shadow if elm.shadow !== void;
+        fontEdge   = +elm.edge   if elm.edge   !== void;
+        fontBold   = +elm.bold   if elm.bold   !== void;
+        fontEdgeColor = +elm.edgecolor     if elm.edgecolor !== void;
+		fontEdgeEmphasis = +elm.edgeemphasis if elm.edgeemphasis !== void;
+		fontEdgeExtent = +elm.edgeextent if elm.edgeextent !== void;
+
+        fontShadowColor = +elm.shadowcolor if elm.shadowcolor !== void;
+		fontShadowOffsetX = +elm.shadowoffsetx if elm.shadowoffsetx !== void;
+		fontShadowOffsetY = +elm.shadowoffsety if elm.shadowoffsety !== void;
+
+		// 通常状態以外の色指定
+		otherFontColors.over  = +elm.overcolor   if elm.overcolor   !== void;
+		otherFontColors.on    = +elm.oncolor     if elm.oncolor     !== void;
+		otherFontColors.focus = +elm.focuscolor  if elm.focuscolor  !== void;
+		otherFontEdgeColors.over  = +elm.overedgecolor   if elm.overedgecolor   !== void;
+		otherFontEdgeColors.on    = +elm.onedgecolor     if elm.onedgecolor     !== void;
+		otherFontEdgeColors.focus = +elm.focusedgecolor  if elm.focusedgecolor  !== void;
+		otherFontShadowColors.over  = +elm.overshadowcolor   if elm.overshadowcolor   !== void;
+		otherFontShadowColors.on    = +elm.onshadowcolor     if elm.onshadowcolor     !== void;
+		otherFontShadowColors.focus = +elm.focusshadowcolor  if elm.focusshadowcolor  !== void;
 
         // 効果音指定
         enterse = elm.enterse if elm.enterse !== void;
@@ -246,6 +253,31 @@ class SelectLayer {
         // フェード時間
         fadeTime = +elm.fadetime if elm.fadetime !== void;
     }
+
+    /**
+     * フォントの色を取得する
+     */
+	function getFontColor(sel, normal, cols) {
+		with (cols) {
+			switch (sel) { // 色がない場合はbreakせずにそのまま下に突き抜ける
+			case 3: if (.focus !== void) return .focus; // フォーカス
+				/**/if (.over  !== void) return .over;  // フォーカス（オーバーで代用）
+			case 1: if (.on    !== void) return .on;    // オン
+			case 2: if (.over  !== void) return .over;  // オーバー
+			}
+		}
+		return normal; // 通常
+	}
+    /**
+     * 文字描画のエフェクトを取得する(SelectButtonLayerから呼ばれる)
+     */
+	function getDrawTextArgs(sel) {
+		var args, color = getFontColor(sel, fontColor, otherFontColors);
+		if (    fontEdge)   args = [color, 255, true, fontEdgeEmphasis, (getFontColor(sel, fontEdgeColor,   otherFontEdgeColors)),   fontEdgeExtent, 0, 0];
+		else if(fontShadow) args = [color, 255, true,              255, (getFontColor(sel, fontShadowColor, otherFontShadowColors)), 0, fontShadowOffsetX, fontShadowOffsetY];
+		else                args = [color, 255, true];
+		return args;
+	}
 
     // 登録済み選択肢
     var selects = [];
