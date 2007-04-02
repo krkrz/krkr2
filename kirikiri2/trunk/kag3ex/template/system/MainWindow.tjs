@@ -216,7 +216,6 @@ class KAGWindow extends Window
     
 	var transCount; // 現在進行中のトランジションの数
 	var moveCount; // 現在進行中の自動移動の数
-    var actionCount;
     
 	var chSpeeds = %[
 		fast: 10, // 「高速」文字表示スピード
@@ -587,16 +586,21 @@ class KAGWindow extends Window
      * 画面更新処理
      */
     function onFlipTimerInterval() {
+		var work = false;
         var now = System.getTickCount();
-
-        // アクション更新
-        updateAction(now);
-
-        // 画面切り替えレイヤ更新
-        if (_transLayer !== void) {
-            _transLayer.update(now);
-        }
-    }
+		
+		// アクション更新
+		updateAction(now);
+		work = true if actionCount > 0;
+		
+		// 画面切り替えレイヤ更新
+		if (_transLayer !== void) {
+			_transLayer.update(now);
+			work = true if _transLayer.working;
+		}
+		
+		flipTimer.enabled = work;
+	}
     
 	//------------------------------------------------------ コンストラクタ --
 
@@ -684,8 +688,8 @@ class KAGWindow extends Window
         // 更新処理用タイマの作成
         flipTimer = new Timer(onFlipTimerInterval, '');
         add(flipTimer);
+        flipTimer.capacity = 1;
         flipTimer.interval = 10;
-		//flipTimer.enabled = true;
         
         // ベースになるレイヤ
         sysbase = new Layer(this, null);
@@ -3303,7 +3307,8 @@ class KAGWindow extends Window
             waitParam.layertrans = function() {} incontextof this;
         }
         transLayer.start(elm);
-        transShowing = true;
+		flipTimer.enabled = true;
+		transShowing = true;
         if (waitTime > 0) {
             conductor.waitWithTimeOut(waitParam, waitTime);
         } else {
@@ -3325,7 +3330,8 @@ class KAGWindow extends Window
             waitParam.click = function() {hideTransLayer();} incontextof this;
         }
         waitParam.layertrans = function() {hideTransLayer();} incontextof this;
-        transLayer.start(elm, true);
+		transLayer.start(elm, true);
+		flipTimer.enabled = true;
         conductor.wait(waitParam);
         return -2;
     }
@@ -4671,16 +4677,160 @@ class KAGWindow extends Window
 		moveCount = 0; // 一応
 	}
 
-    function onActionStop()
-	{
-        // 全レイヤの動作が終了した
-        conductor.trigger('action');
+	//--------------------------------------------------------- アクション関連 --
+
+    // アクション対象全部
+    var allActions = %[];
+    var actionCount = 0;
+
+    /**
+     * アクション実行中か
+     */
+    function isInAction(target) {
+        return allActions[target] !== void;
+    }
+    
+    /**
+     * アクションを登録
+     * @param target ターゲットオブジェクト
+     * @param action アクション情報
+     * @param elm パラメータ
+     * @param completed 終了ハンドラ
+     */
+    function beginAction(target, action, completed) {
+		var info = allActions[target];
+		if (info === void) {
+			info = new ActionSequense(target);
+			allActions[target] = info;
+			actionCount++;
+        }
+		if (completed !== void) {
+            // 終了ハンドラを登録
+			info.onActionCompleted = completed;
+        }
+        
+        // 文字列の場合は評価してしまう
+        if (typeof action == "String") {
+            action = Scripts.eval(action);
+        }
+        
+        if (typeof action == "Object") {
+            if (action instanceof "Dictionary") {
+                dm("辞書アクション");
+                // 辞書の場合
+				if (typeof action.module == "Object") {
+					action.module(info, action);
+                } else if (typeof action.module == "String") {
+                    var module = Scripts.eval(action.module);
+					if (module !== void) {
+						module(info, action);
+                    }
+                } else if (typeof action.moduleName == "String") {
+                    // moduleName が指定されている場合はアクション定義とみなす
+                    var module = Scripts.eval(action.moduleName);
+                    if (module !== void) {
+                        module(info, action);
+                    }
+                } else {
+                    // 複数アクションの同時指定
+                    info.addActions(action);
+                }
+                if (action.next) {
+                    info.next();
+                }
+			} else if (action instanceof "Array") {
+                // アクションシーケンス
+                for (var i=0;i<action.count;i++) {
+                    info.addActions(action[i]);
+                    info.next();
+                }
+            }
+        }
+		flipTimer.enabled = true;
+	}
+    
+    /**
+     * アクションを停止
+     * @param target ターゲットオブジェクト
+     */
+    function stopAction(target) {
+        // 指定されたアクションの停止
+        var info = allActions[target];
+        if (info !== void) {
+            actionCount--;
+            info.stopAction();
+            if (typeof info.onActionCompleted != "undefined") {
+                info.onActionCompleted(info.target);
+            }
+            invalidate info;
+            delete allActions[target];
+        }
+    }
+
+    var stopActionHandler;
+    
+    /**
+     * 全アクションの停止
+     */
+    function stopAllActions() {
+        // 全アクション停止
+        dm("全アクション停止!!!");
+        var names = [];
+        names.assign(allActions);
+        (Dictionary.clear incontextof allActions)();
+        for (var i=0;i<names.count;i+=2) {
+            var info = names[i+1];
+            actionCount--;
+            info.stopAction();
+            if (typeof info.onActionCompleted != "undefined") {
+                info.onActionCompleted(info.target);
+            }
+            invalidate info;
+        }
+        if (stopActionHandler !== void) {
+            stopActionHandler();
+        }
+    }
+    
+    /**
+     * アクション状態更新
+     * システム全体から呼び出す
+     * @param now 現在時刻
+     */
+    function updateAction(now) {
+        var names = [];
+        names.assign(allActions);
+        (Dictionary.clear incontextof allActions)();
+        for (var i=0;i<names.count;i+=2) {
+            var target = names[i];
+            var info   = names[i+1];
+            if (info.doAction(now, false)) {
+                dm("アクション終了:" + info.target);
+                actionCount--;
+                if (typeof info.onActionCompleted != "undefined") {
+                    info.onActionCompleted(info.target);
+                }
+                invalidate info;
+            } else {
+                // 再登録
+                allActions[target] = info;
+            }
+        }
+    }
+    
+    /**
+     * アクション終了
+     */
+    function onActionStop() {
+        if (actionCount == 0) {
+            conductor.trigger('action');
+        }
     }
     
 	function waitAction(elm)
 	{
 		// アクションを待つ
-		if(actionCount == 0) return 0; // アクションを待てない
+        if (actionCount == 0) return 0; // アクションを待てない
 		if((elm.canskip === void || +elm.canskip) && clickSkipEnabled)
 		{
 			// スキップできる場合
@@ -4714,14 +4864,16 @@ class KAGWindow extends Window
 		return -2;
 	}
 
+    /**
+     * 特定レイヤのアクションが終了
+     * @param layer レイヤ
+     */
     function onLayerActionStop(layer) {
-        // 特定レイヤの動作が終了した
-        conductor.trigger('layact' + layer.name);
     }
     
     function _waitLayerAction(layer, canskip=void)
 	{
-        if (!layer.inAction) return 0; // アクションを待てない
+        if (!isInAction(layer)) return 0; // アクションを待てない
         if((canskip === void || +canskip) && clickSkipEnabled)
 		{
 			// スキップできる場合
@@ -4766,32 +4918,6 @@ class KAGWindow extends Window
             return 0;
         }
     }
-    
-    var stopActionHandler;
-    
-    function stopAllActions(page=null)
-	{
-        // すべての自動アクションを停止させる(base と メッセージ窓には無効)
-        var layers, messages;
-        if (page == null || page == 'fore') {
-            fore.stage.stopAction();
-            fore.event.stopAction();
-            layers = fore.layers;
-            for(var i = layers.count-1; i >= 0; i--) layers[i].stopAction();
-        }
-        if (page == null || page == 'back') {
-            back.stage.stopAction();
-            back.event.stopAction();
-            layers = back.layers;
-            for(var i = layers.count-1; i >= 0; i--) layers[i].stopAction();
-        }
-        // 外部通知用
-        if (page == null) {
-            if (stopActionHandler !== void) {
-                stopActionHandler();
-            }
-        }
-	}
     
 	//------------------------------------------------ ディレイ/スキップ関連 --
 
@@ -7605,12 +7731,22 @@ class KAGWindow extends Window
     action : function(elm)
     {
         updateBeforeCh = 1;
-        var layer = getLayerFromElm(elm);
-        if (layer instanceof "GraphicLayerEx") {
-            layer.beginAction(elm);
-        } else {
-            if (debugLevel >= tkdlSimple)
+        var target;
+        if (elm.layer !== void) {
+            // レイヤの場合特例（互換用）
+            var layer = getLayerFromElm(elm);
+            if (layer instanceof "GraphicLayerEx") {
+                layer.beginAction(elm);
+            } else {
                 dm("指定されたレイヤはアクションを指定できません");
+            }
+        } else if (elm.target !== void) {
+            target = Scripts.eval(elm.target);
+            if (typeof target == "Object") {
+                beginAction(target, elm, onActionStop);
+            } else {
+                dm("アクションはオブジェクトに指定する必要があります");
+            }
         }
         return 0;
     } incontextof this,
@@ -7618,25 +7754,37 @@ class KAGWindow extends Window
     // アクション停止
 	stopaction : function(elm)
 	{
+        updateBeforeCh = 1;
+        var target;
         if (elm.layer !== void) {
             var layer = getLayerFromElm(elm);
             if (layer instanceof "GraphicLayerEx") {
                 layer.stopAction();
             } else {
-                if (debugLevel >= tkdlSimple)
-                    dm("指定されたレイヤはアクションを指定できません");
+                dm("指定されたレイヤはアクションを指定できません");
+            }
+        } else if (elm.target !== void) {
+            target = Scripts.eval(elm.target);
+            if (typeof target == "Object") {
+                stopAction(target);
+            } else {
+                dm("アクションはオブジェクトに指定する必要があります");
             }
         } else {
-            stopAllActions(elm.page);
+            stopAllActions();
         }
-		return 0;
+        return 0;
 	} incontextof this,
 
 	wact : function(elm)
 	{
         if (elm.layer !== void) {
-            // 特定レイヤのアクションを待つ
-            return waitLayerAction(elm);
+            var layer = getLayerFromElm(elm);
+            if (layer instanceof "GraphicLayerEx") {
+                return waitLayerAction(elm);
+            } else {
+                dm("指定されたレイヤはアクションを指定できません");
+            }
         } else {
             // 全レイヤのアクションを待つ
             return waitAction(elm);

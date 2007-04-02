@@ -971,7 +971,7 @@ class KAGEnvironment extends KAGEnvImage {
                     var ft = yposFrom !== void ? env.ymax + (int)yposFrom - layer.imageHeight / 2 : t;
                     layer.setPos(fl, ft);
                 }
-                layer.setMove(l, t, moveAccel, moveTime);
+                layer.setMove(l, t, moveTime, moveAccel);
             } else {
                 layer.setMove(l, t);
             }
