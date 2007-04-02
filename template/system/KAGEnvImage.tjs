@@ -98,6 +98,7 @@ class KAGEnvImage {
     // ìßñæìx
     var opacityFrom;
     var opacityTime;
+    var opacityAccel;
     var _opacity;
     var doOpacity;
     property opacity {
@@ -113,6 +114,7 @@ class KAGEnvImage {
     // âÒì]
     var rotateFrom;
     var rotateTime;
+    var rotateAccel;
     var _rotate;
     var doRotate;
     property rotate {
@@ -128,6 +130,7 @@ class KAGEnvImage {
     // ÉYÅ[ÉÄèàóù
     var zoomFrom;
     var zoomTime;
+    var zoomAccel;
     var _zoom;
     var doZoom;
     property zoom {
@@ -286,12 +289,15 @@ class KAGEnvImage {
         type = void;
         opacityFrom = void;
         opacityTime = void;
+        opacityAccel = void;
         opacity = void;
         rotateFrom = void;
         rotateTime = void;
+        rotateAccel = void;
         rotate = void;
         zoomFrom = void;
         zoomTime = void;
+        zoomAccel = void;
         zoom = void;
         afx = void;
         afy = void;
@@ -372,12 +378,15 @@ class KAGEnvImage {
         if (action.module == "LayerFadeToModeModule") {
             opacity     = action.opacity;
             opacityTime = action.time;
+            opacityAccel = action.accel;
         } else if (action.module == "LayerToRotateModule") {
             rotate = action.angle;
             rotateTime = action.time;
+            rotateAccel = action.accel;
         } else if (action.module == "LayerNormalZoomModule") {
             zoom = action.zoom;
             zoomTime = action.time;
+            zoomAccel = action.accel;
         } else if (action.module == "LayerAccelMoveModule") {
             xpos = action.x;
             ypos = action.y;
@@ -662,7 +671,7 @@ class KAGEnvImage {
                     layer.opacity = opacityFrom;
                     opacityFrom = void;
                 }
-                layer.setOpacityTime(opacity, opacityTime);
+                layer.setOpacityTime(opacity, opacityTime, opacityAccel);
                 doOpacity = false;
             }
             if (doRotate) {
@@ -671,7 +680,7 @@ class KAGEnvImage {
                     layer.rotate = rotateFrom;
                     rotateFrom = void;
                 }
-                layer.setRotateTime(rotate, rotateTime);
+                layer.setRotateTime(rotate, rotateTime, rotateAccel);
                 doRotate = false;
             }
             if (doZoom) {
@@ -680,7 +689,7 @@ class KAGEnvImage {
                     layer.zoom = zoomFrom;
                     zoomFrom = void;
                 }
-                layer.setZoomTime(zoom, zoomTime);
+                layer.setZoomTime(zoom, zoomTime, zoomAccel);
                 doZoom = false;
             }
             if (doType) {
@@ -722,17 +731,20 @@ class KAGEnvImage {
         opacityFrom = calcRelative(opacity, getFrom(param), 100);
         opacity     = calcRelative(opacity, getTo(param), 100);
         opacityTime = isSkip() ? 0 : +elm.time;
+        opacityAccel = +elm.accel;
     } incontextof this,
     fade :  setFade incontextof this,
     rotate : function(param, elm) {
         rotateFrom = calcRelative(rotate, getFrom(param), 360);
         rotate     = calcRelative(rotate, getTo(param), 360);
         rotateTime = isSkip() ? 0 : +elm.time;
+        rotateAccel = +elm.accel;
     } incontextof this,
     zoom : function(param, elm) {
         zoomFrom = calcRelative(zoom, getFrom(param), 100);
         zoom     = calcRelative(zoom, getTo(param), 100);
         zoomTime = isSkip() ? 0 : +elm.time;
+        zoomAccel = +elm.accel;
     } incontextof this,
     afx : function(param, elm) {
         afx = param;
@@ -828,12 +840,15 @@ class KAGEnvImage {
         opacity     = f.opacity;
         opacityFrom = void;
         opacityTime = void;
+        opacityAccel = void;
         rotate      = f.rotate;
         rotateFrom  = void;
         rotateTime  = void;
+        rotateAccel = void;
         zoom        = f.zoom;
         zoomFrom    = void;
         zoomTime    = void;
+        zoomAccel   = void;
         if (f.actionList !== void) {
             for (var i=0;i<f.actionList.count;i++) {
                 addAction(f.actionList[i]);
@@ -884,7 +899,7 @@ class KAGEnvImage {
                     var ft = yposFrom !== void ? (int)yposFrom : t;
                     layer.setPos(fl, ft);
                 }
-                layer.setMove(l, t, moveAccel, moveTime);
+                layer.setMove(l, t, moveTime, moveAccel);
             } else {
                 layer.setMove(l, t);
             }

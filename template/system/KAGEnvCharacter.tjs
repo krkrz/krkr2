@@ -896,7 +896,7 @@ class KAGEnvCharacter extends KAGEnvLevelLayer, KAGEnvImage {
                     layer.setPos(fl, ft);
                 } 
                 //dm("layer位置", layer.left, layer.top, l, t);
-                layer.setMove(l, t, moveAccel, moveTime);
+                layer.setMove(l, t, moveTime, moveAccel);
             } else {
                 layer.setMove(l, t);
             }
@@ -953,7 +953,7 @@ class KAGEnvCharacter extends KAGEnvLevelLayer, KAGEnvImage {
                 }
                 
                 // 新規エモーションレイヤ
-                emotionLayer = new global.ActionLayer(layer.window, layer.parent);
+                emotionLayer = new global.AffineLayer(layer.window, layer.parent);
                 
                 if (emoRev && emotion.imageRev !== void) {
                     emoitonLayer.loadImages(emotion.imageRev);
@@ -963,7 +963,7 @@ class KAGEnvCharacter extends KAGEnvLevelLayer, KAGEnvImage {
                 emotionLayer.setPos(layer.left + layer.width/2 + emoX,
                                     layer.top  + layer.height  - emoY);
                 emotionLayer.visible = true;
-                emotion.beginAction(emotion.action);
+                kag.beginAction(emotion, emotion.action);
             }
             
             newEmotionFlag = false;

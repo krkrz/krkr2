@@ -194,3 +194,25 @@ function foreach(dict, func, param) {
         }
     }
 }
+
+/**
+ * 指定した名前の画像ファイルが存在すればその名前を返す
+ * @return 拡張子まで指定された画像ファイル名。存在しなければ void
+ */
+function getExistImageName(storage)
+{
+	var test;
+	if(!Storages.isExistentStorage(storage)) {
+		if (test = storage + ".png", Storages.isExistentStorage(test))
+			storage = test;
+		else if (test = storage + ".tlg5", Storages.isExistentStorage(test))
+			storage = test;
+		else if (test = storage + ".tlg6", Storages.isExistentStorage(test))
+			storage = test;
+		else if (test = storage + ".bmp", Storages.isExistentStorage(test))
+			storage = test;
+		else
+			storage = void;
+	}
+	return storage;
+}
