@@ -15,17 +15,6 @@ class KAGEnvLevelLayer {
     var back;
 
     /**
-     * 時間用最初期化処理
-     */
-    function setRedraw() {
-        // 表示中の場合は再描画処理
-        var layer = kag.fore.layers[env.initLayerCount + layerId];
-        if (layer.visible) {
-            redraw = true;
-        }
-    }
-    
-    /**
      * コンストラクタ
      * @param layerId 前景レイヤID
      */

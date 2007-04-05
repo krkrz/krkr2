@@ -30,7 +30,7 @@ class PropActionInfo {
      * @param elm 初期化パラメータ
      */
     function addAction(target, handler, elm) {
-        dm("アクション追加:" + propName);
+		//dm("アクション追加:" + propName);
         stopAction(target);
         if (typeof handler.AbsoluteActionHandler != "undefined") {
             // 絶対アクションは１つだけ設定可能
@@ -38,7 +38,7 @@ class PropActionInfo {
         } else if (typeof handler.RelativeActionHandler != "undefined") {
             // デフォルトアクション登録
             if (absolute === void) {
-                dm("デフォルトアクション登録");
+				//dm("デフォルトアクション登録");
                 absolute = new DefaultAction(target, propName, %[]);
             }
             // 相対アクションは複数設定可能
@@ -52,7 +52,7 @@ class PropActionInfo {
      */
     function stopAction(target) {
         if (!first) {
-            dm("稼動中アクションを停止");
+			//dm("稼動中アクションを停止");
             // 既に稼動していた場合は停止させる
             if (absolute !== void) {
                 absolute.action(target, propName, 0, true);
@@ -72,12 +72,12 @@ class PropActionInfo {
      */
     function doAction(target, now, stopFlag) {
         if (first) {
-            dm("アクション初回");
+			//dm("アクション初回");
             startTime = now;
             first = false;
         }
         now -= startTime;
-        dm("アクション状態:"+ now + " stop:" + stopFlag);
+		//dm("アクション状態:"+ now + " stop:" + stopFlag);
         var done = true;
         if (absolute !== void) {
             if (!absolute.action(target, propName, now, stopFlag)) {
@@ -200,7 +200,7 @@ class ActionSequense {
      */
     function addAction(propName, handler, elm) {
         if (typeof target[propName] == "undefined") {
-            dm("指定されたプロパティは存在しません:" + target + ":" + propName);
+			dm("指定されたプロパティは存在しません:" + target + ":" + propName);
         } else {
             if (create) {
                 actions.add(new ActionInfo());
@@ -290,7 +290,7 @@ class ActionHandler {
     function ActionHandler(target, propName, elm) {
         time  = +elm.time if elm.time !== void;
         delay = +elm.delay if elm.delay !== void;
-        dm("time:" + time + " delay:" + delay);
+		//dm("time:" + time + " delay:" + delay);
     }
 
     /**
@@ -387,10 +387,11 @@ class MoveAction extends AbsoluteActionHandler {
     var accel;  // 加減速指定
     
     function MoveAction(target, propName, elm) {
-        super.AbsoluteActionHandler(target, propName, elm);
-        start = target[propName];
-        diff  = getRelative(elm.value, start) - start;
-        accel = +elm.accel;
+		super.AbsoluteActionHandler(target, propName, elm);
+		var v = target[propName];
+		start = elm.start !== void ? getRelative(elm.start, v) : v;
+		diff  = getRelative(elm.value, v) - start;
+		accel = +elm.accel;
     }
 
     function doAction(target, propName, now, stopFlag) {
@@ -652,7 +653,7 @@ class FallAction extends RelativeActionHandler {
         if (stopFlag) {
             return true;
         } else {
-            dm("fall:" + now);
+			//dm("fall:" + now);
             target[propName] += distance * (now/time - 1.0);
             return false;
         }
@@ -664,22 +665,22 @@ class FallAction extends RelativeActionHandler {
 // ----------------------------------------------------------------
 
 function LayerNormalZoomModule(info, elm) {
-    info.addAction("zoomx", MoveAction, %[value:elm.zoom, time:elm.time, delay:elm.delay, accel:elm.accel]);
-    info.addAction("zoomy", MoveAction, %[value:elm.zoom, time:elm.time, delay:elm.delay, accel:elm.accel]);
+    info.addAction("zoomx", MoveAction, %[start:elm.start, value:elm.zoom, time:elm.time, delay:elm.delay, accel:elm.accel]);
+    info.addAction("zoomy", MoveAction, %[start:elm.start, value:elm.zoom, time:elm.time, delay:elm.delay, accel:elm.accel]);
 }
 
 function LayerToRotateModule(info, elm) {
     var rotate = elm.angle !== void ? elm.angle : elm.rotate;
-    info.addAction("rotate", MoveAction, %[value:rotate, time:elm.time, delay:elm.delay, accel:elm.accel]);
+    info.addAction("rotate", MoveAction, %[start:elm.start, value:rotate, time:elm.time, delay:elm.delay, accel:elm.accel]);
 }
 
 function LayerFadeToModeModule(info, elm) {
-    info.addAction("opacity", MoveAction, %[value:elm.opacity, time:elm.time, delay:elm.delay, accel:elm.accel]);
+    info.addAction("opacity", MoveAction, %[start:elm.start, value:elm.opacity, time:elm.time, delay:elm.delay, accel:elm.accel]);
 }
 
 function LayerMoveModule(info, elm, accel) {
-    info.addAction("left", MoveAction, %[value:elm.x, time:elm.time, delay:elm.delay, accel:accel]);
-    info.addAction("top",  MoveAction, %[value:elm.y, time:elm.time, delay:elm.delay, accel:accel]);
+    info.addAction("left", MoveAction, %[start:elm.startx, value:elm.x, time:elm.time, delay:elm.delay, accel:accel]);
+    info.addAction("top",  MoveAction, %[start:elm.starty, value:elm.y, time:elm.time, delay:elm.delay, accel:accel]);
 }
 
 function LayerNormalMoveModule(info, elm) {
@@ -715,7 +716,6 @@ function LayerJumpOnceActionModule(info, elm) {
 }
 
 function LayerWaveActionModule(info, elm) {
-    dm("横振動");
     info.addAction("left", SinAction, %[vibration:elm.vibration, cycle:elm.cycle, angvel:elm.angvel, time:elm.time, delay:elm.delay]);
     info.delAction("top");
 }

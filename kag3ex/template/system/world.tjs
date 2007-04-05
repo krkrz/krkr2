@@ -137,12 +137,17 @@ var transitionParam = %[
     "msgoff" => true,
     "charoff" => true,
     "transwait" => true,
+	"showaction" => true,
+	"hideaction" => true
     ];
 
 var actionParam = %[
     "time" => true,
     "delay" => true,
-    "x" => true,
+	"start" => true,
+	"startx" => true,
+	"starty" => true,
+	"x" => true,
     "y" => true,
     "toptime" => true,
     "vibration" => true,
@@ -159,7 +164,6 @@ var actionParam = %[
     "outtime" => true,
     "opacity" => true,
     ];
-
 
 KAGLoadScript('KAGEnvImage.tjs');
 KAGLoadScript('KAGEnvLayer.tjs');

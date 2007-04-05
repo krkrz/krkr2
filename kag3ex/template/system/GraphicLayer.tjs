@@ -545,16 +545,16 @@ class GraphicLayerEx extends GraphicLayer {
 
     var hide; // アクション終了時に消去
 
-    function onActionCompleted() {
-        window.conductor.trigger('layact' + name);
-        window.onActionStop();
-        if (hide) {
-            visible = false;
-        }
+	function onActionCompleted() {
+		window.onActionCompleted(this);
+		if (hide) {
+			visible = false;
+		}
     }
     
-    function beginAction(elm) {
-        window.beginAction(this, elm, onActionCompleted);
+	function beginAction(elm, hide) {
+		window.beginAction(this, elm, onActionCompleted);
+		this.hide = hide if hide !== void;
     }
 
     function stopAction() {
@@ -566,17 +566,51 @@ class GraphicLayerEx extends GraphicLayer {
         stopAction();
         super.reset();
     }
-    
+
+	var _visvalue = 0;
+	property visible {
+		getter() {
+			return _visvalue > 0;
+		}
+		setter(v) {
+			_visvalue = v ? 100 : 0;
+			opacity = _opacity;
+		}
+	}
+
+	property visvalue {
+		getter() {
+			return _visvalue;
+		}
+		setter(v) {
+			_visvalue = v;
+			opacity = _opacity;
+		}
+	}
+	
+	var _opacity = 255;
+	property opacity {
+		getter() {
+			return _opacity;
+		}
+		setter(v) {
+			_opacity = v;
+			var o = _opacity * _visvalue / 100;
+			super.opacity = o;
+			super.visible = o > 0;
+		}
+	}
+	
     /**
      * 不透明度を指定する
      * @param opacity 不透明度
      * @time 変更にかかる時間
      * @accel 加減速指定
      */
-    function setOpacityTime(o, time, accel=0) {
-        if (time) {
-            beginAction(%[opacity:%[handler:MoveAction, value:o, time:time, accel:accel]]);
-        } else {
+	function setOpacityTime(o, time, accel=0) {
+		if (time) {
+			beginAction(%[opacity:%[handler:MoveAction, value:o, time:time, accel:accel]]);
+		} else {
             opacity = o;
         }
     }
