@@ -35,6 +35,7 @@ class UIListParser extends CSVParser {
             if (info === void) {
                 info = %[];
                 info.name = name;
+				info.uiname = name;
                 info.uistates = %[];
                 names.add(name);
                 result[name] = info;
@@ -335,13 +336,6 @@ function uiEntryLayer(layer, name, value) {
 	value.uistates = void;
 	layer.addButton(value);
 	layer.names[value.name].enabled = false;
-}
-function uiEntryCopy(layer, name, value) {
-	layer.locate(value.x, value.y);
-	value.normal = value.storage;
-	value.uistates = void;
-	layer.addButton(value);
-	layer.names[name].enabled = false;
 }
 
 
