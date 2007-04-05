@@ -288,8 +288,11 @@ class ActionHandler {
      * @param elm ‰Šú‰»ƒpƒ‰ƒ[ƒ^
      */
     function ActionHandler(target, propName, elm) {
-        time  = +elm.time if elm.time !== void;
+		time  = +elm.time if elm.time !== void;
         delay = +elm.delay if elm.delay !== void;
+		if (time !== void) {
+			time *= kag.drawspeed;
+		}
 		//dm("time:" + time + " delay:" + delay);
     }
 
