@@ -3179,7 +3179,18 @@ class KAGWindow extends Window
 	}
 
     function addSelect(elm) {
-        selectLayer.addSelect(elm);
+		if (f.selectInfos == void) {
+            f.selectInfos = [];
+        }
+        if (f.selectDoneFlag) {
+            f.selectInfos.clear();
+            f.selDoneStorage = void;
+            f.selDoneTarget  = void;
+            f.selectDoneFlag = false;
+        }
+        var e = %[];
+        (Dictionary.assign incontextof e)(elm,false);
+        f.selectInfos.add(e);
     }
 
     /**
@@ -3187,6 +3198,10 @@ class KAGWindow extends Window
      */
 	function showSelect()
 	{
+		selectLayer.clearButtons();
+		for (var i=0;i<f.selectInfos.count;i++) {
+			selectLayer.addSelect(f.selectInfos[i]);
+        }
         selectLayer.start(fore.base, 1000000);
         selectShowing = true;
         setMenuAccessibleAll();
@@ -4774,7 +4789,6 @@ class KAGWindow extends Window
      */
     function stopAllActions() {
         // 全アクション停止
-        dm("全アクション停止!!!");
         var names = [];
         names.assign(allActions);
         (Dictionary.clear incontextof allActions)();
@@ -8147,10 +8161,12 @@ class KAGWindow extends Window
 
     select : function(elm)
     {
-        if (selectLayer.msgoff && setCurrentMessageLayerVisible(false)) {
+		if (selectLayer.msgoff && setCurrentMessageLayerVisible(false)) {
             // 処理待ち
             return -3;
         }
+
+		f.selectDoneFlag = true;
 
         if (recordHistoryOfStore == 3) // 2 : 選択肢 ( @s タグ ) ごと
             setToRecordHistory();
@@ -8165,6 +8181,8 @@ class KAGWindow extends Window
         stablePosibility = true;
         notifyStable();
         
+        f.selDoneStorage = elm.storage if elm.storage !== void;
+        f.selDoneTarget  = elm.target  if elm.target  !== void;
 
         showSelect();
 
@@ -8177,6 +8195,16 @@ class KAGWindow extends Window
 	selopt : function(elm)
 	{
 		setSelectOptions(elm);
+		return 0;
+	} incontextof this,
+
+	seldone : function(elm)
+	{
+        if (f.selDoneStorage != "" || f.selDoneTarget != "") {
+            process(f.selDoneStorage, f.selDoneTarget);
+        } else {
+            return tagHandlers.s(elm);
+        }
 		return 0;
 	} incontextof this,
 
@@ -8255,7 +8283,17 @@ class KAGWindow extends Window
         setMenuAccessibleAll();
 		return 0;
 	} incontextof this,
-                  
+
+	//----------------------------------------- タグハンドラ群(特殊分岐処理) --
+
+	next : function(elm)
+	{
+		if ((elm.storage !== void || elm.target !== void) && (elm.exp === void || elm.exp == "" || Scripts.eval(elm.exp))) {
+			kag.process(elm.storage, elm.target);
+		}
+		return 0;
+	} incontextof this,
+				  
 	//----------------------------------------- タグハンドラ群(特殊スキップ処理) --
 
     beginskip : function(elm)
