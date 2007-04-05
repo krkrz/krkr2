@@ -312,6 +312,9 @@ class KAGEnvCharacter extends KAGEnvLevelLayer, KAGEnvImage {
         
         switch (info.type) {
         case global.KAGEnvironment.XPOSITION:
+			if (disp == CLEAR) {
+				disp = SHOW;
+            }
 			var posFrom = getFrom(cmd);
             var fromInfo;
 			if (posFrom !== void && (fromInfo = env.positions[posFrom]) !== void) {
@@ -336,6 +339,9 @@ class KAGEnvCharacter extends KAGEnvLevelLayer, KAGEnvImage {
             break;
 
         case global.KAGEnvironment.YPOSITION:
+			if (disp == CLEAR) {
+				disp = SHOW;
+            }
             var posFrom = getFrom(cmd);
             var fromInfo;
             if (posFrom !== void && (fromInfo = env.positions[posFrom]) !== void) {
