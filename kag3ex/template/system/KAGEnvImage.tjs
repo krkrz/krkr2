@@ -470,20 +470,17 @@ class KAGEnvImage {
                 var moduleType;
                 try {
                     moduleType = global[name];
-                    if (moduleType !== void && typeof moduleType == "Object" && moduleType.LayerModule != void) {
-                        // アクションモジュール名の場合
-                        var action = %[];
-                        foreach(elm, function(name, value, elm, action) {
+					if (typeof moduleType == "Object") {
+						// アクションモジュール名の場合
+						var action = %[];
+						foreach(elm, function(name, value, elm, action) {
                             if (actionParam[name] !== void) {
                                 action[name] = value;
                             }
                         }, action);
-                        action.module = name;
-                        action.time = elm.time if elm.time !== void;
-                        if (action.time !== void) {
-                            action.time *= kag.drawspeed;
-                        }
-                        addAction(action);
+						action.module = name;
+						action.time = elm.time if elm.time !== void;
+						addAction(action);
                         return true;
                     }
                 } catch() {
@@ -734,6 +731,7 @@ class KAGEnvImage {
 	show : function(param) { disp = SHOW; },
 	hide : function(param) { disp = CLEAR; },
 	accel : null, // 無視
+	fade : null, // 無視
         ];
 
     /**
