@@ -337,6 +337,7 @@ class DialogLayer extends KAGLayer
      * 閉じる処理
      */
     function close() {
+		enabled = false;
         window.closeDialog(this);
     }
 
@@ -477,6 +478,7 @@ class DialogLayer extends KAGLayer
         object.name =  elm.name !== void ? elm.name : "button" + numLinks;
         if (elm.uistates !== void) {
             object.loadUIInfo(elm);
+			object.uiname = elm.uiname;
         } else if (elm.normal !== void) {
             object.loadButtons(elm.normal, elm.over, elm.on, elm.focus);
         } else if (elm.graphic !== void) {
@@ -644,6 +646,7 @@ class DialogLayer extends KAGLayer
         
         if (elm.uistates !== void) {
             object.loadUIInfo(elm);
+			object.uiname = elm.uiname;
         } else {
             // ベースの指定
             if (elm.base !== void) {

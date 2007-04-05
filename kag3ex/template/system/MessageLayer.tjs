@@ -2535,6 +2535,7 @@ class MessageLayer extends AnimKAGLayer
         object.name =  elm.name !== void ? elm.name : "button" + numLinks;
         if (elm.uistates !== void) {
             object.loadUIInfo(elm);
+			object.uiname = elm.uiname;
         } else if (elm.normal !== void) {
             var over   = elm.over !== void ? elm.over  : getExistName(elm.normal.replace(/_normal/, "_over"));
             var on     = elm.on   !== void ? elm.on    : getExistName(elm.normal.replace(/_normal/, "_on"));
@@ -2765,8 +2766,9 @@ class MessageLayer extends AnimKAGLayer
         object.changese = createSoundExpression(void, elm.changese, elm.changesebuf);
 
         if (elm.uistates !== void) {
-            object.loadUIInfo(elm);
-        } else {
+            object.loadUIInfo(elm); 
+			object.uiname = elm.uiname;
+       } else {
             // ベースの指定
             if (elm.base !== void) {
                 object.loadBase(elm.base);
@@ -2851,6 +2853,7 @@ class MessageLayer extends AnimKAGLayer
         object.name =  elm.name !== void ? elm.name : "sysbutton" + numLinks;
         if (elm.uistates !== void) {
             object.loadUIInfo(elm);
+			object.uiname = elm.uiname;
         } else if (elm.normal !== void) {
             var over   = elm.over !== void ? elm.over  : getExistName(elm.normal.replace(/_normal/, "_over"));
             var on     = elm.on   !== void ? elm.on    : getExistName(elm.normal.replace(/_normal/, "_on"));
