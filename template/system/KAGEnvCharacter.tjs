@@ -30,7 +30,8 @@ class VoiceTrack extends WaveSoundBuffer {
 
 
 /**
- * キャラクタプラグイン
+ * キャラクタレイヤ
+ * ポーズの指定他
  */
 class KAGEnvCharacter extends KAGEnvLevelLayer, KAGEnvImage {
 
@@ -44,21 +45,29 @@ class KAGEnvCharacter extends KAGEnvLevelLayer, KAGEnvImage {
     // フェード指定のデフォルト
     property fadeValue {
         getter() {
-            if (init !== void && init.fadeValue !== void) {
-                return init.fadeValue;
-            } else {
+			if (init !== void && init.fadeValue !== void) {
+				return init.fadeValue;
+			} else {
                 if (env.envinfo !== void && env.envinfo.charFadeValue !== void) {
-                    return env.envinfo.charFadeValue;
-                } else {
-                    return env.fadeValue;
-                }
-            }
+					return env.envinfo.charFadeValue;
+				} else {
+					return env.fadeValue;
+				}
+			}
         }
     }
 
     /// 名前
     var name;
-    /// 初期化名
+
+	/**
+	 * 表示処理用の自動トランジションの指定
+	 */
+	function setDispAutoTrans() {
+		setAutoTrans([init.dispTrans, env.envinfo.charDispTrans]);
+	}
+	
+	/// 初期化名
     var initName;
 
     /// 初期化情報
@@ -200,34 +209,17 @@ class KAGEnvCharacter extends KAGEnvLevelLayer, KAGEnvImage {
     // 表情描画処理を行う
     var redrawFace;
 
-    function setAutoTrans(elm) {
-        if (!setTrans2(init.poseTrans)) {
-            if (!setTrans2(init.charTrans)) {
-                if (!setTrans2(env.envinfo.poseTrans)) {
-                    setTrans2(env.envinfo.charTrans);
-                }
-            }
-        }
-    }
-    
     /**
      * 直接画像指定
      */
     function setImage(imageName, elm) {
-        if (imageName != image || disp == CLEAR) {
-            image = imageName;
-            yoffset = elm.yoffset;
-            if (disp == CLEAR) {
-                disp = init.noimage ? FACE : BOTH;
-            }
-            redraw = true;
-            reposition = true;
-            
-            // 自動トランジション指定は表示される場合のみ
-            if (isShowBU() && elm.fade === void) {
-                setAutoTrans(elm);
-            }
-        }
+		if (imageName != image || isClear()) {
+			image   = imageName;
+			yoffset = elm.yoffset;
+			disp = SHOW;
+			redraw  = true;
+			setAutoTrans([init.poseTrans, init.charTrans, env.envinfo.poseTrans, env.envinfo.charTrans]);
+		}
     }
     
     /**
@@ -236,35 +228,26 @@ class KAGEnvCharacter extends KAGEnvLevelLayer, KAGEnvImage {
     function setPose(poseName, elm) {
         var info = poses[poseName];
         if (info !== void) {
-            if (poseName != pose || disp == CLEAR) {
-                pose = poseName;
-                yoffset = info.yoffset;
-                if (disp == CLEAR) {
-                    disp = init.noPose ? FACE : BOTH;
-                }
-                redraw = true;
-                reposition = true;
-                
-                // 自動トランジション指定は表示される場合のみ
-                if (isShowBU() && elm.fade === void) {
-                    if (!setTrans2(info.trans)) {
-                        setAutoTrans(elm);
-                    }
-                }
-                
+			if (poseName != pose || isClear()) {
+				pose = poseName;
+				yoffset = info.yoffset;
+				disp = SHOW;
+				redraw = true;
+				setAutoTrans([info.trans, init.poseTrans, init.charTrans, env.envinfo.poseTrans, env.envinfo.charTrans]);
+					
                 // 表情表示取得
-                if (isShowFace() && (elm.faceon || env.showFaceMode) && !elm.faceoff) {
-                    redrawFace = true;
-                }
+				if (isShowFace() && (elm.faceon || env.showFaceMode) && !elm.faceoff) {
+					redrawFace = true;
+				}
             }
-            // 服装初期化処理
-            if (dress !== void && (info.dresses == void || info.dresses[dress] == void)) {
-                dress = void;
-            }
-            // 表情初期化処理
-            if (face !== void && (info.faces == void || info.faces[face] == void)) {
-                face = void;
-            }
+			// 服装初期化処理
+			if (dress !== void && (info.dresses == void || info.dresses[dress] == void)) {
+				dress = void;
+			}
+			// 表情初期化処理
+			if (face !== void && (info.faces == void || info.faces[face] == void)) {
+				face = void;
+			}
         }
 
         // イメージを破棄
@@ -280,72 +263,40 @@ class KAGEnvCharacter extends KAGEnvLevelLayer, KAGEnvImage {
      * 服装の設定
      */
     function setDress(dressName, elm) {
-        if (dressName != dress || disp == CLEAR) {
-            dress = dressName;
-            if (disp == CLEAR) {
-                disp = init.noPose ? FACE : BOTH;
-            }
-            redraw = true;
-            reposition = true;
-
-            // 自動トランジション指定は表示される場合のみ
-            if (isShowBU() && elm.fade === void) {
-                if (!setTrans2(init.dressTrans)) {
-                    if (!setTrans2(init.charTrans)) {
-                        if (!setTrans2(env.envinfo.dressTrans)) {
-                            setTrans2(env.envinfo.charTrans);
-                        }
-                    }
-                }
-            }
-            // 表情表示取得
-            if (isShowFace() && (elm.faceon || env.showFaceMode) && !elm.faceoff) {
-                redrawFace = true;
-            }
-        }
-        image = void;
+		if (dressName != dress || isClear()) {
+			dress = dressName;
+			disp = SHOW;
+			redraw = true;
+			setAutoTrans([init.dressTrans, init.charTrans, env.envinfo.dressTrans, env.envinfo.charTrans]);
+			// 表情表示取得
+			if (isShowFace() && (elm.faceon || env.showFaceMode) && !elm.faceoff) {
+				redrawFace = true;
+			}
+		}
+		image = void;
     }
     /**
      * 表情の設定
       */
     function setFace(faceName, elm) {
-        if (faceName != face || disp == CLEAR) {
-            face = faceName;
-            if (disp == CLEAR) {
-                disp = init.noPose ? FACE : BOTH;
-            }
-            redraw = true;
-            reposition = true;
-
-            // 自動トランジション指定は表示される場合のみ
-            if (isShowBU() && elm.fade === void) {
-                if (!setTrans2(init.faceTrans)) {
-                    if (!setTrans2(init.charTrans)) {
-                        if (!setTrans2(env.envinfo.faceTrans)) {
-                            setTrans2(env.envinfo.charTrans);
-                        }
-                    }
-                }
-            }
-
-            // 表情表示取得
-            if (isShowFace() && (elm.faceon || env.showFaceMode) && !elm.faceoff) {
-                redrawFace = true;
-            }
-        }
-        image = void;
+		if (faceName != face || isClear()) {
+			face = faceName;
+			disp = SHOW;
+			redraw = true;
+			setAutoTrans([init.faceTrans, init.charTrans, env.envinfo.faceTrans, env.envinfo.charTrans]);
+			// 表情表示取得
+			if (isShowFace() && (elm.faceon || env.showFaceMode) && !elm.faceoff) {
+				redrawFace = true;
+			}
+		}
+		image = void;
     }
 
     /**
      * 場所表示用トランジション設定
      */
-    function setPositionTrans(info, force=false) {
-        //dm("場所トランジション指定");
-        if (force || isShowBU()) {
-            if (!setTrans2(info.trans)) {
-                setTrans2(env.envinfo.positionTrans);
-            }
-        }
+    function setPositionTrans(info) {
+		setAutoTrans([info.trans, env.envinfo.positionTrans]);
     }
 
     /**
@@ -361,14 +312,11 @@ class KAGEnvCharacter extends KAGEnvLevelLayer, KAGEnvImage {
         
         switch (info.type) {
         case global.KAGEnvironment.XPOSITION:
-            if (disp == CLEAR) {
-                disp = init.noPose ? FACE : BOTH;
-            }
-            var posFrom = getFrom(cmd);
+			var posFrom = getFrom(cmd);
             var fromInfo;
-            if (posFrom !== void && (fromInfo = env.positions[posFrom]) !== void) {
-                moveTime = isSkip() ? 0 : elm.time;
-                moveAccel = (elm.accel === void) ? 0 : +elm.accel;
+			if (posFrom !== void && (fromInfo = env.positions[posFrom]) !== void) {
+				moveTime = isSkip() ? 0 : elm.time;
+				moveAccel = (elm.accel === void) ? 0 : +elm.accel;
                 xposFrom   = calcRelative(xpos, fromInfo.xpos, env.xmax);
                 xpos       = calcRelative(xpos, info.xpos, env.xmax);
                 reposition = true;
@@ -382,17 +330,12 @@ class KAGEnvCharacter extends KAGEnvLevelLayer, KAGEnvImage {
                     moveAccel = (elm.accel === void) ? 0 : +elm.accel;
                     xpos = newxpos;
                     reposition = true;
-                    if (moveTime === void && elm.fade === void) {
-                        setPositionTrans(info);
-                    }
+					setPositionTrans(info);
                 }
             }
             break;
 
         case global.KAGEnvironment.YPOSITION:
-            if (disp == CLEAR) {
-                disp = init.noPose ? FACE : BOTH;
-            }
             var posFrom = getFrom(cmd);
             var fromInfo;
             if (posFrom !== void && (fromInfo = env.positions[posFrom]) !== void) {
@@ -411,33 +354,22 @@ class KAGEnvCharacter extends KAGEnvLevelLayer, KAGEnvImage {
                     moveAccel = (elm.accel === void) ? 0 : +elm.accel;
                     ypos = newypos;
                     reposition = true;
-                    if (moveTime === void && elm.fade === void) {
-                        setPositionTrans(info);
-                    }
+					setPositionTrans(info);
                 }
             }
             break;
 
         case global.KAGEnvironment.DISPPOSITION:
-            disp = info.disp;
+			disp = info.disp;
             redraw = true;
-            reposition = true;
-            if (elm.fade === void) {
-                setPositionTrans(info, true);
-            }
+			setPositionTrans(info);
             break;
 
         case global.KAGEnvironment.LEVEL:
             //dm("レベル:" + info.level);
-            level = info.level;
-            redraw = true;
-            reposition = true;
-            if (disp > CLEAR) {
-                redraw = true;
-            }
-            if (elm.fade === void) {
-                setPositionTrans(info);
-            }
+			level = info.level;
+			redraw = true;
+			setPositionTrans(info);
             break;
         }
     }
@@ -498,9 +430,9 @@ class KAGEnvCharacter extends KAGEnvLevelLayer, KAGEnvImage {
     clearvoice : this.clearVoice incontextof this,
     playvoice : this.playVoice2 incontextof this,
     waitvoice : this.waitVoice incontextof this,
-    facewin : function(param) { disp = FACE; } incontextof this,
-    faceon : null,
-    faceoff : null,
+	facewin : function(param, elm) { disp = FACE; redraw = true; } incontextof this,
+	faceon : null,
+	faceoff : null,
         ];
 
     /**
@@ -596,7 +528,7 @@ class KAGEnvCharacter extends KAGEnvLevelLayer, KAGEnvImage {
         
         // 更新
         if (!find) {
-            find = _setTrans(cmd, elm);
+            find = setTrans(cmd, elm);
         }
         
         return find;
@@ -808,18 +740,6 @@ class KAGEnvCharacter extends KAGEnvLevelLayer, KAGEnvImage {
                             timeInfo.charContrast);
             }
         }
-
-        // グレー補正
-        if (grayscale) {
-            layer.doGrayScale();
-        }
-
-        // ガンマ補正
-        if (rgamma != void || ggamma != void || bgamma != void) {
-            layer.adjustGamma(rgamma == void ? 1.0 : rgamma, 0, 255,
-                              ggamma == void ? 1.0 : ggamma, 0, 255,
-                              bgamma == void ? 1.0 : bgamma, 0, 255);
-        }
     }
 
     /**
@@ -827,16 +747,15 @@ class KAGEnvCharacter extends KAGEnvLevelLayer, KAGEnvImage {
      * @param layer 描画対象レイヤ
      */
     function drawLayer(layer) {
-        initLayer(layer);
-        var levelName;
-        var levelInfo = env.levels[level];
-        if (levelInfo !== void) {
-            levelName = levelInfo.name;
-        }
-        if (levelName === void) {
-            levelName = level;
-        }
-        _drawLayer(layer, levelName);
+		var levelName;
+		var levelInfo = env.levels[level];
+		if (levelInfo !== void) {
+			levelName = levelInfo.name;
+		}
+		if (levelName === void) {
+			levelName = level;
+		}
+		_drawLayer(layer, levelName);
     }
 
     /**
@@ -857,70 +776,67 @@ class KAGEnvCharacter extends KAGEnvLevelLayer, KAGEnvImage {
      * @param layer 処理対象レイヤ
      */
     function calcPosition(layer) {
-        if (reposition) {
-            //dm("位置指定3");
+		//dm("位置指定3");
+		
+		// 未初期化時デフォルト
+		if (xpos === void) {
+			xpos = env.defaultXpos;
+		}
+		if (ypos === void) {
+			ypos = env.defaultYpos;
+		}
+		
+		var yoff = yoffset !== void ? +yoffset : init.yoffset !== void ? +init.yoffset : +env.yoffset;
+		
+		// レベル別座標補正処理。とりあえず適当で画面中央に向かって縮小処理してある
+		var zoom;
+		var levelYoffset = 0;
+		var levelInfo = env.levels[level];
+		if (levelInfo !== void) {
+			zoom         = (int)levelInfo.zoom;
+			levelYoffset = (int)levelInfo.yoffset;
+		}
+		if (zoom === void) {
+			zoom = 100;
+		}
+		if (levelYoffset === void) {
+			levelYoffset = 0;
+		}
+		
+		//dm("キャラ移動処理:", xpos, ypos, xposFrom, yposFrom);
+		
+		var l = env.xmax + ((int)xpos * zoom / 100) - layer.imageWidth / 2;
+		var t = env.ymax + ((yoff - (int)ypos) * zoom / 100) - layer.imageHeight + levelYoffset;
+		if (moveTime) {
+			if (xposFrom !== void || yposFrom !== void) {
+				var fl = xposFrom !== void ? env.xmax + ((int)xposFrom * zoom / 100) - layer.imageWidth / 2 : l;
+				var ft = yposFrom !== void ? env.ymax + ((yoff - (int)yposFrom) * zoom / 100) - layer.imageHeight + levelYoffset: t;
+				layer.setPos(fl, ft);
+			} 
+			//dm("layer位置", layer.left, layer.top, l, t);
+			layer.setMove(l, t, moveTime, moveAccel);
+		} else {
+			layer.setMove(l, t);
+		}
+		xposFrom = void;
+		yposFrom = void;
+		moveTime = void;
+	}
 
-            // 未初期化時デフォルト
-            if (xpos === void) {
-                xpos = env.defaultXpos;
-            }
-            if (ypos === void) {
-                ypos = env.defaultYpos;
-            }
-
-            var yoff = yoffset !== void ? +yoffset : init.yoffset !== void ? +init.yoffset : +env.yoffset;
-            
-            // レベル別座標補正処理。とりあえず適当で画面中央に向かって縮小処理してある
-            var zoom;
-            var levelYoffset = 0;
-            var levelInfo = env.levels[level];
-            if (levelInfo !== void) {
-                zoom         = (int)levelInfo.zoom;
-                levelYoffset = (int)levelInfo.yoffset;
-            }
-            if (zoom === void) {
-                zoom = 100;
-            }
-            if (levelYoffset === void) {
-                levelYoffset = 0;
-            }
-            
-            //dm("キャラ移動処理:", xpos, ypos, xposFrom, yposFrom);
-            
-            var l = env.xmax + ((int)xpos * zoom / 100) - layer.imageWidth / 2;
-            var t = env.ymax + ((yoff - (int)ypos) * zoom / 100) - layer.imageHeight + levelYoffset;
-            if (moveTime) {
-                if (xposFrom !== void || yposFrom !== void) {
-                    var fl = xposFrom !== void ? env.xmax + ((int)xposFrom * zoom / 100) - layer.imageWidth / 2 : l;
-                    var ft = yposFrom !== void ? env.ymax + ((yoff - (int)yposFrom) * zoom / 100) - layer.imageHeight + levelYoffset: t;
-                    layer.setPos(fl, ft);
-                } 
-                //dm("layer位置", layer.left, layer.top, l, t);
-                layer.setMove(l, t, moveTime, moveAccel);
-            } else {
-                layer.setMove(l, t);
-            }
-            xposFrom = void;
-            yposFrom = void;
-            moveTime = void;
-            reposition = false;
-        }
-    }
-    
     /**
      * レイヤ状態更新処理
      * エモーション処理を追加
      */
-    function updateLayer(layer) {
-        global.KAGEnvImage.updateLayer(...);
-
-        // 表情描画
+	function updateLayer(layer) {
+		global.KAGEnvImage.updateLayer(...);
+		
+		// 表情描画
         if (redrawFace) {
-            if (env.currentNameTarget != this) {
-                env.drawName();
-            }
-            env.drawFacePage(layer.parent === kag.fore.base ? kag.fore : kag.back, this);
-            env.currentNameTarget = this;
+			if (env.currentNameTarget != this) {
+				env.drawName();
+			}
+			env.drawFacePage(layer.parent === kag.fore.base ? kag.fore : kag.back, this);
+			env.currentNameTarget = this;
 
             redrawFace = false;
         }
@@ -969,33 +885,30 @@ class KAGEnvCharacter extends KAGEnvLevelLayer, KAGEnvImage {
             newEmotionFlag = false;
         }
     }
-    
-    /**
-     * KAG タグ処理
-     * @param elm 引数
-     */
-    function tagfunc(elm) {
-        //dm("キャラクタタグの呼び出し:" + name);
-        ret = void;
 
-        {
-            var e = %[];
-            (Dictionary.assign incontextof e)(elm); 
-            var names = [];
-            names.assign(e);
-            // ポーズ指定コマンドは優先処理する
-            for (var i=0; i<names.count; i+= 2) {
-                if (doPoseCommand(names[i], names[i+1], e)) {
-                    delete e[names[i]];
-                }
-            }
-            foreach(e, doCommand);
-        }
-        updateImage();
-        return ret;
-    }
+	/**
+	 * KAG タグ処理
+	 * @param elm コマンドパラメータ
+	 */
+	function command(elm) {
+		var e = %[];
+		(Dictionary.assign incontextof e)(elm); 
+		var names = [];
+		names.assign(e);
+		// ポーズ指定コマンドを優先処理する
+		for (var i=0; i<names.count; i+= 2) {
+			if (doPoseCommand(names[i], names[i+1], e)) {
+				delete e[names[i]];
+			}
+		}
+		global.KAGEnvImage.command(e);
+	}
+	
+	// ----------------------------------------------------------
+	// ボイス処理
+	// ----------------------------------------------------------
 
-    var reNumber = new RegExp("^[0-9][0-9]*$");
+	var reNumber = new RegExp("^[0-9][0-9]*$");
 
     // 加算しないフラグ
     var noinc;

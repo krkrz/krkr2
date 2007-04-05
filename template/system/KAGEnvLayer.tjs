@@ -1,5 +1,6 @@
 /**
  * レイヤ系基底クラス
+ * 画像表示が実装されている
  */
 class KAGEnvLayer extends KAGEnvImage {
 
@@ -31,10 +32,7 @@ class KAGEnvLayer extends KAGEnvImage {
     function setImageFile(file, elm) {
 
         imageFile = file;
-        // 消去指定がなければ表示
-        if (elm.hide === void) {
-            disp = BOTH;
-        }
+
         // 背景指定時に座標指定がなければ場所情報を初期化する
         if (elm.xpos === void) {
             xpos = void;
@@ -42,8 +40,9 @@ class KAGEnvLayer extends KAGEnvImage {
         if (elm.ypos === void) {
             ypos = void;
         }
+
+		disp = SHOW;
         redraw = true;
-        reposition = true;
 
         // 記録
         kag.sflags["cg_" + (file.toUpperCase())] = true;
@@ -95,7 +94,7 @@ class KAGEnvLayer extends KAGEnvImage {
 
         // 更新
         if (!find) {
-            find = _setTrans(cmd, elm);
+            find = setTrans(cmd, elm);
         }
 
         // 画像のロード
@@ -109,33 +108,12 @@ class KAGEnvLayer extends KAGEnvImage {
     // function getLayer(base);
     // 
     function drawLayer(layer) {
-        initLayer(layer);
-        if (imageFile !== void) {
-            try {
-                layer.loadImages(%[ "storage" => imageFile]);
-            } catch (e) {
-                kag.errorImage(imageFile + ":画像がロードできません");
-            }
-        }
-        if (grayscale) {
-            layer.doGrayScale();
-        }
-        if (rgamma != void || ggamma != void || bgamma != void) {
-            layer.adjustGamma(rgamma == void ? 1.0 : rgamma, 0, 255,
-                              ggamma == void ? 1.0 : ggamma, 0, 255,
-                              bgamma == void ? 1.0 : bgamma, 0, 255);
-        }
-    }
-
-    /**
-     * KAG タグ処理
-     * @param elm 引数
-     */
-    function tagfunc(elm) {
-        //dm("レイヤタグがよばれたよ");
-        ret = void;
-        foreach(elm, doCommand);
-        updateImage();
-        return ret;
-    }
+		if (imageFile !== void) {
+			try {
+				layer.loadImages(%[ "storage" => imageFile]);
+			} catch (e) {
+				kag.errorImage(imageFile + ":画像がロードできません");
+			}
+		}
+	}
 }
