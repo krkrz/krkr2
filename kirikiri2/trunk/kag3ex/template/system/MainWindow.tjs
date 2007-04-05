@@ -3308,7 +3308,7 @@ class KAGWindow extends Window
         if (elm.time === void) { elm.time = 1000; }
         if (elm.type === void) { elm.type = "wipeltor"; }
         var waitParam  = %[];
-        var waitTime = void;
+		var waitTime = void;
         if((elm.canskip === void || +elm.canskip) && clickSkipEnabled) {
             if(skipMode) {
                 return 0; // すぐに返る
@@ -4704,7 +4704,7 @@ class KAGWindow extends Window
     function isInAction(target) {
         return allActions[target] !== void;
     }
-    
+
     /**
      * アクションを登録
      * @param target ターゲットオブジェクト
@@ -4731,8 +4731,9 @@ class KAGWindow extends Window
         
         if (typeof action == "Object") {
             if (action instanceof "Dictionary") {
-                dm("辞書アクション");
-                // 辞書の場合
+				dm("辞書アクション:" + action);
+				showKeys("アクション", action);
+				// 辞書の場合
 				if (typeof action.module == "Object") {
 					action.module(info, action);
                 } else if (typeof action.module == "String") {
@@ -4768,7 +4769,7 @@ class KAGWindow extends Window
      * アクションを停止
      * @param target ターゲットオブジェクト
      */
-    function stopAction(target) {
+	function stopAction(target) {
         // 指定されたアクションの停止
         var info = allActions[target];
         if (info !== void) {
@@ -4782,8 +4783,6 @@ class KAGWindow extends Window
         }
     }
 
-    var stopActionHandler;
-    
     /**
      * 全アクションの停止
      */
@@ -4800,9 +4799,6 @@ class KAGWindow extends Window
                 info.onActionCompleted(info.target);
             }
             invalidate info;
-        }
-        if (stopActionHandler !== void) {
-            stopActionHandler();
         }
     }
     
@@ -4835,17 +4831,58 @@ class KAGWindow extends Window
     /**
      * アクション終了
      */
-    function onActionStop() {
-        if (actionCount == 0) {
-            conductor.trigger('action');
-        }
+	function onActionCompleted(self) {
+		// 個別アクション停止
+		conductor.trigger('action_' + (string)self);
+		if (actionCount == 0) {
+			// 全アクション停止
+			conductor.trigger('action');
+		}
     }
-    
-	function waitAction(elm)
-	{
+
+	/**
+	 * アクション待ち
+	 */
+	function waitAction(target, canskip=void) {
+		if (!isInAction(target)) return 0; // アクションを待てない
+		if((canskip === void || +canskip) && clickSkipEnabled)
+		{
+			// スキップできる場合
+			if(skipMode)
+			{
+				// スキップ動作中
+                stopAction(target);
+				return 0; // 自動移動を停止させてすぐに返る
+			}
+			conductor.wait(%[
+				click : function (target)
+				{
+                    updateBeforeCh = 1;
+                    stopAction(target); // アクションを停止
+				} incontextof this,
+				'click_arg' => target, // ハンドラへの引数
+                'action_' + (string)target => function
+				{
+					updateBeforeCh = 1;
+				} incontextof this
+				]);
+		}
+		else
+		{
+			conductor.wait(%[
+				'action_' + (string)target => function
+				{
+					updateBeforeCh = 1;
+				} incontextof this
+				]);
+		}
+		return -2;
+	}
+
+	function waitAllAction(canskip)	{
 		// アクションを待つ
         if (actionCount == 0) return 0; // アクションを待てない
-		if((elm.canskip === void || +elm.canskip) && clickSkipEnabled)
+		if((canskip === void || +canskip) && clickSkipEnabled)
 		{
 			// スキップできる場合
 			if(skipMode)
@@ -4877,62 +4914,7 @@ class KAGWindow extends Window
 		}
 		return -2;
 	}
-
-    /**
-     * 特定レイヤのアクションが終了
-     * @param layer レイヤ
-     */
-    function onLayerActionStop(layer) {
-    }
-    
-    function _waitLayerAction(layer, canskip=void)
-	{
-        if (!isInAction(layer)) return 0; // アクションを待てない
-        if((canskip === void || +canskip) && clickSkipEnabled)
-		{
-			// スキップできる場合
-			if(skipMode)
-			{
-				// スキップ動作中
-                layer.stopAction();
-				return 0; // 自動移動を停止させてすぐに返る
-			}
-			conductor.wait(%[
-				click : function (layer)
-				{
-                    updateBeforeCh = 1;
-                    layer.stopAction(); // アクションを停止
-				} incontextof this,
-				'click_arg' => layer, // ハンドラへの引数
-                'layact' + layer.name => function
-				{
-					updateBeforeCh = 1;
-				} incontextof this
-				]);
-		}
-		else
-		{
-			conductor.wait(%[
-				'layact' + layer.name => function
-				{
-					updateBeforeCh = 1;
-				} incontextof this
-				]);
-		}
-		return -2;
-	}
-
-    function waitLayerAction(elm)
-	{
-        var layer = getLayerFromElm(elm);
-        if (layer instanceof "GraphicLayerEx") {
-            return _waitLayerAction(layer, elm.canskip);
-        } else {
-            dm("指定されたレイヤはアクションを指定できません");
-            return 0;
-        }
-    }
-    
+	
 	//------------------------------------------------ ディレイ/スキップ関連 --
 
 	function setDelay(elm)
@@ -5110,10 +5092,15 @@ class KAGWindow extends Window
         timeOrigin = System.getTickCount();
 	}
 
-	function waitTime(waittime, canskip, trans=false)
+	function waitTime(waittime, canskip, trans=false, action=false)
 	{
-        // waittime 分待つ
+		// waittime 分待つ
 		if(waittime == 0) return 0;
+
+		var arg = 0;
+		if (trans) { arg |= 0x01; };
+		if (action) { arg |= 0x02; };
+		
 		if(canskip)
 		{
 			// スキップできる場合
@@ -5123,53 +5110,41 @@ class KAGWindow extends Window
 				return 0; // スキップ中の場合はなにもせずに返る
 			}
 
-            if (trans) {
             conductor.waitWithTimeOut(%[
-				click : function
+				click : function(arg) 
 				{
-					updateBeforeCh = 1;
-					stopAllTransitions(); // すべてのトランジションは停止
+					if (arg) {
+						updateBeforeCh = 1;
+						if ((arg & 0x01)) {stopAllTransitions();} // すべてのトランジションは停止
+						if ((arg & 0x02)) {stopAllActions();} // すべてのアクションは停止
+					}
 				} incontextof this,
-				timeout : function
+				click_arg : arg,
+				timeout : function(arg)
 				{
-					updateBeforeCh = 1;
-					stopAllTransitions(); // すべてのトランジションは停止
-				} incontextof this
-				], waittime);
-
-            } else {
-            conductor.waitWithTimeOut(%[
-				click : function
-				{
-					// やることなし
+					if (arg) {
+						updateBeforeCh = 1;
+						if ((arg & 0x01)) {stopAllTransitions();} // すべてのトランジションは停止
+						if ((arg & 0x02)) {stopAllActions();} // すべてのアクションは停止
+					}
 				} incontextof this,
-
-				timeout : function
-				{
-					// やることなし
-				} incontextof this
+				timeout_arg : arg,
 				], waittime);
-            }
 		}
 		else
 		{
 			// スキップできない場合
-            if (trans) {
 			conductor.waitWithTimeOut(%[
-				timeout : function
+				timeout : function(arg)
 				{
-					updateBeforeCh = 1;
-					stopAllTransitions(); // すべてのトランジションは停止
-				} incontextof this
+					if (arg) {
+						updateBeforeCh = 1;
+						if ((arg & 0x01)) {stopAllTransitions();} // すべてのトランジションは停止
+						if ((arg & 0x02)) {stopAllActions();} // すべてのアクションは停止
+					}
+				} incontextof this,
+				timeout_arg : arg
 				], waittime);
-            } else {
-			conductor.waitWithTimeOut(%[
-				timeout : function
-				{
-					// やることなし
-				} incontextof this
-				], waittime);
-            }
 		}
 		return -2; // break
 		
@@ -5194,7 +5169,9 @@ class KAGWindow extends Window
 		{
 			waittime = +elm.time;
         }
-		return waitTime(waittime, (elm.canskip === void || +elm.canskip) && clickSkipEnabled, elm.trans !== void ? elm.trans : false);
+		return waitTime(waittime, (elm.canskip === void || +elm.canskip) && clickSkipEnabled,
+						elm.trans !== void ? elm.trans : false,
+						elm.action !== void ? elm.action : false);
 	}
 
 	function doWaitCh(elm)
@@ -6059,15 +6036,11 @@ class KAGWindow extends Window
 		conductor.trigger('sefade' + id);
 	}
 
-    // SE 停止時拡張ハンドラ
-    var seStopHandler;
-    
-    function onSESoundBufferStop(id)
-	{
+    function onSESoundBufferStop(id) {
 		// 効果音の再生が終了した
-        conductor.trigger('sestop' + id);
-        if (seStopHandler !== void) {
-            seStopHandler(id);
+		conductor.trigger('sestop' + id);
+		if (typeof seStopHandler != "undefined") {
+			seStopHandler(id);
         }
 	}
 
@@ -7687,16 +7660,16 @@ class KAGWindow extends Window
 	trans : function(elm)
 	{
         // トランジションの開始
-        var layer = getLayerPageFromElm(elm, false);
-        if (layer == fore.base)  {
-            if (selectShowing) {
-                selectLayer.setParent(back.base, 1000000);
-            }
-            if (mapSelectShowing) {
-                mapSelectLayer.setParent(back.base, 1000000);
-            }
-        }
-        layer.beginTransition(elm);
+		var layer = getLayerPageFromElm(elm, false);
+		if (layer == fore.base)  {
+			if (selectShowing) {
+				selectLayer.setParent(back.base, 1000000);
+			}
+			if (mapSelectShowing) {
+				mapSelectLayer.setParent(back.base, 1000000);
+			}
+		}
+		layer.beginTransition(elm);
 		return 0;
 	} incontextof this,
 
@@ -7744,25 +7717,37 @@ class KAGWindow extends Window
     // アクション開始
     action : function(elm)
     {
-        updateBeforeCh = 1;
-        var target;
-        if (elm.layer !== void) {
-            // レイヤの場合特例（互換用）
-            var layer = getLayerFromElm(elm);
-            if (layer instanceof "GraphicLayerEx") {
-                layer.beginAction(elm);
-            } else {
-                dm("指定されたレイヤはアクションを指定できません");
-            }
-        } else if (elm.target !== void) {
-            target = Scripts.eval(elm.target);
-            if (typeof target == "Object") {
-                beginAction(target, elm, onActionStop);
-            } else {
-                dm("アクションはオブジェクトに指定する必要があります");
-            }
-        }
-        return 0;
+		var target;
+		if (elm.layer !== void) {
+			target = getLayerFromElm(elm);
+		} else if (typeof elm.target == "Object") {
+			target = elm.target;
+		} else if (typeof elm.target == "String") {
+			target = Scripts.eval(elm.target);
+		}
+		if (typeof target == "Object") {
+			var action;
+			if (elm.action !== void) {
+				// 直接アクション構造が指定されている場合
+				action = elm.action;
+			} else {
+				action = %[];
+				// アクション構造をパラメータから生成
+				(Dictionary.assign incontextof action)(elm);
+				delete action.tagname;
+				delete action.layer;
+				delete action.page;
+				delete action.target;
+			}
+			if (target instanceof "GraphicLayerEx") {
+				target.beginAction(action, elm.hide);
+			} else {
+				beginAction(target, action, onActionCompleted);
+			}
+		} else {
+			error("アクションはオブジェクトに指定する必要があります");
+		}
+		return 0;
     } incontextof this,
 
     // アクション停止
@@ -7770,39 +7755,48 @@ class KAGWindow extends Window
 	{
         updateBeforeCh = 1;
         var target;
-        if (elm.layer !== void) {
-            var layer = getLayerFromElm(elm);
-            if (layer instanceof "GraphicLayerEx") {
-                layer.stopAction();
-            } else {
-                dm("指定されたレイヤはアクションを指定できません");
-            }
-        } else if (elm.target !== void) {
-            target = Scripts.eval(elm.target);
-            if (typeof target == "Object") {
-                stopAction(target);
-            } else {
-                dm("アクションはオブジェクトに指定する必要があります");
-            }
-        } else {
-            stopAllActions();
-        }
+		if (elm.layer !== void) {
+			target = getLayerFromElm(elm);
+		} else if (typeof elm.target == "Object") {
+			target = elm.target;
+		} else if (typeof elm.target == "String") {
+			target = Scripts.eval(elm.target);
+		}
+		if (target !== void) {
+			if (typeof target == "Object") {
+				stopAction(target);
+			} else {
+				dm("アクションはオブジェクトに指定する必要があります");
+			}
+		} else {
+			stopAllActions();
+			if (typeof stopActionHandler != "undefined") {
+				stopActionHandler();
+			}
+		}
         return 0;
 	} incontextof this,
 
 	wact : function(elm)
 	{
-        if (elm.layer !== void) {
-            var layer = getLayerFromElm(elm);
-            if (layer instanceof "GraphicLayerEx") {
-                return waitLayerAction(elm);
-            } else {
-                dm("指定されたレイヤはアクションを指定できません");
-            }
-        } else {
-            // 全レイヤのアクションを待つ
-            return waitAction(elm);
-        }
+        var target;
+		if (elm.layer !== void) {
+			target = getLayerFromElm(elm);
+		} else if (typeof elm.target == "Object") {
+			target = elm.target;
+		} else if (typeof elm.target == "String") {
+			target = Scripts.eval(elm.target);
+		}
+		if (target !== void) {
+			if (typeof target == "Object") {
+				return waitAction(target, elm.canskip);
+			} else {
+				dm("アクション待ちはオブジェクトに指定する必要があります");
+			}
+		} else {
+			return waitAllAction(elm.canskip);
+		}
+		return 0;
 	} incontextof this,
                   
 	//------------------------------ タグハンドラ群(効果音・BGM・ビデオ操作) --
@@ -8739,22 +8733,32 @@ class KAGWindow extends Window
         saveSystemVariables();
 	}
     
-    var logMode = false;
-    var imageLog = [];
-    var soundLog = [];
-    var voiceLog = [];
+	var logMode = false;
+	var cmdLog = [];
+	var imageLog = [];
+	var soundLog = [];
+	var voiceLog = [];
 
     function error(msg) {
         if (debugLevel >= tkdlSimple) dm(msg);
     }
     
     function errorLine(target, msg) {
-        if (debugLevel >= tkdlSimple) dm(msg);
-        if (logMode) {
-            target.add("%s:%s: %s".sprintf(conductor.curStorage, conductor.curLine, msg));
-        }
+		msg = "%s:%s: %s".sprintf(conductor.curStorage, conductor.curLine, msg);
+		if (debugLevel >= tkdlSimple) dm(msg);
+		if (logMode) {
+			target.add(msg);
+		}
     }
-    
+
+    /**
+	 * 未知の命令
+     */
+	function errorCmd(msg) {
+		errorLine(cmdLog, msg);
+    }
+
+	
     /**
      * 画像ファイルがロードできない場合
      */
@@ -8780,7 +8784,8 @@ class KAGWindow extends Window
      * ログを初期化する
      */
     function initLog() {
-        imageLog.clear();
+		cmdLog.clear();
+		imageLog.clear();
         soundLog.clear();
         voiceLog.clear();
     }
@@ -8790,7 +8795,8 @@ class KAGWindow extends Window
      */
     function outputLog() {
         if (logMode) {
-            imageLog.save(Debug.logLocation + "/imageerror.log");
+			cmdLog.save(Debug.logLocation + "/cmderror.log");
+			imageLog.save(Debug.logLocation + "/imageerror.log");
             soundLog.save(Debug.logLocation + "/sounderror.log");
             voiceLog.save(Debug.logLocation + "/voiceerror.log");
             initLog();
