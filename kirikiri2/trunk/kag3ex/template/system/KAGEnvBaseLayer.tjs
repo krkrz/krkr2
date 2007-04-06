@@ -9,6 +9,13 @@ class KAGEnvBaseLayer extends KAGEnvLayer {
 	 */
     var name;
 
+	/**
+	 * 表示処理用の自動トランジションの指定
+	 */
+	function setDispAutoTrans() {
+		setAutoTrans([env.envinfo.eventTrans, env.envinfo.envTrans]);
+	}
+	
     /**
 	 * コンストラクタ
      * @param env 環境
