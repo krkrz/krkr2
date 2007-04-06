@@ -330,10 +330,13 @@ class KAGEnvCharacter extends KAGEnvLevelLayer, KAGEnvImage {
                     if (moveTime !== void && xpos === void) {
                         moveTime = 0;
                     }
-                    moveAccel = (elm.accel === void) ? 0 : +elm.accel;
-                    xpos = newxpos;
-                    reposition = true;
-					setPositionTrans(info);
+					moveAccel = (elm.accel === void) ? 0 : +elm.accel;
+					xpos = newxpos;
+					reposition = true;
+                    if (moveTime === void && elm.fade === void) {
+						redraw = true;
+						setPositionTrans(info);
+					}
                 }
             }
             break;
@@ -360,7 +363,10 @@ class KAGEnvCharacter extends KAGEnvLevelLayer, KAGEnvImage {
                     moveAccel = (elm.accel === void) ? 0 : +elm.accel;
                     ypos = newypos;
                     reposition = true;
-					setPositionTrans(info);
+					if (moveTime === void && elm.fade === void) {
+						redraw = true;
+						setPositionTrans(info);
+					}
                 }
             }
             break;
