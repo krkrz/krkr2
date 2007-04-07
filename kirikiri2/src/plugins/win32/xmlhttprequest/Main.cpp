@@ -80,7 +80,6 @@ public:
         if (--objcount == 0) {
             WSACleanup();
         }
-        delete _sendingData;
     }
 
 
@@ -232,14 +231,13 @@ public:
 
         _aborted = false;
 
-        delete _sendingData;
+        _sendingData.clear();
         if (data) {
-            _sendingData = TJSAllocVariantOctet(data->AsOctetNoAddRef(), NULL);
-            std::string slen = boost::lexical_cast<std::string>(_sendingData->GetLength());
+            tTJSVariantOctet *oct = data->AsOctetNoAddRef();
+            _sendingData.reserve(oct->GetLength());
+            std::copy(oct->GetData(), oct->GetData() + oct->GetLength(), std::back_inserter(_sendingData));
+            std::string slen = boost::lexical_cast<std::string>(_sendingData.size());
             _requestHeaders.insert(std::pair<std::string, std::string>("Content-Length", slen));
-        }
-        else {
-            _sendingData = NULL;
         }
 
         if (_async) {
@@ -297,6 +295,8 @@ public:
         }
 
         std::ostringstream req;
+        std::vector<char> reqv;
+        std::string reqstr;
         char buf[4096];
         int n;
 
@@ -310,11 +310,14 @@ public:
         }
         req << "\r\n";
 
-        if (_sendingData) {
-            req << _sendingData->GetData();
+        reqstr = req.str();
+        std::copy(reqstr.begin(), reqstr.end(), std::back_inserter(reqv));
+
+        if (!_sendingData.empty()) {
+            std::copy(_sendingData.begin(), _sendingData.end(), std::back_inserter(reqv));
         }
 
-        n = send(sock, req.str().c_str(), req.str().length(), 0); // TODO: req ‚É null •¶Žš‚ª“ü‚Á‚Ä‚é‚Æ‚¨‚©‚µ‚­‚È‚é
+        n = send(sock, &reqv[0], reqv.size(), 0);
         SetReadyState(2);
         if (n < 0) {
             OnErrorOnSending();
@@ -559,7 +562,7 @@ private:
     std::vector<char> _responseData;
     std::vector<char> _responseBody;
     int _responseStatus;
-    tTJSVariantOctet *_sendingData;
+    std::vector<tjs_uint8> _sendingData;
 
     typedef std::map<std::string, std::string> header_container;
     header_container _requestHeaders;
