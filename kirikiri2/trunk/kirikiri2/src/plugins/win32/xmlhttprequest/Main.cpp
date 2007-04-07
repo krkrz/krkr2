@@ -80,6 +80,7 @@ public:
         if (--objcount == 0) {
             WSACleanup();
         }
+        delete _sendingData;
     }
 
 
@@ -155,7 +156,17 @@ public:
     {
         Initialize();
 
-        this->method = method;
+        if (method == ttstr(TJS_W("GET"))) {
+            _method = std::string("GET");
+        }
+        else if (method == ttstr(TJS_W("POST"))) {
+            _method = std::string("POST");
+        }
+        else {
+            TVPThrowExceptionMessage(TJS_W("SYNTAX_ERR (Wrong method)"));
+            return;
+        }
+
         _async = async;
 
         boost::reg_expression<tjs_char> re(
@@ -207,7 +218,7 @@ public:
         SetReadyState(1);
     }
 
-    void Send()
+    void Send(tTJSVariant *data)
     {
         if (_hThread) {
             TVPAddLog(ttstr("レスポンスが戻る前に send しました"));
@@ -220,6 +231,16 @@ public:
         }
 
         _aborted = false;
+
+        delete _sendingData;
+        if (data) {
+            _sendingData = TJSAllocVariantOctet(data->AsOctetNoAddRef(), NULL);
+            std::string slen = boost::lexical_cast<std::string>(_sendingData->GetLength());
+            _requestHeaders.insert(std::pair<std::string, std::string>("Content-Length", slen));
+        }
+        else {
+            _sendingData = NULL;
+        }
 
         if (_async) {
             _hThread = (HANDLE)_beginthreadex(NULL, 0, StartProc, this, 0, NULL);
@@ -283,13 +304,17 @@ public:
             goto onaborted;
         }
 
-        req << "GET " << _path << " HTTP/1.0\r\n";
+        req << _method << " " << _path << " HTTP/1.0\r\n";
         for (header_container::const_iterator p = _requestHeaders.begin(); p != _requestHeaders.end(); ++p) {
             req << p->first << ": " << p->second << "\r\n";
         }
         req << "\r\n";
 
-        n = send(sock, req.str().c_str(), req.str().length(), 0);
+        if (_sendingData) {
+            req << _sendingData->GetData();
+        }
+
+        n = send(sock, req.str().c_str(), req.str().length(), 0); // TODO: req に null 文字が入ってるとおかしくなる
         SetReadyState(2);
         if (n < 0) {
             OnErrorOnSending();
@@ -526,7 +551,7 @@ private:
     }
 private:
     tjs_int _readyState;
-    ttstr method;
+    std::string _method;
     bool _async;
     int _port;
     std::string _host;
@@ -534,6 +559,7 @@ private:
     std::vector<char> _responseData;
     std::vector<char> _responseBody;
     int _responseStatus;
+    tTJSVariantOctet *_sendingData;
 
     typedef std::map<std::string, std::string> header_container;
     header_container _requestHeaders;
@@ -661,7 +687,16 @@ static iTJSDispatch2 * Create_NC_XMLHttpRequest()
             TJS_GET_NATIVE_INSTANCE(/*var. name*/_this,
                 /*var. type*/NI_XMLHttpRequest);
 
-            _this->Send();
+            if (numparams == 0 || param[0]->Type() == tvtVoid) {
+                _this->Send(NULL);
+            }
+            else if (param[0]->Type() == tvtOctet) {
+                _this->Send(param[0]);
+            }
+            else {
+                return TJS_E_INVALIDPARAM;
+            }
+
             if (result) {
                 result->Clear();
             }
