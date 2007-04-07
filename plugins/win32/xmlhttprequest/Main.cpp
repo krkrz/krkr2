@@ -189,17 +189,19 @@ public:
         _path = "";
         _path.append(what[3].first, what[3].second);
 
-        if (IsValidUserInfo(username, password)) {
-            std::string authKey = "";
-            std::copy(username.c_str(), username.c_str() + username.length(), std::back_inserter(authKey));
-            authKey.append(":");
-            std::copy(password.c_str(), password.c_str() + password.length(), std::back_inserter(authKey));
+        if (username.GetLen() > 0) {
+            if (IsValidUserInfo(username, password)) {
+                std::string authKey = "";
+                std::copy(username.c_str(), username.c_str() + username.length(), std::back_inserter(authKey));
+                authKey.append(":");
+                std::copy(password.c_str(), password.c_str() + password.length(), std::back_inserter(authKey));
 
-            _requestHeaders.insert(std::pair<std::string, std::string>("Authorization", std::string("Basic ") + EncodeBase64(authKey)));
-        }
-        else {
-            TVPThrowExceptionMessage(TJS_W("Wrong UserInfo"));
-            return;
+                _requestHeaders.insert(std::pair<std::string, std::string>("Authorization", std::string("Basic ") + EncodeBase64(authKey)));
+            }
+            else {
+                TVPThrowExceptionMessage(TJS_W("Wrong UserInfo"));
+                return;
+            }
         }
 
         SetReadyState(1);
