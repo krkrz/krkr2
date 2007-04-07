@@ -16,6 +16,7 @@
 #include <map>
 #include <algorithm>
 #include <boost/regex.hpp>
+#include <boost/lexical_cast.hpp>
 #pragma comment(lib, "WSock32.lib")
 //---------------------------------------------------------------------------
 
@@ -59,15 +60,16 @@ public:
         Construct(tjs_int numparams, tTJSVariant **param, iTJSDispatch2 *tjs_obj)
     {
         // TJS2 オブジェクトが作成されるときに呼ばれる
-        /*
-            TJS2 の new 演算子で TJS2 オブジェクトが作成されるときに呼ばれます。
-            numparams と param 引数は new 演算子に渡された引数を表しています。
-            tjs_obj 引数は、作成される TJS オブジェクトです。
-            この例では、引数があれば (さらにそれが void で無ければ)、それを Value
-            の初期値として設定しています。
-        */
+
         Initialize();
         _target = tjs_obj;
+
+        if (++objcount == 1) {
+            WSADATA wsaData;
+            if (WSAStartup(MAKEWORD(2, 0), &wsaData)) {
+                // error
+            }
+        }
 
         return S_OK;
     }
@@ -75,10 +77,9 @@ public:
     void TJS_INTF_METHOD Invalidate()
     {
         // オブジェクトが無効化されるときに呼ばれる
-        /*
-            オブジェクトが無効化されるときに呼ばれるメソッドです。ここに終了処理
-            を書くと良いでしょう。この例では何もしません。
-        */
+        if (--objcount == 0) {
+            WSACleanup();
+        }
     }
 
 
@@ -230,12 +231,6 @@ public:
     {
         _responseData.clear();
 
-        WSADATA wsaData;
-        if (WSAStartup(MAKEWORD(2, 0), &wsaData)) {
-            OnErrorOnSending();
-            return;
-        }
-
         SOCKET sock = socket(AF_INET, SOCK_STREAM, 0);
         if (sock == INVALID_SOCKET) {
             OnErrorOnSending();
@@ -326,7 +321,6 @@ public:
 
     onaborted:
         closesocket(sock);
-        WSACleanup();
 
         if (_hThread) {
             CloseHandle(_hThread);
@@ -468,7 +462,8 @@ private:
         bool matched = boost::regex_search(_responseData.begin(), what, re, boost::match_default);
 
         if (matched) {
-            _responseStatus = TJSStringToInteger(ttstr(what[1].first, what[1].second - what[1].first).c_str());
+            std::string s(what[1].first, what[1].second - what[1].first);
+            _responseStatus = boost::lexical_cast<int>(s);
         }
 
         boost::reg_expression<char> re2("\r\n\r\n",
@@ -543,7 +538,12 @@ private:
     HANDLE _hThread;
     bool _aborted;
     iTJSDispatch2 *_target;
+
+    static int objcount;
 };
+
+int NI_XMLHttpRequest::objcount = 0;
+
 //---------------------------------------------------------------------------
 /*
     これは NI_XMLHttpRequest のオブジェクトを作成して返すだけの関数です。
