@@ -493,12 +493,12 @@ private:
             _responseStatus = boost::lexical_cast<int>(s);
         }
 
-        boost::reg_expression<char> re2("\r\n\r\n",
-                                       boost::regbase::normal|boost::regbase::use_except|boost::regbase::nocollate);
         _responseBody.clear();
-        if (boost::regex_search(_responseData.begin(), what, re2, boost::match_default)) {
-            _responseBody.resize(_responseData.end() - what[0].second);
-            std::copy(const_cast<char*>(what[0].second), _responseData.end(), _responseBody.begin());
+        std::string sep("\r\n\r\n");
+        std::vector<char>::iterator p = std::search(_responseData.begin(), _responseData.end(), sep.begin(), sep.end());
+        if (p != _responseData.end()) {
+            _responseBody.reserve(_responseData.end() - p - sep.size());
+            std::copy(p + sep.size(), _responseData.end(), std::back_inserter(_responseBody));
         }
     }
 
