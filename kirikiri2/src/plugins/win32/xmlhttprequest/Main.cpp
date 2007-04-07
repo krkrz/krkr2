@@ -240,6 +240,9 @@ public:
             _requestHeaders.insert(std::pair<std::string, std::string>("Content-Length", slen));
         }
 
+        std::string hostHeader = _port == 80 ? _host : _host + ":" + boost::lexical_cast<std::string>(_port);
+        _requestHeaders.insert(std::pair<std::string, std::string>("Host", hostHeader));
+
         if (_async) {
             _hThread = (HANDLE)_beginthreadex(NULL, 0, StartProc, this, 0, NULL);
         }
@@ -304,7 +307,7 @@ public:
             goto onaborted;
         }
 
-        req << _method << " " << _path << " HTTP/1.0\r\n";
+        req << _method << " " << _path << " HTTP/1.1\r\n";
         for (header_container::const_iterator p = _requestHeaders.begin(); p != _requestHeaders.end(); ++p) {
             req << p->first << ": " << p->second << "\r\n";
         }
