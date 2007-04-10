@@ -982,7 +982,7 @@ TJS_BEGIN_NATIVE_METHOD_DECL(getList)
 			array->PropSetByNum(TJS_MEMBERENSURE, idx++, &val, array);
 		}
 	
-		if (result) *result = array;
+		if (result) *result = tTJSVariant(array, array);
 	}
 	catch(...)
 	{
