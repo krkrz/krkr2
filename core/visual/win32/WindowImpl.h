@@ -73,6 +73,57 @@ extern tjs_int TVPDisplayColorFormat;
 //---------------------------------------------------------------------------
 // Screen Mode management
 //---------------------------------------------------------------------------
+
+//! @brief		Structure for monitor screen mode
+struct tTVPScreenMode
+{
+	tjs_int Width; //!< width of screen in pixel
+	tjs_int Height; //!< height of screen in pixel
+	tjs_int BitsPerPixel; //!< bits per pixel (0 = unspecified)
+
+	ttstr Dump() const
+	{
+		return
+			TJS_W("Width=") + ttstr(Width) +
+			TJS_W(", Height=") + ttstr(Height) +
+			TJS_W(", BitsPerPixel=") + (BitsPerPixel?ttstr(BitsPerPixel):ttstr(TJS_W("unspecified")));
+	}
+};
+
+//! @brief		Structure for monitor screen mode candidate
+struct tTVPScreenModeCandidate : tTVPScreenMode
+{
+	tjs_int ZoomNumer; //!< zoom ratio numer
+	tjs_int ZoomDenom; //!< zoom ratio denom
+	tjs_int RankZoomIn;
+	tjs_int RankBPP;
+	tjs_int RankZoomBeauty;
+	tjs_int RankSize; //!< candidate preference priority (lower value is higher preference)
+
+	ttstr Dump() const
+	{
+		return tTVPScreenMode::Dump() +
+			TJS_W(", ZoomNumer=") + ttstr(ZoomNumer) +
+			TJS_W(", ZoomDenom=") + ttstr(ZoomDenom) +
+			TJS_W(", RankZoomIn=") + ttstr(RankZoomIn) +
+			TJS_W(", RankBPP=") + ttstr(RankBPP) +
+			TJS_W(", RankZoomBeauty=") + ttstr(RankZoomBeauty) +
+			TJS_W(", RankSize=") + ttstr(RankSize);
+	}
+
+	bool operator < (const tTVPScreenModeCandidate & rhs) const{
+		if(RankZoomIn < rhs.RankZoomIn) return true;
+		if(RankZoomIn > rhs.RankZoomIn) return false;
+		if(RankBPP < rhs.RankBPP) return true;
+		if(RankBPP > rhs.RankBPP) return false;
+		if(RankZoomBeauty < rhs.RankZoomBeauty) return true;
+		if(RankZoomBeauty > rhs.RankZoomBeauty) return false;
+		if(RankSize < rhs.RankSize) return true;
+		if(RankSize > rhs.RankSize) return false;
+		return false;
+	}
+};
+
 class IDirectDraw2;
 class IDirectDrawSurface;
 class IDirectDrawClipper;
@@ -80,6 +131,7 @@ extern void TVPTestDisplayMode(tjs_int w, tjs_int h, tjs_int & bpp);
 extern void TVPSwitchToFullScreen(HWND window, tjs_int w, tjs_int h);
 extern void TVPRevertFromFullScreen(HWND window);
 TJS_EXP_FUNC_DEF(void, TVPEnsureDirectDrawObject, ());
+extern tTVPScreenModeCandidate TVPFullScreenMode;
 /*[*/
 //---------------------------------------------------------------------------
 // DirectDraw former declaration
@@ -94,7 +146,6 @@ struct IDirectDrawClipper;
 TJS_EXP_FUNC_DEF(IDirectDraw2 *,  TVPGetDirectDrawObjectNoAddRef, ());
 TJS_EXP_FUNC_DEF(IDirectDrawSurface *, TVPGetDDPrimarySurfaceNoAddRef, ());
 TJS_EXP_FUNC_DEF(void, TVPSetDDPrimaryClipper, (IDirectDrawClipper * clipper));
-extern bool TVPUseChangeDisplaySettings;
 extern void TVPMinimizeFullScreenWindowAtInactivation();
 extern void TVPRestoreFullScreenWindowAtActivation();
 //---------------------------------------------------------------------------
