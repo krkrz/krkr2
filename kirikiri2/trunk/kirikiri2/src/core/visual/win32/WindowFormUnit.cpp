@@ -243,45 +243,17 @@ void TVPHideModalAtAppDeactivate()
 // Window/Bitmap options
 //---------------------------------------------------------------------------
 static bool TVPWindowOptionsInit = false;
-static int TVPFullScreenBPP = 0; // 0 for no-change
-static bool TVPFullScreenNoResolutionChange = false;
 static bool TVPControlImeState = true;
 //---------------------------------------------------------------------------
 void TVPInitWindowOptions()
 {
-	// initialise various options around window/graphics
+	// initialize various options around window/graphics
 
 	if(TVPWindowOptionsInit) return;
 
 	bool initddraw = false;
 
 	tTJSVariant val;
-
-	if(TVPGetCommandLine(TJS_W("-fsbpp"), &val))
-	{
-		ttstr str(val);
-		if(str == TJS_W("nochange"))
-		{
-			TVPFullScreenBPP = 0;
-		}
-		else
-		{
-			TVPFullScreenBPP = (tjs_int)str.AsInteger();
-		}
-	}
-
-	if(TVPGetCommandLine(TJS_W("-fsres"), &val))
-	{
-		ttstr str(val);
-		if(str == TJS_W("nochange"))
-		{
-			TVPFullScreenNoResolutionChange = true;
-		}
-		else
-		{
-			TVPFullScreenNoResolutionChange = false;
-		}
-	}
 
 	if(TVPGetCommandLine(TJS_W("-wheel"), &val) )
 	{
@@ -305,15 +277,6 @@ void TVPInitWindowOptions()
 			TVPJoyPadDetectionType = jdtNone;
 	}
 
-
-	if(TVPGetCommandLine(TJS_W("-fsmethod"), &val) )
-	{
-		ttstr str(val);
-		if(str == TJS_W("cds"))
-			TVPUseChangeDisplaySettings = true;
-		else
-			TVPUseChangeDisplaySettings = false;
-	}
 
 	if(TVPGetCommandLine(TJS_W("-controlime"), &val) )
 	{
@@ -1275,17 +1238,9 @@ void __fastcall TTVPWindowForm::SetFullScreenMode(bool b)
 			OrgWidth = Width;
 			OrgHeight = Height;
 
-			// determine fullscreen size
-			int fs_w = TVPFullScreenNoResolutionChange ? Screen->Width : InnerWidthSave;
-			int fs_h = TVPFullScreenNoResolutionChange ? Screen->Height : InnerHeightSave;
-
-			// check display mode
-			tjs_int bpp = 0;
-			TVPTestDisplayMode(fs_w, fs_h, bpp);
-			if(bpp == 0 || bpp <= 8)
-				TVPThrowExceptionMessage(TVPCannotFindDisplayMode,
-					ttstr(fs_w) + ttstr(TJS_W("x")) +
-					ttstr(fs_h));
+			// determin desired full screen size
+			tjs_int desired_fs_w = InnerWidthSave;
+			tjs_int desired_fs_h = InnerHeightSave;
 
 			// set ScrollBox' border invisible
 			OrgInnerSunken = GetInnerSunken();
@@ -1306,39 +1261,24 @@ void __fastcall TTVPWindowForm::SetFullScreenMode(bool b)
 			// try to switch to fullscreen
 			try
 			{
-				TVPSwitchToFullScreen(Handle, fs_w, fs_h);
+				TVPSwitchToFullScreen(Handle, desired_fs_w, desired_fs_h);
 			}
 			catch(...)
 			{
 				SetFullScreenMode(false);
+				return;
 			}
+
+			// get resulted screen size
+			tjs_int fs_w = TVPFullScreenMode.Width;
+			tjs_int fs_h = TVPFullScreenMode.Height;
 
 			// determine fullscreen zoom factor and ScrollBox size
 			int sb_w, sb_h, zoom_d, zoom_n;
-			if(TVPFullScreenNoResolutionChange)
-			{
-				// try make window size using height
-				double win_aspect;
-				win_aspect = (double)InnerWidthSave / (double)InnerHeightSave;
-				sb_w = int(fs_h * win_aspect + 0.5);
-				sb_h = fs_h;
-				if(sb_w > fs_w)
-				{
-					// try make window size using width
-					win_aspect = (double)InnerHeightSave / (double)InnerWidthSave;
-					sb_h = int(fs_w * win_aspect + 0.5);
-					sb_w = fs_w;
-				}
-				zoom_n = sb_w;
-				zoom_d = InnerWidthSave;
-			}
-			else
-			{
-				// zooming factor is always 1
-				zoom_n = zoom_d = 1;
-				// window size is the same as screen size
-				sb_w = fs_w; sb_h = fs_h;
-			}
+			zoom_d = TVPFullScreenMode.ZoomDenom;
+			zoom_n = TVPFullScreenMode.ZoomNumer;
+			sb_w = desired_fs_w * zoom_n / zoom_d;
+			sb_h = desired_fs_h * zoom_n / zoom_d;
 
 			SetZoom(zoom_n, zoom_d, false);
 
