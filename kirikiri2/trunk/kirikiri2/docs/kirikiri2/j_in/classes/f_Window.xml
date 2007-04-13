@@ -1139,6 +1139,21 @@ postInputEvent('onKeyUp',   %[key: VK_UP, shift: ssShift]);<r/>
 </member>
 
 <member>
+	<name>drawDevice</name>
+	<type>property</type>
+	<shortdesc>描画デバイス</shortdesc>
+	<access>r/w</access>
+	<desc>
+		　描画デバイスオブジェクトを表します。<r/>
+		　値を設定することもできます。値を設定すると、以前このウィンドウに指定されていた描画デバイスは自動的に
+		無効になります (invalidateされます)。<r/>
+		　デフォルトでは、Window.PassThroughDrawDevice というクラスのインスタンスが指定されています。<r/>
+		　独自の描画デバイス (プラグインで提供される物) を指定する場合は、そのプラグインのドキュメントに
+		従ってください。<r/>
+	</desc>
+</member>
+
+<member>
 	<name>borderStyle</name>
 	<type>property</type>
 	<shortdesc>ウィンドウ外見</shortdesc>
