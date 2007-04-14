@@ -84,9 +84,25 @@ struct tTVPScreenMode
 	ttstr Dump() const
 	{
 		return
-			TJS_W("Width=") + ttstr(Width) +
-			TJS_W(", Height=") + ttstr(Height) +
+			DumpHeightAndWidth() +
 			TJS_W(", BitsPerPixel=") + (BitsPerPixel?ttstr(BitsPerPixel):ttstr(TJS_W("unspecified")));
+	}
+
+	ttstr DumpHeightAndWidth() const
+	{
+		return
+			TJS_W("Width=") + ttstr(Width) +
+			TJS_W(", Height=") + ttstr(Height);
+	}
+
+	bool operator < (const tTVPScreenMode & rhs) const {
+		tjs_int area_this = Width * Height;
+		tjs_int area_rhs  = rhs.Width * rhs.Height;
+		if(area_this < area_rhs) return true;
+		if(area_this > area_rhs) return false;
+		if(BitsPerPixel < rhs.BitsPerPixel) return true;
+		if(BitsPerPixel > rhs.BitsPerPixel) return false;
+		return false;
 	}
 };
 
