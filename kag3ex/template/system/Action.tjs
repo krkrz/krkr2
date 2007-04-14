@@ -21,7 +21,21 @@ class PropActionInfo {
     function PropActionInfo(propName) {
         this.propName = propName;
         first = true;
-    }
+	}
+
+	/**
+	 * 複製の生成
+	 */
+	function clone() {
+		var ret = new global.PropActionInfo(propName);
+		ret.absolute = absolute;
+		for (var i=0;i<relative.count;i++) {
+			ret.relative.add(relative[i]);
+		}
+		ret.first = this.first;
+		ret.startTime = this.startTime;
+		return ret;
+	}
 
     /**
      * アクションを追加する
@@ -103,6 +117,34 @@ class ActionInfo {
     var actionDict = %[]; // アクション情報
     var actionList = [];
 
+    /**
+     * コンストラクタ
+     */
+    function ActionInfo() {
+    }
+
+	/**
+	 * ファイナライザ
+	 */
+    function finalize() {
+        invalidate actionList;
+        invalidate actionDict;
+    }
+
+	/**
+	 * 複製の生成
+	 */
+	function clone() {
+		var ret = new global.ActionInfo();
+		for (var i=0;i<actionList.count;i++) {
+			var newact = actionList[i].clone();
+			ret.actionList[i] = newact;
+			ret.actionDict[newact.propName] = newact;
+		}
+		return ret;
+	}
+
+	
     function getPropActionInfo(propName) {
         var ret = actionDict[propName];
         if (ret === void) {
@@ -113,17 +155,7 @@ class ActionInfo {
         return ret;
     }
 
-    function finalize() {
-        invalidate actionList;
-        invalidate actionDict;
-    }
-    
-    /**
-     * コンストラクタ
-     */
-    function ActionInfo() {
-    }
-
+	
     /**
      * 指定されたプロパティのアクションを追加する
      * @param target ターゲット
@@ -180,11 +212,23 @@ class ActionSequense {
     /**
      * コンストラクタ
      */
-    function ActionSequense(target) {
-        this.target = target;
-        create = true;
+	function ActionSequense(target) {
+		this.target = target;
+		create = true;
     }
 
+	/**
+	 * 複製の生成
+	 */
+	function clone() {
+		var ret = new global.ActionSequense(target);
+		ret.create = create;
+		for (var i=0;i<actions.count;i++) {
+			ret.actions.add(actions[i].clone());
+		}
+		return ret;
+	}
+	
     /**
      * アクションシーケンスを進める
      */

@@ -214,6 +214,10 @@ class KAGMenuItem extends MenuItem
 	{
 		super.MenuItem(window, caption);
 		this.owner = window;
+		// command が辞書配列だった場合は exp, clickse, clicksebuf を参照して効果音をつける
+		if (command instanceof "Dictionary") {
+			with (command) command = createSoundExpression(.exp, .clickse, .clicksebuf);
+		}
 		this.command = command;
 		this.autoEnable = autoenable;
 		if(group!=0)
@@ -245,7 +249,7 @@ class KAGMenuItem extends MenuItem
 	function click()
 	{
 		// click 動作
-		if(command !== void)
+		if (_accessible && _enabled && command !== void) 
 		{
 			if(typeof command == "String")
 			{
@@ -262,5 +266,27 @@ class KAGMenuItem extends MenuItem
 	{
 		super.onClick(...);
 		click();
+	}
+
+	// サウンドを鳴らすための式を作成する
+	// exp になにか式があった場合はカンマでつなぐ
+	// system/utils.tjsにあっても良いと思うが現状は MessageLayer と DialogLayer で個別で持っている
+	function createSoundExpression(exp, storage, buf) {
+		if (storage === void) return exp;
+		buf = 0 if (buf === void);
+		if (typeof exp === "String") {
+			var seexp = "(kag.se["+ buf +"].play(%[storage:\"" + storage.escape() +"\"]))";
+			seexp += ",("+exp+")" if (exp !== void);
+			return seexp;
+		} else {
+			// expがfunctionだった場合
+			this._clickse    = storage;
+			this._clicksebuf = buf;
+			this._expression = exp;
+			return function(sender) {
+				kag.se[sender._clicksebuf].play(%[storage: sender._clickse]);
+				sender._expression(sender);
+			};
+		}
 	}
 }
