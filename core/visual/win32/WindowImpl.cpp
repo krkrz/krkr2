@@ -754,9 +754,31 @@ void TVPMakeFullScreenModeCandidates(
 	// enumerate all display modes
 	std::vector<tTVPScreenMode> modes;
 	TVPEnumerateAllDisplayModes(modes);
-	TVPAddLog(TJS_W("(info) environment: available display modes:"));
-	for(std::vector<tTVPScreenMode>::iterator i = modes.begin(); i != modes.end(); i++)
-		TVPAddLog(TJS_W("  ") + i->Dump());
+	std::sort(modes.begin(), modes.end()); // sort by area, and bpp
+
+	{
+		tjs_int last_width = -1, last_height = -1;
+		ttstr last_line;
+		TVPAddLog(TJS_W("(info) environment: available display modes:"));
+		for(std::vector<tTVPScreenMode>::iterator i = modes.begin(); i != modes.end(); i++)
+		{
+			if(last_width != i->Width || last_height != i->Height)
+			{
+				if(!last_line.IsEmpty()) TVPAddLog(last_line);
+				tjs_int w = i->Width, h = i->Height;
+				TVPDoReductionNumerAndDenom(w, h);
+				last_line = TJS_W("(info)  ") + i->DumpHeightAndWidth() +
+					TJS_W(", AspectRatio=") + ttstr(w) + TJS_W(":") + ttstr(h) +
+					TJS_W(", BitsPerPixel=") + ttstr(i->BitsPerPixel);
+			}
+			else
+			{
+				last_line += TJS_W("/") + ttstr(i->BitsPerPixel);
+			}
+			last_width = i->Width; last_height = i->Height;
+		}
+		if(!last_line.IsEmpty()) TVPAddLog(last_line);
+	}
 
 	if(mode != fsrNoChange)
 	{
@@ -921,7 +943,7 @@ void TVPMakeFullScreenModeCandidates(
 	for(std::vector<tTVPScreenModeCandidate>::iterator i = candidates.begin();
 		i != candidates.end(); i++)
 	{
-		TVPAddLog(TJS_W("  ") + i->Dump());
+		TVPAddLog(TJS_W("(info)  ") + i->Dump());
 	}
 }
 //---------------------------------------------------------------------------
@@ -973,7 +995,7 @@ void TVPSwitchToFullScreen(HWND window, tjs_int w, tjs_int h)
 	for(std::vector<tTVPScreenModeCandidate>::iterator i = candidates.begin();
 		i != candidates.end(); i++)
 	{
-		TVPAddLog(TJS_W("Trying screen mode : ") + i->Dump());
+		TVPAddLog(TJS_W("(info) Trying screen mode: ") + i->Dump());
 		if(TVPUseChangeDisplaySettings)
 		{
 			DEVMODE dm;
@@ -1030,17 +1052,21 @@ void TVPSwitchToFullScreen(HWND window, tjs_int w, tjs_int h)
 				TVPAddLog(TJS_W("IDirectDraw2::SetCooperativeLevel failed/hr=") +
 								TJSInt32ToHex(hr) );
 			}
-
-			hr =TVPDirectDraw2->SetDisplayMode(i->Width, i->Height, i->BitsPerPixel, 0, 0);
-			if(FAILED(hr))
+			else
 			{
-				TVPAddLog(
-					ttstr(TJS_W("IDirectDraw2::SetDisplayMode failed/hr=")) + TJSInt32ToHex(hr));
+				hr =TVPDirectDraw2->SetDisplayMode(i->Width, i->Height, i->BitsPerPixel, 0, 0);
+				if(FAILED(hr))
+				{
+					TVPAddLog(
+						ttstr(TJS_W("IDirectDraw2::SetDisplayMode failed/hr=")) + TJSInt32ToHex(hr));
+				}
+				else
+				{
+					success = true;
+					TVPFullScreenMode = *i;
+					break;
+				}
 			}
-
-			success = true;
-			TVPFullScreenMode = *i;
-			break;
 		}
 	}
 
@@ -1049,6 +1075,8 @@ void TVPSwitchToFullScreen(HWND window, tjs_int w, tjs_int h)
 		TVPThrowExceptionMessage(TVPCannotSwitchToFullScreen,
 			TJS_W("All screen mode has been tested, but no modes available at all."));
 	}
+
+	TVPAddLog(TJS_W("(info) Changing screen mode succeeded"));
 
 	TVPInFullScreen = true;
 
