@@ -366,6 +366,7 @@ class KAGWindow extends Window
     /*C*/var currentStorage = ""; // 現在のラベル
     /*C*/var currentLabel = ""; // 現在のラベル
 	/*C*/var currentPageName = ""; // 現在のページ名
+
 	var currentRecordName = ""; // 現在の記録名 ( trail_ストレージ_ラベル )
 	var autoRecordPageShowing = false; // ラベル通過記録をするか
 
@@ -669,7 +670,7 @@ class KAGWindow extends Window
 		if(ismain) caption = System.title;
 
 		// システムタイトルをキャプションと同じに
-		if(ismain) System.title = caption;
+		//if(ismain) System.title = caption;
 
 		// ウィンドウサイズの調整
 		if(width != 0 && height != 0)
@@ -1513,18 +1514,44 @@ class KAGWindow extends Window
      */
     function checkSave()
     {
-        if(!readOnlyMode) {
-            var dummy = ["test"];
-            var fn = saveDataLocation + "/" + "savecheck";
-            try {
-                (Array.saveStruct incontextof dummy)(fn);
-            } catch(e) {
-                saveDataLocation = System.personalPath + System.title;
-                System.inform("書き込み権限がなくファイル保存できません。MyDocument以下にデータを保存します");
-            }
-        }
-    }
+		if(!readOnlyMode) {
+			
+			var appName = (typeof global.ENV_Maker != "undefined") ? global.ENV_Maker + "/" + global.ENV_GameName : System.title;
 
+			// セーブ場所の差し替え
+			var udp = Storages.chopStorageExt(System.exeName) + ".udp";
+			if(Storages.isExistentStorage(udp)) {
+				var vars = [];
+				vars.load(udp);
+				if (vars[0] == "document") {
+					if (System.personalPath != System.exePath) {
+						saveDataLocation = System.personalPath + appName;
+					}
+				} else if (vars[0] == "application") {
+					if (System.appDataPath != System.exePath) {
+						saveDataLocation = System.appDataPath + appName;
+					}
+				}
+			}
+
+			// 書き込み権限テスト
+			var dummy = ["test"];
+			var fn = saveDataLocation + "/" + "savecheck";
+			try {
+				(Array.saveStruct incontextof dummy)(fn);
+			} catch(e) {
+				if (System.personalPath != System.exePath) {
+					System.inform("書き込み権限がなくファイル保存できません。MyDocument以下にデータを保存します");
+					saveDataLocation = System.personalPath + appName;
+				} else {
+					System.inform("書き込み権限がなくファイル保存できません。ReadOnlyMode で動作します");
+					readOnlyMode = true;
+				}
+			}
+
+			dm("セーブデータ保存場所:" + saveDataLocation );
+		}
+    }
     
 	function loadSystemVariables()
 	{
@@ -1913,10 +1940,10 @@ class KAGWindow extends Window
 		f.caption = caption;
 
 		// コンダクタ
-        f.mainConductor = mainConductor.store();
-        f.mainConductor.lineMode = true if loadFromLine;
-        if(!saveMacros) f.mainConductor.macros = void;
-			// マクロ情報を void で上書きすると栞中のマクロ情報は無効になる
+		f.mainConductor = mainConductor.store();
+		f.mainConductor.lineSaveMode = true if loadFromLine;
+		if(!saveMacros) f.mainConductor.macros = void;
+		// マクロ情報を void で上書きすると栞中のマクロ情報は無効になる
 
 		// メッセージ履歴
 		if(historyLayer.storeState)
@@ -2165,7 +2192,7 @@ class KAGWindow extends Window
 
 		// ウィンドウキャプション
 		caption = f.caption;
-		System.title = caption;
+		//System.title = caption;
 
 		// current の設定し直し
 		current = (currentPage?back:fore).messages[currentNum];
@@ -2221,10 +2248,11 @@ class KAGWindow extends Window
 
 		// コンダクタ
 		currentRecordName = "";
-		mainConductor.restore(pcflags.mainConductor);
 		extraConductor.clear();
 		setConductorToMain();
-
+		mainConductor.restore(pcflags.mainConductor);
+		// XXX 順番入れ替え
+		
 		// 読み込み
 		internalRestoreFlags(pcflags);
 
@@ -3007,7 +3035,7 @@ class KAGWindow extends Window
 
     function getBookMarkFileNameAtLabel(storage, label) {
         var name = saveDataLocation + "/" + "auto_" + getRecordLabel(storage, label) + ".ksd";
-        dm("保存ファイル名:" + name);
+		//dm("保存ファイル名:" + name);
         return name;
     }
 
@@ -3053,7 +3081,7 @@ class KAGWindow extends Window
 	function setTitle(title)
 	{
 		// タイトルを設定
-		if(isMain) System.title = title;
+		//if(isMain) System.title = title;
 		caption = title;
 	}
 
@@ -3179,19 +3207,21 @@ class KAGWindow extends Window
 	}
 
     function addSelect(elm) {
-		if (f.selectInfos == void) {
-            f.selectInfos = [];
-        }
-        if (f.selectDoneFlag) {
-            f.selectInfos.clear();
-            f.selDoneStorage = void;
-            f.selDoneTarget  = void;
-            f.selectDoneFlag = false;
-        }
-        var e = %[];
-        (Dictionary.assign incontextof e)(elm,false);
-        f.selectInfos.add(e);
-    }
+		if ((elm.eval === void || elm.eval == "" || Scripts.eval(elm.eval))) {
+			if (f.selectInfos == void) {
+				f.selectInfos = [];
+			}
+			if (f.selectDoneFlag) {
+				f.selectInfos.clear();
+				f.selDoneStorage = void;
+				f.selDoneTarget  = void;
+				f.selectDoneFlag = false;
+			}
+			var e = %[];
+			(Dictionary.assign incontextof e)(elm,false);
+			f.selectInfos.add(e);
+		}
+	}
 
     /**
      * 選択肢の表示
@@ -3201,8 +3231,8 @@ class KAGWindow extends Window
 		selectLayer.clearButtons();
 		for (var i=0;i<f.selectInfos.count;i++) {
 			selectLayer.addSelect(f.selectInfos[i]);
-        }
-        selectLayer.start(fore.base, 1000000);
+		}
+		selectLayer.start(fore.base, 1000000);
         selectShowing = true;
         setMenuAccessibleAll();
 	}
@@ -3260,7 +3290,7 @@ class KAGWindow extends Window
      * ボタン登録
      */
     function addMapSelectButton(elm) {
-        mapSelectLayer.addButton(elm);
+		mapSelectLayer.addButton(elm);
     }
 
     /**
@@ -3274,7 +3304,9 @@ class KAGWindow extends Window
      * 選択肢登録
      */
     function addMapSelect(elm) {
-        mapSelectLayer.addSelect(elm);
+		if ((elm.eval === void || elm.eval == "" || Scripts.eval(elm.eval))) {
+			mapSelectLayer.addSelect(elm);
+		}
     }
     
     function showMapSelect()
@@ -4137,9 +4169,8 @@ class KAGWindow extends Window
      */
     function setCurrentMessageLayerVisible(visible) {
 
-        var fadeTime = messageFadeTime * drawspeed;
-        
-        if (fore.messages[currentNum].visible != visible) {
+		if (fore.messages[currentNum].visible != visible) {
+			var fadeTime = messageFadeTime * drawspeed;
             if (!skipMode && fadeTime > 0) {
 
                 // 裏は先に消しておく。そうしないと msgvisible がとんでしまって
@@ -4705,6 +4736,25 @@ class KAGWindow extends Window
         return allActions[target] !== void;
     }
 
+	/**
+	 * アクション情報をコピーする
+	 * @param src コピー元
+	 * @param dest コピー先
+	 */
+	function copyAction(src, dest, completed) {
+		stopAction(dest);
+		var srcAction = allActions[src];
+		if (srcAction !== void) {
+			var destAction = srcAction.clone();
+			destAction.target = dest;
+			if (completed !== void) {
+				destAction.onActionCompleted = completed;
+			}
+			allActions[dest] = destAction;
+			actionCount++;
+		}
+	}
+	
     /**
      * アクションを登録
      * @param target ターゲットオブジェクト
@@ -4731,8 +4781,8 @@ class KAGWindow extends Window
         
         if (typeof action == "Object") {
             if (action instanceof "Dictionary") {
-				dm("辞書アクション:" + action);
-				showKeys("アクション", action);
+				//dm("辞書アクション:" + action);
+				//showKeys("アクション", action);
 				// 辞書の場合
 				if (typeof action.module == "Object") {
 					action.module(info, action);
@@ -4815,7 +4865,7 @@ class KAGWindow extends Window
             var target = names[i];
             var info   = names[i+1];
             if (info.doAction(now, false)) {
-                dm("アクション終了:" + info.target);
+				//dm("アクション終了:" + info.target);
                 actionCount--;
                 if (typeof info.onActionCompleted != "undefined") {
                     info.onActionCompleted(info.target);
@@ -4950,7 +5000,7 @@ class KAGWindow extends Window
         if (autoLabelMode) {
             if (currentRecordName != "") {
                 var label = "auto" + currentRecordName;
-                //dm("ラベル:" + label);
+				//dm("ラベル:" + label);
                 //dm("フラグ:" + sflags[label]);
                 //dm("カウント:" + autoLabelCount);
                 return sflags[label] !== void && sflags[label] >= autoLabelCount;
@@ -6039,7 +6089,7 @@ class KAGWindow extends Window
     function onSESoundBufferStop(id) {
 		// 効果音の再生が終了した
 		conductor.trigger('sestop' + id);
-		if (typeof seStopHandler != "undefined") {
+		if (typeof this.seStopHandler != "undefined") {
 			seStopHandler(id);
         }
 	}
@@ -6429,6 +6479,15 @@ class KAGWindow extends Window
         }
     }
 
+	function addTag(cd, name, elm) {
+        var e = %[];
+        if (elm !== void) {
+            (Dictionary.assign incontextof e)(elm, false);
+        }
+        e.tagname = name if name !== void;
+		cd.pendings.add(e);
+    }
+	
     /**
      * 画面消去処理の挿入
      */
@@ -6452,7 +6511,303 @@ class KAGWindow extends Window
         e.tagname = name if name !== void;
         conductor.pendings.insert(0, e);
     }
-    
+
+    // パース処理用
+	var voiceMap;
+	var voiceDefault;
+
+	function parseParse(cd, elm) {
+		voiceMap = %[];
+		voiceDefault = +elm.voice;
+		addTag(cd, "parse");
+    }
+
+	var reNumber = new RegExp("^[0-9][0-9]*$");
+
+	function parseVoice(cd, elm) {
+		var info = voiceMap[elm.name];
+		if (info == void) {
+			info = %[];
+			voiceMap[elm.name] = info;
+		}					
+		if (elm.ignore) {
+			info.strVoice = "ignore";
+		} else {
+			if (reNumber.test(elm.voice)) {
+				// 数値指定の場合
+				if (elm.once || elm.replace) {
+					info.strVoice = elm.voice;
+				} else {
+					info.voice = +elm.voice;
+				}
+			} else {
+				info.strVoice = elm.voice;
+			}
+		}
+		info.incVoice = elm.incvoice || elm.replace;
+	}
+	
+    function parseCh(cd, elm, voiceMode) {
+
+        // 名前表示専用処理
+        //【キャラクタ名/表示名】を検出して名前表示処理を実行する
+        if (nameMode > 0) {
+            // 既に名前表示ロジックに入ってる
+            // ここでは emptyLine の状態はありえない
+            if (elm.text == "】") {
+				nameMode = 0;
+				//dm("名前処理:" + nameStr + ":" + nameDisp);
+				if (voiceMode) {
+					var info = voiceMap[nameStr];
+					if (info == void) {
+						info = %[];
+						voiceMap[nameStr] = info;
+					}					
+					var voice;
+					if (info.strVoice !== void) {
+						voice = info.strVoice;
+						info.strVoice = void;
+					} else {
+						if (info.voice === void) {
+							info.voice = voiceDefault;
+						}
+						voice = info.voice;
+						info.incVoice = true;
+					}
+					if (info.incVoice) {
+						if (info.voice >= 0) {
+							info.voice++;
+						}
+						info.incVoice = void;
+					}
+					//dm("ボイス展開:" + nameStr + ":" + voice);
+					if (voice !== void) {
+						addTag(cd, "dispname", %[ name:nameStr, disp:nameDisp, voice:voice]);
+					} else {
+						addTag(cd, "dispname", %[ name:nameStr, disp:nameDisp]);
+                    }
+                } else {
+                    addTag(cd, "dispname", %[ name:nameStr, disp:nameDisp]);
+                }
+                afterName = true;
+                return;
+            } else {
+                if (nameMode == 1) {
+                    if (elm.text == "/") {
+                        nameMode = 2;
+                        return 0;
+                    } else {
+                        nameStr += elm.text;
+                    }
+                } else {
+                    nameDisp += elm.text;
+                }
+            }
+            return;
+        } else if (emptyLine) {
+            // 行頭での処理
+            if (elm.text == "【") {
+                nameMode = 1;
+                nameStr  = "";
+                nameDisp = "";
+                return;
+            } else {
+                // 名前指定がない場合はパラメータなしで名前処理を呼び出す
+                if (!afterName && (lineMode < 3 || prevEmptyLine)) {
+					addTag(cd, "dispname");
+                    addTag(cd, "ch", elm);
+                    afterName = true;
+                    return;
+                }
+            }
+        }
+        
+        // ラインモード処理
+        var erflag;
+        var crflag;
+        
+        // テキストクリア処理
+        switch (lineMode) {
+        case 1:
+            if (emptyLine) {
+                erflag = true;
+            }
+            break;
+        case 2:
+        case 3:
+        case 5:
+            if (afterPage) {
+                afterPage = false;
+                if (emptyLine) {
+                    erflag = true;
+                }
+            } else {
+                if (emptyLine) {
+					addTag(cd, "r");
+                }
+            }
+            break;
+        case 4:
+            if (afterPage) {
+                afterPage = false;
+                erflag = true;
+            }
+            break;
+        }
+
+        if (erflag && !erAfterPage) {
+            addTag(cd, "er");
+        }
+
+        // 文字登録
+		addTag(cd, "ch", elm);
+        emptyLine = false;
+
+        // 自動インデント処理
+        if (autoIndent && afterName && (elm.text == "「" || elm.text == "『")) {
+			addTag(cd, "indent");
+        }
+        afterName = false;
+
+        return;
+    };
+
+	function parseR(cd, elm)
+	{
+		if (!elm.eol) {
+			addTag(cd, "r", elm);
+			return;
+		}
+
+		// 改行効果を一度だけ無視させる
+        if (noCrOnce) {
+            noCrOnce = false;
+            prevEmptyLine = emptyLine;
+            emptyLine = true;
+            return 0;
+        }
+
+		switch (lineMode) {
+        case 1:
+            //dm("page:改行");
+            nameMode = 0;
+            if (emptyLine) {
+                prevEmptyLine = emptyLine;
+                return 0; // 空行は無視する
+            } else {
+
+                // 名前の直後の改行は無視する
+                if (!(crAfterName && afterName)) {
+                    prevEmptyLine = emptyLine;
+                    emptyLine = true;
+					addTag(cd, "p", elm);
+                    return 0;
+                }
+            }
+            break;
+        case 2:
+            //dm("line:改行");
+            nameMode = 0;
+            if (emptyLine) {
+                prevEmptyLine = emptyLine;
+                return 0; // 空行は無視する
+            } else {
+
+                // 名前の直後の改行は無視する
+                if (!(crAfterName && afterName)) {
+                    prevEmptyLine = emptyLine;
+                    emptyLine = true;
+                    // ボイス待ちする [l] + 行終了後処理呼び出し
+                    elm.voicewait = true;
+					addTag(cd, "l", elm);
+					addTag(cd, "afterline");
+                    return 0;
+                }
+            }
+            break;
+        case 3:
+            //dm("vn:改行");
+            nameMode = 0;
+            if (emptyLine) {
+                if (!prevEmptyLine) {
+                    // 最初の空行で改ページ
+                    prevEmptyLine = emptyLine;
+					parseP(cd, elm);
+                    return 0;
+                } else {
+                    // そうでない空行は無視する
+                    prevEmptyLine = emptyLine;
+                    return 0;
+                }
+            } else {
+                // 名前の直後の改行は無視する
+                if (!(crAfterName && afterName)) {
+                    prevEmptyLine = emptyLine;
+                    emptyLine = true;
+                    elm.voicewait = true;
+					addTag(cd, "l", elm);
+					addTag(cd, "afterline");
+                    return 0;
+                }
+            }
+            break;
+
+        case 4:
+        case 5:
+            //dm("tex/free:改行");
+            nameMode = 0;
+            if (emptyLine) {
+                if (!prevEmptyLine) {
+                    // 最初の空行で改ページ
+                    prevEmptyLine = emptyLine;
+					parseP(cd, elm);
+                    return 0;
+                } else {
+                    // そうでない空行は無視する
+                    prevEmptyLine = emptyLine;
+                    return 0;
+                }
+            } else {
+                // 名前の直後の改行は無視する
+                if (!(crAfterName && afterName)) {
+                    prevEmptyLine = emptyLine;
+                    emptyLine = true;
+                    return 0;
+                }
+            }
+        }
+        return 0;
+	}
+
+    function parseP(cd, elm) {
+		addTag(cd, "p", elm);
+		afterPage = true;
+		emptyLine = true;
+    }
+
+	var extractTags = %[
+	parse:parseParse incontextof this,
+	ch:parseCh incontextof this,
+	r:parseR incontextof this,
+	voice:parseVoice incontextof this,
+	p:parseP incontextof this
+		];
+	
+    /*
+     * タグ展開処理
+     * lineMode に応じて特殊なタグ展開を行う
+     */
+	function checkTagExtract(cd, elm, voiceMode) {
+		if (lineMode != 0 ) {
+			var func = extractTags[elm.tagname];
+			if (func !== void) {
+				func(cd, elm, voiceMode);
+				return true;
+			}
+        }
+        return false;
+    }
+
 	//------------------------------------------------------- タグハンドラ群 --
     
 	function getHandlers()
@@ -6472,11 +6827,23 @@ class KAGWindow extends Window
 		*/
 
 	//--------------------------------------- タグハンドラ群(メッセージ操作) --
+    parse : function(elm)
+    {
+        // 特殊パース処理
+        conductor.parseAll();
+        return 0;
+	} incontextof this,
 
-    origch : function(elm)
+    voice : function(elm)
+    {
+        // 無視
+        return 0;
+	} incontextof this,
+
+    ch : function(elm)
     {
         if (lineMode) {
-            // 表示処理
+			// 表示処理
             if (setCurrentMessageLayerVisible(true)) {
                 return -3;
             }
@@ -6507,109 +6874,22 @@ class KAGWindow extends Window
 		return acs;
 	} incontextof this,
 
-	ch : function(elm)
-	{
-        // ラインモード処理
-        if (lineMode) {
-
-            // テキストクリア処理
-            switch (lineMode) {
-            case 1:
-                entryEr();
-                break;
-            case 2:
-                if (afterPage) {
-                    afterPage = false;
-                    entryEr();
-                } else {
-                    if (emptyLine) {
-                        tagHandlers.origr(elm);
-                    }
-                }
-                break;
-            case 3:
-            case 5:
-                if (afterPage) {
-                    afterPage = false;
-                    entryEr();
-                } else {
-                    if (emptyLine) {
-                        tagHandlers.origr(elm);
-                    }
-                }
-                break;
-            case 4:
-                if (afterPage) {
-                    afterPage = false;
-                    entryEr();
-                }
-                break;
-            }
-
-            // 名前表示専用処理
-            //【キャラクタ名/表示名】を検出して名前表示処理を実行する
-            if (nameMode > 0) {
-                // 既に名前表示ロジックに入ってる
-                // ここでは emptyLine の状態はありえない
-                if (elm.text == "】") {
-                    nameMode = 0;
-                    afterName = true;
-                    
-                    //dm("名前処理:" + nameStr + ":" + nameDisp);
-                    insertTag("dispname", %[ name:nameStr, disp:nameDisp]);
-                    return 0;
-                } else {
-                    if (nameMode == 1) {
-                        if (elm.text == "/") {
-                            nameMode = 2;
-                            return 0;
-                        } else {
-                            nameStr += elm.text;
-                        }
-                    } else {
-                        nameDisp += elm.text;
-                    }
-                }
-                return 0;
-            } else if (emptyLine) {
-                // 行頭での処理
-                emptyLine = false;
-                if (elm.text == "【") {
-                    nameMode = 1;
-                    nameStr  = "";
-                    nameDisp = "";
-                    return 0;
-                } else {
-                    // 名前指定がない場合はパラメータなしで名前処理を呼び出す
-                    if (lineMode < 3 || prevEmptyLine) {
-                        insertTag(void, elm);
-                        insertTag("dispname");
-                        return -4;
-                    }
-                }
-            }
-            // 自動インデント処理
-            if (autoIndent && afterName && (elm.text == "「" || elm.text == "『")) {
-                insertTag("indent");
-            }
-        }
-        afterName = false;
-        insertTag("origch", elm);
-        return 0;
-
-    } incontextof this,
-
     dispname : function(elm)
     {
-        if (elm !== void) {
+		// 表示処理
+		if (setCurrentMessageLayerVisible(true)) {
+			return -3;
+		}
+
+		if (elm !== void) {
             var name = elm.disp !== void ? elm.disp : elm.name;
             if (name !== void) {
-                insertTag("origch", %["text" => "【" + elm.name + "】"]);
+                return tagHandlers.ch(%["text" => "【" + elm.name + "】"]);
             }
         }
         return 0;
 	} incontextof this,
-                  
+
 	graph : function(elm)
 	{
 		// グラフィックを文字として表示
@@ -6682,7 +6962,7 @@ class KAGWindow extends Window
         return 0;
     } incontextof this,
 
-	origr : function(elm)
+	r : function(elm)
     {
         // 改行
         if(historyWriteEnabled) historyLayer.reline();
@@ -6699,117 +6979,6 @@ class KAGWindow extends Window
         }
         return actualChSpeed;
     } incontextof this,
-                  
-	r : function(elm)
-	{
-        // 手動指定の場合は従来の挙動にする
-        if (elm.eol === void) {
-            return tagHandlers.origr(elm);
-        }
-
-        // 改行効果を一度だけ無視させる
-        if (noCrOnce) {
-            noCrOnce = false;
-            prevEmptyLine = emptyLine;
-            emptyLine = true;
-            return 0;
-        }
-        
-        switch (lineMode) {
-        case 0:
-            prevEmptyLine = emptyLine;
-            return tagHandlers.origr(elm);
-        case 1:
-            //dm("page:改行");
-            nameMode = 0;
-            if (emptyLine) {
-                prevEmptyLine = emptyLine;
-                return 0; // 空行は無視する
-            } else {
-
-                // 名前の直後の改行は無視する
-                if (!(crAfterName && afterName)) {
-                    prevEmptyLine = emptyLine;
-                    emptyLine = true;
-                    insertTag("p", elm);
-                    return 0;
-                }
-            }
-            break;
-        case 2:
-            //dm("line:改行");
-            nameMode = 0;
-            if (emptyLine) {
-                prevEmptyLine = emptyLine;
-                return 0; // 空行は無視する
-            } else {
-
-                // 名前の直後の改行は無視する
-                if (!(crAfterName && afterName)) {
-                    prevEmptyLine = emptyLine;
-                    emptyLine = true;
-                    // ボイス待ちする [l] + 行終了後処理呼び出し
-                    insertTag("afterline");
-                    elm.voicewait = true;
-                    insertTag("l", elm);
-                    return 0;
-                }
-            }
-            break;
-        case 3:
-            //dm("vn:改行");
-            nameMode = 0;
-            if (emptyLine) {
-                if (!prevEmptyLine) {
-                    // 最初の空行で改ページ
-                    prevEmptyLine = emptyLine;
-                    insertTag("p", elm);
-                    return 0;
-                } else {
-                    // そうでない空行は無視する
-                    prevEmptyLine = emptyLine;
-                    return 0;
-                }
-            } else {
-                // 名前の直後の改行は無視する
-                if (!(crAfterName && afterName)) {
-                    prevEmptyLine = emptyLine;
-                    emptyLine = true;
-                    // ボイス待ちする [l] + 行終了後処理呼び出し
-                    insertTag("afterline");
-                    elm.voicewait = true;
-                    insertTag("l", elm);
-                    return 0;
-                }
-            }
-            break;
-
-        case 4:
-        case 5:
-            //dm("tex/free:改行");
-            nameMode = 0;
-            if (emptyLine) {
-                if (!prevEmptyLine) {
-                    // 最初の空行で改ページ
-                    prevEmptyLine = emptyLine;
-                    insertTag("p", elm);
-                    return 0;
-                } else {
-                    // そうでない空行は無視する
-                    prevEmptyLine = emptyLine;
-                    return 0;
-                }
-            } else {
-                // 名前の直後の改行は無視する
-                if (!(crAfterName && afterName)) {
-                    prevEmptyLine = emptyLine;
-                    emptyLine = true;
-                    return 0;
-                }
-            }
-        }
-        return 0;
-	} incontextof this,
 
 	ruby : function(elm)
 	{
@@ -6993,7 +7162,12 @@ class KAGWindow extends Window
 	p : function(elm)
 	{
         // 自動ラベルモードは p タグにおいて有効
-        setAutoLabel();
+
+		if (!(erAfterPage && noErOnce)) {
+			// 改ページ後消去が無効の場合は自動セーブしない
+			// 選択肢などの前処理の部分で意味がある
+			setAutoLabel();
+		}
 
         if (lineMode == 2 || lineMode == 3) {
             afterPage = true;
@@ -8282,7 +8456,7 @@ class KAGWindow extends Window
 
 	next : function(elm)
 	{
-		if ((elm.storage !== void || elm.target !== void) && (elm.exp === void || elm.exp == "" || Scripts.eval(elm.exp))) {
+		if ((elm.storage !== void || elm.target !== void) && (elm.eval === void || elm.eval == "" || Scripts.eval(elm.eval))) {
 			kag.process(elm.storage, elm.target);
 		}
 		return 0;
@@ -8615,12 +8789,10 @@ class KAGWindow extends Window
                     this.autoModeMediumMenuItem.checked = true;
                 }
             } else if (autoModePageWait <= autoModePageWaits.slower) {
-                dm("少しおそい:" + autoModePageWaits.slower);
                 if (typeof this.autoModeSlowerMenuItem != "undefined") {
                     this.autoModeSlowerMenuItem.checked = true;
                 }
             } else {
-                dm("おそい:" + autoModePageWaits.slow);
                 if (typeof this.autoModeSlowMenuItem != "undefined") {
                     this.autoModeSlowMenuItem.checked = true;
                 }
@@ -8810,10 +8982,10 @@ class KAGWindow extends Window
      */
     function updateDebugInfo() {
         if (_debugwin !== void && debugwin.visible) {
-            var title = "%06d:%s %s".sprintf(conductor.curLine, conductor.curStorage, conductor.curLabel);
-            debugwin.fillRect(0, 0, debugwin.width, debugwin.height, 0xa0000000);
-            debugwin.drawText(10, 10, title , 0xffffff);
-            debugwin.drawText(10, 30, conductor.curLineStr, 0xffffff);
+			var title = "%06d:%s %s".sprintf(conductor.runLine, conductor.curStorage, conductor.runLabel);
+			debugwin.fillRect(0, 0, debugwin.width, debugwin.height, 0xa0000000);
+			debugwin.drawText(10, 10, title , 0xffffff);
+			debugwin.drawText(10, 30, conductor.runLineStr, 0xffffff);
         }
     }
 
@@ -8846,7 +9018,7 @@ class KAGWindow extends Window
                 debugControl = false;
             }
         }
-        dm("デバッグ制御判定:" + debugControl);
+		//dm("デバッグ制御判定:" + debugControl);
         return debugControl;
     }
 

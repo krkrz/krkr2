@@ -22,10 +22,15 @@ class BaseConductor extends KAGParser
 	var reentered = false; // timerCallback 中に 再入したか
 	var nextTimerTick = 0; // 次にタイマーが発動されるはずの tick
 
-    var targetLabel = void; // 再開位置ラベル
-    var targetLine = void; // 強制処理すっとばし用フラグ
-    var curLabelLine = 0;  // 最後に通過したラベルの行番号
-    
+	var runLine;           // 通過中の行番号
+	var runCount;          // 通過中のコマンド番号
+	var runLineStr;        // 通過中のテキスト情報
+	var runLabel;          // 最後に通過したラベル
+	var runLabelLine = 0;  // 最後に通過したラベルの行番号
+	var targetLabel;       // ロード処理ターゲット行の前の基準ラベル
+	var targetLine;        // ロード処理ターゲット行
+	var targetCount;       // ロード処理ターゲットコマンド
+
 	function BaseConductor()
 	{
 		// コンストラクタ
@@ -52,9 +57,18 @@ class BaseConductor extends KAGParser
 	function clear()
 	{
 		// clear オーバーライド
+		runLine = 0;
+		runCount = 0;
+		runLabel = "";
+		runLabelLine = 0;
 		pendings.clear();
 		super.clear();
 	}
+
+    function checkTagExtract(cd, elm, voiceMode) {
+        // 特殊タグ展開処理用フック
+        return false;
+    }
 
     function timerCallback()
 	{
@@ -70,36 +84,106 @@ class BaseConductor extends KAGParser
 				timer.interval = 0;
 				return;
 			}
-            kag.updateDebugInfo();
             inProcessing = true;
 			for(;;)
 			{
 				if(pendings.count > 0)
 				{
 					// 後回しにされたタグがある場合
-					obj = pendings[0];
-					pendings.erase(0);
+
+					if (targetLine !== void) {
+						
+						var i = 0;
+						do {
+							obj = pendings[i++];
+							if (obj.tagname == "line") {
+								runLine    = obj.line;
+								runCount   = 0;
+								runLineStr = obj.lineStr;
+							} else if (obj.tagname == "count") {
+								runCount++;
+							}
+							//dm("pending 行復帰処理中:" + runLine + "/" + runCount + ":" + obj.tagname);
+							if (runLine > targetLine || (runLine >= targetLine && runCount > targetCount)) {
+								targetLine = void;
+							}
+						} while (i<pendings.count && targetLine != void);
+
+						// 残りをコピー
+						var newp = [];
+						while (i <pendings.count) {
+							newp.add(pendings[i]);
+							i++;
+						}
+						pendings = newp;
+						kag.setUserSpeed();
+
+						continue;
+						
+					} else {
+						obj = pendings[0];
+						pendings.erase(0);
+						if (obj.tagname == "line") {
+							// パーサ特殊処理
+							if (runLine != obj.line) {
+								runLine    = obj.line;
+								runCount   = 0;
+								runLineStr = obj.lineStr;
+								kag.updateDebugInfo();
+								if (parseMode && debugLevel >= tkdlVerbose) {
+									dm("%06d:%s %s".sprintf(runLine, curStorage, runLineStr));
+								}
+							}
+							continue;
+						} else if (obj.tagname == "count") {
+							runCount++;
+							continue;
+						} else if (obj.tagname == "label") {
+							//dm("パース中にラベル発見:" + runLabel + ":" + runLabelLine);
+							runLabel     = obj.label;
+							runLabelLine = obj.line;
+							owner.onConductorLabel(obj.label, obj.page);
+							continue;
+						}
+					}
 				}
 				else
 				{
 					// 後回しにされたタグがないので次のタグを得る
 					obj = getNextTag(); // 次のタグを得る
+					if (obj !== void) {
 
-                    if (targetLine !== void) {
-                        if (curLine < targetLine) {
-                            continue;
-                        } else {
-                            pendings.insert(0, %[tagname:"autolabel"]);
-                            targetLabel = void;
-                            targetLine = void;
-                        }
-                    }
-                    
-					// getNextTag() の中で、pendings に追加された (iscript など)
-					if(pendings.count > 0)
-					{
-						pendings.add(obj);
-						continue;
+						if (runLine != curLine) {
+							runLine    = curLine;
+							runCount   = 0;
+							runLineStr = curLineStr;
+							kag.updateDebugInfo();
+						}
+
+						// タグをカウント
+						runCount++;
+						
+						if (checkTagExtract(this, obj)) {
+							continue;
+						} 
+
+						if (targetLine !== void) {
+							//dm("normal 行復帰処理中:" + runLine + "/" + runCount + ":" + obj.tagname);
+							if (runLine > targetLine || (runLine >= targetLine && runCount > targetCount)) {
+								//dm("復帰完了");
+								kag.setUserSpeed();
+								pendings.insert(0, obj);
+								//pendings.insert(0, %[tagname:"autolabel"]);
+								targetLine = void;
+							}
+							continue;
+						}
+						
+						// getNextTag() の中で、pendings に追加された (iscript など)
+						if(pendings.count > 0) {
+							pendings.add(obj);
+							continue;
+						}
 					}
 				}
 
@@ -112,9 +196,18 @@ class BaseConductor extends KAGParser
 					inProcessing = false;
 					reentered = false;
 					return;
-				}
-				else
-				{
+				} else {
+
+					//if (this === kag.mainConductor) {dm(runLine + "/" + runCount +  " タグ実行:" +  obj.tagname);}
+					
+					// 実行時判定される cond
+					if (obj.condex !== void) {
+						if (!Scripts.eval(obj.condex)) {
+							continue;
+						}
+						delete obj.condex;
+					}
+
 					// onTag を呼ぶ
 					var step = onTag(obj);
 					if(step === void)
@@ -193,8 +286,8 @@ class BaseConductor extends KAGParser
 			inProcessing = false;
 
             if (e.message.substring(0,17) == "シナリオファイルに変更があったため") {
-                askYesNo("セーブデータの不整合が検出されました。正常動作は保障されませんが、該当シナリオの冒頭から再開しますか？",
-                         "確認", function(param) {kag.process(param);}, function(param) { kag.goToStart(); }, curStorage);
+				askYesNo("セーブデータの不整合が検出されました。正常動作は保障されませんが、該当シナリオの冒頭から再開しますか？",
+						 "確認", function(param) {kag.process(param);}, function(param) { kag.goToStart(); }, curStorage);
             } else {
                 var msg = "致命的なエラーが発生しました。\n"
                     "ファイル : " + curStorage + "   行 : " + (curLine+1) + "\n"
@@ -320,49 +413,139 @@ class BaseConductor extends KAGParser
 
 	function store()
 	{
+		//dm("コンダクタ保存処理:" + runLine + "/" + runCount + ":" + runLabel + ":" + runLabelLine);
 		// store オーバーライド
-        var ret = super.store(...);
-        ret.curLabelLine = curLabelLine;
-        return ret;
+		var ret = super.store(...);
+		ret.parseMode = parseMode;
+		ret.runLine      = runLine;
+		ret.runCount     = runCount;
+		ret.runLabel     = runLabel;
+		ret.runLabelLine = runLabelLine;
+		return ret;
 	}
 
 	function restore(dic)
 	{
-        if (dic.lineMode) {
-            clear();
-            loadScenario(dic.storageName);
-            goToLabel(dic.curLabel);
-            if (curLine != dic.curLabelLine) {
-                askYesNo("シナリオのラベル位置変更が検出されました。不整合の可能性がありますがそのまま再開しますか？",
-                         "確認", function(param) {}, function(param) { kag.goToStart(); });
-            }
-            targetLabel = dic.curLabel;
-            targetLine  = curLine + dic.curLine - dic.curLabelLine;
-        } else {
-            // restore オーバーライド
-            super.restore(...);
-            pendings.clear();
-        }
+		// 現在のラベル位置まで復帰
+		//dm("コンダクタ復帰処理:" + dic.runLine + "/" + runCount + ":" + dic.runLabel + ":" + dic.runLabelLine);
+
+		//clear();
+		loadScenario(dic.storageName);
+		if (dic.parseMode) {
+			parseAll();
+		}
+		if (dic.runLabel != "") {
+			goToLabel(dic.runLabel);
+			dm("指定のラベル位置に復帰:" + dic.runLabel);
+		}
+		//dm("現在行:" + runLine + " 復帰予定位置:" + dic.runLabelLine);
+		if (dic.lineSaveMode) {
+			//targetLine  = runLine + dic.runLine - dic.runLabelLine;
+			targetLine  = dic.runLine;
+			targetCount = dic.runCount;
+			targetLabel = dic.runLabel;
+			//dm("行復帰実行:" + targetLine + "/" + targetCount);
+			if (runLine != dic.runLabelLine) {
+				askYesNo("シナリオのラベル位置変更が検出されました。不整合の可能性がありますがそのまま再開しますか？",
+						 "確認", function(self) {}, function(self) { self.targetLine = void; kag.goToStart(); }, this);
+			}
+		}
 	}
 
-	function loadScenario()
-	{
-		// loadScenario オーバーライド
-        curLabelLine = 0;
-        pendings.clear();
-        super.loadScenario(...);
-        targetLabel = void;
-        targetLine = void;
-    }
+    // パース処理実行中
+    var parseMode;
 
-	function goToLabel()
+	/**
+	 * 全パース処理実行
+	 */
+	function parseAll() {
+		//dm("全パース処理:" + curStorage);
+		parseMode = true;
+		var obj;
+		while ((obj = getNextTag()) !== void) { // 次のタグを得る
+			if (runLine !== curLine) {
+				enqueueTag(%[tagname:"line", line:curLine, lineStr:curLineStr]);
+				runLine = curLine;
+			}
+			enqueueTag(%[tagname:"count"]);
+			if (!checkTagExtract(this, obj, true)) {
+				var e = %[];
+				(Dictionary.assign incontextof e)(obj, false);
+				enqueueTag(e);
+			}
+		}
+//		for (var i=0;i<pendings.count;i++) {
+//			if (pendings[i].tagname == "line") {
+//				dm("パース結果:" + pendings[i].tagname + ":" + pendings[i].line);
+//			} else {
+//				dm("パース結果:" + pendings[i].tagname);
+//			}
+//		}
+    }
+	
+	function loadScenario(storage)
 	{
+		runLine = 0;
+		runCount = 0;
+		runLabel = "";
+		runLabelLine = 0;
+		targetLine = void;
+		parseMode = false;
+		pendings.clear();
+		super.loadScenario(storage);
+	}
+
+	function goToLabel(label)
+	{
+		runLine = 0;
+		runCount = 0;
+		runLabel = "";
+		runLabelLine = 0;
+		targetLine = void;
+
 		// goToLabel オーバーライド
-        curLabelLine = 0;
+		if (parseMode) {
+			var reload = false;
+			for (;;) {
+				dm("読み出し処理");
+				for (var i=0;i<pendings.count;i++) {
+					var obj = pendings[i];
+					if (obj.tagname == "label" && obj.label == label) {
+						// ラベル発見
+						runLine      = obj.line;
+						runCount     = 0;
+						runLabel     = obj.label;
+						runLabelLine = runLine;
+
+						// そこまでを消去
+						var newp = [];
+						while (i <pendings.count) {
+							newp.add(pendings[i]);
+							i++;
+						}
+						pendings = newp;
+						return;
+					}
+				}
+				// 一度読み直して頭からやりなおし
+				if (reload) {
+					break;
+				} else {
+					dm("読み直し");
+					reload = true;
+					loadScenario(curStorage);
+					parseAll();
+				}
+			}
+			// あきらめて頭から
+			loadScenario(curStorage);
+			parseMode = false;
+		}
+
 		pendings.clear();
 		super.goToLabel(...);
-        targetLabel = void;
-        targetLine = void;
+		runLine = curLine;
+		runCount = 0;
 	}
 
 	function enqueueTag(tag)
@@ -403,6 +586,10 @@ class Conductor extends BaseConductor
 		invalidate timeOutTimer;
 		super.finalize(...);
 	}
+
+    function checkTagExtract(cd, elm, voiceMode) {
+        return owner.checkTagExtract(cd, elm, voiceMode);
+    }
 
 	function run(immediate = false)
 	{
@@ -453,7 +640,7 @@ class Conductor extends BaseConductor
 
 	function trigger(name)
 	{
-        // waitUntil 内にシグナル名 name が存在すれば、実行再開、
+		// waitUntil 内にシグナル名 name が存在すれば、実行再開、
 		// 同時に waitUntil に登録されたメソッド(リスタートハンドラ)を呼ぶ
 		// シグナル名に _arg がついたものが waitUntil 内にあれば、
 		// それを引数としてハンドラに渡す
@@ -527,39 +714,56 @@ class Conductor extends BaseConductor
 
 	function onScenarioLoad()
 	{
-        return targetLine === void ? owner.onConductorScenarioLoad(...) : true;
+		return owner.onConductorScenarioLoad(...);
 	}
 
 	function onScenarioLoaded()
 	{
-        return targetLine === void ? owner.onConductorScenarioLoaded(...) : true;
+		return owner.onConductorScenarioLoaded(...);
 	}
 
-	function onLabel(label)
+	function onLabel(label, page)
 	{
-        if (targetLine !== void) {
-            if (label == targetLabel) {
-                curLabelLine = curLine;
-            } else {
-                targetLabel = void;
-                targetLine  = void;
-                askYesNo("シナリオのラベル不整合が検出されました。正常動作は保障されませんが、該当シナリオの冒頭から再開しますか？",
-                         "確認", function(param) { kag.process(param);}, function(param) { kag.goToStart(); }, curStorage);
-            }
-        } else {
-            curLabelLine = curLine;
-            return targetLine === void ? owner.onConductorLabel(...) : true;
-        }
+		if (parseMode) {
+			// コマンドの登録
+			//dm("ラベル登録:" + label + ":" + curLine);
+			enqueueTag(%[tagname:"label", label:label, page:page, line:curLine]);
+			return true;
+		} else {
+			runLine      = curLine;
+			runCount     = 0;
+			runLabel     = label;
+			runLabelLine = runLine;
+			if (targetLine !== void) {
+				if (label !== targetLabel) {
+					askYesNo("シナリオのラベル不整合が検出されました。正常動作は保障されませんが、該当シナリオの冒頭から再開しますか？",
+							 "確認", function(param) { kag.process(param);}, function(param) { kag.goToStart(); }, curStorage);
+				}
+				return true;
+			} else {
+				return owner.onConductorLabel(...);
+			}
+		}
 	}
 
 	function onJump()
 	{
-        return targetLine === void ? owner.onConductorJump(...) : true;
+		if (parseMode) {
+			// パース中ではエラー扱いすべし XXX
+			return false;
+		} else {
+			return targetLine === void ? owner.onConductorJump(...) : true;
+		}
 	}
 
 	function onCall()
 	{
-        return targetLine === void ? owner.onConductorCall(...) : true;
+        if (parseMode) {
+            // パース中ではエラー扱いすべし XXX
+            return false;
+		} else {
+			return targetLine === void ? owner.onConductorCall(...) : true;
+		}
 	}
 
 	function onReturn()
@@ -574,7 +778,12 @@ class Conductor extends BaseConductor
 
 	function onScript()
 	{
-        return targetLine === void ? owner.onConductorScript(...) : true;
+		if (parseMode) {
+			// パース中ではエラー扱いすべし XXX
+			return false;
+		} else {
+			return targetLine === void ? owner.onConductorScript(...) : true;
+		}
 	}
 
 	function onUnknownTag()

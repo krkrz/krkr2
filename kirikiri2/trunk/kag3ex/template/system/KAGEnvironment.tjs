@@ -366,11 +366,15 @@ class KAGEnvironment extends KAGEnvImage {
         }
         super.onRestore(f);
 
-        if (f.ses) {
-            for (var i=0;i<ses.count;i++) {
-                ses[i].name = f.ses[i].name;
-                ses[i].id   = f.ses[i].id;
-                ses[i].cout = f.ses[i].count;
+		if (f.ses) {
+			seCount = 0;
+			for (var i=0;i<ses.count;i++) {
+				ses[i].name = f.ses[i].name;
+				ses[i].id   = f.ses[i].id;
+				ses[i].count = f.ses[i].count;
+				if (ses[i].count > seCount) {
+					seCount = ses[i].count + 1;
+				}
             }
         }
         
@@ -814,9 +818,8 @@ class KAGEnvironment extends KAGEnvImage {
      * @param layer 描画先レイヤ
      */
 	function drawLayer(layer) {
-
 		var image;
-        if (stage !== void) {
+		if (isShowBU() && stage !== void) {
             image = stages[stage].image;
             // 時間情報で上書き
             time = defaultTime if time === void;
@@ -875,11 +878,8 @@ class KAGEnvironment extends KAGEnvImage {
                         kag.errorImage(image + ":背景画像がロードできません stage:" + stage + " time:" + time);
                     }
                 }
-            }
-
-		} else {
-            layer.clearImage(true);
-        }
+			}
+		}
 	}
 
     /**
@@ -918,7 +918,7 @@ class KAGEnvironment extends KAGEnvImage {
 
 	function update(base) {
 
-		dm("環境更新処理:" + trans);
+		//dm("環境更新処理:" + trans);
 		
 		// 子要素の再描画
 		foreach(characters, function(name, value, dict, base) {
@@ -1237,6 +1237,11 @@ class KAGEnvironment extends KAGEnvImage {
      */
     function dispname(elm) {
 
+		// 表示処理
+		if (kag.setCurrentMessageLayerVisible(true)) {
+			return -3;
+		}
+		
         ret = void;
         
         if (kag.voicecut && !kag.voicecutpage) {
@@ -1271,8 +1276,15 @@ class KAGEnvironment extends KAGEnvImage {
 
             var name = elm.name;
 			var disp = elm.disp;
-            var ch = getCharacter(name);
+            var voice = elm.voice;
 
+			var ch = getCharacter(name);
+
+			// ボイス登録指定
+			if (ch !== void && voice !== void) {
+				ch.setVoice(voice);
+            }
+			
             // 名前表示処理
             var dispName;
 			if (disp !== void && disp != "") {
@@ -1342,7 +1354,7 @@ class KAGEnvironment extends KAGEnvImage {
                         clearFace();
                     }
                 }
-                dispnameVoice(elm);
+				dispnameVoice(elm);
             }
         }
         return ret;
@@ -1463,7 +1475,7 @@ class KAGEnvironment extends KAGEnvImage {
      * @param buf バッファIDを指定
      */
     function getSeId(buf) {
-        // 直接バッファが指定されている場合はそれを返す
+		// 直接バッファが指定されている場合はそれを返す
         if (buf !== void && +buf < ses.count) {
             return +buf;
         }
@@ -1472,15 +1484,15 @@ class KAGEnvironment extends KAGEnvImage {
         var old = void;
         for (var i=0; i<ses.count; i++) {
             if (ses[i].name == void) {
-                return i;
+				return i;
             }
-            if (ses[i].count < max) {
-                max = ses[i].count;
+			if (ses[i].count < max) {
+				max = ses[i].count;
                 old = i;
             }
         }
         // 一番古いものを返す
-        return old;
+		return old;
     }
 
     /**
@@ -1527,10 +1539,10 @@ class KAGEnvironment extends KAGEnvImage {
 
         // SE 処理用
         if (tagName == "se") {
-            if (elm.name !== void) {
-                return getSe(getSeIdFromName(elm.name)).tagfunc(elm);
+			if (elm.name !== void) {
+				return getSe(getSeIdFromName(elm.name)).tagfunc(elm);
             } else {
-                return getSe(getSeId(elm.buf)).tagfunc(elm);
+				return getSe(getSeId(elm.buf)).tagfunc(elm);
             }
         } else if (tagName.substring(0,2) == "se") {
             var se = getSe(getSeIdFromName(tagName));

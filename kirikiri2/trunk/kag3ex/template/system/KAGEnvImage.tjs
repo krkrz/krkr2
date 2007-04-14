@@ -732,6 +732,7 @@ class KAGEnvImage {
 	hide : function(param) { disp = CLEAR; },
 	accel : null, // 無視
 	fade : null, // 無視
+	nosync : null, // 無視
         ];
 
     /**
@@ -1066,7 +1067,7 @@ class KAGEnvImage {
 		if (env.transMode) {
 			// 全画面トランジション処理中
 			update(env.transMode == 1 ? kag.back : kag.fore);
-		} else if (isSkip() || !redraw) {
+		} else if (isSkip()) {
 			// スキップ中または描画なし
 			update(kag.fore);
 		} else {
@@ -1074,19 +1075,19 @@ class KAGEnvImage {
 				update(kag.fore);
 			} else {
 				if (trans.method !== void || mode == 3) {
-					dm("画像更新:" + trans.method + ":" + trans.showaction + ":" + trans.hideaction);
+					//dm("画像更新:" + trans.method + ":" + trans.showaction + ":" + trans.hideaction);
 					kag.fore.base.stopTransition();
 					kag.backupLayer(EMPTY, true);
 					var layer = update(kag.back);
 					beginTransition(trans);
 					beginTransActionUpdate(trans, layer);
 				} else if (mode == 2) {
-					dm("画像消去");
+					//dm("画像消去");
 					doShow = false;
 					var layer = update(kag.fore);
 					beginTransAction(trans, layer, true, elm.nosync);
 				} else if (mode == 1) {
-					dm("画像表示");
+					//dm("画像表示");
 					doShow = false;
 					var layer = update(kag.fore);
 					beginTransAction(trans, layer, false, elm.nosync);
