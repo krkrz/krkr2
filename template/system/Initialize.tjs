@@ -148,6 +148,14 @@ function KAGLoadScriptOnce(name)
 }
 
 /*
+	AppConfig.tjs ì«Ç›çûÇ›
+*/
+if(Storages.isExistentStorage("AppConfig.tjs"))
+{
+	KAGLoadScript("AppConfig.tjs");
+}
+
+/*
 	Config.tjs ì«Ç›çûÇ›
 */
 if(Storages.isExistentStorage("Config.tjs"))

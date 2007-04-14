@@ -107,8 +107,8 @@ class KAGEnvLayer extends KAGEnvImage {
     // ‚±‚Ìƒƒ\ƒbƒh‚ðŽÀ‘•‚·‚é
     // function getLayer(base);
     // 
-    function drawLayer(layer) {
-		if (imageFile !== void) {
+	function drawLayer(layer) {
+		if (isShowBU()&& imageFile !== void) {
 			try {
 				layer.loadImages(%[ "storage" => imageFile]);
 			} catch (e) {

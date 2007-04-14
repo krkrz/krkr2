@@ -496,6 +496,13 @@ class GraphicLayerEx extends GraphicLayer {
         super.GraphicLayer(...);
     }
 
+	function finalize()
+	{
+		window.stopAction(this);
+		super.finalize(...);
+	}
+
+	
     function setOptions(elm) {
         super.setOptions(elm);
         type   = global[elm.type] if elm.type   !== void;
@@ -525,20 +532,33 @@ class GraphicLayerEx extends GraphicLayer {
         dic.zoomx  = zoomx;
         dic.zoomy  = zoomy;
         dic.afx    = afx;
-        dic.afy    = afy;
+		dic.afy    = afy;
+		dic.hide   = hide;
+		dic.visvalue = visvalue;
         return dic;
     }
 
 	function restore(dic)
 	{
 		super.restore(dic);
-        rotate = dic.rotate if dic.rotate !== void; 
-        zoomx  = dic.zoomx  if dic.zoomx  !== void;
-        zoomy  = dic.zoomy  if dic.zoomy  !== void;
-        afx    = dic.afx    if dic.afx    !== void;
-        afy    = dic.afy    if dic.afy    !== void;
-    }
+		rotate = dic.rotate if dic.rotate !== void; 
+		zoomx  = dic.zoomx  if dic.zoomx  !== void;
+		zoomy  = dic.zoomy  if dic.zoomy  !== void;
+		afx    = dic.afx    if dic.afx    !== void;
+		afy    = dic.afy    if dic.afy    !== void;
+		hide   = dic.hide   if dic.hide   !== void;
+		visvalue = dic.visvalue if dic.visvalue !== void;
+	}
 
+	function assign(src)
+	{
+		// assign オーバーライド
+		super.assign(src);
+		hide = src.hide;
+		visvalue = src.visvalue;
+		window.copyAction(src, this, onActionCompleted);
+	}
+	
     // --------------------------------------------
     // アクション系拡張
     // --------------------------------------------

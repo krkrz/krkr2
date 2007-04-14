@@ -42,10 +42,10 @@ class UIListParser extends CSVParser {
             }
 			var knownType = true;
 			switch (type) {
-			case "type": doType(info, columns);
-			case "file": doFile(info, columns);
-			case "func": doFunc(info, columns);
-			case "part": doPart(info, columns);
+			case "type": doType(info, columns); break;
+			case "file": doFile(info, columns); break;
+			case "func": doFunc(info, columns); break;
+			case "part": doPart(info, columns); break;
 			default: knownType = false; break;
 			}
 			check = true if (knownType);
