@@ -382,6 +382,7 @@ static void TVPInitDirectDraw()
 	if(!TVPDirectDrawDLLHandle)
 	{
 		// load ddraw.dll
+		TVPAddLog(TJS_W("(info) Loading DirectDraw ..."));
 		TVPDirectDrawDLLHandle = LoadLibrary("ddraw.dll");
 		if(!TVPDirectDrawDLLHandle)
 			TVPThrowExceptionMessage(TVPCannotInitDirectDraw,
@@ -700,14 +701,15 @@ void TVPEnumerateAllDisplayModes(std::vector<tTVPScreenMode> & modes)
 		do
 		{
 			tTVP_devicemodeA dm;
-			ZeroMemory(&dm, sizeof(DEVMODE));
-			dm.dmSize = sizeof(DEVMODE);
+			ZeroMemory(&dm, sizeof(tTVP_devicemodeA));
+			dm.dmSize = sizeof(tTVP_devicemodeA);
 			dm.dmDriverExtra = 0;
 			if(EnumDisplaySettings(NULL, num, reinterpret_cast<DEVMODE*>(&dm)) == 0) break;
 			tTVPScreenMode mode;
 			mode.Width  = dm.dmPelsWidth;
 			mode.Height = dm.dmPelsHeight;
 			mode.BitsPerPixel = dm.dmBitsPerPel;
+			modes.push_back(mode);
 			num ++;
 		} while(true);
 	}
@@ -726,10 +728,10 @@ void TVPMakeFullScreenModeCandidates(
 		// use_zoom is ignored (as always be true) if mode == fsrAuto
 
 	// print debug information
-	TVPAddLog(TJS_W("Searching best fullscreen resolution ..."));
-	TVPAddLog(TJS_W("condition: preferred screen mode: ") + preferred.Dump());
-	TVPAddLog(TJS_W("condition: mode: " ) + TVPGetGetFullScreenResolutionModeString(mode));
-	TVPAddLog(TJS_W("condition: use zoom: ") + (use_zoom?ttstr(TJS_W("true")):ttstr(TJS_W("false"))));
+	TVPAddLog(TJS_W("(info) Searching best fullscreen resolution ..."));
+	TVPAddLog(TJS_W("(info) condition: preferred screen mode: ") + preferred.Dump());
+	TVPAddLog(TJS_W("(info) condition: mode: " ) + TVPGetGetFullScreenResolutionModeString(mode));
+	TVPAddLog(TJS_W("(info) condition: use zoom: ") + (use_zoom?ttstr(TJS_W("true")):ttstr(TJS_W("false"))));
 
 	// get original screen metrics
 	TVPGetOriginalScreenMetrics();
@@ -742,8 +744,8 @@ void TVPMakeFullScreenModeCandidates(
 	tjs_int screen_aspect_numer = TVPDefaultScreenMode.Width;
 	tjs_int screen_aspect_denom = TVPDefaultScreenMode.Height;
 	TVPDoReductionNumerAndDenom(screen_aspect_numer, screen_aspect_denom); // do reduction
-	TVPAddLog(TJS_W("environment: default screen mode: ") + TVPDefaultScreenMode.Dump());
-	TVPAddLog(TJS_W("environment: default screen aspect ratio: ") +
+	TVPAddLog(TJS_W("(info) environment: default screen mode: ") + TVPDefaultScreenMode.Dump());
+	TVPAddLog(TJS_W("(info) environment: default screen aspect ratio: ") +
 		ttstr(screen_aspect_numer) + TJS_W(":") + ttstr(screen_aspect_denom));
 
 	// clear destination array
@@ -752,7 +754,7 @@ void TVPMakeFullScreenModeCandidates(
 	// enumerate all display modes
 	std::vector<tTVPScreenMode> modes;
 	TVPEnumerateAllDisplayModes(modes);
-	TVPAddLog(TJS_W("environment: available display modes:"));
+	TVPAddLog(TJS_W("(info) environment: available display modes:"));
 	for(std::vector<tTVPScreenMode>::iterator i = modes.begin(); i != modes.end(); i++)
 		TVPAddLog(TJS_W("  ") + i->Dump());
 
@@ -797,12 +799,22 @@ void TVPMakeFullScreenModeCandidates(
 		for(std::vector<tTVPScreenMode>::iterator i = modes.begin();
 			i != modes.end(); /**/)
 		{
-			if(	i->Width != TVPDefaultScreenMode.Width ||
+			if(	i->Width  != TVPDefaultScreenMode.Width ||
 				i->Height != TVPDefaultScreenMode.Height)
 				i = modes.erase(i);
 			else
 				i++;
 		}
+	}
+
+	// reject resolutions larger than the default screen mode
+	for(std::vector<tTVPScreenMode>::iterator i = modes.begin();
+		i != modes.end(); /**/)
+	{
+		if(i->Width > TVPDefaultScreenMode.Width || i->Height > TVPDefaultScreenMode.Height)
+			i = modes.erase(i);
+		else
+			i++;
 	}
 
 	// reject resolutions less than 16
@@ -905,7 +917,7 @@ void TVPMakeFullScreenModeCandidates(
 	std::sort(candidates.begin(), candidates.end());
 
 	// dump all candidates to log
-	TVPAddLog(TJS_W("result: candidates:"));
+	TVPAddLog(TJS_W("(info) result: candidates:"));
 	for(std::vector<tTVPScreenModeCandidate>::iterator i = candidates.begin();
 		i != candidates.end(); i++)
 	{
