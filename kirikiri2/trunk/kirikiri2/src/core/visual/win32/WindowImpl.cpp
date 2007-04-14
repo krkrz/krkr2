@@ -713,6 +713,9 @@ void TVPEnumerateAllDisplayModes(std::vector<tTVPScreenMode> & modes)
 			num ++;
 		} while(true);
 	}
+
+	TVPAddLog(ttstr(TJS_W("(info) environment: using ")) +
+		(TVPUseChangeDisplaySettings?TJS_W("ChangeDisplaySettings API"):TJS_W("DirectDraw")));
 }
 //---------------------------------------------------------------------------
 //! @brief		make full screen mode candidates
