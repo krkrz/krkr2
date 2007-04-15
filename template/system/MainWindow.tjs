@@ -1644,18 +1644,18 @@ class KAGWindow extends Window
 			}
 		}
 
-        if (scflags.allskip !== void) {
-            allskip = scflags.allskip;
-            if (typeof this.allskipMenu !== "undefined") {
-                var children = allskipMenu.children;
-                for(var i = children.count-1; i >= 0; i--) {
-                    var item = children[i];
-                    if(typeof item.skip !== "undefined" && item.skip == allskip) {
-                        item.checked = true;
-                        break;
-                    }
-                }
-            }
+		if (scflags.allskip !== void) {
+			allskip = scflags.allskip;
+		}
+		if (typeof this.allskipMenu !== "undefined") {
+			var children = allskipMenu.children;
+			for(var i = children.count-1; i >= 0; i--) {
+				var item = children[i];
+				if(typeof item.skip !== "undefined" && item.skip == allskip) {
+					item.checked = true;
+					break;
+				}
+			}
         }
 
         voicecut = scflags.voicecut if scflags.voicecut !== void;
@@ -3466,7 +3466,7 @@ class KAGWindow extends Window
 	function onConductorScenarioLoaded(name)
 	{
 		// コンダクタが新しいシナリオファイルを読み込んだ
-//		if(!usingExtraConductor) incRecordLabel(true);
+		if(!usingExtraConductor) incRecordLabel(true);
         return true;
 	}
 
@@ -4998,8 +4998,8 @@ class KAGWindow extends Window
 
         // 自動ラベルモードでは行単位で判定する必要がある 
         if (autoLabelMode) {
-            if (currentRecordName != "") {
-                var label = "auto" + currentRecordName;
+			if (currentRecordName != "") {
+				var label = "auto" + currentRecordName;
 				//dm("ラベル:" + label);
                 //dm("フラグ:" + sflags[label]);
                 //dm("カウント:" + autoLabelCount);
@@ -6457,12 +6457,12 @@ class KAGWindow extends Window
      * 自動ラベルモードの既読処理
      */
     function incAutoLabel() {
-        if (autoLabelMode) {
-            if (currentRecordName != "") {
-                var label = "auto" + currentRecordName;
-                if (sflags[label] === void || sflags[label] < autoLabelCount) {
-                    sflags[label] = autoLabelCount;
-                }
+		if (autoLabelMode) {
+			if (currentRecordName != "") {
+				var label = "auto" + currentRecordName;
+				if (sflags[label] === void || sflags[label] < autoLabelCount) {
+					sflags[label] = autoLabelCount;
+				}
             }
         }
     }
@@ -8506,11 +8506,14 @@ class KAGWindow extends Window
             break;
         case 1:
             // 行指定モードで保存処理
-            pushHistoryOfStore();
-            storeFlags(true);
-            storeLabelPassed = true;
-            setMenuAccessibleAll();
-            break;
+			pushHistoryOfStore();
+			storeFlags(true);
+			storeLabelPassed = true;
+			if(!(allskip || getCurrentRead()) && skipMode < 4) {
+				cancelSkip(); // 未読なのでスキップを停止
+			}
+			setMenuAccessibleAll();
+			break;
         }
         return 0;
 	} incontextof this,
@@ -8758,7 +8761,7 @@ class KAGWindow extends Window
                     this.chNormalMenuItem.checked = true;
                 }
             } else {
-                if (typeof this.chSlowMenuItem != "undefined") {
+				if (typeof this.chSlowMenuItem != "undefined") {
                     this.chSlowMenuItem.checked = true;
                 }
             }
@@ -8800,6 +8803,18 @@ class KAGWindow extends Window
         }
     }
 
+	function updateEffectButton() {
+		if (noeffect) {
+			if (typeof this.noeffectMenuItem != "undefined") {
+				this.noeffectMenuItem.checked = true;
+			}
+		} else {
+			if (typeof this.effectMenuItem != "undefined") {
+				this.effectMenuItem.checked = true;
+			}
+		}
+	}
+	
     /**
      * 描画速度 (トランジションの再生倍率を指定する）
      */
@@ -8811,7 +8826,8 @@ class KAGWindow extends Window
             return scflags.drawspeed;
         }
         setter(v) {
-            scflags.drawspeed = v;
+			scflags.drawspeed = v;
+			updateEffectButton();
         }
     }
     
@@ -8828,9 +8844,10 @@ class KAGWindow extends Window
         setter(v) {
             if (v) {
                 scflags.drawspeed = 0;
-            } else {
-                delete scflags.drawspeed;
-            }
+			} else {
+				delete scflags.drawspeed;
+			}
+			updateEffectButton();
         }
     }
 
