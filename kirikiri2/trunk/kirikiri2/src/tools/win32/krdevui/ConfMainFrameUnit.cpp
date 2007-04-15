@@ -1091,6 +1091,14 @@ void __fastcall TConfMainFrame::OptionsTreeViewChange(TObject *Sender,
 				if(((TOptionData*)Node->Data)->OptionName != "")
 					desc = "-" + ((TOptionData*)Node->Data)->OptionName +
 						"\r\n" + desc;
+				while(true)
+				{
+					int pos = desc.AnsiPos("[cr]");
+					if(!pos) break;
+					AnsiString left = desc.SubString(1, pos - 1);
+					AnsiString right = desc.c_str() + pos + 4 - 1;
+					desc = left + "\r\n" + right;
+				}
 				OptionDescMemo->Text = desc;
 				break;
 			}
