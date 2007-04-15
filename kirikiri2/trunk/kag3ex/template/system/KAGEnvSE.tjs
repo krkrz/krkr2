@@ -24,14 +24,17 @@ class KAGEnvSE {
      * @param param çƒê∂ëŒè€ÉtÉ@ÉCÉã
      */
     function play(param, elm) {
-        if (param !== void) {
-            name = param;
-            if (kag.skipMode<3 || elm.loop || !kag.nosewhenskip) {
-                var time = +elm.time;
-                if (time > 0)  {
-                    kag.se[id].fadeIn(%[ storage:param, loop:elm.loop, time:time, start:elm.start]);
-                } else {
-                    kag.se[id].play(%[ storage:param, loop:elm.loop, start:elm.start]);
+		if (param !== void) {
+			if (elm.fade === void) {
+				kag.se[id].volume = 100;
+			}
+			name = param;
+			if (kag.skipMode<3 || elm.loop || !kag.nosewhenskip) {
+				var time = +elm.time;
+				if (time > 0)  {
+					kag.se[id].fadeIn(%[ storage:param, loop:elm.loop, time:time, start:elm.start]);
+				} else {
+					kag.se[id].play(%[ storage:param, loop:elm.loop, start:elm.start]);
                 }
             }
         }

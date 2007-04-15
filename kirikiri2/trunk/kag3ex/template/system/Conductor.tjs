@@ -437,6 +437,7 @@ class BaseConductor extends KAGParser
 		if (dic.runLabel != "") {
 			goToLabel(dic.runLabel);
 			dm("指定のラベル位置に復帰:" + dic.runLabel);
+			kag.setRecordLabel(curStorage, dic.runLabel);
 		}
 		//dm("現在行:" + runLine + " 復帰予定位置:" + dic.runLabelLine);
 		if (dic.lineSaveMode) {
