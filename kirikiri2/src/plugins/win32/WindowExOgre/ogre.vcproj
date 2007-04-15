@@ -17,7 +17,7 @@
 		<Configuration
 			Name="Debug|Win32"
 			OutputDirectory="$(OGRE_HOME)\bin\$(ConfigurationName)"
-			IntermediateDirectory=".\Debug"
+			IntermediateDirectory="$(ConfigurationName)"
 			ConfigurationType="2"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC60.vsprops"
 			UseOfMFC="0"
@@ -48,7 +48,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..;../WindowEx;$(OGRE_HOME)\include"
+				AdditionalIncludeDirectories="..;$(OGRE_HOME)\include"
 				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -79,11 +79,9 @@
 				OutputFile="$(OutDir)\$(ProjectName).dll"
 				LinkIncremental="2"
 				SuppressStartupBanner="true"
-				AdditionalLibraryDirectories="&quot;$(OGRE_HOME)\lib&quot;"
+				AdditionalLibraryDirectories="$(OGRE_HOME)\lib"
 				ModuleDefinitionFile=".\ogre.def"
 				GenerateDebugInformation="true"
-				ProgramDatabaseFile="$(OutDir)\ogre.pdb"
-				ImportLibrary=".\..\..\..\..\bin\win32\plugin\ogre.lib"
 				TargetMachine="1"
 			/>
 			<Tool
@@ -98,7 +96,6 @@
 			<Tool
 				Name="VCBscMakeTool"
 				SuppressStartupBanner="true"
-				OutputFile=".\..\..\..\..\bin\win32\plugin\ogre.bsc"
 			/>
 			<Tool
 				Name="VCFxCopTool"
@@ -115,8 +112,8 @@
 		</Configuration>
 		<Configuration
 			Name="Release|Win32"
-			OutputDirectory="$(OGRE_HOME)\bin$(ConfigurationName)"
-			IntermediateDirectory=".\Release"
+			OutputDirectory="..\..\..\..\bin\win32\plugin"
+			IntermediateDirectory="$(ConfigurationName)"
 			ConfigurationType="2"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC60.vsprops"
 			UseOfMFC="0"
@@ -148,7 +145,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="2"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="..;../WindowEx;$(OGRE_HOME)\include"
+				AdditionalIncludeDirectories="..;$(OGRE_HOME)\include"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL"
 				StringPooling="true"
 				RuntimeLibrary="2"
@@ -179,11 +176,9 @@
 				OutputFile="$(OutDir)\$(ProjectName).dll"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
-				AdditionalLibraryDirectories="&quot;$(OGRE_HOME)\lib&quot;"
+				AdditionalLibraryDirectories="$(OGRE_HOME)\lib"
 				ModuleDefinitionFile=".\ogre.def"
 				GenerateDebugInformation="true"
-				ProgramDatabaseFile="$(OutDir)\ogre.pdb"
-				ImportLibrary=".\..\..\..\..\bin\win32\plugin\ogre.lib"
 				TargetMachine="1"
 			/>
 			<Tool
@@ -198,7 +193,6 @@
 			<Tool
 				Name="VCBscMakeTool"
 				SuppressStartupBanner="true"
-				OutputFile=".\..\..\..\..\bin\win32\plugin\ogre.bsc"
 			/>
 			<Tool
 				Name="VCFxCopTool"
@@ -270,7 +264,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\WindowEx\WindowExBase.cpp"
+				RelativePath=".\WindowExBase.cpp"
 				>
 			</File>
 		</Filter>
