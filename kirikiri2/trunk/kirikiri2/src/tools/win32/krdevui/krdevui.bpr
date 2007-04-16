@@ -74,7 +74,7 @@ AutoIncBuild=1
 MajorVer=1
 MinorVer=4
 Release=6
-Build=79
+Build=81
 Debug=0
 PreRelease=0
 Special=0
@@ -86,7 +86,7 @@ CodePage=932
 [Version Info Keys]
 CompanyName=
 FileDescription=TVP Development User Interface DLL
-FileVersion=1.4.6.79
+FileVersion=1.4.6.81
 InternalName=
 LegalCopyright=(C)2001-2005, W.Dee All rights reserved.
 LegalTrademarks=
