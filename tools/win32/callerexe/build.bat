@@ -1,11 +1,13 @@
 tasm32 /zi /ml startup.asm
 
 brc32 -r userconf.rc
-bcc32 -O2 -v -c userconf_main.c
-ilink32 -v -aa -Tpe startup.OBJ userconf_main.obj, userconf.exe, , import32.lib, , userconf.RES
+bcc32 -O2 -v -c userconf_main.c find_kirikiri.c util.c
+ilink32 -v -aa -Tpe startup.OBJ userconf_main.obj find_kirikiri.obj util.obj, userconf.exe, , import32.lib, , userconf.RES
 copy userconf.exe ..\..\..\..\bin\win32\enduser-tools
 copy userconf.tds ..\..\..\..\bin\win32\enduser-tools
 
+bcc32 -O2 -v -c xp3_stub.c find_kirikiri.c util.c
+ilink32 -v -aa -Tpe startup.OBJ xp3_stub.obj find_kirikiri.obj util.obj, xp3_stub.exe, , import32.lib, ,
 
 brc32 -r krkrrel.rc
 bcc32 -O2 -v -c -okrkrrel_main.obj -DPROC_NAME=UIExecReleaser callerlib.c 
@@ -42,5 +44,8 @@ bcc32 -O2 -v -c -okrkrlt_main.obj -DPROC_NAME=UIExecLoopTuner callerlib.c
 ilink32 -v -aa -Tpe startup.OBJ krkrlt_main.obj, krkrlt.exe, , import32.lib, , krkrlt.RES
 copy krkrlt.exe ..\..\..\..\bin\win32\tools
 copy krkrlt.tds ..\..\..\..\bin\win32\tools
+
+
+
 
 pause
