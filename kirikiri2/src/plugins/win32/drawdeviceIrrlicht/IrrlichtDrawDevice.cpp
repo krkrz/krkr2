@@ -22,6 +22,11 @@ tTVPIrrlichtDrawDevice::~tTVPIrrlichtDrawDevice()
 	detach();
 }
 
+/**
+ * デバイスの生成
+ * @param hwnd ハンドル
+ * @param ドライバの種類
+ */
 IrrlichtDevice *
 tTVPIrrlichtDrawDevice::create(HWND hwnd, video::E_DRIVER_TYPE type)
 {
@@ -37,6 +42,7 @@ tTVPIrrlichtDrawDevice::create(HWND hwnd, video::E_DRIVER_TYPE type)
 
 /**
  * ウインドウの再設定
+ * @param hwnd ハンドル
  */
 void
 tTVPIrrlichtDrawDevice::attach(HWND hwnd)
@@ -62,7 +68,8 @@ tTVPIrrlichtDrawDevice::attach(HWND hwnd)
 	driver  = device->getVideoDriver();
 	smgr    = device->getSceneManager();
 	texture = driver->addTexture(core::dimension2d<s32>(1024, 1024), "layer", ECF_A8R8G8B8);
-	
+
+	// XXX テスト用
 	init();
 	
 	// 駆動開始
@@ -82,13 +89,14 @@ tTVPIrrlichtDrawDevice::detach()
 		driver = NULL;
 		smgr   = NULL;
 		texture = NULL;
+		destBuffer = NULL;
 	}
 }
 
 /***
  * ウインドウの指定
+ * @param wnd ウインドウハンドラ
  */
-
 void TJS_INTF_METHOD
 tTVPIrrlichtDrawDevice::SetTargetWindow(HWND wnd)
 {
@@ -180,7 +188,7 @@ tTVPIrrlichtDrawDevice::init()
 {
 #if 0
 	// 以下サンプルデータのロード処理
-	ttstr dataPath = "sydney.md2";
+	ttstr dataPath = "../../../media/sydney.md2";
 	dataPath = TVPNormalizeStorageName(dataPath);
 	TVPGetLocalName(dataPath);
 	int len = dataPath.GetNarrowStrLen() + 1;
@@ -194,7 +202,7 @@ tTVPIrrlichtDrawDevice::init()
 	}
 	smgr->addCameraSceneNode(0, vector3df(0,30,-40), vector3df(0,5,0));
 #else
-	ttstr dataPath = "map-20kdm2.pk3";
+	ttstr dataPath = "../../../media/map-20kdm2.pk3";
 	dataPath = TVPNormalizeStorageName(dataPath);
 	TVPGetLocalName(dataPath);
 	int len = dataPath.GetNarrowStrLen() + 1;
@@ -202,7 +210,7 @@ tTVPIrrlichtDrawDevice::init()
 	dataPath.ToNarrowStr(str, len);
 	device->getFileSystem()->addZipFileArchive(str);
 	
-	scene::IAnimatedMesh* mesh = smgr->getMesh("20kdm2.bsp");
+	scene::IAnimatedMesh* mesh = smgr->getMesh("../../../media/20kdm2.bsp");
 	scene::ISceneNode* node = 0;
 		
 	if (mesh)

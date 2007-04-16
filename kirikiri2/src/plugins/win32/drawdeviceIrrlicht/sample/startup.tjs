@@ -1,4 +1,4 @@
-Plugins.link("drawdeviceOgre.dll");
+Plugins.link("drawdeviceIrrlicht.dll");
 
 Scripts.execStorage("AffineLayer.tjs");
 Scripts.execStorage("ActionLayer.tjs");
@@ -13,7 +13,7 @@ class MyWindow extends Window
 
 	function MyWindow() {
 		super.Window();
-		drawDevice = new OgreDrawDevice();
+		drawDevice = new IrrlichtDrawDevice();
 		
 		// ベースレイヤ
 		base = new Layer(this, null);
@@ -46,6 +46,5 @@ class MyWindow extends Window
 
 };
 
-// 窓
 var win = new MyWindow();
-win.visible=true;
+win.visible = true;
