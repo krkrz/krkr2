@@ -31,6 +31,7 @@ tTVPIrrlichtDrawDevice::create(HWND hwnd, video::E_DRIVER_TYPE type)
 	params.WindowSize    = core::dimension2d<s32>(width, height);
 	params.Bits          = 32;
 	params.Stencilbuffer = true;
+	params.Vsync = true;
 	return createDeviceEx(params);
 }
 
