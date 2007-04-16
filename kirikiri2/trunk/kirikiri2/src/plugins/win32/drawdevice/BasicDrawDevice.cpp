@@ -9,7 +9,9 @@
 //!@file 描画デバイス管理
 //---------------------------------------------------------------------------
 
+#include <windows.h>
 #include <vector>
+#include <algorithm>
 #include "BasicDrawDevice.h"
 
 

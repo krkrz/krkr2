@@ -2,7 +2,7 @@
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="8.00"
-	Name="ogre"
+	Name="drawdeviceOgre"
 	ProjectGUID="{6C10BA3C-8B05-4D24-8D85-A6C7DDE9DD6A}"
 	RootNamespace="ogre"
 	>
@@ -48,7 +48,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..;$(OGRE_HOME)\include"
+				AdditionalIncludeDirectories="..;..\drawdevice;$(OGRE_HOME)\include"
 				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -145,7 +145,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="2"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="..;$(OGRE_HOME)\include"
+				AdditionalIncludeDirectories="..;..\drawdevice;$(OGRE_HOME)\include"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL"
 				StringPooling="true"
 				RuntimeLibrary="2"
@@ -216,6 +216,14 @@
 			Filter="cpp;c;cxx;rc;def;r;odl;idl;hpj;bat"
 			>
 			<File
+				RelativePath="..\drawdevice\BasicDrawDevice.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\drawdevice\BasicDrawDevice.h"
+				>
+			</File>
+			<File
 				RelativePath="Main.cpp"
 				>
 				<FileConfiguration
@@ -238,7 +246,19 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath="..\ncbind\ncbind.cpp"
+				>
+			</File>
+			<File
 				RelativePath="ogre.def"
+				>
+			</File>
+			<File
+				RelativePath=".\OgreDrawDevice.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\OgreInfo.cpp"
 				>
 			</File>
 			<File
@@ -263,15 +283,19 @@
 					/>
 				</FileConfiguration>
 			</File>
-			<File
-				RelativePath=".\WindowExBase.cpp"
-				>
-			</File>
 		</Filter>
 		<Filter
 			Name="Header Files"
 			Filter="h;hpp;hxx;hm;inl"
 			>
+			<File
+				RelativePath=".\OgreDrawDevice.h"
+				>
+			</File>
+			<File
+				RelativePath=".\OgreInfo.h"
+				>
+			</File>
 			<File
 				RelativePath="..\tp_stub.h"
 				>

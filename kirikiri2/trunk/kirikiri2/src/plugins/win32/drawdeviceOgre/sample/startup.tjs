@@ -1,0 +1,27 @@
+Plugins.link("drawdeviceOgre.dll");
+
+var ogre = new OgreDrawDevice();
+
+var WIDTH=800;
+var HEIGHT=600;
+
+class MyWindow extends Window
+{
+    var base;
+    
+    function MyWindow() {
+		super.Window();
+		setInnerSize(WIDTH, HEIGHT);
+        
+        // ベースレイヤ
+		base = new Layer(this,null);
+        base.visible=true;
+		base.setSize(WIDTH,HEIGHT);
+		base.fillRect(0,0,WIDTH,HEIGHT,0x0);
+    }
+}
+
+// 窓
+var win = new MyWindow();
+win.visible=true;
+win.drawDevice = ogre;
