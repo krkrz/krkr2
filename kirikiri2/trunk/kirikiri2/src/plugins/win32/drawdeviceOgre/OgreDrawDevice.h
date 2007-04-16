@@ -22,7 +22,7 @@ class tTVPOgreDrawDevice : public tTVPDrawDevice
 public:
 	tTVPOgreDrawDevice(OgreInfo *info); //!< コンストラクタ
 private:
-	~tTVPOgreDrawDevice(); //!< デストラクタ
+	virtual ~tTVPOgreDrawDevice(); //!< デストラクタ
 
 	void attach(HWND hwnd);
 	void detach();
