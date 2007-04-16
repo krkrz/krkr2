@@ -3,10 +3,8 @@
 
 #include <windows.h>
 #include "tp_stub.h"
-#include "BasicDrawDevice.h"
-
-#include <irrlicht.h>
 #include <iostream>
+#include <irrlicht.h>
 using namespace irr;
 using namespace core;
 using namespace video;
@@ -15,6 +13,8 @@ using namespace io;
 
 #include <string>
 using namespace std;
+
+#include "BasicDrawDevice.h"
 
 /**
  * Irrlicht ÉxÅ[ÉXÇÃ DrawDevice

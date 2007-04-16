@@ -22,6 +22,7 @@ tTVPOgreDrawDevice::~tTVPOgreDrawDevice()
 
 /**
  * ウインドウの再設定
+ * @param hwnd ハンドル
  */
 void
 tTVPOgreDrawDevice::attach(HWND hwnd)
@@ -29,6 +30,8 @@ tTVPOgreDrawDevice::attach(HWND hwnd)
 	// サイズ情報
 	RECT rect;
 	GetClientRect(hwnd, &rect);
+	width  = rect.right - rect.left;
+	height = rect.bottom - rect.top;
 
 	// ハンドルを文字列化
 	char hwndName[100];
@@ -46,24 +49,12 @@ tTVPOgreDrawDevice::attach(HWND hwnd)
 	
 	// ウインドウ生成
 	_renderWindow = ogreInfo->root->createRenderWindow(windowName,
-													   rect.right - rect.left,
-													   rect.bottom - rect.top,
+													   width,
+													   height,
 													   false,
 													   &params);
 
-	// カメラ初期化
-	Camera *camera = _sceneManager->createCamera("Player");
-	camera->setPosition(Vector3(0,0,500));
-	camera->lookAt(Vector3(0,0,-300));
-	camera->setNearClipDistance(5);
-
-	// ビューポート初期化
-	Viewport* vp = _renderWindow->addViewport(camera);
-	vp->setBackgroundColour(ColourValue(0,0,0));
-
-	// リソース初期化
-	ResourceGroupManager::getSingleton().initialiseAllResourceGroups();
-	// XXX テスト用
+	// XX テスト用
 	init();
 	
 	// ogre 駆動開始
@@ -88,8 +79,8 @@ tTVPOgreDrawDevice::detach()
 
 /***
  * ウインドウの指定
+ * @param wnd ウインドウハンドラ
  */
-
 void TJS_INTF_METHOD
 tTVPOgreDrawDevice::SetTargetWindow(HWND wnd)
 {
@@ -136,9 +127,20 @@ tTVPOgreDrawDevice::EndBitmapCompletion(iTVPLayerManager * manager)
 void
 tTVPOgreDrawDevice::init()
 {
-	/* nothing to do */
+	// カメラ初期化
+	Camera *camera = _sceneManager->createCamera("Player");
+	camera->setPosition(Vector3(0,0,500));
+	camera->lookAt(Vector3(0,0,-300));
+	camera->setNearClipDistance(5);
+
+	// ビューポート初期化
+	Viewport* vp = _renderWindow->addViewport(camera);
+	vp->setBackgroundColour(ColourValue(0,0,0));
+
+	// リソース初期化
+	ResourceGroupManager::getSingleton().initialiseAllResourceGroups();
 	
-	// XXX テスト用にオブジェクトを配置してみる
+	// テスト用にオブジェクトを配置してみる
 	_sceneManager->setAmbientLight(ColourValue(0.5, 0.5, 0.5));
 	Entity *ent = _sceneManager->createEntity("head", "ogrehead.mesh");
 	_sceneManager->getRootSceneNode()->createChildSceneNode()->attachObject(ent);

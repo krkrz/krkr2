@@ -1,10 +1,11 @@
 #ifndef OGREDRAWDEVICE_H
 #define OGREDRAWDEVICE_H
 
-#include "BasicDrawDevice.h"
 #include "OgreInfo.h"
 #include <string>
 using namespace std;
+
+#include "BasicDrawDevice.h"
 
 /**
  * Ogre ÉxÅ[ÉXÇÃ DrawDevice
@@ -26,6 +27,14 @@ private:
 
 	void attach(HWND hwnd);
 	void detach();
+
+	int width;
+	int height;
+
+	unsigned char *destBuffer;
+	int destWidth;
+	int destHeight;
+	int destPitch;
 	
 public:
 
