@@ -20,6 +20,16 @@ public:
 	}
 
 	/**
+	 * デストラクタ
+	 */
+	~OgreDrawDevice() {
+		if (device) {
+			device->Destruct();
+			device = NULL;
+		}
+	}
+	
+	/**
 	 * @return デバイス情報
 	 */
 	tjs_int64 GetDevice() {
