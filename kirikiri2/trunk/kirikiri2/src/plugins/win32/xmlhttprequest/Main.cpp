@@ -71,6 +71,7 @@ public:
             }
         }
 
+        _hThread = NULL;
         InitializeCriticalSection(&_criticalSection);
 
         return S_OK;
