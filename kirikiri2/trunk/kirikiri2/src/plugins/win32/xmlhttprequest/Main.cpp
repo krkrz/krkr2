@@ -71,15 +71,25 @@ public:
             }
         }
 
+        InitializeCriticalSection(&_criticalSection);
+
         return S_OK;
     }
 
     void TJS_INTF_METHOD Invalidate()
     {
         // オブジェクトが無効化されるときに呼ばれる
+
+        if (_hThread) {
+            CloseHandle(_hThread);
+            _hThread = NULL;
+        }
+
         if (--objcount == 0) {
             WSACleanup();
         }
+
+        DeleteCriticalSection(&_criticalSection);
     }
 
 
@@ -367,17 +377,39 @@ public:
     }
 
     void OnReadyStateChange() {
+        EnterCriticalSection(&_criticalSection);
+
         if (_async && _target->IsValid(TJS_IGNOREPROP, L"onreadystatechange", NULL, _target) == TJS_S_TRUE) {
+            _readyStateChangeQueue.push_back(_readyState);
+        }
+
+        LeaveCriticalSection(&_criticalSection);
+    }
+
+    void ExecuteOnReadyStateChangeCallback(void) {
+        EnterCriticalSection(&_criticalSection);
+
+        for (std::vector<tjs_int>::const_iterator p = _readyStateChangeQueue.begin(); p != _readyStateChangeQueue.end(); ++p) {
             tTJSVariant val;
             if (_target->PropGet(TJS_IGNOREPROP, L"onreadystatechange", NULL, &val, _target) < 0) {
                 ttstr msg = TJS_W("can't get member: onreadystatechange");
                 TVPThrowExceptionMessage(msg.c_str());
             }
 
-            iTJSDispatch2 *method = val.AsObject();
-            method->FuncCall(0, NULL, NULL, NULL, 0, NULL, _target);
-            method->Release();
+            try {
+                tTJSVariant v = _target;
+                tTJSVariant *param[] = { &v };
+                tTJSVariantClosure funcval = val.AsObjectClosureNoAddRef();
+                funcval.FuncCall(0, NULL, NULL, NULL, 1, param, NULL);
+            }
+            catch (...) {
+                LeaveCriticalSection(&_criticalSection);
+                throw;
+            }
         }
+        _readyStateChangeQueue.clear();
+
+        LeaveCriticalSection(&_criticalSection);
     }
 
 
@@ -572,6 +604,8 @@ private:
     HANDLE _hThread;
     bool _aborted;
     iTJSDispatch2 *_target;
+    std::vector<tjs_int> _readyStateChangeQueue;
+    CRITICAL_SECTION _criticalSection;
 
     static int objcount;
 };
@@ -761,6 +795,19 @@ static iTJSDispatch2 * Create_NC_XMLHttpRequest()
         }
         TJS_END_NATIVE_METHOD_DECL(/*func. name*/abort)
 
+        TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/executeCallback)
+        {
+            TJS_GET_NATIVE_INSTANCE(/*var. name*/_this,
+                /*var. type*/NI_XMLHttpRequest);
+
+            _this->ExecuteOnReadyStateChangeCallback();
+            if (result) {
+                result->Clear();
+            }
+
+            return TJS_S_OK;
+        }
+        TJS_END_NATIVE_METHOD_DECL(/*func. name*/executeCallback)
 
         TJS_BEGIN_NATIVE_PROP_DECL(readyState)
         {
@@ -815,7 +862,7 @@ static iTJSDispatch2 * Create_NC_XMLHttpRequest()
                     /*var. type*/NI_XMLHttpRequest);
 
                 if (result) {
-                    *result = _this->GetResponseStatus();
+                    *result = (tTVInteger)_this->GetResponseStatus();
                 }
 
                 return TJS_S_OK;
