@@ -389,7 +389,7 @@ public:
 
     void ExecuteOnReadyStateChangeCallback(void) {
         EnterCriticalSection(&_criticalSection);
-
+        Sleep(1);
         for (std::vector<tjs_int>::const_iterator p = _readyStateChangeQueue.begin(); p != _readyStateChangeQueue.end(); ++p) {
             tTJSVariant val;
             if (_target->PropGet(TJS_IGNOREPROP, L"onreadystatechange", NULL, &val, _target) < 0) {
