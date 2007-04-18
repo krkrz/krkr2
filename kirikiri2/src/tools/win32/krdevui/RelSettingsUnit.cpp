@@ -27,6 +27,7 @@ __fastcall TRelSettingsForm::TRelSettingsForm(TComponent* Owner)
 	: TForm(Owner)
 {
 	GoImmediate = false;
+	WriteDefaultRPF = true;
 
 	FileList = new TStringList();
 	ExeOptionsSheet->TabVisible = 0;
@@ -1707,13 +1708,16 @@ void __fastcall TRelSettingsForm::CreateArchive(void)
 	if(index_compressed) delete [] index_compressed;
 
 	// save current profile to the project folder
-	try
+	if(WriteDefaultRPF)
 	{
-		SaveProfile(ProjFolder + "default.rpf");
-	}
-	catch(...)
-	{
-		// ignode errors
+		try
+		{
+			SaveProfile(ProjFolder + "default.rpf");
+		}
+		catch(...)
+		{
+			// ignode errors
+		}
 	}
 }
 //---------------------------------------------------------------------------

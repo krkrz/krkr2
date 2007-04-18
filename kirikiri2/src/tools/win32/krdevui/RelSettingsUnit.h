@@ -121,6 +121,8 @@ private:	// ユーザー宣言
 
 	bool GoImmediate;
 
+	bool WriteDefaultRPF;
+
 protected:
 	void __fastcall WMStart(TMessage &msg);
 	void __fastcall WMClose(TMessage &msg);
@@ -139,7 +141,8 @@ public:		// ユーザー宣言
 	void __fastcall SetExtList(TStringList *list);
 	void __fastcall LoadDefaultProfile();
 
-	void __fastcall SetGoImmediate() { GoImmediate = true; }
+	void __fastcall SetGoImmediate(bool b = true) { GoImmediate = b; }
+	void __fastcall SetWriteDefaultRPF(bool b = true) { WriteDefaultRPF = b; }
 };
 //---------------------------------------------------------------------------
 extern PACKAGE TRelSettingsForm *RelSettingsForm;
