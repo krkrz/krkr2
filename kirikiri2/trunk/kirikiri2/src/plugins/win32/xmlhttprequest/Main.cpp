@@ -6,6 +6,67 @@
  * Written by Kouhei Yanagita
  *
  */
+
+/*
+
+● 使用例
+
+var xhr = new XMLHttpRequest();
+xhr.open('GET', 'http://example.com/', true);
+xhr.onreadystatechange = function(xhr) {
+    if (xhr.readyState != 4) return;
+
+    // responseText はオクテット列を返すので、
+    // 文字列にするためには、変換が必要。
+    // encode プラグインなどを参照。
+    Debug.message(decodeUTF8(xhr.responseText));
+};
+System.addContinuousHandler(xhr.executeCallback);
+xhr.send();
+
+
+● 注意
+
+ブラウザに実装されている XMLHttpRequest では
+readyState が変化すると onreadystatechange が呼ばれますが、
+このプラグインでは readyState が変化しても、内部のキューに
+変化が蓄積されるだけで、コールバックは自動的には呼ばれません。
+内部のキューに readyState の変化が蓄積されている状態で
+executeCallback() を呼ぶと、その段階でコールバックが実行されます。
+
+このようになっているのは、マルチスレッド時に別スレッドからのコールバックで
+不具合が起こる可能性があるためです。
+
+
+● リファレンス
+
+コンストラクタ
+- XMLHttpRequest()
+
+メソッド
+- open(String method, String url, [bool async, String username, String password])
+リクエストを投げる対象を設定します。
+
+- setRequestHeader(String headerName, String headerValue)
+リクエストヘッダを設定します。
+
+- send([Octet data])
+オクテット列 data をエンティティボディとして、サーバにリクエストを送信します。
+
+- abort()
+通信をキャンセルします。
+
+- executeCallback()
+onreadystatechange のコールバックを実行します。
+
+
+プロパティ
+- int readyState
+- Octet responseText
+- int status
+- String statusText
+
+ */
 //---------------------------------------------------------------------------
 #include <winsock2.h>
 #include <windows.h>
@@ -22,32 +83,6 @@
 
 
 
-/*
-    プラグイン側でネイティブ実装されたクラスを提供し、吉里吉里側で使用できるように
-    する例です。
-
-    ネイティブクラスは tTJSNativeInstance を継承したクラス上に作成し、そのネイ
-    ティブクラスとのインターフェースを tTJSNativeClassForPlugin をベースに作成し
-    ます。
-
-    「TJS2 リファレンス」の「組み込みの手引き」の「基本的な使い方」にある例と同じ
-    クラスをここでは作成します。ただし、プラグインで実装する都合上、TJS2 リファ
-    レンスにある例とは若干実装の仕方が異なることに注意してください。
-*/
-
-
-
-//---------------------------------------------------------------------------
-// テストクラス
-//---------------------------------------------------------------------------
-/*
-    各オブジェクト (iTJSDispatch2 インターフェース) にはネイティブインスタンスと
-    呼ばれる、iTJSNativeInstance 型のオブジェクトを登録することができ、これを
-    オブジェクトから取り出すことができます。
-    まず、ネイティブインスタンスの実装です。ネイティブインスタンスを実装するには
-    tTJSNativeInstance からクラスを導出します。tTJSNativeInstance は
-    iTJSNativeInstance の基本的な動作を実装しています。
-*/
 class NI_XMLHttpRequest : public tTJSNativeInstance // ネイティブインスタンス
 {
 public:
