@@ -39,6 +39,7 @@ static void _UIExecReleaser()
 	TStringList *extlist;
 
 	bool go_immediate = false;
+	bool write_rpf = true;
 
 	int paramcount = ParamCount();
 	for(int i = 1; i <= paramcount; i++)
@@ -48,6 +49,8 @@ static void _UIExecReleaser()
 			projfolder = param;
 		else if(param == "-go")
 			go_immediate = true;
+		else if(param == "-nowriterpf")
+			write_rpf = false;
 	}
 
 	if(projfolder != "")
@@ -119,7 +122,8 @@ search:
 	{
 		int res;
 		TRelSettingsForm * form = new TRelSettingsForm(Application);
-		if(go_immediate) form->SetGoImmediate();
+		form->SetGoImmediate(go_immediate);
+		form->SetWriteDefaultRPF(write_rpf);
 		form->SetProjFolder(projfolder);
 		form->SetFileList(filelist);
 		delete filelist;
