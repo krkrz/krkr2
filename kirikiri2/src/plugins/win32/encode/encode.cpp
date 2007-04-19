@@ -7,11 +7,14 @@
 /*
 
 Octet —ñ -> •¶Žš—ñ
- String decodeSJIS(Octet data)
- String decodeUTF8(Octet data)
+ String Encode.decode(Octet data, String encoding)
+
+ encoding = [ 'Shift_JIS' | 'UTF-8' ]
 
 •¶Žš—ñ -> Octet —ñ
- Octet  encodeUTF8(String str)
+ Octet  Encode.encode(String str, String encoding)
+
+ encoding = [ 'UTF-8' ]
 
  */
 
@@ -23,83 +26,48 @@ Octet —ñ -> •¶Žš—ñ
 //---------------------------------------------------------------------------
 
 
-
-class tDecodeSJISFunction : public tTJSDispatch
+class NI_Encode : public tTJSNativeInstance
 {
-    tjs_error TJS_INTF_METHOD FuncCall(
-        tjs_uint32 flag, const tjs_char * membername, tjs_uint32 *hint,
-        tTJSVariant *result,
-        tjs_int numparams, tTJSVariant **param, iTJSDispatch2 *objthis);
+public:
+    NI_Encode() { }
 
-} * DecodeSJISFunction;
-
-tjs_error TJS_INTF_METHOD tDecodeSJISFunction::FuncCall(
-    tjs_uint32 flag, const tjs_char * membername, tjs_uint32 *hint,
-    tTJSVariant *result,
-    tjs_int numparams, tTJSVariant **param, iTJSDispatch2 *objthis)
-{
-    if (membername) {
-        return TJS_E_MEMBERNOTFOUND;
+    tjs_error TJS_INTF_METHOD Construct(tjs_int numparams, tTJSVariant **param, iTJSDispatch2 *tjs_obj)
+    {
+        return S_OK;
     }
 
-    if (numparams == 0) {
-        return TJS_E_BADPARAMCOUNT;
+    void TJS_INTF_METHOD Invalidate()
+    {
+
     }
 
-    if (param[0]->Type() != tvtOctet) {
-        return TJS_E_INVALIDPARAM;
-    }
-
-    if (result) {
-        tTJSVariantOctet *oct = param[0]->AsOctetNoAddRef();
-        if (oct) {
-            const tjs_uint8 *data = oct->GetData();
-            std::vector<char> v;
-            v.reserve(oct->GetLength() + 1);
-            std::copy(data, data + oct->GetLength(), std::back_inserter(v));
-            v.push_back(0);
-            *result = &v[0];
+    static ttstr Decode(tTJSVariant *param, const ttstr &encoding)
+    {
+        if (encoding == TJS_W("Shift_JIS")) {
+            return DecodeShiftJIS(param);
+        }
+        else if (encoding == TJS_W("UTF-8")) {
+            return DecodeUTF8(param);
         }
         else {
-            *result = TJS_W("");
+            TVPThrowExceptionMessage(TJS_W("Unknown encoding"));
         }
     }
 
-
-    return TJS_S_OK;
-}
-
-
-
-
-//----------------------------------------------------------------------------
-class tDecodeUTF8Function : public tTJSDispatch
-{
-    tjs_error TJS_INTF_METHOD FuncCall(
-        tjs_uint32 flag, const tjs_char * membername, tjs_uint32 *hint,
-        tTJSVariant *result,
-        tjs_int numparams, tTJSVariant **param, iTJSDispatch2 *objthis);
-} * DecodeUTF8Function;
-
-tjs_error TJS_INTF_METHOD tDecodeUTF8Function::FuncCall(
-    tjs_uint32 flag, const tjs_char * membername, tjs_uint32 *hint,
-    tTJSVariant *result,
-    tjs_int numparams, tTJSVariant **param, iTJSDispatch2 *objthis)
-{
-    if (membername) {
-        return TJS_E_MEMBERNOTFOUND;
+    static tTJSVariantOctet *Encode(const ttstr &str, const ttstr &encoding)
+    {
+        if (encoding == TJS_W("UTF-8")) {
+            return EncodeUTF8(str);
+        }
+        else {
+            TVPThrowExceptionMessage(TJS_W("Unknown encoding"));
+        }        
     }
 
-    if (numparams == 0) {
-        return TJS_E_BADPARAMCOUNT;
-    }
-
-    if (param[0]->Type() != tvtOctet) {
-        return TJS_E_INVALIDPARAM;
-    }
-
-    if (result) {
-        tTJSVariantOctet *oct = param[0]->AsOctetNoAddRef();
+private:
+    static ttstr DecodeUTF8(tTJSVariant *param)
+    {
+        tTJSVariantOctet *oct = param->AsOctetNoAddRef();
         if (oct) {
             const tjs_uint8 *data = oct->GetData();
             std::vector<tjs_char> v;
@@ -124,43 +92,32 @@ tjs_error TJS_INTF_METHOD tDecodeUTF8Function::FuncCall(
                 }
             }
             v.push_back(0);
-            *result = &v[0];
+            return ttstr(&v[0]);
         }
         else {
-            *result = TJS_W("");
+            return TJS_W("");
         }
     }
 
-    return TJS_S_OK;
-}
-//----------------------------------------------------------------------------
-class tEncodeUTF8Function : public tTJSDispatch
-{
-    tjs_error TJS_INTF_METHOD FuncCall(
-        tjs_uint32 flag, const tjs_char * membername, tjs_uint32 *hint,
-        tTJSVariant *result,
-        tjs_int numparams, tTJSVariant **param, iTJSDispatch2 *objthis);
-} * EncodeUTF8Function;
-
-tjs_error TJS_INTF_METHOD tEncodeUTF8Function::FuncCall(
-    tjs_uint32 flag, const tjs_char * membername, tjs_uint32 *hint,
-    tTJSVariant *result,
-    tjs_int numparams, tTJSVariant **param, iTJSDispatch2 *objthis)
-{
-    if (membername) {
-        return TJS_E_MEMBERNOTFOUND;
+    static ttstr DecodeShiftJIS(tTJSVariant *param)
+    {
+        tTJSVariantOctet *oct = param->AsOctetNoAddRef();
+        if (oct) {
+            const tjs_uint8 *data = oct->GetData();
+            std::vector<char> v;
+            v.reserve(oct->GetLength() + 1);
+            std::copy(data, data + oct->GetLength(), std::back_inserter(v));
+            v.push_back(0);
+            return ttstr(&v[0]);
+        }
+        else {
+            return TJS_W("");
+        }
     }
 
-    if (numparams == 0) {
-        return TJS_E_BADPARAMCOUNT;
-    }
 
-    if (param[0]->Type() != tvtString) {
-        return TJS_E_INVALIDPARAM;
-    }
-
-    if (result) {
-        ttstr str(*param[0]);
+    static tTJSVariantOctet *EncodeUTF8(const ttstr &str)
+    {
         std::vector<tjs_uint8> v;
 
         tjs_int len = str.GetLen();
@@ -181,106 +138,126 @@ tjs_error TJS_INTF_METHOD tEncodeUTF8Function::FuncCall(
             }
         }
 
-        *result = TJSAllocVariantOctet(&v[0], v.size());
+        return TJSAllocVariantOctet(&v[0], v.size());
     }
+};
 
-    return TJS_S_OK;
+
+static iTJSNativeInstance * TJS_INTF_METHOD Create_NI_Encode()
+{
+    TVPThrowExceptionMessage(
+        TJSGetMessageMapMessage(TJS_W("TVPCannotCreateInstance")).c_str()
+    );
+    return NULL;
 }
 
+#define TJS_NATIVE_CLASSID_NAME ClassID_Encode
+static tjs_int32 TJS_NATIVE_CLASSID_NAME = -1;
 
 
-//---------------------------------------------------------------------------
+static iTJSDispatch2 *Create_NC_Encode()
+{
+    tTJSNativeClassForPlugin *classobj =
+        TJSCreateNativeClassForPlugin(TJS_W("Encode"), Create_NI_Encode);
+
+    TJS_BEGIN_NATIVE_MEMBERS(Encode)
+        TJS_DECL_EMPTY_FINALIZE_METHOD
+
+        TJS_BEGIN_NATIVE_CONSTRUCTOR_DECL_NO_INSTANCE(Encode)
+        {
+            return TJS_S_OK;
+        }
+        TJS_END_NATIVE_CONSTRUCTOR_DECL(Encode)
+
+
+        TJS_BEGIN_NATIVE_METHOD_DECL(decode)
+        {
+            if (numparams < 2) {
+                return TJS_E_BADPARAMCOUNT;
+            }
+
+            if (param[0]->Type() != tvtOctet || param[1]->Type() != tvtString) {
+                return TJS_E_INVALIDPARAM;
+            }
+
+            if (result) {
+                *result = NI_Encode::Decode(param[0], ttstr(*param[1]));
+            }
+
+            return TJS_S_OK;
+        }
+        TJS_END_NATIVE_CONSTRUCTOR_DECL(decode)
+
+
+        TJS_BEGIN_NATIVE_METHOD_DECL(encode)
+        {
+            if (numparams < 2) {
+                return TJS_E_BADPARAMCOUNT;
+            }
+
+            if (param[0]->Type() != tvtString || param[1]->Type() != tvtString) {
+                return TJS_E_INVALIDPARAM;
+            }
+
+            if (result) {
+                *result = NI_Encode::Encode(ttstr(*param[0]), ttstr(*param[1]));
+            }
+
+            return TJS_S_OK;
+        }
+        TJS_END_NATIVE_METHOD_DECL(encode)
+
+    TJS_END_NATIVE_MEMBERS
+
+    return classobj;
+}
+
+#undef TJS_NATIVE_CLASSID_NAME
+
+
 #pragma argsused
-int WINAPI DllEntryPoint(HINSTANCE hinst, unsigned long reason,
-    void* lpReserved)
+int WINAPI DllEntryPoint(HINSTANCE hinst, unsigned long reason, void *lpReserved)
 {
     return 1;
 }
-//---------------------------------------------------------------------------
+
 static tjs_int GlobalRefCountAtInit = 0;
-extern "C" HRESULT __declspec(dllexport) __stdcall V2Link(iTVPFunctionExporter *exporter)
+extern "C" HRESULT _stdcall __declspec(dllexport) V2Link(iTVPFunctionExporter *exporter)
 {
     TVPInitImportStub(exporter);
 
     tTJSVariant val;
+    iTJSDispatch2 *global = TVPGetScriptDispatch();
 
-    iTJSDispatch2 * global = TVPGetScriptDispatch();
+    iTJSDispatch2 *tjsclass = Create_NC_Encode();
+    val = tTJSVariant(tjsclass);
+    tjsclass->Release();
 
-
-    DecodeSJISFunction = new tDecodeSJISFunction();
-    val = tTJSVariant(DecodeSJISFunction);
-    DecodeSJISFunction->Release();
-    global->PropSet(
-        TJS_MEMBERENSURE,
-        TJS_W("decodeSJIS"),
-        NULL,
-        &val,
-        global
-    );
-
-    DecodeUTF8Function = new tDecodeUTF8Function();
-    val = tTJSVariant(DecodeUTF8Function);
-    DecodeUTF8Function->Release();
-    global->PropSet(
-        TJS_MEMBERENSURE,
-        TJS_W("decodeUTF8"),
-        NULL,
-        &val,
-        global
-    );
-
-    EncodeUTF8Function = new tEncodeUTF8Function();
-    val = tTJSVariant(EncodeUTF8Function);
-    EncodeUTF8Function->Release();
-    global->PropSet(
-        TJS_MEMBERENSURE,
-        TJS_W("encodeUTF8"),
-        NULL,
-        &val,
-        global
-    );
-
+    global->PropSet(TJS_MEMBERENSURE, TJS_W("Encode"), NULL, &val, global);
     global->Release();
-
     val.Clear();
-
     GlobalRefCountAtInit = TVPPluginGlobalRefCount;
 
     return S_OK;
 }
-//---------------------------------------------------------------------------
-extern "C" HRESULT __declspec(dllexport) __stdcall V2Unlink()
+
+extern "C" HRESULT _stdcall __declspec(dllexport) V2Unlink()
 {
-    if(TVPPluginGlobalRefCount > GlobalRefCountAtInit) return E_FAIL;
-
-    iTJSDispatch2 * global = TVPGetScriptDispatch();
-
-    if(global)
-    {
-        global->DeleteMember(
-            0,
-            TJS_W("decodeSJIS"),
-            NULL,
-            global
-        );
-        global->DeleteMember(
-            0,
-            TJS_W("decodeUTF8"),
-            NULL,
-            global
-        );
-        global->DeleteMember(
-            0,
-            TJS_W("encodeUTF8"),
-            NULL,
-            global
-        );
+    if (TVPPluginGlobalRefCount > GlobalRefCountAtInit) {
+        return E_FAIL;
     }
 
-    if(global) global->Release();
+    iTJSDispatch2 *global = TVPGetScriptDispatch();
+
+    if (global) {
+        global->DeleteMember(0, TJS_W("Encode"), NULL, global);
+    }
+
+    if (global) {
+        global->Release();
+    }
 
     TVPUninitImportStub();
 
     return S_OK;
 }
-
