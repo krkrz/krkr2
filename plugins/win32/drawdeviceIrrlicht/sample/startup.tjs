@@ -6,34 +6,59 @@ Scripts.execStorage("ActionLayer.tjs");
 var WIDTH=800;
 var HEIGHT=600;
 
+/**
+ * ベースレイヤ
+ * Irrlicht 的にテクスチャとして配置可能なレイヤとして機能する
+ */
+class BaseLayer extends Layer
+{
+	var layer;
+	
+	function BaseLayer(win, width, height) {
+		super.Layer(win, null);
+
+		setSize(width, height);
+		fillRect(0,0,width,height,0);
+		
+		// 表示レイヤ
+		layer = new ActionLayer(window, this);
+		layer.loadImages("test.png");
+		layer.setSizeToImageSize();
+		layer.setPos((width - layer.width) / 2, (height - layer.height) / 2);
+		layer.visible = true;
+	}
+
+	function beginAction(module, elm) {
+		layer.beginAction(module, elm);
+	}
+	
+	function finalize() {
+		invalidate layer;
+	}
+}
+
 class MyWindow extends Window
 {
 	var base;
-	var layer;
+	var base2;
 
 	function MyWindow() {
 		super.Window();
 		drawDevice = new IrrlichtDrawDevice();
-		
-		// ベースレイヤ
-		base = new Layer(this, null);
-		base.visible = true;
-		base.setSize(WIDTH,HEIGHT);
-		base.fillRect(0,0,WIDTH,HEIGHT,0);
-		setInnerSize(base.width, base.height);
+		setInnerSize(WIDTH, HEIGHT);
 
-		// 表示レイヤ
-		layer = new ActionLayer(this, base);
-		layer.loadImages("test.png");
-		layer.setSizeToImageSize();
-		layer.setPos((WIDTH - layer.width) / 2, (HEIGHT - layer.height) / 2);
-		layer.visible = true;
-		layer.beginAction(LayerNormalRotateModule, %[ angvel: 100]);
+		// 1枚目のプライマリレイヤ
+		base = new BaseLayer(this, WIDTH, HEIGHT);
+		base.beginAction(LayerNormalRotateModule, %[angvel: 100]);
+
+		// 2枚目のプライマリレイヤ
+		base2 = new BaseLayer(this, WIDTH, HEIGHT);
+		base2.beginAction(LayerJumpActionModule, %[vibration:30, cycle:1000]);
 	}
 
 	function finalize() {
-		invalidate layer;
 		invalidate base;
+		invalidate base2;
 	}
 	
 	function onKeyDown(key, shift)

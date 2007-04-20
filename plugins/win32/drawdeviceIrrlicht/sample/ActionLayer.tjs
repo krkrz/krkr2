@@ -4,7 +4,7 @@
 class ActionLayer extends AffineLayer {
 
     var _modules;  ///< モジュール保持用配列
-    var _actionTimer;    ///< アクション駆動用タイマ
+    var _doAction;    ///< アクション駆動用タイマ
     
     /**
      * コンストラクタ
@@ -12,19 +12,15 @@ class ActionLayer extends AffineLayer {
     function ActionLayer(win,par=null) {
         super.AffineLayer(win,par);
         _modules = new Array();
-        _actionTimer = new Timer(actionHandler, '');
-        _actionTimer.capacity = 1;
-        _actionTimer.interval = 10;
-        _actionTimer.enabled  = false;
+		_doAction = false;
     }
 
     /**
      * ファイナライザ
      */
     function finalize() {
-        stopAction();
-        invalidate _actionTimer;
-        invalidate _modules;
+		stopAction();
+		invalidate _modules;
         super.finalize();
     }
 
@@ -48,8 +44,7 @@ class ActionLayer extends AffineLayer {
     /**
      * アクション処理用
      */
-    function actionHandler() {
-        var now = System.getTickCount();
+    function actionHandler(now) {
         var done = true;
         for (var i=0;i<6; i++) {
             if (_modules[i] != void) {
@@ -97,8 +92,9 @@ class ActionLayer extends AffineLayer {
         } else {
             throw new Exception("LayerModule を継承したクラスを渡す必要があります");
         }
-        if (!_actionTimer.enabled) {
-            _actionTimer.enabled = true;
+		if (!_doAction) {
+			System.addContinuousHandler(actionHandler);
+			_doAction = true;
         }
     }
 
@@ -106,12 +102,12 @@ class ActionLayer extends AffineLayer {
      * アクションの強制終了
      */
     function stopAction() {
-        //Debug.message("stop");
-        if (_actionTimer.enabled) {
-            _actionTimer.enabled = false;
-            invalidate _modules;
-            _modules = new Array();
-            onActionCompleted();
+		if (_doAction) {
+			System.removeContinuousHandler(actionHandler);
+			_doAction = false;
+			invalidate _modules;
+			_modules = new Array();
+			onActionCompleted();
         }
     }
 
@@ -126,7 +122,7 @@ class ActionLayer extends AffineLayer {
      */
     property inAction {
         getter() {
-            return _actionTimer.enabled;
+            return _doAction;
         }
     }
     
