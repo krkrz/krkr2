@@ -9,20 +9,28 @@
 Octet 列 -> 文字列
  String Encode.decode(Octet data, String encoding)
 
- encoding = [ 'Shift_JIS' | 'UTF-8' ]
+ encoding = [ 'Shift_JIS' | 'EUC-JP' | 'UTF-8' ]
 
 文字列 -> Octet 列
  Octet  Encode.encode(String str, String encoding)
 
- encoding = [ 'UTF-8' ]
+ encoding = [ 'EUC-JP' | 'UTF-8' ]
 
  */
+
+/*
+  Uconv <http://www.yoshidam.net/Ruby_ja.html> (吉田正人氏作) の
+  ソースコードを一部利用しています。
+*/
 
 //---------------------------------------------------------------------------
 #include <windows.h>
 #include "tp_stub.h"
 #include <vector>
 #include <algorithm>
+#include "e2u.h"
+#include "hojo2u.h"
+#include "u2e.h"
 //---------------------------------------------------------------------------
 
 
@@ -49,6 +57,9 @@ public:
         else if (encoding == TJS_W("UTF-8")) {
             return DecodeUTF8(param);
         }
+        else if (encoding == TJS_W("EUC-JP")) {
+            return DecodeEUCJP(param);
+        }
         else {
             TVPThrowExceptionMessage(TJS_W("Unknown encoding"));
         }
@@ -58,6 +69,9 @@ public:
     {
         if (encoding == TJS_W("UTF-8")) {
             return EncodeUTF8(str);
+        }
+        else if (encoding == TJS_W("EUC-JP")) {
+            return EncodeEUCJP(str);
         }
         else {
             TVPThrowExceptionMessage(TJS_W("Unknown encoding"));
@@ -115,7 +129,79 @@ private:
         }
     }
 
+    static ttstr DecodeEUCJP(tTJSVariant *param)
+    {
+        tTJSVariantOctet *oct = param->AsOctetNoAddRef();
+        if (oct) {
+            const tjs_uint8 *e = oct->GetData();
+            std::vector<tjs_char> v;
+            int len = oct->GetLength();
 
+            for (int i = 0; i < len; ++i) {
+                if (e[i] < 128) {
+                    v.push_back(e[i]);
+                }
+                else if (e[i] == 0x8e) { /* JIS X 0201 kana */
+                    unsigned char ec = 0;
+                    if (e[i+1] >= 0xa1 && e[i+1] <= 0xdf) {
+                        ec = e[i+1] - 0x40;
+                    }
+                    v.push_back(0xff00 | ec);
+                    ++i;
+                }
+                else if (e[i] == 0x8f) { /* JIS X 0212 */
+                    int hi = e[i+1] & 0x7f;
+                    int low = e[i+2] & 0x7f;
+                    int key = (hi - 32) * 96 + (low - 32);
+                    unsigned short ec = 0;
+                    if (32 <= hi && hi <= 127 && 32 <= low && low <= 127) {
+                        ec = hojo2u_tbl[key];
+                    }
+                    if (ec == 0) {
+                        ec = '?';
+
+                        if (false) {
+                            // ?
+                        }
+                    }
+
+                    v.push_back(ec);
+                    i += 2;
+                }
+                else if (e[i] < 0xa0) { /* C1 */
+
+                }
+                else { /* JIS X 0208 */
+                    int hi = e[i] & 0x7f;
+                    int low = e[i+1] & 0x7f;
+                    int key = (hi - 32) * 96 + (low - 32);
+                    unsigned short ec = 0;
+                    if (32 <= hi && hi <= 127 && 32 <= low && low <= 127) {
+                        ec = e2u_tbl[key];
+                    }
+                    if (ec == 0) {
+                        ec = '?';
+
+                        if (false) {
+                            // ?
+                        }
+                    }
+
+                    v.push_back(ec);
+                    i++;
+                }
+            }
+
+            v.push_back(0);
+            return ttstr(&v[0]);
+        }
+        else {
+            return TJS_W("");
+        }
+    }
+
+
+    // String -> Octet
     static tTJSVariantOctet *EncodeUTF8(const ttstr &str)
     {
         std::vector<tjs_uint8> v;
@@ -135,6 +221,37 @@ private:
                 v.push_back(0xe0 | ((c >> 12) & 0x0f));
                 v.push_back(0x80 | ((c >> 6) & 0x3f));
                 v.push_back(0x80 | (c & 0x3f));
+            }
+        }
+
+        return TJSAllocVariantOctet(&v[0], v.size());
+    }
+
+    static tTJSVariantOctet *EncodeEUCJP(const ttstr &str)
+    {
+        std::vector<tjs_uint8> v;
+
+        tjs_int len = str.GetLen();
+        for (int i = 0; i < len; ++i) {
+            unsigned short echar = u2e_tbl[str[i]];
+            if (echar == 0) { /* Unknown char */
+                v.push_back('?');
+            }
+            else if (echar < 128) { /* ASCII */
+                v.push_back(echar);
+            }
+            else if (echar > 0xa0 && echar <= 0xdf) { /* JIS X 0201 kana */
+                v.push_back(0x8e);
+                v.push_back(echar & 0xff);
+            }
+            else if (echar >= 0x2121 && echar <= 0x6d63) { /* JIS X 0212 */
+                v.push_back(0x8f);
+                v.push_back((echar >> 8) | 0x80);
+                v.push_back((echar & 0xff) | 0x80);
+            }
+            else if (echar != 0xffff) { /* JIS X 0208 */
+                v.push_back(echar >> 8);
+                v.push_back(echar & 0xff);
             }
         }
 
@@ -215,7 +332,7 @@ static iTJSDispatch2 *Create_NC_Encode()
 #undef TJS_NATIVE_CLASSID_NAME
 
 
-#pragma argsused
+
 int WINAPI DllEntryPoint(HINSTANCE hinst, unsigned long reason, void *lpReserved)
 {
     return 1;
