@@ -336,7 +336,7 @@ tTVPIrrlichtDrawDevice::init()
 	if (node)
 		node->setPosition(core::vector3df(-1300,-144,-1249));
 	
-//	smgr->addCameraSceneNodeFPS();
+	smgr->addCameraSceneNodeFPS();
 //	device->getCursorControl()->setVisible(false);
 #endif
 }
