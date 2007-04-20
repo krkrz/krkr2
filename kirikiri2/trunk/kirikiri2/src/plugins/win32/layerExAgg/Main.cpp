@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include <windows.h>
 #include <list>
 #include <map>
@@ -5,7 +6,17 @@ using namespace std;
 
 #include "tp_stub.h"
 
-#include <stdio.h>
+static const char *copyright = 
+"----- AntiGrainGeometry Copyright START -----\n"
+"Anti-Grain Geometry - Version 2.3\n"
+"Copyright (C) 2002-2005 Maxim Shemanarev (McSeem)\n"
+"\n"
+"Permission to copy, use, modify, sell and distribute this software\n"
+"is granted provided this copyright notice appears in all copies. \n"
+"This software is provided \"as is\" without express or implied\n"
+"warranty, and with no claim as to its suitability for any purpose.\n"
+"----- AntiGrainGeometry Copyright END -----\n";
+
 /**
  * ログ出力用
  */
@@ -649,6 +660,8 @@ extern "C" HRESULT _stdcall _export V2Link(iTVPFunctionExporter *exporter)
 	// スタブの初期化(必ず記述する)
 	TVPInitImportStub(exporter);
 
+	TVPAddImportantLog(ttstr(copyright));
+	
 	// 型リストを型マップに変換
 	{
 		list<RegistType*>::iterator i = typeList->begin();

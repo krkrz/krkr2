@@ -2,6 +2,14 @@
 #include <windows.h>
 #include "tp_stub.h"
 
+static const char *copyright = 
+"----- CxImage Copyright START -----\n"
+"CxImage version 5.99c 17/Oct/2004\n"
+"CxImage : Copyright (C) 2001 - 2004, Davide Pizzolato\n"
+"Original CImage and CImageIterator implementation are:\n"
+"Copyright (C) 1995, Alejandro Aguilar Sierra (asierra(at)servidor(dot)unam(dot)mx)\n"
+"----- CxImage Copyright END -----\n";
+
 /**
  * ログ出力用
  */
@@ -153,6 +161,8 @@ extern "C" HRESULT _stdcall _export V2Link(iTVPFunctionExporter *exporter)
 	// スタブの初期化(必ず記述する)
 	TVPInitImportStub(exporter);
 
+	TVPAddImportantLog(ttstr(copyright));
+	
 	// クラスオブジェクトチェック
 	if ((NI_LayerExBase::classId = TJSFindNativeClassID(L"LayerExBase")) <= 0) {
 		NI_LayerExBase::classId = TJSRegisterNativeClass(L"LayerExBase");
