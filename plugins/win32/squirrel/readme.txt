@@ -1,5 +1,5 @@
 Title: Squirrel Plugin
-Author: わたなべごう (go@wam-soft.com)
+Author: わたなべごう
 
 ●これはなに？
 
@@ -71,4 +71,4 @@ to the following restrictions:
 -----------------------------------------------------
 END OF COPYRIGHT
 
-このプラグインのライセンス自体は吉里吉里本体に準拠してください。
+このプラグイン自体のライセンスは吉里吉里本体に準拠してください。
