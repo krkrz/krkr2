@@ -14,7 +14,7 @@ Octet 列 -> 文字列
 文字列 -> Octet 列
  Octet  Encode.encode(String str, String encoding)
 
- encoding = [ 'EUC-JP' | 'UTF-8' ]
+ encoding = [ 'Shift_JIS' | 'EUC-JP' | 'UTF-8' ]
 
  */
 
@@ -61,7 +61,8 @@ public:
             return DecodeEUCJP(param);
         }
         else {
-            TVPThrowExceptionMessage(TJS_W("Unknown encoding"));
+            ttstr msg = encoding + TJS_W("は不明なエンコーディングです");
+            TVPThrowExceptionMessage(msg.c_str());
         }
     }
 
@@ -73,8 +74,12 @@ public:
         else if (encoding == TJS_W("EUC-JP")) {
             return EncodeEUCJP(str);
         }
+        else if (encoding == TJS_W("Shift_JIS")) {
+            return EncodeShiftJIS(str);
+        }
         else {
-            TVPThrowExceptionMessage(TJS_W("Unknown encoding"));
+            ttstr msg = encoding + TJS_W("は不明なエンコーディングです");
+            TVPThrowExceptionMessage(msg.c_str());
         }        
     }
 
@@ -92,14 +97,14 @@ private:
                 }
                 else if (data[i] <= 0xdf) {
                     if (len <= i + 1) {
-                        TVPThrowExceptionMessage(TJS_W("Illegal UTF-8 sequence"));
+                        TVPThrowExceptionMessage(TJS_W("不正な UTF-8 シーケンスです"));
                     }
                     v.push_back(((data[i] & 0x1f) << 6) | (data[i+1] & 0x3f));
                     i += 1;
                 }
                 else if (data[i] <= 0xef) {
                     if (len <= i + 2) {
-                        TVPThrowExceptionMessage(TJS_W("Illegal UTF-8 sequence"));
+                        TVPThrowExceptionMessage(TJS_W("不正な UTF-8 シーケンスです"));
                     }
                     v.push_back(((data[i] & 0x0f) << 12) | ((data[i+1] & 0x3f) << 6) | (data[i+2] & 0x3f));
                     i += 2;
@@ -256,6 +261,20 @@ private:
         }
 
         return TJSAllocVariantOctet(&v[0], v.size());
+    }
+
+    static tTJSVariantOctet *EncodeShiftJIS(const ttstr &str)
+    {
+        tjs_int narrow_len = str.GetNarrowStrLen();
+        if (narrow_len == -1) {
+            TVPThrowExceptionMessage(TJS_W("文字列の変換に失敗しました"));
+        }
+        else {
+            std::vector<char> v;
+            v.reserve(narrow_len + 1);
+            str.ToNarrowStr(&v[0], narrow_len);
+            return TJSAllocVariantOctet(reinterpret_cast<tjs_uint8*>(&v[0]), narrow_len);
+        }
     }
 };
 
