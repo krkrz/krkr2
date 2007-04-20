@@ -1,3 +1,6 @@
+Title: msgreceiver plugin
+Author: わたなべごう
+
 ●これはなに？
 
 吉里吉里に外部制御の口を追加します
@@ -28,12 +31,6 @@ Win32 API の SendMessage を使って WM_COPYDATA で
     で受信処理が終了します。
 
 　注意点：複数の窓を扱うことは配慮されてません
-
-●つくった人
-
-　わたなべごう (go@denpa.org)
-  ライセンスは吉里吉里に準じてください
-
 
 ●サンプルの制御例（ruby から制御）
 
@@ -66,3 +63,7 @@ cd.cbData = msg.size
 cd.lpData = msg
 CopyData::sendMessage(hwnd, CopyData::WM_COPYDATA, 0, cd.to_ptr.to_i)
 --------------------------------------------------------------------
+
+●ライセンス
+
+このプラグインのライセンスは吉里吉里本体に準拠してください。

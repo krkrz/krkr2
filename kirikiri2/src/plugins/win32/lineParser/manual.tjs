@@ -1,7 +1,7 @@
 /**
  * 擬似コードによるマニュアル
  *
- * Copyright 2005 GoWatanabe
+ * Copyright 2005-2007 GoWatanabe
  */
 
 class LineParser {
