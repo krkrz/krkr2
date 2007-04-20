@@ -1,4 +1,4 @@
-Scripts.execStorage("XML.tjs");
+Scripts.execStorage("../../src/plugins/win32/expat/XML.tjs");
 
 class MyWindow extends Window
 {
