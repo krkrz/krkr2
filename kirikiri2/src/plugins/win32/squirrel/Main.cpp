@@ -5,6 +5,11 @@
 #define KIRIKIRI_GLOBAL L"krkr"
 #define SQUIRREL_GLOBAL L"sqglobal"
 
+static const char *copyright =
+"------ Squirrel Copyright START ------\n"
+"Copyright (c) 2003-2007 Alberto Demichelis\n"
+"------ Squirrel Copyright END ------\n";
+
 /**
  * ログ出力用
  */
@@ -211,6 +216,8 @@ extern "C" HRESULT _stdcall V2Link(iTVPFunctionExporter *exporter)
 	// スタブの初期化(必ず記述する)
 	TVPInitImportStub(exporter);
 
+	TVPAddImportantLog(ttstr(copyright));
+	
 	// squirrel 初期化
 	SquirrelVM::Init();
 
