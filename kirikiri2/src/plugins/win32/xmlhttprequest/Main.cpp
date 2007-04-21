@@ -131,6 +131,7 @@ public:
 
     void Initialize(void) {
         _responseData.clear();
+        _responseHeader.clear();
         _responseBody.clear();
         _responseStatus = 0;
         _requestHeaders.clear();
@@ -481,6 +482,53 @@ public:
         _requestHeaders.insert(std::pair<std::string, std::string>(sheader, svalue));
     }
 
+    ttstr GetResponseHeader(const ttstr &header)
+    {
+        if (!IsValidHeaderName(header)) {
+            TVPThrowExceptionMessage(TJS_W("SYNTAX_ERR"));
+        }
+
+        if (_readyState < 3) {
+            TVPThrowExceptionMessage(TJS_W("INVALID_STATE_ERR"));
+        }
+
+        tjs_int narrow_len = header.GetNarrowStrLen();
+        if(narrow_len == -1) {
+                TVPThrowExceptionMessage(TJS_W("•¶Žš—ñ‚Ì•ÏŠ·‚ÉŽ¸”s‚µ‚Ü‚µ‚½"));
+        }
+
+        std::vector<char> narrow_str;
+        narrow_str.reserve(narrow_len + 1);
+        header.ToNarrowStr(&narrow_str[0], narrow_len);
+
+        std::string s = std::string(&narrow_str[0]) + ":";
+        std::vector<char>::iterator p = std::search(_responseHeader.begin(), _responseHeader.end(), s.begin(), s.end());
+        if (p == _responseHeader.end()) {
+            return TJS_W("");
+        }
+        else {
+            std::string crlf = "\r\n";
+            std::vector<char>::iterator q = std::search(p + s.size(), _responseHeader.end(), crlf.begin(), crlf.end());
+
+            std::vector<char>::iterator beg = p + s.size();
+            while (*beg == ' ' && beg < q) {
+                ++beg;
+            }
+            std::vector<char>::iterator end = q;
+            while (*(end - 1) == ' ' && beg < end) {
+                --end;
+            }
+
+            std::vector<tjs_char> result;
+            result.reserve(end - beg + 1);
+            std::copy(beg, end, std::back_inserter(result));
+            result.push_back(0);
+
+            return ttstr(&result[0]);
+        }
+    }
+
+
     // for debug
     void PrintRequestHeaders(void)
     {
@@ -567,10 +615,14 @@ private:
             _responseStatus = boost::lexical_cast<int>(s);
         }
 
+        _responseHeader.clear();
         _responseBody.clear();
         std::string sep("\r\n\r\n");
         std::vector<char>::iterator p = std::search(_responseData.begin(), _responseData.end(), sep.begin(), sep.end());
         if (p != _responseData.end()) {
+            _responseHeader.reserve(p - _responseData.begin());
+            std::copy(_responseData.begin(), p, std::back_inserter(_responseHeader));
+
             _responseBody.reserve(_responseData.end() - p - sep.size());
             std::copy(p + sep.size(), _responseData.end(), std::back_inserter(_responseBody));
         }
@@ -631,6 +683,7 @@ private:
     std::string _host;
     std::string _path;
     std::vector<char> _responseData;
+    std::vector<char> _responseHeader;
     std::vector<char> _responseBody;
     int _responseStatus;
     std::vector<tjs_uint8> _sendingData;
@@ -815,6 +868,34 @@ static iTJSDispatch2 * Create_NC_XMLHttpRequest()
             return TJS_S_OK;
         }
         TJS_END_NATIVE_METHOD_DECL(/*func. name*/printRequestHeaders)
+
+
+        TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/getResponseHeader)
+        {
+            TJS_GET_NATIVE_INSTANCE(/*var. name*/_this,
+                /*var. type*/NI_XMLHttpRequest);
+
+            if (numparams == 0) {
+                return TJS_E_BADPARAMCOUNT;
+            }
+
+            if (param[0]->Type() != tvtString) {
+                return TJS_E_INVALIDPARAM;
+            }
+
+            if (result) {
+                ttstr v = _this->GetResponseHeader(ttstr(*param[0]));
+                if (v == TJS_W("")) {
+                    result->Clear();
+                }
+                else {
+                    *result = v;
+                }
+            }
+
+            return TJS_S_OK;
+        }
+        TJS_END_NATIVE_METHOD_DECL(/*func. name*/getResponseHeader)
 
 
         TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/abort)
