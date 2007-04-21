@@ -7,7 +7,7 @@ Author: わたなべごう
 
 ●使い方
 
-  manual.tjs 参照
+manual.tjs 参照
 
 ●ライセンス
 
