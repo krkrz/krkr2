@@ -1,7 +1,3 @@
-
-本ソースは一部で CxImage から参照したコードを使用しています。
-追加コピーライト Go Watanabe / go@denpa.org
-
 -----------------------------------------------------------------------------
 This copy of the CxImage notices is provided for your convenience. In case of
 any discrepancy between this copy and the notices in the file ximage.h that is
