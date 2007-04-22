@@ -78,7 +78,6 @@ onreadystatechange のコールバックを実行します。
 #include <algorithm>
 #include <boost/regex.hpp>
 #include <boost/lexical_cast.hpp>
-#pragma comment(lib, "WSock32.lib")
 //---------------------------------------------------------------------------
 
 
@@ -215,18 +214,28 @@ public:
 
         _async = async;
 
-        boost::reg_expression<tjs_char> re(
-            ttstr("http://"
+        boost::regex re(
+            std::string("http://"
                   "("
                   "(?:[a-zA-Z0-9](?:[-a-zA-Z0-9]*[a-zA-Z0-9]|(?:))\\.)*[a-zA-Z](?:[-a-zA-Z0-9]*[a-zA-Z0-9]|(?:))\\.?" // hostname
                   "|"
                   "[0-9]+\\.[0-9]+\\.[0-9]+\\.[0-9]+" // IPv4addr
                   ")"
                   "(?::([0-9]+))?" // port
-                  "(.*)").c_str(),
-            boost::regbase::normal|boost::regbase::use_except|boost::regbase::nocollate);
-        boost::match_results<const tjs_char*> what;
-        bool matched = boost::regex_search(uri.c_str(), what, re, boost::match_default);
+                  "(.*)").c_str());
+        boost::cmatch what;
+
+        tjs_int narrow_len = uri.GetNarrowStrLen();
+        if(narrow_len == -1) {
+            TVPThrowExceptionMessage(TJS_W("string conversion failure"));
+        }
+
+        std::vector<char> narrow_str;
+        narrow_str.reserve(narrow_len + 1);
+        uri.ToNarrowStr(&narrow_str[0], narrow_len);
+        std::string curi = std::string(&narrow_str[0]);
+
+        bool matched = boost::regex_search(curi.c_str(), what, re, boost::match_default);
 
         if (!matched) {
             TVPThrowExceptionMessage(TJS_W("Wrong URL"));
@@ -494,7 +503,7 @@ public:
 
         tjs_int narrow_len = header.GetNarrowStrLen();
         if(narrow_len == -1) {
-                TVPThrowExceptionMessage(TJS_W("文字列の変換に失敗しました"));
+            TVPThrowExceptionMessage(TJS_W("string conversion failure"));
         }
 
         std::vector<char> narrow_str;
@@ -589,7 +598,7 @@ private:
     {
         if (c > 127) return true; // non US-ASCII character
         if (c <= 31 || c == 127) return true; // CTL
-        const std::string separators = "()<>@,;:\\\"/[]?={} \t";
+        const std::wstring separators = L"()<>@,;:\\\"/[]?={} \t";
         return std::find(separators.begin(), separators.end(), c) != separators.end();
     }
 
@@ -605,10 +614,9 @@ private:
 
     void ParseResponse()
     {
-        boost::reg_expression<char> re("\\AHTTP/[0-9]+\\.[0-9]+ ([0-9][0-9][0-9])",
-            boost::regbase::normal|boost::regbase::use_except|boost::regbase::nocollate);
-        boost::match_results<const char*> what;
-        bool matched = boost::regex_search(_responseData.begin(), what, re, boost::match_default);
+        boost::regex re("\\AHTTP/[0-9]+\\.[0-9]+ ([0-9][0-9][0-9])");
+        boost::cmatch what;
+        bool matched = boost::regex_search(&_responseData[0], what, re, boost::match_default);
 
         if (matched) {
             std::string s(what[1].first, what[1].second - what[1].first);
@@ -631,7 +639,7 @@ private:
     std::string EncodeBase64(const std::string target)
     {
         std::string result = "";
-        std::vector<char> r;
+        std::vector<unsigned char> r;
 
         int len, restlen;
         len = restlen = target.length();
@@ -665,7 +673,7 @@ private:
             r.push_back(((t2 & 0x0f) << 2) | (t3 >> 6));
         }
 
-        for (std::vector<char>::const_iterator p = r.begin(); p != r.end(); ++p) {
+        for (std::vector<unsigned char>::const_iterator p = r.begin(); p != r.end(); ++p) {
             result.append(1, "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"[*p]);
         }
 
@@ -776,7 +784,7 @@ static iTJSDispatch2 * Create_NC_XMLHttpRequest()
                 async = true;
             }
             else {
-                async = (bool)*param[2];
+                async = (bool)(tjs_int)*param[2];
             }
 
             ttstr username;
@@ -1029,7 +1037,6 @@ static iTJSDispatch2 * Create_NC_XMLHttpRequest()
 
 
 //---------------------------------------------------------------------------
-#pragma argsused
 int WINAPI DllEntryPoint(HINSTANCE hinst, unsigned long reason,
     void* lpReserved)
 {
@@ -1037,7 +1044,7 @@ int WINAPI DllEntryPoint(HINSTANCE hinst, unsigned long reason,
 }
 //---------------------------------------------------------------------------
 static tjs_int GlobalRefCountAtInit = 0;
-extern "C" HRESULT _stdcall _export V2Link(iTVPFunctionExporter *exporter)
+extern "C" HRESULT _stdcall _export  __declspec(dllexport) V2Link(iTVPFunctionExporter *exporter)
 {
     // スタブの初期化(必ず記述する)
     TVPInitImportStub(exporter);
@@ -1094,7 +1101,7 @@ extern "C" HRESULT _stdcall _export V2Link(iTVPFunctionExporter *exporter)
     return S_OK;
 }
 //---------------------------------------------------------------------------
-extern "C" HRESULT _stdcall _export V2Unlink()
+extern "C" HRESULT _stdcall _export __declspec(dllexport) V2Unlink()
 {
     // 吉里吉里側から、プラグインを解放しようとするときに呼ばれる関数。
 
