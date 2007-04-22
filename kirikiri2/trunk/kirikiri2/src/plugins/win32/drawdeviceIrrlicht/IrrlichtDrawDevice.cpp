@@ -3,6 +3,19 @@
 #include "IrrlichtDrawDevice.h"
 
 /**
+ * ログ出力用
+ */
+static void log(const tjs_char *format, ...)
+{
+	va_list args;
+	va_start(args, format);
+	tjs_char msg[1024];
+	_vsnwprintf(msg, 1024, format, args);
+	TVPAddLog(msg);
+	va_end(args);
+}
+
+/**
  * コンストラクタ
  */
 LayerManagerInfo::LayerManagerInfo(ITexture *texture) : texture(texture)
@@ -177,15 +190,14 @@ tTVPIrrlichtDrawDevice::attach(HWND hwnd)
 	height = rect.bottom - rect.top;
 
 	// デバイス生成
-	device = create(hwnd, video::EDT_DIRECT3D9);
-	if (device == NULL) {
-		device = create(hwnd, video::EDT_DIRECT3D8);
-		if (device == NULL) {
-			device = create(hwnd, video::EDT_OPENGL);
+	if ((device = create(hwnd, video::EDT_DIRECT3D9))) {
+		TVPAddLog(L"DirectX9で初期化");
+	} else {
+		if ((device = create(hwnd, video::EDT_DIRECT3D8))) {
+			TVPAddLog(L"DirectX8で初期化");
+		} else {
+			TVPThrowExceptionMessage(L"Irrlicht デバイスの初期化に失敗しました");
 		}
-	}
-	if (device == NULL) {
-		TVPThrowExceptionMessage(L"Irrlicht デバイスの初期化に失敗しました");
 	}
 
 	//device->setWindowCaption(title.c_str());
@@ -254,6 +266,126 @@ tTVPIrrlichtDrawDevice::SetTargetWindow(HWND wnd)
 	}
 }
 
+
+bool
+tTVPIrrlichtDrawDevice::postEvent(SEvent &ev)
+{
+	if (device) {
+		if (device->getGUIEnvironment()->postEventFromUser(ev) ||
+			device->getSceneManager()->postEventFromUser(ev)) {
+			return true;
+		}
+	}
+	return false;
+}
+
+// -------------------------------------------------------------------------------------
+// 入力イベント処理用
+// -------------------------------------------------------------------------------------
+
+void TJS_INTF_METHOD
+tTVPIrrlichtDrawDevice::OnMouseDown(tjs_int x, tjs_int y, tTVPMouseButton mb, tjs_uint32 flags)
+{
+	if (device) {
+		SEvent ev;
+		ev.EventType = EET_MOUSE_INPUT_EVENT;
+		ev.MouseInput.X = x;
+		ev.MouseInput.Y = y;
+		ev.MouseInput.Wheel = 0;
+		switch ((mb & 0xff)) {
+		case mbLeft:
+			ev.MouseInput.Event = EMIE_LMOUSE_PRESSED_DOWN;
+			break;
+		case mbRight:
+			ev.MouseInput.Event = EMIE_RMOUSE_PRESSED_DOWN;
+			break;
+		case mbMiddle:
+			ev.MouseInput.Event = EMIE_MMOUSE_PRESSED_DOWN;
+			break;
+		}
+		if (postEvent(ev)) {
+			return;
+		}
+	}
+	// XXX 画面サイズに応じた補正が必要
+	tTVPDrawDevice::OnMouseDown(x, y, mb, flags);
+}
+
+void TJS_INTF_METHOD
+tTVPIrrlichtDrawDevice::OnMouseUp(tjs_int x, tjs_int y, tTVPMouseButton mb, tjs_uint32 flags)
+{
+	if (device) {
+		SEvent ev;
+		ev.EventType = EET_MOUSE_INPUT_EVENT;
+		ev.MouseInput.X = x;
+		ev.MouseInput.Y = y;
+		ev.MouseInput.Wheel = 0;
+		switch ((mb & 0xff)) {
+		case mbLeft:
+			ev.MouseInput.Event = EMIE_LMOUSE_LEFT_UP;
+			break;
+		case mbRight:
+			ev.MouseInput.Event = EMIE_RMOUSE_LEFT_UP;
+			break;
+		case mbMiddle:
+			ev.MouseInput.Event = EMIE_MMOUSE_LEFT_UP;
+			break;
+		}
+		if (postEvent(ev)) {
+			return;
+		}
+	}
+	// XXX 画面サイズに応じた補正が必要
+	tTVPDrawDevice::OnMouseUp(x, y, mb, flags);
+}
+
+void TJS_INTF_METHOD
+tTVPIrrlichtDrawDevice::OnMouseMove(tjs_int x, tjs_int y, tjs_uint32 flags)
+{
+	if (device) {
+		SEvent ev;
+		ev.EventType = EET_MOUSE_INPUT_EVENT;
+		ev.MouseInput.X = x;
+		ev.MouseInput.Y = y;
+		ev.MouseInput.Wheel = 0;
+		ev.MouseInput.Event = EMIE_MOUSE_MOVED;
+		if (postEvent(ev)) {
+			return;
+		}
+	}
+	// XXX 画面サイズに応じた補正が必要
+	tTVPDrawDevice::OnMouseMove(x, y, flags);
+}
+
+void TJS_INTF_METHOD
+tTVPIrrlichtDrawDevice::OnKeyDown(tjs_uint key, tjs_uint32 shift)
+{
+	tTVPDrawDevice::OnKeyDown(key, shift);
+}
+
+void TJS_INTF_METHOD
+tTVPIrrlichtDrawDevice::OnKeyUp(tjs_uint key, tjs_uint32 shift)
+{
+	tTVPDrawDevice::OnKeyUp(key, shift);
+}
+
+void TJS_INTF_METHOD
+tTVPIrrlichtDrawDevice::OnKeyPress(tjs_char key)
+{
+	tTVPDrawDevice::OnKeyPress(key);
+}
+
+void TJS_INTF_METHOD
+tTVPIrrlichtDrawDevice::OnMouseWheel(tjs_uint32 shift, tjs_int delta, tjs_int x, tjs_int y)
+{
+	tTVPDrawDevice::OnMouseWheel(shift, delta, x, y);
+}
+
+
+// -------------------------------------------------------------------------------------
+// 描画処理用
+// -------------------------------------------------------------------------------------
+
 /**
  * ビットマップコピー処理開始
  */
@@ -300,9 +432,26 @@ tTVPIrrlichtDrawDevice::EndBitmapCompletion(iTVPLayerManager * manager)
 void
 tTVPIrrlichtDrawDevice::init()
 {
+	IGUIEnvironment* env = device->getGUIEnvironment();
+
+	IGUISkin* skin = env->getSkin();
+	IGUIFont* font = env->getFont("../../media/fonthaettenschweiler.bmp");
+	if (font)
+		skin->setFont(font);
+
+	env->addButton(rect<s32>(10,210,110,210 + 32), 0, 101, L"Quit", L"Exits Programm");
+	env->addButton(rect<s32>(10,250,110,250 + 32), 0, 102, L"New Window", L"Launches a new Window");
+	env->addButton(rect<s32>(10,290,110,290 + 32), 0, 103, L"File Open", L"Opens a file");
+
+	env->addStaticText(L"Transparent Control:", rect<s32>(150,20,350,40), true);
+	IGUIScrollBar* scrollbar = env->addScrollBar(true, rect<s32>(150, 45, 350, 60), 0, 104);
+	scrollbar->setMax(255);
+	
+	
 	/// シーンマネージャ
 	ISceneManager* smgr = device->getSceneManager();
 
+	
 #if 1
 	// 以下サンプルデータのロード処理
 	ttstr dataPath = "../../../media/sydney.md2";
@@ -391,13 +540,21 @@ tTVPIrrlichtDrawDevice::OnContinuousCallback(tjs_uint64 tick)
 									video::SColor(255,255,255,255), true);
 			}
 		}
+
+		// GUI 描画
+		device->getGUIEnvironment()->drawAll();
+		
 		// 描画完了
 		driver->endScene();
 	}
 };
 
+
 /**
  * イベント受理
+ * HWND を指定して生成している関係で Irrlicht 自身は
+ * ウインドウからイベントを取得することはない。
+ * GUI Environment からのイベントだけがここにくることになる
  * @param event イベント情報
  * @return 処理したら true
  */
@@ -405,20 +562,41 @@ bool
 tTVPIrrlichtDrawDevice::OnEvent(SEvent event)
 {
 	switch (event.EventType) {
+	case EET_GUI_EVENT:
+		log(L"GUIイベント:%d", event.GUIEvent.EventType);
+		switch(event.GUIEvent.EventType) {
+		case EGET_BUTTON_CLICKED:
+			log(L"ボタンおされた");
+			break;
+		}
+		break;
+	case EET_MOUSE_INPUT_EVENT:
+		log(L"マウスイベント:%d x:%d y:%d wheel:%f",
+			event.MouseInput.Event,
+			event.MouseInput.X,
+			event.MouseInput.Y,
+			event.MouseInput.Wheel);
+		break;
 	case EET_KEY_INPUT_EVENT:
-		int shift = 0;
-		if (event.KeyInput.Shift) {
-			shift |= 0x01;
+		log(L"キーイベント:%x", event.KeyInput.Key);
+		{
+			int shift = 0;
+			if (event.KeyInput.Shift) {
+				shift |= 0x01;
+			}
+			if (event.KeyInput.Control) {
+				shift |= 0x04;
+			}
 		}
-		if (event.KeyInput.Control) {
-			shift |= 0x04;
-		}
-		if (event.KeyInput.PressedDown){
-			OnKeyDown(event.KeyInput.Key, shift); 
-	    } else {
-			OnKeyUp(event.KeyInput.Key, shift);
-        }
-        return true;
+		break;
+	case EET_LOG_TEXT_EVENT:
+		log(L"ログレベル:%d ログ:%s",
+			event.LogEvent.Level,
+			event.LogEvent.Text);
+		break;
+	case EET_USER_EVENT:
+		log(L"ユーザイベント");
+		break;
 	}
 	return false;
 }
