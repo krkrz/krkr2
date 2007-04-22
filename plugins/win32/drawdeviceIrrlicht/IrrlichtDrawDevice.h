@@ -10,6 +10,7 @@ using namespace core;
 using namespace video;
 using namespace scene;
 using namespace io;
+using namespace gui;
 
 #include <string>
 using namespace std;
@@ -71,6 +72,9 @@ private:
 	int width;
 	int height;
 
+	// Irrlicht にイベントを送る
+	bool postEvent(SEvent &ev);
+	
 public:
 	//---- LayerManager の管理関連
 	virtual void TJS_INTF_METHOD AddLayerManager(iTVPLayerManager * manager);
@@ -79,6 +83,16 @@ public:
 	//---- 描画位置・サイズ関連
 	virtual void TJS_INTF_METHOD SetTargetWindow(HWND wnd);
 
+	//---- ユーザーインターフェース関連
+	// window → drawdevice
+	virtual void TJS_INTF_METHOD OnMouseDown(tjs_int x, tjs_int y, tTVPMouseButton mb, tjs_uint32 flags);
+	virtual void TJS_INTF_METHOD OnMouseUp(tjs_int x, tjs_int y, tTVPMouseButton mb, tjs_uint32 flags);
+	virtual void TJS_INTF_METHOD OnMouseMove(tjs_int x, tjs_int y, tjs_uint32 flags);
+	virtual void TJS_INTF_METHOD OnKeyDown(tjs_uint key, tjs_uint32 shift);
+	virtual void TJS_INTF_METHOD OnKeyUp(tjs_uint key, tjs_uint32 shift);
+	virtual void TJS_INTF_METHOD OnKeyPress(tjs_char key);
+	virtual void TJS_INTF_METHOD OnMouseWheel(tjs_uint32 shift, tjs_int delta, tjs_int x, tjs_int y);
+	
 	//---- LayerManager からの画像受け渡し関連
 	virtual void TJS_INTF_METHOD StartBitmapCompletion(iTVPLayerManager * manager);
 	virtual void TJS_INTF_METHOD NotifyBitmapCompleted(iTVPLayerManager * manager,
