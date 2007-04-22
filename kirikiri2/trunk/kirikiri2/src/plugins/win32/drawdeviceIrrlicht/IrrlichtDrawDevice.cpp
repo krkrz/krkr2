@@ -432,68 +432,21 @@ tTVPIrrlichtDrawDevice::EndBitmapCompletion(iTVPLayerManager * manager)
 void
 tTVPIrrlichtDrawDevice::init()
 {
+	// GUI 環境のテスト
 	IGUIEnvironment* env = device->getGUIEnvironment();
-
-	IGUISkin* skin = env->getSkin();
-	IGUIFont* font = env->getFont("../../media/fonthaettenschweiler.bmp");
-	if (font)
-		skin->setFont(font);
-
-	env->addButton(rect<s32>(10,210,110,210 + 32), 0, 101, L"Quit", L"Exits Programm");
-	env->addButton(rect<s32>(10,250,110,250 + 32), 0, 102, L"New Window", L"Launches a new Window");
-	env->addButton(rect<s32>(10,290,110,290 + 32), 0, 103, L"File Open", L"Opens a file");
-
-	env->addStaticText(L"Transparent Control:", rect<s32>(150,20,350,40), true);
-	IGUIScrollBar* scrollbar = env->addScrollBar(true, rect<s32>(150, 45, 350, 60), 0, 104);
-	scrollbar->setMax(255);
+	env->addButton(rect<s32>(10,210,110,210 + 32), 0, 101, L"TEST BUTTON", L"Button Test");
+	env->addButton(rect<s32>(10,250,110,250 + 32), 0, 102, L"てすとぼたん", L"ボタンのテスト");
 	
-	
-	/// シーンマネージャ
+	/// シーンマネージャでの irr ファイルロードのテスト
 	ISceneManager* smgr = device->getSceneManager();
-
-	
-#if 1
-	// 以下サンプルデータのロード処理
-	ttstr dataPath = "../../../media/sydney.md2";
-	dataPath = TVPNormalizeStorageName(dataPath);
-	TVPGetLocalName(dataPath);
-	int len = dataPath.GetNarrowStrLen() + 1;
-	char *str = new char[len];
-	dataPath.ToNarrowStr(str, len);
-	IAnimatedMesh *mesh = smgr->getMesh(str);
-	IAnimatedMeshSceneNode* node = smgr->addAnimatedMeshSceneNode(mesh);
-	if (node) {
-		node->setMaterialFlag(EMF_LIGHTING, false);
-		node->setMD2Animation ( scene::EMAT_STAND );
-	}
+	smgr->loadScene("data/sample/example.irr");
 	smgr->addCameraSceneNode(0, vector3df(0,30,-40), vector3df(0,5,0));
-#else
-	ttstr dataPath = "../../../media/map-20kdm2.pk3";
-	dataPath = TVPNormalizeStorageName(dataPath);
-	TVPGetLocalName(dataPath);
-	int len = dataPath.GetNarrowStrLen() + 1;
-	char *str = new char[len];
-	dataPath.ToNarrowStr(str, len);
-	device->getFileSystem()->addZipFileArchive(str);
-	
-	scene::IAnimatedMesh* mesh = smgr->getMesh("../../../media/20kdm2.bsp");
-	scene::ISceneNode* node = 0;
-		
-	if (mesh)
-		node = smgr->addOctTreeSceneNode(mesh->getMesh(0));
-	
-	if (node)
-		node->setPosition(core::vector3df(-1300,-144,-1249));
-	
-	smgr->addCameraSceneNodeFPS();
-//	device->getCursorControl()->setVisible(false);
-#endif
 }
 
 //---------------------------------------------------------------------------
 
 /**
- * Ogre 呼び出し処理開始
+ * Irrlicht 呼び出し処理開始
  */
 void
 tTVPIrrlichtDrawDevice::start()
@@ -503,7 +456,7 @@ tTVPIrrlichtDrawDevice::start()
 }
 
 /**
- * Ogre 呼び出し処理停止
+ * Irrlicht 呼び出し処理停止
  */
 void
 tTVPIrrlichtDrawDevice::stop()
@@ -514,6 +467,7 @@ tTVPIrrlichtDrawDevice::stop()
 /**
  * Continuous コールバック
  * 吉里吉里が暇なときに常に呼ばれる
+ * これが事実上のメインループになる
  */
 void TJS_INTF_METHOD
 tTVPIrrlichtDrawDevice::OnContinuousCallback(tjs_uint64 tick)
@@ -527,7 +481,7 @@ tTVPIrrlichtDrawDevice::OnContinuousCallback(tjs_uint64 tick)
 		// 描画開始
 		driver->beginScene(true, true, video::SColor(255,0,0,0));
 
-		/// シーンマネージャ
+		/// シーンマネージャの描画
 		ISceneManager* smgr = device->getSceneManager();
 		smgr->drawAll();
 
@@ -541,7 +495,7 @@ tTVPIrrlichtDrawDevice::OnContinuousCallback(tjs_uint64 tick)
 			}
 		}
 
-		// GUI 描画
+		// GUIの描画
 		device->getGUIEnvironment()->drawAll();
 		
 		// 描画完了
@@ -549,12 +503,11 @@ tTVPIrrlichtDrawDevice::OnContinuousCallback(tjs_uint64 tick)
 	}
 };
 
-
 /**
  * イベント受理
- * HWND を指定して生成している関係で Irrlicht 自身は
- * ウインドウからイベントを取得することはない。
- * GUI Environment からのイベントだけがここにくることになる
+ * HWND を指定して生成している関係で Irrlicht 自身はウインドウから
+ * イベントを取得することはない。ので GUI Environment からのイベント
+ * だけがここにくることになる？
  * @param event イベント情報
  * @return 処理したら true
  */

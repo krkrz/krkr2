@@ -24,7 +24,6 @@ using namespace std;
 class LayerManagerInfo {
 	
 public:
-	// コンストラクタ
 	LayerManagerInfo(ITexture *texture);
 	virtual ~LayerManagerInfo();
 	
@@ -39,6 +38,7 @@ public:
 	// 割り当てテクスチャ
 	ITexture *texture;
 
+	// テクスチャ描画操作用
 	void lock();
 	void copy(tjs_int x, tjs_int y, const void * bits, const BITMAPINFO * bitmapinfo,
 			  const tTVPRect &cliprect, tTVPLayerType type, tjs_int opacity);
