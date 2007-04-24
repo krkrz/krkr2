@@ -69,9 +69,6 @@ private:
 	void attach(HWND hwnd);
 	void detach();
 
-	int width;
-	int height;
-
 	// Irrlicht ‚ÉƒCƒxƒ“ƒg‚ð‘—‚é
 	bool postEvent(SEvent &ev);
 	
