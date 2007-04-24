@@ -168,7 +168,6 @@ tTVPIrrlichtDrawDevice::create(HWND hwnd, video::E_DRIVER_TYPE type)
 	SIrrlichtCreationParameters params;
 	params.WindowId     = reinterpret_cast<s32>(hwnd);
 	params.DriverType    = type;
-//	params.WindowSize    = core::dimension2d<s32>(width, height);
 	params.Bits          = 32;
 	params.Stencilbuffer = true;
 	params.Vsync = true;
@@ -183,12 +182,6 @@ tTVPIrrlichtDrawDevice::create(HWND hwnd, video::E_DRIVER_TYPE type)
 void
 tTVPIrrlichtDrawDevice::attach(HWND hwnd)
 {
-	// ウインドウサイズの取得 XXX
-	RECT rect;
-	GetClientRect(hwnd, &rect);
-	width  = rect.right - rect.left;
-	height = rect.bottom - rect.top;
-
 	// デバイス生成
 	if ((device = create(hwnd, video::EDT_DIRECT3D9))) {
 		TVPAddLog(L"DirectX9で初期化");
@@ -200,6 +193,14 @@ tTVPIrrlichtDrawDevice::attach(HWND hwnd)
 		}
 	}
 
+	video::IVideoDriver* driver = device->getVideoDriver();
+	dimension2d<s32> size = driver->getScreenSize();
+	log(L"デバイス生成後のスクリーンサイズ:%d, %d", size.Width, size.Height);
+
+	size = driver->getCurrentRenderTargetSize();
+	log(L"デバイス生成後のRenderTargetの:%d, %d", size.Width, size.Height);
+
+	
 	//device->setWindowCaption(title.c_str());
 	
 	// マネージャに対するテクスチャの割り当て
@@ -478,6 +479,8 @@ tTVPIrrlichtDrawDevice::OnContinuousCallback(tjs_uint64 tick)
 		/// ドライバ
 		video::IVideoDriver* driver = device->getVideoDriver();
 
+		dimension2d<s32> screenSize = driver->getScreenSize();
+		
 		// 描画開始
 		driver->beginScene(true, true, video::SColor(255,0,0,0));
 
@@ -490,7 +493,7 @@ tTVPIrrlichtDrawDevice::OnContinuousCallback(tjs_uint64 tick)
 			LayerManagerInfo *info = (LayerManagerInfo*)(*i)->GetDrawDeviceData();
 			if (info && info->texture) {
 				driver->draw2DImage(info->texture, core::position2d<s32>(0,0),
-									core::rect<s32>(0,0,width,height), 0, 
+									core::rect<s32>(0,0,screenSize.Width,screenSize.Height), 0, 
 									video::SColor(255,255,255,255), true);
 			}
 		}
