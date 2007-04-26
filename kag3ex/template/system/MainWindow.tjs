@@ -6549,7 +6549,7 @@ class KAGWindow extends Window
 	
     function parseCh(cd, elm, voiceMode) {
 
-        // 名前表示専用処理
+		// 名前表示専用処理
         //【キャラクタ名/表示名】を検出して名前表示処理を実行する
         if (nameMode > 0) {
             // 既に名前表示ロジックに入ってる
@@ -6615,9 +6615,7 @@ class KAGWindow extends Window
                 // 名前指定がない場合はパラメータなしで名前処理を呼び出す
                 if (!afterName && (lineMode < 3 || prevEmptyLine)) {
 					addTag(cd, "dispname");
-                    addTag(cd, "ch", elm);
-                    afterName = true;
-                    return;
+					afterName = true;
                 }
             }
         }
