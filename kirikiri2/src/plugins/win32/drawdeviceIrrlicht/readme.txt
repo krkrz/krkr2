@@ -4,9 +4,22 @@ Irrlicht ベースの drawdevice 実装のテストコードです
 
 ●コンパイル方法
 
+DirectX9 SDK December 2004 を入れてパスを通しておく
+
+※DirectX8 のヘッダがある最終版
+http://www.microsoft.com/downloads/details.aspx?familyid=4E825A37-0C94-4421-9EC8-156E52525D11&displaylang=en
+
 コンパイル時に設定しておく環境変数
 
- IRRLICHT_HOME  irrlicht の SDK が展開されてるフォルダ名
+IRRLICHT_HOME  irrlicht の SDK が展開されてるフォルダ名
+
+SWF制御用
+
+コンパイルにとりあえず必要なもの
+
+tu-testbed/		http://sourceforge.net/projects/tu-testbed/
+
+適宜コンパイルが通るように要調整
 
 ●テスト方法
 

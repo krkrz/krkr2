@@ -1,19 +1,16 @@
 #include <windows.h>
-
 #include "IrrlichtDrawDevice.h"
+#include "LayerManagerInfo.h"
 
-/**
- * ログ出力用
- */
-static void log(const tjs_char *format, ...)
-{
-	va_list args;
-	va_start(args, format);
-	tjs_char msg[1024];
-	_vsnwprintf(msg, 1024, format, args);
-	TVPAddLog(msg);
-	va_end(args);
-}
+using namespace irr;
+using namespace core;
+using namespace video;
+using namespace scene;
+using namespace io;
+using namespace gui;
+
+extern void message_log(const char* format, ...);
+extern void error_log(const char *format, ...);
 
 /**
  * コンストラクタ
@@ -136,6 +133,12 @@ tTVPIrrlichtDrawDevice::allocInfo(iTVPLayerManager * manager)
 		}
 
 		manager->SetDrawDeviceData((void*)new LayerManagerInfo(texture));
+
+		// 更新要求
+		tjs_int w, h;
+		if (manager->GetPrimaryLayerSize(w, h)) {
+			manager->RequestInvalidation(tTVPRect(0,0,w,h));
+		}
 	}
 }
 
@@ -162,8 +165,8 @@ tTVPIrrlichtDrawDevice::freeInfo(iTVPLayerManager * manager)
  * @param hwnd ハンドル
  * @param ドライバの種類
  */
-IrrlichtDevice *
-tTVPIrrlichtDrawDevice::create(HWND hwnd, video::E_DRIVER_TYPE type)
+static IrrlichtDevice *
+create(HWND hwnd, irr::video::E_DRIVER_TYPE type, irr::IEventReceiver *receiver)
 {
 	SIrrlichtCreationParameters params;
 	params.WindowId     = reinterpret_cast<s32>(hwnd);
@@ -171,7 +174,7 @@ tTVPIrrlichtDrawDevice::create(HWND hwnd, video::E_DRIVER_TYPE type)
 	params.Bits          = 32;
 	params.Stencilbuffer = true;
 	params.Vsync = true;
-	params.EventReceiver = this;
+	params.EventReceiver = receiver;
 	return createDeviceEx(params);
 }
 
@@ -183,10 +186,10 @@ void
 tTVPIrrlichtDrawDevice::attach(HWND hwnd)
 {
 	// デバイス生成
-	if ((device = create(hwnd, video::EDT_DIRECT3D9))) {
+	if ((device = create(hwnd, video::EDT_DIRECT3D9, this))) {
 		TVPAddLog(L"DirectX9で初期化");
 	} else {
-		if ((device = create(hwnd, video::EDT_DIRECT3D8))) {
+		if ((device = create(hwnd, video::EDT_DIRECT3D8, this))) {
 			TVPAddLog(L"DirectX8で初期化");
 		} else {
 			TVPThrowExceptionMessage(L"Irrlicht デバイスの初期化に失敗しました");
@@ -195,10 +198,10 @@ tTVPIrrlichtDrawDevice::attach(HWND hwnd)
 
 	video::IVideoDriver* driver = device->getVideoDriver();
 	dimension2d<s32> size = driver->getScreenSize();
-	log(L"デバイス生成後のスクリーンサイズ:%d, %d", size.Width, size.Height);
+	message_log("デバイス生成後のスクリーンサイズ:%d, %d", size.Width, size.Height);
 
 	size = driver->getCurrentRenderTargetSize();
-	log(L"デバイス生成後のRenderTargetの:%d, %d", size.Width, size.Height);
+	message_log("デバイス生成後のRenderTargetの:%d, %d", size.Width, size.Height);
 
 	
 	//device->setWindowCaption(title.c_str());
@@ -434,9 +437,9 @@ void
 tTVPIrrlichtDrawDevice::init()
 {
 	// GUI 環境のテスト
-	IGUIEnvironment* env = device->getGUIEnvironment();
-	env->addButton(rect<s32>(10,210,110,210 + 32), 0, 101, L"TEST BUTTON", L"Button Test");
-	env->addButton(rect<s32>(10,250,110,250 + 32), 0, 102, L"てすとぼたん", L"ボタンのテスト");
+//	IGUIEnvironment* env = device->getGUIEnvironment();
+//	env->addButton(rect<s32>(10,210,110,210 + 32), 0, 101, L"TEST BUTTON", L"Button Test");
+//	env->addButton(rect<s32>(10,250,110,250 + 32), 0, 102, L"てすとぼたん", L"ボタンのテスト");
 	
 	/// シーンマネージャでの irr ファイルロードのテスト
 	ISceneManager* smgr = device->getSceneManager();
@@ -444,115 +447,3 @@ tTVPIrrlichtDrawDevice::init()
 	smgr->addCameraSceneNode(0, vector3df(0,30,-40), vector3df(0,5,0));
 }
 
-//---------------------------------------------------------------------------
-
-/**
- * Irrlicht 呼び出し処理開始
- */
-void
-tTVPIrrlichtDrawDevice::start()
-{
-	stop();
-	TVPAddContinuousEventHook(this);
-}
-
-/**
- * Irrlicht 呼び出し処理停止
- */
-void
-tTVPIrrlichtDrawDevice::stop()
-{
-	TVPRemoveContinuousEventHook(this);
-}
-
-/**
- * Continuous コールバック
- * 吉里吉里が暇なときに常に呼ばれる
- * これが事実上のメインループになる
- */
-void TJS_INTF_METHOD
-tTVPIrrlichtDrawDevice::OnContinuousCallback(tjs_uint64 tick)
-{
-	if (device) {
-		device->getTimer()->tick();
-
-		/// ドライバ
-		video::IVideoDriver* driver = device->getVideoDriver();
-
-		dimension2d<s32> screenSize = driver->getScreenSize();
-		
-		// 描画開始
-		driver->beginScene(true, true, video::SColor(255,0,0,0));
-
-		/// シーンマネージャの描画
-		ISceneManager* smgr = device->getSceneManager();
-		smgr->drawAll();
-
-		// 個別レイヤマネージャの描画
-		for (std::vector<iTVPLayerManager *>::iterator i = Managers.begin(); i != Managers.end(); i++) {
-			LayerManagerInfo *info = (LayerManagerInfo*)(*i)->GetDrawDeviceData();
-			if (info && info->texture) {
-				driver->draw2DImage(info->texture, core::position2d<s32>(0,0),
-									core::rect<s32>(0,0,screenSize.Width,screenSize.Height), 0, 
-									video::SColor(255,255,255,255), true);
-			}
-		}
-
-		// GUIの描画
-		device->getGUIEnvironment()->drawAll();
-		
-		// 描画完了
-		driver->endScene();
-	}
-};
-
-/**
- * イベント受理
- * HWND を指定して生成している関係で Irrlicht 自身はウインドウから
- * イベントを取得することはない。ので GUI Environment からのイベント
- * だけがここにくることになる？
- * @param event イベント情報
- * @return 処理したら true
- */
-bool
-tTVPIrrlichtDrawDevice::OnEvent(SEvent event)
-{
-	switch (event.EventType) {
-	case EET_GUI_EVENT:
-		log(L"GUIイベント:%d", event.GUIEvent.EventType);
-		switch(event.GUIEvent.EventType) {
-		case EGET_BUTTON_CLICKED:
-			log(L"ボタンおされた");
-			break;
-		}
-		break;
-	case EET_MOUSE_INPUT_EVENT:
-		log(L"マウスイベント:%d x:%d y:%d wheel:%f",
-			event.MouseInput.Event,
-			event.MouseInput.X,
-			event.MouseInput.Y,
-			event.MouseInput.Wheel);
-		break;
-	case EET_KEY_INPUT_EVENT:
-		log(L"キーイベント:%x", event.KeyInput.Key);
-		{
-			int shift = 0;
-			if (event.KeyInput.Shift) {
-				shift |= 0x01;
-			}
-			if (event.KeyInput.Control) {
-				shift |= 0x04;
-			}
-		}
-		break;
-	case EET_LOG_TEXT_EVENT:
-		log(L"ログレベル:%d ログ:%s",
-			event.LogEvent.Level,
-			event.LogEvent.Text);
-		break;
-	case EET_USER_EVENT:
-		log(L"ユーザイベント");
-		break;
-	}
-	return false;
-}
