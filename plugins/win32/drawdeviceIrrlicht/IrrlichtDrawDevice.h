@@ -3,13 +3,13 @@
 
 #include <windows.h>
 #include "tp_stub.h"
-
 #include <irrlicht.h>
 
 #include "gameswf/gameswf_impl.h"
 #include "gameswf/gameswf_types.h"
-
 #include "BasicDrawDevice.h"
+
+class SWFMovie;
 
 /**
  * Irrlicht ベースの DrawDevice
@@ -20,11 +20,13 @@ class tTVPIrrlichtDrawDevice : public tTVPDrawDevice, public tTVPContinuousEvent
 {
 	typedef tTVPDrawDevice inherited;
 
+protected:
 	/// デバイス
 	irr::IrrlichtDevice *device;
 
 public:
 	tTVPIrrlichtDrawDevice(); //!< コンストラクタ
+
 private:
 	virtual ~tTVPIrrlichtDrawDevice(); //!< デストラクタ
 
@@ -65,10 +67,29 @@ public:
 	virtual void TJS_INTF_METHOD EndBitmapCompletion(iTVPLayerManager * manager);
 
 	//---------------------------------------------------------------------------
-
+public:
 	// テスト用処理
 	void init();
 
+	// ------------------------------------------------------------
+	// SWF 系 UI
+	// ------------------------------------------------------------
+
+protected:
+	/// UI 用 SWF
+	SWFMovie *uiSWF;
+
+	void initSWF();
+	void deinitSWF();
+
+	bool first;
+	tjs_uint64 prevTick;
+	void drawSWF(tjs_uint64 tick, int x, int y, int width, int height);
+	
+public:
+	// 読み込み
+	void loadSWF(const char *name);
+	
 	// ------------------------------------------------------------
 	// SWF処理用
 	// ------------------------------------------------------------
@@ -80,7 +101,7 @@ public:
 	float	m_display_width;
 	float	m_display_height;
 	
-	//cairo_matrix_t m_current_matrix;
+	gameswf::matrix m_current_matrix;
 	gameswf::cxform	m_current_cxform;
 
 	virtual gameswf::bitmap_info* create_bitmap_info_empty();

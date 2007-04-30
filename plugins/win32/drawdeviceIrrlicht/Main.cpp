@@ -37,8 +37,9 @@ error_log(const char* format, ...)
 class IrrlichtDrawDevice {
 public:
 	// デバイス情報
-	iTVPDrawDevice *device;
+	tTVPIrrlichtDrawDevice *device;
 public:
+
 	/**
 	 * コンストラクタ
 	 */
@@ -57,7 +58,7 @@ public:
 	 * @return デバイス情報
 	 */
 	tjs_int64 GetDevice() {
-		return reinterpret_cast<tjs_int64>(device);
+		return reinterpret_cast<tjs_int64>((tTVPDrawDevice*)device);
 	}
 
 	// ---------------------------------------------
@@ -65,12 +66,19 @@ public:
 	// ---------------------------------------------
 
 	// SWF ファイル生成？
+	void loadSWF(const char *name) {
+		if (device) {
+			device->loadSWF(name);
+		}
+	}
+
 };
 
 
 NCB_REGISTER_CLASS(IrrlichtDrawDevice) {
 	NCB_CONSTRUCTOR(());
 	NCB_PROPERTY_RO(interface, GetDevice);
+	NCB_METHOD(loadSWF);
 }
 
 /**

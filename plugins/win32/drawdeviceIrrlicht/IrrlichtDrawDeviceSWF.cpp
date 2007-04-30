@@ -1,12 +1,10 @@
 #include <windows.h>
 #include "IrrlichtDrawDevice.h"
+#include "SWFMovie.hpp"
 
 extern void message_log(const char* format, ...);
 extern void error_log(const char *format, ...);
-
-// --------------------------------------------------------
-// SWF 関連機能
-// --------------------------------------------------------
+extern void swfload(SWFMovie *swf, const char *name);
 
 #include "base/utility.h"
 #include "base/container.h"
@@ -16,6 +14,65 @@ extern void error_log(const char *format, ...);
 
 using namespace gameswf;
 
+// ------------------------------------------------------------
+// SWF UI 処理用
+// ------------------------------------------------------------
+
+/**
+ * SWF UI 用変数初期化
+ */
+void
+tTVPIrrlichtDrawDevice::initSWF()
+{
+	uiSWF = NULL;
+}
+
+/**
+ * SWF UI 変数破棄
+ */
+void
+tTVPIrrlichtDrawDevice::deinitSWF()
+{
+	delete uiSWF;
+}
+
+/**
+ * SWF UI のロード
+ */
+void
+tTVPIrrlichtDrawDevice::loadSWF(const char *name)
+{
+	delete uiSWF;
+	uiSWF = new SWFMovie();
+	uiSWF->load(name);
+	//swfload(uiSWF, name);
+}
+
+/**
+ * SWF の描画処理
+ */
+void
+tTVPIrrlichtDrawDevice::drawSWF(tjs_uint64 tick, int x, int y, int width, int height)
+{
+	if (uiSWF) {
+		gameswf::set_render_handler(this);
+		if (first) {
+			prevTick = tick;
+			first = false;
+		}
+		uiSWF->update((int)(tick - prevTick));
+		uiSWF->draw(x, y, width, height);
+		prevTick = tick;
+	}
+}
+
+// --------------------------------------------------------
+// SWF 関連機能
+// --------------------------------------------------------
+
+/**
+ * ビットマップ情報
+ */
 struct bitmap_info_irr : public gameswf::bitmap_info
 {
 	bitmap_info_irr();
@@ -26,18 +83,30 @@ struct bitmap_info_irr : public gameswf::bitmap_info
 	}
 };
 
+/**
+ * コンストラクタ
+ */
 bitmap_info_irr::bitmap_info_irr()
 {
 }
 
+/**
+ * コンストラクタ
+ */
 bitmap_info_irr::bitmap_info_irr(int width, int height, Uint8* data)
 {
 }
 
+/**
+ * コンストラクタ
+ */
 bitmap_info_irr::bitmap_info_irr(image::rgb* im)
 {
 }
 
+/**
+ * コンストラクタ
+ */
 bitmap_info_irr::bitmap_info_irr(image::rgba* im)
 {
 }
@@ -81,6 +150,7 @@ tTVPIrrlichtDrawDevice::create_YUV_video(int w, int h)
 void
 tTVPIrrlichtDrawDevice::delete_YUV_video(gameswf::YUV_video* yuv)
 {
+	/** なにもしない */
 }
 
 // Bracket the displaying of a frame from a movie.
@@ -88,11 +158,11 @@ tTVPIrrlichtDrawDevice::delete_YUV_video(gameswf::YUV_video* yuv)
 // transforms, etc.
 void
 tTVPIrrlichtDrawDevice::begin_display(gameswf::rgba bc,
-							  int viewport_x0, int viewport_y0,
-							  int viewport_width, int viewport_height,
-							  float x0, float x1, float y0, float y1)
+									  int viewport_x0, int viewport_y0,
+									  int viewport_width, int viewport_height,
+									  float x0, float x1, float y0, float y1)
 {
-	m_display_width = fabsf(x1 - x0);
+	m_display_width  = fabsf(x1 - x0);
 	m_display_height = fabsf(y1 - y0);
 	
 	if (device) {
@@ -103,15 +173,6 @@ tTVPIrrlichtDrawDevice::begin_display(gameswf::rgba bc,
 		//cairo_matrix_init_scale(&viewport, scale, scale);
 		//cairo_matrix_translate(&viewport, viewport_x0 - x0 * sx, viewport_y0 - y0 * sy);
 		//cairo_set_matrix(ctarget, &viewport);
-		
-		// 背景塗りつぶし
-		//			cairo_set_source_rgba(ctarget,
-		//								  bc.m_r/255.0,
-		//								  bc.m_g/255.0,
-		//								  bc.m_b/255.0,
-		//								  bc.m_a/255.0);
-		//			cairo_rectangle(ctarget, x0, y0, m_display_width, m_display_height);
-		//			cairo_fill(ctarget);
 	}
 }
 
@@ -124,13 +185,7 @@ tTVPIrrlichtDrawDevice::end_display()
 void
 tTVPIrrlichtDrawDevice::set_matrix(const matrix& m)
 {
-	//cairo_matrix_init(&m_current_matrix,
-	//				  m.m_[0][0],
-	//				  m.m_[1][0],
-	//				  m.m_[0][1],
-	//				  m.m_[1][1],
-	//				  m.m_[0][2],
-	//				  m.m_[1][2]);
+    m_current_matrix = m;
 }
 
 void
