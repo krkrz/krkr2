@@ -2,6 +2,9 @@
 #include "IrrlichtDrawDevice.h"
 #include "LayerManagerInfo.h"
 
+extern void message_log(const char* format, ...);
+extern void error_log(const char *format, ...);
+
 using namespace irr;
 using namespace core;
 using namespace video;
@@ -9,103 +12,13 @@ using namespace scene;
 using namespace io;
 using namespace gui;
 
-extern void message_log(const char* format, ...);
-extern void error_log(const char *format, ...);
-
-/**
- * コンストラクタ
- */
-LayerManagerInfo::LayerManagerInfo(ITexture *texture) : texture(texture)
-{
-	destBuffer = NULL;
-};
-
-/**
- * デストラクタ
- */
-LayerManagerInfo::~LayerManagerInfo()
-{
-}
-
-
-/**
- * テクスチャをロックして描画領域情報を取得する
- */
-void
-LayerManagerInfo::lock()
-{
-	if (texture) {
-		destBuffer = (unsigned char *)texture->lock();
-		core::dimension2d<s32> size = texture->getSize();
-		destWidth  = size.Width;
-		destHeight = size.Height;
-		destPitch  = texture->getPitch();
-	} else {
-		destBuffer = NULL;
-	}
-}
-
-/**
- * ロックされたテクスチャにビットマップ描画を行う
- */
-void
-LayerManagerInfo::copy(tjs_int x, tjs_int y, const void * bits, const BITMAPINFO * bitmapinfo,
-					   const tTVPRect &cliprect, tTVPLayerType type, tjs_int opacity)
-{
-	// bits, bitmapinfo で表されるビットマップの cliprect の領域を、x, y に描画する。
-
-	if (destBuffer) {
-		int srcPitch = -bitmapinfo->bmiHeader.biWidth * 4; // XXX きめうち
-		unsigned char *srcBuffer = (unsigned char *)bits - srcPitch * (bitmapinfo->bmiHeader.biHeight - 1);
-		int srcx   = cliprect.left;
-		int srcy   = cliprect.top;
-		int width  = cliprect.get_width();
-		int height = cliprect.get_height();
-		// クリッピング
-		if (x < 0) {
-			srcx  += x;
-			width += x;
-			x = 0;
-		}
-		if (x + width > destWidth) {
-			width -= ((x + width) - destWidth);
-		}
-		if (y < 0) {
-			srcy += y;
-			height += y;
-			y = 0;
-		}
-		if (y + height > destHeight) {
-			height -= ((y + height) - destHeight);
-		}
-		unsigned char *src  = srcBuffer  + srcy * srcPitch  + srcx * 4;
-		unsigned char *dest = destBuffer +    y * destPitch +    x * 4;
-		for (int i=0;i<height;i++) {
-			memcpy(dest, src, width * 4);
-			src  += srcPitch;
-			dest += destPitch;
-		}
-	}
-}
-
-/**
- * テクスチャのロックの解除
- */
-void
-LayerManagerInfo::unlock()
-{
-	if (texture) {
-		texture->unlock();
-		destBuffer = NULL;
-	}
-}
-
 /**
  * コンストラクタ
  */
 tTVPIrrlichtDrawDevice::tTVPIrrlichtDrawDevice()
 {
 	device = NULL;
+	initSWF();
 }
 
 /**
@@ -113,6 +26,7 @@ tTVPIrrlichtDrawDevice::tTVPIrrlichtDrawDevice()
  */
 tTVPIrrlichtDrawDevice::~tTVPIrrlichtDrawDevice()
 {
+	deinitSWF();
 	detach();
 }
 
@@ -203,9 +117,6 @@ tTVPIrrlichtDrawDevice::attach(HWND hwnd)
 	size = driver->getCurrentRenderTargetSize();
 	message_log("デバイス生成後のRenderTargetの:%d, %d", size.Width, size.Height);
 
-	
-	//device->setWindowCaption(title.c_str());
-	
 	// マネージャに対するテクスチャの割り当て
 	for (std::vector<iTVPLayerManager *>::iterator i = Managers.begin(); i != Managers.end(); i++) {
 		allocInfo(*i);

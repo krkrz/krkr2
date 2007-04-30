@@ -1,6 +1,7 @@
 #include <windows.h>
 #include "IrrlichtDrawDevice.h"
 #include "LayerManagerInfo.h"
+#include "SWFMovie.hpp"
 
 using namespace irr;
 using namespace core;
@@ -66,7 +67,8 @@ tTVPIrrlichtDrawDevice::OnContinuousCallback(tjs_uint64 tick)
 		// GUI‚Ì•`‰æ
 		device->getGUIEnvironment()->drawAll();
 
-		// SWF ‚Ì•`‰æ XXX
+		// SWF UI ‚Ì•`‰æ
+		drawSWF(tick, 0, 0, screenSize.Width, screenSize.Height);
 		
 		// •`‰æŠ®—¹
 		driver->endScene();
