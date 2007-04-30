@@ -164,28 +164,70 @@ tTVPIrrlichtDrawDevice::begin_display(gameswf::rgba bc,
 {
 	m_display_width  = fabsf(x1 - x0);
 	m_display_height = fabsf(y1 - y0);
-	
-	if (device) {
-		// ビューポート補正
-		double sx = (double)viewport_width / m_display_width;
-		double sy = (double)viewport_height / m_display_height;
-		double scale = sx < sy ? sx : sy;
-		//cairo_matrix_init_scale(&viewport, scale, scale);
-		//cairo_matrix_translate(&viewport, viewport_x0 - x0 * sx, viewport_y0 - y0 * sy);
-		//cairo_set_matrix(ctarget, &viewport);
+
+	if (driver) {
+		// 現在の状態をバックアップ
+		m_projection_bak = driver->getTransform(irr::video::ETS_PROJECTION); 
+		m_view_bak       = driver->getTransform(irr::video::ETS_VIEW); 
+		m_world_bak      = driver->getTransform(irr::video::ETS_WORLD);
+
+		irr::core::matrix4 prj, view, world;
+		prj.makeIdentity();
+		view.makeIdentity();
+		world.makeIdentity(); 
+
+		float gsWidthDiv  = 1.0f / viewport_width;
+		float gsHeightDiv = 1.0f / viewport_height;
+		
+		prj(0,0) = 2.0f / (x1 - x0);
+		prj(1,1) = -2.0f / (y1 - y0);
+		prj(3,0) = -((x1 + x0) / (x1 - x0));
+		prj(3,1) = ((y1 + y0) / (y1 - y0));
+		
+		view(0,0) = viewport_width * gsWidthDiv;
+	    view(1,1) = viewport_height * gsHeightDiv;
+		view(3,0) = -1.0f + viewport_x0 * 2.0f * gsWidthDiv + viewport_width * gsWidthDiv;
+		view(3,1) = 1.0f - viewport_y0 * 2.0f * gsHeightDiv - viewport_height * gsHeightDiv;
+		
+		driver->setTransform(irr::video::ETS_PROJECTION, prj);
+		driver->setTransform(irr::video::ETS_VIEW, view); 
+		driver->setTransform(irr::video::ETS_WORLD, world); 
+		
+		// ビューポート指定
+		irr::core::rect<irr::s32> area(viewport_x0, viewport_y0, viewport_x0 + viewport_width, viewport_y0 + viewport_height);
+		driver->setViewPort(area);
+
+		// 背景塗りつぶし XXX
+
+		// 描画マテリアル指定
+		// 光源処理を外す
+		irr::video::SMaterial material;
+		material.Lighting = false;
+		driver->setMaterial(material);
 	}
 }
 
 void
 tTVPIrrlichtDrawDevice::end_display()
 {
+	if (driver) {
+		driver->setTransform(irr::video::ETS_PROJECTION, m_projection_bak);
+		driver->setTransform(irr::video::ETS_VIEW,       m_view_bak);
+		driver->setTransform(irr::video::ETS_WORLD,      m_world_bak);
+	}
 }
 
 // Geometric and color transforms for mesh and line_strip rendering.
 void
 tTVPIrrlichtDrawDevice::set_matrix(const matrix& m)
 {
-    m_current_matrix = m;
+	m_current_matrix.makeIdentity();
+	m_current_matrix(0,0) = m.m_[0][0];
+	m_current_matrix(0,1) = m.m_[1][0];
+	m_current_matrix(1,0) = m.m_[0][1];
+	m_current_matrix(1,1) = m.m_[1][1];
+	m_current_matrix(3,0) = m.m_[0][2];
+	m_current_matrix(3,1) = m.m_[1][2];
 }
 
 void
@@ -193,7 +235,6 @@ tTVPIrrlichtDrawDevice::set_cxform(const cxform& cx)
 {
 	m_current_cxform = cx;
 }
-
 
 // Draw triangles using the current fill-style 0.
 // Clears the style list after rendering.
@@ -204,22 +245,20 @@ tTVPIrrlichtDrawDevice::set_cxform(const cxform& cx)
 void
 tTVPIrrlichtDrawDevice::draw_mesh_strip(const void* coords, int vertex_count)
 {
-	if (device) {
+	if (driver) {
+		// かけかえ処理
 		Sint16 *c = (Sint16*)coords;
-		int i = 0;
-		//cairo_save(ctarget);
-		//cairo_transform(ctarget, &m_current_matrix);
-		//cairo_new_path(ctarget);
-		while (i < vertex_count) {
+		irr::core::array<irr::u16> indices;
+		irr::core::array<irr::video::S3DVertex> vertices;
+		for (int i=0; i < vertex_count; i++) {
 			int n = i*2;
-		//	cairo_move_to(ctarget, c[n  ], c[n+1]);
-	//		cairo_line_to(ctarget, c[n+2], c[n+3]);
-	//		cairo_line_to(ctarget, c[n+4], c[n+5]);
-	//		cairo_close_path(ctarget);
-			i++;
+			indices.push_back(i);
+			vertices.push_back(irr::video::S3DVertex(c[n], c[n+1], 0, 0,0,0, m_fill_color, 0, 0));
 		}
-	//	cairo_fill (ctarget);
-	//	cairo_restore(ctarget);
+		driver->setTransform(irr::video::ETS_WORLD, m_current_matrix);
+		driver->drawVertexPrimitiveList(vertices.const_pointer(), vertex_count,
+										indices.const_pointer(), vertex_count - 2, 
+										irr::video::EVT_STANDARD, irr::scene::EPT_TRIANGLE_STRIP);
 	}
 }
 
@@ -227,22 +266,21 @@ tTVPIrrlichtDrawDevice::draw_mesh_strip(const void* coords, int vertex_count)
 void
 tTVPIrrlichtDrawDevice::draw_triangle_list(const void *coords, int vertex_count)
 {
-	if (device) {
+	if (driver) {
+
+		// かけかえ処理
 		Sint16 *c = (Sint16*)coords;
-		//cairo_save(ctarget);
-		//cairo_transform(ctarget, &m_current_matrix);
-		//cairo_new_path(ctarget);
-		int i = 0;
-		while (i < vertex_count) {
+		irr::core::array<irr::u16> indices;
+		irr::core::array<irr::video::S3DVertex> vertices;
+		for (int i=0; i < vertex_count; i++) {
 			int n = i*2;
-			//cairo_move_to(ctarget, c[n  ], c[n+1]);
-			//cairo_line_to(ctarget, c[n+2], c[n+3]);
-			//cairo_line_to(ctarget, c[n+4], c[n+5]);
-			//cairo_close_path(ctarget);
-			i += 3;
+			indices.push_back(i);
+			vertices.push_back(irr::video::S3DVertex(c[n], c[n+1], 0, 0,0,0, m_fill_color, 0, 0));
 		}
-		//cairo_fill (ctarget);
-		//cairo_restore(ctarget);
+		driver->setTransform(irr::video::ETS_WORLD, m_current_matrix);
+		driver->drawVertexPrimitiveList(vertices.const_pointer(), vertex_count,
+										indices.const_pointer(), vertex_count / 3, 
+										irr::video::EVT_STANDARD, irr::scene::EPT_TRIANGLES);
 	}
 }
 
@@ -254,64 +292,61 @@ tTVPIrrlichtDrawDevice::draw_triangle_list(const void *coords, int vertex_count)
 void
 tTVPIrrlichtDrawDevice::draw_line_strip(const void* coords, int vertex_count)
 {
-	if (device) {
+	if (driver) {
+
+		// かけかえ処理
 		Sint16 *c = (Sint16*)coords;
-		//cairo_save(ctarget);
-		//cairo_transform(ctarget, &m_current_matrix);
-		//cairo_new_path(ctarget);
-		//cairo_move_to(ctarget, c[0], c[1]);
-		int i = 1;
-		while (i < vertex_count) {
+		irr::core::array<irr::u16> indices;
+		irr::core::array<irr::video::S3DVertex> vertices;
+		for (int i=0; i < vertex_count; i++) {
 			int n = i*2;
-			//cairo_line_to(ctarget, c[n], c[n+1]);
-			i++;
+			indices.push_back(i);
+			vertices.push_back(irr::video::S3DVertex(c[n], c[n+1], 0, 0,0,0, m_line_color, 0, 0));
 		}
-		//cairo_stroke(ctarget);
-		//cairo_restore(ctarget);
+		driver->setTransform(irr::video::ETS_WORLD, m_current_matrix);
+		driver->drawVertexPrimitiveList(vertices.const_pointer(), vertex_count,
+										indices.const_pointer(), vertex_count - 1, 
+										irr::video::EVT_STANDARD, irr::scene::EPT_LINE_STRIP);
 	}
 }
 
 void
 tTVPIrrlichtDrawDevice::fill_style_disable(int fill_side)
 {
-	if (device) {
+	if (driver) {
 	}
 }
 
 void
 tTVPIrrlichtDrawDevice::fill_style_color(int fill_side, gameswf::rgba c)
 {
-	if (device) {
-		//cairo_set_source_rgba(ctarget, c.m_r/255.0, c.m_g/255.0, c.m_b/255.0, c.m_a/255.0);
-	}
+	m_fill_color.set(c.m_a, c.m_r, c.m_g, c.m_b);
 }
 
 void
 tTVPIrrlichtDrawDevice::fill_style_bitmap(int fill_side, const gameswf::bitmap_info* bi, const gameswf::matrix& m, gameswf::render_handler::bitmap_wrap_mode wm)
 {
-	if (device) {
+	if (driver) {
 	}
 }
 
 void
 tTVPIrrlichtDrawDevice::line_style_disable()
 {
-	if (device) {
+	if (driver) {
 	}
 }
 
 void
 tTVPIrrlichtDrawDevice::line_style_color(gameswf::rgba c)
 {
-	if (device) {
-		//cairo_set_source_rgba(ctarget, c.m_r/255.0, c.m_g/255.0, c.m_b/255.0, c.m_a/255.0);
-	}
+	m_line_color.set(c.m_a, c.m_r, c.m_g, c.m_b);
 }
 
 void
 tTVPIrrlichtDrawDevice::line_style_width(float width)
 {
-	if (device) {
+	if (driver) {
 		//cairo_set_line_width(ctarget, width);
 	}
 }	
@@ -326,7 +361,7 @@ tTVPIrrlichtDrawDevice::draw_bitmap(const matrix&		m,
 									const rect&		uv_coords,
 									gameswf::rgba			color)
 {
-	if (device) {
+	if (driver) {
 	}
 }
 
