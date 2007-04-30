@@ -48,7 +48,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\;..\drawdevice;$(IRRLICHT_HOME)\include"
+				AdditionalIncludeDirectories="..\;..\drawdevice;tu-testbed;$(IRRLICHT_HOME)\include"
 				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -142,7 +142,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="2"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="..\;..\drawdevice;$(IRRLICHT_HOME)\include"
+				AdditionalIncludeDirectories="..\;..\drawdevice;tu-testbed;$(IRRLICHT_HOME)\include"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL"
 				StringPooling="true"
 				RuntimeLibrary="0"
@@ -219,6 +219,14 @@
 				>
 			</File>
 			<File
+				RelativePath=".\IrrlichtDrawDeviceMain.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\IrrlichtDrawDeviceSWF.cpp"
+				>
+			</File>
+			<File
 				RelativePath="krrlicht.def"
 				>
 			</File>
@@ -246,6 +254,10 @@
 			</File>
 			<File
 				RelativePath="..\ncbind\ncbind.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\SWFMovie.cpp"
 				>
 			</File>
 			<File
@@ -281,6 +293,10 @@
 			</File>
 			<File
 				RelativePath=".\IrrlichtDrawDevice.h"
+				>
+			</File>
+			<File
+				RelativePath=".\SWFMovie.hpp"
 				>
 			</File>
 			<File
