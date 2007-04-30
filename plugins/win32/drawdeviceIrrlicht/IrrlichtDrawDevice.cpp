@@ -18,6 +18,7 @@ using namespace gui;
 tTVPIrrlichtDrawDevice::tTVPIrrlichtDrawDevice()
 {
 	device = NULL;
+	driver = NULL;
 	initSWF();
 }
 
@@ -37,8 +38,7 @@ tTVPIrrlichtDrawDevice::~tTVPIrrlichtDrawDevice()
 void 
 tTVPIrrlichtDrawDevice::allocInfo(iTVPLayerManager * manager)
 {
-	if (device) {
-		video::IVideoDriver* driver = device->getVideoDriver();
+	if (driver) {
 
 		// テクスチャ割り当てXXX サイズ判定が必要…
 		ITexture *texture = driver->addTexture(core::dimension2d<s32>(1024, 1024), "layer", ECF_A8R8G8B8);
@@ -63,10 +63,9 @@ tTVPIrrlichtDrawDevice::allocInfo(iTVPLayerManager * manager)
 void
 tTVPIrrlichtDrawDevice::freeInfo(iTVPLayerManager * manager)
 {
-	if (device) {
+	if (driver) {
 		LayerManagerInfo *info = (LayerManagerInfo*)manager->GetDrawDeviceData();
 		if (info != NULL) {
-			video::IVideoDriver* driver = device->getVideoDriver();
 			driver->removeTexture(info->texture);
 			manager->SetDrawDeviceData(NULL);
 			delete info;
@@ -89,6 +88,7 @@ create(HWND hwnd, irr::video::E_DRIVER_TYPE type, irr::IEventReceiver *receiver)
 	params.Stencilbuffer = true;
 	params.Vsync = true;
 	params.EventReceiver = receiver;
+	params.AntiAlias = true;
 	return createDeviceEx(params);
 }
 
@@ -109,8 +109,8 @@ tTVPIrrlichtDrawDevice::attach(HWND hwnd)
 			TVPThrowExceptionMessage(L"Irrlicht デバイスの初期化に失敗しました");
 		}
 	}
-
-	video::IVideoDriver* driver = device->getVideoDriver();
+	driver = device->getVideoDriver();
+	
 	dimension2d<s32> size = driver->getScreenSize();
 	message_log("デバイス生成後のスクリーンサイズ:%d, %d", size.Width, size.Height);
 
@@ -142,6 +142,7 @@ tTVPIrrlichtDrawDevice::detach()
 		}
 		device->drop();
 		device = NULL;
+		driver = NULL;
 	}
 }
 
@@ -201,7 +202,7 @@ tTVPIrrlichtDrawDevice::postEvent(SEvent &ev)
 void TJS_INTF_METHOD
 tTVPIrrlichtDrawDevice::OnMouseDown(tjs_int x, tjs_int y, tTVPMouseButton mb, tjs_uint32 flags)
 {
-	if (device) {
+	if (driver) {
 		SEvent ev;
 		ev.EventType = EET_MOUSE_INPUT_EVENT;
 		ev.MouseInput.X = x;
@@ -229,7 +230,7 @@ tTVPIrrlichtDrawDevice::OnMouseDown(tjs_int x, tjs_int y, tTVPMouseButton mb, tj
 void TJS_INTF_METHOD
 tTVPIrrlichtDrawDevice::OnMouseUp(tjs_int x, tjs_int y, tTVPMouseButton mb, tjs_uint32 flags)
 {
-	if (device) {
+	if (driver) {
 		SEvent ev;
 		ev.EventType = EET_MOUSE_INPUT_EVENT;
 		ev.MouseInput.X = x;
@@ -257,7 +258,7 @@ tTVPIrrlichtDrawDevice::OnMouseUp(tjs_int x, tjs_int y, tTVPMouseButton mb, tjs_
 void TJS_INTF_METHOD
 tTVPIrrlichtDrawDevice::OnMouseMove(tjs_int x, tjs_int y, tjs_uint32 flags)
 {
-	if (device) {
+	if (driver) {
 		SEvent ev;
 		ev.EventType = EET_MOUSE_INPUT_EVENT;
 		ev.MouseInput.X = x;

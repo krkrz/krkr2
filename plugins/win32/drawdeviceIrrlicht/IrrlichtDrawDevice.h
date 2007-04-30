@@ -23,7 +23,9 @@ class tTVPIrrlichtDrawDevice : public tTVPDrawDevice, public tTVPContinuousEvent
 protected:
 	/// デバイス
 	irr::IrrlichtDevice *device;
-
+	// ドライバ
+	irr::video::IVideoDriver *driver;
+	
 public:
 	tTVPIrrlichtDrawDevice(); //!< コンストラクタ
 
@@ -94,6 +96,7 @@ public:
 	// SWF処理用
 	// ------------------------------------------------------------
 
+protected:
 	// Enable/disable antialiasing.
 	bool	m_enable_antialias;
 
@@ -101,9 +104,17 @@ public:
 	float	m_display_width;
 	float	m_display_height;
 	
-	gameswf::matrix m_current_matrix;
+	irr::core::matrix4 m_current_matrix;
 	gameswf::cxform	m_current_cxform;
 
+	irr::core::matrix4 m_projection_bak;
+	irr::core::matrix4 m_view_bak;
+	irr::core::matrix4 m_world_bak;
+
+	irr::video::SColor m_line_color;
+	irr::video::SColor m_fill_color;
+	
+public:
 	virtual gameswf::bitmap_info* create_bitmap_info_empty();
 	virtual gameswf::bitmap_info *create_bitmap_info_alpha(int w, int h, unsigned char* data);
 	virtual gameswf::bitmap_info *create_bitmap_info_rgb(image::rgb* im);
