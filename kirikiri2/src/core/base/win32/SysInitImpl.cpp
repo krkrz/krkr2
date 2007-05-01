@@ -1649,7 +1649,8 @@ static void TVPShowUserConfig(AnsiString orgexe)
 {
 	Application->Title = ChangeFileExt(ExtractFileName(orgexe), "");
 	TConfSettingsForm *form = new TConfSettingsForm(Application);
-	form->ShowUserConfig(orgexe);
+	form->InitializeUserConfig(orgexe);
+	form->ShowModal();
 	delete form;
 }
 //---------------------------------------------------------------------------

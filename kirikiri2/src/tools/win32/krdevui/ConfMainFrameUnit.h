@@ -20,6 +20,42 @@
 #include <ExtDlgs.hpp>
 #include <inifiles.hpp>
 #include <ComCtrls.hpp>
+
+
+//---------------------------------------------------------------------------
+class TLayeredOption
+{
+	TLayeredOption * Parent; // parent option
+	TStringList * Strings; // option strings
+
+public:
+	TLayeredOption();
+	virtual ~TLayeredOption();
+
+	void Clear();
+
+	TLayeredOption * GetParent() const { return Parent; }
+	void SetParent(TLayeredOption * parent) { Parent = parent; }
+
+	void FromString(const AnsiString & content);
+	void LoadFromIni(TMemIniFile * ini);
+	void LoadFromFile(const AnsiString & filename);
+	AnsiString ToString() const;
+	void SaveToFile(const AnsiString & filename) const;
+	void SaveToIni(TMemIniFile * ini) const;
+
+	bool GetOptionValue(const AnsiString & key, AnsiString & value) const;
+	void SetOptionValue(const AnsiString & key, const AnsiString & value);
+
+private:
+	void InternalListOptionsNames(TStringList * dest) const;
+public:
+	void ListOptionNames(TStringList * dest) const;
+};
+//---------------------------------------------------------------------------
+
+
+
 //---------------------------------------------------------------------------
 class TConfMainFrame : public TFrame
 {
@@ -58,9 +94,13 @@ private:	// ユーザー宣言
 
 public:		// ユーザー宣言
 	AnsiString SourceExe;
+	AnsiString TargetExe;
 
 	__fastcall TConfMainFrame(TComponent* Owner);
 	__fastcall ~TConfMainFrame();
+
+	void __fastcall SetUserConfMode();
+	bool __fastcall GetUserConfMode() const { return UserConfMode; }
 
 protected:
 
@@ -68,13 +108,11 @@ protected:
 	AnsiString OriginalOptionsGroupBoxLabel;
 	AnsiString OrgExcludeOptions;
 	TStringList *UnrecognizedOptions;
-	bool ExcludeInvisibleOptions;
+	bool UserConfMode;
 
-	TStringList *ExcludeOptions;
-
-	static AnsiString EncodeString(AnsiString str);
-	static AnsiString DecodeString(AnsiString str);
-
+public:
+	bool __fastcall CheckOK();
+protected:
 	AnsiString __fastcall GetPluginOptions(AnsiString module);
 	AnsiString __fastcall SearchPluginOptions(AnsiString path, AnsiString ext);
 	void __fastcall ParseData();
@@ -89,28 +127,82 @@ protected:
 	void __fastcall SetNodeDefaultOptionValue(TTreeNode *node);
 
 public:
-	bool __fastcall CheckOK();
-	void __fastcall CopyExe(AnsiString to);
-	void __fastcall ModifyExe();
+	void __fastcall ReadOptionInfoFromExe(AnsiString exename);
 
+public: // load and store
+	void __fastcall CopyExe(AnsiString to);
+
+/*
 	void __fastcall SetOptionsFromString(AnsiString str);
-	AnsiString __fastcall GetOptionString();
+	void __fastcall WriteOptionsToIniFile(TMemIniFile * ini);
 	void __fastcall SetExcludeOptionsFromString(AnsiString str);
-	AnsiString __fastcall GetExcludeOptionString();
+	void __fastcall WriteExcludeOptionsToIniFile(TMemIniFile * ini);
 	void __fastcall LoadProfileFromIni(TMemIniFile *ini);
 	void __fastcall SaveProfileToIni(TMemIniFile *ini);
-
-	void __fastcall ReadOptionInfoFromExe();
 	void __fastcall LoadOptionsFromExe(int mode);
-	void __fastcall SaveOptionsToExe(AnsiString target);
-	static unsigned int __fastcall FindOptionAreaOffset(AnsiString target);
-
-	void __fastcall SetExcludeOptions() { ExcludeInvisibleOptions = true; }
-
-	static int GetSecurityOptionItem(const char *options, const char *name);
+	void __fastcall SaveOptionsToFile(AnsiString target);
 	void __fastcall GetSecurityOptionFromExe(AnsiString exe);
-	static void SetSecurityOptionItem(char *options, const char *name, int value);
 	void __fastcall SetSecurityOptionToExe(AnsiString exe);
+*/
+
+//--
+	// options data
+protected:
+	TLayeredOption UserConfigData;
+	TLayeredOption ConfigData;
+	TLayeredOption EmbeddedConfigData;
+	TLayeredOption DefaultConfigData;
+	TLayeredOption * TargetConfigData;
+	TStringList * ExcludeOptions;
+
+public:
+	// data mgn.
+	void InitConfigData();
+	void FreeConfigData();
+
+	// data exchange between data and ui
+	void ApplyReadDataToUI();
+	void ApplyUIDataToConfigData();
+
+	// filenames
+	void SetSourceAndTargetFileName(AnsiString source, AnsiString target);
+
+	AnsiString GetConfigFileName(AnsiString exename);
+	AnsiString GetUserConfigFileName(AnsiString exename);
+
+	// misc
+	unsigned int __fastcall FindOptionAreaOffset(AnsiString target);
+
+	AnsiString ReadOptionSectionFromExe(AnsiString filename, int section);
+	void WriteOptionSectionToExe(AnsiString filename, int section, AnsiString content);
+
+	// read stuff
+	void ReadOptionsFromExe(TLayeredOption * dest, AnsiString filename);
+	void ReadOptionsFromConfFile(TLayeredOption * dest, AnsiString filename);
+	void ReadOptionsFromIni(TLayeredOption * dest, TMemIniFile * ini);
+	void ReadExcludeOptionsFromString(AnsiString str);
+	void ReadExcludeOptionsFromExe(AnsiString filename);
+	void ReadExcludeOptionsFromIni(TMemIniFile * ini);
+	static int GetSecurityOptionItem(const char *options, const char *name);
+	void ReadSecurityOptionsFromExe(AnsiString filename);
+	void ReadSecurityOptionsFromIni(TMemIniFile * ini);
+	void ReadOptions(AnsiString exename);
+	void ReadOptions() { ReadOptions(SourceExe); }
+	void ReadFromIni(TMemIniFile *ini);
+
+	// write stuff
+	void WriteOptionsToExe(const TLayeredOption * src, AnsiString filename);
+	void WriteOptionsToConfFile(const TLayeredOption * src, AnsiString filename);
+	void WriteOptionsToIni(const TLayeredOption * src, TMemIniFile * ini);
+	AnsiString ConvertExcludeOptionsToString();
+	void WriteExcludeOptionsToExe(AnsiString filename);
+	void WriteExcludeOptionsToIni(TMemIniFile * ini);
+	static void SetSecurityOptionItem(char *options, const char *name, int value);
+	void WriteSecurityOptionsToExe(AnsiString filename);
+	void WriteSecurityOptionsToIni(TMemIniFile * ini);
+	void WriteOptions(AnsiString exename);
+	void WriteOptions() { WriteOptions(TargetExe); }
+	void WriteToIni(TMemIniFile *ini);
 };
 //---------------------------------------------------------------------------
 extern PACKAGE TConfMainFrame *ConfMainFrame;

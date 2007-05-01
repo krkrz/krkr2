@@ -56,9 +56,7 @@ __fastcall TRelSettingsForm::TRelSettingsForm(TComponent* Owner)
 	StaticText1->Top = PageControl->Top;
 	StaticText1->Left = SaveProfileButton->Left - StaticText1->Width - SPACER;
 
-	ConfMainFrame->SourceExe = GetKrKrFileName();
-	ConfMainFrame->LoadOptionsFromExe(1);
-	ConfMainFrame->ReadOptionInfoFromExe();
+	ConfMainFrame->ReadOptionInfoFromExe(GetKrKrFileName());
 
 	if(!XP3EncDLLAvailable) UseXP3EncDLLCheck->Visible = false;
 }
@@ -351,13 +349,12 @@ void __fastcall TRelSettingsForm::SaveProfileToIni(TMemIniFile *ini)
 	ini->WriteBool("Options", "CompressIndex", CompressIndexCheck->Checked);
 	ini->WriteBool("Options", "UseXP3EncDLL", UseXP3EncDLLCheck->Checked);
 
-	ConfMainFrame->SaveProfileToIni(ini);
+	ConfMainFrame->WriteToIni(ini);
 }
 //---------------------------------------------------------------------------
 void __fastcall TRelSettingsForm::LoadProfileFromIni(TMemIniFile *ini)
 {
-	ConfMainFrame->LoadOptionsFromExe(0);
-	ConfMainFrame->LoadProfileFromIni(ini);
+	ConfMainFrame->ReadFromIni(ini);
 
 	ExecutableRadio->Checked = ini->ReadBool("Output", "Executable",
 		false);

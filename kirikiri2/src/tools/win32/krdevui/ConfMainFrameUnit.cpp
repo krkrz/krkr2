@@ -9,6 +9,7 @@
 
 #ifndef TVP_ENVIRON
 	#include <vcl.h>
+	#include <Registry.hpp>
 	#pragma hdrstop
 #else
 	#include "tjsCommHead.h"
@@ -20,6 +21,224 @@
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
 #pragma resource "*.dfm"
+
+
+
+
+
+//---------------------------------------------------------------------------
+static int HexNum(char ch)
+{
+	if(ch>='a' && ch<='f')return ch-'a'+10;
+	if(ch>='A' && ch<='F')return ch-'A'+10;
+	if(ch>='0' && ch<='9')return ch-'0';
+	return -1;
+}
+//---------------------------------------------------------------------------
+static AnsiString EncodeString(AnsiString str)
+{
+	if(str == "") return "\"\"";
+
+#ifdef TVP_ENVIRON
+	ttstr ws(str.c_str());
+	const wchar_t *p = ws.c_str();
+#else
+	WideString ws(str);
+	const wchar_t *p = ws.c_bstr();
+#endif
+
+	AnsiString ret = "\"";
+	while(*p)
+	{
+		char tmp[10];
+		sprintf(tmp, "\\x%X", *p);
+		ret += tmp;
+		p++;
+	}
+	return ret + "\"";
+}
+//---------------------------------------------------------------------------
+static AnsiString DecodeString(AnsiString str)
+{
+	if(str == "") return "";
+
+#ifdef TVP_ENVIRON
+	ttstr ret;
+#else
+	WideString ret;
+#endif
+
+	const char *p = str.c_str();
+
+	if(p[0] != '\"') return str;
+
+	p++;
+	while(*p)
+	{
+		if(*p != '\\') break;
+		p++;
+		if(*p != 'x') break;
+		p++;
+		wchar_t ch = 0;
+		while(true)
+		{
+			int n = HexNum(*p);
+			if(n == -1) break;
+			ch <<= 4;
+			ch += n;
+			p++;
+		}
+		ret += ch;
+	}
+
+#ifdef TVP_ENVIRON
+	return ret.AsAnsiString();
+#else
+	return AnsiString(ret);
+#endif
+}
+//---------------------------------------------------------------------------
+
+
+
+
+
+//---------------------------------------------------------------------------
+TLayeredOption::TLayeredOption()
+{
+	Parent = NULL;
+	Strings = new TStringList();
+}
+//---------------------------------------------------------------------------
+TLayeredOption::~TLayeredOption()
+{
+	delete Strings;
+}
+//---------------------------------------------------------------------------
+void TLayeredOption::Clear()
+{
+	Strings->Text = "";
+}
+//---------------------------------------------------------------------------
+void TLayeredOption::FromString(const AnsiString & content)
+{
+	Strings->Text = content;
+}
+//---------------------------------------------------------------------------
+void TLayeredOption::LoadFromIni(TMemIniFile * ini)
+{
+	ini->ReadSection("Executable-options", Strings);
+}
+//---------------------------------------------------------------------------
+void TLayeredOption::LoadFromFile(const AnsiString & filename)
+{
+	Strings->LoadFromFile(filename);
+}
+//---------------------------------------------------------------------------
+AnsiString TLayeredOption::ToString() const
+{
+	// for each options, exclude option which is identical to the parent value
+	AnsiString ret;
+	for(int i = 0; i < Strings->Count; i++)
+	{
+		AnsiString key = Strings->Names[i];
+		AnsiString value = DecodeString(Strings->Values[Strings->Names[i]]);
+		if(Parent)
+		{
+			AnsiString parent_value;
+			if(Parent->GetOptionValue(key, parent_value))
+			{
+				if(parent_value == value) continue; // exclude
+			}
+		}
+		ret += Strings->Strings[i] + "\r\n";
+	}
+	return ret;
+}
+//---------------------------------------------------------------------------
+void TLayeredOption::SaveToFile(const AnsiString & filename) const
+{
+	AnsiString options = ToString();
+	TFileStream * fs = new TFileStream(filename, fmCreate|fmShareDenyWrite);
+	try
+	{
+		fs->Write(options.c_str(), options.Length());
+	}
+	catch(...)
+	{
+		delete fs;
+		throw;
+	}
+	delete fs;
+}
+//---------------------------------------------------------------------------
+void TLayeredOption::SaveToIni(TMemIniFile * ini) const
+{
+	try { ini->EraseSection("Executable-option"); } catch(...) { }
+
+	TStringList * list = new TStringList();
+	try
+	{
+		list->Text = ToString();
+		for(int i = 0; i < list->Count; i++)
+		{
+			ini->WriteString("Executable-option", list->Names[i], list->Values[list->Names[i]]);
+		}
+	}
+	catch(...)
+	{
+		delete list;
+		throw;
+	}
+	delete list;
+}
+//---------------------------------------------------------------------------
+bool TLayeredOption::GetOptionValue(const AnsiString & key, AnsiString & value) const
+{
+	// search options in this object
+	for(int i = 0; i < Strings->Count; i++)
+	{
+		if(key == Strings->Names[i])
+		{
+			value = DecodeString(Strings->Values[Strings->Names[i]]);
+			return true;
+		}
+	}
+
+	// search parent
+	if(Parent) return Parent->GetOptionValue(key, value);
+	return false;
+}
+//---------------------------------------------------------------------------
+void TLayeredOption::SetOptionValue(const AnsiString & key, const AnsiString & value)
+{
+	Strings->Values[key] = EncodeString(value);
+}
+//---------------------------------------------------------------------------
+void TLayeredOption::InternalListOptionsNames(TStringList * dest) const
+{
+	for(int i = 0; i < Strings->Count; i++)
+	{
+		dest->Add(Strings->Names[i]);
+	}
+	if(Parent) Parent->InternalListOptionsNames(dest);
+}
+//---------------------------------------------------------------------------
+void TLayeredOption::ListOptionNames(TStringList * dest) const
+{
+	// list all options names, including parent namespace
+	dest->Text = "";
+	dest->Sorted = true;
+	dest->Duplicates = dupIgnore; // ignore duplicates, just overwrite
+	InternalListOptionsNames(dest);
+}
+//---------------------------------------------------------------------------
+
+
+
+
+
+
 TConfMainFrame *ConfMainFrame;
 
 #define KRKR_MAX_SIZE (4*1024*1024)
@@ -27,7 +246,7 @@ TConfMainFrame *ConfMainFrame;
 
 //---------------------------------------------------------------------------
 #ifndef TVP_ENVIRON
-void __fastcall CopyChangingIcon(AnsiString outname, AnsiString inname,
+void __fastcall ChangeIcon(AnsiString outname, AnsiString inname,
 	AnsiString iconname)
 {
 	// check input exe file
@@ -335,6 +554,88 @@ void SplitAnsiString(AnsiString str, AnsiString splitter, std::vector<AnsiString
 //---------------------------------------------------------------------------
 
 
+//---------------------------------------------------------------------------
+AnsiString ReplaceAnsiStringAll(AnsiString str, AnsiString from, AnsiString to)
+{
+	while(true)
+	{
+		int pos = str.AnsiPos("[cr]");
+		if(!pos) break;
+		AnsiString left = str.SubString(1, pos - 1);
+		AnsiString right = str.c_str() + pos + 4 - 1;
+		str = left + "\r\n" + right;
+	}
+	return str;
+}
+//---------------------------------------------------------------------------
+
+
+//---------------------------------------------------------------------------
+static AnsiString GetRegistryValue(AnsiString key, AnsiString name)
+{
+	AnsiString s;
+	TRegistry *reg = new TRegistry();
+	try
+	{
+		reg->RootKey = HKEY_CURRENT_USER;
+		reg->OpenKey(key, false); 
+		s = reg->ReadString(name);
+	}
+	__finally
+	{
+		delete reg;
+	}
+	return s;
+}
+//---------------------------------------------------------------------------
+
+
+//---------------------------------------------------------------------------
+static AnsiString GetAppPath()
+{
+	try
+	{
+		return GetRegistryValue("Software\\Microsoft\\Windows\\"
+			"CurrentVersion\\Explorer\\Shell Folders", "AppData");
+	}
+	catch(...)
+	{
+		return "";
+	}
+}
+//---------------------------------------------------------------------------
+
+
+//---------------------------------------------------------------------------
+static AnsiString GetPersonalPath()
+{
+	try
+	{
+		return GetRegistryValue("Software\\Microsoft\\Windows\\"
+			"CurrentVersion\\Explorer\\Shell Folders", "Personal");
+	}
+	catch(...)
+	{
+		return GetAppPath();
+	}
+}
+//---------------------------------------------------------------------------
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 //---------------------------------------------------------------------------
 struct TOptionData
@@ -353,6 +654,15 @@ struct TOptionData
 //---------------------------------------------------------------------------
 
 
+
+
+
+
+
+
+
+
+
 //---------------------------------------------------------------------------
 __fastcall TConfMainFrame::TConfMainFrame(TComponent* Owner)
 	: TFrame(Owner)
@@ -360,14 +670,25 @@ __fastcall TConfMainFrame::TConfMainFrame(TComponent* Owner)
 	DescGot = false;
 	ExcludeOptions = NULL;
 	UnrecognizedOptions = NULL;
-	ExcludeInvisibleOptions = false;
+	UserConfMode = false;
+	InitConfigData();
 }
 //---------------------------------------------------------------------------
 __fastcall TConfMainFrame::~TConfMainFrame()
 {
 	FreeOptionsData();
+	FreeConfigData();
 	if(ExcludeOptions) delete ExcludeOptions;
 	if(UnrecognizedOptions) delete UnrecognizedOptions;
+}
+//---------------------------------------------------------------------------
+void __fastcall TConfMainFrame::SetUserConfMode()
+{
+	ConfMainFrame->IconGroupBox->Visible = false;
+	ConfMainFrame->ReleaseOptionGroupBox->Visible = false;
+	ConfMainFrame->InvisibleCheckBox->Visible = false;
+	UserConfMode = true;
+	InitConfigData();
 }
 //---------------------------------------------------------------------------
 void __fastcall TConfMainFrame::RefIconButtonClick(TObject *Sender)
@@ -388,6 +709,153 @@ void __fastcall TConfMainFrame::RefIconButtonClick(TObject *Sender)
 
 }
 //---------------------------------------------------------------------------
+const static char * OptionsParseError = "Options parse error";
+void __fastcall TConfMainFrame::OptionsTreeViewChange(TObject *Sender,
+	  TTreeNode *Node)
+{
+	// currently only "select" and "string(<maxlength>)" option type is supported
+
+	if(!Node)
+	{
+		OptionValueComboBox->Items->Clear();
+		OptionValueComboBox->Enabled = false;
+		InvisibleCheckBox->Enabled = false;
+		InvisibleCheckBox->Checked = false;
+		RestoreDefaultButton->Enabled = false;
+		OptionValueEdit->Visible = false;
+		OptionValueComboBox->Visible = true;
+		return;
+	}
+
+	// find description
+	OptionDescMemo->Text = "";
+	TTreeNode *node = Node;
+	while(true)
+	{
+		if(node->Data)
+		{
+			TOptionData * data = ((TOptionData*)node->Data);
+			if(data && data->Description != "")
+			{
+				AnsiString desc = data->Description;
+				if(((TOptionData*)Node->Data)->OptionName != "")
+					desc = "-" + ((TOptionData*)Node->Data)->OptionName +
+						"\r\n" + desc;
+				desc = ReplaceAnsiStringAll(desc, "[cr]", "\r\n");
+				OptionDescMemo->Text = desc;
+				break;
+			}
+		}
+		node = node->Parent;
+		if(!node) break;
+	}
+
+	// set option combo box
+	OptionValueComboBox->Items->Clear();
+
+	TOptionData *data = ((TOptionData*)Node->Data);
+
+	if(data && data->OptionType != "")
+	{
+		int selectidx = -1;
+		std::vector<AnsiString> array;
+		SplitAnsiString(data->OptionType, ",", array);
+		if(array[0] == "select")
+		{
+
+			unsigned int i;
+			OptionValueComboBox->Items->BeginUpdate();
+			for(i = 1; i < array.size(); i++)
+			{
+				AnsiString str = array[i];
+				if(str.c_str()[0] == '*') str = str.c_str() + 1;
+				std::vector<AnsiString> optarray;
+				SplitAnsiString(str, ";", optarray);
+				AnsiString value;
+				if(optarray.size() <= 1)
+				{
+					value = array[i];
+					OptionValueComboBox->Items->Add(array[i]);
+				}
+				else
+				{
+					value = optarray[0];
+					OptionValueComboBox->Items->Add(optarray[1] + " / " + optarray[0]);
+				}
+				if(value == data->OptionValue) selectidx = i -1;
+			}
+			OptionValueComboBox->Items->EndUpdate();
+			OptionValueComboBox->ItemIndex = selectidx;
+			OptionValueComboBox->Enabled = true;
+			OptionValueEdit->Visible = false;
+			OptionValueComboBox->Visible = true;
+		}
+		else if(!strncmp(array[0].c_str(), "string(", 7))
+		{
+			int limit = atoi(array[0].c_str() + 7);
+			OptionValueEdit->Text = data->OptionValue;
+			OptionValueEdit->Left = OptionValueComboBox->Left;
+			OptionValueEdit->Top = OptionValueComboBox->Top;
+			OptionValueEdit->Width = OptionValueComboBox->Width;
+			OptionValueEdit->Height = OptionValueComboBox->Height;
+			OptionValueEdit->MaxLength = limit;
+			OptionValueEdit->Visible = true;
+			OptionValueComboBox->Visible = false;
+		}
+		else  throw Exception(OptionsParseError);
+		InvisibleCheckBox->Enabled = true;
+		InvisibleCheckBox->Checked = data->Invisible;
+		RestoreDefaultButton->Enabled = true;
+	}
+	else
+	{
+		OptionValueComboBox->Enabled = false;
+		InvisibleCheckBox->Enabled = false;
+		InvisibleCheckBox->Checked = false;
+		RestoreDefaultButton->Enabled = false;
+		OptionValueEdit->Visible = false;
+		OptionValueComboBox->Visible = true;
+	}
+}
+//---------------------------------------------------------------------------
+void __fastcall TConfMainFrame::OptionValueComboBoxChange(TObject *Sender)
+{
+	if(OptionsTreeView->Selected && OptionValueComboBox->ItemIndex != -1)
+	{
+		AnsiString opt =
+			OptionValueComboBox->Items->Strings[OptionValueComboBox->ItemIndex];
+		std::vector<AnsiString> array;
+		SplitAnsiString(opt, " / ", array);
+		if(array.size() <= 1)
+			SetNodeOptionValue(OptionsTreeView->Selected, opt, opt);
+		else
+			SetNodeOptionValue(OptionsTreeView->Selected, array[0], array[1]);
+	}
+}
+//---------------------------------------------------------------------------
+void __fastcall TConfMainFrame::OptionValueEditChange(TObject *Sender)
+{
+	if(OptionsTreeView->Selected)
+	{
+		AnsiString opt = OptionValueEdit->Text;
+		SetNodeOptionValue(OptionsTreeView->Selected, opt, opt);
+	}
+}
+//---------------------------------------------------------------------------
+void __fastcall TConfMainFrame::InvisibleCheckBoxClick(TObject *Sender)
+{
+	SetNodeInvisibleState(OptionsTreeView->Selected, InvisibleCheckBox->Checked);
+}
+//---------------------------------------------------------------------------
+void __fastcall TConfMainFrame::RestoreDefaultButtonClick(TObject *Sender)
+{
+	if(OptionsTreeView->Selected)
+	{
+		SetNodeDefaultOptionValue(OptionsTreeView->Selected);
+		OptionsTreeViewChange(this, OptionsTreeView->Selected);
+	}
+}
+//---------------------------------------------------------------------------
 bool __fastcall TConfMainFrame::CheckOK()
 {
 	if(ChangeIconCheck->Checked && OpenPictureDialog->FileName == "")
@@ -396,264 +864,6 @@ bool __fastcall TConfMainFrame::CheckOK()
 		if(OpenPictureDialog->FileName == "") return false;
 	}
 	return true;
-}
-//---------------------------------------------------------------------------
-void __fastcall TConfMainFrame::CopyExe(AnsiString to)
-{
-#ifndef TVP_ENVIRON
-	// copy specified exe file to destination, applying options.
-	if(ChangeIconCheck->Checked)
-	{
-		CopyChangingIcon(to, SourceExe, OpenPictureDialog->FileName);
-	}
-	else
-	{
-		TFileStream *src = NULL;
-		TFileStream *dest = NULL;
-		try
-		{
-			src = new TFileStream(SourceExe, fmOpenRead|fmShareDenyWrite);
-			dest = new TFileStream(to, fmCreate|fmShareDenyWrite);
-			dest->CopyFrom(src, 0);
-
-		}
-		catch(...)
-		{
-			if(src) delete src;
-			if(dest) delete dest;
-			throw;
-		}
-
-		if(src) delete src;
-		if(dest) delete dest;
-	}
-
-	SaveOptionsToExe(to);
-#endif
-}
-//---------------------------------------------------------------------------
-void __fastcall TConfMainFrame::ModifyExe()
-{
-#ifndef TVP_ENVIRON
-	if(ChangeIconCheck->Checked)
-	{
-		CopyChangingIcon(SourceExe, SourceExe, OpenPictureDialog->FileName);
-	}
-#endif
-	SaveOptionsToExe(SourceExe);
-}
-//---------------------------------------------------------------------------
-static int HexNum(char ch)
-{
-	if(ch>='a' && ch<='f')return ch-'a'+10;
-	if(ch>='A' && ch<='F')return ch-'A'+10;
-	if(ch>='0' && ch<='9')return ch-'0';
-	return -1;
-}
-//---------------------------------------------------------------------------
-AnsiString TConfMainFrame::EncodeString(AnsiString str)
-{
-	if(str == "") return "\"\"";
-
-#ifdef TVP_ENVIRON
-	ttstr ws(str.c_str());
-	const wchar_t *p = ws.c_str();
-#else
-	WideString ws(str);
-	const wchar_t *p = ws.c_bstr();
-#endif
-
-	AnsiString ret = "\"";
-	while(*p)
-	{
-		char tmp[10];
-		sprintf(tmp, "\\x%X", *p);
-		ret += tmp;
-		p++;
-	}
-	return ret + "\"";
-}
-//---------------------------------------------------------------------------
-AnsiString TConfMainFrame::DecodeString(AnsiString str)
-{
-	if(str == "") return "";
-
-#ifdef TVP_ENVIRON
-	ttstr ret;
-#else
-	WideString ret;
-#endif
-
-	const char *p = str.c_str();
-
-	if(p[0] != '\"') return str;
-
-	p++;
-	while(*p)
-	{
-		if(*p != '\\') break;
-		p++;
-		if(*p != 'x') break;
-		p++;
-		wchar_t ch = 0;
-		while(true)
-		{
-			int n = HexNum(*p);
-			if(n == -1) break;
-			ch <<= 4;
-			ch += n;
-			p++;
-		}
-		ret += ch;
-	}
-
-#ifdef TVP_ENVIRON
-	return ret.AsAnsiString();
-#else
-	return AnsiString(ret);
-#endif
-}
-//---------------------------------------------------------------------------
-void __fastcall TConfMainFrame::SetOptionsFromString(AnsiString ops)
-{
-	if(ops != "")
-	{
-		std::vector<AnsiString> array;
-		SplitAnsiString(ops, ",", array);
-		std::vector<AnsiString>::iterator i;
-		for(i = array.begin(); i != array.end(); i++)
-		{
-			std::vector<AnsiString> pair;
-			SplitAnsiString(*i, ":", pair);
-			if(pair.size() != 2) break; // read error
-			SetOptionValue(pair[0], pair[1]);
-		}
-	}
-}
-//---------------------------------------------------------------------------
-AnsiString __fastcall TConfMainFrame::GetOptionString()
-{
-	AnsiString options = "";
-	if(OptionsTreeView->Items->Count)
-	{
-		TTreeNode *node;
-		node = OptionsTreeView->Items->Item[0];
-		TOptionData * data;
-		do
-		{
-			data = (TOptionData*)node->Data;
-			if(data && data->OptionType != "")
-			{
-				if(data->OptionValue != data->DefaultOptionValue)
-				{
-					if(options != "") options += ",";
-					options += data->OptionName + ":" + EncodeString(data->OptionValue);
-				}
-			}
-		} while((node = node->GetNext())!=NULL);
-	}
-
-	if(UnrecognizedOptions)
-	{
-		for(int i = 0; i < UnrecognizedOptions->Count; i++)
-		{
-			AnsiString name = UnrecognizedOptions->Names[i];
-			if(name != "")
-			{
-				AnsiString value = UnrecognizedOptions->Values[name];
-				if(options != "") options += ",";
-				options += name + ":" + value;
-			}
-		}
-	}
-
-	return options;
-}
-//---------------------------------------------------------------------------
-void __fastcall TConfMainFrame::SetExcludeOptionsFromString(AnsiString str)
-{
-	std::vector<AnsiString> array;
-	SplitAnsiString(str, ",", array);
-	if(!ExcludeOptions) ExcludeOptions = new TStringList;
-	for(unsigned int i = 0; i <array.size(); i++)
-	{
-		ExcludeOptions->Values[array[i]] = "i";
-		if(OptionsTreeView->Items->Count)
-		{
-			TTreeNode *node;
-			node = OptionsTreeView->Items->Item[0];
-			TOptionData * data;
-			do
-			{
-				data = (TOptionData*)node->Data;
-
-				if(data && data->OptionName == array[i])
-				{
-					SetNodeInvisibleState(node, true);
-				}
-
-			} while((node = node->GetNext())!=NULL);
-		}
-	}
-}
-//---------------------------------------------------------------------------
-AnsiString __fastcall TConfMainFrame::GetExcludeOptionString()
-{
-	AnsiString options = "";
-	if(OptionsTreeView->Items->Count)
-	{
-		TTreeNode *node;
-		node = OptionsTreeView->Items->Item[0];
-		TOptionData * data;
-		do
-		{
-			data = (TOptionData*)node->Data;
-			if(data && data->OptionType != "")
-			{
-				if(data->Invisible)
-				{
-					if(options != "") options += ",";
-					options += data->OptionName;
-				}
-			}
-		} while((node = node->GetNext())!=NULL);
-	}
-
-	return options;
-}
-//---------------------------------------------------------------------------
-void __fastcall TConfMainFrame::LoadProfileFromIni(TMemIniFile *ini)
-{
-	ChangeIconCheck->Checked = ini->ReadBool("Executable", "ChangeIcon", false);
-
-	OpenPictureDialog->FileName = ini->ReadString("Executable", "Icon", "");
-	if(OpenPictureDialog->FileName != "")
-	{
-		try
-		{
-			IconImage->Picture->LoadFromFile(OpenPictureDialog->FileName);
-		}
-		catch(...)
-		{
-			OpenPictureDialog->FileName = "";
-		}
-	}
-
-	// read option overrides
-	AnsiString ops = ini->ReadString("Executable", "Options", "");
-	SetOptionsFromString(ops);
-	AnsiString exops = ini->ReadString("Executable", "InvisibleOptions", "");
-	SetExcludeOptionsFromString(exops);
-}
-//---------------------------------------------------------------------------
-void __fastcall TConfMainFrame::SaveProfileToIni(TMemIniFile *ini)
-{
-	ini->WriteBool("Executable", "ChangeIcon", ChangeIconCheck->Checked);
-	ini->WriteString("Executable", "Icon",  OpenPictureDialog->FileName);
-
-	// write option overrides
-	ini->WriteString("Executable", "Options", GetOptionString());
-	ini->WriteString("Executable", "InvisibleOptions", GetExcludeOptionString());
 }
 //---------------------------------------------------------------------------
 AnsiString __fastcall TConfMainFrame::GetPluginOptions(AnsiString module)
@@ -798,7 +1008,6 @@ void __fastcall TConfMainFrame::ParseData()
 	OptionsGroupBox->Caption = OriginalOptionsGroupBoxLabel;
 }
 //---------------------------------------------------------------------------
-const static char * OptionsParseError = "Options parse error";
 void __fastcall TConfMainFrame::ParseOptionsData(TStrings *options)
 {
 	// parse options data stored in tree string
@@ -827,7 +1036,7 @@ void __fastcall TConfMainFrame::ParseOptionsData(TStrings *options)
 			{
 				if(ExcludeOptions->Values[optionname] == "i")
 				{
-					if(ExcludeInvisibleOptions)
+					if(UserConfMode)
 					{
 						delete data;
 						continue;
@@ -980,7 +1189,6 @@ void __fastcall TConfMainFrame::SetOptionValue(AnsiString name, AnsiString value
 	node = OptionsTreeView->Items->Item[0];
 	TOptionData * data;
 	AnsiString orgvalue = value;
-	value = DecodeString(value);
 	do
 	{
 		data = (TOptionData*)node->Data;
@@ -1051,175 +1259,20 @@ void __fastcall TConfMainFrame::SetNodeInvisibleState(TTreeNode *node, bool invi
 //---------------------------------------------------------------------------
 void __fastcall TConfMainFrame::SetNodeDefaultOptionValue(TTreeNode *node)
 {
-	// currently only "select" option type is supported
+	// currently only "select" and "string(<maxlength>)" option type is supported
 
 	std::vector<AnsiString> array;
 	TOptionData * data = (TOptionData*)node->Data;
 	if(data->OptionType == "") return;
 	SetNodeOptionValue(node, data->DefaultOptionValueCaption, data->DefaultOptionValue);
+	DefaultConfigData.SetOptionValue(data->OptionName, data->DefaultOptionValue);
 }
 //---------------------------------------------------------------------------
-
-void __fastcall TConfMainFrame::OptionsTreeViewChange(TObject *Sender,
-	  TTreeNode *Node)
-{
-	// currently only "select" option type is supported
-
-	if(!Node)
-	{
-		OptionValueComboBox->Items->Clear();
-		OptionValueComboBox->Enabled = false;
-		InvisibleCheckBox->Enabled = false;
-		InvisibleCheckBox->Checked = false;
-		RestoreDefaultButton->Enabled = false;
-		OptionValueEdit->Visible = false;
-		OptionValueComboBox->Visible = true;
-		return;
-	}
-
-	// find description
-	OptionDescMemo->Text = "";
-	TTreeNode *node = Node;
-	while(true)
-	{
-		if(node->Data)
-		{
-			TOptionData * data = ((TOptionData*)node->Data);
-			if(data && data->Description != "")
-			{
-				AnsiString desc = data->Description;
-				if(((TOptionData*)Node->Data)->OptionName != "")
-					desc = "-" + ((TOptionData*)Node->Data)->OptionName +
-						"\r\n" + desc;
-				while(true)
-				{
-					int pos = desc.AnsiPos("[cr]");
-					if(!pos) break;
-					AnsiString left = desc.SubString(1, pos - 1);
-					AnsiString right = desc.c_str() + pos + 4 - 1;
-					desc = left + "\r\n" + right;
-				}
-				OptionDescMemo->Text = desc;
-				break;
-			}
-		}
-		node = node->Parent;
-		if(!node) break;
-	}
-
-	// set option combo box
-	OptionValueComboBox->Items->Clear();
-
-	TOptionData *data = ((TOptionData*)Node->Data);
-
-	if(data && data->OptionType != "")
-	{
-		int selectidx = -1;
-		std::vector<AnsiString> array;
-		SplitAnsiString(data->OptionType, ",", array);
-		if(array[0] == "select")
-		{
-
-			unsigned int i;
-			OptionValueComboBox->Items->BeginUpdate();
-			for(i = 1; i < array.size(); i++)
-			{
-				AnsiString str = array[i];
-				if(str.c_str()[0] == '*') str = str.c_str() + 1;
-				std::vector<AnsiString> optarray;
-				SplitAnsiString(str, ";", optarray);
-				AnsiString value;
-				if(optarray.size() <= 1)
-				{
-					value = array[i];
-					OptionValueComboBox->Items->Add(array[i]);
-				}
-				else
-				{
-					value = optarray[0];
-					OptionValueComboBox->Items->Add(optarray[1] + " / " + optarray[0]);
-				}
-				if(value == data->OptionValue) selectidx = i -1;
-			}
-			OptionValueComboBox->Items->EndUpdate();
-			OptionValueComboBox->ItemIndex = selectidx;
-			OptionValueComboBox->Enabled = true;
-			OptionValueEdit->Visible = false;
-			OptionValueComboBox->Visible = true;
-		}
-		else if(!strncmp(array[0].c_str(), "string(", 7))
-		{
-			int limit = atoi(array[0].c_str() + 7);
-			OptionValueEdit->Text = data->OptionValue;
-			OptionValueEdit->Left = OptionValueComboBox->Left;
-			OptionValueEdit->Top = OptionValueComboBox->Top;
-			OptionValueEdit->Width = OptionValueComboBox->Width;
-			OptionValueEdit->Height = OptionValueComboBox->Height;
-			OptionValueEdit->MaxLength = limit;
-			OptionValueEdit->Visible = true;
-			OptionValueComboBox->Visible = false;
-		}
-		else  throw Exception(OptionsParseError);
-		InvisibleCheckBox->Enabled = true;
-		InvisibleCheckBox->Checked = data->Invisible;
-		RestoreDefaultButton->Enabled = true;
-	}
-	else
-	{
-		OptionValueComboBox->Enabled = false;
-		InvisibleCheckBox->Enabled = false;
-		InvisibleCheckBox->Checked = false;
-		RestoreDefaultButton->Enabled = false;
-		OptionValueEdit->Visible = false;
-		OptionValueComboBox->Visible = true;
-	}
-}
-//---------------------------------------------------------------------------
-void __fastcall TConfMainFrame::OptionValueComboBoxChange(TObject *Sender)
-{
-	if(OptionsTreeView->Selected && OptionValueComboBox->ItemIndex != -1)
-	{
-		AnsiString opt =
-			OptionValueComboBox->Items->Strings[OptionValueComboBox->ItemIndex];
-		std::vector<AnsiString> array;
-		SplitAnsiString(opt, " / ", array);
-		if(array.size() <= 1)
-			SetNodeOptionValue(OptionsTreeView->Selected, opt, opt);
-		else
-			SetNodeOptionValue(OptionsTreeView->Selected, array[0], array[1]);
-	}
-}
-//---------------------------------------------------------------------------
-void __fastcall TConfMainFrame::OptionValueEditChange(TObject *Sender)
-{
-	if(OptionsTreeView->Selected)
-	{
-		AnsiString opt = OptionValueEdit->Text;
-		SetNodeOptionValue(OptionsTreeView->Selected, opt, opt);
-	}
-}
-//---------------------------------------------------------------------------
-void __fastcall TConfMainFrame::InvisibleCheckBoxClick(TObject *Sender)
-{
-	SetNodeInvisibleState(OptionsTreeView->Selected, InvisibleCheckBox->Checked);
-}
-//---------------------------------------------------------------------------
-void __fastcall TConfMainFrame::RestoreDefaultButtonClick(TObject *Sender)
-{
-	if(OptionsTreeView->Selected)
-	{
-		SetNodeDefaultOptionValue(OptionsTreeView->Selected);
-		OptionsTreeViewChange(this, OptionsTreeView->Selected);
-	}
-}
-//---------------------------------------------------------------------------
-void __fastcall TConfMainFrame::ReadOptionInfoFromExe()
+void __fastcall TConfMainFrame::ReadOptionInfoFromExe(AnsiString exename)
 {
 	if(DescGot) return;
 
-	if(!FileExists(SourceExe)) return;
-
-	GetSecurityOptionFromExe(SourceExe);
+	if(!FileExists(exename)) return;
 
 	// get temporary file name
 	char dir[MAX_PATH];
@@ -1237,7 +1290,7 @@ void __fastcall TConfMainFrame::ReadOptionInfoFromExe()
 	OriginalOptionsGroupBoxLabel = OptionsGroupBox->Caption;
 	OptionsGroupBox->Caption = ReadingOptionsLabel->Caption;
 
-	if(WinExec(("\"" + SourceExe + "\" -@cmddesc " +
+	if(WinExec(("\"" + exename + "\" -@cmddesc " +
 		AnsiString(reinterpret_cast<int>(Handle)) + " \"" +
 		OptionsFileName + "\" \"" + eventname + "\"").c_str(), SW_HIDE) <= 31)
 		OptionsGroupBox->Caption = OptionsReadFailedLabel->Caption;
@@ -1245,7 +1298,7 @@ void __fastcall TConfMainFrame::ReadOptionInfoFromExe()
 	if(WAIT_TIMEOUT	== WaitForSingleObject(event, 10000))
 	{
 		CloseHandle(event);
-		throw Exception("The program \"" + SourceExe + "\" did not reply!");
+		throw Exception("The program \"" + exename + "\" did not reply!");
 	}
 	CloseHandle(event);
 
@@ -1254,118 +1307,200 @@ void __fastcall TConfMainFrame::ReadOptionInfoFromExe()
 	DescGot = true;
 }
 //---------------------------------------------------------------------------
-void __fastcall TConfMainFrame::LoadOptionsFromExe(int mode)
-{
-	// mode=0 : normal options
-	// mode=1 : excluded options
 
-	// ".conf" file exists?
-	bool confmode = false;
-	AnsiString conffilename = ChangeFileExt(SourceExe, ".tof");
-	if(FileExists(conffilename))
+
+
+
+
+
+
+
+
+
+
+
+//---------------------------------------------------------------------------
+void __fastcall TConfMainFrame::CopyExe(AnsiString to)
+{
+#ifndef TVP_ENVIRON
+	// copy specified exe file to destination, applying options.
+	if(ChangeIconCheck->Checked)
 	{
-		TStream *stream = NULL;
-		stream = new TFileStream(conffilename, fmOpenRead|fmShareDenyWrite);
-		int size = stream->Size;
-		delete stream;
-		if(size != 0)
-			confmode = true;
+		ChangeIcon(to, SourceExe, OpenPictureDialog->FileName);
+	}
+	else
+	{
+		TFileStream *src = NULL;
+		TFileStream *dest = NULL;
+		try
+		{
+			src = new TFileStream(SourceExe, fmOpenRead|fmShareDenyWrite);
+			dest = new TFileStream(to, fmCreate|fmShareDenyWrite);
+			dest->CopyFrom(src, 0);
+
+		}
+		catch(...)
+		{
+			if(src) delete src;
+			if(dest) delete dest;
+			throw;
+		}
+
+		if(src) delete src;
+		if(dest) delete dest;
+	}
+#endif
+}
+//---------------------------------------------------------------------------
+
+
+
+
+
+
+
+
+//---------------------------------------------------------------------------
+void TConfMainFrame::InitConfigData()
+{
+	if(UserConfMode)
+	{
+		UserConfigData.SetParent(&ConfigData);
+		ConfigData.SetParent(&EmbeddedConfigData);
+		EmbeddedConfigData.SetParent(&DefaultConfigData);
+		TargetConfigData = &UserConfigData;
+	}
+	else
+	{
+		ConfigData.SetParent(&EmbeddedConfigData);
+		EmbeddedConfigData.SetParent(&DefaultConfigData);
+		TargetConfigData = &ConfigData;
 	}
 
-	if(!confmode) conffilename = SourceExe;
+	if(!ExcludeOptions) ExcludeOptions = new TStringList();
+}
+//---------------------------------------------------------------------------
+void TConfMainFrame::FreeConfigData()
+{
+	delete ExcludeOptions, ExcludeOptions = NULL;
+}
+//---------------------------------------------------------------------------
+void TConfMainFrame::ApplyReadDataToUI()
+{
+	// apply exclude options
+	if(OptionsTreeView->Items->Count)
+	{
+		for(int i = 0; i < ExcludeOptions->Count; i++)
+		{
+			AnsiString optionname = ExcludeOptions->Names[i];
+			TTreeNode *node;
+			node = OptionsTreeView->Items->Item[0];
+			TOptionData * data;
+			do
+			{
+				data = (TOptionData*)node->Data;
 
-	// find "XOPT_EMBED_AREA_"
-	if(!confmode && !FileExists(SourceExe)) return;
+				if(data && data->OptionName == optionname)
+				{
+					SetNodeInvisibleState(node, true);
+				}
 
-	unsigned int offset = confmode?0:FindOptionAreaOffset(conffilename);
+			} while((node = node->GetNext())!=NULL);
+		}
+	}
 
-	TStream *stream = NULL;
-	unsigned char *buf = NULL;
-	stream = new TFileStream(conffilename, fmOpenRead|fmShareDenyWrite);
-
+	// apply option values
+	TStringList * option_names = new TStringList();
 	try
 	{
-		if(!confmode) stream->Position = offset + 16;
-
-		// read options area size
-		unsigned int size = stream->Size;
-		if(!confmode) stream->Read(&size, 4);
-
-		// allocate buffer and read options
-		if(!confmode || stream->Size > 0)
+		TargetConfigData->ListOptionNames(option_names);
+		for(int i = 0; i < option_names->Count; i++)
 		{
-			buf = new unsigned char[confmode?stream->Size:size];
-			if(size) stream->Read(buf, size);
-
-			AnsiString ops = (char*)buf;
-			if(mode == 0)
-				SetOptionsFromString(ops);
-
-			ops = (char*)buf + ops.Length() + 1;
-			OrgExcludeOptions = ops;
-			if(mode == 1)
-				SetExcludeOptionsFromString(ops);
+			AnsiString value;
+			if(TargetConfigData->GetOptionValue(option_names->Strings[i], value))
+			{
+				SetOptionValue(option_names->Strings[i], value);
+			}
 		}
 	}
 	catch(...)
 	{
-		if(buf) delete [] buf;
-		delete stream;
+		delete option_names;
 		throw;
 	}
+	delete option_names;
 
-	delete [] buf;
-	delete stream;
 }
 //---------------------------------------------------------------------------
-void __fastcall TConfMainFrame::SaveOptionsToExe(AnsiString target)
+void TConfMainFrame::ApplyUIDataToConfigData()
 {
-	SetSecurityOptionToExe(target);
-
-	// ".conf" file exists?
-	bool confmode = false;
-	AnsiString conffilename = ChangeFileExt(target, ".tof");
-	if(FileExists(conffilename))
-		confmode = true;
-	else
-		conffilename = target;
-
-	// find "XOPT_EMBED_AREA_"
-	unsigned int offset = confmode?0:FindOptionAreaOffset(conffilename);
-
-	TStream *stream = NULL;
-	stream = new TFileStream(conffilename,
-		confmode ?
-			(fmOpenWrite|fmShareDenyWrite):(fmOpenReadWrite|fmShareDenyWrite));
-
-	try
+	// apply exclude options
+	ExcludeOptions->Clear();
+	if(OptionsTreeView->Items->Count)
 	{
-		if(!confmode) stream->Position = offset + 16;
-
-		// read options area size
-		unsigned int size = 0;
-		if(!confmode) stream->Read(&size, 4);
-
-		// allocate buffer and read options
-		AnsiString options = GetOptionString();
-		AnsiString exoptions;
-		if(!ExcludeInvisibleOptions)
-			exoptions = GetExcludeOptionString();
-		else
-			exoptions = OrgExcludeOptions;
-		if(!confmode && options.Length() + 1 + exoptions.Length() + 1>= (int)size)
-			throw Exception("Too large options string.");
-
-		stream->Write(options.c_str(), options.Length()+1);
-		stream->Write(exoptions.c_str(), exoptions.Length()+1);
-	}
-	catch(...)
-	{
-		delete stream;
-		throw;
+		TTreeNode *node;
+		node = OptionsTreeView->Items->Item[0];
+		TOptionData * data;
+		do
+		{
+			data = (TOptionData*)node->Data;
+			if(data && data->OptionType != "")
+			{
+				if(data->Invisible)
+				{
+					ExcludeOptions->Values[data->OptionName] = "i";
+				}
+			}
+		} while((node = node->GetNext())!=NULL);
 	}
 
-	delete stream;
+	// apply option values
+	if(OptionsTreeView->Items->Count)
+	{
+		TTreeNode *node;
+		node = OptionsTreeView->Items->Item[0];
+		TOptionData * data;
+		do
+		{
+			data = (TOptionData*)node->Data;
+
+			if(data && data->OptionType != "")
+			{
+				TargetConfigData->SetOptionValue(data->OptionName, data->OptionValue);
+			}
+
+		} while((node = node->GetNext())!=NULL);
+	}
+}
+//---------------------------------------------------------------------------
+void TConfMainFrame::SetSourceAndTargetFileName(AnsiString source, AnsiString target)
+{
+	SourceExe = source;
+	TargetExe = target;
+}
+//---------------------------------------------------------------------------
+AnsiString TConfMainFrame::GetConfigFileName(AnsiString exename)
+{
+	return ChangeFileExt(exename, ".cf");
+}
+//---------------------------------------------------------------------------
+AnsiString TConfMainFrame::GetUserConfigFileName(AnsiString exename)
+{
+	// exepath, personalpath, appdatapath
+	AnsiString exepath = ExcludeTrailingBackslash(ExtractFileDir(exename));
+	AnsiString personalpath = ExcludeTrailingBackslash(GetPersonalPath());
+	AnsiString apppath = ExcludeTrailingBackslash(GetAppPath());
+	if(personalpath == "") personalpath = exepath;
+	if(apppath == "") apppath = exepath;
+
+	AnsiString datapath;
+	if(!TargetConfigData->GetOptionValue("datapath", datapath))
+		return ChangeFileExt(exename, ".cfu");
+
+	datapath = ReplaceAnsiStringAll(datapath, "$(exepath)", exepath);
+	datapath = ReplaceAnsiStringAll(datapath, "$(personalpath)", personalpath);
+	datapath = ReplaceAnsiStringAll(datapath, "$(apppath)", apppath);
+	return ExcludeTrailingBackslash(datapath) + "\\" + ExtractFileName(ChangeFileExt(exename, ".cfu"));
 }
 //---------------------------------------------------------------------------
 unsigned int __fastcall TConfMainFrame::FindOptionAreaOffset(AnsiString target)
@@ -1417,6 +1552,162 @@ unsigned int __fastcall TConfMainFrame::FindOptionAreaOffset(AnsiString target)
 	return offset;
 }
 //---------------------------------------------------------------------------
+AnsiString TConfMainFrame::ReadOptionSectionFromExe(AnsiString filename, int section)
+{
+	unsigned int offset = FindOptionAreaOffset(filename);
+
+	TStream *stream = NULL;
+	unsigned char *buf = NULL;
+	stream = new TFileStream(filename, fmOpenRead|fmShareDenyWrite);
+
+	AnsiString opts;
+
+	try
+	{
+		stream->Position = offset + 16;
+
+		// read options area size
+		unsigned int size;
+		stream->Read(&size, sizeof(size));
+
+		// allocate buffer and read options
+		buf = new unsigned char[size];
+		if(size) stream->Read(buf, size);
+		unsigned char * p = buf;
+
+		while(true)
+		{
+			opts = (char*)p;
+			if(section == 0) break;
+			section --;
+			p += opts.Length() + 1;
+		}
+	}
+	catch(...)
+	{
+		if(buf) delete [] buf;
+		delete stream;
+		throw;
+	}
+
+	delete [] buf;
+	delete stream;
+
+	return opts;
+}
+//---------------------------------------------------------------------------
+void TConfMainFrame::WriteOptionSectionToExe(AnsiString filename, int section, AnsiString content)
+{
+	unsigned int offset = FindOptionAreaOffset(filename);
+
+	TStream *stream = NULL;
+	unsigned char *buf = NULL;
+	stream = new TFileStream(filename, fmOpenRead|fmShareDenyWrite);
+
+	AnsiString opts;
+
+	try
+	{
+		stream->Position = offset + 16;
+
+		// read options area size
+		unsigned int size;
+		stream->Read(&size, sizeof(size));
+
+		// allocate buffer and read all options
+		std::vector<AnsiString> array;
+
+		buf = new unsigned char[size];
+		if(size) stream->Read(buf, size);
+		unsigned char * p = buf;
+
+		for(int i = 0; i < 2; i++)  // 2 = max sections
+		{
+			AnsiString str = (char*)p;
+			array.push_back(str);
+			p += str.Length() + 1;
+		}
+
+		// replace specified section
+		array[section] = content;
+
+		// check total length
+		unsigned int new_size = 0;
+		for(std::vector<AnsiString>::iterator i = array.begin();
+			i != array.end(); i++)
+		{
+			new_size += i->Length() + 1;
+		}
+
+		if(new_size > size)
+			throw Exception("Too large options string.");
+
+		// write back to the buffer
+		p = buf;
+		for(std::vector<AnsiString>::iterator i = array.begin();
+			i != array.end(); i++)
+		{
+			strcpy(p, i->c_str());
+			p += i->Length() + 1;
+		}
+
+		// write back to the file
+		delete stream, stream = NULL;
+		stream = new TFileStream(filename, fmOpenWrite|fmShareDenyWrite);
+		stream->Position = offset + 16 + sizeof(size);
+		stream->Write(buf, new_size);
+
+	}
+	catch(...)
+	{
+		if(buf) delete [] buf;
+		delete stream;
+		throw;
+	}
+
+	delete [] buf;
+	delete stream;
+}
+//---------------------------------------------------------------------------
+void TConfMainFrame::ReadOptionsFromExe(TLayeredOption * dest, AnsiString filename)
+{
+	AnsiString opts = ReadOptionSectionFromExe(filename, 0);
+	dest->FromString(opts);
+}
+//---------------------------------------------------------------------------
+void TConfMainFrame::ReadOptionsFromConfFile(TLayeredOption * dest, AnsiString filename)
+{
+	if(FileExists(filename))
+		dest->LoadFromFile(filename);
+	else
+		dest->Clear();
+}
+//---------------------------------------------------------------------------
+void TConfMainFrame::ReadOptionsFromIni(TLayeredOption * dest, TMemIniFile * ini)
+{
+	dest->LoadFromIni(ini);
+}
+//---------------------------------------------------------------------------
+void TConfMainFrame::ReadExcludeOptionsFromString(AnsiString str)
+{
+	std::vector<AnsiString> array;
+	SplitAnsiString(str, ",", array);
+	for(unsigned int i = 0; i <array.size(); i++)
+	{
+		ExcludeOptions->Values[array[i]] = "i";
+	}
+}
+//---------------------------------------------------------------------------
+void TConfMainFrame::ReadExcludeOptionsFromExe(AnsiString filename)
+{
+	ReadExcludeOptionsFromString(ReadOptionSectionFromExe(filename, 1));
+}
+//---------------------------------------------------------------------------
+void TConfMainFrame::ReadExcludeOptionsFromIni(TMemIniFile * ini)
+{
+	ReadExcludeOptionsFromString(ini->ReadString("Executable-exclude-options", "ExcludeOptions", ""));
+}
+//---------------------------------------------------------------------------
 int TConfMainFrame::GetSecurityOptionItem(const char *options, const char *name)
 {
 	size_t namelen = strlen(name);
@@ -1427,9 +1718,9 @@ int TConfMainFrame::GetSecurityOptionItem(const char *options, const char *name)
 	return 0;
 }
 //---------------------------------------------------------------------------
-void __fastcall TConfMainFrame::GetSecurityOptionFromExe(AnsiString exe)
+void TConfMainFrame::ReadSecurityOptionsFromExe(AnsiString filename)
 {
-	TStream *stream = new TFileStream(exe, fmOpenRead|fmShareDenyWrite);
+	TStream *stream = new TFileStream(filename, fmOpenRead|fmShareDenyWrite);
 	unsigned char *buf = NULL;
 	size_t read_size;
 	try
@@ -1437,7 +1728,7 @@ void __fastcall TConfMainFrame::GetSecurityOptionFromExe(AnsiString exe)
 		buf = new unsigned char [KRKR_MAX_SIZE];
 		read_size = stream->Read(buf, KRKR_MAX_SIZE);
 
-		for(int i = 0; i < read_size; i++)
+		for(unsigned int i = 0; i < read_size; i++)
 		{
 			if(buf[i] == '-' && buf[i+1] == '-')
 			{
@@ -1461,6 +1752,80 @@ void __fastcall TConfMainFrame::GetSecurityOptionFromExe(AnsiString exe)
 	delete [] buf;
 }
 //---------------------------------------------------------------------------
+void TConfMainFrame::ReadSecurityOptionsFromIni(TMemIniFile * ini)
+{
+	DisableMessageMapCheckBox->Checked =
+		ini->ReadBool("Executable-security-options", "DisableMessageMap", false);
+	ForceDataXP3CheckBox->Checked =
+		ini->ReadBool("Executable-security-options", "ForceDataXP3", false);
+}
+//---------------------------------------------------------------------------
+void TConfMainFrame::ReadOptions(AnsiString exename)
+{
+	ReadOptionsFromExe(&EmbeddedConfigData, exename);
+
+	if(UserConfMode)
+	{
+		ReadOptionsFromConfFile(&ConfigData, GetConfigFileName(exename));
+		ReadOptionsFromConfFile(&UserConfigData, GetUserConfigFileName(exename));
+		ReadExcludeOptionsFromExe(exename);
+	}
+	else
+	{
+		ReadOptionsFromConfFile(&ConfigData, GetConfigFileName(exename));
+		ReadSecurityOptionsFromExe(exename);
+		UserConfigData.Clear();
+		ReadExcludeOptionsFromExe(exename);
+	}
+}
+//---------------------------------------------------------------------------
+void TConfMainFrame::ReadFromIni(TMemIniFile *ini)
+{
+	ReadOptionsFromIni(TargetConfigData, ini);
+	ReadExcludeOptionsFromIni(ini);
+	ReadSecurityOptionsFromIni(ini);
+}
+//---------------------------------------------------------------------------
+void TConfMainFrame::WriteOptionsToExe(const TLayeredOption * src, AnsiString filename)
+{
+	WriteOptionSectionToExe(filename, 0, src->ToString());
+}
+//---------------------------------------------------------------------------
+void TConfMainFrame::WriteOptionsToConfFile(const TLayeredOption * src, AnsiString filename)
+{
+	src->SaveToFile(filename);
+}
+//---------------------------------------------------------------------------
+void TConfMainFrame::WriteOptionsToIni(const TLayeredOption * src, TMemIniFile * ini)
+{
+	src->SaveToIni(ini);
+}
+//---------------------------------------------------------------------------
+AnsiString TConfMainFrame::ConvertExcludeOptionsToString()
+{
+	AnsiString str;
+	for(int i = 0; i < ExcludeOptions->Count; i++)
+	{
+		if(ExcludeOptions->Values[ExcludeOptions->Names[i]] == "i")
+		{
+			if(str != "") str += ",";
+			str += ExcludeOptions->Names[i];
+		}
+	}
+	return str;
+}
+//---------------------------------------------------------------------------
+void TConfMainFrame::WriteExcludeOptionsToExe(AnsiString filename)
+{
+	// join with ','
+	WriteOptionSectionToExe(filename, 1, ConvertExcludeOptionsToString());
+}
+//---------------------------------------------------------------------------
+void TConfMainFrame::WriteExcludeOptionsToIni(TMemIniFile * ini)
+{
+	ini->WriteString("Executable-exclude-options", "ExcludeOptions", ConvertExcludeOptionsToString());
+}
+//---------------------------------------------------------------------------
 void TConfMainFrame::SetSecurityOptionItem(char *options, const char *name, int value)
 {
 	size_t namelen = strlen(name);
@@ -1470,9 +1835,9 @@ void TConfMainFrame::SetSecurityOptionItem(char *options, const char *name, int 
 		p[namelen+1] = (char)(value + '0');
 }
 //---------------------------------------------------------------------------
-void __fastcall TConfMainFrame::SetSecurityOptionToExe(AnsiString exe)
+void TConfMainFrame::WriteSecurityOptionsToExe(AnsiString filename)
 {
-	TStream *stream = new TFileStream(exe, fmOpenRead|fmShareDenyWrite);
+	TStream *stream = new TFileStream(filename, fmOpenRead|fmShareDenyWrite);
 	unsigned char *buf = NULL;
 	size_t read_size;
 	try
@@ -1480,7 +1845,7 @@ void __fastcall TConfMainFrame::SetSecurityOptionToExe(AnsiString exe)
 		buf = new unsigned char [KRKR_MAX_SIZE];
 		read_size = stream->Read(buf, KRKR_MAX_SIZE);
 
-		for(int i = 0; i < read_size; i++)
+		for(unsigned int i = 0; i < read_size; i++)
 		{
 			if(buf[i] == '-' && buf[i+1] == '-')
 			{
@@ -1496,7 +1861,7 @@ void __fastcall TConfMainFrame::SetSecurityOptionToExe(AnsiString exe)
 		delete stream; stream = NULL;
 		try
 		{
-			stream = new TFileStream(exe, fmOpenWrite|fmShareDenyWrite);
+			stream = new TFileStream(filename, fmOpenWrite|fmShareDenyWrite);
 			stream->WriteBuffer(buf, read_size);
 		}
 		catch(...)
@@ -1522,5 +1887,34 @@ void __fastcall TConfMainFrame::SetSecurityOptionToExe(AnsiString exe)
 	delete [] buf;
 }
 //---------------------------------------------------------------------------
-
+void TConfMainFrame::WriteSecurityOptionsToIni(TMemIniFile * ini)
+{
+	ini->WriteBool("Executable-security-options", "DisableMessageMap", DisableMessageMapCheckBox->Checked);
+	ini->WriteBool("Executable-security-options", "ForceDataXP3", ForceDataXP3CheckBox->Checked);
+}
+//---------------------------------------------------------------------------
+void TConfMainFrame::WriteOptions(AnsiString exename)
+{
+	ApplyUIDataToConfigData();
+	if(UserConfMode)
+	{
+		WriteOptionsToConfFile(&UserConfigData, GetUserConfigFileName(exename));
+	}
+	else
+	{
+		WriteOptionsToConfFile(&ConfigData, GetConfigFileName(exename));
+		WriteExcludeOptionsToExe(exename);
+		WriteSecurityOptionsToExe(exename);
+		if(ChangeIconCheck->Checked)
+			ChangeIcon(exename, exename, OpenPictureDialog->FileName);
+	}
+}
+//---------------------------------------------------------------------------
+void TConfMainFrame::WriteToIni(TMemIniFile *ini)
+{
+	WriteOptionsToIni(TargetConfigData, ini);
+	WriteExcludeOptionsToIni(ini);
+	WriteSecurityOptionsToIni(ini);
+}
+//---------------------------------------------------------------------------
 
