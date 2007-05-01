@@ -188,9 +188,7 @@ WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 		Application->Initialize();
 
 		if(TVPCheckCmdDescription()) return 0;
-		if(TVPExecuteUserConfig1()) return 0; // userconf stage 1
-		if(TVPExecuteUserConfig2()) return 0; // userconf stage 2
-		if(TVPExecuteUserConfig3()) return 0; // userconf stage 3
+		if(TVPExecuteUserConfig()) return 0; // userconf
 
 		TVPSystemInit();
 

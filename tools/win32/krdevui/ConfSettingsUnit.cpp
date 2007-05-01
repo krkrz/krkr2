@@ -21,7 +21,7 @@
 TConfSettingsForm *ConfSettingsForm;
 //---------------------------------------------------------------------------
 #define SPACER 6
-__fastcall TConfSettingsForm::TConfSettingsForm(TComponent* Owner, bool userconfmode)
+__fastcall TConfSettingsForm::TConfSettingsForm(TComponent* Owner, bool userconf)
 	: TForm(Owner)
 {
 	// adjust components
@@ -37,7 +37,7 @@ __fastcall TConfSettingsForm::TConfSettingsForm(TComponent* Owner, bool userconf
 	ConfMainFrame->Width = ClientWidth - SPACER * 2;
 	ConfMainFrame->Height = ClientHeight - SPACER * 2 - SPACER - CancelButton->Height;
 
-	if(userconfmode)
+	if(userconf)
 	{
 		ConfMainFrame->SetUserConfMode();
 		IconChangeWarnLabel->Visible = false;
@@ -85,9 +85,6 @@ bool __fastcall TConfSettingsForm::InitializeConfig(AnsiString filename)
 			return false;
 		}
 	}
-
-	// load option descriptions from executable
-	ConfMainFrame->ReadOptionInfoFromExe(filename);
 
 	// load options and option information
 	try

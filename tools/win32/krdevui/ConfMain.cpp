@@ -22,14 +22,18 @@
 extern "C" void _export PASCAL UIExecConfig()
 {
 	AnsiString file;
+	bool userconf = false;
 	int paramcount = ParamCount();
 	for(int i = 1; i <= paramcount; i++)
 	{
 		AnsiString param = ParamStr(i);
-		if(param.c_str()[0] != '-') file = param;
+		if(param.c_str()[0] != '-')
+			file = param;
+		else if(param == "-userconf")
+			userconf = true;
 	}
 
-	TConfSettingsForm *form = new TConfSettingsForm(Application, false);
+	TConfSettingsForm *form = new TConfSettingsForm(Application, userconf);
 
 	if(file != "")
 	{
