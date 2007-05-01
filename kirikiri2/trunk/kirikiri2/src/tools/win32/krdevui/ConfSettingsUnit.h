@@ -31,13 +31,12 @@ __published:	// IDE 管理のコンポーネント
 	void __fastcall OKButtonClick(TObject *Sender);
 private:	// ユーザー宣言
 public:		// ユーザー宣言
-	__fastcall TConfSettingsForm(TComponent* Owner);
+	__fastcall TConfSettingsForm(TComponent* Owner, bool userconfmode);
 
 	bool __fastcall SelectFile();
 
-	bool __fastcall ProcessFile(AnsiString filename);
+	bool __fastcall InitializeConfig(AnsiString filename);
 
-	void __fastcall ShowUserConfig(AnsiString exefile);
 };
 //---------------------------------------------------------------------------
 extern PACKAGE TConfSettingsForm *ConfSettingsForm;
