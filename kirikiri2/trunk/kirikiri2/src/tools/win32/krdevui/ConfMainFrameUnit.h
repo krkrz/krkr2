@@ -107,7 +107,6 @@ protected:
 	AnsiString OptionsFileName;
 	AnsiString OriginalOptionsGroupBoxLabel;
 	AnsiString OrgExcludeOptions;
-	TStringList *UnrecognizedOptions;
 	bool UserConfMode;
 
 public:

@@ -1648,8 +1648,8 @@ static bool TVPWaitWritePermit(AnsiString fn)
 static void TVPShowUserConfig(AnsiString orgexe)
 {
 	Application->Title = ChangeFileExt(ExtractFileName(orgexe), "");
-	TConfSettingsForm *form = new TConfSettingsForm(Application);
-	form->InitializeUserConfig(orgexe);
+	TConfSettingsForm *form = new TConfSettingsForm(Application, true);
+	form->InitializeConfig(orgexe);
 	form->ShowModal();
 	delete form;
 }
@@ -1658,18 +1658,11 @@ static void TVPShowUserConfig(AnsiString orgexe)
 
 
 //---------------------------------------------------------------------------
-// TVPExecuteUserConfig1
+// TVPExecuteUserConfig
 //---------------------------------------------------------------------------
-bool TVPExecuteUserConfig1()
+bool TVPExecuteUserConfig()
 {
-	// execute user config mode
-
-	// this does:
-	//  0. check tof file existence
-	//  1. copy self to the temporary
-	//  2. execute it with "-@execconf" option
-	//  3. exit
-
+	// check command line argument
 
 	tjs_int i;
 	bool process = false;
@@ -1681,100 +1674,8 @@ bool TVPExecuteUserConfig1()
 
 	if(!process) return false;
 
-	// check tof file existence
-	AnsiString conffilename = ChangeFileExt(ParamStr(0), ".tof");
-	if(FileExists(conffilename))
-	{
-		TVPShowUserConfig(ParamStr(0));
-		return true;
-	}
-
-	// copy self to the temporary directory
-	AnsiString tempfn = (TVPGetTemporaryName() + TJS_W("_temp.exe")).AsAnsiString();
-
-	unsigned int size = TConfMainFrame::FindOptionAreaOffset(ParamStr(0));
-
-	TFileStream *instream = NULL, *outstream = NULL;
-
-	try
-	{
-		instream =
-			new TFileStream(ParamStr(0), fmOpenRead|fmShareDenyWrite);
-		outstream =
-			new TFileStream(tempfn, fmCreate|fmShareDenyWrite);
-
-		outstream->CopyFrom(instream, size);
-
-	}
-	catch(...)
-	{
-		delete instream;
-		delete outstream;
-		throw;
-	}
-
-	delete instream;
-	delete outstream;
-
-	// execute it with "-@execconf" option
-	TVPExecuteAsync("\"" + tempfn + "\" -@execconf \"" + ParamStr(0) + "\"");
-
-	// exit
-	return true;
-}
-//---------------------------------------------------------------------------
-
-
-
-
-
-
-
-//---------------------------------------------------------------------------
-// TVPExecuteUserConfig2
-//---------------------------------------------------------------------------
-bool TVPExecuteUserConfig2()
-{
 	// execute user config mode
-
-	// the temporary exe with "-@execconf" does:
-	//  1. wait until the original exe exits
-	//  2. show config dialog and let user configure
-	//  3. execute original exe with "-@eracetemp" option
-	//  4. exit
-
-	tjs_int i;
-	bool process = false;
-	AnsiString orgexe;
-	for(i=1; i<_argc; i++)
-	{
-		if(!strcmp(_argv[i], "-@execconf")) // this does not refer TVPGetCommandLine
-		{
-			process = true;
-			orgexe = _argv[i + 1];
-		}
-	}
-
-	if(!process) return false;
-
-	// wait until the original exe exits
-	bool error = !TVPWaitWritePermit(orgexe);
-
-	if(error)
-		Application->MessageBox(
-				TVPFormatMessage(
-					TVPConfigFailOriginalFileCannotBeRewritten, orgexe).AsAnsiString().c_str(),
-				ChangeFileExt(ExtractFileName(orgexe), "").c_str(), MB_OK|MB_ICONSTOP);
-
-	// show config dialog
-	if(!error)
-	{
-		TVPShowUserConfig(orgexe);
-	}
-
-
-	// execute original exe with "-@eracetemp" option
-	TVPExecuteAsync("\"" + orgexe + "\" -@eracetemp \"" + ParamStr(0) + "\"");
+	TVPShowUserConfig(ParamStr(0));
 
 	// exit
 	return true;
@@ -1784,46 +1685,3 @@ bool TVPExecuteUserConfig2()
 
 
 
-
-//---------------------------------------------------------------------------
-// TVPExecuteUserConfig3
-//---------------------------------------------------------------------------
-bool TVPExecuteUserConfig3()
-{
-	// execute user config mode
-
-	// again, original exe does:
-	//  1. wait until the temporary exe exits
-	//  2. remove the temporary exe
-
-	tjs_int i;
-	bool process = false;
-	AnsiString tempexe;
-	for(i=1; i<_argc; i++)
-	{
-		if(!strcmp(_argv[i], "-@eracetemp")) // this does not refer TVPGetCommandLine
-		{
-			process = true;
-			tempexe = _argv[i + 1];
-		}
-	}
-
-	if(!process) return false;
-
-	// wait until the original exe exits
-	bool error = !TVPWaitWritePermit(tempexe);
-	if(error)
-		throw Exception(
-				TVPFormatMessage(
-					TVPConfigFailTempExeNotErased, tempexe).AsAnsiString());
-
-	// remove the temporary exe
-	if(!DeleteFile(tempexe))
-			throw Exception(
-				TVPFormatMessage(
-					TVPConfigFailTempExeNotErased, tempexe).AsAnsiString());
-
-	// exit
-	return true;
-}
-//---------------------------------------------------------------------------
