@@ -21,7 +21,7 @@
 TConfSettingsForm *ConfSettingsForm;
 //---------------------------------------------------------------------------
 #define SPACER 6
-__fastcall TConfSettingsForm::TConfSettingsForm(TComponent* Owner)
+__fastcall TConfSettingsForm::TConfSettingsForm(TComponent* Owner, bool userconfmode)
 	: TForm(Owner)
 {
 	// adjust components
@@ -36,24 +36,32 @@ __fastcall TConfSettingsForm::TConfSettingsForm(TComponent* Owner)
 	
 	ConfMainFrame->Width = ClientWidth - SPACER * 2;
 	ConfMainFrame->Height = ClientHeight - SPACER * 2 - SPACER - CancelButton->Height;
+
+	if(userconfmode)
+	{
+		ConfMainFrame->SetUserConfMode();
+		IconChangeWarnLabel->Visible = false;
+	}
 }
 //---------------------------------------------------------------------------
 bool __fastcall TConfSettingsForm::SelectFile()
 {
 	if(OpenDialog->Execute())
 	{
-		return ProcessFile(OpenDialog->FileName);
+		return InitializeConfig(OpenDialog->FileName);
 	}
 	return false;
 }
 //---------------------------------------------------------------------------
-bool __fastcall TConfSettingsForm::ProcessFile(AnsiString filename)
+bool __fastcall TConfSettingsForm::InitializeConfig(AnsiString filename)
 {
+	// set source and target exe (will be the same)
+	ConfMainFrame->SetSourceAndTargetFileName(filename, filename);
+
 	// ensure the program is TVP or TVP's descendant
 	try
 	{
-		ConfMainFrame->SourceExe = filename;
-		ConfMainFrame->FindOptionAreaOffset(ConfMainFrame->SourceExe);
+		ConfMainFrame->FindOptionAreaOffset(filename);
 	}
 	catch(...)
 	{
@@ -62,10 +70,9 @@ bool __fastcall TConfSettingsForm::ProcessFile(AnsiString filename)
 		return false;
 	}
 
-	// ensure the program is not runnning
-	AnsiString conffilename = ChangeFileExt(filename, ".tof");
-	if(!FileExists(conffilename))
+	if(!ConfMainFrame->GetUserConfMode())
 	{
+		// ensure the program is not runnning
 		try
 		{
 			delete new TFileStream(filename, fmOpenReadWrite|
@@ -79,43 +86,43 @@ bool __fastcall TConfSettingsForm::ProcessFile(AnsiString filename)
 		}
 	}
 
+	// load option descriptions from executable
+	ConfMainFrame->ReadOptionInfoFromExe(filename);
+
 	// load options and option information
 	try
 	{
-		ConfMainFrame->LoadOptionsFromExe(1);
-		ConfMainFrame->ReadOptionInfoFromExe();
-		ConfMainFrame->LoadOptionsFromExe(0);
+		ConfMainFrame->ReadOptions();
 	}
-	catch(...)
+	catch(const Exception & e)
 	{
-		Application->MessageBox(SpecifiedFileIsNotKrKrLabel->Caption.c_str(),
+		Application->MessageBox((SpecifiedFileIsNotKrKrLabel->Caption + "\r\n" + e.Message).c_str(),
 			Caption.c_str(), MB_OK|MB_ICONSTOP);
 		return false;
 	}
+
+	// apply read data to the ui
+	ConfMainFrame->ApplyReadDataToUI();
+
 	return true;
 }
 //---------------------------------------------------------------------------
 void __fastcall TConfSettingsForm::OKButtonClick(TObject *Sender)
 {
-	if(ConfMainFrame->CheckOK())
+	try
 	{
-		ConfMainFrame->ModifyExe();
-		Application->MessageBox(FileWroteLabel->Caption.c_str(), Caption.c_str(),
-			MB_OK|MB_ICONINFORMATION);
-		ModalResult = mrOk;
+		if(ConfMainFrame->CheckOK())
+		{
+			ConfMainFrame->WriteOptions();
+			Application->MessageBox(FileWroteLabel->Caption.c_str(), Caption.c_str(),
+				MB_OK|MB_ICONINFORMATION);
+			ModalResult = mrOk;
+		}
 	}
-}
-//---------------------------------------------------------------------------
-void __fastcall TConfSettingsForm::ShowUserConfig(AnsiString exename)
-{
-	ConfMainFrame->IconGroupBox->Visible = false;
-	ConfMainFrame->ReleaseOptionGroupBox->Visible = false;
-	ConfMainFrame->InvisibleCheckBox->Visible = false;
-	IconChangeWarnLabel->Visible = false;
-	ConfMainFrame->SetExcludeOptions();
-
-	if(!ProcessFile(exename)) return;
-
-	ShowModal();
+	catch(const Exception & e)
+	{
+		Application->MessageBox(e.Message.c_str(),
+			Caption.c_str(), MB_OK|MB_ICONSTOP);
+	}
 }
 //---------------------------------------------------------------------------

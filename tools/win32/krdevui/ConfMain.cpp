@@ -29,11 +29,11 @@ extern "C" void _export PASCAL UIExecConfig()
 		if(param.c_str()[0] != '-') file = param;
 	}
 
-	TConfSettingsForm *form = new TConfSettingsForm(Application);
+	TConfSettingsForm *form = new TConfSettingsForm(Application, false);
 
 	if(file != "")
 	{
-		if(form->ProcessFile(file))
+		if(form->InitializeConfig(file))
 		{
 			form->ShowModal();
 		}
