@@ -9,7 +9,6 @@
 
 #ifndef TVP_ENVIRON
 	#include <vcl.h>
-	#include <Registry.hpp>
 	#pragma hdrstop
 #else
 	#include "tjsCommHead.h"
@@ -17,6 +16,7 @@
 
 #include <vector>
 #include <stdio.h>
+#include <Registry.hpp>
 #include "ConfMainFrameUnit.h"
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
@@ -559,11 +559,11 @@ AnsiString ReplaceAnsiStringAll(AnsiString str, AnsiString from, AnsiString to)
 {
 	while(true)
 	{
-		int pos = str.AnsiPos("[cr]");
+		int pos = str.AnsiPos(from);
 		if(!pos) break;
 		AnsiString left = str.SubString(1, pos - 1);
-		AnsiString right = str.c_str() + pos + 4 - 1;
-		str = left + "\r\n" + right;
+		AnsiString right = str.c_str() + pos + from.Length() - 1;
+		str = left + to + right;
 	}
 	return str;
 }
@@ -669,7 +669,6 @@ __fastcall TConfMainFrame::TConfMainFrame(TComponent* Owner)
 {
 	DescGot = false;
 	ExcludeOptions = NULL;
-	UnrecognizedOptions = NULL;
 	UserConfMode = false;
 	InitConfigData();
 }
@@ -679,14 +678,13 @@ __fastcall TConfMainFrame::~TConfMainFrame()
 	FreeOptionsData();
 	FreeConfigData();
 	if(ExcludeOptions) delete ExcludeOptions;
-	if(UnrecognizedOptions) delete UnrecognizedOptions;
 }
 //---------------------------------------------------------------------------
 void __fastcall TConfMainFrame::SetUserConfMode()
 {
-	ConfMainFrame->IconGroupBox->Visible = false;
-	ConfMainFrame->ReleaseOptionGroupBox->Visible = false;
-	ConfMainFrame->InvisibleCheckBox->Visible = false;
+	IconGroupBox->Visible = false;
+	ReleaseOptionGroupBox->Visible = false;
+	InvisibleCheckBox->Visible = false;
 	UserConfMode = true;
 	InitConfigData();
 }
@@ -1032,6 +1030,28 @@ void __fastcall TConfMainFrame::ParseOptionsData(TStrings *options)
 			TOptionData * data = new TOptionData();
 			data->Invisible = false;
 
+			data->OptionName = optionname;
+			data->OptionType = optiontype;
+
+			// retrieve default value
+			SplitAnsiString(data->OptionType, ",", array);
+
+			unsigned int i;
+			for(i = 1; i < array.size(); i++)
+			{
+				if(array[i].c_str()[0] == '*')
+				{
+					// default
+					GetValueCaptionAndValue(array[i],
+						data->DefaultOptionValueCaption,
+						data->DefaultOptionValue);
+				}
+			}
+
+			// set default value
+			DefaultConfigData.SetOptionValue(data->OptionName, data->DefaultOptionValue);
+
+            // exclude invisible options
 			if(ExcludeOptions)
 			{
 				if(ExcludeOptions->Values[optionname] == "i")
@@ -1044,9 +1064,6 @@ void __fastcall TConfMainFrame::ParseOptionsData(TStrings *options)
 					data->Invisible = true;
 				}
 			}
-
-			data->OptionName = optionname;
-			data->OptionType = optiontype;
 
 			// split caption and description
 			SplitAnsiString(text, ";", array);
@@ -1115,21 +1132,6 @@ void __fastcall TConfMainFrame::ParseOptionsData(TStrings *options)
 
 
 			node->Data = data;
-
-			// retrieve default value
-			SplitAnsiString(data->OptionType, ",", array);
-
-			unsigned int i;
-			for(i = 1; i < array.size(); i++)
-			{
-				if(array[i].c_str()[0] == '*')
-				{
-					// default
-					GetValueCaptionAndValue(array[i],
-						data->DefaultOptionValueCaption,
-						data->DefaultOptionValue);
-				}
-			}
 
 			// set default value
 			SetNodeDefaultOptionValue(node);
@@ -1223,9 +1225,6 @@ void __fastcall TConfMainFrame::SetOptionValue(AnsiString name, AnsiString value
 		}
 
 	} while((node = node->GetNext())!=NULL);
-
-	if(!UnrecognizedOptions) UnrecognizedOptions = new TStringList;
-	UnrecognizedOptions->Values[name] = orgvalue;
 }
 //---------------------------------------------------------------------------
 void __fastcall TConfMainFrame::SetNodeOptionValue(TTreeNode *node,
@@ -1265,7 +1264,6 @@ void __fastcall TConfMainFrame::SetNodeDefaultOptionValue(TTreeNode *node)
 	TOptionData * data = (TOptionData*)node->Data;
 	if(data->OptionType == "") return;
 	SetNodeOptionValue(node, data->DefaultOptionValueCaption, data->DefaultOptionValue);
-	DefaultConfigData.SetOptionValue(data->OptionName, data->DefaultOptionValue);
 }
 //---------------------------------------------------------------------------
 void __fastcall TConfMainFrame::ReadOptionInfoFromExe(AnsiString exename)
@@ -1647,7 +1645,7 @@ void TConfMainFrame::WriteOptionSectionToExe(AnsiString filename, int section, A
 		for(std::vector<AnsiString>::iterator i = array.begin();
 			i != array.end(); i++)
 		{
-			strcpy(p, i->c_str());
+			strcpy((char*)p, i->c_str());
 			p += i->Length() + 1;
 		}
 
@@ -1735,9 +1733,9 @@ void TConfMainFrame::ReadSecurityOptionsFromExe(AnsiString filename)
 				if(!strncmp((const char *)(buf+i+2), " TVPSystemSecurityOptions", 25))
 				{
 					DisableMessageMapCheckBox->Checked =
-							GetSecurityOptionItem(buf+i+25+2, "disablemsgmap") != 0;
+							GetSecurityOptionItem((char*)(buf+i+25+2), "disablemsgmap") != 0;
 					ForceDataXP3CheckBox->Checked =
-							GetSecurityOptionItem(buf+i+25+2, "forcedataxp3") != 0;
+							GetSecurityOptionItem((char*)(buf+i+25+2), "forcedataxp3") != 0;
 				}
 			}
 		}
@@ -1762,20 +1760,22 @@ void TConfMainFrame::ReadSecurityOptionsFromIni(TMemIniFile * ini)
 //---------------------------------------------------------------------------
 void TConfMainFrame::ReadOptions(AnsiString exename)
 {
+	ReadExcludeOptionsFromExe(exename);
 	ReadOptionsFromExe(&EmbeddedConfigData, exename);
+	ReadOptionInfoFromExe(exename);
 
 	if(UserConfMode)
 	{
 		ReadOptionsFromConfFile(&ConfigData, GetConfigFileName(exename));
 		ReadOptionsFromConfFile(&UserConfigData, GetUserConfigFileName(exename));
-		ReadExcludeOptionsFromExe(exename);
 	}
 	else
 	{
+#ifndef TVP_ENVIRON
 		ReadOptionsFromConfFile(&ConfigData, GetConfigFileName(exename));
 		ReadSecurityOptionsFromExe(exename);
 		UserConfigData.Clear();
-		ReadExcludeOptionsFromExe(exename);
+#endif
 	}
 }
 //---------------------------------------------------------------------------
@@ -1851,9 +1851,9 @@ void TConfMainFrame::WriteSecurityOptionsToExe(AnsiString filename)
 			{
 				if(!strncmp((const char *)(buf+i+2), " TVPSystemSecurityOptions", 25))
 				{
-					SetSecurityOptionItem(buf+i+25+2, "disablemsgmap",
+					SetSecurityOptionItem((char*)(buf+i+25+2), "disablemsgmap",
 						DisableMessageMapCheckBox->Checked ? 1:0);
-					SetSecurityOptionItem(buf+i+25+2, "forcedataxp3",
+					SetSecurityOptionItem((char*)(buf+i+25+2), "forcedataxp3",
 						ForceDataXP3CheckBox->Checked ? 1:0);
 				}
 			}
@@ -1902,11 +1902,13 @@ void TConfMainFrame::WriteOptions(AnsiString exename)
 	}
 	else
 	{
+#ifndef TVP_ENVIRON
 		WriteOptionsToConfFile(&ConfigData, GetConfigFileName(exename));
 		WriteExcludeOptionsToExe(exename);
 		WriteSecurityOptionsToExe(exename);
 		if(ChangeIconCheck->Checked)
 			ChangeIcon(exename, exename, OpenPictureDialog->FileName);
+#endif
 	}
 }
 //---------------------------------------------------------------------------
