@@ -87,6 +87,12 @@ protected:
 	bool first;
 	tjs_uint64 prevTick;
 	void drawSWF(tjs_uint64 tick, int x, int y, int width, int height);
+
+	void notifyKeySWF(int code, bool down);
+
+	int swfMouseX;
+	int swfMouseY;
+	int swfMouseButton;
 	
 public:
 	// ì«Ç›çûÇ›

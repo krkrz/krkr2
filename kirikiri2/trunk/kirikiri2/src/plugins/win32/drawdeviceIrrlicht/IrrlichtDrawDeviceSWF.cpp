@@ -25,6 +25,9 @@ void
 tTVPIrrlichtDrawDevice::initSWF()
 {
 	uiSWF = NULL;
+	swfMouseX = 0;
+	swfMouseY = 0;
+	swfMouseButton = 0;
 }
 
 /**
@@ -60,10 +63,17 @@ tTVPIrrlichtDrawDevice::drawSWF(tjs_uint64 tick, int x, int y, int width, int he
 			prevTick = tick;
 			first = false;
 		}
+		uiSWF->notifyMouse(swfMouseX, swfMouseY, swfMouseButton);
 		uiSWF->update((int)(tick - prevTick));
 		uiSWF->draw(x, y, width, height);
 		prevTick = tick;
 	}
+}
+
+void
+tTVPIrrlichtDrawDevice::notifyKeySWF(int code, bool down)
+{
+	gameswf::notify_key_event((gameswf::key::code)code, down);
 }
 
 // --------------------------------------------------------

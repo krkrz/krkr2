@@ -202,6 +202,21 @@ tTVPIrrlichtDrawDevice::postEvent(SEvent &ev)
 void TJS_INTF_METHOD
 tTVPIrrlichtDrawDevice::OnMouseDown(tjs_int x, tjs_int y, tTVPMouseButton mb, tjs_uint32 flags)
 {
+	if (uiSWF) {
+		swfMouseX = x;
+		swfMouseY = y;
+		switch ((mb & 0xff)) {
+		case mbLeft:
+			swfMouseButton |= 0x01;
+			break;
+		case mbMiddle:
+			swfMouseButton |= 0x02;
+			break;
+		case mbRight:
+			swfMouseButton |= 0x04;
+			break;
+		}
+	}
 	if (driver) {
 		SEvent ev;
 		ev.EventType = EET_MOUSE_INPUT_EVENT;
@@ -212,11 +227,11 @@ tTVPIrrlichtDrawDevice::OnMouseDown(tjs_int x, tjs_int y, tTVPMouseButton mb, tj
 		case mbLeft:
 			ev.MouseInput.Event = EMIE_LMOUSE_PRESSED_DOWN;
 			break;
-		case mbRight:
-			ev.MouseInput.Event = EMIE_RMOUSE_PRESSED_DOWN;
-			break;
 		case mbMiddle:
 			ev.MouseInput.Event = EMIE_MMOUSE_PRESSED_DOWN;
+			break;
+		case mbRight:
+			ev.MouseInput.Event = EMIE_RMOUSE_PRESSED_DOWN;
 			break;
 		}
 		if (postEvent(ev)) {
@@ -230,6 +245,21 @@ tTVPIrrlichtDrawDevice::OnMouseDown(tjs_int x, tjs_int y, tTVPMouseButton mb, tj
 void TJS_INTF_METHOD
 tTVPIrrlichtDrawDevice::OnMouseUp(tjs_int x, tjs_int y, tTVPMouseButton mb, tjs_uint32 flags)
 {
+	if (uiSWF) {
+		swfMouseX = x;
+		swfMouseY = y;
+		switch ((mb & 0xff)) {
+		case mbLeft:
+			swfMouseButton &= ~0x01;
+			break;
+		case mbMiddle:
+			swfMouseButton &= ~0x02;
+			break;
+		case mbRight:
+			swfMouseButton &= ~0x04;
+			break;
+		}
+	}
 	if (driver) {
 		SEvent ev;
 		ev.EventType = EET_MOUSE_INPUT_EVENT;
@@ -240,11 +270,11 @@ tTVPIrrlichtDrawDevice::OnMouseUp(tjs_int x, tjs_int y, tTVPMouseButton mb, tjs_
 		case mbLeft:
 			ev.MouseInput.Event = EMIE_LMOUSE_LEFT_UP;
 			break;
-		case mbRight:
-			ev.MouseInput.Event = EMIE_RMOUSE_LEFT_UP;
-			break;
 		case mbMiddle:
 			ev.MouseInput.Event = EMIE_MMOUSE_LEFT_UP;
+			break;
+		case mbRight:
+			ev.MouseInput.Event = EMIE_RMOUSE_LEFT_UP;
 			break;
 		}
 		if (postEvent(ev)) {
@@ -258,6 +288,8 @@ tTVPIrrlichtDrawDevice::OnMouseUp(tjs_int x, tjs_int y, tTVPMouseButton mb, tjs_
 void TJS_INTF_METHOD
 tTVPIrrlichtDrawDevice::OnMouseMove(tjs_int x, tjs_int y, tjs_uint32 flags)
 {
+	swfMouseX = x;
+	swfMouseY = y;
 	if (driver) {
 		SEvent ev;
 		ev.EventType = EET_MOUSE_INPUT_EVENT;
@@ -276,12 +308,18 @@ tTVPIrrlichtDrawDevice::OnMouseMove(tjs_int x, tjs_int y, tjs_uint32 flags)
 void TJS_INTF_METHOD
 tTVPIrrlichtDrawDevice::OnKeyDown(tjs_uint key, tjs_uint32 shift)
 {
+	if (uiSWF) {
+		notifyKeySWF(key, true);
+	}
 	tTVPDrawDevice::OnKeyDown(key, shift);
 }
 
 void TJS_INTF_METHOD
 tTVPIrrlichtDrawDevice::OnKeyUp(tjs_uint key, tjs_uint32 shift)
 {
+	if (uiSWF) {
+		notifyKeySWF(key, false);
+	}
 	tTVPDrawDevice::OnKeyUp(key, shift);
 }
 
@@ -296,7 +334,6 @@ tTVPIrrlichtDrawDevice::OnMouseWheel(tjs_uint32 shift, tjs_int delta, tjs_int x,
 {
 	tTVPDrawDevice::OnMouseWheel(shift, delta, x, y);
 }
-
 
 // -------------------------------------------------------------------------------------
 // ï`âÊèàóùóp
