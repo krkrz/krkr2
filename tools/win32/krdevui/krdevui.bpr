@@ -174,8 +174,8 @@ Item3=c:\Program Files\Borland\CBuilder5\Projects\tvp2win32\environ\win32
 DebugSourceDirs=$(BCB)\source\vcl
 
 [Parameters]
-RunParams=-userconf
-HostApplication=C:\Program Files\Borland\CBuilder5\Projects\tvp2win32\kirikiri2\bin\win32\tools\krkrconf.exe
+RunParams=
+HostApplication=C:\Program Files\Borland\CBuilder5\Projects\tvp2win32\kirikiri2\bin\win32\tools\krkrrel.exe
 RemoteHost=
 RemotePath=
 RemoteDebug=0
