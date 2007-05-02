@@ -41,11 +41,16 @@ class MyWindow extends Window
 {
 	var base;
 	var base2;
-
+	var irrlicht;
+	
 	function MyWindow() {
 		super.Window();
-		drawDevice = new IrrlichtDrawDevice();
+		innerSunken = false;
+		borderStyle = bsSingle;
 		setInnerSize(WIDTH, HEIGHT);
+
+		irrlicht = new IrrlichtDrawDevice();
+		drawDevice = irrlicht;
 
 		// 1枚目のプライマリレイヤ
 		base = new BaseLayer(this, WIDTH, HEIGHT);
@@ -54,6 +59,9 @@ class MyWindow extends Window
 		// 2枚目のプライマリレイヤ
 		base2 = new BaseLayer(this, WIDTH, HEIGHT);
 		base2.beginAction(LayerJumpActionModule, %[vibration:30, cycle:1000]);
+
+		// フラッシュファイルの読み込み
+		irrlicht.loadSWF("data/anntest.swf");
 	}
 
 	function finalize() {
@@ -64,10 +72,20 @@ class MyWindow extends Window
 	function onKeyDown(key, shift)
 	{
 		Debug.message("キーがおされた:" + key);
-		if(key == VK_TAB) {
+		if(key == VK_ESCAPE) {
 			close();
+		} else if(key == VK_TAB) {
+			fullScreen = !fullScreen;
 		}
 	}
+
+//	function onMouseDown(x, y, button, shift) {
+//		Debug.message("マウス押し下げ:" + x + "," + y + "," + button + "," + shift);
+//	}
+	
+//	function onMouseMove(x, y, shift) {
+//		Debug.message("マウス移動:" + x + "," + y + "," + shift);
+//	}
 
 };
 
