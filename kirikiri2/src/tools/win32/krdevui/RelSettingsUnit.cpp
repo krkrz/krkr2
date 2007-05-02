@@ -56,7 +56,7 @@ __fastcall TRelSettingsForm::TRelSettingsForm(TComponent* Owner)
 	StaticText1->Top = PageControl->Top;
 	StaticText1->Left = SaveProfileButton->Left - StaticText1->Width - SPACER;
 
-	ConfMainFrame->ReadOptionInfoFromExe(GetKrKrFileName());
+	ConfMainFrame->ReadOptions(GetKrKrFileName());
 
 	if(!XP3EncDLLAvailable) UseXP3EncDLLCheck->Visible = false;
 }
@@ -355,6 +355,7 @@ void __fastcall TRelSettingsForm::SaveProfileToIni(TMemIniFile *ini)
 void __fastcall TRelSettingsForm::LoadProfileFromIni(TMemIniFile *ini)
 {
 	ConfMainFrame->ReadFromIni(ini);
+	ConfMainFrame->ApplyReadDataToUI();
 
 	ExecutableRadio->Checked = ini->ReadBool("Output", "Executable",
 		false);
@@ -760,7 +761,8 @@ void __fastcall TRelSettingsForm::CreateArchive(void)
 	// copy executable file or write a stub
 	if(ExecutableRadio->Checked)
 	{
-		ConfMainFrame->CopyExe(OutputFileNameEdit->Text);
+		ConfMainFrame->SetSourceAndTargetFileName(GetKrKrFileName(), OutputFileNameEdit->Text);
+		ConfMainFrame->CopyExe();
 	}
 	else
 	{
