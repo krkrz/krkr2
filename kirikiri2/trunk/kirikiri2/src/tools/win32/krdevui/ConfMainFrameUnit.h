@@ -129,20 +129,7 @@ public:
 	void __fastcall ReadOptionInfoFromExe(AnsiString exename);
 
 public: // load and store
-	void __fastcall CopyExe(AnsiString to);
-
-/*
-	void __fastcall SetOptionsFromString(AnsiString str);
-	void __fastcall WriteOptionsToIniFile(TMemIniFile * ini);
-	void __fastcall SetExcludeOptionsFromString(AnsiString str);
-	void __fastcall WriteExcludeOptionsToIniFile(TMemIniFile * ini);
-	void __fastcall LoadProfileFromIni(TMemIniFile *ini);
-	void __fastcall SaveProfileToIni(TMemIniFile *ini);
-	void __fastcall LoadOptionsFromExe(int mode);
-	void __fastcall SaveOptionsToFile(AnsiString target);
-	void __fastcall GetSecurityOptionFromExe(AnsiString exe);
-	void __fastcall SetSecurityOptionToExe(AnsiString exe);
-*/
+	void __fastcall CopyExe();
 
 //--
 	// options data

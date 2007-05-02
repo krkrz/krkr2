@@ -127,7 +127,8 @@ void TLayeredOption::FromString(const AnsiString & content)
 //---------------------------------------------------------------------------
 void TLayeredOption::LoadFromIni(TMemIniFile * ini)
 {
-	ini->ReadSection("Executable-options", Strings);
+	Strings->Clear();
+	ini->ReadSectionValues("Executable-options", Strings);
 }
 //---------------------------------------------------------------------------
 void TLayeredOption::LoadFromFile(const AnsiString & filename)
@@ -174,7 +175,7 @@ void TLayeredOption::SaveToFile(const AnsiString & filename) const
 //---------------------------------------------------------------------------
 void TLayeredOption::SaveToIni(TMemIniFile * ini) const
 {
-	try { ini->EraseSection("Executable-option"); } catch(...) { }
+	try { ini->EraseSection("Executable-options"); } catch(...) { }
 
 	TStringList * list = new TStringList();
 	try
@@ -182,7 +183,7 @@ void TLayeredOption::SaveToIni(TMemIniFile * ini) const
 		list->Text = ToString();
 		for(int i = 0; i < list->Count; i++)
 		{
-			ini->WriteString("Executable-option", list->Names[i], list->Values[list->Names[i]]);
+			ini->WriteString("Executable-options", list->Names[i], list->Values[list->Names[i]]);
 		}
 	}
 	catch(...)
@@ -1318,13 +1319,13 @@ void __fastcall TConfMainFrame::ReadOptionInfoFromExe(AnsiString exename)
 
 
 //---------------------------------------------------------------------------
-void __fastcall TConfMainFrame::CopyExe(AnsiString to)
+void __fastcall TConfMainFrame::CopyExe()
 {
 #ifndef TVP_ENVIRON
 	// copy specified exe file to destination, applying options.
 	if(ChangeIconCheck->Checked)
 	{
-		ChangeIcon(to, SourceExe, OpenPictureDialog->FileName);
+		ChangeIcon(TargetExe, SourceExe, OpenPictureDialog->FileName);
 	}
 	else
 	{
@@ -1333,7 +1334,7 @@ void __fastcall TConfMainFrame::CopyExe(AnsiString to)
 		try
 		{
 			src = new TFileStream(SourceExe, fmOpenRead|fmShareDenyWrite);
-			dest = new TFileStream(to, fmCreate|fmShareDenyWrite);
+			dest = new TFileStream(TargetExe, fmCreate|fmShareDenyWrite);
 			dest->CopyFrom(src, 0);
 
 		}
@@ -1347,6 +1348,8 @@ void __fastcall TConfMainFrame::CopyExe(AnsiString to)
 		if(src) delete src;
 		if(dest) delete dest;
 	}
+
+	WriteOptions(TargetExe);
 #endif
 }
 //---------------------------------------------------------------------------
@@ -1784,6 +1787,21 @@ void TConfMainFrame::ReadFromIni(TMemIniFile *ini)
 	ReadOptionsFromIni(TargetConfigData, ini);
 	ReadExcludeOptionsFromIni(ini);
 	ReadSecurityOptionsFromIni(ini);
+
+	ChangeIconCheck->Checked = ini->ReadBool("Executable", "ChangeIcon", false);
+
+	OpenPictureDialog->FileName = ini->ReadString("Executable", "Icon", "");
+	if(OpenPictureDialog->FileName != "")
+	{
+		try
+		{
+			IconImage->Picture->LoadFromFile(OpenPictureDialog->FileName);
+		}
+		catch(...)
+		{
+			OpenPictureDialog->FileName = "";
+		}
+	}
 }
 //---------------------------------------------------------------------------
 void TConfMainFrame::WriteOptionsToExe(const TLayeredOption * src, AnsiString filename)
@@ -1917,6 +1935,9 @@ void TConfMainFrame::WriteToIni(TMemIniFile *ini)
 	WriteOptionsToIni(TargetConfigData, ini);
 	WriteExcludeOptionsToIni(ini);
 	WriteSecurityOptionsToIni(ini);
+
+	ini->WriteBool("Executable", "ChangeIcon", ChangeIconCheck->Checked);
+	ini->WriteString("Executable", "Icon",  OpenPictureDialog->FileName);
 }
 //---------------------------------------------------------------------------
 
