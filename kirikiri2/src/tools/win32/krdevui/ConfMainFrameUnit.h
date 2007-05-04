@@ -153,8 +153,9 @@ public:
 	// filenames
 	void SetSourceAndTargetFileName(AnsiString source, AnsiString target);
 
-	AnsiString GetConfigFileName(AnsiString exename);
-	AnsiString GetUserConfigFileName(AnsiString exename);
+	static AnsiString GetConfigFileName(AnsiString exename);
+	static AnsiString GetDataPathDirectory(AnsiString datapath, AnsiString exename);
+	static AnsiString GetUserConfigFileName(AnsiString datapath, AnsiString exename);
 
 	// misc
 	unsigned int __fastcall FindOptionAreaOffset(AnsiString target);

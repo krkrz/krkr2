@@ -1485,23 +1485,27 @@ AnsiString TConfMainFrame::GetConfigFileName(AnsiString exename)
 	return ChangeFileExt(exename, ".cf");
 }
 //---------------------------------------------------------------------------
-AnsiString TConfMainFrame::GetUserConfigFileName(AnsiString exename)
+AnsiString TConfMainFrame::GetDataPathDirectory(AnsiString datapath, AnsiString exename)
 {
-	// exepath, personalpath, appdatapath
+	if(datapath == "")
+		return IncludeTrailingBackslash(ExtractFileDir(exename));
+
 	AnsiString exepath = ExcludeTrailingBackslash(ExtractFileDir(exename));
 	AnsiString personalpath = ExcludeTrailingBackslash(GetPersonalPath());
 	AnsiString apppath = ExcludeTrailingBackslash(GetAppPath());
 	if(personalpath == "") personalpath = exepath;
 	if(apppath == "") apppath = exepath;
 
-	AnsiString datapath;
-	if(!TargetConfigData->GetOptionValue("datapath", datapath))
-		return ChangeFileExt(exename, ".cfu");
-
 	datapath = ReplaceAnsiStringAll(datapath, "$(exepath)", exepath);
 	datapath = ReplaceAnsiStringAll(datapath, "$(personalpath)", personalpath);
 	datapath = ReplaceAnsiStringAll(datapath, "$(apppath)", apppath);
-	return ExcludeTrailingBackslash(datapath) + "\\" + ExtractFileName(ChangeFileExt(exename, ".cfu"));
+	return IncludeTrailingBackslash(datapath);
+}
+//---------------------------------------------------------------------------
+AnsiString TConfMainFrame::GetUserConfigFileName(AnsiString datapath, AnsiString exename)
+{
+	// exepath, personalpath, appdatapath
+	return GetDataPathDirectory(datapath, exename) + ExtractFileName(ChangeFileExt(exename, ".cfu"));
 }
 //---------------------------------------------------------------------------
 unsigned int __fastcall TConfMainFrame::FindOptionAreaOffset(AnsiString target)
@@ -1770,7 +1774,10 @@ void TConfMainFrame::ReadOptions(AnsiString exename)
 	if(UserConfMode)
 	{
 		ReadOptionsFromConfFile(&ConfigData, GetConfigFileName(exename));
-		ReadOptionsFromConfFile(&UserConfigData, GetUserConfigFileName(exename));
+		AnsiString datapath;
+		if(!ConfigData.GetOptionValue("datapath", datapath))
+			datapath = "";
+		ReadOptionsFromConfFile(&UserConfigData, GetUserConfigFileName(datapath, exename));
 	}
 	else
 	{
@@ -1916,7 +1923,10 @@ void TConfMainFrame::WriteOptions(AnsiString exename)
 	ApplyUIDataToConfigData();
 	if(UserConfMode)
 	{
-		WriteOptionsToConfFile(&UserConfigData, GetUserConfigFileName(exename));
+		AnsiString datapath;
+		if(!ConfigData.GetOptionValue("datapath", datapath))
+			datapath = "";
+		WriteOptionsToConfFile(&UserConfigData, GetUserConfigFileName(datapath, exename));
 	}
 	else
 	{
