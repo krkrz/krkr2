@@ -43,6 +43,7 @@
 // global data
 //---------------------------------------------------------------------------
 AnsiString TVPNativeProjectDir;
+AnsiString TVPNativeDataPath;
 bool TVPProjectDirSelected = false;
 bool TVPSystemIsBasedOnNT = false; // is system NT based ?
 //---------------------------------------------------------------------------
@@ -1306,39 +1307,28 @@ void TVPMainWindowClosed()
 // GetCommandLine
 //---------------------------------------------------------------------------
 #define TVP_FIND_OPTION_MIN_OFS 512*1024  // min 512KB
-#define TVP_FIND_OPTION_MAX_OFS 4*1024*1024 // max 4MB
-static AnsiString TVPFindOptionArea()
+#define TVP_FIND_OPTION_MAX_OFS 5*1024*1024 // max 5MB
+//---------------------------------------------------------------------------
+static TStringList * TVPGetEmbeddedOptions()
 {
-	bool confmode = false; // false: embedded options, true: external tof file
-	AnsiString filename;
-
-	filename = ChangeFileExt(ParamStr(0), ".tof");
-	if(FileExists(filename))
-	{
-		// tof file exists
-		TStream *stream = new TFileStream(filename, fmOpenRead|fmShareDenyWrite);
-		confmode = stream->Size != 0;
-		delete stream;
-	}
-
-	if(!confmode) filename = ParamStr(0);
-
+	AnsiString filename = ParamStr(0);
 	TStream *stream = new TFileStream(filename, fmOpenRead|fmShareDenyWrite);
 
 	char *buf = NULL;
+	TStringList *ret = NULL;
+
+	const char * errmsg = NULL;
 
 	tjs_uint offset;
-	AnsiString opts;
 	try
 	{
+		ret = new TStringList();
+		unsigned int size = stream->Size;
+		if(size < TVP_FIND_OPTION_MIN_OFS)
+			errmsg = "too small executable size."; // too small
 
-		if(!confmode)
+		if(!errmsg)
 		{
-
-			TVPAddImportantLog(TJS_W("(info) Loading options from embedded area..."));
-
-			unsigned int size = stream->Size;
-			if(size < TVP_FIND_OPTION_MIN_OFS) return "";
 			if(size > TVP_FIND_OPTION_MAX_OFS) size = TVP_FIND_OPTION_MAX_OFS;
 			buf = new char [size - TVP_FIND_OPTION_MIN_OFS];
 			stream->Position = TVP_FIND_OPTION_MIN_OFS;
@@ -1358,40 +1348,73 @@ static AnsiString TVPFindOptionArea()
 					if(!memcmp(buf+offset - TVP_FIND_OPTION_MIN_OFS,
 						mark, 16))
 					{
-						opts = buf + offset + 16 + 4 - TVP_FIND_OPTION_MIN_OFS;
+						ret->Text = buf + offset + 16 + 4 - TVP_FIND_OPTION_MIN_OFS;
 						found = true;
 						break;
 					}
 				}
 			}
-			if(!found)
-			{
-				TVPAddImportantLog(TJS_W("(info) Embedded options not found."));
-			}
 
+			if(!found) errmsg = "not found in executable.";
 		}
-		else
-		{
-			TVPAddImportantLog(TJS_W("(info) Loading options from TOF file..."));
-
-			unsigned int size = stream->Size;
-			buf = new char [size];
-			stream->Read(buf, size);
-			opts = buf;
-		}
-
 	}
 	catch(...)
 	{
 		if(buf) delete [] buf;
+		if(ret) delete ret;
 		delete stream;
 		throw;
 	}
 	delete [] buf;
 	delete stream;
-	return opts;
+
+	if(errmsg)
+		TVPAddImportantLog(ttstr("(info) Loading executable embedded options failed (ignoring) : ") +
+			errmsg);
+	else
+		TVPAddImportantLog("(info) Loading executable embedded options succeeded.");
+	return ret;
 }
 //---------------------------------------------------------------------------
+static TStringList * TVPGetConfigFileOptions(AnsiString filename)
+{
+	// load .cf file
+	AnsiString errmsg;
+	if(!FileExists(filename))
+		errmsg = "file not found.";
+
+	TStringList * ret = new TStringList();
+	if(errmsg == "")
+	{
+		try
+		{
+			ret->LoadFromFile(filename);
+		}
+		catch(Exception & e)
+		{
+			errmsg = e.Message;
+		}
+		catch(...)
+		{
+			delete ret;
+			throw;
+		}
+	}
+
+	if(errmsg != "")
+		TVPAddImportantLog(ttstr("(info) Loading configuration file \"") + filename.c_str() +
+			"\" failed (ignoring) : " + errmsg.c_str());
+	else
+		TVPAddImportantLog(ttstr("(info) Loading configuration file \"") + filename.c_str() +
+			"\" succeeded");
+
+	return ret;
+}
+//---------------------------------------------------------------------------
+
+
+//---------------------------------------------------------------------------
+
 static ttstr TVPParseCommandLineOne(const ttstr &i)
 {
 	// value is specified
@@ -1418,53 +1441,92 @@ static ttstr TVPParseCommandLineOne(const ttstr &i)
 //---------------------------------------------------------------------------
 std::vector <ttstr> TVPProgramArguments;
 static bool TVPProgramArgumentsInit = false;
-static void TVPInitProgramArguments()
+//---------------------------------------------------------------------------
+static void PushAllCommandlineArguments()
+{
+	// store arguments given by commandline to "TVPProgramArguments"
+	for(tjs_int i = 1; i<_argc; i++)
+	{
+		if(_argv[i][0] == '-')
+		{
+			ttstr value(_argv[i]);
+			if(!TJS_strchr(value.c_str(), TJS_W('=')))
+				value += TJS_W("=yes");
+			TVPProgramArguments.push_back(TVPParseCommandLineOne(value));
+		}
+	}
+}
+//---------------------------------------------------------------------------
+static void PushConfigFileOptions(TStringList * options)
+{
+	if(!options) return;
+	for(int j = 0; j < options->Count; j++)
+	{
+		TVPProgramArguments.push_back(
+			TVPParseCommandLineOne(TJS_W("-") + ttstr(options->Strings[j])));
+	}
+}
+//---------------------------------------------------------------------------
+static void TVPInitProgramArgumentsAndDataPath()
 {
 	if(!TVPProgramArgumentsInit)
 	{
-		// store the arguments to "TVPProgramArguments".
-		for(tjs_int i = 1; i<_argc; i++)
-		{
-			if(_argv[i][0] == '-')
-			{
-				ttstr value(_argv[i]);
-				if(!TJS_strchr(value.c_str(), TJS_W('=')))
-					value += TJS_W("=yes");
-				TVPProgramArguments.push_back(TVPParseCommandLineOne(value));
-			}
-		}
+		TVPProgramArgumentsInit = true;
+
 
 		// find options from self executable image
-		ttstr options(TVPFindOptionArea());
-		const tjs_char *p = options.c_str();
-		const tjs_char *cp;
-		while((cp = TJS_strchr(p, TJS_W(',') ))!= NULL)
+		const int num_option_layers = 3;
+		TStringList * options[num_option_layers];
+		for(int i = 0; i < num_option_layers; i++) options[i] = NULL;
+		try
 		{
-			ttstr value(p, cp - p);
-			tjs_char *cop = TJS_strchr(value.Independ(), TJS_W(':'));
-			if(cop) *cop = TJS_W('=');
-			TVPProgramArguments.push_back(TVPParseCommandLineOne(TJS_W("-") + value));
-			p = cp + 1;
-		}
+			// read embedded options and default configuration file
+			options[0] = TVPGetEmbeddedOptions();
+			options[1] = TVPGetConfigFileOptions(TConfMainFrame::GetConfigFileName(ParamStr(0)));
 
-		ttstr value(p);
-		if(value.GetLen())
+			// at this point, we need to push all exsting known options
+			// to be able to see datapath
+			PushAllCommandlineArguments();
+			PushConfigFileOptions(options[1]); // has more priority
+			PushConfigFileOptions(options[0]); // has lesser priority
+
+			// read datapath
+			tTJSVariant val;
+			AnsiString config_datapath;
+			if(TVPGetCommandLine(TJS_W("-datapath"), &val))
+				config_datapath = ((ttstr)val).AsAnsiString();
+			TVPNativeDataPath = TConfMainFrame::GetDataPathDirectory(config_datapath, ParamStr(0));
+			TVPDataPath = TVPNormalizeStorageName(TVPNativeDataPath);
+			TVPAddImportantLog(ttstr("(info) Data path : ") + TVPDataPath);
+
+			// read per-user configuration file
+			options[2] = TVPGetConfigFileOptions(TConfMainFrame::GetUserConfigFileName(config_datapath, ParamStr(0)));
+
+			// push each options into option stock
+			// we need to clear TVPProgramArguments first because of the
+			// option priority order.
+			TVPProgramArguments.clear();
+			PushAllCommandlineArguments();
+			PushConfigFileOptions(options[2]); // has more priority
+			PushConfigFileOptions(options[1]); // has more priority
+			PushConfigFileOptions(options[0]); // has lesser priority
+		}
+		catch(...)
 		{
-			tjs_char *cop = TJS_strchr(value.Independ(), TJS_W(':'));
-			if(cop) *cop = TJS_W('=');
-			TVPProgramArguments.push_back(TVPParseCommandLineOne(TJS_W("-") + value));
+			for(int i = 0; i < num_option_layers; i++)
+				if(options[i]) delete options[i];
+			throw;
 		}
+		for(int i = 0; i < num_option_layers; i++)
+			if(options[i]) delete options[i];
 
-
-		//
-		TVPProgramArgumentsInit = true;
 	}
 }
 //---------------------------------------------------------------------------
 static void TVPDumpOptions()
 {
 	std::vector<ttstr>::const_iterator i;
-	ttstr options(TJS_W("(info) Specified option(s) :"));
+	ttstr options(TJS_W("(info) Specified option(s) (earlier item has more priority) :"));
 	if(TVPProgramArguments.size())
 	{
 		for(i = TVPProgramArguments.begin(); i != TVPProgramArguments.end(); i++)
@@ -1482,7 +1544,7 @@ static void TVPDumpOptions()
 //---------------------------------------------------------------------------
 bool TVPGetCommandLine(const tjs_char * name, tTJSVariant *value)
 {
-	TVPInitProgramArguments();
+	TVPInitProgramArgumentsAndDataPath();
 
 	tjs_int namelen = TJS_strlen(name);
 	std::vector<ttstr>::const_iterator i;
