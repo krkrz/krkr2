@@ -1497,7 +1497,7 @@ AnsiString TConfMainFrame::GetDataPathDirectory(AnsiString datapath, AnsiString 
 
 	datapath = ReplaceAnsiStringAll(datapath, "$(exepath)", exepath);
 	datapath = ReplaceAnsiStringAll(datapath, "$(personalpath)", personalpath);
-	datapath = ReplaceAnsiStringAll(datapath, "$(apppath)", apppath);
+	datapath = ReplaceAnsiStringAll(datapath, "$(appdatapath)", apppath);
 	return IncludeTrailingBackslash(ExpandUNCFileName(datapath));
 }
 //---------------------------------------------------------------------------
