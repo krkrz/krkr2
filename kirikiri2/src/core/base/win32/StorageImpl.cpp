@@ -434,7 +434,7 @@ bool TVPCheckExistentLocalFile(const ttstr &name)
 //---------------------------------------------------------------------------
 // TVPCheckExistantLocalFolder
 //---------------------------------------------------------------------------
-static bool TVPCheckExistentLocalFolder(const ttstr &name)
+bool TVPCheckExistentLocalFolder(const ttstr &name)
 {
 	DWORD attrib;
 	if(procGetFileAttributesW)

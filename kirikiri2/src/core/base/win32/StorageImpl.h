@@ -54,8 +54,14 @@ public:
 
 
 //---------------------------------------------------------------------------
-bool TVPCheckExistentLocalFile(const ttstr &name);
+TJS_EXP_FUNC_DEF(bool, TVPCheckExistentLocalFolder, (const ttstr &name));
+	/* name must be an OS's NATIVE folder name */
+
+TJS_EXP_FUNC_DEF(bool, TVPCheckExistentLocalFile, (const ttstr &name));
 	/* name must be an OS's NATIVE file name */
+
+TJS_EXP_FUNC_DEF(bool, TVPCreateFolders, (const ttstr &folder));
+	/* make folders recursively, like mkdir -p. folder must be OS NATIVE folder name */
 //---------------------------------------------------------------------------
 
 
