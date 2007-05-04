@@ -23,7 +23,8 @@
 //---------------------------------------------------------------------------
 // global data
 //---------------------------------------------------------------------------
-ttstr TVPProjectDir; // project directory
+ttstr TVPProjectDir; // project directory (in unified storage name)
+ttstr TVPDataPath; // data directory (in unified storage name)
 //---------------------------------------------------------------------------
 
 

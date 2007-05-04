@@ -17,6 +17,8 @@ extern void TVPDumpHWException();
 extern void TVPInitializeBaseSystems();
 
 extern AnsiString TVPNativeProjectDir;
+extern AnsiString TVPNativeDataPath;
+
 extern bool TVPProjectDirSelected;
 extern bool TVPSystemIsBasedOnNT;
 extern bool TVPCheckCmdDescription(void);

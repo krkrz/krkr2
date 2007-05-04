@@ -18,6 +18,7 @@
 
 //-- global data
 extern ttstr TVPProjectDir; // project directory
+extern ttstr TVPDataPath; // data directory
 
 
 //-- implementation in this unit
