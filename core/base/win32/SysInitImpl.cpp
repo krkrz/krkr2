@@ -18,6 +18,7 @@
 
 #include "SysInitImpl.h"
 #include "StorageIntf.h"
+#include "StorageImpl.h"
 #include "MsgIntf.h"
 #include "GraphicsLoaderIntf.h"
 #include "MainFormUnit.h"
@@ -1091,11 +1092,6 @@ void TVPBeforeSystemInit()
 		TVPAddImportantLog(TJS_W("(info) Selected project directory : ") +
 			TVPProjectDir);
 	}
-
-	// set log output directory
-	ttstr local_proj = TVPGetLocallyAccessibleName(TVPProjectDir);
-	if(!local_proj.IsEmpty()) TVPSetLogLocation(TVPProjectDir);
-
 }
 //---------------------------------------------------------------------------
 static void TVPDumpOptions();
@@ -1496,8 +1492,6 @@ static void TVPInitProgramArgumentsAndDataPath()
 			if(TVPGetCommandLine(TJS_W("-datapath"), &val))
 				config_datapath = ((ttstr)val).AsAnsiString();
 			TVPNativeDataPath = TConfMainFrame::GetDataPathDirectory(config_datapath, ParamStr(0));
-			TVPDataPath = TVPNormalizeStorageName(TVPNativeDataPath);
-			TVPAddImportantLog(ttstr("(info) Data path : ") + TVPDataPath);
 
 			// read per-user configuration file
 			options[2] = TVPGetConfigFileOptions(TConfMainFrame::GetUserConfigFileName(config_datapath, ParamStr(0)));
@@ -1520,6 +1514,25 @@ static void TVPInitProgramArgumentsAndDataPath()
 		for(int i = 0; i < num_option_layers; i++)
 			if(options[i]) delete options[i];
 
+
+
+		// set data path
+		TVPDataPath = TVPNormalizeStorageName(TVPNativeDataPath);
+		TVPAddImportantLog(ttstr("(info) Data path : ") + TVPDataPath);
+
+		// ensure data path existence
+		if(!TVPCheckExistentLocalFolder(TVPNativeDataPath.c_str()))
+		{
+			ttstr msg("(info) Data path does not exist, trying to make it ... ");
+			if(TVPCreateFolders(TVPNativeDataPath.c_str()))
+				TVPAddImportantLog(msg + "ok.");
+			else
+				TVPAddImportantLog(msg + "failed.");
+		}
+
+
+		// set log output directory
+		TVPSetLogLocation(TVPNativeDataPath);
 	}
 }
 //---------------------------------------------------------------------------
