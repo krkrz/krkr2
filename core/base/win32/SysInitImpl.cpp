@@ -225,7 +225,7 @@ static char TVPHWExceptionLogFilename[MAX_PATH];
 
 static void TVPWriteHWELogFile()
 {
-	TJS_nstrcpy(TVPHWExceptionLogFilename, TVPNativeLogLocation);
+	TJS_nstrcpy(TVPHWExceptionLogFilename, TVPNativeDataPath.c_str());
 	TJS_nstrcat(TVPHWExceptionLogFilename, "hwexcept.log");
 	TVPHWExceptionLogHandle = CreateFile(TVPHWExceptionLogFilename, GENERIC_WRITE,
 		FILE_SHARE_READ, NULL, OPEN_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
