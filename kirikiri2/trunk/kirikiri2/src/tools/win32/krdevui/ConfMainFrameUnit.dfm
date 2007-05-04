@@ -158,10 +158,11 @@ object ConfMainFrame: TConfMainFrame
       OnClick = InvisibleCheckBoxClick
     end
     object OptionValueEdit: TEdit
-      Left = 360
+      Left = 363
       Top = 72
       Width = 209
       Height = 20
+      Anchors = [akTop, akRight]
       TabOrder = 5
       Visible = False
       OnChange = OptionValueEditChange

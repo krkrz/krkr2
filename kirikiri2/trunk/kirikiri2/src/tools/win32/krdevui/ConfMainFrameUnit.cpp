@@ -797,6 +797,7 @@ void __fastcall TConfMainFrame::OptionsTreeViewChange(TObject *Sender,
 			OptionValueEdit->Top = OptionValueComboBox->Top;
 			OptionValueEdit->Width = OptionValueComboBox->Width;
 			OptionValueEdit->Height = OptionValueComboBox->Height;
+			OptionValueEdit->Anchors = OptionValueComboBox->Anchors;
 			OptionValueEdit->MaxLength = limit;
 			OptionValueEdit->Visible = true;
 			OptionValueComboBox->Visible = false;
