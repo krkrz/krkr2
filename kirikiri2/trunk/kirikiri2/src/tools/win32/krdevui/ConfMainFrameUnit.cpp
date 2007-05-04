@@ -1487,8 +1487,7 @@ AnsiString TConfMainFrame::GetConfigFileName(AnsiString exename)
 //---------------------------------------------------------------------------
 AnsiString TConfMainFrame::GetDataPathDirectory(AnsiString datapath, AnsiString exename)
 {
-	if(datapath == "")
-		return IncludeTrailingBackslash(ExtractFileDir(exename));
+	if(datapath == "") datapath = "$(exepath)\\savedata";
 
 	AnsiString exepath = ExcludeTrailingBackslash(ExtractFileDir(exename));
 	AnsiString personalpath = ExcludeTrailingBackslash(GetPersonalPath());
@@ -1499,7 +1498,7 @@ AnsiString TConfMainFrame::GetDataPathDirectory(AnsiString datapath, AnsiString 
 	datapath = ReplaceAnsiStringAll(datapath, "$(exepath)", exepath);
 	datapath = ReplaceAnsiStringAll(datapath, "$(personalpath)", personalpath);
 	datapath = ReplaceAnsiStringAll(datapath, "$(apppath)", apppath);
-	return IncludeTrailingBackslash(datapath);
+	return IncludeTrailingBackslash(ExpandUNCFileName(datapath));
 }
 //---------------------------------------------------------------------------
 AnsiString TConfMainFrame::GetUserConfigFileName(AnsiString datapath, AnsiString exename)
