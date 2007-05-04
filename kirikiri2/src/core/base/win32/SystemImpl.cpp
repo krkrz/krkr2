@@ -723,6 +723,16 @@ TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/createAppLock)
 }
 TJS_END_NATIVE_METHOD_DECL_OUTER(/*object to register*/cls,
 	/*func. name*/createAppLock)
+//----------------------------------------------------------------------
+TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/nullpo)
+{
+	// force make a null-po
+	*(int *)0  = 0;
+
+	return TJS_S_OK;
+}
+TJS_END_NATIVE_METHOD_DECL_OUTER(/*object to register*/cls,
+	/*func. name*/nullpo)
 //---------------------------------------------------------------------------
 
 //----------------------------------------------------------------------
@@ -768,6 +778,19 @@ TJS_BEGIN_NATIVE_PROP_DECL(appDataPath)
 	TJS_DENY_NATIVE_PROP_SETTER
 }
 TJS_END_NATIVE_PROP_DECL_OUTER(cls, appDataPath)
+//----------------------------------------------------------------------
+TJS_BEGIN_NATIVE_PROP_DECL(dataPath)
+{
+	TJS_BEGIN_NATIVE_PROP_GETTER
+	{
+		*result = TVPDataPath;
+		return TJS_S_OK;
+	}
+	TJS_END_NATIVE_PROP_GETTER
+
+	TJS_DENY_NATIVE_PROP_SETTER
+}
+TJS_END_NATIVE_PROP_DECL_OUTER(cls, dataPath)
 //----------------------------------------------------------------------
 TJS_BEGIN_NATIVE_PROP_DECL(exeName)
 {

@@ -808,8 +808,8 @@ static void TVPInitEnvironProfile()
 		// read profile from project directory or
 		// current directory ( if projdir was not specified )
 		TVPEnvironProfile =
-			new tTVPProfileHolder(TVPNativeProjectDir + "krenvprf.kep");
-		if(strchr(TVPNativeProjectDir.c_str(), TVPArchiveDelimiter))
+			new tTVPProfileHolder(TVPNativeDataPath + "krenvprf.kep");
+		if(strchr(TVPNativeDataPath.c_str(), TVPArchiveDelimiter))
 			TVPProfileWrite = false; else TVPProfileWrite = true;
 	}
 }
