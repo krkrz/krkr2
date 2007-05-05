@@ -521,10 +521,10 @@
 <member>
 	<name>personalPath</name>
 	<type>property</type>
-	<shortdesc>ユーザのホームディレクトリのパス</shortdesc>
+	<shortdesc>マイドキュメントのパス</shortdesc>
 	<access>r</access>
 	<desc>
-		　ユーザのホームディレクトリのパスを表します。Windows の場合、レジストリの
+		　ユーザのマイドキュメントのパスを表します。Windows の場合、レジストリの
 		HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Explorer\Shell Folders の
 		Personal で表されるフォルダが返されます。通常これは「マイドキュメント」フォルダを指します。<r/>
 		このフォルダがない場合は <ref>System.exePath</ref> と同じ
@@ -547,6 +547,19 @@
 	</desc>
 	<ref>System.exePath</ref>
 	<ref>System.personalPath</ref>
+</member>
+
+<member>
+	<name>dataPath</name>
+	<type>property</type>
+	<shortdesc>データ保存場所のパス</shortdesc>
+	<access>r</access>
+	<desc>
+		　コマンドラインオプションの -datapath で指定したディレクトリを表します。<r/>
+		　標準では、ログなどがすべてここに出力されます。<r/>
+		　ユーザスクリプトがデータを保存する場合は、ここに保存することを推奨します。<r/>
+	</desc>
+
 </member>
 
 <member>
