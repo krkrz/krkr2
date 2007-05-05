@@ -592,7 +592,7 @@ static AnsiString GetRegistryValue(AnsiString key, AnsiString name)
 
 
 //---------------------------------------------------------------------------
-static AnsiString GetAppPath()
+static AnsiString GetAppDataPath()
 {
 	try
 	{
@@ -617,7 +617,7 @@ static AnsiString GetPersonalPath()
 	}
 	catch(...)
 	{
-		return GetAppPath();
+		return GetAppDataPath();
 	}
 }
 //---------------------------------------------------------------------------
@@ -1492,13 +1492,23 @@ AnsiString TConfMainFrame::GetDataPathDirectory(AnsiString datapath, AnsiString 
 
 	AnsiString exepath = ExcludeTrailingBackslash(ExtractFileDir(exename));
 	AnsiString personalpath = ExcludeTrailingBackslash(GetPersonalPath());
-	AnsiString apppath = ExcludeTrailingBackslash(GetAppPath());
+	AnsiString appdatapath = ExcludeTrailingBackslash(GetAppDataPath());
 	if(personalpath == "") personalpath = exepath;
-	if(apppath == "") apppath = exepath;
+	if(appdatapath == "") appdatapath = exepath;
+
+	OSVERSIONINFO osinfo;
+	osinfo.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
+	GetVersionEx(&osinfo);
+
+	bool vista_or_later = osinfo.dwPlatformId == VER_PLATFORM_WIN32_NT &&
+						osinfo.dwMajorVersion >= 6;
+
+	AnsiString vistapath = vista_or_later ? appdatapath : exepath;
 
 	datapath = ReplaceAnsiStringAll(datapath, "$(exepath)", exepath);
 	datapath = ReplaceAnsiStringAll(datapath, "$(personalpath)", personalpath);
-	datapath = ReplaceAnsiStringAll(datapath, "$(appdatapath)", apppath);
+	datapath = ReplaceAnsiStringAll(datapath, "$(appdatapath)", appdatapath);
+	datapath = ReplaceAnsiStringAll(datapath, "$(vistapath)", vistapath);
 	return IncludeTrailingBackslash(ExpandUNCFileName(datapath));
 }
 //---------------------------------------------------------------------------
