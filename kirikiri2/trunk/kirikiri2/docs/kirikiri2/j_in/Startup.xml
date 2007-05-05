@@ -85,5 +85,11 @@
 　吉里吉里は、起動直後に吉里吉里と同じフォルダに msgmap.tjs があるかどうかを調べ、それが存在すれば実行します。ただしリリースオプションでこれを読み込まないように指定されていた場合を除きます ( <link href="Configure"/> 参照 )。msgmap.tjs では <at href="f_System_assignMessage.html">System.assignMessage</at> を使用してメッセージの割り当てを変更することができます。msgmap.tjs は <link href="Controller" /> でも作成することができます。<r/>
 </para>
 
+<para>
+<ptitle>設定ファイル</ptitle>
+　吉里吉里は、<link href="Configure"/> で作成した設定ファイル (.cf ファイルや .cfu ファイル) を読み込み、そこに記述してある設定にしたがって動作します。<r/>
+　ファイル名やファイルの作成される場所については <link href="Configure"/> を参照してください。<r/>
+</para>
+
 </doc>
 
