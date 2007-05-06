@@ -47,7 +47,7 @@
     <DEBUGLIBPATH value="$(BCB)\lib\debug"/>
     <RELEASELIBPATH value="$(BCB)\lib\release"/>
     <LINKER value="tlink32"/>
-    <USERDEFINES value="NO_WIN32_LEAN_AND_MEAN;TVP_IN_LOOP_TUNER;_DEBUG"/>
+    <USERDEFINES value="NO_WIN32_LEAN_AND_MEAN;TVP_IN_LOOP_TUNER"/>
     <SYSDEFINES value="NO_STRICT"/>
     <MAINSOURCE value="krdevui.bpf"/>
     <INCLUDEPATH value="..\..\..\core\sound\win32;$(BCB)\include\tomcrypt1;$(BCB)\include\vcl;$(BCB)\projects\comps\o\shlib;$(BCB)\include;..\..\..\core\sound;..\..\..\core\base;looptuner2;looptune;tpc\tlg6;tpc\tlg5;tpc\psd;tpc\png;tpc;..\..\..\..\..\Bin;..\..\..\..;..\..\..\core\tjs2"/>
@@ -55,11 +55,11 @@
     <WARNINGS value="-w-par"/>
   </MACROS>
   <OPTIONS>
-    <CFLAG1 value="-WD -Od -H=$(BCB)\lib\vcl50.csm -Hc -Vx -Ve -ff -X- -r- -pr -a8 -6 -b- -k 
-      -y -v -vi- -tWD -tWM -c"/>
-    <PFLAGS value="-N2intermediate -N0intermediate -$Y+ -$W -$O- -v -JPHNE -M"/>
+    <CFLAG1 value="-WD -O2 -H=$(BCB)\lib\vcl50.csm -Hc -Vx -Ve -ff -X- -pr -a8 -6 -b- -k- -y 
+      -v -vi -tWD -tWM -c"/>
+    <PFLAGS value="-N2intermediate -N0intermediate -$Y- -$L- -$D- -v -JPHNE -M"/>
     <RFLAGS value=""/>
-    <AFLAGS value="/mx /w2 /zi"/>
+    <AFLAGS value="/mx /w2 /zn"/>
     <LFLAGS value="-Iintermediate -D&quot;&quot; -aa -Tpd -GD -x -Gn -Gi -v"/>
   </OPTIONS>
   <LINKER>
@@ -150,8 +150,8 @@ Item0=$(BCB)\source\vcl
 
 [HistoryLists\hlConditionals]
 Count=7
-Item0=NO_WIN32_LEAN_AND_MEAN;TVP_IN_LOOP_TUNER;_DEBUG
-Item1=NO_WIN32_LEAN_AND_MEAN;TVP_IN_LOOP_TUNER
+Item0=NO_WIN32_LEAN_AND_MEAN;TVP_IN_LOOP_TUNER
+Item1=NO_WIN32_LEAN_AND_MEAN;TVP_IN_LOOP_TUNER;_DEBUG
 Item2=NO_WIN32_LEAN_AND_MEAN;TVP_IN_LOOP_TUNER;_MSC_VER
 Item3=NO_WIN32_LEAN_AND_MEAN
 Item4=NO_WIN32_LEAN_AND_MEAN;_DEBUG
