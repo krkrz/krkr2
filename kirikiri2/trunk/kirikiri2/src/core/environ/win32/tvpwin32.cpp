@@ -23,6 +23,7 @@
 //---------------------------------------------------------------------------
 bool TVPCheckCmdDescription(void);
 bool TVPCheckAbout(void);
+bool TVPCheckPrintDataPath();
 void TVPOnError();
 //---------------------------------------------------------------------------
 USEDEF("tvpwin32.def");
@@ -187,6 +188,7 @@ WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
 		Application->Initialize();
 
+		if(TVPCheckPrintDataPath()) return 0;
 		if(TVPCheckCmdDescription()) return 0;
 		if(TVPExecuteUserConfig()) return 0; // userconf
 
