@@ -809,10 +809,13 @@ void TVPInitializeBaseSystems()
 // system initializer / uninitializer
 //---------------------------------------------------------------------------
 static tjs_uint TVPTotalPhysMemory = 0;
+static void TVPInitProgramArgumentsAndDataPath(bool stop_after_datapath_got);
 void TVPBeforeSystemInit()
 {
 	RegisterDllLoadHook();
 		// register DLL delayed import hook to support _inmm.dll
+
+	TVPInitProgramArgumentsAndDataPath(false); // ensure command line
 
 #ifdef TVP_REPORT_HW_EXCEPTION
 	__dee_hacked_set_getExceptionObjectHook(TVP__dee_hacked_getExceptionObjectHook);
@@ -1463,7 +1466,7 @@ static void PushConfigFileOptions(TStringList * options)
 	}
 }
 //---------------------------------------------------------------------------
-static void TVPInitProgramArgumentsAndDataPath()
+static void TVPInitProgramArgumentsAndDataPath(bool stop_after_datapath_got)
 {
 	if(!TVPProgramArgumentsInit)
 	{
@@ -1493,6 +1496,8 @@ static void TVPInitProgramArgumentsAndDataPath()
 				config_datapath = ((ttstr)val).AsAnsiString();
 			TVPNativeDataPath = TConfMainFrame::GetDataPathDirectory(config_datapath, ParamStr(0));
 
+			if(stop_after_datapath_got) return;
+
 			// read per-user configuration file
 			options[2] = TVPGetConfigFileOptions(TConfMainFrame::GetUserConfigFileName(config_datapath, ParamStr(0)));
 
@@ -1505,15 +1510,11 @@ static void TVPInitProgramArgumentsAndDataPath()
 			PushConfigFileOptions(options[1]); // has more priority
 			PushConfigFileOptions(options[0]); // has lesser priority
 		}
-		catch(...)
+		__finally
 		{
 			for(int i = 0; i < num_option_layers; i++)
 				if(options[i]) delete options[i];
-			throw;
 		}
-		for(int i = 0; i < num_option_layers; i++)
-			if(options[i]) delete options[i];
-
 
 
 		// set data path
@@ -1557,7 +1558,7 @@ static void TVPDumpOptions()
 //---------------------------------------------------------------------------
 bool TVPGetCommandLine(const tjs_char * name, tTJSVariant *value)
 {
-	TVPInitProgramArgumentsAndDataPath();
+	TVPInitProgramArgumentsAndDataPath(false);
 
 	tjs_int namelen = TJS_strlen(name);
 	std::vector<ttstr>::const_iterator i;
@@ -1584,6 +1585,28 @@ bool TVPGetCommandLine(const tjs_char * name, tTJSVariant *value)
 }
 //---------------------------------------------------------------------------
 
+
+
+//---------------------------------------------------------------------------
+// TVPCheckPrintDataPath
+//---------------------------------------------------------------------------
+bool TVPCheckPrintDataPath()
+{
+	// print current datapath to stdout, then exit
+	for(int i=1; i<_argc; i++)
+	{
+		if(!strcmp(_argv[i], "-printdatapath")) // this does not refer TVPGetCommandLine
+		{
+			TVPInitProgramArgumentsAndDataPath(true);
+			printf("%s\n", TVPNativeDataPath.c_str());
+
+			return true; // processed
+		}
+	}
+
+	return false;
+}
+//---------------------------------------------------------------------------
 
 
 
