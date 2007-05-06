@@ -526,9 +526,8 @@
 	<desc>
 		　ユーザのマイドキュメントのパスを表します。Windows の場合、レジストリの
 		HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Explorer\Shell Folders の
-		Personal で表されるフォルダが返されます。通常これは「マイドキュメント」フォルダを指します。<r/>
-		このフォルダがない場合は <ref>System.exePath</ref> と同じ
-		フォルダを返します。<r/>
+		Personal で表されるフォルダが返されます。通常これは「マイドキュメント」フォルダを指します。これは、Windows 95/NT4.0 では Windows をインストールしたフォルダ下の "Personal" フォルダの場合があります。<r/>
+		このフォルダがない場合(Windows 95 の初期のバージョンなど)は <ref>System.exePath</ref> と同じフォルダを返します。<r/>
 	</desc>
 	<ref>System.appDataPath</ref>
 	<ref>System.exePath</ref>
@@ -542,8 +541,23 @@
 	<desc>
 		　ユーザのホームディレクトリのパスを表します。Windows の場合、レジストリの
 		HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Explorer\Shell Folders の
-		AppData で表されるフォルダが返されます。このフォルダがない場合は <ref>exePath</ref> と同じ
+		AppData で表されるフォルダが返されます。このフォルダがない場合は <ref>System.exePath</ref> と同じ
 		フォルダを返します。<r/>
+		<r/>
+		これは、通常、以下の通りになります。
+		<r/>
+			<dl>
+			<dt>Windows 95, 98, 98SE, ME でマルチユーザ環境でない場合</dt>
+			<dd><tt>C:\Windows\Application Data\</tt> ( C:\Windows の部分は Windows をインストールした場所です )</dd>
+			<dt>Windows 95 (初期型でない場合), 98, 98SE, ME でマルチユーザ環境の場合</dt>
+			<dd><tt>C:\Windows\Profiles\&lt;ユーザ名&gt;\Application Data\</tt> ( C:\Windows の部分は Windows をインストールした場所です )</dd>
+			<dt>Windows NT 4.0 の場合</dt>
+			<dd><tt>C:\WINNT\Profiles\&lt;ユーザ名&gt;\Application Data\</tt> ( C:\WINNT の部分は Windows をインストールした場所です )</dd>
+			<dt>Windows 2000, Xp の場合</dt>
+			<dd><tt>C:\Documents and Settings\&lt;ユーザ名&gt;\Application Data\</tt> ( C: の部分は環境によって異なります )</dd>
+			<dt>何らかの理由で レジストリキー ( 上記参照 ) を読み出せなかった場合か、初期の Windows 95</dt>
+			<dd>吉里吉里の実行可能ファイルのあるフォルダ (<ref>System.exePath</ref>)になります</dd>
+			</dl>
 	</desc>
 	<ref>System.exePath</ref>
 	<ref>System.personalPath</ref>
