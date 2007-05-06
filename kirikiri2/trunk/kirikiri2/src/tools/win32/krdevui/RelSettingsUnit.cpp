@@ -117,6 +117,8 @@ void __fastcall TRelSettingsForm::SetExtList(TStringList *list)
 			!ext.AnsiCompareIC(".bak") ||
 			!ext.AnsiCompareIC(".log") ||
 			!ext.AnsiCompareIC(".kep") ||
+			!ext.AnsiCompareIC(".cf")  ||
+			!ext.AnsiCompareIC(".cfu") ||
 			ext == "" || !strncmp(ext.c_str(), ".~", 2))
 		{
 			if(ext == "") ext = NoExtNameLabel->Caption;
