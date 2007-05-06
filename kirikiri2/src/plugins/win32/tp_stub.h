@@ -1842,6 +1842,9 @@ extern void * TVPImportFuncPtr198ce21c54b0cea4c1bf5eeba35349ab;
 extern void * TVPImportFuncPtrdd13d4bc2b48540a92f047bf015b829b;
 extern void * TVPImportFuncPtrcf5401746759bfe38918087aaab6c57b;
 extern void * TVPImportFuncPtr449039d3afbfbd52a63130a3b227a490;
+extern void * TVPImportFuncPtr347a4fa85af84e223c4b61d33ead694a;
+extern void * TVPImportFuncPtr4ad1dd24b3b4769ee10149eea006af7a;
+extern void * TVPImportFuncPtrb246b17b62d273bdc04e9d9e827f5c74;
 extern void * TVPImportFuncPtr9974ebc6296f925cff55d8bcb2d52ce9;
 extern void * TVPImportFuncPtr0e0c9d9107d8c56b8bc4d4198ae9208a;
 extern void * TVPImportFuncPtrc23ece207f6ec2dd7c76ef873047aee3;
@@ -7240,6 +7243,36 @@ inline void TVPCreateMessageMapFile(const ttstr & filename)
 	}
 	typedef void (__stdcall * __functype)(const ttstr &);
 	((__functype)(TVPImportFuncPtr449039d3afbfbd52a63130a3b227a490))(filename);
+}
+inline bool TVPCheckExistentLocalFolder(const ttstr & name)
+{
+	if(!TVPImportFuncPtr347a4fa85af84e223c4b61d33ead694a)
+	{
+		static char funcname[] = "bool ::TVPCheckExistentLocalFolder(const ttstr &)";
+		TVPImportFuncPtr347a4fa85af84e223c4b61d33ead694a = TVPGetImportFuncPtr(funcname);
+	}
+	typedef bool (__stdcall * __functype)(const ttstr &);
+	return ((__functype)(TVPImportFuncPtr347a4fa85af84e223c4b61d33ead694a))(name);
+}
+inline bool TVPCheckExistentLocalFile(const ttstr & name)
+{
+	if(!TVPImportFuncPtr4ad1dd24b3b4769ee10149eea006af7a)
+	{
+		static char funcname[] = "bool ::TVPCheckExistentLocalFile(const ttstr &)";
+		TVPImportFuncPtr4ad1dd24b3b4769ee10149eea006af7a = TVPGetImportFuncPtr(funcname);
+	}
+	typedef bool (__stdcall * __functype)(const ttstr &);
+	return ((__functype)(TVPImportFuncPtr4ad1dd24b3b4769ee10149eea006af7a))(name);
+}
+inline bool TVPCreateFolders(const ttstr & folder)
+{
+	if(!TVPImportFuncPtrb246b17b62d273bdc04e9d9e827f5c74)
+	{
+		static char funcname[] = "bool ::TVPCreateFolders(const ttstr &)";
+		TVPImportFuncPtrb246b17b62d273bdc04e9d9e827f5c74 = TVPGetImportFuncPtr(funcname);
+	}
+	typedef bool (__stdcall * __functype)(const ttstr &);
+	return ((__functype)(TVPImportFuncPtrb246b17b62d273bdc04e9d9e827f5c74))(folder);
 }
 inline IStream * TVPCreateIStream(const ttstr & name , tjs_uint32 flags)
 {
