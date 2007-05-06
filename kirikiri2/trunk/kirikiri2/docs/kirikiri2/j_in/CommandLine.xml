@@ -63,7 +63,7 @@ Releaser や krkrconf.exe ( エンジン設定.exe ) では、吉里吉里の実行可能ファイルや
 <r/>
 <dl>
  <dt>$(exepath)</dt> <dd>System.exePath(吉里吉里コアのあるフォルダ名)に置き換えられます。</dd>
- <dt>$(appdatapath)</dt> <dd>System.appDataPath(ユーザのホームフォルダ)に置き換えられます。</dd>
+ <dt>$(appdatapath)</dt> <dd>System.appDataPath(ユーザのホームフォルダ)に置き換えられます。このフォルダは通常、隠しフォルダになっています。</dd>
  <dt>$(personalpath)</dt> <dd>System.personalPath(マイドキュメントフォルダ)に置き換えられます。</dd>
  <dt>$(vistapath)</dt> <dd>OSがVista以降の場合に$(appdatapath)に、Vista未満の場合に$(exepath)に置き置き換えられます。</dd>
 </dl>
