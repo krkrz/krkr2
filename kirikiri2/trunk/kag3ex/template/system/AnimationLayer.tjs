@@ -797,6 +797,7 @@ class AnimationLayer extends AffineLayer
 			param.rgamma, param.rfloor, param.rceil,
 			param.ggamma, param.gfloor, param.gceil,
 			param.bgamma, param.bfloor, param.bceil);
+
 		if(param.mcolor !== void)
 		{
 			// 色重ね合わせ
@@ -804,6 +805,17 @@ class AnimationLayer extends AffineLayer
 			layer.holdAlpha = true;
 			layer.colorRect(0, 0, layer.imageWidth, layer.imageHeight, +param.mcolor,
 				+param.mopacity);
+		}
+		if (param.lightcolor !== void) {
+			// レイヤ合成
+			layer.holdAlpha = true;
+			layer.fillOperateRect(0,0,layer.imageWidth, layer.imageHeight,
+								  +param.lightcolor,
+								  param.lighttype);
+		}
+		if (param.brightness !== void || param.contrast !== void) {
+			// 明度補正
+			layer.light(+param.brightness, +param.contrast);
 		}
 		layer.face = orgface;
 		layer.holdAlpha = orgholdlpha;
