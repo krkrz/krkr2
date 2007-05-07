@@ -25,9 +25,9 @@
 // TVP Timer class gives ability of triggering event on punctual interval.
 // a large quantity of event at once may easily cause freeze to system,
 // so we must trigger only porocess-able quantity of the event.
-
-
 #define TVP_LEAST_TIMER_INTERVAL 3
+
+
 
 //---------------------------------------------------------------------------
 // tTVPTimerThread
@@ -101,7 +101,7 @@ void tTVPTimerThread::Execute()
 	while(!GetTerminated())
 	{
 		tjs_uint64 step_next = (tjs_uint64)(tjs_int64)-1L; // invalid value
-		tjs_uint64 curtick = TVPGetTickCount();
+		tjs_uint64 curtick = TVPGetTickCount() << TVP_SUBMILLI_FRAC_BITS;
 		DWORD sleeptime;
 
 		{	// thread-protected
@@ -178,6 +178,13 @@ void tTVPTimerThread::Execute()
 
 		}	// end-of-thread-protected
 
+		// now, sleeptime has sub-milliseconds precision but we need millisecond
+		// precision time.
+		if(sleeptime != INFINITE)
+			sleeptime = (sleeptime >> TVP_SUBMILLI_FRAC_BITS) +
+							(sleeptime & ((1<<TVP_SUBMILLI_FRAC_BITS)-1) ? 1: 0); // round up
+
+		// clamp to TVP_LEAST_TIMER_INTERVAL ...
 		if(sleeptime != INFINITE && sleeptime < TVP_LEAST_TIMER_INTERVAL)
 			sleeptime = TVP_LEAST_TIMER_INTERVAL;
 
@@ -256,7 +263,7 @@ void tTVPTimerThread::SetEnabled(tTJSNI_Timer *item, bool enabled)
 		item->InternalSetEnabled(enabled);
 		if(enabled)
 		{
-			item->SetNextTick(TVPGetTickCount() + item->GetInterval());
+			item->SetNextTick((TVPGetTickCount()  << TVP_SUBMILLI_FRAC_BITS) + item->GetInterval());
 		}
 		else
 		{
@@ -278,7 +285,7 @@ void tTVPTimerThread::SetInterval(tTJSNI_Timer *item, tjs_uint64 interval)
 		{
 			item->CancelEvents();
 			item->ZeroPendingCount();
-			item->SetNextTick(TVPGetTickCount() + item->GetInterval());
+			item->SetNextTick((TVPGetTickCount()  << TVP_SUBMILLI_FRAC_BITS) + item->GetInterval());
 		}
 	} // end-of-thread-protected
 
