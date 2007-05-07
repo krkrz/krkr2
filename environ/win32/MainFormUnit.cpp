@@ -607,7 +607,6 @@ void TTVPMainForm::DeliverEvents()
 	else
 	{
 		if(EventButton->Down) TVPDeliverAllEvents();
-		if(ContinuousEventCalling) TVPDeliverContinuousEvent();
 	}
 }
 //---------------------------------------------------------------------------

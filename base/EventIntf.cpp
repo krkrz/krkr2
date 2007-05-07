@@ -287,7 +287,7 @@ void TVPPostEvent(iTJSDispatch2 * source, iTJSDispatch2 *target,
 									numargs, args, flag));
 
 	// is exclusive?
-	if(flag & TVP_EPT_EXCLUSIVE) TVPExclusiveEventPosted = true;
+	if((flag & TVP_EPT_PRIO_MASK) == TVP_EPT_EXCLUSIVE) TVPExclusiveEventPosted = true;
 
 	// make sure that the event is to be delivered.
 	TVPInvokeEvents();
@@ -474,11 +474,8 @@ void TVPDiscardAllDiscardableEvents()
 //---------------------------------------------------------------------------
 // TVPDeliverAllEvents
 //---------------------------------------------------------------------------
-static bool _TVPDeliverAllEvents2()
+static void _TVPDeliverEventByPrio(tjs_uint prio)
 {
-	// process exclusive events
-//	tjs_uint32 starttick = TVPGetRoughTickCount32();
-
 	while(true)
 	{
 		tTVPEvent *e;
@@ -490,7 +487,7 @@ static bool _TVPDeliverAllEvents2()
 		while(i != TVPEventQueue.end())
 		{
 			if((*i)->GetSequence() <= TVPEventSequenceNumberToProcess &&
-				((*i)->GetFlags() & TVP_EPT_EXCLUSIVE)) break;
+				(((*i)->GetFlags() & TVP_EPT_PRIO_MASK) == prio)) break;
 			i++;
 		}
 		if(i == TVPEventQueue.end()) break;
@@ -505,17 +502,22 @@ static bool _TVPDeliverAllEvents2()
 		catch(...)
 		{
 			delete e;
-//			TVPSetSystemEventDisabledState(true);
-				// disable event system to avoid further annoying errors.
 			throw;
 		}
 		delete e;
 	}
+}
+
+
+static bool _TVPDeliverAllEvents2()
+{
+	TVPExclusiveEventPosted = false;
+
+	// process exclusive events
+	_TVPDeliverEventByPrio(TVP_EPT_EXCLUSIVE);
 
 	// check exclusive events
 	if(TVPExclusiveEventPosted) return true;
-	// note that window update handlers are called even if the exclusive event
-	// had been posted.
 
 	// process input event queue
 	while(true)
@@ -537,8 +539,6 @@ static bool _TVPDeliverAllEvents2()
 		catch(...)
 		{
 			delete e;
-//			TVPSetSystemEventDisabledState(true);
-				// disable event system to avoid further annoying errors.
 			throw;
 		}
 		delete e;
@@ -546,62 +546,14 @@ static bool _TVPDeliverAllEvents2()
 		// check exclusive events
 		if(TVPExclusiveEventPosted) return true;
 
-/*
-		// check tick count
-		tjs_uint32 curtick = TVPGetRoughTickCount32();
-		if(curtick - starttick > TVP_EVENT_TASK_RETURN_TICK)
-		{
-			// interruput event processing and once give a control to OS.
-			return false;
-		}
-*/
 	}
 
 	// process normal event queue
-	while(true)
-	{
-		tTVPEvent *e;
+	_TVPDeliverEventByPrio(TVP_EPT_NORMAL);
 
-		// retrieve item to deliver
-		if(TVPEventQueue.size() == 0) break;
-		std::vector<tTVPEvent *>::iterator i =
-			TVPEventQueue.begin();
-		while(i != TVPEventQueue.end())
-		{
-			if((*i)->GetSequence() <= TVPEventSequenceNumberToProcess) break;
-			i++;
-		}
-		if(i == TVPEventQueue.end()) break;
-		e = *i;
-		TVPEventQueue.erase(i);
+	// check exclusive events
+	if(TVPExclusiveEventPosted) return true;
 
-		// event delivering
-		try
-		{
-			e->Deliver();
-		}
-		catch(...)
-		{
-			delete e;
-//			TVPSetSystemEventDisabledState(true);
-				// disable event system to avoid further annoying errors.
-			throw;
-		}
-		delete e;
-
-		// check exclusive events
-		if(TVPExclusiveEventPosted) return true;
-
-		// check tick count
-/*
-		tjs_uint32 curtick = TVPGetRoughTickCount32();
-		if(curtick - starttick > TVP_EVENT_TASK_RETURN_TICK)
-		{
-			// interruput event processing and once give a control to OS.
-			return false;
-		}
-*/
-	}
 	return true;
 }
 //---------------------------------------------------------------------------
@@ -618,9 +570,6 @@ static bool _TVPDeliverAllEvents()
 	bool ret_value;
 
 	ret_value = _TVPDeliverAllEvents2();
-
-	// for window content updating
-	if(ret_value) TVPDeliverWindowUpdateEvents();
 
 	return ret_value;
 }
@@ -647,16 +596,22 @@ void TVPDeliverAllEvents()
 	}
 	TVP_CATCH_AND_SHOW_SCRIPT_EXCEPTION(TJS_W("event"));
 
-	if(r)
-	{
-		// all events are delivered
-		TVPExclusiveEventPosted = false;
-	}
-	else
+	if(!r)
 	{
 		// event processing is to be interrupted
+		// XXX: currently this is not functional
 		TVPEventInterrupting = true;
 		TVPCallDeliverAllEventsOnIdle();
+	}
+
+	if(!TVPExclusiveEventPosted && !TVPEventInterrupting)
+	{
+		// process idle event queue
+		_TVPDeliverEventByPrio(TVP_EPT_IDLE);
+		// process continuous events
+		TVPDeliverContinuousEvent();
+		// for window content updating
+		TVPDeliverWindowUpdateEvents();
 	}
 
 	if(TVPEventQueue.size() == 0)
@@ -1230,8 +1185,6 @@ tjs_error TJS_INTF_METHOD
 //---------------------------------------------------------------------------
 void TJS_INTF_METHOD tTJSNI_AsyncTrigger::Invalidate()
 {
-	if(IdlePendingCount) TVPRemoveContinuousEventHook(this);
-
 	TVPCancelSourceEvents(Owner);
 	Owner = NULL;
 
@@ -1241,49 +1194,23 @@ void TJS_INTF_METHOD tTJSNI_AsyncTrigger::Invalidate()
 	inherited::Invalidate();
 }
 //---------------------------------------------------------------------------
-void TJS_INTF_METHOD tTJSNI_AsyncTrigger::OnContinuousCallback(tjs_uint64 tick)
-{
-	if(IdlePendingCount)
-	{
-		while(IdlePendingCount--)
-		{
-			static ttstr eventname(TJS_W("onFire"));
-			TVPPostEvent(Owner, Owner, eventname, 0, TVP_EPT_POST, 0, NULL);
-		}
-		TVPRemoveContinuousEventHook(this);
-		IdlePendingCount = 0;
-	}
-}
-//---------------------------------------------------------------------------
 void tTJSNI_AsyncTrigger::Trigger()
 {
 	// trigger event
 	if(Owner)
 	{
-		if(Mode != atmAtIdle)
+		if(Cached)
 		{
-			if(Cached)
-			{
-				// remove undelivered events from queue when "Cached" flag is set
-				TVPCancelSourceEvents(Owner);
-			}
-			static ttstr eventname(TJS_W("onFire"));
-
-			tjs_uint32 flags = TVP_EPT_POST;
-			if(Mode == atmExclusive) flags |= TVP_EPT_EXCLUSIVE;  // fire exclusive event
-
-			TVPPostEvent(Owner, Owner, eventname, 0, flags, 0, NULL);
+			// remove undelivered events from queue when "Cached" flag is set
+			TVPCancelSourceEvents(Owner);
 		}
-		else
-		{
-			// atmIdle
-			if(!IdlePendingCount)
-			{
-				// register idle handler
-				TVPAddContinuousEventHook(this);
-			}
-			if(Cached) IdlePendingCount ++; else IdlePendingCount = 1;
-		}
+		static ttstr eventname(TJS_W("onFire"));
+
+		tjs_uint32 flags = TVP_EPT_POST;
+		if(Mode == atmExclusive) flags |= TVP_EPT_EXCLUSIVE;  // fire exclusive event
+		if(Mode == atmAtIdle)    flags |= TVP_EPT_IDLE;       // fire idle event
+
+		TVPPostEvent(Owner, Owner, eventname, 0, flags, 0, NULL);
 	}
 }
 //---------------------------------------------------------------------------
@@ -1291,8 +1218,6 @@ void tTJSNI_AsyncTrigger::Cancel()
 {
 	// cancel event
 	if(Owner) TVPCancelSourceEvents(Owner);
-	if(IdlePendingCount)
-		TVPRemoveContinuousEventHook(this);
 	IdlePendingCount = 0;
 }
 //---------------------------------------------------------------------------
