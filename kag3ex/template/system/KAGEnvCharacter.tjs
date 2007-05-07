@@ -722,7 +722,7 @@ class KAGEnvCharacter extends KAGEnvLevelLayer, KAGEnvImage {
             var imageName = image.replace(/LEVEL/, levelName);
             try {
                 if (layer instanceof "AnimationLayer") {
-                    layer.loadImages(%[ "storage" => image]);
+					layer.loadImages(%[ "storage" => image]);
                 } else {
                     layer.loadImages(image);
                 }
@@ -738,26 +738,34 @@ class KAGEnvCharacter extends KAGEnvLevelLayer, KAGEnvImage {
             }
         }
 
-        // サイズ補正
-        layer.setSizeToImageSize();
-        
-        // 色補正処理
-        var timeInfo;
-        if ((timeInfo = env.currentTime) !== void) {
+		// 色補正処理
+		// AnimationLayer 用にロード時に細工…だと表情別画像とかではまるので後処理対応
+		var timeInfo;
+		if ((timeInfo = env.currentTime) !== void) {
             // レイヤ合成
-            if (timeInfo.charLightColor !== void) {
-                layer.holdAlpha = true;
-                layer.fillOperateRect(0,0,
-                                      layer.width,layer.height,
-                                      timeInfo.charLightColor,
-                                      timeInfo.charLightType);
-            }
+			if (timeInfo.charLightColor !== void) {
+				layer.holdAlpha = true;
+				layer.fillOperateRect(0,0,
+									  layer.imageWidth,layer.imageHeight,
+									  timeInfo.charLightColor,
+									  timeInfo.charLightType);
+				if (layer instanceof "AnimationLayer" && layer.Anim_loadParams !== void) {
+					layer.Anim_loadParams.lightcolor = timeInfo.charLightColor;
+					layer.Anim_loadParams.lighttype  = timeInfo.charLightType;
+				}
+			}
             // 明度補正
-            if (timeInfo.charBrightness !== void) {
-                layer.light(timeInfo.charBrightness,
-                            timeInfo.charContrast);
+			if (timeInfo.charBrightness !== void) {
+				layer.light(timeInfo.charBrightness, timeInfo.charContrast);
+				if (layer instanceof "AnimationLayer" && layer.Anim_loadParams !== void) {
+					layer.Anim_loadParams.brightness = timeInfo.charBrightness;
+					layer.Anim_loadParams.contrast   = timeInfo.charContrast;
+				}
             }
         }
+
+		// サイズ補正
+        layer.setSizeToImageSize();
     }
 
     /**
