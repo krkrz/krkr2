@@ -183,8 +183,8 @@ TJS_BEGIN_NATIVE_PROP_DECL(interval)
 			OK : tjs_uint64 interval = _this->GetInterval(); *result = (tjs_int64)interval;
 			NG : *result = (tjs_int64)interval;
 		*/
-		tjs_uint64 interval = _this->GetInterval();
-		*result = (tjs_int64)interval;
+		double interval = _this->GetInterval() * (1.0 / (1<<TVP_SUBMILLI_FRAC_BITS));
+		*result = interval;
 		return TJS_S_OK;
 	}
 	TJS_END_NATIVE_PROP_GETTER
@@ -192,7 +192,8 @@ TJS_BEGIN_NATIVE_PROP_DECL(interval)
 	TJS_BEGIN_NATIVE_PROP_SETTER
 	{
 		TJS_GET_NATIVE_INSTANCE(/*var. name*/_this, /*var. type*/tTJSNI_Timer);
-		_this->SetInterval((tjs_int64)*param);
+		double interval = (double)*param * (1<<TVP_SUBMILLI_FRAC_BITS);
+		_this->SetInterval((tjs_int64)(interval + 0.5));
 		return TJS_S_OK;
 	}
 	TJS_END_NATIVE_PROP_SETTER

@@ -13,6 +13,11 @@
 
 #include "tjsNative.h"
 
+
+// the timer has sub-milliseconds precision by fixed-point real.
+#define TVP_SUBMILLI_FRAC_BITS 16
+
+
 //---------------------------------------------------------------------------
 // global variables
 //---------------------------------------------------------------------------
