@@ -95,23 +95,6 @@ static bool TVPGetMainThreadPriorityControl()
 
 	return TVPMainThreadPriorityControl;
 }
-static bool TVPReduceCPUTimeInit = false;
-static bool TVPReduceCPUTime = false;
-static bool TVPGetReduceCPUTime()
-{
-	if(TVPReduceCPUTimeInit) return TVPReduceCPUTime;
-	tTJSVariant val;
-	if( TVPGetCommandLine(TJS_W("-reducecpu"), &val) )
-	{
-		ttstr str(val);
-		if(str == TJS_W("yes"))
-			TVPReduceCPUTime = true;
-	}
-
-	TVPReduceCPUTimeInit = true;
-
-	return TVPReduceCPUTime;
-}
 //---------------------------------------------------------------------------
 
 
@@ -171,7 +154,6 @@ static void TVPUninitEnvironProfile();
 __fastcall TTVPMainForm::TTVPMainForm(TComponent* Owner)
 	: TForm(Owner)
 {
-	DeliverEventsOnIdle = false;
 	ContinuousEventCalling = false;
 	AutoShowConsoleOnError = false;
 	ApplicationStayOnTop = false;
@@ -516,7 +498,6 @@ void TTVPMainForm::InvokeEvents()
 //---------------------------------------------------------------------------
 void TTVPMainForm::CallDeliverAllEventsOnIdle()
 {
-	DeliverEventsOnIdle = true;
 	::PostMessage(TVPMainForm->Handle, WM_USER+0x31/*dummy msg*/, 0, 0);
 //	if(SystemWatchTimer->Interval != 50)
 //		SystemWatchTimer->Interval = 50;
@@ -594,20 +575,10 @@ void __fastcall TTVPMainForm::WMInvokeEvents(TMessage &Msg)
 //---------------------------------------------------------------------------
 void TTVPMainForm::DeliverEvents()
 {
-	if(TVPGetReduceCPUTime() && ContinuousEventCalling)
-	{
-		DWORD tick = GetTickCount();
-		if(EventButton->Down) TVPDeliverAllEvents();
-		if(ContinuousEventCalling) TVPDeliverContinuousEvent();
-		tick = GetTickCount() - tick;
-		if(tick < 1) tick = 1;
-		if(tick > 25) tick = 25;
-		Sleep(tick); // insert wait
-	}
-	else
-	{
-		if(EventButton->Down) TVPDeliverAllEvents();
-	}
+	if(ContinuousEventCalling)
+		TVPProcessContinuousHandlerEventFlag = true; // set flag
+
+	if(EventButton->Down) TVPDeliverAllEvents();
 }
 //---------------------------------------------------------------------------
 void __fastcall TTVPMainForm::ApplicationIdle(TObject *Sender, bool &Done)
