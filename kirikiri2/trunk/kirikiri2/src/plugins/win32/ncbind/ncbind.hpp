@@ -446,6 +446,23 @@ NCB_TYPECONV_NARROW_STRING(         char const*);
 NCB_TYPECONV_NARROW_STRING(  signed char const*);
 NCB_TYPECONV_NARROW_STRING(unsigned char const*);
 
+// ワイド文字変換
+struct ncbWideCharConvertor {
+	struct ToWChar {
+		template <typename DST>
+		inline void operator()(DST &dst, tTJSVariant const &src) {
+			dst = static_cast<DST>(src.GetString());
+		}
+	};
+};
+// Wide文字列として登録するマクロ
+#define NCB_TYPECONV_WIDE_STRING(type) \
+	NCB_TYPECONV_SRCMAP_SET(type, ncbTypeConvertor::CastCopy<tjs_char const*>, false); \
+	NCB_TYPECONV_DSTMAP_SET(type, ncbWideCharConvertor::ToWChar,               false)
+
+NCB_TYPECONV_WIDE_STRING(tjs_char const*);
+
+
 /// std::stringなどを c_str() で受け渡す
 template <class StringT>
 struct ncbStringConvertor {
