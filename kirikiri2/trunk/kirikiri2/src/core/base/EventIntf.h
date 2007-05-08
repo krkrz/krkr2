@@ -254,6 +254,8 @@ extern void TVPAddContinuousHandler(tTJSVariantClosure clo);
 	// add callback function written in TJS
 extern void TVPRemoveContinuousHandler(tTJSVariantClosure clo);
 	// remove callback function added by TVPAddIdleHandler
+
+extern bool TVPProcessContinuousHandlerEventFlag;
 //---------------------------------------------------------------------------
 
 
