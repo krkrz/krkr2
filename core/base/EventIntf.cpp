@@ -608,8 +608,19 @@ void TVPDeliverAllEvents()
 	{
 		// process idle event queue
 		_TVPDeliverEventByPrio(TVP_EPT_IDLE);
+
 		// process continuous events
-		TVPDeliverContinuousEvent();
+		if(TVPProcessContinuousHandlerEventFlag)
+		{
+			TVPProcessContinuousHandlerEventFlag = false; // processed
+			// XXX: strictly saying, we need something like InterlockedExchange
+			// to look/set this flag, because TVPProcessContinuousHandlerEventFlag
+			// may be accessed by another thread. But I have no dought about
+			// that no one does care of missing one event in rare race condition.
+
+			TVPDeliverContinuousEvent();
+		}
+
 		// for window content updating
 		TVPDeliverWindowUpdateEvents();
 	}
@@ -880,6 +891,7 @@ ttstr TVPActionName(TJS_W("action"));
 //---------------------------------------------------------------------------
 // Continuous Event Delivering related
 //---------------------------------------------------------------------------
+bool TVPProcessContinuousHandlerEventFlag = false;
 static std::vector<tTVPContinuousEventCallbackIntf *> TVPContinuousEventVector;
 static std::vector<tTJSVariantClosure> TVPContinuousHandlerVector;
 static bool TVPContinuousEventProcessing = false;
