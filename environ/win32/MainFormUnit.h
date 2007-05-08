@@ -74,7 +74,6 @@ __published:	// IDE 管理のコンポーネント
 	void __fastcall RestartScriptEngineMenuItemClick(TObject *Sender);
 
 private:	// ユーザー宣言
-	bool DeliverEventsOnIdle;
 	bool ContinuousEventCalling;
 	bool AutoShowConsoleOnError;
 	bool ApplicationStayOnTop;
