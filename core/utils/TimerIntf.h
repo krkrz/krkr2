@@ -12,6 +12,7 @@
 #define TimerIntfH
 
 #include "tjsNative.h"
+#include "EventIntf.h"
 
 
 // the timer has sub-milliseconds precision by fixed-point real.
@@ -39,6 +40,7 @@ protected:
 	tjs_uint16 Counter; // serial number for event tag
 	tjs_int Capacity; // max queue size for this timer object
 	ttstr ActionName;
+	tTVPAsyncTriggerMode Mode; // trigger mode
 
 public:
 	tTJSNI_BaseTimer();
@@ -58,6 +60,9 @@ public:
 
 	tjs_int GetCapacity() const { return Capacity; }
 	void SetCapacity(tjs_int c) { Capacity = c; }
+
+	tTVPAsyncTriggerMode GetMode() const { return Mode; }
+	void SetMode(tTVPAsyncTriggerMode mode) { Mode = mode; }
 };
 //---------------------------------------------------------------------------
 

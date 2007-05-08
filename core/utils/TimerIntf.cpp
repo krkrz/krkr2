@@ -37,6 +37,7 @@ tTJSNI_BaseTimer::tTJSNI_BaseTimer()
 	Capacity = TVP_DEFAULT_TIMER_CAPACITY;
 	ActionOwner.Object = ActionOwner.ObjThis = NULL;
 	ActionName = TVPActionName;
+	Mode = atmNormal;
 }
 //---------------------------------------------------------------------------
 tjs_error TJS_INTF_METHOD
@@ -86,10 +87,17 @@ void tTJSNI_BaseTimer::Fire(tjs_uint n)
 		if(Owner)
 		{
 			tjs_uint32 tag = 1 + ((tjs_uint32)Counter << 1);
+			tjs_uint32 flags = TVP_EPT_POST|TVP_EPT_DISCARDABLE;
+			switch(Mode)
+			{
+			case atmNormal:			flags |= TVP_EPT_NORMAL; break;
+			case atmExclusive:		flags |= TVP_EPT_EXCLUSIVE; break;
+			case atmAtIdle:			flags |= TVP_EPT_IDLE; break;
+			}
 			while(n--)
 			{
 				TVPPostEvent(Owner, Owner, eventname, tag,
-					TVP_EPT_POST|TVP_EPT_DISCARDABLE, 0, NULL);
+					flags, 0, NULL);
 			}
 		}
 
@@ -239,6 +247,26 @@ TJS_BEGIN_NATIVE_PROP_DECL(capacity)
 	TJS_END_NATIVE_PROP_SETTER
 }
 TJS_END_NATIVE_PROP_DECL(capacity)
+//----------------------------------------------------------------------
+TJS_BEGIN_NATIVE_PROP_DECL(mode)
+{
+	TJS_BEGIN_NATIVE_PROP_GETTER
+	{
+		TJS_GET_NATIVE_INSTANCE(/*var. name*/_this, /*var. type*/tTJSNI_Timer);
+		*result = (tjs_int)_this->GetMode();
+		return TJS_S_OK;
+	}
+	TJS_END_NATIVE_PROP_GETTER
+
+	TJS_BEGIN_NATIVE_PROP_SETTER
+	{
+		TJS_GET_NATIVE_INSTANCE(/*var. name*/_this, /*var. type*/tTJSNI_Timer);
+		_this->SetMode((tTVPAsyncTriggerMode)(tjs_int)*param);
+		return TJS_S_OK;
+	}
+	TJS_END_NATIVE_PROP_SETTER
+}
+TJS_END_NATIVE_PROP_DECL(mode)
 //----------------------------------------------------------------------
 
 	TJS_END_NATIVE_MEMBERS
