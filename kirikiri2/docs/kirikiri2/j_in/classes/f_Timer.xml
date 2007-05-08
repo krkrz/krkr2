@@ -92,4 +92,19 @@
 	</desc>
 </member>
 
+<member>
+	<name>mode</name>
+	<type>property</type>
+	<shortdesc>モード</shortdesc>
+	<access>r/w</access>
+	<desc>
+		　動作のモードを表します。値を設定することもできます。<r/>
+		　以下の値のいずれかを指定します。<r/>
+		<tt><kw>atmNormal</kw>    : </tt> 通常のイベント配信の優先度でイベントが配信されます。<r/>
+		<tt><kw>atmExclusive</kw> : </tt> 他の非同期イベントよりも優先されて配信されます<r/>
+		<tt><kw>atmAtIdle</kw>    : </tt> アイドル状態 ( 他に配信するイベントが無くなったとき ) に配信されます。<r/>
+	</desc>
+	<ref>AsyncTrigger.mode</ref>
+</member>
+
 </doc>

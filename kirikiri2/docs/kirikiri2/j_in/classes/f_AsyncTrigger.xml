@@ -102,6 +102,7 @@
 		　同時にトリガを引いたときに発砲される順序は atmExclusive, atmNormal, atmIdle の順になります。<r/>
 		　同じモードのトリガが複数引かれている場合は、トリガが引かれた順に発砲します。<r/>
 	</desc>
+	<ref>Timer.mode</ref>
 </member>
 
 </doc>
