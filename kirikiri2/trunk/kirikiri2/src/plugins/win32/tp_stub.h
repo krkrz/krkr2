@@ -4501,10 +4501,21 @@ typedef void (TVP_tTVPXP3ArchiveExtractionFilter_CONVENTION *
 #define TVP_EPT_DISCARDABLE		0x10
 		// the event can be discarded when event system is disabled
 
+#define TVP_EPT_NORMAL			0x00
+		// (with TVP_EPT_POST only)
+		// the event will have normal priority.
+
 #define TVP_EPT_EXCLUSIVE		0x20
 		// (with TVP_EPT_POST only)
 		// the event is given priority and other posted events are not processed
 		// until the exclusive event is processed.
+
+#define TVP_EPT_IDLE			0x40
+		// (with TVP_EPT_POST only)
+		// the event is only delivered after the system processes all other events.
+		// this will have a priority roughly identical to "continuous" events.
+
+#define TVP_EPT_PRIO_MASK		0xe0
 
 #define TVP_EPT_METHOD_MASK		0x0f
 
