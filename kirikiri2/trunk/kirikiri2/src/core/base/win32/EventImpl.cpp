@@ -177,7 +177,7 @@ public:
 tTVPContinuousHandlerCallLimitThread::tTVPContinuousHandlerCallLimitThread()
 	 : tTVPThread(true)
 {
-	NextEventTick = TVPGetTickCount();
+	NextEventTick = 0;
 	Interval = (1<<TVP_SUBMILLI_FRAC_BITS)*1000/60; // default 60Hz
 	Enabled = false;
 	UtilWindow = AllocateHWnd(UtilWndProc);
@@ -221,10 +221,11 @@ void tTVPContinuousHandlerCallLimitThread::Execute()
 				tjs_uint64 sleeptime_64 = NextEventTick - curtick;
 				sleeptime = (DWORD)(sleeptime_64 >> TVP_SUBMILLI_FRAC_BITS) +
 						((sleeptime_64 & ((1<<TVP_SUBMILLI_FRAC_BITS)-1))?1:0);
+							// add 1 if fraction exists
 			}
 			else
 			{
-				sleeptime = 10000;
+				sleeptime = 10000; // how long to sleep when disabled does not matter
 			}
 
 
