@@ -134,6 +134,15 @@ void TLayeredOption::LoadFromIni(TMemIniFile * ini)
 void TLayeredOption::LoadFromFile(const AnsiString & filename)
 {
 	Strings->LoadFromFile(filename);
+
+	// leap comment lines
+	for(int i = Strings->Count - 1; i >= 0; i--)
+	{
+		if(Strings->Strings[i].c_str()[0] == ';')
+		{
+			Strings->Delete(i);
+		}
+	}
 }
 //---------------------------------------------------------------------------
 AnsiString TLayeredOption::ToString() const
@@ -160,9 +169,24 @@ AnsiString TLayeredOption::ToString() const
 void TLayeredOption::SaveToFile(const AnsiString & filename) const
 {
 	AnsiString options = ToString();
+	const char * warnings =
+"; ============================================================================\n"
+"; *DO NOT EDIT* this file unless you are understanding what you are doing.\n"
+"; FYI:\n"
+";  Each line consists of NAME=\"VALUE\" pair, VALUE is a series of\n"
+";  \\xNN, where NN is hexadecimal representation of UNICODE codepoint.\n"
+";  For example, opt=\"\\x61\\x62\\x63\\x3042\\x3044\\x3046\" means that the\n"
+";  value of options \"opt\" is alphabets a, b, and c followed by Japanese\n"
+";  Hiraganas A, I, and U.\n"
+";  DO NOT PUT non-escaped value like opt=\"abc\". This doesn't work and should\n"
+";  be like opt=\"\\x61\\x62\\x63\".\n"
+"; ============================================================================\n"
+"";
+
 	TFileStream * fs = new TFileStream(filename, fmCreate|fmShareDenyWrite);
 	try
 	{
+		fs->Write(warnings, strlen(warnings));
 		fs->Write(options.c_str(), options.Length());
 	}
 	catch(...)
