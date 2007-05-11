@@ -2,7 +2,7 @@
 #include "tp_stub.h"
 
 // fps の制限値
-static int fpsLimitValue = 60;
+static int fpsLimitValue = 1000;
 
 // プロパティ名
 #define FPSLIMITNAME L"fpslimit"
@@ -30,6 +30,9 @@ public:
 									  const tTJSVariant *param,
 									  iTJSDispatch2 *objthis) {
 		fpsLimitValue = *param;
+		if (fpsLimitValue == 0) {
+			fpsLimitValue = 1000;
+		}
 		return TJS_S_OK;
 	}
 };
