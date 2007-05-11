@@ -1420,7 +1420,11 @@ static ttstr TVPParseCommandLineOne(const ttstr &i)
 	const tjs_char *p, *o;
 	p = o = i.c_str();
 	p = TJS_strchr(p, '=');
+
+	if(p == NULL) { return i + TJS_W("=yes"); }
+
 	p++;
+
 	ttstr optname(o, p - o);
 
 	if(*p == TJS_W('\'') || *p == TJS_W('\"'))
@@ -1461,8 +1465,9 @@ static void PushConfigFileOptions(TStringList * options)
 	if(!options) return;
 	for(int j = 0; j < options->Count; j++)
 	{
-		TVPProgramArguments.push_back(
-			TVPParseCommandLineOne(TJS_W("-") + ttstr(options->Strings[j])));
+		if(options->Strings[j].c_str()[0] != ';') // unless comment
+			TVPProgramArguments.push_back(
+				TVPParseCommandLineOne(TJS_W("-") + ttstr(options->Strings[j])));
 	}
 }
 //---------------------------------------------------------------------------
