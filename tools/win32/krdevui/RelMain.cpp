@@ -35,6 +35,8 @@ static void _UIExecReleaser()
 
 	// start releaser
 	AnsiString projfolder;
+	AnsiString outputfile;
+	AnsiString rpffile;
 	TStringList *filelist;
 	TStringList *extlist;
 
@@ -51,6 +53,16 @@ static void _UIExecReleaser()
 			go_immediate = true;
 		else if(param == "-nowriterpf")
 			write_rpf = false;
+		else if(param == "-out")
+		{
+			i++;
+			outputfile = ParamStr(i);
+		}
+		else if(param == "-rpf")
+		{
+			i++;
+			rpffile = ParamStr(i);
+		}
 	}
 
 	if(projfolder != "")
@@ -129,7 +141,11 @@ search:
 		delete filelist;
 		form->SetExtList(extlist);
 		delete extlist;
-		form->LoadDefaultProfile();
+		if(rpffile == "")
+			form->LoadDefaultProfile();
+		else
+			form->LoadProfile(rpffile);
+		if(outputfile != "") form->SetOutputFilename(outputfile);
 		res = form->ShowModal();
 		delete form;
 		if(res == mrRetry) goto start;

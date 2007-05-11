@@ -107,7 +107,9 @@ __published:	// IDE 管理のコンポーネント
 private:	// ユーザー宣言
 	void __fastcall SaveProfile(AnsiString name);
 	void __fastcall SaveProfileToIni(TMemIniFile *ini);
+public:
 	void __fastcall LoadProfile(AnsiString name);
+private:
 	void __fastcall LoadProfileFromIni(TMemIniFile *ini);
 	void __fastcall LoadExtList(AnsiString ext, TStrings *to, TStrings *f1, TStrings *f2);
 	AnsiString ProjFolder;
@@ -143,6 +145,7 @@ public:		// ユーザー宣言
 
 	void __fastcall SetGoImmediate(bool b = true) { GoImmediate = b; }
 	void __fastcall SetWriteDefaultRPF(bool b = true) { WriteDefaultRPF = b; }
+	void __fastcall SetOutputFilename(AnsiString s) { OutputFileNameEdit->Text = s; }
 };
 //---------------------------------------------------------------------------
 extern PACKAGE TRelSettingsForm *RelSettingsForm;
