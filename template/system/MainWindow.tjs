@@ -6550,11 +6550,11 @@ class KAGWindow extends Window
     function parseCh(cd, elm, voiceMode) {
 
 		// 名前表示専用処理
-        //【キャラクタ名/表示名】を検出して名前表示処理を実行する
-        if (nameMode > 0) {
-            // 既に名前表示ロジックに入ってる
+		//【キャラクタ名/表示名】を検出して名前表示処理を実行する
+		if (nameMode > 0) {
+			// 既に名前表示ロジックに入ってる
             // ここでは emptyLine の状態はありえない
-            if (elm.text == "】") {
+			if (elm.text == "】") {
 				nameMode = 0;
 				//dm("名前処理:" + nameStr + ":" + nameDisp);
 				if (voiceMode) {
@@ -6590,10 +6590,10 @@ class KAGWindow extends Window
                     addTag(cd, "dispname", %[ name:nameStr, disp:nameDisp]);
                 }
                 afterName = true;
-                return;
+				return;
             } else {
-                if (nameMode == 1) {
-                    if (elm.text == "/") {
+				if (nameMode == 1) {
+					if (elm.text == "/") {
                         nameMode = 2;
                         return 0;
                     } else {
@@ -6604,9 +6604,36 @@ class KAGWindow extends Window
                 }
             }
             return;
-        } else if (emptyLine) {
-            // 行頭での処理
-            if (elm.text == "【") {
+		} else if (emptyLine) {
+			// 行頭での処理
+			// ラインモード処理
+			var erflag;
+			// テキストクリア処理
+			switch (lineMode) {
+			case 1:
+				erflag = true;
+				break;
+			case 2:
+			case 3:
+			case 5:
+				if (afterPage) {
+					afterPage = false;
+					erflag = true;
+				} else {
+					addTag(cd, "r");
+				}
+				break;
+			case 4:
+				if (afterPage) {
+					afterPage = false;
+					erflag = true;
+				}
+				break;
+			}
+			if (erflag && !erAfterPage) {
+				addTag(cd, "er");
+			}
+			if (elm.text == "【") {
                 nameMode = 1;
                 nameStr  = "";
                 nameDisp = "";
@@ -6620,43 +6647,6 @@ class KAGWindow extends Window
             }
         }
         
-        // ラインモード処理
-        var erflag;
-        var crflag;
-        
-        // テキストクリア処理
-        switch (lineMode) {
-        case 1:
-            if (emptyLine) {
-                erflag = true;
-            }
-            break;
-        case 2:
-        case 3:
-        case 5:
-            if (afterPage) {
-                afterPage = false;
-                if (emptyLine) {
-                    erflag = true;
-                }
-            } else {
-                if (emptyLine) {
-					addTag(cd, "r");
-                }
-            }
-            break;
-        case 4:
-            if (afterPage) {
-                afterPage = false;
-                erflag = true;
-            }
-            break;
-        }
-
-        if (erflag && !erAfterPage) {
-            addTag(cd, "er");
-        }
-
         // 文字登録
 		addTag(cd, "ch", elm);
         emptyLine = false;
