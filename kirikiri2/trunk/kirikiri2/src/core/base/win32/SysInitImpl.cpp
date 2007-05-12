@@ -1405,7 +1405,7 @@ static TStringList * TVPGetConfigFileOptions(AnsiString filename)
 			"\" failed (ignoring) : " + errmsg.c_str());
 	else
 		TVPAddImportantLog(ttstr("(info) Loading configuration file \"") + filename.c_str() +
-			"\" succeeded");
+			"\" succeeded.");
 
 	return ret;
 }
