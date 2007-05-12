@@ -6617,7 +6617,6 @@ class KAGWindow extends Window
 			case 3:
 			case 5:
 				if (afterPage) {
-					afterPage = false;
 					erflag = true;
 				} else {
 					addTag(cd, "r");
@@ -6625,7 +6624,6 @@ class KAGWindow extends Window
 				break;
 			case 4:
 				if (afterPage) {
-					afterPage = false;
 					erflag = true;
 				}
 				break;
@@ -6650,6 +6648,7 @@ class KAGWindow extends Window
         // 文字登録
 		addTag(cd, "ch", elm);
         emptyLine = false;
+		afterPage = false;
 
         // 自動インデント処理
         if (autoIndent && afterName && (elm.text == "「" || elm.text == "『")) {
