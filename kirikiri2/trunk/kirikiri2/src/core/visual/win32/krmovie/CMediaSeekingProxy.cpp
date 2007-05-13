@@ -34,8 +34,8 @@ CMediaSeekingProxy::~CMediaSeekingProxy()
 //----------------------------------------------------------------------------
 void CMediaSeekingProxy::SetSeeker( IMediaSeeking *seeker )
 {
-	if( m_Delegate.p != NULL )
-		Release();
+//	if( m_Delegate.p != NULL )
+//		Release();
 	m_Delegate = seeker;
 }
 //----------------------------------------------------------------------------

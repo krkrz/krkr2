@@ -93,8 +93,6 @@ private:
 	LONG	m_StartFrame;
 	LONG	m_StopFrame;
 
-	IMediaSeeking	*m_MediaSeeking;	//! DoRenderSample時にフレーム番号を得るためのIMediaSeekingインターフェイスへのポインタ
-
 	TBufferRendererInputPin		m_InputPin;		//!< 入力ピン
 	TBufferRendererAllocator	m_Allocator;	//!< メモリの割り当て
 

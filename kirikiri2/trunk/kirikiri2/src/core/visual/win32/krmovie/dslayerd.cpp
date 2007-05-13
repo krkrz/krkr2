@@ -32,6 +32,8 @@ tTVPDSLayerVideo::tTVPDSLayerVideo()
 //----------------------------------------------------------------------------
 tTVPDSLayerVideo::~tTVPDSLayerVideo()
 {
+	Shutdown = true;
+
 	m_BmpBits[0] = NULL;
 	m_BmpBits[1] = NULL;
 	ReleaseAll();
@@ -49,7 +51,7 @@ void __stdcall tTVPDSLayerVideo::BuildGraph( HWND callbackwin, IStream *stream,
 {
 	HRESULT			hr;
 
-	CoInitialize(NULL);
+//	CoInitialize(NULL);
 
 	// detect CMediaType from stream's extension ('type')
 	try {
@@ -57,6 +59,7 @@ void __stdcall tTVPDSLayerVideo::BuildGraph( HWND callbackwin, IStream *stream,
 		if( FAILED(hr = m_GraphBuilder.CoCreateInstance(CLSID_FilterGraph, NULL, CLSCTX_INPROC)) )
 			ThrowDShowException(L"Failed to create FilterGraph.", hr);
 
+// ログを書き出す時に有効にする。でも、あんまり役に立たないような。。。
 #if	0
 		{
 			HANDLE	hFile = CreateFile( "C:\\krdslog.txt", GENERIC_WRITE|GENERIC_READ, FILE_SHARE_WRITE|FILE_SHARE_READ, NULL, CREATE_ALWAYS,
@@ -106,6 +109,9 @@ void __stdcall tTVPDSLayerVideo::BuildGraph( HWND callbackwin, IStream *stream,
 			// add fliter
 			if( FAILED(hr = GraphBuilder()->AddFilter( m_Reader, L"Stream Reader")) )
 				ThrowDShowException(L"Failed to call GraphBuilder()->AddFilter( m_Reader, L\"Stream Reader\").", hr);
+
+			// AddFilter したのでリリースする。
+			m_Reader->Release();
 	
 			if( mt.subtype == MEDIASUBTYPE_Avi || mt.subtype == MEDIASUBTYPE_QTMovie )
 			{
@@ -253,19 +259,19 @@ void __stdcall tTVPDSLayerVideo::BuildGraph( HWND callbackwin, IStream *stream,
 	{
 		MakeAPause(true);
 		ReleaseAll();
-		CoUninitialize();
+//		CoUninitialize();
 		TVPThrowExceptionMessage(msg);
 	}
 	catch(...)
 	{
 		MakeAPause(true);
 		ReleaseAll();
-		CoUninitialize();
+//		CoUninitialize();
 		throw;
 	}
 
 	MakeAPause(false);
-	CoUninitialize();	// ここでこれを呼ぶとまずそうな気がするけど、大丈夫なのかなぁ
+//	CoUninitialize();	// ここでこれを呼ぶとまずそうな気がするけど、大丈夫なのかなぁ
 }
 
 //----------------------------------------------------------------------------

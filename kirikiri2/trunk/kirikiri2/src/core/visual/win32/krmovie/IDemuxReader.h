@@ -16,8 +16,9 @@
 #define __DEMUX_READER_H__
 
 #include <windows.h>
-#include <dshow.h>
+//#include <dshow.h>
 #include <streams.h>
+#include <dshow.h>
 #include <wmsdk.h>
 #include <wmdxva.h>
 
