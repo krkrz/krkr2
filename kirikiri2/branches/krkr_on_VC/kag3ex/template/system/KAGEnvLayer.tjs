@@ -1,0 +1,119 @@
+/**
+ * レイヤ系基底クラス
+ * 画像表示が実装されている
+ */
+class KAGEnvLayer extends KAGEnvImage {
+
+    // kag の参照
+    property kag {
+        getter() {
+            return env.kag;
+        }
+    }
+
+    /// 描画中画像
+    var imageFile;
+
+    function KAGEnvLayer(env) {
+        super.KAGEnvImage(env);
+        redraw = false;
+    }
+
+    function onStore(f) {
+        super.onStore(f);
+        f.imageFile = imageFile;
+    }
+    
+    function onRestore(f) {
+        imageFile = f.imageFile;
+        super.onRestore(f);
+    }
+
+    function setImageFile(file, elm) {
+
+        imageFile = file;
+
+        // 背景指定時に座標指定がなければ場所情報を初期化する
+        if (elm.xpos === void) {
+            xpos = void;
+        }
+        if (elm.ypos === void) {
+            ypos = void;
+        }
+
+		disp = SHOW;
+        redraw = true;
+
+        // 記録
+        kag.sflags["cg_" + (file.toUpperCase())] = true;
+
+        return true;
+    }
+
+    var _layerCommands = %[
+    file : function(param, elm) {
+        setImageFile(param, elm);
+    } incontextof this,
+        ];
+
+    /**
+     * コマンドの実行
+     * @param cmd コマンド
+     * @param param パラメータ
+     * @param elm 他のコマンドも含む全パラメータ
+     * @return 実行が行われた場合 true
+     */
+    function doCommand(cmd, param, elm) {
+
+        // 共通コマンド
+        if (super.doCommand(cmd, param, elm)) {
+            return true;
+        }
+        // レイヤ共通コマンド
+        var func;
+        if ((func = _layerCommands[cmd]) !== void) {
+            if (func != null) {
+                func(param, elm);
+            }
+            return true;
+        }
+        // レイヤ拡張コマンド用
+        if ((func = layerCommands[cmd]) !== void) {
+            if (func != null) {
+                func(param, elm);
+            }
+            return true;
+        }
+
+        var find = false;
+        
+        // アクション
+        if (!find) {
+            find = setAction(cmd, elm);
+        }
+
+        // 更新
+        if (!find) {
+            find = setTrans(cmd, elm);
+        }
+
+        // 画像のロード
+        if (!find) {
+            find = setImageFile(cmd, elm);
+        }
+        return find;
+    }
+
+    // このメソッドを実装する
+    // function getLayer(base);
+    // 
+	function drawLayer(layer) {
+		if (isShowBU()&& imageFile !== void) {
+			try {
+				layer.loadImages(%[ "storage" => imageFile]);
+			} catch (e) {
+				kag.errorImage(imageFile + ":画像がロードできません");
+			}
+		}
+	}
+}

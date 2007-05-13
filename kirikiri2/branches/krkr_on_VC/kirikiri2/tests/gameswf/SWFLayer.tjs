@@ -1,0 +1,113 @@
+Plugins.link("gameswf.dll");
+
+class SWFLayer extends Layer
+{
+    var swf;    // 表示対象SWF
+
+    /**
+     * コンストラクタ
+     */
+    function SWFLayer(win, parent) {
+        super.Layer(win, parent);
+        swf = new SWFMovie();
+    }
+
+    /**
+     * ファイナライザ
+     */
+    function finalize() {
+        _stop();
+        invalidate swf;
+        super.finalize();
+    }
+
+    var tick;    //< 再生表示用 tick
+    var first;   //< 初回描画フラグ
+    var updated; //< 描画更新フラグ
+    
+    function _start() {
+        first = true;
+        System.addContinuousHandler(onTimer);
+    }
+
+    function _stop() {
+        System.removeContinuousHandler(onTimer);
+    }
+    
+    /**
+     * SWF の読み込み
+     */
+    function load(name) {
+        swf.load(name);
+        _start();
+    }
+
+    /**
+     * 再描画用インターバル処理
+     */
+    function onTimer(now) {
+        if (first) {
+            updated = true;
+            first = false;
+            update();
+        } else {
+            if (swf.update(now - tick)) {
+                updated = true;
+                update();
+            }
+        }
+        tick = now;
+        // 描画終了判定が必要
+        // XXX_stop();
+    }
+
+    /**
+     * 描画前処理
+     */
+    function onPaint() {
+        super.onPaint(...);
+        if (updated) {
+            fillRect(0,0,width,height,0);
+            drawSWF(swf);
+            updated = false;
+        }
+    }
+
+    
+    // マウス反応
+    function onMouseMove() {
+        //
+        // もし swf がロード完了していたら…
+    }
+
+    // ------------------------------------------- 制御メソッド群
+    
+    function play() {
+        swf.play();
+        _start();
+    }
+
+    function stop() {
+        swf.stop();
+    }
+
+    function restart() {
+        swf.restart();
+        _start();
+    }
+
+    function back() {
+        swf.back();
+        _start();
+    }
+
+    function next() {
+        swf.next();
+        _start();
+    }
+
+    function gotoFrame(frame) {
+        swf.gotoFrame(frame);
+        _start();
+    }
+}

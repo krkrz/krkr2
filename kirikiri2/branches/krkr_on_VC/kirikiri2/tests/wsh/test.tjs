@@ -1,0 +1,10 @@
+//
+// TJS Ç…ÇÊÇÈãLèq
+//
+var win = new Window();
+win.setInnerSize(400,400);
+var base = new Layer(win, null);
+base.setSize(400,400);
+base.fillRect(0,0,400,400,0xffff00);
+base.visible = true;
+win.visible = true;

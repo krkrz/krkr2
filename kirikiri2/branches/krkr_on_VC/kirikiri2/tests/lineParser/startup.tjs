@@ -1,0 +1,22 @@
+// libexpat
+// XMLParser クラス
+Plugins.link("lineParser.dll");
+
+Debug.console.visible = true;
+
+// 窓
+var win = new Window();
+win.visible=true;
+
+class MyParser extends LineParser {
+    function doLine(line, lineNo) {
+        Debug.message("lineNo:" + lineNo + " line:" + line);
+    }
+    function MyParser() {
+        super.LineParser();
+    }
+};
+
+var parser = new MyParser();
+parser.parseStorage("test.txt");
+parser.parse("行1\n行2\n行3");

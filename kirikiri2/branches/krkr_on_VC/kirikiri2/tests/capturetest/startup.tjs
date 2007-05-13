@@ -1,0 +1,126 @@
+// capture テスト
+
+
+Debug.console.visible = true;
+
+class MainWindow extends Window // メインウィンドウクラス
+{
+	var layer;
+	var buttonlayer;
+	var templayer = void;
+	var timer;
+
+	function MainWindow()
+	{
+		// MainWindow コンストラクタ
+		super.Window();
+
+		borderStyle = bsSingle;
+		setInnerSize(640, 480);
+
+		caption = System.title = "capture test";
+
+		// プライマリレイヤを作成
+		add(layer = new Layer(this, null));
+		layer.setSize(innerWidth, innerHeight);
+
+		// 押したくなるようなレイヤを作成
+		add(buttonlayer = new Layer(this, layer));
+		with(buttonlayer)
+		{
+			.setSize(100, 100);
+			.fillRect(0, 0, .width, .height, 0xff0000);
+			.setPos(320 - .width\2, 240 - .height\2);
+			.type = ltCoverRect;
+			.hitType = htMask;
+			.hitThreshold = 0;
+			.opacity = 128;
+			.visible = true;
+		}
+
+		// タイマーを作成
+		add(timer = new Timer(this));
+		with(timer)
+		{
+			.interval = 2000;
+			.enabled = true;
+		}
+
+		// 表示状態に
+		visible = true;
+	}
+
+	function finalize()
+	{
+		System.inform("%d, %d".sprintf(left, top));
+		if(templayer !== void)
+			invalidate templayer if templayer isvalid;
+		super.finalize(...);
+	}
+
+	function action(ev)
+	{
+		// イベント集約ハンドラ
+		var type = ev.type;
+		var target = ev.target;
+		if(type == 'onKeyDown')
+		{
+		}
+		else if(type == 'onKeyUp')
+		{
+		}
+		else if(type == 'onTimer')
+		{
+			if(templayer === void)
+			{
+				// create
+				templayer = new Layer(this, layer);
+				with(templayer)
+				{
+					.setSize(100, 100);
+					.fillRect(0, 0, .width, .height, 0x00ff00);
+					.setPos(0, 0);
+					.type = ltCoverRect;
+					.opacity = 128;
+					.hitType = htMask;
+					.hitThreshold = 0;
+					.visible = true;
+				}
+			}
+			else
+			{
+				// delete
+				invalidate templayer if templayer isvalid;
+				templayer = void;
+			}
+		}
+		else if(type == 'onMouseEnter' && target == this)
+		{
+//			Debug.message("enter");
+		}
+		else if(type == 'onMouseLeave' && target == this)
+		{
+//			Debug.message("leave");
+		}
+		else if(type == 'onMouseUp' && target == buttonlayer)
+		{
+			Debug.message("buttonlayer:up");
+		}
+		else if(type == 'onMouseDown' && target == buttonlayer)
+		{
+			Debug.message("buttonlayer:down");
+		}
+		else if(type == 'onMouseUp' && target == templayer)
+		{
+			Debug.message("templayer:up");
+		}
+		else if(type == 'onMouseDown' && target == templayer)
+		{
+			Debug.message("templayer:down");
+		}
+	}
+
+
+}
+
+var win = new MainWindow();

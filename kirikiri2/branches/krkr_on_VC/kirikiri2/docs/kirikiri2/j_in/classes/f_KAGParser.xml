@@ -1,0 +1,526 @@
+<?xml version="1.0" encoding="Shift_JIS" ?>
+<doc>
+<title>KAGParser</title>
+
+<desc>
+　KAGParser クラスは、<kw>KAG</kw> のシナリオを解析するためのクラスです。<r/>
+</desc>
+
+<member>
+	<name>KAGParser</name>
+	<type>constructor</type>
+	<shortdesc>KAGParser オブジェクトの構築</shortdesc>
+	<arg></arg>
+	<result></result>
+	<desc>
+		　KAGParser クラスのオブジェクトを構築します。<r/>
+	</desc>
+</member>
+
+
+<member>
+	<name>loadScenario</name>
+	<type>method</type>
+	<shortdesc>シナリオの読み込み</shortdesc>
+	<arg>
+		<argitem>
+			<name>name</name>
+			<default></default>
+			<desc>
+				　読み込むシナリオストレージを指定します。<r/>
+			</desc>
+		</argitem>
+	</arg>
+	<result></result>
+	<desc>
+		　指定されたシナリオストレージを読み込み、
+		シナリオ読み込み位置をストレージの先頭に設定します。<r/>
+	</desc>
+</member>
+
+<member>
+	<name>goToLabel</name>
+	<type>method</type>
+	<shortdesc>指定ラベルへの移動</shortdesc>
+	<arg>
+		<argitem>
+			<name>label</name>
+			<default></default>
+			<desc>
+				　移動先のラベル名を指定します。<r/>
+			</desc>
+		</argitem>
+	</arg>
+	<result></result>
+	<desc>
+		　読み込まれているシナリオストレージの中で、指定されたラベルへ移動します。<r/>
+	</desc>
+</member>
+
+
+<member>
+	<name>callLabel</name>
+	<type>method</type>
+	<shortdesc>現在位置をスタックに積んでの、指定ラベルへの移動</shortdesc>
+	<arg>
+		<argitem>
+			<name>label</name>
+			<default></default>
+			<desc>
+				　移動先のラベル名を指定します。<r/>
+			</desc>
+		</argitem>
+	</arg>
+	<result></result>
+	<desc>
+		　指定されたラベルへ移動します。
+		その際、現在のシナリオストレージ読み込み位置をスタックに積みます。<r/>
+	</desc>
+</member>
+
+
+<member>
+	<name>getNextTag</name>
+	<type>method</type>
+	<shortdesc>次のタグを得る</shortdesc>
+	<arg>
+	</arg>
+	<result>タグ情報の辞書配列</result>
+	<desc>
+		　次のタグを辞書配列で返します。(タグ内部にない)通常の文字は、ch タグと解釈されます。<r/>
+		　interrupted 状態では、interrupt タグを返し、interrupted 状態を解除します。<r/>
+		　ストレージの末尾では、void を返します。<r/>
+		　タグの名前は、戻り値の辞書配列の tagname 要素に格納されています。<r/>
+		　if, ignore, endif, endignore, emb, macro, endmacro, erasemacro, 
+		jump, call, return, iscript, endscript の各タグは組み込みタグです。
+		これらのタグに関する処理は、このメソッドの内部で自動的に行なわれます。
+		したがって、このメソッドはこれらのタグに関する情報を返しません。<r/>
+	</desc>
+	<ref>KAGParser.interrupt</ref>
+	<ref>KAGParser.resetInterrupt</ref>
+</member>
+
+<member>
+	<name>assign</name>
+	<type>method</type>
+	<shortdesc>KAGParser オブジェクトのコピー</shortdesc>
+	<arg>
+		<argitem>
+			<name>src</name>
+			<default></default>
+			<desc>
+				　コピー元の KAGParser オブジェクトを指定します。<r/>
+			</desc>
+		</argitem>
+	</arg>
+	<result></result>
+	<desc>
+		　src で指定した KAGParser オブジェクトの内容をコピーします。<r/>
+	</desc>
+</member>
+
+
+<member>
+	<name>clear</name>
+	<type>method</type>
+	<shortdesc>オブジェクトのクリア</shortdesc>
+	<arg>
+	</arg>
+	<result></result>
+	<desc>
+		　オブジェクトの状態をクリアします。<r/>
+	</desc>
+</member>
+
+
+<member>
+	<name>store</name>
+	<type>method</type>
+	<shortdesc>オブジェクトの状態を辞書配列に書き出す</shortdesc>
+	<arg>
+	</arg>
+	<result>オブジェクトの状態を表わす辞書配列</result>
+	<desc>
+		　オブジェクトの状態を辞書配列に書き出します。<r/>
+	</desc>
+	<ref>KAGParser.restore</ref>
+</member>
+
+<member>
+	<name>restore</name>
+	<type>method</type>
+	<shortdesc>辞書配列からオブジェクトの状態を復元する</shortdesc>
+	<arg>
+		<argitem>
+			<name>dic</name>
+			<default></default>
+			<desc>
+				　復元するオブジェクトの状態を表わす辞書配列<r/>
+			</desc>
+		</argitem>
+	</arg>
+	<result></result>
+	<desc>
+		　dic で指定した辞書配列を元にして、KAGParser オブジェクトの状態を復元します。<r/>
+	</desc>
+	<ref>KAGParser.store</ref>
+</member>
+
+
+<member>
+	<name>clearCallStack</name>
+	<type>method</type>
+	<shortdesc>call タグ呼び出しスタックのクリア</shortdesc>
+	<arg>
+	</arg>
+	<result></result>
+	<desc>
+		　call タグ呼び出しのスタックをクリアします。マクロ引数もクリアされます。<r/>
+	</desc>
+</member>
+
+
+<member>
+	<name>interrupt</name>
+	<type>method</type>
+	<shortdesc>interrupted 状態にする</shortdesc>
+	<arg>
+	</arg>
+	<result></result>
+	<desc>
+		　interrupted 状態になります。この状態のときは、
+		次の <ref>KAGParser.getNextTag</ref> メソッドの呼び出しでは interrupt タグが返されます。<r/>
+	</desc>
+	<ref>KAGParser.resetInterrupt</ref>
+	<ref>KAGParser.getNextTag</ref>
+</member>
+
+
+<member>
+	<name>resetInterrupt</name>
+	<type>method</type>
+	<shortdesc>interrupted 状態の解除</shortdesc>
+	<arg>
+	</arg>
+	<result></result>
+	<desc>
+		　interrupted 状態を解除します。<r/>
+	</desc>
+	<ref>KAGParser.interrupt</ref>
+	<ref>KAGParser.getNextTag</ref>
+</member>
+
+
+
+
+
+<member>
+	<name>curLine</name>
+	<type>property</type>
+	<shortdesc>現在行の行数</shortdesc>
+	<access>r</access>
+	<desc>
+		　現在行がストレージ中で何行目かを表わします。<r/>
+	</desc>
+</member>
+
+
+<member>
+	<name>curPos</name>
+	<type>property</type>
+	<shortdesc>現在行における文字の位置</shortdesc>
+	<access>r</access>
+	<desc>
+		　現在行の中で、今何文字目にあるかを表わします。<r/>
+	</desc>
+</member>
+
+
+<member>
+	<name>curLineStr</name>
+	<type>property</type>
+	<shortdesc>現在行の文字列</shortdesc>
+	<access>r</access>
+	<desc>
+		　現在行の文字列を表わします。<r/>
+	</desc>
+</member>
+
+<member>
+	<name>ignoreCR</name>
+	<type>property</type>
+	<shortdesc>改行を無視するかどうか</shortdesc>
+	<access>r/w</access>
+	<desc>
+		　改行を無視するかどうかを表わします。<r/>
+		　真ならば改行を無視します。<r/>
+		　偽ならば、シナリオ中の改行の位置で、表示上も改行します。(KAG2 互換モード)<r/>
+	</desc>
+</member>
+
+<member>
+	<name>debugLevel</name>
+	<type>property</type>
+	<shortdesc>デバッグレベル</shortdesc>
+	<access>r/w</access>
+	<desc>
+		　デバッグレベルを表わします。<r/>
+		　設定可能な値は以下の通りです。<r/>
+		<ul>
+		<li><tt><kw>tkdlNone</kw></tt><r/></li>
+		<li><tt><kw>tkdlSimple</kw></tt><r/></li>
+		<li><tt><kw>tkdlVerbose</kw></tt><r/></li>
+		</ul>
+		　tkdlNone &lt; tkdlSimple &lt; tkdlVerbose の順に、表示されるデバッグメッセージの量が多くなります。<r/>
+	</desc>
+</member>
+
+
+<member>
+	<name>macros</name>
+	<type>property</type>
+	<shortdesc>マクロの入った辞書配列</shortdesc>
+	<access>r</access>
+	<desc>
+		　マクロの入った辞書配列を表わします。<r/>
+		　例えば、hoge マクロには macros['hoge'] でアクセスできます。<r/>
+	</desc>
+</member>
+
+
+<member>
+	<name>macroParams</name>
+	<type>property</type>
+	<shortdesc>現在実行されているマクロの引数</shortdesc>
+	<access>r</access>
+	<desc>
+		　現在実行されているマクロの引数を、辞書配列で表わします。<r/>
+	</desc>
+</member>
+
+
+<member>
+	<name>callStackDepth</name>
+	<type>property</type>
+	<shortdesc>call タグ呼び出しスタックの深さ</shortdesc>
+	<access>r</access>
+	<desc>
+		　call タグ呼び出しスタックの深さを表わします。<r/>
+	</desc>
+</member>
+
+
+<member>
+	<name>curStorage</name>
+	<type>property</type>
+	<shortdesc>現在のストレージ</shortdesc>
+	<access>r/w</access>
+	<desc>
+		　現在のストレージを表わします。<r/>
+		　値を設定することもできます。その場合は、指定されたストレージを読み込みます。<r/>
+	</desc>
+</member>
+
+
+<member>
+	<name>curLabel</name>
+	<type>property</type>
+	<shortdesc>現在のラベル</shortdesc>
+	<access>r</access>
+	<desc>
+		　現在のラベルを表わします。<r/>
+	</desc>
+</member>
+
+
+
+<member>
+	<name>onScenarioLoad</name>
+	<type>event</type>
+	<shortdesc>シナリオ読み込みが開始した</shortdesc>
+	<arg>
+		<argitem>
+			<name>storage</name>
+			<default></default>
+			<desc>
+				　読み込まれるシナリオストレージの名前が渡されます。<r/>
+			</desc>
+		</argitem>
+	</arg>
+	<result></result>
+	<desc>
+		　シナリオ読み込みを開始する時に呼ばれます。<r/>
+		　このイベントで文字列を返すと、ストレージ storage の中身の代わりに
+		その文字列をシナリオとして用います。<r/>
+	</desc>
+	<ref>KAGParser.loadScenario</ref>
+	<ref>KAGParser.onScenarioLoaded</ref>
+</member>
+
+<member>
+	<name>onScenarioLoaded</name>
+	<type>event</type>
+	<shortdesc>シナリオ読み込みが終了した</shortdesc>
+	<arg>
+		<argitem>
+			<name>storage</name>
+			<default></default>
+			<desc>
+				　読み込まれたシナリオストレージの名前が渡されます。<r/>
+			</desc>
+		</argitem>
+	</arg>
+	<result></result>
+	<desc>
+		　シナリオ読み込みが終了した時に呼ばれます。<r/>
+	</desc>
+	<ref>KAGParser.loadScenario</ref>
+	<ref>KAGParser.onScenarioLoad</ref>
+</member>
+
+
+<member>
+	<name>onLabel</name>
+	<type>event</type>
+	<shortdesc>ラベルを通過した</shortdesc>
+	<arg>
+		<argitem>
+			<name>label</name>
+			<default></default>
+			<desc>
+				　通過したラベル名が渡されます。<r/>
+			</desc>
+		</argitem>
+		<argitem>
+			<name>pagename</name>
+			<default></default>
+			<desc>
+				　通過したラベルの見出し(ラベルの | より右側の部分)が渡されます。<r/>
+			</desc>
+		</argitem>
+	</arg>
+	<result></result>
+	<desc>
+		　ラベルを通過した時に呼ばれます。<r/>
+	</desc>
+</member>
+
+
+<member>
+	<name>onScript</name>
+	<type>event</type>
+	<shortdesc>iscript ブロックを通過した</shortdesc>
+	<arg>
+		<argitem>
+			<name>script</name>
+			<default></default>
+			<desc>
+				　iscript タグと endscript タグで挟まれた部分が文字列として渡されます。<r/>
+			</desc>
+		</argitem>
+		<argitem>
+			<name>storageShortName</name>
+			<default></default>
+			<desc>
+				　短いストレージ名が渡されます。<r/>
+			</desc>
+		</argitem>
+		<argitem>
+			<name>scriptStart</name>
+			<default></default>
+			<desc>
+				　スクリプト開始行の行数が渡されます。<r/>
+			</desc>
+		</argitem>
+	</arg>
+	<result></result>
+	<desc>
+		　<ref>KAGParser.getNextTag</ref> メソッドが、iscript ... endscript の部分を通過したときに呼ばれます。<r/>
+		　eval タグでは呼ばれません。<r/>
+		　<ref>KAGParser.getNextTag</ref> メソッドは、iscript ... endscript の部分に関する情報は返さず、
+		この部分をスキップします。したがって、iscript ... endscript の中身の処理は、このイベント内で
+		する必要があります。<r/>
+	</desc>
+	<ref>KAGParser.getNextTag</ref>
+</member>
+
+
+
+<member>
+	<name>onAfterReturn</name>
+	<type>event</type>
+	<shortdesc>return タグで復帰した</shortdesc>
+	<arg>
+	</arg>
+	<result></result>
+	<desc>
+		　return タグで復帰した後に呼ばれます。<r/>
+	</desc>
+</member>
+
+
+<member>
+	<name>onJump</name>
+	<type>event</type>
+	<shortdesc>jump タグが呼ばれた</shortdesc>
+	<arg>
+		<argitem>
+			<name>dic</name>
+			<default></default>
+			<desc>
+				　jump タグの情報を持つ辞書配列<r/>
+			</desc>
+		</argitem>
+	</arg>
+	<result></result>
+	<desc>
+		　<ref>KAGParser.getNextTag</ref> メソッドが jump タグを読んだときに呼ばれます。<r/>
+		　このイベントで偽を返すと、移動は行なわれません。<r/>
+	</desc>
+	<ref>KAGParser.getNextTag</ref>
+</member>
+
+<member>
+	<name>onCall</name>
+	<type>event</type>
+	<shortdesc>call タグが呼ばれた</shortdesc>
+	<arg>
+		<argitem>
+			<name>dic</name>
+			<default></default>
+			<desc>
+				　call タグの情報を持つ辞書配列<r/>
+			</desc>
+		</argitem>
+	</arg>
+	<result></result>
+	<desc>
+		　<ref>KAGParser.getNextTag</ref> メソッドが call タグを読んだときに呼ばれます。<r/>
+		　このイベントで偽を返すと、移動は行なわれません。<r/>
+	</desc>
+	<ref>KAGParser.getNextTag</ref>
+</member>
+
+<member>
+	<name>onReturn</name>
+	<type>event</type>
+	<shortdesc>return タグが呼ばれた</shortdesc>
+	<arg>
+		<argitem>
+			<name>dic</name>
+			<default></default>
+			<desc>
+				　return タグの情報を持つ辞書配列<r/>
+			</desc>
+		</argitem>
+	</arg>
+	<result></result>
+	<desc>
+		　<ref>KAGParser.getNextTag</ref> メソッドが return タグを読んだときに呼ばれます。<r/>
+		　このイベントで偽を返すと、移動は行なわれません。<r/>
+	</desc>
+	<ref>KAGParser.getNextTag</ref>
+</member>
+
+
+</doc>

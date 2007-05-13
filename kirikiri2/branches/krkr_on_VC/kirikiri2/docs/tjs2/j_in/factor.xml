@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="Shift_JIS" ?>
+
+<doc>
+<title>項</title>
+
+<para>
+<ptitle>項</ptitle>
+　項は、式評価の中でもっとも最高の優先順位にあるものです。これらは、通常の即値、識別子 <comlink href="token"/> の他、以下のものがあります。<r/>
+</para>
+
+<para>
+<ptitle>true と false</ptitle>
+　<tt>true</tt> と <tt>false</tt> ( <kw>真と偽</kw> ) は、それぞれ <tt>1</tt> と <tt>0</tt> の値を持つ整数値として扱われます。<r/>
+<r/>
+　<tt>true</tt> および <tt>false</tt> と、その他の式を比較することは避けてください。たとえば、<tt>if(true != getBoolean())</tt> のような事はせず、<tt>if(!getBoolen())</tt> のように記述してください。論理式では「0 が偽」、「0 以外が真」であって、「<tt>1</tt> が 真」では無く、また、TJS2 は 論理型(Boolean)を持っていないため、自動的な数値←→論理型の型変換が行われないためです。<r/>
+</para>
+
+<para>
+<ptitle>void</ptitle>
+　<tt>void</tt> は、「なにもない」を示します。「なにもない」ことを表す様々な場面で使用されます。<tt>null</tt> とは違います。<r/>
+　宣言したての変数 (何も代入されていない変数) は、この値です。<r/>
+　文字列として扱われた場合、空文字列 ( '' )になります。数値として扱われた場合、 0 になります。<r/>
+<r/>
+　<tt>void</tt> 同士の比較には <tt>===</tt> か <tt>!==</tt> ( 識別 )  演算子を使うことをおすすめします。<r/>
+</para>
+
+<para>
+<ptitle>null</ptitle>
+　<tt>null</tt> は、オブジェクトではあるが「なんのオブジェクトも示していない」とうことを示します。<tt>void</tt> とは違います。<r/>
+　null オブジェクトにアクセスしようとするとエラーになります。<r/>
+　incontextof 演算子を用いて コンテキストを null に変更すると、その関数は、呼び出した位置のコンテキスト上で実行されるようになります。<r/>
+<example>
+	var objmethod = obj.method;<r/>
+	objmethod(); // obj のコンテキスト上で実行される<r/>
+	objmethod = objmethod incontextof null; // コンテキストを null に変更<r/>
+	objmethod(); // this (つまり呼び出した位置におけるコンテキスト) 上で実行される<r/>
+</example>
+</para>
+
+<para>
+<ptitle>Infinity</ptitle>
+　<tt>Infinity</tt> は、無限大を表します。負の無限大を表す場合は <tt>-Infinity</tt> です。<r/>
+</para>
+
+<para>
+<ptitle>NaN</ptitle>
+　<tt>NaN</tt> は、非数 (Not a Number) を表します。非数は計算の結果が無効な場合などに得られる数値です。<r/>
+</para>
+
+<para>
+<ptitle>super</ptitle>
+　<tt>super</tt> は、クラスのメソッド/プロパティ内で、そのクラスのスーパークラスを表します。クラスのメソッド/プロパティではないところ、あるいは多重継承を行っているクラス内で参照しようとするとエラーになります。<r/>
+</para>
+
+<para>
+<ptitle>global</ptitle>
+　<tt>global</tt> は、グローバルのオブジェクトを表します。すべてのブロックの外で宣言された変数や、クラス、クラスのメソッドでない関数などにアクセスできます。<r/>
+<r/>
+<example>
+	var v;<r/>
+	function test(v)<r/>
+	{<r/>
+		global.v=v;  // global の v に、引数の v を設定する<r/>
+	}<r/>
+</example>
+</para>
+
+<para>
+<ptitle>this</ptitle>
+　<tt>this</tt> は、クラスのメソッドやプロパティ内で、通常、そのクラスのオブジェクト自身を表します。<r/>
+　呼び出し時に明示的あるいは暗黙的に指定された「コンテキスト」が <tt>this</tt> として指定されます。<r/>
+</para>
+
+<para>
+<ptitle>式中関数</ptitle>
+　<tt>function</tt> を使って、式中に関数を書くことができます。<link href="function" /> を参照してください。<r/>
+</para>
+
+<para>
+<ptitle>式中配列</ptitle>
+　<tt><kw>[ ]</kw></tt> を使って、式中に <tt>Array</tt> クラスのオブジェクトをその場で記述することができます。<link href="array"/> を参照してください。<r/>
+</para>
+
+<para>
+<ptitle>式中辞書配列</ptitle>
+　<tt><kw>%[ ]</kw></tt> を使って、式中に <tt>Dictionary</tt> クラスのオブジェクトをその場で記述することができます。<link href="dictionary"/> を参照してください。<r/>
+</para>
+</doc>

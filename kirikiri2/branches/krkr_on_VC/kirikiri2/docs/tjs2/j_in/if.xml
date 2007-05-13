@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="Shift_JIS" ?>
+<doc>
+<title>if ステートメント</title>
+
+<para>
+<ptitle>if ステートメント</ptitle>
+　if ステートメントは、「○○ならば●●をする」というような、条件判断によってスクリプトの一部を実行するかしないかを決定させる構文です。<r/>
+　構文は以下の通りです。<r/>
+<bq>
+if(expression)<r/>
+	ステートメントまたはブロック<r/>
+else<r/>
+	ステートメントまたはブロック<r/>
+</bq>
+　最初の「ステートメントまたはブロック」は、expression を評価した結果が真の時に実行されるもので、２番目の「ステートメントまたはブロック」は、評価した結果が偽のときに実行されるものです。<kw>else</kw> 以降は必要ない場合は書かなくてかまいません。<r/>
+<example>
+	if(a==b)<r/>
+		inform("a と b は同じです");<r/>
+<r/>
+	if(a&lt;b)<r/>
+	{<r/>
+		var t;<r/>
+		t=a; a=b; b=t; // a と b を入れ替える <r/>
+	}<r/>
+<r/>
+	if(a==b)<r/>
+		inform("a と b は同じです");<r/>
+	else<r/>
+		inform("a と b は違います");<r/>
+</example>
+</para>
+
+<para>
+<ptitle>if と else の対応</ptitle>
+　else は、「前の、まだ else と対応していない if に対応する」という規則を持っています。<r/>
+<r/>
+たとえば、<r/>
+<bq>
+	if(expr) // ★<r/>
+		if(expr) // ●<r/>
+			statement;<r/>
+		else // ●<r/>
+			statement;<r/>
+	else // ★<r/>
+		statement;<r/>
+</bq>
+　と記述した場合、★の else は ★ の if に、● の else は ● の if に対応することになります。<r/>
+　TJS2のようなフリースタイルの言語は、たとえインデントを間違って
+<bq>
+	if(expr) // ★<r/>
+		if(expr) // ●<r/>
+			statement;<r/>
+	else // ●<r/>
+		statement;<r/>
+</bq>
+　と書いても、対応は上記の通りですので注意する必要があります。<r/>
+　対応をはっきり区切りたい場合は、<r/>
+<bq>
+	if(expr) { // ★<r/>
+		if(expr) // ●<r/>
+			statement;<r/>
+	}<r/>
+	else // ★<r/>
+		statement;<r/>
+</bq>
+　のようにブロックで囲むという方法を採ってください。<r/>
+</para>
+</doc>
