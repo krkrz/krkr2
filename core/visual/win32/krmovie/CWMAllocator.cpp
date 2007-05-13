@@ -15,6 +15,14 @@ DirectShowのアロケーターをラップしたWindows Media Format SDK用のアロケーター
 #include "CWMBuffer.h"
 #include <assert.h>
 
+
+//----------------------------------------------------------------------------
+//! @brief	  	デストラクタ
+//----------------------------------------------------------------------------
+CWMAllocator::~CWMAllocator()
+{
+}
+
 //----------------------------------------------------------------------------
 //! @brief	  	要求されたインターフェイスを返す
 //! @param		riid : インターフェイスのIID
@@ -65,16 +73,6 @@ STDMETHODIMP CWMAllocator::AllocateForStreamEx( WORD wStreamNum, DWORD cbBuffer,
 		(*ppBuffer)->AddRef();
 		(*ppBuffer)->SetLength(cbBuffer);
 		pSample->Release();	// CWMBufferへ渡した時点で参照カウントが増える
-	} else {
-		hr = SubAllocator()->GetBuffer( &pSample, &StartTime, &EndTime, flag );
-		if( hr == S_OK )
-		{
-			*ppBuffer = new CWMBuffer(pSample);
-			(*ppBuffer)->AddRef();
-			(*ppBuffer)->SetLength(cbBuffer);
-			pSample->Release();	// CWMBufferへ渡した時点で参照カウントが増える
-		} else 
-			assert(0);
 	}
 	return hr;
 }
