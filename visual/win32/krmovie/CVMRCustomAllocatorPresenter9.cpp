@@ -26,7 +26,7 @@ ATOM CVMRCustomAllocatorPresenter9::m_ChildAtom = 0;
 //----------------------------------------------------------------------------
 CVMRCustomAllocatorPresenter9::CVMRCustomAllocatorPresenter9( tTVPDSMixerVideoOverlay* owner, CCritSec &lock )
  : CUnknown(NAME("VMR Custom Allocator Presenter"),NULL), m_ChildWnd(NULL), m_Visible(false)
- , m_Surfaces(NULL), m_dwUserID(NULL), m_Owner(owner), m_Lock(&lock), m_RebuildingWindow(false)
+ , /*m_Surfaces(NULL),*/ m_dwUserID(NULL), m_Owner(owner), m_Lock(&lock), m_RebuildingWindow(false)
  {
 	m_Rect.left = 0;
 	m_Rect.top = 0;
@@ -77,6 +77,9 @@ STDMETHODIMP CVMRCustomAllocatorPresenter9::NonDelegatingQueryInterface( REFIID 
 void CVMRCustomAllocatorPresenter9::ReleaseAll()
 {
 	CAutoLock Lock(m_Lock);
+	if( m_VMR9SurfAllocNotify.p )
+		m_VMR9SurfAllocNotify.Release();
+
 	ReleaseSurfaces();
 	ReleaseD3D();
 	DestroyChildWindow();
@@ -145,7 +148,7 @@ HRESULT STDMETHODCALLTYPE CVMRCustomAllocatorPresenter9::GetSurface( DWORD_PTR d
 			m_Surfaces[SurfaceIndex].CopyTo( lplpSurface );
 			if( *lplpSurface == NULL )
 				return E_FAIL;
-			(*lplpSurface)->AddRef();
+//			ULONG cnt = (*lplpSurface)->AddRef();
 			return S_OK;
 		}
 		else
@@ -193,6 +196,7 @@ HRESULT CVMRCustomAllocatorPresenter9::ReleaseSurfaces()
 	CAutoLock Lock(m_Lock);
 	for( DWORD i = 0; i < m_Surfaces.size(); ++i )
 	{
+//		m_Surfaces[i].Release();
 		m_Surfaces[i] = NULL;
 	}
 	return S_OK;
@@ -325,7 +329,11 @@ HRESULT CVMRCustomAllocatorPresenter9::CreateD3D()
 	ReleaseD3D();
 	
 	if( m_D3DDll.IsLoaded() == false )
+#if _DEBUG
+		m_D3DDll.Load("d3d9d.dll");
+#else
 		m_D3DDll.Load("d3d9.dll");
+#endif
 	if( m_D3DDll.IsLoaded() == false )
 		return m_D3DDll.GetLastError();
 
@@ -556,6 +564,7 @@ void CVMRCustomAllocatorPresenter9::Reset()
 	if( Owner()->OwnerWindow != NULL )
 	{
 		CAutoLock Lock(m_Lock);
+//		ReleaseSurfaces();
 		DestroyChildWindow();
 		if( FAILED(hr = CreateChildWindow() ) )
 			ThrowDShowException(L"Failed to create window.", hr );

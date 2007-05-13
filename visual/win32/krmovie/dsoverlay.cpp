@@ -91,6 +91,9 @@ void __stdcall tTVPDSVideoOverlay::BuildGraph( HWND callbackwin, IStream *stream
 			if( FAILED(hr = GraphBuilder()->AddFilter( m_Reader, NULL)) )
 				ThrowDShowException(L"Failed to call IFilterGraph::AddFilter.", hr);
 
+			// AddFilter‚µ‚½‚Ì‚ÅRelease
+			m_Reader->Release();
+
 			if( mt.subtype == MEDIASUBTYPE_Avi || mt.subtype == MEDIASUBTYPE_QTMovie )
 			{
 				// render output pin

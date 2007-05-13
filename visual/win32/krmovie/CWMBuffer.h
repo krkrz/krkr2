@@ -17,10 +17,11 @@ DirectShowのMedia SampleをラップしたWindows Media Format SDK用のBuffer
 
 #include <assert.h>
 #include <windows.h>
-#include <dshow.h>
+//#include <dshow.h>
 #include <atlcomcli.h>
 #include <wmsdk.h>
 #include <streams.h>
+#include <dshow.h>
 
 //----------------------------------------------------------------------------
 //! @brief WMV用バッファ

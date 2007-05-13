@@ -6,8 +6,10 @@
 #pragma once
 #endif // _MSC_VER > 1000
 
+//#define _CRTDBG_MAP_ALLOC
 
 #define WIN32_LEAN_AND_MEAN
+
 
 #include <windows.h>
 #include <objidl.h>

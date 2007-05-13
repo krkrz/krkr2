@@ -15,13 +15,13 @@ Windows MediaÉtÉ@ÉCÉãÇì«Ç›çûÇﬁ
 #define __WM_READER_H__
 
 #include <windows.h>
+#include <streams.h>
 #include <dshow.h>
 #include <atlcomcli.h>
 #include <assert.h>
 #include <wmsdk.h>
 #include <wmdxva.h>
 #include <vector>
-#include <streams.h>
 #include "IDemuxReader.h"
 #include "CDLLLoader.h"
 class CWMReader;
@@ -33,8 +33,6 @@ class CWMOutput : public IOutputStream, public CUnknown
 {
 	CWMReader	*m_Reader;
 	WORD		m_StreamNum;
-	LONG		m_cRef;
-	class CWMAllocator	*m_Allocator;
 
 	bool IsEnable() { return m_StreamNum != 0; }
 	HRESULT SetStream();
@@ -47,7 +45,7 @@ class CWMOutput : public IOutputStream, public CUnknown
 	IWMSyncReader *WMReader();
 
 public:
-	CWMOutput( CWMReader *reader ) : CUnknown(NAME("WM Output"),NULL), m_Reader(reader), m_StreamNum(0), m_cRef(0), m_Allocator(NULL) {}
+	CWMOutput( CWMReader *reader ) : CUnknown(NAME("WM Output"),NULL), m_Reader(reader), m_StreamNum(0) {}
 	void SetStreamNumber( WORD num ) { m_StreamNum = num; }
 	WORD GetStreamNumber() { return m_StreamNum; }
 	virtual ~CWMOutput();
