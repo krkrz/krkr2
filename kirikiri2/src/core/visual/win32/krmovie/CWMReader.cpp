@@ -12,7 +12,6 @@ Windows Mediaファイルを読み込む
 *****************************************************************************/
 
 #include "CWMReader.h"
-
 #include "CWMAllocator.h"
 #include "CWMBuffer.h"
 
@@ -139,7 +138,8 @@ HRESULT CWMOutput::GetNeedBufferSize( long &buffers, long &bufsize )
 	if( FAILED(hr = WMReader()->GetMaxStreamSampleSize( m_StreamNum, &max ) ) )
 		return hr;
 
-	buffers = 2;
+//	buffers = 2;
+	buffers = 7;
 	bufsize = max;
 	return S_OK;
 }
@@ -214,33 +214,11 @@ HRESULT CWMOutput::SetAllocator( IMemAllocator *alloc )
 	if( FAILED(hr = WMReader()->QueryInterface( &reader2 ) ) )
 		return hr;
 
-	// 予備のアロケーターを作る
-	CMemAllocator *memalloc = (CMemAllocator*)CMemAllocator::CreateInstance(NULL,&hr);
-	if( FAILED( hr ) ) { memalloc->Release(); return hr; }
-
-	ALLOCATOR_PROPERTIES	req, actual;
-	if( FAILED(hr = alloc->GetProperties( &req )) ) { memalloc->Release(); return hr; }
-
-	DWORD max;
-	if( FAILED(hr = WMReader()->GetMaxStreamSampleSize( m_StreamNum, &max )) ) { memalloc->Release(); return hr; }
-
-	if( req.cbBuffer < static_cast<long>(max) )
-		req.cbBuffer = max;
-
-	req.cBuffers = 5;	// とりあえず5個ぐらい確保しとけ
-	if( FAILED(hr = memalloc->SetProperties( &req, &actual )) ) { memalloc->Release(); return hr; }
-
-	if( FAILED(hr = memalloc->Commit()) ) { memalloc->Release(); return hr; }
-
-	CWMAllocator *wmAlloc = new CWMAllocator( alloc, memalloc );
-	memalloc->Release();
+	CWMAllocator *wmAlloc = new CWMAllocator( alloc );
 	CComPtr<IWMReaderAllocatorEx>	pWMRAE;
 	pWMRAE = wmAlloc;
 
 	hr = reader2->SetAllocateForStream( m_StreamNum, pWMRAE );
-	if( SUCCEEDED(hr) )
-		m_Allocator = wmAlloc;
-
 	return hr;
 }
 //----------------------------------------------------------------------------
@@ -281,6 +259,11 @@ CWMReader::CWMReader()
 //----------------------------------------------------------------------------
 CWMReader::~CWMReader()
 {
+	if( m_HeaderInfo.p )
+		m_HeaderInfo.Release();
+
+	if( m_WMReader.p )
+		m_WMReader.Release();
 }
 //----------------------------------------------------------------------------
 //! @brief	  	出力数を取得する ( 映像と音声なら2つなど )

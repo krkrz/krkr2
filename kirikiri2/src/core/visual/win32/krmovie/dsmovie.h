@@ -17,6 +17,8 @@
 #ifndef __DSMOVIE_H_
 #define __DSMOVIE_H_
 
+//#define _CRTDBG_MAP_ALLOC
+
 #include <assert.h>
 #include <atlbase.h>
 #include <streams.h>

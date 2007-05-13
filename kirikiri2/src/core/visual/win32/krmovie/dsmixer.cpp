@@ -61,6 +61,9 @@ void __stdcall tTVPDSMixerVideoOverlay::ReleaseAll()
 		m_AllocatorPresenter = NULL;
 	}
 
+	if( m_VMR9SurfAllocNotify.p )
+		m_VMR9SurfAllocNotify.Release();
+
 	if( m_VMR9MixerCtrl.p )
 		m_VMR9MixerCtrl.Release();
 
@@ -138,6 +141,9 @@ void __stdcall tTVPDSMixerVideoOverlay::BuildGraph( HWND callbackwin, IStream *s
 			if( FAILED(hr = GraphBuilder()->AddFilter( m_Reader, L"Stream Reader")) )
 				ThrowDShowException(L"Failed to call IFilterGraph::AddFilter.", hr);
 	
+			// AddFilter‚µ‚½‚Ì‚ÅRelease
+			m_Reader->Release();
+
 			if( mt.subtype == MEDIASUBTYPE_Avi || mt.subtype == MEDIASUBTYPE_QTMovie )
 			{
 				// render output pin

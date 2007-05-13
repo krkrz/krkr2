@@ -59,8 +59,6 @@ TBufferRenderer::TBufferRenderer( TCHAR *pName, LPUNKNOWN pUnk, HRESULT *phr )
 
 	m_FrontBuffer = 0;
 
-	m_MediaSeeking = NULL;
-
 	m_StartFrame = 0;
 }
 #pragma warning(default: 4355)
@@ -76,12 +74,6 @@ TBufferRenderer::~TBufferRenderer()
 	// 自分で確保している場合バッファの解放
 	FreeFrontBuffer();
 	FreeBackBuffer();
-
-	if( m_MediaSeeking )
-	{
-		m_MediaSeeking->Release();
-	}
-	m_MediaSeeking = NULL;
 }
 //----------------------------------------------------------------------------
 //! @brief	  	要求されたインターフェイスを返す
@@ -127,7 +119,8 @@ HRESULT TBufferRenderer::CheckMediaType( const CMediaType *pmt )
 	pvi = (VIDEOINFO *)pmt->Format();
 	if( IsEqualGUID( *pmt->Type(), MEDIATYPE_Video) )
 	{
-		if( IsEqualGUID( *pmt->Subtype(), MEDIASUBTYPE_RGB32))
+		if( IsEqualGUID( *pmt->Subtype(), MEDIASUBTYPE_RGB32) || 
+			IsEqualGUID( *pmt->Subtype(), MEDIASUBTYPE_ARGB32) )
 		{
 			hr = S_OK;
 			m_MtIn = (*pmt);
@@ -550,20 +543,22 @@ HRESULT TBufferRenderer::get_VideoHeight( long *pVideoHeight )
 HRESULT TBufferRenderer::OnStartStreaming(void)
 {
 	HRESULT		hr;
-	if( m_MediaSeeking == NULL && m_pGraph )
+	CComPtr<IMediaSeeking>	mediaSeeking;
+	
+	if( m_pGraph )
 	{
-		if( m_pGraph->QueryInterface( IID_IMediaSeeking, (void**)&m_MediaSeeking ) != S_OK )
-			m_MediaSeeking = NULL;
+		if( m_pGraph->QueryInterface( &mediaSeeking ) != S_OK )
+			mediaSeeking = NULL;
 	}
 
 	bool		bGetTime = false;
 	LONGLONG	Current = 0;
-	if( m_MediaSeeking )
+	if( mediaSeeking.p != NULL )
 	{	// IMediaSeekingを使って時間の取得を試みる
 		GUID	Format;
-		if( SUCCEEDED(hr = m_MediaSeeking->GetTimeFormat( &Format ) ) )
+		if( SUCCEEDED(hr = mediaSeeking->GetTimeFormat( &Format ) ) )
 		{
-			if( SUCCEEDED(hr = m_MediaSeeking->GetCurrentPosition( &Current )) )
+			if( SUCCEEDED(hr = mediaSeeking->GetCurrentPosition( &Current )) )
 			{
 				if( IsEqualGUID( TIME_FORMAT_MEDIA_TIME, Format ) )
 				{
@@ -585,6 +580,9 @@ HRESULT TBufferRenderer::OnStartStreaming(void)
 	}
 	if( bGetTime == false )
 		m_StartFrame = 0;
+	
+	mediaSeeking.Release();
+
 	return CBaseVideoRenderer::OnStartStreaming();
 }
 //----------------------------------------------------------------------------

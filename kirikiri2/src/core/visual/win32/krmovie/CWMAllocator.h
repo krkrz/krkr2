@@ -17,37 +17,30 @@ DirectShowのアロケーターをラップしたWindows Media Format SDK用のアロケーター
 
 #include <assert.h>
 #include <windows.h>
-#include <dshow.h>
+//#include <dshow.h>
 #include <atlcomcli.h>
 #include <wmsdk.h>
 #include <streams.h>
+#include <dshow.h>
 
 //----------------------------------------------------------------------------
 //! @brief WMV用アロケーター
 //----------------------------------------------------------------------------
 class CWMAllocator : public IWMReaderAllocatorEx, public CUnknown
 {
-	LONG	m_cRef;
 	CComPtr<IMemAllocator>	m_MemAlloc;
-	CComPtr<IMemAllocator>	m_SubAlloc;
-
 
 	IMemAllocator *Allocator()
 	{
 		assert( m_MemAlloc.p );
 		return m_MemAlloc;
 	}
-	IMemAllocator *SubAllocator()
-	{
-		assert( m_SubAlloc.p );
-		return m_SubAlloc;
-	}
 
 public:
-	CWMAllocator( IMemAllocator *alloc, IMemAllocator *reserve )
-		: CUnknown(NAME("WM Allocator"),NULL), m_cRef(0), m_MemAlloc(alloc), m_SubAlloc(reserve)
+	CWMAllocator( IMemAllocator *alloc )
+		: CUnknown(NAME("WM Allocator"),NULL), m_MemAlloc(alloc)
 	{}
-	virtual ~CWMAllocator(){}
+	virtual ~CWMAllocator();
 
 	// Methods of IUnknown
 	DECLARE_IUNKNOWN

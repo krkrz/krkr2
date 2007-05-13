@@ -27,7 +27,7 @@
 				EnableIntrinsicFunctions="TRUE"
 				ImproveFloatingPointConsistency="TRUE"
 				FavorSizeOrSpeed="1"
-				AdditionalIncludeDirectories="&quot;C:\Program Files\Microsoft DirectX 9.0 SDK (October 2004)\Samples\C++\DirectShow\BaseClasses&quot;;..\;..\..\..\..\plugins\win32;"
+				AdditionalIncludeDirectories="&quot;C:\Program Files\Microsoft DirectX SDK (February 2007)\Samples\C++\DirectShow\BaseClasses&quot;;..\;..\..\..\..\plugins\win32;&quot;C:\WMSDK\WMFSDK9\include&quot;;"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;KRMOVIE_EXPORTS;_WIN32_WINNT=0x400"
 				StringPooling="TRUE"
 				RuntimeLibrary="0"
@@ -45,7 +45,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/COMMENT:&quot;(--has-option--)&quot;"
-				AdditionalDependencies="odbc32.lib odbccp32.lib version.lib winmm.lib strmiids.lib quartz.lib &quot;C:\Program Files\Microsoft DirectX 9.0 SDK (October 2004)\Samples\C++\DirectShow\BaseClasses\Release\strmbase.lib&quot; dmoguids.lib"
+				AdditionalDependencies="odbc32.lib odbccp32.lib version.lib winmm.lib strmiids.lib quartz.lib &quot;C:\Program Files\Microsoft DirectX SDK (February 2007)\Samples\C++\DirectShow\BaseClasses\Release\strmbase.lib&quot; dmoguids.lib"
 				OutputFile=".\..\..\..\..\..\bin\win32/krmovie.dll"
 				LinkIncremental="1"
 				SuppressStartupBanner="TRUE"
@@ -97,7 +97,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="&quot;C:\Program Files\Microsoft DirectX 9.0 SDK (October 2004)\Samples\C++\DirectShow\BaseClasses&quot;;..\..\..\..\plugins\win32;&quot;C:\WMSDK\WMFSDK95\Codec\include&quot;"
+				AdditionalIncludeDirectories="&quot;C:\Program Files\Microsoft DirectX SDK (February 2007)\Samples\C++\DirectShow\BaseClasses&quot;;..\..\..\..\plugins\win32;&quot;C:\WMSDK\WMFSDK9\include&quot;;"
 				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;KRMOVIE_EXPORTS;DEBUG;_WIN32_WINNT=0x400"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
@@ -114,7 +114,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/COMMENT:&quot;(--has-option--)&quot;"
-				AdditionalDependencies="odbc32.lib odbccp32.lib version.lib winmm.lib strmiids.lib quartz.lib &quot;C:\Program Files\Microsoft DirectX 9.0 SDK (October 2004)\Samples\C++\DirectShow\BaseClasses\Debug\strmbasd.lib&quot; dmoguids.lib"
+				AdditionalDependencies="odbc32.lib odbccp32.lib version.lib winmm.lib strmiids.lib quartz.lib &quot;C:\Program Files\Microsoft DirectX SDK (February 2007)\Samples\C++\DirectShow\BaseClasses\Debug\strmbasd.lib&quot; dmoguids.lib"
 				OutputFile=".\..\..\..\..\..\bin\win32/krmovie.dll"
 				LinkIncremental="1"
 				SuppressStartupBanner="TRUE"
@@ -231,9 +231,6 @@
 				RelativePath=".\dsmixer.cpp">
 			</File>
 			<File
-				RelativePath=".\dsmixer.h">
-			</File>
-			<File
 				RelativePath=".\dsmovie.cpp">
 			</File>
 			<File
@@ -329,6 +326,9 @@
 			</File>
 			<File
 				RelativePath=".\dslayerd.h">
+			</File>
+			<File
+				RelativePath=".\dsmixer.h">
 			</File>
 			<File
 				RelativePath=".\dsmovie.h">

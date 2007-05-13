@@ -949,7 +949,9 @@ HRESULT __stdcall tTVPDSMovie::AddToROT( DWORD ROTreg )
 		return E_FAIL;
 
 	WCHAR	wsz[256];
-	wsprintfW(wsz, L"FilterGraph %08x  pid %08x", (DWORD_PTR) 0, GetCurrentProcessId());
+//	wsprintfW(wsz, L"FilterGraph %08x  pid %08x", (DWORD_PTR) 0, GetCurrentProcessId());
+//	swprintf(wsz, L"FilterGraph %08x  pid %08x", (DWORD_PTR) 0, GetCurrentProcessId());
+	(void)StringCchPrintfW(wsz, NUMELMS(wsz), L"FilterGraph %08x  pid %08x", (DWORD_PTR) 0, GetCurrentProcessId());
 	HRESULT hr = CreateItemMoniker(L"!", wsz, &pmk);
 	if( SUCCEEDED(hr) )
 	{
