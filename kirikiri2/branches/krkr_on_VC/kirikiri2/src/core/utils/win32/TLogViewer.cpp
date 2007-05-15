@@ -66,7 +66,7 @@ void TVPCopyToClipboard(const ttstr & unicode)
 
 
 //---------------------------------------------------------------------------
-__fastcall TLogViewer::TLogViewer(TWinControl *owner) : TCustomControl(Owner)
+__fastcall TLogViewer::TLogViewer(TWinControl *owner) : TCustomControl(owner)
 {
 	Brush->Style = bsClear;
 	Color = clBlack;
@@ -795,7 +795,8 @@ void __fastcall TLogViewer::StartScrollTimer()
 	if(!ScrollTimer)
 	{
 		ScrollTimer = new TTimer(this);
-		ScrollTimer->OnTimer = ScrollTimerHandler;
+		ScrollTimer->OnTimer = //ScrollTimerHandler;
+			boost::bind(boost::mem_fn(&TLogViewer::ScrollTimerHandler), this, _1 );
 		ScrollTimer->Interval = 100;
 		ScrollTimer->Enabled = true;
 	}
@@ -840,4 +841,6 @@ void __fastcall TLogViewer::ScrollTimerHandler(TObject *Sender)
 }
 //---------------------------------------------------------------------------
 
+#ifdef __BORLANDC__
 #pragma package(smart_init)
+#endif

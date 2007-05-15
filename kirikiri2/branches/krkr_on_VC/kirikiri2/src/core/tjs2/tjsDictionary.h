@@ -94,7 +94,7 @@ private:
 			tjs_uint32 *hint, tTJSVariant *result, tjs_int numparams,
 			tTJSVariant **param, iTJSDispatch2 *objthis);
 	};
-	friend class tSaveStructCallback;
+	friend struct tSaveStructCallback;
 
 public:
 	void AssignStructure(iTJSDispatch2 * dsp, std::vector<iTJSDispatch2 *> &stack);
@@ -109,7 +109,7 @@ public:
 			tjs_uint32 *hint, tTJSVariant *result, tjs_int numparams,
 			tTJSVariant **param, iTJSDispatch2 *objthis);
 	};
-	friend class tAssignStructCallback;
+	friend struct tAssignStructCallback;
 };
 //---------------------------------------------------------------------------
 class tTJSDictionaryObject : public tTJSCustomObject

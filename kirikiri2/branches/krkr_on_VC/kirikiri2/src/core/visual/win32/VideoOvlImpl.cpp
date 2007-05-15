@@ -184,7 +184,11 @@ tTJSNI_VideoOverlay::tTJSNI_VideoOverlay()
 	OwnerWindow = NULL;
 	LocalTempStorageHolder = NULL;
 
+#ifdef __BORLANDC__
 	UtilWindow = AllocateHWnd(WndProc);
+#else
+	UtilWindow = AllocateHWnd( EVENT_FUNC1(tTJSNI_VideoOverlay, WndProc) );
+#endif
 
 	Layer1 = NULL;
 	Layer2 = NULL;

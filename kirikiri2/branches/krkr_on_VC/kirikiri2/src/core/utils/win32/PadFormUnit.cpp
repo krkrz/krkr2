@@ -18,13 +18,20 @@
 #include <clipbrd.hpp>
 
 //---------------------------------------------------------------------------
+#ifdef __BORLANDC__
 #pragma package(smart_init)
 #pragma resource "*.dfm"
+#else
+#include "PadFormUnit_dfm.h"
+#endif
 TTVPPadForm *TVPPadForm;
 //---------------------------------------------------------------------------
 __fastcall TTVPPadForm::TTVPPadForm(TComponent* Owner, bool ismain)
 	: TForm(Owner)
 {
+#ifndef __BORLANDC__
+	init(this);
+#endif
 	// adjust components
 	ToolBar->Left = 0;
 	ToolBar->Top = ClientHeight - ToolBar->Height;
@@ -46,7 +53,11 @@ __fastcall TTVPPadForm::TTVPPadForm(TComponent* Owner, bool ismain)
 	CopyImportantLogMenuItem->ShortCut = TVPMainForm->CopyImportantLogMenuItem->ShortCut;
 
 	// initialize
+#ifdef __BORLANDC__
 	FOnExecute = DefaultCDPExecute;
+#else
+	FOnExecute = EVENT_FUNC2(TTVPPadForm, DefaultCDPExecute);
+#endif
 	FIsMainCDP = ismain;
 	UpdatePosition();
 

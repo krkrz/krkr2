@@ -8,6 +8,7 @@
 //---------------------------------------------------------------------------
 // TVP Win32 Project File
 //---------------------------------------------------------------------------
+#pragma warning(disable: 4800)
 #include "tjsCommHead.h"
 
 #include "SysInitIntf.h"
@@ -20,12 +21,15 @@
 #include "PluginImpl.h"
 #include "SystemIntf.h"
 
+#include <crtdbg.h>
+
 //---------------------------------------------------------------------------
 bool TVPCheckCmdDescription(void);
 bool TVPCheckAbout(void);
 bool TVPCheckPrintDataPath();
 void TVPOnError();
 //---------------------------------------------------------------------------
+#ifdef __BORLANDC__
 USEDEF("tvpwin32.def");
 USERES("tvpwin32.res");
 USERES("HBeamCur.res");
@@ -162,11 +166,15 @@ USE("..\..\utils\ObjectList.h", File);
 USEUNIT("..\..\..\tools\win32\krdevui\ConfSettingsUnit.cpp");
 USEFORM("..\..\..\tools\win32\krdevui\ConfMainFrameUnit.cpp", ConfMainFrame); /* TFrame: File Type */
 USEUNIT("..\..\base\CharacterSet.cpp");
+#else
+#include <MainFormUnit.h>
+#endif
 //---------------------------------------------------------------------------
 #ifdef TVP_SUPPORT_ERI
 #	pragma link "../../../../Lib/liberina.lib"
 #endif
 //---------------------------------------------------------------------------
+int
 WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 {
 	// try starting the program!

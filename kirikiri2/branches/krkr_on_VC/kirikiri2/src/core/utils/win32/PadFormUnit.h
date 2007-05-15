@@ -20,9 +20,12 @@
 #include <ToolWin.hpp>
 #include <Menus.hpp>
 #include <Dialogs.hpp>
-
+#ifdef __BORLANDC__
 typedef void __fastcall (__closure *TCDPExecEvent)(System::TObject* Sender,
 	const ttstr & content);
+#else
+typedef boost::function2<void, System::TObject*, const ttstr &> TCDPExecEvent;
+#endif
 //---------------------------------------------------------------------------
 class TTVPPadForm : public TForm
 {
@@ -74,7 +77,11 @@ __published:	// IDE 管理のコンポーネント
 	void __fastcall CopyImportantLogMenuItemClick(TObject *Sender);
 	void __fastcall ShowOnTopMenuItemClick(TObject *Sender);
 	void __fastcall ShowScriptEditorMenuItemClick(TObject *Sender);
+#ifdef __BORLANDC__
 private:	// ユーザー宣言
+#else
+public: // VCのpropertyが参照する関数／変数は、propertyと同じアクセス権を要する
+#endif
 	TCDPExecEvent FOnExecute;
 	bool FFreeOnTerminate;
 	bool FIsMainCDP;
@@ -85,6 +92,7 @@ public:		// ユーザー宣言
 	void __fastcall GoToLine(int line);
 	void __fastcall SetLines(const ttstr & lines);
 	ttstr __fastcall GetLines() const;
+#ifdef __BORLANDC__
 	__property TCDPExecEvent OnExecute = { read = FOnExecute, write = FOnExecute };
 	__property bool FreeOnTerminate = { read = FFreeOnTerminate, write = FFreeOnTerminate};
 	__property ttstr StatusText = { read=GetStatusText, write=SetStatusText };
@@ -92,6 +100,14 @@ public:		// ユーザー宣言
 		SetExecButtonEnabled };
 	__property bool ReadOnly = { read=GetReadOnly, write = SetReadOnly };
 	__property bool IsMainCDP = { read=IsMainCDP };
+#else
+	__declspec( property (get=FOnExecute, put=FOnExecute ) ) TCDPExecEvent OnExecute;
+	PROPERTY_VAR_sp(bool,FreeOnTerminate,FFreeOnTerminate);
+	__declspec( property (get=GetStatusText, put=SetStatusText ) )ttstr StatusText;
+	__declspec( property (get=GetExecButtonEnabled, put=SetExecButtonEnabled ) ) bool ExecButtonEnabled;
+	__declspec( property (get=GetReadOnly, put = SetReadOnly ) ) bool ReadOnly;
+	__declspec( property (get=IsMainCDP ) ) bool IsMainCDP;
+#endif
 
 	void SetEditColor(tjs_uint32 color);
 	tjs_uint32 GetEditColor() const;

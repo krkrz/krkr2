@@ -64,7 +64,7 @@ public:
 	virtual void SetStatusBarVisible(bool vis);
 	virtual tjs_int GetScrollBarsVisible(void) const;
 	virtual void SetScrollBarsVisible(tjs_int vis);
-	virtual tjs_int GetBorderStyle(void) const const;
+	virtual tjs_int GetBorderStyle(void) const;
 	virtual void SetBorderStyle(tjs_int style);
 	virtual ttstr GetStatusText() const;
 	virtual void SetStatusText(const ttstr &title);

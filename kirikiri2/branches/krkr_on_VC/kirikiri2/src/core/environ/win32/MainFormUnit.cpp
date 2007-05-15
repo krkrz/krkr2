@@ -39,8 +39,12 @@
 #include "SystemImpl.h"
 
 //---------------------------------------------------------------------------
+#ifdef __BORLANDC__
 #pragma package(smart_init)
 #pragma resource "*.dfm"
+#else
+#include "MainFormUnit_dfm.h"
+#endif
 TTVPMainForm *TVPMainForm = NULL;
 bool TVPMainFormAlive = false;
 //---------------------------------------------------------------------------
@@ -154,6 +158,9 @@ static void TVPUninitEnvironProfile();
 __fastcall TTVPMainForm::TTVPMainForm(TComponent* Owner)
 	: TForm(Owner)
 {
+#ifndef __BORLANDC__
+	init(this);
+#endif
 	ContinuousEventCalling = false;
 	AutoShowConsoleOnError = false;
 	ApplicationStayOnTop = false;
@@ -162,12 +169,19 @@ __fastcall TTVPMainForm::TTVPMainForm(TComponent* Owner)
 	LastCloseClickedTick = 0;
 	LastShowModalWindowSentTick = 0;
 	LastRehashedTick = 0;
+#ifdef __BORLANDC__
 	Application->OnIdle = ApplicationIdle;
 	Application->OnActivate = ApplicationActivate;
 	Application->OnDeactivate = ApplicationDeactivate;
 	Application->OnMinimize = ApplicationMinimize;
 	Application->OnRestore = ApplicationRestore;
-
+#else
+	Application->OnIdle = EVENT_FUNC2(TTVPMainForm, ApplicationIdle);
+	Application->OnActivate = EVENT_FUNC1(TTVPMainForm, ApplicationActivate);
+	Application->OnDeactivate = EVENT_FUNC1(TTVPMainForm, ApplicationDeactivate);
+	Application->OnMinimize = EVENT_FUNC1(TTVPMainForm, ApplicationMinimize);
+	Application->OnRestore = EVENT_FUNC1(TTVPMainForm, ApplicationRestore);
+#endif
 	// get command-line options which specifies global hot keys.
 	SetHotKey(ShowControllerMenuItem, TJS_W("-hkcontroller"));
 	SetHotKey(ShowScriptEditorMenuItem, TJS_W("-hkeditor"));

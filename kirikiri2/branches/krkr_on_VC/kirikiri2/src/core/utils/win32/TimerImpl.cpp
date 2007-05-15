@@ -83,7 +83,12 @@ tTVPTimerThread::tTVPTimerThread() : tTVPThread(true)
 {
 	PendingEventsAvailable = false;
 	SetPriority(TVPLimitTimerCapacity ? ttpNormal : ttpHighest);
+#ifdef __BORLANDC__
 	UtilWindow = AllocateHWnd(UtilWndProc);
+#else
+	UtilWindow = AllocateHWnd( EVENT_FUNC1(tTVPTimerThread, UtilWndProc) );
+#endif
+
 	Resume();
 }
 //---------------------------------------------------------------------------

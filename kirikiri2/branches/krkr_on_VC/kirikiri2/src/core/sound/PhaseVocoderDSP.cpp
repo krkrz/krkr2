@@ -39,10 +39,10 @@
 #include "tjsUtils.h"
 
 #include "tvpgl_ia32_intf.h"
-extern tjs_uint32 TVPCPUType;
 
 extern "C"
 {
+extern tjs_uint32 TVPCPUType;
 #ifdef _WIN32
 #define TVP_CDECL __cdecl
 #endif

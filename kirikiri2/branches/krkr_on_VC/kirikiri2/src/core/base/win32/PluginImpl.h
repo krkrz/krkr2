@@ -40,9 +40,9 @@ struct iTVPFunctionExporter
 
 
 //---------------------------------------------------------------------------
-class ITSSModule;
-class IWaveUnpacker;
-class ITSSStorageProvider;
+interface ITSSModule;
+interface IWaveUnpacker;
+interface ITSSStorageProvider;
 extern "C"
 {
 	iTVPFunctionExporter * __stdcall TVPGetFunctionExporter();
@@ -69,10 +69,10 @@ extern "C"
 //---------------------------------------------------------------------------
 
 //---------------------------------------------------------------------------
-class ITSSWaveDecoder;
+interface ITSSWaveDecoder;
 extern ITSSWaveDecoder * TVPSearchAvailTSSWaveDecoder(const ttstr & storage, const ttstr & extension);
 #ifdef TVP_SUPPORT_OLD_WAVEUNPACKER
-class IWaveUnpacker;
+interface IWaveUnpacker;
 extern IWaveUnpacker * TVPSearchAvailWaveUnpacker(const ttstr & storage, IStream **stream);
 #endif
 #ifdef TVP_SUPPORT_KPI

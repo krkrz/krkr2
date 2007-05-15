@@ -352,8 +352,8 @@ tTVPXP3Archive::tTVPXP3Archive(const ttstr & name) : tTVPArchive(name)
 	static tjs_uint8 cn_adlr[] =
 		{ 0x61/*'a'*/, 0x64/*'d'*/, 0x6c/*'l'*/, 0x72/*'r'*/ };
 
-	TVPAddLog(TJS_W("(info) Trying to read XP3 virtual file system "
-		"information from : ") +
+	TVPAddLog(TJS_W("(info) Trying to read XP3 virtual file system ")
+		TJS_W("information from : ") +
 		name);
 
 	int segmentcount = 0;

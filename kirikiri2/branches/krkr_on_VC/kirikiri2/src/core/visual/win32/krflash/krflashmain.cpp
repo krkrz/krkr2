@@ -12,7 +12,9 @@
 
 #include <vcl.h>
 #include <windows.h>
+#ifdef __BORLANDC__
 #pragma hdrstop
+#endif
 
 
 #include "FlashContainerFormUnit.h"

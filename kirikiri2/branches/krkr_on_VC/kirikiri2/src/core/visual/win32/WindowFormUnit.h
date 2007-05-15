@@ -76,7 +76,7 @@ struct tTVPMessageReceiverRecord
 };
 class tTJSNI_Window;
 class TTVPMenuContainerForm;
-class tTVPRect;
+struct tTVPRect;
 class tTVPBaseBitmap;
 class tTVPWheelDirectInputDevice; // class for DirectInputDevice management
 class tTVPPadDirectInputDevice; // class for DirectInputDevice management

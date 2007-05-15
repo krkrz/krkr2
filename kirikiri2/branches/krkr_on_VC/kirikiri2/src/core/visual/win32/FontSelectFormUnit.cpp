@@ -14,8 +14,10 @@
 #include "tvpfontstruc.h"
 #include "WindowFormUnit.h"
 //---------------------------------------------------------------------------
+#ifdef __BORLANDC__
 #pragma package(smart_init)
 #pragma resource "*.dfm"
+#endif
 TTVPFontSelectForm *TVPFontSelectForm;
 //---------------------------------------------------------------------------
 static TTVPFontSelectForm *TVPCurrentFontSelectForm = NULL;
@@ -237,7 +239,7 @@ void TVPGetFontList(std::vector<AnsiString> & list, tjs_uint32 flags, TCanvas * 
 {
 	tTVPFSEnumFontsProcData data(list, flags, refcanvas->Font);
 
-	::EnumFonts(refcanvas->Handle, NULL, (int (__stdcall *)())TVPFSFEnumFontsProc,
+	::EnumFonts(refcanvas->Handle, NULL, (FONTENUMPROCA)TVPFSFEnumFontsProc,
 		reinterpret_cast<LPARAM>(&data));
 }
 //---------------------------------------------------------------------------

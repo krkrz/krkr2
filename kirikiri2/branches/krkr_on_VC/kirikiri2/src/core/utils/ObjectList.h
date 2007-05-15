@@ -213,7 +213,7 @@ public:
 		return Objects[index];
 	}
 
-	void * & const operator [] (tjs_int index) const
+	void * const operator [] (tjs_int index) const
 	{
 		// this might return a null pointer
 		return Objects[index];
@@ -382,12 +382,13 @@ public:
 		List.Compact();
 	}
 
+	// ObjT * & ‚Ì & ‚ğŠO‚µ‚Ä‚İ‚½B
 	ObjT * & operator [] (tjs_int index)
 	{
-		return static_cast<ObjT*>(List.operator[](index));
+		return * (ObjT**)(&(List.operator[](index)));
 	}
 
-	void * & const operator [] (tjs_int index) const
+	void * const operator [] (tjs_int index) const
 	{
 		return static_cast<ObjT*>(List.operator [] const (index));
 	}

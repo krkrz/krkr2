@@ -261,7 +261,7 @@ ttstr tTVPStorageMediaManager::NormalizeStorageName(const ttstr &name,
 	if(name.IsEmpty()) return name; // empty name is empty name
 
 	// pre-normalize
-	const tjs_char *pca, *pcb, *pcc;
+	const tjs_char *pca;//, *pcb, *pcc;
 	tjs_char *pa, *pb, *pc;
 
 	ttstr tmp(name);
@@ -279,7 +279,7 @@ ttstr tTVPStorageMediaManager::NormalizeStorageName(const ttstr &name,
 	ttstr inarchive_name;
 	bool inarc_name_found = false;
 	pca = tmp.c_str();
-	pa = TJS_strchr(pca, TVPArchiveDelimiter);
+	pa = const_cast<tjs_char*>( TJS_strchr(pca, TVPArchiveDelimiter ) );
 	if(pa)
 	{
 		inarchive_name = ttstr(pa + 1);

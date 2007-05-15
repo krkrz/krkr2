@@ -142,10 +142,10 @@ void tTVPLogStreamHolder::Open(const tjs_nchar *mode)
 			}
 
 #ifdef TJS_TEXT_OUT_CRLF
-			ttstr separator(TJS_W("\r\n\r\n\r\n"
-"==============================================================================\r\n"
-"==============================================================================\r\n"
-				));
+			ttstr separator(TJS_W("\r\n\r\n\r\n")
+TJS_W("==============================================================================\r\n")
+TJS_W("==============================================================================\r\n")
+				);
 #else
 			ttstr separator(TJS_W("\n\n\n"
 "==============================================================================\n"
@@ -289,6 +289,10 @@ void TVPAddLog(const ttstr &line, bool appendtoimportant)
 void TVPAddLog(const ttstr &line)
 {
 	TVPAddLog(line, false);
+#ifdef _DEBUG
+	OutputDebugString( line.AsAnsiString().c_str() );
+	OutputDebugString("\n");
+#endif
 }
 //---------------------------------------------------------------------------
 void TVPAddImportantLog(const ttstr &line)
@@ -377,9 +381,9 @@ void TVPStartLogToFile(bool clear)
 	TVPLogStreamHolder.Log(*TVPImportantLogs);
 
 #ifdef TJS_TEXT_OUT_CRLF
-	ttstr separator(TJS_W("\r\n"
-"------------------------------------------------------------------------------\r\n"
-				));
+	ttstr separator(TJS_W("\r\n")
+TJS_W("------------------------------------------------------------------------------\r\n")
+				);
 #else
 	ttstr separator(TJS_W("\n"
 "------------------------------------------------------------------------------\n"

@@ -10,6 +10,7 @@
 //---------------------------------------------------------------------------
 #include "tjsCommHead.h"
 
+#include <Forms.hpp>
 #include <algorithm>
 #include <functional>
 #include "ScriptMgnIntf.h"

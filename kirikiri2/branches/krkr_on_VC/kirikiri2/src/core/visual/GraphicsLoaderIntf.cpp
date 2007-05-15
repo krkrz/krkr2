@@ -688,7 +688,9 @@ void TVPSaveAsBMP(const ttstr & storagename, const ttstr & mode, tTVPBaseBitmap 
 
 
 
+#ifdef __BORLANDC__
 #pragma option push -pr
+#endif
 extern "C"
 {
 	// fix me: need platform independ one
@@ -712,8 +714,17 @@ struct my_error_mgr
 METHODDEF(void)
 my_error_exit(j_common_ptr cinfo)
 {
+#ifdef __BORLANDC__
 	TVPThrowExceptionMessage(TVPJPEGLoadError,
 		ttstr(TJS_W("error code : ")) + ttstr(cinfo->err->msg_code));
+#else
+	char buffer[JMSG_LENGTH_MAX];
+
+	/* Create the message */
+	(*cinfo->err->format_message) (cinfo, buffer);
+
+	TVPThrowExceptionMessage(TVPJPEGLoadError, ttstr(buffer));
+#endif
 }
 //---------------------------------------------------------------------------
 METHODDEF(void)
@@ -831,7 +842,9 @@ jpeg_TStream_src (j_decompress_ptr cinfo, tTJSBinaryStream * infile)
   src->pub.bytes_in_buffer = 0; /* forces fill_input_buffer on first read */
   src->pub.next_input_byte = NULL; /* until buffer loaded */
 }
+#ifdef __BORLANDC__
 #pragma option pop
+#endif
 //---------------------------------------------------------------------------
 void TVPLoadJPEG(void* formatdata, void *callbackdata, tTVPGraphicSizeCallback sizecallback,
 	tTVPGraphicScanLineCallback scanlinecallback, tTVPMetaInfoPushCallback metainfopushcallback,
@@ -855,7 +868,9 @@ void TVPLoadJPEG(void* formatdata, void *callbackdata, tTVPGraphicSizeCallback s
 	jerr.pub.error_exit = my_error_exit;
 	jerr.pub.emit_message = my_emit_message;
 	jerr.pub.output_message = my_output_message;
+#ifdef __BORLANDC__
 	jerr.pub.format_message = my_format_message;
+#endif
 	jerr.pub.reset_error_mgr = my_reset_error_mgr;
 
 	// create decompress object
@@ -958,10 +973,13 @@ void TVPLoadJPEG(void* formatdata, void *callbackdata, tTVPGraphicSizeCallback s
 
 
 
-
+#ifdef __BORLANDC__
 #pragma option push -pr
+#endif
 #include <png.h>
+#ifdef __BORLANDC__
 #pragma option pop
+#endif
 
 
 //---------------------------------------------------------------------------

@@ -153,7 +153,10 @@ static void TJSUninitStringHeap(void)
 	if(!TJSStringHeapList->empty())
 	{
 		std::vector<tTJSVariantString*>::iterator c;
-		for(c = TJSStringHeapList->end()-1; c >= TJSStringHeapList->begin(); c--)
+		// VS2005はvectorのiteratorがデクリメントできないっぽ？？？
+		// 何の設定をミスってるか不明。後で要調査
+//		for(c = TJSStringHeapList->end()-1; c >= TJSStringHeapList->begin(); c--)
+		for(c = TJSStringHeapList->begin(); c < TJSStringHeapList->end(); c++)
 		{
 			tTJSVariantString *h = *c;
 			for(tjs_int i = 0; i < HEAP_CAPACITY_INC; i++)
@@ -205,7 +208,9 @@ static void TJSUninitStringHeap(void)
 		}
 	}
 }
+#ifdef __BORLANDC__
 #pragma exit TJSReportUnreleasedStringHeap 1
+#endif
 
 #endif
 
@@ -219,7 +224,10 @@ void TJSDumpStringHeap(void)
 		FILE *f = fopen("string.txt", "wt");
 		if(!f) return;
 		std::vector<tTJSVariantString*>::iterator c;
-		for(c = TJSStringHeapList->end()-1; c >= TJSStringHeapList->begin(); c--)
+		// VS2005はvectorのiteratorがデクリメントできないっぽ？？？
+		// 何の設定をミスってるか不明。後で要調査
+//		for(c = TJSStringHeapList->end()-1; c >= TJSStringHeapList->begin(); c--)
+		for(c = TJSStringHeapList->begin(); c < TJSStringHeapList->end(); c++)
 		{
 			tTJSVariantString *h = *c;
 			for(tjs_int i = 0; i < HEAP_CAPACITY_INC; i++)

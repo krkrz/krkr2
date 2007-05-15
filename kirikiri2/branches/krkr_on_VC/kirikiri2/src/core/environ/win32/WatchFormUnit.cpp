@@ -16,8 +16,10 @@
 #include "ScriptMgnIntf.h"
 #include "DebugIntf.h"
 //---------------------------------------------------------------------------
+#ifdef __BORLANDC__
 #pragma package(smart_init)
 #pragma resource "*.dfm"
+#endif
 TTVPWatchForm *TVPWatchForm;
 //---------------------------------------------------------------------------
 __fastcall TTVPWatchForm::TTVPWatchForm(TComponent* Owner)

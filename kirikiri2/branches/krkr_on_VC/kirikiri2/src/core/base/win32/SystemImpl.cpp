@@ -430,8 +430,8 @@ ttstr TVPGetPersonalPath()
 
 	tTJSVariant val;
 	TVPReadRegValue(val,
-		TJS_W("HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\"
-			"CurrentVersion\\Explorer\\Shell Folders\\Personal"));
+		TJS_W("HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\")
+		TJS_W("CurrentVersion\\Explorer\\Shell Folders\\Personal"));
 
 	if(val.Type() == tvtString)
 	{
@@ -461,8 +461,8 @@ ttstr TVPGetAppDataPath()
 
 	tTJSVariant val;
 	TVPReadRegValue(val,
-		TJS_W("HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\"
-			"CurrentVersion\\Explorer\\Shell Folders\\AppData"));
+		TJS_W("HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\")
+		TJS_W("CurrentVersion\\Explorer\\Shell Folders\\AppData"));
 
 	if(val.Type() == tvtString)
 	{

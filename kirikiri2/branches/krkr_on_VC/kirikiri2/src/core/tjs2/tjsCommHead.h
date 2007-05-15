@@ -37,6 +37,9 @@
 #include <vector>
 #include <string>
 #include <stdexcept>
+#ifndef __BORLANDC__
+#include <algorithm>
+#endif
 
 #include "tjsConfig.h"
 
@@ -46,8 +49,10 @@ typedef std::basic_string<TJS::tjs_char> stdstring;
 typedef std::basic_string<TJS::tjs_nchar> stdnstring;
 
 #ifdef TJS_SUPPORT_VCL
+#ifdef __BORLANDC__
 	#pragma intrinsic strcpy
 	#pragma intrinsic strcmp  // why these are needed?
+#endif
 #endif
 
 //---------------------------------------------------------------------------

@@ -1,6 +1,6 @@
 #ifndef TVP_IWAVEUNPACKER_DEFINED
 #define TVP_IWAVEUNPACKER_DEFINED
-class IWaveUnpacker
+interface IWaveUnpacker
 {
 public:
 // IUnknown îhê∂ÉNÉâÉXÇ≈ÇÕÇ»Ç¢ÇÃÇ≈íçà”

@@ -153,7 +153,7 @@ static ttstr TVPDumpCPUInfo(tjs_int cpu_num)
 
 #undef TVP_DUMP_CPU
 #define TVP_DUMP_CPU(x, n) { \
-	if(vendor == x) features += TJS_W("  " n); }
+	if(vendor == x) features += TJS_W("  ") TJS_W(n); }
 
 	TVP_DUMP_CPU(TVP_CPU_IS_INTEL, "Intel");
 	TVP_DUMP_CPU(TVP_CPU_IS_AMD, "AMD");

@@ -13,7 +13,7 @@
 //---------------------------------------------------------------------------
 #include "StorageIntf.h"
 #include "UtilStreams.h"
-
+#include <Classes.hpp>
 
 
 //---------------------------------------------------------------------------
@@ -95,8 +95,14 @@ public:
 		// seek
 	int __fastcall Write(const void *Buffer,int Count);
 
+#ifdef __BORLANDC__
 	__property Size;
 	__property Position;
+#else
+	void none() {};
+	__declspec( property(put=none) ) int Size;
+	__declspec( property(put=none) ) int Position;
+#endif
 };
 //---------------------------------------------------------------------------
 

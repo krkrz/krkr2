@@ -10,6 +10,7 @@
 //---------------------------------------------------------------------------
 #include "tjsCommHead.h"
 
+#include <ExtCtrls.hpp>
 #include "SoundBufferBaseImpl.h"
 #include "WaveImpl.h"
 
@@ -41,7 +42,8 @@ void TVPAddSoundBuffer(tTJSNI_SoundBuffer * buf)
 		// first buffer
 		TVPSoundBufferTimer = new TTimer(Application); // Create VCL TTimer Object
 		TVPSoundBufferTimer->Interval = TVP_SB_BEAT_INTERVAL;
-		TVPSoundBufferTimer->OnTimer = TVPSoundBufferTimerDispatcher.Handler;
+		TVPSoundBufferTimer->OnTimer = //TVPSoundBufferTimerDispatcher.Handler;
+					boost::bind(boost::mem_fn(&tTVPSoundBufferTimerDispatcher::Handler), TVPSoundBufferTimerDispatcher, _1);
 	}
 
 	TVPSoundBufferVector.push_back(buf);

@@ -61,7 +61,9 @@ static void TVPHintWindowRegister(void)
 {
 	HintWindowClass=__classid(TTVPHintWindow); // register hint window class
 }
+#ifdef __BORLANDC__
 #pragma startup TVPHintWindowRegister
+#endif
 //---------------------------------------------------------------------------
 
 

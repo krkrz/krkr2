@@ -1324,7 +1324,8 @@ tTVPBitmap::tTVPBitmap(tjs_uint width, tjs_uint height, tjs_uint bpp)
 	TVPInitWindowOptions(); // ensure window/bitmap usage options are initialized
 
 	RefCount = 1;
-	BitmapDC = BitmapHandle = OldBitmapHandle = NULL; // for DIBSection
+	BitmapDC = NULL;
+	BitmapHandle = OldBitmapHandle = NULL; // for DIBSection
 
 	Allocate(width, height, bpp); // allocate initial bitmap
 }
@@ -1350,7 +1351,8 @@ tTVPBitmap::tTVPBitmap(const tTVPBitmap & r)
 	TVPInitWindowOptions(); // ensure window/bitmap usage options are initialized
 
 	RefCount = 1;
-	BitmapDC = BitmapHandle = OldBitmapHandle = NULL; // for DIBSection
+	BitmapDC = NULL;
+	BitmapHandle = OldBitmapHandle = NULL; // for DIBSection
 
 	// allocate bitmap which has the same metrics to r
 	Allocate(r.GetWidth(), r.GetHeight(), r.GetBPP());
@@ -1442,7 +1444,7 @@ void tTVPBitmap::Allocate(tjs_uint width, tjs_uint height, tjs_uint bpp)
 			}
 			BitmapDC = CreateCompatibleDC(ref);
 			ReleaseDC(0, ref);
-			OldBitmapHandle = SelectObject(BitmapDC, BitmapHandle);
+			OldBitmapHandle = (HBITMAP)SelectObject(BitmapDC, BitmapHandle);
 		}
 		else
 		{
@@ -1559,7 +1561,7 @@ static void TVPInitFontNames()
 	if(TVPFontNamesInit) return;
 
 	HDC dc = GetDC(NULL);
-	EnumFonts(dc, NULL, (int (__stdcall *)())TVPEnumFontsProc,
+	EnumFonts(dc, NULL, (FONTENUMPROCA)TVPEnumFontsProc,
 			(LPARAM)NULL);
  	ReleaseDC(NULL, dc);
 

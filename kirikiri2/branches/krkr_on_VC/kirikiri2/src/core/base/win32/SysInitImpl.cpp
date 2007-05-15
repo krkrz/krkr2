@@ -139,7 +139,11 @@ static void RegisterDllLoadHook(void)
 		if(str == TJS_W("yes"))
 			flag = true;
 	}
+#ifdef __BORLANDC__
 	if(flag) __pfnDliNotifyHook = DllLoadHook;
+#else
+	if(flag) __pfnDliNotifyHook2 = DllLoadHook;
+#endif
 }
 //---------------------------------------------------------------------------
 
@@ -1031,9 +1035,11 @@ void TVPBeforeSystemInit()
 			(void *reserved, char *buf);
 		void PASCAL (*UIGetVersion)(DWORD *hi, DWORD *low);
 
-		(void*)UIShowFolderSelectorForm =
+		UIShowFolderSelectorForm =
+			(int (PASCAL *)(void *reserved, char *buf))
 			GetProcAddress(krdevui, "UIShowFolderSelectorForm");
-		(void*)UIGetVersion =
+		UIGetVersion =
+			(void (PASCAL *)(DWORD *hi, DWORD *low))
 			GetProcAddress(krdevui, "UIGetVersion");
 
 		if(!UIShowFolderSelectorForm || !UIGetVersion)

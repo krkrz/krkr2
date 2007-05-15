@@ -19,8 +19,10 @@
 #include <Registry.hpp>
 #include "ConfMainFrameUnit.h"
 //---------------------------------------------------------------------------
+#ifdef __BORLANDC__
 #pragma package(smart_init)
 #pragma resource "*.dfm"
+#endif
 
 
 
@@ -1062,13 +1064,13 @@ void __fastcall TConfMainFrame::ParseOptionsData(TStrings *options)
 			// retrieve default value
 			SplitAnsiString(data->OptionType, ",", array);
 
-			unsigned int i;
-			for(i = 1; i < array.size(); i++)
+			unsigned int j;
+			for(j = 1; j < array.size(); j++)
 			{
 				if(array[i].c_str()[0] == '*')
 				{
 					// default
-					GetValueCaptionAndValue(array[i],
+					GetValueCaptionAndValue(array[j],
 						data->DefaultOptionValueCaption,
 						data->DefaultOptionValue);
 				}

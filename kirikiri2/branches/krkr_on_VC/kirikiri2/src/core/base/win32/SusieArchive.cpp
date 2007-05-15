@@ -130,8 +130,8 @@ void tTVPSusieArchivePlugin::GetFileList(AnsiString localname,
 		if(errorcode != 0)
 		{
 			TVPAddLog(TJS_W("Warning : invalid errorcode ") + ttstr((tjs_int)errorcode) +
-				TJS_W(" was returned from tTVPSusieArchivePlugin::GetArchiveInfo, "
-					"continuing anyway."));
+				TJS_W(" was returned from tTVPSusieArchivePlugin::GetArchiveInfo, ")
+					TJS_W("continuing anyway."));
 		}
 	}
 

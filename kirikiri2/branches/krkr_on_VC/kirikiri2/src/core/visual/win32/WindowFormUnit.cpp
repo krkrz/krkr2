@@ -31,8 +31,12 @@
 #include "DInputMgn.h"
 #include "tvpinputdefs.h"
 //---------------------------------------------------------------------------
+#ifdef __BORLANDC__
 #pragma package(smart_init)
 #pragma resource "*.dfm"
+#else
+#include "WindowFormUnit_dfm.h"
+#endif
 TTVPWindowForm *TVPWindowForm;
 
 
@@ -190,6 +194,7 @@ static void TVPRemoveModalWindow(TTVPWindowForm *window)
 void TVPShowModalAtAppActivate()
 {
 	// called when the application is activated
+#ifdef __BORLANDC__
 	if(TVPFullScreenedWindow != NULL)
 	{
 		// any window is full-screened
@@ -202,6 +207,7 @@ void TVPShowModalAtAppActivate()
 		for(i = TVPModalWindowList.begin(); i != TVPModalWindowList.end(); i++)
 			(*i)->InvokeShowTop();
 	}
+#endif
 }
 //---------------------------------------------------------------------------
 HDWP TVPShowModalAtTimer(HDWP hdwp)
@@ -299,8 +305,13 @@ void TVPInitWindowOptions()
 __fastcall TTVPWindowForm::TTVPWindowForm(TComponent* Owner, tTJSNI_Window *ni)
 	: TForm(Owner)
 {
+#ifndef __BORLANDC__
+	init(this);
+#endif
 	TVPInitWindowOptions();
-
+#ifndef __BORLANDC__
+	LayerLeft = LayerTop = 0;
+#endif
 	// set hot keys
 	ShowControllerMenuItem->ShortCut = TVPMainForm->ShowControllerMenuItem->ShortCut;
 	ShowScriptEditorMenuItem->ShortCut = TVPMainForm->ShowScriptEditorMenuItem->ShortCut;
@@ -330,7 +341,7 @@ __fastcall TTVPWindowForm::TTVPWindowForm(TComponent* Owner, tTJSNI_Window *ni)
 	MenuContainer = NULL;
 	MenuBarVisible = true;
 
-	AttentionFont = new TFont();
+//	AttentionFont = new TFont();
 
 	PaintBox = NULL;
 
@@ -340,7 +351,11 @@ __fastcall TTVPWindowForm::TTVPWindowForm(TComponent* Owner, tTJSNI_Window *ni)
 	DefaultImeMode = ::imDisable;
 	LastSetImeMode = Controls::imDontCare;
 
+#ifdef __BORLANDC__
 	CreatePaintBox(ScrollBox);
+#else
+	CreatePaintBox(this); // スクロールボックスが無いので、ウィンドウをオーナーにしとく
+#endif
 
 	LastSetImeMode = Controls::imDisable;
 	::PostMessage(Handle, TVP_WM_ACQUIREIMECONTROL, 0, 0);
@@ -362,7 +377,9 @@ __fastcall TTVPWindowForm::TTVPWindowForm(TComponent* Owner, tTJSNI_Window *ni)
 
 	MouseCursorState = mcsVisible;
 	ForceMouseCursorVisible = false;
+#ifdef __BORLANDC__
 	CurrentMouseCursor = crDefault;
+#endif
 
 	DIWheelDevice = NULL;
 	DIPadDevice = NULL;
@@ -370,6 +387,12 @@ __fastcall TTVPWindowForm::TTVPWindowForm(TComponent* Owner, tTJSNI_Window *ni)
 	ReloadDeviceTick = 0;
 
 	LastRecheckInputStateSent = 0;
+
+#ifndef __BORLANDC__
+	// CallWindowAttachが呼ばれないと、描画オブジェクトにDCがセットされない。
+	// VCLの移植が完全でないせいか、描画前にCallWindowAttachが呼ばれてくれないので、ココで強引に呼んでおく
+	CallWindowAttach();
+#endif
 }
 //---------------------------------------------------------------------------
 void __fastcall TTVPWindowForm::FormDestroy(TObject *Sender)
@@ -1104,13 +1127,14 @@ bool TTVPWindowForm::ProcessTrappedKeyMessage(LRESULT &result, UINT msg, WPARAM 
 void __fastcall TTVPWindowForm::SetAttentionPoint(tjs_int left, tjs_int top,
 	TFont *font)
 {
+#ifdef __BORLANDC__
 	if(ScrollBox->BorderStyle == Forms::bsSingle)
 	{
 		// sunken style
 		left += 2;
 		top += 2;
 	}
-
+#endif
 	AttentionPoint.x = left;
 	AttentionPoint.y = top;
 	AttentionPointEnabled = true;
@@ -1244,18 +1268,25 @@ void __fastcall TTVPWindowForm::SetFullScreenMode(bool b)
 
 			// set ScrollBox' border invisible
 			OrgInnerSunken = GetInnerSunken();
+#ifdef __BORLANDC__
 			ScrollBox->BorderStyle = Forms::bsNone;
-
 			// change PaintBox's Owner to directly the Form
-//			CreatePaintBox(this);
 
+//			CreatePaintBox(this);
+#else
+			CreatePaintBox(this);
+#endif
 			// set BorderStyle
 			OrgStyle = GetWindowLong(Handle, GWL_STYLE);
 			OrgExStyle = GetWindowLong(Handle, GWL_EXSTYLE);
+#ifdef __BORLANDC__
 			OrgScrollBoxBorderStyle = ScrollBox->BorderStyle;
+#endif
 			SetWindowLong(Handle, GWL_STYLE,
 				WS_POPUP | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | WS_OVERLAPPED);
+#ifdef __BORLANDC__
 			ScrollBox->BorderStyle = Forms::bsNone;
+#endif
 
 
 			// try to switch to fullscreen
@@ -1292,11 +1323,13 @@ void __fastcall TTVPWindowForm::SetFullScreenMode(bool b)
 			Height = fs_h;
 
 			// reset ScrollBox size
+#ifdef __BORLANDC__
 			ScrollBox->Align = alNone;
 			ScrollBox->Left = (fs_w - sb_w)/2;
 			ScrollBox->Top = (fs_h - sb_h)/2;
 			ScrollBox->Width = sb_w;
 			ScrollBox->Height = sb_h;
+#endif
 
 			// float menu bar
 			CreateMenuContainer();
@@ -1334,16 +1367,22 @@ void __fastcall TTVPWindowForm::SetFullScreenMode(bool b)
 			// set BorderStyle
 			SetWindowLong(Handle, GWL_STYLE, OrgStyle);
 			SetWindowLong(Handle, GWL_EXSTYLE, OrgExStyle);
-			ScrollBox->BorderStyle = OrgScrollBoxBorderStyle;
-
+#ifdef __BORLANDC__
+//			ScrollBox->BorderStyle = OrgScrollBoxBorderStyle;
+#endif
 			// change PaintBox's Owner to the ScrollBox
 //			CreatePaintBox(ScrollBox);
+#ifndef __BORLANDC__
+			CreatePaintBox(this); // スクロールボックスが無いので、ウィンドウをオーナーにしとく
+#endif
 
 			// set ScrollBox visible
 			SetInnerSunken(OrgInnerSunken);
+#ifdef __BORLANDC__
 			ScrollBox->Align = alClient;
 			SetWindowPos(ScrollBox->Handle, HWND_BOTTOM, 0, 0, 0, 0,
 				SWP_NOMOVE|SWP_NOSIZE|SWP_NOACTIVATE);
+#endif
 
 			// revert the position and size
 			SetBounds(OrgLeft, OrgTop, OrgWidth, OrgHeight);
@@ -1391,11 +1430,13 @@ void __fastcall TTVPWindowForm::DestroyMenuContainer()
 //---------------------------------------------------------------------------
 void __fastcall TTVPWindowForm::CreateMenuContainer()
 {
+#ifdef __BORLANDC__
 	if(!MenuContainer)
 	{
 		// create MenuContainer
 		MenuContainer = new TTVPMenuContainerForm(this);
 	}
+#endif
 }
 //---------------------------------------------------------------------------
 void __fastcall TTVPWindowForm::CheckMenuBarDrop()
@@ -1480,13 +1521,19 @@ void __fastcall TTVPWindowForm::SetVisible(bool b)
 //---------------------------------------------------------------------------
 void __fastcall TTVPWindowForm::SetInnerSunken(bool b)
 {
+#ifdef __BORLANDC__
 	// window inner appearance style
 	ScrollBox->BorderStyle = b ? Forms::bsSingle : Forms::bsNone;
+#endif
 }
 //---------------------------------------------------------------------------
 bool __fastcall TTVPWindowForm::GetInnerSunken() const
 {
+#ifdef __BORLANDC__
 	return ScrollBox->BorderStyle == Forms::bsSingle;
+#else
+	return false;
+#endif
 }
 //---------------------------------------------------------------------------
 void __fastcall TTVPWindowForm::SetInnerWidth(tjs_int w)
@@ -1539,6 +1586,7 @@ void __fastcall TTVPWindowForm::SetBorderStyle(tTVPBorderStyle st)
 	CallWindowDetach(false);
 	FreeDirectInputDevice(); // due to re-create window
 
+#ifdef __BORLANDC__
 	if(st == ::bsSingle)
 		BorderIcons = BorderIcons>>biMaximize; // remove maximize button
 	else
@@ -1552,7 +1600,7 @@ void __fastcall TTVPWindowForm::SetBorderStyle(tTVPBorderStyle st)
 	case ::bsToolWindow:	BorderStyle = Forms::bsToolWindow;	break;
 	case ::bsSizeToolWin:	BorderStyle = Forms::bsSizeToolWin;	break;
 	}
-
+#endif
 	CallWindowAttach();
 }
 //---------------------------------------------------------------------------
@@ -1573,8 +1621,10 @@ tTVPBorderStyle __fastcall TTVPWindowForm::GetBorderStyle() const
 //---------------------------------------------------------------------------
 void __fastcall TTVPWindowForm::SetMenuBarVisible(bool b)
 {
+#ifdef __BORLANDC__
 	MenuBarVisible = b;
 	Menu = b?MainMenu:NULL;
+#endif
 }
 //---------------------------------------------------------------------------
 bool __fastcall TTVPWindowForm::GetMenuBarVisible() const
@@ -1584,7 +1634,9 @@ bool __fastcall TTVPWindowForm::GetMenuBarVisible() const
 //---------------------------------------------------------------------------
 void __fastcall TTVPWindowForm::RevertMenuBarVisible()
 {
+#ifdef __BORLANDC__
 	Menu = MenuBarVisible?MainMenu:NULL;
+#endif
 }
 //---------------------------------------------------------------------------
 void __fastcall TTVPWindowForm::SetStayOnTop(bool b)
@@ -1602,19 +1654,25 @@ bool __fastcall TTVPWindowForm::GetStayOnTop() const
 //---------------------------------------------------------------------------
 void __fastcall TTVPWindowForm::SetShowScrollBars(bool b)
 {
+#ifdef __BORLANDC__
 	ScrollBox->HorzScrollBar->Visible = b;
 	ScrollBox->VertScrollBar->Visible = b;
 	ScrollBox->Color = clBlack;
 	ScrollBox->Brush->Style = b?bsSolid:bsClear;
 	this->Color = clBlack;
 	this->Brush->Style = bsSolid;
+#endif
 }
 //---------------------------------------------------------------------------
 bool __fastcall TTVPWindowForm::GetShowScrollBars() const
 {
+#ifdef __BORLANDC__
 	return
 		ScrollBox->HorzScrollBar->Visible ||
 		ScrollBox->VertScrollBar->Visible;
+#else
+	return false;
+#endif
 }
 //---------------------------------------------------------------------------
 void __fastcall TTVPWindowForm::SetUseMouseKey(bool b)
@@ -1631,14 +1689,18 @@ void __fastcall TTVPWindowForm::SetUseMouseKey(bool b)
 		if(MouseLeftButtonEmulatedPushed)
 		{
 			MouseLeftButtonEmulatedPushed = false;
+#ifdef __BORLANDC__
 			PaintBoxMouseUp(this, Controls::mbLeft,
 				TShiftState(), LastMouseMovedPos.x, LastMouseMovedPos.y);
+#endif
 		}
 		if(MouseRightButtonEmulatedPushed)
 		{
 			MouseRightButtonEmulatedPushed = false;
+#ifdef __BORLANDC__
 			PaintBoxMouseUp(this, Controls::mbRight,
 				TShiftState(), LastMouseMovedPos.x, LastMouseMovedPos.y);
+#endif
 		}
 
 	}
@@ -1688,12 +1750,21 @@ void __fastcall TTVPWindowForm::CreatePaintBox(TWinControl *owner)
 
 	PaintBox->Visible = true;
 
+#ifdef __BORLANDC__
 	PaintBox->OnClick = PaintBoxClick;
 	PaintBox->OnMouseDown = PaintBoxMouseDown;
 	PaintBox->OnPaint = PaintBoxPaint;
 	PaintBox->OnDblClick = PaintBoxDblClick;
 	PaintBox->OnMouseMove = PaintBoxMouseMove;
 	PaintBox->OnMouseUp = PaintBoxMouseUp;
+#else
+	PaintBox->OnClick = EVENT_FUNC1(TTVPWindowForm, PaintBoxClick);
+	PaintBox->OnMouseDown = EVENT_FUNC5(TTVPWindowForm, PaintBoxMouseDown);
+	PaintBox->OnPaint = EVENT_FUNC1(TTVPWindowForm, PaintBoxPaint);
+	PaintBox->OnDblClick = EVENT_FUNC1(TTVPWindowForm, PaintBoxDblClick);
+	PaintBox->OnMouseMove = EVENT_FUNC4(TTVPWindowForm, PaintBoxMouseMove);
+	PaintBox->OnMouseUp = EVENT_FUNC5(TTVPWindowForm, PaintBoxMouseUp);
+#endif
 
 	SetStretchBltMode(PaintBox->Canvas->Handle, HALFTONE);
 	SetBrushOrgEx(PaintBox->Canvas->Handle, 0, 0, NULL);
@@ -1801,6 +1872,7 @@ void TTVPWindowForm::InternalKeyDown(WORD key, tjs_uint32 shift)
 				::GetCursorPos(&p);
 				TPoint tp;
 				tp.x = p.x; tp.y = p.y;
+#ifdef __BORLANDC__
 				tp = ScrollBox->ScreenToClient(tp);
 
 				if(tp.x >= 0 && tp.y >= 0 &&
@@ -1820,6 +1892,7 @@ void TTVPWindowForm::InternalKeyDown(WORD key, tjs_uint32 shift)
 							TShiftState(), tp.x, tp.y);
 					}
 				}
+#endif
 				return;
 			}
 
@@ -1932,6 +2005,7 @@ void TTVPWindowForm::InternalKeyUp(WORD key, tjs_uint32 shift)
 				::GetCursorPos(&p);
 				TPoint tp;
 				tp.x = p.x; tp.y = p.y;
+#ifdef __BORLANDC__
 				tp = ScrollBox->ScreenToClient(tp);
 				if(tp.x >= 0 && tp.y >= 0 &&
 					tp.x < ScrollBox->Width && tp.y < ScrollBox->Height)
@@ -1951,6 +2025,7 @@ void TTVPWindowForm::InternalKeyUp(WORD key, tjs_uint32 shift)
 							TShiftState(), tp.x, tp.y);
 					}
 				}
+#endif
 				return;
 			}
 		}
@@ -2354,6 +2429,7 @@ void __fastcall TTVPWindowForm::WndProc(TMessage &Message)
 //---------------------------------------------------------------------------
 bool __fastcall TTVPWindowForm::IsShortCut(Messages::TWMKey &Message)
 {
+#ifdef __BORLANDC__
 	if(MenuContainer)
 	{
 		// Menu bar is separated from main window, so we must drain the
@@ -2361,21 +2437,27 @@ bool __fastcall TTVPWindowForm::IsShortCut(Messages::TWMKey &Message)
 		if(MainMenu->IsShortCut(Message)) return true;
 	}
 	return TForm::IsShortCut(Message);
+#else
+	return false;
+#endif
 }
 //---------------------------------------------------------------------------
 HWND __fastcall TTVPWindowForm::GetSurfaceWindowHandle()
 {
+#ifdef __BORLANDC__
 	if(ScrollBox)
 	{
 		SetWindowPos(ScrollBox->Handle, HWND_BOTTOM, 0, 0, 0, 0,
 				SWP_NOMOVE|SWP_NOSIZE|SWP_NOACTIVATE);
 	}
 	if(PaintBox) return PaintBox->Parent->Handle;
+#endif
 	return NULL;
 }
 //---------------------------------------------------------------------------
 HWND __fastcall TTVPWindowForm::GetWindowHandle(tjs_int &ofsx, tjs_int &ofsy)
 {
+#ifdef __BORLANDC__
 	if(ScrollBox)
 	{
 		SetWindowPos(ScrollBox->Handle, HWND_BOTTOM, 0, 0, 0, 0,
@@ -2384,16 +2466,19 @@ HWND __fastcall TTVPWindowForm::GetWindowHandle(tjs_int &ofsx, tjs_int &ofsy)
 	ofsx = ofsy = GetInnerSunken()?2:0;
 	ofsx += ScrollBox->Align == alClient ? 0 : ScrollBox->Left;
 	ofsy += ScrollBox->Align == alClient ? 0 : ScrollBox->Top;
+#endif
 	return Handle;
 }
 //---------------------------------------------------------------------------
 HWND __fastcall TTVPWindowForm::GetWindowHandleForPlugin()
 {
+#ifdef __BORLANDC__
 	if(ScrollBox)
 	{
 		SetWindowPos(ScrollBox->Handle, HWND_BOTTOM, 0, 0, 0, 0,
 				SWP_NOMOVE|SWP_NOSIZE|SWP_NOACTIVATE);
 	}
+#endif
 	return Handle;
 }
 //---------------------------------------------------------------------------

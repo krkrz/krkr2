@@ -6049,7 +6049,7 @@ void tTJSNI_BaseLayer::InternalComplete2(tTVPComplexRect & updateregion,
 	// split the region to some stripes to utilize the CPU's memory
 	// caching.
 
-	tjs_int i;
+	//tjs_int i;
 	tTVPComplexRect::tIterator it = updateregion.GetIterator();
 	while(it.Step())
 	{

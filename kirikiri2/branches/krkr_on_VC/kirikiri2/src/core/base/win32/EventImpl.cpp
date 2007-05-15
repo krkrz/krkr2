@@ -180,7 +180,11 @@ tTVPContinuousHandlerCallLimitThread::tTVPContinuousHandlerCallLimitThread()
 	NextEventTick = 0;
 	Interval = (1<<TVP_SUBMILLI_FRAC_BITS)*1000/60; // default 60Hz
 	Enabled = false;
+#ifdef __BORLANDC__
 	UtilWindow = AllocateHWnd(UtilWndProc);
+#else
+	UtilWindow = AllocateHWnd( EVENT_FUNC1(tTVPContinuousHandlerCallLimitThread, UtilWndProc) );
+#endif
 	Resume();
 }
 //---------------------------------------------------------------------------

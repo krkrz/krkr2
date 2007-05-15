@@ -13,6 +13,7 @@
 #ifndef WindowImplH
 #define WindowImplH
 
+#include <Forms.hpp>
 #include "WindowIntf.h"
 
 
@@ -140,9 +141,9 @@ struct tTVPScreenModeCandidate : tTVPScreenMode
 	}
 };
 
-class IDirectDraw2;
-class IDirectDrawSurface;
-class IDirectDrawClipper;
+interface IDirectDraw2;
+interface IDirectDrawSurface;
+interface IDirectDrawClipper;
 extern void TVPTestDisplayMode(tjs_int w, tjs_int h, tjs_int & bpp);
 extern void TVPSwitchToFullScreen(HWND window, tjs_int w, tjs_int h);
 extern void TVPRevertFromFullScreen(HWND window);

@@ -1,0 +1,115 @@
+------------------------------------------------------------------------------
+	Shift+F4 でコンソールが出現する機構。
+	TTVPWindowForm::ShowConsoleMenuItem->ShortCut = TVPMainForm->ShowConsoleMenuItem->ShortCut;
+	
+	メニューアイテムのショートカットが各ウィンドウに設定されている　ようだ。
+	MainFormのShortCutは dfmファイル内に記述されている。dfmを処理しないとやっぱダメっぽい
+------------------------------------------------------------------------------
+	libjpegの構造体サイズが、lib内とexe側で異なる問題。wx*.libより前にlibjpegをリンクしたら解決
+
+	以下、解決前に考えていた検討内容
+
+	#pragma option push -b
+	TJSヘッダのenumの前後には、前後コレが入ってる。VC2005EEでも、類似のプラグマ要るのかな
+
+-a　　データアラインメントを -a4 （4 バイト）に指定する。
+-a- 　データアラインメントを -a1 （1 バイト）に指定する。
+-an　 n の値に応じて，データを 1 = バイト，2 = ワード（2 バイト），
+　　　4 = ダブルワード（4 バイト），8 = クワッドワード（8 バイト），
+　　　16 = パラグラフ（16 バイト）にそれぞれ配置する（デフォルトは -a4）
+
+-b　　列挙型を int とする（デフォルトは -b で，列挙型を int サイズにする）
+-b-　 可能ならば列挙型をバイトサイズにする
+
+
+＊ソースコード中で #pragma で指定する方法
+
+#pragma option push -b -a8
+　　　　～
+#pragma option pop
+------------------------------------------------------------------------------
+[libjpegの関数呼び出しで例外発生]
+ libjpegの関数は、呼び出し元exeのsizeof演算子と、lib内のsizeof演算子が同じ値を返さないとダメっぽい。そういうエラーチェックが入っている。
+
+ 対策はいくつかある。アライメント調整も手ではある
+ 
+ ビルド条件を合わせるのが、今回は最適ではないかと思う
+ GraphicsLoaderIntf.cppから、clrサポートをはずしてみる
+------------------------------------------------------------------------------
+【吉里吉里の画面更新】
+TForm::OnPaint
+->TPaintBox::OnPaint
+  ->TTVPWindowForm::PaintBoxPaint
+    ->tTJSNI_BaseWindow::NotifyWindowExposureToLayer
+      ->tTVPDrawDevice::RequestInvalidation
+        ->tTVPLayerManager::RequestInvalidation
+          ->tTVPLayerManager::AddUpdateRegion
+            ->tTVPLayerManager::NotifyWindowInvalidation
+              ->tTJSNI_BaseWindow::NotifyWindowInvalidation
+                ->TVPPostWindowUpdate
+                  ->TVPWinUpdateEventQueue.push_back(tTVPWinUpdateEvent(window));
+                    ->TVPInvokeEvents
+                      ->TTVPMainForm::InvokeEvents
+                        ->TTVPMainForm::CallDeliverAllEventsOnIdle
+                          ->::PostMessage(TVPMainForm->Handle, WM_USER+0x31/*dummy msg*/, 0, 0);
+
+
+  TTVPMainForm::ApplicationIdle
+  ->TTVPMainForm::DeliverEvents   EventButton->Down を評価する
+    ->TVPDeliverAllEvents
+      ->_TVPDeliverAllEvents
+        ->TVPDeliverWindowUpdateEvents
+          ->tTVPWinUpdateEvent::Deliver
+            ->tTJSNI_BaseWindow::UpdateContent
+
+  tTJSNI_Window::Update
+  ->TTVPWindowForm::UpdateWindow
+    ->TVPDeliverWindowUpdateEvents
+      ->tTVPWinUpdateEvent::Deliver
+        ->tTJSNI_BaseWindow::UpdateContent
+
+  WM_USER+0x30
+  ->TTVPMainForm::WMInvokeEvents
+    ->TVPDeliverAllEvents
+      ->_TVPDeliverAllEvents
+        ->TVPDeliverWindowUpdateEvents
+          ->tTVPWinUpdateEvent::Deliver
+            ->tTJSNI_BaseWindow::UpdateContent
+
+
+   tTJSNI_BaseWindow::UpdateContent
+   ->tTVPDrawDevice::Update
+     ->tTVPLayerManager::UpdateToDrawDevice
+       ->tTJSNI_BaseLayer::CompleteForWindow
+         ->tTJSNI_BaseLayer::InternalComplete2
+           ->tTJSNI_BaseLayer::Draw
+             ->tTJSNI_BaseLayer::DrawSelf
+               ->tTVPLayerManager::DrawCompleted
+                 ->tTVPPassThroughDrawDevice::NotifyBitmapCompleted
+                   ->StretchDIBits で、描画される。
+
+  StretchDIBitsが成功するには
+  tTVPPassThroughDrawDevice::TargetDC がセットされなくちゃダメだ。
+
+  TTVPWindowForm::SetFullScreenMode -> TTVPWindowForm::CallWindowAttach
+  TTVPWindowForm::SetBorderStyle    -> TTVPWindowForm::CallWindowAttach
+  TTVPWindowForm::SetStayOnTop      -> TTVPWindowForm::CallWindowAttach
+
+  ->TTVPWindowForm::CallWindowAttach
+    ->tTVPPassThroughDrawDevice::SetTargetWindow
+      ->TargetDC = GetDC(wnd);
+
+                    This class is used for idle events, which are generated when the system becomes idle. Note that, unless you do something specifically, the idle events are not sent if the system remains idle once it has become it, e.g. only a single idle event will be generated until something else resulting in more normal events happens and only then is the next idle event sent again. If you need to ensure a continuous stream of idle events, you can either use RequestMore method in your handler or call wxWakeUpIdle periodically (for example from timer event), but note that both of these approaches (and especially the first one) increase the system load and so should be avoided if possible.
+                    
+version.lib vfw32.lib ddraw.lib dxguid.lib wxmsw28d_core.lib wxbase28d.lib wxtiffd.lib wxjpegd.lib wxpngd.lib wxzlibd.lib wxregexd.lib wxexpatd.lib winmm.lib comctl32.lib rpcrt4.lib wsock32.lib odbc32.lib libjpegd.lib zlibd.lib libpngd.lib delayimp.lib
+
+ddraw.lib dxguid.lib
+version.lib vfw32.lib ddraw.lib dxguid.lib wxmsw28_core.lib wxbase28.lib wxtiff.lib wxjpeg.lib wxpng.lib wxzlib.lib wxregex.lib wxexpat.lib winmm.lib comctl32.lib rpcrt4.lib wsock32.lib odbc32.lib libjpeg.lib zlib.lib libpng.lib delayimp.lib
+
+
+次のエラー、謎すぎ
+ マネージ デバッグ アシスタント 'LoaderLock' では 'c:\MyDocuments\krkr\kirikiri2\source\kirikiri2\src\core\environ\win32\VS2005\Debug\tvpwin32.exe' に問題を検出しました。
+追加情報: OS ローダー ロック内でマネージ実行を試行しました。DllMain またはイメージ初期化関数内部でマネージ コードを実行しないでください。この動作は、アプリケーションをハングさせる原因となる可能性があります。
+
+マネージ デバッグ アシスタント 'LoaderLock' では 'c:\MyDocuments\krkr\kirikiri2\source\kirikiri2\src\core\environ\win32\VS2005\Debug\tvpwin32.exe' に問題を検出しました。
+追加情報: OS ローダー ロック内でマネージ実行を試行しました。DllMain またはイメージ初期化関数内部でマネージ コードを実行しないでください。この動作は、アプリケーションをハングさせる原因となる可能性があります。

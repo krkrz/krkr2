@@ -784,7 +784,11 @@ static void TVPInitDirectSound()
 				TVPPrimaryDelayedStopperTimer->Interval = 4000;
 				TVPPrimaryDelayedStopperTimer->Enabled = false;
 				TVPPrimaryDelayedStopperTimer->OnTimer =
+#ifdef __BORLANDC__
 					TVPPrimaryDelayedStopper.OnTimer;
+#else
+					boost::bind(boost::mem_fn(&tTVPPrimaryDelayedStopper::OnTimer), TVPPrimaryDelayedStopper, _1);
+#endif
 			}
 		}
 
@@ -838,8 +842,8 @@ static void TVPInitDirectSound()
 		{
 			// cannot create DirectSound primary buffer.
 			// try to not set 3D mode
-			TVPAddLog(TJS_W("Warning: Cannot create DirectSound primary buffer with 3D sound mode. "
-				"Force not to use it."));
+			TVPAddLog(TJS_W("Warning: Cannot create DirectSound primary buffer with 3D sound mode. ")
+				TJS_W("Force not to use it."));
 			dsbd.dwFlags &= ~DSBCAPS_CTRL3D;
 			hr = TVPDirectSound->CreateSoundBuffer(&dsbd, &TVPPrimaryBuffer, NULL);
 			if(SUCCEEDED(hr)) TVPDirectSoundUse3D = false;
@@ -856,12 +860,12 @@ static void TVPInitDirectSound()
 			{
 				// failed... here assumes this a failure.
 				TVPThrowExceptionMessage(TVPCannotInitDirectSound,
-					ttstr(TJS_W("IDirectSound::SetCooperativeLevel failed. "
-						"(after creation of primary buffer failed)/HR="))+
+					ttstr(TJS_W("IDirectSound::SetCooperativeLevel failed. ")
+						TJS_W("(after creation of primary buffer failed)/HR="))+
 					TJSInt32ToHex((tjs_uint32)hr));
 			}
-			TVPAddLog(TJS_W("Warning: Cannot create DirectSound primary buffer. "
-				"Force not to use it."));
+			TVPAddLog(TJS_W("Warning: Cannot create DirectSound primary buffer. ")
+				TJS_W("Force not to use it."));
 			pri_normal = true;
 		}
 
@@ -977,13 +981,13 @@ static void TVPInitDirectSound()
 			if(FAILED(hr))
 			{
 				// specified parameter is denied
-				TVPAddImportantLog(ttstr(TJS_W("Warning: IDirectSoundBuffer::SetFormat failed. "
-						"(") + ttstr(TVPPriamrySBFrequency) + TJS_W("Hz, ") +
+				TVPAddImportantLog(ttstr(TJS_W("Warning: IDirectSoundBuffer::SetFormat failed. ")
+						TJS_W("(") + ttstr(TVPPriamrySBFrequency) + TJS_W("Hz, ") +
 						ttstr(TVPPrimarySBBits) + TJS_W("bits, ") +
 						ttstr((tjs_int)wfx.Format.nChannels) + TJS_W("channels)/HR="))+
 						TJSInt32ToHex((tjs_uint32)hr));
-				TVPAddImportantLog(TJS_W("Retrying with 44100Hz, "
-						"16bits, 2channels"));
+				TVPAddImportantLog(TJS_W("Retrying with 44100Hz, ")
+						TJS_W("16bits, 2channels"));
 
 		level0:
 				// fourth very basic buffer format
@@ -1470,7 +1474,12 @@ public:
 tTVPWaveSoundBufferThread::tTVPWaveSoundBufferThread()
 	: tTVPThread(true)
 {
+#ifdef __BORLANDC__
 	UtilWindow = AllocateHWnd(UtilWndProc);
+#else
+	UtilWindow = AllocateHWnd( EVENT_FUNC1(tTVPWaveSoundBufferThread, UtilWndProc) );
+#endif
+
 	PendingLabelEventExists = false;
 	NextLabelEventTick = 0;
 	LastFilledTick = 0;
@@ -2058,8 +2067,8 @@ void tTJSNI_WaveSoundBuffer::TryCreateSoundBuffer(bool use3d)
 		delete [] Level2Buffer;
 		Level2Buffer = NULL;
 		ThrowSoundBufferException(
-			ttstr(TJS_W("IDirectSound::CreateSoundBuffer "
-				"(on to create a secondary buffer) failed./HR=") +
+			ttstr(TJS_W("IDirectSound::CreateSoundBuffer ")
+				TJS_W("(on to create a secondary buffer) failed./HR=") +
 				TJSInt32ToHex(hr)));
 	}
 }

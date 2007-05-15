@@ -13,6 +13,7 @@
 #define MIDIImplH
 
 #include <mmsystem.h>
+#include <Messages.hpp>
 #include "MIDIIntf.h"
 
 
