@@ -90,8 +90,8 @@ void TVP_CDECL sse__Z32RisaPCMConvertLoopInt16ToFloat32PvPKvj(void * dest, const
 void TVP_CDECL def__Z32RisaPCMConvertLoopInt16ToFloat32PvPKvj(void * dest, const void * src, size_t numsamples);
 void TVP_CDECL sse__Z32RisaPCMConvertLoopFloat32ToInt16PvPKvj(void * dest, const void * src, size_t numsamples);
 void TVP_CDECL def__Z32RisaPCMConvertLoopFloat32ToInt16PvPKvj(void * dest, const void * src, size_t numsamples);
-}
 extern tjs_uint32 TVPCPUType;
+}
 #include "tvpgl_ia32_intf.h"
 
 

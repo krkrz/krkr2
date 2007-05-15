@@ -48,8 +48,13 @@ typedef struct
 #ifdef _WIN32
 #define TVP_GL_FUNC_DECL(rettype, funcname, arg)  rettype __cdecl funcname arg
 #define TVP_GL_FUNC_EXTERN_DECL(rettype, funcname, arg)  extern rettype __cdecl funcname arg
+#ifdef __BORLANDC__
 #define TVP_GL_FUNC_PTR_DECL(rettype, funcname, arg) rettype __cdecl (*funcname) arg
 #define TVP_GL_FUNC_PTR_EXTERN_DECL_(rettype, funcname, arg) extern rettype __cdecl (*funcname) arg
+#else
+#define TVP_GL_FUNC_PTR_DECL(rettype, funcname, arg) rettype (__cdecl *funcname) arg
+#define TVP_GL_FUNC_PTR_EXTERN_DECL_(rettype, funcname, arg) extern rettype (__cdecl *funcname) arg
+#endif
 #define TVP_GL_FUNC_PTR_EXTERN_DECL TVP_GL_FUNC_PTR_EXTERN_DECL_
 #endif
 

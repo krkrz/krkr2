@@ -15,9 +15,11 @@
 
 #include "ConfSettingsUnit.h"
 //---------------------------------------------------------------------------
+#ifdef __BORLANDC__
 #pragma package(smart_init)
 #pragma link "ConfMainFrameUnit"
 #pragma resource "*.dfm"
+#endif
 TConfSettingsForm *ConfSettingsForm;
 //---------------------------------------------------------------------------
 #define SPACER 6

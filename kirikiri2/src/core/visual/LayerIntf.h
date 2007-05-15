@@ -971,7 +971,7 @@ private:
 			const tTVPRect &cliprect,
 			tTVPLayerType type, tjs_int opacity);
 	} TransDrawable;
-	friend class tTransDrawable;
+	friend struct tTransDrawable;
 
 	struct tTransIdleCallback : public tTVPContinuousEventCallbackIntf
 	{
@@ -980,7 +980,7 @@ private:
 			{ Owner->InvokeTransition(tick); }
 		// from tTVPIdleEventCallbackIntf
 	} TransIdleCallback;
-	friend class tTransIdleCallback;
+	friend struct tTransIdleCallback;
 
 	tjs_uint64 GetTransTick();
 

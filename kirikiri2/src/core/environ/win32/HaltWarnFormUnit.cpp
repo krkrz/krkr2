@@ -13,8 +13,10 @@
 #include "HaltWarnFormUnit.h"
 #include "MainFormUnit.h"
 //---------------------------------------------------------------------------
+#ifdef __BORLANDC__
 #pragma package(smart_init)
 #pragma resource "*.dfm"
+#endif
 TTVPHaltWarnForm *TVPHaltWarnForm;
 //---------------------------------------------------------------------------
 __fastcall TTVPHaltWarnForm::TTVPHaltWarnForm(TComponent* Owner)

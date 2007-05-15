@@ -10,6 +10,8 @@
 //---------------------------------------------------------------------------
 #include "tjsCommHead.h"
 
+
+#include <Forms.hpp>
 #include "EventIntf.h"
 #include "MenuItemImpl.h"
 #include "MsgIntf.h"
@@ -35,7 +37,11 @@ tjs_error TJS_INTF_METHOD tTJSNI_MenuItem::Construct(tjs_int numparams,
 	else
 	{
 		MenuItem = new TMenuItem(Application);
+#ifdef __BORLANDC__
 		MenuItem->OnClick = MenuItemClick;
+#else
+		MenuItem->OnClick = EVENT_FUNC1(tTJSNI_MenuItem, MenuItemClick);
+#endif
 	}
 
 	// fetch initial caption

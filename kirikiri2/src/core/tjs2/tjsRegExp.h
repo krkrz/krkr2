@@ -11,6 +11,9 @@
 #ifndef tjsRegExpH
 #define tjsRegExpH
 
+#ifndef __BORLANDC__
+#define BOOST_MEM_FN_ENABLE_STDCALL
+#endif
 #include <boost/regex.hpp>
 #include "tjsNative.h"
 
@@ -44,7 +47,7 @@ or uncomment in sgi.hpp
 
 namespace TJS
 {
-typedef boost::reg_expression<tjs_char> tTJSRegEx;
+typedef boost::basic_regex<tjs_char> tTJSRegEx;
 //---------------------------------------------------------------------------
 // tTJSNI_RegExp
 //---------------------------------------------------------------------------

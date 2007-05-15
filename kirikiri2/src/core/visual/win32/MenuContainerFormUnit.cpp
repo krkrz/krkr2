@@ -13,8 +13,10 @@
 #include "WindowFormUnit.h"
 #include "MenuContainerFormUnit.h"
 //---------------------------------------------------------------------------
+#ifdef __BORLANDC__
 #pragma package(smart_init)
 #pragma resource "*.dfm"
+#endif
 TTVPMenuContainerForm *TVPMenuContainerForm;
 //---------------------------------------------------------------------------
 __fastcall TTVPMenuContainerForm::TTVPMenuContainerForm(TComponent* Owner)
@@ -24,7 +26,9 @@ __fastcall TTVPMenuContainerForm::TTVPMenuContainerForm(TComponent* Owner)
 
 	// attach OwnerFowm's main menu to this window
 	OwnerForm->Menu = NULL;
+#ifdef __BORLANDC__
 	Menu = OwnerForm->MainMenu;
+#endif
 	WaitingShowing = false;
 	ShowingMenu = false;
 }

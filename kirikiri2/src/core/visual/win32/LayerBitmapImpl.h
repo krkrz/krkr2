@@ -11,6 +11,7 @@
 #ifndef LayerBitmapImplH
 #define LayerBitmapImplH
 
+#include <Graphics.hpp>
 #include "tvpfontstruc.h"
 #include "ComplexRect.h"
 
@@ -97,7 +98,7 @@ public:
 class tTVPBitmap;
 class tTVPComplexRect;
 class tTVPCharacterData;
-class tTVPDrawTextData;
+struct tTVPDrawTextData;
 class tTVPPrerenderedFont;
 class tTVPNativeBaseBitmap
 {

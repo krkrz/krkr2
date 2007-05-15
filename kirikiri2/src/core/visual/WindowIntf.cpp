@@ -522,8 +522,12 @@ void tTJSNI_BaseWindow::NotifyUpdateRegionFixed(const tTVPComplexRect &updaterec
 void tTJSNI_BaseWindow::UpdateContent()
 {
 	// is called from event dispatcher
+#ifdef __BORLANDC__
 	DrawDevice->Update();
-
+#else
+	if ( DrawDevice ) // OnCloseQueryが呼ばれた後に、なぜか飛んでくる。なぜ・・・
+		DrawDevice->Update();
+#endif
  	EndUpdate();
 }
 //---------------------------------------------------------------------------
@@ -980,7 +984,11 @@ TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/onCloseQuery)
 	TVP_ACTION_INVOKE_MEMBER("canClose");
 	TVP_ACTION_INVOKE_END(tTJSVariantClosure(objthis, objthis));
 */
+#ifdef __BORLANDC__
 	_this->OnCloseQueryCalled((bool)*param[0]);
+#else
+	_this->OnCloseQueryCalled((bool)param[0]->AsInteger()); 
+#endif
 
 	return TJS_S_OK;
 }

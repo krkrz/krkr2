@@ -947,9 +947,9 @@ void tTJSNI_KAGParser::LoadScenario(const ttstr & name)
 
 		if(DebugLevel >= tkdlSimple)
 		{
-			static ttstr hr(TJS_W(
-				"========================================"
-				"========================================"));
+			static ttstr hr(
+				TJS_W("========================================")
+				TJS_W("========================================"));
 			TVPAddLog(hr);
 			TVPAddLog(TJS_W("Scenario loaded : ") + name);
 		}
@@ -1044,9 +1044,9 @@ void tTJSNI_KAGParser::GoToLabel(const ttstr &name)
 
 	if(DebugLevel >= tkdlSimple)
 	{
-		static ttstr hr(TJS_W(
-			"- - - - - - - - - - - - - - - - - - - - "
-			"- - - - - - - - - - - - - - - - - - - - "));
+		static ttstr hr(
+			TJS_W("- - - - - - - - - - - - - - - - - - - - ")
+			TJS_W("- - - - - - - - - - - - - - - - - - - - "));
 		TVPAddLog(hr);
 		TVPAddLog(StorageShortName + TJS_W(" : jumped to : ") + name);
 	}
@@ -1091,7 +1091,7 @@ bool tTJSNI_KAGParser::SkipCommentOrLabel()
 			if(RecordingMacro)
 				TVPThrowExceptionMessage(TVPLabelOrScriptInMacro);
 
-			tjs_char * vl = TJS_strchr(p, TJS_W('|'));
+			const tjs_char * vl = TJS_strchr(p, TJS_W('|'));
 			bool pagename;
 			if(vl)
 			{
@@ -2183,7 +2183,7 @@ parse_start:
 					iTJSDispatch2 *args = GetMacroTopNoAddRef();
 					if(args)
 					{
-						tjs_char *vp = TJS_strchr(value.c_str(), TJS_W('|'));
+						const tjs_char *vp = TJS_strchr(value.c_str(), TJS_W('|'));
 
 						if(vp)
 						{

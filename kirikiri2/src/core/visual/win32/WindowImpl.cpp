@@ -32,7 +32,7 @@
 // Mouse Cursor management
 //---------------------------------------------------------------------------
 static tTJSHashTable<ttstr, tjs_int> TVPCursorTable;
-static TVPCursorCount = 1;
+static int TVPCursorCount = 1;
 tjs_int TVPGetCursor(const ttstr & name)
 {
 	// get placed path
@@ -86,7 +86,7 @@ static tjs_int TVPGetDisplayColorFormat()
 	HDC desktopdc = GetDC(0);
 	HDC bitmapdc = CreateCompatibleDC(desktopdc);
 	HBITMAP bmp = CreateCompatibleBitmap(desktopdc, 1, 1);
-	HBITMAP oldbmp = SelectObject(bitmapdc, bmp);
+	HBITMAP oldbmp = (HBITMAP)SelectObject(bitmapdc, bmp);
 
 	int count;
 	int r, g, b;
@@ -443,8 +443,8 @@ static void TVPInitDirectDraw()
 				(void **)&TVPDirectDraw2);
 			if(FAILED(hr))
 				TVPThrowExceptionMessage(TVPCannotInitDirectDraw,
-					ttstr(TJS_W("Querying of IID_IDirectDraw2 failed."
-						" (DirectX on this system may be too old)/HR="))+
+					ttstr(TJS_W("Querying of IID_IDirectDraw2 failed.")
+						TJS_W(" (DirectX on this system may be too old)/HR="))+
 						TJSInt32ToHex((tjs_uint32)hr));
 
 			TVPDirectDraw->Release(), TVPDirectDraw = NULL;
@@ -1348,8 +1348,10 @@ void tTJSNI_Window::PostInputEvent(const ttstr &name, iTJSDispatch2 * params)
 		Word vcl_key = key;
 		if(type == etOnKeyDown)
 			Form->InternalKeyDown(key, shift);
+#ifdef __BORLANDC__
 		else if(type == etOnKeyUp)
 			Form->OnKeyUp(Form, vcl_key, TVP_TShiftState_From_uint32(shift));
+#endif
 	}
 	else if(type == etOnKeyPress)
 	{
@@ -1370,7 +1372,9 @@ void tTJSNI_Window::PostInputEvent(const ttstr &name, iTJSDispatch2 * params)
 				name, TJS_W("key"));
 
 		char vcl_key = key;
+#ifdef __BORLANDC__
 		Form->OnKeyPress(Form, vcl_key);
+#endif
 	}
 }
 
@@ -1480,8 +1484,12 @@ void tTJSNI_Window::EndUpdate()
 //---------------------------------------------------------------------------
 TMenuItem * tTJSNI_Window::GetRootMenuItem()
 {
+#ifdef __BORLANDC__
 	if(!Form) return NULL;
 	return Form->MainMenu->Items;
+#else
+	return NULL;
+#endif
 }
 //---------------------------------------------------------------------------
 void tTJSNI_Window::SetMenuBarVisible(bool b)

@@ -345,7 +345,7 @@ static int ib_resample(tTVPBaseBitmap *dst,
 				tmp[k].b = (unsigned char)CLAMP(weight.b, 0, 255);
 				tmp[k].a = (unsigned char)CLAMP(weight.a, 0, 255);
 
-				(tjs_uint8*)(line) += srcpitchbytes;
+				*(tjs_uint8**)(&line) += srcpitchbytes;
 			} /* next row in temp column */
 		}
 
@@ -384,7 +384,7 @@ static int ib_resample(tTVPBaseBitmap *dst,
 				line[xx].b = (unsigned char)CLAMP(weight.b, 0, 255);
 				line[xx].a = (unsigned char)CLAMP(weight.a, 0, 255);
 
- 				(tjs_uint8*)(line) += destpitchbytes;
+ 				*(tjs_uint8**)(&line) += destpitchbytes;
 			} /* next dst row */
 		}
 	} /* next dst column */

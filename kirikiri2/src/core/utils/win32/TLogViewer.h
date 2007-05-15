@@ -12,6 +12,7 @@
 #define TLogViewerH
 
 #include <vector>
+#include <ExtCtrls.hpp>
 
 //---------------------------------------------------------------------------
 void TVPCopyToClipboard(const ttstr & unicode);
@@ -138,8 +139,10 @@ protected:
 
 	// properties
 __published:
+#ifdef __BORLANDC__
 	__property Align;
 	__property PopupMenu;
+#endif
 
 };
 //---------------------------------------------------------------------------

@@ -458,9 +458,11 @@ extern void TJSThrowVariantConvertError(const tTJSVariant & from, tTJSVariantTyp
 // tTJSVariant
 //---------------------------------------------------------------------------
 
+#ifdef __BORLANDC__
 #ifdef TJS_SUPPORT_VCL //  suppresses warnings about inline function
 	#pragma warn -8027
 	#pragma warn -8026
+#endif
 #endif
 
 
@@ -603,6 +605,7 @@ public:
 	}
 
 #ifdef TJS_SUPPORT_VCL
+#ifdef __BORLANDC__
 	tTJSVariant(const WideString ref) // from WideString
 	{
 		vt=tvtString;
@@ -611,6 +614,7 @@ public:
 		else
 			String=TJSAllocVariantString(ref);
 	}
+#endif
 #endif
 
 	TJS_METHOD_DEF(TJS_METHOD_RET_EMPTY, tTJSVariant, (bool ref))
@@ -744,12 +748,14 @@ public:
 	}
 
 #ifdef TJS_SUPPORT_VCL
+#ifdef __BORLANDC__
 	void AttachTo(WideString &ws)
 	{
 		tTJSVariantString *str = AsString();
 		ws.Attach(SysAllocString(*str));
 		if(str) str->Release();
 	}
+#endif
 #endif
 
 	TJS_METHOD_DEF(TJS_METHOD_RET(iTJSDispatch2 *), operator iTJSDispatch2 *, ())
@@ -948,7 +954,9 @@ public:
 	TJS_METHOD_DEF(tTJSVariant &, SetObject, (iTJSDispatch2 *object, iTJSDispatch2 *objthis));
 	TJS_METHOD_DEF(tTJSVariant &, operator =, (tTJSVariantClosure ref)); // from Object Closure
 #ifdef TJS_SUPPORT_VCL
+#ifdef __BORLANDC__
 	tTJSVariant & operator =(WideString s); // from WideString
+#endif
 #endif
 	TJS_METHOD_DEF(tTJSVariant &, operator =, (tTJSVariantString *ref)); // from tTJSVariantString
 	TJS_METHOD_DEF(tTJSVariant &, operator =, (tTJSVariantOctet *ref)); // from tTJSVariantOctet
@@ -1240,11 +1248,12 @@ public:
 };
 /*end-of-tTJSVariant*/
 //---------------------------------------------------------------------------
+#ifdef __BORLANDC__
 #ifdef TJS_SUPPORT_VCL
 	#pragma warn .8027
 	#pragma warn .8026
 #endif
-
+#endif
 //---------------------------------------------------------------------------
 
 } // namespace TJS

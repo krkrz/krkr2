@@ -32,8 +32,13 @@ END_MESSAGE_MAP(THintWindow)
 	Graphics::TBitmap *BackBMP;
 
 public:
+#ifdef __BORLANDC__
 	__fastcall virtual TTVPHintWindow(TComponent *AOwner);
 	__fastcall virtual TTVPHintWindow(HWND ParentWindow);
+#else
+	TTVPHintWindow(TComponent *AOwner);
+	TTVPHintWindow(HWND ParentWindow);
+#endif
 	__fastcall virtual ~TTVPHintWindow();
 
 	virtual void __fastcall ActivateHint(const TRect &Rect,const AnsiString

@@ -20,8 +20,12 @@
 #include "TLogViewer.h"
 
 //---------------------------------------------------------------------------
+#ifdef __BORLANDC__
 #pragma package(smart_init)
 #pragma resource "*.dfm"
+#else
+#include "ConsoleFormUnit_dfm.h"
+#endif
 TTVPConsoleForm *TVPConsoleForm;
 //---------------------------------------------------------------------------
 #define TVP_STREAM_DISP_INITIAL_LINES 1024
@@ -62,6 +66,9 @@ void TVPCopyImportantLogToClipboard()
 __fastcall TTVPConsoleForm::TTVPConsoleForm(TComponent* Owner)
 	: TForm(Owner)
 {
+#ifndef __BORLANDC__
+	init(this);
+#endif
 	TVPConsoleForm = this;
 	TVPSetOnLog(TVPConsoleFormOnLog);
 

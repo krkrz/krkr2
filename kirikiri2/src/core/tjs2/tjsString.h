@@ -89,7 +89,9 @@ public:
 
 #ifdef TJS_SUPPORT_VCL
 	tTJSString(const AnsiString &str) { Ptr = TJSAllocVariantString(str.c_str()); }
+#ifdef __BORLANDC__
 	tTJSString(const WideString &str) { Ptr = TJSAllocVariantString(str.c_bstr()); }
+#endif
 #endif
 
 	//--------------------------------------------------------- destructor --
@@ -106,11 +108,13 @@ public:
 		tTJSNarrowStringHolder holder(Ptr->operator const tjs_char*());
 		return AnsiString(holder.operator const char *());
 	}
+#ifdef __BORLANDC__
 	const WideString AsWideString() const
 	{
 		if(!Ptr) return L"";
 		return WideString(Ptr->operator const tjs_char *());
 	}
+#endif
 #endif
 
 	const std::string AsStdString() const
@@ -169,12 +173,14 @@ public:
 		return *this;
 	}
 
+#ifdef __BORLANDC__
 	tTJSString & operator =(WideString &rhs)
 	{
 		if(Ptr) Ptr->Release();
 		Ptr = TJSAllocVariantString(rhs.c_bstr());
 		return *this;
 	}
+#endif
 #endif
 
 	//------------------------------------------------------------ compare --

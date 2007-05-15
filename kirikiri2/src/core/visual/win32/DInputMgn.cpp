@@ -124,7 +124,7 @@ static tjs_uint32 __fastcall PadState();
 //---------------------------------------------------------------------------
 // pad virtual key code map
 //---------------------------------------------------------------------------
-const TVPPadVirtualKeyMap[TVP_NUM_PAD_KEY] = // tTVPPadKeyFlag to VK
+const int TVPPadVirtualKeyMap[TVP_NUM_PAD_KEY] = // tTVPPadKeyFlag to VK
 {
 	VK_PADLEFT,
 	VK_PADRIGHT,

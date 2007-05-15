@@ -36,7 +36,11 @@ static tjs_uint32 TJSRegExpFlagToValue(tjs_char ch, tjs_uint32 prev)
 
 	if(ch == 0)
 	{
+#if BOOST_RE_VERSION < 320
 		return regbase::normal|regbase::use_except| // default behavior
+#else
+		return regbase::normal| // default behavior
+#endif
 			regbase::nocollate
 				// for portability, local collation rules are disabled by the default
 			;
@@ -726,7 +730,7 @@ void tTJSNC_RegExp::Compile(tjs_int numparams, tTJSVariant **param, tTJSNI_RegEx
 bool tTJSNC_RegExp::Match(match_results<const tjs_char *>& what,
 		ttstr target, tTJSNI_RegExp *_this)
 {
-	tjs_uint32 flags = match_default|match_not_dot_null;
+	regex_constants::match_flag_type flags = match_default|match_not_dot_null;
 
 	tjs_uint searchstart;
 

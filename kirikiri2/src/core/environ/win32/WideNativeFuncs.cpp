@@ -50,4 +50,9 @@ static void TVPInitWideNativeFunctions()
 #endif
 }
 //---------------------------------------------------------------------------
+#ifdef __BORLANDC__
+#pragma startup nomb-func <prioridad>
 #pragma startup TVPInitWideNativeFunctions 64
+#else
+CALL_ON_STARTUP(TVPInitWideNativeFunctions, 64);
+#endif

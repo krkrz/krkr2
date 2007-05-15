@@ -13,6 +13,7 @@
 #include "MIDIImpl.h"
 
 #include <mmsystem.h>
+#include <Classes.hpp>
 #include "TickCount.h"
 #include "StorageIntf.h"
 #include "MsgIntf.h"
@@ -314,6 +315,10 @@ static tjs_uint16 TVPGetSMFInt16(const tjs_uint8 *&p)
 	p += 2;
 	return r;
 }
+static tjs_uint16 TVPGetSMFInt16(tjs_uint8 *&p)
+{
+	return TVPGetSMFInt16(*(const tjs_uint8 **)&p);
+}
 //---------------------------------------------------------------------------
 static tjs_uint32 TVPGetSMFInt32(const tjs_uint8 *&p)
 {
@@ -324,6 +329,10 @@ static tjs_uint32 TVPGetSMFInt32(const tjs_uint8 *&p)
 	*(((tjs_uint8*)&r)+0)= p[3];
 	p += 4;
 	return r;
+}
+static tjs_uint32 TVPGetSMFInt32(tjs_uint8 *&p)
+{
+	return TVPGetSMFInt32(*(const tjs_uint8 **)&p);
 }
 //---------------------------------------------------------------------------
 static tjs_int64 TVPGetSMFValue(const tjs_uint8 *&p)
@@ -341,6 +350,11 @@ static tjs_int64 TVPGetSMFValue(const tjs_uint8 *&p)
 	} while(d & 0x80);
 
 	return r;
+}
+//---------------------------------------------------------------------------
+static tjs_int64 TVPGetSMFValue(tjs_uint8 *&p)
+{
+	return TVPGetSMFValue(*(const tjs_uint8 **)&p);
 }
 //---------------------------------------------------------------------------
 
@@ -653,7 +667,11 @@ tTJSNI_MIDISoundBuffer::Construct(tjs_int numparams, tTJSVariant **param,
 	tjs_error hr = inherited::Construct(numparams, param, tjs_obj);
 	if(TJS_FAILED(hr)) return hr;
 
+#ifdef __BORLANDC__
 	UtilWindow = AllocateHWnd(WndProc);
+#else
+	UtilWindow = AllocateHWnd( EVENT_FUNC1(tTJSNI_MIDISoundBuffer, WndProc) );
+#endif
 
 	TVPAddMIDIBuffer(this);
 

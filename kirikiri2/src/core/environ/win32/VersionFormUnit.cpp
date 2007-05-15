@@ -15,8 +15,10 @@
 #include "ConsoleFormUnit.h"
 #include "MainFormUnit.h"
 //---------------------------------------------------------------------------
+#ifdef __BORLANDC__
 #pragma package(smart_init)
 #pragma resource "*.dfm"
+#endif
 TTVPVersionForm *TVPVersionForm;
 //---------------------------------------------------------------------------
 __fastcall TTVPVersionForm::TTVPVersionForm(TComponent* Owner)

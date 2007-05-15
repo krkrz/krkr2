@@ -11,6 +11,7 @@
 #ifndef MenuItemImplH
 #define MenuItemImplH
 
+#include <Menus.hpp>
 #include "MenuItemIntf.h"
 
 //---------------------------------------------------------------------------

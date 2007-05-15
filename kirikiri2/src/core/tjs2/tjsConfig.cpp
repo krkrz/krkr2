@@ -409,9 +409,12 @@ void TJSSetFPUE()
 		TJSFPUInit = true;
 		TJSDefaultFPUCW = _control87(0, 0);
 
-		_default87 = TJSNewFPUCW = _control87(MCW_EM, MCW_EM);
+		TJSNewFPUCW = _control87(MCW_EM, MCW_EM);
+#ifdef __BORLANDC__
+		_default87 = TJSNewFPUCW;
 #ifdef TJS_SUPPORT_VCL
 		Default8087CW = TJSNewFPUCW;
+#endif
 #endif
 	}
 

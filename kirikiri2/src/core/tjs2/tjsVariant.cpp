@@ -551,6 +551,7 @@ tTJSVariant & tTJSVariant::operator =(tTJSVariantClosure ref) // from Object Clo
 //---------------------------------------------------------------------------
 
 #ifdef TJS_SUPPORT_VCL
+#ifdef __BORLANDC__
 tTJSVariant & tTJSVariant::operator =(WideString s) // from WideString
 {
 	ReleaseContent();
@@ -561,6 +562,7 @@ tTJSVariant & tTJSVariant::operator =(WideString s) // from WideString
 		String=TJSAllocVariantString(s.c_bstr());
 	return *this;
 }
+#endif
 #endif
 
 //---------------------------------------------------------------------------
