@@ -28,6 +28,8 @@ protected:
 	
 	bool loop;
 	bool alpha;
+
+	ttstr tempFile;
 	
 public:
 	layerExMovie(DispatchT obj);
