@@ -9,6 +9,9 @@
 
 #include "layerExBase.hpp"
 
+#include <streams.h>
+#include "CIStream.h"
+
 /*
  * Movie •`‰æ—pƒŒƒCƒ„
  */
@@ -29,7 +32,13 @@ protected:
 	bool loop;
 	bool alpha;
 
-	ttstr tempFile;
+	IStream *in;
+	CIStreamProxy			*m_Proxy;
+	CIStreamReader			*m_Reader;
+
+	//ttstr tempFile;
+	
+	void clearMovie();
 	
 public:
 	layerExMovie(DispatchT obj);
