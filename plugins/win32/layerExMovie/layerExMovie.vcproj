@@ -100,7 +100,7 @@
 			OutputDirectory="..\..\..\..\bin\win32\plugin"
 			IntermediateDirectory="$(ConfigurationName)"
 			ConfigurationType="2"
-			CharacterSet="1"
+			CharacterSet="2"
 			WholeProgramOptimization="1"
 			>
 			<Tool
@@ -139,9 +139,10 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="ddraw.lib dxguid.lib strmiids.lib"
+				AdditionalDependencies="ddraw.lib dxguid.lib strmiids.lib strmbase.lib winmm.lib"
 				OutputFile=".\..\..\..\..\bin\win32\plugin\$(ProjectName).dll"
 				LinkIncremental="1"
+				AdditionalLibraryDirectories="$(DSHOW_HOME)\SRV2003_RETAIL"
 				ModuleDefinitionFile="main.def"
 				SubSystem="2"
 				OptimizeReferences="0"
