@@ -127,7 +127,7 @@
 				FavorSizeOrSpeed="1"
 				OmitFramePointers="true"
 				AdditionalIncludeDirectories=".\;.\my_vcl;..\;..;..\..\..\..\tools\win32\krdevui;..\..\..\msg\win32;..\..\..\msg;..\..\..\sound\win32;..\..\..\sound;..\..\..\base\win32;..\..\..\base;..\..\..\utils\win32;..\..\..\utils;..\..\..\visual\IA32;..\..\..\visual\win32;..\..\..\visual;..\..\..\tjs2;..\..\..;C:\data\develop\other\libpng"
-				PreprocessorDefinitions="__WIN32__,TJS_SUPPORT_VCL,TJS_TEXT_OUT_CRLF;TJS_JP_LOCALIZED;TJS_NO_DEBUG_PROFILE_TIME;TVP_NO_CHECK_WIDE_CHAR_SIZE;TVP_SUPPORT_KPI;TVP_SUPPORT_OLD_WAVEUNPACKER;TVP_ENVIRON;BOOST_REGEX_V3;__USE_OLD_RW_STL;TJS_DEBUG_DUMP_STRING"
+				PreprocessorDefinitions="__WIN32__;WIN32;TJS_SUPPORT_VCL;TJS_TEXT_OUT_CRLF;TJS_JP_LOCALIZED;TJS_NO_DEBUG_PROFILE_TIME;TVP_NO_CHECK_WIDE_CHAR_SIZE;TVP_SUPPORT_KPI;TVP_SUPPORT_OLD_WAVEUNPACKER;TVP_ENVIRON;BOOST_REGEX_V3;__USE_OLD_RW_STL;TJS_DEBUG_DUMP_STRING"
 				StringPooling="true"
 				RuntimeLibrary="2"
 				BufferSecurityCheck="false"
@@ -2343,6 +2343,22 @@
 			<File
 				RelativePath=".\my_vcl\AnsiString.cpp"
 				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAsManaged="0"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAsManaged="0"
+					/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\my_vcl\Application.cpp"
@@ -2423,6 +2439,22 @@
 			<File
 				RelativePath=".\my_vcl\SysUtils.cpp"
 				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAsManaged="0"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAsManaged="1"
+					/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\my_vcl\Timer.cpp"
