@@ -20,17 +20,30 @@ TRegistry::~TRegistry()
 // CloseKey メソッドを実行せずに別のキーをオープンすると、直前にオープンしたキーをルートとして下層のキーを開く。
 bool TRegistry::OpenKey(const AnsiString & Key, bool CanCreate)
 {
-	//HKEY_CLASSES_ROOT (HKCR)
-	//HKEY_CURRENT_USER (HKCU)
-	//HKEY_LOCAL_MACHINE (HKLM)
-	//HKEY_CURRENT_CONFIG (HKCC)
-	//HKEY_USERS (HKU)
+	struct {
+		HKEY hKey0;
+		wxRegKey::StdKey hKey1;
+	} table[] = {
+		{ HKEY_CLASSES_ROOT,     wxRegKey::HKCR },
+		{ HKEY_CURRENT_USER,     wxRegKey::HKCU },
+		{ HKEY_LOCAL_MACHINE,    wxRegKey::HKLM },
+		{ HKEY_USERS,            wxRegKey::HKUSR },
+		{ HKEY_PERFORMANCE_DATA, wxRegKey::HKPD },
+		{ HKEY_CURRENT_CONFIG,   wxRegKey::HKCC },
+		{ HKEY_DYN_DATA,         wxRegKey::HKDD } };
 
 	if ( m_wxRegKey == NULL )
 	{
-		if ( RootKey == HKEY_LOCAL_MACHINE )
-			m_wxRegKey = new wxRegKey(wxRegKey::HKLM, Key.c_str());
-		else
+		int i;
+		for(i=0; i < 7; i++)
+		{
+			if ( RootKey == table[i].hKey0 )
+			{
+				m_wxRegKey = new wxRegKey(wxRegKey::HKCR, Key.c_str());
+				break;
+			}
+		}
+		if ( i == 7 )
 			m_wxRegKey = new wxRegKey(Key.c_str());
 	}
 	else
@@ -46,6 +59,7 @@ bool TRegistry::OpenKey(const AnsiString & Key, bool CanCreate)
 		else
 		{
 			delete m_wxRegKey;
+			m_wxRegKey = NULL;
 			return false;
 		}
 	}
@@ -87,7 +101,8 @@ void TRegistry::CloseKey(void)
 {
 	if ( m_wxRegKey )
 	{
-		m_wxRegKey->Close();
+		if ( m_wxRegKey->IsOpened()	)
+			m_wxRegKey->Close();
 		delete m_wxRegKey;
 		m_wxRegKey = NULL;
 	}
