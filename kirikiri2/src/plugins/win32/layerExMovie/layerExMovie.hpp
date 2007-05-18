@@ -18,6 +18,8 @@
 struct layerExMovie : public layerExBase, public tTVPContinuousEventCallbackIntf
 {
 protected:
+
+
 	IAMMultiMediaStream*     pAMStream; 
 	IMediaStream*            pPrimaryVidStream; 
 	IDirectDrawMediaStream*  pDDStream; 
@@ -40,12 +42,15 @@ protected:
 	
 	void clearMovie();
 	
+	DispatchT onStopMovie;
+	bool playing;
+	
 public:
 	layerExMovie(DispatchT obj);
 	~layerExMovie();
 	
 public:
-	
+
 	// ムービーのロード
 	void openMovie(const tjs_char* filename, bool alpha);
 
@@ -54,6 +59,8 @@ public:
 	
 	void start();
 	void stop();
+
+	bool isPlayingMovie();
 	
 	/**
 	 * Continuous コールバック

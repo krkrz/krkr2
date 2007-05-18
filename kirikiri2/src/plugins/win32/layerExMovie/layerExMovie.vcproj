@@ -40,7 +40,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="$(DSHOW_HOME);..\..\..\core\visual\win32\krmovie;..;."
+				AdditionalIncludeDirectories="BaseClasses;..\..\..\core\visual\win32\krmovie;..;."
 				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;LAYEREXCAIRO_EXPORTS"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -61,10 +61,10 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="strmbasd.lib winmm.lib"
+				AdditionalDependencies="ddraw.lib dxguid.lib strmiids.lib winmm.lib"
 				OutputFile=".\..\..\..\..\bin\win32\plugin\$(ProjectName).dll"
 				LinkIncremental="2"
-				AdditionalLibraryDirectories="$(DSHOW_HOME)\SRV2003_DEBUG"
+				AdditionalLibraryDirectories=""
 				ModuleDefinitionFile="main.def"
 				GenerateDebugInformation="true"
 				SubSystem="0"
@@ -120,7 +120,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalIncludeDirectories="$(DSHOW_HOME);..\..\..\core\visual\win32\krmovie;..;."
+				AdditionalIncludeDirectories="BaseClasses;..\..\..\core\visual\win32\krmovie;..;."
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;LAYEREXCAIRO_EXPORTS"
 				RuntimeLibrary="0"
 				UsePrecompiledHeader="0"
@@ -139,10 +139,10 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="ddraw.lib dxguid.lib strmiids.lib strmbase.lib winmm.lib"
+				AdditionalDependencies="ddraw.lib dxguid.lib strmiids.lib winmm.lib"
 				OutputFile=".\..\..\..\..\bin\win32\plugin\$(ProjectName).dll"
 				LinkIncremental="1"
-				AdditionalLibraryDirectories="$(DSHOW_HOME)\SRV2003_RETAIL"
+				AdditionalLibraryDirectories=""
 				ModuleDefinitionFile="main.def"
 				SubSystem="2"
 				OptimizeReferences="0"

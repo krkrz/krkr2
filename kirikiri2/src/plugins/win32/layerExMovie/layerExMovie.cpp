@@ -45,6 +45,13 @@ layerExMovie::layerExMovie(DispatchT obj) : _pType(obj, TJS_W("type")), layerExB
 	m_Proxy = NULL;
 	m_Reader = NULL;
 	in = NULL;
+
+	{
+		tTJSVariant var;
+		if (TJS_SUCCEEDED(obj->PropGet(TJS_IGNOREPROP, L"onStopMovie", NULL, &var, obj))) onStopMovie = var;
+		else onStopMovie = NULL;
+	}
+	playing = false;
 }
 
 /**
@@ -60,26 +67,26 @@ layerExMovie::clearMovie()
 { 
 	if (pAMStream) {
 		pAMStream->SetState(STREAMSTATE_STOP);
-		if (pSurface) {
-			pSurface->Release();
-			pSurface = NULL;
-		}
-		if (pSample) {
-			pSample->Release();
-			pSample = NULL;
-		}
-		if (pDDStream) {
-			pDDStream->Release();
-			pDDStream = NULL;
-		}
-		if (pPrimaryVidStream) {
-			pPrimaryVidStream->Release();
-			pPrimaryVidStream = NULL;
-		}
-		if (pAMStream) {
-			pAMStream->Release();
-			pAMStream = NULL;
-		}
+	}
+	if (pSurface) {
+		pSurface->Release();
+		pSurface = NULL;
+	}
+	if (pSample) {
+		pSample->Release();
+		pSample = NULL;
+	}
+	if (pDDStream) {
+		pDDStream->Release();
+		pDDStream = NULL;
+	}
+	if (pPrimaryVidStream) {
+		pPrimaryVidStream->Release();
+		pPrimaryVidStream = NULL;
+	}
+	if (pAMStream) {
+		pAMStream->Release();
+		pAMStream = NULL;
 	}
 	if (m_Reader) {
 		m_Reader->Release();
@@ -160,6 +167,7 @@ layerExMovie::openMovie(const tjs_char* filename, bool alpha)
 				m_Proxy = new CIStreamProxy(in, size);
 				HRESULT hr;
 				m_Reader = new CIStreamReader( m_Proxy, &mt, &hr );
+				m_Reader->AddRef();
 				builder->AddFilter(m_Reader, L"SourceFilter");
 				builder->Render(m_Reader->GetPin(0));
 				builder->Release();
@@ -257,8 +265,19 @@ layerExMovie::startMovie(bool loop)
 void
 layerExMovie::stopMovie()
 {
+	if (playing) {
+		if (onStopMovie != NULL) {
+			onStopMovie->FuncCall(0, NULL, NULL, NULL, 0, NULL, NULL);
+		}
+	}
 	stop();
 	clearMovie();
+}
+
+bool
+layerExMovie::isPlayingMovie()
+{
+	return playing;
 }
 
 void
@@ -266,6 +285,7 @@ layerExMovie::start()
 {
 	stop();
 	TVPAddContinuousEventHook(this);
+	playing = true;
 }
 
 /**
@@ -275,6 +295,7 @@ void
 layerExMovie::stop()
 {
 	TVPRemoveContinuousEventHook(this);
+	playing = false;
 }
 
 void TJS_INTF_METHOD
@@ -289,31 +310,33 @@ layerExMovie::OnContinuousCallback(tjs_uint64 tick)
 			// 更新完了
 			// サーフェースからレイヤに画面コピー
 			reset();
-			DDSURFACEDESC  ddsd; 
-			ddsd.dwSize=sizeof(DDSURFACEDESC); 
-			if (SUCCEEDED(pSurface->Lock( NULL,&ddsd, DDLOCK_SURFACEMEMORYPTR | DDLOCK_WAIT , NULL))) {
-				if (alpha) {
-					int w = movieWidth*4;
-					for (int y=0; y<ddsd.dwHeight && y<_height; y++) {
-						BYTE *dst  = _buffer+(y*_pitch);
-						BYTE *src1 = (BYTE*)ddsd.lpSurface+y*ddsd.lPitch;
-						BYTE *src2 = src1 + w;
-						for (int x=0; x<_width;x++) {
-							*dst++ = *src1++;
-							*dst++ = *src1++;
-							*dst++ = *src1++;
-							*dst++ = *src2; src2+=4; src1++;
+			if (_buffer != NULL) {
+				DDSURFACEDESC  ddsd; 
+				ddsd.dwSize=sizeof(DDSURFACEDESC); 
+				if (SUCCEEDED(pSurface->Lock( NULL,&ddsd, DDLOCK_SURFACEMEMORYPTR | DDLOCK_WAIT , NULL))) {
+					if (alpha) {
+						int w = movieWidth*4;
+						for (int y=0; y<ddsd.dwHeight && y<_height; y++) {
+							BYTE *dst  = _buffer+(y*_pitch);
+							BYTE *src1 = (BYTE*)ddsd.lpSurface+y*ddsd.lPitch;
+							BYTE *src2 = src1 + w;
+							for (int x=0; x<_width;x++) {
+								*dst++ = *src1++;
+								*dst++ = *src1++;
+								*dst++ = *src1++;
+								*dst++ = *src2; src2+=4; src1++;
+							}
+						}
+					} else {
+						int w = _width < movieWidth ? _width * 4 : movieWidth * 4;
+						for (int y=0; y<_height; y++) {
+							memcpy(_buffer+(y*_pitch), (BYTE*)ddsd.lpSurface+y*ddsd.lPitch, w);
 						}
 					}
-				} else {
-					int w = _width < movieWidth ? _width * 4 : movieWidth * 4;
-					for (int y=0; y<ddsd.dwHeight && y<_height; y++) {
-						memcpy(_buffer+(y*_pitch), (BYTE*)ddsd.lpSurface+y*ddsd.lPitch, w);
-					}
+					pSurface->Unlock(NULL); 
 				}
-				pSurface->Unlock(NULL); 
+				redraw();
 			}
-			redraw();
 			pSample->Update(SSUPDATE_ASYNC, NULL, NULL, 0);
 		} else if (hr == MS_S_ENDOFSTREAM) {
 			// 更新終了
