@@ -27,6 +27,7 @@ NCB_ATTACH_CLASS_WITH_HOOK(layerExMovie, Layer) {
 	NCB_METHOD(openMovie);
 	NCB_METHOD(startMovie);
 	NCB_METHOD(stopMovie);
+	NCB_METHOD(isPlayingMovie);
 }
 
 // ----------------------------------- ‹N“®EŠJ•úˆ—
