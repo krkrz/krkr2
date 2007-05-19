@@ -62,7 +62,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="ddraw.lib dxguid.lib strmiids.lib winmm.lib"
-				OutputFile=".\..\..\..\..\bin\win32\plugin\$(ProjectName).dll"
+				OutputFile="$(OutDir)\$(ProjectName).dll"
 				LinkIncremental="2"
 				AdditionalLibraryDirectories=""
 				ModuleDefinitionFile="main.def"
@@ -97,7 +97,7 @@
 		</Configuration>
 		<Configuration
 			Name="Release|Win32"
-			OutputDirectory="..\..\..\..\bin\win32\plugin"
+			OutputDirectory="..\..\..\..\..\..\‚ä‚¸\plugin"
 			IntermediateDirectory="$(ConfigurationName)"
 			ConfigurationType="2"
 			CharacterSet="2"
@@ -140,10 +140,11 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="ddraw.lib dxguid.lib strmiids.lib winmm.lib"
-				OutputFile=".\..\..\..\..\bin\win32\plugin\$(ProjectName).dll"
+				OutputFile="$(OutDir)\$(ProjectName).dll"
 				LinkIncremental="1"
 				AdditionalLibraryDirectories=""
 				ModuleDefinitionFile="main.def"
+				GenerateDebugInformation="false"
 				SubSystem="2"
 				OptimizeReferences="0"
 				EnableCOMDATFolding="0"
