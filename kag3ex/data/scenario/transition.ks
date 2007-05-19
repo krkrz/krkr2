@@ -28,12 +28,12 @@ World 機能におけるトランジション記述の例
 [endtrans trans=normal]
 一気に更新
 
-[env 夜 trans=wave]wave
-[env 夕 trans=mosaic]mosaic
-[env 昼 trans=turn]turn
-[env 夜 trans=rotatezoom]rotatezoom
-[env 夕 trans=rotatevanish]rotatevanish
-[env 昼 trans=rotateswap]rotateswap
-[env 夜 trans=ripple]ripple
+[env 夜 trans=wave time=1000]wave
+[env 夕 trans=mosaic time=1000]mosaic
+[env 昼 trans=turn time=1000]turn
+[env 夜 trans=rotatezoom time=1000]rotatezoom
+[env 夕 trans=rotatevanish time=1000]rotatevanish
+[env 昼 trans=rotateswap time=1000]rotateswap
+[env 夜 trans=ripple time=1000]ripple
 
 [jump storage=s0001.ks]

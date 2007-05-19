@@ -452,9 +452,6 @@ class BaseLayer extends GraphicLayer
 				super.exchangeInfo();
 				window.exchangeForeBack();
 				window.callExchangeInfo();
-
-                // 裏画面のアクションを停止させる
-                window.stopAllActions('back');
             }
 			else
 			{
@@ -487,18 +484,76 @@ class BaseLayer extends GraphicLayer
 
 }
 
+class MovieControlLayer extends Layer {
+
+	var layers = [];
+	
+	function MovieControlLayer(window) {
+		super.Layer(window, window.primaryLayer);
+	}
+
+	// レイヤ登録
+	function entry(layer) {
+		//dm("レイヤ登録:" + layer);
+		layers.remove(layer);
+		layers.add(layer);
+		layer.setImageSize(imageWidth, imageHeight);
+		layer.setSizeToImageSize();
+		layer.type = type;
+	}
+
+	// レイヤ解除
+	function leave(layer) {
+		//dm("レイヤ解除:" + layer);
+		layers.remove(layer);
+	}
+
+	// ムービー再生開始
+	function start(filename, alpha, loop) {
+		openMovie(filename, alpha);
+		startMovie(loop);
+		for (var i=0;i<layers.count;i++) {
+			layers[i].setImageSize(imageWidth, imageHeight);
+			layers[i].setSizeToImageSize();
+			layers[i].type = type;
+		}
+	}
+
+	// ムービー更新処理
+	function onUpdateMovie() {
+		//dm("ムービー制御:更新通知");
+		for (var i=0;i<layers.count;i++) {
+			layers[i].assignImagesForMovie(this);
+			//dm("更新:" + layers[i]);
+		}
+	}
+
+	// ムービー停止通知
+	function onStopMovie() {
+		//dm("ムービー制御:終了通知");
+		var layers2 = [];
+		layers2.assign(this.layers);
+		for (var i=0;i<layers2.count;i++) {
+			layers2[i].notifyStopMovie();
+		}
+	}
+};
+
 /**
  * AffineLayer 対応拡張処理
+ * あとムービー再生機能対応
  */
 class GraphicLayerEx extends GraphicLayer {
-    
+
     function GraphicLayerEx() {
         super.GraphicLayer(...);
     }
 
 	function finalize()
 	{
+		stopMovie();
 		window.stopAction(this);
+		clearTile();
 		super.finalize(...);
 	}
 
@@ -521,8 +576,9 @@ class GraphicLayerEx extends GraphicLayer {
      * 継承して拡張。reset() させる
      */
 	function freeImage() {
-        super.freeImage(...);
-        reset();
+		super.freeImage(...);
+		clearTile();
+		reset();
     }
     
     function store()
@@ -535,7 +591,10 @@ class GraphicLayerEx extends GraphicLayer {
 		dic.afy    = afy;
 		dic.hide   = hide;
 		dic.visvalue = visvalue;
-        return dic;
+		dic.tileImage = tileImage;
+		dic.tilex = tilex;
+		dic.tiley = tiley;
+		return dic;
     }
 
 	function restore(dic)
@@ -548,14 +607,66 @@ class GraphicLayerEx extends GraphicLayer {
 		afy    = dic.afy    if dic.afy    !== void;
 		hide   = dic.hide   if dic.hide   !== void;
 		visvalue = dic.visvalue if dic.visvalue !== void;
+		clearTile();
+		if (dic.tileImage !== void) {
+			try {
+				setTileImage(dic.tileImage);
+			} catch (e) {
+				dm("ロード時にタイル画像の読み込みに失敗しました:" + tileImage);
+			}
+			setTilePos(dic.tilex, dic.tiley);
+		}
 	}
 
+    // --------------------------------------------
+	// ムービー拡張
+    // --------------------------------------------
+
+	// ムービー用情報
+	var movie;
+
+	/**
+	 * ムービー再生開始
+	 */
+	function startMovie(filename, alpha, loop) {
+		stopMovie();
+		//dm("ムービー開始");
+		movie = window.getLayerMovie();
+		movie.entry(this);
+		movie.start(filename, alpha, loop);
+	}
+
+	/**
+	 * ムービー終了通知
+	 */
+	function notifyStopMovie() {
+		//dm("ムービー終了通知");
+		stopMovie();
+	}
+
+	/**
+	 * ムービー停止
+	 */
+	function stopMovie() {
+		if (movie !== void) {
+			//dm("ムービー停止");
+			movie.leave(this);
+			movie = void;
+		}
+	}
+	
 	function assign(src)
 	{
 		// assign オーバーライド
 		super.assign(src);
 		hide = src.hide;
 		visvalue = src.visvalue;
+		// ムービー情報をコピー
+		if (src.movie !== void) {
+			movie = src.movie;
+			movie.entry(this);
+		}
+		// アクションもコピー
 		window.copyAction(src, this, onActionCompleted);
 	}
 	
@@ -566,15 +677,19 @@ class GraphicLayerEx extends GraphicLayer {
     var hide; // アクション終了時に消去
 
 	function onActionCompleted() {
-		window.onActionCompleted(this);
 		if (hide) {
 			visible = false;
 		}
+		window.onActionCompleted(this);
     }
-    
-	function beginAction(elm, hide) {
-		window.beginAction(this, elm, onActionCompleted);
+
+	function getActionResult() {
+		return window.getActionResult(this);
+	}
+	
+	function beginAction(elm, hide, nowait) {
 		this.hide = hide if hide !== void;
+		return window.beginAction(this, elm, onActionCompleted, nowait);
     }
 
     function stopAction() {
@@ -582,9 +697,9 @@ class GraphicLayerEx extends GraphicLayer {
     }
 
     function reset() {
-        hide = false;
-        stopAction();
-        super.reset();
+		hide = false;
+		stopAction();
+		super.reset();
     }
 
 	var _visvalue = 0;
@@ -655,9 +770,8 @@ class GraphicLayerEx extends GraphicLayer {
      */
     function setZoomTime(z, time, accel=0) {
         if (time) {
-            beginAction(%[zoomx:%[handler:MoveAction, value:z, time:time, accel:accel],
-                          zoomy:%[handler:MoveAction, value:z, time:time, accel:accel]]);
-        } else {
+			beginAction(%[zoom:%[handler:MoveAction, value:z, time:time, accel:accel]]);
+		} else {
             zoom = z;
         }
     }
@@ -671,14 +785,93 @@ class GraphicLayerEx extends GraphicLayer {
      */
     function setMove(x, y, time, accel=0) {
         if (time) {
-            beginAction(%[left:%[handler:MoveAction, value:x, time:time, accel:accel],
-                      top:%[handler:MoveAction, value:y, time:time, accel:accel]]);
+			beginAction(%[left:%[handler:MoveAction, value:x, time:time, accel:accel],
+					  top:%[handler:MoveAction, value:y, time:time, accel:accel]]);
         } else {
             stopAction();
             setPos(x, y);
         }
     }
 
+	// -------------------------------------------------------
+	// タイル描画処理
+
+	// タイル情報保持用レイヤ
+	var tileLayer;
+
+	function clearTile() {
+		tileImage = void;
+		if (tileLayer !== void) {
+			invalidate tileLayer;
+			tileLayer = void;
+			_doTile = false;
+		}
+	}
+	
+	// タイル画像
+	var tileImage;
+	function setTileImage(image) {
+		if (tileImage != image) {
+			tileImage = image;
+			if (tileImage !== void) {
+				if (tileLayer === void) {
+					tileLayer = new global.Layer(window, this);
+				}
+				tileLayer.loadImages(tileImage);
+				tileLayer.setSizeToImageSize();
+			}
+		}
+	}
+
+	var _doTile;
+	
+	// タイル再描画処理
+	function updateTile() {
+		if (tileLayer !== void) {
+			_doTile = true;
+			update();
+		}
+	}
+
+	// 再描画処理
+	function onPaint() {
+		if (_doTile && tileLayer !== void) {
+			tileRect(0, 0, width, height, tileLayer, _tilex, _tiley);
+			_doTile = false;
+		}
+		super.onPaint(...);
+	}
+	
+	// タイルX位置
+	var _tilex;
+	property tilex {
+		getter() {
+			return _tilex;
+		}
+		setter(v) {
+			_tilex = v;
+			updateTile();
+		}
+	}
+
+	// タイルY位置
+	var _tiley;
+	property tiley {
+		getter() {
+			return _tiley;
+		}
+		setter(v) {
+			_tiley = v;
+			updateTile();
+		}
+	}
+
+	// タイル位置指定
+	function setTilePos(x, y) {
+		_tilex = x;
+		_tiley = y;
+		updateTile();
+	}
 }
 
 class StageLayer extends GraphicLayerEx
@@ -760,7 +953,7 @@ class CharacterLayer extends GraphicLayerEx
     var visibleBeforeUserInvisible  = false;
     var level; // 表示レベル補正用
 
-	function CharacterLayer(win, par, name, id, level=0)
+	function CharacterLayer(win, par, name, id, level)
 	{
         super.GraphicLayerEx(win, par, name, id);
 		freeImage();

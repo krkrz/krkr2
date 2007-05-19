@@ -159,12 +159,66 @@
             "vibration" => 30,
             "cycle" => 1000,
             ],
+        "びょんびょん待ち無" => %[
+			"module" => "LayerJumpActionModule",
+            "vibration" => 30,
+            "cycle" => 1000,
+			"nowait" => true,
+            ],
         "ガクガク" => %[
             "module" => LayerVibrateActionModule,
             "vibration" => 3,
             "waitTime" => 40
-            ]
-        ],
+            ],
+
+		// 新スタイルアクション定義例
+
+		"移動テスト" => %[ // 現在位置から+300の位置に500ms かけて移動
+						   "time" => 500,
+						   "left" => %[ handler:"MoveAction", value:"@+300" ],
+						   ],
+		
+		"回転テスト" => %[ // 1000msの間回転
+						   "time" => 1000,
+						   "rotate" => %[ handler:"TriangleAction", vibration:360,  ontime:1000, offtime:0 ]
+						   ],
+
+		// 連続アクション
+
+		"連続テスト" => [
+			// 座標移動の初期値は全アクション実行の前の位置になるのに注意
+			%[ // 現在位置から +300 の位置に 500ms かけて移動
+			   "time" => 500,
+			   "left" => %[ handler:"MoveAction", value:"@+300" ],
+				],
+			%[ // 現在位置から -300 の位置に 500ms かけて移動
+				"time" => 1000,
+				"left" => %[ handler:"MoveAction", value:"@-300" ],
+				],
+			%[ // 現在位置から +300 の位置に 500ms かけて移動
+				"time" => 1000,
+				"left" => %[ handler:"MoveAction", value:"@+300" ],
+			   ],
+			%[ // 現在位置に 500ms かけて移動
+			   "time" => 1000,
+			   "left" => %[ handler:"MoveAction", value:"@" ]
+			   ]
+			],
+
+		"連続テスト２" => [ // アクション名で連続指定も可能
+							"移動テスト", "回転テスト" ],
+
+		"タイルスライド" => %[
+			"tilex" => %[ handler:"LoopMoveAction", max:800, loop:2000 ],
+			"tiley" => %[ handler:"LoopMoveAction", max:600, loop:2000 ]
+			],
+
+		"横スライド" => %[
+			"tilex"  => %[ handler:"LoopMoveAction", max:2700, loop:2700 ],
+			"nowait" => true,
+			],
+		
+		],
 
     // 画面更新パラメータ
     "transitions" => %[
@@ -172,7 +226,31 @@
             "time" => 1000,
             "method" => "crossfade",
             ],
-    ],
+
+        "notrans" => %[
+            "time" => 0,
+            "method" => void,
+            ],
+
+		"showfade" => %[
+		time: 200,
+		showaction: %[],
+		hideaction: %[]
+			],
+		
+		"showslide" => %[
+		time: 200,
+		showaction: %[ left : %[ handler:"MoveAction", start:"@+50", value:"@" ]	],
+		hideaction: %[ left : %[ handler:"MoveAction", start:"@", value:"@-50" ]	]
+			],
+
+		"showzoom" => %[
+		time: 200,
+		showaction: %[ zoom : %[ handler:"MoveAction", start:200, value:100, accel:1 ]],
+		hideaction: %[ zoom : %[ handler:"MoveAction", start:"@", value:150, accel:1 ]]
+			],
+
+		],
 
     // fade コマンドの規定値:全体用 (未定義の場合埋め込み値 500)
     "fadeValue" => 1000,

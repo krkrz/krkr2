@@ -144,6 +144,7 @@ var transitionParam = %[
 var actionParam = %[
     "time" => true,
     "delay" => true,
+	"nowait" => true,
 	"start" => true,
 	"startx" => true,
 	"starty" => true,
@@ -204,4 +205,17 @@ class KAGWorldPlugin extends KAGPlugin
             env.onRestore(f.env);
         }
     }
+
+	function onCopyLayer(toback, backlay) {
+		env.onCopyLayer(toback, backlay);
+	}
+	
+	function onExchangeForeBack() {
+		env.onExchangeForeBack();
+	}
+
+	function onResetAll() {
+		env.resetEnv();
+		env.update(kag.fore);
+	}
 };

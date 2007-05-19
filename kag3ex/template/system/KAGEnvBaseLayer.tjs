@@ -28,7 +28,9 @@ class KAGEnvBaseLayer extends KAGEnvLayer {
 
     function setImageFile(file, elm) {
 
-        var eventTrans;
+		initFile(elm);
+		
+		var eventTrans;
         
 		var eventInfo;
 		if (env.events !== void) {
