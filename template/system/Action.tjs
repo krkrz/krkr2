@@ -45,38 +45,38 @@ class PropActionInfo {
      */
     function addAction(target, handler, elm) {
 		//dm("アクション追加:" + propName);
-        stopAction(target);
-        if (typeof handler.AbsoluteActionHandler != "undefined") {
-            // 絶対アクションは１つだけ設定可能
-            absolute = new handler(target, propName, elm);
-        } else if (typeof handler.RelativeActionHandler != "undefined") {
-            // デフォルトアクション登録
-            if (absolute === void) {
-				//dm("デフォルトアクション登録");
-                absolute = new DefaultAction(target, propName, %[]);
-            }
-            // 相対アクションは複数設定可能
-            relative.add(new handler(target, propName, elm));
-        }
+		if (typeof handler == "Object" && handler != null) {
+			if (typeof handler.AbsoluteActionHandler != "undefined") {
+				// 絶対アクションは１つだけ設定可能
+				absolute = new handler(target, propName, elm);
+			} else if (typeof handler.RelativeActionHandler != "undefined") {
+				// デフォルトアクション登録
+				if (absolute === void) {
+					//dm("デフォルトアクション登録");
+					absolute = new DefaultAction(target, propName, %[]);
+				}
+				// 相対アクションは複数設定可能
+				relative.add(new handler(target, propName, elm));
+			} else {
+				dm("ハンドラ異常:" + handler);
+			}
+		} else {
+			dm("ハンドラ異常:" + handler);
+		}
     }
 
-    /**
-     * アクションを停止する
-     * @param target ターゲットオブジェクト
-     */
-    function stopAction(target) {
-        if (!first) {
-			//dm("稼動中アクションを停止");
-            // 既に稼動していた場合は停止させる
-            if (absolute !== void) {
-                absolute.action(target, propName, 0, true);
-            }
-            absolute = void;
-            relative.clear();
-            first = true;
-        }
-    }
+	/**
+	 * アクションの実行結果を返す
+	 */
+	function getResultValue() {
+		if (absolute !== void) {
+			return absolute.getResultValue();
+		} else {
+			return void;
+		}
+	}
 
+	
     /**
      * アクション処理実行
      * @param target ターゲットオブジェクト
@@ -85,12 +85,18 @@ class PropActionInfo {
      * @return 終了したら true
      */
     function doAction(target, now, stopFlag) {
-        if (first) {
+		if (first) {
 			//dm("アクション初回");
-            startTime = now;
-            first = false;
-        }
-        now -= startTime;
+			startTime = now;
+			if (absolute !== void) {
+				absolute.init(target, propName);
+			}
+			for (var i=0;i<relative.count;i++) {
+				relative[i].init(target, propName);
+			}
+			first = false;
+		}
+		now -= startTime;
 		//dm("アクション状態:"+ now + " stop:" + stopFlag);
         var done = true;
         if (absolute !== void) {
@@ -174,13 +180,27 @@ class ActionInfo {
      * @param propName プロパティ名
      */
     function delAction(target, propName) {
-        var ret = actionDict[propName];
-        if (ret !== void) {
-            ret.stopAction(target);
-            actionList.remove(ret);
-        }
+		var ret = actionDict[propName];
+		if (ret !== void) {
+			ret.doAction(target, 0, true);
+			actionList.remove(ret);
+		}
     }
 
+	/**
+	 * アクションの結果を取得する
+	 */
+	function getResultValue(ret) {
+		for (var i=0;i<actionList.count;i++) {
+			var info = actionList[i];
+			var result = info.getResultValue();
+			if (result !== void) {
+				ret[info.propName] = result;
+			}
+		}
+		return ret;
+	}
+	
     /**
      * アクション処理実行
      * @param target ターゲットオブジェクト
@@ -207,8 +227,9 @@ class ActionSequense {
     var actions = [];
 
     var target; // 対象オブジェクト
-    var create;          // アクション追加フラグ
-    
+	var create; // アクション追加フラグ
+	var nowait; // 待ちなしフラグ
+	
     /**
      * コンストラクタ
      */
@@ -223,6 +244,7 @@ class ActionSequense {
 	function clone() {
 		var ret = new global.ActionSequense(target);
 		ret.create = create;
+		ret.nowait = nowait;
 		for (var i=0;i<actions.count;i++) {
 			ret.actions.add(actions[i].clone());
 		}
@@ -269,46 +291,65 @@ class ActionSequense {
      * @param dict アクション情報の入った辞書
      */
     function addActions(dict) {
-        var names = [];
-        names.assign(dict);
-        for (var i=0; i<names.count; i+= 2) {
-            var name = names[i];
-            var elm  = names[i+1];
-            if (typeof elm == "Object") {
-                if (elm === null) {
-                    delAction(name);
-                } else if (elm instanceof "Dictionary") {
-                    addAction(name, elm.handler, elm);
+		var names = [];
+		names.assign(dict);
+		for (var i=0; i<names.count; i+= 2) {
+			var name = names[i];
+			var elm  = names[i+1];
+			if (typeof elm == "Object") {
+				if (elm === null) {
+					delAction(name);
+				} else if (elm instanceof "Dictionary") {
+					if (typeof elm.handler == "String") {
+						var handler = Scripts.eval(elm.handler);
+						addAction(name, handler, elm);
+					} else if (typeof elm.handler == "Object") {
+						addAction(name, elm.handler, elm);
+					} else {
+						dm("無効なアクションハンドラ指定:" + elm.handler);
+					}
                 }
             }
         }
     }
 
     // -----------------------------------------------
-    
+
+
     /**
-     * アクション初期化
-     * @param target ターゲットオブジェクト
+	 * アクションの結果を取得する
+     */
+	function getResultValue() {
+		var ret = %[];
+		for (var i=0;i<actions.count;i++) {
+			actions[i].getResultValue(ret);
+		}
+		return ret;
+	}
+	
+    /**
+     * アクション実行
      * @param now 現在時刻
      * @param stopFlag 強制停止指定
      * @param 終了したら true
      */
     function doAction(now, stopFlag) {
-        if (actions.count > 0) {
-            if (actions[0].doAction(target, now, stopFlag)) {
-                actions.erase(0);
-            }
-        }
-        return actions.count <= 0;
+		if (actions.count > 0) {
+			if (actions[0].doAction(target, now, stopFlag)) {
+				actions.erase(0);
+			}
+		}
+		return actions.count <= 0;
     }
 
     /**
      * 強制停止
      */
-    function stopAction() {
-        while (actions.count > 0) {
-            actions[0].doAction(target, 0, true);
-            actions.erase(0);
+	function stopAction() {
+		while (actions.count > 0) {
+			//dm("アクション停止:" + actions.count);
+			actions[0].doAction(target, 0, true);
+			actions.erase(0);
         }
     }
 };
@@ -337,9 +378,15 @@ class ActionHandler {
 		if (time !== void) {
 			time *= kag.drawspeed;
 		}
-		//dm("time:" + time + " delay:" + delay);
+		//dm("ActionHandler:" + propName + " time:" + time + " delay:" + delay);
     }
 
+	/**
+	 * 実行初回処理
+	 */
+	function init(target, propname) {
+	}
+	
     /**
      * 実行処理ベース
      * @param target 対象オブジェクト
@@ -415,7 +462,14 @@ class DefaultAction extends AbsoluteActionHandler {
         super.AbsoluteActionHandler(target, propName, elm);
         initValue = target[propName];
     }
-    function doAction(target, propName, now, stopFlag) {
+	/**
+	 * 移動の結果
+	 */
+	function getResultValue() {
+		return initValue;
+	}
+
+	function doAction(target, propName, now, stopFlag) {
         target[propName] = initValue;
         // 常に終わる
         return true;
@@ -429,35 +483,56 @@ class DefaultAction extends AbsoluteActionHandler {
  */
 class MoveAction extends AbsoluteActionHandler {
 
-    var start;  // 開始時の値
-    var diff;   // 差分
-    var accel;  // 加減速指定
+	var initValue; // 初期時の値
+	var start;     // 始点指定 
+	var value;     // 終点指定
+    var accel;     // 加減速指定
+	var diff;      // 移動差分
     
     function MoveAction(target, propName, elm) {
 		super.AbsoluteActionHandler(target, propName, elm);
-		var v = target[propName];
-		start = elm.start !== void ? getRelative(elm.start, v) : v;
-		diff  = getRelative(elm.value, v) - start;
-		accel = +elm.accel;
+		initValue = target[propName];
+		start     = elm.start !== void ? getRelative(elm.start, initValue) : void;
+		value     = getRelative(elm.value, initValue);
+		accel     = +elm.accel;
     }
 
+	/**
+	 * 移動の結果
+	 */
+	function getResultValue() {
+		return value;
+	}
+	
+	/**
+	 * 実行初回処理
+	 */
+	function init(target, propName) {
+		if (start === void) {
+			start = target[propName];
+		}
+		diff  = value - start;
+		//dm("MoveAction:" + propName + " start:" + start + " diff:" + diff);
+	}
+
+	
     function doAction(target, propName, now, stopFlag) {
-        if (stopFlag) {
-            target[propName] = start + diff;
-            return true;
+		if (time == 0 || stopFlag) {
+			target[propName] = start + diff;
+			return true;
         } else {
-            var n;
-            if (accel == 0) {
-                n = now / time;
-            } else if (accel > 0) {
-                var t = now / time;
-                n = t*t;
+			var n;
+			if (accel == 0) {
+				n = now / time;
+			} else if (accel > 0) {
+				var t = now / time;
+				n = t*t;
             } else {
-                var t = now/time;
-                n = ( 1-(1-t)*(1-t) );
-            }
-            target[propName] = start + diff * n;
-            return false;
+				var t = now/time;
+				n = ( 1-(1-t)*(1-t) );
+			}
+			target[propName] = start + diff * n;
+			return false;
         }
     }
 }
@@ -473,7 +548,7 @@ class ParabolaMoveAction extends AbsoluteActionHandler {
     var start_y;
     var diff_x;
     var diff_y;
-    
+
     function ParabolaMoveAction(target, propName, elm) {
         super.AbsoluteActionHandler(target, propName, elm);
         start_x = target["left"];
@@ -483,6 +558,13 @@ class ParabolaMoveAction extends AbsoluteActionHandler {
         t0 = elm.topTime !== void ? (elm.topTime * 2) : time;
     }
 
+	/**
+	 * 最終値 XXX
+	 */
+	function getResultValue() {
+		return start_x + diff_x * 2;
+	}
+	
     function doAction(target, propName, now, stopFlag) {
         if (t0) {
             // X軸は等速移動、Y軸は2次関数移動
@@ -494,6 +576,66 @@ class ParabolaMoveAction extends AbsoluteActionHandler {
         return stopFlag;
     }
 }
+
+/**
+ * ループ移動アクション（絶対アクション）
+ * @param start 開始位置（未指定時は現在値)
+ * @param min ループ最少値
+ * @param max ループ最大値
+ * @param loop ループ時間
+ */
+class LoopMoveAction extends AbsoluteActionHandler {
+
+	var initValue; // 初期時の値
+	var start;     // 始点指定 
+	var min;       // ループ最少値
+	var max;       // ループ最大値
+	var loop;      // ループ時間
+
+	/**
+	 * コンストラクタ
+	 */
+    function LoopMoveAction(target, propName, elm) {
+		super.AbsoluteActionHandler(target, propName, elm);
+		initValue = target[propName];
+		start  = elm.start;
+		min    = elm.min;
+		max    = elm.max;
+		loop   = elm.loop !== void ? +elm.loop : time;
+    }
+
+	/**
+	 * 最終値
+	 */
+	function getResultValue() {
+		return initValue;
+	}
+	
+	/**
+	 * 実行初回処理
+	 */
+	function init(target, propName) {
+		if (start === void) {
+			start = target[propName];
+		} else {
+			start = getRelative(start, initValue);
+		}
+		min = getRelative(min, initValue);
+		max = getRelative(max, initValue);
+		max   -= min;
+		start -= min;
+	}
+	
+    function doAction(target, propName, now, stopFlag) {
+		if (stopFlag) {
+			return true;
+		} else {
+			target[propName] = min + (start + max * (now%loop) / loop) % max;
+			return false;
+        }
+    }
+}
+
 
 /**
  * 振動アクション（相対アクション）

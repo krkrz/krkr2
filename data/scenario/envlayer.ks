@@ -9,13 +9,13 @@
 [newlay name=star1 file=star  xpos=0 ypos=0 show]¯‚P•\¦
 [newlay name=star2 file=star xpos=-200 ypos=0 show]¯‚Q•\¦
 [newlay name=star3 file=star xpos=200 ypos=0 show]¯‚R•\¦
-[star1 action=LayerNormalRotateModule angvel=400]¯‚P‰ñ“]
-[star2 action=LayerNormalRotateModule angvel=200]¯‚Q‰ñ“]
-[star3 action=LayerNormalRotateModule angvel=600]¯‚R‰ñ“]
+[star1 action=LayerNormalRotateModule angvel=400 nowait]¯‚P‰ñ“]
+[star2 action=LayerNormalRotateModule angvel=200 nowait]¯‚Q‰ñ“]
+[star3 action=LayerNormalRotateModule angvel=600 nowait]¯‚R‰ñ“]
 
-[star1 xpos=  -0:400 ypos=0:-400 time=1000]
-[star2 xpos=-200:200 ypos=0:-400 time=1000]
-[star3 xpos= 200:600 ypos=0:-400 time=1000]
+[star1 xpos=  -0:400 ypos=0:-400 time=1000 nowait]
+[star2 xpos=-200:200 ypos=0:-400 time=1000 nowait]
+[star3 xpos= 200:600 ypos=0:-400 time=1000 nowait]
 ¯‚ğˆÚ“®
 
 [star1 hide]¯‚PÁ‹

@@ -46,6 +46,7 @@ class UIListParser extends CSVParser {
 			case "file": doFile(info, columns); break;
 			case "func": doFunc(info, columns); break;
 			case "part": doPart(info, columns); break;
+			case "copy": doCopy(info, columns); break;
 			default: knownType = false; break;
 			}
 			check = true if (knownType);
@@ -59,6 +60,13 @@ class UIListParser extends CSVParser {
 		info.y      = +columns[4];
 		info.width  = +columns[5];
 		info.height = +columns[6];
+	}
+
+	// elm変更用コピー指定(.func用)
+	function doCopy(info, columns) {
+		info.class  = "copy";
+		info.copy   = columns[2];
+		info.subref = columns[3];
 	}
 
 	// ファイル指定
@@ -196,6 +204,22 @@ function uiloadParse(elm)
 	return %[names: parser.names, result:parser.result];
 }
 
+function uiloadCopyElement(dic, elm, name)
+{
+	var target, ret;
+	try { ret = target = dic[name]; } catch {}
+	if (target === void) {
+		kag.error("コピー対象がありません:" + name);
+		return;
+	}
+	if (target.class == "copy") {
+		ret = uiloadCopyElement(dic, elm, target.copy);
+		if (ret === void) return;
+	}
+	(global.Dictionary.assign incontextof elm)(target, false);
+	return ret;
+}
+
 function uiloadEntry(layer, names, dic, elm, table)
 {
 	// part除外処理
@@ -264,6 +288,7 @@ function uiloadEntry(layer, names, dic, elm, table)
 			case "part":
 				break;
 			case "copy":
+				/*
 				var target;
 				try { target = dic[value.copy]; } catch {}
 				if (target === void) {
@@ -272,11 +297,20 @@ function uiloadEntry(layer, names, dic, elm, table)
 				}
 				var temp = %[];
 				(global.Dictionary.assign incontextof temp)(target, true);
-				(global.Dictionary.assign incontextof temp)(value,  false); 
+				(global.Dictionary.assign incontextof temp)(value,  false);
+				 */
+				var temp = %[];
+				var target = uiloadCopyElement(dic, temp, value.copy);
+				if (target === void) break;
+				(global.Dictionary.assign incontextof temp)(value,  false);
+				/**/
 				temp.class = target.class;
 				temp.groupName = value.subref if (temp.class == "radio" && value.subref !== void);
 				temp.uistates = target.uistates;
 				value = temp;
+//dm("uiload copy: ", name);
+//foreach(value, function(key, val) { dm(":", key, val); });
+//dm("----");
 				/* not break */
 			default:
 				var func = table[value.class];

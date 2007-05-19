@@ -146,6 +146,10 @@ function KAGWindow_createMenus()
 
         debugMenu.add(new MenuItem(this, "-"));
 
+		debugMenu.add(this.showControllerMenuItem = new KAGMenuItem(this, "システムリセット", 1,
+																	resetAll, false));
+        debugMenu.add(new MenuItem(this, "-"));
+
 		debugMenu.add(this.debugLevelNoneMenuItem = new KAGMenuItem(this, "デバッグレベル:なし", 2,
 			onDebugLevelNoneMenuItemClick, false));
 		debugMenu.add(this.debugLevelSimpleMenuItem = new KAGMenuItem(this, "デバッグレベル:シンプル", 2,
