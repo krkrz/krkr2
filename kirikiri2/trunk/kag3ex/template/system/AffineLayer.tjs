@@ -258,6 +258,9 @@ class AffineLayer extends KAGLayer {
             _zoomy = v;
             calcAffine();
         }
+		getter() {
+			return _zoomx;
+		}
     }
 
     property afx {
@@ -386,6 +389,12 @@ class AffineLayer extends KAGLayer {
         }
     }
 
+	// ムービー用
+	function assignImagesForMovie(src) {
+		_image.assignImages(src);
+		calcAffine();
+	}
+	
     function colorRect(left, top, width, height, value, opa=255) {
         _image.colorRect(...);
         calcAffine();

@@ -26,7 +26,6 @@
 [endif]
 [init]
 [linemode mode=page]
-[autolabelmode mode=true]
 [craftername mode=true]
 [endmacro]
 

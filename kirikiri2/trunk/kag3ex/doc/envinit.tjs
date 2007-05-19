@@ -1,87 +1,154 @@
+//
+// 環境定義ファイル
+// 
 %[
-    // 時間情報
+    // 環境時間情報
+    // 時間指定コマンド用の名前を登録します。
+    // ・背景画像の時間帯による切り替え
+    // ・立ち絵画像の時間帯による色補正
+    // に利用されます
     "times" => %[
         "昼" => %[
+            // 背景画像指定の TIME 部分に代入される文字列を指定します
             "prefix" => "A",
             ],
-        "夕" => %[
+        "夕室内" => %[
             "prefix" => "B",
+            // 指定された時間帯の背景画像がみつからない場合、
+            // 最初に定義された背景画像をロードして、以下の
+            // パラメータで色補正を行って代替画像にします
             "lightColor" => 0xc0ff6010,    // 背景補正光色
             "lightType" => ltPsHardLight,  // 背景補正光合成種別
             "brightness" => 0,             // 背景明度補正
             "contrast" => 0,               // 背景コントラスト補正
-            "charLightColor" => 0xffff0000,   // キャラ補正光合成色
+
+            // 指定された時間帯ではキャラクタ画像に
+            // 以下の色補正を行います
+            "charLightColor" => 0xffB67F71,   // キャラ補正光合成色
             "charLightType" => ltPsSoftLight, // キャラ補正光合成種別
-            "charBrightness" => 0,            // キャラ明度補正
-            "charContrast" => 0,              // キャラコントラスト補正
+            "charBrightness" => -15,            // キャラ明度補正
+            "charContrast" => 10,              // キャラコントラスト補正
+            ],
+        "夕" => %[
+            "prefix" => "B",
+            "charLightColor" => 0x40B67F71,   // キャラ補正光合成色
+            "charLightType" => ltPsSoftLight, // キャラ補正光合成種別
+            "charBrightness" => -5,            // キャラ明度補正
+            "charContrast" => 5,              // キャラコントラスト補正
+            "charBrightness" => -15,            // キャラ明度補正
+            "charContrast" => 10,              // キャラコントラスト補正
+            ],
+        "夜室内" => %[
+            "prefix" => "C",
             ],
         "夜" => %[
             "prefix" => "C",
-            "lightColor" => 0xc0000040,   // キャラ補正光合成色
-            "lightType" => ltPsHardLight, // キャラ補正光合成種別
-            "brightness" => -20,          // キャラ明度補正
-            "contrast" => -30,            // キャラコントラスト補正
-            "charLightColor" => 0xff400080,   // キャラ補正光合成色
+            "charLightColor" => 0xff42457B,   // キャラ補正光合成色
             "charLightType" => ltPsSoftLight, // キャラ補正光合成種別
-            "charBrightness" => -50,          // キャラ明度補正
+            "charBrightness" => -15,          // キャラ明度補正
+            "charContrast" => -10,            // キャラコントラスト補正
+            "charBrightness" => -26,          // キャラ明度補正
             "charContrast" => -30,            // キャラコントラスト補正
-            ]
+            ],
+        "夜闇" => %[
+            "prefix" => "D",
+            "charLightColor" => 0xff42457B,   // キャラ補正光合成色
+            "charLightType" => ltPsSoftLight, // キャラ補正光合成種別
+            "charBrightness" => -15,          // キャラ明度補正
+            "charContrast" => -10,            // キャラコントラスト補正
+            "charBrightness" => -26,          // キャラ明度補正
+            "charContrast" => -30,            // キャラコントラスト補正
+            ],
+        "特殊背景" => %[
+            "prefix" => "E",
+            ],
+        "特殊背景２" => %[
+            "prefix" => "F",
+            ],
         ],
-    
-    // 場所情報
+
+    // 環境場所場所情報
+    // 背景画像の基本ファイル名を指定します
     "stages" => %[
+        "リビング" => %[
+            // TIME の部分が時間指定の prefix で指定された
+            // 値で置換されます
+            "image" => "BG01_TIME",
+            ],
+        "ダイニング" => %[
+            "image" => "BG02_TIME",
+            ],
+        "主人公の部屋" => %[
+            "image" => "BG03_TIME",
+            ],
+        // 効果用に登録するようために時間指定を無視させることも可能です
+        "黒" => %[
+            "image" => "BG31",
+            ],
         "白" => %[
-            "image" => "white",
+            "image" => "BG32",
             ],
-        "暗転" => %[
-            "image" => "black",
-            ],
-        "自室" => %[
-            "image" => "BG01TIME",
+        ],
+
+    // 時間変更時のトランジションデフォルト。
+    // 文字列で指定すると transitions で登録されたものが参照されます。
+    // 辞書配列で指定するとそれが直接指定されます
+    "timeTrans" => %[
+        "time" => 1000,
+        "method" => "crossfade",
+        ],
+    // 場所変更時のトランジションデフォルト
+    "stageTrans" => %[
+        "time" => 1000,
+        "method" => "crossfade",
+        "charoff" => "true",
+        ],
+    // イベント画像表示時のトランジションデフォルト
+    "eventTrans" => %[
+        "time" => 1000,
+        "method" => "crossfade",
+        "msgoff" => true
+        ],
+    // 環境変更時トランジションデフォルト
+    // timeTrans, stageTrans, eventTrans が未指定時の
+    // デフォルト扱いになります
+    envTrans : void,
+
+    // イベント画像登録
+    // イベント画像は直接ファイル名指定でもロードできますが、
+    // 大きい画像などで標準の yoffset, xoffset を指定しておきたい
+    // 場合はあらかじめ画像を登録しておきます
+    events : %[
+        "TT0101" => %[
+            "image" => "TT0101", // 省略可能
+            "yoff" => 100,
+            "xoff" => 0,
             ],
         ],
 
     "defaultTime" => "昼",
     
     // キャラクタ配置総合オフセット（画面中央原点)
-    "yoffset" => 700,
+    "yoffset" => 400,
     
     // キャラクタ配置情報定義
     "positions" => %[
 
         "出" => %[
             "type" => KAGEnvironment.DISPPOSITION,
-            "disp" => KAGEnvImage.BOTH
+            "disp" => KAGEnvImage.BOTH,
             ],
 
-        "立" => %[
+        "消去" => %[
             "type" => KAGEnvironment.DISPPOSITION,
-            "disp" => KAGEnvImage.BU
-            ],
-        
-        "消" => %[
-            "type" => KAGEnvironment.DISPPOSITION,
-            "disp" => KAGEnvImage.CLEAR
+            "disp" => KAGEnvImage.CLEAR,
             ],
 
-        "顔" => %[
-            "type" => KAGEnvironment.DISPPOSITION,
-            "disp" => KAGEnvImage.FACE
-            ],
-
-        "無" => %[
-            "type" => KAGEnvironment.DISPPOSITION,
-            "disp" => KAGEnvImage.INVISIBLE
-            ],
-        
-        "左奥" => %[
+        "中央" => %[
             "type" => KAGEnvironment.XPOSITION,
-            "xpos" => int -440
+            "xpos" => int 0
             ],
-        "右奥" => %[
-            "type" => KAGEnvironment.XPOSITION,
-            "xpos" => int 440
-            ],
+
         "左" => %[
             "type" => KAGEnvironment.XPOSITION,
             "xpos" => int -200
@@ -89,26 +156,6 @@
         "右" => %[
             "type" => KAGEnvironment.XPOSITION,
             "xpos" => int 200
-            ],
-        "左中" => %[
-            "type" => KAGEnvironment.XPOSITION,
-            "xpos" => int -100
-            ],
-        "右中" => %[
-            "type" => KAGEnvironment.XPOSITION,
-            "xpos" => int 100
-            ],
-        "左外" => %[
-            "type" => KAGEnvironment.XPOSITION,
-            "xpos" => int -600
-            ],
-        "右外" => %[
-            "type" => KAGEnvironment.XPOSITION,
-            "xpos" => int 600
-            ],
-        "中" => %[
-            "type" => KAGEnvironment.XPOSITION,
-            "xpos" => int 0
             ],
 
         "奥" => %[
@@ -121,34 +168,97 @@
             "level" => int 1
             ],
 
-        "手前" => %[
-            "type" => KAGEnvironment.LEVEL,
-            "level" => int 2
+        "無" => %[
+            "type" => KAGEnvironment.DISPPOSITION,
+            "disp" => KAGEnvImage.INVISIBLE
             ],
+        
+        "顔" => %[
+            "type" => KAGEnvironment.DISPPOSITION,
+            "disp" => KAGEnvImage.FACE
+            ],
+
+        "立" => %[
+            "type" => KAGEnvironment.DISPPOSITION,
+            "disp" => KAGEnvImage.BU
+            ],
+
+        ],
+
+    // 場所変更字のデフォルトトランジションです
+    // 時間指定があってスライド移動になっている場合は
+    // 無視されます
+    "positionTrans" => %[
+        "time" => 300,
+        "method" => "crossfade",
         ],
 
     // 表示レベル用情報
+    // キャラクタの立ち絵が前後移動する場合に登録します
+    // 配列での指定になります。
+    // この配列の番号が positions で KAGEnvironment.LEVEL
+    // で指定する値になります
     "levels" => [
+        // level:0 の登録
         %[
-            // 拡大率指定
-            "zoom" => 60,
-            "name" => "1"
-            ],
-        %[
+            // 座標補正用の拡大率指定です
             "zoom" => 100,
-            "name" => "0"
+            // キャラクタ立ち絵画像の LEVEL 項目になります
+            "name" => "b",
+            // このレベルの立ち絵表示時の yoffset 補正です
+            "yoffset" => "-100"
             ],
+        // level:1 の登録
         %[
             "zoom" => 150,
-            "name" => "2"
+            "name" => "u",
+            "yoffset" => "300"
             ],
         ],
-    
-    "defaultLevel" => 1,
+
+    // 未指定時のデフォルトレベルです
+    "defaultLevel" => 0,
+
     // 表情窓用のレベル指定
-    "faceLevelName" => "f",
+//    "faceLevelName" => "f",
+    // 顔ウインドウの消去用画像を指定
+    // 未指定、または void の場合は単純にクリアされます
+    //"clearFace" => "null_face",
+
+    // 名前に対する画像ファイルの個別登録
+    // キャラクタ定義していない名前指定に対して表示する
+    // 画像を個別指定できます
+//    "nameFaces" => %[
+//        "伊藤" => "fot_0_01_1",
+//        "鈴木" => "fot_0_01_1",
+//        "坂本" => "fot_0_02_1",
+//        "後藤" => "fot_0_02_1",
+//        "男性A" => "fot_0_01_1",
+//        "男性B" => "fot_0_01_1",
+//        "店員" => "fot_0_01_1",
+//        "サラリーマン" => "fot_0_01_1",
+//        ],
+
     
     "actions" => %[
+        "揺らす小" => %[
+            "module" => LayerVibrateActionModule,
+            "vibration" => 12,
+            "waitTime" => 30
+            ],
+
+        "揺らす中" => %[
+            "module" => LayerVibrateActionModule,
+            "vibration" => 30,
+            "waitTime" => 200
+            ],
+
+        "揺らす大" => %[
+            "module" => LayerVibrateActionModule,
+            "vibration" => 70,
+            "waitTime" => 300
+            ],
+
         "おじぎ" => %[
             "module" => LayerJumpOnceActionModule,
             "vibration" => -50,
@@ -168,14 +278,147 @@
             "module" => LayerVibrateActionModule,
             "vibration" => 3,
             "waitTime" => 40
-            ]
+            ],
+
+        "背景右" => %[
+            "module" => LayerDecelMoveModule,
+            "time" => 1000,
+            "x" => -800,
+            "y" => 0,
+            ],
+        "背景左" => %[
+            "module" => LayerDecelMoveModule,
+            "time" => 1000,
+            "x" => 0,
+            "y" => 0,
+            ],
+        "背景真ん中" => %[
+            "module" => LayerDecelMoveModule,
+            "time" => 1000,
+            "x" => -400,
+            "y" => 0
+            ],
+        "上段" => %[
+            "module" => LayerDecelMoveModule,
+            "time" => 1000,
+            "x" => 0,
+            "y" => 0,
+            ],
+        "下段" => %[
+            "module" => LayerDecelMoveModule,
+            "time" => 1000,
+            "x" => 0,
+            "y" => -530
+            ],
+        "アクション停止" => %[
+            "module" => void,
+            ],
         ],
 
     // 画面更新パラメータ
     "transitions" => %[
         "normal" => %[
-            "time" => 1000,
+            "time" => 300,
             "method" => "crossfade",
+            ],
+        "時間変化" => %[
+            "time" => 3000,
+            "method" => "crossfade",
+            ],
+
+        "上に移動" => %[
+            "time" => 1200,
+            "method" => "scroll",
+            "from" => "top",
+            "stay" => "nostay",
+            "time" => 500,
+            "msgoff" => true
+            ],
+
+        "場所移動" => %[
+            "time" => 1200,
+            "method" => "scroll",
+            "from" => "right",
+            "stay" => "nostay",
+            "msgoff" => true
+            ],
+
+        "カットイン左から" => %[
+            "time" => 300,
+            "method" => "scroll",
+            "from" => "left",
+            "stay" => "stayfore",
+            "msgoff" => true
+            ],
+        "カットイン上から" => %[
+            "time" => 300,
+            "method" => "scroll",
+            "from" => "top",
+            "stay" => "stayfore",
+            "msgoff" => true
+            ],
+        "カットイン下から" => %[
+            "time" => 300,
+            "method" => "scroll",
+            "from" => "bottom",
+            "stay" => "stayfore",
+            "msgoff" => true
+            ],
+        "カットイン右から" => %[
+            "time" => 300,
+            "method" => "scroll",
+            "from" => "right",
+            "stay" => "stayfore",
+            "msgoff" => true
+            ],
+        "カットアウト右へ" => %[
+            "time" => 300,
+            "method" => "scroll",
+            "from" => "left",
+            "stay" => "stayback",
+            "msgoff" => true
+            ],
+        "カットアウト左へ" => %[
+            "time" => 300,
+            "method" => "scroll",
+            "from" => "right",
+            "stay" => "stayback",
+            "msgoff" => true
+            ],
+        "カットアウト上へ" => %[
+            "time" => 300,
+            "method" => "scroll",
+            "from" => "bottom",
+            "stay" => "stayback",
+            "msgoff" => true
+            ],
+        "カットアウト下へ" => %[
+            "time" => 300,
+            "method" => "scroll",
+            "from" => "top",
+            "stay" => "stayback",
+            "msgoff" => true
+            ],
+
+        "日付変更" => %[
+            "time" => 2000,
+            "method" => "universal",
+            "rule" => "shade1.bmp",
+            "vague" => 128,
+            "msgoff" => true
+            ],
+
+        "夜明ける" => %[
+            "time" => 1000,
+            "method" => "universal",
+            "rule" => "shade2.bmp",
+            "vague" => 128,
+            "msgoff" => true
+            ],
+
+        "notrans" => %[
+            "time" => 0,
+            "method" => void,
             ],
     ],
 
@@ -186,42 +429,2284 @@
     
     // キャラクタ定義情報
     "characters" => %[
-        // 定義
-
-        "主人公" => %[
-            "nameAlias" => "f.name",
-            ],
         
-        "みく" => %[
+        "△△△○○○" => %[
+            "nameAlias" => "f.family+f.name",
+            ],
+
+        // 定義
+        "△△△木葉" => %[
+            "nameAlias" => "f.mother",
+
             // ポーズ登録(表情ファイルの使い分けが無い範囲)
             "poses" => %[
                 // ポーズ指定
                 "通常" => %[
                     // 画像名 合成済みパターン
-                    "image"     => "mik_LEVEL_DRESS_FACE",
-//                    "image"     => "mik_0_DRESS_0",
-//                    "faceImage" => "mik_0_0_FACE",
+                    "image"     => "TCG23_DRESSFACELEVEL",
+                    "msgImage"  => "",
 
                     // 服装バリエーション
                     "dresses" => %[
-                        "制服"     => "0",
+                        "通常服"       => "A",
+                        "パジャマ"     => "B",
+                        "通常服セピア"       => "C",
                         ],
                     // 標準服装
-                    "defaultDress" => "0",
+                    "defaultDress" => "A",
                     // 表情バリエーション
                     "faces" => %[
-                        "01"    => "01",
-                        "02"    => "02",
-                        "03"    => "03",
-                        "04"    => "04",
+                        "普通"      => "1",
+                        "笑い"      => "2",
+                        "怒り"      => "3",
+                        "悲しみ"    => "4",
+                        "照れ"      => "5",
                         ],
                     // 標準表情
-                    "defaultFace" => "01",
+                    "defaultFace" => "1",
+                    // ポーズは固有トランジション指定可能
+//                    "trans" => void,
                     ],
                 ],
             "defaultPose" => "通常",
-            "voiceFile" => "voice/mik/mik%06d%s.ogg",
-            "voiceName" => "mik",
+            "voiceFile" => "MA%s%03d",
+            "voiceName" => "MA",
+
+            // キャラ単位で設定可能
+            "poseTrans"  => void,
+            "dressTrans" => void,
+            "faceTrans"  => void,
+            "charTrans"  => void,
+            
             ],
+
+
+        // 定義
+        "△△△海人" => %[
+            "nameAlias" => "f.father",
+            // ポーズ登録(表情ファイルの使い分けが無い範囲)
+            "poses" => %[
+                // ポーズ指定
+                "通常" => %[
+                    // 画像名 合成済みパターン
+                    "image"     => "TCG22_DRESSFACELEVEL",
+                    "msgImage"  => "",
+
+                    // 服装バリエーション
+                    "dresses" => %[
+                        "通常服"       => "A",
+                        "パジャマ"     => "B",
+                        ],
+                    // 標準服装
+                    "defaultDress" => "A",
+                    // 表情バリエーション
+                    "faces" => %[
+                        "普通"      => "1",
+                        "笑い"      => "2",
+                        "怒り"      => "3",
+                        "悲しみ"    => "4",
+                        "真剣"      => "5",
+                        ],
+                    // 標準表情
+                    "defaultFace" => "1",
+                    // ポーズは固有トランジション指定可能
+//                    "trans" => void,
+                    ],
+                ],
+            "defaultPose" => "通常",
+            "voiceFile" => "FA%s%03d",
+            "voiceName" => "FA",
+
+            // キャラ単位で設定可能
+            "poseTrans"  => void,
+            "dressTrans" => void,
+            "faceTrans"  => void,
+            "charTrans"  => void,
+            
+            ],
+
+
+        // 定義
+        "△△△七星" => %[
+            "nameAlias" => "f.nanahoshiname",
+            // ポーズ登録(表情ファイルの使い分けが無い範囲)
+            "poses" => %[
+                // ポーズ指定
+                "通常" => %[
+                    // 画像名 合成済みパターン
+                    "image"     => "TCG01_DRESSFACELEVEL",
+                    "msgImage"  => "",
+
+                    // 服装バリエーション
+                    "dresses" => %[
+                        "制服"       => "A",
+                        "外出着"     => "B",
+                        "パジャマ"   => "C",
+                        "外出着モノクロ"   => "D",
+                        ],
+                    // 標準服装
+                    "defaultDress" => "A",
+                    // 表情バリエーション
+                    "faces" => %[
+                        "普通"      => "1",
+                        "笑い"      => "2",
+                        "怒り"      => "3",
+                        "悲しみ"    => "4",
+                        "照れ"      => "5",
+                        "真剣"      => "6",
+                        ],
+                    // 標準表情
+                    "defaultFace" => "1",
+                    // ポーズは固有トランジション指定可能
+//                    "trans" => void,
+                    ],
+
+                "家" => %[
+                    // 画像名 合成済みパターン
+                    "image"     => "TCG02_DRESSFACELEVEL",
+                    "msgImage"  => "",
+
+                    // 服装バリエーション
+                    "dresses" => %[
+                        "制服"       => "A",
+                        "家着"       => "B",
+                        ],
+                    // 標準服装
+                    "defaultDress" => "A",
+                    // 表情バリエーション
+                    "faces" => %[
+                        "普通"      => "1",
+                        "笑い"      => "2",
+                        "怒り"      => "3",
+                        "悲しみ"    => "4",
+                        "照れ"      => "5",
+                        "真剣"      => "6",
+                        ],
+                    // 標準表情
+                    "defaultFace" => "1",
+                    // ポーズは固有トランジション指定可能
+//                    "trans" => void,
+                    ],
+
+                "アクティブ" => %[
+                    // 画像名 合成済みパターン
+                    "image"     => "TCG03_DRESSFACELEVEL",
+                    "msgImage"  => "",
+
+                    // 服装バリエーション
+                    "dresses" => %[
+                        "制服"       => "A",
+                        "家着"       => "B",
+                        "外出着"     => "C",
+                        ],
+                    // 標準服装
+                    "defaultDress" => "A",
+                    // 表情バリエーション
+                    "faces" => %[
+                        "普通"      => "1",
+                        "驚き"      => "2",
+                        "怒り"      => "3",
+                        "痛み"      => "4",
+                        ],
+                    // 標準表情
+                    "defaultFace" => "1",
+                    // ポーズは固有トランジション指定可能
+//                    "trans" => void,
+                    ],
+                ],
+            "defaultPose" => "通常",
+            "voiceFile" => "NA%s%03d",
+            "voiceName" => "NA",
+
+            // キャラ単位で設定可能
+            "poseTrans"  => void,
+            "dressTrans" => void,
+            "faceTrans"  => void,
+            "charTrans"  => void,
+            
+            ],
+
+
+        // 定義
+        "森泉晴音" => %[
+            // ポーズ登録(表情ファイルの使い分けが無い範囲)
+            "poses" => %[
+                // ポーズ指定
+                "通常" => %[
+                    // 画像名 合成済みパターン
+                    "image"     => "TCG07_DRESSFACELEVEL",
+                    "msgImage"  => "",
+
+                    // 服装バリエーション
+                    "dresses" => %[
+                        "制服"       => "A",
+                        "外出着"     => "B",
+                        "家着"       => "C",
+                        "制服ボンヤリ"   => "D",
+                        ],
+                    // 標準服装
+                    "defaultDress" => "A",
+                    // 表情バリエーション
+                    "faces" => %[
+                        "普通"      => "1",
+                        "笑い"      => "2",
+                        "怒り"      => "3",
+                        "悲しみ"    => "4",
+                        "照れ"      => "5",
+                        "無表情"    => "6",
+                        ],
+                    // 標準表情
+                    "defaultFace" => "1",
+                    // ポーズは固有トランジション指定可能
+//                    "trans" => void,
+                    ],
+
+                "誘い" => %[
+                    // 画像名 合成済みパターン
+                    "image"     => "TCG08_DRESSFACELEVEL",
+                    "msgImage"  => "",
+
+                    // 服装バリエーション
+                    "dresses" => %[
+                        "制服"       => "A",
+                        "家着"       => "B",
+                        "パジャマ"   => "C",
+                        ],
+                    // 標準服装
+                    "defaultDress" => "A",
+                    // 表情バリエーション
+                    "faces" => %[
+                        "普通"      => "1",
+                        "笑い"      => "2",
+                        "怒り"      => "3",
+                        "悲しみ"    => "4",
+                        "誘惑"      => "5",
+                        ],
+                    // 標準表情
+                    "defaultFace" => "1",
+                    // ポーズは固有トランジション指定可能
+//                    "trans" => void,
+                    ],
+
+                "攻撃" => %[
+                    // 画像名 合成済みパターン
+                    "image"     => "TCG09_DRESSFACELEVEL",
+                    "msgImage"  => "",
+
+                    // 服装バリエーション
+                    "dresses" => %[
+                        "制服"       => "A",
+                        "家着"       => "B",
+                        "外出着"     => "C",
+                        ],
+                    // 標準服装
+                    "defaultDress" => "A",
+                    // 表情バリエーション
+                    "faces" => %[
+                        "真剣"      => "1",
+                        "驚き"      => "2",
+                        "怒り"      => "3",
+                        "痛み"      => "4",
+                        ],
+                    // 標準表情
+                    "defaultFace" => "1",
+                    // ポーズは固有トランジション指定可能
+//                    "trans" => void,
+                    ],
+                ],
+            "defaultPose" => "通常",
+            "voiceFile" => "HM%s%03d",
+            "voiceName" => "HM",
+
+            // キャラ単位で設定可能
+            "poseTrans"  => void,
+            "dressTrans" => void,
+            "faceTrans"  => void,
+            "charTrans"  => void,
+            
+            ],
+
+
+        // 定義
+        "高坂ルイザ" => %[
+            // ポーズ登録(表情ファイルの使い分けが無い範囲)
+            "poses" => %[
+                // ポーズ指定
+                "通常" => %[
+                    // 画像名 合成済みパターン
+                    "image"     => "TCG04_DRESSFACELEVEL",
+                    "msgImage"  => "",
+
+                    // 服装バリエーション
+                    "dresses" => %[
+                        "制服"       => "A",
+                        "外出着"     => "B",
+                        "パジャマ"   => "C",
+                        ],
+                    // 標準服装
+                    "defaultDress" => "A",
+                    // 表情バリエーション
+                    "faces" => %[
+                        "普通"      => "1",
+                        "笑い"      => "2",
+                        "怒り"      => "3",
+                        "悲しみ"    => "4",
+                        "照れ"      => "5",
+                        ],
+                    // 標準表情
+                    "defaultFace" => "1",
+                    // ポーズは固有トランジション指定可能
+//                    "trans" => void,
+                    ],
+
+                "俺様" => %[
+                    // 画像名 合成済みパターン
+                    "image"     => "TCG05_DRESSFACELEVEL",
+                    "msgImage"  => "",
+
+                    // 服装バリエーション
+                    "dresses" => %[
+                        "制服"       => "A",
+                        "家着"       => "B",
+                        "怪盗服"     => "C",
+                        "怪盗服ビデオ越し" => "D",
+                        "怪盗服ボンヤリ"   => "E",
+                        ],
+                    // 標準服装
+                    "defaultDress" => "A",
+                    // 表情バリエーション
+                    "faces" => %[
+                        "普通"      => "1",
+                        "笑い"      => "2",
+                        "高笑い"    => "3",
+                        "悲しみ"    => "4",
+                        "照れ"      => "5",
+                        "怒り"      => "6",
+                        ],
+                    // 標準表情
+                    "defaultFace" => "1",
+                    // ポーズは固有トランジション指定可能
+//                    "trans" => void,
+                    ],
+
+                "怪盗" => %[
+                    // 画像名 合成済みパターン
+                    "image"     => "TCG06_DRESSFACELEVEL",
+                    "msgImage"  => "",
+
+                    // 服装バリエーション
+                    "dresses" => %[
+                        "制服"       => "A",
+                        "家着"       => "B",
+                        "怪盗服"     => "C",
+                        "怪盗服ビデオ越し" => "D",
+                        "怪盗服モノクロ"   => "E",
+                        ],
+                    // 標準服装
+                    "defaultDress" => "A",
+                    // 表情バリエーション
+                    "faces" => %[
+                        "普通"      => "1",
+                        "笑い"      => "2",
+                        "怒り"      => "3",
+                        "真剣"      => "4",
+                        "痛み"      => "5",
+                        ],
+                    // 標準表情
+                    "defaultFace" => "1",
+                    // ポーズは固有トランジション指定可能
+//                    "trans" => void,
+                    ],
+                ],
+            "defaultPose" => "通常",
+            "voiceFile" => "RK%s%03d",
+            "voiceName" => "RK",
+
+            // キャラ単位で設定可能
+            "poseTrans"  => void,
+            "dressTrans" => void,
+            "faceTrans"  => void,
+            "charTrans"  => void,
+            
+            ],
+
+
+        // 定義
+        "清水千晶" => %[
+            // ポーズ登録(表情ファイルの使い分けが無い範囲)
+            "poses" => %[
+                // ポーズ指定
+                "通常" => %[
+                    // 画像名 合成済みパターン
+                    "image"     => "TCG24_DRESSFACELEVEL",
+                    "msgImage"  => "",
+
+                    // 服装バリエーション
+                    "dresses" => %[
+                        "制服"         => "A",
+                        "外出着"       => "B",
+                        ],
+                    // 標準服装
+                    "defaultDress" => "A",
+                    // 表情バリエーション
+                    "faces" => %[
+                        "普通"      => "1",
+                        "笑い"      => "2",
+                        "怒り"      => "3",
+                        "悲しみ"    => "4",
+                        "驚き"      => "5",
+                        ],
+                    // 標準表情
+                    "defaultFace" => "1",
+                    // ポーズは固有トランジション指定可能
+//                    "trans" => void,
+                    ],
+                ],
+            "defaultPose" => "通常",
+            "voiceFile" => "CS%s%03d",
+            "voiceName" => "FR",
+
+            // キャラ単位で設定可能
+            "poseTrans"  => void,
+            "dressTrans" => void,
+            "faceTrans"  => void,
+            "charTrans"  => void,
+            
+            ],
+
+
+        // 定義
+        "豊春加奈子" => %[
+            // ポーズ登録(表情ファイルの使い分けが無い範囲)
+            "poses" => %[
+                // ポーズ指定
+                "通常" => %[
+                    // 画像名 合成済みパターン
+                    "image"     => "TCG25_DRESSFACELEVEL",
+                    "msgImage"  => "",
+
+                    // 服装バリエーション
+                    "dresses" => %[
+                        "制服"         => "A",
+                        "外出着"       => "B",
+                        ],
+                    // 標準服装
+                    "defaultDress" => "A",
+                    // 表情バリエーション
+                    "faces" => %[
+                        "普通"      => "1",
+                        "笑い"      => "2",
+                        "怒り"      => "3",
+                        "悲しみ"    => "4",
+                        "照れ"      => "5",
+                        ],
+                    // 標準表情
+                    "defaultFace" => "1",
+                    // ポーズは固有トランジション指定可能
+//                    "trans" => void,
+                    ],
+                ],
+            "defaultPose" => "通常",
+            "voiceFile" => "KT%s%03d",
+            "voiceName" => "FR",
+
+            // キャラ単位で設定可能
+            "poseTrans"  => void,
+            "dressTrans" => void,
+            "faceTrans"  => void,
+            "charTrans"  => void,
+            
+            ],
+
+
+        // 定義
+        "瑞穂昴" => %[
+            // ポーズ登録(表情ファイルの使い分けが無い範囲)
+            "poses" => %[
+                // ポーズ指定
+                "通常" => %[
+                    // 画像名 合成済みパターン
+                    "image"     => "TCG10_DRESSFACELEVEL",
+                    "msgImage"  => "",
+
+                    // 服装バリエーション
+                    "dresses" => %[
+                        "制服"       => "A",
+                        "外出着"     => "B",
+                        "パジャマ"   => "C",
+                        ],
+                    // 標準服装
+                    "defaultDress" => "A",
+                    // 表情バリエーション
+                    "faces" => %[
+                        "普通"      => "1",
+                        "笑い"      => "2",
+                        "怒り"      => "3",
+                        "悲しみ"    => "4",
+                        "照れ"      => "5",
+                        ],
+                    // 標準表情
+                    "defaultFace" => "1",
+                    // ポーズは固有トランジション指定可能
+//                    "trans" => void,
+                    ],
+
+                "家" => %[
+                    // 画像名 合成済みパターン
+                    "image"     => "TCG11_DRESSFACELEVEL",
+                    "msgImage"  => "",
+
+                    // 服装バリエーション
+                    "dresses" => %[
+                        "制服"           => "A",
+                        "家着"           => "B",
+                        "天使服"         => "C",
+                        "天使服羽根なし" => "D",
+                        ],
+                    // 標準服装
+                    "defaultDress" => "A",
+                    // 表情バリエーション
+                    "faces" => %[
+                        "普通"      => "1",
+                        "笑い"      => "2",
+                        "怒り"      => "3",
+                        "悲しみ"    => "4",
+                        "照れ"      => "5",
+                        ],
+                    // 標準表情
+                    "defaultFace" => "1",
+                    // ポーズは固有トランジション指定可能
+//                    "trans" => void,
+                    ],
+
+                "天使" => %[
+                    // 画像名 合成済みパターン
+                    "image"     => "TCG12_DRESSFACELEVEL",
+                    "msgImage"  => "",
+
+                    // 服装バリエーション
+                    "dresses" => %[
+                        "制服"           => "A",
+                        "家着"           => "B",
+                        "天使服"         => "C",
+                        "天使服羽根なし" => "D",
+                        "天使服モノクロ"       => "E",
+                        ],
+                    // 標準服装
+                    "defaultDress" => "A",
+                    // 表情バリエーション
+                    "faces" => %[
+                        "照れ"      => "1",
+                        "悲しみ"    => "2",
+                        "怒り"      => "3",
+                        "真剣"      => "4",
+                        "痛み"      => "5",
+                        ],
+                    // 標準表情
+                    "defaultFace" => "1",
+                    // ポーズは固有トランジション指定可能
+//                    "trans" => void,
+                    ],
+                ],
+            "defaultPose" => "通常",
+            "voiceFile" => "AM%s%03d",
+            "voiceName" => "AM",
+
+            // キャラ単位で設定可能
+            "poseTrans"  => void,
+            "dressTrans" => void,
+            "faceTrans"  => void,
+            "charTrans"  => void,
+            
+            ],
+
+
+        // 定義
+        "高柳尊" => %[
+            // ポーズ登録(表情ファイルの使い分けが無い範囲)
+            "poses" => %[
+                // ポーズ指定
+                "通常" => %[
+                    // 画像名 合成済みパターン
+                    "image"     => "TCG13_DRESSFACELEVEL",
+                    "msgImage"  => "",
+
+                    // 服装バリエーション
+                    "dresses" => %[
+                        "制服"       => "A",
+                        "外出着"     => "B",
+                        "忍者服"     => "C",
+                        "忍者服モノクロ"   => "D",
+                        ],
+                    // 標準服装
+                    "defaultDress" => "A",
+                    // 表情バリエーション
+                    "faces" => %[
+                        "普通"      => "1",
+                        "笑い"      => "2",
+                        "怒り"      => "3",
+                        "悲しみ"    => "4",
+                        "照れ"      => "5",
+                        ],
+                    // 標準表情
+                    "defaultFace" => "1",
+                    // ポーズは固有トランジション指定可能
+//                    "trans" => void,
+                    ],
+
+                "家" => %[
+                    // 画像名 合成済みパターン
+                    "image"     => "TCG14_DRESSFACELEVEL",
+                    "msgImage"  => "",
+
+                    // 服装バリエーション
+                    "dresses" => %[
+                        "制服"       => "A",
+                        "家着"       => "B",
+                        "パジャマ"   => "C",
+                        "家着セピア" => "D",
+                        ],
+                    // 標準服装
+                    "defaultDress" => "A",
+                    // 表情バリエーション
+                    "faces" => %[
+                        "普通"      => "1",
+                        "笑い"      => "2",
+                        "怒り"      => "3",
+                        "悲しみ"    => "4",
+                        "照れ"      => "5",
+                        ],
+                    // 標準表情
+                    "defaultFace" => "1",
+                    // ポーズは固有トランジション指定可能
+//                    "trans" => void,
+                    ],
+
+                "忍者" => %[
+                    // 画像名 合成済みパターン
+                    "image"     => "TCG15_DRESSFACELEVEL",
+                    "msgImage"  => "",
+
+                    // 服装バリエーション
+                    "dresses" => %[
+                        "制服"       => "A",
+                        "家着"       => "B",
+                        "忍者服"     => "C",
+                        ],
+                    // 標準服装
+                    "defaultDress" => "A",
+                    // 表情バリエーション
+                    "faces" => %[
+                        "普通"      => "1",
+                        "驚き"      => "2",
+                        "怒り"      => "3",
+                        "悲しみ"    => "4",
+                        "痛み"      => "5",
+                        ],
+                    // 標準表情
+                    "defaultFace" => "1",
+                    // ポーズは固有トランジション指定可能
+//                    "trans" => void,
+                    ],
+
+                "忍者服武器あり" => %[
+                    // 画像名 合成済みパターン
+                    "image"     => "TCG15_DRESSFACEwLEVEL",
+                    "msgImage"  => "",
+
+                    // 服装バリエーション
+                    "dresses" => %[
+                        "制服"       => "A",
+                        "家着"       => "B",
+                        "忍者服"     => "C",
+                        ],
+                    // 標準服装
+                    "defaultDress" => "A",
+                    // 表情バリエーション
+                    "faces" => %[
+                        "普通"      => "1",
+                        "驚き"      => "2",
+                        "怒り"      => "3",
+                        "悲しみ"    => "4",
+                        "痛み"      => "5",
+                        ],
+                    // 標準表情
+                    "defaultFace" => "1",
+                    // ポーズは固有トランジション指定可能
+//                    "trans" => void,
+                    ],
+                ],
+            "defaultPose" => "通常",
+            "voiceFile" => "TT%s%03d",
+            "voiceName" => "TT",
+
+            // キャラ単位で設定可能
+            "poseTrans"  => void,
+            "dressTrans" => void,
+            "faceTrans"  => void,
+            "charTrans"  => void,
+            
+            ],
+
+
+        // 定義
+        "高柳唯鈴" => %[
+            // ポーズ登録(表情ファイルの使い分けが無い範囲)
+            "poses" => %[
+                // ポーズ指定
+                "通常" => %[
+                    // 画像名 合成済みパターン
+                    "image"     => "TCG29_DRESSFACELEVEL",
+                    "msgImage"  => "",
+
+                    // 服装バリエーション
+                    "dresses" => %[
+                        "通常服"       => "A",
+                        ],
+                    // 標準服装
+                    "defaultDress" => "A",
+                    // 表情バリエーション
+                    "faces" => %[
+                        "普通"      => "1",
+                        "泣き"      => "2",
+                        "怒り"      => "3",
+                        "悲しみ"    => "4",
+                        "驚き"      => "5",
+                        ],
+                    // 標準表情
+                    "defaultFace" => "1",
+                    // ポーズは固有トランジション指定可能
+//                    "trans" => void,
+                    ],
+                ],
+            "defaultPose" => "通常",
+            "voiceFile" => "TI%s%03d",
+            "voiceName" => "ETC",
+
+            // キャラ単位で設定可能
+            "poseTrans"  => void,
+            "dressTrans" => void,
+            "faceTrans"  => void,
+            "charTrans"  => void,
+            
+            ],
+
+
+        // 定義
+        "高柳嶺" => %[
+            // ポーズ登録(表情ファイルの使い分けが無い範囲)
+            "poses" => %[
+                // ポーズ指定
+                "通常" => %[
+                    // 画像名 合成済みパターン
+                    "image"     => "TCG28_DRESSFACELEVEL",
+                    "msgImage"  => "",
+
+                    // 服装バリエーション
+                    "dresses" => %[
+                        "通常服"       => "A",
+                        "通常服セピア"       => "B",
+                        ],
+                    // 標準服装
+                    "defaultDress" => "A",
+                    // 表情バリエーション
+                    "faces" => %[
+                        "普通"      => "1",
+                        ],
+                    // 標準表情
+                    "defaultFace" => "1",
+                    // ポーズは固有トランジション指定可能
+//                    "trans" => void,
+                    ],
+                ],
+            "defaultPose" => "通常",
+            "voiceFile" => "TR%s%03d",
+            "voiceName" => "ETC",
+
+            // キャラ単位で設定可能
+            "poseTrans"  => void,
+            "dressTrans" => void,
+            "faceTrans"  => void,
+            "charTrans"  => void,
+            
+            ],
+
+
+        // 定義
+        "国谷和樹" => %[
+            // ポーズ登録(表情ファイルの使い分けが無い範囲)
+            "poses" => %[
+                // ポーズ指定
+                "通常" => %[
+                    // 画像名 合成済みパターン
+                    "image"     => "TCG16_DRESSFACELEVEL",
+                    "msgImage"  => "",
+
+                    // 服装バリエーション
+                    "dresses" => %[
+                        "通常服"     => "A",
+                        "外出着Ａ"   => "B",
+                        "外出着Ｂ"   => "C",
+                        "通常服セピア"     => "D",
+                        ],
+                    // 標準服装
+                    "defaultDress" => "A",
+                    // 表情バリエーション
+                    "faces" => %[
+                        "普通"      => "1",
+                        "笑い"      => "2",
+                        "怒り"      => "3",
+                        "悲しみ"    => "4",
+                        "照れ"      => "5",
+                        ],
+                    // 標準表情
+                    "defaultFace" => "1",
+                    // ポーズは固有トランジション指定可能
+//                    "trans" => void,
+                    ],
+
+                "エージェント" => %[
+                    // 画像名 合成済みパターン
+                    "image"     => "TCG17_DRESSFACELEVEL",
+                    "msgImage"  => "",
+
+                    // 服装バリエーション
+                    "dresses" => %[
+                        "通常服"     => "A",
+                        "外出着Ａ"   => "B",
+                        "外出着Ｂ"   => "C",
+                        "通常服セピア"     => "D",
+                        ],
+                    // 標準服装
+                    "defaultDress" => "A",
+                    // 表情バリエーション
+                    "faces" => %[
+                        "真剣"      => "1",
+                        "驚き"      => "2",
+                        "怒り"      => "3",
+                        "悲しみ"    => "4",
+                        "痛み"      => "5",
+                        ],
+                    // 標準表情
+                    "defaultFace" => "1",
+                    // ポーズは固有トランジション指定可能
+//                    "trans" => void,
+                    ],
+
+                ],
+            "defaultPose" => "通常",
+            "voiceFile" => "ZT%s%03d",
+            "voiceName" => "ZT",
+
+            // キャラ単位で設定可能
+            "poseTrans"  => void,
+            "dressTrans" => void,
+            "faceTrans"  => void,
+            "charTrans"  => void,
+            
+            ],
+
+
+        // 定義
+        "羽生凌也" => %[
+            // ポーズ登録(表情ファイルの使い分けが無い範囲)
+            "poses" => %[
+                // ポーズ指定
+                "通常" => %[
+                    // 画像名 合成済みパターン
+                    "image"     => "TCG18_DRESSFACELEVEL",
+                    "msgImage"  => "",
+
+                    // 服装バリエーション
+                    "dresses" => %[
+                        "制服"       => "A",
+                        "外出着"     => "B",
+                        "汚れた制服" => "C",
+                        "制服セピア"     => "D",
+                        ],
+                    // 標準服装
+                    "defaultDress" => "A",
+                    // 表情バリエーション
+                    "faces" => %[
+                        "普通"      => "1",
+                        "笑い"      => "2",
+                        "怒り"      => "3",
+                        "悲しみ"    => "4",
+                        "照れ"      => "5",
+                        "微笑み"    => "6",
+                        ],
+                    // 標準表情
+                    "defaultFace" => "1",
+                    // ポーズは固有トランジション指定可能
+//                    "trans" => void,
+                    ],
+
+                "家" => %[
+                    // 画像名 合成済みパターン
+                    "image"     => "TCG19_DRESSFACELEVEL",
+                    "msgImage"  => "",
+
+                    // 服装バリエーション
+                    "dresses" => %[
+                        "制服"       => "A",
+                        "家着"       => "B",
+                        "パジャマ"   => "C",
+                        "制服モノクロ"   => "D",
+                        ],
+                    // 標準服装
+                    "defaultDress" => "A",
+                    // 表情バリエーション
+                    "faces" => %[
+                        "普通"      => "1",
+                        "笑い"      => "2",
+                        "怒り"      => "3",
+                        "悲しみ"    => "4",
+                        "照れ"      => "5",
+                        ],
+                    // 標準表情
+                    "defaultFace" => "1",
+                    // ポーズは固有トランジション指定可能
+//                    "trans" => void,
+                    ],
+
+                "アクティブ" => %[
+                    // 画像名 合成済みパターン
+                    "image"     => "TCG20_DRESSFACELEVEL",
+                    "msgImage"  => "",
+
+                    // 服装バリエーション
+                    "dresses" => %[
+                        "制服"       => "A",
+                        "外出着"     => "B",
+                        "汚れた制服" => "C",
+                        "制服セピア"     => "D",
+                        ],
+                    // 標準服装
+                    "defaultDress" => "A",
+                    // 表情バリエーション
+                    "faces" => %[
+                        "真剣"      => "1",
+                        "驚き"      => "2",
+                        "怒り"      => "3",
+                        "痛み"      => "4",
+                        ],
+                    // 標準表情
+                    "defaultFace" => "1",
+                    // ポーズは固有トランジション指定可能
+//                    "trans" => void,
+                    ],
+                ],
+            "defaultPose" => "通常",
+            "voiceFile" => "TH%s%03d",
+            "voiceName" => "TH",
+
+            // キャラ単位で設定可能
+            "poseTrans"  => void,
+            "dressTrans" => void,
+            "faceTrans"  => void,
+            "charTrans"  => void,
+            
+            ],
+
+
+        // 定義
+        "羽生忠司" => %[
+            // ポーズ登録(表情ファイルの使い分けが無い範囲)
+            "poses" => %[
+                // ポーズ指定
+                "通常" => %[
+                    // 画像名 合成済みパターン
+                    "image"     => "TCG30_DRESSFACELEVEL",
+                    "msgImage"  => "",
+
+                    // 服装バリエーション
+                    "dresses" => %[
+                        "通常服"       => "A",
+                        ],
+                    // 標準服装
+                    "defaultDress" => "A",
+                    // 表情バリエーション
+                    "faces" => %[
+                        "普通"      => "1",
+                        "笑い"      => "2",
+                        "怒り"      => "3",
+                        "悲しみ"    => "4",
+                        ],
+                    // 標準表情
+                    "defaultFace" => "1",
+                    // ポーズは固有トランジション指定可能
+//                    "trans" => void,
+                    ],
+                ],
+            "defaultPose" => "通常",
+            "voiceFile" => "DH%s%03d",
+            "voiceName" => "ETC",
+
+            // キャラ単位で設定可能
+            "poseTrans"  => void,
+            "dressTrans" => void,
+            "faceTrans"  => void,
+            "charTrans"  => void,
+            
+            ],
+
+
+        // 定義
+        "テラ" => %[
+            // ポーズ登録(表情ファイルの使い分けが無い範囲)
+            "poses" => %[
+                // ポーズ指定
+                "通常" => %[
+                    // 画像名 合成済みパターン
+                    "image"     => "TCG21_DRESSFACELEVEL",
+                    "msgImage"  => "",
+
+                    // 服装バリエーション
+                    "dresses" => %[
+                        "通常服"       => "A",
+                        "外出着"       => "B",
+                        "通常服羽なし" => "C",
+                        "通常服シルエット"   => "D",
+                        ],
+                    // 標準服装
+                    "defaultDress" => "A",
+                    // 表情バリエーション
+                    "faces" => %[
+                        "普通"      => "1",
+                        "笑い"      => "2",
+                        "怒り"      => "3",
+                        "悲しみ"    => "4",
+                        "誘い"      => "5",
+                        ],
+                    // 標準表情
+                    "defaultFace" => "1",
+                    // ポーズは固有トランジション指定可能
+//                    "trans" => void,
+                    ],
+                ],
+            "defaultPose" => "通常",
+            "voiceFile" => "TE%s%03d",
+//            テラはPS2版から個別扱い
+//            "voiceName" => "TE",
+            "voiceName" => "ETC",
+
+            // キャラ単位で設定可能
+            "poseTrans"  => void,
+            "dressTrans" => void,
+            "faceTrans"  => void,
+            "charTrans"  => void,
+            
+            ],
+
+
+        // 定義
+        "アークトゥル" => %[
+            // ポーズ登録(表情ファイルの使い分けが無い範囲)
+            "poses" => %[
+                // ポーズ指定
+                "通常" => %[
+                    // 画像名 合成済みパターン
+                    "image"     => "TCG26_DRESSFACELEVEL",
+                    "msgImage"  => "",
+
+                    // 服装バリエーション
+                    "dresses" => %[
+                        "通常服"       => "A",
+                        ],
+                    // 標準服装
+                    "defaultDress" => "A",
+                    // 表情バリエーション
+                    "faces" => %[
+                        "普通"      => "1",
+                        "笑い"      => "2",
+                        "怒り"      => "3",
+                        "悲しみ"    => "4",
+                        ],
+                    // 標準表情
+                    "defaultFace" => "1",
+                    // ポーズは固有トランジション指定可能
+//                    "trans" => void,
+                    ],
+                ],
+            "defaultPose" => "通常",
+            "voiceFile" => "AK%s%03d",
+            "voiceName" => "ETC",
+
+            // キャラ単位で設定可能
+            "poseTrans"  => void,
+            "dressTrans" => void,
+            "faceTrans"  => void,
+            "charTrans"  => void,
+            
+            ],
+
+
+        // 定義
+        "プレイオネ" => %[
+            // ポーズ登録(表情ファイルの使い分けが無い範囲)
+            "poses" => %[
+                // ポーズ指定
+                "通常" => %[
+                    // 画像名 合成済みパターン
+                    "image"     => "TCG27_DRESSFACELEVEL",
+                    "msgImage"  => "",
+
+                    // 服装バリエーション
+                    "dresses" => %[
+                        "通常服"       => "A",
+                        ],
+                    // 標準服装
+                    "defaultDress" => "A",
+                    // 表情バリエーション
+                    "faces" => %[
+                        "普通"      => "1",
+                        "笑い"      => "2",
+                        "怒り"      => "3",
+                        "悲しみ"    => "4",
+                        "激怒"      => "5",
+                        ],
+                    // 標準表情
+                    "defaultFace" => "1",
+                    // ポーズは固有トランジション指定可能
+//                    "trans" => void,
+                    ],
+                ],
+            "defaultPose" => "通常",
+            "voiceFile" => "PR%s%03d",
+            "voiceName" => "ETC",
+
+            // キャラ単位で設定可能
+            "poseTrans"  => void,
+            "dressTrans" => void,
+            "faceTrans"  => void,
+            "charTrans"  => void,
+            
+            ],
+
+
+        // 定義
+        "暁丸" => %[
+            // ポーズ登録(表情ファイルの使い分けが無い範囲)
+            "poses" => %[
+                // ポーズ指定
+                "通常" => %[
+                    // 画像名 合成済みパターン
+                    "image"     => "",
+                    "msgImage"  => "",
+
+                    // 服装バリエーション
+                    "dresses" => %[
+                        "通常服"   => "1",
+                        ],
+                    // 標準服装
+                    "defaultDress" => "1",
+                    // 表情バリエーション
+                    "faces" => %[
+                        "標準表情"    => "01",
+                        ],
+                    // 標準表情
+                    "defaultFace" => "01",
+                    // ポーズは固有トランジション指定可能
+//                    "trans" => void,
+                    ],
+                ],
+            "defaultPose" => "通常",
+            "voiceFile" => "DA%s%03d",
+            "voiceName" => "ETC",
+
+            // キャラ単位で設定可能
+            "poseTrans"  => void,
+            "dressTrans" => void,
+            "faceTrans"  => void,
+            "charTrans"  => void,
+            
+            ],
+
+
+        // 定義
+        "轟丸" => %[
+            // ポーズ登録(表情ファイルの使い分けが無い範囲)
+            "poses" => %[
+                // ポーズ指定
+                "通常" => %[
+                    // 画像名 合成済みパターン
+                    "image"     => "",
+                    "msgImage"  => "",
+
+                    // 服装バリエーション
+                    "dresses" => %[
+                        "通常服"   => "1",
+                        ],
+                    // 標準服装
+                    "defaultDress" => "1",
+                    // 表情バリエーション
+                    "faces" => %[
+                        "標準表情"    => "01",
+                        ],
+                    // 標準表情
+                    "defaultFace" => "01",
+                    // ポーズは固有トランジション指定可能
+//                    "trans" => void,
+                    ],
+                ],
+            "defaultPose" => "通常",
+            "voiceFile" => "DT%s%03d",
+            "voiceName" => "ETC",
+
+            // キャラ単位で設定可能
+            "poseTrans"  => void,
+            "dressTrans" => void,
+            "faceTrans"  => void,
+            "charTrans"  => void,
+            
+            ],
+
+
+        // 定義
+        "轟丸・暁丸" => %[
+            // ポーズ登録(表情ファイルの使い分けが無い範囲)
+            "poses" => %[
+                // ポーズ指定
+                "通常" => %[
+                    // 画像名 合成済みパターン
+                    "image"     => "",
+                    "msgImage"  => "",
+
+                    // 服装バリエーション
+                    "dresses" => %[
+                        "通常服"   => "1",
+                        ],
+                    // 標準服装
+                    "defaultDress" => "1",
+                    // 表情バリエーション
+                    "faces" => %[
+                        "標準表情"    => "01",
+                        ],
+                    // 標準表情
+                    "defaultFace" => "01",
+                    // ポーズは固有トランジション指定可能
+//                    "trans" => void,
+                    ],
+                ],
+            "defaultPose" => "通常",
+            "voiceFile" => "DG%s%03d",
+            "voiceName" => "ETC",
+
+            // キャラ単位で設定可能
+            "poseTrans"  => void,
+            "dressTrans" => void,
+            "faceTrans"  => void,
+            "charTrans"  => void,
+            
+            ],
+
+
+        // 定義
+        "男の声" => %[
+            // ポーズ登録(表情ファイルの使い分けが無い範囲)
+            "poses" => %[
+                // ポーズ指定
+                "通常" => %[
+                    // 画像名 合成済みパターン
+                    "image"     => "",
+                    "msgImage"  => "",
+
+                    // 服装バリエーション
+                    "dresses" => %[
+                        "通常服"   => "1",
+                        ],
+                    // 標準服装
+                    "defaultDress" => "1",
+                    // 表情バリエーション
+                    "faces" => %[
+                        "標準表情"    => "01",
+                        ],
+                    // 標準表情
+                    "defaultFace" => "01",
+                    // ポーズは固有トランジション指定可能
+//                    "trans" => void,
+                    ],
+                ],
+            "defaultPose" => "通常",
+            "voiceFile" => "MV%s%03d",
+            "voiceName" => "ETC",
+
+            // キャラ単位で設定可能
+            "poseTrans"  => void,
+            "dressTrans" => void,
+            "faceTrans"  => void,
+            "charTrans"  => void,
+            
+            ],
+
+
+        // 定義
+        "無線機の声" => %[
+            // ポーズ登録(表情ファイルの使い分けが無い範囲)
+            "poses" => %[
+                // ポーズ指定
+                "通常" => %[
+                    // 画像名 合成済みパターン
+                    "image"     => "",
+                    "msgImage"  => "",
+
+                    // 服装バリエーション
+                    "dresses" => %[
+                        "通常服"   => "1",
+                        ],
+                    // 標準服装
+                    "defaultDress" => "1",
+                    // 表情バリエーション
+                    "faces" => %[
+                        "標準表情"    => "01",
+                        ],
+                    // 標準表情
+                    "defaultFace" => "01",
+                    // ポーズは固有トランジション指定可能
+//                    "trans" => void,
+                    ],
+                ],
+            "defaultPose" => "通常",
+            "voiceFile" => "RD%s%03d",
+            "voiceName" => "ETC",
+
+            // キャラ単位で設定可能
+            "poseTrans"  => void,
+            "dressTrans" => void,
+            "faceTrans"  => void,
+            "charTrans"  => void,
+            
+            ],
+
+
+        // 定義
+        "女子生徒Ａ" => %[
+            // ポーズ登録(表情ファイルの使い分けが無い範囲)
+            "poses" => %[
+                // ポーズ指定
+                "通常" => %[
+                    // 画像名 合成済みパターン
+                    "image"     => "",
+                    "msgImage"  => "",
+
+                    // 服装バリエーション
+                    "dresses" => %[
+                        "通常服"   => "1",
+                        ],
+                    // 標準服装
+                    "defaultDress" => "1",
+                    // 表情バリエーション
+                    "faces" => %[
+                        "標準表情"    => "01",
+                        ],
+                    // 標準表情
+                    "defaultFace" => "01",
+                    // ポーズは固有トランジション指定可能
+//                    "trans" => void,
+                    ],
+                ],
+            "defaultPose" => "通常",
+            "voiceFile" => "JW%s%03d",
+            "voiceName" => "ETC",
+
+            // キャラ単位で設定可能
+            "poseTrans"  => void,
+            "dressTrans" => void,
+            "faceTrans"  => void,
+            "charTrans"  => void,
+            
+            ],
+
+
+        // 定義
+        "女子生徒Ｂ" => %[
+            // ポーズ登録(表情ファイルの使い分けが無い範囲)
+            "poses" => %[
+                // ポーズ指定
+                "通常" => %[
+                    // 画像名 合成済みパターン
+                    "image"     => "",
+                    "msgImage"  => "",
+
+                    // 服装バリエーション
+                    "dresses" => %[
+                        "通常服"   => "1",
+                        ],
+                    // 標準服装
+                    "defaultDress" => "1",
+                    // 表情バリエーション
+                    "faces" => %[
+                        "標準表情"    => "01",
+                        ],
+                    // 標準表情
+                    "defaultFace" => "01",
+                    // ポーズは固有トランジション指定可能
+//                    "trans" => void,
+                    ],
+                ],
+            "defaultPose" => "通常",
+            "voiceFile" => "JX%s%03d",
+            "voiceName" => "ETC",
+
+            // キャラ単位で設定可能
+            "poseTrans"  => void,
+            "dressTrans" => void,
+            "faceTrans"  => void,
+            "charTrans"  => void,
+            
+            ],
+
+
+        // 定義
+        "女子生徒Ｃ" => %[
+            // ポーズ登録(表情ファイルの使い分けが無い範囲)
+            "poses" => %[
+                // ポーズ指定
+                "通常" => %[
+                    // 画像名 合成済みパターン
+                    "image"     => "",
+                    "msgImage"  => "",
+
+                    // 服装バリエーション
+                    "dresses" => %[
+                        "通常服"   => "1",
+                        ],
+                    // 標準服装
+                    "defaultDress" => "1",
+                    // 表情バリエーション
+                    "faces" => %[
+                        "標準表情"    => "01",
+                        ],
+                    // 標準表情
+                    "defaultFace" => "01",
+                    // ポーズは固有トランジション指定可能
+//                    "trans" => void,
+                    ],
+                ],
+            "defaultPose" => "通常",
+            "voiceFile" => "JY%s%03d",
+            "voiceName" => "ETC",
+
+            // キャラ単位で設定可能
+            "poseTrans"  => void,
+            "dressTrans" => void,
+            "faceTrans"  => void,
+            "charTrans"  => void,
+            
+            ],
+
+
+        // 定義
+        "女子生徒Ｄ" => %[
+            // ポーズ登録(表情ファイルの使い分けが無い範囲)
+            "poses" => %[
+                // ポーズ指定
+                "通常" => %[
+                    // 画像名 合成済みパターン
+                    "image"     => "",
+                    "msgImage"  => "",
+
+                    // 服装バリエーション
+                    "dresses" => %[
+                        "通常服"   => "1",
+                        ],
+                    // 標準服装
+                    "defaultDress" => "1",
+                    // 表情バリエーション
+                    "faces" => %[
+                        "標準表情"    => "01",
+                        ],
+                    // 標準表情
+                    "defaultFace" => "01",
+                    // ポーズは固有トランジション指定可能
+//                    "trans" => void,
+                    ],
+                ],
+            "defaultPose" => "通常",
+            "voiceFile" => "JZ%s%03d",
+            "voiceName" => "ETC",
+
+            // キャラ単位で設定可能
+            "poseTrans"  => void,
+            "dressTrans" => void,
+            "faceTrans"  => void,
+            "charTrans"  => void,
+            
+            ],
+
+
+        // 定義
+        "男子生徒Ａ" => %[
+            // ポーズ登録(表情ファイルの使い分けが無い範囲)
+            "poses" => %[
+                // ポーズ指定
+                "通常" => %[
+                    // 画像名 合成済みパターン
+                    "image"     => "",
+                    "msgImage"  => "",
+
+                    // 服装バリエーション
+                    "dresses" => %[
+                        "通常服"   => "1",
+                        ],
+                    // 標準服装
+                    "defaultDress" => "1",
+                    // 表情バリエーション
+                    "faces" => %[
+                        "標準表情"    => "01",
+                        ],
+                    // 標準表情
+                    "defaultFace" => "01",
+                    // ポーズは固有トランジション指定可能
+//                    "trans" => void,
+                    ],
+                ],
+            "defaultPose" => "通常",
+            "voiceFile" => "HV%s%03d",
+            "voiceName" => "ETC",
+
+            // キャラ単位で設定可能
+            "poseTrans"  => void,
+            "dressTrans" => void,
+            "faceTrans"  => void,
+            "charTrans"  => void,
+            
+            ],
+
+
+        // 定義
+        "男子生徒Ｂ" => %[
+            // ポーズ登録(表情ファイルの使い分けが無い範囲)
+            "poses" => %[
+                // ポーズ指定
+                "通常" => %[
+                    // 画像名 合成済みパターン
+                    "image"     => "",
+                    "msgImage"  => "",
+
+                    // 服装バリエーション
+                    "dresses" => %[
+                        "通常服"   => "1",
+                        ],
+                    // 標準服装
+                    "defaultDress" => "1",
+                    // 表情バリエーション
+                    "faces" => %[
+                        "標準表情"    => "01",
+                        ],
+                    // 標準表情
+                    "defaultFace" => "01",
+                    // ポーズは固有トランジション指定可能
+//                    "trans" => void,
+                    ],
+                ],
+            "defaultPose" => "通常",
+            "voiceFile" => "HW%s%03d",
+            "voiceName" => "ETC",
+
+            // キャラ単位で設定可能
+            "poseTrans"  => void,
+            "dressTrans" => void,
+            "faceTrans"  => void,
+            "charTrans"  => void,
+            
+            ],
+
+
+        // 定義
+        "男子生徒Ｃ" => %[
+            // ポーズ登録(表情ファイルの使い分けが無い範囲)
+            "poses" => %[
+                // ポーズ指定
+                "通常" => %[
+                    // 画像名 合成済みパターン
+                    "image"     => "",
+                    "msgImage"  => "",
+
+                    // 服装バリエーション
+                    "dresses" => %[
+                        "通常服"   => "1",
+                        ],
+                    // 標準服装
+                    "defaultDress" => "1",
+                    // 表情バリエーション
+                    "faces" => %[
+                        "標準表情"    => "01",
+                        ],
+                    // 標準表情
+                    "defaultFace" => "01",
+                    // ポーズは固有トランジション指定可能
+//                    "trans" => void,
+                    ],
+                ],
+            "defaultPose" => "通常",
+            "voiceFile" => "HX%s%03d",
+            "voiceName" => "ETC",
+
+            // キャラ単位で設定可能
+            "poseTrans"  => void,
+            "dressTrans" => void,
+            "faceTrans"  => void,
+            "charTrans"  => void,
+            
+            ],
+
+
+        // 定義
+        "男子高校生Ａ" => %[
+            // ポーズ登録(表情ファイルの使い分けが無い範囲)
+            "poses" => %[
+                // ポーズ指定
+                "通常" => %[
+                    // 画像名 合成済みパターン
+                    "image"     => "",
+                    "msgImage"  => "",
+
+                    // 服装バリエーション
+                    "dresses" => %[
+                        "通常服"   => "1",
+                        ],
+                    // 標準服装
+                    "defaultDress" => "1",
+                    // 表情バリエーション
+                    "faces" => %[
+                        "標準表情"    => "01",
+                        ],
+                    // 標準表情
+                    "defaultFace" => "01",
+                    // ポーズは固有トランジション指定可能
+//                    "trans" => void,
+                    ],
+                ],
+            "defaultPose" => "通常",
+            "voiceFile" => "HA%s%03d",
+            "voiceName" => "ETC",
+
+            // キャラ単位で設定可能
+            "poseTrans"  => void,
+            "dressTrans" => void,
+            "faceTrans"  => void,
+            "charTrans"  => void,
+            
+            ],
+
+
+        // 定義
+        "男子高校生Ｂ" => %[
+            // ポーズ登録(表情ファイルの使い分けが無い範囲)
+            "poses" => %[
+                // ポーズ指定
+                "通常" => %[
+                    // 画像名 合成済みパターン
+                    "image"     => "",
+                    "msgImage"  => "",
+
+                    // 服装バリエーション
+                    "dresses" => %[
+                        "通常服"   => "1",
+                        ],
+                    // 標準服装
+                    "defaultDress" => "1",
+                    // 表情バリエーション
+                    "faces" => %[
+                        "標準表情"    => "01",
+                        ],
+                    // 標準表情
+                    "defaultFace" => "01",
+                    // ポーズは固有トランジション指定可能
+//                    "trans" => void,
+                    ],
+                ],
+            "defaultPose" => "通常",
+            "voiceFile" => "HB%s%03d",
+            "voiceName" => "ETC",
+
+            // キャラ単位で設定可能
+            "poseTrans"  => void,
+            "dressTrans" => void,
+            "faceTrans"  => void,
+            "charTrans"  => void,
+            
+            ],
+
+
+        // 定義
+        "男子高校生Ｃ" => %[
+            // ポーズ登録(表情ファイルの使い分けが無い範囲)
+            "poses" => %[
+                // ポーズ指定
+                "通常" => %[
+                    // 画像名 合成済みパターン
+                    "image"     => "",
+                    "msgImage"  => "",
+
+                    // 服装バリエーション
+                    "dresses" => %[
+                        "通常服"   => "1",
+                        ],
+                    // 標準服装
+                    "defaultDress" => "1",
+                    // 表情バリエーション
+                    "faces" => %[
+                        "標準表情"    => "01",
+                        ],
+                    // 標準表情
+                    "defaultFace" => "01",
+                    // ポーズは固有トランジション指定可能
+//                    "trans" => void,
+                    ],
+                ],
+            "defaultPose" => "通常",
+            "voiceFile" => "HC%s%03d",
+            "voiceName" => "ETC",
+
+            // キャラ単位で設定可能
+            "poseTrans"  => void,
+            "dressTrans" => void,
+            "faceTrans"  => void,
+            "charTrans"  => void,
+            
+            ],
+
+
+        // 定義
+        "男子高校生たち" => %[
+            // ポーズ登録(表情ファイルの使い分けが無い範囲)
+            "poses" => %[
+                // ポーズ指定
+                "通常" => %[
+                    // 画像名 合成済みパターン
+                    "image"     => "",
+                    "msgImage"  => "",
+
+                    // 服装バリエーション
+                    "dresses" => %[
+                        "通常服"   => "1",
+                        ],
+                    // 標準服装
+                    "defaultDress" => "1",
+                    // 表情バリエーション
+                    "faces" => %[
+                        "標準表情"    => "01",
+                        ],
+                    // 標準表情
+                    "defaultFace" => "01",
+                    // ポーズは固有トランジション指定可能
+//                    "trans" => void,
+                    ],
+                ],
+            "defaultPose" => "通常",
+            "voiceFile" => "HH%s%03d",
+            "voiceName" => "ETC",
+
+            // キャラ単位で設定可能
+            "poseTrans"  => void,
+            "dressTrans" => void,
+            "faceTrans"  => void,
+            "charTrans"  => void,
+            
+            ],
+
+
+        // 定義
+        "子供Ａ" => %[
+            // ポーズ登録(表情ファイルの使い分けが無い範囲)
+            "poses" => %[
+                // ポーズ指定
+                "通常" => %[
+                    // 画像名 合成済みパターン
+                    "image"     => "",
+                    "msgImage"  => "",
+
+                    // 服装バリエーション
+                    "dresses" => %[
+                        "通常服"   => "1",
+                        ],
+                    // 標準服装
+                    "defaultDress" => "1",
+                    // 表情バリエーション
+                    "faces" => %[
+                        "標準表情"    => "01",
+                        ],
+                    // 標準表情
+                    "defaultFace" => "01",
+                    // ポーズは固有トランジション指定可能
+//                    "trans" => void,
+                    ],
+                ],
+            "defaultPose" => "通常",
+            "voiceFile" => "CY%s%03d",
+            "voiceName" => "ETC",
+
+            // キャラ単位で設定可能
+            "poseTrans"  => void,
+            "dressTrans" => void,
+            "faceTrans"  => void,
+            "charTrans"  => void,
+            
+            ],
+
+
+        // 定義
+        "子供Ｂ" => %[
+            // ポーズ登録(表情ファイルの使い分けが無い範囲)
+            "poses" => %[
+                // ポーズ指定
+                "通常" => %[
+                    // 画像名 合成済みパターン
+                    "image"     => "",
+                    "msgImage"  => "",
+
+                    // 服装バリエーション
+                    "dresses" => %[
+                        "通常服"   => "1",
+                        ],
+                    // 標準服装
+                    "defaultDress" => "1",
+                    // 表情バリエーション
+                    "faces" => %[
+                        "標準表情"    => "01",
+                        ],
+                    // 標準表情
+                    "defaultFace" => "01",
+                    // ポーズは固有トランジション指定可能
+//                    "trans" => void,
+                    ],
+                ],
+            "defaultPose" => "通常",
+            "voiceFile" => "CZ%s%03d",
+            "voiceName" => "ETC",
+
+            // キャラ単位で設定可能
+            "poseTrans"  => void,
+            "dressTrans" => void,
+            "faceTrans"  => void,
+            "charTrans"  => void,
+            
+            ],
+
+
+        // 定義
+        "ディレクター" => %[
+            // ポーズ登録(表情ファイルの使い分けが無い範囲)
+            "poses" => %[
+                // ポーズ指定
+                "通常" => %[
+                    // 画像名 合成済みパターン
+                    "image"     => "",
+                    "msgImage"  => "",
+
+                    // 服装バリエーション
+                    "dresses" => %[
+                        "通常服"   => "1",
+                        ],
+                    // 標準服装
+                    "defaultDress" => "1",
+                    // 表情バリエーション
+                    "faces" => %[
+                        "標準表情"    => "01",
+                        ],
+                    // 標準表情
+                    "defaultFace" => "01",
+                    // ポーズは固有トランジション指定可能
+//                    "trans" => void,
+                    ],
+                ],
+            "defaultPose" => "通常",
+            "voiceFile" => "DD%s%03d",
+            "voiceName" => "ETC",
+
+            // キャラ単位で設定可能
+            "poseTrans"  => void,
+            "dressTrans" => void,
+            "faceTrans"  => void,
+            "charTrans"  => void,
+            
+            ],
+
+
+        // 定義
+        "アナウンサー" => %[
+            // ポーズ登録(表情ファイルの使い分けが無い範囲)
+            "poses" => %[
+                // ポーズ指定
+                "通常" => %[
+                    // 画像名 合成済みパターン
+                    "image"     => "",
+                    "msgImage"  => "",
+
+                    // 服装バリエーション
+                    "dresses" => %[
+                        "通常服"   => "1",
+                        ],
+                    // 標準服装
+                    "defaultDress" => "1",
+                    // 表情バリエーション
+                    "faces" => %[
+                        "標準表情"    => "01",
+                        ],
+                    // 標準表情
+                    "defaultFace" => "01",
+                    // ポーズは固有トランジション指定可能
+//                    "trans" => void,
+                    ],
+                ],
+            "defaultPose" => "通常",
+            "voiceFile" => "AN%s%03d",
+            "voiceName" => "ETC",
+
+            // キャラ単位で設定可能
+            "poseTrans"  => void,
+            "dressTrans" => void,
+            "faceTrans"  => void,
+            "charTrans"  => void,
+            
+            ],
+
+
+        // 定義
+        "軍人Ａ" => %[
+            // ポーズ登録(表情ファイルの使い分けが無い範囲)
+            "poses" => %[
+                // ポーズ指定
+                "通常" => %[
+                    // 画像名 合成済みパターン
+                    "image"     => "",
+                    "msgImage"  => "",
+
+                    // 服装バリエーション
+                    "dresses" => %[
+                        "通常服"   => "1",
+                        ],
+                    // 標準服装
+                    "defaultDress" => "1",
+                    // 表情バリエーション
+                    "faces" => %[
+                        "標準表情"    => "01",
+                        ],
+                    // 標準表情
+                    "defaultFace" => "01",
+                    // ポーズは固有トランジション指定可能
+//                    "trans" => void,
+                    ],
+                ],
+            "defaultPose" => "通常",
+            "voiceFile" => "MY%s%03d",
+            "voiceName" => "ETC",
+
+            // キャラ単位で設定可能
+            "poseTrans"  => void,
+            "dressTrans" => void,
+            "faceTrans"  => void,
+            "charTrans"  => void,
+            
+            ],
+
+
+        // 定義
+        "軍人Ｂ" => %[
+            // ポーズ登録(表情ファイルの使い分けが無い範囲)
+            "poses" => %[
+                // ポーズ指定
+                "通常" => %[
+                    // 画像名 合成済みパターン
+                    "image"     => "",
+                    "msgImage"  => "",
+
+                    // 服装バリエーション
+                    "dresses" => %[
+                        "通常服"   => "1",
+                        ],
+                    // 標準服装
+                    "defaultDress" => "1",
+                    // 表情バリエーション
+                    "faces" => %[
+                        "標準表情"    => "01",
+                        ],
+                    // 標準表情
+                    "defaultFace" => "01",
+                    // ポーズは固有トランジション指定可能
+//                    "trans" => void,
+                    ],
+                ],
+            "defaultPose" => "通常",
+            "voiceFile" => "MZ%s%03d",
+            "voiceName" => "ETC",
+
+            // キャラ単位で設定可能
+            "poseTrans"  => void,
+            "dressTrans" => void,
+            "faceTrans"  => void,
+            "charTrans"  => void,
+            
+            ],
+
+
+        // 定義
+        "忍者Ａ" => %[
+            // ポーズ登録(表情ファイルの使い分けが無い範囲)
+            "poses" => %[
+                // ポーズ指定
+                "通常" => %[
+                    // 画像名 合成済みパターン
+                    "image"     => "",
+                    "msgImage"  => "",
+
+                    // 服装バリエーション
+                    "dresses" => %[
+                        "通常服"   => "1",
+                        ],
+                    // 標準服装
+                    "defaultDress" => "1",
+                    // 表情バリエーション
+                    "faces" => %[
+                        "標準表情"    => "01",
+                        ],
+                    // 標準表情
+                    "defaultFace" => "01",
+                    // ポーズは固有トランジション指定可能
+//                    "trans" => void,
+                    ],
+                ],
+            "defaultPose" => "通常",
+            "voiceFile" => "NV%s%03d",
+            "voiceName" => "ETC",
+
+            // キャラ単位で設定可能
+            "poseTrans"  => void,
+            "dressTrans" => void,
+            "faceTrans"  => void,
+            "charTrans"  => void,
+            
+            ],
+
+
+        // 定義
+        "忍者Ｂ" => %[
+            // ポーズ登録(表情ファイルの使い分けが無い範囲)
+            "poses" => %[
+                // ポーズ指定
+                "通常" => %[
+                    // 画像名 合成済みパターン
+                    "image"     => "",
+                    "msgImage"  => "",
+
+                    // 服装バリエーション
+                    "dresses" => %[
+                        "通常服"   => "1",
+                        ],
+                    // 標準服装
+                    "defaultDress" => "1",
+                    // 表情バリエーション
+                    "faces" => %[
+                        "標準表情"    => "01",
+                        ],
+                    // 標準表情
+                    "defaultFace" => "01",
+                    // ポーズは固有トランジション指定可能
+//                    "trans" => void,
+                    ],
+                ],
+            "defaultPose" => "通常",
+            "voiceFile" => "NW%s%03d",
+            "voiceName" => "ETC",
+
+            // キャラ単位で設定可能
+            "poseTrans"  => void,
+            "dressTrans" => void,
+            "faceTrans"  => void,
+            "charTrans"  => void,
+            
+            ],
+
+
+        // 定義
+        "忍者Ｃ" => %[
+            // ポーズ登録(表情ファイルの使い分けが無い範囲)
+            "poses" => %[
+                // ポーズ指定
+                "通常" => %[
+                    // 画像名 合成済みパターン
+                    "image"     => "",
+                    "msgImage"  => "",
+
+                    // 服装バリエーション
+                    "dresses" => %[
+                        "通常服"   => "1",
+                        ],
+                    // 標準服装
+                    "defaultDress" => "1",
+                    // 表情バリエーション
+                    "faces" => %[
+                        "標準表情"    => "01",
+                        ],
+                    // 標準表情
+                    "defaultFace" => "01",
+                    // ポーズは固有トランジション指定可能
+//                    "trans" => void,
+                    ],
+                ],
+            "defaultPose" => "通常",
+            "voiceFile" => "NX%s%03d",
+            "voiceName" => "ETC",
+
+            // キャラ単位で設定可能
+            "poseTrans"  => void,
+            "dressTrans" => void,
+            "faceTrans"  => void,
+            "charTrans"  => void,
+            
+            ],
+
+
+        // 定義
+        "忍者Ｄ" => %[
+            // ポーズ登録(表情ファイルの使い分けが無い範囲)
+            "poses" => %[
+                // ポーズ指定
+                "通常" => %[
+                    // 画像名 合成済みパターン
+                    "image"     => "",
+                    "msgImage"  => "",
+
+                    // 服装バリエーション
+                    "dresses" => %[
+                        "通常服"   => "1",
+                        ],
+                    // 標準服装
+                    "defaultDress" => "1",
+                    // 表情バリエーション
+                    "faces" => %[
+                        "標準表情"    => "01",
+                        ],
+                    // 標準表情
+                    "defaultFace" => "01",
+                    // ポーズは固有トランジション指定可能
+//                    "trans" => void,
+                    ],
+                ],
+            "defaultPose" => "通常",
+            "voiceFile" => "NY%s%03d",
+            "voiceName" => "ETC",
+
+            // キャラ単位で設定可能
+            "poseTrans"  => void,
+            "dressTrans" => void,
+            "faceTrans"  => void,
+            "charTrans"  => void,
+            
+            ],
+
+
+        // 定義
+        "警備員" => %[
+            // ポーズ登録(表情ファイルの使い分けが無い範囲)
+            "poses" => %[
+                // ポーズ指定
+                "通常" => %[
+                    // 画像名 合成済みパターン
+                    "image"     => "",
+                    "msgImage"  => "",
+
+                    // 服装バリエーション
+                    "dresses" => %[
+                        "通常服"   => "1",
+                        ],
+                    // 標準服装
+                    "defaultDress" => "1",
+                    // 表情バリエーション
+                    "faces" => %[
+                        "標準表情"    => "01",
+                        ],
+                    // 標準表情
+                    "defaultFace" => "01",
+                    // ポーズは固有トランジション指定可能
+//                    "trans" => void,
+                    ],
+                ],
+            "defaultPose" => "通常",
+            "voiceFile" => "SP%s%03d",
+            "voiceName" => "ETC",
+
+            // キャラ単位で設定可能
+            "poseTrans"  => void,
+            "dressTrans" => void,
+            "faceTrans"  => void,
+            "charTrans"  => void,
+            
+            ],
+
+
+        // 定義
+        "一同" => %[
+            // ポーズ登録(表情ファイルの使い分けが無い範囲)
+            "poses" => %[
+                // ポーズ指定
+                "通常" => %[
+                    // 画像名 合成済みパターン
+                    "image"     => "",
+                    "msgImage"  => "",
+
+                    // 服装バリエーション
+                    "dresses" => %[
+                        "通常服"   => "1",
+                        ],
+                    // 標準服装
+                    "defaultDress" => "1",
+                    // 表情バリエーション
+                    "faces" => %[
+                        "標準表情"    => "01",
+                        ],
+                    // 標準表情
+                    "defaultFace" => "01",
+                    // ポーズは固有トランジション指定可能
+//                    "trans" => void,
+                    ],
+                ],
+            "defaultPose" => "通常",
+            "voiceFile" => "ZZ%s%03d",
+            "voiceName" => "ETC",
+
+            // キャラ単位で設定可能
+            "poseTrans"  => void,
+            "dressTrans" => void,
+            "faceTrans"  => void,
+            "charTrans"  => void,
+            
+            ],
+
+
+
+
+
+
+
+
+
+
+        ],
+
+
+    // キャラクタのトランジションのデフォルト
+
+    // ポーズ指定時
+    "poseTrans" => %[
+        "time" => 300,
+        "method" => "crossfade",
+        ],
+    // 服装指定時
+    "dressTrans" => %[
+        "time" => 300,
+        "method" => "crossfade",
+        ],
+    // 表情指定字
+    "faceTrans" => %[
+        "time" => 300,
+        "method" => "crossfade",
+        ],
+    // pose/dress/faceTrans が未指定時のデフォルト
+    "charTrans" => %[
+        "time" => 300,
+        "method" => "crossfade",
         ],
     ];

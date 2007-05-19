@@ -8,9 +8,49 @@ class KAGEnvSE {
     var name;  // 参照しているファイル名
     var count; // 参照されたカウント値
 
-    var wait;
+	var play;
+	var stop;
+	var fade;
+	var wait;
     var waitFade;
-    
+
+    /**
+     * セーブ処理
+     */
+    function onStore(f) {
+		f.name  = name;
+		f.id    = id;
+		f.count = count;
+		if (play !== void) {
+			f.play = %[];
+			(Dictionary.assign incontextof f.play)(play, false);
+		}
+		if (stop !== void) {
+			f.stop  = stop;
+		}
+		if (fade !== void) {
+			f.fade = %[];
+			(Dictionary.assign incontextof f.fade)(fade, false);
+		}
+	}
+
+	function onRestore(f) {
+		if (f !== void) {
+			name = f.name;
+			id   = f.id;
+			count = f.count;
+			if (f.play !== void) {
+				play = f.play;
+			}
+			if (f.stop !== void) {
+				stop = f.stop;
+			}
+			if (f.fade !== void) {
+				f.fade = %[];
+			}
+		}
+	}
+	
     /**
      * コンストラクタ
      */
@@ -23,41 +63,49 @@ class KAGEnvSE {
      * 再生処理
      * @param param 再生対象ファイル
      */
-    function play(param, elm) {
+	function setPlay(param, elm) {
 		if (param !== void) {
-			if (elm.fade === void) {
-				kag.se[id].volume = 100;
+			stop = void;
+			if (kag.skipMode<SKIP_STOP || elm.loop) {
+				name = param;
+				play = %[];
+				(Dictionary.assign incontextof play)(elm, false);
+				if (play.fade === void && play.time === void) {
+					fade = %[];
+					fade.volume = 100;
+				}
+			} else {
+				play = void;
+				name = void;
 			}
-			name = param;
-			if (kag.skipMode<3 || elm.loop || !kag.nosewhenskip) {
-				var time = +elm.time;
-				if (time > 0)  {
-					kag.se[id].fadeIn(%[ storage:param, loop:elm.loop, time:time, start:elm.start]);
-				} else {
-					kag.se[id].play(%[ storage:param, loop:elm.loop, start:elm.start]);
-                }
-            }
-        }
+		}
     }
 
     /**
      * 停止処理
      * @param param フェードアウト時間
      */
-    function stop(param, elm) {
-        if (kag.skipMode == 0 && +param > 0) {
-            kag.se[id].fadeOut(%[ time: +param]);
-        } else {
-            kag.se[id].stop();
-        }
+	function setStop(param, elm) {
+		play = void;
+		fade = void;
+		name = void;
+		var time;
+		if (elm !== void && elm.time !== void) {
+			time = +elm.time;
+		} else {
+			time = +param;
+		}
+		stop = time;
     }
 
     /**
      * 音量フェード
      * @param param フェード時間
      */
-    function fade(param, elm) {
-        kag.se[id].fade(%[ time:elm.time, volume:param ]);
+	function setFade(param, elm) {
+		fade = %[];
+		fade.volume = param;
+		fade.time   = elm.time;
     }
 
     /**
@@ -76,20 +124,21 @@ class KAGEnvSE {
      * フェード終了待ち
      */
     function setWaitFade(param, elm) {
-        waitFade = %[];
-        (Dictionary.assign incontextof waitFade)(elm, false);
-        waitFade.buf = id;
-        if (waitFade.canskip === void) {
-            waitFade.canskip = true;
-        }
+		waitFade = %[];
+		(Dictionary.assign incontextof waitFade)(elm, false);
+		waitFade.buf = id;
+		if (waitFade.canskip === void) {
+			waitFade.canskip = true;
+		}
     }
 
     var secommands = %[
     tagname : null, 
-    play : play incontextof this,
-    stop : stop incontextof this,
-    fade : fade incontextof this,
-    wait : setWait incontextof this,
+    storage : setPlay incontextof this,
+    play : setPlay incontextof this,
+    stop : setStop incontextof this,
+    fade : setFade incontextof this,
+	wait : setWait incontextof this,
     waitfade : setWaitFade incontextof this,
     loop : null,
     time : null,
@@ -118,7 +167,7 @@ class KAGEnvSE {
             return true;
         }
         // 再生コマンドとみなす
-        play(cmd, elm);
+		setPlay(cmd, elm);
         doflag = true;
         return true;
     }
@@ -128,20 +177,53 @@ class KAGEnvSE {
      * @param elm 引数
      */
     function tagfunc(elm) {
-        // dm("SE 用ファンクション呼び出し!");
-        wait = void;
+		// dm("SE 用ファンクション呼び出し!");
+		wait = void;
         waitFade = void;
-        doflag = false;
-        foreach(elm, doCommand);
-        // 何もしなかった場合、かつ、タグ名が se でなければそれを再生する
+		doflag = false;
+		foreach(elm, doCommand);
         if (!doflag && elm.tagname != "se") {
-            play(elm.tagname, elm);
+			setPlay(elm.tagname, elm);
         }
-        if (waitFade !== void) {
-            return kag.waitSEFade(waitFade);
-        } else if (wait !== void) {
-            return kag.waitSEStop(wait);
-        }
-        return 0;
+		sync();
+		if (waitFade !== void) {
+			return kag.waitSEFade(waitFade);
+		} else if (wait !== void) {
+			return kag.waitSEStop(wait);
+		}
+		return 0;
     }
+
+	function sync() {
+		if (!kag.skipNoDisp) {
+			if (fade !== void) {
+				if (fade.time === void) {
+					kag.se[id].volume = fade.volume;
+				} else {
+					kag.se[id].fade(fade);
+				}
+				fade = void;
+			}
+			if (play !== void) {
+				if (kag.skipMode<SKIP_STOP || play.loop || !kag.nosewhenskip) {
+					var time = +play.time;
+					if (time > 0)  {
+						kag.se[id].fadeIn(%[ storage:name, loop:play.loop, time:time, start:play.start]);
+					} else {
+						kag.se[id].play(%[ storage:name, loop:play.loop, start:play.start]);
+					}
+				}
+				play = void;
+			}
+		}
+		if (stop !== void) {
+			if (kag.skipMode == SKIP_NONE && stop > 0) {
+				kag.se[id].fadeOut(%[time:stop]);
+			} else {
+				kag.se[id].stop();
+			}
+			stop = void;
+		}
+	}
+
 };

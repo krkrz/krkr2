@@ -2,12 +2,20 @@
 // Copyright (C)2001-2007, W.Dee and contributors  改変・配布は自由です
 
 try {
-    Plugins.link("msgreceiver.dll");
+	Plugins.link("fpslimit.dll");
+} catch(e) {
+}
+try {
+	Plugins.link("layerExMovie.dll");
+} catch(e) {
+}
+try {
+    Plugins.link("tools/msgreceiver.dll");
 } catch(e) {
 }
 
 // システムバージョン
-var kagVersion = "3.27-dev.20060219";
+var kagVersion = "EX 3.27-dev.20070519";
 
 /*
 	Debug.message へのショートカット
@@ -58,7 +66,29 @@ function useArchiveIfExists(name)
 		Storages.addAutoPath(arcname + ">");
 }
 
+function addArchive(name)
+{
+	// name が存在していたらそのアーカイブを使う
+	Storages.addAutoPath(name + "/");
+	var arcname;
+	if(Storages.isExistentStorage(arcname = System.exePath + name + ".xp3"))
+		Storages.addAutoPath(arcname + ">");
+}
+
+function addVoiceArchive(name) {
+	Storages.addAutoPath("voice/" + name + "/");
+	// voice.xp3 の中をさがさせる
+	var arcname;
+	if(Storages.isExistentStorage(arcname = System.exePath + "voice.xp3")) {
+		Storages.addAutoPath(arcname + ">" + name + "/");
+	}
+}
+
+if (System.getArgument("-debugwin") != "no") {
+	Storages.addAutoPath(System.exePath + "tools/"); // exePath 以下の tools/
+}
 Storages.addAutoPath(System.exePath + "video/"); // exePath 以下の video/
+Storages.addAutoPath("data/"); // data フォルダ
 Storages.addAutoPath("video/"); // video フォルダ
 Storages.addAutoPath("others/"); // その他
 Storages.addAutoPath("rule/"); // ルール画像フォルダ
@@ -74,6 +104,9 @@ Storages.addAutoPath("face/");   // フェイスフォルダ
 Storages.addAutoPath("init/");   // 初期化用フォルダ
 Storages.addAutoPath("sysscn/"); // システム用シナリオ
 Storages.addAutoPath("main/"); // システム用シナリオ
+Storages.addAutoPath("evimage/");
+Storages.addAutoPath("thum/");
+Storages.addAutoPath("uipsd/");
 
 // パッチアーカイブの検索と使用
 // もしこれらの名前を持ったアーカイブが実行可能ファイルと
@@ -93,6 +126,9 @@ useArchiveIfExists("face.xp3");
 useArchiveIfExists("init.xp3");
 useArchiveIfExists("sysscn.xp3");
 useArchiveIfExists("main.xp3");
+useArchiveIfExists("evimage.xp3");
+useArchiveIfExists("thum.xp3");
+useArchiveIfExists("uipsd.xp3");
 
 if(Storages.isExistentStorage("Storages.tjs"))
 	Scripts.execStorage("Storages.tjs");
@@ -173,6 +209,10 @@ else
 	throw new Exception("Config.tjs が見つかりません。");
 }
 
+if (typeof global.ENV_GameName != "undefined") {
+	System.title = global.ENV_GameName;
+}
+
 /*
 	Config.tjs バージョンチェック
 */
@@ -187,7 +227,7 @@ if(typeof global.config_version == "undefined" || config_version != kagVersion)
 */
 
 // 実行可能ファイルのパスをキーにしてロックを行う
-if(!System.createAppLock(System.exePath.replace(/[^A-Za-z]/g, '_')))
+if(typeof global.restart == "undefined" && !System.createAppLock(System.exePath.replace(/[^A-Za-z]/g, '_')))
 {
 	// すでに起動している
 	System.inform(System.title + "はすでに起動しています");
