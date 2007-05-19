@@ -42,7 +42,10 @@ protected:
 	
 	void clearMovie();
 	
+	DispatchT onStartMovie;
+	DispatchT onUpdateMovie;
 	DispatchT onStopMovie;
+	
 	bool playing;
 	
 public:
