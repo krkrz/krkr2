@@ -1,0 +1,59 @@
+Plugins.link("squirrel.dll");
+
+Debug.console.visible = true;
+
+class MyLayer extends Layer {
+    function MyLayer() {
+        super.Layer(...);
+        Debug.message("レイヤ生成呼び出し!");
+    }
+
+    function setSize(w,h) {
+        super.setSize(w,h);
+        Debug.message("サイズ指定:", w, h);
+    }
+
+    function setPos(x,y) {
+        super.setPos(x,y);
+        Debug.message("場所指定:", x, y);
+    }
+};
+
+
+// 窓
+var win = new Window();
+win.visible=true;
+Debug.message("これはテストです");
+Debug.message(Scripts.execSQ("local a=10; return a;"));
+
+// ベースレイヤ
+var base = new Layer(win, null);
+base.visible=true;
+base.setSize(800,600);
+base.fillRect(0,0,800,600,0x000000);
+
+var a = 10;
+var b = "test data";
+
+var layer1 = new MyLayer(win, base);
+layer1.setSize(100,100);
+layer1.setPos(0,0);
+layer1.fillRect(0,0,100,100,0xffff0000);
+layer1.visible = true;
+
+var layer2 = Scripts.execStorageSQ("test.nut");
+Debug.message("設定された値:" + c);
+
+Debug.message("Squirrel Global:" + sqglobal);
+Debug.message("Squirrel test:" + sqglobal.test);
+
+sqglobal.test = "値を変更";
+Debug.message("Squirrel test:" + sqglobal.test);
+
+// 関数呼び出し
+sqglobal.hoge();
+
+// コンストラクタ
+var foo = new sqglobal.Foo();
+foo.print();
+Debug.message(foo.data);
