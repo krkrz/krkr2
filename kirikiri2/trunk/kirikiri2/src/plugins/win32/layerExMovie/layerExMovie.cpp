@@ -45,11 +45,14 @@ layerExMovie::layerExMovie(DispatchT obj) : _pType(obj, TJS_W("type")), layerExB
 	m_Proxy = NULL;
 	m_Reader = NULL;
 	in = NULL;
-
 	{
 		tTJSVariant var;
+		if (TJS_SUCCEEDED(obj->PropGet(TJS_IGNOREPROP, L"onStartMovie", NULL, &var, obj))) onStartMovie = var;
+		else onStartMovie = NULL;
 		if (TJS_SUCCEEDED(obj->PropGet(TJS_IGNOREPROP, L"onStopMovie", NULL, &var, obj))) onStopMovie = var;
 		else onStopMovie = NULL;
+		if (TJS_SUCCEEDED(obj->PropGet(TJS_IGNOREPROP, L"onUpdateMovie", NULL, &var, obj))) onUpdateMovie = var;
+		else onUpdateMovie = NULL;
 	}
 	playing = false;
 }
@@ -256,6 +259,9 @@ layerExMovie::startMovie(bool loop)
 		pAMStream->SetState(STREAMSTATE_RUN);
 		pSample->Update(SSUPDATE_ASYNC, NULL, NULL, 0);
 		start();
+		if (onStartMovie != NULL) {
+			onStartMovie->FuncCall(0, NULL, NULL, NULL, 0, NULL, _obj);
+		}
 	}
 }
 
@@ -265,13 +271,14 @@ layerExMovie::startMovie(bool loop)
 void
 layerExMovie::stopMovie()
 {
-	if (playing) {
-		if (onStopMovie != NULL) {
-			onStopMovie->FuncCall(0, NULL, NULL, NULL, 0, NULL, NULL);
-		}
-	}
+	bool p = playing;
 	stop();
 	clearMovie();
+	if (p) {
+		if (onStopMovie != NULL) {
+			onStopMovie->FuncCall(0, NULL, NULL, NULL, 0, NULL, _obj);
+		}
+	}
 }
 
 bool
@@ -335,7 +342,10 @@ layerExMovie::OnContinuousCallback(tjs_uint64 tick)
 					}
 					pSurface->Unlock(NULL); 
 				}
-				redraw();
+				//redraw();
+				if (onUpdateMovie != NULL) {
+					onUpdateMovie->FuncCall(0, NULL, NULL, NULL, 0, NULL, _obj);
+				}
 			}
 			pSample->Update(SSUPDATE_ASYNC, NULL, NULL, 0);
 		} else if (hr == MS_S_ENDOFSTREAM) {

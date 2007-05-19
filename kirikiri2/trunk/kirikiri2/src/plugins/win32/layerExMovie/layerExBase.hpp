@@ -15,8 +15,11 @@ struct ObjectCache
 	typedef tTJSVariant     VariantT;
 
 	ObjectCache(DispatchT obj, NameT name) : _obj(obj), _cache(0), _name(name) {
+
+		tTJSVariant layer;
+		TVPExecuteExpression(TJS_W("Layer"), &layer);
 		tTJSVariant var;
-		if (TJS_SUCCEEDED(obj->PropGet(TJS_IGNOREPROP, name, NULL, &var, _obj))) _cache = var;
+		if (TJS_SUCCEEDED(layer.AsObjectNoAddRef()->PropGet(TJS_IGNOREPROP, name, NULL, &var, layer.AsObjectNoAddRef()))) _cache = var;
 		else _Exception(TJS_W("FAILED: get property object :"));
 	}
 
@@ -66,16 +69,16 @@ struct layerExBase
 	typedef unsigned char* BufferRT;
 	typedef tjs_int        PitchT;
 	typedef tjs_int        GeometryT;
-
+	DispatchT _obj;
 	/**
 	 * コンストラクタ
 	 */
 	layerExBase(DispatchT obj)
-		: _pLeft(  obj, TJS_W("imageLeft")),
+		: _obj(obj), _pLeft(  obj, TJS_W("imageLeft")),
 		  _pTop(   obj, TJS_W("imageTop")),
 		  _pWidth( obj, TJS_W("imageWidth")),
 		  _pHeight(obj, TJS_W("imageHeight")),
-		  _pBuffer(obj, TJS_W("mainImageBuffer")),
+		  _pBuffer(obj, TJS_W("mainImageBufferForWrite")),
 		  _pPitch( obj, TJS_W("mainImageBufferPitch")),
 		  _pUpdate(obj, TJS_W("update")),
 		  _width(0), _height(0), _pitch(0), _buffer(0)
