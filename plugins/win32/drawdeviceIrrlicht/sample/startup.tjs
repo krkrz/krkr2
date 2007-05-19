@@ -42,9 +42,12 @@ class MyWindow extends Window
 	var base;
 	var base2;
 	var irrlicht;
+	var flashmenu;
 	
 	function MyWindow() {
 		super.Window();
+		menu.add(flashmenu = new MenuItem(this, "フラッシュテスト(&F)"));
+
 		innerSunken = false;
 		borderStyle = bsSingle;
 		setInnerSize(WIDTH, HEIGHT);
@@ -59,9 +62,6 @@ class MyWindow extends Window
 		// 2枚目のプライマリレイヤ
 		base2 = new BaseLayer(this, WIDTH, HEIGHT);
 		base2.beginAction(LayerJumpActionModule, %[vibration:30, cycle:1000]);
-
-		// フラッシュファイルの読み込み
-		irrlicht.loadSWF("data/anntest.swf");
 	}
 
 	function finalize() {
@@ -79,6 +79,16 @@ class MyWindow extends Window
 		}
 	}
 
+	function action(ev)
+	{
+		if(ev.type == "onClick" && ev.target == flashmenu) {
+			// フラッシュファイルの読み込み例
+			irrlicht.loadSWF("data/anntest.swf");
+		}
+	}
+
+
+	
 //	function onMouseDown(x, y, button, shift) {
 //		Debug.message("マウス押し下げ:" + x + "," + y + "," + button + "," + shift);
 //	}
