@@ -35,7 +35,7 @@ Scripts.execStorageSQ("filename.nut");		// Squirrel スクリプトファイルの実行
 
 　http://wiki.squirrel-lang.org/default.aspx/SquirrelWiki/SqPlus.html
 
-　開発時は SQUIRREL2_1_1_sqplus25.zip を使って作業しています。
+　開発時は SQUIRREL2_1_1_sqplus_snapshot_20070304.zip を使って作業しています。
 
 ●ライセンス
 
