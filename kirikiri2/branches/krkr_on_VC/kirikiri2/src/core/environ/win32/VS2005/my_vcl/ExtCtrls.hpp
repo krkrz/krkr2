@@ -6,13 +6,16 @@
 #include "Forms.hpp"
 #include "Messages.hpp"
 
+#include <wx/timer.h>
 //----------------------------------------------------------------------------
 class TTimer : public TComponent
 {
+private:
+	wxTimer* m_wxTimer;
 public:
 	TTimer(TComponent* Owner);
 	virtual ~TTimer();
-	PROPERTY_VAR0(int, Interval);
-	PROPERTY_VAR0(bool,Enabled);
+	PROPERTY_VAR1(int, Interval);
+	PROPERTY(bool,Enabled);
 	boost::function1<void, System::TObject*> OnTimer;
 };
