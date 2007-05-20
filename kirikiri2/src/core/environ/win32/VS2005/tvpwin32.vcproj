@@ -150,6 +150,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="version.lib vfw32.lib ddraw.lib dxguid.lib libjpeg.lib zlib.lib libpng.lib wxmsw28_core.lib wxbase28.lib wxtiff.lib wxjpeg.lib wxpng.lib wxzlib.lib wxregex.lib wxexpat.lib winmm.lib comctl32.lib rpcrt4.lib wsock32.lib odbc32.lib delayimp.lib"
+				OutputFile="$(OutDir)\krkr_VC2005.exe"
 				LinkIncremental="1"
 				GenerateDebugInformation="true"
 				SubSystem="2"

@@ -78,7 +78,7 @@ enum { ssShift, ssAlt, ssCtrl, ssLeft, ssRight, ssMiddle, ssDouble };
 enum TFormStyle { fsStayOnTop, fsNormal};
 typedef int TOwnerDrawState;
 typedef unsigned int TColor;
-enum { clBlack, clNone, clWhite, clWindow, clWindowText };
+enum { clBlack=0x000000, clWhite=0xFFFFFF, clWindow=0x8000005, clWindowText=0x8000008, clNone=0x1fffffff };
 enum TFontStyle { fsBold, fsItalic, fsUnderline, fsStrikeOut };
 
 using namespace Controls;
