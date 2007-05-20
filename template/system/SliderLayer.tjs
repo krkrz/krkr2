@@ -111,16 +111,18 @@ class SliderLayer extends KAGLayer
                 var tabx = (imw - tabw) / 2;
 
 				if (nodeEnabled) {
-                if (Slider_dragging) {
-                    // on
-                    operateRect(tabx, x_htabh, tabImage, tabw, 0, tabw, tabh);
-                } else if (Slider_mouseOn) {
-                    // over
-                    operateRect(tabx, x_htabh, tabImage, tabw*2, 0, tabw, tabh);
-                } else {
-                    // normal
-                    operateRect(tabx, x_htabh, tabImage, 0, 0, tabw, tabh);
-                }
+					if (Slider_dragging) {
+						// on
+						operateRect(tabx, x_htabh, tabImage, tabw, 0, tabw, tabh);
+					} else if (Slider_mouseOn) {
+						// over
+						operateRect(tabx, x_htabh, tabImage, tabw*2, 0, tabw, tabh);
+					} else {
+						// normal
+						operateRect(tabx, x_htabh, tabImage, 0, 0, tabw, tabh);
+					}
+				} else {
+					operateRect(tabx, x_htabh, tabImage, 0, 0, tabw, tabh);
 				}
             } else {
                 fillRect(0, x_htabh, imw, tabh, 0xffffff + (nodeEnabled ? 0 : 0xc0000000));
@@ -159,16 +161,18 @@ class SliderLayer extends KAGLayer
                 var taby = (imh - tabh) / 2;
                 
 				if (nodeEnabled) {
-                if (Slider_dragging) {
-                    // on
-                    operateRect(x_htabw, taby, tabImage, tabw, 0, tabw, tabh);
-                } else if (Slider_mouseOn) {
-                    // over
-                    operateRect(x_htabw, taby, tabImage, tabw*2, 0, tabw, tabh);
-                } else {
-                    // normal
-                    operateRect(x_htabw, taby, tabImage, 0, 0, tabw, tabh);
-                }
+					if (Slider_dragging) {
+						// on
+						operateRect(x_htabw, taby, tabImage, tabw, 0, tabw, tabh);
+					} else if (Slider_mouseOn) {
+						// over
+						operateRect(x_htabw, taby, tabImage, tabw*2, 0, tabw, tabh);
+					} else {
+						// normal
+						operateRect(x_htabw, taby, tabImage, 0, 0, tabw, tabh);
+					}
+				} else {
+					operateRect(x_htabw, taby, tabImage, 0, 0, tabw, tabh);
 				}
             } else {
                 fillRect(x_htabw, 0, tabw, imh, 0xffffff + (nodeEnabled ? 0 : 0xc0000000));
