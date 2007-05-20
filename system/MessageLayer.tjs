@@ -2153,7 +2153,6 @@ class MessageLayer extends KAGLayer
 			selClickLock = false;
 			cursorX = x;
 			cursorY = y;
-			internalMouseMove(x, y);
 			if(force) keyLink = n; // ˆê‰Äİ’è
 		}
 		if(linkn.type == ltEdit || linkn.type == ltCheckBox)
