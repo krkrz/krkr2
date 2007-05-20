@@ -543,6 +543,34 @@ class KAGEnvCharacter extends KAGEnvLevelLayer, KAGEnvImage {
 
     var imageFile;
 
+	function applyColorInfo(elm) {
+		var timeInfo;
+		if ((timeInfo = env.currentTime) !== void) {
+			elm.lightcolor = timeInfo.charLightColor;
+			elm.lighttype  = timeInfo.charLightType;
+			elm.brightness = timeInfo.charBrightness;
+			elm.contrast   = timeInfo.charContrast;
+		}
+	}
+	
+	function applyColor(layer) {
+		var timeInfo;
+		if ((timeInfo = env.currentTime) !== void) {
+			// 環境光合成
+			if (timeInfo.charLightColor !== void) {
+				layer.holdAlpha = true;
+				layer.fillOperateRect(0,0,
+									  layer.imageWidth,layer.imageHeight,
+									  timeInfo.charLightColor,
+									  timeInfo.charLightType);
+			}
+			// 明度補正
+			if (timeInfo.charBrightness !== void) {
+				layer.light(timeInfo.charBrightness, timeInfo.charContrast);
+			}
+        }
+	}
+	
     /**
      * 立ち絵の描画
      * @param layer 描画対象レイヤ
@@ -663,14 +691,16 @@ class KAGEnvCharacter extends KAGEnvLevelLayer, KAGEnvImage {
                             }
                         }
                     }
-                    if (imageInfo && imageInfo.offs_x !== void) {
+					if (imageInfo && imageInfo.offs_x !== void) {
                         layer.operateRect(imageInfo.offs_x, imageInfo.offs_y,
                                           faceImage, 0, 0, faceImage.imageWidth, faceImage.imageHeight);
                     } else {
                         layer.operateRect(0,0,faceImage,0,0,faceImage.imageWidth, faceImage.imageHeight);
                     }
-                }
-                return true;
+				}
+				// 色情報反映
+				applyColor(layer);
+				return true;
                 
             } else {
                 // 顔合成型立ち絵
@@ -685,10 +715,13 @@ class KAGEnvCharacter extends KAGEnvLevelLayer, KAGEnvImage {
                     imageFile = imageFile.replace(/FACE/, faceName);
                 }
                 try {
-                    if (layer instanceof "AnimationLayer") {
-                        layer.loadImages(%[ "storage" => imageFile]);
+					if (layer instanceof "AnimationLayer") {
+						var elm = %[ storage:imageFile ];
+						applyColorInfo(elm);
+						layer.loadImages(elm);
                     } else {
-                        layer.loadImages(imageFile);
+						layer.loadImages(imageFile);
+						applyColor(layer);
                     }
                 } catch (e) {
                     return false;
@@ -710,11 +743,14 @@ class KAGEnvCharacter extends KAGEnvLevelLayer, KAGEnvImage {
         if (image !== void) {
             var imageName = image.replace(/LEVEL/, levelName);
             try {
-                if (layer instanceof "AnimationLayer") {
-                    layer.loadImages(%[ "storage" => image]);
+				if (layer instanceof "AnimationLayer") {
+					var elm = %[ storage:image ];
+					applyColorInfo(elm);
+					layer.loadImages(elm);
                 } else {
-                    layer.loadImages(image);
-                }
+					layer.loadImages(image);
+					applyColor(layer);
+				}
             } catch (e) {
                 kag.errorImage(image+ ":立ち絵画像がロードできません");
                 return;
@@ -722,39 +758,13 @@ class KAGEnvCharacter extends KAGEnvLevelLayer, KAGEnvImage {
         } else {
             if (!_drawLayerPose(layer, levelName, pose) &&
                 !(pose != init.defaultPose && _drawLayerPose(layer, levelName, init.defaultPose))) {
-                kag.errorImage(imageFile + ":立ち絵画像がロードできません pose:" + pose + " dress:" + dress + " face:" + face);
-                return;
-            }
+				kag.errorImage(imageFile + ":立ち絵画像がロードできません pose:" + pose + " dress:" + dress + " face:" + face);
+				return;
+			}
         }
 
-		// 色補正処理
-		// AnimationLayer 用にロード時に細工…だと表情別画像とかではまるので後処理対応
-		var timeInfo;
-		if ((timeInfo = env.currentTime) !== void) {
-            // レイヤ合成
-			if (timeInfo.charLightColor !== void) {
-				layer.holdAlpha = true;
-				layer.fillOperateRect(0,0,
-									  layer.imageWidth,layer.imageHeight,
-									  timeInfo.charLightColor,
-									  timeInfo.charLightType);
-				if (layer instanceof "AnimationLayer" && layer.Anim_loadParams !== void) {
-					layer.Anim_loadParams.lightcolor = timeInfo.charLightColor;
-					layer.Anim_loadParams.lighttype  = timeInfo.charLightType;
-				}
-			}
-            // 明度補正
-			if (timeInfo.charBrightness !== void) {
-				layer.light(timeInfo.charBrightness, timeInfo.charContrast);
-				if (layer instanceof "AnimationLayer" && layer.Anim_loadParams !== void) {
-					layer.Anim_loadParams.brightness = timeInfo.charBrightness;
-					layer.Anim_loadParams.contrast   = timeInfo.charContrast;
-				}
-            }
-        }
-		
-        // サイズ補正
-        layer.setSizeToImageSize();
+		// サイズ補正
+		layer.setSizeToImageSize();
     }
 
     /**
