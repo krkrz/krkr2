@@ -6867,18 +6867,6 @@ class KAGWindow extends Window
     }
 	
     /**
-     * 画面消去処理の挿入
-     */
-    function entryEr() {
-        if (emptyLine && !erAfterPage) {
-            if (!noErOnce) {
-                tagHandlers.er(%[]);
-            }
-            noErOnce = false;
-        }
-    }
-
-    /**
      * 指定したタグを次回に割り込み実行させる
      */
     function insertTag(name, elm) {
@@ -7007,7 +6995,7 @@ class KAGWindow extends Window
 				if (afterPage) {
 					erflag = true;
 				} else {
-					if (!skipNoDisp) {
+					if (!afterName && !skipNoDisp) {
 						addTag(cd, "r");
 					}
 				}
@@ -7025,7 +7013,8 @@ class KAGWindow extends Window
 				nameMode = 1;
 				nameStr  = "";
 				nameDisp = "";
-                return;
+				afterPage = false;
+				return;
             } else {
 				nameMode = 0;
                 // 名前指定がない場合はパラメータなしで名前処理を呼び出す
