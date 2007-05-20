@@ -22,8 +22,8 @@ public:
 	char * c_str() { return m_szBuffer; }
 
 	int Length(void) const { return m_szBuffer ? strlen(m_szBuffer) : 0; }
-	int AnsiCompareIC(const AnsiString&);
-	int AnsiPos(const AnsiString& str);
+	int AnsiCompareIC(const AnsiString&) const;
+	int AnsiPos(const AnsiString& str) const;
 	AnsiString SubString(int, int) const;
 
 	AnsiString operator+(const char) const;
