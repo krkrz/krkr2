@@ -244,8 +244,8 @@ class KAGWindow extends Window
 	var kagPlugins = []; // KAG プラグイン
 
 	var keyDownHook = []; // キーが押されたときに呼び出される物
-	var leftClickHook = []; // 右クリックされたときに呼び出される物
-	var rightClickHook = []; // 左クリックされたときに呼び出される物
+	var leftClickHook = []; // 左クリックされたときに呼び出される物
+	var rightClickHook = []; // 右クリックされたときに呼び出される物
 
 	var padKeyMap; // パッドボタン -> ハンドラ(キーコード)。コンストラクタ内で設定
 	var padKeyMapReverse; // キーコード -> パッドボタン。コンストラクタ内で設定
