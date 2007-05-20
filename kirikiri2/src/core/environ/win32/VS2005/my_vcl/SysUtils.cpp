@@ -82,7 +82,7 @@ PACKAGE AnsiString __fastcall ExtractFilePath(const AnsiString & FileName)
 AnsiString __fastcall ExpandUNCFileName(const AnsiString & FileName)
 {
 	// –¢ŽÀ‘•
-	return "";
+	return "\\\\?\\" + FileName;
 }
 
 //----------------------------------------------------------------------------

@@ -179,7 +179,9 @@ WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 {
 	// try starting the program!
 	bool engine_init = false;
+#ifndef _DEBUG
 	try
+#endif
 	{
 		if(TVPCheckProcessLog()) return 0; // sub-process for processing object hash map log
 
@@ -220,6 +222,7 @@ WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 			// ignore errors
 		}
 	}
+#ifndef _DEBUG
 	catch (EAbort &e)
 	{
 		// nothing to do
@@ -246,6 +249,7 @@ WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	{
 		Application->ShowException(&Exception("Unknown error!"));
 	}
+#endif
 
 	if(engine_init) TVPUninitScriptEngine();
 

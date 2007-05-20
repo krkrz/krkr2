@@ -74,7 +74,7 @@ AnsiString::~AnsiString()
 		free(m_szBuffer);
 }
 //----------------------------------------------------------------------------
-int AnsiString::AnsiCompareIC(const AnsiString& str)
+int AnsiString::AnsiCompareIC(const AnsiString& str) const
 {
 	if ( m_szBuffer == str.c_str() ) return 0;
 	if ( m_szBuffer == NULL ) return -1;
@@ -83,13 +83,13 @@ int AnsiString::AnsiCompareIC(const AnsiString& str)
 }
 //----------------------------------------------------------------------------
 // この関数はちゃんと作れてないので、また今度
-int  AnsiString::AnsiPos(const AnsiString& str)
+int  AnsiString::AnsiPos(const AnsiString& str) const
 {
 	if ( m_szBuffer == str.m_szBuffer ) return 0;
 	if ( m_szBuffer == NULL || str.m_szBuffer == NULL ) return 0;
 	char* p = (char*)_mbsstr((unsigned char*)m_szBuffer, (unsigned char*)str.m_szBuffer);
 	if ( p == NULL ) return 0;
-	return p - m_szBuffer;
+	return p - m_szBuffer + 1; // 先頭文字にヒットしたら 1 を返すらしい
 }
 //----------------------------------------------------------------------------
 AnsiString AnsiString::SubString(int head, int cnt) const
@@ -225,5 +225,5 @@ bool AnsiString::operator == (const AnsiString& str) const
 //----------------------------------------------------------------------------
 AnsiString operator + (const char *lhs, const AnsiString & rhs)
 {
-	return rhs + lhs;
+	return AnsiString(lhs) + rhs;
 }
