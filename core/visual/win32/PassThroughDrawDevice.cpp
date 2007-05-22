@@ -439,6 +439,8 @@ class tTVPDrawer_DDDoubleBuffering : public tTVPDrawer
 	IDirectDrawSurface * Surface;
 	IDirectDrawClipper * Clipper;
 
+	bool LastOffScreenDCGot;
+
 public:
 	//! @brief	コンストラクタ
 	tTVPDrawer_DDDoubleBuffering(tTVPPassThroughDrawDevice * device) : tTVPDrawer(device)
@@ -447,6 +449,7 @@ public:
 		OffScreenDC = NULL;
 		Surface = NULL;
 		Clipper = NULL;
+		LastOffScreenDCGot = true;
 	}
 
 	//! @brief	デストラクタ
@@ -579,7 +582,7 @@ public:
 		// retrieve DC
 		if(Surface && TargetWindow)
 		{
-			HDC dc;
+			HDC dc = NULL;
 			HRESULT hr = Surface->GetDC(&dc);
 			if(hr == DDERR_SURFACELOST)
 			{
@@ -590,11 +593,21 @@ public:
 
 			if(hr != DD_OK)
 			{
-				TVPThrowExceptionMessage(TJS_W("Off-screen surface, IDirectDrawSurface::GetDC failed/HR=%1"),
-					TJSInt32ToHex(hr, 8));
+				dc = NULL;
+				InvalidateAll();  // causes reconstruction of off-screen image
+
+				if(LastOffScreenDCGot)
+				{
+					// display this message only once since last success
+					TVPAddLog(
+						TJS_W("(inf) Off-screen surface, IDirectDrawSurface::GetDC failed/HR=") +
+						TJSInt32ToHex(hr, 8) + TJS_W(", ignoring"));
+				}
 			}
 
 			OffScreenDC = dc;
+
+			if(OffScreenDC) LastOffScreenDCGot = true; else LastOffScreenDCGot = false;
 		}
 	}
 
