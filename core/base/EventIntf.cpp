@@ -621,8 +621,16 @@ void TVPDeliverAllEvents()
 			TVPDeliverContinuousEvent();
 		}
 
-		// for window content updating
-		TVPDeliverWindowUpdateEvents();
+		try
+		{
+		   try
+			{
+				// for window content updating
+				TVPDeliverWindowUpdateEvents();
+			}
+			TJS_CONVERT_TO_TJS_EXCEPTION
+		}
+		TVP_CATCH_AND_SHOW_SCRIPT_EXCEPTION(TJS_W("window update"));
 	}
 
 	if(TVPEventQueue.size() == 0)
