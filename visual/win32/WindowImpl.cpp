@@ -1865,12 +1865,12 @@ bool tTJSNI_Window::GetTrapKey() const
 void tTJSNI_Window::SetMaskRegion(tjs_int threshold)
 {
 	if(!Form) return;
-/*
-	if(!LayerManager) TVPThrowExceptionMessage(TVPWindowHasNoLayer);
-	tTJSNI_BaseLayer *lay = LayerManager->GetPrimaryLayer();
+
+	if(!DrawDevice) TVPThrowExceptionMessage(TVPWindowHasNoLayer);
+	tTJSNI_BaseLayer *lay = DrawDevice->GetPrimaryLayer();
 	if(!lay) TVPThrowExceptionMessage(TVPWindowHasNoLayer);
 	Form->SetMaskRegion(((tTJSNI_Layer*)lay)->CreateMaskRgn((tjs_uint)threshold));
-*/
+
 }
 //---------------------------------------------------------------------------
 void tTJSNI_Window::RemoveMaskRegion()
