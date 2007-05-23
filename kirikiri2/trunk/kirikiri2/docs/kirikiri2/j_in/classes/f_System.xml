@@ -250,6 +250,37 @@
 		　の形式で吉里吉里に渡されている必要があります。前者の場合は値として <tt>value</tt> が
 		返り、前者の場合は値として <tt>'yes'</tt> が返ります。<r/>
 	</desc>
+	<ref>System.setArgument</ref>
+</member>
+
+
+<member>
+	<name>setArgument</name>
+	<type>method</type>
+	<shortdesc>コマンドラインオプションの設定</shortdesc>
+	<arg>
+		<argitem>
+			<name>name</name>
+			<default></default>
+			<desc>
+				　設定するコマンドラインオプション名を指定します。最初に '-'
+				( ハイフン ) をつけてください ( 例 : <tt>'-contfreq'</tt> )。<r/>
+			</desc>
+		</argitem>
+		<argitem>
+			<name>value</name>
+			<default></default>
+			<desc>
+				　設定する値を指定します。 ( 例 : <tt>'60'</tt> )。<r/>
+			</desc>
+		</argitem>
+	</arg>
+	<desc>
+		　動的に<kw>コマンドラインオプション</kw>を設定します。すべてのコマンドラインオプションが設定可能な訳ではありません。<r/>
+		　設定可能なコマンドラインオプションについては <link href="CommandLine" /> を参照してください。ここで動的に変更可能という表記のないオプションについては変更を行わないでください。<r/>
+		　このメソッドは、そのオプションが動的に変更可能かどうかやオプションの存在、値の有効性などをチェックしません。値の設定には十分気をつけてください。<r/>
+	</desc>
+	<ref>System.getArgument</ref>
 </member>
 
 
