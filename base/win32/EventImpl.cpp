@@ -20,29 +20,6 @@
 
 
 //---------------------------------------------------------------------------
-// global variables
-//---------------------------------------------------------------------------
-tjs_int TVPContinousHandlerLimitFrequency = 0;
-//---------------------------------------------------------------------------
-static bool TVPOptionsInit = false;
-static void TVPInitOptions()
-{
-	if(TVPOptionsInit) return;
-	TVPOptionsInit = true;
-
-	tTJSVariant val;
-	if( TVPGetCommandLine(TJS_W("-contfreq"), &val) )
-	{
-		TVPContinousHandlerLimitFrequency = (tjs_int)val;
-	}
-
-}
-//---------------------------------------------------------------------------
-
-
-
-
-//---------------------------------------------------------------------------
 // TVPInvokeEvents
 //---------------------------------------------------------------------------
 bool TVPEventInvoked = false;
@@ -256,9 +233,24 @@ void tTVPContinuousHandlerCallLimitThread::SetEnabled(bool enabled)
 
 
 //---------------------------------------------------------------------------
+static tjs_int TVPContinousHandlerLimitFrequency = 0;
+//---------------------------------------------------------------------------
 void TVPBeginContinuousEvent()
 {
-	TVPInitOptions();
+	// read commandline options
+	static tjs_int ArgumentGeneration = 0;
+	if(ArgumentGeneration != TVPGetCommandLineArgumentGeneration())
+	{
+		ArgumentGeneration = TVPGetCommandLineArgumentGeneration();
+
+		tTJSVariant val;
+		if( TVPGetCommandLine(TJS_W("-contfreq"), &val) )
+		{
+			TVPContinousHandlerLimitFrequency = (tjs_int)val;
+		}
+	}
+
+
 	if(TVPContinousHandlerLimitFrequency == 0)
 	{
 		// no limit

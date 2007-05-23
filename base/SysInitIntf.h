@@ -74,6 +74,14 @@ TJS_EXP_FUNC_DEF(bool, TVPGetCommandLine, (const tjs_char * name, tTJSVariant *v
 	// command line parameter format must be "-name=value"
 	// returns false if the the parameter is not exist, otherwise
 	// sets the value to "value" and returns true.
+TJS_EXP_FUNC_DEF(tjs_int, TVPGetCommandLineArgumentGeneration, ());
+	// retrieves command line argument generation count. you can check
+	// whether the command line options has changed, by comparing this value
+	// to your value which is remembered when of previous call of this.
+TJS_EXP_FUNC_DEF(void, TVPSetCommandLine, (const tjs_char * name, const ttstr & value));
+	// sets command line to the specified value.
+	// note that this function does not check any consistency or correctness of the value.
+
 //---------------------------------------------------------------------------
 
 #endif

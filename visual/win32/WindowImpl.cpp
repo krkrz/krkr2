@@ -194,14 +194,11 @@ bool TVPDDPrimarySurfaceFailed = false;
 static tjs_int TVPPreferredFullScreenBPP = 0;
 static tTVPFullScreenResolutionMode TVPPreferredFullScreenResolutionMode = fsrAuto;
 static bool TVPPreferredFullScreenUsingEngineZoom = true;
-static bool TVPFullScreenOptionsGot = false;
 
 
 //---------------------------------------------------------------------------
 static void TVPInitFullScreenOptions()
 {
-	if(TVPFullScreenOptionsGot) return;
-
 	tTJSVariant val;
 
 	if(TVPGetCommandLine(TJS_W("-fsbpp"), &val) )
@@ -247,8 +244,6 @@ static void TVPInitFullScreenOptions()
 		else
 			TVPUseChangeDisplaySettings = false;
 	}
-
-	TVPFullScreenOptionsGot = true;
 }
 //---------------------------------------------------------------------------
 static BOOL WINAPI DDEnumCallbackEx( GUID *pGUID, LPSTR pDescription, LPSTR strName,

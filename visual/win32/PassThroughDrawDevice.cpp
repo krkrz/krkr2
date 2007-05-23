@@ -26,7 +26,7 @@
 //---------------------------------------------------------------------------
 // オプション
 //---------------------------------------------------------------------------
-static bool TVPPassThroughOptionsInit = false;
+static tjs_int TVPPassThroughOptionsGeneration = 0;
 static bool TVPWaitVSync = false;
 static bool TVPZoomInterpolation = true;
 static bool TVPForceDoublebuffer = false;
@@ -34,7 +34,8 @@ static bool TVPDBGDIPrefered = false;
 //---------------------------------------------------------------------------
 static void TVPInitPassThroughOptions()
 {
-	if(TVPPassThroughOptionsInit) return;
+	if(TVPPassThroughOptionsGeneration == TVPGetCommandLineArgumentGeneration()) return;
+	TVPPassThroughOptionsGeneration = TVPGetCommandLineArgumentGeneration();
 
 	bool initddraw = false;
 	tTJSVariant val;
@@ -70,8 +71,6 @@ static void TVPInitPassThroughOptions()
 	}
 
 	if(initddraw) TVPEnsureDirectDrawObject();
-
-	TVPPassThroughOptionsInit = true;
 }
 //---------------------------------------------------------------------------
 
@@ -726,6 +725,7 @@ void tTVPPassThroughDrawDevice::EnsureDrawer(tDrawerType failedtype)
 	// このメソッドでは、以下の条件の際に drawer を作る(作り直す)。
 	// 1. Drawer が NULL の場合
 	// 2. 現在の Drawer のタイプが適切でなくなったとき
+	TVPInitPassThroughOptions();
 
 	if(TargetWindow)
 	{
@@ -840,6 +840,7 @@ void TJS_INTF_METHOD tTVPPassThroughDrawDevice::AddLayerManager(iTVPLayerManager
 //---------------------------------------------------------------------------
 void TJS_INTF_METHOD tTVPPassThroughDrawDevice::SetTargetWindow(HWND wnd)
 {
+	TVPInitPassThroughOptions();
 	DestroyDrawer();
 	TargetWindow = wnd;
 }
@@ -906,6 +907,7 @@ void TJS_INTF_METHOD tTVPPassThroughDrawDevice::NotifyBitmapCompleted(iTVPLayerM
 	// opacity と type は無視するしかないので無視する
 	if(Drawer)
 	{
+		TVPInitPassThroughOptions();
 		if(TVPWaitVSync)
 		{
 			tjs_int w, h;
