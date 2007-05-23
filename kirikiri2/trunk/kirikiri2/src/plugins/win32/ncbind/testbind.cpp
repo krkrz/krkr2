@@ -216,6 +216,33 @@ CHECK(TypeConvChecker,
 
 ////////////////////////////////////////
 
+struct BoxingChecker {
+	static TypeConvChecker& CheckRef(TypeConvChecker &ref) { return ref; }
+	static TypeConvChecker* CheckPtr(TypeConvChecker *ref) { return ref; }
+	static bool CheckConstRef(TypeConvChecker const &ref, bool b) { return ref.Bool(b);  }
+	static bool CheckConstPtr(TypeConvChecker const *ref, bool b) { return ref->Bool(b); }
+};
+NCB_REGISTER_CLASS(BoxingChecker) {
+	NCB_METHOD(CheckRef);
+	NCB_METHOD(CheckPtr);
+	NCB_METHOD(CheckConstRef);
+	NCB_METHOD(CheckConstPtr);
+}
+CHECK(BoxingChecker,
+	  SCRIPT_BEGIN
+	  "var inst = new TypeConvChecker();"
+
+	  SCRIPT_EVAL(    "BoxingChecker.CheckRef(inst).Name == 'TypeConvChecker'")
+	  SCRIPT_EVAL(    "BoxingChecker.CheckPtr(inst).Name == 'TypeConvChecker'")
+
+	  SCRIPT_EVAL_LOG("BoxingChecker.CheckConstRef(inst, true ) == true",  "TypeConvChecker::Bool(True)")
+	  SCRIPT_EVAL_LOG("BoxingChecker.CheckConstPtr(inst, false) == false", "TypeConvChecker::Bool(False)")
+
+	  "invalidate inst;"
+	  SCRIPT_END);
+
+////////////////////////////////////////
+
 struct OverloadTest {
 	static void Method(int a, int  b) { mes("Method(int, int) : ", a, ",", b); }
 	static void Method(char const *p) { mes("Method(char const*) : ", p); }

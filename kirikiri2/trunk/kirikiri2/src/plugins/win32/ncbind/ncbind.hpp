@@ -1499,9 +1499,7 @@ struct ncbRegistNativeClass : public ncbRegistNativeClassBase {
 		tTJSVariant val(static_cast<iTJSDispatch2*>(_classobj));
 
 		// 3 すでに val が _classobj を保持しているので、_classobj は Release する
-		//_classobj->Release();
-		// …としたいところだが，Boxing処理でインスタンスを作る関係でクラスオブジェクトが必要なので開放しない
-		// (プラグイン開放時にリリースする⇒ncbCreateClass::Release)
+		_classobj->Release();
 
 		// 4 global の PropSet メソッドを用い、オブジェクトを登録する
 		global->PropSet(
@@ -1525,13 +1523,17 @@ struct ncbRegistNativeClass : public ncbRegistNativeClassBase {
 	}
 
 	/// プラグイン開放時にクラスオブジェクトをリリースする
-	void UnregistBegin() {
+	void UnregistEnd() {
 		iTJSDispatch2 *global = TVPGetScriptDispatch();
 		if (global) {
 			global->DeleteMember(0, _className, 0, global);
 			global->Release();
 		}
 		_RemoveClassInfo();
+		NCB_LOG_2(TJS_W("EndUnregistClass: "), _className);
+	}
+	void UnregistBegin() {
+		NCB_LOG_2(TJS_W("BeginUnregistClass: "), _className);
 	}
 
 private:
@@ -1551,8 +1553,7 @@ protected:
 												 _className, nitMethod);
 	}
 	void _RemoveClassInfo() const {
-		typename ClassInfoT::ClassObjectT *obj = ClassInfoT::GetClassObject();
-		if (obj) obj->Release();
+		NCB_LOG_2(TJS_W("  RemoveClassInfo: "), _className);
 		ClassInfoT::Clear();
 	}
 };
@@ -1566,8 +1567,9 @@ struct ncbRegistSubClass : public ncbRegistNativeClass<CLASS> {
 		BaseT::_AddDummyConstructor();
 		NCB_LOG_2(TJS_W("EndSubClass: "), BaseT::_className);
 	}
-	void UnregistBegin() {
+	void UnregistEnd() {
 		BaseT::_RemoveClassInfo();
+		NCB_LOG_2(TJS_W("EndUnregistSubClass: "), BaseT::_className);
 	}
 };
 
@@ -1595,7 +1597,7 @@ struct ncbSubClassItem : public ncbIMethodObject {
 			RegistT r(d, isRegist);
 			r.Regist();
 		}
-		return (ClassInfoT::GetClassObject() != 0);
+		return isRegist ? (ClassInfoT::GetClassObject() != 0) : true;
 	}
 };
 
@@ -1645,23 +1647,26 @@ struct ncbAttachTJS2Class : public ncbRegistNativeClassBase {
 	}
 
 	void RegistEnd() {
-		NCB_LOG_2(TJS_W("EndAttachClass: "), _className);
 		if (_global) _global->Release();
 		_global = 0;
+		NCB_LOG_2(TJS_W("EndAttachClass: "), _className);
 		// _tjs2ClassObj は NoAddRef なので Release 不要
 	}
 
 	void UnregistBegin() {
+		NCB_LOG_2(TJS_W("BeginDetach: "), _className);
 		// クラスオブジェクトを取得
 		iTJSDispatch2 *global = TVPGetScriptDispatch();
 		_tjs2ClassObj = GetGlobalObject(_tjs2ClassName, global);
 		if (global) global->Release();
 	}
 	void UnregistItem(NameT name) {
+		NCB_LOG_2(TJS_W("DetachItem: "), name);
 		_tjs2ClassObj->DeleteMember(0, name, 0, _tjs2ClassObj);
 	}
 	void UnregistEnd() {
 		ClassInfoT::Clear();
+		NCB_LOG_2(TJS_W("EndDetach: "), _className);
 		// _tjs2ClassObj は NoAddRef なので Release 不要
 	}
 protected:
