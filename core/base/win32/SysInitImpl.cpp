@@ -1444,6 +1444,9 @@ static ttstr TVPParseCommandLineOne(const ttstr &i)
 //---------------------------------------------------------------------------
 std::vector <ttstr> TVPProgramArguments;
 static bool TVPProgramArgumentsInit = false;
+static tjs_int TVPCommandLineArgumentGeneration = 0;
+//---------------------------------------------------------------------------
+tjs_int TVPGetCommandLineArgumentGeneration() { return TVPCommandLineArgumentGeneration; }
 //---------------------------------------------------------------------------
 static void PushAllCommandlineArguments()
 {
@@ -1539,6 +1542,9 @@ static void TVPInitProgramArgumentsAndDataPath(bool stop_after_datapath_got)
 
 		// set log output directory
 		TVPSetLogLocation(TVPNativeDataPath);
+
+		// increment TVPCommandLineArgumentGeneration
+		TVPCommandLineArgumentGeneration++;
 	}
 }
 //---------------------------------------------------------------------------
@@ -1587,6 +1593,33 @@ bool TVPGetCommandLine(const tjs_char * name, tTJSVariant *value)
 		}
 	}
 	return false;
+}
+//---------------------------------------------------------------------------
+void TVPSetCommandLine(const tjs_char * name, const ttstr & value)
+{
+	TVPInitProgramArgumentsAndDataPath(false);
+
+	tjs_int namelen = TJS_strlen(name);
+	std::vector<ttstr>::iterator i;
+	for(i = TVPProgramArguments.begin(); i != TVPProgramArguments.end(); i++)
+	{
+		if(!TJS_strncmp(i->c_str(), name, namelen))
+		{
+			if(i->c_str()[namelen] == TJS_W('=') || i->c_str()[namelen] == 0)
+			{
+				// value found
+				*i = ttstr(i->c_str(), namelen) + TJS_W("=") + value;
+				TVPCommandLineArgumentGeneration ++;
+				if(TVPCommandLineArgumentGeneration == 0) TVPCommandLineArgumentGeneration = 1;
+				return;
+			}
+		}
+	}
+
+	// value not found; insert argument into front
+	TVPProgramArguments.insert(TVPProgramArguments.begin(), ttstr(name) + TJS_W("=") + value);
+	TVPCommandLineArgumentGeneration ++;
+	if(TVPCommandLineArgumentGeneration == 0) TVPCommandLineArgumentGeneration = 1;
 }
 //---------------------------------------------------------------------------
 
