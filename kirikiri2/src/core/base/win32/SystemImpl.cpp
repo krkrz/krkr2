@@ -708,6 +708,20 @@ TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/getArgument)
 TJS_END_NATIVE_METHOD_DECL_OUTER(/*object to register*/cls,
 	/*func. name*/getArgument)
 //----------------------------------------------------------------------
+TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/setArgument)
+{
+	if(numparams < 2) return TJS_E_BADPARAMCOUNT;
+
+	ttstr name = *param[0];
+	ttstr value = *param[1];
+
+	TVPSetCommandLine(name.c_str(), value);
+
+	return TJS_S_OK;
+}
+TJS_END_NATIVE_METHOD_DECL_OUTER(/*object to register*/cls,
+	/*func. name*/setArgument)
+//----------------------------------------------------------------------
 TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/createAppLock)
 {
 	if(numparams < 1) return TJS_E_BADPARAMCOUNT;
