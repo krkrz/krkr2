@@ -26,7 +26,7 @@ clean:
 KRKR_PLUGINS = ../../../../bin/win32/plugin/
 KRKR_EXE     = ../../../../bin/win32/krkr.exe
 TEST_DIR     = ../../../../tests/ncbind
-KRKR_OPT     = -debug  `pwd -P`/$(TEST_DIR)
+KRKR_OPT     = -debug  "`pwd -W`/$(TEST_DIR)"
 
 test: $(TARGET)
 	cp $(TARGET) $(KRKR_PLUGINS)
