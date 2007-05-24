@@ -727,7 +727,7 @@ private:
 
 		/// NativeClassMethod ‚Ì•Ô‚è’l‚ðresult‚ÖŠi”[
 		template <typename ResultT>
-		inline void operator = (ResultT r) {
+		inline void operator = (ResultT const &r) {
 			// ncbToVariantConvertor ‚Å•Ô‚è’l‚É•ÏŠ·
 			if (_result) _rconv(*_result, r);
 		}
