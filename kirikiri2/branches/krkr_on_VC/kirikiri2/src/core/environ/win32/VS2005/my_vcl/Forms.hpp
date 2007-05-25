@@ -52,14 +52,15 @@ public:
 	virtual void WndProc(TMessage&);
 	void SetZOrder(bool);
 
-	// イベントのデフォルトハンドラ(嘘)
-	virtual void FormDestroy( TObject * Sender );
-	virtual void FormClose(TObject *Sender, TCloseAction &Action);
-	virtual void FormCloseQuery(TObject *Sender, bool &CanClose);
-
 	// なんだかイベントハンドラ
 	boost::function1<void, System::TObject*> OnPaint;
+	boost::function1<void, System::TObject*> OnActivate;
 	boost::function1<void, System::TObject*> OnDestroy;
+	boost::function1<void, System::TObject*> OnDeactivate;
+	boost::function1<void, System::TObject*> OnShow;
+
+	boost::function2<void, System::TObject*, TCloseAction&> OnClose;
+	boost::function2<void, System::TObject*, bool&> OnCloseQuery;
 };
 
 //----------------------------------------------------------------------------

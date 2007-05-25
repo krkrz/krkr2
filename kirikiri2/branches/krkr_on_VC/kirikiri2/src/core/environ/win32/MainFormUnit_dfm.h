@@ -32,7 +32,9 @@ static void init(TTVPMainForm* p)
 	_create_VCL_obj( &p->ShowControllerMenuItem      , p );
 	_create_VCL_obj( &p->RestartScriptEngineMenuItem , p );
 
-	p->OnDestroy = 
+	p->OnClose =
+		boost::bind(boost::mem_fn(&TTVPMainForm::FormClose), p, _1, _2);
+	p->OnDestroy =
 		boost::bind(boost::mem_fn(&TTVPMainForm::FormDestroy), p, _1);
 
 	p->EventButton->Down = true;

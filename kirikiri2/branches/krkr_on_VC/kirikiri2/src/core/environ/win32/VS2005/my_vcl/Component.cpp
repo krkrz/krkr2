@@ -14,6 +14,27 @@ TComponent::TComponent(TComponent* owner)
 //----------------------------------------------------------------------------
 TComponent::~TComponent()
 {
+	// 子がいれば勘当する
+	DeleteChildren();
+
+	// 自分がだれかの子だったら、縁を切る
+	std::vector<TComponent*>::iterator c;
+	if ( m_Owner )
+	{
+		for(c=m_Owner->m_Components.begin(); c < m_Owner->m_Components.end();c++)
+		{
+			if ( *c == this )
+			{
+				m_Owner->m_Components.erase(c);
+				break;
+			}
+		}
+	}
+}
+
+//----------------------------------------------------------------------------
+void TComponent::DeleteChildren()
+{
 	std::vector<TComponent*>::iterator c;
 
 	// 子がいれば勘当する
@@ -28,19 +49,8 @@ TComponent::~TComponent()
 			delete *c;
 		}
 	}
-
-	// 自分がだれかの子だったら、縁を切る
-	if ( m_Owner )
-	{
-		for(c=m_Owner->m_Components.begin(); c < m_Owner->m_Components.end();c++)
-		{
-			if ( *c == this )
-			{
-				m_Owner->m_Components.erase(c);
-				break;
-			}
-		}
-	}
+	// 配列自体もクリア
+	m_Components.clear();
 }
 
 //----------------------------------------------------------------------------

@@ -77,6 +77,8 @@ __published:
 	boost::function5<void, System::TObject*, TMouseButton, TShiftState, int, int> OnMouseDown;
 	boost::function4<void, System::TObject*, TShiftState, int, int> OnMouseMove;
 	boost::function5<void, System::TObject*, TMouseButton, TShiftState, int, int> OnMouseUp;
+
+	boost::function1<void, System::TObject*> OnResize;
 };
 
 //----------------------------------------------------------------------------
