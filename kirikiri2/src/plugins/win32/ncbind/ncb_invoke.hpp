@@ -22,7 +22,8 @@ struct MethodCaller {
 		// get params operator method
 		template <int N, typename T> T operator ()(tNumTag<N> index, tTypeTag<T> dummy) const;
 		// set result operator method
-		template <typename T> void operator = (T result);
+		template <typename T> bool operator ()(T result, tTypeTag<T> dummy);
+		/*                  */bool operator ()(); // if result is void
 	};
 #endif
 
@@ -41,8 +42,8 @@ struct MethodCaller {
 	Target t;
 	FunctT p;
 
-	MethodCaller::Invoke(p, &Target::Method, t);    // as: p = t.Method(p(1, tTypeTag<int>()), p(2, tTypeTag<double>()), ...);
-	MethodCaller::Invoke(p, &Target::StaticMethod); // as: Target::StaticMethod();
+	MethodCaller::Invoke(p, &Target::Method, t);    // as: return p(t.Method(p(1, tTypeTag<int>()), p(2, tTypeTag<double>()), ...), tTypeTag<int>());
+	MethodCaller::Invoke(p, &Target::StaticMethod); // as: return Target::StaticMethod(), p();
 
  */
 
@@ -129,7 +130,7 @@ template <>           struct MC::tMethodHasResult<void> { enum { HasResult = fal
 		struct MC::tMethodCallerImpl<res ## _REF, cnst ## _REF cls ## _REF2, MC::tMethodArgs < FOREACH_COMMA_EXT(MCIMPL_METH_ARGS_EXT) >, FncT > {       \
 			typedef              res ## _REF              (cls ## _REF           *MethodType)( FOREACH_COMMA_EXT(MCIMPL_METH_ARGS_EXT)) cnst ## _REF;    \
 			static inline bool Invoke(FncT io, MethodType const &mptr /**/ cls ## _COMMA /**/ cnst ## _REF /**/ cls ## _INST(inst)) {                    \
-				/**/             res ## _RESULT(io)       (cls ## _CALL(inst,mptr)        )(   FOREACH_COMMA_EXT(MCIMPL_READ_ARGS_EXT)); return true; }  \
+				/**/ return      res ## _RESULT(io)      ((cls ## _CALL(inst,mptr)        )(   FOREACH_COMMA_EXT(MCIMPL_READ_ARGS_EXT))) res ## _CLOSE(io); } \
 		}
 #define INSTANCEFACTORY_IMPL \
 	template <class FncT                                 , class ClassT/**/ FOREACH_COMMA /**/ FOREACH_COMMA_EXT(MCIMPL_TMPL_ARGS_EXT) >                 \
@@ -157,10 +158,12 @@ template <>           struct MC::tMethodHasResult<void> { enum { HasResult = fal
 
 #define MCIMPL_VOID_DEF
 #define MCIMPL_VOID_REF /*                 */void
-#define MCIMPL_VOID_RESULT(io) /*          */(void)io;
+#define MCIMPL_VOID_RESULT(io) /*          */(
+#define MCIMPL_VOID_CLOSE(io) /*           */, io())
 #define MCIMPL_NONVOID_DEF /*              */,typename ResultT
 #define MCIMPL_NONVOID_REF /*              */ResultT
-#define MCIMPL_NONVOID_RESULT(io) /*       */io = 
+#define MCIMPL_NONVOID_RESULT(io) /*       */io(
+#define MCIMPL_NONVOID_CLOSE(io) /*        */, tTypeTag<ResultT>())
 
 #define MCIMPL_STATIC_DEF
 #define MCIMPL_STATIC_REF
@@ -225,12 +228,12 @@ template <>           struct MC::tMethodHasResult<void> { enum { HasResult = fal
 
 #undef MCIMPL_VOID_DEF
 #undef MCIMPL_VOID_REF
-#undef MCIMPL_VOID_BOOL
 #undef MCIMPL_VOID_RESULT
+#undef MCIMPL_VOID_CLOSE
 #undef MCIMPL_NONVOID_DEF
 #undef MCIMPL_NONVOID_REF
-#undef MCIMPL_NONVOID_BOOL
 #undef MCIMPL_NONVOID_RESULT
+#undef MCIMPL_NONVOID_CLOSE
 
 #undef MCIMPL_STATIC_DEF
 #undef MCIMPL_STATIC_REF

@@ -361,6 +361,10 @@ struct ncbTypeConvertor {
 #undef NCB_INNER_CONVERSION_SPECIALIZATION
 
 //--------------------------------------
+/// 返り値の型を正確に取りたい場合，コンバータはこれを継承する
+struct ncbStrictResultConvertor {};
+
+//--------------------------------------
 // TypeConvertor関連の各種マクロ
 
 /// SpecialMap に登録するマクロ
@@ -504,7 +508,7 @@ struct ncbNativeObjectBoxing {
 	typedef tTJSVariant VarT;
 	typedef ncbTypeConvertor ConvT;
 	/// Boxing
-	struct Boxing {
+	struct Boxing : public ncbStrictResultConvertor {
 		template <typename T> struct box            { static T* Get(T const &t) { return           new T(t); } enum { Sticky = false }; };
 		template <typename T> struct box<T&>        { static T* Get(T       &t) { return                &t ; } enum { Sticky = true  }; };
 		template <typename T> struct box<T const&>  { static T* Get(T const &t) { return const_cast<T*>(&t); } enum { Sticky = true  }; };
@@ -512,7 +516,7 @@ struct ncbNativeObjectBoxing {
 		template <typename T> struct box<T const*>  { static T* Get(T const *t) { return const_cast<T*>( t); } enum { Sticky = false }; };
 
 		template <typename SRC>
-		inline void operator ()(VarT &dst, SRC src) const {
+		inline void operator ()(VarT &dst, SRC src, ncbTypedefs::Tag<SRC> const&) const {
 			typedef SRC                                     TargetT;
 			typedef typename ConvT::Stripper<TargetT>::Type ClassT;
 			typedef ncbInstanceAdaptor<ClassT>              AdaptorT;
@@ -522,6 +526,12 @@ struct ncbNativeObjectBoxing {
 			iTJSDispatch2 *adpobj = AdaptorT::CreateAdaptor(p, s);	//< アダプタTJSオブジェクト生成
 			dst = adpobj;											//< Variantにコピー
 			adpobj->Release();										//< コピー済みなのでadaptorは不要
+		}
+
+		// for reference
+		template <typename SRC>
+		inline void operator ()(VarT &dst, SRC &src, ncbTypedefs::Tag<SRC&> const &tag) const {
+			operator()<SRC&> (dst, src, tag);
 		}
 	};
 
@@ -590,6 +600,7 @@ NCB_SET_TOVALUE_CONVERTOR(  iTJSDispatch2 const*, ncbDispatchConvertor);
 	NCB_SET_CONVERTOR(CustomType, CustomConvertor);
 	といったような感じで適当に
  */
+
 
 ////////////////////////////////////////
 /// メソッドオブジェクト（と，そのタイプとフラグ）を受け渡すためのインターフェース
@@ -697,6 +708,7 @@ private:
 		typedef tTJSVariant      VariantT;
 		typedef ncbTypeConvertor ConvT;
 		typedef typename     ConvT::SelectConvertorType<RES, VariantT>::Type ResultConvT;
+		enum { StrictResult = ncbTypeConvertor::Conversion<ResultConvT*, ncbStrictResultConvertor*>::Exists };
 
 		template <typename T> struct TypeWrap           { typedef T        Type; static inline T        Restore(Type t) { return  t; } };
 		template <typename T> struct TypeWrap<T&>       { typedef T*       Type; static inline T&       Restore(Type t) { return *t; } };
@@ -725,12 +737,40 @@ private:
 			return TypeWrap<T>::Restore(ret);
 		}
 
+		/// NativeClassMethod の返り値なし
+		inline bool operator ()() const { return true; }
+
 		/// NativeClassMethod の返り値をresultへ格納
 		template <typename ResultT>
-		inline void operator = (ResultT const &r) {
-			// ncbToVariantConvertor で返り値に変換
-			if (_result) _rconv(*_result, r);
+		inline bool operator()(ResultT r, CallerT::tTypeTag<ResultT> const&) {
+			return SetResult(r, DefsT::Tag<ResultT>(),  DefsT::BoolTag<StrictResult>());
 		}
+
+		// StrictResult = false
+		template <typename ResultT>
+		inline bool SetResult(ResultT r, DefsT::Tag<ResultT> const&, DefsT::BoolTag<false> const&) {
+			if (_result) _rconv(*_result, r); // ncbToVariantConvertor で返り値に変換
+			return true;
+		}
+
+		// StrictResult = true
+		template <typename ResultT>
+		inline bool SetResult(ResultT r, DefsT::Tag<ResultT> const &tag, DefsT::BoolTag<true> const&) {
+			if (_result) _rconv(*_result, r, tag);
+			return true;
+		}
+
+		// for reference
+		template <typename ResultT>
+		inline bool operator()(ResultT &r, CallerT::tTypeTag<ResultT&> const& tag) {
+			return  operator()<ResultT &>(r, tag);
+		}
+		template <typename ResultT, bool B>
+		inline bool SetResult(ResultT &r, DefsT::Tag<ResultT&> const &tag, DefsT::BoolTag<B> const &sel) {
+			return  SetResult<ResultT &>(r, tag, sel);
+		}
+
+
 	private:
 		// 型変換用ワーク
 		ArgsConvT   _aconv;
@@ -751,7 +791,9 @@ private:
 		paramsFunctorWithInstance(VariantT *r, tjs_int n, VariantT const *const *p, ClassT *inst) : BaseT(r, n+1, p-1), _inst(inst) {}
 		template <int N, typename T> inline T operator ()(CallerT::tNumTag<N> const &idx, CallerT::tTypeTag<T> const &tag) { return BaseT::operator ()(idx, tag); }
 		template <       typename T> inline T operator ()(CallerT::tNumTag<1> const &,    CallerT::tTypeTag<T> const &   ) { return _inst; }
-		template <typename ResultT>  inline void operator = (ResultT r) { return BaseT::operator =(r); }
+		template <typename ResultT>  inline bool operator()(ResultT  r, CallerT::tTypeTag<ResultT>  const &tag) { return BaseT::operator()          (r, tag); }
+		template <typename ResultT>  inline bool operator()(ResultT &r, CallerT::tTypeTag<ResultT&> const &tag) { return BaseT::operator()<ResultT&>(r, tag); }
+		/*                         */inline bool operator()() const { return BaseT::operator ()(); }
 	private:
 		ClassT *_inst;
 	};
