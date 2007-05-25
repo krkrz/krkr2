@@ -2,6 +2,7 @@
 #define _layExMovie_hpp_
 
 #include <windows.h>
+#include <tchar.h>
 #include <dshow.h> 
 #include <mmstream.h> 
 #include <amstream.h> 
