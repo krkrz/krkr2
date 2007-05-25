@@ -341,7 +341,7 @@ __fastcall TTVPWindowForm::TTVPWindowForm(TComponent* Owner, tTJSNI_Window *ni)
 	MenuContainer = NULL;
 	MenuBarVisible = true;
 
-//	AttentionFont = new TFont();
+	AttentionFont = new TFont();
 
 	PaintBox = NULL;
 

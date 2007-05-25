@@ -97,11 +97,16 @@ wxFrame *MyApp::CreateFrame()
 TApplication::TApplication( TComponent* Owner ) : TComponent(Owner)
 {
 	Handle = NULL;
+	_CrtSetBreakAlloc(1225);
 }
 
 //----------------------------------------------------------------------------
 TApplication::~TApplication()
 {
+	// 子がいれば勘当する(親クラスのデストラクタに任せたりしない)
+	DeleteChildren();
+
+	// 子がいなくなったら、悠々とwxWidgetsをクローズ
 	wxEntryCleanup();
 }
 

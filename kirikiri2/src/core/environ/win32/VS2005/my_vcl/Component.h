@@ -6,6 +6,8 @@
 class TComponent : public System::TObject
 {
 	std::vector<TComponent*> m_Components;
+protected:
+	void DeleteChildren();
 public:
 	TComponent(TComponent* owner=NULL);
 	virtual ~TComponent();

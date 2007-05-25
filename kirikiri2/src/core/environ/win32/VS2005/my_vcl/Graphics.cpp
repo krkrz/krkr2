@@ -131,8 +131,8 @@ void Graphics::TFont::setHandle(HFONT h)
 		m_wxFont->Create(info, (WXHFONT) h);
 		info.InitFromFont(*m_wxFont);
 
-		OutputDebugString(m_wxFont->GetNativeFontInfoDesc().c_str());
-		OutputDebugString("\n");
+//		OutputDebugString(m_wxFont->GetNativeFontInfoDesc().c_str());
+//		OutputDebugString("\n");
 
 		if ( m_wxDCOwner )
 			m_wxDCOwner->SetFont( *m_wxFont );

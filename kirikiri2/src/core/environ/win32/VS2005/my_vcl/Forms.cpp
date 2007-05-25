@@ -13,6 +13,15 @@ public:
 		m_pForm = pForm;
 	}
 	//------------------------------------
+	// デストラクタが走る。MyFrameTCustomFormとwxFrameは対で動作する。
+	// wxWidgetsのフレームワークから、直接このクラスのインスタンスが破壊されてしまうケースがある
+	// その場合に、TFormのデストラクタ中で deleteが失敗して困る。
+	// 理想は、片方を delete しようとしたら、互いに他方を deleteする構造か？　うまくいかない・・
+	virtual ~MyFrameTCustomForm()
+	{
+		m_pForm = NULL;
+	}
+	//------------------------------------
 	void OnPaint(wxPaintEvent& event)
 	{
 		wxPaintDC dc(this);
@@ -166,26 +175,34 @@ public:
 	//------------------------------------
 	void OnSize(wxSizeEvent& event)
 	{
-		OutputDebugString("OnSize\n");
 	}
 	//------------------------------------
 	void OnClose(wxCloseEvent& event)
 	{
 		OutputDebugString("OnClose\n");
+		TCloseAction Action = caFree;
 		if ( event.CanVeto() == false )
-			Destroy();
+		{
+			if ( m_pForm && m_pForm->OnClose )
+				m_pForm->OnClose(m_pForm, Action);
+			TCustomForm * p = m_pForm;
+			m_pForm = NULL;
+			delete p;
+			return;
+		}
 
 		// いろいろ端折る
 		// 最初にクローズ可能か問い合わせ
 		// たぶん、この時点で全子ウィンドウに問い合わせがいるでしょうが、端折る
-		bool CanClose;
-		m_pForm->FormCloseQuery(m_pForm, CanClose);
+		bool CanClose = true;
+		if ( m_pForm && m_pForm->OnCloseQuery )
+			m_pForm->OnCloseQuery(m_pForm, CanClose);
 
 		// 次に、クローズにトライ
 		if ( CanClose == true )
 		{
-			TCloseAction Action = caHide;
-			m_pForm->FormClose(m_pForm, Action);
+			if ( m_pForm && m_pForm->OnClose )
+				m_pForm->OnClose(m_pForm, Action);
 			switch( Action )
 			{
 			case caHide:
@@ -194,18 +211,28 @@ public:
 				event.Veto();
 				break;
 			case caFree:
-				Destroy();
-				{
-					char buf[1024];
-					sprintf(buf, "delete 0x%x(TCustomForm)\n", m_pForm);
-				}
-				delete m_pForm;
+				TCustomForm * p = m_pForm;
+				m_pForm = NULL;
+				delete p;
 				break;
 			}
 		}
 		else
 			event.Veto();
 	}
+	//------------------------------------
+	virtual bool Destroy()
+	{
+		bool res = wxFrame::Destroy();
+
+		if ( res && m_pForm && m_pForm->OnClose )
+		{
+			TCloseAction Action = caFree;
+			m_pForm->OnClose(m_pForm, Action);
+		}
+		return res;
+	}
+
 
 	//------------------------------------
 	WXLRESULT MSWWindowProc(WXUINT message, WXWPARAM wParam, WXLPARAM lParam)
@@ -268,6 +295,8 @@ TCustomForm::TCustomForm(TComponent* Owner) : TScrollingWinControl(Owner)
 	m_wxFrame->SetTitle(_T("wxWidgets canvas frame"));
 
 	// 下のクラスのためにポインタセット
+	if ( m_wxWindow )
+		m_wxWindow->Destroy();
 	m_wxWindow = m_wxFrame;
 	m_wxWindow->Show();
 	// Give it a status line
@@ -290,6 +319,11 @@ TCustomForm::TCustomForm(TComponent* Owner) : TScrollingWinControl(Owner)
 //----------------------------------------------------------------------------
 TCustomForm::~TCustomForm()
 {
+	// いまだにクローズされていないのだったら、イベント発行しておく
+	m_wxWindow->Destroy();
+	m_wxWindow = NULL;
+
+	// VCLオブジェクトを潰すときは、デストロイ
 	if ( OnDestroy )
 		OnDestroy(this);
 }
@@ -359,22 +393,6 @@ void TCustomForm::WndProc(TMessage& message)
 void TCustomForm::SetZOrder(bool)
 {
 }
-
-//----------------------------------------------------------------------------
-void TCustomForm::FormDestroy( TObject * Sender )
-{
-}
-//----------------------------------------------------------------------------
-void TCustomForm::FormClose(TObject *Sender, TCloseAction &Action)
-{
-	Action = caFree;
-}
-//----------------------------------------------------------------------------
-void TCustomForm::FormCloseQuery(TObject *Sender, bool &CanClose)
-{
-	CanClose = true;
-}
-
 
 
 //----------------------------------------------------------------------------

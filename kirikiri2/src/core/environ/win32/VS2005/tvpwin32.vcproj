@@ -1010,6 +1010,7 @@
 						Name="VCCLCompilerTool"
 						FloatingPointModel="2"
 						CompileAsManaged="0"
+						CallingConvention="0"
 					/>
 				</FileConfiguration>
 				<FileConfiguration

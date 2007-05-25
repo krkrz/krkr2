@@ -212,8 +212,14 @@ TWinControl::TWinControl(TComponent* owner) : TControl(owner)
 //----------------------------------------------------------------------------
 TWinControl::~TWinControl()
 {
-	delete m_wxWindow;
-	delete Brush;
+	if (m_wxWindow)
+	{
+		// wxWindowの派生クラスは、deleteしてはいけないらしい
+		m_wxWindow->Destroy();
+		m_wxWindow = NULL;
+	}
+	if (Brush)
+		delete Brush;
 }
 //----------------------------------------------------------------------------
 //ウィンドウを作成するときの情報を保持する構造体を初期化する

@@ -42,7 +42,7 @@ void TCustomIniFile::WriteInteger(const AnsiString & Section, const AnsiString &
 //class TMemIniFile : public TCustomIniFile
 //----------------------------------------------------------------------------
 // TIniFileのバグ回避版らしい・・・が、TIniFileと同じことをやる。ドン
-TMemIniFile::TMemIniFile(const AnsiString& str)
+TMemIniFile::TMemIniFile(const AnsiString& str) : m_pStream(NULL), m_pConfig(NULL)
 {
 	if ( str.AnsiPos("\\\\?\\") )
 		m_strIniFile = str.SubString( 4, str.Length() - 4).c_str();
@@ -58,8 +58,10 @@ TMemIniFile::TMemIniFile(const AnsiString& str)
 //----------------------------------------------------------------------------
 TMemIniFile::~TMemIniFile()
 {
-	delete m_pConfig;
-	delete m_pStream;
+	if ( m_pConfig )
+		delete m_pConfig;
+	if ( m_pStream )
+		delete m_pStream;
 }
 //----------------------------------------------------------------------------
 AnsiString TMemIniFile::ReadString(const AnsiString & Section, const AnsiString & Ident, const AnsiString & Default)
