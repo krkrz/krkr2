@@ -240,6 +240,10 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath="..\ncbind\ncbind.cpp"
+				>
+			</File>
+			<File
 				RelativePath="squirrelBase.def"
 				>
 			</File>
