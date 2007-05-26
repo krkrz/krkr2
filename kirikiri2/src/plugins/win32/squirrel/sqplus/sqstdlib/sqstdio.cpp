@@ -5,57 +5,123 @@
 #include <sqstdio.h>
 #include "sqstdstream.h"
 
+// XXX support for kirikiri
+#include <windows.h>
+#include "../../../tp_stub.h"
+
 #define SQSTD_FILE_TYPE_TAG (SQSTD_STREAM_TYPE_TAG | 0x00000001)
 //basic API
 SQFILE sqstd_fopen(const SQChar *filename ,const SQChar *mode)
 {
-#ifndef _UNICODE
-	return (SQFILE)fopen(filename,mode);
-#else
-	return (SQFILE)_wfopen(filename,mode);
-#endif
+	tjs_uint32 m;
+	if (TJS_stricmp(mode, L"r") == 0 ||
+		TJS_stricmp(mode, L"rb") == 0) {
+		m = TJS_BS_READ;
+	} else if (TJS_stricmp(mode, L"w") == 0 ||
+			   TJS_stricmp(mode, L"wb") == 0) {
+		m = TJS_BS_WRITE;
+	} else if (TJS_stricmp(mode, L"r+") == 0 ||
+			   TJS_stricmp(mode, L"rb+") == 0 ||			   
+			   TJS_stricmp(mode, L"w+") == 0 ||
+			   TJS_stricmp(mode, L"wb+") == 0) {
+		m = TJS_BS_UPDATE;
+	} else if (TJS_stricmp(mode, L"a") == 0 ||
+			   TJS_stricmp(mode, L"ab") == 0) {
+		m = TJS_BS_APPEND;
+	} else {
+		return NULL;
+	}
+	return TVPCreateIStream(filename, m);
 }
 
 SQInteger sqstd_fread(void* buffer, SQInteger size, SQInteger count, SQFILE file)
 {
-	return (SQInteger)fread(buffer,size,count,(FILE *)file);
+	IStream *is = (IStream *)file;
+	if (is) {
+		ULONG len;
+		if (is->Read(buffer,size*count,&len) == S_OK) {
+			return len / size;
+		} 
+	}
+	return 0;
 }
 
 SQInteger sqstd_fwrite(const SQUserPointer buffer, SQInteger size, SQInteger count, SQFILE file)
 {
-	return (SQInteger)fwrite(buffer,size,count,(FILE *)file);
+	IStream *is = (IStream *)file;
+	if (is) {
+		DWORD len;
+		if (is->Write(buffer,size*count,&len) == S_OK) {
+			return len / size;
+		}
+	}
+	return 0;
 }
 
 SQInteger sqstd_fseek(SQFILE file, SQInteger offset, SQInteger origin)
 {
-	SQInteger realorigin;
+	DWORD dwOrigin;
 	switch(origin) {
-		case SQ_SEEK_CUR: realorigin = SEEK_CUR; break;
-		case SQ_SEEK_END: realorigin = SEEK_END; break;
-		case SQ_SEEK_SET: realorigin = SEEK_SET; break;
-		default: return -1; //failed
+	case SQ_SEEK_CUR: dwOrigin = STREAM_SEEK_CUR; break;
+	case SQ_SEEK_END: dwOrigin = STREAM_SEEK_END; break;
+	case SQ_SEEK_SET: dwOrigin = STREAM_SEEK_SET; break;
+	default: return -1; //failed
 	}
-	return fseek((FILE *)file,(long)offset,(int)realorigin);
+	IStream *is = (IStream *)file;
+	if (is) {
+		LARGE_INTEGER move;
+		move.QuadPart = offset;
+		ULARGE_INTEGER newposition;
+		if (is->Seek(move, origin, &newposition) == S_OK) {
+			return (SQInteger)newposition.QuadPart;
+		}
+	}
+	return -1;
 }
 
 SQInteger sqstd_ftell(SQFILE file)
 {
-	return ftell((FILE *)file);
+	IStream *is = (IStream *)file;
+	if (is) {
+		LARGE_INTEGER move = {0};
+		ULARGE_INTEGER newposition;
+		if (is->Seek(move, STREAM_SEEK_CUR, &newposition) == S_OK) {
+			return (SQInteger)newposition.QuadPart;
+		}
+	}
+	return -1;
 }
 
 SQInteger sqstd_fflush(SQFILE file)
 {
-	return fflush((FILE *)file);
+	IStream *is = (IStream *)file;
+	if (is) {
+		if (is->Commit(STGC_DEFAULT) == S_OK) {
+			return 0;
+		}
+	}
+	return EOF;
 }
 
 SQInteger sqstd_fclose(SQFILE file)
 {
-	return fclose((FILE *)file);
+	IStream *is = (IStream *)file;
+	if (is) {
+		is->Release();
+		return 0;
+	}
+	return EOF;
 }
 
-SQInteger sqstd_feof(SQFILE file)
+SQInteger sqstd_flen(SQFILE file)
 {
-	return feof((FILE *)file);
+	IStream *is = (IStream *)file;
+	if (is) {
+		STATSTG stat;
+		is->Stat(&stat, STATFLAG_NONAME);
+		return (SQInteger)stat.cbSize.QuadPart;
+	}
+	return 0;
 }
 
 //File
@@ -91,11 +157,7 @@ struct SQFile : public SQStream {
 		return sqstd_ftell(_handle);
 	}
 	SQInteger Len() {
-		SQInteger prevpos=Tell();
-		Seek(0,SQ_SEEK_END);
-		SQInteger size=Tell();
-		Seek(prevpos,SQ_SEEK_SET);
-		return size;
+		return sqstd_flen(_handle);
 	}
 	SQInteger Seek(SQInteger offset, SQInteger origin)	{
 		return sqstd_fseek(_handle,offset,origin);
@@ -191,132 +253,55 @@ SQRESULT sqstd_getfile(HSQUIRRELVM v, SQInteger idx, SQFILE *file)
 	return sq_throwerror(v,_SC("not a file"));
 }
 
-
-
-static SQInteger _io_file_lexfeed_ASCII(SQUserPointer file)
-{
-	SQInteger ret;
-	char c;
-	if( ( ret=sqstd_fread(&c,sizeof(c),1,(FILE *)file )>0) )
-		return c;
-	return 0;
-}
-
-static SQInteger _io_file_lexfeed_UTF8(SQUserPointer file)
-{
-#define READ() \
-	if(sqstd_fread(&inchar,sizeof(inchar),1,(FILE *)file) != 1) \
-		return 0;
-
-	static const SQInteger utf8_lengths[16] =
-	{
-		1,1,1,1,1,1,1,1,        /* 0000 to 0111 : 1 byte (plain ASCII) */
-		0,0,0,0,                /* 1000 to 1011 : not valid */
-		2,2,                    /* 1100, 1101 : 2 bytes */
-		3,                      /* 1110 : 3 bytes */
-		4                       /* 1111 :4 bytes */
-	};
-	static unsigned char byte_masks[5] = {0,0,0x1f,0x0f,0x07};
-	unsigned char inchar;
-	SQInteger c = 0;
-	READ();
-	c = inchar;
-	//
-	if(c >= 0x80) {
-		SQInteger tmp;
-		SQInteger codelen = utf8_lengths[c>>4];
-		if(codelen == 0) 
-			return 0;
-			//"invalid UTF-8 stream";
-		tmp = c&byte_masks[codelen];
-		for(SQInteger n = 0; n < codelen-1; n++) {
-			tmp<<=6;
-			READ();
-			tmp |= inchar & 0x3F;
-		}
-		c = tmp;
-	}
-	return c;
-}
-
-static SQInteger _io_file_lexfeed_UCS2_LE(SQUserPointer file)
-{
-	SQInteger ret;
-	wchar_t c;
-	if( ( ret=sqstd_fread(&c,sizeof(c),1,(FILE *)file )>0) )
-		return (SQChar)c;
-	return 0;
-}
-
-static SQInteger _io_file_lexfeed_UCS2_BE(SQUserPointer file)
-{
-	SQInteger ret;
-	unsigned short c;
-	if( ( ret=sqstd_fread(&c,sizeof(c),1,(FILE *)file )>0) ) {
-		c = ((c>>8)&0x00FF)| ((c<<8)&0xFF00);
-		return (SQChar)c;
-	}
-	return 0;
-}
-
 SQInteger file_read(SQUserPointer file,SQUserPointer buf,SQInteger size)
 {
-	SQInteger ret;
-	if( ( ret = sqstd_fread(buf,1,size,(SQFILE)file ))!=0 )return ret;
+	IStream *is = (IStream*)file;
+	ULONG s;
+	if (is->Read(buf, size, &s) == S_OK) {
+		return (SQInteger)s;
+	}
 	return -1;
 }
 
 SQInteger file_write(SQUserPointer file,SQUserPointer p,SQInteger size)
 {
-	return sqstd_fwrite(p,1,size,(SQFILE)file);
+	IStream *is = (IStream*)file;
+	ULONG s;
+	if (is->Write(p, size, &s) == S_OK) {
+		return (SQInteger)s;
+	}
+	return -1;
 }
 
 SQRESULT sqstd_loadfile(HSQUIRRELVM v,const SQChar *filename,SQBool printerror)
 {
-	SQFILE file = sqstd_fopen(filename,_SC("rb"));
-	SQInteger ret;
 	unsigned short us;
-	unsigned char uc;
-	SQLEXREADFUNC func = _io_file_lexfeed_ASCII;
-	if(file){
-		ret = sqstd_fread(&us,1,2,file);
-		if(ret != 2) {
-			//probably an empty file
-			us = 0;
-		}
+
+	IStream *is = TVPCreateIStream(filename, TJS_BS_UPDATE);
+	if (is){
+		DWORD len;
+		us = 0;
+		is->Read(&us, 2, &len);
 		if(us == SQ_BYTECODE_STREAM_TAG) { //BYTECODE
-			sqstd_fseek(file,0,SQ_SEEK_SET);
-			if(SQ_SUCCEEDED(sq_readclosure(v,file_read,file))) {
-				sqstd_fclose(file);
+			LARGE_INTEGER move = {0};
+			is->Seek(move,STREAM_SEEK_SET,NULL);
+			if (SQ_SUCCEEDED(sq_readclosure(v,file_read,is))) {
+				is->Release();
 				return SQ_OK;
 			}
+			is->Release();
 		}
 		else { //SCRIPT
-			switch(us)
-			{
-				//gotta swap the next 2 lines on BIG endian machines
-				case 0xFFFE: func = _io_file_lexfeed_UCS2_BE; break;//UTF-16 little endian;
-				case 0xFEFF: func = _io_file_lexfeed_UCS2_LE; break;//UTF-16 big endian;
-				case 0xBBEF: 
-					if(sqstd_fread(&uc,1,sizeof(uc),file) == 0) { 
-						sqstd_fclose(file); 
-						return sq_throwerror(v,_SC("io error")); 
-					}
-					if(uc != 0xBF) { 
-						sqstd_fclose(file); 
-						return sq_throwerror(v,_SC("Unrecognozed ecoding")); 
-					}
-					func = _io_file_lexfeed_UTF8;
-					break;//UTF-8 ;
-				default: sqstd_fseek(file,0,SQ_SEEK_SET); break; // ascii
-			}
-
-			if(SQ_SUCCEEDED(sq_compile(v,func,file,filename,printerror))){
-				sqstd_fclose(file);
+			is->Release();
+			// open for text
+			iTJSTextReadStream *rs = TVPCreateTextStreamForRead(filename, L"");
+			ttstr data;
+			rs->Read(data, 0);
+			rs->Destruct();
+			if (SQ_SUCCEEDED(sq_compilebuffer(v, data.c_str(), data.length(), filename, printerror))) {
 				return SQ_OK;
 			}
 		}
-		sqstd_fclose(file);
 		return SQ_ERROR;
 	}
 	return sq_throwerror(v,_SC("cannot open the file"));
@@ -337,13 +322,13 @@ SQRESULT sqstd_dofile(HSQUIRRELVM v,const SQChar *filename,SQBool retval,SQBool 
 
 SQRESULT sqstd_writeclosuretofile(HSQUIRRELVM v,const SQChar *filename)
 {
-	SQFILE file = sqstd_fopen(filename,_SC("wb+"));
-	if(!file) return sq_throwerror(v,_SC("cannot open the file"));
-	if(SQ_SUCCEEDED(sq_writeclosure(v,file_write,file))) {
-		sqstd_fclose(file);
+	IStream *is = TVPCreateIStream(filename, TJS_BS_WRITE);
+	if(!is) return sq_throwerror(v,_SC("cannot open the file"));
+	if(SQ_SUCCEEDED(sq_writeclosure(v,file_write,is))) {
+		is->Release();
 		return SQ_OK;
 	}
-	sqstd_fclose(file);
+	is->Release();
 	return SQ_ERROR; //forward the error
 }
 
@@ -396,6 +381,7 @@ SQRESULT sqstd_register_iolib(HSQUIRRELVM v)
 	SQInteger top = sq_gettop(v);
 	//create delegate
 	declare_stream(v,_SC("file"),(SQUserPointer)SQSTD_FILE_TYPE_TAG,_SC("std_file"),_file_methods,iolib_funcs);
+#if 0
 	sq_pushstring(v,_SC("stdout"),-1);
 	sqstd_createfile(v,stdout,SQFalse);
 	sq_createslot(v,-3);
@@ -405,6 +391,7 @@ SQRESULT sqstd_register_iolib(HSQUIRRELVM v)
 	sq_pushstring(v,_SC("stderr"),-1);
 	sqstd_createfile(v,stderr,SQFalse);
 	sq_createslot(v,-3);
+#endif
 	sq_settop(v,top);
 	return SQ_OK;
 }
