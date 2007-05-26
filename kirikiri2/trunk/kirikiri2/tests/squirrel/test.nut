@@ -32,6 +32,15 @@ function hoge()
 	print("ファンクション呼び出し!");
 }
 
+// ファイル呼び出しテスト
+dofile("test2.nut");
+
+// ファイル書き込みテスト
+local a = file("output", "w");
+a.writen(10, 'l');
+a = null;
+
+// 吉里吉里側のオブジェクト生成
 local layer2 = ::krkr.MyLayer(::krkr.win, ::krkr.base);
 layer2.setSize(100,100);
 layer2.setPos(100,100);
