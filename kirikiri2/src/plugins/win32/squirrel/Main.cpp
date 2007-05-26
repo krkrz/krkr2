@@ -1,27 +1,16 @@
-#include <windows.h>
-#include "tp_stub.h"
+#include "ncbind/ncbind.hpp"
 #include "sqplus.h"
 
+// squirrel 上での TJS2のグローバル空間の参照名
 #define KIRIKIRI_GLOBAL L"krkr"
+// TJS2 上での squirrel のグローバル空間の参照名
 #define SQUIRREL_GLOBAL L"sqglobal"
 
+// コピーライト表記
 static const char *copyright =
-"------ Squirrel Copyright START ------\n"
+"\n------ Squirrel Copyright START ------\n"
 "Copyright (c) 2003-2007 Alberto Demichelis\n"
-"------ Squirrel Copyright END ------\n";
-
-/**
- * ログ出力用
- */
-static void log(const tjs_char *format, ...)
-{
-	va_list args;
-	va_start(args, format);
-	tjs_char msg[1024];
-	_vsnwprintf(msg, sizeof msg, format, args);
-	TVPAddLog(msg);
-	va_end(args);
-}
+"------ Squirrel Copyright END ------";
 
 /**
  * ログ出力用 for squirrel
@@ -37,87 +26,34 @@ static void PrintFunc(HSQUIRRELVM v, const SQChar* format, ...)
 }
 
 //---------------------------------------------------------------------------
-
-static void
-addMember(iTJSDispatch2 *dispatch, const tjs_char *name, iTJSDispatch2 *member)
-{
-	tTJSVariant var = tTJSVariant(member);
-	member->Release();
-	dispatch->PropSet(
-		TJS_MEMBERENSURE, // メンバがなかった場合には作成するようにするフラグ
-		name, // メンバ名 ( かならず TJS_W( ) で囲む )
-		NULL, // ヒント ( 本来はメンバ名のハッシュ値だが、NULL でもよい )
-		&var, // 登録する値
-		dispatch // コンテキスト
-		);
-}
-
-static iTJSDispatch2*
-getMember(iTJSDispatch2 *dispatch, const tjs_char *name)
-{
-	tTJSVariant val;
-	if (TJS_FAILED(dispatch->PropGet(TJS_IGNOREPROP,
-									 name,
-									 NULL,
-									 &val,
-									 dispatch))) {
-		ttstr msg = TJS_W("can't get member:");
-		msg += name;
-		TVPThrowExceptionMessage(msg.c_str());
-	}
-	return val.AsObject();
-}
-
-static bool
-isValidMember(iTJSDispatch2 *dispatch, const tjs_char *name)
-{
-	return dispatch->IsValid(TJS_IGNOREPROP,
-							 name,
-							 NULL,
-							 dispatch) == TJS_S_TRUE;
-}
-
-static void
-delMember(iTJSDispatch2 *dispatch, const tjs_char *name)
-{
-	dispatch->DeleteMember(
-		0, // フラグ ( 0 でよい )
-		name, // メンバ名
-		NULL, // ヒント
-		dispatch // コンテキスト
-		);
-}
-
+// squirrel -> TJS2 ブリッジ用
 //---------------------------------------------------------------------------
 
 extern void store(tTJSVariant &result, SquirrelObject &variant);
 extern void store(tTJSVariant &result, HSQUIRRELVM v, int idx=-1);
 extern void registglobal(HSQUIRRELVM v, const SQChar *name, iTJSDispatch2 *dispatch);
+extern void unregistglobal(HSQUIRRELVM v, const SQChar *name);
 
 //---------------------------------------------------------------------------
 
 /**
+ * Scripts クラスへの Squirrel 実行メソッドの追加
  */
-class tExecFunction : public tTJSDispatch
-{
-public:	
-	/// コンストラクタ
-	tExecFunction() {
-	}
-	/// デストラクタ
-	~tExecFunction() {
-	}
-	
-	tjs_error TJS_INTF_METHOD FuncCall(
-		tjs_uint32 flag, const tjs_char * membername, tjs_uint32 *hint,
-		tTJSVariant *result,
-		tjs_int numparams, tTJSVariant **param, iTJSDispatch2 *objthis) {
+class ScriptsSquirrel {
 
-		// ネイティブオブジェクトの取得
-		if (!objthis) return TJS_E_NATIVECLASSCRASH;
-		if (membername) return TJS_E_MEMBERNOTFOUND;
+public:
+	ScriptsSquirrel(){};
+
+	/**
+	 * squirrel スクリプトの実行
+	 * @param script スクリプト
+	 * @return 実行結果
+	 */
+	static tjs_error TJS_INTF_METHOD exec(tTJSVariant *result,
+										  tjs_int numparams,
+										  tTJSVariant **param,
+										  iTJSDispatch2 *objthis) {
 		if (numparams <= 0) return TJS_E_BADPARAMCOUNT;
-
 		try {
 			SquirrelObject script = SquirrelVM::CompileBuffer(param[0]->GetString());
 			SquirrelObject ret    = SquirrelVM::RunScript(script);
@@ -129,30 +65,18 @@ public:
 		}
 		return S_OK;
 	}
-};
 
-/**
- */
-class tExecStorageFunction : public tTJSDispatch
-{
-public:	
-	/// コンストラクタ
-	tExecStorageFunction() {
-	}
-	/// デストラクタ
-	~tExecStorageFunction() {
-	}
-	
-	tjs_error TJS_INTF_METHOD FuncCall(
-		tjs_uint32 flag, const tjs_char * membername, tjs_uint32 *hint,
-		tTJSVariant *result,
-		tjs_int numparams, tTJSVariant **param, iTJSDispatch2 *objthis) {
+	/**
+	 * squirrel スクリプトのファイルからの実行
+	 * @param filename ファイル名
+	 * @return 実行結果
+	 */
+	static tjs_error TJS_INTF_METHOD execStorage(tTJSVariant *result,
+												 tjs_int numparams,
+												 tTJSVariant **param,
+												 iTJSDispatch2 *objthis) {
 
-		// ネイティブオブジェクトの取得
-		if (!objthis) return TJS_E_NATIVECLASSCRASH;
-		if (membername) return TJS_E_MEMBERNOTFOUND;
 		if (numparams <= 0) return TJS_E_BADPARAMCOUNT;
-
 		iTJSTextReadStream * stream = TVPCreateTextStreamForRead(param[0]->GetString(), TJS_W(""));
 		try {
 			ttstr data;
@@ -174,118 +98,148 @@ public:
 	}
 };
 
+NCB_ATTACH_CLASS(ScriptsSquirrel, Scripts) {
+	RawCallback("execSQ",        &ScriptsSquirrel::exec,        TJS_STATICMEMBER);
+	RawCallback("execStorageSQ", &ScriptsSquirrel::execStorage, TJS_STATICMEMBER);
+};
+
+/**
+ * Squirrel 用 Continuous ハンドラクラス
+ * 直接 squirrel のメソッドを呼び出す Continuous ハンドラを生成する
+ */
+class SQContinuous : public tTVPContinuousEventCallbackIntf {
+
+protected:
+	// 内部オブジェクト参照保持用
+	HSQOBJECT obj;
+
+public:
+	/**
+	 * コンストラクタ
+	 * @param name 名称
+	 */
+	SQContinuous(const tjs_char *name) {
+		HSQUIRRELVM v = SquirrelVM::GetVMPtr();
+		sq_resetobject(&obj);          // ハンドルを初期化
+		sq_pushroottable(v);
+		sq_pushstring(v, name, -1);
+		sq_get(v, -2);                   // ルートテーブルから関数を取得
+		sq_getstackobj(v, -1, &obj); // 位置-1からオブジェクトハンドルを得る
+		sq_addref(v, &obj);              // オブジェクトへの参照を追加
+		sq_pop(v, 2);
+	}
+
+	/**
+	 * デストラクタ
+	 */
+	~SQContinuous() {
+		stop();
+		HSQUIRRELVM v = SquirrelVM::GetVMPtr();
+		sq_release(v, &obj);  
+	}
+
+	/**
+	 * 呼び出し開始
+	 */
+	void start() {
+		stop();
+		TVPAddContinuousEventHook(this);
+	}
+
+	/**
+	 * 呼び出し停止
+	 */
+	void stop() {
+		TVPRemoveContinuousEventHook(this);
+	}
+
+	/**
+	 * Continuous コールバック
+	 * 吉里吉里が暇なときに常に呼ばれる
+	 */
+	virtual void TJS_INTF_METHOD OnContinuousCallback(tjs_uint64 tick) {
+		HSQUIRRELVM v = SquirrelVM::GetVMPtr();
+		sq_pushobject(v, obj);
+		sq_pushroottable(v);
+		sq_pushinteger(v, (SQInteger)tick); // 切り捨て御免
+		if (!SQ_SUCCEEDED(sq_call(v, 2, SQFalse, SQFalse))) {
+			stop();
+		}
+		sq_pop(SquirrelVM::GetVMPtr(), 1);
+	}
+};
+
+NCB_REGISTER_CLASS(SQContinuous) {
+	NCB_CONSTRUCTOR((const tjs_char *));
+	NCB_METHOD(start);
+	NCB_METHOD(stop);
+};
+
 //---------------------------------------------------------------------------
 
-#pragma argsused
-int WINAPI DllEntryPoint(HINSTANCE hinst, unsigned long reason,
-	void* lpReserved)
+/**
+ * 登録処理前
+ */
+static void PreRegistCallback()
 {
-	return 1;
-}
-
-//---------------------------------------------------------------------------
-static tjs_int GlobalRefCountAtInit = 0;
-extern "C" HRESULT _stdcall V2Link(iTVPFunctionExporter *exporter)
-{
-	// スタブの初期化(必ず記述する)
-	TVPInitImportStub(exporter);
-
+	// Copyright 表示
 	TVPAddImportantLog(ttstr(copyright));
-	
+
 	// squirrel 初期化
 	SquirrelVM::Init();
+	// squirrel printf 登録
+	sq_setprintfunc(SquirrelVM::GetVMPtr(), PrintFunc);
+}
 
-	{
-		HSQUIRRELVM v = SquirrelVM::GetVMPtr();
-
-		// print の登録
-		sq_setprintfunc(v, PrintFunc);
-	}
-	
+/**
+ * 登録処理後
+ */
+static void PostRegistCallback()
+{
 	// TJS のグローバルオブジェクトを取得する
 	iTJSDispatch2 * global = TVPGetScriptDispatch();
-	
 	if (global) {
-
-		// Scripts オブジェクトを取得
-		tTJSVariant varScripts;
-		TVPExecuteExpression(TJS_W("Scripts"), &varScripts);
-		iTJSDispatch2 *dispatch = varScripts.AsObjectNoAddRef();
-		if (dispatch) {
-			addMember(dispatch, TJS_W("execSQ"), new tExecFunction());
-			addMember(dispatch, TJS_W("execStorageSQ"), new tExecStorageFunction());
-		}
-		
-		// Squirrel の グローバルに吉里吉里の グローバルを登録する
-		registglobal(SquirrelVM::GetVMPtr(), KIRIKIRI_GLOBAL, global);
-
 		// 吉里吉里のグローバルに Squirrel のグローバルを登録する
 		{
 			tTJSVariant result = tTJSVariant();
-			
 			HSQUIRRELVM v = SquirrelVM::GetVMPtr();
 			sq_pushroottable(v);
 			store(result, v, -1);
 			sq_pop(v, 1);
-			
-			global->PropSet(
-				TJS_MEMBERENSURE,
-				SQUIRREL_GLOBAL,
-				NULL,
-				&result,
-				global
-				);
+			global->PropSet(TJS_MEMBERENSURE, SQUIRREL_GLOBAL, NULL, &result, global);
 		}
-		
+		// Squirrel の グローバルに吉里吉里の グローバルを登録する
+		registglobal(SquirrelVM::GetVMPtr(), KIRIKIRI_GLOBAL, global);
 		global->Release();
 	}
-			
-	// この時点での TVPPluginGlobalRefCount の値を
-	GlobalRefCountAtInit = TVPPluginGlobalRefCount;
-	// として控えておく。TVPPluginGlobalRefCount はこのプラグイン内で
-	// 管理されている tTJSDispatch 派生オブジェクトの参照カウンタの総計で、
-	// 解放時にはこれと同じか、これよりも少なくなってないとならない。
-	// そうなってなければ、どこか別のところで関数などが参照されていて、
-	// プラグインは解放できないと言うことになる。
-
-	return S_OK;
 }
-//---------------------------------------------------------------------------
-extern "C" HRESULT _stdcall V2Unlink()
+
+/**
+ * 開放処理前
+ */
+static void PreUnregistCallback()
 {
-	// 吉里吉里側から、プラグインを解放しようとするときに呼ばれる関数。
-
-	// もし何らかの条件でプラグインを解放できない場合は
-	// この時点で E_FAIL を返すようにする。
-	// ここでは、TVPPluginGlobalRefCount が GlobalRefCountAtInit よりも
-	// 大きくなっていれば失敗ということにする。
-	if(TVPPluginGlobalRefCount > GlobalRefCountAtInit) return E_FAIL;
-		// E_FAIL が帰ると、Plugins.unlink メソッドは偽を返す
-
-	// - まず、TJS のグローバルオブジェクトを取得する
+	// TJS のグローバルオブジェクトを取得する
 	iTJSDispatch2 * global = TVPGetScriptDispatch();
-
-	// - global の DeleteMember メソッドを用い、オブジェクトを削除する
 	if (global)	{
-
-		// Scripts オブジェクトを取得
-		tTJSVariant varScripts;
-		TVPExecuteExpression(TJS_W("Scripts"), &varScripts);
-		iTJSDispatch2 *dispatch = varScripts.AsObjectNoAddRef();
-		if (dispatch) {
-			delMember(dispatch, TJS_W("execSQ"));
-			delMember(dispatch, TJS_W("execStorageSQ"));
-		}
-
-		delMember(global, SQUIRREL_GLOBAL);
-		
+		// Squirrel の グローバルから吉里吉里のグローバルを削除
+		unregistglobal(SquirrelVM::GetVMPtr(), KIRIKIRI_GLOBAL);
+		// squirrel の global への登録を解除
+		global->DeleteMember(0, SQUIRREL_GLOBAL, NULL, global);
 		global->Release();
 	}
-
-	SquirrelVM::Shutdown();
-	
-	// スタブの使用終了(必ず記述する)
-	TVPUninitImportStub();
-
-	return S_OK;
 }
+
+/**
+ * 開放処理後
+ */
+static void PostUnregistCallback()
+{
+	// squirrel 終了
+	SquirrelVM::Shutdown();
+}
+
+NCB_PRE_REGIST_CALLBACK(PreRegistCallback);
+NCB_POST_REGIST_CALLBACK(PostRegistCallback);
+NCB_PRE_UNREGIST_CALLBACK(PreUnregistCallback);
+NCB_POST_UNREGIST_CALLBACK(PostUnregistCallback);

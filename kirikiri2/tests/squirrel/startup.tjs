@@ -53,7 +53,11 @@ Debug.message("Squirrel test:" + sqglobal.test);
 // 関数呼び出し
 sqglobal.hoge();
 
-// コンストラクタ
+// Squirrel側クラス生成
 var foo = new sqglobal.Foo();
 foo.print();
 Debug.message(foo.data);
+
+// Squirrel Continuous ハンドラ
+//var cont = new SQContinuous("main");
+//cont.start();

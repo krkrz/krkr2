@@ -32,13 +32,25 @@ function hoge()
 	print("ファンクション呼び出し!");
 }
 
+function main(tick)
+{
+	print("tick値:" + tick);
+}
+
 // ファイル呼び出しテスト
 dofile("test2.nut");
 
 // ファイル書き込みテスト
-local a = file("output", "w");
-a.writen(10, 'l');
-a = null;
+local f = file("output", "w");
+f.writen(10, 'l');
+f = null;
+
+// 数学関数テスト
+print("sin(PI):" + sin(PI));
+print("rand():" + rand());
+
+// 文字列関数テスト
+print(format("%s %d 0x%02X","this is a test :",123,10));
 
 // 吉里吉里側のオブジェクト生成
 local layer2 = ::krkr.MyLayer(::krkr.win, ::krkr.base);

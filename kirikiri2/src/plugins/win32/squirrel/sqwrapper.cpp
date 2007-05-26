@@ -74,7 +74,7 @@ public:
 					sq_pop(SquirrelVM::GetVMPtr(), 1);
 				}
 			} else {
-				if (SQ_SUCCEEDED(sq_call(SquirrelVM::GetVMPtr(), numparams + 1, SQTrue, SQFalse))) {
+				if (SQ_SUCCEEDED(sq_call(SquirrelVM::GetVMPtr(), numparams + 1, SQFalse, SQFalse))) {
 					ret = S_OK;
 				}
 			}
@@ -114,7 +114,7 @@ public:
 						sq_pop(SquirrelVM::GetVMPtr(), 1);
 					}
 				} else {
-					if (SQ_SUCCEEDED(sq_call(SquirrelVM::GetVMPtr(), numparams + 1, SQTrue, SQFalse))) {
+					if (SQ_SUCCEEDED(sq_call(SquirrelVM::GetVMPtr(), numparams + 1, SQFalse, SQFalse))) {
 						ret = S_OK;
 					}
 				}
@@ -141,7 +141,7 @@ public:
 						sq_pop(SquirrelVM::GetVMPtr(), 1);
 					}
 				} else {
-					if (SQ_SUCCEEDED(sq_call(SquirrelVM::GetVMPtr(), numparams + 1, SQTrue, SQFalse))) {
+					if (SQ_SUCCEEDED(sq_call(SquirrelVM::GetVMPtr(), numparams + 1, SQFalse, SQFalse))) {
 						ret = S_OK;
 					}
 				}
@@ -382,10 +382,10 @@ store(HSQUIRRELVM v, tTJSVariant &variant)
 		sq_pushnull(v);
 		break;
 	case tvtInteger:
-		sq_pushinteger(v, (int)(variant));
+		sq_pushinteger(v, (SQInteger)(variant));
 		break;
 	case tvtReal:
-		sq_pushfloat(v, (float)(double)(variant));
+		sq_pushfloat(v, (SQFloat)(double)(variant));
 		break;
 	}
 }
@@ -465,7 +465,7 @@ store(tTJSVariant &result, SquirrelObject &obj)
 // -------------------------------------------------------
 
 /**
- * Squirrel の グローバル空間にに登録処理を行う
+ * Squirrel の グローバル空間に登録処理を行う
  */
 void registglobal(HSQUIRRELVM v, const SQChar *name, iTJSDispatch2 *dispatch)
 {
@@ -473,5 +473,16 @@ void registglobal(HSQUIRRELVM v, const SQChar *name, iTJSDispatch2 *dispatch)
 	sq_pushstring(v, name, -1);
 	store(v, dispatch);
 	sq_createslot(v, -3); 
+	sq_pop(v, 1);
+}
+
+/**
+ * Squirrel の グローバル空間から削除処理を行う
+ */
+void unregistglobal(HSQUIRRELVM v, const SQChar *name)
+{
+	sq_pushroottable(v);
+	sq_pushstring(v, name, -1);
+	sq_deleteslot(v, -2, SQFalse); 
 	sq_pop(v, 1);
 }
