@@ -5,14 +5,21 @@ Author: わたなべごう
 
 Squirrel (http://squirrel-lang.org/) の吉里吉里バインドです。
 
+Squirrel 組み込み用オブジェクト指向言語です。
+文法的には C 言語風で、TJS2 と構造も概念もよく似ています。
+
+Squirrel は、協調スレッド（コルーチン）をサポートしており、
+処理を任意のタイミングで中断できるため、ゲーム用のロジック
+を組むのに非常に適しています。
+
 ●使用方法
 
-Squirrel の呼び出し機能が Scripts に拡張されます
+◇基本
 
-------------------------------------------------------------------------------
-Scripts.execSQ("local a=10; return a;");	// Squirrel スクリプトの実行
-Scripts.execStorageSQ("filename.nut");		// Squirrel スクリプトファイルの実行
-------------------------------------------------------------------------------
+・Squirrel のグローバル空間は吉里吉里全体に対して１つだけ存在します。
+　
+　Squirrel 用のスクリプトの実行はこのグローバル空間上でおこなわれ、
+　定義されたファンクションやクラスもこのグローバル空間に登録されていきます。
 
 ・TJS2 のグローバル空間を Squirrel 側から "::krkr" で参照できます。
 
@@ -26,16 +33,57 @@ Scripts.execStorageSQ("filename.nut");		// Squirrel スクリプトファイルの実行
   オブジェクトに対する PropGet/PropSet/FuncCall/CreateNew
   が実装されています。なお incontextof は意味をもちません。
 
-●コンパイル
+・Squirrel 標準ライブラリのうち以下のものが利用可能です
 
-プラグインのコンパイルには以下のライブラリが必要になります。
-フォルダに展開してください。※フォルダ名は sqplus にリネームしてください
+  - I/O
+  - blob
+  - math
+  - string
 
-・sqplus (Squirrel の C++ バインド)
+　I/O 関係は OS直接ではなく、TJS のストレージ空間が参照されます。
+　また、ファイル名も TJS のストレージ名になります。
+　stdin/stdout/stderr は利用できません
 
-　http://wiki.squirrel-lang.org/default.aspx/SquirrelWiki/SqPlus.html
+◇Scripts 拡張
 
-　開発時は SQUIRREL2_1_1_sqplus_snapshot_20070304.zip を使って作業しています。
+Squirrel スクリプトの実行機能が Scripts に拡張されます。
+いずれのメソッドも返り値を返すことができます。プリミティブな値は
+そのまま変換されて、また、クラスは TJS2 の iTJSDispatch に
+ラッピングされた状態で返ります。
+
+------------------------------------------------------------------------------
+Scripts.execSQ("local a=10; return a;");	// Squirrel スクリプトの実行
+Scripts.execStorageSQ("filename.nut");		// Squirrel スクリプトファイルの実行
+------------------------------------------------------------------------------
+
+◇SQContinous 拡張
+
+Squirrel のファンクションを直接呼び出す Continuous Handler を保持するクラスです。
+TJS2 ラッピングによる余分な負荷なしに呼び出し処理を行うことができます。
+
+疑似コードによるマニュアル
+
+------------------------------------------------------------------------------
+class SQContinuous {
+
+	/**
+	 * コンストラクタ
+     * @param func squirrel のグローバルな関数 func(tick){} 
+     * tick は SQInteger にキャストされています
+	 */
+	function SQContinuous(func);
+
+	/**
+	 * 呼び出しを開始する
+     */
+ 	function start();
+    
+    /**
+	 * 呼び出しを停止する
+	 */
+    function stop();
+};
+------------------------------------------------------------------------------
 
 ●ライセンス
 
