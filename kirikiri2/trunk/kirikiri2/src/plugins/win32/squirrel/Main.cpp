@@ -18,7 +18,7 @@ static void log(const tjs_char *format, ...)
 	va_list args;
 	va_start(args, format);
 	tjs_char msg[1024];
-	_vsnwprintf(msg, 1024, format, args);
+	_vsnwprintf(msg, sizeof msg, format, args);
 	TVPAddLog(msg);
 	va_end(args);
 }
@@ -31,7 +31,7 @@ static void PrintFunc(HSQUIRRELVM v, const SQChar* format, ...)
 	va_list args;
 	va_start(args, format);
 	tjs_char msg[1024];
-	_vsnwprintf(msg, 1024, format, args);
+	_vsnwprintf(msg, sizeof msg, format, args);
 	TVPAddLog(msg);
 	va_end(args);
 }
@@ -174,32 +174,6 @@ public:
 	}
 };
 
-static SQInteger getThread(HSQUIRRELVM v)
-{
-	// 新しいスレッドを作る
-	HSQUIRRELVM newvm = sq_newthread(v, 1024);
-
-	// スレッドに対してスクリプトをロードする
-	const SQChar *s;
-	sq_getstring(v, 2, &s);
-	iTJSTextReadStream * stream = TVPCreateTextStreamForRead(s, TJS_W(""));
-	try {
-		ttstr data;
-		stream->Read(data, 0);
-		if (!SQ_SUCCEEDED(sq_compilebuffer(newvm, data.c_str(), data.length(), NULL, 1))) {
-			const SQChar *s;
-			sq_getlasterror(newvm);
-			sq_getstring(newvm,-1,&s);
-			log(s);
-		}
-	} catch(...) {
-		stream->Destruct();
-		throw;
-	}
-	stream->Destruct();
-	return 1;
-}
-
 //---------------------------------------------------------------------------
 
 #pragma argsused
@@ -223,13 +197,6 @@ extern "C" HRESULT _stdcall V2Link(iTVPFunctionExporter *exporter)
 
 	{
 		HSQUIRRELVM v = SquirrelVM::GetVMPtr();
-
-		// getThread の登録
-		sq_pushroottable(v);
-		sq_pushstring(v, L"getThread", -1);
-		sq_newclosure(v, getThread, 0);
-		sq_createslot(v, -3); 
-		sq_pop(v, 1);
 
 		// print の登録
 		sq_setprintfunc(v, PrintFunc);
