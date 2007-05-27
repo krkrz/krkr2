@@ -301,7 +301,9 @@ void tTVPLayerManager::NotifyWindowInvalidation()
 	// notifies layer surface is invalidated and should be transfered to window.
 	if(!Window) return;
 
-	Window->GetDrawDevice()->NotifyLayerImageChange(this);
+	iTVPDrawDevice * DrawDevice = Window->GetDrawDevice();
+	if ( DrawDevice )
+		DrawDevice->NotifyLayerImageChange(this);
 }
 //---------------------------------------------------------------------------
 void tTVPLayerManager::SetWindow(tTJSNI_BaseWindow *window)
