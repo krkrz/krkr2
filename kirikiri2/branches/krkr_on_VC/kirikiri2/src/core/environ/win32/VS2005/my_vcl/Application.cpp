@@ -97,7 +97,7 @@ wxFrame *MyApp::CreateFrame()
 TApplication::TApplication( TComponent* Owner ) : TComponent(Owner)
 {
 	Handle = NULL;
-	_CrtSetBreakAlloc(1225);
+	//_CrtSetBreakAlloc(1225); // TJSオブジェクトの生成
 }
 
 //----------------------------------------------------------------------------

@@ -230,6 +230,7 @@ public:
 			TCloseAction Action = caFree;
 			m_pForm->OnClose(m_pForm, Action);
 		}
+		m_pForm = NULL;
 		return res;
 	}
 
@@ -245,7 +246,7 @@ public:
 //			OutputDebugString(buf);
 #endif
 			TMessage msg = {message, wParam, lParam, 0};
-			if ( m_pForm->HandleMessageMap(msg) == true )
+			if ( m_pForm && m_pForm->HandleMessageMap(msg) == true )
 				return msg.Result;
 		}
 		return wxFrame::MSWWindowProc(message, wParam, lParam);
@@ -321,11 +322,13 @@ TCustomForm::~TCustomForm()
 {
 	// いまだにクローズされていないのだったら、イベント発行しておく
 	m_wxWindow->Destroy();
-	m_wxWindow = NULL;
 
 	// VCLオブジェクトを潰すときは、デストロイ
+	// このハンドラ中では、まだ生きていないとダメだしい
 	if ( OnDestroy )
 		OnDestroy(this);
+
+	m_wxWindow = NULL;
 }
 
 
