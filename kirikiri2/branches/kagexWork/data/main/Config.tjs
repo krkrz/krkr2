@@ -335,7 +335,6 @@ function KAGWindow_config()
 
 // ◆ 自動ラベル処理
 ;autoLabelMode = true; // true:自動ラベルモード
-;autoLabelType = 1;     // 0:間接ラベルロード 1:行番号指定ロード
 
 
 // ◆ ワールド拡張がボイス切り替えようにデフォルト名の判定に利用する名前を指定

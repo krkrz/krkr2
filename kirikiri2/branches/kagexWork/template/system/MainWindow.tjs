@@ -492,7 +492,6 @@ class KAGWindow extends Window
     // ------------------------------------------------------ 自動ラベル処理
 
     var autoLabelMode; // true:自動ラベルモード
-    var autoLabelType; // 0:間接ラベルロード 1:行番号指定ロード
     var autoLabelCount;  // 自動ラベルカウンタ
 	var autoLabelCurrentRecordName; // 自動保存用記録名
 
@@ -3151,7 +3150,9 @@ class KAGWindow extends Window
 	function incRecordLabel(count)
 	{
 		// 自動ラベル状態を保存
-		storeAutoLabel();
+		if (autoLabelMode) {
+			storeAutoLabel();
+		}
 
         // sflags[currentRecordName]++
 		if(autoRecordPageShowing)
@@ -6796,14 +6797,12 @@ class KAGWindow extends Window
      * 自動ラベルモードの既読処理
      */
 	function storeAutoLabel() {
-		if (autoLabelMode) {
-			if (autoLabelCurrentRecordName != "") {
-				if (sflags[autoLabelCurrentRecordName] === void ||
-					sflags[autoLabelCurrentRecordName] < autoLabelCount) {
-					sflags[autoLabelCurrentRecordName] = autoLabelCount;
-				}
-            }
-        }
+		if (autoLabelCurrentRecordName != "") {
+			if (sflags[autoLabelCurrentRecordName] === void ||
+				sflags[autoLabelCurrentRecordName] < autoLabelCount) {
+				sflags[autoLabelCurrentRecordName] = autoLabelCount;
+			}
+		}
     }
 
     /**
@@ -6820,7 +6819,7 @@ class KAGWindow extends Window
 	 * 未読スキップ停止確認
 	 */
 	function checkAutoSkip() {
-		if (autoLabelMode && autoLabelType == 1) {
+		if (autoLabelMode) {
 			if(!(allskip || getCurrentRead()) && skipMode < SKIP_FAST) {
 				cancelSkip(); // 未読なのでスキップを停止
 			}
@@ -6831,27 +6830,14 @@ class KAGWindow extends Window
 	 * 自動ラベル処理実行
 	 */
 	function doAutoLabel() {
-		if (autoLabelMode) {
-			// 自動ラベル処理用特殊タグ
-			// 通常の KAG からよぶことはない。
-			// 改ページ処理によって行頭に擬似的に挿入される
-			switch (autoLabelType) {
-			case 0:
-				// 間接ラベル方式で保存
-				conductor.callLabel("");
-				conductor.loadScenario("autolabel.ks");
-				conductor.goToLabel("*autoLabelLabel");
-				break;
-			case 1:
-				// 行指定モードで保存処理
-				pushHistoryOfStore();
-				storeFlags(true);
-				storeLabelPassed = true;
-				checkAutoSkip();
-				setMenuAccessibleAll();
-				break;
-			}
-		}
+		// autoLabelMode の場合のみ呼び出される
+		// 自動ラベル処理用特殊タグ
+		// 行指定モードで保存処理
+		pushHistoryOfStore();
+		storeFlags(true);
+		storeLabelPassed = true;
+		checkAutoSkip();
+		setMenuAccessibleAll();
 	}
 
 	/**
@@ -8741,7 +8727,7 @@ class KAGWindow extends Window
 		}
 		
 		if (recordHistoryOfStore == 3) { // 2 : 選択肢 ( @s タグ ) ごと
-			if (autoLabelMode && autoLabelType == 1) {
+			if (autoLabelMode) {
 				// 状態保存処理（行指定モード保存を使う)
 				pushHistoryOfStore();
 				storeFlags(true);
@@ -8834,7 +8820,7 @@ class KAGWindow extends Window
 		}
 		
 		if (recordHistoryOfStore == 3) { // 3 : 選択肢 ( @s タグ ) ごと
-			if (autoLabelMode && autoLabelType == 1) {
+			if (autoLabelMode) {
 				// 状態保存処理（行指定モード保存を使う)
 				pushHistoryOfStore();
 				storeFlags(true);
