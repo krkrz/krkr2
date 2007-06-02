@@ -787,8 +787,8 @@ class KAGEnvironment extends KAGEnvBase {
 
 		//dm("レベル指定:" + newlevel + ":" + layer.level);
 		newlevel = +newlevel;
-            
-		if (layer.level !== void) {
+
+		if (layer.level > 0) {
 			if (layer.level === newlevel) {
 				//dm("同一レベルなので処理しない");
 				return;
@@ -886,7 +886,9 @@ class KAGEnvironment extends KAGEnvBase {
 	 * @param origLayer 廃棄元レイヤ
 	 */
 	function getNewLayer(name, base, origLayer) {
-		var newlayer = new CharacterLayer(base.base.window, base.base, name);
+		var newlayer = new GraphicLayerEx(base.base.window, base.base, name);
+		newlayer.hitType = htProvince;
+		newlayer.level = -1;
 		forelayers.add(newlayer);
 		if (origLayer !== void) {
 			newlayer.assign(origLayer);

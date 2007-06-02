@@ -27,6 +27,10 @@ class KAGEnvStageLayer extends KAGEnvLayer {
 	 */
 	function updateStageImage(elm) {
 
+		if (stageName === void) {
+			return;
+		}
+
 		var info = env.stages[stageName];
 		if (info === void) {
 			throw new Exception("ステージ情報がありません:" + stageName);
