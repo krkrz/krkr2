@@ -1,0 +1,393 @@
+Title: 吉里吉里/KAGEX アクション機能リファレンス
+Author: 合資会社ワムソフト 渡邊剛
+
+●概要
+
+吉里吉里/KAGEX では汎用のアクション機能が提供されます
+
+●TJS での利用
+
+◇アクションの開始
+
+ kag.beginAction(target, action, completed, nowait)
+ 
+ target: 対象オブジェクト
+ action: アクション定義（辞書または配列）
+ completed: アクション終了時に呼び出すファンクション
+ nowait: true にすると、waitAction 処理などで停止しなくなります
+
+ 基本は辞書パラメータの指定になります。
+ この辞書パラメータの配列が渡された場合は、
+ 配列の指定順に複数のアクションが順次実行されます
+
+ GraphicLayerEx を継承したレイヤの場合は、以下の
+ 動作についてはレイヤ組み込みとしてアクションが実装されています
+
+ layer.setMoveTime(x, y, time, accel);
+ layer.setOpacityTime(opacity, time, accel);
+ layer.setZoom(opacity, time, accel);
+ layer.setRotate(rotate, time, accel);
+
+◇アクションの中断
+
+ kag.stopAction(target)
+
+ target: 対象オブジェクト
+
+ kag.stopAllActions(all);
+ 
+ 全アクションの中断
+
+ all がtrue の場合は、本当に全部停止する
+ all がfalse の場合は、nowait オプションをつけたアクションは停止しません
+
+◇アクションの待ち指定
+
+ kag.waitAction(target, canskip);
+
+ 特定オブジェクトに対するアクションの終了待ち
+ target: 対象オブジェクト
+ canskip: クリックでキャンセルされるか
+
+ この指定の場合、nowait の有無にかかわらずアクションは停止します。
+
+ kag.waitAllActions(canskip);
+
+ 全アクションの終了待ち
+ canskip: クリックでキャンセルされるか
+
+ この指定の場合、nowait 指定のあるアクションのみが停止対象になります。
+
+●KAGEX での利用
+
+◇アクションの起動
+
+レイヤの場合
+---------------------------------------------------------------
+ [action layer=レイヤ名 パラメータ...]
+---------------------------------------------------------------
+
+その他のオブジェクトの場合
+---------------------------------------------------------------
+ [action taget=オブジェクト名 パラメータ...]
+---------------------------------------------------------------
+
+※パラメータ指定されたものが辞書指定のアクション指定とみなされます
+
+アクションの停止
+---------------------------------------------------------------
+ [stopaction layer=レイヤ名]
+---------------------------------------------------------------
+
+アクション待ち
+---------------------------------------------------------------
+ [wact layer=レイヤ名]
+---------------------------------------------------------------
+※レイヤ名を省略した場合は全アクションの終了を待ちます
+
+・layer= の場合は、page とあわせてレイヤがターゲットになります
+・target= で指定する場合は、その名前で参照可能な任意のオブジェクトが
+　ターゲットになります
+
+●KAGEX ワールド機能での利用
+
+・キャラクタ
+・環境レイヤ
+・SE
+・BGM
+・ev
+・env
+
+の各 action パラメータで指定可能です
+
+方法1: envinit.tjs で actions に登録して、その名前を指定
+
+envinit.tjs
+--------------------------------------------
+	actions = %[
+        "おじぎ" => %[
+            "module" => LayerJumpOnceActionModule,
+            "vibration" => -50,
+            "cycle" => 3000,
+            ],
+		]
+--------------------------------------------
+
+スクリプト中の記述
+--------------------------------------------
+[あかり action=おじぎ]
+
+;他に同名のものがなければ省略記法も可能
+[あかり おじぎ]
+--------------------------------------------
+
+方法2:  直接アクションモジュール名を指定
+
+-------------------------------------------------------------------
+[あかり action=LayerJumpOnceActionModule vibration=-50 cycle=3000]
+-------------------------------------------------------------------
+
+方法3: 一部パラメータのみ変更
+
+-------------------------------------------------------------------
+[あかり おじぎ cycle=1000]
+-------------------------------------------------------------------
+
+ワールド機能でアクション終了を待つ場合は sync 指定します
+
+-------------------------------------------------------------------
+[あかり ガクガク time=1000] ; 時間指定つきアクション
+[あかり sync]               ; アクション終了まち
+-------------------------------------------------------------------
+
+●アクションパラメータ記述
+
+◇基本概念
+
+・プロパティごとにアクション情報を辞書の形で指定します
+・アクション情報に null を指定したプロパティはアクション解除されます
+
+例:
+
+%[
+  left : %[ handler:MoveHandler, value:100 ],
+  top  : %[ handler:MoveHandler, value:200 ],
+]
+
+・アクションには「絶対アクション」と「相対アクション」があります。
+
+　絶対アクション：終了時に指定された値の増減がプロパティに反映される
+
+　  絶対アクションは特定のプロパティに１つだけ指定可能です。
+　　※複数指定した場合は以前のものがキャンセルされます
+　　
+　　要するに「移動」です
+
+　相対アクション：終了時に指定された値の増減は０になる
+
+　　相対アクションは特定のプロパティにいくつでも指定可能です。
+
+　　要するに「振動」です
+
+◇ハンドラ解説
+
+・共通パラメータ
+
+  time:  アクション駆動時間
+    アクションが動作する時間を指定します
+
+  delay: アクション開始遅延時間
+　　アクションが動作開始するまでに遅れを生じさせます
+
+・MoveAction（絶対アクション）
+
+　基本移動アクションです
+　直線的に値が移動します
+
+  パラメータ:
+    start	初期値（相対指定可能）
+	value	終了値（相対指定可能）
+	accel	正：加速運動　０：原則　負：減速運動
+
+・ParabolaMoveAction（絶対アクション）
+
+　二次関数移動アクション
+　※このアクションは汎用には使えません。必ず left/top が同時動作します。
+　　旧アクションの機能再現のためだけに作られています
+
+　パラメータ:
+    x: 頂点X座標
+    y: 頂点Y座標
+    topTime: 頂点通過時間（time はこれの倍の値になります）
+
+・RandomAction（相対アクション）
+
+　ランダム振動アクションです。
+
+　パラメータ:
+	vibration	振動量（相対指定可能）
+    offset   	補正値（相対指定可能）
+    waittime	振動間の待ち時間
+
+・SquareAction（相対アクション）
+
+　矩形波振動アクションです
+
+	vibration	振動量（相対指定可能）
+    offset   	補正値（相対指定可能）
+	ontime		ONの時間  値:vibration
+	offtime		OFFの時間 値:-vibration
+
+・TriangleAction（相対アクション）
+
+　三角波振動アクションです
+
+	vibration	振動量（相対指定可能）
+    offset   	補正値（相対指定可能）
+	ontime		上昇時間
+	offtime		下降時間
+
+・SinAction（相対アクション）
+
+　Sin波振動アクションです
+
+	vibration	振動量（相対指定可能）
+    offset   	補正値（相対指定可能）
+	cycle		周期（ms)
+	angvel		角速度（度/sec) ※cycle指定時は無効
+
+・CosAction（相対アクション）
+
+　Cos波振動アクションです
+
+	vibration	振動量（相対指定可能）
+    offset   	補正値（相対指定可能）
+	cycle		周期（ms)
+	angvel		角速度（度/sec) ※cycle指定時は無効
+
+・FallAction（相対アクション）
+
+　落下運動のアクションです
+
+	distance	落下量
+	time		落下時間
+
+
+●互換機能アクションパラメータ詳細
+
+古いKAGEX との互換のために残されているアクション指定です。
+
+・単純アクション指定のかわりに module 名を指定することで機能します
+
+[action layer=0 module=アクション名 ....]
+
+◇全アクション共通パラメータ
+
+time	アクションが実行される時間
+delay	アクション開始までの遅延時間
+
+◇移動モジュール
+
+◆共通
+
+x		移動先位置
+y		移動先位置
+
+◆LayerNormalMoveModule  通常移動
+
+特に追加なし
+
+◆LayerAccelMoveModule　 加速移動
+
+特に追加なし
+
+◆LayerDecelMoveModule   減速移動
+
+特に追加なし
+
+◆LayerParabolaMoveModule  放物線移動
+
+x/y が放物線の頂点になります（最終点ではありません）
+toptime	頂点通過時間（time の1/2を指定すると丁度落下しきることになる)
+
+※このアクション指定は新アクションとの整合がとれないので、
+　近い将来廃止されます。つかわないでください。
+　代替は検討中です。
+
+◇アクションモジュール
+
+◆共通
+
+特になし
+
+◆LayerVibrateActionModule	振動アクション
+
+vibration	振動量(pixel)
+waittime	振動間の待ち時間(ms)
+
+◆LayerJumpActionModule	縦ゆれアクション
+
+vibration	上下振動量(pixel)
+cycle		周期(ms)
+
+◆LayerJumpOnceActionModule	縦ゆれアクション（単発）
+
+vibration	上下振動量(pixel)
+cycle		周期(ms)
+
+◆LayerWaveActionModule 	横ゆれアクション
+
+vibration	左右振動量(pixel)
+cycle		周期(ms)
+
+◆LayerWaveOnceActionModule 	横ゆれアクション（単発）
+
+vibration	左右振動量(pixel)
+cycle		周期(ms)
+
+◆LayerFallActionModule		落下アクション
+
+distance	落下距離(pixel)
+falltime	落下時間(ms)
+
+◇拡大縮小モジュール
+
+◆共通パラメータ
+
+特になし
+
+◆LayerNormalZoomModule		単純拡大
+
+zoom	最終サイズ（縦長・横長になっている状態からの変更は考慮しない）
+
+◆LayerVRotateZoomModule	拡縮を使った擬似3D回転（縦軸）
+
+angvel	回転の角速度（度/sec）
+
+◆LayerHRotateZoomModule	拡縮を使った擬似3D回転（横軸）
+
+angvel	回転の角速度（度/sec）
+
+◆LayerHeartBeatZoomModule	ハートビート
+
+zoom	最大拡大率
+
+◆LayerVibrateZoomModule	ズーム振動
+
+vibration	振動量(％)
+waittime	振動間の待ち時間(ms)
+
+◇回転モジュール
+
+◆LayerNormalRotateModule	単純回転
+
+angvel		角速度（度/sec）
+
+◆LayerVibrateRotateModule	回転振動
+
+vibration	振幅(度)
+cycle		周期(ms)
+
+◆LayerFalldownRotateModule		転倒
+
+angle	転倒時最大角（-90～90が適正 正で左、負で右に転倒）
+
+◆LayerToRotateModule		指定角度へ
+
+angle	指定角度
+
+◇モードモジュール
+
+◆LayerBlinkModeModule		点滅処理
+
+showtime	表示時間(ms)
+hidetime	消去時間(ms)
+
+◆LayerFadeModeModule		フェード処理用
+
+intime		フェードイン時間   (0の場合フェードインしない)
+outtime		フェードアウト時間 (0の場合フェードアウトしない)
+
+◆LayerFadeToModeModule		指定された不透明度に変更
+
+opacity		不透明度
