@@ -4,15 +4,8 @@
  */
 class KAGEnvLayer extends KAGEnvImage {
 
-    // kag の参照
-    property kag {
-        getter() {
-            return env.kag;
-        }
-    }
-
     /// 描画中画像
-    var imageFile;
+	var imageFile = void;
 
 	// 描画中ムービー
 	var movieFile;
@@ -68,11 +61,10 @@ class KAGEnvLayer extends KAGEnvImage {
 		}
 	}
 	
-	function KAGEnvLayer(env) {
-		super.KAGEnvImage(env);
-		redraw = false;
+	function KAGEnvLayer(env, name) {
+		super.KAGEnvImage(env, name);
 	}
-
+	
     function onStore(f) {
         super.onStore(f);
 		f.imageFile = imageFile;
@@ -87,7 +79,12 @@ class KAGEnvLayer extends KAGEnvImage {
     }
     
     function onRestore(f) {
-		imageFile = f.imageFile;
+		if (f.imageFile !== void) {
+			imageFile = %[];
+			(Dictionary.assign incontextof imageFile)(f.imageFile);
+		} else {
+			imageFile = void;
+		}
 		movieFile = f.movieFile;
 		movieLoop = f.movieLoop;
 		movieAlpha = f.movieAlpha;
@@ -117,8 +114,13 @@ class KAGEnvLayer extends KAGEnvImage {
 		
 		movieFile = void;
 		tileFile  = void;
-		imageFile = file;
-
+		imageFile = %[];
+		imageFile.storage = file;
+		imageFile.lightcolor = elm.lightcolor;
+		imageFile.lighttype  = elm.lighttype;
+		imageFile.brightness = elm.brightness;
+		imageFile.contrast   = elm.contrast;
+		
         // 背景指定時に座標指定がなければ場所情報を初期化する
         if (elm.xpos === void) {
             xpos = void;
@@ -193,7 +195,7 @@ class KAGEnvLayer extends KAGEnvImage {
         return true;
     }
 	
-	var _layerCommands = %[
+	var envLayerCommands = %[
 	file : function(param, elm) {
 		setImageFile(param, elm);
 	} incontextof this,
@@ -225,42 +227,16 @@ class KAGEnvLayer extends KAGEnvImage {
 		
 		// レイヤ共通コマンド
         var func;
-        if ((func = _layerCommands[cmd]) !== void) {
-            if (func != null) {
-                func(param, elm);
-            }
+		if ((func = envLayerCommands[cmd]) !== void) {
+			if (func != null) {
+				func(param, elm);
+			}
             return true;
         }
-        // レイヤ拡張コマンド用
-        if ((func = layerCommands[cmd]) !== void) {
-            if (func != null) {
-                func(param, elm);
-            }
-            return true;
-        }
-
-        var find = false;
-        
-        // アクション
-        if (!find) {
-            find = setAction(cmd, elm);
-        }
-
-        // 更新
-        if (!find) {
-            find = setTrans(cmd, elm);
-        }
-
-		// 画像のロード
-		if (!find) {
-			find = setImageFile(cmd, elm);
-		}
-		return find;
+		
+		return false;
     }
 
-    // このメソッドを実装する
-    // function getLayer(base);
-    // 
 	function drawLayer(layer) {
 		if (isShowBU()) {
 			if (tileFile !== void) {
@@ -283,7 +259,7 @@ class KAGEnvLayer extends KAGEnvImage {
 						}
 					}
 				} catch (e) {
-					var text = imageFile + ":タイル画像がロードできません";
+					var text = tileFile + ":タイル画像がロードできません";
 					kag.errorImage(text);
 					layer.fillRect(0,0,layer.width, layer.height, 0xff000000);
 					layer.drawText(0,0,text,0xffffff);
@@ -296,11 +272,11 @@ class KAGEnvLayer extends KAGEnvImage {
 				}
 				layer.clearTile();
 				try {
-					layer.loadImages(%[ "storage" => imageFile]);
+					layer.loadImages(imageFile);
 					_width  = layer.width;
 					_height = layer.height;
 				} catch (e) {
-					var text = imageFile + ":画像がロードできません";
+					var text = imageFile.storage + ":画像がロードできません";
 					kag.errorImage(text);
 					layer.fillRect(0,0,layer.width, layer.height, 0xff000000);
 					layer.drawText(0,0,text,0xffffff);

@@ -166,9 +166,11 @@ var actionParam = %[
     "opacity" => true,
     ];
 
+KAGLoadScript('KAGEnvBase.tjs');
 KAGLoadScript('KAGEnvImage.tjs');
 KAGLoadScript('KAGEnvLayer.tjs');
-KAGLoadScript('KAGEnvBaseLayer.tjs');
+KAGLoadScript('KAGEnvStageLayer.tjs');
+KAGLoadScript('KAGEnvEventLayer.tjs');
 KAGLoadScript('KAGEnvLevelLayer.tjs');
 KAGLoadScript('KAGEnvSimpleLayer.tjs');
 KAGLoadScript('KAGEnvCharacter.tjs');

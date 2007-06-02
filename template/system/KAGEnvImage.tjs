@@ -1,26 +1,18 @@
 /**
  * 環境画像の基底クラス
  */
-class KAGEnvImage {
-
-    function dm(msg) {
-		if (kag.debugLevel >= tkdlSimple) {
-			global.dm(msg);
-        }
-	}
+class KAGEnvImage extends KAGEnvBase {
 
 	// デフォルト情報
 	var init;
-	var name;
-	
-    // スキップ状態か
-    function isSkip() {
-        return env.kag.skipMode != SKIP_FORCE && (env.kag.skipMode || env.kag.noeffect);
+
+    // kag の参照
+    property kag {
+        getter() {
+            return env.kag;
+        }
     }
-
-    // 各種情報を保持する環境
-    var env;
-
+	
 	/// 表示状態変更
     // BOTH      バストアップ＋フェイス (標準）
     // BU        バストアップ
@@ -225,7 +217,7 @@ class KAGEnvImage {
     property grayscale {
         getter() {
             if (env.colorall) {
-                return env.grayscale;
+                return env.stage.grayscale;
             } else {
                 return _grayscale;
             }
@@ -242,7 +234,7 @@ class KAGEnvImage {
     property rgamma {
         getter() {
             if (env.colorall) {
-                return env.rgamma;
+				return env.stage.rgamma;
             } else {
                 return _rgamma;
             }
@@ -258,8 +250,8 @@ class KAGEnvImage {
     var _ggamma;
     property ggamma {
         getter() {
-            if (env.colorall) {
-                return env.ggamma;
+			if (env.colorall) {
+				return env.stage.ggamma;
             } else {
                 return _ggamma;
             }
@@ -276,7 +268,7 @@ class KAGEnvImage {
     property bgamma {
         getter() {
             if (env.colorall) {
-                return env.bgamma;
+				return env.stage.bgamma;
             } else {
                 return _bgamma;
             }
@@ -300,27 +292,20 @@ class KAGEnvImage {
         }
     }
     
-    // フェード指定のデフォルト値
-    property fadeValue {
-        getter() {
-            return env.fadeValue;
-        }
-    }
-    
     /**
      * コンストラクタ
      * @param env 環境
      */
-    function KAGEnvImage(env) {
-        this.env = env;
+	function KAGEnvImage(env, name) {
+		super.KAGEnvBase(env, name);
 		actionList = new Array();
 		currentActionList = new Array();
         _disp = CLEAR;
     }
 
-    function initImage() {
-        type = void;
-        opacityFrom = void;
+	function initImage() {
+		type = void;
+		opacityFrom = void;
         opacityTime = void;
         opacityAccel = void;
         opacity = void;
@@ -375,9 +360,10 @@ class KAGEnvImage {
     }
     
     function finalize() {
-        clearAction(true);
-        invalidate actionList;
-        invalidate currentActionList;
+		clearAction(true);
+		invalidate actionList;
+		invalidate currentActionList;
+		super.finalize();
     }
 
     function setXPos(cmd, elm) {
@@ -596,99 +582,12 @@ class KAGEnvImage {
 		updateFlag = true;
     }
 
-	// --------------------------------------------------------------------
-	// トランジション処理
-	// --------------------------------------------------------------------
-	
-    // 画面更新設定
-    var trans;
-	
-    /**
-     * トランジション情報の取得
-     */
-    function getTrans(name, elm) {
-		// 名前指定で上書き
-		var tr = %[];
-		if (name == "void" || name == "none") {
-			return tr;
-		}
-		var info;
-		if (env.transitions !== void && (info = env.transitions[name]) !== void) {
-			//dm("登録ずみのトランジション:" + name);
-			// コピー
-			(Dictionary.assign incontextof tr)(info, false); 
-			// パラメータのコピー
-			foreach(elm, function(name, value, elm, tr) {
-				if (transitionParam[name] !== void) {
-					//dm("パラメータコピー:" + name + ":" + value);
-					tr[name] = value;
-				}
-			}, tr);
-			return tr;
-		} else if (elm != null && (transitionName[name] !== void || name.substring(0,5) == "trans")) {
-			//dm("規定のシステムトランジション:" + name);
-			var tr = %[];
-			// 規定のトランジション
-			// パラメータのコピー
-			foreach(elm, function(name, value, elm, tr) {
-				if (transitionParam[name] !== void) {
-					tr[name] = value;
-                }
-			}, tr);
-			tr.method = name;
-			return tr;
-		}
-    }
-
-    /**
-	 * トランジションを設定
-	 * @param name トランジション名
-	 * @param elm パラメータ
-	 * @return トランジションが設定された
-	 */
-	function setTrans(name, elm) {
-		//dm("トランジション設定:" + name);
-		var tr = getTrans(name, elm);
-		if (tr !== void) {
-			trans = tr;
-			return true;
-		}
-		return false;
-    }
-
-	// 自動トランジション
-	var autoTrans;
-
-	// 自動トランジションを登録
-	function setAutoTrans(list) {
-		for (var i=0;i<list.count;i++) {
-			var param = list[i];
-			if (param !== void) {
-				if (typeof param == "String") {
-					var tr = getTrans(param);
-					if (tr !== void && tr.method != void) {
-						autoTrans = tr;
-						//dm("自動トランジション指定:" + tr.method + ":" + tr.time);
-						return;
-					}
-				} else if (param instanceof "Dictionary") {
-					autoTrans = param;
-					return;
-				}
-			}
-		}
-	}
-
-	/**
-	 * 表示処理用の自動トランジションの指定
-	 */
-	function setDispAutoTrans() {
-	}
-	
 	// --------------------------------------------------------------
-	
+
+	var dispMode;
 	var syncMode;
 	var movieSyncMode;
+	var prevShow;
 	
 	/**
 	 * 状態更新処理
@@ -850,26 +749,7 @@ class KAGEnvImage {
 		}
 	}
 
-	function updateSkip() {
-		// アクション廃棄処理
-		if (actionList.count > 0) {
-			for (var i=0;i<actionList.count;i++) {
-				var action = actionList[i];
-				if (action instanceof "Dictionary") {
-					applyMoveAction(action);
-				} else if (action instanceof "Array") {
-					for (var j=0;j<action.count;j++) {
-						applyMoveAction(action[j]);
-					}
-				}
-			}
-			actionList.clear();
-		}
-	}
-	
-    var commands = %[
-    tagname : null, 
-    time : null,
+	var imageCommands = %[
     type : function(param, elm) {
         type =  global[param];
     } incontextof this,
@@ -920,7 +800,6 @@ class KAGEnvImage {
 	waitmovie : function(param) { if (param) { movieSyncMode = true; updateFlag=true; } } incontextof this,
 	xpos : this.setXPos incontextof this,
 	ypos : this.setYPos incontextof this,
-	trans : this.setTrans incontextof this,
 	show : function(param) { disp = SHOW; },
 	hide : function(param) { disp = CLEAR; },
 	accel : null, // 無視
@@ -931,30 +810,40 @@ class KAGEnvImage {
 
     /**
      * コマンドの実行
-     * @param cmd コマンド
-     * @param param パラメータ
+	 * @param cmd コマンド
+	 * @param param パラメータ
      * @param elm 他のコマンドも含む全パラメータ
      * @return 実行が行われた場合 true
      */
     function doCommand(cmd, param, elm) {
-        //dm("コマンド処理:" + cmd + " パラメータ:" + param);
-        var func;
-        if ((func = commands[cmd]) !== void) {
-            if (func != null) {
-                func(param, elm);
-            }
-            return true;
-        }
-        // 後で考えたほうがいいかも？
-        if (actionParam[cmd] !== void) {
-            return true;
-        }
-        if (transitionParam[cmd] !== void) {
-            return true;
-        }
-        return false;
-    }
 
+		// 共通コマンド
+		if (super.doCommand(cmd, param, elm)) {
+			return true;
+        }
+		
+		// Image系共通コマンド
+		var func;
+		if ((func = imageCommands[cmd]) !== void) {
+			if (func != null) {
+				func(param, elm);
+            }
+			return true;
+		}
+
+		// アクション
+		if (setAction(cmd, elm)) {
+			return true;
+		}
+
+		// アクションパラメータの排除
+		if (actionParam[cmd] !== void) {
+			return true;
+		}
+
+		return false;
+	}
+	
     /**
      * セーブ処理
      */
@@ -1080,77 +969,12 @@ class KAGEnvImage {
 		moveTime = void;
 	}
 
-	/*
-	 * トランジション実行エントリ
-	 * @param trans トランジション情報
-	 * KAG にトランジション実行命令を差し込む
-	 */
-	function beginTransition(trans) {
-		if (trans === void || trans.method === void || trans.time == 0 || isSkip()) {
-			kag.insertTag("forelay");
-			env.clearTrash();
-		} else {
-			// メッセージ窓状態同期
-			kag.insertTag("syncmsg");
-			if (trans.transwait !== void) {
-				// 時間待ち
-				kag.insertTag("wait", %[ time : (int)trans.time + (int)trans.transwait, trans:true ]);
-			} else {
-				// トランジション待ち
-				kag.insertTag("wt");
-			}
-			// 実際のトランジション実行
-			trans.children = true;
-			if (trans.method === void) {
-				trans.method = "crossfade";
-			}
-			kag.insertTag("trans", trans);
-		}
-    }
-
-	function beginTransActionUpdate(trans, layer) {
-		//dm("更新アクション実行");
-		if (trans.showaction !== void) {
-			var action = copyActionInfo(trans.showaction, trans.time);
-			kag.insertTag("action", %[target:layer, action:action]);
-		}
-		if (trans.hideaction !== void) {
-			var action = copyActionInfo(trans.hideaction, trans.time);
-			kag.insertTag("action", %[target:layer.comp, action:action]);
-		}
-	}
+	// -------------------------------------------------------------------------------
 	
-	function beginTransAction(trans, layer, hide, nosync) {
-		//dm("表示アクション実行");
-		if (!nosync && !trans.nosync) {
-			if (trans.transwait !== void) {
-				// 時間待ち
-				kag.insertTag("wait", %[ time : (int)trans.time + (int)trans.transwait, action:true ]);
-			} else {
-				// アクション待ち
-				kag.insertTag("wact", %[ target:layer ]);
-			}
-		}
-		// アクション実行
-		var action = copyActionInfo(hide ? trans.hideaction : trans.showaction, trans.time);
-		action["visvalue"] = %[ handler:MoveAction, value: hide ? 0 : 100, time:trans.time ];
-		kag.insertTag("action", %[target:layer, action:action]);
-	}
-	
-	/**
-	 * メッセージ窓消去
-	 */
-	function hideMessage(trans) {
-		if (trans !== void && trans.msgoff) {
-			kag.insertTag("msgoff");
-		}
-    }
-
 	/**
 	 * 単純更新
 	 */
 	function update(base) {
-		//dm("更新処理実行:" + name);
 		if (layerOn && (updateFlag || redraw || reposition)) {
 			var layer = getLayer(base);
 			if (redraw) {
@@ -1185,124 +1009,112 @@ class KAGEnvImage {
 		updateFlag = false;
 	}
 
-	// タグ処理の帰り値
-	var _ret;
-	property ret {
-		getter() {
-			return _ret;
-		}
-		setter(v) {
-			if (v === void) {
-				_ret = 0;
-            } else {
-                if (v < ret) {
-                    _ret = v;
-                }
-            }
-        }
-    }
-
-	/**
-	 * KAG 個別コマンド処理
-	 * @param elm 引数
-	 */
-    function command(elm) {
-		var names = [];
-		names.assign(elm);
-		for (var i=0; i<names.count; i+= 2) {
-			if (!doCommand(names[i], names[i+1], elm)) {
-				kag.errorCmd(name + ":未知のコマンド:" + names[i]);
-			}
-		}
-    }
-	
-	/**
-	 * KAG タグ処理
-	 * @param elm 要素
-	 */
-	function tagfunc(elm) {
-
-		kag.updateBeforeCh = 1;
-		ret = void;
-		trans = void;
-		autoTrans = void;
-		syncMode = void;
-		movieSyncMode = void;
-		
-		// コマンド実行前の表示状態
-		var prevShow = isShowBU();
-
-		command(elm);
-
-		// 0:非表示 1:表示 2:消去 3:更新
-		var mode = (prevShow ? 2 : 0) + (isShowBU() ? 1 : 0);
-		//dm("表示モード:" + mode);
-
-		if (trans === void) {
-			if (elm.fade) {
-				var fadeTime = elm.fade;
-				trans = %[ "time" => fadeTime > 1 ? fadeTime : fadeValue];
-			} else {
-				// 表示・消去指定に対応
-				if (mode == 1 || mode == 2) {
-					setDispAutoTrans();
-				}
-				trans = autoTrans;
-			}
-		}
-
-		// キャラクタ強制消去
-		if (trans !== void && trans.charoff) {
-			foreach(characters, function(name,value,dict) {
-				value.disp = CLEAR;
-			} incontextof this);
-		}
-
-		if (!kag.skipNoDisp) {
-			//dm("更新処理開始" + name);
-			if (env.transMode) {
-				//dm("トランジション処理中");
-				update(env.transMode == 1 ? kag.back : kag.fore);
-			} else if (isSkip()) {
-				// スキップ中または描画なし
-				update(kag.fore);
-				env.clearTrash();
-			} else {
-				if (trans === void) {
-					update(kag.fore);
-				} else if (trans.time == 0) {
-					update(kag.fore);
-					env.clearTrash();
-				} else {
-					if (trans.method !== void || mode == 3) {
-						//dm("画像更新:" + trans.method + ":" + trans.showaction + ":" + trans.hideaction);
-						kag.fore.base.stopTransition();
-						kag.backupLayer(EMPTY, true);
-						var layer = update(kag.back);
-						beginTransition(trans);
-						if (layer !== void) {
-							beginTransActionUpdate(trans, layer);
-						}
-					} else if (mode == 2) {
-						//dm("画像消去");
-						doShow = false;
-						var layer = update(kag.fore);
-						beginTransAction(trans, layer, true, elm.nosync);
-					} else if (mode == 1) {
-						//dm("画像表示");
-						doShow = false;
-						var layer = update(kag.fore);
-						beginTransAction(trans, layer, false, elm.nosync);
-					} else {
-						update(kag.fore);
+	function updateSkip() {
+		// アクション廃棄処理
+		if (actionList.count > 0) {
+			for (var i=0;i<actionList.count;i++) {
+				var action = actionList[i];
+				if (action instanceof "Dictionary") {
+					applyMoveAction(action);
+				} else if (action instanceof "Array") {
+					for (var j=0;j<action.count;j++) {
+						applyMoveAction(action[j]);
 					}
 				}
 			}
-			hideMessage(trans);
-		} else {
-			updateSkip();
+			actionList.clear();
 		}
-		return ret;
+	}
+
+	function beginTransActionUpdate(trans, layer) {
+		//dm("更新アクション実行");
+		if (trans.showaction !== void) {
+			var action = copyActionInfo(trans.showaction, trans.time);
+			kag.insertTag("action", %[target:layer, action:action]);
+		}
+		if (trans.hideaction !== void) {
+			var action = copyActionInfo(trans.hideaction, trans.time);
+			kag.insertTag("action", %[target:layer.comp, action:action]);
+		}
+	}
+	
+	function beginTransAction(trans, layer, hide, nosync) {
+		//dm("表示アクション実行");
+		if (!nosync && !trans.nosync) {
+			if (trans.transwait !== void) {
+				// 時間待ち
+				kag.insertTag("wait", %[ time : (int)trans.time + (int)trans.transwait, action:true ]);
+			} else {
+				// アクション待ち
+				kag.insertTag("wact", %[ target:layer ]);
+			}
+		}
+		// アクション実行
+		var action = copyActionInfo(hide ? trans.hideaction : trans.showaction, trans.time);
+		action["visvalue"] = %[ handler:MoveAction, value: hide ? 0 : 100, time:trans.time ];
+		kag.insertTag("action", %[target:layer, action:action]);
+	}
+	
+	/**
+	 * 表示更新前のフラグ初期化
+	 */
+	function tagfunc(elm) {
+		syncMode = void;
+		movieSyncMode = void;
+		prevShow = isShowBU();
+		dispMode = 0;
+		return super.tagfunc(elm);
+	}
+
+	/**
+	 * 表示処理用の自動トランジションの指定
+	 */
+	function setDispAutoTrans() {
+	}
+	
+	function command(elm) {
+		super.command(elm);
+		// 0:非表示 1:表示 2:消去 3:更新
+		dispMode = (prevShow ? 2 : 0) + (isShowBU() ? 1 : 0);
+		// 表示・消去指定に対応
+		if (dispMode == 1 || dispMode == 2) {
+			setDispAutoTrans();
+		}
+	}
+	
+	/**
+	 * 表示更新処理特殊化
+	 */
+	function doUpdate(elm) {
+		if (trans.method !== void || dispMode == 3) {
+			//dm("画像更新:" + trans.method + ":" + trans.showaction + ":" + trans.hideaction);
+			kag.fore.base.stopTransition();
+			kag.backupLayer(EMPTY, true);
+			var layer = update(kag.back);
+			beginTransition(trans);
+			if (layer !== void) {
+				beginTransActionUpdate(trans, layer);
+			}
+		} else if (dispMode == 2) {
+			//dm("画像消去");
+			doShow = false;
+			var layer = update(kag.fore);
+			beginTransAction(trans, layer, true, elm.nosync);
+		} else if (dispMode == 1) {
+			//dm("画像表示");
+			doShow = false;
+			var layer = update(kag.fore);
+			beginTransAction(trans, layer, false, elm.nosync);
+		} else {
+			update(kag.fore);
+		}
 	}
 
 }
+
+KAGEnvImage.BOTH      = 1;
+KAGEnvImage.BU        = 2;
+KAGEnvImage.FACE      = 3;
+KAGEnvImage.SHOW      = 4;
+KAGEnvImage.CLEAR     = 5;
+KAGEnvImage.INVISIBLE = 6;

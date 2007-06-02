@@ -61,38 +61,6 @@ class EmotionLayer extends GraphicLayerEx {
  */
 class KAGEnvCharacter extends KAGEnvLevelLayer, KAGEnvImage {
 
-    // kag の参照
-    property kag {
-        getter() {
-            return env.kag;
-        }
-    }
-
-    // フェード指定のデフォルト
-    property fadeValue {
-        getter() {
-			if (init !== void && init.fadeValue !== void) {
-				return init.fadeValue;
-			} else {
-                if (env.envinfo !== void && env.envinfo.charFadeValue !== void) {
-					return env.envinfo.charFadeValue;
-				} else {
-					return env.fadeValue;
-				}
-			}
-        }
-    }
-
-    /// 名前
-    var name;
-
-	/**
-	 * 表示処理用の自動トランジションの指定
-	 */
-	function setDispAutoTrans() {
-		setAutoTrans([init.dispTrans, env.envinfo.charDispTrans]);
-	}
-	
 	/// 初期化名
     var initName;
 
@@ -153,12 +121,11 @@ class KAGEnvCharacter extends KAGEnvLevelLayer, KAGEnvImage {
      */
     function KAGEnvCharacter(env, name, initName, init) {
 
-		global.KAGEnvImage.KAGEnvImage(env);
+		global.KAGEnvImage.KAGEnvImage(env, name);
 		global.KAGEnvLevelLayer.KAGEnvLevelLayer();
         
         //dm("キャラクタ登録:" + name); 
 
-        this.name     = name;
         this.initName = initName;
         this.init     = init;
         if (init) {
@@ -523,19 +490,9 @@ class KAGEnvCharacter extends KAGEnvLevelLayer, KAGEnvImage {
             find = true;
         }            
 
-        // アクション
-        if (!find) {
-            find = setAction(cmd, elm);
-        }
-
         // エモーション
         if (!find) {
             find = setEmotion(cmd, elm);
-        }
-        
-        // 更新
-        if (!find) {
-            find = setTrans(cmd, elm);
         }
         
         return find;
@@ -953,6 +910,8 @@ class KAGEnvCharacter extends KAGEnvLevelLayer, KAGEnvImage {
 		}
     }
 
+	// ------------------------------------------------------
+	
 	/**
 	 * KAG タグ処理
 	 * @param elm コマンドパラメータ
@@ -970,6 +929,30 @@ class KAGEnvCharacter extends KAGEnvLevelLayer, KAGEnvImage {
 		}
 		global.KAGEnvImage.command(e);
 	}
+
+	/**
+	 * 表示処理用の自動トランジションの指定
+	 */
+	function setDispAutoTrans() {
+		setAutoTrans([init.dispTrans, env.envinfo.charDispTrans]);
+	}
+
+	// フェード指定のデフォルト値
+	property fadeValue {
+        getter() {
+			if (init !== void && init.fadeValue !== void) {
+				return init.fadeValue;
+			} else {
+                if (env.envinfo !== void && env.envinfo.charFadeValue !== void) {
+					return env.envinfo.charFadeValue;
+				} else {
+					return env.fadeValue;
+				}
+			}
+        }
+    }
+
+	// ------------------------------------------------------
 	
 	// ----------------------------------------------------------
 	// ボイス処理
