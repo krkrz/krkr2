@@ -1,12 +1,12 @@
 /**
  * 環境オブジェクト
  */
-class KAGEnvironment extends KAGEnvImage {
+class KAGEnvironment extends KAGEnvBase {
 	
-    /// KAG本体の参照
-    var kag;
+	/// KAG本体の参照
+	var kag;
     var xmax;
-    var ymax;
+	var ymax;
 
     // フェード指定のデフォルト値
     // envinit.tjs で定義するか、システムのデフォルトを使う
@@ -34,7 +34,7 @@ class KAGEnvironment extends KAGEnvImage {
     var defaultXpos;  //< キャラクタ配置の初期X位置
     var defaultYpos;  //< キャラクタ配置の初期Y位置
     var defaultLevel; //< キャラクタレベルのデフォルト値
-    var levels;       //< キャラクタレベル別補正情報
+	var levels;       //< キャラクタレベル別補正情報
     var faceLevelName;//< フェイスウインドウ用の表示名
     var emotions;
     
@@ -42,13 +42,15 @@ class KAGEnvironment extends KAGEnvImage {
     var characterNames;
     /// キャラクタ初期化情報一覧
     var characterInits;
-    /// キャラクタ情報
+
+	/// 舞台レイヤ
+	var stage;
+	/// イベントレイヤ
+	var event;
+	/// キャラクタ情報
     var characters;
     /// レイヤ情報
     var layers;
-
-    /// イベントレイヤ
-    var event;
 
     // BGM 系
     var bgm;
@@ -57,11 +59,11 @@ class KAGEnvironment extends KAGEnvImage {
     var ses;
     
     //　現在時刻
-    property currentTime {
-        getter() {
-            if (times !== void && time !== void) {
-                return times[time];
-            }
+	property currentTime {
+		getter() {
+			if (times !== void && stage.timeName !== void) {
+				return times[stage.timeName];
+			}
         }
     }
 
@@ -81,116 +83,53 @@ class KAGEnvironment extends KAGEnvImage {
     var colorall;
 
     // 画像補整指定
-
-    property grayscale {
-        getter() {
-            return _grayscale;
-        }
-        setter(v) {
-            _grayscale = v;
-            if (colorall) {
-                setColorAll(true);
-            }
-            redraw = true;
-        }
-    }
-
-    property rgamma {
-        getter() {
-            return _rgamma;
-        }
-        setter(v) {
-            _rgamma = v;
-            if (colorall) {
-                setColorAll(true);
-            }
-            redraw = true;
-        }
-    }
-
-    property ggamma {
-        getter() {
-            return _ggamma;
-        }
-        setter(v) {
-            _ggamma = v;
-            if (colorall) {
-                setColorAll(true);
-            }
-            redraw = true;
-        }
-    }
-    
-    property bgamma {
-        getter() {
-            return _bgamma;
-        }
-        setter(v) {
-            _bgamma = v;
-            if (colorall) {
-                setColorAll(true);
-            }
-            redraw = true;
-        }
-    }
-
-    function resetColor(param, elm) {
-        _grayscale = void;
-        _rgamma = void;
-        _ggamma = void;
-        _bgamma = void;
-        if (colorall) {
-            setColorAll(true);
-        }
-        redraw = true;
-    }
-
-    function setColorAll(param) {
-        colorall = param;
-        // すべて再描画処理
-        event.setRedraw();
-        foreach(characters, function(name, value, dict) {
-            value.setRedraw();
+	function setColorAll(param) {
+		colorall = param;
+		// すべて再描画処理
+		event.setRedraw();
+		stage.setRedraw();
+		foreach(characters, function(name, value, dict) {
+			value.setRedraw();
         });
-        foreach(layers, function(name, value, dict) {
-            value.setRedraw();
-        });
-        redraw = true;
-    }
-
-    
+		foreach(layers, function(name, value, dict) {
+			value.setRedraw();
+		});
+	}
+	
     /**
      * コンストラクタ
      * @param kag KAG本体
      */
-    function KAGEnvironment(kag) {
+	function KAGEnvironment(kag) {
 
-        super.KAGEnvImage(this);
-
-		name = "env";
+		super.KAGEnvBase(this, "env");
 		
         this.kag = kag;
         xmax = kag.scWidth / 2;
         ymax = kag.scHeight / 2;
 
-        characters = %[];
-        layers = %[];
-        event = new KAGEnvBaseLayer(env, "event");
+		characters = %[];
+		layers = %[];
+		event = new KAGEnvEventLayer(env);
+		stage = new KAGEnvStageLayer(env);
 
         // BGM オブジェクト
         bgm = new KAGEnvBgm(env);
-        // SE 保持用。配列
-        ses = [];
-        for (var i=0; i<kag.numSEBuffers; i++) {
-            ses[i] = new KAGEnvSE(env, i);
+		// SE オブジェクト群
+		ses = [];
+		for (var i=0; i<kag.numSEBuffers; i++) {
+			ses[i] = new KAGEnvSE(env, i);
         }
         
         // KAG に自分をコマンドとして登録
         kag.tagHandlers["env"]        = this.tagfunc;
-        kag.tagHandlers["allchar"]    = this.allchar;
+
+		// 一括指定コマンド
+		kag.tagHandlers["allchar"]    = this.allchar;
         kag.tagHandlers["alllayer"]   = this.alllayer;
 		kag.tagHandlers["allse"]      = this.allse;
 
+		// 特殊コマンド
         kag.tagHandlers["begintrans"] = this.beginTrans;
         kag.tagHandlers["endtrans"]   = this.endTrans;
         kag.tagHandlers["newlay"]     = this.newLayer;
@@ -203,7 +142,8 @@ class KAGEnvironment extends KAGEnvImage {
         kag.tagHandlers["msgoff"]     = this.msgoff;
         kag.tagHandlers["msgon"]      = this.msgon;
         kag.tagHandlers["clear"]      = this.clear;
-        
+
+		// 演出用特殊コマンド
         kag.tagHandlers["dispname"]        = this.dispname;
         kag.tagHandlers["dispnameVoice"]   = this.dispnameVoice;
         kag.tagHandlers["quake"]           = this.quake;
@@ -248,7 +188,8 @@ class KAGEnvironment extends KAGEnvImage {
         }
         invalidate characters;
         invalidate layers;
-        invalidate event;
+		invalidate event;
+		invalidate stage;
         super.finalize();
 		dm("環境終了");
     }
@@ -257,12 +198,9 @@ class KAGEnvironment extends KAGEnvImage {
      * セーブ処理
      */
     function onStore(f) {
-        super.onStore(f);
-        f.time = time;
-        f.stage = stage;
 
-        var chars = %[];
-        foreach(characters, function(name, value, dict) {
+		var chars = %[];
+		foreach(characters, function(name, value, dict) {
             var fch = %[];
             value.onStore(fch);
             this[name] = fch;
@@ -278,7 +216,9 @@ class KAGEnvironment extends KAGEnvImage {
         f.layers = lays;
 
         f.event = %[];
-        event.onStore(f.event);
+		event.onStore(f.event);
+		f.stage = %[];
+		stage.onStore(f.stage);
 
 		// サウンド系情報記録
         f.ses = [];
@@ -297,11 +237,9 @@ class KAGEnvironment extends KAGEnvImage {
      */
     function onRestore(f) {
 		initEnv();
-        time = f.time;
-        stage = f.stage;
-        if (f.characters) {
-            foreach(f.characters, function(name, value, dict) {
-                var ch = getCharacter(value.name, value.initName);
+		if (f.characters) {
+			foreach(f.characters, function(name, value, dict) {
+				var ch = getCharacter(value.name, value.initName);
                 if (ch != null) {
                     ch.onRestore(value);
                 }
@@ -315,10 +253,14 @@ class KAGEnvironment extends KAGEnvImage {
                 }
             } incontextof this);
         }
-        if (f.event) {
-            event.onRestore(f.event);
-        }
 
+		if (f.event) {
+            event.onRestore(f.event);
+		}
+		if (f.stage) {
+			stage.onRestore(f.stage);
+		}
+		
 		// サウンド系情報復帰
 		if (f.ses !== void) {
 			seCount = 0;
@@ -338,7 +280,6 @@ class KAGEnvironment extends KAGEnvImage {
             setColorAll(colorall);
 		}
 
-		super.onRestore(f);
 		syncAll();
     }
 
@@ -427,11 +368,6 @@ class KAGEnvironment extends KAGEnvImage {
 	
     // -----------------------------------------
 
-    /// 時間
-    var time;
-    /// 舞台
-    var stage;
-
     // -----------------------------------------
 
 	/**
@@ -440,17 +376,13 @@ class KAGEnvironment extends KAGEnvImage {
     function initEnv() {
 
 		dm("初期化処理");
-		time = void;
-		stage = void;
         transMode = void;
-		
         colorall = false;
 		
-        initImage();
+		stage.initImage();
         event.initImage();
 
 		// キャラクタ情報の破棄
-
 		foreach(characters, function(name,value,dict) {
 			invalidate value;
 		});
@@ -460,6 +392,7 @@ class KAGEnvironment extends KAGEnvImage {
 			invalidate value;
 		});
 		layers = %[];
+
 		// 表示用レイヤの破棄
 		clearTrash();
 		
@@ -476,8 +409,7 @@ class KAGEnvironment extends KAGEnvImage {
 
         // カレントオブジェクト初期化
 		currentNameTarget = void;
-        redraw = true;
-        
+
         voiceCharacters.clear();
     }
 
@@ -486,21 +418,25 @@ class KAGEnvironment extends KAGEnvImage {
      */
     function hideEvent(param, elm) {
 		if (event.isShow()) {
-			event.disp = CLEAR;
-			redraw = true;
-        }
+			event.disp = KAGEnvImage.CLEAR;
+		}
     }
 
+    /**
+     * イベント絵の消去
+     */
+	function hideStage(param, elm) {
+		if (stage.isShow()) {
+			stage.disp = KAGEnvImage.CLEAR;
+		}
+    }
+	
     /**
      * 背景とイベント絵の消去
      */
     function hideBase(param, elm) {
-		if (event.isShow()) {
-			event.disp = CLEAR;
-			redraw = true;
-		} else if (isShow()) {
-			disp = CLEAR;
-        }
+		hideEvent(param, elm);
+		hideStage(param, elm);
     }
     
     /**
@@ -510,10 +446,9 @@ class KAGEnvironment extends KAGEnvImage {
 		// キャラクタレイヤの消去
 		foreach(characters, function(name,value,dict,param) {
 			if (value.isShow()) {
-				value.disp = CLEAR;
-				redraw = true;
-            }
-        } incontextof this, param);
+				value.disp = KAGEnvImage.CLEAR;
+			}
+		} incontextof this, param);
     }
 
     /**
@@ -523,10 +458,9 @@ class KAGEnvironment extends KAGEnvImage {
         // 特殊レイヤの消去
         foreach(layers, function(name,value,dict, param) {
 			if (value.isShow()) {
-				value.disp = CLEAR;
-				redraw = true;
-            }
-        } incontextof this, param);
+				value.disp = KAGEnvImage.CLEAR;
+			}
+		} incontextof this, param);
     }
 
     /**
@@ -546,80 +480,138 @@ class KAGEnvironment extends KAGEnvImage {
         hideLayers(param, elm);
     }
 
+    var envCommands = %[
+	init : this.initEnv incontextof this,
+	hidebase : this.hideBase incontextof this,
+	hideevent : this.hideEvent incontextof this,
+	hidecharacters : this.hideCharacters incontextof this,
+    hidechars : this.hideCharacters incontextof this,
+	hidelayers : this.hideLayers incontextof this,
+    hidefore : this.hideFore incontextof this,
+	hideall : this.hideAll incontextof this,
+	stopallvoice : this.stopAllVoice incontextof this,
+    colorall : this.setColorAll incontextof this,
+        ];
+    
     /**
-     * 舞台を設定する
-     * @param stageName 舞台名
-     * @param elm コマンドのほかの要素
+     * コマンドの実行
+     * @param cmd コマンド
+     * @param param パラメータ
+     * @param elm 他のコマンドも含む全パラメータ
+     * @return 実行が行われた場合 true
      */
-    function setStage(stageName, elm) {
+    function doCommand(cmd, param, elm) {
 
-		if (stageName != stage || isClear() || event.isShow()) {
-
-			//dm("舞台指定:" + stageName);
-			stage = stageName;
-
-			disp = SHOW;
-			redraw = true;
-			reposition = true;
-            
-            // 背景指定時に座標指定がなければ場所情報を初期化する
-            if (elm.xpos === void) {
-                xpos = void;
-            }
-            if (elm.ypos === void) {
-                ypos = void;
-            }
-
-            // ステージ変更時フック
-            if (typeof global.setStageHook != "undefined") {
-                global.setStageHook(stageName, elm);
-            }
-
-			// トランジション指定
-			setAutoTrans([stages[stage].trans, env.envinfo.stageTrans, env.envinfo.envTrans]);
+		// 共通コマンド
+		if (super.doCommand(cmd, param, elm)) {
+			return true;
         }
-		// イベント絵は消去
-		if (event.isShow()) {
-			event.disp = CLEAR;
-		}
-	}
-
-    /**
-     * 時間を設定する
-     * @param timeName 時間名
-     * @param elm コマンドのほかの要素
-     */
-    function setTime(timeName, elm) {
-
-		if (timeName != time || isClear() || event.isShow()) {
-			
-			time = timeName;
-
-			disp = SHOW;
-			redraw = true;
-			reposition = true;
-			
-            // 時間変更時フック
-            if (typeof global.setTimeHook != "undefined") {
-                global.setTimeHook(timeName, elm);
-            }
-
-            // 時間変更はキャラの立ち絵も再描画の必要がある
-            foreach(characters, function(name, value, dict) {
-                value.setRedraw();
-            });
-
-            // トランジション指定
-			setAutoTrans([times[time].trans, env.envinfo.timeTrans, env.envinfo.stageTrans, env.envinfo.envTrans]);
+		
+		var func;
+		if ((func = envCommands[cmd]) !== void) {
+			if (func != null) {
+				func(param, elm);
+			}                
+			return true;
         }
-        // イベント絵は消去
-		if (event.isShow()) {
-			event.disp = CLEAR;
-        }
+
+		return false;
     }
 
-    // トランジションモード
-    var transMode;
+	function update(base) {
+		foreach(characters, function(name, value, dict, base) {
+			value.update(base);
+		}, base);
+        foreach(layers, function(name, value, dict, base) {
+            value.update(base);
+        }, base);
+		event.update(base);
+		stage.update(base);
+		if (currentNameTarget == void) {
+			drawNamePage(base);
+			if (faceLevelName !== void) {
+				clearFacePage(base);
+			}
+		}
+		stage.update(base);
+	}
+
+	function updateSkip() {
+		foreach(characters, function(name, value, dict) {
+			value.updateSkip();
+		});
+		foreach(layers, function(name, value, dict) {
+			value.updateSkip();
+        });
+		event.updateSkip();
+		stage.updateSkip();
+	}
+
+	// ------------------------------------------------------------------
+	// 一括実行
+	// ------------------------------------------------------------------
+
+	/**
+	 * 全キャラにコマンド実行
+	 * @param elm 引数
+	 * poscond パラメータで表示場所限定可能
+     */
+    function allchar(elm) {
+		ret = void;
+		var posName;
+		if (elm.poscond !== void) {
+			posName = elm.poscond;
+			delete elm.poscond;
+		}
+		var names = [];
+		names.assign(characters);
+		for (var i=0; i<names.count; i+= 2) {
+			var ch = names[i+1];
+			if (posName !== void) {
+				if (ch.posName == posName && ch.isShowBU()) {
+					ret = ch.tagfunc(elm);
+				}
+			} else {
+				ret = ch.tagfunc(elm);
+			}
+        }
+        return ret;
+    }
+
+    /**
+     * 全レイヤにコマンド実行
+     * @param elm 引数
+     */
+    function alllayer(elm) {
+        ret = void;
+        var names = [];
+        names.assign(layers);
+        for (var i=0; i<names.count; i+= 2) {
+            ret = names[i+1].tagfunc(elm);
+        }
+        return ret;
+    }
+
+    /**
+     * 全SEにコマンド実行
+     * @param elm 引数
+     */
+    function allse(elm) {
+        ret = void;
+        for (var i=0;i<ses.count;i++) {
+            if (ses[i].name !== void) {
+                ret = ses[i].tagfunc(elm);
+            }
+        }
+        return ret;
+    }
+
+	// ------------------------------------------------------------------
+	// 特殊コマンド
+	// ------------------------------------------------------------------
+
+	// トランジションモード
+	var transMode;
 
     /**
      * 全体トランジション開始
@@ -721,11 +713,10 @@ class KAGEnvironment extends KAGEnvImage {
 	function delCharacter(elm) {
 		if (elm.name !== void && characters[elm.name] !== void) {
 			invalidate characters[elm.name];
-            delete characters[elm.name];
-        }
-        return 0;
-    }
-
+			delete characters[elm.name];
+		}
+		return 0;
+	}
     
     /**
      * メッセージ窓のトランジション処理をくみこんだ ON/OFF
@@ -757,10 +748,10 @@ class KAGEnvironment extends KAGEnvImage {
      * 画面の表示要素の全消去
      */
     function clear(elm) {
-        ret = void;
+		ret = void;
 		trans = void;
         hideAll();
-
+		
 		if (!kag.skipNoDisp) {
 			if (!transMode && !isSkip()) {
 				foreach(elm, checkTrans);
@@ -780,290 +771,6 @@ class KAGEnvironment extends KAGEnvImage {
 			kag.setCurrentMessageLayerVisibleFast(transMode ? 1: 0, false);
 		}
 		return ret;
-    }
-
-    var envCommands = %[
-    /**
-     * 全体の初期化処理
-     */
-    init : this.initEnv incontextof this,
-    stage : this.setStage incontextof this,
-    stime : this.setTime incontextof this,
-    hidebase : this.hideBase incontextof this,
-    hideevent : this.hideEvent incontextof this,
-    hidecharacters : this.hideCharacters incontextof this,
-    hidechars : this.hideCharacters incontextof this,
-    hidelayers : this.hideLayers incontextof this,
-    hidefore : this.hideFore incontextof this,
-    hideall : this.hideAll incontextof this,
-    stopallvoice : this.stopAllVoice incontextof this,
-    colorall : this.setColorAll incontextof this,
-        ];
-    
-    /**
-     * コマンドの実行
-     * @param cmd コマンド
-     * @param param パラメータ
-     * @param elm 他のコマンドも含む全パラメータ
-     * @return 実行が行われた場合 true
-     */
-    function doCommand(cmd, param, elm) {
-
-        //dm("環境コマンド実行:" + cmd);
-        
-        if (super.doCommand(cmd, param, elm)) {
-            return true;
-        }
-        
-        var func;
-        if ((func = envCommands[cmd]) !== void) {
-            //dm("登録コマンドが存在:" + cmd);
-            if (func != null) {
-				func(param, elm);
-            }                
-            return true;
-        }
-
-        var find = false;
-
-        // 時間と舞台
-        var info;
-        if (times !== void && (info = times[cmd]) !== void) {
-            setTime(cmd, elm);
-            find = true;
-        } else if (stages !== void && (info = stages[cmd]) !== void) {
-            setStage(cmd, elm);
-            find = true;
-        }
-
-        // アクション
-        if (!find) {
-            find = setAction(cmd, elm);
-        }
-
-        // 更新
-        if (!find) {
-			find = setTrans(cmd, elm);
-        }
-
-        return find;
-    }
-
-    /**
-     * 舞台画像の描画
-     * @param layer 描画先レイヤ
-     */
-	function drawLayer(layer) {
-		var image;
-		if (isShowBU() && stage !== void) {
-            image = stages[stage].image;
-            // 時間情報で上書き
-            time = defaultTime if time === void;
-            if (time !== void) {
-                image = image.replace(/TIME/, times[time].prefix);
-
-                // 画像のロードと座標補正処理
-                try {
-                    layer.loadImages(%[ "storage" => image ]);
-                    
-                    if (reposition) {
-                        if (xpos === void) {
-                            xpos = (int)stages[stage].xoff;
-                        }
-                        if (ypos === void) {
-                            ypos = (int)stages[stage].yoff;
-                        }
-                    }
-
-                } catch(e) {
-                    // 画像がロードできなかった場合は補正で対応
-                    image = stages[stage].image;
-                    image = image.replace(/TIME/, times[defaultTime].prefix);
-
-                    try {
-                        layer.loadImages(%[ "storage" => image ]);
-                        
-                        // 色補正処理
-                        var timeInfo;
-                        if ((timeInfo = currentTime) !== void) {
-                            // レイヤ合成
-                            if (timeInfo.lightColor !== void) {
-                                layer.holdAlpha = true;
-                                layer.fillOperateRect(0,0,
-                                                      layer.width,layer.height,
-                                                      timeInfo.lightColor,
-                                                      timeInfo.lightType);
-                            }
-                            // 明度補正
-                            if (timeInfo.brightness !== void) {
-                                layer.light(timeInfo.brightness,
-                                            timeInfo.contrast);
-                            }
-                        }
-
-                        if (reposition) {
-                            if (xpos === void) {
-                                xpos = (int)stages[stage].xoff;
-                            }
-                            if (ypos === void) {
-                                ypos = (int)stages[stage].yoff;
-                            }
-                        }
-                        
-                    } catch (e) {
-						var text = image + ":背景画像がロードできません stage:" + stage + " time:" + time;
-						kag.errorImage(text);
-						layer.fillRect(0,0,layer.width, layer.height, 0xff000000);
-						layer.drawText(0,0,text,0xffffff);
-                    }
-                }
-			}
-		}
-	}
-
-    /**
-     * レイヤを作成する
-     * @param base
-     */
-    function getLayer(base) {
-        if (base === void) {
-            base = env.transMode == 1 ? kag.back : kag.fore;
-        }
-        return base.stage;
-    }
-
-	/**
-	 * アクション座標計算
-	 */
-	function calcActionPosition(left, top) {
-		xpos = getRelative(left, xpos + env.xmax) - env.xmax if left !== void;
-		ypos = getRelative(top, ypos + env.ymax)  - env.ymax if top  !== void;
-	}
-
-	/**
-	 * レイヤ位置の逆計算
-	 */
-	function reversePosition(layer, left, top) {
-		xpos = left - env.xmax + layer.imageWidth / 2  if left !== void;
-		ypos = top  - env.ymax + layer.imageHeight / 2 if top  !== void;
-	}
-	
-    /**
-     * レイヤ配置処理(背景用)：中央原点
-     * @param layer 処理対象レイヤ
-     */
-    function calcPosition(layer) {
-		//dm("位置指定2");
-		var l = env.xmax + (int)xpos - layer.imageWidth / 2;
-		var t = env.ymax + (int)ypos - layer.imageHeight / 2;
-		if (moveTime !== void && moveTime > 0) {
-			if (xposFrom !== void || yposFrom !== void) {
-				var fl = xposFrom !== void ? env.xmax + (int)xposFrom - layer.imageWidth / 2 : l;
-				var ft = yposFrom !== void ? env.ymax + (int)yposFrom - layer.imageHeight / 2 : t;
-				layer.setPos(fl, ft);
-			}
-			layer.setMove(l, t, moveTime, moveAccel);
-		} else {
-			layer.setMove(l, t);
-		}
-		xposFrom = void;
-		yposFrom = void;
-		moveTime = void;
-    }
-
-	function update(base) {
-		
-		//dm("環境更新処理:" + trans);
-		
-		// 子要素の再描画
-		foreach(characters, function(name, value, dict, base) {
-			value.update(base);
-        }, base);
-        foreach(layers, function(name, value, dict, base) {
-            value.update(base);
-        }, base);
-		event.update(base);
-
-		// メッセージ窓初期化
-		if (currentNameTarget == void) {
-			drawNamePage(base);
-			if (faceLevelName !== void) {
-				clearFacePage(base);
-			}
-        }
-
-		// 自分の更新
-		return super.update(base);
-    }
-
-	function updateSkip() {
-		//dm("環境更新スキップ処理:" + trans);
-		// 子要素の再描画
-		foreach(characters, function(name, value, dict) {
-			value.updateSkip();
-        });
-        foreach(layers, function(name, value, dict) {
-            value.updateSkip();
-        });
-		event.updateSkip();
-		// 自分の更新
-		return super.updateSkip();
-    }
-
-	
-    /**
-	 * 全キャラにコマンド実行
-	 * @param elm 引数
-	 * poscond パラメータで表示場所限定可能
-     */
-    function allchar(elm) {
-		ret = void;
-		var posName;
-		if (elm.poscond !== void) {
-			posName = elm.poscond;
-			delete elm.poscond;
-		}
-		var names = [];
-		names.assign(characters);
-		for (var i=0; i<names.count; i+= 2) {
-			var ch = names[i+1];
-			if (posName !== void) {
-				if (ch.posName == posName && ch.isShowBU()) {
-					ret = ch.tagfunc(elm);
-				}
-			} else {
-				ret = ch.tagfunc(elm);
-			}
-        }
-        return ret;
-    }
-
-    /**
-     * 全レイヤにコマンド実行
-     * @param elm 引数
-     */
-    function alllayer(elm) {
-        ret = void;
-        var names = [];
-        names.assign(layers);
-        for (var i=0; i<names.count; i+= 2) {
-            ret = names[i+1].tagfunc(elm);
-        }
-        return ret;
-    }
-
-    /**
-     * 全SEにコマンド実行
-     * @param elm 引数
-     */
-    function allse(elm) {
-        ret = void;
-        for (var i=0;i<ses.count;i++) {
-            if (ses[i].name !== void) {
-                ret = ses[i].tagfunc(elm);
-            }
-        }
-        return ret;
     }
 
 	// ------------------------------------------------------------------
@@ -1239,6 +946,8 @@ class KAGEnvironment extends KAGEnvImage {
 	}
 	
  	// ------------------------------------------------------------------
+	// キャラクタ関係処理
+	// ------------------------------------------------------------------
 	
     /**
      * 指定された名前のキャラクタを返す
@@ -1708,7 +1417,9 @@ class KAGEnvironment extends KAGEnvImage {
 			return 0;
 		}
     }
-    
+
+	// --------------------------------------------------------------
+	
     var seCount = 0;
     /**
      * SE 処理用オブジェクトの取得
@@ -1764,7 +1475,7 @@ class KAGEnvironment extends KAGEnvImage {
             if (ses[i].name == name) {
                 return i;
             }
-        }
+		}
         // みつからないのであいている番号を返す
         return getSeId();
     }
@@ -1776,16 +1487,15 @@ class KAGEnvironment extends KAGEnvImage {
 
 		//dm("不明コマンドハンドラ:" + tagName);
 
-		// 自分
+		// ステージ用処理
 		if (tagName == "stage") {
-			return tagfunc(elm);
+			return stage.tagfunc(elm);
 		}
 		
 		// イベント用処理
 		if (tagName == "event" || tagName == "ev") {
 			return event.tagfunc(elm);
-		} else if (tagName.substring(0,2) == "ev" ||
-				   (events !== void && events[tagName] !== void)) {
+		} else if (tagName.substring(0,2) == "ev" || (events !== void && events[tagName] !== void)) {
 			elm[tagName] = true;
 			return event.tagfunc(elm);
         }
@@ -1801,12 +1511,12 @@ class KAGEnvironment extends KAGEnvImage {
         if (tagName == "se") {
 			if (elm.name !== void) {
 				return getSe(getSeIdFromName(elm.name)).tagfunc(elm);
-            } else {
+			} else {
 				return getSe(getSeId(elm.buf)).tagfunc(elm);
-            }
+			}
         } else if (tagName.substring(0,2) == "se") {
-            var se = getSe(getSeIdFromName(tagName));
-            return se.tagfunc(elm);
+			var se = getSe(getSeIdFromName(tagName));
+			return se.tagfunc(elm);
         }
         
         // キャラクタ
@@ -1834,30 +1544,35 @@ class KAGEnvironment extends KAGEnvImage {
 			}
 		}
 
-		// 環境のコマンドか？
+		// 時間指定か背景指定ならステージ用コマンドとみなす
+		if (times !== void && times[tagName] !== void ||
+			stages !== void && stages[tagName] !== void) {
+			elm.tagname = "stage";
+			elm[tagName] = true;
+			return stage.tagfunc(elm);
+		}
+		
+		// 環境のコマンド
 		if (envCommands[tagName] !== void) {
 			elm.tagname = "env";
 			elm[tagName] = true;
 			return tagfunc(elm);
 		}
-		
+
 		// カレントのターゲットがある場合はそのコマンドとして実行
 		if (currentNameTarget !== void) {
 			elm[tagName] = true;
 			return currentNameTarget.tagfunc(elm);
-		} else {
-			// 環境のコマンドとして実行
-			elm.tagname = "env";
-			elm[tagName] = true;
-			return tagfunc(elm);
 		}
-    }
+
+		// それ以外だとエラーになる
+	}
 
     /**
      * アクション停止
      */
 	function onStopAction(all) {
-		clearAction(all);
+		stage.clearAction(all);
 		event.clearAction(all);
 		foreach(characters, function(name, value, dict, all) {
 			value.clearAction(all);
@@ -1900,10 +1615,3 @@ KAGEnvironment.XPOSITION    = 1;
 KAGEnvironment.LEVEL        = 2;
 KAGEnvironment.DISPPOSITION = 3;
 KAGEnvironment.YPOSITION    = 4;
-
-KAGEnvImage.BOTH      = 1;
-KAGEnvImage.BU        = 2;
-KAGEnvImage.FACE      = 3;
-KAGEnvImage.SHOW      = 4;
-KAGEnvImage.CLEAR     = 5;
-KAGEnvImage.INVISIBLE = 6;

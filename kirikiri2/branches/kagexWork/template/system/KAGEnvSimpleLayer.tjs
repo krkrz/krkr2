@@ -3,9 +3,6 @@
  */
 class KAGEnvSimpleLayer extends KAGEnvLevelLayer, KAGEnvLayer {
 
-    // 名前
-    var name;
-
 	/**
 	 * 表示処理用の自動トランジションの指定
 	 */
@@ -75,9 +72,8 @@ class KAGEnvSimpleLayer extends KAGEnvLevelLayer, KAGEnvLayer {
      * @param level
      */
     function KAGEnvSimpleLayer(env, name) {
-        global.KAGEnvLayer.KAGEnvLayer(env);
+		global.KAGEnvLayer.KAGEnvLayer(env, name);
 		global.KAGEnvLevelLayer.KAGEnvLevelLayer();
-		this.name = name;
 		viewOriginMode = 9;
     }
 
@@ -186,11 +182,37 @@ class KAGEnvSimpleLayer extends KAGEnvLevelLayer, KAGEnvLayer {
 		global.KAGEnvLevelLayer.onRestore(f);
     }
 
-    var layerCommands = %[
-    origin : function(cmd,elm) { originMode = +cmd; reposition = true; } incontextof this,
-    vorigin : function(cmd,elm) { viewOriginMode = +cmd; reposition = true; } incontextof this,
+	var simpleLayerCommands = %[
+	origin : function(cmd,elm) { originMode = +cmd; reposition = true; } incontextof this,
+	vorigin : function(cmd,elm) { viewOriginMode = +cmd; reposition = true; } incontextof this,
     front : this.setFront incontextof this,
-    back : this.setBack incontextof this,
-    level : this.setLevel incontextof this,
-        ];
+	back : this.setBack incontextof this,
+	level : this.setLevel incontextof this,
+		];
+
+    /**
+	 * コマンドの実行
+	 * @param cmd コマンド
+	 * @param param パラメータ
+	 * @param elm 他のコマンドも含む全パラメータ
+     * @return 実行が行われた場合 true
+     */
+	function doCommand(cmd, param, elm) {
+		
+		// 共通コマンド
+		if (global.KAGEnvLayer.doCommand(cmd, param, elm)) {
+			return true;
+        }
+
+		var func;
+		if ((func = simpleLayerCommands[cmd]) !== void) {
+			if (func != null) {
+				func(param, elm);
+			}
+            return true;
+        }
+		
+		// 画像のロード
+		return setImageFile(cmd, elm);
+	}
 }
