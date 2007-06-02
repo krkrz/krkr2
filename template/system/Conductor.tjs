@@ -58,7 +58,7 @@ class BaseConductor extends KAGParser
 	function clear()
 	{
 		// clear オーバーライド
-		if (kag.autoLabelMode && kag.autoLabelType == 1) {
+		if (kag.autoLabelMode) {
 			runLine = 0;
 			runCount = 0;
 			runLabel = "";
@@ -158,7 +158,7 @@ class BaseConductor extends KAGParser
 
 					if (obj !== void) {
 
-						if (kag.autoLabelMode && kag.autoLabelType == 1) {
+						if (kag.autoLabelMode) {
 							if (runLine != curLine) {
 								runLine    = curLine;
 								runCount   = 0;
@@ -292,7 +292,7 @@ class BaseConductor extends KAGParser
 			onStop();
 			inProcessing = false;
 			
-			if (kag.autoLabelMode && kag.autoLabelType == 1) {
+			if (kag.autoLabelMode) {
 				if (e.message.substring(0,17) == "シナリオファイルに変更があったため") {
 					askYesNo("セーブデータの不整合が検出されました。正常動作は保障されませんが、該当シナリオの冒頭から再開しますか？",
 							 "確認", function(param) {kag.process(param);}, function(param) { kag.goToStart(); }, curStorage);
@@ -421,7 +421,7 @@ class BaseConductor extends KAGParser
 	function store()
 	{
 		// store オーバーライド
-		if (kag.autoLabelMode && kag.autoLabelType == 1) {
+		if (kag.autoLabelMode) {
 			//dm("コンダクタ保存処理:" + runLine + "/" + runCount + ":" + runLabel + ":" + runLabelLine);
 			// store オーバーライド
 			var ret = super.store(...);
@@ -437,7 +437,7 @@ class BaseConductor extends KAGParser
 
 	function restore(dic)
 	{
-		if (kag.autoLabelMode && kag.autoLabelType == 1) {
+		if (kag.autoLabelMode) {
 			// 現在のラベル位置まで復帰
 			dm("コンダクタ復帰処理:" + dic.runLine + "/" + runCount + ":" + dic.runLabel + ":" + dic.runLabelLine);
 			loadScenario(dic.storageName);
@@ -477,7 +477,7 @@ class BaseConductor extends KAGParser
 	 */
 	function parseAll() {
 		//dm("全パース処理:" + curStorage);
-		if (kag.autoLabelMode && kag.autoLabelType == 1) {
+		if (kag.autoLabelMode) {
 			parseMode = true;
 			var obj;
 			while ((obj = getNextTag()) !== void) { // 次のタグを得る
@@ -506,7 +506,7 @@ class BaseConductor extends KAGParser
 	
 	function loadScenario(storage)
 	{
-		if (kag.autoLabelMode && kag.autoLabelType == 1) {
+		if (kag.autoLabelMode) {
 			runLine = 0;
 			runCount = 0;
 			runLabel = "";
@@ -520,7 +520,7 @@ class BaseConductor extends KAGParser
 
 	function goToLabel(label)
 	{
-		if (kag.autoLabelMode && kag.autoLabelType == 1) {
+		if (kag.autoLabelMode) {
 			runLine = 0;
 			runCount = 0;
 			runLabel = "";
@@ -753,7 +753,7 @@ class Conductor extends BaseConductor
 
 	function onLabel(label, page)
 	{
-		if (kag.autoLabelMode && kag.autoLabelType == 1) {
+		if (kag.autoLabelMode) {
 			if (parseMode) {
 				// コマンドの登録
 				//dm("ラベル登録:" + label + ":" + curLine);
@@ -778,7 +778,7 @@ class Conductor extends BaseConductor
 
 	function onJump()
 	{
-		if (kag.autoLabelMode && kag.autoLabelType == 1) {
+		if (kag.autoLabelMode) {
 			if (parseMode) {
 				// パース中ではエラー扱いすべし XXX
 				return false;
@@ -791,7 +791,7 @@ class Conductor extends BaseConductor
 
 	function onCall()
 	{
-		if (kag.autoLabelMode && kag.autoLabelType == 1) {
+		if (kag.autoLabelMode) {
 			if (parseMode) {
 				// パース中ではエラー扱いすべし XXX
 				return false;
@@ -804,7 +804,7 @@ class Conductor extends BaseConductor
 
 	function onReturn()
 	{
-		if (kag.autoLabelMode && kag.autoLabelType == 1) {
+		if (kag.autoLabelMode) {
 			return targetLine === void ? owner.onConductorReturn(...) : true;
 		}
 		return owner.onConductorReturn(...);
@@ -812,7 +812,7 @@ class Conductor extends BaseConductor
 
 	function onAfterReturn()
 	{
-		if (kag.autoLabelMode && kag.autoLabelType == 1) {
+		if (kag.autoLabelMode) {
 			return targetLine === void ? owner.onConductorAfterReturn(...) : true;
 		}
 		return owner.onConductorAfterReturn(...);
@@ -820,7 +820,7 @@ class Conductor extends BaseConductor
 
 	function onScript()
 	{
-		if (kag.autoLabelMode && kag.autoLabelType == 1) {
+		if (kag.autoLabelMode) {
 			if (parseMode) {
 				// パース中ではエラー扱いすべし XXX
 				return false;
@@ -833,7 +833,7 @@ class Conductor extends BaseConductor
 
 	function onUnknownTag()
 	{
-		if (kag.autoLabelMode && kag.autoLabelType == 1) {
+		if (kag.autoLabelMode) {
 			return targetLine === void ? owner.onConductorUnknownTag(...) : true;
 		}
 		return owner.onConductorUnknownTag(...);
