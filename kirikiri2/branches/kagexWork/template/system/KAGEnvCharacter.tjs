@@ -392,13 +392,11 @@ class KAGEnvCharacter extends KAGEnvLevelLayer, KAGEnvImage {
             setFace(cmd,elm);
         }
     }incontextof this,
-    pos     : this.setPosition incontextof this,
-    emotion : this.setEmotion incontextof this,
-    xpos    : this.setXPos incontextof this,
-    ypos    : this.setYPos incontextof this,
     front   : this.setFront incontextof this,
     back    : this.setBack incontextof this,
-    level   : this.setLevel incontextof this,
+	level   : this.setLevel incontextof this,
+    pos     : this.setPosition incontextof this,
+    emotion : this.setEmotion incontextof this,
     voice   : this.setVoice incontextof this,
     nextvoice : this.setNextVoice incontextof this,
     clearvoice : this.clearVoice incontextof this,
