@@ -892,6 +892,7 @@ class KAGEnvironment extends KAGEnvBase {
 		forelayers.add(newlayer);
 		if (origLayer !== void) {
 			newlayer.assign(origLayer);
+			newlayer.assignVisibleState(origLayer);
 			newlayer.level    = origLayer.level;
 			newlayer.absolute = origLayer.absolute;
 			trashLayer(origLayer);
@@ -924,6 +925,8 @@ class KAGEnvironment extends KAGEnvBase {
 			var value = names[i+1];
 			value.onCopyLayer(toback, backlay);
 		}
+		stage.onCopyLayer(toback, backlay);
+		event.onCopyLayer(toback, backlay);
 		if (backlay && !toback) {
 			clearTrash();
 		}

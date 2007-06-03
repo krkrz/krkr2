@@ -1,7 +1,7 @@
 /**
  * 背景を処理するレイヤ
  */
-class KAGEnvStageLayer extends KAGEnvLayer {
+class KAGEnvStageLayer extends KAGEnvBackLayer {
 
 	/// 時間
 	var timeName;
@@ -19,7 +19,7 @@ class KAGEnvStageLayer extends KAGEnvLayer {
 	 * @param name 環境のレイヤ名
 	 */
 	function KAGEnvStageLayer(env) {
-		super.KAGEnvLayer(env, "stage");
+		super.KAGEnvBackLayer(env, "stage", 100);
     }
 
 	/**
@@ -177,13 +177,6 @@ class KAGEnvStageLayer extends KAGEnvLayer {
 	}
 
 	// ------------------------------------------------------
-
-    function getLayer(base) {
-		if (base === void) {
-			base = env.transMode == 1 ? kag.back : kag.fore;
-		}
-		return base[name];
-	}
 
 	/**
 	 * 更新処理

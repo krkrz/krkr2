@@ -799,38 +799,6 @@ class KAGWindow extends Window
 		fore.base.setDefaultCursor(cursorDefault);
 		back.base.setDefaultCursor(cursorDefault);
 
-        // 舞台レイヤ 背景レイヤの上
-        fore.stage = new StageLayer(this, fore.base, "表-舞台", "stage");
-        add(fore.stage);
-        fore.stage.setImageSize(scWidth, scHeight);
-        fore.stage.setSizeToImageSize();
-        fore.stage.absolute = 100;
-        back.stage = new StageLayer(this, back.base, "裏-舞台", "stage");
-        add(back.stage);
-        back.stage.setImageSize(scWidth, scHeight);
-        back.stage.setSizeToImageSize();
-        back.stage.absolute = 100;
-        fore.stage.setCompLayer(back.stage);
-		back.stage.setCompLayer(fore.stage);
-		fore.stage.freeImage();
-		back.stage.freeImage();
-        
-        // イベントレイヤ メッセージレイヤの下
-        fore.event = new StageLayer(this, fore.base, "表-イベント", "event");
-        add(fore.event);
-        fore.event.setImageSize(scWidth, scHeight);
-        fore.event.setSizeToImageSize();
-        fore.event.absolute = 6 * 100000 - 100;
-        back.event = new StageLayer(this, back.base, "裏-イベント", "event");
-        add(back.event);
-        back.event.setImageSize(scWidth, scHeight);
-        back.event.setSizeToImageSize();
-        back.event.absolute = 6 * 100000 - 100;
-        fore.event.setCompLayer(back.event);
-		back.event.setCompLayer(fore.event);
-		fore.event.freeImage();
-		back.event.freeImage();
-        
 		// メッセージ履歴レイヤの作成
         historyLayer = new HistoryLayer(this, fore.base);
         historyLayer.name = "履歴レイヤ";
@@ -966,12 +934,6 @@ class KAGWindow extends Window
 		for(var i = 0; i< fore.messages.count; i++) invalidate fore.messages[i];
 		for(var i = 0; i< back.messages.count; i++) invalidate back.messages[i];
 
-        // 舞台・イベントレイヤを無効化
-        invalidate fore.stage;
-        invalidate back.stage;
-        invalidate fore.event;
-        invalidate back.event;
-        
 		// snapshotLayer を無効化
 		invalidate snapshotLayer if snapshotLayer !== void;
 
@@ -2006,12 +1968,6 @@ class KAGWindow extends Window
 			f.backCharacterLayers[i] = back.layers[i].store();
 		}
 
-        // 舞台レイヤ・イベントレイヤ
-        f.foreStageLayer = fore.stage.store();
-        f.backStageLayer = back.stage.store();
-        f.foreEventLayer = fore.event.store();
-        f.backEventLayer = back.event.store();
-        
 		// 背景レイヤ
 		f.foreBaseLayer = fore.base.store();
 		f.backBaseLayer = back.base.store();
@@ -2174,16 +2130,6 @@ class KAGWindow extends Window
 			back.base.restore(f.backBaseLayer);
 		}
 
-        if (backlay) {
-            back.stage.restore(f.foreStageLayer);
-            back.event.restore(f.foreEventLayer);
-        } else {
-            fore.stage.restore(f.foreStageLayer);
-			back.stage.restore(f.backStageLayer);
-            fore.event.restore(f.foreEventLayer);
-			back.event.restore(f.backEventLayer);
-        }
-        
 		// メッセージレイヤ
 		allocateMessageLayers(numMessageLayers);
 		if(backlay)
@@ -4488,10 +4434,6 @@ class KAGWindow extends Window
 
     function reorderLayers(ch=true, msg=true)
 	{
-        // ステージレイヤ
-        fore.stage.absolute = 100;
-        back.stage.absolute = 100;
-
         // レイヤを正しい順序に並び替える
         if (ch) {
             var indexes = %[];
@@ -4508,10 +4450,6 @@ class KAGWindow extends Window
                 indexes[level] = index;
             }
         }
-
-        // イベントレイヤ
-        fore.event.absolute = 6 * 100000 - 100;
-        back.event.absolute = 6 * 100000 - 100;
 
         if (msg) {
             var index = 1000000;
@@ -4537,8 +4475,6 @@ class KAGWindow extends Window
 		if(elm[prefix + 'page'] == 'back') base = back; else base = fore;
 		var layer = elm[prefix + 'layer'];
 		if(layer == 'base') return base.base; // 背景
-		if(layer == 'stage') return base.stage; // 舞台
-		if(layer == 'event') return base.event; // イベント
 		if(layer[0] == 'm')
 		{
 			// message? ( ? = 数値 )
@@ -4557,8 +4493,6 @@ class KAGWindow extends Window
 		var base = backlay?back:fore;
 		var layer = elm.layer;
 		if(layer === void || layer == 'base') return base.base; // 背景
-		if(layer == 'stage') return base.stage; // 舞台
-		if(layer == 'event') return base.event; // イベント
         if(layer[0] == 'm')
 		{
 			if(layer == 'message') return base.messages[currentNum];
@@ -4614,8 +4548,6 @@ class KAGWindow extends Window
 			// レイヤ指定が無いので全部のレイヤをコピー
 			var base = toback ? back:fore;
 			base.base.assignComp();
-            base.stage.assignComp();
-            base.event.assignComp();
             var layers = base.layers, messages = base.messages;
 			for(var i = layers.count-1; i >= 0; i--) layers[i].assignComp();
 			for(var i = messages.count-1; i >= 0; i--) messages[i].assignComp();
@@ -4706,14 +4638,10 @@ class KAGWindow extends Window
         // すべてのトランジションを停止させる
 		var layers, messages;
 		fore.base.stopTransition();
-        fore.stage.stopTransition();
-        fore.event.stopTransition();
         layers = fore.layers, messages = fore.messages;
 		for(var i = layers.count-1; i >= 0; i--) layers[i].stopTransition();
 		for(var i = messages.count-1; i >= 0; i--) messages[i].stopTransition();
         back.base.stopTransition();
-        back.stage.stopTransition();
-        back.event.stopTransition();
         layers = back.layers, messages = back.messages;
 		for(var i = layers.count-1; i >= 0; i--) layers[i].stopTransition();
 		for(var i = messages.count-1; i >= 0; i--) messages[i].stopTransition();
@@ -4724,8 +4652,6 @@ class KAGWindow extends Window
 	{
 		// すべての背景レイヤをのぞく表レイヤに対して
 		// exchangeInfo を呼ぶ
-        fore.stage.exchangeInfo();
-        fore.event.exchangeInfo();
         var layers = fore.layers, messages = fore.messages;
 		for(var i = layers.count-1; i >= 0; i--) layers[i].exchangeInfo();
 		for(var i = messages.count-1; i >= 0; i--) messages[i].exchangeInfo();
@@ -4735,8 +4661,6 @@ class KAGWindow extends Window
 	{
 		// すべての背景レイヤをのぞく表レイヤに対して
 		// assignTransSrc を呼ぶ
-        fore.event.assignTransSrc();
-        fore.stage.assignTransSrc();
         var layers = fore.layers, messages = fore.messages;
 		for(var i = layers.count-1; i >= 0; i--) layers[i].assignTransSrc();
 		for(var i = messages.count-1; i >= 0; i--) messages[i].assignTransSrc();
@@ -4777,15 +4701,6 @@ class KAGWindow extends Window
 
     }
 
-	function swapStageLayer(id)
-	{
-        // 前景レイヤの表と裏を取り替える
-        var fl = fore[id], bl = back[id];
-        var tmp = fl;
-        fl = bl;
-        bl = tmp;
-	}
-    
 	function swapCharacterLayer(id)
 	{
 		// 前景レイヤの表と裏を取り替える
@@ -4856,10 +4771,6 @@ class KAGWindow extends Window
 		var layers, messages;
 		fore.base.stopMove();
 		back.base.stopMove();
-        fore.stage.stopMove();
-        back.stage.stopMove();
-        fore.event.stopMove();
-        back.event.stopMove();
         layers = fore.layers, messages = fore.messages;
 		for(var i = layers.count-1; i >= 0; i--) layers[i].stopMove();
 		for(var i = messages.count-1; i >= 0; i--) messages[i].stopMove();
@@ -6684,10 +6595,6 @@ class KAGWindow extends Window
 	function clearLayers(base) {
 		
 		base.base.freeImage();
-		base.stage.freeImage();
-		base.stage.visible = false;
-		base.event.freeImage();
-        base.event.visible = false;
         for(var i = base.layers.count-1; i >= 0; i--) {
 			base.layers[i].freeImage();
             base.layers[i].visible = false;
