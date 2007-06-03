@@ -1,7 +1,7 @@
 /**
  * イベント画像を処理するレイヤ
  */
-class KAGEnvEventLayer extends KAGEnvLayer {
+class KAGEnvEventLayer extends KAGEnvBackLayer {
 
     /**
 	 * コンストラクタ
@@ -9,7 +9,7 @@ class KAGEnvEventLayer extends KAGEnvLayer {
 	 * @param name 環境のレイヤ名
 	 */
 	function KAGEnvEventLayer(env) {
-		super.KAGEnvLayer(env, "event");
+		super.KAGEnvBackLayer(env, "event", 6* 100000 - 100);
     }
 
 	/**
@@ -32,15 +32,6 @@ class KAGEnvEventLayer extends KAGEnvLayer {
 		setAutoTrans([eventTrans, env.envinfo.eventTrans, env.envinfo.envTrans]);
         return true;
     }
-
-	// ------------------------------------------------------
-
-	function getLayer(base) {
-		if (base === void) {
-			base = env.transMode == 1 ? kag.back : kag.fore;
-		}
-		return base[name];
-	}
 
 	// ------------------------------------------------------
 	
