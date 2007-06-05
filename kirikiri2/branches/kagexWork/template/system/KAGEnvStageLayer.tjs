@@ -40,9 +40,8 @@ class KAGEnvStageLayer extends KAGEnvBackLayer {
 		// ŠÔî•ñ‚Åã‘‚«
 		timeName = env.defaultTime if timeName === void;
 		image = image.replace(/TIME/, env.times[timeName].prefix);
-		image = getExistImageName(image);
 
-		if (image === void) {
+		if (getExistImageName(image) === void) {
 			// ‰æ‘œ‚ª‚È‚¢ê‡‚Í•W€‰æ‘œ‚Ì•â³‚Å‘Î‰
 			image = env.stages[stageName].image;
 			image = image.replace(/TIME/, env.times[env.defaultTime].prefix);
