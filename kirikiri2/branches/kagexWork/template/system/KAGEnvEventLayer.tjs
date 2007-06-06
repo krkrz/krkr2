@@ -21,11 +21,11 @@ class KAGEnvEventLayer extends KAGEnvBackLayer {
 		if (env.events !== void && (eventInfo = env.events[file]) !== void) {
 			eventTrans = eventInfo.trans;
 			file = eventInfo.image;
-			if (elm.xpos !== void && eventInfo.xoff !== void) {
-				elm.xpos = eventInfo.xoff;
+			if (elm.xpos === void && elm.left === void && eventInfo.left !== void) {
+				left = eventInfo.left;
 			}
-			if (elm.ypos !== void && eventInfo.xoff !== void) {
-				elm.ypos = eventInfo.yoff;
+			if (elm.ypos === void && elm.top === void && eventInfo.top !== void) {
+				top = eventInfo.top;
 			}
 		}
 		super.setImageFile(file, elm);

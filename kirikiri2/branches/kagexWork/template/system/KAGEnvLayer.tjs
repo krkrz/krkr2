@@ -24,7 +24,7 @@ class KAGEnvLayer extends KAGEnvImage {
 		}
 		setter(v) {
 			_tilex = v;
-			reposition = true;
+			updateFlag = true;
 		}
 	}
 
@@ -35,7 +35,7 @@ class KAGEnvLayer extends KAGEnvImage {
 		}
 		setter(v) {
 			_tiley = v;
-			reposition = true;
+			updateFlag = true;
 		}
 	}
 	
@@ -46,7 +46,7 @@ class KAGEnvLayer extends KAGEnvImage {
 		}
 		setter(v) {
 			_width = v;
-			reposition = true;
+			updateFlag = true;
 		}
 	}
 	
@@ -57,7 +57,7 @@ class KAGEnvLayer extends KAGEnvImage {
 		}
 		setter(v) {
 			_height = v;
-			reposition = true;
+			updateFlag = true;
 		}
 	}
 	
@@ -121,12 +121,12 @@ class KAGEnvLayer extends KAGEnvImage {
 		imageFile.brightness = elm.brightness;
 		imageFile.contrast   = elm.contrast;
 		
-        // 背景指定時に座標指定がなければ場所情報を初期化する
-        if (elm.xpos === void) {
-            xpos = void;
-        }
-        if (elm.ypos === void) {
-            ypos = void;
+		// 背景指定時に座標指定がなければ場所情報を初期化する
+		if (elm.xpos === void && elm.left === void) {
+			left = void;
+		}
+		if (elm.ypos === void && elm.left === void) {
+			top = void;
         }
 
 		disp = SHOW;
@@ -150,11 +150,11 @@ class KAGEnvLayer extends KAGEnvImage {
 		movieLoop  = elm.loop !== void ? +elm.loop : false;
 		
 		// 背景指定時に座標指定がなければ場所情報を初期化する
-		if (elm.xpos === void) {
-			xpos = void;
-        }
-		if (elm.ypos === void) {
-			ypos = void;
+		if (elm.xpos === void && elm.left === void) {
+			left = void;
+		}
+		if (elm.ypos === void && elm.ypos === void) {
+			top = void;
         }
 
 		disp = SHOW;
@@ -179,11 +179,11 @@ class KAGEnvLayer extends KAGEnvImage {
 		if (elm.tiley !== void) { tiley = +elm.tiley; }
 		
 		// 背景指定時に座標指定がなければ場所情報を初期化する
-		if (elm.xpos === void) {
-			xpos = void;
+		if (elm.xpos === void && elm.left === void) {
+			left = void;
 		}
-        if (elm.ypos === void) {
-            ypos = void;
+        if (elm.ypos === void && elm.top === void) {
+            top = void;
 		}
 
 		disp = SHOW;
@@ -219,12 +219,10 @@ class KAGEnvLayer extends KAGEnvImage {
      * @return 実行が行われた場合 true
      */
     function doCommand(cmd, param, elm) {
-
 		// 共通コマンド
 		if (super.doCommand(cmd, param, elm)) {
             return true;
         }
-		
 		// レイヤ共通コマンド
         var func;
 		if ((func = envLayerCommands[cmd]) !== void) {
@@ -251,11 +249,11 @@ class KAGEnvLayer extends KAGEnvImage {
 					layer.setTileImage(tileFile);
 					// 座標補正
 					if (layer.tileLayer !== void) {
-						if (_width == void ) {
-							_width = layer.tileLayer.width;
+						if (width === void ) {
+							width = layer.tileLayer.width;
 						}
-						if (_height == void) {
-							_height = layer.tileLayer.height;
+						if (height === void) {
+							height = layer.tileLayer.height;
 						}
 					}
 				} catch (e) {
@@ -273,8 +271,8 @@ class KAGEnvLayer extends KAGEnvImage {
 				layer.clearTile();
 				try {
 					layer.loadImages(imageFile);
-					_width  = layer.width;
-					_height = layer.height;
+					width  = layer.width;
+					height = layer.height;
 				} catch (e) {
 					var text = imageFile.storage + ":画像がロードできません";
 					kag.errorImage(text);
@@ -287,8 +285,8 @@ class KAGEnvLayer extends KAGEnvImage {
 				layer.clearTile();
 				//try {
 					layer.startMovie(movieFile, movieAlpha, movieLoop);
-					_width  = layer.width;
-					_height = layer.height;
+				    width  = layer.width;
+					height = layer.height;
 					moviePlaying = true;
 			//} catch(e) {
 			//		var text = movieFile + ":ムービーがロードできません";
@@ -305,8 +303,10 @@ class KAGEnvLayer extends KAGEnvImage {
 		}
 	}
 
-	function setSize(layer) {
-		if (_width != layer.width || _height != layer.height) {
+	function updateLayer(layer) {
+		super.updateLayer(layer);
+		if (_width !== void && _width != layer.width ||
+			_height !== void && _height != layer.height) {
 			layer.setSize(width, height);
 		}
 		if (tileFile !== void) {

@@ -152,8 +152,8 @@ class KAGEnvironment extends KAGEnvBase {
 
         // レイヤトランジション処理中は transMode を有効にしておく
         kag.tagHandlers["ltbegin"] = function(elm) {
-            transMode = 2;
-            return kag.layerTransBegin(elm);
+			transMode = 2;
+			return kag.layerTransBegin(elm);
         } incontextof this;
         kag.tagHandlers["ltend"] = function(elm) {
             transMode = 0;
@@ -536,17 +536,6 @@ class KAGEnvironment extends KAGEnvBase {
 		stage.update(base);
 	}
 
-	function updateSkip() {
-		foreach(characters, function(name, value, dict) {
-			value.updateSkip();
-		});
-		foreach(layers, function(name, value, dict) {
-			value.updateSkip();
-        });
-		event.updateSkip();
-		stage.updateSkip();
-	}
-
 	// ------------------------------------------------------------------
 	// 一括実行
 	// ------------------------------------------------------------------
@@ -881,25 +870,8 @@ class KAGEnvironment extends KAGEnvBase {
 	}
 
 	/**
-	 * レイヤ取得処理
-	 * @param base ベース (kag.fore または kag.back)
-	 * @param origLayer 廃棄元レイヤ
+	 * レイヤ破棄実行
 	 */
-	function getNewLayer(name, base, origLayer) {
-		var newlayer = new GraphicLayerEx(base.base.window, base.base, name);
-		newlayer.hitType = htProvince;
-		newlayer.level = -1;
-		forelayers.add(newlayer);
-		if (origLayer !== void) {
-			newlayer.assign(origLayer);
-			newlayer.assignVisibleState(origLayer);
-			newlayer.level    = origLayer.level;
-			newlayer.absolute = origLayer.absolute;
-			trashLayer(origLayer);
-		}
-		return newlayer;
-	}
-
 	function clearTrash() {
 		//dm("レイヤ破棄実行");
 		for (var i=0;i<trashlayers.count;i++) {
@@ -1614,9 +1586,3 @@ class KAGEnvironment extends KAGEnvBase {
     }
 	
 };
-
-// 互換のために残ってるが既に不要
-KAGEnvironment.XPOSITION    = 1;
-KAGEnvironment.LEVEL        = 2;
-KAGEnvironment.DISPPOSITION = 3;
-KAGEnvironment.YPOSITION    = 4;

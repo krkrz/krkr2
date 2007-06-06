@@ -1,4 +1,20 @@
 /**
+ * 舞台用レイヤ
+ */
+class StageGraphicLayer extends EnvGraphicLayer {
+
+	function StageGraphicLayer() {
+		super.EnvGraphicLayer(...);
+	}
+
+	function recalcPosition() {
+		setRealPosition(env.xmax + left - width / 2,
+						env.ymax + top  - height / 2);
+	}
+};
+
+
+/**
  * 背景を処理するレイヤ
  */
 class KAGEnvStageLayer extends KAGEnvBackLayer {
@@ -55,11 +71,11 @@ class KAGEnvStageLayer extends KAGEnvBackLayer {
 			}
 		}
 		
-		if (elm.xpos === void && info.xoff !== void) {
-			elm.xpos = (int)info.xoff;
+		if (elm.xpos === void && elm.left === void && info.left !== void) {
+			left = +info.left;
 		}
-		if (elm.ypos === void && info.yoff !== void) {
-			elm.ypos = (int)info.yoff;
+		if (elm.ypos === void && elm.top  === void && info.top !== void) {
+			top = +info.top;
 		}
 		setImageFile(image, elm);
 		setAutoTrans([info.trans, env.envinfo.stageTrans, env.envinfo.envTrans]);
@@ -188,45 +204,6 @@ class KAGEnvStageLayer extends KAGEnvBackLayer {
 		super.update(base);
 	}
 	
-	/**
-	 * アクション座標計算
-	 */
-	function calcActionPosition(left, top) {
-		xpos = getRelative(left, xpos + env.xmax) - env.xmax if left !== void;
-		ypos = getRelative(top, ypos + env.ymax)  - env.ymax if top  !== void;
-	}
-
-	/**
-	 * レイヤ位置の逆計算
-	 */
-	function reversePosition(layer, left, top) {
-		xpos = left - env.xmax + layer.imageWidth / 2  if left !== void;
-		ypos = top  - env.ymax + layer.imageHeight / 2 if top  !== void;
-	}
-	
-    /**
-     * レイヤ配置処理(背景用)：中央原点
-     * @param layer 処理対象レイヤ
-     */
-    function calcPosition(layer) {
-		//dm("位置指定2");
-		var l = env.xmax + (int)xpos - layer.imageWidth / 2;
-		var t = env.ymax + (int)ypos - layer.imageHeight / 2;
-		if (moveTime !== void && moveTime > 0) {
-			if (xposFrom !== void || yposFrom !== void) {
-				var fl = xposFrom !== void ? env.xmax + (int)xposFrom - layer.imageWidth / 2 : l;
-				var ft = yposFrom !== void ? env.ymax + (int)yposFrom - layer.imageHeight / 2 : t;
-				layer.setPos(fl, ft);
-			}
-			layer.setMove(l, t, moveTime, moveAccel);
-		} else {
-			layer.setMove(l, t);
-		}
-		xposFrom = void;
-		yposFrom = void;
-		moveTime = void;
-	}
-
 	// ------------------------------------------------------
 
 	/**
@@ -234,5 +211,12 @@ class KAGEnvStageLayer extends KAGEnvBackLayer {
 	 */
 	function setDispAutoTrans() {
 		setAutoTrans([env.envinfo.stageTrans, env.envinfo.envTrans]);
+	}
+
+	/**
+	 * 新レイヤ生成
+	 */
+	function createLayer(owner, base, name) {
+		return new StageGraphicLayer(owner, base, name);
 	}
 }

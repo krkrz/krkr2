@@ -4853,23 +4853,16 @@ class KAGWindow extends Window
 				//dm("辞書アクション:" + action);
 				//showKeys("アクション", action);
 				// 辞書の場合
-				if (typeof action.module == "Object") {
-					//dm("モジュール直接指定");
-					action.module(info, action);
-                } else if (typeof action.module == "String") {
+				if (action.module !== void) {
+					if (typeof action.module != "String") {
+						throw new Exception("アクションモジュール名は文字列指定してください");
+					}
 					//dm("モジュール名指定:" + action.module);
 					var module = Scripts.eval(action.module);
 					if (module !== void) {
-						module(info, action);
-                    }
-                } else if (typeof action.moduleName == "String") {
-					// moduleName が指定されている場合はアクション定義とみなす
-					//dm("モジュール名指定:" + action.moduleName);
-                    var module = Scripts.eval(action.moduleName);
-                    if (module !== void) {
-                        module(info, action);
-                    }
-                } else {
+						info.addActions(module(action));
+					}
+				} else {
                     // 複数アクションの同時指定
                     info.addActions(action);
 				}

@@ -237,12 +237,6 @@ class KAGEnvBase {
 	function update(base) {
 	}
 
-	/**
-	 * スキップ更新処理
-	 */
-	function updateSkip() {
-	}
-
     // フェード指定のデフォルト値
     property fadeValue {
         getter() {
@@ -299,8 +293,6 @@ class KAGEnvBase {
 				doUpdate(elm);
 			}
 			hideMessage(trans);
-		} else {
-			updateSkip();
 		}
 
 		return ret;
