@@ -1,6 +1,7 @@
 #pragma comment(lib, "strmiids.lib")
 #include "layerExMovie.hpp"
 
+#ifndef FILEBASE
 void ParseVideoType( CMediaType &mt, const wchar_t *type )
 {
 	// note: audio-less mpeg stream must have an extension of
@@ -27,6 +28,7 @@ void ParseVideoType( CMediaType &mt, const wchar_t *type )
 	else
 		TVPThrowExceptionMessage(L"Unknown video format extension."); // unknown format
 }
+#endif
 
 /**
  * コンストラクタ
@@ -42,8 +44,12 @@ layerExMovie::layerExMovie(DispatchT obj) : _pType(obj, TJS_W("type")), layerExB
 	alpha = false;
 	movieWidth = 0;
 	movieHeight = 0;
+#ifdef FILEBASE
+	tempFile = "";
+#else
 	m_Proxy = NULL;
 	m_Reader = NULL;
+#endif
 	in = NULL;
 	{
 		tTJSVariant var;
@@ -91,6 +97,12 @@ layerExMovie::clearMovie()
 		pAMStream->Release();
 		pAMStream = NULL;
 	}
+#ifdef FILEBASE
+	if (tempFile != "") {
+		DeleteFileW(tempFile.c_str());
+		tempFile = "";
+	}
+#else
 	if (m_Reader) {
 		m_Reader->Release();
 		m_Reader = NULL;
@@ -99,12 +111,11 @@ layerExMovie::clearMovie()
 		delete m_Proxy;
 		m_Proxy = NULL;
 	}
+#endif
 	if (in) {
 		in->Release();
 		in = NULL;
 	}
-	//DeleteFileW(tempFile.c_str());
-	//tempFile = "";
 }
 
 /**
@@ -116,15 +127,17 @@ void
 layerExMovie::openMovie(const tjs_char* filename, bool alpha)
 { 
 	clearMovie();
+	this->alpha = alpha;
+	movieWidth = 0;
+	movieHeight = 0;
 
+#ifndef FILEBASE
 	ttstr ext = TVPExtractStorageExt(filename);
 	CMediaType mt;
 	mt.majortype = MEDIATYPE_Stream;
 	ParseVideoType(mt, ext.c_str()); // may throw an exception
+#endif
 
-	this->alpha = alpha;
-	movieWidth = 0;
-	movieHeight = 0;
 
 	// パス検索
 	//ttstr path = TVPGetPlacedPath(ttstr(filename));
@@ -138,19 +151,15 @@ layerExMovie::openMovie(const tjs_char* filename, bool alpha)
 		TVPAddLog(error);
 		return;
 	}
-	DWORD size;
-	STATSTG stat;
-	in->Stat(&stat, STATFLAG_NONAME);
-	size = stat.cbSize.LowPart;
-
-#if 0		
+#ifdef FILEBASE
 	tempFile = TVPGetTemporaryName();
 	HANDLE hFile;
-	if ((hFile = CreateFile(tempFile.c_str(), GENERIC_WRITE, 0, NULL,
+	if ((hFile = CreateFileW(tempFile.c_str(), GENERIC_WRITE, 0, NULL,
 							CREATE_ALWAYS, FILE_ATTRIBUTE_TEMPORARY, NULL)) == INVALID_HANDLE_VALUE) {
 		TVPAddLog("テンポラリファイルが開けません");
-		in->Release();
 		tempFile = "";
+		in->Release();
+		in = NULL;
 		return;
 	}
 	// ファイルをコピー
@@ -160,23 +169,41 @@ layerExMovie::openMovie(const tjs_char* filename, bool alpha)
 		WriteFile(hFile, buffer, size, &size, NULL);
 	}
 	CloseHandle(hFile);
+	in->Release();
+	in = NULL;
+#else
+	DWORD size;
+	STATSTG stat;
+	in->Stat(&stat, STATFLAG_NONAME);
+	size = stat.cbSize.LowPart;
 #endif
 	
 	if (SUCCEEDED(CoCreateInstance(CLSID_AMMultiMediaStream,0,1,IID_IAMMultiMediaStream,(void**)&pAMStream))) {
 		if (SUCCEEDED(pAMStream->Initialize(STREAMTYPE_READ, 0, NULL)) &&
 			SUCCEEDED(pAMStream->AddMediaStream(0, &MSPID_PrimaryVideo, 0, NULL))) {
+
+#ifdef FILEBASE
+			if (!SUCCEEDED(pAMStream->OpenFile(tempFile.c_str(), AMMSF_NOCLOCK))) {
+				pAMStream->Release();
+				pAMStream = NULL;
+				return;
+			}
+#else
 			IGraphBuilder *builder;
 			if (SUCCEEDED(pAMStream->GetFilterGraph(&builder))) {
 				m_Proxy = new CIStreamProxy(in, size);
 				HRESULT hr;
-				m_Reader = new CIStreamReader( m_Proxy, &mt, &hr );
+				m_Reader = new CIStreamReader(m_Proxy, &mt, &hr);
 				m_Reader->AddRef();
 				builder->AddFilter(m_Reader, L"SourceFilter");
 				builder->Render(m_Reader->GetPin(0));
 				builder->Release();
+			} else {
+				pAMStream->Release();
+				pAMStream = NULL;
+				return;
 			}
-
-			//if (SUCCEEDED(pAMStream->OpenFile(tempFile.c_str(), AMMSF_NOCLOCK))) {
+#endif
 			if (SUCCEEDED(pAMStream->GetMediaStream(MSPID_PrimaryVideo, &pPrimaryVidStream))) {
 				if (SUCCEEDED(pPrimaryVidStream->QueryInterface(IID_IDirectDrawMediaStream,(void**)&pDDStream))) {
 					
@@ -353,6 +380,7 @@ layerExMovie::OnContinuousCallback(tjs_uint64 tick)
 			if (loop) {
 				pAMStream->SetState(STREAMSTATE_STOP);
 				pAMStream->SetState(STREAMSTATE_RUN);
+				pAMStream->Seek(0);
 				pSample->Update(SSUPDATE_ASYNC, NULL, NULL, 0);
 			} else {
 				stopMovie();
