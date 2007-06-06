@@ -101,7 +101,8 @@ class KAGEnvLevelLayer {
      * ƒŒƒxƒ‹“àÅ‘O—ñ
      */
     function setFront() {
-        front = true;
+		front = true;
+		updateFlag = true;
     }
 
     /**
@@ -109,6 +110,7 @@ class KAGEnvLevelLayer {
      */
     function setBack() {
         back = true;
+		updateFlag = true;
     }
 
     /**
