@@ -284,7 +284,8 @@ class KAGEnvImage extends KAGEnvBase {
         grayscale = void;
 		clearAction(true);
 		_disp = CLEAR;
-    }
+		actionList.clear();
+	}
 
     function finalize() {
 		invalidate actionList;
@@ -817,7 +818,6 @@ class KAGEnvImage extends KAGEnvBase {
 		dispMode = 0;
 		doReset      = false;
 		doStopAction = false;
-		doShow       = false;
 		actionList.clear();
 		return super.tagfunc(elm);
 	}
