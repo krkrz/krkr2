@@ -13,6 +13,8 @@
 #include <streams.h>
 #include "CIStream.h"
 
+#define FILEBASE
+
 /*
  * Movie •`‰æ—pƒŒƒCƒ„
  */
@@ -36,10 +38,12 @@ protected:
 	bool alpha;
 
 	IStream *in;
+#ifdef FILEBASE
+	ttstr tempFile;
+#else
 	CIStreamProxy			*m_Proxy;
 	CIStreamReader			*m_Reader;
-
-	//ttstr tempFile;
+#endif
 	
 	void clearMovie();
 	
