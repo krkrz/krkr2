@@ -41,14 +41,18 @@ function showKeys(name, dict) {
  */
 function getTo(value)
 {
-    var p;
-    if ((p = value.indexOf(":")) > 0) {
-        return value.substring(0, p);
-    } else  if (p == 0) {
-        return void;
-    } else  {
-        return value;
-    }
+	if (typeof value == "String") {
+		var p;
+		if ((p = value.indexOf(":")) > 0) {
+			return value.substring(0, p);
+		} else  if (p == 0) {
+			return void;
+		} else  {
+			return value;
+		}
+	} else {
+		return value === void ? value : +value;
+	}
 }
 
 /*
@@ -56,12 +60,15 @@ function getTo(value)
  * @param value ƒpƒ‰ƒ[ƒ^
  */
 function getFrom(value) {
-    var p;
-    if ((p = value.indexOf(":")) >= 0) {
-        return value.substring(p+1);
-    } else {
-        return void;
-    }
+	if (typeof value == "String") {
+		var p;
+		if ((p = value.indexOf(":")) >= 0) {
+			return value.substring(p+1);
+		} else {
+			return void;
+		}
+	}
+	return void;
 }
 
 /**
@@ -142,8 +149,8 @@ var transitionParam = %[
     ];
 
 var actionParam = %[
-    "time" => true,
-    "delay" => true,
+	"time" => true,
+	"delay" => true,
 	"nowait" => true,
 	"start" => true,
 	"startx" => true,
@@ -151,7 +158,7 @@ var actionParam = %[
 	"x" => true,
     "y" => true,
     "toptime" => true,
-    "vibration" => true,
+	"vibration" => true,
     "waittime" => true,
     "cycle" => true,
     "distance" => true,
@@ -164,6 +171,13 @@ var actionParam = %[
     "intime" => true,
     "outtime" => true,
     "opacity" => true,
+	"min" => true,
+	"max" => true,
+	"value" => true,
+	"ontime" => true,
+    "offtime" => true,
+    "handler" => true,
+    "loop" => true,
     ];
 
 KAGLoadScript('KAGEnvBase.tjs');

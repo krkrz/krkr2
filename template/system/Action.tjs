@@ -538,46 +538,6 @@ class MoveAction extends AbsoluteActionHandler {
 }
 
 /**
- * 二次関数移動アクション（絶対アクション）
- * ※指定にかかわらず left/top 操作
- */
-class ParabolaMoveAction extends AbsoluteActionHandler {
-
-    var t0;
-    var start_x;  // 開始時の値
-    var start_y;
-    var diff_x;
-    var diff_y;
-
-    function ParabolaMoveAction(target, propName, elm) {
-        super.AbsoluteActionHandler(target, propName, elm);
-        start_x = target["left"];
-        start_y = target["top"];
-        diff_x  = +elm.x - start_x;
-        diff_y  = +elm.y - start_y;
-        t0 = elm.topTime !== void ? (elm.topTime * 2) : time;
-    }
-
-	/**
-	 * 最終値 XXX
-	 */
-	function getResultValue() {
-		return start_x + diff_x * 2;
-	}
-	
-    function doAction(target, propName, now, stopFlag) {
-        if (t0) {
-            // X軸は等速移動、Y軸は2次関数移動
-            var t = now*2/t0;
-            // 原点と(1,1)を通り、逆U字型のカーブを描く2次関数
-            var n = ( 1-(1-t)*(1-t) );
-            target.setPos(start_x + diff_x*t, start_y + diff_y*n);
-        }
-        return stopFlag;
-    }
-}
-
-/**
  * ループ移動アクション（絶対アクション）
  * @param start 開始位置（未指定時は現在値)
  * @param min ループ最少値
@@ -853,110 +813,141 @@ class FallAction extends RelativeActionHandler {
 // 旧版互換用機能
 // ----------------------------------------------------------------
 
-function LayerNormalZoomModule(info, elm) {
-    info.addAction("zoomx", MoveAction, %[start:elm.start, value:elm.zoom, time:elm.time, delay:elm.delay, accel:elm.accel]);
-    info.addAction("zoomy", MoveAction, %[start:elm.start, value:elm.zoom, time:elm.time, delay:elm.delay, accel:elm.accel]);
+function LayerNormalZoomModule(elm) {
+	return %[
+	zoom :%[handler:"MoveAction", start:elm.start, value:elm.zoom, time:elm.time, delay:elm.delay, accel:elm.accel]
+		];
 }
 
-function LayerToRotateModule(info, elm) {
+function LayerToRotateModule(elm) {
     var rotate = elm.angle !== void ? elm.angle : elm.rotate;
-    info.addAction("rotate", MoveAction, %[start:elm.start, value:rotate, time:elm.time, delay:elm.delay, accel:elm.accel]);
+	return %[
+	rotate :%[ handler:"MoveAction", start:elm.start, value:rotate, time:elm.time, delay:elm.delay, accel:elm.accel]
+		];
 }
 
-function LayerFadeToModeModule(info, elm) {
-    info.addAction("opacity", MoveAction, %[start:elm.start, value:elm.opacity, time:elm.time, delay:elm.delay, accel:elm.accel]);
+function LayerFadeToModeModule(elm) {
+	return %[
+	opacity: %[ handler:"MoveAction", start:elm.start, value:elm.opacity, time:elm.time, delay:elm.delay, accel:elm.accel]
+		];
 }
 
 function LayerMoveModule(info, elm, accel) {
-    info.addAction("left", MoveAction, %[start:elm.startx, value:elm.x, time:elm.time, delay:elm.delay, accel:accel]);
-    info.addAction("top",  MoveAction, %[start:elm.starty, value:elm.y, time:elm.time, delay:elm.delay, accel:accel]);
+	return %[
+	left: %[ handler:"MoveAction", start:elm.startx, value:elm.x, time:elm.time, delay:elm.delay, accel:accel],
+	top : %[ handler:"MoveAction", start:elm.starty, value:elm.y, time:elm.time, delay:elm.delay, accel:accel]
+		];
 }
 
-function LayerNormalMoveModule(info, elm) {
-    LayerMoveModule(info, elm, 0);
+function LayerNormalMoveModule(elm) {
+	return LayerMoveModule(info, elm, 0);
 }
 
-function LayerAccelMoveModule(info, elm) {
-    LayerMoveModule(info, elm, 1);
+function LayerAccelMoveModule(elm) {
+	return LayerMoveModule(info, elm, 1);
 }
 
-function LayerDecelMoveModule(info, elm) {
-    LayerMoveModule(info, elm, -1);
+function LayerDecelMoveModule(elm) {
+	return LayerMoveModule(info, elm, -1);
 }
 
-function LayerParabolaMoveModule(info, elm) {
-    info.addAction("left", ParabolaMoveAction, elm);
-    info.delAction("top");
+function LayerVibrateActionModule(elm) {
+	return %[
+	left: %[ handler:"RandomAction", vibration:elm.vibration/2, waittime:elm.waittime, time:elm.time, delay:elm.delay],
+	top: %[ handler:"RandomAction", vibration:elm.vibration/2, waittime:elm.waittime, time:elm.time, delay:elm.delay]
+		];
 }
 
-function LayerVibrateActionModule(info, elm) {
-    info.addAction("left", RandomAction, %[vibration:elm.vibration/2, waittime:elm.waittime, time:elm.time, delay:elm.delay]);
-    info.addAction("top",  RandomAction, %[vibration:elm.vibration/2, waittime:elm.waittime, time:elm.time, delay:elm.delay]);
+function LayerJumpActionModule(elm) {
+	return %[
+	left: null,
+	top: %[ handler:"SinAction", vibration:elm.vibration, cycle:elm.cycle, angvel:elm.angvel, time:elm.time, delay:elm.delay]
+		];
 }
 
-function LayerJumpActionModule(info, elm) {
-    info.delAction("left");
-    info.addAction("top", SinAction, %[vibration:elm.vibration, cycle:elm.cycle, angvel:elm.angvel, time:elm.time, delay:elm.delay]);
+function LayerJumpOnceActionModule(elm) {
+	return %[
+    left: null,
+	top: %[ handler:"SinAction", vibration:-elm.vibration, cycle:elm.cycle, angvel:elm.angvel, time:elm.cycle/2, delay:elm.delay]
+		];
 }
 
-function LayerJumpOnceActionModule(info, elm) {
-    info.delAction("left");
-    info.addAction("top", SinAction, %[vibration:-elm.vibration, cycle:elm.cycle, angvel:elm.angvel, time:elm.cycle/2, delay:elm.delay]);
+function LayerWaveActionModule(elm) {
+	return %[
+    left: %[ handler:"SinAction", vibration:elm.vibration, cycle:elm.cycle, angvel:elm.angvel, time:elm.time, delay:elm.delay],
+	top: null
+		];
 }
 
-function LayerWaveActionModule(info, elm) {
-    info.addAction("left", SinAction, %[vibration:elm.vibration, cycle:elm.cycle, angvel:elm.angvel, time:elm.time, delay:elm.delay]);
-    info.delAction("top");
+function LayerWaveOnceActionModule(elm) {
+	return %[
+	left: %[ handler:"SinAction", vibration:-elm.vibration, cycle:elm.cycle, angvel:elm.angvel, time:elm.cycle/2, delay:elm.delay],
+	top: null
+		];
 }
 
-function LayerWaveOnceActionModule(info, elm) {
-    info.addAction("left", SinAction, %[vibration:-elm.vibration, cycle:elm.cycle, angvel:elm.angvel, time:elm.cycle/2, delay:elm.delay]);
-    info.delAction("top");
-}
-
-function LayerFallActionModule(info, elm) {
+function LayerFallActionModule(elm) {
     var time = elm.falltime !== void ? elm.falltime : elm.time;
-    info.delAction("left");
-    info.addAction("top", FallAction, %[distance:elm.distance, time:time, delay:elm.delay]);
+	return %[
+	left: null,
+	top: %[ handler:"FallAction", distance:elm.distance, time:time, delay:elm.delay]
+		];
 }
 
-function LayerVRotateZoomModule(info, elm) {
-    info.addAction("zoomx", SinAction, %[vibration:"@", offset:"-@", cycle:elm.time, angvel:elm.angvel, time:elm.time, delay:elm.delay]);
-    info.delAction("zoomy");
+function LayerVRotateZoomModule(elm) {
+	return %[
+	zoomx: %[ handler:"SinAction", vibration:"@", offset:"-@", cycle:elm.time, angvel:elm.angvel, time:elm.time, delay:elm.delay],
+	zoomy: null
+		];
 }
 
-function LayerHRotateZoomModule(info, elm) {
-    info.addAction("zoomy", SinAction, %[vibration:"@", offset:"-@", cycle:elm.time, angvel:elm.angvel, time:elm.time, delay:elm.delay]);
-    info.delAction("zoomx");
+function LayerHRotateZoomModule(elm) {
+	return %[
+	zoomy: %[ handler:"SinAction", vibration:"@", offset:"-@", cycle:elm.time, angvel:elm.angvel, time:elm.time, delay:elm.delay],
+	zoomx: null
+		];
 }
 
-function LayerHeartBeatZoomModule(info, elm) {
-    info.addAction("zoomx", SinAction, %[vibration:elm.zoom-100, cycle:elm.time*2, time:elm.time, delay:elm.delay]);
-    info.addAction("zoomy", SinAction, %[vibration:elm.zoom-100, cycle:elm.time*2, time:elm.time, delay:elm.delay]);
+function LayerHeartBeatZoomModule(elm) {
+	return %[
+	zoom: %[ handler:"SinAction", vibration:elm.zoom-100, cycle:elm.time*2, time:elm.time, delay:elm.delay]
+		];
 }
 
-function LayerVibrateZoomModule(info, elm) {
-    info.addAction("zoomx", RandomAction, %[vibration:elm.vibration/2, waittime:elm.waittime, time:elm.time, delay:elm.delay]);
-    info.addAction("zoomy", RandomAction, %[vibration:elm.vibration/2, waittime:elm.waittime, time:elm.time, delay:elm.delay]);
+function LayerVibrateZoomModule(elm) {
+	return %[
+	zoomx: %[ handler:"RandomAction", vibration:elm.vibration/2, waittime:elm.waittime, time:elm.time, delay:elm.delay],
+	zoomy: %[ handler:"RandomAction", vibration:elm.vibration/2, waittime:elm.waittime, time:elm.time, delay:elm.delay]
+		];
 }
 
-function LayerNormalRotateModule(info, elm) {
+function LayerNormalRotateModule(elm) {
     var cycle = elm.angvel !== void ? 360/elm.angvel*1000 : elm.cycle;
-    info.addAction("rotate", TriangleAction, %[vibration:360, ontime:cycle, offtime:0, time:elm.time, delay:elm.delay]);
+	return %[
+	rotate: %[ handler:"TriangleAction", vibration:360, ontime:cycle, offtime:0, time:elm.time, delay:elm.delay]
+		];
 }
 
-function LayerVibrateRotateModule(info, elm) {
-    info.addAction("rotate", RandomAction, %[vibration:elm.vibration/2, waittime:elm.waittime, time:elm.time, delay:elm.delay]);
+function LayerVibrateRotateModule(elm) {
+ 	return %[
+	rotate: %[ handler:"RandomAction", vibration:elm.vibration/2, waittime:elm.waittime, time:elm.time, delay:elm.delay]
+		];
 }
 
-function LayerFalldownRotateModule(info, elm) {
-    info.addAction("rotate", MoveAction, %[value:"@+" + elm.angle, accel:1, time:elm.time, delay:elm.delay]);
+function LayerFalldownRotateModule(elm) {
+ 	return %[
+	rotate: %[ handler:"MoveAction", value:"@+" + elm.angle, accel:1, time:elm.time, delay:elm.delay]
+		];
 }
 
-function LayerBlinkModeModule(info, elm) {
-    info.addAction("visible", SquareAction, %[vibration:1, ontime:elm.showtime, offtime:elm.hidetime, time:elm.time, delay:elm.delay]);
+function LayerBlinkModeModule(elm) {
+ 	return %[
+	visible: %[ handler:"SquareAction", vibration:1, ontime:elm.showtime, offtime:elm.hidetime, time:elm.time, delay:elm.delay]
+		];
 }
 
-function LayerFadeModeModule(info, elm) {
-    info.addAction("opacity", TriangleAction, %[vibration:"@", offset:"-@", ontime:elm.intime, offtime:elm.outtime, time:elm.time, delay:elm.delay]);
+function LayerFadeModeModule(elm) {
+ 	return %[
+	opacity: %[ handler:"TriangleAction", vibration:"@", offset:"-@", ontime:elm.intime, offtime:elm.outtime, time:elm.time, delay:elm.delay],
+		];
 }

@@ -44,79 +44,62 @@
     "positions" => %[
 
         "出" => %[
-            "type" => KAGEnvironment.DISPPOSITION,
             "disp" => KAGEnvImage.BOTH
             ],
 
         "立" => %[
-            "type" => KAGEnvironment.DISPPOSITION,
             "disp" => KAGEnvImage.BU
             ],
         
         "消" => %[
-            "type" => KAGEnvironment.DISPPOSITION,
             "disp" => KAGEnvImage.CLEAR
             ],
 
         "顔" => %[
-            "type" => KAGEnvironment.DISPPOSITION,
             "disp" => KAGEnvImage.FACE
             ],
 
         "無" => %[
-            "type" => KAGEnvironment.DISPPOSITION,
             "disp" => KAGEnvImage.INVISIBLE
             ],
         
         "左奥" => %[
-            "type" => KAGEnvironment.XPOSITION,
             "xpos" => int -440
             ],
         "右奥" => %[
-            "type" => KAGEnvironment.XPOSITION,
             "xpos" => int 440
             ],
         "左" => %[
-            "type" => KAGEnvironment.XPOSITION,
             "xpos" => int -200
             ],
         "右" => %[
-            "type" => KAGEnvironment.XPOSITION,
             "xpos" => int 200
             ],
         "左中" => %[
-            "type" => KAGEnvironment.XPOSITION,
             "xpos" => int -100
             ],
         "右中" => %[
-            "type" => KAGEnvironment.XPOSITION,
             "xpos" => int 100
             ],
         "左外" => %[
-            "type" => KAGEnvironment.XPOSITION,
             "xpos" => int -600
             ],
         "右外" => %[
-            "type" => KAGEnvironment.XPOSITION,
             "xpos" => int 600
             ],
         "中" => %[
-            "type" => KAGEnvironment.XPOSITION,
             "xpos" => int 0
             ],
 
         "奥" => %[
-            "type" => KAGEnvironment.LEVEL,
             "level" => int 0
             ],
 
         "前" => %[
-            "type" => KAGEnvironment.LEVEL,
             "level" => int 1
             ],
 
         "手前" => %[
-            "type" => KAGEnvironment.LEVEL,
             "level" => int 2
             ],
         ],
@@ -141,37 +124,29 @@
     "defaultLevel" => 1,
 
     // 表情窓用のレベル指定。表情窓を使わない場合は void
-    "faceLevelName" => void,
+	"faceLevelName" => void,
     
     "actions" => %[
-        "おじぎ" => %[
-            "module" => LayerJumpOnceActionModule,
-            "vibration" => -50,
-            "cycle" => 3000,
-            ],
-        "どっきり" => %[
-            "module" => LayerHeartBeatZoomModule,
-            "time" => 200,
-            "zoom" => 120,
-            ],
-        "びょんびょん" => %[
-            "module" => LayerJumpActionModule,
-            "vibration" => 30,
-            "cycle" => 1000,
-            ],
-        "びょんびょん待ち無" => %[
-			"module" => "LayerJumpActionModule",
-            "vibration" => 30,
-            "cycle" => 1000,
-			"nowait" => true,
+		"おじぎ" => %[
+		top: %[handler:"SinAction", vibration:50, cycle:3000, time:1500],
+		left : null
+			],
+		"どっきり" => %[
+		zoom: %[ handler:"SinAction", vibration:20, cycle:200,]
+			],
+		"びょんびょん" => %[
+		top:%[ handler:"SinAction", vibration:30, cycle:1000],
+		left:null,
+			],
+		"びょんびょん待ち無" => %[
+		left:null,
+		top:%[ handler:"SinAction", vibration:30, cycle:1000],
+		nowait:true,
             ],
         "ガクガク" => %[
-            "module" => LayerVibrateActionModule,
-            "vibration" => 3,
-            "waitTime" => 40
-            ],
-
-		// 新スタイルアクション定義例
+		left:%[ handler:"RandomAction", vibration:3, waittime:40],
+		top:%[ handler:"RandomAction", vibration:3, waittime:40]
+			],
 
 		"移動テスト" => %[ // 現在位置から+300の位置に500ms かけて移動
 						   "time" => 500,

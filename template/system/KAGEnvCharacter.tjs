@@ -1,4 +1,39 @@
 /**
+ * 舞台用レイヤ
+ */
+class CharacterGraphicLayer extends EnvGraphicLayer {
+
+	var yoffset;
+	
+	function CharacterGraphicLayer(owner, base, name) {
+		yoffset = owner.yoffset !== void ? +owner.yoffset : owner.init.yoffset !== void ? +owner.init.yoffset : +owner.env.yoffset;
+		super.EnvGraphicLayer(...);
+	}
+
+	function recalcPosition() {
+		
+		// レベル別座標補正処理。とりあえず適当で画面中央に向かって縮小処理してある
+		var zoom;
+		var levelYoffset = 0;
+		var levelInfo = env.levels[level];
+		if (levelInfo !== void) {
+			zoom         = (int)levelInfo.zoom;
+			levelYoffset = (int)levelInfo.yoffset;
+		}
+		if (zoom === void) {
+			zoom = 100;
+		}
+		if (levelYoffset === void) {
+			levelYoffset = 0;
+		}
+
+		setRealPosition(env.xmax + (left * zoom / 100) - width / 2, 
+						env.ymax + ((yoffset - top) * zoom / 100) - height + levelYoffset);
+	}
+};
+
+
+/**
  * ボイス再生用トラック
  */
 class VoiceTrack extends WaveSoundBuffer {
@@ -244,9 +279,9 @@ class KAGEnvCharacter extends KAGEnvLevelLayer, KAGEnvImage {
         }
 
         // イメージを破棄
-        image = void;
-        // ypos はポーズ設定したときに0に戻す
-        ypos = 0;
+		image = void;
+		// Y座標はポーズ設定したときに初期値に戻す
+		setTop(env.defaultYpos);
     }
 
     /**
@@ -301,55 +336,44 @@ class KAGEnvCharacter extends KAGEnvLevelLayer, KAGEnvImage {
 		
 		posName = getTo(cmd);
 		var info;
-        if (env.positions === void || (info = env.positions[posName]) === void) {
-            return;
+		if (env.positions === void || (info = env.positions[posName]) === void) {
+			return;
         }
-        
+		var istrans = false;
+		
 		if (info.xpos !== void || info.ypos !== void) {
 			if (disp == CLEAR) {
 				disp = SHOW;
+				istrans = true;
 			}
 			var posFrom = getFrom(cmd);
             var fromInfo;
 			if (posFrom !== void && (fromInfo = env.positions[posFrom]) !== void) {
-				moveTime = isSkip() ? 0 : elm.time;
-				moveAccel = (elm.accel === void) ? 0 : +elm.accel;
-				if (fromInfo.xpos !== void) {
-					xposFrom   = calcRelative(xpos, fromInfo.xpos, env.xmax);
-				}
 				if (info.xpos !== void) {
-					xpos       = calcRelative(xpos, info.xpos, env.xmax);
-				}					
-				if (fromInfo.ypos !== void) {
-					yposFrom   = calcRelative(ypos, fromInfo.ypos, env.ymax);
+					setPropFromTo("left", env.xmax, fromInfo.xpos, info.xpos, elm);
 				}
 				if (info.ypos !== void) {
-					ypos       = calcRelative(ypos, info.ypos, env.ymax);
+					setPropFromTo("top", env.ymax, fromInfo.ypos, info.ypos, elm);
 				}
-                reposition = true;
-            } else {
-				var newxpos = info.xpos !== void ? calcRelative(xpos, info.xpos, env.xmax) : xpos;
-				var newypos = info.ypos !== void ? calcRelative(xpos, info.ypos, env.ymax) : ypos;
-				if (xpos == void || xpos != newxpos || ypos == void || ypos != newypos) {
-					moveTime = isSkip() ? 0 : elm.time;
-					if (moveTime !== void && xpos === void) {
-						moveTime = 0;
-                    }
-					moveAccel = (elm.accel === void) ? 0 : +elm.accel;
-					xpos = newxpos;
-					ypos = newypos;
-					reposition = true;
-					if (moveTime === void && elm.fade === void) {
-						redraw = true;
-						istrans = true;
-					}
+			} else {
+				if (info.xpos !== void) {
+					setPropFromTo("left", env.xmax, void, info.xpos, elm);
 				}
-            }
+				if (info.ypos !== void) {
+					setPropFromTo("top", emv.ymax, void, info.ypos, elm);
+				}
+			}
+			// 未初期化時デフォルト
+			if (left === void) {
+				setLeft(env.defaultXpos);
+			}
+			if (top === void) {
+				setTop(env.defaultYpos);
+			}
 		}
 
 		if (info.disp !== void) {
 			disp = info.disp;
-			redraw = true;
 			istrans = true;
 		}
 
@@ -758,104 +782,12 @@ class KAGEnvCharacter extends KAGEnvLevelLayer, KAGEnvImage {
     }
 
 	/**
-	 * アクション座標計算
+	 * 新レイヤ生成
 	 */
-	function calcActionPosition(left, top) {
-		if (level == void) {
-			level = env.defaultLevel;
-		}
-		var yoff = yoffset !== void ? +yoffset : init.yoffset !== void ? +init.yoffset : +env.yoffset;
-		var zoom;
-		var levelYoffset = 0;
-		var levelInfo = env.levels[level];
-		if (levelInfo !== void) {
-			zoom         = (int)levelInfo.zoom;
-			levelYoffset = (int)levelInfo.yoffset;
-		}
-		if (zoom === void) {
-			zoom = 100;
-		}
-		if (levelYoffset === void) {
-			levelYoffset = 0;
-		}
-		xpos =        (getRelative(left, env.xmax + ((int)xpos * zoom / 100)) - env.xmax) * 100 / zoom if left !== void;
-		ypos = yoff - (getRelative(top, env.ymax + ((yoff - (int)ypos) * zoom / 100) + levelYoffset)  - env.ymax - levelYoffset) * 100 / zoom if top !== void;
+	function createLayer(owner, base, name) {
+		return new CharacterGraphicLayer(owner, base, name);
 	}
 	
-	/**
-	 * レイヤ位置の逆計算
-	 */
-	function reversePosition(layer, left, top) {
-		var yoff = yoffset !== void ? +yoffset : init.yoffset !== void ? +init.yoffset : +env.yoffset;
-		var zoom;
-		var levelYoffset = 0;
-		var levelInfo = env.levels[level];
-		if (levelInfo !== void) {
-			zoom         = (int)levelInfo.zoom;
-			levelYoffset = (int)levelInfo.yoffset;
-		}
-		if (zoom === void) {
-			zoom = 100;
-		}
-		if (levelYoffset === void) {
-			levelYoffset = 0;
-		}
-
-		xpos =        (left - env.xmax  + layer.width / 2) * 100 / zoom if left !== void;
-		ypos = yoff - (top  - env.ymax  + layer.height - levelYoffset) * 100 / zoom if top !== void;
-	}
-	
-    /**
-     * レイヤ配置処理(キャラクタ用)：中央原点＋レベル補正
-     * @param layer 処理対象レイヤ
-     */
-    function calcPosition(layer) {
-		//dm("位置指定3");
-
-		// 未初期化時デフォルト
-		if (xpos === void) {
-			xpos = env.defaultXpos;
-		}
-		if (ypos === void) {
-			ypos = env.defaultYpos;
-		}
-		
-		var yoff = yoffset !== void ? +yoffset : init.yoffset !== void ? +init.yoffset : +env.yoffset;
-		
-		// レベル別座標補正処理。とりあえず適当で画面中央に向かって縮小処理してある
-		var zoom;
-		var levelYoffset = 0;
-		var levelInfo = env.levels[level];
-		if (levelInfo !== void) {
-			zoom         = (int)levelInfo.zoom;
-			levelYoffset = (int)levelInfo.yoffset;
-		}
-		if (zoom === void) {
-			zoom = 100;
-		}
-		if (levelYoffset === void) {
-			levelYoffset = 0;
-		}
-
-		var l = env.xmax + ((int)xpos * zoom / 100) - layer.width / 2;
-		var t = env.ymax + ((yoff - (int)ypos) * zoom / 100) - layer.height + levelYoffset;
-
-		if (moveTime) {
-			if (xposFrom !== void || yposFrom !== void) {
-				var fl = xposFrom !== void ? env.xmax + ((int)xposFrom * zoom / 100) - layer.width / 2 : l;
-				var ft = yposFrom !== void ? env.ymax + ((yoff - (int)yposFrom) * zoom / 100) - layer.height + levelYoffset: t;
-				layer.setPos(fl, ft);
-			} 
-			//dm("layer位置", layer.left, layer.top, l, t);
-			layer.setMove(l, t, moveTime, moveAccel);
-		} else {
-			layer.setMove(l, t);
-		}
-		xposFrom = void;
-		yposFrom = void;
-		moveTime = void;
-	}
-
     /**
      * レイヤ状態更新処理
      * エモーション処理を追加
@@ -950,8 +882,6 @@ class KAGEnvCharacter extends KAGEnvLevelLayer, KAGEnvImage {
         }
     }
 
-	// ------------------------------------------------------
-	
 	// ----------------------------------------------------------
 	// ボイス処理
 	// ----------------------------------------------------------

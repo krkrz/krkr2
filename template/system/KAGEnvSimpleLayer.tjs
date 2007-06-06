@@ -1,4 +1,68 @@
 /**
+ * 舞台用レイヤ
+ */
+class SimpleLayerGraphicLayer extends EnvGraphicLayer {
+
+	var xbase;
+	var ybase;
+	var originMode;
+	
+	function SimpleLayerGraphicLayer(owner, base, name) {
+		super.EnvGraphicLayer(...);
+		originMode = owner.originMode;
+		xbase = owner.xbase;
+		ybase = owner.ybase;
+	}
+
+	function recalcPosition() {
+		var xdiff;
+		var ydiff;
+		switch (originMode) {
+		case 1:
+			xdiff = 0;
+			ydiff = 0;
+			break;
+		case 2:
+			xdiff = width / 2;
+			ydiff = 0;
+			break;
+		case 3:
+			xdiff = width;
+			ydiff = 0;
+			break;
+		case 4:
+			xdiff = width;
+			ydiff = height / 2;
+			break;
+		case 5:
+			xdiff = width;
+			ydiff = height;
+			break;
+		case 6:
+			xdiff = width / 2;
+			ydiff = height;
+			break;
+		case 7:
+			xdiff = 0;
+			ydiff = height;
+			break;
+		case 8:
+			xdiff = 0;
+			ydiff = height / 2;
+			break;
+		default:
+			xdiff = width / 2;
+			ydiff = height / 2;
+			break;
+		}
+
+		//dm("位置指定2:" + xbase + "," + ybase + ":" + xdiff + "," + ydiff + ":" + left + "," + top);
+		setRealPosition(xbase + left - xdiff,
+						ybase + top  - ydiff);
+	}
+};
+
+/**
  * 単独レイヤ
  */
 class KAGEnvSimpleLayer extends KAGEnvLevelLayer, KAGEnvLayer {
@@ -83,89 +147,6 @@ class KAGEnvSimpleLayer extends KAGEnvLevelLayer, KAGEnvLayer {
         global.KAGEnvLayer.finalize();
     }
 
-	var xdiff;
-	var ydiff;
-	
-	function calcBase(layer) {
-		switch (originMode) {
-		case 1:
-			xdiff = 0;
-			ydiff = 0;
-			break;
-		case 2:
-			xdiff = layer.width / 2;
-			ydiff = 0;
-			break;
-		case 3:
-			xdiff = layer.width;
-			ydiff = 0;
-			break;
-		case 4:
-			xdiff = layer.width;
-			ydiff = layer.height / 2;
-			break;
-		case 5:
-			xdiff = layer.width;
-			ydiff = layer.height;
-			break;
-		case 6:
-			xdiff = layer.width / 2;
-			ydiff = layer.height;
-			break;
-		case 7:
-			xdiff = 0;
-			ydiff = layer.height;
-			break;
-		case 8:
-			xdiff = 0;
-			ydiff = layer.height / 2;
-			break;
-		default:
-			xdiff = layer.width / 2;
-			ydiff = layer.height / 2;
-			break;
-		}
-	}
-
-	/**
-	 * アクション座標計算
-	 */
-	function calcActionPosition(left, top) {
-		xpos = getRelative(left, xpos + xbase) - xbase if left !== void;
-		ypos = getRelative(top, ypos + ybase) - ybase  if top  !== void;
-	}
-	
-	function reversePosition(layer, left, top) {
-		calcBase(layer);
-		xpos = left + xdiff - xbase if left !== void;
-		ypos = top  + ydiff - ybase if top  !== void;
-	}
-	
-    /**
-     * レイヤ配置処理(環境レイヤ用)：中央原点
-     * @param layer 処理対象レイヤ
-     */
-    function calcPosition(layer) {
-		calcBase(layer);
-
-		//dm("位置指定2:" + xbase + "," + ybase + ":" + xdiff + "," + ydiff + ":" + xpos + "," + ypos);
-		var l = xbase + (int)xpos - xdiff;
-		var t = ybase + (int)ypos - ydiff;
-		if (moveTime !== void && moveTime > 0) {
-			if (xposFrom !== void || yposFrom !== void) {
-				var fl = xposFrom !== void ? xbase + (int)xposFrom - xdiff : l;
-				var ft = yposFrom !== void ? ybase + (int)yposFrom - ydiff : t;
-				layer.setPos(fl, ft);
-			}
-			layer.setMove(l, t, moveTime, moveAccel);
-		} else {
-			layer.setMove(l, t);
-		}
-		xposFrom = void;
-		yposFrom = void;
-		moveTime = void;
-    }
-    
     function onStore(f) {
         global.KAGEnvLayer.onStore(f);
         global.KAGEnvLevelLayer.onStore(f);
@@ -176,15 +157,15 @@ class KAGEnvSimpleLayer extends KAGEnvLevelLayer, KAGEnvLayer {
 
     function onRestore(f) {
         name = f.name;
-        originMode = f.originMode;
+		originMode = f.originMode;
         viewOriginMode = f.viewOriginMode;
 		global.KAGEnvLayer.onRestore(f);
 		global.KAGEnvLevelLayer.onRestore(f);
     }
 
 	var simpleLayerCommands = %[
-	origin : function(cmd,elm) { originMode = +cmd; reposition = true; } incontextof this,
-	vorigin : function(cmd,elm) { viewOriginMode = +cmd; reposition = true; } incontextof this,
+	origin : function(cmd,elm) { originMode = +cmd; } incontextof this,
+	vorigin : function(cmd,elm) { viewOriginMode = +cmd; } incontextof this,
     front : this.setFront incontextof this,
 	back : this.setBack incontextof this,
 	level : this.setLevel incontextof this,
@@ -215,4 +196,12 @@ class KAGEnvSimpleLayer extends KAGEnvLevelLayer, KAGEnvLayer {
 		// 画像のロード
 		return setImageFile(cmd, elm);
 	}
+
+	/**
+	 * 新レイヤ生成
+	 */
+	function createLayer(owner, base, name) {
+		return new SimpleLayerGraphicLayer(owner, base, name);
+	}
+
 }
