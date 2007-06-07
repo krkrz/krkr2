@@ -832,7 +832,7 @@ function LayerFadeToModeModule(elm) {
 		];
 }
 
-function LayerMoveModule(info, elm, accel) {
+function LayerMoveModule(elm, accel) {
 	return %[
 	left: %[ handler:"MoveAction", start:elm.startx, value:elm.x, time:elm.time, delay:elm.delay, accel:accel],
 	top : %[ handler:"MoveAction", start:elm.starty, value:elm.y, time:elm.time, delay:elm.delay, accel:accel]
@@ -840,15 +840,15 @@ function LayerMoveModule(info, elm, accel) {
 }
 
 function LayerNormalMoveModule(elm) {
-	return LayerMoveModule(info, elm, 0);
+	return LayerMoveModule(elm, 0);
 }
 
 function LayerAccelMoveModule(elm) {
-	return LayerMoveModule(info, elm, 1);
+	return LayerMoveModule(elm, 1);
 }
 
 function LayerDecelMoveModule(elm) {
-	return LayerMoveModule(info, elm, -1);
+	return LayerMoveModule(elm, -1);
 }
 
 function LayerVibrateActionModule(elm) {
