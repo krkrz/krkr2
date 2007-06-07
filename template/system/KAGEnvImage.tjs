@@ -41,6 +41,7 @@ class EnvGraphicLayer extends GraphicLayerEx {
 	}
 
 	function setPos(left, top, width, height) {
+		//dm("座標設定:" + left + "," + top);
 		this.width = width if width !== void; 
 		this.height = height if height !== void;
 		_left = left;
@@ -281,9 +282,9 @@ class KAGEnvImage extends KAGEnvBase {
 		rgamma = void;
 		ggamma = void;
         bgamma = void;
-        grayscale = void;
+		grayscale = void;
 		clearAction(true);
-		_disp = CLEAR;
+		disp = CLEAR;
 		actionList.clear();
 	}
 
@@ -570,7 +571,8 @@ class KAGEnvImage extends KAGEnvBase {
 	 * 状態更新処理
      */
 	function updateLayer(layer) {
-		
+
+		//dm("updateLayer:" + name);
 		if (doReset) {
 			//dm("リセット処理");
 			layer.reset();
@@ -670,8 +672,9 @@ class KAGEnvImage extends KAGEnvBase {
      * セーブ処理
      */
     function onStore(f) {
+		//dm("保存:" + name + ":" + disp + "("  + left + "," + top + ")");
+		f.disp    = disp;
 		f.type    = type;
-        f.disp    = disp;
 		f.left    = left;
         f.top     = top;
 		f.opacity = opacity;
@@ -709,6 +712,7 @@ class KAGEnvImage extends KAGEnvBase {
 		rgamma    = f.rgamma;
 		ggamma    = f.ggamma;
 		bgamma    = f.bgamma;
+		//dm("復帰:" + name + ":" + disp + "("  + left + "," + top + ")");
 	}
 
     // このメソッドを実装する
@@ -748,10 +752,11 @@ class KAGEnvImage extends KAGEnvBase {
 	 * 単純更新
 	 */
 	function update(base) {
-		//dm("更新処理:" + layerOn + ":" + updateFlag + ":" + redraw);
+		//dm("更新処理:" + name + ":" + layerOn + ":" + updateFlag + ":" + redraw);
 		if (layerOn && (updateFlag || redraw)) {
 			var layer = getLayer(base);
 			if (redraw) {
+				//dm("再描画:" + name);
 				layer.reset();
 				drawLayer(layer);
 				layer.type = type if type !== void;
@@ -759,6 +764,9 @@ class KAGEnvImage extends KAGEnvBase {
 				layer.afy  = afy  if afy  !== void;
 				layer.left = left if left !== void;
 				layer.top  = top  if top  !== void;
+				if (left === void && top === void) {
+					layer.recalcPosition();
+				}
 				layer.opacity = opacity if opacity !== void;
 				layer.rotate  = rotate  if rotate  !== void;
 				layer.zoom    = zoom    if zoom    !== void;

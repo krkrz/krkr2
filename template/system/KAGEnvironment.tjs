@@ -375,7 +375,7 @@ class KAGEnvironment extends KAGEnvBase {
      */
     function initEnv() {
 
-		dm("初期化処理");
+		//dm("初期化処理");
         transMode = void;
         colorall = false;
 		
@@ -519,13 +519,12 @@ class KAGEnvironment extends KAGEnvBase {
     }
 
 	function update(base) {
-		foreach(characters, function(name, value, dict, base) {
-			value.update(base);
-		}, base);
+		//dm("環境更新");
         foreach(layers, function(name, value, dict, base) {
             value.update(base);
         }, base);
 		event.update(base);
+		// XXX キャラ更新はステージ更新に含まれる
 		stage.update(base);
 		if (currentNameTarget == void) {
 			drawNamePage(base);
@@ -533,7 +532,6 @@ class KAGEnvironment extends KAGEnvBase {
 				clearFacePage(base);
 			}
 		}
-		stage.update(base);
 	}
 
 	// ------------------------------------------------------------------
