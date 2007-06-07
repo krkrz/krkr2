@@ -440,10 +440,11 @@ class KAGEnvImage extends KAGEnvBase {
 			var names = [];
 			names.assign(act);
 			if (act.module !== void) {
+				//dm("module 指定アクション:" + act.module);
 				if (typeof act.module != "String") {
 					throw new Exception("アクションモジュール名は文字列指定してください");
 				}
-				var module = Scripts.eval(action.module);
+				var module = Scripts.eval(act.module);
 				if (module !== void) {
 					// 旧スタイル
 					for (var i=0; i<names.count; i+= 2) {

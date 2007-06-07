@@ -11,7 +11,7 @@ class CharacterGraphicLayer extends EnvGraphicLayer {
 	}
 
 	function assign(src) {
-		dm("アサイン処理:" + yoffset);
+		//dm("アサイン処理:" + yoffset);
 		super.assign(src);
 		this.yoffset = src.yoffset;
 	}
@@ -379,7 +379,7 @@ class KAGEnvCharacter extends KAGEnvLevelLayer, KAGEnvImage {
 					setPropFromTo("left", env.xmax, void, info.xpos, elm);
 				}
 				if (info.ypos !== void) {
-					setPropFromTo("top", emv.ymax, void, info.ypos, elm);
+					setPropFromTo("top", env.ymax, void, info.ypos, elm);
 				}
 			}
 			// 未初期化時デフォルト
