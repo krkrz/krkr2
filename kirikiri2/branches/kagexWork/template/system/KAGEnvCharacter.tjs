@@ -10,7 +10,26 @@ class CharacterGraphicLayer extends EnvGraphicLayer {
 		super.EnvGraphicLayer(...);
 	}
 
+	function assign(src) {
+		dm("アサイン処理:" + yoffset);
+		super.assign(src);
+		this.yoffset = src.yoffset;
+	}
+
+	var _level;
+	property level {
+		getter() {
+			return _level;
+		}
+		setter(v) {
+			_level = v;
+			recalcPosition();
+		}
+	}
+	
 	function recalcPosition() {
+
+		//dm("キャラ表示:" + name + ":" + yoffset + ":"  +level + ":" + left + ":" + top);
 		
 		// レベル別座標補正処理。とりあえず適当で画面中央に向かって縮小処理してある
 		var zoom;

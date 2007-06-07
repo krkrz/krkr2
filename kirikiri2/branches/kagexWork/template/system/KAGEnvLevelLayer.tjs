@@ -35,13 +35,13 @@ class KAGEnvLevelLayer {
 		if (backlay) {
 			if (toback) {
 				if (targetLayer !== void) {
-					dm("裏画面にコピー:" + name);
-					dm("元レイヤ:" + targetLayer + ":" + (targetLayer.parent === kag.back.base ? "裏" : "表"));
+					//dm("裏画面にコピー:" + name);
+					//dm("元レイヤ:" + targetLayer + ":" + (targetLayer.parent === kag.back.base ? "裏" : "表"));
 					if (targetLayer.parent === kag.fore.base && targetLayer.visible) {
 						targetLayer = getNewLayer(this, kag.back, name, targetLayer);
-						dm("複製レイヤ:" + targetLayer + ":" + (targetLayer.parent === kag.back.base ? "裏" : "表"));
+						//dm("複製レイヤ:" + targetLayer + ":" + (targetLayer.parent === kag.back.base ? "裏" : "表"));
 					} else {
-						dm("廃棄");
+						//dm("廃棄");
 						targetLayer = env.trashLayer(targetLayer);
 					}
 				}
