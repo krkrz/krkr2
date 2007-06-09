@@ -3,50 +3,43 @@
  */
 class KAGEnvSE extends KAGEnvObject {
 
-    var id;
-	var storage;  // 参照しているファイル名
-    var count; // 参照されたカウント値
+	var id;
+	var count; // 参照されたカウント値
 
-	var play;
-	var stop;
-	var fade;
-	var wait;
-    var waitFade;
+	var storage;   // 参照しているファイル名
+	var volume;    // 音量
+	var loop;      // ループ指定
+	var start;     // 開始指定
 
+	var transTime; // 変動時間
+	var waitFade;  // フェード待ち指定
+	var wait;      // 終了待ち指定
+	
+	var replay;  // 再生指定
+	var refade;  // 音量指定
+	
     /**
-     * セーブ処理
-     */
+	 * セーブ処理
+	 */
     function onStore(f) {
-		f.storage = storage;
-		f.id    = id;
-		f.count = count;
-		if (play !== void) {
-			f.play = %[];
-			(Dictionary.assign incontextof f.play)(play, false);
-		}
-		if (stop !== void) {
-			f.stop  = stop;
-		}
-		if (fade !== void) {
-			f.fade = %[];
-			(Dictionary.assign incontextof f.fade)(fade, false);
-		}
+		f.id        = id;
+		f.count     = count;
+		f.storage   = storage;
+		f.volume    = volume;
+		f.loop      = loop;
+		f.start     = start;
 	}
 
 	function onRestore(f) {
 		if (f !== void) {
-			storage = f.storage;
 			id   = f.id;
 			count = f.count;
-			if (f.play !== void) {
-				play = f.play;
-			}
-			if (f.stop !== void) {
-				stop = f.stop;
-			}
-			if (f.fade !== void) {
-				f.fade = %[];
-			}
+			storage = f.storage;
+			volume  = f.volume;
+			loop    = f.loop;
+			start   = f.start;
+			replay  = f.storage !== void;
+			transTime = 0;
 		}
 	}
 	
@@ -54,47 +47,45 @@ class KAGEnvSE extends KAGEnvObject {
      * コンストラクタ
      */
     function KAGEnvSE(env, id) {
-		super.KAGEnvObject(env, "se" + id);
+		super.KAGEnvObject(env, void);
 		this.id = id;
     }
 
+	function init() {
+		name = void;
+		count = 0;
+		replay = true;
+		storage = void;
+		transTime = void;
+	}
+	
     /**
      * 再生処理
      * @param param 再生対象ファイル
      */
 	function setPlay(param, elm) {
 		if (param !== void) {
-			stop = void;
-			if (!isSkip() || elm.loop) {
-				play = %[];
-				(Dictionary.assign incontextof play)(elm, false);
-				play.storage = storage = param;
-				if (play.fade === void && play.time === void) {
-					fade = %[];
-					fade.volume = 100;
-				}
+			replay  = true;
+			if (!isSkip() || elm.loop || !env.nosewhenski) {
+				storage   = param;
+				volume    = elm.volume !== void ? +elm.volume : 100;
+				loop      = elm.loop;
+				start     = elm.start;
+				transTime = +elm.time if elm.time !== void;
 			} else {
-				play = void;
 				storage = void;
 			}
 		}
-    }
+	}
 
     /**
      * 停止処理
      * @param param フェードアウト時間
      */
 	function setStop(param, elm) {
-		play = void;
-		fade = void;
-		storage = void;
-		var time;
-		if (elm !== void && elm.time !== void) {
-			time = +elm.time;
-		} else {
-			time = +param;
-		}
-		stop = time;
+		replay    = true;
+		storage   = void;
+		transTime = elm.time !== void ? +elm.time : +param;
     }
 
     /**
@@ -102,16 +93,16 @@ class KAGEnvSE extends KAGEnvObject {
      * @param param フェード時間
      */
 	function setFade(param, elm) {
-		fade = %[];
-		fade.volume = param;
-		fade.time   = elm.time;
+		refade    = true;
+		volume    = param;
+		transTime = elm.time !== void ? +elm.time : +param;
     }
 
     /**
      * 終了待ち
      */
     function setWait(param, elm) {
-        wait = %[];
+		wait = %[];
         (Dictionary.assign incontextof wait)(elm, false);
         wait.buf = id;
         if (wait.canskip === void) {
@@ -122,7 +113,7 @@ class KAGEnvSE extends KAGEnvObject {
     /**
      * フェード終了待ち
      */
-    function setWaitFade(param, elm) {
+	function setWaitFade(param, elm) {
 		waitFade = %[];
 		(Dictionary.assign incontextof waitFade)(elm, false);
 		waitFade.buf = id;
@@ -137,17 +128,14 @@ class KAGEnvSE extends KAGEnvObject {
     play : setPlay incontextof this,
     stop : setStop incontextof this,
     fade : setFade incontextof this,
+	volume : setFade incontextof this,
 	wait : setWait incontextof this,
     waitfade : setWaitFade incontextof this,
     loop : null,
     time : null,
     start : null,
     canskip : null,
-    buf : null,
-    name : null,
         ];
-
-    var doflag;
 
     /**
      * コマンドの実行
@@ -156,18 +144,17 @@ class KAGEnvSE extends KAGEnvObject {
      * @param elm 他のコマンドも含む全パラメータ
      * @return 実行が行われた場合 true
      */
-    function doCommand(cmd, param, elm) {
-        var func;
-        if ((func = secommands[cmd]) !== void) {
-            if (func != null) {
-                func(param, elm);
-                doflag = true;
+	function doCommand(cmd, param, elm) {
+		var func;
+		if ((func = secommands[cmd]) !== void) {
+			if (func != null) {
+				func(param, elm);
+				return true;
             }
-            return true;
+			return false;
         }
         // 再生コマンドとみなす
 		setPlay(cmd, elm);
-        doflag = true;
         return true;
     }
 
@@ -175,41 +162,44 @@ class KAGEnvSE extends KAGEnvObject {
      * KAG タグ処理
      * @param elm 引数
      */
-    function tagfunc(elm) {
+	function tagcommand(elm) {
 		// dm("SE 用ファンクション呼び出し!");
 		wait = void;
-        waitFade = void;
-		doflag = false;
-		foreach(elm, doCommand);
-        if (!doflag && elm.tagname != "se") {
+		waitFade = void;
+		transTime = void;
+		var doflag = false;
+		var names = [];
+		names.assign(elm);
+		for (var i=0; i<names.count; i+= 2) {
+			if (doCommand(names[i], names[i+1], elm)) {
+				doflag = true;
+			}
+		}
+		if (!doflag && elm.tagname != "se") {
 			setPlay(elm.tagname, elm);
         }
-		sync();
+    }
+
+	function sync() {
+		var time = isSkip() ? 0 : transTime;
+		if (replay) {
+			if (storage !== void) {
+				env.playSE(id, time, %[storage:storage, loop:loop, start:start]);
+			} else {
+				env.stopSE(id, time);
+			}
+			replay = false;
+			refade = false;
+		} else if (refade) {
+			env.fadeSE(id, time, volume);
+			refade = false;
+		}
 		if (waitFade !== void) {
 			return env.waitSEFade(waitFade);
 		} else if (wait !== void) {
 			return env.waitSEStop(wait);
 		}
 		return 0;
-    }
-
-	function sync() {
-		if (!isJump()) {
-			if (fade !== void) {
-				env.setSEFade(id, fade);
-				fade = void;
-			}
-			if (play !== void) {
-				if (!isSkip() || play.loop || !env.nosewhenskip) {
-					env.playSE(id, isSkip() ? 0 : +play.time, play);
-				}
-				play = void;
-			}
-		}
-		if (stop !== void) {
-			env.stopSE(id, isSkip() ? 0 : stop);
-			stop = void;
-		}
 	}
 
 };

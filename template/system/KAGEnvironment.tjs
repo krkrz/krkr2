@@ -73,7 +73,7 @@ class KAGEnvironment extends KAGEnvBase {
 	}
 
 	function isJump() {
-		return false;
+		return kag.skipNoDisp;
 	}
 
 	function insertTag(name, elm) {
@@ -661,14 +661,10 @@ class KAGEnvironment extends KAGEnvBase {
 		clearTrash();
 		
         // SE 初期化
-        for (var i=0;i<ses.count;i++) {
-            if (ses[i].name !== void) {
-				ses[i].setStop();
-				ses[i].sync();
-            }
-            ses[i].name  = void;
-            ses[i].count = 0;
-        }
+		for (var i=0;i<ses.count;i++) {
+			ses[i].init();
+			ses[i].sync();
+		}
         seCount = 0;
 
         // カレントオブジェクト初期化
@@ -1861,8 +1857,11 @@ class KAGEnvironment extends KAGEnvBase {
 			ses[i].sync();
 		}
 		bgm.sync();
-		// 画面同期
-		update(true);
+		foreach(layers, function(name, value, dict) {
+			value.sync();
+		});
+		event.sync();
+		stage.sync();
 	}
 	
 	// ------------------------------------------------------------
@@ -1877,14 +1876,6 @@ class KAGEnvironment extends KAGEnvBase {
 		return kag.waitSEStop(wait);
 	}
 
-	function setSEFade(id, fade) {
-		if (fade.time === void) {
-			kag.se[id].volume = fade.volume;
-		} else {
-			kag.se[id].fade(fade);
-		}
-	}
-	
 	property nosewhenskip {
 		getter() {
 			return kag.nosewhenskip;
@@ -1899,6 +1890,14 @@ class KAGEnvironment extends KAGEnvBase {
 		}
 	}
 
+	function fadeSE(id, time, volume) {
+		if (time === void || time == 0) {
+			kag.se[id].volume = volume;
+		} else {
+			kag.se[id].fade(%[time:time, volume:volume]);
+		}
+	}
+	
 	function stopSE(id, time) {
 		if (time > 0) {
 			kag.se[id].fadeOut(%[time:time]);
@@ -1917,14 +1916,6 @@ class KAGEnvironment extends KAGEnvBase {
 
 	function waitBGMStop(wait) {
 		return kag.waitBGMStop(wait);
-	}
-
-	function setBGMFade(fade) {
-		if (fade.time === void) {
-			kag.bgm.setVolume(fade.volume * 1000);
-		} else {
-			kag.bgm.fade(fade);
-		}
 	}
 
 	function setBGMVolDown(down) {
@@ -1957,7 +1948,7 @@ class KAGEnvironment extends KAGEnvBase {
 		kag.clearBgmStop();
 		kag.clearBgmLabel();
 	}
-	
+
 	function pauseBGM(time) {
 		if (time > 0) {
 			kag.bgm.fadePause(%[ time:time ]);
@@ -1970,6 +1961,14 @@ class KAGEnvironment extends KAGEnvBase {
 		kag.bgm.resume();
 	}
 
+	function fadeBGM(time, volume) {
+		if (time === void || time == 0) {
+			kag.bgm.setVolume(volume * 1000);
+		} else {
+			kag.bgm.fade(%[time:time, volume:volume]);
+		}
+	}
+	
 	function stopBGM(time) {
 		if (time > 0) {
 			kag.bgm.fadeOut(%[ time:time ]);

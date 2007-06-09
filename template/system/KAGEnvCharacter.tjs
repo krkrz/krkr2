@@ -349,10 +349,11 @@ class KAGEnvCharacter extends KAGEnvLevelLayer, KAGEnvImage {
 				}
 			}
 			// 未初期化時デフォルト
-			if (left === void) {
+			if (props.left === void) {
+				dm("デフォルトのX位置を指定");
 				setLeft(env.defaultXpos);
 			}
-			if (top === void) {
+			if (props.top === void) {
 				setTop(env.defaultYpos);
 			}
 		}
@@ -588,7 +589,7 @@ class KAGEnvCharacter extends KAGEnvLevelLayer, KAGEnvImage {
 						baseImage.name = "立ち絵画像キャッシュ:" + name;
                     }
                     try {
-                        baseImage.loadImages(imageFile);
+						baseImage.loadImages(imageFile);
                     } catch (e) {
                         if (dressName != poseInfo.defaultDress) {
                             // デフォルトの服装におとしこむ
@@ -607,8 +608,8 @@ class KAGEnvCharacter extends KAGEnvLevelLayer, KAGEnvImage {
                 }
                 
                 // 画像をレイヤに割り当てる
-                layer.assignImages(baseImage);
-                // 初期化処理XXX ちょっと再検討必要かも
+				layer.assignImages(baseImage);
+				// 初期化処理XXX ちょっと再検討必要かも
                 layer.type    = layer._initType    = baseImage.type;
                 layer.opacity = layer._initOpacity = baseImage.opacity;
 
@@ -729,6 +730,8 @@ class KAGEnvCharacter extends KAGEnvLevelLayer, KAGEnvImage {
 
 		// サイズ補正
 		layer.setSizeToImageSize();
+		_width  = layer.width;
+		_height = layer.height;
     }
 
     /**
