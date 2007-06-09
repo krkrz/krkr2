@@ -3,58 +3,40 @@
  */
 class KAGEnvBgm extends KAGEnvObject {
 	
-	var storage;
-	
-	var play;
-	var stop;
-	var pause;
-	var resume;
-	var fade;
-    var wait;
-    var waitFade;
+	var storage;   // 参照しているファイル名
+	var volume;    // 音量
+	var loop;      // ループ指定
+	var start;     // 開始指定
+	var pause;     // ポーズ指定
+
+	var transTime; // 変動時間
+	var waitFade;  // フェード待ち指定
+	var wait;      // 終了待ち指定
+
+	var replay;  // 再生指定
+	var refade;  // 音量指定
+	var repause;
 
     /**
      * セーブ処理
      */
     function onStore(f) {
-		f.storage  = storage;
-		if (play !== void) {
-			f.play = %[];
-			(Dictionary.assign incontextof f.play)(play, false);
-		}
-		if (stop !== void) {
-			f.stop  = stop;
-		}
-		if (pause !== void) {
-			f.pause  = pause;
-		}
-		if (resume !== void) {
-			f.resume  = resume;
-		}
-		if (fade !== void) {
-			f.fade = %[];
-			(Dictionary.assign incontextof f.fade)(fade, false);
-		}
+		f.storage = storage;
+		f.volume  = volume;
+		f.loop    = loop;
+		f.start   = start;
+		f.pause   = pause;
 	}
 
 	function onRestore(f) {
 		if (f !== void) {
 			storage = f.storage;
-			if (f.play !== void) {
-				play = f.play;
-			}
-			if (f.stop !== void) {
-				stop = f.stop;
-			}
-			if (f.pause !== void) {
-				pause = f.pause;
-			}
-			if (f.resume !== void) {
-				resume = f.resume;
-			}
-			if (f.fade !== void) {
-				f.fade = %[];
-			}
+			volume  = f.volume;
+			loop    = f.loop;
+			start   = f.start;
+			pause   = f.pause;
+			replay  = f.storage !== void;
+			transTime = 0;
 		}
 	}
 	
@@ -71,16 +53,12 @@ class KAGEnvBgm extends KAGEnvObject {
      */
     function setPlay(param, elm) {
         if (param !== void) {
-			stop = void;
-			pause = void;
-			resume = void;
-			play = %[];
-			(Dictionary.assign incontextof play)(elm, false);
-			play.storage = storage = param;
-			if (play.fade === void && play.time === void) {
-				fade = %[];
-				fade.volume = 100;
-			}
+			replay = true;
+			storage = param;
+			volume    = elm.volume !== void ? +elm.volume : 100;
+			loop      = elm.loop;
+			start     = elm.start;
+			transTime = +elm.time if elm.time !== void;
 			env.setBGMFlag(param);
         }
     }
@@ -89,19 +67,10 @@ class KAGEnvBgm extends KAGEnvObject {
      * 停止処理
      * @param param フェードアウト時間
      */
-    function setStop(param, elm) {
-		play = void;
-		fade = void;
-		pause = void;
-		resume = void;
+	function setStop(param, elm) {
+		replay = true;
 		storage = void;
-		var time;
-		if (elm !== void && elm.time !== void) {
-			time = +elm.time;
-		} else {
-			time = +param;
-		}
-		stop = time;
+		transTime = elm.time !== void ? +elm.time : +param;
     }
 
     /**
@@ -110,18 +79,18 @@ class KAGEnvBgm extends KAGEnvObject {
      */
 	function setPause(param, elm) {
 		if (storage !== void) {
-			resume = void;
-			pause = +param;
+			repause = true;
+			pause = true;
 		}
-    }
+	}
 
     /**
 	 * 再開
 	 */
 	function setResume(param, elm) {
 		if (storage !== void) {
-			pause = void;
-			resume = true;
+			repause = true;
+			pause = false;
 		}
     }
 
@@ -130,9 +99,9 @@ class KAGEnvBgm extends KAGEnvObject {
      * @param param フェード時間
      */
 	function setFade(param, elm) {
-		fade = %[];
-		fade.volume = param;
-		fade.time   = elm.time;
+		refade    = true;
+		volume    = param;
+		transTime = elm.time !== void ? +elm.time : +param;
     }
 
     /**
@@ -169,14 +138,9 @@ class KAGEnvBgm extends KAGEnvObject {
     fade : setFade incontextof this,
     wait : setWait incontextof this,
     waitfade : setWaitFade incontextof this,
-    noxchg : null,
     loop : null,
     time : null,
     start : null,
-    paused : null,
-    intime : null,
-    outtime : null,
-    overlap : null,
     canskip : null,
         ];
 
@@ -194,13 +158,12 @@ class KAGEnvBgm extends KAGEnvObject {
         if ((func = bgmcommands[cmd]) !== void) {
             if (func != null) {
                 func(param, elm);
-                doflag = true;
+				return true;
             }
-            return true;
+			return false;
         }
         // 再生コマンドとみなす
 		setPlay(cmd, elm);
-        doflag = true;
         return true;
     }
 
@@ -208,17 +171,53 @@ class KAGEnvBgm extends KAGEnvObject {
      * KAG タグ処理
      * @param elm 引数
      */
-    function tagfunc(elm) {
-        //dm("BGM 用ファンクション呼び出し!");
-        doflag = false;
-        wait = void;
-        waitFade = void;
-        foreach(elm, doCommand);
-        // 何もしなかった場合、かつ、タグ名が bgm でなければそれを再生する
-        if (!doflag && elm.tagname != "bgm") {
+	function tagcommand(elm) {
+		dm("BGM 用ファンクション呼び出し!");
+		wait = void;
+		waitFade = void;
+		transTime = void;
+		var doflag = false;
+		var names = [];
+		names.assign(elm);
+		for (var i=0; i<names.count; i+= 2) {
+			if (doCommand(names[i], names[i+1], elm)) {
+				doflag = true;
+			}
+		}
+		if (!doflag && elm.tagname != "bgm") {
 			setPlay(elm.tagname, elm);
         }
-		sync();
+	}
+
+	/**
+	 * コマンド同期
+	 */
+	function sync() {
+		var time = isSkip() ? 0 : transTime;
+		if (replay) {
+			dm("再生状態変更:" + storage);
+			if (storage !== void) {
+				env.playBGM(time, %[storage:storage, loop:loop, start:start]);
+			} else {
+				env.stopBGM(time);
+			}
+			if (pause) {
+				env.pauseBGM(0);
+			}
+			replay = false;
+			refade = false;
+			repause = false;
+		} else if (refade) {
+			env.fadeBGM(time, volume);
+			refade = false;
+		} else if (repause) {
+			if (pause) {
+				env.pauseBGM(time);
+			} else {
+				env.resumeBGM(time);
+			}
+			repause = false;
+		}
 		if (waitFade !== void) {
 			return env.waitBGMFade(waitFade);
 		} else  if (wait !== void) {
@@ -226,28 +225,4 @@ class KAGEnvBgm extends KAGEnvObject {
 		}
         return 0;
     }
-
-	function sync() {
-		if (!isJump()) {
-			if (fade !== void) {
-				env.setBGMFade(fade);
-				fade = void;
-			}
-			if (play !== void) {
-				env.playBGM(isSkip() ? 0 : +play.time, play);
-				play = void;
-			}
-			if (pause !== void) {
-				env.pauseBGM(pause);
-				pause = void;
-			} else if (resume !== void) {
-				env.resumeBGM();
-				resume = void;
-			}
-		}
-		if (stop !== void) {
-			env.stopBGM(isSkip() ? 0 : +stop);
-			stop = void;
-		}
-	}
 };
