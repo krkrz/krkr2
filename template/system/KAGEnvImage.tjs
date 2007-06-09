@@ -167,14 +167,31 @@ class KAGEnvImage extends KAGEnvBase {
         }
     }
 
-	var left;    //< 表示位置
-    var top;     //< 表示位置
-	var opacity; //< 透明度
-	var afx;     //< 回転原点指定
-	var afy;     //< 回転原点指定
-	var rotate;  //< 回転
-	var zoom;    //< ズーム処理
-
+	// サイズ指定
+	var _width;
+	property width {
+		getter() {
+			return _width;
+		}
+		setter(v) {
+			_width = v;
+			updateFlag = true;
+		}
+	}
+	
+	var _height;
+	property height {
+		getter() {
+			return _height;
+		}
+		setter(v) {
+			_height = v;
+			updateFlag = true;
+		}
+	}
+	
+	var props = %[];
+	
     // アクション処理
 	var doStopAction;
 	var actionList;
@@ -273,16 +290,10 @@ class KAGEnvImage extends KAGEnvBase {
 
 	function initImage() {
 		type = void;
-		left = void;
-		top  = void;
-		opacity = void;
-		afx = void;
-		afy = void;
-		rotate  = void;
-		zoom    = void;
+		props = %[];
 		rgamma = void;
 		ggamma = void;
-        bgamma = void;
+		bgamma = void;
 		grayscale = void;
 		clearAction(true);
 		disp = CLEAR;
@@ -303,13 +314,7 @@ class KAGEnvImage extends KAGEnvBase {
 
 	function setReset(param, elm) {
 		type    = void;
-		left    = void;
-		top     = void;
-		opacity = void;
-		afx     = void;
-		afy     = void;
-		rotate  = void;
-		zoom    = void;
+		props   = %[];
 		_rgamma = void;
 		_ggamma = void;
 		_bgamma = void;
@@ -323,9 +328,13 @@ class KAGEnvImage extends KAGEnvBase {
 
 	function setPropFromTo(name, max, from, to, elm) {
 		if (to !== void) {
+			// 初期値不定の場合は同じ値のまま処理
+			if (props[name] === void && from === void) {
+				from = to;
+			}
 			addAction(%[name =>	%[handler:"MoveAction",
-							  start:calcRelative(this[name], from, max),
-							  value:calcRelative(this[name], to, max),
+							  start:calcRelative(props[name], from, max),
+							  value:calcRelative(props[name], to, max),
 							  time:elm !== void ? +elm.time:0,
 							  accel:elm !== void ? +elm.accel:0]]);
 		}
@@ -334,6 +343,14 @@ class KAGEnvImage extends KAGEnvBase {
 	function setProp(name, max, param, elm) {
 		setPropFromTo(name, max, getFrom(param), getTo(param), elm);
 	}
+
+	function setAfx(param, elm) {
+		setProp("afx", width, param, elm);
+	} 
+
+	function setAfy(param, elm) {
+		setProp("afy", height, param, elm);
+	} 
 	
 	function setLeft(param, elm) {
 		setProp("left", env.xmax, param, elm);
@@ -369,28 +386,21 @@ class KAGEnvImage extends KAGEnvBase {
 	}
 
 	/**
-	 * プロパティに対するアクションの適応
+	 * アクションの適用
 	 */
-	function applyPropMoveAction(action, prop) {
-		var info = action[prop];
-		if (info !== void && info !== null && info.handler == "MoveAction") {
-			if (info.value !== void) {
-				this[prop] = getRelative(info.value, this[prop]);
+	function applyMoveAction(action) {
+		var names = [];
+		names.assign(action);
+		for (var i=0; i<names.count; i+= 2) {
+			var name  = names[i];
+			var info  = names[i+1];
+			if (typeof info == "Object" && info !== null && info.handler == "MoveAction" && info.value !== void) {
+				//dm("アクション適用 " + name + ":" + info.value);
+				props[name] = getRelative(info.value, props[name]);
 			}
 		}
 	}
 
-	/**
-	 * アクションの適応
-	 */
-	function applyMoveAction(action) {
-		applyPropMoveAction(action, "left");
-		applyPropMoveAction(action, "top");
-		applyPropMoveAction(action, "opacity");
-		applyPropMoveAction(action, "rotate");
-		applyPropMoveAction(action, "zoom");
-	}
-	
     /**
 	 * アクション情報の追加
 	 * @param action アクション情報
@@ -498,7 +508,7 @@ class KAGEnvImage extends KAGEnvBase {
 	var syncMode;
 	var movieSyncMode;
 	var prevShow;
-	
+
 	/**
 	 * 状態更新処理
      */
@@ -517,10 +527,11 @@ class KAGEnvImage extends KAGEnvBase {
 			//dm("表示変更!");
 			layer.visible = isShowBU();
 		}
+		// レイヤパラメータ反映
 		if (type !== void && layer.type != type) { layer.type = type; }
-		if (afx !== void && layer.afx != afx) { layer.afx = afx; };
-		if (afy !== void && layer.afx != afy) { layer.afy = afy; };
-		
+		if (width !== void && width != layer.width || height !== void && height != layer.height) {
+			layer.setSize(width, height);
+		}
 		// アクション処理
 		for (var i=0;i<actionList.count;i++) {
 			layer.beginAction(actionList[i]);
@@ -531,6 +542,8 @@ class KAGEnvImage extends KAGEnvBase {
 
 	var imageCommands = %[
 	type : function(param, elm) { type =  global[param]; } incontextof this,
+	afx : this.setAfx incontextof this,
+	afy : this.setAfy incontextof this,
 	xpos : this.setLeft incontextof this,
 	ypos : this.setTop incontextof this,
 	left : this.setLeft incontextof this,
@@ -538,8 +551,6 @@ class KAGEnvImage extends KAGEnvBase {
 	opacity : this.setOpacity incontextof this,
 	rotate : this.setRotate incontextof this,
 	zoom : this.setZoom incontextof this,
-	afx : function(param, elm) { afx = param; } incontextof this,
-    afy : function(param, elm) { afy = param; } incontextof this,
 	reset : this.setReset incontextof this,
     grayscale : function(param, elm) { grayscale = param;  } incontextof this,
     rgamma : function(param, elm) { rgamma = param; } incontextof this,
@@ -598,16 +609,13 @@ class KAGEnvImage extends KAGEnvBase {
      * セーブ処理
      */
     function onStore(f) {
-		//dm("保存:" + name + ":" + disp + "("  + left + "," + top + ")");
+		//dm("保存:" + name + ":" + disp );
 		f.disp    = disp;
 		f.type    = type;
-		f.left    = left;
-        f.top     = top;
-		f.opacity = opacity;
-		f.afx     = afx;
-		f.afy     = afy;
-		f.rotate  = rotate;
-		f.zoom    = zoom;
+		f.width   = width;
+		f.height  = height;
+		f.props = %[];
+		(Dictionary.assign incontextof f.props)(props); 
 		f.currentActionList = [];
 		(Array.assign incontextof f.currentActionList)(currentActionList);
 		f.grayscale = grayscale;
@@ -622,13 +630,12 @@ class KAGEnvImage extends KAGEnvBase {
 	function onRestore(f) {
 		disp    = f.disp;
 		type    = f.type;
-		left    = f.left;
-		top     = f.top;
-		afx     = f.afx;
-		afy     = f.afy;
-		opacity = f.opacity;
-		rotate  = f.rotate;
-		zoom    = f.zoom;
+		width   = f.width;
+		height  = f.height;
+		props   = %[];
+		if (f.props !== void) {
+			(Dictionary.assign incontextof props)(f.props);
+		}
 		if (f.currentActionList !== void) {
 			for (var i=0;i<f.currentActionList.count;i++) {
 				addAction(f.currentActionList[i]);
@@ -639,7 +646,7 @@ class KAGEnvImage extends KAGEnvBase {
 		ggamma    = f.ggamma;
 		bgamma    = f.bgamma;
 		trans     = void;
-		//dm("復帰:" + name + ":" + disp + "("  + left + "," + top + ")");
+		//dm("復帰:" + name + ":" + disp);
 	}
 
     // このメソッドを実装する
@@ -674,6 +681,18 @@ class KAGEnvImage extends KAGEnvBase {
 	}
 	
 	// -------------------------------------------------------------------------------
+
+	function applyProps(layer) {
+		var names = [];
+		names.assign(props);
+		for (var i=0; i<names.count; i+= 2) {
+			var name  = names[i];
+			var value = names[i+1];
+			if (layer[name] !== void) {
+				layer[name] = value;
+			}
+		}
+	}
 	
 	/**
 	 * 単純更新
@@ -685,18 +704,10 @@ class KAGEnvImage extends KAGEnvBase {
 			if (redraw) {
 				//dm("再描画:" + name);
 				layer.reset();
-				drawLayer(layer);
 				layer.type = type if type !== void;
-				layer.afx  = afx  if afx  !== void;
-				layer.afy  = afy  if afy  !== void;
-				layer.left = left if left !== void;
-				layer.top  = top  if top  !== void;
-				if (left === void && top === void) {
-					layer.recalcPosition();
-				}
-				layer.opacity = opacity if opacity !== void;
-				layer.rotate  = rotate  if rotate  !== void;
-				layer.zoom    = zoom    if zoom    !== void;
+				drawLayer(layer);
+				applyProps(layer);
+				layer.recalcPosition();
 				if (grayscale) {
 					layer.doGrayScale();
 				}

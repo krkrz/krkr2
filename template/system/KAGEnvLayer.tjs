@@ -39,28 +39,6 @@ class KAGEnvLayer extends KAGEnvImage {
 		}
 	}
 	
-	var _width;
-	property width {
-		getter() {
-			return _width;
-		}
-		setter(v) {
-			_width = v;
-			updateFlag = true;
-		}
-	}
-	
-	var _height;
-	property height {
-		getter() {
-			return _height;
-		}
-		setter(v) {
-			_height = v;
-			updateFlag = true;
-		}
-	}
-	
 	function KAGEnvLayer(env, name) {
 		super.KAGEnvImage(env, name);
 	}
@@ -74,8 +52,6 @@ class KAGEnvLayer extends KAGEnvImage {
 		f.tileFile = tileFile;
 		f.tilex = tilex;
 		f.tiley = tiley;
-		f.width  = width;
-		f.height = height;
     }
     
     function onRestore(f) {
@@ -92,20 +68,17 @@ class KAGEnvLayer extends KAGEnvImage {
 		tileFile = f.tileFile;
 		tilex = f.tilex;
 		tiley = f.tiley;
-		width = f.width;
-		height = f.height;
 		super.onRestore(f);
     }
 
 	function initFile(elm) {
-		if (elm.type === void) type = void;
-		if (elm.opacity === void) opacity = void;
-		if (elm.rotate === void) rotate = void;
-		if (elm.zoom === void) zoom = void;
-		if (elm.afx === void) afx = void;
-		if (elm.afy === void) afy = void;
+		if (elm.type === void)    type = void;
+		if (elm.opacity === void) delete props.opacity;
+		if (elm.rotate === void)  delete props.rotate;
+		if (elm.zoom === void)    delete props.zoom;
+		if (elm.afx === void)     delete props.afx;
+		if (elm.afy === void)     delete props.afy;
 	}
-
 	
 	// 画像ファイルを指定
 	function setImageFile(file, elm) {
@@ -123,10 +96,10 @@ class KAGEnvLayer extends KAGEnvImage {
 		
 		// 背景指定時に座標指定がなければ場所情報を初期化する
 		if (elm.xpos === void && elm.left === void) {
-			left = void;
+			delete props.left;
 		}
 		if (elm.ypos === void && elm.left === void) {
-			top = void;
+			delete props.top;
         }
 
 		disp = SHOW;
@@ -151,10 +124,10 @@ class KAGEnvLayer extends KAGEnvImage {
 		
 		// 背景指定時に座標指定がなければ場所情報を初期化する
 		if (elm.xpos === void && elm.left === void) {
-			left = void;
+			delete props.left;
 		}
 		if (elm.ypos === void && elm.ypos === void) {
-			top = void;
+			delete props.top;
         }
 
 		disp = SHOW;
@@ -180,10 +153,10 @@ class KAGEnvLayer extends KAGEnvImage {
 		
 		// 背景指定時に座標指定がなければ場所情報を初期化する
 		if (elm.xpos === void && elm.left === void) {
-			left = void;
+			delete props.left;
 		}
         if (elm.ypos === void && elm.top === void) {
-            top = void;
+            delete props.top;
 		}
 
 		disp = SHOW;
@@ -246,11 +219,11 @@ class KAGEnvLayer extends KAGEnvImage {
 					layer.setTileImage(tileFile);
 					// 座標補正
 					if (layer.tileLayer !== void) {
-						if (width === void ) {
-							width = layer.tileLayer.width;
+						if (_width === void ) {
+							_width = layer.tileLayer.width;
 						}
-						if (height === void) {
-							height = layer.tileLayer.height;
+						if (_height === void) {
+							_height = layer.tileLayer.height;
 						}
 					}
 				} catch (e) {
@@ -268,8 +241,8 @@ class KAGEnvLayer extends KAGEnvImage {
 				layer.clearTile();
 				try {
 					layer.loadImages(imageFile);
-					width  = layer.width;
-					height = layer.height;
+					_width  = layer.width;
+					_height = layer.height;
 				} catch (e) {
 					var text = imageFile.storage + ":画像がロードできません";
 					env.errorImage(text);
@@ -302,10 +275,6 @@ class KAGEnvLayer extends KAGEnvImage {
 
 	function updateLayer(layer) {
 		super.updateLayer(layer);
-		if (_width !== void && _width != layer.width ||
-			_height !== void && _height != layer.height) {
-			layer.setSize(width, height);
-		}
 		if (tileFile !== void) {
 			layer.setTilePos(tilex, tiley);
 		}
