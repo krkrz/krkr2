@@ -1,7 +1,7 @@
 class KAGEnvObject {
 
     // 各種情報を保持する環境
-    var env;
+	var env;
 	// 名前
 	var name;
 
@@ -14,20 +14,18 @@ class KAGEnvObject {
 	}
 
 	// メッセージ表示用
-    function dm(msg) {
-		if (kag.debugLevel >= tkdlSimple) {
-			global.dm(msg);
-        }
+	function dm(msg) {
+		return env.dm(msg);
 	}
 
     // スキップ状態か
     function isSkip() {
-        return env.kag.skipMode != SKIP_FORCE && (env.kag.skipMode || env.kag.noeffect);
-    }
+		return env.isSkip();
+	}
 
 	// ジャンプ状態か
 	function isJump() {
-		return false;
+		return env.isJump();
 	}
 }
 
@@ -170,43 +168,6 @@ class KAGEnvBase extends KAGEnvObject {
 		return false;
 	}
 
-	/*
-	 * トランジション実行エントリ
-	 * @param trans トランジション情報
-	 * KAG にトランジション実行命令を差し込む
-	 */
-	function beginTransition(trans) {
-		if (trans === void || trans.method === void || trans.time == 0 || isSkip()) {
-			kag.insertTag("forelay");
-			env.clearTrash();
-		} else {
-			// メッセージ窓状態同期
-			kag.insertTag("syncmsg");
-			if (trans.transwait !== void) {
-				// 時間待ち
-				kag.insertTag("wait", %[ time : (int)trans.time + (int)trans.transwait, trans:true ]);
-			} else {
-				// トランジション待ち
-				kag.insertTag("wt");
-			}
-			// 実際のトランジション実行
-			trans.children = true;
-			if (trans.method === void) {
-				trans.method = "crossfade";
-			}
-			kag.insertTag("trans", trans);
-		}
-	}
-
-	/**
-	 * メッセージ窓消去
-	 */
-	function hideMessage(trans) {
-		if (trans !== void && trans.msgoff) {
-			kag.insertTag("msgoff");
-		}
-    }
-
 	// タグ処理の帰り値
 	var _ret;
 	property ret {
@@ -233,7 +194,7 @@ class KAGEnvBase extends KAGEnvObject {
 		names.assign(elm);
 		for (var i=0; i<names.count; i+= 2) {
 			if (!doCommand(names[i], names[i+1], elm)) {
-				kag.errorCmd(name + ":未知のコマンド:" + names[i]);
+				env.errorCmd(name + ":未知のコマンド:" + names[i]);
 			}
 		}
 	}
@@ -242,16 +203,16 @@ class KAGEnvBase extends KAGEnvObject {
 	 * 更新処理
 	 */
 	function doUpdate(elm) {
-		kag.fore.base.stopTransition();
-		kag.backupLayer(EMPTY, true);
-		update(kag.back);
-		beginTransition(trans);
+		env.stopTrans();
+		env.backup();
+		update(false);
+		env.beginTransition(trans);
 	}
 
 	/**
 	 * 更新処理
 	 */
-	function update(base) {
+	function update(isfore) {
 	}
 
     // フェード指定のデフォルト値
@@ -267,7 +228,6 @@ class KAGEnvBase extends KAGEnvObject {
 	 */
 	function tagfunc(elm) {
 		
-		kag.updateBeforeCh = 1;
 		ret = void;
 		trans = void;
 		autoTrans = void;
@@ -303,13 +263,13 @@ class KAGEnvBase extends KAGEnvObject {
 		if (!isJump()) {
 			//dm("更新処理開始" + name);
 			if (env.transMode) {
-				update(env.transMode == 1 ? kag.back : kag.fore);
+				update(env.transMode != 1);
 			} else if (trans === void) {
-				update(kag.fore);
+				update(true);
 			} else {
 				doUpdate(elm);
 			}
-			hideMessage(trans);
+			env.hideMessage(trans);
 		}
 
 		return ret;

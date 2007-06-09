@@ -1,4 +1,34 @@
 /**
+ * ボイス再生用トラック
+ */
+class VoiceTrack extends WaveSoundBuffer {
+
+    var owner;
+    
+    function VoiceTrack(owner) {
+        this.owner = owner;
+        super.WaveSoundBuffer(owner);
+    }
+
+    function play() {
+		owner.setBGMVolDown(true);
+		super.play(...);
+    }
+
+    var prevstatus = "unload"; // 直前のステータス
+
+    function onStatusChanged() {
+        super.onStatusChanged(...);
+        var ps = prevstatus;
+        var cs = status;
+        prevstatus = cs;
+        if(ps == "play" && cs == "stop") {
+			owner.setBGMVolDown(false);
+		}
+    }
+}
+
+/**
  * 環境オブジェクト
  */
 class KAGEnvironment extends KAGEnvBase {
@@ -8,6 +38,237 @@ class KAGEnvironment extends KAGEnvBase {
     var xmax;
 	var ymax;
 
+	// ------------------------------------------------------------------
+	// 背景他
+	// ------------------------------------------------------------------
+
+	property fore {
+		getter() {
+			return kag.fore;
+		}
+	}
+
+	property back {
+		getter() {
+			return kag.back;
+		}
+	}
+
+	function backup() {
+		kag.backupLayer(EMPTY, true);
+	}
+
+	function stopTrans() {
+		kag.fore.base.stopTransition();
+	}
+	
+	function dm(msg) {
+		if (kag.debugLevel >= tkdlSimple) {
+			global.dm(msg);
+        }
+	}
+
+	function isSkip() {
+		return kag.skipMode != SKIP_FORCE && (kag.skipMode || kag.noeffect);
+	}
+
+	function isJump() {
+		return false;
+	}
+
+	function insertTag(name, elm) {
+		kag.insertTag(name, elm);
+	}
+
+	/*
+	 * トランジション実行エントリ
+	 * @param trans トランジション情報
+	 * KAG にトランジション実行命令を差し込む
+	 */
+	function beginTransition(trans) {
+		if (trans === void || trans.method === void || trans.time == 0 || isSkip()) {
+			insertTag("forelay");
+			clearTrash();
+		} else {
+			// メッセージ窓状態同期
+			insertTag("syncmsg");
+			if (trans.transwait !== void) {
+				// 時間待ち
+				insertTag("wait", %[ time : (int)trans.time + (int)trans.transwait, trans:true ]);
+			} else {
+				// トランジション待ち
+				insertTag("wt");
+			}
+			// 実際のトランジション実行
+			trans.children = true;
+			if (trans.method === void) {
+				trans.method = "crossfade";
+			}
+			insertTag("trans", trans);
+		}
+	}
+
+	function beginTransActionUpdate(trans, layer) {
+		//dm("更新アクション実行");
+		if (trans.showaction !== void) {
+			var action = copyActionInfo(trans.showaction, trans.time);
+			insertTag("action", %[target:layer, action:action]);
+		}
+		if (trans.hideaction !== void) {
+			var action = copyActionInfo(trans.hideaction, trans.time);
+			insertTag("action", %[target:layer.comp, action:action]);
+		}
+	}
+
+	function beginTransAction(trans, layer, hide, nosync) {
+		//dm("表示アクション実行");
+		if (!nosync && !trans.nosync) {
+			if (trans.transwait !== void) {
+				// 時間待ち
+				insertTag("wait", %[ time : (int)trans.time + (int)trans.transwait, action:true ]);
+			} else {
+				// アクション待ち
+				insertTag("wact", %[ target:layer ]);
+			}
+		}
+		// アクション実行
+		var action = copyActionInfo(hide ? trans.hideaction : trans.showaction, trans.time);
+		action["visvalue"] = %[ handler:MoveAction, value: hide ? 0 : 100, time:trans.time ];
+		insertTag("action", %[target:layer, action:action]);
+	}
+	
+	/**
+	 * メッセージ窓消去
+	 */
+	function hideMessage(trans) {
+		if (trans !== void && trans.msgoff) {
+			insertTag("msgoff");
+		}
+    }
+
+	/**
+	 * アクションの終了を待たせる
+	 */
+	function waitAction(layer, syncMode, movieSyncMode) {
+		// シンクロ指定
+		if (syncMode) {
+			return kag.waitAction(layer);
+		}
+		// ムービー同期
+		if (movieSyncMode) {
+			return kag.waitLayerMovie(layer);
+		}
+	}
+
+	// 名前定義がデフォルト名か？
+	function isDefaultName() {
+		return kag.flags.name === void || (kag.flags.name == kag.defaultName && kag.flags.family == kag.defaultFamily);
+	}
+	
+	// -------------------------------------------------------------------
+	// ボイス処理系
+	// -------------------------------------------------------------------
+
+	// ボイス用トラック
+	var voiceTracks = %[];
+
+    /**
+	 * ボイストラックの破棄
+     */
+	function updateVoice() {
+		foreach(voiceTracks, function(name, value, dict) {
+			invalidate value;
+		});
+		voiceTracks = %[];
+	}
+
+	// ボイス参照用ベース名
+	property voiceBase {
+		getter() {
+			return kag.flags.voiceBase !== void ? kag.flags.voiceBase : "";
+		}
+	}
+
+	/**
+	 * ボイス再生
+	 * @param name キャラ名
+	 * @param voiceName キャラボイス用識別名
+	 * @param voicefile 再生ファイル
+	 */
+	function playVoice(name, voiceName, voicefile) {
+		// ボイス再生OFF
+		if (!(kag.voiceenable && kag.getVoiceOn(voiceName))) {
+			return;
+		}
+		var ret = void;
+		var soundBuffer = voiceTracks[name];
+		if (soundBuffer === void) {
+			soundBuffer = new VoiceTrack(this);
+			voiceTracks[name] = soundBuffer;
+		}
+		soundBuffer.volume2 = kag.getVoiceVolume(voiceName) * 1000;
+		try {
+			if (kag.voicespeed != 1.0 && typeof soundBuffer.filters != "undefined") {
+				soundBuffer.filters.clear();
+				soundBuffer.filters.add(new WaveSoundBuffer.PhaseVocoder());
+				soundBuffer.filters[0].window = 256;
+				soundBuffer.filters[0].time = 1.0 / kag.voicespeed;
+				soundBuffer.open(voicefile);
+				soundBuffer.play();
+				ret = (int)(soundBuffer.totalTime / kag.voicespeed);
+			} else {
+				soundBuffer.open(voicefile);
+				soundBuffer.play();
+				ret = soundBuffer.totalTime;
+			}
+		} catch (e) {
+		}
+		return ret;
+	}
+
+	/**
+	 * ボイス停止
+	 * @param name キャラ名
+	 */
+	function stopVoice(name) {
+		var soundBuffer = voiceTracks[name];
+		if (soundBuffer !== void) {
+			soundBuffer.stop();
+			if (typeof soundBuffer.filters != "undefined") {
+				soundBuffer.filters.clear();
+			}
+        }
+	}
+
+	/**
+	 * ボイスまち
+	 * @param name キャラ名
+	 * @param canSkip スキップできる
+	 */
+	function waitVoice(name, canSkip) {
+		var soundBuffer = voiceTracks[name];
+		if (soundBuffer !== void && soundBuffer.status == "play") {
+			var remainTime = (soundBuffer.totalTime - soundBuffer.position) / kag.voicespeed;
+			if (remainTime > 0) {
+				return kag.waitTime(remainTime, canSkip && kag.clickSkipEnabled);
+			}
+		}
+	}
+	
+    /**
+     * ボイスのボリュームの再調整
+	 * @param name キャラ名
+	 * @param voiceName キャラボイス用識別名
+     */
+	function resetVoiceVolume(name, voiceName) {
+		var soundBuffer = voiceTracks[name];
+		if (soundBuffer !== void) {
+			soundBuffer.volume2 = kag.getVoiceVolume(voiceName) * 1000;
+        }
+    }
+	
+	// -------------------------------------------------------------------
+	
     // フェード指定のデフォルト値
     // envinit.tjs で定義するか、システムのデフォルトを使う
     property fadeValue {
@@ -393,6 +654,9 @@ class KAGEnvironment extends KAGEnvBase {
 		});
 		layers = %[];
 
+		// ボイストラックの破棄
+		updateVoice();
+		
 		// 表示用レイヤの破棄
 		clearTrash();
 		
@@ -518,18 +782,18 @@ class KAGEnvironment extends KAGEnvBase {
 		return false;
     }
 
-	function update(base) {
+	function update(isfore) {
 		//dm("環境更新");
-        foreach(layers, function(name, value, dict, base) {
-            value.update(base);
-        }, base);
-		event.update(base);
+        foreach(layers, function(name, value, dict, isfore) {
+            value.update(isfore);
+        }, isfore);
+		event.update(isfore);
 		// XXX キャラ更新はステージ更新に含まれる
-		stage.update(base);
+		stage.update(isfore);
 		if (currentNameTarget == void) {
-			drawNamePage(base);
+			drawNamePage(isfore);
 			if (faceLevelName !== void) {
-				clearFacePage(base);
+				clearFacePage(isfore);
 			}
 		}
 	}
@@ -604,8 +868,8 @@ class KAGEnvironment extends KAGEnvBase {
      * 全体トランジション開始
      */
     function beginTrans(elm) {
-		kag.fore.base.stopTransition();
-		kag.backupLayer(EMPTY, true);
+		stopTrans();
+		backup();
 		transMode = true;
         return 0;
     }
@@ -657,7 +921,7 @@ class KAGEnvironment extends KAGEnvBase {
 				return lay.tagfunc(elm);
 			}
 		} else {
-			kag.error("レイヤ名が指定されていません");
+			env.error("レイヤ名が指定されていません");
 		}
 		return 0;
     }
@@ -689,7 +953,7 @@ class KAGEnvironment extends KAGEnvBase {
 				return ch.tagfunc(elm);
 			}
 		} else {
-			kag.error("キャラクタ名または初期化名が指定されていません");
+			env.error("キャラクタ名または初期化名が指定されていません");
 		}
         return 0;
     }        
@@ -715,16 +979,16 @@ class KAGEnvironment extends KAGEnvBase {
             foreach(elm, checkTrans);
             if (trans !== void && trans.method !== void && !isSkip()) {
 				kag.updateBeforeCh = 1;
-				kag.fore.base.stopTransition();
-				kag.backupLayer(EMPTY, true);
-				kag.setCurrentMessageLayerVisibleFast(1, v);
+				stopTrans();
+				backup();
+				setMessageLayerVisibleFast(1, v);
 				beginTransition(trans);
 				return ret;
 			} else {
-				return kag.setCurrentMessageLayerVisible(v) ? -2 : 0;
+				return setMessageLayerVisible(v) ? -2 : 0;
 			}
 		}
-		kag.setCurrentMessageLayerVisibleFast(transMode ? 1: 0, v);
+		setMessageLayerVisibleFast(transMode ? 1: 0, v);
 		return ret;
     }
 
@@ -744,18 +1008,18 @@ class KAGEnvironment extends KAGEnvBase {
 				foreach(elm, checkTrans);
 				if (trans !== void && trans.method !== void && !isSkip()) {
 					kag.updateBeforeCh = 1;
-					kag.fore.base.stopTransition();
-					kag.backupLayer(EMPTY, true);
-					kag.setCurrentMessageLayerVisibleFast(1, false);
-					update(kag.back);
+					stopTrans();
+					backup();
+					setMessageLayerVisibleFast(1, false);
+					update(back);
 					beginTransition(trans);
 					return ret;
 				}
 			}
-			kag.setCurrentMessageLayerVisibleFast(transMode ? 1: 0, false);
-			update(kag.fore);
+			setMessageLayerVisibleFast(transMode ? 1: 0, false);
+			update(true);
 		} else {
-			kag.setCurrentMessageLayerVisibleFast(transMode ? 1: 0, false);
+			setMessageLayerVisibleFast(transMode ? 1: 0, false);
 		}
 		return ret;
     }
@@ -847,6 +1111,24 @@ class KAGEnvironment extends KAGEnvBase {
 		layer.absolute = minindex;
     }
 
+	/**
+	 * 表にあるレイヤか？
+	 */
+	function isForeLayer(layer) {
+		return layer.parent === fore.base;
+	}
+
+	/**
+	 * 表に移動させる
+	 */
+	function toForeLayer(layer) {
+		var absolute = layer.absolute;
+		layer.parent = fore.base;
+		layer.absolute = absolute;
+	}
+		
+	
+	
 	// 廃棄対象レイヤ一覧
 	var trashlayers = [];
 
@@ -873,7 +1155,6 @@ class KAGEnvironment extends KAGEnvBase {
 	function clearTrash() {
 		//dm("レイヤ破棄実行");
 		for (var i=0;i<trashlayers.count;i++) {
-			//dm("レイヤ破棄実行:" + trashlayers[i] + ":" + (trashlayers[i].parent == kag.fore.base ? "表": "裏"));
 			invalidate trashlayers[i];
 		}
 		trashlayers.clear();
@@ -913,17 +1194,17 @@ class KAGEnvironment extends KAGEnvBase {
 	/**
 	 * レイヤ消去系処理
 	 */
-	function clearLayers(base) {
+	function clearLayers(isfore) {
 		hideAll();
 		if (!isJump()) {
-			update(base);
+			update(isfore);
 		}
 	}
 	
  	// ------------------------------------------------------------------
 	// キャラクタ関係処理
 	// ------------------------------------------------------------------
-	
+
     /**
      * 指定された名前のキャラクタを返す
      * @param name 名前
@@ -967,19 +1248,19 @@ class KAGEnvironment extends KAGEnvBase {
         });
     }
 
-    /**
-     * 全キャラのボイスを停止する
-     */
+	/**
+	 * 全キャラのボイスのボリュームを調整する
+	 */
     function resetAllVoiceVolume() {
-        foreach(characters, function(name, value, dict) {
-            value.resetVoiceVolume();
-        });
+		foreach(characters, function(name, value, dict) {
+			value.resetVoiceVolume();
+		});
     }
     
     /*
      * 指定したキャラで指定したボイスファイルを再生
      */
-    function playVoice(name, voicename) {
+	function playChVoice(name, voicename) {
         var ch = getCharacter(name);
         if (ch !== void && voicename !== void) {
             return ch.playVoice(voicename);
@@ -994,27 +1275,37 @@ class KAGEnvironment extends KAGEnvBase {
         return 0;
     }
     
-    function getMessageLayer(base) {
-        if (base === void) {
-            base = transMode ? kag.back : kag.fore;
-        }
+	function getMessageLayer(isfore) {
+		var base;
+		if (isfore !== void) {
+			base = isfore ? fore : back;
+		} else {
+			base = transMode ? back : fore;
+		}
         return base.messages[kag.currentNum];
     }
 
-    function getFaceLayer(base) {
-        return getMessageLayer(base).faceLayer;
+	function setMessageLayerVisibleFast(page, visible) {
+		return kag.setCurrentMessageLayerVisibleFast(page, visible);
+	}
+	function setMessageLayerVisible(visible) {
+		return kag.setCurrentMessageLayerVisible(visible);
+	}
+	
+    function getFaceLayer(isfore) {
+        return getMessageLayer(isfore).faceLayer;
     }
     
     /**
      * 表情表示処理下請け
      */
-    function loadFacePage(base, name) {
-        var faceLayer = getFaceLayer(base);
+    function loadFacePage(isfore, name) {
+        var faceLayer = getFaceLayer(isfore);
         if (faceLayer !== void) {
             try {
                 faceLayer.loadImages(name);
             } catch (e) {
-                kag.errorImage(name + ":表情画像がロードできません");
+				env.errorImage(name + ":表情画像がロードできません");
             }
             faceLayer.visible = true;
         }
@@ -1023,11 +1314,11 @@ class KAGEnvironment extends KAGEnvBase {
     /**
      * 表情消去処理下請け
      */
-    function clearFacePage(base) {
+    function clearFacePage(isfore) {
         if (envinfo.clearFace !== void) {
-            loadFacePage(base, envinfo.clearFace);
+            loadFacePage(isfore, envinfo.clearFace);
         } else {
-            var faceLayer = getFaceLayer(base);
+            var faceLayer = getFaceLayer(isfore);
 			if (faceLayer !== void) {
 	            faceLayer.visible = false;
 			}
@@ -1039,16 +1330,16 @@ class KAGEnvironment extends KAGEnvBase {
      */
     function clearFace() {
         if (!transMode) {
-            clearFacePage(kag.fore);
+            clearFacePage(true);
         }
-        clearFacePage(kag.back);
+        clearFacePage(false);
     }
 
     // 指定されたキャラクタの表情が表示可能なら表示する
-    function drawFacePage(base, ch) {
-        if (faceLevelName !== void) {
-            if (ch !== void) {
-                var layer = getFaceLayer(base);
+	function drawFacePage(isfore, ch) {
+		if (faceLevelName !== void) {
+			if (ch !== void) {
+				var layer = getFaceLayer(isfore);
 				if (layer !== void) {
 	                if (ch.isShowFace()) {
     	                ch.drawFace(layer, faceLevelName);
@@ -1057,7 +1348,7 @@ class KAGEnvironment extends KAGEnvBase {
                 	}
 				}
             } else {
-                clearFacePage(base);
+				clearFacePage(isfore);
             }
         }
     }
@@ -1065,8 +1356,8 @@ class KAGEnvironment extends KAGEnvBase {
     /**
      * 名前の表示（ページ指定あり)
      */
-    function drawNamePage(base, name="") {
-        var msg = getMessageLayer(base);
+    function drawNamePage(isfore, name="") {
+        var msg = getMessageLayer(isfore);
         msg.processName(name);
     }
 
@@ -1080,9 +1371,9 @@ class KAGEnvironment extends KAGEnvBase {
 
         //dm("名前描画:" + name);
         if (!transMode) {
-            drawNamePage(kag.fore, name);
+            drawNamePage(true, name);
         }
-        drawNamePage(kag.back, name);
+        drawNamePage(false, name);
 
         // ヒストリ用
 		if (!isJump() && kag.historyWriteEnabled) {
@@ -1101,7 +1392,7 @@ class KAGEnvironment extends KAGEnvBase {
     function getVoicePlayingScript(ch) {
         var voice;
         if (ch !== void && (voice = ch.getCurrentVoice(true)) !== void) {
-            return "global.world_object.env.playVoice(\"" + ch.name + "\",\"" + voice + "\");";
+            return "global.world_object.env.playChVoice(\"" + ch.name + "\",\"" + voice + "\");";
         } else {
             return "";
         }
@@ -1160,7 +1451,7 @@ class KAGEnvironment extends KAGEnvBase {
     function dispname(elm) {
 		
 		// 表示処理
-		if (kag.setCurrentMessageLayerVisible(true)) {
+		if (setMessageLayerVisible(true)) {
 			return -3;
 		}
 		
@@ -1181,8 +1472,8 @@ class KAGEnvironment extends KAGEnvBase {
 				// 表情処理
 				if (faceLevelName !== void && currentNameTarget !== void && currentNameTarget.isShowFace() && !transMode && !isSkip() && faceFadeTime > 0) {
 					// フェースをフェードで消去する場合
-					kag.backupLayer(EMPTY, true);
-					clearFacePage(kag.back);
+					backup();
+					clearFacePage(back);
 					beginTransition(%[ method: "crossfade", time: faceFadeTime]);
 					
 				} else {
@@ -1237,20 +1528,20 @@ class KAGEnvironment extends KAGEnvBase {
                 
                 currentNameTarget = ch;
                 
-				kag.backupLayer(EMPTY, true);
+				backup();
                 if (ch !== void && ch.isShowFace()) {
-                    drawFacePage(kag.back, ch);
+					drawFacePage(false, ch);
                 } else {
                     var img;
                     if (envinfo.nameFaces !== void && (img = envinfo.nameFaces[envinfo.dispNameFace ? dispName : name]) !== void) {
-                        loadFacePage(kag.back, img);
+                        loadFacePage(false, img);
                     } else {
-                        clearFacePage(kag.back);
+                        clearFacePage(false);
                     }
                 }
 
                 // ボイス再生処理の先送り
-				kag.insertTag("dispNameVoice", elm);
+				insertTag("dispNameVoice", elm);
 
                 // 表情変更用トランジション導入
                 beginTransition(%[ method: "crossfade", time: faceFadeTime]);
@@ -1265,16 +1556,16 @@ class KAGEnvironment extends KAGEnvBase {
 				if (!isJump()) {
 					if (ch !== void && ch.isShowFace()) {
 						if (!transMode) {
-							drawFacePage(kag.fore, ch);
+							drawFacePage(true, ch);
 						}
-						drawFacePage(kag.back, ch);
+						drawFacePage(false, ch);
 					} else {
 						var img;
 						if (envinfo.nameFaces !== void && (img = envinfo.nameFaces[envinfo.dispNameFace ? dispName : name]) !== void) {
 							if (!transMode) {
-								loadFacePage(kag.fore, img);
+								loadFacePage(true, img);
 							}
-							loadFacePage(kag.back, img);
+							loadFacePage(false, img);
 						} else {
 							clearFace();
 						}
@@ -1557,7 +1848,7 @@ class KAGEnvironment extends KAGEnvBase {
 		}, all);
 		//dm("アクション停止");
 		if (!isJump()) {
-			update(kag.fore);
+			update(true);
 		}
     }
 
@@ -1571,16 +1862,156 @@ class KAGEnvironment extends KAGEnvBase {
 		}
 		bgm.sync();
 		// 画面同期
-		update(kag.fore);
+		update(true);
 	}
 	
-    /**
-     * ボイス更新
-     */
-    function updateVoice() {
-        foreach(characters, function(name, value, dict) {
-            value.updateVoice();
-        });
-    }
+	// ------------------------------------------------------------
+	// SE 系機能
+	// ------------------------------------------------------------
+
+	function waitSEFade(wait) {
+		return kag.waitSEFade(wait);
+	}
+
+	function waitSEStop(wait) {
+		return kag.waitSEStop(wait);
+	}
+
+	function setSEFade(id, fade) {
+		if (fade.time === void) {
+			kag.se[id].volume = fade.volume;
+		} else {
+			kag.se[id].fade(fade);
+		}
+	}
 	
+	property nosewhenskip {
+		getter() {
+			return kag.nosewhenskip;
+		}
+	}
+
+	function playSE(id, time, play) {
+		if (time > 0)  {
+			kag.se[id].fadeIn(%[ storage:storage, loop:play.loop, time:time, start:play.start]);
+		} else {
+			kag.se[id].play(%[ storage:storage, loop:play.loop, start:play.start]);
+		}
+	}
+
+	function stopSE(id, time) {
+		if (time > 0) {
+			kag.se[id].fadeOut(%[time:time]);
+		} else {
+			kag.se[id].stop();
+		}
+	}
+	
+	// ------------------------------------------------------------
+	// BGM 系機能
+	// ------------------------------------------------------------
+
+	function waitBGMFade(wait) {
+		return kag.waitBGMFade(waitFade);
+	}
+
+	function waitBGMStop(wait) {
+		return kag.waitBGMStop(wait);
+	}
+
+	function setBGMFade(fade) {
+		if (fade.time === void) {
+			kag.bgm.setVolume(fade.volume * 1000);
+		} else {
+			kag.bgm.fade(fade);
+		}
+	}
+
+	function setBGMVolDown(down) {
+		if (down) {
+			if (kag.bgmdown && !isSkip()) {
+				kag.bgm.voldown = true;
+			}
+		} else {
+			if (kag.bgm.voldown) {
+				kag.bgm.voldown = false;
+			}
+		}
+	}
+	
+	function playBGM(time, play) {
+		var time = +play.time;
+		if (play.noxchg) {
+			if (time > 0)  {
+				kag.bgm.fadeIn(%[ storage:play.storage, loop:play.loop, time:time, start:play.start]);
+			} else {
+				kag.bgm.play(%[ storage:play.storage, loop:play.loop, paused:play.paused, start:play.start]);
+			}
+		} else {
+			if (time > 0 || +play.intime > 0) {
+				kag.bgm.exchange(%[ storage:play.storage, loop:play.loop, time:time, intime:play.intime, outtime:play.outtime, overlap:play.overlap, start:play.start]);
+			} else {
+				kag.bgm.play(%[ storage:play.storage, loop:play.loop, paused:play.paused, start:play.start]);
+			}
+		}
+		kag.clearBgmStop();
+		kag.clearBgmLabel();
+	}
+	
+	function pauseBGM(time) {
+		if (time > 0) {
+			kag.bgm.fadePause(%[ time:time ]);
+		} else {
+			kag.bgm.pause();
+		}
+	}
+	
+	function resumeBGM() {
+		kag.bgm.resume();
+	}
+
+	function stopBGM(time) {
+		if (time > 0) {
+			kag.bgm.fadeOut(%[ time:stop ]);
+		} else {
+			kag.bgm.stop();
+		}
+	}
+
+	// ------------------------------------------------------
+	// エラー処理系
+	// ------------------------------------------------------
+
+	function errorImage() {
+		kag.errorImage(...);
+	}
+
+	function errorCmd() {
+		kag.errorCmd(...);
+	}
+
+	function error() {
+		kag.error(...);
+	}
+
+	function errorVoice() {
+		kag.errorVoice(...);
+	}
+
+	// ------------------------------------------------------
+	// フラグ処理系
+	// ------------------------------------------------------
+
+	function setBGMFlag(name) {
+		kag.sflags["bgm_" + (name.toUpperCase())] = true;
+	}
+
+	function setCGFlag(name) {
+		kag.sflags["cg_" + (name.toUpperCase())] = true;
+	}
+
+	function setMovieFlag(name) {
+		kag.sflags["movie_" + (name.toUpperCase())] = true;
+	}
+
 };

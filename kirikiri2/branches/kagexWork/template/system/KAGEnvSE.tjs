@@ -66,9 +66,9 @@ class KAGEnvSE extends KAGEnvObject {
 		if (param !== void) {
 			stop = void;
 			if (!isSkip() || elm.loop) {
-				storage = param;
 				play = %[];
 				(Dictionary.assign incontextof play)(elm, false);
+				play.storage = storage = param;
 				if (play.fade === void && play.time === void) {
 					fade = %[];
 					fade.volume = 100;
@@ -186,9 +186,9 @@ class KAGEnvSE extends KAGEnvObject {
         }
 		sync();
 		if (waitFade !== void) {
-			return kag.waitSEFade(waitFade);
+			return env.waitSEFade(waitFade);
 		} else if (wait !== void) {
-			return kag.waitSEStop(wait);
+			return env.waitSEStop(wait);
 		}
 		return 0;
     }
@@ -196,31 +196,18 @@ class KAGEnvSE extends KAGEnvObject {
 	function sync() {
 		if (!isJump()) {
 			if (fade !== void) {
-				if (fade.time === void) {
-					kag.se[id].volume = fade.volume;
-				} else {
-					kag.se[id].fade(fade);
-				}
+				env.setSEFade(id, fade);
 				fade = void;
 			}
 			if (play !== void) {
-				if (!isSkip() || play.loop || !kag.nosewhenskip) {
-					var time = +play.time;
-					if (time > 0)  {
-						kag.se[id].fadeIn(%[ storage:storage, loop:play.loop, time:time, start:play.start]);
-					} else {
-						kag.se[id].play(%[ storage:storage, loop:play.loop, start:play.start]);
-					}
+				if (!isSkip() || play.loop || !env.nosewhenskip) {
+					env.playSE(id, isSkip() ? 0 : +play.time, play);
 				}
 				play = void;
 			}
 		}
 		if (stop !== void) {
-			if (!isSkip() && stop > 0) {
-				kag.se[id].fadeOut(%[time:stop]);
-			} else {
-				kag.se[id].stop();
-			}
+			env.stopSE(id, isSkip() ? 0 : stop);
 			stop = void;
 		}
 	}

@@ -10,13 +10,14 @@ class EnvGraphicLayer extends GraphicLayerEx {
 	/**
 	 * コンストラクタ
 	 * @param owner オブジェクト情報をもってる親
-	 * @param base ベースになるレイヤ
+	 * @param isfore 表画面か裏画面か
 	 * @param name 名前
 	 */
-	function EnvGraphicLayer(owner, base, name) {
+	function EnvGraphicLayer(owner, isfore, name) {
 		this.owner = owner;
 		this.env   = owner.env;
-		super.GraphicLayerEx(base.base.window, base.base, name);
+		var base = isfore ? env.fore.base : env.back.base;
+		super.GraphicLayerEx(base.window, base, name);
 	}
 
 	var _left;
@@ -427,76 +428,6 @@ class KAGEnvImage extends KAGEnvBase {
 		}
     }
 
-	/**
-	 * アクション情報のコピー
-	 * @param act  元アクション情報
-	 * @param time 時間上書き指定
-	 * @param elm  タグによる上書き用パラメータ情報
-	 * @return システム登録用アクション情報
-	 */
-	function copyActionInfo(act, time, elm) {
-		var action = %[];
-		if (act !== void) {
-			var names = [];
-			names.assign(act);
-			if (act.module !== void) {
-				//dm("module 指定アクション:" + act.module);
-				if (typeof act.module != "String") {
-					throw new Exception("アクションモジュール名は文字列指定してください");
-				}
-				var module = Scripts.eval(act.module);
-				if (module !== void) {
-					// 旧スタイル
-					for (var i=0; i<names.count; i+= 2) {
-						var name = names[i];
-						var elm  = names[i+1];
-						action[name] = elm;
-					}
-					if (time !== void) {
-						action.time = time;
-					}
-					// パラメータのコピー
-					if (elm !== void) {
-						foreach(elm, function(name, value, elm, action) {
-							if (actionParam[name] !== void) {
-								action[name] = value;
-							}
-						}, action);
-					}
-					// 新スタイルに置き換え
-					action = module(action);
-				}
-			} else {
-				// 新スタイル
-				for (var i=0; i<names.count; i+= 2) {
-					var name  = names[i];
-					var value = names[i+1];
-					if (value instanceof "Dictionary") {
-						// 辞書の場合はクローンして時間指定
-						var e = %[];
-						(Dictionary.assign incontextof e)(value);
-						if (time !== void) {
-							e.time = time;
-						}
-						// パラメータのコピー
-						if (elm !== void) {
-							e.time   = +elm.time if elm.time !== void;
-							e.delay  = +elm.delay if elm.delay !== void;
-						}
-						action[name] = e;
-					} else {
-						// そうでない場合はそのまま
-						action[name] = value;
-					}
-				}
-			}
-		}
-		if (elm !== void) {
-			action.nowait = +elm.nowait if elm.nowait !== void;
-		}
-		return action;
-	}
-	
     /**
      * アクションを設定
      * @param name アクション名
@@ -594,14 +525,8 @@ class KAGEnvImage extends KAGEnvBase {
 		for (var i=0;i<actionList.count;i++) {
 			layer.beginAction(actionList[i]);
 		}
-		// シンクロ指定
-		if (syncMode) {
-			ret = kag.waitAction(layer);
-		}
-		// ムービー同期
-		if (movieSyncMode) {
-			ret = kag.waitLayerMovie(layer);
-		}
+		// アクション終了まち
+		ret = env.waitAction(layer, syncMode, movieSyncMode);
 	}
 
 	var imageCommands = %[
@@ -717,23 +642,23 @@ class KAGEnvImage extends KAGEnvBase {
 	}
 
     // このメソッドを実装する
-    // function getLayer(base);
+    // function getLayer(isfore);
 	// function drawLayer(layer)
 
 	/**
 	 * 新レイヤ生成
 	 */
-	function createLayer(owner, base, name) {
-		return new EnvGraphicLayer(owner, base, name);
+	function createLayer(owner, isfore, name) {
+		return new EnvGraphicLayer(owner, isfore, name);
 	}
 
 	/**
 	 * レイヤ取得処理
-	 * @param base ベース (kag.fore または kag.back)
+	 * @param fore
 	 * @param origLayer 廃棄元レイヤ
 	 */
-	function getNewLayer(owner, base, name, origLayer) {
-		var newlayer = createLayer(owner, base, name);
+	function getNewLayer(owner, isfore, name, origLayer) {
+		var newlayer = createLayer(owner, isfore, name);
 		newlayer.hitType = htProvince;
 		newlayer.level = -1;
 		env.forelayers.add(newlayer);
@@ -752,10 +677,10 @@ class KAGEnvImage extends KAGEnvBase {
 	/**
 	 * 単純更新
 	 */
-	function update(base) {
+	function update(isfore) {
 		//dm("更新処理:" + name + ":" + layerOn + ":" + updateFlag + ":" + redraw);
 		if (layerOn && (updateFlag || redraw)) {
-			var layer = getLayer(base);
+			var layer = getLayer(isfore);
 			if (redraw) {
 				//dm("再描画:" + name);
 				layer.reset();
@@ -788,35 +713,6 @@ class KAGEnvImage extends KAGEnvBase {
 		updateFlag = false;
 	}
 
-	function beginTransActionUpdate(trans, layer) {
-		//dm("更新アクション実行");
-		if (trans.showaction !== void) {
-			var action = copyActionInfo(trans.showaction, trans.time);
-			kag.insertTag("action", %[target:layer, action:action]);
-		}
-		if (trans.hideaction !== void) {
-			var action = copyActionInfo(trans.hideaction, trans.time);
-			kag.insertTag("action", %[target:layer.comp, action:action]);
-		}
-	}
-	
-	function beginTransAction(trans, layer, hide, nosync) {
-		//dm("表示アクション実行");
-		if (!nosync && !trans.nosync) {
-			if (trans.transwait !== void) {
-				// 時間待ち
-				kag.insertTag("wait", %[ time : (int)trans.time + (int)trans.transwait, action:true ]);
-			} else {
-				// アクション待ち
-				kag.insertTag("wact", %[ target:layer ]);
-			}
-		}
-		// アクション実行
-		var action = copyActionInfo(hide ? trans.hideaction : trans.showaction, trans.time);
-		action["visvalue"] = %[ handler:MoveAction, value: hide ? 0 : 100, time:trans.time ];
-		kag.insertTag("action", %[target:layer, action:action]);
-	}
-	
 	/**
 	 * 表示更新前のフラグ初期化
 	 */
@@ -853,25 +749,25 @@ class KAGEnvImage extends KAGEnvBase {
 	function doUpdate(elm) {
 		if (trans.method !== void || dispMode == 3) {
 			//dm("画像更新:" + trans.method + ":" + trans.showaction + ":" + trans.hideaction);
-			kag.fore.base.stopTransition();
-			kag.backupLayer(EMPTY, true);
-			var layer = update(kag.back);
-			beginTransition(trans);
+			env.stopTrans();
+			env.backup();
+			var layer = update(false);
+			env.beginTransition(trans);
 			if (layer !== void) {
-				beginTransActionUpdate(trans, layer);
+				env.beginTransActionUpdate(trans, layer);
 			}
 		} else if (dispMode == 2) {
 			//dm("画像消去");
 			doShow = false;
-			var layer = update(kag.fore);
-			beginTransAction(trans, layer, true, elm.nosync);
+			var layer = update(true);
+			env.beginTransAction(trans, layer, true, elm.nosync);
 		} else if (dispMode == 1) {
 			//dm("画像表示");
 			doShow = false;
-			var layer = update(kag.fore);
-			beginTransAction(trans, layer, false, elm.nosync);
+			var layer = update(true);
+			env.beginTransAction(trans, layer, false, elm.nosync);
 		} else {
-			update(kag.fore);
+			update(true);
 		}
 	}
 }

@@ -197,11 +197,11 @@ class KAGEnvStageLayer extends KAGEnvBackLayer {
 	 * 更新処理
 	 * キャラクタも更新する必要がある
 	 */
-	function update(base) {
-		foreach(env.characters, function(name, value, dict, base) {
-			value.update(base);
-		}, base);
-		super.update(base);
+	function update(isfore) {
+		foreach(env.characters, function(name, value, dict, isfore) {
+			value.update(isfore);
+		}, isfore);
+		super.update(isfore);
 	}
 	
 	// ------------------------------------------------------
@@ -216,7 +216,7 @@ class KAGEnvStageLayer extends KAGEnvBackLayer {
 	/**
 	 * 新レイヤ生成
 	 */
-	function createLayer(owner, base, name) {
-		return new StageGraphicLayer(owner, base, name);
+	function createLayer(owner, isfore, name) {
+		return new StageGraphicLayer(owner, isfore, name);
 	}
 }

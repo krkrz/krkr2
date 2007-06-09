@@ -133,8 +133,8 @@ class KAGEnvLayer extends KAGEnvImage {
 		redraw = true;
 
         // 記録
-        kag.sflags["cg_" + (file.toUpperCase())] = true;
-
+		env.setCGFlag(file);
+		
         return true;
     }
 
@@ -161,7 +161,7 @@ class KAGEnvLayer extends KAGEnvImage {
 		redraw = true;
 
 		// 記録
-		kag.sflags["movie_" + (file.toUpperCase())] = true;
+		env.setMovieFlag(file);
 
 		return true;
     }
@@ -188,9 +188,6 @@ class KAGEnvLayer extends KAGEnvImage {
 
 		disp = SHOW;
         redraw = true;
-
-        // 記録
-        kag.sflags["tile_" + (file.toUpperCase())] = true;
 
         return true;
     }
@@ -258,7 +255,7 @@ class KAGEnvLayer extends KAGEnvImage {
 					}
 				} catch (e) {
 					var text = tileFile + ":タイル画像がロードできません";
-					kag.errorImage(text);
+					env.errorImage(text);
 					layer.fillRect(0,0,layer.width, layer.height, 0xff000000);
 					layer.drawText(0,0,text,0xffffff);
 				}
@@ -275,7 +272,7 @@ class KAGEnvLayer extends KAGEnvImage {
 					height = layer.height;
 				} catch (e) {
 					var text = imageFile.storage + ":画像がロードできません";
-					kag.errorImage(text);
+					env.errorImage(text);
 					layer.fillRect(0,0,layer.width, layer.height, 0xff000000);
 					layer.drawText(0,0,text,0xffffff);
 				}
@@ -290,7 +287,7 @@ class KAGEnvLayer extends KAGEnvImage {
 					moviePlaying = true;
 			//} catch(e) {
 			//		var text = movieFile + ":ムービーがロードできません";
-			//		kag.errorImage(text);
+			//		env.errorImage(text);
 			//		layer.fillRect(0,0,layer.width, layer.height, 0xff000000);
 			//		layer.drawText(0,0,text,0xffffff);
 			//	}
