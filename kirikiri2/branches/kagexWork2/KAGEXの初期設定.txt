@@ -1,0 +1,72 @@
+Title: KAGEX の初期設定方法
+Date: 2007/1/23
+Author: 渡邊剛
+
+1. ベースの取得
+
+　Subversion を使って吉里吉里公式レポジトリから以下を取得します。
+
+　最新をおいかけたい場合は以下をチェックアウト
+　  https://sv.kikyou.info/svn/kirikiri2/trunk/kag3ex/　
+
+　安定版を取得したい場合は以下からエクスポート
+　  https://sv.kikyou.info/svn/kirikiri2/tags/kag3exバージョン名 
+
+  　※現時点で安定版は一度も出されてません
+
+2. 実行ファイルを展開
+
+  吉里吉里本家から吉里吉里の配布をダウンロードします
+
+　http://kikyou.info/tvp/#dev			開発版
+　http://kikyou.info/tvp/#downloads		安定版
+
+ この版は吉里吉里の data フォルダの仕様変更に追従したため、
+ 以降でないと動作しません!!!
+
+ 必要なファイルを KAGEX 用のフォルダ以下にコピーします
+
+  krkr.exe
+  krmovie.dll
+  plugin/
+   wuvorbis.dll
+   layerExImage.dll
+   extrans.dll
+   csvParser.dll
+
+ krkr.exe を実行するとサンプルのシステムが起動します。
+
+3. サンプルデータについて
+
+  template/   ベースになるテンプレートファイルです
+  data/       システムスクリプト（タイトル画面他）まで含んだサンプルです。
+
+  data/ 以下のファイルは template/system を参照しています。
+
+  実際のゲームのリリース時には template/system と template/startup.tjs 
+　を data 以下にそのままコピーしたほうが良いでしょう
+
+●特殊デバッグ機能について
+
+「デバッグ/自動ラベルセーブ」を有効にすると、
+「前のラベルに戻る」が利用可能になります。
+
+これは、プレイ中にラベルを発見するごとにセーブして、
+デバッグ作業中に直前のラベルからロードすることで
+そこに戻ることができる機能です。
+
+この機能を使う場合は
+
+・msgreceiver.dll
+・searchprev.exe
+
+が必要になるのでご注意ください。
+
+msgreceiver.dll は吉里吉里を外部制御する機能を追加する
+プラグインです。実行ファイル.hwnd というファイルに、
+現在有効なウインドウハンドルが記録されているので、
+そのハンドルに対して WM_COPYDATA でコマンドを送ることができます。
+
+searchprev は、シナリオファイルの現在行から一番近い
+以前のラベルを検索して、その部分にジャンプするように
+吉里吉里に指示を出すコマンドです。

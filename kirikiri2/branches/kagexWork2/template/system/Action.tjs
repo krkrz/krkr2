@@ -1,0 +1,953 @@
+//
+// 汎用アクション機能実装用クラス群
+//
+
+/**
+ * 単独プロパティに対するアクション情報
+ * 絶対アクション：ターゲットプロパティの絶対値を指定する　　　　　１つしか使えない
+ * 相対アクション：ターゲットプロパティに対する相対値を指定する　　複数指定できる
+ */
+class PropActionInfo {
+
+    var propName;      // プロパティ名
+    var absolute;      // 絶対アクションハンドラ
+    var relative = []; // 相対アクションハンドラ
+    var first;     // 初回実行
+    var startTime; // 開始時刻
+    
+    /**
+     * コンストラクタ
+     */
+    function PropActionInfo(propName) {
+        this.propName = propName;
+        first = true;
+	}
+
+	/**
+	 * 複製の生成
+	 */
+	function clone() {
+		var ret = new global.PropActionInfo(propName);
+		ret.absolute = absolute;
+		for (var i=0;i<relative.count;i++) {
+			ret.relative.add(relative[i]);
+		}
+		ret.first = this.first;
+		ret.startTime = this.startTime;
+		return ret;
+	}
+
+    /**
+     * アクションを追加する
+     * @param target ターゲットオブジェクト
+     * @param handler アクションハンドラ
+     * @param elm 初期化パラメータ
+     */
+    function addAction(target, handler, elm) {
+		//dm("アクション追加:" + propName);
+		if (typeof handler == "Object" && handler != null) {
+			if (typeof handler.AbsoluteActionHandler != "undefined") {
+				// 絶対アクションは１つだけ設定可能
+				absolute = new handler(target, propName, elm);
+			} else if (typeof handler.RelativeActionHandler != "undefined") {
+				// デフォルトアクション登録
+				if (absolute === void) {
+					//dm("デフォルトアクション登録");
+					absolute = new DefaultAction(target, propName, %[]);
+				}
+				// 相対アクションは複数設定可能
+				relative.add(new handler(target, propName, elm));
+			} else {
+				dm("ハンドラ異常:" + handler);
+			}
+		} else {
+			dm("ハンドラ異常:" + handler);
+		}
+    }
+
+	/**
+	 * アクションの実行結果を返す
+	 */
+	function getResultValue() {
+		if (absolute !== void) {
+			return absolute.getResultValue();
+		} else {
+			return void;
+		}
+	}
+
+	
+    /**
+     * アクション処理実行
+     * @param target ターゲットオブジェクト
+     * @param now 時間
+     * @param stopFlag 強制終了指定
+     * @return 終了したら true
+     */
+    function doAction(target, now, stopFlag) {
+		if (first) {
+			//dm("アクション初回");
+			startTime = now;
+			if (absolute !== void) {
+				absolute.init(target, propName);
+			}
+			for (var i=0;i<relative.count;i++) {
+				relative[i].init(target, propName);
+			}
+			first = false;
+		}
+		now -= startTime;
+		//dm("アクション状態:"+ now + " stop:" + stopFlag);
+        var done = true;
+        if (absolute !== void) {
+            if (!absolute.action(target, propName, now, stopFlag)) {
+                done = false;
+            }
+        }
+        if (!stopFlag) {
+            for (var i=0;i<relative.count;i++) {
+                if (!relative[i].action(target, propName, now)) {
+                    done = false;
+                }
+            }
+        }
+        return done;
+    }
+};
+
+/**
+ * 複数プロパティに対するアクション
+ */
+class ActionInfo {
+
+    var actionDict = %[]; // アクション情報
+    var actionList = [];
+
+    /**
+     * コンストラクタ
+     */
+    function ActionInfo() {
+    }
+
+	/**
+	 * ファイナライザ
+	 */
+    function finalize() {
+        invalidate actionList;
+        invalidate actionDict;
+    }
+
+	/**
+	 * 複製の生成
+	 */
+	function clone() {
+		var ret = new global.ActionInfo();
+		for (var i=0;i<actionList.count;i++) {
+			var newact = actionList[i].clone();
+			ret.actionList[i] = newact;
+			ret.actionDict[newact.propName] = newact;
+		}
+		return ret;
+	}
+
+	
+    function getPropActionInfo(propName) {
+        var ret = actionDict[propName];
+        if (ret === void) {
+            ret = new PropActionInfo(propName);
+            actionDict[propName] = ret;
+            actionList.add(ret);
+        }
+        return ret;
+    }
+
+	
+    /**
+     * 指定されたプロパティのアクションを追加する
+     * @param target ターゲット
+     * @param propName プロパティ名
+     * @param handler アクションハンドラ
+     * @param elm 初期化パラメータ
+     */
+    function addAction(target, propName, handler, elm) {
+        var info = getPropActionInfo(propName);
+        info.addAction(target, handler, elm);
+    }
+
+    /**
+     * 指定されたプロパティのアクションを消去する
+     * @param target ターゲット
+     * @param propName プロパティ名
+     */
+    function delAction(target, propName) {
+		var ret = actionDict[propName];
+		if (ret !== void) {
+			ret.doAction(target, 0, true);
+			actionList.remove(ret);
+		}
+    }
+
+	/**
+	 * アクションの結果を取得する
+	 */
+	function getResultValue(ret) {
+		for (var i=0;i<actionList.count;i++) {
+			var info = actionList[i];
+			var result = info.getResultValue();
+			if (result !== void) {
+				ret[info.propName] = result;
+			}
+		}
+		return ret;
+	}
+	
+    /**
+     * アクション処理実行
+     * @param target ターゲットオブジェクト
+     * @param now 時間
+     * @param stopFlag 強制終了指定
+     * @return 終了したら true
+     */
+    function doAction(target, now, stopFlag) {
+        var done = true;
+        for (var i=0; i<actionList.count; i++) {
+            if (!actionList[i].doAction(target, now, stopFlag)) {
+                done = false;
+            }
+        }
+        return done;
+    }
+};
+
+/**
+ * 一連のアクション
+ */
+class ActionSequense {
+
+    var actions = [];
+
+    var target; // 対象オブジェクト
+	var create; // アクション追加フラグ
+	var nowait; // 待ちなしフラグ
+	
+    /**
+     * コンストラクタ
+     */
+	function ActionSequense(target) {
+		this.target = target;
+		create = true;
+    }
+
+	/**
+	 * 複製の生成
+	 */
+	function clone() {
+		var ret = new global.ActionSequense(target);
+		ret.create = create;
+		ret.nowait = nowait;
+		for (var i=0;i<actions.count;i++) {
+			ret.actions.add(actions[i].clone());
+		}
+		return ret;
+	}
+	
+    /**
+     * アクションシーケンスを進める
+     */
+    function next() {
+        create = true;
+    }
+    
+    /**
+     * アクションを追加する
+     * @param propName プロパティ名
+     * @param handler アクションハンドラ
+     * @param elm 初期化パラメータ
+     */
+    function addAction(propName, handler, elm) {
+        if (typeof target[propName] == "undefined") {
+			dm("指定されたプロパティは存在しません:" + target + ":" + propName);
+        } else {
+            if (create) {
+                actions.add(new ActionInfo());
+                create = false;
+            }
+            actions[actions.count - 1].addAction(target, propName, handler, elm);
+        }
+    }
+
+    /**
+     * アクションを消去する
+     * @param propName プロパティ名
+     */
+    function delAction(propName) {
+        if (actions.count > 0) {
+            actions[actions.count - 1].delAction(target, propName);
+        }
+    }
+    
+    /**
+     * 複数のアクションを同時登録する
+     * @param dict アクション情報の入った辞書
+     */
+    function addActions(dict) {
+		var names = [];
+		names.assign(dict);
+		for (var i=0; i<names.count; i+= 2) {
+			var name = names[i];
+			var elm  = names[i+1];
+			if (typeof elm == "Object") {
+				if (elm === null) {
+					delAction(name);
+				} else if (elm instanceof "Dictionary") {
+					if (typeof elm.handler == "String") {
+						var handler = Scripts.eval(elm.handler);
+						addAction(name, handler, elm);
+					} else if (typeof elm.handler == "Object") {
+						addAction(name, elm.handler, elm);
+					} else {
+						dm("無効なアクションハンドラ指定:" + elm.handler);
+					}
+                }
+            }
+        }
+    }
+
+    // -----------------------------------------------
+
+
+    /**
+	 * アクションの結果を取得する
+     */
+	function getResultValue() {
+		var ret = %[];
+		for (var i=0;i<actions.count;i++) {
+			actions[i].getResultValue(ret);
+		}
+		return ret;
+	}
+	
+    /**
+     * アクション実行
+     * @param now 現在時刻
+     * @param stopFlag 強制停止指定
+     * @param 終了したら true
+     */
+    function doAction(now, stopFlag) {
+		if (actions.count > 0) {
+			if (actions[0].doAction(target, now, stopFlag)) {
+				actions.erase(0);
+			}
+		}
+		return actions.count <= 0;
+    }
+
+    /**
+     * 強制停止
+     */
+	function stopAction() {
+		while (actions.count > 0) {
+			//dm("アクション停止:" + actions.count);
+			actions[0].doAction(target, 0, true);
+			actions.erase(0);
+        }
+    }
+};
+
+// ----------------------------------------------------------------
+// ハンドラクラス
+// ----------------------------------------------------------------
+
+/**
+ * アクションハンドラ基底クラス
+ */
+class ActionHandler {
+
+    var time;  // 駆動時間
+    var delay; // 開始遅延時間
+
+    /**
+     * コンストラクタ
+     * @param target 対象オブジェクト
+     * @param propName 対象プロパティ
+     * @param elm 初期化パラメータ
+     */
+    function ActionHandler(target, propName, elm) {
+		time  = +elm.time if elm.time !== void;
+        delay = +elm.delay if elm.delay !== void;
+		if (time !== void) {
+			time *= kag.drawspeed;
+		}
+		//dm("ActionHandler:" + propName + " time:" + time + " delay:" + delay);
+    }
+
+	/**
+	 * 実行初回処理
+	 */
+	function init(target, propname) {
+	}
+	
+    /**
+     * 実行処理ベース
+     * @param target 対象オブジェクト
+     * @param propName 対象プロパティ
+     * @param now 駆動時間
+     * @param stopFlag 停止フラグ
+     * @return 終了したら true
+     */
+    function action(target, propName, now, stopFlag) {
+        if (!stopFlag && delay !== void) {
+            now -= delay;
+            if (now < 0) {
+                return false;
+            }
+        }
+        return doAction(target, propName, now, stopFlag || (time !== void && now > time));
+    }
+    
+    /**
+     * アクション実行
+     * @param target 対象オブジェクト
+     * @param propName 対象プロパティ
+     * @param now 駆動時間
+     * @param stopFlag 停止フラグ
+     * @return 終了したら true
+     */
+    function doAction(target, propName, now, stopFlag) {
+        // それぞれのアクションで実装
+        return true;
+    }
+
+    /**
+     * 相対値計算
+     * @param value 値指定
+     * @param orig オリジナルの値
+     */
+    function getRelative(value, orig) {
+        if (typeof value == "String" && (value.indexOf("@") >= 0)) {
+            return Scripts.eval(value.replace(/@/, (string)orig));
+        } else {
+            return +value;
+        }
+    }
+
+}
+
+/**
+ * 絶対動作アクション基底クラス
+ * 値を維持するアクション
+ */
+class AbsoluteActionHandler extends ActionHandler {
+    function AbsoluteActionHandler(target, propName, elm) {
+        super.ActionHandler(target, propName, elm);
+    }
+};
+
+/**
+ * 相対アクション基底クラス
+ */
+class RelativeActionHandler extends ActionHandler {
+    function RelativeActionHandler(target, propName, elm) {
+        super.ActionHandler(target, propName, elm);
+    }
+};
+
+/**
+ * 値初期化アクション
+ * 相対アクションのみの場合にベースの値を維持するために使う
+ */
+class DefaultAction extends AbsoluteActionHandler {
+    var initValue;
+    function DefaultAction(target, propName, elm) {
+        super.AbsoluteActionHandler(target, propName, elm);
+        initValue = target[propName];
+    }
+	/**
+	 * 移動の結果
+	 */
+	function getResultValue() {
+		return initValue;
+	}
+
+	function doAction(target, propName, now, stopFlag) {
+        target[propName] = initValue;
+        // 常に終わる
+        return true;
+    }
+}
+
+
+/**
+ * 基本移動アクション（絶対アクション）
+ * @param 
+ */
+class MoveAction extends AbsoluteActionHandler {
+
+	var initValue; // 初期時の値
+	var start;     // 始点指定 
+	var value;     // 終点指定
+    var accel;     // 加減速指定
+	var diff;      // 移動差分
+    
+    function MoveAction(target, propName, elm) {
+		super.AbsoluteActionHandler(target, propName, elm);
+		initValue = target[propName];
+		start     = elm.start !== void ? getRelative(elm.start, initValue) : void;
+		value     = getRelative(elm.value, initValue);
+		accel     = +elm.accel;
+    }
+
+	/**
+	 * 移動の結果
+	 */
+	function getResultValue() {
+		return value;
+	}
+	
+	/**
+	 * 実行初回処理
+	 */
+	function init(target, propName) {
+		if (start === void) {
+			start = target[propName];
+		}
+		diff  = value - start;
+		//dm("MoveAction:" + propName + " start:" + start + " diff:" + diff);
+	}
+
+	
+    function doAction(target, propName, now, stopFlag) {
+		if (time == 0 || stopFlag) {
+			target[propName] = start + diff;
+			return true;
+        } else {
+			var n;
+			if (accel == 0) {
+				n = now / time;
+			} else if (accel > 0) {
+				var t = now / time;
+				n = t*t;
+            } else {
+				var t = now/time;
+				n = ( 1-(1-t)*(1-t) );
+			}
+			target[propName] = start + diff * n;
+			return false;
+        }
+    }
+}
+
+/**
+ * ループ移動アクション（絶対アクション）
+ * @param start 開始位置（未指定時は現在値)
+ * @param min ループ最少値
+ * @param max ループ最大値
+ * @param loop ループ時間
+ */
+class LoopMoveAction extends AbsoluteActionHandler {
+
+	var initValue; // 初期時の値
+	var start;     // 始点指定 
+	var min;       // ループ最少値
+	var max;       // ループ最大値
+	var loop;      // ループ時間
+
+	/**
+	 * コンストラクタ
+	 */
+    function LoopMoveAction(target, propName, elm) {
+		super.AbsoluteActionHandler(target, propName, elm);
+		initValue = target[propName];
+		start  = elm.start;
+		min    = elm.min;
+		max    = elm.max;
+		loop   = elm.loop !== void ? +elm.loop : time;
+    }
+
+	/**
+	 * 最終値
+	 */
+	function getResultValue() {
+		return initValue;
+	}
+	
+	/**
+	 * 実行初回処理
+	 */
+	function init(target, propName) {
+		if (start === void) {
+			start = target[propName];
+		} else {
+			start = getRelative(start, initValue);
+		}
+		min = getRelative(min, initValue);
+		max = getRelative(max, initValue);
+		max   -= min;
+		start -= min;
+	}
+	
+    function doAction(target, propName, now, stopFlag) {
+		if (stopFlag) {
+			return true;
+		} else {
+			target[propName] = min + (start + max * (now%loop) / loop) % max;
+			return false;
+        }
+    }
+}
+
+
+/**
+ * 振動アクション（相対アクション）
+ * vibration : 振動量
+ * offset    : 補正値
+ */
+class VibrateAction extends RelativeActionHandler {
+
+    var vibration;
+    var offset;
+
+    function VibrateAction(target, propName, elm) {
+        super.RelativeActionHandler(target, propName, elm);
+        vibration  = getRelative(elm.value !== void ? elm.value : elm.vibration, target[propName]);
+        offset    = getRelative(elm.offset, target[propName]);
+    }
+};
+
+/**
+ * ランダム振動アクション（相対アクション）
+ * vibration : 振動量
+ * offset    : 補正値
+ * waittime 振動間の待ち時間
+ */
+class RandomAction extends VibrateAction {
+
+    var waitTime;
+    var randomTime;
+    var randomValue;
+    
+    function RandomAction(target, propName, elm) {
+        super.RelativeActionHandler(target, propName, elm);
+        vibration = elm.value !== void ? elm.value : elm.vibration;
+        waitTime  = +elm.waittime;
+        randomTime = 0;
+        randomValue = 0;
+    }
+
+    function doAction(target, propName, now, stopFlag) {
+        if (stopFlag) {
+            return true; 
+        } else {
+            if (now >= randomTime) {
+                randomValue = (Math.random() * vibration * 2 - vibration) + offset;
+                randomTime += waitTime;
+            }
+            target[propName] += randomValue;
+            return false;
+        }
+    }
+};
+
+/**
+ * 矩形波
+ * vibration : 振動量
+ * offset    : 補正値
+ * ontime  : ONの時間   値:vibration
+ * offtime : OFFの時間  値:-vibration
+ */
+class SquareAction extends VibrateAction {
+
+    var ontime;
+    var offtime;
+
+    function SquareAction(target, propName, elm) {
+        super.VibrateAction(target, propName, elm);
+        ontime  = +elm.ontime if elm.ontime !== void;
+        offtime = +elm.offtime if elm.offtime  !== void;
+    };
+
+    function doAction(target, propName, now, stopFlag) {
+        if (stopFlag) {
+            return true;
+        } else {
+            target[propName] += ((now % (ontime + offtime) < ontime) ? vibration : -vibration) + offset;
+            return false;
+        }
+    }
+};
+
+/**
+ * 三角波
+ * vibration : 振動量
+ * offset    : 補正値
+ * 0～vibration を繰り返す
+ * ontime  : 上昇時間
+ * offtime : 加工時間
+ */
+class TriangleAction extends VibrateAction {
+
+    var ontime;
+    var offtime;
+
+    function TriangleAction(target, propName, elm) {
+        super.VibrateAction(target, propName, elm);
+        ontime  = +elm.ontime if elm.ontime !== void;
+        offtime = +elm.offtime if elm.offtime  !== void;
+    };
+
+    function doAction(target, propName, now, stopFlag) {
+        if (stopFlag) {
+            return true;
+        } else {
+            now = now % (ontime + offtime);
+            var v;
+            if (now <= ontime) {
+                v = vibration * now / ontime;
+            } else {
+                if (offtime > 0) {
+                    v = vibration * (offtime - (now - ontime)) / offtime;
+                } else {
+                    v = 0;
+                }
+            }
+            target[propName] += v + offset;
+            return false;
+        }
+    }
+};
+
+/**
+ * 三角関数振動アクション（相対アクション）
+ * vibration : 振動量
+ * offset    : 補正値
+ * cycle     : 周期(ms)
+ * angvel    : 角速度(度/sec) ※cycle指定時は無効
+ */
+class TrigonoAction extends VibrateAction {
+    
+    var cycle;
+    var angvel;
+    
+    function TrigonoAction(target, propName, elm) {
+        super.VibrateAction(target, propName, elm);
+        cycle  = +elm.cycle if elm.cycle !== void;
+        angvel = +elm.angvel if elm.angvel !== void;
+    }
+
+    function getAngle(now) {
+        return (cycle !== void) ? (Math.PI * 2 * now / cycle) : (Math.PI * 2 * now * angvel / 360000.0);
+    }
+};
+
+/**
+ * sin振動アクション（相対アクション）
+ * vibration : 振動量
+ * offset    : 補正値
+ * cycle     : 周期(ms)
+ * angvel    : 角速度(度/sec) ※cycle指定時は無効
+ */
+class SinAction extends TrigonoAction {
+
+    function SinAction(target, propName, elm) {
+        super.TrigonoAction(target, propName, elm);
+    }
+    function doAction(target, propName, now, stopFlag) {
+        if (stopFlag) {
+            return true;
+        } else {
+            target[propName] += vibration * Math.sin(getAngle(now)) + offset;
+            return false;
+        }
+    }
+}
+
+/**
+ * cos振動アクション（相対アクション）
+ * vibration : 振動量
+ * offset    : 補正値
+ * cycle     : 周期(ms)
+ * angvel    : 角速度(度/sec) ※cycle指定時は無効
+ */
+class CosAction extends TrigonoAction {
+
+    function CosAction(target, propName, elm) {
+        super.TrigonoAction(target, propName, elm);
+    }
+    function doAction(target, propName, now, stopFlag) {
+        if (stopFlag) {
+            return true;
+        } else {
+            target[propName] += vibration * Math.cos(getAngle(now)) + offset;
+            return false;
+        } 
+    }
+}
+
+/**
+ * 落下アクション
+ * distance 落下量
+ * time 落下時間
+ */
+class FallAction extends RelativeActionHandler {
+
+    var distance;
+    var fallTime;
+    
+    function FallAction(target, propName, elm) {
+        super.RelativeActionHandler(target, propName, elm);
+        distance = +elm.distance;
+    }
+
+    function doAction(target, propName, now, stopFlag) {
+        if (stopFlag) {
+            return true;
+        } else {
+			//dm("fall:" + now);
+            target[propName] += distance * (now/time - 1.0);
+            return false;
+        }
+    }
+};
+
+// ----------------------------------------------------------------
+// 旧版互換用機能
+// ----------------------------------------------------------------
+
+function LayerNormalZoomModule(elm) {
+	return %[
+	zoom :%[handler:"MoveAction", start:elm.start, value:elm.zoom, time:elm.time, delay:elm.delay, accel:elm.accel]
+		];
+}
+
+function LayerToRotateModule(elm) {
+    var rotate = elm.angle !== void ? elm.angle : elm.rotate;
+	return %[
+	rotate :%[ handler:"MoveAction", start:elm.start, value:rotate, time:elm.time, delay:elm.delay, accel:elm.accel]
+		];
+}
+
+function LayerFadeToModeModule(elm) {
+	return %[
+	opacity: %[ handler:"MoveAction", start:elm.start, value:elm.opacity, time:elm.time, delay:elm.delay, accel:elm.accel]
+		];
+}
+
+function LayerMoveModule(elm, accel) {
+	return %[
+	left: %[ handler:"MoveAction", start:elm.startx, value:elm.x, time:elm.time, delay:elm.delay, accel:accel],
+	top : %[ handler:"MoveAction", start:elm.starty, value:elm.y, time:elm.time, delay:elm.delay, accel:accel]
+		];
+}
+
+function LayerNormalMoveModule(elm) {
+	return LayerMoveModule(elm, 0);
+}
+
+function LayerAccelMoveModule(elm) {
+	return LayerMoveModule(elm, 1);
+}
+
+function LayerDecelMoveModule(elm) {
+	return LayerMoveModule(elm, -1);
+}
+
+function LayerVibrateActionModule(elm) {
+	return %[
+	left: %[ handler:"RandomAction", vibration:elm.vibration/2, waittime:elm.waittime, time:elm.time, delay:elm.delay],
+	top: %[ handler:"RandomAction", vibration:elm.vibration/2, waittime:elm.waittime, time:elm.time, delay:elm.delay]
+		];
+}
+
+function LayerJumpActionModule(elm) {
+	return %[
+	left: null,
+	top: %[ handler:"SinAction", vibration:elm.vibration, cycle:elm.cycle, angvel:elm.angvel, time:elm.time, delay:elm.delay]
+		];
+}
+
+function LayerJumpOnceActionModule(elm) {
+	return %[
+    left: null,
+	top: %[ handler:"SinAction", vibration:-elm.vibration, cycle:elm.cycle, angvel:elm.angvel, time:elm.cycle/2, delay:elm.delay]
+		];
+}
+
+function LayerWaveActionModule(elm) {
+	return %[
+    left: %[ handler:"SinAction", vibration:elm.vibration, cycle:elm.cycle, angvel:elm.angvel, time:elm.time, delay:elm.delay],
+	top: null
+		];
+}
+
+function LayerWaveOnceActionModule(elm) {
+	return %[
+	left: %[ handler:"SinAction", vibration:-elm.vibration, cycle:elm.cycle, angvel:elm.angvel, time:elm.cycle/2, delay:elm.delay],
+	top: null
+		];
+}
+
+function LayerFallActionModule(elm) {
+    var time = elm.falltime !== void ? elm.falltime : elm.time;
+	return %[
+	left: null,
+	top: %[ handler:"FallAction", distance:elm.distance, time:time, delay:elm.delay]
+		];
+}
+
+function LayerVRotateZoomModule(elm) {
+	return %[
+	zoomx: %[ handler:"SinAction", vibration:"@", offset:"-@", cycle:elm.time, angvel:elm.angvel, time:elm.time, delay:elm.delay],
+	zoomy: null
+		];
+}
+
+function LayerHRotateZoomModule(elm) {
+	return %[
+	zoomy: %[ handler:"SinAction", vibration:"@", offset:"-@", cycle:elm.time, angvel:elm.angvel, time:elm.time, delay:elm.delay],
+	zoomx: null
+		];
+}
+
+function LayerHeartBeatZoomModule(elm) {
+	return %[
+	zoom: %[ handler:"SinAction", vibration:elm.zoom-100, cycle:elm.time*2, time:elm.time, delay:elm.delay]
+		];
+}
+
+function LayerVibrateZoomModule(elm) {
+	return %[
+	zoomx: %[ handler:"RandomAction", vibration:elm.vibration/2, waittime:elm.waittime, time:elm.time, delay:elm.delay],
+	zoomy: %[ handler:"RandomAction", vibration:elm.vibration/2, waittime:elm.waittime, time:elm.time, delay:elm.delay]
+		];
+}
+
+function LayerNormalRotateModule(elm) {
+    var cycle = elm.angvel !== void ? 360/elm.angvel*1000 : elm.cycle;
+	return %[
+	rotate: %[ handler:"TriangleAction", vibration:360, ontime:cycle, offtime:0, time:elm.time, delay:elm.delay]
+		];
+}
+
+function LayerVibrateRotateModule(elm) {
+ 	return %[
+	rotate: %[ handler:"RandomAction", vibration:elm.vibration/2, waittime:elm.waittime, time:elm.time, delay:elm.delay]
+		];
+}
+
+function LayerFalldownRotateModule(elm) {
+ 	return %[
+	rotate: %[ handler:"MoveAction", value:"@+" + elm.angle, accel:1, time:elm.time, delay:elm.delay]
+		];
+}
+
+function LayerBlinkModeModule(elm) {
+ 	return %[
+	visible: %[ handler:"SquareAction", vibration:1, ontime:elm.showtime, offtime:elm.hidetime, time:elm.time, delay:elm.delay]
+		];
+}
+
+function LayerFadeModeModule(elm) {
+ 	return %[
+	opacity: %[ handler:"TriangleAction", vibration:"@", offset:"-@", ontime:elm.intime, offtime:elm.outtime, time:elm.time, delay:elm.delay],
+		];
+}
