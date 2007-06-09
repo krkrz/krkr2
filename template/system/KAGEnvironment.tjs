@@ -1893,9 +1893,9 @@ class KAGEnvironment extends KAGEnvBase {
 
 	function playSE(id, time, play) {
 		if (time > 0)  {
-			kag.se[id].fadeIn(%[ storage:storage, loop:play.loop, time:time, start:play.start]);
+			kag.se[id].fadeIn(%[ storage:play.storage, loop:play.loop, time:time, start:play.start]);
 		} else {
-			kag.se[id].play(%[ storage:storage, loop:play.loop, start:play.start]);
+			kag.se[id].play(%[ storage:play.storage, loop:play.loop, start:play.start]);
 		}
 	}
 
