@@ -1056,7 +1056,7 @@ class KAGEnvCharacter extends KAGEnvLevelLayer, KAGEnvImage {
             strVoice   = void;
         }
 
-		if (!kag.skipNoDisp && voicename !== void && voicename != ""){
+		if (!isJump() && voicename !== void && voicename != ""){
 			//dm("Ä¶ˆ—:" + voicename);
 
             // Šg’£q•âŠ®ˆ—

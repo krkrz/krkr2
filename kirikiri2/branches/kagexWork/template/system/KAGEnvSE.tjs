@@ -1,11 +1,10 @@
 /**
  * 環境SEオブジェクト
  */
-class KAGEnvSE {
+class KAGEnvSE extends KAGEnvObject {
 
-    var env;
     var id;
-    var name;  // 参照しているファイル名
+	var storage;  // 参照しているファイル名
     var count; // 参照されたカウント値
 
 	var play;
@@ -18,7 +17,7 @@ class KAGEnvSE {
      * セーブ処理
      */
     function onStore(f) {
-		f.name  = name;
+		f.storage = storage;
 		f.id    = id;
 		f.count = count;
 		if (play !== void) {
@@ -36,7 +35,7 @@ class KAGEnvSE {
 
 	function onRestore(f) {
 		if (f !== void) {
-			name = f.name;
+			storage = f.storage;
 			id   = f.id;
 			count = f.count;
 			if (f.play !== void) {
@@ -55,8 +54,8 @@ class KAGEnvSE {
      * コンストラクタ
      */
     function KAGEnvSE(env, id) {
-        this.env = env;
-        this.id = id;
+		super.KAGEnvObject(env, "se" + id);
+		this.id = id;
     }
 
     /**
@@ -66,8 +65,8 @@ class KAGEnvSE {
 	function setPlay(param, elm) {
 		if (param !== void) {
 			stop = void;
-			if (kag.skipMode<SKIP_STOP || elm.loop) {
-				name = param;
+			if (!isSkip() || elm.loop) {
+				storage = param;
 				play = %[];
 				(Dictionary.assign incontextof play)(elm, false);
 				if (play.fade === void && play.time === void) {
@@ -76,7 +75,7 @@ class KAGEnvSE {
 				}
 			} else {
 				play = void;
-				name = void;
+				storage = void;
 			}
 		}
     }
@@ -88,7 +87,7 @@ class KAGEnvSE {
 	function setStop(param, elm) {
 		play = void;
 		fade = void;
-		name = void;
+		storage = void;
 		var time;
 		if (elm !== void && elm.time !== void) {
 			time = +elm.time;
@@ -133,7 +132,7 @@ class KAGEnvSE {
     }
 
     var secommands = %[
-    tagname : null, 
+	tagname : null, 
     storage : setPlay incontextof this,
     play : setPlay incontextof this,
     stop : setStop incontextof this,
@@ -195,7 +194,7 @@ class KAGEnvSE {
     }
 
 	function sync() {
-		if (!kag.skipNoDisp) {
+		if (!isJump()) {
 			if (fade !== void) {
 				if (fade.time === void) {
 					kag.se[id].volume = fade.volume;
@@ -205,19 +204,19 @@ class KAGEnvSE {
 				fade = void;
 			}
 			if (play !== void) {
-				if (kag.skipMode<SKIP_STOP || play.loop || !kag.nosewhenskip) {
+				if (!isSkip() || play.loop || !kag.nosewhenskip) {
 					var time = +play.time;
 					if (time > 0)  {
-						kag.se[id].fadeIn(%[ storage:name, loop:play.loop, time:time, start:play.start]);
+						kag.se[id].fadeIn(%[ storage:storage, loop:play.loop, time:time, start:play.start]);
 					} else {
-						kag.se[id].play(%[ storage:name, loop:play.loop, start:play.start]);
+						kag.se[id].play(%[ storage:storage, loop:play.loop, start:play.start]);
 					}
 				}
 				play = void;
 			}
 		}
 		if (stop !== void) {
-			if (kag.skipMode == SKIP_NONE && stop > 0) {
+			if (!isSkip() && stop > 0) {
 				kag.se[id].fadeOut(%[time:stop]);
 			} else {
 				kag.se[id].stop();
