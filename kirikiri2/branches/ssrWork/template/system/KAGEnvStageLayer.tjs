@@ -72,10 +72,10 @@ class KAGEnvStageLayer extends KAGEnvBackLayer {
 		}
 		
 		if (elm.xpos === void && elm.left === void && info.left !== void) {
-			left = +info.left;
+			props.left = +info.left;
 		}
 		if (elm.ypos === void && elm.top  === void && info.top !== void) {
-			top = +info.top;
+			props.top = +info.top;
 		}
 		setImageFile(image, elm);
 		setAutoTrans([info.trans, env.envinfo.stageTrans, env.envinfo.envTrans]);
