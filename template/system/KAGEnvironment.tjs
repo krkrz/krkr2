@@ -739,7 +739,7 @@ class KAGEnvironment extends KAGEnvBase {
 		trans = void;
         hideAll();
 		
-		if (!kag.skipNoDisp) {
+		if (!isJump()) {
 			if (!transMode && !isSkip()) {
 				foreach(elm, checkTrans);
 				if (trans !== void && trans.method !== void && !isSkip()) {
@@ -915,7 +915,7 @@ class KAGEnvironment extends KAGEnvBase {
 	 */
 	function clearLayers(base) {
 		hideAll();
-		if (!kag.skipNoDisp) {
+		if (!isJump()) {
 			update(base);
 		}
 	}
@@ -1085,7 +1085,7 @@ class KAGEnvironment extends KAGEnvBase {
         drawNamePage(kag.back, name);
 
         // ヒストリ用
-		if (!kag.skipNoDisp && kag.historyWriteEnabled) {
+		if (!isJump() && kag.historyWriteEnabled) {
             if (typeof kag.historyLayer.storeName !== 'undefined') {
                 kag.historyLayer.storeName(name);
             } else {
@@ -1175,7 +1175,7 @@ class KAGEnvironment extends KAGEnvBase {
         //dm("名前表示ハンドラ");
         if (elm === void || elm.name === void || elm.name == "") {
 
-			if (!kag.skipNoDisp) {
+			if (!isJump()) {
 				// キャラ指定が無い場合
 				drawName();
 				// 表情処理
@@ -1226,7 +1226,7 @@ class KAGEnvironment extends KAGEnvBase {
 			elm.dispName = dispName;
             
 			// 表情変更処理
-			if (!kag.skipNoDisp && faceLevelName !== void && currentNameTarget != ch &&
+			if (!isJump() && faceLevelName !== void && currentNameTarget != ch &&
                 ((currentNameTarget !== void && currentNameTarget.isShowFace()) || (ch !== void && ch.isShowFace())) &&
                 !transMode && !isSkip() && faceFadeTime > 0) {
                 
@@ -1262,7 +1262,7 @@ class KAGEnvironment extends KAGEnvBase {
                 
                 currentNameTarget = ch;
 
-				if (!kag.skipNoDisp) {
+				if (!isJump()) {
 					if (ch !== void && ch.isShowFace()) {
 						if (!transMode) {
 							drawFacePage(kag.fore, ch);
@@ -1310,7 +1310,7 @@ class KAGEnvironment extends KAGEnvBase {
 
             // ボイスの登録
             var nextVoice;
-			if (!kag.skipNoDisp && kag.historyWriteEnabled && (nextVoice = getNextVoiceScript() + getVoicePlayingScript(ch)) != "") {
+			if (!isJump() && kag.historyWriteEnabled && (nextVoice = getNextVoiceScript() + getVoicePlayingScript(ch)) != "") {
                 nextVoice = "global.world_object.env.stopAllVoice();" + nextVoice;
 				kag.historyLayer.setNewAction(nextVoice);
             }
@@ -1320,7 +1320,7 @@ class KAGEnvironment extends KAGEnvBase {
                 dispName = global.dispNameFilter(dispName);
             }
 
-			if (!kag.skipNoDisp) {
+			if (!isJump()) {
 				drawName(dispName, nextVoice);
 			}
         }
@@ -1358,7 +1358,7 @@ class KAGEnvironment extends KAGEnvBase {
      * 行待ち終了後に呼び出される処理
      */
     function afterline(elm) {
-		if (!kag.skipNoDisp && kag.historyWriteEnabled) {
+		if (!isJump() && kag.historyWriteEnabled) {
 			kag.historyLayer.clearAction();
         }
 		return 0;
@@ -1370,7 +1370,7 @@ class KAGEnvironment extends KAGEnvBase {
      * ページ処理後に呼び出される処理
      */
     function afterpage(elm) {
-		if (kag.skipNoDisp) {
+		if (isJump()) {
 			currentNameTarget = void;
 			kag.stopAllActions();
 			if (System.getTickCount() - kag.skipNoDispStartTime > 3000) {
@@ -1556,7 +1556,7 @@ class KAGEnvironment extends KAGEnvBase {
 			value.clearAction(all);
 		}, all);
 		//dm("アクション停止");
-		if (!kag.skipNoDisp) {
+		if (!isJump()) {
 			update(kag.fore);
 		}
     }

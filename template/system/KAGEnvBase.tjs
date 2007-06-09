@@ -1,25 +1,18 @@
-/**
- * 環境オブジェクトの基底クラス
- */
-class KAGEnvBase {
+class KAGEnvObject {
 
     // 各種情報を保持する環境
     var env;
 	// 名前
 	var name;
 
-	/**
-	 * コンストラクタ
-	 * @param env 環境
-	 */
-	function KAGEnvBase(env, name) {
+	function KAGEnvObject(env, name) {
 		this.env = env;
 		this.name = name;
 	}
 
 	function finalize() {
 	}
-	
+
 	// メッセージ表示用
     function dm(msg) {
 		if (kag.debugLevel >= tkdlSimple) {
@@ -31,6 +24,30 @@ class KAGEnvBase {
     function isSkip() {
         return env.kag.skipMode != SKIP_FORCE && (env.kag.skipMode || env.kag.noeffect);
     }
+
+	// ジャンプ状態か
+	function isJump() {
+		return false;
+	}
+}
+
+
+/**
+ * 環境オブジェクトの基底クラス
+ */
+class KAGEnvBase extends KAGEnvObject {
+
+	/**
+	 * コンストラクタ
+	 * @param env 環境
+	 */
+	function KAGEnvBase(env, name) {
+		super.KAGEnvObject(env, name);
+	}
+
+	function finalize() {
+		super.finalize();
+	}
 	
 	// --------------------------------------------------------------------
 	// トランジション処理
@@ -283,7 +300,7 @@ class KAGEnvBase {
 			}
 		}
 		
-		if (!kag.skipNoDisp) {
+		if (!isJump()) {
 			//dm("更新処理開始" + name);
 			if (env.transMode) {
 				update(env.transMode == 1 ? kag.back : kag.fore);
