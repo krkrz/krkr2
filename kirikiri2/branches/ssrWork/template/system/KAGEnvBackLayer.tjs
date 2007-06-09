@@ -1,0 +1,71 @@
+/**
+ * KAG 前景レイヤのレベル制御用
+ */
+class KAGEnvBackLayer extends KAGEnvLayer {
+
+	var absolute;
+	
+	// 描画対象レイヤ
+	var targetLayer;
+	
+    /**
+     * コンストラクタ
+     */
+	function KAGEnvBackLayer(env, name, absolute) {
+		super.KAGEnvLayer(env, name);
+		this.absolute = absolute;
+    }
+
+    function finalize() {
+		env.trashLayer(targetLayer);
+		super.finalize();
+    }
+
+	/**
+	 * レイヤのコピー処理
+	 */
+	function onCopyLayer(toback, backlay) {
+		if (backlay) {
+			if (toback) {
+				if (targetLayer !== void) {
+					//dm("裏画面にコピー:" + name);
+					//dm("元レイヤ:" + targetLayer + ":" + (env.isForeLayer(targetLayer) ? "表" : "裏"));
+					if (env.isForeLayer(targetLayer) && targetLayer.visible) {
+						targetLayer = getNewLayer(this, false, name, targetLayer);
+						targetLayer.absolute = absolute;
+						//dm("複製レイヤ:" + targetLayer + ":" + (env.isForeLayer(targetLayer) ? "表" : "裏"));
+					} else {
+						//dm("廃棄");
+						targetLayer = env.trashLayer(targetLayer);
+					}
+				}
+			} else {
+				if (targetLayer !== void) {
+					//dm("表画面にコピー:" + name);
+					if (!env.isForeLayer(targetLayer) && targetLayer.visible) {
+						//dm("表に移動");
+						env.toForeLayer(targetLayer);
+						targetLayer.absolute = absolute;
+					} else {
+						//dm("廃棄");
+						targetLayer = env.trashLayer(targetLayer);
+					}
+				}
+			}
+		}
+	}
+	
+    /**
+     * レイヤ情報の取得
+     * @param isfore fore / back      
+     * 同時にレベルに応じた front/back の処理も実行する
+     */
+	function getLayer(isfore) {
+		if (targetLayer === void || env.isForeLayer(targetLayer) != isfore) {
+			targetLayer = getNewLayer(this, isfore, name, targetLayer);
+		}
+		targetLayer.absolute = absolute;
+		return targetLayer;
+    }
+
+}

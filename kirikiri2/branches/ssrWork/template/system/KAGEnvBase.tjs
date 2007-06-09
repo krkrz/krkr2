@@ -1,0 +1,277 @@
+class KAGEnvObject {
+
+    // 各種情報を保持する環境
+	var env;
+	// 名前
+	var name;
+
+	function KAGEnvObject(env, name) {
+		this.env = env;
+		this.name = name;
+	}
+
+	function finalize() {
+	}
+
+	// メッセージ表示用
+	function dm(msg) {
+		return env.dm(msg);
+	}
+
+    // スキップ状態か
+    function isSkip() {
+		return env.isSkip();
+	}
+
+	// ジャンプ状態か
+	function isJump() {
+		return env.isJump();
+	}
+}
+
+
+/**
+ * 環境オブジェクトの基底クラス
+ */
+class KAGEnvBase extends KAGEnvObject {
+
+	/**
+	 * コンストラクタ
+	 * @param env 環境
+	 */
+	function KAGEnvBase(env, name) {
+		super.KAGEnvObject(env, name);
+	}
+
+	function finalize() {
+		super.finalize();
+	}
+	
+	// --------------------------------------------------------------------
+	// トランジション処理
+	// --------------------------------------------------------------------
+	
+    // 画面更新設定
+    var trans;
+	
+    /**
+     * トランジション情報の取得
+     */
+    function getTrans(name, elm) {
+		// 名前指定で上書き
+		var tr = %[];
+		if (name == "void" || name == "none") {
+			return tr;
+		}
+		var info;
+		if (env.transitions !== void && (info = env.transitions[name]) !== void) {
+			//dm("登録ずみのトランジション:" + name);
+			// コピー
+			(Dictionary.assign incontextof tr)(info, false); 
+			// パラメータのコピー
+			foreach(elm, function(name, value, elm, tr) {
+				if (transitionParam[name] !== void) {
+					//dm("パラメータコピー:" + name + ":" + value);
+					tr[name] = value;
+				}
+			}, tr);
+			return tr;
+		} else if (elm != null && (transitionName[name] !== void || name.substring(0,5) == "trans")) {
+			//dm("規定のシステムトランジション:" + name);
+			var tr = %[];
+			// 規定のトランジション
+			// パラメータのコピー
+			foreach(elm, function(name, value, elm, tr) {
+				if (transitionParam[name] !== void) {
+					tr[name] = value;
+                }
+			}, tr);
+			tr.method = name;
+			return tr;
+		}
+    }
+
+    /**
+	 * トランジションを設定
+	 * @param name トランジション名
+	 * @param elm パラメータ
+	 * @return トランジションが設定された
+	 */
+	function setTrans(name, elm) {
+		//dm("トランジション設定:" + name);
+		var tr = getTrans(name, elm);
+		if (tr !== void) {
+			trans = tr;
+			return true;
+		}
+		return false;
+    }
+
+	// 自動トランジション
+	var autoTrans;
+
+	// 自動トランジションを登録
+	function setAutoTrans(list) {
+		for (var i=0;i<list.count;i++) {
+			var param = list[i];
+			if (param !== void) {
+				if (typeof param == "String") {
+					var tr = getTrans(param);
+					if (tr !== void && tr.method != void) {
+						autoTrans = tr;
+						//dm("自動トランジション指定:" + tr.method + ":" + tr.time);
+						return;
+					}
+				} else if (param instanceof "Dictionary") {
+					autoTrans = param;
+					return;
+				}
+			}
+		}
+	}
+
+	var baseCommands = %[
+	tagname : null, 
+	time : null,
+	trans : this.setTrans incontextof this,
+		];
+
+	/**
+	 * コマンドの実行
+	 * @param cmd コマンド
+	 * @param param パラメータ
+	 * @param elm 他のコマンドも含む全パラメータ
+	 * @return 実行が行われた場合 true
+	 */
+    function doCommand(cmd, param, elm) {
+		
+		//dm("コマンド処理:" + cmd + " パラメータ:" + param);
+		
+		var func;
+		if ((func = baseCommands[cmd]) !== void) {
+			if (func != null) {
+				func(param, elm);
+			}
+			return true;
+        }
+
+		// トランジションパラメータを排除
+		if (transitionParam[cmd] !== void) {
+			return true;
+		}
+
+		// トランジション指定の判定
+		if (setTrans(cmd, elm)) {
+			return true;
+		}
+		
+		return false;
+	}
+
+	// タグ処理の帰り値
+	var _ret;
+	property ret {
+		getter() {
+			return _ret;
+		}
+		setter(v) {
+			if (v === void) {
+				_ret = 0;
+            } else {
+                if (v < ret) {
+                    _ret = v;
+                }
+            }
+        }
+    }
+
+	/**
+	 * KAG 個別コマンド処理
+	 * @param elm 引数
+	 */
+	function command(elm) {
+		var names = [];
+		names.assign(elm);
+		for (var i=0; i<names.count; i+= 2) {
+			if (!doCommand(names[i], names[i+1], elm)) {
+				env.errorCmd(name + ":未知のコマンド:" + names[i]);
+			}
+		}
+	}
+
+	/**
+	 * 更新処理
+	 */
+	function doUpdate(elm) {
+		env.stopTrans();
+		env.backup();
+		update(false);
+		env.beginTransition(trans);
+	}
+
+	/**
+	 * 更新処理
+	 */
+	function update(isfore) {
+	}
+
+    // フェード指定のデフォルト値
+    property fadeValue {
+        getter() {
+            return env.fadeValue;
+        }
+    }
+	
+	/**
+	 * KAG タグ処理
+	 * @param elm 要素
+	 */
+	function tagfunc(elm) {
+		
+		ret = void;
+		trans = void;
+		autoTrans = void;
+		
+		// コマンドを実行
+		command(elm);
+
+		// トランジション再処理
+		if (trans === void) {
+			if (elm.fade) {
+				var fadeTime = elm.fade;
+				trans = %[ "time" => fadeTime > 1 ? fadeTime : fadeValue];
+			} else {
+				trans = autoTrans;
+			}
+		}
+
+		if (trans !== void) {
+			// キャラクタ強制消去
+			if (trans.charoff) {
+				foreach(env.characters, function(name,value,dict) {
+					value.disp = CLEAR;
+				} incontextof this);
+			}
+			// レイヤ強制消去
+			if (trans.layeroff) {
+				foreach(env.layers, function(name,value,dict) {
+					value.disp = CLEAR;
+				} incontextof this);
+			}
+		}
+		
+		if (!isJump()) {
+			//dm("更新処理開始" + name);
+			if (env.transMode) {
+				update(env.transMode != 1);
+			} else if (trans === void) {
+				update(true);
+			} else {
+				doUpdate(elm);
+			}
+			env.hideMessage(trans);
+		}
+
+		return ret;
+	}
+};
