@@ -1972,7 +1972,7 @@ class KAGEnvironment extends KAGEnvBase {
 
 	function stopBGM(time) {
 		if (time > 0) {
-			kag.bgm.fadeOut(%[ time:stop ]);
+			kag.bgm.fadeOut(%[ time:time ]);
 		} else {
 			kag.bgm.stop();
 		}
