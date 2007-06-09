@@ -180,6 +180,80 @@ var actionParam = %[
     "loop" => true,
     ];
 
+// ----------------------------------------------------------------
+// アクション情報のコピー
+// ----------------------------------------------------------------
+
+/**
+ * アクション情報のコピー
+ * @param act  元アクション情報
+ * @param time 時間上書き指定
+ * @param elm  タグによる上書き用パラメータ情報
+ * @return システム登録用アクション情報
+ */
+function copyActionInfo(act, time, elm) {
+	var action = %[];
+	if (act !== void) {
+		var names = [];
+		names.assign(act);
+		if (act.module !== void) {
+			//dm("module 指定アクション:" + act.module);
+			if (typeof act.module != "String") {
+				throw new Exception("アクションモジュール名は文字列指定してください");
+			}
+			var module = Scripts.eval(act.module);
+			if (module !== void) {
+				// 旧スタイル
+				for (var i=0; i<names.count; i+= 2) {
+					var name = names[i];
+					var elm  = names[i+1];
+					action[name] = elm;
+				}
+				if (time !== void) {
+					action.time = time;
+				}
+				// パラメータのコピー
+				if (elm !== void) {
+					foreach(elm, function(name, value, elm, action) {
+						if (actionParam[name] !== void) {
+							action[name] = value;
+						}
+					}, action);
+				}
+				// 新スタイルに置き換え
+				action = module(action);
+			}
+		} else {
+			// 新スタイル
+			for (var i=0; i<names.count; i+= 2) {
+				var name  = names[i];
+				var value = names[i+1];
+				if (value instanceof "Dictionary") {
+					// 辞書の場合はクローンして時間指定
+					var e = %[];
+					(Dictionary.assign incontextof e)(value);
+					if (time !== void) {
+						e.time = time;
+					}
+					// パラメータのコピー
+					if (elm !== void) {
+						e.time   = +elm.time if elm.time !== void;
+						e.delay  = +elm.delay if elm.delay !== void;
+					}
+					action[name] = e;
+				} else {
+					// そうでない場合はそのまま
+					action[name] = value;
+				}
+			}
+		}
+	}
+	if (elm !== void) {
+		action.nowait = +elm.nowait if elm.nowait !== void;
+	}
+	return action;
+}
+
 KAGLoadScript('KAGEnvBase.tjs');
 KAGLoadScript('KAGEnvImage.tjs');
 KAGLoadScript('KAGEnvLayer.tjs');

@@ -7,7 +7,7 @@ class SimpleLayerGraphicLayer extends EnvGraphicLayer {
 	var ybase;
 	var originMode;
 	
-	function SimpleLayerGraphicLayer(owner, base, name) {
+	function SimpleLayerGraphicLayer(owner, isfore, name) {
 		super.EnvGraphicLayer(...);
 		originMode = owner.originMode;
 		xbase = owner.xbase;
@@ -89,36 +89,36 @@ class KAGEnvSimpleLayer extends KAGEnvLevelLayer, KAGEnvLayer {
 				ybase = 0;
 				break;
 			case 2:
-				xbase = kag.scWidth / 2;
+				xbase = env.xmax;
 				ybase = 0;
 				break;
 			case 3:
-				xbase = kag.scWidth;
+				xbase = env.xmax*2;
 				ybase = 0;
 				break;
 			case 4:
-				xbase = kag.scWidth;
-				ybase = kag.scHeight / 2;
+				xbase = env.xmax*2;
+				ybase = env.ymax;
 				break;
 			case 5:
-				xbase = kag.scWidth;
-				ybase = kag.scHeight;
+				xbase = env.xmax*2;
+				ybase = env.ymax*2;
 				break;
 			case 6:
-				xbase = kag.scWidth / 2;
-				ybase = kag.scHeight;
+				xbase = env.xmax;
+				ybase = env.ymax*2;
 				break;
 			case 7:
 				xbase = 0;
-				ybase = kag.scHeight;
+				ybase = env.ymax*2;
 				break;
 			case 8:
 				xbase = 0;
-				ybase = kag.scHeight / 2;
+				ybase = env.ymax;
 				break;
 			default:
-				xbase = kag.scWidth / 2;
-				ybase = kag.scHeight / 2;
+				xbase = env.xmax;
+				ybase = env.ymax;
 				break;
 			}
 		}
@@ -200,8 +200,8 @@ class KAGEnvSimpleLayer extends KAGEnvLevelLayer, KAGEnvLayer {
 	/**
 	 * êVÉåÉCÉÑê∂ê¨
 	 */
-	function createLayer(owner, base, name) {
-		return new SimpleLayerGraphicLayer(owner, base, name);
+	function createLayer(owner, isfore, name) {
+		return new SimpleLayerGraphicLayer(owner, isfore, name);
 	}
 
 }

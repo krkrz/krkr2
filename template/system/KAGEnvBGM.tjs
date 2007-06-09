@@ -74,16 +74,14 @@ class KAGEnvBgm extends KAGEnvObject {
 			stop = void;
 			pause = void;
 			resume = void;
-
-			storage = param;
 			play = %[];
 			(Dictionary.assign incontextof play)(elm, false);
+			play.storage = storage = param;
 			if (play.fade === void && play.time === void) {
 				fade = %[];
 				fade.volume = 100;
 			}
-			// Ä¶Šù“Çƒtƒ‰ƒO
-			kag.sflags["bgm_" + (param.toUpperCase())] = true;
+			env.setBGMFlag(param);
         }
     }
 
@@ -222,9 +220,9 @@ class KAGEnvBgm extends KAGEnvObject {
         }
 		sync();
 		if (waitFade !== void) {
-			return kag.waitBGMFade(waitFade);
+			return env.waitBGMFade(waitFade);
 		} else  if (wait !== void) {
-			return kag.waitBGMStop(wait);
+			return env.waitBGMStop(wait);
 		}
         return 0;
     }
@@ -232,50 +230,23 @@ class KAGEnvBgm extends KAGEnvObject {
 	function sync() {
 		if (!isJump()) {
 			if (fade !== void) {
-				if (fade.time === void) {
-					kag.bgm.setVolume(fade.volume * 1000);
-				} else {
-					kag.bgm.fade(fade);
-				}
+				env.setBGMFade(fade);
 				fade = void;
 			}
 			if (play !== void) {
-				var time = +play.time;
-				if (play.noxchg) {
-					if (!isSkip() && time > 0)  {
-						kag.bgm.fadeIn(%[ storage:storage, loop:play.loop, time:time, start:play.start]);
-					} else {
-						kag.bgm.play(%[ storage:storage, loop:play.loop, paused:play.paused, start:play.start]);
-					}
-				} else {
-					if (!isSkip() && (time > 0 || +play.intime > 0)) {
-						kag.bgm.exchange(%[ storage:storage, loop:play.loop, time:time, intime:play.intime, outtime:play.outtime, overlap:play.overlap, start:play.start]);
-					} else {
-						kag.bgm.play(%[ storage:storage, loop:play.loop, paused:play.paused, start:play.start]);
-					}
-				}
-				kag.clearBgmStop();
-				kag.clearBgmLabel();
+				env.playBGM(isSkip() ? 0 : +play.time, play);
 				play = void;
 			}
 			if (pause !== void) {
-				if (pause > 0) {
-					kag.bgm.fadePause(%[ time: +param]);
-				} else {
-					kag.bgm.pause();
-				}
+				env.pauseBGM(pause);
 				pause = void;
 			} else if (resume !== void) {
-				kag.bgm.resume();
+				env.resumeBGM();
 				resume = void;
 			}
 		}
 		if (stop !== void) {
-			if (!isSkip() && stop > 0) {
-				kag.bgm.fadeOut(%[ time:stop ]);
-			} else {
-				kag.bgm.stop();
-			}
+			env.stopBGM(isSkip() ? 0 : +stop);
 			stop = void;
 		}
 	}

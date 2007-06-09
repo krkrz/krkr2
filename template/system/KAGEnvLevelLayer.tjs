@@ -36,10 +36,10 @@ class KAGEnvLevelLayer {
 			if (toback) {
 				if (targetLayer !== void) {
 					//dm("裏画面にコピー:" + name);
-					//dm("元レイヤ:" + targetLayer + ":" + (targetLayer.parent === kag.back.base ? "裏" : "表"));
-					if (targetLayer.parent === kag.fore.base && targetLayer.visible) {
-						targetLayer = getNewLayer(this, kag.back, name, targetLayer);
-						//dm("複製レイヤ:" + targetLayer + ":" + (targetLayer.parent === kag.back.base ? "裏" : "表"));
+					//dm("元レイヤ:" + targetLayer + ":" + (env.isForeLayer(targetLayer) ? "表" : "裏"));
+					if (env.isForeLayer(targetLayer) && targetLayer.visible) {
+						targetLayer = getNewLayer(this, false, name, targetLayer);
+						//dm("複製レイヤ:" + targetLayer + ":" + (env.isForeLayer(targetLayer) ? "表" : "裏"));
 					} else {
 						//dm("廃棄");
 						targetLayer = env.trashLayer(targetLayer);
@@ -47,14 +47,12 @@ class KAGEnvLevelLayer {
 				}
 			} else {
 				if (targetLayer !== void) {
-					//dm("表画面にコピー:" + name);
-					if (targetLayer.parent === kag.back.base && targetLayer.visible) {
-						//dm("表に移動");
-						var absolute = targetLayer.absolute;
-						targetLayer.parent = kag.fore.base;
-						targetLayer.absolute = absolute;
+					dm("表画面にコピー:" + name);
+					if (!env.isForeLayer(targetLayer) && targetLayer.visible) {
+						dm("表に移動");
+						env.toForeLayer(targetLayer);
 					} else {
-						//dm("廃棄");
+						dm("廃棄");
 						targetLayer = env.trashLayer(targetLayer);
 					}
 				}
@@ -67,22 +65,15 @@ class KAGEnvLevelLayer {
      * @param base fore / back      
      * 同時にレベルに応じた front/back の処理も実行する
      */
-	function getLayer(base) {
-		//dm("レイヤ取得:" + name + ":" + (base == kag.back ? "裏" : "表"));
-		//if (targetLayer !== void) {
-		//dm(" 現在レイヤ:" + targetLayer + "/" + (targetLayer.parent == kag.back.base ? "裏":"表"));
-		//}
-		if (targetLayer === void || targetLayer.parent !== base.base) {
-			//dm("新規レイヤ生成:" + name);
-			targetLayer = getNewLayer(this, base, name, targetLayer);
+	function getLayer(isfore) {
+		if (targetLayer === void || env.isForeLayer(targetLayer) != isfore) {
+			targetLayer = getNewLayer(this, isfore, name, targetLayer);
 		}
 		if (restore) {
-			//dm("復帰実行:" + level + "/" + absolute);
 			targetLayer.level    = +level    if (level !== void);
 			targetLayer.absolute = +absolute if (absolute !== void);
 			restore = false;
 		}
-
 		if (level === void) {
 			level = env.defaultLevel;
 		}
