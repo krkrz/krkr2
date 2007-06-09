@@ -638,6 +638,7 @@ class KAGEnvImage extends KAGEnvBase {
 		rgamma    = f.rgamma;
 		ggamma    = f.ggamma;
 		bgamma    = f.bgamma;
+		trans     = void;
 		//dm("復帰:" + name + ":" + disp + "("  + left + "," + top + ")");
 	}
 
@@ -716,7 +717,7 @@ class KAGEnvImage extends KAGEnvBase {
 	/**
 	 * 表示更新前のフラグ初期化
 	 */
-	function tagfunc(elm) {
+	function tagcommand(elm) {
 		syncMode = void;
 		movieSyncMode = void;
 		layerOn = prevShow = isShowBU();
@@ -724,7 +725,7 @@ class KAGEnvImage extends KAGEnvBase {
 		doReset      = false;
 		doStopAction = false;
 		actionList.clear();
-		return super.tagfunc(elm);
+		super.tagcommand(elm);
 	}
 
 	/**
