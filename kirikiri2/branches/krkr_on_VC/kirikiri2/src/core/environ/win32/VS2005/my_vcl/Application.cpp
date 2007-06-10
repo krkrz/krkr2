@@ -58,6 +58,7 @@ void MyApp::OnIdle(wxIdleEvent& event)
 {
 	bool Done;  //（戻り値）ほかのアプリケーションに制御を移すとき true
 	Application->OnIdle(Application, Done);
+	wxApp::OnIdle(event);
 }
 
 //----------------------------------------------------------------------------

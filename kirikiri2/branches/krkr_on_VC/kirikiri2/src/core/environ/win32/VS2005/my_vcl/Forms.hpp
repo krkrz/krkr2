@@ -18,10 +18,12 @@ public:
 
 //----------------------------------------------------------------------------
 typedef unsigned char Byte;
+class MyFrameTCustomForm;
 class TCustomForm : public TScrollingWinControl
 {
+friend MyFrameTCustomForm;
 protected:
-	wxFrame* m_wxFrame;
+	MyFrameTCustomForm* m_wxFrame;
 public:
 	TCustomForm(TComponent* owner);
 	virtual ~TCustomForm();
