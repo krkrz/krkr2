@@ -1,4 +1,20 @@
 ------------------------------------------------------------------------------
+	_crtBreakAlloc が便利っぽい。が、VC2005EEでは使えねぇ
+------------------------------------------------------------------------------
+	STGを実行すると、tTVPTimerThread::Add が17回呼ばれるが、tTVPTimerThread::Remove は6回しか呼ばれない
+	Timerオブジェクトがinvalidateされないために問題を起しているようだ
+
+	tTJS::Release が呼ばれる回数が足りない気がする。RefCount が 0 にならん。
+	tTJSScriptCache::ExecScript
+		tTJSScriptBlock::Release
+			tTJSScriptBlock::~tTJSScriptBlock
+				tTJS::Release
+
+	tTJSInterCodeContext::Finalize
+		tTJSScriptBlock::Release
+			tTJSScriptBlock::~tTJSScriptBlock
+				tTJS::Release
+------------------------------------------------------------------------------
 	Shift+F4 でコンソールが出現する機構。
 	TTVPWindowForm::ShowConsoleMenuItem->ShortCut = TVPMainForm->ShowConsoleMenuItem->ShortCut;
 	

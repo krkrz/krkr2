@@ -2,15 +2,18 @@
 
 class MyFrameTCustomForm : public wxFrame
 {
+	friend TCustomForm;
 private:
 	TCustomForm * m_pForm;
 	int m_nLastX, m_nLastY;
+	bool m_bOnCloseCalledBeforeDestroy;
 public:
 	//------------------------------------
 	MyFrameTCustomForm(TCustomForm * pForm) :
 		wxFrame(NULL, -1, _T("Canvas Frame"), wxPoint(10, 10), wxSize(300, 300), wxDEFAULT_FRAME_STYLE)
 	{
 		m_pForm = pForm;
+		m_bOnCloseCalledBeforeDestroy = false;
 	}
 	//------------------------------------
 	// デストラクタが走る。MyFrameTCustomFormとwxFrameは対で動作する。
@@ -19,7 +22,13 @@ public:
 	// 理想は、片方を delete しようとしたら、互いに他方を deleteする構造か？　うまくいかない・・
 	virtual ~MyFrameTCustomForm()
 	{
-		m_pForm = NULL;
+		if ( m_pForm )
+		{
+			m_pForm->m_wxFrame = NULL;
+			TCustomForm * p = m_pForm;
+			m_pForm = NULL;
+			delete p;
+		}
 	}
 	//------------------------------------
 	void OnPaint(wxPaintEvent& event)
@@ -185,9 +194,8 @@ public:
 		{
 			if ( m_pForm && m_pForm->OnClose )
 				m_pForm->OnClose(m_pForm, Action);
-			TCustomForm * p = m_pForm;
-			m_pForm = NULL;
-			delete p;
+			m_bOnCloseCalledBeforeDestroy = true;
+			Destroy();
 			return;
 		}
 
@@ -211,9 +219,8 @@ public:
 				event.Veto();
 				break;
 			case caFree:
-				TCustomForm * p = m_pForm;
-				m_pForm = NULL;
-				delete p;
+				m_bOnCloseCalledBeforeDestroy = true;
+				Destroy();
 				break;
 			}
 		}
@@ -223,14 +230,14 @@ public:
 	//------------------------------------
 	virtual bool Destroy()
 	{
-		bool res = wxFrame::Destroy();
-
-		if ( res && m_pForm && m_pForm->OnClose )
+		if ( m_bOnCloseCalledBeforeDestroy == false && m_pForm && m_pForm->OnClose )
 		{
 			TCloseAction Action = caFree;
 			m_pForm->OnClose(m_pForm, Action);
 		}
-		m_pForm = NULL;
+
+		bool res = wxFrame::Destroy();
+		//m_pForm = NULL;
 		return res;
 	}
 
@@ -321,14 +328,19 @@ TCustomForm::TCustomForm(TComponent* Owner) : TScrollingWinControl(Owner)
 TCustomForm::~TCustomForm()
 {
 	// いまだにクローズされていないのだったら、イベント発行しておく
-	m_wxWindow->Destroy();
+	if ( m_wxFrame )
+		m_wxFrame->Destroy();
 
 	// VCLオブジェクトを潰すときは、デストロイ
 	// このハンドラ中では、まだ生きていないとダメだしい
 	if ( OnDestroy )
 		OnDestroy(this);
 
+	if ( m_wxFrame )
+		m_wxFrame->m_pForm = NULL;
+
 	m_wxWindow = NULL;
+	m_wxFrame = NULL;
 }
 
 
