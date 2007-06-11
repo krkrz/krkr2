@@ -185,40 +185,6 @@ class KAGEnvCharacter extends KAGEnvLevelLayer, KAGEnvImage {
 		global.KAGEnvImage.finalize();
     }
 
-    /**
-     * セーブ処理
-     */
-    function onStore(f) {
-        global.KAGEnvImage.onStore(f);
-        global.KAGEnvLevelLayer.onStore(f);
-        f.name = name;
-        f.initName = initName;
-        f.image = image;
-        f.yoffset = yoffset;
-        f.pose = pose;
-        f.dress = dress;
-        f.face = face;
-        f.voice = voice;
-        f.strVoice = strVoice;
-		f.posName = posName;
-    }
-
-    /**
-     * ロード処理
-     */
-    function onRestore(f) {
-        image = f.image;
-        yoffset = f.yoffset;
-        pose  = f.pose;
-        dress = f.dress;
-        face  = f.face;
-        voice = f.voice;
-        strVoice = f.strVoice;
-		posName  = posName;
-		global.KAGEnvImage.onRestore(f);
-		global.KAGEnvLevelLayer.onRestore(f);
-    }
-
     // 表情描画処理を行う
     var redrawFace;
 

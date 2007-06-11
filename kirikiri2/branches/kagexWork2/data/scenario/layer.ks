@@ -1,15 +1,15 @@
 *start|スタート
 
-; ワールド拡張の特殊環境は解除しておく
-[linemode]
-[csysbutton]
+[clearlayers]
+[position layer=message0 frame="messagewindow" opacity=255 left=25 top=360 width=750 height=220 marginL=16 marginT=40 marginR=16 marginB=16 nameLeft=32 nameTop=8 nameWidth=150 nameHeight=40 visible=false]
+[current layer=message0]
 
 [layopt layer=message0 visible]
 KAGEX のレイヤ拡張機能のサンプルです。レイヤに対して回転・拡大縮小の制御ができます。
 [l][r]
 
-[image layer=stage page=fore storage="bg01_01"  visible=true left=0 top=0]
-[image layer=0     page=fore storage="ch_0_0_1" visible=true left=300 top=50]
+[image layer=base page=fore storage="bg01_01"  visible=true left=0 top=0]
+[image layer=0    page=fore storage="ch_0_0_1" visible=true left=300 top=50]
 [cm]
 
 スタート
@@ -112,10 +112,6 @@ X拡大
 キャラをズーム（時間指定）
 [l][r]
 
-[action layer=stage module=LayerNormalZoomModule zoom=150 time=1000]
-背景もズーム（時間指定）
-[l][r]
-
 *label12|ズーム回転
 
 [layopt layer=stage reset]
@@ -138,4 +134,4 @@ X拡大
 フェード点滅
 [l][r]
 
-[jump storage=s0001.ks]
+[return]

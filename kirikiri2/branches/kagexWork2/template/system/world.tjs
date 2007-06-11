@@ -266,47 +266,19 @@ KAGLoadScript('KAGEnvCharacter.tjs');
 KAGLoadScript('KAGEnvBGM.tjs');
 KAGLoadScript('KAGEnvSE.tjs');
 KAGLoadScript('KAGEnvironment.tjs');
+KAGLoadScript('SceneParser.tjs');
+KAGLoadScript('ScenePlayer.tjs');
 
-/**
- * KAG 用ワールド拡張プラグイン
- */
-class KAGWorldPlugin extends KAGPlugin
-{
-    var env;
-    function KAGWorldPlugin(kag) {
-        super.KAGPlugin();
-        env = new KAGEnvironment(kag);
-    }
+kag.addPlugin(kag.scenePlayer = new ScenePlayer(kag));
 
-    function finalize() {
-        if (env) {
-            invalidate env;
-        }
-    }
+kag.tagHandlers["scenestart"] = function(elm) {
+	return scenePlayer.scenestart(elm);
+} incontextof kag;
 
-    function onStore(f, elm)
-    {
-        var dic = f.env = %[];
-        env.onStore(dic);
-    }
+kag.tagHandlers["scenemain"] = function(elm) {
+	return scenePlayer.scenemain(elm);
+} incontextof kag;
 
-    function onRestore(f, clear, elm)
-    {
-        if (f.env !== void) {
-            env.onRestore(f.env);
-        }
-    }
-
-	function onCopyLayer(toback, backlay) {
-		env.onCopyLayer(toback, backlay);
-	}
-	
-	function onExchangeForeBack() {
-		env.onExchangeForeBack();
-	}
-
-	function onResetAll() {
-		env.resetEnv();
-		env.update(kag.fore);
-	}
-};
+if (kag.debugLevel >= tkdlSimple) {
+	dm("ワールド環境設定完了");
+}

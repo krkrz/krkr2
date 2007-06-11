@@ -15,7 +15,7 @@ try {
 }
 
 // システムバージョン
-var kagVersion = "EX 3.27-dev.20070519";
+var kagVersion = "EX 3.27-dev.20070611";
 
 /*
 	Debug.message へのショートカット

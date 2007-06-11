@@ -43,34 +43,6 @@ class KAGEnvLayer extends KAGEnvImage {
 		super.KAGEnvImage(env, name);
 	}
 	
-    function onStore(f) {
-        super.onStore(f);
-		f.imageFile = imageFile;
-		f.movieFile = movieFile;
-		f.movieLoop = movieLoop;
-		f.movieAlpha = movieAlpha;
-		f.tileFile = tileFile;
-		f.tilex = tilex;
-		f.tiley = tiley;
-    }
-    
-    function onRestore(f) {
-		if (f.imageFile !== void) {
-			imageFile = %[];
-			(Dictionary.assign incontextof imageFile)(f.imageFile);
-		} else {
-			imageFile = void;
-		}
-		movieFile = f.movieFile;
-		movieLoop = f.movieLoop;
-		movieAlpha = f.movieAlpha;
-		moviePlaying = false;
-		tileFile = f.tileFile;
-		tilex = f.tilex;
-		tiley = f.tiley;
-		super.onRestore(f);
-    }
-
 	function initFile(elm) {
 		if (elm.type === void)    type = void;
 		if (elm.opacity === void) delete props.opacity;

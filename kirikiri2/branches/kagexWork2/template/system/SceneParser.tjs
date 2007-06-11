@@ -1,0 +1,454 @@
+// Conductor.tjs - KAG シナリオ進行処理
+// Copyright (C)2001-2007, W.Dee and contributors  改変・配布は自由です
+
+
+class SceneParser extends KAGParser
+{
+	var lines; // パース結果
+
+    /**
+     * @param lineMode
+     * 1:行単位で [p]
+     * 2:行単位で [l] 手動で [p]
+     * 3:行単位で [l] 空行で [p]
+     * 4:改行は無視。空行で [p]
+     * 5:改行は [r] 。空行で [p]
+     */
+	var lineMode;    // 改行処理モード
+    var crAfterName; // 名前の後に改行をいれるか
+    var erAfterPage; // 改ページ直後に画面消去するか
+    var autoIndent;  // 「『で自動的にインデントする
+	var voiceDefault;  // ボイスデフォルト値
+
+	var voiceMap = %[];      // ボイス状態記録マップ
+
+	var noCrOnce;    // 改行処理を１回なしにする
+    var noErOnce;    // 画面消去処理を１回なしにする
+    var afterPage;   // 改ページ直後
+    var emptyLine;     // まだ行が空
+    var prevEmptyLine; // 前の空行状態
+
+    var nameMode;    // 名前処理モード
+    var afterName;   // 名前処理の直後
+    var nameStr;     // 現在の名前
+    var nameDisp;    // 現在の表示名
+
+	
+	// -------------------------------------------------------------
+	
+	/**
+	 * コンストラクタ
+	 */
+	function SceneParser() {
+		super.KAGParser(...);
+		ignoreCR  = false;
+	}
+
+	/**
+	 * 初期化処理
+	 */
+	function init() {
+		lines = [];
+		(Dictionary.clear incontextof voiceMap)(); 
+		noCrOnce = false;
+		noErOnce = false;
+		afterPage = true;
+		emptyLine = true;
+		prevEmptyLine = true;
+		nameMode  = 0;
+		afterName = false;
+	}
+
+	/**
+	 * 全情報消去
+	 */
+	function clear() {
+		super.clear();
+		init();
+	}
+	
+	// -------------------------------------------------------------
+
+	/**
+	 * タグの追加
+	 */
+	function enqueueTag(tag) {
+		lines.add(tag);
+	}
+	
+	/**
+	 * タグの追加（コピー処理する）
+	 */
+	function addTag(name, elm) {
+        var e = %[];
+        if (elm !== void) {
+            (Dictionary.assign incontextof e)(elm, false);
+        }
+        e.tagname = name if name !== void;
+		//dm("タグ追加:" + e.tagname);
+		lines.add(e);
+    }
+	
+	var reNumber = new RegExp("^[0-9][0-9]*$");
+
+	/**
+	 * ボイス番号指定のパース
+	 */
+	function parseVoice(elm) {
+		var info = voiceMap[elm.name];
+		if (info == void) {
+			info = %[];
+			voiceMap[elm.name] = info;
+		}					
+		if (elm.ignore) {
+			info.strVoice = "ignore";
+		} else {
+			if (reNumber.test(elm.voice)) {
+				// 数値指定の場合
+				if (elm.once || elm.replace) {
+					info.strVoice = elm.voice;
+				} else {
+					info.voice = +elm.voice;
+				}
+			} else {
+				info.strVoice = elm.voice;
+			}
+		}
+		info.incVoice = elm.incvoice || elm.replace;
+	}
+
+	/**
+	 * テキストのパース処理
+	 */
+    function parseCh(elm) {
+
+        // 名前表示専用処理
+        //【キャラクタ名/表示名】を検出して名前表示処理を実行する
+		if (nameMode > 0) {
+            // 既に名前表示ロジックに入ってる
+            // ここでは emptyLine の状態はありえない
+			if (elm.text == "】") {
+				nameMode = 0;
+				//dm("名前処理:" + nameStr + ":" + nameDisp);
+				var info = voiceMap[nameStr];
+				if (info == void) {
+					info = %[];
+					voiceMap[nameStr] = info;
+				}					
+				var voice;
+				if (info.strVoice !== void) {
+					voice = info.strVoice;
+					info.strVoice = void;
+				} else {
+					if (info.voice === void) {
+						info.voice = voiceDefault;
+					}
+					voice = info.voice;
+					info.incVoice = true;
+				}
+				if (info.incVoice) {
+					if (info.voice >= 0) {
+						info.voice++;
+					}
+					info.incVoice = void;
+				}
+				//dm("ボイス展開:" + nameStr + ":" + voice);
+				if (voice !== void) {
+					addTag("dispname", %[name:nameStr, disp:nameDisp, voice:voice]);
+				} else {
+					addTag("dispname", %[name:nameStr, disp:nameDisp]);
+				}
+				afterName = true;
+                return;
+            } else {
+				if (nameMode == 1) {
+					if (elm.text == "/") {
+						nameMode = 2;
+						return;
+                    } else {
+                        nameStr += elm.text;
+                    }
+                } else {
+                    nameDisp += elm.text;
+                }
+            }
+            return;
+        } else if (emptyLine) {
+            // 行頭での処理
+			// ラインモード処理
+			var erflag;
+			// テキストクリア処理
+			switch (lineMode) {
+			case 1:
+				erflag = true;
+				break;
+			case 2:
+			case 3:
+			case 5:
+				if (afterPage) {
+					erflag = true;
+				} else {
+					if (!afterName) {
+						addTag("r");
+					}
+				}
+				break;
+			case 4:
+				if (afterPage) {
+					erflag = true;
+				}
+				break;
+			}
+			if (erflag && !erAfterPage) {
+				addTag("er");
+			}
+            if (elm.text == "【") {
+				nameMode = 1;
+				nameStr  = "";
+				nameDisp = "";
+				afterPage = false;
+				return;
+            } else {
+				nameMode = 0;
+                // 名前指定がない場合はパラメータなしで名前処理を呼び出す
+                if (!afterName && (lineMode < 3 || prevEmptyLine)) {
+					addTag("dispname");
+					afterName = true;
+                }
+            }
+        }
+        
+        // 文字登録
+		addTag("ch", elm);
+        emptyLine = false;
+		afterPage = false;
+
+        // 自動インデント処理
+		if (autoIndent && afterName && (elm.text == "「" || elm.text == "『")) {
+			addTag("indent");
+        }
+        afterName = false;
+
+        return;
+    };
+
+	/**
+	 * 改行のパース処理
+	 */
+	function parseR(elm) {
+
+		if (!elm.eol) {
+			addTag("r", elm);
+			return;
+		}
+
+		// 改行効果を一度だけ無視させる
+        if (noCrOnce) {
+            noCrOnce = false;
+            prevEmptyLine = emptyLine;
+            emptyLine = true;
+            return;
+        }
+
+		switch (lineMode) {
+        case 1:
+			dm("page:改行");
+			nameMode = 0;
+			if (emptyLine) {
+				prevEmptyLine = emptyLine;
+				return; // 空行は無視する
+            } else {
+				// 名前の直後の改行は無視する
+                if (!(crAfterName && afterName)) {
+					prevEmptyLine = emptyLine;
+					parseP(elm);
+					return;
+                }
+            }
+            break;
+        case 2:
+            //dm("line:改行");
+            nameMode = 0;
+            if (emptyLine) {
+                prevEmptyLine = emptyLine;
+				return; // 空行は無視する
+            } else {
+				// 名前の直後の改行は無視する
+				if (!(crAfterName && afterName)) {
+                    prevEmptyLine = emptyLine;
+					emptyLine = true;
+					elm.voicewait = true;
+					addTag("l", elm) ;
+					addTag("afterline");
+					return;
+				}
+			}
+			break;
+        case 3:
+            //dm("vn:改行");
+            nameMode = 0;
+            if (emptyLine) {
+                if (!prevEmptyLine) {
+                    // 最初の空行で改ページ
+                    prevEmptyLine = emptyLine;
+					parseP(elm);
+					return;
+                } else {
+                    // そうでない空行は無視する
+                    prevEmptyLine = emptyLine;
+                    return;
+                }
+            } else {
+                // 名前の直後の改行は無視する
+                if (!(crAfterName && afterName)) {
+                    prevEmptyLine = emptyLine;
+					emptyLine = true;
+					elm.voicewait = true;
+					addTag("l", elm) ;
+					addTag("afterline");
+					return;
+                }
+            }
+            break;
+		case 4:
+		case 5:
+			//dm("tex/free:改行");
+            nameMode = 0;
+            if (emptyLine) {
+                if (!prevEmptyLine) {
+                    // 最初の空行で改ページ
+                    prevEmptyLine = emptyLine;
+					parseP(elm);
+					return;
+                } else {
+                    // そうでない空行は無視する
+                    prevEmptyLine = emptyLine;
+					return;
+                }
+            } else {
+                // 名前の直後の改行は無視する
+                if (!(crAfterName && afterName)) {
+					prevEmptyLine = emptyLine;
+					emptyLine = true;
+					return;
+                }
+            }
+        }
+        return;
+	}
+
+	/**
+	 * p タグの展開
+	 */
+    function parseP(elm) {
+		addTag("p", elm);
+		// 自動インデント解除
+		if (autoIndent) {
+			addTag("endindent");
+		}
+		// ページ終了後に呼ばれるタグ
+		addTag("afterpage");
+		// ページ待ち後に消去を強制投入
+		if (erAfterPage) {
+			if (!noErOnce) {
+				addTag("er", %[all:true]);
+			}
+			noErOnce = false;
+		}
+		afterPage = true;
+		emptyLine = true;
+    }
+
+	var extractTags = %[
+	ch:parseCh incontextof this,
+	r:parseR incontextof this,
+	voice:parseVoice incontextof this,
+	p:parseP incontextof this,
+    nor: function(elm) { noCrOnce = true; return 0; } incontextof this,
+    noer: function(elm) { noErOnce = true; return 0; } incontextof this,
+		];
+
+	/**
+	 * 全パース処理実行
+	 * @param storage 対象ファイル
+	 * @param elm 基本パラメータ
+	 * パラメータ
+	 * lineMode    行モード指定（必須）
+	 * erAfterPage ページの直後に画面消去
+	 * crAfterName 名前の後の改行を無視
+	 * autoIndent  "「" による自動インデントを有効にする
+	 * voice       ボイスカウントの初期値
+	 */
+	function parse(storage, elm) {
+
+		showKeys("parse:" , elm);
+		
+		init();
+		loadScenario(storage);
+		
+		lineMode     = +elm.linemode;
+		erAfterPage  = elm.erafterpage;
+		crAfterName  = elm.craftername;
+		autoIndent   = elm.autoindent;
+		voiceDefault = +elm.voice;
+
+		dm("シーン情報パース:" + storage);
+		dm("lineMode:" + lineMode);
+		dm("erAfterPage:" + erAfterPage);
+		dm("crAfterName:" + crAfterName);
+		dm("autoIndent:" + autoIndent);
+		dm("voiceDefault:" + voiceDefault);
+		
+		var runLine = 0;
+		var obj;
+		while ((obj = getNextTag()) !== void) { // 次のタグを得る
+			if (runLine !== curLine) {
+				enqueueTag(%[tagname:"line", line:curLine, lineStr:curLineStr]);
+				runLine = curLine;
+			}
+			var func = extractTags[obj.tagname];
+			if (func !== void) {
+				func(obj);
+			} else {
+				addTag(void, obj);
+			}
+		}
+		for (var i=0;i<lines.count;i++) {
+			if (lines[i].tagname == "line") {
+				dm("パース結果:" + lines[i].tagname + ":" + lines[i].line);
+			} else if (lines[i].tagname == "label") {
+				dm("パース結果:" + lines[i].tagname + ":" + lines[i].label);
+			} else {
+				dm("パース結果:" + lines[i].tagname);
+			}
+		}
+		return lines;
+	}
+
+	/**
+	 * マクロ用のパース実行
+	 */
+	function parseMacro(storage) {
+		loadScenario(storage);
+		while ((obj = getNextTag()) !== void) {} // 次のタグを得る
+	}
+	
+	/**
+	 * ラベル通過
+	 */
+	function onLabel(label, page) {
+		//dm("ラベル登録:" + label + ":" + curLine);
+		enqueueTag(%[tagname:"label", label:label, page:page, line:curLine]);
+		return true;
+	}
+
+	// call は禁止
+	function onCall() {
+		return false;
+	}
+	
+	// return は禁止
+	function onReturn()	{
+		return false;
+	}
+}

@@ -7,16 +7,13 @@
 [clickskip enabled=true]
 [cancelskip]
 [cancelautomode]
-[linemode]
 [rclick enabled=false]
 [history enabled=false]
-[stoprecollection]
 [clearhistory]
 
 *dispstart
 
 ; Šeí‰Šú‰»
-[init]
 [clearlayers]
 [stopbgm]
 [stopvideo]

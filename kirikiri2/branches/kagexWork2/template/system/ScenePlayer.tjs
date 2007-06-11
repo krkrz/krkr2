@@ -1,0 +1,944 @@
+/**
+ * シーン再生ロジック
+ */
+class ScenePlayer extends KAGPlugin
+{
+	var sceneParser; // パーサ
+	var env;         // 再生対象環境
+
+	var lines = [];    // パース結果
+	var pendings = []; // 割り込み処理
+
+	/**
+	 * タグ割り込み処理
+	 */
+    function insertTag(name, elm) {
+		var e = %[];
+		if (elm !== void) {
+			(Dictionary.assign incontextof e)(elm, false);
+        }
+		e.tagname = name if name !== void;
+		pendings.insert(0, e);
+    }
+	
+	var handlers;      // 処理ハンドラ群
+	
+	// 実行情報
+	var curStorage;        // 実行中のシナリオ
+	var curOption = %[];   // パースに使ったオプション
+	var cur;               // 実行ポイント
+	var curLine;           // 通過中の行番号
+	var targetLine;        // ロード処理ターゲット行
+
+	// 選択処理通過記録
+	var branches = %[];
+	
+	// Conductor - シナリオ進行処理
+	/*const*/ var mStop = 0; // 停止
+	/*const*/ var mRun  = 1; // 動作中
+	/*const*/ var mWait = 2; // 待ち
+
+	var status = mStop;   // 実行状態
+	var waitUntil = %[];  // 待ち状態記録用
+	var lastTagName = ''; // 直前のタグ名
+
+	var nowTick = 0;  // 現在の実行時間
+	var nextTick;     // 次の実行時間
+	var timeoutTick;  // 時間待ち用
+	
+	/**
+	 * コンストラクタ
+	 */
+	function ScenePlayer(kag) {
+        super.KAGPlugin();
+		sceneParser = new SceneParser();
+		env         = new KAGEnvironment(kag);
+		handlers = getHandlers();
+		status = mStop;
+    }
+
+	/**
+	 * ファイナライザ
+	 */
+	function finalize()	{
+		invalidate env;
+	}
+
+	/**
+	 * 情報クリア
+	 */
+	function clear() {
+		status = mStop;
+		lastTagName = "";
+		(Dictionary.clear incontextof branches)();
+		(Dictionary.clear incontextof waitUntil)();
+		(Dictionary.clear incontextof curOption)();
+		curStorage = void;
+		cur = 0;
+		curLine = 0;
+		targetLine = void;
+	}
+
+	// ------------------------------------------------------------
+	
+	/**
+	 * 待ち
+	 * until = trigger で用いるシグナル名とコールバック関数の
+	 * 辞書配列
+	 */
+	function wait(until) {
+		status = mWait;
+		(Dictionary.assign incontextof waitUntil)(until);
+	}
+
+	/**
+	 * タイムアウトつきの待ち
+	 * タイムアウト時には 'timeout' がトリガされるので
+	 * ハンドラを定義すること。
+	 */
+	function waitWithTimeOut(until, timeout) {
+		wait(until);
+		if(timeout == 0) timeout = 1; // timeout が 0 の場合は 1 に
+		timeoutTick = nowTick + timeout;
+	}
+
+	/**
+	 * 待ち解除トリガ
+	 *
+	 * waitUntil 内にシグナル名 name が存在すれば、実行再開、
+	 * 同時に waitUntil に登録されたメソッド(リスタートハンドラ)を呼ぶ
+	 * シグナル名に _arg がついたものが waitUntil 内にあれば、
+	 * それを引数としてハンドラに渡す
+	 * waitUntil はクリアされる
+	 */
+	function trigger(name) {
+		if(status != mWait) return false;
+		var func = waitUntil[name];
+		if(func !== void) {
+			var arg = waitUntil[name + '_arg'];
+			if(arg !== void) func(arg); else func();
+			(Dictionary.clear incontextof waitUntil)();
+			status = mRun;
+			return true;
+		} else {
+			return false;
+		}
+	}
+
+	// ------------------------------------------------------------
+	
+	/**
+	 * タグの処理
+	 */
+	function onTag(elm) {
+		var tagname = elm.tagname;
+		var handler = handlers[tagname];
+		if (handler !== void) {
+			var ret = handler(elm);
+			lastTagName = tagname;
+			return ret;
+		}
+		// 無効なタグ
+		return env.unknown(tagname, elm);
+	}
+
+	// --------------------------------------------------------------
+
+	/**
+	 * 実行開始
+	 * @param storage 開始シナリオ
+	 * @param option パース用オプション
+	 */
+	function run(storage, option) {
+		dm("シーン実行開始:" + storage + ":" + option) ;
+		showKeys("scene run:" + option);
+		clear();
+		curStorage = storage;
+		(Dictionary.assign incontextof curOption)(option);
+//		try {
+			showKeys("scene run:" + curOption);
+			lines = sceneParser.parse(curStorage, curOption);
+//		} catch(e) {
+//			throw new Exception(curStorage + "の読み出しに失敗しました");
+//		}
+		status = mRun;
+	}
+	
+	/**
+	 * 状態保存
+	 */
+	function save(dic) {
+		dic.status = status;
+		if (status != mStop) {
+			dic.storage = curStorage;
+			dic.option = %[];
+			(Dictionary.assign incontextof dic.option)(curOption);
+			dic.branches = %[];
+			(Dictionary.assign incontextof dic.branches)(branches);
+			if (curLine > 0) {
+				dic.targetLine = curLine;
+			}
+		}
+		return dic;
+	}
+
+	/**
+	 * 状態復帰
+	 * パラメータ: storage
+	 */
+	function load(dic) {
+		clear();
+		if (dic.status != mStop) {
+			curStorage = dic.storage;
+			if (dic.option !== void) {
+				(Dictionary.assign incontextof curOption)(dic.option);
+			}
+			if (dic.branches !== void) {
+				(Dictionary.assign incontextof branches)(dic.branches);
+			}
+			lines = sceneParser.parse(curStorage, curOption);
+			targetLine = dic.targetLine;
+			status = mRun;
+		}
+	}
+
+	/**
+	 * メインロジック
+	 * @return 0:終了 1:実行 2:イベント待ち
+	 */
+	function main(diff)	{
+
+		nowTick += diff;
+
+		// タイムアウト処理
+		if (timeoutTick !== void) {
+			timeoutTick -= diff;
+			if (timeoutTick < 0) {
+				trigger("timeout");
+				timeoutTick = void;
+			}
+		}
+
+		// 時間待ち処理
+		if (nextTick !== void && nextTick < nowTick) {
+			return;
+		}
+		nextTick = void;
+
+		// 停止または待ち
+		if (status == mStop || status == mWait) {
+			return;
+		}
+
+		var obj;
+		try
+		{
+			for(;;)
+			{
+				if (pendings.count > 0) {
+					// 後回しにされたタグがある場合
+					obj = pendings[0];
+					pendings.erase(0);
+				} else {
+					obj = lines[cur++];
+				}
+
+				if(obj === void)
+				{
+					// シナリオ終了
+					status = mStop;
+					return 0;
+				} else if (obj.tagname == "line") {
+					if (curLine != obj.line) {
+						curLine    = obj.line;
+						dm("%06d:%s %s".sprintf(curLine, curStorage, obj.lineStr));
+					}
+					continue;
+				} else if (obj.tagname == "label") {
+					continue;
+				} else {
+					// 実行時判定される cond
+					if (obj.condex !== void) {
+						if (!Scripts.eval(obj.condex)) {
+							continue;
+						}
+						delete obj.condex;
+					}
+
+					// onTag を呼ぶ
+					var step = onTag(obj);
+					if(step === void) {
+						throw new Exception("onTag が void を返しました (" + obj.tagname + ")"
+							"( おそらくタグハンドラの戻り値を返し忘れた )");
+					}
+					step = int step; // step を数値に
+					if(step == 0) {
+						// ウェイトを掛けずに次へ
+						continue;
+					}
+					else if(step < 0) {
+						switch(step) {
+						case -5: // いったんイベントを処理(現在のタグは後回し)
+							pendings.insert(0, obj);
+							return 2;
+						case -4: // いったんイベントを処理
+							return 2;
+						case -3: // 後回ししてブレーク
+							pendings.insert(0, obj);
+							return 1;
+						case -2: // ブレーク
+							return 1;
+						case -1: // シナリオ終了
+							status = mStop;
+							return 0;
+						}
+					} else {
+						// 時間待ち
+						nextTick = nowTick + step;
+						return 1;
+					}
+				}
+			}
+		}
+		catch(e)
+		{
+			status = mStop;
+			var msg = "致命的なエラーが発生しました。\n"
+				"ファイル : " + curStorage + "   行 : " + (curLine+1) + "\n"
+					"タグ : " + (obj === void ? "不明" : obj.tagname)
+						+ " ( ← エラーの発生した前後のタグを示している場合もあります )\n"
+						+ e.message;
+			if((typeof e.trace) != "undefined") dm("trace : " + e.trace);
+			dm(msg);
+			throw new ConductorException(msg);
+		}
+	}
+
+	// ------------------------------------------------------------------
+
+	function getHandlers()
+	{
+		return %[ // 辞書配列オブジェクト
+
+	//--------------------------------------- タグハンドラ群(メッセージ操作) --
+
+    ch : function(elm)
+    {
+		// 文字表示
+		var acs = actualChSpeed;
+		if(updateBeforeCh)
+		{
+			if(acs) { updateBeforeCh--; return -5; } else { updateBeforeCh--; }
+		}
+		var text = elm.text;
+		if(currentWithBack) current.comp.processCh(text);
+		if(current.processCh(text))
+		{
+			return showPageBreakAndClear();
+		}
+		if(historyWriteEnabled) historyLayer.store(text);
+		if(autoWCEnabled)
+		{
+			// 自動ウェイト
+			var ind;
+			if((ind = autoWCChars.indexOf(text)) != -1)
+			{
+				return int(acs * autoWCWaits[ind]);
+			}
+		}
+		return acs;
+	} incontextof kag,
+
+	graph : function(elm)
+	{
+		// グラフィックを文字として表示
+		var acs = actualChSpeed;
+		if(updateBeforeCh)
+		{
+			if(acs) { updateBeforeCh--; return -5; } else { updateBeforeCh--; }
+		}
+		if(currentWithBack) current.comp.processGraph(elm);
+		if(current.processGraph(elm))
+		{
+			return showPageBreakAndClear();
+		}
+		if(historyWriteEnabled && elm.alt !== void) historyLayer.store(elm.alt);
+		return acs;
+	} incontextof kag,
+
+	hch : function(elm)
+	{
+		// 縦中横
+		var acs = actualChSpeed;
+		if(updateBeforeCh)
+		{
+			if(acs) { updateBeforeCh--; return -5; } else { updateBeforeCh--; }
+		}
+		var text = elm.text;
+		var expand = elm.expand !== void && +elm.expand;
+		if(currentWithBack) current.comp.putHorizonCh(text, expand);
+		if(current.putHorizonCh(text, expand))
+		{
+			return showPageBreakAndClear();
+		}
+		if(historyWriteEnabled) historyLayer.store(text);
+		return acs;
+	} incontextof kag,
+
+	r : function(elm)
+    {
+		// 改行
+        if(historyWriteEnabled) historyLayer.reline();
+        if(currentWithBack) current.comp.processReturn();
+        if(current.processReturn())
+        {
+            var ret = showPageBreakAndClear();
+            // 改行はpendingしない
+            if(ret == -5)
+                ret = -4;
+            else if(ret == -3)
+                ret = -2;
+            return ret;
+        }
+        return actualChSpeed;
+    } incontextof kag,
+
+	ruby : function(elm)
+	{
+		// 次の文字に対するルビ設定
+		if(currentWithBack) current.comp.setRuby(elm.text);
+		current.setRuby(elm.text);
+		return 0;
+	} incontextof kag,
+
+	font : function(elm)
+	{
+		// フォント設定
+		if(currentWithBack) current.comp.setFont(elm);
+		current.setFont(elm);
+		return 0;
+	} incontextof kag,
+
+	deffont : function(elm)
+	{
+		// デフォルトのフォント設定
+		if(currentWithBack) current.comp.setDefaultFont(elm);
+		current.setDefaultFont(elm);
+		return 0;
+	} incontextof kag,
+
+	resetfont : function(elm)
+	{
+		// フォントのリセット
+		if(currentWithBack) current.comp.resetFont();
+		current.resetFont();
+		return 0;
+	} incontextof kag,
+
+	style : function(elm)
+	{
+		// スタイル設定
+		if(currentWithBack) current.comp.setStyle(elm);
+		current.setStyle(elm);
+		return 0;
+	} incontextof kag,
+
+	defstyle : function(elm)
+	{
+		// デフォルトのスタイル設定
+		if(currentWithBack) current.comp.setDefaultStyle(elm);
+		current.setDefaultStyle(elm);
+		return 0;
+	} incontextof kag,
+
+	resetstyle : function(elm)
+	{
+		// スタイルのリセット
+		if(currentWithBack) current.comp.resetStyle();
+		current.resetStyle();
+		return 0;
+	} incontextof kag,
+
+	l : function(elm)
+	{
+		// 行クリック待ち
+		return showLineBreak(elm);
+	} incontextof kag,
+
+	p : function(elm)
+	{
+		// ページクリック待ち
+		if(historyWriteEnabled) historyLayer.reline();
+		return showPageBreak(elm);
+	} incontextof kag,
+
+	er : function(elm)
+	{
+		// 現在のメッセージレイヤのクリア
+		if(historyWriteEnabled) historyLayer.repage();
+		if(currentWithBack) current.comp.clear(elm.all);
+		current.clear(elm.all);
+		return 0;
+	} incontextof kag,
+
+	indent : function(elm)
+	{
+		// インデントの設定
+		if(currentWithBack) current.comp.setIndent();
+		current.setIndent();
+		if(historyWriteEnabled) historyLayer.beginIndent();
+		return 0;
+	} incontextof kag,
+
+	endindent : function(elm)
+	{
+		// インデントの解除
+		if(currentWithBack) current.comp.resetIndent();
+		current.resetIndent();
+		if(historyWriteEnabled) historyLayer.endIndent();
+		return 0;
+	} incontextof kag,
+
+	delay : function(elm)
+	{
+		// 文字表示速度の指定
+		setDelay(elm);
+		return 0;
+	} incontextof kag,
+
+	cancelskip : function(elm)
+	{
+		// スキップの解除
+		cancelSkip();
+        setMenuAccessibleAll();
+		return 0;
+	} incontextof kag,
+
+	resetwait : function(elm)
+	{
+		// 時間原点の設定
+		resetWait();
+		return 0;
+	} incontextof kag,
+
+	wait : function(elm)
+	{
+		// ウェイト
+		return doWait(elm);
+	} incontextof this,
+
+    syncmsg : function(elm) {
+        var messages = fore.messages;
+        for(var i = messages.count-1; i >= 0; i--) messages[i].assignComp();
+        return 0;
+    } incontextof kag,
+                  
+	backlay : function(elm)
+	{
+		// レイヤを裏画面にコピー
+		updateBeforeCh = 1;
+		backupLayer(elm, true);
+		return 0;
+	} incontextof kag,
+
+	forelay : function(elm)
+	{
+		// レイヤを表画面にコピー
+		updateBeforeCh = 1;
+		backupLayer(elm, false);
+		return 0;
+	} incontextof kag,
+
+	trans : function(elm)
+	{
+        // トランジションの開始
+		var layer = getLayerPageFromElm(elm, false);
+		if (layer == fore.base)  {
+			if (selectShowing) {
+				selectLayer.setParent(back.base, 1000000);
+			}
+			if (mapSelectShowing) {
+				mapSelectLayer.setParent(back.base, 1000000);
+			}
+		}
+		layer.beginTransition(elm);
+		return 0;
+	} incontextof kag,
+
+	wt : function(elm)
+	{
+        // トランジションを待つ
+		return waitTransition(elm);
+	} incontextof kag,
+
+	stoptrans : function(elm)
+	{
+		// トランジションを停止する
+		stopAllTransitions();
+		return 0;
+	} incontextof kag,
+
+    // アクション開始
+    action : function(elm)
+    {
+		var target;
+		if (elm.layer !== void) {
+			target = getLayerFromElm(elm);
+		} else if (typeof elm.target == "Object") {
+			target = elm.target;
+		} else if (typeof elm.target == "String") {
+			target = Scripts.eval(elm.target);
+		}
+		if (typeof target == "Object") {
+			var action;
+			if (elm.action !== void) {
+				// 直接アクション構造が指定されている場合
+				action = elm.action;
+			} else {
+				action = %[];
+				// アクション構造をパラメータから生成
+				(Dictionary.assign incontextof action)(elm);
+				delete action.tagname;
+				delete action.layer;
+				delete action.page;
+				delete action.target;
+			}
+			if (target instanceof "GraphicLayerEx") {
+				target.beginAction(action, elm.hide, elm.nowait);
+			} else {
+				beginAction(target, action, onActionCompleted, elm.nowait);
+			}
+		} else {
+			error("アクションはオブジェクトに指定する必要があります");
+		}
+		return 0;
+    } incontextof kag,
+
+    // アクション停止
+	stopaction : function(elm)
+	{
+		updateBeforeCh = 1;
+        var target;
+		if (elm.layer !== void) {
+			target = getLayerFromElm(elm);
+		} else if (typeof elm.target == "Object") {
+			target = elm.target;
+		} else if (typeof elm.target == "String") {
+			target = Scripts.eval(elm.target);
+		}
+		if (target !== void) {
+			if (typeof target == "Object") {
+				stopAction(target);
+			} else {
+				dm("アクションはオブジェクトに指定する必要があります");
+			}
+		} else {
+			stopAllActions(true);
+		}
+        return 0;
+	} incontextof kag,
+
+	wact : function(elm)
+	{
+        var target;
+		if (elm.layer !== void) {
+			target = getLayerFromElm(elm);
+		} else if (typeof elm.target == "Object") {
+			target = elm.target;
+		} else if (typeof elm.target == "String") {
+			target = Scripts.eval(elm.target);
+		}
+		if (target !== void) {
+			if (typeof target == "Object") {
+				return waitAction(target, elm.canskip);
+			} else {
+				dm("アクション待ちはオブジェクトに指定する必要があります");
+			}
+		} else {
+			return waitAllAction(elm.canskip);
+		}
+		return 0;
+	} incontextof kag,
+                  
+	//--------------------------------------- タグハンドラ群(変数・TJS 操作) --
+
+	eval : function(elm)
+	{
+		// 式の評価
+		Scripts.eval(elm.exp);
+		return 0;
+	} incontextof this,
+
+	clearsysvar : function(elm)
+	{
+		// システム変数のクリア
+		clearSystemVariables();
+		return 0;
+	} incontextof kag,
+
+	clearvar : function(elm)
+	{
+		// ゲーム変数のクリア
+		clearVariables();
+		return 0;
+	} incontextof kag,
+
+	clearplaytime : function(elm)
+	{
+        // プレイ時間のクリア
+		clearPlayTime();
+		return 0;
+	} incontextof kag,
+
+	waittrig : function(elm)
+	{
+		// トリガを待つ
+		return waitTrigger(elm);
+	} incontextof this,
+
+	//----------------------------------------- タグハンドラ群(選択肢) --
+
+    seladd : function(elm)
+    {
+        addSelect(elm);
+        return 0;
+	} incontextof kag,
+
+    select : function(elm)
+    {
+		if (selectLayer.msgoff && setCurrentMessageLayerVisible(false)) {
+            // 処理待ち
+            return -3;
+        }
+
+		f.selectDoneFlag = true;
+
+		if (recordHistoryOfStore == 3) { // 2 : 選択肢 ( @s タグ ) ごと
+			if (autoLabelMode) {
+				// 状態保存処理（行指定モード保存を使う)
+				pushHistoryOfStore();
+				storeFlags(true);
+				storeLabelPassed = true;
+			}
+			// 記録指定
+			setToRecordHistory();
+		}
+
+        selectPrevAutoMode = autoMode;
+        selectPrevSkipMode = skipMode;
+        if (skipMode < SKIP_FORCE) {
+            cancelSkip();
+        }
+        cancelAutoMode();
+        
+        stablePosibility = true;
+        notifyStable();
+        
+        f.selDoneStorage = elm.storage if elm.storage !== void;
+        f.selDoneTarget  = elm.target  if elm.target  !== void;
+
+        showSelect();
+
+        conductor.sleep();
+        conductor.interrupt();
+        setMenuAccessibleAll();
+        return -1;
+	} incontextof kag,
+
+	selopt : function(elm)
+	{
+		setSelectOptions(elm);
+		return 0;
+	} incontextof kag,
+
+	seldone : function(elm)
+	{
+        if (f.selDoneStorage != "" || f.selDoneTarget != "") {
+            process(f.selDoneStorage, f.selDoneTarget);
+        } else {
+			return tagHandlers.s(elm);
+        }
+		return 0;
+	} incontextof kag,
+
+	doneselect : function(elm)
+	{
+        hideSelect();
+        afterSelect();
+        setMenuAccessibleAll();
+		return 0;
+	} incontextof kag,
+
+	//----------------------------------------- タグハンドラ群(シナリオ内分岐) --
+
+    bradd : function(elm)
+    {
+		return addBranch(elm);
+	} incontextof this,
+
+    branch : function(elm)
+    {
+		return doBranch(elm);
+	} incontextof this,
+
+    brdone : function(elm)
+    {
+		return doneBranch(elm);
+	} incontextof this,
+
+	//----------------------------------------- タグハンドラ群(特殊分岐処理) --
+
+	next : function(elm)
+	{
+		// 次のシーンにうつる
+		return 0;
+	} incontextof this,
+				  
+	//----------------------------------------- タグハンドラ群(特殊スキップ処理) --
+
+    beginskip : function(elm)
+	{
+        // 現在のスキップモードを記録
+        if (prevSkipMode !== void) {
+            throw new Exception("beginskipは入れ子できません!!!");
+        } else {
+            prevSkipMode = skipMode;
+            if (skipMode) {
+                // 既にスキップしてた場合は停止できないスキップ状態にする
+                skipMode = SKIP_CANCEL;
+            }
+        }
+        return 0;
+	} incontextof kag,
+
+    endskip : function(elm)
+	{
+        if (prevSkipMode == 0) {
+            cancelSkip();
+        } else {
+            skipMode = prevSkipMode;
+        }
+        prevSkipMode = void;
+        return 0;
+	} incontextof kag,
+
+	//----------------------------------------------- レイヤトランジション --
+
+	ltbegin : function(elm)
+	{
+		env.transMode = 2;
+		return layerTransBegin(elm);
+	} incontextof this,
+
+	ltend : function(elm) {
+		env.transMode = 0;
+		return layerTransEnd(elm);
+	} incontextof this,
+
+	//----------------------------------------------- 環境系機能 --
+
+	env : env.tagfunc,
+    allchar : env.allchar,
+    alllayer : env.alllayer,
+    allse : env.allse,
+
+	begintrans : env.beginTrans,
+    endtrans   : env.endTrans,
+    newlay     : env.newLayer,
+    newlayer   : env.newLayer,
+    dellay     : env.delLayer,
+    dellayer   : env.delLayer,
+    newchar    : env.newCharacter,
+    delchar    : env.delCharacter,
+
+    msgoff : env.msgoff,
+    msgon  : env.msgon,
+    clear  : env.clear,
+
+    dispname      : env.dispname,
+    dispnameVoice : env.dispnameVoice,
+    quake         : env.quake,
+    afterpage     : env.afterpage,
+    afterline     : env.afterline,
+				  
+				  ];
+	}
+
+	/**
+	 * 状態保存処理
+	 */
+	function onStore(f, elm) {
+        var dic = f.env = %[];
+		save(dic);
+	}
+
+	/**
+	 * 状態復帰処理
+	 */
+	function onRestore(f, clear, elm) {
+		if (f.env !== void) {
+			load(f.env);
+		}
+	}
+
+	function onCopyLayer(toback, backlay) {
+		env.onCopyLayer(toback, backlay);
+	}
+	
+	function onExchangeForeBack() {
+		env.onExchangeForeBack();
+	}
+
+	function onResetAll() {
+		env.resetEnv();
+		env.update(kag.fore);
+	}
+
+	// --------------------------------------------------------------
+	// KAG 用タグ定義
+	// --------------------------------------------------------------
+
+	var tick;
+
+	/**
+	 * シーン初期化
+	 */
+	function sceneinit() {
+		sceneParser.clear();
+	}
+	
+	/**
+	 * シーンマクロ読み込み
+	 */
+	function scenemacro(elm) {
+		sceneParser.parseMacro(elm.storage);
+	}
+	
+	/**
+	 * シーン開始処理
+	 */
+	function scenestart(elm) {
+		tick = System.getTickCount();
+
+		
+		run(elm.storage, elm);
+		return 0;
+	}
+
+	/**
+	 * シーン実行処理
+	 */
+	function scenemain(elm) {
+		var now = System.getTickCount();
+		var diff = now - tick;
+		tick = now;
+		switch (main(diff)) {
+		case 1: // 通常
+			return -3;
+		case 2: // イベント待ち
+			return -5;
+		default: // 終了
+			return 0;
+		}
+	}
+};
