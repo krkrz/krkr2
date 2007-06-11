@@ -2,22 +2,18 @@
  * 環境用レイヤ
  * ・座標配置調整機能を持つ
  */
-class EnvGraphicLayer extends GraphicLayerEx {
+class EnvGraphicLayer extends GraphicLayerBase {
 
 	var owner;
-	var env;
 
 	/**
 	 * コンストラクタ
 	 * @param owner オブジェクト情報をもってる親
 	 * @param isfore 表画面か裏画面か
-	 * @param name 名前
 	 */
-	function EnvGraphicLayer(owner, isfore, name) {
+	function EnvGraphicLayer(owner, isfore) {
 		this.owner = owner;
-		this.env   = owner.env;
-		var base = isfore ? env.fore.base : env.back.base;
-		super.GraphicLayerEx(base.window, base, name);
+		super.GraphicLayerBase(isfore);
 	}
 
 	var _left;
@@ -71,13 +67,6 @@ class KAGEnvImage extends KAGEnvBase {
 
 	// デフォルト情報
 	var init;
-
-    // kag の参照
-    property kag {
-        getter() {
-            return env.kag;
-        }
-    }
 
 	var layerOn; //< レイヤが有効になっている
 	var doShow;  //< 表示処理実行
@@ -511,7 +500,7 @@ class KAGEnvImage extends KAGEnvBase {
 			layer.beginAction(actionList[i]);
 		}
 		// アクション終了まち
-		ret = env.waitAction(layer, syncMode, movieSyncMode);
+		ret = player.waitAction(layer, syncMode, movieSyncMode);
 	}
 
 	var imageCommands = %[
@@ -586,30 +575,10 @@ class KAGEnvImage extends KAGEnvBase {
 	/**
 	 * 新レイヤ生成
 	 */
-	function createLayer(owner, isfore, name) {
-		return new EnvGraphicLayer(owner, isfore, name);
+	function createLayer(isfore) {
+		return new EnvGraphicLayer(this, isfore);
 	}
 
-	/**
-	 * レイヤ取得処理
-	 * @param fore
-	 * @param origLayer 廃棄元レイヤ
-	 */
-	function getNewLayer(owner, isfore, name, origLayer) {
-		var newlayer = createLayer(owner, isfore, name);
-		newlayer.hitType = htProvince;
-		newlayer.level = -1;
-		env.forelayers.add(newlayer);
-		if (origLayer !== void) {
-			newlayer.assign(origLayer);
-			newlayer.assignVisibleState(origLayer);
-			newlayer.level    = origLayer.level;
-			newlayer.absolute = origLayer.absolute;
-			env.trashLayer(origLayer);
-		}
-		return newlayer;
-	}
-	
 	// -------------------------------------------------------------------------------
 
 	function applyProps(layer) {
@@ -691,23 +660,22 @@ class KAGEnvImage extends KAGEnvBase {
 	function doUpdate(elm) {
 		if (trans.method !== void || dispMode == 3) {
 			//dm("画像更新:" + trans.method + ":" + trans.showaction + ":" + trans.hideaction);
-			env.stopTrans();
-			env.backup();
+			player.backup();
 			var layer = update(false);
-			env.beginTransition(trans);
+			player.beginTransition(trans);
 			if (layer !== void) {
-				env.beginTransActionUpdate(trans, layer);
+				player.beginTransActionUpdate(trans, layer);
 			}
 		} else if (dispMode == 2) {
 			//dm("画像消去");
 			doShow = false;
 			var layer = update(true);
-			env.beginTransAction(trans, layer, true, elm.nosync);
+			player.beginTransAction(trans, layer, true, elm.nosync);
 		} else if (dispMode == 1) {
 			//dm("画像表示");
 			doShow = false;
 			var layer = update(true);
-			env.beginTransAction(trans, layer, false, elm.nosync);
+			player.beginTransAction(trans, layer, false, elm.nosync);
 		} else {
 			update(true);
 		}

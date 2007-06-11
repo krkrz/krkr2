@@ -1,13 +1,18 @@
 class KAGEnvObject {
 
-    // 各種情報を保持する環境
+	// 実行環境
 	var env;
+
+	// 実行プレイヤー
+	var player;
+
 	// 名前
 	var name;
 
 	function KAGEnvObject(env, name) {
-		this.env = env;
-		this.name = name;
+		this.env    = env;
+		this.player = env.player;
+		this.name   = name;
 	}
 
 	function finalize() {
@@ -15,17 +20,7 @@ class KAGEnvObject {
 
 	// メッセージ表示用
 	function dm(msg) {
-		return env.dm(msg);
-	}
-
-    // スキップ状態か
-    function isSkip() {
-		return env.isSkip();
-	}
-
-	// ジャンプ状態か
-	function isJump() {
-		return env.isJump();
+		return player.dm(msg);
 	}
 
 	/**
@@ -33,7 +28,7 @@ class KAGEnvObject {
 	 */
 	function tagfunc(elm) {
 		tagcommand(elm);
-		if (!isJump()) {
+		if (!player.isJump()) {
 			return sync(elm);
 		}
 		return 0;
@@ -217,7 +212,7 @@ class KAGEnvBase extends KAGEnvObject {
 		names.assign(elm);
 		for (var i=0; i<names.count; i+= 2) {
 			if (!doCommand(names[i], names[i+1], elm)) {
-				env.errorCmd(name + ":未知のコマンド:" + names[i]);
+				player.errorCmd(name + ":未知のコマンド:" + names[i]);
 			}
 		}
 	}
@@ -226,10 +221,9 @@ class KAGEnvBase extends KAGEnvObject {
 	 * 更新処理
 	 */
 	function doUpdate(elm) {
-		env.stopTrans();
-		env.backup();
+		player.backup();
 		update(false);
-		env.beginTransition(trans);
+		player.beginTransition(trans);
 	}
 
 	/**
@@ -281,6 +275,10 @@ class KAGEnvBase extends KAGEnvObject {
 					value.disp = CLEAR;
 				} incontextof this);
 			}
+			// メッセージ窓消去
+			if (trans.msgoff) {
+				player.addTag("msgoff");
+			}
 		}
 	}
 
@@ -293,7 +291,6 @@ class KAGEnvBase extends KAGEnvObject {
 		} else {
 			doUpdate(elm);
 		}
-		env.hideMessage(trans);
 		return ret;
 	}
 };

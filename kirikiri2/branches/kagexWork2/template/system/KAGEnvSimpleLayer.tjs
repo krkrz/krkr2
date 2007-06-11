@@ -7,7 +7,7 @@ class SimpleLayerGraphicLayer extends EnvGraphicLayer {
 	var ybase;
 	var originMode;
 	
-	function SimpleLayerGraphicLayer(owner, isfore, name) {
+	function SimpleLayerGraphicLayer(owner, isfore) {
 		super.EnvGraphicLayer(...);
 		originMode = owner.originMode;
 		xbase = owner.xbase;
@@ -184,8 +184,8 @@ class KAGEnvSimpleLayer extends KAGEnvLevelLayer, KAGEnvLayer {
 	/**
 	 * êVÉåÉCÉÑê∂ê¨
 	 */
-	function createLayer(owner, isfore, name) {
-		return new SimpleLayerGraphicLayer(owner, isfore, name);
+	function createLayer(isfore) {
+		return new SimpleLayerGraphicLayer(this, isfore);
 	}
 
 }

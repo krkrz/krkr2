@@ -1,10 +1,9 @@
 /**
  * シーン再生ロジック
  */
-class ScenePlayer extends KAGPlugin
+class ScenePlayer extends BasicPlayer
 {
 	var sceneParser; // パーサ
-	var env;         // 再生対象環境
 
 	var lines = [];    // パース結果
 	var pendings = []; // 割り込み処理
@@ -12,13 +11,13 @@ class ScenePlayer extends KAGPlugin
 	/**
 	 * タグ割り込み処理
 	 */
-    function insertTag(name, elm) {
+	function addTag(name, elm) {
 		var e = %[];
 		if (elm !== void) {
 			(Dictionary.assign incontextof e)(elm, false);
-        }
+		}
 		e.tagname = name if name !== void;
-		pendings.insert(0, e);
+		pendings.add(e);
     }
 	
 	var handlers;      // 処理ハンドラ群
@@ -49,10 +48,9 @@ class ScenePlayer extends KAGPlugin
 	/**
 	 * コンストラクタ
 	 */
-	function ScenePlayer(kag) {
-        super.KAGPlugin();
+	function ScenePlayer() {
+		super.BasicPlayer();
 		sceneParser = new SceneParser();
-		env         = new KAGEnvironment(kag);
 		handlers = getHandlers();
 		status = mStop;
     }
@@ -61,7 +59,7 @@ class ScenePlayer extends KAGPlugin
 	 * ファイナライザ
 	 */
 	function finalize()	{
-		invalidate env;
+		super.finalize();
 	}
 
 	/**
@@ -346,42 +344,6 @@ class ScenePlayer extends KAGPlugin
 				return int(acs * autoWCWaits[ind]);
 			}
 		}
-		return acs;
-	} incontextof kag,
-
-	graph : function(elm)
-	{
-		// グラフィックを文字として表示
-		var acs = actualChSpeed;
-		if(updateBeforeCh)
-		{
-			if(acs) { updateBeforeCh--; return -5; } else { updateBeforeCh--; }
-		}
-		if(currentWithBack) current.comp.processGraph(elm);
-		if(current.processGraph(elm))
-		{
-			return showPageBreakAndClear();
-		}
-		if(historyWriteEnabled && elm.alt !== void) historyLayer.store(elm.alt);
-		return acs;
-	} incontextof kag,
-
-	hch : function(elm)
-	{
-		// 縦中横
-		var acs = actualChSpeed;
-		if(updateBeforeCh)
-		{
-			if(acs) { updateBeforeCh--; return -5; } else { updateBeforeCh--; }
-		}
-		var text = elm.text;
-		var expand = elm.expand !== void && +elm.expand;
-		if(currentWithBack) current.comp.putHorizonCh(text, expand);
-		if(current.putHorizonCh(text, expand))
-		{
-			return showPageBreakAndClear();
-		}
-		if(historyWriteEnabled) historyLayer.store(text);
 		return acs;
 	} incontextof kag,
 
@@ -853,92 +815,13 @@ class ScenePlayer extends KAGPlugin
 
     msgoff : env.msgoff,
     msgon  : env.msgon,
-    clear  : env.clear,
 
     dispname      : env.dispname,
     dispnameVoice : env.dispnameVoice,
-    quake         : env.quake,
     afterpage     : env.afterpage,
     afterline     : env.afterline,
 				  
 				  ];
 	}
 
-	/**
-	 * 状態保存処理
-	 */
-	function onStore(f, elm) {
-        var dic = f.env = %[];
-		save(dic);
-	}
-
-	/**
-	 * 状態復帰処理
-	 */
-	function onRestore(f, clear, elm) {
-		if (f.env !== void) {
-			load(f.env);
-		}
-	}
-
-	function onCopyLayer(toback, backlay) {
-		env.onCopyLayer(toback, backlay);
-	}
-	
-	function onExchangeForeBack() {
-		env.onExchangeForeBack();
-	}
-
-	function onResetAll() {
-		env.resetEnv();
-		env.update(kag.fore);
-	}
-
-	// --------------------------------------------------------------
-	// KAG 用タグ定義
-	// --------------------------------------------------------------
-
-	var tick;
-
-	/**
-	 * シーン初期化
-	 */
-	function sceneinit() {
-		sceneParser.clear();
-	}
-	
-	/**
-	 * シーンマクロ読み込み
-	 */
-	function scenemacro(elm) {
-		sceneParser.parseMacro(elm.storage);
-	}
-	
-	/**
-	 * シーン開始処理
-	 */
-	function scenestart(elm) {
-		tick = System.getTickCount();
-
-		
-		run(elm.storage, elm);
-		return 0;
-	}
-
-	/**
-	 * シーン実行処理
-	 */
-	function scenemain(elm) {
-		var now = System.getTickCount();
-		var diff = now - tick;
-		tick = now;
-		switch (main(diff)) {
-		case 1: // 通常
-			return -3;
-		case 2: // イベント待ち
-			return -5;
-		default: // 終了
-			return 0;
-		}
-	}
 };

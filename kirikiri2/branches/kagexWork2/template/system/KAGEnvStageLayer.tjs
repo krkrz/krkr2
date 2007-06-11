@@ -8,8 +8,8 @@ class StageGraphicLayer extends EnvGraphicLayer {
 	}
 
 	function recalcPosition() {
-		setRealPosition(env.xmax + left - width / 2,
-						env.ymax + top  - height / 2);
+		setRealPosition(owner.env.xmax + left - width / 2,
+						owner.env.ymax + top  - height / 2);
 	}
 };
 
@@ -201,7 +201,7 @@ class KAGEnvStageLayer extends KAGEnvBackLayer {
 	/**
 	 * êVÉåÉCÉÑê∂ê¨
 	 */
-	function createLayer(owner, isfore, name) {
-		return new StageGraphicLayer(owner, isfore, name);
+	function createLayer(isfore) {
+		return new StageGraphicLayer(this, isfore);
 	}
 }

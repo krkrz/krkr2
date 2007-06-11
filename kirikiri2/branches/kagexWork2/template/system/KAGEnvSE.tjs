@@ -41,7 +41,7 @@ class KAGEnvSE extends KAGEnvObject {
 	function setPlay(param, elm) {
 		if (param !== void) {
 			replay  = true;
-			if (!isSkip() || elm.loop || !env.nosewhenski) {
+			if (elm.loop || !(player.isSkip() && player.nosewhenskip)) {
 				storage   = param;
 				volume    = elm.volume !== void ? +elm.volume : 100;
 				loop      = elm.loop;
@@ -156,23 +156,22 @@ class KAGEnvSE extends KAGEnvObject {
     }
 
 	function sync() {
-		var time = isSkip() ? 0 : transTime;
 		if (replay) {
 			if (storage !== void) {
-				env.playSE(id, time, %[storage:storage, loop:loop, start:start]);
+				player.playSE(id, transTime, %[storage:storage, loop:loop, start:start]);
 			} else {
-				env.stopSE(id, time);
+				player.stopSE(id, transTime);
 			}
 			replay = false;
 			refade = false;
 		} else if (refade) {
-			env.fadeSE(id, time, volume);
+			player.fadeSE(id, transTime, volume);
 			refade = false;
 		}
 		if (waitFade !== void) {
-			return env.waitSEFade(waitFade);
+			return player.waitSEFade(waitFade);
 		} else if (wait !== void) {
-			return env.waitSEStop(wait);
+			return player.waitSEStop(wait);
 		}
 		return 0;
 	}
