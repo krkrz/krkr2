@@ -36,6 +36,8 @@ protected:
 	
 	bool loop;
 	bool alpha;
+	bool supportSeek;
+	bool supportAsync;
 
 	IStream *in;
 #ifdef FILEBASE
