@@ -36,7 +36,7 @@ class KAGEnvBgm extends KAGEnvObject {
 			loop      = elm.loop;
 			start     = elm.start;
 			transTime = +elm.time if elm.time !== void;
-			env.setBGMFlag(param);
+			player.setBGMFlag(param);
         }
     }
 
@@ -170,35 +170,34 @@ class KAGEnvBgm extends KAGEnvObject {
 	 * コマンド同期
 	 */
 	function sync() {
-		var time = isSkip() ? 0 : transTime;
 		if (replay) {
 			dm("再生状態変更:" + storage);
 			if (storage !== void) {
-				env.playBGM(time, %[storage:storage, loop:loop, start:start]);
+				player.playBGM(transTime, %[storage:storage, loop:loop, start:start]);
 			} else {
-				env.stopBGM(time);
+				player.stopBGM(transTime);
 			}
 			if (pause) {
-				env.pauseBGM(0);
+				player.pauseBGM(0);
 			}
 			replay = false;
 			refade = false;
 			repause = false;
 		} else if (refade) {
-			env.fadeBGM(time, volume);
+			player.fadeBGM(transTime, volume);
 			refade = false;
 		} else if (repause) {
 			if (pause) {
-				env.pauseBGM(time);
+				player.pauseBGM(transTime);
 			} else {
-				env.resumeBGM(time);
+				player.resumeBGM(transTime);
 			}
 			repause = false;
 		}
 		if (waitFade !== void) {
-			return env.waitBGMFade(waitFade);
+			return player.waitBGMFade(waitFade);
 		} else  if (wait !== void) {
-			return env.waitBGMStop(wait);
+			return player.waitBGMStop(wait);
 		}
         return 0;
     }

@@ -1,3 +1,788 @@
+/**
+ * 基本概念になるレイヤ
+ */
+class GraphicLayerBase extends GraphicLayerEx {
+	function GraphicLayerBase(isfore) {
+		super.GraphicLayerEx(kag, isfore ? kag.fore.base : kag.back.base);
+	}
+};
+
+/**
+ * 基本概念になるボイストラック
+ */
+class VoiceTrack extends WaveSoundBuffer {
+
+    var owner;
+    
+    function VoiceTrack(owner) {
+        this.owner = owner;
+        super.WaveSoundBuffer(owner);
+    }
+
+    function play() {
+		owner.setBGMVolDown(true);
+		super.play(...);
+    }
+
+    var prevstatus = "unload"; // 直前のステータス
+
+    function onStatusChanged() {
+        super.onStatusChanged(...);
+        var ps = prevstatus;
+        var cs = status;
+        prevstatus = cs;
+        if(ps == "play" && cs == "stop") {
+			owner.setBGMVolDown(false);
+		}
+    }
+}
+
+/**
+ * 基本プレイヤー
+ */
+class BasicPlayer extends KAGPlugin {
+
+	// 環境情報
+	var env;
+
+	/**
+	 * コンストラクタ
+	 */
+	function BasicPlayer() {
+		env = new KAGEnvironment(this, kag.scWidth, kag.scHeight);
+	}
+
+	/**
+	 * ファイナライザ
+	 */
+	function finalize() {
+		invalidate env;
+	}
+	
+	// ---------------------------------------------------
+	// 共通処理
+	// ---------------------------------------------------
+	
+	function dm(msg) {
+		if (kag.debugLevel >= tkdlSimple) {
+			global.dm(msg);
+        }
+	}
+
+	/**
+	 * スキップ中か
+	 */
+	function isSkip() {
+		return kag.skipMode != SKIP_FORCE && (kag.skipMode || kag.noeffect);
+	}
+
+	/**
+	 * ジャンプ中か
+	 */
+	function isJump() {
+		return false;
+	}
+	
+	// --------------------------------------------------------
+	// メッセージ窓制御関連
+	// --------------------------------------------------------
+	
+	/**
+	 * 名前の表示（ページ指定あり)
+     */
+	function drawNamePage(isfore, name="") {
+		var base = isfore ? kag.fore : kag.back;
+		var msg = base.messages[kag.currentNum];
+		msg.processName(name);
+    }
+
+	/**
+	 * 表情表示用レイヤを返す
+	 */
+	function getFaceLayer(isfore) {
+		var base = isfore ? kag.fore : kag.back;
+		var msg = base.messages[kag.currentNum];
+		return msg.faceLayer;
+	}
+
+	function msgonoff(v, trans) {
+		if (trans !== void && trans.method !== void && !isSkip()) {
+			backup();
+			kag.setCurrentMessageLayerVisibleFast(1, v);
+			beginTransition(trans);
+		} else {
+			kag.setCurrentMessageLayerVisibleFast(0, v);
+		}
+	}
+	
+	// ------------------------------------------------------------------
+	// 画面切り替え関連
+	// ------------------------------------------------------------------
+
+	function backup() {
+		kag.fore.base.stopTransition();
+		kag.backupLayer(EMPTY, true);
+	}
+
+	/*
+	 * トランジション実行エントリ
+	 * @param trans トランジション情報
+	 * KAG にトランジション実行命令を差し込む
+	 */
+	function beginTransition(trans) {
+		if (trans === void || trans.method === void || trans.time == 0 || isSkip()) {
+			addTag("forelay");
+			clearTrash();
+		} else {
+			// 実際のトランジション実行
+			trans.children = true;
+			if (trans.method === void) {
+				trans.method = "crossfade";
+			}
+			addTag("trans", trans);
+			if (trans.transwait !== void) {
+				// 時間待ち
+				addTag("wait", %[ time : (int)trans.time + (int)trans.transwait, trans:true ]);
+			} else {
+				// トランジション待ち
+				addTag("wt");
+			}
+			// メッセージ窓状態同期
+			addTag("syncmsg");
+		}
+	}
+
+	function beginTransActionUpdate(trans, layer) {
+		//dm("更新アクション実行");
+		if (trans.showaction !== void) {
+			var action = copyActionInfo(trans.showaction, trans.time);
+			addTag("action", %[target:layer, action:action]);
+		}
+		if (trans.hideaction !== void) {
+			var action = copyActionInfo(trans.hideaction, trans.time);
+			addTag("action", %[target:layer.comp, action:action]);
+		}
+	}
+
+	function beginTransAction(trans, layer, hide, nosync) {
+
+		// アクション実行
+		var action = copyActionInfo(hide ? trans.hideaction : trans.showaction, trans.time);
+		action["visvalue"] = %[ handler:MoveAction, value: hide ? 0 : 100, time:trans.time ];
+		addTag("action", %[target:layer, action:action]);
+		
+		//dm("表示アクション実行");
+		if (!nosync && !trans.nosync) {
+			if (trans.transwait !== void) {
+				// 時間待ち
+				addTag("wait", %[ time : (int)trans.time + (int)trans.transwait, action:true ]);
+			} else {
+				// アクション待ち
+				addTag("wact", %[ target:layer ]);
+			}
+		}
+	}
+
+	/**
+	 * アクションの終了を待たせる
+	 */
+	function waitAction(layer, syncMode, movieSyncMode) {
+		// シンクロ指定
+		if (syncMode) {
+			return kag.waitAction(layer);
+		}
+		// ムービー同期
+		if (movieSyncMode) {
+			return kag.waitLayerMovie(layer);
+		}
+	}
+
+	// 名前定義がデフォルト名か？
+	function isDefaultName() {
+		return kag.flags.name === void || (kag.flags.name == kag.defaultName && kag.flags.family == kag.defaultFamily);
+	}
+	
+	// ------------------------------------------------------------------
+	// 環境レイヤ制御
+	// ------------------------------------------------------------------
+	
+	// 現在前面にあるレイヤ一覧
+	var forelayers = [];
+
+	/**
+	 * 指定したレイヤを指定したレベルに移動する
+	 */
+	function toLevel(layer, newlevel) {
+
+		//dm("レベル指定:" + newlevel + ":" + layer.level);
+		newlevel = +newlevel;
+
+		if (layer.level > 0) {
+			if (layer.level === newlevel) {
+				//dm("同一レベルなので処理しない");
+				return;
+			}
+			var index = layer.absolute;
+			// もともといたレベルの調整
+			for (var i = 0; i<forelayers.count; i++) {
+				var target = forelayers[i];
+				if (target !== layer && target.level == layer.level) {
+					if (target.absolute > index) {
+						target.absolute -= 100;
+					}
+				}
+			}
+		}
+		// 新規レベルの一番上にもっていく
+		var newindex = (newlevel + 1) * 100000;
+		for (var i = 0; i<forelayers.count; i++) {
+			var target = forelayers[i];
+			if (target !== layer && target.level == newlevel && target.absolute > newindex) {
+				newindex = target.absolute;
+			}
+		}
+		newindex += 100;
+		//dm("レベル設定:" + newlevel + ":" + newindex);
+		layer.absolute = newindex;
+		layer.level    = newlevel;
+    }
+	
+	/**
+	 * 同じレベルのレイヤの中で最前列に移動
+	 */
+	function toFront(layer) {
+		var level = layer.level;
+		var index = layer.absolute;
+		var maxindex = index;
+		for(var i = 0; i<forelayers.count; i++) {
+			var target = forelayers[i];
+			if (target !== layer && target.level == level) {
+				if (target.absolute > maxindex) {
+					maxindex = target.absolute;
+				}
+				if (target.absolute > index) {
+					target.absolute -= 100;
+				}
+			}
+		}
+		layer.absolute = maxindex;
+	}
+
+	/*
+	 * レイヤを最後列に移動
+	 */
+	function toBack(layer) {
+		var level = layer.level;
+		var index = layer.absolute;
+		var minindex = index;
+		for(var i = 0; i<forelayers.count; i++) {
+			var target = forelayers[i];
+			if (target !== layer && target.level == level) {
+				if (target.absolute < minindex) {
+					minindex = target.absolute;
+				}
+				if (target.absolute < index) {
+					target.absolute += 100;
+				}
+			}
+		}
+		layer.absolute = minindex;
+    }
+
+	/**
+	 * 表にあるレイヤか？
+	 */
+	function isForeLayer(layer) {
+		return layer.parent === kag.fore.base;
+	}
+
+	/**
+	 * 表に移動させる
+	 */
+	function toForeLayer(layer) {
+		var absolute = layer.absolute;
+		layer.parent = kag.fore.base;
+		layer.absolute = absolute;
+	}
+
+	/**
+	 * レイヤ取得処理
+	 * @param fore
+	 * @param origLayer 廃棄元レイヤ
+	 */
+	function getNewLayer(owner, isfore, origLayer) {
+		var newlayer = owner.createLayer(isfore);
+		newlayer.hitType = htProvince;
+		newlayer.level = -1;
+		forelayers.add(newlayer);
+		if (origLayer !== void) {
+			newlayer.assign(origLayer);
+			newlayer.assignVisibleState(origLayer);
+			newlayer.level    = origLayer.level;
+			newlayer.absolute = origLayer.absolute;
+			trashLayer(origLayer);
+		}
+		return newlayer;
+	}
+	
+	// 廃棄対象レイヤ一覧
+	var trashlayers = [];
+
+	/**
+	 * レイヤ廃棄処理
+	 * @param layer
+	 */
+	function trashLayer(layer) {
+		if (layer !== void) {
+			forelayers.remove(layer);
+			for (var i=0;i<trashlayers.count;i++) {
+				if (trashlayers[i] === layer) {
+					return;
+				}
+			}
+			trashlayers.add(layer);
+		}
+		return void;
+	}
+
+	/**
+	 * レイヤ破棄実行
+	 */
+	function clearTrash() {
+		//dm("レイヤ破棄実行");
+		for (var i=0;i<trashlayers.count;i++) {
+			invalidate trashlayers[i];
+		}
+		trashlayers.clear();
+	}
+
+	
+	// -------------------------------------------------------------------
+	// ボイス処理系
+	// -------------------------------------------------------------------
+
+	// ボイス参照用ベース名
+	property voiceBase {
+		getter() {
+			return kag.flags.voiceBase !== void ? kag.flags.voiceBase : "";
+		}
+	}
+
+	// ボイスをカットするか
+	property voicecut {
+		getter() {
+			return kag.voicecut;
+		}
+	}
+
+	// 改ページ後にボイスカット
+	property voicecutpage {
+		getter() {
+			return kag.voicecutpage;
+		}
+	}
+	
+	// ボイス用トラック
+	var voiceTracks = %[];
+	
+	/**
+	 * ボイス再生
+	 * @param name キャラ名
+	 * @param voiceName キャラボイス用識別名
+	 * @param voicefile 再生ファイル
+	 */
+	function playVoice(name, voiceName, voicefile) {
+		// ボイス再生OFF
+		if (isSkip() || !(kag.voiceenable && kag.getVoiceOn(voiceName))) {
+			return;
+		}
+		var ret = void;
+		var soundBuffer = voiceTracks[name];
+		if (soundBuffer === void) {
+			soundBuffer = new VoiceTrack(this);
+			voiceTracks[name] = soundBuffer;
+		}
+		soundBuffer.volume2 = kag.getVoiceVolume(voiceName) * 1000;
+		try {
+			if (kag.voicespeed != 1.0 && typeof soundBuffer.filters != "undefined") {
+				soundBuffer.filters.clear();
+				soundBuffer.filters.add(new WaveSoundBuffer.PhaseVocoder());
+				soundBuffer.filters[0].window = 256;
+				soundBuffer.filters[0].time = 1.0 / kag.voicespeed;
+				soundBuffer.open(voicefile);
+				soundBuffer.play();
+				ret = (int)(soundBuffer.totalTime / kag.voicespeed);
+			} else {
+				soundBuffer.open(voicefile);
+				soundBuffer.play();
+				ret = soundBuffer.totalTime;
+			}
+		} catch (e) {
+		}
+		return ret;
+	}
+
+	/**
+	 * ボイス停止
+	 * @param name キャラ名
+	 */
+	function stopVoice(name) {
+		var soundBuffer = voiceTracks[name];
+		if (soundBuffer !== void) {
+			soundBuffer.stop();
+			if (typeof soundBuffer.filters != "undefined") {
+				soundBuffer.filters.clear();
+			}
+        }
+	}
+
+	/**
+	 * ボイスまち
+	 * @param name キャラ名
+	 * @param canSkip スキップできる
+	 */
+	function waitVoice(name, canSkip) {
+		var soundBuffer = voiceTracks[name];
+		if (soundBuffer !== void && soundBuffer.status == "play") {
+			var remainTime = (soundBuffer.totalTime - soundBuffer.position) / kag.voicespeed;
+			if (remainTime > 0) {
+				return kag.waitTime(remainTime, canSkip && kag.clickSkipEnabled);
+			}
+		}
+	}
+	
+    /**
+     * ボイスのボリュームの再調整
+	 * @param name キャラ名
+	 * @param voiceName キャラボイス用識別名
+     */
+	function resetVoiceVolume(name, voiceName) {
+		var soundBuffer = voiceTracks[name];
+		if (soundBuffer !== void) {
+			soundBuffer.volume2 = kag.getVoiceVolume(voiceName) * 1000;
+        }
+    }
+	
+	// -------------------------------------------------------------------
+
+
+    function quake(elm) {
+        // 揺れをのっとる
+        if (!isSkip()) {
+            kag.doQuake(elm);
+        }
+        return 0;
+    }
+
+	function setNextVoice(nextVoice) {
+		kag.currentVoiceScript = nextVoice;
+	}
+
+	// 履歴に名前設定
+	function setHistoryName(name) {
+		if (kag.historyWriteEnabled) {
+			if (typeof kag.historyLayer.storeName !== 'undefined') {
+				kag.historyLayer.storeName(name);
+			} else {
+				if (name != "") {
+					kag.historyLayer.store(name + " ");
+				}
+            }
+        }
+	}
+
+	function setHistoryAction(action) {
+		if (kag.historyWriteEnabled) {
+			kag.historyLayer.setNewAction(action);
+		}
+	}
+	
+	// 履歴のアクション消去
+	function clearHistoryAction(reline) {
+		if (kag.historyWriteEnabled) {
+			kag.historyLayer.clearAction();
+			if (reline) {
+				kag.historyLayer.reline();
+			}
+        }
+	}
+
+	// 自動待ちの追加
+	function addAutoWait(wait) {
+		kag.addAutoWait(wait);
+	}
+
+	// アクションの停止
+	function stopAllActions() {
+		kag.stopAllActions();
+	}
+	
+	// ------------------------------------------------------------
+	// SE 系機能
+	// ------------------------------------------------------------
+
+	property nosewhenskip {
+		getter() {
+			return kag.nosewhenskip;
+		}
+	}
+
+	property senum {
+		getter() {
+			return kag.numSEBuffers;
+		}
+	}
+	
+	function waitSEFade(wait) {
+		return kag.waitSEFade(wait);
+	}
+
+	function waitSEStop(wait) {
+		return kag.waitSEStop(wait);
+	}
+
+	function playSE(id, time, play) {
+		time = isSkip() ? 0 : +time;
+		if (time > 0)  {
+			kag.se[id].fadeIn(%[ storage:play.storage, loop:play.loop, time:time, start:play.start]);
+		} else {
+			kag.se[id].play(%[ storage:play.storage, loop:play.loop, start:play.start]);
+		}
+	}
+
+	function fadeSE(id, time, volume) {
+		time = isSkip() ? 0 : +time;
+		if (time > 0) {
+			kag.se[id].fade(%[time:time, volume:volume]);
+		} else {
+			kag.se[id].volume = volume;
+		}
+	}
+	
+	function stopSE(id, time) {
+		time = isSkip() ? 0 : +time;
+		if (time > 0) {
+			kag.se[id].fadeOut(%[time:time]);
+		} else {
+			kag.se[id].stop();
+		}
+	}
+
+	// ------------------------------------------------------------
+	// BGM 系機能
+	// ------------------------------------------------------------
+
+	function waitBGMFade(wait) {
+		return kag.waitBGMFade(waitFade);
+	}
+
+	function waitBGMStop(wait) {
+		return kag.waitBGMStop(wait);
+	}
+
+	function setBGMVolDown(down) {
+		if (down) {
+			if (kag.bgmdown && !isSkip()) {
+				kag.bgm.voldown = true;
+			}
+		} else {
+			if (kag.bgm.voldown) {
+				kag.bgm.voldown = false;
+			}
+		}
+	}
+	
+	function playBGM(time, play) {
+		time = isSkip() ? 0 : +time;
+		if (play.noxchg) {
+			if (time > 0)  {
+				kag.bgm.fadeIn(%[ storage:play.storage, loop:play.loop, time:time, start:play.start]);
+			} else {
+				kag.bgm.play(%[ storage:play.storage, loop:play.loop, paused:play.paused, start:play.start]);
+			}
+		} else {
+			if (time > 0 || +play.intime > 0) {
+				kag.bgm.exchange(%[ storage:play.storage, loop:play.loop, time:time, intime:play.intime, outtime:play.outtime, overlap:play.overlap, start:play.start]);
+			} else {
+				kag.bgm.play(%[ storage:play.storage, loop:play.loop, paused:play.paused, start:play.start]);
+			}
+		}
+		kag.clearBgmStop();
+		kag.clearBgmLabel();
+	}
+
+	function pauseBGM(time) {
+		time = isSkip() ? 0 : +time;
+		if (time > 0) {
+			kag.bgm.fadePause(%[ time:time ]);
+		} else {
+			kag.bgm.pause();
+		}
+	}
+	
+	function resumeBGM() {
+		kag.bgm.resume();
+	}
+
+	function fadeBGM(time, volume) {
+		time = isSkip() ? 0 : +time;
+		if (time > 0) {
+			kag.bgm.fade(%[time:time, volume:volume]);
+		} else {
+			kag.bgm.setVolume(volume * 1000);
+		}
+	}
+	
+	function stopBGM(time) {
+		time = isSkip() ? 0 : +time;
+		if (time > 0) {
+			kag.bgm.fadeOut(%[ time:time ]);
+		} else {
+			kag.bgm.stop();
+		}
+	}
+
+	// ------------------------------------------------------
+	// エラー処理系
+	// ------------------------------------------------------
+
+	function errorImage() {
+		kag.errorImage(...);
+	}
+
+	function errorCmd() {
+		kag.errorCmd(...);
+	}
+
+	function error() {
+		kag.error(...);
+	}
+
+	function errorVoice() {
+		kag.errorVoice(...);
+	}
+
+	// ------------------------------------------------------
+	// フラグ処理系
+	// ------------------------------------------------------
+
+	function setBGMFlag(name) {
+		kag.sflags["bgm_" + (name.toUpperCase())] = true;
+	}
+
+	function setCGFlag(name) {
+		kag.sflags["cg_" + (name.toUpperCase())] = true;
+	}
+
+	function setMovieFlag(name) {
+		kag.sflags["movie_" + (name.toUpperCase())] = true;
+	}
+
+	// --------------------------------------------------------------
+	// KAG 用処理呼び出し
+	// --------------------------------------------------------------
+
+    /**
+	 * ボイス速度変更
+	 */
+	function onVoiceSpeed() {
+		foreach(voiceTracks, function(name, value, dict) {
+			invalidate value;
+		});
+		voiceTracks = %[];
+	}
+	
+	/**
+	 * SE 用情報のクリア
+	 */
+	function onSeStop(id) {
+		env.onSeStop(id);
+	}
+	
+	function onCopyLayer(toback, backlay) {
+		env.onCopyLayer(toback, backlay);
+		if (backlay && !toback) {
+			clearTrash();
+		}
+	}
+	
+	function onExchangeForeBack() {
+		clearTrash();
+	}
+
+	function onResetAll() {
+		env.resetEnv();
+		env.update(true);
+	}
+
+	// --------------------------------------------------------------
+	// KAG 用保存処理
+	// --------------------------------------------------------------
+	
+	/**
+	 * 状態保存処理
+	 */
+	function onStore(f, elm) {
+        var dic = f.env = %[];
+		save(dic);
+	}
+
+	/**
+	 * 状態復帰処理
+	 */
+	function onRestore(f, clear, elm) {
+		if (f.env !== void) {
+			load(f.env);
+		}
+	}
+	
+	// --------------------------------------------------------------
+	// KAG 用タグ定義
+	// --------------------------------------------------------------
+
+	var tick;
+
+	/**
+	 * シーン初期化
+	 */
+	function sceneinit() {
+		sceneParser.clear();
+	}
+	
+	/**
+	 * シーンマクロ読み込み
+	 */
+	function scenemacro(elm) {
+		sceneParser.parseMacro(elm.storage);
+	}
+	
+	/**
+	 * シーン開始処理
+	 */
+	function scenestart(elm) {
+		tick = System.getTickCount();
+		run(elm.storage, elm);
+		return 0;
+	}
+
+	/**
+	 * シーン実行処理
+	 */
+	function scenemain(elm) {
+		var now = System.getTickCount();
+		var diff = now - tick;
+		tick = now;
+		switch (main(diff)) {
+		case 1: // 通常
+			return -3;
+		case 2: // イベント待ち
+			return -5;
+		default: // 終了
+			return 0;
+		}
+	}
+};
+
 KAGLoadScript('YAML.tjs');
 
 /**

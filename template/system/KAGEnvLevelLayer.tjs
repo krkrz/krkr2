@@ -25,7 +25,7 @@ class KAGEnvLevelLayer {
     }
 
     function finalize() {
-		env.trashLayer(targetLayer);
+		player.trashLayer(targetLayer);
     }
 
 	/**
@@ -36,24 +36,24 @@ class KAGEnvLevelLayer {
 			if (toback) {
 				if (targetLayer !== void) {
 					//dm("裏画面にコピー:" + name);
-					//dm("元レイヤ:" + targetLayer + ":" + (env.isForeLayer(targetLayer) ? "表" : "裏"));
-					if (env.isForeLayer(targetLayer) && targetLayer.visible) {
-						targetLayer = getNewLayer(this, false, name, targetLayer);
-						//dm("複製レイヤ:" + targetLayer + ":" + (env.isForeLayer(targetLayer) ? "表" : "裏"));
+					//dm("元レイヤ:" + targetLayer + ":" + (player.isForeLayer(targetLayer) ? "表" : "裏"));
+					if (player.isForeLayer(targetLayer) && targetLayer.visible) {
+						targetLayer = player.getNewLayer(this, false, targetLayer);
+						//dm("複製レイヤ:" + targetLayer + ":" + (player.isForeLayer(targetLayer) ? "表" : "裏"));
 					} else {
 						//dm("廃棄");
-						targetLayer = env.trashLayer(targetLayer);
+						targetLayer = player.trashLayer(targetLayer);
 					}
 				}
 			} else {
 				if (targetLayer !== void) {
 					dm("表画面にコピー:" + name);
-					if (!env.isForeLayer(targetLayer) && targetLayer.visible) {
+					if (!player.isForeLayer(targetLayer) && targetLayer.visible) {
 						dm("表に移動");
-						env.toForeLayer(targetLayer);
+						player.toForeLayer(targetLayer);
 					} else {
 						dm("廃棄");
-						targetLayer = env.trashLayer(targetLayer);
+						targetLayer = player.trashLayer(targetLayer);
 					}
 				}
 			}
@@ -66,8 +66,8 @@ class KAGEnvLevelLayer {
      * 同時にレベルに応じた front/back の処理も実行する
      */
 	function getLayer(isfore) {
-		if (targetLayer === void || env.isForeLayer(targetLayer) != isfore) {
-			targetLayer = getNewLayer(this, isfore, name, targetLayer);
+		if (targetLayer === void || player.isForeLayer(targetLayer) != isfore) {
+			targetLayer = player.getNewLayer(this, isfore, targetLayer);
 		}
 		if (restore) {
 			targetLayer.level    = +level    if (level !== void);
@@ -77,11 +77,11 @@ class KAGEnvLevelLayer {
 		if (level === void) {
 			level = env.defaultLevel;
 		}
-		env.toLevel(targetLayer, level);
+		player.toLevel(targetLayer, level);
 		if (front) {
-			env.toFront(targetLayer);
+			player.toFront(targetLayer);
 		} else if (back) {
-			env.toBack(targetLayer);
+			player.toBack(targetLayer);
         }
 		front = back = void;
 		absolute = targetLayer.absolute;

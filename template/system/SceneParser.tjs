@@ -154,8 +154,10 @@ class SceneParser extends KAGParser
 				}
 				//dm("ボイス展開:" + nameStr + ":" + voice);
 				if (voice !== void) {
+					addTag("msgon");
 					addTag("dispname", %[name:nameStr, disp:nameDisp, voice:voice]);
 				} else {
+					addTag("msgon");
 					addTag("dispname", %[name:nameStr, disp:nameDisp]);
 				}
 				afterName = true;
@@ -212,6 +214,7 @@ class SceneParser extends KAGParser
 				nameMode = 0;
                 // 名前指定がない場合はパラメータなしで名前処理を呼び出す
                 if (!afterName && (lineMode < 3 || prevEmptyLine)) {
+					addTag("msgon");
 					addTag("dispname");
 					afterName = true;
                 }

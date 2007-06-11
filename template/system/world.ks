@@ -1,4 +1,4 @@
-@if exp="typeof(global.scenePlayer) == 'undefined'"
+@if exp="typeof(kag.scenePlayer) == 'undefined'"
 @iscript
 KAGLoadScript('world.tjs');
 @endscript

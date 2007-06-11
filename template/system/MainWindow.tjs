@@ -5960,9 +5960,9 @@ class KAGWindow extends Window
     function onSESoundBufferStop(id) {
 		// å¯â âπÇÃçƒê∂Ç™èIóπÇµÇΩ
 		conductor.trigger('sestop' + id);
-		if (typeof this.seStopHandler != "undefined") {
-			seStopHandler(id);
-        }
+		forEachEventHook('onSeStop',
+						 function(handler, f) { handler(id); } incontextof this,
+						 %[id:id]);
 	}
 
 	function waitSEFade(elm)
@@ -8262,9 +8262,8 @@ class KAGWindow extends Window
 	{
 		sender.checked = true;
         voicespeed = sender.speed;
-        if (typeof updateVoice !== "undefined") {
-            updateVoice();
-        }
+		forEachEventHook('onVoiceSpeed',
+						 function(handler) { handler(); } incontextof this);
     }
 
     // ----------------------------------------------------------
