@@ -147,22 +147,6 @@ class KAGEnvSimpleLayer extends KAGEnvLevelLayer, KAGEnvLayer {
         global.KAGEnvLayer.finalize();
     }
 
-    function onStore(f) {
-        global.KAGEnvLayer.onStore(f);
-        global.KAGEnvLevelLayer.onStore(f);
-        f.name = name;
-        f.originMode = originMode;
-        f.viewOriginMode = viewOriginMode;
-    }
-
-    function onRestore(f) {
-        name = f.name;
-		originMode = f.originMode;
-        viewOriginMode = f.viewOriginMode;
-		global.KAGEnvLayer.onRestore(f);
-		global.KAGEnvLevelLayer.onRestore(f);
-    }
-
 	var simpleLayerCommands = %[
 	origin : function(cmd,elm) { originMode = +cmd; } incontextof this,
 	vorigin : function(cmd,elm) { viewOriginMode = +cmd; } incontextof this,

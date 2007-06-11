@@ -195,7 +195,6 @@ class KAGEnvImage extends KAGEnvBase {
     // アクション処理
 	var doStopAction;
 	var actionList;
-	var currentActionList; //< 保存対象アクション
 
     // 画像補整指定
     var _grayscale;
@@ -284,7 +283,6 @@ class KAGEnvImage extends KAGEnvBase {
 	function KAGEnvImage(env, name) {
 		super.KAGEnvBase(env, name);
 		actionList = [];
-		currentActionList = [];
         _disp = CLEAR;
     }
 
@@ -295,14 +293,12 @@ class KAGEnvImage extends KAGEnvBase {
 		ggamma = void;
 		bgamma = void;
 		grayscale = void;
-		clearAction(true);
 		disp = CLEAR;
 		actionList.clear();
 	}
 
     function finalize() {
 		invalidate actionList;
-		invalidate currentActionList;
 		super.finalize();
     }
 
@@ -319,7 +315,6 @@ class KAGEnvImage extends KAGEnvBase {
 		_ggamma = void;
 		_bgamma = void;
 		_grayscale = void;
-		clearAction(true);
 		doReset = true;
 		updateFlag = true;
 	}
@@ -409,34 +404,14 @@ class KAGEnvImage extends KAGEnvBase {
 		if (action instanceof "Dictionary") {
 			actionList.add(action);
 			applyMoveAction(action);
-			if (action.time === void) {
-				currentActionList.add(action);
-			}
 		} else if (action instanceof "Array" && action.count > 0) {
 			actionList.add(action);
 			for (var j=0;j<action.count;j++) {
 				applyMoveAction(action[j]);
 			}
-			if (action[action.count - 1].time === void) {
-				currentActionList.add(action);
-			}
 		}
 		updateFlag = true;
 	}
-
-    /**
-	 * アクション情報の消去
-	 * @param all 全アクション指定
-     */
-	function clearAction(all) {
-		//dm("アクション解除指示:" + name + ":" + all);
-		for (var i=currentActionList.count-1;i>=0;i--) {
-			var info = currentActionList[i];
-			if (all || !info.nowait) {
-				currentActionList.erase(i);
-			}
-		}
-    }
 
     /**
      * アクションを設定
@@ -497,7 +472,6 @@ class KAGEnvImage extends KAGEnvBase {
 	 * 全アクションを解除
      */
 	function stopAction() {
-		clearAction(true);
 		doStopAction = true;
 		updateFlag = true;
     }
@@ -605,50 +579,6 @@ class KAGEnvImage extends KAGEnvBase {
 		return false;
 	}
 	
-    /**
-     * セーブ処理
-     */
-    function onStore(f) {
-		//dm("保存:" + name + ":" + disp );
-		f.disp    = disp;
-		f.type    = type;
-		f.width   = width;
-		f.height  = height;
-		f.props = %[];
-		(Dictionary.assign incontextof f.props)(props); 
-		f.currentActionList = [];
-		(Array.assign incontextof f.currentActionList)(currentActionList);
-		f.grayscale = grayscale;
-        f.rgamma    = rgamma;
-		f.ggamma    = ggamma;
-		f.bgamma    = bgamma;
-    }
-
-    /**
-     * ロード処理
-     */
-	function onRestore(f) {
-		disp    = f.disp;
-		type    = f.type;
-		width   = f.width;
-		height  = f.height;
-		props   = %[];
-		if (f.props !== void) {
-			(Dictionary.assign incontextof props)(f.props);
-		}
-		if (f.currentActionList !== void) {
-			for (var i=0;i<f.currentActionList.count;i++) {
-				addAction(f.currentActionList[i]);
-			}
-		}
-		grayscale = f.grayscale;
-		rgamma    = f.rgamma;
-		ggamma    = f.ggamma;
-		bgamma    = f.bgamma;
-		trans     = void;
-		//dm("復帰:" + name + ":" + disp);
-	}
-
     // このメソッドを実装する
     // function getLayer(isfore);
 	// function drawLayer(layer)

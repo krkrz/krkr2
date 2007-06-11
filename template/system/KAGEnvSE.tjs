@@ -19,31 +19,6 @@ class KAGEnvSE extends KAGEnvObject {
 	var refade;  // 音量指定
 	
     /**
-	 * セーブ処理
-	 */
-    function onStore(f) {
-		f.id        = id;
-		f.count     = count;
-		f.storage   = storage;
-		f.volume    = volume;
-		f.loop      = loop;
-		f.start     = start;
-	}
-
-	function onRestore(f) {
-		if (f !== void) {
-			id   = f.id;
-			count = f.count;
-			storage = f.storage;
-			volume  = f.volume;
-			loop    = f.loop;
-			start   = f.start;
-			replay  = f.storage !== void;
-			transTime = 0;
-		}
-	}
-	
-    /**
      * コンストラクタ
      */
     function KAGEnvSE(env, id) {

@@ -112,17 +112,4 @@ class KAGEnvLevelLayer {
 		absolute = void;
     } 
 
-    function onStore(f) {
-		f.level = level;
-        f.absolute = absolute;
-    }
-
-    function onRestore(f) {
-		level    = f.level;
-		absolute = f.absolute;
-		if (level !== void && absolute !== void && isShowBU()) {
-			//dm("•\Ž¦•œ‹A:" + name + " " + level + "/" + absolute);
-			restore = true;
-		}
-	}
 }

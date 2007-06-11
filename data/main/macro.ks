@@ -24,9 +24,7 @@
 [sysbutton name=msg_log    x=614 y=0 exp="kag.onShowHistoryMenuItemClick()"]
 [sysbutton name=msg_config x=678 y=0 exp="startConfig()"]
 [endif]
-[init]
-[linemode mode=page]
-[craftername mode=true]
+[scenestart storage=%storage linemode=1 erafterpage=true craftername=true]
 [endmacro]
 
 @return

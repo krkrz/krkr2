@@ -1,6 +1,6 @@
 *start|ƒXƒ^[ƒg
 
-[initscene]
+[init]
 
 [“¹˜H]
 [‚ ‚¢ §• ’†]
@@ -21,5 +21,3 @@
 [star1 hide]¯‚PÁ‹
 [star2 hide]¯‚QÁ‹
 [star3 hide]¯‚RÁ‹
-
-[jump storage=s0001.ks]

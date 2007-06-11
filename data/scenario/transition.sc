@@ -1,6 +1,6 @@
 *start|スタート
 
-[initscene]
+[init]
 
 World 機能におけるトランジション記述の例
 
@@ -35,5 +35,3 @@ World 機能におけるトランジション記述の例
 [env 夕 trans=rotatevanish time=1000]rotatevanish
 [env 昼 trans=rotateswap time=1000]rotateswap
 [env 夜 trans=ripple time=1000]ripple
-
-[jump storage=s0001.ks]

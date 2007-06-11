@@ -178,21 +178,6 @@ class KAGEnvStageLayer extends KAGEnvBackLayer {
 	
 	// ------------------------------------------------------
 
-	function onStore(f) {
-		super.onStore(f);
-		f.timeName = timeName;
-		f.stageName = stageName;
-	}
-
-    function onRestore(f) {
-		timeName = f.timeName;
-		stageName = f.stageName;
-		updateStageImage(%[]);
-		super.onRestore(f);
-	}
-
-	// ------------------------------------------------------
-
 	/**
 	 * 更新処理
 	 * キャラクタも更新する必要がある
