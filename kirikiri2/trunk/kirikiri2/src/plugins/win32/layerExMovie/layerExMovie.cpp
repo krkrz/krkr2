@@ -183,7 +183,7 @@ layerExMovie::openMovie(const tjs_char* filename, bool alpha)
 			SUCCEEDED(pAMStream->AddMediaStream(0, &MSPID_PrimaryVideo, 0, NULL))) {
 
 #ifdef FILEBASE
-			if (!SUCCEEDED(pAMStream->OpenFile(tempFile.c_str(), AMMSF_NOCLOCK))) {
+			if (!SUCCEEDED(pAMStream->OpenFile(tempFile.c_str(), 0))) {
 				pAMStream->Release();
 				pAMStream = NULL;
 				return;
@@ -204,9 +204,28 @@ layerExMovie::openMovie(const tjs_char* filename, bool alpha)
 				return;
 			}
 #endif
+			
+			DWORD flag;
+			pAMStream->GetInformation(&flag, NULL);
+			if ((flag & MMSSF_ASYNCHRONOUS)) {
+				TVPAddLog("ASYNC更新サポート");
+				supportAsync = true;
+			} else {
+				supportAsync = false;
+			}
+			if ((flag & MMSSF_HASCLOCK)) {
+				TVPAddLog("CLOCK あり");
+			}
+			if ((flag & MMSSF_SUPPORTSEEK)) {
+				TVPAddLog("SEEKをサポート");
+				supportSeek = true;
+			} else {
+				supportSeek = false;
+			}
+
 			if (SUCCEEDED(pAMStream->GetMediaStream(MSPID_PrimaryVideo, &pPrimaryVidStream))) {
 				if (SUCCEEDED(pPrimaryVidStream->QueryInterface(IID_IDirectDrawMediaStream,(void**)&pDDStream))) {
-					
+
 					// フォーマットの指定 ARGB32
 					DDSURFACEDESC desc;
 					ZeroMemory(&desc, sizeof DDSURFACEDESC);
@@ -284,10 +303,12 @@ layerExMovie::startMovie(bool loop)
 		// 再生開始
 		this->loop = loop;
 		pAMStream->SetState(STREAMSTATE_RUN);
-		pSample->Update(SSUPDATE_ASYNC, NULL, NULL, 0);
 		start();
 		if (onStartMovie != NULL) {
 			onStartMovie->FuncCall(0, NULL, NULL, NULL, 0, NULL, _obj);
+		}
+		if (supportAsync) {
+			pSample->Update(SSUPDATE_ASYNC, NULL, NULL, 0);
 		}
 	}
 }
@@ -337,10 +358,13 @@ layerExMovie::OnContinuousCallback(tjs_uint64 tick)
 {
 	if (pSample) {
 		// 更新
-		HRESULT hr = pSample->CompletionStatus(0,0);
-		if (hr == MS_S_PENDING) {
-//			TVPAddLog("更新待ち");
-		} else if (hr == S_OK) {
+		HRESULT hr;
+		if (supportAsync) {
+			hr = pSample->CompletionStatus(0,0);
+		} else {
+			hr = pSample->Update(0, NULL, NULL, 0);
+		}
+		if (hr == S_OK) {
 			// 更新完了
 			// サーフェースからレイヤに画面コピー
 			reset();
@@ -374,17 +398,26 @@ layerExMovie::OnContinuousCallback(tjs_uint64 tick)
 					onUpdateMovie->FuncCall(0, NULL, NULL, NULL, 0, NULL, _obj);
 				}
 			}
-			pSample->Update(SSUPDATE_ASYNC, NULL, NULL, 0);
+			if (supportAsync) {
+				pSample->Update(SSUPDATE_ASYNC, NULL, NULL, 0);
+			}
 		} else if (hr == MS_S_ENDOFSTREAM) {
 			// 更新終了
 			if (loop) {
-				pAMStream->SetState(STREAMSTATE_STOP);
-				pAMStream->SetState(STREAMSTATE_RUN);
-				pAMStream->Seek(0);
-				pSample->Update(SSUPDATE_ASYNC, NULL, NULL, 0);
+				if (supportSeek) {
+					pAMStream->Seek(0);
+				} else {
+					pAMStream->SetState(STREAMSTATE_STOP);
+					pAMStream->SetState(STREAMSTATE_RUN);
+				}
+				if (supportAsync) {
+					pSample->Update(SSUPDATE_ASYNC, NULL, NULL, 0);
+				}
 			} else {
 				stopMovie();
 			}
+		} else if (hr == MS_S_PENDING) {
+			//TVPAddLog("更新待ち");
 		} else {
 			stopMovie();
 		}
