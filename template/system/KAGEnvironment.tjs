@@ -490,7 +490,6 @@ class KAGEnvironment extends KAGEnvBase {
 			player.addTag("msgoff");
 		}
 		player.beginTransition(trans);
-		hideMessage(trans);
         return ret;
     }
 
@@ -561,6 +560,7 @@ class KAGEnvironment extends KAGEnvBase {
      * メッセージ窓のトランジション処理をくみこんだ ON/OFF
      */
     function msgonoff(elm, v) {
+		//dm("メッセージ表示指定:" + v);
 		ret = void;
 		trans = void;
 		if (!transMode && elm.nofade === void) {
@@ -1073,7 +1073,7 @@ class KAGEnvironment extends KAGEnvBase {
      */
     function unknown(tagName, elm) {
 
-		//dm("不明コマンドハンドラ:" + tagName);
+		//dm("環境不明コマンド処理:" + tagName);
 
 		// ステージ用処理
 		if (tagName == "stage") {
@@ -1157,9 +1157,10 @@ class KAGEnvironment extends KAGEnvBase {
 	}
 
     /**
-     * アクション停止
-     */
+	 * 環境同期
+	 */
 	function syncAll() {
+		dm("環境全同期");
 		for (var i=0; i<player.senum; i++) {
 			ses[i].sync();
 		}
@@ -1169,6 +1170,6 @@ class KAGEnvironment extends KAGEnvBase {
 		});
 		event.sync();
 		stage.sync();
+		return 0;
 	}
-	
 };

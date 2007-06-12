@@ -16,6 +16,9 @@ class StageGraphicLayer extends EnvGraphicLayer {
 
 /**
  * 背景を処理するレイヤ
+ * グローバルに以下のメソッドがあった場合はフックとして呼び出します
+ * setTimeHook(time, elm)     時間変更時フック
+ * setStageHook(stage, elm)   ステージ変更時フック
  */
 class KAGEnvStageLayer extends KAGEnvBackLayer {
 

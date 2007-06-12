@@ -3539,18 +3539,11 @@ class KAGWindow extends Window
 		return true;
 	}
 
-    var unknownHandler;
-    
 	function onConductorUnknownTag(tagname, elm)
 	{
-        var ret;
-        if (unknownHandler === void || (ret = unknownHandler(tagname,elm)) === void) {
-			// 不明なタグがあった場合
-			errorCmd("タグ/マクロ \"" + tagname + "\" は存在しません");
-			return 0;
-		} else {
-            return ret; // この戻り値は、各タグハンドラが返す物とおなじ
-        }
+		// 不明なタグがあった場合
+		throw new Exception("タグ/マクロ \"" + tagname + "\" は存在しません");
+		return 0; // この戻り値は、各タグハンドラが返す物とおなじ
 	}
 
 	//----------------------------------------------------------- stable/run --
