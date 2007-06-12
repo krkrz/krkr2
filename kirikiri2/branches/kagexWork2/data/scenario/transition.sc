@@ -1,6 +1,6 @@
 *start|スタート
 
-[init]
+[initscene]
 
 World 機能におけるトランジション記述の例
 
@@ -28,10 +28,10 @@ World 機能におけるトランジション記述の例
 [endtrans trans=normal]
 一気に更新
 
-[env 夜 trans=wave time=1000]wave
-[env 夕 trans=mosaic time=1000]mosaic
-[env 昼 trans=turn time=1000]turn
-[env 夜 trans=rotatezoom time=1000]rotatezoom
-[env 夕 trans=rotatevanish time=1000]rotatevanish
-[env 昼 trans=rotateswap time=1000]rotateswap
-[env 夜 trans=ripple time=1000]ripple
+[夜 msgoff trans=wave time=1000]wave
+[夕 msgoff trans=mosaic time=1000]mosaic
+[昼 msgoff trans=turn time=1000]turn
+[夜 msgoff trans=rotatezoom time=1000]rotatezoom
+[夕 msgoff trans=rotatevanish time=1000]rotatevanish
+[昼 msgoff trans=rotateswap time=1000]rotateswap
+[夜 msgoff trans=ripple time=1000]ripple

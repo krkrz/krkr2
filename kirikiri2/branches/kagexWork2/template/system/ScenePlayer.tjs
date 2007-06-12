@@ -1,10 +1,9 @@
 /**
  * シーン再生ロジック
+ * 共通コード
  */
 class ScenePlayer extends BasicPlayer
 {
-	var sceneParser; // パーサ
-
 	var lines = [];    // パース結果
 	var pendings = []; // 割り込み処理
 
@@ -24,7 +23,6 @@ class ScenePlayer extends BasicPlayer
 	
 	// 実行情報
 	var curStorage;        // 実行中のシナリオ
-	var curOption = %[];   // パースに使ったオプション
 	var cur;               // 実行ポイント
 	var curLine;           // 通過中の行番号
 	var targetLine;        // ロード処理ターゲット行
@@ -50,7 +48,6 @@ class ScenePlayer extends BasicPlayer
 	 */
 	function ScenePlayer() {
 		super.BasicPlayer();
-		sceneParser = new SceneParser();
 		handlers = getHandlers();
 		status = mStop;
     }
@@ -70,7 +67,6 @@ class ScenePlayer extends BasicPlayer
 		lastTagName = "";
 		(Dictionary.clear incontextof branches)();
 		(Dictionary.clear incontextof waitUntil)();
-		(Dictionary.clear incontextof curOption)();
 		curStorage = void;
 		cur = 0;
 		curLine = 0;
@@ -137,7 +133,11 @@ class ScenePlayer extends BasicPlayer
 			return ret;
 		}
 		// 無効なタグ
-		return env.unknown(tagname, elm);
+		var ret = env.unknown(tagname, elm);
+		if (ret === void) {
+			throw new Exception("タグ/マクロ \"" + tagname + "\" は存在しません");
+		}
+		return ret;
 	}
 
 	// --------------------------------------------------------------
@@ -147,18 +147,15 @@ class ScenePlayer extends BasicPlayer
 	 * @param storage 開始シナリオ
 	 * @param option パース用オプション
 	 */
-	function run(storage, option) {
-		dm("シーン実行開始:" + storage + ":" + option) ;
-		showKeys("scene run:" + option);
+	function run(storage) {
+		dm("シーン実行開始:" + storage);
 		clear();
 		curStorage = storage;
-		(Dictionary.assign incontextof curOption)(option);
-//		try {
-			showKeys("scene run:" + curOption);
-			lines = sceneParser.parse(curStorage, curOption);
-//		} catch(e) {
-//			throw new Exception(curStorage + "の読み出しに失敗しました");
-//		}
+		try {
+			lines = getScene(curStorage);
+		} catch(e) {
+			throw new Exception(curStorage + "の読み出しに失敗しました");
+		}
 		status = mRun;
 	}
 	
@@ -169,8 +166,6 @@ class ScenePlayer extends BasicPlayer
 		dic.status = status;
 		if (status != mStop) {
 			dic.storage = curStorage;
-			dic.option = %[];
-			(Dictionary.assign incontextof dic.option)(curOption);
 			dic.branches = %[];
 			(Dictionary.assign incontextof dic.branches)(branches);
 			if (curLine > 0) {
@@ -188,13 +183,10 @@ class ScenePlayer extends BasicPlayer
 		clear();
 		if (dic.status != mStop) {
 			curStorage = dic.storage;
-			if (dic.option !== void) {
-				(Dictionary.assign incontextof curOption)(dic.option);
-			}
 			if (dic.branches !== void) {
 				(Dictionary.assign incontextof branches)(dic.branches);
 			}
-			lines = sceneParser.parse(curStorage, curOption);
+			lines = getScene(curStorage);
 			targetLine = dic.targetLine;
 			status = mRun;
 		}
@@ -307,7 +299,6 @@ class ScenePlayer extends BasicPlayer
 						+ " ( ← エラーの発生した前後のタグを示している場合もあります )\n"
 						+ e.message;
 			if((typeof e.trace) != "undefined") dm("trace : " + e.trace);
-			dm(msg);
 			throw new ConductorException(msg);
 		}
 	}
@@ -318,418 +309,61 @@ class ScenePlayer extends BasicPlayer
 	{
 		return %[ // 辞書配列オブジェクト
 
-	//--------------------------------------- タグハンドラ群(メッセージ操作) --
+	//----------------------------------------- タグハンドラ群(各種機能) --
 
-    ch : function(elm)
-    {
-		// 文字表示
-		var acs = actualChSpeed;
-		if(updateBeforeCh)
-		{
-			if(acs) { updateBeforeCh--; return -5; } else { updateBeforeCh--; }
-		}
-		var text = elm.text;
-		if(currentWithBack) current.comp.processCh(text);
-		if(current.processCh(text))
-		{
-			return showPageBreakAndClear();
-		}
-		if(historyWriteEnabled) historyLayer.store(text);
-		if(autoWCEnabled)
-		{
-			// 自動ウェイト
-			var ind;
-			if((ind = autoWCChars.indexOf(text)) != -1)
-			{
-				return int(acs * autoWCWaits[ind]);
-			}
-		}
-		return acs;
-	} incontextof kag,
+    ch : tag_ch,
+	r : tag_r,
+	ruby : tag_ruby,
+	font : tag_font,
+    deffont : tag_deffont,
+	resetfont : tag_resetfont,
+	style : tag_style,
+	defstyle : tag_defstyle,
+	l : tag_l,
+	p : tag_p,
+	er : tag_er,
+	indent : tag_indent,
+	endindent : tag_endindent,
+	delay : tag_delay,
+	cancelskip : tag_cancelskip,
+	resetwait : tag_resetwait,
+	wait : tag_wait,
+    syncmsg : tag_syncmsg,
+	backlay : tag_backlay,
+	forelay : tag_forelay,
+	trans : tag_trans,
+	wt : tag_wt,
+    action : tag_action,
+	stopaction : tag_stopaction,
+	wact : tag_wact,
+	eval : tag_eval,
+	clearsysvar : tag_clearsysvar,
+	clearvar : tag_clearvar,
+	clearplaytime : tag_clearplaytime,
+	waittrig : tag_waittrig,
+    beginskip : tag_beginskip,
+    endskip : tag_endskip,
+	ltbegin : tag_ltbegin,
+	ltend : tag_ltend,
 
-	r : function(elm)
-    {
-		// 改行
-        if(historyWriteEnabled) historyLayer.reline();
-        if(currentWithBack) current.comp.processReturn();
-        if(current.processReturn())
-        {
-            var ret = showPageBreakAndClear();
-            // 改行はpendingしない
-            if(ret == -5)
-                ret = -4;
-            else if(ret == -3)
-                ret = -2;
-            return ret;
-        }
-        return actualChSpeed;
-    } incontextof kag,
-
-	ruby : function(elm)
-	{
-		// 次の文字に対するルビ設定
-		if(currentWithBack) current.comp.setRuby(elm.text);
-		current.setRuby(elm.text);
-		return 0;
-	} incontextof kag,
-
-	font : function(elm)
-	{
-		// フォント設定
-		if(currentWithBack) current.comp.setFont(elm);
-		current.setFont(elm);
-		return 0;
-	} incontextof kag,
-
-	deffont : function(elm)
-	{
-		// デフォルトのフォント設定
-		if(currentWithBack) current.comp.setDefaultFont(elm);
-		current.setDefaultFont(elm);
-		return 0;
-	} incontextof kag,
-
-	resetfont : function(elm)
-	{
-		// フォントのリセット
-		if(currentWithBack) current.comp.resetFont();
-		current.resetFont();
-		return 0;
-	} incontextof kag,
-
-	style : function(elm)
-	{
-		// スタイル設定
-		if(currentWithBack) current.comp.setStyle(elm);
-		current.setStyle(elm);
-		return 0;
-	} incontextof kag,
-
-	defstyle : function(elm)
-	{
-		// デフォルトのスタイル設定
-		if(currentWithBack) current.comp.setDefaultStyle(elm);
-		current.setDefaultStyle(elm);
-		return 0;
-	} incontextof kag,
-
-	resetstyle : function(elm)
-	{
-		// スタイルのリセット
-		if(currentWithBack) current.comp.resetStyle();
-		current.resetStyle();
-		return 0;
-	} incontextof kag,
-
-	l : function(elm)
-	{
-		// 行クリック待ち
-		return showLineBreak(elm);
-	} incontextof kag,
-
-	p : function(elm)
-	{
-		// ページクリック待ち
-		if(historyWriteEnabled) historyLayer.reline();
-		return showPageBreak(elm);
-	} incontextof kag,
-
-	er : function(elm)
-	{
-		// 現在のメッセージレイヤのクリア
-		if(historyWriteEnabled) historyLayer.repage();
-		if(currentWithBack) current.comp.clear(elm.all);
-		current.clear(elm.all);
-		return 0;
-	} incontextof kag,
-
-	indent : function(elm)
-	{
-		// インデントの設定
-		if(currentWithBack) current.comp.setIndent();
-		current.setIndent();
-		if(historyWriteEnabled) historyLayer.beginIndent();
-		return 0;
-	} incontextof kag,
-
-	endindent : function(elm)
-	{
-		// インデントの解除
-		if(currentWithBack) current.comp.resetIndent();
-		current.resetIndent();
-		if(historyWriteEnabled) historyLayer.endIndent();
-		return 0;
-	} incontextof kag,
-
-	delay : function(elm)
-	{
-		// 文字表示速度の指定
-		setDelay(elm);
-		return 0;
-	} incontextof kag,
-
-	cancelskip : function(elm)
-	{
-		// スキップの解除
-		cancelSkip();
-        setMenuAccessibleAll();
-		return 0;
-	} incontextof kag,
-
-	resetwait : function(elm)
-	{
-		// 時間原点の設定
-		resetWait();
-		return 0;
-	} incontextof kag,
-
-	wait : function(elm)
-	{
-		// ウェイト
-		return doWait(elm);
-	} incontextof this,
-
-    syncmsg : function(elm) {
-        var messages = fore.messages;
-        for(var i = messages.count-1; i >= 0; i--) messages[i].assignComp();
-        return 0;
-    } incontextof kag,
-                  
-	backlay : function(elm)
-	{
-		// レイヤを裏画面にコピー
-		updateBeforeCh = 1;
-		backupLayer(elm, true);
-		return 0;
-	} incontextof kag,
-
-	forelay : function(elm)
-	{
-		// レイヤを表画面にコピー
-		updateBeforeCh = 1;
-		backupLayer(elm, false);
-		return 0;
-	} incontextof kag,
-
-	trans : function(elm)
-	{
-        // トランジションの開始
-		var layer = getLayerPageFromElm(elm, false);
-		if (layer == fore.base)  {
-			if (selectShowing) {
-				selectLayer.setParent(back.base, 1000000);
-			}
-			if (mapSelectShowing) {
-				mapSelectLayer.setParent(back.base, 1000000);
-			}
-		}
-		layer.beginTransition(elm);
-		return 0;
-	} incontextof kag,
-
-	wt : function(elm)
-	{
-        // トランジションを待つ
-		return waitTransition(elm);
-	} incontextof kag,
-
-	stoptrans : function(elm)
-	{
-		// トランジションを停止する
-		stopAllTransitions();
-		return 0;
-	} incontextof kag,
-
-    // アクション開始
-    action : function(elm)
-    {
-		var target;
-		if (elm.layer !== void) {
-			target = getLayerFromElm(elm);
-		} else if (typeof elm.target == "Object") {
-			target = elm.target;
-		} else if (typeof elm.target == "String") {
-			target = Scripts.eval(elm.target);
-		}
-		if (typeof target == "Object") {
-			var action;
-			if (elm.action !== void) {
-				// 直接アクション構造が指定されている場合
-				action = elm.action;
-			} else {
-				action = %[];
-				// アクション構造をパラメータから生成
-				(Dictionary.assign incontextof action)(elm);
-				delete action.tagname;
-				delete action.layer;
-				delete action.page;
-				delete action.target;
-			}
-			if (target instanceof "GraphicLayerEx") {
-				target.beginAction(action, elm.hide, elm.nowait);
-			} else {
-				beginAction(target, action, onActionCompleted, elm.nowait);
-			}
-		} else {
-			error("アクションはオブジェクトに指定する必要があります");
-		}
-		return 0;
-    } incontextof kag,
-
-    // アクション停止
-	stopaction : function(elm)
-	{
-		updateBeforeCh = 1;
-        var target;
-		if (elm.layer !== void) {
-			target = getLayerFromElm(elm);
-		} else if (typeof elm.target == "Object") {
-			target = elm.target;
-		} else if (typeof elm.target == "String") {
-			target = Scripts.eval(elm.target);
-		}
-		if (target !== void) {
-			if (typeof target == "Object") {
-				stopAction(target);
-			} else {
-				dm("アクションはオブジェクトに指定する必要があります");
-			}
-		} else {
-			stopAllActions(true);
-		}
-        return 0;
-	} incontextof kag,
-
-	wact : function(elm)
-	{
-        var target;
-		if (elm.layer !== void) {
-			target = getLayerFromElm(elm);
-		} else if (typeof elm.target == "Object") {
-			target = elm.target;
-		} else if (typeof elm.target == "String") {
-			target = Scripts.eval(elm.target);
-		}
-		if (target !== void) {
-			if (typeof target == "Object") {
-				return waitAction(target, elm.canskip);
-			} else {
-				dm("アクション待ちはオブジェクトに指定する必要があります");
-			}
-		} else {
-			return waitAllAction(elm.canskip);
-		}
-		return 0;
-	} incontextof kag,
-                  
-	//--------------------------------------- タグハンドラ群(変数・TJS 操作) --
-
-	eval : function(elm)
-	{
-		// 式の評価
-		Scripts.eval(elm.exp);
-		return 0;
-	} incontextof this,
-
-	clearsysvar : function(elm)
-	{
-		// システム変数のクリア
-		clearSystemVariables();
-		return 0;
-	} incontextof kag,
-
-	clearvar : function(elm)
-	{
-		// ゲーム変数のクリア
-		clearVariables();
-		return 0;
-	} incontextof kag,
-
-	clearplaytime : function(elm)
-	{
-        // プレイ時間のクリア
-		clearPlayTime();
-		return 0;
-	} incontextof kag,
-
-	waittrig : function(elm)
-	{
-		// トリガを待つ
-		return waitTrigger(elm);
-	} incontextof this,
-
-	//----------------------------------------- タグハンドラ群(選択肢) --
-
+    msgwin : tag_msgwin,
+				  
+	//----------------------------------------- タグハンドラ群(選択肢分岐) --
+				  
     seladd : function(elm)
     {
-        addSelect(elm);
-        return 0;
-	} incontextof kag,
+		return addSelect(elm);
+	} incontextof this,
 
     select : function(elm)
     {
-		if (selectLayer.msgoff && setCurrentMessageLayerVisible(false)) {
-            // 処理待ち
-            return -3;
-        }
-
-		f.selectDoneFlag = true;
-
-		if (recordHistoryOfStore == 3) { // 2 : 選択肢 ( @s タグ ) ごと
-			if (autoLabelMode) {
-				// 状態保存処理（行指定モード保存を使う)
-				pushHistoryOfStore();
-				storeFlags(true);
-				storeLabelPassed = true;
-			}
-			// 記録指定
-			setToRecordHistory();
-		}
-
-        selectPrevAutoMode = autoMode;
-        selectPrevSkipMode = skipMode;
-        if (skipMode < SKIP_FORCE) {
-            cancelSkip();
-        }
-        cancelAutoMode();
-        
-        stablePosibility = true;
-        notifyStable();
-        
-        f.selDoneStorage = elm.storage if elm.storage !== void;
-        f.selDoneTarget  = elm.target  if elm.target  !== void;
-
-        showSelect();
-
-        conductor.sleep();
-        conductor.interrupt();
-        setMenuAccessibleAll();
-        return -1;
-	} incontextof kag,
-
-	selopt : function(elm)
-	{
-		setSelectOptions(elm);
-		return 0;
-	} incontextof kag,
+		return doSelect(elm);
+	} incontextof this,
 
 	seldone : function(elm)
 	{
-        if (f.selDoneStorage != "" || f.selDoneTarget != "") {
-            process(f.selDoneStorage, f.selDoneTarget);
-        } else {
-			return tagHandlers.s(elm);
-        }
-		return 0;
-	} incontextof kag,
-
-	doneselect : function(elm)
-	{
-        hideSelect();
-        afterSelect();
-        setMenuAccessibleAll();
-		return 0;
-	} incontextof kag,
+		return doneSelect(elm);
+	} incontextof this,
 
 	//----------------------------------------- タグハンドラ群(シナリオ内分岐) --
 
@@ -748,55 +382,13 @@ class ScenePlayer extends BasicPlayer
 		return doneBranch(elm);
 	} incontextof this,
 
-	//----------------------------------------- タグハンドラ群(特殊分岐処理) --
+	//----------------------------------------- タグハンドラ群(シーン間分岐処理) --
 
 	next : function(elm)
 	{
-		// 次のシーンにうつる
 		return 0;
 	} incontextof this,
 				  
-	//----------------------------------------- タグハンドラ群(特殊スキップ処理) --
-
-    beginskip : function(elm)
-	{
-        // 現在のスキップモードを記録
-        if (prevSkipMode !== void) {
-            throw new Exception("beginskipは入れ子できません!!!");
-        } else {
-            prevSkipMode = skipMode;
-            if (skipMode) {
-                // 既にスキップしてた場合は停止できないスキップ状態にする
-                skipMode = SKIP_CANCEL;
-            }
-        }
-        return 0;
-	} incontextof kag,
-
-    endskip : function(elm)
-	{
-        if (prevSkipMode == 0) {
-            cancelSkip();
-        } else {
-            skipMode = prevSkipMode;
-        }
-        prevSkipMode = void;
-        return 0;
-	} incontextof kag,
-
-	//----------------------------------------------- レイヤトランジション --
-
-	ltbegin : function(elm)
-	{
-		env.transMode = 2;
-		return layerTransBegin(elm);
-	} incontextof this,
-
-	ltend : function(elm) {
-		env.transMode = 0;
-		return layerTransEnd(elm);
-	} incontextof this,
-
 	//----------------------------------------------- 環境系機能 --
 
 	env : env.tagfunc,
@@ -820,7 +412,6 @@ class ScenePlayer extends BasicPlayer
     dispnameVoice : env.dispnameVoice,
     afterpage     : env.afterpage,
     afterline     : env.afterline,
-				  
 				  ];
 	}
 

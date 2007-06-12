@@ -13,12 +13,18 @@ class GraphicLayerBase extends GraphicLayerEx {
 class VoiceTrack extends WaveSoundBuffer {
 
     var owner;
-    
+
+	/**
+	 * コンストラクタ
+	 */
     function VoiceTrack(owner) {
         this.owner = owner;
         super.WaveSoundBuffer(owner);
     }
 
+	/**
+	 * ボイスの再生
+	 */
     function play() {
 		owner.setBGMVolDown(true);
 		super.play(...);
@@ -26,6 +32,9 @@ class VoiceTrack extends WaveSoundBuffer {
 
     var prevstatus = "unload"; // 直前のステータス
 
+	/**
+	 * ステータスの変更
+	 */
     function onStatusChanged() {
         super.onStatusChanged(...);
         var ps = prevstatus;
@@ -36,6 +45,8 @@ class VoiceTrack extends WaveSoundBuffer {
 		}
     }
 }
+
+KAGLoadScript('SceneParser.tjs');
 
 /**
  * 基本プレイヤー
@@ -82,6 +93,20 @@ class BasicPlayer extends KAGPlugin {
 	function isJump() {
 		return false;
 	}
+
+	// --------------------------------------------------------
+	// シーンコンバート処理
+	// --------------------------------------------------------
+
+	var sceneParser = new SceneParser(); // パーサ 
+
+	/**
+	 * シーンファイルを変換してデータとして取得する
+	 * 
+	 */
+	function getScene(name) {
+		return sceneParser.parse(name);
+	}
 	
 	// --------------------------------------------------------
 	// メッセージ窓制御関連
@@ -105,6 +130,9 @@ class BasicPlayer extends KAGPlugin {
 		return msg.faceLayer;
 	}
 
+	/**
+	 * メッセージの表示指定
+	 */
 	function msgonoff(v, trans) {
 		if (trans !== void && trans.method !== void && !isSkip()) {
 			backup();
@@ -112,6 +140,7 @@ class BasicPlayer extends KAGPlugin {
 			beginTransition(trans);
 		} else {
 			kag.setCurrentMessageLayerVisibleFast(0, v);
+			kag.setCurrentMessageLayerVisibleFast(1, v);
 		}
 	}
 	
@@ -152,6 +181,76 @@ class BasicPlayer extends KAGPlugin {
 		}
 	}
 
+	/**
+	 * アクション情報のコピー
+	 * @param act  元アクション情報
+	 * @param time 時間上書き指定
+	 * @param elm  タグによる上書き用パラメータ情報
+	 * @return システム登録用アクション情報
+	 */
+	function copyActionInfo(act, time, elm) {
+		var action = %[];
+		if (act !== void) {
+			var names = [];
+			names.assign(act);
+			if (act.module !== void) {
+				//dm("module 指定アクション:" + act.module);
+				if (typeof act.module != "String") {
+					throw new Exception("アクションモジュール名は文字列指定してください");
+				}
+				var module = Scripts.eval(act.module);
+				if (module !== void) {
+					// 旧スタイル
+					for (var i=0; i<names.count; i+= 2) {
+						var name = names[i];
+						var elm  = names[i+1];
+						action[name] = elm;
+					}
+					if (time !== void) {
+						action.time = time;
+					}
+					// パラメータのコピー
+					if (elm !== void) {
+						foreach(elm, function(name, value, elm, action) {
+							if (actionParam[name] !== void) {
+								action[name] = value;
+							}
+						}, action);
+					}
+					// 新スタイルに置き換え
+					action = module(action);
+				}
+			} else {
+				// 新スタイル
+				for (var i=0; i<names.count; i+= 2) {
+					var name  = names[i];
+					var value = names[i+1];
+					if (value instanceof "Dictionary") {
+						// 辞書の場合はクローンして時間指定
+						var e = %[];
+						(Dictionary.assign incontextof e)(value);
+						if (time !== void) {
+							e.time = time;
+						}
+						// パラメータのコピー
+						if (elm !== void) {
+							e.time   = +elm.time if elm.time !== void;
+							e.delay  = +elm.delay if elm.delay !== void;
+						}
+						action[name] = e;
+					} else {
+						// そうでない場合はそのまま
+						action[name] = value;
+					}
+				}
+			}
+		}
+		if (elm !== void) {
+			action.nowait = +elm.nowait if elm.nowait !== void;
+		}
+		return action;
+	}
+	
 	function beginTransActionUpdate(trans, layer) {
 		//dm("更新アクション実行");
 		if (trans.showaction !== void) {
@@ -197,11 +296,6 @@ class BasicPlayer extends KAGPlugin {
 		}
 	}
 
-	// 名前定義がデフォルト名か？
-	function isDefaultName() {
-		return kag.flags.name === void || (kag.flags.name == kag.defaultName && kag.flags.family == kag.defaultFamily);
-	}
-	
 	// ------------------------------------------------------------------
 	// 環境レイヤ制御
 	// ------------------------------------------------------------------
@@ -381,6 +475,11 @@ class BasicPlayer extends KAGPlugin {
 			return kag.voicecutpage;
 		}
 	}
+
+	// 名前定義がデフォルト名か？
+	function isDefaultName() {
+		return kag.flags.name === void || (kag.flags.name == kag.defaultName && kag.flags.family == kag.defaultFamily);
+	}
 	
 	// ボイス用トラック
 	var voiceTracks = %[];
@@ -462,21 +561,16 @@ class BasicPlayer extends KAGPlugin {
 			soundBuffer.volume2 = kag.getVoiceVolume(voiceName) * 1000;
         }
     }
-	
-	// -------------------------------------------------------------------
 
-
-    function quake(elm) {
-        // 揺れをのっとる
-        if (!isSkip()) {
-            kag.doQuake(elm);
-        }
-        return 0;
-    }
-
+	/**
+	 * リプレイ用にボイス指定の記録
+	 */
 	function setNextVoice(nextVoice) {
 		kag.currentVoiceScript = nextVoice;
 	}
+	
+	// -------------------------------------------------------------------
+
 
 	// 履歴に名前設定
 	function setHistoryName(name) {
@@ -679,6 +773,162 @@ class BasicPlayer extends KAGPlugin {
 	}
 
 	// --------------------------------------------------------------
+	// KAG の諸機能
+	// --------------------------------------------------------------
+
+	function tag_ch() {
+		return kag.tagHandlers.ch(...);
+	}
+
+	function tag_r() {
+		return kag.tagHandlers.r(...);
+	}
+
+	function tag_ruby() {
+		return kag.tagHandlers.ruby(...);
+	}
+
+	function tag_font() {
+		return kag.tagHandlers.font(...);
+	}
+
+	function tag_deffont() {
+		return kag.tagHandlers.deffont(...);
+	}
+
+	function tag_resetfont() {
+		return kag.tagHandlers.resetfont(...);
+	}
+
+	function tag_style() {
+		return kag.tagHandlers.style(...);
+	}
+
+	function tag_defstyle() {
+		return kag.tagHandlers.defstyle(...);
+	}
+
+	function tag_resetstyle() {
+		return kag.tagHandlers.resetstyle(...);
+	}
+
+	function tag_l() {
+		return kag.tagHandlers.l(...);
+	}
+
+	function tag_p() {
+		return kag.tagHandlers.p(...);
+	}
+
+	function tag_er() {
+		return kag.tagHandlers.er(...);
+	}
+
+	function tag_indent() {
+		return kag.tagHandlers.indent(...);
+	}
+	
+	function tag_endindent() {
+		return kag.tagHandlers.endindent(...);
+	}
+
+	function tag_delay() {
+		return kag.tagHandlers.delay(...);
+	}
+
+	function tag_cancelskip() {
+		return kag.tagHandlers.cancelskip(...);
+	}
+
+	function tag_resetwait() {
+		return kag.tagHandlers.resetwait(...);
+	}
+	
+	function tag_wait() {
+		return kag.tagHandlers.wait(...);
+	}
+
+	function tag_syncmsg() {
+		return kag.tagHandlers.syncmsg(...);
+	}
+	
+	function tag_backlay() {
+		return kag.tagHandlers.backlay(...);
+	}
+
+	function tag_forelay() {
+		return kag.tagHandlers.forelay(...);
+	}
+	
+	function tag_trans() {
+		return kag.tagHandlers.trans(...);
+	}
+
+	function tag_wt() {
+		return kag.tagHandlers.wt(...);
+	}
+	
+	function tag_action() {
+		return kag.tagHandlers.action(...);
+	}
+	
+	function tag_stopaction() {
+		return kag.tagHandlers.stopaction(...);
+	}
+
+	function tag_wact() {
+		return kag.tagHandlers.wact(...);
+	}
+
+	function tag_eval() {
+		return kag.tagHandlers.eval(...);
+	}
+
+	function tag_clearsysvar() {
+		return kag.tagHandlers.clearsysvar(...);
+	}
+
+	function tag_clearvar() {
+		return kag.tagHandlers.clearvar(...);
+	}
+	
+	function tag_clearplaytime() {
+		return kag.tagHandlers.clearplaytime(...);
+	}
+
+	function tag_waittrig() {
+		return kag.tagHandlers.waittrig(...);
+	}
+	
+	function tag_beginskip() {
+		return kag.tagHandlers.beginskip(...);
+	}
+
+	function tag_endskip() {
+		return kag.tagHandlers.endskip(...);
+	}
+
+	function tag_ltbegin() {
+		env.transMode = 2;
+		return kag.tagHandlers.ltbegin(...);
+	}
+
+	function tag_ltend() {
+		env.transMode = 0;
+		return kag.tagHandlers.ltend(...);
+	}
+
+	// --------------------------------------------------------------
+	// メッセージ窓制御
+	// --------------------------------------------------------------
+	
+	function tag_msgwin(elm) {
+		kag.setCurrentMessageLayer(%[layer:"message0"]);
+		kag.fore.messages[kag.currentNum].setPosition(elm);
+		return 0;
+	}
+	
+	// --------------------------------------------------------------
 	// KAG 用処理呼び出し
 	// --------------------------------------------------------------
 
@@ -698,21 +948,30 @@ class BasicPlayer extends KAGPlugin {
 	function onSeStop(id) {
 		env.onSeStop(id);
 	}
-	
+
+	/**
+	 * 表裏コピーが実行された倍あの処理
+	 */
 	function onCopyLayer(toback, backlay) {
 		env.onCopyLayer(toback, backlay);
 		if (backlay && !toback) {
 			clearTrash();
 		}
 	}
-	
+
+	/**
+	 * トランジション終了時処理
+	 */
 	function onExchangeForeBack() {
 		clearTrash();
 	}
 
+	/**
+	 * 全リセット時の処理
+	 */
 	function onResetAll() {
 		env.resetEnv();
-		env.update(true);
+		env.syncAll();
 	}
 
 	// --------------------------------------------------------------
@@ -735,39 +994,40 @@ class BasicPlayer extends KAGPlugin {
 			load(f.env);
 		}
 	}
-	
+
 	// --------------------------------------------------------------
-	// KAG 用タグ定義
+	// KAG 用コマンド拡張インターフェース
 	// --------------------------------------------------------------
 
+	// シーン再生処理用 tick
 	var tick;
 
-	/**
-	 * シーン初期化
-	 */
-	function sceneinit() {
+	// シーンパーサの初期化
+	function sceneinit(elm) {
 		sceneParser.clear();
-	}
-	
-	/**
-	 * シーンマクロ読み込み
-	 */
-	function scenemacro(elm) {
-		sceneParser.parseMacro(elm.storage);
-	}
-	
-	/**
-	 * シーン開始処理
-	 */
-	function scenestart(elm) {
-		tick = System.getTickCount();
-		run(elm.storage, elm);
 		return 0;
 	}
 
-	/**
-	 * シーン実行処理
-	 */
+	// シーン用マクロの読み込み
+	function scenemacro(elm) {
+		sceneParser.parseMacro(elm.storage);
+		return 0;
+	}
+
+	// シーン用オプション指定
+	function sceneopt(elm) {
+		sceneParser.setOption(elm);
+		return 0;
+	}
+
+	// シーン再生開始
+	function scenestart(elm) {
+		tick = System.getTickCount();
+		run(elm.storage);
+		return 0;
+	}
+
+	// シーン再生メイン処理
 	function scenemain(elm) {
 		var now = System.getTickCount();
 		var diff = now - tick;
@@ -781,17 +1041,10 @@ class BasicPlayer extends KAGPlugin {
 			return 0;
 		}
 	}
+	
 };
 
 KAGLoadScript('YAML.tjs');
-
-/**
- * ワールド拡張
- * ◇フック一覧
- * グローバルに以下のメソッドがあった場合はフックとして呼び出します
- * setTimeHook(time, elm)     時間変更時フック
- * setStageHook(stage, elm)   ステージ変更時フック
- */
 
 /**
  * 空の辞書
@@ -817,74 +1070,6 @@ function showKeys(name, dict) {
             }
             dm(name);
         }
-    }
-}
-
-/*
- * 分割パラメータの前側を取得
- * @param value パラメータ
- */
-function getTo(value)
-{
-	if (typeof value == "String") {
-		var p;
-		if ((p = value.indexOf(":")) > 0) {
-			return value.substring(0, p);
-		} else  if (p == 0) {
-			return void;
-		} else  {
-			return value;
-		}
-	} else {
-		return value === void ? value : +value;
-	}
-}
-
-/*
- * 分割パラメータの後側を取得
- * @param value パラメータ
- */
-function getFrom(value) {
-	if (typeof value == "String") {
-		var p;
-		if ((p = value.indexOf(":")) >= 0) {
-			return value.substring(p+1);
-		} else {
-			return void;
-		}
-	}
-	return void;
-}
-
-/**
- * 相対位置指定の判定。
- * 指定値が "%" で終わっていたら最大値への相対での指定とみなす
- * 指定値が "@" ではじまっていたら現在値への相対の指定とみなす
- * @param base  現在値
- * @param value 指定値
- * @param valueBase 指定の最大値
- */
-function calcRelative(base, value, valueBase) {
-    if (value === void) {
-        return value;
-    } else {
-        if (typeof value == "String") {
-            // 相対指定の場合
-            if (value.charAt(0) == '@') {
-                value = value.substring(1);
-                // %指定の場合
-                if (valueBase !== void && value.charAt(-1) == '%') {
-                    value = valueBase * (int)value.substring(0,value.length - 1) / 100;
-                }
-                return (int)base + (int)value;
-            } else {
-                // %指定の場合
-                if (valueBase !== void && value.charAt(-1) == '%') {
-                    value = valueBase * (int)value.substring(0,value.length - 1) / 100;
-                }
-            }
-        }
-        return (int)value;
     }
 }
 
@@ -965,80 +1150,6 @@ var actionParam = %[
     "loop" => true,
     ];
 
-// ----------------------------------------------------------------
-// アクション情報のコピー
-// ----------------------------------------------------------------
-
-/**
- * アクション情報のコピー
- * @param act  元アクション情報
- * @param time 時間上書き指定
- * @param elm  タグによる上書き用パラメータ情報
- * @return システム登録用アクション情報
- */
-function copyActionInfo(act, time, elm) {
-	var action = %[];
-	if (act !== void) {
-		var names = [];
-		names.assign(act);
-		if (act.module !== void) {
-			//dm("module 指定アクション:" + act.module);
-			if (typeof act.module != "String") {
-				throw new Exception("アクションモジュール名は文字列指定してください");
-			}
-			var module = Scripts.eval(act.module);
-			if (module !== void) {
-				// 旧スタイル
-				for (var i=0; i<names.count; i+= 2) {
-					var name = names[i];
-					var elm  = names[i+1];
-					action[name] = elm;
-				}
-				if (time !== void) {
-					action.time = time;
-				}
-				// パラメータのコピー
-				if (elm !== void) {
-					foreach(elm, function(name, value, elm, action) {
-						if (actionParam[name] !== void) {
-							action[name] = value;
-						}
-					}, action);
-				}
-				// 新スタイルに置き換え
-				action = module(action);
-			}
-		} else {
-			// 新スタイル
-			for (var i=0; i<names.count; i+= 2) {
-				var name  = names[i];
-				var value = names[i+1];
-				if (value instanceof "Dictionary") {
-					// 辞書の場合はクローンして時間指定
-					var e = %[];
-					(Dictionary.assign incontextof e)(value);
-					if (time !== void) {
-						e.time = time;
-					}
-					// パラメータのコピー
-					if (elm !== void) {
-						e.time   = +elm.time if elm.time !== void;
-						e.delay  = +elm.delay if elm.delay !== void;
-					}
-					action[name] = e;
-				} else {
-					// そうでない場合はそのまま
-					action[name] = value;
-				}
-			}
-		}
-	}
-	if (elm !== void) {
-		action.nowait = +elm.nowait if elm.nowait !== void;
-	}
-	return action;
-}
-
 KAGLoadScript('KAGEnvBase.tjs');
 KAGLoadScript('KAGEnvImage.tjs');
 KAGLoadScript('KAGEnvLayer.tjs');
@@ -1051,18 +1162,14 @@ KAGLoadScript('KAGEnvCharacter.tjs');
 KAGLoadScript('KAGEnvBGM.tjs');
 KAGLoadScript('KAGEnvSE.tjs');
 KAGLoadScript('KAGEnvironment.tjs');
-KAGLoadScript('SceneParser.tjs');
 KAGLoadScript('ScenePlayer.tjs');
 
 kag.addPlugin(kag.scenePlayer = new ScenePlayer(kag));
-
-kag.tagHandlers["scenestart"] = function(elm) {
-	return scenePlayer.scenestart(elm);
-} incontextof kag;
-
-kag.tagHandlers["scenemain"] = function(elm) {
-	return scenePlayer.scenemain(elm);
-} incontextof kag;
+kag.tagHandlers["sceneinit"]  = kag.scenePlayer.sceneinit;
+kag.tagHandlers["sceneopt"]   = kag.scenePlayer.sceneopt;
+kag.tagHandlers["scenemacro"] = kag.scenePlayer.scenemacro;
+kag.tagHandlers["scenestart"] = kag.scenePlayer.scenestart;
+kag.tagHandlers["scenemain"]  = kag.scenePlayer.scenemain;
 
 if (kag.debugLevel >= tkdlSimple) {
 	dm("ワールド環境設定完了");

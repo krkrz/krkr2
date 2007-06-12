@@ -27,6 +27,7 @@ class KAGEnvObject {
 	 * コマンドの処理
 	 */
 	function tagfunc(elm) {
+		//dm("コマンド処理:" + name);
 		tagcommand(elm);
 		if (!player.isJump()) {
 			return sync(elm);
@@ -44,6 +45,7 @@ class KAGEnvObject {
 	 * 状態同期
 	 */
 	function sync(elm) {
+		return 0;
 	}
 }
 

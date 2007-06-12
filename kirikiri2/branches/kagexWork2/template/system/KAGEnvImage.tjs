@@ -310,6 +310,73 @@ class KAGEnvImage extends KAGEnvBase {
 
 	// -------------------------------------------------------
 
+	/*
+	 * 分割パラメータの前側を取得
+	 * @param value パラメータ
+	 */
+	function getTo(value) {
+		if (typeof value == "String") {
+			var p;
+			if ((p = value.indexOf(":")) > 0) {
+				return value.substring(0, p);
+			} else  if (p == 0) {
+				return void;
+			} else  {
+				return value;
+			}
+		} else {
+			return value === void ? value : +value;
+		}
+	}
+	
+	/*
+	 * 分割パラメータの後側を取得
+	 * @param value パラメータ
+	 */
+	function getFrom(value) {
+		if (typeof value == "String") {
+			var p;
+			if ((p = value.indexOf(":")) >= 0) {
+				return value.substring(p+1);
+			} else {
+				return void;
+			}
+		}
+		return void;
+	}
+
+	/**
+	 * 場所指定 相対位置指定の判定。
+	 * 指定値が "%" で終わっていたら最大値への相対での指定とみなす
+	 * 指定値が "@" ではじまっていたら現在値への相対の指定とみなす
+	 * @param base  現在値
+	 * @param value 指定値
+	 * @param valueBase 指定の最大値
+	 */
+	function calcRelative(base, value, valueBase) {
+		if (value === void) {
+			return value;
+		} else {
+			if (typeof value == "String") {
+				// 相対指定の場合
+				if (value.charAt(0) == '@') {
+					value = value.substring(1);
+					// %指定の場合
+					if (valueBase !== void && value.charAt(-1) == '%') {
+						value = valueBase * (int)value.substring(0,value.length - 1) / 100;
+					}
+					return (int)base + (int)value;
+				} else {
+					// %指定の場合
+					if (valueBase !== void && value.charAt(-1) == '%') {
+						value = valueBase * (int)value.substring(0,value.length - 1) / 100;
+					}
+				}
+			}
+			return (int)value;
+		}
+	}
+	
 	function setPropFromTo(name, max, from, to, elm) {
 		if (to !== void) {
 			// 初期値不定の場合は同じ値のまま処理
@@ -412,7 +479,7 @@ class KAGEnvImage extends KAGEnvBase {
 			var info;
 			if ((info = env.actions[name]) !== void) {
 				if (info instanceof "Dictionary") {
-					var action = copyActionInfo(info, info.time, elm);
+					var action = player.copyActionInfo(info, info.time, elm);
 					addAction(action);
 					return true;
 				} else if (info instanceof "Array") {
@@ -425,7 +492,7 @@ class KAGEnvImage extends KAGEnvBase {
 							i = env.actions[i];
 						}
 						if (i !== void && i instanceof "Dictionary") {
-							var action = copyActionInfo(i, i.time, elm);
+							var action = player.copyActionInfo(i, i.time, elm);
 							arrayAction.add(action);
 						}
 					}

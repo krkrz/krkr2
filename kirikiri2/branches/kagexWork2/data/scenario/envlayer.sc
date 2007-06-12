@@ -1,6 +1,6 @@
 *start|スタート
 
-[init]
+[initscene]
 
 [道路]
 [あい 制服 中]

@@ -1,7 +1,8 @@
-// Conductor.tjs - KAG シナリオ進行処理
-// Copyright (C)2001-2007, W.Dee and contributors  改変・配布は自由です
-
-
+/**
+ * シーン再生用パーサ
+ * KAG 形式でかかれたシナリオデータを
+ * linemode に応じて改行処理を適切に行って再生用の状態に変換するパーサ
+ */
 class SceneParser extends KAGParser
 {
 	var lines; // パース結果
@@ -372,8 +373,7 @@ class SceneParser extends KAGParser
 		];
 
 	/**
-	 * 全パース処理実行
-	 * @param storage 対象ファイル
+	 * パース用オプション設定
 	 * @param elm 基本パラメータ
 	 * パラメータ
 	 * lineMode    行モード指定（必須）
@@ -382,26 +382,36 @@ class SceneParser extends KAGParser
 	 * autoIndent  "「" による自動インデントを有効にする
 	 * voice       ボイスカウントの初期値
 	 */
-	function parse(storage, elm) {
-
-		showKeys("parse:" , elm);
-		
-		init();
-		loadScenario(storage);
-		
+	function setOption(elm) {
 		lineMode     = +elm.linemode;
 		erAfterPage  = elm.erafterpage;
 		crAfterName  = elm.craftername;
 		autoIndent   = elm.autoindent;
 		voiceDefault = +elm.voice;
-
-		dm("シーン情報パース:" + storage);
 		dm("lineMode:" + lineMode);
 		dm("erAfterPage:" + erAfterPage);
 		dm("crAfterName:" + crAfterName);
-		dm("autoIndent:" + autoIndent);
+		dm("autoIndent:"  + autoIndent);
 		dm("voiceDefault:" + voiceDefault);
-		
+	}
+
+	/**
+	 * マクロ用のパース実行
+	 * @param storage 対象ファイル
+	 */
+	function parseMacro(storage) {
+		dm("シーン用のマクロをパース:" + storage);
+		loadScenario(storage);
+		while (getNextTag() !== void) {} // 次のタグを得る
+	}
+	
+	/**
+	 * 全パース処理実行
+	 * @param storage 対象ファイル
+	 */
+	function parse(storage) {
+		init();
+		loadScenario(storage);
 		var runLine = 0;
 		var obj;
 		while ((obj = getNextTag()) !== void) { // 次のタグを得る
@@ -428,14 +438,6 @@ class SceneParser extends KAGParser
 		return lines;
 	}
 
-	/**
-	 * マクロ用のパース実行
-	 */
-	function parseMacro(storage) {
-		loadScenario(storage);
-		while ((obj = getNextTag()) !== void) {} // 次のタグを得る
-	}
-	
 	/**
 	 * ラベル通過
 	 */

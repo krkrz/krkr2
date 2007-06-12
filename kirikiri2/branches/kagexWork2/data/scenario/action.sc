@@ -1,7 +1,7 @@
 *start|スタート
 
 ; 環境初期化処理
-[init]
+[initscene]
 
 [道路 normal]
 
