@@ -151,11 +151,7 @@ class ScenePlayer extends BasicPlayer
 		dm("シーン実行開始:" + storage);
 		clear();
 		curStorage = storage;
-		try {
-			lines = getScene(curStorage);
-		} catch(e) {
-			throw new Exception(curStorage + "の読み出しに失敗しました");
-		}
+		lines = getScene(curStorage);
 		status = mRun;
 	}
 	
@@ -396,6 +392,7 @@ class ScenePlayer extends BasicPlayer
     alllayer : env.alllayer,
     allse : env.allse,
 
+	init       : env.initCmd,
 	begintrans : env.beginTrans,
     endtrans   : env.endTrans,
     newlay     : env.newLayer,
