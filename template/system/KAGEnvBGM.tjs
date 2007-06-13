@@ -24,6 +24,12 @@ class KAGEnvBgm extends KAGEnvObject {
 		super.KAGEnvObject(env, "bgm");
     }
 
+	function init() {
+		replay = true;
+		storage = void;
+		transTime = void;
+	}
+	
     /**
      * Ä¶ˆ—
      * @param param Ä¶‘ÎÛƒtƒ@ƒCƒ‹

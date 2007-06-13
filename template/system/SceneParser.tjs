@@ -411,20 +411,28 @@ class SceneParser extends KAGParser
 	 */
 	function parse(storage) {
 		init();
-		loadScenario(storage);
-		var runLine = 0;
-		var obj;
-		while ((obj = getNextTag()) !== void) { // ŽŸ‚Ìƒ^ƒO‚ð“¾‚é
-			if (runLine !== curLine) {
-				enqueueTag(%[tagname:"line", line:curLine, lineStr:curLineStr]);
-				runLine = curLine;
+		try {
+			loadScenario(storage);
+			var runLine = 0;
+			var obj;
+			while ((obj = getNextTag()) !== void) { // ŽŸ‚Ìƒ^ƒO‚ð“¾‚é
+				if (runLine !== curLine) {
+					enqueueTag(%[tagname:"line", line:curLine, lineStr:curLineStr]);
+					runLine = curLine;
+				}
+				var func = extractTags[obj.tagname];
+				if (func !== void) {
+					func(obj);
+				} else {
+					addTag(void, obj);
+				}
 			}
-			var func = extractTags[obj.tagname];
-			if (func !== void) {
-				func(obj);
-			} else {
-				addTag(void, obj);
-			}
+			
+		} catch(e) {
+			var msg = curStorage + ":" + curLine + ":" + curLineStr + "\n" + e.message;
+			dm(msg);
+			if((typeof e.trace) != "undefined") dm("trace : " + e.trace);
+			throw new Exception(msg);
 		}
 		for (var i=0;i<lines.count;i++) {
 			if (lines[i].tagname == "line") {
@@ -445,15 +453,5 @@ class SceneParser extends KAGParser
 		//dm("ƒ‰ƒxƒ‹“o˜^:" + label + ":" + curLine);
 		enqueueTag(%[tagname:"label", label:label, page:page, line:curLine]);
 		return true;
-	}
-
-	// call ‚Í‹ÖŽ~
-	function onCall() {
-		return false;
-	}
-	
-	// return ‚Í‹ÖŽ~
-	function onReturn()	{
-		return false;
 	}
 }

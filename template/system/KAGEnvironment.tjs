@@ -227,14 +227,14 @@ class KAGEnvironment extends KAGEnvBase {
 	/**
 	 * 環境情報の初期化
      */
-    function initEnv() {
+	function initEnv(elm) {
 
 		//dm("初期化処理");
-        transMode = void;
-        colorall = false;
+		transMode = void;
+		colorall = false;
 		
 		stage.initImage();
-        event.initImage();
+		event.initImage();
 
 		// キャラクタ情報の破棄
 		foreach(characters, function(name,value,dict) {
@@ -257,6 +257,11 @@ class KAGEnvironment extends KAGEnvBase {
 		}
         seCount = 0;
 
+		// BGM初期化
+		if (elm === void || !elm.bgmcont) {
+			bgm.init();
+		}
+		
         // カレントオブジェクト初期化
 		currentNameTarget = void;
 
@@ -331,7 +336,6 @@ class KAGEnvironment extends KAGEnvBase {
     }
 
     var envCommands = %[
-	init : this.initEnv incontextof this,
 	hidebase : this.hideBase incontextof this,
 	hideevent : this.hideEvent incontextof this,
 	hidecharacters : this.hideCharacters incontextof this,
@@ -450,6 +454,14 @@ class KAGEnvironment extends KAGEnvBase {
 	// トランジションモード
 	var transMode;
 
+	/**
+	 * 初期化
+	 */
+	function initCmd(elm) {
+		initEnv(elm);
+		return 0;
+	}
+	
     /**
      * 全体トランジション開始
      */
@@ -560,7 +572,7 @@ class KAGEnvironment extends KAGEnvBase {
      * メッセージ窓のトランジション処理をくみこんだ ON/OFF
      */
     function msgonoff(elm, v) {
-		//dm("メッセージ表示指定:" + v);
+		dm("メッセージ表示指定:" + v);
 		ret = void;
 		trans = void;
 		if (!transMode && elm.nofade === void) {
