@@ -1514,7 +1514,7 @@ void TVPLoadERI(void* formatdata, void *callbackdata, tTVPGraphicSizeCallback si
 	TVPInitERINA();
 
 	// ERI-chan ( stands for "Entis Rasterized Image" ) will be
-	// available at http://www.entis.gr.jp/eri/
+	// available at http://www.entis.jp/eri/
 
 	// currently TVP's ERI handler does not support palettized ERI loading
 	if(mode == glmPalettized)
