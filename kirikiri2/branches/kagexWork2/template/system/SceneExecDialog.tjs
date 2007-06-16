@@ -1,6 +1,6 @@
-class ExecSceneEditLayer extends EditLayer
+class SceneExecEditLayer extends EditLayer
 {
-    function ExecSceneEditLayer() {
+    function SceneExecEditLayer() {
         super.EditLayer(...);
     }
 
@@ -12,19 +12,19 @@ class ExecSceneEditLayer extends EditLayer
     }
 }
 
-class ExecSceneDialogWindow extends Window
+class SceneExecDialogWindow extends Window
 {
     var edit;         // 編集欄
     var okButton;     // [OK] ボタン
 	var cancelButton; // [キャンセル] ボタン
 
-	function ExecSceneDialogWindow()
+	function SceneExecDialogWindow()
 	{
 		super.Window();
 
 		borderStyle = bsDialog;
 		innerSunken = false;
-		caption = "シナリオの読込み";
+		caption = "シーンの読込み";
 
 		// プライマリレイヤの作成
 		add(new Layer(this, null));
@@ -57,7 +57,7 @@ class ExecSceneDialogWindow extends Window
 		}
 
 		// エディット
-        add(edit = new ExecSceneEditLayer(this, primaryLayer));
+        add(edit = new SceneExecEditLayer(this, primaryLayer));
         edit.width = 150;
         edit.height = 25;
         edit.top  = 10;
@@ -159,9 +159,9 @@ class ExecSceneDialogWindow extends Window
 	}
 }
 
-function execSceneDialog()
+function sceneExecDialog()
 {
-	var win = new ExecSceneDialogWindow();
+	var win = new SceneExecDialogWindow();
 	win.showModal();
 	invalidate win;
 }

@@ -1,5 +1,5 @@
 /**
- * KAG 前景レイヤのレベル制御用
+ * 背景用レイヤ
  */
 class EnvBackLayer extends EnvLayer {
 

@@ -153,7 +153,7 @@ class EnvBgm extends EnvObject {
     }
 
     /**
-     * KAG タグ処理
+     * タグ処理
      * @param elm 引数
      */
 	function tagcommand(elm) {

@@ -1,5 +1,5 @@
 /**
- * KAG 前景レイヤのレベル制御用
+ * 前景レイヤのレベル制御用
  */
 class EnvLevelLayer {
 

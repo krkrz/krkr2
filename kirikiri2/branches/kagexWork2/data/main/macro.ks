@@ -1,13 +1,13 @@
-; 各シーンの初期化用
-[macro name=initscene]
+// KS用マクロ定義登録
+[macro name=sceneplay]
 [clearlayers]
-[stopse buf=1]
-[stopse buf=2]
 [stopbgm]
+[stopse]
 [stopvideo]
 [video visible=false]
 [history enabled=true]
 [rclick enabled=true jump=false]
-[scenestart storage=%storage linemode=1 erafterpage=true craftername=true]
+[clickskip enabled=true]
+[scenemain]
 [endmacro]
 @return

@@ -8,7 +8,7 @@
 [selopt normal=select_normal over=select_over left=100 top=80 width=600 height=360]
 
 ; シーン用のマクロ
-[scenemacro storage=macro.cs]
+[scenemacro storage=macro.sc]
 ; シーンパース処理初期化
 [sceneopt linemode=1 erafterpage=true]
 
