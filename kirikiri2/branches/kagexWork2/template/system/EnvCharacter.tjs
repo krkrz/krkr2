@@ -87,7 +87,7 @@ class EmotionLayer extends GraphicLayerEx {
  * キャラクタレイヤ
  * ポーズの指定他
  */
-class KAGEnvCharacter extends KAGEnvLevelLayer, KAGEnvImage {
+class EnvCharacter extends EnvLevelLayer, EnvImage {
 
 	/// 初期化名
     var initName;
@@ -155,10 +155,10 @@ class KAGEnvCharacter extends KAGEnvLevelLayer, KAGEnvImage {
      * @param name キャラクタ名
      * @param init キャラクタ初期化データ
      */
-    function KAGEnvCharacter(env, name, initName, init) {
+    function EnvCharacter(env, name, initName, init) {
 
-		global.KAGEnvImage.KAGEnvImage(env, name);
-		global.KAGEnvLevelLayer.KAGEnvLevelLayer();
+		global.EnvImage.EnvImage(env, name);
+		global.EnvLevelLayer.EnvLevelLayer();
         
         //dm("キャラクタ登録:" + name); 
 
@@ -194,8 +194,8 @@ class KAGEnvCharacter extends KAGEnvLevelLayer, KAGEnvImage {
 			invalidate emotionLayer;
 		}
 		// 順番変更不可注意
-		global.KAGEnvLevelLayer.finalize();
-		global.KAGEnvImage.finalize();
+		global.EnvLevelLayer.finalize();
+		global.EnvImage.finalize();
     }
 
     // 表情描画処理を行う
@@ -436,7 +436,7 @@ class KAGEnvCharacter extends KAGEnvLevelLayer, KAGEnvImage {
      */
     function doCommand(cmd, param, elm) {
 
-        if (global.KAGEnvImage.doCommand(cmd, param, elm)) {
+        if (global.EnvImage.doCommand(cmd, param, elm)) {
             return true;
         }
 
@@ -665,7 +665,7 @@ class KAGEnvCharacter extends KAGEnvLevelLayer, KAGEnvImage {
      * エモーション処理を追加
      */
 	function updateLayer(layer) {
-		global.KAGEnvImage.updateLayer(...);
+		global.EnvImage.updateLayer(...);
 		
 		// 表情描画
 		if (redrawFace) {
@@ -729,7 +729,7 @@ class KAGEnvCharacter extends KAGEnvLevelLayer, KAGEnvImage {
 				delete e[names[i]];
 			}
 		}
-		global.KAGEnvImage.command(e);
+		global.EnvImage.command(e);
 	}
 
 	/**

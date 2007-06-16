@@ -1,7 +1,7 @@
 /**
  * KAG 前景レイヤのレベル制御用
  */
-class KAGEnvLevelLayer {
+class EnvLevelLayer {
 
     /// 表示レベル
     var level;
@@ -20,7 +20,7 @@ class KAGEnvLevelLayer {
     /**
      * コンストラクタ
      */
-    function KAGEnvLevelLayer() {
+    function EnvLevelLayer() {
 		level = void;
     }
 

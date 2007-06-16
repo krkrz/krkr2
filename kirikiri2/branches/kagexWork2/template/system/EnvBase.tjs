@@ -1,4 +1,4 @@
-class KAGEnvObject {
+class EnvObject {
 
 	// 実行環境
 	var env;
@@ -9,7 +9,7 @@ class KAGEnvObject {
 	// 名前
 	var name;
 
-	function KAGEnvObject(env, name) {
+	function EnvObject(env, name) {
 		this.env    = env;
 		this.player = env.player;
 		this.name   = name;
@@ -53,14 +53,14 @@ class KAGEnvObject {
 /**
  * 環境オブジェクトの基底クラス
  */
-class KAGEnvBase extends KAGEnvObject {
+class EnvBase extends EnvObject {
 
 	/**
 	 * コンストラクタ
 	 * @param env 環境
 	 */
-	function KAGEnvBase(env, name) {
-		super.KAGEnvObject(env, name);
+	function EnvBase(env, name) {
+		super.EnvObject(env, name);
 	}
 
 	function finalize() {

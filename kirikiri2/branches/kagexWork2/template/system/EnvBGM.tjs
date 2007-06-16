@@ -1,7 +1,7 @@
 /**
  * 環境BGMオブジェクト
  */
-class KAGEnvBgm extends KAGEnvObject {
+class EnvBgm extends EnvObject {
 	
 	var storage;   // 参照しているファイル名
 	var volume;    // 音量
@@ -20,8 +20,8 @@ class KAGEnvBgm extends KAGEnvObject {
     /**
      * コンストラクタ
      */
-    function KAGEnvBgm(env) {
-		super.KAGEnvObject(env, "bgm");
+    function EnvBgm(env) {
+		super.EnvObject(env, "bgm");
     }
 
 	function init() {

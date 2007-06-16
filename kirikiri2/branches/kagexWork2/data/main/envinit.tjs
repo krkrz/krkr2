@@ -44,23 +44,23 @@
     "positions" => %[
 
         "o" => %[
-            "disp" => KAGEnvImage.BOTH
+            "disp" => EnvImage.BOTH
             ],
 
         "—§" => %[
-            "disp" => KAGEnvImage.BU
+            "disp" => EnvImage.BU
             ],
         
         "Á" => %[
-            "disp" => KAGEnvImage.CLEAR
+            "disp" => EnvImage.CLEAR
             ],
 
         "Šç" => %[
-            "disp" => KAGEnvImage.FACE
+            "disp" => EnvImage.FACE
             ],
 
         "–³" => %[
-            "disp" => KAGEnvImage.INVISIBLE
+            "disp" => EnvImage.INVISIBLE
             ],
         
         "¶‰œ" => %[

@@ -65,7 +65,7 @@ class SimpleLayerGraphicLayer extends EnvGraphicLayer {
 /**
  * 単独レイヤ
  */
-class KAGEnvSimpleLayer extends KAGEnvLevelLayer, KAGEnvLayer {
+class EnvSimpleLayer extends EnvLevelLayer, EnvLayer {
 
 	/**
 	 * 表示処理用の自動トランジションの指定
@@ -135,16 +135,16 @@ class KAGEnvSimpleLayer extends KAGEnvLevelLayer, KAGEnvLayer {
      * @param name
      * @param level
      */
-    function KAGEnvSimpleLayer(env, name) {
-		global.KAGEnvLayer.KAGEnvLayer(env, name);
-		global.KAGEnvLevelLayer.KAGEnvLevelLayer();
+    function EnvSimpleLayer(env, name) {
+		global.EnvLayer.EnvLayer(env, name);
+		global.EnvLevelLayer.EnvLevelLayer();
 		viewOriginMode = 9;
     }
 
     function finalize() {
         // 順番変更不可
-        global.KAGEnvLevelLayer.finalize();
-        global.KAGEnvLayer.finalize();
+        global.EnvLevelLayer.finalize();
+        global.EnvLayer.finalize();
     }
 
 	var simpleLayerCommands = %[
@@ -165,7 +165,7 @@ class KAGEnvSimpleLayer extends KAGEnvLevelLayer, KAGEnvLayer {
 	function doCommand(cmd, param, elm) {
 		
 		// 共通コマンド
-		if (global.KAGEnvLayer.doCommand(cmd, param, elm)) {
+		if (global.EnvLayer.doCommand(cmd, param, elm)) {
 			return true;
         }
 
