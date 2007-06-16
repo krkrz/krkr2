@@ -1248,13 +1248,13 @@ kag.tagHandlers["scenemacro"] = kag.scenePlayer.scenemacro;
 kag.tagHandlers["scenestart"] = kag.scenePlayer.scenestart;
 kag.tagHandlers["scenemain"]  = kag.scenePlayer.scenemain;
 
-property execSceneDialog { getter() { KAGLoadScript("ExecSceneDialog.tjs"); return global.execSceneDialog; } };
+property sceneExecDialog { getter() { KAGLoadScript("SceneExecDialog.tjs"); return global.sceneExecDialog; } };
 
 // デバッグメニューに登録
 if (kag.debugMenu !== void && kag.debugMenu.visible) {
 	kag.debugMenu.insert(new MenuItem(this, "-"), 0);
 	kag.debugMenu.insert(kag.loadSceneMenuItem = new KAGMenuItem(this, "シーンの読込み(&L)", 1,
-																 function() {execSceneDialog();}), 1);
+																 function() {sceneExecDialog();}), 1);
 }
 
 if (kag.debugLevel >= tkdlSimple) {

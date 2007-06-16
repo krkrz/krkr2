@@ -13,21 +13,21 @@
 [jump target=*start]
 
 *char|
-[initscene storage=char.sc]
-[scenemain]
+[scenestart storage=char.sc]
+[sceneplay]
 [jump target=*start]
 
 *envlayer|
-[initscene storage=envlayer.sc]
-[scenemain]
+[scenestart storage=envlayer.sc]
+[sceneplay]
 [jump target=*start]
 
 *transition|
-[initscene storage=transition.sc]
-[scenemain]
+[scenestart storage=transition.sc]
+[sceneplay]
 [jump target=*start]
 
 *action|
-[initscene storage=action.sc]
-[scenemain]
+[scenestart storage=action.sc]
+[sceneplay]
 [jump target=*start]

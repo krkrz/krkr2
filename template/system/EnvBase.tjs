@@ -207,7 +207,7 @@ class EnvBase extends EnvObject {
     }
 
 	/**
-	 * KAG 個別コマンド処理
+	 * 個別コマンド処理
 	 * @param elm 引数
 	 */
 	function command(elm) {
@@ -243,7 +243,7 @@ class EnvBase extends EnvObject {
     }
 	
 	/**
-	 * KAG タグ処理
+	 * タグ処理
 	 * @param elm 要素
 	 */
 	function tagcommand(elm) {

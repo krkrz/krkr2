@@ -715,7 +715,7 @@ class EnvCharacter extends EnvLevelLayer, EnvImage {
 	// ------------------------------------------------------
 	
 	/**
-	 * KAG タグ処理
+	 * タグ処理
 	 * @param elm コマンドパラメータ
 	 */
 	function command(elm) {
