@@ -35,7 +35,8 @@ class KAGEnvBgm extends KAGEnvObject {
      * @param param 再生対象ファイル
      */
     function setPlay(param, elm) {
-        if (param !== void) {
+		//dm("BGM再生:" + param);
+		if (param !== void) {
 			replay = true;
 			storage = param;
 			volume    = elm.volume !== void ? +elm.volume : 100;
@@ -51,6 +52,7 @@ class KAGEnvBgm extends KAGEnvObject {
      * @param param フェードアウト時間
      */
 	function setStop(param, elm) {
+		//dm("BGM停止");
 		replay = true;
 		storage = void;
 		transTime = elm.time !== void ? +elm.time : +param;
@@ -155,7 +157,7 @@ class KAGEnvBgm extends KAGEnvObject {
      * @param elm 引数
      */
 	function tagcommand(elm) {
-		dm("BGM 用ファンクション呼び出し!");
+		//dm("BGM 用ファンクション呼び出し!");
 		wait = void;
 		waitFade = void;
 		transTime = void;
@@ -177,7 +179,7 @@ class KAGEnvBgm extends KAGEnvObject {
 	 */
 	function sync() {
 		if (replay) {
-			dm("再生状態変更:" + storage);
+			//dm("再生状態変更:" + storage);
 			if (storage !== void) {
 				player.playBGM(transTime, %[storage:storage, loop:loop, start:start]);
 			} else {

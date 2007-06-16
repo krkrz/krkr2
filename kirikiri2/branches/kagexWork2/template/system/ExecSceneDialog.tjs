@@ -1,6 +1,6 @@
-class ExecEditLayer extends EditLayer
+class ExecSceneEditLayer extends EditLayer
 {
-    function ExecEditLayer() {
+    function ExecSceneEditLayer() {
         super.EditLayer(...);
     }
 
@@ -12,13 +12,13 @@ class ExecEditLayer extends EditLayer
     }
 }
 
-class ExecDialogWindow extends Window
+class ExecSceneDialogWindow extends Window
 {
     var edit;         // 編集欄
     var okButton;     // [OK] ボタン
 	var cancelButton; // [キャンセル] ボタン
 
-	function ExecDialogWindow()
+	function ExecSceneDialogWindow()
 	{
 		super.Window();
 
@@ -57,7 +57,7 @@ class ExecDialogWindow extends Window
 		}
 
 		// エディット
-        add(edit = new ExecEditLayer(this, primaryLayer));
+        add(edit = new ExecSceneEditLayer(this, primaryLayer));
         edit.width = 150;
         edit.height = 25;
         edit.top  = 10;
@@ -87,10 +87,12 @@ class ExecDialogWindow extends Window
         edit.focus();
 	}
 
-    function exec() {
-        try {
-            if (edit.Edit_text != "") {
-                kag.process(edit.Edit_text, "");
+	// 実行処理
+	function exec() {
+		try {
+			if (edit.Edit_text != "") {
+				kag.scenePlayer.scenestart(%[storage:edit.Edit_text]);
+				kag.process("main.ks");
             }
         } catch(e) {
             Debug.notice("シナリオを実行できませんでした : " + e.message);
@@ -157,9 +159,9 @@ class ExecDialogWindow extends Window
 	}
 }
 
-function execDialog()
+function execSceneDialog()
 {
-	var win = new ExecDialogWindow();
+	var win = new ExecSceneDialogWindow();
 	win.showModal();
 	invalidate win;
 }

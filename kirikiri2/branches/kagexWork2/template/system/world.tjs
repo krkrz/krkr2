@@ -47,6 +47,7 @@ class VoiceTrack extends WaveSoundBuffer {
 }
 
 KAGLoadScript('SceneParser.tjs');
+KAGLoadScript('SceneListParser.tjs');
 
 /**
  * 基本プレイヤー
@@ -61,6 +62,8 @@ class BasicPlayer extends KAGPlugin {
 	 */
 	function BasicPlayer() {
 		env = new KAGEnvironment(this, kag.scWidth, kag.scHeight);
+		sceneParser     = new SceneParser(); // シーンパーサ
+		getSceneInfo();
 	}
 
 	/**
@@ -68,6 +71,32 @@ class BasicPlayer extends KAGPlugin {
 	 */
 	function finalize() {
 		invalidate env;
+		invalidate sceneInfos;
+		invalidate sceneNames;
+	}
+
+	// ---------------------------------------------------
+	// シーン情報処理
+	// ---------------------------------------------------
+
+	var sceneNames;
+	var sceneInfos;
+
+	/**
+	 * シーン情報の読み込み
+	 */
+	function getSceneInfo() {
+		var sceneListParser = new SceneListParser();
+		try {
+			sceneListParser.parseStorage("scenes.csv");
+			sceneNames = sceneListParser.sceneNames;
+			sceneInfos = sceneListParser.sceneInfos;
+		} catch (e) {
+			dm(e.message);
+			sceneNames = [];
+			sceneInfos = %[];
+		}
+		invalidate sceneListParser;
 	}
 	
 	// ---------------------------------------------------
@@ -94,20 +123,45 @@ class BasicPlayer extends KAGPlugin {
 		return false;
 	}
 
+	/**
+	 * 条件判定
+	 */
+	function eval(eval) {
+		return Scripts.eval(eval);
+	}
+	
 	// --------------------------------------------------------
 	// シーンコンバート処理
 	// --------------------------------------------------------
 
-	var sceneParser = new SceneParser(); // パーサ 
+	var sceneParser     = new SceneParser(); // パーサ
 
 	/**
 	 * シーンファイルを変換してデータとして取得する
-	 * 
+	 * @param name シーン名
 	 */
 	function getScene(name) {
 		return sceneParser.parse(name);
 	}
-	
+
+	/**
+	 * 次シーン判定処理
+	 * @param name 現在のシーン名
+	 */
+	function getNextScene(name) {
+		var info = sceneInfos[name];
+		if (info !== void) {
+			var next = info.next;
+			if (next !== void) {
+				for (var i=0;i<next.count;i++) {
+					if (next.cond === void || next.cond == "" || eval(next.cond)) {
+						return next.scene;
+					}
+				}
+			}
+		}
+	}
+
 	// --------------------------------------------------------
 	// メッセージ窓制御関連
 	// --------------------------------------------------------
@@ -974,6 +1028,17 @@ class BasicPlayer extends KAGPlugin {
 		env.syncAll();
 	}
 
+	/**
+	 * レイヤ消去指定
+	 */
+	function onClearLayers(isfore) {
+		if (isfore) {
+			env.hideAll();
+			env.syncAll();
+		}
+	}
+
+	
 	// --------------------------------------------------------------
 	// KAG 用保存処理
 	// --------------------------------------------------------------
@@ -1032,16 +1097,28 @@ class BasicPlayer extends KAGPlugin {
 		var now = System.getTickCount();
 		var diff = now - tick;
 		tick = now;
-		switch (main(diff)) {
-		case 1: // 通常
-			return -3;
-		case 2: // イベント待ち
+		//dm("シーンメイン:" + tick + ":" + diff);
+		var step = main(diff);
+		//dm("シーン返り値:" + step);
+		switch (step) {
+		case -5: // イベント待ち
+		case -4: // イベント待ち
+			//dm("処理継続");
 			return -5;
-		default: // 終了
+		case -3: // ブレーク
+		case -2:
+			//dm("ブレーク");
+			return -3;
+		case -1: // 終了
+			//dm("終了");
 			return 0;
 		}
+		if (step > 0) {
+			//dm("処理継続");
+			kag.insertTag(void, elm);
+			return step;
+		}
 	}
-	
 };
 
 KAGLoadScript('YAML.tjs');
@@ -1170,6 +1247,15 @@ kag.tagHandlers["sceneopt"]   = kag.scenePlayer.sceneopt;
 kag.tagHandlers["scenemacro"] = kag.scenePlayer.scenemacro;
 kag.tagHandlers["scenestart"] = kag.scenePlayer.scenestart;
 kag.tagHandlers["scenemain"]  = kag.scenePlayer.scenemain;
+
+property execSceneDialog { getter() { KAGLoadScript("ExecSceneDialog.tjs"); return global.execSceneDialog; } };
+
+// デバッグメニューに登録
+if (kag.debugMenu !== void && kag.debugMenu.visible) {
+	kag.debugMenu.insert(new MenuItem(this, "-"), 0);
+	kag.debugMenu.insert(kag.loadSceneMenuItem = new KAGMenuItem(this, "シーンの読込み(&L)", 1,
+																 function() {execSceneDialog();}), 1);
+}
 
 if (kag.debugLevel >= tkdlSimple) {
 	dm("ワールド環境設定完了");

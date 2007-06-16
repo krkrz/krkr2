@@ -26,6 +26,7 @@ class ScenePlayer extends BasicPlayer
 	var cur;               // 実行ポイント
 	var curLine;           // 通過中の行番号
 	var targetLine;        // ロード処理ターゲット行
+	var nextScene;         // 次のシーン
 
 	// 選択処理通過記録
 	var branches = %[];
@@ -71,6 +72,7 @@ class ScenePlayer extends BasicPlayer
 		cur = 0;
 		curLine = 0;
 		targetLine = void;
+		nextScene = void;
 	}
 
 	// ------------------------------------------------------------
@@ -126,6 +128,7 @@ class ScenePlayer extends BasicPlayer
 	 */
 	function onTag(elm) {
 		var tagname = elm.tagname;
+		//dm("シーンタグ:" + tagname);
 		var handler = handlers[tagname];
 		if (handler !== void) {
 			var ret = handler(elm);
@@ -135,7 +138,10 @@ class ScenePlayer extends BasicPlayer
 		// 無効なタグ
 		var ret = env.unknown(tagname, elm);
 		if (ret === void) {
-			throw new Exception("タグ/マクロ \"" + tagname + "\" は存在しません");
+			var msg = "タグ/マクロ \"" + tagname + "\" は存在しません";
+			errorCmd(msg);
+			return 0;
+			//throw new Exception(msg);
 		}
 		return ret;
 	}
@@ -148,7 +154,6 @@ class ScenePlayer extends BasicPlayer
 	 * @param option パース用オプション
 	 */
 	function run(storage) {
-		dm("シーン実行開始:" + storage);
 		clear();
 		curStorage = storage;
 		lines = getScene(curStorage);
@@ -205,97 +210,96 @@ class ScenePlayer extends BasicPlayer
 			}
 		}
 
+		//dm("scene メインロジック:" + nowTick + ":" + nextTick);
+
+		
 		// 時間待ち処理
 		if (nextTick !== void && nextTick < nowTick) {
-			return;
+			return -4;
 		}
 		nextTick = void;
 
 		// 停止または待ち
-		if (status == mStop || status == mWait) {
-			return;
+		if (status == mStop) {
+			return -1;
+		} else  if (status == mWait) {
+			return -4;
 		}
 
 		var obj;
-		try
-		{
-			for(;;)
-			{
-				if (pendings.count > 0) {
-					// 後回しにされたタグがある場合
-					obj = pendings[0];
-					pendings.erase(0);
+		for(;;)	{
+			if (pendings.count > 0) {
+				// 後回しにされたタグがある場合
+				obj = pendings[0];
+				pendings.erase(0);
+			} else {
+				obj = lines[cur++];
+			}
+			
+			if(obj === void) {
+				// シナリオ終了
+				var next = nextScene !== void ? nextScene : getNextScene(curStorage);
+				if (next !== void) {
+					clear();
+					lines = getScene(next);
+					status = mRun;
+					continue;
 				} else {
-					obj = lines[cur++];
-				}
-
-				if(obj === void)
-				{
-					// シナリオ終了
 					status = mStop;
-					return 0;
-				} else if (obj.tagname == "line") {
-					if (curLine != obj.line) {
-						curLine    = obj.line;
-						dm("%06d:%s %s".sprintf(curLine, curStorage, obj.lineStr));
-					}
-					continue;
-				} else if (obj.tagname == "label") {
-					continue;
-				} else {
-					// 実行時判定される cond
-					if (obj.condex !== void) {
-						if (!Scripts.eval(obj.condex)) {
-							continue;
-						}
-						delete obj.condex;
-					}
-
-					// onTag を呼ぶ
-					var step = onTag(obj);
-					if(step === void) {
-						throw new Exception("onTag が void を返しました (" + obj.tagname + ")"
-							"( おそらくタグハンドラの戻り値を返し忘れた )");
-					}
-					step = int step; // step を数値に
-					if(step == 0) {
-						// ウェイトを掛けずに次へ
+					return -1;
+				}
+			} else if (obj.tagname == "line") {
+				if (curLine != obj.line) {
+					curLine    = obj.line;
+					//dm("%06d:%s %s".sprintf(curLine, curStorage, obj.lineStr));
+				}
+				continue;
+			} else if (obj.tagname == "label") {
+				continue;
+			} else {
+				// 実行時判定される cond
+				if (obj.condex !== void) {
+					if (!Scripts.eval(obj.condex)) {
 						continue;
 					}
-					else if(step < 0) {
-						switch(step) {
-						case -5: // いったんイベントを処理(現在のタグは後回し)
-							pendings.insert(0, obj);
-							return 2;
-						case -4: // いったんイベントを処理
-							return 2;
-						case -3: // 後回ししてブレーク
-							pendings.insert(0, obj);
-							return 1;
-						case -2: // ブレーク
-							return 1;
-						case -1: // シナリオ終了
-							status = mStop;
-							return 0;
-						}
-					} else {
-						// 時間待ち
-						nextTick = nowTick + step;
-						return 1;
+					delete obj.condex;
+				}
+				
+				// onTag を呼ぶ
+				var step = onTag(obj);
+				if(step === void) {
+					throw new Exception("onTag が void を返しました (" + obj.tagname + ")"
+										"( おそらくタグハンドラの戻り値を返し忘れた )");
+				}
+				step = int step; // step を数値に
+				//dm("タグ戻り値:" + step);
+				
+				if (step == 0) {
+					// ウェイトを掛けずに次へ
+					continue;
+				}
+				else if(step < 0) {
+					switch(step) {
+					case -5: // いったんイベントを処理(現在のタグは後回し)
+						pendings.insert(0, obj);
+						return step;
+					case -4: // いったんイベントを処理
+						return step;
+					case -3: // 後回ししてブレーク
+						pendings.insert(0, obj);
+						return step;
+					case -2: // ブレーク
+						return step;
+					case -1: // シナリオ終了
+						status = mStop;
+						return step;
 					}
+				} else {
+					// 時間待ち
+					//nextTick = nowTick + step;
+					return step;
 				}
 			}
-		}
-		catch(e)
-		{
-			status = mStop;
-			var msg = "致命的なエラーが発生しました。\n"
-				"ファイル : " + curStorage + "   行 : " + (curLine+1) + "\n"
-					"タグ : " + (obj === void ? "不明" : obj.tagname)
-						+ " ( ← エラーの発生した前後のタグを示している場合もあります )\n"
-						+ e.message;
-			if((typeof e.trace) != "undefined") dm("trace : " + e.trace);
-			throw new ConductorException(msg);
 		}
 	}
 
@@ -382,6 +386,7 @@ class ScenePlayer extends BasicPlayer
 
 	next : function(elm)
 	{
+		nextScene = elm.storage;
 		return 0;
 	} incontextof this,
 				  
