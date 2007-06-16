@@ -1,15 +1,15 @@
 /**
  * イベント画像を処理するレイヤ
  */
-class KAGEnvEventLayer extends KAGEnvBackLayer {
+class EnvEventLayer extends EnvBackLayer {
 
     /**
 	 * コンストラクタ
      * @param env 環境
 	 * @param name 環境のレイヤ名
 	 */
-	function KAGEnvEventLayer(env) {
-		super.KAGEnvBackLayer(env, "event", 6* 100000 - 100);
+	function EnvEventLayer(env) {
+		super.EnvBackLayer(env, "event", 6* 100000 - 100);
     }
 
 	/**

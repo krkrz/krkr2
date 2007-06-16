@@ -1,7 +1,7 @@
 /**
  * KAG 前景レイヤのレベル制御用
  */
-class KAGEnvBackLayer extends KAGEnvLayer {
+class EnvBackLayer extends EnvLayer {
 
 	var absolute;
 	
@@ -11,8 +11,8 @@ class KAGEnvBackLayer extends KAGEnvLayer {
     /**
      * コンストラクタ
      */
-	function KAGEnvBackLayer(env, name, absolute) {
-		super.KAGEnvLayer(env, name);
+	function EnvBackLayer(env, name, absolute) {
+		super.EnvLayer(env, name);
 		this.absolute = absolute;
     }
 

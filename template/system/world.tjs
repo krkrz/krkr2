@@ -61,7 +61,7 @@ class BasicPlayer extends KAGPlugin {
 	 * コンストラクタ
 	 */
 	function BasicPlayer() {
-		env = new KAGEnvironment(this, kag.scWidth, kag.scHeight);
+		env = new Environment(this, kag.scWidth, kag.scHeight);
 		sceneParser     = new SceneParser(); // シーンパーサ
 		getSceneInfo();
 	}
@@ -1227,18 +1227,18 @@ var actionParam = %[
     "loop" => true,
     ];
 
-KAGLoadScript('KAGEnvBase.tjs');
-KAGLoadScript('KAGEnvImage.tjs');
-KAGLoadScript('KAGEnvLayer.tjs');
-KAGLoadScript('KAGEnvBackLayer.tjs');
-KAGLoadScript('KAGEnvStageLayer.tjs');
-KAGLoadScript('KAGEnvEventLayer.tjs');
-KAGLoadScript('KAGEnvLevelLayer.tjs');
-KAGLoadScript('KAGEnvSimpleLayer.tjs');
-KAGLoadScript('KAGEnvCharacter.tjs');
-KAGLoadScript('KAGEnvBGM.tjs');
-KAGLoadScript('KAGEnvSE.tjs');
-KAGLoadScript('KAGEnvironment.tjs');
+KAGLoadScript('EnvBase.tjs');
+KAGLoadScript('EnvImage.tjs');
+KAGLoadScript('EnvLayer.tjs');
+KAGLoadScript('EnvBackLayer.tjs');
+KAGLoadScript('EnvStageLayer.tjs');
+KAGLoadScript('EnvEventLayer.tjs');
+KAGLoadScript('EnvLevelLayer.tjs');
+KAGLoadScript('EnvSimpleLayer.tjs');
+KAGLoadScript('EnvCharacter.tjs');
+KAGLoadScript('EnvBGM.tjs');
+KAGLoadScript('EnvSE.tjs');
+KAGLoadScript('Environment.tjs');
 KAGLoadScript('ScenePlayer.tjs');
 
 kag.addPlugin(kag.scenePlayer = new ScenePlayer(kag));

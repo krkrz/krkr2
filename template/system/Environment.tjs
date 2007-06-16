@@ -1,7 +1,7 @@
 /**
  * 環境オブジェクト
  */
-class KAGEnvironment extends KAGEnvBase {
+class Environment extends EnvBase {
 	
 	/// KAG本体の参照
     var xmax;
@@ -99,9 +99,9 @@ class KAGEnvironment extends KAGEnvBase {
      * コンストラクタ
      * @param kag KAG本体
      */
-	function KAGEnvironment(player, width, height) {
+	function Environment(player, width, height) {
 
-		super.KAGEnvBase(this, "env");
+		super.EnvBase(this, "env");
 		this.player = player;
 		
 		xmax = width / 2;
@@ -109,15 +109,15 @@ class KAGEnvironment extends KAGEnvBase {
 
 		characters = %[];
 		layers = %[];
-		event = new KAGEnvEventLayer(env);
-		stage = new KAGEnvStageLayer(env);
+		event = new EnvEventLayer(env);
+		stage = new EnvStageLayer(env);
 
         // BGM オブジェクト
-        bgm = new KAGEnvBgm(env);
+        bgm = new EnvBgm(env);
 		// SE オブジェクト群
 		ses = [];
 		for (var i=0; i<player.senum; i++) {
-			ses[i] = new KAGEnvSE(env, i);
+			ses[i] = new EnvSE(env, i);
         }
 		
 		resetEnv();
@@ -273,7 +273,7 @@ class KAGEnvironment extends KAGEnvBase {
      */
     function hideEvent(param, elm) {
 		if (event.isShow()) {
-			event.disp = KAGEnvImage.CLEAR;
+			event.disp = EnvImage.CLEAR;
 		}
     }
 
@@ -282,7 +282,7 @@ class KAGEnvironment extends KAGEnvBase {
      */
 	function hideStage(param, elm) {
 		if (stage.isShow()) {
-			stage.disp = KAGEnvImage.CLEAR;
+			stage.disp = EnvImage.CLEAR;
 		}
     }
 	
@@ -301,7 +301,7 @@ class KAGEnvironment extends KAGEnvBase {
 		// キャラクタレイヤの消去
 		foreach(characters, function(name,value,dict,param) {
 			if (value.isShow()) {
-				value.disp = KAGEnvImage.CLEAR;
+				value.disp = EnvImage.CLEAR;
 			}
 		} incontextof this, param);
     }
@@ -313,7 +313,7 @@ class KAGEnvironment extends KAGEnvBase {
         // 特殊レイヤの消去
         foreach(layers, function(name,value,dict, param) {
 			if (value.isShow()) {
-				value.disp = KAGEnvImage.CLEAR;
+				value.disp = EnvImage.CLEAR;
 			}
 		} incontextof this, param);
     }
@@ -621,7 +621,7 @@ class KAGEnvironment extends KAGEnvBase {
             }
             var init;
             if ((init = characterInits[initName]) !== void) {
-				ch = new KAGEnvCharacter(env, name, initName, init);
+				ch = new EnvCharacter(env, name, initName, init);
                 characters[name] = ch;
             }
         }
@@ -636,7 +636,7 @@ class KAGEnvironment extends KAGEnvBase {
     function getEnvLayer(name, create=false) {
         var lay = layers[name];
         if (lay === void && create) {
-            lay = new KAGEnvSimpleLayer(env, name);
+            lay = new EnvSimpleLayer(env, name);
             layers[name] = lay;
         }
         return lay;

@@ -2,7 +2,7 @@
  * レイヤ系基底クラス
  * 画像表示が実装されている
  */
-class KAGEnvLayer extends KAGEnvImage {
+class EnvLayer extends EnvImage {
 
     /// 描画中画像
 	var imageFile = void;
@@ -39,8 +39,8 @@ class KAGEnvLayer extends KAGEnvImage {
 		}
 	}
 	
-	function KAGEnvLayer(env, name) {
-		super.KAGEnvImage(env, name);
+	function EnvLayer(env, name) {
+		super.EnvImage(env, name);
 	}
 	
 	function initFile(elm) {

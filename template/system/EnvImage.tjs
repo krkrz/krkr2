@@ -63,7 +63,7 @@ class EnvGraphicLayer extends GraphicLayerBase {
 /**
  * 環境画像の基底クラス
  */
-class KAGEnvImage extends KAGEnvBase {
+class EnvImage extends EnvBase {
 
 	// デフォルト情報
 	var init;
@@ -269,8 +269,8 @@ class KAGEnvImage extends KAGEnvBase {
      * コンストラクタ
      * @param env 環境
      */
-	function KAGEnvImage(env, name) {
-		super.KAGEnvBase(env, name);
+	function EnvImage(env, name) {
+		super.EnvBase(env, name);
 		actionList = [];
         _disp = CLEAR;
     }
@@ -759,9 +759,9 @@ class KAGEnvImage extends KAGEnvBase {
 	}
 }
 
-KAGEnvImage.BOTH      = 1;
-KAGEnvImage.BU        = 2;
-KAGEnvImage.FACE      = 3;
-KAGEnvImage.SHOW      = 4;
-KAGEnvImage.CLEAR     = 5;
-KAGEnvImage.INVISIBLE = 6;
+EnvImage.BOTH      = 1;
+EnvImage.BU        = 2;
+EnvImage.FACE      = 3;
+EnvImage.SHOW      = 4;
+EnvImage.CLEAR     = 5;
+EnvImage.INVISIBLE = 6;

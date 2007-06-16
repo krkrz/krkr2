@@ -1,7 +1,7 @@
 /**
  * 環境SEオブジェクト
  */
-class KAGEnvSE extends KAGEnvObject {
+class EnvSE extends EnvObject {
 
 	var id;
 	var count; // 参照されたカウント値
@@ -21,8 +21,8 @@ class KAGEnvSE extends KAGEnvObject {
     /**
      * コンストラクタ
      */
-    function KAGEnvSE(env, id) {
-		super.KAGEnvObject(env, void);
+    function EnvSE(env, id) {
+		super.EnvObject(env, void);
 		this.id = id;
     }
 

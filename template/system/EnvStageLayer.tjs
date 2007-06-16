@@ -20,7 +20,7 @@ class StageGraphicLayer extends EnvGraphicLayer {
  * setTimeHook(time, elm)     時間変更時フック
  * setStageHook(stage, elm)   ステージ変更時フック
  */
-class KAGEnvStageLayer extends KAGEnvBackLayer {
+class EnvStageLayer extends EnvBackLayer {
 
 	/// 時間
 	var timeName;
@@ -37,8 +37,8 @@ class KAGEnvStageLayer extends KAGEnvBackLayer {
      * @param env 環境
 	 * @param name 環境のレイヤ名
 	 */
-	function KAGEnvStageLayer(env) {
-		super.KAGEnvBackLayer(env, "stage", 100);
+	function EnvStageLayer(env) {
+		super.EnvBackLayer(env, "stage", 100);
     }
 
 	/**
