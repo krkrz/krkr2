@@ -113,7 +113,7 @@
 <dt><kw>Entis Rasterized Image format 画像</kw> ( <kw>ERI 画像</kw> ) </dt>
 <dd>
 　拡張子は .eri です。Leshade Entis 氏 により開発・考案された可逆画像圧縮技術・フォーマットです。通称「恵理ちゃん」です。<r/>
-　画像コンバータなどのユーティリティ類は「恵理ちゃんclub」 <at target="_top"  href="http://www.entis.gr.jp/eri/">http://www.entis.gr.jp/eri/</at> から入手できます。<r/>
+　画像コンバータなどのユーティリティ類は「恵理ちゃんclub」 <at target="_top"  href="http://www.entis.jp/eri/">http://www.entis.gr.jp/eri/</at> から入手できます。<r/>
 <r/>
 　この画像圧縮形式を用いる場合は、著作権関係で<b>特に</b>注意が必要です。詳しくは 吉里吉里 SDK Help の「使用条件等」および上記「恵理ちゃん club」をご覧ください。
 </dd>
