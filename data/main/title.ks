@@ -68,7 +68,6 @@
 
 *backtotitle
 [rclick enabled=false]
-[stoprecollection]
 [jump target=*titleloop]
 
 *gamestart

@@ -3,7 +3,7 @@
 //
 
 // csv パーサプラグインの読み込み
-if (global.CSVParser === void) {
+if (typeof global.CSVParser == "undefined") {
     Plugins.link("csvParser.dll");
 }
 

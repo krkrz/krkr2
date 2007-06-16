@@ -45,9 +45,9 @@ class KAGEnvLayer extends KAGEnvImage {
 	
 	function initFile(elm) {
 		if (elm.type === void)    type = void;
-		if (elm.opacity === void) delete props.opacity;
-		if (elm.rotate === void)  delete props.rotate;
-		if (elm.zoom === void)    delete props.zoom;
+		if (elm.opacity === void) props.opacity = 255;
+		if (elm.rotate === void)  props.rotate = 0;
+		if (elm.zoom === void)    props.zoom = 100;
 		if (elm.afx === void)     delete props.afx;
 		if (elm.afy === void)     delete props.afy;
 	}

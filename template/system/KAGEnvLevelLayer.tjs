@@ -47,12 +47,12 @@ class KAGEnvLevelLayer {
 				}
 			} else {
 				if (targetLayer !== void) {
-					dm("表画面にコピー:" + name);
+					//dm("表画面にコピー:" + name);
 					if (!player.isForeLayer(targetLayer) && targetLayer.visible) {
-						dm("表に移動");
+						//dm("表に移動");
 						player.toForeLayer(targetLayer);
 					} else {
-						dm("廃棄");
+						//dm("廃棄");
 						targetLayer = player.trashLayer(targetLayer);
 					}
 				}

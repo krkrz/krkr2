@@ -110,6 +110,7 @@ class KAGEnvSE extends KAGEnvObject {
     time : null,
     start : null,
     canskip : null,
+	buf : null,
         ];
 
     /**

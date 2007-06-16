@@ -153,6 +153,7 @@ class KAGEnvBase extends KAGEnvObject {
 	var baseCommands = %[
 	tagname : null, 
 	time : null,
+	fade : null,
 	trans : this.setTrans incontextof this,
 		];
 

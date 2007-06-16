@@ -1,3 +1,10 @@
+var LINEMODE_NONE = 0;
+var LINEMODE_PAGE = 1;
+var LINEMODE_LINE = 2;
+var LINEMODE_VN   = 3;
+var LINEMODE_TEX  = 4;
+var LINEMODE_FREE = 5;
+
 /**
  * シーン再生用パーサ
  * KAG 形式でかかれたシナリオデータを
@@ -26,6 +33,7 @@ class SceneParser extends KAGParser
 	var noCrOnce;    // 改行処理を１回なしにする
     var noErOnce;    // 画面消去処理を１回なしにする
     var afterPage;   // 改ページ直後
+	var doLine;      // 入力待ち実行指示
     var emptyLine;     // まだ行が空
     var prevEmptyLine; // 前の空行状態
 
@@ -42,7 +50,6 @@ class SceneParser extends KAGParser
 	 */
 	function SceneParser() {
 		super.KAGParser(...);
-		ignoreCR  = false;
 	}
 
 	/**
@@ -177,61 +184,76 @@ class SceneParser extends KAGParser
             }
             return;
         } else if (emptyLine) {
-            // 行頭での処理
-			// ラインモード処理
-			var erflag;
-			// テキストクリア処理
-			switch (lineMode) {
-			case 1:
-				erflag = true;
-				break;
-			case 2:
-			case 3:
-			case 5:
-				if (afterPage) {
-					erflag = true;
-				} else {
-					if (!afterName) {
-						addTag("r");
-					}
-				}
-				break;
-			case 4:
-				if (afterPage) {
-					erflag = true;
-				}
-				break;
+
+			if (doLine) {
+				parseL();
+				doLine = false;
 			}
-			if (erflag && !erAfterPage) {
-				addTag("er");
-			}
+
             if (elm.text == "【") {
 				nameMode = 1;
 				nameStr  = "";
 				nameDisp = "";
-				afterPage = false;
 				return;
             } else {
 				nameMode = 0;
                 // 名前指定がない場合はパラメータなしで名前処理を呼び出す
-                if (!afterName && (lineMode < 3 || prevEmptyLine)) {
+				if (!afterName && (lineMode < LINEMODE_VN || prevEmptyLine)) {
 					addTag("msgon");
 					addTag("dispname");
+					addTag("ch", elm);
 					afterName = true;
+					return;
+                }
+			}
+		}
+        
+        // ラインモード処理
+        var erflag;
+        var crflag;
+
+        // テキストクリア処理
+		switch (lineMode) {
+        case LINEMODE_PAGE:
+            if (emptyLine) {
+                erflag = true;
+            }
+            break;
+        case LINEMODE_LINE:
+        case LINEMODE_VN:
+        case LINEMODE_FREE:
+            if (afterPage) {
+                afterPage = false;
+                if (emptyLine) {
+                    erflag = true;
+                }
+            } else {
+                if (emptyLine) {
+					addTag("r");
                 }
             }
+            break;
+        case LINEMODE_TEX:
+            if (afterPage) {
+                afterPage = false;
+                erflag = true;
+            }
+            break;
         }
-        
-        // 文字登録
+
+        if (erflag && !erAfterPage) {
+			addTag("er");
+        }
+
+		// 文字登録
 		addTag("ch", elm);
         emptyLine = false;
-		afterPage = false;
 
         // 自動インデント処理
 		if (autoIndent && afterName && (elm.text == "「" || elm.text == "『")) {
 			addTag("indent");
         }
-        afterName = false;
+		afterName = false;
 
         return;
     };
@@ -254,47 +276,43 @@ class SceneParser extends KAGParser
             return;
         }
 
+		nameMode = 0;
+		if (crAfterName && afterName) {
+			return;
+		}
 		switch (lineMode) {
-        case 1:
-			dm("page:改行");
-			nameMode = 0;
+		case LINEMODE_PAGE:
+			//dm("page:改行");
 			if (emptyLine) {
 				prevEmptyLine = emptyLine;
 				return; // 空行は無視する
             } else {
 				// 名前の直後の改行は無視する
-                if (!(crAfterName && afterName)) {
-					prevEmptyLine = emptyLine;
-					parseP(elm);
-					return;
-                }
+				prevEmptyLine = emptyLine;
+				parseP(elm);
+				return;
             }
             break;
-        case 2:
+        case LINEMODE_LINE:
             //dm("line:改行");
-            nameMode = 0;
             if (emptyLine) {
                 prevEmptyLine = emptyLine;
 				return; // 空行は無視する
             } else {
 				// 名前の直後の改行は無視する
-				if (!(crAfterName && afterName)) {
-                    prevEmptyLine = emptyLine;
-					emptyLine = true;
-					elm.voicewait = true;
-					addTag("l", elm) ;
-					addTag("afterline");
-					return;
-				}
+				prevEmptyLine = emptyLine;
+				emptyLine = true;
+				parseL();
+				return;
 			}
 			break;
-        case 3:
+        case LINEMODE_VN:
             //dm("vn:改行");
-            nameMode = 0;
             if (emptyLine) {
                 if (!prevEmptyLine) {
                     // 最初の空行で改ページ
-                    prevEmptyLine = emptyLine;
+					doLine = false;
+					prevEmptyLine = emptyLine;
 					parseP(elm);
 					return;
                 } else {
@@ -304,20 +322,15 @@ class SceneParser extends KAGParser
                 }
             } else {
                 // 名前の直後の改行は無視する
-                if (!(crAfterName && afterName)) {
-                    prevEmptyLine = emptyLine;
-					emptyLine = true;
-					elm.voicewait = true;
-					addTag("l", elm) ;
-					addTag("afterline");
-					return;
-                }
+				prevEmptyLine = emptyLine;
+				emptyLine = true;
+				doLine = true;
+				return;
             }
             break;
-		case 4:
-		case 5:
+		case LINEMODE_TEX:
+		case LINEMODE_FREE:
 			//dm("tex/free:改行");
-            nameMode = 0;
             if (emptyLine) {
                 if (!prevEmptyLine) {
                     // 最初の空行で改ページ
@@ -330,17 +343,19 @@ class SceneParser extends KAGParser
 					return;
                 }
             } else {
-                // 名前の直後の改行は無視する
-                if (!(crAfterName && afterName)) {
-					prevEmptyLine = emptyLine;
-					emptyLine = true;
-					return;
-                }
+				prevEmptyLine = emptyLine;
+				emptyLine = true;
+				return;
             }
         }
         return;
 	}
 
+	function parseL() {
+		addTag("l", %[voicewait:true]);
+		addTag("afterline");
+	}
+	
 	/**
 	 * p タグの展開
 	 */
@@ -383,16 +398,29 @@ class SceneParser extends KAGParser
 	 * voice       ボイスカウントの初期値
 	 */
 	function setOption(elm) {
-		lineMode     = +elm.linemode;
+
+		if (elm.lineMode == "page") {
+			lineMode = LINEMODE_PAGE;
+		} else if (elm.lineMode == "line") {
+			lineMode = LINEMODE_LINE;
+		} else if (elm.lineMode == "vn") {
+			lineMode = LINEMODE_VN;
+		} else if (elm.lineMode == "tex") {
+			lineMode = LINEMODE_TEX;
+		} else if (elm.lineMode == "free") {
+			lineMode = LINEMODE_FREE;
+		} else {
+			lineMode     = +elm.linemode;
+		}
 		erAfterPage  = elm.erafterpage;
 		crAfterName  = elm.craftername;
 		autoIndent   = elm.autoindent;
 		voiceDefault = +elm.voice;
-		dm("lineMode:" + lineMode);
-		dm("erAfterPage:" + erAfterPage);
-		dm("crAfterName:" + crAfterName);
-		dm("autoIndent:"  + autoIndent);
-		dm("voiceDefault:" + voiceDefault);
+		//dm("lineMode:" + lineMode);
+		//dm("erAfterPage:" + erAfterPage);
+		//dm("crAfterName:" + crAfterName);
+		//dm("autoIndent:"  + autoIndent);
+		//dm("voiceDefault:" + voiceDefault);
 	}
 
 	/**
@@ -401,6 +429,7 @@ class SceneParser extends KAGParser
 	 */
 	function parseMacro(storage) {
 		dm("シーン用のマクロをパース:" + storage);
+		ignoreCR  = true;
 		loadScenario(storage);
 		while (getNextTag() !== void) {} // 次のタグを得る
 	}
@@ -412,6 +441,7 @@ class SceneParser extends KAGParser
 	function parse(storage) {
 		init();
 		try {
+			ignoreCR = false;
 			loadScenario(storage);
 			var runLine = 0;
 			var obj;
@@ -434,6 +464,7 @@ class SceneParser extends KAGParser
 			if((typeof e.trace) != "undefined") dm("trace : " + e.trace);
 			throw new Exception(msg);
 		}
+@if(false)
 		for (var i=0;i<lines.count;i++) {
 			if (lines[i].tagname == "line") {
 				dm("パース結果:" + lines[i].tagname + ":" + lines[i].line);
@@ -443,6 +474,7 @@ class SceneParser extends KAGParser
 				dm("パース結果:" + lines[i].tagname);
 			}
 		}
+@endif
 		return lines;
 	}
 

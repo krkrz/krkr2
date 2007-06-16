@@ -3325,7 +3325,7 @@ class KAGWindow extends Window
 		}
 
         if (debugLevel >= tkdlSimple)
-            dm("処理を開始します");
+            dm("処理を開始します:" + file);
 		inSleep = false;
 		notifyRun();
 		if(conductor.status != conductor.mRun) conductor.run(immediate); // 実行開始
@@ -3356,7 +3356,7 @@ class KAGWindow extends Window
 		notifyRun();
 		conductor.callLabel(label); // 実行開始
         if (debugLevel >= tkdlSimple)
-            dm("処理を開始します");
+			dm("処理を開始します");
 		if(conductor.status != conductor.mRun) conductor.run();
 	}
 
@@ -5954,7 +5954,7 @@ class KAGWindow extends Window
 		// 効果音の再生が終了した
 		conductor.trigger('sestop' + id);
 		forEachEventHook('onSeStop',
-						 function(handler, f) { handler(id); } incontextof this,
+						 function(handler, f) { handler(f.id); } incontextof this,
 						 %[id:id]);
 	}
 
@@ -7146,9 +7146,10 @@ class KAGWindow extends Window
 		clearLayers(base);
 		
 		// レイヤ全消去
-		if (typeof this.clearLayersHandler != "undefined") {
-			clearLayersHandler(base);
-		}
+		forEachEventHook('onClearLayers',
+						 function(handler, f) { handler(f.isfore); } incontextof this,
+						 %[isfore:(elm === void || elm.page != "back")]);
+
 		return 0;
     } incontextof this,
 				  
@@ -7334,6 +7335,9 @@ class KAGWindow extends Window
 			target = elm.target;
 		} else if (typeof elm.target == "String") {
 			target = Scripts.eval(elm.target);
+		}
+		if (!(target isvalid)) {
+			return 0;
 		}
 		if (typeof target == "Object") {
 			var action;

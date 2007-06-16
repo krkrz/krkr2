@@ -572,7 +572,7 @@ class KAGEnvironment extends KAGEnvBase {
      * メッセージ窓のトランジション処理をくみこんだ ON/OFF
      */
     function msgonoff(elm, v) {
-		dm("メッセージ表示指定:" + v);
+		//dm("メッセージ表示指定:" + v);
 		ret = void;
 		trans = void;
 		if (!transMode && elm.nofade === void) {

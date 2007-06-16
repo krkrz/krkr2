@@ -179,7 +179,7 @@ class KAGEnvImage extends KAGEnvBase {
 		}
 	}
 	
-	var props = %[];
+	var props = %[ zoom:100, rotate:0, opacity:255 ];
 	
     // アクション処理
 	var doStopAction;
@@ -278,6 +278,9 @@ class KAGEnvImage extends KAGEnvBase {
 	function initImage() {
 		type = void;
 		props = %[];
+		props.zoom    = 100;
+		props.rotate  = 0;
+		props.opacity = 255;
 		rgamma = void;
 		ggamma = void;
 		bgamma = void;
@@ -300,6 +303,9 @@ class KAGEnvImage extends KAGEnvBase {
 	function setReset(param, elm) {
 		type    = void;
 		props   = %[];
+		props.zoom    = 100;
+		props.rotate  = 0;
+		props.opacity = 255;
 		_rgamma = void;
 		_ggamma = void;
 		_bgamma = void;
@@ -412,7 +418,7 @@ class KAGEnvImage extends KAGEnvBase {
     }
 
 	function setOpacity(param, elm) {
-		setProp("opacity", 100, param, elm);
+		setProp("opacity", 255, param, elm);
 	}
 
 	function setRotate(param, elm) {
@@ -737,12 +743,16 @@ class KAGEnvImage extends KAGEnvBase {
 			//dm("画像消去");
 			doShow = false;
 			var layer = update(true);
-			player.beginTransAction(trans, layer, true, elm.nosync);
+			if (layer !== void) {
+				player.beginTransAction(trans, layer, true, elm !== void && elm.nosync);
+			}
 		} else if (dispMode == 1) {
 			//dm("画像表示");
 			doShow = false;
 			var layer = update(true);
-			player.beginTransAction(trans, layer, false, elm.nosync);
+			if (layer !== void) {
+				player.beginTransAction(trans, layer, false, elm !== void && elm.nosync);
+			}
 		} else {
 			update(true);
 		}
