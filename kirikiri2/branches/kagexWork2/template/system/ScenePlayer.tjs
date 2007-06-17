@@ -304,6 +304,285 @@ class ScenePlayer extends BasicPlayer
 	}
 
 	// ------------------------------------------------------------------
+	// 特殊コマンド
+	// ------------------------------------------------------------------
+
+	// トランジションモード
+	var transMode;
+
+	/**
+	 * 初期化
+	 */
+	function tag_init(elm) {
+		transMode = 0;
+		env.initEnv(elm);
+		clearTrash();
+		return 0;
+	}
+	
+    /**
+     * 全体トランジション開始
+     */
+	function tag_begintrans(elm) {
+		backup();
+		transMode = 1;
+        return 0;
+    }
+
+    /**
+     * 全体トランジション終了
+     */
+	function tag_endtrans(elm) {
+		// まず解除（トランジション処理中で true だと処理が登録されないので)
+		transMode = 0;
+		var trans = void;
+		var names = [];
+		names.assign(elm);
+		for (var i=0;i<names.count;i+=2) {
+			var cmd   = names[i];
+			var param = names[i+1];
+			if (cmd == "tagname") {
+				// ignore
+			} else if (cmd == "trans") {
+				var tr = getTrans(param, elm);
+				if (tr !== void) {
+					trans = tr;
+				}
+			} else if (cmd == "fade") {
+				var time = +param;
+				trans = %[ "method" => "crossfade",
+						   "children" => true,
+						   "time" => time > 1 ? time : fadeValue];
+			} else {
+				var tr = getTrans(cmd, elm);
+				if (tr !== void) {
+					trans = tr;
+				}
+			}
+		}
+		if (trans !== void && trans.msgoff) {
+			addTag("msgoff");
+		}
+		beginTransition(trans);
+		return 0;
+    }
+
+	/**
+	 * レイヤトランジション開始
+	 */
+	function tag_beginlt(elm) {
+		transMode = 2;
+		return beginLayerTrans(elm);
+	}
+
+	/**
+	 * レイヤトランジション終了
+	 */
+	function tag_endlt() {
+		transMode = 0;
+		return endLayerTrans(elm);
+	}
+
+	// ------------------------------------------------------------------
+	
+	// 次回再生するボイス情報
+	// キー:キャラクタ名
+	// 値:ボイス
+	var nextvoices = %[];
+	var nextvoicecount = 0;
+
+	/**
+	 * 次回同時に鳴らすボイスの追加
+	 * @param name キャラ名
+	 * @param voice  ボイス指定
+	 * @param voicen 非デフォルト時ボイス指定
+	 */
+	function entryNextVoice(name, voice, voicen) {
+		if (name !== void && voice !== void) {
+			nextvoices[name] = %[voice:voice, voicen:voicen];
+			nextvoicecount++;
+		}
+    }
+
+	/**
+	 * 次回鳴らすボイスの情報をクリア
+	 */
+	function clearNextVoice() {
+		(Dictionary.clear incontextof nextvoices)();
+		nextvoicecount = 0;
+	}
+
+	/**
+	 * 複数ボイスを鳴らす
+	 * @return 最長のボイス再生時間
+     */
+	function playVoices(voices) {
+		var ret = void;
+		if (voices !== void) {
+			var names = [];
+			names.assign(voices);
+			for (var i=0;i<names.count;i+=2) {
+				var name = names[i];
+				var info = names[i+1];
+				var r;
+				// デフォルト名の場合の処理
+				if (isDefaultName() && info.voicen !== void) {
+					r = playVoice(name, info.voicen);
+				} else {
+					r = playVoice(name, info.voice);
+				}
+				if (ret === void || r !== void && r > ret) {
+					ret = r;
+				}
+			}
+		}
+		return ret;
+    }
+	
+	/**
+	 * ボイス再生実行
+	 */
+	function playNextVoice() {
+		if (nextvoicecount > 0) {
+			var ret = playVoices(nextvoices);
+			clearNextVoice();
+			return ret;
+		}
+	}
+	
+	// ------------------------
+
+	/**
+	 * ボイス追加
+	 */
+	function tag_entryvoice(elm) {
+		entryNextVoice(elm.name, elm.voice, elm.voicen);
+		return 0;
+	}
+
+	/**
+	 * ボイス再生
+	 */
+	function tag_playvoice(elm) {
+		playNextVoice();
+		return 0;
+	}
+
+	/**
+	 * ボイス待ち
+	 */
+	function tag_waitvoice(elm) {
+		if (elm.name !== void) {
+			return waitVoice(elm.name);
+		}
+		return 0;
+	}
+	
+	/**
+	 * 名前表示
+	 */
+	function tag_dispname(elm) {
+
+		if (voicecut && !voicecutpage) {
+			stopAllVoice();
+		}
+
+		var dispName = void;
+		var faceName = void;
+		
+		//dm("名前表示ハンドラ");
+		if (elm === void || elm.name === void || elm.name == "") {
+			
+			env.currentNameTarget = void;
+
+		} else {
+
+			var name = elm.name;
+			var disp = elm.disp;
+
+			var ch = env.getCharacter(name);
+			env.currentNameTarget = ch;
+
+			if (elm.voice !== void) {
+				entryNextVoice(name, elm.voice, elm.voicen);
+			}
+
+			// 名前の決定
+			if (disp !== void && disp != "") {
+				dispName = disp;
+			} else {
+				if (ch !== void && ch.init.nameAlias !== void) {
+					dispName = Scripts.eval(ch.init.nameAlias);
+					if (dispName === void) {
+						dispName = name;
+					}
+				} else {
+					dispName = name;
+				}
+			}
+			
+			// 名前加工処理
+            if (typeof global.dispNameFilter !== 'undefined') {
+				dispName = global.dispNameFilter(dispName);
+            }
+			
+			// 表情判定
+			if (env.faceLevelName !== void) {
+				if (ch !== void) {
+					if (ch.isShowFace()) {
+						faceName = ch.getPoseImage(env.faceLevelName);
+					}
+				} else {
+					if (env.envinfo.nameFaces !== void) {
+						faceName = env.envinfo.nameFaces[env.envinfo.dispNameFace ? dispName : name];
+					}
+				}
+				// 指定がきまらなかった場合
+				if (faceName == void) {
+					faceName = env.envinfo.clearFace;
+				}
+			}
+		}
+
+		// 名前表示
+		drawName(dispName, faceName, nextvoices);
+
+		// ボイス再生
+		if (nextvoicecount > 0) {
+			var ret = playNextVoice();
+			if (ret > 0) {
+				addAutoWait(ret);
+			}
+		}
+		return 0;
+	}
+
+	/**
+	 * 行待ち終了後に呼び出される処理
+	 */
+	function tag_afterline(elm) {
+		if (voicecut && voicecutpage) {
+			stopAllVoice();
+		}
+		return super.tag_afterline(elm);
+    }
+
+    /**
+     * ページ処理後に呼び出される処理
+     */
+	function tag_afterpage(elm) {
+		if (voicecut && voicecutpage) {
+			stopAllVoice();
+		}
+		env.currentNameTarget = void;
+		return super.tag_afterpage(elm);
+    }
+
+	function tag_stopallvoice(elm) {
+		stopAllVoice();
+	}
+	
+	// ------------------------------------------------------------------
 
 	function getHandlers()
 	{
@@ -325,10 +604,14 @@ class ScenePlayer extends BasicPlayer
 	indent : tag_indent,
 	endindent : tag_endindent,
 	delay : tag_delay,
-	cancelskip : tag_cancelskip,
+
+    cancelskip : tag_cancelskip,
 	resetwait : tag_resetwait,
 	wait : tag_wait,
-    syncmsg : tag_syncmsg,
+	waittrig : tag_waittrig,
+    beginskip : tag_beginskip,
+    endskip : tag_endskip,
+				  
 	backlay : tag_backlay,
 	forelay : tag_forelay,
 	trans : tag_trans,
@@ -336,18 +619,17 @@ class ScenePlayer extends BasicPlayer
     action : tag_action,
 	stopaction : tag_stopaction,
 	wact : tag_wact,
+
 	eval : tag_eval,
 	clearsysvar : tag_clearsysvar,
 	clearvar : tag_clearvar,
 	clearplaytime : tag_clearplaytime,
-	waittrig : tag_waittrig,
-    beginskip : tag_beginskip,
-    endskip : tag_endskip,
-	ltbegin : tag_ltbegin,
-	ltend : tag_ltend,
 
     msgwin : tag_msgwin,
-				  
+    msgoff : tag_msgoff,
+    msgon  : tag_msgon,
+    syncmsg : tag_syncmsg,
+
 	//----------------------------------------- タグハンドラ群(選択肢分岐) --
 				  
     seladd : function(elm)
@@ -392,14 +674,17 @@ class ScenePlayer extends BasicPlayer
 				  
 	//----------------------------------------------- 環境系機能 --
 
-	env : env.tagfunc,
-    allchar : env.allchar,
+    env      : env.tagfunc,
+    allchar  : env.allchar,
     alllayer : env.alllayer,
-    allse : env.allse,
+    allse    : env.allse,
 
-	init       : env.initCmd,
-	begintrans : env.beginTrans,
-    endtrans   : env.endTrans,
+	init       : tag_init,
+	begintrans : tag_begintrans,
+    endtrans   : tag_endtrans,
+	beginlt    : tag_beginlt,
+	endlt      : tag_endlt,
+
     newlay     : env.newLayer,
     newlayer   : env.newLayer,
     dellay     : env.delLayer,
@@ -407,13 +692,13 @@ class ScenePlayer extends BasicPlayer
     newchar    : env.newCharacter,
     delchar    : env.delCharacter,
 
-    msgoff : env.msgoff,
-    msgon  : env.msgon,
-
-    dispname      : env.dispname,
-    dispnameVoice : env.dispnameVoice,
-    afterpage     : env.afterpage,
-    afterline     : env.afterline,
+    entryvoice    : tag_entryvoice,
+    playvoice     : tag_playvoice,
+    waitvoice     : tag_waitvoice,
+    dispname      : tag_dispname,
+    afterpage     : tag_afterpage,
+    afterline     : tag_afterline,
+    stopallvoice  : tag_stopallvoice
 				  ];
 	}
 

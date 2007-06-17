@@ -69,16 +69,14 @@ class Environment extends EnvBase {
     // 名前表示のあと設定される
     // 環境系命令の後は解除される
     var currentNameTarget;
-    // コマンド実行毎に表情処理を行うモード
-    var showFaceMode;
-    // 表情のフェード指定
-    var faceFadeTime;
 
-    // 表情表示を立ち絵同時可能に
-    var bothFace;
-    
-    // 全カラー制御
-    var colorall;
+	// コマンド実行毎に表情処理を行うモード
+    var showFaceMode;
+	// 表情表示を立ち絵同時可能に
+	var bothFace;
+
+	// 全カラー制御
+	var colorall;
 
     // 画像補整指定
 	function setColorAll(param) {
@@ -185,7 +183,6 @@ class Environment extends EnvBase {
             levels       = envinfo.levels;
             faceLevelName = envinfo.faceLevelName;
             showFaceMode  = envinfo.showFaceMode;
-            faceFadeTime  = envinfo.faceFadeTime;
             bothFace = envinfo.bothFace !== void ? envinfo.bothFace : true;
         
             // キャラクタ情報初期化処理
@@ -231,7 +228,6 @@ class Environment extends EnvBase {
 	function initEnv(elm) {
 
 		//dm("初期化処理");
-		transMode = void;
 		colorall = false;
 		
 		stage.initImage();
@@ -248,9 +244,6 @@ class Environment extends EnvBase {
 		});
 		layers = %[];
 
-		// 表示用レイヤの破棄
-		player.clearTrash();
-		
         // SE 初期化
 		for (var i=0;i<ses.count;i++) {
 			ses[i].init();
@@ -265,8 +258,6 @@ class Environment extends EnvBase {
 		
         // カレントオブジェクト初期化
 		currentNameTarget = void;
-
-        voiceCharacters.clear();
     }
 
     /**
@@ -331,8 +322,8 @@ class Environment extends EnvBase {
      * 全要素消去
      */
     function hideAll(param, elm) {
-        hideBase(param, elm);
-        hideCharacters(param, elm);
+		hideBase(param, elm);
+		hideCharacters(param, elm);
         hideLayers(param, elm);
     }
 
@@ -340,11 +331,10 @@ class Environment extends EnvBase {
 	hidebase : this.hideBase incontextof this,
 	hideevent : this.hideEvent incontextof this,
 	hidecharacters : this.hideCharacters incontextof this,
-    hidechars : this.hideCharacters incontextof this,
+	hidechars : this.hideCharacters incontextof this,
 	hidelayers : this.hideLayers incontextof this,
-    hidefore : this.hideFore incontextof this,
+	hidefore : this.hideFore incontextof this,
 	hideall : this.hideAll incontextof this,
-	stopallvoice : this.stopAllVoice incontextof this,
     colorall : this.setColorAll incontextof this,
         ];
     
@@ -381,12 +371,6 @@ class Environment extends EnvBase {
 		event.update(isfore);
 		// XXX キャラ更新はステージ更新に含まれる
 		stage.update(isfore);
-		if (currentNameTarget == void) {
-			player.drawNamePage(isfore);
-			if (faceLevelName !== void) {
-				clearFacePage(isfore);
-			}
-		}
 	}
 
 	// ------------------------------------------------------------------
@@ -445,64 +429,6 @@ class Environment extends EnvBase {
                 ret = ses[i].tagfunc(elm);
             }
         }
-        return ret;
-    }
-
-	// ------------------------------------------------------------------
-	// 特殊コマンド
-	// ------------------------------------------------------------------
-
-	// トランジションモード
-	var transMode;
-
-	/**
-	 * 初期化
-	 */
-	function initCmd(elm) {
-		initEnv(elm);
-		return 0;
-	}
-	
-    /**
-     * 全体トランジション開始
-     */
-    function beginTrans(elm) {
-		player.backup();
-		transMode = true;
-        return 0;
-    }
-
-    /**
-     * トランジション指定をコマンドから探す処理
-     */
-    function checkTrans(cmd, param, elm) {
-		if (cmd == "tagname") {
-            // ignore
-        } else if (cmd == "trans") {
-			setTrans(param, elm);
-        } else if (cmd == "fade") {
-			var time = +param;
-			trans = %[ "method" => "crossfade",
-					   "children" => true,
-					   "time" => time > 1 ? time : fadeValue];
-		} else {
-			setTrans(cmd, elm);
-        }
-    }
-
-    /**
-     * 全体トランジション終了
-     */
-    function endTrans(elm) {
-		// まず解除（トランジション処理中で true だと処理が登録されないので)
-		transMode = false;
-		ret = void;
-		trans = void;
-		foreach(elm, checkTrans);
-		if (trans !== void && trans.msgoff) {
-			player.addTag("msgoff");
-		}
-		player.beginTransition(trans);
         return ret;
     }
 
@@ -569,23 +495,6 @@ class Environment extends EnvBase {
 		return 0;
 	}
     
-    /**
-     * メッセージ窓のトランジション処理をくみこんだ ON/OFF
-     */
-    function msgonoff(elm, v) {
-		//dm("メッセージ表示指定:" + v);
-		ret = void;
-		trans = void;
-		if (!transMode && elm.nofade === void) {
-			foreach(elm, checkTrans);
-		}
-		player.msgonoff(v, trans);
-		return 0;
-    }
-
-    function msgon(elm) { return msgonoff(elm, true); }
-    function msgoff(elm) { return msgonoff(elm, false); }
-
 	/**
 	 * レイヤ一括複製指定
 	 */
@@ -629,398 +538,29 @@ class Environment extends EnvBase {
         return ch;
     }
 
-    /**
+	// ------------------------------------------------------------------
+	// レイヤ関係処理
+	// ------------------------------------------------------------------
+
+	/**
      * 指定された名前のレイヤを返す
      * @param name 名前
      * @param create 生成モード
      */
     function getEnvLayer(name, create=false) {
-        var lay = layers[name];
-        if (lay === void && create) {
-            lay = new EnvSimpleLayer(env, name);
-            layers[name] = lay;
+		var lay = layers[name];
+		if (lay === void && create) {
+			lay = new EnvSimpleLayer(env, name);
+			layers[name] = lay;
         }
         return lay;
     }
 
-    /**
-     * 全キャラのボイスを停止する
-     */
-    function stopAllVoice() {
-        foreach(characters, function(name, value, dict) {
-            value.stopVoice();
-        });
-    }
-
-	/**
-	 * 全キャラのボイスのボリュームを調整する
-	 */
-    function resetAllVoiceVolume() {
-		foreach(characters, function(name, value, dict) {
-			value.resetVoiceVolume();
-		});
-    }
-    
-    /*
-     * 指定したキャラで指定したボイスファイルを再生
-     */
-	function playChVoice(name, voicename) {
-        var ch = getCharacter(name);
-        if (ch !== void && voicename !== void) {
-            return ch.playVoice(voicename);
-        }
-    }
-
-    /**
-     * 表情表示処理下請け
-     */
-    function loadFacePage(isfore, name) {
-        var faceLayer = player.getFaceLayer(isfore);
-        if (faceLayer !== void) {
-            try {
-                faceLayer.loadImages(name);
-            } catch (e) {
-				player.errorImage(name + ":表情画像がロードできません");
-            }
-            faceLayer.visible = true;
-        }
-    }
-
-    /**
-     * 表情消去処理下請け
-     */
-    function clearFacePage(isfore) {
-        if (envinfo.clearFace !== void) {
-            loadFacePage(isfore, envinfo.clearFace);
-        } else {
-            var faceLayer = player.getFaceLayer(isfore);
-			if (faceLayer !== void) {
-	            faceLayer.visible = false;
-			}
-        }
-    }
-    
-    /**
-     * 表情消去処理
-     */
-    function clearFace() {
-        if (!transMode) {
-            clearFacePage(true);
-        }
-        clearFacePage(false);
-    }
-
-    // 指定されたキャラクタの表情が表示可能なら表示する
-	function drawFacePage(isfore, ch) {
-		if (faceLevelName !== void) {
-			if (ch !== void) {
-				var layer = player.getFaceLayer(isfore);
-				if (layer !== void) {
-	                if (ch.isShowFace()) {
-    	                ch.drawFace(layer, faceLevelName);
-        	        } else {
-            	        layer.visible = false;
-                	}
-				}
-            } else {
-				clearFacePage(isfore);
-            }
-        }
-    }
-
-    /**
-     * 名前の表示
-     */
-    function drawName(name = "", nextVoice= "") {
-
-        // ボイス状態の更新
-		player.setNextVoice(nextVoice);
-
-        //dm("名前描画:" + name);
-        if (!transMode) {
-			player.drawNamePage(true, name);
-        }
-		player.drawNamePage(false, name);
-
-		player.setHistoryName(name);
-    }
-
-    var voiceCharacters = [];
-
-    function getVoicePlayingScript(ch) {
-        var voice;
-        if (ch !== void && (voice = ch.getCurrentVoice(true)) !== void) {
-			return "playChVoice(\"" + ch.name + "\",\"" + voice + "\");";
-		} else {
-            return "";
-        }
-    }
-    
-    /**
-     * 次回同時に鳴らすボイスの追加
-     */
-    function entryNextVoice(ch) {
-        voiceCharacters.add(ch);
-    }
-    
-    function getNextVoiceScript() {
-        var ret = "";
-        for (var i=voiceCharacters.count-1;i>=0;i--) {
-            ret += getVoicePlayingScript(voiceCharacters[i]);
-        }
-        return ret;
-    }
-
-    /**
-     * ならすボイスがあるか
-     */
-    function checkNextVoice() {
-        for (var i=voiceCharacters.count-1;i>=0;i--) {
-            var voice = voiceCharacters[i].getCurrentVoice();
-            if (voice !== void) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    /**
-     * 複数ボイスを鳴らす
-     */
-    function playNextVoice() {
-        var ret = void;
-        for (var i=voiceCharacters.count-1;i>=0;i--) {
-            var ch = voiceCharacters[i]; 
-            var voice = ch.getCurrentVoice();
-            if (voice !== void) {
-                var r = ch.playVoice();
-                if (ret === void || (r !== void && r > ret)) {
-                    ret = r;
-                }
-            }
-        }
-        voiceCharacters.clear();
-        return ret;
-    }
-    
-    /**
-     * 名前表示処理ハンドラ
-     */
-    function dispname(elm) {
-		
-        ret = void;
-
-		if (player.voicecut && !player.voicecutpage) {
-			stopAllVoice();
-        }
-
-        // 表情表示部
-        
-        //dm("名前表示ハンドラ");
-        if (elm === void || elm.name === void || elm.name == "") {
-
-			if (!player.isJump()) {
-				// キャラ指定が無い場合
-				drawName();
-				// 表情処理
-				if (faceLevelName !== void && currentNameTarget !== void && currentNameTarget.isShowFace() && !transMode && faceFadeTime > 0) {
-					// フェースをフェードで消去する場合
-					backup();
-					clearFacePage(back);
-					player.beginTransition(%[ method: "crossfade", time: faceFadeTime]);
-				} else {
-					if (faceLevelName !== void) {
-						clearFace();
-					}
-				}
-			}
-
-			currentNameTarget = void;
-			dispnameVoice(elm);
-            
-        } else {
-
-            var name = elm.name;
-			var disp = elm.disp;
-            var voice = elm.voice;
-
-			var ch = getCharacter(name);
-
-			// ボイス登録指定
-			if (ch !== void && voice !== void) {
-				ch.setVoice(voice);
-            }
-			
-            // 名前表示処理
-            var dispName;
-			if (disp !== void && disp != "") {
-                dispName = disp;
-            } else {
-                if (ch !== void && ch.init.nameAlias !== void) {
-                    dispName = Scripts.eval(ch.init.nameAlias);
-                    if (dispName === void) {
-                        dispName = name;
-                    }
-                } else {
-                    dispName = name;
-                }
-            }
-
-			elm.dispName = dispName;
-            
-			// 表情変更処理
-			if (!player.isJump() && faceLevelName !== void && currentNameTarget != ch &&
-                ((currentNameTarget !== void && currentNameTarget.isShowFace()) || (ch !== void && ch.isShowFace())) && !transMode && faceFadeTime > 0) {
-                
-                // フェードで表示する場合
-
-                // XXX 名前消去
-                drawName();
-                
-                currentNameTarget = ch;
-                
-				backup();
-                if (ch !== void && ch.isShowFace()) {
-					drawFacePage(false, ch);
-                } else {
-                    var img;
-                    if (envinfo.nameFaces !== void && (img = envinfo.nameFaces[envinfo.dispNameFace ? dispName : name]) !== void) {
-                        loadFacePage(false, img);
-                    } else {
-                        clearFacePage(false);
-                    }
-                }
-
-                // ボイス再生処理の先送り
-
-                // 表情変更用トランジション導入
-				player.beginTransition(%[ method: "crossfade", time: faceFadeTime]);
-				player.addTag("dispNameVoice", elm);
-
-            } else {
-
-                // 瞬間表示する場合
-                // たぶんここのロジック必要ない？
-                
-                currentNameTarget = ch;
-
-				if (!player.isJump()) {
-					if (ch !== void && ch.isShowFace()) {
-						if (!transMode) {
-							drawFacePage(true, ch);
-						}
-						drawFacePage(false, ch);
-					} else {
-						var img;
-						if (envinfo.nameFaces !== void && (img = envinfo.nameFaces[envinfo.dispNameFace ? dispName : name]) !== void) {
-							if (!transMode) {
-								loadFacePage(true, img);
-							}
-							loadFacePage(false, img);
-						} else {
-							clearFace();
-						}
-					}
-				}
-				
-				dispnameVoice(elm);
-            }
-        }
-        return ret;
-    }
-
-    /**
-     * 名前表示＋ボイス再生部分
-     * ボイスの状態に応じた待ち時間補正も行う
-     */
-    function dispnameVoice(elm) {
-
-        // -------  名前表示（瞬間）
-
-        if (elm === void || elm.name === void || elm.name == "") {
-
-            // すでに名前表示済み
-            
-        } else {
-            var name     = elm.name;
-            var dispName = elm.dispName;
-            if (dispName === void) {
-                dispName = name;
-            }
-
-            var ch = getCharacter(name);
-
-            // ボイスの登録
-			var nextVoice = getNextVoiceScript() + getVoicePlayingScript(ch);
-			if (nextVoice != "") {
-				nextVoice = "env.stopAllVoice();" + nextVoice;
-				player.setHistoryAction(nextVoice);
-			}
-
-			// 名前加工処理
-            if (typeof global.dispNameFilter !== 'undefined') {
-                dispName = global.dispNameFilter(dispName);
-            }
-
-			if (!player.isJump()) {
-				drawName(dispName, nextVoice);
-			}
-        }
-
-        // -------  ボイス再生
-        
-        // ボイス再生
-        var ret;
-        if (currentNameTarget !== void) {
-            // ボイス再生がある場合
-            if (currentNameTarget.getCurrentVoice() !== void || checkNextVoice()) {
-                // ほかのボイスを消去する
-				stopAllVoice();
-                // 同時再生ボイスの再生
-                ret = currentNameTarget.playVoice();
-                var r = playNextVoice();
-                if (ret === void || (r !== void && r > ret)) {
-                    ret = r;
-                }
-            }
-        } else {
-            // ボイス再生がある場合
-            if (checkNextVoice()) {
-                // ほかのボイスを消去する
-				stopAllVoice();
-                // 同時再生ボイスの再生
-                ret = playNextVoice();
-            }
-        }
-		player.addAutoWait(ret);
-        return 0;
-    }
-
-    /**
-     * 行待ち終了後に呼び出される処理
-     */
-    function afterline(elm) {
-		player.clearHistoryAction();
-		return 0;
-    }
-
-    /**
-     * ページ処理後に呼び出される処理
-     */
-    function afterpage(elm) {
-		if (player.voicecut && player.voicecutpage) {
-			stopAllVoice();
-		}
-		player.clearHistoryAction(true);
-		currentNameTarget = void;
-		// ページ後に基本的にアクションは停止する
-		player.stopAllActions();
-		return 0;
-    }
-
 	// --------------------------------------------------------------
-	
-    var seCount = 0;
+	// SE 処理用
+	// --------------------------------------------------------------
+
+	var seCount = 0;
 
 	/**
      * SE 処理用オブジェクトの取得
@@ -1030,16 +570,6 @@ class Environment extends EnvBase {
     function getSe(id) {
         ses[id].count = seCount++;
         return ses[id];
-    }
-
-    /**
-     * SE 停止時の処理
-     * 停止中状態にする
-     */
-    function onSeStop(id) {
-        if (id < ses.count) {
-            ses[id].name = void;
-        }
     }
 
     /**
@@ -1080,7 +610,19 @@ class Environment extends EnvBase {
         // みつからないのであいている番号を返す
         return getSeId();
     }
-    
+
+    /**
+     * SE 停止時の処理
+     * 停止中状態にする
+     */
+    function onSeStop(id) {
+        if (id < ses.count) {
+            ses[id].name = void;
+        }
+    }
+
+	// --------------------------------------------------------------
+	
     /**
 	 * 不明コマンド処理ハンドラ
      */
