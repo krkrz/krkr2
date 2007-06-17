@@ -201,7 +201,6 @@ class KAGWindow extends Window
 	/*C*/var currentNum; // 現在操作中のメッセージレイヤ番号
 	/*C*/var currentPage; // 現在操作中のメッセージレイヤのページ(表0/裏1)
 	/*C*/var currentWithBack = false; // 裏画面にも文字を描画するかどうか
-    var currentVoiceScript; // 現在有効なボイス
     
 	var bgm; // BGM オブジェクト
 
@@ -228,13 +227,6 @@ class KAGWindow extends Window
         return false;
     }
 
-    // 次のテキスト表示の前に全ボイスをカット
-    /*C*/var voicecut = false;
-    // ボイスをカットのタイミングはページ消去時
-    /*C*/var voicecutpage = false;
-    // ボイス再生時に bgm をダウンさせる
-    /*C*/var bgmdown = false;
-    
 	var transCount; // 現在進行中のトランジションの数
 	var moveCount; // 現在進行中の自動移動の数
     
@@ -1582,10 +1574,6 @@ class KAGWindow extends Window
 			}
         }
 
-        voicecut = scflags.voicecut if scflags.voicecut !== void;
-        voicecutpage = scflags.voicecutpage if scflags.voicecutpage !== void;
-        bgmdown = scflags.bgmdown if scflags.bgmdown !== void;
-        
         afterauto = scflags.afterauto if scflags.afterauto !== void;
         afterskip = scflags.afterskip if scflags.afterskip !== void;
         nosewhenskip = scflags.nosewhenskip if scflags.nosewhenskip !== void;
@@ -1724,11 +1712,6 @@ class KAGWindow extends Window
 
 		scflags.lastSaveDataNameGlobal = lastSaveDataNameGlobal;
 
-        // ボイスカット処理設定
-        scflags.voicecut = voicecut;
-        scflags.voicecutpage = voicecutpage;
-        scflags.bgmdown = bgmdown;
-        
         // 全てスキップ
         scflags.allskip = allskip;
         

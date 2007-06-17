@@ -196,23 +196,82 @@ function foreach(dict, func, param) {
 }
 
 /**
- * 指定した名前の画像ファイルが存在すればその名前を返す
- * @return 拡張子まで指定された画像ファイル名。存在しなければ void
+ * @return 指定した名前の画像ファイルが存在すれば true
  */
-function getExistImageName(storage)
+function isExistImageName(storage)
 {
-	var test;
-	if(!Storages.isExistentStorage(storage)) {
-		if (test = storage + ".png", Storages.isExistentStorage(test))
-			storage = test;
-		else if (test = storage + ".tlg5", Storages.isExistentStorage(test))
-			storage = test;
-		else if (test = storage + ".tlg6", Storages.isExistentStorage(test))
-			storage = test;
-		else if (test = storage + ".bmp", Storages.isExistentStorage(test))
-			storage = test;
-		else
-			storage = void;
+	return (Storages.isExistentStorage(storage) ||
+			Storages.isExistentStorage(storage + ".png") ||
+			Storages.isExistentStorage(storage + ".tlg5") ||
+			Storages.isExistentStorage(storage + ".tlg6") ||
+			Storages.isExistentStorage(storage + ".bmp"));
+}
+
+/**
+ * @return 指定した名前のボイスファイルが存在すれば true
+ */
+function isExistVoiceName(storage)
+{
+	return (Storages.isExistentStorage(storage) ||
+			Storages.isExistentStorage(storage + ".wav") ||
+			Storages.isExistentStorage(storage + ".ogg"));
+}
+
+/**
+ * 値を文字列化する
+ * @param value 値
+ * @return 文字列化した値
+ */
+function valueToString(value) {
+	if (typeof value == "Integer") {
+		return "int " + value;
+	} else if (typeof value == "Real") {
+		return "real " + value;
+	} else if (typeof value == "String") {
+		return "\"" + value + "\"";
+	} else if (typeof value == "Object") {
+		if (value instanceof "Dictionary") {
+			return dictToString(value);
+		} else if (value instanceof "Array") {
+			return arrayToString(value);
+		} else {
+			return "null";
+		}
+	} else {
+		return "void";
 	}
-	return storage;
+}
+
+/*
+ * 辞書の文字列化
+ * @param 辞書
+ * @return 文字列化したもの
+ */
+function dictToString(dict) {
+	var ret = "%[";
+	var names = [];
+	names.assign(dict);
+	for (var i=0;i<names.count;i++) {
+		if (i != 0) { ret += ","; }
+		var name = names[i];
+		var value = names[i+1];
+		ret += ("name" + ":" + valueToString(value));
+	}
+	ret += "]";
+	return ret;
+}
+
+/*
+ * 配列の文字列化
+ * @param 配列
+ * @return 文字列化したもの
+ */
+function arrayToString(array) {
+	var ret = "[";
+	for (var i=0;i<arrays.count;i++) {
+		if (i != 0) { ret += ","; }
+		ret += valueToString(array[i]);
+	}
+	ret += "]";
+	return ret;
 }

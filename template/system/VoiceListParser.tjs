@@ -5,14 +5,11 @@ if (typeof global.CSVParser == "undefined") {
 
 /**
  * シーン定義ファイル読み出し用パーサ
- * シーン名, 次シーン番号, 次シーン条件
+ * キャラ名, コンフィグ名, ボイスファイル名
  */
-class SceneListParser extends CSVParser {
+class VoiceListParser extends CSVParser {
 
-    // パース結果格納用
-
-	var sceneNames = [];  // シーン名一覧（参照用）
-	var sceneInfos = %[]; // シーン情報一覧（次シーン情報など含む）
+	var voiceInfos = %[]; // ボイス情報
 	var check; // ロードチェック用
 
     /**
@@ -24,22 +21,14 @@ class SceneListParser extends CSVParser {
 		if (columns[0].charAt(0) != '#' && columns.count > 0) {
 			var name = columns[0].trim();
 			if (name != "") {
-				var info = sceneInfos[name];
+				var info = voiceInfos[name];
 				if (info === void) {
 					info = %[];
-					info.next = [];
-					sceneInfos[name] = info;
-					sceneNames.add(name);
+					voiceInfos[name] = info;
 				}
 				if (columns.count > 1) {
-					var next = columns[1].trim();
-					var cond = columns.count > 2 ? columns[2].trim() : "";
-					if (next != "") {
-						info.next.add(%[scene:name, cond:cond]);
-					}
-					if (columns.count > 3) {
-						info.voiceBase = colums[3].trim();
-					}
+					info.config   = columns[1].trim();
+					info.filename = columns.count > 2 ? columns[2].trim() : "";
 				}
 			}
 		}
@@ -69,7 +58,7 @@ class SceneListParser extends CSVParser {
 	/**
 	 * コンストラクタ
 	 */
-	function SceneListParser() {
+	function VoiceListParser() {
 		super.CSVParser(...);
 	}
 };

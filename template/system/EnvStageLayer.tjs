@@ -60,7 +60,7 @@ class EnvStageLayer extends EnvBackLayer {
 		timeName = env.defaultTime if timeName === void;
 		image = image.replace(/TIME/, env.times[timeName].prefix);
 
-		if (getExistImageName(image) === void) {
+		if (!isExistImageName(image)) {
 			// ‰æ‘œ‚ª‚È‚¢ê‡‚Í•W€‰æ‘œ‚Ì•â³‚Å‘Î‰
 			image = env.stages[stageName].image;
 			image = image.replace(/TIME/, env.times[env.defaultTime].prefix);

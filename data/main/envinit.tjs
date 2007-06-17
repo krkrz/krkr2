@@ -264,8 +264,6 @@
                     ],
                 ],
             "defaultPose" => "’Êí",
-            "voiceFile" => "ai%s%06d.ogg",
-            "voiceName" => "voice0"
             ],
         ],
     ];

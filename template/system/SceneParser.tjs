@@ -9,10 +9,15 @@ var LINEMODE_FREE = 5;
  * シーン再生用パーサ
  * KAG 形式でかかれたシナリオデータを
  * linemode に応じて改行処理を適切に行って再生用の状態に変換するパーサ
+ *
+ * ボイスの自動処理機能を持つ
+ * - ボイスはあらかじめ一覧リストを準備する必要がある(ボイスのファイル名リストをつくっておく)
+ * - キャラクタ毎にボイス用の定義をあらかじめくんでおくこと
  */
 class SceneParser extends KAGParser
 {
 	var lines; // パース結果
+	var errors; // エラー結果
 
     /**
      * @param lineMode
@@ -37,14 +42,13 @@ class SceneParser extends KAGParser
     var emptyLine;     // まだ行が空
     var prevEmptyLine; // 前の空行状態
 
-    var nameMode;    // 名前処理モード
-    var afterName;   // 名前処理の直後
-    var nameStr;     // 現在の名前
-    var nameDisp;    // 現在の表示名
-
+    var nameMode;       // 名前処理モード
+    var nameStr;        // 現在の名前
+    var nameDisp;       // 現在の表示名
+	var nameInfos = []; // 登録済みの名前
 	
 	// -------------------------------------------------------------
-	
+
 	/**
 	 * コンストラクタ
 	 */
@@ -57,6 +61,7 @@ class SceneParser extends KAGParser
 	 */
 	function init() {
 		lines = [];
+		errors = [];
 		(Dictionary.clear incontextof voiceMap)(); 
 		noCrOnce = false;
 		noErOnce = false;
@@ -64,7 +69,8 @@ class SceneParser extends KAGParser
 		emptyLine = true;
 		prevEmptyLine = true;
 		nameMode  = 0;
-		afterName = false;
+		nameInfos.clear();
+		voiceBase = "";
 	}
 
 	/**
@@ -96,141 +102,244 @@ class SceneParser extends KAGParser
 		//dm("タグ追加:" + e.tagname);
 		lines.add(e);
     }
-	
-	var reNumber = new RegExp("^[0-9][0-9]*$");
 
+	// ------------------------------------------------
+
+	/**
+	 * エラー
+	 * @param type 種類
+	 * @param msg メッセージ
+	 */
+	function error(type, msg) {
+		errors.add(curStorage + ":" + curLine + ":(" + type + ") " + msg);
+	}
+
+	// ------------------------------------------------
+
+	var voiceInfos; // ボイス展開用情報
+	var voiceBase;  // ボイス展開時のベース値
+	
+	/**
+	 * 指定キャラの現在のボイス情報を返す
+	 * @param name キャラ名
+	 * @return ボイスファイル名
+	 */
+	function getCurrentVoice(name) {
+		//dm("ボイス情報取得:" + name);
+		var info = voiceMap[name];
+		if (info == void) {
+			if (voiceDefault !== void) {
+				info = %[];
+				voiceMap[name] = info;
+				info.voice = voiceDefault;
+			}
+		}					
+		var voice;
+		if (info !== void) {
+			if (info.strVoice !== void) {
+				// 文字列指定
+				dm("文字列指定:" + info.strVoice);
+				if (info.strVoice != "ignore") {
+					voice = info.strVoice;
+				}
+				info.strVoice = void;
+			} else if (info.voice !== void) {
+				voice = info.voice;
+				info.incVoice = true;
+			}
+			if (info.incVoice) {
+				if (info.voice >= 0) {
+					info.voice++;
+				}
+				info.incVoice = void;
+			}
+			if (typeof voice == "Integer") {
+				// 数値指定の場合は規定に従って変換
+				var vinfo = voiceInfos[name];
+				var voiceFile = vinfo !== void ? vinfo.filename : void;
+				if (voiceFile !== void) {
+					voice = voiceFile.sprintf(voiceBase, voice);
+				}
+			}
+		}
+		return voice;
+	}
+
+	/**
+	 * 名前のエントリ。これで登録されたものは、
+	 * テキスト表示または playvoice 命令でボイス再生されます。
+	 * @param name 名前
+	 * @param disp 表示名
+	 */
+	function entryName(name, disp) {
+		var info = %[];
+		info.name = name;
+		info.disp = disp if disp !== void;
+		// ボイス情報の展開
+		var voice = getCurrentVoice(name);
+		if (voice !== void && voice != "") {
+			if (isExistVoiceName(voice)) {
+				info.voice = voice;
+				// デフォルト名以外用の別ボイスがある場合
+				if (isExistVoiceName(voice + "N")) {
+					info.voicen = voice + "N";
+				}
+			} else {
+				error("voice", "ボイスファイルがありません:" + voice);
+			}
+		}
+		nameInfos.add(info);
+	}
+	
+	// 正規表現
+	var reNumber = new RegExp("^[0-9][0-9]*$");
+	// ボイスコマンド扱い
+	var voiceCmds = %[ tagname:true, replace:true, once:true, entry:true ];
+	
 	/**
 	 * ボイス番号指定のパース
 	 */
 	function parseVoice(elm) {
-		var info = voiceMap[elm.name];
-		if (info == void) {
-			info = %[];
-			voiceMap[elm.name] = info;
-		}					
-		if (elm.ignore) {
-			info.strVoice = "ignore";
-		} else {
-			if (reNumber.test(elm.voice)) {
+		var names = [];
+		names.assign(elm);
+		for (var i=0;i<names.count;i+=2) {
+			var name  = names[i];
+			var value = names[i+1];
+			if (voiceCmds[name] !== void) {
+				continue;
+			}
+			var info = voiceMap[name];
+			if (info == void) {
+				info = %[];
+				voiceMap[name] = info;
+			}
+			if (value == "clear") {
+				delete info.strVoice;
+				delete info.voice;
+				delete info.incVoice;
+			} else if (value == "ignore") {
+				info.strVoice = "ignore";
+			} else if (reNumber.test(value)) {
 				// 数値指定の場合
 				if (elm.once || elm.replace) {
-					info.strVoice = elm.voice;
+					info.strVoice = +value;
 				} else {
-					info.voice = +elm.voice;
+					info.voice = +value;
 				}
 			} else {
-				info.strVoice = elm.voice;
+				info.strVoice = value;
+			}
+			info.incVoice = elm.replace;
+			// 再生指定
+			if (elm.entry) {
+				entryName(name);
 			}
 		}
-		info.incVoice = elm.incvoice || elm.replace;
 	}
 
+	/**
+	 * 強制再生処理
+	 */
+	function parsePlayvoice(elm) {
+		if (nameInfos.count > 0) {
+			for (var i=0;i<nameInfos.count;i++) {
+				var info = nameInfos[i];
+				if (info.voice !== void) {
+					addTag("entryvoice", info);
+				}
+			}
+			addTag("playvoice");
+			nameInfos.clear();
+		}
+	}
+	
 	/**
 	 * テキストのパース処理
 	 */
     function parseCh(elm) {
-
-        // 名前表示専用処理
-        //【キャラクタ名/表示名】を検出して名前表示処理を実行する
+		// 名前表示専用処理
+		//【キャラクタ名/表示名】を検出して名前表示処理を実行する
 		if (nameMode > 0) {
-            // 既に名前表示ロジックに入ってる
-            // ここでは emptyLine の状態はありえない
+			// 既に名前表示ロジックに入ってる
+			// ここでは emptyLine の状態はありえない
 			if (elm.text == "】") {
 				nameMode = 0;
-				//dm("名前処理:" + nameStr + ":" + nameDisp);
-				var info = voiceMap[nameStr];
-				if (info == void) {
-					info = %[];
-					voiceMap[nameStr] = info;
-				}					
-				var voice;
-				if (info.strVoice !== void) {
-					voice = info.strVoice;
-					info.strVoice = void;
-				} else {
-					if (info.voice === void) {
-						info.voice = voiceDefault;
-					}
-					voice = info.voice;
-					info.incVoice = true;
-				}
-				if (info.incVoice) {
-					if (info.voice >= 0) {
-						info.voice++;
-					}
-					info.incVoice = void;
-				}
-				//dm("ボイス展開:" + nameStr + ":" + voice);
-				if (voice !== void) {
-					addTag("msgon");
-					addTag("dispname", %[name:nameStr, disp:nameDisp, voice:voice]);
-				} else {
-					addTag("msgon");
-					addTag("dispname", %[name:nameStr, disp:nameDisp]);
-				}
-				afterName = true;
-                return;
-            } else {
+				entryName(nameStr, nameDisp);
+				return;
+			} else {
 				if (nameMode == 1) {
 					if (elm.text == "/") {
 						nameMode = 2;
 						return;
-                    } else {
-                        nameStr += elm.text;
+					} else {
+						nameStr += elm.text;
                     }
                 } else {
                     nameDisp += elm.text;
                 }
             }
             return;
-        } else if (emptyLine) {
 
+		} else if (emptyLine) {
+
+			// 行頭
+
+			// 改行指示がある
 			if (doLine) {
 				parseL();
 				doLine = false;
 			}
 
-            if (elm.text == "【") {
+			if (elm.text == "【") {
 				nameMode = 1;
 				nameStr  = "";
 				nameDisp = "";
 				return;
             } else {
 				nameMode = 0;
-                // 名前指定がない場合はパラメータなしで名前処理を呼び出す
-				if (!afterName && (lineMode < LINEMODE_VN || prevEmptyLine)) {
-					addTag("msgon");
-					addTag("dispname");
-					addTag("ch", elm);
-					afterName = true;
-					return;
-                }
+				// 名前指定がない場合はパラメータなしで名前処理を呼び出す
+				if (nameInfos.count == 0 && (lineMode < LINEMODE_VN || prevEmptyLine)) {
+					nameInfos.add(%[]);
+				}
 			}
 		}
-        
-        // ラインモード処理
-        var erflag;
-        var crflag;
 
+		// 名前表示の展開
+		if (nameInfos.count > 0) {
+			addTag("msgon");
+			var i;
+			for (i=0;i<nameInfos.count-1;i++) {
+				var info = nameInfos[i];
+				if (info.voice !== void) {
+					addTag("entryvoice", info);
+				}
+			}
+			var info = nameInfos[i];
+			addTag("dispname", info);
+		}
+		
+		// ラインモード処理
+        var erflag;
+		
         // テキストクリア処理
 		switch (lineMode) {
         case LINEMODE_PAGE:
-            if (emptyLine) {
-                erflag = true;
+			if (emptyLine) {
+				erflag = true;
             }
             break;
         case LINEMODE_LINE:
         case LINEMODE_VN:
         case LINEMODE_FREE:
-            if (afterPage) {
+			if (afterPage) {
                 afterPage = false;
                 if (emptyLine) {
                     erflag = true;
                 }
-            } else {
-                if (emptyLine) {
+			} else {
+				if (emptyLine) {
 					addTag("r");
-                }
+				}
             }
             break;
         case LINEMODE_TEX:
@@ -240,21 +349,19 @@ class SceneParser extends KAGParser
             }
             break;
         }
-
-        if (erflag && !erAfterPage) {
+		if (erflag && !erAfterPage) {
 			addTag("er");
         }
-
+		
 		// 文字登録
 		addTag("ch", elm);
-        emptyLine = false;
+		emptyLine = false;
 
-        // 自動インデント処理
-		if (autoIndent && afterName && (elm.text == "「" || elm.text == "『")) {
+		// 自動インデント処理
+		if (autoIndent && nameInfos.count > 0 && (elm.text == "「" || elm.text == "『")) {
 			addTag("indent");
-        }
-		afterName = false;
-
+		}
+		nameInfos.clear();
         return;
     };
 
@@ -269,15 +376,15 @@ class SceneParser extends KAGParser
 		}
 
 		// 改行効果を一度だけ無視させる
-        if (noCrOnce) {
-            noCrOnce = false;
-            prevEmptyLine = emptyLine;
+		if (noCrOnce) {
+			noCrOnce = false;
+			prevEmptyLine = emptyLine;
             emptyLine = true;
             return;
         }
 
 		nameMode = 0;
-		if (crAfterName && afterName) {
+		if (crAfterName && nameInfos.count > 0) {
 			return;
 		}
 		switch (lineMode) {
@@ -286,19 +393,19 @@ class SceneParser extends KAGParser
 			if (emptyLine) {
 				prevEmptyLine = emptyLine;
 				return; // 空行は無視する
-            } else {
+			} else {
 				// 名前の直後の改行は無視する
 				prevEmptyLine = emptyLine;
 				parseP(elm);
 				return;
-            }
+			}
             break;
-        case LINEMODE_LINE:
-            //dm("line:改行");
+		case LINEMODE_LINE:
+			//dm("line:改行");
             if (emptyLine) {
-                prevEmptyLine = emptyLine;
+				prevEmptyLine = emptyLine;
 				return; // 空行は無視する
-            } else {
+			} else {
 				// 名前の直後の改行は無視する
 				prevEmptyLine = emptyLine;
 				emptyLine = true;
@@ -347,8 +454,8 @@ class SceneParser extends KAGParser
 				emptyLine = true;
 				return;
             }
-        }
-        return;
+		}
+		return;
 	}
 
 	function parseL() {
@@ -370,7 +477,7 @@ class SceneParser extends KAGParser
 		// ページ待ち後に消去を強制投入
 		if (erAfterPage) {
 			if (!noErOnce) {
-				addTag("er", %[all:true]);
+				addTag("er");
 			}
 			noErOnce = false;
 		}
@@ -382,6 +489,8 @@ class SceneParser extends KAGParser
 	ch:parseCh incontextof this,
 	r:parseR incontextof this,
 	voice:parseVoice incontextof this,
+	voicebase: function(elm) { voiceBase = elm.base; return 0; } incontextof this,
+	playvoice: parsePlayvoice incontextof this,
 	p:parseP incontextof this,
     nor: function(elm) { noCrOnce = true; return 0; } incontextof this,
     noer: function(elm) { noErOnce = true; return 0; } incontextof this,
@@ -415,7 +524,7 @@ class SceneParser extends KAGParser
 		erAfterPage  = elm.erafterpage;
 		crAfterName  = elm.craftername;
 		autoIndent   = elm.autoindent;
-		voiceDefault = +elm.voice;
+		voiceDefault = +elm.voice if elm.voice !== void;
 		//dm("lineMode:" + lineMode);
 		//dm("erAfterPage:" + erAfterPage);
 		//dm("crAfterName:" + crAfterName);
@@ -438,31 +547,28 @@ class SceneParser extends KAGParser
 	 * 全パース処理実行
 	 * @param storage 対象ファイル
 	 */
-	function parse(storage) {
+	function parse(storage, voiceInfos, voiceBase) {
 		init();
-		try {
-			ignoreCR = false;
-			loadScenario(storage);
-			var runLine = 0;
-			var obj;
-			while ((obj = getNextTag()) !== void) { // 次のタグを得る
-				if (runLine !== curLine) {
-					enqueueTag(%[tagname:"line", line:curLine, lineStr:curLineStr]);
-					runLine = curLine;
-				}
-				var func = extractTags[obj.tagname];
-				if (func !== void) {
-					func(obj);
-				} else {
-					addTag(void, obj);
-				}
+		this.voiceInfos = voiceInfos;
+		if (voiceBase !== void) {
+			this.voiceBase = voiceBase;
+		}
+		ignoreCR = false;
+		loadScenario(storage);
+		var runLine = 0;
+		var obj;
+		while ((obj = getNextTag()) !== void) { // 次のタグを得る
+			if (runLine !== curLine) {
+				enqueueTag(%[tagname:"line", line:curLine, lineStr:curLineStr]);
+				runLine = curLine;
 			}
-			
-		} catch(e) {
-			var msg = curStorage + ":" + curLine + ":" + curLineStr + "\n" + e.message;
-			dm(msg);
-			if((typeof e.trace) != "undefined") dm("trace : " + e.trace);
-			throw new Exception(msg);
+			var func = extractTags[obj.tagname];
+			if (func !== void) {
+				func(obj);
+			} else {
+				// XXX 利用可能なタグかチェックしたほうがいいかな？
+				addTag(void, obj);
+			}
 		}
 @if(false)
 		for (var i=0;i<lines.count;i++) {

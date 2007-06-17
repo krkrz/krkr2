@@ -1,5 +1,6 @@
 /**
- * 舞台用レイヤ
+ * キャラクタ用レイヤ
+ * LEVEL に応じた座標補正機能を持つ
  */
 class CharacterGraphicLayer extends EnvGraphicLayer {
 
@@ -56,11 +57,14 @@ class CharacterGraphicLayer extends EnvGraphicLayer {
 	}
 };
 
-class EmotionLayer extends GraphicLayerEx {
+/**
+ * エモーション処理用レイヤ
+ */
+class EmotionLayer extends GraphicLayerBase {
 
 	var timer;
 	function EmotionLayer(layer) {
-		super.GraphicLayerEx(layer.window, layer.parent);
+		super.GraphicLayerBase(true);
 		timer = new Timer(onTimer, '');
 		timer.capacity = 1;
 	}
@@ -130,21 +134,9 @@ class EnvCharacter extends EnvLevelLayer, EnvImage {
     /// 表情
     var face;
 
+	// 表情とポーズの対応表
     var facePoseMap;
     
-    /// ボイス情報
-    var voice;
-    var strVoice;
-    var incVoice;   // true なら文字列指定時もカウントする
-    var noincVoice; // true ならカウントしない
-    
-    // ベース画像名
-    var baseImageName;
-    // ベース画像
-    var baseImage;
-    // 顔画像
-    var faceImage;
-
     // エモーション
     var emotion;
     var emotionLayer;
@@ -184,12 +176,6 @@ class EnvCharacter extends EnvLevelLayer, EnvImage {
     }
     
     function finalize() {
-		if (baseImage !== void) {
-            invalidate baseImage;
-        }
-        if (faceImage !== void) {
-            invalidate faceImage;
-        }
 		if (emotionLayer !== void) {
 			invalidate emotionLayer;
 		}
@@ -386,10 +372,6 @@ class EnvCharacter extends EnvLevelLayer, EnvImage {
 	level   : this.setLevel incontextof this,
     pos     : this.setPosition incontextof this,
     emotion : this.setEmotion incontextof this,
-    voice   : this.setVoice incontextof this,
-    nextvoice : this.setNextVoice incontextof this,
-    clearvoice : this.clearVoice incontextof this,
-    waitvoice : this.waitVoice incontextof this,
 	facewin : function(param, elm) { disp = FACE; redraw = true; } incontextof this,
 	faceon : null,
 	faceoff : null,
@@ -484,63 +466,30 @@ class EnvCharacter extends EnvLevelLayer, EnvImage {
         return find;
     };
 
-    var imageFile;
+	/**
+	 * 立ち絵画像の取得
+	 * @param levelName 現在の表示レベル
+	 * @param pose      ポーズ指定
+	 */
+	function _getPoseImage(levelName, pose) {
+		var poseInfo;
+		if (poses !== void && (poseInfo = poses[pose]) !== void) {
 
-	function applyColorInfo(elm) {
-		var timeInfo;
-		if ((timeInfo = env.currentTime) !== void) {
-			elm.lightcolor = timeInfo.charLightColor;
-			elm.lighttype  = timeInfo.charLightType;
-			elm.brightness = timeInfo.charBrightness;
-			elm.contrast   = timeInfo.charContrast;
-		}
-	}
-	
-	function applyColor(layer) {
-		var timeInfo;
-		if ((timeInfo = env.currentTime) !== void) {
-			// 環境光合成
-			if (timeInfo.charLightColor !== void) {
-				layer.holdAlpha = true;
-				layer.fillOperateRect(0,0,
-									  layer.imageWidth,layer.imageHeight,
-									  timeInfo.charLightColor,
-									  timeInfo.charLightType);
-			}
-			// 明度補正
-			if (timeInfo.charBrightness !== void) {
-				layer.light(timeInfo.charBrightness, timeInfo.charContrast);
-			}
-        }
-	}
-	
-    /**
-     * 立ち絵の描画
-     * @param layer 描画対象レイヤ
-     * @param levelName レベル名
-     * @param pose ポーズ指定
-     * @oaram face 顔描画を示すフラグ
-     * @return 成功したら true
-     */
-    function _drawLayerPose(layer, levelName, pose) {
+			var imageFile;
+			
+			// 顔描画の場合は msgImage / msgFaceImage を優先
+			var imageName     = (levelName == env.faceLevelName && poseInfo.msgImage !== void) ? poseInfo.msgImage : poseInfo.image;
+			var dresses       = poseInfo.dresses;
+			var faces         = poseInfo.faces;
 
-        var poseInfo;
-        if (poses !== void && (poseInfo = poses[pose]) !== void) {
-
-            // 顔描画の場合は msgImage / msgFaceImage を優先
-            var imageName     = (levelName == env.faceLevelName && poseInfo.msgImage !== void)     ? poseInfo.msgImage : poseInfo.image;
-            var faceImageName = (levelName == env.faceLevelName && poseInfo.msgFaceImage !== void) ? poseInfo.msgFaceImage : poseInfo.faceImage;
-            var dresses       = poseInfo.dresses;
-            var faces         = poseInfo.faces;
-
-            imageName = imageName.replace(/LEVEL/, levelName);
-
-            // 服装指定が無い場合はデフォルトを参照
-            var dressName;
-            if (dress !== void) {
-                dressName = dresses[dress];
+			imageName = imageName.replace(/LEVEL/, levelName);
+			
+			// 服装指定が無い場合はデフォルトを参照
+			var dressName;
+			if (dress !== void) {
+				dressName = dresses[dress];
             } 
-            dressName = poseInfo.defaultDress if dressName === void;
+			dressName = poseInfo.defaultDress if dressName === void;
 
             // 表情指定が無い場合はデフォルトを参照
             var faceName;
@@ -551,72 +500,32 @@ class EnvCharacter extends EnvLevelLayer, EnvImage {
 
             //dm("dress:", dressName, "face:", faceName);
             
-            {
-                // 顔合成型立ち絵
-                // 服装情報で上書き
-                if (dressName !== void) {
-                    imageFile = imageName.replace(/DRESS/, dressName);
-                } else {
-                    imageFile = imageName;
-                }
-                // 表情で上書き
-                if (faceName !== void) {
-                    imageFile = imageFile.replace(/FACE/, faceName);
-                }
-                try {
-					if (layer instanceof "AnimationLayer") {
-						var elm = %[ storage:imageFile ];
-						applyColorInfo(elm);
-						layer.loadImages(elm);
-                    } else {
-						layer.loadImages(imageFile);
-						applyColor(layer);
-                    }
-                } catch (e) {
-                    return false;
-                }
-                return true;
-            }
-        }
-        return false;
-    }
-
-    /**
-     * 現在の立ち絵の描画
-     * @param layer 描画対象レイヤ
-     * @param levelName レベル名
-     */
-    function _drawLayer(layer, levelName) {
-
-        imageFile = "";
-        if (image !== void) {
-            var imageName = image.replace(/LEVEL/, levelName);
-            try {
-				if (layer instanceof "AnimationLayer") {
-					var elm = %[ storage:image ];
-					applyColorInfo(elm);
-					layer.loadImages(elm);
-                } else {
-					layer.loadImages(image);
-					applyColor(layer);
-				}
-            } catch (e) {
-				player.errorImage(image+ ":立ち絵画像がロードできません");
-                return;
-            }
-        } else {
-            if (!_drawLayerPose(layer, levelName, pose) &&
-                !(pose != init.defaultPose && _drawLayerPose(layer, levelName, init.defaultPose))) {
-				player.errorImage(imageFile + ":立ち絵画像がロードできません pose:" + pose + " dress:" + dress + " face:" + face);
-				return;
+			// 顔合成型立ち絵
+			// 服装情報で上書き
+			if (dressName !== void) {
+				imageFile = imageName.replace(/DRESS/, dressName);
+			} else {
+				imageFile = imageName;
 			}
-        }
-
-		// サイズ補正
-		layer.setSizeToImageSize();
-		_width  = layer.width;
-		_height = layer.height;
-    }
+			// 表情で上書き
+			if (faceName !== void) {
+				imageFile = imageFile.replace(/FACE/, faceName);
+			}
+			return imageFile;
+		}
+	}
+	
+	/**
+	 * 立ち絵画像の取得
+	 * @param levelName 現在の表示レベル
+	 */
+	function getPoseImage(levelName) {
+		var imageName = _getPoseImage(levelName, pose);
+		if (imageName == void || !isExistImageName(imageName) && pose != init.defaultPose) {
+			imageName = _getPoseImage(levelName, init.defaultPose);
+		}
+		return imageName;
+	}
 
     /**
      * 現在の立ち絵の描画
@@ -628,6 +537,8 @@ class EnvCharacter extends EnvLevelLayer, EnvImage {
 			emotionLayer = void;
 		}
 		if (isShowBU()) {
+
+			// レベルで補正
 			var levelName;
 			var levelInfo = env.levels[level];
 			if (levelInfo !== void) {
@@ -636,22 +547,37 @@ class EnvCharacter extends EnvLevelLayer, EnvImage {
 			if (levelName === void) {
 				levelName = level;
 			}
-			_drawLayer(layer, levelName);
+
+			// 画像を決定
+			var imageName;
+			if (image !== void) {
+				imageName = image.replace(/LEVEL/, levelName);
+			} else {
+				imageName = getPoseImage(levelName);
+			}
+
+			// 画像のロード
+			try {
+				var elm = %[ storage:imageName ];
+				// 色補正
+				var timeInfo;
+				if ((timeInfo = env.currentTime) !== void) {
+					elm.lightcolor = timeInfo.charLightColor;
+					elm.lighttype  = timeInfo.charLightType;
+					elm.brightness = timeInfo.charBrightness;
+					elm.contrast   = timeInfo.charContrast;
+				}
+				layer.loadImages(elm);
+			} catch (e) {
+				player.errorImage(imageName + ":立ち絵画像がロードできません");
+				return;
+			}
+			// サイズ補正
+			layer.setSizeToImageSize();
+			_width  = layer.width;
+			_height = layer.height;
 		}
 	}
-
-    /**
-     * 表情を描画する
-     */
-    function drawFace(layer, faceLevelName) {
-        //dm("表情描画:" + name + " face:" + face + " layer:" + layer.name + " level:" + faceLevelName);
-        if (faceLevelName !== void && poses !== void) {
-            _drawLayer(layer, faceLevelName);
-            layer.visible = true;
-        } else {
-            layer.visible = false;
-        }
-    }
 
 	/**
 	 * 新レイヤ生成
@@ -669,11 +595,7 @@ class EnvCharacter extends EnvLevelLayer, EnvImage {
 		
 		// 表情描画
 		if (redrawFace) {
-			if (env.currentNameTarget != this) {
-				env.drawName();
-			}
-			env.drawFacePage(player.isForeLayer(layer), this);
-			env.currentNameTarget = this;
+			// 表情と名前の再描画指定 XXXXX
 			redrawFace = false;
         }
         
@@ -741,7 +663,7 @@ class EnvCharacter extends EnvLevelLayer, EnvImage {
 
 	// フェード指定のデフォルト値
 	property fadeValue {
-        getter() {
+		getter() {
 			if (init !== void && init.fadeValue !== void) {
 				return init.fadeValue;
 			} else {
@@ -753,170 +675,4 @@ class EnvCharacter extends EnvLevelLayer, EnvImage {
 			}
         }
     }
-
-	// ----------------------------------------------------------
-	// ボイス処理
-	// ----------------------------------------------------------
-
-	var reNumber = new RegExp("^[0-9][0-9]*$");
-
-    // 加算しないフラグ
-    var noinc;
-    
-    /**
-     * ボイスファイルの指定
-     */
-    function setVoice(param, elm) {
-		// ボイスなし指定
-		if (init.noVoice !== void) {
-			return;
-		}
-		if (typeof param == "Integer") {
-			if (elm !== void && elm.once) {
-				strVoice = getVoice(param);
-			} else {
-				voice = param;
-				strVoice = void;
-			}
-		} else if (typeof param == "String") {
-			if (reNumber.test(param)) {
-				if (elm !== void && elm.once) {
-					strVoice = getVoice((int)param);
-				} else {
-					voice = (int)param;
-					strVoice = void;
-                }
-            } else {
-                strVoice = param;
-            }
-        } else {
-            voice = void;
-            strVoice = void;
-        }
-		incVoice   = elm !== void ? elm.incvoice : false;
-		noincVoice = elm !== void ? elm.noincvoice : false;
-		//dm("ボイス設定:" + param + ":" + voice);
-    }
-
-    /**
-     * ボイスファイル指定＋次回再生エントリ
-     */
-    function setNextVoice(param) {
-		env.entryNextVoice(this);
-    }
-    
-    /**
-     * ボイスファイル指定の解除
-     */
-    function clearVoice() {
-        voice = void;
-        strVoice = void;
-    }
-    
-    /**
-     * ボイスファイル名の取得
-     * @param voice パラメータ　数値の場合は書式処理、文字列の場合はそのまま返す
-     */
-    function getVoice(voice) {
-        if (typeof voice == "Integer") {
-            if (init.voiceFile === void) {
-                return void;
-            }
-            // 名前指定がある場合でデフォルト名でない場合は Nつきのファイル名で参照する
-			if (!player.isDefaultName()) {
-				var name = init.voiceFile.sprintf(player.voiceBase, voice, "N");
-				if (Storages.isExistentStorage(name)) {
-                    return name;
-				}
-            }
-            // 普通の名前の場合
-            return init.voiceFile.sprintf(player.voiceBase, voice, "");
-        } else if (typeof voice == "String") {
-            return voice;
-        }
-        return void;
-    }
-
-    function getCurrentVoice(check=false) {
-        var voicename = strVoice == "ignore" ? void : getVoice(strVoice !== void ? strVoice : voice);
-        if (check) {
-            if (voicename !== void) {
-                if (!Storages.isExistentStorage(voicename)) {
-                    var test;
-                    if (test = voicename + ".wav", Storages.isExistentStorage(test)) {
-                        voicename = test;
-                    } else if(test = voicename + ".ogg", Storages.isExistentStorage(test)) {
-                        voicename = test;
-                    } else {
-						player.errorVoice(voicename + ":ボイスがロードできません name:" + name);
-                        voicename = void;
-                    }
-                }
-            }
-        }
-        return voicename;
-    }
-
-    /**
-     * ボイスの再生
-     */
-	function playVoice(voicename=void) {
-
-		if (voicename === void) {
-			voicename = getCurrentVoice();
-			if (strVoice === void || incVoice) {
-				if (typeof voice == "Integer") {
-					if (!noincVoice) {
-						voice++;
-					}
-                } else {
-					voice = void;
-				}
-            }
-			incVoice   = void;
-			noincVoice = void;
-			strVoice   = void;
-        }
-
-		if (voicename !== void && voicename != ""){
-			// 拡張子補完処理
-			if (!Storages.isExistentStorage(voicename)) {
-				var test;
-				if (test = voicename + ".wav", Storages.isExistentStorage(test)) {
-                    voicename = test;
-                } else if(test = voicename + ".ogg", Storages.isExistentStorage(test)) {
-                    voicename = test;
-                } else {
-					player.errorVoice(voicename + ":ボイスがロードできません name:" + name);
-                    voicename = void;
-                }
-			}
-			if (voicename !== void) {
-				ret = player.playVoice(name, init.voiceName, voicename);
-			}
-		}
-        return ret;
-    }
-
-    /**
-     * ボイスの停止
-     */
-	function stopVoice() {
-		player.stopVoice(name);
-	}
-
-    /**
-	 * ボイス待ち
-	 * @canSkip true の場合スキップ可能（デフォルト）
-	 */
-	function waitVoice(canSkip) {
-		player.waitVoice(name, canSkip);
-	}
-
-	/**
-	 * ボイスボリューム初期化
-	 */
-	function resetVoiceVolume() {
-		player.resetVoiceVolume(name, init.voiceName);
-	}
 };
