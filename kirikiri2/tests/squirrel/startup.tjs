@@ -58,6 +58,11 @@ var foo = new sqglobal.Foo();
 foo.print();
 Debug.message(foo.data);
 
+var a = ["abc", 1, %[ test:"data", test2:1]];
+
+Debug.message("Squirrel convert:" + Scripts.toSQString(a));
+Scripts.saveSQ("a.nut", a);
+
 // Squirrel Continuous ƒnƒ“ƒhƒ‰
 //var cont = new SQContinuous("main");
 //cont.start();
