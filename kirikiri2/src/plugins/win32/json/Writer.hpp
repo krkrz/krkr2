@@ -72,15 +72,21 @@ class IFileWriter : public IWriter {
 	/// 出力バッファ
 	ttstr buf;
 	/// 出力ストリーム
-	iTJSTextWriteStream *stream;
-
+	IStream *stream;
+	bool utf;
+	char *dat;
+	int datlen;
+	
 public:
 
 	/**
 	 * コンストラクタ
 	 */
-	IFileWriter(const tjs_char *filename) {
-		stream = TVPCreateTextStreamForWrite(filename, TJS_W(""));
+	IFileWriter(const tjs_char *filename, bool utf=false) {
+		stream = TVPCreateIStream(filename, TJS_BS_WRITE);
+		this->utf = utf;
+		dat = NULL;
+		datlen = 0;
 	}
 
 	/**
@@ -89,19 +95,51 @@ public:
 	~IFileWriter() {
 		if (stream) {
 			if (buf.length() > 0) {
-				stream->Write(buf);
-				buf.Clear();
+				output();
 			}
-			stream->Destruct();
+			stream->Commit(STGC_DEFAULT);
+			stream->Release();
+		}
+		if (dat) {
+			free(dat);
 		}
 	}
-
+	
+	void output() {
+		if (stream) {
+			ULONG s;
+			if (utf) {
+				// UTF-8 で出力
+				int maxlen = buf.length() * 6 + 1;
+				if (maxlen > datlen) {
+					datlen = maxlen;
+					dat = (char*)realloc(dat, datlen);
+				}
+				if (dat != NULL) {
+					int len = TVPWideCharToUtf8String(buf.c_str(), dat);
+					stream->Write(dat, len, &s);
+				}
+			} else {
+				// 現在のコードページで出力
+				int len = buf.GetNarrowStrLen() + 1;
+				if (len > datlen) {
+					datlen = len;
+					dat = (char*)realloc(dat, datlen);
+				}
+				if (dat != NULL) {
+					buf.ToNarrowStr(dat, len-1);
+					stream->Write(dat, len-1, &s);
+				}
+			}
+		}
+		buf.Clear();
+	}
+	
 	virtual void write(const tjs_char *str) {
 		if (stream) {
 			buf += str;
 			if (buf.length() >= 1024) {
-				stream->Write(buf);
-				buf.Clear();
+				output();
 			}
 		}
 	}

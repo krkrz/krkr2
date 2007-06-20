@@ -1,7 +1,6 @@
 /**
  * 擬似コードによるマニュアル
  */
-
 class Scripts {
 
     /**
@@ -19,11 +18,12 @@ class Scripts {
     function evalJSONStorage(jsonFile);
 
     /**
-     * データを JSON 形式で保存する
-     * @param jsonFile 格納先ファイル
-     * @param オブジェクト
-     */
-    function saveJSON(jsonFile, obj);
+	 * データを JSON 形式で保存する
+	 * @param jsonFile 格納先ファイル
+	 * @param obj 保存対象オブジェクト
+	 * @param utf8 出力エンコーディング指定。true なら UTF-8、falseなら現在のコードページ
+	 */
+    function saveJSON(jsonFile, obj, utf8=false);
 
     /**
      * データを JSON 形式の文字列に変換する
