@@ -1,0 +1,38 @@
+/**
+ * 擬似コードによるマニュアル
+ */
+class Array {
+	/**
+	 * データを save に準じる形式で保存する
+	 * @param filename 格納先ファイル
+	 * @param utf8 出力エンコーディング指定。true なら UTF-8、falseなら現在のコードページ
+	 */
+	function save2(filename, utf8=false);
+	
+	/**
+	 * データを saveStruct に準じる形式で保存する
+	 * @param filename 格納先ファイル
+	 * @param utf8 出力エンコーディング指定。true なら UTF-8、falseなら現在のコードページ
+	 */
+	function saveStruct2(filename, utf8=false);
+
+	/**
+	 * @return saveStruct に準じた形の文字列を返す
+	 */
+	function toStructString();
+};
+
+class Dictionary {
+	/**
+	 * データを saveStruct に準じる形式で保存する
+	 * @param filename 格納先ファイル
+	 * @param utf8 出力エンコーディング指定。true なら UTF-8、falseなら現在のコードページ
+	 */
+	function saveStruct2(filename, utf8=false);
+
+	/**
+	 * @return saveStruct に準じた形の文字列を返す
+	 */
+	function toStructString();
+}
+
