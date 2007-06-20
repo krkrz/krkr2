@@ -1,0 +1,59 @@
+/**
+ * Scripts クラスへの squirrel 機能拡張の擬似コードによるマニュアル
+ */
+class Scripts {
+
+	/**
+	 * Squirrel スクリプトの実行
+	 * @param text スクリプトが格納された文字列
+	 * @return スクリプトの実行結果。プリミティブな値はそのまま変換されて、
+	 * また、クラスは TJS2 の iTJSDispatch にラッピングされた状態で返ります。
+	 */
+	function execSQ(text);
+
+	/**
+	 * Squirrel スクリプトの実行
+	 * @param filename スクリプトが格納されたファイル
+	 * @return スクリプトの実行結果
+	 */
+	function execStorageSQ(filename);
+
+	/**
+	 * データを Squirrel 形式で保存する。このファイルは "return" を先頭にもつので
+	 * dofile() で読みだすことができます
+	 * @param filename 格納先ファイル
+	 * @param obj 保存対象オブジェクト
+	 * @param utf8 出力エンコーディング指定。true なら UTF-8、falseなら現在のコードページ
+	 */
+    function saveSQ(filename, obj, utf8=false);
+
+    /**
+	 * データを Squirrel 形式の文字列に変換する
+	 * @param obj オブジェクト
+	 * @return Squirrel 形式のテキスト
+	 */
+	function toSQString(obj);
+}
+
+/**
+ * Squirrel 専用の Continuous ハンドラを維持するためのクラス
+ */
+class SQContinuous {
+
+	/**
+	 * コンストラクタ
+	 * @param func squirrel のグローバルな関数 func(tick){} の名前
+	 * ※tick は SQInteger にキャストされてから呼び出されます
+	 */
+	function SQContinuous(func);
+
+	/**
+	 * 呼び出しを開始する
+     */
+ 	function start();
+    
+    /**
+	 * 呼び出しを停止する
+	 */
+    function stop();
+};
