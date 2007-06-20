@@ -38,6 +38,26 @@ extern void unregistglobal(HSQUIRRELVM v, const SQChar *name);
 
 #include "../json/Writer.hpp"
 
+static bool isaln(int c) {
+	return (c >= '0' && c <= '9' ||
+			c >= 'a' && c <= 'z' ||
+			c >= 'A' && c <= 'Z' ||
+			c == '_');
+}
+
+static bool
+isSimpleString(const tjs_char *str)
+{
+	const tjs_char *p = str;
+	while (*p != '\0') {
+		if (!isaln(*p)) {
+			return false;
+		}
+		p++;
+	}
+	return true;
+}
+
 static void
 quoteString(const tjs_char *str, IWriter *writer)
 {
@@ -48,6 +68,8 @@ quoteString(const tjs_char *str, IWriter *writer)
 		while ((ch = *p++)) {
 			if (ch == '"') {
 				writer->write(L"\\\"");
+			} else if (ch == '\\') {
+				writer->write(L"\\\\");
 			} else {
 				writer->write((tjs_char)ch);
 			}
@@ -85,11 +107,17 @@ public:
 					first = false;
 				} else {
 					writer->write((tjs_char)',');
-					writer->newline();
+//					writer->newline();
 				}
-				writer->write((tjs_char)'[');
-				quoteString(param[0]->GetString(), writer);
-				writer->write(L"]=");
+				const tjs_char *name = param[0]->GetString();
+				if (isSimpleString(name)) {
+					writer->write(name);
+					writer->write((tjs_char)'=');
+				} else {
+					writer->write((tjs_char)'[');
+					quoteString(name, writer);
+					writer->write(L"]=");
+				}
 				getVariantString(*param[2], writer);
 			}
 		}
@@ -103,11 +131,11 @@ public:
 static void getDictString(iTJSDispatch2 *dict, IWriter *writer)
 {
 	writer->write((tjs_char)'{');
-	writer->addIndent();
+	//writer->addIndent();
 	DictMemberDispCaller caller(writer);
 	tTJSVariantClosure closure(&caller);
 	dict->EnumMembers(TJS_IGNOREPROP, &closure, dict);
-	writer->delIndent();
+	//writer->delIndent();
 	writer->write((tjs_char)'}');
 }
 
@@ -117,7 +145,7 @@ static iTJSDispatch2 *ArrayCountProp   = NULL;   // Array.count
 static void getArrayString(iTJSDispatch2 *array, IWriter *writer)
 {
 	writer->write((tjs_char)'[');
-	writer->addIndent();
+	//writer->addIndent();
 	tjs_int64 count = 0;
 	{
 		tTJSVariant result;
@@ -135,7 +163,7 @@ static void getArrayString(iTJSDispatch2 *array, IWriter *writer)
 			getVariantString(result, writer);
 		}
 	}
-	writer->delIndent();
+	//writer->delIndent();
 	writer->write((tjs_char)']');
 }
 
@@ -245,6 +273,8 @@ public:
 	/**
 	 * squirrel 形式でのオブジェクトの保存
 	 * @param filename ファイル名
+	 * @param obj オブジェクト
+	 * @param utf true なら UTF-8 で出力
 	 * @return 実行結果
 	 */
 	static tjs_error TJS_INTF_METHOD save(tTJSVariant *result,
@@ -252,7 +282,7 @@ public:
 										  tTJSVariant **param,
 										  iTJSDispatch2 *objthis) {
 		if (numparams < 2) return TJS_E_BADPARAMCOUNT;
-		IFileWriter writer(param[0]->GetString());
+		IFileWriter writer(param[0]->GetString(), numparams > 2 ? (int)*param[2] != 0: false);
 		writer.write(L"return ");
 		getVariantString(*param[1], &writer);
 		return TJS_S_OK;
