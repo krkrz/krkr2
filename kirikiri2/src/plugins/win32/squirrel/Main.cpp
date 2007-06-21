@@ -146,17 +146,17 @@ static void getArrayString(iTJSDispatch2 *array, IWriter *writer)
 {
 	writer->write((tjs_char)'[');
 	//writer->addIndent();
-	tjs_int64 count = 0;
+	tjs_int count = 0;
 	{
 		tTJSVariant result;
 		if (TJS_SUCCEEDED(ArrayCountProp->PropGet(0, NULL, NULL, &result, array))) {
 			count = result.AsInteger();
 		}
 	}
-	for (int i=0; i<count; i++) {
+	for (tjs_int i=0; i<count; i++) {
 		if (i != 0) {
 			writer->write((tjs_char)',');
-			writer->newline();
+			//writer->newline();
 		}
 		tTJSVariant result;
 		if (array->PropGetByNum(TJS_IGNOREPROP, i, &result, array) == TJS_S_OK) {

@@ -77,16 +77,24 @@ static void getDictString(iTJSDispatch2 *dict, IWriter *writer)
 	writer->write((tjs_char)']');
 }
 
+// Array クラスメンバ
+static iTJSDispatch2 *ArrayCountProp   = NULL;   // Array.count
+
 static void getArrayString(iTJSDispatch2 *array, IWriter *writer)
 {
 	writer->write((tjs_char)'[');
 	//writer->addIndent();
 	tjs_int count = 0;
-	array->GetCount(&count,NULL,NULL,array);
+	{
+		tTJSVariant result;
+		if (TJS_SUCCEEDED(ArrayCountProp->PropGet(0, NULL, NULL, &result, array))) {
+			count = result.AsInteger();
+		}
+	}
 	for (tjs_int i=0; i<count; i++) {
 		if (i != 0) {
 			writer->write((tjs_char)',');
-			writer->newline();
+			//writer->newline();
 		}
 		tTJSVariant result;
 		if (array->PropGetByNum(TJS_IGNOREPROP, i, &result, array) == TJS_S_OK) {
@@ -162,8 +170,13 @@ public:
 		if (numparams < 1) return TJS_E_BADPARAMCOUNT;
 		IFileWriter writer(param[0]->GetString(), numparams > 1 ? (int)*param[1] != 0: false);
 		tjs_int count = 0;
-		objthis->GetCount(&count,NULL,NULL,objthis);
-		for (int i=0; i<count; i++) {
+		{
+			tTJSVariant result;
+			if (TJS_SUCCEEDED(ArrayCountProp->PropGet(0, NULL, NULL, &result, objthis))) {
+				count = result.AsInteger();
+			}
+		}
+		for (tjs_int i=0; i<count; i++) {
 			tTJSVariant result;
 			if (objthis->PropGetByNum(TJS_IGNOREPROP, i, &result, objthis) == TJS_S_OK) {
 				writer.write(result.GetString());
@@ -208,9 +221,9 @@ public:
 };
 
 NCB_ATTACH_CLASS(ArrayAdd, Array) {
-	RawCallback("save2", &ArrayAdd::save2,TJS_STATICMEMBER);
-	RawCallback("saveStruct2", &ArrayAdd::saveStruct2, TJS_STATICMEMBER);
-	RawCallback("toStructString", &ArrayAdd::toStructString, TJS_STATICMEMBER);
+	RawCallback("save2", &ArrayAdd::save2, 0);
+	RawCallback("saveStruct2", &ArrayAdd::saveStruct2, 0);
+	RawCallback("toStructString", &ArrayAdd::toStructString, 0);
 };
 
 /**
@@ -259,3 +272,39 @@ NCB_ATTACH_CLASS(DictAdd, Dictionary) {
 	RawCallback("saveStruct2", &DictAdd::saveStruct2, TJS_STATICMEMBER);
 	RawCallback("toStructString", &DictAdd::toStructString, TJS_STATICMEMBER);
 };
+
+/**
+ * 登録処理後
+ */
+static void PostRegistCallback()
+{
+	// Array.count を取得
+	{
+		tTJSVariant varScripts;
+		TVPExecuteExpression(TJS_W("Array"), &varScripts);
+		iTJSDispatch2 *dispatch = varScripts.AsObjectNoAddRef();
+		tTJSVariant val;
+		if (TJS_FAILED(dispatch->PropGet(TJS_IGNOREPROP,
+										 TJS_W("count"),
+										 NULL,
+										 &val,
+										 dispatch))) {
+			TVPThrowExceptionMessage(L"can't get Array.count");
+		}
+		ArrayCountProp = val.AsObject();
+	}
+}
+
+/**
+ * 開放処理前
+ */
+static void PreUnregistCallback()
+{
+	if (ArrayCountProp) {
+		ArrayCountProp->Release();
+		ArrayCountProp = NULL;
+	}
+}
+
+NCB_POST_REGIST_CALLBACK(PostRegistCallback);
+NCB_PRE_UNREGIST_CALLBACK(PreUnregistCallback);
