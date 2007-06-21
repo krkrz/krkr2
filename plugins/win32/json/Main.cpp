@@ -668,7 +668,7 @@ static void getArrayString(iTJSDispatch2 *array, IWriter *writer)
 			count = result.AsInteger();
 		}
 	}
-	for (int i=0; i<count; i++) {
+	for (tjs_int i=0; i<count; i++) {
 		if (i != 0) {
 			writer->write((tjs_char)',');
 			writer->newline();
