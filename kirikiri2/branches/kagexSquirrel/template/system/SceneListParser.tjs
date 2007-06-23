@@ -1,0 +1,75 @@
+if (typeof global.CSVParser == "undefined") {
+	dm("csv Parserr がロードされてない");
+	Plugins.link("csvParser.dll");
+}
+
+/**
+ * シーン定義ファイル読み出し用パーサ
+ * シーン名, 次シーン番号, 次シーン条件
+ */
+class SceneListParser extends CSVParser {
+
+    // パース結果格納用
+
+	var sceneNames = [];  // シーン名一覧（参照用）
+	var sceneInfos = %[]; // シーン情報一覧（次シーン情報など含む）
+	var check; // ロードチェック用
+
+    /**
+     * 行毎に呼び出される
+     * @param columns カラムデータ(Array)
+     * @param lineNo 論理行番号(1～)
+     */
+	function doLine(columns, lineNo) {
+		if (columns[0].charAt(0) != '#' && columns.count > 0) {
+			var name = columns[0].trim();
+			if (name != "") {
+				var info = sceneInfos[name];
+				if (info === void) {
+					info = %[];
+					info.next = [];
+					sceneInfos[name] = info;
+					sceneNames.add(name);
+				}
+				if (columns.count > 1) {
+					var next = columns[1].trim();
+					var cond = columns.count > 2 ? columns[2].trim() : "";
+					if (next != "") {
+						info.next.add(%[scene:name, cond:cond]);
+					}
+					if (columns.count > 3) {
+						info.voiceBase = colums[3].trim();
+					}
+				}
+			}
+		}
+    }
+
+	// ファイルをパースする
+	function parseStorage(filename,utf8=false) {
+		check = false;
+		super.parseStorage(...);
+		if (check) return;
+
+		// １行も読まれなかったらとりあえずエンコードを変えて読み直し
+		super.parseStorage(filename, !utf8);
+		if (check) return;
+
+		// それでもダメだったらArrayで読み直す
+		var temp = [];
+		var sep = (Storages.extractStorageExt(filename).toLowerCase() == ".txt") ? "\t" : ",";
+		temp.load(filename);
+		for (var i = 0; i < temp.count; i++) {
+			var line = [];
+			line.split(sep, temp[i]);
+			doLine(line, i+1) if (line.count > 0);
+		}
+	}
+
+	/**
+	 * コンストラクタ
+	 */
+	function SceneListParser() {
+		super.CSVParser(...);
+	}
+};

@@ -1,0 +1,210 @@
+/**
+ * 舞台用レイヤ
+ */
+class StageGraphicLayer extends EnvGraphicLayer {
+
+	function StageGraphicLayer() {
+		super.EnvGraphicLayer(...);
+	}
+
+	function recalcPosition() {
+		setRealPosition(owner.env.xmax + left - width / 2,
+						owner.env.ymax + top  - height / 2);
+	}
+};
+
+
+/**
+ * 背景を処理するレイヤ
+ * グローバルに以下のメソッドがあった場合はフックとして呼び出します
+ * setTimeHook(time, elm)     時間変更時フック
+ * setStageHook(stage, elm)   ステージ変更時フック
+ */
+class EnvStageLayer extends EnvBackLayer {
+
+	/// 時間
+	var timeName;
+    /// 舞台
+	var stageName;
+
+	function initImage() {
+		timeName = void;
+		stageName = void;
+	}
+	
+    /**
+	 * コンストラクタ
+     * @param env 環境
+	 * @param name 環境のレイヤ名
+	 */
+	function EnvStageLayer(env) {
+		super.EnvBackLayer(env, "stage", 100);
+    }
+
+	/**
+	 * 背景画像の更新処理
+	 */
+	function updateStageImage(elm) {
+
+		if (stageName === void) {
+			return;
+		}
+
+		var info = env.stages[stageName];
+		if (info === void) {
+			throw new Exception("ステージ情報がありません:" + stageName);
+		}
+		
+		var image = info.image;
+		// 時間情報で上書き
+		timeName = env.defaultTime if timeName === void;
+		image = image.replace(/TIME/, env.times[timeName].prefix);
+
+		if (!isExistImageName(image)) {
+			// 画像がない場合は標準画像の補正で対応
+			image = env.stages[stageName].image;
+			image = image.replace(/TIME/, env.times[env.defaultTime].prefix);
+			// 色補正処理
+			var timeInfo;
+			if ((timeInfo = env.currentTime) !== void) {
+				elm.lightcolor = timeInfo.lightColor;
+				elm.lighttype  = timeInfo.lightType;
+				elm.brightness = timeInfo.brightness;
+				elm.contrast   = timeInfo.contrast;
+			}
+		}
+		
+		if (elm.xpos === void && elm.left === void && info.left !== void) {
+			props.left = +info.left;
+		}
+		if (elm.ypos === void && elm.top  === void && info.top !== void) {
+			props.top = +info.top;
+		}
+		setImageFile(image, elm);
+		setAutoTrans([info.trans, env.envinfo.stageTrans, env.envinfo.envTrans]);
+	}
+	
+	/**
+     * 舞台を設定する
+     * @param stageName 舞台名
+     * @param elm コマンドのほかの要素
+     */
+    function setStage(stageName, elm) {
+
+		if (this.stageName != stageName || isClear() || env.event.isShow()) {
+
+			this.stageName = stageName;
+			updateStageImage(elm);
+			
+			// ステージ変更時フック
+			if (typeof global.setStageHook != "undefined") {
+				global.setStageHook(stageName, elm);
+            }
+        }
+		// イベント絵は消去
+		if (env.event.isShow()) {
+			env.event.disp = CLEAR;
+		}
+	}
+
+    /**
+     * 時間を設定する
+     * @param timeName 時間名
+     * @param elm コマンドのほかの要素
+     */
+    function setTime(timeName, elm) {
+
+		if (this.timeName != timeName || isClear() || env.event.isShow()) {
+			
+			this.timeName = timeName;
+			updateStageImage(elm);
+			
+			// 時間変更時フック
+			if (typeof global.setTimeHook != "undefined") {
+				global.setTimeHook(timeName, elm);
+            }
+
+			// 時間変更はキャラの立ち絵も再描画の必要がある
+			foreach(env.characters, function(name, value, dict) {
+				value.setRedraw();
+            });
+        }
+        // イベント絵は消去
+		if (env.event.isShow()) {
+			env.event.disp = CLEAR;
+        }
+    }
+
+	// ------------------------------------------------------
+	
+	var stageLayerCommands = %[
+	stage : this.setStage incontextof this,
+	stime : this.setTime incontextof this,
+		];
+
+
+    /**
+	 * コマンドの実行
+	 * @param cmd コマンド
+	 * @param param パラメータ
+	 * @param elm 他のコマンドも含む全パラメータ
+     * @return 実行が行われた場合 true
+     */
+    function doCommand(cmd, param, elm) {
+
+		// 共通コマンド
+		if (super.doCommand(cmd, param, elm)) {
+			return true;
+        }
+
+		// レイヤ共通コマンド
+		var func;
+		if ((func = stageLayerCommands[cmd]) !== void) {
+			if (func != null) {
+				func(param, elm);
+			}
+			return true;
+		}
+
+		// 時間と舞台
+		var info;
+		if (env.times !== void && (info = env.times[cmd]) !== void) {
+			setTime(cmd, elm);
+			return true;
+		} else if (env.stages !== void && (info = env.stages[cmd]) !== void) {
+			setStage(cmd, elm);
+			return true;
+		}
+
+		return false;
+	}
+	
+	// ------------------------------------------------------
+
+	/**
+	 * 更新処理
+	 * キャラクタも更新する必要がある
+	 */
+	function update(isfore) {
+		foreach(env.characters, function(name, value, dict, isfore) {
+			value.update(isfore);
+		}, isfore);
+		super.update(isfore);
+	}
+	
+	// ------------------------------------------------------
+
+	/**
+	 * 表示処理用の自動トランジションの指定
+	 */
+	function setDispAutoTrans() {
+		setAutoTrans([env.envinfo.stageTrans, env.envinfo.envTrans]);
+	}
+
+	/**
+	 * 新レイヤ生成
+	 */
+	function createLayer(isfore) {
+		return new StageGraphicLayer(this, isfore);
+	}
+}

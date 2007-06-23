@@ -1,0 +1,730 @@
+/**
+ * 環境オブジェクト
+ */
+class Environment extends EnvBase {
+	
+    var xmax;
+	var ymax;
+
+    // フェード指定のデフォルト値
+    // envinit.tjs で定義するか、システムのデフォルトを使う
+    property fadeValue {
+        getter() {
+            if (envinfo !== void && envinfo.fadeValue !== void) {
+                return envinfo.fadeValue;
+            } else {
+                return 500;
+            }
+        }
+    }
+    
+    /// 初期化情報
+    var envinfo;
+
+    var times;        //< 時間情報
+    var stages;       //< 舞台情報
+    var events;       //< イベント絵情報
+    var positions;    //< 配置情報
+    var actions;      //< アクション情報
+    var transitions;  //< トランジション情報
+    var defaultTime;  //< デフォルトの時間
+    var yoffset;      //< キャラクタ配置のyoffset 値
+    var defaultXpos;  //< キャラクタ配置の初期X位置
+    var defaultYpos;  //< キャラクタ配置の初期Y位置
+    var defaultLevel; //< キャラクタレベルのデフォルト値
+	var levels;       //< キャラクタレベル別補正情報
+    var faceLevelName;//< フェイスウインドウ用の表示名
+    var emotions;
+    
+    /// キャラクタ名一覧
+    var characterNames;
+    /// キャラクタ初期化情報一覧
+    var characterInits;
+
+	/// 舞台レイヤ
+	var stage;
+	/// イベントレイヤ
+	var event;
+	/// キャラクタ情報
+    var characters;
+    /// レイヤ情報
+    var layers;
+
+    // BGM 系
+    var bgm;
+
+    // SE 系
+    var ses;
+    
+    //　現在時刻
+	property currentTime {
+		getter() {
+			if (times !== void && stage.timeName !== void) {
+				return times[stage.timeName];
+			}
+        }
+    }
+
+    // メッセージ窓処理対象になるデフォルトのオブジェクト
+    // 名前表示のあと設定される
+    // 環境系命令の後は解除される
+    var currentNameTarget;
+
+	// コマンド実行毎に表情処理を行うモード
+    var showFaceMode;
+	// 表情表示を立ち絵同時可能に
+	var bothFace;
+
+	// 全カラー制御
+	var colorall;
+
+    // 画像補整指定
+	function setColorAll(param) {
+		colorall = param;
+		// すべて再描画処理
+		event.setRedraw();
+		stage.setRedraw();
+		foreach(characters, function(name, value, dict) {
+			value.setRedraw();
+        });
+		foreach(layers, function(name, value, dict) {
+			value.setRedraw();
+		});
+	}
+	
+    /**
+     * コンストラクタ
+	 * @param player 再生プレイヤー
+	 * @param width 画面横幅
+	 * @param height 画面縦幅
+     */
+	function Environment(player, width, height) {
+
+		super.EnvBase(this, "env");
+		this.player = player;
+		
+		xmax = width / 2;
+		ymax = height / 2;
+
+		characters = %[];
+		layers = %[];
+		event = new EnvEventLayer(env);
+		stage = new EnvStageLayer(env);
+
+        // BGM オブジェクト
+        bgm = new EnvBgm(env);
+		// SE オブジェクト群
+		ses = [];
+		for (var i=0; i<player.senum; i++) {
+			ses[i] = new EnvSE(env, i);
+        }
+		
+		resetEnv();
+        dm("環境初期化完了");
+    }
+
+    /**
+     * ファイナライザ
+     */
+    function finalize() {
+		initEnv();
+		invalidate characters;
+		invalidate layers;
+		invalidate event;
+		invalidate stage;
+		super.finalize();
+		dm("環境終了");
+    }
+
+	// ------------------------------------------------------
+
+    /**
+     * 初期化情報のロード
+     */
+    function loadEnvinfo() {
+        try {
+            var yamlFile = 'envinit.yaml';
+            if (Storages.isExistentStorage(yamlFile)) {
+                return YAML.parse([].load(yamlFile));
+            }
+            return Scripts.evalStorage("envinit.tjs");
+        } catch (e) {
+			throw new Exception("初期化情報のパースに失敗しました(詳細はコンソール参照)");
+        }
+    }
+	
+    /**
+	 * 環境のリセット
+	 */
+	function resetEnv() {
+
+		initEnv();
+
+		// キャラクタ情報廃棄
+		characterInits = %[];
+		
+		// 初期化情報展開
+		envinfo = loadEnvinfo();
+
+        if (envinfo) {
+            // デバッグ表示 
+            times       = envinfo.times;       showKeys("times", times);
+            stages      = envinfo.stages;      showKeys("stages", stages);
+            events      = envinfo.events;      showKeys("events", events);
+            positions   = envinfo.positions;   showKeys("positions", positions);
+            actions     = envinfo.actions;     showKeys("actions", actions);
+            emotions    = envinfo.emotions;    showKeys("emotions", emotions);
+            transitions = envinfo.transitions; showKeys("transitions", transitions);
+            defaultTime = envinfo.defaultTime;      dm("defaultTime:" + defaultTime);
+            yoffset     = (int)envinfo.yoffset;     dm("yoffset:" + yoffset);
+            defaultXpos = (int)envinfo.defaultXpos;
+            defaultYpos = (int)envinfo.defaultYpos;
+            defaultLevel = (int)envinfo.defaultLevel;
+            levels       = envinfo.levels;
+            faceLevelName = envinfo.faceLevelName;
+            showFaceMode  = envinfo.showFaceMode;
+            bothFace = envinfo.bothFace !== void ? envinfo.bothFace : true;
+        
+            // キャラクタ情報初期化処理
+            if (envinfo.characters !== void) {
+				//dm("キャラクタ情報初期化");
+				var chinit = [];
+				chinit.assign(envinfo.characters);
+                //dm("キャラクタ情報個数" + chinit.count);
+                for (var i=0; i<chinit.count; i+=2) {
+                    var name = chinit[i];
+                    var init = chinit[i+1];
+                    characterInits[name] = init;
+                }
+			}
+			
+        } else {
+
+			dm("環境情報がありません");
+			envinfo = %[];
+			times  = void;
+			stages = void;
+			events = void;
+			positions = void;
+			actions   = void;
+			emotions  = void;
+			transitions = void;
+			defaultTime = void;
+			yoffset     = 0;
+			levels = void;
+			faceLevelName = void;
+			showFaceMode = void;
+			bothFave = false;
+		}
+	}
+	
+    // -----------------------------------------
+
+    // -----------------------------------------
+
+	/**
+	 * 環境情報の初期化
+     */
+	function initEnv(elm) {
+
+		//dm("初期化処理");
+		colorall = false;
+		
+		stage.initImage();
+		event.initImage();
+
+		// キャラクタ情報の破棄
+		foreach(characters, function(name,value,dict) {
+			invalidate value;
+		});
+		characters = %[];
+        // 特殊レイヤ情報の破棄
+        foreach(layers, function(name,value,dict) {
+			invalidate value;
+		});
+		layers = %[];
+
+        // SE 初期化
+		for (var i=0;i<ses.count;i++) {
+			ses[i].init();
+			ses[i].sync();
+		}
+        seCount = 0;
+
+		// BGM初期化
+		if (elm === void || !elm.bgmcont) {
+			bgm.init();
+		}
+		
+        // カレントオブジェクト初期化
+		currentNameTarget = void;
+    }
+
+    /**
+     * イベント絵の消去
+     */
+    function hideEvent(param, elm) {
+		if (event.isShow()) {
+			event.disp = EnvImage.CLEAR;
+		}
+    }
+
+    /**
+     * イベント絵の消去
+     */
+	function hideStage(param, elm) {
+		if (stage.isShow()) {
+			stage.disp = EnvImage.CLEAR;
+		}
+    }
+	
+    /**
+     * 背景とイベント絵の消去
+     */
+    function hideBase(param, elm) {
+		hideEvent(param, elm);
+		hideStage(param, elm);
+    }
+    
+    /**
+     * 全キャラクタ消去
+     */
+	function hideCharacters(param, elm) {
+		// キャラクタレイヤの消去
+		foreach(characters, function(name,value,dict,param) {
+			if (value.isShow()) {
+				value.disp = EnvImage.CLEAR;
+			}
+		} incontextof this, param);
+    }
+
+    /**
+     * 全レイヤ消去
+     */
+    function hideLayers(param, elm) {
+        // 特殊レイヤの消去
+        foreach(layers, function(name,value,dict, param) {
+			if (value.isShow()) {
+				value.disp = EnvImage.CLEAR;
+			}
+		} incontextof this, param);
+    }
+
+    /**
+     * 前景要素消去
+     */
+    function hideFore(param, elm) {
+        hideCharacters(param, elm);
+        hideLayers(param, elm);
+    }
+
+    /**
+     * 全要素消去
+     */
+    function hideAll(param, elm) {
+		hideBase(param, elm);
+		hideCharacters(param, elm);
+        hideLayers(param, elm);
+    }
+
+    var envCommands = %[
+	hidebase : this.hideBase incontextof this,
+	hideevent : this.hideEvent incontextof this,
+	hidecharacters : this.hideCharacters incontextof this,
+	hidechars : this.hideCharacters incontextof this,
+	hidelayers : this.hideLayers incontextof this,
+	hidefore : this.hideFore incontextof this,
+	hideall : this.hideAll incontextof this,
+    colorall : this.setColorAll incontextof this,
+        ];
+    
+    /**
+     * コマンドの実行
+     * @param cmd コマンド
+     * @param param パラメータ
+     * @param elm 他のコマンドも含む全パラメータ
+     * @return 実行が行われた場合 true
+     */
+    function doCommand(cmd, param, elm) {
+
+		// 共通コマンド
+		if (super.doCommand(cmd, param, elm)) {
+			return true;
+        }
+		
+		var func;
+		if ((func = envCommands[cmd]) !== void) {
+			if (func != null) {
+				func(param, elm);
+			}                
+			return true;
+        }
+
+		return false;
+    }
+
+	function update(isfore) {
+		//dm("環境更新");
+        foreach(layers, function(name, value, dict, isfore) {
+            value.update(isfore);
+        }, isfore);
+		event.update(isfore);
+		// XXX キャラ更新はステージ更新に含まれる
+		stage.update(isfore);
+	}
+
+	// ------------------------------------------------------------------
+	// 一括実行
+	// ------------------------------------------------------------------
+
+	/**
+	 * 全キャラにコマンド実行
+	 * @param elm 引数
+	 * poscond パラメータで表示場所限定可能
+     */
+    function allchar(elm) {
+		ret = void;
+		var posName;
+		if (elm.poscond !== void) {
+			posName = elm.poscond;
+			delete elm.poscond;
+		}
+		var names = [];
+		names.assign(characters);
+		for (var i=0; i<names.count; i+= 2) {
+			var ch = names[i+1];
+			if (posName !== void) {
+				if (ch.posName == posName && ch.isShowBU()) {
+					ret = ch.tagfunc(elm);
+				}
+			} else {
+				ret = ch.tagfunc(elm);
+			}
+        }
+        return ret;
+    }
+
+    /**
+     * 全レイヤにコマンド実行
+     * @param elm 引数
+     */
+    function alllayer(elm) {
+        ret = void;
+        var names = [];
+        names.assign(layers);
+        for (var i=0; i<names.count; i+= 2) {
+            ret = names[i+1].tagfunc(elm);
+        }
+        return ret;
+    }
+
+    /**
+     * 全SEにコマンド実行
+     * @param elm 引数
+     */
+    function allse(elm) {
+        ret = void;
+        for (var i=0;i<ses.count;i++) {
+            if (ses[i].name !== void) {
+                ret = ses[i].tagfunc(elm);
+            }
+        }
+        return ret;
+    }
+
+    /**
+     * 新規レイヤ生成
+     */
+    function newLayer(elm) {
+		// 既存データは廃棄
+		delLayer(elm);
+		// 新規生成
+		if (elm.name !== void) {
+			var lay = getEnvLayer(elm.name, true);
+			if (lay != null) {
+				delete elm.tagname;
+				delete elm.name;
+				return lay.tagfunc(elm);
+			}
+		} else {
+			player.error("レイヤ名が指定されていません");
+		}
+		return 0;
+    }
+
+    /**
+     * 新規レイヤ生成
+     */
+    function delLayer(elm) {
+		if (elm.name !== void && layers[elm.name] !== void) {
+			invalidate layers[elm.name];
+			delete layers[elm.name];
+        }
+        return 0;
+    }
+    
+    /**
+     * 新規キャラクタ生成
+     */
+    function newCharacter(elm) {
+		// 既存データは廃棄
+		delCharacter(elm);
+        // 新規生成
+		if (elm.name !== void && elm.initname !== void) {
+			var ch = getCharacter(elm.name, elm.initname);
+			if (ch != null) {
+				delete elm.tagname;
+				delete elm.name;
+				delete elm.initname;
+				return ch.tagfunc(elm);
+			}
+		} else {
+			player.error("キャラクタ名または初期化名が指定されていません");
+		}
+        return 0;
+    }        
+
+	/**
+     * キャラクタ操作
+     */
+	function delCharacter(elm) {
+		if (elm.name !== void && characters[elm.name] !== void) {
+			invalidate characters[elm.name];
+			delete characters[elm.name];
+		}
+		return 0;
+	}
+    
+	/**
+	 * レイヤ一括複製指定
+	 */
+	function onCopyLayer(toback, backlay) {
+		var names = [];
+		names.assign(characters);
+		for (var i=0; i<names.count; i+= 2) {
+			var value = names[i+1];
+			value.onCopyLayer(toback, backlay);
+		}
+        names.assign(layers);
+		for (var i=0; i<names.count; i+= 2) {
+			var value = names[i+1];
+			value.onCopyLayer(toback, backlay);
+		}
+		stage.onCopyLayer(toback, backlay);
+		event.onCopyLayer(toback, backlay);
+	}
+
+ 	// ------------------------------------------------------------------
+	// キャラクタ関係処理
+	// ------------------------------------------------------------------
+
+    /**
+     * 指定された名前のキャラクタを返す
+     * @param name 名前
+     * @param initName 初期化名
+     */
+    function getCharacter(name, initName) {
+		var ch = characters[name];
+		if (ch === void) {
+			if (initName === void) {
+				initName = name;
+            }
+            var init;
+            if ((init = characterInits[initName]) !== void) {
+				ch = new EnvCharacter(env, name, initName, init);
+                characters[name] = ch;
+            }
+        }
+        return ch;
+    }
+
+	// ------------------------------------------------------------------
+	// レイヤ関係処理
+	// ------------------------------------------------------------------
+
+	/**
+     * 指定された名前のレイヤを返す
+     * @param name 名前
+     * @param create 生成モード
+     */
+    function getEnvLayer(name, create=false) {
+		var lay = layers[name];
+		if (lay === void && create) {
+			lay = new EnvSimpleLayer(env, name);
+			layers[name] = lay;
+        }
+        return lay;
+    }
+
+	// --------------------------------------------------------------
+	// SE 処理用
+	// --------------------------------------------------------------
+
+	var seCount = 0;
+
+	/**
+     * SE 処理用オブジェクトの取得
+     * @param id SE番号指定
+     * 一番古いSEがわかるようにカウント処理をしている
+     */
+    function getSe(id) {
+        ses[id].count = seCount++;
+        return ses[id];
+    }
+
+    /**
+     * SE の ID を決定する
+     * @param buf バッファIDを指定
+     */
+    function getSeId(buf) {
+		// 直接バッファが指定されている場合はそれを返す
+        if (buf !== void && +buf < ses.count) {
+            return +buf;
+        }
+        // 使われてないものをさがす
+        var max = seCount;
+        var old = void;
+        for (var i=0; i<ses.count; i++) {
+            if (ses[i].name == void) {
+				return i;
+            }
+			if (ses[i].count < max) {
+				max = ses[i].count;
+                old = i;
+            }
+        }
+        // 一番古いものを返す
+		return old;
+    }
+
+    /**
+     * SE の ID を決定する
+     * @param name SE の名前
+     */
+    function getSeIdFromName(name) {
+        for (var i=0; i<ses.count; i++) {
+            if (ses[i].name == name) {
+                return i;
+            }
+		}
+        // みつからないのであいている番号を返す
+        return getSeId();
+    }
+
+    /**
+     * SE 停止時の処理
+     * 停止中状態にする
+     */
+    function onSeStop(id) {
+        if (id < ses.count) {
+            ses[id].name = void;
+        }
+    }
+
+	// --------------------------------------------------------------
+	
+    /**
+	 * 不明コマンド処理ハンドラ
+     */
+    function unknown(tagName, elm) {
+
+		//dm("環境不明コマンド処理:" + tagName);
+
+		// ステージ用処理
+		if (tagName == "stage") {
+			return stage.tagfunc(elm);
+		}
+		
+		// イベント用処理
+		if (tagName == "event" || tagName == "ev") {
+			return event.tagfunc(elm);
+		} else if (tagName.substring(0,2) == "ev" || (events !== void && events[tagName] !== void)) {
+			elm[tagName] = true;
+			return event.tagfunc(elm);
+        }
+
+        // BGM 処理用
+        if (tagName == "bgm") {
+            return bgm.tagfunc(elm);
+        } else if (tagName.substring(0,3) == "bgm") {
+            return bgm.tagfunc(elm);
+        }
+
+        // SE 処理用
+        if (tagName == "se") {
+			if (elm.name !== void) {
+				return getSe(getSeIdFromName(elm.name)).tagfunc(elm);
+			} else {
+				return getSe(getSeId(elm.buf)).tagfunc(elm);
+			}
+        } else if (tagName.substring(0,2) == "se") {
+			var se = getSe(getSeIdFromName(tagName));
+			return se.tagfunc(elm);
+        }
+        
+        // キャラクタ
+        if (tagName == "char") {
+            var ch = getCharacter(elm.name);
+            if (ch !== void) {
+                return ch.tagfunc(elm);
+            }
+		} else {
+			var ch = getCharacter(tagName);
+			if (ch !== void) {
+				return ch.tagfunc(elm);
+			}
+		}
+
+        if (tagName == "layer") {
+            var lay = getEnvLayer(elm.name);
+            if (lay !== void) {
+                return lay.tagfunc(elm);
+            }
+		} else { 
+			var lay = getEnvLayer(tagName);
+			if (lay !== void) {
+				return lay.tagfunc(elm);
+			}
+		}
+
+		// 時間指定か背景指定ならステージ用コマンドとみなす
+		if (times !== void && times[tagName] !== void ||
+			stages !== void && stages[tagName] !== void) {
+			elm.tagname = "stage";
+			elm[tagName] = true;
+			return stage.tagfunc(elm);
+		}
+		
+		// 環境のコマンド
+		if (envCommands[tagName] !== void) {
+			elm.tagname = "env";
+			elm[tagName] = true;
+			return tagfunc(elm);
+		}
+
+		// カレントのターゲットがある場合はそのコマンドとして実行
+		if (currentNameTarget !== void) {
+			elm[tagName] = true;
+			return currentNameTarget.tagfunc(elm);
+		}
+
+		// それ以外だとエラーになる
+	}
+
+    /**
+	 * 環境同期
+	 */
+	function syncAll() {
+		dm("環境全同期");
+		for (var i=0; i<player.senum; i++) {
+			ses[i].sync();
+		}
+		bgm.sync();
+		foreach(layers, function(name, value, dict) {
+			value.sync();
+		});
+		event.sync();
+		stage.sync();
+		return 0;
+	}
+};

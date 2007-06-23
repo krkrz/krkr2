@@ -1,0 +1,71 @@
+/**
+ * 背景用レイヤ
+ */
+class EnvBackLayer extends EnvLayer {
+
+	var absolute;
+	
+	// 描画対象レイヤ
+	var targetLayer;
+	
+    /**
+     * コンストラクタ
+     */
+	function EnvBackLayer(env, name, absolute) {
+		super.EnvLayer(env, name);
+		this.absolute = absolute;
+    }
+
+    function finalize() {
+		player.trashLayer(targetLayer);
+		super.finalize();
+    }
+
+	/**
+	 * レイヤのコピー処理
+	 */
+	function onCopyLayer(toback, backlay) {
+		if (backlay) {
+			if (toback) {
+				if (targetLayer !== void) {
+					//dm("裏画面にコピー:" + name);
+					//dm("元レイヤ:" + targetLayer + ":" + (player.isForeLayer(targetLayer) ? "表" : "裏"));
+					if (player.isForeLayer(targetLayer) && targetLayer.visible) {
+						targetLayer = player.getNewLayer(this, false, targetLayer);
+						targetLayer.absolute = absolute;
+						//dm("複製レイヤ:" + targetLayer + ":" + (player.isForeLayer(targetLayer) ? "表" : "裏"));
+					} else {
+						//dm("廃棄");
+						targetLayer = player.trashLayer(targetLayer);
+					}
+				}
+			} else {
+				if (targetLayer !== void) {
+					//dm("表画面にコピー:" + name);
+					if (!player.isForeLayer(targetLayer) && targetLayer.visible) {
+						//dm("表に移動");
+						player.toForeLayer(targetLayer);
+						targetLayer.absolute = absolute;
+					} else {
+						//dm("廃棄");
+						targetLayer = player.trashLayer(targetLayer);
+					}
+				}
+			}
+		}
+	}
+	
+    /**
+     * レイヤ情報の取得
+     * @param isfore fore / back      
+     * 同時にレベルに応じた front/back の処理も実行する
+     */
+	function getLayer(isfore) {
+		if (targetLayer === void || player.isForeLayer(targetLayer) != isfore) {
+			targetLayer = player.getNewLayer(this, isfore, targetLayer);
+		}
+		targetLayer.absolute = absolute;
+		return targetLayer;
+    }
+
+}
