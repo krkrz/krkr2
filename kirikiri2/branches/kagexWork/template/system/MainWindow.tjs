@@ -1401,9 +1401,13 @@ class KAGWindow extends Window
 		// 「このソフトについて」ウィンドウを表示
         var win = new global.KAGWindow(false, aboutWidth, aboutHeight);
         win.debugLevel = tkdlNone;
+		win.borderStyle = bsToolWindow;
+		win.setInnerSize(aboutWidth, aboutHeight);
         win.setPos(left + ((width - win.width)>>1), top + ((height - win.height)>>1));
+		win.rightClickMenuItem = new KAGMenuItem(this, "RightClick", 0, win.onRightClickMenuItemClick, false); // ESCで消せるように
         win.process('about.ks' ,,, true); // about.ks を immediate で表示
 		win.showModal(); // モード付きで表示
+		invalidate win.rightClickMenuItem;
 		invalidate win;
 	}
 

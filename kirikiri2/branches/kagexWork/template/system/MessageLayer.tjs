@@ -3391,7 +3391,7 @@ class MessageLayer extends AnimKAGLayer
                 }
             }
         } while (link != firstLink);
-        return link;
+        return -1;
     }
 
     function tabPrev() {
@@ -3407,6 +3407,7 @@ class MessageLayer extends AnimKAGLayer
 				keyLink--;
 			}
             keyLink = checkFocus(keyLink, -1);
+			if (keyLink < 0) return;
             var obj = setFocusToLink(keyLink);
 			if(obj !== void) obj.focus();
     }
@@ -3424,6 +3425,7 @@ class MessageLayer extends AnimKAGLayer
 				keyLink ++;
 			}
             keyLink = checkFocus(keyLink, 1);
+			if (keyLink < 0) return;
             var obj = setFocusToLink(keyLink);
             if(obj !== void) obj.focus();
     }

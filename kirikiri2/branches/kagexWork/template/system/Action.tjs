@@ -209,6 +209,7 @@ class ActionInfo {
      * @return I—¹‚µ‚½‚ç true
      */
     function doAction(target, now, stopFlag) {
+		if (!isvalid target) return true; // ‘ÎÛ‚ª–³Œø‚È‚çI—¹
         var done = true;
         for (var i=0; i<actionList.count; i++) {
             if (!actionList[i].doAction(target, now, stopFlag)) {
