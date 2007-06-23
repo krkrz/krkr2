@@ -29,10 +29,12 @@ static void PrintFunc(HSQUIRRELVM v, const SQChar* format, ...)
 // squirrel -> TJS2 ブリッジ用
 //---------------------------------------------------------------------------
 
+extern void store(HSQUIRRELVM v, tTJSVariant &variant);
 extern void store(tTJSVariant &result, SquirrelObject &variant);
 extern void store(tTJSVariant &result, HSQUIRRELVM v, int idx=-1);
 extern void registglobal(HSQUIRRELVM v, const SQChar *name, iTJSDispatch2 *dispatch);
 extern void unregistglobal(HSQUIRRELVM v, const SQChar *name);
+extern void SQEXCEPTION(HSQUIRRELVM v);
 
 //---------------------------------------------------------------------------
 
@@ -329,9 +331,14 @@ public:
 		sq_resetobject(&obj);          // ハンドルを初期化
 		sq_pushroottable(v);
 		sq_pushstring(v, name, -1);
-		sq_get(v, -2);                   // ルートテーブルから関数を取得
+		if (!SQ_SUCCEEDED(sq_get(v, -2))) { // ルートテーブルから関数を取得
+			sq_pop(v, 1);
+			ttstr error = "指定された関数は存在しません:";
+			error += name;
+			TVPThrowExceptionMessage(error.c_str());
+		}
 		sq_getstackobj(v, -1, &obj); // 位置-1からオブジェクトハンドルを得る
-		sq_addref(v, &obj);              // オブジェクトへの参照を追加
+		sq_addref(v, &obj);          // オブジェクトへの参照を追加
 		sq_pop(v, 2);
 	}
 
@@ -340,8 +347,7 @@ public:
 	 */
 	~SQContinuous() {
 		stop();
-		HSQUIRRELVM v = SquirrelVM::GetVMPtr();
-		sq_release(v, &obj);  
+		sq_release(SquirrelVM::GetVMPtr(), &obj);  
 	}
 
 	/**
@@ -368,10 +374,12 @@ public:
 		sq_pushobject(v, obj);
 		sq_pushroottable(v);
 		sq_pushinteger(v, (SQInteger)tick); // 切り捨て御免
-		if (!SQ_SUCCEEDED(sq_call(v, 2, SQFalse, SQFalse))) {
+		if (!SQ_SUCCEEDED(sq_call(v, 2, SQFalse, SQTrue))) {
 			stop();
+			sq_pop(v, 1);
+			SQEXCEPTION(v);
 		}
-		sq_pop(SquirrelVM::GetVMPtr(), 1);
+		sq_pop(v, 1);
 	}
 };
 
@@ -379,6 +387,76 @@ NCB_REGISTER_CLASS(SQContinuous) {
 	NCB_CONSTRUCTOR((const tjs_char *));
 	NCB_METHOD(start);
 	NCB_METHOD(stop);
+};
+
+
+/**
+ * 直接 squirrel のグローバルファンクションを呼び出すことができるラッパー
+ * 変換処理を介さずに処理できるので効率が良い
+ */
+class SQFunction {
+
+protected:
+	// 内部オブジェクト参照保持用
+	HSQOBJECT obj;
+
+public:
+	/**
+	 * コンストラクタ
+	 * @param name 名称
+	 */
+	SQFunction(const tjs_char *name) {
+		HSQUIRRELVM v = SquirrelVM::GetVMPtr();
+		sq_resetobject(&obj);          // ハンドルを初期化
+		sq_pushroottable(v);
+		sq_pushstring(v, name, -1);
+		if (!SQ_SUCCEEDED(sq_get(v, -2))) { // ルートテーブルから関数を取得
+			sq_pop(v, 1);
+			ttstr error = "指定された関数は存在しません:";
+			error += name;
+			TVPThrowExceptionMessage(error.c_str());
+		}
+		sq_getstackobj(v, -1, &obj); // 位置-1からオブジェクトハンドルを得る
+		sq_addref(v, &obj);          // オブジェクトへの参照を追加
+		sq_pop(v, 2);
+	}
+
+	/**
+	 * デストラクタ
+	 */
+	~SQFunction() {
+		sq_release(SquirrelVM::GetVMPtr(), &obj);  
+	}
+
+	/**
+	 * ファンクションとして呼び出し
+	 */
+	static tjs_error TJS_INTF_METHOD call(tTJSVariant *result,
+										  tjs_int numparams,
+										  tTJSVariant **param,
+										  SQFunction *objthis) {
+		HSQUIRRELVM v = SquirrelVM::GetVMPtr();
+		sq_pushobject(v, objthis->obj);
+		sq_pushroottable(v); // this
+		for (int i=0;i<numparams;i++) { // 引数
+			store(v, *param[i]);
+		}
+		if (!SQ_SUCCEEDED(sq_call(v, numparams + 1, result ? SQTrue:SQFalse, SQTrue))) {
+			sq_pop(v, 1);
+			SQEXCEPTION(v);
+		}
+		if (result) {
+			store(*result, v);
+			sq_pop(v, 1);
+		}
+		sq_pop(v, 1);
+		return TJS_S_OK;
+	}
+};
+
+NCB_REGISTER_CLASS(SQFunction) {
+	NCB_CONSTRUCTOR((const tjs_char *));
+	RawCallback("call", &SQFunction::call, 0);
 };
 
 //---------------------------------------------------------------------------
