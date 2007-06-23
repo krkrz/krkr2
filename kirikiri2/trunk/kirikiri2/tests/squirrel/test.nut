@@ -27,9 +27,9 @@ class Foo {
 	data="testdata";
 };
 
-function hoge()
+function hoge(msg)
 {
-	print("ファンクション呼び出し!");
+	print("ファンクション呼び出し!:"+ msg);
 }
 
 function main(tick)
@@ -41,7 +41,7 @@ function main(tick)
 dofile("test2.nut");
 
 // ファイル書き込みテスト
-local f = file("output", "w");
+local f = file("output.txt", "w");
 f.writen(10, 'l');
 f = null;
 

@@ -50,9 +50,16 @@ Squirrel スクリプトの実行機能や、オブジェクトを Squirrel の書式で
 文字列化したり、ファイルに保存したりするメソッドが Scripts クラス
 に拡張されます。詳細は manual.tjs を参照してください
 
+◇SQFunction 拡張
+
+Squirrel のglobalファンクションを直接呼び出せるように保持するクラスです。
+TJS2 ラッピングによる余分な負荷なしに呼び出し処理を行うことができます。
+詳細は manual.tjs を参照してください。
+
 ◇SQContinous 拡張
 
-Squirrel のファンクションを直接呼び出す Continuous Handler を保持するクラスです。
+Squirrel のglobalファンクションを直接呼び出す Continuous Handler を
+保持するクラスです。
 TJS2 ラッピングによる余分な負荷なしに呼び出し処理を行うことができます。
 詳細は manual.tjs を参照してください。
 
