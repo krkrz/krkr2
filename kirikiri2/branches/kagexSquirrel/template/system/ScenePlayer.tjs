@@ -194,6 +194,22 @@ class ScenePlayer extends BasicPlayer
 	}
 
 	/**
+	 * 指定ラベルまで移動
+	 */
+	function goToLabel(label) {
+		var newcur = 0;
+		var obj;
+		while ((obj = lines[newcur++]) !== void) {
+			if (obj.tagname == "label" && obj.label == label) {
+				cur = newcur;
+				return;
+			}
+		}
+		throw new Exception("ラベル" + label + "がみつかりません");
+	}
+
+	
+	/**
 	 * メインロジック
 	 * @return 0:終了 1:実行 2:イベント待ち
 	 */
@@ -251,7 +267,6 @@ class ScenePlayer extends BasicPlayer
 			} else if (obj.tagname == "line") {
 				if (curLine != obj.line) {
 					curLine    = obj.line;
-					//dm("%06d:%s %s".sprintf(curLine, curStorage, obj.lineStr));
 				}
 				continue;
 			} else if (obj.tagname == "label") {
@@ -263,6 +278,11 @@ class ScenePlayer extends BasicPlayer
 						continue;
 					}
 					delete obj.condex;
+				} else if (obj.if !== void) {
+					if (!Scripts.eval(obj.if)) {
+						continue;
+					}
+					delete obj.if;
 				}
 				
 				// onTag を呼ぶ
@@ -581,7 +601,7 @@ class ScenePlayer extends BasicPlayer
 	function tag_stopallvoice(elm) {
 		stopAllVoice();
 	}
-	
+
 	// ------------------------------------------------------------------
 
 	function getHandlers()
@@ -647,31 +667,33 @@ class ScenePlayer extends BasicPlayer
 		return doneSelect(elm);
 	} incontextof this,
 
+	selend : function(elm)
+	{
+		return endSelect(elm);
+	} incontextof this,
+
 	//----------------------------------------- タグハンドラ群(シナリオ内分岐) --
 
-    bradd : function(elm)
-    {
-		return addBranch(elm);
+    "goto" => function(elm) {
+		if (elm.target !== void) {
+			goToLabel(elm.target);
+		}
+		return 0;
 	} incontextof this,
 
-    branch : function(elm)
-    {
-		return doBranch(elm);
-	} incontextof this,
-
-    brdone : function(elm)
-    {
-		return doneBranch(elm);
-	} incontextof this,
-
-	//----------------------------------------- タグハンドラ群(シーン間分岐処理) --
+	//----------------------------------------- タグハンドラ群(次シナリオ指定) --
 
 	next : function(elm)
 	{
 		nextScene = elm.storage;
 		return 0;
 	} incontextof this,
-				  
+
+    exit : function(elm) {
+		cur = lines.count;
+		return 0;
+	} incontextof this,
+
 	//----------------------------------------------- 環境系機能 --
 
     env      : env.tagfunc,
@@ -701,5 +723,4 @@ class ScenePlayer extends BasicPlayer
     stopallvoice  : tag_stopallvoice
 				  ];
 	}
-
 };

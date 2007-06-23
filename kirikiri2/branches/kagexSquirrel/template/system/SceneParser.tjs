@@ -45,7 +45,9 @@ class SceneParser extends KAGParser
     var nameMode;       // 名前処理モード
     var nameStr;        // 現在の名前
     var nameDisp;       // 現在の表示名
+	var afterName;
 	var nameInfos = []; // 登録済みの名前
+	var overvoiceInfos = []; // ボイス上書き司令
 	
 	// -------------------------------------------------------------
 
@@ -69,7 +71,9 @@ class SceneParser extends KAGParser
 		emptyLine = true;
 		prevEmptyLine = true;
 		nameMode  = 0;
+		afterName = false;
 		nameInfos.clear();
+		overvoiceInfos.clear();
 		voiceBase = "";
 	}
 
@@ -158,7 +162,7 @@ class SceneParser extends KAGParser
 				var vinfo = voiceInfos[name];
 				var voiceFile = vinfo !== void ? vinfo.filename : void;
 				if (voiceFile !== void) {
-					voice = voiceFile.sprintf(voiceBase, voice);
+					voice = voiceFile.sprintf(voiceBase, voice, "");
 				}
 			}
 		}
@@ -189,6 +193,19 @@ class SceneParser extends KAGParser
 			}
 		}
 		nameInfos.add(info);
+	}
+
+	/**
+	 * ボイス強制指定の追加
+	 */
+	function entryOverVoice(voice) {
+		var info = %[];
+		if (nameInfos.count > 0) {
+			info.name = nameInfos[nameInfos.count-1].name;
+			info.disp = nameInfos[nameInfos.count-1].disp;
+		}
+		info.voice = voice;
+		overvoiceInfos.add(info);
 	}
 	
 	// 正規表現
@@ -265,6 +282,7 @@ class SceneParser extends KAGParser
 			if (elm.text == "】") {
 				nameMode = 0;
 				entryName(nameStr, nameDisp);
+				afterName = true;
 				return;
 			} else {
 				if (nameMode == 1) {
@@ -298,7 +316,7 @@ class SceneParser extends KAGParser
             } else {
 				nameMode = 0;
 				// 名前指定がない場合はパラメータなしで名前処理を呼び出す
-				if (nameInfos.count == 0 && (lineMode < LINEMODE_VN || prevEmptyLine)) {
+				if (nameInfos.count == 0 && (lineMode <= LINEMODE_VN || prevEmptyLine)) {
 					nameInfos.add(%[]);
 				}
 			}
@@ -314,7 +332,16 @@ class SceneParser extends KAGParser
 					addTag("entryvoice", info);
 				}
 			}
-			var info = nameInfos[i];
+			var info;
+			// ボイスの上書き指定
+			if (overvoiceInfos.count > 0) {
+				//dm("ボイス上書き指定");
+				info = overvoiceInfos[0];
+				overvoiceInfos.erase(0);
+			} else {
+				info = nameInfos[i];
+			}
+			//dm("dispname:" + info.name);
 			addTag("dispname", info);
 		}
 		
@@ -362,6 +389,7 @@ class SceneParser extends KAGParser
 			addTag("indent");
 		}
 		nameInfos.clear();
+		afterName = false;
         return;
     };
 
@@ -384,7 +412,7 @@ class SceneParser extends KAGParser
         }
 
 		nameMode = 0;
-		if (crAfterName && nameInfos.count > 0) {
+		if (crAfterName && afterName) {
 			return;
 		}
 		switch (lineMode) {
@@ -428,7 +456,7 @@ class SceneParser extends KAGParser
                     return;
                 }
             } else {
-                // 名前の直後の改行は無視する
+				// 名前の直後の改行は無視する
 				prevEmptyLine = emptyLine;
 				emptyLine = true;
 				doLine = true;
@@ -559,7 +587,8 @@ class SceneParser extends KAGParser
 		var obj;
 		while ((obj = getNextTag()) !== void) { // 次のタグを得る
 			if (runLine !== curLine) {
-				enqueueTag(%[tagname:"line", line:curLine, lineStr:curLineStr]);
+				//dm(curLine + ":" + curLineStr);
+				enqueueTag(%[tagname:"line", line:curLine]);
 				runLine = curLine;
 			}
 			var func = extractTags[obj.tagname];
