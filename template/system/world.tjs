@@ -1,3 +1,11 @@
+if (typeof Scripts.execSQ == "undefined") {
+	Plugins.link("squirrel.dll");
+}
+
+if (typeof Array.save2 == "undefined") {
+	Plugins.link("savestruct.dll");
+}
+
 /**
  * 基本概念になるレイヤ
  */
@@ -682,7 +690,7 @@ class BasicPlayer extends KAGPlugin {
 	 */
 	function stopAllVoice() {
 		var names = [];
-		names.assign(soundBuffer);
+		names.assign(voiceTracks);
         for (var i=0; i<names.count; i+= 2) {
 			var soundBuffer = names[i+1];
 			soundBuffer.stop();
@@ -1161,6 +1169,67 @@ class BasicPlayer extends KAGPlugin {
 	function tag_stopallvoice(elm) {
 		stopAllVoice();
 	}
+
+	// ---------------------------------------------------
+	// 選択肢用処理
+	// ---------------------------------------------------
+
+	function addSelect(elm) {
+		if (f.selectInfos == void) {
+			f.selectInfos = [];
+		}
+		if (f.selectDoneFlag) {
+			f.selectInfos.clear();
+			f.selDoneTarget  = void;
+			f.selectDoneFlag = false;
+		}
+		var e = %[];
+		(Dictionary.assign incontextof e)(elm,false);
+		f.selectInfos.add(e);
+		return 0;
+	}
+
+    /**
+     * 選択肢の表示
+     */
+	function doSelect(elm)
+	{
+		f.selectDoneFlag = true;
+		f.selDoneTarget  = elm.target  if elm.target  !== void;
+		f.selTarget      = void;
+		// 終了処理をさしこむ
+		addTag("er");
+		addTag("selend");
+		
+		// f.selectInfo の内容で選択肢を表示
+		kag.showSelect();
+		return kag.waitTrigger(%[name:"selectdone"]);
+	}
+
+	/**
+	 * 選択肢の終了
+	 */
+	function endSelect(elm) {
+		kag.hideSelect();
+		if (f.selTarget != '') {
+			goToLabel(f.selTarget);
+			return 0;
+		} else {
+			return -1;
+		}
+	}
+
+	/**
+	 * 選択肢処理の完了
+	 */
+	function doneSelect(elm) {
+		if (f.selDoneTarget != "") {
+			goToLabel(f.selDoneTarget);
+			return 0;
+		} else {
+			return -1;
+        }
+	}
 	
 	// --------------------------------------------------------------
 	// KAG からの処理呼び出し
@@ -1299,6 +1368,43 @@ class BasicPlayer extends KAGPlugin {
 			return step;
 		}
 	}
+
+	// ------------------------------------------------------
+	// コンバート処理
+	// ------------------------------------------------------
+
+	/**
+	 * コンバート処理の実行
+	 * @path 格納先パス
+	 */
+	function convert(path = "") {
+		if (path.length > 0 && path[path.length - 1] != '/') {
+			path += "/";
+		}
+		System.inform("コンバート処理を実行します。コンバート実行中は処理が固まるのでご注意ください");
+		var list = [ "[SCENE_ID]" ];
+		for (var i=0;i<sceneNames.count;i++) {
+			var name = path + "SCENE/" + Storages.chopStorageExt(sceneNames[i]) + ".nut";
+			list.add("SCENE\\" + Storages.chopStorageExt(sceneNames[i]) + ".nut");
+			Scripts.saveSQ(name, getScene(sceneNames[i]));
+		}
+		list.add("[END]");
+		list.save2(path + "SCENE_ID.LST");
+		System.inform("コンバート処理が終了しました");
+	}
+
+	function convertParam(path = "") {
+		System.inform("パラメータ出力を実行します");
+		if (path.length > 0 && path[path.length - 1] != '/') {
+			path += "/";
+		}
+		Scripts.saveSQ(path + "SYSTEM/" + "envinit.nut", env.envinfo);
+		Scripts.saveSQ(path + "SYSTEM/" + "voices.nut",  voiceInfos);
+		Scripts.saveSQ(path + "SYSTEM/" + "scenes.nut",  sceneInfos);
+		System.inform("パラメータ出力が完了しました");
+	}
+
+
 };
 
 KAGLoadScript('YAML.tjs');
@@ -1433,8 +1539,16 @@ property sceneExecDialog { getter() { KAGLoadScript("SceneExecDialog.tjs"); retu
 // デバッグメニューに登録
 if (kag.debugMenu !== void && kag.debugMenu.visible) {
 	kag.debugMenu.insert(new MenuItem(this, "-"), 0);
+	kag.debugMenu.insert(kag.loadSceneMenuItem = new KAGMenuItem(this, "パラメータの変換", 1,
+																 function() {
+																	 kag.scenePlayer.convertParam("../../PSVersion/DataMake/");
+																 }), 0);
+	kag.debugMenu.insert(kag.loadSceneMenuItem = new KAGMenuItem(this, "シーンの変換", 1,
+																 function() {
+																	 kag.scenePlayer.convert("../../PSVersion/DataMake/");
+																 }), 0);
 	kag.debugMenu.insert(kag.loadSceneMenuItem = new KAGMenuItem(this, "シーンの読込み(&L)", 1,
-																 function() {sceneExecDialog();}), 1);
+																 function() {sceneExecDialog();}), 0);
 }
 
 if (kag.debugLevel >= tkdlSimple) {

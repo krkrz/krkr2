@@ -103,11 +103,11 @@ class KAGWindow extends Window
 
     property selectLayer {
         getter() {
-            if (_selectLayer === void) {
-                // 選択肢レイヤの作成
-                _selectLayer = new SelectLayer(this, fore.base);
-                _selectLayer.name = "選択肢レイヤ";
-                add(_selectLayer);
+			if (_selectLayer === void) {
+				// 選択肢レイヤの作成
+				_selectLayer = new SelectLayer(this);
+				_selectLayer.name = "選択肢レイヤ";
+				add(_selectLayer);
             }
             return _selectLayer;
         }
@@ -120,8 +120,8 @@ class KAGWindow extends Window
         getter() {
             if (_mapSelectLayer === void) {
                 // マップ選択肢レイヤの作成
-                _mapSelectLayer = new MapSelectLayer(this, fore.base);
-                _mapSelectLayer.name = "マップ選択肢レイヤ";
+				_mapSelectLayer = new MapSelectLayer(this);
+				_mapSelectLayer.name = "マップ選択肢レイヤ";
                 add(_mapSelectLayer);
             }
             return _mapSelectLayer;
@@ -3063,20 +3063,18 @@ class KAGWindow extends Window
 	}
 
     function addSelect(elm) {
-		if ((elm.eval === void || elm.eval == "" || Scripts.eval(elm.eval))) {
-			if (f.selectInfos == void) {
-				f.selectInfos = [];
-			}
-			if (f.selectDoneFlag) {
-				f.selectInfos.clear();
-				f.selDoneStorage = void;
-				f.selDoneTarget  = void;
-				f.selectDoneFlag = false;
-			}
-			var e = %[];
-			(Dictionary.assign incontextof e)(elm,false);
-			f.selectInfos.add(e);
+		if (f.selectInfos == void) {
+			f.selectInfos = [];
 		}
+		if (f.selectDoneFlag) {
+			f.selectInfos.clear();
+			f.selDoneStorage = void;
+			f.selDoneTarget  = void;
+			f.selectDoneFlag = false;
+		}
+		var e = %[];
+		(Dictionary.assign incontextof e)(elm,false);
+		f.selectInfos.add(e);
 	}
 
     /**
@@ -3088,9 +3086,9 @@ class KAGWindow extends Window
 		for (var i=0;i<f.selectInfos.count;i++) {
 			selectLayer.addSelect(f.selectInfos[i]);
 		}
-		selectLayer.start(fore.base, 1000000);
-        selectShowing = true;
-        setMenuAccessibleAll();
+		selectLayer.start();
+		selectShowing = true;
+		setMenuAccessibleAll();
 	}
 
     function hideSelect() {
@@ -3154,21 +3152,25 @@ class KAGWindow extends Window
     }
 
     /**
-     * 選択肢登録
+	 * マップ選択肢登録
      */
     function addMapSelect(elm) {
-		if ((elm.eval === void || elm.eval == "" || Scripts.eval(elm.eval))) {
-			mapSelectLayer.addSelect(elm);
-		}
+		mapSelectLayer.addSelect(elm);
     }
-    
+
+	/**
+	 * マップ選択肢の表示
+	 */
     function showMapSelect()
 	{
-        mapSelectLayer.start(fore.base, 1000000);
+		mapSelectLayer.start();
         mapSelectShowing = true;
         setMenuAccessibleAll();
 	}
 
+	/**
+	 * マップ選択肢の消去
+	 */
     function hideMapSelect()
 	{
         if (_mapSelectLayer !== void) {
@@ -3178,52 +3180,6 @@ class KAGWindow extends Window
         }
     }
 
-    //------------------------------------------------------- シナリオ内分岐 --
-
-	/**
-	 * 分岐の追加
-	 */
-    function addBranch(elm) {
-		if (f.branchInfos == void) {
-			f.branchInfos = [];
-		}
-		delete f.branchDoneTarget;
-		var e = %[];
-		(Dictionary.assign incontextof e)(elm,false);
-		f.branchInfos.add(e);
-		return 0;
-    }
-
-	/**
-	 * 分岐実行
-	 */
-	function doBranch(elm) {
-		f.branchDoneTarget  = elm.target  if elm.target  !== void;
-		for (var i=0;i<f.branchInfos.count;i++) {
-			var elm = f.branchInfos[i];
-			if (elm.target !== void && (elm.eval === void || elm.eval == "" || Scripts.eval(elm.eval))) {
-				kag.process("", elm.target);
-				break;
-			}
-		}
-		delete f.branchInfos;
-		return 0;
-    }
-
-	/**
-	 * 分岐終了
-	 */
-	function doneBranch(elm) {
-		if (f.branchDoneTarget != "") {
-			// 分岐
-			kag.process("", f.branchDoneTarget);
-		} else {
-			// 強制停止
-			return kag.tagHandlers.s(elm);
-		}
-        return 0;
-    }
-	
     //------------------------------------------------------- 画面切り替え特殊レイヤ --
 
     function hideTransLayer() {
@@ -4458,14 +4414,6 @@ class KAGWindow extends Window
 		current = (currentPage?back:fore).messages[currentNum]; // current は設定し直し
 		forEachEventHook('onExchangeForeBack',
 				function(handler, f) { handler(); } incontextof this);
-
-        // 選択肢復帰
-        if (selectShowing) {
-            selectLayer.setParent(fore.base, 1000000);
-        }
-        if (mapSelectShowing) {
-            mapSelectLayer.setParent(fore.base, 1000000);
-        }
 
         // 強制表示変更
         fore.base.visible = true;
@@ -7259,14 +7207,6 @@ class KAGWindow extends Window
 	{
         // トランジションの開始
 		var layer = getLayerPageFromElm(elm, false);
-		if (layer == fore.base)  {
-			if (selectShowing) {
-				selectLayer.setParent(back.base, 1000000);
-			}
-			if (mapSelectShowing) {
-				mapSelectLayer.setParent(back.base, 1000000);
-			}
-		}
 		layer.beginTransition(elm);
 		return 0;
 	} incontextof this,
@@ -7750,6 +7690,12 @@ class KAGWindow extends Window
 
 	//----------------------------------------- タグハンドラ群(選択肢) --
 
+	selopt : function(elm)
+	{
+		setSelectOptions(elm);
+		return 0;
+	} incontextof this,
+
     seladd : function(elm)
     {
         addSelect(elm);
@@ -7782,21 +7728,30 @@ class KAGWindow extends Window
         
         f.selDoneStorage = elm.storage if elm.storage !== void;
         f.selDoneTarget  = elm.target  if elm.target  !== void;
-
+		f.selStorage = void;
+		f.selTarget  = void;
+		
         showSelect();
-
-        conductor.sleep();
-        conductor.interrupt();
-        setMenuAccessibleAll();
-        return -1;
+		
+		insertTag("selend");
+		return waitTrigger(%[name:"selectdone"]);
 	} incontextof this,
 
-	selopt : function(elm)
+	selend : function(elm)
 	{
-		setSelectOptions(elm);
+		dm("選択肢処理終了");
+		hideSelect();
+		afterSelect();
+		setMenuAccessibleAll();
+		if (f.selStorage != '' || f.selTarget != '') {
+			dm("ジャンプ:" + f.selStorage + "/" + f.selTarget);
+			process(f.selStorage, f.selTarget);
+		} else {
+			return tagHandlers.s(elm);
+		}
 		return 0;
 	} incontextof this,
-
+				  
 	seldone : function(elm)
 	{
         if (f.selDoneStorage != "" || f.selDoneTarget != "") {
@@ -7804,14 +7759,6 @@ class KAGWindow extends Window
         } else {
             return tagHandlers.s(elm);
         }
-		return 0;
-	} incontextof this,
-
-	doneselect : function(elm)
-	{
-        hideSelect();
-        afterSelect();
-        setMenuAccessibleAll();
 		return 0;
 	} incontextof this,
 
