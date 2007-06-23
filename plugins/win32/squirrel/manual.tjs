@@ -1,5 +1,5 @@
 /**
- * Scripts クラスへの squirrel 機能拡張の擬似コードによるマニュアル
+ * Scripts クラスへの squirrel 機能拡張
  */
 class Scripts {
 
@@ -34,6 +34,25 @@ class Scripts {
 	 */
 	function toSQString(obj);
 }
+
+/**
+ * Squirrel のグローバルファンクションを直接呼び出すためのクラス
+ */
+class SQFunction {
+
+	/**
+	 * コンストラクタ
+	 * @param func squirrel のグローバルな関数の名前
+	 */
+	function SQFunction(func);
+
+    /**
+	 * 関数を呼び出す
+	 * @param 引数はそのまま変換してわたされます
+	 * @return 関数の返り値
+	 */
+    function call();
+};
 
 /**
  * Squirrel 専用の Continuous ハンドラを維持するためのクラス

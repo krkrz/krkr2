@@ -11,6 +11,20 @@ void store(tTJSVariant &result, SquirrelObject &obj);
 static const SQUserPointer TJSTYPETAG = (SQUserPointer)"TJSTYPETAG";
 
 /**
+ * エラー処理
+ */
+void
+SQEXCEPTION(HSQUIRRELVM v)
+{
+	sq_getlasterror(v);
+	const SQChar *str;
+	sq_getstring(v, -1, &str);
+	ttstr error = str;
+	sq_pop(v, 1);
+	TVPThrowExceptionMessage(error.c_str());
+}
+
+/**
  * IDispatch 用 iTJSDispatch2 ラッパー
  */
 class iTJSDispatch2Wrapper : public tTJSDispatch
@@ -52,36 +66,28 @@ public:
 		if (membername) {
 			return TJS_E_MEMBERNOTFOUND;
 		}
-		if (obj._type == OT_CLASS) {
-			int ret = S_FALSE;
-			sq_pushobject(SquirrelVM::GetVMPtr(), obj);
-			// this 相当部分
-			sq_pushroottable(SquirrelVM::GetVMPtr());
-			// パラメータ群
-			for (int i=0;i<numparams;i++) {
-				store(SquirrelVM::GetVMPtr(), *param[i]);
-			}
-			if (result) {
-				// 帰り値がある場合
-				if (SQ_SUCCEEDED(sq_call(SquirrelVM::GetVMPtr(), numparams + 1, SQTrue, SQFalse))) {
-					ret = S_OK;
-					{
-						HSQOBJECT x;
-						sq_resetobject(&x);
-						sq_getstackobj(SquirrelVM::GetVMPtr(),-1,&x);
-						*result = new iTJSDispatch2Wrapper(x);
-					}
-					sq_pop(SquirrelVM::GetVMPtr(), 1);
-				}
-			} else {
-				if (SQ_SUCCEEDED(sq_call(SquirrelVM::GetVMPtr(), numparams + 1, SQFalse, SQFalse))) {
-					ret = S_OK;
-				}
-			}
-			sq_pop(SquirrelVM::GetVMPtr(), 1);
-			return ret;
+		if (obj._type != OT_CLASS) {
+			return TJS_E_NOTIMPL;
 		}
-		return TJS_E_NOTIMPL;
+		HSQUIRRELVM v = SquirrelVM::GetVMPtr();
+		int ret = S_FALSE;
+		sq_pushobject(v, obj);
+		sq_pushroottable(v);			// this 相当部分
+		for (int i=0;i<numparams;i++) {	// パラメータ群
+			store(v, *param[i]);
+		}
+		if (!SQ_SUCCEEDED(sq_call(v, numparams + 1, result ? SQTrue:SQFalse, SQTrue))) {
+			sq_pop(v, 1);
+			SQEXCEPTION(v);
+		}
+		if (result) {
+			HSQOBJECT x;
+			sq_resetobject(&x);
+			sq_getstackobj(v,-1,&x);
+			*result = new iTJSDispatch2Wrapper(x);
+		}
+		sq_pop(v, 1);
+		return TJS_S_OK;
 	}
 
 	
@@ -94,60 +100,50 @@ public:
 		tTJSVariant **param,
 		iTJSDispatch2 *objthis
 		) {
+		HSQUIRRELVM v = SquirrelVM::GetVMPtr();
 		if (membername == NULL) {
-			if (obj._type == OT_CLOSURE ||
-				obj._type == OT_NATIVECLOSURE ||
-				obj._type == OT_GENERATOR) {
-				int ret = S_FALSE;
-				sq_pushobject(SquirrelVM::GetVMPtr(), obj);
-				// this 相当部分
-				sq_pushroottable(SquirrelVM::GetVMPtr());
-				// パラメータ群
-				for (int i=0;i<numparams;i++) {
-					store(SquirrelVM::GetVMPtr(), *param[i]);
-				}
-				if (result) {
-					// 帰り値がある場合
-					if (SQ_SUCCEEDED(sq_call(SquirrelVM::GetVMPtr(), numparams + 1, SQTrue, SQFalse))) {
-						ret = S_OK;
-						store(*result, SquirrelVM::GetVMPtr());
-						sq_pop(SquirrelVM::GetVMPtr(), 1);
-					}
-				} else {
-					if (SQ_SUCCEEDED(sq_call(SquirrelVM::GetVMPtr(), numparams + 1, SQFalse, SQFalse))) {
-						ret = S_OK;
-					}
-				}
-				sq_pop(SquirrelVM::GetVMPtr(), 1);
-				return ret;
+			if (!(obj._type == OT_CLOSURE ||
+				  obj._type == OT_NATIVECLOSURE ||
+				  obj._type == OT_GENERATOR)) {
+				return TJS_E_NOTIMPL;
 			}
-			return TJS_E_NOTIMPL;
+			sq_pushobject(v, obj);
+			sq_pushroottable(v);
+			for (int i=0;i<numparams;i++) {	// パラメータ群
+				store(v, *param[i]);
+			}
+			if (!SQ_SUCCEEDED(sq_call(v, numparams + 1, result ? SQTrue:SQFalse, SQTrue))) {
+				sq_pop(v, 1);
+				SQEXCEPTION(v);
+			}
+			if (result) {
+				store(*result, v);
+				sq_pop(v, 1);
+			}
+			sq_pop(v, 1);
+			return TJS_S_OK;
 		} else {
-			int ret = S_FALSE;
-			sq_pushobject(SquirrelVM::GetVMPtr(), obj);
-			sq_pushstring(SquirrelVM::GetVMPtr(), membername,-1);
-			if(SQ_SUCCEEDED(sq_get(SquirrelVM::GetVMPtr(),-2))) {
-				// this
-				sq_pushobject(SquirrelVM::GetVMPtr(), obj);
-				// パラメータ群
-				for (int i=0;i<numparams;i++) {
-					store(SquirrelVM::GetVMPtr(), *param[i]);
-				}
-				if (result) {
-					// 帰り値がある場合
-					if (SQ_SUCCEEDED(sq_call(SquirrelVM::GetVMPtr(), numparams + 1, SQTrue, SQFalse))) {
-						ret = S_OK;
-						store(*result, SquirrelVM::GetVMPtr());
-						sq_pop(SquirrelVM::GetVMPtr(), 1);
-					}
-				} else {
-					if (SQ_SUCCEEDED(sq_call(SquirrelVM::GetVMPtr(), numparams + 1, SQFalse, SQFalse))) {
-						ret = S_OK;
-					}
-				}
+			sq_pushobject(v, obj);
+			sq_pushstring(v, membername,-1);
+			if (!SQ_SUCCEEDED(sq_get(v,-2))) {
+				sq_pop(v, 1);
+				return TJS_E_MEMBERNOTFOUND;
 			}
-			sq_pop(SquirrelVM::GetVMPtr(), 1);
-			return ret;
+			sq_pushobject(v, obj); // this
+			for (int i=0;i<numparams;i++) {	// パラメータ群
+				store(v, *param[i]);
+			}
+			// 帰り値がある場合
+			if (!SQ_SUCCEEDED(sq_call(v, numparams + 1, result ? SQTrue:SQFalse, SQTrue))) {
+				sq_pop(v, 2);
+				SQEXCEPTION(v);
+			}
+			if (result) {
+				store(*result, v);
+				sq_pop(v, 1);
+			}
+			sq_pop(v, 2);
+			return TJS_S_OK;
 		}
 	}
 
@@ -162,18 +158,18 @@ public:
 		if (!membername) {
 			return TJS_E_NOTIMPL;
 		}
-		int ret = S_FALSE;
-		sq_pushobject(SquirrelVM::GetVMPtr(), obj);
-		sq_pushstring(SquirrelVM::GetVMPtr(), membername,-1);
-		if(SQ_SUCCEEDED(sq_get(SquirrelVM::GetVMPtr(),-2))) {
-			ret = S_OK;
-			if (result) {
-				store(*result, SquirrelVM::GetVMPtr());
-			}	
-			sq_pop(SquirrelVM::GetVMPtr(),1);
+		HSQUIRRELVM v = SquirrelVM::GetVMPtr();
+		sq_pushobject(v, obj);
+		sq_pushstring(v, membername,-1);
+		if (!SQ_SUCCEEDED(sq_get(v,-2))) {
+			sq_pop(v,1);
+			return TJS_E_MEMBERNOTFOUND;
 		}
-		sq_pop(SquirrelVM::GetVMPtr(),1);
-		return ret;
+		if (result) {
+			store(*result, v);
+		}
+		sq_pop(v,2);
+		return TJS_S_OK;
 	}
 
 	tjs_error TJS_INTF_METHOD PropSet(
@@ -187,21 +183,23 @@ public:
 		if (!membername) {
 			return TJS_E_NOTIMPL;
 		}
-		int ret = S_FALSE;
-		sq_pushobject(SquirrelVM::GetVMPtr(), obj);
-		sq_pushstring(SquirrelVM::GetVMPtr(), membername,-1);
-		store(SquirrelVM::GetVMPtr(), (tTJSVariant&)*param);
+		HSQUIRRELVM v = SquirrelVM::GetVMPtr();
+		sq_pushobject(v, obj);
+		sq_pushstring(v, membername,-1);
+		store(v, (tTJSVariant&)*param);
 		if ((flag & TJS_MEMBERENSURE)) {
-			if(SQ_SUCCEEDED(sq_newslot(SquirrelVM::GetVMPtr(),-3, SQFalse))) {
-				ret = S_OK;
+			if (!SQ_SUCCEEDED(sq_newslot(v,-3, SQFalse))) {
+				sq_pop(v,1);
+				SQEXCEPTION(v);
 			}
 		} else {
-			if(SQ_SUCCEEDED(sq_set(SquirrelVM::GetVMPtr(),-3))) {
-				ret = S_OK;
+			if (!SQ_SUCCEEDED(sq_set(v,-3))) {
+				sq_pop(v,1);
+				SQEXCEPTION(v);
 			}
 		}
-		sq_pop(SquirrelVM::GetVMPtr(),1);
-		return ret;
+		sq_pop(v,1);
+		return TJS_S_OK;
 	}
 };
 
