@@ -3,13 +3,18 @@
  */
 class StageGraphicLayer extends EnvGraphicLayer {
 
-	function StageGraphicLayer() {
-		super.EnvGraphicLayer(...);
+	/**
+	 * コンストラクタ
+	 * @param owner オブジェクト情報をもってる親
+	 * @param isfore 表画面か裏画面か
+	 */
+	function constructor(owner, isfore) {
+		::EnvGraphicLayer.constructor(owner, isfore);
 	}
 
 	function recalcPosition() {
-		setRealPosition(owner.env.xmax + left - width / 2,
-						owner.env.ymax + top  - height / 2);
+		setRealPosition(owner.env.xmax + _left - getWidth() / 2,
+						owner.env.ymax + _top  - getHeight() / 2);
 	}
 };
 
@@ -17,28 +22,32 @@ class StageGraphicLayer extends EnvGraphicLayer {
 /**
  * 背景を処理するレイヤ
  * グローバルに以下のメソッドがあった場合はフックとして呼び出します
- * setTimeHook(time, elm)     時間変更時フック
- * setStageHook(stage, elm)   ステージ変更時フック
  */
 class EnvStageLayer extends EnvBackLayer {
 
 	/// 時間
-	var timeName;
+	timeName = null;
     /// 舞台
-	var stageName;
+	stageName = null;
 
 	function initImage() {
-		timeName = void;
-		stageName = void;
+		timeName = null;
+		stageName = null;
 	}
+
+	stageLayerCommands = null;
 	
     /**
 	 * コンストラクタ
      * @param env 環境
 	 * @param name 環境のレイヤ名
 	 */
-	function EnvStageLayer(env) {
-		super.EnvBackLayer(env, "stage", 100);
+	function constructor(env) {
+		::EnvBackLayer.constructor(env, "stage", 100);
+		stageLayerCommands = {
+			stage = setStage,
+			stime = setTime,
+		};
     }
 
 	/**
@@ -46,42 +55,61 @@ class EnvStageLayer extends EnvBackLayer {
 	 */
 	function updateStageImage(elm) {
 
-		if (stageName === void) {
+		if (stageName == null) {
 			return;
 		}
 
-		var info = env.stages[stageName];
-		if (info === void) {
-			throw new Exception("ステージ情報がありません:" + stageName);
+		local info;
+		if (stageName in env.stages) {
+			info = env.stages[stageName];
+		} else {
+			throw "ステージ情報がありません:" + stageName;
 		}
 		
-		var image = info.image;
-		// 時間情報で上書き
-		timeName = env.defaultTime if timeName === void;
-		image = image.replace(/TIME/, env.times[timeName].prefix);
+		local image = info.image;
+		if (timeName == null) {
+			timeName = env.defaultTime;
+		}
+		if (timeName in env.times) {
+			image = replace(image, "TIME", env.times[timeName].prefix);
+		}
 
 		if (!isExistImageName(image)) {
 			// 画像がない場合は標準画像の補正で対応
-			image = env.stages[stageName].image;
-			image = image.replace(/TIME/, env.times[env.defaultTime].prefix);
+			image = info.image;
+			image = replace(image, "TIME", env.times[env.defaultTime].prefix);
 			// 色補正処理
-			var timeInfo;
-			if ((timeInfo = env.currentTime) !== void) {
-				elm.lightcolor = timeInfo.lightColor;
-				elm.lighttype  = timeInfo.lightType;
-				elm.brightness = timeInfo.brightness;
-				elm.contrast   = timeInfo.contrast;
+			local timeInfo;
+			if ((timeInfo = env.getCurrentTime()) != null) {
+				if ("lightColor" in timeInfo) {
+					elm.lightcolor = timeInfo.lightColor;
+				}
+				if ("lightType" in timeInfo) {
+					elm.lighttype  = timeInfo.lightType;
+				}
+				if ("brigtness" in timeInfo) {
+					elm.brightness = timeInfo.brightness;
+				}
+				if ("contrast" in timeInfo) {
+					elm.contrast   = timeInfo.contrast;
+				}
 			}
 		}
 		
-		if (elm.xpos === void && elm.left === void && info.left !== void) {
-			props.left = +info.left;
+		if (!("xpos" in elm) && !("left" in elm) && "left" in info) {
+			props.left <- info.left;
 		}
-		if (elm.ypos === void && elm.top  === void && info.top !== void) {
-			props.top = +info.top;
+		if (!("ypos" in elm) && !("top" in elm) && "top" in info) {
+			props.top <- info.top;
 		}
 		setImageFile(image, elm);
-		setAutoTrans([info.trans, env.envinfo.stageTrans, env.envinfo.envTrans]);
+		if ("trans" in info) {
+			setAutoTrans(info.trans);
+		} else if ("stageTrans" in env.envinfo) {
+			setAutoTrans(env.envinfo.stageTrans);
+		} else if ("envTrans" in env.envinfo) {
+			setAutoTrans(env.envinfo.envTrans);
+		}
 	}
 	
 	/**
@@ -92,14 +120,8 @@ class EnvStageLayer extends EnvBackLayer {
     function setStage(stageName, elm) {
 
 		if (this.stageName != stageName || isClear() || env.event.isShow()) {
-
 			this.stageName = stageName;
 			updateStageImage(elm);
-			
-			// ステージ変更時フック
-			if (typeof global.setStageHook != "undefined") {
-				global.setStageHook(stageName, elm);
-            }
         }
 		// イベント絵は消去
 		if (env.event.isShow()) {
@@ -119,15 +141,10 @@ class EnvStageLayer extends EnvBackLayer {
 			this.timeName = timeName;
 			updateStageImage(elm);
 			
-			// 時間変更時フック
-			if (typeof global.setTimeHook != "undefined") {
-				global.setTimeHook(timeName, elm);
-            }
-
 			// 時間変更はキャラの立ち絵も再描画の必要がある
-			foreach(env.characters, function(name, value, dict) {
+			foreach (name, value in env.characters) {
 				value.setRedraw();
-            });
+            };
         }
         // イベント絵は消去
 		if (env.event.isShow()) {
@@ -137,12 +154,6 @@ class EnvStageLayer extends EnvBackLayer {
 
 	// ------------------------------------------------------
 	
-	var stageLayerCommands = %[
-	stage : this.setStage incontextof this,
-	stime : this.setTime incontextof this,
-		];
-
-
     /**
 	 * コマンドの実行
 	 * @param cmd コマンド
@@ -153,13 +164,13 @@ class EnvStageLayer extends EnvBackLayer {
     function doCommand(cmd, param, elm) {
 
 		// 共通コマンド
-		if (super.doCommand(cmd, param, elm)) {
+		if (::EnvBackLayer.doCommand(cmd, param, elm)) {
 			return true;
         }
 
 		// レイヤ共通コマンド
-		var func;
-		if ((func = stageLayerCommands[cmd]) !== void) {
+		if (cmd in stageLayerCommands) {
+			local func = stageLayerCommands[cmd];
 			if (func != null) {
 				func(param, elm);
 			}
@@ -167,11 +178,10 @@ class EnvStageLayer extends EnvBackLayer {
 		}
 
 		// 時間と舞台
-		var info;
-		if (env.times !== void && (info = env.times[cmd]) !== void) {
+		if (cmd in env.times) {
 			setTime(cmd, elm);
 			return true;
-		} else if (env.stages !== void && (info = env.stages[cmd]) !== void) {
+		} else if (cmd in env.stages) {
 			setStage(cmd, elm);
 			return true;
 		}
@@ -186,10 +196,10 @@ class EnvStageLayer extends EnvBackLayer {
 	 * キャラクタも更新する必要がある
 	 */
 	function update(isfore) {
-		foreach(env.characters, function(name, value, dict, isfore) {
+		foreach (name, value in env.characters) {
 			value.update(isfore);
-		}, isfore);
-		super.update(isfore);
+		};
+		::EnvBackLayer.update(isfore);
 	}
 	
 	// ------------------------------------------------------
@@ -198,13 +208,17 @@ class EnvStageLayer extends EnvBackLayer {
 	 * 表示処理用の自動トランジションの指定
 	 */
 	function setDispAutoTrans() {
-		setAutoTrans([env.envinfo.stageTrans, env.envinfo.envTrans]);
+		if ("stageTrans" in env.envinfo) {
+			setAutoTrans(env.envinfo.stageTrans);
+		} else if ("envTrans" in env.envinfo) {
+			setAutoTrans(env.envinfo.envTrans);
+		}
 	}
 
 	/**
 	 * 新レイヤ生成
 	 */
 	function createLayer(isfore) {
-		return new StageGraphicLayer(this, isfore);
+		return StageGraphicLayer(this, isfore);
 	}
 }

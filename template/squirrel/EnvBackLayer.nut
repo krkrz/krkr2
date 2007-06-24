@@ -1,24 +1,21 @@
 /**
  * 背景用レイヤ
+ * EnvLevelLayer の定義を上書きして消してしまう
  */
 class EnvBackLayer extends EnvLayer {
 
-	var absolute;
+	// 表示レベル
+	absolute = null;
 	
 	// 描画対象レイヤ
-	var targetLayer;
+	targetLayer = null;
 	
     /**
      * コンストラクタ
      */
-	function EnvBackLayer(env, name, absolute) {
-		super.EnvLayer(env, name);
+	constructor(env, name, absolute) {
+		::EnvLayer.constructor(env, name);
 		this.absolute = absolute;
-    }
-
-    function finalize() {
-		player.trashLayer(targetLayer);
-		super.finalize();
     }
 
 	/**
@@ -27,27 +24,20 @@ class EnvBackLayer extends EnvLayer {
 	function onCopyLayer(toback, backlay) {
 		if (backlay) {
 			if (toback) {
-				if (targetLayer !== void) {
-					//dm("裏画面にコピー:" + name);
-					//dm("元レイヤ:" + targetLayer + ":" + (player.isForeLayer(targetLayer) ? "表" : "裏"));
+				if (targetLayer != null) {
 					if (player.isForeLayer(targetLayer) && targetLayer.visible) {
 						targetLayer = player.getNewLayer(this, false, targetLayer);
 						targetLayer.absolute = absolute;
-						//dm("複製レイヤ:" + targetLayer + ":" + (player.isForeLayer(targetLayer) ? "表" : "裏"));
 					} else {
-						//dm("廃棄");
 						targetLayer = player.trashLayer(targetLayer);
 					}
 				}
 			} else {
-				if (targetLayer !== void) {
-					//dm("表画面にコピー:" + name);
+				if (targetLayer != null) {
 					if (!player.isForeLayer(targetLayer) && targetLayer.visible) {
-						//dm("表に移動");
 						player.toForeLayer(targetLayer);
 						targetLayer.absolute = absolute;
 					} else {
-						//dm("廃棄");
 						targetLayer = player.trashLayer(targetLayer);
 					}
 				}
@@ -61,7 +51,7 @@ class EnvBackLayer extends EnvLayer {
      * 同時にレベルに応じた front/back の処理も実行する
      */
 	function getLayer(isfore) {
-		if (targetLayer === void || player.isForeLayer(targetLayer) != isfore) {
+		if (targetLayer == null || player.isForeLayer(targetLayer) != isfore) {
 			targetLayer = player.getNewLayer(this, isfore, targetLayer);
 		}
 		targetLayer.absolute = absolute;

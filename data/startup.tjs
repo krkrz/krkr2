@@ -10,6 +10,7 @@
 
 	if(Storages.isExistentStorage("../template/system/Initialize.tjs"))	{
 		Storages.addAutoPath("../template/system/");
+		Storages.addAutoPath("../template/squirrel/");
 		Scripts.execStorage("../template/system/Initialize.tjs");
 	} else {
 		throw_system_not_found();
