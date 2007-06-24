@@ -33,6 +33,19 @@ class Scripts {
 	 * @return Squirrel 形式のテキスト
 	 */
 	function toSQString(obj);
+
+    /**
+	 * Squirrel のグローバル空間に TJS2 のオブジェクト/関数を登録する
+	 * @param name 登録名称
+	 * @param obj オブジェクト（省略した場合は名称で参照されるオブジェクト）
+	 */
+	function registSQ(name, obj);
+
+    /**
+	 * Squirrel のグローバル空間に登録されたオブジェクトを解放する
+	 * @param name 登録名称
+	 */
+	function unregistSQ(name);
 }
 
 /**

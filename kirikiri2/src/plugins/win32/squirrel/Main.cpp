@@ -290,6 +290,11 @@ public:
 		return TJS_S_OK;
 	}
 
+	/**
+	 * squirrel 形式で文字列化
+	 * @param obj オブジェクト
+	 * @return 実行結果
+	 */
 	static tjs_error TJS_INTF_METHOD toString(tTJSVariant *result,
 											  tjs_int numparams,
 											  tTJSVariant **param,
@@ -302,6 +307,45 @@ public:
 		}
 		return TJS_S_OK;
 	}
+
+	/**
+	 * squirrel の名前空間に登録
+	 * @param name オブジェクト名
+	 * @param obj オブジェクト
+	 */
+	static tjs_error TJS_INTF_METHOD regist(tTJSVariant *result,
+											tjs_int numparams,
+											tTJSVariant **param,
+											iTJSDispatch2 *objthis) {
+		if (numparams < 1) return TJS_E_BADPARAMCOUNT;
+		if (numparams > 1) {
+			registglobal(SquirrelVM::GetVMPtr(),
+						 param[0]->GetString(),
+						 param[1]->AsObjectNoAddRef());
+		} else {
+			tTJSVariant var;
+			TVPExecuteExpression(param[0]->GetString(), &var);
+			registglobal(SquirrelVM::GetVMPtr(),
+						 param[0]->GetString(),
+						 var.AsObjectNoAddRef());
+		}
+		return TJS_S_OK;
+	}
+
+	/**
+	 * squirrel の名前空間から削除
+	 * @param name オブジェクト名
+	 * @param obj オブジェクト
+	 */
+	static tjs_error TJS_INTF_METHOD unregist(tTJSVariant *result,
+											  tjs_int numparams,
+											  tTJSVariant **param,
+											  iTJSDispatch2 *objthis) {
+		if (numparams < 1) return TJS_E_BADPARAMCOUNT;
+		unregistglobal(SquirrelVM::GetVMPtr(),
+					   param[0]->GetString());
+		return TJS_S_OK;
+	}
 };
 
 NCB_ATTACH_CLASS(ScriptsSquirrel, Scripts) {
@@ -309,6 +353,8 @@ NCB_ATTACH_CLASS(ScriptsSquirrel, Scripts) {
 	RawCallback("execStorageSQ", &ScriptsSquirrel::execStorage, TJS_STATICMEMBER);
 	RawCallback("saveSQ",        &ScriptsSquirrel::save,        TJS_STATICMEMBER);
 	RawCallback("toSQString",    &ScriptsSquirrel::toString,    TJS_STATICMEMBER);
+	RawCallback("registSQ",      &ScriptsSquirrel::regist,      TJS_STATICMEMBER);
+	RawCallback("unregistSQ",    &ScriptsSquirrel::unregist,    TJS_STATICMEMBER);
 };
 
 /**
