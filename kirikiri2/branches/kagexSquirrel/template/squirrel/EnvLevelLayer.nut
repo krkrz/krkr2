@@ -1,32 +1,27 @@
 /**
  * 前景レイヤのレベル制御用
  */
-class EnvLevelLayer {
+class EnvLevelLayer extends EnvImage {
 
     /// 表示レベル
-    var level;
-    /// 表示絶対レベル
-	var absolute;
-	/// 復帰フラグ
-	var restore;
+	level = null;
+	/// 表示絶対レベル
+	absolute = null;
 	
 	// 描画対象レイヤ
-	var targetLayer;
+	targetLayer = null;
 	
-    /// 位置変更
-    var front;
-    var back;
+	/// 位置変更
+    front = null;
+	back = null;
 
     /**
      * コンストラクタ
      */
-    function EnvLevelLayer() {
-		level = void;
-    }
-
-    function finalize() {
-		player.trashLayer(targetLayer);
-    }
+	function constructor(env, name) {
+		::EnvImage.constructor(env, name);
+		level = null;
+	}
 
 	/**
 	 * レイヤのコピー処理
@@ -34,25 +29,18 @@ class EnvLevelLayer {
 	function onCopyLayer(toback, backlay) {
 		if (backlay) {
 			if (toback) {
-				if (targetLayer !== void) {
-					//dm("裏画面にコピー:" + name);
-					//dm("元レイヤ:" + targetLayer + ":" + (player.isForeLayer(targetLayer) ? "表" : "裏"));
+				if (targetLayer != null) {
 					if (player.isForeLayer(targetLayer) && targetLayer.visible) {
 						targetLayer = player.getNewLayer(this, false, targetLayer);
-						//dm("複製レイヤ:" + targetLayer + ":" + (player.isForeLayer(targetLayer) ? "表" : "裏"));
 					} else {
-						//dm("廃棄");
 						targetLayer = player.trashLayer(targetLayer);
 					}
 				}
 			} else {
-				if (targetLayer !== void) {
-					//dm("表画面にコピー:" + name);
+				if (targetLayer != null) {
 					if (!player.isForeLayer(targetLayer) && targetLayer.visible) {
-						//dm("表に移動");
 						player.toForeLayer(targetLayer);
 					} else {
-						//dm("廃棄");
 						targetLayer = player.trashLayer(targetLayer);
 					}
 				}
@@ -66,15 +54,10 @@ class EnvLevelLayer {
      * 同時にレベルに応じた front/back の処理も実行する
      */
 	function getLayer(isfore) {
-		if (targetLayer === void || player.isForeLayer(targetLayer) != isfore) {
+		if (targetLayer == null || player.isForeLayer(targetLayer) != isfore) {
 			targetLayer = player.getNewLayer(this, isfore, targetLayer);
 		}
-		if (restore) {
-			targetLayer.level    = +level    if (level !== void);
-			targetLayer.absolute = +absolute if (absolute !== void);
-			restore = false;
-		}
-		if (level === void) {
+		if (level == null) {
 			level = env.defaultLevel;
 		}
 		player.toLevel(targetLayer, level);
@@ -82,8 +65,8 @@ class EnvLevelLayer {
 			player.toFront(targetLayer);
 		} else if (back) {
 			player.toBack(targetLayer);
-        }
-		front = back = void;
+		}
+		front = back = null;
 		absolute = targetLayer.absolute;
 		return targetLayer;
     }
@@ -106,10 +89,9 @@ class EnvLevelLayer {
 
     /**
      * レベルの指定
-     */
-    function setLevel(cmd, elm) {
+	 */
+	function setLevel(cmd, elm) {
 		level = cmd;
-		absolute = void;
-    } 
-
+		absolute = null;
+	} 
 }

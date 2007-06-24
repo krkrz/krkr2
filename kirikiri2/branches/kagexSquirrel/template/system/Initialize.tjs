@@ -99,6 +99,7 @@ Storages.addAutoPath("bgimage/"); // 背景画像フォルダ
 Storages.addAutoPath("scenario/"); // シナリオフォルダ
 Storages.addAutoPath("image/"); // そのほかの画像フォルダ
 Storages.addAutoPath("system/"); // システムフォルダ
+Storages.addAutoPath("squirrel/"); // Squirrel システムフォルダ
 Storages.addAutoPath("voice/");  // ボイスフォルダ
 Storages.addAutoPath("face/");   // フェイスフォルダ
 Storages.addAutoPath("init/");   // 初期化用フォルダ

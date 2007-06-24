@@ -3,31 +3,47 @@
  */
 class EnvBgm extends EnvObject {
 	
-	var storage;   // 参照しているファイル名
-	var volume;    // 音量
-	var loop;      // ループ指定
-	var start;     // 開始指定
-	var pause;     // ポーズ指定
+	storage = null;   // 参照しているファイル名
+	volume = null;    // 音量
+	loop = null;      // ループ指定
+	start = null;     // 開始指定
+	pause = null;     // ポーズ指定
 
-	var transTime; // 変動時間
-	var waitFade;  // フェード待ち指定
-	var wait;      // 終了待ち指定
+	transTime = null; // 変動時間
+	waitFade = null;  // フェード待ち指定
+	wait = null;      // 終了待ち指定
 
-	var replay;  // 再生指定
-	var refade;  // 音量指定
-	var repause;
+	replay = null;  // 再生指定
+	refade = null;  // 音量指定
+	repause = null;
 
+	bgmcommands = null;
+	
     /**
      * コンストラクタ
      */
-    function EnvBgm(env) {
-		super.EnvObject(env, "bgm");
-    }
+	constructor(env) {
+		::EnvObject.constructor(env, "bgm");
+		bgmcommands = {
+			tagname = null, 
+			storage = setPlay,
+			play = setPlay,
+			stop = setStop,
+			pause = setPause,
+			["resume"] = setResume,
+			fade = setFade,
+			wait = setWait,
+			waitfade = setWaitFade,
+			loop = null,
+			time = null,
+			start = null,
+		};
+	}
 
 	function init() {
 		replay = true;
-		storage = void;
-		transTime = void;
+		storage = null;
+		transTime = null;
 	}
 	
     /**
@@ -36,13 +52,23 @@ class EnvBgm extends EnvObject {
      */
     function setPlay(param, elm) {
 		//dm("BGM再生:" + param);
-		if (param !== void) {
+		if (param != null) {
 			replay = true;
 			storage = param;
-			volume    = elm.volume !== void ? +elm.volume : 100;
-			loop      = elm.loop;
-			start     = elm.start;
-			transTime = +elm.time if elm.time !== void;
+			if ("volume" in elm) {
+				volume    = elm.volume;
+			} else {
+				volume = 100;
+			}
+			if ("loop" in elm) {
+				loop      = elm.loop;
+			}
+			if ("start" in elm) {
+				start     = elm.start;
+			}
+			if ("time" in elm) {
+				transTime = elm.time;
+			}
 			player.setBGMFlag(param);
         }
     }
@@ -54,8 +80,12 @@ class EnvBgm extends EnvObject {
 	function setStop(param, elm) {
 		//dm("BGM停止");
 		replay = true;
-		storage = void;
-		transTime = elm.time !== void ? +elm.time : +param;
+		storage = null;
+		if ("time" in elm) {
+			transTime = elm.time;
+		} else {
+			transTime = param;
+		}
     }
 
     /**
@@ -63,7 +93,7 @@ class EnvBgm extends EnvObject {
      * @param param フェードアウト時間
      */
 	function setPause(param, elm) {
-		if (storage !== void) {
+		if (storage != null) {
 			repause = true;
 			pause = true;
 		}
@@ -73,7 +103,7 @@ class EnvBgm extends EnvObject {
 	 * 再開
 	 */
 	function setResume(param, elm) {
-		if (storage !== void) {
+		if (storage != null) {
 			repause = true;
 			pause = false;
 		}
@@ -86,7 +116,11 @@ class EnvBgm extends EnvObject {
 	function setFade(param, elm) {
 		refade    = true;
 		volume    = param;
-		transTime = elm.time !== void ? +elm.time : +param;
+		if ("time" in elm) {
+			transTime = elm.time;
+		} else {
+			transTime = param;
+		}
     }
 
     /**
@@ -94,11 +128,7 @@ class EnvBgm extends EnvObject {
      * @param param フェード時間
      */
     function setWait(param, elm) {
-        wait = %[];
-        (Dictionary.assign incontextof wait)(elm, false);
-        if (wait.canskip === void) {
-            wait.canskip = true;
-        }
+		wait = clone elm;
     }
 
     /**
@@ -106,31 +136,9 @@ class EnvBgm extends EnvObject {
      * @param param フェード時間
      */
     function setWaitFade(param, elm) {
-        waitFade = %[];
-        (Dictionary.assign incontextof waitFade)(elm, false);
-        if (waitFade.canskip === void) {
-            waitFade.canskip = true;
-        }
-    }
+		waitFade = clone elm;
+	}
 
-    var bgmcommands = %[
-    tagname : null, 
-	storage : setPlay incontextof this,
-    play : setPlay incontextof this,
-    stop : setStop incontextof this,
-    pause : setPause incontextof this,
-	resume : setResume incontextof this,
-    fade : setFade incontextof this,
-    wait : setWait incontextof this,
-    waitfade : setWaitFade incontextof this,
-    loop : null,
-    time : null,
-    start : null,
-    canskip : null,
-        ];
-
-    var doflag;
-    
     /**
      * コマンドの実行
      * @param cmd コマンド
@@ -139,10 +147,10 @@ class EnvBgm extends EnvObject {
      * @return 実行が行われた場合 true
      */
     function doCommand(cmd, param, elm) {
-        var func;
-        if ((func = bgmcommands[cmd]) !== void) {
-            if (func != null) {
-                func(param, elm);
+		if (cmd in bgmcommands) {
+			local func = bgmcommands[cmd];
+			if (func != null) {
+				func(param, elm);
 				return true;
             }
 			return false;
@@ -158,14 +166,12 @@ class EnvBgm extends EnvObject {
      */
 	function tagcommand(elm) {
 		//dm("BGM 用ファンクション呼び出し!");
-		wait = void;
-		waitFade = void;
-		transTime = void;
-		var doflag = false;
-		var names = [];
-		names.assign(elm);
-		for (var i=0; i<names.count; i+= 2) {
-			if (doCommand(names[i], names[i+1], elm)) {
+		wait = null;
+		waitFade = null;
+		transTime = null;
+		local doflag = false;
+		foreach (name, value in elm) {
+			if (doCommand(name, value, elm)) {
 				doflag = true;
 			}
 		}
@@ -180,8 +186,8 @@ class EnvBgm extends EnvObject {
 	function sync() {
 		if (replay) {
 			//dm("再生状態変更:" + storage);
-			if (storage !== void) {
-				player.playBGM(transTime, %[storage:storage, loop:loop, start:start]);
+			if (storage != null) {
+				player.playBGM(transTime, {storage=storage, loop=loop, start=start, volume=volume});
 			} else {
 				player.stopBGM(transTime);
 			}
@@ -202,10 +208,10 @@ class EnvBgm extends EnvObject {
 			}
 			repause = false;
 		}
-		if (waitFade !== void) {
-			return player.waitBGMFade(waitFade);
-		} else  if (wait !== void) {
-			return player.waitBGMStop(wait);
+		if (waitFade != null) {
+			return player.waitBGMFade(getint(waitFade,"timeout"), getint(waitFade, "canskip", true));
+		} else  if (wait != null) {
+			return player.waitBGMStop(getint(wait, "timeout"), getint(wait, "canskip", true));
 		}
         return 0;
     }
