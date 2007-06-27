@@ -40,6 +40,13 @@ extern void SQEXCEPTION(HSQUIRRELVM v);
 
 #include "../json/Writer.hpp"
 
+static bool isal(int c) {
+	return (c >= 'a' && c <= 'z' ||
+			c >= 'A' && c <= 'Z' ||
+			c == '_');
+}
+
+
 static bool isaln(int c) {
 	return (c >= '0' && c <= '9' ||
 			c >= 'a' && c <= 'z' ||
@@ -51,6 +58,9 @@ static bool
 isSimpleString(const tjs_char *str)
 {
 	const tjs_char *p = str;
+	if (!isal(*p)) {
+		return false;
+	}
 	while (*p != '\0') {
 		if (!isaln(*p)) {
 			return false;
@@ -158,7 +168,7 @@ static void getArrayString(iTJSDispatch2 *array, IWriter *writer)
 	for (tjs_int i=0; i<count; i++) {
 		if (i != 0) {
 			writer->write((tjs_char)',');
-			//writer->newline();
+			writer->newline();
 		}
 		tTJSVariant result;
 		if (array->PropGetByNum(TJS_IGNOREPROP, i, &result, array) == TJS_S_OK) {
