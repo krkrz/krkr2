@@ -40,6 +40,68 @@ extern void SQEXCEPTION(HSQUIRRELVM v);
 
 #include "../json/Writer.hpp"
 
+// squirrel —\–ñŒêˆê——
+static const char *reservedKeys[] = 
+{
+	"break",
+	"case",
+	"catch",
+	"class",
+	"clone",
+	"continue",
+	"default",
+	"delegate",
+	"delete",
+	"else",
+	"extends",
+	"for",
+	"function",
+	"if",
+	"in",
+	"local",
+	"null",
+	"resume",
+	"return",
+	"switch",
+	"this",
+	"throw",
+	"try",
+	"typeof" ,
+	"while",
+	"parent",
+	"yield",
+	"constructor",
+	"vargc",
+	"vargv" ,
+	"instanceof",
+	"true",
+	"false",
+	"static",
+	NULL
+};
+
+#include <set>
+using namespace std;
+
+// —\–ñŒêˆê——
+set<ttstr> reserved;
+
+// —\–ñŒê‚Ì“o˜^
+static void initReserved()
+{
+	const char **p = reservedKeys;
+	while (*p != NULL) {
+		reserved.insert(ttstr(*p));
+		p++;
+	}
+}
+
+// —\–ñŒê‚©‚Ç‚¤‚©
+static bool isReserved(const tjs_char *key)
+{
+	return reserved.find(ttstr(key)) != reserved.end();
+}
+
 static bool isal(int c) {
 	return (c >= 'a' && c <= 'z' ||
 			c >= 'A' && c <= 'Z' ||
@@ -122,7 +184,7 @@ public:
 //					writer->newline();
 				}
 				const tjs_char *name = param[0]->GetString();
-				if (isSimpleString(name)) {
+				if (!isReserved(name) && isSimpleString(name)) {
 					writer->write(name);
 					writer->write((tjs_char)'=');
 				} else {
@@ -524,6 +586,9 @@ static void PreRegistCallback()
 {
 	// Copyright •\¦
 	TVPAddImportantLog(ttstr(copyright));
+
+	// —\–ñŒê“o˜^
+	initReserved();
 
 	// squirrel ‰Šú‰»
 	SquirrelVM::Init();
