@@ -69,7 +69,7 @@ var foo = new sqglobal.Foo();
 foo.print();
 Debug.message(foo.data);
 
-var a = ["abc", 1, %[ test:"data", test2:1]];
+var a = ["abc", 1, %[ test:"data", test2:1, "if" => "test" ]];
 
 Debug.message("Squirrel convert:" + Scripts.toSQString(a));
 Scripts.saveSQ("a.nut", a);
