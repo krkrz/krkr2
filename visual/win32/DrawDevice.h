@@ -133,8 +133,8 @@ public:
 	//! @param		flags	フラグ(TVP_SS_*定数の組み合わせ)
 	virtual void TJS_INTF_METHOD OnMouseMove(tjs_int x, tjs_int y, tjs_uint32 flags) = 0;
 
-	//! @brief		(Window→DrawDevice) マウスキャプチャを解放する
-	//! @note		マウスキャプチャを解放すべき場合にウィンドウから呼ばれる。
+	//! @brief		(Window→DrawDevice) レイヤのマウスキャプチャを解放する
+	//! @note		レイヤのマウスキャプチャを解放すべき場合にウィンドウから呼ばれる。
 	virtual void TJS_INTF_METHOD OnReleaseCapture() = 0;
 
 	//! @brief		(Window→DrawDevice) マウスが描画矩形外に移動した
