@@ -89,6 +89,12 @@ public:
 	//! @param		y			描画矩形内の座標におけるマウスカーソルのy位置
 	virtual void TJS_INTF_METHOD SetCursorPos(tjs_int x, tjs_int y) = 0;
 
+	//! @brief		ウィンドウのマウスキャプチャを解放する
+	//! @note		ウィンドウのマウスキャプチャを解放すべき場合に呼ぶ。
+	//! @note		このメソッドでは基本的には ::ReleaseCapture() などで
+	//!				マウスのキャプチャを開放すること。
+	virtual void TJS_INTF_METHOD WindowReleaseCapture() = 0;
+
 	//! @brief		ツールチップヒントを設定する
 	//! @param		text		ヒントテキスト(空文字列の場合はヒントの表示をキャンセルする)
 	virtual void TJS_INTF_METHOD SetHintText(const ttstr & text) = 0;

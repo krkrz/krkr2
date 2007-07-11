@@ -554,6 +554,8 @@ void TJS_INTF_METHOD tTVPLayerManager::ReleaseCapture()
 		if(lay->Owner) lay->Owner->Release();
 			// release TJS object
 	}
+
+	Window->GetDrawDevice()->WindowReleaseCapture(this);
 }
 //---------------------------------------------------------------------------
 void tTVPLayerManager::ReleaseCaptureFromTree(tTJSNI_BaseLayer * layer)

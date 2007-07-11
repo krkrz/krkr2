@@ -356,6 +356,19 @@ void TJS_INTF_METHOD tTVPDrawDevice::SetCursorPos(iTVPLayerManager * manager, tj
 
 
 //---------------------------------------------------------------------------
+void TJS_INTF_METHOD tTVPDrawDevice::WindowReleaseCapture(iTVPLayerManager * manager)
+{
+	iTVPLayerManager * primary_manager = GetLayerManagerAt(PrimaryLayerManagerIndex);
+	if(!primary_manager) return;
+	if(primary_manager == manager)
+	{
+		Window->WindowReleaseCapture();
+	}
+}
+//---------------------------------------------------------------------------
+
+
+//---------------------------------------------------------------------------
 void TJS_INTF_METHOD tTVPDrawDevice::SetHintText(iTVPLayerManager * manager, const ttstr & text)
 {
 	iTVPLayerManager * primary_manager = GetLayerManagerAt(PrimaryLayerManagerIndex);
