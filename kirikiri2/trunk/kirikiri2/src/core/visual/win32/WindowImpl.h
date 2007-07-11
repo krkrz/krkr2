@@ -220,6 +220,7 @@ public:
 	void TJS_INTF_METHOD SetMouseCursor(tjs_int cursor); // set window mouse cursor
 	void TJS_INTF_METHOD GetCursorPos(tjs_int &x, tjs_int &y);
 	void TJS_INTF_METHOD SetCursorPos(tjs_int x, tjs_int y);
+	void TJS_INTF_METHOD WindowReleaseCapture();
 	void TJS_INTF_METHOD SetHintText(const ttstr & text);
 	void TJS_INTF_METHOD SetAttentionPoint(tTJSNI_BaseLayer *layer,
 		tjs_int l, tjs_int t);

@@ -5330,6 +5330,12 @@ public:
 	//! @param		y			描画矩形内の座標におけるマウスカーソルのy位置
 	virtual void TJS_INTF_METHOD SetCursorPos(tjs_int x, tjs_int y) = 0;
 
+	//! @brief		ウィンドウのマウスキャプチャを解放する
+	//! @note		ウィンドウのマウスキャプチャを解放すべき場合に呼ぶ。
+	//! @note		このメソッドでは基本的には ::ReleaseCapture() などで
+	//!				マウスのキャプチャを開放すること。
+	virtual void TJS_INTF_METHOD WindowReleaseCapture() = 0;
+
 	//! @brief		ツールチップヒントを設定する
 	//! @param		text		ヒントテキスト(空文字列の場合はヒントの表示をキャンセルする)
 	virtual void TJS_INTF_METHOD SetHintText(const ttstr & text) = 0;
@@ -5510,8 +5516,9 @@ public:
 	//! @param		flags	フラグ(TVP_SS_*定数の組み合わせ)
 	virtual void TJS_INTF_METHOD OnMouseMove(tjs_int x, tjs_int y, tjs_uint32 flags) = 0;
 
-	//! @brief		(Window→DrawDevice) マウスキャプチャを解放する
-	//! @note		マウスキャプチャを解放すべき場合にウィンドウから呼ばれる。
+	//! @brief		(Window→DrawDevice) レイヤのマウスキャプチャを解放する
+	//! @note		レイヤのマウスキャプチャを解放すべき場合にウィンドウから呼ばれる。
+	//! @note		WindowReleaseCapture() と混同しないこと。
 	virtual void TJS_INTF_METHOD OnReleaseCapture() = 0;
 
 	//! @brief		(Window→DrawDevice) マウスが描画矩形外に移動した
@@ -5570,6 +5577,16 @@ public:
 	//! @param		y			プライマリレイヤ上の座標におけるマウスカーソルのy位置
 	//! @note		座標はプライマリレイヤ上の座標なので、必要ならば変換を行う
 	virtual void TJS_INTF_METHOD SetCursorPos(iTVPLayerManager * manager, tjs_int x, tjs_int y) = 0;
+
+	//! @brief		(LayerManager→DrawDevice) ウィンドウのマウスキャプチャを解放する
+	//! @param		manager		レイヤマネージャ
+	//! @note		ウィンドウのマウスキャプチャを解放すべき場合にレイヤマネージャから呼ばれる。
+	//! @note		ウィンドウのマウスキャプチャは OnReleaseCapture() で開放できるレイヤのマウスキャプチャ
+	//!				と異なることに注意。ウィンドウのマウスキャプチャは主にOSのウィンドウシステムの
+	//!				機能であるが、レイヤのマウスキャプチャは吉里吉里がレイヤマネージャごとに
+	//!				独自に管理している物である。このメソッドでは基本的には ::ReleaseCapture() などで
+	//!				マウスのキャプチャを開放する。
+	virtual void TJS_INTF_METHOD WindowReleaseCapture(iTVPLayerManager * manager) = 0;
 
 	//! @brief		(LayerManager→DrawDevice) ツールチップヒントを設定する
 	//! @param		manager		レイヤマネージャ

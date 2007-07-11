@@ -1406,6 +1406,11 @@ void TJS_INTF_METHOD tTJSNI_Window::SetCursorPos(tjs_int x, tjs_int y)
 	if(Form) Form->SetCursorPos(x, y);
 }
 //---------------------------------------------------------------------------
+void TJS_INTF_METHOD tTJSNI_Window::WindowReleaseCapture()
+{
+	::ReleaseCapture(); // Windows API
+}
+//---------------------------------------------------------------------------
 void TJS_INTF_METHOD tTJSNI_Window::SetHintText(const ttstr & text)
 {
 	// set hint text to window
