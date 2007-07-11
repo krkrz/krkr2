@@ -135,6 +135,7 @@ public:
 
 	//! @brief		(Window→DrawDevice) レイヤのマウスキャプチャを解放する
 	//! @note		レイヤのマウスキャプチャを解放すべき場合にウィンドウから呼ばれる。
+	//! @note		WindowReleaseCapture() と混同しないこと。
 	virtual void TJS_INTF_METHOD OnReleaseCapture() = 0;
 
 	//! @brief		(Window→DrawDevice) マウスが描画矩形外に移動した
@@ -193,6 +194,16 @@ public:
 	//! @param		y			プライマリレイヤ上の座標におけるマウスカーソルのy位置
 	//! @note		座標はプライマリレイヤ上の座標なので、必要ならば変換を行う
 	virtual void TJS_INTF_METHOD SetCursorPos(iTVPLayerManager * manager, tjs_int x, tjs_int y) = 0;
+
+	//! @brief		(LayerManager→DrawDevice) ウィンドウのマウスキャプチャを解放する
+	//! @param		manager		レイヤマネージャ
+	//! @note		ウィンドウのマウスキャプチャを解放すべき場合にレイヤマネージャから呼ばれる。
+	//! @note		ウィンドウのマウスキャプチャは OnReleaseCapture() で開放できるレイヤのマウスキャプチャ
+	//!				と異なることに注意。ウィンドウのマウスキャプチャは主にOSのウィンドウシステムの
+	//!				機能であるが、レイヤのマウスキャプチャは吉里吉里がレイヤマネージャごとに
+	//!				独自に管理している物である。このメソッドでは基本的には ::ReleaseCapture() などで
+	//!				マウスのキャプチャを開放する。
+	virtual void TJS_INTF_METHOD WindowReleaseCapture(iTVPLayerManager * manager) = 0;
 
 	//! @brief		(LayerManager→DrawDevice) ツールチップヒントを設定する
 	//! @param		manager		レイヤマネージャ
@@ -387,6 +398,7 @@ public:
 	virtual void TJS_INTF_METHOD GetCursorPos(iTVPLayerManager * manager, tjs_int &x, tjs_int &y);
 	virtual void TJS_INTF_METHOD SetCursorPos(iTVPLayerManager * manager, tjs_int x, tjs_int y);
 	virtual void TJS_INTF_METHOD SetHintText(iTVPLayerManager * manager, const ttstr & text);
+	virtual void TJS_INTF_METHOD WindowReleaseCapture(iTVPLayerManager * manager);
 
 	virtual void TJS_INTF_METHOD SetAttentionPoint(iTVPLayerManager * manager, tTJSNI_BaseLayer *layer,
 							tjs_int l, tjs_int t);
