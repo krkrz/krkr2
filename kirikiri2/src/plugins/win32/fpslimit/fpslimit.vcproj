@@ -42,7 +42,7 @@
 				MkTypLibCompatible="true"
 				SuppressStartupBanner="true"
 				TargetEnvironment="1"
-				TypeLibraryName=".\..\..\..\..\bin\win32\plugin/krrlicht.tlb"
+				TypeLibraryName="$(OutDir)\$(ProjectName).tlb"
 				HeaderFileName=""
 			/>
 			<Tool
@@ -73,7 +73,7 @@
 				AdditionalOptions=""
 				OutputFile="$(OutDir)\$(ProjectName).dll"
 				SuppressStartupBanner="true"
-				AdditionalLibraryDirectories="$(IRRLICHT_HOME)\lib\Win32-VisualStudio"
+				AdditionalLibraryDirectories=""
 				ModuleDefinitionFile=".\fpslimit.def"
 				GenerateDebugInformation="true"
 				ProgramDatabaseFile="$(TargetDir)$(TargetName).pdb"
@@ -135,7 +135,7 @@
 				MkTypLibCompatible="true"
 				SuppressStartupBanner="true"
 				TargetEnvironment="1"
-				TypeLibraryName=".\..\..\..\..\bin\win32\plugin/krrlicht.tlb"
+				TypeLibraryName="$(OutDir)\$(ProjectName).tlb"
 				HeaderFileName=""
 			/>
 			<Tool
@@ -168,7 +168,7 @@
 				AdditionalOptions=""
 				OutputFile="$(OutDir)\$(ProjectName).dll"
 				SuppressStartupBanner="true"
-				AdditionalLibraryDirectories="$(IRRLICHT_HOME)\lib\Win32-VisualStudio"
+				AdditionalLibraryDirectories=""
 				ModuleDefinitionFile=".\fpslimit.def"
 				GenerateDebugInformation="true"
 				ProgramDatabaseFile="$(TargetDir)$(TargetName).pdb"
