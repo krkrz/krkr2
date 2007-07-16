@@ -1,0 +1,16 @@
+/**
+ * 擬似コードによるマニュアル
+ *
+ * Copyright 2007 GoWatanabe
+ */
+class Storages {
+	/**
+	 * ファイル属性の取得
+	 * @return 属性情報の入った辞書
+	 * size: ファイルサイズ
+	 * mtime: 更新日時 (Date オブジェクト)
+	 * atime: アクセス日時 (Date オブジェクト)
+	 * ctime: 作成日時 (Date オブジェクト)
+	 */
+	function fstat(filename);
+};
