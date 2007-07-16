@@ -1,0 +1,16 @@
+Plugins.link("fstat.dll");
+
+function showDate(date) {
+	if (date !== void && date !== null) {
+		Debug.message("%04d/%02d/%02d %02d:%02d:%02d".sprintf(date.getYear(), date.getMonth()+1, date.getDate(), date.getHours(), date.getMinutes(), date.getSeconds()));
+	}
+}
+var win = new Window();
+win.visible = true;
+
+Debug.console.visible = true;
+var stat = Storages.fstat("startup.tjs");
+Debug.message("mtime:"); showDate(stat.mtime);
+Debug.message("atime:"); showDate(stat.atime);
+Debug.message("ctime:"); showDate(stat.ctime);
+
