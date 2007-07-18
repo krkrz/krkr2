@@ -107,12 +107,12 @@ public:
 		while ((c = getc()) != EOF && !endOfLine(c)) {
 			mbline += c;
 		}
-		int l = mbline.length();
+		int l = (int)mbline.length();
 		if (l > 0 || c != EOF) {
 			wchar_t *buf = new wchar_t[l + 1];
 			l = MultiByteToWideChar(codepage, 0,
 									mbline.data(),
-									mbline.length(),
+									(int)mbline.length(),
 									buf, l);
 			buf[l] = '\0';
 			str += buf;
@@ -136,7 +136,7 @@ public:
 	}
 
 	int getc() {
-		return pos < dat.length() ? dat[pos++] : EOF;
+		return pos < (ULONG)dat.length() ? dat[pos++] : EOF;
 	}
 
 	void ungetc() {
@@ -146,7 +146,7 @@ public:
 	}
 
 	bool eof() {
-		return pos >= dat.length();
+		return pos >= (ULONG)dat.length();
 	}
 
 	/**
@@ -538,7 +538,6 @@ static iTJSDispatch2 * Create_NC_CSVParser()
 
 //---------------------------------------------------------------------------
 
-#pragma argsused
 int WINAPI DllEntryPoint(HINSTANCE hinst, unsigned long reason,
 	void* lpReserved)
 {
@@ -547,7 +546,7 @@ int WINAPI DllEntryPoint(HINSTANCE hinst, unsigned long reason,
 
 //---------------------------------------------------------------------------
 static tjs_int GlobalRefCountAtInit = 0;
-extern "C" HRESULT _stdcall _export V2Link(iTVPFunctionExporter *exporter)
+extern "C" __declspec(dllexport) HRESULT __stdcall V2Link(iTVPFunctionExporter *exporter)
 {
 	// スタブの初期化(必ず記述する)
 	TVPInitImportStub(exporter);
@@ -581,7 +580,7 @@ extern "C" HRESULT _stdcall _export V2Link(iTVPFunctionExporter *exporter)
 	return S_OK;
 }
 //---------------------------------------------------------------------------
-extern "C" HRESULT _stdcall _export V2Unlink()
+extern "C" __declspec(dllexport) HRESULT _stdcall V2Unlink()
 {
 	// 吉里吉里側から、プラグインを解放しようとするときに呼ばれる関数。
 
