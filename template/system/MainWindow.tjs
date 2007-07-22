@@ -3478,8 +3478,8 @@ class KAGWindow extends Window
 	function cancelSkip()
 	{
 		// スキップ動作をキャンセル
+		if(skipMode == 4) skipKeyRepressed = false;
 		skipMode = 0;
-		skipKeyRepressed = false;
 		actualChSpeed = chSpeed;
 	}
 
