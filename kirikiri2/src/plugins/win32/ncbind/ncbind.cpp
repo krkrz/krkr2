@@ -4,6 +4,11 @@
 
 #define EXPORT(hr) extern "C" __declspec(dllexport) hr __stdcall
 
+#ifdef _MSC_VER
+#pragma comment(linker, "/EXPORT:V2Link=_V2Link@4")
+#pragma comment(linker, "/EXPORT:V2Unlink=_V2Unlink@0")
+#endif
+
 //--------------------------------------
 int WINAPI
 DllEntryPoint(HINSTANCE /*hinst*/, unsigned long /*reason*/, void* /*lpReserved*/)
