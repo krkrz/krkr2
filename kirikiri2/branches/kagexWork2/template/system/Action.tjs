@@ -209,7 +209,6 @@ class ActionInfo {
      * @return I—¹‚µ‚½‚ç true
      */
     function doAction(target, now, stopFlag) {
-		if (!isvalid target) return true; // ‘ÎÛ‚ª–³Œø‚È‚çI—¹
         var done = true;
         for (var i=0; i<actionList.count; i++) {
             if (!actionList[i].doAction(target, now, stopFlag)) {
@@ -911,7 +910,8 @@ function LayerHRotateZoomModule(elm) {
 
 function LayerHeartBeatZoomModule(elm) {
 	return %[
-	zoom: %[ handler:"SinAction", vibration:elm.zoom-100, cycle:elm.time*2, time:elm.time, delay:elm.delay]
+	zoomx: %[ handler:"SinAction", vibration:elm.zoom-100, cycle:elm.time*2, time:elm.time, delay:elm.delay],
+	zoomy: %[ handler:"SinAction", vibration:elm.zoom-100, cycle:elm.time*2, time:elm.time, delay:elm.delay]
 		];
 }
 

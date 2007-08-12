@@ -255,7 +255,7 @@ function dictToString(dict) {
 		if (i != 0) { ret += ","; }
 		var name = names[i];
 		var value = names[i+1];
-		ret += ("name" + ":" + valueToString(value));
+		ret += (valueToString(name) + "=>" + valueToString(value));
 	}
 	ret += "]";
 	return ret;

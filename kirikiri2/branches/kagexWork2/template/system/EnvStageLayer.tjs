@@ -8,8 +8,8 @@ class StageGraphicLayer extends EnvGraphicLayer {
 	}
 
 	function recalcPosition() {
-		setRealPosition(owner.env.xmax + left - width / 2,
-						owner.env.ymax + top  - height / 2);
+		setRealPosition(owner.env.xmax + +left - width / 2,
+						owner.env.ymax + +top  - height / 2);
 	}
 };
 
@@ -30,6 +30,7 @@ class EnvStageLayer extends EnvBackLayer {
 	function initImage() {
 		timeName = void;
 		stageName = void;
+		super.initImage();
 	}
 	
     /**
@@ -38,7 +39,7 @@ class EnvStageLayer extends EnvBackLayer {
 	 * @param name 環境のレイヤ名
 	 */
 	function EnvStageLayer(env) {
-		super.EnvBackLayer(env, "stage", 100);
+		super.EnvBackLayer(env, "stage", 200);
     }
 
 	/**
@@ -75,10 +76,10 @@ class EnvStageLayer extends EnvBackLayer {
 		}
 		
 		if (elm.xpos === void && elm.left === void && info.left !== void) {
-			props.left = +info.left;
+			setLeft(info.left);
 		}
 		if (elm.ypos === void && elm.top  === void && info.top !== void) {
-			props.top = +info.top;
+			setTop(info.top);
 		}
 		setImageFile(image, elm);
 		setAutoTrans([info.trans, env.envinfo.stageTrans, env.envinfo.envTrans]);
@@ -183,13 +184,14 @@ class EnvStageLayer extends EnvBackLayer {
 
 	/**
 	 * 更新処理
-	 * キャラクタも更新する必要がある
+	 * キャラクタやイベント絵も更新する必要がある
 	 */
 	function update(isfore) {
 		foreach(env.characters, function(name, value, dict, isfore) {
 			value.update(isfore);
 		}, isfore);
-		super.update(isfore);
+		env.event.update(isfore);
+		return super.update(isfore);
 	}
 	
 	// ------------------------------------------------------

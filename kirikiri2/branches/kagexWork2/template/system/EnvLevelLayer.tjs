@@ -5,8 +5,8 @@ class EnvLevelLayer {
 
     /// 表示レベル
     var level;
-    /// 表示絶対レベル
-	var absolute;
+	/// 表示絶対位置
+	var index;
 	/// 復帰フラグ
 	var restore;
 	
@@ -70,8 +70,8 @@ class EnvLevelLayer {
 			targetLayer = player.getNewLayer(this, isfore, targetLayer);
 		}
 		if (restore) {
-			targetLayer.level    = +level    if (level !== void);
-			targetLayer.absolute = +absolute if (absolute !== void);
+			targetLayer.level = +level if (level !== void);
+			targetLayer.index = +index if (index !== void);
 			restore = false;
 		}
 		if (level === void) {
@@ -84,7 +84,7 @@ class EnvLevelLayer {
 			player.toBack(targetLayer);
         }
 		front = back = void;
-		absolute = targetLayer.absolute;
+		index = targetLayer.index;
 		return targetLayer;
     }
 
@@ -109,7 +109,7 @@ class EnvLevelLayer {
      */
     function setLevel(cmd, elm) {
 		level = cmd;
-		absolute = void;
+		index = void;
     } 
 
 }

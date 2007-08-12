@@ -77,8 +77,7 @@ class UIListParser extends CSVParser {
 			info.subref = columns[8];
 			break;
 		case "base":
-			var stateName = columns[7];
-			info.storage  = columns[2] if (stateName == void || stateName == "");
+			info.storage =columns[2];
 			break;
 		case "layer":
 			info.storage =columns[2];
@@ -370,10 +369,7 @@ function uiEntryLayer(layer, name, value) {
 	value.normal = value.storage;
 	value.uistates = void;
 	layer.addButton(value);
-	with (layer.names[value.name]) {
-		.enabled   = false;
-		.focusable = false;
-	}
+	layer.names[value.name].enabled = false;
 }
 
 

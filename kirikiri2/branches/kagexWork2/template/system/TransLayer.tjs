@@ -81,7 +81,7 @@ class TransLayer
       ],
 
       // フェード
-      fade : %[
+	  layfade : %[
         init : function(elm) {
             maxCount = time;
             if (!hide) {
@@ -100,7 +100,7 @@ class TransLayer
       ],
 
       // トランジション利用
-      trans : %[
+      laytrans : %[
         init : function(elm) {
             if (elm.method !== void) {
                 trans = %[];
@@ -187,7 +187,7 @@ class TransLayer
         }
         info = types[elm.type] if elm.type !== void;
         if (info === void) {
-            info = types["wipeltor"];
+			info = types["layfade"];
         }
         info.init(elm);
         layer.visible = true;

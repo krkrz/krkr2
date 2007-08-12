@@ -7,9 +7,9 @@ if (typeof global.CSVParser == "undefined") {
  * シーン定義ファイル読み出し用パーサ
  * キャラ名, コンフィグ名, ボイスファイル名
  */
-class VoiceListParser extends CSVParser {
+class VariableListParser extends CSVParser {
 
-	var voiceInfos = %[]; // ボイス情報
+	var varInfos = []; // 変数情報
 	var check; // ロードチェック用
 
     /**
@@ -21,15 +21,41 @@ class VoiceListParser extends CSVParser {
 		if (columns[0].charAt(0) != '#' && columns.count > 0) {
 			var name = columns[0].trim();
 			if (name != "") {
-				var info = voiceInfos[name];
-				if (info === void) {
-					info = %[];
-					voiceInfos[name] = info;
+				// 変数の所属
+				var zone = 0;
+				var p = name.indexOf(".");
+				if (p >= 0) {
+					var base = name.substring(0,p);
+					name = name.substring(p+1);
+					if (base == "sf") {
+						zone = 1;
+					} else if (base == "tf") {
+						zone = 2;
+					}
 				}
+
+				// 変数の型とサイズ
+				// 0:整数 1:実数 2:文字列
+				var type = 0;
+				var size;
 				if (columns.count > 1) {
-					info.config   = columns[1].trim();
-					info.filename = columns.count > 2 ? columns[2].trim() : "";
+					var typen = columns[1].trim().toUpperCase();
+					if (typen == "FLOAT") {
+						type = 1;
+					} else if (typen == "STRING" || typen == "STR" ) {
+						type = 2;
+						if (columns.count > 2) {
+							size = (int)columns[2];
+						} else{
+							size = 16;
+						}
+					}
 				}
+				var e = %[ zone:zone, type:type, name:name ];
+				if (size !== void) {
+					e.size = size;
+				}
+				varInfos.add(e);
 			}
 			check = true;
 		}
@@ -59,7 +85,7 @@ class VoiceListParser extends CSVParser {
 	/**
 	 * コンストラクタ
 	 */
-	function VoiceListParser() {
+	function VariableListParser() {
 		super.CSVParser(...);
 	}
 };

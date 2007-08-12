@@ -52,40 +52,10 @@ class CharacterGraphicLayer extends EnvGraphicLayer {
 			levelYoffset = 0;
 		}
 
-		setRealPosition(owner.env.xmax + (left * zoom / 100) - width / 2, 
-						owner.env.ymax + ((yoffset - top) * zoom / 100) - height + levelYoffset);
+		setRealPosition(owner.env.xmax + (+left * +zoom / 100) - width / 2, 
+						owner.env.ymax + ((yoffset - +top) * zoom / 100) - height + levelYoffset);
 	}
 };
-
-/**
- * エモーション処理用レイヤ
- */
-class EmotionLayer extends GraphicLayerBase {
-
-	var timer;
-	function EmotionLayer(layer) {
-		super.GraphicLayerBase(true);
-		timer = new Timer(onTimer, '');
-		timer.capacity = 1;
-	}
-
-	// 消去用タイマー
-	function onTimer() {
-		timer.enabled = false;
-		visible = false;
-	}
-	
-	function start(time, action) {
-		if (time > 0) {
-			timer.interval = time;
-			timer.enabled = true;
-		}
-		if (action !== void) {
-			beginAction(action);
-		}
-		visible = true;
-	}
-}
 
 /**
  * キャラクタレイヤ
@@ -137,10 +107,6 @@ class EnvCharacter extends EnvLevelLayer, EnvImage {
 	// 表情とポーズの対応表
     var facePoseMap;
     
-    // エモーション
-    var emotion;
-    var emotionLayer;
-
     /**
      * コンストラクタ
      * @param env 環境オブジェクト
@@ -154,14 +120,14 @@ class EnvCharacter extends EnvLevelLayer, EnvImage {
         
         //dm("キャラクタ登録:" + name); 
 
-        this.initName = initName;
-        this.init     = init;
-        if (init) {
-            poses = init.poses; //showKeys("poses", poses);
-            
-            // 表情ポーズ同期機能
+		this.initName = initName;
+		this.init     = init;
+		if (init) {
+			poses = init.poses; //showKeys("poses", poses);
+			
+			// 表情ポーズ同期機能
             if (init.facePose) {
-                // 表情からポーズに対するマップを作成する
+				// 表情からポーズに対するマップを作成する
                 facePoseMap = %[];
                 foreach(poses, function(name, value, dict, facePoseMap) {
                     var faces = [];
@@ -171,14 +137,14 @@ class EnvCharacter extends EnvLevelLayer, EnvImage {
                     }
                 }, facePoseMap);
             }
+		}
 
-        }
+		// 未初期化時デフォルト
+		setLeft(env.defaultXpos);
+		setTop(env.defaultYpos);
     }
     
     function finalize() {
-		if (emotionLayer !== void) {
-			invalidate emotionLayer;
-		}
 		// 順番変更不可注意
 		global.EnvLevelLayer.finalize();
 		global.EnvImage.finalize();
@@ -194,9 +160,11 @@ class EnvCharacter extends EnvLevelLayer, EnvImage {
 		if (imageName != image || isClear()) {
 			image   = imageName;
 			yoffset = elm.yoffset;
-			disp = SHOW;
-			redraw  = true;
-			setAutoTrans([init.poseTrans, init.charTrans, env.envinfo.poseTrans, env.envinfo.charTrans]);
+			if (elm.hide === void) {
+				disp = SHOW;
+				redraw  = true;
+				setAutoTrans([init.poseTrans, init.charTrans, env.envinfo.poseTrans, env.envinfo.charTrans]);
+			}
 		}
     }
     
@@ -209,13 +177,15 @@ class EnvCharacter extends EnvLevelLayer, EnvImage {
 			if (poseName != pose || isClear()) {
 				pose = poseName;
 				yoffset = info.yoffset;
-				disp = SHOW;
-				redraw = true;
-				setAutoTrans([info.trans, init.poseTrans, init.charTrans, env.envinfo.poseTrans, env.envinfo.charTrans]);
-					
-                // 表情表示取得
-				if (isShowFace() && (elm.faceon || env.showFaceMode) && !elm.faceoff) {
-					redrawFace = true;
+				if (elm.hide === void) {
+					disp = SHOW;
+					redraw = true;
+					setAutoTrans([info.trans, init.poseTrans, init.charTrans, env.envinfo.poseTrans, env.envinfo.charTrans]);
+
+					// 表情表示取得
+					if (isShowFace() && (elm.faceon || env.showFaceMode) && !elm.faceoff) {
+						redrawFace = true;
+					}
 				}
             }
 			// 服装初期化処理
@@ -240,12 +210,14 @@ class EnvCharacter extends EnvLevelLayer, EnvImage {
     function setDress(dressName, elm) {
 		if (dressName != dress || isClear()) {
 			dress = dressName;
-			disp = SHOW;
-			redraw = true;
-			setAutoTrans([init.dressTrans, init.charTrans, env.envinfo.dressTrans, env.envinfo.charTrans]);
-			// 表情表示取得
-			if (isShowFace() && (elm.faceon || env.showFaceMode) && !elm.faceoff) {
-				redrawFace = true;
+			if (elm.hide === void) {
+				disp = SHOW;
+				redraw = true;
+				setAutoTrans([init.dressTrans, init.charTrans, env.envinfo.dressTrans, env.envinfo.charTrans]);
+				// 表情表示取得
+				if (isShowFace() && (elm.faceon || env.showFaceMode) && !elm.faceoff) {
+					redrawFace = true;
+				}
 			}
 		}
 		image = void;
@@ -256,12 +228,14 @@ class EnvCharacter extends EnvLevelLayer, EnvImage {
     function setFace(faceName, elm) {
 		if (faceName != face || isClear()) {
 			face = faceName;
-			disp = SHOW;
-			redraw = true;
-			setAutoTrans([init.faceTrans, init.charTrans, env.envinfo.faceTrans, env.envinfo.charTrans]);
-			// 表情表示取得
-			if (isShowFace() && (elm.faceon || env.showFaceMode) && !elm.faceoff) {
-				redrawFace = true;
+			if (elm.hide === void) {
+				disp = SHOW;
+				redraw = true;
+				setAutoTrans([init.faceTrans, init.charTrans, env.envinfo.faceTrans, env.envinfo.charTrans]);
+				// 表情表示取得
+				if (isShowFace() && (elm.faceon || env.showFaceMode) && !elm.faceoff) {
+					redrawFace = true;
+				}
 			}
 		}
 		image = void;
@@ -292,34 +266,26 @@ class EnvCharacter extends EnvLevelLayer, EnvImage {
 		var istrans = false;
 		
 		if (info.xpos !== void || info.ypos !== void) {
-			if (disp == CLEAR) {
+			if (elm.hide === void && disp == CLEAR) {
 				disp = SHOW;
 				istrans = true;
 			}
 			var posFrom = getFrom(cmd);
-            var fromInfo;
+			var fromInfo;
 			if (posFrom !== void && (fromInfo = env.positions[posFrom]) !== void) {
 				if (info.xpos !== void) {
-					setPropFromTo("left", env.xmax, fromInfo.xpos, info.xpos, elm);
+					setPropFromTo("left", fromInfo.xpos, info.xpos, elm);
 				}
 				if (info.ypos !== void) {
-					setPropFromTo("top", env.ymax, fromInfo.ypos, info.ypos, elm);
+					setPropFromTo("top", fromInfo.ypos, info.ypos, elm);
 				}
 			} else {
 				if (info.xpos !== void) {
-					setPropFromTo("left", env.xmax, void, info.xpos, elm);
+					setPropFromTo("left", void, info.xpos, elm);
 				}
 				if (info.ypos !== void) {
-					setPropFromTo("top", env.ymax, void, info.ypos, elm);
+					setPropFromTo("top", void, info.ypos, elm);
 				}
-			}
-			// 未初期化時デフォルト
-			if (props.left === void) {
-				dm("デフォルトのX位置を指定");
-				setLeft(env.defaultXpos);
-			}
-			if (props.top === void) {
-				setTop(env.defaultYpos);
 			}
 		}
 
@@ -339,20 +305,6 @@ class EnvCharacter extends EnvLevelLayer, EnvImage {
 		}
 	}
 
-    /**
-     * エモーションの設定
-     */
-	function setEmotion(name, elm) {
-		var info;
-		if (env.emotions !== void && (info = env.emotions[name]) !== void) {
-			emotion = %[];
-			(Dictionary.assign incontextof emotion)(info, false);
-			emotion.time = elm.time if elm.time !== void;
-			return true;
-		}
-		return false;
-    }
-    
     var charCommands = %[
     image   : this.setImage incontextof this,
     dress   : this.setDress incontextof this,
@@ -371,7 +323,6 @@ class EnvCharacter extends EnvLevelLayer, EnvImage {
     back    : this.setBack incontextof this,
 	level   : this.setLevel incontextof this,
     pos     : this.setPosition incontextof this,
-    emotion : this.setEmotion incontextof this,
 	facewin : function(param, elm) { disp = FACE; redraw = true; } incontextof this,
 	faceon : null,
 	faceoff : null,
@@ -458,11 +409,6 @@ class EnvCharacter extends EnvLevelLayer, EnvImage {
             find = true;
         }            
 
-        // エモーション
-        if (!find) {
-            find = setEmotion(cmd, elm);
-        }
-        
         return find;
     };
 
@@ -532,10 +478,6 @@ class EnvCharacter extends EnvLevelLayer, EnvImage {
      * @param layer 描画対象レイヤ
      */
 	function drawLayer(layer) {
-		if (emotionLayer !== void) {
-			invalidate emotionLayer;
-			emotionLayer = void;
-		}
 		if (isShowBU()) {
 
 			// レベルで補正
@@ -598,40 +540,6 @@ class EnvCharacter extends EnvLevelLayer, EnvImage {
 			// 表情と名前の再描画指定 XXXXX
 			redrawFace = false;
         }
-        
-		// 新規エモーション処理
-		if (emotion !== void) {
-			if (isShowBU()) {
-				var emoX;
-				var emoY;
-				var emoRev;
-				// 表示座標
-				emoX    = emotion.emoX   if emotion.emoX   !== void;
-				emoY    = emotion.emoY   if emotion.emoY   !== void;
-				emoRev  = emotion.emoRev if emotion.emoRev !== void;
-				// ポーズ別補正
-				var info;
-				if ((info = poses[pose]) !== void) {
-					emoX   = poseInfo.emoX   if info.emoX   !== void;
-					emoY   = poseInfo.emoY   if info.emoY   !== void;
-					emoRev = poseInfo.emoRev if info.emoRev !== void;
-				}
-				// 新規エモーションレイヤ
-				if (emotionLayer === void) {
-					emotionLayer = new global.EmotionLayer(layer);
-				}
-				if (emoRev && emotion.imageRev !== void) {
-					emotionLayer.loadImages(%[storage:emotion.imageRev]);
-				} else {
-					emotionLayer.loadImages(%[storage:emotion.image]);
-				}
-				emotionLayer.setPos(layer.left + layer.width/2 + emoX - emotionLayer.width/2,
-									layer.top  + layer.height  - emoY - emotionLayer.height/2);
-				emotionLayer.start(emotion.time, emotion.action);
-			}
-			invalidate emotion;
-			emotion = void;
-		}
     }
 
 	// ------------------------------------------------------
