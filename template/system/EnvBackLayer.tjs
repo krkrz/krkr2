@@ -3,7 +3,8 @@
  */
 class EnvBackLayer extends EnvLayer {
 
-	var absolute;
+	// 表示位置
+	var index;
 	
 	// 描画対象レイヤ
 	var targetLayer;
@@ -11,9 +12,9 @@ class EnvBackLayer extends EnvLayer {
     /**
      * コンストラクタ
      */
-	function EnvBackLayer(env, name, absolute) {
+	function EnvBackLayer(env, name, index) {
 		super.EnvLayer(env, name);
-		this.absolute = absolute;
+		this.index = index;
     }
 
     function finalize() {
@@ -32,7 +33,7 @@ class EnvBackLayer extends EnvLayer {
 					//dm("元レイヤ:" + targetLayer + ":" + (player.isForeLayer(targetLayer) ? "表" : "裏"));
 					if (player.isForeLayer(targetLayer) && targetLayer.visible) {
 						targetLayer = player.getNewLayer(this, false, targetLayer);
-						targetLayer.absolute = absolute;
+						targetLayer.index = index;
 						//dm("複製レイヤ:" + targetLayer + ":" + (player.isForeLayer(targetLayer) ? "表" : "裏"));
 					} else {
 						//dm("廃棄");
@@ -45,7 +46,7 @@ class EnvBackLayer extends EnvLayer {
 					if (!player.isForeLayer(targetLayer) && targetLayer.visible) {
 						//dm("表に移動");
 						player.toForeLayer(targetLayer);
-						targetLayer.absolute = absolute;
+						targetLayer.index = index;
 					} else {
 						//dm("廃棄");
 						targetLayer = player.trashLayer(targetLayer);
@@ -64,7 +65,7 @@ class EnvBackLayer extends EnvLayer {
 		if (targetLayer === void || player.isForeLayer(targetLayer) != isfore) {
 			targetLayer = player.getNewLayer(this, isfore, targetLayer);
 		}
-		targetLayer.absolute = absolute;
+		targetLayer.index = index;
 		return targetLayer;
     }
 

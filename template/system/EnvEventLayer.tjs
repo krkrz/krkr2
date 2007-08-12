@@ -9,7 +9,7 @@ class EnvEventLayer extends EnvBackLayer {
 	 * @param name ŠÂ‹«‚ÌƒŒƒCƒ„–¼
 	 */
 	function EnvEventLayer(env) {
-		super.EnvBackLayer(env, "event", 6* 100000 - 100);
+		super.EnvBackLayer(env, "event", 2200);
     }
 
 	/**
@@ -22,10 +22,10 @@ class EnvEventLayer extends EnvBackLayer {
 			eventTrans = eventInfo.trans;
 			file = eventInfo.image;
 			if (elm.xpos === void && elm.left === void && eventInfo.left !== void) {
-				props.left = eventInfo.left;
+				setLeft(eventInfo.left);
 			}
 			if (elm.ypos === void && elm.top === void && eventInfo.top !== void) {
-				props.top = eventInfo.top;
+				setTop(eventInfo.top);
 			}
 		}
 		super.setImageFile(file, elm);

@@ -42,6 +42,7 @@ class SceneListParser extends CSVParser {
 					}
 				}
 			}
+			check = true;
 		}
     }
 

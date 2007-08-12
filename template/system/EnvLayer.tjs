@@ -45,11 +45,10 @@ class EnvLayer extends EnvImage {
 	
 	function initFile(elm) {
 		if (elm.type === void)    type = void;
-		if (elm.opacity === void) props.opacity = 255;
-		if (elm.rotate === void)  props.rotate = 0;
-		if (elm.zoom === void)    props.zoom = 100;
-		if (elm.afx === void)     delete props.afx;
-		if (elm.afy === void)     delete props.afy;
+		if (elm.opacity === void) setOpacity(255);
+		if (elm.rotate === void)  setRotate(0);
+		if (elm.zoomx === void && elm.zoom === void) setZoomx(100);
+		if (elm.zoomy === void && elm.zoom === void) setZoomy(100);
 	}
 	
 	// 画像ファイルを指定
@@ -68,14 +67,16 @@ class EnvLayer extends EnvImage {
 		
 		// 背景指定時に座標指定がなければ場所情報を初期化する
 		if (elm.xpos === void && elm.left === void) {
-			delete props.left;
+			setLeft(0);
 		}
 		if (elm.ypos === void && elm.left === void) {
-			delete props.top;
+			setTop(0);
         }
 
-		disp = SHOW;
-		redraw = true;
+		if (elm.hide === void) {
+			disp = SHOW;
+			redraw = true;
+		}
 
         // 記録
 		player.setCGFlag(file);
@@ -96,14 +97,16 @@ class EnvLayer extends EnvImage {
 		
 		// 背景指定時に座標指定がなければ場所情報を初期化する
 		if (elm.xpos === void && elm.left === void) {
-			delete props.left;
+			setLeft(0);
 		}
 		if (elm.ypos === void && elm.ypos === void) {
-			delete props.top;
+			setTop(0);
         }
 
-		disp = SHOW;
-		redraw = true;
+		if (elm.hide === void) {
+			disp = SHOW;
+			redraw = true;
+		}
 
 		// 記録
 		player.setMovieFlag(file);
@@ -125,14 +128,16 @@ class EnvLayer extends EnvImage {
 		
 		// 背景指定時に座標指定がなければ場所情報を初期化する
 		if (elm.xpos === void && elm.left === void) {
-			delete props.left;
+			setLeft(0);
 		}
         if (elm.ypos === void && elm.top === void) {
-            delete props.top;
+            setTop(0);
 		}
 
-		disp = SHOW;
-        redraw = true;
+		if (elm.hide === void) {
+			disp = SHOW;
+			redraw = true;
+		}
 
         return true;
     }

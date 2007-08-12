@@ -16,23 +16,23 @@ class EnvGraphicLayer extends GraphicLayerBase {
 		super.GraphicLayerBase(isfore);
 	}
 
-	var _left;
+	var _left = 0;
 	property left {
 		getter() {
 			return _left;
 		}
 		setter(v) {
-			_left = v;
+			_left = +v;
 			recalcPosition();
 		}
 	}
-	var _top;
+	var _top = 0;
 	property top {
 		getter() {
 			return _top;
 		}
 		setter(v) {
-			_top = v;
+			_top = +v;
 			recalcPosition();
 		}
 	}
@@ -50,7 +50,7 @@ class EnvGraphicLayer extends GraphicLayerBase {
 	 * 配置位置調整
 	 */
 	function recalcPosition() {
-		setRealPosition(left, top);
+		setRealPosition(+left, +top);
 	}
 
 	function setRealPosition(left, top) {
@@ -179,11 +179,13 @@ class EnvImage extends EnvBase {
 		}
 	}
 	
-	var props = %[ zoom:100, rotate:0, opacity:255 ];
-	
-    // アクション処理
-	var doStopAction;
-	var actionList;
+	var cprops;  // プロパティ操作の記録
+	// プロパティ指定の結果、アクションによる移動の実行後の結果、などがあらかじめ格納されている
+
+	var props;  // プロパティ操作指定
+	var doStopAction; // アクション停止指定
+	var actionList; // アクション処理
+
 
     // 画像補整指定
     var _grayscale;
@@ -271,26 +273,24 @@ class EnvImage extends EnvBase {
      */
 	function EnvImage(env, name) {
 		super.EnvBase(env, name);
+		cprops = %[];
+		props = %[];
 		actionList = [];
         _disp = CLEAR;
     }
 
+	/**
+	 * 画像を初期化
+	 */
 	function initImage() {
-		type = void;
-		props = %[];
-		props.zoom    = 100;
-		props.rotate  = 0;
-		props.opacity = 255;
-		rgamma = void;
-		ggamma = void;
-		bgamma = void;
-		grayscale = void;
+		(Dictionary.clear incontextof cprops)();
+		setReset();
 		disp = CLEAR;
-		actionList.clear();
 	}
 
     function finalize() {
 		invalidate actionList;
+		invalidate props;
 		super.finalize();
     }
 
@@ -298,19 +298,16 @@ class EnvImage extends EnvBase {
 	// 初期化処理
 	// -------------------------------------------------------
 
-	var doReset;
-
 	function setReset(param, elm) {
 		type    = void;
-		props   = %[];
-		props.zoom    = 100;
-		props.rotate  = 0;
-		props.opacity = 255;
+		setZoom(100);
+		setRotate(0);
+		setOpacity(255);
 		_rgamma = void;
 		_ggamma = void;
 		_bgamma = void;
 		_grayscale = void;
-		doReset = true;
+		redraw = true;
 		updateFlag = true;
 	}
 
@@ -351,84 +348,65 @@ class EnvImage extends EnvBase {
 		return void;
 	}
 
-	/**
-	 * 場所指定 相対位置指定の判定。
-	 * 指定値が "%" で終わっていたら最大値への相対での指定とみなす
-	 * 指定値が "@" ではじまっていたら現在値への相対の指定とみなす
-	 * @param base  現在値
-	 * @param value 指定値
-	 * @param valueBase 指定の最大値
-	 */
-	function calcRelative(base, value, valueBase) {
-		if (value === void) {
-			return value;
-		} else {
-			if (typeof value == "String") {
-				// 相対指定の場合
-				if (value.charAt(0) == '@') {
-					value = value.substring(1);
-					// %指定の場合
-					if (valueBase !== void && value.charAt(-1) == '%') {
-						value = valueBase * (int)value.substring(0,value.length - 1) / 100;
-					}
-					return (int)base + (int)value;
-				} else {
-					// %指定の場合
-					if (valueBase !== void && value.charAt(-1) == '%') {
-						value = valueBase * (int)value.substring(0,value.length - 1) / 100;
-					}
-				}
-			}
-			return (int)value;
-		}
-	}
-	
-	function setPropFromTo(name, max, from, to, elm) {
+	function setPropFromTo(name, from, to, elm) {
 		if (to !== void) {
-			// 初期値不定の場合は同じ値のまま処理
-			if (props[name] === void && from === void) {
-				from = to;
+			if (elm !== void && elm.time > 0) {
+				//dm("値指定:" + name + ":" + from + ":" + to + ":" + elm.time);
+				addAction(%[name =>	%[handler:"MoveAction",
+								  start:from,
+								  value:to,
+								  time:elm !== void ? +elm.time:0,
+								  accel:elm !== void ? +elm.accel:0]]);
+			} else {
+				//dm("値指定:" + name + ":" + to);
+				addProp(name, to);
 			}
-			addAction(%[name =>	%[handler:"MoveAction",
-							  start:calcRelative(props[name], from, max),
-							  value:calcRelative(props[name], to, max),
-							  time:elm !== void ? +elm.time:0,
-							  accel:elm !== void ? +elm.accel:0]]);
 		}
 	}
 
-	function setProp(name, max, param, elm) {
-		setPropFromTo(name, max, getFrom(param), getTo(param), elm);
+	function setProp(name, param, elm) {
+		if (param !== void) {
+			setPropFromTo(name, getFrom(param), getTo(param), elm);
+		}
 	}
 
 	function setAfx(param, elm) {
-		setProp("afx", width, param, elm);
+		setProp("afx", param, elm);
 	} 
 
 	function setAfy(param, elm) {
-		setProp("afy", height, param, elm);
+		setProp("afy", param, elm);
 	} 
 	
 	function setLeft(param, elm) {
-		setProp("left", env.xmax, param, elm);
+		setProp("left", param, elm);
 	} 
 
 	function setTop(param, elm) {
-		setProp("top", env.ymax, param, elm);
+		setProp("top", param, elm);
     }
 
 	function setOpacity(param, elm) {
-		setProp("opacity", 255, param, elm);
+		setProp("opacity", param, elm);
 	}
 
 	function setRotate(param, elm) {
-		setProp("rotate", 360, param, elm);
+		setProp("rotate", param, elm);
 	}
 
 	function setZoom(param, elm) {
-		setProp("zoom", 100, param, elm);
+		setProp("zoomx", param, elm);
+		setProp("zoomy", param, elm);
 	}
 
+	function setZoomx(param, elm) {
+		setProp("zoomx", param, elm);
+	}
+
+	function setZoomy(param, elm) {
+		setProp("zoomy", param, elm);
+	}
+	
 	/**
 	 * 相対値計算 Action.tjs からのコピー
 	 * @param value 値指定
@@ -443,9 +421,28 @@ class EnvImage extends EnvBase {
 	}
 
 	/**
-	 * アクションの適用
+	 * プロパティ変更の反映
+	 * @param props プロパティセット
+	 * @param target 処理対象
 	 */
-	function applyMoveAction(action) {
+	function applyProps(props, target) {
+		var names = [];
+		names.assign(props);
+		for (var i=0; i<names.count; i+= 2) {
+			var name  = names[i];
+			var value = names[i+1];
+			if (target[name] !== value) {
+				target[name] = value;
+			}
+		}
+	}
+	
+    /**
+	 * アクションの適用
+	 * @param action アクション情報
+	 * @param target 処理対象
+	 */
+	function _applyMoveAction(action, target) {
 		var names = [];
 		names.assign(action);
 		for (var i=0; i<names.count; i+= 2) {
@@ -453,25 +450,41 @@ class EnvImage extends EnvBase {
 			var info  = names[i+1];
 			if (typeof info == "Object" && info !== null && info.handler == "MoveAction" && info.value !== void) {
 				//dm("アクション適用 " + name + ":" + info.value);
-				props[name] = getRelative(info.value, props[name]);
+				var value = getRelative(info.value, cprops[name]);
+				if (target[names] != value) {
+					target[name] = value;
+				}
 			}
 		}
 	}
 
     /**
+	 * アクションの適用
+	 */
+	function applyMoveAction(action, target) {
+		if (action instanceof "Dictionary") {
+			_applyMoveAction(action, target);
+		} else if (action instanceof "Array" && action.count > 0) {
+			for (var j=0;j<action.count;j++) {
+				_applyMoveAction(action[j], target);
+			}
+		}
+	}
+
+	/**
+	 * プロパティ変更情報の追加
+	 */
+	function addProp(name, value) {
+		props[name] = value;
+		updateFlag = true;
+	}
+	
+    /**
 	 * アクション情報の追加
 	 * @param action アクション情報
      */
 	function addAction(action) {
-		if (action instanceof "Dictionary") {
-			actionList.add(action);
-			applyMoveAction(action);
-		} else if (action instanceof "Array" && action.count > 0) {
-			actionList.add(action);
-			for (var j=0;j<action.count;j++) {
-				applyMoveAction(action[j]);
-			}
-		}
+		actionList.add(action);
 		updateFlag = true;
 	}
 
@@ -549,16 +562,6 @@ class EnvImage extends EnvBase {
 	 * 状態更新処理
      */
 	function updateLayer(layer) {
-
-		//dm("updateLayer:" + name);
-		if (doReset) {
-			//dm("リセット処理");
-			layer.reset();
-		}
-		if (doStopAction) {
-			//dm("アクション停止");
-			layer.stopAction();
-		}
 		if (doShow) {
 			//dm("表示変更!");
 			layer.visible = isShowBU();
@@ -568,10 +571,18 @@ class EnvImage extends EnvBase {
 		if (width !== void && width != layer.width || height !== void && height != layer.height) {
 			layer.setSize(width, height);
 		}
+
+		// プロパティ処理
+		applyProps(props, layer);
 		// アクション処理
+		if (doStopAction) {
+			layer.stopAction();
+			doStopAction = false;
+		}
 		for (var i=0;i<actionList.count;i++) {
 			layer.beginAction(actionList[i]);
 		}
+
 		// アクション終了まち
 		ret = player.waitAction(layer, syncMode, movieSyncMode);
 	}
@@ -587,6 +598,8 @@ class EnvImage extends EnvBase {
 	opacity : this.setOpacity incontextof this,
 	rotate : this.setRotate incontextof this,
 	zoom : this.setZoom incontextof this,
+	zoomx : this.setZoomx incontextof this,
+	zoomy : this.setZoomy incontextof this,
 	reset : this.setReset incontextof this,
     grayscale : function(param, elm) { grayscale = param;  } incontextof this,
     rgamma : function(param, elm) { rgamma = param; } incontextof this,
@@ -654,18 +667,6 @@ class EnvImage extends EnvBase {
 
 	// -------------------------------------------------------------------------------
 
-	function applyProps(layer) {
-		var names = [];
-		names.assign(props);
-		for (var i=0; i<names.count; i+= 2) {
-			var name  = names[i];
-			var value = names[i+1];
-			if (layer[name] !== void) {
-				layer[name] = value;
-			}
-		}
-	}
-	
 	/**
 	 * 単純更新
 	 */
@@ -675,11 +676,9 @@ class EnvImage extends EnvBase {
 			var layer = getLayer(isfore);
 			if (redraw) {
 				//dm("再描画:" + name);
-				layer.reset();
+				//layer.reset();
 				layer.type = type if type !== void;
 				drawLayer(layer);
-				applyProps(layer);
-				layer.recalcPosition();
 				if (grayscale) {
 					layer.doGrayScale();
 				}
@@ -688,6 +687,9 @@ class EnvImage extends EnvBase {
 									  ggamma == void ? 1.0 : ggamma, 0, 255,
 									  bgamma == void ? 1.0 : bgamma, 0, 255);
 				}
+				// プロパティの再反映
+				applyProps(cprops, layer);
+				layer.recalcPosition();
 				redraw = false;
 			}
 			updateLayer(layer);
@@ -705,12 +707,23 @@ class EnvImage extends EnvBase {
 		movieSyncMode = void;
 		layerOn = prevShow = isShowBU();
 		dispMode = 0;
-		doReset      = false;
-		doStopAction = false;
 		actionList.clear();
+		(Dictionary.clear incontextof props)();
 		super.tagcommand(elm);
 	}
 
+	function tagdone(elm) {
+		super.tagdone(elm);
+		// アクション情報反映
+		for (var i=0;i<actionList.count;i++) {
+			applyMoveAction(actionList[i], props);
+		}
+		// プロパティ情報反映
+		applyProps(props, cprops);
+	}
+
+	// -----------------------------------------------
+	
 	/**
 	 * 表示処理用の自動トランジションの指定
 	 */
@@ -731,30 +744,57 @@ class EnvImage extends EnvBase {
 	 * 表示更新処理特殊化
 	 */
 	function doUpdate(elm) {
-		if (trans.method !== void || dispMode == 3) {
-			//dm("画像更新:" + trans.method + ":" + trans.showaction + ":" + trans.hideaction);
-			player.backup();
-			var layer = update(false);
-			player.beginTransition(trans);
-			if (layer !== void) {
-				player.beginTransActionUpdate(trans, layer);
-			}
-		} else if (dispMode == 2) {
-			//dm("画像消去");
-			doShow = false;
-			var layer = update(true);
-			if (layer !== void) {
-				player.beginTransAction(trans, layer, true, elm !== void && elm.nosync);
-			}
-		} else if (dispMode == 1) {
+		//dm("doUpdate:" + name + ":" + dispMode);
+		if (dispMode == 1 && trans.showaction !== void) {
 			//dm("画像表示");
 			doShow = false;
 			var layer = update(true);
 			if (layer !== void) {
 				player.beginTransAction(trans, layer, false, elm !== void && elm.nosync);
 			}
+		} else if (dispMode == 2 && trans.hideaction !== void) {
+			//dm("画像消去");
+			doShow = false;
+			var layer = update(true);
+			if (layer !== void) {
+				player.beginTransAction(trans, layer, true, elm !== void && elm.nosync);
+			}
 		} else {
-			update(true);
+			//dm("画像更新:" + trans.method + ":" + trans.showaction + ":" + trans.hideaction);
+			if (trans.showaction !== void && trans.hideaction !== void) {
+				//dm("表示消去アクションを実行:name");
+				// 現在のレイヤを消去アクション
+				// 新レイヤを表示アクション
+				var oldLayer = targetLayer != null ? player.getNewLayer(this, true, targetLayer, false) : null;
+				doShow = false;
+				var layer = update(true);
+				if (oldLayer !== void) {
+					//dm("旧レイヤを消去:" + name);
+					if (layer !== void) {
+						oldLayer.absolute = layer.absolute - 1;
+					}
+					var time = trans.hidetime !== void ? trans.hidetime : trans.time;
+					var delay = trans.hidedelay;
+					var hideaction = player.copyActionInfo(trans.hideaction, time, %[delay:delay]);
+					hideaction["visvalue"] = %[ handler:MoveAction, value:0, time:time, delay:delay ];
+					player.addTag("action", %[target:oldLayer, action:hideaction]);
+					player.trashLayer(oldLayer);
+				}
+				if (layer !== void) {
+					//dm("新レイヤを表示:" + name);
+					layer.visvalue = 0;
+					var time  = trans.showtime !== void ? trans.showtime : trans.time;
+					var delay = trans.showdelay;
+					var showaction = player.copyActionInfo(trans.showaction, time, %[delay:delay]);
+					showaction["visvalue"] = %[ handler:MoveAction, value:100, time:time, delay:delay];
+					player.addTag("action", %[target:layer, action:showaction]);
+				}
+				player.addTag("wact");
+			} else {
+				player.backup();
+				var layer = update(false);
+				player.beginTransition(trans);
+			}
 		}
 	}
 }

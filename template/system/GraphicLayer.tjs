@@ -708,7 +708,7 @@ class GraphicLayerEx extends GraphicLayer {
 			return _visvalue > 0;
 		}
 		setter(v) {
-			_visvalue = v ? 100 : 0;
+			_visvalue = +v ? 100 : 0;
 			opacity = _opacity;
 		}
 	}
@@ -718,7 +718,7 @@ class GraphicLayerEx extends GraphicLayer {
 			return _visvalue;
 		}
 		setter(v) {
-			_visvalue = v;
+			_visvalue = +v;
 			opacity = _opacity;
 		}
 	}
@@ -729,7 +729,7 @@ class GraphicLayerEx extends GraphicLayer {
 			return _opacity;
 		}
 		setter(v) {
-			_opacity = v;
+			_opacity = +v;
 			var o = _opacity * _visvalue / 100;
 			super.opacity = o;
 			super.visible = o > 0;

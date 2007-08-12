@@ -221,14 +221,15 @@ class MapSelectLayer extends KAGLayer {
     /**
      * コンストラクタ
      */
-    function MapSelectLayer(window) {
-        super.Layer(window, window.primaryLayer);
-        setImageSize(parent.width, parent.height);
-        setSizeToImageSize();
-        hitType      = htMask;
-        hitThreshold = 1;
-        focusable    = false;
+	function MapSelectLayer(window) {
+		super.Layer(window, window.primaryLayer);
+		setImageSize(parent.width, parent.height);
+		setSizeToImageSize();
+		hitType      = htMask;
+		hitThreshold = 1;
+		focusable    = false;
         cursor = window.cursorDefault;
+		absolute = 1000000;
         
         // タイマーを作成
         timer = new Timer(onTimer, '');
@@ -329,26 +330,13 @@ class MapSelectLayer extends KAGLayer {
         selects.add(select);
     }
 
-    /*
-     * 親の差し替え
-     */
-    function setParent(parent, absolute) {
-        this.parent = parent;
-        this.absolute = absolute;
-    }
-    
     /**
      * 選択処理開始
      */
-    function start(parent, absolute) {
-
-        this.parent = parent;
-        this.absolute = absolute;
-        
-        var posall   = %[];
-        
-        // 選択肢を場所ごとに分類
-        for (var i=0; i<selects.count;i++) {
+    function start() {
+		var posall   = %[];
+		// 選択肢を場所ごとに分類
+		for (var i=0; i<selects.count;i++) {
             var select = selects[i];
             if (posall[select.pos] === void) {
                 posall[select.pos] = [];
@@ -372,7 +360,7 @@ class MapSelectLayer extends KAGLayer {
                     select.setPos(left + i * self.buttonWidth + ((self.buttonWidth - select.width) / 2),
                                   pos.top - select.height / 2);
                     // Ｙ座標が大きいほうが上、左にいるほうが上
-                    select.absolute = pos.top * 1000 + select.left;
+					select.absolute = pos.top * 1000 + select.left;
                     select.visible = true;
                     //dm("表示:" + select.left  +"," + select.top);
                 }

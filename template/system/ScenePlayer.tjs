@@ -19,6 +19,18 @@ class ScenePlayer extends BasicPlayer
 		pendings.add(e);
     }
 	
+	/**
+	 * タグ割り込み処理
+	 */
+	function insertTag(name, elm) {
+		var e = %[];
+		if (elm !== void) {
+			(Dictionary.assign incontextof e)(elm, false);
+		}
+		e.tagname = name if name !== void;
+		pendings.insert(0,e);
+    }
+
 	var handlers;      // 処理ハンドラ群
 	
 	// 実行情報
@@ -27,9 +39,18 @@ class ScenePlayer extends BasicPlayer
 	var curLine;           // 通過中の行番号
 	var targetLine;        // ロード処理ターゲット行
 	var nextScene;         // 次のシーン
+	var currentText; // 現在表示対象のテキスト
+	var saveFlag;
 
 	// 選択処理通過記録
 	var branches = %[];
+
+	/**
+	 * ジャンプ中か
+	 */
+	function isJump() {
+		return curLine < targetLine;
+	}
 	
 	// Conductor - シナリオ進行処理
 	/*const*/ var mStop = 0; // 停止
@@ -51,6 +72,7 @@ class ScenePlayer extends BasicPlayer
 		super.BasicPlayer();
 		handlers = getHandlers();
 		status = mStop;
+		currentText = "";
     }
 
 	/**
@@ -64,15 +86,21 @@ class ScenePlayer extends BasicPlayer
 	 * 情報クリア
 	 */
 	function clear() {
-		status = mStop;
+		clearInfo();
+		tag_init(null);
+		env.syncAll();
+		super.clear();
+	}
+
+	function clearInfo() {
 		lastTagName = "";
 		(Dictionary.clear incontextof branches)();
-		(Dictionary.clear incontextof waitUntil)();
 		curStorage = void;
 		cur = 0;
 		curLine = 0;
 		targetLine = void;
 		nextScene = void;
+		saveFlag = false;
 	}
 
 	// ------------------------------------------------------------
@@ -154,19 +182,22 @@ class ScenePlayer extends BasicPlayer
 	 * @param option パース用オプション
 	 */
 	function run(storage) {
-		clear();
+		clearInfo();
 		curStorage = storage;
 		lines = getScene(curStorage);
+		currentText = "";
 		status = mRun;
 	}
-	
+
+	var saveDic;
+
 	/**
 	 * 状態保存
 	 */
 	function save(dic) {
 		dic.status = status;
 		if (status != mStop) {
-			dic.storage = curStorage;
+			dic.storage  = curStorage;
 			dic.branches = %[];
 			(Dictionary.assign incontextof dic.branches)(branches);
 			if (curLine > 0) {
@@ -181,7 +212,11 @@ class ScenePlayer extends BasicPlayer
 	 * パラメータ: storage
 	 */
 	function load(dic) {
-		clear();
+		dm("ロード実行開始");
+		if (env.event !== void && env.event.targetLayer !== void) {
+			dm("ロード前のtargetLayerの状態:" + env.event.targetLayer + ":" + (isvalid env.event.targetLayer ? "1" : "0"));
+		}
+		clearInfo();
 		if (dic.status != mStop) {
 			curStorage = dic.storage;
 			if (dic.branches !== void) {
@@ -190,7 +225,23 @@ class ScenePlayer extends BasicPlayer
 			lines = getScene(curStorage);
 			targetLine = dic.targetLine;
 			status = mRun;
+			currentText = "";
 		}
+	}
+
+	/**
+	 * 指定ラベルまで移動
+	 */
+	function goToLabel(label) {
+		var newcur = 0;
+		var obj;
+		while ((obj = lines[newcur++]) !== void) {
+			if (obj.tagname == "label" && obj.label == label) {
+				cur = newcur;
+				return;
+			}
+		}
+		throw new Exception("ラベル" + label + "がみつかりません");
 	}
 
 	/**
@@ -233,14 +284,25 @@ class ScenePlayer extends BasicPlayer
 				obj = pendings[0];
 				pendings.erase(0);
 			} else {
-				obj = lines[cur++];
+				if (currentText.length > 0) {
+					if (isSkip()) {
+						obj = %[tagname:"ch2", text:currentText];
+						currentText = "";
+					} else {
+						var ch = currentText.substring(0,1);
+						currentText = currentText.substring(1);
+						obj = %[tagname:"ch2", text:ch];
+					}
+				} else {
+					obj = lines[cur++];
+				}
 			}
 			
-			if(obj === void) {
+			if (obj === void) {
 				// シナリオ終了
 				var next = nextScene !== void ? nextScene : getNextScene(curStorage);
 				if (next !== void) {
-					clear();
+					clearInfo();
 					lines = getScene(next);
 					status = mRun;
 					continue;
@@ -248,13 +310,74 @@ class ScenePlayer extends BasicPlayer
 					status = mStop;
 					return -1;
 				}
+			} else if (obj.tagname == "begintrans") {
+				//dm("トランジションを処理");
+				while ((obj = lines[cur++]) !== void && obj.tagname != "endtrans") {
+					if (obj.tagname == "begintrans") {
+						throw new Exception("begintrans は入れ子にできません");
+					}
+					pendings.add(obj);
+				}
+				if (obj === void) {
+					throw new Exception("begintrans に対応する endtrans がありません");
+				}
+				if (!isJump()) {
+					var trans = void;
+					var names = [];
+					names.assign(obj);
+					for (var i=0;i<names.count;i+=2) {
+						var cmd   = names[i];
+						var param = names[i+1];
+						if (cmd == "tagname") {
+							// ignore
+						} else if (cmd == "trans") {
+							var tr = getTrans(param, obj);
+							if (tr !== void) {
+								trans = tr;
+							}
+						} else if (cmd == "fade") {
+							var time = +param;
+							trans = %[ "method" => "crossfade",
+									   "children" => true,
+									   "time" => time > 1 ? time : env.fadeValue];
+						} else {
+							var tr = getTrans(cmd, obj);
+							if (tr !== void) {
+								trans = tr;
+							}
+						}
+					}
+					if (trans !== void && trans.msgoff) {
+						insertTag("msgoff");
+					}
+					if (trans !== void && trans.method == "layer") {
+						insertTag("_beginlt", trans);
+						addTag("_endlt", %[wait:trans.transwait, time:trans.endtime, color:trans.endcolor, type:trans.endtype]);
+					} else {
+						transMode = 1;
+						insertTag("_begintrans");
+						beginTransition(trans);
+						addTag("_endtrans");
+					}
+				}
+				continue;
 			} else if (obj.tagname == "line") {
 				if (curLine != obj.line) {
 					curLine    = obj.line;
-					//dm("%06d:%s %s".sprintf(curLine, curStorage, obj.lineStr));
+					if (saveFlag) {
+						doSave();
+						saveFlag = false;
+					}
+					if (targetLine !== void && curLine >= targetLine) {
+						targetLine = void;
+						env.syncAll();
+					}
 				}
 				continue;
 			} else if (obj.tagname == "label") {
+				continue;
+			} else if (obj.tagname == "ch") {
+				currentText = obj.text;
 				continue;
 			} else {
 				// 実行時判定される cond
@@ -263,10 +386,14 @@ class ScenePlayer extends BasicPlayer
 						continue;
 					}
 					delete obj.condex;
+				} else if (obj.if !== void) {
+					if (!Scripts.eval(obj.if)) {
+						continue;
+					}
+					delete obj.if;
 				}
-				
-				// onTag を呼ぶ
-				var step = onTag(obj);
+
+				var	step = onTag(obj);
 				if(step === void) {
 					throw new Exception("onTag が void を返しました (" + obj.tagname + ")"
 										"( おそらくタグハンドラの戻り値を返し忘れた )");
@@ -333,37 +460,7 @@ class ScenePlayer extends BasicPlayer
      * 全体トランジション終了
      */
 	function tag_endtrans(elm) {
-		// まず解除（トランジション処理中で true だと処理が登録されないので)
 		transMode = 0;
-		var trans = void;
-		var names = [];
-		names.assign(elm);
-		for (var i=0;i<names.count;i+=2) {
-			var cmd   = names[i];
-			var param = names[i+1];
-			if (cmd == "tagname") {
-				// ignore
-			} else if (cmd == "trans") {
-				var tr = getTrans(param, elm);
-				if (tr !== void) {
-					trans = tr;
-				}
-			} else if (cmd == "fade") {
-				var time = +param;
-				trans = %[ "method" => "crossfade",
-						   "children" => true,
-						   "time" => time > 1 ? time : fadeValue];
-			} else {
-				var tr = getTrans(cmd, elm);
-				if (tr !== void) {
-					trans = tr;
-				}
-			}
-		}
-		if (trans !== void && trans.msgoff) {
-			addTag("msgoff");
-		}
-		beginTransition(trans);
 		return 0;
     }
 
@@ -378,7 +475,7 @@ class ScenePlayer extends BasicPlayer
 	/**
 	 * レイヤトランジション終了
 	 */
-	function tag_endlt() {
+	function tag_endlt(elm) {
 		transMode = 0;
 		return endLayerTrans(elm);
 	}
@@ -472,8 +569,10 @@ class ScenePlayer extends BasicPlayer
 	 * ボイス待ち
 	 */
 	function tag_waitvoice(elm) {
-		if (elm.name !== void) {
-			return waitVoice(elm.name);
+		if (!isJump()) {
+			if (elm.name !== void) {
+				return waitVoice(elm.name);
+			}
 		}
 		return 0;
 	}
@@ -574,14 +673,18 @@ class ScenePlayer extends BasicPlayer
 		if (voicecut && voicecutpage) {
 			stopAllVoice();
 		}
+		if (!isJump()) {
+			saveFlag = true;
+		}
 		env.currentNameTarget = void;
 		return super.tag_afterpage(elm);
     }
 
 	function tag_stopallvoice(elm) {
 		stopAllVoice();
+		return 0;
 	}
-	
+
 	// ------------------------------------------------------------------
 
 	function getHandlers()
@@ -590,7 +693,7 @@ class ScenePlayer extends BasicPlayer
 
 	//----------------------------------------- タグハンドラ群(各種機能) --
 
-    ch : tag_ch,
+    ch2 : tag_ch,
 	r : tag_r,
 	ruby : tag_ruby,
 	font : tag_font,
@@ -647,31 +750,40 @@ class ScenePlayer extends BasicPlayer
 		return doneSelect(elm);
 	} incontextof this,
 
+	selend : function(elm)
+	{
+		return endSelect(elm);
+	} incontextof this,
+
 	//----------------------------------------- タグハンドラ群(シナリオ内分岐) --
 
-    bradd : function(elm)
-    {
-		return addBranch(elm);
+    "goto" => function(elm) {
+		if (elm.target !== void) {
+			goToLabel(elm.target);
+		}
+		return 0;
 	} incontextof this,
 
-    branch : function(elm)
-    {
-		return doBranch(elm);
-	} incontextof this,
-
-    brdone : function(elm)
-    {
-		return doneBranch(elm);
-	} incontextof this,
-
-	//----------------------------------------- タグハンドラ群(シーン間分岐処理) --
+	//----------------------------------------- タグハンドラ群(次シナリオ指定) --
 
 	next : function(elm)
 	{
-		nextScene = elm.storage;
+		if (elm.storage !== void) {
+			if (elm.storage.charAt(0) == '@') {
+				nextScene = eval(elm.storage.substring(1));
+			} else {
+				nextScene = elm.storage;
+			}
+			cur = lines.count;
+		}
 		return 0;
 	} incontextof this,
-				  
+
+    exit : function(elm) {
+		cur = lines.count;
+		return 0;
+	} incontextof this,
+
 	//----------------------------------------------- 環境系機能 --
 
     env      : env.tagfunc,
@@ -680,10 +792,10 @@ class ScenePlayer extends BasicPlayer
     allse    : env.allse,
 
 	init       : tag_init,
-	begintrans : tag_begintrans,
-    endtrans   : tag_endtrans,
-	beginlt    : tag_beginlt,
-	endlt      : tag_endlt,
+	_begintrans : tag_begintrans,
+    _endtrans   : tag_endtrans,
+    _beginlt    : tag_beginlt,
+    _endlt      : tag_endlt,
 
     newlay     : env.newLayer,
     newlayer   : env.newLayer,
@@ -698,8 +810,12 @@ class ScenePlayer extends BasicPlayer
     dispname      : tag_dispname,
     afterpage     : tag_afterpage,
     afterline     : tag_afterline,
-    stopallvoice  : tag_stopallvoice
-				  ];
-	}
+    stopallvoice  : tag_stopallvoice,
 
+	//----------------------------------------------- その他 --
+
+	movie : function(elm) { return 0; }
+		
+		];
+	}
 };

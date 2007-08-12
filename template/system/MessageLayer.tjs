@@ -654,12 +654,17 @@ class NameLayer extends RelativeLayer
     function processName(text) {
         if (owner.nameImageMap !== void ) {
             if (text != "") {
-                var image = owner.nameImageMap[text];
-                if (image === void) {
-                    image = owner.defaultNameImage;
-                }
-                loadImages(image);
-                visible = true;
+				var image = owner.nameImageMap[text];
+				if (image === void) {
+					image = owner.defaultNameImage;
+				}
+				if (image !== void) {
+					loadImages(image);
+					setSizeToImageSize();
+					visible = true;
+				} else {
+					visible = false;
+				}
             } else {
                 visible = false;
             }
@@ -3391,7 +3396,7 @@ class MessageLayer extends AnimKAGLayer
                 }
             }
         } while (link != firstLink);
-        return -1;
+        return link;
     }
 
     function tabPrev() {
@@ -3407,7 +3412,6 @@ class MessageLayer extends AnimKAGLayer
 				keyLink--;
 			}
             keyLink = checkFocus(keyLink, -1);
-			if (keyLink < 0) return;
             var obj = setFocusToLink(keyLink);
 			if(obj !== void) obj.focus();
     }
@@ -3425,7 +3429,6 @@ class MessageLayer extends AnimKAGLayer
 				keyLink ++;
 			}
             keyLink = checkFocus(keyLink, 1);
-			if (keyLink < 0) return;
             var obj = setFocusToLink(keyLink);
             if(obj !== void) obj.focus();
     }
@@ -3907,6 +3910,8 @@ class MessageLayer extends AnimKAGLayer
         } else {
             invalidateNameLayer();
         }
+		nameImageMap = src.nameImageMap;
+		defaultNameImage = src.defaultNameImage;
 
         // •\îƒŒƒCƒ„
         if (src.faceLayer !== void) {

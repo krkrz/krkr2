@@ -1,9 +1,44 @@
+if (typeof Scripts.execSQ == "undefined") {
+	try {
+		Plugins.link("squirrel.dll");
+	} catch(e) {
+		dm("squirrel.dll がみつかりません");
+	}
+}
+
+if (typeof Array.save2 == "undefined") {
+	try {
+		Plugins.link("savestruct.dll");
+	} catch(e) {
+		dm("savestruct.dll がみつかりません");
+	}
+}
+
+if (typeof Storages.fstat == "undefined") {
+	try {
+		Plugins.link("fstat.dll");
+	} catch(e) {
+		dm("fstat.dll がみつかりません");
+	}
+}
+
 /**
  * 基本概念になるレイヤ
  */
 class GraphicLayerBase extends GraphicLayerEx {
 	function GraphicLayerBase(isfore) {
 		super.GraphicLayerEx(kag, isfore ? kag.fore.base : kag.back.base);
+	}
+
+	var _index = 0;
+	property index {
+		getter() {
+			return _index;
+		}
+		setter(v) {
+			_index = v;
+			absolute = v;
+		}
 	}
 };
 
@@ -67,6 +102,7 @@ class VoiceTrack extends WaveSoundBuffer {
 KAGLoadScript('SceneParser.tjs');
 KAGLoadScript('SceneListParser.tjs');
 KAGLoadScript('VoiceListParser.tjs');
+KAGLoadScript('VariableListParser.tjs');
 
 
 /**
@@ -84,6 +120,7 @@ class BasicPlayer extends KAGPlugin {
 		env = new Environment(this, kag.scWidth, kag.scHeight);
 		getSceneInfos();
 		getVoiceInfos();
+		getVariableInfos();
 		sceneParser = new SceneParser();
 	}
 
@@ -141,6 +178,27 @@ class BasicPlayer extends KAGPlugin {
 		}
 		invalidate parser;
 	}
+
+	// ---------------------------------------------------
+	// ボイス情報処理
+	// ---------------------------------------------------
+
+	var variableInfos; // 変数定義情報
+
+	/**
+	 * シーン情報の読み込み
+	 */
+	function getVariableInfos() {
+		var parser = new VariableListParser();
+		try {
+			parser.parseStorage("variables.csv");
+			variableInfos = parser.varInfos;
+		} catch (e) {
+			dm(e.message);
+			variableInfos = [];
+		}
+		invalidate parser;
+	}
 	
 	// ---------------------------------------------------
 	// 共通処理
@@ -160,13 +218,6 @@ class BasicPlayer extends KAGPlugin {
 	}
 
 	/**
-	 * ジャンプ中か
-	 */
-	function isJump() {
-		return false;
-	}
-
-	/**
 	 * 条件判定
 	 */
 	function eval(eval) {
@@ -182,15 +233,16 @@ class BasicPlayer extends KAGPlugin {
 	/**
 	 * シーンファイルを変換してデータとして取得する
 	 * @param name シーン名
+	 * @param voiceNameMap
 	 */
-	function getScene(name) {
+	function getScene(name, voiceNameMap) {
 		var info = sceneInfos[name];
 		var voiceBase;
 		if (info !== void) {
 			voiceBase = info.voiceBase;
 		}
 		// パース実行
-		var ret = sceneParser.parse(name, voiceInfos, voiceBase);
+		var ret = sceneParser.parse(name, voiceInfos, voiceBase, voiceNameMap);
 		// エラー情報表示
 		var errors = sceneParser.errors;
 		for (var i=0;i<errors.count;i++) {
@@ -204,13 +256,15 @@ class BasicPlayer extends KAGPlugin {
 	 * @param name 現在のシーン名
 	 */
 	function getNextScene(name) {
-		var info = sceneInfos[name];
-		if (info !== void) {
-			var next = info.next;
-			if (next !== void) {
-				for (var i=0;i<next.count;i++) {
-					if (next.cond === void || next.cond == "" || eval(next.cond)) {
-						return next.scene;
+		if (name !== void && name !== null && name != "") {
+			var info = sceneInfos[name];
+			if (info !== void) {
+				var next = info.next;
+				if (next !== void) {
+					for (var i=0;i<next.count;i++) {
+						if (next.cond === void || next.cond == "" || eval(next.cond)) {
+							return next.scene;
+						}
 					}
 				}
 			}
@@ -236,25 +290,45 @@ class BasicPlayer extends KAGPlugin {
 			// コピー
 			(Dictionary.assign incontextof tr)(info, false); 
 			// パラメータのコピー
-			foreach(elm, function(name, value, elm, tr) {
-				if (transitionParam[name] !== void) {
-					//dm("パラメータコピー:" + name + ":" + value);
-					tr[name] = value;
-				}
-			}, tr);
+			if (tr.method == "layer") {
+				foreach(elm, function(name, value, elm, tr) {
+					if (layerTransitionParam[name] !== void) {
+						tr[name] = value;
+					}
+				}, tr);
+			} else {
+				foreach(elm, function(name, value, elm, tr) {
+					if (transitionParam[name] !== void) {
+						tr[name] = value;
+					}
+				}, tr);
+			}
 			return tr;
-		} else if (elm != null && (transitionName[name] !== void || name.substring(0,5) == "trans")) {
-			//dm("規定のシステムトランジション:" + name);
-			var tr = %[];
-			// 規定のトランジション
-			// パラメータのコピー
-			foreach(elm, function(name, value, elm, tr) {
-				if (transitionParam[name] !== void) {
-					tr[name] = value;
-                }
-			}, tr);
-			tr.method = name;
-			return tr;
+		} else if (elm != null) {
+			if (transitionName[name] !== void || name.substring(0,5) == "trans") {
+				//dm("規定のシステムトランジション:" + name);
+				var tr = %[];
+				// パラメータのコピー
+				foreach(elm, function(name, value, elm, tr) {
+					if (transitionParam[name] !== void) {
+						tr[name] = value;
+					}
+				}, tr);
+				tr.method = name;
+				return tr;
+			} else if (layerTransitionName[name] !== void || name.substring(0,5) == "layer") {
+				//dm("規定のレイヤトランジション:" + name);
+				var tr = %[];
+				// パラメータのコピー
+				foreach(elm, function(name, value, elm, tr) {
+					if (layerTransitionParam[name] !== void) {
+						tr[name] = value;
+					}
+				}, tr);
+				tr.method = "layer";
+				tr.type   = name;
+				return tr;
+			}
 		}
     }
 	
@@ -375,20 +449,6 @@ class BasicPlayer extends KAGPlugin {
 	}
 
 	/**
-	 * 更新時アクションの実行
-	 */
-	function beginTransActionUpdate(trans, layer) {
-		if (trans.showaction !== void) {
-			var action = copyActionInfo(trans.showaction, trans.time);
-			addTag("action", %[target:layer, action:action]);
-		}
-		if (trans.hideaction !== void) {
-			var action = copyActionInfo(trans.hideaction, trans.time);
-			addTag("action", %[target:layer.comp, action:action]);
-		}
-	}
-
-	/**
 	 * 表示/消去アクションの実行
 	 */
 	function beginTransAction(trans, layer, hide, nosync) {
@@ -428,6 +488,24 @@ class BasicPlayer extends KAGPlugin {
 	// ------------------------------------------------------------------
 	// 環境レイヤ制御
 	// ------------------------------------------------------------------
+
+	/**
+	 * 表示位置指定
+	 * 値的には 0～4096 の範囲で
+	 * stage     200
+	 * level 0:  400
+	 * level 1:  800
+	 * level 2: 1200
+	 * level 3: 1600
+	 * level 4: 2000
+	 * event    2200
+	 * level 5: 2400
+	 * level 6: 2800
+	 * level 7: 3200
+	 * level 8: 3600
+	 * msg      3800
+     * level 9: 4000
+	 */
 	
 	// 現在前面にあるレイヤ一覧
 	var forelayers = [];
@@ -445,29 +523,29 @@ class BasicPlayer extends KAGPlugin {
 				//dm("同一レベルなので処理しない");
 				return;
 			}
-			var index = layer.absolute;
+			var index = layer.index;
 			// もともといたレベルの調整
 			for (var i = 0; i<forelayers.count; i++) {
 				var target = forelayers[i];
 				if (target !== layer && target.level == layer.level) {
-					if (target.absolute > index) {
-						target.absolute -= 100;
+					if (target.index > index) {
+						target.index --;
 					}
 				}
 			}
 		}
 		// 新規レベルの一番上にもっていく
-		var newindex = (newlevel + 1) * 100000;
+		var newindex = (newlevel + 1) * 400;
 		for (var i = 0; i<forelayers.count; i++) {
 			var target = forelayers[i];
-			if (target !== layer && target.level == newlevel && target.absolute > newindex) {
-				newindex = target.absolute;
+			if (target !== layer && target.level == newlevel && target.index > newindex) {
+				newindex = target.index;
 			}
 		}
-		newindex += 100;
+		newindex++;
 		//dm("レベル設定:" + newlevel + ":" + newindex);
-		layer.absolute = newindex;
-		layer.level    = newlevel;
+		layer.index = newindex;
+		layer.level = newlevel;
     }
 	
 	/**
@@ -475,20 +553,20 @@ class BasicPlayer extends KAGPlugin {
 	 */
 	function toFront(layer) {
 		var level = layer.level;
-		var index = layer.absolute;
+		var index = layer.index;
 		var maxindex = index;
 		for(var i = 0; i<forelayers.count; i++) {
 			var target = forelayers[i];
 			if (target !== layer && target.level == level) {
-				if (target.absolute > maxindex) {
-					maxindex = target.absolute;
+				if (target.index > maxindex) {
+					maxindex = target.index;
 				}
-				if (target.absolute > index) {
-					target.absolute -= 100;
+				if (target.index > index) {
+					target.index--;
 				}
 			}
 		}
-		layer.absolute = maxindex;
+		layer.index = maxindex;
 	}
 
 	/*
@@ -496,20 +574,20 @@ class BasicPlayer extends KAGPlugin {
 	 */
 	function toBack(layer) {
 		var level = layer.level;
-		var index = layer.absolute;
+		var index = layer.index;
 		var minindex = index;
 		for(var i = 0; i<forelayers.count; i++) {
 			var target = forelayers[i];
 			if (target !== layer && target.level == level) {
-				if (target.absolute < minindex) {
-					minindex = target.absolute;
+				if (target.index < minindex) {
+					minindex = target.index;
 				}
-				if (target.absolute < index) {
-					target.absolute += 100;
+				if (target.index < index) {
+					target.index++;
 				}
 			}
 		}
-		layer.absolute = minindex;
+		layer.idnex = minindex;
     }
 
 	/**
@@ -523,17 +601,18 @@ class BasicPlayer extends KAGPlugin {
 	 * 表に移動させる
 	 */
 	function toForeLayer(layer) {
-		var absolute = layer.absolute;
+		var index    = layer.index;
 		layer.parent = kag.fore.base;
-		layer.absolute = absolute;
+		layer.index  = index;
 	}
 
 	/**
 	 * レイヤ取得処理
 	 * @param fore
 	 * @param origLayer 廃棄元レイヤ
+	 * @param trash orig を廃棄するかどうか
 	 */
-	function getNewLayer(owner, isfore, origLayer) {
+	function getNewLayer(owner, isfore, origLayer, trash=true) {
 		var newlayer = owner.createLayer(isfore);
 		newlayer.hitType = htProvince;
 		newlayer.level = -1;
@@ -541,9 +620,11 @@ class BasicPlayer extends KAGPlugin {
 		if (origLayer !== void) {
 			newlayer.assign(origLayer);
 			newlayer.assignVisibleState(origLayer);
-			newlayer.level    = origLayer.level;
-			newlayer.absolute = origLayer.absolute;
-			trashLayer(origLayer);
+			newlayer.level = origLayer.level;
+			newlayer.index = origLayer.index;
+			if (trash) {
+				trashLayer(origLayer);
+			}
 		}
 		return newlayer;
 	}
@@ -682,7 +763,7 @@ class BasicPlayer extends KAGPlugin {
 	 */
 	function stopAllVoice() {
 		var names = [];
-		names.assign(soundBuffer);
+		names.assign(voiceTracks);
         for (var i=0; i<names.count; i+= 2) {
 			var soundBuffer = names[i+1];
 			soundBuffer.stop();
@@ -705,6 +786,7 @@ class BasicPlayer extends KAGPlugin {
 				return kag.waitTime(remainTime, canSkip && kag.clickSkipEnabled);
 			}
 		}
+		return 0;
 	}
 	
     /**
@@ -927,15 +1009,15 @@ class BasicPlayer extends KAGPlugin {
 	// テキスト系
 	
 	function tag_ch() {
-		return kag.tagHandlers.ch(...);
+		return isJump() ? 0 : kag.tagHandlers.ch(...);
 	}
 
 	function tag_r() {
-		return kag.tagHandlers.r(...);
+		return isJump() ? 0 : kag.tagHandlers.r(...);
 	}
 
 	function tag_ruby() {
-		return kag.tagHandlers.ruby(...);
+		return isJump() ? 0 : kag.tagHandlers.ruby(...);
 	}
 
 	function tag_font() {
@@ -963,15 +1045,15 @@ class BasicPlayer extends KAGPlugin {
 	}
 
 	function tag_l() {
-		return kag.tagHandlers.l(...);
+		return isJump() ? 0 : kag.tagHandlers.l(...);
 	}
 
 	function tag_p() {
-		return kag.tagHandlers.p(...);
+		return isJump() ? 0 : kag.tagHandlers.p(...);
 	}
 
 	function tag_er() {
-		return kag.tagHandlers.er(...);
+		return isJump() ? 0 : kag.tagHandlers.er(...);
 	}
 
 	function tag_indent() {
@@ -998,11 +1080,11 @@ class BasicPlayer extends KAGPlugin {
 	}
 	
 	function tag_wait() {
-		return kag.tagHandlers.wait(...);
+		return isJump() ? 0 : kag.tagHandlers.wait(...);
 	}
 
 	function tag_waittrig() {
-		return kag.tagHandlers.waittrig(...);
+		return isJump() ? 0 : kag.tagHandlers.waittrig(...);
 	}
 	
 	function tag_beginskip() {
@@ -1029,7 +1111,7 @@ class BasicPlayer extends KAGPlugin {
 	}
 
 	function tag_wt() {
-		return kag.tagHandlers.wt(...);
+		return isJump() ? 0 : kag.tagHandlers.wt(...);
 	}
 	
 	function tag_action() {
@@ -1041,7 +1123,7 @@ class BasicPlayer extends KAGPlugin {
 	}
 
 	function tag_wact() {
-		return kag.tagHandlers.wact(...);
+		return isJump() ? 0 : kag.tagHandlers.wact(...);
 	}
 
 	// --------------------------------------------------
@@ -1072,7 +1154,11 @@ class BasicPlayer extends KAGPlugin {
 	 */
 	function tag_msgwin(elm) {
 		kag.setCurrentMessageLayer(%[layer:"message0"]);
-		kag.fore.messages[kag.currentNum].setPosition(elm);
+		var msg = kag.fore.messages[kag.currentNum];
+		msg.setPosition(elm);
+		if (env.envinfo.nameImageMap !== void) {
+			msg.setNameImage(env.envinfo.nameImageMap);
+		}
 		return 0;
 	}
 
@@ -1149,7 +1235,7 @@ class BasicPlayer extends KAGPlugin {
     /**
      * ページ処理後に呼び出される処理
      */
-    function tag_afterpage(elm) {
+	function tag_afterpage(elm) {
 		clearHistory(true);
 		kag.stopAllActions();
 		return 0;
@@ -1160,6 +1246,70 @@ class BasicPlayer extends KAGPlugin {
 	 */
 	function tag_stopallvoice(elm) {
 		stopAllVoice();
+	}
+
+	// ---------------------------------------------------
+	// 選択肢用処理
+	// ---------------------------------------------------
+
+	function addSelect(elm) {
+		if (f.selectInfos == void) {
+			f.selectInfos = [];
+		}
+		if (f.selectDoneFlag) {
+			f.selectInfos.clear();
+			f.selDoneTarget  = void;
+			f.selectDoneFlag = false;
+		}
+		var e = %[];
+		(Dictionary.assign incontextof e)(elm,false);
+		f.selectInfos.add(e);
+		return 0;
+	}
+
+    /**
+     * 選択肢の表示
+     */
+	function doSelect(elm)
+	{
+		f.selectDoneFlag = true;
+		f.selDoneTarget  = elm.target  if elm.target  !== void;
+		f.selTarget      = void;
+		// 終了処理をさしこむ
+		addTag("er");
+		addTag("selend");
+		
+		// f.selectInfo の内容で選択肢を表示
+		if (env.envinfo.selectopt !== void) {
+			kag.setSelectOptions(env.envinfo.selectopt);
+		}
+		kag.showSelect();
+		return kag.waitTrigger(%[name:"selectdone"]);
+	}
+
+	/**
+	 * 選択肢の終了
+	 */
+	function endSelect(elm) {
+		kag.hideSelect();
+		if (f.selTarget != '') {
+			goToLabel(f.selTarget);
+			return 0;
+		} else {
+			return -1;
+		}
+	}
+
+	/**
+	 * 選択肢処理の完了
+	 */
+	function doneSelect(elm) {
+		if (f.selDoneTarget != "") {
+			goToLabel(f.selDoneTarget);
+			return 0;
+		} else {
+			return -1;
+        }
 	}
 	
 	// --------------------------------------------------------------
@@ -1222,7 +1372,17 @@ class BasicPlayer extends KAGPlugin {
 	// --------------------------------------------------------------
 	// KAG 用保存処理
 	// --------------------------------------------------------------
-	
+
+	/**
+	 * 保存実行
+	 */
+	function doSave() {
+		kag.pushHistoryOfStore();
+		kag.storeFlags();
+		kag.storeLabelPassed = true;
+		kag.setMenuAccessibleAll();
+	}
+
 	/**
 	 * 状態保存処理
 	 */
@@ -1267,6 +1427,7 @@ class BasicPlayer extends KAGPlugin {
 
 	// シーン再生開始
 	function scenestart(elm) {
+		kag.prevSkipMode = void;
 		tick = System.getTickCount();
 		run(elm.storage);
 		return 0;
@@ -1293,11 +1454,118 @@ class BasicPlayer extends KAGPlugin {
 			//dm("終了");
 			return 0;
 		}
-		if (step > 0) {
+		if (step >= 0) {
 			//dm("処理継続");
 			kag.insertTag(void, elm);
 			return step;
 		}
+	}
+
+	// ------------------------------------------------------
+	// コンバート処理
+	// ------------------------------------------------------
+
+	function getTime(name) {
+		if (Storages.isExistentStorage(name)) {
+			var stat = Storages.fstat(name);
+			if (stat.mtime !== void) {
+				return stat.mtime.getTime();
+			} else {
+				return 0;
+			}
+		} else {
+			return 0;
+		}
+	}
+
+	var convertAll;
+
+	function getVoiceNameMap(path) {
+		var voiceNameMap = %[];
+		var voiceNameList = [];
+		voiceNameList.load(path + "VOICE_ID.lst");
+		var cnt = 0;
+		for (var i=0;i<voiceNameList.count;i++) {
+			var name = voiceNameList[i];
+			if (name.charAt(0) != '[') {
+				name = Storages.chopStorageExt(Storages.extractStorageName(name));
+				voiceNameMap[name.toUpperCase()] = cnt++;
+			}
+		}
+		return voiceNameMap;
+	}
+
+	// システムボイス情報
+	function getSysVoiceInfos(path) {
+		var voiceNameMap = getVoiceNameMap(path);
+		var sysVoiceList = [];
+		var sysVoiceMap = %[];
+		try {
+			sysVoiceList.load("sysvoices.csv");
+			for (var i=0;i<sysVoiceList.count;i++) {
+				var name = sysVoiceList[i];
+				if (name.charAt(0) != '#') {
+					name = name.toUpperCase();
+					var value = voiceNameMap[name];
+					//dm("システムボイス:" + name + ":" + value);
+					if (value !== void) {
+						sysVoiceMap[name] = value;
+					}
+				}
+			}
+		} catch (e) {
+			dm(e);
+		}
+		return sysVoiceMap;
+	}
+	
+	/**
+	 * コンバート処理の実行
+	 * @path 格納先パス
+	 */
+	function convert(path = "", all=false) {
+
+		convertAll = all;
+		askYesNo((all ? "再" : "") + "コンバート処理を実行します。コンバート実行中は処理が固まるのでご注意ください", "確認", function(path) {
+			
+			var envtime = getTime("envinit.tjs");
+			var voicetime = getTime("voices.csv");
+
+			if (path.length > 0 && path[path.length - 1] != '/') {
+				path += "/";
+			}
+			// ボイスリストの読み込み
+			var voiceNameMap = getVoiceNameMap(path);
+			var list = [ "[SCENE_ID]" ];
+			for (var i=0;i<sceneNames.count;i++) {
+				var name = path + "SCENE/" + Storages.chopStorageExt(sceneNames[i]) + ".nut";
+				list.add("SCENE\\" + Storages.chopStorageExt(sceneNames[i]) + ".nut");
+				var srctime  = getTime(sceneNames[i]);
+				var desttime = getTime(name);
+				//dm("%s: src:%d dest:%d env:%d voice:%d\n".sprintf(name, desttime, srctime, envtime, voicetime));
+				if (convertAll || desttime < srctime || desttime < envtime || desttime < voicetime) {
+					dm("convert file:" + sceneNames[i]);
+					Scripts.saveSQ(name, getScene(sceneNames[i], voiceNameMap));
+				}
+			}
+			list.add("[END]");
+			list.save2(path + "SCENE_ID.LST");
+			System.inform("コンバート処理が終了しました");
+		} incontextof this, void, path);
+	}
+
+	function convertParam(path = "") {
+		askYesNo("パラメータ出力を実行します", "確認", function(path) {
+			if (path.length > 0 && path[path.length - 1] != '/') {
+				path += "/";
+			}
+			Scripts.saveSQ(path + "SCENE/" + "envinit.nut", env.envinfo);
+			Scripts.saveSQ(path + "SCENE/" + "voices.nut",  voiceInfos);
+			Scripts.saveSQ(path + "SCENE/" + "scenes.nut",  sceneInfos);
+			Scripts.saveSQ(path + "SCENE/" + "variables.nut",  variableInfos);
+			Scripts.saveSQ(path + "SCENE/" + "sysvoices.nut", getSysVoiceInfos(path));
+			System.inform("パラメータ出力が完了しました");
+		} incontextof this, void, path);
 	}
 };
 
@@ -1375,6 +1643,18 @@ var transitionParam = %[
 	"hideaction" => true
     ];
 
+var layerTransitionName = %[
+	"wipeltor" => true,
+	"wipertol" => true,
+	"layfade"  => true,
+	"laytrans" => true,
+	];
+
+var layerTransitionParam = %[
+	"time" => true,
+	"color" => true,
+	];
+
 var actionParam = %[
 	"time" => true,
 	"delay" => true,
@@ -1430,11 +1710,31 @@ kag.tagHandlers["scenemain"]  = kag.scenePlayer.scenemain;
 
 property sceneExecDialog { getter() { KAGLoadScript("SceneExecDialog.tjs"); return global.sceneExecDialog; } };
 
+var psfolder = "../../PSVersion/DataMake/";
+
 // デバッグメニューに登録
 if (kag.debugMenu !== void && kag.debugMenu.visible) {
 	kag.debugMenu.insert(new MenuItem(this, "-"), 0);
-	kag.debugMenu.insert(kag.loadSceneMenuItem = new KAGMenuItem(this, "シーンの読込み(&L)", 1,
-																 function() {sceneExecDialog();}), 1);
+	kag.debugMenu.insert(kag.loadSceneMenuItem =
+						 new KAGMenuItem(this, "パラメータの変換", 1,
+										 function() {
+											 kag.scenePlayer.convertParam(psfolder);
+										 }), 0);
+	kag.debugMenu.insert(kag.loadSceneMenuItem =
+						 new KAGMenuItem(this, "シーンの変換（全部）", 1,
+										 function() {
+											 kag.scenePlayer.convert(psfolder, true);
+										 }), 0);
+
+	kag.debugMenu.insert(kag.loadSceneMenuItem =
+						 new KAGMenuItem(this, "シーンの変換", 1,
+										 function() {
+											 kag.scenePlayer.convert(psfolder);
+										 }), 0);
+	
+	kag.debugMenu.insert(kag.loadSceneMenuItem =
+						 new KAGMenuItem(this, "シーンの読込み(&L)", 1,
+										 function() {sceneExecDialog();}), 0);
 }
 
 if (kag.debugLevel >= tkdlSimple) {

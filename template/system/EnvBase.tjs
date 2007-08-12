@@ -28,11 +28,13 @@ class EnvObject {
 	 */
 	function tagfunc(elm) {
 		//dm("コマンド処理:" + name);
+		var ret = 0;
 		tagcommand(elm);
 		if (!player.isJump()) {
-			return sync(elm);
+			ret = sync(elm);
 		}
-		return 0;
+		tagdone(elm);
+		return ret;
 	}
 
 	/**
@@ -40,12 +42,18 @@ class EnvObject {
 	 */
 	function tagcommand(elm) {
 	}
-	
+
 	/**
 	 * 状態同期
 	 */
 	function sync(elm) {
 		return 0;
+	}
+
+	/**
+	 * コマンド終了
+	 */
+	function tagdone(elm) {
 	}
 }
 
@@ -100,7 +108,7 @@ class EnvBase extends EnvObject {
 			if (param !== void) {
 				if (typeof param == "String") {
 					var tr = player.getTrans(param);
-					if (tr !== void && tr.method != void) {
+					if (tr !== void) {
 						autoTrans = tr;
 						//dm("自動トランジション指定:" + tr.method + ":" + tr.time);
 						return;

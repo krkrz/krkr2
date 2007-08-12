@@ -57,8 +57,8 @@ class SimpleLayerGraphicLayer extends EnvGraphicLayer {
 		}
 
 		//dm("ˆÊ’uŽw’è2:" + xbase + "," + ybase + ":" + xdiff + "," + ydiff + ":" + left + "," + top);
-		setRealPosition(xbase + left - xdiff,
-						ybase + top  - ydiff);
+		setRealPosition(xbase + +left - xdiff,
+						ybase + +top  - ydiff);
 	}
 };
 
