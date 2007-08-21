@@ -232,8 +232,10 @@ public: // link operations
 	void Unlink()
 	{
 		// unchain from the link list
-		Prev->Next = Next;
-		Next->Prev = Prev;
+		tTVPRegionRect *prev = Prev;
+		tTVPRegionRect *next = Next;
+		prev->Next = next;
+		next->Prev = prev;
 	}
 
 };
@@ -261,6 +263,8 @@ public: // iterator
 	public: // operator function (data access)
 		const tTVPRect & operator * () const { return *Current; }
 		const tTVPRect * operator -> () const { return Current; }
+
+		const tTVPRegionRect & Get() const { return *Current; }
 
 	public: // stepping forward; this object supports only forward step.
 			// method step returns true if stepping successful,
@@ -372,6 +376,8 @@ public: // iterator
 	tIterator GetIterator() const
 		{ if(Count) return tIterator(Head); else return tIterator(NULL); }
 
+public: // debug
+	void DumpChain();
 };
 //---------------------------------------------------------------------------
 

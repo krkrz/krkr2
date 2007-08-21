@@ -158,6 +158,7 @@ void TVPDeallocateRegionRect(tTVPRegionRect * rect)
 
 		// Free the vector
 		delete TVPRegionFreeRects, TVPRegionFreeRects = NULL;
+		TVPRegionFreeMaxCount = 0;
 	}
 }
 //---------------------------------------------------------------------------
@@ -256,11 +257,8 @@ void tTVPComplexRect::SetCount(tjs_int count)
 		while(add_count--)
 		{
 			tTVPRegionRect * newrect = new tTVPRegionRect();
-			cur->Next = newrect;
-			newrect->Prev = cur;
-			cur = newrect;
+			newrect->LinkBefore(Head);
 		}
-		cur->Next = Head;
 		Count = count;
 	}
 	else if(count < Count)
@@ -278,7 +276,7 @@ void tTVPComplexRect::SetCount(tjs_int count)
 			}
 			Count = count;
 			if(Count)
-				cur->Next = Head, Current = Head;
+				cur->Next = Head, Current = Head, Head->Prev = cur;
 			else
 				Head = NULL, Current = NULL;
 		}
@@ -415,8 +413,6 @@ void tTVPComplexRect::Remove(tTVPRegionRect * rect)
 	// Note that this function does not update the bounding rectangle.
 	if(rect == Head) Head = rect->Next;
 
-	rect->Unlink();
-	delete rect;
 	Count --;
 	if(!Count)
 	{
@@ -427,6 +423,8 @@ void tTVPComplexRect::Remove(tTVPRegionRect * rect)
 	{
 		if(rect == Current) Current = rect->Prev;
 	}
+	rect->Unlink();
+	delete rect;
 }
 //---------------------------------------------------------------------------
 void tTVPComplexRect::Merge(const tTVPComplexRect & rects)
@@ -1207,3 +1205,19 @@ void tTVPComplexRect::RectangleSub(tTVPRegionRect *r, const tTVPRect *rr)
 
 }
 //---------------------------------------------------------------------------
+
+
+//---------------------------------------------------------------------------
+void tTVPComplexRect::DumpChain()
+{
+	AnsiString str;
+	tIterator it = GetIterator();
+	while(it.Step()) {
+		char tmp[200];
+		sprintf(tmp, "%p (%p) %p : ", it.Get().Prev, &(it.Get()), it.Get().Next);
+		str += tmp;
+	}
+	OutputDebugString(str.c_str());
+}
+//---------------------------------------------------------------------------
+
