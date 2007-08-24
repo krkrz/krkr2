@@ -746,6 +746,8 @@ void tTVPLayerManager::RemoveModeFrom(tTJSNI_BaseLayer *layer)
 	// remove modal state from given layer
 	SaveEnabledWork();
 
+	bool do_notify = false;
+
 	try
 	{
 		std::vector<tTJSNI_BaseLayer*>::iterator i;
@@ -756,6 +758,7 @@ void tTVPLayerManager::RemoveModeFrom(tTJSNI_BaseLayer *layer)
 				if(layer->Owner) layer->Owner->Release();
 				SetFocusTo(layer->GetNextFocusable(), true);
 				i = ModalLayerVector.erase(i);
+				do_notify = true;
 			}
 			else
 			{
@@ -765,17 +768,19 @@ void tTVPLayerManager::RemoveModeFrom(tTJSNI_BaseLayer *layer)
 	}
 	catch(...)
 	{
-		NotifyNodeEnabledState();
+		NotifyNodeEnabledState(do_notify);
 		throw;
 	}
 
-	NotifyNodeEnabledState();
+	NotifyNodeEnabledState(do_notify);
 }
 //---------------------------------------------------------------------------
 void tTVPLayerManager::RemoveTreeModalState(tTJSNI_BaseLayer *root)
 {
 	// remove modal state from given tree
 	SaveEnabledWork();
+
+	bool do_notify = false;
 
 	try
 	{
@@ -787,6 +792,7 @@ void tTVPLayerManager::RemoveTreeModalState(tTJSNI_BaseLayer *root)
 				if((*i)->Owner) (*i)->Owner->Release();
 				SetFocusTo(root->GetNextFocusable(), true);
 				i = ModalLayerVector.erase(i);
+				do_notify = true;
 			}
 			else
 			{
@@ -796,11 +802,11 @@ void tTVPLayerManager::RemoveTreeModalState(tTJSNI_BaseLayer *root)
 	}
 	catch(...)
 	{
-		NotifyNodeEnabledState();
+		NotifyNodeEnabledState(do_notify);
 		throw;
 	}
 
-	NotifyNodeEnabledState();
+	NotifyNodeEnabledState(do_notify);
 }
 //---------------------------------------------------------------------------
 tTJSNI_BaseLayer *tTVPLayerManager::GetCurrentModalLayer() const
@@ -879,13 +885,16 @@ void tTVPLayerManager::SaveEnabledWork()
 	EnabledWorkRefCount ++;
 }
 //---------------------------------------------------------------------------
-void tTVPLayerManager::NotifyNodeEnabledState()
+void tTVPLayerManager::NotifyNodeEnabledState(bool do_notify)
 {
 	// notify node enabled state change to self and its children
 	// this refers EnabledWork which is created by SaveEnabledWork
 	EnabledWorkRefCount --;
 
-	if(EnabledWorkRefCount == 0) if(Primary) Primary->NotifyNodeEnabledState();
+	if(do_notify)
+	{
+		if(EnabledWorkRefCount == 0) if(Primary) Primary->NotifyNodeEnabledState();
+	}
 }
 //---------------------------------------------------------------------------
 void tTVPLayerManager::PrimaryKeyDown(tjs_uint key, tjs_uint32 shift)
