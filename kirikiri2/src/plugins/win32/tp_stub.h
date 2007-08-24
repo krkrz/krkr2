@@ -1902,6 +1902,7 @@ extern void * TVPImportFuncPtr9e0df54e4c24ee28d5517c1743faa3a3;
 extern void * TVPImportFuncPtrb426fbfb6ccb4e89c252b6af566995b8;
 extern void * TVPImportFuncPtr678c2b211f8d8f661f6fdd95c52fbaa8;
 extern void * TVPImportFuncPtr9ec5b02d14238454101dad083b5dfc3b;
+extern void * TVPImportFuncPtr471b3daf08ed9b828679d0dae78250ed;
 extern void * TVPImportFuncPtrd0bb2c604ee6f0bba72ddc017f6416eb;
 extern void * TVPImportFuncPtr3ab4d4d7b57eea827e7bb7c263afb951;
 extern void * TVPImportFuncPtr9982ebedc12d343cb098e2a7b25bdef1;
@@ -5396,6 +5397,7 @@ typedef bool (__stdcall * tTVPWindowMessageReceiver)
 //---------------------------------------------------------------------------
 #ifndef __DDRAW_INCLUDED__
 struct IDirectDraw2;
+struct IDirectDraw7;
 struct IDirectDrawSurface;
 struct IDirectDrawClipper;
 #endif
@@ -7873,6 +7875,16 @@ inline IDirectDraw2 * TVPGetDirectDrawObjectNoAddRef()
 	}
 	typedef IDirectDraw2 * (__stdcall * __functype)();
 	return ((__functype)(TVPImportFuncPtr9ec5b02d14238454101dad083b5dfc3b))();
+}
+inline IDirectDraw7 * TVPGetDirectDraw7ObjectNoAddRef()
+{
+	if(!TVPImportFuncPtr471b3daf08ed9b828679d0dae78250ed)
+	{
+		static char funcname[] = "IDirectDraw7 * ::TVPGetDirectDraw7ObjectNoAddRef()";
+		TVPImportFuncPtr471b3daf08ed9b828679d0dae78250ed = TVPGetImportFuncPtr(funcname);
+	}
+	typedef IDirectDraw7 * (__stdcall * __functype)();
+	return ((__functype)(TVPImportFuncPtr471b3daf08ed9b828679d0dae78250ed))();
 }
 inline IDirectDrawSurface * TVPGetDDPrimarySurfaceNoAddRef()
 {
