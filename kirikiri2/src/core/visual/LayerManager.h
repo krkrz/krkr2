@@ -357,7 +357,7 @@ private:
 	tjs_int EnabledWorkRefCount;
 public:
 	void SaveEnabledWork();
-	void NotifyNodeEnabledState(bool do_notify = true);
+	void NotifyNodeEnabledState();
 	void PrimaryKeyDown(tjs_uint key, tjs_uint32 shift);
 	void PrimaryKeyUp(tjs_uint key, tjs_uint32 shift);
 	void PrimaryKeyPress(tjs_char key);
