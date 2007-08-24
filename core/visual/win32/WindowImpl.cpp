@@ -171,15 +171,16 @@ enum tTVPFullScreenResolutionMode
 };
 static IDirectDraw *TVPDirectDraw=NULL;
 static IDirectDraw2 *TVPDirectDraw2=NULL;
+static IDirectDraw7 *TVPDirectDraw7=NULL;
 static HRESULT WINAPI (*TVPDirectDrawCreate)
 	( GUID FAR *lpGUID, LPDIRECTDRAW FAR *lplpDD, IUnknown FAR *pUnkOuter ) = NULL;
+static HRESULT WINAPI (*TVPDirectDrawCreateEx)
+	( GUID FAR * lpGuid, LPVOID  *lplpDD, REFIID  iid,IUnknown FAR *pUnkOuter ) = NULL;
+
 static HRESULT WINAPI (*TVPDirectDrawEnumerateA)
 	( LPDDENUMCALLBACKA lpCallback, LPVOID lpContext ) = NULL;
 static HRESULT WINAPI (*TVPDirectDrawEnumerateExA)
 	( LPDDENUMCALLBACKEXA lpCallback, LPVOID lpContext, DWORD dwFlags) = NULL;
-
-const static GUID __GUID_IDirectDraw7 =
-	{ 0x15e65ec0,0x3b9c,0x11d2, { 0xb9,0x2f,0x00,0x60,0x97,0x97,0xea,0x5b }};
 
 static HMODULE TVPDirectDrawDLLHandle=NULL;
 static bool TVPUseChangeDisplaySettings = false;
@@ -424,47 +425,73 @@ static void TVPInitDirectDraw()
 				TVPThrowExceptionMessage(TVPCannotInitDirectDraw,
 					TJS_W("Missing DirectDrawCreate in ddraw.dll"));
 
+			TVPDirectDrawCreateEx = (HRESULT(WINAPI*)( GUID FAR *, LPVOID  *, REFIID,IUnknown FAR *))
+				GetProcAddress(TVPDirectDrawDLLHandle, "DirectDrawCreateEx");
+
 			// create IDirectDraw object
-			HRESULT hr;
+			if(TVPDirectDrawCreateEx)
+			{
+				HRESULT hr;
+				hr = TVPDirectDrawCreateEx(NULL, (void**)&TVPDirectDraw7, IID_IDirectDraw7, NULL);
+ 				if(FAILED(hr))
+					TVPThrowExceptionMessage(TVPCannotInitDirectDraw,
+						ttstr(TJS_W("DirectDrawCreateEx failed./HR="))+
+							TJSInt32ToHex((tjs_uint32)hr));
 
-			hr = TVPDirectDrawCreate(NULL, &TVPDirectDraw, NULL);
-			if(FAILED(hr))
-				TVPThrowExceptionMessage(TVPCannotInitDirectDraw,
-					ttstr(TJS_W("DirectDrawCreate failed./HR="))+
-						TJSInt32ToHex((tjs_uint32)hr));
+				// retrieve IDirecDraw2 interface
+				hr = TVPDirectDraw7->QueryInterface(IID_IDirectDraw2,
+					(void **)&TVPDirectDraw2);
+				if(FAILED(hr))
+					TVPThrowExceptionMessage(TVPCannotInitDirectDraw,
+						ttstr(TJS_W("Querying of IID_IDirectDraw2 failed."
+							"/HR="))+
+							TJSInt32ToHex((tjs_uint32)hr));
+			}
+			else
+			{
+				HRESULT hr;
 
-			// retrieve IDirecDraw2 interface
-			hr = TVPDirectDraw->QueryInterface(IID_IDirectDraw2,
-				(void **)&TVPDirectDraw2);
-			if(FAILED(hr))
-				TVPThrowExceptionMessage(TVPCannotInitDirectDraw,
-					ttstr(TJS_W("Querying of IID_IDirectDraw2 failed."
-						" (DirectX on this system may be too old)/HR="))+
-						TJSInt32ToHex((tjs_uint32)hr));
+				hr = TVPDirectDrawCreate(NULL, &TVPDirectDraw, NULL);
+				if(FAILED(hr))
+					TVPThrowExceptionMessage(TVPCannotInitDirectDraw,
+						ttstr(TJS_W("DirectDrawCreate failed./HR="))+
+							TJSInt32ToHex((tjs_uint32)hr));
 
-			TVPDirectDraw->Release(), TVPDirectDraw = NULL;
+				// retrieve IDirecDraw2 interface
+				hr = TVPDirectDraw->QueryInterface(IID_IDirectDraw2,
+					(void **)&TVPDirectDraw2);
+				if(FAILED(hr))
+					TVPThrowExceptionMessage(TVPCannotInitDirectDraw,
+						ttstr(TJS_W("Querying of IID_IDirectDraw2 failed."
+							" (DirectX on this system may be too old)/HR="))+
+							TJSInt32ToHex((tjs_uint32)hr));
 
-			// retrieve IDirectDraw7 interface
+				TVPDirectDraw->Release(), TVPDirectDraw = NULL;
 
-			IDirectDraw7 *dd7 = NULL;
-			hr = TVPDirectDraw2->QueryInterface(IID_IDirectDraw7, (void**)&dd7);
-			if(SUCCEEDED(hr) && dd7)
+				// retrieve IDirectDraw7 interface
+				hr = TVPDirectDraw2->QueryInterface(IID_IDirectDraw7, (void**)&TVPDirectDraw7);
+				if(FAILED(hr)) TVPDirectDraw7 = NULL;
+			}
+
+			if(TVPDirectDraw7)
 			{
 				TVPAddImportantLog(TJS_W("(info) DirectDraw7 or higher detected. Retrieving current DirectDraw driver information..."));
 				try
 				{
-					TVPDumpDirectDrawDriverInformation(dd7);
+					TVPDumpDirectDrawDriverInformation(TVPDirectDraw7);
 				}
 				catch(...)
 				{
 					// ignore errors
 				}
-				dd7->Release();
+
 			}
 
-
 			// set cooperative level
-			TVPDirectDraw2->SetCooperativeLevel(NULL, DDSCL_NORMAL);
+			if(TVPDirectDraw7)
+				TVPDirectDraw7->SetCooperativeLevel(NULL, DDSCL_NORMAL);
+			else
+				TVPDirectDraw2->SetCooperativeLevel(NULL, DDSCL_NORMAL);
 		}
 		catch(...)
 		{
@@ -486,6 +513,7 @@ static void TVPUnloadDirectDraw()
 	// release DirectDraw object and /*release it's DLL */
 	TVPUninitDirectDraw();
 	if(TVPDDPrimarySurface) TVPDDPrimarySurface->Release(), TVPDDPrimarySurface = NULL;
+	if(TVPDirectDraw7) TVPDirectDraw7->Release(), TVPDirectDraw7 = NULL;
 	if(TVPDirectDraw2) TVPDirectDraw2->Release(), TVPDirectDraw2 = NULL;
 	if(TVPDirectDraw) TVPDirectDraw -> Release(), TVPDirectDraw = NULL;
 //	if(TVPDirectDrawDLLHandle)
@@ -509,6 +537,12 @@ IDirectDraw2 * TVPGetDirectDrawObjectNoAddRef()
 {
 	// retrieves DirectDraw2 interface
 	return TVPDirectDraw2;
+}
+//---------------------------------------------------------------------------
+IDirectDraw7 * TVPGetDirectDraw7ObjectNoAddRef()
+{
+	// retrieves DirectDraw7 interface
+	return TVPDirectDraw7;
 }
 //---------------------------------------------------------------------------
 IDirectDrawSurface * TVPGetDDPrimarySurfaceNoAddRef()
