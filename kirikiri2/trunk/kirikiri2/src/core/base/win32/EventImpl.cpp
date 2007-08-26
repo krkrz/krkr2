@@ -17,6 +17,9 @@
 #include "TimerIntf.h"
 #include "SysInitIntf.h"
 #include "DebugIntf.h"
+#include "WindowImpl.h"
+#include <mmsystem.h>
+#include <ddraw.h>
 
 
 //---------------------------------------------------------------------------
@@ -250,32 +253,34 @@ void TVPBeginContinuousEvent()
 		}
 	}
 
+	if(!TVPGetWaitVSync())
+	{
+		if(TVPContinousHandlerLimitFrequency == 0)
+		{
+			// no limit
+			// this notifies continuous calling of TVPDeliverAllEvents.
+			if(TVPMainForm) TVPMainForm->BeginContinuousEvent();
+		}
+		else
+		{
+			// has limit
+			if(!TVPContinuousHandlerCallLimitThread)
+				TVPContinuousHandlerCallLimitThread = new tTVPContinuousHandlerCallLimitThread();
+			TVPContinuousHandlerCallLimitThread->SetInterval(
+				 (1<<TVP_SUBMILLI_FRAC_BITS)*1000/TVPContinousHandlerLimitFrequency);
+			TVPContinuousHandlerCallLimitThread->SetEnabled(true);
+		}
+	}
 
-	if(TVPContinousHandlerLimitFrequency == 0)
-	{
-		// no limit
-		// this notifies continuous calling of TVPDeliverAllEvents.
-		if(TVPMainForm) TVPMainForm->BeginContinuousEvent();
-	}
-	else
-	{
-		// has limit
-		if(!TVPContinuousHandlerCallLimitThread)
-			TVPContinuousHandlerCallLimitThread = new tTVPContinuousHandlerCallLimitThread();
-		TVPContinuousHandlerCallLimitThread->SetInterval(
-			 (1<<TVP_SUBMILLI_FRAC_BITS)*1000/TVPContinousHandlerLimitFrequency);
-		TVPContinuousHandlerCallLimitThread->SetEnabled(true);
-	}
+	// if we wait vsync, the continuous handler will be executed at the every timing of
+	// vsync.
 }
 //---------------------------------------------------------------------------
 void TVPEndContinuousEvent()
 {
-	if(TVPContinousHandlerLimitFrequency != 0)
-	{
-		// has limit
-		if(TVPContinuousHandlerCallLimitThread)
-			TVPContinuousHandlerCallLimitThread->SetEnabled(false);
-	}
+	// anyway
+	if(TVPContinuousHandlerCallLimitThread)
+		TVPContinuousHandlerCallLimitThread->SetEnabled(false);
 
 	// anyway
 	if(TVPMainForm) TVPMainForm->EndContinuousEvent();
@@ -295,6 +300,370 @@ static void TVPReleaseContinuousHandlerCallLimitThread()
 static tTVPAtExit TVPTimerThreadUninitAtExit(TVP_ATEXIT_PRI_SHUTDOWN,
 	TVPReleaseContinuousHandlerCallLimitThread);
 //---------------------------------------------------------------------------
+
+
+
+
+
+
+
+
+
+
+//---------------------------------------------------------------------------
+static bool TVPWaitVSync = 0;
+//---------------------------------------------------------------------------
+bool TVPGetWaitVSync()
+{
+	static tjs_int ArgumentGeneration = 0;
+	if(ArgumentGeneration != TVPGetCommandLineArgumentGeneration())
+	{
+		ArgumentGeneration = TVPGetCommandLineArgumentGeneration();
+
+		tTJSVariant val;
+		if(TVPGetCommandLine(TJS_W("-waitvsync"), &val))
+		{
+			ttstr str(val);
+			if(str == TJS_W("yes"))
+			{
+				TVPWaitVSync = true;
+				TVPEnsureDirectDrawObject();
+			}
+		}
+	}
+	return TVPWaitVSync;
+}
+//---------------------------------------------------------------------------e
+
+
+
+//---------------------------------------------------------------------------
+// VSync用のタイミングを発生させるためのスレッド
+//---------------------------------------------------------------------------
+class tTVPVSyncTimingThread : public tTVPThread
+{
+	DWORD SleepTime;
+	tTVPThreadEvent Event;
+	tTJSCriticalSection CS;
+	DWORD VSyncInterval; //!< VSync の間隔(参考値)
+	DWORD LastVBlankTick; //!< 最後の vblank の時間
+
+	bool Enabled;
+	HWND UtilWindow;
+
+public:
+	tTVPVSyncTimingThread();
+	~tTVPVSyncTimingThread();
+
+protected:
+	void Execute();
+
+	void __fastcall UtilWndProc(Messages::TMessage &Msg);
+
+public:
+	void MeasureVSyncInterval(); // VSyncInterval を計測する
+} static * TVPVSyncTimingThread = NULL;
+//---------------------------------------------------------------------------
+
+
+//---------------------------------------------------------------------------
+tTVPVSyncTimingThread::tTVPVSyncTimingThread()
+	 : tTVPThread(true)
+{
+	SleepTime = 1;
+	LastVBlankTick = 0;
+	VSyncInterval = 16; // 初期値。
+	Enabled = false;
+	UtilWindow = AllocateHWnd(UtilWndProc);
+	MeasureVSyncInterval();
+	Resume();
+}
+//---------------------------------------------------------------------------
+
+
+//---------------------------------------------------------------------------
+tTVPVSyncTimingThread::~tTVPVSyncTimingThread()
+{
+	Terminate();
+	Resume();
+	Event.Set();
+	WaitFor();
+	DeallocateHWnd(UtilWindow);
+}
+//---------------------------------------------------------------------------
+
+
+//---------------------------------------------------------------------------
+void tTVPVSyncTimingThread::Execute()
+{
+	while(!GetTerminated())
+	{
+		// SleepTime と LastVBlankTick を得る
+		DWORD sleep_time, last_vblank_tick;
+		{	// thread-protected
+			tTJSCriticalSectionHolder holder(CS);
+			sleep_time = SleepTime;
+			last_vblank_tick = LastVBlankTick;
+		}
+
+		// SleepTime 分眠る
+		// LastVBlankTick から起算し、SleepTime 分眠る
+		DWORD sleep_start_tick = timeGetTime();
+
+		DWORD sleep_time_adj = sleep_start_tick - last_vblank_tick;
+
+		if(sleep_time_adj < sleep_time)
+			Event.WaitFor(sleep_time - sleep_time_adj);
+
+		// イベントをポストする
+		::PostMessage(UtilWindow, WM_USER+2, 0, (LPARAM)sleep_start_tick);
+		Event.WaitFor(66); // vsync まで待つ
+	}
+}
+//---------------------------------------------------------------------------
+
+
+//---------------------------------------------------------------------------
+void __fastcall tTVPVSyncTimingThread::UtilWndProc(Messages::TMessage &Msg)
+{
+	if(Msg.Msg != WM_USER+2)
+	{
+		Msg.Result =  DefWindowProc(UtilWindow, Msg.Msg, Msg.WParam, Msg.LParam);
+		return;
+	}
+
+	// tTVPVSyncTimingThread から投げられたメッセージ
+
+	// いま vblank 中？
+	IDirectDraw2 * DirectDraw2 = TVPGetDirectDrawObjectNoAddRef();
+	BOOL in_vblank = false;
+	if(DirectDraw2)
+		DirectDraw2->GetVerticalBlankStatus(&in_vblank);
+
+	// VSync 待ちを行う
+	DWORD vblank_wait_start = timeGetTime();
+	if(!in_vblank)
+	{
+		if(DirectDraw2)
+			DirectDraw2->WaitForVerticalBlank(DDWAITVB_BLOCKBEGIN, NULL);
+		else
+			Sleep(0); // 適当な時間を待つ………
+	}
+	DWORD vblank_wait_end = timeGetTime();
+
+	// タイマの時間原点を設定する
+	{
+		tTJSCriticalSectionHolder holder(CS);
+		LastVBlankTick = timeGetTime(); // これが次に眠る時間の起算点になる
+	}
+
+	// 画面の更新を行う (DrawDeviceのShowメソッドを呼ぶ)
+	TVPDeliverDrawDeviceShow();
+
+	// もし vsync 待ちを行う直前、すでに vblank に入っていた場合は、
+	// 待つ時間が長すぎたと言うことである
+	if(in_vblank)
+	{
+		// その場合は SleepTime を減らす
+		tTJSCriticalSectionHolder holder(CS);
+		if(SleepTime > 8) SleepTime --;
+	}
+	else
+	{
+		// vblank で無かった場合は二つの場合が考えられる
+		// 1. vblank 前だった
+		// 2. vblank 後だった
+		// どっちかは分からないが
+		// SleepTime を増やす。ただしこれが VSyncInterval を超えるはずはない。
+		tTJSCriticalSectionHolder holder(CS);
+		SleepTime ++;
+		if(SleepTime > VSyncInterval) SleepTime = VSyncInterval;
+	}
+
+	// ContinuousHandler を呼ぶ
+	// これは十分な時間をとれるよう、vsync 待ちの直後に呼ばれる
+	TVPProcessContinuousHandlerEventFlag = true; // set flag
+
+
+	// タイマを起動する
+	Event.Set();
+
+static DWORD last_report_tick;
+
+if(timeGetTime() > last_report_tick + 1000)
+{
+	last_report_tick = timeGetTime();
+	TVPAddLog(TJS_W("SleepTime : ") + ttstr((int)SleepTime));
+	TVPAddLog(TJS_W("VSyncInterval : ") + ttstr((int)VSyncInterval));
+	TVPAddLog(TJS_W("VSync wait time : ") + ttstr((int)(vblank_wait_end - vblank_wait_start)));
+}
+
+}
+//---------------------------------------------------------------------------
+
+
+//---------------------------------------------------------------------------
+void tTVPVSyncTimingThread::MeasureVSyncInterval()
+{
+	TVPEnsureDirectDrawObject();
+
+	DWORD vsync_interval = 10000;
+
+	// vsync 周期を ms で得る。
+	// ms 単位なのであまり正確な値は得られないが、まぁ特に問題ないこととする。
+
+	// まず、DirectDraw が使用可能な場合、 WaitForVerticalBlank あるいは
+	// GetScanLine を busy loop で監視して周期を得ることを試す。
+	IDirectDraw2 * dd2 = TVPGetDirectDrawObjectNoAddRef();
+	if(dd2)
+	{
+		// 参考: http://hpcgi1.nifty.com/MADIA/Vcbbs/wwwlng.cgi?print+200605/06050028.txt
+
+		// まず、GetScanLine による周期の取得を試みる
+		DWORD start_tick;
+		DWORD timeout;
+
+		DWORD last_scanline = 65536, last_sync_tick;
+
+		// 走査線が元に戻るまで空ループ
+		// ここからが本来の計測。
+		last_sync_tick = timeGetTime();
+		timeout = 250;
+		start_tick = timeGetTime();
+		int repeat_count = 0;
+		while(timeGetTime() - start_tick < timeout)
+		{
+			DWORD scanline = 65536;
+			if(FAILED(dd2->GetScanLine(&scanline))) scanline = 65536;
+			if(scanline < last_scanline && last_scanline - scanline > 100)
+			{
+				// 走査線が元に戻った
+				// 前回チェックした位置よりも前に値が戻った場合は
+				// 復帰したとみなす
+				// 前回と比べて100ライン以上戻ってることを確認する。
+				// これは W.Dee の環境 (GeForce 7600 GT) で、なぜか
+				// まれにスキャンラインが1だけ戻ることがあるという現象が
+				// あったため。
+				DWORD tick = timeGetTime();
+				if(repeat_count > 2)
+				{
+					// 最初の数回の結果は捨てる
+					// 最小の間隔を記録する
+					if(tick - last_sync_tick < vsync_interval)
+						vsync_interval = tick - last_sync_tick;
+				}
+				last_sync_tick = tick;
+				repeat_count ++;
+			}
+			last_scanline = scanline;
+		}
+
+		TVPAddLog(TJS_W("Rough VSync interval measured by GetScanLine() : " + ttstr((int)vsync_interval)));
+
+		// vsync 周期は適切っぽい？
+		if(vsync_interval < 6 || vsync_interval > 66)
+		{
+			TVPAddLog(TJS_W("VSync interval by GetScanLine() seems to be strange, trying WaitForVerticalBlank() ..."));
+
+			// どうも変
+			vsync_interval = 10000;
+			// WaitForVerticalBlank による測定を試みる
+			// 最初のvblankを待つ
+			dd2->WaitForVerticalBlank(DDWAITVB_BLOCKBEGIN, NULL);
+			// 何回かループを回して間隔を測定する
+			timeout = 250;
+			last_sync_tick = timeGetTime();
+			start_tick = timeGetTime();
+			while(timeGetTime() - start_tick < timeout)
+			{
+				dd2->WaitForVerticalBlank(DDWAITVB_BLOCKBEGIN, NULL);
+
+				// 最小の間隔を記録する
+				DWORD tick = timeGetTime();
+				if(tick - last_sync_tick < vsync_interval)
+					vsync_interval = tick - last_sync_tick;
+				last_sync_tick = tick;
+			}
+
+			TVPAddLog(TJS_W("Rough VSync interval measured by WaitForVerticalBlank() : " + ttstr((int)vsync_interval)));
+		}
+	}
+
+
+	// vsync 周期は適切っぽい？
+	if(!dd2 || vsync_interval < 6 || vsync_interval > 66)
+	{
+		// どうもこれでも vsync 周期をうまくとれていないっぽい
+		// そうなると、次は API による取得。
+		// 参考: http://www.interq.or.jp/moonstone/person/del/zenact01.htm
+		DWORD vsync_rate = 0;
+
+		OSVERSIONINFO osvi;
+		ZeroMemory(&osvi, sizeof(osvi));
+		osvi.dwOSVersionInfoSize = sizeof(osvi);
+		GetVersionEx(&osvi);
+
+		if(osvi.dwPlatformId == VER_PLATFORM_WIN32_NT)
+		{
+			HDC dc = GetDC(0);
+			vsync_rate = GetDeviceCaps(dc, VREFRESH);
+			ReleaseDC(0, dc);
+		}
+		else if(osvi.dwMajorVersion == 4 && osvi.dwMinorVersion >= 10) // Windows 98 or lator
+		{
+			tTVP_devicemodeA dm;
+			ZeroMemory(&dm, sizeof(tTVP_devicemodeA));
+			dm.dmSize = sizeof(tTVP_devicemodeA);
+			dm.dmDriverExtra = 0;
+			EnumDisplaySettings(NULL, ENUM_REGISTRY_SETTINGS, reinterpret_cast<DEVMODE*>(&dm));
+			vsync_rate = dm.dmDisplayFrequency;
+		}
+
+		if(vsync_rate != 0)
+			vsync_interval = 1000 / vsync_rate;
+		else
+			vsync_interval = 0;
+
+		TVPAddLog(TJS_W("Rough VSync interval read from API : " + ttstr((int)vsync_interval)));
+	}
+
+	// vsync 周期は適切っぽい？
+	if(vsync_interval < 6 || vsync_interval > 66)
+	{
+		TVPAddLog(TJS_W("Rough VSync interval still seems wrong, assuming default value (16)"));
+		vsync_interval = 16;
+	}
+
+	VSyncInterval = vsync_interval;
+}
+//---------------------------------------------------------------------------
+
+
+//---------------------------------------------------------------------------
+void TVPEnsureVSyncTimingThread()
+{
+	// (もし必要ならば) VSyncTimingThread を作成する
+	if(TVPGetWaitVSync())
+	{
+		if(!TVPVSyncTimingThread)
+			TVPVSyncTimingThread = new tTVPVSyncTimingThread();
+	}
+}
+//---------------------------------------------------------------------------
+
+
+//---------------------------------------------------------------------------
+void TVPReleaseVSyncTimingThread()
+{
+	if(TVPVSyncTimingThread)
+		delete TVPVSyncTimingThread,
+			TVPVSyncTimingThread = NULL;
+}
+// to release TVPContinuousHandlerCallLimitThread at exit
+static tTVPAtExit TVPVSyncTimingThreadUninitAtExit(TVP_ATEXIT_PRI_SHUTDOWN,
+	TVPReleaseVSyncTimingThread);
+//---------------------------------------------------------------------------
+
 
 
 
