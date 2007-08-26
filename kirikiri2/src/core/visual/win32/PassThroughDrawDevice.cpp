@@ -874,7 +874,6 @@ public:
 
 	bool SetDestRectangle(const tTVPRect & rect)
 	{
-	return false;
 		if(inherited::SetDestRectangle(rect))
 		{
 			try
