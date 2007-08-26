@@ -29,7 +29,7 @@ public:
 	//! @brief		(Window→DrawDevice) 描画デバイスを破棄する
 	//! @note		ウィンドウが破棄されるとき、あるいはほかの描画デバイスが
 	//!				設定されたためにこの描画デバイスが必要なくなった際に呼ばれる。
-	//!				通常、ここでは delete this 実行し、描画デバイスを破棄するが、その前に
+	//!				通常、ここでは delete this を実行し、描画デバイスを破棄するが、その前に
 	//!				AddLayerManager() でこの描画デバイスの管理下に入っている
 	//!				レイヤマネージャをすべて Release する。
 	//!				レイヤマネージャの Release 中に RemoveLayerManager() が呼ばれる
@@ -268,8 +268,17 @@ public:
 	//! @brief		(Window→DrawDevice) 更新の要求
 	//! @note		描画矩形の内容を最新の状態に更新すべきタイミングで、ウィンドウから呼ばれる。
 	//!				iTVPWindow::RequestUpdate() を呼んだ後、システムが描画タイミングに入った際に
-	//!				呼ばれる。通常、描画デバイスはこのタイミングを利用して描画矩形に画像を転送する。
+	//!				呼ばれる。通常、描画デバイスはこのタイミングを利用してオフスクリーン
+	//!				サーフェースに画像を描画する。
 	virtual void TJS_INTF_METHOD Update() = 0;
+
+	//! @brief		(Window->DrawDevice) 画像の表示
+	//! @note		オフスクリーンサーフェースに描画された画像を、オンスクリーンに表示する
+	//!				(あるいはフリップする) タイミングで呼ばれる。通常は Update の直後に
+	//!				呼ばれるが、VSync 待ちが有効になっている場合は Update 直後ではなく、
+	//!				VBlank 中に呼ばれる可能性がある。オフスクリーンサーフェースを
+	//!				使わない場合は無視してかまわない。
+	virtual void TJS_INTF_METHOD Show() = 0;
 
 //---- LayerManager からの画像受け渡し関連
 	//! @brief		(LayerManager->DrawDevice) ビットマップの描画を開始する
@@ -414,6 +423,7 @@ public:
 //---- 再描画関連
 	virtual void TJS_INTF_METHOD RequestInvalidation(const tTVPRect & rect);
 	virtual void TJS_INTF_METHOD Update();
+	virtual void TJS_INTF_METHOD Show() = 0;
 
 //---- デバッグ支援
 	virtual void TJS_INTF_METHOD DumpLayerStructure();

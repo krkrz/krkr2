@@ -18,6 +18,7 @@
 #include "SysInitIntf.h"
 #include "WindowIntf.h"
 #include "DebugIntf.h"
+#include "ThreadIntf.h"
 
 #include <ddraw.h>
 #include <d3d.h>
@@ -27,7 +28,6 @@
 // オプション
 //---------------------------------------------------------------------------
 static tjs_int TVPPassThroughOptionsGeneration = 0;
-static bool TVPWaitVSync = false;
 static bool TVPZoomInterpolation = true;
 static bool TVPForceDoublebuffer = false;
 static bool TVPDBGDIPrefered = false;
@@ -40,16 +40,6 @@ static void TVPInitPassThroughOptions()
 
 	bool initddraw = false;
 	tTJSVariant val;
-
-	if(TVPGetCommandLine(TJS_W("-waitvsync"), &val))
-	{
-		ttstr str(val);
-		if(str == TJS_W("yes"))
-		{
-			TVPWaitVSync = true;
-			initddraw = true;
-		}
-	}
 
 	if(TVPGetCommandLine(TJS_W("-dbstyle"), &val) )
 	{
@@ -76,6 +66,8 @@ static void TVPInitPassThroughOptions()
 	if(initddraw) TVPEnsureDirectDrawObject();
 }
 //---------------------------------------------------------------------------
+
+
 
 
 
@@ -124,6 +116,7 @@ public:
 		const void * bits, const BITMAPINFO * bitmapinfo,
 		const tTVPRect &cliprect) = 0;
 	virtual void EndBitmapCompletion() = 0;
+	virtual void Show() {;}
 	virtual void SetShowUpdateRect(bool b)  { DrawUpdateRectangle = b; }
 };
 //---------------------------------------------------------------------------
@@ -405,6 +398,10 @@ public:
 
 	void EndBitmapCompletion()
 	{
+	}
+
+	void Show()
+	{
 		if(TargetDC)
 		{
 			// オフスクリーンビットマップを TargetDC に転送する
@@ -427,6 +424,7 @@ public:
 				SRCCOPY);
 		}
 	}
+
 };
 //---------------------------------------------------------------------------
 
@@ -642,6 +640,12 @@ public:
 		if(!OffScreenDC) return;
 
 		Surface->ReleaseDC(OffScreenDC), OffScreenDC = NULL;
+	}
+
+	void Show()
+	{
+		if(!TargetWindow) return;
+		if(!Surface) return;
 
 		// Blt to the primary surface
 		IDirectDrawSurface *pri = TVPGetDDPrimarySurfaceNoAddRef();
@@ -685,6 +689,7 @@ public:
 				TJSInt32ToHex(hr, 8));
 		}
 	}
+
 };
 //---------------------------------------------------------------------------
 
@@ -869,6 +874,7 @@ public:
 
 	bool SetDestRectangle(const tTVPRect & rect)
 	{
+	return false;
 		if(inherited::SetDestRectangle(rect))
 		{
 			try
@@ -983,6 +989,7 @@ public:
 
 		Texture->ReleaseDC(OffScreenDC), OffScreenDC = NULL;
 
+		// Blt to the primary surface
 
 		// Blt texture to surface
 
@@ -1009,12 +1016,6 @@ public:
 		};
 
 		HRESULT hr;
-
-		// retrieve the primary surface
-		IDirectDrawSurface *pri = TVPGetDDPrimarySurfaceNoAddRef();
-		if(!pri)
-			TVPThrowExceptionMessage(TJS_W("Cannot retrieve primary surface object"));
-
 
 		// clear back surface
 		DDBLTFX fx;
@@ -1049,6 +1050,39 @@ public:
 
 		Direct3DDevice7->EndScene();
 		Direct3DDevice7->SetTexture(0, NULL);
+
+	got_error:
+		if(hr == DDERR_SURFACELOST)
+		{
+			Surface->Restore();
+			Texture->Restore();
+			InvalidateAll();  // causes reconstruction of off-screen image
+		}
+		else if(hr == DDERR_INVALIDRECT)
+		{
+			// ignore this error
+		}
+		else if(hr != DD_OK)
+		{
+			TVPThrowExceptionMessage(TJS_W("Primary surface, polygon drawing failed/HR=%1"),
+				TJSInt32ToHex(hr, 8));
+		}
+	}
+
+
+	void Show()
+	{
+		if(!TargetWindow) return;
+		if(!Texture) return;
+		if(!Surface) return;
+		if(!Direct3DDevice7) return;
+
+		HRESULT hr;
+
+		// retrieve the primary surface
+		IDirectDrawSurface *pri = TVPGetDDPrimarySurfaceNoAddRef();
+		if(!pri)
+			TVPThrowExceptionMessage(TJS_W("Cannot retrieve primary surface object"));
 
 		// set clipper
 		TVPSetDDPrimaryClipper(Clipper);
@@ -1348,6 +1382,17 @@ void TJS_INTF_METHOD tTVPPassThroughDrawDevice::NotifyLayerResize(iTVPLayerManag
 
 
 //---------------------------------------------------------------------------
+void TJS_INTF_METHOD tTVPPassThroughDrawDevice::Show()
+{
+	if(Drawer)
+	{
+		Drawer->Show();
+	}
+}
+//---------------------------------------------------------------------------
+
+
+//---------------------------------------------------------------------------
 void TJS_INTF_METHOD tTVPPassThroughDrawDevice::StartBitmapCompletion(iTVPLayerManager * manager)
 {
 	EnsureDrawer(dtNone);
@@ -1368,18 +1413,6 @@ void TJS_INTF_METHOD tTVPPassThroughDrawDevice::NotifyBitmapCompleted(iTVPLayerM
 	if(Drawer)
 	{
 		TVPInitPassThroughOptions();
-		if(TVPWaitVSync)
-		{
-			tjs_int w, h;
-			GetSrcSize(w, h);
-			if(cliprect.get_width() == w && cliprect.get_height() == h)
-			{
-				// 全画面を更新するときだけ、vsync をまつ。
-				IDirectDraw2 *object = TVPGetDirectDrawObjectNoAddRef();
-				if(object) object->WaitForVerticalBlank(DDWAITVB_BLOCKBEGIN, NULL);
-			}
-		}
-
 		Drawer->NotifyBitmapCompleted(x, y, bits, bitmapinfo, cliprect);
 	}
 }

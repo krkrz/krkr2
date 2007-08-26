@@ -23,6 +23,7 @@
 #include "VideoOvlIntf.h"
 #include "LayerManager.h"
 #include "PassThroughDrawDevice.h"
+#include "EventImpl.h"
 
 
 //---------------------------------------------------------------------------
@@ -82,6 +83,16 @@ void TVPClearAllWindowInputEvents()
 //---------------------------------------------------------------------------
 
 
+//---------------------------------------------------------------------------
+void TVPDeliverDrawDeviceShow()
+{
+	std::vector<tTJSNI_Window*>::iterator i;
+	for(i = TVPWindowVector.begin(); i!=TVPWindowVector.end(); i++)
+	{
+		(*i)->DeliverDrawDeviceShow();
+	}
+}
+//---------------------------------------------------------------------------
 
 
 
@@ -524,7 +535,15 @@ void tTJSNI_BaseWindow::UpdateContent()
 	// is called from event dispatcher
 	DrawDevice->Update();
 
+	if(!TVPGetWaitVSync()) DrawDevice->Show();
+
  	EndUpdate();
+}
+//---------------------------------------------------------------------------
+void tTJSNI_BaseWindow::DeliverDrawDeviceShow()
+{
+	// call DrawDevice->Show, at VBlank
+	DrawDevice->Show();
 }
 //---------------------------------------------------------------------------
 void tTJSNI_BaseWindow::BeginUpdate(const tTVPComplexRect & rects)
