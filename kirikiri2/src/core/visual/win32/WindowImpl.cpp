@@ -26,6 +26,7 @@
 #include "PluginImpl.h"
 #include "LayerManager.h"
 #include "PassThroughDrawDevice.h"
+#include "EventImpl.h"
 
 
 //---------------------------------------------------------------------------
@@ -603,52 +604,6 @@ static tTVPAtExit
 
 
 //---------------------------------------------------------------------------
-struct tTVP_devicemodeA {
-	// copy of DEVMODE, to avoid windows platform SDK version mismatch
-#pragma pack(push, 1)
-	BYTE   dmDeviceName[CCHDEVICENAME];
-	WORD dmSpecVersion;
-	WORD dmDriverVersion;
-	WORD dmSize;
-	WORD dmDriverExtra;
-	DWORD dmFields;
-	union {
-	  struct {
-		short dmOrientation;
-		short dmPaperSize;
-		short dmPaperLength;
-		short dmPaperWidth;
-	  };
-	  POINTL dmPosition;
-	};
-	short dmScale;
-	short dmCopies;
-	short dmDefaultSource;
-	short dmPrintQuality;
-	short dmColor;
-	short dmDuplex;
-	short dmYResolution;
-	short dmTTOption;
-	short dmCollate;
-	BYTE   dmFormName[CCHFORMNAME];
-	WORD   dmLogPixels;
-	DWORD  dmBitsPerPel;
-	DWORD  dmPelsWidth;
-	DWORD  dmPelsHeight;
-	union {
-		DWORD  dmDisplayFlags;
-		DWORD  dmNup;
-	};
-	DWORD  dmDisplayFrequency;
-	DWORD  dmICMMethod;
-	DWORD  dmICMIntent;
-	DWORD  dmMediaType;
-	DWORD  dmDitherType;
-	DWORD  dmReserved1;
-	DWORD  dmReserved2;
-#pragma pack(pop)
-};
-//---------------------------------------------------------------------------
 //! @brief		Get tTVPFullScreenResolutionMode enumeration string
 static ttstr TVPGetGetFullScreenResolutionModeString(tTVPFullScreenResolutionMode mode)
 {
@@ -990,6 +945,8 @@ void TVPSwitchToFullScreen(HWND window, tjs_int w, tjs_int h)
 
 	TVPInitFullScreenOptions();
 
+	TVPReleaseVSyncTimingThread();
+
 	TVPReleaseDDPrimarySurface();
 
 	if(!TVPUseChangeDisplaySettings)
@@ -1113,12 +1070,14 @@ void TVPSwitchToFullScreen(HWND window, tjs_int w, tjs_int h)
 	TVPInFullScreen = true;
 
 	TVPGetDisplayColorFormat();
+	TVPEnsureVSyncTimingThread();
 }
 //---------------------------------------------------------------------------
 void TVPRevertFromFullScreen(HWND window)
 {
 	if(!TVPInFullScreen) return;
 
+	TVPReleaseVSyncTimingThread();
 	TVPReleaseDDPrimarySurface();
 
 	if(TVPUseChangeDisplaySettings)
@@ -1138,6 +1097,7 @@ void TVPRevertFromFullScreen(HWND window)
 	TVPInFullScreen = false;
 
 	TVPGetDisplayColorFormat();
+	TVPEnsureVSyncTimingThread();
 }
 //---------------------------------------------------------------------------
 
@@ -1262,6 +1222,7 @@ HWND TVPGetModalWindowOwnerHandle()
 //---------------------------------------------------------------------------
 tTJSNI_Window::tTJSNI_Window()
 {
+	TVPEnsureVSyncTimingThread();
 	Form = NULL;
 }
 //---------------------------------------------------------------------------

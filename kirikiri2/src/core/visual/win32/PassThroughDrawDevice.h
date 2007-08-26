@@ -54,6 +54,8 @@ public:
 	virtual void TJS_INTF_METHOD SetDestRectangle(const tTVPRect & rect);
 	virtual void TJS_INTF_METHOD NotifyLayerResize(iTVPLayerManager * manager);
 
+//---- Ä•`‰æŠÖ˜A
+	virtual void TJS_INTF_METHOD Show();
 
 //---- LayerManager ‚©‚ç‚Ì‰æ‘œó‚¯“n‚µŠÖ˜A
 	virtual void TJS_INTF_METHOD StartBitmapCompletion(iTVPLayerManager * manager);
