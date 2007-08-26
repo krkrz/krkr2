@@ -26,6 +26,7 @@
 // Window List Management
 //---------------------------------------------------------------------------
 extern void TVPClearAllWindowInputEvents();
+extern void TVPDeliverDrawDeviceShow();
 //---------------------------------------------------------------------------
 
 
@@ -218,6 +219,7 @@ public:
 public:
 	void NotifyUpdateRegionFixed(const tTVPComplexRect &updaterects); // is called by layer manager
 	void UpdateContent(); // is called from event dispatcher
+	void DeliverDrawDeviceShow();
 	virtual void BeginUpdate(const tTVPComplexRect & rects);
 	virtual void EndUpdate();
 	virtual void TJS_INTF_METHOD RequestUpdate();

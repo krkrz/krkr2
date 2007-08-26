@@ -1216,7 +1216,7 @@ void TVPAfterSystemInit()
 	Screen->Cursors[1] = LoadCursor(HInstance, "HBEAM");
 
 	// timer precision
-	UINT prectick = 10;
+	UINT prectick = 1;
 	if(TVPGetCommandLine(TJS_W("-timerprec"), &opt))
 	{
 		ttstr str(opt);
