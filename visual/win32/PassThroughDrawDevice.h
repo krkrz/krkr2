@@ -21,8 +21,10 @@ class tTVPPassThroughDrawDevice : public tTVPDrawDevice
 {
 	typedef tTVPDrawDevice inherited;
 	HWND TargetWindow;
+	bool IsMainWindow;
 	tTVPDrawer * Drawer; //!< 描画を行うもの
 
+public:
 	//! @brief	drawerのタイプ
 	enum tDrawerType
 	{
@@ -32,25 +34,30 @@ class tTVPPassThroughDrawDevice : public tTVPDrawDevice
 		dtDBDD, // DirectDraw によるダブルバッファリングを行うdrawer
 		dtDBD3D // Direct3D によるダブルバッファリングを行うdrawer
 	};
+
 	tDrawerType DrawerType; //!< drawer のタイプ
-	bool DDFailed; //!< DirectDraw によるダブルバッファリングに過去失敗したか
-	bool D3DFailed; //!< Direct3D によるダブルバッファリングに過去失敗したか
+
+	bool DestSizeChanged; //!< DestRect のサイズに変更があったか
+	bool SrcSizeChanged; //!< SrcSize に変更があったか
 
 public:
 	tTVPPassThroughDrawDevice(); //!< コンストラクタ
 private:
 	~tTVPPassThroughDrawDevice(); //!< デストラクタ
-public:
 
+private:
 	void DestroyDrawer();
-	tDrawerType SelectNewDrawerType(tDrawerType failedtype);
-	void EnsureDrawer(tDrawerType failedtype);
+	void CreateDrawer(tDrawerType type);
+	void CreateDrawer(bool zoom_required);
+
+public:
+	void EnsureDrawer();
 
 //---- LayerManager の管理関連
 	virtual void TJS_INTF_METHOD AddLayerManager(iTVPLayerManager * manager);
 
 //---- 描画位置・サイズ関連
-	virtual void TJS_INTF_METHOD SetTargetWindow(HWND wnd);
+	virtual void TJS_INTF_METHOD SetTargetWindow(HWND wnd, bool is_main);
 	virtual void TJS_INTF_METHOD SetDestRectangle(const tTVPRect & rect);
 	virtual void TJS_INTF_METHOD NotifyLayerResize(iTVPLayerManager * manager);
 
