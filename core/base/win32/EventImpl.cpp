@@ -337,6 +337,14 @@ bool TVPGetWaitVSync()
 
 
 
+
+
+
+
+
+
+
+
 //---------------------------------------------------------------------------
 // VSync用のタイミングを発生させるためのスレッド
 //---------------------------------------------------------------------------
@@ -440,25 +448,56 @@ void __fastcall tTVPVSyncTimingThread::UtilWndProc(Messages::TMessage &Msg)
 	if(DirectDraw2)
 		DirectDraw2->GetVerticalBlankStatus(&in_vblank);
 
-	// VSync 待ちを行う
+	// 時間をチェック
+	bool drawn = false;
 	DWORD vblank_wait_start = timeGetTime();
-	if(!in_vblank)
+
+	// VSync 待ちを行う
+	bool delayed = false;
+	if(!drawn)
 	{
-		if(DirectDraw2)
-			DirectDraw2->WaitForVerticalBlank(DDWAITVB_BLOCKBEGIN, NULL);
-		else
-			Sleep(0); // 適当な時間を待つ………
+		if(!in_vblank)
+		{
+			// vblank から抜けるまで待つ
+			DWORD timeout_target_tick = timeGetTime() + 1;
+
+			BOOL in_vblank = false;
+			do
+			{
+				DirectDraw2->GetVerticalBlankStatus(&in_vblank);
+			} while(in_vblank && (int)(timeGetTime() - timeout_target_tick) <= 0);
+
+			// vblank に入るまで待つ
+			in_vblank = true;
+			do
+			{
+				DirectDraw2->GetVerticalBlankStatus(&in_vblank);
+			} while(!in_vblank && (int)(timeGetTime() - timeout_target_tick) <= 0);
+
+			if((int)(timeGetTime() - timeout_target_tick) > 0)
+			{
+				// フレームスキップが発生したと考えてよい
+				delayed  =true;
+			}
+		}
 	}
+
 	DWORD vblank_wait_end = timeGetTime();
 
 	// タイマの時間原点を設定する
+	if(!delayed)
 	{
 		tTJSCriticalSectionHolder holder(CS);
 		LastVBlankTick = timeGetTime(); // これが次に眠る時間の起算点になる
 	}
+	else
+	{
+		tTJSCriticalSectionHolder holder(CS);
+		LastVBlankTick += VSyncInterval; // これが次に眠る時間の起算点になる
+	}
 
 	// 画面の更新を行う (DrawDeviceのShowメソッドを呼ぶ)
-	TVPDeliverDrawDeviceShow();
+	if(!drawn) TVPDeliverDrawDeviceShow();
 
 	// もし vsync 待ちを行う直前、すでに vblank に入っていた場合は、
 	// 待つ時間が長すぎたと言うことである
@@ -483,6 +522,7 @@ void __fastcall tTVPVSyncTimingThread::UtilWndProc(Messages::TMessage &Msg)
 	// ContinuousHandler を呼ぶ
 	// これは十分な時間をとれるよう、vsync 待ちの直後に呼ばれる
 	TVPProcessContinuousHandlerEventFlag = true; // set flag
+	::PostMessage(UtilWindow, WM_USER+0, 0, 0);
 
 
 	// タイマを起動する
@@ -490,7 +530,7 @@ void __fastcall tTVPVSyncTimingThread::UtilWndProc(Messages::TMessage &Msg)
 
 static DWORD last_report_tick;
 
-if(timeGetTime() > last_report_tick + 1000)
+if(timeGetTime() > last_report_tick + 5000)
 {
 	last_report_tick = timeGetTime();
 	TVPAddLog(TJS_W("SleepTime : ") + ttstr((int)SleepTime));
@@ -519,18 +559,23 @@ void tTVPVSyncTimingThread::MeasureVSyncInterval()
 	{
 		// 参考: http://hpcgi1.nifty.com/MADIA/Vcbbs/wwwlng.cgi?print+200605/06050028.txt
 
-		// まず、GetScanLine による周期の取得を試みる
+		// それにしても GetScanLine は信用ならない
+		// これで正常に周期を得られない環境が多すぎて断念
 		DWORD start_tick;
 		DWORD timeout;
 
-		DWORD last_scanline = 65536, last_sync_tick;
+		DWORD last_sync_tick;
+		int repeat_count;
+/*
+		// まず、GetScanLine による周期の取得を試みる
+		DWORD last_scanline = 65536;
 
 		// 走査線が元に戻るまで空ループ
 		// ここからが本来の計測。
 		last_sync_tick = timeGetTime();
 		timeout = 250;
 		start_tick = timeGetTime();
-		int repeat_count = 0;
+		repeat_count = 0;
 		while(timeGetTime() - start_tick < timeout)
 		{
 			DWORD scanline = 65536;
@@ -564,7 +609,7 @@ void tTVPVSyncTimingThread::MeasureVSyncInterval()
 		if(vsync_interval < 6 || vsync_interval > 66)
 		{
 			TVPAddLog(TJS_W("VSync interval by GetScanLine() seems to be strange, trying WaitForVerticalBlank() ..."));
-
+*/
 			// どうも変
 			vsync_interval = 10000;
 			// WaitForVerticalBlank による測定を試みる
@@ -574,19 +619,40 @@ void tTVPVSyncTimingThread::MeasureVSyncInterval()
 			timeout = 250;
 			last_sync_tick = timeGetTime();
 			start_tick = timeGetTime();
+			repeat_count = 0;
 			while(timeGetTime() - start_tick < timeout)
 			{
-				dd2->WaitForVerticalBlank(DDWAITVB_BLOCKBEGIN, NULL);
+				// vblank から抜けるまで待つ
+				BOOL in_vblank = false;
+				do
+				{
+					dd2->GetVerticalBlankStatus(&in_vblank);
+				} while(in_vblank && timeGetTime() - start_tick < timeout);
 
-				// 最小の間隔を記録する
+				// vblank に入るまで待つ
+				in_vblank = true;
+				do
+				{
+					dd2->GetVerticalBlankStatus(&in_vblank);
+				} while(!in_vblank && timeGetTime() - start_tick < timeout);
+
 				DWORD tick = timeGetTime();
-				if(tick - last_sync_tick < vsync_interval)
-					vsync_interval = tick - last_sync_tick;
+				if(repeat_count > 2)
+				{
+					// 最初の数回の結果は捨てる
+					// 最小の間隔を記録する
+					// 最小の間隔を記録する
+					if(tick - last_sync_tick < vsync_interval)
+						vsync_interval = tick - last_sync_tick;
+				}
 				last_sync_tick = tick;
+				repeat_count ++;
 			}
 
-			TVPAddLog(TJS_W("Rough VSync interval measured by WaitForVerticalBlank() : " + ttstr((int)vsync_interval)));
+			TVPAddLog(TJS_W("Rough VSync interval measured by GetVerticalBlankStatus() : " + ttstr((int)vsync_interval)));
+/*
 		}
+*/
 	}
 
 
