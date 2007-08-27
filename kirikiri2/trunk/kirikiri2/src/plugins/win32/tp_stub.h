@@ -5442,6 +5442,8 @@ public:
 
 //---- 描画位置・サイズ関連
 	//! @brief		(Window→DrawDevice) 描画先ウィンドウの設定
+	//! @param		wnd		ウィンドウハンドル
+	//! @param		is_main	メインウィンドウの場合に真
 	//! @note		ウィンドウから描画先となるウィンドウハンドルを指定するために呼ばれる。
 	//!				しばしば、Window.borderStyle プロパティが変更されたり、フルスクリーンに
 	//!				移行するときやフルスクリーンから戻る時など、ウィンドウが再作成される
@@ -5450,7 +5452,7 @@ public:
 	//!				されたあと、再び有効なウィンドウハンドルを伴ってこのメソッドが呼ばれる。
 	//!				このメソッドは、ウィンドウが作成された直後に呼ばれる保証はない。
 	//!				たいてい、一番最初にウィンドウが表示された直後に呼ばれる。
-	virtual void TJS_INTF_METHOD SetTargetWindow(HWND wnd) = 0;
+	virtual void TJS_INTF_METHOD SetTargetWindow(HWND wnd, bool is_main) = 0;
 
 	//! @brief		(Window->DrawDevice) 描画矩形の設定
 	//! @note		ウィンドウから、描画先となる矩形を設定するために呼ばれる。

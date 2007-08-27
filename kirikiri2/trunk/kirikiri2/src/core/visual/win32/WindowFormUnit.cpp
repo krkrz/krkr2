@@ -597,7 +597,7 @@ void __fastcall TTVPWindowForm::FirePopupHide()
 //---------------------------------------------------------------------------
 void TTVPWindowForm::CallWindowDetach(bool close)
 {
-	if(TJSNativeInstance) TJSNativeInstance->GetDrawDevice()->SetTargetWindow(NULL);
+	if(TJSNativeInstance) TJSNativeInstance->GetDrawDevice()->SetTargetWindow(NULL, false);
 
 	tTVPWindowMessage msg;
 	msg.Msg = TVP_WM_DETACH;
@@ -2021,7 +2021,9 @@ void __fastcall TTVPWindowForm::PaintBoxPaint(TObject *Sender)
 	// a painting event
 	if(NextSetWindowHandleToDrawDevice)
 	{
-		if(TJSNativeInstance) TJSNativeInstance->GetDrawDevice()->SetTargetWindow(PaintBox->Parent->Handle);
+		bool ismain = false;
+		if(TJSNativeInstance) ismain = TJSNativeInstance->IsMainWindow();
+		if(TJSNativeInstance) TJSNativeInstance->GetDrawDevice()->SetTargetWindow(PaintBox->Parent->Handle, ismain);
 		NextSetWindowHandleToDrawDevice = false;
 	}
 
