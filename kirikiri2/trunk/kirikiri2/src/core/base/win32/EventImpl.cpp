@@ -589,6 +589,7 @@ void tTVPVSyncTimingThread::MeasureVSyncInterval()
 				// これは W.Dee の環境 (GeForce 7600 GT) で、なぜか
 				// まれにスキャンラインが1だけ戻ることがあるという現象が
 				// あったため。
+				// しかしこの対策をとってもまともに周期を取得できない環境がある……
 				DWORD tick = timeGetTime();
 				if(repeat_count > 2)
 				{
@@ -628,6 +629,14 @@ void tTVPVSyncTimingThread::MeasureVSyncInterval()
 				{
 					dd2->GetVerticalBlankStatus(&in_vblank);
 				} while(in_vblank && timeGetTime() - start_tick < timeout);
+
+				DWORD aux_wait = timeGetTime();
+				while(timeGetTime() - aux_wait < 2) ;
+					// 1ms～2msほどまつ
+					// どうも、短期間に vblank に入ったり vblank から抜けたりするような
+					// 結果が得られることがある。
+					// 詳しい原因は分からないが、ここに適当なウェイトを入れることで
+					// なんとか対処を試みる。
 
 				// vblank に入るまで待つ
 				in_vblank = true;
