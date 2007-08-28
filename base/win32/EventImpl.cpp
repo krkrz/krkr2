@@ -141,7 +141,14 @@ protected:
 
 	void __fastcall UtilWndProc(Messages::TMessage &Msg)
 	{
-		Msg.Result =  DefWindowProc(UtilWindow, Msg.Msg, Msg.WParam, Msg.LParam);
+		if(Msg.Msg != WM_APP+1)
+		{
+			Msg.Result =  DefWindowProc(UtilWindow, Msg.Msg, Msg.WParam, Msg.LParam);
+			return;
+		}
+
+		TVPProcessContinuousHandlerEventFlag = true; // set flag
+		TVPDeliverAllEvents(); // 強制的にイベントを配る
 	}
 
 public:
@@ -193,8 +200,7 @@ void tTVPContinuousHandlerCallLimitThread::Execute()
 			{
 				if(NextEventTick <= curtick)
 				{
-					TVPProcessContinuousHandlerEventFlag = true; // set flag
-					::PostMessage(UtilWindow, WM_USER+1, 0, 0);
+					::PostMessage(UtilWindow, WM_APP+1, 0, 0);
 						// this will activate main thread' message pump
 					while(NextEventTick <= curtick) NextEventTick += Interval;
 				}
@@ -316,6 +322,7 @@ static bool TVPWaitVSync = 0;
 bool TVPGetWaitVSync()
 {
 	static tjs_int ArgumentGeneration = 0;
+	TVPWaitVSync = false;
 	if(ArgumentGeneration != TVPGetCommandLineArgumentGeneration())
 	{
 		ArgumentGeneration = TVPGetCommandLineArgumentGeneration();
@@ -421,11 +428,26 @@ void tTVPVSyncTimingThread::Execute()
 		DWORD sleep_time_adj = sleep_start_tick - last_vblank_tick;
 
 		if(sleep_time_adj < sleep_time)
-			Event.WaitFor(sleep_time - sleep_time_adj);
+		{
+			Sleep(sleep_time - sleep_time_adj);
+		}
+		else
+		{
+			// 普通、メインスレッド内で Event.Set() したならば、
+			// タイムスライス(長くて10ms) が終わる頃は
+			// ここに来ているはずである。
+			// sleep_time は通常 10ms より長いので、
+			// ここに来るってのは異常。
+			// よほどシステムが重たい状態になってると考えられる。
+			// そこで立て続けに イベントをポストするわけにはいかないので
+			// 適当な時間(本当に適当) 眠る。
+			Sleep(5);
+		}
 
 		// イベントをポストする
-		::PostMessage(UtilWindow, WM_USER+2, 0, (LPARAM)sleep_start_tick);
-		Event.WaitFor(66); // vsync まで待つ
+		::PostMessage(UtilWindow, WM_APP+2, 0, (LPARAM)sleep_start_tick);
+
+		Event.WaitFor(0x7fffffff); // vsync まで待つ
 	}
 }
 //---------------------------------------------------------------------------
@@ -434,7 +456,7 @@ void tTVPVSyncTimingThread::Execute()
 //---------------------------------------------------------------------------
 void __fastcall tTVPVSyncTimingThread::UtilWndProc(Messages::TMessage &Msg)
 {
-	if(Msg.Msg != WM_USER+2)
+	if(Msg.Msg != WM_APP+2)
 	{
 		Msg.Result =  DefWindowProc(UtilWindow, Msg.Msg, Msg.WParam, Msg.LParam);
 		return;
@@ -465,14 +487,14 @@ void __fastcall tTVPVSyncTimingThread::UtilWndProc(Messages::TMessage &Msg)
 			do
 			{
 				DirectDraw2->GetVerticalBlankStatus(&in_vblank);
-			} while(in_vblank && (int)(timeGetTime() - timeout_target_tick) <= 0);
+			} while(in_vblank && (long)(timeGetTime() - timeout_target_tick) <= 0);
 
 			// vblank に入るまで待つ
 			in_vblank = true;
 			do
 			{
 				DirectDraw2->GetVerticalBlankStatus(&in_vblank);
-			} while(!in_vblank && (int)(timeGetTime() - timeout_target_tick) <= 0);
+			} while(!in_vblank && (long)(timeGetTime() - timeout_target_tick) <= 0);
 
 			if((int)(timeGetTime() - timeout_target_tick) > 0)
 			{
@@ -493,7 +515,12 @@ void __fastcall tTVPVSyncTimingThread::UtilWndProc(Messages::TMessage &Msg)
 	else
 	{
 		tTJSCriticalSectionHolder holder(CS);
-		LastVBlankTick += VSyncInterval; // これが次に眠る時間の起算点になる
+		LastVBlankTick += VSyncInterval; // これが次に眠る時間の起算点になる(おおざっぱ)
+		if((long) (timeGetTime() - (LastVBlankTick + SleepTime)) <= 0)
+		{
+			// 眠った後、次に起きようとする時間がすでに過去なので眠れません
+			LastVBlankTick = timeGetTime(); // 強制的に今の時刻にします
+		}
 	}
 
 	// 画面の更新を行う (DrawDeviceのShowメソッドを呼ぶ)
@@ -519,14 +546,13 @@ void __fastcall tTVPVSyncTimingThread::UtilWndProc(Messages::TMessage &Msg)
 		if(SleepTime > VSyncInterval) SleepTime = VSyncInterval;
 	}
 
+	// タイマを起動する
+	Event.Set();
+
 	// ContinuousHandler を呼ぶ
 	// これは十分な時間をとれるよう、vsync 待ちの直後に呼ばれる
 	TVPProcessContinuousHandlerEventFlag = true; // set flag
-	::PostMessage(UtilWindow, WM_USER+0, 0, 0);
-
-
-	// タイマを起動する
-	Event.Set();
+	TVPDeliverAllEvents(); // 強制的にイベントを配る
 
 static DWORD last_report_tick;
 
@@ -723,6 +749,10 @@ void TVPEnsureVSyncTimingThread()
 		if(!TVPVSyncTimingThread)
 			TVPVSyncTimingThread = new tTVPVSyncTimingThread();
 	}
+	else
+	{
+		TVPReleaseVSyncTimingThread();
+	}
 }
 //---------------------------------------------------------------------------
 
@@ -734,6 +764,7 @@ void TVPReleaseVSyncTimingThread()
 		delete TVPVSyncTimingThread,
 			TVPVSyncTimingThread = NULL;
 }
+//---------------------------------------------------------------------------
 // to release TVPContinuousHandlerCallLimitThread at exit
 static tTVPAtExit TVPVSyncTimingThreadUninitAtExit(TVP_ATEXIT_PRI_SHUTDOWN,
 	TVPReleaseVSyncTimingThread);
