@@ -145,6 +145,9 @@ public:
 	virtual void SetShowUpdateRect(bool b)  { DrawUpdateRectangle = b; }
 	virtual int GetInterpolationCapability() { return 3; }
 		// bit 0 for point-on-point, bit 1 for bilinear interpolation
+
+	virtual void InitTimings() {;} // notifies begining of benchmark
+	virtual void ReportTimings() {;} // notifies end of benchmark
 };
 //---------------------------------------------------------------------------
 
@@ -327,6 +330,8 @@ class tTVPDrawer_GDIDoubleBuffering : public tTVPDrawer_GDI
 	HBITMAP OffScreenBitmap; //!< オフスクリーンビットマップ
 	HDC OffScreenDC; //!< オフスクリーン DC
 	HBITMAP OldOffScreenBitmap; //!< OffScreenDC に以前選択されていた ビットマップ
+	bool ShouldShow; //!< show で実際に画面に画像を転送すべきか
+	bool InBenchMark; //!< ベンチマーク中かどうか
 
 public:
 	//! @brief	コンストラクタ
@@ -335,6 +340,8 @@ public:
 		OffScreenBitmap = NULL;
 		OffScreenDC = NULL;
 		OldOffScreenBitmap = NULL;
+		ShouldShow = false;
+		InBenchMark = false;
 	}
 
 	//! @brief	デストラクタ
@@ -412,6 +419,8 @@ public:
 	{
 		// DrawDibDraw にて OffScreenDC に描画を行う
 		if(DrawDibHandle && OffScreenDC)
+		{
+			ShouldShow = true;
 			DrawDibDraw(DrawDibHandle,
 				OffScreenDC,
 				x,
@@ -425,6 +434,7 @@ public:
 				cliprect.get_width(),
 				cliprect.get_height(),
 				0);
+		}
 	}
 
 	void EndBitmapCompletion()
@@ -433,7 +443,7 @@ public:
 
 	void Show()
 	{
-		if(TargetDC && OffScreenDC)
+		if(TargetDC && OffScreenDC && ShouldShow)
 		{
 			// オフスクリーンビットマップを TargetDC に転送する
 			if(TVPZoomInterpolation)
@@ -453,11 +463,25 @@ public:
 				SrcWidth,
 				SrcHeight,
 				SRCCOPY);
+
+			if(InBenchMark)
+			{
+				// 画面からの読み出しを行う関数を実行する
+				// こうしないと StrechBlt などはコマンドキューにたたき込まれる
+				// だけで、実際の描画を待たずに帰る可能性がある。
+				(void)GetPixel(TargetDC, DestLeft + DestWidth / 2, DestTop + DestHeight / 2);
+			}
+
+			ShouldShow = false;
 		}
 	}
 
-	virtual int GetInterpolationCapability() { return 3; }
+	virtual int GetInterpolationCapability() { return 1; }
 		// bit 0 for point-on-point, bit 1 for bilinear interpolation
+
+	virtual void InitTimings() { InBenchMark = true; }
+	virtual void ReportTimings() { InBenchMark = false; }
+
 
 };
 //---------------------------------------------------------------------------
@@ -479,6 +503,7 @@ class tTVPDrawer_DDDoubleBuffering : public tTVPDrawer
 	IDirectDrawClipper * Clipper;
 
 	bool LastOffScreenDCGot;
+	bool ShouldShow; //!< show で実際に画面に画像を転送すべきか
 
 public:
 	//! @brief	コンストラクタ
@@ -489,6 +514,7 @@ public:
 		Surface = NULL;
 		Clipper = NULL;
 		LastOffScreenDCGot = true;
+		ShouldShow = false;
 	}
 
 	//! @brief	デストラクタ
@@ -652,6 +678,8 @@ public:
 	{
 		// DrawDibDraw にて OffScreenDC に描画を行う
 		if(DrawDibHandle && OffScreenDC && TargetWindow)
+		{
+			ShouldShow = true;
 			DrawDibDraw(DrawDibHandle,
 				OffScreenDC,
 				x,
@@ -665,6 +693,7 @@ public:
 				cliprect.get_width(),
 				cliprect.get_height(),
 				0);
+		}
 	}
 
 	void EndBitmapCompletion()
@@ -680,6 +709,9 @@ public:
 	{
 		if(!TargetWindow) return;
 		if(!Surface) return;
+		if(!ShouldShow) return;
+
+		ShouldShow = false;
 
 		// Blt to the primary surface
 		IDirectDrawSurface *pri = TVPGetDDPrimarySurfaceNoAddRef();
@@ -880,7 +912,7 @@ public:
 			s1->ReleaseDC(s1dc), s1dc = NULL;
 		if(s1) s1->Release(), s1 = NULL;
 		if(s2dc && s2)
-			s1->ReleaseDC(s1dc), s2dc = NULL;
+			s2->ReleaseDC(s2dc), s2dc = NULL;
 		if(s2) s2->Release(), s2 = NULL;
 
 		switch(caps)
@@ -929,6 +961,7 @@ class tTVPDrawer_D3DDoubleBuffering : public tTVPDrawer
 	IDirectDrawSurface7 * Texture;
 
 	bool LastOffScreenDCGot;
+	bool ShouldShow; //!< show で実際に画面に画像を転送すべきか
 
 public:
 	//! @brief	コンストラクタ
@@ -938,11 +971,12 @@ public:
 		OffScreenDC = NULL;
 		DirectDraw7 = NULL;
 		Direct3D7 = NULL;
+		Direct3DDevice7 = NULL;
 		Surface = NULL;
 		Clipper = NULL;
 		Texture = NULL;
-		Direct3DDevice7 = NULL;
 		LastOffScreenDCGot = true;
+		ShouldShow = false;
 	}
 
 	//! @brief	デストラクタ
@@ -1066,19 +1100,19 @@ public:
 			// create Direct3D Texture
 			ZeroMemory(&ddsd, sizeof(ddsd));
 			ddsd.dwSize = sizeof(ddsd);
-			ddsd.dwFlags = DDSD_WIDTH | DDSD_HEIGHT | DDSD_CAPS/* | DDSD_PIXELFORMAT*/;
+			ddsd.dwFlags = DDSD_WIDTH | DDSD_HEIGHT | DDSD_CAPS | DDSD_PIXELFORMAT;
 			ddsd.dwWidth = SrcWidth;
 			ddsd.dwHeight = SrcHeight;
 			ddsd.ddsCaps.dwCaps =
-				/*DDSCAPS_OFFSCREENPLAIN |*/ DDSCAPS_VIDEOMEMORY | DDSCAPS_TEXTURE;
-/*
+				/*DDSCAPS_OFFSCREENPLAIN |*/ DDSCAPS_VIDEOMEMORY | DDSCAPS_TEXTURE | DDSCAPS_LOCALVIDMEM;
+
 			ddsd.ddpfPixelFormat.dwSize = sizeof(DDPIXELFORMAT);
 			ddsd.ddpfPixelFormat.dwFlags = DDPF_RGB;
 			ddsd.ddpfPixelFormat.dwRGBBitCount	= 32;
 			ddsd.ddpfPixelFormat.dwRBitMask		= 0x00FF0000;
 			ddsd.ddpfPixelFormat.dwGBitMask		= 0x0000FF00;
 			ddsd.ddpfPixelFormat.dwBBitMask		= 0x000000FF;
-*/
+
 			hr = DirectDraw7->CreateSurface(&ddsd, &Texture, NULL);
 
 			if(hr != DD_OK)
@@ -1162,6 +1196,33 @@ public:
 		inherited::SetTargetWindow(wnd);
 		CreateOffScreenSurface();
 	}
+#define TVPD3DTIMING
+#ifdef TVPD3DTIMING
+	DWORD StartTick;
+
+	DWORD GetDCTime;
+	DWORD DrawDibDrawTime;
+	DWORD ReleaseDCTime;
+	DWORD DrawPrimitiveTime;
+	DWORD BltTime;
+	void InitTimings()
+	{
+		GetDCTime = 0;
+		DrawDibDrawTime = 0;
+		ReleaseDCTime = 0;
+		DrawPrimitiveTime = 0;
+		BltTime = 0;
+	}
+
+	void ReportTimings()
+	{
+		TVPAddLog(TJS_W("GetDCTime : ") + ttstr((int)GetDCTime));
+		TVPAddLog(TJS_W("DrawDibDrawTime : ") + ttstr((int)DrawDibDrawTime));
+		TVPAddLog(TJS_W("ReleaseDCTime : ") + ttstr((int)ReleaseDCTime));
+		TVPAddLog(TJS_W("DrawPrimitiveTime : ") + ttstr((int)DrawPrimitiveTime));
+		TVPAddLog(TJS_W("BltTime : ") + ttstr((int)BltTime));
+	}
+#endif
 
 	void StartBitmapCompletion()
 	{
@@ -1169,7 +1230,32 @@ public:
 		if(Texture && TargetWindow)
 		{
 			HDC dc = NULL;
+/*
+#ifdef TVPD3DTIMING
+StartTick = timeGetTime();
+#endif
+		DDSURFACEDESC2 ddsd;
+		ZeroMemory(&ddsd, sizeof(ddsd));
+		ddsd.dwSize = sizeof(ddsd);
+		RECT lock_rect;
+		lock_rect.left = 0; lock_rect.top = 0;
+		lock_rect.right = SrcWidth; lock_rect.bottom = SrcHeight;
+		if(SUCCEEDED(Texture->Lock(&lock_rect, &ddsd, DDLOCK_WAIT|DDLOCK_SURFACEMEMORYPTR|DDLOCK_WRITEONLY, NULL)))
+		{
+			Texture->Unlock(&lock_rect);
+		}
+#ifdef TVPD3DTIMING
+GetDCTime += timeGetTime() - StartTick;
+#endif
+*/
+
+#ifdef TVPD3DTIMING
+StartTick = timeGetTime();
+#endif
 			HRESULT hr = Texture->GetDC(&dc);
+#ifdef TVPD3DTIMING
+GetDCTime += timeGetTime() - StartTick;
+#endif
 			if(hr == DDERR_SURFACELOST)
 			{
 				Texture->Restore();
@@ -1201,7 +1287,12 @@ public:
 		const tTVPRect &cliprect)
 	{
 		// DrawDibDraw にて OffScreenDC に描画を行う
+#ifdef TVPD3DTIMING
+StartTick = timeGetTime();
+#endif
 		if(DrawDibHandle && OffScreenDC && TargetWindow)
+		{
+			ShouldShow = true;
 			DrawDibDraw(DrawDibHandle,
 				OffScreenDC,
 				x,
@@ -1215,6 +1306,10 @@ public:
 				cliprect.get_width(),
 				cliprect.get_height(),
 				0);
+		}
+#ifdef TVPD3DTIMING
+DrawDibDrawTime += timeGetTime() - StartTick;
+#endif
 	}
 
 	void EndBitmapCompletion()
@@ -1224,8 +1319,17 @@ public:
 		if(!Surface) return;
 		if(!OffScreenDC) return;
 		if(!Direct3DDevice7) return;
+		if(!ShouldShow) return;
 
+#ifdef TVPD3DTIMING
+StartTick = timeGetTime();
+#endif
 		Texture->ReleaseDC(OffScreenDC), OffScreenDC = NULL;
+#ifdef TVPD3DTIMING
+ReleaseDCTime += timeGetTime() - StartTick;
+#endif
+
+		ShouldShow = false;
 
 		// Blt to the primary surface
 
@@ -1255,6 +1359,9 @@ public:
 
 		HRESULT hr;
 
+#ifdef TVPD3DTIMING
+StartTick = timeGetTime();
+#endif
 		// clear back surface
 		DDBLTFX fx;
 		ZeroMemory(&fx, sizeof(fx));
@@ -1289,6 +1396,9 @@ public:
 		Direct3DDevice7->EndScene();
 		Direct3DDevice7->SetTexture(0, NULL);
 
+#ifdef TVPD3DTIMING
+DrawPrimitiveTime += timeGetTime() - StartTick;
+#endif
 	got_error:
 		if(hr == DDERR_SURFACELOST)
 		{
@@ -1322,6 +1432,9 @@ public:
 		if(!pri)
 			TVPThrowExceptionMessage(TJS_W("Cannot retrieve primary surface object"));
 
+#ifdef TVPD3DTIMING
+StartTick = timeGetTime();
+#endif
 		// set clipper
 		TVPSetDDPrimaryClipper(Clipper);
 
@@ -1344,6 +1457,9 @@ public:
 
 		hr = pri->Blt(&drect, (IDirectDrawSurface*)Surface, &srect, DDBLT_WAIT, NULL);
 
+#ifdef TVPD3DTIMING
+BltTime += timeGetTime() - StartTick;
+#endif
 
 	got_error:
 		if(hr == DDERR_SURFACELOST)
@@ -1578,6 +1694,7 @@ void tTVPPassThroughDrawDevice::CreateDrawer(bool zoom_required)
 
 				// ベンチマークを行う
 				// 持ち時間約333msで、その間に何回転送を行えるかを見る
+				Drawer->InitTimings();
 				static const DWORD timeout = 333;
 				DWORD start_tick = timeGetTime();
 				int count = 0;
@@ -1590,6 +1707,7 @@ void tTVPPassThroughDrawDevice::CreateDrawer(bool zoom_required)
 					count ++;
 				}
 				DWORD end_tick = timeGetTime();
+				Drawer->ReportTimings();
 
 				// 結果を格納、それとデバッグ用に表示
 				results[i].score = count * 1000 / (float)(end_tick - start_tick);
