@@ -960,8 +960,12 @@ class tTVPDrawer_D3DDoubleBuffering : public tTVPDrawer
 	IDirectDrawClipper * Clipper;
 	IDirectDrawSurface7 * Texture;
 
+	void * TextureBuffer; //!< テクスチャのサーフェースへのメモリポインタ
+	long TexturePitch; //!< テクスチャのピッチ
+
 	bool LastOffScreenDCGot;
 	bool ShouldShow; //!< show で実際に画面に画像を転送すべきか
+	bool UseDirectTransfer; //!< メモリ直接転送を行うかどうか
 
 public:
 	//! @brief	コンストラクタ
@@ -977,6 +981,8 @@ public:
 		Texture = NULL;
 		LastOffScreenDCGot = true;
 		ShouldShow = false;
+		UseDirectTransfer = false;
+		TextureBuffer = NULL;
 	}
 
 	//! @brief	デストラクタ
@@ -989,6 +995,7 @@ public:
 
 	void DestroyOffScreenSurface()
 	{
+		if(TextureBuffer && Texture) Texture->Unlock(NULL), TextureBuffer = NULL;
 		if(OffScreenDC && Surface) Surface->ReleaseDC(OffScreenDC);
 		if(Surface) Surface->Release(), Surface = NULL;
 		if(Clipper) Clipper->Release(), Clipper = NULL;
@@ -1115,10 +1122,30 @@ public:
 
 			hr = DirectDraw7->CreateSurface(&ddsd, &Texture, NULL);
 
-			if(hr != DD_OK)
-				TVPThrowExceptionMessage(TJS_W("Cannot allocate D3D texture/HR=%1"),
-					TJSInt32ToHex(hr, 8));
+			if(hr == DD_OK)
+			{
+				UseDirectTransfer = true; // 直接のメモリ転送を有効にする
+			}
+			else /*if(hr != DD_OK) */
+			{
+				// ピクセルフォーマットを指定せずに生成を試みる
 
+				ZeroMemory(&ddsd, sizeof(ddsd));
+				ddsd.dwSize = sizeof(ddsd);
+				ddsd.dwFlags = DDSD_WIDTH | DDSD_HEIGHT | DDSD_CAPS/* | DDSD_PIXELFORMAT*/;
+				ddsd.dwWidth = SrcWidth;
+				ddsd.dwHeight = SrcHeight;
+				ddsd.ddsCaps.dwCaps =
+					/*DDSCAPS_OFFSCREENPLAIN |*/ DDSCAPS_VIDEOMEMORY | DDSCAPS_TEXTURE | DDSCAPS_LOCALVIDMEM;
+
+				hr = DirectDraw7->CreateSurface(&ddsd, &Texture, NULL);
+
+				if(FAILED(hr))
+					TVPThrowExceptionMessage(TJS_W("Cannot allocate D3D texture/HR=%1"),
+						TJSInt32ToHex(hr, 8));
+
+				TVPAddImportantLog("Passthrough: Using non 32bit ARGB texture format");
+			}
 		}
 	}
 
@@ -1216,11 +1243,11 @@ public:
 
 	void ReportTimings()
 	{
-		TVPAddLog(TJS_W("GetDCTime : ") + ttstr((int)GetDCTime));
-		TVPAddLog(TJS_W("DrawDibDrawTime : ") + ttstr((int)DrawDibDrawTime));
-		TVPAddLog(TJS_W("ReleaseDCTime : ") + ttstr((int)ReleaseDCTime));
-		TVPAddLog(TJS_W("DrawPrimitiveTime : ") + ttstr((int)DrawPrimitiveTime));
-		TVPAddLog(TJS_W("BltTime : ") + ttstr((int)BltTime));
+		TVPAddLog(TJS_W("GetDC / Lock : ") + ttstr((int)GetDCTime));
+		TVPAddLog(TJS_W("DrawDibDraw : ") + ttstr((int)DrawDibDrawTime));
+		TVPAddLog(TJS_W("ReleaseDC / Unlock : ") + ttstr((int)ReleaseDCTime));
+		TVPAddLog(TJS_W("DrawPrimitive : ") + ttstr((int)DrawPrimitiveTime));
+		TVPAddLog(TJS_W("Blt : ") + ttstr((int)BltTime));
 	}
 #endif
 
@@ -1229,87 +1256,157 @@ public:
 		// retrieve DC
 		if(Texture && TargetWindow)
 		{
-			HDC dc = NULL;
-/*
+			if(UseDirectTransfer)
+			{
 #ifdef TVPD3DTIMING
 StartTick = timeGetTime();
 #endif
-		DDSURFACEDESC2 ddsd;
-		ZeroMemory(&ddsd, sizeof(ddsd));
-		ddsd.dwSize = sizeof(ddsd);
-		RECT lock_rect;
-		lock_rect.left = 0; lock_rect.top = 0;
-		lock_rect.right = SrcWidth; lock_rect.bottom = SrcHeight;
-		if(SUCCEEDED(Texture->Lock(&lock_rect, &ddsd, DDLOCK_WAIT|DDLOCK_SURFACEMEMORYPTR|DDLOCK_WRITEONLY, NULL)))
-		{
-			Texture->Unlock(&lock_rect);
-		}
-#ifdef TVPD3DTIMING
-GetDCTime += timeGetTime() - StartTick;
-#endif
-*/
+				DDSURFACEDESC2 ddsd;
+				ZeroMemory(&ddsd, sizeof(ddsd));
+				ddsd.dwSize = sizeof(ddsd);
+				HRESULT hr = Texture->Lock(NULL, &ddsd, DDLOCK_WAIT|DDLOCK_SURFACEMEMORYPTR|DDLOCK_WRITEONLY, NULL);
 
-#ifdef TVPD3DTIMING
-StartTick = timeGetTime();
-#endif
-			HRESULT hr = Texture->GetDC(&dc);
-#ifdef TVPD3DTIMING
-GetDCTime += timeGetTime() - StartTick;
-#endif
-			if(hr == DDERR_SURFACELOST)
-			{
-				Texture->Restore();
-				InvalidateAll();  // causes reconstruction of off-screen image
-				hr = Texture->GetDC(&dc);
-			}
-
-			if(hr != DD_OK)
-			{
-				dc = NULL;
-				InvalidateAll();  // causes reconstruction of off-screen image
-
-				if(LastOffScreenDCGot)
+				if(hr == DDERR_SURFACELOST)
 				{
-					// display this message only once since last success
-					TVPAddImportantLog(
-						TJS_W("Passthrough: (inf) Texture, IDirectDrawSurface::GetDC failed/HR=") +
-						TJSInt32ToHex(hr, 8) + TJS_W(", ignoring"));
+					Texture->Restore();
+					InvalidateAll();  // causes reconstruction of off-screen image
+					hr = Texture->Lock(NULL, &ddsd, DDLOCK_WAIT|DDLOCK_SURFACEMEMORYPTR|DDLOCK_WRITEONLY, NULL);
 				}
+
+				if(hr != DD_OK)
+				{
+					TextureBuffer = NULL;
+					InvalidateAll();  // causes reconstruction of off-screen image
+
+					if(LastOffScreenDCGot)
+					{
+						// display this message only once since last success
+						TVPAddImportantLog(
+							TJS_W("Passthrough: (inf) Texture, IDirectDrawSurface::Lock failed/HR=") +
+							TJSInt32ToHex(hr, 8) + TJS_W(", ignoring"));
+					}
+				}
+				else /*if(hr == DD_OK) */
+				{
+					TextureBuffer = ddsd.lpSurface;
+					TexturePitch = ddsd.lPitch;
+				}
+
+
+#ifdef TVPD3DTIMING
+GetDCTime += timeGetTime() - StartTick;
+#endif
 			}
+			else
+			{
+				HDC dc = NULL;
+#ifdef TVPD3DTIMING
+StartTick = timeGetTime();
+#endif
+				HRESULT hr = Texture->GetDC(&dc);
+#ifdef TVPD3DTIMING
+GetDCTime += timeGetTime() - StartTick;
+#endif
+				if(hr == DDERR_SURFACELOST)
+				{
+					Texture->Restore();
+					InvalidateAll();  // causes reconstruction of off-screen image
+					hr = Texture->GetDC(&dc);
+				}
 
-			OffScreenDC = dc;
+				if(hr != DD_OK)
+				{
+					dc = NULL;
+					InvalidateAll();  // causes reconstruction of off-screen image
 
-			if(OffScreenDC) LastOffScreenDCGot = true; else LastOffScreenDCGot = false;
+					if(LastOffScreenDCGot)
+					{
+						// display this message only once since last success
+						TVPAddImportantLog(
+							TJS_W("Passthrough: (inf) Texture, IDirectDrawSurface::GetDC failed/HR=") +
+							TJSInt32ToHex(hr, 8) + TJS_W(", ignoring"));
+					}
+				}
+
+				OffScreenDC = dc;
+
+				if(OffScreenDC) LastOffScreenDCGot = true; else LastOffScreenDCGot = false;
+			}
 		}
 	}
 
 	void NotifyBitmapCompleted(tjs_int x, tjs_int y, const void * bits, const BITMAPINFO * bitmapinfo,
 		const tTVPRect &cliprect)
 	{
-		// DrawDibDraw にて OffScreenDC に描画を行う
+		if(UseDirectTransfer)
+		{
+			// 直接メモリ転送を用いて描画を行う
 #ifdef TVPD3DTIMING
 StartTick = timeGetTime();
 #endif
-		if(DrawDibHandle && OffScreenDC && TargetWindow)
-		{
-			ShouldShow = true;
-			DrawDibDraw(DrawDibHandle,
-				OffScreenDC,
-				x,
-				y,
-				cliprect.get_width(),
-				cliprect.get_height(),
-				const_cast<BITMAPINFOHEADER*>(reinterpret_cast<const BITMAPINFOHEADER*>(bitmapinfo)),
-				const_cast<void*>(bits),
-				cliprect.left,
-				cliprect.top,
-				cliprect.get_width(),
-				cliprect.get_height(),
-				0);
-		}
+			if(DrawDibHandle && TextureBuffer && TargetWindow)
+			{
+				ShouldShow = true;
+				// bitmapinfo で表された cliprect の領域を x,y にコピーする
+				long src_y       = cliprect.top;
+				long src_y_limit = cliprect.bottom;
+				long src_x       = cliprect.left;
+				long width_bytes   = cliprect.get_width() * 4; // 32bit
+				long dest_y      = y;
+				long dest_x      = x;
+				const tjs_uint8 * src_p = (const tjs_uint8 *)bits;
+				long src_pitch;
+
+				if(bitmapinfo->bmiHeader.biHeight < 0)
+				{
+					// bottom-down
+					src_pitch = bitmapinfo->bmiHeader.biWidth * 4;
+				}
+				else
+				{
+					// bottom-up
+					src_pitch = -bitmapinfo->bmiHeader.biWidth * 4;
+					src_p += bitmapinfo->bmiHeader.biWidth * 4 * (bitmapinfo->bmiHeader.biHeight - 1);
+				}
+
+				for(; src_y < src_y_limit; src_y ++, dest_y ++)
+				{
+					const void *srcp = src_p + src_pitch * src_y + src_x * 4;
+					void *destp = (tjs_uint8*)TextureBuffer + TexturePitch * dest_y + dest_x * 4;
+					memcpy(destp, srcp, width_bytes);
+				}
+			}
 #ifdef TVPD3DTIMING
 DrawDibDrawTime += timeGetTime() - StartTick;
 #endif
+		}
+		else
+		{
+			// DrawDibDraw にて OffScreenDC に描画を行う
+#ifdef TVPD3DTIMING
+StartTick = timeGetTime();
+#endif
+			if(DrawDibHandle && OffScreenDC && TargetWindow)
+			{
+				ShouldShow = true;
+				DrawDibDraw(DrawDibHandle,
+					OffScreenDC,
+					x,
+					y,
+					cliprect.get_width(),
+					cliprect.get_height(),
+					const_cast<BITMAPINFOHEADER*>(reinterpret_cast<const BITMAPINFOHEADER*>(bitmapinfo)),
+					const_cast<void*>(bits),
+					cliprect.left,
+					cliprect.top,
+					cliprect.get_width(),
+					cliprect.get_height(),
+					0);
+			}
+#ifdef TVPD3DTIMING
+DrawDibDrawTime += timeGetTime() - StartTick;
+#endif
+		}
 	}
 
 	void EndBitmapCompletion()
@@ -1317,17 +1414,31 @@ DrawDibDrawTime += timeGetTime() - StartTick;
 		if(!TargetWindow) return;
 		if(!Texture) return;
 		if(!Surface) return;
-		if(!OffScreenDC) return;
 		if(!Direct3DDevice7) return;
 		if(!ShouldShow) return;
 
+		if(UseDirectTransfer)
+		{
 #ifdef TVPD3DTIMING
 StartTick = timeGetTime();
 #endif
-		Texture->ReleaseDC(OffScreenDC), OffScreenDC = NULL;
+			if(!TextureBuffer) return;
+			Texture->Unlock(NULL), TextureBuffer = NULL;
 #ifdef TVPD3DTIMING
 ReleaseDCTime += timeGetTime() - StartTick;
 #endif
+		}
+		else
+		{
+#ifdef TVPD3DTIMING
+StartTick = timeGetTime();
+#endif
+			if(!OffScreenDC) return;
+			Texture->ReleaseDC(OffScreenDC), OffScreenDC = NULL;
+#ifdef TVPD3DTIMING
+ReleaseDCTime += timeGetTime() - StartTick;
+#endif
+		}
 
 		ShouldShow = false;
 
