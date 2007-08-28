@@ -1776,10 +1776,17 @@ void tTVPPassThroughDrawDevice::CreateDrawer(bool zoom_required)
 		for(int i = 0; i < num_types; i++)
 		{
 			results[i].type = bench_types[i];
-			results[i].score = 0.0f;
+			results[i].score = -1.0f;
 
 			try
 			{
+				// GDI ‚ÍÅŒã‚ÌŽè’i
+				if(results[i].type == dtDBGDI)
+				{
+					results[i].score = 0.0f;
+					continue;
+				}
+
 				// drawer ‚ðì¬
 				CreateDrawer(results[i].type);
 				if(!Drawer)
