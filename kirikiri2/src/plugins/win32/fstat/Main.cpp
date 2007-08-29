@@ -112,10 +112,35 @@ public:
 		TVPThrowExceptionMessage((ttstr(TJS_W("cannot open : ")) + param[0]->GetString()).c_str());
 		return TJS_S_OK;
 	}
+
+	void exportFile(const char *src, const char *dest) {
+		ttstr filename = src;
+		IStream *in = TVPCreateIStream(filename, TJS_BS_READ);
+		if (in) {
+			ttstr storename = dest;
+			IStream *out = TVPCreateIStream(storename, TJS_BS_WRITE);
+			if (out) {
+				BYTE buffer[1024*16];
+				DWORD size;
+				while (in->Read(buffer, sizeof buffer, &size) == S_OK && size > 0) {			
+					out->Write(buffer, size, &size);
+				}
+				out->Release();
+				in->Release();
+			} else {
+				in->Release();
+				TVPThrowExceptionMessage((ttstr(TJS_W("cannot open storefile: ")) + storename).c_str());
+			}
+		} else {
+			TVPThrowExceptionMessage((ttstr(TJS_W("cannot open readfile: ")) + filename).c_str());
+		}
+	}
+	
 };
 
 NCB_ATTACH_CLASS(StoragesFstat, Storages) {
 	RawCallback("fstat", &StoragesFstat::fstat, TJS_STATICMEMBER);
+	NCB_METHOD(exportFile);
 };
 
 /**
