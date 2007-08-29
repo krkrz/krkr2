@@ -940,18 +940,7 @@ void TJS_INTF_METHOD tTVPLayerManager::UpdateToDrawDevice()
 {
 	// drawdevice -> layer
 	if(!Primary) return;
-
-	Window->GetDrawDevice()->StartBitmapCompletion(this);
-	try
-	{
-		Primary->CompleteForWindow(this);
-	}
-	catch(...)
-	{
-		Window->GetDrawDevice()->EndBitmapCompletion(this);
-		throw;
-	}
-	Window->GetDrawDevice()->EndBitmapCompletion(this);
+	Primary->CompleteForWindow(this);
 }
 //---------------------------------------------------------------------------
 void tTVPLayerManager::NotifyUpdateRegionFixed()

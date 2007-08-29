@@ -6184,7 +6184,17 @@ void tTJSNI_BaseLayer::CompleteForWindow(tTVPDrawable *drawable)
 
 	InCompletion = true;
 
-	InternalComplete2(Manager->GetUpdateRegionForCompletion(), drawable);
+	if(Manager) Manager->GetWindow()->GetDrawDevice()->StartBitmapCompletion(Manager);
+	try
+	{
+		InternalComplete2(Manager->GetUpdateRegionForCompletion(), drawable);
+	}
+	catch(...)
+	{
+		if(Manager) Manager->GetWindow()->GetDrawDevice()->EndBitmapCompletion(Manager);
+		throw;
+	}
+	if(Manager) Manager->GetWindow()->GetDrawDevice()->EndBitmapCompletion(Manager);
 
 	InCompletion = false;
 	AfterCompletion();
