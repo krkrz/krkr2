@@ -13,4 +13,11 @@ class Storages {
 	 * ctime: 作成日時 (Date オブジェクト)
 	 */
 	function fstat(filename);
+
+	/**
+	 * 吉里吉里のストレージ空間中のファイルを抽出する
+	 * @param src 保存元ファイル
+	 * @param dest 保存先ファイル
+	 */
+	function exportFile(src, dest);
 };
