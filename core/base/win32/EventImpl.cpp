@@ -322,10 +322,10 @@ static bool TVPWaitVSync = 0;
 bool TVPGetWaitVSync()
 {
 	static tjs_int ArgumentGeneration = 0;
-	TVPWaitVSync = false;
 	if(ArgumentGeneration != TVPGetCommandLineArgumentGeneration())
 	{
 		ArgumentGeneration = TVPGetCommandLineArgumentGeneration();
+		TVPWaitVSync = false;
 
 		tTJSVariant val;
 		if(TVPGetCommandLine(TJS_W("-waitvsync"), &val))
