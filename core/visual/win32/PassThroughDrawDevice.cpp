@@ -6,7 +6,7 @@
 	See details of license at "license.txt"
 */
 //---------------------------------------------------------------------------
-//!@file "PassThrough" `foCXÇ—
+//!@file "PassThrough" •`‰æƒfƒoƒCƒXŠÇ—
 //---------------------------------------------------------------------------
 
 #include "tjsCommHead.h"
@@ -25,7 +25,7 @@
 
 
 //---------------------------------------------------------------------------
-// IvV
+// ƒIƒvƒVƒ‡ƒ“
 //---------------------------------------------------------------------------
 static tjs_int TVPPassThroughOptionsGeneration = 0;
 static bool TVPZoomInterpolation = true;
@@ -82,7 +82,7 @@ static void TVPInitPassThroughOptions()
 
 
 //---------------------------------------------------------------------------
-//! @brief	PassThrough Å—p`@pC^[tF[X
+//! @brief	PassThrough ‚Å—p‚¢‚é•`‰æ•û–@—pƒCƒ“ƒ^[ƒtƒF[ƒX
 //---------------------------------------------------------------------------
 class tTVPDrawer
 {
@@ -153,7 +153,7 @@ public:
 
 
 //---------------------------------------------------------------------------
-//! @brief	GDIÉ‚`KvÆ‚{NX
+//! @brief	GDI‚É‚æ‚é•`‰æ‚ğ•K—v‚Æ‚·‚éŠî–{ƒNƒ‰ƒX
 //---------------------------------------------------------------------------
 class tTVPDrawer_GDI : public tTVPDrawer
 {
@@ -162,13 +162,13 @@ protected:
 	HDC TargetDC;
 
 public:
-	//! @brief	RXgN^
+	//! @brief	ƒRƒ“ƒXƒgƒ‰ƒNƒ^
 	tTVPDrawer_GDI(tTVPPassThroughDrawDevice * device) : tTVPDrawer(device)
 	{
 		TargetDC = NULL;
 	}
 
-	//! @brief	fXgN^
+	//! @brief	ƒfƒXƒgƒ‰ƒNƒ^
 	~tTVPDrawer_GDI()
 	{
 		if(TargetDC && TargetWindow) ReleaseDC(TargetWindow, TargetDC);
@@ -178,12 +178,12 @@ public:
 	{
 		if(wnd)
 		{
-			// `p DC æ“¾
+			// •`‰æ—p DC ‚ğæ“¾‚·‚é
 			TargetDC = GetDC(wnd);
 		}
 		else
 		{
-			// `p DC J
+			// •`‰æ—p DC ‚ğŠJ•ú‚·‚é
 			if(TargetDC) ReleaseDC(TargetWindow, TargetDC), TargetDC = NULL;
 		}
 
@@ -196,7 +196,7 @@ public:
 
 
 //---------------------------------------------------------------------------
-//! @brief	DrawDibÉ‚obt@`s{NX
+//! @brief	DrawDib‚É‚æ‚éƒoƒbƒtƒ@–³‚µ•`‰æ‚ğs‚¤Šî–{ƒNƒ‰ƒX
 //---------------------------------------------------------------------------
 class tTVPDrawer_DrawDibNoBuffering : public tTVPDrawer_GDI
 {
@@ -206,14 +206,14 @@ class tTVPDrawer_DrawDibNoBuffering : public tTVPDrawer_GDI
 	HPEN YellowPen;
 
 public:
-	//! @brief	RXgN^
+	//! @brief	ƒRƒ“ƒXƒgƒ‰ƒNƒ^
 	tTVPDrawer_DrawDibNoBuffering(tTVPPassThroughDrawDevice * device) : tTVPDrawer_GDI(device)
 	{
 		BluePen = NULL;
 		YellowPen = NULL;
 	}
 
-	//! @brief	fXgN^
+	//! @brief	ƒfƒXƒgƒ‰ƒNƒ^
 	~tTVPDrawer_DrawDibNoBuffering()
 	{
 		if(BluePen)   DeleteObject(BluePen);
@@ -224,8 +224,8 @@ public:
 
 	bool SetDestSize(tjs_int width, tjs_int height)
 	{
-		// ÌƒfoCXÅ‚ÍŠgkÍ‚Å‚È‚Ì‚
-		// gkKvÈê‡ false Ô‚
+		// ‚±‚ÌƒfƒoƒCƒX‚Å‚ÍŠg‘åk¬‚Í‚Å‚«‚È‚¢‚Ì‚Å
+		// Šg‘åk¬‚ª•K—v‚Èê‡‚Í false ‚ğ•Ô‚·
 		tjs_int w, h;
 		Device->GetSrcSize(w, h);
 		if(width != w || height != h)
@@ -246,13 +246,13 @@ public:
 
 	void StartBitmapCompletion()
 	{
-		// é‚±Æ‚È‚
+		// ‚â‚é‚±‚Æ‚È‚µ
 	}
 
 	void NotifyBitmapCompleted(tjs_int x, tjs_int y, const void * bits, const BITMAPINFO * bitmapinfo,
 		const tTVPRect &cliprect)
 	{
-		// DrawDibDraw É‚ TargetDC É•`s
+		// DrawDibDraw ‚É‚Ä TargetDC ‚É•`‰æ‚ğs‚¤
 		if(DrawDibHandle && TargetDC)
 			DrawDibDraw(DrawDibHandle,
 				TargetDC,
@@ -268,7 +268,7 @@ public:
 				cliprect.get_height(),
 				0);
 
-		// XV`Ì•\
+		// XV‹éŒ`‚Ì•\¦
 		if(DrawUpdateRectangle)
 		{
 			if(!BluePen) BluePen = CreatePen(PS_SOLID, 1, RGB(0, 0, 255));
@@ -308,7 +308,7 @@ public:
 
 	void EndBitmapCompletion()
 	{
-		// é‚±Æ‚È‚
+		// ‚â‚é‚±‚Æ‚È‚µ
 	}
 
 	virtual int GetInterpolationCapability() { return 1; }
@@ -322,19 +322,19 @@ public:
 
 
 //---------------------------------------------------------------------------
-//! @brief	GDIÉ‚_uobt@OsNX
+//! @brief	GDI‚É‚æ‚éƒ_ƒuƒ‹ƒoƒbƒtƒ@ƒŠƒ“ƒO‚ğs‚¤ƒNƒ‰ƒX
 //---------------------------------------------------------------------------
 class tTVPDrawer_GDIDoubleBuffering : public tTVPDrawer_GDI
 {
 	typedef tTVPDrawer_GDI inherited;
-	HBITMAP OffScreenBitmap; //!< ItXN[rbg}bv
-	HDC OffScreenDC; //!< ItXN[ DC
-	HBITMAP OldOffScreenBitmap; //!< OffScreenDC ÉˆÈ‘OIÄ‚ rbg}bv
-	bool ShouldShow; //!< show ÅÛ‚É‰Ê‚É‰æ‘œ]×‚
-	bool InBenchMark; //!< x`}[NÇ‚
+	HBITMAP OffScreenBitmap; //!< ƒIƒtƒXƒNƒŠ[ƒ“ƒrƒbƒgƒ}ƒbƒv
+	HDC OffScreenDC; //!< ƒIƒtƒXƒNƒŠ[ƒ“ DC
+	HBITMAP OldOffScreenBitmap; //!< OffScreenDC ‚ÉˆÈ‘O‘I‘ğ‚³‚ê‚Ä‚¢‚½ ƒrƒbƒgƒ}ƒbƒv
+	bool ShouldShow; //!< show ‚ÅÀÛ‚É‰æ–Ê‚É‰æ‘œ‚ğ“]‘—‚·‚×‚«‚©
+	bool InBenchMark; //!< ƒxƒ“ƒ`ƒ}[ƒN’†‚©‚Ç‚¤‚©
 
 public:
-	//! @brief	RXgN^
+	//! @brief	ƒRƒ“ƒXƒgƒ‰ƒNƒ^
 	tTVPDrawer_GDIDoubleBuffering(tTVPPassThroughDrawDevice * device) : tTVPDrawer_GDI(device)
 	{
 		OffScreenBitmap = NULL;
@@ -344,7 +344,7 @@ public:
 		InBenchMark = false;
 	}
 
-	//! @brief	fXgN^
+	//! @brief	ƒfƒXƒgƒ‰ƒNƒ^
 	~tTVPDrawer_GDIDoubleBuffering()
 	{
 		DestroyBitmap();
@@ -364,8 +364,8 @@ public:
 
 	void CreateBitmap()
 	{
-		// XN[İŠ DDB ì¬B
-		// Í‚Ä‚Ìê‡ArfIÉì¬B
+		// ƒXƒNƒŠ[ƒ“ŒİŠ·‚Ì DDB ‚ğì¬‚·‚éB
+		// ‚±‚ê‚Í‚½‚¢‚Ä‚¢‚Ìê‡AƒrƒfƒIƒƒ‚ƒŠã‚Éì¬‚³‚ê‚éB
 		DestroyBitmap();
 		if(TargetWindow && SrcWidth > 0 && SrcHeight > 0)
 		{
@@ -411,13 +411,13 @@ public:
 
 	void StartBitmapCompletion()
 	{
-		// é‚±Æ‚È‚
+		// ‚â‚é‚±‚Æ‚È‚µ
 	}
 
 	void NotifyBitmapCompleted(tjs_int x, tjs_int y, const void * bits, const BITMAPINFO * bitmapinfo,
 		const tTVPRect &cliprect)
 	{
-		// DrawDibDraw É‚ OffScreenDC É•`s
+		// DrawDibDraw ‚É‚Ä OffScreenDC ‚É•`‰æ‚ğs‚¤
 		if(DrawDibHandle && OffScreenDC)
 		{
 			ShouldShow = true;
@@ -445,10 +445,10 @@ public:
 	{
 		if(TargetDC && OffScreenDC && ShouldShow)
 		{
-			// ItXN[rbg}bv TargetDC É“]
+			// ƒIƒtƒXƒNƒŠ[ƒ“ƒrƒbƒgƒ}ƒbƒv‚ğ TargetDC ‚É“]‘—‚·‚é
 			if(DestWidth == SrcWidth && DestHeight == SrcHeight)
 			{
-				// gEkÍ•KvÈ‚
+				// Šg‘åEk¬‚Í•K—v‚È‚¢
 				BitBlt(TargetDC,
 					DestLeft,
 					DestTop,
@@ -461,7 +461,7 @@ public:
 			}
 			else
 			{
-				// gEkKv
+				// Šg‘åEk¬‚ª•K—v
 				if(TVPZoomInterpolation)
 					SetStretchBltMode(TargetDC, HALFTONE);
 				else
@@ -483,9 +483,9 @@ public:
 
 			if(InBenchMark)
 			{
-				// Ê‚Ì“Ç‚İosÖs
-				// È‚ StrechBlt È‚Ç‚ÍƒR}hL[É‚Ü‚
-				// ÅAÛ‚Ì•`Ò‚É‹AÂ”\B
+				// ‰æ–Ê‚©‚ç‚Ì“Ç‚İo‚µ‚ğs‚¤ŠÖ”‚ğÀs‚·‚é
+				// ‚±‚¤‚µ‚È‚¢‚Æ StrechBlt ‚È‚Ç‚ÍƒRƒ}ƒ“ƒhƒLƒ…[‚É‚½‚½‚«‚Ü‚ê‚é
+				// ‚¾‚¯‚ÅAÀÛ‚Ì•`‰æ‚ğ‘Ò‚½‚¸‚É‹A‚é‰Â”\«‚ª‚ ‚éB
 				(void)GetPixel(TargetDC, DestLeft + DestWidth / 2, DestTop + DestHeight / 2);
 			}
 
@@ -509,7 +509,7 @@ public:
 
 
 //---------------------------------------------------------------------------
-//! @brief	DirectDrawÉ‚_uobt@OsNX
+//! @brief	DirectDraw‚É‚æ‚éƒ_ƒuƒ‹ƒoƒbƒtƒ@ƒŠƒ“ƒO‚ğs‚¤ƒNƒ‰ƒX
 //---------------------------------------------------------------------------
 class tTVPDrawer_DDDoubleBuffering : public tTVPDrawer
 {
@@ -520,10 +520,10 @@ class tTVPDrawer_DDDoubleBuffering : public tTVPDrawer
 	IDirectDrawClipper * Clipper;
 
 	bool LastOffScreenDCGot;
-	bool ShouldShow; //!< show ÅÛ‚É‰Ê‚É‰æ‘œ]×‚
+	bool ShouldShow; //!< show ‚ÅÀÛ‚É‰æ–Ê‚É‰æ‘œ‚ğ“]‘—‚·‚×‚«‚©
 
 public:
-	//! @brief	RXgN^
+	//! @brief	ƒRƒ“ƒXƒgƒ‰ƒNƒ^
 	tTVPDrawer_DDDoubleBuffering(tTVPPassThroughDrawDevice * device) : tTVPDrawer(device)
 	{
 		TVPEnsureDirectDrawObject();
@@ -534,7 +534,7 @@ public:
 		ShouldShow = false;
 	}
 
-	//! @brief	fXgN^
+	//! @brief	ƒfƒXƒgƒ‰ƒNƒ^
 	~tTVPDrawer_DDDoubleBuffering()
 	{
 		DestroyOffScreenSurface();
@@ -551,14 +551,14 @@ public:
 
 	void InvalidateAll()
 	{
-		// CZÊ‚×‚ÄƒNGXg
-		// T[tF[X lost Û‚É“eÄ\zÚ“IÅ—p
+		// ƒŒƒCƒ„‰‰ZŒ‹‰Ê‚ğ‚·‚×‚ÄƒŠƒNƒGƒXƒg‚·‚é
+		// ƒT[ƒtƒF[ƒX‚ª lost ‚µ‚½Û‚É“à—e‚ğÄ\’z‚·‚é–Ú“I‚Å—p‚¢‚é
 		Device->RequestInvalidation(tTVPRect(0, 0, DestWidth, DestHeight));
 	}
 
 	void CreateOffScreenSurface()
 	{
-		// ItXN[T[tF[Xİ’è‚·
+		// ƒIƒtƒXƒNƒŠ[ƒ“ƒT[ƒtƒF[ƒX‚ğİ’è‚·‚é
 		DestroyOffScreenSurface();
 		if(TargetWindow && SrcWidth > 0 && SrcHeight > 0)
 		{
@@ -695,7 +695,7 @@ public:
 	void NotifyBitmapCompleted(tjs_int x, tjs_int y, const void * bits, const BITMAPINFO * bitmapinfo,
 		const tTVPRect &cliprect)
 	{
-		// DrawDibDraw É‚ OffScreenDC É•`s
+		// DrawDibDraw ‚É‚Ä OffScreenDC ‚É•`‰æ‚ğs‚¤
 		if(DrawDibHandle && OffScreenDC && TargetWindow)
 		{
 			ShouldShow = true;
@@ -778,19 +778,19 @@ public:
 	virtual int GetInterpolationCapability()
 	{
 		// bit 0 for point-on-point, bit 1 for bilinear interpolation
-		// ÄADirectDraw  blt Ô‚sÇ‚mFÌ‚Í‚
-		// Å‚B
-		// GetCaps È‚Ç‚Ìƒ\bhÄAç“¾lÉ•Ô‚sÇ‚
-		// ñ‚ª‚È‚Î˜bÍ‘AÈ‚Í’TÅ‚Í‚İ‚Â‚È‚B
-		// vC}T[tF[XÖÛ‚É‰æ‘œ]ÄŠmß‚Ä‚İ‚Æ‚Í‚é‚ª
-		// Ê‚É•`æ‚µÄ‚mFÜ‚Å‚ÌŠÔ‚É‘ÌƒAvÌ‰æ‘œ
-		// Ä‚Ü‚È‚ (È‚ñ‚¾‚Å‚È‚)
-		// å‚¤È‚Ì‚ÅAQÂ‚ItXN[T[tF[XÄ‚İ‚ÄA
-		// ÌŠÔ“mÅ‚Ì“]sÄ‚İ‚é‚±Æ‚É‚BItXN[T[tF[XÅ‚
-		// é‚ªAvC}T[tF[XÆ“rfIÉ”zuÌ‚
-		// æ‚¤È•Ô‚ÌdÄ‚ÆŠÒ‚B
-		// Æ‚Ä‚AxÌ‘å‚«È‚Æ•Ô‚sÄ‚È‚
-		// foCXİ‚é‚©È‚Ì‚ÅA100x100200x200mÛ‚Ä‚İ‚é‚±Æ‚É‚B
+		// ‚³‚ÄADirectDraw ‚Ì blt ‚ª•âŠÔ‚ğs‚¤‚©‚Ç‚¤‚©‚ğŠm”F‚·‚é‚Ì‚Í‚¿‚å‚Á‚Æ
+		// ‚â‚Á‚©‚¢‚Å‚ ‚éB
+		// GetCaps ‚È‚Ç‚Ìƒƒ\ƒbƒh‚ª‚ ‚Á‚ÄA‚»‚±‚©‚ç“¾‚ç‚ê‚é’l‚É•âŠÔ‚ğs‚¤‚©‚Ç‚¤‚©‚Ì
+		// î•ñ‚ª‚ ‚é‚È‚ç‚Î˜b‚Í‘‚¢‚ªA‚»‚ñ‚È‚à‚ñ‚Í’T‚µ‚½ŒÀ‚è‚Å‚Í‚İ‚Â‚©‚ç‚È‚¢B
+		// ƒvƒ‰ƒCƒ}ƒŠƒT[ƒtƒF[ƒX‚ÖÀÛ‚É‰æ‘œ‚ğ“]‘—‚µ‚ÄŠm‚©‚ß‚Ä‚İ‚é‚Æ‚¢‚¤è‚Í‚ ‚é‚ª
+		// ‰æ–Ê‚ğ‰˜‚·ã‚É•`‰æ‚µ‚Ä‚©‚çŠm”F‚·‚é‚Ü‚Å‚ÌŠÔ‚É‘¼‚ÌƒAƒvƒŠ‚ª‚»‚±‚Ì‰æ‘œ‚ğ
+		// Á‚µ‚Ä‚µ‚Ü‚¤‚©‚à‚µ‚ê‚È‚¢ (‚â‚Á‚©‚¢‚È‚à‚ñ‚¾‚¢‚Å‚·‚È‚ )
+		// ‚µ‚å‚¤‚ª‚È‚¢‚Ì‚ÅA‚QŒÂ‚¿‚Á‚±‚¢ƒIƒtƒXƒNƒŠ[ƒ“ƒT[ƒtƒF[ƒX‚ğì‚Á‚Ä‚İ‚ÄA
+		// ‚»‚±‚ÌŠÔ“¯m‚Å‚Ì“]‘—‚ğs‚Á‚Ä‚İ‚é‚±‚Æ‚É‚·‚éBƒIƒtƒXƒNƒŠ[ƒ“ƒT[ƒtƒF[ƒX‚Å‚Í
+		// ‚ ‚é‚ªAƒvƒ‰ƒCƒ}ƒŠƒT[ƒtƒF[ƒX‚Æ“¯‚¶‚­ƒrƒfƒIƒƒ‚ƒŠã‚É”z’u‚³‚ê‚é‚Ì‚Å
+		// “¯‚¶‚æ‚¤‚È•âŠÔ‚Ìd•û‚ğ‚µ‚Ä‚­‚ê‚é‚ÆŠú‘Ò‚·‚éB
+		// ‚¿‚Á‚±‚¢‚Æ‚¢‚Á‚Ä‚àA‚ ‚é’ö“x‚Ì‘å‚«‚³‚ª‚È‚¢‚Æ•âŠÔ‚ğs‚Á‚Ä‚­‚ê‚È‚¢
+		// ƒfƒoƒCƒX‚ª‘¶İ‚·‚é‚©‚à‚µ‚ê‚È‚¢‚Ì‚ÅA100x100‚Æ200x200‚ğŠm•Û‚µ‚Ä‚İ‚é‚±‚Æ‚É‚·‚éB
 		IDirectDraw2 *object = TVPGetDirectDrawObjectNoAddRef();
 		if(!object) return 0;
 
@@ -801,7 +801,7 @@ public:
 		HDC s1dc = NULL;
 		HDC s2dc = NULL;
 
-		// T[tF[XÌŠm
+		// ƒT[ƒtƒF[ƒX‚ÌŠm•Û
 		for(int i = 0; i < 2; i++)
 		{
 			IDirectDrawSurface * & surface = (i == 0) ? s1 : s2;
@@ -840,7 +840,7 @@ public:
 			}
 		}
 
-		// s1     Ì×‚cÌƒXgCv
+		// s1 ‚É ‚µ‚ë ‚Æ ‚­‚ë ‚Ì×‚©‚¢c‚ÌƒXƒgƒ‰ƒCƒv‚ğ‘‚­
 		while(true)
 		{
 			HDC dc = NULL;
@@ -853,7 +853,7 @@ public:
 			else if(FAILED(hr))
 				goto got_error;
 
-			// s1 ÌƒTCY(100x100) ÉƒXgCv
+			// s1 ‚ÌƒTƒCƒY(100x100) ‚ÉƒXƒgƒ‰ƒCƒv‚ğ‘‚­
 			HPEN white_pen   = CreatePen(PS_SOLID, 1, RGB(255, 255, 255));
 			HPEN black_pen   = CreatePen(PS_SOLID, 1, RGB(0, 0, 0));
 
@@ -879,7 +879,7 @@ public:
 			break;
 		}
 
-		// s1  s2 ÉŠg Blt 
+		// s1 ‚ğ s2 ‚ÉŠg‘å Blt ‚·‚é
 		RECT drect;
 		drect.left   = 0;
 		drect.top    = 0;
@@ -895,7 +895,7 @@ public:
 		if(FAILED(s2->Blt(&drect, s1, &srect, DDBLT_WAIT, NULL)))
 			goto got_error;
 
-		// s2 Ç‚gå‚³ê‚½ğ’²
+		// s2 ‚ª‚Ç‚¤Šg‘å‚³‚ê‚½‚©‚ğ’²¸‚·‚é
 		while(true)
 		{
 			HDC dc = NULL;
@@ -908,14 +908,14 @@ public:
 			else if(FAILED(hr))
 				goto got_error;
 
-			// Ü‚È‚Ö‚Ì‰fğ’²‚×‚
+			// ‚Ü‚ñ‚È‚©‚Ö‚ñ‚Ì‰æ‘f‚ğ’²‚×‚é
 			bool halftone_detected = false;
 			for(int i = 90; i < 110; i++)
 			{
-				// Fget
+				// F‚ğget
 				COLORREF color = GetPixel(s2dc, i, 100);
-				// AÔ‚sÄ‚ÎAÆ‚ÈŠOÌF
-				// oÄ‚Ä‚Í‚
+				// ‚à‚µA•âŠÔ‚ªs‚í‚ê‚Ä‚¢‚ê‚ÎA‚µ‚ë‚Æ‚­‚ëˆÈŠO‚ÌF‚ª
+				// o‚Ä‚«‚Ä‚¢‚é‚Í‚¸
 				halftone_detected = halftone_detected ||
 					(color != 0xffffff && color != 0x000000);
 			}
@@ -925,7 +925,7 @@ public:
 			break;
 		}
 
-		// 
+		// ‰ğ•ú‚·‚é
 	got_error:
 		if(s1dc && s1)
 			s1->ReleaseDC(s1dc), s1dc = NULL;
@@ -958,17 +958,17 @@ public:
 
 
 //---------------------------------------------------------------------------
-//! @brief	Direct3D7 É‚_uobt@OsNX
-//! @note	tTVPDrawer_DDDoubleBuffering Æ‚æ‚­Ä‚é‚ªÊƒNXÉ‚È‚Ä‚B
-//!			Csê‡ÍAİ‚É‚æ‚­×Aæ‚¤È‚Æ‚ë‚ªÎ‚Æ‚ÉCİ‚é‚±ÆB
+//! @brief	Direct3D7 ‚É‚æ‚éƒ_ƒuƒ‹ƒoƒbƒtƒ@ƒŠƒ“ƒO‚ğs‚¤ƒNƒ‰ƒX
+//! @note	tTVPDrawer_DDDoubleBuffering ‚Æ‚æ‚­—‚Ä‚¢‚é‚ª•ÊƒNƒ‰ƒX‚É‚È‚Á‚Ä‚¢‚éB
+//!			C³‚ğs‚¤ê‡‚ÍAŒİ‚¢‚É‚æ‚­Œ©”ä‚×A—‚½‚æ‚¤‚È‚Æ‚±‚ë‚ª‚ ‚ê‚Î‚Æ‚à‚ÉC³‚ğ‚İ‚é‚±‚ÆB
 //---------------------------------------------------------------------------
 class tTVPDrawer_D3DDoubleBuffering : public tTVPDrawer
 {
 	typedef tTVPDrawer inherited;
 
 /*
-	note: Texture É‘Î‚Ä‚`æ‚³ê‚½e Surface É“]A
-			É‚vC}T[tF[XÉƒRs[B
+	note: Texture ‚É‘Î‚µ‚Ä‚¢‚Á‚½‚ñ•`‰æ‚³‚ê‚½“à—e‚Í Surface ‚É“]‘—‚³‚êA
+			‚³‚ç‚É‚»‚±‚©‚çƒvƒ‰ƒCƒ}ƒŠƒT[ƒtƒF[ƒX‚ÉƒRƒs[‚³‚ê‚éB
 */
 
 	HDC OffScreenDC;
@@ -979,15 +979,15 @@ class tTVPDrawer_D3DDoubleBuffering : public tTVPDrawer
 	IDirectDrawClipper * Clipper;
 	IDirectDrawSurface7 * Texture;
 
-	void * TextureBuffer; //!< eNX`ÌƒT[tF[XÖ‚Ìƒ|C^
-	long TexturePitch; //!< eNX`Ìƒsb`
+	void * TextureBuffer; //!< ƒeƒNƒXƒ`ƒƒ‚ÌƒT[ƒtƒF[ƒX‚Ö‚Ìƒƒ‚ƒŠƒ|ƒCƒ“ƒ^
+	long TexturePitch; //!< ƒeƒNƒXƒ`ƒƒ‚Ìƒsƒbƒ`
 
 	bool LastOffScreenDCGot;
-	bool ShouldShow; //!< show ÅÛ‚É‰Ê‚É‰æ‘œ]×‚
-	bool UseDirectTransfer; //!< Ú“]sÇ‚
+	bool ShouldShow; //!< show ‚ÅÀÛ‚É‰æ–Ê‚É‰æ‘œ‚ğ“]‘—‚·‚×‚«‚©
+	bool UseDirectTransfer; //!< ƒƒ‚ƒŠ’¼Ú“]‘—‚ğs‚¤‚©‚Ç‚¤‚©
 
 public:
-	//! @brief	RXgN^
+	//! @brief	ƒRƒ“ƒXƒgƒ‰ƒNƒ^
 	tTVPDrawer_D3DDoubleBuffering(tTVPPassThroughDrawDevice * device) : tTVPDrawer(device)
 	{
 		TVPEnsureDirectDrawObject();
@@ -1004,7 +1004,7 @@ public:
 		TextureBuffer = NULL;
 	}
 
-	//! @brief	fXgN^
+	//! @brief	ƒfƒXƒgƒ‰ƒNƒ^
 	~tTVPDrawer_D3DDoubleBuffering()
 	{
 		DestroyOffScreenSurface();
@@ -1026,8 +1026,8 @@ public:
 
 	void InvalidateAll()
 	{
-		// CZÊ‚×‚ÄƒNGXg
-		// T[tF[X lost Û‚É“eÄ\zÚ“IÅ—p
+		// ƒŒƒCƒ„‰‰ZŒ‹‰Ê‚ğ‚·‚×‚ÄƒŠƒNƒGƒXƒg‚·‚é
+		// ƒT[ƒtƒF[ƒX‚ª lost ‚µ‚½Û‚É“à—e‚ğÄ\’z‚·‚é–Ú“I‚Å—p‚¢‚é
 		Device->RequestInvalidation(tTVPRect(0, 0, DestWidth, DestHeight));
 	}
 
@@ -1048,7 +1048,7 @@ public:
 
 	void CreateOffScreenSurface()
 	{
-		// Direct3D foCXAeNX`È‚Ç‚ì¬
+		// Direct3D ƒfƒoƒCƒXAƒeƒNƒXƒ`ƒƒ‚È‚Ç‚ğì¬‚·‚é
 		DestroyOffScreenSurface();
 		if(TargetWindow && SrcWidth > 0 && SrcHeight > 0)
 		{
@@ -1143,11 +1143,11 @@ public:
 
 			if(hr == DD_OK)
 			{
-				UseDirectTransfer = true; // Ú‚Ìƒ]LÉ‚
+				UseDirectTransfer = true; // ’¼Ú‚Ìƒƒ‚ƒŠ“]‘—‚ğ—LŒø‚É‚·‚é
 			}
 			else /*if(hr != DD_OK) */
 			{
-				// sNZtH[}bgwè‚¹Éİ‚
+				// ƒsƒNƒZƒ‹ƒtƒH[ƒ}ƒbƒg‚ğw’è‚¹‚¸‚É¶¬‚ğ‚İ‚é
 
 				ZeroMemory(&ddsd, sizeof(ddsd));
 				ddsd.dwSize = sizeof(ddsd);
@@ -1366,14 +1366,14 @@ GetDCTime += timeGetTime() - StartTick;
 	{
 		if(UseDirectTransfer)
 		{
-			// Úƒ]pÄ•`s
+			// ’¼Úƒƒ‚ƒŠ“]‘—‚ğ—p‚¢‚Ä•`‰æ‚ğs‚¤
 #ifdef TVPD3DTIMING
 StartTick = timeGetTime();
 #endif
 			if(DrawDibHandle && TextureBuffer && TargetWindow)
 			{
 				ShouldShow = true;
-				// bitmapinfo Å•\ê‚½ cliprect Ì—Ìˆ x,y ÉƒRs[
+				// bitmapinfo ‚Å•\‚³‚ê‚½ cliprect ‚Ì—Ìˆæ‚ğ x,y ‚ÉƒRƒs[‚·‚é
 				long src_y       = cliprect.top;
 				long src_y_limit = cliprect.bottom;
 				long src_x       = cliprect.left;
@@ -1408,7 +1408,7 @@ DrawDibDrawTime += timeGetTime() - StartTick;
 		}
 		else
 		{
-			// DrawDibDraw É‚ OffScreenDC É•`s
+			// DrawDibDraw ‚É‚Ä OffScreenDC ‚É•`‰æ‚ğs‚¤
 #ifdef TVPD3DTIMING
 StartTick = timeGetTime();
 #endif
@@ -1730,19 +1730,19 @@ void tTVPPassThroughDrawDevice::CreateDrawer(tDrawerType type)
 //---------------------------------------------------------------------------
 void tTVPPassThroughDrawDevice::CreateDrawer(bool zoom_required)
 {
-	// TVPPreferredDrawType wè‚³Ä‚Î‚g
+	// TVPPreferredDrawType ‚ªw’è‚³‚ê‚Ä‚¢‚ê‚Î‚»‚ê‚ğg‚¤
 	Drawer = NULL;
 	if(TVPPreferredDrawType != dtNone)
 		CreateDrawer(TVPPreferredDrawType);
 
-	// Y[KvÈ‚A_uobt@OKvÈ‚È‚
-	// ÔŠ{I DrawDib Ì‚Â‚g
+	// ‚à‚µƒY[ƒ€‚ª•K—v‚È‚­Aƒ_ƒuƒ‹ƒoƒbƒtƒ@ƒŠƒ“ƒO‚à•K—v‚È‚¢‚È‚ç‚Î
+	// ˆê”ÔŠî–{“I‚È DrawDib ‚Ì‚â‚Â‚ğg‚¤
 	if(!zoom_required && !TVPForceDoublebuffer)
 		CreateDrawer(dtDrawDib);
 
 	if(!Drawer)
 	{
-		// CEBhEÈŠOÌê‡ÍŠ{IÈƒ\bhg
+		// ƒƒCƒ“ƒEƒBƒ“ƒhƒEˆÈŠO‚Ìê‡‚ÍŠî–{“I‚Èƒƒ\ƒbƒh‚ğg‚¤
 		if(!IsMainWindow)
 		{
 			if(zoom_required)
@@ -1754,9 +1754,9 @@ void tTVPPassThroughDrawDevice::CreateDrawer(bool zoom_required)
 
 	if(!Drawer)
 	{
-		// Ü‚ Drawer ì¬Ä‚È‚
+		// ‚Ü‚¾ Drawer ‚ªì¬‚³‚ê‚Ä‚È‚¢‚º
 
-		// x`}[NÜ‚
+		// ƒxƒ“ƒ`ƒ}[ƒN‚µ‚Ü‚·‚©‚Ë
 		static tDrawerType bench_types[] = { dtDBDD, dtDBGDI, dtDBD3D };
 		const static tjs_char * type_names[] = { TJS_W("DirectDraw"), TJS_W("GDI"), TJS_W("Direct3D") };
 		static const int num_types = sizeof(bench_types) / sizeof(bench_types[0]);
@@ -1766,7 +1766,7 @@ void tTVPPassThroughDrawDevice::CreateDrawer(bool zoom_required)
 			tDrawerType type;
 		} results[num_types];
 
-		// x`}[NpÌŒæ‘œm
+		// ƒxƒ“ƒ`ƒ}[ƒN—p‚ÌŒ³‰æ‘œ‚ğŠm•Û
 		tjs_int srcw, srch;
 		GetSrcSize(srcw, srch);
 		BITMAPINFOHEADER bmi;
@@ -1776,7 +1776,7 @@ void tTVPPassThroughDrawDevice::CreateDrawer(bool zoom_required)
 		bmi.biPlanes = 1;
 		bmi.biBitCount = 32;
 		bmi.biCompression = BI_RGB;
-		bmi.biSizeImage = srcw * 4 * srch; // 32bpp Ìê‡Í‚Å‚
+		bmi.biSizeImage = srcw * 4 * srch; // 32bpp ‚Ìê‡‚Í‚±‚ê‚Å‚¢‚¢
 		bmi.biXPelsPerMeter = 0;
 		bmi.biYPelsPerMeter = 0;
 		bmi.biClrUsed = 0;
@@ -1791,7 +1791,7 @@ void tTVPPassThroughDrawDevice::CreateDrawer(bool zoom_required)
 		cliprect.right = srcw;
 		cliprect.bottom = srch;
 
-		// x`}[Ns
+		// ƒxƒ“ƒ`ƒ}[ƒN‚ğs‚¤
 		for(int i = 0; i < num_types; i++)
 		{
 			results[i].type = bench_types[i];
@@ -1799,14 +1799,14 @@ void tTVPPassThroughDrawDevice::CreateDrawer(bool zoom_required)
 
 			try
 			{
-				// GDI ÍÅŒÌi
+				// GDI ‚ÍÅŒã‚Ìè’i
 				if(results[i].type == dtDBGDI)
 				{
 					results[i].score = 0.0f;
 					continue;
 				}
 
-				// drawer ì¬
+				// drawer ‚ğì¬
 				CreateDrawer(results[i].type);
 				if(!Drawer)
 				{
@@ -1814,7 +1814,7 @@ void tTVPPassThroughDrawDevice::CreateDrawer(bool zoom_required)
 					continue;
 				}
 
-				// Y[Ô‚Ìİ’Íó‚¯“é‚©H
+				// ƒY[ƒ€•âŠÔ‚Ìİ’è‚Íó‚¯“ü‚ê‚ç‚ê‚é‚©H
 				int caps = Drawer->GetInterpolationCapability();
 				if(TVPZoomInterpolation && !(caps & 2))
 				{
@@ -1829,8 +1829,8 @@ void tTVPPassThroughDrawDevice::CreateDrawer(bool zoom_required)
 					continue;
 				}
 
-				// x`}[Ns
-				// Ô–333msÅAÌŠÔ‚É‰]sé‚©
+				// ƒxƒ“ƒ`ƒ}[ƒN‚ğs‚¤
+				// ‚¿ŠÔ–ñ333ms‚ÅA‚»‚ÌŠÔ‚É‰½‰ñ“]‘—‚ğs‚¦‚é‚©‚ğŒ©‚é
 				Drawer->InitTimings();
 				static const DWORD timeout = 333;
 				DWORD start_tick = timeGetTime();
@@ -1846,7 +1846,7 @@ void tTVPPassThroughDrawDevice::CreateDrawer(bool zoom_required)
 				DWORD end_tick = timeGetTime();
 				Drawer->ReportTimings();
 
-				// Ê‚i[AÆƒfobOpÉ•\
+				// Œ‹‰Ê‚ğŠi”[A‚»‚ê‚ÆƒfƒoƒbƒO—p‚É•\¦
 				results[i].score = count * 1000 / (float)(end_tick - start_tick);
 				tjs_char msg[80];
 				TJS_sprintf(msg, TJS_W("%.2f fps"), (float)results[i].score);
@@ -1860,12 +1860,12 @@ void tTVPPassThroughDrawDevice::CreateDrawer(bool zoom_required)
 			DestroyDrawer();
 		}
 
-		// x`}[NÉgæ‘œ
+		// ƒxƒ“ƒ`ƒ}[ƒN‚Ég‚Á‚½‰æ‘œ‚ğ‰ğ•ú
 		GlobalFree((HGLOBAL)memblk);
 
 
-		// Ê‚XRAÉƒ\[g
-		// È‚ÉÍ‘È‚Ì‚ÅŒnIÉƒou\[g
+		// Œ‹‰Ê‚ğƒXƒRƒA‡‚Éƒ\[ƒg
+		// ‚»‚ñ‚È‚É”‚Í‘½‚­‚È‚¢‚Ì‚ÅŒ´n“I‚Éƒoƒuƒ‹ƒ\[ƒg
 		while(true)
 		{
 			bool swapped = false;
@@ -1882,7 +1882,7 @@ void tTVPPassThroughDrawDevice::CreateDrawer(bool zoom_required)
 			if(!swapped) break;
 		}
 	
-		// XRAÌì¬İ‚
+		// ƒXƒRƒA‚Ì‚‚¢‡‚©‚çì¬‚ğ‚İ‚é
 		for(int i = 0; i < num_types; i++)
 		{
 			CreateDrawer(results[i].type);
@@ -1893,9 +1893,9 @@ void tTVPPassThroughDrawDevice::CreateDrawer(bool zoom_required)
 
 	if(!Drawer)
 	{
-		// Drawer Sì¬Å‚È‚
-		// Íƒo
-		// Ü‚è“¾È‚vIB
+		// Drawer ‚ğ‘S‚­ì¬‚Å‚«‚È‚©‚Á‚½
+		// ‚±‚ê‚Íƒ„ƒo‚¢
+		// ‚Ü‚¸‚ ‚è“¾‚È‚¢‚ª’v–½“IB
 		TVPThrowExceptionMessage(TJS_W("Fatal: Could not create any drawer objects."));
 	}
 
@@ -1911,14 +1911,14 @@ void tTVPPassThroughDrawDevice::CreateDrawer(bool zoom_required)
 //---------------------------------------------------------------------------
 void tTVPPassThroughDrawDevice::EnsureDrawer()
 {
-	// Ìƒ\bhÅ‚ÍAÈ‰ÌÌÛ‚ drawer (è’¼)B
-	// 1. Drawer  NULL Ìê‡
-	// 2. İ‚ Drawer Ìƒ^CvKØ‚Å‚È‚È‚Æ‚
+	// ‚±‚Ìƒƒ\ƒbƒh‚Å‚ÍAˆÈ‰º‚ÌğŒ‚ÌÛ‚É drawer ‚ğì‚é(ì‚è’¼‚·)B
+	// 1. Drawer ‚ª NULL ‚Ìê‡
+	// 2. Œ»İ‚Ì Drawer ‚Ìƒ^ƒCƒv‚ª“KØ‚Å‚È‚­‚È‚Á‚½‚Æ‚«
 	TVPInitPassThroughOptions();
 
 	if(TargetWindow)
 	{
-		// Y[Í•KvH
+		// ƒY[ƒ€‚Í•K—v‚¾‚Á‚½‚©H
 		bool zoom_was_required = false;
 		if(Drawer)
 		{
@@ -1930,7 +1930,7 @@ void tTVPPassThroughDrawDevice::EnsureDrawer()
 				zoom_was_required = true;
 		}
 
-		// Y[()KvH
+		// ƒY[ƒ€‚Í(¡‰ñ‚Í)•K—v‚©H
 		bool zoom_is_required = false;
 		tjs_int srcw, srch;
 		GetSrcSize(srcw, srch);
@@ -1944,7 +1944,7 @@ void tTVPPassThroughDrawDevice::EnsureDrawer()
 
 		if(need_recreate)
 		{
-			// Drawer ÌÄì¬Kv
+			// Drawer ‚ÌÄì¬‚ª•K—v
 			CreateDrawer(zoom_is_required);
 		}
 	}
@@ -1957,13 +1957,13 @@ void TJS_INTF_METHOD tTVPPassThroughDrawDevice::AddLayerManager(iTVPLayerManager
 {
 	if(inherited::Managers.size() > 0)
 	{
-		// "Pass Through" foCXÅ‚Í‚QÂˆÈLayer Managero^Å‚È‚
+		// "Pass Through" ƒfƒoƒCƒX‚Å‚Í‚Q‚ÂˆÈã‚ÌLayer Manager‚ğ“o˜^‚Å‚«‚È‚¢
 		TVPThrowExceptionMessage(TJS_W("\"passthrough\" device does not support layer manager more than 1"));
 			// TODO: i18n
 	}
 	inherited::AddLayerManager(manager);
 
-	manager->SetDesiredLayerType(ltOpaque); // ltOpaque ÈoÍ‚ó‚¯è‚½
+	manager->SetDesiredLayerType(ltOpaque); // ltOpaque ‚Èo—Í‚ğó‚¯æ‚è‚½‚¢
 }
 //---------------------------------------------------------------------------
 
@@ -1982,16 +1982,16 @@ void TJS_INTF_METHOD tTVPPassThroughDrawDevice::SetTargetWindow(HWND wnd, bool i
 //---------------------------------------------------------------------------
 void TJS_INTF_METHOD tTVPPassThroughDrawDevice::SetDestRectangle(const tTVPRect & rect)
 {
-	// Ê’uÌ•ÏXÌê‡Ç‚`FbN
+	// ˆÊ’u‚¾‚¯‚Ì•ÏX‚Ìê‡‚©‚Ç‚¤‚©‚ğƒ`ƒFƒbƒN‚·‚é
 	if(rect.get_width() == DestRect.get_width() && rect.get_height() == DestRect.get_height())
 	{
-		// Ê’uÌ•ÏX
+		// ˆÊ’u‚¾‚¯‚Ì•ÏX‚¾
 		if(Drawer) Drawer->SetDestPos(DestRect.left, DestRect.top);
 		inherited::SetDestRectangle(rect);
 	}
 	else
 	{
-		// TCYá‚¤
+		// ƒTƒCƒY‚àˆá‚¤
 		DestSizeChanged = true;
 		inherited::SetDestRectangle(rect);
 	}
@@ -2031,9 +2031,9 @@ void TJS_INTF_METHOD tTVPPassThroughDrawDevice::NotifyBitmapCompleted(iTVPLayerM
 	tjs_int x, tjs_int y, const void * bits, const BITMAPINFO * bitmapinfo,
 	const tTVPRect &cliprect, tTVPLayerType type, tjs_int opacity)
 {
-	// bits, bitmapinfo Å•\rbg}bv cliprect Ì—ÌˆAx, y É•`
-	// B
-	// opacity  type Í–é‚µÈ‚Ì‚Å–
+	// bits, bitmapinfo ‚Å•\‚³‚ê‚éƒrƒbƒgƒ}ƒbƒv‚Ì cliprect ‚Ì—Ìˆæ‚ğAx, y ‚É•`‰æ
+	// ‚·‚éB
+	// opacity ‚Æ type ‚Í–³‹‚·‚é‚µ‚©‚È‚¢‚Ì‚Å–³‹‚·‚é
 	if(Drawer)
 	{
 		TVPInitPassThroughOptions();
