@@ -1705,6 +1705,76 @@ void tTJSNI_Window::SetSize(tjs_int w, tjs_int h)
 	if(Form) Form->SetBounds(Form->Left, Form->Top, w, h);
 }
 //---------------------------------------------------------------------------
+void tTJSNI_Window::SetMinWidth(int v)
+{
+	if(Form->GetFullScreenMode())
+		TVPThrowExceptionMessage(TVPInvalidPropertyInFullScreen);
+	if(Form) Form->Constraints->MinWidth = v;
+}
+//---------------------------------------------------------------------------
+int  tTJSNI_Window::GetMinWidth() const
+{
+	if(Form) return Form->Constraints->MinWidth; else return 0;
+}
+//---------------------------------------------------------------------------
+void tTJSNI_Window::SetMinHeight(int v)
+{
+	if(Form->GetFullScreenMode())
+		TVPThrowExceptionMessage(TVPInvalidPropertyInFullScreen);
+	if(Form) Form->Constraints->MinHeight = v;
+}
+//---------------------------------------------------------------------------
+int  tTJSNI_Window::GetMinHeight() const
+{
+	if(Form) return Form->Constraints->MinHeight; else return 0;
+}
+//---------------------------------------------------------------------------
+void tTJSNI_Window::SetMinSize(int w, int h)
+{
+	if(Form->GetFullScreenMode())
+		TVPThrowExceptionMessage(TVPInvalidPropertyInFullScreen);
+	if(Form)
+	{
+		Form->Constraints->MinWidth = w;
+		Form->Constraints->MinHeight = h;
+	}
+}
+//---------------------------------------------------------------------------
+void tTJSNI_Window::SetMaxWidth(int v)
+{
+	if(Form->GetFullScreenMode())
+		TVPThrowExceptionMessage(TVPInvalidPropertyInFullScreen);
+	if(Form) Form->Constraints->MaxWidth = v;
+}
+//---------------------------------------------------------------------------
+int  tTJSNI_Window::GetMaxWidth() const
+{
+	if(Form) return Form->Constraints->MaxWidth; else return 0;
+}
+//---------------------------------------------------------------------------
+void tTJSNI_Window::SetMaxHeight(int v)
+{
+	if(Form->GetFullScreenMode())
+		TVPThrowExceptionMessage(TVPInvalidPropertyInFullScreen);
+	if(Form) Form->Constraints->MaxHeight = v;
+}
+//---------------------------------------------------------------------------
+int  tTJSNI_Window::GetMaxHeight() const
+{
+	if(Form) return Form->Constraints->MaxHeight; else return 0;
+}
+//---------------------------------------------------------------------------
+void tTJSNI_Window::SetMaxSize(int w, int h)
+{
+	if(Form->GetFullScreenMode())
+		TVPThrowExceptionMessage(TVPInvalidPropertyInFullScreen);
+	if(Form)
+	{
+		Form->Constraints->MaxWidth = w;
+		Form->Constraints->MaxHeight = h;
+	}
+}
+//---------------------------------------------------------------------------
 void tTJSNI_Window::SetPosition(tjs_int l, tjs_int t)
 {
 	if(Form->GetFullScreenMode())

@@ -330,6 +330,18 @@ public:
 	tjs_int GetHeight() const;
 	void SetSize(tjs_int w, tjs_int h);
 
+	void SetMinWidth(int v);
+	int GetMinWidth() const;
+	void SetMinHeight(int v);
+	int GetMinHeight() const;
+	void SetMinSize(int w, int h);
+
+	void SetMaxWidth(int v);
+	int GetMaxWidth() const;
+	void SetMaxHeight(int v);
+	int GetMaxHeight() const;
+	void SetMaxSize(int w, int h);
+
 	void SetLeft(tjs_int l);
 	tjs_int GetLeft() const;
 	void SetTop(tjs_int t);
