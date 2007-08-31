@@ -11,6 +11,7 @@
 #ifndef PASSTHROUGHDRAWDEVICE_H
 #define PASSTHROUGHDRAWDEVICE_H
 
+#include "tp_stub.h"
 #include "BasicDrawDevice.h"
 
 class tTVPDrawer;
@@ -21,35 +22,48 @@ class tTVPPassThroughDrawDevice : public tTVPDrawDevice
 {
 	typedef tTVPDrawDevice inherited;
 	HWND TargetWindow;
+	bool IsMainWindow;
 	tTVPDrawer * Drawer; //!< 描画を行うもの
 
+public:
 	//! @brief	drawerのタイプ
 	enum tDrawerType
 	{
 		dtNone, //!< drawer なし
 		dtDrawDib, //!< もっとも単純なdrawer
 		dtDBGDI, // GDI によるダブルバッファリングを行うdrawer
-		dtDBDD // DirectDraw によるダブルバッファリングを行うdrawer
+		dtDBDD, // DirectDraw によるダブルバッファリングを行うdrawer
+		dtDBD3D // Direct3D によるダブルバッファリングを行うdrawer
 	};
+
 	tDrawerType DrawerType; //!< drawer のタイプ
+
+	bool DestSizeChanged; //!< DestRect のサイズに変更があったか
+	bool SrcSizeChanged; //!< SrcSize に変更があったか
 
 public:
 	tTVPPassThroughDrawDevice(); //!< コンストラクタ
 private:
 	~tTVPPassThroughDrawDevice(); //!< デストラクタ
-public:
 
+private:
 	void DestroyDrawer();
-	void EnsureDrawer(tDrawerType failedtype);
+	void CreateDrawer(tDrawerType type);
+	void CreateDrawer(bool zoom_required);
+
+public:
+	void EnsureDrawer();
 
 //---- LayerManager の管理関連
 	virtual void TJS_INTF_METHOD AddLayerManager(iTVPLayerManager * manager);
 
 //---- 描画位置・サイズ関連
-	virtual void TJS_INTF_METHOD SetTargetWindow(HWND wnd);
+	virtual void TJS_INTF_METHOD SetTargetWindow(HWND wnd, bool is_main);
 	virtual void TJS_INTF_METHOD SetDestRectangle(const tTVPRect & rect);
 	virtual void TJS_INTF_METHOD NotifyLayerResize(iTVPLayerManager * manager);
 
+//---- 再描画関連
+	virtual void TJS_INTF_METHOD Show();
 
 //---- LayerManager からの画像受け渡し関連
 	virtual void TJS_INTF_METHOD StartBitmapCompletion(iTVPLayerManager * manager);
@@ -57,6 +71,9 @@ public:
 		tjs_int x, tjs_int y, const void * bits, const BITMAPINFO * bitmapinfo,
 		const tTVPRect &cliprect, tTVPLayerType type, tjs_int opacity);
 	virtual void TJS_INTF_METHOD EndBitmapCompletion(iTVPLayerManager * manager);
+
+//---- デバッグ支援
+	virtual void TJS_INTF_METHOD SetShowUpdateRect(bool b);
 
 };
 //---------------------------------------------------------------------------

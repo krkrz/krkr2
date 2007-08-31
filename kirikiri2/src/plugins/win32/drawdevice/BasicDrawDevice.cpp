@@ -53,8 +53,10 @@ bool tTVPDrawDevice::TransformToPrimaryLayerManager(tjs_int &x, tjs_int &y)
 	if(!manager->GetPrimaryLayerSize(pl_w, pl_h)) return false;
 
 	// x , y は DestRect の 0, 0 を原点とした座標として渡されてきている
-	x = x * pl_w / DestRect.get_width();
-	y = y * pl_h / DestRect.get_height();
+	tjs_int w = DestRect.get_width();
+	tjs_int h = DestRect.get_height();
+	x = w ? (x * pl_w / w) : 0;
+	y = h ? (y * pl_h / h) : 0;
 
 	return true;
 }
@@ -72,8 +74,8 @@ bool tTVPDrawDevice::TransformFromPrimaryLayerManager(tjs_int &x, tjs_int &y)
 	if(!manager->GetPrimaryLayerSize(pl_w, pl_h)) return false;
 
 	// x , y は DestRect の 0, 0 を原点とした座標として渡されてきている
-	x = x * DestRect.get_width() / pl_w;
-	y = y * DestRect.get_height() / pl_h;
+	x = pl_w ? (x * DestRect.get_width()  / pl_w) : 0;
+	y = pl_h ? (y * DestRect.get_height() / pl_h) : 0;
 
 	return true;
 }
@@ -491,6 +493,15 @@ void TJS_INTF_METHOD tTVPDrawDevice::Update()
 	}
 }
 //---------------------------------------------------------------------------
+
+
+//---------------------------------------------------------------------------
+void TJS_INTF_METHOD tTVPDrawDevice::Show()
+{
+	// なにもしない
+}
+//---------------------------------------------------------------------------
+
 
 //---------------------------------------------------------------------------
 void TJS_INTF_METHOD tTVPDrawDevice::DumpLayerStructure()
