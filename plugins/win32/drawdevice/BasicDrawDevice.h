@@ -16,6 +16,8 @@
 
 
 //---------------------------------------------------------------------------
+//! @brief		描画デバイスインターフェースの基本的な実装
+//---------------------------------------------------------------------------
 class tTVPDrawDevice : public iTVPDrawDevice
 {
 protected:
@@ -109,6 +111,7 @@ public:
 //---- 再描画関連
 	virtual void TJS_INTF_METHOD RequestInvalidation(const tTVPRect & rect);
 	virtual void TJS_INTF_METHOD Update();
+	virtual void TJS_INTF_METHOD Show() = 0;
 
 //---- デバッグ支援
 	virtual void TJS_INTF_METHOD DumpLayerStructure();
