@@ -8,53 +8,54 @@
 //---------------------------------------------------------------------------
 //!@file "PassThrough" 描画デバイス管理
 //---------------------------------------------------------------------------
+
 #include <windows.h>
-
-#include <vfw.h>
-#include "BasicDrawDevice.h"
+#include <stdio.h>
+#include "tp_stub.h"
 #include "PassThroughDrawDevice.h"
-#define DIRECTDRAW_VERSION 0x0300
+#include <vfw.h>
 #include <ddraw.h>
-
+#include <d3d.h>
 
 
 //---------------------------------------------------------------------------
 // オプション
 //---------------------------------------------------------------------------
-static bool TVPPassThroughOptionsInit = false;
-static bool TVPWaitVSync = false;
+static tjs_int TVPPassThroughOptionsGeneration = 0;
 static bool TVPZoomInterpolation = true;
 static bool TVPForceDoublebuffer = false;
-static bool TVPDBGDIPrefered = false;
+static tTVPPassThroughDrawDevice::tDrawerType TVPPreferredDrawType = tTVPPassThroughDrawDevice::dtNone;
 //---------------------------------------------------------------------------
 static void TVPInitPassThroughOptions()
 {
-	if(TVPPassThroughOptionsInit) return;
+	if(TVPPassThroughOptionsGeneration == TVPGetCommandLineArgumentGeneration()) return;
+	TVPPassThroughOptionsGeneration = TVPGetCommandLineArgumentGeneration();
 
 	bool initddraw = false;
 	tTJSVariant val;
 
-	if(TVPGetCommandLine(TJS_W("-waitvsync"), &val))
+	TVPForceDoublebuffer = false;
+	if(TVPGetCommandLine(TJS_W("-usedb"), &val) )
 	{
 		ttstr str(val);
-		if(str == TJS_W("yes"))
-		{
-			TVPWaitVSync = true;
-			initddraw = true;
-		}
+		if(str == TJS_W("yes")) TVPForceDoublebuffer = true;
 	}
 
+	TVPPreferredDrawType = tTVPPassThroughDrawDevice::dtNone;
 	if(TVPGetCommandLine(TJS_W("-dbstyle"), &val) )
 	{
 		ttstr str(val);
-		if(str == TJS_W("none") || str == TJS_W("no"))
-			TVPForceDoublebuffer = false;
-		if(str == TJS_W("auto") || str == TJS_W("gdi") || str == TJS_W("ddraw") || str == TJS_W("yes"))
-			TVPForceDoublebuffer = true,
-			initddraw = true;
-		if(str == TJS_W("gdi")) TVPDBGDIPrefered = true;
+		if(str == TJS_W("none") || str == TJS_W("no") || str == TJS_W("auto"))
+			TVPPreferredDrawType = tTVPPassThroughDrawDevice::dtNone;
+		if(str == TJS_W("gdi"))
+			TVPPreferredDrawType = tTVPPassThroughDrawDevice::dtDBGDI;
+		if(str == TJS_W("ddraw"))
+			TVPPreferredDrawType = tTVPPassThroughDrawDevice::dtDBDD;
+		if(str == TJS_W("d3d"))
+			TVPPreferredDrawType = tTVPPassThroughDrawDevice::dtDBD3D;
 	}
 
+	TVPZoomInterpolation = true;
 	if(TVPGetCommandLine(TJS_W("-smoothzoom"), &val))
 	{
 		ttstr str(val);
@@ -65,10 +66,10 @@ static void TVPInitPassThroughOptions()
 	}
 
 	if(initddraw) TVPEnsureDirectDrawObject();
-
-	TVPPassThroughOptionsInit = true;
 }
 //---------------------------------------------------------------------------
+
+
 
 
 
@@ -81,28 +82,48 @@ class tTVPDrawer
 {
 protected:
 	tTVPPassThroughDrawDevice * Device;
-	tTVPRect DestRect;
+	tjs_int DestLeft;
+	tjs_int DestTop;
+	tjs_int DestWidth;
+	tjs_int DestHeight;
 	tjs_int SrcWidth;
 	tjs_int SrcHeight;
 	HWND TargetWindow;
 	HDRAWDIB DrawDibHandle;
+	bool DrawUpdateRectangle;
 public:
 	tTVPDrawer(tTVPPassThroughDrawDevice * device)
 	{
 		Device = device;
 		SrcWidth = 0;
 		SrcHeight = 0;
-		DestRect.clear();
+		DestLeft = DestTop = DestWidth = DestHeight = 0;
 		TargetWindow = NULL;
 		DrawDibHandle = NULL;
+		DrawUpdateRectangle = NULL;
 	} 
 	virtual ~tTVPDrawer()
 	{
 		if(DrawDibHandle) DrawDibClose(DrawDibHandle), DrawDibHandle = NULL;
 	}
+	virtual ttstr GetName() = 0;
 
-	virtual bool SetDestRectangle(const tTVPRect & rect) { DestRect = rect; return true; }
-	virtual bool NotifyLayerResize(tjs_int w, tjs_int h) { SrcWidth = w; SrcHeight = h; return true; }
+	virtual bool SetDestPos(tjs_int left, tjs_int top)
+		{ DestLeft = left; DestTop = top; return true; }
+	virtual bool SetDestSize(tjs_int width, tjs_int height)
+		{ DestWidth = width; DestHeight = height; return true; }
+	void GetDestSize(tjs_int &width, tjs_int &height) const
+		{ width = DestWidth; height = DestHeight; }
+	virtual bool NotifyLayerResize(tjs_int w, tjs_int h)
+		{ SrcWidth = w; SrcHeight = h; return true; }
+	void GetSrcSize(tjs_int &w, tjs_int &h) const
+		{ w = SrcWidth; h = SrcHeight; }
+	virtual bool SetDestSizeAndNotifyLayerResize(tjs_int width, tjs_int height, tjs_int w, tjs_int h)
+	{
+		if(!SetDestSize(width, height)) return false;
+		if(!NotifyLayerResize(w, h)) return false;
+		return true;
+	}
 	virtual void SetTargetWindow(HWND wnd)
 	{
 		if(DrawDibHandle) DrawDibClose(DrawDibHandle), DrawDibHandle = NULL;
@@ -114,6 +135,13 @@ public:
 		const void * bits, const BITMAPINFO * bitmapinfo,
 		const tTVPRect &cliprect) = 0;
 	virtual void EndBitmapCompletion() = 0;
+	virtual void Show() {;}
+	virtual void SetShowUpdateRect(bool b)  { DrawUpdateRectangle = b; }
+	virtual int GetInterpolationCapability() { return 3; }
+		// bit 0 for point-on-point, bit 1 for bilinear interpolation
+
+	virtual void InitTimings() {;} // notifies begining of benchmark
+	virtual void ReportTimings() {;} // notifies end of benchmark
 };
 //---------------------------------------------------------------------------
 
@@ -168,27 +196,36 @@ class tTVPDrawer_DrawDibNoBuffering : public tTVPDrawer_GDI
 {
 	typedef tTVPDrawer_GDI inherited;
 
+	HPEN BluePen;
+	HPEN YellowPen;
+
 public:
 	//! @brief	コンストラクタ
 	tTVPDrawer_DrawDibNoBuffering(tTVPPassThroughDrawDevice * device) : tTVPDrawer_GDI(device)
 	{
+		BluePen = NULL;
+		YellowPen = NULL;
 	}
 
 	//! @brief	デストラクタ
 	~tTVPDrawer_DrawDibNoBuffering()
 	{
+		if(BluePen)   DeleteObject(BluePen);
+		if(YellowPen) DeleteObject(YellowPen);
 	}
 
-	bool SetDestRectangle(const tTVPRect & rect)
+	virtual ttstr GetName() { return TJS_W("DrawDIB (no buffering)"); }
+
+	bool SetDestSize(tjs_int width, tjs_int height)
 	{
 		// このデバイスでは拡大縮小はできないので
 		// 拡大縮小が必要な場合は false を返す
 		tjs_int w, h;
 		Device->GetSrcSize(w, h);
-		if(rect.get_width() != w || rect.get_height() != h)
+		if(width != w || height != h)
 			return false;
 
-		return inherited::SetDestRectangle(rect);
+		return inherited::SetDestSize(width, height);
 	}
 
 	bool NotifyLayerResize(tjs_int w, tjs_int h)
@@ -213,8 +250,8 @@ public:
 		if(DrawDibHandle && TargetDC)
 			DrawDibDraw(DrawDibHandle,
 				TargetDC,
-				x + DestRect.left,
-				y + DestRect.top,
+				x + DestLeft,
+				y + DestTop,
 				cliprect.get_width(),
 				cliprect.get_height(),
 				const_cast<BITMAPINFOHEADER*>(reinterpret_cast<const BITMAPINFOHEADER*>(bitmapinfo)),
@@ -224,12 +261,53 @@ public:
 				cliprect.get_width(),
 				cliprect.get_height(),
 				0);
+
+		// 更新矩形の表示
+		if(DrawUpdateRectangle)
+		{
+			if(!BluePen) BluePen = CreatePen(PS_SOLID, 1, RGB(0, 0, 255));
+			if(!YellowPen) YellowPen = CreatePen(PS_SOLID, 1, RGB(255, 255, 0));
+
+			HPEN oldpen;
+
+			int ROP_save = GetROP2(TargetDC);
+
+			tjs_int rleft   = x + DestLeft;
+			tjs_int rtop    = y + DestTop;
+			tjs_int rright  = rleft + cliprect.get_width();
+			tjs_int rbottom = rtop  + cliprect.get_height();
+
+			POINT points[5];
+			points[0].x = rleft;
+			points[0].y = rtop;
+			points[1].x = rright -1;
+			points[1].y = rtop;
+			points[2].x = rright -1;
+			points[2].y = rbottom -1;
+			points[3].x = rleft;
+			points[3].y = rbottom -1;
+			points[4] = points[0];
+
+			oldpen = SelectObject(TargetDC, BluePen);
+			SetROP2(TargetDC, R2_NOTMASKPEN);
+			Polyline(TargetDC, points, 4);
+
+			SelectObject(TargetDC, YellowPen);
+			SetROP2(TargetDC, R2_MERGEPEN);
+			Polyline(TargetDC, points, 5);
+
+			SelectObject(TargetDC, oldpen);
+		}
 	}
 
 	void EndBitmapCompletion()
 	{
 		// やることなし
 	}
+
+	virtual int GetInterpolationCapability() { return 1; }
+		// bit 0 for point-on-point, bit 1 for bilinear interpolation
+
 };
 //---------------------------------------------------------------------------
 
@@ -246,6 +324,8 @@ class tTVPDrawer_GDIDoubleBuffering : public tTVPDrawer_GDI
 	HBITMAP OffScreenBitmap; //!< オフスクリーンビットマップ
 	HDC OffScreenDC; //!< オフスクリーン DC
 	HBITMAP OldOffScreenBitmap; //!< OffScreenDC に以前選択されていた ビットマップ
+	bool ShouldShow; //!< show で実際に画面に画像を転送すべきか
+	bool InBenchMark; //!< ベンチマーク中かどうか
 
 public:
 	//! @brief	コンストラクタ
@@ -254,6 +334,8 @@ public:
 		OffScreenBitmap = NULL;
 		OffScreenDC = NULL;
 		OldOffScreenBitmap = NULL;
+		ShouldShow = false;
+		InBenchMark = false;
 	}
 
 	//! @brief	デストラクタ
@@ -261,6 +343,8 @@ public:
 	{
 		DestroyBitmap();
 	}
+
+	virtual ttstr GetName() { return TJS_W("GDI double buffering"); }
 
 	void DestroyBitmap()
 	{
@@ -298,9 +382,9 @@ public:
 		}
 	}
 
-	bool SetDestRectangle(const tTVPRect & rect)
+	bool SetDestSize(tjs_int width, tjs_int height)
 	{
-		return inherited::SetDestRectangle(rect);
+		return inherited::SetDestSize(width, height);
 	}
 
 	bool NotifyLayerResize(tjs_int w, tjs_int h)
@@ -329,6 +413,8 @@ public:
 	{
 		// DrawDibDraw にて OffScreenDC に描画を行う
 		if(DrawDibHandle && OffScreenDC)
+		{
+			ShouldShow = true;
 			DrawDibDraw(DrawDibHandle,
 				OffScreenDC,
 				x,
@@ -342,32 +428,72 @@ public:
 				cliprect.get_width(),
 				cliprect.get_height(),
 				0);
+		}
 	}
 
 	void EndBitmapCompletion()
 	{
-		if(TargetDC)
+	}
+
+	void Show()
+	{
+		if(TargetDC && OffScreenDC && ShouldShow)
 		{
 			// オフスクリーンビットマップを TargetDC に転送する
-			if(TVPZoomInterpolation)
-				SetStretchBltMode(TargetDC, HALFTONE);
+			if(DestWidth == SrcWidth && DestHeight == SrcHeight)
+			{
+				// 拡大・縮小は必要ない
+				BitBlt(TargetDC,
+					DestLeft,
+					DestTop,
+					DestWidth,
+					DestHeight,
+					OffScreenDC,
+					0,
+					0,
+					SRCCOPY);
+			}
 			else
-				SetStretchBltMode(TargetDC, COLORONCOLOR);
-			SetBrushOrgEx(TargetDC, 0, 0, NULL);
+			{
+				// 拡大・縮小が必要
+				if(TVPZoomInterpolation)
+					SetStretchBltMode(TargetDC, HALFTONE);
+				else
+					SetStretchBltMode(TargetDC, COLORONCOLOR);
+				SetBrushOrgEx(TargetDC, 0, 0, NULL);
 
-			StretchBlt(TargetDC,
-				DestRect.left,
-				DestRect.top,
-				DestRect.get_width(),
-				DestRect.get_height(),
-				OffScreenDC,
-				0,
-				0,
-				SrcWidth,
-				SrcHeight,
-				SRCCOPY);
+				StretchBlt(TargetDC,
+					DestLeft,
+					DestTop,
+					DestWidth,
+					DestHeight,
+					OffScreenDC,
+					0,
+					0,
+					SrcWidth,
+					SrcHeight,
+					SRCCOPY);
+			}
+
+			if(InBenchMark)
+			{
+				// 画面からの読み出しを行う関数を実行する
+				// こうしないと StrechBlt などはコマンドキューにたたき込まれる
+				// だけで、実際の描画を待たずに帰る可能性がある。
+				(void)GetPixel(TargetDC, DestLeft + DestWidth / 2, DestTop + DestHeight / 2);
+			}
+
+			ShouldShow = false;
 		}
 	}
+
+	virtual int GetInterpolationCapability() { return 1; }
+		// bit 0 for point-on-point, bit 1 for bilinear interpolation
+
+	virtual void InitTimings() { InBenchMark = true; }
+	virtual void ReportTimings() { InBenchMark = false; }
+
+
 };
 //---------------------------------------------------------------------------
 
@@ -387,6 +513,9 @@ class tTVPDrawer_DDDoubleBuffering : public tTVPDrawer
 	IDirectDrawSurface * Surface;
 	IDirectDrawClipper * Clipper;
 
+	bool LastOffScreenDCGot;
+	bool ShouldShow; //!< show で実際に画面に画像を転送すべきか
+
 public:
 	//! @brief	コンストラクタ
 	tTVPDrawer_DDDoubleBuffering(tTVPPassThroughDrawDevice * device) : tTVPDrawer(device)
@@ -395,6 +524,8 @@ public:
 		OffScreenDC = NULL;
 		Surface = NULL;
 		Clipper = NULL;
+		LastOffScreenDCGot = true;
+		ShouldShow = false;
 	}
 
 	//! @brief	デストラクタ
@@ -402,6 +533,8 @@ public:
 	{
 		DestroyOffScreenSurface();
 	}
+
+	virtual ttstr GetName() { return TJS_W("DirectDraw double buffering"); }
 
 	void DestroyOffScreenSurface()
 	{
@@ -414,7 +547,7 @@ public:
 	{
 		// レイヤ演算結果をすべてリクエストする
 		// サーフェースが lost した際に内容を再構築する目的で用いる
-		Device->RequestInvalidation(tTVPRect(0, 0, DestRect.get_width(), DestRect.get_height()));
+		Device->RequestInvalidation(tTVPRect(0, 0, DestWidth, DestHeight));
 	}
 
 	void CreateOffScreenSurface()
@@ -451,7 +584,6 @@ public:
 
 			if(hr != DD_OK)
 			{
-				Surface->Release(), Surface = NULL;
 				TVPThrowExceptionMessage(TJS_W("Cannot get surface description/HR=%1"),
 					TJSInt32ToHex(hr, 8));
 			}
@@ -463,7 +595,6 @@ public:
 			}
 			else
 			{
-				Surface->Release(), Surface = NULL;
 				TVPThrowExceptionMessage(TJS_W("Cannot allocate the surface on the local video memory"),
 					TJSInt32ToHex(hr, 8));
 			}
@@ -473,24 +604,21 @@ public:
 			hr = object->CreateClipper(0, &Clipper, NULL);
 			if(hr != DD_OK)
 			{
-				Surface->Release(), Surface = NULL;
 				TVPThrowExceptionMessage(TJS_W("Cannot create a clipper object/HR=%1"),
 					TJSInt32ToHex(hr, 8));
 			}
 			hr = Clipper->SetHWnd(0, TargetWindow);
 			if(hr != DD_OK)
 			{
-				Clipper->Release(), Clipper = NULL;
-				Surface->Release(), Surface = NULL;
 				TVPThrowExceptionMessage(TJS_W("Cannot set the window handle to the clipper object/HR=%1"),
 					TJSInt32ToHex(hr, 8));
 			}
 		}
 	}
 
-	bool SetDestRectangle(const tTVPRect & rect)
+	bool SetDestSize(tjs_int width, tjs_int height)
 	{
-		return inherited::SetDestRectangle(rect);
+		return inherited::SetDestSize(width, height);
 	}
 
 	bool NotifyLayerResize(tjs_int w, tjs_int h)
@@ -501,9 +629,14 @@ public:
 			{
 				CreateOffScreenSurface();
 			}
-			catch(...)
+/*			catch(const eTJS & e)
 			{
-				TVPAddLog(TJS_W("Failed to create DirectDraw off-screen buffer: unknown reason"));
+				TVPAddImportantLog(TJS_W("Passthrough: Failed to create DirectDraw off-screen buffer: ") + e.GetMessage());
+				return false;
+			}
+*/			catch(...)
+			{
+				TVPAddImportantLog(TJS_W("Passthrough: Failed to create DirectDraw off-screen buffer: unknown reason"));
 				return false;
 			}
 			return true;
@@ -520,11 +653,13 @@ public:
 	void StartBitmapCompletion()
 	{
 		// retrieve DC
+		if(Surface && OffScreenDC) Surface->ReleaseDC(OffScreenDC), OffScreenDC = NULL;
+
 		if(Surface && TargetWindow)
 		{
-			HDC dc;
+			HDC dc = NULL;
 			HRESULT hr = Surface->GetDC(&dc);
-			if(hr == DDERR_SURFACELOST)
+			if(hr == DDERR_SURFACELOST || hr == DDERR_SURFACEBUSY)
 			{
 				Surface->Restore();
 				InvalidateAll();  // causes reconstruction of off-screen image
@@ -533,11 +668,21 @@ public:
 
 			if(hr != DD_OK)
 			{
-				TVPThrowExceptionMessage(TJS_W("Off-screen surface, IDirectDrawSurface::GetDC failed/HR=%1"),
-					TJSInt32ToHex(hr, 8));
+				dc = NULL;
+				InvalidateAll();  // causes reconstruction of off-screen image
+
+				if(LastOffScreenDCGot)
+				{
+					// display this message only once since last success
+					TVPAddImportantLog(
+						TJS_W("Passthrough: (inf) Off-screen surface, IDirectDrawSurface::GetDC failed/HR=") +
+						TJSInt32ToHex(hr, 8) + TJS_W(", ignoring"));
+				}
 			}
 
 			OffScreenDC = dc;
+
+			if(OffScreenDC) LastOffScreenDCGot = true; else LastOffScreenDCGot = false;
 		}
 	}
 
@@ -546,6 +691,8 @@ public:
 	{
 		// DrawDibDraw にて OffScreenDC に描画を行う
 		if(DrawDibHandle && OffScreenDC && TargetWindow)
+		{
+			ShouldShow = true;
 			DrawDibDraw(DrawDibHandle,
 				OffScreenDC,
 				x,
@@ -559,6 +706,7 @@ public:
 				cliprect.get_width(),
 				cliprect.get_height(),
 				0);
+		}
 	}
 
 	void EndBitmapCompletion()
@@ -568,6 +716,15 @@ public:
 		if(!OffScreenDC) return;
 
 		Surface->ReleaseDC(OffScreenDC), OffScreenDC = NULL;
+	}
+
+	void Show()
+	{
+		if(!TargetWindow) return;
+		if(!Surface) return;
+		if(!ShouldShow) return;
+
+		ShouldShow = false;
 
 		// Blt to the primary surface
 		IDirectDrawSurface *pri = TVPGetDDPrimarySurfaceNoAddRef();
@@ -578,15 +735,15 @@ public:
 		TVPSetDDPrimaryClipper(Clipper);
 
 		// get PaintBox's origin
-		POINT origin; origin.x = DestRect.left, origin.y = DestRect.top;
+		POINT origin; origin.x = DestLeft, origin.y = DestTop;
 		ClientToScreen(TargetWindow, &origin);
 
 		// entire of the bitmap is to be transfered (this is not optimal. FIX ME!)
 		RECT drect;
 		drect.left   = origin.x;
 		drect.top    = origin.y;
-		drect.right  = origin.x + DestRect.get_width();
-		drect.bottom = origin.y + DestRect.get_height();
+		drect.right  = origin.x + DestWidth;
+		drect.bottom = origin.y + DestHeight;
 
 		RECT srect;
 		srect.left = 0;
@@ -595,7 +752,7 @@ public:
 		srect.bottom = SrcHeight;
 
 		HRESULT hr = pri->Blt(&drect, Surface, &srect, DDBLT_WAIT, NULL);
-		if(hr == DDERR_SURFACELOST)
+		if(hr == DDERR_SURFACELOST || hr == DDERR_SURFACEBUSY)
 		{
 			pri->Restore();
 			Surface->Restore();
@@ -609,6 +766,867 @@ public:
 		{
 			TVPThrowExceptionMessage(TJS_W("Primary surface, IDirectDrawSurface::Blt failed/HR=%1"),
 				TJSInt32ToHex(hr, 8));
+		}
+	}
+
+	virtual int GetInterpolationCapability()
+	{
+		// bit 0 for point-on-point, bit 1 for bilinear interpolation
+		// さて、DirectDraw の blt が補間を行うかどうかを確認するのはちょっと
+		// やっかいである。
+		// GetCaps などのメソッドがあって、そこから得られる値に補間を行うかどうかの
+		// 情報があるならば話は早いが、そんなもんは探した限りではみつからない。
+		// プライマリサーフェースへ実際に画像を転送して確かめてみるという手はあるが
+		// 画面を汚す上に描画してから確認するまでの間に他のアプリがそこの画像を
+		// 消してしまうかもしれない (やっかいなもんだいですなあ)
+		// しょうがないので、２個ちっこいオフスクリーンサーフェースを作ってみて、
+		// そこの間同士での転送を行ってみることにする。オフスクリーンサーフェースでは
+		// あるが、プライマリサーフェースと同じくビデオメモリ上に配置されるので
+		// 同じような補間の仕方をしてくれると期待する。
+		// ちっこいといっても、ある程度の大きさがないと補間を行ってくれない
+		// デバイスが存在するかもしれないので、100x100と200x200を確保してみることにする。
+		IDirectDraw2 *object = TVPGetDirectDrawObjectNoAddRef();
+		if(!object) return 0;
+
+		int caps = 0;
+
+		IDirectDrawSurface * s1 = NULL;
+		IDirectDrawSurface * s2 = NULL;
+		HDC s1dc = NULL;
+		HDC s2dc = NULL;
+
+		// サーフェースの確保
+		for(int i = 0; i < 2; i++)
+		{
+			IDirectDrawSurface * & surface = (i == 0) ? s1 : s2;
+
+			// allocate secondary off-screen buffer
+			DDSURFACEDESC ddsd;
+			ZeroMemory(&ddsd, sizeof(ddsd));
+			ddsd.dwSize = sizeof(ddsd);
+			ddsd.dwFlags = DDSD_WIDTH | DDSD_HEIGHT | DDSD_CAPS;
+			ddsd.dwWidth  = (i == 0) ? 100 : 200;
+			ddsd.dwHeight = (i == 0) ? 100 : 200;
+			ddsd.ddsCaps.dwCaps =
+				DDSCAPS_OFFSCREENPLAIN | DDSCAPS_VIDEOMEMORY | DDSCAPS_LOCALVIDMEM;
+			HRESULT hr;
+
+			hr = object->CreateSurface(&ddsd, &surface, NULL);
+
+			if(hr != DD_OK) goto got_error;
+
+			// check whether the surface is on video memory
+			ZeroMemory(&ddsd, sizeof(ddsd));
+			ddsd.dwSize = sizeof(ddsd);
+
+			hr = surface->GetSurfaceDesc(&ddsd);
+
+			if(hr != DD_OK) goto got_error;
+
+			if(ddsd.ddsCaps.dwCaps & DDSCAPS_VIDEOMEMORY &&
+				ddsd.ddsCaps.dwCaps & DDSCAPS_LOCALVIDMEM)
+			{
+				// ok
+			}
+			else
+			{
+				goto got_error;
+			}
+		}
+
+		// s1 に しろ と くろ の細かい縦のストライプを書く
+		while(true)
+		{
+			HDC dc = NULL;
+			HRESULT hr = s1->GetDC(&s1dc);
+			if(hr == DDERR_SURFACELOST || hr == DDERR_SURFACEBUSY)
+			{
+				s1->Restore();
+				continue;
+			}
+			else if(FAILED(hr))
+				goto got_error;
+
+			// s1 のサイズ(100x100) にストライプを書く
+			HPEN white_pen   = CreatePen(PS_SOLID, 1, RGB(255, 255, 255));
+			HPEN black_pen   = CreatePen(PS_SOLID, 1, RGB(0, 0, 0));
+
+			HPEN oldpen;
+
+			oldpen = SelectObject(s1dc, white_pen);
+			SetROP2(s1dc, R2_COPYPEN);
+			for(int i = 0; i < 100; i += 2)
+			{
+				MoveToEx(s1dc, i, 0, NULL);
+				LineTo(s1dc, i, 100);
+			}
+
+			SelectObject(s1dc, black_pen);
+			for(int i = 1; i < 100; i += 2)
+			{
+				MoveToEx(s1dc, i, 0, NULL);
+				LineTo(s1dc, i, 100);
+			}
+			SelectObject(s1dc, oldpen);
+
+			s1->ReleaseDC(s1dc), s1dc = NULL;
+			break;
+		}
+
+		// s1 を s2 に拡大 Blt する
+		RECT drect;
+		drect.left   = 0;
+		drect.top    = 0;
+		drect.right  = 200;
+		drect.bottom = 200;
+
+		RECT srect;
+		srect.left   = 0;
+		srect.top    = 0;
+		srect.right  = 100;
+		srect.bottom = 100;
+
+		if(FAILED(s2->Blt(&drect, s1, &srect, DDBLT_WAIT, NULL)))
+			goto got_error;
+
+		// s2 がどう拡大されたかを調査する
+		while(true)
+		{
+			HDC dc = NULL;
+			HRESULT hr = s2->GetDC(&s2dc);
+			if(hr == DDERR_SURFACELOST || hr == DDERR_SURFACEBUSY)
+			{
+				s2->Restore();
+				continue;
+			}
+			else if(FAILED(hr))
+				goto got_error;
+
+			// まんなかへんの画素を調べる
+			bool halftone_detected = false;
+			for(int i = 90; i < 110; i++)
+			{
+				// 色をget
+				COLORREF color = GetPixel(s2dc, i, 100);
+				// もし、補間が行われていれば、しろとくろ以外の色が
+				// 出てきているはず
+				halftone_detected = halftone_detected ||
+					(color != 0xffffff && color != 0x000000);
+			}
+			caps = halftone_detected ? 2 : 1;
+
+			s2->ReleaseDC(s2dc), s2dc = NULL;
+			break;
+		}
+
+		// 解放する
+	got_error:
+		if(s1dc && s1)
+			s1->ReleaseDC(s1dc), s1dc = NULL;
+		if(s1) s1->Release(), s1 = NULL;
+		if(s2dc && s2)
+			s2->ReleaseDC(s2dc), s2dc = NULL;
+		if(s2) s2->Release(), s2 = NULL;
+
+		switch(caps)
+		{
+		case 0:
+			TVPAddImportantLog(TJS_W("Passthrough: Could not get IDirectDraw::Blt working."));
+			break;
+		case 1:
+			TVPAddImportantLog(TJS_W("Passthrough: IDirectDraw::Blt seems to filter by nearest neighbor method."));
+			break;
+		case 2:
+			TVPAddImportantLog(TJS_W("Passthrough: IDirectDraw::Blt seems to filter by some kind of interpolation method."));
+			break;
+		}
+
+		return caps;
+	}
+};
+//---------------------------------------------------------------------------
+
+
+
+
+
+
+//---------------------------------------------------------------------------
+//! @brief	Direct3D7 によるダブルバッファリングを行うクラス
+//! @note	tTVPDrawer_DDDoubleBuffering とよく似ているが別クラスになっている。
+//!			修正を行う場合は、互いによく見比べ、似たようなところがあればともに修正を試みること。
+//---------------------------------------------------------------------------
+class tTVPDrawer_D3DDoubleBuffering : public tTVPDrawer
+{
+	typedef tTVPDrawer inherited;
+
+/*
+	note: Texture に対していったん描画された内容は Surface に転送され、
+			さらにそこからプライマリサーフェースにコピーされる。
+*/
+
+	HDC OffScreenDC;
+	IDirectDraw7 * DirectDraw7;
+	IDirect3D7 * Direct3D7;
+	IDirect3DDevice7 * Direct3DDevice7;
+	IDirectDrawSurface7 * Surface;
+	IDirectDrawClipper * Clipper;
+	IDirectDrawSurface7 * Texture;
+
+	void * TextureBuffer; //!< テクスチャのサーフェースへのメモリポインタ
+	long TexturePitch; //!< テクスチャのピッチ
+
+	bool LastOffScreenDCGot;
+	bool ShouldShow; //!< show で実際に画面に画像を転送すべきか
+	bool UseDirectTransfer; //!< メモリ直接転送を行うかどうか
+
+public:
+	//! @brief	コンストラクタ
+	tTVPDrawer_D3DDoubleBuffering(tTVPPassThroughDrawDevice * device) : tTVPDrawer(device)
+	{
+		TVPEnsureDirectDrawObject();
+		OffScreenDC = NULL;
+		DirectDraw7 = NULL;
+		Direct3D7 = NULL;
+		Direct3DDevice7 = NULL;
+		Surface = NULL;
+		Clipper = NULL;
+		Texture = NULL;
+		LastOffScreenDCGot = true;
+		ShouldShow = false;
+		UseDirectTransfer = false;
+		TextureBuffer = NULL;
+	}
+
+	//! @brief	デストラクタ
+	~tTVPDrawer_D3DDoubleBuffering()
+	{
+		DestroyOffScreenSurface();
+	}
+
+	virtual ttstr GetName() { return TJS_W("Direct3D double buffering"); }
+
+	void DestroyOffScreenSurface()
+	{
+		if(TextureBuffer && Texture) Texture->Unlock(NULL), TextureBuffer = NULL;
+		if(OffScreenDC && Surface) Surface->ReleaseDC(OffScreenDC);
+		if(Surface) Surface->Release(), Surface = NULL;
+		if(Clipper) Clipper->Release(), Clipper = NULL;
+		if(Texture) Texture->Release(), Texture = NULL;
+		if(DirectDraw7) DirectDraw7->Release(), DirectDraw7 = NULL;
+		if(Direct3DDevice7) Direct3DDevice7->Release(), Direct3DDevice7 = NULL;
+		if(Direct3D7) Direct3D7->Release(), Direct3D7 = NULL;
+	}
+
+	void InvalidateAll()
+	{
+		// レイヤ演算結果をすべてリクエストする
+		// サーフェースが lost した際に内容を再構築する目的で用いる
+		Device->RequestInvalidation(tTVPRect(0, 0, DestWidth, DestHeight));
+	}
+
+	void GetDirect3D7Device()
+	{
+		// get DirectDraw7/Direct3D7 interface
+		if(DirectDraw7) DirectDraw7->Release(), DirectDraw7 = NULL;
+		DirectDraw7 = TVPGetDirectDraw7ObjectNoAddRef();
+		if(!DirectDraw7) TVPThrowExceptionMessage(TJS_W("DirectDraw7 not available"));
+
+		DirectDraw7->AddRef();
+
+		if(Direct3D7) Direct3D7->Release(), Direct3D7 = NULL;
+		HRESULT hr = DirectDraw7->QueryInterface(IID_IDirect3D7, (void**)&Direct3D7);
+		if(FAILED(hr))
+			TVPThrowExceptionMessage(TJS_W("Direct3D7 not available"));
+	}
+
+	void CreateOffScreenSurface()
+	{
+		// Direct3D デバイス、テクスチャなどを作成する
+		DestroyOffScreenSurface();
+		if(TargetWindow && SrcWidth > 0 && SrcHeight > 0)
+		{
+			HRESULT hr;
+
+			// get DirectDraw7/Direct3D7 interface
+			GetDirect3D7Device();
+
+			// check display mode
+			DDSURFACEDESC2 ddsd;
+			ZeroMemory(&ddsd, sizeof(ddsd));
+			ddsd.dwSize = sizeof(ddsd);
+			hr = DirectDraw7->GetDisplayMode(&ddsd);
+			if(FAILED(hr) || ddsd.ddpfPixelFormat.dwRGBBitCount <= 8)
+				TVPThrowExceptionMessage(TJS_W("Too less display color depth"));
+
+			// create clipper object
+			hr = DirectDraw7->CreateClipper(0, &Clipper, NULL);
+			if(hr != DD_OK)
+			{
+				TVPThrowExceptionMessage(TJS_W("Cannot create a clipper object/HR=%1"),
+					TJSInt32ToHex(hr, 8));
+			}
+			hr = Clipper->SetHWnd(0, TargetWindow);
+			if(hr != DD_OK)
+			{
+				TVPThrowExceptionMessage(TJS_W("Cannot set the window handle to the clipper object/HR=%1"),
+					TJSInt32ToHex(hr, 8));
+			}
+
+			// allocate secondary off-screen buffer
+			ZeroMemory(&ddsd, sizeof(ddsd));
+			ddsd.dwSize = sizeof(ddsd);
+			ddsd.dwFlags = DDSD_WIDTH | DDSD_HEIGHT | DDSD_CAPS;
+			ddsd.dwWidth  = DestWidth;
+			ddsd.dwHeight = DestHeight;
+			ddsd.ddsCaps.dwCaps =
+				/*DDSCAPS_OFFSCREENPLAIN |*/ DDSCAPS_VIDEOMEMORY /*| DDSCAPS_LOCALVIDMEM*/ | DDSCAPS_3DDEVICE;
+
+			hr = DirectDraw7->CreateSurface(&ddsd, &Surface, NULL);
+
+			if(hr != DD_OK)
+				TVPThrowExceptionMessage(TJS_W("Cannot allocate D3D off-screen surface/HR=%1"),
+					TJSInt32ToHex(hr, 8));
+
+			// check whether the surface is on video memory
+			ZeroMemory(&ddsd, sizeof(ddsd));
+			ddsd.dwSize = sizeof(ddsd);
+
+			hr = Surface->GetSurfaceDesc(&ddsd);
+
+			if(hr != DD_OK)
+			{
+				TVPThrowExceptionMessage(TJS_W("Cannot get D3D surface description/HR=%1"),
+					TJSInt32ToHex(hr, 8));
+			}
+
+			if(ddsd.ddsCaps.dwCaps & DDSCAPS_VIDEOMEMORY &&
+				ddsd.ddsCaps.dwCaps & DDSCAPS_LOCALVIDMEM)
+			{
+				// ok
+			}
+			else
+			{
+				TVPThrowExceptionMessage(TJS_W("Cannot allocate the D3D surface on the local video memory"),
+					TJSInt32ToHex(hr, 8));
+			}
+
+			// create Direct3D Device
+			hr = Direct3D7->CreateDevice(IID_IDirect3DHALDevice, Surface, &Direct3DDevice7);
+			if(FAILED(hr))
+				TVPThrowExceptionMessage(TJS_W("Cannot create Direct3D device/HR=%1"),
+					TJSInt32ToHex(hr, 8));
+
+			// create Direct3D Texture
+			ZeroMemory(&ddsd, sizeof(ddsd));
+			ddsd.dwSize = sizeof(ddsd);
+			ddsd.dwFlags = DDSD_WIDTH | DDSD_HEIGHT | DDSD_CAPS | DDSD_PIXELFORMAT;
+			ddsd.dwWidth = SrcWidth;
+			ddsd.dwHeight = SrcHeight;
+			ddsd.ddsCaps.dwCaps =
+				/*DDSCAPS_OFFSCREENPLAIN |*/ DDSCAPS_VIDEOMEMORY | DDSCAPS_TEXTURE | DDSCAPS_LOCALVIDMEM;
+
+			ddsd.ddpfPixelFormat.dwSize = sizeof(DDPIXELFORMAT);
+			ddsd.ddpfPixelFormat.dwFlags = DDPF_RGB;
+			ddsd.ddpfPixelFormat.dwRGBBitCount	= 32;
+			ddsd.ddpfPixelFormat.dwRBitMask		= 0x00FF0000;
+			ddsd.ddpfPixelFormat.dwGBitMask		= 0x0000FF00;
+			ddsd.ddpfPixelFormat.dwBBitMask		= 0x000000FF;
+
+			hr = DirectDraw7->CreateSurface(&ddsd, &Texture, NULL);
+
+			if(hr == DD_OK)
+			{
+				UseDirectTransfer = true; // 直接のメモリ転送を有効にする
+			}
+			else /*if(hr != DD_OK) */
+			{
+				// ピクセルフォーマットを指定せずに生成を試みる
+
+				ZeroMemory(&ddsd, sizeof(ddsd));
+				ddsd.dwSize = sizeof(ddsd);
+				ddsd.dwFlags = DDSD_WIDTH | DDSD_HEIGHT | DDSD_CAPS/* | DDSD_PIXELFORMAT*/;
+				ddsd.dwWidth = SrcWidth;
+				ddsd.dwHeight = SrcHeight;
+				ddsd.ddsCaps.dwCaps =
+					/*DDSCAPS_OFFSCREENPLAIN |*/ DDSCAPS_VIDEOMEMORY | DDSCAPS_TEXTURE | DDSCAPS_LOCALVIDMEM;
+
+				hr = DirectDraw7->CreateSurface(&ddsd, &Texture, NULL);
+
+				if(FAILED(hr))
+					TVPThrowExceptionMessage(TJS_W("Cannot allocate D3D texture/HR=%1"),
+						TJSInt32ToHex(hr, 8));
+
+				TVPAddImportantLog("Passthrough: Using non 32bit ARGB texture format");
+			}
+		}
+	}
+
+	bool SetDestSize(tjs_int width, tjs_int height)
+	{
+		if(inherited::SetDestSize(width, height))
+		{
+			try
+			{
+				CreateOffScreenSurface();
+			}
+/*			catch(const eTJS & e)
+			{
+				TVPAddImportantLog(TJS_W("Passthrough: Failed to create Direct3D devices: ") + e.GetMessage());
+				return false;
+			}
+*/			catch(...)
+			{
+				TVPAddImportantLog(TJS_W("Passthrough: Failed to create Direct3D devices: unknown reason"));
+				return false;
+			}
+			return true;
+		}
+		return false;
+	}
+
+	bool NotifyLayerResize(tjs_int w, tjs_int h)
+	{
+		if(inherited::NotifyLayerResize(w, h))
+		{
+			try
+			{
+				CreateOffScreenSurface();
+			}
+/*			catch(const eTJS & e)
+			{
+				TVPAddImportantLog(TJS_W("Passthrough: Failed to create Direct3D devices: ") + e.GetMessage());
+				return false;
+			}
+*/			catch(...)
+			{
+				TVPAddImportantLog(TJS_W("Passthrough: Failed to create Direct3D devices: unknown reason"));
+				return false;
+			}
+			return true;
+		}
+		return false;
+	}
+
+	bool SetDestSizeAndNotifyLayerResize(tjs_int width, tjs_int height, tjs_int w, tjs_int h)
+	{
+		if(inherited::SetDestSize(width, height) && inherited::NotifyLayerResize(w, h))
+		{
+			try
+			{
+				CreateOffScreenSurface();
+			}
+/*			catch(const eTJS & e)
+			{
+				TVPAddImportantLog(TJS_W("Passthrough: Failed to create Direct3D devices: ") + e.GetMessage());
+				return false;
+			}
+*/			catch(...)
+			{
+				TVPAddImportantLog(TJS_W("Passthrough: Failed to create Direct3D devices: unknown reason"));
+				return false;
+			}
+			return true;
+		}
+		return false;
+	}
+
+	void SetTargetWindow(HWND wnd)
+	{
+		inherited::SetTargetWindow(wnd);
+		CreateOffScreenSurface();
+	}
+#define TVPD3DTIMING
+#ifdef TVPD3DTIMING
+	DWORD StartTick;
+
+	DWORD GetDCTime;
+	DWORD DrawDibDrawTime;
+	DWORD ReleaseDCTime;
+	DWORD DrawPrimitiveTime;
+	DWORD BltTime;
+	void InitTimings()
+	{
+		GetDCTime = 0;
+		DrawDibDrawTime = 0;
+		ReleaseDCTime = 0;
+		DrawPrimitiveTime = 0;
+		BltTime = 0;
+	}
+
+	void ReportTimings()
+	{
+		TVPAddLog(TJS_W("GetDC / Lock : ") + ttstr((int)GetDCTime));
+		TVPAddLog(TJS_W("DrawDibDraw / memcpy : ") + ttstr((int)DrawDibDrawTime));
+		TVPAddLog(TJS_W("ReleaseDC / Unlock : ") + ttstr((int)ReleaseDCTime));
+		TVPAddLog(TJS_W("DrawPrimitive : ") + ttstr((int)DrawPrimitiveTime));
+		TVPAddLog(TJS_W("Blt : ") + ttstr((int)BltTime));
+	}
+#endif
+
+	void StartBitmapCompletion()
+	{
+		// retrieve DC
+		if(Texture && TargetWindow)
+		{
+			if(UseDirectTransfer)
+			{
+#ifdef TVPD3DTIMING
+StartTick = timeGetTime();
+#endif
+				if(TextureBuffer)
+				{
+					TVPAddImportantLog(TJS_W("Passthrough: Texture has already locked (StartBitmapCompletion() has called twice without EndBitmapCompletion()), unlocking the texture."));
+					Texture->Unlock(NULL), TextureBuffer = NULL;
+				}
+
+
+				DDSURFACEDESC2 ddsd;
+				ZeroMemory(&ddsd, sizeof(ddsd));
+				ddsd.dwSize = sizeof(ddsd);
+				HRESULT hr = Texture->Lock(NULL, &ddsd, DDLOCK_WAIT|DDLOCK_SURFACEMEMORYPTR|DDLOCK_WRITEONLY, NULL);
+
+				if(hr == DDERR_SURFACELOST || hr == DDERR_SURFACEBUSY)
+				{
+					Texture->Restore();
+					InvalidateAll();  // causes reconstruction of off-screen image
+					hr = Texture->Lock(NULL, &ddsd, DDLOCK_WAIT|DDLOCK_SURFACEMEMORYPTR|DDLOCK_WRITEONLY, NULL);
+				}
+
+				if(hr != DD_OK)
+				{
+					TextureBuffer = NULL;
+					InvalidateAll();  // causes reconstruction of off-screen image
+
+					if(LastOffScreenDCGot)
+					{
+						// display this message only once since last success
+						TVPAddImportantLog(
+							TJS_W("Passthrough: (inf) Texture, IDirectDrawSurface::Lock failed/HR=") +
+							TJSInt32ToHex(hr, 8) + TJS_W(", ignoring"));
+					}
+				}
+				else /*if(hr == DD_OK) */
+				{
+					TextureBuffer = ddsd.lpSurface;
+					TexturePitch = ddsd.lPitch;
+				}
+
+
+#ifdef TVPD3DTIMING
+GetDCTime += timeGetTime() - StartTick;
+#endif
+			}
+			else
+			{
+				HDC dc = NULL;
+#ifdef TVPD3DTIMING
+StartTick = timeGetTime();
+#endif
+				HRESULT hr = Texture->GetDC(&dc);
+#ifdef TVPD3DTIMING
+GetDCTime += timeGetTime() - StartTick;
+#endif
+				if(hr == DDERR_SURFACELOST || hr == DDERR_SURFACEBUSY)
+				{
+					Texture->Restore();
+					InvalidateAll();  // causes reconstruction of off-screen image
+					hr = Texture->GetDC(&dc);
+				}
+
+				if(hr != DD_OK)
+				{
+					dc = NULL;
+					InvalidateAll();  // causes reconstruction of off-screen image
+
+					if(LastOffScreenDCGot)
+					{
+						// display this message only once since last success
+						TVPAddImportantLog(
+							TJS_W("Passthrough: (inf) Texture, IDirectDrawSurface::GetDC failed/HR=") +
+							TJSInt32ToHex(hr, 8) + TJS_W(", ignoring"));
+					}
+				}
+
+				OffScreenDC = dc;
+
+				if(OffScreenDC) LastOffScreenDCGot = true; else LastOffScreenDCGot = false;
+			}
+		}
+	}
+
+	void NotifyBitmapCompleted(tjs_int x, tjs_int y, const void * bits, const BITMAPINFO * bitmapinfo,
+		const tTVPRect &cliprect)
+	{
+		if(UseDirectTransfer)
+		{
+			// 直接メモリ転送を用いて描画を行う
+#ifdef TVPD3DTIMING
+StartTick = timeGetTime();
+#endif
+			if(DrawDibHandle && TextureBuffer && TargetWindow)
+			{
+				ShouldShow = true;
+				// bitmapinfo で表された cliprect の領域を x,y にコピーする
+				long src_y       = cliprect.top;
+				long src_y_limit = cliprect.bottom;
+				long src_x       = cliprect.left;
+				long width_bytes   = cliprect.get_width() * 4; // 32bit
+				long dest_y      = y;
+				long dest_x      = x;
+				const tjs_uint8 * src_p = (const tjs_uint8 *)bits;
+				long src_pitch;
+
+				if(bitmapinfo->bmiHeader.biHeight < 0)
+				{
+					// bottom-down
+					src_pitch = bitmapinfo->bmiHeader.biWidth * 4;
+				}
+				else
+				{
+					// bottom-up
+					src_pitch = -bitmapinfo->bmiHeader.biWidth * 4;
+					src_p += bitmapinfo->bmiHeader.biWidth * 4 * (bitmapinfo->bmiHeader.biHeight - 1);
+				}
+
+				for(; src_y < src_y_limit; src_y ++, dest_y ++)
+				{
+					const void *srcp = src_p + src_pitch * src_y + src_x * 4;
+					void *destp = (tjs_uint8*)TextureBuffer + TexturePitch * dest_y + dest_x * 4;
+					memcpy(destp, srcp, width_bytes);
+				}
+			}
+#ifdef TVPD3DTIMING
+DrawDibDrawTime += timeGetTime() - StartTick;
+#endif
+		}
+		else
+		{
+			// DrawDibDraw にて OffScreenDC に描画を行う
+#ifdef TVPD3DTIMING
+StartTick = timeGetTime();
+#endif
+			if(DrawDibHandle && OffScreenDC && TargetWindow)
+			{
+				ShouldShow = true;
+				DrawDibDraw(DrawDibHandle,
+					OffScreenDC,
+					x,
+					y,
+					cliprect.get_width(),
+					cliprect.get_height(),
+					const_cast<BITMAPINFOHEADER*>(reinterpret_cast<const BITMAPINFOHEADER*>(bitmapinfo)),
+					const_cast<void*>(bits),
+					cliprect.left,
+					cliprect.top,
+					cliprect.get_width(),
+					cliprect.get_height(),
+					0);
+			}
+#ifdef TVPD3DTIMING
+DrawDibDrawTime += timeGetTime() - StartTick;
+#endif
+		}
+	}
+
+	void EndBitmapCompletion()
+	{
+		if(!TargetWindow) return;
+		if(!Texture) return;
+		if(!Surface) return;
+		if(!Direct3DDevice7) return;
+
+		if(UseDirectTransfer)
+		{
+#ifdef TVPD3DTIMING
+StartTick = timeGetTime();
+#endif
+			if(!TextureBuffer) return;
+			Texture->Unlock(NULL), TextureBuffer = NULL;
+#ifdef TVPD3DTIMING
+ReleaseDCTime += timeGetTime() - StartTick;
+#endif
+		}
+		else
+		{
+#ifdef TVPD3DTIMING
+StartTick = timeGetTime();
+#endif
+			if(!OffScreenDC) return;
+			Texture->ReleaseDC(OffScreenDC), OffScreenDC = NULL;
+#ifdef TVPD3DTIMING
+ReleaseDCTime += timeGetTime() - StartTick;
+#endif
+		}
+
+		// Blt to the primary surface
+
+		// Blt texture to surface
+
+		//- build vertex list
+		struct tVertices
+		{
+			float x, y, z, rhw;
+			float tu, tv;
+		};
+
+		float dw = (float)DestWidth;
+		float dh = (float)DestHeight;
+
+		float sw = (float)SrcWidth;
+		float sh = (float)SrcHeight;
+
+
+		tVertices vertices[] =
+		{
+			{0.0f - 0.5f, 0.0f - 0.5f, 1.0f, 1.0f, 0.0f, 0.0f},
+			{dw   - 0.5f, 0.0f - 0.5f, 1.0f, 1.0f, 1.0f, 0.0f},
+			{0.0f - 0.5f, dh   - 0.5f, 1.0f, 1.0f, 0.0f, 1.0f},
+			{dw   - 0.5f, dh   - 0.5f, 1.0f, 1.0f, 1.0f, 1.0f}
+		};
+
+		HRESULT hr;
+
+#ifdef TVPD3DTIMING
+StartTick = timeGetTime();
+#endif
+		//- draw as triangles
+		hr = Direct3DDevice7->SetTexture(0, Texture);
+		if(FAILED(hr)) goto got_error;
+
+		Direct3DDevice7->SetRenderState(D3DRENDERSTATE_LIGHTING			, FALSE);
+		Direct3DDevice7->SetRenderState(D3DRENDERSTATE_BLENDENABLE		, FALSE);
+		Direct3DDevice7->SetRenderState(D3DRENDERSTATE_ALPHATESTENABLE	, FALSE); 
+		Direct3DDevice7->SetRenderState(D3DRENDERSTATE_CULLMODE			, D3DCULL_NONE);
+
+		Direct3DDevice7->SetTextureStageState(0, D3DTSS_MAGFILTER,
+			TVPZoomInterpolation ?  D3DTFG_LINEAR : D3DTFG_POINT);
+		Direct3DDevice7->SetTextureStageState(0, D3DTSS_MINFILTER,
+			TVPZoomInterpolation ?  D3DTFN_LINEAR : D3DTFN_POINT);
+		Direct3DDevice7->SetTextureStageState(0, D3DTSS_MIPFILTER,
+			TVPZoomInterpolation ?  D3DTFP_LINEAR : D3DTFP_POINT);
+		Direct3DDevice7->SetTextureStageState(0, D3DTSS_ADDRESS  , D3DTADDRESS_CLAMP);
+
+		hr = Direct3DDevice7->BeginScene();
+		if(FAILED(hr)) goto got_error;
+
+		hr = Direct3DDevice7->DrawPrimitive(D3DPT_TRIANGLESTRIP, D3DFVF_XYZRHW | D3DFVF_TEX1,
+												vertices, 4, D3DDP_WAIT);
+		if(FAILED(hr)) goto got_error;
+
+		Direct3DDevice7->EndScene();
+		Direct3DDevice7->SetTexture(0, NULL);
+
+#ifdef TVPD3DTIMING
+DrawPrimitiveTime += timeGetTime() - StartTick;
+#endif
+	got_error:
+		if(hr == DDERR_SURFACELOST || hr == DDERR_SURFACEBUSY)
+		{
+			Surface->Restore();
+			Texture->Restore();
+			InvalidateAll();  // causes reconstruction of off-screen image
+		}
+		else if(hr == DDERR_INVALIDRECT)
+		{
+			// ignore this error
+		}
+		else if(hr != DD_OK)
+		{
+			TVPThrowExceptionMessage(TJS_W("Primary surface, polygon drawing failed/HR=%1"),
+				TJSInt32ToHex(hr, 8));
+		}
+	}
+
+
+	void Show()
+	{
+		if(!TargetWindow) return;
+		if(!Texture) return;
+		if(!Surface) return;
+		if(!Direct3DDevice7) return;
+		if(!ShouldShow) return;
+
+		ShouldShow = false;
+
+		HRESULT hr;
+
+		// retrieve the primary surface
+		IDirectDrawSurface *pri = TVPGetDDPrimarySurfaceNoAddRef();
+		if(!pri)
+			TVPThrowExceptionMessage(TJS_W("Cannot retrieve primary surface object"));
+
+#ifdef TVPD3DTIMING
+StartTick = timeGetTime();
+#endif
+		// set clipper
+		TVPSetDDPrimaryClipper(Clipper);
+
+		// get PaintBox's origin
+		POINT origin; origin.x = DestLeft, origin.y = DestTop;
+		ClientToScreen(TargetWindow, &origin);
+
+		// entire of the bitmap is to be transfered (this is not optimal. FIX ME!)
+		RECT drect;
+		drect.left   = origin.x;
+		drect.top    = origin.y;
+		drect.right  = origin.x + DestWidth;
+		drect.bottom = origin.y + DestHeight;
+
+		RECT srect;
+		srect.left   = 0;
+		srect.top    = 0;
+		srect.right  = DestWidth;
+		srect.bottom = DestHeight;
+
+		hr = pri->Blt(&drect, (IDirectDrawSurface*)Surface, &srect, DDBLT_WAIT, NULL);
+
+#ifdef TVPD3DTIMING
+BltTime += timeGetTime() - StartTick;
+#endif
+
+	got_error:
+		if(hr == DDERR_SURFACELOST || hr == DDERR_SURFACEBUSY)
+		{
+			pri->Restore();
+			Surface->Restore();
+			Texture->Restore();
+			InvalidateAll();  // causes reconstruction of off-screen image
+		}
+		else if(hr == DDERR_INVALIDRECT)
+		{
+			// ignore this error
+		}
+		else if(hr != DD_OK)
+		{
+			TVPThrowExceptionMessage(TJS_W("Primary surface, IDirectDrawSurface::Blt failed/HR=%1"),
+				TJSInt32ToHex(hr, 8));
+		}
+	}
+
+	virtual int GetInterpolationCapability()
+	{
+		// bit 0 for point-on-point, bit 1 for bilinear interpolation
+		GetDirect3D7Device();
+		if(Direct3DDevice7)
+		{
+			HRESULT hr;
+			D3DDEVICEDESC7 desc;
+			ZeroMemory(&desc, sizeof(desc));
+			if(SUCCEEDED(Direct3DDevice7->GetCaps(&desc)))
+			{
+				int caps = 0;
+				if(desc.dpcTriCaps.dwTextureFilterCaps & D3DPTFILTERCAPS_MAGFLINEAR)
+					caps += 2;
+				if(desc.dpcTriCaps.dwTextureFilterCaps & D3DPTFILTERCAPS_MAGFPOINT)
+					caps += 1;
+				return caps;
+			}
+			return 3;
+		}
+		else
+		{
+			return 3;
 		}
 	}
 };
@@ -629,6 +1647,8 @@ tTVPPassThroughDrawDevice::tTVPPassThroughDrawDevice()
 	TargetWindow = NULL;
 	Drawer = NULL;
 	DrawerType = dtNone;
+	DestSizeChanged = false;
+	SrcSizeChanged = false;
 }
 //---------------------------------------------------------------------------
 
@@ -651,102 +1671,277 @@ void tTVPPassThroughDrawDevice::DestroyDrawer()
 
 
 //---------------------------------------------------------------------------
-void tTVPPassThroughDrawDevice::EnsureDrawer(tDrawerType failedtype)
+void tTVPPassThroughDrawDevice::CreateDrawer(tDrawerType type)
+{
+	Drawer = NULL;
+	switch(type)
+	{
+	case dtNone:
+		break;
+	case dtDrawDib:
+		Drawer = new tTVPDrawer_DrawDibNoBuffering(this);
+		break;
+	case dtDBGDI:
+		Drawer = new tTVPDrawer_GDIDoubleBuffering(this);
+		break;
+	case dtDBDD:
+		Drawer = new tTVPDrawer_DDDoubleBuffering(this);
+		break;
+	case dtDBD3D:
+		Drawer = new tTVPDrawer_D3DDoubleBuffering(this);
+		break;
+	}
+	if(Drawer)
+		Drawer->SetTargetWindow(TargetWindow);
+
+	if(Drawer)
+	{
+		if(!Drawer->SetDestPos(DestRect.left, DestRect.top))
+		{
+			TVPAddImportantLog(
+				TJS_W("Passthrough: Failed to set destination position to draw device drawer"));
+			delete Drawer, Drawer = NULL;
+		}
+	}
+
+	if(Drawer)
+	{
+		tjs_int srcw, srch;
+		GetSrcSize(srcw, srch);
+		if(!Drawer->SetDestSizeAndNotifyLayerResize(DestRect.get_width(), DestRect.get_height(), srcw, srch))
+		{
+			TVPAddImportantLog(
+				TJS_W("Passthrough: Failed to set destination size and source layer size to draw device drawer"));
+			delete Drawer, Drawer = NULL;
+		}
+	}
+
+	if(Drawer) DrawerType = type; else DrawerType = dtNone;
+}
+//---------------------------------------------------------------------------
+
+
+//---------------------------------------------------------------------------
+void tTVPPassThroughDrawDevice::CreateDrawer(bool zoom_required)
+{
+	// TVPPreferredDrawType が指定されていればそれを使う
+	Drawer = NULL;
+	if(TVPPreferredDrawType != dtNone)
+		CreateDrawer(TVPPreferredDrawType);
+
+	// もしズームが必要なく、ダブルバッファリングも必要ないならば
+	// 一番基本的な DrawDib のやつを使う
+	if(!zoom_required && !TVPForceDoublebuffer)
+		CreateDrawer(dtDrawDib);
+
+	if(!Drawer)
+	{
+		// メインウィンドウ以外の場合は基本的なメソッドを使う
+		if(!IsMainWindow)
+		{
+			if(zoom_required)
+				CreateDrawer(dtDBGDI);
+			else
+				CreateDrawer(dtDrawDib);
+		}
+	}
+
+	if(!Drawer)
+	{
+		// まだ Drawer が作成されてないぜ
+
+		// ベンチマークしますかね
+		static tDrawerType bench_types[] = { dtDBDD, dtDBGDI, dtDBD3D };
+		const static tjs_char * type_names[] = { TJS_W("DirectDraw"), TJS_W("GDI"), TJS_W("Direct3D") };
+		static const int num_types = sizeof(bench_types) / sizeof(bench_types[0]);
+		struct tBenchmarkResult
+		{
+			float score;
+			tDrawerType type;
+		} results[num_types];
+
+		// ベンチマーク用の元画像を確保
+		tjs_int srcw, srch;
+		GetSrcSize(srcw, srch);
+		BITMAPINFOHEADER bmi;
+		bmi.biSize = sizeof(BITMAPINFOHEADER);
+		bmi.biWidth = srcw;
+		bmi.biHeight = srch;
+		bmi.biPlanes = 1;
+		bmi.biBitCount = 32;
+		bmi.biCompression = BI_RGB;
+		bmi.biSizeImage = srcw * 4 * srch; // 32bpp の場合はこれでいい
+		bmi.biXPelsPerMeter = 0;
+		bmi.biYPelsPerMeter = 0;
+		bmi.biClrUsed = 0;
+		bmi.biClrImportant = 0;
+
+		void * memblk = GlobalAlloc(GMEM_FIXED, bmi.biSizeImage);
+		ZeroMemory(memblk, bmi.biSizeImage);
+
+		tTVPRect cliprect;
+		cliprect.left = 0;
+		cliprect.top = 0;
+		cliprect.right = srcw;
+		cliprect.bottom = srch;
+
+		// ベンチマークを行う
+		for(int i = 0; i < num_types; i++)
+		{
+			results[i].type = bench_types[i];
+			results[i].score = -1.0f;
+
+			try
+			{
+				// GDI は最後の手段
+				if(results[i].type == dtDBGDI)
+				{
+					results[i].score = 0.0f;
+					continue;
+				}
+
+				// drawer を作成
+				CreateDrawer(results[i].type);
+				if(!Drawer)
+				{
+					TVPAddImportantLog(TJS_W("Passthrough: Could not create drawer object ") + ttstr(type_names[i]));
+					continue;
+				}
+
+				// ズーム補間の設定は受け入れられるか？
+				int caps = Drawer->GetInterpolationCapability();
+				if(TVPZoomInterpolation && !(caps & 2))
+				{
+					TVPAddImportantLog(TJS_W("Passthrough: Drawer object ") + ttstr(type_names[i]) +
+						TJS_W(" does not have smooth zooming functionality"));
+					continue;
+				}
+				else if(!TVPZoomInterpolation && !(caps & 1))
+				{
+					TVPAddImportantLog(TJS_W("Passthrough: Drawer object ") + ttstr(type_names[i]) +
+						TJS_W(" does not have point-on-point zooming functionality"));
+					continue;
+				}
+
+				// ベンチマークを行う
+				// 持ち時間約333msで、その間に何回転送を行えるかを見る
+				Drawer->InitTimings();
+				static const DWORD timeout = 333;
+				DWORD start_tick = timeGetTime();
+				int count = 0;
+				while(timeGetTime() - start_tick < timeout)
+				{
+					Drawer->StartBitmapCompletion();
+					Drawer->NotifyBitmapCompleted(0, 0, memblk, (const BITMAPINFO *)&bmi, cliprect);
+					Drawer->EndBitmapCompletion();
+					Drawer->Show();
+					count ++;
+				}
+				DWORD end_tick = timeGetTime();
+				Drawer->ReportTimings();
+
+				// 結果を格納、それとデバッグ用に表示
+				results[i].score = count * 1000 / (float)(end_tick - start_tick);
+				char msg[80];
+				sprintf(msg, "%.2f fps", (float)results[i].score);
+				TVPAddImportantLog(TJS_W("Passthrough: benchmark result: ") + ttstr(type_names[i]) + TJS_W(" : ") +
+					ttstr(msg));
+			}
+			catch(...)
+			{
+				DestroyDrawer();
+			}
+			DestroyDrawer();
+		}
+
+		// ベンチマークに使った画像を解放
+		GlobalFree((HGLOBAL)memblk);
+
+
+		// 結果をスコア順にソート
+		// そんなに数は多くないので原始的にバブルソート
+		while(true)
+		{
+			bool swapped = false;
+			for(int i = 0; i < num_types - 1; i++)
+			{
+				if(results[i].score < results[i+1].score)
+				{
+					tBenchmarkResult tmp = results[i];
+					results[i] = results[i+1];
+					results[i+1] = tmp;
+					swapped = true;
+				}
+			}
+			if(!swapped) break;
+		}
+	
+		// スコアの高い順から作成を試みる
+		for(int i = 0; i < num_types; i++)
+		{
+			CreateDrawer(results[i].type);
+			if(Drawer) break;
+		}
+
+	}
+
+	if(!Drawer)
+	{
+		// Drawer を全く作成できなかった
+		// これはヤバい
+		// まずあり得ないが致命的。
+		TVPThrowExceptionMessage(TJS_W("Fatal: Could not create any drawer objects."));
+	}
+
+	if(Drawer)
+	{
+		if(IsMainWindow)
+			TVPAddImportantLog(TJS_W("Passthrough: Using passthrough draw device: ") + Drawer->GetName());
+	}
+}
+//---------------------------------------------------------------------------
+
+
+//---------------------------------------------------------------------------
+void tTVPPassThroughDrawDevice::EnsureDrawer()
 {
 	// このメソッドでは、以下の条件の際に drawer を作る(作り直す)。
 	// 1. Drawer が NULL の場合
 	// 2. 現在の Drawer のタイプが適切でなくなったとき
+	TVPInitPassThroughOptions();
 
 	if(TargetWindow)
 	{
-		// drawer の種類を特定する
-		tDrawerType newtype = dtDrawDib;
+		// ズームは必要だったか？
+		bool zoom_was_required = false;
+		if(Drawer)
+		{
+			tjs_int srcw, srch;
+			Drawer->GetSrcSize(srcw, srch);
+			tjs_int destw, desth;
+			Drawer->GetDestSize(destw, desth);
+			if(destw != srcw || desth != srch)
+				zoom_was_required = true;
+		}
 
-		// ズームは必要？
-		bool zoom_required = false;
+		// ズームは(今回は)必要か？
+		bool zoom_is_required = false;
 		tjs_int srcw, srch;
 		GetSrcSize(srcw, srch);
 		if(DestRect.get_width() != srcw || DestRect.get_height() != srch)
-			zoom_required = true;
+			zoom_is_required = true;
 
-		if(!zoom_required && !TVPForceDoublebuffer)
+
+		bool need_recreate = false;
+		if(!Drawer) need_recreate = true;
+		if(zoom_was_required != zoom_is_required) need_recreate = true;
+
+		if(need_recreate)
 		{
-			// ズームが必要なく、かつ、ダブルバッファも要求されていない場合
-			newtype = dtDrawDib;
+			// Drawer の再作成が必要
+			CreateDrawer(zoom_is_required);
 		}
-		else
-		{
-			// ズームが必要か、ダブルバッファが必要
-			if(!TVPZoomInterpolation || failedtype == dtDBDD || TVPDBGDIPrefered)
-			{
-				// 1) ズームで補完を行わない場合(補完なしはGDIでしかできない)
-				// 2) DirectDraw でダブルバッファリングに失敗した場合
-				// 3) GDIがオプションで指定された場合
-				// のいずれかの場合は GDI を用いる
-				newtype = dtDBGDI;
-			}
-			else
-			{
-				// そうでなければ DirectDraw
-				newtype = dtDBDD;
-			}
-		}
-
-		if(newtype != DrawerType)
-		{
-			// drawer がない (つまりDrawerType が dtNoneなのでnewtypeに一致しない)
-			// あるいは DrawerType が newtype と違う場合
-			if(Drawer) delete Drawer, Drawer = NULL;
-
-			bool success;
-			do
-			{
-				success = true;
-				try
-				{
-					switch(newtype)
-					{
-					case dtNone:
-						break;
-					case dtDrawDib:
-						Drawer = new tTVPDrawer_DrawDibNoBuffering(this);
-						break;
-					case dtDBGDI:
-						Drawer = new tTVPDrawer_GDIDoubleBuffering(this);
-						break;
-					case dtDBDD:
-						Drawer = new tTVPDrawer_DDDoubleBuffering(this);
-						break;
-					}
-					Drawer->SetTargetWindow(TargetWindow);
-					if(!Drawer->SetDestRectangle(DestRect))
-						TVPThrowExceptionMessage(
-							TJS_W("Failed to set destination rectangle to draw device drawer"));
-					if(!Drawer->NotifyLayerResize(srcw, srch))
-						TVPThrowExceptionMessage(
-							TJS_W("Failed to set source layer size to draw device drawer"));
-				}
-				catch(...)
-				{
-					// 例外が発生した。
-					if(newtype == dtDBDD)
-					{
-						// DirectDraw の場合は GDI に fall back を試みる
-						newtype = dtDBGDI;
-						success = false;
-					}
-					else
-					{
-						// それ以外は fall back のしようがない
-						throw;
-					}
-				}
-			} while(!success);
-
-			DrawerType = newtype;
-		} // if(newtype != DrawerType)
-	} // if(TargetWindow)
-
+	}
 }
 //---------------------------------------------------------------------------
 
@@ -768,10 +1963,12 @@ void TJS_INTF_METHOD tTVPPassThroughDrawDevice::AddLayerManager(iTVPLayerManager
 
 
 //---------------------------------------------------------------------------
-void TJS_INTF_METHOD tTVPPassThroughDrawDevice::SetTargetWindow(HWND wnd)
+void TJS_INTF_METHOD tTVPPassThroughDrawDevice::SetTargetWindow(HWND wnd, bool is_main)
 {
+	TVPInitPassThroughOptions();
 	DestroyDrawer();
 	TargetWindow = wnd;
+	IsMainWindow = is_main;
 }
 //---------------------------------------------------------------------------
 
@@ -779,17 +1976,18 @@ void TJS_INTF_METHOD tTVPPassThroughDrawDevice::SetTargetWindow(HWND wnd)
 //---------------------------------------------------------------------------
 void TJS_INTF_METHOD tTVPPassThroughDrawDevice::SetDestRectangle(const tTVPRect & rect)
 {
-	inherited::SetDestRectangle(rect);
-
-	// 拡大や縮小がある場合はdrawerを作り直さなければならないかもしれない
-	if(Drawer)
+	// 位置だけの変更の場合かどうかをチェックする
+	if(rect.get_width() == DestRect.get_width() && rect.get_height() == DestRect.get_height())
 	{
-		if(!Drawer->SetDestRectangle(rect))
-		{
-			tDrawerType failedtype = DrawerType; // 失敗した drawer
-			DestroyDrawer(); // DestRect の設定に失敗した場合は drawer を作り直す
-			EnsureDrawer(failedtype);
-		}
+		// 位置だけの変更だ
+		if(Drawer) Drawer->SetDestPos(DestRect.left, DestRect.top);
+		inherited::SetDestRectangle(rect);
+	}
+	else
+	{
+		// サイズも違う
+		DestSizeChanged = true;
+		inherited::SetDestRectangle(rect);
 	}
 }
 //---------------------------------------------------------------------------
@@ -799,19 +1997,15 @@ void TJS_INTF_METHOD tTVPPassThroughDrawDevice::SetDestRectangle(const tTVPRect 
 void TJS_INTF_METHOD tTVPPassThroughDrawDevice::NotifyLayerResize(iTVPLayerManager * manager)
 {
 	inherited::NotifyLayerResize(manager);
+	SrcSizeChanged = true;
+}
+//---------------------------------------------------------------------------
 
-	// 拡大や縮小がある場合はdrawerを作り直さなければならないかもしれない
-	if(Drawer)
-	{
-		tjs_int w, h;
-		GetSrcSize(w, h);
-		if(!Drawer->NotifyLayerResize(w, h))
-		{
-			tDrawerType failedtype = DrawerType; // 失敗した drawer
-			DestroyDrawer(); // DestRect の設定に失敗した場合は drawer を作り直す
-			EnsureDrawer(failedtype);
-		}
-	}
+
+//---------------------------------------------------------------------------
+void TJS_INTF_METHOD tTVPPassThroughDrawDevice::Show()
+{
+	if(Drawer) Drawer->Show();
 }
 //---------------------------------------------------------------------------
 
@@ -819,7 +2013,7 @@ void TJS_INTF_METHOD tTVPPassThroughDrawDevice::NotifyLayerResize(iTVPLayerManag
 //---------------------------------------------------------------------------
 void TJS_INTF_METHOD tTVPPassThroughDrawDevice::StartBitmapCompletion(iTVPLayerManager * manager)
 {
-	EnsureDrawer(dtNone);
+	EnsureDrawer();
 
 	if(Drawer) Drawer->StartBitmapCompletion();
 }
@@ -836,18 +2030,7 @@ void TJS_INTF_METHOD tTVPPassThroughDrawDevice::NotifyBitmapCompleted(iTVPLayerM
 	// opacity と type は無視するしかないので無視する
 	if(Drawer)
 	{
-		if(TVPWaitVSync)
-		{
-			tjs_int w, h;
-			GetSrcSize(w, h);
-			if(cliprect.get_width() == w && cliprect.get_height() == h)
-			{
-				// 全画面を更新するときだけ、vsync をまつ。
-				IDirectDraw2 *object = TVPGetDirectDrawObjectNoAddRef();
-				if(object) object->WaitForVerticalBlank(DDWAITVB_BLOCKBEGIN, NULL);
-			}
-		}
-
+		TVPInitPassThroughOptions();
 		Drawer->NotifyBitmapCompleted(x, y, bits, bitmapinfo, cliprect);
 	}
 }
@@ -862,10 +2045,12 @@ void TJS_INTF_METHOD tTVPPassThroughDrawDevice::EndBitmapCompletion(iTVPLayerMan
 //---------------------------------------------------------------------------
 
 
-
-
-
-
+//---------------------------------------------------------------------------
+void TJS_INTF_METHOD tTVPPassThroughDrawDevice::SetShowUpdateRect(bool b)
+{
+	if(Drawer) Drawer->SetShowUpdateRect(b);
+}
+//---------------------------------------------------------------------------
 
 
 
