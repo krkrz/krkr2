@@ -700,6 +700,68 @@
 	<ref>Window.height</ref>
 	<ref>Window.setPos</ref>
 	<ref>Window.setInnerSize</ref>
+	<ref>Window.setMinSize</ref>
+	<ref>Window.setMaxSize</ref>
+</member>
+
+<member>
+	<name>setMinSize</name>
+	<type>method</type>
+	<shortdesc>ウィンドウの最小サイズの設定</shortdesc>
+	<arg>
+		<argitem>
+			<name>width</name>
+			<default></default>
+			<desc>
+				　ウィンドウの最小の横幅を指定します。0を指定すると制限は無くなります。<r/>
+			</desc>
+		</argitem>
+		<argitem>
+			<name>height</name>
+			<default></default>
+			<desc>
+				　ウィンドウの最小の縦幅を指定します。0を指定すると制限は無くなります。<r/>
+			</desc>
+		</argitem>
+	</arg>
+	<result></result>
+	<desc>
+		　ウィンドウの最小サイズを指定します。ウィンドウはこのメソッドで指定したサイズより小さくなることはできません。
+	</desc>
+	<ref>Window.setMaxSize</ref>
+	<ref>Window.setSize</ref>
+	<ref>Window.minWidth</ref>
+	<ref>Window.minHeight</ref>
+</member>
+
+<member>
+	<name>setMaxSize</name>
+	<type>method</type>
+	<shortdesc>ウィンドウの最大サイズの設定</shortdesc>
+	<arg>
+		<argitem>
+			<name>width</name>
+			<default></default>
+			<desc>
+				　ウィンドウの最大の横幅を指定します。0を指定すると制限は無くなります。<r/>
+			</desc>
+		</argitem>
+		<argitem>
+			<name>height</name>
+			<default></default>
+			<desc>
+				　ウィンドウの最大の縦幅を指定します。0を指定すると制限は無くなります。<r/>
+			</desc>
+		</argitem>
+	</arg>
+	<result></result>
+	<desc>
+		　ウィンドウの最大サイズを指定します。ウィンドウはこのメソッドで指定したサイズより大きくなることはできません。
+	</desc>
+	<ref>Window.setMixSize</ref>
+	<ref>Window.setSize</ref>
+	<ref>Window.maxWidth</ref>
+	<ref>Window.maxHeight</ref>
 </member>
 
 <member>
@@ -983,6 +1045,74 @@ postInputEvent('onKeyUp',   %[key: VK_UP, shift: ssShift]);<r/>
 		　ウィンドウの縦幅を表します。値を設定することもできます。<r/>
 	</desc>
 	<ref>Window.width</ref>
+	<ref>Window.setSize</ref>
+</member>
+
+<member>
+	<name>minWidth</name>
+	<type>property</type>
+	<shortdesc>ウィンドウの最小の横幅</shortdesc>
+	<access>r/w</access>
+	<desc>
+		　ウィンドウの最小の横幅を表します。値を設定することもできます。0を指定すると制限は無くなります。<r/>
+	</desc>
+	<ref>Window.width</ref>
+	<ref>Window.minHeight</ref>
+	<ref>Window.maxWidth</ref>
+	<ref>Window.maxHeight</ref>
+	<ref>Window.setMinSize</ref>
+	<ref>Window.setMaxSize</ref>
+	<ref>Window.setSize</ref>
+</member>
+
+<member>
+	<name>minHeight</name>
+	<type>property</type>
+	<shortdesc>ウィンドウの最小の縦幅</shortdesc>
+	<access>r/w</access>
+	<desc>
+		　ウィンドウの最小の縦幅を表します。値を設定することもできます。0を指定すると制限は無くなります。<r/>
+	</desc>
+	<ref>Window.height</ref>
+	<ref>Window.minWidth</ref>
+	<ref>Window.maxWidth</ref>
+	<ref>Window.maxHeight</ref>
+	<ref>Window.setMinSize</ref>
+	<ref>Window.setMaxSize</ref>
+	<ref>Window.setSize</ref>
+</member>
+
+<member>
+	<name>maxWidth</name>
+	<type>property</type>
+	<shortdesc>ウィンドウの最大の横幅</shortdesc>
+	<access>r/w</access>
+	<desc>
+		　ウィンドウの最大の横幅を表します。値を設定することもできます。0を指定すると制限は無くなります。<r/>
+	</desc>
+	<ref>Window.width</ref>
+	<ref>Window.maxHeight</ref>
+	<ref>Window.minWidth</ref>
+	<ref>Window.minHeight</ref>
+	<ref>Window.setMinSize</ref>
+	<ref>Window.setMaxSize</ref>
+	<ref>Window.setSize</ref>
+</member>
+
+<member>
+	<name>maxHeight</name>
+	<type>property</type>
+	<shortdesc>ウィンドウの最大の縦幅</shortdesc>
+	<access>r/w</access>
+	<desc>
+		　ウィンドウの最大の縦幅を表します。値を設定することもできます。0を指定すると制限は無くなります。<r/>
+	</desc>
+	<ref>Window.height</ref>
+	<ref>Window.maxWidth</ref>
+	<ref>Window.minWidth</ref>
+	<ref>Window.minHeight</ref>
+	<ref>Window.setMinSize</ref>
+	<ref>Window.setMaxSize</ref>
 	<ref>Window.setSize</ref>
 </member>
 
