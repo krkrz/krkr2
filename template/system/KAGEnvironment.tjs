@@ -30,7 +30,8 @@ class KAGEnvironment extends KAGEnvImage {
     var actions;      //< アクション情報
     var transitions;  //< トランジション情報
     var defaultTime;  //< デフォルトの時間
-    var yoffset;      //< キャラクタ配置のyoffset 値
+	var yoffset;      //< キャラクタ配置のyoffset 値
+	var xoffset;      //< キャラクタ配置のyoffset 値
     var defaultXpos;  //< キャラクタ配置の初期X位置
     var defaultYpos;  //< キャラクタ配置の初期Y位置
     var defaultLevel; //< キャラクタレベルのデフォルト値
@@ -301,8 +302,8 @@ class KAGEnvironment extends KAGEnvImage {
         stage = f.stage;
         if (f.characters) {
             foreach(f.characters, function(name, value, dict) {
-                var ch = getCharacter(value.name, value.initName);
-                if (ch != null) {
+				var ch = getCharacter(value.name, value.initName);
+                if (ch !== void) {
                     ch.onRestore(value);
                 }
             } incontextof this);
@@ -374,15 +375,16 @@ class KAGEnvironment extends KAGEnvImage {
 
         if (envinfo) {
             // デバッグ表示 
-            times       = envinfo.times;       showKeys("times", times);
-            stages      = envinfo.stages;      showKeys("stages", stages);
-            events      = envinfo.events;      showKeys("events", events);
-            positions   = envinfo.positions;   showKeys("positions", positions);
-            actions     = envinfo.actions;     showKeys("actions", actions);
-            emotions    = envinfo.emotions;    showKeys("emotions", emotions);
-            transitions = envinfo.transitions; showKeys("transitions", transitions);
-            defaultTime = envinfo.defaultTime;      dm("defaultTime:" + defaultTime);
-            yoffset     = (int)envinfo.yoffset;     dm("yoffset:" + yoffset);
+            times       = envinfo.times;
+            stages      = envinfo.stages;
+            events      = envinfo.events;
+            positions   = envinfo.positions;
+            actions     = envinfo.actions;
+            emotions    = envinfo.emotions;
+            transitions = envinfo.transitions;
+            defaultTime = envinfo.defaultTime;
+            yoffset     = (int)envinfo.yoffset;
+            xoffset     = (int)envinfo.xoffset;
             defaultXpos = (int)envinfo.defaultXpos;
             defaultYpos = (int)envinfo.defaultYpos;
             defaultLevel = (int)envinfo.defaultLevel;
@@ -417,7 +419,8 @@ class KAGEnvironment extends KAGEnvImage {
 			emotions  = void;
 			transitions = void;
 			defaultTime = void;
-			yoffset     = 0;
+			yoffset = 0;
+			xoffset = 0;
 			levels = void;
 			faceLevelName = void;
 			showFaceMode = void;
@@ -703,11 +706,13 @@ class KAGEnvironment extends KAGEnvImage {
         // 新規生成
 		if (elm.name !== void && elm.initname !== void) {
 			var ch = getCharacter(elm.name, elm.initname);
-			if (ch != null) {
+			if (ch !== void) {
 				delete elm.tagname;
 				delete elm.name;
 				delete elm.initname;
 				return ch.tagfunc(elm);
+			} else {
+				throw new Exception(elm.initName + ":指定されたキャラクタ初期化指定の定義がありません。envinit.tjs を確認してください。");
 			}
 		} else {
 			kag.error("キャラクタ名または初期化名が指定されていません");
@@ -1255,7 +1260,7 @@ class KAGEnvironment extends KAGEnvImage {
             if ((init = characterInits[initName]) !== void) {
 				ch = new KAGEnvCharacter(this, name, initName, init);
                 characters[name] = ch;
-            }
+			}
         }
         return ch;
     }
