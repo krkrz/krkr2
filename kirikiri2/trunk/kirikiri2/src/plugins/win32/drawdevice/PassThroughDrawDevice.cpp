@@ -487,7 +487,7 @@ public:
 		}
 	}
 
-	virtual int GetInterpolationCapability() { return 1; }
+	virtual int GetInterpolationCapability() { return 1+2; }
 		// bit 0 for point-on-point, bit 1 for bilinear interpolation
 
 	virtual void InitTimings() { InBenchMark = true; }
@@ -1236,7 +1236,7 @@ public:
 		inherited::SetTargetWindow(wnd);
 		CreateOffScreenSurface();
 	}
-#define TVPD3DTIMING
+//#define TVPD3DTIMING
 #ifdef TVPD3DTIMING
 	DWORD StartTick;
 
@@ -1364,9 +1364,17 @@ GetDCTime += timeGetTime() - StartTick;
 #ifdef TVPD3DTIMING
 StartTick = timeGetTime();
 #endif
-			if(DrawDibHandle && TextureBuffer && TargetWindow)
+			if(DrawDibHandle && TextureBuffer && TargetWindow &&
+				!(x < 0 || y < 0 ||
+					x + cliprect.get_width() > DestWidth ||
+					y + cliprect.get_height() > DestHeight) &&
+				!(cliprect.left < 0 || cliprect.top < 0 ||
+					cliprect.right > bitmapinfo->bmiHeader.biWidth ||
+					cliprect.bottom > bitmapinfo->bmiHeader.biHeight))
 			{
+				// 範囲外の転送は(一部だけ転送するのではなくて)無視してよい
 				ShouldShow = true;
+
 				// bitmapinfo で表された cliprect の領域を x,y にコピーする
 				long src_y       = cliprect.top;
 				long src_y_limit = cliprect.bottom;
@@ -1776,7 +1784,7 @@ void tTVPPassThroughDrawDevice::CreateDrawer(bool zoom_required)
 		bmi.biClrUsed = 0;
 		bmi.biClrImportant = 0;
 
-		void * memblk = GlobalAlloc(GMEM_FIXED, bmi.biSizeImage);
+		void * memblk = GlobalAlloc(GMEM_FIXED, bmi.biSizeImage + 64); // 64 = 余裕(無くてもいいかもしれない)
 		ZeroMemory(memblk, bmi.biSizeImage);
 
 		tTVPRect cliprect;
@@ -1793,13 +1801,6 @@ void tTVPPassThroughDrawDevice::CreateDrawer(bool zoom_required)
 
 			try
 			{
-				// GDI は最後の手段
-				if(results[i].type == dtDBGDI)
-				{
-					results[i].score = 0.0f;
-					continue;
-				}
-
 				// drawer を作成
 				CreateDrawer(results[i].type);
 				if(!Drawer)
@@ -1846,6 +1847,13 @@ void tTVPPassThroughDrawDevice::CreateDrawer(bool zoom_required)
 				sprintf(msg, "%.2f fps", (float)results[i].score);
 				TVPAddImportantLog(TJS_W("Passthrough: benchmark result: ") + ttstr(type_names[i]) + TJS_W(" : ") +
 					ttstr(msg));
+
+				// GDI は最後の手段
+				// 結果だけは計っておくが、これが候補になるのは
+				// ほかのdrawerに失敗したときのみ
+				if(results[i].type == dtDBGDI)
+					results[i].score = 0.0f;
+
 			}
 			catch(...)
 			{
@@ -1980,13 +1988,14 @@ void TJS_INTF_METHOD tTVPPassThroughDrawDevice::SetDestRectangle(const tTVPRect 
 	if(rect.get_width() == DestRect.get_width() && rect.get_height() == DestRect.get_height())
 	{
 		// 位置だけの変更だ
-		if(Drawer) Drawer->SetDestPos(DestRect.left, DestRect.top);
+		if(Drawer) Drawer->SetDestPos(rect.left, rect.top);
 		inherited::SetDestRectangle(rect);
 	}
 	else
 	{
 		// サイズも違う
 		DestSizeChanged = true;
+		if(Drawer) Drawer->SetDestSize(rect.get_width(), rect.get_height());
 		inherited::SetDestRectangle(rect);
 	}
 }
