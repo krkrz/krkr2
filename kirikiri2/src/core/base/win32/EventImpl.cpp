@@ -472,7 +472,7 @@ void __fastcall tTVPVSyncTimingThread::UtilWndProc(Messages::TMessage &Msg)
 
 	// 時間をチェック
 	bool drawn = false;
-	DWORD vblank_wait_start = timeGetTime();
+//	DWORD vblank_wait_start = timeGetTime();
 
 	// VSync 待ちを行う
 	bool delayed = false;
@@ -504,7 +504,7 @@ void __fastcall tTVPVSyncTimingThread::UtilWndProc(Messages::TMessage &Msg)
 		}
 	}
 
-	DWORD vblank_wait_end = timeGetTime();
+//	DWORD vblank_wait_end = timeGetTime();
 
 	// タイマの時間原点を設定する
 	if(!delayed)
@@ -553,7 +553,7 @@ void __fastcall tTVPVSyncTimingThread::UtilWndProc(Messages::TMessage &Msg)
 	// これは十分な時間をとれるよう、vsync 待ちの直後に呼ばれる
 	TVPProcessContinuousHandlerEventFlag = true; // set flag
 	TVPDeliverAllEvents(); // 強制的にイベントを配る
-
+/*
 static DWORD last_report_tick;
 
 if(timeGetTime() > last_report_tick + 5000)
@@ -563,7 +563,7 @@ if(timeGetTime() > last_report_tick + 5000)
 	TVPAddLog(TJS_W("VSyncInterval : ") + ttstr((int)VSyncInterval));
 	TVPAddLog(TJS_W("VSync wait time : ") + ttstr((int)(vblank_wait_end - vblank_wait_start)));
 }
-
+*/
 }
 //---------------------------------------------------------------------------
 
