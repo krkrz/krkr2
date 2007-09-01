@@ -113,7 +113,7 @@ AutoIncBuild=0
 MajorVer=2
 MinorVer=29
 Release=2007
-Build=825
+Build=901
 Debug=0
 PreRelease=0
 Special=0
@@ -125,7 +125,7 @@ CodePage=932
 [Version Info Keys]
 CompanyName=
 FileDescription=TVP(KIRIKIRI) 2 core / Scripting Platform for Win32
-FileVersion=2.29.2007.825
+FileVersion=2.29.2007.901
 InternalName=tvp2/win32
 LegalCopyright=(KIRIKIRI core) (C) 1997-2007 W.Dee and Contributors All Rights Reserved. This software is based in part on the work of Independent JPEG Group. For details: Run this program with '-about' option.
 LegalTrademarks=
@@ -179,7 +179,7 @@ Item1=..\..\..\..\bin\win32
 DebugSourceDirs=C:\Program Files\Borland\CBuilder5\Projects\tvp2win32\visual\IA32\;C:\Program Files\Borland\CBuilder5\Projects\comps\o\erinalib\library\common\;C:\Program Files\Borland\CBuilder5\Projects\tvp2win32\kirikiri2\src\core\visual\IA32\;C:\Program Files\Borland\CBuilder5\Projects\tvp2win32\kirikiri2\src\core\sound\cpu\
 
 [Parameters]
-RunParams=-logerror=yes -wheel=message ..\..\tests -sel -debug -vorbis_pcm_format=f32 -smoothzoom=no
+RunParams=-logerror=yes -wheel=message ..\..\tests -sel -debug -vorbis_pcm_format=f32 -usedb
 HostApplication=
 RemoteHost=
 RemotePath=
