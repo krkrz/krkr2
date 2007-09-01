@@ -192,7 +192,7 @@ class ButtonLayer extends AnimKAGLayer
 		}
 		// 隣にハミ出さないように調整
 		if (ox + cw > w) cw = w - ox;
-		if (oy + ch > h) cw = h - oy;
+		if (oy + ch > h) ch = h - oy;
 		// コピーする
 		copyRect(w*num + ox, oy, temp, 0, 0, cw, ch);
 	}
@@ -261,15 +261,15 @@ class ButtonLayer extends AnimKAGLayer
         var cw = temp.imageWidth, ch = temp.imageHeight;
         // 隣にハミ出さないように調整
 		if (ox + cw > w) cw = w - ox;
-		if (oy + ch > h) cw = h - oy;
+		if (oy + ch > h) ch = h - oy;
 		// コピーする
-		copyRect(w*num + ox, oy, temp, 0, 0, cw, ch);
+		operateRect(w*num + ox, oy, temp, 0, 0, cw, ch);
 	}
 
     /**
      * ボタン画像UI情報の読み込み
      */
-    function loadUIInfo(uiinfo) {
+    function loadUIInfo(uiinfo, noclear = false) {
         var temp = window.temporaryLayer;
         var states = uiinfo.uistates;
         
@@ -297,7 +297,7 @@ class ButtonLayer extends AnimKAGLayer
         imageHeight = h;
         callOnPaint = true;
         Butt_imageLoaded = true;
-        fillRect(0, 0, imageWidth, imageHeight, 0);
+        fillRect(0, 0, imageWidth, imageHeight, 0) if (!noclear);
 
         var normal;
         if (states.off !== void) {
@@ -346,6 +346,8 @@ class ButtonLayer extends AnimKAGLayer
                 normal = states.normal_on;
             } else if (states.on !== void) {
                 normal = states.on;
+            } else if (states.over !== void) {
+                normal = states.over;
             } else if (states.normal) {
                 normal = states.normal;
             }

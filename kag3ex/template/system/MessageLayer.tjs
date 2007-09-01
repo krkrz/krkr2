@@ -18,12 +18,14 @@ class LinkButtonLayer extends ButtonLayer
 
     var _eventTransparent;
     var _focusable;
+	var _enabled;
     
 	function LinkButtonLayer(win, par)
 	{
 		// コンストラクタ
         super.ButtonLayer(...);
-        focusable = false; // フォーカスは受け取らない
+		focusable = false; // フォーカスは受け取らない
+		enabled  = true;
         eventTransparent = false;
         hint = "";
 	}
@@ -80,8 +82,9 @@ class LinkButtonLayer extends ButtonLayer
         // 有効かどうか
         // 無効な場合はイベントを透過させる
         setter(x) {
-            super.enabled = x;
-            if (x) {
+			_enabled = x;
+			var en = super.enabled = getEnabled(x);
+            if (en) {
                 hitType = _eventTransparent ? htProvince : htMask; 
                 super.focusable = _focusable;
             } else {
@@ -90,7 +93,7 @@ class LinkButtonLayer extends ButtonLayer
             }
         }
         getter() {
-            return super.enabled;
+            return _enabled;
         }
     }
     
@@ -120,7 +123,7 @@ class LinkButtonLayer extends ButtonLayer
 		setter(x)
 		{
             _focusable = x;
-            super.focusable = x && enabled;
+            super.focusable = x && getEnabled(enabled);
         }
         getter()
 		{
@@ -134,11 +137,15 @@ class LinkButtonLayer extends ButtonLayer
         }
         setter(v) {
             super.toggle = v;
-            if (v && groupName != "") {
-                parent.updateRadio(this);
+			if (radio) {
+				parent.updateRadio(this) if (v);
+				enabled   = _enabled;
+				focusable = _focusable;
             }
         }
     }
+	property radio { getter { return groupName != ""; } }
+	function getEnabled(en) { return en && !(radio && toggle); }
 }
 
 class LinkCheckBoxLayer extends CheckBoxLayer

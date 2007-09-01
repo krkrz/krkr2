@@ -337,6 +337,7 @@ class ActionSequense {
     function doAction(now, stopFlag) {
 		if (actions.count > 0) {
 			if (actions[0].doAction(target, now, stopFlag)) {
+				invalidate actions[0] if (isvalid actions[0]);
 				actions.erase(0);
 			}
 		}
@@ -350,6 +351,7 @@ class ActionSequense {
 		while (actions.count > 0) {
 			//dm("ƒAƒNƒVƒ‡ƒ“’â~:" + actions.count);
 			actions[0].doAction(target, 0, true);
+			invalidate actions[0] if (isvalid actions[0]);
 			actions.erase(0);
         }
     }

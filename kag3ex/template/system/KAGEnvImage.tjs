@@ -625,7 +625,7 @@ class KAGEnvImage {
 				}
 			}, tr);
 			return tr;
-		} else if (elm != null && (transitionName[name] !== void || name.substring(0,5) == "trans")) {
+		} else if (elm != null && (transitionName[name] !== void)) {
 			//dm("規定のシステムトランジション:" + name);
 			var tr = %[];
 			// 規定のトランジション
@@ -633,7 +633,7 @@ class KAGEnvImage {
 			foreach(elm, function(name, value, elm, tr) {
 				if (transitionParam[name] !== void) {
 					tr[name] = value;
-                }
+				}
 			}, tr);
 			tr.method = name;
 			return tr;
@@ -1241,7 +1241,10 @@ class KAGEnvImage {
 		if (trans === void) {
 			if (elm.fade) {
 				var fadeTime = elm.fade;
-				trans = %[ "time" => fadeTime > 1 ? fadeTime : fadeValue];
+				trans = %[
+					"time" => fadeTime > 1 ? fadeTime : fadeValue,
+					"method" => "crossfade",
+					];
 			} else {
 				// 表示・消去指定に対応
 				if (mode == 1 || mode == 2) {
