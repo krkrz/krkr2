@@ -100,13 +100,17 @@ class SelectButtonLayer extends ButtonLayer
 
 	function onKeyDown(key, shift, process)
 	{
-        // キーが押された
-        if(window.preProcessKeys(key, shift)) return;
-        if (enabled && (key == VK_SPACE || key == VK_RETURN)) {
-            owner.onButtonClick(this);
-        }
-        if (this isvalid) super.onKeyDown(...);
-    }
+		// キーが押された
+		if (window.preProcessKeys(key, shift)) return;
+		switch (key) {
+		case VK_SPACE: case VK_RETURN:
+			owner.onButtonClick(this) if (enabled);
+			break;
+		case VK_ESCAPE:
+			return window.processKeys(key, shift);
+		}
+		if (this isvalid) super.onKeyDown(...);
+	}
 
 	function onFocus(prevfocused, direction)
 	{

@@ -30,9 +30,13 @@ class DialogButtonLayer extends ButtonLayer
 	function onExecute(x, y, button, shift)
 	{
         if (enabled && button == mbLeft && Butt_mouseDown) parent.onButtonClick(linkNum);
-        else if (button == mbRight) parent.close();
+//      else if (button == mbRight) parent.close();
         
         if (this isvalid) super.onExecute(...);
+	}
+	function onMouseUp(x, y, button) {
+		super.onMouseUp(...);
+		if (button == mbRight) parent.close();
 	}
 
 	function onMouseEnter()
@@ -48,23 +52,26 @@ class DialogButtonLayer extends ButtonLayer
 		super.onMouseLeave(...);
 	}
 
-	property eventTransparent
-	{
-		// イベントを透過するかどうか
-		setter(x)
-		{
-			if(_eventTransparent != x)
-			{
-				_eventTransparent = x;
-				hitType = x ? htProvince : htMask; 
-					// ボタン画像は領域画像は持っていないので
-					// hitType を htProvince にすると必ず
-					// マウスイベントを透過するようになる
-			}
+	function resetHitType() {
+		// ボタン画像は領域画像は持っていないので hitType を
+		// htProvince にすると必ずマウスイベントを透過するようになる
+		hitType = (_eventTransparent || !enabled) ? htProvince : htMask;
+	}
+
+	// イベントを透過するかどうか
+	property eventTransparent {
+		getter()  { return _eventTransparent; }
+		setter(x) {
+			_eventTransparent = x;
+			resetHitType();
 		}
-		getter()
-		{
-			return _eventTransparent;
+	}
+	// disable時にはイベント透過させる
+	property enabled {
+		getter() { return super.enabled; }
+		setter(x) {
+			super.enabled = x;
+			resetHitType();
 		}
 	}
 }
@@ -974,7 +981,7 @@ class DialogLayer extends KAGLayer
     }
 
     function uiload(elm) {
-        global.uiload(this, elm);
+		return global.uiload(this, elm);
     }
 
 }
