@@ -1282,7 +1282,7 @@ StartTick = timeGetTime();
 #endif
 				if(TextureBuffer)
 				{
-					TVPAddImportantLog(TJS_W("Passthrough: Texture has already locked (StartBitmapCompletion() has called twice without EndBitmapCompletion()), unlocking the texture."));
+					TVPAddImportantLog(TJS_W("Passthrough: Texture has already been locked (StartBitmapCompletion() has been called twice without EndBitmapCompletion()), unlocking the texture."));
 					Texture->Unlock(NULL), TextureBuffer = NULL;
 				}
 
