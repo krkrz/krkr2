@@ -141,14 +141,8 @@ protected:
 
 	void __fastcall UtilWndProc(Messages::TMessage &Msg)
 	{
-		if(Msg.Msg != WM_APP+1)
-		{
-			Msg.Result =  DefWindowProc(UtilWindow, Msg.Msg, Msg.WParam, Msg.LParam);
-			return;
-		}
-
-		TVPProcessContinuousHandlerEventFlag = true; // set flag
-		TVPDeliverAllEvents(); // 強制的にイベントを配る
+		Msg.Result =  DefWindowProc(UtilWindow, Msg.Msg, Msg.WParam, Msg.LParam);
+		return;
 	}
 
 public:
@@ -200,8 +194,8 @@ void tTVPContinuousHandlerCallLimitThread::Execute()
 			{
 				if(NextEventTick <= curtick)
 				{
-					::PostMessage(UtilWindow, WM_APP+1, 0, 0);
-						// this will activate main thread' message pump
+					TVPProcessContinuousHandlerEventFlag = true; // set flag to process event on next idle
+					::PostMessage(UtilWindow, WM_APP+2, 0, 0);
 					while(NextEventTick <= curtick) NextEventTick += Interval;
 				}
 				tjs_uint64 sleeptime_64 = NextEventTick - curtick;
@@ -551,8 +545,8 @@ void __fastcall tTVPVSyncTimingThread::UtilWndProc(Messages::TMessage &Msg)
 
 	// ContinuousHandler を呼ぶ
 	// これは十分な時間をとれるよう、vsync 待ちの直後に呼ばれる
-	TVPProcessContinuousHandlerEventFlag = true; // set flag
-	TVPDeliverAllEvents(); // 強制的にイベントを配る
+	TVPProcessContinuousHandlerEventFlag = true; // set flag to invoke continuous handler on next idle
+
 /*
 static DWORD last_report_tick;
 
