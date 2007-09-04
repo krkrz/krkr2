@@ -1,0 +1,52 @@
+Plugins.link("layerExText.dll");
+
+var WIDTH=800;
+var HEIGHT=600;
+
+class MyWindow extends Window
+{
+	var base;
+	var layer;
+	
+	function MyWindow() {
+		super.Window();
+		setInnerSize(WIDTH, HEIGHT);
+
+		// プライマリレイヤ
+		base = new Layer(this, null);
+		base.setSize(WIDTH, HEIGHT);
+		base.fillRect(0,0,WIDTH,HEIGHT,0xff000000);
+		add(base);
+
+		// 表示レイヤ
+		layer = new Layer(this, base);
+		layer.setSize(WIDTH, HEIGHT);
+		layer.setPos(0, 0);
+		layer.visible = true;
+		add(layer);
+
+		var app = new GdiPlus.Appearance();
+		app.addColorPen(0xffffffff, 10, 0, 0);
+		app.addSolidBrush(0xff000000, 0, 0);
+		var font = new GdiPlus.FontInfo("Arial", 40, GdiPlus.FontStyle.FontStyleBold);
+		layer.drawString(font, app, 10, 10, "これはテストのテキストABC", false);
+
+		app.clear();
+		app.addLinearGradientBrush(0, 0, 0xffff0000, 0, 50, 0xff0000ff, 0, 0);
+		app.addColorPen(0xffffffff, 1, 0, 0);
+		layer.drawString(font, app, 10, 150, "別のブラシにしてみるテスト", false);
+	}
+
+	function onKeyDown(key, shift)
+	{
+		Debug.message("キーがおされた:" + key);
+		if(key == VK_ESCAPE) {
+			close();
+		} else if(key == VK_TAB) {
+			fullScreen = !fullScreen;
+		}
+	}
+};
+
+var win = new MyWindow();
+win.visible = true;
