@@ -53,7 +53,7 @@ void deInitGdiPlus()
  * @param fontFileName フォントファイル名
  */
 void
-FontInfo::addPrivateFont(const tjs_char *fontFileName)
+GdiPlus::addPrivateFont(const tjs_char *fontFileName)
 {
 	ttstr filename = TVPGetPlacedPath(fontFileName);
 	if (filename.length()) {
@@ -94,7 +94,7 @@ FontInfo::addPrivateFont(const tjs_char *fontFileName)
  * プライベートフォント一覧をログに出力
  */
 void
-FontInfo::showPrivateFontList()
+GdiPlus::showPrivateFontList()
 {
 	if (!privateFontCollection)	return;
 	int count = privateFontCollection->GetFamilyCount();
@@ -113,6 +113,9 @@ FontInfo::showPrivateFontList()
 	}
 }
 
+/**
+ * コンストラクタ
+ */
 FontInfo::FontInfo() : fontFamily(NULL), emSize(12), style(0) {}
 
 /**
@@ -128,6 +131,9 @@ FontInfo::FontInfo(const tjs_char *familyName, REAL emSize, INT style) : fontFam
 	setStyle(style);
 }
 
+/**
+ * コピーコンストラクタ
+ */
 FontInfo::FontInfo(const FontInfo &orig)
 {
 	fontFamily = orig.fontFamily ? orig.fontFamily->Clone() : NULL;
@@ -140,17 +146,18 @@ FontInfo::FontInfo(const FontInfo &orig)
  */
 FontInfo::~FontInfo()
 {
-	clearFont();
+	clear();
 }
 
 /**
  * フォント情報のクリア
  */
 void
-FontInfo::clearFont()
+FontInfo::clear()
 {
 	delete fontFamily;
 	fontFamily = NULL;
+	familyName = "";
 }
 
 /**
@@ -160,20 +167,22 @@ void
 FontInfo::setFamilyName(const tjs_char *familyName)
 {
 	if (familyName) {
-		clearFont();
+		clear();
 		if (privateFontCollection) {
 			fontFamily = new FontFamily(familyName, privateFontCollection);
 			if (fontFamily->IsAvailable()) {
+				this->familyName = familyName;
 				return;
 			} else {
-				clearFont();
+				clear();
 			}
 		}
 		fontFamily = new FontFamily(familyName);
 		if (fontFamily->IsAvailable()) {
+			this->familyName = familyName;
 			return;
 		} else {
-			clearFont();
+			clear();
 		}
 	}
 }

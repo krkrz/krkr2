@@ -5,12 +5,26 @@
 class GdiPlus {
 
 	// FontStyle 定義
-	FontStyle.FontStyleRegular = 0;
-	FontStyle.FontStyleBold = 1;
-	FontStyle.FontStyleItalic = 2;
-	FontStyle.FontStyleBoldItalic = 3;
-	FontStyle.FontStyleUnderline = 4;
-	FontStyle.FontStyleStrikeout = 8;
+	FontStyleRegular = 0;
+	FontStyleBold = 1;
+	FontStyleItalic = 2;
+	FontStyleBoldItalic = 3;
+	FontStyleUnderline = 4;
+	FontStyleStrikeout = 8;
+
+	/**
+	 * プライベートフォントの追加
+	 * @param fontFileName フォントファイル名
+	 * アプリケーション固有のフォントを追加します。
+	 * 吉里吉里アーカイブ中にあるフォントも登録できます。
+	 */
+	addPrivateFont(fontFileName);
+
+	/**
+	 * プライベートフォント一覧をログに出力
+	 * 情報参照用です。これで出力される名前をファミリーに指定できます。
+	 */
+	showPrivateFontList();
 	
 	/**
 	 * フォント情報
@@ -24,33 +38,22 @@ class GdiPlus {
 		 */
 		function FontInfo(familyName, emSize, style);
 		
-		property familyName; //< フォントファミリー（書き込み専用)
+		property familyName; //< フォントファミリー
 		property emSize;     //< フォントのサイズ
 		property style;      //< フォントのスタイル
 	};
 
 	/**
-	 * プライベートフォントの追加
-	 * @param fontFileName フォントファイル名
-	 * アプリケーション固有のフォントを追加します。
-	 * 吉里吉里アーカイブ中にあるフォントも登録できます。
-	 */
-	FontInfo.addPrivateFont(fontFileName);
-
-	/**
-	 * プライベートフォント一覧をログに出力
-	 * 情報参照用です。これで出力される名前をファミリーに指定できます。
-	 */
-	FontInfo.showPrivateFontList();
-
-	/**
 	 * 描画外観情報
-	 * 描画に対して、複数の「塗り」と「線」を指定できます。
 	 * Illustrator のアピアランスをイメージしてください。
+	 * 描画に対して、複数のブラシ（塗り）とペン（線）を指定できます。
 	 * 先に追加した方が下に入ります
 	 */
 	class Appearance {
 
+		/**
+		 * コンストラクタ
+		 */
 		function Appearance();
 
 		/**
@@ -68,11 +71,11 @@ class GdiPlus {
 
 		/**
 		 * グラデーションブラシの追加
-		 * @param x1
-		 * @param y1
+		 * @param x1 色指定その1ポイント座標X
+		 * @param y1 色指定その1ポイント座標Y
 		 * @param argb1 色指定その１
-		 * @param x1
-		 * @param y1
+		 * @param x1 色指定その1ポイント座標X
+		 * @param y1 色指定その1ポイント座標Y
 		 * @param argb1 色指定その２
 		 * @param ox 表示オフセットX
 		 * @param oy 表示オフセットY
@@ -98,12 +101,12 @@ class Layer {
 
 	/**
 	 * アウトライン描画での文字列の描画
-	 * @param font フォント FontInfo でフォントを指定します
-	 * @param app アピアランス Appearance で描画スタイルを指定します
+	 * @param font フォント GdiPlus.FontInfo でフォントを指定します
+	 * @param app アピアランス GdiPlus.Appearance で描画スタイルを指定します
 	 * @param x 描画位置X
 	 * @param y 描画位置Y
 	 * @param text 描画テキスト
-	 * @param noupdate true なら画面更新処理を行わない
+	 * @param noupdate true なら update() による画面更新指定を行わない
 	 */
 	void drawString(font, app, x, y, text, noupdate);
 };
