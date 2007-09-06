@@ -11,9 +11,6 @@ NCB_REGISTER_SUBCLASS(FontInfo) {
 	NCB_PROPERTY_WO(familyName, setFamilyName);
 	NCB_PROPERTY(emSize, getEmSize, setEmSize);
 	NCB_PROPERTY(style, getStyle, setStyle);
-// statics
-	NCB_METHOD(addPrivateFont);
-	NCB_METHOD(showPrivateFontList);
 };
 
 NCB_REGISTER_SUBCLASS(Appearance) {
@@ -24,23 +21,23 @@ NCB_REGISTER_SUBCLASS(Appearance) {
 	NCB_METHOD(addColorPen);
 };
 
-#define ENUM(n) struct prop ## n { static Class Get() { return n; } }; Property(TJS_W(# n), & prop ## n::Get, 0)
+#define ENUM(n) Variant(#n, (int)n)
 
-NCB_REGISTER_SUBCLASS_DELAY(FontStyle) {
+NCB_REGISTER_CLASS(GdiPlus)
+{
+// enums
 	ENUM(FontStyleRegular);
 	ENUM(FontStyleBold);
 	ENUM(FontStyleItalic);
 	ENUM(FontStyleBoldItalic);
 	ENUM(FontStyleUnderline);
 	ENUM(FontStyleStrikeout);
-};
 
-struct GdiPlus {
-};
+// statics
+	NCB_METHOD(addPrivateFont);
+	NCB_METHOD(showPrivateFontList);
 
-NCB_REGISTER_CLASS(GdiPlus)
-{
-	NCB_SUBCLASS(FontStyle, FontStyle);
+// classes
 	NCB_SUBCLASS(FontInfo,FontInfo);
 	NCB_SUBCLASS(Appearance,Appearance);
 }
