@@ -11,6 +11,22 @@ using namespace std;
 #include "layerExBase.hpp"
 
 /**
+ * GDIPlus 固有処理用
+ */
+struct GdiPlus {
+	/**
+	 * プライベートフォントの追加
+	 * @param fontFileName フォントファイル名
+	 */
+	static void addPrivateFont(const tjs_char *fontFileName);
+
+	/**
+	 * プライベートフォント一覧をログに出力
+	 */
+	static void showPrivateFontList();
+};
+
+/**
  * フォント情報
  */
 class FontInfo {
@@ -18,13 +34,14 @@ class FontInfo {
 
 protected:
 	FontFamily *fontFamily; //< フォントファミリー
+	ttstr familyName;
 	REAL emSize; //< フォントサイズ 
 	INT style; //< フォントスタイル
 
 	/**
 	 * フォント情報のクリア
 	 */
-	void clearFont();
+	void clear();
 
 public:
 
@@ -44,21 +61,11 @@ public:
 	virtual ~FontInfo();
 
 	void setFamilyName(const tjs_char *familyName);
+	const tjs_char *getFamilyName() { return familyName.c_str(); }
 	void setEmSize(REAL emSize) { this->emSize = emSize; }
 	REAL getEmSize() {  return emSize; }
 	void setStyle(INT style) { this->style = style; }
 	INT getStyle() { return style; }
-
-	/**
-	 * プライベートフォントの追加
-	 * @param fontFileName フォントファイル名
-	 */
-	static void addPrivateFont(const tjs_char *fontFileName);
-
-	/**
-	 * プライベートフォント一覧をログに出力
-	 */
-	static void showPrivateFontList();
 };
 
 /**

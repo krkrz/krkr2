@@ -28,7 +28,7 @@ class MyWindow extends Window
 		var app = new GdiPlus.Appearance();
 		app.addColorPen(0xffffffff, 10, 0, 0);
 		app.addSolidBrush(0xff000000, 0, 0);
-		var font = new GdiPlus.FontInfo("Arial", 40, GdiPlus.FontStyle.FontStyleBold);
+		var font = new GdiPlus.FontInfo("Arial", 40, GdiPlus.FontStyleBold);
 		layer.drawString(font, app, 10, 10, "これはテストのテキストABC", false);
 
 		app.clear();
