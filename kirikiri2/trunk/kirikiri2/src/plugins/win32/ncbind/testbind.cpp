@@ -196,6 +196,12 @@ NCB_REGISTER_CLASS(TypeConvChecker) {
 
 	RawCallback("Raw1", &RawCallback1, 0); //NCB_METHOD_RAW_CALLBACK(Raw1, RawCallback1, 0);
 	RawCallback("Raw2", &RawCallback2, 0); //NCB_METHOD_RAW_CALLBACK(Raw2, RawCallback2, 0);
+
+	Variant("instint",   98765,    0);
+	Variant("instfloat", 98765.99, 0);
+
+	Variant("staticint",   12345);
+	Variant("staticfloat", 12345.0123);
 }
 
 CHECK(TypeConvChecker,
@@ -210,6 +216,28 @@ CHECK(TypeConvChecker,
 
 	  SCRIPT_LOG_CHECK("inst.Raw1()", "RawCallback1")
 	  SCRIPT_LOG_CHECK("inst.Raw2()", "RawCallback2:TypeConvChecker")
+
+	  // variant test
+	  SCRIPT_EVAL(     "inst.instint   === 98765")
+	  SCRIPT_EVAL(     "inst.instfloat === 98765.99")
+	  SCRIPT_MUST_ERROR("inst.staticint   === 12345")
+	  SCRIPT_MUST_ERROR("inst.staticfloat === 12345.0123")
+
+	  "inst.instint = 0;"
+	  "var inst2 = new TypeConvChecker();"
+	  SCRIPT_EVAL(     "inst.instint    === 0")
+	  SCRIPT_EVAL(     "inst2.instint   === 98765")
+	  "invalidate inst2;"
+
+	  SCRIPT_EVAL(     "TypeConvChecker.staticint   === 12345")
+	  SCRIPT_EVAL(     "TypeConvChecker.staticfloat === 12345.0123")
+	  SCRIPT_EVAL(     "TypeConvChecker.instint     === 98765")
+	  SCRIPT_EVAL(     "TypeConvChecker.instfloat   === 98765.99")
+
+	  "invalidate inst;"
+	  "TypeConvChecker.instint = 0;"
+	  "var inst = new TypeConvChecker();"
+	  SCRIPT_EVAL(     "inst.instint    === 0")
 
 	  "invalidate inst;"
 	  SCRIPT_END);

@@ -1456,6 +1456,21 @@ public:
 		DoItem(GetName(n), SubClassT::Create(_isRegist));
 	}
 
+	/// tTJSVariant‚ð“o˜^‚·‚é
+	template <typename NAME, typename VALUE>
+	void Variant(NAME n, VALUE const v, _FlagsT flag = TJS_STATICMEMBER) {
+		typedef typename ncbTypeConvertor::SelectConvertorType<tTJSVariant, VALUE>::Type ConvT;
+		_StringT s(n);
+		_NameT name = s.c_str();
+		if (!_isRegist)_impl.UnregistItem( name);
+		else {
+			ConvT cv;
+			tTJSVariant var;
+			cv(var, v);
+			_impl.RegistVariant(name, var, flag);
+		}
+	}
+
 	void Regist();
 };
 
@@ -1474,6 +1489,7 @@ struct ncbRegistNativeClassBase {
 	void UnregistBegin()			{}
 	void UnregistItem(NameT)		{}
 	void UnregistEnd()				{}
+	void   RegistVariant(NameT, tTJSVariant const &, FlagsT) {}
 
 	NameT  GetName() const {return _className; }
 protected:
@@ -1512,6 +1528,10 @@ struct ncbRegistNativeClass : public ncbRegistNativeClassBase {
 		TJSNativeClassRegisterNCM(_classobj, TJS_W("finalize"),
 								  TJSCreateNativeClassMethod(EmptyCallback),
 								  _className, nitMethod);
+	}
+
+	void RegistVariant(NameT name, tTJSVariant const &val, FlagsT flg) {
+		_classobj->PropSet(TJS_MEMBERENSURE | flg, name, 0, &val, _classobj);
 	}
 
 	void RegistItem(NameT name, ItemT item) {
@@ -1674,6 +1694,10 @@ struct ncbAttachTJS2Class : public ncbRegistNativeClassBase {
 		}
 	}
 
+	void RegistVariant(NameT name, tTJSVariant const &val, FlagsT flg) {
+		_tjs2ClassObj->PropSet(TJS_MEMBERENSURE | flg, name, 0, &val, ((flg & TJS_STATICMEMBER) ? _global : _tjs2ClassObj));
+	}
+
 	void RegistItem(NameT name, ItemT item) {
 		NCB_LOG_2(TJS_W("  RegistItem: "), name);
 		if (!item) return;
@@ -1684,7 +1708,7 @@ struct ncbAttachTJS2Class : public ncbRegistNativeClassBase {
 		tTJSVariant val(dsp);
 		dsp->Release();
 		FlagsT flg = item->GetFlags();
-		_tjs2ClassObj->PropSet(TJS_MEMBERENSURE | flg, name, 0, &val, ((flg & TJS_STATICMEMBER) ? _global : _tjs2ClassObj));
+		RegistVariant(name, val, flg);
 		item->Release();
 	}
 
