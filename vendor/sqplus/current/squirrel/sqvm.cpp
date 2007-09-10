@@ -171,10 +171,13 @@ bool SQVM::ObjCmp(const SQObjectPtr &o1,const SQObjectPtr &o2,SQInteger &result)
 		case OT_TABLE:
 		case OT_USERDATA:
 		case OT_INSTANCE:
-			Push(o1);Push(o2);
-			if(_delegable(o1)->_delegate)CallMetaMethod(_delegable(o1),MT_CMP,2,res);
-			break;
-		default: break; //shutup compiler
+			if(_delegable(o1)->_delegate) {
+				Push(o1);Push(o2);
+				if(CallMetaMethod(_delegable(o1),MT_CMP,2,res)) break;
+			}
+			//continues through (no break needed)
+		default: 
+			_RET_SUCCEED( _userpointer(o1) < _userpointer(o2)?-1:1 );
 		}
 		if(type(res)!=OT_INTEGER) { Raise_CompareError(o1,o2); return false; }
 			_RET_SUCCEED(_integer(res));
@@ -471,24 +474,24 @@ void SQVM::PopVarArgs(VarArgs &vargs)
 		_vargsstack.pop_back();
 }
 
-#define _FINISH(stoploop) {finished = stoploop; return true; }
+#define _FINISH(howmuchtojump) {jump = howmuchtojump; return true; }
 bool SQVM::FOREACH_OP(SQObjectPtr &o1,SQObjectPtr &o2,SQObjectPtr 
-&o3,SQObjectPtr &o4,SQInteger arg_2,bool &finished)
+&o3,SQObjectPtr &o4,SQInteger arg_2,int exitpos,int &jump)
 {
 	SQInteger nrefidx;
 	switch(type(o1)) {
 	case OT_TABLE:
-		if((nrefidx = _table(o1)->Next(false,o4, o2, o3)) == -1) _FINISH(true);
-		o4 = (SQInteger)nrefidx; _FINISH(false);
+		if((nrefidx = _table(o1)->Next(false,o4, o2, o3)) == -1) _FINISH(exitpos);
+		o4 = (SQInteger)nrefidx; _FINISH(1);
 	case OT_ARRAY:
-		if((nrefidx = _array(o1)->Next(o4, o2, o3)) == -1) _FINISH(true);
-		o4 = (SQInteger) nrefidx; _FINISH(false);
+		if((nrefidx = _array(o1)->Next(o4, o2, o3)) == -1) _FINISH(exitpos);
+		o4 = (SQInteger) nrefidx; _FINISH(1);
 	case OT_STRING:
-		if((nrefidx = _string(o1)->Next(o4, o2, o3)) == -1)_FINISH(true);
-		o4 = (SQInteger)nrefidx; _FINISH(false);
+		if((nrefidx = _string(o1)->Next(o4, o2, o3)) == -1)_FINISH(exitpos);
+		o4 = (SQInteger)nrefidx; _FINISH(1);
 	case OT_CLASS:
-		if((nrefidx = _class(o1)->Next(o4, o2, o3)) == -1)_FINISH(true);
-		o4 = (SQInteger)nrefidx; _FINISH(false);
+		if((nrefidx = _class(o1)->Next(o4, o2, o3)) == -1)_FINISH(exitpos);
+		o4 = (SQInteger)nrefidx; _FINISH(1);
 	case OT_USERDATA:
 	case OT_INSTANCE:
 		if(_delegable(o1)->_delegate) {
@@ -497,19 +500,19 @@ bool SQVM::FOREACH_OP(SQObjectPtr &o1,SQObjectPtr &o2,SQObjectPtr
 			Push(o4);
 			if(CallMetaMethod(_delegable(o1), MT_NEXTI, 2, itr)){
 				o4 = o2 = itr;
-				if(type(itr) == OT_NULL) _FINISH(true);
+				if(type(itr) == OT_NULL) _FINISH(exitpos);
 				if(!Get(o1, itr, o3, false,false)) {
 					Raise_Error(_SC("_nexti returned an invalid idx"));
 					return false;
 				}
-				_FINISH(false);
+				_FINISH(1);
 			}
 			Raise_Error(_SC("_nexti failed"));
 			return false;
 		}
 		break;
 	case OT_GENERATOR:
-		if(_generator(o1)->_state == SQGenerator::eDead) _FINISH(true);
+		if(_generator(o1)->_state == SQGenerator::eDead) _FINISH(exitpos);
 		if(_generator(o1)->_state == SQGenerator::eSuspended) {
 			SQInteger idx = 0;
 			if(type(o4) == OT_INTEGER) {
@@ -518,7 +521,7 @@ bool SQVM::FOREACH_OP(SQObjectPtr &o1,SQObjectPtr &o2,SQObjectPtr
 			o2 = idx;
 			o4 = idx;
 			_generator(o1)->Resume(this, arg_2+1);
-			_FINISH(false);
+			_FINISH(0);
 		}
 	default: 
 		Raise_Error(_SC("cannot iterate %s"), GetTypeName(o1));
@@ -725,6 +728,7 @@ exception_restore:
 					ct_target = arg0;
 					temp_reg = STK(arg1);
 					ct_stackbase = _stackbase+arg2;
+
 common_call:
 					SQInteger last_top = _top;
 					switch (type(temp_reg)) {
@@ -734,6 +738,10 @@ common_call:
 							SQGenerator *gen = SQGenerator::Create(_ss(this), _closure(temp_reg));
 							_GUARD(gen->Yield(this));
 							Return(1, ct_target, temp_reg);
+
+
+
+
 							STK(ct_target) = gen;
 							while (last_top >= _top) _stack._vals[last_top--].Null();
 							continue;
@@ -744,7 +752,7 @@ common_call:
 						continue;
 					case OT_NATIVECLOSURE: {
 						bool suspend;
-						_GUARD(CallNative(_nativeclosure(temp_reg), arg3, ct_stackbase, ct_tailcall, temp_reg,suspend));
+						_GUARD(CallNative(_nativeclosure(temp_reg), arg3, ct_stackbase, temp_reg,suspend));
 						if(suspend){
 							_suspended = SQTrue;
 							_suspended_target = ct_target;
@@ -927,9 +935,14 @@ common_call:
 				_GUARD(_generator(STK(arg1))->Resume(this, arg0));
 				traps += ci->_etraps;
                 continue;
-			case _OP_FOREACH:{ bool finished;
-				_GUARD(FOREACH_OP(STK(arg0),STK(arg2),STK(arg2+1),STK(arg2+2),arg2,finished));
-				if(finished) ci->_ip += sarg1; }
+			case _OP_FOREACH:{ int tojump;
+				_GUARD(FOREACH_OP(STK(arg0),STK(arg2),STK(arg2+1),STK(arg2+2),arg2,sarg1,tojump));
+				ci->_ip += tojump; }
+				continue;
+			case _OP_POSTFOREACH:
+				assert(type(STK(arg0)) == OT_GENERATOR);
+				if(_generator(STK(arg0))->_state == SQGenerator::eDead) 
+					ci->_ip += (sarg1 - 1);
 				continue;
 			case _OP_DELEGATE: _GUARD(DELEGATE_OP(TARGET,STK(arg1),STK(arg2))); continue;
 			case _OP_CLONE:
@@ -1059,7 +1072,7 @@ void SQVM::CallDebugHook(SQInteger type,SQInteger forcedline)
 	Pop(nparams);
 }
 
-bool SQVM::CallNative(SQNativeClosure *nclosure,SQInteger nargs,SQInteger stackbase,bool tailcall,SQObjectPtr &retval,bool &suspend)
+bool SQVM::CallNative(SQNativeClosure *nclosure,SQInteger nargs,SQInteger stackbase,SQObjectPtr &retval,bool &suspend)
 {
 	if (_nnativecalls + 1 > MAX_NATIVE_CALLS) { Raise_Error(_SC("Native stack overflow")); return false; }
 	SQInteger nparamscheck = nclosure->_nparamscheck;
@@ -1373,7 +1386,7 @@ SQInteger prevstackbase = _stackbase;
 		break;
 	case OT_NATIVECLOSURE:{
 		bool suspend;
-		return CallNative(_nativeclosure(closure), nparams, stackbase, false, outres,suspend);
+		return CallNative(_nativeclosure(closure), nparams, stackbase, outres,suspend);
 		
 						  }
 		break;

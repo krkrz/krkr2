@@ -7,7 +7,7 @@
 
 enum BitWiseOP {
 	BW_AND = 0,
-	BW_OR = 2,	//like ADD
+	BW_OR = 2,	
 	BW_XOR = 3,
 	BW_SHIFTL = 4,
 	BW_SHIFTR = 5,
@@ -16,7 +16,7 @@ enum BitWiseOP {
 
 enum CmpOP {
 	CMP_G = 0,
-	CMP_GE = 2,	//like ADD
+	CMP_GE = 2,	
 	CMP_L = 3,
 	CMP_LE = 4
 };
@@ -74,14 +74,15 @@ enum SQOpcode
 	_OP_YIELD=				0x31,	
 	_OP_RESUME=				0x32,
 	_OP_FOREACH=			0x33,
-	_OP_DELEGATE=			0x34,
-	_OP_CLONE=				0x35,
-	_OP_TYPEOF=				0x36,
-	_OP_PUSHTRAP=			0x37,
-	_OP_POPTRAP=			0x38,
-	_OP_THROW=				0x39,
-	_OP_CLASS=				0x3A,
-	_OP_NEWSLOTA=			0x3B
+	_OP_POSTFOREACH=		0x34,
+	_OP_DELEGATE=			0x35,
+	_OP_CLONE=				0x36,
+	_OP_TYPEOF=				0x37,
+	_OP_PUSHTRAP=			0x38,
+	_OP_POPTRAP=			0x39,
+	_OP_THROW=				0x3A,
+	_OP_CLASS=				0x3B,
+	_OP_NEWSLOTA=			0x3C,
 };							  
 
 struct SQInstructionDesc {	  

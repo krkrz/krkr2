@@ -59,7 +59,7 @@ public:
 	bool Init(SQVM *friendvm, SQInteger stacksize);
 	bool Execute(SQObjectPtr &func, SQInteger target, SQInteger nargs, SQInteger stackbase, SQObjectPtr &outres, SQBool raiseerror, ExecutionType et = ET_CALL);
 	//starts a native call return when the NATIVE closure returns
-	bool CallNative(SQNativeClosure *nclosure, SQInteger nargs, SQInteger stackbase, bool tailcall, SQObjectPtr &retval,bool &suspend);
+	bool CallNative(SQNativeClosure *nclosure, SQInteger nargs, SQInteger stackbase, SQObjectPtr &retval,bool &suspend);
 	//starts a SQUIRREL call in the same "Execution loop"
 	bool StartCall(SQClosure *closure, SQInteger target, SQInteger nargs, SQInteger stackbase, bool tailcall);
 	bool CreateClassInstance(SQClass *theclass, SQObjectPtr &inst, SQObjectPtr &constructor);
@@ -102,7 +102,7 @@ public:
 	bool CLASS_OP(SQObjectPtr &target,SQInteger base,SQInteger attrs);
 	bool GETPARENT_OP(SQObjectPtr &o,SQObjectPtr &target);
 	//return true if the loop is finished
-	bool FOREACH_OP(SQObjectPtr &o1,SQObjectPtr &o2,SQObjectPtr &o3,SQObjectPtr &o4,SQInteger arg_2,bool &finished);
+	bool FOREACH_OP(SQObjectPtr &o1,SQObjectPtr &o2,SQObjectPtr &o3,SQObjectPtr &o4,SQInteger arg_2,int exitpos,int &jump);
 	bool DELEGATE_OP(SQObjectPtr &trg,SQObjectPtr &o1,SQObjectPtr &o2);
 	_INLINE bool LOCAL_INC(SQInteger op,SQObjectPtr &target, SQObjectPtr &a, SQObjectPtr &incr);
 	_INLINE bool PLOCAL_INC(SQInteger op,SQObjectPtr &target, SQObjectPtr &a, SQObjectPtr &incr);
