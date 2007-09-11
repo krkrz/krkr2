@@ -1114,7 +1114,16 @@ void __fastcall TTVPWindowForm::SetAttentionPoint(tjs_int left, tjs_int top,
 	AttentionPoint.x = left;
 	AttentionPoint.y = top;
 	AttentionPointEnabled = true;
-	AttentionFont->Assign(font);
+	if(font)
+	{
+		AttentionFont->Assign(font);
+	}
+	else
+	{
+		TFont * default_font = new TFont();
+		AttentionFont->Assign(default_font);
+		delete default_font;
+	}
 	AcquireImeControl();
 }
 //---------------------------------------------------------------------------
