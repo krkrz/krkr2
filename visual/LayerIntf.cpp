@@ -4702,7 +4702,7 @@ void tTJSNI_BaseLayer::UDFlip()
 //---------------------------------------------------------------------------
 void tTJSNI_BaseLayer::ApplyFont()
 {
-	if(FontChanged)
+	if(FontChanged && MainImage)
 	{
 		FontChanged = false;
 		MainImage->SetFont(Font);
