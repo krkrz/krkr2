@@ -75,10 +75,10 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions=""
-				OutputFile=".\..\..\..\..\bin\win32\plugin/savestruct.dll"
+				OutputFile="$(OutDir)\$(ProjectName).dll"
 				LinkIncremental="2"
 				SuppressStartupBanner="true"
-				ModuleDefinitionFile=".\saveStruct.def"
+				ModuleDefinitionFile=""
 				GenerateDebugInformation="true"
 				ProgramDatabaseFile=".\..\..\..\..\bin\win32\plugin/savestruct.pdb"
 				ImportLibrary=".\..\..\..\..\bin\win32\plugin/savestruct.lib"
@@ -173,10 +173,10 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions=""
-				OutputFile=".\..\..\..\..\bin\win32\plugin/savestruct.dll"
+				OutputFile="$(OutDir)\$(ProjectName).dll"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
-				ModuleDefinitionFile=".\saveStruct.def"
+				ModuleDefinitionFile=""
 				GenerateDebugInformation="true"
 				ProgramDatabaseFile=".\..\..\..\..\bin\win32\plugin/savestruct.pdb"
 				ImportLibrary=".\..\..\..\..\bin\win32\plugin/savestruct.lib"
@@ -241,10 +241,6 @@
 			</File>
 			<File
 				RelativePath="..\ncbind\ncbind.cpp"
-				>
-			</File>
-			<File
-				RelativePath="saveStruct.def"
 				>
 			</File>
 			<File
