@@ -14,6 +14,7 @@ public:
 	virtual void write(tTVInteger) = 0;
 
 	inline void newline() {
+		write((tjs_char)'\r');
 		write((tjs_char)'\n');
 		for (int i=0;i<indent;i++) {
 			write((tjs_char)' ');
