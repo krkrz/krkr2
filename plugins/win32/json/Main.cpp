@@ -734,7 +734,9 @@ public:
 		tTJSVariant *result,
 		tjs_int numparams, tTJSVariant **param, iTJSDispatch2 *objthis) {
 		if (numparams < 2) return TJS_E_BADPARAMCOUNT;
-		IFileWriter writer(param[0]->GetString(), numparams > 2 ? (bool)(int)*param[2] : false);
+		IFileWriter writer(param[0]->GetString(), 
+			numparams > 1 ? (int)*param[1] != 0 : false, 
+			numparams > 2 ? (int)*param[2] : 0);
 		getVariantString(*param[1], &writer);
 		return TJS_S_OK;
 	}
@@ -753,7 +755,7 @@ public:
 		tjs_int numparams, tTJSVariant **param, iTJSDispatch2 *objthis) {
 		if (numparams < 1) return TJS_E_BADPARAMCOUNT;
 		if (result) {
-			IStringWriter writer;
+			IStringWriter writer(numparams > 1 ? *param[1] : 0);
 			getVariantString(*param[0], &writer);
 			*result = writer.buf;
 		}
