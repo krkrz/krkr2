@@ -88,7 +88,7 @@ static void getArrayString(iTJSDispatch2 *array, IWriter *writer)
 	{
 		tTJSVariant result;
 		if (TJS_SUCCEEDED(ArrayCountProp->PropGet(0, NULL, NULL, &result, array))) {
-			count = result.AsInteger();
+			count = result;
 		}
 	}
 	for (tjs_int i=0; i<count; i++) {
@@ -161,6 +161,7 @@ public:
 	 * save 形式での辞書または配列の保存
 	 * @param filename ファイル名
 	 * @param utf true なら UTF-8 で出力
+	 * @param newline 改行コード 0:CRLF 1:LF
 	 * @return 実行結果
 	 */
 	static tjs_error TJS_INTF_METHOD save2(tTJSVariant *result,
@@ -168,12 +169,15 @@ public:
 										   tTJSVariant **param,
 										   iTJSDispatch2 *objthis) {
 		if (numparams < 1) return TJS_E_BADPARAMCOUNT;
-		IFileWriter writer(param[0]->GetString(), numparams > 1 ? (int)*param[1] != 0: false);
+		IFileWriter writer(param[0]->GetString(),
+						   numparams > 1 ? (int)*param[1] != 0: false,
+						   numparams > 2 ? (int)*param[2] : 0
+						   );
 		tjs_int count = 0;
 		{
 			tTJSVariant result;
 			if (TJS_SUCCEEDED(ArrayCountProp->PropGet(0, NULL, NULL, &result, objthis))) {
-				count = result.AsInteger();
+				count = result;
 			}
 		}
 		for (tjs_int i=0; i<count; i++) {
@@ -190,6 +194,7 @@ public:
 	 * saveStruct 形式でのオブジェクトの保存
 	 * @param filename ファイル名
 	 * @param utf true なら UTF-8 で出力
+	 * @param newline 改行コード 0:CRLF 1:LF
 	 * @return 実行結果
 	 */
 	static tjs_error TJS_INTF_METHOD saveStruct2(tTJSVariant *result,
@@ -197,14 +202,17 @@ public:
 												 tTJSVariant **param,
 												 iTJSDispatch2 *objthis) {
 		if (numparams < 1) return TJS_E_BADPARAMCOUNT;
-		IFileWriter writer(param[0]->GetString(), numparams > 1 ? (int)*param[1] != 0: false);
+		IFileWriter writer(param[0]->GetString(),
+						   numparams > 1 ? (int)*param[1] != 0: false,
+						   numparams > 2 ? (int)*param[2] : 0
+						   );
 		getArrayString(objthis, &writer);
 		return TJS_S_OK;
 	}
 	
 	/**
 	 * saveStruct 形式で文字列化
-	 * @param obj オブジェクト
+	 * @param newline 改行コード 0:CRLF 1:LF
 	 * @return 実行結果
 	 */
 	static tjs_error TJS_INTF_METHOD toStructString(tTJSVariant *result,
@@ -212,7 +220,7 @@ public:
 													tTJSVariant **param,
 													iTJSDispatch2 *objthis) {
 		if (result) {
-			IStringWriter writer;
+			IStringWriter writer(numparams > 0 ? (int)*param[0] : 0);
 			getArrayString(objthis, &writer);
 			*result = writer.buf;
 		}
@@ -238,6 +246,7 @@ public:
 	 * saveStruct 形式でのオブジェクトの保存
 	 * @param filename ファイル名
 	 * @param utf true なら UTF-8 で出力
+	 * @param newline 改行コード 0:CRLF 1:LF
 	 * @return 実行結果
 	 */
 	static tjs_error TJS_INTF_METHOD saveStruct2(tTJSVariant *result,
@@ -245,14 +254,17 @@ public:
 												 tTJSVariant **param,
 												 iTJSDispatch2 *objthis) {
 		if (numparams < 1) return TJS_E_BADPARAMCOUNT;
-		IFileWriter writer(param[0]->GetString(), numparams > 1 ? (int)*param[1] != 0: false);
+		IFileWriter writer(param[0]->GetString(),
+						   numparams > 1 ? (int)*param[1] != 0: false,
+						   numparams > 2 ? (int)*param[2] : 0
+						   );
 		getDictString(objthis, &writer);
 		return TJS_S_OK;
 	}
 	
 	/**
 	 * saveStruct 形式で文字列化
-	 * @param obj オブジェクト
+	 * @param newline 改行コード 0:CRLF 1:LF
 	 * @return 実行結果
 	 */
 	static tjs_error TJS_INTF_METHOD toStructString(tTJSVariant *result,
@@ -260,7 +272,7 @@ public:
 													tTJSVariant **param,
 													iTJSDispatch2 *objthis) {
 		if (result) {
-			IStringWriter writer;
+			IStringWriter writer(numparams > 0 ? (int)*param[0] : 0);
 			getDictString(objthis, &writer);
 			*result = writer.buf;
 		}

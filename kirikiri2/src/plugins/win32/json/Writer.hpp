@@ -2,10 +2,20 @@
  * 出力処理用インターフェース
  */
 class IWriter {
+protected:
+	const tjs_char *newlinestr;
 public:
 	int indent;
-	IWriter() {
+	IWriter(int newlinetype=0) {
 		indent = 0;
+		switch (newlinetype) {
+		case 1:
+			newlinestr = L"\n";
+			break;
+		default:
+			newlinestr  = L"\r\n";
+			break;
+		}
 	}
 	virtual ~IWriter(){};
 	virtual void write(const tjs_char *str) = 0;
@@ -14,8 +24,7 @@ public:
 	virtual void write(tTVInteger) = 0;
 
 	inline void newline() {
-		write((tjs_char)'\r');
-		write((tjs_char)'\n');
+		write(newlinestr);
 		for (int i=0;i<indent;i++) {
 			write((tjs_char)' ');
 		}
@@ -42,7 +51,7 @@ public:
 	/**
 	 * コンストラクタ
 	 */
-	IStringWriter(){};
+	IStringWriter(int newlinetype=0) : IWriter(newlinetype) {};
 
 	virtual void write(const tjs_char *str) {
 		buf += str;
@@ -83,7 +92,7 @@ public:
 	/**
 	 * コンストラクタ
 	 */
-	IFileWriter(const tjs_char *filename, bool utf=false) {
+	IFileWriter(const tjs_char *filename, bool utf=false, int newlinetype=0) : IWriter(newlinetype) {
 		stream = TVPCreateIStream(filename, TJS_BS_WRITE);
 		this->utf = utf;
 		dat = NULL;
