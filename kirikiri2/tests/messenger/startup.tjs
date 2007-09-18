@@ -36,7 +36,7 @@ class MyWindow extends Window
 	function action(ev)	{
 		if(ev.type == "onClick") {
 			if(ev.target == sendmenu) {
-				sendMessage(12345, "送信データ");
+				sendMessage("TEST APPLICATION", "送信データ");
 			}
 		}
 	}
