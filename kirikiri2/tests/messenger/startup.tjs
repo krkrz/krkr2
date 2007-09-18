@@ -7,12 +7,15 @@ class MyWindow extends Window
 {
 	//  メニュ
 	var sendmenu;
+	var execmenu;
 	var base;
+	var process;
 	
 	function MyWindow() {
 		super.Window();
 		caption = "MSG送受信テスト";
 		menu.add(sendmenu = new MenuItem(this, "送信(&S)"));
+		menu.add(execmenu = new MenuItem(this, "実行(&X)"));
 
         // ベースレイヤ
 		base = new Layer(this,null);
@@ -26,20 +29,34 @@ class MyWindow extends Window
 	}
 
 	var ypos;
-	
+
+	// メッセージ受信イベント
 	function onMessageReceived(key, msg) {
-		Debug.message(key + ":" + msg);
-		base.drawText(0, ypos, key + ":" + msg, 0xffffff);
+		base.drawText(0, ypos, "メッセージ受信:" + key + ":" + msg, 0xffffff);
 		ypos += 20;
 	}
-    
+
+	// 実行終了イベント
+	function onShellExecuted(process, code) {
+		base.drawText(0, ypos, "実行終了:" + process + ":" + code, 0xffffff);
+		ypos += 20;
+	}
+
+	// 実行部
 	function action(ev)	{
 		if(ev.type == "onClick") {
 			if(ev.target == sendmenu) {
 				sendMessage("TEST APPLICATION", "送信データ");
+			} else if (ev.target == execmenu) {
+				if (process) {
+					terminateProcess(process, 1);
+					process = void;
+				}
+				process = shellExecute("cmd.exe", "");
 			}
 		}
 	}
+	
 }
 
 // 窓
