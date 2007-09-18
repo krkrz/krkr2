@@ -1,0 +1,34 @@
+/**
+ * 擬似コードによるマニュアル
+ *
+ * 同一マシン上で起動している吉里吉里間での相互通信機能を提供します。
+ * msgreceiver など、他の registerMessageReceiver を使っているアプリとは
+ * 本質的に共存できないので注意してください。やりとりされるデータは
+ * WM_COPYDATA を用いて転送されます。
+ */
+class Window {
+
+	/**
+	 * メッセージ受信が有効かどうかを指定します。
+	 * true にするとメッセージを受信するようになります。
+	 * @return メッセージ受信が有効なら true
+	 */
+	property messageEnable;
+
+	/**
+	 * メッセージの送信を行います。
+	 * 識別キーとメッセージの意味はそれぞれのアプリで適当に定めてください。
+	 * @param key 識別キー(数値)
+	 * @param message メッセージ(文字列)
+	 */
+	function sendMessage(key, message);
+
+	/**
+	 * イベント：メッセージ受信。ほかの吉里吉里から送られたメッセージを受信したときに呼び出されます
+	 * 呼び出し元はこれの呼び出しが終了するまでロックされてしまうため、速やかに処理を
+	 * 終了するようにしてください。
+	 * @param key 識別キー(数値)
+	 * @param message メッセージ(文字列)
+	 */
+	function onMessageReceived(key, message);
+};
