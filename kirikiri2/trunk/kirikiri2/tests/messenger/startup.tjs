@@ -1,0 +1,47 @@
+Plugins.link("messenger.dll");
+
+var WIDTH=640;
+var HEIGHT=480;
+
+class MyWindow extends Window
+{
+	//  メニュ
+	var sendmenu;
+	var base;
+	
+	function MyWindow() {
+		super.Window();
+		caption = "MSG送受信テスト";
+		menu.add(sendmenu = new MenuItem(this, "送信(&S)"));
+
+        // ベースレイヤ
+		base = new Layer(this,null);
+		base.visible=true;
+		base.setSize(WIDTH,HEIGHT);
+		base.fillRect(0,0,WIDTH,HEIGHT,0x000000);
+		setInnerSize(base.width, base.height);
+        add(base);
+		messageEnable = true;
+		ypos = 0;
+	}
+
+	var ypos;
+	
+	function onMessageReceived(key, msg) {
+		Debug.message(key + ":" + msg);
+		base.drawText(0, ypos, key + ":" + msg, 0xffffff);
+		ypos += 20;
+	}
+    
+	function action(ev)	{
+		if(ev.type == "onClick") {
+			if(ev.target == sendmenu) {
+				sendMessage(12345, "送信データ");
+			}
+		}
+	}
+}
+
+// 窓
+var win = new MyWindow();
+win.visible=true;
