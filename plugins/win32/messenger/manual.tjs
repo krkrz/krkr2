@@ -31,4 +31,29 @@ class Window {
 	 * @param message メッセージ(文字列)
 	 */
 	function onMessageReceived(key, message);
+
+	// ---------------------------------------------------
+
+	/**
+	 * 外部プログラムの実行を行う。処理がおわったらonShellExecuted がコールバックされる
+	 * @param target プログラム
+	 * @param param 引数
+	 * @return プロセスハンドル（失敗した場合は-1)
+	 */
+	function shellExecute(target, param);
+
+	/**
+	 * 実行中の外部プログラムの強制終了
+	 * @param process プロセスハンドル
+	 * @param endCode 終了コード
+	 */
+	function terminateProcess(process, endCode);
+	
+	/**
+	 * シェル実行終了コールバック
+	 * @param process プロセスハンドル
+	 * @param endCode 終了コード
+	 */
+	function onShellExecuted(process, endCode);
+	
 };
