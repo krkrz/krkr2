@@ -1,5 +1,6 @@
 #include <windows.h>
 #include <tchar.h>
+#include <process.h>
 #include "tp_stub.h"
 #include "ncbind/ncbind.hpp"
 #include <map>
@@ -7,6 +8,8 @@ using namespace std;
 
 // 吉里吉里のウインドウクラス
 #define KRWINDOWCLASS _T("TTVPWindowForm")
+#define WM_SHELLEXECUTED (WM_APP + 0x01)
+#define KEYSIZE 256
 
 // 確保したアトム情報
 static map<ttstr,ATOM> *atoms = NULL;
@@ -24,24 +27,41 @@ static ATOM getAtom(const TCHAR *str)
 	return atom;
 }
 
+static void getKey(tTJSVariant &key, ATOM atom)
+{
+	TCHAR buf[KEYSIZE+1];
+	UINT len = GlobalGetAtomName(atom, buf, KEYSIZE);
+	if (len > 0) {
+		buf[len] = '\0';
+		key = buf;
+	}
+}
+
+
 //---------------------------------------------------------------------------
 // メッセージ受信関数
 //---------------------------------------------------------------------------
 static bool __stdcall MyReceiver(void *userdata, tTVPWindowMessage *Message)
 {
 	iTJSDispatch2 *obj = (iTJSDispatch2 *)userdata;
-	if (Message->Msg == WM_COPYDATA) {
-		COPYDATASTRUCT *copyData = (COPYDATASTRUCT*)Message->LParam;
-		TCHAR buf[256+1];
-		UINT len = GlobalGetAtomName((ATOM)copyData->dwData, buf, 256);
-		tTJSVariant key;
-		if (len > 0) {
-			buf[len] = '\0';
-			key = buf;
+	switch (Message->Msg) {
+	case WM_COPYDATA: // 外部からの通信
+		{
+			COPYDATASTRUCT *copyData = (COPYDATASTRUCT*)Message->LParam;
+			tTJSVariant key;
+			getKey(key, (ATOM)copyData->dwData);
+			tTJSVariant msg((const tjs_char *)copyData->lpData);
+			tTJSVariant *p[] = {&key, &msg};
+			obj->FuncCall(0, L"onMessageReceived", NULL, NULL, 2, p, obj);
 		}
-		tTJSVariant msg((const tjs_char *)copyData->lpData);
-		tTJSVariant *p[] = {&key, &msg};
-		obj->FuncCall(0, L"onMessageReceived", NULL, NULL, 2, p, obj);
+		return true;
+	case WM_SHELLEXECUTED: // シェル実行が終了した
+		{
+			tTJSVariant process = (tjs_int)(HANDLE)Message->WParam;
+			tTJSVariant endCode = (tjs_int)(DWORD)Message->LParam;
+			tTJSVariant *p[] = {&process, &endCode};
+			obj->FuncCall(0, L"onShellExecuted", NULL, NULL, 2, p, obj);
+		}
 		return true;
 	}
 	return false;
@@ -120,6 +140,69 @@ public:
 		MsgInfo info(reinterpret_cast<HWND>((tjs_int)(val)), key, msg);
 		EnumWindows(enumWindowsProc, (LPARAM)&info);
 	}
+
+	// -------------------------------------------------------
+
+	/**
+	 * 実行情報
+	 */
+	struct ExecuteInfo {
+		HANDLE process;         // 待ち対象プロセス
+		iTJSDispatch2 *objthis; // this 保持用
+		ExecuteInfo(HANDLE process, iTJSDispatch2 *objthis) : process(process), objthis(objthis) {};
+	};
+	
+	/**
+	 * 終了待ちスレッド
+	 */
+	static void waitProcess(void *data) {
+		// パラメータ引き継ぎ
+		HANDLE process         = ((ExecuteInfo*)data)->process;
+		iTJSDispatch2 *objthis = ((ExecuteInfo*)data)->objthis;
+		delete data;
+
+		// プロセス待ち
+		WaitForSingleObject(process, INFINITE);
+		DWORD dt;
+		GetExitCodeProcess(process, &dt); // 結果取得
+		CloseHandle(process);
+
+		// 送信
+		tTJSVariant val;
+		objthis->PropGet(0, TJS_W("HWND"), NULL, &val, objthis);
+		PostMessage(reinterpret_cast<HWND>((tjs_int)(val)), WM_SHELLEXECUTED, (WPARAM)process, (LPARAM)dt);
+	}
+
+	/**
+	 * プロセスの停止
+	 * @param keyName 識別キー
+	 * @param endCode 終了コード
+	 */
+	void terminateProcess(int process, int endCode) {
+		TerminateProcess((HANDLE)process, endCode);
+	}
+
+	/**
+	 * プロセスの実行
+	 * @param keyName 識別キー
+	 * @param target ターゲット
+	 * @praam param パラメータ
+	 */
+	int shellExecute(LPCTSTR target, LPCTSTR param) {
+		SHELLEXECUTEINFO si;
+		ZeroMemory(&si, sizeof(si));
+		si.cbSize = sizeof(si);
+		si.lpVerb = _T("open");
+		si.lpFile = target;
+		si.lpParameters = param;
+		si.nShow = SW_SHOWNORMAL;
+		si.fMask = SEE_MASK_FLAG_NO_UI | SEE_MASK_NOCLOSEPROCESS;
+		if (ShellExecuteEx(&si)) {
+			_beginthread(waitProcess, 0, new ExecuteInfo(si.hProcess, objthis));
+			return (int)si.hProcess;
+		}
+		return (int)INVALID_HANDLE_VALUE;
+	}
 };
 
 // インスタンスゲッタ
@@ -139,6 +222,8 @@ NCB_GET_INSTANCE_HOOK(WindowAdd)
 NCB_ATTACH_CLASS_WITH_HOOK(WindowAdd, Window) {
 	Property(L"messageEnable", &WindowAdd::getMessageEnable, &WindowAdd::setMessageEnable);
 	Method(L"sendMessage", &WindowAdd::sendMessage);
+	Method(L"shellExecute", &WindowAdd::shellExecute);
+	Method(L"terminateProcess", &WindowAdd::terminateProcess);
 }
 
 
