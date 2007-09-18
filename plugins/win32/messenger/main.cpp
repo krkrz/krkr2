@@ -2,8 +2,27 @@
 #include <tchar.h>
 #include "tp_stub.h"
 #include "ncbind/ncbind.hpp"
+#include <map>
+using namespace std;
 
+// 吉里吉里のウインドウクラス
 #define KRWINDOWCLASS _T("TTVPWindowForm")
+
+// 確保したアトム情報
+static map<ttstr,ATOM> *atoms = NULL;
+
+// 名前からシステムグローバルアトム取得
+static ATOM getAtom(const TCHAR *str)
+{
+	ttstr name(str);
+	map<ttstr,ATOM>::const_iterator n = atoms->find(name);
+	if (n != atoms->end()) {
+		return n->second;
+	}
+	ATOM atom = GlobalAddAtom(str);
+	(*atoms)[name] = atom;
+	return atom;
+}
 
 //---------------------------------------------------------------------------
 // メッセージ受信関数
@@ -13,7 +32,13 @@ static bool __stdcall MyReceiver(void *userdata, tTVPWindowMessage *Message)
 	iTJSDispatch2 *obj = (iTJSDispatch2 *)userdata;
 	if (Message->Msg == WM_COPYDATA) {
 		COPYDATASTRUCT *copyData = (COPYDATASTRUCT*)Message->LParam;
-		tTJSVariant key((tjs_int32)copyData->dwData);
+		TCHAR buf[256+1];
+		UINT len = GlobalGetAtomName((ATOM)copyData->dwData, buf, 256);
+		tTJSVariant key;
+		if (len > 0) {
+			buf[len] = '\0';
+			key = buf;
+		}
 		tTJSVariant msg((const tjs_char *)copyData->lpData);
 		tTJSVariant *p[] = {&key, &msg};
 		obj->FuncCall(0, L"onMessageReceived", NULL, NULL, 2, p, obj);
@@ -66,8 +91,8 @@ public:
 	struct MsgInfo {
 		HWND hWnd;
 		COPYDATASTRUCT copyData;
-		MsgInfo(HWND hWnd, int key, const tjs_char *msg) : hWnd(hWnd) {
-			copyData.dwData = key;
+		MsgInfo(HWND hWnd, const TCHAR *key, const tjs_char *msg) : hWnd(hWnd) {
+			copyData.dwData = getAtom(key);
 			copyData.cbData = (TJS_strlen(msg) + 1) * sizeof(tjs_char);
 			copyData.lpData = (PVOID)msg;
 		}
@@ -89,7 +114,7 @@ public:
 	 * @param key 識別キー
 	 * @param msg メッセージ
 	 */
-	void sendMessage(int key, const tjs_char *msg) {
+	void sendMessage(const TCHAR *key, const tjs_char *msg) {
 		tTJSVariant val;
 		objthis->PropGet(0, TJS_W("HWND"), NULL, &val, objthis);
 		MsgInfo info(reinterpret_cast<HWND>((tjs_int)(val)), key, msg);
@@ -115,3 +140,28 @@ NCB_ATTACH_CLASS_WITH_HOOK(WindowAdd, Window) {
 	Property(L"messageEnable", &WindowAdd::getMessageEnable, &WindowAdd::setMessageEnable);
 	Method(L"sendMessage", &WindowAdd::sendMessage);
 }
+
+
+/**
+ * 登録処理前
+ */
+void PreRegistCallback()
+{
+	atoms = new map<ttstr,ATOM>;
+}
+
+/**
+ * 開放処理後
+ */
+void PostUnregistCallback()
+{
+	map<ttstr,ATOM>::const_iterator i = atoms->begin();
+	while (i != atoms->end()) {
+		GlobalDeleteAtom(i->second);
+	}
+	delete atoms;
+	atoms = NULL;
+}
+
+NCB_PRE_REGIST_CALLBACK(PreRegistCallback);
+NCB_POST_UNREGIST_CALLBACK(PostUnregistCallback);

@@ -18,7 +18,7 @@ class Window {
 	/**
 	 * メッセージの送信を行います。
 	 * 識別キーとメッセージの意味はそれぞれのアプリで適当に定めてください。
-	 * @param key 識別キー(数値)
+	 * @param key 識別キー(文字列:256文字までなので注意)
 	 * @param message メッセージ(文字列)
 	 */
 	function sendMessage(key, message);
@@ -27,7 +27,7 @@ class Window {
 	 * イベント：メッセージ受信。ほかの吉里吉里から送られたメッセージを受信したときに呼び出されます
 	 * 呼び出し元はこれの呼び出しが終了するまでロックされてしまうため、速やかに処理を
 	 * 終了するようにしてください。
-	 * @param key 識別キー(数値)
+	 * @param key 識別キー(文字列:256文字までなので注意)
 	 * @param message メッセージ(文字列)
 	 */
 	function onMessageReceived(key, message);
