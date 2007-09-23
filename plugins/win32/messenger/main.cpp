@@ -1,15 +1,16 @@
 #include <windows.h>
 #include <tchar.h>
-#include <process.h>
-#include "tp_stub.h"
 #include "ncbind/ncbind.hpp"
 #include <map>
 using namespace std;
 
 // 吉里吉里のウインドウクラス
 #define KRWINDOWCLASS _T("TTVPWindowForm")
-#define WM_SHELLEXECUTED (WM_APP + 0x01)
 #define KEYSIZE 256
+
+// -------------------------------------------------------------------
+// アトム処理
+// -------------------------------------------------------------------
 
 // 確保したアトム情報
 static map<ttstr,ATOM> *atoms = NULL;
@@ -27,6 +28,7 @@ static ATOM getAtom(const TCHAR *str)
 	return atom;
 }
 
+// アトムから名前を取得する
 static void getKey(tTJSVariant &key, ATOM atom)
 {
 	TCHAR buf[KEYSIZE+1];
@@ -37,52 +39,193 @@ static void getKey(tTJSVariant &key, ATOM atom)
 	}
 }
 
-
-//---------------------------------------------------------------------------
-// メッセージ受信関数
-//---------------------------------------------------------------------------
-static bool __stdcall MyReceiver(void *userdata, tTVPWindowMessage *Message)
-{
-	iTJSDispatch2 *obj = (iTJSDispatch2 *)userdata;
-	switch (Message->Msg) {
-	case WM_COPYDATA: // 外部からの通信
-		{
-			COPYDATASTRUCT *copyData = (COPYDATASTRUCT*)Message->LParam;
-			tTJSVariant key;
-			getKey(key, (ATOM)copyData->dwData);
-			tTJSVariant msg((const tjs_char *)copyData->lpData);
-			tTJSVariant *p[] = {&key, &msg};
-			obj->FuncCall(0, L"onMessageReceived", NULL, NULL, 2, p, obj);
-		}
-		return true;
-	case WM_SHELLEXECUTED: // シェル実行が終了した
-		{
-			tTJSVariant process = (tjs_int)(HANDLE)Message->WParam;
-			tTJSVariant endCode = (tjs_int)(DWORD)Message->LParam;
-			tTJSVariant *p[] = {&process, &endCode};
-			obj->FuncCall(0, L"onShellExecuted", NULL, NULL, 2, p, obj);
-		}
-		return true;
-	}
-	return false;
-}
+// -------------------------------------------------------------------
+// 処理本体
+// -------------------------------------------------------------------
 
 /**
  * メソッド追加用クラス
  */
-class WindowAdd {
+class WindowMsg {
 
 protected:
 	iTJSDispatch2 *objthis; //< オブジェクト情報の参照
-	bool messageEnable;     //< メッセージ処理が有効か
+	bool messageEnable;     //< メッセージ処理が有効かどうか
+
+	// --------------------------------------------------------
+
+	typedef bool (__stdcall *NativeReceiver)(iTJSDispatch2 *obj, void *userdata, tTVPWindowMessage *Message);
+	
+	// ユーザ定義レシーバ情報
+	struct ReceiverInfo {
+		NativeReceiver receiverNative;
+		iTJSDispatch2 *receiverFunc;
+		ttstr receiverStr;
+		tTJSVariant userData;
+		// デフォルトコンストラクタ
+		ReceiverInfo() : receiverNative(NULL), receiverFunc(NULL) {
+			};
+		// コンストラクタ
+		ReceiverInfo(tTJSVariant &receiver, tTJSVariant &userData)
+			: receiverNative(NULL), receiverFunc(NULL), userData(userData) {
+				switch (receiver.Type()) {
+				case tvtObject:
+					receiverFunc = receiver.AsObject();
+					break;
+				case tvtString:
+					receiverStr = receiver.GetString();
+					break;
+				case tvtInteger:
+					receiverNative = (NativeReceiver)(tjs_int)receiver;
+					break;
+				}
+			}
+
+		// コピーコンストラクタ
+		ReceiverInfo(const ReceiverInfo &orig) {
+			receiverNative = orig.receiverNative;
+			receiverFunc   = orig.receiverFunc;
+			receiverStr    = orig.receiverStr;
+			if (receiverFunc) {
+				receiverFunc->AddRef();
+			}
+		}
+
+		// デストラクタ
+		~ReceiverInfo() {
+			if (receiverFunc) {
+				receiverFunc->Release();
+			}
+		}
+
+		// 処理の実行
+		bool exec(iTJSDispatch2 *obj, tTVPWindowMessage *message) {
+			if (receiverNative) {
+				return receiverNative(obj, (void*)(tjs_int)userData, message);
+			} else if (receiverFunc) {
+				tTJSVariant result;
+				tTJSVariant wparam = (tjs_int)message->WParam;
+				tTJSVariant lparam = (tjs_int)message->LParam;
+				tTJSVariant *p[] = {&userData, &wparam, &lparam};
+				receiverFunc->FuncCall(0, NULL, NULL, &result, 3, p, NULL);
+				return (int)result != 0;
+			} else if (receiverStr != "") {
+				tTJSVariant result;
+				tTJSVariant wparam = (tjs_int)message->WParam;
+				tTJSVariant lparam = (tjs_int)message->LParam;
+				tTJSVariant *p[] = {&userData, &wparam, &lparam};
+				obj->FuncCall(0, receiverStr.c_str(), NULL, &result, 3, p, obj);
+				return (int)result != 0;
+			}
+			return false;
+		}
+	};
+	
+	map<unsigned int, ReceiverInfo> receiverMap;
+
+	// ユーザ規定レシーバの削除
+	void removeUserReceiver(unsigned int Msg) {
+		map<unsigned int, ReceiverInfo>::const_iterator n = receiverMap.find(Msg);
+		if (n != receiverMap.end()) {
+			receiverMap.erase(Msg);
+		}
+	}
+	
+	// ユーザ規定レシーバの登録
+	void addUserReceiver(unsigned int Msg, tTJSVariant &receiver, tTJSVariant &userdata) {
+		removeUserReceiver(Msg);
+		receiverMap[Msg] = ReceiverInfo(receiver, userdata);
+	}
+
+	// --------------------------------------------------------
+
+	ttstr storeKey;         //< HWND 保存指定キー
+	
+	/**
+	 * 実行ファイルがある場所に HWND 情報を保存する
+	 */
+	void storeHWND(HWND hwnd) {
+		if (storeKey != "") {
+			tTJSVariant varScripts;
+			TVPExecuteExpression(TJS_W("System.exeName"), &varScripts);
+			ttstr path = varScripts;
+			path += ".";
+			path += storeKey;
+			IStream *stream = TVPCreateIStream(path, TJS_BS_WRITE);
+			if (stream != NULL) {
+				char buf[100];
+				DWORD len;
+				_snprintf(buf, sizeof buf, "%d", (int)hwnd);
+				stream->Write(buf, strlen(buf), &len);
+				stream->Release();
+			}
+		}
+	}
+	
+	/**
+	 * メッセージ受信関数本体
+	 * @param userdata ユーザデータ(この場合ネイティブオブジェクト情報)
+	 * @param Message ウインドウメッセージ情報
+	 */
+	static bool __stdcall MyReceiver(void *userdata, tTVPWindowMessage *Message) {
+		WindowMsg *self    = (WindowMsg*)userdata;
+		iTJSDispatch2 *obj = self->objthis;
+		switch (Message->Msg) {
+		case TVP_WM_DETACH: // ウインドウが切り離された
+			break; 
+		case TVP_WM_ATTACH: // ウインドウが設定された
+			self->storeHWND((HWND)Message->LParam);
+			break;
+		case WM_COPYDATA: // 外部からの通信
+			{
+				COPYDATASTRUCT *copyData = (COPYDATASTRUCT*)Message->LParam;
+				tTJSVariant key;
+				getKey(key, (ATOM)copyData->dwData);
+				tTJSVariant msg((const tjs_char *)copyData->lpData);
+				tTJSVariant *p[] = {&key, &msg};
+				obj->FuncCall(0, L"onMessageReceived", NULL, NULL, 2, p, obj);
+			}
+			return true;
+		default:
+			{
+				map<unsigned int, ReceiverInfo>::iterator n = self->receiverMap.find(Message->Msg);
+				if (n != self->receiverMap.end()) {
+					return n->second.exec(obj, Message);
+				}
+			}
+			break;
+		}
+		return false;
+	}
+
+	/**
+	 * レシーバの登録
+	 */
+	void registReceiver() {
+
+		// レシーバ更新
+		tTJSVariant mode    = messageEnable ? (tTVInteger)(tjs_int)wrmRegister : (tTVInteger)(tjs_int)wrmUnregister;
+		tTJSVariant proc     = (tTVInteger)(tjs_int)MyReceiver;
+		tTJSVariant userdata = (tTVInteger)(tjs_int)this;
+		tTJSVariant *p[3] = {&mode, &proc, &userdata};
+		objthis->FuncCall(0, L"registerMessageReceiver", NULL, NULL, 3, p, objthis);
+
+		if (messageEnable && storeKey != "") {
+			tTJSVariant val;
+			objthis->PropGet(0, TJS_W("HWND"), NULL, &val, objthis);
+			storeHWND(reinterpret_cast<HWND>((tjs_int)(val)));
+		}
+	}
 
 public:
 	// コンストラクタ
-	WindowAdd(iTJSDispatch2 *objthis) : objthis(objthis), messageEnable(false) {}
+	WindowMsg(iTJSDispatch2 *objthis) : objthis(objthis), messageEnable(false) {}
 
 	// デストラクタ
-	~WindowAdd() {
-		setMessageEnable(false);
+	~WindowMsg() {
+		// レシーバを解放
+		messageEnable = false;
+		registReceiver();
 	}
 
 	/**
@@ -92,21 +235,108 @@ public:
 	void setMessageEnable(bool enable) {
 		if (messageEnable != enable) {
 			messageEnable = enable;
-			tTJSVariant mode     = enable ? (tTVInteger)(tjs_int)wrmRegister : (tTVInteger)(tjs_int)wrmUnregister;
-			tTJSVariant proc     = (tTVInteger)reinterpret_cast<tjs_int>(MyReceiver);
-			tTJSVariant userdata = (tTVInteger)(tjs_int)objthis;
-			tTJSVariant *p[3] = {&mode, &proc, &userdata};
-			objthis->FuncCall(0, L"registerMessageReceiver", NULL, NULL, 3, p, objthis);
+			registReceiver();
 		}
 	}
 	
 	/**
-	 * @return メッセージ受信が有効かどうか
+	 * @return メッセージ受信が有効かどうかを取得
 	 */
 	bool getMessageEnable() {
 		return messageEnable;
 	}
 
+	/**
+	 * storeKey を指定
+	 * この値を指定すると、HWND の値が 実行ファイル名.key名 として保存されるようになります
+	 * @param keyName HWND保存用キー
+	 */
+	void setStoreKey(const tjs_char *keyName) {
+		if (storeKey != keyName) {
+			storeKey = keyName;
+			if (messageEnable) {
+				registReceiver();
+			}
+		}
+	}
+
+	/**
+	 * @return storeKey を取得
+	 */
+	const tjs_char *getStoreKey() {
+		return storeKey.c_str();
+	}
+
+	/**
+	 * 外部プラグインからのメッセージ処理ロジックの登録
+	 * @param mode 登録モード
+	 * @param msg
+	 * @param func
+	 */
+	static tjs_error TJS_INTF_METHOD registerUserMessageReceiver(tTJSVariant *result,
+																 tjs_int numparams,
+																 tTJSVariant **param,
+																 WindowMsg *self) {
+		if (numparams < 2) return TJS_E_BADPARAMCOUNT;
+		int mode         = (tjs_int)*param[0];
+		unsigned int msg;
+		if (param[1]->Type() == tvtString) {
+			msg = RegisterWindowMessage(param[1]->GetString());
+		} else {
+			msg = (unsigned int)(tTVInteger)*param[1];
+		}
+		if (mode == wrmRegister) {
+			if (numparams < 4) return TJS_E_BADPARAMCOUNT;
+			self->addUserReceiver(msg, *param[2], *param[3]);
+		} else if (mode == wrmUnregister) {
+			self->removeUserReceiver(msg);
+		}
+		if (result) {
+			*result = (tjs_int)msg;
+		}
+		return TJS_S_OK;
+	}
+
+	// 送信メッセージ情報
+	struct UserMsgInfo {
+		HWND hWnd;
+		unsigned int msg;
+		WPARAM wparam;
+		LPARAM lparam;
+		UserMsgInfo(HWND hWnd, unsigned int msg, WPARAM wparam, LPARAM lparam) : hWnd(hWnd), msg(msg), wparam(wparam), lparam(lparam) {}
+	};
+
+	/**
+	 * 個別窓へのメッセージ送信処理
+	 * @param hWnd 送信先ウインドウハンドラ
+	 * @param parent 送信情報
+	 */
+	static BOOL CALLBACK enumWindowsProcUser(HWND hWnd, LPARAM parent) {
+		UserMsgInfo *info = (UserMsgInfo*)parent;
+		TCHAR buf[100];
+		GetClassName(hWnd, buf, sizeof buf);
+		if (info->hWnd != hWnd && _tcscmp(buf, KRWINDOWCLASS) == 0) {
+			SendMessage(hWnd, info->msg, info->wparam, info->lparam);
+		}
+		return TRUE;
+	}
+	
+	/**
+	 * ユーザ定義メッセージ送信処理
+	 * 起動している吉里吉里すべてにメッセージを送信します
+	 * @param msg メッセージID
+	 * @param wparam WPARAM値
+	 * @param lparam LPARAM値
+	 */
+	void sendUserMessage(unsigned int msg, tjs_int wparam, tjs_int lparam) {
+		tTJSVariant val;
+		objthis->PropGet(0, TJS_W("HWND"), NULL, &val, objthis);
+		UserMsgInfo info(reinterpret_cast<HWND>((tjs_int)(val)), msg, (WPARAM)wparam, (LPARAM)lparam);
+		EnumWindows(enumWindowsProcUser, (LPARAM)&info);
+	}
+	
+	// --------------------------------------------------------
+	
 	// 送信メッセージ情報
 	struct MsgInfo {
 		HWND hWnd;
@@ -118,7 +348,11 @@ public:
 		}
 	};
 
-	// メッセージ送信処理
+	/**
+	 * 個別窓へのメッセージ送信処理
+	 * @param hWnd 送信先ウインドウハンドラ
+	 * @param parent 送信情報
+	 */
 	static BOOL CALLBACK enumWindowsProc(HWND hWnd, LPARAM parent) {
 		MsgInfo *info = (MsgInfo*)parent;
 		TCHAR buf[100];
@@ -130,7 +364,8 @@ public:
 	}
 
 	/**
-	 * メッセージ送信
+	 * メッセージ送信処理
+	 * 起動している吉里吉里すべてにメッセージを送信します
 	 * @param key 識別キー
 	 * @param msg メッセージ
 	 */
@@ -141,72 +376,10 @@ public:
 		EnumWindows(enumWindowsProc, (LPARAM)&info);
 	}
 
-	// -------------------------------------------------------
-
-	/**
-	 * 実行情報
-	 */
-	struct ExecuteInfo {
-		HANDLE process;         // 待ち対象プロセス
-		iTJSDispatch2 *objthis; // this 保持用
-		ExecuteInfo(HANDLE process, iTJSDispatch2 *objthis) : process(process), objthis(objthis) {};
-	};
-	
-	/**
-	 * 終了待ちスレッド
-	 */
-	static void waitProcess(void *data) {
-		// パラメータ引き継ぎ
-		HANDLE process         = ((ExecuteInfo*)data)->process;
-		iTJSDispatch2 *objthis = ((ExecuteInfo*)data)->objthis;
-		delete data;
-
-		// プロセス待ち
-		WaitForSingleObject(process, INFINITE);
-		DWORD dt;
-		GetExitCodeProcess(process, &dt); // 結果取得
-		CloseHandle(process);
-
-		// 送信
-		tTJSVariant val;
-		objthis->PropGet(0, TJS_W("HWND"), NULL, &val, objthis);
-		PostMessage(reinterpret_cast<HWND>((tjs_int)(val)), WM_SHELLEXECUTED, (WPARAM)process, (LPARAM)dt);
-	}
-
-	/**
-	 * プロセスの停止
-	 * @param keyName 識別キー
-	 * @param endCode 終了コード
-	 */
-	void terminateProcess(int process, int endCode) {
-		TerminateProcess((HANDLE)process, endCode);
-	}
-
-	/**
-	 * プロセスの実行
-	 * @param keyName 識別キー
-	 * @param target ターゲット
-	 * @praam param パラメータ
-	 */
-	int shellExecute(LPCTSTR target, LPCTSTR param) {
-		SHELLEXECUTEINFO si;
-		ZeroMemory(&si, sizeof(si));
-		si.cbSize = sizeof(si);
-		si.lpVerb = _T("open");
-		si.lpFile = target;
-		si.lpParameters = param;
-		si.nShow = SW_SHOWNORMAL;
-		si.fMask = SEE_MASK_FLAG_NO_UI | SEE_MASK_NOCLOSEPROCESS;
-		if (ShellExecuteEx(&si)) {
-			_beginthread(waitProcess, 0, new ExecuteInfo(si.hProcess, objthis));
-			return (int)si.hProcess;
-		}
-		return (int)INVALID_HANDLE_VALUE;
-	}
 };
 
 // インスタンスゲッタ
-NCB_GET_INSTANCE_HOOK(WindowAdd)
+NCB_GET_INSTANCE_HOOK(WindowMsg)
 {
 	NCB_INSTANCE_GETTER(objthis) { // objthis を iTJSDispatch2* 型の引数とする
 		ClassT* obj = GetNativeInstance(objthis);	// ネイティブインスタンスポインタ取得
@@ -219,13 +392,13 @@ NCB_GET_INSTANCE_HOOK(WindowAdd)
 };
 
 // フックつきアタッチ
-NCB_ATTACH_CLASS_WITH_HOOK(WindowAdd, Window) {
-	Property(L"messageEnable", &WindowAdd::getMessageEnable, &WindowAdd::setMessageEnable);
-	Method(L"sendMessage", &WindowAdd::sendMessage);
-	Method(L"shellExecute", &WindowAdd::shellExecute);
-	Method(L"terminateProcess", &WindowAdd::terminateProcess);
+NCB_ATTACH_CLASS_WITH_HOOK(WindowMsg, Window) {
+	Property(L"messageEnable", &WindowMsg::getMessageEnable, &WindowMsg::setMessageEnable);
+	Property(L"storeHWND", &WindowMsg::getStoreKey, &WindowMsg::setStoreKey);
+	RawCallback("registerUserMessageReceiver", &WindowMsg::registerUserMessageReceiver, 0);
+	Method(L"sendUserMessage", &WindowMsg::sendUserMessage);
+	Method(L"sendMessage", &WindowMsg::sendMessage);
 }
-
 
 /**
  * 登録処理前

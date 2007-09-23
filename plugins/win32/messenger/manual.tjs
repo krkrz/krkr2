@@ -1,22 +1,84 @@
 /**
  * 擬似コードによるマニュアル
  *
- * 同一マシン上で起動している吉里吉里間での相互通信機能を提供します。
- * msgreceiver など、他の registerMessageReceiver を使っているアプリとは
- * 本質的に共存できないので注意してください。やりとりされるデータは
- * WM_COPYDATA を用いて転送されます。
+ * 同一マシン上で起動している吉里吉里間での相互通信機能および
+ * 外部アプリからの通信機能を提供します。
+ * やりとりされる データは WM_COPYDATA を用いて転送されます。
+ * 他の Window.registerMessageReceiver を
+ * 使っているアプリとは原理的に共存できないので注意してください。
+ * 他のプラグインからイベント処理を追加したい場合には、このプラグインに
+ * よって拡張される Window.registerUserMessageReceiver を使うこともできます。
  */
 class Window {
 
+	// ---------------------------------------------------
+	// ウインドウメッセージ処理拡張
+	// ---------------------------------------------------
+
 	/**
-	 * メッセージ受信が有効かどうかを指定します。
+	 * メッセージ受信機能が有効かどうかを指定します。
 	 * true にするとメッセージを受信するようになります。
 	 * @return メッセージ受信が有効なら true
 	 */
 	property messageEnable;
+	
+	/**
+	 * HWND 情報を保存するかどうかを指定します。
+	 * これの値を指定すると、実行ファイル名.キーの値 という名前の
+	 * ファイルが作成され、その中に現在の HWND 情報が出力されるようになります。
+	 * 外部アプリケーションからメッセージを送りたい場合は、このファイルに
+	 * 記録された HWND を参照することができます。
+	 * フルスクリーン時など、HWND が変わった時には内容が自動的に更新されます。
+	 * このため、外部アプリケーションは送るときは毎回 HWND の値を参照しなおす必要があります。
+	 * @return 保存用キーの値
+	 */
+	property storeHWND;
+
+	// ---------------------------------------------------
 
 	/**
+	 * ユーザ定義の低レベルメッセージハンドラを登録します。
+	 * registerMessageReceiver はこのプラグインが占有するため、
+	 * 他にこの機能を使ったプラグインを追加でつくりたいような場合に利用できます。
+	 *
+	 * @param mode wrmRegister:登録 wrmUnRegister:解除
+	 * @param msg 数値:メッセージ番号 文字列:RegisterWindowMessage して値を決定
+	 * @param proc 呼び出しファンクション
+	 * @param userdata ユーザデータパラメータ
+	 * @return 登録されたメッセージ番号を返す
+	 *
+	 * ※TJS2 から関数を登録した場合（typeof proc == Object の場合)
+	 * function receiver(userdata, wparam, lparam)
+	 * の形式のファンクションであるとみなされます。
+	 * この時、userdata は渡した値そのままを渡します。
+	 * wparam, lparam は元メッセージのデータから整数にキャストした値を渡します。
+	 *
+	 * ※TJS から文字列を登録した場合 (typeof proc == String の場合)
+	 * 該当オブジェクトの指定された文字列の関数を function name(userdata, wparam, lparam)
+	 * の引数で呼びだします
+	 *
+	 * ※プラグイン側から関数を登録する場合 (typeof proc == Integer の場合)
+	 * static bool __stdcall receiver(iTJSDispatch2 *winobj, void *userdata, tTVPWindowMessage *Message)
+	 * であるとみなされます。設定時は整数にキャストしてください。
+	 * winobj は該当するウインドウのオブジェクトです
+	 * userdata は整数にキャストした値でひきわたされます。
+	 */
+	function registerUserMessageReceiver(mode, msg, proc, userdata);
+
+	/**
+	 * 低レベルメッセージ送信を実行します。
+	 * 全吉里吉里に指定のメッセージが送信されます
+	 * @param msg メッセージ番号
+	 * @param wparam WPARAM (整数扱いで処理されます)
+	 * @param lparam LPARAM (整数扱いで処理されます)
+	 */
+	function sendUserMessage(msg, wparam, lparam);
+	
+	// ---------------------------------------------------
+	
+	/**
 	 * メッセージの送信を行います。
+	 * 起動している吉里吉里すべてに WM_COPYDATA メッセージを送信します。
 	 * 識別キーとメッセージの意味はそれぞれのアプリで適当に定めてください。
 	 * @param key 識別キー(文字列:256文字までなので注意)
 	 * @param message メッセージ(文字列)
@@ -24,36 +86,13 @@ class Window {
 	function sendMessage(key, message);
 
 	/**
-	 * イベント：メッセージ受信。ほかの吉里吉里から送られたメッセージを受信したときに呼び出されます
-	 * 呼び出し元はこれの呼び出しが終了するまでロックされてしまうため、速やかに処理を
-	 * 終了するようにしてください。
+	 * イベント：メッセージ受信。
+	 * ほかの吉里吉里、あるいは外部アプリから WM_COPYDATA メッセージを受信したときに呼び出されます
+	 * 呼び出し元はこれの呼び出しが終了するまでロックされてしまうため、
+	 * 速やかに処理を終了するようにしてください。
 	 * @param key 識別キー(文字列:256文字までなので注意)
 	 * @param message メッセージ(文字列)
 	 */
 	function onMessageReceived(key, message);
 
-	// ---------------------------------------------------
-
-	/**
-	 * 外部プログラムの実行を行う。処理がおわったらonShellExecuted がコールバックされる
-	 * @param target プログラム
-	 * @param param 引数
-	 * @return プロセスハンドル（失敗した場合は-1)
-	 */
-	function shellExecute(target, param);
-
-	/**
-	 * 実行中の外部プログラムの強制終了
-	 * @param process プロセスハンドル
-	 * @param endCode 終了コード
-	 */
-	function terminateProcess(process, endCode);
-	
-	/**
-	 * シェル実行終了コールバック
-	 * @param process プロセスハンドル
-	 * @param endCode 終了コード
-	 */
-	function onShellExecuted(process, endCode);
-	
 };
