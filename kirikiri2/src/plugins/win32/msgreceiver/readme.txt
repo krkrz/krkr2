@@ -3,6 +3,10 @@ Author: わたなべごう
 
 ●これはなに？
 
+※obsoluted plugin
+  同等以上の機能をもつ messenger plugin が存在します
+  そちらの利用を検討してください
+
 吉里吉里に外部制御の口を追加します
 
 Win32 API の SendMessage を使って WM_COPYDATA で
