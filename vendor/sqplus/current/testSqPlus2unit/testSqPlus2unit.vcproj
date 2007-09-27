@@ -357,11 +357,19 @@
 				>
 			</File>
 			<File
+				RelativePath=".\test_GlobalAsMember.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\test_GlobalFunctionBindings.cpp"
 				>
 			</File>
 			<File
 				RelativePath=".\test_Instance.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\test_MemberVariableTypes.cpp"
 				>
 			</File>
 			<File
@@ -374,6 +382,10 @@
 			</File>
 			<File
 				RelativePath=".\test_PassByReference.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\test_PointerToDerived.cpp"
 				>
 			</File>
 			<File
@@ -394,6 +406,10 @@
 			</File>
 			<File
 				RelativePath=".\test_SimpleVariable.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\test_SmartPointer.cpp"
 				>
 			</File>
 			<File

@@ -272,8 +272,15 @@ private:
         }
     };
 
+    static inline int destruct(SQUserPointer up, SQInteger size) {
+        if (up) {
+            static_cast<TClassType*>(up)->~TClassType();
+        }
+        return 0;
+    }
+
     static inline SQRELEASEHOOK &release(void) {
-        static SQRELEASEHOOK hook = ReleaseClassPtr<TClassType>::release;
+        static SQRELEASEHOOK hook = SQClassDefBase<TClassType>::destruct;
         return hook;
     }
 

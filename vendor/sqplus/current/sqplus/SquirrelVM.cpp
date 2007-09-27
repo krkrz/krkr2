@@ -34,20 +34,26 @@ SquirrelError::SquirrelError()
 	}
 }
 
-void SquirrelVM::Init()
+void SquirrelVM::Init( HSQUIRRELVM v )
 {
-	_VM = sq_open(1024);
-	sq_setprintfunc(_VM,SquirrelVM::PrintFunc);
-	sq_pushroottable(_VM);
-	sqstd_register_iolib(_VM);
-	sqstd_register_bloblib(_VM);
-	sqstd_register_mathlib(_VM);
-	sqstd_register_stringlib(_VM);
-	sqstd_seterrorhandlers(_VM);
-  _root = new SquirrelObject();
+    if( !v ){
+        _VM = sq_open(1024);
+        sq_setprintfunc(_VM,SquirrelVM::PrintFunc);
+        sq_pushroottable(_VM);
+        sqstd_register_iolib(_VM);
+        sqstd_register_bloblib(_VM);
+        sqstd_register_mathlib(_VM);
+        sqstd_register_stringlib(_VM);
+        sqstd_seterrorhandlers(_VM);
+        //TODO error handler, compiler error handler
+    }
+    else {
+        _VM = v;
+        sq_pushroottable(_VM);
+    }
+	_root = new SquirrelObject();
 	_root->AttachToStackObject(-1);
 	sq_pop(_VM,1);
-	//TODO error handler, compiler error handler
 }
 
 BOOL SquirrelVM::Update()
