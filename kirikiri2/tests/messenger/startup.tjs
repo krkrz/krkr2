@@ -1,4 +1,5 @@
 Plugins.link("messenger.dll");
+Plugins.link("shellExecute.dll");
 
 var WIDTH=640;
 var HEIGHT=480;
@@ -8,6 +9,7 @@ class MyWindow extends Window
 	//  メニュ
 	var sendmenu;
 	var execmenu;
+	var storemenu;
 	var base;
 	var process;
 	
@@ -16,7 +18,8 @@ class MyWindow extends Window
 		caption = "MSG送受信テスト";
 		menu.add(sendmenu = new MenuItem(this, "送信(&S)"));
 		menu.add(execmenu = new MenuItem(this, "実行(&X)"));
-
+		menu.add(storemenu = new MenuItem(this, "HWND出力(&H)"));
+		
         // ベースレイヤ
 		base = new Layer(this,null);
 		base.visible=true;
@@ -53,6 +56,12 @@ class MyWindow extends Window
 					process = void;
 				}
 				process = shellExecute("cmd.exe", "");
+			} else if (ev.target == storemenu) {
+				if (storeHWND == "") {
+					storeHWND = "HWND";
+				} else {
+					storeHWND = "";
+				}
 			}
 		}
 	}
