@@ -159,4 +159,10 @@ int main(int argc,char * argv[]) {
 
 #endif
 
+#ifdef SQPLUS_SMARTPOINTER_OPT
+unsigned char* getSmartPointerPointee(unsigned char *up) {
+	return up;
+}
+#endif
+
 // minimalSqPlus.cpp

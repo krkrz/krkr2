@@ -1,5 +1,7 @@
 #include "testEnv.hpp"
 
+namespace {
+
 class Creature {
     int health;
 public:
@@ -14,9 +16,17 @@ public:
     void SetHealth(int newHealth) {
         health = newHealth;
     }
+    static const SQChar *sqtypeof;
 };
 
+#ifdef SQPLUS_ENABLE_TYPEOF
+const SQChar *Creature::sqtypeof = _T("Creature");
+#else
+const SQChar *Creature::sqtypeof = _T("instance");
+#endif
+}
 DECLARE_INSTANCE_TYPE(Creature);
+
 
     
 SQPLUS_TEST(Test_PassByReference)
@@ -31,6 +41,7 @@ SQPLUS_TEST(Test_PassByReference)
         .func(&Creature::GetMaxHealth, _T("GetMaxHealth"))
         .func(&Creature::GetHealth, _T("GetHealth"))
         .func(&Creature::SetHealth, _T("SetHealth"))
+        .staticVar(&Creature::sqtypeof, _T("sqtypeof"), VAR_ACCESS_READ_ONLY)
         ;
     Creature frodo;
     frodo.SetHealth(frodo.GetMaxHealth() / 2);
@@ -44,8 +55,8 @@ SQPLUS_TEST(Test_PassByReference)
                        curHealth = maxHealth; \n\
                      } \n\
                      Target.SetHealth(curHealth); \n\
-                     print(typeof Target); \n\
-                     assert(typeof(Target) == \"instance\"); \n\
+                     print(typeof Target); \n \
+                     assert(typeof(Target) == Target.sqtypeof); \n \
                      return Target; \n\
                    }"));
 

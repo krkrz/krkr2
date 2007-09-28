@@ -1,5 +1,13 @@
+#include <stdio.h>
 #include "ncbind/ncbind.hpp"
-#include "sqplus.h"
+
+#include <squirrel.h>
+#include <sqstdio.h>
+#include <sqstdmath.h>
+#include <sqstdstring.h>
+#include <sqstdaux.h>
+#include <sqstdblob.h>
+
 
 // squirrel 上での TJS2のグローバル空間の参照名
 #define KIRIKIRI_GLOBAL L"krkr"
@@ -25,12 +33,13 @@ static void PrintFunc(HSQUIRRELVM v, const SQChar* format, ...)
 	va_end(args);
 }
 
+static HSQUIRRELVM vm = NULL;
+
 //---------------------------------------------------------------------------
 // squirrel -> TJS2 ブリッジ用
 //---------------------------------------------------------------------------
 
 extern void store(HSQUIRRELVM v, tTJSVariant &variant);
-extern void store(tTJSVariant &result, SquirrelObject &variant);
 extern void store(tTJSVariant &result, HSQUIRRELVM v, int idx=-1);
 extern void registglobal(HSQUIRRELVM v, const SQChar *name, iTJSDispatch2 *dispatch);
 extern void unregistglobal(HSQUIRRELVM v, const SQChar *name);
@@ -224,7 +233,7 @@ static void getArrayString(iTJSDispatch2 *array, IWriter *writer)
 	{
 		tTJSVariant result;
 		if (TJS_SUCCEEDED(ArrayCountProp->PropGet(0, NULL, NULL, &result, array))) {
-			count = result.AsInteger();
+			count = (tjs_int)result.AsInteger();
 		}
 	}
 	for (tjs_int i=0; i<count; i++) {
@@ -284,6 +293,22 @@ getVariantString(tTJSVariant &var, IWriter *writer)
 //---------------------------------------------------------------------------
 
 /**
+ * バッファにデータを書き込む
+ * バイトコードファイルの読み込みに使う
+ */
+static SQInteger
+buffer_write(SQUserPointer file, SQUserPointer buf, SQInteger size)
+{
+	IStream *out = (IStream*)file;
+	DWORD len;
+	if (out->Write(buf, size, &len) == S_OK) {
+		return len;
+	} else {
+		return -1;
+	}
+}
+
+/**
  * Scripts クラスへの Squirrel 実行メソッドの追加
  */
 class ScriptsSquirrel {
@@ -301,16 +326,20 @@ public:
 										  tTJSVariant **param,
 										  iTJSDispatch2 *objthis) {
 		if (numparams <= 0) return TJS_E_BADPARAMCOUNT;
-		try {
-			SquirrelObject script = SquirrelVM::CompileBuffer(param[0]->GetString());
-			SquirrelObject ret    = SquirrelVM::RunScript(script);
-			if (result) {
-				store(*result, ret);
-			}
-		} catch(SquirrelError e) {
-			TVPThrowExceptionMessage(e.desc);
+		if (!SQ_SUCCEEDED(sq_compilebuffer(vm, param[0]->GetString(), param[0]->AsString()->GetLength(), L"TEXT", SQTrue))) {
+			SQEXCEPTION(vm);
 		}
-		return S_OK;
+		sq_pushroottable(vm); // this
+		if (!SQ_SUCCEEDED(sq_call(vm, 1, result ? SQTrue:SQFalse, SQTrue))) {
+			sq_pop(vm, 1);
+			SQEXCEPTION(vm);
+		}
+		if (result) {
+			store(*result, vm);
+			sq_pop(vm, 1);
+		}
+		sq_pop(vm, 1);
+		return TJS_S_OK;
 	}
 
 	/**
@@ -324,31 +353,72 @@ public:
 												 iTJSDispatch2 *objthis) {
 
 		if (numparams <= 0) return TJS_E_BADPARAMCOUNT;
-		iTJSTextReadStream * stream = TVPCreateTextStreamForRead(param[0]->GetString(), TJS_W(""));
-		try {
-			ttstr data;
-			stream->Read(data, 0);
-			SquirrelObject script = SquirrelVM::CompileBuffer(data.c_str());
-			SquirrelObject ret    = SquirrelVM::RunScript(script);
-			if (result) {
-				store(*result, ret);
-			}
-		} catch(SquirrelError e) {
-			stream->Destruct();
-			TVPThrowExceptionMessage(e.desc);
-		} catch(...) {
-			stream->Destruct();
-			throw;
+		if (!SQ_SUCCEEDED(sqstd_loadfile(vm, param[0]->GetString(), SQTrue))) {
+			SQEXCEPTION(vm);
+		} 
+		sq_pushroottable(vm); // this
+		if (!SQ_SUCCEEDED(sq_call(vm, 1, result ? SQTrue:SQFalse, SQTrue))) {
+			sq_pop(vm, 1);
+			SQEXCEPTION(vm);
 		}
-		stream->Destruct();
-		return S_OK;
+		if (result) {
+			store(*result, vm);
+			sq_pop(vm, 1);
+		}
+		sq_pop(vm, 1);
+		return TJS_S_OK;
 	}
 
+	/**
+	 * squirrel スクリプトのコンパイル処理
+	 * @param text スクリプトが格納された文字列
+	 * @store store バイナリクロージャ格納先ファイル
+	 * @return エラー文字列または void
+	 */
+	static tjs_error TJS_INTF_METHOD compile(tTJSVariant *result,
+											 tjs_int numparams,
+											 tTJSVariant **param,
+											 iTJSDispatch2 *objthis) {
+		if (numparams < 2) return TJS_E_BADPARAMCOUNT;
+		if (!SQ_SUCCEEDED(sq_compilebuffer(vm, param[0]->GetString(), param[0]->AsString()->GetLength(), L"TEXT", SQTrue))) {
+			TVPThrowExceptionMessage(L"スクリプトの読み込みに失敗しました");
+		}
+		if (!SQ_SUCCEEDED(sqstd_writeclosuretofile(vm, param[1]->GetString()))) {
+			sq_pop(vm, 1);
+			TVPThrowExceptionMessage(L"スクリプトの保存に失敗しました");
+		}
+		sq_pop(vm, 1);
+		return TJS_S_OK;
+	}
+
+	/**
+	 * Squirrel コードのコンパイル処理
+	 * @param コンパイル元ファイル
+	 * @store バイナリクロージャ格納先ファイル
+	 * @return エラー文字列または void
+	 */
+	static tjs_error TJS_INTF_METHOD compileStorage(tTJSVariant *result,
+													tjs_int numparams,
+													tTJSVariant **param,
+													iTJSDispatch2 *objthis) {
+		if (numparams < 2) return TJS_E_BADPARAMCOUNT;
+		if (!SQ_SUCCEEDED(sqstd_loadfile(vm, param[0]->GetString(), SQTrue))) {
+			TVPThrowExceptionMessage(L"スクリプトの読み込みに失敗しました");
+		} 
+		if (!SQ_SUCCEEDED(sqstd_writeclosuretofile(vm, param[1]->GetString()))) {
+			sq_pop(vm, 1);
+			TVPThrowExceptionMessage(L"スクリプトの保存に失敗しました");
+		}
+		sq_pop(vm, 1);
+		return TJS_S_OK;
+	}
+	
 	/**
 	 * squirrel 形式でのオブジェクトの保存
 	 * @param filename ファイル名
 	 * @param obj オブジェクト
 	 * @param utf true なら UTF-8 で出力
+	 * @param newline 改行コード 0:CRLF 1:LF
 	 * @return 実行結果
 	 */
 	static tjs_error TJS_INTF_METHOD save(tTJSVariant *result,
@@ -356,7 +426,10 @@ public:
 										  tTJSVariant **param,
 										  iTJSDispatch2 *objthis) {
 		if (numparams < 2) return TJS_E_BADPARAMCOUNT;
-		IFileWriter writer(param[0]->GetString(), numparams > 2 ? (int)*param[2] != 0: false);
+		IFileWriter writer(param[0]->GetString(),
+						   numparams > 2 ? (int)*param[2] != 0: false,
+						   numparams > 3 ? (int)*param[3] : 0
+						   );
 		writer.write(L"return ");
 		getVariantString(*param[1], &writer);
 		return TJS_S_OK;
@@ -365,6 +438,7 @@ public:
 	/**
 	 * squirrel 形式で文字列化
 	 * @param obj オブジェクト
+	 * @param newline 改行コード 0:CRLF 1:LF
 	 * @return 実行結果
 	 */
 	static tjs_error TJS_INTF_METHOD toString(tTJSVariant *result,
@@ -373,7 +447,7 @@ public:
 											  iTJSDispatch2 *objthis) {
 		if (numparams < 1) return TJS_E_BADPARAMCOUNT;
 		if (result) {
-			IStringWriter writer;
+			IStringWriter writer(numparams > 1 ? (int)*param[1] : 0);
 			getVariantString(*param[0], &writer);
 			*result = writer.buf;
 		}
@@ -391,13 +465,13 @@ public:
 											iTJSDispatch2 *objthis) {
 		if (numparams < 1) return TJS_E_BADPARAMCOUNT;
 		if (numparams > 1) {
-			registglobal(SquirrelVM::GetVMPtr(),
+			registglobal(vm,
 						 param[0]->GetString(),
 						 param[1]->AsObjectNoAddRef());
 		} else {
 			tTJSVariant var;
 			TVPExecuteExpression(param[0]->GetString(), &var);
-			registglobal(SquirrelVM::GetVMPtr(),
+			registglobal(vm,
 						 param[0]->GetString(),
 						 var.AsObjectNoAddRef());
 		}
@@ -414,7 +488,7 @@ public:
 											  tTJSVariant **param,
 											  iTJSDispatch2 *objthis) {
 		if (numparams < 1) return TJS_E_BADPARAMCOUNT;
-		unregistglobal(SquirrelVM::GetVMPtr(),
+		unregistglobal(vm,
 					   param[0]->GetString());
 		return TJS_S_OK;
 	}
@@ -427,6 +501,8 @@ NCB_ATTACH_CLASS(ScriptsSquirrel, Scripts) {
 	RawCallback("toSQString",    &ScriptsSquirrel::toString,    TJS_STATICMEMBER);
 	RawCallback("registSQ",      &ScriptsSquirrel::regist,      TJS_STATICMEMBER);
 	RawCallback("unregistSQ",    &ScriptsSquirrel::unregist,    TJS_STATICMEMBER);
+	RawCallback("compileSQ",        &ScriptsSquirrel::compile,        TJS_STATICMEMBER);
+	RawCallback("compileStorageSQ", &ScriptsSquirrel::compileStorage, TJS_STATICMEMBER);
 };
 
 /**
@@ -445,19 +521,18 @@ public:
 	 * @param name 名称
 	 */
 	SQContinuous(const tjs_char *name) {
-		HSQUIRRELVM v = SquirrelVM::GetVMPtr();
 		sq_resetobject(&obj);          // ハンドルを初期化
-		sq_pushroottable(v);
-		sq_pushstring(v, name, -1);
-		if (!SQ_SUCCEEDED(sq_get(v, -2))) { // ルートテーブルから関数を取得
-			sq_pop(v, 1);
+		sq_pushroottable(vm);
+		sq_pushstring(vm, name, -1);
+		if (!SQ_SUCCEEDED(sq_get(vm, -2))) { // ルートテーブルから関数を取得
+			sq_pop(vm, 1);
 			ttstr error = "指定された関数は存在しません:";
 			error += name;
 			TVPThrowExceptionMessage(error.c_str());
 		}
-		sq_getstackobj(v, -1, &obj); // 位置-1からオブジェクトハンドルを得る
-		sq_addref(v, &obj);          // オブジェクトへの参照を追加
-		sq_pop(v, 2);
+		sq_getstackobj(vm, -1, &obj); // 位置-1からオブジェクトハンドルを得る
+		sq_addref(vm, &obj);          // オブジェクトへの参照を追加
+		sq_pop(vm, 2);
 	}
 
 	/**
@@ -465,7 +540,7 @@ public:
 	 */
 	~SQContinuous() {
 		stop();
-		sq_release(SquirrelVM::GetVMPtr(), &obj);  
+		sq_release(vm, &obj);  
 	}
 
 	/**
@@ -488,16 +563,15 @@ public:
 	 * 吉里吉里が暇なときに常に呼ばれる
 	 */
 	virtual void TJS_INTF_METHOD OnContinuousCallback(tjs_uint64 tick) {
-		HSQUIRRELVM v = SquirrelVM::GetVMPtr();
-		sq_pushobject(v, obj);
-		sq_pushroottable(v);
-		sq_pushinteger(v, (SQInteger)tick); // 切り捨て御免
-		if (!SQ_SUCCEEDED(sq_call(v, 2, SQFalse, SQTrue))) {
+		sq_pushobject(vm, obj);
+		sq_pushroottable(vm);
+		sq_pushinteger(vm, (SQInteger)tick); // 切り捨て御免
+		if (!SQ_SUCCEEDED(sq_call(vm, 2, SQFalse, SQTrue))) {
 			stop();
-			sq_pop(v, 1);
-			SQEXCEPTION(v);
+			sq_pop(vm, 1);
+			SQEXCEPTION(vm);
 		}
-		sq_pop(v, 1);
+		sq_pop(vm, 1);
 	}
 };
 
@@ -524,26 +598,25 @@ public:
 	 * @param name 名称
 	 */
 	SQFunction(const tjs_char *name) {
-		HSQUIRRELVM v = SquirrelVM::GetVMPtr();
 		sq_resetobject(&obj);          // ハンドルを初期化
-		sq_pushroottable(v);
-		sq_pushstring(v, name, -1);
-		if (!SQ_SUCCEEDED(sq_get(v, -2))) { // ルートテーブルから関数を取得
-			sq_pop(v, 1);
+		sq_pushroottable(vm);
+		sq_pushstring(vm, name, -1);
+		if (!SQ_SUCCEEDED(sq_get(vm, -2))) { // ルートテーブルから関数を取得
+			sq_pop(vm, 1);
 			ttstr error = "指定された関数は存在しません:";
 			error += name;
 			TVPThrowExceptionMessage(error.c_str());
 		}
-		sq_getstackobj(v, -1, &obj); // 位置-1からオブジェクトハンドルを得る
-		sq_addref(v, &obj);          // オブジェクトへの参照を追加
-		sq_pop(v, 2);
+		sq_getstackobj(vm, -1, &obj); // 位置-1からオブジェクトハンドルを得る
+		sq_addref(vm, &obj);          // オブジェクトへの参照を追加
+		sq_pop(vm, 2);
 	}
 
 	/**
 	 * デストラクタ
 	 */
 	~SQFunction() {
-		sq_release(SquirrelVM::GetVMPtr(), &obj);  
+		sq_release(vm, &obj);  
 	}
 
 	/**
@@ -553,21 +626,20 @@ public:
 										  tjs_int numparams,
 										  tTJSVariant **param,
 										  SQFunction *objthis) {
-		HSQUIRRELVM v = SquirrelVM::GetVMPtr();
-		sq_pushobject(v, objthis->obj);
-		sq_pushroottable(v); // this
+		sq_pushobject(vm, objthis->obj);
+		sq_pushroottable(vm); // this
 		for (int i=0;i<numparams;i++) { // 引数
-			store(v, *param[i]);
+			store(vm, *param[i]);
 		}
-		if (!SQ_SUCCEEDED(sq_call(v, numparams + 1, result ? SQTrue:SQFalse, SQTrue))) {
-			sq_pop(v, 1);
-			SQEXCEPTION(v);
+		if (!SQ_SUCCEEDED(sq_call(vm, numparams + 1, result ? SQTrue:SQFalse, SQTrue))) {
+			sq_pop(vm, 1);
+			SQEXCEPTION(vm);
 		}
 		if (result) {
-			store(*result, v);
-			sq_pop(v, 1);
+			store(*result, vm);
+			sq_pop(vm, 1);
 		}
-		sq_pop(v, 1);
+		sq_pop(vm, 1);
 		return TJS_S_OK;
 	}
 };
@@ -590,10 +662,18 @@ static void PreRegistCallback()
 	// 予約語登録
 	initReserved();
 
-	// squirrel 初期化
-	SquirrelVM::Init();
-	// squirrel printf 登録
-	sq_setprintfunc(SquirrelVM::GetVMPtr(), PrintFunc);
+	vm = sq_open(1024);
+	sq_setprintfunc(vm, PrintFunc);
+	sq_pushroottable(vm);
+	sqstd_register_iolib(vm);
+	sqstd_register_bloblib(vm);
+	sqstd_register_mathlib(vm);
+	sqstd_register_stringlib(vm);
+	sqstd_seterrorhandlers(vm);
+	sq_pop(vm, 1);
+	
+	// 例外通知を有効に
+	sq_notifyallexceptions(vm, SQTrue);
 }
 
 /**
@@ -607,14 +687,13 @@ static void PostRegistCallback()
 		// 吉里吉里のグローバルに Squirrel のグローバルを登録する
 		{
 			tTJSVariant result = tTJSVariant();
-			HSQUIRRELVM v = SquirrelVM::GetVMPtr();
-			sq_pushroottable(v);
-			store(result, v, -1);
-			sq_pop(v, 1);
+			sq_pushroottable(vm);
+			store(result, vm, -1);
+			sq_pop(vm, 1);
 			global->PropSet(TJS_MEMBERENSURE, SQUIRREL_GLOBAL, NULL, &result, global);
 		}
 		// Squirrel の グローバルに吉里吉里の グローバルを登録する
-		registglobal(SquirrelVM::GetVMPtr(), KIRIKIRI_GLOBAL, global);
+		registglobal(vm, KIRIKIRI_GLOBAL, global);
 		global->Release();
 	}
 
@@ -649,7 +728,7 @@ static void PreUnregistCallback()
 	iTJSDispatch2 * global = TVPGetScriptDispatch();
 	if (global)	{
 		// Squirrel の グローバルから吉里吉里のグローバルを削除
-		unregistglobal(SquirrelVM::GetVMPtr(), KIRIKIRI_GLOBAL);
+		unregistglobal(vm, KIRIKIRI_GLOBAL);
 		// squirrel の global への登録を解除
 		global->DeleteMember(0, SQUIRREL_GLOBAL, NULL, global);
 		global->Release();
@@ -662,7 +741,10 @@ static void PreUnregistCallback()
 static void PostUnregistCallback()
 {
 	// squirrel 終了
-	SquirrelVM::Shutdown();
+	if (vm) {
+		sq_close(vm);
+	}
+	TVPAddLog(L"squirrel終了");
 }
 
 NCB_PRE_REGIST_CALLBACK(PreRegistCallback);

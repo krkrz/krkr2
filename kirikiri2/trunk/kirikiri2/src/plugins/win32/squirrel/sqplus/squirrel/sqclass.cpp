@@ -12,6 +12,7 @@ SQClass::SQClass(SQSharedState *ss,SQClass *base)
 	_base = base;
 	_typetag = 0;
 	_hook = NULL;
+	_udsize = 0;
 	_metamethods.resize(MT_LAST); //size it to max size
 	if(_base) {
 		_defaultvalues.copy(base->_defaultvalues);
@@ -61,7 +62,7 @@ bool SQClass::NewSlot(SQSharedState *ss,const SQObjectPtr &key,const SQObjectPtr
 		} 
 		else {
 			if(type(temp) == OT_NULL) {
-				SQClassMemeber m;
+				SQClassMember m;
 				m.val = val;
 				_members->NewSlot(key,SQObjectPtr(_make_method_idx(_methods.size())));
 				_methods.push_back(m);
@@ -72,7 +73,7 @@ bool SQClass::NewSlot(SQSharedState *ss,const SQObjectPtr &key,const SQObjectPtr
 		}
 		return true;
 	}
-	SQClassMemeber m;
+	SQClassMember m;
 	m.val = val;
 	_members->NewSlot(key,SQObjectPtr(_make_field_idx(_defaultvalues.size())));
 	_defaultvalues.push_back(m);
@@ -139,8 +140,8 @@ SQInstance::SQInstance(SQSharedState *ss, SQClass *c, SQInteger memsize)
 {
 	_memsize = memsize;
 	_class = c;
-	_nvalues = _class->_defaultvalues.size();
-	for(SQUnsignedInteger n = 0; n < _nvalues; n++) {
+	SQUnsignedInteger nvalues = _class->_defaultvalues.size();
+	for(SQUnsignedInteger n = 0; n < nvalues; n++) {
 		new (&_values[n]) SQObjectPtr(_class->_defaultvalues[n].val);
 	}
 	Init(ss);
@@ -150,8 +151,8 @@ SQInstance::SQInstance(SQSharedState *ss, SQInstance *i, SQInteger memsize)
 {
 	_memsize = memsize;
 	_class = i->_class;
-	_nvalues = _class->_defaultvalues.size();
-	for(SQUnsignedInteger n = 0; n < _nvalues; n++) {
+	SQUnsignedInteger nvalues = _class->_defaultvalues.size();
+	for(SQUnsignedInteger n = 0; n < nvalues; n++) {
 		new (&_values[n]) SQObjectPtr(i->_values[n]);
 	}
 	Init(ss);
@@ -159,8 +160,9 @@ SQInstance::SQInstance(SQSharedState *ss, SQInstance *i, SQInteger memsize)
 
 void SQInstance::Finalize() 
 {
+	SQUnsignedInteger nvalues = _class->_defaultvalues.size();
 	__ObjRelease(_class);
-	for(SQUnsignedInteger i = 0; i < _nvalues; i++) {
+	for(SQUnsignedInteger i = 0; i < nvalues; i++) {
 		_values[i] = _null_;
 	}
 }
@@ -168,7 +170,7 @@ void SQInstance::Finalize()
 SQInstance::~SQInstance()
 {
 	REMOVE_FROM_CHAIN(&_sharedstate->_gc_chain, this);
-	Finalize();
+	if(_class){ Finalize(); } //if _class is null it was already finalized by the GC
 }
 
 bool SQInstance::GetMetaMethod(SQVM *v,SQMetaMethod mm,SQObjectPtr &res)

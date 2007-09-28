@@ -1,3 +1,14 @@
+***version 2.1.2 stable***
+-new behaviour for generators iteration using foreach
+now when a generator is iterated by foreach the value returned by a 'return val' statement
+will terminate the iteration but will not be returned as foreach iteration
+-added sq_setclassudsize()
+-added sq_clear()
+-added table.clear(), array.clear()
+-fixed sq_cmp() (thx jyuill)
+-fixed minor bugs
+
+***2006-08-21	     ***
 ***version 2.1.1 stable***
 -vm refactoring
 -optimized internal function memory layout

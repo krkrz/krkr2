@@ -190,7 +190,6 @@ SQInteger SQFunctionProto::GetLine(SQInstruction *curr)
 	return line;
 }
 
-//#define _ERROR_TRAP() error_trap:
 #define _CHECK_IO(exp)  { if(!exp)return false; }
 bool SafeWrite(HSQUIRRELVM v,SQWRITEFUNC write,SQUserPointer up,SQUserPointer dest,SQInteger size)
 {
@@ -290,7 +289,6 @@ bool SQClosure::Load(SQVM *v,SQUserPointer up,SQREADFUNC read,SQObjectPtr &ret)
 {
 	_CHECK_IO(CheckTag(v,read,up,SQ_CLOSURESTREAM_HEAD));
 	_CHECK_IO(CheckTag(v,read,up,sizeof(SQChar)));
-	//_CHECK_IO(_funcproto(_function)->Load(v,up,read));
 	SQObjectPtr func;
 	_CHECK_IO(SQFunctionProto::Load(v,up,read,func));
 	_CHECK_IO(CheckTag(v,read,up,SQ_CLOSURESTREAM_TAIL));
@@ -382,19 +380,19 @@ bool SQFunctionProto::Load(SQVM *v,SQUserPointer up,SQREADFUNC read,SQObjectPtr 
 	f->_name = name;
 
 	_CHECK_IO(CheckTag(v,read,up,SQ_CLOSURESTREAM_PART));
-//	f->_literals.reserve(nliterals);
+
 	for(i = 0;i < nliterals; i++){
 		_CHECK_IO(ReadObject(v, up, read, o));
 		f->_literals[i] = o;
 	}
 	_CHECK_IO(CheckTag(v,read,up,SQ_CLOSURESTREAM_PART));
-//	f->_parameters.reserve(nparameters);
+
 	for(i = 0; i < nparameters; i++){
 		_CHECK_IO(ReadObject(v, up, read, o));
 		f->_parameters[i] = o;
 	}
 	_CHECK_IO(CheckTag(v,read,up,SQ_CLOSURESTREAM_PART));
-//	f->_outervalues.reserve(noutervalues);
+
 	for(i = 0; i < noutervalues; i++){
 		SQUnsignedInteger type;
 		SQObjectPtr name;
@@ -404,7 +402,7 @@ bool SQFunctionProto::Load(SQVM *v,SQUserPointer up,SQREADFUNC read,SQObjectPtr 
 		f->_outervalues[i] = SQOuterVar(name,o, (SQOuterType)type);
 	}
 	_CHECK_IO(CheckTag(v,read,up,SQ_CLOSURESTREAM_PART));
-//	f->_localvarinfos.reserve(nlocalvarinfos);
+
 	for(i = 0; i < nlocalvarinfos; i++){
 		SQLocalVarInfo lvi;
 		_CHECK_IO(ReadObject(v, up, read, lvi._name));
@@ -414,14 +412,12 @@ bool SQFunctionProto::Load(SQVM *v,SQUserPointer up,SQREADFUNC read,SQObjectPtr 
 		f->_localvarinfos[i] = lvi;
 	}
 	_CHECK_IO(CheckTag(v,read,up,SQ_CLOSURESTREAM_PART));
-	//f->_lineinfos.resize(nlineinfos);
 	_CHECK_IO(SafeRead(v,read,up, f->_lineinfos, sizeof(SQLineInfo)*nlineinfos));
 
 	_CHECK_IO(CheckTag(v,read,up,SQ_CLOSURESTREAM_PART));
 	_CHECK_IO(SafeRead(v,read,up, f->_instructions, sizeof(SQInstruction)*ninstructions));
 
 	_CHECK_IO(CheckTag(v,read,up,SQ_CLOSURESTREAM_PART));
-//	f->_functions.reserve(nfunctions);
 	for(i = 0; i < nfunctions; i++){
 		_CHECK_IO(_funcproto(o)->Load(v, up, read, o));
 		f->_functions[i] = o;
@@ -497,7 +493,8 @@ void SQInstance::Mark(SQCollectable **chain)
 {
 	START_MARK()
 		_class->Mark(chain);
-		for(SQUnsignedInteger i =0; i< _nvalues; i++) {
+		SQUnsignedInteger nvalues = _class->_defaultvalues.size();
+		for(SQUnsignedInteger i =0; i< nvalues; i++) {
 			SQSharedState::MarkObject(_values[i], chain);
 		}
 	END_MARK()

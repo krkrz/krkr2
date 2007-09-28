@@ -63,6 +63,7 @@ SQInstructionDesc g_InstrDesc[]={
 	{_SC("_OP_YIELD")},
 	{_SC("_OP_RESUME")},
 	{_SC("_OP_FOREACH")},
+	{_SC("_OP_POSTFOREACH")},
 	{_SC("_OP_DELEGATE")},
 	{_SC("_OP_CLONE")},
 	{_SC("_OP_TYPEOF")},
@@ -496,7 +497,7 @@ SQFunctionProto *SQFuncState::BuildProto()
 	SQFunctionProto *f=SQFunctionProto::Create(_instructions.size(),
 		_nliterals,_parameters.size(),_functions.size(),_outervalues.size(),
 		_lineinfos.size(),_localvarinfos.size());
-	//f->_literals.resize(_nliterals);
+
 	SQObjectPtr refidx,key,val;
 	SQInteger idx;
 
@@ -510,23 +511,14 @@ SQFunctionProto *SQFuncState::BuildProto()
 		refidx=idx;
 	}
 
-	//f->_functions.resize(_functions.size());
-	//f->_functions.copy(_functions);
-	//f->_parameters.resize(_parameters.size());
 	for(SQUnsignedInteger nf = 0; nf < _functions.size(); nf++) f->_functions[nf] = _functions[nf];
 	for(SQUnsignedInteger np = 0; np < _parameters.size(); np++) f->_parameters[np] = _parameters[np];
 	for(SQUnsignedInteger no = 0; no < _outervalues.size(); no++) f->_outervalues[no] = _outervalues[no];
 	for(SQUnsignedInteger no = 0; no < _localvarinfos.size(); no++) f->_localvarinfos[no] = _localvarinfos[no];
 	for(SQUnsignedInteger no = 0; no < _lineinfos.size(); no++) f->_lineinfos[no] = _lineinfos[no];
-	//f->_outervalues.resize(_outervalues.size());
-	//f->_outervalues.copy(_outervalues);
-	//f->_instructions.resize(_instructions.size());
-	//f->_instructions.copy(_instructions);
+
 	memcpy(f->_instructions,&_instructions[0],_instructions.size()*sizeof(SQInstruction));
-	//f->_localvarinfos.resize(_localvarinfos.size());
-	//f->_localvarinfos.copy(_localvarinfos);
-	//f->_lineinfos.resize(_lineinfos.size());
-	//f->_lineinfos.copy(_lineinfos);
+
 	f->_varparams = _varparams;
 
 	return f;

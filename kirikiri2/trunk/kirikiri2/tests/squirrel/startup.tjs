@@ -74,6 +74,12 @@ var a = ["abc", 1, %[ test:"data", test2:1, "if" => "test" ]];
 Debug.message("Squirrel convert:" + Scripts.toSQString(a));
 Scripts.saveSQ("a.nut", a);
 
+Debug.message("コンパイル処理実行");
+Scripts.compileStorageSQ("test2.nut", "test2.nutb");
+
+Debug.message("バイナリファイルから実行");
+Scripts.execStorageSQ("test2.nutb");
+
 // Squirrel Continuous ハンドラ
 //var cont = new SQContinuous("main");
 //cont.start();
