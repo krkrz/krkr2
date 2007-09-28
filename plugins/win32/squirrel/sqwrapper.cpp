@@ -1,12 +1,11 @@
 #include <windows.h>
 #include "tp_stub.h"
-#include "sqplus.h"
+#include <squirrel.h>
 
 void store(HSQUIRRELVM v, iTJSDispatch2 *dispatch);
 void store(HSQUIRRELVM v, tTJSVariant &variant);
-void store(tTJSVariant &result, HSQOBJECT &obj);
+void store(tTJSVariant &result, HSQUIRRELVM v, HSQOBJECT &obj);
 void store(tTJSVariant &result, HSQUIRRELVM v, int idx=-1);
-void store(tTJSVariant &result, SquirrelObject &obj);
 
 static const SQUserPointer TJSTYPETAG = (SQUserPointer)"TJSTYPETAG";
 
@@ -31,6 +30,7 @@ class iTJSDispatch2Wrapper : public tTJSDispatch
 {
 protected:
 	/// 内部保持用
+	HSQUIRRELVM v;
 	HSQOBJECT obj;
 
 public:
@@ -38,16 +38,16 @@ public:
 	 * コンストラクタ
 	 * @param obj IDispatch
 	 */
-	iTJSDispatch2Wrapper(HSQOBJECT obj) : obj(obj) {
-		sq_addref(SquirrelVM::GetVMPtr(), &obj);
+	iTJSDispatch2Wrapper(HSQUIRRELVM v, HSQOBJECT obj) : v(v), obj(obj) {
+		sq_addref(v, &obj);
 	}
 	
 	/**
 	 * デストラクタ
 	 */
 	~iTJSDispatch2Wrapper() {
-		if(SquirrelVM::GetVMPtr()) {
-			sq_release(SquirrelVM::GetVMPtr(), &obj);
+		if(v) {
+			sq_release(v, &obj);
 		}
 	}
 
@@ -69,7 +69,6 @@ public:
 		if (obj._type != OT_CLASS) {
 			return TJS_E_NOTIMPL;
 		}
-		HSQUIRRELVM v = SquirrelVM::GetVMPtr();
 		int ret = S_FALSE;
 		sq_pushobject(v, obj);
 		sq_pushroottable(v);			// this 相当部分
@@ -84,7 +83,7 @@ public:
 			HSQOBJECT x;
 			sq_resetobject(&x);
 			sq_getstackobj(v,-1,&x);
-			*result = new iTJSDispatch2Wrapper(x);
+			*result = new iTJSDispatch2Wrapper(v, x);
 		}
 		sq_pop(v, 1);
 		return TJS_S_OK;
@@ -100,7 +99,6 @@ public:
 		tTJSVariant **param,
 		iTJSDispatch2 *objthis
 		) {
-		HSQUIRRELVM v = SquirrelVM::GetVMPtr();
 		if (membername == NULL) {
 			if (!(obj._type == OT_CLOSURE ||
 				  obj._type == OT_NATIVECLOSURE ||
@@ -158,7 +156,6 @@ public:
 		if (!membername) {
 			return TJS_E_NOTIMPL;
 		}
-		HSQUIRRELVM v = SquirrelVM::GetVMPtr();
 		sq_pushobject(v, obj);
 		sq_pushstring(v, membername,-1);
 		if (!SQ_SUCCEEDED(sq_get(v,-2))) {
@@ -183,7 +180,6 @@ public:
 		if (!membername) {
 			return TJS_E_NOTIMPL;
 		}
-		HSQUIRRELVM v = SquirrelVM::GetVMPtr();
 		sq_pushobject(v, obj);
 		sq_pushstring(v, membername,-1);
 		store(v, (tTJSVariant&)*param);
@@ -219,6 +215,32 @@ tjsDispatchRelease(SQUserPointer up, SQInteger size)
 	return 1;
 }
 
+static const SQChar *GetString(HSQUIRRELVM v, int idx)
+{
+	const SQChar *x = NULL;
+	sq_getstring(v,idx,&x);
+	return x;
+}
+
+static HSQOBJECT GetObjectHandle(HSQUIRRELVM v, int idx)
+{
+	HSQOBJECT x;
+	sq_resetobject(&x);
+	sq_getstackobj(v,idx,&x);
+    return x;
+}
+
+
+static SQUserPointer GetUserData(HSQUIRRELVM v, int idx,SQUserPointer tag=0)
+{
+	SQUserPointer otag;
+	SQUserPointer up;
+	if (SQ_SUCCEEDED(sq_getuserdata(v,idx,&up,&otag)) && tag == otag) {
+		return up;
+	}
+	return NULL;
+}
+
 /**
  * iTJSDispatch2 用プロパティの取得
  * @param v squirrel VM
@@ -226,12 +248,11 @@ tjsDispatchRelease(SQUserPointer up, SQInteger size)
 static SQInteger
 get(HSQUIRRELVM v)
 {
-	StackHandler stack(v);
-	SQUserPointer up = stack.GetUserData(1, TJSTYPETAG);
+	SQUserPointer up = GetUserData(v, 1, TJSTYPETAG);
 	if (up) {
 		iTJSDispatch2 *dispatch	= *((iTJSDispatch2**)up);
 		tTJSVariant result;
-		if (SUCCEEDED(dispatch->PropGet(0, stack.GetString(2), NULL, &result, dispatch))) {
+		if (SUCCEEDED(dispatch->PropGet(0, GetString(v, 2), NULL, &result, dispatch))) {
 			store(v, result);
 			return 1;
 		}
@@ -246,13 +267,12 @@ get(HSQUIRRELVM v)
 static SQInteger
 set(HSQUIRRELVM v)
 {
-	StackHandler stack(v);
-	SQUserPointer up = stack.GetUserData(1, TJSTYPETAG);
+	SQUserPointer up = GetUserData(v, 1, TJSTYPETAG);
 	if (up) {
 		iTJSDispatch2 *dispatch	= *((iTJSDispatch2**)up);
 		tTJSVariant result;
-		store(result, stack.GetObjectHandle(3));
-		dispatch->PropSet(TJS_MEMBERENSURE, stack.GetString(2), NULL, &result, dispatch);
+		store(result, v, GetObjectHandle(v, 3));
+		dispatch->PropSet(TJS_MEMBERENSURE, GetString(v, 2), NULL, &result, dispatch);
 	}
 	return 0;
 }
@@ -268,26 +288,25 @@ call(HSQUIRRELVM v)
 	// param2 オリジナルオブジェクト
 	// param3 ～ 本来の引数ぽ
 
-	StackHandler stack(v);
-	SQUserPointer up = stack.GetUserData(1, TJSTYPETAG);
+	SQUserPointer up = GetUserData(v, 1, TJSTYPETAG);
 	int ret = 0;
 	if (up) {
 		iTJSDispatch2 *dispatch	= *((iTJSDispatch2**)up);
 
 		// this を取得
 		iTJSDispatch2 *thisobj = NULL;
-		up = stack.GetUserData(2, TJSTYPETAG);
+		up = GetUserData(v, 2, TJSTYPETAG);
 		if (up) {
 			thisobj = *((iTJSDispatch2**)up);
 		}
 		
-		int argc = stack.GetParamCount() - 2;
+		int argc = sq_gettop(v) - 2;
 		
 		// 引数変換
 		tTJSVariant **args = new tTJSVariant*[argc];
 		for (int i=0;i<argc;i++) {
 			args[i] = new tTJSVariant();
-			store(*args[i], stack.GetObjectHandle(i+3));
+			store(*args[i], v, GetObjectHandle(v, i+3));
 		}
 
 		if (dispatch->IsInstanceOf(0, NULL, NULL, L"Class", dispatch) == TJS_S_TRUE) {
@@ -392,11 +411,9 @@ store(HSQUIRRELVM v, tTJSVariant &variant)
 /**
  * squirrel のオブジェクトを tTJSVariant に変換する(値渡し）
  * @param result 結果格納先
- * @param stack squirrel のスタックのラッパー
- * @param idx スタックのどの部分を取得するかのインデックス指定
  */
 void
-store(tTJSVariant &result, HSQOBJECT &obj)
+store(tTJSVariant &result, HSQUIRRELVM v, HSQOBJECT &obj)
 {
 	result.Clear();
 	switch (obj._type) {
@@ -416,13 +433,13 @@ store(tTJSVariant &result, HSQOBJECT &obj)
 		break;
 	case OT_USERDATA:
 		{
-			sq_pushobject(SquirrelVM::GetVMPtr(), obj);
+			sq_pushobject(v, obj);
 			SQUserPointer data, typetag;
-			sq_getuserdata(SquirrelVM::GetVMPtr(), -1, &data, &typetag);
+			sq_getuserdata(v, -1, &data, &typetag);
 			if (data && typetag == TJSTYPETAG) {
 				result = *((iTJSDispatch2**)data);
 			}
-			sq_pop(SquirrelVM::GetVMPtr(), 1);
+			sq_pop(v, 1);
 		}
 		break;
 	case OT_TABLE:
@@ -437,7 +454,7 @@ store(tTJSVariant &result, HSQOBJECT &obj)
 	case OT_WEAKREF:
 		// ラッピングが必要!
 		{
-			iTJSDispatch2 *tjsobj = new iTJSDispatch2Wrapper(obj);
+			iTJSDispatch2 *tjsobj = new iTJSDispatch2Wrapper(v, obj);
 			result = tjsobj;
 			tjsobj->Release();
 		}
@@ -451,13 +468,7 @@ store(tTJSVariant &result, HSQUIRRELVM v, int idx)
 	HSQOBJECT x;
 	sq_resetobject(&x);
 	sq_getstackobj(v,idx,&x);
-	store(result, x);
-}
-
-void
-store(tTJSVariant &result, SquirrelObject &obj)
-{
-	store(result, obj.GetObjectHandle());
+	store(result, v, x);
 }
 
 // -------------------------------------------------------

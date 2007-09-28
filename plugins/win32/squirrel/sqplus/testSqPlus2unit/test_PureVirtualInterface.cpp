@@ -11,10 +11,10 @@ public:
     PureInterface *getInterface(void) {
         return static_cast<PureInterface*>(this);
     }
-    void pureFunc1(void) {
+    virtual void pureFunc1(void) {
         scprintf(_T("PureFunc1 called [0x%p].\n"), this);
     }
-    void pureFunc2(void) {
+    virtual void pureFunc2(void) {
         scprintf(_T("PureFunc2 called [0x%p].\n"), this);
     }
 };

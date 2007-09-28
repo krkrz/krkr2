@@ -78,7 +78,7 @@
 				OutputFile=".\..\..\..\..\bin\win32\plugin/squirrel.dll"
 				LinkIncremental="2"
 				SuppressStartupBanner="true"
-				ModuleDefinitionFile=".\squirrelBase.def"
+				ModuleDefinitionFile=""
 				GenerateDebugInformation="true"
 				ProgramDatabaseFile=".\..\..\..\..\bin\win32\plugin/squirrel.pdb"
 				ImportLibrary=".\..\..\..\..\bin\win32\plugin/squirrel.lib"
@@ -176,9 +176,11 @@
 				OutputFile=".\..\..\..\..\bin\win32\plugin/squirrel.dll"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
-				ModuleDefinitionFile=".\squirrelBase.def"
+				ModuleDefinitionFile=""
 				GenerateDebugInformation="true"
 				ProgramDatabaseFile=".\..\..\..\..\bin\win32\plugin/squirrel.pdb"
+				OptimizeReferences="2"
+				EnableCOMDATFolding="2"
 				ImportLibrary=".\..\..\..\..\bin\win32\plugin/squirrel.lib"
 				TargetMachine="1"
 			/>
@@ -241,10 +243,6 @@
 			</File>
 			<File
 				RelativePath="..\ncbind\ncbind.cpp"
-				>
-			</File>
-			<File
-				RelativePath="squirrelBase.def"
 				>
 			</File>
 			<File

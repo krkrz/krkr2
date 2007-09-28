@@ -7,6 +7,7 @@ public:
         void printName(void) {
             scprintf(_T("Player.name = %s\n"), name.s);
         }
+        static const SQChar *sqtypeof;
     };
     Player playerVar; // Will be accessed directly.
     Player players[2];
@@ -24,6 +25,12 @@ public:
 
 DECLARE_INSTANCE_TYPE(PlayerManager);
 DECLARE_INSTANCE_TYPE(PlayerManager::Player);
+
+#ifdef SQPLUS_ENABLE_TYPEOF
+const SQChar *PlayerManager::Player::sqtypeof = _T("PlayerManager::Player");
+#else
+const SQChar *PlayerManager::Player::sqtypeof = _T("instance");
+#endif
 
 PlayerManager *
 getPlayerManager(void) {
@@ -43,6 +50,7 @@ SQPLUS_TEST(Test_Instance)
     SQClassDef<PlayerManager::Player>(_T("PlayerManager::Player"))
         .func(&PlayerManager::Player::printName, _T("printName"))
         .var(&PlayerManager::Player::name, _T("name"))
+        .staticVar(&PlayerManager::Player::sqtypeof, _T("sqtypeof"))
         ;
     SQClassDef<PlayerManager>(_T("PlayerManager"))
         .func(&PlayerManager::GetPlayer,_T("GetPlayer"))
@@ -56,7 +64,7 @@ SQPLUS_TEST(Test_Instance)
         local PlayerManager = getPlayerManager(); \n\
         local oPlayer = PlayerManager.GetPlayer(0); \n\
         print(typeof oPlayer); \n\
-        assert(typeof(oPlayer) == \"instance\") \n\
+        assert(typeof(oPlayer) == oPlayer.sqtypeof)\n\
         oPlayer.printName(); \n\
         assert(oPlayer.name == \"Player1\") \n\
         PlayerManager.playerVar.printName(); \n\
