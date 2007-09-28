@@ -8,8 +8,8 @@ struct SquirrelError {
 };
 
 struct SquirrelVMSys {
-  HSQUIRRELVM _VM;
-  SquirrelObject * _root;
+    HSQUIRRELVM _VM;
+    SquirrelObject * _root;
 };
 
 class SquirrelVM
@@ -17,7 +17,8 @@ class SquirrelVM
 	friend class SquirrelObject;
 	friend struct SquirrelError;
 public:
-	static void Init();
+    // If a VM is passed as arg here, Init will not alter it
+	static void Init( HSQUIRRELVM v=NULL );
 	static BOOL IsInitialized(){return _VM == NULL?FALSE:TRUE;}
 	static void Shutdown();
 	static void Cleanup();

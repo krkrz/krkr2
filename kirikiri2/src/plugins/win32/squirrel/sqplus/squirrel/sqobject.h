@@ -258,9 +258,27 @@ struct SQObjectPtr : public SQObject
 	}
 	inline void Null()
 	{
+		SQObjectType tOldType;
+		SQObjectValue unOldVal;
+		tOldType = _type;
+		unOldVal = _unVal;
+		_type = OT_NULL;
+		_unVal.pUserPointer = NULL;
+		__Release(tOldType,unOldVal);
+	}
+	inline SQObjectPtr& operator=(SQInteger i)
+	{ 
 		__Release(_type,_unVal);
-		_type=OT_NULL;
-		_unVal.pUserPointer=NULL;
+		_unVal.nInteger = i;
+		_type = OT_INTEGER;
+		return *this;
+	}
+	inline SQObjectPtr& operator=(SQFloat f)
+	{ 
+		__Release(_type,_unVal);
+		_unVal.fFloat = f;
+		_type = OT_FLOAT;
+		return *this;
 	}
 	inline SQObjectPtr& operator=(const SQObjectPtr& obj)
 	{ 

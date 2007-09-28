@@ -321,6 +321,12 @@ static SQInteger obj_delegate_weakref(HSQUIRRELVM v)
 	return 1;
 }
 
+static SQInteger obj_clear(HSQUIRRELVM v)
+{
+	return sq_clear(v,-1);
+}
+
+
 static SQInteger number_delegate_tochar(HSQUIRRELVM v)
 {
 	SQObject &o=stack_get(v,1);
@@ -362,6 +368,7 @@ static SQInteger table_rawget(HSQUIRRELVM v)
 	return SQ_SUCCEEDED(sq_rawget(v,-2))?1:SQ_ERROR;
 }
 
+
 SQRegFunction SQSharedState::_table_default_delegate_funcz[]={
 	{_SC("len"),default_delegate_len,1, _SC("t")},
 	{_SC("rawget"),table_rawget,2, _SC("t")},
@@ -370,6 +377,7 @@ SQRegFunction SQSharedState::_table_default_delegate_funcz[]={
 	{_SC("rawin"),container_rawexists,2, _SC("t")},
 	{_SC("weakref"),obj_delegate_weakref,1, NULL },
 	{_SC("tostring"),default_delegate_tostring,1, _SC(".")},
+	{_SC("clear"),obj_clear,1, _SC(".")},
 	{0,0}
 };
 
@@ -519,7 +527,7 @@ static SQInteger array_slice(HSQUIRRELVM v)
 	if(get_slice_params(v,sidx,eidx,o)==-1)return -1;
 	if(sidx<0)sidx=_array(o)->Size()+sidx;
 	if(eidx<0)eidx=_array(o)->Size()+eidx;
-	if(eidx <= sidx)return sq_throwerror(v,_SC("wrong indexes"));
+	if(eidx < sidx)return sq_throwerror(v,_SC("wrong indexes"));
 	SQArray *arr=SQArray::Create(_ss(v),eidx-sidx);
 	SQObjectPtr t;
 	SQInteger count=0;
@@ -547,6 +555,7 @@ SQRegFunction SQSharedState::_array_default_delegate_funcz[]={
 	{_SC("slice"),array_slice,-1, _SC("ann")},
 	{_SC("weakref"),obj_delegate_weakref,1, NULL },
 	{_SC("tostring"),default_delegate_tostring,1, _SC(".")},
+	{_SC("clear"),obj_clear,1, _SC(".")},
 	{0,0}
 };
 

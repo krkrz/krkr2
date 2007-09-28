@@ -943,11 +943,13 @@ public:
 		SQInteger jmppos = _fs->GetCurrentPos();
 		_fs->AddInstruction(_OP_FOREACH, container, 0, indexpos);
 		SQInteger foreachpos = _fs->GetCurrentPos();
+		_fs->AddInstruction(_OP_POSTFOREACH, container, 0, indexpos);
 		//generate the statement code
 		BEGIN_BREAKBLE_BLOCK()
 		Statement();
 		_fs->AddInstruction(_OP_JMP, 0, jmppos - _fs->GetCurrentPos() - 1);
 		_fs->SetIntructionParam(foreachpos, 1, _fs->GetCurrentPos() - foreachpos);
+		_fs->SetIntructionParam(foreachpos + 1, 1, _fs->GetCurrentPos() - foreachpos);
 		//restore the local variable stack(remove index,val and ref idx)
 		CleanStack(stacksize);
 		END_BREAKBLE_BLOCK(foreachpos - 1);

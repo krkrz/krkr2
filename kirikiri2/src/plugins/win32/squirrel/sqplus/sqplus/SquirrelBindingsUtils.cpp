@@ -94,26 +94,37 @@ BOOL CreateClass(HSQUIRRELVM v,SquirrelClassDecl *cd)
 	return TRUE;
 }
 
-BOOL CreateNativeClassInstance(HSQUIRRELVM v,const SQChar *classname,SQUserPointer ud,SQRELEASEHOOK hook)
+BOOL CreateNativeClassInstance(HSQUIRRELVM v,
+                               const SQChar *classname,
+                               SQUserPointer ud,
+                               SQRELEASEHOOK hook)
 {
-	int oldtop = sq_gettop(v);
-	sq_pushroottable(v);
-	sq_pushstring(v,classname,-1);
-	if(SQ_FAILED(sq_rawget(v,-2))){ // Get the class (created with sq_newclass()).
-		sq_settop(v,oldtop);
-		return FALSE;
-	}
-	//sq_pushroottable(v);
-	if(SQ_FAILED(sq_createinstance(v,-1))) {
-		sq_settop(v,oldtop);
-		return FALSE;
-	}
-	sq_remove(v,-3); //removes the root table
-	sq_remove(v,-2); //removes the class
-	if(SQ_FAILED(sq_setinstanceup(v,-1,ud))) {
-		sq_settop(v,oldtop);
-		return FALSE;
-	}
-	sq_setreleasehook(v,-1,hook);
-	return TRUE;
+  int oldtop = sq_gettop(v);
+  sq_pushroottable(v);
+  sq_pushstring(v,classname,-1);
+  if(SQ_FAILED(sq_rawget(v,-2))){ //Get the class (created with sq_newclass()).
+    sq_settop(v,oldtop);
+    return FALSE;
+  }
+  //sq_pushroottable(v);
+  if(SQ_FAILED(sq_createinstance(v,-1))) {
+    sq_settop(v,oldtop);
+    return FALSE;
+  }
+
+#ifdef SQ_USE_CLASS_INHERITANCE
+  HSQOBJECT ho;
+  sq_getstackobj(v, -1, &ho); // OT_INSTANCE
+  SquirrelObject instance(ho);
+  SqPlus::PopulateAncestry(v, instance, ud);
+#endif
+    
+  sq_remove(v,-3); //removes the root table
+  sq_remove(v,-2); //removes the class
+  if(SQ_FAILED(sq_setinstanceup(v,-1,ud))) {
+    sq_settop(v,oldtop);
+    return FALSE;
+  }
+  sq_setreleasehook(v,-1,hook);
+  return TRUE;
 }

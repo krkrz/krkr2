@@ -61,7 +61,7 @@ DECLARE_INSTANCE_TYPE(Boxf);
 DECLARE_INSTANCE_TYPE(Windowf);
 
 
-SQPLUS_TEST(Test_PointBoxf)
+SQPLUS_TEST(Test_PointfBoxf)
 {
     SQPLUS_TEST_TRACE();
     
@@ -93,6 +93,13 @@ SQPLUS_TEST(Test_PointBoxf)
     // The createWindow() function below creates a new instance on the
     // root table.  The instance data is a pointer to the C/C++
     // instance, and will not be freed or otherwise managed.
+    RUN_SCRIPT(_T("\
+local p = Pointf(11., 22.);\n\
+local b = Boxf(p, p); \n\
+local w = Windowf(); \n\
+w.Box = b;  /* BANG! */ \n\
+"));
+    
     RUN_SCRIPT(_T("\
     local MyWindow = Windowf(); \n\
     MyWindow.Box = Boxf(Pointf(11., 22.), Pointf(33., 44.)); \n\

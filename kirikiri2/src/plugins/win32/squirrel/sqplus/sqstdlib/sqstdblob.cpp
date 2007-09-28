@@ -237,7 +237,6 @@ SQUserPointer sqstd_createblob(HSQUIRRELVM v, SQInteger size)
 		if(SQ_SUCCEEDED(sq_call(v,2,SQTrue,SQFalse))
 			&& SQ_SUCCEEDED(sq_getinstanceup(v,-1,(SQUserPointer *)&blob,(SQUserPointer)SQSTD_BLOB_TYPE_TAG))) {
 			sq_remove(v,-2);
-			sq_remove(v,-2);
 			return blob->GetBuf();
 		}
 	}

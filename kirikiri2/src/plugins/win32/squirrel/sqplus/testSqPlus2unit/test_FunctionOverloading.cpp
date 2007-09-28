@@ -173,7 +173,7 @@ assert(p3v.z == 0.0); \n\
             local p3v = Point3(); p3v.set(p3v);"),
         _T("No match for given arguments")
         );
-# endif
+# endif // SQ_USE_CLASS_INHERITANCE
     
 #else  //SQPLUS_OVERLOAD_OPT
     

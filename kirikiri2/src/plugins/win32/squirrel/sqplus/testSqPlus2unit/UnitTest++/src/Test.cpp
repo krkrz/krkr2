@@ -58,5 +58,10 @@ void Test::RunImpl(TestResults&) const
 {
 }
 
-
 }
+
+#ifdef SQPLUS_SMARTPOINTER_OPT
+unsigned char* getSmartPointerPointee(unsigned char *up) {
+	return up;
+}
+#endif
