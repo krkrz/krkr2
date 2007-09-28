@@ -179,6 +179,8 @@
 				ModuleDefinitionFile=""
 				GenerateDebugInformation="true"
 				ProgramDatabaseFile=".\..\..\..\..\bin\win32\plugin/savestruct.pdb"
+				OptimizeReferences="2"
+				EnableCOMDATFolding="2"
 				ImportLibrary=".\..\..\..\..\bin\win32\plugin/savestruct.lib"
 				TargetMachine="1"
 			/>
