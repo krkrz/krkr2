@@ -212,9 +212,11 @@ class ActionInfo {
 		if (!isvalid target) return true; // 対象が無効なら終了
         var done = true;
         for (var i=0; i<actionList.count; i++) {
-            if (!actionList[i].doAction(target, now, stopFlag)) {
-                done = false;
-            }
+			try {
+				done = false if (!actionList[i].doAction(target, now, stopFlag));
+			} catch {
+				return true; // エラーが出たら強制終了する
+			}
         }
         return done;
     }
@@ -350,7 +352,7 @@ class ActionSequense {
 	function stopAction() {
 		while (actions.count > 0) {
 			//dm("アクション停止:" + actions.count);
-			actions[0].doAction(target, 0, true);
+			try { actions[0].doAction(target, 0, true); } catch {} // エラーが発生しても無視する
 			invalidate actions[0] if (isvalid actions[0]);
 			actions.erase(0);
         }

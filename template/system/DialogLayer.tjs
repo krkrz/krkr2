@@ -541,18 +541,17 @@ class DialogLayer extends KAGLayer
 		var object = new DialogEditLayer(window, this, vertical);
         object.name = elm.name !== void ? elm.name : "edit" + numLinks;
 		var of = object.font;
-
-        //var lf = lineLayer.font;
-        //of.face   = lf.face;
-        //of.angle  = lf.angle;
-        //of.bold   = lf.bold;
-        //of.italic = lf.italic;
-        //of.height = lf.height;
+		of.face   = elm.fontface   if (elm.fontface   !== void);
+		of.angle  = elm.fontangle  if (elm.fontangle  !== void);
+		of.bold   = elm.fontbold   if (elm.fontbold   !== void);
+		of.italic = elm.fontitalic if (elm.fontitalic !== void);
+		of.height = elm.fontheight if (elm.fontheight !== void);
 
         object.linkNum = numLinks;
-		object.text = Scripts.eval(elm.name);
-        object.exp = elm.name;
-        object.antialiased = antialiased;
+		var exp = (elm.exp != "") ? elm.exp : elm.name;
+		object.text = Scripts.eval(exp);
+		object.exp = exp;
+		object.antialiased = elm.antialiased if elm.antialiased !== void;
 		object.color = elm.bgcolor if elm.bgcolor !== void; // color Ç≈Ç»Ç¢éñÇ…íçà”
 		object.textColor = elm.color if elm.color !== void; // textColor Ç≈Ç»Ç¢Ç±Ç∆Ç…íçà”
 		object.maxChars = elm.maxchars if elm.maxchars !== void;
@@ -560,20 +559,21 @@ class DialogLayer extends KAGLayer
 		object.noborder = elm.noborder if elm.noborder !== void;
 
 		var len = elm.length === void ? 200: +elm.length;
+		var fh = Math.abs(of.height);
 		if(vertical) {
             object.setPos(x, y);
             object.height = len;
-            object.width = lf.height + 6;
+			object.width = fh + 6;
         } else {
             object.setPos(x, y);
             object.width  = len;
-            object.height = lf.height + 6;
+			object.height = fh + 6;
         }
 		object.visible = true;
 
 		links[numLinks] = %[
 			type :			ltEdit,
-			exp :			elm.name,
+			exp :			exp,
 			object :		object,
 			x :				[object.left],
 			y :				[object.top],
@@ -598,8 +598,9 @@ class DialogLayer extends KAGLayer
         object.name = elm.name !== void ? elm.name : "check" + numLinks;
         object.linkNum = numLinks;
 		object.vertical = vertical;
-		object.checked = Scripts.eval(elm.name);
-		object.exp = elm.name;
+		var exp = (elm.exp != "") ? elm.exp : elm.name;
+		object.checked = Scripts.eval(exp);
+		object.exp = exp;
         object.change = elm.onchange if elm.onchange !== void;
         object.color = elm.bgcolor if elm.bgcolor !== void; // color Ç≈Ç»Ç¢éñÇ…íçà”
 		object.glyphColor = elm.color if elm.color !== void; // glyphColor Ç≈Ç»Ç¢Ç±Ç∆Ç…íçà”
@@ -610,7 +611,7 @@ class DialogLayer extends KAGLayer
 
 		links[numLinks] = %[
 			type :			ltCheckBox,
-			exp :			elm.name,
+			exp :			exp,
 			object :		object,
 			x :				[object.left],
 			y :				[object.top],
@@ -635,11 +636,13 @@ class DialogLayer extends KAGLayer
         var object = new DialogSliderLayer(window, this, vert);
         object.name = elm.name !== void ? elm.name : "slider" + numLinks;
         object.linkNum = numLinks;
-        object.exp     = elm.name;
+		var exp = (elm.exp != "") ? elm.exp : elm.name;
+		object.exp     = exp;
         object.color = elm.bgcolor if elm.bgcolor !== void; // color Ç≈Ç»Ç¢éñÇ…íçà”
         object.bgOpacity = elm.opacity if elm.opacity !== void;
-        object.min = +elm.min if elm.min !== void;
-        object.max = +elm.max if elm.max !== void;
+		object.min  = +elm.min  if elm.min  !== void;
+		object.max  = +elm.max  if elm.max  !== void;
+		object.step = +elm.step if elm.step !== void;
         object.nohilight = elm.nohilight if elm.nohilight !== void;
         object.jumpMode = elm.jumpmode if elm.jumpmode !== void;
         if (elm.value !== void) {
@@ -675,7 +678,7 @@ class DialogLayer extends KAGLayer
 
         links[numLinks] = %[
 			type :			ltSlider,
-			exp :			elm.name,
+			exp :			exp,
 			object :		object,
 			x :				[object.left],
 			y :				[object.top],
