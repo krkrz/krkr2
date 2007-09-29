@@ -10,6 +10,7 @@ if (typeof global.CSVParser == "undefined") {
 class VoiceListParser extends CSVParser {
 
 	var voiceInfos = %[]; // ボイス情報
+	var voiceList  = [];
 	var check; // ロードチェック用
 
     /**
@@ -30,6 +31,10 @@ class VoiceListParser extends CSVParser {
 					info.config   = columns[1].trim();
 					info.filename = columns.count > 2 ? columns[2].trim() : "";
 				}
+				var info2 = [];
+				info2.add(name);
+				info2.add(info.config);
+				voiceList.add(info2);
 			}
 			check = true;
 		}

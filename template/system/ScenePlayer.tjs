@@ -352,7 +352,7 @@ class ScenePlayer extends BasicPlayer
 					}
 					if (trans !== void && trans.method == "layer") {
 						insertTag("_beginlt", trans);
-						addTag("_endlt", %[wait:trans.transwait, time:trans.endtime, color:trans.endcolor, type:trans.endtype]);
+						addTag("_endlt", %[wait:trans.transwait, time:trans.endtime, color:trans.endcolor, type:trans.endtype, rule:trans.endrule]);
 					} else {
 						transMode = 1;
 						insertTag("_begintrans");
@@ -387,6 +387,7 @@ class ScenePlayer extends BasicPlayer
 					}
 					delete obj.condex;
 				} else if (obj.if !== void) {
+					dm("if:" + obj.if);
 					if (!Scripts.eval(obj.if)) {
 						continue;
 					}
@@ -724,14 +725,13 @@ class ScenePlayer extends BasicPlayer
 	wact : tag_wact,
 
 	eval : tag_eval,
-	clearsysvar : tag_clearsysvar,
-	clearvar : tag_clearvar,
-	clearplaytime : tag_clearplaytime,
+    set : tag_set,
 
     msgwin : tag_msgwin,
     msgoff : tag_msgoff,
     msgon  : tag_msgon,
     syncmsg : tag_syncmsg,
+    savepoint : function(elm) { return 0; }, // XXX 暫定
 
 	//----------------------------------------- タグハンドラ群(選択肢分岐) --
 				  
@@ -753,6 +753,11 @@ class ScenePlayer extends BasicPlayer
 	selend : function(elm)
 	{
 		return endSelect(elm);
+	} incontextof this,
+
+	selopt : function(elm)
+	{
+		return optSelect(elm);
 	} incontextof this,
 
 	//----------------------------------------- タグハンドラ群(シナリオ内分岐) --

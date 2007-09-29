@@ -366,16 +366,21 @@ class EnvImage extends EnvBase {
 
 	function setProp(name, param, elm) {
 		if (param !== void) {
-			setPropFromTo(name, getFrom(param), getTo(param), elm);
+			var from = getFrom(param);
+			if (from !== void) { from = +from; }
+			var to = getTo(param);
+			if (to !== void) { to = +to; }
+			//dm("プロパティ設定:" + name + ":"  + from + ">" + to);
+			setPropFromTo(name, from, to, elm);
 		}
 	}
 
 	function setAfx(param, elm) {
-		setProp("afx", param, elm);
+		addProp("afx", param);
 	} 
 
 	function setAfy(param, elm) {
-		setProp("afy", param, elm);
+		addProp("afy", param);
 	} 
 	
 	function setLeft(param, elm) {

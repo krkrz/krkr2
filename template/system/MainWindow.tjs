@@ -4961,6 +4961,8 @@ class KAGWindow extends Window
 			if(skipMode)
 			{
 				// スキップ中の場合
+				if ((arg & 0x01)) {stopAllTransitions();} // すべてのトランジションは停止
+				if ((arg & 0x02)) {stopAllActions(false);} // すべてのアクションは停止
 				return 0; // スキップ中の場合はなにもせずに返る
 			}
 

@@ -200,7 +200,7 @@ class EnvStageLayer extends EnvBackLayer {
 	 * 表示処理用の自動トランジションの指定
 	 */
 	function setDispAutoTrans() {
-		setAutoTrans([env.envinfo.stageTrans, env.envinfo.envTrans]);
+		setDispTrans([env.envinfo.stageTrans, env.envinfo.envTrans]);
 	}
 
 	/**

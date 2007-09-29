@@ -652,8 +652,8 @@ class NameLayer extends RelativeLayer
      * ñºëOèàóù
      */
     function processName(text) {
-        if (owner.nameImageMap !== void ) {
-            if (text != "") {
+		if (owner.nameImageMap !== void ) {
+			if (text != "") {
 				var image = owner.nameImageMap[text];
 				if (image === void) {
 					image = owner.defaultNameImage;
@@ -662,6 +662,7 @@ class NameLayer extends RelativeLayer
 					loadImages(image);
 					setSizeToImageSize();
 					visible = true;
+					update();
 				} else {
 					visible = false;
 				}

@@ -1,25 +1,13 @@
 if (typeof Scripts.execSQ == "undefined") {
-	try {
-		Plugins.link("squirrel.dll");
-	} catch(e) {
-		dm("squirrel.dll がみつかりません");
-	}
+	Plugins.link("squirrel.dll");
 }
 
 if (typeof Array.save2 == "undefined") {
-	try {
-		Plugins.link("savestruct.dll");
-	} catch(e) {
-		dm("savestruct.dll がみつかりません");
-	}
+	Plugins.link("savestruct.dll");
 }
 
 if (typeof Storages.fstat == "undefined") {
-	try {
-		Plugins.link("fstat.dll");
-	} catch(e) {
-		dm("fstat.dll がみつかりません");
-	}
+	Plugins.link("fstat.dll");
 }
 
 /**
@@ -163,7 +151,8 @@ class BasicPlayer extends KAGPlugin {
 	// ---------------------------------------------------
 
 	var voiceInfos; // ボイス再生用情報
-
+	var voiceList;  // ボイス再生用情報
+	
 	/**
 	 * シーン情報の読み込み
 	 */
@@ -172,6 +161,7 @@ class BasicPlayer extends KAGPlugin {
 		try {
 			parser.parseStorage("voices.csv");
 			voiceInfos = parser.voiceInfos;
+			voiceList  = parser.voiceList;
 		} catch (e) {
 			dm(e.message);
 			voiceInfos = %[];
@@ -235,14 +225,14 @@ class BasicPlayer extends KAGPlugin {
 	 * @param name シーン名
 	 * @param voiceNameMap
 	 */
-	function getScene(name, voiceNameMap) {
+	function getScene(name, voiceNameMap, labelMap) {
 		var info = sceneInfos[name];
 		var voiceBase;
 		if (info !== void) {
 			voiceBase = info.voiceBase;
 		}
 		// パース実行
-		var ret = sceneParser.parse(name, voiceInfos, voiceBase, voiceNameMap);
+		var ret = sceneParser.parse(name, voiceInfos, voiceBase, voiceNameMap, labelMap);
 		// エラー情報表示
 		var errors = sceneParser.errors;
 		for (var i=0;i<errors.count;i++) {
@@ -1129,20 +1119,20 @@ class BasicPlayer extends KAGPlugin {
 	// --------------------------------------------------
 	// 変数系
 	
-	function tag_eval() {
+	function tag_eval(elm) {
 		return kag.tagHandlers.eval(...);
 	}
 
-	function tag_clearsysvar() {
-		return kag.tagHandlers.clearsysvar(...);
-	}
-
-	function tag_clearvar() {
-		return kag.tagHandlers.clearvar(...);
-	}
-	
-	function tag_clearplaytime() {
-		return kag.tagHandlers.clearplaytime(...);
+	function tag_set(elm) {
+		if (elm.name !== void && elm.value !== void) {
+			var name = elm.name;
+			if (name.substring(0,3) == "sf.") {
+				sf[name.substring(3)] = elm.value;
+			} else if (name.substring(0,2) == "f.") {
+				f[name.substring(2)] = elm.value;
+			}
+		}
+		return 0;
 	}
 
 	// --------------------------------------------------------------
@@ -1312,6 +1302,14 @@ class BasicPlayer extends KAGPlugin {
         }
 	}
 	
+	/**
+	 * 選択肢処理の完了
+	 */
+	function optSelect(elm) {
+		kag.setSelectOptions(elm);
+		return 0;
+	}
+
 	// --------------------------------------------------------------
 	// KAG からの処理呼び出し
 	// --------------------------------------------------------------
@@ -1467,10 +1465,14 @@ class BasicPlayer extends KAGPlugin {
 
 	function getTime(name) {
 		if (Storages.isExistentStorage(name)) {
-			var stat = Storages.fstat(name);
-			if (stat.mtime !== void) {
-				return stat.mtime.getTime();
-			} else {
+			try {
+				var stat = Storages.fstat(name);
+				if (stat.mtime !== void) {
+					return stat.mtime.getTime();
+				} else {
+					return 0;
+				}
+			} catch (e) {
 				return 0;
 			}
 		} else {
@@ -1530,12 +1532,23 @@ class BasicPlayer extends KAGPlugin {
 			
 			var envtime = getTime("envinit.tjs");
 			var voicetime = getTime("voices.csv");
-
+			var labelMapName = System.exePath + "labelMap.tjs";
+			
 			if (path.length > 0 && path[path.length - 1] != '/') {
 				path += "/";
 			}
 			// ボイスリストの読み込み
 			var voiceNameMap = getVoiceNameMap(path);
+
+			// ラベルマップを読み込み
+			var labelMap;
+			try {
+				labelMap = Scripts.evalStorage(labelMapName);
+			} catch (e) {
+				labelMap = %[count:0];
+			}
+			var labelMapCount = labelMap.count;
+			
 			var list = [ "[SCENE_ID]" ];
 			for (var i=0;i<sceneNames.count;i++) {
 				var name = path + "SCENE/" + Storages.chopStorageExt(sceneNames[i]) + ".nut";
@@ -1545,11 +1558,16 @@ class BasicPlayer extends KAGPlugin {
 				//dm("%s: src:%d dest:%d env:%d voice:%d\n".sprintf(name, desttime, srctime, envtime, voicetime));
 				if (convertAll || desttime < srctime || desttime < envtime || desttime < voicetime) {
 					dm("convert file:" + sceneNames[i]);
-					Scripts.saveSQ(name, getScene(sceneNames[i], voiceNameMap));
+					Scripts.saveSQ(name, getScene(sceneNames[i], voiceNameMap, labelMap));
 				}
 			}
 			list.add("[END]");
 			list.save2(path + "SCENE_ID.LST");
+
+			if (labelMapCount != labelMap.count) {
+				(Dictionary.saveStruct incontextof labelMap)(labelMapName); // ラベルマップを追加保存
+			}
+			
 			System.inform("コンバート処理が終了しました");
 		} incontextof this, void, path);
 	}
@@ -1560,7 +1578,7 @@ class BasicPlayer extends KAGPlugin {
 				path += "/";
 			}
 			Scripts.saveSQ(path + "SCENE/" + "envinit.nut", env.envinfo);
-			Scripts.saveSQ(path + "SCENE/" + "voices.nut",  voiceInfos);
+			Scripts.saveSQ(path + "SCENE/" + "voices.nut",  voiceList);
 			Scripts.saveSQ(path + "SCENE/" + "scenes.nut",  sceneInfos);
 			Scripts.saveSQ(path + "SCENE/" + "variables.nut",  variableInfos);
 			Scripts.saveSQ(path + "SCENE/" + "sysvoices.nut", getSysVoiceInfos(path));
@@ -1648,11 +1666,17 @@ var layerTransitionName = %[
 	"wipertol" => true,
 	"layfade"  => true,
 	"laytrans" => true,
+	"layalpha" => true,
 	];
 
 var layerTransitionParam = %[
 	"time" => true,
 	"color" => true,
+	"rule" => true,
+	"endtime" => true,
+	"endcolor" => true,
+	"endrule" => true,
+	"endtype" => true
 	];
 
 var actionParam = %[

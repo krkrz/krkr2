@@ -18,7 +18,7 @@ class VariableListParser extends CSVParser {
      * @param lineNo ˜_—s”Ô†(1`)
      */
 	function doLine(columns, lineNo) {
-		if (columns[0].charAt(0) != '#' && columns.count > 0) {
+		if (columns.count > 0 && columns[0] != "" && columns[0].charAt(0) != '#') {
 			var name = columns[0].trim();
 			if (name != "") {
 				// •Ï”‚ÌŠ‘®

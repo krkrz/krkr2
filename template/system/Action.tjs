@@ -923,9 +923,16 @@ function LayerVibrateZoomModule(elm) {
 }
 
 function LayerNormalRotateModule(elm) {
-    var cycle = elm.angvel !== void ? 360/elm.angvel*1000 : elm.cycle;
+	var cycle = elm.angvel !== void ? 360/+elm.angvel*1000 : +elm.cycle;
+	var vibration;
+	if (cycle > 0) {
+		vibration = 360;
+	} else {
+		vibration = -360;
+		cycle = -cycle;
+	}
 	return %[
-	rotate: %[ handler:"TriangleAction", vibration:360, ontime:cycle, offtime:0, time:elm.time, delay:elm.delay]
+	rotate: %[ handler:"TriangleAction", vibration:vibration, ontime:cycle, offtime:0, time:elm.time, delay:elm.delay]
 		];
 }
 
