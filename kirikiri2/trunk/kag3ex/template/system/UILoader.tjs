@@ -320,7 +320,6 @@ function uiloadEntry(layer, names, dic, elm, table, evals)
 	uiloadEvals(names, evals.names, dic) if (evals !== void);
 
 	var basex = 0, basey = 0;
-	var links = layer.numLinks;
 
 	// ”wŒi‚¾‚¯“Áêˆ—
 	var base;
@@ -343,6 +342,7 @@ function uiloadEntry(layer, names, dic, elm, table, evals)
 		table.base(layer, base, %[ x:0, y:0, width:layer.parent.width, height:layer.parent.height ], elm);
 	}
 
+	var links = layer.numLinks;
 	for (var i=0; i<names.count; i++) {
 		var name  = names[i];
 		var value = dic[name];
@@ -391,9 +391,11 @@ function uiloadEntry(layer, names, dic, elm, table, evals)
 	}
 
 	// —Dæ‡ˆÊ‹t“]
-	var max = layer.numLinks;
-	for (var i = links; i < max; i++) {
-		layer.links[i].object.order = max - i;
+	var cnt = layer.numLinks - links;
+	if (cnt > 0) {
+		var min = layer.links[links].object.order;
+		for (var i = 0; i < cnt; i++)
+			layer.links[links + i].object.order = min;
 	}
 
 	uiloadEvals(layer, evals.base, dic, base) if (evals !== void);

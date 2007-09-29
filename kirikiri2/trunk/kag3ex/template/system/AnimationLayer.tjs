@@ -497,14 +497,19 @@ class AnimationLayer extends AffineLayer
 		// 追加画像読み込みの情報をクリア
 		Anim_partialImageInfo = void;
 
-		// 画像を読み込む
-		var taginfo = super.loadImages(elm.storage, elm.key);
+		if (elm.color !== void) {
+			// 塗りつぶし指定
+			setSize(+elm.width, +elm.height);
+			fillRect(0, 0, +elm.width, +elm.height, 0xff000000 | +elm.color);
+		} else {
+			// 画像を読み込む
+			var taginfo = super.loadImages(elm.storage, elm.key);
 
-		// 画像のタグ情報をデフォルト値として採用
-		if(taginfo)
-		{
-			(Dictionary.assign incontextof taginfo)(elm, false);
-			elm = taginfo;
+			// 画像のタグ情報をデフォルト値として採用
+			if(taginfo)	{
+				(Dictionary.assign incontextof taginfo)(elm, false);
+				elm = taginfo;
+			}
 		}
 
 		// フリップ
@@ -570,7 +575,11 @@ class AnimationLayer extends AffineLayer
 		// 可視不可視、位置、不透明度、インデックス
 		if ( elm !== void && elm.pos !== void ) {
 			// ポジションに従って位置を決定
-			left= window.scPositionX[elm.pos] - width \ 2;
+			if (window.scPositionX[elm.pos] !== void) {
+				left= window.scPositionX[elm.pos] - width \ 2;
+			} else {
+				left= +elm.pos - width \ 2;
+			}
 			top = window.scHeight - height;
 		}
 		else

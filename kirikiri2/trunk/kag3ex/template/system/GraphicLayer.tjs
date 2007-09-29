@@ -559,7 +559,7 @@ class GraphicLayerEx extends GraphicLayer {
 
 	
     function setOptions(elm) {
-        super.setOptions(elm);
+		super.setOptions(elm);
         type   = global[elm.type] if elm.type   !== void;
         rotate = +elm.rotate if elm.rotate !== void;
         zoomx  = +elm.zoomx  if elm.zoomx  !== void;
@@ -570,6 +570,7 @@ class GraphicLayerEx extends GraphicLayer {
         if (elm.reset !== void && elm.reset) {
             reset();
         }
+		visvalue = +elm.visvalue if elm.visvalue !== void;
 	}
 
     /**
@@ -669,7 +670,7 @@ class GraphicLayerEx extends GraphicLayer {
 		// アクションもコピー
 		window.copyAction(src, this, onActionCompleted);
 	}
-	
+
     // --------------------------------------------
     // アクション系拡張
     // --------------------------------------------
@@ -999,7 +1000,7 @@ class CharacterLayer extends GraphicLayerEx
 	{
 		// setOptions オーバーライド
         super.setOptions(elm);
-        autoHide = +elm.autohide if elm.autohide !== void;
+		autoHide = +elm.autohide if elm.autohide !== void;
 	}
 
 	function atEndOfTransition(src, withchildren, exchange)
