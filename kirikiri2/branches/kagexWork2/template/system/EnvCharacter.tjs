@@ -34,26 +34,23 @@ class CharacterGraphicLayer extends EnvGraphicLayer {
 	}
 	
 	function recalcPosition() {
-
 		//dm("キャラ表示:" + name + ":" + yoffset + ":"  +level + ":" + left + ":" + top);
-		
 		// レベル別座標補正処理。とりあえず適当で画面中央に向かって縮小処理してある
-		var zoom;
+		var zoom = 100;
 		var levelYoffset = 0;
 		var levelInfo = owner.env.levels[level];
 		if (levelInfo !== void) {
-			zoom         = (int)levelInfo.zoom;
-			levelYoffset = (int)levelInfo.yoffset;
+			if (levelInfo.zoom !== void) {
+				zoom = (int)levelInfo.zoom;
+			}
+			if (levelInfo.yoffset !== void) {
+				levelYoffset = (int)levelInfo.yoffset;
+			}
 		}
-		if (zoom === void) {
-			zoom = 100;
-		}
-		if (levelYoffset === void) {
-			levelYoffset = 0;
-		}
-
-		setRealPosition(owner.env.xmax + (+left * +zoom / 100) - width / 2, 
-						owner.env.ymax + ((yoffset - +top) * zoom / 100) - height + levelYoffset);
+		var x = owner.env.xmax + (+left * +zoom / 100) - width / 2;
+		var y = owner.env.ymax + ((yoffset - +top) * zoom / 100) - height + levelYoffset;
+		//dm("表示位置:" + x + "," + y + ":" + levelYoffset + ":" + zoom);
+		setRealPosition(x, y);
 	}
 };
 
@@ -118,7 +115,7 @@ class EnvCharacter extends EnvLevelLayer, EnvImage {
 		global.EnvImage.EnvImage(env, name);
 		global.EnvLevelLayer.EnvLevelLayer();
         
-        //dm("キャラクタ登録:" + name); 
+		//dm("キャラクタ登録:" + name); 
 
 		this.initName = initName;
 		this.init     = init;
@@ -136,7 +133,7 @@ class EnvCharacter extends EnvLevelLayer, EnvImage {
                         facePoseMap[faces[i]] = name;
                     }
                 }, facePoseMap);
-            }
+			}
 		}
 
 		// 未初期化時デフォルト
@@ -241,13 +238,6 @@ class EnvCharacter extends EnvLevelLayer, EnvImage {
 		image = void;
     }
 
-    /**
-     * 場所表示用トランジション設定
-     */
-    function setPositionTrans(info) {
-		setAutoTrans([info.trans, env.envinfo.positionTrans]);
-    }
-
 	// 表示位置指定
 	var posName;
 	
@@ -289,19 +279,34 @@ class EnvCharacter extends EnvLevelLayer, EnvImage {
 			}
 		}
 
+		if (info.level !== void) {
+			level = info.level;
+			redraw = true;
+			if (elm.hide === void && disp == CLEAR) {
+				disp = SHOW;
+				istrans = true;
+			}
+		}
+
 		if (info.disp !== void) {
 			disp = info.disp;
 			istrans = true;
 		}
-
-		if (info.level !== void) {
-			level = info.level;
-			redraw = true;
-			istrans = true;
+		
+		if (info.trans !== void) {
+			setDispTrans([info.trans]);
+		} else {
+			if (istrans) {
+				setDispTrans([env.envinfo.positionTrans]);
+			}
 		}
 
-		if (istrans) {
-			setPositionTrans(info);
+		// 未初期化時デフォルト
+		if (cprops.left === void) {
+			cprops.left = env.defaultXpos;
+		}
+		if (cprops.top === void) {
+			cprops.top = env.defaultYpos;
 		}
 	}
 
@@ -566,7 +571,7 @@ class EnvCharacter extends EnvLevelLayer, EnvImage {
 	 * 表示処理用の自動トランジションの指定
 	 */
 	function setDispAutoTrans() {
-		setAutoTrans([init.dispTrans, env.envinfo.charDispTrans]);
+		setDispTrans([init.dispTrans, env.envinfo.charDispTrans]);
 	}
 
 	// フェード指定のデフォルト値

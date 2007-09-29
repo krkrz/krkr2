@@ -100,12 +100,47 @@ class TransLayer
       ],
 
       // トランジション利用
+      layalpha : %[
+        init : function(elm) {
+			if (elm.method !== void) {
+				trans = %[];
+				trans.rule = elm.rule + ".png"; // 強制でPNGファイルを指定
+				trans.selfupdate = true;
+				trans.time = time;
+			}
+            maxCount = time;
+			if (tlayer === void) {
+				tlayer = new Layer(owner, owner.primaryLayer);
+				tlayer.setSize(width, height);
+				tlayer.hitType = htMask;
+                tlayer.hitThreshold = 256; // 全域透過
+				tlayer.name = "切り替えレイヤ";
+			}
+			if (!hide) {
+				layer.fillRect(0, 0, width, height, 0);
+				tlayer.fillRect(0, 0, width, height, color);
+				layer.opacity = 255;
+                tlayer.opacity = 255;
+			} else {
+                layer.fillRect(0, 0, width, height, color);
+				tlayer.fillRect(0, 0, width, height, 0);
+				layer.opacity = 255;
+                tlayer.opacity = 255;
+            }
+			layer.beginTransition("universal", true, tlayer, trans);
+        } incontextof this,
+        effect : function(count) {
+			layer.update();
+        } incontextof this
+      ],
+		
+      // トランジション利用
       laytrans : %[
         init : function(elm) {
             if (elm.method !== void) {
                 trans = %[];
                 (Dictionary.assign incontextof trans)(elm);
-                dm("トランジション実行:" + trans.method + ":" + trans.rule);
+				//dm("トランジション実行:" + trans.method + ":" + trans.rule);
                 trans.selfupdate = true;
                 trans.time = time;
             }
@@ -166,8 +201,9 @@ class TransLayer
             
             // 終了処理
             if (count >= maxCount) {
-                done();
-                owner.trigger("layertrans");
+				//dm("処理終了");
+				done();
+				owner.trigger("layertrans");
             }
         }
     }
@@ -199,7 +235,8 @@ class TransLayer
      * 終了
      */
     function done() {
-        working = false;
+		//dm("トランスレイヤ処理終了");
+		working = false;
         if (!hide) {
             layer.fillRect(0,0,width,height,color);
         } else {

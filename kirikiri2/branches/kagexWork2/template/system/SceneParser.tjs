@@ -28,15 +28,16 @@ class SceneParser extends KAGParser
      * 5:改行は [r] 。空行で [p]
      */
 	var lineMode;    // 改行処理モード
-    var crAfterName; // 名前の後に改行をいれるか
-    var erAfterPage; // 改ページ直後に画面消去するか
+	var crAfterName; // 名前の後に改行をいれるか
+	var erAfterPage; // 改ページ直後に画面消去するか
+	var saveBeforeName; // 名前の直前にセーブポイントをいれる
     var autoIndent;  // 「『で自動的にインデントする
 	var voiceDefault;  // ボイスデフォルト値
 
 	var voiceMap = %[];      // ボイス状態記録マップ
 
 	var noCrOnce;    // 改行処理を１回なしにする
-    var noErOnce;    // 画面消去処理を１回なしにする
+	var noErOnce;    // 画面消去処理を１回なしにする
     var afterPage;   // 改ページ直後
 	var doLine;      // 入力待ち実行指示
 	var emptyLine;     // まだ行が空
@@ -71,6 +72,7 @@ class SceneParser extends KAGParser
 		noCrOnce = false;
 		noErOnce = false;
 		afterPage = true;
+		doLine = false;
 		emptyLine = true;
 		commandLine = false;
 		prevEmptyLine = true;
@@ -132,8 +134,8 @@ class SceneParser extends KAGParser
 	var voiceInfos; // ボイス展開用情報
 	var voiceBase;  // ボイス展開時のベース値
 	var voiceNameMap;   // ボイス展開用マップ
+	var labelMap;       // ラベル固有のIDを保持するマップ
 
-	
 	/**
 	 * 指定キャラの現在のボイス情報を返す
 	 * @param name キャラ名
@@ -449,6 +451,9 @@ class SceneParser extends KAGParser
 				info = nameInfos[i];
 			}
 			//dm("dispname:" + info.name);
+			if (saveBeforeName) {
+				addTag("savepoint");
+			}
 			addTag("dispname", info);
 		}
 		
@@ -472,6 +477,11 @@ class SceneParser extends KAGParser
 	function parseR(elm) {
 
 		if (!elm.eol) {
+			// 改行指示がある
+			if (doLine) {
+				parseL();
+				doLine = false;
+			}
 			addTag("r", elm);
 			return;
 		}
@@ -578,18 +588,23 @@ class SceneParser extends KAGParser
 	 * p タグの展開
 	 */
     function parseP(elm) {
-		addTag("p", elm);
 		// 自動インデント解除
 		if (autoIndent) {
 			addTag("endindent");
 		}
-		// ページ終了後に呼ばれるタグ
-		addTag("afterpage");
-		// ページ待ち後に消去を強制投入
-		if (erAfterPage) {
-			if (!noErOnce) {
+		// 改ページ処理無視フラグ
+		if (!noErOnce) {
+			addTag("p", elm);
+			addTag("afterpage");
+			if (erAfterPage) {
+				if (!saveBeforeName) {
+					addTag("savepoint");
+				}
 				addTag("er");
 			}
+		} else {
+			addTag("p", elm);
+			addTag("afterpage");
 			noErOnce = false;
 		}
 		afterPage = true;
@@ -604,13 +619,17 @@ class SceneParser extends KAGParser
 	r:parseR incontextof this,
 	p:parseP incontextof this,
 	l:parseL2 incontextof this,
-    nor: function(elm) { noCrOnce = true; return 0; } incontextof this,
-    noer: function(elm) { noErOnce = true; return 0; } incontextof this,
+	nor: function(elm) { noCrOnce = true; return 0; } incontextof this,
+	noer: function(elm) { noErOnce = true; return 0; } incontextof this,
 		];
 
 	var extractTags = %[
 	voice:parseVoice incontextof this,
-	voicebase: function(elm) { voiceBase = elm.base; return 0; } incontextof this,
+	voicebase: function(elm) {
+		voiceBase = elm.base;
+		(Dictionary.clear incontextof voiceMap)(); 
+		return 0;
+	} incontextof this,
 	playvoice: parsePlayvoice incontextof this,
 	entryvoice: parseEntryvoice incontextof this,
 		];
@@ -623,6 +642,7 @@ class SceneParser extends KAGParser
 	 * lineMode    行モード指定（必須）
 	 * erAfterPage ページの直後に画面消去
 	 * crAfterName 名前の後の改行を無視
+	 * saveBeforeName 名前の前で保存
 	 * autoIndent  "「" による自動インデントを有効にする
 	 * voice       ボイスカウントの初期値
 	 */
@@ -643,6 +663,7 @@ class SceneParser extends KAGParser
 		}
 		erAfterPage  = elm.erafterpage;
 		crAfterName  = elm.craftername;
+		saveBeforeName = elm.saveBeforeName;
 		autoIndent   = elm.autoindent;
 		voiceDefault = +elm.voice if elm.voice !== void;
 		//dm("lineMode:" + lineMode);
@@ -670,10 +691,11 @@ class SceneParser extends KAGParser
 	 * @param voiceBase ボイスベース値（省略時はボイス情報から抽出）
 	 * @param voiceNameMap ボイスファイル名置換情報（省略時は無視)
 	 */
-	function parse(storage, voiceInfos, voiceBase, voiceNameMap) {
+	function parse(storage, voiceInfos, voiceBase, voiceNameMap, labelMap) {
 		init();
 		this.voiceInfos   = voiceInfos;
 		this.voiceNameMap = voiceNameMap;
+		this.labelMap     = labelMap;
 		if (voiceBase !== void) {
 			this.voiceBase = voiceBase;
 		}
@@ -681,30 +703,35 @@ class SceneParser extends KAGParser
 		loadScenario(storage);
 		var runLine = 0;
 		var obj;
-		while ((obj = getNextTag()) !== void) { // 次のタグを得る
-			if (runLine !== curLine) {
-				//dm(curLine + ":" + curLineStr);
-				enqueueTag(%[tagname:"line", line:curLine]);
-				runLine = curLine;
-			}
-			var func = textTags[obj.tagname];
-			if (func !== void) {
-				func(obj);
-			} else {
-				// 改行指示がある場合はそれを実行
-				if (doLine) {
-					parseL();
-					doLine = false;
+		try {
+			while ((obj = getNextTag()) !== void) { // 次のタグを得る
+				if (runLine !== curLine) {
+					//dm(curLine + ":" + curLineStr);
+					//enqueueTag(%[tagname:"line", line:curLine]);
+					runLine = curLine;
 				}
-				commandLine = true;
-				func = extractTags[obj.tagname];
+				var func = textTags[obj.tagname];
 				if (func !== void) {
 					func(obj);
 				} else {
-					// XXX 利用可能なタグかチェックしたほうがいいかな？
-					addTag(void, obj);
+					// 改行指示がある場合はそれを実行
+					if (doLine) {
+						parseL();
+						doLine = false;
+					}
+					commandLine = true;
+					func = extractTags[obj.tagname];
+					if (func !== void) {
+						func(obj);
+					} else {
+						// タグがあったらさっくりなしに
+						noErOnce = false;
+						addTag(void, obj);
+					}
 				}
 			}
+		} catch (e) {
+			error("error", e.message);
 		}
 @if(false)
 		for (var i=0;i<lines.count;i++) {
@@ -725,7 +752,18 @@ class SceneParser extends KAGParser
 	 */
 	function onLabel(label, page) {
 		//dm("ラベル登録:" + label + ":" + curLine);
-		enqueueTag(%[tagname:"label", label:label, page:page, line:curLine]);
+		if (labelMap !== void) { // ラベルのカウント処理を行う
+			var count;
+			var labelName = curStorage + label;
+			count = labelMap[labelName];
+			if (count === void) {
+				count = labelMap.count++;
+				labelMap[labelName] = count;
+			}
+			enqueueTag(%[tagname:"label", label:label, page:page, line:curLine, count:count]);
+		} else {
+			enqueueTag(%[tagname:"label", label:label, page:page, line:curLine]);
+		}
 		return true;
 	}
 }

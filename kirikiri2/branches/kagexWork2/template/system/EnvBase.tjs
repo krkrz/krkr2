@@ -103,6 +103,9 @@ class EnvBase extends EnvObject {
 
 	// 自動トランジションを登録
 	function setAutoTrans(list) {
+		if (autoTrans !== void) {
+			return;
+		}
 		for (var i=0;i<list.count;i++) {
 			var param = list[i];
 			if (param !== void) {
@@ -121,6 +124,29 @@ class EnvBase extends EnvObject {
 		}
 	}
 
+	// 自動トランジション
+	var dispTrans;
+
+	// 自動トランジションを登録
+	function setDispTrans(list) {
+		for (var i=0;i<list.count;i++) {
+			var param = list[i];
+			if (param !== void) {
+				if (typeof param == "String") {
+					var tr = player.getTrans(param);
+					if (tr !== void) {
+						dispTrans = tr;
+						//dm("自動トランジション指定:" + tr.method + ":" + tr.time);
+						return;
+					}
+				} else if (param instanceof "Dictionary") {
+					dispTrans = param;
+					return;
+				}
+			}
+		}
+	}
+	
 	var baseCommands = %[
 	tagname : null, 
 	time : null,
@@ -222,6 +248,7 @@ class EnvBase extends EnvObject {
 		ret = void;
 		trans = void;
 		autoTrans = void;
+		dispTrans = void;
 		
 		// コマンドを実行
 		command(elm);
@@ -232,7 +259,11 @@ class EnvBase extends EnvObject {
 				var fadeTime = elm.fade;
 				trans = %[ "time" => fadeTime > 1 ? fadeTime : fadeValue];
 			} else {
-				trans = autoTrans;
+				if (dispTrans !== void) {
+					trans = dispTrans;
+				} else {
+					trans = autoTrans;
+				}
 			}
 		}
 
