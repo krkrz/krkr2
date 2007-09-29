@@ -110,6 +110,9 @@ class KAGEnvCharacter extends KAGEnvLevelLayer, KAGEnvImage {
     var _pose;
 	property pose {
 		getter() {
+			if (init.noPose || poses === void) {
+				return void;
+			}
 			if (_pose === void) {
 				if (init.defaultPose !== void) {
 					setPose(init.defaultPose, EMPTY);
@@ -986,9 +989,9 @@ class KAGEnvCharacter extends KAGEnvLevelLayer, KAGEnvImage {
 				// ポーズ別補正
 				var info;
 				if ((info = poses[pose]) !== void) {
-					emoX   = poseInfo.emoX   if info.emoX   !== void;
-					emoY   = poseInfo.emoY   if info.emoY   !== void;
-					emoRev = poseInfo.emoRev if info.emoRev !== void;
+					emoX   = info.emoX   if info.emoX   !== void;
+					emoY   = info.emoY   if info.emoY   !== void;
+					emoRev = info.emoRev if info.emoRev !== void;
 				}
 
 				// 座標調整

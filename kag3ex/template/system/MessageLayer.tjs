@@ -2619,11 +2619,11 @@ class MessageLayer extends AnimKAGLayer
         object.name = elm.name !== void ? elm.name : "edit" + numLinks;
 		var of = object.font;
 		var lf = lineLayer.font;
-		of.face = lf.face;
-		of.angle = lf.angle;
-		of.bold = lf.bold;
-		of.italic = lf.italic;
-		of.height = lf.height;
+		of.face   = (elm.fontface   !== void) ? elm.fontface   : lf.face;
+		of.angle  = (elm.fontangle  !== void) ? elm.fontangle  : lf.angle;
+		of.bold   = (elm.fontbold   !== void) ? elm.fontbold   : lf.bold;
+		of.italic = (elm.fontitalic !== void) ? elm.fontitalic : lf.italic;
+		of.height = (elm.fontheight !== void) ? elm.fontheight : lf.height;
 		object.linkNum = numLinks;
 		object.text = Scripts.eval(elm.name);
         object.exp = elm.name;
@@ -2749,7 +2749,8 @@ class MessageLayer extends AnimKAGLayer
 
 	function addSlider(elm)
 	{
-        var object = new LinkSliderLayer(window, this, vertical);
+		var vert = elm.vertical !== void ? +elm.vertical : vertical;
+        var object = new LinkSliderLayer(window, this, vert);
         object.name = elm.name !== void ? elm.name : "slider" + numLinks;
         object.linkNum = numLinks;
 		object.onenter = createSoundExpression(elm.onenter, elm.enterse, elm.entersebuf);
@@ -2757,8 +2758,9 @@ class MessageLayer extends AnimKAGLayer
         object.exp     = elm.name;
         object.color = elm.bgcolor if elm.bgcolor !== void; // color ‚Å‚È‚¢Ž–‚É’ˆÓ
         object.bgOpacity = elm.opacity if elm.opacity !== void;
-        object.min = +elm.min if elm.min !== void;
-        object.max = +elm.max if elm.max !== void;
+		object.min  = +elm.min  if elm.min  !== void;
+		object.max  = +elm.max  if elm.max  !== void;
+		object.step = +elm.step if elm.step !== void;
         object.nohilight = elm.nohilight if elm.nohilight !== void;
         object.jumpMode = elm.jumpmode if elm.jumpmode !== void;
         if (elm.value !== void) {
@@ -2790,44 +2792,44 @@ class MessageLayer extends AnimKAGLayer
                 object.loadTab(elm.tab);
             }
         }
-        
-        var cw;
-        var lw = object.width;
-		var lh = object.height;
-		if(vertical)
-		{
-			if(lw > lineSize) lineSize = lw; else lw = object.width = lineSize; // Šg’£
-			cw = lh;
+
+		// ˆÊ’u•â³‚ð‚µ‚È‚¢ƒIƒvƒVƒ‡ƒ“‚ð’Ç‰Á
+		if (elm.nofixpos) {
+			object.setPos(x, y);
+		} else {
+			var cw;
+			var lw = object.width;
+			var lh = object.height;
+			if(vertical) {
+				if (lw > lineSize) lineSize = lw;
+				else lw = object.width = lineSize; // Šg’£
+				cw = lh;
+			} else {
+				if (lh > lineSize) lineSize = lh;
+				else lh = object.height = lineSize; // Šg’£
+				cw = lw;
+			}
+			changeLineSize();
+
+			var cx,cy;
+			if(vertical) {
+				cx = lineLayerBase - (lw>>1);
+				cy = lineLayerPos;
+			} else {
+				cx = lineLayerPos;
+				cy = lineLayerBase - lh;
+			}
+
+			cx += +elm.ox if elm.ox !== void;
+			cy += +elm.oy if elm.oy !== void;
+
+			object.setPos(cx + lineLayerOriginX + getLineLayerLeftOffset(),
+						  cy + lineLayerOriginY + getLineLayerTopOffset());
+
+			if(vertical) y+=cw; else x+=cw;
+			lineLayerPos += cw;
+			lineLayerLength += cw;
 		}
-		else
-		{
-			if(lh > lineSize) lineSize = lh; else lh = object.height = lineSize; // Šg’£
-			cw = lw;
-		}
-
-		changeLineSize();
-
-		var cx,cy;
-		if(vertical)
-		{
-			cx = lineLayerBase - (lw>>1);
-			cy = lineLayerPos;
-		}
-		else
-		{
-			cx = lineLayerPos;
-			cy = lineLayerBase - lh;
-		}
-
-		cx += +elm.ox if elm.ox !== void;
-		cy += +elm.oy if elm.oy !== void;
-
-        object.setPos(cx + lineLayerOriginX + getLineLayerLeftOffset(),
-                      cy + lineLayerOriginY + getLineLayerTopOffset());
-
-        if(vertical) y+=cw; else x+=cw;
-        lineLayerPos += cw;
-        lineLayerLength += cw;
 
         object.visible = (elm.visible !== void) ? elm.visible : true;
 
@@ -2884,6 +2886,7 @@ class MessageLayer extends AnimKAGLayer
 		object.onenter = createSoundExpression(elm.onenter, elm.enterse, elm.entersebuf);
         object.onleave = createSoundExpression(elm.onleave, elm.leavese, elm.leavesebuf);
         object.hitThreshold = (elm.recthit === void || +elm.recthit) ? 0 : 64;
+		object.absolute = +elm.absolute if (elm.absolute !== void);
         if (elm.enabled !== void) {
             object.enabled = (elm.enabled != 0);
         } else if (elm.disabled !== void && elm.disabled) {

@@ -149,16 +149,20 @@ class KAGWindow extends Window
     var sysbase;  // ベースレイヤ
     var _debugwin; // デバッグ表示用レイヤ
 
-    property debugwin {
-        getter() {
-            if (_debugwin === void) {
-                // デバッグ表示用
+	property debugwin {
+		getter() {
+			if (_debugwin === void) {
+				// デバッグ表示用
 				_debugwin = new Layer(this, primaryLayer);
-                _debugwin.name = "デバッグ情報レイヤ";
-                _debugwin.setSize(scWidth, 50);
-                _debugwin.setPos(0, scHeight - 50);
-                _debugwin.visible = false;
-                _debugwin.hitThreshold = 256;
+				_debugwin.name = "デバッグ情報レイヤ";
+				_debugwin.setSize(scWidth, 50);
+				if (typeof global.debugwintop !== "undefined" && global.debugwintop) {
+					_debugwin.setPos(0, 0);
+				} else {
+					_debugwin.setPos(0, scHeight - _debugwin.height);
+				}
+				_debugwin.visible = false;
+				_debugwin.hitThreshold = 256;
             }
             return _debugwin;
         }
@@ -5041,12 +5045,12 @@ class KAGWindow extends Window
         var names = [];
         names.assign(allActions);
         (Dictionary.clear incontextof allActions)();
+		actionCount = 0;
         for (var i=0;i<names.count;i+=2) {
             var target = names[i];
             var info   = names[i+1];
             if (info.doAction(now, false)) {
 				//dm("アクション終了:" + info.target);
-                actionCount--;
                 if (typeof info.onActionCompleted != "undefined") {
                     info.onActionCompleted(info.target);
                 }
@@ -5054,6 +5058,7 @@ class KAGWindow extends Window
             } else {
                 // 再登録
                 allActions[target] = info;
+				actionCount++;
             }
         }
     }
@@ -8125,7 +8130,7 @@ class KAGWindow extends Window
 		clearLayers(base);
 		
 		// レイヤ全消去
-		if (typeof global.clearLayersHandler != "undefined") {
+		if (typeof this.clearLayersHandler != "undefined") {
 			clearLayersHandler(base);
 		}
 		return 0;
@@ -8758,12 +8763,12 @@ class KAGWindow extends Window
 		}
 		
 		if (recordHistoryOfStore == 3) { // 2 : 選択肢 ( @s タグ ) ごと
-			if (autoLabelMode && autoLabelType == 1) {
-				// 状態保存処理（行指定モード保存を使う)
-				pushHistoryOfStore();
-				storeFlags(true);
-				storeLabelPassed = true;
-			}
+//			if (autoLabelMode && autoLabelType == 1) {
+//				// 状態保存処理（行指定モード保存を使う)
+//				pushHistoryOfStore();
+//				storeFlags(true);
+//				storeLabelPassed = true;
+//			}
 			// 記録指定
 			setToRecordHistory();
 		}
