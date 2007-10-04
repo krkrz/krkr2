@@ -2,7 +2,7 @@
 #define __PSD_TYPES_H__
 
 #include <stddef.h>
-
+#include <string.h>
 
 typedef unsigned char			psd_bool;
 #define psd_true				1
