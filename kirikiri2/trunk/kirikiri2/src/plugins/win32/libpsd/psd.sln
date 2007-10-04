@@ -12,9 +12,9 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libpsd", "libpsd\libpsd.vcp
 		{F9EF0771-BF7D-461B-B897-44AA16D3F5EC} = {F9EF0771-BF7D-461B-B897-44AA16D3F5EC}
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libjpeg", "libjpeg\libjpeg.vcproj", "{F9EF0771-BF7D-461B-B897-44AA16D3F5EC}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "zlib", "..\zlib\zlib.vcproj", "{4D60AC68-DE6A-4E37-A0CD-A52D1ECD6646}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "zlib", "zlib\zlib.vcproj", "{4D60AC68-DE6A-4E37-A0CD-A52D1ECD6646}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libjpeg", "..\libjpeg\libjpeg.vcproj", "{F9EF0771-BF7D-461B-B897-44AA16D3F5EC}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -30,14 +30,14 @@ Global
 		{5B3D8A71-6293-4CE5-A0B5-1E3F9BFED4F5}.Debug|Win32.Build.0 = Debug|Win32
 		{5B3D8A71-6293-4CE5-A0B5-1E3F9BFED4F5}.Release|Win32.ActiveCfg = Release|Win32
 		{5B3D8A71-6293-4CE5-A0B5-1E3F9BFED4F5}.Release|Win32.Build.0 = Release|Win32
-		{F9EF0771-BF7D-461B-B897-44AA16D3F5EC}.Debug|Win32.ActiveCfg = Debug|Win32
-		{F9EF0771-BF7D-461B-B897-44AA16D3F5EC}.Debug|Win32.Build.0 = Debug|Win32
-		{F9EF0771-BF7D-461B-B897-44AA16D3F5EC}.Release|Win32.ActiveCfg = Release|Win32
-		{F9EF0771-BF7D-461B-B897-44AA16D3F5EC}.Release|Win32.Build.0 = Release|Win32
 		{4D60AC68-DE6A-4E37-A0CD-A52D1ECD6646}.Debug|Win32.ActiveCfg = Debug|Win32
 		{4D60AC68-DE6A-4E37-A0CD-A52D1ECD6646}.Debug|Win32.Build.0 = Debug|Win32
 		{4D60AC68-DE6A-4E37-A0CD-A52D1ECD6646}.Release|Win32.ActiveCfg = Release|Win32
 		{4D60AC68-DE6A-4E37-A0CD-A52D1ECD6646}.Release|Win32.Build.0 = Release|Win32
+		{F9EF0771-BF7D-461B-B897-44AA16D3F5EC}.Debug|Win32.ActiveCfg = Debug|Win32
+		{F9EF0771-BF7D-461B-B897-44AA16D3F5EC}.Debug|Win32.Build.0 = Debug|Win32
+		{F9EF0771-BF7D-461B-B897-44AA16D3F5EC}.Release|Win32.ActiveCfg = Release|Win32
+		{F9EF0771-BF7D-461B-B897-44AA16D3F5EC}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
