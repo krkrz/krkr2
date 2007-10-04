@@ -1,7 +1,6 @@
 #ifndef __PSD_CONFIG_H__
 #define __PSD_CONFIG_H__
 
-
 // we need libjpeg to get the thumbnail
 // You can download libjpeg from http://sourceforge.net/projects/libjpeg
 #if 1
@@ -27,7 +26,7 @@
 // but we seldom use the XMP metadata to get the information of PSD file,
 // so you don't have to define this macro
 // You can download libxml from http://sourceforge.net/projects/libxml
-#if 1
+#if 0
 #if defined(PSD_GET_ALL_IMAGE_RESOURCE)
 #define PSD_INCLUDE_LIBXML
 #endif
@@ -38,7 +37,7 @@
 // Exif: Exchangeable image file format for Digital Still Cameras
 // http://www.pima.net/standards/it10/PIMA15740/exif.htm
 // You can download EXIF Tag Parsing Library from http://sourceforge.net/projects/libexif
-#if 1
+#if 0
 #if defined(PSD_GET_ALL_IMAGE_RESOURCE)
 #define PSD_INCLUDDE_LIBEXIF
 #endif
