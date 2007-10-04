@@ -1,0 +1,13 @@
+/**
+ * 擬似コードによるマニュアル
+ */
+
+class Layer {
+	/**
+	 * TLG5 形式での画像の保存
+	 * @param filename ファイル名
+	 * @param tags タグ情報
+	 */
+	void saveLayerImageTlg5(filename, tags=void);
+};
+
