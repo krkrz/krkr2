@@ -194,7 +194,7 @@ psd_status psd_get_layer_vector_mask(psd_context * context, psd_layer_record * l
 	psd_uint tag;
 	
 	// Version ( = 3 for Photoshop 6.0)
-	psd_assert(psd_stream_get_int(context) == 3);
+	{int ver = psd_stream_get_int(context); psd_assert(ver == 3);};
 
 	// Flags. bit 1 = invert, bit 2 = not link, bit 3 = disable
 	tag = psd_stream_get_int(context);
