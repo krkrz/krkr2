@@ -305,7 +305,7 @@
 				>
 			</File>
 			<File
-				RelativePath=".\src\psd_system.c"
+				RelativePath=".\src\psd_system.cpp"
 				>
 			</File>
 			<File
