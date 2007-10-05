@@ -1,0 +1,67 @@
+
+/**
+ * 擬似コードによるマニュアル
+ */
+
+class PSD {
+
+	// カラーモード定義
+	color_mode_bitmap 		= 0;
+	color_mode_grayscale 	= 1;
+	color_mode_indexed		= 2;
+	color_mode_rgb			= 3;
+	color_mode_cmyk			= 4;
+	color_mode_multichannel	= 7;
+	color_mode_duotone		= 8;
+	color_mode_lab			= 9;
+
+	// レイヤ種別定義
+	layer_type_normal = 0;
+	layer_type_hidden = 1;
+	layer_type_folder = 2;
+	layer_type_solid_color = 3;
+	layer_type_gradient_fill = 4;
+	layer_type_pattern_fill = 5;
+	layer_type_levels = 6;
+	layer_type_curves = 7;
+	layer_type_brightness_contrast = 8;
+	layer_type_color_balance = 9;
+	layer_type_hue_saturation = 10;
+	layer_type_selective_color = 11;
+	layer_type_threshold = 12;
+	layer_type_invert = 13;
+	layer_type_posterize = 14;
+	layer_type_channel_mixer = 15;
+	layer_type_gradient_map = 16;
+	layer_type_photo_filter = 17;
+	
+	/**
+	 * PSD画像のロード
+	 * @param filename ファイル名
+	 * @return ロードに成功したら true
+	 */
+	function load(filename);
+
+	// 画像の基本プロパティ
+	
+	property width; //< 画像横幅
+	property height; //< 画像縦幅
+	property channels; //< チャンネル数
+	property color_mode; //< カラーモード
+	property layer_count; //< レイヤ数
+
+	/**
+	 * レイヤ種別の取得
+	 * @param no レイヤ番号
+	 * @return レイヤ種別
+	 */
+	function getLayerType(no);
+	
+	/**
+	 * レイヤデータの読み出し
+	 * @param layer 読み出し先レイヤ
+	 * @param no レイヤ番号
+	 */
+	function getLayerData(layer, no);
+
+};

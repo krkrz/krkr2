@@ -1,0 +1,90 @@
+Plugins.link("psd.dll");
+
+function dm() {
+	Debug.message(...);
+}
+
+var WIDTH=800;
+var HEIGHT=600;
+
+class MyWindow extends Window
+{
+	var base;
+	var layers;
+	var filemenu;
+	var exitmenu;
+	var openmenu;
+	
+	function MyWindow() {
+		super.Window();
+		menu.add(filemenu = new MenuItem(this, "ファイル(&F)"));
+		filemenu.add(openmenu = new MenuItem(this, "開く(&O)"));
+		filemenu.add(exitmenu = new MenuItem(this, "終了(&X)"));
+
+		setInnerSize(WIDTH, HEIGHT);
+
+		// プライマリレイヤ
+		base = new Layer(this, null);
+		base.setSize(WIDTH, HEIGHT);
+		base.fillRect(0,0,WIDTH,HEIGHT,0xff000000);
+		add(base);
+
+		layers = [];
+	}
+
+	function clear() {
+		for (var i=0;i<layers.count;i++) {
+			invalidate layers[i];
+		}
+		layers.clear();
+	}
+	
+	function open(filename) {
+		clear();
+		var psd = new PSD();
+		if (!psd.load(filename)) {
+			System.inform("ロードに失敗しました");
+			return;
+		}
+
+		// 情報表示
+		dm("width:" + psd.width);
+		dm("height:" + psd.height);
+		dm("channels:" + psd.channels);
+		dm("depth:" + psd.depth);
+		dm("color_mode:" + psd.color_mode);
+		dm("layer_count:" + psd.layer_count);
+
+		var count = psd.layer_count;
+		for (var i=0;i<count;i++) {
+			if (psd.getLayerType(i) == PSD.layer_type_normal) {
+				var layer = new Layer(this, base);
+				psd.getLayerData(layer, i);
+				layers.add(layer);
+			}
+		}
+	}
+
+	function openDialog() {
+		var fileDialog =%[
+		filter : [ "PSDファイル(*.psd)|*.psd" ],
+		title  :   "PSDファイルの読込み",
+			];
+		if (!Storages.selectFile(fileDialog)) return; // キャンセルで抜ける
+		open(fileDialog.name);
+	}
+	
+	// 実行部
+	function action(ev)	{
+		if(ev.type == "onClick") {
+			if (ev.target == exitmenu) {
+				close();
+			} else if (ev.target == openmenu) {
+				openDialog();
+			}
+		}
+	}
+};
+
+var win = new MyWindow();
+win.visible = true;
