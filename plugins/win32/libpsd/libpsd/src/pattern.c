@@ -636,8 +636,10 @@ psd_status psd_get_pattern(psd_context * context)
 		{
 			if(pattern->channel_number == 0)
 				depth = psd_stream_get_int(context);
-			else
-				psd_assert(depth == psd_stream_get_int(context));
+			else {
+				int d = psd_stream_get_int(context);
+				psd_assert(depth == d);
+			}
 		}
 		else
 		{
