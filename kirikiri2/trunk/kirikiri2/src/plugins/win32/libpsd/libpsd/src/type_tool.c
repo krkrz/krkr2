@@ -45,7 +45,7 @@ psd_status psd_get_layer_type_tool(psd_context * context, psd_layer_record * lay
 	layer->layer_info_count ++;
 
 	// Version ( = 1)
-	psd_assert(psd_stream_get_short(context) == 1);
+	{int ver=psd_stream_get_short(context);psd_assert(ver == 1);};
 
 	// 6 * 8 double precision numbers for the transform information
 	for(i = 0; i < 6; i ++)
@@ -55,7 +55,7 @@ psd_status psd_get_layer_type_tool(psd_context * context, psd_layer_record * lay
 	// Font information
 	/***********************************************************************/
 	// Version ( = 6)
-	psd_assert(psd_stream_get_short(context) == 6);
+	{int ver=psd_stream_get_short(context); psd_assert(ver == 6);};
 
 	// Count of faces
 	data->faces_count = psd_stream_get_short(context);
