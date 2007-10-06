@@ -46,7 +46,7 @@ CVMRCustomAllocatorPresenter9::~CVMRCustomAllocatorPresenter9()
 //! @brief	  	初期化処理
 //----------------------------------------------------------------------------
 void CVMRCustomAllocatorPresenter9::Initialize()
-{	
+{
 	CAutoLock	autoLock(m_Lock);
 	HRESULT	hr;
 	if( FAILED(hr = CreateChildWindow()) )
@@ -117,7 +117,6 @@ HRESULT STDMETHODCALLTYPE CVMRCustomAllocatorPresenter9::InitializeDevice( DWORD
 HRESULT STDMETHODCALLTYPE CVMRCustomAllocatorPresenter9::TerminateDevice( DWORD_PTR dwID )
 {
 	HRESULT hr = S_OK;
-
 //	CAutoLock Lock(m_Lock);
 	if( m_dwUserID == dwID ) {
 		if( FAILED(hr = ReleaseSurfaces()) )
@@ -138,7 +137,7 @@ HRESULT STDMETHODCALLTYPE CVMRCustomAllocatorPresenter9::TerminateDevice( DWORD_
 HRESULT STDMETHODCALLTYPE CVMRCustomAllocatorPresenter9::GetSurface( DWORD_PTR dwUserID, DWORD SurfaceIndex, DWORD SurfaceFlags, IDirect3DSurface9 **lplpSurface )
 {
     if( lplpSurface == NULL )
-        return E_POINTER;
+		return E_POINTER;
 
 	if( m_dwUserID == dwUserID ) {
 		CAutoLock Lock(m_Lock);
@@ -156,6 +155,7 @@ HRESULT STDMETHODCALLTYPE CVMRCustomAllocatorPresenter9::GetSurface( DWORD_PTR d
 			return E_FAIL;
 		}
 	}
+
 	return E_INVALIDARG;
 }
 //----------------------------------------------------------------------------
@@ -227,12 +227,13 @@ HRESULT STDMETHODCALLTYPE CVMRCustomAllocatorPresenter9::PresentImage( DWORD_PTR
 	HRESULT hr = S_OK;
 	if( m_dwUserID == dwUserID ) {
 		CAutoLock Lock(m_Lock);
-		AllocatorNotify()->NotifyEvent(EC_UPDATE,0,0);
+//		AllocatorNotify()->NotifyEvent(EC_UPDATE,0,0);
 		if( m_RebuildingWindow ) return S_OK;	// フルスクリーン切り替え中は描画しない
 		hr = PresentHelper( lpPresInfo );
 #if 1
 		if( hr == D3DERR_DEVICELOST)
 		{
+			OutputDebugString("DS ERROR: Device Lost.\n");
 			hr = D3DDevice()->TestCooperativeLevel();
 			if( hr == D3DERR_DEVICENOTRESET )
 			{	// リセット可能
@@ -256,7 +257,6 @@ HRESULT STDMETHODCALLTYPE CVMRCustomAllocatorPresenter9::PresentImage( DWORD_PTR
 HRESULT CVMRCustomAllocatorPresenter9::PresentHelper( VMR9PresentationInfo *lpPresInfo )
 {
 	HRESULT hr;
-
 	CAutoLock Lock(m_Lock);
 	CComPtr<IDirect3DDevice9> device;
 	if( FAILED(hr = lpPresInfo->lpSurf->GetDevice(&device.p )) )
@@ -268,12 +268,18 @@ HRESULT CVMRCustomAllocatorPresenter9::PresentHelper( VMR9PresentationInfo *lpPr
 		if( FAILED(hr = device->StretchRect( lpPresInfo->lpSurf, NULL, pBackBuffer, NULL, D3DTEXF_NONE )) )
 			AllocatorNotify()->NotifyEvent(EC_ERRORABORT,hr,0);
 		pBackBuffer->Release();
+		if( hr == S_OK ) {
+			AllocatorNotify()->NotifyEvent(EC_UPDATE,0,0);
+		}
+	} else {
+		OutputDebugString("DS ERROR: Failed To Get back buffer surface.\n");
 	}
 //	hr = device->Present( NULL, NULL, m_ChildWnd, NULL );
 //	hr = device->Present( NULL, NULL, m_ChildWnd, NULL );
 //		hr = device->Present( NULL, NULL, NULL, NULL );
 //	if( FAILED(hr = device->Present( NULL, NULL, m_ChildWnd, NULL )) )
 //		AllocatorNotify()->NotifyEvent(EC_ERRORABORT,hr,0);
+
 	return hr;
 }
 //----------------------------------------------------------------------------
@@ -323,11 +329,10 @@ UINT CVMRCustomAllocatorPresenter9::GetMonitorNumber()
 HRESULT CVMRCustomAllocatorPresenter9::CreateD3D()
 {
 	HRESULT	hr;
-
 	CAutoLock Lock(m_Lock);
 	ReleaseSurfaces();
 	ReleaseD3D();
-	
+
 	if( m_D3DDll.IsLoaded() == false )
 #if _DEBUG
 		m_D3DDll.Load("d3d9d.dll");
@@ -371,7 +376,6 @@ HRESULT CVMRCustomAllocatorPresenter9::CreateD3D()
 HRESULT CVMRCustomAllocatorPresenter9::ChangeD3DDevice()
 {
 	HRESULT	hr;
-
 	CAutoLock Lock(m_Lock);
 	D3DDEVICE_CREATION_PARAMETERS	Parameters;
 	if( FAILED( hr = D3DDevice()->GetCreationParameters(  &Parameters ) ) )
@@ -411,29 +415,36 @@ HRESULT CVMRCustomAllocatorPresenter9::ResizeBackbuffer()
 	ZeroMemory( &d3dpp, sizeof(d3dpp) );
 	CAutoLock Lock(m_Lock);
 
-	if( m_ThreadID != GetCurrentThreadId() )
-		OutputDebugString("may be cannot reset.");
-
-	d3dpp.Windowed = TRUE;
-	d3dpp.SwapEffect = D3DSWAPEFFECT_DISCARD;
-	d3dpp.BackBufferFormat = D3DFMT_UNKNOWN;
-	d3dpp.BackBufferHeight = m_VideoSize.cy;
-	d3dpp.BackBufferWidth = m_VideoSize.cx;
-	d3dpp.hDeviceWindow = m_ChildWnd;
-	hr = D3DDevice()->Reset(&d3dpp);
-	if( hr == D3DERR_DEVICELOST )
-		OutputDebugString("Cannot reset device.");
-	else if( hr == D3DERR_DRIVERINTERNALERROR )
-	{
-		OutputDebugString("Device internal fatal error.");
-		AllocatorNotify()->NotifyEvent(EC_ERRORABORT,hr,0);
+	if( m_ThreadID != GetCurrentThreadId() ) {
+		OutputDebugString("DS ERROR: may be cannot reset.\n");
 	}
-	else if( hr == D3DERR_INVALIDCALL )
-		OutputDebugString("Invalid call.");
-	else if( hr  == D3DERR_OUTOFVIDEOMEMORY )
-		OutputDebugString("Cannot allocate video memory.");
-	else if( hr == E_OUTOFMEMORY  )
-		OutputDebugString("Cannot allocate memory.");
+
+	hr = D3DDevice()->TestCooperativeLevel();
+	if( hr == D3DERR_DEVICENOTRESET ) {
+		d3dpp.Windowed = TRUE;
+		d3dpp.SwapEffect = D3DSWAPEFFECT_DISCARD;
+		d3dpp.BackBufferFormat = D3DFMT_UNKNOWN;
+		d3dpp.BackBufferHeight = m_VideoSize.cy;
+		d3dpp.BackBufferWidth = m_VideoSize.cx;
+		d3dpp.hDeviceWindow = m_ChildWnd;
+		ReleaseSurfaces();
+		hr = D3DDevice()->Reset(&d3dpp);
+		if( hr == D3DERR_DEVICELOST ) {
+			OutputDebugString("DS ERROR: Cannot reset device.\n");
+		} else if( hr == D3DERR_DRIVERINTERNALERROR ) {
+			OutputDebugString("DS ERROR: Device internal fatal error.\n");
+			AllocatorNotify()->NotifyEvent(EC_ERRORABORT,hr,0);
+		} else if( hr == D3DERR_INVALIDCALL ) {
+			OutputDebugString("DS ERROR: Invalid call.\n");
+		} else if( hr  == D3DERR_OUTOFVIDEOMEMORY ) {
+			OutputDebugString("DS ERROR: Cannot allocate video memory.\n");
+		} else if( hr == E_OUTOFMEMORY  ) {
+			OutputDebugString("DS ERROR: Cannot allocate memory.\n");
+		}
+	} else {
+		hr = E_FAIL;
+	}
+
 	return hr;
 }
 //----------------------------------------------------------------------------
@@ -453,14 +464,14 @@ HRESULT CVMRCustomAllocatorPresenter9::CreateChildWindow()
 		if( m_ChildAtom == 0 )
 			return HRESULT_FROM_WIN32(GetLastError());
 	}
-
 	DWORD	atom = (DWORD)(0xFFFF & m_ChildAtom);
-	if( (m_Rect.right - m_Rect.left) != 0 && (m_Rect.bottom - m_Rect.top) != 0 )
+	if( (m_Rect.right - m_Rect.left) != 0 && (m_Rect.bottom - m_Rect.top) != 0 ) {
 //		m_ChildWnd = CreateWindow( (LPCTSTR)atom, "VMR9 child", WS_CHILDWINDOW, 0, 0, m_Rect.right - m_Rect.left, m_Rect.bottom - m_Rect.top, Owner()->OwnerWindow, NULL, Owner()->m_OwnerInst, NULL );
 		m_ChildWnd = CreateWindow( _T("krmovie VMR9 Child Window Class"), "VMR9 child", WS_CHILDWINDOW, 0, 0, m_Rect.right - m_Rect.left, m_Rect.bottom - m_Rect.top, Owner()->OwnerWindow, NULL, Owner()->m_OwnerInst, NULL );
-	else
+	} else {
 //		m_ChildWnd = CreateWindow( (LPCTSTR)atom, "VMR9 child", WS_CHILDWINDOW, 0, 0, 320, 240, Owner()->OwnerWindow, NULL, Owner()->m_OwnerInst, NULL );
 		m_ChildWnd = CreateWindow( _T("krmovie VMR9 Child Window Class"), "VMR9 child", WS_CHILDWINDOW, 0, 0, 320, 240, Owner()->OwnerWindow, NULL, Owner()->m_OwnerInst, NULL );
+	}
 	if( m_ChildWnd == NULL )
 		return HRESULT_FROM_WIN32(GetLastError());
 
@@ -482,6 +493,7 @@ void CVMRCustomAllocatorPresenter9::DestroyChildWindow()
 		DestroyWindow(m_ChildWnd);
 	}
 	m_ChildWnd = NULL;
+
 }
 //----------------------------------------------------------------------------
 //! @brief	  	ウィンドウプロシージャ
@@ -514,10 +526,15 @@ LRESULT WINAPI CVMRCustomAllocatorPresenter9::Proc( HWND hWnd, UINT msg, WPARAM 
 		PAINTSTRUCT ps;
 		HDC			hDC;
 		hDC = BeginPaint(hWnd, &ps);
+//		HGDIOBJ hBrush = ::GetStockObject(BLACK_BRUSH);
+//		FillRect( hDC, &ps.rcPaint, (HBRUSH)hBrush );
 		EndPaint(hWnd, &ps);
 		return 0;
+	} else if( msg >= WM_MOUSEFIRST && msg <= WM_MOUSELAST && Owner()->GetMessageDrainWindow() ) {
+		return ::SendMessage( Owner()->GetMessageDrainWindow(), msg, wParam, lParam );
+//		::PostMessage( Owner()->GetMessageDrainWindow(), msg, wParam, lParam );
+//		return 0;
 	}
-
 	return DefWindowProc(hWnd,msg,wParam,lParam);
 }
 //----------------------------------------------------------------------------
@@ -532,6 +549,7 @@ void CVMRCustomAllocatorPresenter9::SetRect( RECT *rect )
 		if( MoveWindow( m_ChildWnd, m_Rect.left, m_Rect.top, m_Rect.right - m_Rect.left, m_Rect.bottom - m_Rect.top, TRUE ) == 0 )
 			ThrowDShowException(L"Failed to call MoveWindow.", HRESULT_FROM_WIN32(GetLastError()));
 	}
+
 }
 //----------------------------------------------------------------------------
 //! @brief	  	ビデオの表示/非表示を設定する
@@ -564,7 +582,7 @@ void CVMRCustomAllocatorPresenter9::Reset()
 	if( Owner()->OwnerWindow != NULL )
 	{
 		CAutoLock Lock(m_Lock);
-//		ReleaseSurfaces();
+		ReleaseSurfaces();
 		DestroyChildWindow();
 		if( FAILED(hr = CreateChildWindow() ) )
 			ThrowDShowException(L"Failed to create window.", hr );
@@ -579,3 +597,4 @@ void CVMRCustomAllocatorPresenter9::Reset()
 		m_RebuildingWindow = true;
 	}
 }
+
