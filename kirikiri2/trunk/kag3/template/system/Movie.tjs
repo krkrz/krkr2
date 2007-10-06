@@ -247,6 +247,8 @@ class Movie extends VideoOverlay
 		{
 			if( elm.mode == "layer" )
 				mode = vomLayer;
+			else if( elm.mode == "mixer" )
+				mode = vomMixer;
 			else
 				mode = vomOverlay;
 		}
