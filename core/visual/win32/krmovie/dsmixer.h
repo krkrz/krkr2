@@ -35,6 +35,7 @@ private:
 	REFERENCE_TIME					m_AvgTimePerFrame;
 	long							m_Width;
 	long							m_Height;
+	HWND							m_hMessageDrainWnd;
 
 	HINSTANCE	m_OwnerInst;
 	CCritSec	m_VMRLock;	// for VMR
@@ -67,6 +68,10 @@ private:
 	{
 		return m_AllocatorPresenter;
 	}
+	HWND GetMessageDrainWindow()
+	{
+		return m_hMessageDrainWnd;
+	}
 
 public:
 	tTVPDSMixerVideoOverlay();
@@ -91,6 +96,7 @@ public:
 	virtual void __stdcall SetMixingMovieBGColor( unsigned long col );
 	virtual void __stdcall GetMixingMovieBGColor( unsigned long *col );
 	virtual void __stdcall PresentVideoImage();
+	virtual void __stdcall SetMessageDrainWindow(HWND window);
 
 	void AddVMR9Filer( CComPtr<IBaseFilter> &pVMR9 );
 
