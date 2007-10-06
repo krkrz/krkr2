@@ -1372,8 +1372,8 @@ StartTick = timeGetTime();
 #endif
 			if(DrawDibHandle && TextureBuffer && TargetWindow &&
 				!(x < 0 || y < 0 ||
-					x + cliprect.get_width() > DestWidth ||
-					y + cliprect.get_height() > DestHeight) &&
+					x + cliprect.get_width() > SrcWidth ||
+					y + cliprect.get_height() > SrcHeight) &&
 				!(cliprect.left < 0 || cliprect.top < 0 ||
 					cliprect.right > bitmapinfo->bmiHeader.biWidth ||
 					cliprect.bottom > bitmapinfo->bmiHeader.biHeight))
