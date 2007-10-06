@@ -35,6 +35,7 @@ tTVPDSMixerVideoOverlay::tTVPDSMixerVideoOverlay()
 	m_Width = 0;
 	m_Height = 0;
 	m_AllocatorPresenter = NULL;
+	m_hMessageDrainWnd = NULL;
 }
 //----------------------------------------------------------------------------
 //! @brief	  	インターフェイスを解放する
@@ -43,6 +44,7 @@ tTVPDSMixerVideoOverlay::~tTVPDSMixerVideoOverlay()
 {
 	Shutdown = true;
 	ReleaseAll();
+	m_hMessageDrainWnd = NULL;
 }
 //----------------------------------------------------------------------------
 //! @brief	  	インターフェイスを解放する
@@ -479,4 +481,10 @@ void __stdcall tTVPDSMixerVideoOverlay::PresentVideoImage()
 {
 	AllocatorPresenter()->PresentVideoImage();
 }
-
+//----------------------------------------------------------------------------
+//! @brief	  	メッセージを送るウィンドウを設定する
+//----------------------------------------------------------------------------
+void __stdcall tTVPDSMixerVideoOverlay::SetMessageDrainWindow(HWND window)
+{
+	m_hMessageDrainWnd = window;
+}
