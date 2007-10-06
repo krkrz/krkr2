@@ -50,6 +50,7 @@ class LinkButtonLayer extends ButtonLayer
 	{
 		super.onMouseDown(...);
         if (button == mbRight) {
+			releaseCapture();
             window.onPrimaryRightClick();
         }
 	}
@@ -237,6 +238,7 @@ class LinkCheckBoxLayer extends CheckBoxLayer
 	{
 		super.onMouseDown(...);
         if(button == mbRight) {
+			releaseCapture();
             window.onPrimaryRightClick();
         }
 	}
@@ -308,6 +310,7 @@ class LinkEditLayer extends EditLayer
 	{
 		super.onMouseDown(...);
         if(button == mbRight) {
+			releaseCapture();
             window.onPrimaryRightClick();
         }
 	}
@@ -405,6 +408,7 @@ class LinkSliderLayer extends SliderLayer
 	{
 		super.onMouseDown(...);
         if(button == mbRight) {
+			releaseCapture();
             window.onPrimaryRightClick();
         }
 	}
@@ -471,6 +475,7 @@ class SystemButtonLayer extends ButtonLayer
 	{
 		super.onMouseDown(...);
         if(button == mbRight) {
+			releaseCapture();
             window.onPrimaryRightClick();
         }
 	}
@@ -3235,6 +3240,7 @@ class MessageLayer extends AnimKAGLayer
 
         // 右クリックは素通しする
         if (button == mbRight) {
+			releaseCapture();
             window.onPrimaryRightClick();
         }
         

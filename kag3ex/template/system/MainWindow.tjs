@@ -935,6 +935,13 @@ class KAGWindow extends Window
 				onFullScreenMenuItemClick(this);
 		}
 
+		// ズーム状態補正
+		if(ismain) {
+			if (scflags.zoomNumer != 0 && scflags.zoomDenom != 0) {
+				setZoom(scflags.zoomNumer, scflags.zoomDenom);
+			}
+		}
+		
 		// 前回起動時にフルスクリーンだった場合はフルスクリーンにしてみる
 		if(ismain)
 		{
@@ -1391,6 +1398,13 @@ class KAGWindow extends Window
 		saveBookMarkToFileWithAsk();
 	}
 
+	function setZoom(numer, denom) {
+		super.setZoom(numer, denom);
+		setInnerSize(scWidth * zoomNumer / zoomDenom,
+					 scHeight * zoomNumer / zoomDenom);
+		top++, top--; // VCRなムービーが追従するようにおまじない XXX
+	}
+	
 	function onWindowedMenuItemClick(sender)
 	{
 		if(fullScreened)
@@ -1398,6 +1412,7 @@ class KAGWindow extends Window
 			try
 			{
 				fullScreen = false;
+				setZoom(zoomNumer, zoomDenom);
 			}
 			catch(e)
 			{
@@ -1418,6 +1433,7 @@ class KAGWindow extends Window
 		{
 			try
 			{
+				setInnerSize(scWidth, scHeight);
 				fullScreen = true;
 			}
 			catch(e)
@@ -1867,6 +1883,8 @@ class KAGWindow extends Window
 
 		// フルスクリーン
 		scflags.fullScreen = fullScreened;
+		scflags.zoomNumer = zoomNumer;
+		scflags.zoomDenom = zoomDenom;
 
 		// 文字表示速度
 		scflags.autoModePageWait = autoModePageWait;
@@ -6941,6 +6959,37 @@ class KAGWindow extends Window
 		info.incVoice = elm.incvoice || elm.replace;
 	}
 
+	function emptyCheck(cd) {
+		// 行頭での処理
+		// ラインモード処理
+		var erflag;
+		// テキストクリア処理
+		switch (lineMode) {
+		case 1:
+			erflag = true;
+			break;
+		case 2:
+		case 3:
+		case 5:
+			if (afterPage) {
+				erflag = true;
+			} else {
+				if (!afterName && !skipNoDisp) {
+					addParseTag(cd, "r");
+				}
+			}
+			break;
+		case 4:
+			if (afterPage) {
+				erflag = true;
+			}
+			break;
+		}
+		if (erflag && !erAfterPage && !skipNoDisp) {
+			addParseTag(cd, "er");
+		}
+	}
+	
 	/**
 	 * テキストのパース処理
 	 */
@@ -7003,35 +7052,8 @@ class KAGWindow extends Window
             }
             return;
         } else if (emptyLine) {
-            // 行頭での処理
-			// ラインモード処理
-			var erflag;
-			// テキストクリア処理
-			switch (lineMode) {
-			case 1:
-				erflag = true;
-				break;
-			case 2:
-			case 3:
-			case 5:
-				if (afterPage) {
-					erflag = true;
-				} else {
-					if (!afterName && !skipNoDisp) {
-						addParseTag(cd, "r");
-					}
-				}
-				break;
-			case 4:
-				if (afterPage) {
-					erflag = true;
-				}
-				break;
-			}
-			if (erflag && !erAfterPage && !skipNoDisp) {
-				addParseTag(cd, "er");
-			}
-            if (elm.text == "【") {
+			emptyCheck(cd);
+			if (elm.text == "【") {
 				nameMode = 1;
 				nameStr  = "";
 				nameDisp = "";
@@ -7197,12 +7219,25 @@ class KAGWindow extends Window
 		emptyLine = true;
     }
 
+	function parseRuby(cd, elm) {
+		if (emptyLine) {
+			emptyCheck(cd);
+		}
+		emptyLine = false;
+		afterPage = false;
+		afterName = false;
+		if (!skipNoDisp) {
+			addParseTag(cd, "ruby",elm);
+		}
+	}
+	
 	var extractTags = %[
 	parse:parseParse incontextof this,
 	ch:parseCh incontextof this,
 	r:parseR incontextof this,
 	voice:parseVoice incontextof this,
-	p:parseP incontextof this
+	p:parseP incontextof this,
+	ruby:parseRuby incontextof this
 		];
 	
     /*

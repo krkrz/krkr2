@@ -86,6 +86,7 @@ class SelectButtonLayer extends ButtonLayer
 
 	function onMouseDown(x, y, button, shift)	{
         if (button == mbRight) {
+			releaseCapture();
             window.onPrimaryRightClick();
         }
         if (this isvalid) super.onMouseDown(...);
