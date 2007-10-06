@@ -106,7 +106,7 @@ void tTVPScenarioCacheItem::LoadScenario(const ttstr & name, bool isstring)
 
 	tjs_char *buffer_p = Buffer;
 
-	// count lines
+	// pass1: count lines
 	tjs_int count = 0;
 	tjs_char *ls = buffer_p;
 	tjs_char *p = buffer_p;
@@ -135,6 +135,7 @@ void tTVPScenarioCacheItem::LoadScenario(const ttstr & name, bool isstring)
 	Lines = new tLine[count];
 	LineCount = count;
 
+	// pass2: split lines
 	count = 0;
 	ls = buffer_p;
 	while(*ls == '\t') ls++; // skip leading tabs
@@ -164,7 +165,12 @@ void tTVPScenarioCacheItem::LoadScenario(const ttstr & name, bool isstring)
 	{
 		Lines[count].Start = ls;
 		Lines[count].Length = p-ls;
+		count ++;
 	}
+
+	LineCount = count;
+			// tab-only last line will not be counted in pass2, thus makes
+			// pass2 counted lines are lesser than pass1 lines.
 }
 //---------------------------------------------------------------------------
 void tTVPScenarioCacheItem::EnsureLabelCache()
