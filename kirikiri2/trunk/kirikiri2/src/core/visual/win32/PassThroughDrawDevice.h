@@ -48,7 +48,7 @@ private:
 private:
 	void DestroyDrawer();
 	void CreateDrawer(tDrawerType type);
-	void CreateDrawer(bool zoom_required);
+	void CreateDrawer(bool zoom_required, bool should_benchmark);
 
 public:
 	void EnsureDrawer();

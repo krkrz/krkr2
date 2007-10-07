@@ -1736,10 +1736,18 @@ void tTVPPassThroughDrawDevice::CreateDrawer(tDrawerType type)
 
 
 //---------------------------------------------------------------------------
-void tTVPPassThroughDrawDevice::CreateDrawer(bool zoom_required)
+void tTVPPassThroughDrawDevice::CreateDrawer(bool zoom_required, bool should_benchmark)
 {
+	// いったん Drawer を削除
+	tDrawerType last_type = DrawerType;
+	DestroyDrawer();
+
+	// should_benchmark が偽で、前回 Drawer を作成していれば、それと同じタイプの
+	// Drawer を用いる
+	if(!should_benchmark && last_type != dtNone)
+		CreateDrawer(last_type);
+
 	// TVPPreferredDrawType が指定されていればそれを使う
-	Drawer = NULL;
 	if(TVPPreferredDrawType != dtNone)
 		CreateDrawer(TVPPreferredDrawType);
 
@@ -1922,6 +1930,7 @@ void tTVPPassThroughDrawDevice::EnsureDrawer()
 	// このメソッドでは、以下の条件の際に drawer を作る(作り直す)。
 	// 1. Drawer が NULL の場合
 	// 2. 現在の Drawer のタイプが適切でなくなったとき
+	// 3. 元のレイヤのサイズが変更されたとき
 	TVPInitPassThroughOptions();
 
 	if(TargetWindow)
@@ -1947,13 +1956,18 @@ void tTVPPassThroughDrawDevice::EnsureDrawer()
 
 
 		bool need_recreate = false;
+		bool should_benchmark = false;
 		if(!Drawer) need_recreate = true;
 		if(zoom_was_required != zoom_is_required) need_recreate = true;
+		if(need_recreate) should_benchmark = true;
+		if(SrcSizeChanged) { SrcSizeChanged = false; need_recreate = true; }
+			// SrcSizeChanged という理由だけでは should_benchmark は真には
+			// 設定しない
 
 		if(need_recreate)
 		{
 			// Drawer の再作成が必要
-			CreateDrawer(zoom_is_required);
+			CreateDrawer(zoom_is_required, should_benchmark);
 		}
 	}
 }
