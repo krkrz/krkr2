@@ -294,22 +294,46 @@ class ActionSequense {
      * @param dict アクション情報の入った辞書
      */
     function addActions(dict) {
+		var time  = dict.time;
+		var delay = dict.delay;
+		var accel = dict.accel;
+
 		var names = [];
 		names.assign(dict);
 		for (var i=0; i<names.count; i+= 2) {
 			var name = names[i];
 			var elm  = names[i+1];
+			if (name == "time" || name == "delay" || name == "accel") {
+				continue;
+			}
+			// 評価処理
+			if (typeof elm == "String") {
+				dm("name:" + name + " elm:"  +elm);
+				elm = Scripts.eval(elm);
+			}
 			if (typeof elm == "Object") {
 				if (elm === null) {
 					delAction(name);
 				} else if (elm instanceof "Dictionary") {
-					if (typeof elm.handler == "String") {
-						var handler = Scripts.eval(elm.handler);
-						addAction(name, handler, elm);
-					} else if (typeof elm.handler == "Object") {
-						addAction(name, elm.handler, elm);
+					var e = %[];
+					(Dictionary.assign incontextof e)(elm, false);
+					// 共通パラメータ反映
+					if (time !== void) {
+						e.time = time;
+					}
+					if (delay !== void) {
+						e.delay = delay;
+					}
+					if (accel !== void) {
+						e.accel = accel;
+					}
+					if (typeof e.handler == "String") {
+						var handler = Scripts.eval(e.handler);
+						addAction(name, handler, e);
+					} else if (typeof e.handler == "Object") {
+						addAction(name, e.handler, e);
 					} else {
-						dm("無効なアクションハンドラ指定:" + elm.handler);
+						dm("無効なアクションハンドラ指定:" + e.handler);
 					}
                 }
             }
