@@ -1731,6 +1731,8 @@ void tTVPPassThroughDrawDevice::CreateDrawer(tDrawerType type)
 	}
 
 	if(Drawer) DrawerType = type; else DrawerType = dtNone;
+
+	RequestInvalidation(tTVPRect(0, 0, DestRect.get_width(), DestRect.get_height()));
 }
 //---------------------------------------------------------------------------
 
@@ -2109,6 +2111,16 @@ TJS_BEGIN_NATIVE_CONSTRUCTOR_DECL(/*var.name*/_this, /*var.type*/tTJSNI_PassThro
 }
 TJS_END_NATIVE_CONSTRUCTOR_DECL(/*TJS class name*/PassThroughDrawDevice)
 //----------------------------------------------------------------------
+TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/recreate)
+{
+	TJS_GET_NATIVE_INSTANCE(/*var. name*/_this, /*var. type*/tTJSNI_PassThroughDrawDevice);
+	_this->GetDevice()->SetToRecreateDrawer();
+	_this->GetDevice()->EnsureDrawer();
+	return TJS_S_OK;
+}
+TJS_END_NATIVE_METHOD_DECL(/*func. name*/recreate)
+//----------------------------------------------------------------------
+
 
 //---------------------------------------------------------------------------
 //----------------------------------------------------------------------
@@ -2127,7 +2139,39 @@ TJS_BEGIN_NATIVE_PROP_DECL(interface)
 	TJS_DENY_NATIVE_PROP_SETTER
 }
 TJS_END_NATIVE_PROP_DECL(interface)
+//----------------------------------------------------------------------
+#define TVP_REGISTER_PTDD_ENUM(name) \
+	TJS_BEGIN_NATIVE_PROP_DECL(name) \
+	{ \
+		TJS_BEGIN_NATIVE_PROP_GETTER \
+		{ \
+			*result = (tjs_int64)tTVPPassThroughDrawDevice::name; \
+			return TJS_S_OK; \
+		} \
+		TJS_END_NATIVE_PROP_GETTER \
+		TJS_DENY_NATIVE_PROP_SETTER \
+	} \
+	TJS_END_NATIVE_PROP_DECL(name)
 
+TVP_REGISTER_PTDD_ENUM(dtNone)
+TVP_REGISTER_PTDD_ENUM(dtDrawDib)
+TVP_REGISTER_PTDD_ENUM(dtDBGDI)
+TVP_REGISTER_PTDD_ENUM(dtDBDD)
+TVP_REGISTER_PTDD_ENUM(dtDBD3D)
+//----------------------------------------------------------------------
+TJS_BEGIN_NATIVE_PROP_DECL(drawer)
+{
+	TJS_BEGIN_NATIVE_PROP_GETTER
+	{
+		TJS_GET_NATIVE_INSTANCE(/*var. name*/_this, /*var. type*/tTJSNI_PassThroughDrawDevice);
+		*result = (tjs_int64)(_this->GetDevice()->GetDrawerType());
+		return TJS_S_OK;
+	}
+	TJS_END_NATIVE_PROP_GETTER
+
+	TJS_DENY_NATIVE_PROP_SETTER
+}
+TJS_END_NATIVE_PROP_DECL(drawer)
 //----------------------------------------------------------------------
 	TJS_END_NATIVE_MEMBERS
 }

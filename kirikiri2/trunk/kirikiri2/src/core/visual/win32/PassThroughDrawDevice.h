@@ -35,6 +35,7 @@ public:
 		dtDBD3D // Direct3D によるダブルバッファリングを行うdrawer
 	};
 
+private:
 	tDrawerType DrawerType; //!< drawer のタイプ
 
 	bool DestSizeChanged; //!< DestRect のサイズに変更があったか
@@ -45,6 +46,8 @@ public:
 private:
 	~tTVPPassThroughDrawDevice(); //!< デストラクタ
 
+public:
+	void SetToRecreateDrawer() { DestroyDrawer(); }
 private:
 	void DestroyDrawer();
 	void CreateDrawer(tDrawerType type);
@@ -52,6 +55,8 @@ private:
 
 public:
 	void EnsureDrawer();
+
+	tDrawerType GetDrawerType() const { return DrawerType; }
 
 //---- LayerManager の管理関連
 	virtual void TJS_INTF_METHOD AddLayerManager(iTVPLayerManager * manager);
