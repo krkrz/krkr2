@@ -225,6 +225,7 @@ static char TVPHWExceptionLogFilename[MAX_PATH];
 
 static void TVPWriteHWELogFile()
 {
+	TVPEnsureDataPathDirectory();
 	TJS_nstrcpy(TVPHWExceptionLogFilename, TVPNativeDataPath.c_str());
 	TJS_nstrcat(TVPHWExceptionLogFilename, "hwexcept.log");
 	TVPHWExceptionLogHandle = CreateFile(TVPHWExceptionLogFilename, GENERIC_WRITE,
@@ -1104,6 +1105,9 @@ static UINT TVPTimeBeginPeriodRes = 0;
 //---------------------------------------------------------------------------
 void TVPAfterSystemInit()
 {
+	// ensure datapath directory
+	TVPEnsureDataPathDirectory();
+
 	// check CPU type
 	TVPDetectCPU();
 
@@ -1445,8 +1449,26 @@ static ttstr TVPParseCommandLineOne(const ttstr &i)
 std::vector <ttstr> TVPProgramArguments;
 static bool TVPProgramArgumentsInit = false;
 static tjs_int TVPCommandLineArgumentGeneration = 0;
+static bool TVPDataPathDirectoryEnsured = false;
 //---------------------------------------------------------------------------
 tjs_int TVPGetCommandLineArgumentGeneration() { return TVPCommandLineArgumentGeneration; }
+//---------------------------------------------------------------------------
+void TVPEnsureDataPathDirectory()
+{
+	if(!TVPDataPathDirectoryEnsured)
+	{
+		TVPDataPathDirectoryEnsured = true;
+		// ensure data path existence
+		if(!TVPCheckExistentLocalFolder(TVPNativeDataPath.c_str()))
+		{
+			ttstr msg("(info) Data path does not exist, trying to make it ... ");
+			if(TVPCreateFolders(TVPNativeDataPath.c_str()))
+				TVPAddImportantLog(msg + "ok.");
+			else
+				TVPAddImportantLog(msg + "failed.");
+		}
+	}
+}
 //---------------------------------------------------------------------------
 static void PushAllCommandlineArguments()
 {
@@ -1528,17 +1550,6 @@ static void TVPInitProgramArgumentsAndDataPath(bool stop_after_datapath_got)
 		// set data path
 		TVPDataPath = TVPNormalizeStorageName(TVPNativeDataPath);
 		TVPAddImportantLog(ttstr("(info) Data path : ") + TVPDataPath);
-
-		// ensure data path existence
-		if(!TVPCheckExistentLocalFolder(TVPNativeDataPath.c_str()))
-		{
-			ttstr msg("(info) Data path does not exist, trying to make it ... ");
-			if(TVPCreateFolders(TVPNativeDataPath.c_str()))
-				TVPAddImportantLog(msg + "ok.");
-			else
-				TVPAddImportantLog(msg + "failed.");
-		}
-
 
 		// set log output directory
 		TVPSetLogLocation(TVPNativeDataPath);
