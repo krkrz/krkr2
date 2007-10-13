@@ -16,7 +16,7 @@
 #include "MsgIntf.h"
 #include "StorageIntf.h"
 #include "SysInitIntf.h"
-
+#include "SysInitImpl.h"
 
 //---------------------------------------------------------------------------
 // global variables
@@ -127,6 +127,7 @@ void tTVPLogStreamHolder::Open(const tjs_nchar *mode)
 			// no log location specified
 			TJS_nstrcpy(filename, TVPNativeLogLocation);
 			TJS_nstrcat(filename, TJS_N("\\krkr.console.log"));
+			TVPEnsureDataPathDirectory();
 			Stream = fopen(filename, mode);
 			if(!Stream) OpenFailed = true;
 		}

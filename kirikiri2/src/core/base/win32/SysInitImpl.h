@@ -22,6 +22,7 @@ extern AnsiString TVPNativeDataPath;
 extern bool TVPProjectDirSelected;
 extern bool TVPSystemIsBasedOnNT;
 extern bool TVPCheckCmdDescription(void);
+extern void TVPEnsureDataPathDirectory();
 
 
 extern bool TVPExecuteUserConfig();
