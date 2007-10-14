@@ -1146,6 +1146,43 @@ public:
 				TVPThrowExceptionMessage(TJS_W("Cannot create Direct3D device/HR=%1"),
 					TJSInt32ToHex(hr, 8));
 
+			// retrieve device caps
+			D3DDEVICEDESC7 caps;
+			ZeroMemory(&caps, sizeof(caps));
+			if(FAILED(Direct3DDevice7->GetCaps(&caps)))
+				TVPThrowExceptionMessage(TJS_W("Failed to retrieve Direct3D device caps/HR=%1"),
+					TJSInt32ToHex(hr, 8));
+
+			// decide texture size
+			tjs_uint text_w = SrcWidth, text_h = SrcHeight;
+			if(caps.dpcTriCaps.dwTextureCaps & D3DPTEXTURECAPS_SQUAREONLY)
+			{
+				// only square textures are supported
+				text_w = std::max(text_h, text_w);
+				text_h = text_w;
+			}
+
+			if(caps.dpcTriCaps.dwTextureCaps & D3DPTEXTURECAPS_POW2)
+			{
+				// power of 2 size of texture dimentions are required
+				tjs_uint sz;
+				
+				sz = 1; while(sz < text_w) sz <<= 1;
+				text_w = sz;
+
+				sz = 1; while(sz < text_h) sz <<= 1;
+				text_h = sz;
+			}
+
+			if(caps.dwMinTextureWidth  > text_w) text_w = caps.dwMinTextureWidth;
+			if(caps.dwMinTextureHeight > text_h) text_h = caps.dwMinTextureHeight;
+			if(	caps.dwMaxTextureWidth  < text_w ||
+				caps.dwMaxTextureHeight < text_h)
+			{
+				TVPThrowExceptionMessage(TJS_W("Could not allocate texture size of %1x%2"),
+					ttstr((int)text_w), ttstr((int)text_h));
+			}
+
 			// create Direct3D Texture
 			ZeroMemory(&ddsd, sizeof(ddsd));
 			ddsd.dwSize = sizeof(ddsd);
@@ -1711,6 +1748,7 @@ void tTVPPassThroughDrawDevice::DestroyDrawer()
 void tTVPPassThroughDrawDevice::CreateDrawer(tDrawerType type)
 {
 	Drawer = NULL;
+
 	switch(type)
 	{
 	case dtNone:
@@ -1728,34 +1766,49 @@ void tTVPPassThroughDrawDevice::CreateDrawer(tDrawerType type)
 		Drawer = new tTVPDrawer_D3DDoubleBuffering(this);
 		break;
 	}
-	if(Drawer)
-		Drawer->SetTargetWindow(TargetWindow);
 
-	if(Drawer)
+	try
 	{
-		if(!Drawer->SetDestPos(DestRect.left, DestRect.top))
-		{
-			TVPAddImportantLog(
-				TJS_W("Passthrough: Failed to set destination position to draw device drawer"));
-			delete Drawer, Drawer = NULL;
-		}
-	}
 
-	if(Drawer)
+		if(Drawer)
+			Drawer->SetTargetWindow(TargetWindow);
+
+		if(Drawer)
+		{
+			if(!Drawer->SetDestPos(DestRect.left, DestRect.top))
+			{
+				TVPAddImportantLog(
+					TJS_W("Passthrough: Failed to set destination position to draw device drawer"));
+				delete Drawer, Drawer = NULL;
+			}
+		}
+
+		if(Drawer)
+		{
+			tjs_int srcw, srch;
+			GetSrcSize(srcw, srch);
+			if(!Drawer->SetDestSizeAndNotifyLayerResize(DestRect.get_width(), DestRect.get_height(), srcw, srch))
+			{
+				TVPAddImportantLog(
+					TJS_W("Passthrough: Failed to set destination size and source layer size to draw device drawer"));
+				delete Drawer, Drawer = NULL;
+			}
+		}
+
+		if(Drawer) DrawerType = type; else DrawerType = dtNone;
+
+		RequestInvalidation(tTVPRect(0, 0, DestRect.get_width(), DestRect.get_height()));
+	}
+	catch(const eTJS & e)
 	{
-		tjs_int srcw, srch;
-		GetSrcSize(srcw, srch);
-		if(!Drawer->SetDestSizeAndNotifyLayerResize(DestRect.get_width(), DestRect.get_height(), srcw, srch))
-		{
-			TVPAddImportantLog(
-				TJS_W("Passthrough: Failed to set destination size and source layer size to draw device drawer"));
-			delete Drawer, Drawer = NULL;
-		}
+		TVPAddImportantLog(TJS_W("Passthrough: Failed to create drawer: ") + e.GetMessage());
+		DestroyDrawer();
 	}
-
-	if(Drawer) DrawerType = type; else DrawerType = dtNone;
-
-	RequestInvalidation(tTVPRect(0, 0, DestRect.get_width(), DestRect.get_height()));
+	catch(...)
+	{
+		TVPAddImportantLog(TJS_W("Passthrough: Failed to create drawer: unknown reason"));
+		DestroyDrawer();
+	}
 }
 //---------------------------------------------------------------------------
 
@@ -2035,7 +2088,11 @@ void TJS_INTF_METHOD tTVPPassThroughDrawDevice::SetDestRectangle(const tTVPRect 
 	{
 		// サイズも違う
 		DestSizeChanged = true;
-		if(Drawer) Drawer->SetDestSize(rect.get_width(), rect.get_height());
+		if(Drawer)
+		{
+			if(!Drawer->SetDestSize(rect.get_width(), rect.get_height()))
+				DestroyDrawer(); // エラーが起こったのでその drawer を破棄する
+		}
 		inherited::SetDestRectangle(rect);
 	}
 }
