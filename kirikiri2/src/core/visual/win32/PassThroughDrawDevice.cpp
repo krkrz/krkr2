@@ -1783,14 +1783,9 @@ void tTVPPassThroughDrawDevice::CreateDrawer(bool zoom_required, bool should_ben
 
 	if(!Drawer)
 	{
-		// メインウィンドウ以外の場合は基本的なメソッドを使う
-		if(!IsMainWindow)
-		{
-			if(zoom_required)
-				CreateDrawer(dtDBGDI);
-			else
-				CreateDrawer(dtDrawDib);
-		}
+		// メインウィンドウ以外の場合はズームが必要なければ基本的なメソッドを使う
+		if(!IsMainWindow && !zoom_required)
+			CreateDrawer(dtDrawDib);
 	}
 
 	if(!Drawer)
