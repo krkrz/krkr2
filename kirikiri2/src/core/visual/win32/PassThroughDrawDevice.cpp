@@ -23,6 +23,29 @@
 #include <ddraw.h>
 #include <d3d.h>
 
+/*
+	PassThroughDrawDevice クラスには、Window.PassThroughDrawDevice として
+	アクセスでききる。通常、Window クラスを生成すると、その drawDevice プロパ
+	ティには自動的にこのクラスのインスタンスが設定されるので、(ほかのDrawDevice
+	を使わない限りは) 特に意識する必要はない。
+
+	PassThroughDrawDevice は以下のメソッドとプロパティを持つ。
+
+	recreate()
+		Drawer (内部で使用している描画方式) を切り替える。コマンドライン
+		オプションで設定された内容に再設定される。(ちなみにコマンドラインオプ
+		ションは System.setArgument() で設定可能である)
+
+	drawer
+		現在使用されている drawer を表すプロパティ。以下のいずれかの値をとる。
+		読み取り専用。
+		Window.PassThroughDrawDevice.dtNone			普通はこれはない
+		Window.PassThroughDrawDevice.dtDrawDib		ダブルバッファリング(DB)なし
+		Window.PassThroughDrawDevice.dtDBGDI		GDIによるDB
+		Window.PassThroughDrawDevice.dtDBDD			DirectDrawによるDB
+		Window.PassThroughDrawDevice.dtDBD3D		Direct3DによるDB
+*/
+
 
 //---------------------------------------------------------------------------
 // オプション
