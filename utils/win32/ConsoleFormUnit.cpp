@@ -18,6 +18,7 @@
 #include "SysInitImpl.h"
 #include "MsgIntf.h"
 #include "TLogViewer.h"
+#include "WindowImpl.h"
 
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
@@ -50,6 +51,11 @@ void TVPConsoleFormOnLog(const ttstr & log)
 //---------------------------------------------------------------------------
 void TVPCopyImportantLogToClipboard()
 {
+	// get DirectDraw driver information
+	TVPEnsureDirectDrawObject();
+	TVPDumpDirectDrawDriverInformation();
+
+	// copy
 	TVPCopyToClipboard(TVPGetImportantLog());
 }
 //---------------------------------------------------------------------------
