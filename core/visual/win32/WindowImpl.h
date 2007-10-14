@@ -195,6 +195,7 @@ extern void TVPTestDisplayMode(tjs_int w, tjs_int h, tjs_int & bpp);
 extern void TVPSwitchToFullScreen(HWND window, tjs_int w, tjs_int h);
 extern void TVPRevertFromFullScreen(HWND window);
 TJS_EXP_FUNC_DEF(void, TVPEnsureDirectDrawObject, ());
+void TVPDumpDirectDrawDriverInformation();
 extern tTVPScreenModeCandidate TVPFullScreenMode;
 /*[*/
 //---------------------------------------------------------------------------

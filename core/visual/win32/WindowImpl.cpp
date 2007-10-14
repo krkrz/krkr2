@@ -270,105 +270,121 @@ static BOOL WINAPI DDEnumCallback( GUID *pGUID, LPSTR pDescription,
 	return ( DDEnumCallbackEx( pGUID, pDescription, strName, pContext, NULL ) );
 }
 //---------------------------------------------------------------------------
-static void TVPDumpDirectDrawDriverInformation(IDirectDraw7 *dd7)
+void TVPDumpDirectDrawDriverInformation()
 {
-	// dump directdraw information
-	DDDEVICEIDENTIFIER2 DDID = {0};
-	if(SUCCEEDED(dd7->GetDeviceIdentifier(&DDID, 0)))
+	if(TVPDirectDraw7)
 	{
-		ttstr infostart(TJS_W("(info)  "));
-		ttstr log;
+		IDirectDraw7 *dd7 = TVPDirectDraw7;
+		static bool dumped = false;
+		if(dumped) return;
+		dumped = true;
 
-		// driver string
-		log = infostart + ttstr(DDID.szDescription) + TJS_W(" [") + ttstr(DDID.szDriver) + TJS_W("]");
-		TVPAddImportantLog(log);
+		TVPAddImportantLog(TJS_W("(info) DirectDraw7 or higher detected. Retrieving current DirectDraw driver information..."));
 
-		// driver version(reported)
-		log = infostart + TJS_W("Driver version (reported) : ");
-		char tmp[256];
-		wsprintf( tmp, "%d.%02d.%02d.%04d ",
-				  HIWORD( DDID.liDriverVersion.u.HighPart ),
-				  LOWORD( DDID.liDriverVersion.u.HighPart ),
-				  HIWORD( DDID.liDriverVersion.u.LowPart  ),
-				  LOWORD( DDID.liDriverVersion.u.LowPart  ) );
-		log += tmp;
-		TVPAddImportantLog(log);
-
-		// driver version(actual)
-		char driverpath[1024];
-		char *driverpath_filename = NULL;
-		bool success = SearchPath(NULL, DDID.szDriver, NULL, 1023, driverpath, &driverpath_filename);
-
-		if(!success)
+		try
 		{
-			char syspath[1024];
-			GetSystemDirectory(syspath, 1023);
-			strcat(syspath, "\\drivers"); // SystemDir\drivers
-			success = SearchPath(syspath, DDID.szDriver, NULL, 1023, driverpath, &driverpath_filename);
-		}
-
-		if(!success)
-		{
-			char syspath[1024];
-			GetWindowsDirectory(syspath, 1023);
-			strcat(syspath, "\\system32"); // WinDir\system32
-			success = SearchPath(syspath, DDID.szDriver, NULL, 1023, driverpath, &driverpath_filename);
-		}
-
-		if(!success)
-		{
-			char syspath[1024];
-			GetWindowsDirectory(syspath, 1023);
-			strcat(syspath, "\\system32\\drivers"); // WinDir\system32\drivers
-			success = SearchPath(syspath, DDID.szDriver, NULL, 1023, driverpath, &driverpath_filename);
-		}
-
-		if(success)
-		{
-			log = infostart + TJS_W("Driver version (") + ttstr(driverpath) + TJS_W(") : ");
-			tjs_int major, minor, release, build;
-			if(TVPGetFileVersionOf(driverpath, major, minor, release, build))
+			// dump directdraw information
+			DDDEVICEIDENTIFIER2 DDID = {0};
+			if(SUCCEEDED(dd7->GetDeviceIdentifier(&DDID, 0)))
 			{
-				wsprintf(tmp, "%d.%d.%d.%d", (int)major, (int)minor, (int)release, (int)build);
+				ttstr infostart(TJS_W("(info)  "));
+				ttstr log;
+
+				// driver string
+				log = infostart + ttstr(DDID.szDescription) + TJS_W(" [") + ttstr(DDID.szDriver) + TJS_W("]");
+				TVPAddImportantLog(log);
+
+				// driver version(reported)
+				log = infostart + TJS_W("Driver version (reported) : ");
+				char tmp[256];
+				wsprintf( tmp, "%d.%02d.%02d.%04d ",
+						  HIWORD( DDID.liDriverVersion.u.HighPart ),
+						  LOWORD( DDID.liDriverVersion.u.HighPart ),
+						  HIWORD( DDID.liDriverVersion.u.LowPart  ),
+						  LOWORD( DDID.liDriverVersion.u.LowPart  ) );
 				log += tmp;
+				TVPAddImportantLog(log);
+
+				// driver version(actual)
+				char driverpath[1024];
+				char *driverpath_filename = NULL;
+				bool success = SearchPath(NULL, DDID.szDriver, NULL, 1023, driverpath, &driverpath_filename);
+
+				if(!success)
+				{
+					char syspath[1024];
+					GetSystemDirectory(syspath, 1023);
+					strcat(syspath, "\\drivers"); // SystemDir\drivers
+					success = SearchPath(syspath, DDID.szDriver, NULL, 1023, driverpath, &driverpath_filename);
+				}
+
+				if(!success)
+				{
+					char syspath[1024];
+					GetWindowsDirectory(syspath, 1023);
+					strcat(syspath, "\\system32"); // WinDir\system32
+					success = SearchPath(syspath, DDID.szDriver, NULL, 1023, driverpath, &driverpath_filename);
+				}
+
+				if(!success)
+				{
+					char syspath[1024];
+					GetWindowsDirectory(syspath, 1023);
+					strcat(syspath, "\\system32\\drivers"); // WinDir\system32\drivers
+					success = SearchPath(syspath, DDID.szDriver, NULL, 1023, driverpath, &driverpath_filename);
+				}
+
+				if(success)
+				{
+					log = infostart + TJS_W("Driver version (") + ttstr(driverpath) + TJS_W(") : ");
+					tjs_int major, minor, release, build;
+					if(TVPGetFileVersionOf(driverpath, major, minor, release, build))
+					{
+						wsprintf(tmp, "%d.%d.%d.%d", (int)major, (int)minor, (int)release, (int)build);
+						log += tmp;
+					}
+					else
+					{
+						log += TJS_W("unknown");
+					}
+				}
+				else
+				{
+					log = infostart + TJS_W("Driver ") + ttstr(DDID.szDriver) +
+						TJS_W(" is not found in search path.");
+				}
+				TVPAddImportantLog(log);
+
+				// device id
+				wsprintf(tmp, "VendorId:%08X  DeviceId:%08X  SubSysId:%08X  Revision:%08X",
+					DDID.dwVendorId, DDID.dwDeviceId, DDID.dwSubSysId, DDID.dwRevision);
+				log = infostart + TJS_W("Device ids : ") + tmp;
+				TVPAddImportantLog(log);
+
+				// Device GUID
+				GUID *pguid = &DDID.guidDeviceIdentifier;
+				wsprintf( tmp, "%08X-%04X-%04X-%02X%02X%02X%02X%02X%02X%02X%02X",
+						  pguid->Data1,
+						  pguid->Data2,
+						  pguid->Data3,
+						  pguid->Data4[0], pguid->Data4[1], pguid->Data4[2], pguid->Data4[3],
+						  pguid->Data4[4], pguid->Data4[5], pguid->Data4[6], pguid->Data4[7] );
+				log = infostart + TJS_W("Unique driver/device id : ") + tmp;
+				TVPAddImportantLog(log);
+
+				// WHQL level
+				wsprintf(tmp, "%08x", DDID.dwWHQLLevel);
+				log = infostart + TJS_W("WHQL level : ")  + tmp;
+				TVPAddImportantLog(log);
 			}
 			else
 			{
-				log += TJS_W("unknown");
+				TVPAddImportantLog(TJS_W("(info) Failed."));
 			}
 		}
-		else
+		catch(...)
 		{
-			log = infostart + TJS_W("Driver ") + ttstr(DDID.szDriver) +
-				TJS_W(" is not found in search path.");
 		}
-		TVPAddImportantLog(log);
-
-		// device id
-		wsprintf(tmp, "VendorId:%08X  DeviceId:%08X  SubSysId:%08X  Revision:%08X",
-			DDID.dwVendorId, DDID.dwDeviceId, DDID.dwSubSysId, DDID.dwRevision);
-		log = infostart + TJS_W("Device ids : ") + tmp;
-		TVPAddImportantLog(log);
-
-		// Device GUID
-		GUID *pguid = &DDID.guidDeviceIdentifier;
-		wsprintf( tmp, "%08X-%04X-%04X-%02X%02X%02X%02X%02X%02X%02X%02X",
-				  pguid->Data1,
-				  pguid->Data2,
-				  pguid->Data3,
-				  pguid->Data4[0], pguid->Data4[1], pguid->Data4[2], pguid->Data4[3],
-				  pguid->Data4[4], pguid->Data4[5], pguid->Data4[6], pguid->Data4[7] );
-		log = infostart + TJS_W("Unique driver/device id : ") + tmp;
-		TVPAddImportantLog(log);
-
-		// WHQL level
-		wsprintf(tmp, "%08x", DDID.dwWHQLLevel);
-		log = infostart + TJS_W("WHQL level : ")  + tmp;
-		TVPAddImportantLog(log);
-	}
-	else
-	{
-		TVPAddImportantLog(TJS_W("(info) Failed."));
 	}
 
 }
@@ -474,18 +490,10 @@ static void TVPInitDirectDraw()
 				if(FAILED(hr)) TVPDirectDraw7 = NULL;
 			}
 
-			if(TVPDirectDraw7)
-			{
-				TVPAddImportantLog(TJS_W("(info) DirectDraw7 or higher detected. Retrieving current DirectDraw driver information..."));
-				try
-				{
-					TVPDumpDirectDrawDriverInformation(TVPDirectDraw7);
-				}
-				catch(...)
-				{
-					// ignore errors
-				}
 
+			if(TVPLoggingToFile)
+			{
+				TVPDumpDirectDrawDriverInformation();
 			}
 
 			// set cooperative level
