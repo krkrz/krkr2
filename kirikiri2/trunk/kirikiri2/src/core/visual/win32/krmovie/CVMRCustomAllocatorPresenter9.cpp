@@ -567,9 +567,13 @@ HRESULT CVMRCustomAllocatorPresenter9::DecideD3DPresentParameters( D3DPRESENT_PA
 		if( ::GetClientRect( Owner()->OwnerWindow, &clientRect ) ) {
 			width = clientRect.right - clientRect.left;
 			height = clientRect.bottom - clientRect.top;
+			// 初回は、サイズ0のウィンドウハンドルが渡されるので、ここは0になる。
+			// その時は、ウィンドウのクライアント領域と同じサイズのバックバッファが作られることになる。
+			// ただし、直後に正しいウィンドウハンドルが渡されて、期待した大きさのバックバッファになるはず。
 		}
-	}
-	if( width == 0 || height == 0 ) {
+	} else {
+//	if( width == 0 || height == 0 ) {
+		// サイズ変更可の時は、画面サイズと同じ大きさのバックバッファサイズにしてしまう
 		width = dm.Width;
 		height = dm.Height;
 	}
