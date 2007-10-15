@@ -597,7 +597,7 @@ void TVPSetDDPrimaryClipper(IDirectDrawClipper *clipper)
 	if(pri) pri->SetClipper(clipper);
 }
 //---------------------------------------------------------------------------
-static void TVPReleaseDDPrimarySurface()
+void TVPReleaseDDPrimarySurface()
 {
 	if(TVPDDPrimarySurface) TVPDDPrimarySurface->Release(), TVPDDPrimarySurface = NULL;
 }
