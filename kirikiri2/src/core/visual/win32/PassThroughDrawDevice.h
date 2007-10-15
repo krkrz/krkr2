@@ -48,8 +48,8 @@ private:
 
 public:
 	void SetToRecreateDrawer() { DestroyDrawer(); }
-private:
 	void DestroyDrawer();
+private:
 	void CreateDrawer(tDrawerType type);
 	void CreateDrawer(bool zoom_required, bool should_benchmark);
 
