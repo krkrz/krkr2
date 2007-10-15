@@ -1905,6 +1905,7 @@ extern void * TVPImportFuncPtr9ec5b02d14238454101dad083b5dfc3b;
 extern void * TVPImportFuncPtr471b3daf08ed9b828679d0dae78250ed;
 extern void * TVPImportFuncPtrd0bb2c604ee6f0bba72ddc017f6416eb;
 extern void * TVPImportFuncPtr3ab4d4d7b57eea827e7bb7c263afb951;
+extern void * TVPImportFuncPtrdc025d3981a832b095736a0214b98797;
 extern void * TVPImportFuncPtr9982ebedc12d343cb098e2a7b25bdef1;
 extern void * TVPImportFuncPtr81eeacbed5ee6129bef4b370e28b5d10;
 extern void * TVPImportFuncPtr6ed1088905d99012d2fb5827ea19527e;
@@ -7916,6 +7917,16 @@ inline void TVPSetDDPrimaryClipper(IDirectDrawClipper * clipper)
 	}
 	typedef void (__stdcall * __functype)(IDirectDrawClipper *);
 	((__functype)(TVPImportFuncPtr3ab4d4d7b57eea827e7bb7c263afb951))(clipper);
+}
+inline void TVPReleaseDDPrimarySurface()
+{
+	if(!TVPImportFuncPtrdc025d3981a832b095736a0214b98797)
+	{
+		static char funcname[] = "void ::TVPReleaseDDPrimarySurface()";
+		TVPImportFuncPtrdc025d3981a832b095736a0214b98797 = TVPGetImportFuncPtr(funcname);
+	}
+	typedef void (__stdcall * __functype)();
+	((__functype)(TVPImportFuncPtrdc025d3981a832b095736a0214b98797))();
 }
 inline iTVPScanLineProvider * TVPSLPLoadImage(const ttstr & name , tjs_int bpp , tjs_uint32 key , tjs_uint w , tjs_uint h)
 {
