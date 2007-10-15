@@ -48,7 +48,20 @@ class CVMRCustomAllocatorPresenter9 : public CUnknown, public IVMRSurfaceAllocat
 	CCritSec				*m_Lock;
 	bool					m_RebuildingWindow;
 
+	CComPtr<IDirect3DTexture9>	m_Texture;
+    CComPtr<IDirect3DSurface9>	m_RenderTarget;
+    CComPtr<IDirect3DVertexBuffer9> m_VertexBuffer;
+	RECT						m_SrcRect;
+
 	DWORD	m_ThreadID;
+
+	struct VideoVertex
+	{
+		float		x, y, z, w;
+		float		tu, tv;
+	};
+	VideoVertex		m_Vtx[4];
+
 	IVMRSurfaceAllocatorNotify9 *AllocatorNotify()
 	{
 		assert( m_VMR9SurfAllocNotify.p );
@@ -112,6 +125,13 @@ protected:
 	HRESULT ReleaseSurfaces();
 	HRESULT PresentHelper( VMR9PresentationInfo *lpPresInfo );
 	UINT GetMonitorNumber();
+
+	HRESULT DrawVideoPlane( IDirect3DDevice9* device, IDirect3DTexture9* tex );
+	HRESULT WindowSizeChanged( UINT w, UINT h );
+	HRESULT DecideD3DPresentParameters( D3DPRESENT_PARAMETERS& d3dpp );
+	HRESULT InitializeDirect3DState();
+	HRESULT UpdateVertex();
+	HRESULT CreateVertexBuffer( int texWidth, int texHeight );
 };
 
 
