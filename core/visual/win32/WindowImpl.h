@@ -213,6 +213,7 @@ TJS_EXP_FUNC_DEF(IDirectDraw2 *,  TVPGetDirectDrawObjectNoAddRef, ());
 TJS_EXP_FUNC_DEF(IDirectDraw7 *,  TVPGetDirectDraw7ObjectNoAddRef, ());
 TJS_EXP_FUNC_DEF(IDirectDrawSurface *, TVPGetDDPrimarySurfaceNoAddRef, ());
 TJS_EXP_FUNC_DEF(void, TVPSetDDPrimaryClipper, (IDirectDrawClipper * clipper));
+TJS_EXP_FUNC_DEF(void, TVPReleaseDDPrimarySurface, ());
 extern void TVPMinimizeFullScreenWindowAtInactivation();
 extern void TVPRestoreFullScreenWindowAtActivation();
 //---------------------------------------------------------------------------
