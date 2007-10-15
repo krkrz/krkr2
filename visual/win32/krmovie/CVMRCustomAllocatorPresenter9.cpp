@@ -14,10 +14,16 @@
 #include "dsmixer.h"
 #include "DShowException.h"
 #include "OptionInfo.h"
+#include "tp_stub.h"
 
 #define EC_UPDATE		(EC_USER+1)
 
 ATOM CVMRCustomAllocatorPresenter9::m_ChildAtom = 0;
+
+/* IID_IDirect3DTexture9 */
+/* {85C31227-3DE5-4f00-9B3A-F11AC38C18B5} */
+static const GUID IID_IDirect3DTexture9 = 
+{ 0x85c31227, 0x3de5, 0x4f00, { 0x9b, 0x3a, 0xf1, 0x1a, 0xc3, 0x8c, 0x18, 0xb5} };
 
 //----------------------------------------------------------------------------
 //! @brief	  	CVMRCustomAllocatorPresenter9 constructor
@@ -27,13 +33,16 @@ ATOM CVMRCustomAllocatorPresenter9::m_ChildAtom = 0;
 CVMRCustomAllocatorPresenter9::CVMRCustomAllocatorPresenter9( tTVPDSMixerVideoOverlay* owner, CCritSec &lock )
  : CUnknown(NAME("VMR Custom Allocator Presenter"),NULL), m_ChildWnd(NULL), m_Visible(false)
  , /*m_Surfaces(NULL),*/ m_dwUserID(NULL), m_Owner(owner), m_Lock(&lock), m_RebuildingWindow(false)
- {
+  {
 	m_Rect.left = 0;
 	m_Rect.top = 0;
 	m_Rect.right = 0;
 	m_Rect.bottom = 0;
 	m_VideoSize.cx = 0;
 	m_VideoSize.cy = 0;
+	m_Vtx[0].z = m_Vtx[1].z = m_Vtx[2].z = m_Vtx[3].z = 1.0f;
+	m_Vtx[0].w = m_Vtx[1].w = m_Vtx[2].w = m_Vtx[3].w = 1.0f;
+	m_SrcRect.left = m_SrcRect.top = m_SrcRect.right = m_SrcRect.bottom = 0;
 }
 //----------------------------------------------------------------------------
 //! @brief	  	CDemuxSource destructor
@@ -97,14 +106,180 @@ HRESULT STDMETHODCALLTYPE CVMRCustomAllocatorPresenter9::InitializeDevice( DWORD
 		return E_INVALIDARG;
 
 	m_dwUserID = dwUserID;
-	HRESULT hr;
+	HRESULT hr = S_OK;
 	CAutoLock Lock(m_Lock);
+
 	m_VideoSize.cx = lpAllocInfo->dwWidth;
 	m_VideoSize.cy = lpAllocInfo->dwHeight;
-	lpAllocInfo->Pool = D3DPOOL_MANAGED;
+
+	D3DCAPS9	d3dcaps;
+	D3DDevice()->GetDeviceCaps( &d3dcaps );
+	if( d3dcaps.TextureCaps & D3DPTEXTURECAPS_POW2 )
+	{	// 2の累乗のみ許可するかどうか判定
+		// ムービーなので、最低値は64にしておく
+		DWORD		dwWidth = 64;
+		DWORD		dwHeight = 64;
+
+		while( dwWidth < lpAllocInfo->dwWidth ) dwWidth = dwWidth << 1;
+		while( dwHeight < lpAllocInfo->dwHeight ) dwHeight = dwHeight << 1;
+
+		lpAllocInfo->dwWidth = dwWidth;
+		lpAllocInfo->dwHeight = dwHeight;
+
+		if( dwWidth > d3dcaps.MaxTextureWidth || dwHeight > d3dcaps.MaxTextureHeight ) {
+			TVPAddLog( ttstr("krmovie warning : Video size too large. May be cannot create texture.") );
+		}
+
+		TVPAddLog( ttstr("krmovie : Use power of two surface.") );
+	}
+
+	// テクスチャとして使えるようにする
+	lpAllocInfo->dwFlags |= VMR9AllocFlag_TextureSurface;
 	ReleaseSurfaces();
-    m_Surfaces.resize(*lpNumBuffers);
-	if( FAILED(hr = AllocatorNotify()->AllocateSurfaceHelper( lpAllocInfo, lpNumBuffers, &m_Surfaces.at(0) )) )
+	m_Surfaces.resize(*lpNumBuffers);
+	hr = AllocatorNotify()->AllocateSurfaceHelper( lpAllocInfo, lpNumBuffers, &m_Surfaces.at(0) );
+
+	if( FAILED(hr) && !(lpAllocInfo->dwFlags & VMR9AllocFlag_3DRenderTarget) )
+	{
+		// テクスチャ生成失敗
+		ReleaseSurfaces();
+
+		// YUV サーフェイスかどうか
+		if( lpAllocInfo->Format > '0000' )
+		{
+			D3DDISPLAYMODE dm; 
+			if( FAILED( hr = (D3DDevice()->GetDisplayMode( NULL, &dm )) ) )
+				return hr;
+
+			if( D3D_OK != ( hr = D3DDevice()->CreateTexture(lpAllocInfo->dwWidth, lpAllocInfo->dwHeight, 1, D3DUSAGE_RENDERTARGET, dm.Format, 
+								D3DPOOL_DEFAULT, &m_Texture.p, NULL) ) )
+				return hr;
+			TVPAddLog( ttstr("krmovie : Use offscreen and YUV surface.") );
+		} else {
+			TVPAddLog( ttstr("krmovie : Use offscreen surface.") );
+		}
+		// テクスチャは止めてオフスクリーンに
+		lpAllocInfo->dwFlags &= ~VMR9AllocFlag_TextureSurface;
+		lpAllocInfo->dwFlags |= VMR9AllocFlag_OffscreenSurface;
+		m_Surfaces.resize(*lpNumBuffers);
+		if( FAILED( hr = AllocatorNotify()->AllocateSurfaceHelper(lpAllocInfo, lpNumBuffers, &m_Surfaces.at(0) ) ) )
+			return hr;
+	} else {
+		TVPAddLog( ttstr("krmovie : Use texture surface.") );
+	}
+
+	if( SUCCEEDED(hr) ) {
+		if( FAILED(hr = CreateVertexBuffer( lpAllocInfo->dwWidth, lpAllocInfo->dwHeight )) )
+			return hr;
+	}
+
+	return hr;
+}
+//----------------------------------------------------------------------------
+//! @brief	  	頂点バッファを生成し、初期値を入れる
+//! @param		texWidth : テクスチャの幅
+//! @param		texHeight : テクスチャの高さ
+//! @return		エラーコード
+//----------------------------------------------------------------------------
+HRESULT CVMRCustomAllocatorPresenter9::CreateVertexBuffer( int texWidth, int texHeight )
+{
+	// 頂点情報を計算しておく
+	HRESULT		hr;
+
+	CAutoLock Lock(m_Lock);
+	D3DDISPLAYMODE dm;
+	UINT iCurrentMonitor = GetMonitorNumber();
+	if( FAILED(hr = D3D()->GetAdapterDisplayMode( iCurrentMonitor, &dm )) )
+		return hr;
+
+	float	vtx_w = 0.0f;
+	float	vtx_h = 0.0f;
+	RECT	clientRect;
+	if( ::GetClientRect( m_ChildWnd, &clientRect ) ) {
+		vtx_w = static_cast<float>(clientRect.right - clientRect.left);
+		vtx_h = static_cast<float>(clientRect.bottom - clientRect.top);
+	}
+
+	float	tex_w = static_cast<float>(texWidth);
+	float	tex_h = static_cast<float>(texHeight);
+	float	video_w = static_cast<float>(m_VideoSize.cx);
+	float	video_h = static_cast<float>(m_VideoSize.cy);
+	if( vtx_w == 0.0f || vtx_h == 0.0f ) {
+		vtx_w = static_cast<float>(dm.Width);
+		vtx_h = static_cast<float>(dm.Height);
+	}
+	m_SrcRect.left = m_SrcRect.top = 0;
+	m_SrcRect.right = static_cast<int>(vtx_w);
+	m_SrcRect.bottom = static_cast<int>(vtx_h);
+
+	m_Vtx[0].x =  0.0f;	// TL
+	m_Vtx[0].y =  0.0f;
+	m_Vtx[0].tu = 0.0f;
+	m_Vtx[0].tv = 0.0f;
+
+	m_Vtx[1].x =  vtx_w;	// TR
+	m_Vtx[1].y =  0.0f;
+	m_Vtx[1].tu = (video_w + 0.5f) / tex_w;
+	m_Vtx[1].tv = 0.0f;
+
+	m_Vtx[2].x =  vtx_w;	// BR
+	m_Vtx[2].y =  vtx_h;
+	m_Vtx[2].tu = (video_w + 0.5f) / tex_w;
+	m_Vtx[2].tv = (video_h + 0.5f) / tex_h;
+
+	m_Vtx[3].x =  0.0f;	// BL
+	m_Vtx[3].y =  vtx_h;
+	m_Vtx[3].tu = 0.0f;
+	m_Vtx[3].tv = (video_h + 0.5f) / tex_h;
+
+	m_VertexBuffer = NULL;
+	if( FAILED( hr = D3DDevice()->CreateVertexBuffer( sizeof(m_Vtx) ,D3DUSAGE_WRITEONLY, D3DFVF_XYZRHW|D3DFVF_TEX1, D3DPOOL_MANAGED, &m_VertexBuffer.p, NULL ) ) )
+		return hr;
+
+	void* pData;
+	if( FAILED( hr = m_VertexBuffer->Lock( 0, sizeof(pData), &pData, 0 ) ) )
+		return hr;
+
+	memcpy( pData, m_Vtx, sizeof(m_Vtx) );
+
+	if( FAILED( hr = m_VertexBuffer->Unlock() ) )
+		return hr;
+
+	return S_OK;
+}
+//----------------------------------------------------------------------------
+//! @brief	  	頂点バッファの頂点情報を更新する
+//! @return		エラーコード
+//----------------------------------------------------------------------------
+HRESULT CVMRCustomAllocatorPresenter9::UpdateVertex()
+{
+	HRESULT	hr;
+	CAutoLock Lock(m_Lock);
+
+	// 頂点バッファがまだ確保されていない時はスルー
+	if( m_VertexBuffer == NULL )
+		return S_OK;
+
+	float	vtx_w = static_cast<float>(m_SrcRect.right - m_SrcRect.left);
+	float	vtx_h = static_cast<float>(m_SrcRect.bottom - m_SrcRect.top);
+
+	m_Vtx[0].x =  0.0f;	// TL
+	m_Vtx[0].y =  0.0f;
+
+	m_Vtx[1].x =  vtx_w;	// TR
+	m_Vtx[1].y =  0.0f;
+
+	m_Vtx[2].x =  vtx_w;	// BR
+	m_Vtx[2].y =  vtx_h;
+
+	m_Vtx[3].x =  0.0f;	// BL
+	m_Vtx[3].y =  vtx_h;
+
+	void* pData;
+	if( FAILED( hr = m_VertexBuffer->Lock( 0, sizeof(pData), &pData, 0 ) ) )
+		return hr;
+	memcpy( pData, m_Vtx, sizeof(m_Vtx) );
+	if( FAILED( hr = m_VertexBuffer->Unlock() ) )
 		return hr;
 
 	return S_OK;
@@ -180,6 +355,9 @@ HRESULT STDMETHODCALLTYPE CVMRCustomAllocatorPresenter9::AdviseNotify( IVMRSurfa
 HRESULT CVMRCustomAllocatorPresenter9::ReleaseD3D()
 {
 	CAutoLock Lock(m_Lock);
+	if( m_VertexBuffer.p )
+		m_VertexBuffer.Release();
+
 	if( m_D3DDevice.p )
 		m_D3DDevice.Release();
 
@@ -194,11 +372,15 @@ HRESULT CVMRCustomAllocatorPresenter9::ReleaseD3D()
 HRESULT CVMRCustomAllocatorPresenter9::ReleaseSurfaces()
 {
 	CAutoLock Lock(m_Lock);
+
+	m_Texture = NULL;
+
 	for( DWORD i = 0; i < m_Surfaces.size(); ++i )
 	{
 //		m_Surfaces[i].Release();
 		m_Surfaces[i] = NULL;
 	}
+
 	return S_OK;
 }
 //----------------------------------------------------------------------------
@@ -212,6 +394,43 @@ HRESULT STDMETHODCALLTYPE CVMRCustomAllocatorPresenter9::StartPresenting( DWORD_
 	if( m_D3DDevice.p == NULL )
 		return E_FAIL;
     return S_OK;
+}
+
+//----------------------------------------------------------------------------
+//! @brief	  	ビデオテクスチャをポリゴンに貼り付けて描画する
+//! @param		device : Direct3D Device
+//! @param		tex : テクスチャ
+//! @return		エラーコード
+//----------------------------------------------------------------------------
+HRESULT CVMRCustomAllocatorPresenter9::DrawVideoPlane( IDirect3DDevice9* device, IDirect3DTexture9* tex )
+{
+//	device->Clear(0,NULL,D3DCLEAR_TARGET,0,1.0f,0);
+	if( SUCCEEDED(device->BeginScene()) )
+	{
+		struct CAutoEndSceneCall {
+			IDirect3DDevice9*	m_Device;
+			CAutoEndSceneCall( IDirect3DDevice9* device ) : m_Device(device) {}
+			~CAutoEndSceneCall() { m_Device->EndScene(); }
+		};
+		{
+			HRESULT				hr;
+			CAutoEndSceneCall	autoEnd(device);
+			if( FAILED( hr = device->SetTexture( 0, tex ) ) )
+				return hr;
+			if( FAILED( hr = device->SetStreamSource(0, m_VertexBuffer.p, 0, sizeof(VideoVertex) ) ) )
+				return hr;
+			if( FAILED( hr = device->SetFVF( D3DFVF_XYZRHW|D3DFVF_TEX1 ) ) )
+				return hr;
+			if( FAILED( hr = device->DrawPrimitive( D3DPT_TRIANGLEFAN, 0, 2 ) ) )
+				return hr;
+//			device->DrawPrimitiveUP( D3DPT_TRIANGLEFAN, 2, reinterpret_cast<void*>(m_Vtx), sizeof(m_Vtx[0]) );
+			if( FAILED( hr = device->SetTexture( 0, NULL) ) )
+				return hr;
+		}
+
+		AllocatorNotify()->NotifyEvent(EC_UPDATE,0,0);
+	}
+	return S_OK;
 }
 //----------------------------------------------------------------------------
 //! @brief	  	このビデオ フレームを表示しなければならないときに呼び出される
@@ -230,10 +449,9 @@ HRESULT STDMETHODCALLTYPE CVMRCustomAllocatorPresenter9::PresentImage( DWORD_PTR
 //		AllocatorNotify()->NotifyEvent(EC_UPDATE,0,0);
 		if( m_RebuildingWindow ) return S_OK;	// フルスクリーン切り替え中は描画しない
 		hr = PresentHelper( lpPresInfo );
-#if 1
 		if( hr == D3DERR_DEVICELOST)
 		{
-			OutputDebugString("DS ERROR: Device Lost.\n");
+			TVPAddLog( ttstr("krmovie warning : Device lost.") );
 			hr = D3DDevice()->TestCooperativeLevel();
 			if( hr == D3DERR_DEVICENOTRESET )
 			{	// リセット可能
@@ -245,7 +463,6 @@ HRESULT STDMETHODCALLTYPE CVMRCustomAllocatorPresenter9::PresentImage( DWORD_PTR
 				// どうやらフルスクリーン切り替え時などに何度か失敗することがあるようだ
 			}
 		}
-#endif
 	}
 	return hr;
 }
@@ -262,23 +479,27 @@ HRESULT CVMRCustomAllocatorPresenter9::PresentHelper( VMR9PresentationInfo *lpPr
 	if( FAILED(hr = lpPresInfo->lpSurf->GetDevice(&device.p )) )
 		return hr;
 
-	IDirect3DSurface9	*pBackBuffer;
-	if( SUCCEEDED(hr = device->GetBackBuffer( 0, 0, D3DBACKBUFFER_TYPE_MONO, &pBackBuffer )) )
+	if( FAILED(hr = device->SetRenderTarget( 0, m_RenderTarget ) ) )
+		return hr;
+	if( m_Texture != NULL )
 	{
-		if( FAILED(hr = device->StretchRect( lpPresInfo->lpSurf, NULL, pBackBuffer, NULL, D3DTEXF_NONE )) )
-			AllocatorNotify()->NotifyEvent(EC_ERRORABORT,hr,0);
-		pBackBuffer->Release();
-		if( hr == S_OK ) {
-			AllocatorNotify()->NotifyEvent(EC_UPDATE,0,0);
+		CComPtr<IDirect3DSurface9> pSurf;
+		if( SUCCEEDED(hr = m_Texture->GetSurfaceLevel(0, &pSurf)) ) {
+			if( FAILED(hr = device->StretchRect( lpPresInfo->lpSurf, NULL, pSurf, NULL, D3DTEXF_NONE )) ) {
+				return hr;
+			}
+		} else {
+			return hr;
 		}
+		if( FAILED(hr = DrawVideoPlane( device, m_Texture.p ) ) )
+			return hr;
 	} else {
-		OutputDebugString("DS ERROR: Failed To Get back buffer surface.\n");
+		CComPtr<IDirect3DTexture9> texture;
+		if( FAILED(hr = lpPresInfo->lpSurf->GetContainer( IID_IDirect3DTexture9, (LPVOID*)&texture.p ) ) )
+			return hr;
+		if( FAILED(hr = DrawVideoPlane( device, texture.p ) ) )
+			return hr;
 	}
-//	hr = device->Present( NULL, NULL, m_ChildWnd, NULL );
-//	hr = device->Present( NULL, NULL, m_ChildWnd, NULL );
-//		hr = device->Present( NULL, NULL, NULL, NULL );
-//	if( FAILED(hr = device->Present( NULL, NULL, m_ChildWnd, NULL )) )
-//		AllocatorNotify()->NotifyEvent(EC_ERRORABORT,hr,0);
 
 	return hr;
 }
@@ -289,8 +510,9 @@ void CVMRCustomAllocatorPresenter9::PresentVideoImage()
 {
 	CAutoLock Lock(m_Lock);
 	if( m_D3DDevice.p ) {
-		HRESULT hr;
-		hr = m_D3DDevice->Present( NULL, NULL, m_ChildWnd, NULL );
+		HRESULT hr = S_OK;
+		hr = m_D3DDevice->Present( &m_SrcRect, NULL, m_ChildWnd, NULL );
+//		hr = m_D3DDevice->Present( NULL, NULL, m_ChildWnd, NULL );
 		if( hr == D3DERR_DEVICELOST)
 		{
 			hr = D3DDevice()->TestCooperativeLevel();
@@ -322,6 +544,46 @@ UINT CVMRCustomAllocatorPresenter9::GetMonitorNumber()
 		iCurrentMonitor = D3DADAPTER_DEFAULT;
 	return iCurrentMonitor;
 }
+
+//----------------------------------------------------------------------------
+//! @brief	  	プレゼント パラメータを決定する
+//! @param		d3dpp : D3DPRESENT_PARAMETERS
+//! @return		エラーコード
+//----------------------------------------------------------------------------
+HRESULT CVMRCustomAllocatorPresenter9::DecideD3DPresentParameters( D3DPRESENT_PARAMETERS& d3dpp )
+{
+	HRESULT			hr;
+	D3DDISPLAYMODE	dm;
+	UINT iCurrentMonitor = GetMonitorNumber();
+	if( FAILED( hr = D3D()->GetAdapterDisplayMode( iCurrentMonitor, &dm ) ) )
+		return hr;
+
+	UINT	width = 0;
+	UINT	height = 0;
+	LONG	ownerStyle = ::GetWindowLong( Owner()->OwnerWindow, GWL_STYLE );
+	if( !(ownerStyle&WS_THICKFRAME) ) {
+		// オーナーはサイズ変更不可
+		RECT	clientRect;
+		if( ::GetClientRect( Owner()->OwnerWindow, &clientRect ) ) {
+			width = clientRect.right - clientRect.left;
+			height = clientRect.bottom - clientRect.top;
+		}
+	}
+	if( width == 0 || height == 0 ) {
+		width = dm.Width;
+		height = dm.Height;
+	}
+
+	ZeroMemory( &d3dpp, sizeof(d3dpp) );
+	d3dpp.Windowed = TRUE;
+	d3dpp.SwapEffect = D3DSWAPEFFECT_COPY;
+	d3dpp.BackBufferFormat = dm.Format;
+	d3dpp.BackBufferHeight = height;
+	d3dpp.BackBufferWidth = width;
+	d3dpp.hDeviceWindow = m_ChildWnd;
+
+	return S_OK;
+}
 //----------------------------------------------------------------------------
 //! @brief	  	Direct3Dを初期化する
 //! @return		エラーコード
@@ -351,21 +613,71 @@ HRESULT CVMRCustomAllocatorPresenter9::CreateD3D()
 	if( NULL == ( m_D3D = pDirect3DCreate9( D3D_SDK_VERSION ) ) )
 		return E_FAIL;
 
-	D3DPRESENT_PARAMETERS d3dpp; 
-	ZeroMemory( &d3dpp, sizeof(d3dpp) );
-	d3dpp.Windowed = TRUE;
-	d3dpp.SwapEffect = D3DSWAPEFFECT_DISCARD;
-	d3dpp.BackBufferFormat = D3DFMT_UNKNOWN;
-	d3dpp.BackBufferHeight = m_VideoSize.cy;
-	d3dpp.BackBufferWidth = m_VideoSize.cx;
-	d3dpp.hDeviceWindow = m_ChildWnd;
-	UINT iCurrentMonitor = GetMonitorNumber();
-
-	DWORD	BehaviorFlags = D3DCREATE_SOFTWARE_VERTEXPROCESSING | D3DCREATE_MULTITHREADED;
-	if( D3D_OK != ( hr = D3D()->CreateDevice( iCurrentMonitor, D3DDEVTYPE_HAL, NULL, BehaviorFlags, &d3dpp, &m_D3DDevice ) ) )
+	D3DPRESENT_PARAMETERS	d3dpp;
+	if( FAILED( hr = DecideD3DPresentParameters( d3dpp ) ) )
 		return hr;
-//	m_CurPresentParam = d3dpp;
-	m_ThreadID = GetCurrentThreadId();
+
+	UINT iCurrentMonitor = GetMonitorNumber();
+	DWORD	BehaviorFlags = D3DCREATE_SOFTWARE_VERTEXPROCESSING | D3DCREATE_MULTITHREADED;
+	if( D3D_OK != ( hr = D3D()->CreateDevice( iCurrentMonitor, D3DDEVTYPE_HAL, NULL, BehaviorFlags, &d3dpp, &m_D3DDevice.p ) ) )
+		return hr;
+
+	m_ThreadID = ::GetCurrentThreadId();
+
+	m_RenderTarget = NULL;
+	if( FAILED( hr = D3DDevice()->GetRenderTarget( 0, &m_RenderTarget.p ) ) )
+		return hr;
+
+	if( FAILED( hr = InitializeDirect3DState() ) )
+		return hr;
+
+	return S_OK;
+}
+//----------------------------------------------------------------------------
+//! @brief	  	Direct3Dのステートを初期化する
+//! @return		エラーコード
+//----------------------------------------------------------------------------
+HRESULT CVMRCustomAllocatorPresenter9::InitializeDirect3DState()
+{
+	HRESULT	hr;
+	D3DCAPS9	d3dcaps;
+	if( FAILED( hr = D3DDevice()->GetDeviceCaps( &d3dcaps ) ) )
+		return hr;
+
+	if( d3dcaps.TextureFilterCaps & D3DPTFILTERCAPS_MAGFLINEAR ) {
+		if( FAILED( hr = D3DDevice()->SetSamplerState( 0, D3DSAMP_MAGFILTER, D3DTEXF_LINEAR ) ) )
+			return hr;
+	} else {
+		if( FAILED( hr = D3DDevice()->SetSamplerState( 0, D3DSAMP_MAGFILTER, D3DTEXF_POINT ) ) )
+			return hr;
+	}
+
+	if( d3dcaps.TextureFilterCaps & D3DPTFILTERCAPS_MINFLINEAR ) {
+		if( FAILED( hr = D3DDevice()->SetSamplerState( 0, D3DSAMP_MINFILTER, D3DTEXF_LINEAR ) ) )
+			return hr;
+	} else {
+		if( FAILED( hr = D3DDevice()->SetSamplerState( 0, D3DSAMP_MINFILTER, D3DTEXF_POINT ) ) )
+		return hr;
+	}
+
+	if( FAILED( hr = D3DDevice()->SetSamplerState( 0, D3DSAMP_ADDRESSU,  D3DTADDRESS_CLAMP ) ) )
+		return hr;
+	if( FAILED( hr = D3DDevice()->SetSamplerState( 0, D3DSAMP_ADDRESSV,  D3DTADDRESS_CLAMP ) ) )
+		return hr;
+	if( FAILED( hr = D3DDevice()->SetRenderState( D3DRS_CULLMODE, D3DCULL_NONE ) ) )
+		return hr;
+	if( FAILED( hr = D3DDevice()->SetRenderState( D3DRS_LIGHTING, FALSE ) ) )
+		return hr;
+	if( FAILED( hr = D3DDevice()->SetRenderState( D3DRS_ZENABLE, FALSE ) ) )
+		return hr;
+	if( FAILED( hr = D3DDevice()->SetRenderState( D3DRS_ALPHABLENDENABLE, FALSE ) ) )
+		return hr;
+	if( FAILED( hr = D3DDevice()->SetTextureStageState( 0, D3DTSS_COLOROP,   D3DTOP_SELECTARG1 ) ) )
+		return hr;
+	if( FAILED( hr = D3DDevice()->SetTextureStageState( 0, D3DTSS_COLORARG1, D3DTA_TEXTURE ) ) )
+		return hr;
+	if( FAILED( hr = D3DDevice()->SetTextureStageState( 0, D3DTSS_ALPHAOP,   D3DTOP_DISABLE ) ) )
+		return hr;
 
 	return S_OK;
 }
@@ -410,36 +722,33 @@ HRESULT CVMRCustomAllocatorPresenter9::RebuildD3DDevice()
 //----------------------------------------------------------------------------
 HRESULT CVMRCustomAllocatorPresenter9::ResizeBackbuffer()
 {
-	HRESULT	hr = S_OK;
-	D3DPRESENT_PARAMETERS d3dpp; 
-	ZeroMemory( &d3dpp, sizeof(d3dpp) );
-	CAutoLock Lock(m_Lock);
+	if( m_D3DDevice == NULL ) return E_FAIL;
 
-	if( m_ThreadID != GetCurrentThreadId() ) {
-		OutputDebugString("DS ERROR: may be cannot reset.\n");
+	CAutoLock Lock(m_Lock);
+	if( m_ThreadID != ::GetCurrentThreadId() ) {
+		TVPAddLog( ttstr("krmovie warning :  may be cannot reset.") );
 	}
 
-	hr = D3DDevice()->TestCooperativeLevel();
+	HRESULT	hr = D3DDevice()->TestCooperativeLevel();
 	if( hr == D3DERR_DEVICENOTRESET ) {
-		d3dpp.Windowed = TRUE;
-		d3dpp.SwapEffect = D3DSWAPEFFECT_DISCARD;
-		d3dpp.BackBufferFormat = D3DFMT_UNKNOWN;
-		d3dpp.BackBufferHeight = m_VideoSize.cy;
-		d3dpp.BackBufferWidth = m_VideoSize.cx;
-		d3dpp.hDeviceWindow = m_ChildWnd;
+
+		D3DPRESENT_PARAMETERS	d3dpp;
+		if( FAILED( hr = DecideD3DPresentParameters( d3dpp ) ) )
+			return hr;
+
 		ReleaseSurfaces();
 		hr = D3DDevice()->Reset(&d3dpp);
 		if( hr == D3DERR_DEVICELOST ) {
-			OutputDebugString("DS ERROR: Cannot reset device.\n");
+			TVPAddLog( ttstr("krmovie error : Device lost. Cannot reset device.") );
 		} else if( hr == D3DERR_DRIVERINTERNALERROR ) {
-			OutputDebugString("DS ERROR: Device internal fatal error.\n");
+			TVPAddLog( ttstr("krmovie error : Device internal fatal error.") );
 			AllocatorNotify()->NotifyEvent(EC_ERRORABORT,hr,0);
 		} else if( hr == D3DERR_INVALIDCALL ) {
-			OutputDebugString("DS ERROR: Invalid call.\n");
+			TVPAddLog( ttstr("krmovie error : Invalid call.") );
 		} else if( hr  == D3DERR_OUTOFVIDEOMEMORY ) {
-			OutputDebugString("DS ERROR: Cannot allocate video memory.\n");
+			TVPAddLog( ttstr("krmovie error : Cannot allocate video memory.") );
 		} else if( hr == E_OUTOFMEMORY  ) {
-			OutputDebugString("DS ERROR: Cannot allocate memory.\n");
+			TVPAddLog( ttstr("krmovie error : Cannot allocate memory.") );
 		}
 	} else {
 		hr = E_FAIL;
@@ -466,10 +775,8 @@ HRESULT CVMRCustomAllocatorPresenter9::CreateChildWindow()
 	}
 	DWORD	atom = (DWORD)(0xFFFF & m_ChildAtom);
 	if( (m_Rect.right - m_Rect.left) != 0 && (m_Rect.bottom - m_Rect.top) != 0 ) {
-//		m_ChildWnd = CreateWindow( (LPCTSTR)atom, "VMR9 child", WS_CHILDWINDOW, 0, 0, m_Rect.right - m_Rect.left, m_Rect.bottom - m_Rect.top, Owner()->OwnerWindow, NULL, Owner()->m_OwnerInst, NULL );
 		m_ChildWnd = CreateWindow( _T("krmovie VMR9 Child Window Class"), "VMR9 child", WS_CHILDWINDOW, 0, 0, m_Rect.right - m_Rect.left, m_Rect.bottom - m_Rect.top, Owner()->OwnerWindow, NULL, Owner()->m_OwnerInst, NULL );
 	} else {
-//		m_ChildWnd = CreateWindow( (LPCTSTR)atom, "VMR9 child", WS_CHILDWINDOW, 0, 0, 320, 240, Owner()->OwnerWindow, NULL, Owner()->m_OwnerInst, NULL );
 		m_ChildWnd = CreateWindow( _T("krmovie VMR9 Child Window Class"), "VMR9 child", WS_CHILDWINDOW, 0, 0, 320, 240, Owner()->OwnerWindow, NULL, Owner()->m_OwnerInst, NULL );
 	}
 	if( m_ChildWnd == NULL )
@@ -530,6 +837,9 @@ LRESULT WINAPI CVMRCustomAllocatorPresenter9::Proc( HWND hWnd, UINT msg, WPARAM 
 //		FillRect( hDC, &ps.rcPaint, (HBRUSH)hBrush );
 		EndPaint(hWnd, &ps);
 		return 0;
+	} else if( msg == WM_DESTROY ) {
+		ReleaseSurfaces();
+		ReleaseD3D();
 	} else if( msg >= WM_MOUSEFIRST && msg <= WM_MOUSELAST && Owner()->GetMessageDrainWindow() ) {
 		return ::SendMessage( Owner()->GetMessageDrainWindow(), msg, wParam, lParam );
 //		::PostMessage( Owner()->GetMessageDrainWindow(), msg, wParam, lParam );
@@ -546,10 +856,21 @@ void CVMRCustomAllocatorPresenter9::SetRect( RECT *rect )
 	m_Rect = *rect;
 	if( m_ChildWnd != NULL )
 	{
-		if( MoveWindow( m_ChildWnd, m_Rect.left, m_Rect.top, m_Rect.right - m_Rect.left, m_Rect.bottom - m_Rect.top, TRUE ) == 0 )
-			ThrowDShowException(L"Failed to call MoveWindow.", HRESULT_FROM_WIN32(GetLastError()));
-	}
+		int		width = m_Rect.right - m_Rect.left;
+		int		height = m_Rect.bottom - m_Rect.top;
 
+		if( MoveWindow( m_ChildWnd, m_Rect.left, m_Rect.top, width, height, TRUE ) == 0 )
+			ThrowDShowException(L"Failed to call MoveWindow.", HRESULT_FROM_WIN32(GetLastError()));
+
+		if( (m_SrcRect.right - m_SrcRect.left) != width || (m_SrcRect.bottom - m_SrcRect.top) != height ) {
+			m_SrcRect.left = m_SrcRect.top = 0;
+			m_SrcRect.right = width;
+			m_SrcRect.bottom = height;
+			HRESULT	hr;
+			if( FAILED(hr = UpdateVertex()) )
+				ThrowDShowException(L"Failed to Update Vertex.", hr );
+		}
+	}
 }
 //----------------------------------------------------------------------------
 //! @brief	  	ビデオの表示/非表示を設定する
@@ -582,7 +903,7 @@ void CVMRCustomAllocatorPresenter9::Reset()
 	if( Owner()->OwnerWindow != NULL )
 	{
 		CAutoLock Lock(m_Lock);
-		ReleaseSurfaces();
+//		ReleaseSurfaces();
 		DestroyChildWindow();
 		if( FAILED(hr = CreateChildWindow() ) )
 			ThrowDShowException(L"Failed to create window.", hr );
