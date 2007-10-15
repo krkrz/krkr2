@@ -570,6 +570,7 @@ public:
 		if(OffScreenDC && Surface) Surface->ReleaseDC(OffScreenDC);
 		if(Surface) Surface->Release(), Surface = NULL;
 		if(Clipper) Clipper->Release(), Clipper = NULL;
+		TVPReleaseDDPrimarySurface();
 	}
 
 	void InvalidateAll()
@@ -705,7 +706,9 @@ public:
 					// display this message only once since last success
 					TVPAddImportantLog(
 						TJS_W("Passthrough: (inf) Off-screen surface, IDirectDrawSurface::GetDC failed/HR=") +
-						TJSInt32ToHex(hr, 8) + TJS_W(", ignoring"));
+						TJSInt32ToHex(hr, 8) + TJS_W(", recreating drawer ..."));
+					Device->DestroyDrawer(); // destroy self
+					return; // return immediately
 				}
 			}
 
@@ -793,7 +796,8 @@ public:
 		}
 		else if(hr != DD_OK)
 		{
-			TVPThrowExceptionMessage(TJS_W("Primary surface, IDirectDrawSurface::Blt failed/HR=%1"),
+			TVPAddImportantLog(
+				TJS_W("Passthrough: (inf) Primary surface, IDirectDrawSurface::Blt failed/HR=") +
 				TJSInt32ToHex(hr, 8));
 		}
 	}
@@ -1045,6 +1049,7 @@ public:
 		if(DirectDraw7) DirectDraw7->Release(), DirectDraw7 = NULL;
 		if(Direct3DDevice7) Direct3DDevice7->Release(), Direct3DDevice7 = NULL;
 		if(Direct3D7) Direct3D7->Release(), Direct3D7 = NULL;
+		TVPReleaseDDPrimarySurface();
 	}
 
 	void InvalidateAll()
@@ -1369,7 +1374,9 @@ StartTick = timeGetTime();
 						// display this message only once since last success
 						TVPAddImportantLog(
 							TJS_W("Passthrough: (inf) Texture, IDirectDrawSurface::Lock failed/HR=") +
-							TJSInt32ToHex(hr, 8) + TJS_W(", ignoring"));
+							TJSInt32ToHex(hr, 8) + TJS_W(", recreating drawer ..."));
+						Device->DestroyDrawer(); // destroy self
+						return;
 					}
 				}
 				else /*if(hr == DD_OK) */
@@ -1410,7 +1417,9 @@ GetDCTime += timeGetTime() - StartTick;
 						// display this message only once since last success
 						TVPAddImportantLog(
 							TJS_W("Passthrough: (inf) Texture, IDirectDrawSurface::GetDC failed/HR=") +
-							TJSInt32ToHex(hr, 8) + TJS_W(", ignoring"));
+							TJSInt32ToHex(hr, 8) + TJS_W(", recreating drawer ..."));
+						Device->DestroyDrawer(); // destroy self
+						return;
 					}
 				}
 
@@ -1605,9 +1614,10 @@ DrawPrimitiveTime += timeGetTime() - StartTick;
 		{
 			// ignore this error
 		}
-		else if(hr != DD_OK)
+		else if(hr != D3D_OK)
 		{
-			TVPThrowExceptionMessage(TJS_W("Primary surface, polygon drawing failed/HR=%1"),
+			TVPAddImportantLog(
+				TJS_W("Passthrough: (inf) Polygon drawing failed/HR=") +
 				TJSInt32ToHex(hr, 8));
 		}
 	}
@@ -1673,7 +1683,8 @@ BltTime += timeGetTime() - StartTick;
 		}
 		else if(hr != DD_OK)
 		{
-			TVPThrowExceptionMessage(TJS_W("Primary surface, IDirectDrawSurface::Blt failed/HR=%1"),
+			TVPAddImportantLog(
+				TJS_W("Passthrough: (inf) Primary surface, IDirectDrawSurface::Blt failed/HR=") +
 				TJSInt32ToHex(hr, 8));
 		}
 	}
@@ -2088,12 +2099,13 @@ void TJS_INTF_METHOD tTVPPassThroughDrawDevice::SetDestRectangle(const tTVPRect 
 	{
 		// サイズも違う
 		DestSizeChanged = true;
+		inherited::SetDestRectangle(rect);
+		EnsureDrawer();
 		if(Drawer)
 		{
 			if(!Drawer->SetDestSize(rect.get_width(), rect.get_height()))
 				DestroyDrawer(); // エラーが起こったのでその drawer を破棄する
 		}
-		inherited::SetDestRectangle(rect);
 	}
 }
 //---------------------------------------------------------------------------
@@ -2121,7 +2133,15 @@ void TJS_INTF_METHOD tTVPPassThroughDrawDevice::StartBitmapCompletion(iTVPLayerM
 {
 	EnsureDrawer();
 
+	// この中で DestroyDrawer が呼ばれる可能性に注意すること
 	if(Drawer) Drawer->StartBitmapCompletion();
+
+	if(!Drawer)
+	{
+		// リトライする
+		EnsureDrawer();
+		if(Drawer) Drawer->StartBitmapCompletion();
+	}
 }
 //---------------------------------------------------------------------------
 
