@@ -1009,6 +1009,9 @@ class tTVPDrawer_D3DDoubleBuffering : public tTVPDrawer
 	void * TextureBuffer; //!< テクスチャのサーフェースへのメモリポインタ
 	long TexturePitch; //!< テクスチャのピッチ
 
+	tjs_uint TextureWidth; //!< テクスチャの横幅
+	tjs_uint TextureHeight; //!< テクスチャの縦幅
+
 	bool LastOffScreenDCGot;
 	bool ShouldShow; //!< show で実際に画面に画像を転送すべきか
 	bool UseDirectTransfer; //!< メモリ直接転送を行うかどうか
@@ -1029,6 +1032,7 @@ public:
 		ShouldShow = false;
 		UseDirectTransfer = false;
 		TextureBuffer = NULL;
+		TextureWidth = TextureHeight = 0;
 	}
 
 	//! @brief	デストラクタ
@@ -1159,41 +1163,42 @@ public:
 					TJSInt32ToHex(hr, 8));
 
 			// decide texture size
-			tjs_uint text_w = SrcWidth, text_h = SrcHeight;
+			TextureWidth = SrcWidth;
+			TextureHeight = SrcHeight;
 			if(caps.dpcTriCaps.dwTextureCaps & D3DPTEXTURECAPS_SQUAREONLY)
 			{
 				// only square textures are supported
-				text_w = std::max(text_h, text_w);
-				text_h = text_w;
+				TextureWidth = std::max(TextureHeight, TextureWidth);
+				TextureHeight = TextureWidth;
 			}
 
 			if(caps.dpcTriCaps.dwTextureCaps & D3DPTEXTURECAPS_POW2)
 			{
 				// power of 2 size of texture dimentions are required
 				tjs_uint sz;
-				
-				sz = 1; while(sz < text_w) sz <<= 1;
-				text_w = sz;
 
-				sz = 1; while(sz < text_h) sz <<= 1;
-				text_h = sz;
+				sz = 1; while(sz < TextureWidth) sz <<= 1;
+				TextureWidth = sz;
+
+				sz = 1; while(sz < TextureHeight) sz <<= 1;
+				TextureHeight = sz;
 			}
 
-			if(caps.dwMinTextureWidth  > text_w) text_w = caps.dwMinTextureWidth;
-			if(caps.dwMinTextureHeight > text_h) text_h = caps.dwMinTextureHeight;
-			if(	caps.dwMaxTextureWidth  < text_w ||
-				caps.dwMaxTextureHeight < text_h)
+			if(caps.dwMinTextureWidth  > TextureWidth) TextureWidth = caps.dwMinTextureWidth;
+			if(caps.dwMinTextureHeight > TextureHeight) TextureHeight = caps.dwMinTextureHeight;
+			if(	caps.dwMaxTextureWidth  < TextureWidth ||
+				caps.dwMaxTextureHeight < TextureHeight)
 			{
 				TVPThrowExceptionMessage(TJS_W("Could not allocate texture size of %1x%2"),
-					ttstr((int)text_w), ttstr((int)text_h));
+					ttstr((int)TextureWidth), ttstr((int)TextureHeight));
 			}
 
 			// create Direct3D Texture
 			ZeroMemory(&ddsd, sizeof(ddsd));
 			ddsd.dwSize = sizeof(ddsd);
 			ddsd.dwFlags = DDSD_WIDTH | DDSD_HEIGHT | DDSD_CAPS | DDSD_PIXELFORMAT;
-			ddsd.dwWidth = SrcWidth;
-			ddsd.dwHeight = SrcHeight;
+			ddsd.dwWidth  = TextureWidth;
+			ddsd.dwHeight = TextureHeight;
 			ddsd.ddsCaps.dwCaps =
 				/*DDSCAPS_OFFSCREENPLAIN |*/ DDSCAPS_VIDEOMEMORY | DDSCAPS_TEXTURE | DDSCAPS_LOCALVIDMEM;
 
@@ -1556,16 +1561,16 @@ ReleaseDCTime += timeGetTime() - StartTick;
 		float dw = (float)DestWidth;
 		float dh = (float)DestHeight;
 
-		float sw = (float)SrcWidth;
-		float sh = (float)SrcHeight;
+		float sw = (float)SrcWidth  / (float)TextureWidth;
+		float sh = (float)SrcHeight / (float)TextureHeight;
 
 
 		tVertices vertices[] =
 		{
 			{0.0f - 0.5f, 0.0f - 0.5f, 1.0f, 1.0f, 0.0f, 0.0f},
-			{dw   - 0.5f, 0.0f - 0.5f, 1.0f, 1.0f, 1.0f, 0.0f},
-			{0.0f - 0.5f, dh   - 0.5f, 1.0f, 1.0f, 0.0f, 1.0f},
-			{dw   - 0.5f, dh   - 0.5f, 1.0f, 1.0f, 1.0f, 1.0f}
+			{dw   - 0.5f, 0.0f - 0.5f, 1.0f, 1.0f, sw  , 0.0f},
+			{0.0f - 0.5f, dh   - 0.5f, 1.0f, 1.0f, 0.0f, sh  },
+			{dw   - 0.5f, dh   - 0.5f, 1.0f, 1.0f, sw  , sh  }
 		};
 
 		HRESULT hr;
