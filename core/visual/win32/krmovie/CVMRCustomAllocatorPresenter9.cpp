@@ -214,13 +214,13 @@ HRESULT CVMRCustomAllocatorPresenter9::CreateVertexBuffer( int texWidth, int tex
 
 	m_Vtx[0].x =  0.0f;	// TL
 	m_Vtx[0].y =  0.0f;
-	m_Vtx[0].tu = 0.0f;
-	m_Vtx[0].tv = 0.0f;
+	m_Vtx[0].tu = 0.5f / tex_w;
+	m_Vtx[0].tv = 0.5f / tex_h;
 
 	m_Vtx[1].x =  vtx_w;	// TR
 	m_Vtx[1].y =  0.0f;
 	m_Vtx[1].tu = (video_w + 0.5f) / tex_w;
-	m_Vtx[1].tv = 0.0f;
+	m_Vtx[1].tv = 0.5f / tex_h;
 
 	m_Vtx[2].x =  vtx_w;	// BR
 	m_Vtx[2].y =  vtx_h;
@@ -229,7 +229,7 @@ HRESULT CVMRCustomAllocatorPresenter9::CreateVertexBuffer( int texWidth, int tex
 
 	m_Vtx[3].x =  0.0f;	// BL
 	m_Vtx[3].y =  vtx_h;
-	m_Vtx[3].tu = 0.0f;
+	m_Vtx[3].tu = 0.5f / tex_w;
 	m_Vtx[3].tv = (video_h + 0.5f) / tex_h;
 
 	m_VertexBuffer = NULL;
