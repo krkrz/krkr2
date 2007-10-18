@@ -1593,6 +1593,8 @@ AnsiString TVPGetBeingFont(AnsiString fonts)
 		vfont = false;
 	}
 
+	bool prev_empty_name = false;
+
 	while(fonts!="")
 	{
 		AnsiString fontname;
@@ -1608,7 +1610,10 @@ AnsiString TVPGetBeingFont(AnsiString fonts)
 			fonts="";
 		}
 
-		if(TVPFontExists(fontname) )
+		// no existing check if previously specified font candidate is empty
+		// eg. ",Fontname"
+
+		if(fontname != "" && (prev_empty_name || TVPFontExists(fontname) ) )
 		{
 			if(vfont && fontname.c_str()[0] != '@')
 			{
@@ -1619,6 +1624,8 @@ AnsiString TVPGetBeingFont(AnsiString fonts)
 				return fontname;
 			}
 		}
+
+		prev_empty_name = (fontname == "");
 	}
 
 	if(vfont)
