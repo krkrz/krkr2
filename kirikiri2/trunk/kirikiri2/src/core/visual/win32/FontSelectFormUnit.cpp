@@ -182,6 +182,20 @@ HDWP TTVPFontSelectForm::ShowTop(HDWP hdwp)
 
 
 
+// 以下の二つのdefineはOpenType フォントを表していて、
+// EnumFontsProc の lpntme->ntmTm.ntmFlags にビットセットとして渡されてくる。
+// (OpenTypeがサポートされた Windows 2000 以降で存在)
+// tBaseFreeTypeFontDriver::EnumerateFonts ではTrueType フォントとともに
+// これらのフォントも列挙される。
+
+#ifndef NTM_PS_OPENTYPE
+#define NTM_PS_OPENTYPE     0x00020000 //!< PostScript 形式 OpenType フォント
+#endif
+
+#ifndef NTM_TT_OPENTYPE
+#define NTM_TT_OPENTYPE     0x00040000 //!< TrueType 形式 OpenType フォント
+#endif
+
 
 
 //---------------------------------------------------------------------------
@@ -198,8 +212,11 @@ struct tTVPFSEnumFontsProcData
 	}
 };
 //---------------------------------------------------------------------------
-int CALLBACK TVPFSFEnumFontsProc(LOGFONT *lplf, TEXTMETRIC *lptm, DWORD type,
-	LPARAM userdata)
+static int CALLBACK TVPFSFEnumFontsProc(
+			ENUMLOGFONTEX *lpelfe,    // pointer to logical-font data
+			NEWTEXTMETRICEX *lpntme,  // pointer to physical-font data
+			int FontType,             // type of font
+			LPARAM userdata)
 {
 	// enumerate fonts
 	tTVPFSEnumFontsProcData *data = reinterpret_cast<tTVPFSEnumFontsProcData*>(userdata);
@@ -207,28 +224,35 @@ int CALLBACK TVPFSFEnumFontsProc(LOGFONT *lplf, TEXTMETRIC *lptm, DWORD type,
 	if(data->Flags & TVP_FSF_FIXEDPITCH)
 	{
 		// fixed pitch only ?
-		if(lptm->tmPitchAndFamily & TMPF_FIXED_PITCH) return 1;
+		if(lpntme->ntmTm.tmPitchAndFamily & TMPF_FIXED_PITCH) return 1;
 	}
 
 	if(data->Flags & TVP_FSF_SAMECHARSET)
 	{
-		// sama character set only ?
-		if(lplf->lfCharSet != data->RefFont.lfCharSet) return 1;
+		// same character set only ?
+		if(lpelfe->elfLogFont.lfCharSet != data->RefFont.lfCharSet) return 1;
 	}
 
 	if(data->Flags & TVP_FSF_NOVERTICAL)
 	{
 		// not to list vertical fonts up ?
-		if(lplf->lfFaceName[0] == '@') return 1;
+		if(lpelfe->elfLogFont.lfFaceName[0] == '@') return 1;
 	}
 
 	if(data->Flags & TVP_FSF_TRUETYPEONLY)
 	{
-		// true type only ?
-		if(!(type & TRUETYPE_FONTTYPE)) return 1;
+		// true type or opentype only ?
+		bool is_outline =
+			(lpntme->ntmTm.ntmFlags &  NTM_PS_OPENTYPE) ||
+			(lpntme->ntmTm.ntmFlags &  NTM_TT_OPENTYPE) ||
+			(FontType & TRUETYPE_FONTTYPE);
+		if(!is_outline) return 1;
 	}
 
-	data->List.push_back(lplf->lfFaceName);
+	AnsiString facename(lpelfe->elfLogFont.lfFaceName);
+	if(std::find(data->List.begin(), data->List.end(), facename) ==
+		data->List.end())
+		data->List.push_back(facename); // not insert the same face twice
 
 	return 1;
 }
@@ -237,8 +261,23 @@ void TVPGetFontList(std::vector<AnsiString> & list, tjs_uint32 flags, TCanvas * 
 {
 	tTVPFSEnumFontsProcData data(list, flags, refcanvas->Font);
 
-	::EnumFonts(refcanvas->Handle, NULL, (int (__stdcall *)())TVPFSFEnumFontsProc,
-		reinterpret_cast<LPARAM>(&data));
+	LOGFONT l;
+	l.lfHeight = -12;
+	l.lfWidth = 0;
+	l.lfEscapement = 0;
+	l.lfOrientation = 0;
+	l.lfWeight = 400;
+	l.lfItalic = FALSE;
+	l.lfUnderline = FALSE;
+	l.lfStrikeOut = FALSE;
+	l.lfCharSet = DEFAULT_CHARSET;
+	l.lfOutPrecision = OUT_DEFAULT_PRECIS;
+	l.lfQuality = DEFAULT_QUALITY;
+	l.lfPitchAndFamily = 0;
+	l.lfFaceName[0] = '\0';
+
+	::EnumFontFamiliesEx(refcanvas->Handle, &l, (FONTENUMPROC)TVPFSFEnumFontsProc,
+		reinterpret_cast<LPARAM>(&data), 0);
 }
 //---------------------------------------------------------------------------
 
