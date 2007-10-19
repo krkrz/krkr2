@@ -48,16 +48,12 @@ public:
 
 		ttstr filename = TVPGetPlacedPath(*param[0]);
 		if (filename.length()) {
-			
-			ttstr localname = filename;
-			TVPGetLocalName(localname);
-			
-			if (localname.length()) {
-				
+			if (!wcschr(filename.c_str(), '>')) {
+				// é¿ÉtÉ@ÉCÉãÇ™ë∂ç›Ç∑ÇÈèÍçá
+				TVPGetLocalName(filename);
 				HANDLE hFile;
-				if ((hFile = CreateFile(localname.c_str(), GENERIC_READ, 0, NULL ,
+				if ((hFile = CreateFile(filename.c_str(), GENERIC_READ, 0, NULL ,
 										OPEN_EXISTING , FILE_ATTRIBUTE_NORMAL , NULL)) != INVALID_HANDLE_VALUE) {
-
 					tTJSVariant size;
 					tTJSVariant mtime;
 					tTJSVariant ctime;
@@ -88,7 +84,6 @@ public:
 					CloseHandle(hFile);
 					return TJS_S_OK;
 				}
-				
 			} else {
 				IStream *in = TVPCreateIStream(filename, TJS_BS_READ);
 				if (in) {

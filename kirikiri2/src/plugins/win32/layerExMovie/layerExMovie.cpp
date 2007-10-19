@@ -138,12 +138,6 @@ layerExMovie::openMovie(const tjs_char* filename, bool alpha)
 	ParseVideoType(mt, ext.c_str()); // may throw an exception
 #endif
 
-
-	// パス検索
-	//ttstr path = TVPGetPlacedPath(ttstr(filename));
-	// ローカル名に変換
-	//TVPGetLocalName(path);
-
 	// ファイルをテンポラリにコピーして対応
 	if ((in = TVPCreateIStream(filename, GENERIC_READ)) == NULL) {
 		ttstr error = filename;

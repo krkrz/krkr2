@@ -55,17 +55,15 @@ void deInitGdiPlus()
 void
 GdiPlus::addPrivateFont(const tjs_char *fontFileName)
 {
+	if (!privateFontCollection) {
+		privateFontCollection = new PrivateFontCollection();
+	}
 	ttstr filename = TVPGetPlacedPath(fontFileName);
 	if (filename.length()) {
-		ttstr localname = filename;
-		TVPGetLocalName(localname);
-
-		if (!privateFontCollection) {
-			privateFontCollection = new PrivateFontCollection();
-		}
-		if (localname.length()) {
-			// 実ファイルが存在した場合
-			privateFontCollection->AddFontFile(localname.c_str());
+		if (!wcschr(filename.c_str(), '>')) {
+			// 実ファイルが存在
+			TVPGetLocalName(filename);
+			privateFontCollection->AddFontFile(filename.c_str());
 			return;
 		} else {
 			// メモリにロードして展開
