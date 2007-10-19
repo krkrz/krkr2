@@ -25,8 +25,11 @@ extern void TVPHideFontSelectFormAtAppDeactivate();
 //---------------------------------------------------------------------------
 class TTVPFontSelectForm : public TForm
 {
-	friend int CALLBACK TVPFSFEnumFontsProc(LOGFONT *lplf, TEXTMETRIC *lptm,
-		DWORD type, LPARAM data);
+	friend int CALLBACK TVPFSFEnumFontsProc(
+			ENUMLOGFONTEX *lpelfe,    // pointer to logical-font data
+			NEWTEXTMETRICEX *lpntme,  // pointer to physical-font data
+			int FontType,             // type of font
+			LPARAM userdata);
 __published:	// IDE 管理のコンポーネント
 	TListBox *ListBox;
 	TLabel *Label1;
