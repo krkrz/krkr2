@@ -1723,12 +1723,18 @@ struct ncbAttachTJS2Class : public ncbRegistNativeClassBase {
 		NCB_LOG_2(TJS_W("BeginDetach: "), _className);
 		// クラスオブジェクトを取得
 		iTJSDispatch2 *global = TVPGetScriptDispatch();
-		_tjs2ClassObj = GetGlobalObject(_tjs2ClassName, global);
-		if (global) global->Release();
+		if (global) {
+			_tjs2ClassObj = GetGlobalObject(_tjs2ClassName, global);
+			global->Release();
+		} else {
+			_tjs2ClassObj = NULL;
+		}
 	}
 	void UnregistItem(NameT name) {
 		NCB_LOG_2(TJS_W("DetachItem: "), name);
-		_tjs2ClassObj->DeleteMember(0, name, 0, _tjs2ClassObj);
+		if (_tjs2ClassObj) {
+			_tjs2ClassObj->DeleteMember(0, name, 0, _tjs2ClassObj);
+		}
 	}
 	void UnregistEnd() {
 		ClassInfoT::Clear();
