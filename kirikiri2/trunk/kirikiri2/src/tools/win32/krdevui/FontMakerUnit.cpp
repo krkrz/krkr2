@@ -33,20 +33,29 @@ BOOL  APIENTRY (*procGetTextExtentPoint32W)(HDC, LPCWSTR, int, LPSIZE);
 	// GetTextExtentPoint32W
 
 //---------------------------------------------------------------------------
-int CALLBACK FontEnumProc(LOGFONT *lplf, TEXTMETRIC *lptm, DWORD type,
-	LPARAM data)
+int CALLBACK FontEnumProc(
+			ENUMLOGFONTEX *lpelfe,    // pointer to logical-font data
+			NEWTEXTMETRICEX *lpntme,  // pointer to physical-font data
+			int FontType,             // type of font
+			LPARAM userdata)
 {
-	TFontMakerForm *form = reinterpret_cast<TFontMakerForm*>(data);
+	TFontMakerForm *form = reinterpret_cast<TFontMakerForm*>(userdata);
 
 	// enumerate fonts
 	// true type only
-	if(!(type & TRUETYPE_FONTTYPE)) return 1;
+	bool is_outline =
+		(lpntme->ntmTm.ntmFlags &  NTM_PS_OPENTYPE) ||
+		(lpntme->ntmTm.ntmFlags &  NTM_TT_OPENTYPE) ||
+		(FontType & TRUETYPE_FONTTYPE);
+	if(!is_outline) return 1;
+
 	if(!form->ShowAllFontsCheckBox->Checked)
 	{
-		if(lplf->lfCharSet != SHIFTJIS_CHARSET) return 1;
+		if(lpelfe->elfLogFont.lfCharSet != SHIFTJIS_CHARSET) return 1;
 	}
 
-	form->FontSelectComboBox->Items->Add(lplf->lfFaceName);
+	if(form->FontSelectComboBox->Items->IndexOf(lpelfe->elfLogFont.lfFaceName) == -1)
+		form->FontSelectComboBox->Items->Add(lpelfe->elfLogFont.lfFaceName);
 
 	return 1;
 }
@@ -107,8 +116,23 @@ void __fastcall TFontMakerForm::EnumFonts()
 {
 	FontSelectComboBox->Items->Clear();
 
-	::EnumFonts(Canvas->Handle, NULL, (int (__stdcall *)())FontEnumProc,
-		reinterpret_cast<LPARAM>(this));
+	LOGFONT l;
+	l.lfHeight = -12;
+	l.lfWidth = 0;
+	l.lfEscapement = 0;
+	l.lfOrientation = 0;
+	l.lfWeight = 400;
+	l.lfItalic = FALSE;
+	l.lfUnderline = FALSE;
+	l.lfStrikeOut = FALSE;
+	l.lfCharSet = DEFAULT_CHARSET;
+	l.lfOutPrecision = OUT_DEFAULT_PRECIS;
+	l.lfQuality = DEFAULT_QUALITY;
+	l.lfPitchAndFamily = 0;
+	l.lfFaceName[0] = '\0';
+
+	::EnumFontFamiliesEx(Canvas->Handle, &l, (FONTENUMPROC)FontEnumProc,
+		reinterpret_cast<LPARAM>(this), 0);
 
 	TStringList *list = new TStringList();
 	list->Assign(FontSelectComboBox->Items);
