@@ -1,7 +1,5 @@
-#pragma comment(lib, "Irrlicht.lib")
 #include "ncbind/ncbind.hpp"
 #include "IrrlichtDrawDevice.h"
-#include "SWFMovie.hpp"
 
 /**
  * ログ出力用
@@ -31,85 +29,25 @@ error_log(const char* format, ...)
 	va_end(args);
 }
 
-/**
- * Irrlicht ベース DrawDevice のクラス
- */
-class IrrlichtDrawDevice {
-public:
-	// デバイス情報
-	tTVPIrrlichtDrawDevice *device;
-public:
+// ----------------------------------- クラスの登録
 
-	/**
-	 * コンストラクタ
-	 */
-	IrrlichtDrawDevice() {
-		device = new tTVPIrrlichtDrawDevice();
-	}
+using namespace irr::core;
 
-	~IrrlichtDrawDevice() {
-		if (device) {
-			device->Destruct();
-			device = NULL;
-		}
-	}
-
-	/**
-	 * @return デバイス情報
-	 */
-	tjs_int64 GetDevice() {
-		return reinterpret_cast<tjs_int64>((tTVPDrawDevice*)device);
-	}
-
-	// ---------------------------------------------
-	// 以下 Irrlicht を制御するための機能を順次追加予定
-	// ---------------------------------------------
-
-	// SWF ファイル生成？
-	void loadSWF(const char *name) {
-		if (device) {
-			device->loadSWF(name);
-		}
-	}
-
+NCB_REGISTER_SUBCLASS(vector3df) {
+	NCB_CONSTRUCTOR(());
 };
 
+#define ENUM(n) Variant(#n, (int)n)
 
-NCB_REGISTER_CLASS(IrrlichtDrawDevice) {
+NCB_REGISTER_CLASS_DIFFER(Irrlicht, tTVPIrrlichtDrawDevice) {
+
+	//enums
+
+	//static
+
+	//classes
+	NCB_SUBCLASS(vector3df, vector3df);
+	
 	NCB_CONSTRUCTOR(());
 	NCB_PROPERTY_RO(interface, GetDevice);
-	NCB_METHOD(loadSWF);
 }
-
-/**
- * ファイル名変換用 proxy
- */
-void swfload(SWFMovie *swf, const char *name)
-{
-	ttstr path(name);
-	TVPGetLocalName(path);
-	int len = path.GetNarrowStrLen() + 1;
-	char *filename = new char[len];
-	path.ToNarrowStr(filename, len);
-	swf->load(filename);
-	delete filename;
-}
-
-NCB_REGISTER_CLASS(SWFMovie) {
-	NCB_CONSTRUCTOR(());
-	NCB_METHOD_PROXY(load, swfload);
-	NCB_METHOD(update);
-	NCB_METHOD(notifyMouse);
-	NCB_METHOD(play);
-	NCB_METHOD(stop);
-	NCB_METHOD(restart);
-	NCB_METHOD(back);
-	NCB_METHOD(next);
-	NCB_METHOD(gotoFrame);
-}
-
-extern void initSWFMovie();
-extern void destroySWFMovie();
-
-NCB_POST_REGIST_CALLBACK(initSWFMovie);
-NCB_PRE_UNREGIST_CALLBACK(destroySWFMovie);
