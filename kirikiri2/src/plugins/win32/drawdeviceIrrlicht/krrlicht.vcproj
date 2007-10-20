@@ -16,13 +16,13 @@
 	<Configurations>
 		<Configuration
 			Name="Debug|Win32"
-			OutputDirectory="$(IRRLICHT_HOME)\bin\Win32-VisualStudio"
+			OutputDirectory="..\..\..\..\bin\win32\plugin"
 			IntermediateDirectory="$(ConfigurationName)"
 			ConfigurationType="2"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC60.vsprops"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="false"
-			CharacterSet="1"
+			CharacterSet="2"
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
@@ -48,14 +48,16 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\;..\drawdevice;tu-testbed;$(IRRLICHT_HOME)\include"
-				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL"
+				AdditionalIncludeDirectories="..\;..\drawdevice;irrlicht\include"
+				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;_IRR_STATIC_LIB_"
 				MinimalRebuild="true"
+				ExceptionHandling="1"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
 				WarningLevel="3"
 				SuppressStartupBanner="true"
 				DebugInformationFormat="4"
+				CompileAs="0"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -73,8 +75,8 @@
 				AdditionalOptions=""
 				OutputFile="$(OutDir)\$(ProjectName).dll"
 				SuppressStartupBanner="true"
-				AdditionalLibraryDirectories="$(IRRLICHT_HOME)\lib\Win32-VisualStudio"
-				ModuleDefinitionFile=".\krrlicht.def"
+				AdditionalLibraryDirectories=""
+				ModuleDefinitionFile=""
 				GenerateDebugInformation="true"
 				ProgramDatabaseFile="$(TargetDir)$(TargetName).pdb"
 				ImportLibrary="$(TargetDir)$(TargetName).lib"
@@ -109,13 +111,13 @@
 		</Configuration>
 		<Configuration
 			Name="Release|Win32"
-			OutputDirectory="$(IRRLICHT_HOME)\bin\Win32-VisualStudio"
+			OutputDirectory="..\..\..\..\bin\win32\plugin"
 			IntermediateDirectory="$(ConfigurationName)"
 			ConfigurationType="2"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC60.vsprops"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="false"
-			CharacterSet="1"
+			CharacterSet="2"
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
@@ -142,8 +144,8 @@
 				Name="VCCLCompilerTool"
 				Optimization="2"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="..\;..\drawdevice;tu-testbed;$(IRRLICHT_HOME)\include"
-				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL"
+				AdditionalIncludeDirectories="..\;..\drawdevice;irrlicht\include"
+				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;_IRR_STATIC_LIB_"
 				StringPooling="true"
 				RuntimeLibrary="0"
 				EnableFunctionLevelLinking="true"
@@ -168,10 +170,12 @@
 				AdditionalOptions=""
 				OutputFile="$(OutDir)\$(ProjectName).dll"
 				SuppressStartupBanner="true"
-				AdditionalLibraryDirectories="$(IRRLICHT_HOME)\lib\Win32-VisualStudio"
-				ModuleDefinitionFile=".\krrlicht.def"
+				AdditionalLibraryDirectories=""
+				ModuleDefinitionFile=""
 				GenerateDebugInformation="true"
 				ProgramDatabaseFile="$(TargetDir)$(TargetName).pdb"
+				OptimizeReferences="2"
+				EnableCOMDATFolding="2"
 				ImportLibrary="$(TargetDir)$(TargetName).lib"
 				TargetMachine="1"
 			/>
@@ -223,14 +227,6 @@
 				>
 			</File>
 			<File
-				RelativePath=".\IrrlichtDrawDeviceSWF.cpp"
-				>
-			</File>
-			<File
-				RelativePath="krrlicht.def"
-				>
-			</File>
-			<File
 				RelativePath=".\LayerManagerInfo.cpp"
 				>
 			</File>
@@ -258,10 +254,6 @@
 			</File>
 			<File
 				RelativePath="..\ncbind\ncbind.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\SWFMovie.cpp"
 				>
 			</File>
 			<File
@@ -301,10 +293,6 @@
 			</File>
 			<File
 				RelativePath=".\LayerManagerInfo.h"
-				>
-			</File>
-			<File
-				RelativePath=".\SWFMovie.hpp"
 				>
 			</File>
 			<File
