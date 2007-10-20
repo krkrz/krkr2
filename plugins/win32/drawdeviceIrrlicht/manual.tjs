@@ -1,0 +1,12 @@
+/**
+ * Irrclicht DrawDevice Class
+ */
+class Irrlicht {
+
+	// drawdevice 情報を返します（内部参照用）
+	property interface;
+
+	class vector3df; // irr::core::vector3df 相当
+
+
+};

@@ -1,4 +1,3 @@
-#include <windows.h>
 #include "IrrlichtDrawDevice.h"
 #include "LayerManagerInfo.h"
 
@@ -19,7 +18,6 @@ tTVPIrrlichtDrawDevice::tTVPIrrlichtDrawDevice()
 {
 	device = NULL;
 	driver = NULL;
-	initSWF();
 }
 
 /**
@@ -27,7 +25,6 @@ tTVPIrrlichtDrawDevice::tTVPIrrlichtDrawDevice()
  */
 tTVPIrrlichtDrawDevice::~tTVPIrrlichtDrawDevice()
 {
-	deinitSWF();
 	detach();
 }
 
@@ -74,25 +71,6 @@ tTVPIrrlichtDrawDevice::freeInfo(iTVPLayerManager * manager)
 }
 
 /**
- * デバイスの生成
- * @param hwnd ハンドル
- * @param ドライバの種類
- */
-static IrrlichtDevice *
-create(HWND hwnd, irr::video::E_DRIVER_TYPE type, irr::IEventReceiver *receiver)
-{
-	SIrrlichtCreationParameters params;
-	params.WindowId     = reinterpret_cast<s32>(hwnd);
-	params.DriverType    = type;
-	params.Bits          = 32;
-	params.Stencilbuffer = true;
-	params.Vsync = true;
-	params.EventReceiver = receiver;
-	params.AntiAlias = true;
-	return createDeviceEx(params);
-}
-
-/**
  * ウインドウの再設定
  * @param hwnd ハンドル
  */
@@ -100,14 +78,20 @@ void
 tTVPIrrlichtDrawDevice::attach(HWND hwnd)
 {
 	// デバイス生成
-	if ((device = create(hwnd, video::EDT_DIRECT3D9, this))) {
+
+	SIrrlichtCreationParameters params;
+	params.WindowId     = reinterpret_cast<void*>(hwnd);
+	params.DriverType    = video::EDT_DIRECT3D9;
+	params.Bits          = 32;
+	params.Stencilbuffer = true;
+	params.Vsync = true;
+	params.EventReceiver = this;
+	params.AntiAlias = true;
+
+	if ((device = irr::createDeviceEx(params))) {
 		TVPAddLog(L"DirectX9で初期化");
 	} else {
-		if ((device = create(hwnd, video::EDT_DIRECT3D8, this))) {
-			TVPAddLog(L"DirectX8で初期化");
-		} else {
-			TVPThrowExceptionMessage(L"Irrlicht デバイスの初期化に失敗しました");
-		}
+		TVPThrowExceptionMessage(L"Irrlicht デバイスの初期化に失敗しました");
 	}
 	driver = device->getVideoDriver();
 	
@@ -122,9 +106,6 @@ tTVPIrrlichtDrawDevice::attach(HWND hwnd)
 		allocInfo(*i);
 	}
 
-	// XXX テスト用
-	init();
-	
 	// 駆動開始
 	start();
 }
@@ -174,7 +155,7 @@ tTVPIrrlichtDrawDevice::RemoveLayerManager(iTVPLayerManager * manager)
  * @param wnd ウインドウハンドラ
  */
 void TJS_INTF_METHOD
-tTVPIrrlichtDrawDevice::SetTargetWindow(HWND wnd)
+tTVPIrrlichtDrawDevice::SetTargetWindow(HWND wnd, bool is_main)
 {
 	detach();
 	if (wnd != NULL) {
@@ -182,6 +163,10 @@ tTVPIrrlichtDrawDevice::SetTargetWindow(HWND wnd)
 	}
 }
 
+void
+tTVPIrrlichtDrawDevice::Show()
+{
+}
 
 bool
 tTVPIrrlichtDrawDevice::postEvent(SEvent &ev)
@@ -202,21 +187,6 @@ tTVPIrrlichtDrawDevice::postEvent(SEvent &ev)
 void TJS_INTF_METHOD
 tTVPIrrlichtDrawDevice::OnMouseDown(tjs_int x, tjs_int y, tTVPMouseButton mb, tjs_uint32 flags)
 {
-	if (uiSWF) {
-		swfMouseX = x;
-		swfMouseY = y;
-		switch ((mb & 0xff)) {
-		case mbLeft:
-			swfMouseButton |= 0x01;
-			break;
-		case mbMiddle:
-			swfMouseButton |= 0x02;
-			break;
-		case mbRight:
-			swfMouseButton |= 0x04;
-			break;
-		}
-	}
 	if (driver) {
 		SEvent ev;
 		ev.EventType = EET_MOUSE_INPUT_EVENT;
@@ -245,21 +215,6 @@ tTVPIrrlichtDrawDevice::OnMouseDown(tjs_int x, tjs_int y, tTVPMouseButton mb, tj
 void TJS_INTF_METHOD
 tTVPIrrlichtDrawDevice::OnMouseUp(tjs_int x, tjs_int y, tTVPMouseButton mb, tjs_uint32 flags)
 {
-	if (uiSWF) {
-		swfMouseX = x;
-		swfMouseY = y;
-		switch ((mb & 0xff)) {
-		case mbLeft:
-			swfMouseButton &= ~0x01;
-			break;
-		case mbMiddle:
-			swfMouseButton &= ~0x02;
-			break;
-		case mbRight:
-			swfMouseButton &= ~0x04;
-			break;
-		}
-	}
 	if (driver) {
 		SEvent ev;
 		ev.EventType = EET_MOUSE_INPUT_EVENT;
@@ -288,8 +243,6 @@ tTVPIrrlichtDrawDevice::OnMouseUp(tjs_int x, tjs_int y, tTVPMouseButton mb, tjs_
 void TJS_INTF_METHOD
 tTVPIrrlichtDrawDevice::OnMouseMove(tjs_int x, tjs_int y, tjs_uint32 flags)
 {
-	swfMouseX = x;
-	swfMouseY = y;
 	if (driver) {
 		SEvent ev;
 		ev.EventType = EET_MOUSE_INPUT_EVENT;
@@ -308,18 +261,12 @@ tTVPIrrlichtDrawDevice::OnMouseMove(tjs_int x, tjs_int y, tjs_uint32 flags)
 void TJS_INTF_METHOD
 tTVPIrrlichtDrawDevice::OnKeyDown(tjs_uint key, tjs_uint32 shift)
 {
-	if (uiSWF) {
-		notifyKeySWF(key, true);
-	}
 	tTVPDrawDevice::OnKeyDown(key, shift);
 }
 
 void TJS_INTF_METHOD
 tTVPIrrlichtDrawDevice::OnKeyUp(tjs_uint key, tjs_uint32 shift)
 {
-	if (uiSWF) {
-		notifyKeySWF(key, false);
-	}
 	tTVPDrawDevice::OnKeyUp(key, shift);
 }
 
@@ -376,23 +323,3 @@ tTVPIrrlichtDrawDevice::EndBitmapCompletion(iTVPLayerManager * manager)
 		info->unlock();
 	}
 }
-
-//---------------------------------------------------------------------------
-
-/**
- * テスト用初期化処理
- */
-void
-tTVPIrrlichtDrawDevice::init()
-{
-	// GUI 環境のテスト
-//	IGUIEnvironment* env = device->getGUIEnvironment();
-//	env->addButton(rect<s32>(10,210,110,210 + 32), 0, 101, L"TEST BUTTON", L"Button Test");
-//	env->addButton(rect<s32>(10,250,110,250 + 32), 0, 102, L"てすとぼたん", L"ボタンのテスト");
-	
-	/// シーンマネージャでの irr ファイルロードのテスト
-	ISceneManager* smgr = device->getSceneManager();
-	smgr->loadScene("data/sample/example.irr");
-	smgr->addCameraSceneNode(0, vector3df(0,30,-40), vector3df(0,5,0));
-}
-

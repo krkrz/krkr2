@@ -1,7 +1,5 @@
-#include <windows.h>
 #include "IrrlichtDrawDevice.h"
 #include "LayerManagerInfo.h"
-#include "SWFMovie.hpp"
 
 using namespace irr;
 using namespace core;
@@ -67,9 +65,6 @@ tTVPIrrlichtDrawDevice::OnContinuousCallback(tjs_uint64 tick)
 		// GUIの描画
 		device->getGUIEnvironment()->drawAll();
 
-		// SWF UI の描画
-		drawSWF(tick, 0, 0, screenSize.Width, screenSize.Height);
-		
 		// 描画完了
 		driver->endScene();
 	}
@@ -84,7 +79,7 @@ tTVPIrrlichtDrawDevice::OnContinuousCallback(tjs_uint64 tick)
  * @return 処理したら true
  */
 bool
-tTVPIrrlichtDrawDevice::OnEvent(irr::SEvent event)
+tTVPIrrlichtDrawDevice::OnEvent(const irr::SEvent &event)
 {
 	switch (event.EventType) {
 	case EET_GUI_EVENT:
@@ -96,14 +91,16 @@ tTVPIrrlichtDrawDevice::OnEvent(irr::SEvent event)
 		}
 		break;
 	case EET_MOUSE_INPUT_EVENT:
+#if 0
 		message_log("マウスイベント:%d x:%d y:%d wheel:%f",
 			event.MouseInput.Event,
 			event.MouseInput.X,
 			event.MouseInput.Y,
 			event.MouseInput.Wheel);
+#endif
 		break;
 	case EET_KEY_INPUT_EVENT:
-		message_log("キーイベント:%x", event.KeyInput.Key);
+//		message_log("キーイベント:%x", event.KeyInput.Key);
 		{
 			int shift = 0;
 			if (event.KeyInput.Shift) {
@@ -116,8 +113,8 @@ tTVPIrrlichtDrawDevice::OnEvent(irr::SEvent event)
 		break;
 	case EET_LOG_TEXT_EVENT:
 		message_log("ログレベル:%d ログ:%s",
-			event.LogEvent.Level,
-			event.LogEvent.Text);
+					event.LogEvent.Level,
+					event.LogEvent.Text);
 		break;
 	case EET_USER_EVENT:
 		message_log("ユーザイベント");
