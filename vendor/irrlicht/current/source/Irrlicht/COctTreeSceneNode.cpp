@@ -9,6 +9,7 @@
 #include "ICameraSceneNode.h"
 #include "IMeshCache.h"
 #include "IAnimatedMesh.h"
+#include "IMaterialRenderer.h"
 
 #include "os.h"
 
@@ -112,16 +113,19 @@ void COctTreeSceneNode::render()
 	//transform the frustum to the current absolute transformation
 	core::matrix4 invTrans(AbsoluteTransformation);
 	invTrans.makeInverse();
-	frust.transform(invTrans);
+	/*
+	//frust.transform(invTrans);
+	//const core::aabbox3d<float> &box = frust.getBoundingBox();
+	*/
 
-	const core::aabbox3d<float> &box = frust.getBoundingBox();
+	frust.transform(invTrans);
 
 	switch(vertexType)
 	{
 	case video::EVT_STANDARD:
 		{
-			StdOctTree->calculatePolys(box);
-			//StdOctTree->calculatePolys(frust);
+			//StdOctTree->calculatePolys(box);
+			StdOctTree->calculatePolys(frust);
 
 			OctTree<video::S3DVertex>::SIndexData* d =  StdOctTree->getIndexData();
 
@@ -145,26 +149,30 @@ void COctTreeSceneNode::render()
 			}
 
 			// for debug purposes only
-			if (DebugDataVisible && !Materials.empty() && PassCount==1)
+			if ( DebugDataVisible && !Materials.empty() && PassCount==1)
 			{
 				const core::aabbox3d<float> &box = frust.getBoundingBox();
 				core::array< core::aabbox3d<f32> > boxes;
 				video::SMaterial m;
 				m.Lighting = false;
 				driver->setMaterial(m);
-				StdOctTree->renderBoundingBoxes(box, boxes);
-				for (u32 b=0; b<boxes.size(); ++b)
-					driver->draw3DBox(boxes[b], video::SColor(0,255,255,255));
+				if ( DebugDataVisible & scene::EDS_BBOX_BUFFERS )
+				{
+					StdOctTree->renderBoundingBoxes(box, boxes);
+					for (u32 b=0; b<boxes.size(); ++b)
+						driver->draw3DBox(boxes[b], video::SColor(0,255,255,255));
+				}
 
-				driver->draw3DBox(Box,video::SColor(0,255,0,0));
+				if ( DebugDataVisible & scene::EDS_BBOX )
+					driver->draw3DBox(Box,video::SColor(0,255,0,0));
 			}
 			break;
 
 		}
 	case video::EVT_2TCOORDS:
 		{
-			LightMapOctTree->calculatePolys(box);
-			//LightMapOctTree->calculatePolys(frust);
+			//LightMapOctTree->calculatePolys(box);
+			LightMapOctTree->calculatePolys(frust);
 
 			OctTree<video::S3DVertex2TCoords>::SIndexData* d =  LightMapOctTree->getIndexData();
 
@@ -195,15 +203,19 @@ void COctTreeSceneNode::render()
 				video::SMaterial m;
 				m.Lighting = false;
 				driver->setMaterial(m);
-				LightMapOctTree->renderBoundingBoxes(box, boxes);
-				for (u32 b=0; b<boxes.size(); ++b)
-					driver->draw3DBox(boxes[b], video::SColor(0,255,255,255));
+				if ( DebugDataVisible & scene::EDS_BBOX_BUFFERS )
+				{
+					LightMapOctTree->renderBoundingBoxes(box, boxes);
+					for (u32 b=0; b<boxes.size(); ++b)
+						driver->draw3DBox(boxes[b], video::SColor(0,255,255,255));
+				}
 
-				driver->draw3DBox(Box,video::SColor(0,255,0,0));
+				if ( DebugDataVisible & scene::EDS_BBOX )
+					driver->draw3DBox(Box,video::SColor(0,255,0,0));
 			}
 		}
 		break;
-	};
+	}
 }
 
 
@@ -309,7 +321,7 @@ bool COctTreeSceneNode::createTree(IMesh* mesh)
 
 	u32 endTime = os::Timer::getRealTime();
 	c8 tmp[255];
-	sprintf(tmp, "Needed %ums to create OctTree SceneNode.(%d nodes, %d polys)",
+	sprintf(tmp, "Needed %ums to create OctTree SceneNode.(%u nodes, %u polys)",
 		endTime - beginTime, nodeCount, polyCount/3);
 	os::Printer::log(tmp, ELL_INFORMATION);
 
@@ -331,14 +343,14 @@ video::SMaterial& COctTreeSceneNode::getMaterial(u32 i)
 }
 
 //! returns amount of materials used by this scene node.
-u32 COctTreeSceneNode::getMaterialCount()
+u32 COctTreeSceneNode::getMaterialCount() const
 {
 	return Materials.size();
 }
 
 
 //! Writes attributes of the scene node.
-void COctTreeSceneNode::serializeAttributes(io::IAttributes* out, io::SAttributeReadWriteOptions* options)
+void COctTreeSceneNode::serializeAttributes(io::IAttributes* out, io::SAttributeReadWriteOptions* options) const
 {
 	ISceneNode::serializeAttributes(out, options);
 
@@ -370,13 +382,12 @@ void COctTreeSceneNode::deserializeAttributes(io::IAttributes* in, io::SAttribut
 
 		if (newMesh)
 		{
-/*
-			if (Mesh)
-				Mesh->drop();
+		//	if (Mesh)
+		//		Mesh->drop();
 
-			Mesh = newMesh;
-			Mesh->grab();
-*/
+		//	Mesh = newMesh;
+		//	Mesh->grab();
+
 			loadedNewMesh = true;
 		}
 	}
@@ -386,7 +397,7 @@ void COctTreeSceneNode::deserializeAttributes(io::IAttributes* in, io::SAttribut
 		// recalculate tree
 		//createTree(Mesh);
 		createTree ( newMesh );
-		newMesh->drop ();
+		// newMesh->drop ();
 	}
 
 	ISceneNode::deserializeAttributes(in, options);

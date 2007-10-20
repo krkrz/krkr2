@@ -5,7 +5,7 @@
 #ifndef __I_SCENE_NODE_FACTORY_H_INCLUDED__
 #define __I_SCENE_NODE_FACTORY_H_INCLUDED__
 
-#include "IUnknown.h"
+#include "IReferenceCounted.h"
 #include "ESceneNodeTypes.h"
 
 namespace irr
@@ -25,9 +25,11 @@ namespace scene
 	scene node manager will grab() the factory anyway, and otherwise cyclic references will
 	be created and the scene manager and all its nodes won't get deallocated.
 	*/
-	class ISceneNodeFactory : public virtual IUnknown
+	class ISceneNodeFactory : public virtual IReferenceCounted
 	{
 	public:
+
+		virtual ~ISceneNodeFactory() {}
 
 		//! adds a scene node to the scene graph based on its type id
 		/** \param type: Type of the scene node to add.
@@ -42,22 +44,22 @@ namespace scene
 		virtual ISceneNode* addSceneNode(const c8* typeName, ISceneNode* parent=0) = 0;
 
 		//! returns amount of scene node types this factory is able to create
-		virtual s32 getCreatableSceneNodeTypeCount() = 0;
+		virtual u32 getCreatableSceneNodeTypeCount() const = 0;
 
 			//! returns type of a createable scene node type
 		/** \param idx: Index of scene node type in this factory. Must be a value between 0 and
 		getCreatableSceneNodeTypeCount() */
-		virtual ESCENE_NODE_TYPE getCreateableSceneNodeType(s32 idx) = 0;
+		virtual ESCENE_NODE_TYPE getCreateableSceneNodeType(u32 idx) const = 0;
 
 		//! returns type name of a createable scene node type by index
 		/** \param idx: Index of scene node type in this factory. Must be a value between 0 and
 		getCreatableSceneNodeTypeCount() */
-		virtual const c8* getCreateableSceneNodeTypeName(s32 idx) = 0;
+		virtual const c8* getCreateableSceneNodeTypeName(u32 idx) const = 0;
 
 		//! returns type name of a createable scene node type 
 		/** \param type: Type of scene node. 
 		\return: Returns name of scene node type if this factory can create the type, otherwise 0. */
-		virtual const c8* getCreateableSceneNodeTypeName(ESCENE_NODE_TYPE type) = 0;
+		virtual const c8* getCreateableSceneNodeTypeName(ESCENE_NODE_TYPE type) const = 0;
 	};
 
 

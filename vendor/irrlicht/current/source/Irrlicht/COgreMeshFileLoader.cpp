@@ -3,10 +3,14 @@
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 // orginally written by Christian Stehno, modified by Nikolaus Gebhardt
 
+#include "IrrCompileConfig.h" 
+#ifdef _IRR_COMPILE_WITH_OGRE_LOADER_
+
 #include "COgreMeshFileLoader.h"
 #include "os.h"
 #include "SMeshBuffer.h"
 #include "SAnimatedMesh.h"
+#include "IReadFile.h"
 #include "fast_atof.h"
 #include "coreutil.h"
 
@@ -72,7 +76,7 @@ COgreMeshFileLoader::~COgreMeshFileLoader()
 
 //! returns true if the file maybe is able to be loaded by this class
 //! based on the file extension (e.g. ".bsp")
-bool COgreMeshFileLoader::isALoadableFileExtension(const c8* filename)
+bool COgreMeshFileLoader::isALoadableFileExtension(const c8* filename) const
 {
 	return strstr(filename, ".mesh")!=0;
 }
@@ -82,7 +86,7 @@ bool COgreMeshFileLoader::isALoadableFileExtension(const c8* filename)
 //! creates/loads an animated mesh from the file.
 //! \return Pointer to the created mesh. Returns 0 if loading failed.
 //! If you no longer need the mesh, you should call IAnimatedMesh::drop().
-//! See IUnknown::drop() for more information.
+//! See IReferenceCounted::drop() for more information.
 IAnimatedMesh* COgreMeshFileLoader::createMesh(io::IReadFile* file)
 {
 	s16 id;
@@ -94,11 +98,11 @@ IAnimatedMesh* COgreMeshFileLoader::createMesh(io::IReadFile* file)
 	else if (id == 0x0010)
 		SwapEndian=true;
 	else
-		return false;
+		return 0;
 	ChunkData data;
 	readString(file, data, Version);
-	if (Version != "[MeshSerializer_v1.30]")
-		return false;
+	if ((Version != "[MeshSerializer_v1.30]") && (Version != "[MeshSerializer_v1.40]"))
+		return 0;
 
 	clearMeshes();
 	if (Mesh)
@@ -129,7 +133,7 @@ IAnimatedMesh* COgreMeshFileLoader::createMesh(io::IReadFile* file)
 	Mesh->drop();
 	Mesh = 0;
 
-    return 0;
+	return 0;
 }
 
 
@@ -195,7 +199,7 @@ bool COgreMeshFileLoader::readObjectChunk(io::IReadFile* file, ChunkData& parent
 				break;
 			default:
 				parent.read=parent.header.length;
-				file->seek(-(int)sizeof(ChunkHeader), true);
+				file->seek(-(long)sizeof(ChunkHeader), true);
 				return true;
 		}
 		parent.read += data.read;
@@ -349,7 +353,7 @@ bool COgreMeshFileLoader::readSubMesh(io::IReadFile* file, ChunkData& parent, Og
 			break;
 		default:
 			parent.read=parent.header.length;
-			file->seek(-(int)sizeof(ChunkHeader), true);
+			file->seek(-(long)sizeof(ChunkHeader), true);
 			return true;
 		}
 		parent.read += data.read;
@@ -369,14 +373,18 @@ void COgreMeshFileLoader::composeMeshBufferMaterial(scene::IMeshBuffer* mb, cons
 			material=Materials[k].Techniques[0].Passes[0].Material;
 			if (Materials[k].Techniques[0].Passes[0].Texture.Filename.size())
 			{
-				material.Textures[0]=Driver->getTexture(Materials[k].Techniques[0].Passes[0].Texture.Filename.c_str());
-				if (!material.Textures[0])
+				material.setTexture(0, Driver->getTexture(Materials[k].Techniques[0].Passes[0].Texture.Filename.c_str()));
+				if (!material.getTexture(0))
 				{
 					// retry with relative path
-					core::stringc relative = CurrentlyLoadingFromPath;
-					relative += '/';
-					relative += Materials[k].Techniques[0].Passes[0].Texture.Filename;
-					material.Textures[0] = Driver->getTexture(relative.c_str());
+					core::stringc relative = Materials[k].Techniques[0].Passes[0].Texture.Filename;
+					s32 idx = relative.findLast('\\');
+					if (idx != -1)
+						relative = relative.subString(idx+1, relative.size()-idx-1);
+					idx = relative.findLast('/');
+					if (idx != -1)
+						relative = relative.subString(idx+1, relative.size()-idx-1);
+					material.setTexture(0, Driver->getTexture((CurrentlyLoadingFromPath+"/"+relative).c_str()));
 				}
 			}
 			break;
@@ -513,8 +521,8 @@ scene::SMeshBufferLightMap* COgreMeshFileLoader::composeMeshBufferLightMap(const
 					u32 ePos=geom.Elements[i].Offset;
 					for (s32 k=0; k<geom.NumVertex; ++k)
 					{
-						mb->Vertices[k].TCoords.set( geom.Buffers[j].Data[ePos]  ,geom.Buffers[j].Data[ePos+1]);
-						mb->Vertices[k].TCoords2.set(geom.Buffers[j].Data[ePos+2],geom.Buffers[j].Data[ePos+3]);
+						mb->Vertices[k].TCoords.set(geom.Buffers[j].Data[ePos], geom.Buffers[j].Data[ePos+1]);
+						mb->Vertices[k].TCoords2.set(geom.Buffers[j].Data[ePos+2], geom.Buffers[j].Data[ePos+3]);
 						
 						ePos += eSize;
 					}
@@ -1027,3 +1035,4 @@ void COgreMeshFileLoader::clearMeshes()
 } // end namespace scene
 } // end namespace irr
 
+#endif // _IRR_COMPILE_WITH_OGRE_LOADER_

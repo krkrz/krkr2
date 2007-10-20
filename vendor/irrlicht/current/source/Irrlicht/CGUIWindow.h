@@ -5,6 +5,9 @@
 #ifndef __C_GUI_WINDOW_H_INCLUDED__
 #define __C_GUI_WINDOW_H_INCLUDED__
 
+#include "IrrCompileConfig.h"
+#ifdef _IRR_COMPILE_WITH_GUI_
+
 #include "IGUIWindow.h"
 
 namespace irr
@@ -21,10 +24,10 @@ namespace gui
 		CGUIWindow(IGUIEnvironment* environment, IGUIElement* parent, s32 id, core::rect<s32> rectangle);
 
 		//! destructor
-		~CGUIWindow();
+		virtual ~CGUIWindow();
 
 		//! called if an event happened.
-		virtual bool OnEvent(SEvent event);
+		virtual bool OnEvent(const SEvent& event);
 
 		//! update absolute position
 		virtual void updateAbsolutePosition();
@@ -33,13 +36,13 @@ namespace gui
 		virtual void draw();
 
 		//! Returns pointer to the close button
-		virtual IGUIButton* getCloseButton();
+		virtual IGUIButton* getCloseButton() const;
 
 		//! Returns pointer to the minimize button
-		virtual IGUIButton* getMinimizeButton();
+		virtual IGUIButton* getMinimizeButton() const;
 
 		//! Returns pointer to the maximize button
-		virtual IGUIButton* getMaximizeButton();
+		virtual IGUIButton* getMaximizeButton() const;
 
 	protected:
 
@@ -54,5 +57,7 @@ namespace gui
 } // end namespace gui
 } // end namespace irr
 
-#endif
+#endif // _IRR_COMPILE_WITH_GUI_
+
+#endif 
 

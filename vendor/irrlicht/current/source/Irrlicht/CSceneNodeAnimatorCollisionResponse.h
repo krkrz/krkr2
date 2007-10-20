@@ -38,13 +38,13 @@ namespace scene
 		//! Returns if the attached scene node is falling, which means that
 		//! there is no blocking wall from the scene node in the direction of
 		//! the gravity.
-		virtual bool isFalling();
+		virtual bool isFalling() const;
 
 		//! Sets the radius of the ellipsoid with which collision detection and
 		//! response is done. 
 		virtual void setEllipsoidRadius(const core::vector3df& radius);
 
-		//! Returns the radius of the ellipsoid with wich the collision detection and
+		//! Returns the radius of the ellipsoid with which the collision detection and
 		//! response is done.
 		virtual core::vector3df getEllipsoidRadius() const;
 
@@ -72,13 +72,13 @@ namespace scene
 		virtual void animateNode(ISceneNode* node, u32 timeMs);
 
 		//! Writes attributes of the scene node animator.
-		virtual void serializeAttributes(io::IAttributes* out, io::SAttributeReadWriteOptions* options=0);
+		virtual void serializeAttributes(io::IAttributes* out, io::SAttributeReadWriteOptions* options=0) const;
 
 		//! Reads attributes of the scene node animator.
 		virtual void deserializeAttributes(io::IAttributes* in, io::SAttributeReadWriteOptions* options=0);
 
 		//! Returns type of the scene node animator
-		virtual ESCENE_NODE_ANIMATOR_TYPE getType()	{ return ESNAT_COLLISION_RESPONSE; }
+		virtual ESCENE_NODE_ANIMATOR_TYPE getType() const { return ESNAT_COLLISION_RESPONSE; }
 
 	private:
 		core::vector3df LastPosition;

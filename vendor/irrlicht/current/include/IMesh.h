@@ -5,23 +5,25 @@
 #ifndef __I_MESH_H_INCLUDED__
 #define __I_MESH_H_INCLUDED__
 
-#include "IUnknown.h"
-#include "IMeshBuffer.h"
+#include "IReferenceCounted.h"
+#include "SMaterial.h"
 
 namespace irr
 {
 namespace scene
 {
+	class IMeshBuffer;
+
 	//! Class for accessing a mesh with multiple mesh buffers.
 	/** An IMesh is nothing more than a collection of some mesh buffers (IMeshBuffer).
 	SMesh is a simple implementation of an IMesh.
 	*/
-	class IMesh : public virtual IUnknown
+	class IMesh : public virtual IReferenceCounted
 	{
 	public:
 
 		//! destructor
-		virtual ~IMesh(){};
+		virtual ~IMesh() { }
 
 		//! Returns the amount of mesh buffers.
 		/** \return Returns the amount of mesh buffers (IMeshBuffer) in this mesh. */
@@ -38,7 +40,7 @@ namespace scene
  		/** \param material: material to search for
 		\return Returns the pointer to the mesh buffer or 
 		NULL if there is no such mesh buffer. */
-		virtual IMeshBuffer* getMeshBuffer( const video::SMaterial &material) const { return 0; }
+		virtual IMeshBuffer* getMeshBuffer( const video::SMaterial &material) const = 0;
 
 		//! Returns an axis aligned bounding box of the mesh.
 		/** \return A bounding box of this mesh is returned. */
@@ -51,7 +53,6 @@ namespace scene
 		/** \param flag: Flag to set in all materials.
 		 \param newvalue: New value to set in all materials. */
 		virtual void setMaterialFlag(video::E_MATERIAL_FLAG flag, bool newvalue) = 0;
-
 	};
 
 } // end namespace scene

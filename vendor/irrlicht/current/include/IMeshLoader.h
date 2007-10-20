@@ -5,36 +5,39 @@
 #ifndef __I_MESH_LOADER_H_INCLUDED__
 #define __I_MESH_LOADER_H_INCLUDED__
 
-#include "IUnknown.h"
-#include "IReadFile.h"
-#include "IAnimatedMesh.h"
+#include "IReferenceCounted.h"
 
 namespace irr
 {
+namespace io
+{
+	class IReadFile;
+} // end namespace io
 namespace scene
 {
+	class IAnimatedMesh;
 
 //!	Class which is able to load an animated mesh from a file.
 /** If you want the Irrlicht Engine be able to load meshes of 
 currently unsupported file formats (e.g .cob), then implement
 this and add your new Surface loader with 
 ISceneManager::addExternalMeshLoader() to the engine. */
-class IMeshLoader : public virtual IUnknown
+class IMeshLoader : public virtual IReferenceCounted
 {
 public:
 
 	//! destructor
-	virtual ~IMeshLoader() {};
+	virtual ~IMeshLoader() {}
 
 	//! Returns true if the file maybe is able to be loaded by this class.
 	/** This decision should be based only on the file extension (e.g. ".cob") */
-	virtual bool isALoadableFileExtension(const c8* fileName) = 0;
+	virtual bool isALoadableFileExtension(const c8* fileName) const = 0;
 
 	//! Creates/loads an animated mesh from the file.
 	/** \return Pointer to the created mesh. Returns 0 if loading failed.
 	If you no longer need the mesh, you should call IAnimatedMesh::drop().
-	See IUnknown::drop() for more information. */
-	virtual IAnimatedMesh* createMesh(irr::io::IReadFile* file) = 0;
+	See IReferenceCounted::drop() for more information. */
+	virtual IAnimatedMesh* createMesh(io::IReadFile* file) = 0;
 };
 
 

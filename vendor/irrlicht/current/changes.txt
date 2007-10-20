@@ -1,3 +1,390 @@
+Changes in version 1.4 (... 2007)
+
+ - Major API change: All material properties which are available per texture layer (curently texture, texture matrix, texture filters, and texture wrap mode) are separated into a new struct SMaterialLayer. You can access them via the array TextureLayer[] in SMaterial. The texture matrix methods in SMaterial are still alive, and also textures can be accessed via methods in SMaterial now. But still, many places in user code need some update (usually changing material.Textures[i] to material.TextureLayer[i].Texture etc.)
+
+ - Major API rewriting for proper const usage. Now, most getter methods are const and so are the larger parameters and return values. Moreover, many methods taking only unsigned numbers now use u32 instead of s32 in order to recognize this limitation from the method's signature.
+
+ - the base class for nearly all Irrlicht classes has been renamed from IUnknown to IReferenceCounted
+
+ - Fixed Skybox texture orientations. They are now displayed non-flipped. Existing skyboxes have to be changed, though. Echange left and right texture and rotate up-texture 270 degrees clockwise, and down-texture 90 degrees clockwise. Textures from Terragen and other tools can be used directly, now.
+
+ - Added ITexture::isRenderTarget()
+
+ - Added STL mesh file format reader and writer.
+
+ - Added IMeshManipulator::createMeshWelded which creates a copy of the mesh with similar vertices welded together.
+
+ - Irrlicht now has its own file format for static meshes. It is based on xml and has the 
+   extension .irrmesh. Irrlicht is able to write every IMesh to this file format, and of course to
+   read it back again.
+   
+ - Irrlicht is now able to write Meshes out into files. Use ISceneManager::createMeshWriter()
+   to obtain an interface with which you can write out meshes. Currently, an own .irrmesh
+   file format is supported as well as the COLLADA file format.
+   
+ - fixed the keyboard autorepeat difference betwenn Linux and Windows. Thanks to denton we now have only KeyPressed events on both systems in case of autorepeat.
+
+ - Added several new particle emitters and affectors from IrrSpintz. Also some new getter and setter methods were added.
+
+ - D3D transparent materials do not disable zbuffer writing automatically anymore. This has to be done by the user to keep those settings configurable.
+
+ - OpenGL texture now also require a regenerateMipmapLevels() after unlocking. This is the same as for d3d devices now.
+
+ - Point sprite support in the driver. Point sprites use just one 3d vertex and a size to create a textured billboard on the GPU. This can provide fast particle systems, especially in combination with shaders. The proper particle extension will follow later on as it needs some more refactoring.
+
+ - OpenGL 2D drawing accuracy fix by tuXXX
+
+ - Added OnResize and getCurrentRenderTargetSize to the software video drivers.
+
+ - Added Spot light type for dynamic lights. Note that both position and direction for all dynamic lights are now determined by the LightSceneNode, the SLight attributes are only used for internal purposes.
+   API change! One can easily work around this change by setting the LightSceneNode's Position and Rotation instead of the SLight's. This change won't provoke a compile error, though, and can hence go unrecognized besides the visual problems.
+   The lights use a default direction (0,0,-1) which is rotated by the usual scene node transformations and can hence be modified by scene node animators.
+   A change in the Radius usage can lead to strange artifacts. Just increase the Radius in this case. further handling of Radius is to be discussed.
+
+ - Added per pixel fog support for OpenGL.
+
+ - Added driver support for user defined clip planes, based on mandrav's patch.
+   The OpenGL version is more picky about ModelView matrices, so it's best to set the projection plane at the time it is used.
+
+ - .obj files now load relative indices correctly. Collada files load textures.
+
+ - A new MeshBuffer implementation is publicly available. It supports a shared vertex list for all MeshBuffers, used for MS3D meshes.
+
+ - MeshBuffers can recalculate their BoundingBoxes on their own now, no need for MeshManipulators. New append methods help to merge MeshBuffers. take care that the types match!
+
+ - The new texture generation mode is working. With ETCF_NO_ALPHA_CHANNEL textures are generated without ALPHA bits reserved.
+
+ - D3D9 hardware mipmap updates are re-enabled, problems should be reported.
+
+ - In some cases fullscreeen modes under win32 should have a better frame rate now.
+
+ - Fixed the hillplane mesh to work with non-quadratic dimensions as well. Changed the interface also, so use a u32 dimension to specify the tilecount now.
+
+ - Hires timers are disabled on windows systems with more than one CPU, due to bugs
+   in the BIOS of many multi-core motherboards. To enable hires timers in your project, 
+   use SetProcessAffinityMask to set to use only one CPU before creating the device.
+
+ - OpenGL render targets now the same way up as the other drivers. If you have
+   written opengl shaders that use render targets then you'll need to change your 
+   texture coordinates accordingly.
+
+ - Fixed some OpenGL renderstate stuff. setBasicRenderstate returns with
+   active texture layer 0. The material renderer must return from OnUnset
+   with the same active texture layer. The alpha test is disabled and the
+   texture mode should be GL_MODULATE.
+
+ - Fixed CSoftwareTexture2::getOriginalSize, reported by CaptainPants. Added a
+   new method CSoftwareTexture2::getMaxSize to return the size of the largest
+   mipmap, which is used by texelarea instead of getOriginalSize.
+
+ - Changed parameter order of addArrowMesh and added default parameters such
+   that it's enough to set the color (or even just the name).
+
+ - Fixed bugs in MY3D and OBJ loader.
+
+ - Added IMeshCache::clearUnusedMeshes(). This allows the user to remove 
+   meshes that are sitting in the mesh cache but aren't used by any scene nodes. 
+   This is useful for example when changing levels.
+
+ - Added IUnknown::getReferenceCount()
+
+ - createDevice now reports errors if the driverType is unknown, previously it 
+   created a window but populated it with a null driver without any warning.
+
+ - Fixed a bug in CBillboardTextSceneNode::setText where the old text was not 
+   cleared.
+
+ - Changed irrArray::linear_search to use the == operator rather than <
+   This may be slower in some cases, but it no longer returns false positives
+   when searching arrays of classes that override the < operator but 
+   !(x<y) && !(y<x) does not necessarily mean x==y (vectors, positions etc).
+
+ - Fixed getSize/getOriginalSize method inversion in OpenGL textures.
+
+ - Added per texture-layer filter settings, i.e. one can choose to filter
+   only chosen texture layers. If all layers are set to the same value the
+   convenience function material.setFlag(EMF_BILINEAR_FILTER, boolean) can be
+   used, TRILINEAR_FILTER and ANISOTROPIC_FILTER do work, too. In all other
+   cases material.BilinearFilter[i] (resp. TrilinerFilter[i] or
+   AnisotropicFilter[i]) shall are to be used.
+
+ - Added adjustable Attenuation for dynamic lights. This allows to change the
+   intensity of a light based on its distance. The default attenuation changed
+   from (0,1/radius,0) to (1,0,0) which means no effect by distance. Good
+   values for distance effects simply add small values to the second and third
+   element.
+
+ - Fixed a typo to do with 2nd light vectors in opengl parallax and normal map
+   renderers.
+
+GUI:
+
+ - Fixes to menu and listbox (de)serialization, and custom listbox colors by CuteAlien.
+
+ - Added EGET_ELEMENT_CLOSED GUI event type. Absorb this event to cancel closing a window.
+
+ - Added _IRR_COMPILE_WITH_GUI_ to allow compiling without the GUI. 
+   This is useful if you use another GUI system (ie CEGUI) or are using Irrlicht 
+   inside another window. You will have to supply an external IGUIFont if you wish
+   to use font scene nodes as there will be no GUI environment available to load fonts.
+
+ - Added 7 more symbols to the built-in font and skin.
+   EGDI_MORE_LEFT, EGDI_MORE_RIGHT, EGDI_MORE_UP, EGDI_MORE_DOWN: "<<" symbols
+   indicating there is more content in that direction.
+   EGDI_WINDOW_RESIZE: Window symbol for resizing by clicking the bottom right
+   corner of a window.
+   EGDI_EXPAND, EGDI_COLLAPSE: Plus and minus buttons for trees.
+
+ - Added IGUISkin::draw2dRectangle, so skins can override the default highlight.
+
+ - EGET_ELEMENT_FOCUS_LOST and EGET_ELEMENT_FOCUSED events can now be absorbed 
+   by returning true in OnEvent. Absorbing these events will cancel the focus 
+   change.
+
+ - IGUIEnvironment::setFocus and removeFocus now return bools.
+
+ - New SEvent.GUIEvent.Element. Points to a second element that is being 
+   used in the event. During a EGET_ELEMENT_FOCUS_LOST event it points
+   to the element which would like the focus.
+
+ - Fixed the default font icons so they have a black border and are not 
+   invisible in default listboxes. Old font tool textures now keep their color
+   so colorful fonts are possible by editing the font's texture. The colors of 
+   completely transparent areas are no longer kept when generating the texture
+   from an image. Added builtInFont.bmp for ease of editing.
+
+ - IGUIElement changes:
+
+     Most elements can now be accessed using the keyboard. Use space and return
+     to select or deselect, escape to cancel selection (ie while pressing a 
+     button with space or return), and the cursor keys where appropriate.
+
+     Added navigation through the GUI using tab and the shift and control keys.
+     Use these new methods to control tab navigation:
+       setTabStop - set this to true if the focus will vist the element.
+       isTabStop - returns true if the focus will visit the element.
+       setTabOrder - Sets the order of focus within this tab group,
+         Only one element in each group should have the same TabOrder number.
+         Set to -1 to add to the end of the group.
+       setTabGroup - set this to true if the element is a group that contains 
+         other elements, and can be navigated with ctrl+tab/ctrl+shift+tab.
+       isTabGroup - returns true if the element is a tab group.
+       getTabGroup - returns the tab group that the element belongs to.
+       getNextElement - searches for the next element which would be focused 
+         within the element's children, only useful if you are doing your own 
+         custom navigation.
+
+     Added isMychild, to check if an element is descended from this one.
+
+     Added isPointInside, which is called by getElementFromPoint. Override this
+     when making non-rectangular elements.
+
+     OnEvent no longer absorbs events by default.
+
+     Serialize/deserialize now call getter and setter functions, in case people
+     override these and don't use the internal protected variables.
+
+     added getAbsoluteClippingRect, returns the visible area of an element.
+
+ - Added IGUISpinBox, by Michael Zeilfelder (CuteAlien).
+
+ - IGUIEditBox new methods:
+   setWordWrap/isWordWrapEnabled, to split words on to the next line.
+   setMultiLine and isMultiLineEnabled, inserts a newline instead of sending
+   EGET_EDITBOX_ENTER events.
+   setPasswordBox/isPasswordBox to use the edit box for password input.
+   setTextAlignment, to align the text to left, right, top, bottom and centers
+   setAutoScroll, to enable and disable automatic scrolling with the cursor
+
+ - IGUIStaticText new methods setDrawBorder and setTextAlignment.
+
+ - IGUIListBox changes:
+   Added setAutoScrollEnabled and isAutoScrollEnabled, for automatic scrolling 
+   when selecting or adding an item. 
+   Scrollbars are now only visible when the list doesn't fit in the visible area.
+   You can now type an item's text to select it.
+
+ - IGUIScrollBar new methods set/getLargeStep
+
+-------------------------------------------
+Changes in version 1.3.1 (20 Jun 2007)
+
+ - Fixed a bug with negative exponents in fast_atof, posted by RVL
+
+ - renamed IAnimatedMeshSceneNode::getAbsoluteTransformation to
+   getMD3TagTransformation to avoid conflicts with
+   ISceneNode::getAbsoluteTransformation
+
+ - Added rect::constrainTo for locking a rectangle inside another without
+   resizing it
+
+ - Moved the OpenGL API functions from COpenGL driver into new extension
+   handler. Thereby, some renaming took place - the ARB and EXT suffix was
+   removed. Simply rename the functions in case you use them.
+
+ - matrix4 is now a template internally such that also int and double matrices
+   are possible now.
+
+ - CMeshBuffer is a new template replacing all previous SMeshBuffer* classes.
+   New mesh buffers can be easily implemented based on this code.
+
+ - Ogre 1.40 files now also load.
+
+ - New filename based methods in the MeshCache.
+
+ - CSphereSceneNode is now texture wrapped with sphere mapping by exactly one
+   texture. Only a small error on the top remained.
+   
+ - The Sky box scene node now clamps its textures by default (meaning no
+   more ugly artifacts at the borders).
+
+ - Frustum culling fixed by using the fixed classifyPointRelation function.
+
+ - Some fixes in the 3d basic structures: plane3d.classifyPointRelation now
+   correctly returns the relation, it returned the opposite before. Also
+   renamed existsInterSection to existsIntersection for consistency.
+   triangle3d.isOnSameSide is now private - it's just a helper class not
+   intended for further use.
+
+ - Added IFileSystem::getFileDir, to get the directory when given a file 
+   name. Submitted by Jeff Myers
+
+ - Updated to latest PNG library (1.2.18), fixing a vulnerability.
+   Also changed some data structures which should make the library 64bit
+   compatible.
+
+ - Changed the external window pointer from s32 to void*. This makes the
+   mechanism 64bit safe, but also breaks the API. You have to cast to
+   void* now.
+
+ - Moved image scaling algorithms to CImage class and made them public. This
+   replaces lots of code from the hardware textures. It should also fix the
+   missing MipMaps in OpenGL if the driver does not support mipmap generation.
+
+ - Added support for texture creation flags in OpenGL. This changes some
+   textures to other color formats than in previous versions.
+
+ - MD2 normals fixed.
+
+ - Some defines for the platform choice have changed their names and semantics.
+   E.g. IRR_LINUX is now _IRR_LINUX_PLATFORM_ for os specific things and
+   _IRR_USE_LINUX_DEVICE_ to choose the original X11 IrrLinux device.
+
+ - Added an SDL device for cross-platform window support. Especially useful
+   for embedded systems and others without hardware acceleration. This device
+   is mutually exclusive with the other devices and requires linking against
+   the SDL library.
+
+ - Q3 shader crash fix.
+
+ - Fixed the too small D3D texture bug.
+
+ - The OpenGL texture is internally stored as a CImage now.
+
+ - Fixed some Borland compiler problems.
+
+ - ShadowVolume init bug fixed.
+
+ - MS3D rotation bug fixed.
+
+ - setFrameLoop bug fixed.
+
+ - Fixed OpenGL's draw2DImage texture inits to avoid texture confusion.
+
+ - Fixed getHeight from terrain scene node.
+
+ - The FPS counter now works as in previous releases, the accumulating counter
+   can be enabled by a parameter.
+
+ - getType() is now const correct (API Changes)
+
+ - Added scissor test to opengl draw2DImage method that ignored clip.
+
+ - Fixed a bug in rect::isValid, it was almost always true.
+ 
+ - Fixed wrong particle emission.
+ 
+ - Added LinuxDevice setResizeAble implementation.
+ 
+ - Enumeration values of the ESCENE_NODE_TYPE enum are no longer ints but four
+   character codes. If you were using them as index previously, this is no longer possible.
+ 
+ - There is now a way to set which scene manager should recieve user input, when working
+   with multiple scene managers: IrrlichtDevice::setInputReceivingSceneManager().
+ 
+ - ICursorControl now supports setting a reference rectangle.
+   If this rect is set, the cursor position is not being calculated relative to
+   the rendering window but to this rect. You can set the rect pointer to 0 to disable
+   this feature again. This feature is useful when rendering into parts of foreign windows
+   for example in an editor. See ICursorControl::setReferenceRect() for details.
+   (Windows only implementation currently)
+
+ - It is now possible to clone single scene nodes (ISceneNode::clone()) and to create copies
+   of a whole scene graph (ISceneManager::createNewSceneManager(cloneContent=true);
+
+ - IAttributes now supports a user pointer (void*)
+
+ - Added query methods to scene manager: Find Scene nodes by type
+    getSceneNodesFromType
+
+ - Added min and max functions with 3 values: core::min_ and core::max_
+
+ - Fixed a crash when using Octtrees caused by unnecessary dropping of meshes when 
+   deserializing the scene node.
+
+ - Removed an array::erase from Octtrees and Octtree triangle selector.
+ 
+ - Removed a bug which caused irrlicht to crash when using animated .x files as static meshes.
+
+GUI:
+
+  - Added EGUI_DEFAULT_FONT for skins, default fonts can now be set for windows, menus, buttons and tooltips.
+    use IGUISkin::setFont and getFont to use them. Fonts are not serialized with saveGUI yet
+
+  - Added EGDC_TOOLTIP_BACKGROUND for setting background color of tooltips.
+
+  - Tooltips now appear relative to mouse position, also they do not appear for 500ms.
+
+  - Fixed a memory leak when dropping the GUIEnvironment when a tooltip was present.
+
+  - Added IGUIStaticText::setDrawBackground and IGUIStaticText::setBackgroundColor.
+
+  - Fixed a messagebox focus bug when no 'okay' button was present.
+
+  - Added setColor and setScaleImage to GUIImage.
+
+  - GUIListBox highlighted area now clips properly.
+
+  - added getOSOperator to GUIEnvironment (for clipboard access in elements) and updated CGUIEditBox.
+
+  - Can now load/save gui environment from/to an element.
+
+  - Most element set functions now have a corresponding get or is function. 
+   (API change) IGUIButton::getUseAlphaChannel is now isAlphaChannelUsed, to fit with other is* functions.
+
+  - Fixed a bug with resizing the gui environment when the device is resized
+
+  - Modal screens now resize to fit their parent.
+
+  - XML bitmap fonts now load textures from the XML file directory rather than the current one.
+
+  - Fixed a small bug with click areas in combo boxes.
+
+  - Fixed a bug in clear() when an element was hovered or had focus
+
+  - Fixed a bug when loading fonts with uppercase letters in the name in case-sensitive filesystems
+
+GUI Editor:
+
+  - Added cut/copy/paste using clipboard and xml (via memory file). Will have problems in Linux due 
+    to no clipboard support
+
+  - Added texture attribute element
+
+  - Added CGUIPanel, a container with optional scrollbars. Originally submitted by Asger Feldthaus
+
+
+-------------------------------------------
 Changes in version 1.3 (15 Mar 2007)
 
 - SMaterial structure changed:
@@ -7,11 +394,12 @@ Changes in version 1.3 (15 Mar 2007)
 	  Now, Texture1..4 is removed - use Textures[i] instead
 	  The Flags[x] is replaced by setFlags(x, bool) resp. getFlags(x)
 
-- The methods OnPreRender and OnPostRender of ISceneNode have been changed to OnAnimate and 
-  OnRegisterSceneNode(). Also, they are now called at different times: OnAnimate is called
-  every frame before anything else, removing the one-frame-lag Irrlicht suffered until now.
-  To make most of your own scene nodes work again, it should be enough to rename OnPreRender()
-  to OnAnimate() and OnPostRender() to OnRegisterSceneNode() in most cases.
+- The methods OnPreRender and OnPostRender of ISceneNode have been changed to
+  OnRegisterSceneNode() and OnAnimate(). Also, they are now called at different
+  times: OnAnimate is called every frame before anything else, removing the
+  one-frame-lag Irrlicht suffered until now. To make most of your own scene
+  nodes work again, it should be enough to rename OnPreRender()
+  to OnRegisterSceneNode() and OnPostRender() to OnAnimate() in most cases.
 
 - ISceneNode::getMaterialCount and getMaterial now use u32 instead of s32. You will also need 
   to update this in your custom scene nodes.

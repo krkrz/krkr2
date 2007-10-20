@@ -104,7 +104,7 @@ bool CD3D8ShaderMaterialRenderer::OnRender(IMaterialRendererServices* service, E
 }
 
 
-void CD3D8ShaderMaterialRenderer::OnSetMaterial(video::SMaterial& material, const video::SMaterial& lastMaterial,
+void CD3D8ShaderMaterialRenderer::OnSetMaterial(const video::SMaterial& material, const video::SMaterial& lastMaterial,
 	bool resetAllRenderstates, video::IMaterialRendererServices* services) 
 {
 	if (material.MaterialType != lastMaterial.MaterialType || resetAllRenderstates)
@@ -153,7 +153,7 @@ void CD3D8ShaderMaterialRenderer::OnUnsetMaterial()
 	
 //! Returns if the material is transparent. The scene managment needs to know this
 //! for being able to sort the materials by opaque and transparent.
-bool CD3D8ShaderMaterialRenderer::isTransparent() 
+bool CD3D8ShaderMaterialRenderer::isTransparent()  const
 {
 	return BaseMaterial ? BaseMaterial->isTransparent() : false; 
 }
@@ -312,5 +312,5 @@ bool CD3D8ShaderMaterialRenderer::createVertexShader(const char* vtxsh, E_VERTEX
 } // end namespace video
 } // end namespace irr
 
-#endif
+#endif // _IRR_COMPILE_WITH_DIRECT3D_8_
 

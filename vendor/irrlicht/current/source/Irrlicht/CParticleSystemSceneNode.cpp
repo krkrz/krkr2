@@ -8,10 +8,18 @@
 #include "ICameraSceneNode.h"
 #include "IVideoDriver.h"
 
-#include "CParticlePointEmitter.h"
+#include "CParticleAnimatedMeshSceneNodeEmitter.h"
 #include "CParticleBoxEmitter.h"
+#include "CParticleCylinderEmitter.h"
+#include "CParticleMeshEmitter.h"
+#include "CParticlePointEmitter.h"
+#include "CParticleRingEmitter.h"
+#include "CParticleSphereEmitter.h"
+#include "CParticleAttractionAffector.h"
 #include "CParticleFadeOutAffector.h"
 #include "CParticleGravityAffector.h"
+#include "CParticleRotationAffector.h"
+#include "SViewFrustum.h"
 
 namespace irr
 {
@@ -97,55 +105,158 @@ video::SMaterial& CParticleSystemSceneNode::getMaterial(u32 i)
 
 
 //! Returns amount of materials used by this scene node.
-u32 CParticleSystemSceneNode::getMaterialCount()
+u32 CParticleSystemSceneNode::getMaterialCount() const
 {
 	return 1;
 }
 
 
-
-//! Creates a point particle emitter.
-IParticleEmitter* CParticleSystemSceneNode::createPointEmitter(
-	const core::vector3df& direction, u32 minParticlesPerSecond,
-	u32 maxParticlePerSecond, video::SColor minStartColor,
-	video::SColor maxStartColor, u32 lifeTimeMin, u32 lifeTimeMax,
-	s32 maxAngleDegrees)
+//! Creates a particle emitter for an animated mesh scene node
+IParticleAnimatedMeshSceneNodeEmitter*
+CParticleSystemSceneNode::createAnimatedMeshSceneNodeEmitter(
+	scene::IAnimatedMeshSceneNode* node, bool useNormalDirection,
+	const core::vector3df& direction, f32 normalDirectionModifier,
+	s32 mbNumber, bool everyMeshVertex,
+	u32 minParticlesPerSecond, u32 maxParticlesPerSecond,
+	const video::SColor& minStartColor, const video::SColor& maxStartColor,
+	u32 lifeTimeMin, u32 lifeTimeMax, s32 maxAngleDegrees )
 {
-	return new CParticlePointEmitter(direction, minParticlesPerSecond,
-		maxParticlePerSecond, minStartColor, maxStartColor,
-		lifeTimeMin, lifeTimeMax, maxAngleDegrees);
+	return new CParticleAnimatedMeshSceneNodeEmitter( node,
+			useNormalDirection, direction, normalDirectionModifier,
+			mbNumber, everyMeshVertex,
+			minParticlesPerSecond, maxParticlesPerSecond,
+			minStartColor, maxStartColor,
+			lifeTimeMin, lifeTimeMax, maxAngleDegrees );
 }
 
 
+
 //! Creates a box particle emitter.
-IParticleEmitter* CParticleSystemSceneNode::createBoxEmitter(
+IParticleBoxEmitter* CParticleSystemSceneNode::createBoxEmitter(
 	const core::aabbox3df& box, const core::vector3df& direction,
-	u32 minParticlesPerSecond,	u32 maxParticlePerSecond,
-	video::SColor minStartColor,	video::SColor maxStartColor,
+	u32 minParticlesPerSecond, u32 maxParticlesPerSecond,
+	const video::SColor& minStartColor, const video::SColor& maxStartColor,
 	u32 lifeTimeMin, u32 lifeTimeMax,
 	s32 maxAngleDegrees)
 {
 	return new CParticleBoxEmitter(box, direction, minParticlesPerSecond,
-		maxParticlePerSecond, minStartColor, maxStartColor,
+		maxParticlesPerSecond, minStartColor, maxStartColor,
 		lifeTimeMin, lifeTimeMax, maxAngleDegrees);
 }
 
 
+//! Creates a particle emitter for emitting from a cylinder
+IParticleCylinderEmitter* CParticleSystemSceneNode::createCylinderEmitter(
+	const core::vector3df& center, f32 radius,
+	const core::vector3df& normal, f32 length,
+	bool outlineOnly, const core::vector3df& direction,
+	u32 minParticlesPerSecond, u32 maxParticlesPerSecond,
+	const video::SColor& minStartColor, const video::SColor& maxStartColor,
+	u32 lifeTimeMin, u32 lifeTimeMax, s32 maxAngleDegrees )
+{
+	return new CParticleCylinderEmitter( center, radius, normal, length,
+			outlineOnly, direction,
+			minParticlesPerSecond, maxParticlesPerSecond,
+			minStartColor, maxStartColor,
+			lifeTimeMin, lifeTimeMax, maxAngleDegrees );
+}
+
+
+//! Creates a mesh particle emitter.
+IParticleMeshEmitter* CParticleSystemSceneNode::createMeshEmitter(
+	scene::IMesh* mesh, bool useNormalDirection,
+	const core::vector3df& direction, f32 normalDirectionModifier,
+	s32 mbNumber, bool everyMeshVertex,
+	u32 minParticlesPerSecond, u32 maxParticlesPerSecond,
+	const video::SColor& minStartColor, const video::SColor& maxStartColor,
+	u32 lifeTimeMin, u32 lifeTimeMax, s32 maxAngleDegrees )
+{
+	return new CParticleMeshEmitter( mesh, useNormalDirection, direction,
+			normalDirectionModifier, mbNumber, everyMeshVertex,
+			minParticlesPerSecond, maxParticlesPerSecond,
+			minStartColor, maxStartColor,
+			lifeTimeMin, lifeTimeMax, maxAngleDegrees );
+}
+
+
+
+//! Creates a point particle emitter.
+IParticlePointEmitter* CParticleSystemSceneNode::createPointEmitter(
+	const core::vector3df& direction, u32 minParticlesPerSecond,
+	u32 maxParticlesPerSecond, const video::SColor& minStartColor,
+	const video::SColor& maxStartColor, u32 lifeTimeMin, u32 lifeTimeMax,
+	s32 maxAngleDegrees)
+{
+	return new CParticlePointEmitter(direction, minParticlesPerSecond,
+		maxParticlesPerSecond, minStartColor, maxStartColor,
+		lifeTimeMin, lifeTimeMax, maxAngleDegrees);
+}
+
+
+//! Creates a ring particle emitter.
+IParticleRingEmitter* CParticleSystemSceneNode::createRingEmitter(
+	const core::vector3df& center, f32 radius, f32 ringThickness,
+	const core::vector3df& direction,
+	u32 minParticlesPerSecond, u32 maxParticlesPerSecond,
+	const video::SColor& minStartColor, const video::SColor& maxStartColor,
+	u32 lifeTimeMin, u32 lifeTimeMax, s32 maxAngleDegrees )
+{
+	return new CParticleRingEmitter( center, radius, ringThickness, direction,
+		minParticlesPerSecond, maxParticlesPerSecond, minStartColor,
+		maxStartColor, lifeTimeMin, lifeTimeMax, maxAngleDegrees );
+}
+
+
+//! Creates a sphere particle emitter.
+IParticleSphereEmitter* CParticleSystemSceneNode::createSphereEmitter(
+	const core::vector3df& center, f32 radius, const core::vector3df& direction,
+	u32 minParticlesPerSecond, u32 maxParticlesPerSecond,
+	const video::SColor& minStartColor, const video::SColor& maxStartColor,
+	u32 lifeTimeMin, u32 lifeTimeMax,
+	s32 maxAngleDegrees)
+{
+	return new CParticleSphereEmitter(center, radius, direction,
+			minParticlesPerSecond, maxParticlesPerSecond,
+			minStartColor, maxStartColor,
+			lifeTimeMin, lifeTimeMax, maxAngleDegrees);
+}
+
+
+
+//! Creates a point attraction affector. This affector modifies the positions of the
+//! particles and attracts them to a specified point at a specified speed per second.
+IParticleAttractionAffector* CParticleSystemSceneNode::createAttractionAffector(
+	const core::vector3df& point, f32 speed, bool attract,
+	bool affectX, bool affectY, bool affectZ )
+{
+	return new CParticleAttractionAffector( point, speed, attract, affectX, affectY, affectZ );
+}
+
 
 //! Creates a fade out particle affector.
-IParticleAffector* CParticleSystemSceneNode::createFadeOutParticleAffector(
-		video::SColor targetColor,	u32 timeNeededToFadeOut)
+IParticleFadeOutAffector* CParticleSystemSceneNode::createFadeOutParticleAffector(
+		const video::SColor& targetColor, u32 timeNeededToFadeOut)
 {
 	return new CParticleFadeOutAffector(targetColor, timeNeededToFadeOut);
 }
 
 
 //! Creates a gravity affector.
-IParticleAffector* CParticleSystemSceneNode::createGravityAffector(
+IParticleGravityAffector* CParticleSystemSceneNode::createGravityAffector(
 		const core::vector3df& gravity, u32 timeForceLost)
 {
 	return new CParticleGravityAffector(gravity, timeForceLost);
 }
+
+
+//! Creates a rotation affector. This affector rotates the particles around a specified pivot
+//! point.  The speed represents Degrees of rotation per second.
+IParticleRotationAffector* CParticleSystemSceneNode::createRotationAffector(
+	const core::vector3df& speed, const core::vector3df& pivotPoint )
+{
+	return new CParticleRotationAffector( speed, pivotPoint );
+}
+
 
 
 //! pre render event
@@ -243,12 +354,12 @@ void CParticleSystemSceneNode::render()
 		Buffer.getIndices(), Particles.size()*2, video::EVT_STANDARD, EPT_TRIANGLES);
 
 	// for debug purposes only:
-	if (DebugDataVisible)
+	if ( DebugDataVisible & scene::EDS_BBOX )
 	{
 		driver->setTransform(video::ETS_WORLD, AbsoluteTransformation);
-		video::SMaterial m;
-		m.Lighting = false;
-		driver->setMaterial(m);
+		video::SMaterial deb_m;
+		deb_m.Lighting = false;
+		driver->setMaterial(deb_m);
 		driver->draw3DBox(Buffer.BoundingBox, video::SColor(0,255,255,255));
 	}
 }
@@ -288,14 +399,12 @@ void CParticleSystemSceneNode::doParticleSystem(u32 time)
 			if (newParticles > 16250-j)
 				newParticles=16250-j;
 			Particles.set_used(j+newParticles);
-			for (s32 i=0; i<newParticles; ++i)
+			for (s32 i=j; i<j+newParticles; ++i)
 			{
-				AbsoluteTransformation.rotateVect(array[i].startVector);
-
+				Particles[i]=array[i-j];
+				AbsoluteTransformation.rotateVect(Particles[i].startVector);
 				if (ParticlesAreGlobal)
-					AbsoluteTransformation.transformVect(array[i].pos);
-
-				Particles[j+i]=array[i];
+					AbsoluteTransformation.transformVect(Particles[i].pos);
 			}
 		}
 	}
@@ -400,7 +509,7 @@ void CParticleSystemSceneNode::reallocateBuffers()
 
 
 //! Writes attributes of the scene node.
-void CParticleSystemSceneNode::serializeAttributes(io::IAttributes* out, io::SAttributeReadWriteOptions* options)
+void CParticleSystemSceneNode::serializeAttributes(io::IAttributes* out, io::SAttributeReadWriteOptions* options) const
 {
 	IParticleSystemSceneNode::serializeAttributes(out, options);
 
@@ -423,7 +532,7 @@ void CParticleSystemSceneNode::serializeAttributes(io::IAttributes* out, io::SAt
 
 	E_PARTICLE_AFFECTOR_TYPE atype = EPAT_NONE;
 
-	for (core::list<IParticleAffector*>::Iterator it = AffectorList.begin();
+	for (core::list<IParticleAffector*>::ConstIterator it = AffectorList.begin();
 		 it != AffectorList.end(); ++it)
 	{
 		atype = (*it)->getType();
@@ -474,7 +583,7 @@ void CParticleSystemSceneNode::deserializeAttributes(io::IAttributes* in, io::SA
 		break;
 	}
 
-	s32 idx = 0;
+	u32 idx = 0;
 
 	if (Emitter)
 		idx = Emitter->deserializeAttributes(idx, in);
@@ -484,7 +593,7 @@ void CParticleSystemSceneNode::deserializeAttributes(io::IAttributes* in, io::SA
 	// read affectors
 
 	removeAllAffectors();
-	s32 cnt = in->getAttributeCount();
+	u32 cnt = in->getAttributeCount();
 
 	while(idx < cnt)
 	{

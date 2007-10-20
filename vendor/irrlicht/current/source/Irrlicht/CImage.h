@@ -10,7 +10,7 @@
 
 namespace irr
 {
-namespace video  
+namespace video
 {
 
 //! IImage implementation with a lot of special image operations for
@@ -19,20 +19,20 @@ class CImage : public IImage
 {
 public:
 
-	//! constructor 
+	//! constructor from another image with format change
 	CImage(ECOLOR_FORMAT format, IImage* imageToCopy);
 
-	//! constructor 
+	//! constructor from raw image data
 	//! \param useForeignMemory: If true, the image will use the data pointer
 	//! directly and own it from now on, which means it will also try to delete [] the
 	//! data when the image will be destructed. If false, the memory will by copied.
 	CImage(ECOLOR_FORMAT format, const core::dimension2d<s32>& size,
 		void* data, bool ownForeignMemory=true, bool deleteMemory = true);
 
-	//! constructor
+	//! constructor for empty image
 	CImage(ECOLOR_FORMAT format, const core::dimension2d<s32>& size);
 
-	//! constructor
+	//! constructor using a part from another image
 	CImage(IImage* imageToCopy,
 		const core::position2d<s32>& pos, const core::dimension2d<s32>& size);
 
@@ -49,37 +49,37 @@ public:
 	virtual void unlock() {};
 
 	//! Returns width and height of image data.
-	virtual const core::dimension2d<s32>& getDimension();
+	virtual const core::dimension2d<s32>& getDimension() const;
 
-	//! Returns bits per pixel. 
-	virtual s32 getBitsPerPixel();
+	//! Returns bits per pixel.
+	virtual u32 getBitsPerPixel() const;
 
 	//! Returns bytes per pixel
-	virtual s32 getBytesPerPixel();
+	virtual u32 getBytesPerPixel() const;
 
 	//! Returns image data size in bytes
-	virtual s32 getImageDataSizeInBytes();
+	virtual u32 getImageDataSizeInBytes() const;
 
 	//! Returns image data size in pixels
-	virtual s32 getImageDataSizeInPixels();
+	virtual u32 getImageDataSizeInPixels() const;
 
 	//! returns mask for red value of a pixel
-	virtual u32 getRedMask();
+	virtual u32 getRedMask() const;
 
 	//! returns mask for green value of a pixel
-	virtual u32 getGreenMask();
+	virtual u32 getGreenMask() const;
 
 	//! returns mask for blue value of a pixel
-	virtual u32 getBlueMask();
+	virtual u32 getBlueMask() const;
 
 	//! returns mask for alpha value of a pixel
-	virtual u32 getAlphaMask();
+	virtual u32 getAlphaMask() const;
 
 	//! returns a pixel
-	virtual SColor getPixel(s32 x, s32 y);
+	virtual SColor getPixel(u32 x, u32 y) const;
 
 	//! sets a pixel
-	virtual void setPixel(s32 x, s32 y, const SColor &color );
+	virtual void setPixel(u32 x, u32 y, const SColor &color );
 
 	//! returns the color format
 	virtual ECOLOR_FORMAT getColorFormat() const;
@@ -88,23 +88,26 @@ public:
 	void drawRectangle(const core::rect<s32>& rect, const SColor &color);
 
 	//! copies this surface into another
-	void copyTo(CImage* target, const core::position2d<s32>& pos);
+	void copyTo(IImage* target, const core::position2d<s32>& pos=core::position2d<s32>(0,0));
 
 	//! copies this surface into another
-	void copyTo(CImage* target, const core::position2d<s32>& pos, const core::rect<s32>& sourceRect, const core::rect<s32>* clipRect=0);
+	void copyTo(IImage* target, const core::position2d<s32>& pos, const core::rect<s32>& sourceRect, const core::rect<s32>* clipRect=0);
 
 	//! copies this surface into another, using the alpha mask, an cliprect and a color to add with
-	void copyToWithAlpha(CImage* target, const core::position2d<s32>& pos, const core::rect<s32>& sourceRect, const SColor &color, const core::rect<s32>* clipRect = 0);
+	void copyToWithAlpha(IImage* target, const core::position2d<s32>& pos, const core::rect<s32>& sourceRect, const SColor &color, const core::rect<s32>* clipRect = 0);
 
-	//! copies this surface into another, scaling it to fit it.
-	void copyToScaling(CImage* target);
+	//! copies this surface into another, scaling it to fit.
+	void copyToScaling(void* target, s32 width, s32 height, ECOLOR_FORMAT format, u32 pitch=0);
 
-	//! copies this surface into another, scaling it to fit it, appyling a box filter
-	void copyToScalingBoxFilter(CImage* target, s32 bias = 0);
+	//! copies this surface into another, scaling it to fit.
+	void copyToScaling(IImage* target);
+
+	//! copies this surface into another, scaling it to fit, appyling a box filter
+	void copyToScalingBoxFilter(IImage* target, s32 bias = 0);
 
 	//! draws a line from to
 	void drawLine(const core::position2d<s32>& from, const core::position2d<s32>& to, const SColor &color);
-	
+
 	//! fills the surface with black or white
 	void fill(const SColor &color);
 
@@ -113,21 +116,23 @@ public:
 	{
 		return Pitch;
 	}
-	
-	
+
+	static u32 getBitsPerPixelFromFormat(ECOLOR_FORMAT format);
+
+
 private:
 
 	//! assumes format and size has been set and creates the rest
 	void initData();
 
-	s32 getBitsPerPixelFromFormat();
+	void setBitMasks();
 
-	inline SColor getPixelBox ( s32 x, s32 y, s32 fx, s32 fy, s32 bias );
+	inline SColor getPixelBox ( s32 x, s32 y, s32 fx, s32 fy, s32 bias ) const;
 
 	void* Data;
 	core::dimension2d<s32> Size;
-	s32 BitsPerPixel;
-	s32 BytesPerPixel;
+	u32 BitsPerPixel;
+	u32 BytesPerPixel;
 	u32 Pitch;
 	ECOLOR_FORMAT Format;
 

@@ -60,14 +60,14 @@ namespace scene
 
 		//! returns true if the file maybe is able to be loaded by this class
 		//! based on the file extension (e.g. ".bsp")
-		virtual bool isALoadableFileExtension(const c8* fileName);
+		virtual bool isALoadableFileExtension(const c8* fileName) const;
 
 		//! creates/loads an animated mesh from the file.
-		virtual IAnimatedMesh* createMesh(irr::io::IReadFile* file);
+		virtual IAnimatedMesh* createMesh(io::IReadFile* file);
 
 	private:
 
-		scene::IMesh* createCSMMesh(irr::io::IReadFile* file);
+		scene::IMesh* createCSMMesh(io::IReadFile* file);
 
 		scene::IMesh* createIrrlichtMesh(const CSMFile* csmFile,
 			core::stringc textureRoot, const c8* lmprefix);

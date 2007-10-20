@@ -7,8 +7,9 @@
 
 namespace irr
 {
-namespace scene  
+namespace scene
 {
+
 	//! An enumeration for all types of built-in scene node animators
 	enum ESCENE_NODE_ANIMATOR_TYPE
 	{
@@ -33,13 +34,13 @@ namespace scene
 		//! Collision respose scene node animator
 		ESNAT_COLLISION_RESPONSE,
 
-		//! Amount of build in scene node animators
+		//! Amount of built-in scene node animators
 		ESNAT_COUNT,
 
 		//! Unknown scene node animator
 		ESNAT_UNKNOWN,
 
-		//! This enum is never used, it only forces the compiler to 
+		//! This enum is never used, it only forces the compiler to
 		//! compile these enumeration values to 32 bit.
 		ESNAT_FORCE_32_BIT = 0x7fffffff
 	};

@@ -58,9 +58,18 @@ namespace video
 	}
 
 
+	//! Converts a 32 bit (A8R8G8B8) color to a 16 R5G6B5 color
+	inline u16 A8R8G8B8toR5G6B5(u32 color)
+	{
+		return (( color & 0x00F80000) >> 8 |
+			( color & 0x0000FC00) >> 5 |
+			( color & 0x000000F8) >> 3);
+	}
+
+
 	//! Returns A8R8G8B8 Color from A1R5G5B5 color
 	//! build a nicer 32 Bit Color by extending dest lower bits with source high bits
-	inline u32 A1R5G5B5toA8R8G8B8(u32 color)
+	inline u32 A1R5G5B5toA8R8G8B8(u16 color)
 	{
 		return	( (( -( (s32) color & 0x00008000 ) >> (s32) 31 ) & 0xFF000000 ) |
 				(( color & 0x00007C00 ) << 9) | (( color & 0x00007000 ) << 4) |
@@ -125,7 +134,7 @@ namespace video
 		return (color & 0x1F);
 	}
 
-		//! Returns the red component from A1R5G5B5 color.
+	//! Returns the red component from A1R5G5B5 color.
 	//! Shift left by 3 to get 8 bit value.
 	inline s32 getRedSigned(u16 color)
 	{
@@ -276,6 +285,28 @@ namespace video
 		//! \return Returns true if the colors are different, and false if they are the same.
 		inline bool operator!=(const SColor& other) const { return other.color != color; }
 
+		//! Adds two colors
+		inline SColor operator+(const SColor& other) const
+		{
+			s32 a = getAlpha() + other.getAlpha();
+			if (a > 255) 
+				a = 255;
+
+			s32 r = getRed() + other.getRed();
+			if (r > 255) 
+				r = 255;
+
+			s32 g = getGreen() + other.getGreen();
+			if (g > 255) 
+				g = 255;
+
+			s32 b = getBlue() + other.getBlue();
+			if (b > 255) 
+				b = 255;
+
+			return SColor(a,r,g,b);
+		}
+
 		//! Interpolates the color with a f32 value to another color
 		//! \param other: Other color
 		//! \param d: value between 0.0f and 1.0f
@@ -290,24 +321,22 @@ namespace video
 		}
 
 		//! Returns interpolated color. ( quadratic )
-		/** \param other0: other vector to interpolate between
-			\param other1: other vector to interpolate between
-		\param factor: value between 0.0f and 1.0f. */
-		inline SColor getInterpolated_quadratic(const SColor& v2, const SColor& v3, const f32 d) const
+		/** \param c1: first color to interpolate with
+		    \param c2: second color to interpolate with
+		\param d: value between 0.0f and 1.0f. */
+		inline SColor getInterpolated_quadratic(const SColor& c1, const SColor& c2, const f32 d) const
 		{
-			// this*(1-d)*(1-d) + 2 * v2 * (1-d) + v3 * d * d;
+			// this*(1-d)*(1-d) + 2 * c1 * (1-d) + c2 * d * d;
 			const f32 inv = 1.f - d;
 			const f32 mul0 = inv * inv;
 			const f32 mul1 = 2.f * d * inv;
 			const f32 mul2 = d * d;
 
-			return SColor ( core::clamp ( core::floor32 ( getAlpha() * mul0 + v2.getAlpha() * mul1 + v3.getAlpha() * mul2 ), 0, 255 ),
-							core::clamp ( core::floor32 ( getRed()   * mul0 + v2.getRed()   * mul1 + v3.getRed()   * mul2 ), 0, 255 ),
-							core::clamp ( core::floor32 ( getGreen() * mul0 + v2.getGreen() * mul1 + v3.getGreen() * mul2 ), 0, 255 ),
-							core::clamp ( core::floor32 ( getBlue()  * mul0 + v2.getBlue()  * mul1 + v3.getBlue()  * mul2 ), 0, 255 )
-						);
+			return SColor ( core::clamp ( core::floor32 ( getAlpha() * mul0 + c1.getAlpha() * mul1 + c2.getAlpha() * mul2 ), 0, 255 ),
+					core::clamp ( core::floor32 ( getRed()   * mul0 + c1.getRed()   * mul1 + c2.getRed()   * mul2 ), 0, 255 ),
+					core::clamp ( core::floor32 ( getGreen() * mul0 + c1.getGreen() * mul1 + c2.getGreen() * mul2 ), 0, 255 ),
+					core::clamp ( core::floor32 ( getBlue()  * mul0 + c1.getBlue()  * mul1 + c2.getBlue()  * mul2 ), 0, 255 ));
 		}
-
 
 		//! color in A8R8G8B8 Format
 		u32 color;
@@ -339,17 +368,17 @@ namespace video
 		//! no blue (=black) and 1.0f, meaning full blue.
 		SColorf(f32 r, f32 g, f32 b) : r(r), g(g), b(b), a(1.0f) {};
 
-		//! Constructs a color from four color values: alpha, red, green and blue.
-		//! \param a: Alpha color component of the color.
-		//! The alpha component defines how transparent a color should be.
-		//! Has to be a value between 0.0f and 1.0f,
-		//! 0.0f means not transparent (opaque), 1.0f means fully transparent.
+		//! Constructs a color from four color values: red, green, blue, and alpha.
 		//! \param r: Red color component. Should be a value between 0.0f meaning
 		//! no red (=black) and 1.0f, meaning full red.
 		//! \param g: Green color component. Should be a value between 0.0f meaning
 		//! no green (=black) and 1.0f, meaning full green.
 		//! \param b: Blue color component. Should be a value between 0.0f meaning
 		//! no blue (=black) and 1.0f, meaning full blue.
+		//! \param a: Alpha color component of the color.
+		//! The alpha component defines how transparent a color should be.
+		//! Has to be a value between 0.0f and 1.0f,
+		//! 0.0f means not transparent (opaque), 1.0f means fully transparent.
 		SColorf(f32 r, f32 g, f32 b, f32 a) : r(r), g(g), b(b), a(a) {};
 
 		//! Constructs a color from 32 bit Color.
@@ -385,7 +414,7 @@ namespace video
 		void set(f32 rr, f32 gg, f32 bb) {r = rr; g =gg; b = bb; };
 
 		//! Sets all four color components to new values at once.
-		//! \param a: Alpha component.
+		//! \param aa: Alpha component.
 		//! \param rr: Red color component. Should be a value between 0.0f meaning
 		//! no red (=black) and 1.0f, meaning full red.
 		//! \param gg: Green color component. Should be a value between 0.0f meaning
@@ -406,22 +435,21 @@ namespace video
 		}
 
 		//! Returns interpolated color. ( quadratic )
-		/** \param other0: other vector to interpolate between
-			\param other1: other vector to interpolate between
-		\param factor: value between 0.0f and 1.0f. */
-		inline SColorf getInterpolated_quadratic(const SColorf& v2, const SColorf& v3, const f32 d) const
+		/** \param c1: first color to interpolate with
+		\param c2: second color to interpolate with
+		\param d: value between 0.0f and 1.0f. */
+		inline SColorf getInterpolated_quadratic(const SColorf& c1, const SColorf& c2, const f32 d) const
 		{
-			// this*(1-d)*(1-d) + 2 * v2 * (1-d) + v3 * d * d;
+			// this*(1-d)*(1-d) + 2 * c1 * (1-d) + c2 * d * d;
 			const f32 inv = 1.f - d;
 			const f32 mul0 = inv * inv;
 			const f32 mul1 = 2.f * d * inv;
 			const f32 mul2 = d * d;
 
-			return SColorf ( r * mul0 + v2.r * mul1 + v3.r * mul2,
-							 g * mul0 + v2.g * mul1 + v3.g * mul2,
-							 g * mul0 + v2.b * mul1 + v3.b * mul2,
-							 a * mul0 + v2.a * mul1 + v3.a * mul2
-							);
+			return SColorf ( r * mul0 + c1.r * mul1 + c2.r * mul2,
+					 g * mul0 + c1.g * mul1 + c2.g * mul2,
+					 g * mul0 + c1.b * mul1 + c2.b * mul2,
+					 a * mul0 + c1.a * mul1 + c2.a * mul2);
 		}
 
 

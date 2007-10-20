@@ -31,18 +31,18 @@ public:
 
 	//! returns true if the file maybe is able to be loaded by this class
 	//! based on the file extension (e.g. ".cob")
-	virtual bool isALoadableFileExtension(const c8* fileName);
+	virtual bool isALoadableFileExtension(const c8* fileName) const;
 
 	//! creates/loads an animated mesh from the file.
 	//! \return Pointer to the created mesh. Returns 0 if loading failed.
 	//! If you no longer need the mesh, you should call IAnimatedMesh::drop().
-	//! See IUnknown::drop() for more information.
-	virtual IAnimatedMesh* createMesh(irr::io::IReadFile* file);
+	//! See IReferenceCounted::drop() for more information.
+	virtual IAnimatedMesh* createMesh(io::IReadFile* file);
 
 private:
 
 	// byte-align structures
-	#ifdef _MSC_VER
+	#if defined(_MSC_VER) ||  defined(__BORLANDC__) || defined (__BCPLUSPLUS__) 
 	#	pragma pack( push, packing )
 	#	pragma pack( 1 )
 	#	define PACK_STRUCT
@@ -59,7 +59,7 @@ private:
 	} PACK_STRUCT;
 
 	// Default alignment
-	#ifdef _MSC_VER
+	#if defined(_MSC_VER) ||  defined(__BORLANDC__) || defined (__BCPLUSPLUS__) 
 	#	pragma pack( pop, packing )
 	#endif
 
@@ -76,10 +76,6 @@ private:
 
 	struct SCurrentMaterial
 	{
-		SCurrentMaterial() {};
-
-		~SCurrentMaterial() { 	};
-
 		void clear() {
 			Material=video::SMaterial();
 			Name="";
@@ -111,7 +107,7 @@ private:
 
 		void clear() 
 		{ 
-			if (faces) delete [] faces;
+			delete [] faces;
 			faces = 0;
 			faceCount = 0;
 		}
@@ -120,14 +116,14 @@ private:
 		{
 			MaterialName = o.MaterialName;
 			faceCount = o.faceCount;
-			faces = new s16[faceCount];
-			for (s32 i=0; i<faceCount; ++i)
+			faces = new u16[faceCount];
+			for (u32 i=0; i<faceCount; ++i)
 				faces[i] = o.faces[i];
 		}
 
 		core::stringc MaterialName;
 		u16 faceCount;
-		s16* faces;
+		u16* faces;
 	};
 
 	bool readChunk(io::IReadFile* file, ChunkData* parent);
@@ -156,6 +152,7 @@ private:
 
 	f32* Vertices;
 	u16* Indices;
+	u32* SmoothingGroups;
 	core::array<u16> TempIndices;
 	f32* TCoords;
 	u16 CountVertices;

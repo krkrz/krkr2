@@ -5,6 +5,9 @@
 #ifndef __C_GUI_SKIN_H_INCLUDED__
 #define __C_GUI_SKIN_H_INCLUDED__
 
+#include "IrrCompileConfig.h"
+#ifdef _IRR_COMPILE_WITH_GUI_
+
 #include "IGUISkin.h"
 #include "irrString.h"
 
@@ -24,35 +27,35 @@ namespace gui
 		CGUISkin(EGUI_SKIN_TYPE type, video::IVideoDriver* driver);
 
 		//! destructor
-		~CGUISkin();
+		virtual ~CGUISkin();
 
 		//! returns default color
-		virtual video::SColor getColor(EGUI_DEFAULT_COLOR color);
+		virtual video::SColor getColor(EGUI_DEFAULT_COLOR color) const;
 
 		//! sets a default color
 		virtual void setColor(EGUI_DEFAULT_COLOR which, video::SColor newColor);
 
 		//! returns default color
-		virtual s32 getSize(EGUI_DEFAULT_SIZE size);
+		virtual s32 getSize(EGUI_DEFAULT_SIZE size) const;
 
 		//! sets a default size
 		virtual void setSize(EGUI_DEFAULT_SIZE which, s32 size);
 
 		//! returns the default font
-		virtual IGUIFont* getFont();
+		virtual IGUIFont* getFont(EGUI_DEFAULT_FONT which=EGDF_DEFAULT) const;
 
 		//! sets a default font
-		virtual void setFont(IGUIFont* font);
+		virtual void setFont(IGUIFont* font, EGUI_DEFAULT_FONT which=EGDF_DEFAULT);
 
 		//! sets the sprite bank used for drawing icons
 		virtual void setSpriteBank(IGUISpriteBank* bank);
 
 		//! gets the sprite bank used for drawing icons
-		virtual IGUISpriteBank* getSpriteBank();
+		virtual IGUISpriteBank* getSpriteBank() const;
 
 		//! Returns a default icon
 		/** Returns the sprite index within the sprite bank */
-		virtual u32 getIcon(EGUI_DEFAULT_ICON icon);
+		virtual u32 getIcon(EGUI_DEFAULT_ICON icon) const;
 
 		//! Sets a default icon
 		/** Sets the sprite index used for drawing icons like arrows, 
@@ -64,7 +67,7 @@ namespace gui
 		//! Returns a default text.
 		/** For example for Message box button captions:
 		 "OK", "Cancel", "Yes", "No" and so on. */
-		virtual const wchar_t* getDefaultText(EGUI_DEFAULT_TEXT text);
+		virtual const wchar_t* getDefaultText(EGUI_DEFAULT_TEXT text) const;
 
 		//! Sets a default text. 
 		/** For example for Message box button captions:
@@ -81,8 +84,8 @@ namespace gui
 		is usually not used by ISkin, but can be used for example by more complex 
 		implementations to find out how to draw the part exactly. */
 		virtual void draw3DButtonPaneStandard(IGUIElement* element, 
-			const core::rect<s32>& rect,
-			const core::rect<s32>* clip=0);
+				const core::rect<s32>& rect,
+				const core::rect<s32>* clip=0);
 
 		//! draws a pressed 3d button pane
 		/**	Used for drawing for example buttons in pressed state. 
@@ -94,8 +97,8 @@ namespace gui
 		is usually not used by ISkin, but can be used for example by more complex 
 		implementations to find out how to draw the part exactly. */
 		virtual void draw3DButtonPanePressed(IGUIElement* element, 
-			const core::rect<s32>& rect,
-			const core::rect<s32>* clip=0);
+				const core::rect<s32>& rect,
+				const core::rect<s32>* clip=0);
 
 		//! draws a sunken 3d pane
 		/** Used for drawing the background of edit, combo or check boxes.
@@ -108,9 +111,10 @@ namespace gui
 		\param rect: Defining area where to draw.
 		\param clip: Clip area.	*/
 		virtual void draw3DSunkenPane(IGUIElement* element,
-			video::SColor bgcolor, bool flat, bool fillBackGround,
-			const core::rect<s32>& rect,
-			const core::rect<s32>* clip=0);
+				video::SColor bgcolor, bool flat,
+				bool fillBackGround,
+				const core::rect<s32>& rect,
+				const core::rect<s32>* clip=0);
 
 		//! draws a window background
 		/** Used for drawing the background of dialogs and windows.
@@ -123,9 +127,9 @@ namespace gui
 		\param clip: Clip area.
 		\return Returns rect where to draw title bar text. */
 		virtual core::rect<s32> draw3DWindowBackground(IGUIElement* element,
-			bool drawTitleBar, video::SColor titleBarColor,
-			const core::rect<s32>& rect,
-			const core::rect<s32>* clip=0);
+				bool drawTitleBar, video::SColor titleBarColor,
+				const core::rect<s32>& rect,
+				const core::rect<s32>* clip=0);
 
 		//! draws a standard 3d menu pane
 		/**	Used for drawing for menus and context menus. 
@@ -137,8 +141,8 @@ namespace gui
 		\param rect: Defining area where to draw.
 		\param clip: Clip area.	*/
 		virtual void draw3DMenuPane(IGUIElement* element,
-			const core::rect<s32>& rect,
-			const core::rect<s32>* clip=0);
+				const core::rect<s32>& rect,
+				const core::rect<s32>* clip=0);
 
 		//! draws a standard 3d tool bar
 		/**	Used for drawing for toolbars and menus.
@@ -148,8 +152,8 @@ namespace gui
 		\param rect: Defining area where to draw.
 		\param clip: Clip area.	*/
 		virtual void draw3DToolBar(IGUIElement* element,
-			const core::rect<s32>& rect,
-			const core::rect<s32>* clip=0);
+				const core::rect<s32>& rect,
+				const core::rect<s32>* clip=0);
 
 		//! draws a tab button
 		/**	Used for drawing for tab buttons on top of tabs.
@@ -171,12 +175,13 @@ namespace gui
 		\param background: Specifies if the background should be drawn.
 		\param rect: Defining area where to draw.
 		\param clip: Clip area.	*/
-		virtual void draw3DTabBody(IGUIElement* element, bool border, bool background,
+		virtual void draw3DTabBody(IGUIElement* element, bool border,
+						bool background,
 						const core::rect<s32>& rect,
 						const core::rect<s32>* clip=0);
 
 		//! draws an icon, usually from the skin's sprite bank
-		/**	\param parent: Pointer to the element which wishes to draw this icon. 
+		/**	\param element: Pointer to the element which wishes to draw this icon. 
 		This parameter is usually not used by IGUISkin, but can be used for example 
 		by more complex implementations to find out how to draw the part exactly. 
 		\param icon: Specifies the icon to be drawn.
@@ -186,16 +191,31 @@ namespace gui
 		\param loop: Whether the animation should loop or not
 		\param clip: Clip area.	*/
 		virtual void drawIcon(IGUIElement* element, EGUI_DEFAULT_ICON icon,
-			const core::position2di position, u32 starttime=0, u32 currenttime=0, 
-			bool loop=false, const core::rect<s32>* clip=0);
+				const core::position2di position,
+				u32 starttime=0, u32 currenttime=0, 
+				bool loop=false, const core::rect<s32>* clip=0);
+
+
+		//! draws a 2d rectangle.
+		/** \param element: Pointer to the element which wishes to draw this icon. 
+		This parameter is usually not used by IGUISkin, but can be used for example 
+		by more complex implementations to find out how to draw the part exactly. 
+		\param color: Color of the rectangle to draw. The alpha component specifies how 
+		transparent the rectangle will be.
+		\param pos: Position of the rectangle.
+		\param clip: Pointer to rectangle against which the rectangle will be clipped.
+		If the pointer is null, no clipping will be performed. */
+		virtual void draw2DRectangle(IGUIElement* element, const video::SColor &color, 
+				const core::rect<s32>& pos, const core::rect<s32>* clip = 0);
+
 
 		//! get the type of this skin
-		virtual EGUI_SKIN_TYPE getType();
+		virtual EGUI_SKIN_TYPE getType() const;
 
 		//! Writes attributes of the object.
 		//! Implement this to expose the attributes of your scene node animator for 
 		//! scripting languages, editors, debuggers or xml serialization purposes.
-		virtual void serializeAttributes(io::IAttributes* out, io::SAttributeReadWriteOptions* options=0);
+		virtual void serializeAttributes(io::IAttributes* out, io::SAttributeReadWriteOptions* options=0) const;
 
 		//! Reads attributes of the object.
 		//! Implement this to set the attributes of your scene node animator for 
@@ -207,7 +227,7 @@ namespace gui
 		video::SColor Colors[EGDC_COUNT];
 		s32 Sizes[EGDS_COUNT];
 		u32 Icons[EGDI_COUNT];
-		IGUIFont* Font;
+		IGUIFont* Fonts[EGDF_COUNT];
 		IGUISpriteBank* SpriteBank;
 		core::stringw Texts[EGDT_COUNT];
 		video::IVideoDriver* Driver;
@@ -219,6 +239,8 @@ namespace gui
 
 } // end namespace gui
 } // end namespace irr
+
+#endif // _IRR_COMPILE_WITH_GUI_
 
 #endif
 

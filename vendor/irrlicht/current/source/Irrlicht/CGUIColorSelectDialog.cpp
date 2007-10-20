@@ -3,6 +3,9 @@
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
 #include "CGUIColorSelectDialog.h"
+
+#ifdef _IRR_COMPILE_WITH_GUI_
+
 #include "IGUISkin.h"
 #include "IGUIEnvironment.h"
 #include "IVideoDriver.h"
@@ -13,6 +16,7 @@
 #include "IFileList.h"
 #include "os.h"
 #include "SoftwareDriver2_helper.h"
+#include "CImage.h"
 
 namespace irr
 {
@@ -72,6 +76,7 @@ CGUIColorSelectDialog::CGUIColorSelectDialog( const wchar_t* title, IGUIEnvironm
 		CloseButton->setSprite(EGBS_BUTTON_DOWN, skin->getIcon(EGDI_WINDOW_CLOSE), skin->getColor(EGDC_WINDOW_SYMBOL));
 	}
 	CloseButton->setSubElement(true);
+	CloseButton->setTabStop(false);
 	CloseButton->setAlignment(EGUIA_LOWERRIGHT, EGUIA_LOWERRIGHT, EGUIA_UPPERLEFT, EGUIA_UPPERLEFT); 
 	CloseButton->grab();
 
@@ -154,7 +159,6 @@ CGUIColorSelectDialog::CGUIColorSelectDialog( const wchar_t* title, IGUIEnvironm
 
 	bringToFront(CancelButton);
 	bringToFront(OKButton);
-
 }
 
 
@@ -181,7 +185,6 @@ CGUIColorSelectDialog::~CGUIColorSelectDialog()
 	{
 		ColorRing.Control->drop ();
 	}
-
 }
 
 //! renders a antialiased, colored ring
@@ -193,7 +196,7 @@ void CGUIColorSelectDialog::buildColorRing( const core::dimension2d<s32> & dim, 
 	d.Width = dim.Width * supersample;
 	d.Height = dim.Height * supersample;
 
-	RawTexture = new video::CImage ( irr::video::ECF_A8R8G8B8, d );
+	RawTexture = new video::CImage ( video::ECF_A8R8G8B8, d );
 
 	RawTexture->fill ( 0x00808080 );
 
@@ -312,7 +315,7 @@ void CGUIColorSelectDialog::buildColorRing( const core::dimension2d<s32> & dim, 
 
 	if ( supersample > 1 )
 	{
-		video::CImage * filter = new video::CImage(irr::video::ECF_A8R8G8B8, dim );
+		video::CImage * filter = new video::CImage(video::ECF_A8R8G8B8, dim );
 		RawTexture->copyToScalingBoxFilter ( filter, 0 );
 		RawTexture->drop ();
 		RawTexture = filter;
@@ -334,7 +337,7 @@ void CGUIColorSelectDialog::buildColorRing( const core::dimension2d<s32> & dim, 
 
 
 //! called if an event happened.
-bool CGUIColorSelectDialog::OnEvent(SEvent event)
+bool CGUIColorSelectDialog::OnEvent(const SEvent& event)
 {
 
 	switch(event.EventType)
@@ -355,7 +358,7 @@ bool CGUIColorSelectDialog::OnEvent(SEvent event)
 					}
 				}
 				return true;
-			} break;
+			}
 
 		case EGET_ELEMENT_FOCUS_LOST:
 			Dragging = false;
@@ -378,14 +381,10 @@ bool CGUIColorSelectDialog::OnEvent(SEvent event)
 			break;
 
 		case EGET_LISTBOX_CHANGED:
-			{
-			}
-			break;
-
 		case EGET_LISTBOX_SELECTED_AGAIN:
-			{
-			}
+		default:
 			break;
+			
 		}
 		break;
 	case EET_MOUSE_INPUT_EVENT:
@@ -418,8 +417,11 @@ bool CGUIColorSelectDialog::OnEvent(SEvent event)
 				DragStart.Y = event.MouseInput.Y;
 				return true;
 			}
+		default:
 			break;
 		}
+	default:
+		break;
 	}
 
 	return Parent ? Parent->OnEvent(event) : false;
@@ -444,7 +446,7 @@ void CGUIColorSelectDialog::draw()
 		rect.UpperLeftCorner.X += 2;
 		rect.LowerRightCorner.X -= skin->getSize(EGDS_WINDOW_BUTTON_WIDTH) + 5;
 
-		IGUIFont* font = skin->getFont();
+		IGUIFont* font = skin->getFont(EGDF_WINDOW);
 		if (font)
 			font->draw(Text.c_str(), rect, skin->getColor(EGDC_ACTIVE_CAPTION), false, true, 
 			&AbsoluteClippingRect);
@@ -462,6 +464,7 @@ void CGUIColorSelectDialog::sendSelectedEvent()
 	SEvent event;
 	event.EventType = EET_GUI_EVENT;
 	event.GUIEvent.Caller = this;
+	event.GUIEvent.Element = 0;
 	event.GUIEvent.EventType = EGET_FILE_SELECTED;
 	Parent->OnEvent(event);
 }
@@ -472,9 +475,12 @@ void CGUIColorSelectDialog::sendCancelEvent()
 	SEvent event;
 	event.EventType = EET_GUI_EVENT;
 	event.GUIEvent.Caller = this;
+	event.GUIEvent.Element = 0;
 	event.GUIEvent.EventType = EGET_FILE_CHOOSE_DIALOG_CANCELLED;
 	Parent->OnEvent(event);
 }
 
 } // end namespace gui
 } // end namespace irr
+
+#endif // _IRR_COMPILE_WITH_GUI_

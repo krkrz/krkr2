@@ -287,5 +287,5 @@ void CD3D9HLSLMaterialRenderer::printHLSLVariables(LPD3DXCONSTANTTABLE table)
 } // end namespace video
 } // end namespace irr
 
-#endif
+#endif // _IRR_COMPILE_WITH_DIRECT3D_9_
 

@@ -4,22 +4,18 @@
 
 #include "IrrCompileConfig.h"
 
-#if defined(_IRR_WINDOWS_) || defined(_XBOX)
- 
-#ifdef _IRR_WINDOWS_ 
+static const char* const copyright = "Irrlicht Engine (c) 2002-2007 Nikolaus Gebhardt";
+
+#ifdef _IRR_WINDOWS_
 	#include <windows.h>
-#endif // _IRR_WINDOWS_
+	#if defined(_DEBUG) && !defined(__GNUWIN32__)
+		#include <crtdbg.h>
+	#endif // _DEBUG
+#endif
 
-#ifdef _XBOX
+#ifdef _IRR_XBOX_PLATFORM_
 	#include <xtl.h>
-#endif // _XBOX
-
-#if defined(_DEBUG) && !defined(__GNUWIN32__)
-#include <crtdbg.h>
-#endif // _DEBUG
-
-#endif // defined(_IRR_WINDOWS_) || defined(_XBOX)
-
+#endif
 
 #include "irrlicht.h"
 
@@ -27,12 +23,12 @@ namespace irr
 {
 	//! stub for calling createDeviceEx
 	IRRLICHT_API IrrlichtDevice* IRRCALLCONV createDevice(video::E_DRIVER_TYPE driverType,
-											const core::dimension2d<s32>& windowSize,
-											u32 bits, bool fullscreen, 
-											bool stencilbuffer, bool vsync, IEventReceiver* res,
-											const char* version)
+			const core::dimension2d<s32>& windowSize,
+			u32 bits, bool fullscreen, 
+			bool stencilbuffer, bool vsync, IEventReceiver* res,
+			const char* version)
 	{
-		irr::SIrrlichtCreationParameters p;
+		SIrrlichtCreationParameters p;
 		p.DriverType = driverType;
 		p.WindowSize = windowSize;
 		p.Bits = bits;
@@ -48,24 +44,18 @@ namespace irr
 } // end namespace irr
 
 
-
-#if defined(_IRR_WINDOWS_) || defined(_XBOX)
-
-#ifdef _MSC_VER
-#pragma comment(exestr, "Irrlicht Engine (c) 2002-2007 Nikolaus Gebhardt")
-#endif
+#if defined(_IRR_WINDOWS_API_)
 
 BOOL APIENTRY DllMain( HANDLE hModule, 
                        DWORD  ul_reason_for_call, 
-                       LPVOID lpReserved
-					 )
+                       LPVOID lpReserved )
 {
 	// _crtBreakAlloc = 139;
 
     switch (ul_reason_for_call)
 	{
 		case DLL_PROCESS_ATTACH:
-			#if defined(_DEBUG) && !defined(__GNUWIN32__)
+			#if defined(_DEBUG) && !defined(__GNUWIN32__) && !defined(__BORLANDC__)
 				_CrtSetDbgFlag(_CRTDBG_LEAK_CHECK_DF | _CRTDBG_ALLOC_MEM_DF);
 			#endif
 			break;
@@ -77,4 +67,5 @@ BOOL APIENTRY DllMain( HANDLE hModule,
     return TRUE;
 }
 
-#endif // defined(_IRR_WINDOWS_) || defined(_XBOX)
+#endif // defined(_IRR_WINDOWS_)
+

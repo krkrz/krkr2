@@ -19,29 +19,29 @@ class vector2d
 {
 public:
 
-	vector2d() : X(0), Y(0) {};
-	vector2d(T nx, T ny) : X(nx), Y(ny) {};
-	vector2d(const vector2d<T>& other) : X(other.X), Y(other.Y) {};
+	vector2d() : X(0), Y(0) {}
+	vector2d(T nx, T ny) : X(nx), Y(ny) {}
+	vector2d(const vector2d<T>& other) : X(other.X), Y(other.Y) {}
 
 	// operators
 
-	vector2d<T> operator-() const { return vector2d<T>(-X, -Y);   }
+	vector2d<T> operator-() const { return vector2d<T>(-X, -Y); }
 
-	vector2d<T>& operator=(const vector2d<T>& other)	{ X = other.X; Y = other.Y; return *this; }
+	vector2d<T>& operator=(const vector2d<T>& other) { X = other.X; Y = other.Y; return *this; }
 
 	vector2d<T> operator+(const vector2d<T>& other) const { return vector2d<T>(X + other.X, Y + other.Y);	}
-	vector2d<T>& operator+=(const vector2d<T>& other)	{ X+=other.X; Y+=other.Y; return *this; }
+	vector2d<T>& operator+=(const vector2d<T>& other) { X+=other.X; Y+=other.Y; return *this; }
 
 	vector2d<T> operator-(const vector2d<T>& other) const { return vector2d<T>(X - other.X, Y - other.Y);	}
-	vector2d<T>& operator-=(const vector2d<T>& other)	{ X-=other.X; Y-=other.Y; return *this; }
+	vector2d<T>& operator-=(const vector2d<T>& other) { X-=other.X; Y-=other.Y; return *this; }
 
 	vector2d<T> operator*(const vector2d<T>& other) const { return vector2d<T>(X * other.X, Y * other.Y);	}
-	vector2d<T>& operator*=(const vector2d<T>& other)	{ X*=other.X; Y*=other.Y; return *this; }
+	vector2d<T>& operator*=(const vector2d<T>& other) { X*=other.X; Y*=other.Y; return *this; }
 	vector2d<T> operator*(const T v) const { return vector2d<T>(X * v, Y * v);	}
 	vector2d<T>& operator*=(const T v) { X*=v; Y*=v; return *this; }
 
 	vector2d<T> operator/(const vector2d<T>& other) const { return vector2d<T>(X / other.X, Y / other.Y);	}
-	vector2d<T>& operator/=(const vector2d<T>& other)	{ X/=other.X; Y/=other.Y; return *this; }
+	vector2d<T>& operator/=(const vector2d<T>& other) { X/=other.X; Y/=other.Y; return *this; }
 	vector2d<T> operator/(const T v) const { return vector2d<T>(X / v, Y / v);	}
 	vector2d<T>& operator/=(const T v) { X/=v; Y/=v; return *this; }
 
@@ -59,8 +59,7 @@ public:
 	//! returns if this vector equals the other one, taking floating point rounding errors into account
 	bool equals(const vector2d<T>& other) const
 	{
-		return core::equals(X, other.X) &&
-			   core::equals(Y, other.Y);
+		return core::equals(X, other.X) && core::equals(Y, other.Y);
 	}
 
 	void set(T nx, T ny) {X=nx; Y=ny; }
@@ -68,9 +67,9 @@ public:
 
 	//! Returns the length of the vector
 	//! \return Returns the length of the vector.
-	f64 getLength() const { return sqrt(X*X + Y*Y); }
+	T getLength() const { return (T)sqrt((f64)(X*X + Y*Y)); }
 
-	//! Returns the squared lenth of this vector
+	//! Returns the squared length of this vector
 	/** This is useful because it is much faster than getLength(). */
 	T getLengthSQ() const { return X*X + Y*Y; }
 
@@ -80,15 +79,15 @@ public:
 		return X*other.X + Y*other.Y;
 	}
 
-	//! Returns distance from another point. Here, the vector is interpreted as
-	//! point in 2 dimensional space.
-	f64 getDistanceFrom(const vector2d<T>& other) const
+	//! Returns distance from another point. Here, the vector is interpreted
+	//! as a point in 2 dimensional space.
+	T getDistanceFrom(const vector2d<T>& other) const
 	{
 		return vector2d<T>(X - other.X, Y - other.Y).getLength();
 	}
 
-	//! Returns squared distance from another point. Here, the vector is interpreted as
-	//! point in 2 dimensional space.
+	//! Returns squared distance from another point. Here, the vector is
+	//! interpreted as a point in 2 dimensional space.
 	T getDistanceFromSQ(const vector2d<T>& other) const
 	{
 		return vector2d<T>(X - other.X, Y - other.Y).getLengthSQ();
@@ -113,14 +112,10 @@ public:
 	//! normalizes the vector.
 	vector2d<T>& normalize()
 	{
-		T l = core::reciprocal_squareroot ( X*X + Y*Y );
-/*
-		T l = (T)getLength();
+		T l = X*X + Y*Y;
 		if (l == 0)
 			return *this;
-
-		l = (T)1.0 / l;
-*/
+		l = core::reciprocal_squareroot ( (f32)l );
 		X *= l;
 		Y *= l;
 		return *this;
@@ -131,19 +126,19 @@ public:
 	//! \return Returns a value between 0 and 360.
 	f64 getAngleTrig() const
 	{
-		if (X == 0.0)
-			return Y < 0.0 ? 270.0 : 90.0;
+		if (X == 0)
+			return Y < 0 ? 270 : 90;
 		else
 		if (Y == 0)
-			return X < 0.0 ? 180.0 : 0.0;
+			return X < 0 ? 180 : 0;
 
-		if ( Y > 0.0)
-			if (X > 0.0)
+		if ( Y > 0)
+			if (X > 0)
 				return atan(Y/X) * RADTODEG64;
 			else
 				return 180.0-atan(Y/-X) * RADTODEG64;
 		else
-			if (X > 0.0)
+			if (X > 0)
 				return 360.0-atan(-Y/X) * RADTODEG64;
 			else
 				return 180.0+atan(-Y/-X) * RADTODEG64;
@@ -153,24 +148,24 @@ public:
 	//! \return Returns a value between 0 and 360.
 	inline f64 getAngle() const
 	{
-		if (Y == 0.0)  // corrected thanks to a suggestion by Jox
-			return X < 0.0 ? 180.0 : 0.0; 
-		else if (X == 0.0) 
-			return Y < 0.0 ? 90.0 : 270.0;
+		if (Y == 0)  // corrected thanks to a suggestion by Jox
+			return X < 0 ? 180 : 0; 
+		else if (X == 0) 
+			return Y < 0 ? 90 : 270;
 
 		f64 tmp = Y / getLength();
 		tmp = atan(sqrt(1 - tmp*tmp) / tmp) * RADTODEG64;
 
-		if (X>0.0 && Y>0.0)
+		if (X>0 && Y>0)
 			return tmp + 270;
 		else
-		if (X>0.0 && Y<0.0)
+		if (X>0 && Y<0)
 			return tmp + 90;
 		else
-		if (X<0.0 && Y<0.0)
+		if (X<0 && Y<0)
 			return 90 - tmp;
 		else
-		if (X<0.0 && Y>0.0)
+		if (X<0 && Y>0)
 			return 270 - tmp;
 
 		return tmp;
@@ -185,8 +180,9 @@ public:
 		if (tmp == 0.0)
 			return 90.0;
 
-		tmp = tmp / sqrt((X*X + Y*Y) * (b.X*b.X + b.Y*b.Y));
-		if (tmp < 0.0) tmp = -tmp;
+		tmp = tmp / sqrt((f64)((X*X + Y*Y) * (b.X*b.X + b.Y*b.Y)));
+		if (tmp < 0.0)
+			tmp = -tmp;
 
 		return atan(sqrt(1 - tmp*tmp) / tmp) * RADTODEG64;
 	}
@@ -212,10 +208,10 @@ public:
 		return vector2d<T>(other.X*inv + X*d, other.Y*inv + Y*d);
 	}
 
-	//! Returns interpolated vector. ( quadratic )
-	/** \param other0: other vector to interpolate between
-		\param other1: other vector to interpolate between
-	\param factor: value between 0.0f and 1.0f. */
+	//! Returns (quadratically) interpolated vector between this and the two given ones.
+	/** \param v2: second vector to interpolate with
+	\param v3: third vector to interpolate with
+	\param d: value between 0.0f and 1.0f. */
 	vector2d<T> getInterpolated_quadratic(const vector2d<T>& v2, const vector2d<T>& v3, const T d) const
 	{
 		// this*(1-d)*(1-d) + 2 * v2 * (1-d) + v3 * d * d;
@@ -225,11 +221,13 @@ public:
 		const T mul2 = d * d;
 
 		return vector2d<T> ( X * mul0 + v2.X * mul1 + v3.X * mul2,
-							 Y * mul0 + v2.Y * mul1 + v3.Y * mul2
-							);
+					Y * mul0 + v2.Y * mul1 + v3.Y * mul2);
 	}
 
-	//! sets this vector to the interpolated vector between a and b. 
+	//! sets this vector to the linearly interpolated vector between a and b.
+	/** \param a: first vector to interpolate with
+	\param b: second vector to interpolate with
+	\param t: value between 0.0f and 1.0f. */
 	void interpolate(const vector2d<T>& a, const vector2d<T>& b, const f32 t)
 	{
 		X = b.X + ( ( a.X - b.X ) * t );

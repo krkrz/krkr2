@@ -6,12 +6,12 @@
 #define __I_SHADOW_VOLUME_SCENE_NODE_H_INCLUDED__
 
 #include "ISceneNode.h"
-#include "IMesh.h"
 
 namespace irr
 {
 namespace scene
 {
+	class IMesh;
 
 	//! Scene node for rendering a shadow volume into a stencil buffer.
 	class IShadowVolumeSceneNode : public ISceneNode
@@ -23,7 +23,7 @@ namespace scene
 			: ISceneNode(parent, mgr, id) {}
 
 		//! sets the mesh from which the shadow volume should be generated.
-		virtual void setMeshToRenderFrom(IMesh* mesh) = 0;
+		virtual void setMeshToRenderFrom(const IMesh* mesh) = 0;
 	};
 
 } // end namespace scene

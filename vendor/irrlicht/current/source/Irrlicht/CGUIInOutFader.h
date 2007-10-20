@@ -5,6 +5,9 @@
 #ifndef __C_GUI_IN_OUT_FADER_H_INCLUDED__
 #define __C_GUI_IN_OUT_FADER_H_INCLUDED__
 
+#include "IrrCompileConfig.h"
+#ifdef _IRR_COMPILE_WITH_GUI_
+
 #include "IGUIInOutFader.h"
 
 namespace irr
@@ -19,9 +22,6 @@ namespace gui
 		//! constructor
 		CGUIInOutFader(IGUIEnvironment* environment, IGUIElement* parent,
 			s32 id, core::rect<s32> rectangle);
-
-		//! destructor
-		~CGUIInOutFader();
 
 		//! draws the element and its children
 		virtual void draw();
@@ -43,7 +43,7 @@ namespace gui
 		virtual bool isReady() const;
 
 		//! Writes attributes of the element.
-		virtual void serializeAttributes(io::IAttributes* out, io::SAttributeReadWriteOptions* options);
+		virtual void serializeAttributes(io::IAttributes* out, io::SAttributeReadWriteOptions* options) const;
 
 		//! Reads attributes of the element
 		virtual void deserializeAttributes(io::IAttributes* in, io::SAttributeReadWriteOptions* options);
@@ -70,5 +70,7 @@ namespace gui
 } // end namespace gui
 } // end namespace irr
 
-#endif
+#endif // _IRR_COMPILE_WITH_GUI_
+
+#endif // __C_GUI_IN_OUT_FADER_H_INCLUDED__
 

@@ -41,19 +41,21 @@ namespace scene
 		virtual video::SMaterial& getMaterial(u32 i);
 
 		//! returns amount of materials used by this scene node.
-		virtual u32 getMaterialCount();
+		virtual u32 getMaterialCount() const;
 
 		//! Returns type of the scene node
-		virtual ESCENE_NODE_TYPE getType() { return ESNT_CUBE; }
+		virtual ESCENE_NODE_TYPE getType() const { return ESNT_CUBE; }
 
 		//! Writes attributes of the scene node.
-		virtual void serializeAttributes(io::IAttributes* out, io::SAttributeReadWriteOptions* options=0);
+		virtual void serializeAttributes(io::IAttributes* out, io::SAttributeReadWriteOptions* options=0) const;
 
 		//! Reads attributes of the scene node.
 		virtual void deserializeAttributes(io::IAttributes* in, io::SAttributeReadWriteOptions* options=0);
 
-	private:
+		//! Creates a clone of this scene node and its children.
+		virtual ISceneNode* clone(ISceneNode* newParent=0, ISceneManager* newManager=0);
 
+	private:
 		void setSize();
 
 		SMeshBuffer Buffer;

@@ -2,6 +2,9 @@
 #ifndef __C_GUI_SPRITE_BANK_H_INCLUDED__
 #define __C_GUI_SPRITE_BANK_H_INCLUDED__
 
+#include "IrrCompileConfig.h"
+#ifdef _IRR_COMPILE_WITH_GUI_
+
 #include "IGUISpriteBank.h"
 
 namespace irr
@@ -29,8 +32,8 @@ public:
 	virtual core::array< core::rect<s32> >& getPositions();
 	virtual core::array< SGUISprite >& getSprites();
 
-	virtual u32 getTextureCount();
-	virtual video::ITexture* getTexture(u32 index);
+	virtual u32 getTextureCount() const;
+	virtual video::ITexture* getTexture(u32 index) const;
 	virtual void addTexture(video::ITexture* texture);
 	virtual void setTexture(u32 index, video::ITexture* texture);
 
@@ -51,6 +54,8 @@ protected:
 
 } // end namespace gui
 } // end namespace irr
+
+#endif // _IRR_COMPILE_WITH_GUI_
 
 #endif // __C_GUI_SPRITE_BANK_H_INCLUDED__
 

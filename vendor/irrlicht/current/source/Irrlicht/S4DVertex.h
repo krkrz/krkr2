@@ -85,7 +85,7 @@ struct sCompressedVec4
 		argb = value;
 	}
 
-	void setColorf ( const irr::video::SColorf & color )
+	void setColorf ( const video::SColorf & color )
 	{
 		argb = 	core::floor32 ( color.a * 255.f ) << 24 |
 				core::floor32 ( color.r * 255.f ) << 16 |
@@ -131,7 +131,7 @@ struct sVec4
 	}
 
 
-	void setColorf ( const irr::video::SColorf & color )
+	void setColorf ( const video::SColorf & color )
 	{
 		x = color.a;
 		y = color.r;
@@ -457,7 +457,7 @@ struct sScanLineData
 /*
 	load a color value
 */
-inline void getTexel_plain (	tFixPoint &r, tFixPoint &g, tFixPoint &b, 
+inline void getTexel_plain2 (	tFixPoint &r, tFixPoint &g, tFixPoint &b, 
 							const sVec4 &v
 							)
 {

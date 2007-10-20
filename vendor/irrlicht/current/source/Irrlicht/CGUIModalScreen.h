@@ -5,6 +5,9 @@
 #ifndef __C_GUI_MODAL_SCREEN_H_INCLUDED__
 #define __C_GUI_MODAL_SCREEN_H_INCLUDED__
 
+#include "IrrCompileConfig.h"
+#ifdef _IRR_COMPILE_WITH_GUI_
+
 #include "IGUIElement.h"
 
 namespace irr
@@ -19,14 +22,15 @@ namespace gui
 		//! constructor
 		CGUIModalScreen(IGUIEnvironment* environment, IGUIElement* parent, s32 id);
 
-		//! destructor
-		~CGUIModalScreen();
-
 		//! called if an event happened.
-		virtual bool OnEvent(SEvent event);
+		virtual bool OnEvent(const SEvent& event);
 
 		//! Removes a child.
 		virtual void removeChild(IGUIElement* child);
+
+		//! Adds a child
+		virtual void addChild(IGUIElement* child);
+
 
 		//! draws the element and its children
 		virtual void draw();
@@ -35,7 +39,7 @@ namespace gui
 		virtual void updateAbsolutePosition();
 
 		//! Writes attributes of the element.
-		virtual void serializeAttributes(io::IAttributes* out, io::SAttributeReadWriteOptions* options);
+		virtual void serializeAttributes(io::IAttributes* out, io::SAttributeReadWriteOptions* options) const;
 
 		//! Reads attributes of the element
 		virtual void deserializeAttributes(io::IAttributes* in, io::SAttributeReadWriteOptions* options);
@@ -49,5 +53,6 @@ namespace gui
 } // end namespace gui
 } // end namespace irr
 
-#endif
+#endif // _IRR_COMPILE_WITH_GUI_
 
+#endif

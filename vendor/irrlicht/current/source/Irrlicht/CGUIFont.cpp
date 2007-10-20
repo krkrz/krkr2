@@ -3,6 +3,8 @@
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
 #include "CGUIFont.h"
+#ifdef _IRR_COMPILE_WITH_GUI_
+
 #include "os.h"
 #include "IGUIEnvironment.h"
 #include "IXMLReader.h"
@@ -38,7 +40,6 @@ CGUIFont::CGUIFont(IGUIEnvironment *env, const c8* filename)
 }
 
 
-
 //! destructor
 CGUIFont::~CGUIFont()
 {
@@ -49,6 +50,7 @@ CGUIFont::~CGUIFont()
 		SpriteBank->drop();
 
 }
+
 
 //! loads a font file from xml
 bool CGUIFont::load(io::IXMLReader* xml)
@@ -173,7 +175,6 @@ bool CGUIFont::load(io::IXMLReader* xml)
 				Areas.push_back(a);
 			}
 		}
-
 	}
 
 	// set bad character
@@ -183,6 +184,7 @@ bool CGUIFont::load(io::IXMLReader* xml)
 
 	return true;
 }
+
 
 void CGUIFont::setMaxHeight()
 {
@@ -211,6 +213,7 @@ bool CGUIFont::load(io::IReadFile* file)
 				file->getFileName());
 }
 
+
 //! loads a font file, native file needed, for texture parsing
 bool CGUIFont::load(const c8* filename)
 {
@@ -219,6 +222,7 @@ bool CGUIFont::load(const c8* filename)
 	return loadTexture(Driver->createImageFromFile( filename ),
 				filename);
 }
+
 
 //! load & prepare font from ITexture
 bool CGUIFont::loadTexture(video::IImage* image, const c8* name)
@@ -272,7 +276,6 @@ bool CGUIFont::loadTexture(video::IImage* image, const c8* name)
 }
 
 
-
 void CGUIFont::readPositions32bit(video::IImage* image, s32& lowerRightPositions)
 {
 	const core::dimension2d<s32>& size = image->getDimension();
@@ -284,17 +287,13 @@ void CGUIFont::readPositions32bit(video::IImage* image, s32& lowerRightPositions
 		return;
 	}
 
-	// TODO: Hack till it's getting better...
-	// Pixel(0,0) == half opacity assume font with alpha..
-
-	s32 truealphaFont = ( (p[0] & 0xFF000000) == 0x7f000000 );
+	// fix half alpha of top left pixel in some font textures
 	p[0] |= 0xFF000000;
 
 	s32 colorTopLeft = p[0];
 	s32 colorLowerRight = *(p+1);
 	s32 colorBackGround = *(p+2);
-	s32 colorBackGroundTransparent = 0x00FFFFFF & colorBackGround;
-	s32 colorFont = 0xFFFFFFFF;
+	s32 colorBackGroundTransparent = 0; // 0x00FFFFFF & colorBackGround;
 
 	*(p+1) = colorBackGround;
 
@@ -348,11 +347,6 @@ void CGUIFont::readPositions32bit(video::IImage* image, s32& lowerRightPositions
 			{
 				*p = colorBackGroundTransparent;
 			}
-			else
-			if ( 0 == truealphaFont )
-			{
-				*p = colorFont;
-			}
 			++p;
 		}
 	}
@@ -361,8 +355,6 @@ void CGUIFont::readPositions32bit(video::IImage* image, s32& lowerRightPositions
 
 	image->unlock();
 }
-
-
 
 
 void CGUIFont::readPositions16bit(video::IImage* image, s32& lowerRightPositions)
@@ -376,14 +368,13 @@ void CGUIFont::readPositions16bit(video::IImage* image, s32& lowerRightPositions
 		return;
 	}
 
-	s16 truealphaFont = ( (p[0] & 0x8000) == 0x8000 );
+	// fix half alpha of top left pixel in some font textures
 	p[0] |= 0x8000;
 
-	s16 colorTopLeft = p[0];;
+	s16 colorTopLeft = p[0];
 	s16 colorLowerRight = *(p+1);
 	s16 colorBackGround = *(p+2);
-	s16 colorBackGroundTransparent = 0x7FFF & colorBackGround;
-	u16 colorFont = 0xFFFF;
+	s16 colorBackGroundTransparent = 0; // 0x7FFF & colorBackGround;
 
 	*(p+1) = colorBackGround;
 
@@ -436,11 +427,6 @@ void CGUIFont::readPositions16bit(video::IImage* image, s32& lowerRightPositions
 			else
 			if (*p == colorBackGround)
 				*p = colorBackGroundTransparent;
-			else
-			if ( 0 == truealphaFont )
-			{
-				*p = colorFont;
-			}
 			++p;
 		}
 	}
@@ -452,22 +438,46 @@ void CGUIFont::readPositions16bit(video::IImage* image, s32& lowerRightPositions
 
 
 //! returns the dimension of text
-core::dimension2d<s32> CGUIFont::getDimension(const wchar_t* text)
+core::dimension2d<s32> CGUIFont::getDimension(const wchar_t* text) const
 {
 	core::dimension2d<s32> dim(0, 0);
+	core::dimension2d<s32> thisLine(0, MaxHeight);
 
 	for (const wchar_t* p = text; *p; ++p)
 	{
-		SFontArea &area = Areas[getAreaFromCharacter(*p)];
+		bool lineBreak=false;
+		if (*p == L'\r') // Mac or Windows breaks
+		{
+			lineBreak = true;
+			if (p[1] == L'\n') // Windows breaks
+				++p;
+		}
+		else if (*p == L'\n') // Unix breaks
+		{
+			lineBreak = true;
+		}
+		if (lineBreak)
+		{
+			dim.Height += thisLine.Height;
+			if (dim.Width < thisLine.Width)
+				dim.Width = thisLine.Width;
+			thisLine.Width = 0;
+			continue;
+		}
 
-		dim.Width += area.underhang;
-		dim.Width += area.width + area.overhang + GlobalKerningWidth;
+		const SFontArea &area = Areas[getAreaFromCharacter(*p)];
+
+		thisLine.Width += area.underhang;
+		thisLine.Width += area.width + area.overhang + GlobalKerningWidth;
 	}
 
-	dim.Height = MaxHeight;
+	dim.Height += thisLine.Height;
+	if (dim.Width < thisLine.Width)
+		dim.Width = thisLine.Width;
 
 	return dim;
 }
+
 
 //! set an Pixel Offset on Drawing ( scale position on width )
 void CGUIFont::setKerningWidth ( s32 kerning )
@@ -475,8 +485,9 @@ void CGUIFont::setKerningWidth ( s32 kerning )
 	GlobalKerningWidth = kerning;
 }
 
+
 //! set an Pixel Offset on Drawing ( scale position on width )
-s32 CGUIFont::getKerningWidth(const wchar_t* thisLetter, const wchar_t* previousLetter)
+s32 CGUIFont::getKerningWidth(const wchar_t* thisLetter, const wchar_t* previousLetter) const
 {
 	s32 ret = GlobalKerningWidth;
 
@@ -493,26 +504,29 @@ s32 CGUIFont::getKerningWidth(const wchar_t* thisLetter, const wchar_t* previous
 	return ret;
 }
 
+
 //! set an Pixel Offset on Drawing ( scale position on height )
 void CGUIFont::setKerningHeight ( s32 kerning )
 {
 	GlobalKerningHeight = kerning;
 }
 
+
 //! set an Pixel Offset on Drawing ( scale position on height )
-s32 CGUIFont::getKerningHeight ()
+s32 CGUIFont::getKerningHeight () const
 {
 	return GlobalKerningHeight;
 }
 
+
 //! returns the sprite number from a given character
-u32 CGUIFont::getSpriteNoFromChar(const wchar_t *c)
+u32 CGUIFont::getSpriteNoFromChar(const wchar_t *c) const
 {
 	return Areas[getAreaFromCharacter(*c)].spriteno;
 }
 
 
-s32 CGUIFont::getAreaFromCharacter(const wchar_t c)
+s32 CGUIFont::getAreaFromCharacter(const wchar_t c) const
 {
 	core::map<wchar_t, s32>::Node* n = CharacterMap.find(c);
 	if (n)
@@ -520,6 +534,7 @@ s32 CGUIFont::getAreaFromCharacter(const wchar_t c)
 	else
 		return WrongCharacter;
 }
+
 
 /*
 //! draws an text and clips it to the specified rectangle if wanted
@@ -558,7 +573,7 @@ void CGUIFont::draw(const wchar_t* text, const core::rect<s32>& position, video:
 */
 
 
-//! draws an text and clips it to the specified rectangle if wanted
+//! draws some text and clips it to the specified rectangle if wanted
 void CGUIFont::draw(const wchar_t* text, const core::rect<s32>& position, video::SColor color, bool hcenter, bool vcenter, const core::rect<s32>* clip)
 {
 	if (!Driver)
@@ -568,15 +583,21 @@ void CGUIFont::draw(const wchar_t* text, const core::rect<s32>& position, video:
 	core::position2d<s32> offset = position.UpperLeftCorner;
 	core::rect<s32> pos;
 
-	if (hcenter || vcenter)
-	{
+	if (hcenter || vcenter || clip)
 		textDimension = getDimension(text);
 
-		if (hcenter)
-			offset.X = ((position.getWidth() - textDimension.Width)>>1) + offset.X;
+	if (hcenter)
+		offset.X = ((position.getWidth() - textDimension.Width)>>1) + offset.X;
 
-		if (vcenter)
-			offset.Y = ((position.getHeight() - textDimension.Height)>>1) + offset.Y;
+	if (vcenter)
+		offset.Y = ((position.getHeight() - textDimension.Height)>>1) + offset.Y;
+
+	if (clip)
+	{
+		core::rect<s32> clippedRect(offset, textDimension);
+		clippedRect.clipAgainst(*clip);
+		if (!clippedRect.isValid())
+			return;
 	}
 
 	while(*text)
@@ -593,15 +614,16 @@ void CGUIFont::draw(const wchar_t* text, const core::rect<s32>& position, video:
 	}
 }
 
+
 //! Calculates the index of the character in the text which is on a specific position.
-s32 CGUIFont::getCharacterFromPos(const wchar_t* text, s32 pixel_x)
+s32 CGUIFont::getCharacterFromPos(const wchar_t* text, s32 pixel_x) const
 {
 	s32 x = 0;
 	s32 idx = 0;
 
 	while (text[idx])
 	{
-		SFontArea &a = Areas[getAreaFromCharacter(text[idx])];
+		const SFontArea& a = Areas[getAreaFromCharacter(text[idx])];
 
 		x += a.width + a.overhang + a.underhang;
 
@@ -614,10 +636,13 @@ s32 CGUIFont::getCharacterFromPos(const wchar_t* text, s32 pixel_x)
 	return -1;
 }
 
-IGUISpriteBank* CGUIFont::getSpriteBank()
+
+IGUISpriteBank* CGUIFont::getSpriteBank() const
 {
 	return SpriteBank;
 }
 
 } // end namespace gui
 } // end namespace irr
+
+#endif // _IRR_COMPILE_WITH_GUI_

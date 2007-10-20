@@ -8,16 +8,16 @@
 #include "S3DVertex.h"
 #include "os.h"
 #include "CShadowVolumeSceneNode.h"
-#include "ICameraSceneNode.h"
-#include "IAnimatedMeshMS3D.h"
 #include "IAnimatedMeshMD3.h"
-#include "IAnimatedMeshX.h"
-#include "IAnimatedMeshB3d.h"
+#include "ISkinnedMesh.h"
 #include "IDummyTransformationSceneNode.h"
+#include "IBoneSceneNode.h"
 #include "IMaterialRenderer.h"
+#include "IMesh.h"
 #include "IMeshCache.h"
 #include "IAnimatedMesh.h"
 #include "quaternion.h"
+
 
 namespace irr
 {
@@ -25,13 +25,14 @@ namespace scene
 {
 
 
-
 //! constructor
 CAnimatedMeshSceneNode::CAnimatedMeshSceneNode(IAnimatedMesh* mesh, ISceneNode* parent, ISceneManager* mgr, s32 id,
 			const core::vector3df& position, const core::vector3df& rotation,	const core::vector3df& scale)
 : IAnimatedMeshSceneNode(parent, mgr, id, position, rotation, scale), Mesh(0),
 	BeginFrameTime(0), StartFrame(0), EndFrame(0), FramesPerSecond(25.f / 1000.f ),
-	CurrentFrameNr(0), Looping(true), ReadOnlyMaterials(false),
+	CurrentFrameNr(0.f), JointMode(0), JointsUsed(false),
+	TransitionTime(0), Transiting(0.f), TransitingBlend(0.f),
+	Looping(true), ReadOnlyMaterials(false),
 	LoopCallBack(0), PassCount(0), Shadow(0)
 {
 	#ifdef _DEBUG
@@ -44,7 +45,6 @@ CAnimatedMeshSceneNode::CAnimatedMeshSceneNode(IAnimatedMesh* mesh, ISceneNode* 
 }
 
 
-
 //! destructor
 CAnimatedMeshSceneNode::~CAnimatedMeshSceneNode()
 {
@@ -54,60 +54,102 @@ CAnimatedMeshSceneNode::~CAnimatedMeshSceneNode()
 	if (Shadow)
 		Shadow->drop();
 
-	for (s32 i=0; i<(s32)JointChildSceneNodes.size(); ++i)
-		if (JointChildSceneNodes[i])
-			JointChildSceneNodes[i]->drop();
+	//for (u32 i=0; i<JointChildSceneNodes.size(); ++i)
+	//	if (JointChildSceneNodes[i])
+	//		JointChildSceneNodes[i]->drop();
 
 	if (LoopCallBack)
 		LoopCallBack->drop();
 }
 
 
-
 //! Sets the current frame. From now on the animation is played from this frame.
-void CAnimatedMeshSceneNode::setCurrentFrame(s32 frame)
+void CAnimatedMeshSceneNode::setCurrentFrame(f32 frame)
 {
 	// if you pass an out of range value, we just clamp it
-	CurrentFrameNr = core::s32_clamp ( frame, StartFrame, EndFrame );
+	CurrentFrameNr = core::clamp ( frame, (f32)StartFrame, (f32)EndFrame );
 
 	BeginFrameTime = os::Timer::getTime() - (s32)((CurrentFrameNr - StartFrame) / FramesPerSecond);
+
+	beginTransition(); //transit to this frame if enabled
 }
 
 
 //! Returns the current displayed frame number.
-s32 CAnimatedMeshSceneNode::getFrameNr()
+f32 CAnimatedMeshSceneNode::getFrameNr() const
 {
 	return CurrentFrameNr;
 }
 
 
-u32 CAnimatedMeshSceneNode::buildFrameNr( u32 timeMs)
+f32 CAnimatedMeshSceneNode::buildFrameNr(u32 timeMs)
 {
-	s32 len = EndFrame - StartFrame + 1;
+	if (Transiting!=0.f)
+	{
+		TransitingBlend = (f32)(timeMs-BeginFrameTime) * Transiting;
+		if (TransitingBlend > 1.f)
+		{
+			Transiting=0.f;
+			TransitingBlend=0.f;
+		}
+	}
 
+	if (StartFrame==EndFrame)
+		return (f32)StartFrame; //Support for non animated meshes
+	if (FramesPerSecond==0.f)
+		return (f32)StartFrame;
 
-	s32 deltaFrame = core::floor32 ( f32 ( timeMs - BeginFrameTime ) * FramesPerSecond );
-
-	s32 frame;
 	if (Looping)
 	{
 		// play animation looped
-		frame = StartFrame + ( deltaFrame % len );
+
+		if (FramesPerSecond > 0.f) //forwards...
+		{
+			const s32 lenInTime = s32( f32(EndFrame - StartFrame) / FramesPerSecond);
+			return StartFrame + ( (timeMs - BeginFrameTime) % lenInTime) *FramesPerSecond;
+		}
+		else //backwards...
+		{
+			const s32 lenInTime = s32( f32(EndFrame - StartFrame) / -FramesPerSecond);
+			return EndFrame - ( (timeMs - BeginFrameTime) % lenInTime)*-FramesPerSecond;
+		}
 	}
 	else
 	{
 		// play animation non looped
-		frame = StartFrame + deltaFrame;
 
-		if (frame > EndFrame)
+		f32 frame;
+
+		if (FramesPerSecond > 0.f) //forwards...
 		{
-			frame = EndFrame;
-			if (LoopCallBack)
-				LoopCallBack->OnAnimationEnd(this);
-		}
-	}
+			const f32 deltaFrame = floorf( f32 ( timeMs - BeginFrameTime ) * FramesPerSecond );
 
-	return frame;
+			frame = StartFrame + deltaFrame;
+
+			if (frame > (f32)EndFrame)
+			{
+				frame = (f32)EndFrame;
+				if (LoopCallBack)
+					LoopCallBack->OnAnimationEnd(this);
+			}
+		}
+		else //backwards... (untested)
+		{
+			const f32 deltaFrame = floorf( f32 ( timeMs - BeginFrameTime ) * -FramesPerSecond );
+
+			frame = EndFrame - deltaFrame;
+
+			if (frame < (f32)StartFrame)
+			{
+				frame = (f32)StartFrame;
+				if (LoopCallBack)
+					LoopCallBack->OnAnimationEnd(this);
+			}
+
+		}
+
+		return frame;
+	}
 }
 
 //! frame
@@ -151,7 +193,7 @@ void CAnimatedMeshSceneNode::OnRegisterSceneNode()
 
 		ISceneNode::OnRegisterSceneNode();
 
-		for (s32 j=0; j<(s32)JointChildSceneNodes.size(); ++j)
+		for (u32 j=0; j<JointChildSceneNodes.size(); ++j)
 			if (JointChildSceneNodes[j])
 				JointChildSceneNodes[j]->OnRegisterSceneNode();
 	}
@@ -162,19 +204,23 @@ void CAnimatedMeshSceneNode::OnRegisterSceneNode()
 //! OnAnimate() is called just before rendering the whole scene.
 void CAnimatedMeshSceneNode::OnAnimate(u32 timeMs)
 {
+
 	CurrentFrameNr = buildFrameNr ( timeMs );
 
 	if ( Mesh )
 	{
+		/*
 		scene::IMesh *m = Mesh->getMesh(CurrentFrameNr, 255, StartFrame, EndFrame);
 		if ( m )
 		{
 			Box = m->getBoundingBox();
 		}
+		*/
 	}
 
 
 	IAnimatedMeshSceneNode::OnAnimate ( timeMs );
+
 }
 
 
@@ -182,12 +228,12 @@ void CAnimatedMeshSceneNode::OnAnimate(u32 timeMs)
 	angle = dotproduct ( v(0,1,0), up )
 	axis = crossproduct ( v(0,1,0), up )
 */
-inline void AlignToUpVector(irr::core::matrix4 &m, const irr::core::vector3df &up )
+inline void AlignToUpVector(core::matrix4 &m, const core::vector3df &up )
 {
 	core::quaternion quatRot( up.Z, 0.f, -up.X, 1 + up.Y );
 	quatRot.normalize();
 	quatRot.getMatrix ( m );
-} 
+}
 
 
 
@@ -199,16 +245,46 @@ void CAnimatedMeshSceneNode::render()
 	if (!Mesh || !driver)
 		return;
 
+
 	bool isTransparentPass =
 		SceneManager->getSceneNodeRenderPass() == scene::ESNRP_TRANSPARENT;
 
 	++PassCount;
 
-	u32 i,g;
-	video::SMaterial mat;
+	f32 frame = getFrameNr();
 
-	s32 frame = getFrameNr();
-	scene::IMesh* m = Mesh->getMesh(frame, 255, StartFrame, EndFrame);
+	scene::IMesh* m;
+
+	if (Mesh->getMeshType() != EAMT_SKINNED)
+		m = Mesh->getMesh((s32)frame, 255, StartFrame, EndFrame);
+	else
+	{
+		ISkinnedMesh* skinnedMesh = reinterpret_cast<ISkinnedMesh*>(Mesh);
+
+		if (JointMode &2)//write to mesh
+			skinnedMesh->transferJointsToMesh(JointChildSceneNodes);
+		else
+			skinnedMesh->animateMesh(frame, 1.0f);
+
+		skinnedMesh->skinMesh();
+
+		if (JointMode &1)//read from mesh
+		{
+			skinnedMesh->recoverJointsFromMesh(JointChildSceneNodes);
+
+			//---slow---
+			for (u32 n=0;n<JointChildSceneNodes.size();++n)
+				if (JointChildSceneNodes[n]->getParent()==this)
+				{
+					JointChildSceneNodes[n]->updateAbsolutePositionOfAllChildren(); //temp, should be an option
+				}
+
+		}
+
+
+		m=skinnedMesh;
+	}
+
 
 	if ( 0 == m )
 	{
@@ -220,39 +296,24 @@ void CAnimatedMeshSceneNode::render()
 	driver->setTransform(video::ETS_WORLD, AbsoluteTransformation);
 
 
-	// update all dummy transformation nodes
-	if (!JointChildSceneNodes.empty() && Mesh &&
-		(Mesh->getMeshType() == EAMT_MS3D || Mesh->getMeshType() == EAMT_X  || Mesh->getMeshType() == EAMT_B3D ))
-	{
-		IAnimatedMeshMS3D* amm = (IAnimatedMeshMS3D*)Mesh;
-		core::matrix4* mat;
-
-		for ( i=0; i< JointChildSceneNodes.size(); ++i)
-			if (JointChildSceneNodes[i])
-			{
-				mat = amm->getMatrixOfJoint(i, frame);
-				if (mat)
-					JointChildSceneNodes[i]->getRelativeTransformationMatrix() = *mat;
-			}
-	}
-
 	if (Shadow && PassCount==1)
 		Shadow->setMeshToRenderFrom(m);
 
 	// for debug purposes only:
 
 	u32 renderMeshes = 1;
+	video::SMaterial mat;
 	if (DebugDataVisible && PassCount==1)
 	{
 		// overwrite half transparency
 		if ( DebugDataVisible & scene::EDS_HALF_TRANSPARENCY )
 		{
-			for ( g=0; g<m->getMeshBufferCount(); ++g)
+			for (u32 g=0; g<m->getMeshBufferCount(); ++g)
 			{
 				mat = Materials[g];
 				mat.MaterialType = video::EMT_TRANSPARENT_ADD_COLOR;
 				driver->setMaterial(mat);
-				driver->drawMeshBuffer ( m->getMeshBuffer ( g ) );
+				driver->drawMeshBuffer ( m->getMeshBuffer(g) );
 			}
 			renderMeshes = 0;
 		}
@@ -261,7 +322,7 @@ void CAnimatedMeshSceneNode::render()
 	// render original meshes
 	if ( renderMeshes )
 	{
-		for ( i=0; i<m->getMeshBufferCount(); ++i)
+		for (u32 i=0; i<m->getMeshBufferCount(); ++i)
 		{
 			video::IMaterialRenderer* rnd = driver->getMaterialRenderer(Materials[i].MaterialType);
 			bool transparent = (rnd && rnd->isTransparent());
@@ -271,11 +332,18 @@ void CAnimatedMeshSceneNode::render()
 			if (transparent == isTransparentPass)
 			{
 				scene::IMeshBuffer* mb = m->getMeshBuffer(i);
+
+				if (Mesh->getMeshType() == EAMT_SKINNED)
+					driver->setTransform(video::ETS_WORLD, AbsoluteTransformation * ((SSkinMeshBuffer*)mb)->Transformation);
+
+
 				driver->setMaterial(Materials[i]);
 				driver->drawMeshBuffer(mb);
 			}
 		}
 	}
+
+	driver->setTransform(video::ETS_WORLD, AbsoluteTransformation);
 
 	// for debug purposes only:
 	if (DebugDataVisible && PassCount==1)
@@ -286,63 +354,69 @@ void CAnimatedMeshSceneNode::render()
 		// show bounding box
 		if ( DebugDataVisible & scene::EDS_BBOX_BUFFERS )
 		{
-			for ( g=0; g< m->getMeshBufferCount(); ++g)
+			for (u32 g=0; g< m->getMeshBufferCount(); ++g)
 			{
-				driver->draw3DBox( m->getMeshBuffer(g)->getBoundingBox(), 
-									video::SColor(0,190,128,128)
-								);
+				driver->draw3DBox( m->getMeshBuffer(g)->getBoundingBox(),
+						video::SColor(0,190,128,128) );
 			}
 		}
 
 		if ( DebugDataVisible & scene::EDS_BBOX )
-		{
 			driver->draw3DBox(Box, video::SColor(0,255,255,255));
-		}
-
 
 		// show skeleton
 		if ( DebugDataVisible & scene::EDS_SKELETON )
 		{
-			if (Mesh->getMeshType() == EAMT_X)
+			if (Mesh->getMeshType() == EAMT_SKINNED)
 			{
-				// draw skeleton
-				const core::array<core::vector3df>* ds =
-					((IAnimatedMeshX*)Mesh)->getDrawableSkeleton(frame);
 
-				for ( g=0; g < ds->size(); g +=2 )
-					driver->draw3DLine((*ds)[g], (*ds)[g+1],  video::SColor(0,51,66,255));
+				// draw skeleton
+
+
+				for (u32 g=0; g < ((ISkinnedMesh*)Mesh)->getAllJoints().size(); ++g)
+				{
+					ISkinnedMesh::SJoint *joint=((ISkinnedMesh*)Mesh)->getAllJoints()[g];
+
+					for (u32 n=0;n<joint->Children.size();++n)
+					{
+						driver->draw3DLine(joint->GlobalAnimatedMatrix.getTranslation(), joint->Children[n]->GlobalAnimatedMatrix.getTranslation(),  video::SColor(0,51,66,255));
+					}
+				}
 			}
 
 			// show tag for quake3 models
 			if (Mesh->getMeshType() == EAMT_MD3 )
 			{
-				IAnimatedMesh * arrow = SceneManager->addArrowMesh ( "__tag_show",
-					4, 8, 5.f, 4.f, 0.5f, 1.f, 0xFF0000FF, 0xFF000088
-				);
+				IAnimatedMesh * arrow =
+					SceneManager->addArrowMesh (
+							"__tag_show",
+							0xFF0000FF, 0xFF000088,
+							4, 8, 5.f, 4.f, 0.5f,
+							1.f);
 				if ( 0 == arrow )
 				{
 					arrow = SceneManager->getMesh ( "__tag_show" );
 				}
 				IMesh *arrowMesh = arrow->getMesh ( 0 );
 
-				video::SMaterial mat;
-				mat.Lighting = false;
-				driver->setMaterial(mat);
+				video::SMaterial material;
+				material.Lighting = false;
+				driver->setMaterial(material);
 
-				core::matrix4 m;
+				core::matrix4 matr;
 
-				SMD3QuaterionTagList *taglist = ((IAnimatedMeshMD3*)Mesh)->getTagList (	getFrameNr(),
+				SMD3QuaterionTagList *taglist = ((IAnimatedMeshMD3*)Mesh)->getTagList (	(s32)getFrameNr(),
 												255,
 												getStartFrame (),
 												getEndFrame ()
 											);
 				if ( taglist )
 				{
-					for ( u32 g = 0; g != taglist->size();++g )
+					for ( u32 ts = 0; ts != taglist->size(); ++ts )
 					{
-						(*taglist)[g].setto ( m );
+						(*taglist)[ts].setto ( matr );
 
-						driver->setTransform(video::ETS_WORLD, m );
+						driver->setTransform(video::ETS_WORLD, matr );
 
 						for ( u32 a = 0; a != arrowMesh->getMeshBufferCount(); ++a )
 							driver->drawMeshBuffer ( arrowMesh->getMeshBuffer ( a ) );
@@ -351,13 +425,13 @@ void CAnimatedMeshSceneNode::render()
 			}
 		}
 
-
 		// show normals
 		if ( DebugDataVisible & scene::EDS_NORMALS )
 		{
-			IAnimatedMesh * arrow = SceneManager->addArrowMesh ( "__debugnormal", 
-							4, 8, 1.f, 0.6f, 0.05f, 0.3f, 0xFFECEC00, 0xFF999900
-							);
+			IAnimatedMesh * arrow = SceneManager->addArrowMesh (
+					"__debugnormal", 0xFFECEC00,
+					0xFF999900, 4, 8, 1.f, 0.6f, 0.05f,
+					0.3f);
 			if ( 0 == arrow )
 			{
 				arrow = SceneManager->getMesh ( "__debugnormal" );
@@ -369,17 +443,17 @@ void CAnimatedMeshSceneNode::render()
 			core::matrix4 m2;
 
 			// draw normals
-			for ( g=0; g<m->getMeshBufferCount(); ++g)
+			for (u32 g=0; g<m->getMeshBufferCount(); ++g)
 			{
-				scene::IMeshBuffer* mb = m->getMeshBuffer(g);
-
-				const u32 vSize = mb->getVertexPitch();
-
+				const scene::IMeshBuffer* mb = m->getMeshBuffer(g);
+				const u32 vSize = video::getVertexPitchFromType(mb->getVertexType());
 				const video::S3DVertex* v = ( const video::S3DVertex*)mb->getVertices();
-				for ( i = 0; i != mb->getVertexCount(); ++i )
+				for ( u32 i=0; i != mb->getVertexCount(); ++i )
 				{
 					AlignToUpVector ( m2, v->Normal );
-					AbsoluteTransformation.transformVect ( m2.pointer(), v->Pos );
+
+					m2.setTranslation(v->Pos);
+					m2*=AbsoluteTransformation;
 
 					driver->setTransform(video::ETS_WORLD, m2 );
 					for ( u32 a = 0; a != mesh->getMeshBufferCount(); ++a )
@@ -388,7 +462,6 @@ void CAnimatedMeshSceneNode::render()
 					v = (const video::S3DVertex*) ( (u8*) v + vSize );
 				}
 			}
-
 			driver->setTransform(video::ETS_WORLD, AbsoluteTransformation);
 		}
 
@@ -399,24 +472,23 @@ void CAnimatedMeshSceneNode::render()
 			mat.Wireframe = true;
 			driver->setMaterial(mat);
 
-			for ( g=0; g<m->getMeshBufferCount(); ++g)
+			for (u32 g=0; g<m->getMeshBufferCount(); ++g)
 			{
-				driver->drawMeshBuffer ( m->getMeshBuffer ( g ) );
+				driver->drawMeshBuffer( m->getMeshBuffer(g) );
 			}
-
 		}
 	}
 }
 
 
 //! Returns the current start frame number.
-s32 CAnimatedMeshSceneNode::getStartFrame()
+s32 CAnimatedMeshSceneNode::getStartFrame() const
 {
 	return StartFrame;
 }
 
 //! Returns the current start frame number.
-s32 CAnimatedMeshSceneNode::getEndFrame()
+s32 CAnimatedMeshSceneNode::getEndFrame() const
 {
 	return EndFrame;
 }
@@ -425,17 +497,18 @@ s32 CAnimatedMeshSceneNode::getEndFrame()
 //! the default is 0 - MaximalFrameCount of the mesh.
 bool CAnimatedMeshSceneNode::setFrameLoop(s32 begin, s32 end)
 {
+	const s32 maxFrameCount = Mesh->getFrameCount() - 1;
 	if ( end < begin )
 	{
-		StartFrame = core::s32_max(0, end);
-		EndFrame = core::s32_clamp(begin, StartFrame, Mesh->getFrameCount() - 1);
+		StartFrame = core::s32_clamp(end, 0, maxFrameCount);
+		EndFrame = core::s32_clamp(begin, StartFrame, maxFrameCount);
 	}
 	else
 	{
-		StartFrame = core::s32_max(0, begin);
-		EndFrame = core::s32_clamp(end, StartFrame, Mesh->getFrameCount() - 1);
+		StartFrame = core::s32_clamp(begin, 0, maxFrameCount);
+		EndFrame = core::s32_clamp(end, StartFrame, maxFrameCount);
 	}
-	setCurrentFrame ( StartFrame );
+	setCurrentFrame ( (f32)StartFrame );
 
 	return true;
 }
@@ -463,7 +536,7 @@ const core::aabbox3d<f32>& CAnimatedMeshSceneNode::getBoundingBox() const
 //! This function is needed for inserting the node into the scene hirachy on a
 //! optimal position for minimizing renderstate changes, but can also be used
 //! to directly modify the material of a scene node.
-video::SMaterial& CAnimatedMeshSceneNode::getMaterial(u32  i)
+video::SMaterial& CAnimatedMeshSceneNode::getMaterial(u32 i)
 {
 	if ( i >= Materials.size() )
 		return ISceneNode::getMaterial(i);
@@ -474,7 +547,7 @@ video::SMaterial& CAnimatedMeshSceneNode::getMaterial(u32  i)
 
 
 //! returns amount of materials used by this scene node.
-u32 CAnimatedMeshSceneNode::getMaterialCount()
+u32 CAnimatedMeshSceneNode::getMaterialCount() const
 {
 	return Materials.size();
 }
@@ -483,8 +556,7 @@ u32 CAnimatedMeshSceneNode::getMaterialCount()
 //! Creates shadow volume scene node as child of this node
 //! and returns a pointer to it.
 IShadowVolumeSceneNode* CAnimatedMeshSceneNode::addShadowVolumeSceneNode(s32 id,
-																		 bool zfailmethod,
-																		 f32 infinity)
+						 bool zfailmethod, f32 infinity)
 {
 	if (!SceneManager->getVideoDriver()->queryFeature(video::EVDF_STENCIL_BUFFER))
 		return 0;
@@ -500,40 +572,51 @@ IShadowVolumeSceneNode* CAnimatedMeshSceneNode::addShadowVolumeSceneNode(s32 id,
 }
 
 
+IBoneSceneNode* CAnimatedMeshSceneNode::getJointNode(const c8* jointName)
+{
+	if (!Mesh || Mesh->getMeshType() != EAMT_SKINNED)
+		return 0;
+
+	checkJoints();
+
+
+	ISkinnedMesh *skinnedMesh=(ISkinnedMesh*)Mesh;
+
+	s32 number = skinnedMesh->getJointNumber(jointName);
+
+	if (number == -1)
+	{
+		os::Printer::log("Joint with specified name not found in skinned mesh.", jointName, ELL_WARNING);
+		return 0;
+	}
+
+	if ((s32)JointChildSceneNodes.size() <= number)
+	{
+		os::Printer::log("Joint was found in mesh, but is not loaded into node", jointName, ELL_WARNING);
+		return 0;
+	}
+
+	return getJointNode((u32)number);
+}
+
+
+IBoneSceneNode* CAnimatedMeshSceneNode::getJointNode(u32 jointID)
+{
+	if (JointChildSceneNodes.size() <= jointID)
+	{
+		os::Printer::log("Joint not loaded into node", ELL_WARNING);
+		return 0;
+	}
+
+	return JointChildSceneNodes[jointID];
+}
+
 
 //! Returns a pointer to a child node, which has the same transformation as
 //! the corrsesponding joint, if the mesh in this scene node is a ms3d mesh.
 ISceneNode* CAnimatedMeshSceneNode::getMS3DJointNode(const c8* jointName)
 {
-	if (!Mesh || Mesh->getMeshType() != EAMT_MS3D)
-		return 0;
-
-	IAnimatedMeshMS3D* amm = (IAnimatedMeshMS3D*)Mesh;
-	s32 jointCount = amm->getJointCount();
-	s32 number = amm->getJointNumber(jointName);
-
-	if (number == -1)
-	{
-		os::Printer::log("Joint with specified name not found in ms3d mesh.", jointName, ELL_WARNING);
-		return 0;
-	}
-
-	if (JointChildSceneNodes.empty())
-	{
-		// allocate joints for the first time.
-		JointChildSceneNodes.set_used(jointCount);
-		for (s32 i=0; i<jointCount; ++i)
-			JointChildSceneNodes[i] = 0;
-	}
-
-	if (JointChildSceneNodes[number] == 0)
-	{
-		JointChildSceneNodes[number] =
-			SceneManager->addDummyTransformationSceneNode(this);
-		JointChildSceneNodes[number]->grab();
-	}
-
-	return JointChildSceneNodes[number];
+	return  getJointNode(jointName);
 }
 
 
@@ -541,72 +624,9 @@ ISceneNode* CAnimatedMeshSceneNode::getMS3DJointNode(const c8* jointName)
 //! the corrsesponding joint, if the mesh in this scene node is a ms3d mesh.
 ISceneNode* CAnimatedMeshSceneNode::getXJointNode(const c8* jointName)
 {
-	if (!Mesh || Mesh->getMeshType() != EAMT_X)
-		return 0;
-
-	IAnimatedMeshX* amm = (IAnimatedMeshX*)Mesh;
-	s32 jointCount = amm->getJointCount();
-	s32 number = amm->getJointNumber(jointName);
-
-	if (number == -1)
-	{
-		os::Printer::log("Joint with specified name not found in x mesh.", jointName, ELL_WARNING);
-		return 0;
-	}
-
-	if (JointChildSceneNodes.empty())
-	{
-		// allocate joints for the first time.
-		JointChildSceneNodes.set_used(jointCount);
-		for (s32 i=0; i<jointCount; ++i)
-			JointChildSceneNodes[i] = 0;
-	}
-
-	if (JointChildSceneNodes[number] == 0)
-	{
-		JointChildSceneNodes[number] =
-			SceneManager->addDummyTransformationSceneNode(this);
-		JointChildSceneNodes[number]->grab();
-	}
-
-	return JointChildSceneNodes[number];
+	return  getJointNode(jointName);
 }
 
-
-//! Returns a pointer to a child node, which has the same transformation as
-//! the corrsesponding joint, if the mesh in this scene node is a b3d mesh.
-ISceneNode* CAnimatedMeshSceneNode::getB3DJointNode(const c8* jointName)
-{
-	if (!Mesh || Mesh->getMeshType() != EAMT_B3D)
-		return 0;
-
-	IAnimatedMeshB3d* amm = (IAnimatedMeshB3d*)Mesh;
-	s32 jointCount = amm->getJointCount();
-	s32 number = amm->getJointNumber(jointName);
-
-	if (number == -1)
-	{
-		os::Printer::log("Joint with specified name not found in b3d mesh.", jointName, ELL_WARNING);
-		return 0;
-	}
-
-	if (JointChildSceneNodes.empty())
-	{
-		// allocate joints for the first time.
-		JointChildSceneNodes.set_used(jointCount);
-		for (s32 i=0; i<jointCount; ++i)
-			JointChildSceneNodes[i] = 0;
-	}
-
-	if (JointChildSceneNodes[number] == 0)
-	{
-		JointChildSceneNodes[number] =
-			SceneManager->addDummyTransformationSceneNode(this);
-		JointChildSceneNodes[number]->grab();
-	}
-
-	return JointChildSceneNodes[number];
-}
 
 //! Removes a child from this scene node.
 //! Implemented here, to be able to remove the shadow properly, if there is one,
@@ -620,17 +640,20 @@ bool CAnimatedMeshSceneNode::removeChild(ISceneNode* child)
 		return true;
 	}
 
-	if (ISceneNode::removeChild(child))
+	if (JointsUsed) //stop it doing weird things while the joints are being made
 	{
-		for (s32 i=0; i<(s32)JointChildSceneNodes.size(); ++i)
-		if (JointChildSceneNodes[i] == child)
+		if (ISceneNode::removeChild(child))
 		{
-			JointChildSceneNodes[i]->drop();
-			JointChildSceneNodes[i] = 0;
+			for (u32 i=0; i<JointChildSceneNodes.size(); ++i)
+			if (JointChildSceneNodes[i] == child)
+			{
+				//JointChildSceneNodes[i]->drop();
+				JointChildSceneNodes[i] = 0;
+				return true;
+			}
+
 			return true;
 		}
-
-		return true;
 	}
 
 	return false;
@@ -666,11 +689,10 @@ bool CAnimatedMeshSceneNode::setMD2Animation(const c8* animationName)
 	if (!m->getFrameLoop(animationName, begin, end, speed))
 		return false;
 
-	setAnimationSpeed( f32(speed) );
+	setAnimationSpeed( (f32)speed );
 	setFrameLoop(begin, end);
 	return true;
 }
-
 
 
 //! Sets looping mode which is on by default. If set to false,
@@ -703,14 +725,14 @@ void CAnimatedMeshSceneNode::setReadOnlyMaterials(bool readonly)
 
 
 //! Returns if the scene node should not copy the materials of the mesh but use them in a read only style
-bool CAnimatedMeshSceneNode::isReadOnlyMaterials()
+bool CAnimatedMeshSceneNode::isReadOnlyMaterials() const
 {
 	return ReadOnlyMaterials;
 }
 
 
 //! Writes attributes of the scene node.
-void CAnimatedMeshSceneNode::serializeAttributes(io::IAttributes* out, io::SAttributeReadWriteOptions* options)
+void CAnimatedMeshSceneNode::serializeAttributes(io::IAttributes* out, io::SAttributeReadWriteOptions* options) const
 {
 	IAnimatedMeshSceneNode::serializeAttributes(out, options);
 
@@ -787,12 +809,12 @@ void CAnimatedMeshSceneNode::setMesh(IAnimatedMesh* mesh)
 
 // returns the absolute transformation for a special MD3 Tag if the mesh is a md3 mesh,
 // or the absolutetransformation if it's a normal scenenode
-const SMD3QuaterionTag& CAnimatedMeshSceneNode::getAbsoluteTransformation( const core::stringc & tagname)
+const SMD3QuaterionTag& CAnimatedMeshSceneNode::getMD3TagTransformation( const core::stringc & tagname)
 {
 	SMD3QuaterionTag * tag = MD3Special.AbsoluteTagList.get ( tagname );
 	if ( tag )
 		return *tag;
-		
+
 	MD3Special.AbsoluteTagList.Container.push_back ( SMD3QuaterionTag ( tagname, AbsoluteTransformation ) );
 	return *MD3Special.AbsoluteTagList.get ( tagname );
 }
@@ -810,25 +832,163 @@ void CAnimatedMeshSceneNode::updateAbsolutePosition()
 	SMD3QuaterionTag parent;
 	if ( Parent && Parent->getType () == ESNT_ANIMATED_MESH)
 	{
-		parent = ((IAnimatedMeshSceneNode*) Parent)->getAbsoluteTransformation ( MD3Special.Tagname );
+		parent = ((IAnimatedMeshSceneNode*) Parent)->getMD3TagTransformation ( MD3Special.Tagname );
 	}
 
 	SMD3QuaterionTag relative( RelativeTranslation, RelativeRotation );
-	
+
 	SMD3QuaterionTagList *taglist;
-	taglist = ( (IAnimatedMeshMD3*) Mesh )->getTagList ( getFrameNr(),255,getStartFrame (),getEndFrame () );
+	taglist = ( (IAnimatedMeshMD3*) Mesh )->getTagList ( (s32)getFrameNr(),255,getStartFrame (),getEndFrame () );
 	if ( taglist )
 	{
 		MD3Special.AbsoluteTagList.Container.set_used ( taglist->size () );
-		u32 i;
-		for ( i = 0; i!= taglist->size (); ++i )
+		for ( u32 i=0; i!= taglist->size (); ++i )
 		{
 			MD3Special.AbsoluteTagList[i].position = parent.position + (*taglist)[i].position + relative.position;
 			MD3Special.AbsoluteTagList[i].rotation = parent.rotation * (*taglist)[i].rotation * relative.rotation;
 		}
-
 	}
+}
 
+//! Set the joint update mode (0-unused, 1-get joints only, 2-set joints only, 3-move and set)
+void CAnimatedMeshSceneNode::setJointMode(s32 mode)
+{
+	checkJoints();
+
+	if (mode<0) mode=0;
+	if (mode>3) mode=3;
+
+	JointMode=mode;
+}
+
+
+//! Sets the transition time in seconds (note: This needs to enable joints, and setJointmode maybe set to 2)
+//! you must call animateJoints(), or the mesh will not animate
+void CAnimatedMeshSceneNode::setTransitionTime(f32 time)
+{
+	if (time != 0.f)
+		checkJoints();
+	if (!(JointMode & 0x2))
+		setJointMode(2);
+	TransitionTime = (u32)core::floor32(time*1000.0f);
+}
+
+//! updates the joint positions of this mesh
+void CAnimatedMeshSceneNode::animateJoints()
+{
+	checkJoints();
+
+	if (Mesh && Mesh->getMeshType() == EAMT_SKINNED )
+	{
+		if (JointsUsed)
+		{
+			f32 frame = getFrameNr(); //old?
+
+			ISkinnedMesh* skinnedMesh=(ISkinnedMesh*)Mesh;
+
+			skinnedMesh->animateMesh(frame, 1.0f);
+
+			skinnedMesh->recoverJointsFromMesh( JointChildSceneNodes);
+
+			//---slow---
+			for (u32 n=0;n<JointChildSceneNodes.size();++n)
+				if (JointChildSceneNodes[n]->getParent()==this)
+				{
+					JointChildSceneNodes[n]->updateAbsolutePositionOfAllChildren(); //temp, should be an option
+				}
+
+			//-----------------------------------------
+			//		Transition
+			//-----------------------------------------
+
+			if (Transiting != 0.f)
+			{
+				//Check the array is big enough (not really needed)
+				if (PretransitingSave.size()<JointChildSceneNodes.size())
+				{
+					for(u32 n=PretransitingSave.size(); n<JointChildSceneNodes.size(); ++n)
+						PretransitingSave.push_back(core::matrix4());
+				}
+
+				for (u32 n=0; n<JointChildSceneNodes.size(); ++n)
+				{
+					//------Position------
+
+					JointChildSceneNodes[n]->setPosition(
+							core::lerp(
+								PretransitingSave[n].getTranslation(),
+								JointChildSceneNodes[n]->getPosition(),
+								TransitingBlend));
+
+					//------Rotation------
+
+					//Code is slow, needs to be fixed up
+
+					const core::quaternion RotationStart(PretransitingSave[n].getRotationDegrees()*core::DEGTORAD);
+					const core::quaternion RotationEnd(JointChildSceneNodes[n]->getRotation()*core::DEGTORAD);
+
+					core::quaternion QRotation;
+					QRotation.slerp(RotationStart, RotationEnd, TransitingBlend);
+
+					core::vector3df tmpVector;
+					QRotation.toEuler(tmpVector);
+					tmpVector*=core::RADTODEG; //convert from radians back to degrees
+					JointChildSceneNodes[n]->setRotation( tmpVector );
+
+					//------Scale------
+
+					//JointChildSceneNodes[n]->setScale(
+					//		core::lerp(
+					//			PretransitingSave[n].getScale(),
+					//			JointChildSceneNodes[n]->getScale(),
+					//			TransitingBlend));
+				}
+			}
+		}
+	}
+}
+
+
+
+
+void CAnimatedMeshSceneNode::checkJoints()
+{
+	if (!Mesh || Mesh->getMeshType() != EAMT_SKINNED)
+		return;
+
+	if (!JointsUsed)
+	{
+		//Create joints for SkinnedMesh
+
+		((ISkinnedMesh*)Mesh)->createJoints(JointChildSceneNodes, this, SceneManager);
+		((ISkinnedMesh*)Mesh)->recoverJointsFromMesh(JointChildSceneNodes);
+
+		JointsUsed=true;
+		JointMode=1;
+	}
+}
+
+void CAnimatedMeshSceneNode::beginTransition()
+{
+	if (!JointsUsed)
+		return;
+
+	if (TransitionTime != 0)
+	{
+		//Check the array is big enough
+		if (PretransitingSave.size()<JointChildSceneNodes.size())
+		{
+			for(u32 n=PretransitingSave.size(); n<JointChildSceneNodes.size(); ++n)
+				PretransitingSave.push_back(core::matrix4());
+		}
+
+
+		//Copy the position of joints
+		for (u32 n=0;n<JointChildSceneNodes.size();++n)
+			PretransitingSave[n]=JointChildSceneNodes[n]->getRelativeTransformation();
+
+		Transiting = core::reciprocal((f32)TransitionTime);
+	}
 }
 
 

@@ -7,21 +7,21 @@
 
 #include "IrrCompileConfig.h"
 
-#if defined(_IRR_WINDOWS_) || defined(_XBOX)
+#ifdef _IRR_COMPILE_WITH_DIRECT3D_8_
 
 #ifdef _IRR_WINDOWS_
 	#define WIN32_LEAN_AND_MEAN
-	#include "CNullDriver.h"
-	#include "IMaterialRendererServices.h"
 	#include <windows.h>
 #endif
 
-#ifdef _XBOX
+#ifdef _IRR_XBOX_PLATFORM_
 	#include <xtl.h>
 #endif
 
+// always included for static createDriver function
+#include "CNullDriver.h"
+#include "IMaterialRendererServices.h"
 
-#ifdef _IRR_COMPILE_WITH_DIRECT3D_8_
 #include <d3d8.h>
 
 namespace irr
@@ -46,7 +46,7 @@ namespace video
 		virtual bool endScene( s32 windowId, core::rect<s32>* sourceRect=0 );
 
 		//! queries the features of the driver, returns true if feature is available
-		virtual bool queryFeature(E_VIDEO_DRIVER_FEATURE feature);
+		virtual bool queryFeature(E_VIDEO_DRIVER_FEATURE feature) const;
 
 		//! sets transformation
 		virtual void setTransform(E_TRANSFORMATION_STATE state, const core::matrix4& mat);
@@ -69,12 +69,12 @@ namespace video
 		void drawVertexPrimitiveList(const void* vertices, u32 vertexCount, const u16* indexList, u32 primitiveCount, E_VERTEX_TYPE vType, scene::E_PRIMITIVE_TYPE pType);
 
 		//! draws an 2d image, using a color (if color is other then Color(255,255,255,255)) and the alpha channel of the texture if wanted.
-		virtual void draw2DImage(video::ITexture* texture, const core::position2d<s32>& destPos,
+		virtual void draw2DImage(const video::ITexture* texture, const core::position2d<s32>& destPos,
 			const core::rect<s32>& sourceRect, const core::rect<s32>* clipRect = 0,
 			SColor color=SColor(255,255,255,255), bool useAlphaChannelOfTexture=false);
 
 		//! Draws a part of the texture into the rectangle.
-		virtual void draw2DImage(video::ITexture* texture, const core::rect<s32>& destRect,
+		virtual void draw2DImage(const video::ITexture* texture, const core::rect<s32>& destRect,
 			const core::rect<s32>& sourceRect, const core::rect<s32>* clipRect = 0,
 			video::SColor* colors=0, bool useAlphaChannelOfTexture=false);
 
@@ -99,7 +99,7 @@ namespace video
 
 		//! \return Returns the name of the video driver. Example: In case of the DIRECT3D8
 		//! driver, it would return "Direct3D8.1".
-		virtual const wchar_t* getName();
+		virtual const wchar_t* getName() const;
 
 		//! deletes all dynamic lights there are
 		virtual void deleteAllDynamicLights();
@@ -108,7 +108,7 @@ namespace video
 		virtual void addDynamicLight(const SLight& light);
 
 		//! returns the maximal amount of dynamic lights the device can handle
-		virtual u32 getMaximalDynamicLightAmount();
+		virtual u32 getMaximalDynamicLightAmount() const;
 
 		//! Sets the dynamic ambient light color. The default color is
 		//! (0,0,0,0) which means it is dark.
@@ -132,7 +132,7 @@ namespace video
 		//! Returns the maximum amount of primitives (mostly vertices) which
 		//! the device is able to render with one drawIndexedTriangleList
 		//! call.
-		virtual u32 getMaximalPrimitiveCount();
+		virtual u32 getMaximalPrimitiveCount() const;
 
 		//! Enables or disables a texture creation flag.
 		virtual void setTextureCreationFlag(E_TEXTURE_CREATION_FLAG flag, bool enabled);
@@ -146,10 +146,10 @@ namespace video
 		virtual void OnResize(const core::dimension2d<s32>& size);
 
 		//! Returns type of video driver
-		virtual E_DRIVER_TYPE getDriverType();
+		virtual E_DRIVER_TYPE getDriverType() const;
 
 		//! Returns the transformation set by setTransform
-		virtual const core::matrix4& getTransform(E_TRANSFORMATION_STATE state);
+		virtual const core::matrix4& getTransform(E_TRANSFORMATION_STATE state) const;
 
 		//! Can be called by an IMaterialRenderer to make its work easier.
 		virtual void setBasicRenderStates(const SMaterial& material, const SMaterial& lastMaterial,
@@ -175,13 +175,26 @@ namespace video
 		virtual IVideoDriver* getVideoDriver();
 
 		//! Creates a render target texture.
-		virtual ITexture* createRenderTargetTexture(const core::dimension2d<s32>& size);
+		virtual ITexture* createRenderTargetTexture(const core::dimension2d<s32>& size, const c8* name);
 
 		//! Clears the ZBuffer.
 		virtual void clearZBuffer();
 
 		//! Returns an image created from the last rendered frame.
 		virtual IImage* createScreenShot();
+
+		//! Set/unset a clipping plane.
+		//! There are at least 6 clipping planes available for the user to set at will.
+		//! \param index: The plane index. Must be between 0 and MaxUserClipPlanes.
+		//! \param plane: The plane itself.
+		//! \param enable: If true, enable the clipping plane else disable it.
+		virtual bool setClipPlane(u32 index, const core::plane3df& plane, bool enable=false);
+
+		//! Enable/disable a clipping plane.
+		//! There are at least 6 clipping planes available for the user to set at will.
+		//! \param index: The plane index. Must be between 0 and MaxUserClipPlanes.
+		//! \param enable: If true, enable the clipping plane else disable it.
+		virtual void enableClipPlane(u32 index, bool enable);
 
 	private:
 
@@ -212,7 +225,7 @@ namespace video
 		void setRenderStatesStencilShadowMode(bool zfail);
 
 		//! sets the current Texture
-		bool setTexture(s32 stage, video::ITexture* texture);
+		bool setTexture(s32 stage, const video::ITexture* texture);
 
 		//! resets the device
 		bool reset();
@@ -250,7 +263,7 @@ namespace video
 		bool ResetRenderStates; // bool to make all renderstates be reseted if set.
 		bool Transformation3DChanged;
 		bool StencilBuffer;
-		ITexture* CurrentTexture[MATERIAL_MAX_TEXTURES];
+		const ITexture* CurrentTexture[MATERIAL_MAX_TEXTURES];
 		core::matrix4 Matrices[ETS_COUNT]; // matrices of the 3d mode we need to restore when we switch back from the 2d mode.
 
 		HINSTANCE D3DLibrary;
@@ -267,6 +280,7 @@ namespace video
 		D3DMATRIX UnitMatrix;
 
 		u32 MaxTextureUnits;
+		u32 MaxUserClipPlanes;
 		f32 MaxLightDistance;
 		s32 LastSetLight;
 		bool DeviceLost;
@@ -277,8 +291,7 @@ namespace video
 } // end namespace video
 } // end namespace irr
 
-
 #endif // _IRR_COMPILE_WITH_DIRECT3D_8_
-#endif // _IRR_WINDOWS_
+
 #endif // __C_VIDEO_DIRECTX_8_H_INCLUDED__
 

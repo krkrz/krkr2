@@ -5,7 +5,7 @@
 #ifndef __I_GPU_PROGRAMMING_SERVICES_H_INCLUDED__
 #define __I_GPU_PROGRAMMING_SERVICES_H_INCLUDED__
 
-#include "IUnknown.h"
+#include "IReferenceCounted.h"
 #include "SMaterial.h"
 
 namespace irr
@@ -81,13 +81,13 @@ public:
 	//! Adds a new material renderer to the VideoDriver, based on a high level shading 
 	//! language. Currently only HLSL/D3D9 and GLSL/OpenGL is supported. 
 	//! \param vertexShaderProgram: String containing the source of the vertex shader program.
-	//! This can be 0 if no vertex program should be used. 
-	//! \param Entry name of the function of the vertexShaderProgram
-	//! \param vsCompileTarget: Vertex shader version where the high level shader should be compiled to.
+	//! This can be 0 if no vertex program shall be used. 
+	//! \param vertexShaderEntryPointName: Name of the entry function of the vertexShaderProgram
+	//! \param vsCompileTarget: Vertex shader version where the high level shader shall be compiled to.
 	//! \param pixelShaderProgram: String containing the source of the pixel shader program.
-	//! This can be 0 if no pixel shader should be used. 
+	//! This can be 0 if no pixel shader shall be used. 
 	//! \param pixelShaderEntryPointName: Entry name of the function of the pixelShaderEntryPointName
-	//! \param psCompileTarget: Pixel shader version where the high level shader should be compiled to.
+	//! \param psCompileTarget: Pixel shader version where the high level shader shall be compiled to.
 	//! \param callback: Pointer to an implementation of IShaderConstantSetCallBack in which you 
 	//! can set the needed vertex and pixel shader program constants. Set this to 0 if you don't need this.
 	//! \param baseMaterial: Base material which renderstates will be used to shade the
@@ -97,9 +97,9 @@ public:
 	//! use the same callback method for multiple materials and distinguish  between them during the call.
 	//! \return Returns the number of the
 	//! material type which can be set in SMaterial::MaterialType to use the renderer.
-	//! -1 is returned if an error occured. -1 is returned for example if a vertex or pixel shader
+	//! -1 is returned if an error occured, e.g. if a vertex or pixel shader
 	//! program could not be compiled or a compile target is not reachable.
-	//! The error strings are then printed out into the error log, and
+	//! The error strings are then printed to the error log and
 	//! can be catched with a custom event receiver.
     virtual s32 addHighLevelShaderMaterial(
 		const c8* vertexShaderProgram,
@@ -112,12 +112,33 @@ public:
 		E_MATERIAL_TYPE baseMaterial = video::EMT_SOLID,
 		s32 userData = 0 ) = 0;    
 
-	//! Like IGPUProgrammingServices::addShaderMaterial() (look there for a detailed description),
+	//! Like IGPUProgrammingServices::addShaderMaterial(),
 	//! but tries to load the programs from files. 
 	//! \param vertexShaderProgram: Text file containing the source of the vertex shader program.
-	//! Set to null if no shader should be created.
+	//! Set to 0 if no shader shall be created.
+	//! \param vertexShaderEntryPointName: Name of the entry function of the vertexShaderProgram
+	//! \param vsCompileTarget: Vertex shader version where the high level shader shall be compiled to.
 	//! \param pixelShaderProgram: Text file containing the source of the pixel shader program. Set to 
-	//! 0 if no shader should be created.
+	//! 0 if no shader shall be created.
+	//! \param vertexShaderEntryPointName: Name of the entry function of the vertexShaderProgram
+	//! \param vsCompileTarget: Vertex shader version where the high level shader shall be compiled to.
+	//! \param pixelShaderProgram: String containing the source of the pixel shader program.
+	//! This can be 0 if no pixel shader shall be used. 
+	//! \param pixelShaderEntryPointName: Entry name of the function of the pixelShaderEntryPointName
+	//! \param psCompileTarget: Pixel shader version where the high level shader shall be compiled to.
+	//! \param callback: Pointer to an implementation of IShaderConstantSetCallBack in which you 
+	//! can set the needed vertex and pixel shader program constants. Set this to 0 if you don't need this.
+	//! \param baseMaterial: Base material which renderstates will be used to shade the
+	//! material.
+	//! \param userData: a user data int. This int can be set to any value and will be set as parameter
+	//! in the callback method when calling OnSetConstants(). In this way it is easily possible to 
+	//! use the same callback method for multiple materials and distinguish  between them during the call.
+	//! \return Returns the number of the
+	//! material type which can be set in SMaterial::MaterialType to use the renderer.
+	//! -1 is returned if an error occured, e.g. if a vertex or pixel shader
+	//! program could not be compiled or a compile target is not reachable.
+	//! The error strings are then printed to the error log and
+	//! can be catched with a custom event receiver.
 	virtual s32 addHighLevelShaderMaterialFromFiles(
 		const c8* vertexShaderProgram,
 		const c8* vertexShaderEntryPointName = "main",
@@ -130,12 +151,30 @@ public:
 		s32 userData = 0) = 0; 
 
 
-	//! Like IGPUProgrammingServices::addShaderMaterial() (look there for a detailed description),
+	//! Like IGPUProgrammingServices::addShaderMaterial(),
 	//! but tries to load the programs from files. 
-	//! \param vertexShaderProgram: Text file containing the source of the vertex shader program.
-	//! Set to null if no shader should be created.
+	//! \param vertexShaderProgram: Text file handle containing the source of the vertex shader program.
+	//! Set to 0 if no shader shall be created.
+	//! \param vertexShaderEntryPointName: Name of the entry function of the vertexShaderProgram
+	//! \param vsCompileTarget: Vertex shader version where the high level shader shall be compiled to.
 	//! \param pixelShaderProgram: Text file containing the source of the pixel shader program. Set to 
-	//! 0 if no shader should be created.
+	//! \param pixelShaderProgram: Text file handle containing the source of the pixel shader program. Set to 
+	//! 0 if no shader shall be created.
+	//! \param pixelShaderEntryPointName: Entry name of the function of the pixelShaderEntryPointName
+	//! \param psCompileTarget: Pixel shader version where the high level shader shall be compiled to.
+	//! \param callback: Pointer to an implementation of IShaderConstantSetCallBack in which you 
+	//! can set the needed vertex and pixel shader program constants. Set this to 0 if you don't need this.
+	//! \param baseMaterial: Base material which renderstates will be used to shade the
+	//! material.
+	//! \param userData: a user data int. This int can be set to any value and will be set as parameter
+	//! in the callback method when calling OnSetConstants(). In this way it is easily possible to 
+	//! use the same callback method for multiple materials and distinguish  between them during the call.
+	//! \return Returns the number of the
+	//! material type which can be set in SMaterial::MaterialType to use the renderer.
+	//! -1 is returned if an error occured, e.g. if a vertex or pixel shader
+	//! program could not be compiled or a compile target is not reachable.
+	//! The error strings are then printed to the error log and
+	//! can be catched with a custom event receiver.
 	virtual s32 addHighLevelShaderMaterialFromFiles(
 		io::IReadFile* vertexShaderProgram,
 		const c8* vertexShaderEntryPointName = "main",
@@ -154,7 +193,7 @@ public:
 	//! The material is added to the VideoDriver like with IVideoDriver::addMaterialRenderer()
 	//! and can be used like it had been added with that method.
 	//! \param vertexShaderProgram: String containing the source of the vertex shader program. This can be
-	//! 0 if no vertex program should be used. 
+	//! 0 if no vertex program shall be used. 
 	//! For DX8 programs, the will always input registers look like this:
 	//! v0: position, v1: normal, 
 	//! v2: color, v3: texture cooridnates, v4: texture coordinates 2 if available.
@@ -182,12 +221,20 @@ public:
 	//! Like IGPUProgrammingServices::addShaderMaterial(), but tries to load the 
 	//! programs from files.
 	//! \param vertexShaderProgram: Text file containing the source of the vertex shader program.
-	//! Set to null if no shader should be created.
+	//! Set to 0 if no shader shall be created.
 	//! \param pixelShaderProgram: Text file containing the source of the pixel shader program. Set to 
-	//! 0 if no shader should be created.
+	//! 0 if no shader shall be created.
  	//! \param callback: Pointer to an IShaderConstantSetCallback object to which the
  	//! OnSetConstants function is called.
  	//! \param baseMaterial: baseMaterial
+	//! \param userData: a user data int. This int can be set to any value and will be set as parameter
+	//! in the callback method when calling OnSetConstants(). In this way it is easily possible to 
+	//! use the same callback method for multiple materials and distinguish  between them during the call.
+	//! \return Returns the number of the
+	//! material type which can be set in SMaterial::MaterialType to use the renderer.
+	//! -1 is returned if an error occured. -1 is returned for example if a vertex or pixel shader
+	//! program could not be compiled, the error strings are then printed out into the error log, and
+	//! can be catched with a custom event receiver.
 	virtual s32 addShaderMaterialFromFiles(io::IReadFile* vertexShaderProgram,
 		io::IReadFile* pixelShaderProgram,
 		IShaderConstantSetCallBack* callback = 0,
@@ -198,12 +245,20 @@ public:
 	//! programs from files.
 	//! \param vertexShaderProgramFileName: Text file name containing the source of the 
 	//! vertex shader program. 
-	//! Set to null if no shader should be created.
+	//! Set to 0 if no shader shall be created.
 	//! \param pixelShaderProgramFileName: Text file name containing the source of the
-	//! pixel shader program. Set to 0 if no shader should be created.
- 	//! \param callback: Pointer to an IShaderConstantSetCallback object to which the
+	//! pixel shader program. Set to 0 if no shader shall be created.
+ 	//! \param callback: Pointer to an IShaderConstantSetCallback object on which the
  	//! OnSetConstants function is called.
  	//! \param baseMaterial: baseMaterial
+	//! \param userData: a user data int. This int can be set to any value and will be set as parameter
+	//! in the callback method when calling OnSetConstants(). In this way it is easily possible to 
+	//! use the same callback method for multiple materials and distinguish  between them during the call.
+	//! \return Returns the number of the
+	//! material type which can be set in SMaterial::MaterialType to use the renderer.
+	//! -1 is returned if an error occured. -1 is returned for example if a vertex or pixel shader
+	//! program could not be compiled, the error strings are then printed out into the error log, and
+	//! can be catched with a custom event receiver.
 	virtual s32 addShaderMaterialFromFiles(const c8* vertexShaderProgramFileName,
 		const c8* pixelShaderProgramFileName,
 		IShaderConstantSetCallBack* callback = 0,

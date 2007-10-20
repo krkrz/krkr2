@@ -15,15 +15,28 @@ namespace irr
 	enum EEVENT_TYPE
 	{
 		//! An event of the graphical user interface.
+		/** GUI events are created by the GUI environment or the GUI elements in response
+		to mouse or keyboard events. When a GUI element receives an event it will either 
+		process it and return true, or pass the event to its parent. If an event is not absorbed
+		before it reaches the root element then it will then be passed to the user receiver. */
 		EET_GUI_EVENT = 0,
 
 		//! A mouse input event.
+		/** Mouse events are created by the device and passed to IrrlichtDevice::postEventFromUser 
+		in response to mouse input received from the operating system. 
+		Mouse events are first passed to the user receiver, then to the GUI environment (and possibly
+		many GUI elements), then finally the input receiving scene manager (and possibly the active
+		camera) */
 		EET_MOUSE_INPUT_EVENT,
 
 		//! A key input evant.
+		/** Keyboard events are also created by the device and passed to IrrlichtDevice::postEventFromUser.
+		They take the same path as mouse events. */
 		EET_KEY_INPUT_EVENT,
 
 		//! A log event
+		/** Log events are only passed to the user receiver if there is one. If they are absorbed by the
+		user receiver then no text will be sent to the console. */
 		EET_LOG_TEXT_EVENT,
 
 		//! A user event with user data. This is not used by Irrlicht and can be used
@@ -72,16 +85,24 @@ namespace irr
 		enum EGUI_EVENT_TYPE
 		{
 			//! A gui element has lost its focus.
+			//! GUIEvent.Caller is losing the focus to GUIEvent.Element. 
+			//! If the event is absorbed then the focus will not be changed.
 			EGET_ELEMENT_FOCUS_LOST = 0,
 
 			//! A gui element has got the focus.
+			//! If the event is absorbed then the focus will not be changed.
 			EGET_ELEMENT_FOCUSED,
 
-			//! A gui element was hovered.
+			//! The mouse cursor hovered over a gui element.
 			EGET_ELEMENT_HOVERED,
 
-			//! A hovered gui element was left
+			//! The mouse cursor left the hovered element.
 			EGET_ELEMENT_LEFT,
+
+			//! An element would like to close.
+			//! Windows and context menus use this event when they would like to close,
+			//! this can be cancelled by absorbing the event.
+			EGET_ELEMENT_CLOSED,
 
 			//! A button was clicked.
 			EGET_BUTTON_CLICKED,
@@ -126,96 +147,113 @@ namespace irr
 			EGET_MENU_ITEM_SELECTED,
 
 			//! The selection in a combo box has been changed
-			EGET_COMBO_BOX_CHANGED
+			EGET_COMBO_BOX_CHANGED,
+
+			//! The value of a spin box has changed
+			EGET_SPINBOX_CHANGED
+
 		};
 	} // end namespace gui
 
 
-//! Struct for holding event data. An event can be a gui, mouse or keyboard event.
+//! SEvents hold information about an event. See irr::IEventReceiver for details on event handling.
 struct SEvent
 {
-	EEVENT_TYPE EventType;
+	struct SGUIEvent
+	{
+		//! IGUIElement who called the event
+		gui::IGUIElement* Caller;
 
+		//! If the event has something to do with another element, it will be held here.
+		gui::IGUIElement* Element;
+
+		//! Type of GUI Event
+		gui::EGUI_EVENT_TYPE EventType;
+
+	};
+
+	struct SMouseInput
+	{
+		//! X position of mouse cursor
+		s32 X;
+
+		//! Y position of mouse cursor
+		s32 Y;
+
+		//! mouse wheel delta, usually 1.0 or -1.0.
+		/** Only valid if event was EMIE_MOUSE_WHEEL */
+		f32 Wheel; 
+
+		//! type of mouse event
+		EMOUSE_INPUT_EVENT Event;
+	};
+
+	struct SKeyInput
+	{
+		//! Character corresponding to the key (0, if not a character)
+		wchar_t Char; 
+
+		//! Key which has been pressed or released
+		EKEY_CODE Key; 
+
+		//! if not pressed, then the key was left up
+		bool PressedDown; 
+
+		//! true if shift was also pressed
+		bool Shift; 
+
+		//! true if ctrl was also pressed
+		bool Control; 
+	};
+
+	struct SLogEvent
+	{
+		//! pointer to text which has been logged
+		const c8* Text;
+
+		//! log level in which the text has been logged
+		ELOG_LEVEL Level;
+	};
+
+	struct SUserEvent
+	{
+		//! Some user specified data as int
+		s32 UserData1; 
+
+		//! Another user specified data as int
+		s32 UserData2; 
+
+		//! Some user specified data as float
+		f32 UserData3; 
+	};
+
+	EEVENT_TYPE EventType;
 	union
 	{
-		struct 
-		{
-			//! IGUIElement who called the event
-			gui::IGUIElement* Caller;
-
-			//! Type of GUI Event
-			gui::EGUI_EVENT_TYPE EventType;
-
-		} GUIEvent;
-
-		struct
-		{
-			//! X position of mouse cursor
-			s32 X;
-
-			//! Y position of mouse cursor
-			s32 Y;
-
-			//! mouse wheel delta, usually 1.0 or -1.0.
-			/** Only valid if event was EMIE_MOUSE_WHEEL */
-			f32 Wheel; 
-
-			//! type of mouse event
-			EMOUSE_INPUT_EVENT Event;
-		} MouseInput;
-
-		struct
-		{
-			//! Character corresponding to the key (0, if not a character)
-			wchar_t Char; 
-
-			//! Key which has been pressed or released
-			EKEY_CODE Key; 
-
-			//! if not pressed, then the key was left up
-			bool PressedDown; 
-
-			//! true if shift was also pressed
-			bool Shift; 
-
-			//! true if ctrl was also pressed
-			bool Control; 
-		} KeyInput;
-
-		struct
-		{
-			//! pointer to text which has been logged
-			const c8* Text;
-
-			//! log level in which the text has been logged
-			ELOG_LEVEL Level;
-		} LogEvent;
-
-		struct
-		{
-			//! Some user specified data as int
-			s32 UserData1; 
-
-			//! Another user specified data as int
-			s32 UserData2; 
-
-			//! Some user specified data as float
-			f32 UserData3; 
-		} UserEvent;
-
+		struct SGUIEvent GUIEvent;
+		struct SMouseInput MouseInput;
+		struct SKeyInput KeyInput;
+		struct SLogEvent LogEvent;
+		struct SUserEvent UserEvent;
 	};
 
 };
 
-//! Interface of an object wich can receive events.
+//! Interface of an object which can receive events.
+/** Many of the engine's classes inherit IEventReceiver so they are able to process events.
+Events usually start at a postEventFromUser function and are passed down through a chain of 
+event receivers until OnEvent returns true.
+See irr::EEVENT_TYPE for a description of where each type of event starts, and the path it takes
+through the system. */
 class IEventReceiver
 {
 public:
 
-	virtual ~IEventReceiver() {};
+	virtual ~IEventReceiver() {}
 
-	//! called if an event happened. returns true if event was processed
-	virtual bool OnEvent(SEvent event) = 0;
+	//! called if an event happened.
+	//! \return Returns true if the event was processed
+	virtual bool OnEvent(const SEvent& event) = 0;
 };
 
 

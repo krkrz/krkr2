@@ -7,7 +7,6 @@
 
 #include "IrrlichtDevice.h"
 #include "IImagePresenter.h"
-#include "IGUIEnvironment.h"
 #include "CVideoModeList.h"
 
 namespace irr
@@ -15,6 +14,13 @@ namespace irr
 	// lots of prototypes:
 	class ILogger;
 	class CLogger;
+
+	namespace gui
+	{
+		class IGUIEnvironment;
+		IGUIEnvironment* createGUIEnvironment(io::IFileSystem* fs, 
+			video::IVideoDriver* Driver, IOSOperator* op);
+	}
 
 	namespace scene
 	{
@@ -25,12 +31,6 @@ namespace irr
 	namespace io
 	{
 		IFileSystem* createFileSystem();
-	}
-
-	namespace gui
-	{
-		IGUIEnvironment* createGUIEnvironment(io::IFileSystem* fs, 
-			video::IVideoDriver* Driver, IOSOperator* op);
 	}
 
 	namespace video
@@ -48,7 +48,7 @@ namespace irr
 	public:
 
 		//! constructor
-		CIrrDeviceStub(const char* version, irr::IEventReceiver* resv);
+		CIrrDeviceStub(const char* version, IEventReceiver* resv);
 
 		//! destructor
 		virtual ~CIrrDeviceStub();
@@ -77,10 +77,10 @@ namespace irr
 		virtual ITimer* getTimer();
 
 		//! Returns the version of the engine. 
-		virtual const char* getVersion();
+		virtual const char* getVersion() const;
 
 		//! send the event to the right receiver
-		virtual void postEventFromUser(SEvent event);
+		virtual void postEventFromUser(const SEvent& event);
 
 		//! Sets a new event receiver to receive events
 		virtual void setEventReceiver(IEventReceiver* receiver);
@@ -88,15 +88,15 @@ namespace irr
 		//! Returns poinhter to the current event receiver. Returns 0 if there is none.
 		virtual IEventReceiver* getEventReceiver();
 
+		//! Sets the input receiving scene manager. 
+		/** If set to null, the main scene manager (returned by GetSceneManager()) will receive the input */
+		virtual void setInputReceivingSceneManager(scene::ISceneManager* sceneManager);
+
 		//! \return Returns a pointer to the logger.
 		virtual ILogger* getLogger();
 
 		//! Returns the operation system opertator object.
 		virtual IOSOperator* getOSOperator();
-
-		//! Sets if the window should be resizeable in windowed mode. The default
-		//! is false.
-		virtual void setResizeAble(bool resize=false);
 
 	protected:
 
@@ -115,6 +115,7 @@ namespace irr
 		CLogger* Logger;
 		IOSOperator* Operator;
 		io::IFileSystem* FileSystem;
+		scene::ISceneManager* InputReceivingSceneManager;
 	};
 
 } // end namespace irr

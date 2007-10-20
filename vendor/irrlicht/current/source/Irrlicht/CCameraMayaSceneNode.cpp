@@ -15,17 +15,17 @@ namespace scene
 CCameraMayaSceneNode::CCameraMayaSceneNode(ISceneNode* parent, ISceneManager* mgr, s32 id,
 	 f32 rs, f32 zs, f32 ts)
 : CCameraSceneNode(parent, mgr, id), 
-	zooming(false), rotating(false), moving(false), translating(false),
-	zoomSpeed(zs), rotateSpeed(ts), translateSpeed(ts),
-	rotateStartX(0.0f), rotateStartY(0.0f), zoomStartX(0.0f), zoomStartY(0.0f),
-	translateStartX(0.0f), translateStartY(0.0f), currentZoom(70.0f), rotX(0.0f), rotY(0.0f)
+	Zooming(false), Rotating(false), Moving(false), Translating(false),
+	ZoomSpeed(zs), RotateSpeed(rs), TranslateSpeed(ts),
+	RotateStartX(0.0f), RotateStartY(0.0f), ZoomStartX(0.0f), ZoomStartY(0.0f),
+	TranslateStartX(0.0f), TranslateStartY(0.0f), CurrentZoom(70.0f), RotX(0.0f), RotY(0.0f)
 {
 	#ifdef _DEBUG
 	setDebugName("CCameraMayaSceneNode");
 	#endif
 
 	Target.set(0.0f, 0.0f, 0.0f);
-	oldTarget = Target;
+	OldTarget = Target;
 
 	allKeysUp();
 	recalculateViewArea();
@@ -43,7 +43,7 @@ CCameraMayaSceneNode::~CCameraMayaSceneNode()
 //! example with scene::ISceneManager::addMayaCameraSceneNode or
 //! scene::ISceneManager::addMeshViewerCameraSceneNode, may want to get this input
 //! for changing their position, look at target or whatever.
-bool CCameraMayaSceneNode::OnEvent(SEvent event)
+bool CCameraMayaSceneNode::OnEvent(const SEvent& event)
 {
 	if (event.EventType != EET_MOUSE_INPUT_EVENT ||
 		!InputReceiverEnabled)
@@ -117,23 +117,23 @@ void CCameraMayaSceneNode::animate()
 
 	const SViewFrustum* va = getViewFrustum();
 
-	f32 nRotX = rotX;
-	f32 nRotY = rotY;
-	f32 nZoom = currentZoom;
+	f32 nRotX = RotX;
+	f32 nRotY = RotY;
+	f32 nZoom = CurrentZoom;
 
 	if ( (isMouseKeyDown(0) && isMouseKeyDown(2)) || isMouseKeyDown(1) )
 	{
-		if (!zooming)
+		if (!Zooming)
 		{
-			zoomStartX = MousePos.X;
-			zoomStartY = MousePos.Y;
-			zooming = true;
-			nZoom = currentZoom;
+			ZoomStartX = MousePos.X;
+			ZoomStartY = MousePos.Y;
+			Zooming = true;
+			nZoom = CurrentZoom;
 		}
 		else
 		{
 			f32 old = nZoom;
-			nZoom += (zoomStartX - MousePos.X) * zoomSpeed;
+			nZoom += (ZoomStartX - MousePos.X) * ZoomSpeed;
 
 			f32 targetMinDistance = 0.1f;
 			if (nZoom < targetMinDistance) // jox: fixed bug: bounce back when zooming to close
@@ -145,22 +145,22 @@ void CCameraMayaSceneNode::animate()
 	}
 	else
 	{
-		if (zooming)
+		if (Zooming)
 		{
-			f32 old = currentZoom;
-			currentZoom = currentZoom + (zoomStartX - MousePos.X ) * zoomSpeed;
-			nZoom = currentZoom;
+			f32 old = CurrentZoom;
+			CurrentZoom = CurrentZoom + (ZoomStartX - MousePos.X ) * ZoomSpeed;
+			nZoom = CurrentZoom;
 
 			if (nZoom < 0)
-				nZoom = currentZoom = old;
+				nZoom = CurrentZoom = old;
 		}
 
-		zooming = false;
+		Zooming = false;
 	}
 
 	// Translation ---------------------------------
 
-	core::vector3df translate(oldTarget);
+	core::vector3df translate(OldTarget);
 
 	core::vector3df tvectX = Pos - Target;
 	tvectX = tvectX.crossProduct(UpVector);
@@ -171,61 +171,61 @@ void CCameraMayaSceneNode::animate()
 	tvectY.normalize();
 	
 
-	if (isMouseKeyDown(2) && !zooming)
+	if (isMouseKeyDown(2) && !Zooming)
 	{
-		if (!translating)
+		if (!Translating)
 		{
-			translateStartX = MousePos.X;
-			translateStartY = MousePos.Y;
-			translating = true;
+			TranslateStartX = MousePos.X;
+			TranslateStartY = MousePos.Y;
+			Translating = true;
 		}
 		else
 		{
-			translate +=	tvectX * (translateStartX - MousePos.X)*translateSpeed + 
-								tvectY * (translateStartY - MousePos.Y)*translateSpeed;
+			translate +=	tvectX * (TranslateStartX - MousePos.X)*TranslateSpeed + 
+								tvectY * (TranslateStartY - MousePos.Y)*TranslateSpeed;
 		}
 	}
 	else
 	{
-		if (translating)
+		if (Translating)
 		{
-			translate +=	tvectX * (translateStartX - MousePos.X)*translateSpeed + 
-								tvectY * (translateStartY - MousePos.Y)*translateSpeed;
-			oldTarget = translate;
+			translate +=	tvectX * (TranslateStartX - MousePos.X)*TranslateSpeed + 
+								tvectY * (TranslateStartY - MousePos.Y)*TranslateSpeed;
+			OldTarget = translate;
 		}
 
-		translating = false;
+		Translating = false;
 	}
 
 	// Rotation ------------------------------------
 
-	if (isMouseKeyDown(0) && !zooming)
+	if (isMouseKeyDown(0) && !Zooming)
 	{
-		if (!rotating)
+		if (!Rotating)
 		{
-			rotateStartX = MousePos.X;
-			rotateStartY = MousePos.Y;
-			rotating = true;
-			nRotX = rotX;
-			nRotY = rotY;
+			RotateStartX = MousePos.X;
+			RotateStartY = MousePos.Y;
+			Rotating = true;
+			nRotX = RotX;
+			nRotY = RotY;
 		}
 		else
 		{
-			nRotX += (rotateStartX - MousePos.X) * rotateSpeed;
-			nRotY += (rotateStartY - MousePos.Y) * rotateSpeed;
+			nRotX += (RotateStartX - MousePos.X) * RotateSpeed;
+			nRotY += (RotateStartY - MousePos.Y) * RotateSpeed;
 		}
 	}
 	else
 	{
-		if (rotating)
+		if (Rotating)
 		{
-			rotX = rotX + (rotateStartX - MousePos.X) * rotateSpeed;
-			rotY = rotY + (rotateStartY - MousePos.Y) * rotateSpeed;
-			nRotX = rotX;
-			nRotY = rotY;
+			RotX = RotX + (RotateStartX - MousePos.X) * RotateSpeed;
+			RotY = RotY + (RotateStartY - MousePos.Y) * RotateSpeed;
+			nRotX = RotX;
+			nRotY = RotY;
 		}
 
-		rotating = false;
+		Rotating = false;
 	}
 
 	// Set Pos ------------------------------------
@@ -277,7 +277,7 @@ void CCameraMayaSceneNode::setPosition(const core::vector3df& pos)
 // function added by jox: fix setTarget()
 void CCameraMayaSceneNode::setTarget(const core::vector3df& pos) 
 {
-	Target = oldTarget = pos;
+	Target = OldTarget = pos;
 	updateAnimationState();
 }
 
@@ -289,39 +289,39 @@ void CCameraMayaSceneNode::updateAnimationState()
 
 	// X rotation
 	core::vector2df vec2d(pos.X, pos.Z);
-	rotX = (f32)vec2d.getAngle();
+	RotX = (f32)vec2d.getAngle();
 
 	// Y rotation
-	pos.rotateXZBy(rotX, core::vector3df());
+	pos.rotateXZBy(RotX, core::vector3df());
 	vec2d.set(pos.X, pos.Y);
-	rotY = -(f32)vec2d.getAngle();
+	RotY = -(f32)vec2d.getAngle();
 
 	// Zoom
-	currentZoom = (f32)Pos.getDistanceFrom(Target);
+	CurrentZoom = (f32)Pos.getDistanceFrom(Target);
 }
 
 //! Sets the rotation speed
 void CCameraMayaSceneNode::setRotateSpeed(const f32 speed)
 {
-	rotateSpeed = speed;	
+	RotateSpeed = speed;	
 }
 
 //! Sets the movement speed
 void CCameraMayaSceneNode::setMoveSpeed(const f32 speed)
 {
-	translateSpeed = speed;
+	TranslateSpeed = speed;
 }
 
 //! Gets the rotation speed
 f32 CCameraMayaSceneNode::getRotateSpeed()
 {
-	return rotateSpeed;
+	return RotateSpeed;
 }
 
 // Gets the movement speed
 f32 CCameraMayaSceneNode::getMoveSpeed()
 {
-	return translateSpeed;
+	return TranslateSpeed;
 }
 
 } // end namespace

@@ -29,7 +29,7 @@ void CColorConverter::convert1BitTo16Bit(const u8* in, s16* out, s32 width, s32 
 
 		for (s32 x=0; x<width; ++x)
 		{
-			out[x] = *in>>shift & 0x01 ? (s16)0xffff : (s16)0x0000;
+			out[x] = *in>>shift & 0x01 ? (s16)0xffff : (s16)0x8000;
 
 			if ((--shift)<0) // 8 pixel done
 			{
@@ -246,8 +246,8 @@ void CColorConverter::convert_A1R5G5B5toR8G8B8(const void* sP, s32 sN, void* dP)
 
 	for (s32 x = 0; x < sN; ++x)
 	{
-		dB[2] = (*sB & 0x7c) << 9;
-		dB[1] = (*sB & 0x3e) << 6;
+		dB[2] = (*sB & 0x7c00) >> 7;
+		dB[1] = (*sB & 0x03e0) >> 2;
 		dB[0] = (*sB & 0x1f) << 3;
 
 		sB += 1;
@@ -262,8 +262,8 @@ void CColorConverter::convert_A1R5G5B5toB8G8R8(const void* sP, s32 sN, void* dP)
 
 	for (s32 x = 0; x < sN; ++x)
 	{
-		dB[0] = (*sB & 0x7c) << 9;
-		dB[1] = (*sB & 0x3e) << 6;
+		dB[0] = (*sB & 0x7c00) >> 7;
+		dB[1] = (*sB & 0x03e0) >> 2;
 		dB[2] = (*sB & 0x1f) << 3;
 
 		sB += 1;
@@ -302,9 +302,9 @@ void CColorConverter::convert_A8R8G8B8toR8G8B8(const void* sP, s32 sN, void* dP)
 	for (s32 x = 0; x < sN; ++x)
 	{
 		// sB[3] is alpha
-		dB[0] = sB[0];
+		dB[0] = sB[2];
 		dB[1] = sB[1];
-		dB[2] = sB[2];
+		dB[2] = sB[0];
 
 		sB += 4;
 		dB += 3;
@@ -319,9 +319,9 @@ void CColorConverter::convert_A8R8G8B8toB8G8R8(const void* sP, s32 sN, void* dP)
 	for (s32 x = 0; x < sN; ++x)
 	{
 		// sB[3] is alpha
-		dB[0] = sB[2];
+		dB[0] = sB[0];
 		dB[1] = sB[1];
-		dB[2] = sB[0];
+		dB[2] = sB[2];
 
 		sB += 4;
 		dB += 3;
@@ -486,6 +486,83 @@ void CColorConverter::convert_R5G6B5toA1R5G5B5(const void* sP, s32 sN, void* dP)
 
 	for (s32 x = 0; x < sN; ++x)
 		*dB++ = R5G6B5toA1R5G5B5(*sB++);
+}
+
+
+void CColorConverter::convert_viaFormat(const void* sP, ECOLOR_FORMAT sF, s32 sN,
+				void* dP, ECOLOR_FORMAT dF)
+{
+	switch (sF)
+	{
+		case ECF_A1R5G5B5:
+			switch (dF)
+			{
+				case ECF_A1R5G5B5:
+					convert_A1R5G5B5toA1R5G5B5(sP, sN, dP);
+				break;
+				case ECF_R5G6B5:
+					convert_A1R5G5B5toR5G6B5(sP, sN, dP);
+				break;
+				case ECF_A8R8G8B8:
+					convert_A1R5G5B5toA8R8G8B8(sP, sN, dP);
+				break;
+				case ECF_R8G8B8:
+					convert_A1R5G5B5toR8G8B8(sP, sN, dP);
+				break;
+			}
+		break;
+		case ECF_R5G6B5:
+			switch (dF)
+			{
+				case ECF_A1R5G5B5:
+					convert_R5G6B5toA1R5G5B5(sP, sN, dP);
+				break;
+				case ECF_R5G6B5:
+					convert_R5G6B5toR5G6B5(sP, sN, dP);
+				break;
+				case ECF_A8R8G8B8:
+					convert_R5G6B5toA8R8G8B8(sP, sN, dP);
+				break;
+				case ECF_R8G8B8:
+					convert_R5G6B5toR8G8B8(sP, sN, dP);
+				break;
+			}
+		break;
+		case ECF_A8R8G8B8:
+			switch (dF)
+			{
+				case ECF_A1R5G5B5:
+					convert_A8R8G8B8toA1R5G5B5(sP, sN, dP);
+				break;
+				case ECF_R5G6B5:
+					convert_A8R8G8B8toR5G6B5(sP, sN, dP);
+				break;
+				case ECF_A8R8G8B8:
+					convert_A8R8G8B8toA8R8G8B8(sP, sN, dP);
+				break;
+				case ECF_R8G8B8:
+					convert_A8R8G8B8toR8G8B8(sP, sN, dP);
+				break;
+			}
+		break;
+		case ECF_R8G8B8:
+			switch (dF)
+			{
+				case ECF_A1R5G5B5:
+					convert_R8G8B8toA1R5G5B5(sP, sN, dP);
+				break;
+				case ECF_R5G6B5:
+					convert_R8G8B8toR5G6B5(sP, sN, dP);
+				break;
+				case ECF_A8R8G8B8:
+					convert_R8G8B8toA8R8G8B8(sP, sN, dP);
+				break;
+				case ECF_R8G8B8:
+					convert_R8G8B8toR8G8B8(sP, sN, dP);
+				break;
+			}
+		break;
+	}
 }
 
 

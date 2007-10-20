@@ -2,6 +2,9 @@
 // This file is part of the "Irrlicht Engine".
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
+#include "IrrCompileConfig.h"
+#ifdef _IRR_COMPILE_WITH_BSP_LOADER_
+
 #include "CQ3LevelMesh.h"
 #include "ISceneManager.h"
 #include "os.h"
@@ -23,8 +26,8 @@ CQ3LevelMesh::CQ3LevelMesh(io::IFileSystem* fs, video::IVideoDriver* driver, sce
 	MeshVerts(0), Brushes(0), Driver(driver), FileSystem(fs), SceneManager ( smgr )
 {
 	#ifdef _DEBUG
-	IUnknown::setDebugName("CQ3LevelMesh");
-	#endif	
+	IReferenceCounted::setDebugName("CQ3LevelMesh");
+	#endif
 
 	s32 i;
 	for ( i = 0; i!= quake3::E_Q3_MESH_SIZE; ++i )
@@ -53,7 +56,7 @@ CQ3LevelMesh::~CQ3LevelMesh()
 
 	if (LightMaps)
 		delete [] LightMaps;
-	
+
 	if (Vertices)
 		delete [] Vertices;
 
@@ -71,7 +74,7 @@ CQ3LevelMesh::~CQ3LevelMesh()
 
 	if (LeafFaces)
 		delete [] LeafFaces;
-	
+
 	if (MeshVerts)
 		delete [] MeshVerts;
 
@@ -175,7 +178,7 @@ bool CQ3LevelMesh::loadFile(io::IReadFile* file)
 
 
 //! returns the amount of frames in milliseconds. If the amount is 1, it is a static (=non animated) mesh.
-s32 CQ3LevelMesh::getFrameCount()
+u32 CQ3LevelMesh::getFrameCount() const
 {
 	return 1;
 }
@@ -260,7 +263,7 @@ void CQ3LevelMesh::loadFaces(tBSPLump* l, io::IReadFile* file)
 	file->read(Faces, l->length);
 
 	#ifdef __BIG_ENDIAN__
-	for ( u32 i=0;i<NumFaces;i++)
+	for ( s32 i=0;i<NumFaces;i++)
 	{
 		Faces[i].textureID = os::Byteswap::byteswap(Faces[i].textureID);
 		Faces[i].effect = os::Byteswap::byteswap(Faces[i].effect);
@@ -461,7 +464,7 @@ void CQ3LevelMesh::parser_nextToken ()
 			}
 			// take /[name] as valid token..?!?!?. mhmm, maybe
 			break;
-			
+
 		case '\n':
 			Parser.tokenresult = Q3_TOKEN_EOL;
 			return;
@@ -627,12 +630,11 @@ s32 CQ3LevelMesh::setShaderMaterial ( video::SMaterial &material, const tBSPFace
 	material.MaterialType = video::EMT_SOLID;
 	material.Wireframe = false;
 	material.Lighting = false;
-	material.BilinearFilter = true;
 	material.BackfaceCulling = true;
-	material.Textures[0] = 0;
-	material.Textures[1] = 0;
-	material.Textures[2] = 0;
-	material.Textures[3] = 0;
+	material.setTexture(0, 0);
+	material.setTexture(1, 0);
+	material.setTexture(2, 0);
+	material.setTexture(3, 0);
 	material.ZBuffer = true;
 	material.ZWriteEnable = true;
 	material.MaterialTypeParam = 0.f;
@@ -641,13 +643,13 @@ s32 CQ3LevelMesh::setShaderMaterial ( video::SMaterial &material, const tBSPFace
 
 	if ( face->textureID >= 0 )
 	{
-		material.Textures[0] = Tex [ face->textureID ].Texture;
+		material.setTexture(0, Tex [ face->textureID ].Texture);
 		shaderState = Tex [ face->textureID ].ShaderID;
 	}
 
 	if ( face->lightmapID >= 0 )
 	{
-		material.Textures[1] = Lightmap [ face->lightmapID ];
+		material.setTexture(1, Lightmap [ face->lightmapID ]);
 		material.MaterialType = quake3::defaultLightMap;
 	}
 
@@ -672,7 +674,7 @@ s32 CQ3LevelMesh::setShaderMaterial ( video::SMaterial &material, const tBSPFace
 		if ( group->isDefined ( "surfaceparm", "nolightmap" ) )
 		{
 			material.MaterialType = video::EMT_SOLID;
-			material.Textures[1] = 0;
+			material.setTexture(1, 0);
 		}
 
 	}
@@ -761,7 +763,7 @@ void CQ3LevelMesh::constructMesh2()
 				{
 					if ( 0 == shader )
 					{
-						item.takeVertexColor = material.Textures[0] == 0 || material.Textures[1] == 0;
+						item.takeVertexColor = material.getTexture(0) == 0 || material.getTexture(1) == 0;
 						item.index = quake3::E_Q3_MESH_GEOMETRY;
 						toBuffer.push_back ( item );
 					}
@@ -835,7 +837,7 @@ void CQ3LevelMesh::constructMesh2()
 			{
 				if ( 0 == toBuffer[g].takeVertexColor )
 				{
-					toBuffer[g].takeVertexColor = material.Textures[0] == 0 || material.Textures[1];
+					toBuffer[g].takeVertexColor = material.getTexture(0) == 0 || material.getTexture(1);
 				}
 				if (Faces[i].lightmapID < -1 || Faces[i].lightmapID > NumLightMaps-1)
 				{
@@ -843,8 +845,8 @@ void CQ3LevelMesh::constructMesh2()
 				}
 
 				// there are lightmapsids and textureid with -1
-				s32 index = ((Faces[i].lightmapID+1) * (NumTextures+1)) + (Faces[i].textureID+1);
-				buffer = (SMeshBufferLightMap*) Mesh[quake3::E_Q3_MESH_GEOMETRY]->getMeshBuffer(index);
+				const s32 tmp_index = ((Faces[i].lightmapID+1) * (NumTextures+1)) + (Faces[i].textureID+1);
+				buffer = (SMeshBufferLightMap*) Mesh[quake3::E_Q3_MESH_GEOMETRY]->getMeshBuffer(tmp_index);
 				buffer->getMaterial() = material;
 			}
 			else
@@ -890,14 +892,14 @@ void CQ3LevelMesh::constructMesh2()
 			} // end switch
 		}
 	}
-	
+
 
 }
 
 //! constructs a mesh from the quake 3 level file.
 void CQ3LevelMesh::constructMesh()
 {
-	// reserve buffer. 
+	// reserve buffer.
 	s32 i; // new ISO for scoping problem with some compilers
 
 	for (i=0; i<(NumTextures+1) * (NumLightMaps+1); ++i)
@@ -907,7 +909,6 @@ void CQ3LevelMesh::constructMesh()
 		buffer->Material.MaterialType = video::EMT_LIGHTMAP_M4;
 		buffer->Material.Wireframe = false;
 		buffer->Material.Lighting = false;
-		buffer->Material.BilinearFilter = true;
 
 		Mesh[0]->addMeshBuffer(buffer);
 
@@ -940,9 +941,9 @@ void CQ3LevelMesh::constructMesh()
 						s32 idx = meshBuffer->getVertexCount();
 						s32 vidxes[3];
 
-						vidxes[0] = MeshVerts[Faces[i].meshVertIndex + tf +0] 
+						vidxes[0] = MeshVerts[Faces[i].meshVertIndex + tf +0]
 							+ Faces[i].vertexIndex;
-						vidxes[1] = MeshVerts[Faces[i].meshVertIndex + tf +1] 
+						vidxes[1] = MeshVerts[Faces[i].meshVertIndex + tf +1]
 							+ Faces[i].vertexIndex;
 						vidxes[2] = MeshVerts[Faces[i].meshVertIndex + tf +2]
 							+ Faces[i].vertexIndex;
@@ -972,7 +973,7 @@ void CQ3LevelMesh::constructMesh()
 				break;
 		} // end switch
 	}
-	
+
 }
 
 // helper method for creating curved surfaces, sent in by Dean P. Macri.
@@ -991,18 +992,11 @@ inline f32 CQ3LevelMesh::Blend( const f64 s[3], const f64 t[3], const tBSPVertex
 	return (f32) res;
 }
 
-//!helper function 
-inline s32 s32_min ( s32 a, s32 b)
-{
-	s32 mask = (a - b) >> 31;
-	return (a & mask) | (b & ~mask);
-}
-
 void CQ3LevelMesh::S3DVertex2TCoords_64::copyto ( video::S3DVertex2TCoords &dest ) const
 {
-	dest.Pos.X = core::round ( (f32) Pos.X );
-	dest.Pos.Y = core::round ( (f32) Pos.Y );
-	dest.Pos.Z = core::round ( (f32) Pos.Z );
+	dest.Pos.X = core::round_( (f32) Pos.X );
+	dest.Pos.Y = core::round_( (f32) Pos.Y );
+	dest.Pos.Z = core::round_( (f32) Pos.Z );
 	//dest.Pos.X = (f32) Pos.X;
 	//dest.Pos.Y = (f32) Pos.Y;
 	//dest.Pos.Z = (f32) Pos.Z;
@@ -1043,10 +1037,10 @@ void CQ3LevelMesh::copy ( S3DVertex2TCoords_64 * dest, const tBSPVertex * source
 
 	if ( vertexcolor )
 	{
-		u32 a = s32_min ( source->color[3] * quake3::defaultModulate, 255 );
-		u32 r = s32_min ( source->color[0] * quake3::defaultModulate, 255 );
-		u32 g = s32_min ( source->color[1] * quake3::defaultModulate, 255 );
-		u32 b = s32_min ( source->color[2] * quake3::defaultModulate, 255 );
+		u32 a = core::s32_min ( source->color[3] * quake3::defaultModulate, 255 );
+		u32 r = core::s32_min ( source->color[0] * quake3::defaultModulate, 255 );
+		u32 g = core::s32_min ( source->color[1] * quake3::defaultModulate, 255 );
+		u32 b = core::s32_min ( source->color[2] * quake3::defaultModulate, 255 );
 
 		dest->Color.set (	a * 1.f/255.f,
 							r * 1.f/255.f,
@@ -1064,9 +1058,9 @@ void CQ3LevelMesh::copy ( S3DVertex2TCoords_64 * dest, const tBSPVertex * source
 
 inline void CQ3LevelMesh::copy ( video::S3DVertex2TCoords * dest, const tBSPVertex * source, s32 vertexcolor ) const
 {
-	dest->Pos.X = core::round ( source->vPosition[0] );
-	dest->Pos.Y = core::round ( source->vPosition[2] );
-	dest->Pos.Z = core::round ( source->vPosition[1] );
+	dest->Pos.X = core::round_( source->vPosition[0] );
+	dest->Pos.Y = core::round_( source->vPosition[2] );
+	dest->Pos.Z = core::round_( source->vPosition[1] );
 
 	//dest->Pos.X = source->vPosition[0];
 	//dest->Pos.Y = source->vPosition[2];
@@ -1084,10 +1078,10 @@ inline void CQ3LevelMesh::copy ( video::S3DVertex2TCoords * dest, const tBSPVert
 
 	if ( vertexcolor )
 	{
-		u32 a = s32_min ( source->color[3] * quake3::defaultModulate, 255 );
-		u32 r = s32_min ( source->color[0] * quake3::defaultModulate, 255 );
-		u32 g = s32_min ( source->color[1] * quake3::defaultModulate, 255 );
-		u32 b = s32_min ( source->color[2] * quake3::defaultModulate, 255 );
+		u32 a = core::s32_min ( source->color[3] * quake3::defaultModulate, 255 );
+		u32 r = core::s32_min ( source->color[0] * quake3::defaultModulate, 255 );
+		u32 g = core::s32_min ( source->color[1] * quake3::defaultModulate, 255 );
+		u32 b = core::s32_min ( source->color[2] * quake3::defaultModulate, 255 );
 
 		dest->Color.color = a << 24 | r << 16 | g << 8 | b;
 	}
@@ -1266,7 +1260,7 @@ void CQ3LevelMesh::createCurvedSurface2 (	SMeshBufferLightMap* meshBuffer,
 			if ( !v.equals ( m, tolerance ) )
 				continue;
 
-			meshBuffer->Vertices[k].Pos = v; 
+			meshBuffer->Vertices[k].Pos = v;
 			//Bezier.Patch->Vertices[j].Pos = m;
 		}
 	}
@@ -1459,7 +1453,7 @@ const quake3::SShader * CQ3LevelMesh::getShader ( const c8 * filename, s32 fileN
 	search.name = filename;
 
 	s32 index;
-	
+
 	//! is Shader already in cache?
 	index = Shader.linear_search ( search );
 	if ( index >= 0 )
@@ -1492,18 +1486,6 @@ const quake3::SShader * CQ3LevelMesh::getShader ( const c8 * filename, s32 fileN
 	if ( index >= 0 )
 		return 0;
 
-#if 0
-	core::stringc message;
-	message = loadFile + " for " + core::stringc ( filename );
-	os::Printer::log("Q3: Loading shader file ", message.c_str(), ELL_INFORMATION);
-	io::IReadFile *file = FileSystem->createAndOpenFile ( loadFile.c_str () );
-	if ( 0 == file )
-	{
-		os::Printer::log("Q3: could not load shader ", loadFile.c_str(), ELL_INFORMATION);
-		return 0;
-	}
-#endif
-
 	if ( !FileSystem->existFile ( loadFile.c_str () ) )
 		return 0;
 
@@ -1520,7 +1502,7 @@ const quake3::SShader * CQ3LevelMesh::getShader ( const c8 * filename, s32 fileN
 
 	// load script
 	core::array<u8> script;
-	u32 len = file->getSize ();
+	const long len = file->getSize ();
 
 	script.set_used ( len + 2 );
 	script[ len + 1 ] = 0;
@@ -1609,6 +1591,11 @@ void CQ3LevelMesh::scriptcallback_shader ( quake3::SVarGroupList *& grouplist )
 {
 	quake3::SShader element;
 
+	// TODO: There might be something wrong with this fix, but it avoids a core dump...
+	if (grouplist->VariableGroup[0].Variable.size()==0)
+		return;
+	// end fix
+
 	grouplist->grab ();
 
 	element.VarGroup = grouplist;
@@ -1636,7 +1623,7 @@ void CQ3LevelMesh::loadTextures()
 	tex.set_used(NumTextures+1);
 
 	tex[0] = 0;
-	
+
 	s32 t;// new ISO for scoping problem with some compilers
 
 	for (t=1; t<(NumTextures+1); ++t)
@@ -1680,7 +1667,7 @@ void CQ3LevelMesh::loadTextures()
 
 		// lightmap is a CTexture::R8G8B8 format
 		lmapImg = Driver->createImageFromData(
-			video::ECF_R8G8B8, 
+			video::ECF_R8G8B8,
 			lmapsize,
 			LightMaps[t-1].imageBits, true, false );
 
@@ -1693,20 +1680,20 @@ void CQ3LevelMesh::loadTextures()
 
 	// attach textures to materials.
 	for (s32 l=0; l<NumLightMaps+1; ++l)
+	{
 		for (t=0; t<NumTextures+1; ++t)
 		{
 			SMeshBufferLightMap* b = (SMeshBufferLightMap*)Mesh[0]->getMeshBuffer(l*(NumTextures+1) + t);
-			b->Material.Textures[1] = lig[l];
-			b->Material.Textures[0] = tex[t];
+			b->Material.setTexture(1, lig[l]);
+			b->Material.setTexture(0, tex[t]);
 
-			if (!b->Material.Textures[1])
+			if (!b->Material.getTexture(1))
 				b->Material.MaterialType = video::EMT_SOLID;
 
-			if ( !b->Material.Textures[0] )
+			if (!b->Material.getTexture(0))
  				b->Material.MaterialType = video::EMT_SOLID;
-
 		}
-
+	}
 }
 
 // delete all buffers without geometry in it.
@@ -1721,12 +1708,12 @@ void CQ3LevelMesh::cleanMeshes ()
 		{
 			if (Mesh[g]->MeshBuffers[i]->getVertexCount() == 0 ||
 				Mesh[g]->MeshBuffers[i]->getIndexCount() == 0 ||
-				( texture0important && Mesh[g]->MeshBuffers[i]->getMaterial().Textures[0] == 0 )
+				( texture0important && Mesh[g]->MeshBuffers[i]->getMaterial().getTexture(0) == 0 )
 				)
 			{
 				// delete Meshbuffer
 				Mesh[g]->MeshBuffers[i]->drop();
-				Mesh[g]->MeshBuffers.erase(i);		
+				Mesh[g]->MeshBuffers.erase(i);
 			}
 			else
 				++i;
@@ -1755,7 +1742,7 @@ void CQ3LevelMesh::calcBoundingBoxes ()
 //! loads a texture
 video::ITexture* CQ3LevelMesh::loadTexture ( const tStringList &stringList )
 {
-	static const char * extension[2] = 
+	static const char * extension[2] =
 	{
 		".jpg",
 		".tga"
@@ -1801,7 +1788,7 @@ void CQ3LevelMesh::loadTextures2()
 
 		// lightmap is a CTexture::R8G8B8 format
 		lmapImg = Driver->createImageFromData(
-			video::ECF_R8G8B8, 
+			video::ECF_R8G8B8,
 			lmapsize,
 			LightMaps[t].imageBits, true, false );
 
@@ -1812,7 +1799,7 @@ void CQ3LevelMesh::loadTextures2()
 
 	// load textures
 	Tex.set_used( NumTextures+1 );
-	
+
 	const quake3::SShader * shader;
 
 	core::stringc list;
@@ -1873,6 +1860,11 @@ const core::aabbox3d<f32>& CQ3LevelMesh::getBoundingBox() const
 	return Mesh[0]->getBoundingBox();
 }
 
+void CQ3LevelMesh::setBoundingBox( const core::aabbox3df& box)
+{
+	Mesh[0]->setBoundingBox(box); //?
+}
+
 
 //! Returns the type of the animated mesh.
 E_ANIMATED_MESH_TYPE CQ3LevelMesh::getMeshType() const
@@ -1883,3 +1875,4 @@ E_ANIMATED_MESH_TYPE CQ3LevelMesh::getMeshType() const
 } // end namespace scene
 } // end namespace irr
 
+#endif // _IRR_COMPILE_WITH_BSP_LOADER_

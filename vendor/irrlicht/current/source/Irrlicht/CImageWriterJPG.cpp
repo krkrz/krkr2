@@ -1,12 +1,17 @@
+// Copyright (C) 2002-2007 Nikolaus Gebhardt
+// This file is part of the "Irrlicht Engine".
+// For conditions of distribution and use, see copyright notice in irrlicht.h
 
 #include "CImageWriterJPG.h"
+
+#ifdef _IRR_COMPILE_WITH_JPG_WRITER_
+
 #include "CColorConverter.h"
 #include "IWriteFile.h"
 #include "CImage.h"
 #include "CColorConverter.h"
 #include "irrString.h"
 
-#include "IrrCompileConfig.h"
 #ifdef _IRR_COMPILE_WITH_LIBJPEG_
 #include <stdio.h> // required for jpeglib.h
 extern "C"
@@ -101,16 +106,14 @@ void jpeg_memory_dest (j_compress_ptr cinfo, u8 *jfif_buffer,
 /* write_JPEG_memory: store JPEG compressed image into memory.
 */
 void write_JPEG_memory (void *img_buf, s32 width, s32 height, u32 bpp, u32 pitch,
-						u8 *jpeg_buffer, u32 jpeg_buffer_size,
-						s32 quality, u32 *jpeg_comp_size
-						)
+					u8 *jpeg_buffer, u32 jpeg_buffer_size,
+					s32 quality, u32 *jpeg_comp_size)
 {
 	struct jpeg_compress_struct cinfo;
 	struct jpeg_error_mgr jerr;
 
 	/* More stuff */
 	JSAMPROW row_pointer[1];      /* pointer to JSAMPLE row[s] */
-
 
 	cinfo.err = jpeg_std_error(&jerr);
 	jpeg_create_compress(&cinfo);
@@ -164,13 +167,13 @@ CImageWriterJPG::CImageWriterJPG()
 }
 
 
-bool CImageWriterJPG::isAWriteableFileExtension(const c8* fileName)
+bool CImageWriterJPG::isAWriteableFileExtension(const c8* fileName) const
 {
 	return strstr(fileName, ".jpg") != 0 || strstr(fileName, ".jpeg") != 0;
 }
 
 
-bool CImageWriterJPG::writeImage(io::IWriteFile *file, IImage *input,u32 quality )
+bool CImageWriterJPG::writeImage(io::IWriteFile *file, IImage *input,u32 quality) const
 {
 #ifndef _IRR_COMPILE_WITH_LIBJPEG_
 	return false;
@@ -183,7 +186,7 @@ bool CImageWriterJPG::writeImage(io::IWriteFile *file, IImage *input,u32 quality
 	switch( input->getColorFormat () )
 	{
 		case ECF_R8G8B8:	format = CColorConverter::convert_R8G8B8toR8G8B8; break;
-		case ECF_A8R8G8B8:	format = CColorConverter::convert_A8R8G8B8toB8G8R8; break;
+		case ECF_A8R8G8B8:	format = CColorConverter::convert_A8R8G8B8toR8G8B8; break;
 		case ECF_A1R5G5B5:	format = CColorConverter::convert_A1R5G5B5toB8G8R8; break;
 		case ECF_R5G6B5:	format = CColorConverter::convert_R5G6B5toR8G8B8; break;
 	}
@@ -197,7 +200,7 @@ bool CImageWriterJPG::writeImage(io::IWriteFile *file, IImage *input,u32 quality
 	void *dst = image->lock();
 	for ( y = 0; y!= dim.Height; ++y )
 	{
-		format ( src, dim.Width, dst );
+		format( src, dim.Width, dst );
 		src = (void*) ( (u8*) src + input->getPitch () );
 		dst = (void*) ( (u8*) dst + image->getPitch () );
 	}
@@ -212,11 +215,10 @@ bool CImageWriterJPG::writeImage(io::IWriteFile *file, IImage *input,u32 quality
 		quality = 75;
 
 	write_JPEG_memory ( image->lock (), dim.Width, dim.Height,
-						image->getBytesPerPixel(), image->getPitch (),
-						dest, destSize,
-						quality,
-						&destSize
-					);
+				image->getBytesPerPixel(), image->getPitch(),
+				dest, destSize,
+				quality,
+				&destSize);
 
 	file->write ( dest, destSize );
 
@@ -229,4 +231,6 @@ bool CImageWriterJPG::writeImage(io::IWriteFile *file, IImage *input,u32 quality
 
 } // namespace video
 } // namespace irr
+
+#endif
 

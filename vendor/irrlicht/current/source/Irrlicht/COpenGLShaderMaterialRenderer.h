@@ -8,21 +8,22 @@
 #include "IrrCompileConfig.h"
 #ifdef _IRR_COMPILE_WITH_OPENGL_
 
-#ifdef _IRR_WINDOWS_
-#define WIN32_LEAN_AND_MEAN
-#include <windows.h>
-#include <GL/gl.h>
-#elif defined(LINUX)
+#ifdef _IRR_WINDOWS_API_
+	#define WIN32_LEAN_AND_MEAN
+	#include <windows.h>
+	#include <GL/gl.h>
+#else
 #if defined(_IRR_OPENGL_USE_EXTPOINTER_)
-#define GL_GLEXT_LEGACY 1
+	#define GL_GLEXT_LEGACY 1
 #endif
-#include <GL/gl.h>
+#if defined(MACOSX)
+	#include <OpenGL/gl.h>
+#else
+	#include <GL/gl.h>
+#endif
 #if defined(_IRR_OPENGL_USE_EXTPOINTER_)
-#include "glext.h"
+	#include "glext.h"
 #endif
-#elif defined(MACOSX)
-#include <OpenGL/gl.h>
-#include <OpenGL/glext.h>
 #endif
 
 #include "IMaterialRenderer.h"
@@ -47,9 +48,9 @@ public:
 		IShaderConstantSetCallBack* callback, IMaterialRenderer* baseMaterial, s32 userData);
 
 	//! Destructor
-	~COpenGLShaderMaterialRenderer();
+	virtual ~COpenGLShaderMaterialRenderer();
 
-	virtual void OnSetMaterial(video::SMaterial& material, const video::SMaterial& lastMaterial,
+	virtual void OnSetMaterial(const video::SMaterial& material, const video::SMaterial& lastMaterial,
 		bool resetAllRenderstates, video::IMaterialRendererServices* services);
 
 	virtual bool OnRender(IMaterialRendererServices* service, E_VERTEX_TYPE vtxtype);
@@ -57,7 +58,7 @@ public:
 	virtual void OnUnsetMaterial();
 
 	//! Returns if the material is transparent.
-	virtual bool isTransparent();
+	virtual bool isTransparent() const;
 
 protected:
 

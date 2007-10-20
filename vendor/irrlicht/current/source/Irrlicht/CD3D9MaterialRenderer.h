@@ -63,7 +63,7 @@ public:
 	CD3D9MaterialRenderer_SOLID(IDirect3DDevice9* p, video::IVideoDriver* d)
 		: CD3D9MaterialRenderer(p, d) {}
 
-	virtual void OnSetMaterial(SMaterial& material, const SMaterial& lastMaterial,
+	virtual void OnSetMaterial(const SMaterial& material, const SMaterial& lastMaterial,
 		bool resetAllRenderstates, IMaterialRendererServices* services)
 	{
 		if (material.MaterialType != lastMaterial.MaterialType || resetAllRenderstates)
@@ -89,10 +89,10 @@ public:
 	CD3D9MaterialRenderer_ONETEXTURE_BLEND(IDirect3DDevice9* p, video::IVideoDriver* d)
 		: CD3D9MaterialRenderer(p, d) {}
 
-	virtual void OnSetMaterial(SMaterial& material, const SMaterial& lastMaterial,
+	virtual void OnSetMaterial(const SMaterial& material, const SMaterial& lastMaterial,
 		bool resetAllRenderstates, IMaterialRendererServices* services)
 	{
-		if (material.MaterialType != lastMaterial.MaterialType || 
+		if (material.MaterialType != lastMaterial.MaterialType ||
 			material.MaterialTypeParam != lastMaterial.MaterialTypeParam ||
 			resetAllRenderstates)
 		{
@@ -101,9 +101,14 @@ public:
 			E_MODULATE_FUNC modulate;
 			unpack_texureBlendFunc ( srcFact, dstFact, modulate, material.MaterialTypeParam );
 
-			pID3DDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE);
-			pID3DDevice->SetRenderState(D3DRS_SRCBLEND, getD3DBlend ( srcFact ) );
-			pID3DDevice->SetRenderState(D3DRS_DESTBLEND, getD3DBlend ( dstFact ) );
+			if (srcFact == EBF_SRC_COLOR && dstFact == EBF_ZERO) 
+				pID3DDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
+			else
+			{
+				pID3DDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE);
+				pID3DDevice->SetRenderState(D3DRS_SRCBLEND, getD3DBlend ( srcFact ) );
+				pID3DDevice->SetRenderState(D3DRS_DESTBLEND, getD3DBlend ( dstFact ) );
+			}
 
 			pID3DDevice->SetTextureStageState (0, D3DTSS_COLOROP, getD3DModulate ( modulate ) );
 			pID3DDevice->SetTextureStageState (0, D3DTSS_COLORARG1, D3DTA_TEXTURE);
@@ -132,7 +137,7 @@ public:
 		u32 getD3DBlend ( E_BLEND_FACTOR factor ) const
 		{
 			u32 r = 0;
-    		switch ( factor )
+		switch ( factor )
 			{
 				case EBF_ZERO:					r = D3DBLEND_ZERO; break;
 				case EBF_ONE:					r = D3DBLEND_ONE; break;
@@ -152,7 +157,7 @@ public:
 		u32 getTexelAlpha ( E_BLEND_FACTOR factor ) const
 		{
 			u32 r = 0;
-    		switch ( factor )
+		switch ( factor )
 			{
 				case EBF_SRC_ALPHA:				r = 1; break;
 				case EBF_ONE_MINUS_SRC_ALPHA:	r = 1; break;
@@ -187,7 +192,7 @@ public:
 	CD3D9MaterialRenderer_SOLID_2_LAYER(IDirect3DDevice9* p, video::IVideoDriver* d)
 		: CD3D9MaterialRenderer(p, d) {}
 
-	virtual void OnSetMaterial(SMaterial& material, const SMaterial& lastMaterial,
+	virtual void OnSetMaterial(const SMaterial& material, const SMaterial& lastMaterial,
 		bool resetAllRenderstates, IMaterialRendererServices* services)
 	{
 		if (material.MaterialType != lastMaterial.MaterialType || resetAllRenderstates)
@@ -215,7 +220,7 @@ public:
 	CD3D9MaterialRenderer_TRANSPARENT_ADD_COLOR(IDirect3DDevice9* p, video::IVideoDriver* d)
 		: CD3D9MaterialRenderer(p, d) {}
 
-	virtual void OnSetMaterial(SMaterial& material, const SMaterial& lastMaterial,
+	virtual void OnSetMaterial(const SMaterial& material, const SMaterial& lastMaterial,
 		bool resetAllRenderstates, IMaterialRendererServices* services)
 	{
 		if (material.MaterialType != lastMaterial.MaterialType || resetAllRenderstates)
@@ -231,13 +236,12 @@ public:
 			pID3DDevice->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCCOLOR);
 		}
 
-		material.ZWriteEnable = false;
 		services->setBasicRenderStates(material, lastMaterial, resetAllRenderstates);
 	}
 
 	//! Returns if the material is transparent. The scene management needs to know this
 	//! for being able to sort the materials by opaque and transparent.
-	virtual bool isTransparent()
+	virtual bool isTransparent() const
 	{
 		return true;
 	}
@@ -252,7 +256,7 @@ public:
 	CD3D9MaterialRenderer_TRANSPARENT_VERTEX_ALPHA(IDirect3DDevice9* p, video::IVideoDriver* d)
 		: CD3D9MaterialRenderer(p, d) {}
 
-	virtual void OnSetMaterial(SMaterial& material, const SMaterial& lastMaterial,
+	virtual void OnSetMaterial(const SMaterial& material, const SMaterial& lastMaterial,
 		bool resetAllRenderstates, IMaterialRendererServices* services)
 	{
 		if (material.MaterialType != lastMaterial.MaterialType || resetAllRenderstates)
@@ -271,13 +275,12 @@ public:
 			pID3DDevice->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA);
 		}
 
-		material.ZWriteEnable = false;
 		services->setBasicRenderStates(material, lastMaterial, resetAllRenderstates);
 	}
 
 	//! Returns if the material is transparent. The scene managment needs to know this
 	//! for being able to sort the materials by opaque and transparent.
-	virtual bool isTransparent()
+	virtual bool isTransparent() const
 	{
 		return true;
 	}
@@ -292,7 +295,7 @@ public:
 	CD3D9MaterialRenderer_TRANSPARENT_ALPHA_CHANNEL(IDirect3DDevice9* p, video::IVideoDriver* d)
 		: CD3D9MaterialRenderer(p, d) {}
 
-	virtual void OnSetMaterial(SMaterial& material, const SMaterial& lastMaterial,
+	virtual void OnSetMaterial(const SMaterial& material, const SMaterial& lastMaterial,
 		bool resetAllRenderstates, IMaterialRendererServices* services)
 	{
 		if (material.MaterialType != lastMaterial.MaterialType || resetAllRenderstates
@@ -321,7 +324,6 @@ public:
 
 		}
 
-		//material.ZWriteEnable = false;
 		services->setBasicRenderStates(material, lastMaterial, resetAllRenderstates);
 	}
 
@@ -332,7 +334,7 @@ public:
 
 	//! Returns if the material is transparent. The scene managment needs to know this
 	//! for being able to sort the materials by opaque and transparent.
-	virtual bool isTransparent()
+	virtual bool isTransparent() const
 	{
 		return true;
 	}
@@ -348,7 +350,7 @@ public:
 	CD3D9MaterialRenderer_TRANSPARENT_ALPHA_CHANNEL_REF(IDirect3DDevice9* p, video::IVideoDriver* d)
 		: CD3D9MaterialRenderer(p, d) {}
 
-	virtual void OnSetMaterial(SMaterial& material, const SMaterial& lastMaterial,
+	virtual void OnSetMaterial(const SMaterial& material, const SMaterial& lastMaterial,
 		bool resetAllRenderstates, IMaterialRendererServices* services)
 	{
 		if (material.MaterialType != lastMaterial.MaterialType || resetAllRenderstates)
@@ -383,7 +385,7 @@ public:
 
 	//! Returns if the material is transparent. The scene managment needs to know this
 	//! for being able to sort the materials by opaque and transparent.
-	virtual bool isTransparent()
+	virtual bool isTransparent() const
 	{
 		return false; // this material is not really transparent because it does no blending.
 	}
@@ -398,7 +400,7 @@ public:
 	CD3D9MaterialRenderer_LIGHTMAP(IDirect3DDevice9* p, video::IVideoDriver* d)
 		: CD3D9MaterialRenderer(p, d) {}
 
-	virtual void OnSetMaterial(SMaterial& material, const SMaterial& lastMaterial,
+	virtual void OnSetMaterial(const SMaterial& material, const SMaterial& lastMaterial,
 		bool resetAllRenderstates, IMaterialRendererServices* services)
 	{
 		if (material.MaterialType != lastMaterial.MaterialType || resetAllRenderstates)
@@ -451,7 +453,7 @@ public:
 	CD3D9MaterialRenderer_DETAIL_MAP(IDirect3DDevice9* p, video::IVideoDriver* d)
 		: CD3D9MaterialRenderer(p, d) {}
 
-	virtual void OnSetMaterial(SMaterial& material, const SMaterial& lastMaterial,
+	virtual void OnSetMaterial(const SMaterial& material, const SMaterial& lastMaterial,
 		bool resetAllRenderstates, IMaterialRendererServices* services)
 	{
 		if (material.MaterialType != lastMaterial.MaterialType || resetAllRenderstates)
@@ -483,7 +485,7 @@ public:
 	CD3D9MaterialRenderer_SPHERE_MAP(IDirect3DDevice9* p, video::IVideoDriver* d)
 		: CD3D9MaterialRenderer(p, d) {}
 
-	virtual void OnSetMaterial(SMaterial& material, const SMaterial& lastMaterial,
+	virtual void OnSetMaterial(const SMaterial& material, const SMaterial& lastMaterial,
 		bool resetAllRenderstates, IMaterialRendererServices* services)
 	{
 		if (material.MaterialType != lastMaterial.MaterialType || resetAllRenderstates)
@@ -521,7 +523,7 @@ public:
 	CD3D9MaterialRenderer_REFLECTION_2_LAYER(IDirect3DDevice9* p, video::IVideoDriver* d)
 		: CD3D9MaterialRenderer(p, d) {}
 
-	virtual void OnSetMaterial(SMaterial& material, const SMaterial& lastMaterial,
+	virtual void OnSetMaterial(const SMaterial& material, const SMaterial& lastMaterial,
 		bool resetAllRenderstates, IMaterialRendererServices* services)
 	{
 		if (material.MaterialType != lastMaterial.MaterialType || resetAllRenderstates)
@@ -561,7 +563,7 @@ public:
 	CD3D9MaterialRenderer_TRANSPARENT_REFLECTION_2_LAYER(IDirect3DDevice9* p, video::IVideoDriver* d)
 		: CD3D9MaterialRenderer(p, d) {}
 
-	virtual void OnSetMaterial(SMaterial& material, const SMaterial& lastMaterial,
+	virtual void OnSetMaterial(const SMaterial& material, const SMaterial& lastMaterial,
 		bool resetAllRenderstates, IMaterialRendererServices* services)
 	{
 		if (material.MaterialType != lastMaterial.MaterialType || resetAllRenderstates)
@@ -585,7 +587,6 @@ public:
 			pID3DDevice->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA );
 		}
 
-		material.ZWriteEnable = false;
 		services->setBasicRenderStates(material, lastMaterial, resetAllRenderstates);
 	}
 
@@ -598,7 +599,7 @@ public:
 
 	//! Returns if the material is transparent. The scene managment needs to know this
 	//! for being able to sort the materials by opaque and transparent.
-	virtual bool isTransparent()
+	virtual bool isTransparent() const
 	{
 		return true;
 	}

@@ -4,14 +4,13 @@
 
 #include "CIrrDeviceLinux.h"
 
-#ifdef LINUX
+#ifdef _IRR_USE_LINUX_DEVICE_
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/utsname.h>
 #include <time.h>
 #include "IEventReceiver.h"
-#include "irrList.h"
 #include "os.h"
 #include "CTimer.h"
 #include "irrString.h"
@@ -19,6 +18,7 @@
 #include "COSOperator.h"
 #include "CColorConverter.h"
 #include "SIrrCreationParameters.h"
+#include <X11/XKBlib.h>
 
 namespace irr
 {
@@ -45,11 +45,11 @@ CIrrDeviceLinux::CIrrDeviceLinux(video::E_DRIVER_TYPE driverType,
 	const char* version)
  : CIrrDeviceStub(version, receiver),
 #ifdef _IRR_COMPILE_WITH_X11_
-	display(0), screennr(0), window(0), SoftwareImage(0),
+	display(0), visual(0), screennr(0), window(0), StdHints(0), SoftwareImage(0),
 #endif
 	Fullscreen(fullscreen), StencilBuffer(sbuffer), AntiAlias(antiAlias), DriverType(driverType),
-	Width(windowSize.Width), Height(windowSize.Height), Depth(24),
-	Close(false), WindowActive(false), WindowMinimized(false), UseXVidMode(false), UseXRandR(false), UseGLXWindow(false)
+	Width(windowSize.Width), Height(windowSize.Height), Depth(24), 
+	Close(false), WindowActive(false), WindowMinimized(false), UseXVidMode(false), UseXRandR(false), UseGLXWindow(false), AutorepeatSupport(0)
 {
 	#ifdef _DEBUG
 	setDebugName("CIrrDeviceLinux");
@@ -87,7 +87,7 @@ CIrrDeviceLinux::CIrrDeviceLinux(video::E_DRIVER_TYPE driverType,
 	CursorControl = new CCursorControl(this, driverType == video::EDT_NULL);
 
 	// create driver
-	createDriver(windowSize, bits, vsync);
+	createDriver(windowSize, vsync);
 
 	if (!VideoDriver)
 		return;
@@ -101,10 +101,10 @@ CIrrDeviceLinux::CIrrDeviceLinux(video::E_DRIVER_TYPE driverType,
 CIrrDeviceLinux::~CIrrDeviceLinux()
 {
 #ifdef _IRR_COMPILE_WITH_X11_
+	if (StdHints)
+		XFree(StdHints);
 	if (display)
 	{
-		//os::Printer::log("Deleting window...", ELL_INFORMATION);
-
 		#ifdef _IRR_COMPILE_WITH_OPENGL_
 		if (Context)
 		{
@@ -138,6 +138,9 @@ CIrrDeviceLinux::~CIrrDeviceLinux()
 		XDestroyWindow(display,window);
 		XCloseDisplay(display);
 	}
+	if (visual)
+		XFree(visual);
+
 #endif // #ifdef _IRR_COMPILE_WITH_X11_
 }
 
@@ -238,7 +241,9 @@ bool CIrrDeviceLinux::createWindow(const core::dimension2d<s32>& windowSize,
 				modes[oldRandrMode].width, modes[oldRandrMode].height));
 			for (s32 i = 0; i<modeCount; ++i)
 			{
-				if (bestMode==-1 && modes[i].width >= Width && modes[i].height >= Height)
+				if (bestMode==-1 && (u32)modes[i].width >= Width && (u32)modes[i].height >= Height)
+					bestMode = i;
+				else if (bestMode!=-1 && (u32)modes[i].width >= Width && (u32)modes[i].height >= Height && modes[i].width < modes[bestMode].width && modes[i].height < modes[bestMode].height)
 					bestMode = i;
 				VideoModeList.addMode(core::dimension2d<s32>(
 					modes[i].width, modes[i].height), defaultDepth);
@@ -253,14 +258,11 @@ bool CIrrDeviceLinux::createWindow(const core::dimension2d<s32>& windowSize,
 		else
 		#endif
 		{
-			os::Printer::log("VidMode extension must be installed to allow Irrlicht "
+			os::Printer::log("VidMode or RandR extension must be installed to allow Irrlicht "
 			"to switch to fullscreen mode. Running in windowed mode instead.", ELL_WARNING);
 			Fullscreen = false;
 		}
 	}
-
-	// get visual
-	XVisualInfo* visual = 0;
 	
 #ifdef _IRR_COMPILE_WITH_OPENGL_
 
@@ -519,6 +521,7 @@ bool CIrrDeviceLinux::createWindow(const core::dimension2d<s32>& windowSize,
 		XMapRaised(display, window);
 	}
 	WindowActive=true;
+	XkbSetDetectableAutoRepeat(display, True, &AutorepeatSupport);
 
 #ifdef _IRR_COMPILE_WITH_OPENGL_
 
@@ -574,6 +577,9 @@ bool CIrrDeviceLinux::createWindow(const core::dimension2d<s32>& windowSize,
 	int x,y;
 
 	XGetGeometry(display, window, &tmp, &x, &y, &Width, &Height, &borderWidth, &Depth);
+	StdHints = XAllocSizeHints();
+	long num;
+	XGetWMNormalHints(display, window, StdHints, &num);
 
 	// create an XImage for the software renderer 
 	//(thx to Nadav for some clues on how to do that!)
@@ -585,10 +591,10 @@ bool CIrrDeviceLinux::createWindow(const core::dimension2d<s32>& windowSize,
 			ZPixmap, 0, 0, Width, Height,
 			BitmapPad(display), 0);
 
-		SoftwareImage->data = new char[SoftwareImage->bytes_per_line * SoftwareImage->height];
+		// use malloc because X will free it later on
+		SoftwareImage->data = (char*) malloc(SoftwareImage->bytes_per_line * SoftwareImage->height * sizeof(char));
 	} 
 
-	XFree(visual);
 #endif // #ifdef _IRR_COMPILE_WITH_X11_
 	return true;
 }
@@ -596,7 +602,7 @@ bool CIrrDeviceLinux::createWindow(const core::dimension2d<s32>& windowSize,
 
 //! create the driver
 void CIrrDeviceLinux::createDriver(const core::dimension2d<s32>& windowSize,
-				   u32 bits, bool vsync)
+				   bool vsync)
 {
 	switch(DriverType)
 	{
@@ -606,7 +612,7 @@ void CIrrDeviceLinux::createDriver(const core::dimension2d<s32>& windowSize,
 		#ifdef _IRR_COMPILE_WITH_SOFTWARE_
 		VideoDriver = video::createSoftwareDriver(windowSize, Fullscreen, FileSystem, this);
 		#else
-		os::Printer::log("No Software driver support compiled in.", ELL_WARNING);
+		os::Printer::log("No Software driver support compiled in.", ELL_ERROR);
 		#endif
 		break;
 		
@@ -614,7 +620,7 @@ void CIrrDeviceLinux::createDriver(const core::dimension2d<s32>& windowSize,
 		#ifdef _IRR_COMPILE_WITH_BURNINGSVIDEO_
 		VideoDriver = video::createSoftwareDriver2(windowSize, Fullscreen, FileSystem, this);
 		#else
-		os::Printer::log("Burning's video driver was not compiled in.", ELL_WARNING);
+		os::Printer::log("Burning's video driver was not compiled in.", ELL_ERROR);
 		#endif
 		break;
 
@@ -623,25 +629,29 @@ void CIrrDeviceLinux::createDriver(const core::dimension2d<s32>& windowSize,
 		if (Context)
 			VideoDriver = video::createOpenGLDriver(windowSize, Fullscreen, StencilBuffer, FileSystem, vsync, AntiAlias);
 	#else
-		os::Printer::log("No OpenGL support compiled in.", ELL_WARNING);
+		os::Printer::log("No OpenGL support compiled in.", ELL_ERROR);
 	#endif
 		break;
 
 	case video::EDT_DIRECT3D8:
 	case video::EDT_DIRECT3D9:
 		os::Printer::log("This driver is not available in Linux. Try OpenGL or Software renderer.",
-			ELL_WARNING);
+			ELL_ERROR);
+		break;
+
+	case video::EDT_NULL:
+		VideoDriver = video::createNullDriver(FileSystem, windowSize);
 		break;
 
 	default:
-		VideoDriver = video::createNullDriver(FileSystem, windowSize);
+		os::Printer::log("Unable to create video driver of unknown type.", ELL_ERROR);
 		break;
 #else
 	case video::EDT_NULL:
 		VideoDriver = video::createNullDriver(FileSystem, windowSize);
 		break;
 	default:
-		os::Printer::log("No X11 support compiled in. Only Null driver available.", ELL_WARNING);
+		os::Printer::log("No X11 support compiled in. Only Null driver available.", ELL_ERROR);
 		break;
 #endif
 	}
@@ -657,10 +667,11 @@ bool CIrrDeviceLinux::run()
 #ifdef _IRR_COMPILE_WITH_X11_
 	if (DriverType != video::EDT_NULL)
 	{
-		irr::SEvent irrevent;
+		SEvent irrevent;
 
 		while (XPending(display) > 0 && !Close)
 		{
+			XEvent event;
 			XNextEvent(display, &event);
 
 			switch (event.type)
@@ -672,6 +683,21 @@ bool CIrrDeviceLinux::run()
 				{
 					Width = event.xconfigure.width;
 					Height = event.xconfigure.height;
+
+					// resize image data
+					if (DriverType == video::EDT_SOFTWARE || DriverType == video::EDT_BURNINGSVIDEO)
+					{
+						XDestroyImage(SoftwareImage);
+
+						SoftwareImage = XCreateImage(display, 
+							visual->visual, visual->depth, 
+							ZPixmap, 0, 0, Width, Height,
+							BitmapPad(display), 0);
+
+						// use malloc because X will free it later on
+						SoftwareImage->data = (char*) malloc(SoftwareImage->bytes_per_line * SoftwareImage->height * sizeof(char));
+					} 
+
 					if (VideoDriver)
 						VideoDriver->OnResize(core::dimension2d<s32>(Width, Height));
 				}
@@ -748,6 +774,22 @@ bool CIrrDeviceLinux::run()
 				break;
 
 			case KeyRelease:
+				if (0 == AutorepeatSupport)
+				{
+					// check for Autorepeat manually
+					// We'll do the same as Windows does: Only send KeyPressed
+					// So every KeyRelease is a real release
+					XEvent next_event;
+					XPeekEvent (event.xkey.display, &next_event);
+					if ((next_event.type == KeyPress) &&
+						(next_event.xkey.keycode == event.xkey.keycode) &&
+						(next_event.xkey.time == event.xkey.time))
+					{
+						/* Ignore the key release event */
+						break;
+					}
+				}
+				// fall-through in case the release should be handled
 			case KeyPress:
 				{
 					SKeyMap mp;
@@ -825,13 +867,14 @@ void CIrrDeviceLinux::sleep(u32 timeMs, bool pauseTimer=false)
 //! sets the caption of the window
 void CIrrDeviceLinux::setWindowCaption(const wchar_t* text)
 {
+#ifdef _IRR_COMPILE_WITH_X11_
 	if (DriverType == video::EDT_NULL)
 		return;
 
-#ifdef _IRR_COMPILE_WITH_X11_
-	core::stringc textc = text;
-	XSetStandardProperties(display, window, textc.c_str(), textc.c_str(),
-			       None, NULL, 0, NULL);
+	XTextProperty txt;
+	XwcTextListToTextProperty(display, const_cast<wchar_t**>(&text), 1, XStdICCTextStyle, &txt);
+	XSetWMName(display, window, &txt);
+	XSetWMIconName(display, window, &txt);
 #endif
 }
 
@@ -957,10 +1000,116 @@ void CIrrDeviceLinux::closeDevice()
 
 
 //! returns if window is active. if not, nothing need to be drawn
-bool CIrrDeviceLinux::isWindowActive()
+bool CIrrDeviceLinux::isWindowActive() const
 {
 	return WindowActive;
 }
+
+
+
+//! Sets if the window should be resizeable in windowed mode.
+void CIrrDeviceLinux::setResizeAble(bool resize)
+{
+#ifdef _IRR_COMPILE_WITH_X11_
+	if (DriverType == video::EDT_NULL)
+		return;
+
+	XUnmapWindow(display, window);
+	if ( !resize )
+	{
+		// Must be heap memory because data size depends on X Server
+		XSizeHints *hints = XAllocSizeHints();
+		hints->flags=PSize|PMinSize|PMaxSize;
+		hints->min_width=hints->max_width=hints->base_width=Width;
+		hints->min_height=hints->max_height=hints->base_height=Height;
+		XSetWMNormalHints(display, window, hints);
+		XFree(hints);
+	}
+	else
+	{
+		XSetWMNormalHints(display, window, StdHints);
+	}
+	XMapWindow(display, window);
+	XFlush(display);
+#endif // #ifdef _IRR_COMPILE_WITH_X11_
+}
+
+
+//! \return Returns a pointer to a list with all video modes supported
+//! by the gfx adapter.
+video::IVideoModeList* CIrrDeviceLinux::getVideoModeList()
+{
+
+	if (!VideoModeList.getVideoModeCount())
+	{
+		bool temporaryDisplay = false;
+
+		if (!display)
+		{
+			display = XOpenDisplay(0);
+			temporaryDisplay=true;
+		}
+		if (!display)
+		{
+			s32 eventbase, errorbase;
+			s32 defaultDepth=DefaultDepth(display,screennr);
+
+			#ifdef _IRR_LINUX_X11_VIDMODE_
+			if (XF86VidModeQueryExtension(display, &eventbase, &errorbase))
+			{
+				// enumerate video modes
+				int modeCount;
+				XF86VidModeModeInfo** modes;
+
+				XF86VidModeGetAllModeLines(display, screennr, &modeCount, &modes);
+
+				// save current video mode
+				oldVideoMode = *modes[0];
+
+				// find fitting mode
+
+				VideoModeList.setDesktop(defaultDepth, core::dimension2d<s32>(
+					modes[0]->hdisplay, modes[0]->vdisplay));
+				for (int i = 0; i<modeCount; ++i)
+				{
+					VideoModeList.addMode(core::dimension2d<s32>(
+						modes[i]->hdisplay, modes[i]->vdisplay), defaultDepth);
+				}
+				XFree(modes);
+			}
+			else
+			#endif
+			#ifdef _IRR_LINUX_X11_RANDR_
+			if (XRRQueryExtension(display, &eventbase, &errorbase))
+			{
+				int modeCount;
+				XRRScreenConfiguration *config=XRRGetScreenInfo(display,DefaultRootWindow(display));
+				oldRandrMode=XRRConfigCurrentConfiguration(config,&oldRandrRotation);
+				XRRScreenSize *modes=XRRConfigSizes(config,&modeCount);
+				VideoModeList.setDesktop(defaultDepth, core::dimension2d<s32>(
+					modes[oldRandrMode].width, modes[oldRandrMode].height));
+				for (int i = 0; i<modeCount; ++i)
+				{
+					VideoModeList.addMode(core::dimension2d<s32>(
+						modes[i].width, modes[i].height), defaultDepth);
+				}
+				XRRFreeScreenConfigInfo(config);
+			}
+			else
+			#endif
+			{
+				os::Printer::log("VidMode or RandR X11 extension requireed for VideoModeList." , ELL_WARNING);
+			}
+		}
+		if (display && temporaryDisplay)
+		{
+			XCloseDisplay(display);
+		}
+	}
+
+	return &VideoModeList;
+}
+
 
 
 void CIrrDeviceLinux::createKeyMap()
@@ -1186,5 +1335,5 @@ IRRLICHT_API IrrlichtDevice* IRRCALLCONV createDeviceEx(const SIrrlichtCreationP
 
 } // end namespace
 
-#endif // LINUX
+#endif // _IRR_USE_LINUX_DEVICE_
 

@@ -9,7 +9,6 @@
 #include "IFileSystem.h"
 #include "IVideoDriver.h"
 #include "irrString.h"
-#include "SMesh.h"
 #include "SMeshBuffer.h"
 
 namespace irr
@@ -17,7 +16,7 @@ namespace irr
 namespace scene
 {
 
-//! Meshloader capable of loading 3ds meshes.
+//! Meshloader capable of loading obj meshes.
 class COBJMeshFileLoader : public IMeshLoader
 {
 public:
@@ -29,42 +28,32 @@ public:
 	virtual ~COBJMeshFileLoader();
 
 	//! returns true if the file maybe is able to be loaded by this class
-	//! based on the file extension (e.g. ".cob")
-	virtual bool isALoadableFileExtension(const c8* fileName);
+	//! based on the file extension (e.g. ".obj")
+	virtual bool isALoadableFileExtension(const c8* fileName) const;
 
 	//! creates/loads an animated mesh from the file.
 	//! \return Pointer to the created mesh. Returns 0 if loading failed.
 	//! If you no longer need the mesh, you should call IAnimatedMesh::drop().
-	//! See IUnknown::drop() for more information.
-	virtual IAnimatedMesh* createMesh(irr::io::IReadFile* file);
+	//! See IReferenceCounted::drop() for more information.
+	virtual IAnimatedMesh* createMesh(io::IReadFile* file);
 
 private:
 
 	struct SObjMtl
 	{
-		SObjMtl() : pMeshbuffer(0), illumination(0) {
-			this->pMeshbuffer = new SMeshBuffer();
-			this->pMeshbuffer->Material.Shininess = 0.0f;
-			this->pMeshbuffer->Material.AmbientColor = video::SColorf(0.2f, 0.2f, 0.2f, 1.0f).toSColor();
-			this->pMeshbuffer->Material.DiffuseColor = video::SColorf(0.8f, 0.8f, 0.8f, 1.0f).toSColor();
-			this->pMeshbuffer->Material.SpecularColor = video::SColorf(1.0f, 1.0f, 1.0f, 1.0f).toSColor();
-		};
-		SObjMtl(SObjMtl& o) : pMeshbuffer(o.pMeshbuffer) { o.pMeshbuffer->grab(); };
+		SObjMtl() : Meshbuffer(0), illumination(0) {
+			Meshbuffer = new SMeshBuffer();
+			Meshbuffer->Material.Shininess = 0.0f;
+			Meshbuffer->Material.AmbientColor = video::SColorf(0.2f, 0.2f, 0.2f, 1.0f).toSColor();
+			Meshbuffer->Material.DiffuseColor = video::SColorf(0.8f, 0.8f, 0.8f, 1.0f).toSColor();
+			Meshbuffer->Material.SpecularColor = video::SColorf(1.0f, 1.0f, 1.0f, 1.0f).toSColor();
+		}
 
-		~SObjMtl() { 	};
+		SObjMtl(SObjMtl& o) : Meshbuffer(o.Meshbuffer), name(o.name), illumination(o.illumination) { o.Meshbuffer->grab(); }
 
-		scene::SMeshBuffer *pMeshbuffer;
+		scene::SMeshBuffer *Meshbuffer;
 		core::stringc name;
 		c8 illumination;
-	};
-
-	struct SObjGroup
-	{
-		SObjGroup() {};
-		SObjGroup(SObjGroup& o) {};
-		~SObjGroup() { 	};
-
-		core::stringc name;
 	};
 
 	// returns a pointer to the first printable character available in the buffer
@@ -76,11 +65,15 @@ private:
 	// copies the current word from the inBuf to the outBuf
 	u32 copyWord(c8* outBuf, const c8* inBuf, u32 outBufLength, const c8* const pBufEnd);
 	// copies the current line from the inBuf to the outBuf
-	u32 copyLine(c8* outBuf, const c8* inBuf, u32 outBufLength, const c8* const pBufEnd);
+	core::stringc copyLine(const c8* inBuf, const c8* const pBufEnd);
 	// combination of goNextWord followed by copyWord
 	const c8* goAndCopyNextWord(c8* outBuf, const c8* inBuf, u32 outBufLength, const c8* const pBufEnd);
 
+	//! Read the material from the given file
 	void readMTL(const c8* pFileName, core::stringc relPath);
+	//! Find and return the material with the given name
+	SObjMtl * findMtl(const c8* pMtlName);
+
 	//! Read RGB color
 	const c8* readColor(const c8* pBufPtr, video::SColor& color, const c8* const pBufEnd);
 	//! Read 3d vector of floats
@@ -89,14 +82,11 @@ private:
 	const c8* readVec2(const c8* pBufPtr, core::vector2df& vec, const c8* const pBufEnd);
 	//! Read boolean value represented as 'on' or 'off'
 	const c8* readBool(const c8* pBufPtr, bool& tf, const c8* const pBufEnd);
-	SObjMtl * findMtl(const c8* pMtlName);
-	SObjGroup * findGroup(const c8* pGroupName);
-	SObjGroup * findOrAddGroup(const c8* pGroupName);
 
 	// reads and convert to integer the vertex indices in a line of obj file's face statement
 	// -1 for the index if it doesn't exist
 	// indices are changed to 0-based index instead of 1-based from the obj file
-	bool retrieveVertexIndices(c8* pVertexData, s32* Idx, const c8* pBufEnd);
+	bool retrieveVertexIndices(c8* pVertexData, s32* Idx, const c8* pBufEnd, u32 vbsize, u32 vtsize, u32 vnsize);
 
 	void cleanUp();
 
@@ -104,8 +94,6 @@ private:
 	video::IVideoDriver* Driver;
 
 	core::array<SObjMtl*> materials;
-	core::array<SObjGroup*> groups;
-	SMesh* Mesh;
 };
 
 } // end namespace scene

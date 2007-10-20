@@ -5,6 +5,9 @@
 #ifndef __C_GUI_MESSAGE_BOX_H_INCLUDED__
 #define __C_GUI_MESSAGE_BOX_H_INCLUDED__
 
+#include "IrrCompileConfig.h"
+#ifdef _IRR_COMPILE_WITH_GUI_
+
 #include "CGUIWindow.h"
 #include "IGUIStaticText.h"
 #include "irrArray.h"
@@ -23,13 +26,13 @@ namespace gui
 			IGUIElement* parent, s32 id, core::rect<s32> rectangle);
 
 		//! destructor
-		~CGUIMessageBox();
+		virtual ~CGUIMessageBox();
 
 		//! called if an event happened.
-		virtual bool OnEvent(SEvent event);
+		virtual bool OnEvent(const SEvent& event);
 
 		//! Writes attributes of the element.
-		virtual void serializeAttributes(io::IAttributes* out, io::SAttributeReadWriteOptions* options);
+		virtual void serializeAttributes(io::IAttributes* out, io::SAttributeReadWriteOptions* options) const;
 
 		//! Reads attributes of the element
 		virtual void deserializeAttributes(io::IAttributes* in, io::SAttributeReadWriteOptions* options);
@@ -46,10 +49,12 @@ namespace gui
 
 		s32 Flags;
 		core::stringw MessageText;
+		bool Pressed;
 	};
 
 } // end namespace gui
 } // end namespace irr
 
-#endif
+#endif // _IRR_COMPILE_WITH_GUI_
 
+#endif 

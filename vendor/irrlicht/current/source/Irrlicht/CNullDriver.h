@@ -8,20 +8,28 @@
 #include "IVideoDriver.h"
 #include "IFileSystem.h"
 #include "IImagePresenter.h"
+#include "IGPUProgrammingServices.h"
 #include "irrArray.h"
 #include "irrString.h"
 #include "IAttributes.h"
-#include "IImageLoader.h"
-#include "IImageWriter.h"
 #include "IMeshBuffer.h"
 #include "CFPSCounter.h"
 #include "S3DVertex.h"
 #include "SLight.h"
+#include "SExposedVideoData.h"
 
 namespace irr
 {
+namespace io
+{
+	class IWriteFile;
+	class IReadFile;
+} // end namespace io
 namespace video
 {
+	class IImageLoader;
+	class IImageWriter;
+
 	class CNullDriver : public IVideoDriver, public IGPUProgrammingServices
 	{
 	public:
@@ -37,7 +45,7 @@ namespace video
 		virtual bool endScene( s32 windowId = 0, core::rect<s32>* sourceRect=0 );
 
 		//! queries the features of the driver, returns true if feature is available
-		virtual bool queryFeature(E_VIDEO_DRIVER_FEATURE feature);
+		virtual bool queryFeature(E_VIDEO_DRIVER_FEATURE feature) const;
 
 		//! sets transformation
 		virtual void setTransform(E_TRANSFORMATION_STATE state, const core::matrix4& mat);
@@ -55,7 +63,10 @@ namespace video
 		virtual ITexture* getTextureByIndex(u32 index);
 
 		//! Returns amount of textures currently loaded
-		virtual s32 getTextureCount();
+		virtual u32 getTextureCount() const;
+
+		//! Renames a texture
+		virtual void renameTexture(ITexture* texture, const c8* newName);
 
 		//! creates a Texture
 		virtual ITexture* addTexture(const core::dimension2d<s32>& size, const c8* name, ECOLOR_FORMAT format = ECF_A8R8G8B8);
@@ -104,11 +115,11 @@ namespace video
 			SColor color = SColor(255,255,255,255));
 
 		//! Draws a 3d axis aligned box.
-		virtual void draw3DBox(const core::aabbox3d<f32> box,
+		virtual void draw3DBox(const core::aabbox3d<f32>& box,
 			SColor color = SColor(255,255,255,255));
 
 		//! draws an 2d image
-		virtual void draw2DImage(video::ITexture* texture, const core::position2d<s32>& destPos);
+		virtual void draw2DImage(const video::ITexture* texture, const core::position2d<s32>& destPos);
 
 		//! draws a set of 2d images, using a color and the alpha
 		/** channel of the texture if desired. The images are drawn
@@ -127,21 +138,22 @@ namespace video
 		Note that the alpha component is used: If alpha is other than 255, the image will be transparent.
 		\param useAlphaChannelOfTexture: If true, the alpha channel of the texture is
 		used to draw the image. */
-		virtual void draw2DImage(video::ITexture* texture,
+		virtual void draw2DImage(const video::ITexture* texture,
 				const core::position2d<s32>& pos,
 				const core::array<core::rect<s32> >& sourceRects,
 				const core::array<s32>& indices,
-				s32 kerningWidth,
-				const core::rect<s32>* clipRect, SColor color,
-				bool useAlphaChannelOfTexture);
+				s32 kerningWidth = 0,
+				const core::rect<s32>* clipRect = 0,
+				SColor color=SColor(255,255,255,255),
+				bool useAlphaChannelOfTexture=false);
 
 		//! draws an 2d image, using a color (if color is other then Color(255,255,255,255)) and the alpha channel of the texture if wanted.
-		virtual void draw2DImage(video::ITexture* texture, const core::position2d<s32>& destPos, 
+		virtual void draw2DImage(const video::ITexture* texture, const core::position2d<s32>& destPos, 
 			const core::rect<s32>& sourceRect, const core::rect<s32>* clipRect = 0,
 			SColor color=SColor(255,255,255,255), bool useAlphaChannelOfTexture=false);
 
 		//! Draws a part of the texture into the rectangle.
-		virtual void draw2DImage(video::ITexture* texture, const core::rect<s32>& destRect,
+		virtual void draw2DImage(const video::ITexture* texture, const core::rect<s32>& destRect,
 			const core::rect<s32>& sourceRect, const core::rect<s32>* clipRect = 0,
 			video::SColor* colors=0, bool useAlphaChannelOfTexture=false);
 
@@ -155,8 +167,8 @@ namespace video
 
 		//! Draws a 2d line. 
 		virtual void draw2DLine(const core::position2d<s32>& start,
-								const core::position2d<s32>& end, 
-								SColor color=SColor(255,255,255,255));
+					const core::position2d<s32>& end,
+					SColor color=SColor(255,255,255,255));
 
 		//! Draws a non filled concyclic reqular 2d polyon.
 		virtual void draw2DPolygon(core::position2d<s32> center, 
@@ -167,17 +179,17 @@ namespace video
 			f32 density=0.01f, bool pixelFog=false, bool rangeFog=false);
 
 		//! returns screen size
-		virtual core::dimension2d<s32> getScreenSize();
+		virtual const core::dimension2d<s32>& getScreenSize() const;
 
 		//! returns screen size
-		virtual core::dimension2d<s32> getCurrentRenderTargetSize();
+		virtual const core::dimension2d<s32>& getCurrentRenderTargetSize() const;
 
 		// returns current frames per second value
-		virtual s32 getFPS();
+		virtual s32 getFPS() const;
 
 		//! returns amount of primitives (mostly triangles) were drawn in the last frame.
 		//! very useful method for statistics.
-		virtual u32 getPrimitiveCountDrawn( u32 param );
+		virtual u32 getPrimitiveCountDrawn( u32 param = 0 ) const;
 
 		//! deletes all dynamic lights there are
 		virtual void deleteAllDynamicLights();
@@ -186,11 +198,11 @@ namespace video
 		virtual void addDynamicLight(const SLight& light);
 
 		//! returns the maximal amount of dynamic lights the device can handle
-		virtual u32 getMaximalDynamicLightAmount();
+		virtual u32 getMaximalDynamicLightAmount() const;
 
 		//! \return Returns the name of the video driver. Example: In case of the DIRECT3D8
 		//! driver, it would return "Direct3D8.1".
-		virtual const wchar_t* getName();
+		virtual const wchar_t* getName() const;
 
 		//! Sets the dynamic ambient light color. The default color is
 		//! (0,0,0,0) which means it is dark.
@@ -219,13 +231,13 @@ namespace video
 
 		//! Returns current amount of dynamic lights set
 		//! \return Current amount of dynamic lights set
-		virtual u32 getDynamicLightCount();
+		virtual u32 getDynamicLightCount() const;
 
 		//! Returns light data which was previously set with IVideDriver::addDynamicLight().
 		//! \param idx: Zero based index of the light. Must be greater than 0 and smaller
 		//! than IVideoDriver()::getDynamicLightCount.
 		//! \return Light data.
-		virtual const SLight& getDynamicLight(u32 idx);
+		virtual const SLight& getDynamicLight(u32 idx) const;
 
 		//! Removes a texture from the texture cache and deletes it, freeing lot of
 		//! memory. 
@@ -236,28 +248,28 @@ namespace video
 		virtual void removeAllTextures();
 
 		//! Creates a render target texture.
-		virtual ITexture* createRenderTargetTexture(const core::dimension2d<s32>& size);
+		virtual ITexture* createRenderTargetTexture(const core::dimension2d<s32>& size, const c8* name);
 
 		//! Creates an 1bit alpha channel of the texture based of an color key.
-		virtual void makeColorKeyTexture(video::ITexture* texture, video::SColor color);
+		virtual void makeColorKeyTexture(video::ITexture* texture, video::SColor color) const;
 
 		//! Creates an 1bit alpha channel of the texture based of an color key position.
-		virtual void makeColorKeyTexture(video::ITexture* texture, core::position2d<s32> colorKeyPixelPos);
+		virtual void makeColorKeyTexture(video::ITexture* texture, core::position2d<s32> colorKeyPixelPos) const;
 
 		//! Creates a normal map from a height map texture. 
 		//! \param amplitude: Constant value by which the height information is multiplied.
-		virtual void makeNormalMapTexture(video::ITexture* texture, f32 amplitude=1.0f);
+		virtual void makeNormalMapTexture(video::ITexture* texture, f32 amplitude=1.0f) const;
 
 		//! Returns the maximum amount of primitives (mostly vertices) which
 		//! the device is able to render with one drawIndexedTriangleList
 		//! call.
-		virtual u32 getMaximalPrimitiveCount();
+		virtual u32 getMaximalPrimitiveCount() const;
 
 		//! Enables or disables a texture creation flag.
 		virtual void setTextureCreationFlag(E_TEXTURE_CREATION_FLAG flag, bool enabled);
 
 		//! Returns if a texture creation flag is enabled or disabled.
-		virtual bool getTextureCreationFlag(E_TEXTURE_CREATION_FLAG flag);
+		virtual bool getTextureCreationFlag(E_TEXTURE_CREATION_FLAG flag) const;
 
 		//! Creates a software image from a file. 
 		virtual IImage* createImageFromFile(const char* filename);
@@ -281,16 +293,17 @@ namespace video
 		virtual void OnResize(const core::dimension2d<s32>& size);
 
 		//! Adds a new material renderer to the video device.
-		virtual s32 addMaterialRenderer(IMaterialRenderer* renderer, const char* name = 0);
+		virtual s32 addMaterialRenderer(IMaterialRenderer* renderer,
+				const char* name = 0);
 
 		//! Returns driver and operating system specific data about the IVideoDriver.
-		virtual SExposedVideoData getExposedVideoData();
+		virtual const SExposedVideoData& getExposedVideoData();
 
 		//! Returns type of video driver
-		virtual E_DRIVER_TYPE getDriverType();
+		virtual E_DRIVER_TYPE getDriverType() const;
 
 		//! Returns the transformation set by setTransform
-		virtual const core::matrix4& getTransform(E_TRANSFORMATION_STATE state);
+		virtual const core::matrix4& getTransform(E_TRANSFORMATION_STATE state) const;
 
 		//! Returns pointer to the IGPUProgrammingServices interface.
 		virtual IGPUProgrammingServices* getGPUProgrammingServices();
@@ -323,10 +336,10 @@ namespace video
 		virtual IMaterialRenderer* getMaterialRenderer(u32 idx);
 
 		//! Returns amount of currently available material renderers.
-		virtual u32 getMaterialRendererCount();
+		virtual u32 getMaterialRendererCount() const;
 
 		//! Returns name of the material renderer
-		virtual const char* getMaterialRendererName(u32 idx);
+		virtual const char* getMaterialRendererName(u32 idx) const;
 
 		//! Adds a new material renderer to the VideoDriver, based on a high level shading 
 		//! language. Currently only HLSL in D3D9 is supported. 
@@ -385,13 +398,26 @@ namespace video
 		//! Fills an SMaterial structure from attributes.
 		virtual void fillMaterialStructureFromAttributes(video::SMaterial& outMaterial, io::IAttributes* attributes);
 
+		//! looks if the image is already loaded
+		virtual video::ITexture* findTexture(const c8* filename);
+
+		//! Set/unset a clipping plane.
+		//! There are at least 6 clipping planes available for the user to set at will.
+		//! \param index: The plane index. Must be between 0 and MaxUserClipPlanes.
+		//! \param plane: The plane itself.
+		//! \param enable: If true, enable the clipping plane else disable it.
+		virtual bool setClipPlane(u32 index, const core::plane3df& plane, bool enable=false);
+
+		//! Enable/disable a clipping plane.
+		//! There are at least 6 clipping planes available for the user to set at will.
+		//! \param index: The plane index. Must be between 0 and MaxUserClipPlanes.
+		//! \param enable: If true, enable the clipping plane else disable it.
+		virtual void enableClipPlane(u32 index, bool enable);
+
 	protected:
 
 		//! deletes all textures
 		void deleteAllTextures();
-
-		//! looks if the image is already loaded
-		video::ITexture* findTexture(const c8* filename);
 
 		//! opens the file and loads it into the surface
 		video::ITexture* loadTextureFromFile(io::IReadFile* file, const c8* hashName = 0);
@@ -407,7 +433,7 @@ namespace video
 		virtual video::ITexture* createDeviceDependentTexture(IImage* surface, const char* name);
 
 		//! checks triangle count and print warning if wrong
-		bool checkPrimitiveCount(s32 prmcnt);
+		bool checkPrimitiveCount(u32 prmcnt) const;
 
 		// adds a material renderer and drops it afterwards. To be used for internal creation
 		s32 addAndDropMaterialRenderer(IMaterialRenderer* m);
@@ -419,7 +445,7 @@ namespace video
 		void printVersion();
 
 		//! normal map lookup 32 bit version
-		inline f32 nml32(int x, int y, int pitch, int height, s32 *p)
+		inline f32 nml32(int x, int y, int pitch, int height, s32 *p) const
 		{
 			if (x < 0) x = pitch-1; if (x >= pitch) x = 0;
 			if (y < 0) y = height-1; if (y >= height) y = 0;
@@ -427,7 +453,7 @@ namespace video
 		}
 
 		//! normal map lookup 16 bit version
-		inline f32 nml16(int x, int y, int pitch, int height, s16 *p)
+		inline f32 nml16(int x, int y, int pitch, int height, s16 *p) const
 		{
 			if (x < 0) x = pitch-1; if (x >= pitch) x = 0;
 			if (y < 0) y = height-1; if (y >= height) y = 0;
@@ -457,10 +483,10 @@ namespace video
 
 			virtual void* lock() { return 0; };
 			virtual void unlock(){}
-			virtual const core::dimension2d<s32>& getOriginalSize() { return size; }
-			virtual const core::dimension2d<s32>& getSize() { return size; }
-			virtual E_DRIVER_TYPE getDriverType() { return video::EDT_NULL; }
-			virtual ECOLOR_FORMAT getColorFormat() const { return video::ECF_R5G6B5; };
+			virtual const core::dimension2d<s32>& getOriginalSize() const { return size; }
+			virtual const core::dimension2d<s32>& getSize() const { return size; }
+			virtual E_DRIVER_TYPE getDriverType() const { return video::EDT_NULL; }
+			virtual ECOLOR_FORMAT getColorFormat() const { return video::ECF_A1R5G5B5; };
 			virtual u32 getPitch() const { return 0; }
 			virtual void regenerateMipMapLevels() {};
 			core::dimension2d<s32> size;

@@ -3,12 +3,16 @@
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
 #include "CDefaultGUIElementFactory.h"
+
+#ifdef _IRR_COMPILE_WITH_GUI_
+
 #include "IGUIEnvironment.h"
 #include "IGUIButton.h"
 #include "IGUICheckBox.h"
 #include "IGUIComboBox.h"
 #include "IGUIContextMenu.h"
 #include "IGUIEditBox.h"
+#include "IGUISpinBox.h"
 #include "IGUIFileOpenDialog.h"
 #include "IGUIColorSelectDialog.h"
 #include "IGUIInOutFader.h"
@@ -35,15 +39,9 @@ CDefaultGUIElementFactory::CDefaultGUIElementFactory(IGUIEnvironment* env)
 }
 
 
-CDefaultGUIElementFactory::~CDefaultGUIElementFactory()
-{
-}
-
-
 //! adds an element to the env based on its type id
 IGUIElement* CDefaultGUIElementFactory::addGUIElement(EGUI_ELEMENT_TYPE type, IGUIElement* parent)
 {
-	
 	switch(type)
 	{
 		case EGUIET_BUTTON:
@@ -86,10 +84,11 @@ IGUIElement* CDefaultGUIElementFactory::addGUIElement(EGUI_ELEMENT_TYPE type, IG
 			return Environment->addToolBar(parent);
 		case EGUIET_WINDOW:
 			return Environment->addWindow(core::rect<s32>(0,0,100,100),false,0,parent);
-
+		case EGUIET_SPIN_BOX:
+			return Environment->addSpinBox(L"0.0", core::rect<s32>(0,0,100,100), parent);
+		default:
+ 			return 0;
 	}
-
-	return 0;
 }
 
 
@@ -101,14 +100,14 @@ IGUIElement* CDefaultGUIElementFactory::addGUIElement(const c8* typeName, IGUIEl
 
 
 //! returns amount of element types this factory is able to create
-s32 CDefaultGUIElementFactory::getCreatableGUIElementTypeCount()
+s32 CDefaultGUIElementFactory::getCreatableGUIElementTypeCount() const
 {
 	return EGUIET_COUNT;
 }
 
 
 //! returns type of a createable element type
-EGUI_ELEMENT_TYPE CDefaultGUIElementFactory::getCreateableGUIElementType(s32 idx)
+EGUI_ELEMENT_TYPE CDefaultGUIElementFactory::getCreateableGUIElementType(s32 idx) const
 {
 	if (idx>=0 && idx<EGUIET_COUNT)
 		return (EGUI_ELEMENT_TYPE)idx;
@@ -118,7 +117,7 @@ EGUI_ELEMENT_TYPE CDefaultGUIElementFactory::getCreateableGUIElementType(s32 idx
 
 
 //! returns type name of a createable element type 
-const c8* CDefaultGUIElementFactory::getCreateableGUIElementTypeName(s32 idx)
+const c8* CDefaultGUIElementFactory::getCreateableGUIElementTypeName(s32 idx) const
 {
 	if (idx>=0 && idx<EGUIET_COUNT)
 		return GUIElementTypeNames[idx];
@@ -128,7 +127,7 @@ const c8* CDefaultGUIElementFactory::getCreateableGUIElementTypeName(s32 idx)
 
 
 //! returns type name of a createable element type 
-const c8* CDefaultGUIElementFactory::getCreateableGUIElementTypeName(EGUI_ELEMENT_TYPE type)
+const c8* CDefaultGUIElementFactory::getCreateableGUIElementTypeName(EGUI_ELEMENT_TYPE type) const
 {
 	// for this factory, type == index
 
@@ -138,9 +137,9 @@ const c8* CDefaultGUIElementFactory::getCreateableGUIElementTypeName(EGUI_ELEMEN
 	return 0;
 }
 
-EGUI_ELEMENT_TYPE CDefaultGUIElementFactory::getTypeFromName(const c8* name)
+EGUI_ELEMENT_TYPE CDefaultGUIElementFactory::getTypeFromName(const c8* name) const
 {
-	for ( int i=0; GUIElementTypeNames[i]; ++i)
+	for ( u32 i=0; GUIElementTypeNames[i]; ++i)
 		if (!strcmp(name, GUIElementTypeNames[i]) )
 			return (EGUI_ELEMENT_TYPE)i;
 
@@ -150,4 +149,6 @@ EGUI_ELEMENT_TYPE CDefaultGUIElementFactory::getTypeFromName(const c8* name)
 
 } // end namespace gui
 } // end namespace irr
+
+#endif // _IRR_COMPILE_WITH_GUI_
 

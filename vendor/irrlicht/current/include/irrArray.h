@@ -419,14 +419,14 @@ public:
 
 
 	//! Finds an element in linear time, which is very slow. Use
-	//! binary_search for faster finding. Only works if =operator is implemented.
+	//! binary_search for faster finding. Only works if ==operator is implemented.
 	//! \param element: Element to search for.
 	//! \return Returns position of the searched element if it was found,
 	//! otherwise -1 is returned.
 	s32 linear_search(const T& element) const
 	{
 		for (u32 i=0; i<used; ++i)
-			if (!(element < data[i]) && !(data[i] < element))
+			if (element == data[i])
 				return (s32)i;
 
 		return -1;
@@ -434,7 +434,7 @@ public:
 
 
 	//! Finds an element in linear time, which is very slow. Use
-	//! binary_search for faster finding. Only works if =operator is implemented.
+	//! binary_search for faster finding. Only works if ==operator is implemented.
 	//! \param element: Element to search for.
 	//! \return Returns position of the searched element if it was found,
 	//! otherwise -1 is returned.

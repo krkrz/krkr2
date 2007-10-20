@@ -5,6 +5,7 @@
 #include "CWaterSurfaceSceneNode.h"
 #include "ISceneManager.h"
 #include "IMeshManipulator.h"
+#include "IMeshCache.h"
 #include "S3DVertex.h"
 #include "SMesh.h"
 #include "os.h"
@@ -30,6 +31,7 @@ CWaterSurfaceSceneNode::CWaterSurfaceSceneNode(f32 waveHeight, f32 waveSpeed, f3
 	if (!mesh)
 		return;
 
+	// Mesh is set in CMeshSceneNode constructor, now it is moved to OriginalMesh
 	IMesh* clone = SceneManager->getMeshManipulator()->createMeshCopy(mesh);
 	OriginalMesh = Mesh;
 	Mesh = clone;
@@ -40,6 +42,7 @@ CWaterSurfaceSceneNode::CWaterSurfaceSceneNode(f32 waveHeight, f32 waveSpeed, f3
 //! destructor
 CWaterSurfaceSceneNode::~CWaterSurfaceSceneNode()
 {
+	// Mesh is dropped in CMeshSceneNode destructor
 	if (OriginalMesh)
 		OriginalMesh->drop();
 }
@@ -71,7 +74,7 @@ void CWaterSurfaceSceneNode::animateWaterSurface()
 
 	for (u32 b=0; b<meshBufferCount; ++b)
 	{
-		u32 vtxCnt = Mesh->getMeshBuffer(b)->getVertexCount();
+		const u32 vtxCnt = Mesh->getMeshBuffer(b)->getVertexCount();
 
 		switch(Mesh->getMeshBuffer(b)->getVertexType())
 		{
@@ -85,9 +88,7 @@ void CWaterSurfaceSceneNode::animateWaterSurface()
 
 				for (u32 i=0; i<vtxCnt; ++i)
 				{
-					v[i].Pos.Y = v2[i].Pos.Y +
-					(sinf(((v2[i].Pos.X/WaveLength) + time)) * WaveHeight) +
-					(cosf(((v2[i].Pos.Z/WaveLength) + time)) * WaveHeight);
+					addWave(v[i].Pos, v2[i].Pos, time);
 				}
 
 			}
@@ -102,9 +103,7 @@ void CWaterSurfaceSceneNode::animateWaterSurface()
 
 				for (u32 i=0; i<vtxCnt; ++i)
 				{
-					v[i].Pos.Y = v2[i].Pos.Y +
-					(sinf(((v2[i].Pos.X/WaveLength) + time)) * WaveHeight) +
-					(cosf(((v2[i].Pos.Z/WaveLength) + time)) * WaveHeight);
+					addWave(v[i].Pos, v2[i].Pos, time);
 				}
 			}
 			break;
@@ -118,9 +117,7 @@ void CWaterSurfaceSceneNode::animateWaterSurface()
 
 				for (u32 i=0; i<vtxCnt; ++i)
 				{
-					v[i].Pos.Y = v2[i].Pos.Y +
-					(sinf(((v2[i].Pos.X/WaveLength) + time)) * WaveHeight) +
-					(cosf(((v2[i].Pos.Z/WaveLength) + time)) * WaveHeight);
+					addWave(v[i].Pos, v2[i].Pos, time);
 				}
 			}
 			break;
@@ -133,36 +130,24 @@ void CWaterSurfaceSceneNode::animateWaterSurface()
 
 
 //! Writes attributes of the scene node.
-void CWaterSurfaceSceneNode::serializeAttributes(io::IAttributes* out, io::SAttributeReadWriteOptions* options)
+void CWaterSurfaceSceneNode::serializeAttributes(io::IAttributes* out, io::SAttributeReadWriteOptions* options) const
 {
-
-	out->addFloat("WaveLength",	WaveLength);
-	out->addFloat("WaveSpeed",	WaveSpeed);
+	out->addFloat("WaveLength", WaveLength);
+	out->addFloat("WaveSpeed",  WaveSpeed);
 	out->addFloat("WaveHeight", WaveHeight);
 	
-	// serialize original mesh
-	scene::IMesh *swap = 0;
-
-	if (Mesh)
-	{
-		swap = Mesh;
-		Mesh = OriginalMesh;
-	}
 	CMeshSceneNode::serializeAttributes(out, options);
-	if (swap)
-	{
-		Mesh = swap;
-		OriginalMesh = Mesh;
-	}
+	// serialize original mesh
+	out->setAttribute("Mesh", SceneManager->getMeshCache()->getMeshFilename(OriginalMesh));
 }
 
 
 //! Reads attributes of the scene node.
 void CWaterSurfaceSceneNode::deserializeAttributes(io::IAttributes* in, io::SAttributeReadWriteOptions* options)
 {
-	WaveLength	= in->getAttributeAsFloat("WaveLength");
-	WaveSpeed	= in->getAttributeAsFloat("WaveSpeed");
-	WaveHeight	= in->getAttributeAsFloat("WaveHeight");
+	WaveLength = in->getAttributeAsFloat("WaveLength");
+	WaveSpeed  = in->getAttributeAsFloat("WaveSpeed");
+	WaveHeight = in->getAttributeAsFloat("WaveHeight");
 	
 	if (Mesh)
 	{

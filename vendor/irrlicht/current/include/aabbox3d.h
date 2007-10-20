@@ -24,11 +24,10 @@ class aabbox3d
 
 		// Constructors
 
-		aabbox3d(): MinEdge(-1,-1,-1), MaxEdge(1,1,1) {};
-		aabbox3d(const aabbox3d<T>& other): MinEdge(other.MinEdge), MaxEdge(other.MaxEdge) {};
-		aabbox3d(const vector3d<T>& min, const vector3d<T>& max): MinEdge(min), MaxEdge(max) {};
-		aabbox3d(const vector3d<T>& init): MinEdge(init), MaxEdge(init) {};
-		aabbox3d(T minx, T miny, T minz, T maxx, T maxy, T maxz): MinEdge(minx, miny, minz), MaxEdge(maxx, maxy, maxz) {};
+		aabbox3d(): MinEdge(-1,-1,-1), MaxEdge(1,1,1) {}
+		aabbox3d(const vector3d<T>& min, const vector3d<T>& max): MinEdge(min), MaxEdge(max) {}
+		aabbox3d(const vector3d<T>& init): MinEdge(init), MaxEdge(init) {}
+		aabbox3d(T minx, T miny, T minz, T maxx, T maxy, T maxz): MinEdge(minx, miny, minz), MaxEdge(maxx, maxy, maxz) {}
 
 		// operators
 
@@ -119,6 +118,7 @@ class aabbox3d
 			return (MinEdge <= other.MaxEdge && MaxEdge >= other.MinEdge);
 		}
 
+		//! Returns if this box is completely inside the 'other' box.
 		bool isFullInside(const aabbox3d<T>& other) const
 		{
 			return MinEdge >= other.MinEdge && MaxEdge <= other.MaxEdge;
@@ -141,14 +141,13 @@ class aabbox3d
 		{
 			const vector3d<T> e = getExtent() * (T)0.5;
 			const vector3d<T> t = getCenter() - linemiddle;
-			T r;
 
 			if ((fabs(t.X) > e.X + halflength * fabs(linevect.X)) || 
 				(fabs(t.Y) > e.Y + halflength * fabs(linevect.Y)) ||
 				(fabs(t.Z) > e.Z + halflength * fabs(linevect.Z)) )
 				return false;
 
-			r = e.Y * (T)fabs(linevect.Z) + e.Z * (T)fabs(linevect.Y);
+			T r = e.Y * (T)fabs(linevect.Z) + e.Z * (T)fabs(linevect.Y);
 			if (fabs(t.Y*linevect.Z - t.Z*linevect.Y) > r )
 				return false;
 
@@ -166,8 +165,8 @@ class aabbox3d
 		//! Classifies a relation with a plane.
 		//! \param plane: Plane to classify relation to.
 		//! \return Returns ISREL3D_FRONT if the box is in front of the plane,
-		//! ISREL3D_BACK if the box is back of the plane, and
-		//! ISREL3D_CLIPPED if is on both sides of the plane.
+		//! ISREL3D_BACK if the box is behind the plane, and
+		//! ISREL3D_CLIPPED if it is on both sides of the plane.
 		EIntersectionRelation3D classifyPlaneRelation(const plane3d<T>& plane) const
 		{
 			vector3d<T> nearPoint(MaxEdge);
@@ -224,14 +223,14 @@ class aabbox3d
 			/*
 			Edges are stored in this way:
 			Hey, am I an ascii artist, or what? :) niko.
-                  /4--------/0
+                  /3--------/7
                  /  |      / |
                 /   |     /  |
-                6---------2  |
-                |   5- - -| -1
+                1---------5  |
+                |   2- - -| -6
                 |  /      |  /
                 |/        | /
-                7---------3/ 
+                0---------4/ 
 			*/
 
 			edges[0].set(middle.X + diag.X, middle.Y + diag.Y, middle.Z + diag.Z);
@@ -285,7 +284,6 @@ class aabbox3d
 	typedef aabbox3d<f32> aabbox3df;
 	//! Typedef for an integer 3d bounding box.
 	typedef aabbox3d<s32> aabbox3di;
-
 
 } // end namespace core
 } // end namespace irr

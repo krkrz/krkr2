@@ -5,21 +5,16 @@
 #include "COSOperator.h"
 #include "IrrCompileConfig.h"
 
-#ifdef _IRR_WINDOWS_
+#ifdef _IRR_WINDOWS_API_
 #include <windows.h>
 #else
 #include <string.h>
-#endif
-
-#ifdef LINUX
 #include <unistd.h>
-#endif
-
 #ifdef MACOSX
 #include "OSXClipboard.h"
-#include <unistd.h>
 #include <sys/types.h>
 #include <sys/sysctl.h>
+#endif
 #endif
 
 namespace irr
@@ -27,34 +22,26 @@ namespace irr
 
 
 // constructor
-COSOperator::COSOperator(const c8* osVersion)
+COSOperator::COSOperator(const c8* osVersion) : OperatingSystem(osVersion)
+{ }
+
+
+//! returns the current operating system version as string.
+const wchar_t* COSOperator::getOperationSystemVersion() const
 {
-	OperationSystem = osVersion;
-}
-
-
-//! destructor
-COSOperator::~COSOperator()
-{
-}
-
-
-//! returns the current operation system version as string.
-const wchar_t* COSOperator::getOperationSystemVersion()
-{
-	return OperationSystem.c_str();
+	return OperatingSystem.c_str();
 }
 
 
 //! copies text to the clipboard
-void COSOperator::copyToClipboard(const c8* text)
+void COSOperator::copyToClipboard(const c8* text) const
 {
 	if (strlen(text)==0)
 		return;
 
 // Windows version
-#if defined(_IRR_WINDOWS_)
-	if (!OpenClipboard(0) || text == 0)
+#if defined(_IRR_WINDOWS_API_)
+	if (!OpenClipboard(NULL) || text == 0)
 		return;
 
 	EmptyClipboard();
@@ -83,9 +70,9 @@ void COSOperator::copyToClipboard(const c8* text)
 
 //! gets text from the clipboard
 //! \return Returns 0 if no string is in there.
-c8* COSOperator::getTextFromClipboard()
+c8* COSOperator::getTextFromClipboard() const
 {
-#if defined(_IRR_WINDOWS_)
+#if defined(_IRR_WINDOWS_API_)
 	if (!OpenClipboard(NULL))
 		return 0;
 	
@@ -108,9 +95,9 @@ c8* COSOperator::getTextFromClipboard()
 }
 
 
-bool COSOperator::getProcessorSpeedMHz(irr::u32* MHz)
+bool COSOperator::getProcessorSpeedMHz(u32* MHz) const
 {
-#if defined(_IRR_WINDOWS_)
+#if defined(_IRR_WINDOWS_API_)
 	LONG Error;
 	
 	HKEY Key;
@@ -150,9 +137,9 @@ bool COSOperator::getProcessorSpeedMHz(irr::u32* MHz)
 #endif
 }
 
-bool COSOperator::getSystemMemory(irr::u32* Total, irr::u32* Avail)
+bool COSOperator::getSystemMemory(u32* Total, u32* Avail) const
 {
-#if defined(_IRR_WINDOWS_)
+#if defined(_IRR_WINDOWS_API_)
 	MEMORYSTATUS MemoryStatus;
 	MemoryStatus.dwLength = sizeof(MEMORYSTATUS);
 
@@ -160,14 +147,14 @@ bool COSOperator::getSystemMemory(irr::u32* Total, irr::u32* Avail)
 	GlobalMemoryStatus(&MemoryStatus);
 
 	if (Total)
-		*Total = (irr::u32)(MemoryStatus.dwTotalPhys>>10);
+		*Total = (u32)(MemoryStatus.dwTotalPhys>>10);
 	if (Avail)
-		*Avail = (irr::u32)(MemoryStatus.dwAvailPhys>>10);
+		*Avail = (u32)(MemoryStatus.dwAvailPhys>>10);
 	
 	_IRR_IMPLEMENT_MANAGED_MARSHALLING_BUGFIX;
 	return true;
 
-#elif defined(LINUX) // || defined(MACOSX)
+#elif defined(_IRR_POSIX_API_)
         long ps = sysconf(_SC_PAGESIZE);
         long pp = sysconf(_SC_PHYS_PAGES);
         long ap = sysconf(_SC_AVPHYS_PAGES);
@@ -180,9 +167,10 @@ bool COSOperator::getSystemMemory(irr::u32* Total, irr::u32* Avail)
 	if (Avail)
 		*Avail = ((ps*(long long)ap)>>10);
 	return true;
-#endif
+#else
 	// TODO: implement for OSX 
 	return false;
+#endif
 }
 
 

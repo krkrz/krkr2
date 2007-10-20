@@ -32,7 +32,7 @@ namespace scene
 		//! the gravity. The implementation of this method is very fast,
 		//! no collision detection is done when invoking it. 
 		//! \return Returns true if the scene node is falling, false if not.
-		virtual bool isFalling() = 0;
+		virtual bool isFalling() const = 0;
 
 		//! Sets the radius of the ellipsoid with which collision detection and
 		//! response is done. If you have got a scene node, and you are unsure about
@@ -45,7 +45,7 @@ namespace scene
 		//! \param radius: New radius of the ellipsoid.
 		virtual void setEllipsoidRadius(const core::vector3df& radius) = 0;
 
-		//! Returns the radius of the ellipsoid with wich the collision detection and
+		//! Returns the radius of the ellipsoid with which the collision detection and
 		//! response is done.
 		//! \return Radius of the ellipsoid.
 		virtual core::vector3df getEllipsoidRadius() const = 0;

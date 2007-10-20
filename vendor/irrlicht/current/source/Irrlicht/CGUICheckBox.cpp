@@ -3,6 +3,9 @@
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
 #include "CGUICheckBox.h"
+
+#ifdef _IRR_COMPILE_WITH_GUI_
+
 #include "IGUISkin.h"
 #include "IGUIEnvironment.h"
 #include "IVideoDriver.h"
@@ -21,26 +24,56 @@ CGUICheckBox::CGUICheckBox(bool checked, IGUIEnvironment* environment, IGUIEleme
 	#ifdef _DEBUG
 	setDebugName("CGUICheckBox");
 	#endif
-}
 
-
-
-//! destructor
-CGUICheckBox::~CGUICheckBox()
-{
+	// this element can be tabbed into
+	setTabStop(true);
+	setTabOrder(-1);
 }
 
 
 
 //! called if an event happened.
-bool CGUICheckBox::OnEvent(SEvent event)
+bool CGUICheckBox::OnEvent(const SEvent& event)
 {
 	switch(event.EventType)
 	{
+	case EET_KEY_INPUT_EVENT:
+		if (event.KeyInput.PressedDown &&
+			(event.KeyInput.Key == KEY_RETURN || 
+			 event.KeyInput.Key == KEY_SPACE))
+		{
+			Pressed = true;
+			return true;
+		}
+		else
+		if (Pressed && event.KeyInput.PressedDown && event.KeyInput.Key == KEY_ESCAPE)
+		{
+			Pressed = false;
+			return true;
+		}
+		else
+		if (!event.KeyInput.PressedDown && Pressed &&
+			(event.KeyInput.Key == KEY_RETURN || 
+			 event.KeyInput.Key == KEY_SPACE))
+		{
+			Pressed = false;
+			if (Parent)
+			{
+				SEvent newEvent;
+				newEvent.EventType = EET_GUI_EVENT;
+				newEvent.GUIEvent.Caller = this;
+				newEvent.GUIEvent.Element = 0;
+				Checked = !Checked;
+				newEvent.GUIEvent.EventType = EGET_CHECKBOX_CHANGED;
+				Parent->OnEvent(newEvent);
+			}
+			return true;
+		}
+		break;
 	case EET_GUI_EVENT:
 		if (event.GUIEvent.EventType == EGET_ELEMENT_FOCUS_LOST)
 		{
-			if (event.GUIEvent.Caller == (IGUIElement*)this)
+			if (event.GUIEvent.Caller == this)
 				Pressed = false;
 		}
 		break;
@@ -70,6 +103,7 @@ bool CGUICheckBox::OnEvent(SEvent event)
 				SEvent newEvent;
 				newEvent.EventType = EET_GUI_EVENT;
 				newEvent.GUIEvent.Caller = this;
+				newEvent.GUIEvent.Element = 0;
 				Checked = !Checked;
 				newEvent.GUIEvent.EventType = EGET_CHECKBOX_CHANGED;
 				Parent->OnEvent(newEvent);
@@ -77,6 +111,8 @@ bool CGUICheckBox::OnEvent(SEvent event)
 
 			return true;
 		}
+		break;
+	default:
 		break;
 	}
 
@@ -134,17 +170,17 @@ void CGUICheckBox::setChecked(bool checked)
 
 
 //! returns if box is checked
-bool CGUICheckBox::isChecked()
+bool CGUICheckBox::isChecked() const
 {
 	_IRR_IMPLEMENT_MANAGED_MARSHALLING_BUGFIX;
 	return Checked;
 }
 
 //! Writes attributes of the element.
-void CGUICheckBox::serializeAttributes(io::IAttributes* out, io::SAttributeReadWriteOptions* options=0)
+void CGUICheckBox::serializeAttributes(io::IAttributes* out, io::SAttributeReadWriteOptions* options=0) const
 {
 	IGUICheckBox::serializeAttributes(out,options);
-	out->addBool	("Checked",			Checked );
+	out->addBool	("Checked",	Checked );
 }
 
 //! Reads attributes of the element
@@ -158,3 +194,5 @@ void CGUICheckBox::deserializeAttributes(io::IAttributes* in, io::SAttributeRead
 
 } // end namespace gui
 } // end namespace irr
+
+#endif // _IRR_COMPILE_WITH_GUI_

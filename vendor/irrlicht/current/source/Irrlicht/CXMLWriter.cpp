@@ -15,7 +15,7 @@ namespace io
 
 //! Constructor
 CXMLWriter::CXMLWriter(IWriteFile* file)
-: File(file), Tabs(0)
+: File(file), Tabs(0), TextWrittenLast(false)
 {
 	if (File)
 		File->grab();
@@ -53,6 +53,7 @@ void CXMLWriter::writeXMLHeader()
 	File->write(p, wcslen(p)*sizeof(wchar_t));
 
 	writeLineBreak();
+	TextWrittenLast = false;
 }
 
 
@@ -95,6 +96,8 @@ void CXMLWriter::writeElement(const wchar_t* name, bool empty,
 		File->write(L">", sizeof(wchar_t));
 		++Tabs;
 	}
+	
+	TextWrittenLast = false;
 }
 
 //! Writes an xml element with any number of attributes
@@ -129,6 +132,8 @@ void CXMLWriter::writeElement(const wchar_t* name, bool empty,
 		File->write(L">", sizeof(wchar_t));
 		++Tabs;
 	}
+	
+	TextWrittenLast = false;
 }
 
 
@@ -165,7 +170,7 @@ void CXMLWriter::writeClosingTag(const wchar_t* name)
 
 	--Tabs;
 
-	if (Tabs > 0)
+	if (Tabs > 0 && !TextWrittenLast)
 	{
 		for (int i=0; i<Tabs; ++i)
 			File->write(L"\t", sizeof(wchar_t));
@@ -174,6 +179,7 @@ void CXMLWriter::writeClosingTag(const wchar_t* name)
 	File->write(L"</", 2*sizeof(wchar_t));
 	File->write(name, wcslen(name)*sizeof(wchar_t));
 	File->write(L">", sizeof(wchar_t));
+	TextWrittenLast = false;
 }
 
 
@@ -217,6 +223,7 @@ void CXMLWriter::writeText(const wchar_t* text)
 
 	// write new string
 	File->write(s.c_str(), s.size()*sizeof(wchar_t));
+	TextWrittenLast = true;
 }
 
 
@@ -228,7 +235,7 @@ void CXMLWriter::writeLineBreak()
 
 #if defined(MACOSX)
 	File->write(L"\r", sizeof(wchar_t));
-#elif (defined(_IRR_WINDOWS_) || defined(_XBOX))
+#elif defined(_IRR_WINDOWS_API_)
 	File->write(L"\r\n", 2*sizeof(wchar_t));
 #else
 	File->write(L"\n", sizeof(wchar_t));

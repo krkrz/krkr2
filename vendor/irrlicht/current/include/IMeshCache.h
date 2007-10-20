@@ -5,8 +5,8 @@
 #ifndef __I_MESH_CACHE_H_INCLUDED__
 #define __I_MESH_CACHE_H_INCLUDED__
 
-#include "irrTypes.h"
-#include "IUnknown.h"
+#include "IReferenceCounted.h"
+#include "irrString.h"
 
 namespace irr
 {
@@ -20,16 +20,16 @@ namespace scene
 
 	//!	The mesh cache stores already loaded meshes and provides an interface to them.
 	/** You can access it using ISceneManager::getMeshCache(). All existing scene managers
-	will return a pointer to the same mesh cache, because it is shared between them. With 
+	will return a pointer to the same mesh cache, because it is shared between them. With
 	this interface, it is possible to manually add new loaded meshes (if
 	ISceneManager::getMesh() is not sufficient), to remove them and to iterate through
 	already loaded meshes.  */
-	class IMeshCache : public virtual IUnknown
+	class IMeshCache : public virtual IReferenceCounted
 	{
 	public:
 
 		//! destructor
-		virtual ~IMeshCache() {};
+		virtual ~IMeshCache() {}
 
 		//! Adds a mesh to the internal list of loaded meshes.
 		/** Usually, ISceneManager::getMesh() is called to load a mesh from a file.
@@ -39,43 +39,88 @@ namespace scene
 		has been loaded. This method can be used for example by mesh loaders who need to
 		load more than one mesh with one call. They can add additional meshes with this
 		method to the scene manager. The COLLADA loader for example uses this method.
-		\param filename: Filename of the mesh. When called ISceneManager::getMesh() with this 
-		parameter, the method will return the mesh parameter given with this method. 
-		\param mesh: Pointer to a mesh which will now be referenced by this name. */ 
+		\param filename: Filename of the mesh. When called ISceneManager::getMesh() with this
+		parameter, the method will return the mesh parameter given with this method.
+		\param mesh: Pointer to a mesh which will now be referenced by this name. */
 		virtual void addMesh(const c8* filename, IAnimatedMesh* mesh) = 0;
 
 		//! Removes a mesh from the cache.
 		/** After loading a mesh with getMesh(), the mesh can be removed from the cache
-		using this method, freeing a lot of memory.	*/
-		virtual void removeMesh(IAnimatedMesh* mesh) = 0;
+		using this method, freeing a lot of memory. */
+		virtual void removeMesh(const IAnimatedMesh* const mesh) = 0;
+
+		//! Removes a mesh from the cache.
+		/** After loading a mesh with getMesh(), the mesh can be removed from the cache
+		using this method, freeing a lot of memory. */
+		virtual void removeMesh(const IMesh* const mesh) = 0;
 
 		//! Returns amount of loaded meshes in the cache.
-		/** You can load new meshes into the cache using getMesh() and addMesh(). 
+		/** You can load new meshes into the cache using getMesh() and addMesh().
 		If you ever need to access the internal mesh cache, you can do this using
 		removeMesh(), getMeshNumber(), getMeshByIndex() and getMeshFilename() */
-		virtual s32 getMeshCount() = 0;
+		virtual u32 getMeshCount() const = 0;
 
 		//! Returns current index number of the mesh, and -1 if it is not in the cache.
-		virtual s32 getMeshIndex(IAnimatedMesh* mesh) = 0;
+		virtual s32 getMeshIndex(const IAnimatedMesh* const mesh) const = 0;
+
+		//! Returns current index number of the mesh, and -1 if it is not in the cache.
+		virtual s32 getMeshIndex(const IMesh* const mesh) const = 0;
 
 		//! Returns a mesh based on its index number.
-		/** \param index: Index of the mesh, number between 0 and getMeshCount()-1. 
+		/** \param index: Index of the mesh, number between 0 and getMeshCount()-1.
 		Note that this number is only valid until a new mesh is loaded or removed *
 		\return Returns pointer to the mesh or 0 if there is none with this number. */
-		virtual IAnimatedMesh* getMeshByIndex(s32 index) = 0;
+		virtual IAnimatedMesh* getMeshByIndex(u32 index) = 0;
 
-		//! Returns name of a mesh based on its index number. 
-		/** \param index: Index of the mesh, number between 0 and getMeshCount()-1. 
+		//! Returns a mesh based on its file name.
+		/** \return Returns pointer to the mesh or 0 if there is none with this number. */
+		virtual IAnimatedMesh* getMeshByFilename(const c8* filename) = 0;
+
+		//! Returns name of a mesh based on its index number.
+		/** \param index: Index of the mesh, number between 0 and getMeshCount()-1.
 		Note that this is only valid until a new mesh is loaded */
-		virtual const c8* getMeshFilename(s32 index) = 0;
+		virtual const c8* getMeshFilename(u32 index) const = 0;
 
 		//! Returns the filename of a loaded mesh, if there is any.
 		/** Returns 0 if there is none. */
-		virtual const c8* getMeshFilename(IAnimatedMesh* mesh) = 0;
+		virtual const c8* getMeshFilename(const IAnimatedMesh* const mesh) const = 0;
 
 		//! Returns the filename of a loaded mesh, if there is any.
 		/* Returns 0 if there is none.*/
-		virtual const c8* getMeshFilename(IMesh* mesh) = 0;
+		virtual const c8* getMeshFilename(const IMesh* const mesh) const = 0;
+
+		//! Renames a loaded mesh, if possible.
+		/** Returns true if sucessful. Note that renaming meshes might change
+		the ordering of the meshes, and so the index of the meshes as returned by
+		getMeshIndex() or taken by some methods will change. */
+		virtual bool setMeshFilename(u32 index, const c8* filename) = 0;
+
+		//! Renames a loaded mesh, if possible.
+		/** Returns true if sucessful. Note that renaming meshes might change
+		the ordering of the meshes, and so the index of the meshes as returned by
+		getMeshIndex() or taken by some methods will change. */
+		virtual bool setMeshFilename(const IAnimatedMesh* const mesh, const c8* filename) = 0;
+
+		//! Renames a loaded mesh, if possible.
+		/** Returns true if sucessful. Note that renaming meshes might change
+		the ordering of the meshes, and so the index of the meshes as returned by
+		getMeshIndex() or taken by some methods will change. */
+		virtual bool setMeshFilename(const IMesh* const mesh, const c8* filename) = 0;
+
+		//! returns if a mesh already was loaded
+		virtual bool isMeshLoaded(const c8* filename) = 0;
+
+		//! Clears the whole mesh cache, removing all meshes.
+		/** All meshes will be reloaded completely when using ISceneManager::getMesh()
+		after calling this method. 
+		Warning: If you have pointers to meshes that were loaded with ISceneManager::getMesh() 
+		and you did not grab them, then they may become invalid. */
+		virtual void clear() = 0;
+
+		//! Clears all meshes that are held in the mesh cache but not used anywhere else.
+		/** Warning: If you have pointers to meshes that were loaded with ISceneManager::getMesh() 
+		and you did not grab them, then they may become invalid. */
+		virtual void clearUnusedMeshes() = 0;
 	};
 
 

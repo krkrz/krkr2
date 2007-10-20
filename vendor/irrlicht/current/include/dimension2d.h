@@ -17,41 +17,34 @@ namespace core
 	class dimension2d
 	{
 		public:
+			dimension2d() : Width(0), Height(0) {}
 
-			dimension2d()
-				: Width(0), Height(0) {};
-
-			dimension2d(T width, T height)
-				: Width(width), Height(height) {};
-
-			dimension2d(const dimension2d<T>& other)
-				: Width(other.Width), Height(other.Height) {};
-
+			dimension2d(const T& width, const T& height)
+				: Width(width), Height(height) {}
 
 			bool operator == (const dimension2d<T>& other) const
 			{
 				return Width == other.Width && Height == other.Height;
 			}
 
-
 			bool operator != (const dimension2d<T>& other) const
 			{
-				return Width != other.Width || Height != other.Height;
+				return ! (*this == other);
 			}
 
-			const dimension2d<T>& operator=(const dimension2d<T>& other) 
+			dimension2d<T>& set(const T& width, const T& height) 
 			{
-				Width = other.Width;
-				Height = other.Height;
+				Width = width;
+				Height = height;
 				return *this;
 			}
 
-			dimension2d<T> operator/(T scale) 
+			dimension2d<T> operator/(const T& scale) 
 			{
 				return dimension2d<T>(Width/scale, Height/scale);
 			}
 
-			dimension2d<T> operator*(T scale) 
+			dimension2d<T> operator*(const T& scale) 
 			{
 				return dimension2d<T>(Width*scale, Height*scale);
 			}

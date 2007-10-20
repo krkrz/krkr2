@@ -28,7 +28,7 @@ public:
 	~CAttributes();
 
 	//! Returns amount of attributes in this collection of attributes.
-	virtual s32 getAttributeCount();
+	virtual u32 getAttributeCount() const;
 
 	//! Returns attribute name by index. 
 	//! \param index: Index value, must be between 0 and getAttributeCount()-1.
@@ -62,10 +62,11 @@ public:
 	//! Reads attributes from a xml file.
 	//! \param readCurrentElementOnly: If set to true, reading only works if current element has the name 'attributes'.
 	//! IF set to false, the first appearing list attributes are read.
-	virtual bool read(irr::io::IXMLReader* reader, bool readCurrentElementOnly=false);
+	virtual bool read(io::IXMLReader* reader, bool readCurrentElementOnly=false,
+					  const wchar_t* nonDefaultElementName = 0);
 
 	//! Write these attributes into a xml file
-	virtual bool write(io::IXMLWriter* writer, bool writeXMLHeader=false);
+	virtual bool write(io::IXMLWriter* writer, bool writeXMLHeader=false, const wchar_t* nonDefaultElementName=0);
 
 
 	/*
@@ -430,10 +431,10 @@ public:
 	*/ 
 
 	//! Adds an attribute as matrix
-	virtual void addMatrix(const c8* attributeName, core::matrix4 v);
+	virtual void addMatrix(const c8* attributeName, const core::matrix4& v);
 
 	//! Sets an attribute as matrix
-	virtual void setAttribute(const c8* attributeName, core::matrix4 v);
+	virtual void setAttribute(const c8* attributeName, const core::matrix4& v);
 
 	//! Gets an attribute as a matrix4
 	//! \param attributeName: Name of the attribute to get.
@@ -445,7 +446,7 @@ public:
 	virtual core::matrix4 getAttributeAsMatrix(s32 index);
 
 	//! Sets an attribute as matrix
-	virtual void setAttribute(s32 index, core::matrix4 v);
+	virtual void setAttribute(s32 index, const core::matrix4& v);
 
 	/*
 		quaternion attribute
@@ -617,6 +618,31 @@ public:
 	//! Sets an attribute as texture reference
 	virtual void setAttribute(s32 index, video::ITexture* texture);
 
+
+	
+	/*
+
+		User Pointer Attribute
+
+	*/
+
+	//! Adds an attribute as user pointner
+	virtual void addUserPointer(const c8* attributeName, void* userPointer);
+
+	//! Sets an attribute as user pointer
+	virtual void setAttribute(const c8* attributeName, void* userPointer);
+
+	//! Gets an attribute as user pointer
+	//! \param attributeName: Name of the attribute to get.
+	virtual void* getAttributeAsUserPointer(const c8* attributeName);
+
+	//! Gets an attribute as user pointer
+	//! \param index: Index value, must be between 0 and getAttributeCount()-1.
+	virtual void* getAttributeAsUserPointer(s32 index);
+
+	//! Sets an attribute as user pointer
+	virtual void setAttribute(s32 index, void* userPointer);
+
 protected:
 
 	void readAttributeFromXML(io::IXMLReader* reader);
@@ -629,7 +655,7 @@ protected:
 };
 
 
-class IAttribute : public virtual IUnknown
+class IAttribute : public virtual IReferenceCounted
 {
 public:
 
@@ -662,6 +688,7 @@ public:
 
 	virtual video::ITexture* getTexture()		{ return 0; }
 	virtual const char* getEnum()			{ return 0; }
+	virtual void* getUserPointer()			{ return 0; }
 
 	virtual void setInt(s32 intValue)		{};
 	virtual void setFloat(f32 floatValue)		{};
@@ -687,14 +714,15 @@ public:
 	virtual void setDimension2d(core::dimension2di v) {};
 	virtual void setBBox(core::aabbox3d<f32> v) {};
 	virtual void setPlane(core::plane3df v) {};
+	virtual void setUserPointer(void* v)	{};
 
 	virtual void setEnum(const char* enumValue, const char* const* enumerationLiterals) {};
 	virtual void setTexture(video::ITexture*)	{};
 
 	core::stringc Name;
 
-	virtual E_ATTRIBUTE_TYPE getType() = 0;
-	virtual const wchar_t* getTypeString() = 0;
+	virtual E_ATTRIBUTE_TYPE getType() const = 0;
+	virtual const wchar_t* getTypeString() const = 0;
 };
 
 } // end namespace io

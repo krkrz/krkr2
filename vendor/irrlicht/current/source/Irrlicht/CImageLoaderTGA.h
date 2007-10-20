@@ -5,6 +5,10 @@
 #ifndef __C_IMAGE_LOADER_TGA_H_INCLUDED__
 #define __C_IMAGE_LOADER_TGA_H_INCLUDED__
 
+#include "IrrCompileConfig.h"
+
+#ifdef _IRR_COMPILE_WITH_TGA_LOADER_
+
 #include "IImageLoader.h"
 
 
@@ -15,7 +19,7 @@ namespace video
 
 
 // byte-align structures
-#ifdef _MSC_VER
+#if defined(_MSC_VER) ||  defined(__BORLANDC__) || defined (__BCPLUSPLUS__) 
 #	pragma pack( push, packing )
 #	pragma pack( 1 )
 #	define PACK_STRUCT
@@ -49,7 +53,7 @@ namespace video
 	} PACK_STRUCT;
 
 // Default alignment
-#ifdef _MSC_VER
+#if defined(_MSC_VER) ||  defined(__BORLANDC__) || defined (__BCPLUSPLUS__) 
 #	pragma pack( pop, packing )
 #endif
 
@@ -62,33 +66,26 @@ class CImageLoaderTGA : public IImageLoader
 {
 public:
 
-	//! constructor
-	CImageLoaderTGA();
-
-	//! destructor
-	virtual ~CImageLoaderTGA();
-
 	//! returns true if the file maybe is able to be loaded by this class
 	//! based on the file extension (e.g. ".tga")
-	virtual bool isALoadableFileExtension(const c8* fileName);
+	virtual bool isALoadableFileExtension(const c8* fileName) const;
 
 	//! returns true if the file maybe is able to be loaded by this class
-	virtual bool isALoadableFileFormat(irr::io::IReadFile* file);
+	virtual bool isALoadableFileFormat(io::IReadFile* file) const;
 
 	//! creates a surface from the file
-	virtual IImage* loadImage(irr::io::IReadFile* file);
+	virtual IImage* loadImage(io::IReadFile* file) const;
 
 private:
 
 	//! loads a compressed tga. Was written and sent in by Jon Pry, thank you very much!
-	u8* loadCompressedImage(irr::io::IReadFile *file, const STGAHeader& header);
-
+	u8* loadCompressedImage(io::IReadFile *file, const STGAHeader& header) const;
 };
 
 
 } // end namespace video
 } // end namespace irr
 
-
+#endif
 #endif
 

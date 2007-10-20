@@ -208,8 +208,8 @@ IReadFile* CZipReader::openFile(s32 index)
 		{
   			#ifdef _IRR_COMPILE_WITH_ZLIB_
 			
-			u32 uncompressedSize = FileList[index].header.DataDescriptor.UncompressedSize;			
-			u32 compressedSize = FileList[index].header.DataDescriptor.CompressedSize;
+			const u32 uncompressedSize = FileList[index].header.DataDescriptor.UncompressedSize;			
+			const u32 compressedSize = FileList[index].header.DataDescriptor.CompressedSize;
 
 			void* pBuf = new c8[ uncompressedSize ];
 			if (!pBuf)
@@ -248,7 +248,6 @@ IReadFile* CZipReader::openFile(s32 index)
 				inflateEnd(&stream);
 				if (err == Z_STREAM_END)
 					err = Z_OK;
-
 				err = Z_OK;
 				inflateEnd(&stream);
 			}
@@ -263,11 +262,7 @@ IReadFile* CZipReader::openFile(s32 index)
 				return 0;
 			}
 			else
-				return io::createMemoryReadFile (	pBuf,
-													uncompressedSize,
-													FileList[index].zipFileName.c_str(),
-													true
-												);
+				return io::createMemoryReadFile(pBuf, uncompressedSize, FileList[index].zipFileName.c_str(), true);
 			
 			#else
 			return 0; // zlib not compiled, we cannot decompress the data.
@@ -349,7 +344,7 @@ s32 CZipReader::findFile(const c8* simpleFilename)
 }
 
 
-// ------------------------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 #if 1
 
 class CUnzipReadFile : public CReadFile
@@ -362,7 +357,7 @@ class CUnzipReadFile : public CReadFile
 		}
 		virtual ~CUnzipReadFile () {}
 
-		virtual const c8* getFileName()
+		virtual const c8* getFileName() const
 		{
 			return CallFileName.c_str ();
 		}
@@ -417,7 +412,7 @@ s32 CUnZipReader::findFile(const c8* filename)
 #else
 
 CUnZipReader::CUnZipReader( IFileSystem * parent, const c8* basename, bool ignoreCase, bool ignorePaths)
-:CZipReader ( 0, ignoreCase, ignorePaths ), Parent ( parent )
+	: CZipReader( 0, ignoreCase, ignorePaths ), Parent ( parent )
 {
 	strcpy ( Buf, Parent->getWorkingDirectory () );
 
@@ -430,17 +425,12 @@ CUnZipReader::CUnZipReader( IFileSystem * parent, const c8* basename, bool ignor
 
 void CUnZipReader::buildDirectory ( )
 {
-	s32 i;
-	s32 size;
-	const c8 * rel;
-
-	IFileList * list;
-	list = new CFileList ();
+	IFileList * list = new CFileList();
 
 	SZipFileEntry entry;
 
-	size = list->getFileCount();
-	for ( i = 0; i!= size; ++i )
+	const u32 size = list->getFileCount();
+	for (u32 i = 0; i!= size; ++i)
 	{
 		if ( false == list->isDirectory( i ) )
 		{
@@ -451,22 +441,18 @@ void CUnZipReader::buildDirectory ( )
 		}
 		else
 		{
-			rel = list->getFileName ( i );
+			const c8 * rel = list->getFileName ( i );
 
-			if (	strcmp ( rel, "." ) &&
-					strcmp ( rel, ".." )
-				)
+			if (strcmp( rel, "." ) && strcmp( rel, ".." ))
 			{
 				Parent->changeWorkingDirectoryTo ( rel );
 				buildDirectory ();
 				Parent->changeWorkingDirectoryTo ( ".." );
 			}
 		}
-
 	}
 
 	list->drop ();
-
 }
 
 //! opens a file by file name
@@ -481,16 +467,14 @@ IReadFile* CUnZipReader::openFile(const c8* filename)
 	else
 	if ( FileList.size () )
 	{
-		core::stringc search = FileList[0].path + filename;
+		const core::stringc search = FileList[0].path + filename;
 		index = findFile( search.c_str() );
 	}
 
 	if (index == -1)
 		return 0;
 
-	IReadFile *file;
-	file = createReadFile(FileList[index].zipFileName.c_str() );
-	return file;
+	return createReadFile(FileList[index].zipFileName.c_str() );
 }
 #endif
 

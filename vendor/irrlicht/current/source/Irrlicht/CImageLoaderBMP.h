@@ -5,6 +5,10 @@
 #ifndef __C_IMAGE_LOADER_BMP_H_INCLUDED__
 #define __C_IMAGE_LOADER_BMP_H_INCLUDED__
 
+#include "IrrCompileConfig.h"
+
+#ifdef _IRR_COMPILE_WITH_BMP_LOADER_
+
 #include "IImageLoader.h"
 
 
@@ -15,7 +19,7 @@ namespace video
 
 
 	// byte-align structures
-#ifdef _MSC_VER
+#if defined(_MSC_VER) ||  defined(__BORLANDC__) || defined (__BCPLUSPLUS__) 
 #	pragma pack( push, packing )
 #	pragma pack( 1 )
 #	define PACK_STRUCT
@@ -62,7 +66,7 @@ namespace video
 
 
 // Default alignment
-#ifdef _MSC_VER
+#if defined(_MSC_VER) ||  defined(__BORLANDC__) || defined (__BCPLUSPLUS__) 
 #	pragma pack( pop, packing )
 #endif
 
@@ -79,28 +83,21 @@ public:
 	//! constructor
 	CImageLoaderBMP();
 
-	//! destructor
-	virtual ~CImageLoaderBMP();
-
 	//! returns true if the file maybe is able to be loaded by this class
 	//! based on the file extension (e.g. ".tga")
-	virtual bool isALoadableFileExtension(const c8* fileName);
+	virtual bool isALoadableFileExtension(const c8* fileName) const;
 
 	//! returns true if the file maybe is able to be loaded by this class
-	virtual bool isALoadableFileFormat(irr::io::IReadFile* file);
+	virtual bool isALoadableFileFormat(io::IReadFile* file) const;
 
 	//! creates a surface from the file
-	virtual IImage* loadImage(irr::io::IReadFile* file);
+	virtual IImage* loadImage(io::IReadFile* file) const;
 
 private:
 
-	void decompress8BitRLE(u8*& BmpData, s32 size, s32 width, s32 height, s32 pitch);
+	void decompress8BitRLE(u8*& BmpData, s32 size, s32 width, s32 height, s32 pitch) const;
 
-	void decompress4BitRLE(u8*& BmpData, s32 size, s32 width, s32 height, s32 pitch);
-
-	u8* BmpData;
-	s32* PaletteData;
-
+	void decompress4BitRLE(u8*& BmpData, s32 size, s32 width, s32 height, s32 pitch) const;
 };
 
 
@@ -108,5 +105,6 @@ private:
 } // end namespace irr
 
 
+#endif
 #endif
 

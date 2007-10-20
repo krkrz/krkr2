@@ -3,6 +3,8 @@
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
 #include "CGUISkin.h"
+#ifdef _IRR_COMPILE_WITH_GUI_
+
 #include "IGUIFont.h"
 #include "IGUISpriteBank.h"
 #include "IVideoDriver.h"
@@ -15,7 +17,7 @@ namespace gui
 {
 
 CGUISkin::CGUISkin(EGUI_SKIN_TYPE type, video::IVideoDriver* driver)
-: Font(0), SpriteBank(0), Driver(driver), Type(type)
+: SpriteBank(0), Driver(driver), Type(type)
 {
 	#ifdef _DEBUG
 	setDebugName("CGUISkin");
@@ -25,26 +27,27 @@ CGUISkin::CGUISkin(EGUI_SKIN_TYPE type, video::IVideoDriver* driver)
 			(Type == EGST_WINDOWS_METALLIC)
 		)
 	{
-		Colors[EGDC_3D_DARK_SHADOW] =	video::SColor(101,50,50,50);
-		Colors[EGDC_3D_SHADOW] =	video::SColor(101,130,130,130);
-		Colors[EGDC_3D_FACE] =		video::SColor(101,210,210,210);
-		Colors[EGDC_3D_HIGH_LIGHT] =	video::SColor(101,255,255,255);
-		Colors[EGDC_3D_LIGHT] =		video::SColor(101,210,210,210);
-		Colors[EGDC_ACTIVE_BORDER] =	video::SColor(101,16,14,115);
-		Colors[EGDC_ACTIVE_CAPTION] =	video::SColor(240,255,255,255);
-		Colors[EGDC_APP_WORKSPACE] =	video::SColor(101,100,100,100);
-		Colors[EGDC_BUTTON_TEXT] =	video::SColor(240,10,10,10);
-		Colors[EGDC_GRAY_TEXT] =	video::SColor(240,130,130,130);
-		Colors[EGDC_HIGH_LIGHT] =	video::SColor(101,8,36,107);
-		Colors[EGDC_HIGH_LIGHT_TEXT] =	video::SColor(240,255,255,255);
-		Colors[EGDC_INACTIVE_BORDER] =	video::SColor(101,165,165,165);
+		Colors[EGDC_3D_DARK_SHADOW]   = video::SColor(101,50,50,50);
+		Colors[EGDC_3D_SHADOW]        = video::SColor(101,130,130,130);
+		Colors[EGDC_3D_FACE]          = video::SColor(101,210,210,210);
+		Colors[EGDC_3D_HIGH_LIGHT]    = video::SColor(101,255,255,255);
+		Colors[EGDC_3D_LIGHT]         =	video::SColor(101,210,210,210);
+		Colors[EGDC_ACTIVE_BORDER]    = video::SColor(101,16,14,115);
+		Colors[EGDC_ACTIVE_CAPTION]   = video::SColor(200,255,255,255);
+		Colors[EGDC_APP_WORKSPACE]    = video::SColor(101,100,100,100);
+		Colors[EGDC_BUTTON_TEXT]      = video::SColor(240,10,10,10);
+		Colors[EGDC_GRAY_TEXT]        = video::SColor(240,130,130,130);
+		Colors[EGDC_HIGH_LIGHT]       = video::SColor(101,8,36,107);
+		Colors[EGDC_HIGH_LIGHT_TEXT]  = video::SColor(240,255,255,255);
+		Colors[EGDC_INACTIVE_BORDER]  = video::SColor(101,165,165,165);
 		Colors[EGDC_INACTIVE_CAPTION] = video::SColor(101,210,210,210);
-		Colors[EGDC_TOOLTIP] =		video::SColor(101,255,255,230);
-		Colors[EGDC_SCROLLBAR] =	video::SColor(101,230,230,230);
-		Colors[EGDC_WINDOW] =		video::SColor(101,255,255,255);
-		Colors[EGDC_WINDOW_SYMBOL] = video::SColor(240,10,10,10);
-		Colors[EGDC_ICON] =			video::SColor(240,255,255,255);
-		Colors[EGDC_ICON_HIGH_LIGHT] = video::SColor(240,10,10,10);
+		Colors[EGDC_TOOLTIP]          = video::SColor(200,0,0,0);
+		Colors[EGDC_TOOLTIP_BACKGROUND]= video::SColor(200,255,255,225);
+		Colors[EGDC_SCROLLBAR]        = video::SColor(101,230,230,230);
+		Colors[EGDC_WINDOW]           = video::SColor(101,255,255,255);
+		Colors[EGDC_WINDOW_SYMBOL]    = video::SColor(200,10,10,10);
+		Colors[EGDC_ICON]             = video::SColor(200,255,255,255);
+		Colors[EGDC_ICON_HIGH_LIGHT]  = video::SColor(200,8,36,107);
 
 		Sizes[EGDS_SCROLLBAR_SIZE] = 14;
 		Sizes[EGDS_MENU_HEIGHT] = 30;
@@ -57,7 +60,6 @@ CGUISkin::CGUISkin(EGUI_SKIN_TYPE type, video::IVideoDriver* driver)
 	
 		Sizes[EGDS_TEXT_DISTANCE_X] = 2;
 		Sizes[EGDS_TEXT_DISTANCE_Y] = 0;
-
 	}
 	else
 	{
@@ -78,11 +80,12 @@ CGUISkin::CGUISkin(EGUI_SKIN_TYPE type, video::IVideoDriver* driver)
 		Colors[EGDC_INACTIVE_BORDER]=	0xf0a5a5a5;
 		Colors[EGDC_INACTIVE_CAPTION]=	0xf0d2d2d2;
 		Colors[EGDC_TOOLTIP]		=	0xf00f2033;
+		Colors[EGDC_TOOLTIP_BACKGROUND]=0xc0cbd2d9;
 		Colors[EGDC_SCROLLBAR]		=	0xf0e0e0e0;
 		Colors[EGDC_WINDOW]			=	0xf0f0f0f0;
 		Colors[EGDC_WINDOW_SYMBOL]	=	0xd0161616;
 		Colors[EGDC_ICON]			=	0xd0161616;
-		Colors[EGDC_ICON_HIGH_LIGHT]=	0xd0e0e0e0;
+		Colors[EGDC_ICON_HIGH_LIGHT]=	0xd0606060;
 
 		Sizes[EGDS_SCROLLBAR_SIZE] = 14;
 		Sizes[EGDS_MENU_HEIGHT] = 48;
@@ -120,8 +123,19 @@ CGUISkin::CGUISkin(EGUI_SKIN_TYPE type, video::IVideoDriver* driver)
 	Icons[EGDI_SMALL_CURSOR_UP] = 235;
 	Icons[EGDI_SMALL_CURSOR_DOWN] = 236;
 	Icons[EGDI_RADIO_BUTTON_CHECKED] = 237;
-	Icons[EGDI_FILE] = 238;
-	Icons[EGDI_DIRECTORY] = 239;
+	Icons[EGDI_MORE_LEFT] = 238;
+	Icons[EGDI_MORE_RIGHT] = 239;
+	Icons[EGDI_MORE_UP] = 240;
+	Icons[EGDI_MORE_DOWN] = 241;
+	Icons[EGDI_WINDOW_RESIZE] = 242;
+	Icons[EGDI_EXPAND] = 243;
+	Icons[EGDI_COLLAPSE] = 244;
+
+	Icons[EGDI_FILE] = 245;
+	Icons[EGDI_DIRECTORY] = 246;
+
+	for (u32 i=0; i<EGDF_COUNT; ++i)
+		Fonts[i] = 0;
 
 	UseGradient = (Type == EGST_WINDOWS_METALLIC) ||
 				  (Type == EGST_BURNING_SKIN) ;
@@ -131,8 +145,12 @@ CGUISkin::CGUISkin(EGUI_SKIN_TYPE type, video::IVideoDriver* driver)
 //! destructor
 CGUISkin::~CGUISkin()
 {
-	if (Font)
-		Font->drop();
+	for (u32 i=0; i<EGDF_COUNT; ++i)
+	{
+		if (Fonts[i])
+			Fonts[i]->drop();
+	}
+
 	if (SpriteBank)
 		SpriteBank->drop();
 }
@@ -140,24 +158,30 @@ CGUISkin::~CGUISkin()
 
 
 //! returns default color
-video::SColor CGUISkin::getColor(EGUI_DEFAULT_COLOR color)
+video::SColor CGUISkin::getColor(EGUI_DEFAULT_COLOR color) const
 {
-	return Colors[color];
+	if ((u32)color < EGDC_COUNT)
+		return Colors[color];
+	else
+		return video::SColor();
 }
 
 
 //! sets a default color
 void CGUISkin::setColor(EGUI_DEFAULT_COLOR which, video::SColor newColor)
 {
-	if (which>=0 && which<= EGDC_COUNT)
+	if ((u32)which < EGDC_COUNT)
 		Colors[which] = newColor;
 }
 
 
 //! returns default color
-s32 CGUISkin::getSize(EGUI_DEFAULT_SIZE size)
+s32 CGUISkin::getSize(EGUI_DEFAULT_SIZE size) const
 {
-	return Sizes[size];
+	if ((u32)size < EGDS_COUNT)
+		return Sizes[size];
+	else
+		return 0;
 }
 
 
@@ -165,35 +189,45 @@ s32 CGUISkin::getSize(EGUI_DEFAULT_SIZE size)
 //! sets a default size
 void CGUISkin::setSize(EGUI_DEFAULT_SIZE which, s32 size)
 {
-	if (which >= 0 && which <= EGDS_COUNT)
+	if ((u32)which < EGDS_COUNT)
 		Sizes[which] = size;
 }
 
 
 
 //! returns the default font
-IGUIFont* CGUISkin::getFont()
+IGUIFont* CGUISkin::getFont(EGUI_DEFAULT_FONT which) const
 {
-	return Font;
+	if (((u32)which < EGDS_COUNT) && Fonts[which])
+		return Fonts[which];
+	else
+		return Fonts[EGDF_DEFAULT];
 }
 
 //! sets a default font
-void CGUISkin::setFont(IGUIFont* font)
+void CGUISkin::setFont(IGUIFont* font, EGUI_DEFAULT_FONT which)
 {
-	if (Font)
-		Font->drop();
+	if ((u32)which >= EGDS_COUNT)
+		return;
 
-	Font = font;
+	if (Fonts[which])
+		Fonts[which]->drop();
 
-	if (Font)
-		Font->grab();
+	Fonts[which] = font;
+
+	if (Fonts[which])
+		Fonts[which]->grab();
 }
 
-IGUISpriteBank* CGUISkin::getSpriteBank()
+
+//! gets the sprite bank stored
+IGUISpriteBank* CGUISkin::getSpriteBank() const
 {
 	return SpriteBank;
 }
 
+
+//! set a new sprite bank or remove one by passing 0
 void CGUISkin::setSpriteBank(IGUISpriteBank* bank)
 {
 	if (SpriteBank)
@@ -205,23 +239,31 @@ void CGUISkin::setSpriteBank(IGUISpriteBank* bank)
 	SpriteBank = bank;
 }
 
+
 //! Returns a default icon
-u32 CGUISkin::getIcon(EGUI_DEFAULT_ICON icon)
+u32 CGUISkin::getIcon(EGUI_DEFAULT_ICON icon) const
 {
-	return Icons[icon];
+	if ((u32)icon < EGDI_COUNT)
+		return Icons[icon];
+	else
+		return 0;
 }
 
 //! Sets a default icon
 void CGUISkin::setIcon(EGUI_DEFAULT_ICON icon, u32 index)
 {
-	Icons[icon] = index;
+	if ((u32)icon < EGDI_COUNT)
+		Icons[icon] = index;
 }
 
 //! Returns a default text. For example for Message box button captions:
 //! "OK", "Cancel", "Yes", "No" and so on.
-const wchar_t* CGUISkin::getDefaultText(EGUI_DEFAULT_TEXT text)
+const wchar_t* CGUISkin::getDefaultText(EGUI_DEFAULT_TEXT text) const
 {
-	return Texts[text].c_str();
+	if ((u32)text < EGDT_COUNT)
+		return Texts[text].c_str();
+	else
+		return Texts[0].c_str();
 }
 
 
@@ -229,7 +271,8 @@ const wchar_t* CGUISkin::getDefaultText(EGUI_DEFAULT_TEXT text)
 //! "OK", "Cancel", "Yes", "No" and so on.
 void CGUISkin::setDefaultText(EGUI_DEFAULT_TEXT which, const wchar_t* newText)
 {
-	Texts[which] = newText;
+	if ((u32)which < EGDT_COUNT)
+		Texts[which] = newText;
 }
 
 //! draws a standard 3d button pane
@@ -242,8 +285,8 @@ EGDC_3D_FACE for this. See EGUI_DEFAULT_COLOR for details.
 is usually not used by ISkin, but can be used for example by more complex
 implementations to find out how to draw the part exactly. */
 void CGUISkin::draw3DButtonPaneStandard(IGUIElement* element,
-										const core::rect<s32>& r,
-										const core::rect<s32>* clip)
+					const core::rect<s32>& r,
+					const core::rect<s32>* clip)
 {
 	if (!Driver)
 		return;
@@ -257,8 +300,8 @@ void CGUISkin::draw3DButtonPaneStandard(IGUIElement* element,
 		rect.LowerRightCorner.X += 1;
 		rect.LowerRightCorner.Y += 1;
 		draw3DSunkenPane(element,
-						getColor( EGDC_WINDOW ).getInterpolated( 0xFFFFFFFF, 0.9f )
-						,false, true, rect, clip);
+					getColor( EGDC_WINDOW ).getInterpolated( 0xFFFFFFFF, 0.9f )
+					,false, true, rect, clip);
 		return;
 	}
 
@@ -281,8 +324,8 @@ void CGUISkin::draw3DButtonPaneStandard(IGUIElement* element,
 	}
 	else
 	{
-		video::SColor c1 = getColor(EGDC_3D_FACE);
-		video::SColor c2 = c1.getInterpolated(getColor(EGDC_3D_DARK_SHADOW), 0.4f);
+		const video::SColor c1 = getColor(EGDC_3D_FACE);
+		const video::SColor c2 = c1.getInterpolated(getColor(EGDC_3D_DARK_SHADOW), 0.4f);
 		Driver->draw2DRectangle(rect, c1, c1, c2, c2, clip);
 	}
 }
@@ -298,8 +341,8 @@ EGDC_3D_FACE for this. See EGUI_DEFAULT_COLOR for details.
 is usually not used by ISkin, but can be used for example by more complex
 implementations to find out how to draw the part exactly. */
 void CGUISkin::draw3DButtonPanePressed(IGUIElement* element,
-	const core::rect<s32>& r,
-	const core::rect<s32>* clip)
+					const core::rect<s32>& r,
+					const core::rect<s32>* clip)
 {
 	if (!Driver)
 		return;
@@ -324,8 +367,8 @@ void CGUISkin::draw3DButtonPanePressed(IGUIElement* element,
 	}
 	else
 	{
-		video::SColor c1 = getColor(EGDC_3D_FACE);
-		video::SColor c2 = c1.getInterpolated(getColor(EGDC_3D_DARK_SHADOW), 0.4f);
+		const video::SColor c1 = getColor(EGDC_3D_FACE);
+		const video::SColor c2 = c1.getInterpolated(getColor(EGDC_3D_DARK_SHADOW), 0.4f);
 		Driver->draw2DRectangle(rect, c1, c1, c2, c2, clip);
 	}
 }
@@ -341,16 +384,15 @@ implementations to find out how to draw the part exactly.
  deep into the ground.
 \param rect: Defining area where to draw.
 \param clip: Clip area.	*/
-void CGUISkin::draw3DSunkenPane(IGUIElement* element,
-	video::SColor bgcolor, bool flat, bool fillBackGround,
-	const core::rect<s32>& r,
-	const core::rect<s32>* clip)
+void CGUISkin::draw3DSunkenPane(IGUIElement* element, video::SColor bgcolor,
+				bool flat, bool fillBackGround,
+				const core::rect<s32>& r,
+				const core::rect<s32>* clip)
 {
 	if (!Driver)
 		return;
 
 	core::rect<s32> rect = r;
-
 
 	if (flat)
 	{
@@ -410,15 +452,14 @@ implementations to find out how to draw the part exactly.
 \param clip: Clip area.
 \return Returns rect where to draw title bar text. */
 core::rect<s32> CGUISkin::draw3DWindowBackground(IGUIElement* element,
-	bool drawTitleBar, video::SColor titleBarColor,
-	const core::rect<s32>& r,
-	const core::rect<s32>* cl)
+				bool drawTitleBar, video::SColor titleBarColor,
+				const core::rect<s32>& r,
+				const core::rect<s32>* cl)
 {
 	if (!Driver)
 		return r;
 
 	core::rect<s32> rect = r;
-
 
 	rect.LowerRightCorner.Y = rect.UpperLeftCorner.Y + 1;
 	Driver->draw2DRectangle(getColor(EGDC_3D_HIGH_LIGHT), rect, cl);
@@ -464,15 +505,15 @@ core::rect<s32> CGUISkin::draw3DWindowBackground(IGUIElement* element,
 	else
 	if ( Type == EGST_BURNING_SKIN )
 	{
-		video::SColor c1 = getColor(EGDC_WINDOW).getInterpolated ( 0xFFFFFFFF, 0.9f );
-		video::SColor c2 = getColor(EGDC_WINDOW).getInterpolated ( 0xFFFFFFFF, 0.8f );
+		const video::SColor c1 = getColor(EGDC_WINDOW).getInterpolated ( 0xFFFFFFFF, 0.9f );
+		const video::SColor c2 = getColor(EGDC_WINDOW).getInterpolated ( 0xFFFFFFFF, 0.8f );
 
 		Driver->draw2DRectangle(rect, c1, c1, c2, c2, cl);
 	}
 	else
 	{
-		video::SColor c2 = getColor(EGDC_3D_SHADOW);
-		video::SColor c1 = getColor(EGDC_3D_FACE);
+		const video::SColor c2 = getColor(EGDC_3D_SHADOW);
+		const video::SColor c1 = getColor(EGDC_3D_FACE);
 		Driver->draw2DRectangle(rect, c1, c1, c1, c2, cl);
 	}
 
@@ -490,12 +531,12 @@ core::rect<s32> CGUISkin::draw3DWindowBackground(IGUIElement* element,
 		//else
 		if ( Type == EGST_BURNING_SKIN )
 		{
-			video::SColor c = titleBarColor.getInterpolated( 0xffffffff, 0.8f);
+			const video::SColor c = titleBarColor.getInterpolated( 0xffffffff, 0.8f);
 			Driver->draw2DRectangle(rect, titleBarColor, titleBarColor, c, c, cl);
 		}
 		else
 		{
-			video::SColor c = titleBarColor.getInterpolated(video::SColor(255,0,0,0), 0.2f);
+			const video::SColor c = titleBarColor.getInterpolated(video::SColor(255,0,0,0), 0.2f);
 			Driver->draw2DRectangle(rect, titleBarColor, c, titleBarColor, c, cl);
 		}
 	}
@@ -516,16 +557,17 @@ implementations to find out how to draw the part exactly.
 void CGUISkin::draw3DMenuPane(IGUIElement* element,
 			const core::rect<s32>& r, const core::rect<s32>* clip)
 {
+	if (!Driver)
+		return;
+
+	core::rect<s32> rect = r;
+
 	if ( Type == EGST_BURNING_SKIN )
 	{	
-		core::rect<s32> rect = r;
 		rect.UpperLeftCorner.Y -= 3;
 		draw3DButtonPaneStandard(element, rect, clip);
 		return;
 	}
-
-	if (!Driver)
-		return;
 
 	// in this skin, this is exactly what non pressed buttons look like,
 	// so we could simply call
@@ -535,7 +577,6 @@ void CGUISkin::draw3DMenuPane(IGUIElement* element,
 	// We draw it a little bit better, with some more draw2DRectangle calls,
 	// but there aren't that much menus visible anyway.
 
-	core::rect<s32> rect = r;
 	rect.LowerRightCorner.Y = rect.UpperLeftCorner.Y + 1;
 	Driver->draw2DRectangle(getColor(EGDC_3D_HIGH_LIGHT), rect, clip);
 
@@ -577,8 +618,8 @@ void CGUISkin::draw3DMenuPane(IGUIElement* element,
 		Driver->draw2DRectangle(getColor(EGDC_3D_FACE), rect, clip);
 	else
 	{
-		video::SColor c1 = getColor(EGDC_3D_FACE);
-		video::SColor c2 = getColor(EGDC_3D_SHADOW);
+		const video::SColor c1 = getColor(EGDC_3D_FACE);
+		const video::SColor c2 = getColor(EGDC_3D_SHADOW);
 		Driver->draw2DRectangle(rect, c1, c1, c2, c2, clip);
 	}
 }
@@ -592,8 +633,8 @@ implementations to find out how to draw the part exactly.
 \param rect: Defining area where to draw.
 \param clip: Clip area.	*/
 void CGUISkin::draw3DToolBar(IGUIElement* element,
-	const core::rect<s32>& r,
-	const core::rect<s32>* clip)
+				const core::rect<s32>& r,
+				const core::rect<s32>* clip)
 {
 	if (!Driver)
 		return;
@@ -616,20 +657,20 @@ void CGUISkin::draw3DToolBar(IGUIElement* element,
 	else
 	if ( Type == EGST_BURNING_SKIN )
 	{
-		video::SColor c1 = 0xF0000000 | getColor(EGDC_3D_FACE).color;
-		video::SColor c2 = 0xF0000000 | getColor(EGDC_3D_SHADOW).color;
+		const video::SColor c1 = 0xF0000000 | getColor(EGDC_3D_FACE).color;
+		const video::SColor c2 = 0xF0000000 | getColor(EGDC_3D_SHADOW).color;
 
 		rect.LowerRightCorner.Y += 1;
 		Driver->draw2DRectangle(rect, c1, c2, c1, c2, clip);
-
 	}
 	else
 	{
-		video::SColor c1 = getColor(EGDC_3D_FACE);
-		video::SColor c2 = getColor(EGDC_3D_SHADOW);
+		const video::SColor c1 = getColor(EGDC_3D_FACE);
+		const video::SColor c2 = getColor(EGDC_3D_SHADOW);
 		Driver->draw2DRectangle(rect, c1, c1, c2, c2, clip);
 	}
 }
+
 
 //! draws a tab button
 /**	Used for drawing for tab buttons on top of tabs.
@@ -640,7 +681,8 @@ implementations to find out how to draw the part exactly.
 \param rect: Defining area where to draw.
 \param clip: Clip area.	*/
 void CGUISkin::draw3DTabButton(IGUIElement* element, bool active,
-	const core::rect<s32>& frameRect, const core::rect<s32>* clip)
+				const core::rect<s32>& frameRect,
+				const core::rect<s32>* clip)
 {
 	if (!Driver)
 		return;
@@ -724,12 +766,13 @@ void CGUISkin::draw3DTabBody(IGUIElement* element, bool border, bool background,
 			Driver->draw2DRectangle(getColor(EGDC_3D_FACE), tr, clip);
 		else
 		{
-			video::SColor c1 = getColor(EGDC_3D_FACE);
-			video::SColor c2 = getColor(EGDC_3D_SHADOW);
+			const video::SColor c1 = getColor(EGDC_3D_FACE);
+			const video::SColor c2 = getColor(EGDC_3D_SHADOW);
 			Driver->draw2DRectangle(tr, c1, c1, c2, c2, clip);
 		}
 	}
 }
+
 
 //! draws an icon, usually from the skin's sprite bank
 /**	\param parent: Pointer to the element which wishes to draw this icon. 
@@ -742,7 +785,8 @@ by more complex implementations to find out how to draw the part exactly.
 \param loop: Whether the animation should loop or not
 \param clip: Clip area.	*/
 void CGUISkin::drawIcon(IGUIElement* element, EGUI_DEFAULT_ICON icon,
-			const core::position2di position, u32 starttime, u32 currenttime, 
+			const core::position2di position,
+			u32 starttime, u32 currenttime, 
 			bool loop, const core::rect<s32>* clip)
 {
 	if (!SpriteBank)
@@ -750,18 +794,28 @@ void CGUISkin::drawIcon(IGUIElement* element, EGUI_DEFAULT_ICON icon,
 
 	SpriteBank->draw2DSprite(Icons[icon], position, clip, 
 			video::SColor(255,0,0,0), starttime, currenttime, loop, true);
-
 }
 
-EGUI_SKIN_TYPE CGUISkin::getType()
+
+EGUI_SKIN_TYPE CGUISkin::getType() const
 {
 	return Type;
 }
 
+
+//! draws a 2d rectangle.
+void CGUISkin::draw2DRectangle(IGUIElement* element,
+		const video::SColor &color, const core::rect<s32>& pos,
+		const core::rect<s32>* clip)
+{
+	Driver->draw2DRectangle(color, pos, clip);
+}
+
+
 //! Writes attributes of the object.
 //! Implement this to expose the attributes of your scene node animator for 
 //! scripting languages, editors, debuggers or xml serialization purposes.
-void CGUISkin::serializeAttributes(io::IAttributes* out, io::SAttributeReadWriteOptions* options) 
+void CGUISkin::serializeAttributes(io::IAttributes* out, io::SAttributeReadWriteOptions* options) const
 {
 	u32 i;
 	for (i=0; i<EGDC_COUNT; ++i)
@@ -776,6 +830,7 @@ void CGUISkin::serializeAttributes(io::IAttributes* out, io::SAttributeReadWrite
 	for (i=0; i<EGDI_COUNT; ++i)
 		out->addInt(GUISkinIconNames[i], Icons[i]);
 }
+
 
 //! Reads attributes of the object.
 //! Implement this to set the attributes of your scene node animator for 
@@ -794,10 +849,11 @@ void CGUISkin::deserializeAttributes(io::IAttributes* in, io::SAttributeReadWrit
 
 	for (i=0; i<EGDI_COUNT; ++i)
 		Icons[i] = in->getAttributeAsInt(GUISkinIconNames[i]);
-
 }
 
 
 } // end namespace gui
 } // end namespace irr
+
+#endif // _IRR_COMPILE_WITH_GUI_
 

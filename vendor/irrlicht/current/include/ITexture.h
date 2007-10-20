@@ -5,7 +5,7 @@
 #ifndef __I_TEXTURE_H_INCLUDED__
 #define __I_TEXTURE_H_INCLUDED__
 
-#include "IUnknown.h"
+#include "IReferenceCounted.h"
 #include "IImage.h"
 #include "dimension2d.h"
 #include "EDriverTypes.h"
@@ -14,7 +14,7 @@
 
 namespace irr
 {
-namespace video  
+namespace video
 {
 
 
@@ -59,6 +59,9 @@ enum E_TEXTURE_CREATION_FLAG
 	//! Automatically creates mip map levels for the textures.
 	ETCF_CREATE_MIP_MAPS = 0x00000010,
 
+	//! Discard any alpha layer and use non-alpha color format.
+	ETCF_NO_ALPHA_CHANNEL = 0x00000020,
+
 	//! This flag is never used, it only forces the compiler to 
 	//! compile these enumeration values to 32 bit.
 	ETCF_FORCE_32_BIT_DO_NOT_USE = 0x7fffffff
@@ -91,7 +94,7 @@ inline E_TEXTURE_CREATION_FLAG getTextureFormatFromFlags(u32 flags)
 	If you try to use a texture created by one device with an other device, the device
 	will refuse to do that and write a warning or an error message to the output buffer.
 */
-class ITexture : public virtual IUnknown
+class ITexture : public virtual IReferenceCounted
 {
 public:
 
@@ -102,7 +105,7 @@ public:
 	}
 
 	//! destructor
-	virtual ~ITexture() {};
+	virtual ~ITexture() {}
 
 	//! Lock function. 
 	/** Locks the Texture and returns a pointer to access the 
@@ -125,11 +128,11 @@ public:
 	of the original texture. Use ITexture::getSize() if you want to know 
 	the real size it has now stored in the system.
 	\return Returns the original size of the texture. */
-	virtual const core::dimension2d<s32>& getOriginalSize() = 0;
+	virtual const core::dimension2d<s32>& getOriginalSize() const = 0;
 
 	//! Returns dimension (=size) of the texture.
 	/** \return Returns the size of the texture. */
-	virtual const core::dimension2d<s32>& getSize() = 0;
+	virtual const core::dimension2d<s32>& getSize() const = 0;
 
 	//! Returns driver type of texture. 
 	/** This is the driver, which created the texture.
@@ -137,7 +140,7 @@ public:
 	use a texture because textures may be incompatible between different
 	devices.
 	\return Returns driver type of texture. */
-	virtual E_DRIVER_TYPE getDriverType() = 0;
+	virtual E_DRIVER_TYPE getDriverType() const = 0;
 
 	//! Returns the color format of texture.
 	/** \return Returns the color format of texture. */
@@ -151,14 +154,18 @@ public:
 
 	//! Returns whether the texture has MipMaps
 	/** \return Returns true if texture has MipMaps, else false. */
-	virtual bool hasMipMaps() { return false; }
+	virtual bool hasMipMaps() const { return false; }
 
 	//! Regenerates the mip map levels of the texture.
 	/** Useful after locking and modifying the texture */
 	virtual void regenerateMipMapLevels() = 0;
 
+	//! Returns whether the texture is a render target
+	/** \return Returns true if this is a render target, otherwise false. */
+	virtual bool isRenderTarget() const { return false; }
+
 	//! Returns name of texture (in most cases this is the filename)
-	const core::stringc& getName() { return Name; }
+	const core::stringc& getName() const { return Name; }
 
 protected:
 

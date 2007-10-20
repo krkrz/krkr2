@@ -5,14 +5,13 @@
 #ifndef __I_ATTRIBUTES_H_INCLUDED__
 #define __I_ATTRIBUTES_H_INCLUDED__
 
-#include "IUnknown.h"
+#include "IReferenceCounted.h"
 #include "SColor.h"
 #include "vector3d.h"
 #include "vector2d.h"
 #include "line2d.h"
 #include "line3d.h"
 #include "triangle3d.h"
-#include "quaternion.h"
 #include "position2d.h"
 #include "rect.h"
 #include "matrix4.h"
@@ -107,6 +106,9 @@ enum E_ATTRIBUTE_TYPE
 	// texture reference attribute
 	EAT_TEXTURE,
 
+	// user pointer void*
+	EAT_USER_POINTER,
+
 	// known attribute type count
 	EAT_COUNT,
 
@@ -115,12 +117,12 @@ enum E_ATTRIBUTE_TYPE
 };
 
 //! Provides a generic interface for attributes and their values and the possiblity to serialize them
-class IAttributes : public virtual IUnknown
+class IAttributes : public virtual IReferenceCounted
 {
 public:
 
 	//! Returns amount of attributes in this collection of attributes.
-	virtual s32 getAttributeCount() = 0;
+	virtual u32 getAttributeCount() const = 0;
 
 	//! Returns attribute name by index. 
 	//! \param index: Index value, must be between 0 and getAttributeCount()-1.
@@ -152,15 +154,17 @@ public:
 	virtual void clear() = 0;
 
 	//! Reads attributes from a xml file.
-	//! \param readCurrentElementOnly: If set to true, reading only works if current element has the name 'attributes'.
-	//! If set to false, the first appearing list attributes are read.
-	virtual bool read(irr::io::IXMLReader* reader, bool readCurrentElementOnly=false) = 0;
+	//! \param readCurrentElementOnly: If set to true, reading only works if current element has the name 'attributes' or 
+	//! the name specified using elementName.
+	//! \param elementName: The surrounding element name. If it is null, the default one, "attributes" will be taken.
+	//! If set to false, the first appearing list of attributes are read.
+	virtual bool read(io::IXMLReader* reader, bool readCurrentElementOnly=false, const wchar_t* elementName=0) = 0;
 
 	//! Write these attributes into a xml file
 	//! \param writer: The XML writer to write to
 	//! \param writeXMLHeader: Writes a header to the XML file, required if at the beginning of the file
-	//! and you haven't already written one with writer->writeXMLHeader()
-	virtual bool write(io::IXMLWriter* writer, bool writeXMLHeader=false) = 0;
+	//! \param elementName: The surrounding element name. If it is null, the default one, "attributes" will be taken.
+	virtual bool write(io::IXMLWriter* writer, bool writeXMLHeader=false, const wchar_t* elementName=0) = 0;
 
 
 	/*
@@ -527,10 +531,10 @@ public:
 	*/ 
 
 	//! Adds an attribute as matrix
-	virtual void addMatrix(const c8* attributeName, core::matrix4 v) = 0;
+	virtual void addMatrix(const c8* attributeName, const core::matrix4& v) = 0;
 
 	//! Sets an attribute as matrix
-	virtual void setAttribute(const c8* attributeName, core::matrix4 v) = 0;
+	virtual void setAttribute(const c8* attributeName, const core::matrix4& v) = 0;
 
 	//! Gets an attribute as a matrix4
 	//! \param attributeName: Name of the attribute to get.
@@ -542,7 +546,7 @@ public:
 	virtual core::matrix4 getAttributeAsMatrix(s32 index) = 0;
 
 	//! Sets an attribute as matrix
-	virtual void setAttribute(s32 index, core::matrix4 v) = 0;
+	virtual void setAttribute(s32 index, const core::matrix4& v) = 0;
 
 	/*
 		quaternion attribute
@@ -713,6 +717,30 @@ public:
 
 	//! Sets an attribute as texture reference
 	virtual void setAttribute(s32 index, video::ITexture* texture) = 0;
+
+
+	/*
+
+		User Pointer Attribute
+
+	*/
+
+	//! Adds an attribute as user pointner
+	virtual void addUserPointer(const c8* attributeName, void* userPointer) = 0;
+
+	//! Sets an attribute as user pointer
+	virtual void setAttribute(const c8* attributeName, void* userPointer) = 0;
+
+	//! Gets an attribute as user pointer
+	//! \param attributeName: Name of the attribute to get.
+	virtual void* getAttributeAsUserPointer(const c8* attributeName) = 0;
+
+	//! Gets an attribute as user pointer
+	//! \param index: Index value, must be between 0 and getAttributeCount()-1.
+	virtual void* getAttributeAsUserPointer(s32 index) = 0;
+
+	//! Sets an attribute as user pointer
+	virtual void setAttribute(s32 index, void* userPointer) = 0;
 
 };
 

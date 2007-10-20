@@ -14,7 +14,7 @@ namespace scene
 //! constructor
 CParticleGravityAffector::CParticleGravityAffector(
 	const core::vector3df& gravity, u32 timeForceLost)
-	: IParticleAffector(), TimeForceLost((f32)timeForceLost), Gravity(gravity)
+	: IParticleGravityAffector(), TimeForceLost(static_cast<f32>(timeForceLost)), Gravity(gravity)
 {
 }
 
@@ -40,7 +40,7 @@ void CParticleGravityAffector::affect(u32 now, SParticle* particlearray, u32 cou
 }
 
 //! Writes attributes of the object.
-void CParticleGravityAffector::serializeAttributes(io::IAttributes* out, io::SAttributeReadWriteOptions* options)
+void CParticleGravityAffector::serializeAttributes(io::IAttributes* out, io::SAttributeReadWriteOptions* options) const
 {
 	out->addVector3d("Gravity", Gravity);
 	out->addFloat("TimeForceLost", TimeForceLost);

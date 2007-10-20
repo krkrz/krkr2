@@ -5,11 +5,12 @@
 #ifndef __I_MESH_MANIPULATOR_H_INCLUDED__
 #define __I_MESH_MANIPULATOR_H_INCLUDED__
 
-#include "IUnknown.h"
+#include "IReferenceCounted.h"
 #include "vector3d.h"
-#include "IMeshBuffer.h"
 #include "aabbox3d.h"
+#include "matrix4.h"
 #include "IAnimatedMesh.h"
+#include "SColor.h"
 
 namespace irr
 {
@@ -17,7 +18,7 @@ namespace scene
 {
 
 	class IMesh;
-	class IAnimatedMesh;
+	class IMeshBuffer;
 	struct SMesh;
 
 	//! An interface for easily manipulate meshes.
@@ -25,12 +26,12 @@ namespace scene
 	with wrong imported or exported meshes quickly after loading. It is not intended for doing mesh
 	modifications and/or animations during runtime.
 	*/
-	class IMeshManipulator : public virtual IUnknown
+	class IMeshManipulator : public virtual IReferenceCounted
 	{
 	public:
 
 		//! destructor
-		virtual ~IMeshManipulator() {};
+		virtual ~IMeshManipulator() {}
 
 		//! Flips the direction of surfaces. 
 		/** Changes backfacing triangles to frontfacing
@@ -47,11 +48,13 @@ namespace scene
 		virtual void setVertexColors(IMesh* mesh, video::SColor color) const = 0;
 
 		//! Recalculates all normals of the mesh.
-		/** \param mesh: Mesh on which the operation is performed. */
+		/** \param mesh: Mesh on which the operation is performed.
+		    \param smooth: If the normals shall be smoothed. */
 		virtual void recalculateNormals(IMesh* mesh, bool smooth = false) const = 0;
 
 		//! Recalculates all normals of the mesh buffer.
-		/** \param buffer: Mesh buffer on which the operation is performed. */
+		/** \param buffer: Mesh buffer on which the operation is performed.
+		    \param smooth: If the normals shall be smoothed. */
 		virtual void recalculateNormals(IMeshBuffer* buffer, bool smooth = false) const = 0;
 
 		//! Scales the whole mesh.
@@ -70,7 +73,7 @@ namespace scene
 		\param mesh: Mesh to copy.
 		\return Returns the cloned mesh.
 		If you no longer need the cloned mesh, you should call SMesh::drop().
-		See IUnknown::drop() for more information. */
+		See IReferenceCounted::drop() for more information. */
 		virtual SMesh* createMeshCopy(IMesh* mesh) const = 0;
 
 
@@ -87,23 +90,25 @@ namespace scene
 		\param mesh: Input mesh
 		\return Mesh consiting only of S3DVertexTangents vertices.
 		If you no longer need the cloned mesh, you should call IMesh::drop().
-		See IUnknown::drop() for more information. */
+		See IReferenceCounted::drop() for more information. */
 		virtual IMesh* createMeshWithTangents(IMesh* mesh) const = 0;
 
-		//! Unweld vertices
+		//! Creates a copy of the mesh, which will only consist of S3DVertex2TCoord vertices.
+		virtual IMesh* createMeshWith2TCoords(IMesh* mesh) const = 0;
+		//! Creates a copy of a mesh with all vertices unwelded
 		virtual IMesh* createMeshUniquePrimitives(IMesh* mesh) const = 0;
 
-		//! Recalculates the bounding box for a meshbuffer
-		virtual void recalculateBoundingBox(scene::IMeshBuffer* buffer) const = 0;
+		//! Creates a copy of a mesh with vertices welded
+		virtual IMesh* createMeshWelded(IMesh* mesh, f32 tolerance=core::ROUNDING_ERROR_32) const = 0;
 
 		//! Returns amount of polygons in mesh.
-		virtual s32 getPolyCount(scene::IMesh* mesh) const = 0;
+		virtual s32 getPolyCount(IMesh* mesh) const = 0;
 
 		//! Returns amount of polygons in mesh.
-		virtual s32 getPolyCount(scene::IAnimatedMesh* mesh) const = 0;
+		virtual s32 getPolyCount(IAnimatedMesh* mesh) const = 0;
 
 		//! create a new AnimatedMesh and adds the mesh to it
-		virtual IAnimatedMesh * createAnimatedMesh(scene::IMesh* mesh,
+		virtual IAnimatedMesh * createAnimatedMesh(IMesh* mesh,
 			scene::E_ANIMATED_MESH_TYPE type = scene::EAMT_UNKNOWN) const = 0;
 
 	};

@@ -13,15 +13,14 @@ namespace scene
 {
 
 //! constructor
-COctTreeTriangleSelector::COctTreeTriangleSelector(IMesh* mesh, ISceneNode* node,
-												   s32 minimalPolysPerNode)
-: CTriangleSelector(mesh, node), Root(0), NodeCount(0),
- MinimalPolysPerNode(minimalPolysPerNode)
+COctTreeTriangleSelector::COctTreeTriangleSelector(IMesh* mesh,
+		ISceneNode* node, s32 minimalPolysPerNode)
+	: CTriangleSelector(mesh, node), Root(0), NodeCount(0),
+	 MinimalPolysPerNode(minimalPolysPerNode)
 {
 	#ifdef _DEBUG
 	setDebugName("COctTreeTriangleSelector");
 	#endif
-
 	
 	if (!Triangles.empty())
 	{
@@ -41,13 +40,11 @@ COctTreeTriangleSelector::COctTreeTriangleSelector(IMesh* mesh, ISceneNode* node
 }
 
 
-
 //! destructor
 COctTreeTriangleSelector::~COctTreeTriangleSelector()
 {
 	delete Root;
 }
-
 
 
 void COctTreeTriangleSelector::constructOctTree(SOctTreeNode* node)
@@ -57,19 +54,20 @@ void COctTreeTriangleSelector::constructOctTree(SOctTreeNode* node)
 	node->Box.reset(node->Triangles[0].pointA);
 
 	// get bounding box
-	s32 cnt = node->Triangles.size();
-	for (s32 i=0; i<cnt; ++i)
+	const u32 cnt = node->Triangles.size();
+	for (u32 i=0; i<cnt; ++i)
 	{
 		node->Box.addInternalPoint(node->Triangles[i].pointA);
 		node->Box.addInternalPoint(node->Triangles[i].pointB);
 		node->Box.addInternalPoint(node->Triangles[i].pointC);
 	}
 
-	core::vector3df middle = node->Box.getCenter();
+	const core::vector3df& middle = node->Box.getCenter();
 	core::vector3df edges[8];
 	node->Box.getEdges(edges);
 
 	core::aabbox3d<f32> box;
+	core::array<core::triangle3df> keepTriangles;
 
 	// calculate children
 
@@ -85,10 +83,19 @@ void COctTreeTriangleSelector::constructOctTree(SOctTreeNode* node)
 			if (node->Triangles[i].isTotalInsideBox(box))
 			{
 				node->Child[ch]->Triangles.push_back(node->Triangles[i]);
-				node->Triangles.erase(i);
-				--i;
+				//node->Triangles.erase(i);
+				//--i;
+			}
+			else
+			{
+				keepTriangles.push_back(node->Triangles[i]);
 			}
 		}
+		memcpy(node->Triangles.pointer(), keepTriangles.pointer(), 
+			sizeof(core::triangle3df)*keepTriangles.size());
+
+		node->Triangles.set_used(keepTriangles.size());
+		keepTriangles.set_used(0);
 
 		if (node->Child[ch]->Triangles.empty())
 		{
@@ -104,9 +111,9 @@ void COctTreeTriangleSelector::constructOctTree(SOctTreeNode* node)
 
 //! Gets all triangles which lie within a specific bounding box.
 void COctTreeTriangleSelector::getTriangles(core::triangle3df* triangles, 
-									 s32 arraySize, s32& outTriangleCount, 
-									const core::aabbox3d<f32>& box,
-									const core::matrix4* transform)
+					s32 arraySize, s32& outTriangleCount, 
+					const core::aabbox3d<f32>& box,
+					const core::matrix4* transform) const
 {
 	core::matrix4 mat;
 	core::aabbox3d<f32> invbox = box;
@@ -121,7 +128,7 @@ void COctTreeTriangleSelector::getTriangles(core::triangle3df* triangles,
 	mat.makeIdentity();
 
 	if (transform)
-		mat = (*transform);
+		mat = *transform;
 
 	if (SceneNode)
 		mat *= SceneNode->getAbsoluteTransformation();
@@ -139,7 +146,7 @@ void COctTreeTriangleSelector::getTriangles(core::triangle3df* triangles,
 void COctTreeTriangleSelector::getTrianglesFromOctTree(
 		SOctTreeNode* node, s32& trianglesWritten,
 		s32 maximumSize, const core::aabbox3d<f32>& box,
-		const core::matrix4* mat, core::triangle3df* triangles)
+		const core::matrix4* mat, core::triangle3df* triangles) const
 {
 	if (!box.intersectsWithBox(node->Box))
 		return;
@@ -168,8 +175,8 @@ void COctTreeTriangleSelector::getTrianglesFromOctTree(
 
 //! Gets all triangles which have or may have contact with a 3d line.
 void COctTreeTriangleSelector::getTriangles(core::triangle3df* triangles, s32 arraySize,
-	s32& outTriangleCount, const core::line3d<f32>& line, 
-	const core::matrix4* transform)
+		s32& outTriangleCount, const core::line3d<f32>& line, 
+		const core::matrix4* transform) const
 {
 	core::aabbox3d<f32> box(line.start);
 	box.addInternalPoint(line.end);

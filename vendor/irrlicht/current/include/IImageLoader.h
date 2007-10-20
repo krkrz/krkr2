@@ -5,12 +5,15 @@
 #ifndef __I_SURFACE_LOADER_H_INCLUDED__
 #define __I_SURFACE_LOADER_H_INCLUDED__
 
-#include "IUnknown.h"
-#include "IReadFile.h"
+#include "IReferenceCounted.h"
 #include "IImage.h"
 
 namespace irr
 {
+namespace io
+{
+	class IReadFile;
+} // end namespace io
 namespace video
 {
 
@@ -19,22 +22,22 @@ namespace video
 currently unsupported file formats (e.g .gif), then implement
 this and add your new Surface loader with 
 IVideoDriver::addExternalImageLoader() to the engine. */
-class IImageLoader : public virtual IUnknown
+class IImageLoader : public virtual IReferenceCounted
 {
 public:
 
 	//! destructor
-	virtual ~IImageLoader() {};
+	virtual ~IImageLoader() {}
 
 	//! returns true if the file maybe is able to be loaded by this class
 	//! based on the file extension (e.g. ".tga")
-	virtual bool isALoadableFileExtension(const c8* fileName) = 0;
+	virtual bool isALoadableFileExtension(const c8* fileName) const = 0;
 
 	//! returns true if the file maybe is able to be loaded by this class
-	virtual bool isALoadableFileFormat(irr::io::IReadFile* file) = 0;
+	virtual bool isALoadableFileFormat(io::IReadFile* file) const = 0;
 
 	//! creates a surface from the file
-	virtual IImage* loadImage(irr::io::IReadFile* file) = 0;
+	virtual IImage* loadImage(io::IReadFile* file) const = 0;
 };
 
 

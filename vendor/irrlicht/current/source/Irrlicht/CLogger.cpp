@@ -13,12 +13,12 @@ namespace irr
 	}
 
 	//! Returns the current set log level.
-	ELOG_LEVEL CLogger::getLogLevel()
+	ELOG_LEVEL CLogger::getLogLevel() const
 	{
 		return LogLevel;
 	}
 
-	//! Sets a new log level.	virtual void setLogLevel(ELOG_LEVEL ll);
+	//! Sets a new log level.
 	void CLogger::setLogLevel(ELOG_LEVEL ll)
 	{
 		LogLevel = ll;
@@ -30,7 +30,7 @@ namespace irr
 		if (ll < LogLevel)
 			return;
 
-        if (Receiver)
+		if (Receiver)
 		{
 			SEvent event;
 			event.EventType = EET_LOG_TEXT_EVENT;

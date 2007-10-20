@@ -3,6 +3,8 @@
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
 #include "CGUIWindow.h"
+#ifdef _IRR_COMPILE_WITH_GUI_
+
 #include "IGUISkin.h"
 #include "IGUIEnvironment.h"
 #include "IVideoDriver.h"
@@ -42,6 +44,7 @@ CGUIWindow::CGUIWindow(IGUIEnvironment* environment, IGUIElement* parent, s32 id
 	CloseButton = Environment->addButton(core::rect<s32>(posx, 3, posx + buttonw, 3 + buttonw), this, -1, 
 		L"", skin ? skin->getDefaultText(EGDT_WINDOW_CLOSE) : L"Close" );
 	CloseButton->setSubElement(true);
+	CloseButton->setTabStop(false);
 	CloseButton->setAlignment(EGUIA_LOWERRIGHT, EGUIA_LOWERRIGHT, EGUIA_UPPERLEFT, EGUIA_UPPERLEFT);
 	if (sprites)
 	{
@@ -55,6 +58,7 @@ CGUIWindow::CGUIWindow(IGUIEnvironment* environment, IGUIElement* parent, s32 id
 		L"", skin ? skin->getDefaultText(EGDT_WINDOW_RESTORE) : L"Restore" );
 	RestoreButton->setVisible(false);
 	RestoreButton->setSubElement(true);
+	RestoreButton->setTabStop(false);
 	RestoreButton->setAlignment(EGUIA_LOWERRIGHT, EGUIA_LOWERRIGHT, EGUIA_UPPERLEFT, EGUIA_UPPERLEFT);
 	if (sprites)
 	{
@@ -68,6 +72,7 @@ CGUIWindow::CGUIWindow(IGUIEnvironment* environment, IGUIElement* parent, s32 id
 		L"", skin ? skin->getDefaultText(EGDT_WINDOW_MINIMIZE) : L"Minimize" );
 	MinButton->setVisible(false);
 	MinButton->setSubElement(true);
+	MinButton->setTabStop(false);
 	MinButton->setAlignment(EGUIA_LOWERRIGHT, EGUIA_LOWERRIGHT, EGUIA_UPPERLEFT, EGUIA_UPPERLEFT);
 	if (sprites)
 	{
@@ -79,8 +84,12 @@ CGUIWindow::CGUIWindow(IGUIEnvironment* environment, IGUIElement* parent, s32 id
 	MinButton->grab();
 	RestoreButton->grab();
 	CloseButton->grab();
-}
 
+	// this element is a tab group
+	setTabGroup(true);
+	setTabStop(true);
+	setTabOrder(-1);
+}
 
 
 //! destructor
@@ -97,26 +106,51 @@ CGUIWindow::~CGUIWindow()
 }
 
 
-
 //! called if an event happened.
-bool CGUIWindow::OnEvent(SEvent event)
+bool CGUIWindow::OnEvent(const SEvent& event)
 {
 	switch(event.EventType)
 	{
 	case EET_GUI_EVENT:
 		if (event.GUIEvent.EventType == EGET_ELEMENT_FOCUS_LOST)
 		{
-			if (event.GUIEvent.Caller == (IGUIElement*)this)
-				Dragging = false;
-			return true;
+			Dragging = false;
+		}
+		else
+		if (event.GUIEvent.EventType == EGET_ELEMENT_FOCUSED)
+		{
+			if (event.GUIEvent.Caller == this && Parent)
+			{
+				Parent->bringToFront(this);
+			}
 		}
 		else
 		if (event.GUIEvent.EventType == EGET_BUTTON_CLICKED)
 		{
 			if (event.GUIEvent.Caller == CloseButton)
 			{
-				remove();
-				return true;
+				if (Parent)
+				{
+					// send close event to parent
+					SEvent e;
+					e.EventType = EET_GUI_EVENT;
+					e.GUIEvent.Caller = this;
+					e.GUIEvent.Element = 0;
+					e.GUIEvent.EventType = EGET_ELEMENT_CLOSED;
+
+					// if the event was not absorbed
+					if (!Parent->OnEvent(e))
+					{
+						remove();
+					}
+					return true;
+
+				}
+				else
+				{
+					remove();
+					return true;
+				}
 			}
 		}
 		break;
@@ -126,9 +160,9 @@ bool CGUIWindow::OnEvent(SEvent event)
 		case EMIE_LMOUSE_PRESSED_DOWN:
 			DragStart.X = event.MouseInput.X;
 			DragStart.Y = event.MouseInput.Y;
+			Dragging = true;
 			if (!Environment->hasFocus(this))
 			{
-				Dragging = true;
 				Environment->setFocus(this);
 				if (Parent)
 					Parent->bringToFront(this);
@@ -136,7 +170,6 @@ bool CGUIWindow::OnEvent(SEvent event)
 			return true;
 		case EMIE_LMOUSE_LEFT_UP:
 			Dragging = false;
-			Environment->removeFocus(this);
 			return true;
 		case EMIE_MOUSE_MOVED:
 			if (Dragging)
@@ -157,18 +190,22 @@ bool CGUIWindow::OnEvent(SEvent event)
 				return true;
 			}
 			break;
+		default:
+			break;
 		}
+	default:
+		break;
 	}
 
-	return Parent ? Parent->OnEvent(event) : false;
+	return IGUIElement::OnEvent(event);
 }
+
 
 //! Updates the absolute position.
 void CGUIWindow::updateAbsolutePosition()
 {
 	IGUIElement::updateAbsolutePosition();
 }
-
 
 
 //! draws the element and its children
@@ -192,7 +229,7 @@ void CGUIWindow::draw()
 		rect.UpperLeftCorner.Y += skin->getSize(EGDS_TEXT_DISTANCE_Y);
 		rect.LowerRightCorner.X -= skin->getSize(EGDS_WINDOW_BUTTON_WIDTH) + 5;
 
-		IGUIFont* font = skin->getFont();
+		IGUIFont* font = skin->getFont(EGDF_WINDOW);
 		if (font)
 			font->draw(Text.c_str(), rect, skin->getColor(EGDC_ACTIVE_CAPTION), false, true, cl);
 	}
@@ -201,25 +238,22 @@ void CGUIWindow::draw()
 }
 
 
-
 //! Returns pointer to the close button
-IGUIButton* CGUIWindow::getCloseButton()
+IGUIButton* CGUIWindow::getCloseButton() const
 {
 	return CloseButton;
 }
 
 
-
 //! Returns pointer to the minimize button
-IGUIButton* CGUIWindow::getMinimizeButton()
+IGUIButton* CGUIWindow::getMinimizeButton() const
 {
 	return MinButton;
 }
 
 
-
 //! Returns pointer to the maximize button
-IGUIButton* CGUIWindow::getMaximizeButton()
+IGUIButton* CGUIWindow::getMaximizeButton() const
 {
 	return RestoreButton;
 }
@@ -227,3 +261,6 @@ IGUIButton* CGUIWindow::getMaximizeButton()
 
 } // end namespace gui
 } // end namespace irr
+
+#endif // _IRR_COMPILE_WITH_GUI_
+

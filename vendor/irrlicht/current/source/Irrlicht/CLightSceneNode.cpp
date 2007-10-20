@@ -28,19 +28,17 @@ CLightSceneNode::CLightSceneNode(ISceneNode* parent, ISceneManager* mgr, s32 id,
 
 	// set some useful specular color
 	LightData.SpecularColor = color.getInterpolated(video::SColor(255,255,255,255),0.7f);
-}
 
-CLightSceneNode::~CLightSceneNode()
-{
+	doLightRecalc();
 }
 
 
 //! pre render event
 void CLightSceneNode::OnRegisterSceneNode()
 {
-	doLightRecalc ();
+	doLightRecalc();
 
-	if (IsVisible  )
+	if (IsVisible)
 	{
 		SceneManager->registerNodeForRendering(this, ESNRP_LIGHT);
 		ISceneNode::OnRegisterSceneNode();
@@ -55,7 +53,7 @@ void CLightSceneNode::render()
 	if (!driver)
 		return;
 
-	if (DebugDataVisible)
+	if ( DebugDataVisible & scene::EDS_BBOX )
 	{
 		driver->setTransform(video::ETS_WORLD, AbsoluteTransformation);
 		video::SMaterial m;
@@ -65,28 +63,32 @@ void CLightSceneNode::render()
 		switch ( LightData.Type )
 		{
 			case video::ELT_POINT:
-				driver->draw3DBox( BBox, LightData.DiffuseColor.toSColor());
+			case video::ELT_SPOT:
+				driver->draw3DBox(BBox, LightData.DiffuseColor.toSColor());
 				break;
 
 			case video::ELT_DIRECTIONAL:
-				driver->draw3DLine (	core::vector3df ( 0.f, 0.f, 0.f ), 
-										core::vector3df ( 0.f, 0.f, 0.f ) + (LightData.Position * 10.f ),
-										LightData.DiffuseColor.toSColor()
-									);
+				driver->draw3DLine(core::vector3df(0.f, 0.f, 0.f),
+						LightData.Direction * LightData.Radius,
+						LightData.DiffuseColor.toSColor());
 				break;
 		}
 	}
-
 	driver->addDynamicLight(LightData);
 }
 
 
-//! returns the light data
+//! sets the light data
 void CLightSceneNode::setLightData(const video::SLight& light)
 {
 	LightData = light;
-	ISceneNode::setPosition(light.Position);
-	ISceneNode::updateAbsolutePosition ();
+}
+
+
+//! \return Returns the light data.
+const video::SLight& CLightSceneNode::getLightData() const
+{
+	return LightData;
 }
 
 
@@ -106,48 +108,41 @@ const core::aabbox3d<f32>& CLightSceneNode::getBoundingBox() const
 
 void CLightSceneNode::doLightRecalc()
 {
-	switch ( LightData.Type )
+	if ((LightData.Type == video::ELT_SPOT) || (LightData.Type == video::ELT_DIRECTIONAL))
 	{
-		case video::ELT_POINT:
-		{
-			f32 r = LightData.Radius * LightData.Radius * 0.5f;
-			BBox.MaxEdge.set ( r, r, r );
-			BBox.MinEdge.set ( -r, -r, -r );
-			setAutomaticCulling ( scene::EAC_BOX );
-
-			LightData.Position = getAbsolutePosition();
-		} break;
-
-		case video::ELT_DIRECTIONAL:
-			BBox.reset ( 0, 0, 0 );
-			setAutomaticCulling ( scene::EAC_OFF );
-
-			// misuse Position as direction..
-			LightData.Position = getAbsolutePosition();
-			LightData.Position.invert();
-			if ( LightData.Position.getLengthSQ() == 0.0 )
-			{
-				LightData.Position.set ( 0.f, -1.f, 0.f );
-				os::Printer::log ( "Invalid Directional Light Direction" );
-			}
-			else
-			{
-				LightData.Position.normalize();
-			}
-			break;
+		LightData.Direction = core::vector3df(.0f,.0f,1.0f);
+		getAbsoluteTransformation().rotateVect(LightData.Direction);
+		LightData.Direction.normalize();
 	}
-
+	if ((LightData.Type == video::ELT_SPOT) || (LightData.Type == video::ELT_POINT))
+	{
+		const f32 r = LightData.Radius * LightData.Radius * 0.5f;
+		BBox.MaxEdge.set( r, r, r );
+		BBox.MinEdge.set( -r, -r, -r );
+		setAutomaticCulling( scene::EAC_BOX );
+		LightData.Position = getAbsolutePosition();
+	}
+	if (LightData.Type == video::ELT_DIRECTIONAL)
+	{
+		BBox.reset( 0, 0, 0 );
+		setAutomaticCulling( scene::EAC_OFF );
+	}
 }
 
+
 //! Writes attributes of the scene node.
-void CLightSceneNode::serializeAttributes(io::IAttributes* out, io::SAttributeReadWriteOptions* options)
+void CLightSceneNode::serializeAttributes(io::IAttributes* out, io::SAttributeReadWriteOptions* options) const
 {
 	ILightSceneNode::serializeAttributes(out, options);
 
 	out->addColorf	("AmbientColor", LightData.AmbientColor);
 	out->addColorf	("DiffuseColor", LightData.DiffuseColor);
 	out->addColorf	("SpecularColor", LightData.SpecularColor);
+	out->addVector3d("Attenuation", LightData.Attenuation);
 	out->addFloat	("Radius", LightData.Radius);
+	out->addFloat	("OuterCone", LightData.OuterCone);
+	out->addFloat	("InnerCone", LightData.InnerCone);
+	out->addFloat	("Falloff", LightData.Falloff);
 	out->addBool	("CastShadows", LightData.CastShadows);
 	out->addEnum	("LightType", LightData.Type, video::LightTypeNames);
 }
@@ -158,11 +153,38 @@ void CLightSceneNode::deserializeAttributes(io::IAttributes* in, io::SAttributeR
 	LightData.AmbientColor =	in->getAttributeAsColorf("AmbientColor");
 	LightData.DiffuseColor =	in->getAttributeAsColorf("DiffuseColor");
 	LightData.SpecularColor =	in->getAttributeAsColorf("SpecularColor");
+	if (in->existsAttribute("Attenuation")) // might not exist in older files
+		LightData.Attenuation =	in->getAttributeAsVector3d("Attenuation");
+	if (in->existsAttribute("OuterCone")) // might not exist in older files
+		LightData.OuterCone =	in->getAttributeAsFloat("OuterCone");
+	if (in->existsAttribute("InnerCone")) // might not exist in older files
+		LightData.InnerCone =	in->getAttributeAsFloat("InnerCone");
+	if (in->existsAttribute("Falloff")) // might not exist in older files
+		LightData.Falloff =	in->getAttributeAsFloat("Falloff");
 	LightData.Radius =		in->getAttributeAsFloat("Radius");
 	LightData.CastShadows =		in->getAttributeAsBool("CastShadows");
 	LightData.Type =		(video::E_LIGHT_TYPE)in->getAttributeAsEnumeration("LightType", video::LightTypeNames);
 
 	ILightSceneNode::deserializeAttributes(in, options);
+}
+
+//! Creates a clone of this scene node and its children.
+ISceneNode* CLightSceneNode::clone(ISceneNode* newParent, ISceneManager* newManager)
+{
+	if (!newParent)
+		newParent = Parent;
+	if (!newManager)
+		newManager = SceneManager;
+
+	CLightSceneNode* nb = new CLightSceneNode(newParent, 
+		newManager, ID, RelativeTranslation, LightData.DiffuseColor, LightData.Radius);
+
+	nb->cloneMembers(this, newManager);
+	nb->LightData = LightData;
+	nb->BBox = BBox;
+
+	nb->drop();
+	return nb;
 }
 
 } // end namespace scene

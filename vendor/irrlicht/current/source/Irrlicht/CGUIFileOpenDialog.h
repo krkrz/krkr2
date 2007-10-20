@@ -5,6 +5,9 @@
 #ifndef __C_GUI_FILE_OPEN_DIALOG_H_INCLUDED__
 #define __C_GUI_FILE_OPEN_DIALOG_H_INCLUDED__
 
+#include "IrrCompileConfig.h"
+#ifdef _IRR_COMPILE_WITH_GUI_
+
 #include "IGUIFileOpenDialog.h"
 #include "IGUIButton.h"
 #include "IGUIListBox.h"
@@ -26,10 +29,10 @@ namespace gui
 		virtual ~CGUIFileOpenDialog();
 
 		//! returns the filename of the selected file. Returns NULL, if no file was selected.
-		virtual const wchar_t* getFilename();
+		virtual const wchar_t* getFileName() const;
 
 		//! called if an event happened.
-		virtual bool OnEvent(SEvent event);
+		virtual bool OnEvent(const SEvent& event);
 
 		//! draws the element and its children
 		virtual void draw();
@@ -53,6 +56,7 @@ namespace gui
 		IGUIButton* CancelButton;
 		IGUIListBox* FileBox;
 		IGUIElement* FileNameText;
+		IGUIElement* EventParent;
 		io::IFileSystem* FileSystem;
 
 		io::IFileList* FileList;
@@ -62,5 +66,7 @@ namespace gui
 } // end namespace gui
 } // end namespace irr
 
-#endif
+#endif // _IRR_COMPILE_WITH_GUI_
+
+#endif // __C_GUI_FILE_OPEN_DIALOG_H_INCLUDED__
 

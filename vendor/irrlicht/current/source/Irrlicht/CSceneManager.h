@@ -18,10 +18,11 @@ namespace irr
 namespace io
 {
 	class IXMLWriter;
+	class IFileSystem;
 }
 namespace scene
 {
-	class CMeshCache;
+	class IMeshCache;
 
 	/*!
 		The Scene Manager manages scene nodes, mesh recources, cameras and all the other stuff.
@@ -32,7 +33,7 @@ namespace scene
 
 		//! constructor
 		CSceneManager(video::IVideoDriver* driver, io::IFileSystem* fs,
-			gui::ICursorControl* cursorControl, CMeshCache* cache = 0, 
+			gui::ICursorControl* cursorControl, IMeshCache* cache = 0, 
 			gui::IGUIEnvironment *guiEnvironment = 0);
 
 		//! destructor
@@ -54,7 +55,7 @@ namespace scene
 		virtual ISceneNode* addCubeSceneNode(f32 size=10.0f, ISceneNode* parent=0, s32 id=-1,
 			const core::vector3df& position = core::vector3df(0,0,0),	const core::vector3df& rotation = core::vector3df(0,0,0),	const core::vector3df& scale = core::vector3df(1.0f, 1.0f, 1.0f));
 
-		//! Adds a sphere scene node for test purposes to the scene.
+		//! Adds a sphere scene node to the scene.
 		virtual ISceneNode* addSphereSceneNode(f32 radius=5.0f, s32 polyCount=16, ISceneNode* parent=0, s32 id=-1,
 			const core::vector3df& position = core::vector3df(0,0,0),
 			const core::vector3df& rotation = core::vector3df(0,0,0),
@@ -175,16 +176,17 @@ namespace scene
 												);
 
 
-		//! Adds a Hill Plane mesh to the mesh pool. The mesh is generated on the fly
-		//! and looks like a plane with some hills on it. It is uses mostly for quick
-		//! tests of the engine only. You can specify how many hills there should be 
-		//! on the plane and how high they should be. Also you must specify a name for
-		//! the mesh, because the mesh is added to the mesh pool, and can be retieved
-		//! again using ISceneManager::getMesh with the name as parameter.
+		//! Adds a Hill Plane mesh to the mesh pool. The mesh is
+		//! generated on the fly and looks like a plane with some hills
+		//! on it. You can specify how many hills should be on the plane
+		//! and how high they should be. Also you must specify a name
+		//! for the mesh because the mesh is added to the mesh pool and
+		//! can be retrieved back using ISceneManager::getMesh with the
+		//! name as parameter.
 		virtual IAnimatedMesh* addHillPlaneMesh(const c8* name,
-			const core::dimension2d<f32>& tileSize, const core::dimension2d<s32>& tileCount,
+			const core::dimension2d<f32>& tileSize, const core::dimension2d<u32>& tileCount,
 			video::SMaterial* material = 0,	f32 hillHeight = 0.0f, 
-			const core::dimension2d<f32>& countHills = core::dimension2d<f32>(0.0f, 0.0f),
+			const core::dimension2d<f32>& countHills = core::dimension2d<f32>(1.0f, 1.0f),
 			const core::dimension2d<f32>& textureRepeatCount = core::dimension2d<f32>(1.0f, 1.0f));
 
 		//! Adds a terrain mesh to the mesh pool.
@@ -193,9 +195,15 @@ namespace scene
 			f32 maxHeight, const core::dimension2d<s32>& defaultVertexBlockSize);
 
 		//! Add a arrow mesh to the mesh pool
-		virtual IAnimatedMesh* addArrowMesh(const c8* name, u32 tesselationCylinder, u32 tesselationCone, f32 height,
-											f32 cylinderHeight, f32 width0,f32 width1,
-											video::SColor vtxColor0, video::SColor vtxColor1);
+		virtual IAnimatedMesh* addArrowMesh(const c8* name,
+				video::SColor vtxColor0, video::SColor vtxColor1,
+				u32 tesselationCylinder, u32 tesselationCone,
+				f32 height, f32 cylinderHeight, f32 width0,
+				f32 width1);
+
+		//! Adds a static sphere mesh to the mesh pool.
+		IAnimatedMesh* addSphereMesh(const c8* name,
+				f32 radius, u32 polyCountX, u32 polyCountY);
 
 		//! Adds a particle system scene node. 
 		virtual IParticleSystemSceneNode* addParticleSystemSceneNode(
@@ -212,7 +220,8 @@ namespace scene
 			const core::vector3df& rotation = core::vector3df(0.0f,0.0f,0.0f),
 			const core::vector3df& scale = core::vector3df(1.0f,1.0f,1.0f),
 			video::SColor vertexColor = video::SColor(255,255,255,255),
-			s32 maxLOD=4, E_TERRAIN_PATCH_SIZE patchSize=ETPS_17,s32 smoothFactor=0);
+			s32 maxLOD=4, E_TERRAIN_PATCH_SIZE patchSize=ETPS_17,s32 smoothFactor=0,
+			bool addAlsoIfHeightmapEmpty = false);
 
 		//! Adds a terrain scene node to the scene graph.
 		virtual ITerrainSceneNode* addTerrainSceneNode(
@@ -222,7 +231,8 @@ namespace scene
 			const core::vector3df& rotation = core::vector3df(0.0f,0.0f,0.0f),
 			const core::vector3df& scale = core::vector3df(1.0f,1.0f,1.0f),
 			video::SColor vertexColor = video::SColor(255,255,255,255),
-			s32 maxLOD=4, E_TERRAIN_PATCH_SIZE patchSize=ETPS_17,s32 smoothFactor=0);
+			s32 maxLOD=4, E_TERRAIN_PATCH_SIZE patchSize=ETPS_17,s32 smoothFactor=0,
+			bool addAlsoIfHeightmapEmpty=false);
 
 		//! Adds a dummy transformation scene node to the scene graph.
 		virtual IDummyTransformationSceneNode* addDummyTransformationSceneNode(
@@ -335,9 +345,15 @@ namespace scene
 		//! Returns the first scene node with the specified name.
 		virtual ISceneNode* getSceneNodeFromName(const c8* name, ISceneNode* start=0);
 
+		//! Returns the first scene node with the specified type.
+		virtual ISceneNode* getSceneNodeFromType(scene::ESCENE_NODE_TYPE type, ISceneNode* start=0);
+
+		//! returns scene nodes by type.
+		virtual void getSceneNodesFromType(ESCENE_NODE_TYPE type, core::array<scene::ISceneNode*>& outNodes, ISceneNode* start=0);
+
 		//! Posts an input event to the environment. Usually you do not have to
 		//! use this method, it is used by the internal engine.
-		virtual bool postEventFromUser(SEvent event);
+		virtual bool postEventFromUser(const SEvent& event);
 
 		//! Clears the whole scene. All scene nodes are removed. 
 		virtual void clear();
@@ -349,13 +365,13 @@ namespace scene
 		virtual io::IAttributes* getParameters();
 
 		//! Returns current render pass. 
-		virtual E_SCENE_NODE_RENDER_PASS getSceneNodeRenderPass();
+		virtual E_SCENE_NODE_RENDER_PASS getSceneNodeRenderPass() const;
 
 		//! Creates a new scene manager. 
-		virtual ISceneManager* createNewSceneManager();
+		virtual ISceneManager* createNewSceneManager(bool cloneContent);
 
 		//! Returns type of the scene node
-		virtual ESCENE_NODE_TYPE getType() { return ESNT_UNKNOWN; }
+		virtual ESCENE_NODE_TYPE getType() const { return ESNT_UNKNOWN; }
 
 		//! Returns the default scene node factory which can create all built in scene nodes
 		virtual ISceneNodeFactory* getDefaultSceneNodeFactory();
@@ -366,13 +382,16 @@ namespace scene
 		virtual void registerSceneNodeFactory(ISceneNodeFactory* factoryToAdd);
 
 		//! Returns amount of registered scene node factories.
-		virtual s32 getRegisteredSceneNodeFactoryCount();
+		virtual u32 getRegisteredSceneNodeFactoryCount() const;
 
 		//! Returns a scene node factory by index
-		virtual ISceneNodeFactory* getSceneNodeFactory(s32 index);
+		virtual ISceneNodeFactory* getSceneNodeFactory(u32 index);
 
 		//! Returns a typename from a scene node type or null if not found
 		virtual const c8* getSceneNodeTypeName(ESCENE_NODE_TYPE type);
+
+		//! Adds a scene node to the scene by name
+		virtual ISceneNode* addSceneNode(const char* sceneNodeTypeName, ISceneNode* parent);
 
 		//! Returns the default scene node animator factory which can create all built-in scene node animators
 		virtual ISceneNodeAnimatorFactory* getDefaultSceneNodeAnimatorFactory();
@@ -381,10 +400,10 @@ namespace scene
 		virtual void registerSceneNodeAnimatorFactory(ISceneNodeAnimatorFactory* factoryToAdd);
 
 		//! Returns amount of registered scene node animator factories.
-		virtual s32 getRegisteredSceneNodeAnimatorFactoryCount();
+		virtual u32 getRegisteredSceneNodeAnimatorFactoryCount() const;
 
 		//! Returns a scene node animator factory by index
-		virtual ISceneNodeAnimatorFactory* getSceneNodeAnimatorFactory(s32 index);
+		virtual ISceneNodeAnimatorFactory* getSceneNodeAnimatorFactory(u32 index);
 
 		//! Saves the current scene into a file.
 		//! \param filename: Name of the file .
@@ -401,24 +420,27 @@ namespace scene
 		virtual bool loadScene(io::IReadFile* file, ISceneUserDataSerializer* userDataSerializer=0);	
 
 		//! Writes attributes of the scene node.
-		virtual void serializeAttributes(io::IAttributes* out, io::SAttributeReadWriteOptions* options=0);
+		virtual void serializeAttributes(io::IAttributes* out, io::SAttributeReadWriteOptions* options=0) const;
 	
 		//! Reads attributes of the scene node.
 		virtual void deserializeAttributes(io::IAttributes* in, io::SAttributeReadWriteOptions* options=0);
+
+		//! Returns a mesh writer implementation if available
+		virtual IMeshWriter* createMeshWriter(EMESH_WRITER_TYPE type);
 
 		//! Sets ambient color of the scene
 		virtual void setAmbientLight(const video::SColorf &ambientColor);
 
 		//! Returns ambient color of the scene
-		virtual video::SColorf getAmbientLight();
+		virtual const video::SColorf& getAmbientLight() const;
 
 	private:
 
 		//! Returns a typename from a scene node animator type or null if not found
-		virtual const c8* getAnimatorTypeName(ESCENE_NODE_ANIMATOR_TYPE type);
+		virtual const c8* getAnimatorTypeName(ESCENE_NODE_ANIMATOR_TYPE type) const;
 
 		//! returns if node is culled
-		bool isCulled(ISceneNode* node);
+		bool isCulled(const ISceneNode* node);
 
 		//! clears the deletion list
 		void clearDeletionList();
@@ -447,7 +469,7 @@ namespace scene
 				textureValue = 0;
 
 				if (n->getMaterialCount())
-					textureValue = (n->getMaterial(0).Textures[0]);
+					textureValue = (n->getMaterial(0).getTexture(0));
 
 				node = n;
 			}
@@ -467,7 +489,7 @@ namespace scene
 
 			ShaderNodeEntry(ISceneNode* n, u32 sceneTime )
 			{
-				textureValue = n->getMaterial( sceneTime ).Textures[0];
+				textureValue = n->getMaterial( sceneTime ).getTexture(0);
 
 				node = n;
 			}
@@ -575,7 +597,7 @@ namespace scene
 		io::CAttributes Parameters;
 
 		//! Mesh cache
-		CMeshCache* MeshCache;
+		IMeshCache* MeshCache;
 
 		E_SCENE_NODE_RENDER_PASS CurrentRendertime;
 

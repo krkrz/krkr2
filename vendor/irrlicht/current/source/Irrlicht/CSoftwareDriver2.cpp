@@ -8,6 +8,7 @@
 
 #ifdef _IRR_COMPILE_WITH_BURNINGSVIDEO_
 
+#include "SoftwareDriver2_helper.h"
 #include "CSoftwareTexture2.h"
 #include "CSoftware2MaterialRenderer.h"
 #include "S3DVertex.h"
@@ -41,11 +42,11 @@ CSoftwareDriver2::CSoftwareDriver2(const core::dimension2d<s32>& windowSize, boo
 	
 	// create z buffer
 
-	DepthBuffer = irr::video::createDepthBuffer(BackBuffer->getDimension());
+	DepthBuffer = video::createDepthBuffer(BackBuffer->getDimension());
 
 	// create triangle renderers
 
-	memset32 ( BurningShader, 0, sizeof ( BurningShader ) );
+	irr::memset32 ( BurningShader, 0, sizeof ( BurningShader ) );
 	//BurningShader[ETR_FLAT] = createTRFlat2(DepthBuffer);
 	//BurningShader[ETR_FLAT_WIRE] = createTRFlatWire2(DepthBuffer);
 	BurningShader[ETR_GOURAUD] = createTriangleRendererGouraud2(DepthBuffer);
@@ -211,16 +212,16 @@ void CSoftwareDriver2::setCurrentShader()
 			break;
 
 		case EMT_LIGHTMAP_LIGHTING_M4:
-			if ( Material.org.Textures[1] )
+			if ( Material.org.getTexture(1) )
 				shader = ETR_TEXTURE_GOURAUD_LIGHTMAP_M4;
 			break;
 		case EMT_LIGHTMAP_M4:
-			if ( Material.org.Textures[1] )
+			if ( Material.org.getTexture(1) )
 				shader = ETR_TEXTURE_LIGHTMAP_M4;
 			break;
 
 		case EMT_LIGHTMAP_ADD:
-			if ( Material.org.Textures[1] )
+			if ( Material.org.getTexture(1) )
 				shader = ETR_TEXTURE_GOURAUD_LIGHTMAP_ADD;
 			break;
 
@@ -238,7 +239,7 @@ void CSoftwareDriver2::setCurrentShader()
 		shader = ETR_TEXTURE_GOURAUD_NOZ;
 	}
 
-	if ( 0 == Material.org.Textures[0] )
+	if ( 0 == Material.org.getTexture(0) )
 	{
 		shader = ETR_GOURAUD;
 	}
@@ -279,7 +280,7 @@ void CSoftwareDriver2::setCurrentShader()
 
 
 //! queries the features of the driver, returns true if feature is available
-bool CSoftwareDriver2::queryFeature(E_VIDEO_DRIVER_FEATURE feature)
+bool CSoftwareDriver2::queryFeature(E_VIDEO_DRIVER_FEATURE feature) const
 {
 	switch (feature)
 	{
@@ -298,7 +299,7 @@ bool CSoftwareDriver2::queryFeature(E_VIDEO_DRIVER_FEATURE feature)
 
 	default:
 		return false;
-	};
+	}
 }
 
 
@@ -377,10 +378,8 @@ bool CSoftwareDriver2::setTexture(u32 stage, video::ITexture* texture)
 	if (Texture[stage])
 		Texture[stage]->grab();
 
-	if ( Texture[stage] )
-	{
+	if (Texture[stage])
 		Texmap[stage].Texture = (video::CSoftwareTexture2*) Texture[stage];
-	}
 
 	setCurrentShader();
 	return true;
@@ -404,7 +403,7 @@ void CSoftwareDriver2::setMaterial(const SMaterial& material)
 
 	for (u32 i = 0; i < 2; ++i)
 	{
-		setTexture( i, Material.org.Textures[i] );
+		setTexture( i, Material.org.getTexture(i) );
 		setTransform((E_TRANSFORMATION_STATE) (ETS_TEXTURE_0 + i), 
 				material.getTextureMatrix(i));
 	}
@@ -463,7 +462,6 @@ bool CSoftwareDriver2::setRenderTarget(video::ITexture* texture, bool clearBackB
 	else
 	{
 		setRenderTarget(BackBuffer);
-		//setRenderTarget((video::CImage*)0);
 	}
 
 	if (RenderTargetSurface && (clearBackBuffer || clearZBuffer))
@@ -642,7 +640,7 @@ u32 CSoftwareDriver2::clipToHyperPlane ( s4DVertex * dest, const s4DVertex * sou
 
 			// copy current to out
 			//*out = *a;
-			memcpy32_small ( out, a, SIZEOF_SVERTEX * 2 );
+			irr::memcpy32_small ( out, a, SIZEOF_SVERTEX * 2 );
 			b = out;
 
 			out += 2;
@@ -801,7 +799,7 @@ inline f32 CSoftwareDriver2::texelarea ( const s4DVertex *v, int tex ) const
 
 	z = x0*y1 - x1*y0;
 
-	const core::dimension2d<s32> &d = Texmap[tex].Texture->getOriginalSize();
+	const core::dimension2d<s32> &d = Texmap[tex].Texture->getMaxSize();
 	z *= d.Height;
 	z *= d.Width;
 	return z;
@@ -828,7 +826,7 @@ inline f32 CSoftwareDriver2::texelarea2 ( const s4DVertex **v, s32 tex ) const
 			(v[1]->Tex[tex].y - v[0]->Tex[tex].y )
 		;
 
-	const core::dimension2d<s32> &d = Texmap[tex].Texture->getOriginalSize();
+	const core::dimension2d<s32> &d = Texmap[tex].Texture->getMaxSize();
 	z *= d.Height;
 	z *= d.Width;
 	return z;
@@ -941,7 +939,7 @@ void CSoftwareDriver2::VertexCache_fill(const u32 sourceIndex,
 	if ( Transformation [ ETS_TEXTURE_0 ].isIdentity )
 	{
 		// only look on first transform
-		memcpy32_small ( &dest->Tex[0],
+		irr::memcpy32_small ( &dest->Tex[0],
 						&((S3DVertex*) source )->TCoords,
 						vSize[VertexCache.vType].TexSize * ( sizeof ( f32 ) * 2 )
 					);
@@ -965,7 +963,7 @@ void CSoftwareDriver2::VertexCache_fill(const u32 sourceIndex,
 		for ( t = 0; t != vSize[VertexCache.vType].TexSize; ++t )
 		{
 			const core::matrix4& M = Transformation [ ETS_TEXTURE_0 + t ].m;
-			if ( Material.org.TextureWrap[0]==ETC_REPEAT )
+			if ( Material.org.TextureLayer[0].TextureWrap==ETC_REPEAT )
 			{
 				dest->Tex[t].x = M[0] * src[t].X + M[4] * src[t].Y + M[8];
 				dest->Tex[t].y = M[1] * src[t].X + M[5] * src[t].Y + M[9];
@@ -1033,7 +1031,7 @@ REALINLINE void CSoftwareDriver2::VertexCache_get ( s4DVertex ** face )
 		// rewind to start of primitive
 		VertexCache.indicesIndex = VertexCache.indicesRun;
 
-		memset32 ( info, VERTEXCACHE_MISS, sizeof ( info ) );
+		irr::memset32 ( info, VERTEXCACHE_MISS, sizeof ( info ) );
 
 		// get the next unique vertices cache line
 		u32 fillIndex = 0;
@@ -1153,7 +1151,7 @@ void CSoftwareDriver2::VertexCache_reset ( const void* vertices, u32 vertexCount
 			break;
 	}
 
-	memset32 ( VertexCache.info, VERTEXCACHE_MISS, sizeof ( VertexCache.info ) );
+	irr::memset32 ( VertexCache.info, VERTEXCACHE_MISS, sizeof ( VertexCache.info ) );
 
 }
 
@@ -1221,9 +1219,9 @@ void CSoftwareDriver2::drawVertexPrimitiveList(const void* vertices, u32 vertexC
 		}
 
 		// else if not complete inside clipping necessary
-		memcpy32_small ( ( (u8*) CurrentOut.data + ( 0 << ( SIZEOF_SVERTEX_LOG2 + 1 ) ) ), face[0], SIZEOF_SVERTEX * 2 );
-		memcpy32_small ( ( (u8*) CurrentOut.data + ( 1 << ( SIZEOF_SVERTEX_LOG2 + 1 ) ) ), face[1], SIZEOF_SVERTEX * 2 );
-		memcpy32_small ( ( (u8*) CurrentOut.data + ( 2 << ( SIZEOF_SVERTEX_LOG2 + 1 ) ) ), face[2], SIZEOF_SVERTEX * 2 );
+		irr::memcpy32_small ( ( (u8*) CurrentOut.data + ( 0 << ( SIZEOF_SVERTEX_LOG2 + 1 ) ) ), face[0], SIZEOF_SVERTEX * 2 );
+		irr::memcpy32_small ( ( (u8*) CurrentOut.data + ( 1 << ( SIZEOF_SVERTEX_LOG2 + 1 ) ) ), face[1], SIZEOF_SVERTEX * 2 );
+		irr::memcpy32_small ( ( (u8*) CurrentOut.data + ( 2 << ( SIZEOF_SVERTEX_LOG2 + 1 ) ) ), face[2], SIZEOF_SVERTEX * 2 );
 
 		u32 flag = CurrentOut.data->flag & VERTEX4D_FORMAT_MASK;
 
@@ -1372,9 +1370,9 @@ void CSoftwareDriver2::addDynamicLight(const SLight& dl)
 	// light in eye space
 	Transformation[ETS_VIEW].m.transformVect ( &l.posEyeSpace.x, l.org.Position );
 
-	l.constantAttenuation = 0.f;
-	l.linearAttenuation = core::reciprocal ( l.org.Radius );
-	l.quadraticAttenuation = 0.f;
+	l.constantAttenuation = l.org.Attenuation.X;
+	l.linearAttenuation = l.org.Attenuation.Y;
+	l.quadraticAttenuation = l.org.Attenuation.Z;
 
 	l.AmbientColor.setColorf ( l.org.AmbientColor );
 	l.DiffuseColor.setColorf ( l.org.DiffuseColor );
@@ -1401,7 +1399,7 @@ void CSoftwareDriver2::deleteAllDynamicLights()
 }
 
 //! returns the maximal amount of dynamic lights the device can handle
-u32 CSoftwareDriver2::getMaximalDynamicLightAmount()
+u32 CSoftwareDriver2::getMaximalDynamicLightAmount() const
 {
 	return 8;
 }
@@ -1488,7 +1486,7 @@ void CSoftwareDriver2::lightVertex ( s4DVertex *dest, const S3DVertex *source )
 				vp.z = light.posEyeSpace.z - vertexEyeSpace.z;
 
 				// irrlicht attenuation model
-#if 1
+#if 0
 				const f32 d = vp.get_inverse_length_xyz();
 
 				vp.x *= d;
@@ -1498,7 +1496,7 @@ void CSoftwareDriver2::lightVertex ( s4DVertex *dest, const S3DVertex *source )
 
 #else
 				const f32 d = vp.get_length_xyz();
-				attenuation = 1.f / (light.constantAttenuation +
+				attenuation = core::reciprocal (light.constantAttenuation +
 									light.linearAttenuation * d +
 									light.quadraticAttenuation * d * d
 								);
@@ -1540,7 +1538,7 @@ void CSoftwareDriver2::lightVertex ( s4DVertex *dest, const S3DVertex *source )
 		}
 		else
 		{
-			pf = powf(dotHV, Material.org.Shininess );
+			pf = (f32)pow(dotHV, Material.org.Shininess );
 		}
 
 		// accumulate ambient
@@ -1566,7 +1564,7 @@ void CSoftwareDriver2::lightVertex ( s4DVertex *dest, const S3DVertex *source )
 
 
 //! draws an 2d image, using a color (if color is other then Color(255,255,255,255)) and the alpha channel of the texture if wanted.
-void CSoftwareDriver2::draw2DImage(video::ITexture* texture, const core::position2d<s32>& destPos,
+void CSoftwareDriver2::draw2DImage(const video::ITexture* texture, const core::position2d<s32>& destPos,
 					 const core::rect<s32>& sourceRect, 
 					 const core::rect<s32>* clipRect, SColor color, 
 					 bool useAlphaChannelOfTexture)
@@ -1624,7 +1622,44 @@ void CSoftwareDriver2::draw2DRectangle(SColor color, const core::rect<s32>& pos,
 	}
 }
 
+//! Only used by the internal engine. Used to notify the driver that
+//! the window was resized.
+void CSoftwareDriver2::OnResize(const core::dimension2d<s32>& size)
+{
+	// make sure width and height are multiples of 2
+	core::dimension2d<s32> realSize(size);
 
+	if (realSize.Width % 2)
+		realSize.Width += 1;
+
+	if (realSize.Height % 2)
+		realSize.Height += 1;
+
+	if (ScreenSize != realSize)
+	{
+		if (ViewPort.getWidth() == ScreenSize.Width &&
+			ViewPort.getHeight() == ScreenSize.Height)
+		{
+			ViewPort = core::rect<s32>(core::position2d<s32>(0,0), realSize);
+		}
+
+		ScreenSize = realSize;
+
+		bool resetRT = (RenderTargetSurface == BackBuffer);
+
+		BackBuffer->drop();
+		BackBuffer = new CImage(ECF_SOFTWARE2, realSize);
+
+		if (resetRT)
+			setRenderTarget(BackBuffer);
+	}
+}
+
+//! returns the current render target size
+const core::dimension2d<s32>& CSoftwareDriver2::getCurrentRenderTargetSize() const
+{
+	return RenderTargetSize;
+}
 
 //!Draws an 2d rectangle with a gradient.
 void CSoftwareDriver2::draw2DRectangle(const core::rect<s32>& position,
@@ -1791,7 +1826,7 @@ void CSoftwareDriver2::draw3DLine(const core::vector3df& start,
 
 //! \return Returns the name of the video driver. Example: In case of the DirectX8
 //! driver, it would return "Direct3D8.1".
-const wchar_t* CSoftwareDriver2::getName()
+const wchar_t* CSoftwareDriver2::getName() const
 {
 #ifdef BURNINGVIDEO_RENDERER_BEAUTIFUL
 	return L"burnings video 0.38b";
@@ -1805,23 +1840,23 @@ const wchar_t* CSoftwareDriver2::getName()
 }
 
 //! Returns type of video driver
-E_DRIVER_TYPE CSoftwareDriver2::getDriverType()
+E_DRIVER_TYPE CSoftwareDriver2::getDriverType() const
 {
 	return EDT_BURNINGSVIDEO;
 }
 
 //! Returns the transformation set by setTransform
-const core::matrix4& CSoftwareDriver2::getTransform(E_TRANSFORMATION_STATE state)
+const core::matrix4& CSoftwareDriver2::getTransform(E_TRANSFORMATION_STATE state) const
 {
 	return Transformation[state].m;
 }
 
 //! Creates a render target texture.
-ITexture* CSoftwareDriver2::createRenderTargetTexture(const core::dimension2d<s32>& size)
+ITexture* CSoftwareDriver2::createRenderTargetTexture(const core::dimension2d<s32>& size, const c8* name)
 {
 	CImage* img = new CImage(ECF_SOFTWARE2, size);
 
-	ITexture* tex = new CSoftwareTexture2(img, 0, false);
+	ITexture* tex = new CSoftwareTexture2(img, name, false, true);
 	img->drop();
 	return tex;	
 }
@@ -1841,12 +1876,6 @@ IImage* CSoftwareDriver2::createScreenShot()
 	return new CImage(BackBuffer->getColorFormat(), BackBuffer);
 }
 
-//! Enables or disables a texture creation flag.
-void CSoftwareDriver2::setTextureCreationFlag(E_TEXTURE_CREATION_FLAG flag, bool enabled)
-{
-	CNullDriver::setTextureCreationFlag(flag,enabled);
-}
-
 
 //! returns a device dependent texture from a software surface (IImage)
 //! THIS METHOD HAS TO BE OVERRIDDEN BY DERIVED DRIVERS WITH OWN TEXTURES
@@ -1859,7 +1888,7 @@ ITexture* CSoftwareDriver2::createDeviceDependentTexture(IImage* surface, const 
 //! Returns the maximum amount of primitives (mostly vertices) which
 //! the device is able to render with one drawIndexedTriangleList
 //! call.
-u32 CSoftwareDriver2::getMaximalPrimitiveCount()
+u32 CSoftwareDriver2::getMaximalPrimitiveCount() const
 {
 	return 0x00800000;
 }

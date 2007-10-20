@@ -65,11 +65,18 @@ typedef double				f64;
 
 
 #include <wchar.h>
-#ifdef _IRR_WINDOWS_
+#ifdef _IRR_WINDOWS_API_
 //! Defines for s{w,n}printf because these methods do not match the ISO C
 //! standard on Windows platforms, but it does on all others.
+//! These should be int snprintf(char *str, size_t size, const char *format, ...);
+//! and int swprintf(wchar_t *wcs, size_t maxlen, const wchar_t *format, ...);
+#if defined(_MSC_VER) && _MSC_VER > 1310
+#define swprintf swprintf_s
+#define snprintf sprintf_s
+#else
 #define swprintf _snwprintf
 #define snprintf _snprintf
+#endif
 
 // define the wchar_t type if not already built in.
 #ifdef _MSC_VER 
@@ -86,11 +93,11 @@ typedef unsigned short wchar_t;
 #define _WCHAR_T_DEFINED
 #endif // wchar is not defined
 #endif // microsoft compiler
-#endif // _IRR_WINDOWS_
+#endif // _IRR_WINDOWS_API_
 
 //! define a break macro for debugging.
 #if defined(_DEBUG)
-#if defined(_IRR_WINDOWS_) && defined(_MSC_VER)
+#if defined(_IRR_WINDOWS_API_) && defined(_MSC_VER)
 #define _IRR_DEBUG_BREAK_IF( _CONDITION_ ) if (_CONDITION_) {_asm int 3}
 #else 
 #include "assert.h"
@@ -106,13 +113,14 @@ When you call unmanaged code that returns a bool type value of false from manage
 the return value may appear as true. See 
 http://support.microsoft.com/default.aspx?kbid=823071 for details. 
 Compiler version defines: VC6.0 : 1200, VC7.0 : 1300, VC7.1 : 1310, VC8.0 : 1400*/
-#if defined(_IRR_WINDOWS_) && defined(_MSC_VER) && (_MSC_VER > 1299) && (_MSC_VER < 1400)
+#if defined(_IRR_WINDOWS_API_) && defined(_MSC_VER) && (_MSC_VER > 1299) && (_MSC_VER < 1400)
 #define _IRR_IMPLEMENT_MANAGED_MARSHALLING_BUGFIX __asm mov eax,100
 #else
 #define _IRR_IMPLEMENT_MANAGED_MARSHALLING_BUGFIX
 #endif // _IRR_MANAGED_MARSHALLING_BUGFIX
 
 
+// memory debugging
 #if defined(_DEBUG) && defined(IRRLICHT_EXPORTS) && defined(_MSC_VER) && \
 	(_MSC_VER > 1299) && !defined(_IRR_DONT_DO_MEMORY_DEBUGGING_HERE)
 	
@@ -129,14 +137,24 @@ Compiler version defines: VC6.0 : 1200, VC7.0 : 1300, VC7.1 : 1310, VC8.0 : 1400
 #pragma warning( disable: 4786)
 #endif // _MSC
 
+
 //! ignore VC8 warning deprecated
 /** The microsoft compiler */
-#if defined(_IRR_WINDOWS_) && defined(_MSC_VER) && (_MSC_VER >= 1400)
+#if defined(_IRR_WINDOWS_API_) && defined(_MSC_VER) && (_MSC_VER >= 1400)
 	//#pragma warning( disable: 4996)
 	//#define _CRT_SECURE_NO_DEPRECATE 1
 	//#define _CRT_NONSTDC_NO_DEPRECATE 1
 #endif
 
 
+//! creates four CC codes used in Irrlicht for simple ids
+/** some compilers can create those by directly writing the
+code like 'code', but some generate warnings so we use this macro here */
+#define MAKE_IRR_ID(c0, c1, c2, c3)                       \
+                ((u32)(u8)(c0) | ((u32)(u8)(c1) << 8) |   \
+                ((u32)(u8)(c2) << 16) | ((u32)(u8)(c3) << 24 ))
+
+
 #endif // __IRR_TYPES_H_INCLUDED__
+
 

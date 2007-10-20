@@ -50,12 +50,13 @@ public:
 	}
 
 
+
 	//! Constructs a string from a float
-	string(double number)
+	string(const double number)
 	: array(0), allocated(0), used(0)
 	{
 		c8 tmpbuf[255];
-		sprintf(tmpbuf,"%0.6f",number);
+		snprintf(tmpbuf, 255, "%0.6f", number);
 		*this = tmpbuf;
 	}
 
@@ -266,12 +267,18 @@ public:
 	}
 
 
-
 	//! Direct access operator
-	T& operator [](const u32 index) const
+	T& operator [](const u32 index)
 	{
 		_IRR_DEBUG_BREAK_IF(index>=used) // bad index
+		return array[index];
+	}
 
+
+	//! Direct access operator
+	const T& operator [](const u32 index) const
+	{
+		_IRR_DEBUG_BREAK_IF(index>=used) // bad index
 		return array[index];
 	}
 
@@ -703,30 +710,68 @@ public:
 	}
 
 
-	void operator += (T c)
+	string<T>& operator += (T c)
 	{
 		append(c);
+		return *this;
 	}
 
-	void operator += (const T* const c)
+
+	string<T>& operator += (const T* const c)
 	{
 		append(c);
+		return *this;
 	}
 
-	void operator += (const string<T>& other)
+
+	string<T>& operator += (const string<T>& other)
 	{
 		append(other);
+		return *this;
 	}
 
-	void operator += (int i)
+
+	string<T>& operator += (const int i)
 	{
 		append(string<T>(i));
+		return *this;
 	}
 
-	void operator += (double i)
+
+	string<T>& operator += (const unsigned int i)
 	{
 		append(string<T>(i));
+		return *this;
 	}
+
+
+	string<T>& operator += (const long i)
+	{
+		append(string<T>(i));
+		return *this;
+	}
+
+
+	string<T>& operator += (const unsigned long& i)
+	{
+		append(string<T>(i));
+		return *this;
+	}
+
+
+	string<T>& operator += (const double i)
+	{
+		append(string<T>(i));
+		return *this;
+	}
+
+
+	string<T>& operator += (const float i)
+	{
+		append(string<T>(i));
+		return *this;
+	}
+
 
 	//! replaces all characters of a special type with another one
 	void replace(T toReplace, T replaceWith)
@@ -818,7 +863,7 @@ private:
 
 
 //! Typedef for character strings
-typedef string<irr::c8> stringc;
+typedef string<c8> stringc;
 
 //! Typedef for wide character strings
 typedef string<wchar_t> stringw;

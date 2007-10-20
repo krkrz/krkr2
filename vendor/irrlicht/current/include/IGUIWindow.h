@@ -5,30 +5,14 @@
 #ifndef __I_GUI_WINDOW_H_INCLUDED__
 #define __I_GUI_WINDOW_H_INCLUDED__
 
-#include "IGUIButton.h"
+#include "IGUIElement.h"
+#include "EMessageBoxFlags.h"
 
 namespace irr
 {
 namespace gui
 {
-	//! enumeration for message box layout flags
-	enum EMESSAGE_BOX_FLAG
-	{
-		//! Flag for the ok button
-		EMBF_OK = 0x1,
-
-		//! Flag for the cancel button
-		EMBF_CANCEL = 0x2,
-
-		//! Flag for the yes button
-		EMBF_YES = 0x4,
-
-		//! Flag for the no button
-		EMBF_NO = 0x8,
-
-		//! This value is not used. It only forces this enumeration to compile in 32 bit. 
-		EMBF_FORCE_32BIT = 0x7fffffff	
-	};
+	class IGUIButton;
 
 	//! Default moveable window GUI element with border, caption and close icons.
 	class IGUIWindow : public IGUIElement
@@ -40,16 +24,16 @@ namespace gui
 			: IGUIElement(EGUIET_WINDOW, environment, parent, id, rectangle) {}
 
 		//! destructor
-		virtual ~IGUIWindow() {};
+		virtual ~IGUIWindow() {}
 
 		//! Returns pointer to the close button
-		virtual IGUIButton* getCloseButton() = 0;
+		virtual IGUIButton* getCloseButton() const = 0;
 
 		//! Returns pointer to the minimize button
-		virtual IGUIButton* getMinimizeButton() = 0;
+		virtual IGUIButton* getMinimizeButton() const = 0;
 
 		//! Returns pointer to the maximize button
-		virtual IGUIButton* getMaximizeButton() = 0;
+		virtual IGUIButton* getMaximizeButton() const = 0;
 	};
 
 

@@ -5,7 +5,7 @@
 #ifndef __I_MATERIAL_RENDERER_H_INCLUDED__
 #define __I_MATERIAL_RENDERER_H_INCLUDED__
 
-#include "IUnknown.h"
+#include "IReferenceCounted.h"
 #include "SMaterial.h"
 #include "S3DVertex.h"
 
@@ -21,12 +21,12 @@ class IMaterialRendererServices;
 /** Refer to IVideoDriver::addMaterialRenderer() for more informations on how to extend the engine
  with new materials.
 */
-class IMaterialRenderer : public virtual IUnknown
+class IMaterialRenderer : public virtual IReferenceCounted
 {
 public:
 
 	//! destructor
-	virtual ~IMaterialRenderer() {};
+	virtual ~IMaterialRenderer() {}
 
 	//! Called by the IVideoDriver implementation the let the renderer set its needed render states. 
 	/** This is called during the IVideoDriver::setMaterial() call.
@@ -46,7 +46,7 @@ public:
 	lighting, zbuffer, zwriteenable, backfaceculling and fogenable.
 	\param services: Interface providing some methods for changing advanced, internal
 	states of a IVideoDriver. */
-	virtual void OnSetMaterial(SMaterial& material, const SMaterial& lastMaterial,
+	virtual void OnSetMaterial(const SMaterial& material, const SMaterial& lastMaterial,
 		bool resetAllRenderstates, IMaterialRendererServices* services) {};
 
 	//! Called every time before a new bunch of geometry is being drawn using this material with
@@ -69,12 +69,12 @@ public:
 	/** Called during the 
 	IVideoDriver::setMaterial() call before the new material will get the OnSetMaterial()
 	call. */
-	virtual void OnUnsetMaterial() {};
+	virtual void OnUnsetMaterial() {}
 
 	//! Returns if the material is transparent. 
 	/** The scene managment needs to know this
 	for being able to sort the materials by opaque and transparent. */
-	virtual bool isTransparent() { return false; }
+	virtual bool isTransparent() const { return false; }
 
 	//! Returns the render capability of the material. 
 	/** Because some more complex materials
@@ -86,7 +86,7 @@ public:
 	it cannot use the latest shaders. More specific examples: 
 	Fixed function pipeline materials should return 0 in most cases, parallax mapped
 	material will only return 0 when at least pixel shader 1.4 is available on that machine. */
-	virtual s32 getRenderCapability() { return 0; }
+	virtual s32 getRenderCapability() const { return 0; }
 };
 
 

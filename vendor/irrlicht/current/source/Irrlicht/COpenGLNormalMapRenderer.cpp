@@ -19,15 +19,15 @@ namespace video
 
 // Irrlicht Engine OpenGL render path normal map vertex shader
 // I guess it could be optimized a lot, because I wrote it in D3D ASM and 
-// transfered it 1:1 to OpenGL
+// transferred it 1:1 to OpenGL
 const char OPENGL_NORMAL_MAP_VSH[] = 
 	"!!ARBvp1.0\n"\
 	"#input\n"\
 	"# 0-3: transposed world matrix;\n"\
 	"#;12: Light01 position \n"\
-	"#;13: x,y,z: Light01 color; .w: 1/LightRadius² \n"\
+	"#;13: x,y,z: Light01 color; .w: 1/LightRadius^2 \n"\
 	"#;14: Light02 position \n"\
-	"#;15: x,y,z: Light02 color; .w: 1/LightRadius² \n"\
+	"#;15: x,y,z: Light02 color; .w: 1/LightRadius^2 \n"\
 	"\n"\
 	"ATTRIB InPos = vertex.position;\n"\
 	"ATTRIB InColor = vertex.color;\n"\
@@ -163,7 +163,7 @@ const char OPENGL_NORMAL_MAP_PSH[] =
 	"\n"\
 	"# calculate color of light2; \n"\
 	"MAD temp2, light2Vector, {2,2,2,2}, {-1,-1,-1,-1}; \n"\
-	"DP3_SAT temp2, normalMapColor, light2Vector; \n"\
+	"DP3_SAT temp2, normalMapColor, temp2; \n"\
 	"MAD temp, light2Color, temp2, temp; \n"\
 	"\n"\
 	"# luminance * base color; \n"\
@@ -201,7 +201,7 @@ COpenGLNormalMapRenderer::COpenGLNormalMapRenderer(video::COpenGLDriver* driver,
 	if (renderer)
 	{
 		// use the already compiled shaders 
-		video::COpenGLNormalMapRenderer* nmr = (video::COpenGLNormalMapRenderer*)renderer;
+		video::COpenGLNormalMapRenderer* nmr = reinterpret_cast<video::COpenGLNormalMapRenderer*>(renderer);
 		CompiledShaders = false;
 
 		VertexShader = nmr->VertexShader;
@@ -233,7 +233,7 @@ COpenGLNormalMapRenderer::~COpenGLNormalMapRenderer()
 
 
 //! Returns the render capability of the material. 
-s32 COpenGLNormalMapRenderer::getRenderCapability()
+s32 COpenGLNormalMapRenderer::getRenderCapability() const
 {
 	if (Driver->queryFeature(video::EVDF_ARB_FRAGMENT_PROGRAM_1) &&
 		Driver->queryFeature(video::EVDF_ARB_VERTEX_PROGRAM_1))

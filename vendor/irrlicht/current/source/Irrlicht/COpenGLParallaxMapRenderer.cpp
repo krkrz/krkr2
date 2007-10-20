@@ -19,15 +19,15 @@ namespace video
 
 // Irrlicht Engine OpenGL render path parallax map vertex shader
 // I guess it could be optimized a lot, because I wrote it in D3D ASM and
-// transfered it 1:1 to OpenGL
+// transferred it 1:1 to OpenGL
 const char OPENGL_PARALLAX_MAP_VSH[] =
 	"!!ARBvp1.0\n"\
 	"#input\n"\
 	"# 0-3: transposed world matrix;\n"\
 	"#;12: Light01 position \n"\
-	"#;13: x,y,z: Light01 color; .w: 1/LightRadius² \n"\
+	"#;13: x,y,z: Light01 color; .w: 1/LightRadius^2 \n"\
 	"#;14: Light02 position \n"\
-	"#;15: x,y,z: Light02 color; .w: 1/LightRadius² \n"\
+	"#;15: x,y,z: Light02 color; .w: 1/LightRadius^2 \n"\
 	"#;16: Eye position \n"\
 	"\n"\
 	"ATTRIB InPos = vertex.position;\n"\
@@ -197,7 +197,7 @@ const char OPENGL_PARALLAX_MAP_PSH[] =
 	"\n"\
 	"# calculate color of light2; \n"\
 	"MAD temp2, light2Vector, {2,2,2,2}, {-1,-1,-1,-1}; \n"\
-	"DP3_SAT temp2, normalMapColor, light2Vector; \n"\
+	"DP3_SAT temp2, normalMapColor, temp2; \n"\
 	"MAD temp, light2Color, temp2, temp; \n"\
 	"\n"\
 	"# luminance * base color; \n"\
@@ -235,7 +235,7 @@ COpenGLParallaxMapRenderer::COpenGLParallaxMapRenderer(video::COpenGLDriver* dri
 	if (renderer)
 	{
 		// use the already compiled shaders
-		video::COpenGLParallaxMapRenderer* nmr = (video::COpenGLParallaxMapRenderer*)renderer;
+		video::COpenGLParallaxMapRenderer* nmr = reinterpret_cast<video::COpenGLParallaxMapRenderer*>(renderer);
 		CompiledShaders = false;
 
 		VertexShader = nmr->VertexShader;
@@ -266,7 +266,7 @@ COpenGLParallaxMapRenderer::~COpenGLParallaxMapRenderer()
 }
 
 
-void COpenGLParallaxMapRenderer::OnSetMaterial(video::SMaterial& material,
+void COpenGLParallaxMapRenderer::OnSetMaterial(const video::SMaterial& material,
 	const video::SMaterial& lastMaterial,
 	bool resetAllRenderstates, video::IMaterialRendererServices* services)
 {
@@ -279,7 +279,7 @@ void COpenGLParallaxMapRenderer::OnSetMaterial(video::SMaterial& material,
 
 
 //! Returns the render capability of the material.
-s32 COpenGLParallaxMapRenderer::getRenderCapability()
+s32 COpenGLParallaxMapRenderer::getRenderCapability() const
 {
 	if (Driver->queryFeature(video::EVDF_ARB_FRAGMENT_PROGRAM_1) &&
 		Driver->queryFeature(video::EVDF_ARB_VERTEX_PROGRAM_1))

@@ -3,6 +3,10 @@
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
 #include "CImageLoaderPSD.h"
+
+#ifdef _IRR_COMPILE_WITH_PSD_LOADER_
+
+#include "IReadFile.h"
 #include "os.h"
 #include "CImage.h"
 #include "irrString.h"
@@ -16,7 +20,6 @@ namespace video
 
 //! constructor
 CImageLoaderPSD::CImageLoaderPSD()
-: imageData(0)
 {
 	#ifdef _DEBUG
 	setDebugName("CImageLoaderPSD");
@@ -24,18 +27,9 @@ CImageLoaderPSD::CImageLoaderPSD()
 }
 
 
-
-//! destructor
-CImageLoaderPSD::~CImageLoaderPSD()
-{
-	delete [] imageData;
-}
-
-
-
 //! returns true if the file maybe is able to be loaded by this class
 //! based on the file extension (e.g. ".tga")
-bool CImageLoaderPSD::isALoadableFileExtension(const c8* fileName)
+bool CImageLoaderPSD::isALoadableFileExtension(const c8* fileName) const
 {
 	return strstr(fileName, ".psd") != 0;
 }
@@ -43,7 +37,7 @@ bool CImageLoaderPSD::isALoadableFileExtension(const c8* fileName)
 
 
 //! returns true if the file maybe is able to be loaded by this class
-bool CImageLoaderPSD::isALoadableFileFormat(irr::io::IReadFile* file)
+bool CImageLoaderPSD::isALoadableFileFormat(io::IReadFile* file) const
 {
 	if (!file)
 		return false;
@@ -56,11 +50,11 @@ bool CImageLoaderPSD::isALoadableFileFormat(irr::io::IReadFile* file)
 
 
 //! creates a surface from the file
-IImage* CImageLoaderPSD::loadImage(irr::io::IReadFile* file)
+IImage* CImageLoaderPSD::loadImage(io::IReadFile* file) const
 {
-	delete [] imageData;
-	imageData = 0;
+	u32* imageData = 0;
 
+	PsdHeader header;
 	file->read(&header, sizeof(PsdHeader));
 
 #ifndef __BIG_ENDIAN__
@@ -148,9 +142,9 @@ IImage* CImageLoaderPSD::loadImage(irr::io::IReadFile* file)
 	bool res = false;
 
 	if (compressionType == 0)
-		res = readRawImageData(file); // RAW image data
+		res = readRawImageData(file, header, imageData); // RAW image data
 	else
-		res = readRLEImageData(file); // RLE compressed data
+		res = readRLEImageData(file, header, imageData); // RLE compressed data
 
 	video::IImage* image = 0;
 
@@ -169,8 +163,7 @@ IImage* CImageLoaderPSD::loadImage(irr::io::IReadFile* file)
 }
 
 
-
-bool CImageLoaderPSD::readRawImageData(irr::io::IReadFile* file)
+bool CImageLoaderPSD::readRawImageData(io::IReadFile* file, const PsdHeader& header, u32* imageData) const
 {
 	u8* tmpData = new u8[header.width * header.height];
 
@@ -182,18 +175,20 @@ bool CImageLoaderPSD::readRawImageData(irr::io::IReadFile* file)
 			break;
 		}
 
-		s16 shift = getShiftFromChannel(channel);
+		s16 shift = getShiftFromChannel(channel, header);
 		if (shift != -1)
 		{
 			u32 mask = 0xff << shift;
 
 			for (u32 x=0; x<header.width; ++x)
+			{
 				for (u32 y=0; y<header.height; ++y)
 				{
 					s32 index = x + y*header.width;
 					imageData[index] = ~(~imageData[index] | mask);
 					imageData[index] |= tmpData[index] << shift;
 				}
+			}
 		}
 
 	}
@@ -203,7 +198,7 @@ bool CImageLoaderPSD::readRawImageData(irr::io::IReadFile* file)
 }
 
 
-bool CImageLoaderPSD::readRLEImageData(irr::io::IReadFile* file)
+bool CImageLoaderPSD::readRLEImageData(io::IReadFile* file, const PsdHeader& header, u32* imageData) const
 {
 	/*	If the compression code is 1, the image data
 		starts with the byte counts for all the scan lines in the channel
@@ -321,7 +316,7 @@ bool CImageLoaderPSD::readRLEImageData(irr::io::IReadFile* file)
 			}
 		}
 
-		s16 shift = getShiftFromChannel(channel);
+		s16 shift = getShiftFromChannel(channel, header);
 
 		if (shift != -1)
 		{
@@ -345,7 +340,7 @@ bool CImageLoaderPSD::readRLEImageData(irr::io::IReadFile* file)
 }
 
 
-s16 CImageLoaderPSD::getShiftFromChannel(c8 channelNr)
+s16 CImageLoaderPSD::getShiftFromChannel(c8 channelNr, const PsdHeader& header) const
 {
 	switch(channelNr)
 	{
@@ -375,4 +370,6 @@ IImageLoader* createImageLoaderPSD()
 
 } // end namespace video
 } // end namespace irr
+
+#endif
 

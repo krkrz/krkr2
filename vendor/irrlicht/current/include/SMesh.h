@@ -26,14 +26,12 @@ namespace scene
 		}
 
 		//! destructor
-		~SMesh()
+		virtual ~SMesh()
 		{
 			// drop buffers
 			for (u32 i=0; i<MeshBuffers.size(); ++i)
-			{
 				MeshBuffers[i]->drop();
-			}
-		};
+		}
 
 		//! returns amount of mesh buffers.
 		virtual u32 getMeshBufferCount() const
@@ -53,7 +51,7 @@ namespace scene
 		{
 			for (s32 i = (s32) MeshBuffers.size(); --i >= 0; )
 			{
-				if ( !(material != MeshBuffers[i]->getMaterial()) )
+				if ( material == MeshBuffers[i]->getMaterial())
 					return MeshBuffers[i];
 			}
 

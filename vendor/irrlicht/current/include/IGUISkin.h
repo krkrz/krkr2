@@ -7,7 +7,6 @@
 
 #include "IAttributeExchangingObject.h"
 #include "SColor.h"
-#include "IGUISkin.h"
 #include "rect.h"
 
 namespace irr
@@ -82,8 +81,10 @@ namespace gui
 		EGDC_INACTIVE_BORDER,
 		//! Inactive window caption.
 		EGDC_INACTIVE_CAPTION,
-		//! Tool tip color
+		//! Tool tip text color
 		EGDC_TOOLTIP,
+		//! Tool tip background color
+		EGDC_TOOLTIP_BACKGROUND,
 		//! Scrollbar gray area
 		EGDC_SCROLLBAR,
 		//! Window background
@@ -117,6 +118,7 @@ namespace gui
 		"InactiveBorder",
 		"InactiveCaption",
 		"ToolTip",
+		"ToolTipBackground",
 		"ScrollBar",
 		"Window",
 		"WindowSymbol",
@@ -219,6 +221,8 @@ namespace gui
 		EGDI_WINDOW_CLOSE,
 		//! minimize window button
 		EGDI_WINDOW_MINIMIZE,
+		//! resize icon for bottom right corner of a window
+		EGDI_WINDOW_RESIZE,
 		//! scroll bar up button
 		EGDI_CURSOR_UP,
 		//! scroll bar down button
@@ -239,6 +243,18 @@ namespace gui
 		EGDI_SMALL_CURSOR_DOWN,
 		//! selection dot in a radio button
 		EGDI_RADIO_BUTTON_CHECKED,
+		//! << icon indicating there is more content to the left
+		EGDI_MORE_LEFT,
+		//! >> icon indicating that there is more content to the right
+		EGDI_MORE_RIGHT,
+		//! icon indicating that there is more content above
+		EGDI_MORE_UP,
+		//! icon indicating that there is more content below
+		EGDI_MORE_DOWN,
+		//! plus icon for trees
+		EGDI_EXPAND,
+		//! minus icon for trees
+		EGDI_COLLAPSE,
 		//! file icon for file selection
 		EGDI_FILE,
 		//! folder icon for file selection
@@ -254,6 +270,7 @@ namespace gui
 		"windowRestore",
 		"windowClose",
 		"windowMinimize",
+		"windowResize", 
 		"cursorUp",
 		"cursorDown",
 		"cursorLeft",
@@ -264,8 +281,42 @@ namespace gui
 		"smallCursorUp",
 		"smallCursorDown",
 		"radioButtonChecked",
+		"moreLeft",
+		"moreRight",
+		"moreUp",
+		"moreDown",
+		"expand",
+		"collapse",
 		"file",
 		"directory",
+		0
+	};
+
+	// Customizable fonts
+	enum EGUI_DEFAULT_FONT
+	{
+		//! For static text, edit boxes, lists and most other places
+		EGDF_DEFAULT=0,
+		//! Font for buttons
+		EGDF_BUTTON,
+		//! Font for window title bars
+		EGDF_WINDOW,
+		//! Font for menu items
+		EGDF_MENU,
+		//! Font for tooltips
+		EGDF_TOOLTIP,
+		//! this value is not used, it only specifies the amount of default fonts
+		//! available.
+		EGDF_COUNT
+	};
+
+	const c8* const GUISkinFontNames[] =
+	{
+		"defaultFont",
+		"buttonFont",
+		"windowFont",
+		"menuFont",
+		"tooltipFont",
 		0
 	};
 
@@ -275,21 +326,21 @@ namespace gui
 	public:
 
 		//! destructor
-		~IGUISkin() {};
+		virtual ~IGUISkin() {};
 
 		//! returns default color
-		virtual video::SColor getColor(EGUI_DEFAULT_COLOR color) = 0;
+		virtual video::SColor getColor(EGUI_DEFAULT_COLOR color) const = 0;
 
 		//! sets a default color
 		virtual void setColor(EGUI_DEFAULT_COLOR which, video::SColor newColor) = 0;
 
 		//! returns default color
-		virtual s32 getSize(EGUI_DEFAULT_SIZE size) = 0;
+		virtual s32 getSize(EGUI_DEFAULT_SIZE size) const = 0;
 
 		//! Returns a default text. 
 		/** For example for Message box button captions:
 		"OK", "Cancel", "Yes", "No" and so on. */
-		virtual const wchar_t* getDefaultText(EGUI_DEFAULT_TEXT text) = 0;
+		virtual const wchar_t* getDefaultText(EGUI_DEFAULT_TEXT text) const = 0;
 
 		//! Sets a default text.
 		/** For example for Message box button captions:
@@ -300,20 +351,20 @@ namespace gui
 		virtual void setSize(EGUI_DEFAULT_SIZE which, s32 size) = 0;
 
 		//! returns the default font
-		virtual IGUIFont* getFont() = 0;
+		virtual IGUIFont* getFont(EGUI_DEFAULT_FONT which=EGDF_DEFAULT) const = 0;
 
 		//! sets a default font
-		virtual void setFont(IGUIFont* font) = 0;
+		virtual void setFont(IGUIFont* font, EGUI_DEFAULT_FONT which=EGDF_DEFAULT) = 0;
 
 		//! returns the sprite bank
-		virtual IGUISpriteBank* getSpriteBank() = 0;
+		virtual IGUISpriteBank* getSpriteBank() const = 0;
 
 		//! sets the sprite bank
 		virtual void setSpriteBank(IGUISpriteBank* bank) = 0;
 
 		//! Returns a default icon
 		/** Returns the sprite index within the sprite bank */
-		virtual u32 getIcon(EGUI_DEFAULT_ICON icon) = 0;
+		virtual u32 getIcon(EGUI_DEFAULT_ICON icon) const = 0;
 
 		//! Sets a default icon
 		/** Sets the sprite index used for drawing icons like arrows, 
@@ -427,7 +478,7 @@ namespace gui
 			const core::rect<s32>& rect, const core::rect<s32>* clip=0) = 0;
 
 		//! draws an icon, usually from the skin's sprite bank
-		/**	\param parent: Pointer to the element which wishes to draw this icon. 
+		/** \param element: Pointer to the element which wishes to draw this icon. 
 		This parameter is usually not used by IGUISkin, but can be used for example 
 		by more complex implementations to find out how to draw the part exactly. 
 		\param icon: Specifies the icon to be drawn.
@@ -440,9 +491,20 @@ namespace gui
 			const core::position2di position, u32 starttime=0, u32 currenttime=0, 
 			bool loop=false, const core::rect<s32>* clip=0) = 0;
 
-		//! get the type of this skin
-		virtual EGUI_SKIN_TYPE getType() { return EGST_UNKNOWN; };
+		//! draws a 2d rectangle.
+		/** \param element: Pointer to the element which wishes to draw this icon. 
+		This parameter is usually not used by IGUISkin, but can be used for example 
+		by more complex implementations to find out how to draw the part exactly. 
+		\param color: Color of the rectangle to draw. The alpha component specifies how 
+		transparent the rectangle will be.
+		\param pos: Position of the rectangle.
+		\param clip: Pointer to rectangle against which the rectangle will be clipped.
+		If the pointer is null, no clipping will be performed. */
+		virtual void draw2DRectangle(IGUIElement* element, const video::SColor &color, 
+			const core::rect<s32>& pos, const core::rect<s32>* clip = 0) = 0;
 
+		//! get the type of this skin
+		virtual EGUI_SKIN_TYPE getType() const { return EGST_UNKNOWN; };
 	};
 
 

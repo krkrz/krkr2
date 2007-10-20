@@ -2,6 +2,9 @@
 // This file is part of the "Irrlicht Engine".
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
+#include "IrrCompileConfig.h"
+#ifdef _IRR_COMPILE_WITH_MD3_LOADER_
+
 #include "CMD3MeshFileLoader.h"
 #include "CAnimatedMeshMD3.h"
 #include "irrString.h"
@@ -17,22 +20,21 @@ CMD3MeshFileLoader::CMD3MeshFileLoader(io::IFileSystem* fs, video::IVideoDriver*
 }
 
 
-
 //! destructor
 CMD3MeshFileLoader::~CMD3MeshFileLoader()
 {
 }
 
 
-
 //! returns true if the file maybe is able to be loaded by this class
 //! based on the file extension (e.g. ".bsp")
-bool CMD3MeshFileLoader::isALoadableFileExtension(const c8* filename)
+bool CMD3MeshFileLoader::isALoadableFileExtension(const c8* filename) const
 {
 	return strstr(filename, ".md3") != 0;
 }
 
-IAnimatedMesh* CMD3MeshFileLoader::createMesh(irr::io::IReadFile* file)
+
+IAnimatedMesh* CMD3MeshFileLoader::createMesh(io::IReadFile* file)
 {
 	CAnimatedMeshMD3 * mesh = new CAnimatedMeshMD3();
 
@@ -46,4 +48,6 @@ IAnimatedMesh* CMD3MeshFileLoader::createMesh(irr::io::IReadFile* file)
 
 } // end namespace scene
 } // end namespace irr
+
+#endif // _IRR_COMPILE_WITH_MD3_LOADER_
 

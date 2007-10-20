@@ -5,8 +5,10 @@
 #ifndef __I_SCENE_NODE_H_INCLUDED__
 #define __I_SCENE_NODE_H_INCLUDED__
 
-#include "IUnknown.h"
+#include "IReferenceCounted.h"
 #include "ESceneNodeTypes.h"
+#include "ECullingTypes.h"
+#include "EDebugSceneTypes.h"
 #include "ISceneManager.h"
 #include "ISceneNodeAnimator.h"
 #include "ITriangleSelector.h"
@@ -33,10 +35,10 @@ namespace scene
 	public:
 
 		//! Constructor
-		ISceneNode(	ISceneNode* parent, ISceneManager* mgr, s32 id=-1,
-					const core::vector3df& position = core::vector3df(0,0,0),
-					const core::vector3df& rotation = core::vector3df(0,0,0),
-					const core::vector3df& scale = core::vector3df(1.0f, 1.0f, 1.0f))
+		ISceneNode(ISceneNode* parent, ISceneManager* mgr, s32 id=-1,
+				const core::vector3df& position = core::vector3df(0,0,0),
+				const core::vector3df& rotation = core::vector3df(0,0,0),
+				const core::vector3df& scale = core::vector3df(1.0f, 1.0f, 1.0f))
 			: RelativeTranslation(position), RelativeRotation(rotation), RelativeScale(scale),
 				Parent(parent), ID(id), SceneManager(mgr), TriangleSelector(0),
 				AutomaticCullingState(EAC_BOX), IsVisible(true),
@@ -47,7 +49,6 @@ namespace scene
 
 			updateAbsolutePosition();
 		}
-
 
 
 		//! Destructor
@@ -330,7 +331,7 @@ namespace scene
 
 		//! Returns amount of materials used by this scene node.
 		//! \return Returns current count of materials used by this scene node.
-		virtual u32 getMaterialCount()
+		virtual u32 getMaterialCount() const
 		{
 			return 0;
 		}
@@ -354,11 +355,11 @@ namespace scene
 		//! \param texture: Texture to be used.
 		void setMaterialTexture(u32 textureLayer, video::ITexture* texture)
 		{
-			if (textureLayer>= video::MATERIAL_MAX_TEXTURES)
+			if (textureLayer >= video::MATERIAL_MAX_TEXTURES)
 				return;
 
 			for (u32 i=0; i<getMaterialCount(); ++i)
-				getMaterial(i).Textures[textureLayer] = texture;
+				getMaterial(i).setTexture(textureLayer, texture);
 		}
 
 
@@ -435,11 +436,10 @@ namespace scene
 
 		//! Enables or disables automatic culling based on the bounding box.
 		/** Automatic culling is enabled by default. Note that not
-		all SceneNodes support culling (the billboard scene node for example)
+		all SceneNodes support culling (e.g. the billboard scene node)
 		and that some nodes always cull their geometry because it is their
-		only reason for existance, for example the OctreeSceneNode.
-		\param enabled: If true, automatic culling is enabled.
-		If false, it is disabled. */
+		only reason for existence, for example the OctreeSceneNode.
+		\param state: The culling state to be used. */
 		void setAutomaticCulling( E_CULLING_TYPE state)
 		{
 			AutomaticCullingState = state;
@@ -482,7 +482,7 @@ namespace scene
 		//! Returns if this scene node is a debug object.
 		/** Debug objects have some special properties, for example they can be easily
 		excluded from collision detection or from serialization, etc. */
-		bool isDebugObject()
+		bool isDebugObject() const
 		{
 			_IRR_IMPLEMENT_MANAGED_MARSHALLING_BUGFIX;
 			return IsDebugObject;
@@ -545,6 +545,7 @@ namespace scene
 				TriangleSelector->grab();
 		}
 
+
 		//! updates the absolute position based on the relative and the parents position
 		virtual void updateAbsolutePosition()
 		{
@@ -572,16 +573,18 @@ namespace scene
 		//! Writes attributes of the scene node.
 		//! Implement this to expose the attributes of your scene node for
 		//! scripting languages, editors, debuggers or xml serialization purposes.
-		virtual void serializeAttributes(io::IAttributes* out, io::SAttributeReadWriteOptions* options=0)
+		virtual void serializeAttributes(io::IAttributes* out, io::SAttributeReadWriteOptions* options=0) const
 		{
 			out->addString	("Name", Name.c_str());
 			out->addInt	("Id", ID );
-			out->addVector3d("Position", RelativeTranslation );
-			out->addVector3d("Rotation", RelativeRotation );
-			out->addVector3d("Scale", RelativeScale );
+
+			out->addVector3d("Position", getPosition() );
+			out->addVector3d("Rotation", getRotation() );
+			out->addVector3d("Scale", getScale() );
+
 			out->addBool	("Visible", IsVisible );
 			out->addEnum	("AutomaticCulling", AutomaticCullingState, AutomaticCullingNames);
-			out->addInt		("DebugDataVisible", DebugDataVisible );
+			out->addInt	("DebugDataVisible", DebugDataVisible );
 			out->addBool	("IsDebugObject", IsDebugObject );
 		}
 
@@ -592,9 +595,11 @@ namespace scene
 		{
 			Name = in->getAttributeAsString("Name");
 			ID = in->getAttributeAsInt("Id");
-			RelativeTranslation = in->getAttributeAsVector3d("Position");
-			RelativeRotation = in->getAttributeAsVector3d("Rotation");
-			RelativeScale = in->getAttributeAsVector3d("Scale");
+
+			setPosition(in->getAttributeAsVector3d("Position"));
+			setRotation(in->getAttributeAsVector3d("Rotation"));
+			setScale(in->getAttributeAsVector3d("Scale"));
+
 			IsVisible = in->getAttributeAsBool("Visible");
 			AutomaticCullingState = (scene::E_CULLING_TYPE ) in->getAttributeAsEnumeration("AutomaticCulling", scene::AutomaticCullingNames);
 
@@ -604,7 +609,53 @@ namespace scene
 			updateAbsolutePosition();
 		}
 
+		//! Creates a clone of this scene node and its children.
+		virtual ISceneNode* clone(ISceneNode* newParent=0, ISceneManager* newManager=0) 
+		{ 
+			return 0; // to be implemented by derived classes
+		}
+
 	protected:
+
+		//! this method can be used by clone() implementations of derived classes
+		void cloneMembers(ISceneNode* toCopyFrom, ISceneManager* newManager)
+		{
+			Name = toCopyFrom->Name;
+			AbsoluteTransformation = toCopyFrom->AbsoluteTransformation;
+			RelativeTranslation = toCopyFrom->RelativeTranslation;
+			RelativeRotation = toCopyFrom->RelativeRotation;
+			RelativeScale = toCopyFrom->RelativeScale;			
+			ID = toCopyFrom->ID;
+			setTriangleSelector(toCopyFrom->TriangleSelector);
+			AutomaticCullingState = toCopyFrom->AutomaticCullingState;
+			DebugDataVisible = toCopyFrom->DebugDataVisible;
+			IsVisible = toCopyFrom->IsVisible;
+			IsDebugObject = toCopyFrom->IsDebugObject;
+
+			if (newManager)
+				SceneManager = newManager;
+			else
+				SceneManager = toCopyFrom->SceneManager;
+
+			// clone children
+
+			core::list<ISceneNode*>::Iterator it = toCopyFrom->Children.begin();
+			for (; it != toCopyFrom->Children.end(); ++it)
+				(*it)->clone(this, newManager);
+
+			// clone animators
+
+			core::list<ISceneNodeAnimator*>::Iterator ait = toCopyFrom->Animators.begin();
+			for (; ait != toCopyFrom->Animators.end(); ++ait)
+			{
+				ISceneNodeAnimator* anim = (*ait)->createClone(this, SceneManager);
+				if (anim)
+				{
+					addAnimator(anim);
+					anim->drop();
+				}
+			}
+		}
 
 		//! name of the scene node.
 		core::stringc Name;

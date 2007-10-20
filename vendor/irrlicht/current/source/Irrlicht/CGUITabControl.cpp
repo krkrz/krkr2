@@ -3,6 +3,8 @@
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
 #include "CGUITabControl.h"
+#ifdef _IRR_COMPILE_WITH_GUI_
+
 #include "IGUISkin.h"
 #include "IGUIEnvironment.h"
 #include "IGUIFont.h"
@@ -32,17 +34,9 @@ CGUITab::CGUITab(s32 number, IGUIEnvironment* environment,
 }
 
 
-
-//! destructor
-CGUITab::~CGUITab()
-{
-}
-
-
-
 //! Returns number of tab in tabcontrol. Can be accessed
 //! later IGUITabControl::getTab() by this number.
-s32 CGUITab::getNumber()
+s32 CGUITab::getNumber() const
 {
 	return Number;
 }
@@ -61,19 +55,21 @@ void CGUITab::draw()
 	if (!IsVisible)
 		return;
 
-	video::IVideoDriver* driver = Environment->getVideoDriver();
+	IGUISkin *skin = Environment->getSkin();
 
-	if (DrawBackground)
-		driver->draw2DRectangle(BackColor, AbsoluteRect, &AbsoluteClippingRect);
+	if (skin && DrawBackground)
+		skin->draw2DRectangle(this, BackColor, AbsoluteRect, &AbsoluteClippingRect);
 
 	IGUIElement::draw();
 }
+
 
 //! sets if the tab should draw its background
 void CGUITab::setDrawBackground(bool draw)
 {
 	DrawBackground = draw;
 }
+
 
 //! sets the color of the background, if it should be drawn.
 void CGUITab::setBackgroundColor(video::SColor c)
@@ -82,16 +78,32 @@ void CGUITab::setBackgroundColor(video::SColor c)
 }
 
 
+//! returns true if the tab is drawing its background, false if not
+bool CGUITab::isDrawingBackground() const
+{
+	_IRR_IMPLEMENT_MANAGED_MARSHALLING_BUGFIX;
+	return DrawBackground;
+}
+
+
+//! returns the color of the background
+video::SColor CGUITab::getBackgroundColor() const
+{
+	return BackColor;
+}
+
+
 //! Writes attributes of the element.
-void CGUITab::serializeAttributes(io::IAttributes* out, io::SAttributeReadWriteOptions* options=0)
+void CGUITab::serializeAttributes(io::IAttributes* out, io::SAttributeReadWriteOptions* options=0) const
 {
 	IGUITab::serializeAttributes(out,options);
 
-	out->addInt		("TabNumber",		Number);
+	out->addInt	("TabNumber",		Number);
 	out->addBool	("DrawBackground",	DrawBackground);
 	out->addColor	("BackColor",		BackColor);
 
 }
+
 
 //! Reads attributes of the element
 void CGUITab::deserializeAttributes(io::IAttributes* in, io::SAttributeReadWriteOptions* options=0)
@@ -108,7 +120,6 @@ void CGUITab::deserializeAttributes(io::IAttributes* in, io::SAttributeReadWrite
 		if (isVisible())
 			((CGUITabControl*)Parent)->setActiveTab(this);
 	}
-
 }
 
 
@@ -123,8 +134,10 @@ CGUITabControl::CGUITabControl(IGUIEnvironment* environment,
 	: IGUITabControl(environment, parent, id, rectangle), ActiveTab(-1),
 	Border(border), FillBackground(fillbackground)
 {
+	#ifdef _DEBUG
+	setDebugName("CGUITabControl");
+	#endif
 }
-
 
 
 //! destructor
@@ -165,6 +178,7 @@ IGUITab* CGUITabControl::addTab(const wchar_t* caption, s32 id)
 	return tab;
 }
 
+
 //! adds a tab which has been created elsewhere
 void CGUITabControl::addTab(CGUITab* tab)
 {
@@ -201,16 +215,16 @@ void CGUITabControl::addTab(CGUITab* tab)
 	}
 }
 
+
 //! Returns amount of tabs in the tabcontrol
-s32 CGUITabControl::getTabcount()
+s32 CGUITabControl::getTabCount() const
 {
 	return Tabs.size();
 }
 
 
-
 //! Returns a tab based on zero based index
-IGUITab* CGUITabControl::getTab(s32 idx)
+IGUITab* CGUITabControl::getTab(s32 idx) const
 {
 	if (idx < 0 || idx >= (s32)Tabs.size())
 		return 0;
@@ -219,23 +233,14 @@ IGUITab* CGUITabControl::getTab(s32 idx)
 }
 
 
-
 //! called if an event happened.
-bool CGUITabControl::OnEvent(SEvent event)
+bool CGUITabControl::OnEvent(const SEvent& event)
 {
 	if (!IsEnabled)
 		return Parent ? Parent->OnEvent(event) : false;
 
 	switch(event.EventType)
 	{
-	case EET_GUI_EVENT:
-		switch(event.GUIEvent.EventType)
-		{
-			case gui::EGET_ELEMENT_FOCUS_LOST:
-				if (event.GUIEvent.Caller == (IGUIElement*)this)
-					return true;
-		}
-		break;
 	case EET_MOUSE_INPUT_EVENT:
 		switch(event.MouseInput.Event)
 		{
@@ -246,12 +251,17 @@ bool CGUITabControl::OnEvent(SEvent event)
 			Environment->removeFocus(this);
 			selectTab(core::position2d<s32>(event.MouseInput.X, event.MouseInput.Y));
 			return true;
+		default:
+			break;
 		}
+		break;
+	default:
 		break;
 	}
 
 	return Parent ? Parent->OnEvent(event) : false;
 }
+
 
 void CGUITabControl::selectTab(core::position2d<s32> p)
 {
@@ -265,7 +275,7 @@ void CGUITabControl::selectTab(core::position2d<s32> p)
 	frameRect.LowerRightCorner.Y = frameRect.UpperLeftCorner.Y + tabheight;
 	s32 pos = frameRect.UpperLeftCorner.X + 2;
 
-	for (s32 i=0; i<(s32)Tabs.size(); ++i)
+	for (u32 i=0; i<Tabs.size(); ++i)
 	{
 		// get Text
 		const wchar_t* text = 0;
@@ -301,12 +311,11 @@ void CGUITabControl::draw()
 		return;
 
 	IGUIFont* font = skin->getFont();
-	video::IVideoDriver* driver = Environment->getVideoDriver();
 
 	core::rect<s32> frameRect(AbsoluteRect);
 
 	if (Tabs.empty())
-		driver->draw2DRectangle(skin->getColor(EGDC_3D_HIGH_LIGHT),
+		skin->draw2DRectangle(this, skin->getColor(EGDC_3D_HIGH_LIGHT),
 		frameRect, &AbsoluteClippingRect);
 
 	if (!font)
@@ -370,11 +379,11 @@ void CGUITabControl::draw()
 		tr.LowerRightCorner.X = left - 1;
 		tr.UpperLeftCorner.Y = frameRect.LowerRightCorner.Y - 1;
 		tr.LowerRightCorner.Y = frameRect.LowerRightCorner.Y;
-		driver->draw2DRectangle(skin->getColor(EGDC_3D_HIGH_LIGHT), tr, &AbsoluteClippingRect);
+		skin->draw2DRectangle(this, skin->getColor(EGDC_3D_HIGH_LIGHT), tr, &AbsoluteClippingRect);
 
 		tr.UpperLeftCorner.X = right;
 		tr.LowerRightCorner.X = AbsoluteRect.LowerRightCorner.X;
-		driver->draw2DRectangle(skin->getColor(EGDC_3D_HIGH_LIGHT), tr, &AbsoluteClippingRect);
+		skin->draw2DRectangle(this, skin->getColor(EGDC_3D_HIGH_LIGHT), tr, &AbsoluteClippingRect);
 	}
 
 	skin->draw3DTabBody(this, Border, FillBackground, AbsoluteRect, &AbsoluteClippingRect);
@@ -384,7 +393,7 @@ void CGUITabControl::draw()
 
 
 //! Returns which tab is currently active
-s32 CGUITabControl::getActiveTab()
+s32 CGUITabControl::getActiveTab() const
 {
 	return ActiveTab;
 }
@@ -398,10 +407,11 @@ bool CGUITabControl::setActiveTab(IGUIElement *tab)
 	return false;
 }
 
+
 //! Brings a tab to front.
 bool CGUITabControl::setActiveTab(s32 idx)
 {
-	if (idx < 0 || idx >= (s32)Tabs.size())
+	if ((u32)idx >= Tabs.size())
 		return false;
 
 	bool changed = (ActiveTab != idx);
@@ -417,6 +427,7 @@ bool CGUITabControl::setActiveTab(s32 idx)
 		SEvent event;
 		event.EventType = EET_GUI_EVENT;
 		event.GUIEvent.Caller = this;
+		event.GUIEvent.Element = 0;
 		event.GUIEvent.EventType = EGET_TAB_CHANGED;
 		Parent->OnEvent(event);		
 	}
@@ -429,10 +440,11 @@ bool CGUITabControl::setActiveTab(s32 idx)
 void CGUITabControl::removeChild(IGUIElement* child)
 {
 	bool isTab = false;
-	s32 i=0;
 
+	u32 i=0;
 	// check if it is a tab
-	for (i=0; i<(s32)Tabs.size(); )
+	while (i<Tabs.size())
+	{
 		if (Tabs[i] == child)
 		{
 			Tabs[i]->drop();
@@ -441,12 +453,15 @@ void CGUITabControl::removeChild(IGUIElement* child)
 		}
 		else
 			++i;
+	}
 
 	// reassign numbers
 	if (isTab)
-		for (i=0; i<(s32)Tabs.size(); ++i)
+	{
+		for (i=0; i<Tabs.size(); ++i)
 			if (Tabs[i])
 				Tabs[i]->setNumber(i);
+	}
 
 	// remove real element
 	IGUIElement::removeChild(child);
@@ -454,20 +469,20 @@ void CGUITabControl::removeChild(IGUIElement* child)
 
 
 //! Writes attributes of the element.
-void CGUITabControl::serializeAttributes(io::IAttributes* out, io::SAttributeReadWriteOptions* options=0)
+void CGUITabControl::serializeAttributes(io::IAttributes* out, io::SAttributeReadWriteOptions* options=0) const
 {
 	IGUITabControl::serializeAttributes(out,options);
 
-	out->addInt	("ActiveTab",		ActiveTab);
-	out->addBool("Border",			Border);
+	out->addInt("ActiveTab",	ActiveTab);
+	out->addBool("Border",		Border);
 	out->addBool("FillBackground",	FillBackground);
-
 }
+
 
 //! Reads attributes of the element
 void CGUITabControl::deserializeAttributes(io::IAttributes* in, io::SAttributeReadWriteOptions* options=0)
 {
-	Border			= in->getAttributeAsBool("Border");
+	Border		= in->getAttributeAsBool("Border");
 	FillBackground  = in->getAttributeAsBool("FillBackground");
 
 	ActiveTab = -1;
@@ -480,4 +495,6 @@ void CGUITabControl::deserializeAttributes(io::IAttributes* in, io::SAttributeRe
 
 } // end namespace irr
 } // end namespace gui
+
+#endif // _IRR_COMPILE_WITH_GUI_
 

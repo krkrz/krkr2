@@ -6,7 +6,7 @@
 #define __C_D3D8_NORMAL_MAPMATERIAL_RENDERER_H_INCLUDED__
 
 #include "IrrCompileConfig.h"
-#ifdef _IRR_WINDOWS_
+#ifdef _IRR_WINDOWS_API_
 
 #ifdef _IRR_COMPILE_WITH_DIRECT3D_8_
 #include <d3d8.h>
@@ -16,7 +16,7 @@
 
 namespace irr
 {
-namespace video  
+namespace video
 {
 
 //! Renderer for normal maps
@@ -25,7 +25,7 @@ class CD3D8NormalMapRenderer : public CD3D8ShaderMaterialRenderer, IShaderConsta
 public:
 
 	CD3D8NormalMapRenderer(
-		IDirect3DDevice8* d3ddev, video::IVideoDriver* driver, 
+		IDirect3DDevice8* d3ddev, video::IVideoDriver* driver,
 		s32& outMaterialTypeNr, IMaterialRenderer* baseMaterial);
 	~CD3D8NormalMapRenderer();
 
@@ -35,15 +35,15 @@ public:
 
 	bool OnRender(IMaterialRendererServices* service, E_VERTEX_TYPE vtxtype);
 
-	//! Returns the render capability of the material. 
-	virtual s32 getRenderCapability();
+	//! Returns the render capability of the material.
+	virtual s32 getRenderCapability() const;
 
 private:
 
-	//! stores if this shader compiled the shaders and is 
+	//! stores if this shader compiled the shaders and is
 	//! allowed to delete them again. D3D8 lacks reference counting
-	//! support for shaders.						
-	bool CompiledShaders; 
+	//! support for shaders.
+	bool CompiledShaders;
 
 };
 

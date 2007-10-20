@@ -5,7 +5,7 @@
 #ifndef __I_LOGGER_H_INCLUDED__
 #define __I_LOGGER_H_INCLUDED__
 
-#include "IUnknown.h"
+#include "IReferenceCounted.h"
 
 namespace irr
 {
@@ -28,7 +28,7 @@ enum ELOG_LEVEL
 
 
 //! Interface for logging messages, warnings and errors
-class ILogger : public virtual IUnknown
+class ILogger : public virtual IReferenceCounted
 {
 public:
 
@@ -36,7 +36,7 @@ public:
 	virtual ~ILogger() {}
 
 	//! Returns the current set log level.
-	virtual ELOG_LEVEL getLogLevel() = 0;
+	virtual ELOG_LEVEL getLogLevel() const = 0;
 
 	//! Sets a new log level. With this value, texts which are sent to
 	//! the logger are filtered out. For example setting this value to

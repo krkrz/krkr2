@@ -6,7 +6,6 @@
 #define __C_TRIANGLE_RENDERER_TEXTURE_GOURAUD_H_INCLUDED__
 
 #include "ITriangleRenderer.h"
-#include "rect.h"
 
 namespace irr
 {

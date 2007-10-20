@@ -46,7 +46,7 @@ public:
 	virtual video::SMaterial& getMaterial(u32 i);
 
 	//! Returns amount of materials used by this scene node.
-	virtual u32 getMaterialCount();
+	virtual u32 getMaterialCount() const;
 
 	//! pre render event
 	virtual void OnRegisterSceneNode();
@@ -57,36 +57,106 @@ public:
 	//! returns the axis aligned bounding box of this node
 	virtual const core::aabbox3d<f32>& getBoundingBox() const;
 
-	//! Creates a point particle emitter.
-	virtual IParticleEmitter* createPointEmitter(
-		const core::vector3df& direction = core::vector3df(0.0f,0.03f,0.0f), 
-		u32 minParticlesPerSecond = 5,
-		u32 maxParticlePerSecond = 10,
-		video::SColor minStartColor = video::SColor(255,0,0,0),
-		video::SColor maxStartColor = video::SColor(255,255,255,255),
-		u32 lifeTimeMin=2000, u32 lifeTimeMax=4000,
-		s32 maxAngleDegrees=0);
+	//! Creates a particle emitter for an animated mesh scene node
+	virtual IParticleAnimatedMeshSceneNodeEmitter* createAnimatedMeshSceneNodeEmitter(
+		scene::IAnimatedMeshSceneNode* node, bool useNormalDirection = true,
+		const core::vector3df& direction = core::vector3df(0.0f,0.0f,0.0f),
+		f32 normalDirectionModifier = 100.0f, s32 mbNumber = -1,
+		bool everyMeshVertex = false, u32 minParticlesPerSecond = 5,
+		u32 maxParticlesPerSecond = 10,
+		const video::SColor& minStartColor = video::SColor(255,0,0,0),
+		const video::SColor& maxStartColor = video::SColor(255,255,255,255),
+		u32 lifeTimeMin = 2000, u32 lifeTimeMax = 4000,
+		s32 maxAngleDegrees = 0 );
 
 	//! Creates a box particle emitter.
-	virtual IParticleEmitter* createBoxEmitter(
+	virtual IParticleBoxEmitter* createBoxEmitter(
 		const core::aabbox3df& box = core::aabbox3d<f32>(-10,0,-10,5,30,10),
 		const core::vector3df& direction = core::vector3df(0.0f,0.03f,0.0f), 
 		u32 minParticlesPerSecond = 5,
-		u32 maxParticlePerSecond = 10,
-		video::SColor minStartColor = video::SColor(255,0,0,0),
-		video::SColor maxStartColor = video::SColor(255,255,255,255),
+		u32 maxParticlesPerSecond = 10,
+		const video::SColor& minStartColor = video::SColor(255,0,0,0),
+		const video::SColor& maxStartColor = video::SColor(255,255,255,255),
 		u32 lifeTimeMin=2000, u32 lifeTimeMax=4000,
 		s32 maxAngleDegrees=0);
 
+	//! Creates a particle emitter for emitting from a cylinder
+	virtual IParticleCylinderEmitter* createCylinderEmitter(
+		const core::vector3df& center, f32 radius,
+		const core::vector3df& normal, f32 length,
+		bool outlineOnly = false, const core::vector3df& direction = core::vector3df(0.0f,0.0f,0.0f),
+		u32 minParticlesPerSecond = 5, u32 maxParticlesPersSecond = 10,
+		const video::SColor& minStartColor = video::SColor(255,0,0,0),
+		const video::SColor& maxStartColor = video::SColor(255,255,255,255),
+		u32 lifeTimeMin = 2000, u32 lifeTimeMax = 4000,
+		s32 maxAngleDegrees = 0 );
+
+	//! Creates a mesh particle emitter.
+	virtual IParticleMeshEmitter* createMeshEmitter(
+		scene::IMesh* mesh, bool useNormalDirection = true,
+		const core::vector3df& direction = core::vector3df(0.0f,0.0f,0.0f),
+		f32 normalDirectionModifier = 100.0f, s32 mbNumber = -1,
+		bool everyMeshVertex = false,
+		u32 minParticlesPerSecond = 5,
+		u32 maxParticlesPerSecond = 10,
+		const video::SColor& minStartColor = video::SColor(255,0,0,0),
+		const video::SColor& maxStartColor = video::SColor(255,255,255,255),
+		u32 lifeTimeMin = 2000, u32 lifeTimeMax = 4000,
+		s32 maxAngleDegrees = 0 );
+
+	//! Creates a point particle emitter.
+	virtual IParticlePointEmitter* createPointEmitter(
+		const core::vector3df& direction = core::vector3df(0.0f,0.03f,0.0f), 
+		u32 minParticlesPerSecond = 5,
+		u32 maxParticlesPerSecond = 10,
+		const video::SColor& minStartColor = video::SColor(255,0,0,0),
+		const video::SColor& maxStartColor = video::SColor(255,255,255,255),
+		u32 lifeTimeMin=2000, u32 lifeTimeMax=4000,
+		s32 maxAngleDegrees=0);
+
+	//! Creates a ring particle emitter.
+	virtual IParticleRingEmitter* createRingEmitter(
+		const core::vector3df& center, f32 radius, f32 ringThickness,
+		const core::vector3df& direction = core::vector3df(0.0f,0.03f,0.0f),
+		u32 minParticlesPerSecond = 5,
+		u32 maxParticlesPerSecond = 10,
+		const video::SColor& minStartColor = video::SColor(255,0,0,0),
+		const video::SColor& maxStartColor = video::SColor(255,255,255,255),
+		u32 lifeTimeMin=2000, u32 lifeTimeMax=4000,
+		s32 maxAngleDegrees=0);
+
+	//! Creates a sphere particle emitter.
+	virtual IParticleSphereEmitter* createSphereEmitter(
+		const core::vector3df& center, f32 radius,
+		const core::vector3df& direction = core::vector3df(0.0f,0.03f,0.0f),
+		u32 minParticlesPerSecond = 5,
+		u32 maxParticlesPerSecond = 10,
+		const video::SColor& minStartColor = video::SColor(255,0,0,0),
+		const video::SColor& maxStartColor = video::SColor(255,255,255,255),
+		u32 lifeTimeMin=2000, u32 lifeTimeMax=4000,
+		s32 maxAngleDegrees=0);
+
+	//! Creates a point attraction affector. This affector modifies the positions of the
+	//! particles and attracts them to a specified point at a specified speed per second.
+	virtual IParticleAttractionAffector* createAttractionAffector(
+		const core::vector3df& point, f32 speed = 1.0f, bool attract = true,
+		bool affectX = true, bool affectY = true, bool affectZ = true);
+
 	//! Creates a fade out particle affector.
-	virtual IParticleAffector* createFadeOutParticleAffector(
-		video::SColor targetColor = video::SColor(0,0,0,0),
+	virtual IParticleFadeOutAffector* createFadeOutParticleAffector(
+		const video::SColor& targetColor = video::SColor(0,0,0,0),
 		u32 timeNeededToFadeOut = 1000);
 
 	//! Creates a gravity affector.
-	virtual IParticleAffector* createGravityAffector(
+	virtual IParticleGravityAffector* createGravityAffector(
 		const core::vector3df& gravity = core::vector3df(0.0f,-0.03f,0.0f),
 		u32 timeForceLost = 1000);
+
+	//! Creates a rotation affector. This affector rotates the particles
+	//! around a specified pivot point. The speed is in Degrees per second.
+	virtual IParticleRotationAffector* createRotationAffector(
+		const core::vector3df& speed = core::vector3df(5.0f,5.0f,5.0f),
+		const core::vector3df& pivotPoint = core::vector3df(0.0f,0.0f,0.0f) );
 
 	//! Sets the size of all particles.
 	virtual void setParticleSize(
@@ -98,13 +168,13 @@ public:
 	virtual void setParticlesAreGlobal(bool global);
 
 	//! Writes attributes of the scene node.
-	virtual void serializeAttributes(io::IAttributes* out, io::SAttributeReadWriteOptions* options=0);
+	virtual void serializeAttributes(io::IAttributes* out, io::SAttributeReadWriteOptions* options=0) const;
 
 	//! Reads attributes of the scene node.
 	virtual void deserializeAttributes(io::IAttributes* in, io::SAttributeReadWriteOptions* options=0);
 
 	//! Returns type of the scene node
-	virtual ESCENE_NODE_TYPE getType() { return ESNT_PARTICLE_SYSTEM; }
+	virtual ESCENE_NODE_TYPE getType() const { return ESNT_PARTICLE_SYSTEM; }
 
 private:
 

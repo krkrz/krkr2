@@ -5,10 +5,12 @@
 #ifndef __C_IMAGE_LOADER_JPG_H_INCLUDED__
 #define __C_IMAGE_LOADER_JPG_H_INCLUDED__
 
+#include "IrrCompileConfig.h"
+
+#ifdef _IRR_COMPILE_WITH_JPG_LOADER_
+
 #include "IImageLoader.h"
 
-
-#include "IrrCompileConfig.h"
 #include <stdio.h> // required for jpeglib.h
 #ifdef _IRR_COMPILE_WITH_LIBJPEG_
 extern "C" {
@@ -41,13 +43,13 @@ public:
 
 	//! returns true if the file maybe is able to be loaded by this class
 	//! based on the file extension (e.g. ".tga")
-	virtual bool isALoadableFileExtension(const c8* fileName);
+	virtual bool isALoadableFileExtension(const c8* fileName) const;
 
 	//! returns true if the file maybe is able to be loaded by this class
-	virtual bool isALoadableFileFormat(irr::io::IReadFile* file);
+	virtual bool isALoadableFileFormat(io::IReadFile* file) const;
 
 	//! creates a surface from the file
-	virtual IImage* loadImage(irr::io::IReadFile* file);
+	virtual IImage* loadImage(io::IReadFile* file) const;
 
 private:
 
@@ -106,5 +108,6 @@ private:
 } // end namespace irr
 
 
+#endif
 #endif
 

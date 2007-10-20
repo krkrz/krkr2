@@ -5,6 +5,8 @@
 #ifndef __C_GUI_SCROLL_BAR_H_INCLUDED__
 #define __C_GUI_SCROLL_BAR_H_INCLUDED__
 
+#include "IrrCompileConfig.h"
+#ifdef _IRR_COMPILE_WITH_GUI_
 
 #include "IGUIScrollBar.h"
 #include "IGUIButton.h"
@@ -24,57 +26,75 @@ namespace gui
 			bool noclip=false);
 
 		//! destructor
-		~CGUIScrollBar();
+		virtual ~CGUIScrollBar();
 
 		//! called if an event happened.
-		virtual bool OnEvent(SEvent event);
+		virtual bool OnEvent(const SEvent& event);
 
 		//! draws the element and its children
 		virtual void draw();
 
-		//! sets the position of the scrollbar
-		virtual void setPos(s32 pos);
+		//! gets the maximum value of the scrollbar.
+		virtual s32 getMax() const;
 
-		//! sets the maximum value of the scrollbar. must be > 0
+		//! sets the maximum value of the scrollbar.
 		virtual void setMax(s32 max);
+
+		//! gets the small step value
+		virtual s32 getSmallStep() const;
 
 		//! sets the small step value
 		virtual void setSmallStep(s32 step);
 
+		//! gets the large step value
+		virtual s32 getLargeStep() const;
+
+		//! sets the large step value
+		virtual void setLargeStep(s32 step);
+
 		//! gets the current position of the scrollbar
-		virtual s32 getPos();
+		virtual s32 getPos() const;
+
+		//! sets the position of the scrollbar
+		virtual void setPos(s32 pos);
 
 		//! updates the rectangle
 		virtual void updateAbsolutePosition();
 
 		//! Writes attributes of the element.
-		virtual void serializeAttributes(io::IAttributes* out, io::SAttributeReadWriteOptions* options);
+		virtual void serializeAttributes(io::IAttributes* out, io::SAttributeReadWriteOptions* options) const;
 
 		//! Reads attributes of the element
 		virtual void deserializeAttributes(io::IAttributes* in, io::SAttributeReadWriteOptions* options);
 
-
 	private:
 
 		void refreshControls();
-		void setPosFromMousePos(s32 x, s32 y);
+		s32 getPosFromMousePos(s32 x, s32 y) const;
 
 		IGUIButton* UpButton;
 		IGUIButton* DownButton;
 
+		core::rect<s32> SliderRect;
+
 		bool Dragging;
 		bool Horizontal;
+		bool DraggedBySlider;
+		bool TrayClick;
 		s32 Pos;
 		s32 DrawPos;
 		s32 DrawHeight;
 		s32 Max;
 		s32 SmallStep;
-
-
+		s32 LargeStep;
+		s32 DesiredPos;
+		u32 LastChange;
 	};
 
 } // end namespace gui
 } // end namespace irr
+
+#endif // _IRR_COMPILE_WITH_GUI_
 
 #endif
 

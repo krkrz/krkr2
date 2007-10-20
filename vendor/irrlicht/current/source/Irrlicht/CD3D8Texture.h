@@ -43,13 +43,13 @@ public:
 	virtual void unlock();
 
 	//! Returns original size of the texture.
-	virtual const core::dimension2d<s32>& getOriginalSize();
+	virtual const core::dimension2d<s32>& getOriginalSize() const;
 
 	//! Returns (=size) of the texture.
-	virtual const core::dimension2d<s32>& getSize();
+	virtual const core::dimension2d<s32>& getSize() const;
 
 	//! returns driver type of texture (=the driver, who created the texture)
-	virtual E_DRIVER_TYPE getDriverType();
+	virtual E_DRIVER_TYPE getDriverType() const;
 
 	//! returns color format of texture
 	virtual ECOLOR_FORMAT getColorFormat() const;
@@ -58,17 +58,17 @@ public:
 	virtual u32 getPitch() const;
 
 	//! returns the DIRECT3D8 Texture
-	IDirect3DTexture8* getDX8Texture();
+	IDirect3DTexture8* getDX8Texture() const;
 
 	//! returns if texture has mipmap levels
-	bool hasMipMaps();
+	bool hasMipMaps() const;
 
 	//! Regenerates the mip map levels of the texture. Useful after locking and
 	//! modifying the texture
 	virtual void regenerateMipMapLevels();
 
 	//! returns if it is a render target
-	bool isRenderTarget();
+	virtual bool isRenderTarget() const;
 
 	//! Returns pointer to the render target surface
 	IDirect3DSurface8* getRenderTargetSurface();
@@ -78,27 +78,24 @@ private:
 	void createRenderTarget();
 
 	//! returns the size of a texture which would be the optimize size for rendering it
-	inline s32 getTextureSizeFromImageSize(s32 size);
+	inline s32 getTextureSizeFromImageSize(s32 size) const;
 
 	//! creates the hardware texture
-	void createTexture(u32 flags);
+	bool createTexture(u32 flags);
 
 	//! copies the image to the texture
 	bool copyTexture();
 
-	//! optimized for 16 bit to 16 copy.
-	bool copyTo16BitTexture();
+	//! convert color formats
+	ECOLOR_FORMAT getColorFormatFromD3DFormat(D3DFORMAT format);
 
-	//! copies texture to 32 bit hardware texture
-	bool copyTo32BitTexture();
-
-	bool createMipMaps(s32 level=1);
+	bool createMipMaps(u32 level=1);
 
 	void copy16BitMipMap(char* src, char* tgt,
-		s32 width, s32 height, s32 pitchsrc, s32 pitchtgt);
+		s32 width, s32 height, s32 pitchsrc, s32 pitchtgt) const;
 
 	void copy32BitMipMap(char* src, char* tgt,
-		s32 width, s32 height, s32 pitchsrc, s32 pitchtgt);
+		s32 width, s32 height, s32 pitchsrc, s32 pitchtgt) const;
 
 	IImage* Image;
 	IDirect3DDevice8* Device;
@@ -109,7 +106,6 @@ private:
 	core::dimension2d<s32> ImageSize;
 	s32 Pitch;
 	ECOLOR_FORMAT ColorFormat;
-	bool SurfaceHasSameSize; // true if image has the same dimension as texture.
 	bool HasMipMaps;
 	bool IsRenderTarget;
 };

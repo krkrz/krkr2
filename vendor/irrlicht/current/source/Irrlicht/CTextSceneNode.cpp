@@ -6,6 +6,7 @@
 #include "ISceneManager.h"
 #include "IVideoDriver.h"
 #include "ICameraSceneNode.h"
+#include "IGUISpriteBank.h"
 #include "SMeshBuffer.h"
 #include "os.h"
 
@@ -71,12 +72,6 @@ const core::aabbox3d<f32>& CTextSceneNode::getBoundingBox() const
 	return Box;
 }
 
-//! returns amount of materials used by this scene node.
-u32 CTextSceneNode::getMaterialCount()
-{
-	return 0;
-}
-
 //! sets the text string
 void CTextSceneNode::setText(const wchar_t* text)
 {
@@ -127,7 +122,7 @@ CBillboardTextSceneNode::CBillboardTextSceneNode(ISceneNode* parent, ISceneManag
 			{
 				SMeshBuffer *mb = new SMeshBuffer();
 				mb->Material = Material;
-				mb->Material.Textures[0] = Font->getSpriteBank()->getTexture(i);
+				mb->Material.setTexture(0, Font->getSpriteBank()->getTexture(i));
 				Mesh->addMeshBuffer(mb);
 				mb->drop();
 			}
@@ -163,6 +158,13 @@ void CBillboardTextSceneNode::setText(const wchar_t* text)
 	Text = text;
 
 	Symbol.clear();
+
+	// clear mesh
+	for (u32 j=0; j < Mesh->getMeshBufferCount(); ++j)
+	{
+		((SMeshBuffer*)Mesh->getMeshBuffer(j))->Indices.clear();
+		((SMeshBuffer*)Mesh->getMeshBuffer(j))->Vertices.clear();
+	}
 
 	if (!Font)
 		return;
@@ -341,7 +343,7 @@ void CBillboardTextSceneNode::render()
 		driver->drawMeshBuffer(Mesh->getMeshBuffer(i));
 	}
 
-	if (DebugDataVisible)
+	if ( DebugDataVisible & scene::EDS_BBOX )
 	{
 		driver->setTransform(video::ETS_WORLD, AbsoluteTransformation);
 		video::SMaterial m;
@@ -386,7 +388,7 @@ video::SMaterial& CBillboardTextSceneNode::getMaterial(u32 i)
 
 
 //! returns amount of materials used by this scene node.
-u32 CBillboardTextSceneNode::getMaterialCount()
+u32 CBillboardTextSceneNode::getMaterialCount() const
 {
 	if (Mesh)
 		return Mesh->getMeshBufferCount();

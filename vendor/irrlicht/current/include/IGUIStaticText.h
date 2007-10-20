@@ -24,7 +24,7 @@ namespace gui
 			: IGUIElement(EGUIET_STATIC_TEXT, environment, parent, id, rectangle) {}
 
 		//! destructor
-		~IGUIStaticText() {};
+		virtual ~IGUIStaticText() {}
 
 		//! Sets another skin independent font.
 		/** If this is set to zero, the button uses the font of the skin.
@@ -33,11 +33,11 @@ namespace gui
 
 		//! Gets the override font (if any)
 		//! \return The override font (may be 0)
-		virtual IGUIFont * getOverrideFont(void) = 0;
+		virtual IGUIFont* getOverrideFont(void) const = 0;
 
 		//! Sets another color for the text.
 		/** If set, the static text does not use the EGDC_BUTTON_TEXT color defined
-         in the skin, but the set color instead. You don't need to call 
+		 in the skin, but the set color instead. You don't need to call 
 		 IGUIStaticText::enableOverrrideColor(true) after this, this is done
 		 by this function.
 		 If you set a color, and you want the text displayed with the color
@@ -47,7 +47,7 @@ namespace gui
 
 		//! Gets the override color
 		//! \return: The override color
-		virtual video::SColor const & getOverrideColor(void) = 0;
+		virtual video::SColor const& getOverrideColor(void) const = 0;
 
 		//! Sets if the static text should use the overide color or the color in the gui skin.
 		/** \param enable: If set to true, the override color, which can be set
@@ -57,28 +57,43 @@ namespace gui
 
 		//! Checks if an override color is enabled
 		//! \return true if the override color is enabled, false otherwise
-		virtual bool isOverrideColorEnabled(void) = 0;
+		virtual bool isOverrideColorEnabled(void) const = 0;
+
+		//! Sets another color for the background.
+		virtual void setBackgroundColor(video::SColor color) = 0;
+
+		//! Sets whether to draw the background
+		virtual void setDrawBackground(bool draw) = 0;
+
+		//! Sets whether to draw the border
+		virtual void setDrawBorder(bool draw) = 0;
+
+		//! Sets text justification mode
+		/** \param horizontal: EGUIA_UPPERLEFT for left justified (default), 
+		 EGUIA_LOWEERRIGHT for right justified, or EGUIA_CENTER for centered text.
+		\param vertical: EGUIA_UPPERLEFT to align with top edge, 
+		 EGUIA_LOWEERRIGHT for bottom edge, or EGUIA_CENTER for centered text (default). */
+		virtual void setTextAlignment(EGUI_ALIGNMENT horizontal, EGUI_ALIGNMENT vertical) = 0;
 
 		//! Enables or disables word wrap for using the static text as multiline text control.
 		/** \param enable: If set to true, words going over one line are 
-		 breaked to the next line. */
+		 broken on to the next line. */
 		virtual void setWordWrap(bool enable) = 0;
 
 		//! Checks if word wrap is enabled
 		//! \return true if word wrap is enabled, false otherwise
-		virtual bool isWordWrapEnabled(void) = 0;
+		virtual bool isWordWrapEnabled(void) const = 0;
 
 		//! Returns the height of the text in pixels when it is drawn. 
 		/** This is useful for adjusting the layout of gui elements based on the height 
 		 of the multiline text in this element. 
 		 \return Returns height of text in pixels. */
-		virtual s32 getTextHeight() = 0;
+		virtual s32 getTextHeight() const = 0;
 
 		//! Returns the width of the current text, in the current font
 		/** If the text is broken, this returns the width of the widest line
 		 \return The width of the text, or the widest broken line. */
-		virtual s32 getTextWidth(void) = 0;
-
+		virtual s32 getTextWidth(void) const = 0;
 	};
 
 
@@ -86,5 +101,4 @@ namespace gui
 } // end namespace irr
 
 #endif
-
 

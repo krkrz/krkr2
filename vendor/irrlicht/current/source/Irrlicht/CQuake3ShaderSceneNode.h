@@ -33,7 +33,7 @@ public:
 	virtual void OnAnimate(u32 timeMs);
 	virtual const core::aabbox3d<f32>& getBoundingBox() const;
 
-	virtual u32 getMaterialCount();
+	virtual u32 getMaterialCount() const;
 	virtual video::SMaterial& getMaterial(u32 i);
 
 private:
@@ -58,7 +58,7 @@ private:
 	core::array< SQ3Texture > Q3Texture;
 
 	void loadTextures ( io::IFileSystem * fileSystem );
-	void clone ( scene::SMeshBufferLightMap * buffer );
+	void cloneBuffer ( scene::SMeshBufferLightMap * buffer );
 
 	void vertextransform_wave ( f32 dt, quake3::SModifierFunction &function );
 	void vertextransform_bulge( f32 dt, quake3::SModifierFunction &function );

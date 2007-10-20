@@ -5,12 +5,11 @@
 #ifndef __I_TRIANGLE_RENDERER_H_INCLUDED__
 #define __I_TRIANGLE_RENDERER_H_INCLUDED__
 
-#include "IUnknown.h"
+#include "IReferenceCounted.h"
 #include "IImage.h"
 #include "S2DVertex.h"
 #include "rect.h"
 #include "IZBuffer.h"
-#include "IImage.h"
 
 namespace irr
 {
@@ -32,7 +31,7 @@ namespace video
 		ETR_COUNT
 	};
 
-	class ITriangleRenderer : public virtual IUnknown
+	class ITriangleRenderer : public virtual IReferenceCounted
 	{
 	public:
 	

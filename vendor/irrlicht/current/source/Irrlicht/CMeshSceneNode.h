@@ -43,16 +43,16 @@ namespace scene
 		virtual video::SMaterial& getMaterial(u32 i);
 		
 		//! returns amount of materials used by this scene node.
-		virtual u32 getMaterialCount();
+		virtual u32 getMaterialCount() const;
 
 		//! Writes attributes of the scene node.
-		virtual void serializeAttributes(io::IAttributes* out, io::SAttributeReadWriteOptions* options=0);
+		virtual void serializeAttributes(io::IAttributes* out, io::SAttributeReadWriteOptions* options=0) const;
 
 		//! Reads attributes of the scene node.
 		virtual void deserializeAttributes(io::IAttributes* in, io::SAttributeReadWriteOptions* options=0);
 
 		//! Returns type of the scene node
-		virtual ESCENE_NODE_TYPE getType() { return ESNT_MESH; }
+		virtual ESCENE_NODE_TYPE getType() const { return ESNT_MESH; }
 
 		//! Sets a new mesh
 		virtual void setMesh(IMesh* mesh);
@@ -62,11 +62,14 @@ namespace scene
 
 		//! Sets if the scene node should not copy the materials of the mesh but use them in a read only style.
 		/* In this way it is possible to change the materials a mesh causing all mesh scene nodes 
-	    referencing this mesh to change too. */
+		referencing this mesh to change too. */
 		virtual void setReadOnlyMaterials(bool readonly);
 
 		//! Returns if the scene node should not copy the materials of the mesh but use them in a read only style
-		virtual bool isReadOnlyMaterials();
+		virtual bool isReadOnlyMaterials() const;
+
+		//! Creates a clone of this scene node and its children.
+		virtual ISceneNode* clone(ISceneNode* newParent=0, ISceneManager* newManager=0);
 
 	protected:
 

@@ -5,6 +5,9 @@
 #ifndef __C_GUI_MESH_VIEWER_H_INCLUDED__
 #define __C_GUI_MESH_VIEWER_H_INCLUDED__
 
+#include "IrrCompileConfig.h"
+#ifdef _IRR_COMPILE_WITH_GUI_
+
 #include "IGUIMeshViewer.h"
 #include "SMaterial.h"
 #include "vector3d.h"
@@ -23,23 +26,25 @@ namespace gui
 		CGUIMeshViewer(IGUIEnvironment* environment, IGUIElement* parent, s32 id, core::rect<s32> rectangle);
 
 		//! destructor
-		~CGUIMeshViewer();
+		virtual ~CGUIMeshViewer();
 
 		//! sets the mesh to be shown
 		virtual void setMesh(scene::IAnimatedMesh* mesh);
+
+		//! Gets the displayed mesh
+		virtual scene::IAnimatedMesh* getMesh() const;
 
 		//! sets the material
 		virtual void setMaterial(const video::SMaterial& material);
 
 		//! gets the material
-		virtual const video::SMaterial& getMaterial();
+		virtual const video::SMaterial& getMaterial() const;
 
 		//! called if an event happened.
-		virtual bool OnEvent(SEvent event);
+		virtual bool OnEvent(const SEvent& event);
 
 		//! draws the element and its children
 		virtual void draw();
-
 
 	private:
 
@@ -51,5 +56,7 @@ namespace gui
 } // end namespace gui
 } // end namespace irr
 
-#endif
+#endif // _IRR_COMPILE_WITH_GUI_
+
+#endif // __C_GUI_MESH_VIEWER_H_INCLUDED__
 

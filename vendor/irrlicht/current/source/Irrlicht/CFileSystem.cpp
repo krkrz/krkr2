@@ -16,11 +16,9 @@
 #include "CAttributes.h"
 #include "CMemoryReadFile.h"
 
-#ifdef _IRR_WINDOWS_
+#ifdef _IRR_WINDOWS_API_
 #include <direct.h> // for _chdir
-#endif
-
-#if (defined(LINUX) || defined(MACOSX))
+#else
 #include <unistd.h>
 #include <limits.h>
 #include <stdlib.h>
@@ -92,7 +90,7 @@ IReadFile* CFileSystem::createAndOpenFile(const c8* filename)
 
 //! Creates an IReadFile interface for treating memory like a file.
 IReadFile* CFileSystem::createMemoryReadFile(void* memory, s32 len, 
-											const c8* fileName, bool deleteMemoryWhenDropped)
+			const c8* fileName, bool deleteMemoryWhenDropped)
 {
 	if (!memory)
 		return 0;
@@ -185,47 +183,44 @@ bool CFileSystem::addPakFileArchive(const c8* filename, bool ignoreCase, bool ig
 //! Returns the string of the current working directory
 const c8* CFileSystem::getWorkingDirectory()
 {
-#ifdef _IRR_WINDOWS_
+#ifdef _IRR_WINDOWS_API_
 	_getcwd(WorkingDirectory, FILE_SYSTEM_MAX_PATH);
 #endif
 
-#if (defined(LINUX) || defined(MACOSX))
+#if (defined(_IRR_POSIX_API_) || defined(MACOSX))
 	getcwd(WorkingDirectory, (size_t)FILE_SYSTEM_MAX_PATH);
 #endif
 	return WorkingDirectory;
 }
 
 
-//! Changes the current Working Directory to the string given.
+//! Changes the current Working Directory to the given string.
 //! The string is operating system dependent. Under Windows it will look
 //! like this: "drive:\directory\sudirectory\"
-//! \return
-//! Returns true if successful, otherwise false.
+//! \return Returns true if successful, otherwise false.
 bool CFileSystem::changeWorkingDirectoryTo(const c8* newDirectory)
 {
 	bool success=false;
-#ifdef _IRR_WINDOWS_
+#ifdef _MSC_VER
 	success=(_chdir(newDirectory) == 0);
-#endif
-
-#if (defined(LINUX) || defined(MACOSX))
+#else
 	success=(chdir(newDirectory) == 0);
 #endif
 	return success;
 }
 
-irr::core::stringc CFileSystem::getAbsolutePath(irr::core::stringc &filename)
+core::stringc CFileSystem::getAbsolutePath(const core::stringc& filename) const
 {
 	c8 *p=0;
-	irr::core::stringc ret;
+	core::stringc ret;
 
-#ifdef _IRR_WINDOWS_
+#ifdef _IRR_WINDOWS_API_
 
 	c8 fpath[_MAX_PATH];
 	p = _fullpath( fpath, filename.c_str(), _MAX_PATH);
 	ret = p;
 
-#elif (defined(LINUX) || defined(MACOSX))
+#elif (defined(_IRR_POSIX_API_) || defined(MACOSX))
 
 	c8 fpath[4096];
 	p = realpath(filename.c_str(), fpath);
@@ -236,16 +231,28 @@ irr::core::stringc CFileSystem::getAbsolutePath(irr::core::stringc &filename)
 	return ret;
 }
 
+core::stringc CFileSystem::getFileDir(const core::stringc& filename) const
+{
+	// find last forward or backslash
+	s32 lastSlash = filename.findLast('/');
+	const s32 lastBackSlash = filename.findLast('\\');
+	lastSlash = lastSlash > lastBackSlash ? lastSlash : lastBackSlash;
+
+	if ((u32)lastSlash < filename.size())
+		return filename.subString(0, lastSlash);
+	else
+		return ".";
+}
 
 //! Creates a list of files and directories in the current working directory 
-IFileList* CFileSystem::createFileList()
+IFileList* CFileSystem::createFileList() const
 {
 	return new CFileList();
 }
 
 
 //! determines if a file exists and would be able to be opened.
-bool CFileSystem::existFile(const c8* filename)
+bool CFileSystem::existFile(const c8* filename) const
 {
 	u32 i;
 

@@ -47,7 +47,7 @@ CSceneNodeAnimatorCollisionResponse::~CSceneNodeAnimatorCollisionResponse()
 //! Returns if the attached scene node is falling, which means that
 //! there is no blocking wall from the scene node in the direction of
 //! the gravity.
-bool CSceneNodeAnimatorCollisionResponse::isFalling()
+bool CSceneNodeAnimatorCollisionResponse::isFalling() const
 {
 	_IRR_IMPLEMENT_MANAGED_MARSHALLING_BUGFIX;
 	return Falling;
@@ -189,7 +189,7 @@ void CSceneNodeAnimatorCollisionResponse::animateNode(ISceneNode* node, u32 time
 }
 
 //! Writes attributes of the scene node animator.
-void CSceneNodeAnimatorCollisionResponse::serializeAttributes(io::IAttributes* out, io::SAttributeReadWriteOptions* options)
+void CSceneNodeAnimatorCollisionResponse::serializeAttributes(io::IAttributes* out, io::SAttributeReadWriteOptions* options) const
 {
 	out->addVector3d("Radius", Radius);
 	out->addVector3d("Gravity", Gravity);

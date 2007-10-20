@@ -10,7 +10,7 @@
 
 namespace irr
 {
-namespace video  
+namespace video
 {
 
 /*!
@@ -21,7 +21,7 @@ class CSoftwareTexture : public ITexture
 public:
 
 	//! constructor
-	CSoftwareTexture(IImage* surface, const char* name);
+	CSoftwareTexture(IImage* surface, const char* name, bool renderTarget=false);
 
 	//! destructor
 	virtual ~CSoftwareTexture();
@@ -33,10 +33,10 @@ public:
 	virtual void unlock();
 
 	//! Returns original size of the texture.
-	virtual const core::dimension2d<s32>& getOriginalSize();
+	virtual const core::dimension2d<s32>& getOriginalSize() const;
 
 	//! Returns (=size) of the texture.
-	virtual const core::dimension2d<s32>& getSize();
+	virtual const core::dimension2d<s32>& getSize() const;
 
 	//! returns unoptimized surface
 	virtual CImage* getImage();
@@ -45,7 +45,7 @@ public:
 	virtual CImage* getTexture();
 
 	//! returns driver type of texture (=the driver, who created the texture)
-	virtual E_DRIVER_TYPE getDriverType();
+	virtual E_DRIVER_TYPE getDriverType() const;
 
 	//! returns color format of texture
 	virtual ECOLOR_FORMAT getColorFormat() const;
@@ -57,15 +57,18 @@ public:
 	//! modifying the texture
 	virtual void regenerateMipMapLevels();
 
+	//! is it a render target?
+	virtual bool isRenderTarget() const;
+
 private:
 
 	//! returns the size of a texture which would be the optimize size for rendering it
-	inline s32 getTextureSizeFromSurfaceSize(s32 size);
+	inline s32 getTextureSizeFromSurfaceSize(s32 size) const;
 
 	CImage* Image;
 	CImage* Texture;
 	core::dimension2d<s32> OrigSize;
-
+	bool IsRenderTarget;
 };
 
 

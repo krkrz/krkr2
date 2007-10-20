@@ -38,9 +38,6 @@ namespace scene
 		//! returns the axis aligned bounding box of this node
 		virtual const core::aabbox3d<f32>& getBoundingBox() const;
 
-		//! returns amount of materials used by this scene node.
-		virtual u32 getMaterialCount();
-
 		//! sets the text string
 		virtual void setText(const wchar_t* text);
 
@@ -48,7 +45,7 @@ namespace scene
 		virtual void setTextColor(video::SColor color);
 		
 		//! Returns type of the scene node
-		virtual ESCENE_NODE_TYPE getType() { return ESNT_TEXT; }
+		virtual ESCENE_NODE_TYPE getType() const { return ESNT_TEXT; }
 
 	private:
 
@@ -94,10 +91,10 @@ namespace scene
 		virtual video::SMaterial& getMaterial(u32 i);
 		
 		//! returns amount of materials used by this scene node.
-		virtual u32 getMaterialCount();
+		virtual u32 getMaterialCount() const;
 
 		//! Returns type of the scene node
-		virtual ESCENE_NODE_TYPE getType() { return ESNT_TEXT; }
+		virtual ESCENE_NODE_TYPE getType() const { return ESNT_TEXT; }
 
 	private:
 

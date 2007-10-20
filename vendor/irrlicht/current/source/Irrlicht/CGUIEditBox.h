@@ -5,6 +5,9 @@
 #ifndef __C_GUI_EDIT_BOX_H_INCLUDED__
 #define __C_GUI_EDIT_BOX_H_INCLUDED__
 
+#include "IrrCompileConfig.h"
+#ifdef _IRR_COMPILE_WITH_GUI_
+
 #include "IGUIEditBox.h"
 #include "irrArray.h"
 #include "IOSOperator.h"
@@ -19,11 +22,10 @@ namespace gui
 
 		//! constructor
 		CGUIEditBox(const wchar_t* text, bool border, IGUIEnvironment* environment,
-			IGUIElement* parent, s32 id, const core::rect<s32>& rectangle,
-			IOSOperator* op);
+			IGUIElement* parent, s32 id, const core::rect<s32>& rectangle);
 
 		//! destructor
-		~CGUIEditBox();
+		virtual ~CGUIEditBox();
 
 		//! Sets another skin independent font.
 		virtual void setOverrideFont(IGUIFont* font=0);
@@ -35,8 +37,42 @@ namespace gui
 		//! color in the gui skin.
 		virtual void enableOverrideColor(bool enable);
 
+		//! Turns the border on or off
+		virtual void setDrawBorder(bool border);
+
+		//! Enables or disables word wrap for using the edit box as multiline text editor.
+		virtual void setWordWrap(bool enable);
+
+		//! Checks if word wrap is enabled
+		//! \return true if word wrap is enabled, false otherwise
+		virtual bool isWordWrapEnabled() const;
+
+		//! Enables or disables newlines.
+		/** \param enable: If set to true, the EGET_EDITBOX_ENTER event will not be fired,
+		instead a newline character will be inserted. */
+		virtual void setMultiLine(bool enable);
+
+		//! Checks if multi line editing is enabled
+		//! \return true if mult-line is enabled, false otherwise
+		virtual bool isMultiLineEnabled() const;
+
+		//! Enables or disables automatic scrolling with cursor position
+		//! \param enable: If set to true, the text will move around with the cursor position
+		virtual void setAutoScroll(bool enable);
+
+		//! Checks to see if automatic scrolling is enabled
+		//! \return true if automatic scrolling is enabled, false if not
+		virtual bool isAutoScrollEnabled() const;
+
+		//! Gets the size area of the text in the edit box
+		//! \return Returns the size in pixels of the text
+		virtual core::dimension2di getTextDimension();
+
+		//! Sets text justification
+		virtual void setTextAlignment(EGUI_ALIGNMENT horizontal, EGUI_ALIGNMENT vertical);
+
 		//! called if an event happened.
-		virtual bool OnEvent(SEvent event);
+		virtual bool OnEvent(const SEvent& event);
 
 		//! draws the element and its children
 		virtual void draw();
@@ -47,22 +83,44 @@ namespace gui
 		//! Sets the maximum amount of characters which may be entered in the box.
 		//! \param max: Maximum amount of characters. If 0, the character amount is 
 		//! infinity.
-		virtual void setMax(s32 max);
+		virtual void setMax(u32 max);
 
 		//! Returns maximum amount of characters, previously set by setMax();
-		virtual s32 getMax();
+		virtual u32 getMax() const;
+
+		//! Sets whether the edit box is a password box. Setting this to true will 
+		/** disable MultiLine, WordWrap and the ability to copy with ctrl+c or ctrl+x
+		\param passwordBox: true to enable password, false to disable
+		\param passwordChar: the character that is displayed instead of letters */
+		virtual void setPasswordBox(bool passwordBox, wchar_t passwordChar = L'*');
+
+		//! Returns true if the edit box is currently a password box.
+		virtual bool isPasswordBox() const;
+
+		//! Updates the absolute position, splits text if required
+		virtual void updateAbsolutePosition();
 
 		//! Writes attributes of the element.
-		virtual void serializeAttributes(io::IAttributes* out, io::SAttributeReadWriteOptions* options);
+		virtual void serializeAttributes(io::IAttributes* out, io::SAttributeReadWriteOptions* options) const;
 
 		//! Reads attributes of the element
 		virtual void deserializeAttributes(io::IAttributes* in, io::SAttributeReadWriteOptions* options);
 
 	protected:
+		//! Breaks the single text line.
+		void breakText();
+		//! sets the area of the given line
+		void setTextRect(s32 line);
+		//! returns the line number that the cursor is on
+		s32 getLineFromPos(s32 pos);
+		//! adds a letter to the edit box
+		void inputChar(wchar_t c);
+		//! calculates the current scroll position
+		void calculateScrollPos();
 
 		bool processKey(const SEvent& event);
 		bool processMouse(const SEvent& event);
-		s32 getCursorPos(s32 x);
+		s32 getCursorPos(s32 x, s32 y);
 
 		bool MouseMarking;
 		bool Border;
@@ -71,17 +129,28 @@ namespace gui
 		s32 MarkEnd;
 
 		video::SColor OverrideColor;
-		gui::IGUIFont* OverrideFont;
+		gui::IGUIFont *OverrideFont, *LastBreakFont;
 		IOSOperator* Operator;
 
 		u32 BlinkStartTime;
 		s32 CursorPos;
-		s32 ScrollPos; // scrollpos in characters
-		s32 Max;
+		s32 HScrollPos, VScrollPos; // scroll position in characters
+		u32 Max;
+
+		bool WordWrap, MultiLine, AutoScroll, PasswordBox;
+		wchar_t PasswordChar;
+		EGUI_ALIGNMENT HAlign, VAlign;
+
+		core::array< core::stringw > BrokenText;
+		core::array< s32 > BrokenTextPositions;
+
+		core::rect<s32> CurrentTextRect, frameRect; // temporary values
 	};
+
 
 } // end namespace gui
 } // end namespace irr
 
-#endif
+#endif // _IRR_COMPILE_WITH_GUI_
+#endif // __C_GUI_EDIT_BOX_H_INCLUDED__
 

@@ -16,7 +16,7 @@ namespace irr
 namespace scene
 {
 
-	//! Defines the view frustum. Thats the space viewed by the camera.
+	//! Defines the view frustum. That's the space visible by the camera.
 	/** The view frustum is enclosed by 6 planes. These six planes share
 	four points. A bounding box around these four points is also stored in
 	this structure.
@@ -25,9 +25,9 @@ namespace scene
 	{
 		enum VFPLANES
 		{
-			//! Far plane of the frustum. Thats the plane farest away from the eye.
+			//! Far plane of the frustum. That is the plane farest away from the eye.
 			VF_FAR_PLANE = 0,
-			//! Near plane of the frustum. Thats the plane nearest to the eye.
+			//! Near plane of the frustum. That is the plane nearest to the eye.
 			VF_NEAR_PLANE,
 			//! Left plane of the frustum.
 			VF_LEFT_PLANE,
@@ -42,27 +42,32 @@ namespace scene
 			VF_PLANE_COUNT
 		};
 
-		//! Default Constructor
-		SViewFrustum() {};
+		//! Hold a copy of important transform matrices
+		enum E_TRANSFORMATION_STATE_3
+		{
+			ETS_VIEW_PROJECTION_3 = video::ETS_PROJECTION + 1,
+			ETS_VIEW_MODEL_INVERSE_3,
+			ETS_CURRENT_3,
+			ETS_COUNT_3
+		};
 
-		//! This constructor creates a view frustum based on a projection and/or
-		//! view matrix.
+		//! Default Constructor
+		SViewFrustum() {}
+
+		//! Copy Constructor
+		SViewFrustum(const SViewFrustum& other);
+
+		//! This constructor creates a view frustum based on a
+		//! projection and/or view matrix.
 		SViewFrustum(const core::matrix4& mat);
 
 		//! This constructor creates a view frustum based on a projection
 		//! and/or view matrix.
-		void setFrom(const core::matrix4& mat);
-
-		//! the position of the camera
-		core::vector3df cameraPosition;
-
-		//! all planes enclosing the view frustum.
-		core::plane3d<f32> planes[VF_PLANE_COUNT];
-
+		inline void setFrom(const core::matrix4& mat);
 
 		//! transforms the frustum by the matrix
 		//! \param mat: Matrix by which the view frustum is transformed.
-		void transform(const core::matrix4 &mat);
+		void transform(const core::matrix4& mat);
 
 		//! returns the point which is on the far left upper corner inside the
 		//! the view frustum.
@@ -86,28 +91,49 @@ namespace scene
 		//! recalculates the bounding box member based on the planes
 		inline void recalculateBoundingBox();
 
-		//! bouding box around the view frustum
+		void setTransformState( video::E_TRANSFORMATION_STATE state);
+
+		//! the position of the camera
+		core::vector3df cameraPosition;
+
+		//! all planes enclosing the view frustum.
+		core::plane3d<f32> planes[VF_PLANE_COUNT];
+
+		//! bounding box around the view frustum
 		core::aabbox3d<f32> boundingBox;
 
 		//! Hold a copy of important transform matrices
-		enum E_TRANSFORMATION_STATE_3
-		{
-			ETS_VIEW_PROJECTION_3 = video::ETS_PROJECTION + 1,
-			ETS_VIEW_MODEL_INVERSE_3,
-			ETS_CURRENT_3,
-			ETS_COUNT_3
-		};
-
 		core::matrix4 Matrices[ETS_COUNT_3];
-		void setTransformState( video::E_TRANSFORMATION_STATE state);
 	};
+
+
+	//! Construct from another view frustum
+	inline SViewFrustum::SViewFrustum(const SViewFrustum& other)
+	{
+		cameraPosition=other.cameraPosition;
+		boundingBox=other.boundingBox;
+
+		u32 i;
+		for (i=0; i<VF_PLANE_COUNT; ++i)
+			planes[i]=other.planes[i];
+
+		for (i=0; i<VF_PLANE_COUNT; ++i)
+			Matrices[i]=other.Matrices[i];
+	}
+
+	//! This constructor creates a view frustum based on a projection
+	//! and/or view matrix.
+	inline SViewFrustum::SViewFrustum(const core::matrix4& mat)
+	{
+		setFrom ( mat );
+	}
 
 
 	//! transforms the frustum by the matrix
 	//! \param Matrix by which the view frustum is transformed.
-	inline void SViewFrustum::transform(const core::matrix4 &mat)
+	inline void SViewFrustum::transform(const core::matrix4& mat)
 	{
-		for (int i=0; i<VF_PLANE_COUNT; ++i)
+		for (u32 i=0; i<VF_PLANE_COUNT; ++i)
 			mat.transformPlane(planes[i]);
 
 		mat.transformVect(cameraPosition);
@@ -178,13 +204,6 @@ namespace scene
 		boundingBox.addInternalPoint(getFarRightUp());
 		boundingBox.addInternalPoint(getFarLeftDown());
 		boundingBox.addInternalPoint(getFarRightDown());
-	}
-
-	//! This constructor creates a view frustum based on a projection
-	//! and/or view matrix.
-	inline SViewFrustum::SViewFrustum(const core::matrix4& mat)
-	{
-		setFrom ( mat );
 	}
 
 /*
@@ -281,10 +300,9 @@ namespace scene
 		planes[VF_NEAR_PLANE].Normal.Z = mat[10];
 		planes[VF_NEAR_PLANE].D =        mat[14];
 
-		
 		// normalize normals
 		u32 i;
-		for ( i=0; i != 6; ++i)
+		for ( i=0; i != VF_PLANE_COUNT; ++i)
 		{
 			const f32 len = - core::reciprocal_squareroot ( planes[i].Normal.getLengthSQ() );
 			planes[i].Normal *= len;

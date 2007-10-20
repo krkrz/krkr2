@@ -17,7 +17,7 @@ namespace video
 	an the Screen. Usually only implemented by an IrrDevice for
 	presenting Software Device Rendered images.
 
-	This class should be used internal only.
+	This class should be used only internally.
 */
 
 	class IImagePresenter

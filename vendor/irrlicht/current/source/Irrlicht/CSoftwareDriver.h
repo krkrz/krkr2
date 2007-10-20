@@ -28,7 +28,7 @@ namespace video
 		virtual bool endScene( s32 windowId = 0, core::rect<s32>* sourceRect=0 );
 
 		//! queries the features of the driver, returns true if feature is available
-		virtual bool queryFeature(E_VIDEO_DRIVER_FEATURE feature);
+		virtual bool queryFeature(E_VIDEO_DRIVER_FEATURE feature) const;
 
 		//! sets transformation
 		virtual void setTransform(E_TRANSFORMATION_STATE state, const core::matrix4& mat);
@@ -45,6 +45,13 @@ namespace video
 		//! clears the zbuffer
 		virtual bool beginScene(bool backBuffer, bool zBuffer, SColor color);
 
+		//! Only used by the internal engine. Used to notify the driver that
+		//! the window was resized.
+		virtual void OnResize(const core::dimension2d<s32>& size);
+
+		//! returns size of the current render target
+		virtual const core::dimension2d<s32>& getCurrentRenderTargetSize() const;
+
 		//! draws a vertex primitive list
 		void drawVertexPrimitiveList(const void* vertices, u32 vertexCount, const u16* indexList, u32 primitiveCount, E_VERTEX_TYPE vType, scene::E_PRIMITIVE_TYPE pType);
 
@@ -53,7 +60,7 @@ namespace video
 			const core::vector3df& end, SColor color = SColor(255,255,255,255));
 
 		//! draws an 2d image, using a color (if color is other then Color(255,255,255,255)) and the alpha channel of the texture if wanted.
-		virtual void draw2DImage(video::ITexture* texture, const core::position2d<s32>& destPos,
+		virtual void draw2DImage(const video::ITexture* texture, const core::position2d<s32>& destPos,
 			const core::rect<s32>& sourceRect, const core::rect<s32>* clipRect = 0,
 			SColor color=SColor(255,255,255,255), bool useAlphaChannelOfTexture=false);
 
@@ -73,16 +80,16 @@ namespace video
 
 		//! \return Returns the name of the video driver. Example: In case of the Direct3D8
 		//! driver, it would return "Direct3D8.1".
-		virtual const wchar_t* getName();
+		virtual const wchar_t* getName() const;
 
 		//! Returns type of video driver
-		virtual E_DRIVER_TYPE getDriverType();
+		virtual E_DRIVER_TYPE getDriverType() const;
 
 		//! Returns the transformation set by setTransform
-		virtual const core::matrix4& getTransform(E_TRANSFORMATION_STATE state);
+		virtual const core::matrix4& getTransform(E_TRANSFORMATION_STATE state) const;
 
 		//! Creates a render target texture.
-		virtual ITexture* createRenderTargetTexture(const core::dimension2d<s32>& size);
+		virtual ITexture* createRenderTargetTexture(const core::dimension2d<s32>& size, const c8* name);
 
 		//! Clears the ZBuffer.
 		virtual void clearZBuffer();
@@ -93,7 +100,7 @@ namespace video
 		//! Returns the maximum amount of primitives (mostly vertices) which
 		//! the device is able to render with one drawIndexedTriangleList
 		//! call.
-		virtual u32 getMaximalPrimitiveCount();
+		virtual u32 getMaximalPrimitiveCount() const;
 
 	protected:
 

@@ -2,12 +2,15 @@
 // This file is part of the "Irrlicht Engine".
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
+#include "CGUIComboBox.h"
+#ifdef _IRR_COMPILE_WITH_GUI_
+
 #include "IGUIEnvironment.h"
 #include "IVideoDriver.h"
-#include "CGUIComboBox.h"
 #include "IGUISkin.h"
 #include "IGUIEnvironment.h"
 #include "IGUIFont.h"
+#include "IGUIButton.h"
 #include "CGUIListBox.h"
 #include "os.h"
 
@@ -20,7 +23,7 @@ namespace gui
 CGUIComboBox::CGUIComboBox(IGUIEnvironment* environment, IGUIElement* parent,
 	s32 id, core::rect<s32> rectangle)
 	: IGUIComboBox(environment, parent, id, rectangle),
-	ListButton(0), ListBox(0), Selected(-1)
+	ListButton(0), ListBox(0), Selected(-1), HasFocus(false), LastFocus(0)
 {
 	#ifdef _DEBUG
 	setDebugName("CGUICheckBox");
@@ -47,41 +50,54 @@ CGUIComboBox::CGUIComboBox(IGUIEnvironment* environment, IGUIElement* parent,
 		ListButton->setSprite(EGBS_BUTTON_DOWN, skin->getIcon(EGDI_CURSOR_DOWN), skin->getColor(EGDC_WINDOW_SYMBOL));
 	}
 	ListButton->setSubElement(true);
+	ListButton->setTabStop(false);
 
 	setNotClipped(true);
-}
 
-
-//! destructor
-CGUIComboBox::~CGUIComboBox()
-{
+	// this element can be tabbed to
+	setTabStop(true);
+	setTabOrder(-1);
 }
 
 
 //! Returns amount of items in box
-s32 CGUIComboBox::getItemCount()
+u32 CGUIComboBox::getItemCount() const
 {
 	return Items.size();
 }
 
+
 //! returns string of an item. the idx may be a value from 0 to itemCount-1
-const wchar_t* CGUIComboBox::getItem(s32 idx)
+const wchar_t* CGUIComboBox::getItem(u32 idx) const
 {
-	if (idx < 0 || idx >= (s32)Items.size())
+	if (idx >= Items.size())
 		return 0;
 
 	return Items[idx].c_str();
 }
 
+
+//! Removes an item from the combo box.
+void CGUIComboBox::removeItem(u32 idx)
+{
+	if (idx >= Items.size())
+		return;
+
+	if (Selected == (s32)idx)
+		Selected = -1;
+
+	Items.erase(idx);
+}
+
 //! Returns caption of this element.
-const wchar_t* CGUIComboBox::getText()
+const wchar_t* CGUIComboBox::getText() const
 {
 	return getItem(Selected);
 }
 
 
 //! adds an item and returns the index of it
-s32 CGUIComboBox::addItem(const wchar_t* text)
+u32 CGUIComboBox::addItem(const wchar_t* text)
 {
 	Items.push_back(core::stringw(text));
 
@@ -103,7 +119,7 @@ void CGUIComboBox::clear()
 
 
 //! returns id of selected item. returns -1 if no item is selected.
-s32 CGUIComboBox::getSelected()
+s32 CGUIComboBox::getSelected() const
 {
 	return Selected;
 }
@@ -113,7 +129,7 @@ s32 CGUIComboBox::getSelected()
 //! sets the selected item. Set this to -1 if no item should be selected
 void CGUIComboBox::setSelected(s32 id)
 {
-	if (id <0 || id>=(s32)Items.size())
+	if (id < -1 || id >= (s32)Items.size())
 		return;
 
 	Selected = id;
@@ -123,7 +139,7 @@ void CGUIComboBox::updateAbsolutePosition()
 {
 	IGUIElement::updateAbsolutePosition();
 
-	s32 width = Environment->getSkin()->getSize(EGDS_WINDOW_BUTTON_WIDTH);
+	const s32 width = Environment->getSkin()->getSize(EGDS_WINDOW_BUTTON_WIDTH);
 
 	ListButton->setRelativePosition(core::rect<s32>(RelativeRect.getWidth() - width - 2, 2,
 													RelativeRect.getWidth() - 2, RelativeRect.getHeight() - 2));
@@ -131,14 +147,82 @@ void CGUIComboBox::updateAbsolutePosition()
 
 
 //! called if an event happened.
-bool CGUIComboBox::OnEvent(SEvent event)
+bool CGUIComboBox::OnEvent(const SEvent& event)
 {
 	switch(event.EventType)
 	{
+
+	case EET_KEY_INPUT_EVENT:
+		if (ListBox && event.KeyInput.PressedDown && event.KeyInput.Key == KEY_ESCAPE)
+		{
+			// hide list box
+			openCloseMenu();
+			return true;
+		}
+		else
+		if (event.KeyInput.Key == KEY_RETURN || event.KeyInput.Key == KEY_SPACE)
+		{
+			if (!event.KeyInput.PressedDown)
+				openCloseMenu();
+
+			ListButton->setPressed(ListBox == 0);
+
+			return true;
+		}
+		else
+		if (event.KeyInput.PressedDown)
+		{
+			s32 oldSelected = Selected;
+			bool absorb = true;
+			switch (event.KeyInput.Key)
+			{
+				case KEY_DOWN: 
+					Selected += 1; 
+					break;
+				case KEY_UP: 
+					Selected -= 1;
+					break;
+				case KEY_HOME:
+				case KEY_PRIOR:
+					Selected = 0;
+					break;
+				case KEY_END:
+				case KEY_NEXT:
+					Selected = (s32)Items.size()-1;
+					break;
+				default:
+					absorb = false;
+			}
+
+			if (Selected <0)
+				Selected = 0;
+
+			if (Selected >= (s32)Items.size())
+				Selected = (s32)Items.size() -1;
+
+			if (Selected != oldSelected)
+				sendSelectionChangedEvent();
+
+			if (absorb)
+				return true;
+		}
+		break;
+
 	case EET_GUI_EVENT:
 
 		switch(event.GUIEvent.EventType)
 		{
+		case EGET_ELEMENT_FOCUS_LOST:
+			if (ListBox && 
+				(Environment->hasFocus(ListBox) || ListBox->isMyChild(event.GUIEvent.Caller) ) && 
+				event.GUIEvent.Element != this && 
+				event.GUIEvent.Element != ListButton && 
+				event.GUIEvent.Element != ListBox && 
+				!ListBox->isMyChild(event.GUIEvent.Element))
+			{
+				openCloseMenu();
+			}
+			break;
 		case EGET_BUTTON_CLICKED:
 			if (event.GUIEvent.Caller == ListButton)
 			{
@@ -158,6 +242,8 @@ bool CGUIComboBox::OnEvent(SEvent event)
 				sendSelectionChangedEvent();
 			}
 			return true;
+		default:
+			break;
 		}
 		break;
 	case EET_MOUSE_INPUT_EVENT:
@@ -166,22 +252,12 @@ bool CGUIComboBox::OnEvent(SEvent event)
 		{
 		case EMIE_LMOUSE_PRESSED_DOWN:
 			{
-				if (!ListBox)
-					Environment->removeFocus(this);
-
 				core::position2d<s32> p(event.MouseInput.X, event.MouseInput.Y);
 				
 				// send to list box
-				if (ListBox && ListBox->getAbsolutePosition().isPointInside(p) &&
-					ListBox->OnEvent(event))
+				if (ListBox && ListBox->isPointInside(p) && ListBox->OnEvent(event))
 					return true;
-		
-				// check if it is outside
-				if (!AbsoluteClippingRect.isPointInside(p))
-				{
-					Environment->removeFocus(this);
-					return false;
-				}
+
 				return true;
 			}
 		case EMIE_LMOUSE_LEFT_UP:
@@ -193,16 +269,31 @@ bool CGUIComboBox::OnEvent(SEvent event)
 					ListBox->OnEvent(event))
 					return true;
 				else
-					openCloseMenu();
-				
-				if (!AbsoluteClippingRect.isPointInside(p))
 				{
-					Environment->removeFocus(this);
-					return false;
+					openCloseMenu();
+					return true;
 				}
 			}
 			break;
+		case EMIE_MOUSE_WHEEL:
+			{
+				s32 oldSelected = Selected;
+				Selected += (event.MouseInput.Wheel < 0) ? 1 : -1;
+
+				if (Selected <0)
+					Selected = 0;
+
+				if (Selected >= (s32)Items.size())
+					Selected = (s32)Items.size() -1;
+
+				if (Selected != oldSelected)
+					sendSelectionChangedEvent();
+			}
+		default:
+			break;
 		}
+		break;
+	default:
 		break;
 	}
 
@@ -219,6 +310,7 @@ void CGUIComboBox::sendSelectionChangedEvent()
 
 		event.EventType = EET_GUI_EVENT;
 		event.GUIEvent.Caller = this;
+		event.GUIEvent.Element = 0;
 		event.GUIEvent.EventType = EGET_COMBO_BOX_CHANGED;
 		Parent->OnEvent(event);
 	}
@@ -233,6 +325,12 @@ void CGUIComboBox::draw()
 		return;
 
 	IGUISkin* skin = Environment->getSkin();
+	IGUIElement *currentFocus = Environment->getFocus();
+	if (currentFocus != LastFocus)
+	{
+		HasFocus = currentFocus == this || isMyChild(currentFocus);
+		LastFocus = currentFocus;
+	}
 
 	core::rect<s32> frameRect(AbsoluteRect);
 
@@ -247,11 +345,16 @@ void CGUIComboBox::draw()
 	{
 		frameRect = AbsoluteRect;
 		frameRect.UpperLeftCorner.X += 2;
+		frameRect.UpperLeftCorner.Y += 2;
+		frameRect.LowerRightCorner.X -= ListButton->getAbsolutePosition().getWidth() + 2;
+		frameRect.LowerRightCorner.Y -= 2;
+		if (HasFocus)
+			skin->draw2DRectangle(this, skin->getColor(EGDC_HIGH_LIGHT), frameRect, &AbsoluteClippingRect);
 
 		IGUIFont* font = skin->getFont();
 		if (font)
 			font->draw(Items[Selected].c_str(), frameRect, 
-				skin->getColor(EGDC_BUTTON_TEXT),
+				skin->getColor(HasFocus ? EGDC_HIGH_LIGHT_TEXT : EGDC_BUTTON_TEXT),
 				false, true, &AbsoluteClippingRect);
 	}
 
@@ -265,6 +368,7 @@ void CGUIComboBox::openCloseMenu()
 	if (ListBox)
 	{
 		// close list box
+		Environment->setFocus(this);
 		ListBox->remove();
 		ListBox = 0;
 	}
@@ -304,12 +408,12 @@ void CGUIComboBox::openCloseMenu()
 }
 
 //! Writes attributes of the element.
-void CGUIComboBox::serializeAttributes(io::IAttributes* out, io::SAttributeReadWriteOptions* options=0)
+void CGUIComboBox::serializeAttributes(io::IAttributes* out, io::SAttributeReadWriteOptions* options=0) const
 {
 	IGUIComboBox::serializeAttributes(out,options);
 
-	out->addInt		("Selected",		Selected );
-	out->addArray	("Items",			Items);
+	out->addInt	("Selected",	Selected );
+	out->addArray	("Items",	Items);
 }
 
 //! Reads attributes of the element
@@ -323,4 +427,7 @@ void CGUIComboBox::deserializeAttributes(io::IAttributes* in, io::SAttributeRead
 
 } // end namespace gui
 } // end namespace irr
+
+
+#endif // _IRR_COMPILE_WITH_GUI_
 

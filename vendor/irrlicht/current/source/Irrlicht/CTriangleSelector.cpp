@@ -4,6 +4,7 @@
 
 #include "CTriangleSelector.h"
 #include "ISceneNode.h"
+#include "IMeshBuffer.h"
 
 namespace irr
 {
@@ -28,13 +29,13 @@ CTriangleSelector::CTriangleSelector(IMesh* mesh, ISceneNode* node)
 	setDebugName("CTriangleSelector");
 	#endif
 
-	u32 cnt = mesh->getMeshBufferCount();
+	const u32 cnt = mesh->getMeshBufferCount();
 	for (u32 i=0; i<cnt; ++i)
 	{
 		IMeshBuffer* buf = mesh->getMeshBuffer(i);
 
 		s32 idxCnt = buf->getIndexCount();
-		const u16* indices = buf->getIndices();
+		const u16* const indices = buf->getIndices();
 		core::triangle3df tri;
 
 		switch (buf->getVertexType())
@@ -44,10 +45,10 @@ CTriangleSelector::CTriangleSelector(IMesh* mesh, ISceneNode* node)
 				video::S3DVertex* vtx = (video::S3DVertex*)buf->getVertices();
 				for (s32 j=0; j<idxCnt; j+=3)
 				{
-					tri.pointA = vtx[indices[j+0]].Pos;
-					tri.pointB = vtx[indices[j+1]].Pos;
-					tri.pointC = vtx[indices[j+2]].Pos;
-					Triangles.push_back(tri);
+					Triangles.push_back(core::triangle3df(
+							vtx[indices[j+0]].Pos,
+							vtx[indices[j+1]].Pos,
+							vtx[indices[j+2]].Pos));
 				}
 			}
 			break;
@@ -56,10 +57,10 @@ CTriangleSelector::CTriangleSelector(IMesh* mesh, ISceneNode* node)
 				video::S3DVertex2TCoords* vtx = (video::S3DVertex2TCoords*)buf->getVertices();
 				for (s32 j=0; j<idxCnt; j+=3)
 				{
-					tri.pointA = vtx[indices[j+0]].Pos;
-					tri.pointB = vtx[indices[j+1]].Pos;
-					tri.pointC = vtx[indices[j+2]].Pos;
-					Triangles.push_back(tri);
+					Triangles.push_back(core::triangle3df(
+							vtx[indices[j+0]].Pos,
+							vtx[indices[j+1]].Pos,
+							vtx[indices[j+2]].Pos));
 				}
 			}
 			break;
@@ -68,10 +69,10 @@ CTriangleSelector::CTriangleSelector(IMesh* mesh, ISceneNode* node)
 				video::S3DVertexTangents* vtx = (video::S3DVertexTangents*)buf->getVertices();
 				for (s32 j=0; j<idxCnt; j+=3)
 				{
-					tri.pointA = vtx[indices[j+0]].Pos;
-					tri.pointB = vtx[indices[j+1]].Pos;
-					tri.pointC = vtx[indices[j+2]].Pos;
-					Triangles.push_back(tri);
+					Triangles.push_back(core::triangle3df(
+							vtx[indices[j+0]].Pos,
+							vtx[indices[j+1]].Pos,
+							vtx[indices[j+2]].Pos));
 				}
 			}
 			break;
@@ -92,18 +93,10 @@ CTriangleSelector::CTriangleSelector(core::aabbox3d<f32> box, ISceneNode* node)
 }
 
 
-
-//! destructor
-CTriangleSelector::~CTriangleSelector()
-{
-}
-
-
-
 //! Gets all triangles.
 void CTriangleSelector::getTriangles(core::triangle3df* triangles,
-									 s32 arraySize, s32& outTriangleCount, 
-									const core::matrix4* transform)
+					s32 arraySize, s32& outTriangleCount, 
+					const core::matrix4* transform) const
 {
 	s32 cnt = Triangles.size();
 	if (cnt > arraySize)
@@ -112,7 +105,7 @@ void CTriangleSelector::getTriangles(core::triangle3df* triangles,
 	core::matrix4 mat;
 
 	if (transform)
-		mat = (*transform);
+		mat = *transform;
 
 	if (SceneNode)
 		mat *= SceneNode->getAbsoluteTransformation();
@@ -132,9 +125,9 @@ void CTriangleSelector::getTriangles(core::triangle3df* triangles,
 
 //! Gets all triangles which lie within a specific bounding box.
 void CTriangleSelector::getTriangles(core::triangle3df* triangles, 
-									 s32 arraySize, s32& outTriangleCount, 
-									const core::aabbox3d<f32>& box,
-									const core::matrix4* transform)
+					s32 arraySize, s32& outTriangleCount, 
+					const core::aabbox3d<f32>& box,
+					const core::matrix4* transform) const
 {
 	// return all triangles
 	getTriangles(triangles, arraySize, outTriangleCount, transform);
@@ -142,9 +135,10 @@ void CTriangleSelector::getTriangles(core::triangle3df* triangles,
 
 
 //! Gets all triangles which have or may have contact with a 3d line.
-void CTriangleSelector::getTriangles(core::triangle3df* triangles, s32 arraySize,
-	s32& outTriangleCount, const core::line3d<f32>& line, 
-	const core::matrix4* transform)
+void CTriangleSelector::getTriangles(core::triangle3df* triangles,
+					s32 arraySize, s32& outTriangleCount,
+					const core::line3d<f32>& line,
+					const core::matrix4* transform) const
 {
 	// return all triangles
 	getTriangles(triangles, arraySize, outTriangleCount, transform);

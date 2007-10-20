@@ -5,6 +5,9 @@
 // This file was written by Saurav Mohapatra and modified by Nikolaus Gebhardt.
 // See CCSMLoader.h for details.
 
+#include "IrrCompileConfig.h" 
+#ifdef _IRR_COMPILE_WITH_CSM_LOADER_
+
 #include "CCSMLoader.h"
 #include "os.h"
 #include "IFileSystem.h"
@@ -365,13 +368,13 @@ namespace scene
 
 	//! returns true if the file maybe is able to be loaded by this class
 	//! based on the file extension (e.g. ".bsp")
-	bool CCSMLoader::isALoadableFileExtension(const c8* fileName)
+	bool CCSMLoader::isALoadableFileExtension(const c8* fileName) const
 	{
 		return strstr(fileName, ".csm")!=0;
 	}
 
 	//! creates/loads an animated mesh from the file.
-	IAnimatedMesh* CCSMLoader::createMesh(irr::io::IReadFile* file)
+	IAnimatedMesh* CCSMLoader::createMesh(io::IReadFile* file)
 	{
 		file->grab(); // originally, this loader created the file on its own.
 
@@ -389,7 +392,7 @@ namespace scene
 		return am;
 	}
 
-	scene::IMesh* CCSMLoader::createCSMMesh(irr::io::IReadFile* file)
+	scene::IMesh* CCSMLoader::createCSMMesh(io::IReadFile* file)
 	{
 		if (!file)
 			return 0;
@@ -454,8 +457,8 @@ namespace scene
 				lmapName += "LMAP_";
 				lmapName += (int)surface->getLightMapId();
 
-				buffer->Material.Textures[0] = texture;
-				buffer->Material.Textures[1] = driver->getTexture(lmapName.c_str());
+				buffer->Material.setTexture(0, texture);
+				buffer->Material.setTexture(1, driver->getTexture(lmapName.c_str()));
 				buffer->Material.Lighting = false;
 				buffer->Material.MaterialType = video::EMT_LIGHTMAP_M4;
 
@@ -592,7 +595,7 @@ namespace scene
 	{
 		flags = 0;
 		lightMapId = 0;
-		textureName = 0;
+		textureName = "";
 		uvOffset.set(0.0f,0.0f);
 		uvScale.set(0.0f,0.0f);
 		uvRotation = 0.0f;
@@ -871,3 +874,4 @@ namespace scene
 } // end namespace
 } // end namespace
 
+#endif // _IRR_COMPILE_WITH_CSM_LOADER_

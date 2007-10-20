@@ -3,9 +3,12 @@
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
 #include "CGUIMeshViewer.h"
+#ifdef _IRR_COMPILE_WITH_GUI_
+
 #include "IGUIEnvironment.h"
 #include "IVideoDriver.h"
 #include "IAnimatedMesh.h"
+#include "IMesh.h"
 #include "irrMath.h"
 #include "os.h"
 #include "IGUISkin.h"
@@ -27,14 +30,12 @@ CGUIMeshViewer::CGUIMeshViewer(IGUIEnvironment* environment, IGUIElement* parent
 }
 
 
-
 //! destructor
 CGUIMeshViewer::~CGUIMeshViewer()
 {
 	if (Mesh)
 		Mesh->drop();
 }
-
 
 
 //! sets the mesh to be shown
@@ -61,6 +62,12 @@ void CGUIMeshViewer::setMesh(scene::IAnimatedMesh* mesh)
 }
 
 
+//! Gets the displayed mesh
+scene::IAnimatedMesh* CGUIMeshViewer::getMesh() const
+{
+	return Mesh;
+}
+
 
 //! sets the material
 void CGUIMeshViewer::setMaterial(const video::SMaterial& material)
@@ -69,21 +76,18 @@ void CGUIMeshViewer::setMaterial(const video::SMaterial& material)
 }
 
 
-
 //! gets the material
-const video::SMaterial& CGUIMeshViewer::getMaterial()
+const video::SMaterial& CGUIMeshViewer::getMaterial() const
 {
 	return Material;
 }
 
 
-
 //! called if an event happened.
-bool CGUIMeshViewer::OnEvent(SEvent event)
+bool CGUIMeshViewer::OnEvent(const SEvent& event)
 {
 	return Parent ? Parent->OnEvent(event) : false;
 }
-
 
 
 //! draws the element and its children
@@ -106,20 +110,20 @@ void CGUIMeshViewer::draw()
 	
 	core::rect<s32> frameRect(AbsoluteRect);
 	frameRect.LowerRightCorner.Y = frameRect.UpperLeftCorner.Y + 1;
-	driver->draw2DRectangle(skin->getColor(EGDC_3D_SHADOW), frameRect, &AbsoluteClippingRect);
+	skin->draw2DRectangle(this, skin->getColor(EGDC_3D_SHADOW), frameRect, &AbsoluteClippingRect);
 
 	frameRect.LowerRightCorner.Y = AbsoluteRect.LowerRightCorner.Y;
 	frameRect.LowerRightCorner.X = frameRect.UpperLeftCorner.X + 1;
-	driver->draw2DRectangle(skin->getColor(EGDC_3D_SHADOW), frameRect, &AbsoluteClippingRect);
+	skin->draw2DRectangle(this, skin->getColor(EGDC_3D_SHADOW), frameRect, &AbsoluteClippingRect);
 
 	frameRect = AbsoluteRect;
 	frameRect.UpperLeftCorner.X = frameRect.LowerRightCorner.X - 1;
-	driver->draw2DRectangle(skin->getColor(EGDC_3D_HIGH_LIGHT), frameRect, &AbsoluteClippingRect);
+	skin->draw2DRectangle(this, skin->getColor(EGDC_3D_HIGH_LIGHT), frameRect, &AbsoluteClippingRect);
 
 	frameRect = AbsoluteRect;
 	frameRect.UpperLeftCorner.Y = AbsoluteRect.LowerRightCorner.Y - 1;
 	frameRect.LowerRightCorner.Y = AbsoluteRect.LowerRightCorner.Y;
-	driver->draw2DRectangle(skin->getColor(EGDC_3D_HIGH_LIGHT), frameRect, &AbsoluteClippingRect);
+	skin->draw2DRectangle(this, skin->getColor(EGDC_3D_HIGH_LIGHT), frameRect, &AbsoluteClippingRect);
 
 	// draw the mesh
 
@@ -150,19 +154,7 @@ void CGUIMeshViewer::draw()
 		for (u32 i=0; i<m->getMeshBufferCount(); ++i)
 		{
 			scene::IMeshBuffer* mb = m->getMeshBuffer(i);
-
-			switch(mb->getVertexType())
-			{
-			case video::EVT_STANDARD:
-				driver->drawIndexedTriangleList((video::S3DVertex*)mb->getVertices(), mb->getVertexCount(), mb->getIndices(), mb->getIndexCount()/ 3);
-				break;
-			case video::EVT_2TCOORDS:
-				driver->drawIndexedTriangleList((video::S3DVertex2TCoords*)mb->getVertices(), mb->getVertexCount(), mb->getIndices(), mb->getIndexCount()/ 3);
-				break;
-			case video::EVT_TANGENTS:
-				driver->drawIndexedTriangleList((video::S3DVertexTangents*)mb->getVertices(), mb->getVertexCount(), mb->getIndices(), mb->getIndexCount()/ 3);
-				break;
-			}
+			driver->drawVertexPrimitiveList(mb->getVertices(), mb->getVertexCount(), mb->getIndices(), mb->getIndexCount()/ 3, mb->getVertexType(), scene::EPT_TRIANGLES);
 		}
 
 		driver->setViewPort(oldViewPort);
@@ -175,4 +167,5 @@ void CGUIMeshViewer::draw()
 } // end namespace gui
 } // end namespace irr
 
+#endif // _IRR_COMPILE_WITH_GUI_
 

@@ -211,7 +211,7 @@ namespace video
 		return CD3D8ShaderMaterialRenderer::OnRender(service, vtxtype);
 	}
 
-	void CD3D8ParallaxMapRenderer::OnSetMaterial(video::SMaterial& material, 
+	void CD3D8ParallaxMapRenderer::OnSetMaterial(const video::SMaterial& material, 
 		const video::SMaterial& lastMaterial,
 		bool resetAllRenderstates, video::IMaterialRendererServices* services)
 	{
@@ -222,7 +222,7 @@ namespace video
 	}
 
 	//! Returns the render capability of the material. 
-	s32 CD3D8ParallaxMapRenderer::getRenderCapability()
+	s32 CD3D8ParallaxMapRenderer::getRenderCapability() const
 	{
 		if (Driver->queryFeature(video::EVDF_PIXEL_SHADER_1_4) &&
 			Driver->queryFeature(video::EVDF_VERTEX_SHADER_1_1))
@@ -302,5 +302,5 @@ namespace video
 } // end namespace video
 } // end namespace irr
 
-#endif
+#endif // _IRR_COMPILE_WITH_DIRECT3D_8_
 

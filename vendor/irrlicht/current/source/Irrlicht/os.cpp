@@ -7,14 +7,18 @@
 #include "IrrCompileConfig.h"
 #include "irrMath.h"
 
-#ifdef _IRR_WINDOWS_
-	#if defined(__GNUC__) || (defined(_MSC_VER) && (_MSC_VER < 1299))
-		#define bswap_16(X) ((((X)&0xFF) << 8) | (((X)&=0xFF00) >> 8))
-		#define bswap_32(X) ( (((X)&0x000000FF)<<24) | (((X)&0xFF000000) >> 24) | (((X)&0x0000FF00) << 8) | (((X) &0x00FF0000) >> 8))
-	#else
+#if defined(_IRR_USE_SDL_DEVICE_)
+	#include <SDL/SDL_endian.h>
+	#define bswap_16(X) SDL_Swap16(X)
+	#define bswap_32(X) SDL_Swap32(X)
+#elif defined(_IRR_WINDOWS_API_)
+	#if (defined(_MSC_VER) && (_MSC_VER > 1298))
 		#include <stdlib.h>
 		#define bswap_16(X) _byteswap_ushort(X)
 		#define bswap_32(X) _byteswap_ulong(X)
+	#else
+		#define bswap_16(X) ((((X)&0xFF) << 8) | (((X)&=0xFF00) >> 8))
+		#define bswap_32(X) ( (((X)&0x000000FF)<<24) | (((X)&0xFF000000) >> 24) | (((X)&0x0000FF00) << 8) | (((X) &0x00FF0000) >> 8))
 	#endif
 #else
 	#ifdef MACOSX
@@ -24,7 +28,7 @@
 		#include <sys/endian.h>
 		#define bswap_16(X) bswap16(X)
 		#define bswap_32(X) bswap32(X)
-	#elif !defined(__sun__) && !defined(__PPC__)
+	#elif !defined(_IRR_SOLARIS_PLATFORM_) && !defined(__PPC__)
 		#include <byteswap.h>
 	#else
 		#define bswap_16(X) ((((X)&0xFF) << 8) | (((X)&=0xFF00) >> 8))
@@ -44,17 +48,16 @@ namespace os
 }
 }
 
-#if defined(_IRR_WINDOWS_) || defined(_XBOX)
+#if defined(_IRR_WINDOWS_API_)
 // ----------------------------------------------------------------
 // Windows specific functions
 // ----------------------------------------------------------------
 
-#ifdef _IRR_WINDOWS_
+#ifdef _IRR_XBOX_PLATFORM_
+#include <xtl.h>
+#else
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
-#endif
-#ifdef _XBOX
-#include <xtl.h>
 #endif
 
 namespace irr
@@ -71,14 +74,35 @@ namespace os
 		delete [] tmp;
 	}
 
-
 	LARGE_INTEGER HighPerformanceFreq;
 	BOOL HighPerformanceTimerSupport = FALSE;
 
-
 	void Timer::initTimer()
 	{
-		HighPerformanceTimerSupport = QueryPerformanceFrequency(&HighPerformanceFreq);
+		// disable hires timer on multiple core systems, bios bugs result in bad hires timers.
+		SYSTEM_INFO sysinfo;
+		DWORD affinity, sysaffinity;
+		GetSystemInfo(&sysinfo);
+		s32 affinityCount = 0;
+
+		// count the processors that can be used by this process
+		if (GetProcessAffinityMask( GetCurrentProcess(), &affinity, &sysaffinity ))
+		{
+			for (u32 i=0; i<32; ++i)
+			{
+				if ((1<<i) & affinity)
+					affinityCount++;
+			}
+		}
+
+		if (sysinfo.dwNumberOfProcessors == 1 || affinityCount == 1)
+		{
+			HighPerformanceTimerSupport = QueryPerformanceFrequency(&HighPerformanceFreq);
+		}
+		else
+		{
+			HighPerformanceTimerSupport = false;
+		}
 		initVirtualTimer();
 	}
 
@@ -124,7 +148,7 @@ namespace os
 
 	u32 Timer::getRealTime()
 	{
-		static timeval tv;
+		timeval tv;
 		gettimeofday(&tv, 0);
 		return (u32)(tv.tv_sec * 1000) + (tv.tv_usec / 1000);
 	}

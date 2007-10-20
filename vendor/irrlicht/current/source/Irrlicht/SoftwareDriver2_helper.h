@@ -4,7 +4,7 @@
 
 /*
 	History:
-	- changed behaviour for log2 textures ( replaced multiplys by shift )
+	- changed behaviour for log2 textures ( replaced multiplies by shift )
 */
 
 #ifndef __S_VIDEO_2_SOFTWARE_HELPER_H_INCLUDED__
@@ -38,7 +38,6 @@ namespace irr
 	#define	COLOR_BRIGHT_WHITE			0xFFFFFFFF
 
 	#define VIDEO_SAMPLE_GRANULARITY	2
-	#define	ECF_SOFTWARE2	ECF_A8R8G8B8
 
 #else
 	typedef u16	tVideoSample;
@@ -56,7 +55,6 @@ namespace irr
 	#define	COLOR_MAX					0x1F
 	#define	COLOR_BRIGHT_WHITE			0xFFFF
 	#define VIDEO_SAMPLE_GRANULARITY	1
-	#define	ECF_SOFTWARE2	ECF_A1R5G5B5
 
 #endif
 
@@ -71,7 +69,7 @@ inline void memset32 ( void * dest, const u32 value, u32 bytesize )
 	u32 * d = (u32*) dest;
 
 	u32 i;
-	
+
 	i = bytesize >> ( 2 + 3 );
 	while( i )
 	{

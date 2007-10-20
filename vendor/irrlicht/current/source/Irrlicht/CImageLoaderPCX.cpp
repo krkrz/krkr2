@@ -3,6 +3,10 @@
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
 #include "CImageLoaderPCX.h"
+
+#ifdef _IRR_COMPILE_WITH_PCX_LOADER_
+
+#include "IReadFile.h"
 #include "SColor.h"
 #include "CColorConverter.h"
 #include "CImage.h"
@@ -18,7 +22,6 @@ namespace video
 
 //! constructor
 CImageLoaderPCX::CImageLoaderPCX()
-: PCXData(0), PaletteData(0)
 {
 	#ifdef _DEBUG
 	setDebugName("CImageLoaderPCX");
@@ -26,22 +29,9 @@ CImageLoaderPCX::CImageLoaderPCX()
 }
 
 
-
-//! destructor
-CImageLoaderPCX::~CImageLoaderPCX()
-{
-	if (PaletteData)
-		delete [] PaletteData;
-
-	if (PCXData)
-		delete [] PCXData;
-}
-
-
-
 //! returns true if the file maybe is able to be loaded by this class
 //! based on the file extension (e.g. ".tga")
-bool CImageLoaderPCX::isALoadableFileExtension(const c8* fileName)
+bool CImageLoaderPCX::isALoadableFileExtension(const c8* fileName) const
 {
 	return (strstr(fileName, ".PCX") != 0) || (strstr(fileName, ".pcx") != 0);
 }
@@ -49,7 +39,7 @@ bool CImageLoaderPCX::isALoadableFileExtension(const c8* fileName)
 
 
 //! returns true if the file maybe is able to be loaded by this class
-bool CImageLoaderPCX::isALoadableFileFormat(irr::io::IReadFile* file)
+bool CImageLoaderPCX::isALoadableFileFormat(io::IReadFile* file) const
 {
 	u8 headerID;
 	file->read(&headerID, sizeof(headerID));
@@ -58,9 +48,10 @@ bool CImageLoaderPCX::isALoadableFileFormat(irr::io::IReadFile* file)
 
 
 //! creates a image from the file
-IImage* CImageLoaderPCX::loadImage(irr::io::IReadFile* file)
+IImage* CImageLoaderPCX::loadImage(io::IReadFile* file) const
 {
 	SPCXHeader header;
+	s32* paletteData = 0;
 
 	file->read(&header, sizeof(header));
 	#ifdef __BIG_ENDIAN__
@@ -94,17 +85,17 @@ IImage* CImageLoaderPCX::loadImage(irr::io::IReadFile* file)
 		// the palette indicator (usually a 0x0c is found infront of the actual palette data)
 		// is ignored because some exporters seem to forget to write it. This would result in
 		// no image loaded before, now only wrong colors will be set.
-		s32 pos = file->getPos();
+		const long pos = file->getPos();
 		file->seek( file->getSize()-256*3, false );
 
 		u8 *tempPalette = new u8[768];
-		PaletteData = new s32[256];
-		memset(PaletteData, 0, 256*sizeof(s32));
+		paletteData = new s32[256];
+		memset(paletteData, 0xFF, 256*sizeof(s32));
 		file->read( tempPalette, 768 );
 
 		for( s32 i=0; i<256; i++ )
 		{
-			PaletteData[i] = (tempPalette[i*3+0] << 16) |
+			paletteData[i] = (tempPalette[i*3+0] << 16) |
 					 (tempPalette[i*3+1] << 8) | 
 					 (tempPalette[i*3+2] );
 		}
@@ -115,11 +106,11 @@ IImage* CImageLoaderPCX::loadImage(irr::io::IReadFile* file)
 	}
 	else if( header.BitsPerPixel == 4 )
 	{
-		PaletteData = new s32[16];
-		memset(PaletteData, 0, 16*sizeof(s32));
+		paletteData = new s32[16];
+		memset(paletteData, 0, 16*sizeof(s32));
 		for( s32 i=0; i<256; i++ )
 		{
-			PaletteData[i] = (header.Palette[i*3+0] << 16) |
+			paletteData[i] = (header.Palette[i*3+0] << 16) |
 					 (header.Palette[i*3+1] << 8) | 
 					 (header.Palette[i*3+2]);
 		}
@@ -130,7 +121,7 @@ IImage* CImageLoaderPCX::loadImage(irr::io::IReadFile* file)
 	width = header.XMax - header.XMin + 1;
 	height = header.YMax - header.YMin + 1;
 	imagebytes = header.BytesPerLine * height * header.Planes * header.BitsPerPixel / 8;
-	PCXData = new u8[imagebytes];
+	u8* PCXData = new u8[imagebytes];
 
 	u8 cnt, value;
 	for( s32 offset = 0; offset < imagebytes; )
@@ -162,7 +153,7 @@ IImage* CImageLoaderPCX::loadImage(irr::io::IReadFile* file)
 	case 8:
 		image = new CImage(ECF_A1R5G5B5, core::dimension2d<s32>(width, height));
 		if (image)
-			CColorConverter::convert8BitTo16Bit(PCXData, (s16*)image->lock(), width, height, PaletteData, pitch);
+			CColorConverter::convert8BitTo16Bit(PCXData, (s16*)image->lock(), width, height, paletteData, pitch);
 		break;
 	case 24:
 		image = new CImage(ECF_R8G8B8, core::dimension2d<s32>(width, height));
@@ -175,13 +166,8 @@ IImage* CImageLoaderPCX::loadImage(irr::io::IReadFile* file)
 
 	// clean up
 
-	if( PaletteData )
-		delete [] PaletteData;
-	PaletteData = 0;
-
-	if( PCXData )
-		delete [] PCXData;
-	PCXData = 0;
+	delete [] paletteData;
+	delete [] PCXData;
 
 	return image;
 }
@@ -197,3 +183,6 @@ IImageLoader* createImageLoaderPCX()
 
 } // end namespace video
 } // end namespace irr
+
+#endif
+

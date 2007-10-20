@@ -12,7 +12,7 @@ namespace irr
 namespace scene
 {
 
-//! An interface for easily manipulate meshes.
+//! An interface for easy manipulation of meshes.
 /** Scale, set alpha value, flip surfaces, and so on. This exists for fixing problems 
  with wrong imported or exported meshes quickly after loading. It is not intended for doing mesh
  modifications and/or animations during runtime.
@@ -21,11 +21,8 @@ class CMeshManipulator : public IMeshManipulator
 {
 public:
 
-	//! Constructor
-	CMeshManipulator();
-
 	//! destructor
-	virtual ~CMeshManipulator();
+	virtual ~CMeshManipulator() {}
 
 	//! Flips the direction of surfaces. Changes backfacing triangles to frontfacing
 	//! triangles and vice versa.
@@ -76,13 +73,13 @@ public:
 	//! \param mesh: Input mesh
 	//! \return Mesh consiting only of S3DVertexNormalMapped vertices.
 	//! If you no longer need the cloned mesh, you should call IMesh::drop().
-	//! See IUnknown::drop() for more information.
+	//! See IReferenceCounted::drop() for more information.
 	virtual IMesh* createMeshWithTangents(IMesh* mesh) const;
+	virtual IMesh* createMeshWith2TCoords(IMesh* mesh) const;
 
 	virtual IMesh* createMeshUniquePrimitives(IMesh* mesh) const;
 
-	//! Recalculates the bounding box for a meshbuffer
-	virtual void recalculateBoundingBox(scene::IMeshBuffer* buffer) const;
+	virtual IMesh* createMeshWelded(IMesh *mesh, f32 tolerance=core::ROUNDING_ERROR_32) const;
 
 	//! Returns amount of polygons in mesh.
 	virtual s32 getPolyCount(scene::IMesh* mesh) const;
@@ -98,8 +95,8 @@ private:
 	static void calculateTangents(core::vector3df& normal, 
 		core::vector3df& tangent, 
 		core::vector3df& binormal, 
-		core::vector3df& vt1, core::vector3df& vt2, core::vector3df& vt3,
-		core::vector2df& tc1, core::vector2df& tc2, core::vector2df& tc3);
+		const core::vector3df& vt1, const core::vector3df& vt2, const core::vector3df& vt3,
+		const core::vector2df& tc1, const core::vector2df& tc2, const core::vector2df& tc3);
 };
 
 } // end namespace scene

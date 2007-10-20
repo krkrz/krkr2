@@ -4,7 +4,7 @@
 
 #include "IrrCompileConfig.h"
 
-#ifdef _IRR_WINDOWS_
+#ifdef _IRR_USE_WINDOWS_DEVICE_
 
 #include "CIrrDeviceWin32.h"
 #include "IEventReceiver.h"
@@ -23,17 +23,23 @@ namespace irr
 {
 	namespace video
 	{
+		#ifdef _IRR_COMPILE_WITH_DIRECT3D_8_
 		IVideoDriver* createDirectX8Driver(const core::dimension2d<s32>& screenSize, HWND window,
 			u32 bits, bool fullscreen, bool stencilbuffer, io::IFileSystem* io,
 			bool pureSoftware, bool highPrecisionFPU, bool vsync, bool antiAlias);
+		#endif
 
+		#ifdef _IRR_COMPILE_WITH_DIRECT3D_9_
 		IVideoDriver* createDirectX9Driver(const core::dimension2d<s32>& screenSize, HWND window,
 			u32 bits, bool fullscreen, bool stencilbuffer, io::IFileSystem* io,
 			bool pureSoftware, bool highPrecisionFPU, bool vsync, bool antiAlias);
+		#endif
 
+		#ifdef _IRR_COMPILE_WITH_OPENGL_
 		IVideoDriver* createOpenGLDriver(const core::dimension2d<s32>& screenSize, HWND window,
 			u32 bits, bool fullscreen, bool stencilBuffer, io::IFileSystem* io,
 			bool vsync, bool antiAlias);
+		#endif
 	}
 } // end namespace irr
 
@@ -215,35 +221,18 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		event.MouseInput.X = (short)LOWORD(lParam);
 		event.MouseInput.Y = (short)HIWORD(lParam);
 		dev = getDeviceFromHWnd(hWnd);
+
 		if (dev)
 			dev->postEventFromUser(event);
+
 		return 0;
 
 	case WM_KEYDOWN:
-		{
-			event.EventType = irr::EET_KEY_INPUT_EVENT;
-			event.KeyInput.Key = (irr::EKEY_CODE)wParam;
-			event.KeyInput.PressedDown = true;
-			dev = getDeviceFromHWnd(hWnd);
-
-			WORD KeyAsc=0;
-			GetKeyboardState(allKeys);
-			ToAscii(wParam,lParam,allKeys,&KeyAsc,0);
-
-			event.KeyInput.Shift = ((allKeys[VK_SHIFT] & 0x80)!=0);
-			event.KeyInput.Control = ((allKeys[VK_CONTROL] & 0x80)!=0);
-			event.KeyInput.Char = KeyAsc; //KeyAsc >= 0 ? KeyAsc : 0;
-
-			if (dev)
-				dev->postEventFromUser(event);
-
-			return 0;
-		}
 	case WM_KEYUP:
 		{
 			event.EventType = irr::EET_KEY_INPUT_EVENT;
 			event.KeyInput.Key = (irr::EKEY_CODE)wParam;
-			event.KeyInput.PressedDown = false;
+			event.KeyInput.PressedDown = (message==WM_KEYDOWN);
 			dev = getDeviceFromHWnd(hWnd);
 
 			WORD KeyAsc=0;
@@ -252,7 +241,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 			event.KeyInput.Shift = ((allKeys[VK_SHIFT] & 0x80)!=0);
 			event.KeyInput.Control = ((allKeys[VK_CONTROL] & 0x80)!=0);
-			event.KeyInput.Char = KeyAsc; //KeyAsc >= 0 ? KeyAsc : 0;
+			event.KeyInput.Char = (KeyAsc & 0x00ff); //KeyAsc >= 0 ? KeyAsc : 0;
 
 			if (dev)
 				dev->postEventFromUser(event);
@@ -457,7 +446,7 @@ void CIrrDeviceWin32::createDriver(video::E_DRIVER_TYPE driverType,
 		}
 		#else
 		os::Printer::log("DIRECT3D8 Driver was not compiled into this dll. Try another one.", ELL_ERROR);
-		#endif
+		#endif // _IRR_COMPILE_WITH_DIRECT3D_8_
 
 		break;
 
@@ -471,7 +460,7 @@ void CIrrDeviceWin32::createDriver(video::E_DRIVER_TYPE driverType,
 		}
 		#else
 		os::Printer::log("DIRECT3D9 Driver was not compiled into this dll. Try another one.", ELL_ERROR);
-		#endif
+		#endif // _IRR_COMPILE_WITH_DIRECT3D_9_
 
 		break;
 
@@ -510,9 +499,13 @@ void CIrrDeviceWin32::createDriver(video::E_DRIVER_TYPE driverType,
 		#endif 
 		break;
 
-	default:
+	case video::EDT_NULL:
 		// create null driver
 		VideoDriver = video::createNullDriver(FileSystem, windowSize);
+		break;
+
+	default:
+		os::Printer::log("Unable to create video driver of unknown type.", ELL_ERROR);
 		break;
 	}
 }
@@ -590,12 +583,6 @@ void CIrrDeviceWin32::resizeIfNecessary()
 		sprintf(tmp, "Resizing window (%ld %ld)", r.right, r.bottom);
 		os::Printer::log(tmp);
 
-		if ( r.right % 2 )
-			r.right += 1;
-
-		if ( r.bottom % 2 )
-			r.bottom += 1;
-
 		getVideoDriver()->OnResize(irr::core::dimension2d<irr::s32>(r.right, r.bottom));
 	}
 
@@ -672,12 +659,15 @@ void CIrrDeviceWin32::present(video::IImage* image, s32 windowId, core::rect<s32
 void CIrrDeviceWin32::closeDevice()
 {
 	DestroyWindow(HWnd);
+	PostQuitMessage(0);
+	MSG msg;
+	GetMessage(&msg, NULL, WM_QUIT, WM_QUIT);
 }
 
 
 
 //! returns if window is active. if not, nothing need to be drawn
-bool CIrrDeviceWin32::isWindowActive()
+bool CIrrDeviceWin32::isWindowActive() const
 {
 	bool ret = (GetActiveWindow() == HWnd);
 	_IRR_IMPLEMENT_MANAGED_MARSHALLING_BUGFIX;
@@ -686,18 +676,25 @@ bool CIrrDeviceWin32::isWindowActive()
 
 
 
-//! switchs to fullscreen
+//! switches to fullscreen
 bool CIrrDeviceWin32::switchToFullScreen(s32 width, s32 height, s32 bits)
 {
 	DEVMODE dm;
 	memset(&dm, 0, sizeof(dm));
 	dm.dmSize = sizeof(dm);
+	// use default values from current setting
+	EnumDisplaySettings(NULL, ENUM_CURRENT_SETTINGS, &dm);
 	dm.dmPelsWidth = width;
 	dm.dmPelsHeight	= height;
 	dm.dmBitsPerPel	= bits;
-	dm.dmFields = DM_BITSPERPEL | DM_PELSWIDTH | DM_PELSHEIGHT;
+	dm.dmFields = DM_BITSPERPEL | DM_PELSWIDTH | DM_PELSHEIGHT | DM_DISPLAYFREQUENCY;
 
 	LONG ret = ChangeDisplaySettings(&dm, CDS_FULLSCREEN);
+	if (ret != DISP_CHANGE_SUCCESSFUL)
+	{ // try again without forcing display frequency
+		dm.dmFields = DM_BITSPERPEL | DM_PELSWIDTH | DM_PELSHEIGHT;
+		ret = ChangeDisplaySettings(&dm, CDS_FULLSCREEN);
+	}
 
 	switch(ret)
 	{
@@ -742,6 +739,8 @@ video::IVideoModeList* CIrrDeviceWin32::getVideoModeList()
 		// enumerate video modes.
 		DWORD i=0;
 		DEVMODE mode;
+		memset(&mode, 0, sizeof(mode)); 
+		mode.dmSize = sizeof(mode);
 
 		while (EnumDisplaySettings(NULL, i, &mode))
 		{
@@ -789,10 +788,12 @@ void CIrrDeviceWin32::getWindowsVersion(core::stringc& out)
 			#ifdef VER_SUITE_ENTERPRISE
 			if (osvi.wProductType == VER_NT_WORKSTATION)
 			{
+#ifndef __BORLANDC__
 				if( osvi.wSuiteMask & VER_SUITE_PERSONAL )
 					out.append("Personal ");
 				else
 					out.append("Professional ");
+#endif
 			}
 			else if (osvi.wProductType == VER_NT_SERVER)
 			{
@@ -949,5 +950,5 @@ IRRLICHT_API IrrlichtDevice* IRRCALLCONV createDeviceEx(
 
 } // end namespace
 
-#endif // _IRR_WINDOWS_
+#endif // _IRR_USE_WINDOWS_DEVICE_
 

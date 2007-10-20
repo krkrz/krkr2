@@ -5,33 +5,43 @@
 #ifndef __I_IRRLICHT_DEVICE_H_INCLUDED__
 #define __I_IRRLICHT_DEVICE_H_INCLUDED__
 
-#include "irrTypes.h"
-#include "IUnknown.h"
+#include "IReferenceCounted.h"
 #include "dimension2d.h"
-#include "IFileSystem.h"
 #include "IVideoDriver.h"
 #include "EDriverTypes.h"
-#include "IGUIEnvironment.h"
 #include "IEventReceiver.h"
-#include "ISceneManager.h"
 #include "ICursorControl.h"
 #include "IVideoModeList.h"
 #include "ITimer.h"
-#include "ILogger.h"
 #include "IOSOperator.h"
 
 namespace irr
 {
+	class ILogger;
+	class IEventReceiver;
+
+	namespace io {
+		class IFileSystem;
+	} // end namespace io
+
+	namespace gui {
+		class IGUIEnvironment;
+	} // end namespace gui
+
+	namespace scene {
+		class ISceneManager;
+	} // end namespace scene
+
 	//! The Irrlicht device. You can create it with createDevice() or createDeviceEx(). 
 	/** This is the most important class of the Irrlicht Engine. You can access everything
 	in the engine if you have a pointer to an instance of this class. 
 	*/
-	class IrrlichtDevice : public virtual IUnknown
+	class IrrlichtDevice : public virtual IReferenceCounted
 	{
 	public:
 
 		//! destructor
-		virtual ~IrrlichtDevice() {};
+		virtual ~IrrlichtDevice() {}
 
         //! Runs the device. 
 		/** Also increments the virtual timer by calling ITimer::tick();. You can prevent this
@@ -134,7 +144,7 @@ while(device->run())
     // draw everything here
   }
 		\endcode */
-		virtual bool isWindowActive() = 0;
+		virtual bool isWindowActive() const = 0;
 
 		//! Notifies the device that it should close itself.
 		/** IrrlichtDevice::run() will always return false after closeDevice() was called. */
@@ -143,7 +153,7 @@ while(device->run())
 		//! Returns the version of the engine.
 		/** The returned string
 		will look like this: "1.2.3" or this: "1.2". */
-		virtual const c8* getVersion() = 0;
+		virtual const c8* getVersion() const = 0;
 
 		//! Sets a new event receiver to receive events.
 		virtual void setEventReceiver(IEventReceiver* receiver) = 0;
@@ -156,7 +166,11 @@ while(device->run())
 		input library for example for doing joystick input, you can use this to post key or mouse input 
 		events to the engine. Internally, this method only delegates the events further to the 
 		scene manager and the GUI environment. */
-		virtual void postEventFromUser(SEvent event) = 0;
+		virtual void postEventFromUser(const SEvent& event) = 0;
+
+		//! Sets the input receiving scene manager. 
+		/** If set to null, the main scene manager (returned by GetSceneManager()) will receive the input */
+		virtual void setInputReceivingSceneManager(scene::ISceneManager* sceneManager) = 0;
 
 		//! Sets if the window should be resizeable in windowed mode.
 		/** The default is false. This method only works in windowed mode. */

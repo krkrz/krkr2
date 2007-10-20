@@ -5,6 +5,9 @@
 #ifndef __C_GUI_TAB_CONTROL_H_INCLUDED__
 #define __C_GUI_TAB_CONTROL_H_INCLUDED__
 
+#include "IrrCompileConfig.h"
+#ifdef _IRR_COMPILE_WITH_GUI_
+
 #include "IGUITabControl.h"
 #include "irrArray.h"
 
@@ -22,12 +25,9 @@ namespace gui
 			IGUIElement* parent, const core::rect<s32>& rectangle,
 			s32 id);
 
-		//! destructor
-		virtual ~CGUITab();
-
 		//! Returns number of this tab in tabcontrol. Can be accessed
 		//! later IGUITabControl::getTab() by this number.
-		virtual s32 getNumber();
+		virtual s32 getNumber() const;
 
 		//! Sets the number
 		virtual void setNumber(s32 n);
@@ -41,8 +41,14 @@ namespace gui
 		//! sets the color of the background, if it should be drawn.
 		virtual void setBackgroundColor(video::SColor c);
 
+		//! returns true if the tab is drawing its background, false if not
+		virtual bool isDrawingBackground() const;
+
+		//! returns the color of the background
+		virtual video::SColor getBackgroundColor() const;
+
 		//! Writes attributes of the element.
-		virtual void serializeAttributes(io::IAttributes* out, io::SAttributeReadWriteOptions* options);
+		virtual void serializeAttributes(io::IAttributes* out, io::SAttributeReadWriteOptions* options) const;
 
 		//! Reads attributes of the element
 		virtual void deserializeAttributes(io::IAttributes* in, io::SAttributeReadWriteOptions* options);
@@ -77,10 +83,10 @@ namespace gui
 		virtual void addTab(CGUITab* tab);
 
 		//! Returns amount of tabs in the tabcontrol
-		virtual s32 getTabcount();
+		virtual s32 getTabCount() const;
 
 		//! Returns a tab based on zero based index
-		virtual IGUITab* getTab(s32 idx);
+		virtual IGUITab* getTab(s32 idx) const;
 
 		//! Brings a tab to front.
 		virtual bool setActiveTab(s32 idx);
@@ -89,10 +95,10 @@ namespace gui
 		virtual bool setActiveTab(IGUIElement *tab);
 
 		//! Returns which tab is currently active
-		virtual s32 getActiveTab();
+		virtual s32 getActiveTab() const;
 
 		//! called if an event happened.
-		virtual bool OnEvent(SEvent event);
+		virtual bool OnEvent(const SEvent& event);
 
 		//! draws the element and its children
 		virtual void draw();
@@ -101,7 +107,7 @@ namespace gui
 		virtual void removeChild(IGUIElement* child);
 
 		//! Writes attributes of the element.
-		virtual void serializeAttributes(io::IAttributes* out, io::SAttributeReadWriteOptions* options);
+		virtual void serializeAttributes(io::IAttributes* out, io::SAttributeReadWriteOptions* options) const;
 
 		//! Reads attributes of the element
 		virtual void deserializeAttributes(io::IAttributes* in, io::SAttributeReadWriteOptions* options);
@@ -119,6 +125,8 @@ namespace gui
 
 } // end namespace gui
 } // end namespace irr
+
+#endif // _IRR_COMPILE_WITH_GUI_
 
 #endif
 

@@ -9,6 +9,7 @@
 #include "ICameraSceneNode.h"
 #include "IMeshCache.h"
 #include "IAnimatedMesh.h"
+#include "IMaterialRenderer.h"
 
 namespace irr
 {
@@ -127,37 +128,51 @@ void CMeshSceneNode::render()
 	Box = Mesh->getBoundingBox();
 
 	// for debug purposes only:
-	if (DebugDataVisible && PassCount==1)
+	if ( DebugDataVisible && PassCount==1)
 	{
-		video::SMaterial m;
-		m.Lighting = false;
-		driver->setMaterial(m);
-		driver->draw3DBox(Box, video::SColor(0,255,255,255));
-
-#if 0 // draw normals
-		for (u32 g=0; g<Mesh->getMeshBufferCount(); ++g)
+		if ( DebugDataVisible & scene::EDS_BBOX )
 		{
-			scene::IMeshBuffer* mb = Mesh->getMeshBuffer(g);
-
-			u32 vSize;
-			u32 i;
-			vSize = mb->getVertexPitch ();
-
-			const video::S3DVertex* v = ( const video::S3DVertex*)mb->getVertices();
-			video::SColor c ( 255, 128 ,0, 0 );
-			video::SColor c1 ( 255, 255 ,0, 0 );
-			for ( i = 0; i != mb->getVertexCount(); ++i )
-			{
-				core::vector3df h = v->Normal * 5.f;
-				core::vector3df h1 = h.crossProduct ( core::vector3df ( 0.f, 1.f, 0.f ) );
-
-				driver->draw3DLine ( v->Pos, v->Pos + h, c );
-				driver->draw3DLine ( v->Pos + h, v->Pos + h + h1, c1 );
-				v = (const video::S3DVertex*) ( (u8*) v + vSize );
-			}
-
+			video::SMaterial m;
+			m.Lighting = false;
+			driver->setMaterial(m);
+			driver->draw3DBox(Box, video::SColor(0,255,255,255));
 		}
-#endif // Draw normals
+		if ( DebugDataVisible & scene::EDS_BBOX_BUFFERS )
+		{
+			video::SMaterial m;
+			m.Lighting = false;
+			driver->setMaterial(m);
+			for (u32 g=0; g<Mesh->getMeshBufferCount(); ++g)
+			{
+				driver->draw3DBox(
+					Mesh->getMeshBuffer(g)->getBoundingBox(), 
+					video::SColor(0,255,255,255));
+			}
+		}
+		if ( DebugDataVisible & scene::EDS_NORMALS )
+		{
+			for (u32 g=0; g<Mesh->getMeshBufferCount(); ++g)
+			{
+				scene::IMeshBuffer* mb = Mesh->getMeshBuffer(g);
+
+				u32 vSize;
+				u32 i;
+				vSize = video::getVertexPitchFromType(mb->getVertexType());
+
+				const video::S3DVertex* v = ( const video::S3DVertex*)mb->getVertices();
+				video::SColor c ( 255, 128 ,0, 0 );
+				video::SColor c1 ( 255, 255 ,0, 0 );
+				for ( i = 0; i != mb->getVertexCount(); ++i )
+				{
+					core::vector3df h = v->Normal * 5.f;
+					core::vector3df h1 = h.crossProduct ( core::vector3df ( 0.f, 1.f, 0.f ) );
+
+					driver->draw3DLine ( v->Pos, v->Pos + h, c );
+					driver->draw3DLine ( v->Pos + h, v->Pos + h + h1, c1 );
+					v = (const video::S3DVertex*) ( (u8*) v + vSize );
+				}
+			}
+		}
 	}
 
 	for (u32 i=0; i<Mesh->getMeshBufferCount(); ++i)
@@ -178,7 +193,7 @@ void CMeshSceneNode::render()
 				driver->drawMeshBuffer(mb);
 			}
 		}
-	}			
+	}
 }
 
 
@@ -191,7 +206,7 @@ const core::aabbox3d<f32>& CMeshSceneNode::getBoundingBox() const
 
 //! returns the material based on the zero based index i. To get the amount
 //! of materials used by this scene node, use getMaterialCount().
-//! This function is needed for inserting the node into the scene hirachy on a
+//! This function is needed for inserting the node into the scene hierarchy on a
 //! optimal position for minimizing renderstate changes, but can also be used
 //! to directly modify the material of a scene node.
 video::SMaterial& CMeshSceneNode::getMaterial(u32 i)
@@ -211,7 +226,7 @@ video::SMaterial& CMeshSceneNode::getMaterial(u32 i)
 
 
 //! returns amount of materials used by this scene node.
-u32 CMeshSceneNode::getMaterialCount()
+u32 CMeshSceneNode::getMaterialCount() const
 {
 	if (Mesh && ReadOnlyMaterials)
 		return Mesh->getMeshBufferCount();
@@ -259,7 +274,7 @@ void CMeshSceneNode::copyMaterials()
 
 
 //! Writes attributes of the scene node.
-void CMeshSceneNode::serializeAttributes(io::IAttributes* out, io::SAttributeReadWriteOptions* options)
+void CMeshSceneNode::serializeAttributes(io::IAttributes* out, io::SAttributeReadWriteOptions* options) const
 {
 	IMeshSceneNode::serializeAttributes(out, options);
 
@@ -298,9 +313,27 @@ void CMeshSceneNode::setReadOnlyMaterials(bool readonly)
 }
 
 //! Returns if the scene node should not copy the materials of the mesh but use them in a read only style
-bool CMeshSceneNode::isReadOnlyMaterials()
+bool CMeshSceneNode::isReadOnlyMaterials() const
 {
 	return ReadOnlyMaterials;
+}
+
+
+//! Creates a clone of this scene node and its children.
+ISceneNode* CMeshSceneNode::clone(ISceneNode* newParent, ISceneManager* newManager)
+{
+	if (!newParent) newParent = Parent;
+	if (!newManager) newManager = SceneManager;
+
+	CMeshSceneNode* nb = new CMeshSceneNode(Mesh, newParent, 
+		newManager, ID, RelativeTranslation, RelativeRotation, RelativeScale);
+
+	nb->cloneMembers(this, newManager);
+	nb->ReadOnlyMaterials = ReadOnlyMaterials;
+	nb->Materials = Materials;
+
+	nb->drop();
+	return nb;
 }
 
 

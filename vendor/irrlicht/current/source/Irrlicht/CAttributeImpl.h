@@ -67,12 +67,12 @@ public:
 		BoolValue = strcmp(string, "true") == 0;
 	}
 
-	virtual E_ATTRIBUTE_TYPE getType()
+	virtual E_ATTRIBUTE_TYPE getType() const
 	{
 		return EAT_BOOL;
 	}
 
-	virtual const wchar_t* getTypeString()
+	virtual const wchar_t* getTypeString() const
 	{
 		return L"bool";
 	}
@@ -126,13 +126,13 @@ public:
 		Value = atoi(text);
 	}
 
-	virtual E_ATTRIBUTE_TYPE getType()
+	virtual E_ATTRIBUTE_TYPE getType() const
 	{
 		return EAT_INT;
 	}
 
 
-	virtual const wchar_t* getTypeString()
+	virtual const wchar_t* getTypeString() const
 	{
 		return L"int";
 	}
@@ -186,13 +186,13 @@ public:
 		Value = core::fast_atof(text);
 	}
 
-	virtual E_ATTRIBUTE_TYPE getType()
+	virtual E_ATTRIBUTE_TYPE getType() const 
 	{
 		return EAT_FLOAT;
 	}
 
 
-	virtual const wchar_t* getTypeString()
+	virtual const wchar_t* getTypeString() const
 	{
 		return L"float";
 	}
@@ -1138,7 +1138,7 @@ public:
 		return IsFloat;
 	}
 
-	virtual E_ATTRIBUTE_TYPE getType()
+	virtual E_ATTRIBUTE_TYPE getType() const
 	{
 		if (IsFloat)
 			return EAT_FLOATARRAY;
@@ -1146,7 +1146,7 @@ public:
 			return EAT_INTARRAY;
 	}
 
-	virtual const wchar_t* getTypeString()
+	virtual const wchar_t* getTypeString() const
 	{
 		if (IsFloat)
 			return L"floatlist";
@@ -1205,13 +1205,13 @@ public:
 		setInt((s32)floatValue);
 	}
 
-	virtual E_ATTRIBUTE_TYPE getType()
+	virtual E_ATTRIBUTE_TYPE getType() const 
 	{
 		return EAT_COLORF;
 	}
 
 
-	virtual const wchar_t* getTypeString()
+	virtual const wchar_t* getTypeString() const
 	{
 		return L"colorf";
 	}
@@ -1265,13 +1265,13 @@ public:
 		setColor(c);
 	}
 
-	virtual E_ATTRIBUTE_TYPE getType()
+	virtual E_ATTRIBUTE_TYPE getType() const
 	{
 		return EAT_COLOR;
 	}
 
 
-	virtual const wchar_t* getTypeString()
+	virtual const wchar_t* getTypeString() const
 	{
 		return L"color";
 	}
@@ -1286,7 +1286,7 @@ public:
 
 	CVector3DAttribute(const char* name, core::vector3df value) : CNumbersAttribute(name, value) {}
 
-	virtual E_ATTRIBUTE_TYPE getType()
+	virtual E_ATTRIBUTE_TYPE getType() const
 	{
 		return EAT_VECTOR3D;
 	}
@@ -1299,7 +1299,7 @@ public:
 		return ret;
 	}
 
-	virtual const wchar_t* getTypeString()
+	virtual const wchar_t* getTypeString() const
 	{
 		return L"vector3d";
 	}
@@ -1312,12 +1312,12 @@ public:
 
 	CPosition2DAttribute(const char* name, core::position2di value) : CNumbersAttribute(name, value) {}
 
-	virtual E_ATTRIBUTE_TYPE getType()
+	virtual E_ATTRIBUTE_TYPE getType() const
 	{
 		return EAT_POSITION2D;
 	}
 
-	virtual const wchar_t* getTypeString()
+	virtual const wchar_t* getTypeString() const
 	{
 		return L"position";
 	}
@@ -1332,12 +1332,12 @@ public:
 
 	CRectAttribute(const char* name, core::rect<s32> value) : CNumbersAttribute(name, value) { }
 
-	virtual E_ATTRIBUTE_TYPE getType()
+	virtual E_ATTRIBUTE_TYPE getType() const
 	{
 		return EAT_RECT;
 	}
 
-	virtual const wchar_t* getTypeString()
+	virtual const wchar_t* getTypeString() const
 	{
 		return L"rect";
 	}
@@ -1350,7 +1350,7 @@ public:
 
 	CMatrixAttribute(const char* name, core::matrix4 value) : CNumbersAttribute(name, value) { }
 
-	virtual E_ATTRIBUTE_TYPE getType()
+	virtual E_ATTRIBUTE_TYPE getType() const
 	{
 		return EAT_MATRIX;
 	}
@@ -1360,7 +1360,7 @@ public:
 		return core::quaternion(getMatrix());
 	}
 
-	virtual const wchar_t* getTypeString()
+	virtual const wchar_t* getTypeString() const
 	{
 		return L"matrix";
 	}
@@ -1373,7 +1373,7 @@ public:
 
 	CQuaternionAttribute(const char* name, core::quaternion value) : CNumbersAttribute(name, value) { }
 
-	virtual E_ATTRIBUTE_TYPE getType()
+	virtual E_ATTRIBUTE_TYPE getType() const
 	{
 		return EAT_QUATERNION;
 	}
@@ -1383,7 +1383,7 @@ public:
 		return getQuaternion().getMatrix();
 	}
 
-	virtual const wchar_t* getTypeString()
+	virtual const wchar_t* getTypeString() const
 	{
 		return L"quaternion";
 	}
@@ -1397,12 +1397,12 @@ public:
 
 	CBBoxAttribute(const char* name, core::aabbox3df value) : CNumbersAttribute(name, value) { }
 
-	virtual E_ATTRIBUTE_TYPE getType()
+	virtual E_ATTRIBUTE_TYPE getType() const
 	{
 		return EAT_BBOX;
 	}
 
-	virtual const wchar_t* getTypeString()
+	virtual const wchar_t* getTypeString() const
 	{
 		return L"box3d";
 	}
@@ -1415,12 +1415,12 @@ public:
 
 	CPlaneAttribute(const char* name, core::plane3df value) : CNumbersAttribute(name, value) { }
 
-	virtual E_ATTRIBUTE_TYPE getType()
+	virtual E_ATTRIBUTE_TYPE getType() const
 	{
 		return EAT_PLANE;
 	}
 
-	virtual const wchar_t* getTypeString()
+	virtual const wchar_t* getTypeString() const
 	{
 		return L"plane";
 	}
@@ -1433,7 +1433,7 @@ public:
 
 	CTriangleAttribute(const char* name, core::triangle3df value) : CNumbersAttribute(name, value) { }
 
-	virtual E_ATTRIBUTE_TYPE getType()
+	virtual E_ATTRIBUTE_TYPE getType() const
 	{
 		return EAT_TRIANGLE3D;
 	}
@@ -1443,7 +1443,7 @@ public:
 		return getTriangle().getPlane();
 	}
 
-	virtual const wchar_t* getTypeString()
+	virtual const wchar_t* getTypeString() const
 	{
 		return L"triangle";
 	}
@@ -1457,12 +1457,12 @@ public:
 
 	CLine2dAttribute(const char* name, core::line2df value) : CNumbersAttribute(name, value) { }
 
-	virtual E_ATTRIBUTE_TYPE getType()
+	virtual E_ATTRIBUTE_TYPE getType() const
 	{
 		return EAT_LINE2D;
 	}
 
-	virtual const wchar_t* getTypeString()
+	virtual const wchar_t* getTypeString() const
 	{
 		return L"line2d";
 	}
@@ -1475,12 +1475,12 @@ public:
 
 	CLine3dAttribute(const char* name, core::line3df value) : CNumbersAttribute(name, value) { }
 
-	virtual E_ATTRIBUTE_TYPE getType()
+	virtual E_ATTRIBUTE_TYPE getType() const
 	{
 		return EAT_LINE3D;
 	}
 
-	virtual const wchar_t* getTypeString()
+	virtual const wchar_t* getTypeString() const
 	{
 		return L"line3d";
 	}
@@ -1577,13 +1577,13 @@ public:
 		return Value.c_str();
 	}
 
-	virtual E_ATTRIBUTE_TYPE getType()
+	virtual E_ATTRIBUTE_TYPE getType() const
 	{
 		return EAT_ENUM;
 	}
 
 
-	virtual const wchar_t* getTypeString()
+	virtual const wchar_t* getTypeString() const
 	{
 		return L"enum";
 	}
@@ -1697,13 +1697,13 @@ public:
 			Value = core::stringc(text);
 	}
 
-	virtual E_ATTRIBUTE_TYPE getType()
+	virtual E_ATTRIBUTE_TYPE getType() const
 	{
 		return EAT_STRING;
 	}
 
 
-	virtual const wchar_t* getTypeString()
+	virtual const wchar_t* getTypeString() const
 	{
 		return L"string";
 	}
@@ -1789,13 +1789,13 @@ public:
 
 	}
 
-	virtual E_ATTRIBUTE_TYPE getType()
+	virtual E_ATTRIBUTE_TYPE getType() const
 	{
 		return EAT_BINARY;
 	}
 
 
-	virtual const wchar_t* getTypeString()
+	virtual const wchar_t* getTypeString() const
 	{
 		return L"binary";
 	}
@@ -1877,13 +1877,13 @@ public:
 			Value->grab();
 	}
 
-	virtual E_ATTRIBUTE_TYPE getType()
+	virtual E_ATTRIBUTE_TYPE getType() const
 	{
 		return EAT_TEXTURE;
 	}
 
 
-	virtual const wchar_t* getTypeString()
+	virtual const wchar_t* getTypeString() const
 	{
 		return L"texture";
 	}
@@ -1915,12 +1915,12 @@ public:
 		Value = value;
 	}
 
-	virtual E_ATTRIBUTE_TYPE getType()
+	virtual E_ATTRIBUTE_TYPE getType() const
 	{
 		return EAT_STRINGWARRAY;
 	}
 
-	virtual const wchar_t* getTypeString()
+	virtual const wchar_t* getTypeString() const
 	{
 		return L"stringwarray";
 	}
@@ -1929,6 +1929,60 @@ public:
 };
 
 
+// Attribute implemented for user pointers
+class CUserPointerAttribute : public IAttribute
+{
+public:
+
+	CUserPointerAttribute(const char* name, void* value)
+	{
+		Name = name;
+		Value = value;
+	}
+
+	virtual s32 getInt() 
+	{ 
+		return *(s32*)(&Value);
+	}
+
+	virtual bool getBool()
+	{ 
+		return (Value != 0);
+	}
+
+	virtual void getString(char* target) 
+	{
+		sprintf(target, "0x%x", *(int*)(&Value));
+	}
+
+	virtual void setString(const char* text) 
+	{
+		sscanf(text, "0x%x", (unsigned int*)(&Value));
+	}
+
+	virtual E_ATTRIBUTE_TYPE getType() const
+	{
+		return EAT_USER_POINTER;
+	}
+
+	virtual void setUserPointer(void* v)
+	{
+		Value = v;
+	}
+
+	virtual void* getUserPointer()
+	{
+		return Value;
+	}
+
+	
+	virtual const wchar_t* getTypeString() const
+	{
+		return L"userPointer";
+	}
+
+	void* Value;
+};
 
 
 // todo: CGUIFontAttribute

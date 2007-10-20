@@ -3,6 +3,8 @@
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
 #include "CGUIInOutFader.h"
+#ifdef _IRR_COMPILE_WITH_GUI_
+
 #include "IGUIEnvironment.h"
 #include "IVideoDriver.h"
 #include "os.h"
@@ -29,14 +31,6 @@ CGUIInOutFader::CGUIInOutFader(IGUIEnvironment* environment, IGUIElement* parent
 }
 
 
-
-//! destructor
-CGUIInOutFader::~CGUIInOutFader()
-{
-}
-
-
-
 //! draws the element and its children
 void CGUIInOutFader::draw()
 {
@@ -50,7 +44,7 @@ void CGUIInOutFader::draw()
 		return;
 	}
 
-	irr::video::IVideoDriver* driver = Environment->getVideoDriver();
+	video::IVideoDriver* driver = Environment->getVideoDriver();
 
 	if (driver)
 	{
@@ -159,7 +153,7 @@ void CGUIInOutFader::fadeOut(u32 time)
 }
 
 //! Writes attributes of the element.
-void CGUIInOutFader::serializeAttributes(io::IAttributes* out, io::SAttributeReadWriteOptions* options=0)
+void CGUIInOutFader::serializeAttributes(io::IAttributes* out, io::SAttributeReadWriteOptions* options=0) const
 {
 	IGUIInOutFader::serializeAttributes(out,options);
 
@@ -181,3 +175,6 @@ void CGUIInOutFader::deserializeAttributes(io::IAttributes* in, io::SAttributeRe
 
 } // end namespace gui
 } // end namespace irr
+
+#endif // _IRR_COMPILE_WITH_GUI_
+

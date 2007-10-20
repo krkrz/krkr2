@@ -5,6 +5,7 @@
 #include "CQuake3ShaderSceneNode.h"
 #include "IVideoDriver.h"
 #include "ICameraSceneNode.h"
+#include "SViewFrustum.h"
 
 namespace irr
 {
@@ -12,13 +13,12 @@ namespace scene
 {
 
 
-CQuake3ShaderSceneNode::CQuake3ShaderSceneNode(scene::ISceneNode* parent, scene::ISceneManager* mgr,s32 id,
-									   io::IFileSystem *fileSystem, 
-									   scene::IMeshBuffer *buffer, const quake3::SShader * shader
-									  )
-: scene::ISceneNode(parent, mgr, id), Shader ( shader ),TimeAbs ( 0.f )
+CQuake3ShaderSceneNode::CQuake3ShaderSceneNode(
+			scene::ISceneNode* parent, scene::ISceneManager* mgr,s32 id,
+			io::IFileSystem *fileSystem, scene::IMeshBuffer *buffer,
+			const quake3::SShader * shader)
+	: scene::ISceneNode(parent, mgr, id), Shader ( shader ),TimeAbs ( 0.f )
 {
-
 	#ifdef _DEBUG
 		core::stringc dName = "CQuake3ShaderSceneNode ";
 		dName += Shader->name;
@@ -30,7 +30,7 @@ CQuake3ShaderSceneNode::CQuake3ShaderSceneNode(scene::ISceneNode* parent, scene:
 	this->Name = Shader->name;
 
 	// clone meshbuffer to modifiable buffer
-	clone ( static_cast< scene::SMeshBufferLightMap *> ( buffer ) );
+	cloneBuffer ( static_cast< scene::SMeshBufferLightMap *> ( buffer ) );
 
 	// load all Textures in all stages
 	loadTextures ( fileSystem );
@@ -45,7 +45,7 @@ CQuake3ShaderSceneNode::~CQuake3ShaderSceneNode ()
 /*
 	create single copies
 */
-void CQuake3ShaderSceneNode::clone ( scene::SMeshBufferLightMap * buffer )
+void CQuake3ShaderSceneNode::cloneBuffer ( scene::SMeshBufferLightMap * buffer )
 {
 	Original.Material = buffer->Material;
 	MeshBuffer.Material = buffer->Material;
@@ -72,7 +72,7 @@ void CQuake3ShaderSceneNode::clone ( scene::SMeshBufferLightMap * buffer )
 
 	MeshBuffer.recalculateBoundingBox ();
 	// used for sorting
-	MeshBuffer.Material.Textures[0] = (video::ITexture*) Shader;
+	MeshBuffer.Material.setTexture(0, (video::ITexture*) Shader);
 }
 
 
@@ -106,7 +106,7 @@ void CQuake3ShaderSceneNode::loadTextures ( io::IFileSystem * fileSystem )
 		// our lightmap is passed in material.Texture[2]
 		if ( mapname == "$lightmap" )
 		{
-			Q3Texture [i].Texture.push_back ( Original.getMaterial().Textures[1] );
+			Q3Texture [i].Texture.push_back ( Original.getMaterial().getTexture(1) );
 		}
 		else
 		{
@@ -216,8 +216,8 @@ void CQuake3ShaderSceneNode::render()
 	SQ3Texture &q = Q3Texture [ stage];
 
 	material.Lighting = false;
-	material.Textures[0] = q.Texture [ q.TextureIndex ];
-	material.Textures[1] = 0;
+	material.setTexture(0, q.Texture [ q.TextureIndex ]);
+	material.setTexture(1, 0);
 	material.ZBuffer = quake3::getDepthFunction ( group->get ( "depthfunc" ) );
 	material.ZWriteEnable = (0 == StageCall );
 	material.NormalizeNormals = false;
@@ -235,8 +235,8 @@ void CQuake3ShaderSceneNode::render()
 		transformtex ( texture, q.TextureAddressMode );
 	}
 */
-	material.TextureWrap[0] = q.TextureAddressMode;
-	material.TextureWrap[1] = material.TextureWrap[0];
+	material.TextureLayer[0].TextureWrap = q.TextureAddressMode;
+	material.TextureLayer[1].TextureWrap = material.TextureLayer[0].TextureWrap;
 	driver->setTransform ( video::ETS_TEXTURE_0, texture );
 
 	driver->setMaterial( material );
@@ -498,7 +498,6 @@ u32 CQuake3ShaderSceneNode::animate( u32 stage,core::matrix4 &texture )
 
 	const quake3::SVarGroup *group = Shader->getGroup ( stage );
 
-
 	// select current texture
 	if ( Q3Texture [ stage ].TextureFrequency != 0.f )
 	{
@@ -510,7 +509,6 @@ u32 CQuake3ShaderSceneNode::animate( u32 stage,core::matrix4 &texture )
 	core::matrix4 texturem;
 	core::matrix4 m2;
 	quake3::SModifierFunction function;
-
 
 	f32 f0;
 	f32 f1;
@@ -686,7 +684,7 @@ const core::aabbox3d<f32>& CQuake3ShaderSceneNode::getBoundingBox() const
 }
 
 
-u32 CQuake3ShaderSceneNode::getMaterialCount()
+u32 CQuake3ShaderSceneNode::getMaterialCount() const
 {
 	return Q3Texture.size();
 }
@@ -694,9 +692,9 @@ u32 CQuake3ShaderSceneNode::getMaterialCount()
 video::SMaterial& CQuake3ShaderSceneNode::getMaterial(u32 i)
 {
 	video::SMaterial& m = MeshBuffer.getMaterial();
-	m.Textures[0] = 0;
+	m.setTexture(0, 0);
 	if ( Q3Texture [ i ].TextureIndex )
-		m.Textures[0] = Q3Texture [ i ].Texture [ Q3Texture [ i ].TextureIndex ];
+		m.setTexture(0, Q3Texture [ i ].Texture [ Q3Texture [ i ].TextureIndex ]);
 	return m;
 }	
 

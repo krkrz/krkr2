@@ -53,9 +53,9 @@ namespace quake3
 			return name.size();
 		}
 
-		bool operator < ( const SVariable &other ) const
+		bool operator == ( const SVariable &other ) const
 		{
-			return name < other.name;
+			return name == other.name;
 		}
 	};
 
@@ -432,7 +432,7 @@ namespace quake3
 		core::array < SVariable > Variable;
 	};
 
-	struct SVarGroupList: public IUnknown
+	struct SVarGroupList: public IReferenceCounted
 	{
 		SVarGroupList () {}
 		virtual ~SVarGroupList () {}
@@ -444,9 +444,14 @@ namespace quake3
 	class SShader
 	{
 		public:
+			bool operator == (const SShader &other ) const
+			{
+				return name == other.name;
+			}
+
 			bool operator < (const SShader &other ) const
 			{
-				return	name < other.name;
+				return name < other.name;
 			}
 
 			const SVarGroup * getGroup ( u32 stage ) const
@@ -570,7 +575,7 @@ namespace quake3
 			video::ITexture* texture = 0;
 			for ( u32 g = 0; g != 2 ; ++g )
 			{
-				irr::core::cutFilenameExtension ( loadFile, stringList[i] ).append ( extension[g] );
+				core::cutFilenameExtension ( loadFile, stringList[i] ).append ( extension[g] );
 
 				if ( fileSystem->existFile ( loadFile.c_str() ) )
 				{
@@ -590,7 +595,7 @@ namespace quake3
 	/*!
 		Manages various Quake3 Shader Styles
 	*/
-	class IShaderManager : public irr::IUnknown
+	class IShaderManager : public IReferenceCounted
 	{
 	};
 

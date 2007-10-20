@@ -10,29 +10,28 @@
 
 namespace irr
 {
-namespace video  
+namespace video
 {
 
 //! constructor
-CSoftwareTexture::CSoftwareTexture(IImage* image, const char* name)
-: ITexture(name), Texture(0)
+CSoftwareTexture::CSoftwareTexture(IImage* image, const char* name, bool renderTarget)
+: ITexture(name), Texture(0), IsRenderTarget(renderTarget)
 {
 	#ifdef _DEBUG
 	setDebugName("CSoftwareTexture");
-	#endif	
+	#endif
 
 	if (image)
 	{
 		core::dimension2d<s32> optSize;
-		core::dimension2d<s32> origSize = image->getDimension();
-		OrigSize = origSize;
+		OrigSize = image->getDimension();
 
-		optSize.Width = getTextureSizeFromSurfaceSize(origSize.Width);
-		optSize.Height = getTextureSizeFromSurfaceSize(origSize.Height);
+		optSize.Width = getTextureSizeFromSurfaceSize(OrigSize.Width);
+		optSize.Height = getTextureSizeFromSurfaceSize(OrigSize.Height);
 
 		Image = new CImage(ECF_A1R5G5B5, image);
 
-		if (optSize == origSize)
+		if (optSize == OrigSize)
 		{
 			Texture = Image;
 			Texture->grab();
@@ -40,7 +39,7 @@ CSoftwareTexture::CSoftwareTexture(IImage* image, const char* name)
 		else
 		{
 			Texture = new CImage(ECF_A1R5G5B5, optSize);
-			Image->copyToScaling(Texture);			
+			Image->copyToScaling(Texture);
 		}
 	}
 }
@@ -81,14 +80,14 @@ void CSoftwareTexture::unlock()
 
 
 //! Returns original size of the texture.
-const core::dimension2d<s32>& CSoftwareTexture::getOriginalSize()
+const core::dimension2d<s32>& CSoftwareTexture::getOriginalSize() const
 {
 	return OrigSize;
 }
 
 
 //! Returns (=size) of the texture.
-const core::dimension2d<s32>& CSoftwareTexture::getSize()
+const core::dimension2d<s32>& CSoftwareTexture::getSize() const
 {
 	return Image->getDimension();
 }
@@ -111,7 +110,7 @@ CImage* CSoftwareTexture::getTexture()
 
 
 //! returns the size of a texture which would be the optimize size for rendering it
-inline s32 CSoftwareTexture::getTextureSizeFromSurfaceSize(s32 size)
+inline s32 CSoftwareTexture::getTextureSizeFromSurfaceSize(s32 size) const
 {
 	s32 ts = 0x01;
 	while(ts < size)
@@ -123,7 +122,7 @@ inline s32 CSoftwareTexture::getTextureSizeFromSurfaceSize(s32 size)
 
 
 //! returns driver type of texture (=the driver, who created the texture)
-E_DRIVER_TYPE CSoftwareTexture::getDriverType()
+E_DRIVER_TYPE CSoftwareTexture::getDriverType() const
 {
 	return EDT_SOFTWARE;
 }
@@ -145,13 +144,17 @@ u32 CSoftwareTexture::getPitch() const
 }
 
 
-//! Regenerates the mip map levels of the texture. Useful after locking and 
+//! Regenerates the mip map levels of the texture. Useful after locking and
 //! modifying the texture
 void CSoftwareTexture::regenerateMipMapLevels()
 {
 	// our software textures don't have mip maps
 }
 
+bool CSoftwareTexture::isRenderTarget() const
+{
+	return IsRenderTarget;
+}
 
 
 } // end namespace video

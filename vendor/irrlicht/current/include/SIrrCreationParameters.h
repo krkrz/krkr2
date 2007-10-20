@@ -125,7 +125,7 @@ namespace irr
 		\endcode
 		However, there is no need to draw the picture this often. Just do it how you like.
 		*/
-		s32 WindowId;
+		void* WindowId;
 
 		//! Don't use or change this parameter. 
 		/** Always set it to IRRLICHT_SDK_VERSION, which is done by default.

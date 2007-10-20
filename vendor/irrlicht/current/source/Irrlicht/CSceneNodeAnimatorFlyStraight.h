@@ -16,9 +16,10 @@ namespace scene
 	public:
 
 		//! constructor
-		CSceneNodeAnimatorFlyStraight(const core::vector3df& startPoint, 
-									  const core::vector3df& endPoint, u32 timeForWay,
-									  bool loop, u32 now);
+		CSceneNodeAnimatorFlyStraight(const core::vector3df& startPoint,
+						const core::vector3df& endPoint,
+						u32 timeForWay,
+						bool loop, u32 now);
 
 		//! destructor
 		virtual ~CSceneNodeAnimatorFlyStraight();
@@ -27,13 +28,13 @@ namespace scene
 		virtual void animateNode(ISceneNode* node, u32 timeMs);
 
 		//! Writes attributes of the scene node animator.
-		virtual void serializeAttributes(io::IAttributes* out, io::SAttributeReadWriteOptions* options=0);
+		virtual void serializeAttributes(io::IAttributes* out, io::SAttributeReadWriteOptions* options=0) const;
 
 		//! Reads attributes of the scene node animator.
 		virtual void deserializeAttributes(io::IAttributes* in, io::SAttributeReadWriteOptions* options=0);
 
 		//! Returns type of the scene node animator
-		virtual ESCENE_NODE_ANIMATOR_TYPE getType()	{ return ESNAT_FLY_STRAIGHT; }
+		virtual ESCENE_NODE_ANIMATOR_TYPE getType() const { return ESNAT_FLY_STRAIGHT; }
 
 	private:
 

@@ -3,27 +3,32 @@
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
 #include "CIrrDeviceStub.h"
+#include "ISceneManager.h"
 #include "IEventReceiver.h"
-#include "irrList.h"
+#include "IFileSystem.h"
+#include "IGUIEnvironment.h"
 #include "os.h"
 #include "IrrCompileConfig.h"
 #include "CTimer.h"
 #include "CLogger.h"
 #include "irrString.h"
-#include "irrlicht.h"
 
 namespace irr
 {
 
 //! constructor
-CIrrDeviceStub::CIrrDeviceStub(const char* version, irr::IEventReceiver* recv)
-: IrrlichtDevice(), VideoDriver(0), GUIEnvironment(0), SceneManager(0), Timer(new irr::CTimer()), CursorControl(0), UserReceiver(recv), Logger(new CLogger(UserReceiver)), Operator(0), FileSystem(io::createFileSystem())
+CIrrDeviceStub::CIrrDeviceStub(const char* version, IEventReceiver* recv)
+: IrrlichtDevice(), VideoDriver(0), GUIEnvironment(0), SceneManager(0), 
+	Timer(0), CursorControl(0), UserReceiver(recv), Logger(0), Operator(0),
+	FileSystem(io::createFileSystem()), InputReceivingSceneManager(0)
 {
+	Timer = new CTimer();
+	Logger = new CLogger(UserReceiver);
 	os::Printer::Logger = Logger;
 
 	core::stringc s = "Irrlicht Engine version ";
 	s.append(getVersion());
-	os::Printer::log(s.c_str(), ELL_NONE);
+	os::Printer::log(s.c_str(), ELL_INFORMATION);
 
 	checkVersion(version);
 }
@@ -42,6 +47,9 @@ CIrrDeviceStub::~CIrrDeviceStub()
 	if (SceneManager)
 		SceneManager->drop();
 
+	if (InputReceivingSceneManager)
+		InputReceivingSceneManager->drop();
+
 	if (CursorControl)
 		CursorControl->drop();
 
@@ -58,8 +66,10 @@ CIrrDeviceStub::~CIrrDeviceStub()
 
 void CIrrDeviceStub::createGUIAndScene()
 {
+	#ifdef _IRR_COMPILE_WITH_GUI_
 	// create gui environment
 	GUIEnvironment = gui::createGUIEnvironment(FileSystem, VideoDriver, Operator);
+	#endif 
 
 	// create Scene manager
 	SceneManager = scene::createSceneManager(VideoDriver, FileSystem, CursorControl, GUIEnvironment);
@@ -108,7 +118,7 @@ ITimer* CIrrDeviceStub::getTimer()
 
 
 //! Returns the version of the engine. 
-const char* CIrrDeviceStub::getVersion()
+const char* CIrrDeviceStub::getVersion() const
 {
 	return IRRLICHT_SDK_VERSION;
 }
@@ -148,7 +158,7 @@ bool CIrrDeviceStub::checkVersion(const char* version)
 
 
 //! send the event to the right receiver
-void CIrrDeviceStub::postEventFromUser(SEvent event)
+void CIrrDeviceStub::postEventFromUser(const SEvent& event)
 {
 	bool absorbed = false;
 
@@ -158,8 +168,12 @@ void CIrrDeviceStub::postEventFromUser(SEvent event)
 	if (!absorbed && GUIEnvironment)
 		absorbed = GUIEnvironment->postEventFromUser(event);
 
-	if (!absorbed && SceneManager)
-		absorbed = SceneManager->postEventFromUser(event);
+	scene::ISceneManager* inputReceiver = InputReceivingSceneManager;
+	if (!inputReceiver)
+		inputReceiver = SceneManager;
+
+	if (!absorbed && inputReceiver)
+		absorbed = inputReceiver->postEventFromUser(event);
 }
 
 
@@ -194,11 +208,18 @@ IOSOperator* CIrrDeviceStub::getOSOperator()
 }
 
 
-//! Sets if the window should be resizeable in windowed mode.
-void CIrrDeviceStub::setResizeAble(bool resize)
+//! Sets the input receiving scene manager. 
+void CIrrDeviceStub::setInputReceivingSceneManager(scene::ISceneManager* sceneManager)
 {
+	if (InputReceivingSceneManager)
+		InputReceivingSceneManager->drop();
 
+	InputReceivingSceneManager = sceneManager;
+
+	if (InputReceivingSceneManager)
+		InputReceivingSceneManager->grab();
 }
+
 
 
 } // end namespace irr

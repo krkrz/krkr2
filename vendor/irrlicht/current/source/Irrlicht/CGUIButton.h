@@ -5,6 +5,9 @@
 #ifndef __C_GUI_BUTTON_H_INCLUDED__
 #define __C_GUI_BUTTON_H_INCLUDED__
 
+#include "IrrCompileConfig.h"
+#ifdef _IRR_COMPILE_WITH_GUI_
+
 #include "IGUIButton.h"
 #include "IGUISpriteBank.h"
 #include "SColor.h"
@@ -23,10 +26,10 @@ namespace gui
 			s32 id, core::rect<s32> rectangle, bool noclip=false);
 
 		//! destructor
-		~CGUIButton();
+		virtual ~CGUIButton();
 
 		//! called if an event happened.
-		virtual bool OnEvent(SEvent event);
+		virtual bool OnEvent(const SEvent& event);
 
 		//! draws the element and its children
 		virtual void draw();
@@ -64,7 +67,7 @@ namespace gui
 		virtual void setIsPushButton(bool isPushButton);
 
 		//! Returns if the button is currently pressed
-		virtual bool isPressed();
+		virtual bool isPressed() const;
 
 		//! Sets the pressed state of the button if this is a pushbutton
 		virtual void setPressed(bool pressed);
@@ -76,10 +79,16 @@ namespace gui
 		virtual void setUseAlphaChannel(bool useAlphaChannel);
 
 		//! Returns if the alpha channel should be used for drawing images on the button
-		virtual bool getUseAlphaChannel();
+		virtual bool isAlphaChannelUsed() const;
+
+		//! Returns if the button face and border are being drawn
+		virtual bool isDrawingBorder() const;
+
+		//! Returns whether the button is a push button
+		virtual bool isPushButton() const;
 
 		//! Writes attributes of the element.
-		virtual void serializeAttributes(io::IAttributes* out, io::SAttributeReadWriteOptions* options);
+		virtual void serializeAttributes(io::IAttributes* out, io::SAttributeReadWriteOptions* options) const;
 
 		//! Reads attributes of the element
 		virtual void deserializeAttributes(io::IAttributes* in, io::SAttributeReadWriteOptions* options);
@@ -118,5 +127,7 @@ namespace gui
 } // end namespace gui
 } // end namespace irr
 
-#endif
+#endif // _IRR_COMPILE_WITH_GUI_
+
+#endif // __C_GUI_BUTTON_H_INCLUDED__
 

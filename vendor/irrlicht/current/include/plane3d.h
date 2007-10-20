@@ -14,7 +14,7 @@ namespace core
 {
 
 //! Enumeration for intersection relations of 3d objects
-enum EIntersectionRelation3D 
+enum EIntersectionRelation3D
 {
 	ISREL3D_FRONT = 0,
 	ISREL3D_BACK,
@@ -31,23 +31,21 @@ class plane3d
 
 		// Constructors
 
-		plane3d(): Normal(0,1,0) { recalculateD(vector3d<T>(0,0,0)); };
-		plane3d(const vector3d<T>& MPoint, const vector3d<T>& Normal) : Normal(Normal) { recalculateD(MPoint); };
-		plane3d(T px, T py, T pz, T nx, T ny, T nz) : Normal(nx, ny, nz) { recalculateD(vector3d<T>(px, py, pz)); };
-		plane3d(const plane3d<T>& other) : Normal(other.Normal), D(other.D) {};
-		plane3d(const vector3d<T>& point1, const vector3d<T>& point2, const vector3d<T>& point3) { setPlane(point1, point2, point3); };
+		plane3d(): Normal(0,1,0) { recalculateD(vector3d<T>(0,0,0)); }
+		plane3d(const vector3d<T>& MPoint, const vector3d<T>& Normal) : Normal(Normal) { recalculateD(MPoint); }
+		plane3d(T px, T py, T pz, T nx, T ny, T nz) : Normal(nx, ny, nz) { recalculateD(vector3d<T>(px, py, pz)); }
+		plane3d(const vector3d<T>& point1, const vector3d<T>& point2, const vector3d<T>& point3) { setPlane(point1, point2, point3); }
 
 		// operators
 
-		inline bool operator==(const plane3d<T>& other) const { return (D==other.D && Normal==other.Normal);};
-		inline bool operator!=(const plane3d<T>& other) const { return !(D==other.D && Normal==other.Normal);};
+		inline bool operator==(const plane3d<T>& other) const { return (D==other.D && Normal==other.Normal);}
+		inline bool operator!=(const plane3d<T>& other) const { return !(D==other.D && Normal==other.Normal);}
 
 		// functions
 
 		void setPlane(const vector3d<T>& point, const vector3d<T>& nvector)
 		{
 			Normal = nvector;
-			Normal.normalize();
 			recalculateD(point);
 		}
 
@@ -80,7 +78,7 @@ class plane3d
 			if (t2 == 0)
 				return false;
 
-			T t =- (Normal.dotProduct(linePoint) + D) / t2;			
+			T t =- (Normal.dotProduct(linePoint) + D) / t2;
 			outIntersection = linePoint + (lineVect * t);
 			return true;
 		}
@@ -104,11 +102,13 @@ class plane3d
 		//! \param linePoint2: Point 2 of the line.
 		//! \param outIntersection: Place to store the intersection point, if there is one.
 		//! \return Returns true if there was an intersection, false if there was not.
-		bool getIntersectionWithLimitedLine(const vector3d<T>& linePoint1, 
-					const vector3d<T>& linePoint2, vector3d<T>& outIntersection) const
+		bool getIntersectionWithLimitedLine(
+				const vector3d<T>& linePoint1,
+				const vector3d<T>& linePoint2,
+				vector3d<T>& outIntersection) const
 		{
-			return (	getIntersectionWithLine(linePoint1, linePoint2 - linePoint1, outIntersection) &&
-						outIntersection.isBetweenPoints(linePoint1, linePoint2));
+			return (getIntersectionWithLine(linePoint1, linePoint2 - linePoint1, outIntersection) &&
+					outIntersection.isBetweenPoints(linePoint1, linePoint2));
 		}
 
 		//! Classifies the relation of a point to this plane.
@@ -121,10 +121,10 @@ class plane3d
 			const T d = Normal.dotProduct(point) + D;
 
 			if (d < -ROUNDING_ERROR_32)
-				return ISREL3D_FRONT;
+				return ISREL3D_BACK;
 
 			if (d > ROUNDING_ERROR_32)
-				return ISREL3D_BACK;
+				return ISREL3D_FRONT;
 
 			return ISREL3D_PLANAR;
 		}
@@ -142,9 +142,9 @@ class plane3d
 			return Normal * -D;
 		}
 
-		//! Tests if there is a intersection between this plane and another
+		//! Tests if there is an intersection between with the other plane
 		//! \return Returns true if there is a intersection.
-		bool existsInterSection(const plane3d<T>& other) const
+		bool existsIntersection(const plane3d<T>& other) const
 		{
 			vector3d<T> cross = other.Normal.crossProduct(Normal);
 			return cross.getLength() > core::ROUNDING_ERROR_32;
@@ -155,9 +155,9 @@ class plane3d
 		bool getIntersectionWithPlane(const plane3d<T>& other, vector3d<T>& outLinePoint,
 				vector3d<T>& outLineVect) const
 		{
-			f64 fn00 = Normal.getLength();
-			f64 fn01 = Normal.dotProduct(other.Normal);
-			f64 fn11 = other.Normal.getLength();
+			T fn00 = Normal.getLength();
+			T fn01 = Normal.dotProduct(other.Normal);
+			T fn11 = other.Normal.getLength();
 			f64 det = fn00*fn11 - fn01*fn01;
 
 			if (fabs(det) < ROUNDING_ERROR_64 )
@@ -173,7 +173,7 @@ class plane3d
 		}
 
 		//! Returns the intersection point with two other planes if there is one.
-		bool getIntersectionWithPlanes(const plane3d<T>& o1, 
+		bool getIntersectionWithPlanes(const plane3d<T>& o1,
 				const plane3d<T>& o2, vector3d<T>& outPoint) const
 		{
 			vector3d<T> linePoint, lineVect;
@@ -183,11 +183,15 @@ class plane3d
 			return false;
 		}
 
-		//! Returns if the plane is front of backfacing. Note that this only
-		//! works if the normal is Normalized.
+		//! Test if the triangle would be front or backfacing from any
+		//! point. Thus, this method assumes a camera position from
+		//! which the triangle is definitely visible when looking into
+		//! the given direction.
+		//! Note that this only works if the normal is Normalized.
+		//! Do not use this method with points as it will give wrong results!
 		//! \param lookDirection: Look direction.
-		//! \return Returns true if the plane is front facing, which mean it would
-		//! be visible, and false if it is backfacing.
+		//! \return Returns true if the plane is front facing and
+		//! false if it is backfacing.
 		bool isFrontFacing(const vector3d<T>& lookDirection) const
 		{
 			const f32 d = Normal.dotProduct(lookDirection);
@@ -200,11 +204,11 @@ class plane3d
 		{
 			return point.dotProduct(Normal) + D;
 		}
-	
+
 		// member variables
-		
+
 		vector3d<T> Normal;		// normal vector
-		T D;					// distance from origin
+		T D;				// distance from origin
 };
 
 

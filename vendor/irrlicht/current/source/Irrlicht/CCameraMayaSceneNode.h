@@ -29,7 +29,7 @@ namespace scene
 		//! example with scene::ISceneManager::addMayaCameraSceneNode or
 		//! scene::ISceneManager::addMeshViewerCameraSceneNode, may want to get this input
 		//! for changing their position, look at target or whatever. 
-		virtual bool OnEvent(SEvent event);
+		virtual bool OnEvent(const SEvent& event);
 
 		//! OnAnimate() is called just before rendering the whole scene.
 		//! nodes may calculate or store animations here, and may do other useful things,
@@ -57,7 +57,7 @@ namespace scene
 		virtual f32 getMoveSpeed();
 
 		//! Returns type of the scene node
-		virtual ESCENE_NODE_TYPE getType() { return ESNT_CAMERA_MAYA; }
+		virtual ESCENE_NODE_TYPE getType() const { return ESNT_CAMERA_MAYA; }
 
 	private:
 
@@ -69,16 +69,16 @@ namespace scene
 		bool MouseKeys[3];
 
 		core::vector3df Pos;
-		bool zooming, rotating, moving, translating;
-		f32 zoomSpeed;
-		f32 rotateSpeed;
-		f32 translateSpeed;
-		f32 rotateStartX, rotateStartY;
-		f32 zoomStartX, zoomStartY;
-		f32 translateStartX, translateStartY;
-		f32 currentZoom;
-		f32 rotX, rotY;
-		core::vector3df oldTarget;
+		bool Zooming, Rotating, Moving, Translating;
+		f32 ZoomSpeed;
+		f32 RotateSpeed;
+		f32 TranslateSpeed;
+		f32 RotateStartX, RotateStartY;
+		f32 ZoomStartX, ZoomStartY;
+		f32 TranslateStartX, TranslateStartY;
+		f32 CurrentZoom;
+		f32 RotX, RotY;
+		core::vector3df OldTarget;
 
 		core::vector2df MousePos;
 	};

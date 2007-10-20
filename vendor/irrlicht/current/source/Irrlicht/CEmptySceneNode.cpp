@@ -47,5 +47,23 @@ const core::aabbox3d<f32>& CEmptySceneNode::getBoundingBox() const
 	return Box;
 }
 
+
+//! Creates a clone of this scene node and its children.
+ISceneNode* CEmptySceneNode::clone(ISceneNode* newParent, ISceneManager* newManager)
+{
+	if (!newParent) newParent = Parent;
+	if (!newManager) newManager = SceneManager;
+
+	CEmptySceneNode* nb = new CEmptySceneNode(newParent, 
+		newManager, ID);
+
+	nb->cloneMembers(this, newManager);
+	nb->Box = Box;
+
+	nb->drop();
+	return nb;
+}
+
+
 } // end namespace scene
 } // end namespace irr

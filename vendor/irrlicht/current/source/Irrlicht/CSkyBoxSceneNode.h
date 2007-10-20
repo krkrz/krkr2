@@ -13,7 +13,7 @@ namespace irr
 namespace scene
 {
 
-	// Skybox, rendererd with zbuffer turned off, before all other nodes.
+	// Skybox, rendered with zbuffer turned off, before all other nodes.
 	class CSkyBoxSceneNode : public ISceneNode
 	{
 	public:
@@ -22,9 +22,6 @@ namespace scene
 		CSkyBoxSceneNode(video::ITexture* top, video::ITexture* bottom, video::ITexture* left,
 			video::ITexture* right, video::ITexture* front, video::ITexture* back,
 			ISceneNode* parent, ISceneManager* mgr, s32 id);
-
-		//! destructor
-		virtual ~CSkyBoxSceneNode();
 
 		virtual void OnRegisterSceneNode();
 
@@ -42,10 +39,13 @@ namespace scene
 		virtual video::SMaterial& getMaterial(u32 i);
 
 		//! returns amount of materials used by this scene node.
-		virtual u32 getMaterialCount();
+		virtual u32 getMaterialCount() const;
 
 		//! Returns type of the scene node
-		virtual ESCENE_NODE_TYPE getType() { return ESNT_SKY_BOX; }
+		virtual ESCENE_NODE_TYPE getType() const { return ESNT_SKY_BOX; }
+
+		//! Creates a clone of this scene node and its children.
+		virtual ISceneNode* clone(ISceneNode* newParent=0, ISceneManager* newManager=0); 
 
 	private:
 

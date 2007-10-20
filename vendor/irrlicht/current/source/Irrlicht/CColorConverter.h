@@ -6,6 +6,7 @@
 #define __C_COLOR_CONVERTER_H_INCLUDED__
 
 #include "irrTypes.h"
+#include "IImage.h"
 
 namespace irr
 {
@@ -71,6 +72,8 @@ public:
 	static void convert_R5G6B5toB8G8R8(const void* sP, s32 sN, void* dP);
 	static void convert_R5G6B5toA8R8G8B8(const void* sP, s32 sN, void* dP);
 	static void convert_R5G6B5toA1R5G5B5(const void* sP, s32 sN, void* dP);
+	static void convert_viaFormat(const void* sP, ECOLOR_FORMAT sF, s32 sN,
+				void* dP, ECOLOR_FORMAT dF);
 };
 
 

@@ -16,11 +16,11 @@ namespace video
 {
 
 //! constructor
-CSoftwareTexture2::CSoftwareTexture2(IImage* image, const char* name, bool generateMipLevels)
-: ITexture(name), MipMapLOD(0), HasMipMaps(generateMipLevels)
+CSoftwareTexture2::CSoftwareTexture2(IImage* image, const char* name, bool generateMipLevels, bool isRenderTarget)
+: ITexture(name), MipMapLOD(0), HasMipMaps(generateMipLevels), IsRenderTarget(isRenderTarget)
 {
 	#ifndef SOFTWARE_DRIVER_2_MIPMAPPING
-		HasMipMaps = 0;
+		HasMipMaps = false;
 	#endif
 
 	memset32 ( MipMap, 0, sizeof ( MipMap ) );
@@ -48,14 +48,11 @@ CSoftwareTexture2::CSoftwareTexture2(IImage* image, const char* name, bool gener
 			temp->copyToScaling(MipMap[0]);
 			temp->drop ();
 		}
-
-
 	}
 
 	regenerateMipMapLevels ();
 	setCurrentMipMapLOD ( 0 );
 }
-
 
 
 //! destructor
@@ -70,7 +67,7 @@ CSoftwareTexture2::~CSoftwareTexture2()
 
 
 //! returns the size of a texture which would be the optimize size for rendering it
-inline s32 CSoftwareTexture2::getTextureSizeFromSurfaceSize(s32 size)
+inline s32 CSoftwareTexture2::getTextureSizeFromSurfaceSize(s32 size) const
 {
 	s32 ts = 0x01;
 	while(ts < size)
@@ -84,12 +81,11 @@ inline s32 CSoftwareTexture2::getTextureSizeFromSurfaceSize(s32 size)
 }
 
 
-
 //! Regenerates the mip map levels of the texture. Useful after locking and 
 //! modifying the texture
 void CSoftwareTexture2::regenerateMipMapLevels()
 {
-	if ( 0 == HasMipMaps )
+	if ( !HasMipMaps )
 		return;
 
 	s32 i;
@@ -124,3 +120,4 @@ void CSoftwareTexture2::regenerateMipMapLevels()
 } // end namespace irr
 
 #endif // _IRR_COMPILE_WITH_BURNINGSVIDEO_
+

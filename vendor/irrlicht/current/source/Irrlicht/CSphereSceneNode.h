@@ -6,7 +6,7 @@
 #define __C_SHPERE_SCENE_NODE_H_INCLUDED__
 
 #include "ISceneNode.h"
-#include "SMeshBuffer.h"
+#include "IMesh.h"
 
 namespace irr
 {
@@ -17,7 +17,7 @@ namespace scene
 	public:
 
 		//! constructor
-		CSphereSceneNode(f32 size, s32 polyCount, ISceneNode* parent, ISceneManager* mgr, s32 id,
+		CSphereSceneNode(f32 size, u32 polyCountX, u32 polyCountY, ISceneNode* parent, ISceneManager* mgr, s32 id,
 			const core::vector3df& position = core::vector3df(0,0,0),
 			const core::vector3df& rotation = core::vector3df(0,0,0),
 			const core::vector3df& scale = core::vector3df(1.0f, 1.0f, 1.0f));
@@ -41,24 +41,27 @@ namespace scene
 		virtual video::SMaterial& getMaterial(u32 i);
 
 		//! returns amount of materials used by this scene node.
-		virtual u32 getMaterialCount();
+		virtual u32 getMaterialCount() const;
 
 		//! Returns type of the scene node
-		virtual ESCENE_NODE_TYPE getType() { return ESNT_SPHERE; }
+		virtual ESCENE_NODE_TYPE getType() const { return ESNT_SPHERE; }
 
 		//! Writes attributes of the scene node.
-		virtual void serializeAttributes(io::IAttributes* out, io::SAttributeReadWriteOptions* options=0);
+		virtual void serializeAttributes(io::IAttributes* out, io::SAttributeReadWriteOptions* options=0) const;
 
 		//! Reads attributes of the scene node.
 		virtual void deserializeAttributes(io::IAttributes* in, io::SAttributeReadWriteOptions* options=0);
 
+		//! Creates a clone of this scene node and its children.
+		virtual ISceneNode* clone(ISceneNode* newParent=0, ISceneManager* newManager=0);
+
 	private:
 
-		void setSizeAndPolys();
-
-		SMeshBuffer Buffer;
+		IMesh* Mesh;
+		core::aabbox3d<f32> Box;
 		f32 Radius;
-		s32 PolyCount;
+		u32 PolyCountX;
+		u32 PolyCountY;
 	};
 
 } // end namespace scene

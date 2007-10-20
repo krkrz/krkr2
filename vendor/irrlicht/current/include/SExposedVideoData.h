@@ -72,8 +72,9 @@ struct SExposedVideoData
 
 		struct 
 		{
-			// XWindow handle
-			u32 Window;
+			// XWindow handles
+			void* X11Display;
+			unsigned long X11Window;
 		} OpenGLLinux;
 	};
 };

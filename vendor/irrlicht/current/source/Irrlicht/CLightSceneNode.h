@@ -22,7 +22,7 @@ public:
 	CLightSceneNode(ISceneNode* parent, ISceneManager* mgr, s32 id,
 		const core::vector3df& position, video::SColorf color, f32 range);
 
-	virtual ~CLightSceneNode();
+	virtual ~CLightSceneNode() { }
 
 	//! pre render event
 	virtual void OnRegisterSceneNode();
@@ -31,7 +31,10 @@ public:
 	virtual void render();
 
 	//! set node light data from light info
-	virtual void setLightData( const video::SLight& light);
+	virtual void setLightData(const video::SLight& light);
+
+	//! \return Returns the light data.
+	virtual const video::SLight& getLightData() const;
 
 	//! \return Returns the light data.
 	virtual video::SLight& getLightData();
@@ -40,13 +43,16 @@ public:
 	virtual const core::aabbox3d<f32>& getBoundingBox() const;
 
 	//! Returns type of the scene node
-	virtual ESCENE_NODE_TYPE getType() { return ESNT_LIGHT; }
+	virtual ESCENE_NODE_TYPE getType() const { return ESNT_LIGHT; }
 
 	//! Writes attributes of the scene node.
-	virtual void serializeAttributes(io::IAttributes* out, io::SAttributeReadWriteOptions* options=0);
+	virtual void serializeAttributes(io::IAttributes* out, io::SAttributeReadWriteOptions* options=0) const;
 
 	//! Reads attributes of the scene node.
 	virtual void deserializeAttributes(io::IAttributes* in, io::SAttributeReadWriteOptions* options=0);
+
+	//! Creates a clone of this scene node and its children.
+	virtual ISceneNode* clone(ISceneNode* newParent=0, ISceneManager* newManager=0); 
 
 private:
 

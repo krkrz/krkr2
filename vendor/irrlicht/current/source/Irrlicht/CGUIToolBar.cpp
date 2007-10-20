@@ -3,6 +3,8 @@
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
 #include "CGUIToolBar.h"
+#ifdef _IRR_COMPILE_WITH_GUI_
+
 #include "IGUISkin.h"
 #include "IGUIEnvironment.h"
 #include "IVideoDriver.h"
@@ -32,7 +34,7 @@ CGUIToolBar::CGUIToolBar(IGUIEnvironment* environment, IGUIElement* parent, s32 
 		parentwidth = Parent->getAbsolutePosition().getWidth();
 
 		const core::list<IGUIElement*>& children = parent->getChildren();
-		core::list<IGUIElement*>::Iterator it = children.begin();
+		core::list<IGUIElement*>::ConstIterator it = children.begin();
 		for (; it != children.end(); ++it)
 		{
 			core::rect<s32> r = (*it)->getAbsolutePosition();
@@ -62,12 +64,18 @@ CGUIToolBar::CGUIToolBar(IGUIEnvironment* environment, IGUIElement* parent, s32 
 }
 
 
-
-//! destructor
-CGUIToolBar::~CGUIToolBar()
+//! called if an event happened.
+bool CGUIToolBar::OnEvent(const SEvent& event)
 {
-}
+	if (event.EventType == EET_MOUSE_INPUT_EVENT && 
+		event.MouseInput.Event == EMIE_LMOUSE_PRESSED_DOWN)
+	{
+		if (AbsoluteClippingRect.isPointInside(core::position2di(event.MouseInput.X, event.MouseInput.Y)))
+			return true;
+	}
 
+	return Parent ? Parent->OnEvent(event) : false;
+}
 
 
 //! draws the element and its children
@@ -146,3 +154,6 @@ IGUIButton* CGUIToolBar::addButton(s32 id, const wchar_t* text,const wchar_t* to
 	
 } // end namespace gui
 } // end namespace irr
+
+#endif // _IRR_COMPILE_WITH_GUI_
+

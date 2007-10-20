@@ -1,11 +1,11 @@
-// Copyright (C) 2002-2006 Nikolaus Gebhardt
+// Copyright (C) 2002-2007 Nikolaus Gebhardt
 // This file is part of the "Irrlicht Engine".
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
 #ifndef __I_GUI_ELEMENT_FACTORY_H_INCLUDED__
 #define __I_GUI_ELEMENT_FACTORY_H_INCLUDED__
 
-#include "IUnknown.h"
+#include "IReferenceCounted.h"
 #include "EGUIElementTypes.h"
 
 namespace irr
@@ -24,9 +24,12 @@ namespace gui
 	increase the reference counter of the environment. This is not necessary because the
 	it will grab() the factory anyway, and otherwise cyclic references will be created.
 	*/
-	class IGUIElementFactory : public virtual IUnknown
+	class IGUIElementFactory : public virtual IReferenceCounted
 	{
 	public:
+
+		// destructor
+		virtual ~IGUIElementFactory() {}
 
 		//! adds an element to the gui environment based on its type id
 		/** \param type: Type of the element to add.
@@ -41,22 +44,22 @@ namespace gui
 		virtual IGUIElement* addGUIElement(const c8* typeName, IGUIElement* parent=0) = 0;
 
 		//! returns amount of GUI element types this factory is able to create
-		virtual s32 getCreatableGUIElementTypeCount() = 0;
+		virtual s32 getCreatableGUIElementTypeCount() const = 0;
 
 		//! returns type of a createable element type
 		/** \param idx: Index of the element type in this factory. Must be a value between 0 and
 		getCreatableGUIElementTypeCount() */
-		virtual EGUI_ELEMENT_TYPE getCreateableGUIElementType(s32 idx) = 0;
+		virtual EGUI_ELEMENT_TYPE getCreateableGUIElementType(s32 idx) const = 0;
 
 		//! returns type name of a createable GUI element type by index
 		/** \param idx: Index of the type in this factory. Must be a value between 0 and
 		getCreatableGUIElementTypeCount() */
-		virtual const c8* getCreateableGUIElementTypeName(s32 idx) = 0;
+		virtual const c8* getCreateableGUIElementTypeName(s32 idx) const = 0;
 
 		//! returns type name of a createable GUI element
 		/** \param type: Type of GUI element. 
 		\return: Returns name of the type if this factory can create the type, otherwise 0. */
-		virtual const c8* getCreateableGUIElementTypeName(EGUI_ELEMENT_TYPE type) = 0;
+		virtual const c8* getCreateableGUIElementTypeName(EGUI_ELEMENT_TYPE type) const = 0;
 	};
 
 
@@ -64,3 +67,4 @@ namespace gui
 } // end namespace irr
 
 #endif // __I_GUI_ELEMENT_FACTORY_H_INCLUDED__
+

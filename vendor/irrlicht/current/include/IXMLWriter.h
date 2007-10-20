@@ -5,7 +5,7 @@
 #ifndef __I_XML_WRITER_H_INCLUDED__
 #define __I_XML_WRITER_H_INCLUDED__
 
-#include "IUnknown.h"
+#include "IReferenceCounted.h"
 #include "irrArray.h"
 #include "irrString.h"
 
@@ -18,12 +18,12 @@ namespace io
 	/** This XML Writer only writes UTF-16 xml files, because these are parsed 
 	faster than all other formats by IXMLReader.
 	*/
-	class IXMLWriter : public virtual IUnknown
+	class IXMLWriter : public virtual IReferenceCounted
 	{
 	public:
 
 		//! Destructor
-		virtual ~IXMLWriter() {};
+		virtual ~IXMLWriter() {}
 
 		//! Writes a xml 1.0 header like &lt;?xml version="1.0"?&gt;. This should
 		//! always be called before writing anything other, because also the

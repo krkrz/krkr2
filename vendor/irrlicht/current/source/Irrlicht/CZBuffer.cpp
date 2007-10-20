@@ -14,10 +14,9 @@ namespace video
 {
 
 
-
 //! constructor
 CZBuffer::CZBuffer(const core::dimension2d<s32>& size)
-: Buffer(0), Size(0,0), TotalSize(0), BufferEnd(0)
+: Buffer(0), BufferEnd(0), Size(0,0), TotalSize(0)
 {
 	#ifdef _DEBUG
 	setDebugName("CZBuffer");
@@ -31,8 +30,7 @@ CZBuffer::CZBuffer(const core::dimension2d<s32>& size)
 //! destructor
 CZBuffer::~CZBuffer()
 {
-	if (Buffer)
-		delete [] Buffer;
+	delete [] Buffer;
 }
 
 
@@ -53,8 +51,7 @@ void CZBuffer::setSize(const core::dimension2d<s32>& size)
 
 	Size = size;
 
-	if (Buffer)
-		delete [] Buffer;
+	delete [] Buffer;
 
 	TotalSize = size.Width * size.Height;
 	Buffer = new TZBufferType[TotalSize];
@@ -64,7 +61,7 @@ void CZBuffer::setSize(const core::dimension2d<s32>& size)
 
 
 //! returns the size of the zbuffer
-const core::dimension2d<s32>& CZBuffer::getSize()
+const core::dimension2d<s32>& CZBuffer::getSize() const
 {
 	return Size;
 }

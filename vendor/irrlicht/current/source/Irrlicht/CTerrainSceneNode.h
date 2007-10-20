@@ -16,6 +16,10 @@
 
 namespace irr
 {
+namespace io
+{
+	class IFileSystem;
+}
 namespace scene
 {
 	//! A scene node for displaying terrain using the geo mip map algorithm.
@@ -39,13 +43,13 @@ namespace scene
 		//! \param scale: The scale factor for the terrain.  If you're using a heightmap of size 128x128 and would like
 		//! your terrain to be 12800x12800 in game units, then use a scale factor of ( core::vector ( 100.0f, 100.0f, 100.0f ).
 		//! If you use a Y scaling factor of 0.0f, then your terrain will be flat.
-		CTerrainSceneNode(ISceneNode* parent, ISceneManager* mgr, s32 id, 
+		CTerrainSceneNode(ISceneNode* parent, ISceneManager* mgr, io::IFileSystem* fs, s32 id, 
 			s32 maxLOD = 4, E_TERRAIN_PATCH_SIZE patchSize = ETPS_17,
 			const core::vector3df& position = core::vector3df(0.0f, 0.0f, 0.0f),
 			const core::vector3df& rotation = core::vector3df(0.0f, 0.0f, 0.0f),
 			const core::vector3df& scale = core::vector3df(1.0f, 1.0f, 1.0f));
 
-		~CTerrainSceneNode();
+		virtual ~CTerrainSceneNode();
 
 		//! Initializes the terrain data.  Loads the vertices from the heightMapFile.
 		virtual bool loadHeightMap(io::IReadFile* file, 
@@ -66,7 +70,7 @@ namespace scene
 
 		//! Returns amount of materials used by this scene node ( always 1 )
 		//! \return Returns current count of materials used by this scene node ( always 1 )
-		virtual u32 getMaterialCount()
+		virtual u32 getMaterialCount() const
 		{
 			return Mesh.getMeshBufferCount(); 
 		}
@@ -131,7 +135,7 @@ namespace scene
 		virtual const core::aabbox3d<f32>& getBoundingBox(s32 patchX, s32 patchZ) const;
 
 		//! Return the number of indices currently used to draw the scene node.
-		virtual u32 getIndexCount() { return IndicesToRender; }
+		virtual u32 getIndexCount() const { return IndicesToRender; }
 
 		//! Returns the mesh
 		virtual IMesh* getMesh() { return &Mesh; }
@@ -139,7 +143,7 @@ namespace scene
 		//! Gets the meshbuffer data based on a specified Level of Detail.
 		//! \param mb: A reference to an SMeshBufferLightMap object
 		//! \param LOD: The Level Of Detail you want the indices from.
-		virtual void getMeshBufferForLOD(SMeshBufferLightMap& mb, s32 LOD );
+		virtual void getMeshBufferForLOD(SMeshBufferLightMap& mb, s32 LOD ) const;
 
 		//! Gets the indices for a specified patch at a specified Level of Detail.  
 		//! \param indices: A reference to an array of u32 indices.
@@ -155,7 +159,7 @@ namespace scene
 		//! Populates an array with the CurrentLOD of each patch.
 		//! \param LODs: A reference to a core::array<s32> to hold the values
 		//! \return Returns the number of elements in the array
-		virtual s32 getCurrentLODOfPatches(core::array<s32>& LODs);
+		virtual s32 getCurrentLODOfPatches(core::array<s32>& LODs) const;
 
 		//! Manually sets the LOD of a patch
 		//! \param patchX: Patch x coordinate.
@@ -164,13 +168,13 @@ namespace scene
 		virtual void setLODOfPatch( s32 patchX, s32 patchZ, s32 LOD );
 
 		//! Returns center of terrain.
-		virtual core::vector3df getTerrainCenter() 
+		virtual const core::vector3df& getTerrainCenter() const
 		{
 			return TerrainData.Center;
 		}
 
 		//! Returns center of terrain.
-		virtual f32 getHeight( f32 x, f32 y );
+		virtual f32 getHeight( f32 x, f32 y ) const;
 
 		//! Sets the movement camera threshold which is used to determine when to recalculate
 		//! indices for the scene node.  The default value is 10.0f.
@@ -200,11 +204,23 @@ namespace scene
 		//! work best with your new terrain size.
 		virtual bool overrideLODDistance( s32 LOD, f64 newDistance );
 
-		//! Scales the base texture, similar to makePlanarTextureMapping 
-		virtual void scaleTexture(f32 scale = 1.0f, f32 scale2=0.0f );
+		//! Scales the two textures
+		virtual void scaleTexture(f32 scale = 1.0f, f32 scale2 = 0.0f);
 
 		//! Returns type of the scene node
-		virtual ESCENE_NODE_TYPE getType() { return ESNT_TERRAIN; }
+		virtual ESCENE_NODE_TYPE getType() const {return ESNT_TERRAIN;}
+
+		//! Writes attributes of the scene node.
+		virtual void serializeAttributes(io::IAttributes* out,
+				io::SAttributeReadWriteOptions* options=0) const;
+
+		//! Reads attributes of the scene node.
+		virtual void deserializeAttributes(io::IAttributes* in,
+				io::SAttributeReadWriteOptions* options=0);
+
+		//! Creates a clone of this scene node and its children.
+		virtual ISceneNode* clone(ISceneNode* newParent,
+				ISceneManager* newManager);
 
 	private:
 
@@ -268,7 +284,7 @@ namespace scene
 		virtual void preRenderIndicesCalculations();
 
 		//! get indices when generating index data for patches at varying levels of detail.
-		u32 getIndex(const s32& PatchX, const s32& PatchZ, const s32& PatchIndex, u32 vX, u32 vZ);
+		u32 getIndex(const s32& PatchX, const s32& PatchZ, const s32& PatchIndex, u32 vX, u32 vZ) const;
 
 		//! calculate smooth normals 
 		void calculateNormals(SMeshBufferLightMap* pMeshBuffer );
@@ -300,17 +316,23 @@ namespace scene
 		bool DynamicSelectorUpdate;
 		bool OverrideDistanceThreshold;
 		bool UseDefaultRotationPivot;
+		bool ForceRecalculation;
 
 		core::vector3df	OldCameraPosition;
 		core::vector3df	OldCameraRotation;
 		f32 CameraMovementDelta;
 		f32 CameraRotationDelta;
 
+		// needed for (de)serialization
+		f32 TCoordScale1;
+		f32 TCoordScale2;
+		core::stringc HeightmapFile;
+		io::IFileSystem* FileSystem;
 	};
+
 
 } // end namespace scene
 } // end namespace irr
-
 
 #endif // __C_TERRAIN_SCENE_NODE_H__
 

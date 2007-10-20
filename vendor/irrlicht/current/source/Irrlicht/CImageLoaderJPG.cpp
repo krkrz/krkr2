@@ -3,6 +3,10 @@
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
 #include "CImageLoaderJPG.h"
+
+#ifdef _IRR_COMPILE_WITH_JPG_LOADER_
+
+#include "IReadFile.h"
 #include "CImage.h"
 #include "os.h"
 #include "irrString.h"
@@ -31,7 +35,7 @@ CImageLoaderJPG::~CImageLoaderJPG()
 
 //! returns true if the file maybe is able to be loaded by this class
 //! based on the file extension (e.g. ".tga")
-bool CImageLoaderJPG::isALoadableFileExtension(const c8* fileName)
+bool CImageLoaderJPG::isALoadableFileExtension(const c8* fileName) const
 {
 	return strstr(fileName, ".jpg") != 0;
 }
@@ -108,7 +112,7 @@ void CImageLoaderJPG::output_message(j_common_ptr cinfo)
 #endif // _IRR_COMPILE_WITH_LIBJPEG_
 
 //! returns true if the file maybe is able to be loaded by this class
-bool CImageLoaderJPG::isALoadableFileFormat(irr::io::IReadFile* file)
+bool CImageLoaderJPG::isALoadableFileFormat(io::IReadFile* file) const
 {
 	#ifndef _IRR_COMPILE_WITH_LIBJPEG_
 	return false;
@@ -126,7 +130,7 @@ bool CImageLoaderJPG::isALoadableFileFormat(irr::io::IReadFile* file)
 }
 
 //! creates a surface from the file
-IImage* CImageLoaderJPG::loadImage(irr::io::IReadFile* file)
+IImage* CImageLoaderJPG::loadImage(io::IReadFile* file) const
 {
 	#ifndef _IRR_COMPILE_WITH_LIBJPEG_
 	return 0;
@@ -251,4 +255,6 @@ IImageLoader* createImageLoaderJPG()
 
 } // end namespace video
 } // end namespace irr
+
+#endif
 
