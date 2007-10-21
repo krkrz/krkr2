@@ -8,10 +8,18 @@ static tjs_int getIntProp(iTJSDispatch2 *obj, const tjs_char *name)
 	return (tjs_int)var;
 }
 
+// オブジェクトに数値を格納
 static void setIntProp(iTJSDispatch2 *obj, const tjs_char *name, int value)
 {
 	tTJSVariant var = value;
-	obj->PropSet(0, name,  NULL, &var, obj);
+	obj->PropSet(TJS_MEMBERENSURE, name,  NULL, &var, obj);
+}
+
+// オブジェクトに文字列を格納
+static void setStrProp(iTJSDispatch2 *obj, const tjs_char *name, ttstr &value)
+{
+	tTJSVariant var = value;
+	obj->PropSet(TJS_MEMBERENSURE, name,  NULL, &var, obj);
 }
 
 static int convBlendMode(psd_blend_mode mode)
@@ -97,20 +105,89 @@ public:
 	INTGETTER(color_mode);
 	INTGETTER(layer_count);
 
+protected:
+
 	/**
-	 * レイヤ種別の取得
+	 * レイヤ番号が適切かどうか判定
 	 * @param no レイヤ番号
-	 * @return レイヤ種別
 	 */
-	int getLayerType(int no) {
+	void checkLayerNo(int no) {
 		if (!context) {
 			TVPThrowExceptionMessage(L"no data");
 		}
 		if (no < 0 || no > context->layer_count) {
 			TVPThrowExceptionMessage(L"not such layer");
 		}
+	}
+
+	/**
+	 * 名前の取得
+	 * @param name 名前文字列（ユニコード)
+	 * @len 長さ
+	 */
+	ttstr layname(psd_layer_record *lay) {
+		ttstr ret;
+		if (lay->unicode_name_length > 0) {
+			psd_ushort *name = lay->unicode_name;
+			for (int i=0;i<lay->unicode_name_length;i++) {
+				ret += (tjs_char)_byteswap_ushort(*name++);
+			}
+		} else {
+			ret = ttstr((char*)lay->layer_name);
+		}
+		return ret;
+	}
+	
+public:
+	/**
+	 * レイヤ種別の取得
+	 * @param no レイヤ番号
+	 * @return レイヤ種別
+	 */
+	int getLayerType(int no) {
+		checkLayerNo(no);
 		psd_layer_record *lay = context->layer_records + no;
 		return lay->layer_type;
+	}
+
+	/**
+	 * レイヤ名称の取得
+	 * @param no レイヤ番号
+	 * @return レイヤ種別
+	 */
+	ttstr getLayerName(int no) {
+		checkLayerNo(no);
+		psd_layer_record *lay = context->layer_records + no;
+		return layname(lay);
+	}
+	
+	/**
+	 * レイヤ情報の取得
+	 * @param no レイヤ番号
+	 * @return レイヤ情報が格納された辞書
+	 */
+	tTJSVariant getLayerInfo(int no) {
+		checkLayerNo(no);
+		psd_layer_record *lay = context->layer_records + no;
+		tTJSVariant result;	
+		iTJSDispatch2 *obj;
+		if ((obj = TJSCreateDictionaryObject()) != NULL) {
+			setIntProp(obj, L"layer_type", lay->layer_type);
+			setIntProp(obj, L"top",        lay->top);
+			setIntProp(obj, L"left",       lay->left);
+			setIntProp(obj, L"bottom",     lay->bottom);
+			setIntProp(obj, L"right",      lay->right);
+			setIntProp(obj, L"width",      lay->width);
+			setIntProp(obj, L"height",     lay->height);
+			setIntProp(obj, L"blend_mode", lay->blend_mode);
+			setIntProp(obj, L"opacity",    lay->opacity);
+			setIntProp(obj, L"visible",    lay->visible);
+			setStrProp(obj, L"name",       layname(lay));
+			setIntProp(obj, L"type",       convBlendMode(lay->blend_mode));
+			result = obj;
+			obj->Release();
+		}
+		return result;
 	}
 	
 	/**
@@ -119,15 +196,11 @@ public:
 	 * @param no レイヤ番号
 	 */
 	void getLayerData(tTJSVariant layer, int no) {
-		if (!context) {
-			TVPThrowExceptionMessage(L"no data");
-		}
 //		if (!layer.IsInstanceOf(L"Layer")) {
 //			TVPThrowExceptionMessage(L"not layer");
 //		}
-		if (no < 0 || no > context->layer_count) {
-			TVPThrowExceptionMessage(L"not such layer");
-		}
+		checkLayerNo(no);
+
 		psd_layer_record *lay = context->layer_records + no;
 		if (lay->layer_type != psd_layer_type_normal) {
 			TVPThrowExceptionMessage(L"invalid layer type");
@@ -142,8 +215,6 @@ public:
 		}
 
 		iTJSDispatch2 *obj = layer.AsObjectNoAddRef();
-
-		// レイヤへのプロパティの設定
 		setIntProp(obj, L"left", lay->left);
 		setIntProp(obj, L"top",  lay->top);
 		setIntProp(obj, L"width", width);
@@ -155,7 +226,8 @@ public:
 		setIntProp(obj, L"imageTop",   0);
 		setIntProp(obj, L"imageWidth",  width);
 		setIntProp(obj, L"imageHeight", height);
-
+		setStrProp(obj, L"name", layname(lay));
+		
 		// 画像データのコピー
 		psd_argb_color *src = lay->image_data;
 		int srclen = width * 4;
@@ -203,6 +275,31 @@ NCB_REGISTER_CLASS(PSD) {
 	ENUM(psd_layer_type_channel_mixer);
 	ENUM(psd_layer_type_gradient_map);
 	ENUM(psd_layer_type_photo_filter);
+
+	ENUM(psd_blend_mode_normal);
+	ENUM(psd_blend_mode_dissolve);
+	ENUM(psd_blend_mode_darken);
+	ENUM(psd_blend_mode_multiply);
+	ENUM(psd_blend_mode_color_burn);
+	ENUM(psd_blend_mode_linear_burn);
+	ENUM(psd_blend_mode_lighten);
+	ENUM(psd_blend_mode_screen);
+	ENUM(psd_blend_mode_color_dodge);
+	ENUM(psd_blend_mode_linear_dodge);
+	ENUM(psd_blend_mode_overlay);
+	ENUM(psd_blend_mode_soft_light);
+	ENUM(psd_blend_mode_hard_light);
+	ENUM(psd_blend_mode_vivid_light);
+	ENUM(psd_blend_mode_linear_light);
+	ENUM(psd_blend_mode_pin_light);
+	ENUM(psd_blend_mode_hard_mix);
+	ENUM(psd_blend_mode_difference);
+	ENUM(psd_blend_mode_exclusion);
+	ENUM(psd_blend_mode_hue);
+	ENUM(psd_blend_mode_saturation);
+	ENUM(psd_blend_mode_color);
+	ENUM(psd_blend_mode_luminosity);
+	ENUM(psd_blend_mode_pass_through);
 	
 	NCB_METHOD(load);
 
@@ -216,5 +313,7 @@ NCB_REGISTER_CLASS(PSD) {
 	INTPROP(layer_count);
 
 	NCB_METHOD(getLayerType);
+	NCB_METHOD(getLayerName);
+	NCB_METHOD(getLayerInfo);
 	NCB_METHOD(getLayerData);
 };
