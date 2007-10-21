@@ -177,8 +177,28 @@ class Movie extends VideoOverlay
 		// open オーバーライド
 		try
 		{
-			super.open(storage);
-			opened = true;
+			opened = false;
+			if(mode == vomOverlay)
+			{
+				mode = vomMixer; // モードがoverlayの場合はmixer を試行する
+				try
+				{
+					super.open(storage);
+					opened = true;
+				}
+				catch(e)
+				{
+					dm("ムービーを Mixer モードで開くことができません : " + e.message);
+					dm("オーバーレイモードで開きます");
+					mode = vomOverlay;
+				}
+			}
+
+			if(!opened)
+			{
+				super.open(storage);
+				opened = true;
+			}
 		}
 		catch(e)
 		{
@@ -192,9 +212,9 @@ class Movie extends VideoOverlay
 	function play(storage)
 	{
 		// play オーバーライド
+		if(!opened) open(storage);
 		try
 		{
-			if(!opened) super.open(storage);
 			super.play();
 			opened = false;
 		}
