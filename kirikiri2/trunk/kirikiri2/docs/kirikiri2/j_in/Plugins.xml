@@ -191,6 +191,22 @@ var svg1 = new AGGPrimitive(layer, "SVG", "tiger.svg");<r/>
 
 
 
+<dt><kw>saveStruct.dll</kw></dt>
+<dd>
+Array/Dictionary の saveStruct の処理を、Unicode (UTF-16)ではなく、現在のコードページまたは UTF-8 で出力可能にする物です。<r/>
+　詳しくは 吉里吉里ソースの <a href="https://sv.kikyou.info/trac/kirikiri/browser/kirikiri2/trunk/kirikiri2/src/plugins/win32/saveStruct/">kirikiri2/trunk/kirikiri2/src/plugins/win32/saveStruct</a> ディレクトリを参照してください。<r/>
+</dd>
+
+
+
+<dt><kw>fstat.dll</kw></dt>
+<dd>
+Storages クラスに、ファイルのサイズや更新日時などの情報を取得したり、ファイルをストレージシステム内から取り出すメソッドを追加します。
+　詳しくは 吉里吉里ソースの <a href="https://sv.kikyou.info/trac/kirikiri/browser/kirikiri2/trunk/kirikiri2/src/plugins/win32/fstat/">kirikiri2/trunk/kirikiri2/src/plugins/win32/fstat</a> ディレクトリを参照してください。<r/>
+</dd>
+
+
+
 
 
 </dl>
