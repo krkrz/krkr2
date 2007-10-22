@@ -12,6 +12,7 @@
 
 #include "tjsCommHead.h"
 
+#include <algorithm>
 #include "MsgIntf.h"
 #include "VideoOvlImpl.h"
 #include "DebugIntf.h"
