@@ -2,7 +2,7 @@
 // Copyright (C)2001-2007, W.Dee and contributors  改変・配布は自由です
 
 // システムバージョン
-var kagVersion = "3.29-dev.20070908";
+var kagVersion = "3.29-dev.20071022";
 
 /*
 	Debug.message へのショートカット
