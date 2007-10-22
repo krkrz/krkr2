@@ -1,0 +1,773 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<BorlandProject>
+	<PersonalityInfo>
+		<Option>
+			<Option Name="Personality">CPlusPlusBuilder.Personality</Option>
+			<Option Name="ProjectType">CppVCLApplication</Option>
+			<Option Name="Version">1.0</Option>
+			<Option Name="GUID">{FB8990F9-9AF3-4377-9F80-DE08D7A391AE}</Option>
+		</Option>
+	</PersonalityInfo>
+	<CPlusPlusBuilder.Personality>
+		<BCBPROJECT>
+      <project version="10.0">
+        <property category="build.config" name="active" value="1"/>
+        <property category="build.config" name="count" value="1"/>
+        <property category="build.config" name="excludedefaultforzero" value="0"/>
+        <property category="build.config.0" name="builddir" value="Debug"/>
+        <property category="build.config.0" name="key" value="Debug_Build"/>
+        <property category="build.config.0" name="name" value="Debug Build"/>
+        <property category="build.config.0" name="settings.win32b" value="default"/>
+        <property category="build.config.0" name="type" value="Toolset"/>
+        <property category="build.config.0" name="win32.win32b.builddir" value="Debug_Build"/>
+        <property category="build.config.1" name="key" value="Release_Build"/>
+        <property category="build.config.1" name="name" value="Release Build"/>
+        <property category="build.config.1" name="settings.win32b" value="default"/>
+        <property category="build.config.1" name="type" value="Toolset"/>
+        <property category="build.config.1" name="win32.win32b.builddir" value="Release_Build"/>
+        <property category="build.node" name="libraries" value="vclx.lib vcl.lib rtl.lib"/>
+        <property category="build.node" name="name" value="tvpwin32.exe"/>
+        <property category="build.node" name="packages" value="rtl;vcl;vclx"/>
+        <property category="build.node" name="sparelibs" value="rtl.lib vcl.lib vclx.lib"/>
+        <property category="build.node" name="use_packages" value="0"/>
+        <property category="build.platform" name="active" value="win32"/>
+        <property category="build.platform" name="win32.Debug_Build.toolset" value="win32b"/>
+        <property category="build.platform" name="win32.Release_Build.toolset" value="win32b"/>
+        <property category="build.platform" name="win32.default" value="win32b"/>
+        <property category="build.platform" name="win32.enabled" value="1"/>
+        <property category="build.platform" name="win32.win32b.enabled" value="1"/>
+        <property category="win32.*.win32b.dcc32" name="param.filenames.merge" value="1"/>
+        <property category="win32.*.win32b.tasm32" name="param.listfile.merge" value="1"/>
+        <property category="win32.*.win32b.tasm32" name="param.objfile.merge" value="1"/>
+        <property category="win32.*.win32b.tasm32" name="param.xreffile.merge" value="1"/>
+        <property category="win32.Debug_Build.win32b.bcc32" name="option.D.arg.1" value="_DEBUG"/>
+        <property category="win32.Debug_Build.win32b.bcc32" name="option.D.arg.merge" value="1"/>
+        <property category="win32.Debug_Build.win32b.bcc32" name="option.D.enabled" value="1"/>
+        <property category="win32.Debug_Build.win32b.bcc32" name="option.Od.enabled" value="1"/>
+        <property category="win32.Debug_Build.win32b.bcc32" name="option.k.enabled" value="1"/>
+        <property category="win32.Debug_Build.win32b.bcc32" name="option.n.arg.1" value="debug"/>
+        <property category="win32.Debug_Build.win32b.bcc32" name="option.n.arg.merge" value="0"/>
+        <property category="win32.Debug_Build.win32b.bcc32" name="option.n.enabled" value="1"/>
+        <property category="win32.Debug_Build.win32b.bcc32" name="option.r.enabled" value="0"/>
+        <property category="win32.Debug_Build.win32b.bcc32" name="option.vi.enabled" value="0"/>
+        <property category="win32.Debug_Build.win32b.brcc32" name="option.outputdir.arg.1" value="debug"/>
+        <property category="win32.Debug_Build.win32b.brcc32" name="option.outputdir.arg.merge" value="0"/>
+        <property category="win32.Debug_Build.win32b.brcc32" name="option.outputdir.enabled" value="1"/>
+        <property category="win32.Debug_Build.win32b.dcc32" name="option.$D.enabled" value="1"/>
+        <property category="win32.Debug_Build.win32b.dcc32" name="option.$O.enabled" value="0"/>
+        <property category="win32.Debug_Build.win32b.dcc32" name="option.D.arg.1" value="DEBUG"/>
+        <property category="win32.Debug_Build.win32b.dcc32" name="option.D.arg.merge" value="1"/>
+        <property category="win32.Debug_Build.win32b.dcc32" name="option.D.enabled" value="1"/>
+        <property category="win32.Debug_Build.win32b.dcc32" name="option.J.enabled" value="0"/>
+        <property category="win32.Debug_Build.win32b.dcc32" name="option.JP.enabled" value="0"/>
+        <property category="win32.Debug_Build.win32b.dcc32" name="option.JPH.enabled" value="0"/>
+        <property category="win32.Debug_Build.win32b.dcc32" name="option.JPHN.enabled" value="0"/>
+        <property category="win32.Debug_Build.win32b.dcc32" name="option.N0.arg.1" value="debug"/>
+        <property category="win32.Debug_Build.win32b.dcc32" name="option.N0.arg.merge" value="0"/>
+        <property category="win32.Debug_Build.win32b.dcc32" name="option.N0.enabled" value="1"/>
+        <property category="win32.Debug_Build.win32b.dcc32" name="option.NH.arg.1" value="debug"/>
+        <property category="win32.Debug_Build.win32b.dcc32" name="option.NH.arg.merge" value="0"/>
+        <property category="win32.Debug_Build.win32b.dcc32" name="option.NH.enabled" value="1"/>
+        <property category="win32.Debug_Build.win32b.dcc32" name="option.NO.arg.1" value="debug"/>
+        <property category="win32.Debug_Build.win32b.dcc32" name="option.NO.arg.merge" value="0"/>
+        <property category="win32.Debug_Build.win32b.dcc32" name="option.NO.enabled" value="1"/>
+        <property category="win32.Debug_Build.win32b.dcc32" name="param.filenames.merge" value="1"/>
+        <property category="win32.Debug_Build.win32b.ilink32" name="option.D.arg.merge" value="1"/>
+        <property category="win32.Debug_Build.win32b.ilink32" name="option.D.enabled" value="1"/>
+        <property category="win32.Debug_Build.win32b.ilink32" name="option.I.arg.1" value="debug"/>
+        <property category="win32.Debug_Build.win32b.ilink32" name="option.I.arg.merge" value="0"/>
+        <property category="win32.Debug_Build.win32b.ilink32" name="option.I.enabled" value="1"/>
+        <property category="win32.Debug_Build.win32b.ilink32" name="option.L.arg.1" value="$(BDS)\lib\debug"/>
+        <property category="win32.Debug_Build.win32b.ilink32" name="option.L.arg.merge" value="1"/>
+        <property category="win32.Debug_Build.win32b.ilink32" name="option.L.enabled" value="1"/>
+        <property category="win32.Debug_Build.win32b.ilink32" name="option.l.arg.1" value="debug"/>
+        <property category="win32.Debug_Build.win32b.ilink32" name="option.l.arg.merge" value="0"/>
+        <property category="win32.Debug_Build.win32b.ilink32" name="option.l.enabled" value="1"/>
+        <property category="win32.Debug_Build.win32b.tasm32" name="option.outputdir.arg.1" value="debug"/>
+        <property category="win32.Debug_Build.win32b.tasm32" name="option.outputdir.arg.merge" value="0"/>
+        <property category="win32.Debug_Build.win32b.tasm32" name="option.outputdir.enabled" value="1"/>
+        <property category="win32.Debug_Build.win32b.tasm32" name="option.zd.enabled" value="0"/>
+        <property category="win32.Debug_Build.win32b.tasm32" name="option.zi.enabled" value="1"/>
+        <property category="win32.Debug_Build.win32b.tasm32" name="param.listfile.merge" value="1"/>
+        <property category="win32.Debug_Build.win32b.tasm32" name="param.objfile.merge" value="1"/>
+        <property category="win32.Debug_Build.win32b.tasm32" name="param.xreffile.merge" value="1"/>
+        <property category="win32.Release_Build.win32b.bcc32" name="option.D.arg.1" value="NDEBUG"/>
+        <property category="win32.Release_Build.win32b.bcc32" name="option.D.arg.merge" value="1"/>
+        <property category="win32.Release_Build.win32b.bcc32" name="option.D.enabled" value="1"/>
+        <property category="win32.Release_Build.win32b.bcc32" name="option.n.arg.1" value="release"/>
+        <property category="win32.Release_Build.win32b.bcc32" name="option.n.arg.merge" value="0"/>
+        <property category="win32.Release_Build.win32b.bcc32" name="option.n.enabled" value="1"/>
+        <property category="win32.Release_Build.win32b.bcc32" name="option.r.enabled" value="1"/>
+        <property category="win32.Release_Build.win32b.brcc32" name="option.outputdir.arg.1" value="release"/>
+        <property category="win32.Release_Build.win32b.brcc32" name="option.outputdir.arg.merge" value="0"/>
+        <property category="win32.Release_Build.win32b.brcc32" name="option.outputdir.enabled" value="1"/>
+        <property category="win32.Release_Build.win32b.dcc32" name="option.N0.arg.1" value="release"/>
+        <property category="win32.Release_Build.win32b.dcc32" name="option.N0.arg.merge" value="0"/>
+        <property category="win32.Release_Build.win32b.dcc32" name="option.N0.enabled" value="1"/>
+        <property category="win32.Release_Build.win32b.dcc32" name="option.NH.arg.1" value="release"/>
+        <property category="win32.Release_Build.win32b.dcc32" name="option.NH.arg.merge" value="0"/>
+        <property category="win32.Release_Build.win32b.dcc32" name="option.NH.enabled" value="1"/>
+        <property category="win32.Release_Build.win32b.dcc32" name="option.NO.arg.1" value="release"/>
+        <property category="win32.Release_Build.win32b.dcc32" name="option.NO.arg.merge" value="0"/>
+        <property category="win32.Release_Build.win32b.dcc32" name="option.NO.enabled" value="1"/>
+        <property category="win32.Release_Build.win32b.dcc32" name="option.V.enabled" value="0"/>
+        <property category="win32.Release_Build.win32b.dcc32" name="param.filenames.merge" value="1"/>
+        <property category="win32.Release_Build.win32b.ilink32" name="container.SelectedWarnings.containerenabled" value="1"/>
+        <property category="win32.Release_Build.win32b.ilink32" name="option.-w-.enabled" value="0"/>
+        <property category="win32.Release_Build.win32b.ilink32" name="option.Gpd.enabled" value="0"/>
+        <property category="win32.Release_Build.win32b.ilink32" name="option.Gpr.enabled" value="0"/>
+        <property category="win32.Release_Build.win32b.ilink32" name="option.I.arg.1" value="release"/>
+        <property category="win32.Release_Build.win32b.ilink32" name="option.I.arg.merge" value="0"/>
+        <property category="win32.Release_Build.win32b.ilink32" name="option.I.enabled" value="1"/>
+        <property category="win32.Release_Build.win32b.ilink32" name="option.L.arg.1" value="$(BDS)\lib\release"/>
+        <property category="win32.Release_Build.win32b.ilink32" name="option.L.arg.merge" value="1"/>
+        <property category="win32.Release_Build.win32b.ilink32" name="option.L.enabled" value="1"/>
+        <property category="win32.Release_Build.win32b.ilink32" name="option.l.arg.1" value="release"/>
+        <property category="win32.Release_Build.win32b.ilink32" name="option.l.arg.merge" value="0"/>
+        <property category="win32.Release_Build.win32b.ilink32" name="option.l.enabled" value="1"/>
+        <property category="win32.Release_Build.win32b.ilink32" name="option.w.enabled" value="0"/>
+        <property category="win32.Release_Build.win32b.tasm32" name="option.outputdir.arg.1" value="release"/>
+        <property category="win32.Release_Build.win32b.tasm32" name="option.outputdir.arg.merge" value="0"/>
+        <property category="win32.Release_Build.win32b.tasm32" name="option.outputdir.enabled" value="1"/>
+        <property category="win32.Release_Build.win32b.tasm32" name="option.z.enabled" value="0"/>
+        <property category="win32.Release_Build.win32b.tasm32" name="option.zd.enabled" value="0"/>
+        <property category="win32.Release_Build.win32b.tasm32" name="option.zi.enabled" value="0"/>
+        <property category="win32.Release_Build.win32b.tasm32" name="param.listfile.merge" value="1"/>
+        <property category="win32.Release_Build.win32b.tasm32" name="param.objfile.merge" value="1"/>
+        <property category="win32.Release_Build.win32b.tasm32" name="param.xreffile.merge" value="1"/>
+        <optionset name="all_configurations">
+          <property category="node" name="displayname" value="All Configurations"/>
+          <property category="win32.*.win32b.bcc32" name="container.SelectedOptimizations.containerenabled" value="0"/>
+          <property category="win32.*.win32b.bcc32" name="container.SelectedWarnings.containerenabled" value="1"/>
+          <property category="win32.*.win32b.bcc32" name="option.3.enabled" value="0"/>
+          <property category="win32.*.win32b.bcc32" name="option.4.enabled" value="0"/>
+          <property category="win32.*.win32b.bcc32" name="option.5.enabled" value="0"/>
+          <property category="win32.*.win32b.bcc32" name="option.6.enabled" value="1"/>
+          <property category="win32.*.win32b.bcc32" name="option.A.enabled" value="0"/>
+          <property category="win32.*.win32b.bcc32" name="option.AK.enabled" value="0"/>
+          <property category="win32.*.win32b.bcc32" name="option.AU.enabled" value="0"/>
+          <property category="win32.*.win32b.bcc32" name="option.D.arg.1" value="TJS_SUPPORT_VCL"/>
+          <property category="win32.*.win32b.bcc32" name="option.D.arg.10" value="BOOST_REGEX_V3"/>
+          <property category="win32.*.win32b.bcc32" name="option.D.arg.11" value="__USE_OLD_RW_STL"/>
+          <property category="win32.*.win32b.bcc32" name="option.D.arg.12" value="TJS_DEBUG_DUMP_STRING"/>
+          <property category="win32.*.win32b.bcc32" name="option.D.arg.13" value="BOOST_REGEX_NO_LIB"/>
+          <property category="win32.*.win32b.bcc32" name="option.D.arg.2" value="TJS_TEXT_OUT_CRLF"/>
+          <property category="win32.*.win32b.bcc32" name="option.D.arg.3" value="TJS_JP_LOCALIZED"/>
+          <property category="win32.*.win32b.bcc32" name="option.D.arg.4" value="TJS_NO_DEBUG_PROFILE_TIME"/>
+          <property category="win32.*.win32b.bcc32" name="option.D.arg.5" value="TVP_NO_CHECK_WIDE_CHAR_SIZE"/>
+          <property category="win32.*.win32b.bcc32" name="option.D.arg.6" value="TVP_SUPPORT_ERI"/>
+          <property category="win32.*.win32b.bcc32" name="option.D.arg.7" value="TVP_SUPPORT_KPI"/>
+          <property category="win32.*.win32b.bcc32" name="option.D.arg.8" value="TVP_SUPPORT_OLD_WAVEUNPACKER"/>
+          <property category="win32.*.win32b.bcc32" name="option.D.arg.9" value="TVP_ENVIRON"/>
+          <property category="win32.*.win32b.bcc32" name="option.D.arg.merge" value="1"/>
+          <property category="win32.*.win32b.bcc32" name="option.D.enabled" value="1"/>
+          <property category="win32.*.win32b.bcc32" name="option.H=.arg.1" value="$(BDS)\lib\tvp32.csm"/>
+          <property category="win32.*.win32b.bcc32" name="option.H=.arg.merge" value="0"/>
+          <property category="win32.*.win32b.bcc32" name="option.H=.enabled" value="1"/>
+          <property category="win32.*.win32b.bcc32" name="option.Hc.enabled" value="1"/>
+          <property category="win32.*.win32b.bcc32" name="option.Hh=.arg.1" value="tjsCommHead.h"/>
+          <property category="win32.*.win32b.bcc32" name="option.Hh=.arg.merge" value="0"/>
+          <property category="win32.*.win32b.bcc32" name="option.Hh=.enabled" value="1"/>
+          <property category="win32.*.win32b.bcc32" name="option.I.arg.1" value="..\"/>
+          <property category="win32.*.win32b.bcc32" name="option.I.arg.10" value="..\..\..\utils\win32"/>
+          <property category="win32.*.win32b.bcc32" name="option.I.arg.11" value="..\..\..\utils"/>
+          <property category="win32.*.win32b.bcc32" name="option.I.arg.12" value="..\..\..\visual\IA32"/>
+          <property category="win32.*.win32b.bcc32" name="option.I.arg.13" value="..\..\..\visual\win32"/>
+          <property category="win32.*.win32b.bcc32" name="option.I.arg.14" value="..\..\..\visual"/>
+          <property category="win32.*.win32b.bcc32" name="option.I.arg.15" value="..\..\..\tjs2"/>
+          <property category="win32.*.win32b.bcc32" name="option.I.arg.16" value="..\..\.."/>
+          <property category="win32.*.win32b.bcc32" name="option.I.arg.17" value="$(BDS)\include"/>
+          <property category="win32.*.win32b.bcc32" name="option.I.arg.18" value="$(BDS)\include\vcl"/>
+          <property category="win32.*.win32b.bcc32" name="option.I.arg.19" value="$(BDS)\include\dinkumware"/>
+          <property category="win32.*.win32b.bcc32" name="option.I.arg.2" value=".."/>
+          <property category="win32.*.win32b.bcc32" name="option.I.arg.20" value=".\include\boost"/>
+          <property category="win32.*.win32b.bcc32" name="option.I.arg.21" value=".\include\erina"/>
+          <property category="win32.*.win32b.bcc32" name="option.I.arg.22" value=".\include\libjpeg2"/>
+          <property category="win32.*.win32b.bcc32" name="option.I.arg.23" value=".\include\libpng"/>
+          <property category="win32.*.win32b.bcc32" name="option.I.arg.24" value=".\include\zlib"/>
+          <property category="win32.*.win32b.bcc32" name="option.I.arg.25" value=".\include"/>
+          <property category="win32.*.win32b.bcc32" name="option.I.arg.3" value="..\..\..\..\tools\win32\krdevui"/>
+          <property category="win32.*.win32b.bcc32" name="option.I.arg.4" value="..\..\..\msg\win32"/>
+          <property category="win32.*.win32b.bcc32" name="option.I.arg.5" value="..\..\..\msg"/>
+          <property category="win32.*.win32b.bcc32" name="option.I.arg.6" value="..\..\..\sound\win32"/>
+          <property category="win32.*.win32b.bcc32" name="option.I.arg.7" value="..\..\..\sound"/>
+          <property category="win32.*.win32b.bcc32" name="option.I.arg.8" value="..\..\..\base\win32"/>
+          <property category="win32.*.win32b.bcc32" name="option.I.arg.9" value="..\..\..\base"/>
+          <property category="win32.*.win32b.bcc32" name="option.I.arg.merge" value="1"/>
+          <property category="win32.*.win32b.bcc32" name="option.I.enabled" value="1"/>
+          <property category="win32.*.win32b.bcc32" name="option.Jgi.enabled" value="0"/>
+          <property category="win32.*.win32b.bcc32" name="option.Jgx.enabled" value="0"/>
+          <property category="win32.*.win32b.bcc32" name="option.O1.enabled" value="0"/>
+          <property category="win32.*.win32b.bcc32" name="option.O2.enabled" value="1"/>
+          <property category="win32.*.win32b.bcc32" name="option.Od.enabled" value="0"/>
+          <property category="win32.*.win32b.bcc32" name="option.V0.enabled" value="0"/>
+          <property category="win32.*.win32b.bcc32" name="option.V1.enabled" value="0"/>
+          <property category="win32.*.win32b.bcc32" name="option.Ve.enabled" value="1"/>
+          <property category="win32.*.win32b.bcc32" name="option.Vmd.enabled" value="0"/>
+          <property category="win32.*.win32b.bcc32" name="option.Vmm.enabled" value="0"/>
+          <property category="win32.*.win32b.bcc32" name="option.Vms.enabled" value="0"/>
+          <property category="win32.*.win32b.bcc32" name="option.Vx.enabled" value="1"/>
+          <property category="win32.*.win32b.bcc32" name="option.X.enabled" value="0"/>
+          <property category="win32.*.win32b.bcc32" name="option.align-1.enabled" value="0"/>
+          <property category="win32.*.win32b.bcc32" name="option.align-2.enabled" value="0"/>
+          <property category="win32.*.win32b.bcc32" name="option.align-3.enabled" value="1"/>
+          <property category="win32.*.win32b.bcc32" name="option.align-4.enabled" value="0"/>
+          <property category="win32.*.win32b.bcc32" name="option.align-5.enabled" value="0"/>
+          <property category="win32.*.win32b.bcc32" name="option.b.enabled" value="0"/>
+          <property category="win32.*.win32b.bcc32" name="option.d.enabled" value="1"/>
+          <property category="win32.*.win32b.bcc32" name="option.disablewarns.enabled" value="0"/>
+          <property category="win32.*.win32b.bcc32" name="option.k.enabled" value="0"/>
+          <property category="win32.*.win32b.bcc32" name="option.noregistervars.enabled" value="0"/>
+          <property category="win32.*.win32b.bcc32" name="option.p.enabled" value="0"/>
+          <property category="win32.*.win32b.bcc32" name="option.pc.enabled" value="0"/>
+          <property category="win32.*.win32b.bcc32" name="option.pm.enabled" value="0"/>
+          <property category="win32.*.win32b.bcc32" name="option.pr.enabled" value="1"/>
+          <property category="win32.*.win32b.bcc32" name="option.ps.enabled" value="0"/>
+          <property category="win32.*.win32b.bcc32" name="option.rd.enabled" value="0"/>
+          <property category="win32.*.win32b.bcc32" name="option.sysdefines.arg.1" value="NO_STRICT"/>
+          <property category="win32.*.win32b.bcc32" name="option.sysdefines.arg.merge" value="1"/>
+          <property category="win32.*.win32b.bcc32" name="option.sysdefines.enabled" value="1"/>
+          <property category="win32.*.win32b.bcc32" name="option.tW.enabled" value="1"/>
+          <property category="win32.*.win32b.bcc32" name="option.tWM.enabled" value="1"/>
+          <property category="win32.*.win32b.bcc32" name="option.v.enabled" value="1"/>
+          <property category="win32.*.win32b.bcc32" name="option.vi.enabled" value="1"/>
+          <property category="win32.*.win32b.bcc32" name="option.w.enabled" value="0"/>
+          <property category="win32.*.win32b.bcc32" name="option.wamb.enabled" value="1"/>
+          <property category="win32.*.win32b.bcc32" name="option.wamp.enabled" value="1"/>
+          <property category="win32.*.win32b.bcc32" name="option.wcln.enabled" value="1"/>
+          <property category="win32.*.win32b.bcc32" name="option.winl.enabled" value="0"/>
+          <property category="win32.*.win32b.bcc32" name="option.wpck.enabled" value="0"/>
+          <property category="win32.*.win32b.bcc32" name="option.wprc.enabled" value="1"/>
+          <property category="win32.*.win32b.bcc32" name="option.wucp.enabled" value="1"/>
+          <property category="win32.*.win32b.bcc32" name="option.xf.enabled" value="1"/>
+          <property category="win32.*.win32b.bcc32" name="option.y.enabled" value="1"/>
+          <property category="win32.*.win32b.brcc32" name="option.D.arg.1" value="TJS_SUPPORT_VCL"/>
+          <property category="win32.*.win32b.brcc32" name="option.D.arg.10" value="BOOST_REGEX_V3"/>
+          <property category="win32.*.win32b.brcc32" name="option.D.arg.11" value="__USE_OLD_RW_STL"/>
+          <property category="win32.*.win32b.brcc32" name="option.D.arg.12" value="TJS_DEBUG_DUMP_STRING"/>
+          <property category="win32.*.win32b.brcc32" name="option.D.arg.2" value="TJS_TEXT_OUT_CRLF"/>
+          <property category="win32.*.win32b.brcc32" name="option.D.arg.3" value="TJS_JP_LOCALIZED"/>
+          <property category="win32.*.win32b.brcc32" name="option.D.arg.4" value="TJS_NO_DEBUG_PROFILE_TIME"/>
+          <property category="win32.*.win32b.brcc32" name="option.D.arg.5" value="TVP_NO_CHECK_WIDE_CHAR_SIZE"/>
+          <property category="win32.*.win32b.brcc32" name="option.D.arg.6" value="TVP_SUPPORT_ERI"/>
+          <property category="win32.*.win32b.brcc32" name="option.D.arg.7" value="TVP_SUPPORT_KPI"/>
+          <property category="win32.*.win32b.brcc32" name="option.D.arg.8" value="TVP_SUPPORT_OLD_WAVEUNPACKER"/>
+          <property category="win32.*.win32b.brcc32" name="option.D.arg.9" value="TVP_ENVIRON"/>
+          <property category="win32.*.win32b.brcc32" name="option.D.arg.merge" value="1"/>
+          <property category="win32.*.win32b.brcc32" name="option.D.enabled" value="0"/>
+          <property category="win32.*.win32b.brcc32" name="option.INCLUDEPATH.arg.1" value="..\"/>
+          <property category="win32.*.win32b.brcc32" name="option.INCLUDEPATH.arg.10" value="..\..\..\utils\win32"/>
+          <property category="win32.*.win32b.brcc32" name="option.INCLUDEPATH.arg.11" value="..\..\..\utils"/>
+          <property category="win32.*.win32b.brcc32" name="option.INCLUDEPATH.arg.12" value="..\..\..\visual\IA32"/>
+          <property category="win32.*.win32b.brcc32" name="option.INCLUDEPATH.arg.13" value="..\..\..\visual\win32"/>
+          <property category="win32.*.win32b.brcc32" name="option.INCLUDEPATH.arg.14" value="..\..\..\visual"/>
+          <property category="win32.*.win32b.brcc32" name="option.INCLUDEPATH.arg.15" value="..\..\..\tjs2"/>
+          <property category="win32.*.win32b.brcc32" name="option.INCLUDEPATH.arg.16" value="..\..\.."/>
+          <property category="win32.*.win32b.brcc32" name="option.INCLUDEPATH.arg.17" value="$(BDS)\include"/>
+          <property category="win32.*.win32b.brcc32" name="option.INCLUDEPATH.arg.18" value="$(BDS)\include\vcl"/>
+          <property category="win32.*.win32b.brcc32" name="option.INCLUDEPATH.arg.19" value="$(BDS)\include\libjpeg2"/>
+          <property category="win32.*.win32b.brcc32" name="option.INCLUDEPATH.arg.2" value=".."/>
+          <property category="win32.*.win32b.brcc32" name="option.INCLUDEPATH.arg.20" value="$(BDS)\include\libpng"/>
+          <property category="win32.*.win32b.brcc32" name="option.INCLUDEPATH.arg.21" value="$(BDS)\include\erina"/>
+          <property category="win32.*.win32b.brcc32" name="option.INCLUDEPATH.arg.22" value="$(BDS)\include\dinkumware"/>
+          <property category="win32.*.win32b.brcc32" name="option.INCLUDEPATH.arg.3" value="..\..\..\..\tools\win32\krdevui"/>
+          <property category="win32.*.win32b.brcc32" name="option.INCLUDEPATH.arg.4" value="..\..\..\msg\win32"/>
+          <property category="win32.*.win32b.brcc32" name="option.INCLUDEPATH.arg.5" value="..\..\..\msg"/>
+          <property category="win32.*.win32b.brcc32" name="option.INCLUDEPATH.arg.6" value="..\..\..\sound\win32"/>
+          <property category="win32.*.win32b.brcc32" name="option.INCLUDEPATH.arg.7" value="..\..\..\sound"/>
+          <property category="win32.*.win32b.brcc32" name="option.INCLUDEPATH.arg.8" value="..\..\..\base\win32"/>
+          <property category="win32.*.win32b.brcc32" name="option.INCLUDEPATH.arg.9" value="..\..\..\base"/>
+          <property category="win32.*.win32b.brcc32" name="option.INCLUDEPATH.arg.merge" value="1"/>
+          <property category="win32.*.win32b.brcc32" name="option.INCLUDEPATH.enabled" value="1"/>
+          <property category="win32.*.win32b.dcc32" name="option.$.arg.1" value="Y-"/>
+          <property category="win32.*.win32b.dcc32" name="option.$.arg.merge" value="1"/>
+          <property category="win32.*.win32b.dcc32" name="option.$.enabled" value="1"/>
+          <property category="win32.*.win32b.dcc32" name="option.$D.enabled" value="0"/>
+          <property category="win32.*.win32b.dcc32" name="option.$L.enabled" value="0"/>
+          <property category="win32.*.win32b.dcc32" name="option.I.arg.1" value="..\"/>
+          <property category="win32.*.win32b.dcc32" name="option.I.arg.10" value="..\..\..\sound"/>
+          <property category="win32.*.win32b.dcc32" name="option.I.arg.11" value="..\..\..\sound\win32"/>
+          <property category="win32.*.win32b.dcc32" name="option.I.arg.12" value="..\..\..\msg"/>
+          <property category="win32.*.win32b.dcc32" name="option.I.arg.13" value="..\..\..\msg\win32"/>
+          <property category="win32.*.win32b.dcc32" name="option.I.arg.14" value="..\..\..\..\tools\win32\krdevui"/>
+          <property category="win32.*.win32b.dcc32" name="option.I.arg.2" value="..\..\..\tjs2"/>
+          <property category="win32.*.win32b.dcc32" name="option.I.arg.3" value="..\..\..\visual"/>
+          <property category="win32.*.win32b.dcc32" name="option.I.arg.4" value="..\..\..\visual\win32"/>
+          <property category="win32.*.win32b.dcc32" name="option.I.arg.5" value="..\..\..\visual\IA32"/>
+          <property category="win32.*.win32b.dcc32" name="option.I.arg.6" value="..\..\..\utils"/>
+          <property category="win32.*.win32b.dcc32" name="option.I.arg.7" value="..\..\..\utils\win32"/>
+          <property category="win32.*.win32b.dcc32" name="option.I.arg.8" value="..\..\..\base"/>
+          <property category="win32.*.win32b.dcc32" name="option.I.arg.9" value="..\..\..\base\win32"/>
+          <property category="win32.*.win32b.dcc32" name="option.I.arg.merge" value="1"/>
+          <property category="win32.*.win32b.dcc32" name="option.I.enabled" value="0"/>
+          <property category="win32.*.win32b.dcc32" name="option.M.enabled" value="1"/>
+          <property category="win32.*.win32b.dcc32" name="option.N0.arg.1" value="intermediate"/>
+          <property category="win32.*.win32b.dcc32" name="option.N0.arg.merge" value="0"/>
+          <property category="win32.*.win32b.dcc32" name="option.N0.enabled" value="1"/>
+          <property category="win32.*.win32b.dcc32" name="option.NO.arg.merge" value="1"/>
+          <property category="win32.*.win32b.dcc32" name="option.NO.enabled" value="1"/>
+          <property category="win32.*.win32b.dcc32" name="option.O.arg.1" value="..\"/>
+          <property category="win32.*.win32b.dcc32" name="option.O.arg.10" value="..\..\..\sound"/>
+          <property category="win32.*.win32b.dcc32" name="option.O.arg.11" value="..\..\..\sound\win32"/>
+          <property category="win32.*.win32b.dcc32" name="option.O.arg.12" value="..\..\..\msg"/>
+          <property category="win32.*.win32b.dcc32" name="option.O.arg.13" value="..\..\..\msg\win32"/>
+          <property category="win32.*.win32b.dcc32" name="option.O.arg.14" value="..\..\..\..\tools\win32\krdevui"/>
+          <property category="win32.*.win32b.dcc32" name="option.O.arg.2" value="..\..\..\tjs2"/>
+          <property category="win32.*.win32b.dcc32" name="option.O.arg.3" value="..\..\..\visual"/>
+          <property category="win32.*.win32b.dcc32" name="option.O.arg.4" value="..\..\..\visual\win32"/>
+          <property category="win32.*.win32b.dcc32" name="option.O.arg.5" value="..\..\..\visual\IA32"/>
+          <property category="win32.*.win32b.dcc32" name="option.O.arg.6" value="..\..\..\utils"/>
+          <property category="win32.*.win32b.dcc32" name="option.O.arg.7" value="..\..\..\utils\win32"/>
+          <property category="win32.*.win32b.dcc32" name="option.O.arg.8" value="..\..\..\base"/>
+          <property category="win32.*.win32b.dcc32" name="option.O.arg.9" value="..\..\..\base\win32"/>
+          <property category="win32.*.win32b.dcc32" name="option.O.arg.merge" value="1"/>
+          <property category="win32.*.win32b.dcc32" name="option.O.enabled" value="0"/>
+          <property category="win32.*.win32b.dcc32" name="option.R.arg.1" value="..\"/>
+          <property category="win32.*.win32b.dcc32" name="option.R.arg.10" value="..\..\..\sound"/>
+          <property category="win32.*.win32b.dcc32" name="option.R.arg.11" value="..\..\..\sound\win32"/>
+          <property category="win32.*.win32b.dcc32" name="option.R.arg.12" value="..\..\..\msg"/>
+          <property category="win32.*.win32b.dcc32" name="option.R.arg.13" value="..\..\..\msg\win32"/>
+          <property category="win32.*.win32b.dcc32" name="option.R.arg.14" value="..\..\..\..\tools\win32\krdevui"/>
+          <property category="win32.*.win32b.dcc32" name="option.R.arg.2" value="..\..\..\tjs2"/>
+          <property category="win32.*.win32b.dcc32" name="option.R.arg.3" value="..\..\..\visual"/>
+          <property category="win32.*.win32b.dcc32" name="option.R.arg.4" value="..\..\..\visual\win32"/>
+          <property category="win32.*.win32b.dcc32" name="option.R.arg.5" value="..\..\..\visual\IA32"/>
+          <property category="win32.*.win32b.dcc32" name="option.R.arg.6" value="..\..\..\utils"/>
+          <property category="win32.*.win32b.dcc32" name="option.R.arg.7" value="..\..\..\utils\win32"/>
+          <property category="win32.*.win32b.dcc32" name="option.R.arg.8" value="..\..\..\base"/>
+          <property category="win32.*.win32b.dcc32" name="option.R.arg.9" value="..\..\..\base\win32"/>
+          <property category="win32.*.win32b.dcc32" name="option.R.arg.merge" value="1"/>
+          <property category="win32.*.win32b.dcc32" name="option.R.enabled" value="0"/>
+          <property category="win32.*.win32b.dcc32" name="option.U.arg.1" value="..\"/>
+          <property category="win32.*.win32b.dcc32" name="option.U.arg.10" value="..\..\..\sound"/>
+          <property category="win32.*.win32b.dcc32" name="option.U.arg.11" value="..\..\..\sound\win32"/>
+          <property category="win32.*.win32b.dcc32" name="option.U.arg.12" value="..\..\..\msg"/>
+          <property category="win32.*.win32b.dcc32" name="option.U.arg.13" value="..\..\..\msg\win32"/>
+          <property category="win32.*.win32b.dcc32" name="option.U.arg.14" value="..\..\..\..\tools\win32\krdevui"/>
+          <property category="win32.*.win32b.dcc32" name="option.U.arg.15" value=".\"/>
+          <property category="win32.*.win32b.dcc32" name="option.U.arg.16" value="$(BDS)\lib"/>
+          <property category="win32.*.win32b.dcc32" name="option.U.arg.17" value="$(BDS)\lib\obj"/>
+          <property category="win32.*.win32b.dcc32" name="option.U.arg.2" value="..\..\..\tjs2"/>
+          <property category="win32.*.win32b.dcc32" name="option.U.arg.3" value="..\..\..\visual"/>
+          <property category="win32.*.win32b.dcc32" name="option.U.arg.4" value="..\..\..\visual\win32"/>
+          <property category="win32.*.win32b.dcc32" name="option.U.arg.5" value="..\..\..\visual\IA32"/>
+          <property category="win32.*.win32b.dcc32" name="option.U.arg.6" value="..\..\..\utils"/>
+          <property category="win32.*.win32b.dcc32" name="option.U.arg.7" value="..\..\..\utils\win32"/>
+          <property category="win32.*.win32b.dcc32" name="option.U.arg.8" value="..\..\..\base"/>
+          <property category="win32.*.win32b.dcc32" name="option.U.arg.9" value="..\..\..\base\win32"/>
+          <property category="win32.*.win32b.dcc32" name="option.U.arg.merge" value="1"/>
+          <property category="win32.*.win32b.dcc32" name="option.U.enabled" value="1"/>
+          <property category="win32.*.win32b.dcc32" name="param.filenames.merge" value="1"/>
+          <property category="win32.*.win32b.idl2cpp" name="option.I.arg.1" value="..\"/>
+          <property category="win32.*.win32b.idl2cpp" name="option.I.arg.10" value="..\..\..\sound"/>
+          <property category="win32.*.win32b.idl2cpp" name="option.I.arg.11" value="..\..\..\sound\win32"/>
+          <property category="win32.*.win32b.idl2cpp" name="option.I.arg.12" value="..\..\..\msg"/>
+          <property category="win32.*.win32b.idl2cpp" name="option.I.arg.13" value="..\..\..\msg\win32"/>
+          <property category="win32.*.win32b.idl2cpp" name="option.I.arg.14" value="..\..\..\..\tools\win32\krdevui"/>
+          <property category="win32.*.win32b.idl2cpp" name="option.I.arg.2" value="..\..\..\tjs2"/>
+          <property category="win32.*.win32b.idl2cpp" name="option.I.arg.3" value="..\..\..\visual"/>
+          <property category="win32.*.win32b.idl2cpp" name="option.I.arg.4" value="..\..\..\visual\win32"/>
+          <property category="win32.*.win32b.idl2cpp" name="option.I.arg.5" value="..\..\..\visual\IA32"/>
+          <property category="win32.*.win32b.idl2cpp" name="option.I.arg.6" value="..\..\..\utils"/>
+          <property category="win32.*.win32b.idl2cpp" name="option.I.arg.7" value="..\..\..\utils\win32"/>
+          <property category="win32.*.win32b.idl2cpp" name="option.I.arg.8" value="..\..\..\base"/>
+          <property category="win32.*.win32b.idl2cpp" name="option.I.arg.9" value="..\..\..\base\win32"/>
+          <property category="win32.*.win32b.idl2cpp" name="option.I.arg.merge" value="1"/>
+          <property category="win32.*.win32b.idl2cpp" name="option.I.enabled" value="1"/>
+          <property category="win32.*.win32b.ilink32" name="option.D.arg" value="&quot;&quot;"/>
+          <property category="win32.*.win32b.ilink32" name="option.D.arg.merge" value="1"/>
+          <property category="win32.*.win32b.ilink32" name="option.D.enabled" value="1"/>
+          <property category="win32.*.win32b.ilink32" name="option.GC.arg.1" value="&quot;TVP(kirikiri) for win32&quot;"/>
+          <property category="win32.*.win32b.ilink32" name="option.GC.arg.merge" value="1"/>
+          <property category="win32.*.win32b.ilink32" name="option.GC.enabled" value="1"/>
+          <property category="win32.*.win32b.ilink32" name="option.GD.enabled" value="1"/>
+          <property category="win32.*.win32b.ilink32" name="option.H:xxxx.arg" value="0x10000"/>
+          <property category="win32.*.win32b.ilink32" name="option.H:xxxx.arg.merge" value="0"/>
+          <property category="win32.*.win32b.ilink32" name="option.H:xxxx.enabled" value="1"/>
+          <property category="win32.*.win32b.ilink32" name="option.I.arg.1" value="intermediate"/>
+          <property category="win32.*.win32b.ilink32" name="option.I.arg.merge" value="0"/>
+          <property category="win32.*.win32b.ilink32" name="option.I.enabled" value="1"/>
+          <property category="win32.*.win32b.ilink32" name="option.L.arg.1" value="..\"/>
+          <property category="win32.*.win32b.ilink32" name="option.L.arg.10" value="..\..\..\utils\win32"/>
+          <property category="win32.*.win32b.ilink32" name="option.L.arg.11" value="..\..\..\utils"/>
+          <property category="win32.*.win32b.ilink32" name="option.L.arg.12" value="..\..\..\visual\IA32"/>
+          <property category="win32.*.win32b.ilink32" name="option.L.arg.13" value="..\..\..\visual\win32"/>
+          <property category="win32.*.win32b.ilink32" name="option.L.arg.14" value="..\..\..\visual"/>
+          <property category="win32.*.win32b.ilink32" name="option.L.arg.15" value="..\..\..\tjs2"/>
+          <property category="win32.*.win32b.ilink32" name="option.L.arg.16" value="..\..\..\tools\win32\krdevui"/>
+          <property category="win32.*.win32b.ilink32" name="option.L.arg.17" value="krdevui"/>
+          <property category="win32.*.win32b.ilink32" name="option.L.arg.18" value="..\..\visual\IA32"/>
+          <property category="win32.*.win32b.ilink32" name="option.L.arg.19" value="..\..\..\..\Bin"/>
+          <property category="win32.*.win32b.ilink32" name="option.L.arg.2" value=".."/>
+          <property category="win32.*.win32b.ilink32" name="option.L.arg.20" value="..\..\sound"/>
+          <property category="win32.*.win32b.ilink32" name="option.L.arg.21" value="..\..\sound\win32"/>
+          <property category="win32.*.win32b.ilink32" name="option.L.arg.22" value="..\..\msg\win32"/>
+          <property category="win32.*.win32b.ilink32" name="option.L.arg.23" value="..\..\visual\win32"/>
+          <property category="win32.*.win32b.ilink32" name="option.L.arg.24" value="$(BDS)\Projects\Lib"/>
+          <property category="win32.*.win32b.ilink32" name="option.L.arg.25" value="..\..\visual"/>
+          <property category="win32.*.win32b.ilink32" name="option.L.arg.26" value="..\..\base\win32"/>
+          <property category="win32.*.win32b.ilink32" name="option.L.arg.27" value="..\..\base"/>
+          <property category="win32.*.win32b.ilink32" name="option.L.arg.28" value="..\..\base\storage\win32"/>
+          <property category="win32.*.win32b.ilink32" name="option.L.arg.29" value="..\..\msg"/>
+          <property category="win32.*.win32b.ilink32" name="option.L.arg.3" value="..\..\..\..\tools\win32\krdevui"/>
+          <property category="win32.*.win32b.ilink32" name="option.L.arg.30" value="..\..\utils\win32"/>
+          <property category="win32.*.win32b.ilink32" name="option.L.arg.31" value="..\..\utils"/>
+          <property category="win32.*.win32b.ilink32" name="option.L.arg.32" value="..\..\base\storage"/>
+          <property category="win32.*.win32b.ilink32" name="option.L.arg.33" value="..\..\tjs2"/>
+          <property category="win32.*.win32b.ilink32" name="option.L.arg.34" value="..\..\visual\window"/>
+          <property category="win32.*.win32b.ilink32" name="option.L.arg.35" value="..\..\.."/>
+          <property category="win32.*.win32b.ilink32" name="option.L.arg.36" value="$(BDS)\lib\obj"/>
+          <property category="win32.*.win32b.ilink32" name="option.L.arg.37" value="$(BDS)\lib"/>
+          <property category="win32.*.win32b.ilink32" name="option.L.arg.38" value=".\lib"/>
+          <property category="win32.*.win32b.ilink32" name="option.L.arg.4" value="..\..\..\msg\win32"/>
+          <property category="win32.*.win32b.ilink32" name="option.L.arg.5" value="..\..\..\msg"/>
+          <property category="win32.*.win32b.ilink32" name="option.L.arg.6" value="..\..\..\sound\win32"/>
+          <property category="win32.*.win32b.ilink32" name="option.L.arg.7" value="..\..\..\sound"/>
+          <property category="win32.*.win32b.ilink32" name="option.L.arg.8" value="..\..\..\base\win32"/>
+          <property category="win32.*.win32b.ilink32" name="option.L.arg.9" value="..\..\..\base"/>
+          <property category="win32.*.win32b.ilink32" name="option.L.arg.merge" value="1"/>
+          <property category="win32.*.win32b.ilink32" name="option.L.enabled" value="1"/>
+          <property category="win32.*.win32b.ilink32" name="option.Rr.enabled" value="1"/>
+          <property category="win32.*.win32b.ilink32" name="option.Tpe.enabled" value="1"/>
+          <property category="win32.*.win32b.ilink32" name="option.aa.enabled" value="1"/>
+          <property category="win32.*.win32b.ilink32" name="option.d.arg.1" value="WINSPOOL.DRV"/>
+          <property category="win32.*.win32b.ilink32" name="option.d.arg.2" value="WINMM.DLL"/>
+          <property category="win32.*.win32b.ilink32" name="option.d.arg.3" value="MSVFW32.DLL"/>
+          <property category="win32.*.win32b.ilink32" name="option.d.arg.4" value="COMDLG32.DLL"/>
+          <property category="win32.*.win32b.ilink32" name="option.d.arg.merge" value="1"/>
+          <property category="win32.*.win32b.ilink32" name="option.d.enabled" value="1"/>
+          <property category="win32.*.win32b.ilink32" name="option.dynamicrtl.enabled" value="0"/>
+          <property category="win32.*.win32b.ilink32" name="option.j.arg.1" value="..\"/>
+          <property category="win32.*.win32b.ilink32" name="option.j.arg.10" value="..\..\..\sound"/>
+          <property category="win32.*.win32b.ilink32" name="option.j.arg.11" value="..\..\..\sound\win32"/>
+          <property category="win32.*.win32b.ilink32" name="option.j.arg.12" value="..\..\..\msg"/>
+          <property category="win32.*.win32b.ilink32" name="option.j.arg.13" value="..\..\..\msg\win32"/>
+          <property category="win32.*.win32b.ilink32" name="option.j.arg.14" value="..\..\..\..\tools\win32\krdevui"/>
+          <property category="win32.*.win32b.ilink32" name="option.j.arg.2" value="..\..\..\tjs2"/>
+          <property category="win32.*.win32b.ilink32" name="option.j.arg.3" value="..\..\..\visual"/>
+          <property category="win32.*.win32b.ilink32" name="option.j.arg.4" value="..\..\..\visual\win32"/>
+          <property category="win32.*.win32b.ilink32" name="option.j.arg.5" value="..\..\..\visual\IA32"/>
+          <property category="win32.*.win32b.ilink32" name="option.j.arg.6" value="..\..\..\utils"/>
+          <property category="win32.*.win32b.ilink32" name="option.j.arg.7" value="..\..\..\utils\win32"/>
+          <property category="win32.*.win32b.ilink32" name="option.j.arg.8" value="..\..\..\base"/>
+          <property category="win32.*.win32b.ilink32" name="option.j.arg.9" value="..\..\..\base\win32"/>
+          <property category="win32.*.win32b.ilink32" name="option.j.arg.merge" value="1"/>
+          <property category="win32.*.win32b.ilink32" name="option.j.enabled" value="0"/>
+          <property category="win32.*.win32b.ilink32" name="option.outputdir.arg.1" value="..\..\..\..\..\bin\win32\"/>
+          <property category="win32.*.win32b.ilink32" name="option.outputdir.arg.merge" value="1"/>
+          <property category="win32.*.win32b.ilink32" name="option.outputdir.enabled" value="1"/>
+          <property category="win32.*.win32b.ilink32" name="option.v.enabled" value="1"/>
+          <property category="win32.*.win32b.ilink32" name="param.deffile.1" value="E:\krkr\krkr2trunk\core\environ\win32\tvpwin32.def"/>
+          <property category="win32.*.win32b.ilink32" name="param.deffile.merge" value="1"/>
+          <property category="win32.*.win32b.ilink32" name="param.libfiles.1" value="$(LIBRARIES)"/>
+          <property category="win32.*.win32b.ilink32" name="param.libfiles.2" value="import32.lib"/>
+          <property category="win32.*.win32b.ilink32" name="param.libfiles.3" value="cp32mt.lib"/>
+          <property category="win32.*.win32b.ilink32" name="param.libfiles.merge" value="1"/>
+          <property category="win32.*.win32b.ilink32" name="param.objfiles.1" value="c0w32.obj"/>
+          <property category="win32.*.win32b.ilink32" name="param.objfiles.2" value="sysinit.obj"/>
+          <property category="win32.*.win32b.ilink32" name="param.objfiles.merge" value="1"/>
+          <property category="win32.*.win32b.tasm32" name="option.d.arg.1" value="TJS_SUPPORT_VCL"/>
+          <property category="win32.*.win32b.tasm32" name="option.d.arg.10" value="BOOST_REGEX_V3"/>
+          <property category="win32.*.win32b.tasm32" name="option.d.arg.11" value="__USE_OLD_RW_STL"/>
+          <property category="win32.*.win32b.tasm32" name="option.d.arg.12" value="TJS_DEBUG_DUMP_STRING"/>
+          <property category="win32.*.win32b.tasm32" name="option.d.arg.2" value="TJS_TEXT_OUT_CRLF"/>
+          <property category="win32.*.win32b.tasm32" name="option.d.arg.3" value="TJS_JP_LOCALIZED"/>
+          <property category="win32.*.win32b.tasm32" name="option.d.arg.4" value="TJS_NO_DEBUG_PROFILE_TIME"/>
+          <property category="win32.*.win32b.tasm32" name="option.d.arg.5" value="TVP_NO_CHECK_WIDE_CHAR_SIZE"/>
+          <property category="win32.*.win32b.tasm32" name="option.d.arg.6" value="TVP_SUPPORT_ERI"/>
+          <property category="win32.*.win32b.tasm32" name="option.d.arg.7" value="TVP_SUPPORT_KPI"/>
+          <property category="win32.*.win32b.tasm32" name="option.d.arg.8" value="TVP_SUPPORT_OLD_WAVEUNPACKER"/>
+          <property category="win32.*.win32b.tasm32" name="option.d.arg.9" value="TVP_ENVIRON"/>
+          <property category="win32.*.win32b.tasm32" name="option.d.arg.merge" value="1"/>
+          <property category="win32.*.win32b.tasm32" name="option.d.enabled" value="1"/>
+          <property category="win32.*.win32b.tasm32" name="option.i.arg.1" value="..\"/>
+          <property category="win32.*.win32b.tasm32" name="option.i.arg.10" value="..\..\..\utils\win32"/>
+          <property category="win32.*.win32b.tasm32" name="option.i.arg.11" value="..\..\..\utils"/>
+          <property category="win32.*.win32b.tasm32" name="option.i.arg.12" value="..\..\..\visual\IA32"/>
+          <property category="win32.*.win32b.tasm32" name="option.i.arg.13" value="..\..\..\visual\win32"/>
+          <property category="win32.*.win32b.tasm32" name="option.i.arg.14" value="..\..\..\visual"/>
+          <property category="win32.*.win32b.tasm32" name="option.i.arg.15" value="..\..\..\tjs2"/>
+          <property category="win32.*.win32b.tasm32" name="option.i.arg.16" value="..\..\.."/>
+          <property category="win32.*.win32b.tasm32" name="option.i.arg.17" value="$(BDS)\include"/>
+          <property category="win32.*.win32b.tasm32" name="option.i.arg.18" value="$(BDS)\include\vcl"/>
+          <property category="win32.*.win32b.tasm32" name="option.i.arg.19" value="$(BDS)\include\libjpeg2"/>
+          <property category="win32.*.win32b.tasm32" name="option.i.arg.2" value=".."/>
+          <property category="win32.*.win32b.tasm32" name="option.i.arg.20" value="$(BDS)\include\libpng"/>
+          <property category="win32.*.win32b.tasm32" name="option.i.arg.21" value="$(BDS)\include\erina"/>
+          <property category="win32.*.win32b.tasm32" name="option.i.arg.22" value="$(BDS)\include\dinkumware"/>
+          <property category="win32.*.win32b.tasm32" name="option.i.arg.3" value="..\..\..\..\tools\win32\krdevui"/>
+          <property category="win32.*.win32b.tasm32" name="option.i.arg.4" value="..\..\..\msg\win32"/>
+          <property category="win32.*.win32b.tasm32" name="option.i.arg.5" value="..\..\..\msg"/>
+          <property category="win32.*.win32b.tasm32" name="option.i.arg.6" value="..\..\..\sound\win32"/>
+          <property category="win32.*.win32b.tasm32" name="option.i.arg.7" value="..\..\..\sound"/>
+          <property category="win32.*.win32b.tasm32" name="option.i.arg.8" value="..\..\..\base\win32"/>
+          <property category="win32.*.win32b.tasm32" name="option.i.arg.9" value="..\..\..\base"/>
+          <property category="win32.*.win32b.tasm32" name="option.i.arg.merge" value="1"/>
+          <property category="win32.*.win32b.tasm32" name="option.i.enabled" value="1"/>
+          <property category="win32.*.win32b.tasm32" name="option.m.arg" value="5"/>
+          <property category="win32.*.win32b.tasm32" name="option.m.arg.merge" value="0"/>
+          <property category="win32.*.win32b.tasm32" name="option.m.enabled" value="1"/>
+          <property category="win32.*.win32b.tasm32" name="option.w2.enabled" value="1"/>
+          <property category="win32.*.win32b.tasm32" name="option.z.enabled" value="1"/>
+          <property category="win32.*.win32b.tasm32" name="option.zn.enabled" value="1"/>
+          <property category="win32.*.win32b.tasm32" name="param.listfile.merge" value="1"/>
+          <property category="win32.*.win32b.tasm32" name="param.objfile.merge" value="1"/>
+          <property category="win32.*.win32b.tasm32" name="param.xreffile.merge" value="1"/>
+        </optionset>
+      </project>
+      <FILELIST>
+        <FILE FILENAME="tvpwin32.cpp" CONTAINERID="CCompiler" LOCALCOMMAND="" UNITNAME="tvpwin32" FORMNAME="" DESIGNCLASS=""/>
+        <FILE FILENAME="..\tvpwin32.def" CONTAINERID="DefTool" LOCALCOMMAND="" UNITNAME="tvpwin32" FORMNAME="" DESIGNCLASS=""/>
+        <FILE FILENAME="tvpwin32.res" CONTAINERID="ResTool" LOCALCOMMAND="" UNITNAME="tvpwin32.res" FORMNAME="" DESIGNCLASS=""/>
+        <FILE FILENAME="..\HBeamCur.res" CONTAINERID="ResTool" LOCALCOMMAND="" UNITNAME="HBeamCur" FORMNAME="" DESIGNCLASS=""/>
+        <FILE FILENAME="..\..\..\tjs2\tjsCommHead.h" CONTAINERID="" LOCALCOMMAND="" UNITNAME="tjsCommHead" FORMNAME="" DESIGNCLASS=""/>
+        <FILE FILENAME="..\..\..\tjs2\tjsHashSearch.h" CONTAINERID="" LOCALCOMMAND="" UNITNAME="tjsHashSearch" FORMNAME="" DESIGNCLASS=""/>
+        <FILE FILENAME="..\..\..\tjs2\bison\tjs.y" CONTAINERID="" LOCALCOMMAND="" UNITNAME="tjs" FORMNAME="" DESIGNCLASS=""/>
+        <FILE FILENAME="..\..\..\tjs2\bison\tjspp.y" CONTAINERID="" LOCALCOMMAND="" UNITNAME="tjspp" FORMNAME="" DESIGNCLASS=""/>
+        <FILE FILENAME="..\WideNativeFuncs.cpp" CONTAINERID="CCompiler" LOCALCOMMAND="" UNITNAME="WideNativeFuncs" FORMNAME="" DESIGNCLASS="" ADDITIONAL="..\WideNativeFuncs.h"/>
+        <FILE FILENAME="..\DetectCPU.cpp" CONTAINERID="CCompiler" LOCALCOMMAND="" UNITNAME="DetectCPU" FORMNAME="" DESIGNCLASS="" ADDITIONAL="..\DetectCPU.h"/>
+        <FILE FILENAME="..\..\..\tjs2\tjsInterface.cpp" CONTAINERID="CCompiler" LOCALCOMMAND="" UNITNAME="tjsInterface" FORMNAME="" DESIGNCLASS="" ADDITIONAL="..\..\..\tjs2\tjsInterface.h"/>
+        <FILE FILENAME="..\..\..\tjs2\tjsVariant.cpp" CONTAINERID="CCompiler" LOCALCOMMAND="" UNITNAME="tjsVariant" FORMNAME="" DESIGNCLASS="" ADDITIONAL="..\..\..\tjs2\tjsVariant.h"/>
+        <FILE FILENAME="..\..\..\tjs2\tjsVariantString.cpp" CONTAINERID="CCompiler" LOCALCOMMAND="" UNITNAME="tjsVariantString" FORMNAME="" DESIGNCLASS="" ADDITIONAL="..\..\..\tjs2\tjsVariantString.h"/>
+        <FILE FILENAME="..\..\..\tjs2\tjsString.cpp" CONTAINERID="CCompiler" LOCALCOMMAND="" UNITNAME="tjsString" FORMNAME="" DESIGNCLASS="" ADDITIONAL="..\..\..\tjs2\tjsString.h"/>
+        <FILE FILENAME="..\..\..\tjs2\tjsInterCodeExec.cpp" CONTAINERID="CCompiler" LOCALCOMMAND="" UNITNAME="tjsInterCodeExec" FORMNAME="" DESIGNCLASS="" ADDITIONAL="..\..\..\tjs2\tjsInterCodeExec.h"/>
+        <FILE FILENAME="..\..\..\tjs2\tjsObject.cpp" CONTAINERID="CCompiler" LOCALCOMMAND="" UNITNAME="tjsObject" FORMNAME="" DESIGNCLASS="" ADDITIONAL="..\..\..\tjs2\tjsObject.h"/>
+        <FILE FILENAME="..\..\..\tjs2\tjsDictionary.cpp" CONTAINERID="CCompiler" LOCALCOMMAND="" UNITNAME="tjsDictionary" FORMNAME="" DESIGNCLASS="" ADDITIONAL="..\..\..\tjs2\tjsDictionary.h"/>
+        <FILE FILENAME="..\..\..\tjs2\tjsArray.cpp" CONTAINERID="CCompiler" LOCALCOMMAND="" UNITNAME="tjsArray" FORMNAME="" DESIGNCLASS="" ADDITIONAL="..\..\..\tjs2\tjsArray.h"/>
+        <FILE FILENAME="..\..\..\tjs2\tjsNative.cpp" CONTAINERID="CCompiler" LOCALCOMMAND="" UNITNAME="tjsNative" FORMNAME="" DESIGNCLASS="" ADDITIONAL="..\..\..\tjs2\tjsNative.h"/>
+        <FILE FILENAME="..\..\..\tjs2\tjs.cpp" CONTAINERID="CCompiler" LOCALCOMMAND="" UNITNAME="tjs" FORMNAME="" DESIGNCLASS="" ADDITIONAL="..\..\..\tjs2\tjs.h"/>
+        <FILE FILENAME="..\..\..\tjs2\tjsScriptCache.cpp" CONTAINERID="CCompiler" LOCALCOMMAND="" UNITNAME="tjsScriptCache" FORMNAME="" DESIGNCLASS="" ADDITIONAL="..\..\..\tjs2\tjsScriptCache.h"/>
+        <FILE FILENAME="..\..\..\tjs2\tjsConfig.cpp" CONTAINERID="CCompiler" LOCALCOMMAND="" UNITNAME="tjsConfig" FORMNAME="" DESIGNCLASS="" ADDITIONAL="..\..\..\tjs2\tjsConfig.h"/>
+        <FILE FILENAME="..\..\..\tjs2\tjsRegExp.cpp" CONTAINERID="CCompiler" LOCALCOMMAND="" UNITNAME="tjsRegExp" FORMNAME="" DESIGNCLASS="" ADDITIONAL="..\..\..\tjs2\tjsRegExp.h"/>
+        <FILE FILENAME="..\..\..\tjs2\tjsScriptBlock.cpp" CONTAINERID="CCompiler" LOCALCOMMAND="" UNITNAME="tjsScriptBlock" FORMNAME="" DESIGNCLASS="" ADDITIONAL="..\..\..\tjs2\tjsScriptBlock.h"/>
+        <FILE FILENAME="..\..\..\tjs2\tjsInterCodeGen.cpp" CONTAINERID="CCompiler" LOCALCOMMAND="" UNITNAME="tjsInterCodeGen" FORMNAME="" DESIGNCLASS="" ADDITIONAL="..\..\..\tjs2\tjsInterCodeGen.h"/>
+        <FILE FILENAME="..\..\..\tjs2\tjs.tab.cpp" CONTAINERID="CCompiler" LOCALCOMMAND="" UNITNAME="tjs.tab" FORMNAME="" DESIGNCLASS=""/>
+        <FILE FILENAME="..\..\..\tjs2\tjsLex.cpp" CONTAINERID="CCompiler" LOCALCOMMAND="" UNITNAME="tjsLex" FORMNAME="" DESIGNCLASS="" ADDITIONAL="..\..\..\tjs2\tjsLex.h"/>
+        <FILE FILENAME="..\..\..\tjs2\tjsCompileControl.cpp" CONTAINERID="CCompiler" LOCALCOMMAND="" UNITNAME="tjsCompileControl" FORMNAME="" DESIGNCLASS="" ADDITIONAL="..\..\..\tjs2\tjsCompileControl.h"/>
+        <FILE FILENAME="..\..\..\tjs2\tjspp.tab.cpp" CONTAINERID="CCompiler" LOCALCOMMAND="" UNITNAME="tjspp.tab" FORMNAME="" DESIGNCLASS=""/>
+        <FILE FILENAME="..\..\..\tjs2\tjsNamespace.cpp" CONTAINERID="CCompiler" LOCALCOMMAND="" UNITNAME="tjsNamespace" FORMNAME="" DESIGNCLASS="" ADDITIONAL="..\..\..\tjs2\tjsNamespace.h"/>
+        <FILE FILENAME="..\..\..\tjs2\tjsError.cpp" CONTAINERID="CCompiler" LOCALCOMMAND="" UNITNAME="tjsError" FORMNAME="" DESIGNCLASS="" ADDITIONAL="..\..\..\tjs2\tjsError.h"/>
+        <FILE FILENAME="..\..\..\tjs2\tjsUtils.cpp" CONTAINERID="CCompiler" LOCALCOMMAND="" UNITNAME="tjsUtils" FORMNAME="" DESIGNCLASS="" ADDITIONAL="..\..\..\tjs2\tjsUtils.h"/>
+        <FILE FILENAME="..\..\..\tjs2\tjsMath.cpp" CONTAINERID="CCompiler" LOCALCOMMAND="" UNITNAME="tjsMath" FORMNAME="" DESIGNCLASS="" ADDITIONAL="..\..\..\tjs2\tjsMath.h"/>
+        <FILE FILENAME="..\..\..\tjs2\tjsRandomGenerator.cpp" CONTAINERID="CCompiler" LOCALCOMMAND="" UNITNAME="tjsRandomGenerator" FORMNAME="" DESIGNCLASS="" ADDITIONAL="..\..\..\tjs2\tjsRandomGenerator.h"/>
+        <FILE FILENAME="..\..\..\tjs2\tjsMT19937ar-cok.cpp" CONTAINERID="CCompiler" LOCALCOMMAND="" UNITNAME="tjsMT19937ar-cok" FORMNAME="" DESIGNCLASS=""/>
+        <FILE FILENAME="..\..\..\tjs2\tjsDate.cpp" CONTAINERID="CCompiler" LOCALCOMMAND="" UNITNAME="tjsDate" FORMNAME="" DESIGNCLASS="" ADDITIONAL="..\..\..\tjs2\tjsDate.h"/>
+        <FILE FILENAME="..\..\..\tjs2\tjsDateParser.cpp" CONTAINERID="CCompiler" LOCALCOMMAND="" UNITNAME="tjsDateParser" FORMNAME="" DESIGNCLASS="" ADDITIONAL="..\..\..\tjs2\tjsDateParser.h"/>
+        <FILE FILENAME="..\..\..\tjs2\tjsdate.tab.cpp" CONTAINERID="CCompiler" LOCALCOMMAND="" UNITNAME="tjsdate.tab" FORMNAME="" DESIGNCLASS=""/>
+        <FILE FILENAME="..\..\..\tjs2\tjsException.cpp" CONTAINERID="CCompiler" LOCALCOMMAND="" UNITNAME="tjsException" FORMNAME="" DESIGNCLASS="" ADDITIONAL="..\..\..\tjs2\tjsException.h"/>
+        <FILE FILENAME="..\..\..\tjs2\tjsMessage.cpp" CONTAINERID="CCompiler" LOCALCOMMAND="" UNITNAME="tjsMessage" FORMNAME="" DESIGNCLASS="" ADDITIONAL="..\..\..\tjs2\tjsMessage.h"/>
+        <FILE FILENAME="..\..\..\visual\IA32\tvpgl_ia32.lib" CONTAINERID="LibTool" LOCALCOMMAND="" UNITNAME="tvpgl_ia32" FORMNAME="" DESIGNCLASS=""/>
+        <FILE FILENAME="..\..\..\visual\LayerBitmapIntf.cpp" CONTAINERID="CCompiler" LOCALCOMMAND="" UNITNAME="LayerBitmapIntf" FORMNAME="" DESIGNCLASS="" ADDITIONAL="..\..\..\visual\LayerBitmapIntf.h"/>
+        <FILE FILENAME="..\..\..\visual\win32\LayerBitmapImpl.cpp" CONTAINERID="CCompiler" LOCALCOMMAND="" UNITNAME="LayerBitmapImpl" FORMNAME="" DESIGNCLASS="" ADDITIONAL="..\..\..\visual\win32\LayerBitmapImpl.h"/>
+        <FILE FILENAME="..\..\..\visual\LayerIntf.cpp" CONTAINERID="CCompiler" LOCALCOMMAND="" UNITNAME="LayerIntf" FORMNAME="" DESIGNCLASS="" ADDITIONAL="..\..\..\visual\LayerIntf.h"/>
+        <FILE FILENAME="..\..\..\visual\win32\LayerImpl.cpp" CONTAINERID="CCompiler" LOCALCOMMAND="" UNITNAME="LayerImpl" FORMNAME="" DESIGNCLASS="" ADDITIONAL="..\..\..\visual\win32\LayerImpl.h"/>
+        <FILE FILENAME="..\..\..\visual\win32\DInputMgn.cpp" CONTAINERID="CCompiler" LOCALCOMMAND="" UNITNAME="DInputMgn" FORMNAME="" DESIGNCLASS=""/>
+        <FILE FILENAME="..\..\..\visual\WindowIntf.cpp" CONTAINERID="CCompiler" LOCALCOMMAND="" UNITNAME="WindowIntf" FORMNAME="" DESIGNCLASS="" ADDITIONAL="..\..\..\visual\WindowIntf.h"/>
+        <FILE FILENAME="..\..\..\visual\win32\WindowImpl.cpp" CONTAINERID="CCompiler" LOCALCOMMAND="" UNITNAME="WindowImpl" FORMNAME="" DESIGNCLASS="" ADDITIONAL="..\..\..\visual\win32\WindowImpl.h"/>
+        <FILE FILENAME="..\..\..\visual\GraphicsLoaderIntf.cpp" CONTAINERID="CCompiler" LOCALCOMMAND="" UNITNAME="GraphicsLoaderIntf" FORMNAME="" DESIGNCLASS="" ADDITIONAL="..\..\..\visual\GraphicsLoaderIntf.h"/>
+        <FILE FILENAME="..\..\..\visual\LoadTLG.cpp" CONTAINERID="CCompiler" LOCALCOMMAND="" UNITNAME="LoadTLG" FORMNAME="" DESIGNCLASS="" ADDITIONAL="..\..\..\visual\LoadTLG.h"/>
+        <FILE FILENAME="..\..\..\visual\win32\GraphicsLoaderImpl.cpp" CONTAINERID="CCompiler" LOCALCOMMAND="" UNITNAME="GraphicsLoaderImpl" FORMNAME="" DESIGNCLASS="" ADDITIONAL="..\..\..\visual\win32\GraphicsLoaderImpl.h"/>
+        <FILE FILENAME="..\..\..\visual\MenuItemIntf.cpp" CONTAINERID="CCompiler" LOCALCOMMAND="" UNITNAME="MenuItemIntf" FORMNAME="" DESIGNCLASS="" ADDITIONAL="..\..\..\visual\MenuItemIntf.h"/>
+        <FILE FILENAME="..\..\..\visual\win32\MenuItemImpl.cpp" CONTAINERID="CCompiler" LOCALCOMMAND="" UNITNAME="MenuItemImpl" FORMNAME="" DESIGNCLASS="" ADDITIONAL="..\..\..\visual\win32\MenuItemImpl.h"/>
+        <FILE FILENAME="..\..\..\visual\ComplexRect.cpp" CONTAINERID="CCompiler" LOCALCOMMAND="" UNITNAME="ComplexRect" FORMNAME="" DESIGNCLASS=""/>
+        <FILE FILENAME="..\..\..\visual\TransIntf.cpp" CONTAINERID="CCompiler" LOCALCOMMAND="" UNITNAME="TransIntf" FORMNAME="" DESIGNCLASS="" ADDITIONAL="..\..\..\visual\TransIntf.h"/>
+        <FILE FILENAME="..\..\..\visual\win32\TransImpl.cpp" CONTAINERID="CCompiler" LOCALCOMMAND="" UNITNAME="TransImpl" FORMNAME="" DESIGNCLASS="" ADDITIONAL="..\..\..\visual\win32\TransImpl.h"/>
+        <FILE FILENAME="..\..\..\visual\VideoOvlIntf.cpp" CONTAINERID="CCompiler" LOCALCOMMAND="" UNITNAME="VideoOvlIntf" FORMNAME="" DESIGNCLASS="" ADDITIONAL="..\..\..\visual\VideoOvlIntf.h"/>
+        <FILE FILENAME="..\..\..\visual\win32\VideoOvlImpl.cpp" CONTAINERID="CCompiler" LOCALCOMMAND="" UNITNAME="VideoOvlImpl" FORMNAME="" DESIGNCLASS="" ADDITIONAL="..\..\..\visual\win32\VideoOvlImpl.h"/>
+        <FILE FILENAME="..\..\..\visual\Resampler.cpp" CONTAINERID="CCompiler" LOCALCOMMAND="" UNITNAME="Resampler" FORMNAME="" DESIGNCLASS="" ADDITIONAL="..\..\..\visual\Resampler.h"/>
+        <FILE FILENAME="..\..\..\visual\tvpgl.c" CONTAINERID="CCompiler" LOCALCOMMAND="" UNITNAME="tvpgl" FORMNAME="" DESIGNCLASS=""/>
+        <FILE FILENAME="..\..\..\visual\IA32\tvpgl_ia32_intf.c" CONTAINERID="CCompiler" LOCALCOMMAND="" UNITNAME="tvpgl_ia32_intf" FORMNAME="" DESIGNCLASS=""/>
+        <FILE FILENAME="..\..\..\utils\DebugIntf.cpp" CONTAINERID="CCompiler" LOCALCOMMAND="" UNITNAME="DebugIntf" FORMNAME="" DESIGNCLASS="" ADDITIONAL="..\..\..\utils\DebugIntf.h"/>
+        <FILE FILENAME="..\..\..\utils\win32\DebugImpl.cpp" CONTAINERID="CCompiler" LOCALCOMMAND="" UNITNAME="DebugImpl" FORMNAME="" DESIGNCLASS="" ADDITIONAL="..\..\..\utils\win32\DebugImpl.h"/>
+        <FILE FILENAME="..\..\..\utils\PadIntf.cpp" CONTAINERID="CCompiler" LOCALCOMMAND="" UNITNAME="PadIntf" FORMNAME="" DESIGNCLASS="" ADDITIONAL="..\..\..\utils\PadIntf.h"/>
+        <FILE FILENAME="..\..\..\utils\win32\PadImpl.cpp" CONTAINERID="CCompiler" LOCALCOMMAND="" UNITNAME="PadImpl" FORMNAME="" DESIGNCLASS="" ADDITIONAL="..\..\..\utils\win32\PadImpl.h"/>
+        <FILE FILENAME="..\..\..\utils\TimerIntf.cpp" CONTAINERID="CCompiler" LOCALCOMMAND="" UNITNAME="TimerIntf" FORMNAME="" DESIGNCLASS="" ADDITIONAL="..\..\..\utils\TimerIntf.h"/>
+        <FILE FILENAME="..\..\..\utils\win32\TimerImpl.cpp" CONTAINERID="CCompiler" LOCALCOMMAND="" UNITNAME="TimerImpl" FORMNAME="" DESIGNCLASS="" ADDITIONAL="..\..\..\utils\win32\TimerImpl.h"/>
+        <FILE FILENAME="..\..\..\utils\win32\TickCount.cpp" CONTAINERID="CCompiler" LOCALCOMMAND="" UNITNAME="TickCount" FORMNAME="" DESIGNCLASS="" ADDITIONAL="..\..\..\utils\win32\TickCount.h"/>
+        <FILE FILENAME="..\..\..\utils\KAGParser.cpp" CONTAINERID="CCompiler" LOCALCOMMAND="" UNITNAME="KAGParser" FORMNAME="" DESIGNCLASS="" ADDITIONAL="..\..\..\utils\KAGParser.h"/>
+        <FILE FILENAME="..\..\..\utils\Random.cpp" CONTAINERID="CCompiler" LOCALCOMMAND="" UNITNAME="Random" FORMNAME="" DESIGNCLASS="" ADDITIONAL="..\..\..\utils\Random.h"/>
+        <FILE FILENAME="..\..\..\utils\md5.c" CONTAINERID="CCompiler" LOCALCOMMAND="" UNITNAME="md5" FORMNAME="" DESIGNCLASS=""/>
+        <FILE FILENAME="..\..\..\utils\ThreadIntf.cpp" CONTAINERID="CCompiler" LOCALCOMMAND="" UNITNAME="ThreadIntf" FORMNAME="" DESIGNCLASS="" ADDITIONAL="..\..\..\utils\ThreadIntf.h"/>
+        <FILE FILENAME="..\..\..\utils\win32\ThreadImpl.cpp" CONTAINERID="CCompiler" LOCALCOMMAND="" UNITNAME="ThreadImpl" FORMNAME="" DESIGNCLASS="" ADDITIONAL="..\..\..\utils\win32\ThreadImpl.h"/>
+        <FILE FILENAME="..\..\..\base\XP3Archive.cpp" CONTAINERID="CCompiler" LOCALCOMMAND="" UNITNAME="XP3Archive" FORMNAME="" DESIGNCLASS="" ADDITIONAL="..\..\..\base\XP3Archive.h"/>
+        <FILE FILENAME="..\..\..\base\TextStream.cpp" CONTAINERID="CCompiler" LOCALCOMMAND="" UNITNAME="TextStream" FORMNAME="" DESIGNCLASS="" ADDITIONAL="..\..\..\base\TextStream.h"/>
+        <FILE FILENAME="..\..\..\base\UtilStreams.cpp" CONTAINERID="CCompiler" LOCALCOMMAND="" UNITNAME="UtilStreams" FORMNAME="" DESIGNCLASS="" ADDITIONAL="..\..\..\base\UtilStreams.h"/>
+        <FILE FILENAME="..\..\..\base\win32\FileSelector.cpp" CONTAINERID="CCompiler" LOCALCOMMAND="" UNITNAME="FileSelector" FORMNAME="" DESIGNCLASS="" ADDITIONAL="..\..\..\base\win32\FileSelector.h"/>
+        <FILE FILENAME="..\..\..\base\win32\SusieArchive.cpp" CONTAINERID="CCompiler" LOCALCOMMAND="" UNITNAME="SusieArchive" FORMNAME="" DESIGNCLASS="" ADDITIONAL="..\..\..\base\win32\SusieArchive.h"/>
+        <FILE FILENAME="..\..\..\base\StorageIntf.cpp" CONTAINERID="CCompiler" LOCALCOMMAND="" UNITNAME="StorageIntf" FORMNAME="" DESIGNCLASS="" ADDITIONAL="..\..\..\base\StorageIntf.h"/>
+        <FILE FILENAME="..\..\..\base\win32\StorageImpl.cpp" CONTAINERID="CCompiler" LOCALCOMMAND="" UNITNAME="StorageImpl" FORMNAME="" DESIGNCLASS="" ADDITIONAL="..\..\..\base\win32\StorageImpl.h"/>
+        <FILE FILENAME="..\..\..\base\win32\ScriptMgnImpl.cpp" CONTAINERID="CCompiler" LOCALCOMMAND="" UNITNAME="ScriptMgnImpl" FORMNAME="" DESIGNCLASS="" ADDITIONAL="..\..\..\base\win32\ScriptMgnImpl.h"/>
+        <FILE FILENAME="..\..\..\base\EventIntf.cpp" CONTAINERID="CCompiler" LOCALCOMMAND="" UNITNAME="EventIntf" FORMNAME="" DESIGNCLASS="" ADDITIONAL="..\..\..\base\EventIntf.h"/>
+        <FILE FILENAME="..\..\..\base\win32\EventImpl.cpp" CONTAINERID="CCompiler" LOCALCOMMAND="" UNITNAME="EventImpl" FORMNAME="" DESIGNCLASS="" ADDITIONAL="..\..\..\base\win32\EventImpl.h"/>
+        <FILE FILENAME="..\..\..\base\SysInitIntf.cpp" CONTAINERID="CCompiler" LOCALCOMMAND="" UNITNAME="SysInitIntf" FORMNAME="" DESIGNCLASS="" ADDITIONAL="..\..\..\base\SysInitIntf.h"/>
+        <FILE FILENAME="..\..\..\base\win32\SysInitImpl.cpp" CONTAINERID="CCompiler" LOCALCOMMAND="" UNITNAME="SysInitImpl" FORMNAME="" DESIGNCLASS="" ADDITIONAL="..\..\..\base\win32\SysInitImpl.h"/>
+        <FILE FILENAME="..\..\..\base\SystemIntf.cpp" CONTAINERID="CCompiler" LOCALCOMMAND="" UNITNAME="SystemIntf" FORMNAME="" DESIGNCLASS="" ADDITIONAL="..\..\..\base\SystemIntf.h"/>
+        <FILE FILENAME="..\..\..\base\win32\SystemImpl.cpp" CONTAINERID="CCompiler" LOCALCOMMAND="" UNITNAME="SystemImpl" FORMNAME="" DESIGNCLASS="" ADDITIONAL="..\..\..\base\win32\SystemImpl.h"/>
+        <FILE FILENAME="..\..\..\base\PluginIntf.cpp" CONTAINERID="CCompiler" LOCALCOMMAND="" UNITNAME="PluginIntf" FORMNAME="" DESIGNCLASS="" ADDITIONAL="..\..\..\base\PluginIntf.h"/>
+        <FILE FILENAME="..\..\..\base\win32\PluginImpl.cpp" CONTAINERID="CCompiler" LOCALCOMMAND="" UNITNAME="PluginImpl" FORMNAME="" DESIGNCLASS="" ADDITIONAL="..\..\..\base\win32\PluginImpl.h"/>
+        <FILE FILENAME="..\..\..\sound\SoundBufferBaseIntf.cpp" CONTAINERID="CCompiler" LOCALCOMMAND="" UNITNAME="SoundBufferBaseIntf" FORMNAME="" DESIGNCLASS="" ADDITIONAL="..\..\..\sound\SoundBufferBaseIntf.h"/>
+        <FILE FILENAME="..\..\..\sound\win32\SoundBufferBaseImpl.cpp" CONTAINERID="CCompiler" LOCALCOMMAND="" UNITNAME="SoundBufferBaseImpl" FORMNAME="" DESIGNCLASS="" ADDITIONAL="..\..\..\sound\win32\SoundBufferBaseImpl.h"/>
+        <FILE FILENAME="..\..\..\sound\CDDAIntf.cpp" CONTAINERID="CCompiler" LOCALCOMMAND="" UNITNAME="CDDAIntf" FORMNAME="" DESIGNCLASS="" ADDITIONAL="..\..\..\sound\CDDAIntf.h"/>
+        <FILE FILENAME="..\..\..\sound\win32\CDDAImpl.cpp" CONTAINERID="CCompiler" LOCALCOMMAND="" UNITNAME="CDDAImpl" FORMNAME="" DESIGNCLASS="" ADDITIONAL="..\..\..\sound\win32\CDDAImpl.h"/>
+        <FILE FILENAME="..\..\..\sound\MIDIIntf.cpp" CONTAINERID="CCompiler" LOCALCOMMAND="" UNITNAME="MIDIIntf" FORMNAME="" DESIGNCLASS="" ADDITIONAL="..\..\..\sound\MIDIIntf.h"/>
+        <FILE FILENAME="..\..\..\sound\win32\MIDIImpl.cpp" CONTAINERID="CCompiler" LOCALCOMMAND="" UNITNAME="MIDIImpl" FORMNAME="" DESIGNCLASS="" ADDITIONAL="..\..\..\sound\win32\MIDIImpl.h"/>
+        <FILE FILENAME="..\..\..\sound\WaveIntf.cpp" CONTAINERID="CCompiler" LOCALCOMMAND="" UNITNAME="WaveIntf" FORMNAME="" DESIGNCLASS="" ADDITIONAL="..\..\..\sound\WaveIntf.h"/>
+        <FILE FILENAME="..\..\..\sound\win32\WaveImpl.cpp" CONTAINERID="CCompiler" LOCALCOMMAND="" UNITNAME="WaveImpl" FORMNAME="" DESIGNCLASS="" ADDITIONAL="..\..\..\sound\win32\WaveImpl.h"/>
+        <FILE FILENAME="..\..\..\sound\win32\tvpsnd.c" CONTAINERID="CCompiler" LOCALCOMMAND="" UNITNAME="tvpsnd" FORMNAME="" DESIGNCLASS=""/>
+        <FILE FILENAME="..\EmergencyExit.cpp" CONTAINERID="CCompiler" LOCALCOMMAND="" UNITNAME="EmergencyExit" FORMNAME="" DESIGNCLASS="" ADDITIONAL="..\EmergencyExit.h"/>
+        <FILE FILENAME="..\HintWindow.cpp" CONTAINERID="CCompiler" LOCALCOMMAND="" UNITNAME="HintWindow" FORMNAME="" DESIGNCLASS="" ADDITIONAL="..\HintWindow.h"/>
+        <FILE FILENAME="..\..\..\utils\win32\TLogViewer.cpp" CONTAINERID="CCompiler" LOCALCOMMAND="" UNITNAME="TLogViewer" FORMNAME="" DESIGNCLASS="" ADDITIONAL="..\..\..\utils\win32\TLogViewer.h"/>
+        <FILE FILENAME="..\HaltWarnFormUnit.cpp" CONTAINERID="CCompiler" LOCALCOMMAND="" UNITNAME="HaltWarnFormUnit" FORMNAME="TVPHaltWarnForm" DESIGNCLASS="" ADDITIONAL="..\HaltWarnFormUnit.h"/>
+        <FILE FILENAME="..\..\..\utils\win32\ConsoleFormUnit.cpp" CONTAINERID="CCompiler" LOCALCOMMAND="" UNITNAME="ConsoleFormUnit" FORMNAME="TVPConsoleForm" DESIGNCLASS="" ADDITIONAL="..\..\..\utils\win32\ConsoleFormUnit.h"/>
+        <FILE FILENAME="..\..\..\utils\win32\PadFormUnit.cpp" CONTAINERID="CCompiler" LOCALCOMMAND="" UNITNAME="PadFormUnit" FORMNAME="TVPPadForm" DESIGNCLASS="" ADDITIONAL="..\..\..\utils\win32\PadFormUnit.h"/>
+        <FILE FILENAME="..\MainFormUnit.cpp" CONTAINERID="CCompiler" LOCALCOMMAND="" UNITNAME="MainFormUnit" FORMNAME="TVPMainForm" DESIGNCLASS="" ADDITIONAL="..\MainFormUnit.h"/>
+        <FILE FILENAME="..\WatchFormUnit.cpp" CONTAINERID="CCompiler" LOCALCOMMAND="" UNITNAME="WatchFormUnit" FORMNAME="TVPWatchForm" DESIGNCLASS="" ADDITIONAL="..\WatchFormUnit.h"/>
+        <FILE FILENAME="..\..\..\visual\win32\WindowFormUnit.cpp" CONTAINERID="CCompiler" LOCALCOMMAND="" UNITNAME="WindowFormUnit" FORMNAME="TVPWindowForm" DESIGNCLASS="" ADDITIONAL="..\..\..\visual\win32\WindowFormUnit.h"/>
+        <FILE FILENAME="..\..\..\visual\win32\MenuContainerFormUnit.cpp" CONTAINERID="CCompiler" LOCALCOMMAND="" UNITNAME="MenuContainerFormUnit" FORMNAME="TVPMenuContainerForm" DESIGNCLASS="" ADDITIONAL="..\..\..\visual\win32\MenuContainerFormUnit.h"/>
+        <FILE FILENAME="..\..\..\visual\win32\FontSelectFormUnit.cpp" CONTAINERID="CCompiler" LOCALCOMMAND="" UNITNAME="FontSelectFormUnit" FORMNAME="TVPFontSelectForm" DESIGNCLASS="" ADDITIONAL="..\..\..\visual\win32\FontSelectFormUnit.h"/>
+        <FILE FILENAME="..\VersionFormUnit.cpp" CONTAINERID="CCompiler" LOCALCOMMAND="" UNITNAME="VersionFormUnit" FORMNAME="TVPVersionForm" DESIGNCLASS="" ADDITIONAL="..\VersionFormUnit.h"/>
+        <FILE FILENAME="..\..\..\msg\MsgIntf.cpp" CONTAINERID="CCompiler" LOCALCOMMAND="" UNITNAME="MsgIntf" FORMNAME="" DESIGNCLASS="" ADDITIONAL="..\..\..\msg\MsgIntf.h"/>
+        <FILE FILENAME="..\..\..\msg\win32\MsgImpl.cpp" CONTAINERID="CCompiler" LOCALCOMMAND="" UNITNAME="MsgImpl" FORMNAME="" DESIGNCLASS="" ADDITIONAL="..\..\..\msg\win32\MsgImpl.h"/>
+        <FILE FILENAME="..\..\..\base\ScriptMgnIntf.cpp" CONTAINERID="CCompiler" LOCALCOMMAND="" UNITNAME="ScriptMgnIntf" FORMNAME="" DESIGNCLASS=""/>
+        <FILE FILENAME="..\..\..\base\win32\FuncStubs.cpp" CONTAINERID="CCompiler" LOCALCOMMAND="" UNITNAME="FuncStubs" FORMNAME="" DESIGNCLASS=""/>
+        <FILE FILENAME="..\..\..\msg\win32\OptionsDesc.cpp" CONTAINERID="CCompiler" LOCALCOMMAND="" UNITNAME="OptionsDesc" FORMNAME="" DESIGNCLASS="" ADDITIONAL="..\..\..\msg\win32\OptionsDesc.h"/>
+        <FILE FILENAME="..\..\..\base\common.h" CONTAINERID="" LOCALCOMMAND="" UNITNAME="common" FORMNAME="" DESIGNCLASS=""/>
+        <FILE FILENAME="..\..\..\utils\ObjectList.h" CONTAINERID="" LOCALCOMMAND="" UNITNAME="ObjectList" FORMNAME="" DESIGNCLASS=""/>
+        <FILE FILENAME="..\..\..\..\tools\win32\krdevui\ConfSettingsUnit.cpp" CONTAINERID="CCompiler" LOCALCOMMAND="" UNITNAME="ConfSettingsUnit" FORMNAME="" DESIGNCLASS="" ADDITIONAL="..\..\..\..\tools\win32\krdevui\ConfSettingsUnit.h"/>
+        <FILE FILENAME="..\..\..\..\tools\win32\krdevui\ConfMainFrameUnit.cpp" CONTAINERID="CCompiler" LOCALCOMMAND="" UNITNAME="ConfMainFrameUnit" FORMNAME="ConfMainFrame" DESIGNCLASS="TFrame" ADDITIONAL="..\..\..\..\tools\win32\krdevui\ConfMainFrameUnit.h"/>
+        <FILE FILENAME="..\..\..\tjs2\tjsGlobalStringMap.cpp" CONTAINERID="CCompiler" LOCALCOMMAND="" UNITNAME="tjsGlobalStringMap" FORMNAME="" DESIGNCLASS="" ADDITIONAL="..\..\..\tjs2\tjsGlobalStringMap.h"/>
+        <FILE FILENAME="..\..\..\utils\ClipboardIntf.cpp" CONTAINERID="CCompiler" LOCALCOMMAND="" UNITNAME="ClipboardIntf" FORMNAME="" DESIGNCLASS="" ADDITIONAL="..\..\..\utils\ClipboardIntf.h"/>
+        <FILE FILENAME="..\..\..\utils\win32\ClipboardImpl.cpp" CONTAINERID="CCompiler" LOCALCOMMAND="" UNITNAME="ClipboardImpl" FORMNAME="" DESIGNCLASS="" ADDITIONAL="..\..\..\utils\win32\ClipboardImpl.h"/>
+        <FILE FILENAME="..\..\..\tjs2\tjsDisassemble.cpp" CONTAINERID="CCompiler" LOCALCOMMAND="" UNITNAME="tjsDisassemble" FORMNAME="" DESIGNCLASS=""/>
+        <FILE FILENAME="..\..\..\tjs2\tjsDebug.cpp" CONTAINERID="CCompiler" LOCALCOMMAND="" UNITNAME="tjsDebug" FORMNAME="" DESIGNCLASS="" ADDITIONAL="..\..\..\tjs2\tjsDebug.h"/>
+        <FILE FILENAME="..\..\..\base\CharacterSet.cpp" CONTAINERID="CCompiler" LOCALCOMMAND="" UNITNAME="CharacterSet" FORMNAME="" DESIGNCLASS=""/>
+        <FILE FILENAME="..\..\..\sound\WaveLoopManager.cpp" CONTAINERID="CCompiler" LOCALCOMMAND="" UNITNAME="WaveLoopManager" FORMNAME="" DESIGNCLASS="" ADDITIONAL="..\..\..\sound\WaveLoopManager.h"/>
+        <FILE FILENAME="..\..\..\sound\WaveSegmentQueue.cpp" CONTAINERID="CCompiler" LOCALCOMMAND="" UNITNAME="WaveSegmentQueue" FORMNAME="" DESIGNCLASS=""/>
+        <FILE FILENAME="..\..\..\sound\cpu\pv_sse.obj" CONTAINERID="OBJTool" LOCALCOMMAND="" UNITNAME="pv_sse.obj" FORMNAME="" DESIGNCLASS=""/>
+        <FILE FILENAME="..\..\..\sound\cpu\pv_def.obj" CONTAINERID="OBJTool" LOCALCOMMAND="" UNITNAME="pv_def.obj" FORMNAME="" DESIGNCLASS=""/>
+        <FILE FILENAME="..\..\..\sound\PhaseVocoderDSP.cpp" CONTAINERID="CCompiler" LOCALCOMMAND="" UNITNAME="PhaseVocoderDSP.cpp" FORMNAME="" DESIGNCLASS=""/>
+        <FILE FILENAME="..\..\..\sound\PhaseVocoderFilter.cpp" CONTAINERID="CCompiler" LOCALCOMMAND="" UNITNAME="PhaseVocoderFilter.cpp" FORMNAME="" DESIGNCLASS="" ADDITIONAL="..\..\..\sound\PhaseVocoderFilter.h"/>
+        <FILE FILENAME="..\..\..\visual\LayerManager.cpp" CONTAINERID="CCompiler" LOCALCOMMAND="" UNITNAME="LayerManager" FORMNAME="" DESIGNCLASS=""/>
+        <FILE FILENAME="..\..\..\visual\win32\PassThroughDrawDevice.cpp" CONTAINERID="CCompiler" LOCALCOMMAND="" UNITNAME="PassThroughDrawDevice" FORMNAME="" DESIGNCLASS=""/>
+        <FILE FILENAME="..\..\..\visual\win32\DrawDevice.cpp" CONTAINERID="CCompiler" LOCALCOMMAND="" UNITNAME="DrawDevice" FORMNAME="" DESIGNCLASS=""/>
+        <FILE FILENAME="lib\boost_regex_bcb2006.lib" CONTAINERID="LibTool" LOCALCOMMAND="" UNITNAME="boost_regex_bcb2006" FORMNAME="" DESIGNCLASS=""/>
+        <FILE FILENAME="lib\deelibpng.lib" CONTAINERID="LibTool" LOCALCOMMAND="" UNITNAME="deelibpng" FORMNAME="" DESIGNCLASS=""/>
+        <FILE FILENAME="lib\libjpeg2.lib" CONTAINERID="LibTool" LOCALCOMMAND="" UNITNAME="libjpeg2" FORMNAME="" DESIGNCLASS=""/>
+        <FILE FILENAME="lib\zlib.lib" CONTAINERID="LibTool" LOCALCOMMAND="" UNITNAME="zlib" FORMNAME="" DESIGNCLASS=""/>
+      </FILELIST>
+      <IDEOPTIONS>
+        <VersionInfo>
+          <VersionInfo Name="IncludeVerInfo">True</VersionInfo>
+          <VersionInfo Name="AutoIncBuild">False</VersionInfo>
+          <VersionInfo Name="MajorVer">2</VersionInfo>
+          <VersionInfo Name="MinorVer">29</VersionInfo>
+          <VersionInfo Name="Release">2007</VersionInfo>
+          <VersionInfo Name="Build">1022</VersionInfo>
+          <VersionInfo Name="Debug">False</VersionInfo>
+          <VersionInfo Name="PreRelease">False</VersionInfo>
+          <VersionInfo Name="Special">False</VersionInfo>
+          <VersionInfo Name="Private">False</VersionInfo>
+          <VersionInfo Name="DLL">False</VersionInfo>
+          <VersionInfo Name="Locale">1041</VersionInfo>
+          <VersionInfo Name="CodePage">932</VersionInfo>
+        </VersionInfo>
+        <VersionInfoKeys>
+          <VersionInfoKeys Name="CompanyName"></VersionInfoKeys>
+          <VersionInfoKeys Name="FileDescription">TVP(KIRIKIRI) 2 core / Scripting Platform for Win32</VersionInfoKeys>
+          <VersionInfoKeys Name="FileVersion">2.29.2007.1022</VersionInfoKeys>
+          <VersionInfoKeys Name="InternalName">tvp2/win32</VersionInfoKeys>
+          <VersionInfoKeys Name="LegalCopyright">(KIRIKIRI core) (C) 1997-2007 W.Dee and Contributors All Rights Reserved. This software is based in part on the work of Independent JPEG Group. For details: Run this program with '-about' option.</VersionInfoKeys>
+          <VersionInfoKeys Name="LegalTrademarks"></VersionInfoKeys>
+          <VersionInfoKeys Name="OriginalFilename"></VersionInfoKeys>
+          <VersionInfoKeys Name="ProductName"></VersionInfoKeys>
+          <VersionInfoKeys Name="ProductVersion">1.0.0.0</VersionInfoKeys>
+        </VersionInfoKeys>
+        <HistoryLists_hlIncludePath>
+          <HistoryLists_hlIncludePath Name="Count">6</HistoryLists_hlIncludePath>
+          <HistoryLists_hlIncludePath Name="Item0">..\;..;..\..\..\..\tools\win32\krdevui;..\..\..\msg\win32;..\..\..\msg;..\..\..\sound\win32;..\..\..\sound;..\..\..\base\win32;..\..\..\base;..\..\..\utils\win32;..\..\..\utils;..\..\..\visual\IA32;..\..\..\visual\win32;..\..\..\visual;..\..\..\tjs2;..\..\..;$(BCB)\include;$(BCB)\include\vcl;$(BCB)\include\libjpeg2;$(BCB)\include\libpng;$(BCB)\include\erina</HistoryLists_hlIncludePath>
+          <HistoryLists_hlIncludePath Name="Item1">..\;..\..\..\..\tools\win32\krdevui;..\..\..\msg\win32;..\..\..\msg;..\..\..\sound\win32;..\..\..\sound;..\..\..\base\win32;..\..\..\base;..\..\..\utils\win32;..\..\..\utils;..\..\..\visual\IA32;..\..\..\visual\win32;..\..\..\visual;..\..\..\tjs2;..;..\..\..;$(BCB)\include;$(BCB)\include\vcl;$(BCB)\include\libjpeg2;$(BCB)\include\libpng;$(BCB)\include\erina</HistoryLists_hlIncludePath>
+          <HistoryLists_hlIncludePath Name="Item2">..\..\..\..\tools\win32\krdevui;..\..\..\msg\win32;..\..\..\msg;..\..\..\sound\win32;..\..\..\sound;..\..\..\base\win32;..\..\..\base;..\..\..\utils\win32;..\..\..\utils;..\..\..\visual\IA32;..\..\..\visual\win32;..\..\..\visual;..\..\..\tjs2;..\;..\..\..;$(BCB)\include;$(BCB)\include\vcl;$(BCB)\include\libjpeg2;$(BCB)\include\libpng;$(BCB)\include\erina</HistoryLists_hlIncludePath>
+          <HistoryLists_hlIncludePath Name="Item3">..\..\..\..\tools\win32\krdevui;..\..\..\msg\win32;..\..\..\msg;..\..\..\sound\win32;..\..\..\sound;..\..\..\base\win32;..\..\..\base;..\..\..\utils\win32;..\..\..\utils;..\..\..\visual\IA32;..\..\..\visual\win32;..\..\..\visual;..\..\..\tjs2;..\;..\..\..\tools\win32\krdevui;krdevui;..\..\..\..\Bin;..\..\sound;..\..\sound\win32;..\..\msg\win32;..\..\visual\win32;..\..\visual;..\..\base\win32;..\..\base;..\..\msg;..\..\utils\win32;..\..\utils;..\..\base\storage;..\..\tjs2;..\..\visual\window;..\..\..;..\..\visual\IA32;$(BCB)\include;$(BCB)\include\vcl;$(BCB)\include\libjpeg2;$(BCB)\include\libpng;$(BCB)\include\erina</HistoryLists_hlIncludePath>
+          <HistoryLists_hlIncludePath Name="Item4">..\..\..\tools\win32\krdevui;krdevui;..\..\..\..\Bin;..\..\sound;..\..\sound\win32;..\..\msg\win32;..\..\visual\win32;..\..\visual;..\..\base\win32;..\..\base;..\..\msg;..\..\utils\win32;..\..\utils;..\..\base\storage;..\..\tjs2;..\..\visual\window;..\..\..;..\..\visual\IA32;$(BCB)\include;$(BCB)\include\vcl;$(BCB)\include\libjpeg2;$(BCB)\include\libpng;$(BCB)\include\erina</HistoryLists_hlIncludePath>
+          <HistoryLists_hlIncludePath Name="Item5">krdevui;..\..\..\..\Bin;..\..\sound;..\..\sound\win32;..\..\msg\win32;..\..\visual\win32;..\..\visual;..\..\base\win32;..\..\base;..\..\msg;..\..\utils\win32;..\..\utils;..\..\base\storage;..\..\tjs2;..\..\visual\window;..\..\..;..\..\visual\IA32;$(BCB)\include;$(BCB)\include\vcl;$(BCB)\include\libjpeg2;$(BCB)\include\libpng;$(BCB)\include\erina</HistoryLists_hlIncludePath>
+        </HistoryLists_hlIncludePath>
+        <HistoryLists_hlLibraryPath>
+          <HistoryLists_hlLibraryPath Name="Count">5</HistoryLists_hlLibraryPath>
+          <HistoryLists_hlLibraryPath Name="Item0">..\;..;..\..\..\..\tools\win32\krdevui;..\..\..\msg\win32;..\..\..\msg;..\..\..\sound\win32;..\..\..\sound;..\..\..\base\win32;..\..\..\base;..\..\..\utils\win32;..\..\..\utils;..\..\..\visual\IA32;..\..\..\visual\win32;..\..\..\visual;..\..\..\tjs2;..\..\..\tools\win32\krdevui;krdevui;..\..\visual\IA32;..\..\..\..\Bin;..\..\sound;..\..\sound\win32;..\..\msg\win32;..\..\visual\win32;$(BCB)\Projects\Lib;..\..\visual;..\..\base\win32;..\..\base;..\..\base\storage\win32;..\..\msg;..\..\utils\win32;..\..\utils;..\..\base\storage;..\..\tjs2;..\..\visual\window;..\..\..;$(BCB)\lib\obj;$(BCB)\lib</HistoryLists_hlLibraryPath>
+          <HistoryLists_hlLibraryPath Name="Item1">..\;..\..\..\..\tools\win32\krdevui;..\..\..\msg\win32;..\..\..\msg;..\..\..\sound\win32;..\..\..\sound;..\..\..\base\win32;..\..\..\base;..\..\..\utils\win32;..\..\..\utils;..\..\..\visual\IA32;..\..\..\visual\win32;..\..\..\visual;..\..\..\tjs2;..;..\..\..\tools\win32\krdevui;krdevui;..\..\visual\IA32;..\..\..\..\Bin;..\..\sound;..\..\sound\win32;..\..\msg\win32;..\..\visual\win32;$(BCB)\Projects\Lib;..\..\visual;..\..\base\win32;..\..\base;..\..\base\storage\win32;..\..\msg;..\..\utils\win32;..\..\utils;..\..\base\storage;..\..\tjs2;..\..\visual\window;..\..\..;$(BCB)\lib\obj;$(BCB)\lib</HistoryLists_hlLibraryPath>
+          <HistoryLists_hlLibraryPath Name="Item2">..\..\..\..\tools\win32\krdevui;..\..\..\msg\win32;..\..\..\msg;..\..\..\sound\win32;..\..\..\sound;..\..\..\base\win32;..\..\..\base;..\..\..\utils\win32;..\..\..\utils;..\..\..\visual\IA32;..\..\..\visual\win32;..\..\..\visual;..\..\..\tjs2;..\;..\..\..\tools\win32\krdevui;krdevui;..\..\visual\IA32;..\..\..\..\Bin;..\..\sound;..\..\sound\win32;..\..\msg\win32;..\..\visual\win32;$(BCB)\Projects\Lib;..\..\visual;..\..\base\win32;..\..\base;..\..\base\storage\win32;..\..\msg;..\..\utils\win32;..\..\utils;..\..\base\storage;..\..\tjs2;..\..\visual\window;..\..\..;$(BCB)\lib\obj;$(BCB)\lib</HistoryLists_hlLibraryPath>
+          <HistoryLists_hlLibraryPath Name="Item3">..\..\..\tools\win32\krdevui;krdevui;..\..\visual\IA32;..\..\..\..\Bin;..\..\sound;..\..\sound\win32;..\..\msg\win32;..\..\visual\win32;$(BCB)\Projects\Lib;..\..\visual;..\..\base\win32;..\..\base;..\..\base\storage\win32;..\..\msg;..\..\utils\win32;..\..\utils;..\..\base\storage;..\..\tjs2;..\..\visual\window;..\..\..;$(BCB)\lib\obj;$(BCB)\lib</HistoryLists_hlLibraryPath>
+          <HistoryLists_hlLibraryPath Name="Item4">krdevui;..\..\visual\IA32;..\..\..\..\Bin;..\..\sound;..\..\sound\win32;..\..\msg\win32;..\..\visual\win32;$(BCB)\Projects\Lib;..\..\visual;..\..\base\win32;..\..\base;..\..\base\storage\win32;..\..\msg;..\..\utils\win32;..\..\utils;..\..\base\storage;..\..\tjs2;..\..\visual\window;..\..\..;$(BCB)\lib\obj;$(BCB)\lib</HistoryLists_hlLibraryPath>
+        </HistoryLists_hlLibraryPath>
+        <HistoryLists_hlDebugSourcePath>
+          <HistoryLists_hlDebugSourcePath Name="Count">1</HistoryLists_hlDebugSourcePath>
+          <HistoryLists_hlDebugSourcePath Name="Item0">C:\Program Files\Borland\CBuilder5\Projects\tvp2win32\visual\IA32\;C:\Program Files\Borland\CBuilder5\Projects\comps\o\erinalib\library\common\</HistoryLists_hlDebugSourcePath>
+        </HistoryLists_hlDebugSourcePath>
+        <HistoryLists_hlConditionals>
+          <HistoryLists_hlConditionals Name="Count">12</HistoryLists_hlConditionals>
+          <HistoryLists_hlConditionals Name="Item0">TJS_SUPPORT_VCL;TJS_TEXT_OUT_CRLF;TJS_JP_LOCALIZED;TJS_NO_DEBUG_PROFILE_TIME;TVP_NO_CHECK_WIDE_CHAR_SIZE;TVP_SUPPORT_ERI;TVP_SUPPORT_KPI;TVP_SUPPORT_OLD_WAVEUNPACKER;TVP_ENVIRON;BOOST_REGEX_V3;__USE_OLD_RW_STL;TJS_DEBUG_DUMP_STRING</HistoryLists_hlConditionals>
+          <HistoryLists_hlConditionals Name="Item1">TJS_SUPPORT_VCL;TJS_TEXT_OUT_CRLF;TJS_JP_LOCALIZED;TJS_NO_DEBUG_PROFILE_TIME;TVP_NO_CHECK_WIDE_CHAR_SIZE;TVP_SUPPORT_ERI;TVP_SUPPORT_KPI;TVP_SUPPORT_OLD_WAVEUNPACKER;TVP_ENVIRON;BOOST_REGEX_V3;__USE_OLD_RW_STL;_DEBUG;TJS_DEBUG_DUMP_STRING</HistoryLists_hlConditionals>
+          <HistoryLists_hlConditionals Name="Item2">TJS_SUPPORT_VCL;TJS_TEXT_OUT_CRLF;TJS_JP_LOCALIZED;TJS_NO_DEBUG_PROFILE_TIME;TVP_NO_CHECK_WIDE_CHAR_SIZE;TVP_SUPPORT_ERI;TVP_SUPPORT_KPI;TVP_SUPPORT_OLD_WAVEUNPACKER;TVP_ENVIRON;BOOST_REGEX_V3;__USE_OLD_RW_STL;_DEBUG</HistoryLists_hlConditionals>
+          <HistoryLists_hlConditionals Name="Item3">TJS_SUPPORT_VCL;TJS_TEXT_OUT_CRLF;TJS_JP_LOCALIZED;TJS_NO_DEBUG_PROFILE_TIME;TVP_NO_CHECK_WIDE_CHAR_SIZE;TVP_SUPPORT_ERI;TVP_SUPPORT_KPI;TVP_SUPPORT_OLD_WAVEUNPACKER;TVP_ENVIRON;BOOST_REGEX_V3;__USE_OLD_RW_STL</HistoryLists_hlConditionals>
+          <HistoryLists_hlConditionals Name="Item4">TJS_SUPPORT_VCL;TJS_TEXT_OUT_CRLF;TJS_JP_LOCALIZED;TJS_NO_DEBUG_PROFILE_TIME;TVP_NO_CHECK_WIDE_CHAR_SIZE;TVP_SUPPORT_ERI;TVP_SUPPORT_KPI;TVP_SUPPORT_OLD_WAVEUNPACKER;TVP_ENVIRON;_DEBUG;BOOST_REGEX_V3;__USE_OLD_RW_STL</HistoryLists_hlConditionals>
+          <HistoryLists_hlConditionals Name="Item5">TJS_SUPPORT_VCL;TJS_TEXT_OUT_CRLF;TJS_JP_LOCALIZED;TJS_NO_DEBUG_PROFILE_TIME;TVP_NO_CHECK_WIDE_CHAR_SIZE;TVP_SUPPORT_ERI;TVP_SUPPORT_KPI;TVP_SUPPORT_OLD_WAVEUNPACKER;TVP_ENVIRON;_DEBUG;BOOST_REGEX_V3;_USE_OLD_RW_STL</HistoryLists_hlConditionals>
+          <HistoryLists_hlConditionals Name="Item6">TJS_SUPPORT_VCL;TJS_TEXT_OUT_CRLF;TJS_JP_LOCALIZED;TJS_NO_DEBUG_PROFILE_TIME;TVP_NO_CHECK_WIDE_CHAR_SIZE;TVP_SUPPORT_ERI;TVP_SUPPORT_KPI;TVP_SUPPORT_OLD_WAVEUNPACKER;TVP_ENVIRON;_DEBUG;_BOOST_REGEX_V3;__USE_OLD_RW_STL</HistoryLists_hlConditionals>
+          <HistoryLists_hlConditionals Name="Item7">TJS_SUPPORT_VCL;TJS_TEXT_OUT_CRLF;TJS_JP_LOCALIZED;TJS_NO_DEBUG_PROFILE_TIME;TVP_NO_CHECK_WIDE_CHAR_SIZE;TVP_SUPPORT_ERI;TVP_SUPPORT_KPI;TVP_SUPPORT_OLD_WAVEUNPACKER;TVP_ENVIRON;_DEBUG;_BOOST_REGEX_V3;_USE_OLD_RW_STL</HistoryLists_hlConditionals>
+          <HistoryLists_hlConditionals Name="Item8">TJS_SUPPORT_VCL;TJS_TEXT_OUT_CRLF;TJS_JP_LOCALIZED;TJS_NO_DEBUG_PROFILE_TIME;TVP_NO_CHECK_WIDE_CHAR_SIZE;TVP_REPORT_HW_EXCEPTION;TVP_SUPPORT_ERI;TVP_SUPPORT_KPI;TVP_SUPPORT_OLD_WAVEUNPACKER;TVP_ENVIRON;_DEBUG;BOOST_REGEX_V3;_USE_OLD_RW_STL</HistoryLists_hlConditionals>
+          <HistoryLists_hlConditionals Name="Item9">TJS_SUPPORT_VCL;TJS_TEXT_OUT_CRLF;TJS_JP_LOCALIZED;TJS_NO_DEBUG_PROFILE_TIME;TVP_NO_CHECK_WIDE_CHAR_SIZE;TVP_REPORT_HW_EXCEPTION;TVP_SUPPORT_ERI;TVP_SUPPORT_KPI;TVP_SUPPORT_OLD_WAVEUNPACKER;TVP_ENVIRON;_DEBUG;BOOST_REGEX_V3</HistoryLists_hlConditionals>
+          <HistoryLists_hlConditionals Name="Item10">TJS_SUPPORT_VCL;TJS_TEXT_OUT_CRLF;TJS_JP_LOCALIZED;TJS_NO_DEBUG_PROFILE_TIME;TVP_NO_CHECK_WIDE_CHAR_SIZE;TVP_REPORT_HW_EXCEPTION;TVP_SUPPORT_ERI;TVP_SUPPORT_KPI;TVP_SUPPORT_OLD_WAVEUNPACKER;TVP_ENVIRON;_DEBUG</HistoryLists_hlConditionals>
+          <HistoryLists_hlConditionals Name="Item11">TJS_SUPPORT_VCL;TJS_TEXT_OUT_CRLF;TJS_JP_LOCALIZED;TJS_NO_DEBUG_PROFILE_TIME;TVP_NO_CHECK_WIDE_CHAR_SIZE;TVP_REPORT_HW_EXCEPTION;TVP_SUPPORT_ERI;TVP_SUPPORT_KPI;TVP_SUPPORT_OLD_WAVEUNPACKER;TVP_ENVIRON</HistoryLists_hlConditionals>
+        </HistoryLists_hlConditionals>
+        <HistoryLists_hlIntOutputDir>
+          <HistoryLists_hlIntOutputDir Name="Count">1</HistoryLists_hlIntOutputDir>
+          <HistoryLists_hlIntOutputDir Name="Item0">intermediate</HistoryLists_hlIntOutputDir>
+        </HistoryLists_hlIntOutputDir>
+        <HistoryLists_hlFinalOutputDir>
+          <HistoryLists_hlFinalOutputDir Name="Count">3</HistoryLists_hlFinalOutputDir>
+          <HistoryLists_hlFinalOutputDir Name="Item0">..\..\..\..\..\bin\win32\</HistoryLists_hlFinalOutputDir>
+          <HistoryLists_hlFinalOutputDir Name="Item1">..\..\..\..\bin\win32\</HistoryLists_hlFinalOutputDir>
+          <HistoryLists_hlFinalOutputDir Name="Item2">..\..\..\..\bin\win32</HistoryLists_hlFinalOutputDir>
+        </HistoryLists_hlFinalOutputDir>
+        <Debugging>
+          <Debugging Name="DebugSourceDirs"></Debugging>
+        </Debugging>
+        <Parameters>
+          <Parameters Name="RunParams">-logerror=yes</Parameters>
+          <Parameters Name="Launcher"></Parameters>
+          <Parameters Name="UseLauncher">False</Parameters>
+          <Parameters Name="DebugCWD"></Parameters>
+          <Parameters Name="HostApplication"></Parameters>
+          <Parameters Name="RemoteHost"></Parameters>
+          <Parameters Name="RemotePath"></Parameters>
+          <Parameters Name="RemoteParams"></Parameters>
+          <Parameters Name="RemoteLauncher"></Parameters>
+          <Parameters Name="UseRemoteLauncher">False</Parameters>
+          <Parameters Name="RemoteCWD"></Parameters>
+          <Parameters Name="RemoteDebug">False</Parameters>
+          <Parameters Name="Debug Symbols Search Path"></Parameters>
+          <Parameters Name="LoadAllSymbols">True</Parameters>
+          <Parameters Name="LoadUnspecifiedSymbols">False</Parameters>
+        </Parameters>
+        <Excluded_Packages>
+          <Excluded_Packages Name="c:\program files\borland\bds\4.0\Bin\dclib100.bpl">Borland InterBase Express Components</Excluded_Packages>
+          <Excluded_Packages Name="c:\program files\borland\bds\4.0\Bin\dclIntraweb_80_100.bpl">Intraweb 8.0 Design Package for Borland Development Studio 2006</Excluded_Packages>
+          <Excluded_Packages Name="c:\program files\borland\bds\4.0\Bin\dclindy100.bpl">Internet Direct Version 9 (Indy) Property and Component Editors</Excluded_Packages>
+          <Excluded_Packages Name="c:\program files\borland\bds\4.0\Bin\bcbofficexp100.bpl">Borland C++Builder Office XP Servers Package</Excluded_Packages>
+          <Excluded_Packages Name="c:\program files\borland\bds\4.0\Bin\dclbcbsmp100.bpl">Borland Sample Controls Design Time Package</Excluded_Packages>
+          <Excluded_Packages Name="c:\program files\borland\bds\4.0\Bin\bcbie100.bpl">Borland C++Builder Internet Explorer 5 Components Package</Excluded_Packages>
+          <Excluded_Packages Name="c:\program files\borland\bds\4.0\Bin\dcltee100.bpl">TeeChart Components</Excluded_Packages>
+          <Excluded_Packages Name="C:\Program Files\TwinForms\wxForms\bds2006\wxformside100.bpl">wxformside100</Excluded_Packages>
+        </Excluded_Packages>
+        <Linker>
+          <Linker Name="LibPrefix"></Linker>
+          <Linker Name="LibSuffix"></Linker>
+          <Linker Name="LibVersion"></Linker>
+        </Linker>
+      </IDEOPTIONS>
+    </BCBPROJECT>
+		<Source>
+			<Source Name="MainSource">tvpwin32.cpp</Source>
+		</Source>
+		<buildevents/>
+	</CPlusPlusBuilder.Personality>
+</BorlandProject>
