@@ -11,7 +11,11 @@
 #include "tjsCommHead.h"
 
 #include <deque>
+#if defined( __BORLANDC__ ) && (__BORLANDC__ >= 0x0581 )	// BCB2006 à»ç~
+#include <time.h>
+#else
 #include <time>
+#endif
 #include "DebugIntf.h"
 #include "MsgIntf.h"
 #include "StorageIntf.h"

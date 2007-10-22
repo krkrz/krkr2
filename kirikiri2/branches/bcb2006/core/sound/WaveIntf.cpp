@@ -10,6 +10,7 @@
 //---------------------------------------------------------------------------
 #include "tjsCommHead.h"
 
+#include <algorithm>
 #include "WaveIntf.h"
 #include "EventIntf.h"
 #include "StorageIntf.h"

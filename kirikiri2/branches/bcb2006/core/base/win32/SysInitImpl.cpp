@@ -1028,6 +1028,18 @@ void TVPBeforeSystemInit()
 				ttstr(TVPCannnotLocateUIDLLForFolderSelection).AsAnsiString());
 		}
 
+#if defined( __BORLANDC__ ) && (__BORLANDC__ >= 0x0581 )	// BCB2006 à»ç~
+		typedef int PASCAL (*UIShowFolderSelectorForm_t)(void *reserved, char *buf);
+		typedef void PASCAL (*UIGetVersion_t)(DWORD *hi, DWORD *low);
+
+		UIShowFolderSelectorForm_t	UIShowFolderSelectorForm;
+		UIGetVersion_t				UIGetVersion;
+
+		UIShowFolderSelectorForm =
+			(UIShowFolderSelectorForm_t)GetProcAddress(krdevui, "UIShowFolderSelectorForm");
+		UIGetVersion =
+			(UIGetVersion_t)GetProcAddress(krdevui, "UIGetVersion");
+#else
 		int PASCAL (*UIShowFolderSelectorForm)
 			(void *reserved, char *buf);
 		void PASCAL (*UIGetVersion)(DWORD *hi, DWORD *low);
@@ -1036,7 +1048,7 @@ void TVPBeforeSystemInit()
 			GetProcAddress(krdevui, "UIShowFolderSelectorForm");
 		(void*)UIGetVersion =
 			GetProcAddress(krdevui, "UIGetVersion");
-
+#endif
 		if(!UIShowFolderSelectorForm || !UIGetVersion)
 		{
 			FreeLibrary(krdevui);

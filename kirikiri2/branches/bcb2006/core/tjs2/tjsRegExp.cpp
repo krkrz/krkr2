@@ -116,7 +116,11 @@ public:
 		tjs_int targlen = target.GetLen();
 		unsigned int match_count = regex_grep
 			(
+#if defined( __BORLANDC__ ) && (__BORLANDC__ >= 0x0581 )	// BCB2006 à»ç~
+			*this,
+#else
 			std::bind1st(std::mem_fun(&tTJSReplacePredicator::Callback), this),
+#endif
 			target.c_str(),
 			_this->RegEx,
 			match_default|match_not_dot_null);
@@ -161,6 +165,11 @@ public:
 
 		return _this->Flags & globalsearch;
 	}
+#if defined( __BORLANDC__ ) && (__BORLANDC__ >= 0x0581 )	// BCB2006 à»ç~
+	bool TJS_cdecl operator()(const match_results<const tjs_char *> what) {
+		return Callback( what );
+	}
+#endif
 };
 //---------------------------------------------------------------------------
 
@@ -198,7 +207,11 @@ public:
 		tjs_int targlen = target.GetLen();
 		unsigned int match_count = regex_grep
 			(
+#if defined( __BORLANDC__ ) && (__BORLANDC__ >= 0x0581 )	// BCB2006 à»ç~
+			*this,
+#else
 			std::bind1st(std::mem_fun(&tTJSSplitPredicator::Callback), this),
+#endif
 			target.c_str(),
 			regex,
 			match_default|match_not_dot_null);
@@ -249,6 +262,11 @@ public:
 
 		return true;
 	}
+#if defined( __BORLANDC__ ) && (__BORLANDC__ >= 0x0581 )	// BCB2006 à»ç~
+	bool TJS_cdecl operator()(const match_results<const tjs_char *> what) {
+		return Callback( what );
+	}
+#endif
 };
 //---------------------------------------------------------------------------
 
