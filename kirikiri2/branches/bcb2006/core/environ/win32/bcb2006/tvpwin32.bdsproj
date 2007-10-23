@@ -25,6 +25,7 @@
         <property category="build.config.1" name="settings.win32b" value="default"/>
         <property category="build.config.1" name="type" value="Toolset"/>
         <property category="build.config.1" name="win32.win32b.builddir" value="Release_Build"/>
+        <property category="build.node" name="lastconfig" value="Release_Build"/>
         <property category="build.node" name="libraries" value="vclx.lib vcl.lib rtl.lib"/>
         <property category="build.node" name="name" value="tvpwin32.exe"/>
         <property category="build.node" name="packages" value="rtl;vcl;vclx"/>
@@ -150,7 +151,6 @@
           <property category="win32.*.win32b.bcc32" name="option.D.arg.10" value="BOOST_REGEX_V3"/>
           <property category="win32.*.win32b.bcc32" name="option.D.arg.11" value="__USE_OLD_RW_STL"/>
           <property category="win32.*.win32b.bcc32" name="option.D.arg.12" value="TJS_DEBUG_DUMP_STRING"/>
-          <property category="win32.*.win32b.bcc32" name="option.D.arg.13" value="BOOST_REGEX_NO_LIB"/>
           <property category="win32.*.win32b.bcc32" name="option.D.arg.2" value="TJS_TEXT_OUT_CRLF"/>
           <property category="win32.*.win32b.bcc32" name="option.D.arg.3" value="TJS_JP_LOCALIZED"/>
           <property category="win32.*.win32b.bcc32" name="option.D.arg.4" value="TJS_NO_DEBUG_PROFILE_TIME"/>
@@ -650,7 +650,6 @@
         <FILE FILENAME="..\..\..\visual\LayerManager.cpp" CONTAINERID="CCompiler" LOCALCOMMAND="" UNITNAME="LayerManager" FORMNAME="" DESIGNCLASS=""/>
         <FILE FILENAME="..\..\..\visual\win32\PassThroughDrawDevice.cpp" CONTAINERID="CCompiler" LOCALCOMMAND="" UNITNAME="PassThroughDrawDevice" FORMNAME="" DESIGNCLASS=""/>
         <FILE FILENAME="..\..\..\visual\win32\DrawDevice.cpp" CONTAINERID="CCompiler" LOCALCOMMAND="" UNITNAME="DrawDevice" FORMNAME="" DESIGNCLASS=""/>
-        <FILE FILENAME="lib\boost_regex_bcb2006.lib" CONTAINERID="LibTool" LOCALCOMMAND="" UNITNAME="boost_regex_bcb2006" FORMNAME="" DESIGNCLASS=""/>
         <FILE FILENAME="lib\deelibpng.lib" CONTAINERID="LibTool" LOCALCOMMAND="" UNITNAME="deelibpng" FORMNAME="" DESIGNCLASS=""/>
         <FILE FILENAME="lib\libjpeg2.lib" CONTAINERID="LibTool" LOCALCOMMAND="" UNITNAME="libjpeg2" FORMNAME="" DESIGNCLASS=""/>
         <FILE FILENAME="lib\zlib.lib" CONTAINERID="LibTool" LOCALCOMMAND="" UNITNAME="zlib" FORMNAME="" DESIGNCLASS=""/>

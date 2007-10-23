@@ -1,8 +1,9 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <BorlandProject>
-  <Transactions>
+	<Transactions>
     <Transaction>2007/10/23 00:45:35.593.lib,E:\krkr\Lib\zlib.lib=</Transaction>
     <Transaction>2007/10/23 00:45:39.953.lib,E:\krkr\Lib\deelibpng.lib=</Transaction>
     <Transaction>2007/10/23 00:45:42.046.lib,E:\krkr\Lib\libjpeg2.lib=</Transaction>
+    <Transaction>2007/10/23 22:34:31.015.lib,E:\krkr\krkr2trunk\core\environ\win32\bcb2006\lib\boost_regex_bcb2006.lib=</Transaction>
   </Transactions>
 </BorlandProject>
