@@ -1028,14 +1028,16 @@ void TVPBeforeSystemInit()
 				ttstr(TVPCannnotLocateUIDLLForFolderSelection).AsAnsiString());
 		}
 
-		int PASCAL (*UIShowFolderSelectorForm)
-			(void *reserved, char *buf);
-		void PASCAL (*UIGetVersion)(DWORD *hi, DWORD *low);
+		typedef int PASCAL (*UIShowFolderSelectorForm_t)(void *reserved, char *buf);
+		typedef void PASCAL (*UIGetVersion_t)(DWORD *hi, DWORD *low);
 
-		(void*)UIShowFolderSelectorForm =
-			GetProcAddress(krdevui, "UIShowFolderSelectorForm");
-		(void*)UIGetVersion =
-			GetProcAddress(krdevui, "UIGetVersion");
+		UIShowFolderSelectorForm_t	UIShowFolderSelectorForm;
+		UIGetVersion_t				UIGetVersion;
+
+		UIShowFolderSelectorForm =
+			(UIShowFolderSelectorForm_t)GetProcAddress(krdevui, "UIShowFolderSelectorForm");
+		UIGetVersion =
+			(UIGetVersion_t)GetProcAddress(krdevui, "UIGetVersion");
 
 		if(!UIShowFolderSelectorForm || !UIGetVersion)
 		{

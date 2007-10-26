@@ -10,6 +10,8 @@
 //---------------------------------------------------------------------------
 
 #include "tjsCommHead.h"
+
+#include <algorithm>
 #include "DrawDevice.h"
 #include "MsgIntf.h"
 #include "LayerIntf.h"

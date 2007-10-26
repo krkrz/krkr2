@@ -10,7 +10,7 @@
 //---------------------------------------------------------------------------
 #include "tjsCommHead.h"
 
-
+#include <algorithm>
 #include "WindowFormUnit.h"
 #include "WindowImpl.h"
 #include "EventIntf.h"

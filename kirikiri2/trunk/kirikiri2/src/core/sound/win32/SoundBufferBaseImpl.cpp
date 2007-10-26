@@ -10,6 +10,7 @@
 //---------------------------------------------------------------------------
 #include "tjsCommHead.h"
 
+#include <algorithm>
 #include "SoundBufferBaseImpl.h"
 #include "WaveImpl.h"
 
