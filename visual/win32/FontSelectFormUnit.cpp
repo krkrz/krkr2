@@ -10,6 +10,7 @@
 //---------------------------------------------------------------------------
 #include "tjsCommHead.h"
 
+#include <algorithm>
 #include "FontSelectFormUnit.h"
 #include "tvpfontstruc.h"
 #include "WindowFormUnit.h"

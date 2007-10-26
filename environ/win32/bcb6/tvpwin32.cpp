@@ -62,10 +62,9 @@ WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
 		Application->Initialize();
 
+		if(TVPCheckPrintDataPath()) return 0;
 		if(TVPCheckCmdDescription()) return 0;
-		if(TVPExecuteUserConfig1()) return 0; // userconf stage 1
-		if(TVPExecuteUserConfig2()) return 0; // userconf stage 2
-		if(TVPExecuteUserConfig3()) return 0; // userconf stage 3
+		if(TVPExecuteUserConfig()) return 0; // userconf
 
 		TVPSystemInit();
 
@@ -73,12 +72,19 @@ WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
 		Application->Title = "‹g—¢‹g—¢";
 		Application->CreateForm(__classid(TTVPMainForm), &TVPMainForm);
-                 TVPLoadPluigins(); // load plugin module *.tpm
+		TVPLoadPluigins(); // load plugin module *.tpm
 		if(TVPProjectDirSelected) TVPInitializeStartupScript();
 
 		Application->Run();
 
-		TVPSystemUninit();
+		try
+		{
+			TVPSystemUninit();
+		}
+		catch(...)
+		{
+			// ignore errors
+		}
 	}
 	catch (EAbort &e)
 	{
@@ -108,6 +114,14 @@ WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	}
 
 	if(engine_init) TVPUninitScriptEngine();
+
+#ifndef _DEBUG
+	// delete application and exit forcely
+	// this prevents ugly exception message on exit
+
+	delete Application;
+	ExitProcess(0);
+#endif
 	return 0;
 }
 //---------------------------------------------------------------------------

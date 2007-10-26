@@ -1,0 +1,8 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<BorlandProject>
+  <Transactions>
+    <Transaction>2007/10/23 00:45:35.593.lib,E:\krkr\Lib\zlib.lib=</Transaction>
+    <Transaction>2007/10/23 00:45:39.953.lib,E:\krkr\Lib\deelibpng.lib=</Transaction>
+    <Transaction>2007/10/23 00:45:42.046.lib,E:\krkr\Lib\libjpeg2.lib=</Transaction>
+  </Transactions>
+</BorlandProject>
