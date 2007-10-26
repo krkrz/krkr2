@@ -12,6 +12,7 @@
 
 #include "MIDIImpl.h"
 
+#include <algorithm>
 #include <mmsystem.h>
 #include "TickCount.h"
 #include "StorageIntf.h"

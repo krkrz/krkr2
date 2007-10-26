@@ -11,7 +11,7 @@
 #include "tjsCommHead.h"
 
 #include <deque>
-#include <time>
+#include <time.h>
 #include "DebugIntf.h"
 #include "MsgIntf.h"
 #include "StorageIntf.h"

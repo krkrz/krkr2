@@ -15,6 +15,7 @@
 
 #include <dbt.h> // for WM_DEVICECHANGE
 
+#include <algorithm>
 #include "WindowFormUnit.h"
 #include "WindowImpl.h"
 #include "EventIntf.h"

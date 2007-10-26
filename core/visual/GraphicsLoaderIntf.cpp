@@ -1534,7 +1534,7 @@ void TVPLoadERI(void* formatdata, void *callbackdata, tTVPGraphicSizeCallback si
 	// set size
 	sizecallback(callbackdata,
 		erifile.m_InfoHeader.nImageWidth,
-		std::abs(erifile.m_InfoHeader.nImageHeight));
+		std::abs(static_cast<int>(erifile.m_InfoHeader.nImageHeight)));
 
 	// set RASTER_IMAGE_INFO up
 	bool has_alpha;
@@ -1565,7 +1565,7 @@ void TVPLoadERI(void* formatdata, void *callbackdata, tTVPGraphicSizeCallback si
 	tjs_int w;
 	rii.nImageWidth = w = erifile.m_InfoHeader.nImageWidth;
 	tjs_uint imagesize;
-	rii.nImageHeight = h = std::abs(erifile.m_InfoHeader.nImageHeight);
+	rii.nImageHeight = h = std::abs(static_cast<int>(erifile.m_InfoHeader.nImageHeight));
 
 	rii.BytesPerLine = ((rii.nImageWidth * rii.dwBitsPerPixel /8)+0x07)& ~0x07;
 
