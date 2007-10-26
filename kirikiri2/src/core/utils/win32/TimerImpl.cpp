@@ -10,6 +10,7 @@
 //---------------------------------------------------------------------------
 #include "tjsCommHead.h"
 
+#include <algorithm>
 #include <syncobjs.hpp>
 #include <mmsystem.h>
 #include <EventIntf.h>

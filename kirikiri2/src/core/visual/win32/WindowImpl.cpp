@@ -13,6 +13,7 @@
 #define DIRECTDRAW_VERSION 0x0300
 #include <ddraw.h>
 
+#include <algorithm>
 #include "MsgIntf.h"
 #include "WindowIntf.h"
 #include "LayerIntf.h"

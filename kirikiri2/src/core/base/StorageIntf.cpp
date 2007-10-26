@@ -10,6 +10,7 @@
 //---------------------------------------------------------------------------
 #include "tjsCommHead.h"
 
+#include <algorithm>
 #include <stdexcept>
 #include <memory>
 #include "StorageIntf.h"
