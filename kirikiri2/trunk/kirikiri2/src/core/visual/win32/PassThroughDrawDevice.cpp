@@ -1832,9 +1832,16 @@ void tTVPPassThroughDrawDevice::CreateDrawer(tDrawerType type)
 //---------------------------------------------------------------------------
 void tTVPPassThroughDrawDevice::CreateDrawer(bool zoom_required, bool should_benchmark)
 {
+	// プライマリレイヤのサイズを取得
+	tjs_int srcw, srch;
+	GetSrcSize(srcw, srch);
+
 	// いったん Drawer を削除
 	tDrawerType last_type = DrawerType;
 	DestroyDrawer();
+
+	// プライマリレイヤがないならば DrawDevice は作成しない
+	if(srcw == 0 || srch == 0) return;
 
 	// should_benchmark が偽で、前回 Drawer を作成していれば、それと同じタイプの
 	// Drawer を用いる
@@ -1872,8 +1879,6 @@ void tTVPPassThroughDrawDevice::CreateDrawer(bool zoom_required, bool should_ben
 		} results[num_types];
 
 		// ベンチマーク用の元画像を確保
-		tjs_int srcw, srch;
-		GetSrcSize(srcw, srch);
 		BITMAPINFOHEADER bmi;
 		bmi.biSize = sizeof(BITMAPINFOHEADER);
 		bmi.biWidth = srcw;
@@ -1946,8 +1951,8 @@ void tTVPPassThroughDrawDevice::CreateDrawer(bool zoom_required, bool should_ben
 
 				// 結果を格納、それとデバッグ用に表示
 				results[i].score = count * 1000 / (float)(end_tick - start_tick);
-				tjs_char msg[80];
-				TJS_sprintf(msg, TJS_W("%.2f fps"), (float)results[i].score);
+				char msg[80];
+				sprintf(msg, "%.2f fps", (float)results[i].score);
 				TVPAddImportantLog(TJS_W("Passthrough: benchmark result: ") + ttstr(type_names[i]) + TJS_W(" : ") +
 					msg);
 
