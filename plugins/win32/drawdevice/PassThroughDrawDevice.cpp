@@ -18,6 +18,9 @@
 #include <d3d.h>
 
 
+
+
+
 //---------------------------------------------------------------------------
 // オプション
 //---------------------------------------------------------------------------
@@ -541,6 +544,7 @@ public:
 		if(OffScreenDC && Surface) Surface->ReleaseDC(OffScreenDC);
 		if(Surface) Surface->Release(), Surface = NULL;
 		if(Clipper) Clipper->Release(), Clipper = NULL;
+		TVPReleaseDDPrimarySurface();
 	}
 
 	void InvalidateAll()
@@ -676,7 +680,9 @@ public:
 					// display this message only once since last success
 					TVPAddImportantLog(
 						TJS_W("Passthrough: (inf) Off-screen surface, IDirectDrawSurface::GetDC failed/HR=") +
-						TJSInt32ToHex(hr, 8) + TJS_W(", ignoring"));
+						TJSInt32ToHex(hr, 8) + TJS_W(", recreating drawer ..."));
+					Device->DestroyDrawer(); // destroy self
+					return; // return immediately
 				}
 			}
 
@@ -764,7 +770,8 @@ public:
 		}
 		else if(hr != DD_OK)
 		{
-			TVPThrowExceptionMessage(TJS_W("Primary surface, IDirectDrawSurface::Blt failed/HR=%1"),
+			TVPAddImportantLog(
+				TJS_W("Passthrough: (inf) Primary surface, IDirectDrawSurface::Blt failed/HR=") +
 				TJSInt32ToHex(hr, 8));
 		}
 	}
@@ -976,6 +983,9 @@ class tTVPDrawer_D3DDoubleBuffering : public tTVPDrawer
 	void * TextureBuffer; //!< テクスチャのサーフェースへのメモリポインタ
 	long TexturePitch; //!< テクスチャのピッチ
 
+	tjs_uint TextureWidth; //!< テクスチャの横幅
+	tjs_uint TextureHeight; //!< テクスチャの縦幅
+
 	bool LastOffScreenDCGot;
 	bool ShouldShow; //!< show で実際に画面に画像を転送すべきか
 	bool UseDirectTransfer; //!< メモリ直接転送を行うかどうか
@@ -996,6 +1006,7 @@ public:
 		ShouldShow = false;
 		UseDirectTransfer = false;
 		TextureBuffer = NULL;
+		TextureWidth = TextureHeight = 0;
 	}
 
 	//! @brief	デストラクタ
@@ -1016,6 +1027,7 @@ public:
 		if(DirectDraw7) DirectDraw7->Release(), DirectDraw7 = NULL;
 		if(Direct3DDevice7) Direct3DDevice7->Release(), Direct3DDevice7 = NULL;
 		if(Direct3D7) Direct3D7->Release(), Direct3D7 = NULL;
+		TVPReleaseDDPrimarySurface();
 	}
 
 	void InvalidateAll()
@@ -1117,12 +1129,50 @@ public:
 				TVPThrowExceptionMessage(TJS_W("Cannot create Direct3D device/HR=%1"),
 					TJSInt32ToHex(hr, 8));
 
+			// retrieve device caps
+			D3DDEVICEDESC7 caps;
+			ZeroMemory(&caps, sizeof(caps));
+			if(FAILED(Direct3DDevice7->GetCaps(&caps)))
+				TVPThrowExceptionMessage(TJS_W("Failed to retrieve Direct3D device caps/HR=%1"),
+					TJSInt32ToHex(hr, 8));
+
+			// decide texture size
+			TextureWidth = SrcWidth;
+			TextureHeight = SrcHeight;
+			if(caps.dpcTriCaps.dwTextureCaps & D3DPTEXTURECAPS_SQUAREONLY)
+			{
+				// only square textures are supported
+				TextureWidth = std::max(TextureHeight, TextureWidth);
+				TextureHeight = TextureWidth;
+			}
+
+			if(caps.dpcTriCaps.dwTextureCaps & D3DPTEXTURECAPS_POW2)
+			{
+				// power of 2 size of texture dimentions are required
+				tjs_uint sz;
+
+				sz = 1; while(sz < TextureWidth) sz <<= 1;
+				TextureWidth = sz;
+
+				sz = 1; while(sz < TextureHeight) sz <<= 1;
+				TextureHeight = sz;
+			}
+
+			if(caps.dwMinTextureWidth  > TextureWidth) TextureWidth = caps.dwMinTextureWidth;
+			if(caps.dwMinTextureHeight > TextureHeight) TextureHeight = caps.dwMinTextureHeight;
+			if(	caps.dwMaxTextureWidth  < TextureWidth ||
+				caps.dwMaxTextureHeight < TextureHeight)
+			{
+				TVPThrowExceptionMessage(TJS_W("Could not allocate texture size of %1x%2"),
+					ttstr((int)TextureWidth), ttstr((int)TextureHeight));
+			}
+
 			// create Direct3D Texture
 			ZeroMemory(&ddsd, sizeof(ddsd));
 			ddsd.dwSize = sizeof(ddsd);
 			ddsd.dwFlags = DDSD_WIDTH | DDSD_HEIGHT | DDSD_CAPS | DDSD_PIXELFORMAT;
-			ddsd.dwWidth = SrcWidth;
-			ddsd.dwHeight = SrcHeight;
+			ddsd.dwWidth  = TextureWidth;
+			ddsd.dwHeight = TextureHeight;
 			ddsd.ddsCaps.dwCaps =
 				/*DDSCAPS_OFFSCREENPLAIN |*/ DDSCAPS_VIDEOMEMORY | DDSCAPS_TEXTURE | DDSCAPS_LOCALVIDMEM;
 
@@ -1276,7 +1326,7 @@ StartTick = timeGetTime();
 #endif
 				if(TextureBuffer)
 				{
-					TVPAddImportantLog(TJS_W("Passthrough: Texture has already locked (StartBitmapCompletion() has called twice without EndBitmapCompletion()), unlocking the texture."));
+					TVPAddImportantLog(TJS_W("Passthrough: Texture has already been locked (StartBitmapCompletion() has been called twice without EndBitmapCompletion()), unlocking the texture."));
 					Texture->Unlock(NULL), TextureBuffer = NULL;
 				}
 
@@ -1303,7 +1353,9 @@ StartTick = timeGetTime();
 						// display this message only once since last success
 						TVPAddImportantLog(
 							TJS_W("Passthrough: (inf) Texture, IDirectDrawSurface::Lock failed/HR=") +
-							TJSInt32ToHex(hr, 8) + TJS_W(", ignoring"));
+							TJSInt32ToHex(hr, 8) + TJS_W(", recreating drawer ..."));
+						Device->DestroyDrawer(); // destroy self
+						return;
 					}
 				}
 				else /*if(hr == DD_OK) */
@@ -1344,7 +1396,9 @@ GetDCTime += timeGetTime() - StartTick;
 						// display this message only once since last success
 						TVPAddImportantLog(
 							TJS_W("Passthrough: (inf) Texture, IDirectDrawSurface::GetDC failed/HR=") +
-							TJSInt32ToHex(hr, 8) + TJS_W(", ignoring"));
+							TJSInt32ToHex(hr, 8) + TJS_W(", recreating drawer ..."));
+						Device->DestroyDrawer(); // destroy self
+						return;
 					}
 				}
 
@@ -1481,16 +1535,16 @@ ReleaseDCTime += timeGetTime() - StartTick;
 		float dw = (float)DestWidth;
 		float dh = (float)DestHeight;
 
-		float sw = (float)SrcWidth;
-		float sh = (float)SrcHeight;
+		float sw = (float)SrcWidth  / (float)TextureWidth;
+		float sh = (float)SrcHeight / (float)TextureHeight;
 
 
 		tVertices vertices[] =
 		{
 			{0.0f - 0.5f, 0.0f - 0.5f, 1.0f, 1.0f, 0.0f, 0.0f},
-			{dw   - 0.5f, 0.0f - 0.5f, 1.0f, 1.0f, 1.0f, 0.0f},
-			{0.0f - 0.5f, dh   - 0.5f, 1.0f, 1.0f, 0.0f, 1.0f},
-			{dw   - 0.5f, dh   - 0.5f, 1.0f, 1.0f, 1.0f, 1.0f}
+			{dw   - 0.5f, 0.0f - 0.5f, 1.0f, 1.0f, sw  , 0.0f},
+			{0.0f - 0.5f, dh   - 0.5f, 1.0f, 1.0f, 0.0f, sh  },
+			{dw   - 0.5f, dh   - 0.5f, 1.0f, 1.0f, sw  , sh  }
 		};
 
 		HRESULT hr;
@@ -1539,9 +1593,10 @@ DrawPrimitiveTime += timeGetTime() - StartTick;
 		{
 			// ignore this error
 		}
-		else if(hr != DD_OK)
+		else if(hr != D3D_OK)
 		{
-			TVPThrowExceptionMessage(TJS_W("Primary surface, polygon drawing failed/HR=%1"),
+			TVPAddImportantLog(
+				TJS_W("Passthrough: (inf) Polygon drawing failed/HR=") +
 				TJSInt32ToHex(hr, 8));
 		}
 	}
@@ -1607,7 +1662,8 @@ BltTime += timeGetTime() - StartTick;
 		}
 		else if(hr != DD_OK)
 		{
-			TVPThrowExceptionMessage(TJS_W("Primary surface, IDirectDrawSurface::Blt failed/HR=%1"),
+			TVPAddImportantLog(
+				TJS_W("Passthrough: (inf) Primary surface, IDirectDrawSurface::Blt failed/HR=") +
 				TJSInt32ToHex(hr, 8));
 		}
 	}
@@ -1682,6 +1738,7 @@ void tTVPPassThroughDrawDevice::DestroyDrawer()
 void tTVPPassThroughDrawDevice::CreateDrawer(tDrawerType type)
 {
 	Drawer = NULL;
+
 	switch(type)
 	{
 	case dtNone:
@@ -1699,32 +1756,49 @@ void tTVPPassThroughDrawDevice::CreateDrawer(tDrawerType type)
 		Drawer = new tTVPDrawer_D3DDoubleBuffering(this);
 		break;
 	}
-	if(Drawer)
-		Drawer->SetTargetWindow(TargetWindow);
 
-	if(Drawer)
+	try
 	{
-		if(!Drawer->SetDestPos(DestRect.left, DestRect.top))
-		{
-			TVPAddImportantLog(
-				TJS_W("Passthrough: Failed to set destination position to draw device drawer"));
-			delete Drawer, Drawer = NULL;
-		}
-	}
 
-	if(Drawer)
+		if(Drawer)
+			Drawer->SetTargetWindow(TargetWindow);
+
+		if(Drawer)
+		{
+			if(!Drawer->SetDestPos(DestRect.left, DestRect.top))
+			{
+				TVPAddImportantLog(
+					TJS_W("Passthrough: Failed to set destination position to draw device drawer"));
+				delete Drawer, Drawer = NULL;
+			}
+		}
+
+		if(Drawer)
+		{
+			tjs_int srcw, srch;
+			GetSrcSize(srcw, srch);
+			if(!Drawer->SetDestSizeAndNotifyLayerResize(DestRect.get_width(), DestRect.get_height(), srcw, srch))
+			{
+				TVPAddImportantLog(
+					TJS_W("Passthrough: Failed to set destination size and source layer size to draw device drawer"));
+				delete Drawer, Drawer = NULL;
+			}
+		}
+
+		if(Drawer) DrawerType = type; else DrawerType = dtNone;
+
+		RequestInvalidation(tTVPRect(0, 0, DestRect.get_width(), DestRect.get_height()));
+	}
+/*	catch(const eTJS & e)
 	{
-		tjs_int srcw, srch;
-		GetSrcSize(srcw, srch);
-		if(!Drawer->SetDestSizeAndNotifyLayerResize(DestRect.get_width(), DestRect.get_height(), srcw, srch))
-		{
-			TVPAddImportantLog(
-				TJS_W("Passthrough: Failed to set destination size and source layer size to draw device drawer"));
-			delete Drawer, Drawer = NULL;
-		}
+		TVPAddImportantLog(TJS_W("Passthrough: Failed to create drawer: ") + e.GetMessage());
+		DestroyDrawer();
 	}
-
-	if(Drawer) DrawerType = type; else DrawerType = dtNone;
+*/	catch(...)
+	{
+		TVPAddImportantLog(TJS_W("Passthrough: Failed to create drawer: unknown reason"));
+		DestroyDrawer();
+	}
 }
 //---------------------------------------------------------------------------
 
@@ -1732,9 +1806,16 @@ void tTVPPassThroughDrawDevice::CreateDrawer(tDrawerType type)
 //---------------------------------------------------------------------------
 void tTVPPassThroughDrawDevice::CreateDrawer(bool zoom_required, bool should_benchmark)
 {
+	// プライマリレイヤのサイズを取得
+	tjs_int srcw, srch;
+	GetSrcSize(srcw, srch);
+
 	// いったん Drawer を削除
 	tDrawerType last_type = DrawerType;
 	DestroyDrawer();
+
+	// プライマリレイヤがないならば DrawDevice は作成しない
+	if(srcw == 0 || srch == 0) return;
 
 	// should_benchmark が偽で、前回 Drawer を作成していれば、それと同じタイプの
 	// Drawer を用いる
@@ -1752,14 +1833,9 @@ void tTVPPassThroughDrawDevice::CreateDrawer(bool zoom_required, bool should_ben
 
 	if(!Drawer)
 	{
-		// メインウィンドウ以外の場合は基本的なメソッドを使う
-		if(!IsMainWindow)
-		{
-			if(zoom_required)
-				CreateDrawer(dtDBGDI);
-			else
-				CreateDrawer(dtDrawDib);
-		}
+		// メインウィンドウ以外の場合はズームが必要なければ基本的なメソッドを使う
+		if(!IsMainWindow && !zoom_required)
+			CreateDrawer(dtDrawDib);
 	}
 
 	if(!Drawer)
@@ -1777,8 +1853,6 @@ void tTVPPassThroughDrawDevice::CreateDrawer(bool zoom_required, bool should_ben
 		} results[num_types];
 
 		// ベンチマーク用の元画像を確保
-		tjs_int srcw, srch;
-		GetSrcSize(srcw, srch);
 		BITMAPINFOHEADER bmi;
 		bmi.biSize = sizeof(BITMAPINFOHEADER);
 		bmi.biWidth = srcw;
@@ -1854,7 +1928,7 @@ void tTVPPassThroughDrawDevice::CreateDrawer(bool zoom_required, bool should_ben
 				char msg[80];
 				sprintf(msg, "%.2f fps", (float)results[i].score);
 				TVPAddImportantLog(TJS_W("Passthrough: benchmark result: ") + ttstr(type_names[i]) + TJS_W(" : ") +
-					ttstr(msg));
+					msg);
 
 				// GDI は最後の手段
 				// 結果だけは計っておくが、これが候補になるのは
@@ -2009,8 +2083,13 @@ void TJS_INTF_METHOD tTVPPassThroughDrawDevice::SetDestRectangle(const tTVPRect 
 	{
 		// サイズも違う
 		DestSizeChanged = true;
-		if(Drawer) Drawer->SetDestSize(rect.get_width(), rect.get_height());
 		inherited::SetDestRectangle(rect);
+		EnsureDrawer();
+		if(Drawer)
+		{
+			if(!Drawer->SetDestSize(rect.get_width(), rect.get_height()))
+				DestroyDrawer(); // エラーが起こったのでその drawer を破棄する
+		}
 	}
 }
 //---------------------------------------------------------------------------
@@ -2038,7 +2117,15 @@ void TJS_INTF_METHOD tTVPPassThroughDrawDevice::StartBitmapCompletion(iTVPLayerM
 {
 	EnsureDrawer();
 
+	// この中で DestroyDrawer が呼ばれる可能性に注意すること
 	if(Drawer) Drawer->StartBitmapCompletion();
+
+	if(!Drawer)
+	{
+		// リトライする
+		EnsureDrawer();
+		if(Drawer) Drawer->StartBitmapCompletion();
+	}
 }
 //---------------------------------------------------------------------------
 
