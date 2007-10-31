@@ -11,7 +11,6 @@ class EditLayer extends KAGLayer
 {
 	var Edit_text = ""; // 編集中のテキスト
 	var Edit_selStart = 0; // カーソル位置
-	var Edit_selLength = 0; // 選択長さ
 	var Edit_selAnchor = 0; // 範囲選択アンカー位置
 	var Edit_scrollPos = 0; // 表示されている左端の文字位置
 	var Edit_caretLayer; // キャレット用レイヤ
@@ -23,6 +22,9 @@ class EditLayer extends KAGLayer
 	var Edit_blinkTimer;
 	var Edit_vertical = false;
 	var Edit_mouseDown = false;
+
+	var Edit_selLength = 0; // 廃止しました。
+							// 使わないでください。
 
 	function EditLayer(win, par, vert = false)
 	{
@@ -62,7 +64,6 @@ class EditLayer extends KAGLayer
 		assignImages(src, true);
 		Edit_text = src.Edit_text;
 		Edit_selStart = src.Edit_selStart;
-		Edit_selLength = src.Edit_selLength;
 		Edit_selAnchor = src.Edit_selAnchor;
 		Edit_scrollPos = src.Edit_scrollPos;
 		Edit_color = src.Edit_color;
@@ -174,7 +175,6 @@ class EditLayer extends KAGLayer
 		var oldAnchor = Edit_selAnchor;
 
 		// キャレットを左へ
-		if(Edit_selLength) Edit_selLength = 0, update();
 		if(Edit_selStart > 0) Edit_selStart --, ensureCaretVisible(3);
 		if(!keepAnchor) Edit_selAnchor = Edit_selStart;
 		if(keepAnchor || oldAnchor != Edit_selAnchor)
@@ -187,7 +187,6 @@ class EditLayer extends KAGLayer
 		var oldAnchor = Edit_selAnchor;
 
 		// キャレットを右へ
-		if(Edit_selLength) Edit_selLength = 0, update();
 		if(Edit_selStart < Edit_text.length) Edit_selStart ++, ensureCaretVisible(3);
 		if(!keepAnchor) Edit_selAnchor = Edit_selStart;
 		if(keepAnchor || oldAnchor != Edit_selAnchor)
@@ -436,8 +435,8 @@ class EditLayer extends KAGLayer
 		deleteSelectRange();
 
 		// ch をカーソル位置に挿入
-		var bcr = Edit_text.substring(0, Edit_selStart); // 選択領域以前
-		var acr = Edit_text.substring(Edit_selStart + Edit_selLength); // 選択領域以後
+		var bcr = Edit_text.substring(0, Edit_selStart);
+		var acr = Edit_text.substring(Edit_selStart);
 		Edit_text = bcr + ch + acr;
 		Edit_selStart += ch.length;
 		Edit_selAnchor = Edit_selStart;
@@ -452,7 +451,7 @@ class EditLayer extends KAGLayer
 		if(!deleteSelectRange() && Edit_selStart > 0)
 		{
 			var bcr = Edit_text.substring(0, Edit_selStart-1);
-			var acr = Edit_text.substring(Edit_selStart + Edit_selLength);
+			var acr = Edit_text.substring(Edit_selStart);
 			Edit_text = bcr + acr;
 			Edit_selStart --;
 			Edit_selAnchor = Edit_selStart;
@@ -468,7 +467,7 @@ class EditLayer extends KAGLayer
 		if(!deleteSelectRange() && Edit_selStart < Edit_text.length)
 		{
 			var bcr = Edit_text.substring(0, Edit_selStart);
-			var acr = Edit_text.substring(Edit_selStart + Edit_selLength + 1);
+			var acr = Edit_text.substring(Edit_selStart + 1);
 			Edit_text = bcr + acr;
 			ensureCaretVisible();
 			showCaret();
@@ -547,7 +546,6 @@ class EditLayer extends KAGLayer
 		var text = Edit_text;
 		var textlen = text.length;
 		var selstart = Edit_selStart;
-		var selend = Edit_selLength + selstart;
 		var highlightbg = 0xff000000 | clHighlight;
 		var highlighttext = clHighlightText;
 		var anti = Edit_antialiased;
@@ -627,7 +625,6 @@ class EditLayer extends KAGLayer
 			x = "" if x === void;
 			Edit_text = string x;
 			Edit_selStart = 0;
-			Edit_selLength = 0;
 			Edit_selAnchor = 0;
 			Edit_scrollPos = 0;
 			setCaretLayerPos();
@@ -645,7 +642,6 @@ class EditLayer extends KAGLayer
 		{
 			Edit_maxChars = int x;
 			Edit_selStart = 0;
-			Edit_selLength = 0;
 			Edit_selAnchor = 0;
 			Edit_scrollPos = 0;
 			if(Edit_maxChars && Edit_text.length >= Edit_maxChars)
@@ -656,6 +652,16 @@ class EditLayer extends KAGLayer
 		getter
 		{
 			return Edit_maxChars;
+		}
+	}
+
+	property selectLength
+	{
+		getter
+		{
+			if(Edit_selStart > Edit_selAnchor)
+				return Edit_selStart - Edit_selAnchor;
+			return Edit_selAnchor - Edit_selStart;
 		}
 	}
 
