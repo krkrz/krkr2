@@ -1,0 +1,36 @@
+Plugins.link("minizip.dll");
+
+function showDate(date) {
+	if (date !== void && date !== null) {
+		Debug.message("%04d/%02d/%02d %02d:%02d:%02d".sprintf(date.getYear(), date.getMonth()+1, date.getDate(), date.getHours(), date.getMinutes(), date.getSeconds()));
+	}
+}
+var win = new Window();
+win.add(new Layer(win, null));
+win.visible = true;
+
+Debug.console.visible = true;
+
+var zip = new Zip();
+zip.open("test.zip", true);
+zip.add("file1.txt", "file1.txt");
+zip.add("file2.txt", "folder/file2.txt");
+zip.close();
+
+var unzip = new Unzip();
+unzip.open("test.zip");
+var list = unzip.list();
+for (var i=0;i<list.count;i++) {
+	var info = list[i];
+	Debug.message("%s:%d %d %02d/%02d/%02d %02d:%02d:%02d".sprintf(info.filename,
+																   info.compressed_size,
+																   info.uncompressed_size,
+																   info.date.getYear(),
+																   info.date.getMonth()+1,
+																   info.date.getDate(),
+																   info.date.getHours(),
+																   info.date.getMinutes(),
+																   info.date.getSeconds()));
+	unzip.extract(info.filename, "extract/" + info.filename);
+}
+unzip.close();
