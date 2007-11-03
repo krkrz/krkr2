@@ -1,35 +1,105 @@
 Plugins.link("sigcheck.dll");
 
-var publickey =
-"-----BEGIN PUBLIC KEY-----\n"
-"MIGJAoGBAL4qXx//6DYgF2dyZtPT11/9T5DVBJM/2QOvUewUpfHmV8FYGH2HdMPd\n"
-"xppUV5UmkvMjjIIMiCpaCfGe+KnhHI0xgICA5IrbFxuIsPQa7d6yY96U+tT4V1ZY\n"
-"dqnv3L06PDC9dDApo8ZH8Iqnj/x1ZHSBfd44fw/A1wDDpmOrZfNHAgMBAAE=\n"
-"-----END PUBLIC KEY-----\n";
+var WIDTH=400;
+var HEIGHT=300;
 
-class Test {
-	var stop = false;
+class MyWindow extends Window {
 
-	function Test() {
+	var publickey =
+		"-----BEGIN PUBLIC KEY-----\n"
+		"MIGJAoGBAL4qXx//6DYgF2dyZtPT11/9T5DVBJM/2QOvUewUpfHmV8FYGH2HdMPd\n"
+		"xppUV5UmkvMjjIIMiCpaCfGe+KnhHI0xgICA5IrbFxuIsPQa7d6yY96U+tT4V1ZY\n"
+		"dqnv3L06PDC9dDApo8ZH8Iqnj/x1ZHSBfd44fw/A1wDDpmOrZfNHAgMBAAE=\n"
+		"-----END PUBLIC KEY-----\n";
+	
+	var keymenu;
+	var checkmenu;
+	var clearmenu;
+	var base;
+	var layer;
+	
+	function MyWindow() {
+		super.Window();
+		menu.add(keymenu = new MenuItem(this, "キー読み込み"));
+		menu.add(checkmenu = new MenuItem(this, "チェック開始"));
+
+		base = new Layer(this, null);
+		base.setSize(WIDTH, HEIGHT);
+		add(base);
+		setInnerSize(WIDTH, HEIGHT);
+
+		layer = new Layer(this, base);
+		layer.setSize(WIDTH, HEIGHT);
+		layer.setPos(0,0);
+		add(layer);
+		layer.visible = true;
+		layer.font.height = 12;
+		layer.fillRect(0,0,layer.width, layer.height, 0xff000000);
 	}
 
-	function onCheckSignatureProgress(num) {
-		Debug.message("署名確認経過:" + num);
-		return !stop;
+	var msgs = [];
+	
+	function message(msg, same=false) {
+		//Debug.message(msg);
+		msgs.add(msg);
+		if (msgs.count > 24) {
+			msgs.erase(0);
+		}
+		layer.fillRect(0,0,layer.width, layer.height, 0xff000000);
+		var y = 0;
+		for (var i=0;i<msgs.count;i++) {
+			layer.drawText(0, y, msgs[i], 0xffffff);
+			y += layer.font.height;
+		}
 	}
+	
+	function check(file) {
+		message("署名確認開始:" + checkSignature(file, publickey) + ":" + file);
+	}
+
+	// 実行部
+	function action(ev)	{
+		if(ev.type == "onClick") {
+			if (ev.target == checkmenu) {
+				openCheckDialog();
+			} else if (ev.target == keymenu) {
+				openKeyDialog();
+			}
+		}
+	}
+
+	function onCheckSignatureProgress(handler, percent) {
+		message("署名確認経過:" + handler + ":" + percent);
+	}
+
+	function onCheckSignatureDone(handler, result, error) {
+		message("署名確認結果:" + handler + ":" + result + ":" + error);
+	}
+
+	function openKeyDialog() {
+		var fileDialog =%[
+		filter : [ "ファイル(*.*)|*.*" ],
+		title  :   "秘密鍵の読込み",
+			];
+		if (!Storages.selectFile(fileDialog)) return; // キャンセルで抜ける
+		var data = [];
+		data.load(fileDialog.name);
+		publickey = "";
+		for (var i=0;i<data.count;i++) {
+			publickey += data[i];
+		}
+	}
+
+	function openCheckDialog() {
+		var fileDialog =%[
+		filter : [ "ファイル(*.*)|*.*" ],
+		title  :   "チェック対象ファイル読込み",
+			];
+		if (!Storages.selectFile(fileDialog)) return; // キャンセルで抜ける
+		check(fileDialog.name);
+	}
+
 };
 
-var test = new Test();
-
-
-function check(file) {
-	Debug.message("署名確認結果 " + file + ":" + Storages.checkSignature(file, publickey, test));
-}
-
-var win = new Window();
-var lay = new Layer(win, null);
+var win = new MyWindow();
 win.visible = true;
-Debug.console.visible = true;
-
-check("startup.tjs");
-check("secretkey.txt");

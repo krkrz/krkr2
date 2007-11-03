@@ -1,22 +1,50 @@
 /**
  * 擬似コードによるマニュアル
- *
- * Copyright 2007 GoWatanabe
+ * バックグラウンドで署名チェックを行います。
+ * ウインドウメッセージとして WM_APP + 2 と WM_APP + 3 を利用しています
  */
-class Storages {
+class Window {
+
 	/**
-	 * 署名の確認
+	 * 署名チェックの開始
 	 * @param filename 確認対象ファイル
 	 * @param publickey 公開鍵
-	 * @param notify 状態通知先オブジェクト
-	 * @return -1:中断 0:失敗 1:成功
+	 * @return handler 識別ハンドラ
+	 * 処理中に onCheckSignatureProgress、
+	 * 終了時に onCheckSignatureDone イベントが発生します。
 	 * exe や dll の場合は署名はファイルに内臓されます。xp3 などの場合は、
 	 * 元のファイルに .sig をつけた外部ファイルを署名として処理されます。
-	 * notify が指定された場合は、進捗の度合いに応じて
-	 * notify.onCheckSignatureProgress(percent) が呼び出されます。
-	 * percent: 進捗度合い 0～100%
-	 * 返り値: true なら継続、false なら中断
 	 */
-	function checkSignature(filename, publickey, notify=void);
+	function checkSignature(filename, publickey);
+
+	/**
+	 * 署名チェックのキャンセル
+	 * @param handler 識別ハンドラ
+	 * 実行中の署名チェックを速やかに停止させます。キャンセル終了になります。
+	 */
+	function cancelCheckSignature(handler);
+
+	/**
+	 * 署名チェックの中止
+	 * @param handler 識別ハンドラ
+	 * 実行中の署名チェックを速やかに停止させます。終了イベントは来ません。
+	 */
+	function stopCheckSignature(handler);
+
+	
+	/**
+	 * イベント:署名チェック進捗
+	 * @param handler 識別ハンドラ
+	 * @param percent 進捗度合い 0～100%
+	 */
+	function onCheckSignatureProgress(handler, percent);
+
+	/**
+	 * イベント:署名チェック終了
+	 * @param handler 識別ハンドラ
+	 * @param result 結果 -2:エラー -1:キャンセル 0:チェック失敗 1:チェック成功
+	 * @param errormsg 結果がエラーの場合のエラーメッセージ
+	 */
+	function onCheckSignatureDone(handler, result, errormsg);
 
 };
