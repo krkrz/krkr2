@@ -1,0 +1,35 @@
+Plugins.link("sigcheck.dll");
+
+var publickey =
+"-----BEGIN PUBLIC KEY-----\n"
+"MIGJAoGBAL4qXx//6DYgF2dyZtPT11/9T5DVBJM/2QOvUewUpfHmV8FYGH2HdMPd\n"
+"xppUV5UmkvMjjIIMiCpaCfGe+KnhHI0xgICA5IrbFxuIsPQa7d6yY96U+tT4V1ZY\n"
+"dqnv3L06PDC9dDApo8ZH8Iqnj/x1ZHSBfd44fw/A1wDDpmOrZfNHAgMBAAE=\n"
+"-----END PUBLIC KEY-----\n";
+
+class Test {
+	var stop = false;
+
+	function Test() {
+	}
+
+	function onCheckSignatureProgress(num) {
+		Debug.message("署名確認経過:" + num);
+		return !stop;
+	}
+};
+
+var test = new Test();
+
+
+function check(file) {
+	Debug.message("署名確認結果 " + file + ":" + Storages.checkSignature(file, publickey, test));
+}
+
+var win = new Window();
+var lay = new Layer(win, null);
+win.visible = true;
+Debug.console.visible = true;
+
+check("startup.tjs");
+check("secretkey.txt");
