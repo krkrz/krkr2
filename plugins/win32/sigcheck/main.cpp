@@ -1,20 +1,204 @@
 #include "ncbind/ncbind.hpp"
 
-#include <stdio.h>
 #include <string>
+#include <vector>
 using namespace std;
+#include <process.h>
 
-// copy from 
-// kirikiri\kirikiri2\src\tools\win32\sigchecker\krkrsiglib
+
+#define WM_SIGCHECKPROGRESS (WM_APP+2)
+#define WM_SIGCHECKDONE     (WM_APP+3)
 
 //---------------------------------------------------------------------------
-#define MIN_KRKR_MARK_SEARCH 512*1024
-#define MAX_KRKR_MARK_SEARCH 4*1024*1024
-//---------------------------------------------------------------------------
-char XOPT_EMBED_AREA_[] = " OPT_EMBED_AREA_";
-char XCORE_SIG_______[] = " CORE_SIG_______";
-char XRELEASE_SIG____[] = " RELEASE_SIG____";
-char XP3_SIG[] = " P3\x0d\x0a\x20\x0a\x1a\x8b\x67\x01";   // mark_size = 11
+
+class WindowSigCheck;
+
+class SigChecker {
+
+protected:
+	// 初期化変数
+	WindowSigCheck *notify;
+	ttstr filename;
+	string publickey;
+	bool canceled;
+
+	// 結果変数
+public:
+	int handler;
+	int progressPercent;
+	int result;
+	ttstr errormsg;
+
+protected:
+	void progress(int percent);
+	int CheckKrkrExecutable(const char *mark);
+	int CheckSignatureOfFile(int ignorestart, int ignoreend, int ofs);
+	int CheckSignature();
+	
+public:
+	// コンストラクタ
+	SigChecker(int handler, WindowSigCheck *notify, const tjs_char *filename, const char *publickey)
+		: handler(handler), notify(notify), filename(filename), publickey(publickey), canceled(false) {}
+
+	// デストラクタ
+	~SigChecker() {}
+
+	// 処理開始
+	void start();
+
+	// 処理キャンセル
+	void cancel() {
+		canceled = true;
+	}
+
+	// 強制終了
+	void stop() {
+		canceled = true;
+		notify = NULL;
+	}
+	
+};
+
+class WindowSigCheck {
+
+protected:
+	iTJSDispatch2 *objthis; //< オブジェクト情報の参照
+
+	// ユーザメッセージレシーバの登録/解除
+	void setReceiver(tTVPWindowMessageReceiver receiver, bool enable) {
+		tTJSVariant mode     = enable ? (tTVInteger)(tjs_int)wrmRegister : (tTVInteger)(tjs_int)wrmUnregister;
+		tTJSVariant proc     = (tTVInteger)(tjs_int)receiver;
+		tTJSVariant userdata = (tTVInteger)(tjs_int)objthis;
+		tTJSVariant *p[] = {&mode, &proc, &userdata};
+		if (objthis->FuncCall(0, L"registerMessageReceiver", NULL, NULL, 4, p, objthis) != TJS_S_OK) {
+			TVPThrowExceptionMessage(L"can't regist user message receiver");
+		}
+	}
+
+public:
+	// メッセージ送信
+	void postMessage(UINT msg, WPARAM wparam=NULL, LPARAM lparam=NULL) {
+		// ウィンドウハンドルを取得して通知
+		tTJSVariant val;
+		objthis->PropGet(0, TJS_W("HWND"), NULL, &val, objthis);
+		HWND hwnd = reinterpret_cast<HWND>((tjs_int)(val));
+		::PostMessage(hwnd, msg, wparam, lparam);
+	}
+
+protected:
+
+	vector<SigChecker*> checkers;
+
+	// 実行スレッド
+	static void checkThread(void *data) {
+		((SigChecker*)data)->start();
+	}
+
+	// 進捗通知
+	void eventProgress(SigChecker *sender) {
+		if (checkers[sender->handler] == sender) {
+			tTJSVariant var1 = tTJSVariant(sender->handler);
+			tTJSVariant var2 = tTJSVariant(sender->progressPercent);
+			tTJSVariant *vars[] = {&var1, &var2};
+			objthis->FuncCall(0, L"onCheckSignatureProgress", NULL, NULL, 2, vars, objthis);
+		}
+	}
+
+	//終了通知
+	void eventDone(SigChecker *sender) {
+		if (checkers[sender->handler] == sender) {
+			checkers[sender->handler] = NULL;
+			tTJSVariant var1 = tTJSVariant(sender->handler);
+			tTJSVariant var2 = tTJSVariant(sender->result);
+			tTJSVariant var3 = tTJSVariant(sender->errormsg);
+			tTJSVariant *vars[] = {&var1, &var2, &var3};
+			objthis->FuncCall(0, L"onCheckSignatureDone", NULL, NULL, 3, vars, objthis);
+		}
+		delete sender;
+	}
+
+	// イベント処理
+	static bool __stdcall sigcheckevent(void *userdata, tTVPWindowMessage *Message) {
+		if (Message->Msg == WM_SIGCHECKPROGRESS) {
+			iTJSDispatch2 *obj = (iTJSDispatch2*)userdata;
+			WindowSigCheck *self = ncbInstanceAdaptor<WindowSigCheck>::GetNativeInstance(obj);
+			if (self) {
+				self->eventProgress((SigChecker*)Message->WParam);
+			}
+			return true;
+		} else if (Message->Msg == WM_SIGCHECKDONE) {
+			iTJSDispatch2 *obj = (iTJSDispatch2*)userdata;
+			WindowSigCheck *self = ncbInstanceAdaptor<WindowSigCheck>::GetNativeInstance(obj);
+			if (self) {
+				self->eventDone((SigChecker*)Message->WParam);
+			}
+			return true;
+		}
+		return false;
+	}
+	
+public:
+	
+	WindowSigCheck(iTJSDispatch2 *objthis) : objthis(objthis) {
+		setReceiver(sigcheckevent, true);
+	}
+
+	~WindowSigCheck() {
+		setReceiver(sigcheckevent, false);
+		for (int i=0;i<checkers.size();i++) {
+			SigChecker *checker = checkers[i];
+			if (checker) {
+				checker->stop();
+				checkers[i] = NULL;
+			}
+		}
+	}
+
+	/**
+	 * 署名チェックを行う
+	 * @param filename 対象ファイル
+	 * @param publickey 公開鍵
+	 * @return ハンドラ
+	 */
+	int checkSignature(const tjs_char *filename, const char *publickey) {
+		int handler = checkers.size();
+		for (int i=0;i<checkers.size();i++) {
+			if (checkers[i] == NULL) {
+				handler = i;
+				break;
+			}
+		}
+		if (handler >= checkers.size()) {
+			checkers.resize(handler + 1);
+		}
+		SigChecker *checker = new SigChecker(handler, this, filename, publickey);
+		checkers[handler] = checker;
+		_beginthread(checkThread, 0, checker);
+		return handler;
+	}
+
+	/**
+	 * 実行のキャンセル
+	 */
+	void cancelCheckSignature(int handler) {
+		if (checkers.size() < handler && checkers[handler] != NULL) {
+			checkers[handler]->cancel();
+		}
+	}
+
+	/**
+	 * 実行の停止
+	 */
+	void stopCheckSignature(int handler) {
+		if (checkers.size() < handler && checkers[handler] != NULL) {
+			checkers[handler]->stop();
+			checkers[handler] = NULL;
+		}
+	}
+
+
+};
+
 //---------------------------------------------------------------------------
 
 // IStream の読み込み位置取得
@@ -53,7 +237,34 @@ static DWORD getSize(IStream *is)
 	return 0;
 }
 
-static int CheckKrkrExecutable(ttstr &fn, const char *mark)
+// copy from 
+// kirikiri\kirikiri2\src\tools\win32\sigchecker\krkrsiglib
+
+//---------------------------------------------------------------------------
+#define MIN_KRKR_MARK_SEARCH 512*1024
+#define MAX_KRKR_MARK_SEARCH 4*1024*1024
+//---------------------------------------------------------------------------
+char XOPT_EMBED_AREA_[] = " OPT_EMBED_AREA_";
+char XCORE_SIG_______[] = " CORE_SIG_______";
+char XRELEASE_SIG____[] = " RELEASE_SIG____";
+char XP3_SIG[] = " P3\x0d\x0a\x20\x0a\x1a\x8b\x67\x01";   // mark_size = 11
+//---------------------------------------------------------------------------
+
+#include <tomcrypt.h>
+#undef HASH_PROCESS
+#define HASH_INIT    sha256_init
+#define HASH_PROCESS sha256_process
+#define HASH_DONE    sha256_done
+#define HASH_DESC    sha256_desc
+#define HASH_METHOD_STRING "SHA256"
+#define HASH_METHOD_INTERNAL_STRING "sha256"
+#define HASH_SIZE     32
+
+#define EXCEPTION -2
+#define CANCELED  -1
+
+int
+SigChecker::CheckKrkrExecutable(const char *mark)
 {
 	// Find the mark in the krkr executable.
 	// All krkr executable have
@@ -63,401 +274,332 @@ static int CheckKrkrExecutable(ttstr &fn, const char *mark)
 	// signatures.
 	// "XP3\x0d\x0a\x20\x0a\x1a\x8b\x67\x01" are optional XP3 archive attached
 	// to the executable.
-
+	
 	// This function returns the mark offset
 	// (area size bofore specified mark)
 	int mark_size = strlen(mark);
-
-	IStream *st = TVPCreateIStream(fn, TJS_BS_READ);
+	
+	IStream *st = TVPCreateIStream(filename, TJS_BS_READ);
 	if (st == NULL) {
-		TVPThrowExceptionMessage((ttstr(L"can't open file:") + fn).c_str());
+		errormsg = ttstr(L"can't open file:") + filename;
+		return EXCEPTION;
 	}
 	
 	int imagesize = 0;
-	try
-	{
+	try {
 		int ofs = MIN_KRKR_MARK_SEARCH;
 		char buf[4096];
 		DWORD read;
 		bool found = false;
 		setPosition(st, ofs);
-		while( st->Read(buf, sizeof(buf), &read) == S_OK && read != 0)
-		{
-			for(int i = 0; i < read; i += 16) // the mark is aligned to paragraph (16bytes)
-			{
-				if(buf[i] == 'X')
-				{
-					if(!memcmp(buf + i + 1, mark + 1, mark_size - 1))
-					{
+		while( st->Read(buf, sizeof(buf), &read) == S_OK && read != 0){
+			for(int i = 0; i < read; i += 16) {
+				// the mark is aligned to paragraph (16bytes)
+				if(buf[i] == 'X') {
+					if(!memcmp(buf + i + 1, mark + 1, mark_size - 1)) {
 						// mark found
 						imagesize = i + ofs;
 						found = true;
 						break;
-					}
+						}
 				}
 			}
 			if(found) break;
 			ofs += read;
 			if(ofs >= MAX_KRKR_MARK_SEARCH) break;
 		}
-	}
-	catch(...)
-	{
+	} catch(...) {
 		st->Release();
-		throw;
+		errormsg = L"exception";
+		return EXCEPTION;
 	}
 	st->Release();
-
 	return imagesize;
 }
 
 //---------------------------------------------------------------------------
 
-#include <tomcrypt.h>
-
-//---------------------------------------------------------------------------
-
-#undef HASH_PROCESS
-
-#define HASH_INIT    sha256_init
-#define HASH_PROCESS sha256_process
-#define HASH_DONE    sha256_done
-#define HASH_DESC    sha256_desc
-#define HASH_METHOD_STRING "SHA256"
-#define HASH_METHOD_INTERNAL_STRING "sha256"
-#define HASH_SIZE     32
-
-
-bool callNotify(iTJSDispatch2 *notify, int param)
+int
+SigChecker::CheckSignatureOfFile(int ignorestart, int ignoreend, int ofs)
 {
-	tTJSVariant result;
-	tTJSVariant var = tTJSVariant(param);
-	tTJSVariant *vars[] = {&var};
-	notify->FuncCall(0, L"onCheckSignatureProgress", NULL, &result, 1, vars, notify);
-	return (int)result != 0;
-}
-
-//---------------------------------------------------------------------------
-static bool MakeFileHash(ttstr &fn, unsigned char *hash,
-						 int ignorestart, int ignoreend, iTJSDispatch2 *notify)
-{
-	if(find_hash(HASH_METHOD_INTERNAL_STRING) == -1)
+	// read publickey
+	unsigned char pubbuf[10240];
+	unsigned long pubbuf_len;
 	{
-		int errnum = register_hash(&HASH_DESC);
+		const char *inkey = publickey.data();
+		const char *startline = "-----BEGIN PUBLIC KEY----";
+		const char *endline   = "-----END PUBLIC KEY-----";
+		
+		// read pubkey
+		const char *start = strstr(inkey, startline);
+		if (!start) {
+			errormsg = ttstr(L"Cannot find \"") + startline + "\" in the key string";
+			return EXCEPTION;
+		}
+		const char *end = strstr(inkey, endline);
+		if (!end) {
+			errormsg = ttstr(L"Cannot find \"") + endline + "\" in the key string";
+			return EXCEPTION;
+		}
+		start += strlen(startline);
+		
+		int errnum;
+		pubbuf_len = sizeof(pubbuf) - 1;
+		errnum = base64_decode((const unsigned char*)(start), end - start, pubbuf, &pubbuf_len);
 		if(errnum != CRYPT_OK) {
-			TVPThrowExceptionMessage(ttstr(error_to_string(errnum)).c_str());
+			errormsg = error_to_string(errnum);
+			return EXCEPTION;
 		}
 	}
-
-	if (notify) {
-		if (!callNotify(notify, 0)) {
-			return true;
+	
+	// read signature file
+	unsigned char buf[10240];
+	unsigned long buf_len;
+	{
+		char buf_asc[sizeof(buf)*3/2+2];
+		unsigned long buf_asc_len;
+		
+		IStream *st = NULL;
+		if(ofs == -1) {
+			// separated
+			ttstr signame = filename + L".sig";
+			if (TVPGetPlacedPath(signame) == "") {
+				errormsg = ttstr(L"not exist:") + signame;
+				return EXCEPTION;
+			}
+			st = TVPCreateIStream(filename + L".sig", TJS_BS_READ);
+		} else {
+			// embedded
+			st = TVPCreateIStream(filename, TJS_BS_READ);
+			setPosition(st, ofs);
+		}
+		if (st == NULL) {
+			// 署名ファイルが開けないので失敗
+			errormsg = L"can't open signature file";
+			return EXCEPTION;
+		}
+		try {
+			st->Read(buf_asc, sizeof(buf_asc) - 1, &buf_asc_len);
+		} catch(...) {
+			st->Release();
+			errormsg = L"exception";
+			return EXCEPTION;
+		}
+		st->Release();
+		
+		buf_asc[buf_asc_len] = 0;
+		buf_asc_len = strlen(buf_asc);
+		
+		string signmark("-- SIGNATURE - " HASH_METHOD_STRING "/PSS/RSA --");
+		if(strncmp(buf_asc, signmark.data(), signmark.size())) {
+			errormsg = L"Invalid signature file format";
+			return EXCEPTION;
+		}
+		
+		buf_len = sizeof(buf) - 1;
+		int errnum = base64_decode((const unsigned char*)(buf_asc + signmark.size()),
+								   buf_asc_len - signmark.size(), buf, &buf_len);
+		if(errnum != CRYPT_OK) {
+			errormsg = error_to_string(errnum);
+			return EXCEPTION;
 		}
 	}
 
 	int pts = 0;
-
-	IStream *fs = TVPCreateIStream(fn, TJS_BS_READ);
-	if (fs == NULL) {
-		TVPThrowExceptionMessage((ttstr(L"can't open file:") + fn).c_str());
-	}
-
-	int size = getSize(fs);
-	if(ignorestart != -1 && ignoreend == -1) ignoreend = size;
-	int signfnsize = size;
-	bool interrupted = false;
-	try
+	progress(pts);
+	
+	// make target hash
+	unsigned char hash[HASH_SIZE];
 	{
-		hash_state st;
-		HASH_INIT(&st);
-
-		DWORD read;
-		unsigned char buf[4096];
-		int ofs = 0;
-		while(fs->Read(buf, sizeof(buf), &read) == S_OK && read != 0)
-		{
-			if(ignorestart != -1 && read + ofs > ignorestart)
-			{
-				read = ignorestart - ofs;
-				if(read) HASH_PROCESS(&st, buf, read);
-				break;
+		if (find_hash(HASH_METHOD_INTERNAL_STRING) == -1) {
+			int errnum = register_hash(&HASH_DESC);
+			if(errnum != CRYPT_OK) {
+				errormsg = error_to_string(errnum);
+				return EXCEPTION;
 			}
-			else
-			{
-				HASH_PROCESS(&st, buf, read);
-			}
-			ofs += read;
+		}
+		if (canceled) {
+			return CANCELED;
+		}
 
-			if(notify)
-			{
+		IStream *st = TVPCreateIStream(filename, TJS_BS_READ);
+		if (st == NULL) {
+			errormsg = ttstr(L"can't open file:") + filename;
+			return EXCEPTION;
+		}
+		
+		int size = getSize(st);
+		if(ignorestart != -1 && ignoreend == -1) ignoreend = size;
+		int signfnsize = size;
+
+		try {
+			hash_state state;
+			HASH_INIT(&state);
+			
+			DWORD read;
+			unsigned char buf[4096];
+			int ofs = 0;
+			while(st->Read(buf, sizeof(buf), &read) == S_OK && read != 0) {
+				if(ignorestart != -1 && read + ofs > ignorestart) {
+					read = ignorestart - ofs;
+					if(read) HASH_PROCESS(&state, buf, read);
+					break;
+				} else {
+					HASH_PROCESS(&state, buf, read);
+				}
+				ofs += read;
+				
+				if (canceled) {
+					return CANCELED;
+				}
 				// callback notify
 				int npts = (int)( (__int64)ofs * (__int64)100 / (__int64)signfnsize );
-				if(pts < npts)
-				{
+				if(pts < npts) {
 					pts = npts;
-					if (!callNotify(notify, 0)) {
-						interrupted = true;
-						break;
-					}
+					progress(pts);
 				}
 			}
-		}
-
-		if(!interrupted && ignorestart != -1 && getPosition(fs) != ignoreend)
-		{
-			setPosition(fs, (ofs = ignoreend));
 			
-			while(fs->Read(buf, sizeof(buf), &read) == S_OK && read != 0)
-			{
-				HASH_PROCESS(&st, buf, read);
-				ofs += read;
+			if (ignorestart != -1 && getPosition(st) != ignoreend) {
+				setPosition(st, (ofs = ignoreend));
+				while (st->Read(buf, sizeof(buf), &read) == S_OK && read != 0) {
+					HASH_PROCESS(&state, buf, read);
+					ofs += read;
 
-				if(notify)
-				{
+					if (canceled) {
+						return CANCELED;
+					}
 					// callback notify
 					int npts = (int)( (__int64)ofs * (__int64)100 / (__int64)signfnsize );
-					if(pts < npts)
-					{
+					if(pts < npts) {
 						pts = npts;
-						if (!callNotify(notify, 0)) {
-							interrupted = true;
-							break;
-						}
+						progress(pts);
 					}
 				}
 			}
+			HASH_DONE(&state, hash);
+		} catch(...) {
+			st->Release();
+			errormsg = L"exception";
+			return EXCEPTION;
 		}
-
-		HASH_DONE(&st, hash);
-	}
-	catch(...)
-	{
-		fs->Release();
-		throw;
-	}
-	fs->Release();
-
-	if(!interrupted && notify)
-		if(!callNotify(notify,100)) return true;
-
-	return interrupted;
-}
-//---------------------------------------------------------------------------
-static void ImportKey(const char *inkey, const char *startline, const char *endline, rsa_key * key)
-{
-	const char *start = strstr(inkey, startline);
-	if (!start) {
-		TVPThrowExceptionMessage((ttstr(L"Cannot find \"") + startline + "\" in the key string").c_str());
-	}
-	const char *end = strstr(inkey, endline);
-	if (!end) {
-		TVPThrowExceptionMessage((ttstr(L"Cannot find \"") + endline + "\" in the key string").c_str());
-	}
-	start += strlen(startline);
-	unsigned char buf[10240];
-	unsigned long buf_len;
-	int errnum;
-
-	buf_len = sizeof(buf) - 1;
-	errnum = base64_decode((const unsigned char*)(start), end - start, buf, &buf_len);
-	if(errnum != CRYPT_OK) {
-		TVPThrowExceptionMessage(ttstr(error_to_string(errnum)).c_str());
-	}
-	errnum = rsa_import(buf, buf_len, key);
-	if(errnum != CRYPT_OK) {
-		TVPThrowExceptionMessage(ttstr(error_to_string(errnum)).c_str());
-	}
-}
-//---------------------------------------------------------------------------
-static int CheckSignatureOfFile(ttstr &signfn,
-								const char *pubkey,
-								int ignorestart, int ignoreend, int ofs,
-								iTJSDispatch2 *notify)
-{
-	// check signature of the file
-	if(pubkey == NULL || *pubkey == '\0') {
-		TVPThrowExceptionMessage(L"Specify public key");
-	}
-	if(signfn == "") {
-		TVPThrowExceptionMessage(L"Specify target file");
-	}
-
-	// read pubkey
-	unsigned char buf[10240];
-	unsigned long buf_len;
-	char buf_asc[sizeof(buf)*3/2+2];
-	unsigned long buf_asc_len;
-
-	rsa_key key;
-
-	ImportKey(pubkey, "-----BEGIN PUBLIC KEY-----", "-----END PUBLIC KEY-----",	&key);
-
-	// read signature file
-
-	IStream *st = NULL;
-	if(ofs == -1)
-	{
-		// separated
-		st = TVPCreateIStream(signfn + L".sig", TJS_BS_READ);
-	}
-	else
-	{
-		// embedded
-		st = TVPCreateIStream(signfn, TJS_BS_READ);
-		setPosition(st, ofs);
-	}
-	if (st == NULL) {
-		// 署名ファイルが開けないので失敗
-		return false;
-	}
-
-	try
-	{
-		st->Read(buf_asc, sizeof(buf_asc) - 1, &buf_asc_len);
-	}
-	catch(...)
-	{
 		st->Release();
-		throw;
-	}
-	st->Release();
-
-	buf_asc[buf_asc_len] = 0;
-	buf_asc_len = strlen(buf_asc);
-
-	string signmark("-- SIGNATURE - " HASH_METHOD_STRING "/PSS/RSA --");
-	if(strncmp(buf_asc, signmark.data(), signmark.size())) {
-		TVPThrowExceptionMessage(L"Invalid signature file format");
 	}
 
-	buf_len = sizeof(buf) - 1;
-	int errnum = base64_decode((const unsigned char*)(buf_asc + signmark.size()),
-		buf_asc_len - signmark.size(), buf, &buf_len);
-	if(errnum != CRYPT_OK) {
-		TVPThrowExceptionMessage(ttstr(error_to_string(errnum)).c_str());
+	if (canceled) {
+		return CANCELED;
 	}
-
+	
+	// 結果判定
 	int stat = 0;
-	try
 	{
-		// make target hash
-		unsigned char hash[HASH_SIZE];
-		bool interrupted = MakeFileHash(signfn, hash, ignorestart, ignoreend, notify);
-		if(!interrupted)
-		{
-			// check signature
-			errnum = rsa_verify_hash(buf, buf_len, hash, HASH_SIZE,
-				find_hash(HASH_METHOD_INTERNAL_STRING), HASH_SIZE,
-				&stat, &key);
-			if(errnum != CRYPT_OK) {
-				TVPThrowExceptionMessage(ttstr(error_to_string(errnum)).c_str());
-			}
+		rsa_key key;
+		int errnum;
+		if ((errnum = rsa_import(pubbuf, pubbuf_len, &key)) != CRYPT_OK) {
+			errormsg = error_to_string(errnum);
+			return EXCEPTION;
 		}
-		else
-		{
-			stat = -1;
+		if ((errnum = rsa_verify_hash(buf, buf_len, hash, HASH_SIZE,
+							find_hash(HASH_METHOD_INTERNAL_STRING), HASH_SIZE,
+							&stat, &key)) != CRYPT_OK) {
+			errormsg = error_to_string(errnum);
+			rsa_free(&key);
+			return EXCEPTION;
 		}
-	}
-	catch(...)
-	{
 		rsa_free(&key);
-		throw;
 	}
-	rsa_free(&key);
+
+	if (pts < 100) {
+		pts = 100;
+		progress(100);
+	}
 
 	return stat;
 }
-//---------------------------------------------------------------------------
-
-
-//---------------------------------------------------------------------------
-static bool CheckExeHasSignature(ttstr &fn)
-{
-	// check whether "fn" has executable signature of KIRIKIRI.
-	return CheckKrkrExecutable(fn, XRELEASE_SIG____) != 0;
-}
 
 //---------------------------------------------------------------------------
 
 /**
- *
- * @return 結果 -1:中断 0:失敗 1:成功
+ * @return 結果 -2:失敗 -1:中断 0:失敗 1:成功
  */
-static int CheckSignature(ttstr &fn,
-						  const char *publickey,
-						  iTJSDispatch2 *notify)
-{
-	int ignorestart = CheckKrkrExecutable(fn, XOPT_EMBED_AREA_);
-	int signofs     = CheckKrkrExecutable(fn, XRELEASE_SIG____);
-	int xp3ofs      = CheckKrkrExecutable(fn, XP3_SIG);
+int
+SigChecker::CheckSignature() {
+	if (filename == "") {
+		errormsg = L"Specify target file";
+		return EXCEPTION;
+	}
+	if (publickey == "") {
+		errormsg = L"Specify public key";
+		return EXCEPTION;
+	}
+
+	if (TVPGetPlacedPath(filename) == "") {
+		errormsg = ttstr(L"not exist:") + filename;
+		return EXCEPTION;
+	}
 	
-	if(ignorestart != 0 && signofs != 0)
-	{
-		// krkr executable
-		return CheckSignatureOfFile(fn, publickey, ignorestart,
-									xp3ofs?xp3ofs:-1, signofs+ 16+4, notify);
+	int ignorestart = CheckKrkrExecutable(XOPT_EMBED_AREA_);
+	if (ignorestart < 0) {
+		return EXCEPTION;
 	}
-	else
-	{
+	int signofs     = CheckKrkrExecutable(XRELEASE_SIG____);
+	if (signofs < 0) {
+		return EXCEPTION;
+	}
+	int xp3ofs      = CheckKrkrExecutable(XP3_SIG);
+	if (signofs < 0) {
+		return EXCEPTION;
+	}
+
+	if (ignorestart != 0 && signofs != 0) {
+		// krkr executable
+		return CheckSignatureOfFile(ignorestart, xp3ofs?xp3ofs:-1, signofs+ 16+4);
+	} else {
 		// normal file
-		return CheckSignatureOfFile(fn, publickey, -1, -1, -1, notify);
+		return CheckSignatureOfFile(-1, -1, -1);
+	}
+};
+
+void
+SigChecker::progress(int percent)
+{
+	progressPercent = percent;
+	if (notify) {
+		notify->postMessage(WM_SIGCHECKPROGRESS, (WPARAM)this);
+		Sleep(0);
 	}
 }
+
+void
+SigChecker::start()
+{
+	result = CheckSignature();
+	if (notify) {
+		notify->postMessage(WM_SIGCHECKDONE, (WPARAM)this);
+		Sleep(0);
+	} else {
+		delete this;
+	}
+}
+
 //---------------------------------------------------------------------------
 
-//---------------------------------------------------------------------------
-
-/**
- * C文字列処理用
- */
-class NarrowString {
-private:
-	tjs_nchar *_data;
-public:
-	NarrowString(ttstr &str) : _data(NULL) {
-		tjs_int len = str.GetNarrowStrLen();
-		_data = new tjs_nchar[len+1];
-		str.ToNarrowStr(_data, len+1);
-	}
-	~NarrowString() {
-		delete[] _data;
-	}
-
-	const tjs_nchar *data() {
-		return _data;
-	}
-
-	operator const char *() const
-	{
-		return (const char *)_data;
-	}
-};
-
-struct StoragesSigCheck {
-	/**
-	 * 署名チェックを行う
-	 * @param filename 対象ファイル
-	 * @param publickey 公開鍵
-	 */
-	static tjs_error TJS_INTF_METHOD checkSignature(tTJSVariant *result,
-													tjs_int numparams,
-													tTJSVariant **param,
-													iTJSDispatch2 *objthis) {
-		if (numparams < 2) return TJS_E_BADPARAMCOUNT;
-		ttstr filename  = *param[0];
-		ttstr publickey = *param[1];
-		iTJSDispatch2 *notify = (numparams > 2 && param[2]->Type() == tvtObject) ?
-			param[2]->AsObjectNoAddRef() : NULL;
-		int ret = CheckSignature(filename, NarrowString(publickey), notify);
-		if (result) {
-			*result = ret;
+// インスタンスゲッタ
+NCB_GET_INSTANCE_HOOK(WindowSigCheck)
+{
+	NCB_INSTANCE_GETTER(objthis) { // objthis を iTJSDispatch2* 型の引数とする
+		ClassT* obj = GetNativeInstance(objthis);	// ネイティブインスタンスポインタ取得
+		if (!obj) {
+			obj = new ClassT(objthis);				// ない場合は生成する
+			SetNativeInstance(objthis, obj);		// objthis に obj をネイティブインスタンスとして登録する
 		}
-		return TJS_S_OK;
+		return obj;
 	}
 };
 
-NCB_ATTACH_CLASS(StoragesSigCheck, Storages) {
-	RawCallback("checkSignature", &ClassT::checkSignature, TJS_STATICMEMBER);
+NCB_ATTACH_CLASS_WITH_HOOK(WindowSigCheck, Window) {
+	NCB_METHOD(checkSignature);
+	NCB_METHOD(cancelCheckSignature);
 };
 
 /**
