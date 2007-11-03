@@ -64,7 +64,7 @@ protected:
 		tTJSVariant userData;
 		// デフォルトコンストラクタ
 		ReceiverInfo() : receiverNative(NULL), receiverFunc(NULL) {
-			};
+		};
 		// コンストラクタ
 		ReceiverInfo(tTJSVariant &receiver, tTJSVariant &userData)
 			: receiverNative(NULL), receiverFunc(NULL), userData(userData) {
@@ -168,8 +168,14 @@ protected:
 	 * @param Message ウインドウメッセージ情報
 	 */
 	static bool __stdcall MyReceiver(void *userdata, tTVPWindowMessage *Message) {
-		WindowMsg *self    = (WindowMsg*)userdata;
-		iTJSDispatch2 *obj = self->objthis;
+
+		iTJSDispatch2 *obj = (iTJSDispatch2*)userdata; // Window のオブジェクト
+		// 吉里吉里の内部処理の関係でイベント処理中は登録破棄後でも呼ばれることがあるので
+		// Window の本体オブジェクトからネイティブオブジェクトを取り直す
+		WindowMsg *self = ncbInstanceAdaptor<WindowMsg>::GetNativeInstance(obj);
+		if (self == NULL) {
+			return false;
+		}
 		switch (Message->Msg) {
 		case TVP_WM_DETACH: // ウインドウが切り離された
 			break; 
@@ -198,23 +204,24 @@ protected:
 		return false;
 	}
 
-	/**
-	 * レシーバの登録
-	 */
-	void registReceiver() {
-
-		// レシーバ更新
-		tTJSVariant mode    = messageEnable ? (tTVInteger)(tjs_int)wrmRegister : (tTVInteger)(tjs_int)wrmUnregister;
-		tTJSVariant proc     = (tTVInteger)(tjs_int)MyReceiver;
-		tTJSVariant userdata = (tTVInteger)(tjs_int)this;
-		tTJSVariant *p[3] = {&mode, &proc, &userdata};
-		objthis->FuncCall(0, L"registerMessageReceiver", NULL, NULL, 3, p, objthis);
-
-		if (messageEnable && storeKey != "") {
+	void doStoreKey() {
+		if (storeKey != "") {
 			tTJSVariant val;
 			objthis->PropGet(0, TJS_W("HWND"), NULL, &val, objthis);
 			storeHWND(reinterpret_cast<HWND>((tjs_int)(val)));
 		}
+	}
+	
+	/**
+	 * レシーバの登録
+	 */
+	void registReceiver(bool enable) {
+		// レシーバ更新
+		tTJSVariant mode    = enable ? (tTVInteger)(tjs_int)wrmRegister : (tTVInteger)(tjs_int)wrmUnregister;
+		tTJSVariant proc     = (tTVInteger)(tjs_int)MyReceiver;
+		tTJSVariant userdata = (tTVInteger)(tjs_int)objthis;
+		tTJSVariant *p[3] = {&mode, &proc, &userdata};
+		int ret = objthis->FuncCall(0, L"registerMessageReceiver", NULL, NULL, 3, p, objthis);
 	}
 
 public:
@@ -223,9 +230,9 @@ public:
 
 	// デストラクタ
 	~WindowMsg() {
+		receiverMap.clear();
 		// レシーバを解放
-		messageEnable = false;
-		registReceiver();
+		registReceiver(false);
 	}
 
 	/**
@@ -235,7 +242,10 @@ public:
 	void setMessageEnable(bool enable) {
 		if (messageEnable != enable) {
 			messageEnable = enable;
-			registReceiver();
+			registReceiver(messageEnable);
+			if (messageEnable) {
+				doStoreKey();
+			}
 		}
 	}
 	
@@ -255,7 +265,7 @@ public:
 		if (storeKey != keyName) {
 			storeKey = keyName;
 			if (messageEnable) {
-				registReceiver();
+				doStoreKey();
 			}
 		}
 	}
@@ -416,6 +426,7 @@ void PostUnregistCallback()
 	map<ttstr,ATOM>::const_iterator i = atoms->begin();
 	while (i != atoms->end()) {
 		GlobalDeleteAtom(i->second);
+		i++;
 	}
 	delete atoms;
 	atoms = NULL;

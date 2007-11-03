@@ -1,19 +1,16 @@
 /**
  * 擬似コードによるマニュアル
- *
  * 外部アプリを機動してその終了を待つ機構を提供します。
- * 本プラグインが正常に動作するためには messenger
- * プラグインがあらかじめ動作していることが必要です
  * ウインドウメッセージとして WM_APP + 1 を利用しています
  */
 class Window {
 
 	/**
-	 * 外部プログラムを実行します。処理がおわったら onShellExecuted イベントが発生します。
-	 * この機能を使う場合は、あらかじめ messageEnable して機能を有効にしておく必要があります。
+	 * バックグラウンドでの外部プログラムの実行
 	 * @param target プログラム
 	 * @param param 引数
 	 * @return プロセスハンドル（失敗した場合は-1)。terminateProcess に渡すことができます。
+	 * 処理がおわったら onShellExecuted イベントが発生します。
 	 */
 	function shellExecute(target, param);
 

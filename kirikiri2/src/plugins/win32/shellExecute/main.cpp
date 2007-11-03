@@ -13,36 +13,39 @@ class WindowShell {
 protected:
 	iTJSDispatch2 *objthis; //< オブジェクト情報の参照
 
-	// コールバック処理
-	static bool __stdcall shellExecuted(iTJSDispatch2 *obj, void *userdata, tTVPWindowMessage *Message) {
-		tTJSVariant process = (tjs_int)Message->WParam;
-		tTJSVariant endCode = (tjs_int)Message->LParam;
-		tTJSVariant *p[] = {&process, &endCode};
-		obj->FuncCall(0, L"onShellExecuted", NULL, NULL, 2, p, obj);
-		return true;
+	// イベント処理
+	static bool __stdcall shellExecuted(void *userdata, tTVPWindowMessage *Message) {
+		if (Message->Msg == WM_SHELLEXECUTED) {
+			iTJSDispatch2 *obj = (iTJSDispatch2*)userdata;
+			tTJSVariant process = (tjs_int)Message->WParam;
+			tTJSVariant endCode = (tjs_int)Message->LParam;
+			tTJSVariant *p[] = {&process, &endCode};
+			obj->FuncCall(0, L"onShellExecuted", NULL, NULL, 2, p, obj);
+			return true;
+		}
+		return false;
 	}
 	
-public:
 	// ユーザメッセージレシーバの登録/解除
-	void setReceiver(bool enable) {
+	void setReceiver(tTVPWindowMessageReceiver receiver, bool enable) {
 		tTJSVariant mode     = enable ? (tTVInteger)(tjs_int)wrmRegister : (tTVInteger)(tjs_int)wrmUnregister;
-		tTJSVariant msg      = WM_SHELLEXECUTED;
-		tTJSVariant proc     = (tTVInteger)(tjs_int)shellExecuted;
-		tTJSVariant userdata = (tTVInteger)(tjs_int)this;
-		tTJSVariant *p[] = {&mode, &msg, &proc, &userdata};
-		if (objthis->FuncCall(0, L"registerUserMessageReceiver", NULL, NULL, 4, p, objthis) != TJS_S_OK) {
+		tTJSVariant proc     = (tTVInteger)(tjs_int)receiver;
+		tTJSVariant userdata = (tTVInteger)(tjs_int)objthis;
+		tTJSVariant *p[] = {&mode, &proc, &userdata};
+		if (objthis->FuncCall(0, L"registerMessageReceiver", NULL, NULL, 4, p, objthis) != TJS_S_OK) {
 			TVPThrowExceptionMessage(L"can't regist user message receiver");
 		}
 	}
 	
+public:
 	// コンストラクタ
 	WindowShell(iTJSDispatch2 *objthis) : objthis(objthis) {
-		setReceiver(true);
+		setReceiver(shellExecuted, true);
 	}
 
 	// デストラクタ
 	~WindowShell() {
-		setReceiver(false);
+		setReceiver(shellExecuted, false);
 	}
 
 public:

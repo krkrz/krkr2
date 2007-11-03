@@ -4,10 +4,6 @@
  * 同一マシン上で起動している吉里吉里間での相互通信機能および
  * 外部アプリからの通信機能を提供します。
  * やりとりされる データは WM_COPYDATA を用いて転送されます。
- * 他の Window.registerMessageReceiver を
- * 使っているアプリとは原理的に共存できないので注意してください。
- * 他のプラグインからイベント処理を追加したい場合には、このプラグインに
- * よって拡張される Window.registerUserMessageReceiver を使うこともできます。
  */
 class Window {
 
@@ -37,9 +33,7 @@ class Window {
 	// ---------------------------------------------------
 
 	/**
-	 * ユーザ定義の低レベルメッセージハンドラを登録します。
-	 * registerMessageReceiver はこのプラグインが占有するため、
-	 * 他にこの機能を使ったプラグインを追加でつくりたいような場合に利用できます。
+	 * ユーザ定義のメッセージハンドラを登録します。
 	 *
 	 * @param mode wrmRegister:登録 wrmUnRegister:解除
 	 * @param msg 数値:メッセージ番号 文字列:RegisterWindowMessage して値を決定
@@ -50,10 +44,10 @@ class Window {
 	 * ※TJS2 から関数を登録した場合（typeof proc == Object の場合)
 	 * function receiver(userdata, wparam, lparam)
 	 * の形式のファンクションであるとみなされます。
-	 * この時、userdata は渡した値そのままを渡します。
+	 * この時、userdata は渡した値そのままを、
 	 * wparam, lparam は元メッセージのデータから整数にキャストした値を渡します。
 	 *
-	 * ※TJS から文字列を登録した場合 (typeof proc == String の場合)
+	 * ※TJS2 から文字列を登録した場合 (typeof proc == String の場合)
 	 * 該当オブジェクトの指定された文字列の関数を function name(userdata, wparam, lparam)
 	 * の引数で呼びだします
 	 *
