@@ -600,6 +600,7 @@ NCB_GET_INSTANCE_HOOK(WindowSigCheck)
 NCB_ATTACH_CLASS_WITH_HOOK(WindowSigCheck, Window) {
 	NCB_METHOD(checkSignature);
 	NCB_METHOD(cancelCheckSignature);
+	NCB_METHOD(stopCheckSignature);
 };
 
 /**
