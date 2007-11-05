@@ -108,6 +108,11 @@ public:
 		return TJS_S_OK;
 	}
 
+	/**
+	 * 吉里吉里のストレージ空間中のファイルを抽出する
+	 * @param src 保存元ファイル
+	 * @param dest 保存先ファイル
+	 */
 	void exportFile(const char *src, const char *dest) {
 		ttstr filename = src;
 		IStream *in = TVPCreateIStream(filename, TJS_BS_READ);
@@ -130,12 +135,29 @@ public:
 			TVPThrowExceptionMessage((ttstr(TJS_W("cannot open readfile: ")) + filename).c_str());
 		}
 	}
-	
+
+	/**
+	 * 吉里吉里のストレージ空間中の指定ファイルを削除する。
+	 * @param file 削除対象ファイル
+	 * @return 実際に削除されたら true
+	 * 実ファイルがある場合のみ削除されます
+	 */
+	bool remove(ttstr filename) {
+		filename = TVPGetPlacedPath(filename);
+		if (filename.length() && !wcschr(filename.c_str(), '>')) {
+			TVPGetLocalName(filename);
+			if (DeleteFile(filename.c_str())) {
+				return true;
+			}
+		}
+		return false;
+	}
 };
 
 NCB_ATTACH_CLASS(StoragesFstat, Storages) {
 	RawCallback("fstat", &StoragesFstat::fstat, TJS_STATICMEMBER);
 	NCB_METHOD(exportFile);
+	NCB_METHOD(remove);
 };
 
 /**
