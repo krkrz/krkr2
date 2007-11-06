@@ -30,4 +30,11 @@ class Storages {
 	 */
 	function deleteFile(file);
 
+	/**
+	 * 指定ディレクトリのファイル一覧を取得する
+	 * @param dir ディレクトリ名
+	 * @return ファイル名一覧が格納された配列
+	 */
+	function dirlist(dir);
+
 };
