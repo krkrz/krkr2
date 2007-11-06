@@ -1,4 +1,6 @@
 #include "ncbind/ncbind.hpp"
+#include <string>
+using namespace std;
 
 // Date クラスメンバ
 static iTJSDispatch2 *dateClass = NULL;    // Date のクラスオブジェクト
@@ -152,12 +154,68 @@ public:
 		}
 		return false;
 	}
+
+	/**
+	 * 指定ディレクトリのファイル一覧を取得する
+	 * @param dir ディレクトリ名
+	 * @return ファイル名一覧が格納された配列
+	 */
+	static tTJSVariant dirlist(ttstr dir) {
+
+		if (dir.GetLastChar() != TJS_W('/')) {
+			TVPThrowExceptionMessage(TJS_W("'/' must be specified at the end of given directory name."));
+		}
+		
+		// OSネイティブな表現に変換
+		dir = TVPNormalizeStorageName(dir);
+		TVPGetLocalName(dir);
+
+		// Array クラスのオブジェクトを作成
+		iTJSDispatch2 * array = TJSCreateArrayObject();
+		tTJSVariant result;
+		
+		try {
+			ttstr wildcard = dir + "*.*";
+			WIN32_FIND_DATA data;
+			HANDLE handle = FindFirstFile(wildcard.c_str(), &data);
+			if (handle != INVALID_HANDLE_VALUE) {
+				tjs_int count = 0;
+				do {
+					ttstr file = dir;
+					file += data.cFileName;
+					if (GetFileAttributes(file.c_str()) & FILE_ATTRIBUTE_DIRECTORY) {
+						// ディレクトリの場合は最後に / をつける
+						file = data.cFileName;
+						file += "/";
+					} else {
+						// 普通のファイルの場合はそのまま
+						file = data.cFileName;
+					}
+					// 配列に追加する
+					tTJSVariant val(file);
+					array->PropSetByNum(0, count++, &val, array);
+				} while(FindNextFile(handle, &data));
+				FindClose(handle);
+			} else {
+				TVPThrowExceptionMessage(TJS_W("Directory not found."));
+			}
+			result = tTJSVariant(array, array);
+			array->Release();
+		} catch(...) {
+			array->Release();
+			throw;
+		}
+
+		return result;
+	}
+
 };
 
 NCB_ATTACH_CLASS(StoragesFstat, Storages) {
 	RawCallback("fstat", &StoragesFstat::fstat, TJS_STATICMEMBER);
 	NCB_METHOD(exportFile);
 	NCB_METHOD(deleteFile);
+	NCB_METHOD(dirlist);
 };
 
 /**
