@@ -28,6 +28,6 @@ class Storages {
 	 * @return ÀÛ‚Éíœ‚³‚ê‚½‚ç true
 	 * Àƒtƒ@ƒCƒ‹‚ª‚ ‚éê‡‚Ì‚İíœ‚³‚ê‚Ü‚·
 	 */
-	function remove(file);
+	function deleteFile(file);
 
 };
