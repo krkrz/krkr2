@@ -113,7 +113,7 @@ public:
 	 * @param src 保存元ファイル
 	 * @param dest 保存先ファイル
 	 */
-	void exportFile(const char *src, const char *dest) {
+	static void exportFile(const char *src, const char *dest) {
 		ttstr filename = src;
 		IStream *in = TVPCreateIStream(filename, TJS_BS_READ);
 		if (in) {
@@ -142,7 +142,7 @@ public:
 	 * @return 実際に削除されたら true
 	 * 実ファイルがある場合のみ削除されます
 	 */
-	bool remove(ttstr filename) {
+	static bool deleteFile(ttstr filename) {
 		filename = TVPGetPlacedPath(filename);
 		if (filename.length() && !wcschr(filename.c_str(), '>')) {
 			TVPGetLocalName(filename);
@@ -157,7 +157,7 @@ public:
 NCB_ATTACH_CLASS(StoragesFstat, Storages) {
 	RawCallback("fstat", &StoragesFstat::fstat, TJS_STATICMEMBER);
 	NCB_METHOD(exportFile);
-	NCB_METHOD(remove);
+	NCB_METHOD(deleteFile);
 };
 
 /**
