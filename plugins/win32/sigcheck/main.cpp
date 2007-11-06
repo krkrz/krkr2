@@ -20,29 +20,51 @@ protected:
 	WindowSigCheck *notify;
 	ttstr filename;
 	string publickey;
+
+	/// ユーザ情報
+	tTJSVariant info; 
+
+	// キャンセル指示
 	bool canceled;
 
 	// 結果変数
-public:
-	int handler;
-	int progressPercent;
-	int result;
-	ttstr errormsg;
+	tTJSVariant handler;
+	tTJSVariant progressPercent;
+	tTJSVariant result;
+	tTJSVariant errormsg;
 
 protected:
 	void progress(int percent);
 	int CheckKrkrExecutable(const char *mark);
 	int CheckSignatureOfFile(int ignorestart, int ignoreend, int ofs);
 	int CheckSignature();
+
+public:
+	// 経過イベント送信
+	void eventProgress(iTJSDispatch2 *objthis) {
+		tTJSVariant *vars[] = {&handler, &info, &progressPercent};
+		objthis->FuncCall(0, L"onCheckSignatureProgress", NULL, NULL, 3, vars, objthis);
+	}
+
+	// 終了イベント送信
+	void eventDone(iTJSDispatch2 *objthis) {
+		tTJSVariant *vars[] = {&handler, &info, &result, &errormsg};
+		objthis->FuncCall(0, L"onCheckSignatureDone", NULL, NULL, 4, vars, objthis);
+	}
 	
 public:
 	// コンストラクタ
-	SigChecker(int handler, WindowSigCheck *notify, const tjs_char *filename, const char *publickey)
-		: handler(handler), notify(notify), filename(filename), publickey(publickey), canceled(false) {}
-
+	SigChecker(int handler, WindowSigCheck *notify, const tjs_char *filename, const char *publickey, tTJSVariant &info)
+		: handler(handler), notify(notify), filename(filename), publickey(publickey), info(info), canceled(false) {}
+	
 	// デストラクタ
 	~SigChecker() {}
 
+	// ハンドラ取得
+	int getHandler() {
+		return (int)handler;
+	}
+	
 	// 処理開始
 	void start();
 
@@ -96,28 +118,23 @@ protected:
 
 	// 進捗通知
 	void eventProgress(SigChecker *sender) {
-		if (checkers[sender->handler] == sender) {
-			tTJSVariant var1 = tTJSVariant(sender->handler);
-			tTJSVariant var2 = tTJSVariant(sender->progressPercent);
-			tTJSVariant *vars[] = {&var1, &var2};
-			objthis->FuncCall(0, L"onCheckSignatureProgress", NULL, NULL, 2, vars, objthis);
+		int handler = sender->getHandler();
+		if (checkers[handler] == sender) {
+			sender->eventProgress(objthis);
 		}
 	}
 
-	//終了通知
+	// 終了通知
 	void eventDone(SigChecker *sender) {
-		if (checkers[sender->handler] == sender) {
-			checkers[sender->handler] = NULL;
-			tTJSVariant var1 = tTJSVariant(sender->handler);
-			tTJSVariant var2 = tTJSVariant(sender->result);
-			tTJSVariant var3 = tTJSVariant(sender->errormsg);
-			tTJSVariant *vars[] = {&var1, &var2, &var3};
-			objthis->FuncCall(0, L"onCheckSignatureDone", NULL, NULL, 3, vars, objthis);
+		int handler = sender->getHandler();
+		if (checkers[handler] == sender) {
+			checkers[handler] = NULL;
+			sender->eventDone(objthis);
 		}
 		delete sender;
 	}
 
-	// イベント処理
+	// ウインドウイベント処理
 	static bool __stdcall sigcheckevent(void *userdata, tTVPWindowMessage *Message) {
 		if (Message->Msg == WM_SIGCHECKPROGRESS) {
 			iTJSDispatch2 *obj = (iTJSDispatch2*)userdata;
@@ -160,7 +177,7 @@ public:
 	 * @param publickey 公開鍵
 	 * @return ハンドラ
 	 */
-	int checkSignature(const tjs_char *filename, const char *publickey) {
+	int checkSignature(const tjs_char *filename, const char *publickey, tTJSVariant info) {
 		int handler = checkers.size();
 		for (int i=0;i<checkers.size();i++) {
 			if (checkers[i] == NULL) {
@@ -171,7 +188,7 @@ public:
 		if (handler >= checkers.size()) {
 			checkers.resize(handler + 1);
 		}
-		SigChecker *checker = new SigChecker(handler, this, filename, publickey);
+		SigChecker *checker = new SigChecker(handler, this, filename, publickey, info);
 		checkers[handler] = checker;
 		_beginthread(checkThread, 0, checker);
 		return handler;
