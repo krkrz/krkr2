@@ -40,7 +40,7 @@ class MyWindow extends Window {
 	var msgs = [];
 	
 	function message(msg, same=false) {
-		//Debug.message(msg);
+		Debug.message(msg);
 		msgs.add(msg);
 		if (msgs.count > 24) {
 			msgs.erase(0);
@@ -54,7 +54,7 @@ class MyWindow extends Window {
 	}
 	
 	function check(file) {
-		message("署名確認開始:" + checkSignature(file, publickey) + ":" + file);
+		message("署名確認開始:" + checkSignature(file, publickey, null) + ":" + file);
 	}
 
 	// 実行部
@@ -68,11 +68,11 @@ class MyWindow extends Window {
 		}
 	}
 
-	function onCheckSignatureProgress(handler, percent) {
+	function onCheckSignatureProgress(handler, info, percent) {
 		message("署名確認経過:" + handler + ":" + percent);
 	}
 
-	function onCheckSignatureDone(handler, result, error) {
+	function onCheckSignatureDone(handler, info, result, error) {
 		message("署名確認結果:" + handler + ":" + result + ":" + error);
 	}
 
