@@ -37,4 +37,11 @@ class Storages {
 	 */
 	function dirlist(dir);
 
+	/**
+	 * 指定ディレクトリを削除する
+	 * @param dir ディレクトリ名
+	 * @return 実際に削除されたら true
+	 * 中にファイルが無い場合のみ削除されます
+	 */
+	function removeDirectory(dir);
 };

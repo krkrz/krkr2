@@ -209,6 +209,24 @@ public:
 		return result;
 	}
 
+	/**
+	 * 指定ディレクトリを削除する
+	 * @param dir ディレクトリ名
+	 * @return 実際に削除されたら true
+	 * 中にファイルが無い場合のみ削除されます
+	 */
+	static bool removeDirectory(ttstr dir) {
+
+		if (dir.GetLastChar() != TJS_W('/')) {
+			TVPThrowExceptionMessage(TJS_W("'/' must be specified at the end of given directory name."));
+		}
+
+		// OSネイティブな表現に変換
+		dir = TVPNormalizeStorageName(dir);
+		TVPGetLocalName(dir);
+
+		return RemoveDirectory(dir.c_str()) == TRUE;
+	}
 };
 
 NCB_ATTACH_CLASS(StoragesFstat, Storages) {
@@ -216,6 +234,7 @@ NCB_ATTACH_CLASS(StoragesFstat, Storages) {
 	NCB_METHOD(exportFile);
 	NCB_METHOD(deleteFile);
 	NCB_METHOD(dirlist);
+	NCB_METHOD(removeDirectory);
 };
 
 /**
