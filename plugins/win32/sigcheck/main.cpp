@@ -198,7 +198,7 @@ public:
 	 * 実行のキャンセル
 	 */
 	void cancelCheckSignature(int handler) {
-		if (checkers.size() < handler && checkers[handler] != NULL) {
+		if (handler < checkers.size() && checkers[handler] != NULL) {
 			checkers[handler]->cancel();
 		}
 	}
@@ -207,7 +207,7 @@ public:
 	 * 実行の停止
 	 */
 	void stopCheckSignature(int handler) {
-		if (checkers.size() < handler && checkers[handler] != NULL) {
+		if (handler < checkers.size() && checkers[handler] != NULL) {
 			checkers[handler]->stop();
 			checkers[handler] = NULL;
 		}
@@ -304,7 +304,8 @@ SigChecker::CheckKrkrExecutable(const char *mark)
 	
 	int imagesize = 0;
 	try {
-		int ofs = MIN_KRKR_MARK_SEARCH;
+//		int ofs = MIN_KRKR_MARK_SEARCH;
+		int ofs = 0;
 		char buf[4096];
 		DWORD read;
 		bool found = false;
@@ -323,7 +324,7 @@ SigChecker::CheckKrkrExecutable(const char *mark)
 			}
 			if(found) break;
 			ofs += read;
-			if(ofs >= MAX_KRKR_MARK_SEARCH) break;
+//			if(ofs >= MAX_KRKR_MARK_SEARCH) break;
 		}
 	} catch(...) {
 		st->Release();
