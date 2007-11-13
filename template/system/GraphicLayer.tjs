@@ -560,7 +560,7 @@ class GraphicLayerEx extends GraphicLayer {
 	
     function setOptions(elm) {
 		super.setOptions(elm);
-        type   = global[elm.type] if elm.type   !== void;
+		type   = global[elm.type] if elm.type   !== void;
         rotate = +elm.rotate if elm.rotate !== void;
         zoomx  = +elm.zoomx  if elm.zoomx  !== void;
 		zoomy  = +elm.zoomy  if elm.zoomy  !== void;
@@ -571,8 +571,33 @@ class GraphicLayerEx extends GraphicLayer {
             reset();
         }
 		visvalue = +elm.visvalue if elm.visvalue !== void;
+		if (elm.tile !== void) {
+			setTileImage(elm.tile);
+		}
+		tilex = +elm.tilex if elm.tilex !== void;
+		tiley = +elm.tiley if elm.tiley !== void;
 	}
 
+	function loadImages(elm)
+	{
+		super.loadImages(elm);
+		if (elm !== void) {
+			type   = global[elm.type] if elm.type   !== void;
+			rotate = +elm.rotate if elm.rotate !== void;
+			zoomx  = +elm.zoomx  if elm.zoomx  !== void;
+			zoomy  = +elm.zoomy  if elm.zoomy  !== void;
+			zoom   = +elm.zoom   if elm.zoom   !== void;
+			afx    = elm.afx    if elm.afx    !== void;
+			afy    = elm.afy    if elm.afy    !== void;
+			visvalue = +elm.visvalue if elm.visvalue !== void;
+			if (elm.tile !== void) {
+				setTileImage(elm.tile);
+			}
+			tilex = +elm.tilex if elm.tilex !== void;
+			tiley = +elm.tiley if elm.tiley !== void;
+		}
+	}
+	
     /**
      * åpè≥ÇµÇƒägí£ÅBreset() Ç≥ÇπÇÈ
      */

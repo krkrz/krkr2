@@ -14,6 +14,9 @@ try {
 } catch(e) {
 }
 
+// ロック区分用
+var lockKey = "";
+
 // システムバージョン
 var kagVersion = "EX 3.27-dev.20070519";
 
@@ -27,6 +30,7 @@ var dm = Debug.message; // これで dm("message"); でコンソールに message を表示で
 /*
 	デフォルトの「捕捉されない例外」ハンドラ
 */
+if (System.getArgument("-debugwin") != "no") {
 
 System.exceptionHandler = function (e)
 {
@@ -51,6 +55,17 @@ System.exceptionHandler = function (e)
 	}
 };
 
+} else {
+	// リリース時処理
+	System.exceptionHandler = function (e) {
+		Debug.logAsError(); // ログのファイルへの書き出し動作の開始など
+		var event_disabled = System.eventDisabled;
+		System.eventDisabled = true;
+		System.inform(e.message);
+		System.terminate();
+		return true;
+	};
+};
 
 /*
 	パスの設定
@@ -239,7 +254,7 @@ if(typeof global.config_version == "undefined" || config_version != kagVersion)
 */
 
 // 実行可能ファイルのパスをキーにしてロックを行う
-if(typeof global.restart == "undefined" && !System.createAppLock(System.exePath.replace(/[^A-Za-z]/g, '_')))
+if(!System.createAppLock((System.exePath + lockKey).replace(/[^A-Za-z]/g, '_')) && typeof global.restart == "undefined")
 {
 	// すでに起動している
 	System.inform(System.title + "はすでに起動しています");
