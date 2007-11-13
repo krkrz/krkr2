@@ -113,14 +113,17 @@ class Movie extends VideoOverlay
 
 	function onStatusChanged(status)
 	{
-		// ステータスの変更があった
-		if(lastStatus == "play" && status == "stop")
-		{
-			owner.onMovieStop(id); // 停止
-			super.close();
-		}
-
+		var oldls = lastStatus;
 		lastStatus = status;
+
+		// ステータスの変更があった
+		if(oldls == "play" && status == "stop")
+		{
+			owner.onMovieStop(id); // 停止通知
+			super.close();
+		} else if(oldls == "stop" && status == "play") {
+			owner.onMoviePlay(id); // 開始通知
+		}
 	}
 
 	function onPeriod(type)
@@ -250,11 +253,9 @@ class Movie extends VideoOverlay
             } else if (elm.mode == "mixer") {
                 try {
                     mode = vomMixer;
-                    dm("video mode:mixer");
                 } catch (e) {
                     try {
                         mode = vomOverlay;
-                        dm("video mode:overlay");
                     } catch (e) {
                         mode = vomLayer;
                     }
@@ -262,6 +263,7 @@ class Movie extends VideoOverlay
             } else {
 				mode = vomOverlay;
             }
+			dm("video mode:" + ((mode == vomOverlay) ? "overlay" : (mode == vomMixer) ? "mixer" : (mode == vomLayer) ? "layer" : "unknown"));
 		}
 		playRate = +elm.playrate if elm.playrate !== void;
 		audioVolume = +elm.volume * 1000 if elm.volume !== void;

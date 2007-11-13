@@ -339,10 +339,16 @@ function uiloadEntry(layer, names, dic, elm, table, evals)
 	// ”wŒi‚ª‚È‚©‚Á‚½‚Æ‚«‚Ìˆ—
 	if (base === void) {
 		uiloadEvals(elm, evals.elm, dic, base) if (evals !== void);
-		table.base(layer, base, %[ x:0, y:0, width:layer.parent.width, height:layer.parent.height ], elm);
+		var tmp = %[];
+		(global.Dictionary.assign incontextof tmp)(elm,false);
+		with (tmp) {
+			.opacity = 0 if (.opacity === void);
+			.color   = 0 if (.color   === void);
+		}
+		table.base(layer, base, %[ x:0, y:0, width:layer.parent.width, height:layer.parent.height, storage:"" ], tmp);
 	}
 
-	var links = layer.numLinks;
+	var links = (typeof layer.numLinks != "undefined") ? layer.numLinks : void;
 	for (var i=0; i<names.count; i++) {
 		var name  = names[i];
 		var value = dic[name];
@@ -391,11 +397,13 @@ function uiloadEntry(layer, names, dic, elm, table, evals)
 	}
 
 	// —Dæ‡ˆÊ‹t“]
-	var cnt = layer.numLinks - links;
-	if (cnt > 0) {
-		var min = layer.links[links].object.order;
-		for (var i = 0; i < cnt; i++)
-			layer.links[links + i].object.order = min;
+	if (links !== void) {
+		var cnt = layer.numLinks - links;
+		if (cnt > 0) {
+			var min = layer.links[links].object.order;
+			for (var i = 0; i < cnt; i++)
+				layer.links[links + i].object.order = min;
+		}
 	}
 
 	uiloadEvals(layer, evals.base, dic, base) if (evals !== void);
@@ -476,20 +484,20 @@ function uiloadWithFuncTable(layer, elm, funcTable) {
 
 
 function uiEntryBase(layer, name, value, elm) {
-    var e = %[];
-    (global.Dictionary.assign incontextof e)(elm,false); 
-    e.left   = value.x;
-    e.top    = value.y;
-    e.width  = value.width;
-    e.height = value.height;
-    e.frame  = value.storage;
-    e.margint = 0 if e.margint === void;
-    e.marginl = 0 if e.marginl === void;
-    e.marginr = 0 if e.marginr === void;
-    e.marginb = 0 if e.marginb === void;
-    e.transparent = false if e.transparent === void;
-    e.visible = true if e.visible === void;
-    layer.setPosition(e);
+	var e = %[];
+	(global.Dictionary.assign incontextof e)(elm,false); 
+	e.left   = value.x + e.baseoffsetx;
+	e.top    = value.y + e.baseoffsety;
+	e.width  = value.width;
+	e.height = value.height;
+	e.frame  = value.storage;
+	e.margint = 0 if e.margint === void;
+	e.marginl = 0 if e.marginl === void;
+	e.marginr = 0 if e.marginr === void;
+	e.marginb = 0 if e.marginb === void;
+	e.transparent = false if e.transparent === void;
+	e.visible = true if e.visible === void;
+	layer.setPosition(e);
 }
 function uiEntryButton(layer, name, value) {
 	layer.locate(value.x, value.y);
@@ -505,6 +513,8 @@ function uiSetLayerOption(target) {
 	with (target) {
 		.setImageSize(.width, .height); // ƒ{ƒ^ƒ“•ª‚ğg‚í‚È‚¢‚Ì‚ÅƒTƒCƒY‚ğk‚ß‚é
 		.enabled = .focusable = false;
+		if (typeof .linkNum != "undefined" && typeof .parent.links != "undefined")
+			.parent.links[.linkNum].type = .parent.ltLayer;
 	}
 	return target;
 }

@@ -580,7 +580,7 @@ class AnimationLayer extends AffineLayer
 			} else {
 				left= +elm.pos - width \ 2;
 			}
-			top = window.scHeight - height;
+			top = window.scHeight - height + (elm.yoff !== void ? +elm.yoff : 0);
 		}
 		else
 		{

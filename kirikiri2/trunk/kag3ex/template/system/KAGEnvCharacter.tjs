@@ -210,7 +210,7 @@ class KAGEnvCharacter extends KAGEnvLevelLayer, KAGEnvImage {
     /**
      * セーブ処理
      */
-    function onStore(f) {
+	function onStore(f) {
         global.KAGEnvImage.onStore(f);
 		global.KAGEnvLevelLayer.onStore(f);
         f.name = name;
@@ -219,8 +219,8 @@ class KAGEnvCharacter extends KAGEnvLevelLayer, KAGEnvImage {
         f.yoffset = yoffset;
 		f.xoffset = xoffset;
 		f.levels = levels;
-        f.pose = pose;
-        f.dress = dress;
+		f.pose = _pose;
+		f.dress = dress;
         f.face = face;
         f.voice = voice;
         f.strVoice = strVoice;
@@ -235,7 +235,7 @@ class KAGEnvCharacter extends KAGEnvLevelLayer, KAGEnvImage {
         yoffset = f.yoffset;
 		xoffset = f.xoffset;
 		levels = f.levels;
-        pose  = f.pose;
+		_pose  = f.pose;
         dress = f.dress;
         face  = f.face;
         voice = f.voice;
@@ -825,7 +825,7 @@ class KAGEnvCharacter extends KAGEnvLevelLayer, KAGEnvImage {
 	 * アクション座標計算
 	 */
 	function calcActionPosition(left, top) {
-		if (level == void) {
+		if (level === void) {
 			level = env.defaultLevel;
 		}
 		if (levels !== void) {
@@ -945,6 +945,17 @@ class KAGEnvCharacter extends KAGEnvLevelLayer, KAGEnvImage {
 		moveTime = void;
 	}
 
+	function emoConv(emo) {
+		if (emo instanceof "Array") {
+			if (level === void) {
+				level = env.defaultLevel;
+			}
+			dm("エモーションレベル:" + level);
+			return emo[level];
+		}
+		return emo;
+	}
+	
     /**
      * レイヤ状態更新処理
      * エモーション処理を追加
@@ -974,26 +985,29 @@ class KAGEnvCharacter extends KAGEnvLevelLayer, KAGEnvImage {
 					levelName = level;
 				}
 
-				var emoX = env.envinfo.emoX;
-				var emoY = env.envinfo.emoY;
+				var emoX = emoConv(env.envinfo.emoX);
+				var emoY = emoConv(env.envinfo.emoY);
 				var emoRev;
 
 				// 表示座標
 				emoRev  = emotion.emoRev if emotion.emoRev !== void;
 
 				// キャラ別補正
-				emoX = init.emoX if init.emoX !== void;
-				emoY = init.emoY if init.emoY !== void;
+				emoX = emoConv(init.emoX) if init.emoX !== void;
+				emoY = emoConv(init.emoY) if init.emoY !== void;
 				emoRev = init.emoRev if init.emoRev !== void;
 
 				// ポーズ別補正
 				var info;
 				if ((info = poses[pose]) !== void) {
-					emoX   = info.emoX   if info.emoX   !== void;
-					emoY   = info.emoY   if info.emoY   !== void;
+					emoX   = emoConv(info.emoX)   if info.emoX   !== void;
+					emoY   = emoConv(info.emoY)   if info.emoY   !== void;
 					emoRev = info.emoRev if info.emoRev !== void;
 				}
 
+				dm("エモーション原点:" + emoX + "," + emoY);
+
+				
 				// 座標調整
 				emoY += emotion.yoff if emotion.yoff !== void;
 				emoX += emotion.xoff if emotion.xoff !== void;
@@ -1011,9 +1025,15 @@ class KAGEnvCharacter extends KAGEnvLevelLayer, KAGEnvImage {
 					name = name.replace(/LEVEL/, levelName);
 					emotionLayer.loadImages(%[storage:name]);
 				}
-				emotionLayer.setPos(layer.left + layer.width/2 + (emoRev ? -emoX : emoX) - emotionLayer.width/2,
-									layer.top  + layer.height  - emoY - emotionLayer.height/2);
-				emotionLayer.start(emotion.time, emotion.action);
+				with (emotionLayer) {
+					dm("エモーション配置:" + emoX + "," + emoY);
+					.setPos(layer.left + layer.width/2 + (emoRev ? -emoX : emoX) - emotionLayer.width/2,
+							layer.top  + layer.height  - emoY - emotionLayer.height/2);
+					.start(emotion.time, emotion.action);
+					.parent   = layer.parent;
+					.absolute = layer.absolute+1;
+				}
+				//dm("emoLayer", layer.parent.name, layer.absolute);
 			}
 			invalidate emotion;
 			emotion = void;
@@ -1281,10 +1301,10 @@ class KAGEnvCharacter extends KAGEnvLevelLayer, KAGEnvImage {
      * @param falseの場合スキップ不可能
      */
     function waitVoice(param) {
-        if (voiceEndTime !== void) {
-            var waitTime = voiceEndTime - System.getTickCount();
-            ret = kag.waitTime(waitTime, param == true && kag.clickSkipEnabled);
-        }
+		if (voiceEndTime !== void) {
+			var waitTime = voiceEndTime - System.getTickCount();
+			ret = kag.waitTime(waitTime, +param && kag.clickSkipEnabled);
+		}
     }
     
 
