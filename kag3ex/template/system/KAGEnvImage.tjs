@@ -3,10 +3,8 @@
  */
 class KAGEnvImage {
 
-    function dm(msg) {
-		if (kag.debugLevel >= tkdlSimple) {
-			global.dm(msg);
-        }
+	function dm() {
+		global.dm(...) if (kag.debugLevel >= tkdlSimple);
 	}
 
 	// デフォルト情報

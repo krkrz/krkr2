@@ -58,12 +58,14 @@ class LinkButtonLayer extends ButtonLayer
 	function onMouseEnter()
 	{
 		parent.keyLink = linkNum;
+		parent.focus() if (window.focusedLayer === null);
 		if(!parent.selProcessLock && onenter !== void) Scripts.eval(onenter);
 		super.onMouseEnter(...);
 	}
 
 	function onMouseLeave()
 	{
+		parent.keyLink = -1 if (parent.keyLink == linkNum);
 		if(!parent.selProcessLock && onleave !== void) Scripts.eval(onleave);
 		super.onMouseLeave(...);
 	}
@@ -1012,6 +1014,7 @@ class MessageLayer extends AnimKAGLayer
     var ltEdit     = 3;
     var ltCheckBox = 4;
     var ltSlider   = 5;
+    var ltLayer    = 6;
     
     // 名前描画用レイヤ
     var nameLayer;
@@ -2631,13 +2634,19 @@ class MessageLayer extends AnimKAGLayer
 		of.height = (elm.fontheight !== void) ? elm.fontheight : lf.height;
 		object.linkNum = numLinks;
 		object.text = Scripts.eval(elm.name);
-        object.exp = elm.name;
+		var exp = (elm.exp != "") ? elm.exp : elm.name;
+		object.exp     = exp;
         object.antialiased = antialiased;
 		object.color = elm.bgcolor if elm.bgcolor !== void; // color でない事に注意
 		object.textColor = elm.color if elm.color !== void; // textColor でないことに注意
 		object.maxChars = elm.maxchars if elm.maxchars !== void;
 		object.bgOpacity = elm.opacity if elm.opacity !== void;
 		object.noborder = elm.noborder if elm.noborder !== void;
+
+		var ox = 0, oy = 0;
+		ox = +elm.textox if (elm.textox !== void);
+		oy = +elm.textoy if (elm.textoy !== void);
+		object.setDrawTextOffset(ox, oy) if (ox != 0 || oy != 0);
 
 		var len = elm.length === void ? 200: +elm.length;
 		if(vertical)
@@ -2663,7 +2672,7 @@ class MessageLayer extends AnimKAGLayer
 
 		links[numLinks] = %[
 			type :			ltEdit,
-			exp :			elm.name,
+			exp :			exp,
 			object :		object,
 			x :				[object.left],
 			y :				[object.top],
@@ -2760,7 +2769,8 @@ class MessageLayer extends AnimKAGLayer
         object.linkNum = numLinks;
 		object.onenter = createSoundExpression(elm.onenter, elm.enterse, elm.entersebuf);
 		object.onleave = createSoundExpression(elm.onleave, elm.leavese, elm.leavesebuf);
-        object.exp     = elm.name;
+		var exp = (elm.exp != "") ? elm.exp : elm.name;
+		object.exp     = exp;
         object.color = elm.bgcolor if elm.bgcolor !== void; // color でない事に注意
         object.bgOpacity = elm.opacity if elm.opacity !== void;
 		object.min  = +elm.min  if elm.min  !== void;
@@ -2840,7 +2850,7 @@ class MessageLayer extends AnimKAGLayer
 
         links[numLinks] = %[
 			type :			ltSlider,
-			exp :			elm.name,
+			exp :			exp,
 			object :		object,
 			onenter :		object.onenter,
 			onleave :		object.onleave,
@@ -3467,10 +3477,12 @@ class MessageLayer extends AnimKAGLayer
 
 		if(!selProcessLock && ((key == VK_UP && !(shift & ssShift)) || key == l || (key == VK_TAB && (shift & ssShift))))
 		{
+			releaseCapture();
             tabPrev();
         }
 		else if(!selProcessLock && (key == VK_DOWN || key == r || (key == VK_TAB && !(shift & ssShift))))
 		{
+			releaseCapture();
             tabNext();
 		}
 		else if(key == VK_SPACE || key == VK_RETURN)
@@ -3754,7 +3766,7 @@ class MessageLayer extends AnimKAGLayer
 
 				// タイプに従って
 				var type = tl_d.type;
-				if(type == ltButton)
+				if(type == ltButton || type == ltLayer)
 				{
 					// ボタン
 					var sl_d_object = sl_d.object;
@@ -3763,6 +3775,7 @@ class MessageLayer extends AnimKAGLayer
 					object.assign(sl_d_object);
 					tl_d.object = object;
                     names[object.name] = object;
+					if (type == ltLayer) with (object) .enabled = .focusable = false;
 				}
 				else if(type == ltEdit)
 				{

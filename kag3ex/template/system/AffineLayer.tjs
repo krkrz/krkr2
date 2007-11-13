@@ -723,6 +723,10 @@ class AffineLayer extends KAGLayer {
 		_image.drawPathString(x, y, text);
 		calcAffine();
 	}
+	function setScale(sx, sy) {
+		_image.setScale(sx, sy);
+	}
+
 };
 
 // ’è”’è‹`

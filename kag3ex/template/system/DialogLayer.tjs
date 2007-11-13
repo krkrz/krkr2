@@ -36,18 +36,20 @@ class DialogButtonLayer extends ButtonLayer
 	}
 	function onMouseUp(x, y, button) {
 		super.onMouseUp(...);
-		if (button == mbRight) parent.close();
+		if (this isvalid && button == mbRight) parent.close();
 	}
 
 	function onMouseEnter()
 	{
         parent.keyLink = linkNum;
+		parent.focus() if (window.focusedLayer === null);
 		if(!parent.selProcessLock && onenter !== void) Scripts.eval(onenter);
 		super.onMouseEnter(...);
 	}
 
 	function onMouseLeave()
 	{
+		parent.keyLink = -1 if (parent.keyLink == linkNum);
 		if(!parent.selProcessLock && onleave !== void) Scripts.eval(onleave);
 		super.onMouseLeave(...);
 	}
@@ -288,11 +290,13 @@ class DialogLayer extends KAGLayer
     var ltEdit     = 3;
     var ltCheckBox = 4;
     var ltSlider   = 5;
+    var ltLayer    = 6;
 
     var xpos;
     var ypos;
 
     var vertical = false;
+	var coverParent = true; // 親ウインドウを多い尽くすかどうかのフラグ
     
     /**
      * コンストラクタ
@@ -419,6 +423,12 @@ class DialogLayer extends KAGLayer
             basewidth  = elm.width  if elm.width !== void;
             baseheight = elm.height if elm.height !== void;
         }
+		if (!coverParent) {
+			setPos(baseleft, basetop);
+			setImageSize(basewidth, baseheight);
+			setSizeToImageSize();
+			baseleft = basetop = 0;
+		}
 
 		frameGraphic  = elm.frame    if elm.frame !== void;
 		frameKey      = elm.framekey if elm.framekey !== void;
@@ -557,6 +567,11 @@ class DialogLayer extends KAGLayer
 		object.maxChars = elm.maxchars if elm.maxchars !== void;
 		object.bgOpacity = elm.opacity if elm.opacity !== void;
 		object.noborder = elm.noborder if elm.noborder !== void;
+
+		var ox = 0, oy = 0;
+		ox = +elm.textox if (elm.textox !== void);
+		oy = +elm.textoy if (elm.textoy !== void);
+		object.setDrawTextOffset(ox, oy) if (ox != 0 || oy != 0);
 
 		var len = elm.length === void ? 200: +elm.length;
 		var fh = Math.abs(of.height);
@@ -843,10 +858,12 @@ class DialogLayer extends KAGLayer
 
 		if(!selProcessLock && ((key == VK_UP && !(shift & ssShift)) || key == l || (key == VK_TAB && (shift & ssShift))))
 		{
+			releaseCapture();
             tabPrev();
 		}
 		else if(!selProcessLock && (key == VK_DOWN || key == r || (key == VK_TAB && !(shift & ssShift))))
 		{
+			releaseCapture();
             tabNext();
 		}
 		else if(key == VK_SPACE || key == VK_RETURN)
@@ -987,4 +1004,37 @@ class DialogLayer extends KAGLayer
 		return global.uiload(this, elm);
     }
 
+}
+
+/**
+ * システムパネルで使われるレイヤ
+ * パネルのクラスは必ずこれを継承すること
+ */
+class PanelLayer extends DialogLayer {
+
+	var modal = false; // true にするとモーダル状態で表示（falseなら選択肢と同様扱い）
+
+	/**
+	 * コンストラクタ
+	 * @param window KAGのウインドウ
+	 * @param name ダイアログ名
+	 * @param elm 初期化パラメータ
+	 */
+	function PanelLayer(window, name, elm) {
+		super.DialogLayer(window, window.primaryLayer, name);
+	}
+
+	/*
+	 * クローズ時処理
+	 */
+	var _closed = false;
+	function close() {
+		// super.close() は呼ばない（上書き）
+		
+		if (_closed) return; // 多重クローズはしない
+		_closed = true;
+		enabled = false;
+		window.processGo();
+		window.insertTag("donepanel");
+	}
 }

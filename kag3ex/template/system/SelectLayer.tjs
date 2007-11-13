@@ -82,6 +82,7 @@ class SelectButtonLayer extends ButtonLayer
 	{
         if(onleave !== void) Scripts.eval(onleave);
         super.onMouseLeave(...);
+		window.focusedLayer = null if (focused);
 	}
 
 	function onMouseDown(x, y, button, shift)	{
@@ -122,6 +123,7 @@ class SelectButtonLayer extends ButtonLayer
         if(process) {
             cursorX = (width>>1);
             cursorY = (height>>1);
+			releaseCapture();
         }
     }
 }
