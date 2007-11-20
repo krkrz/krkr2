@@ -1796,6 +1796,8 @@ static bool TVPWaitWritePermit(AnsiString fn)
 //---------------------------------------------------------------------------
 static void TVPShowUserConfig(AnsiString orgexe)
 {
+	TVPEnsureDataPathDirectory();
+
 	Application->Title = ChangeFileExt(ExtractFileName(orgexe), "");
 	TConfSettingsForm *form = new TConfSettingsForm(Application, true);
 	form->InitializeConfig(orgexe);
