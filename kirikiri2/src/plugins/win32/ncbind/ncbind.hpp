@@ -601,6 +601,96 @@ NCB_SET_TOVALUE_CONVERTOR(  iTJSDispatch2 const*, ncbDispatchConvertor);
 	といったような感じで適当に
  */
 
+// Dicionary/Array 向けラッパ(手抜き実装)
+struct ncbPropAccessor {
+	typedef ncbTypedefs   DefsT;
+	typedef DefsT::FlagsT FlagsT;
+	typedef DefsT::NameT  KeyT;
+	typedef tjs_int32     IndexT;
+	typedef tjs_int       CountT;
+	typedef tjs_uint32    SizeT;
+	typedef tjs_error     ErrorT;
+	typedef tjs_uint32*   HintT;
+	typedef tTJSVariant   VariantT;
+
+	ncbPropAccessor(iTJSDispatch2 *obj, bool addref = true) : _obj(obj) {
+		if (addref) _obj->AddRef();
+	}
+	virtual ~ncbPropAccessor() {
+		_obj->Release();
+	}
+	CountT GetCount() const {
+		CountT sz;
+		ErrorT r = _obj->GetCount(&sz, 0, 0, _obj);
+		return (r == TJS_S_OK) ? sz : 0;
+	}
+	template <typename TargetT>
+	TargetT GetValue(IndexT ofs, DefsT::Tag<TargetT> const &tag, FlagsT f = 0) {
+		VariantT var;
+		_obj->PropGetByNum(f, ofs, &var, _obj);
+		return _toTarget(var, tag);
+	}
+	template <typename TargetT>
+	TargetT GetValue(KeyT key, DefsT::Tag<TargetT> const &tag, FlagsT f = 0, HintT hint = 0) {
+		VariantT var;
+		_obj->PropGet(f, key, hint, &var, _obj);
+		return _toTarget(var, tag);
+	}
+	bool HasValue(IndexT ofs) {
+		VariantT var;
+		return TJS_SUCCEEDED(_obj->PropGetByNum(TJS_MEMBERMUSTEXIST, ofs, &var, _obj));
+	}
+	bool HasValue(KeyT key, HintT hint = 0) {
+		VariantT var;
+		return TJS_SUCCEEDED(_obj->PropGet(TJS_MEMBERMUSTEXIST, key, hint, &var, _obj));
+	}
+	template <typename TargetT>
+	bool SetValue(IndexT ofs, TargetT const &val, FlagsT f = TJS_MEMBERENSURE) {
+		VariantT var;
+		_toVariant(var, val);
+		return (_obj->PropSetByNum(f, ofs, &var, _obj) == TJS_S_OK);
+	}
+	template <typename TargetT>
+	bool SetValue(KeyT key, TargetT const &val, FlagsT f = TJS_MEMBERENSURE, HintT hint = 0) {
+		VariantT var;
+		_toVariant(var, val);
+		return (_obj->PropSet(f, key, hint, &var, _obj) == TJS_S_OK);
+	}
+	bool IsValid() const { return _obj != 0; }
+	iTJSDispatch2* GetDispatch() const { return _obj; }
+	operator iTJSDispatch2*   () const { return _obj; }
+protected:
+	iTJSDispatch2 *_obj;
+
+	template <typename TargetT>
+	TargetT _toTarget(VariantT &v, DefsT::Tag<TargetT> const&) {
+		typedef typename ncbTypeConvertor::SelectConvertorType<TargetT, VariantT>::Type ToTargetT;
+		TargetT r;
+		ToTargetT conv;
+		conv(r, v);
+		return r;
+	}
+	template <typename TargetT>
+	void _toVariant(VariantT &v, TargetT const &r) {
+		typedef typename ncbTypeConvertor::SelectConvertorType<VariantT, TargetT>::Type ToVariantT;
+		ToVariantT conv;
+		conv(v, r);
+	}
+	VariantT _toTarget( VariantT &v, DefsT::Tag<VariantT> const&) { return v; }
+	void     _toVariant(VariantT &v, VariantT const &r) { v = r; }
+	iTJSDispatch2* _toTarget( VariantT &v, DefsT::Tag<iTJSDispatch2*> const&) { return v; }
+	void           _toVariant(VariantT &v, iTJSDispatch2*  const &r) { v = VariantT(r, r); }
+	void           _toVariant(VariantT &v, ncbPropAccessor  const &r) { _toVariant(v, r._obj);  }
+	void           _toVariant(VariantT &v, ncbPropAccessor* const &r) { _toVariant(v, r->_obj); }
+};
+
+struct ncbArrayAccessor : public ncbPropAccessor {
+	ncbArrayAccessor() : ncbPropAccessor(TJSCreateArrayObject(), false) {}
+};
+struct ncbDictionaryAccessor : public ncbPropAccessor {
+	ncbDictionaryAccessor() : ncbPropAccessor(TJSCreateDictionaryObject(), false) {}
+};
+
 
 ////////////////////////////////////////
 /// メソッドオブジェクト（と，そのタイプとフラグ）を受け渡すためのインターフェース
