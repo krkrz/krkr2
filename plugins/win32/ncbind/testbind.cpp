@@ -530,6 +530,43 @@ CHECK(ProxyTest,
 
 
 
+////////////////////////////////////////
+// PropAccessor test
+
+struct AccessorTest : public ncbPropAccessor {
+	AccessorTest() : ncbPropAccessor(TJSCreateArrayObject(), false) {
+		TVPAddLog(TJS_W("construct testAccessor"));
+	}
+	~AccessorTest() {
+		TVPAddLog(TJS_W("destruct testAccessor"));
+	}
+	int  IntGetValue(IndexT idx)        { return GetValue(idx, DefsT::Tag<int>()); }
+	bool IntSetValue(IndexT idx, int v) { return SetValue(idx, v); }
+
+	AccessorTest* New() { return new AccessorTest(); }
+};
+
+NCB_REGISTER_CLASS(AccessorTest) {
+	Constructor();
+	Method("IntGetValue", &Class::IntGetValue);
+	Method("IntSetValue", &Class::IntSetValue);
+	Method("New",         &Class::New);
+}
+
+
+CHECK(AccessorTest,
+	  SCRIPT_BEGIN
+	  "var inst = new AccessorTest();"
+	  SCRIPT_EVAL("inst.IntSetValue(0, 100) != 0")
+	  SCRIPT_EVAL("inst.IntGetValue(0)      == 100")
+	  "var inst2 = inst.New();"
+	  SCRIPT_EVAL("inst2.IntGetValue(1)     == 0")
+
+	  "invalidate inst;"
+	  "invalidate inst2;"
+	  SCRIPT_END);
+
+
 
 
 ////////////////////////////////////////
