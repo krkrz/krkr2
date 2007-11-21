@@ -70,6 +70,37 @@ class MyWindow extends Window
 				layers.add(layer);
 			}
 		}
+
+		var sliceinfo;
+		if ((sliceinfo = psd.getSlices()) !== void) with (sliceinfo) {
+			var slay = new Layer(this, base);
+			slay.name = "slices";
+			slay.setImageSize(.right - .left, .bottom - .top);
+			slay.setSizeToImageSize();
+			slay.visible = true;
+			layers.add(slay);
+			dm(@"slice bounding box left:${.left} top:${.top} right:${.right} bottom:${.bottom}");
+			dm(@"slice counts ${.slices.count}");
+			for (var i = 0; i < .slices.count; i++) {
+				var s = .slices[i];
+				if (typeof s == "Object") {
+					var w = s.right - s.left;
+					var h = s.bottom - s.top;
+					var col = s.color;
+					slay.fillRect(s.left, s.top, 1, h, 0xC0000000 | col);
+					slay.fillRect(s.left, s.top, w, 1, 0xC0000000 | col);
+					slay.drawText(s.left, s.top, string s.group_id, 0x808080, 255, true) if (s.group_id != 0);
+					dm(@"  slice${i}  ${dictToString(s)}");
+				}
+			}
+		}
+	}
+	function dictToString(dic) {
+		var ret = "", tmp = [];
+		tmp.assign(dic);
+		for (var i = 0; i < tmp.count; i+=2)
+			ret += @"${tmp[i]}:${tmp[i+1]} ";
+		return ret;
 	}
 
 	function openDialog() {
@@ -93,5 +124,6 @@ class MyWindow extends Window
 	}
 };
 
+Debug.console.visible = true;
 var win = new MyWindow();
 win.visible = true;

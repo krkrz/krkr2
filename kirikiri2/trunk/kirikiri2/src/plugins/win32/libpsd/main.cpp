@@ -240,6 +240,53 @@ public:
 		}
 	}
 
+	/**
+	 * スライスデータの読み出し
+	 * @return スライス情報辞書 %[ top, left, bottom, right, slices:[ %[ id, group_id, left, top, bottom, right ], ... ] ]
+	 *         スライス情報がない場合は void を返す
+	 */
+	tTJSVariant getSlices() {
+		if (!context) TVPThrowExceptionMessage(L"no data");
+		tTJSVariant result;	
+		ncbDictionaryAccessor dict;
+		ncbArrayAccessor arr;
+		if (context->fill_slices_resource) {
+			if (dict.IsValid()) {
+				psd_slices_resource *sr = &context->slices_resource;
+				dict.SetValue(L"top",    sr->bounding_top);
+				dict.SetValue(L"left",   sr->bounding_left);
+				dict.SetValue(L"bottom", sr->bounding_bottom);
+				dict.SetValue(L"right",  sr->bounding_right);
+				if (arr.IsValid()) {
+					psd_slices_resource_block *block = sr->slices_resource_block;
+					if (block) for (int i = 0; i < sr->number_of_slices; i++) {
+						ncbDictionaryAccessor tmp;
+						if (tmp.IsValid()) {
+#define SLICEPROP(tag) 		tmp.SetValue(L ## #tag, block[i]. tag)
+							SLICEPROP(id);
+							SLICEPROP(group_id);
+							SLICEPROP(origin);
+							SLICEPROP(associated_layer_id);
+							SLICEPROP(type);
+							SLICEPROP(left);
+							SLICEPROP(top);
+							SLICEPROP(right);
+							SLICEPROP(bottom);
+							SLICEPROP(cell_text_is_html);
+							SLICEPROP(horizontal_alignment);
+							SLICEPROP(veritcal_alignment);
+							SLICEPROP(color);
+							arr.SetValue((tjs_int32)i, tmp.GetDispatch());
+						}
+					}
+					dict.SetValue(L"slices", arr.GetDispatch());
+				}
+				result = dict;
+			}
+		}
+		return result;
+	}
+
 };
 
 #define ENUM(n) Variant(#n + 4, (int)n)
@@ -316,4 +363,6 @@ NCB_REGISTER_CLASS(PSD) {
 	NCB_METHOD(getLayerName);
 	NCB_METHOD(getLayerInfo);
 	NCB_METHOD(getLayerData);
+
+	NCB_METHOD(getSlices);
 };
