@@ -1,26 +1,9 @@
 #include "ncbind/ncbind.hpp"
 #include <libpsd.h>
 
-static tjs_int getIntProp(iTJSDispatch2 *obj, const tjs_char *name)
-{
-	tTJSVariant var;
-	obj->PropGet(0, name, NULL, &var, obj);
-	return (tjs_int)var;
-}
-
-// オブジェクトに数値を格納
-static void setIntProp(iTJSDispatch2 *obj, const tjs_char *name, int value)
-{
-	tTJSVariant var = value;
-	obj->PropSet(TJS_MEMBERENSURE, name,  NULL, &var, obj);
-}
-
-// オブジェクトに文字列を格納
-static void setStrProp(iTJSDispatch2 *obj, const tjs_char *name, ttstr &value)
-{
-	tTJSVariant var = value;
-	obj->PropSet(TJS_MEMBERENSURE, name,  NULL, &var, obj);
-}
+// ncb.typeconv: cast: enum->int
+NCB_TYPECONV_CAST_INTEGER(psd_layer_type);
+NCB_TYPECONV_CAST_INTEGER(psd_blend_mode);
 
 static int convBlendMode(psd_blend_mode mode)
 {
@@ -66,11 +49,10 @@ static int convBlendMode(psd_blend_mode mode)
 
 class PSD {
 
-
-	
 protected:
 	psd_context *context; //< 処理用コンテキスト
 	psd_status status;    //< 最後の処理のステータス
+
 public:
 	/**
 	 * コンストラクタ
@@ -170,22 +152,22 @@ public:
 		checkLayerNo(no);
 		psd_layer_record *lay = context->layer_records + no;
 		tTJSVariant result;	
-		iTJSDispatch2 *obj;
-		if ((obj = TJSCreateDictionaryObject()) != NULL) {
-			setIntProp(obj, L"layer_type", lay->layer_type);
-			setIntProp(obj, L"top",        lay->top);
-			setIntProp(obj, L"left",       lay->left);
-			setIntProp(obj, L"bottom",     lay->bottom);
-			setIntProp(obj, L"right",      lay->right);
-			setIntProp(obj, L"width",      lay->width);
-			setIntProp(obj, L"height",     lay->height);
-			setIntProp(obj, L"blend_mode", lay->blend_mode);
-			setIntProp(obj, L"opacity",    lay->opacity);
-			setIntProp(obj, L"visible",    lay->visible);
-			setStrProp(obj, L"name",       layname(lay));
-			setIntProp(obj, L"type",       convBlendMode(lay->blend_mode));
-			result = obj;
-			obj->Release();
+		ncbDictionaryAccessor dict;
+		if (dict.IsValid()) {
+#define SETPROP(dict, obj, prop) dict.SetValue(L ## #prop, obj->prop)
+			SETPROP(dict, lay, layer_type);
+			SETPROP(dict, lay, top);
+			SETPROP(dict, lay, left);
+			SETPROP(dict, lay, bottom);
+			SETPROP(dict, lay, right);
+			SETPROP(dict, lay, width);
+			SETPROP(dict, lay, height);
+			SETPROP(dict, lay, blend_mode);
+			SETPROP(dict, lay, opacity);
+			SETPROP(dict, lay, visible);
+			dict.SetValue(L"name", layname(lay));
+			dict.SetValue(L"type", convBlendMode(lay->blend_mode));
+			result = dict;
 		}
 		return result;
 	}
@@ -214,25 +196,25 @@ public:
 			return;
 		}
 
-		iTJSDispatch2 *obj = layer.AsObjectNoAddRef();
-		setIntProp(obj, L"left", lay->left);
-		setIntProp(obj, L"top",  lay->top);
-		setIntProp(obj, L"width", width);
-		setIntProp(obj, L"height", height);
-		setIntProp(obj, L"type", convBlendMode(lay->blend_mode));
-		setIntProp(obj, L"opacity", lay->opacity);
-		setIntProp(obj, L"visible", lay->visible);
-		setIntProp(obj, L"imageLeft",  0);
-		setIntProp(obj, L"imageTop",   0);
-		setIntProp(obj, L"imageWidth",  width);
-		setIntProp(obj, L"imageHeight", height);
-		setStrProp(obj, L"name", layname(lay));
-		
+		ncbPropAccessor obj(layer.AsObject());
+		SETPROP(obj, lay, left);
+		SETPROP(obj, lay, top);
+		obj.SetValue(L"width",  width);
+		obj.SetValue(L"height", height);
+		obj.SetValue(L"type",   convBlendMode(lay->blend_mode));
+		SETPROP(obj, lay, opacity);
+		SETPROP(obj, lay, visible);
+		obj.SetValue(L"imageLeft",  0);
+		obj.SetValue(L"imageTop",   0);
+		obj.SetValue(L"imageWidth",  width);
+		obj.SetValue(L"imageHeight", height);
+		obj.SetValue(L"name", layname(lay));
+
 		// 画像データのコピー
 		psd_argb_color *src = lay->image_data;
 		int srclen = width * 4;
-		unsigned char *buffer = (unsigned char*)getIntProp(obj, L"mainImageBufferForWrite");
-		int pitch = getIntProp(obj, L"mainImageBufferPitch");
+		unsigned char *buffer = (unsigned char*)obj.GetValue(L"mainImageBufferForWrite", ncbTypedefs::Tag<tjs_int>());
+		int pitch = obj.GetValue(L"mainImageBufferPitch", ncbTypedefs::Tag<tjs_int>());
 		for (int y=0;y<height;y++) {
 			memcpy(buffer, (unsigned char*)src, srclen);
 			src    += width;
@@ -262,7 +244,7 @@ public:
 					if (block) for (int i = 0; i < sr->number_of_slices; i++) {
 						ncbDictionaryAccessor tmp;
 						if (tmp.IsValid()) {
-#define SLICEPROP(tag) 		tmp.SetValue(L ## #tag, block[i]. tag)
+#define SLICEPROP(tag) 		SETPROP(tmp, (block + i), tag)
 							SLICEPROP(id);
 							SLICEPROP(group_id);
 							SLICEPROP(origin);
