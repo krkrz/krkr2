@@ -46,6 +46,8 @@ extern void psd_alpha_channel_free(psd_context * context);
 extern psd_status psd_get_path(psd_context * context, psd_int length);
 extern void psd_path_free(psd_context * context);
 
+// for unicode string resoruce added by miahmie. 2007/11/26
+extern psd_int psd_stream_get_unicode_string(psd_context * context);
 
 psd_status psd_get_image_resource(psd_context * context)
 {
@@ -488,8 +490,8 @@ psd_status psd_get_image_resource(psd_context * context)
 						context->slices_resource.bounding_bottom = psd_stream_get_int(context);
 						context->slices_resource.bounding_right = psd_stream_get_int(context);
 						// Name of group of slices: Unicode string
-						size = psd_stream_get_int(context) * 2;
-						psd_stream_get_null(context, size);
+						context->slices_resource.name_string_id = psd_stream_get_unicode_string(context);
+						
 						// Number of slices to follow
 						context->slices_resource.number_of_slices = psd_stream_get_int(context);
 						context->slices_resource.slices_resource_block = (psd_slices_resource_block *)psd_malloc(context->slices_resource.number_of_slices * sizeof(psd_slices_resource_block));
@@ -505,29 +507,29 @@ psd_status psd_get_image_resource(psd_context * context)
 							if(context->slices_resource.slices_resource_block[i].origin == 1)
 								context->slices_resource.slices_resource_block[i].associated_layer_id = psd_stream_get_int(context);
 							// Name: Unicode string
-							size = psd_stream_get_int(context) * 2;
-							psd_stream_get_null(context, size);
+							context->slices_resource.slices_resource_block[i].name_string_id = psd_stream_get_unicode_string(context);
+							
 							context->slices_resource.slices_resource_block[i].type = psd_stream_get_int(context);
 							context->slices_resource.slices_resource_block[i].left = psd_stream_get_int(context);
 							context->slices_resource.slices_resource_block[i].top = psd_stream_get_int(context);
 							context->slices_resource.slices_resource_block[i].right = psd_stream_get_int(context);
 							context->slices_resource.slices_resource_block[i].bottom = psd_stream_get_int(context);
 							// URL: Unicode string
-							size = psd_stream_get_int(context) * 2;
-							psd_stream_get_null(context, size);
+							context->slices_resource.slices_resource_block[i].url_string_id = psd_stream_get_unicode_string(context);
+							
 							// Target: Unicode string
-							size = psd_stream_get_int(context) * 2;
-							psd_stream_get_null(context, size);
+							context->slices_resource.slices_resource_block[i].target_string_id = psd_stream_get_unicode_string(context);
+							
 							// Message: Unicode string
-							size = psd_stream_get_int(context) * 2;
-							psd_stream_get_null(context, size);
+							context->slices_resource.slices_resource_block[i].message_string_id = psd_stream_get_unicode_string(context);
+							
 							// Alt Tag: Unicode string
-							size = psd_stream_get_int(context) * 2;
-							psd_stream_get_null(context, size);
+							context->slices_resource.slices_resource_block[i].alt_tag_string_id = psd_stream_get_unicode_string(context);
+							
 							context->slices_resource.slices_resource_block[i].cell_text_is_html = psd_stream_get_char(context);
 							// Cell text: Unicode string
-							size = psd_stream_get_int(context) * 2;
-							psd_stream_get_null(context, size);
+							context->slices_resource.slices_resource_block[i].cell_text_string_id = psd_stream_get_unicode_string(context);
+							
 							context->slices_resource.slices_resource_block[i].horizontal_alignment = psd_stream_get_int(context);
 							context->slices_resource.slices_resource_block[i].veritcal_alignment = psd_stream_get_int(context);
 							context->slices_resource.slices_resource_block[i].color = psd_argb_to_color(psd_stream_get_char(context), 

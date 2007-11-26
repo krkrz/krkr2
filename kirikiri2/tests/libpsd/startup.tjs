@@ -79,7 +79,7 @@ class MyWindow extends Window
 			slay.setSizeToImageSize();
 			slay.visible = true;
 			layers.add(slay);
-			dm(@"slice bounding box left:${.left} top:${.top} right:${.right} bottom:${.bottom}");
+			dm(@"slices: ${dictToString(sliceinfo)}");
 			dm(@"slice counts ${.slices.count}");
 			for (var i = 0; i < .slices.count; i++) {
 				var s = .slices[i];
