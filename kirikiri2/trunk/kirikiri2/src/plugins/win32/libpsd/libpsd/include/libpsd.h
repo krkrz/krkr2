@@ -415,6 +415,14 @@ typedef struct _psd_slices_resource_block
 	psd_int						horizontal_alignment;
 	psd_int						veritcal_alignment;
 	psd_argb_color				color;
+
+	// added by miahmie. 2007/11/26
+	psd_int						name_string_id;
+	psd_int						url_string_id;
+	psd_int						target_string_id;
+	psd_int						message_string_id;
+	psd_int						alt_tag_string_id;
+	psd_int						cell_text_string_id;
 } psd_slices_resource_block;
 
 // Slices resource format
@@ -427,6 +435,9 @@ typedef struct _psd_slices_resource{
 	psd_int						bounding_right;
 	psd_int						number_of_slices;// Number of slices to follow. See Slices resource block in the next table.
 	psd_slices_resource_block * slices_resource_block;
+
+	// added by miahmie. 2007/11/26
+	psd_int						name_string_id;
 } psd_slices_resource;
 
 // Border information
@@ -528,6 +539,13 @@ typedef struct _psd_path
 	psd_bool					initial_fill;
 } psd_path;
 
+// for unicode string resoruce added by miahmie. 2007/11/26
+typedef struct _psd_unicode_strings
+{
+	psd_int						id;
+	psd_int						name_length;
+	psd_ushort *				name;
+} psd_unicode_strings;
 
 // end of image resources section
 /*********************************************************************************/
@@ -1314,6 +1332,10 @@ typedef struct _psd_context
 	psd_int						temp_channel_length;
 	psd_int						per_channel_length;
 	psd_int						max_channel_length;
+
+	// for unicode string resoruce added by miahmie. 2007/11/26
+	psd_int						number_of_unicode_strings;
+	psd_unicode_strings *		unicode_strings;
 } psd_context;
 
 

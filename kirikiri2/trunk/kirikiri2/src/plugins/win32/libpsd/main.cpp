@@ -223,6 +223,27 @@ public:
 	}
 
 	/**
+	 * 文字リソースの取得
+	 * @param id 文字列ID
+	 * @return 文字列リソース
+	 */
+	ttstr getStringResource(int id) {
+		ttstr ret;
+		if (!context) TVPThrowExceptionMessage(L"no data");
+		if (id < 0 || id >= context->number_of_unicode_strings)
+			TVPThrowExceptionMessage(L"no such string resouce");
+
+		psd_unicode_strings * str = context->unicode_strings + id;
+		psd_ushort *name = str->name;
+		if (str->name_length > 0) {
+			for (int i = 0; i < str->name_length; i++) {
+				ret += (tjs_char)_byteswap_ushort(*name++);
+			}
+		}
+		return ret;
+	}
+
+	/**
 	 * スライスデータの読み出し
 	 * @return スライス情報辞書 %[ top, left, bottom, right, slices:[ %[ id, group_id, left, top, bottom, right ], ... ] ]
 	 *         スライス情報がない場合は void を返す
@@ -239,6 +260,7 @@ public:
 				dict.SetValue(L"left",   sr->bounding_left);
 				dict.SetValue(L"bottom", sr->bounding_bottom);
 				dict.SetValue(L"right",  sr->bounding_right);
+				dict.SetValue(L"name",   getStringResource(sr->name_string_id));
 				if (arr.IsValid()) {
 					psd_slices_resource_block *block = sr->slices_resource_block;
 					if (block) for (int i = 0; i < sr->number_of_slices; i++) {
@@ -258,6 +280,12 @@ public:
 							SLICEPROP(horizontal_alignment);
 							SLICEPROP(veritcal_alignment);
 							SLICEPROP(color);
+							tmp.SetValue(L"name",      getStringResource(block[i].name_string_id));
+							tmp.SetValue(L"url",       getStringResource(block[i].url_string_id));
+							tmp.SetValue(L"target",    getStringResource(block[i].target_string_id));
+							tmp.SetValue(L"message",   getStringResource(block[i].message_string_id));
+							tmp.SetValue(L"alt_tag",   getStringResource(block[i].alt_tag_string_id));
+							tmp.SetValue(L"cell_text", getStringResource(block[i].cell_text_string_id));
 							arr.SetValue((tjs_int32)i, tmp.GetDispatch());
 						}
 					}
