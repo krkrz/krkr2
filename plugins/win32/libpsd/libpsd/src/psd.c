@@ -49,6 +49,9 @@ extern void psd_layer_and_mask_free(psd_context * context);
 extern void psd_image_data_free(psd_context * context);
 extern void psd_image_blend_free(psd_context * context);
 
+// for unicode string resoruce added by miahmie. 2007/11/26
+extern void psd_unicode_strings_free(psd_context * context);
+
 static psd_status psd_main_loop(psd_context * context);
 
 
@@ -141,6 +144,8 @@ psd_status psd_image_free(psd_context * context)
 	
 	psd_image_blend_free(context);
 	psd_stream_free(context);
+	
+	psd_unicode_strings_free(context);
 	
 	psd_free(context);
 
