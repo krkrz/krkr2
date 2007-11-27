@@ -8,6 +8,8 @@
 #include <stdio.h>
 #include "IrrCompileConfig.h"
 
+struct IStream;
+
 /** \mainpage irrXML 1.2 API documentation
  <div align="center"><img src="logobig.png" ></div>
 
@@ -422,7 +424,7 @@ namespace io
 	\return Returns a pointer to the created xml parser. This pointer should be 
 	deleted using 'delete' after no longer needed. Returns 0 if an error occured
 	and the file could not be opened. */
-	IRRLICHT_API IrrXMLReader* IRRCALLCONV createIrrXMLReader(FILE* file);
+	IRRLICHT_API IrrXMLReader* IRRCALLCONV createIrrXMLReader(IStream* file);
 
 	//! Creates an instance of an UFT-8 or ASCII character xml parser. 
 	/** This means that all character data will be returned in 8 bit ASCII or UTF-8. The file to read can 
@@ -459,7 +461,7 @@ namespace io
 	\return Returns a pointer to the created xml parser. This pointer should be 
 	deleted using 'delete' after no longer needed. Returns 0 if an error occured
 	and the file could not be opened. */
-	IRRLICHT_API IrrXMLReaderUTF16* IRRCALLCONV createIrrXMLReaderUTF16(FILE* file);
+	IRRLICHT_API IrrXMLReaderUTF16* IRRCALLCONV createIrrXMLReaderUTF16(IStream* file);
 
 	//! Creates an instance of an UFT-16 xml parser. 
 	/** This means that all character data will be returned in UTF-16. The file to read can 
@@ -496,7 +498,7 @@ namespace io
 	\return Returns a pointer to the created xml parser. This pointer should be 
 	deleted using 'delete' after no longer needed. Returns 0 if an error occured
 	and the file could not be opened. */
-	IRRLICHT_API IrrXMLReaderUTF32* IRRCALLCONV createIrrXMLReaderUTF32(FILE* file);
+	IRRLICHT_API IrrXMLReaderUTF32* IRRCALLCONV createIrrXMLReaderUTF32(IStream* file);
 
 	//! Creates an instance of an UFT-32 xml parser. 
 	/** This means that

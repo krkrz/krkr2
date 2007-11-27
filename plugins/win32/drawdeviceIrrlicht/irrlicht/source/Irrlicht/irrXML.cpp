@@ -8,6 +8,9 @@
 #include "fast_atof.h"
 #include "CXMLReaderImpl.h"
 
+#include <windows.h>
+#include "../../../../tp_stub.h"
+
 namespace irr
 {
 namespace io
@@ -23,14 +26,14 @@ public:
 		: File(0), Size(0), Close(true)
 	{
 		// open file
-		File = fopen(filename, "rb");
+		File = TVPCreateIStream(ttstr(filename), TJS_BS_READ);
 
 		if (File)
 			getFileSize();
 	}
 
 	//! construct from FILE pointer
-	CFileReadCallBack(FILE* file)
+	CFileReadCallBack(IStream* file)
 		: File(file), Size(0), Close(false)
 	{
 		if (File)
@@ -40,8 +43,10 @@ public:
 	//! destructor
 	virtual ~CFileReadCallBack()
 	{
-		if (Close && File)
-			fclose(File);
+		if (Close && File) {
+			File->Release();
+			File = NULL;
+		}
 	}
 
 	//! Reads an amount of bytes from the file.
@@ -50,7 +55,11 @@ public:
 		if (!File)
 			return 0;
 
-		return (int)fread(buffer, 1, sizeToRead, File);
+		ULONG len;
+		if (File->Read(buffer,sizeToRead,&len) == S_OK) {
+			return len;
+		} 
+		return 9;
 	}
 
 	//! Returns size of file in bytes
@@ -64,12 +73,12 @@ private:
 	//! retrieves the file size of the open file
 	void getFileSize()
 	{
-		fseek(File, 0, SEEK_END);
-		Size = ftell(File);
-		fseek(File, 0, SEEK_SET);
+		STATSTG stat;
+		File->Stat(&stat, STATFLAG_NONAME);
+		Size = (long)stat.cbSize.QuadPart;
 	}
 
-	FILE* File;
+	IStream* File;
 	long Size;
 	bool Close;
 
@@ -88,7 +97,7 @@ IRRLICHT_API IrrXMLReader* IRRCALLCONV createIrrXMLReader(const char* filename)
 
 
 //! Creates an instance of an UFT-8 or ASCII character xml parser. 
-IRRLICHT_API IrrXMLReader* IRRCALLCONV createIrrXMLReader(FILE* file)
+IRRLICHT_API IrrXMLReader* IRRCALLCONV createIrrXMLReader(IStream* file)
 {
 	return new CXMLReaderImpl<char, IXMLBase>(new CFileReadCallBack(file)); 
 }
@@ -109,7 +118,7 @@ IRRLICHT_API IrrXMLReaderUTF16* IRRCALLCONV createIrrXMLReaderUTF16(const char* 
 
 
 //! Creates an instance of an UTF-16 xml parser. 
-IRRLICHT_API IrrXMLReaderUTF16* IRRCALLCONV createIrrXMLReaderUTF16(FILE* file)
+IRRLICHT_API IrrXMLReaderUTF16* IRRCALLCONV createIrrXMLReaderUTF16(IStream* file)
 {
 	return new CXMLReaderImpl<char16, IXMLBase>(new CFileReadCallBack(file)); 
 }
@@ -130,7 +139,7 @@ IRRLICHT_API IrrXMLReaderUTF32* IRRCALLCONV createIrrXMLReaderUTF32(const char* 
 
 
 //! Creates an instance of an UTF-32 xml parser. 
-IRRLICHT_API IrrXMLReaderUTF32* IRRCALLCONV createIrrXMLReaderUTF32(FILE* file)
+IRRLICHT_API IrrXMLReaderUTF32* IRRCALLCONV createIrrXMLReaderUTF32(IStream* file)
 {
 	return new CXMLReaderImpl<char32, IXMLBase>(new CFileReadCallBack(file)); 
 }

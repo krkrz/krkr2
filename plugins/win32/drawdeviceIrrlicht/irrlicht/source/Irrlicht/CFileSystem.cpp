@@ -24,6 +24,10 @@
 #include <stdlib.h>
 #endif
 
+// XXX support for kirikiri
+#include <windows.h>
+#include "../../../../tp_stub.h"
+
 namespace irr
 {
 namespace io
@@ -268,15 +272,10 @@ bool CFileSystem::existFile(const c8* filename) const
 		if (UnZipFileSystems[i]->findFile(filename)!=-1)
 			return true;
 
-	FILE* f = fopen(filename, "rb");
-	if (f) 
-	{
-		fclose(f);
-		return true;
-	}
+	return TVPIsExistentStorage(ttstr(filename));
 
-	_IRR_IMPLEMENT_MANAGED_MARSHALLING_BUGFIX;
-	return false;
+//	_IRR_IMPLEMENT_MANAGED_MARSHALLING_BUGFIX;
+//	return false;
 }
 
 
