@@ -4,6 +4,9 @@
 
 #include "CReadFile.h"
 
+// XXX support for kirikiri
+#include "../../../../tp_stub.h"
+
 namespace irr
 {
 namespace io
@@ -25,8 +28,10 @@ CReadFile::CReadFile(const c8* fileName)
 
 CReadFile::~CReadFile()
 {
-	if (File)
-		fclose(File);
+	if (File) {
+		File->Release();
+		File = NULL;
+	}
 }
 
 
@@ -37,7 +42,11 @@ s32 CReadFile::read(void* buffer, u32 sizeToRead)
 	if (!isOpen())
 		return 0;
 
-	return fread(buffer, 1, sizeToRead, File);
+	ULONG len;
+	if (File->Read(buffer,sizeToRead,&len) == S_OK) {
+		return len;
+	} 
+	return 0;
 }
 
 
@@ -50,7 +59,11 @@ bool CReadFile::seek(long finalPos, bool relativeMovement)
 	if (!isOpen())
 		return false;
 
-	return fseek(File, finalPos, relativeMovement ? SEEK_CUR : SEEK_SET) == 0;
+	DWORD dwOrigin = relativeMovement ? STREAM_SEEK_CUR : STREAM_SEEK_SET;
+	LARGE_INTEGER move;
+	move.QuadPart = finalPos;
+	ULARGE_INTEGER newposition;
+	return File->Seek(move, dwOrigin, &newposition) == S_OK;
 }
 
 
@@ -66,7 +79,14 @@ long CReadFile::getSize() const
 //! returns where in the file we are.
 long CReadFile::getPos() const
 {
-	return ftell(File);
+	if (File) {
+		LARGE_INTEGER move = {0};
+		ULARGE_INTEGER newposition;
+		if (File->Seek(move, STREAM_SEEK_CUR, &newposition) == S_OK) {
+			return (long)newposition.QuadPart;
+		}
+	}
+	return -1;
 }
 
 
@@ -80,15 +100,14 @@ void CReadFile::openFile()
 		return;
 	}
 
-	File = fopen(Filename.c_str(), "rb");
+	File = TVPCreateIStream(ttstr(Filename.c_str()), TJS_BS_READ);
 
 	if (File)
 	{
 		// get FileSize
-
-		fseek(File, 0, SEEK_END);
-		FileSize = getPos();
-		fseek(File, 0, SEEK_SET);
+		STATSTG stat;
+		File->Stat(&stat, STATFLAG_NONAME);
+		FileSize = (long)stat.cbSize.QuadPart;
 	}
 }
 

@@ -5,6 +5,7 @@
 #ifndef __C_WRITE_FILE_H_INCLUDED__
 #define __C_WRITE_FILE_H_INCLUDED__
 
+#include <windows.h>
 #include <stdio.h>
 #include "IWriteFile.h"
 #include "irrString.h"
@@ -48,7 +49,7 @@ namespace io
 		void openFile(bool append);
 
 		core::stringc Filename;
-		FILE* File;
+		IStream* File;
 		long FileSize;
 	};
 

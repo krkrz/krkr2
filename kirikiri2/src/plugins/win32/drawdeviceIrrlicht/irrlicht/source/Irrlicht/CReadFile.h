@@ -5,6 +5,7 @@
 #ifndef __C_READ_FILE_H_INCLUDED__
 #define __C_READ_FILE_H_INCLUDED__
 
+#include <windows.h>
 #include <stdio.h>
 #include "IReadFile.h"
 #include "irrString.h"
@@ -56,7 +57,7 @@ namespace io
 		void openFile();
 
 		core::stringc Filename;
-		FILE* File;
+		IStream* File;
 		long FileSize;
 	};
 
