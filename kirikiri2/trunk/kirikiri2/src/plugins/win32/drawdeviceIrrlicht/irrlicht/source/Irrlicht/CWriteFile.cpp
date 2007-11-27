@@ -3,7 +3,9 @@
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
 #include "CWriteFile.h"
-#include <stdio.h>
+
+// XXX support for kirikiri
+#include "../../../../tp_stub.h"
 
 namespace irr
 {
@@ -26,8 +28,10 @@ CWriteFile::CWriteFile(const c8* fileName, bool append)
 
 CWriteFile::~CWriteFile()
 {
-	if (File)
-		fclose(File);
+	if (File) {
+		File->Release();
+		File = NULL;
+	}
 }
 
 
@@ -46,7 +50,11 @@ s32 CWriteFile::write(const void* buffer, u32 sizeToWrite)
 	if (!isOpen())
 		return 0;
 
-	return fwrite(buffer, 1, sizeToWrite, File);
+	DWORD len;
+	if (File->Write(buffer,sizeToWrite,&len) == S_OK) {
+		return len;
+	}
+	return 0;
 }
 
 
@@ -59,7 +67,11 @@ bool CWriteFile::seek(long finalPos, bool relativeMovement)
 	if (!isOpen())
 		return false;
 
-	return fseek(File, finalPos, relativeMovement ? SEEK_CUR : SEEK_SET) == 0;
+	DWORD dwOrigin = relativeMovement ? STREAM_SEEK_CUR : STREAM_SEEK_SET;
+	LARGE_INTEGER move;
+	move.QuadPart = finalPos;
+	ULARGE_INTEGER newposition;
+	return File->Seek(move, dwOrigin, &newposition) == S_OK;
 }
 
 
@@ -67,7 +79,14 @@ bool CWriteFile::seek(long finalPos, bool relativeMovement)
 //! returns where in the file we are.
 long CWriteFile::getPos() const
 {
-	return ftell(File);
+	if (File) {
+		LARGE_INTEGER move = {0};
+		ULARGE_INTEGER newposition;
+		if (File->Seek(move, STREAM_SEEK_CUR, &newposition) == S_OK) {
+			return (long)newposition.QuadPart;
+		}
+	}
+	return -1;
 }
 
 
@@ -81,15 +100,14 @@ void CWriteFile::openFile(bool append)
 		return; 
 	}
 
-	File = fopen(Filename.c_str(), append ? "ab" : "wb");
+	File = TVPCreateIStream(ttstr(Filename.c_str()), append ? TJS_BS_APPEND : TJS_BS_READ);
 
 	if (File)
 	{
 		// get FileSize
-
-		fseek(File, 0, SEEK_END);
-		FileSize = ftell(File);
-		fseek(File, 0, SEEK_SET);
+		STATSTG stat;
+		File->Stat(&stat, STATFLAG_NONAME);
+		FileSize = (long)stat.cbSize.QuadPart;
 	}
 }
 
