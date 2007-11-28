@@ -468,6 +468,7 @@ SigChecker::CheckSignatureOfFile(int ignorestart, int ignoreend, int ofs)
 				ofs += read;
 				
 				if (canceled) {
+					st->Release();
 					return CANCELED;
 				}
 				// callback notify
@@ -485,6 +486,7 @@ SigChecker::CheckSignatureOfFile(int ignorestart, int ignoreend, int ofs)
 					ofs += read;
 
 					if (canceled) {
+						st->Release();
 						return CANCELED;
 					}
 					// callback notify
