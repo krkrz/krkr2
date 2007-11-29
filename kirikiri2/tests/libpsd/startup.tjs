@@ -57,13 +57,9 @@ class MyWindow extends Window
 
 		var count = psd.layer_count;
 		for (var i=0;i<count;i++) {
-			dm("レイヤ" + i + ":" + psd.getLayerName(i));
 			var info = psd.getLayerInfo(i);
-			var names = [];
-			names.assign(info);
-			for (var j=0; j<names.count; j+= 2) {
-				dm("\t" + names[j] + ":" + names[j+1]);
-			}
+			dm(@'■レイヤ${i}: "${psd.getLayerName(i)}"\n' + dictToString(info));
+
 			if (psd.getLayerType(i) == PSD.layer_type_normal) {
 				var layer = new Layer(this, base);
 				psd.getLayerData(layer, i);
@@ -79,7 +75,7 @@ class MyWindow extends Window
 			slay.setSizeToImageSize();
 			slay.visible = true;
 			layers.add(slay);
-			dm(@"slices: ${dictToString(sliceinfo)}");
+			dm("slices\n" + dictToString(sliceinfo));
 			dm(@"slice counts ${.slices.count}");
 			for (var i = 0; i < .slices.count; i++) {
 				var s = .slices[i];
@@ -90,17 +86,45 @@ class MyWindow extends Window
 					slay.fillRect(s.left, s.top, 1, h, 0xC0000000 | col);
 					slay.fillRect(s.left, s.top, w, 1, 0xC0000000 | col);
 					slay.drawText(s.left, s.top, string s.group_id, 0x808080, 255, true) if (s.group_id != 0);
-					dm(@"  slice${i}  ${dictToString(s)}");
+					dm(@'■スライス${i}: "${s.name}"\n' + dictToString(s));
 				}
 			}
 		}
+
+		var guideinfo;
+		if ((guideinfo = psd.getGuides()) !== void) {
+			var glay = new Layer(this, base);
+			glay.name = "guides";
+			glay.setImageSize(psd.width, psd.height);
+			glay.setSizeToImageSize();
+			glay.visible = true;
+			layers.add(glay);
+
+			var h = guideinfo.horizontal, v = guideinfo.vertical;
+			dm("guides", (h !== void) ? h.count : "", (v !== void) ? v.count : "");
+			if (h !== void) for (var i = 0; i < h.count; i++) {
+				dm("horz", h[i]);
+				glay.fillRect(0, h[i] \ 32, psd.width, 1,  0xC0808080);
+			}
+			if (v !== void) for (var i = 0; i < h.count; i++) {
+				dm("vert", v[i]);
+				glay.fillRect(v[i] \ 32, 0, 1, psd.height, 0xC0808080);
+			}
+		}
+
 	}
 	function dictToString(dic) {
-		var ret = "", tmp = [];
+		var ret = [], tmp = [];
 		tmp.assign(dic);
-		for (var i = 0; i < tmp.count; i+=2)
-			ret += @"${tmp[i]}:${tmp[i+1]} ";
-		return ret;
+		for (var i = 0; i < tmp.count; i+=2) {
+			var name = tmp[i], value = tmp[i+1];
+			if (name != "") {
+				value = "0x%08X".sprintf(value) if (name.indexOf("color") >= 0);
+				ret.add(@"    ${name}:${value}");
+			}
+		}
+		ret.sort();
+		return ret.join("\n");
 	}
 
 	function openDialog() {
