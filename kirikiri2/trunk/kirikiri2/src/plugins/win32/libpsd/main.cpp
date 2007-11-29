@@ -167,6 +167,40 @@ public:
 			SETPROP(dict, lay, visible);
 			dict.SetValue(L"name", layname(lay));
 			dict.SetValue(L"type", convBlendMode(lay->blend_mode));
+
+			// additional information
+			SETPROP(dict, lay, clipping);
+			SETPROP(dict, lay, transparency_protected);
+			SETPROP(dict, lay, obsolete);
+			SETPROP(dict, lay, pixel_data_irrelevant);
+			// ...struct: layer_mask_info
+			// ...struct: layer_blending_ranges
+			// ...struct: vector_mask
+			// ...array:  layer_info_type/data (layer_info_count)
+			SETPROP(dict, lay, adjustment_valid); // 調整レイヤーかどうか？
+			SETPROP(dict, lay, fill_opacity);
+			SETPROP(dict, lay, layer_name_id);
+			SETPROP(dict, lay, layer_id);
+			SETPROP(dict, lay, layer_version);
+			SETPROP(dict, lay, blend_clipped);
+			SETPROP(dict, lay, blend_interior);
+			SETPROP(dict, lay, knockout);
+			SETPROP(dict, lay, transparency);
+			SETPROP(dict, lay, composite);
+			SETPROP(dict, lay, position_respectively);
+			SETPROP(dict, lay, sheet_color);
+			SETPROP(dict, lay, reference_point_x); // 塗りつぶしレイヤ（パターン）のオフセット
+			SETPROP(dict, lay, reference_point_y); // 塗りつぶしレイヤ（パターン）のオフセット
+			SETPROP(dict, lay, transparency_shapes_layer);
+			SETPROP(dict, lay, layer_mask_hides_effects);
+			SETPROP(dict, lay, vector_mask_hides_effects);
+			SETPROP(dict, lay, divider_type);
+			SETPROP(dict, lay, divider_blend_mode);
+
+			// group layer はスクリプト側では layer_id 参照で引くようにする
+			if (lay->group_layer != NULL)
+				dict.SetValue(L"group_layer_id", lay->group_layer->layer_id);
+
 			result = dict;
 		}
 		return result;
@@ -297,6 +331,37 @@ public:
 		return result;
 	}
 
+	/**
+	 * ガイドデータの読み出し
+	 * @return ガイド情報辞書 %[ vertical:[ x1, x2, ... ], horizontal:[ y1, y2, ... ] ]
+	 *         ガイド情報がない場合は void を返す
+	 */
+	tTJSVariant getGuides() {
+		if (!context) TVPThrowExceptionMessage(L"no data");
+		tTJSVariant result;	
+		ncbDictionaryAccessor dict;
+		ncbArrayAccessor vert, horz;
+		if (context->fill_grid_and_guides_info) {
+			psd_grid_guides *gg = &context->grid_guides;
+			if (dict.IsValid() && vert.IsValid() && horz.IsValid()) {
+				dict.SetValue(L"horz_grid",  gg->horz_grid);
+				dict.SetValue(L"vert_grid",  gg->vert_grid);
+				dict.SetValue(L"vertical",   vert.GetDispatch());
+				dict.SetValue(L"horizontal", horz.GetDispatch());
+				for (int i = 0, v = 0, h = 0; i < gg->guide_count; i++) {
+					if (gg->guide_direction[i] == 0) {
+						vert.SetValue(v++, gg->guide_coordinate[i]);
+					} else {
+						horz.SetValue(h++, gg->guide_coordinate[i]);
+					}
+				}
+				result = dict;
+			}
+		}
+		return result;
+	}
+
+
 };
 
 #define ENUM(n) Variant(#n + 4, (int)n)
@@ -375,4 +440,5 @@ NCB_REGISTER_CLASS(PSD) {
 	NCB_METHOD(getLayerData);
 
 	NCB_METHOD(getSlices);
+	NCB_METHOD(getGuides);
 };
