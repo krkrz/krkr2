@@ -2,24 +2,34 @@
 
 Irrlicht ベースの drawdevice 実装のテストコードです
 
-- Irrclicht のソースを吉里吉里レポジトリにとりこみ(1.4betaあわせ)
-- gameswf は単独プラグインが安定化してからとりこみ予定でいったん削除
-
-●コンパイル方法
-
-コンパイルには DirectX9 SDK が必要です。
-
 ●動作上の特記事項
 
-・DirectX9 専用でコンパイルされています。
-  DirectX9 が使えない場合は drawdevice 設定時に例外がおこります
+・DirectX9 専用で構築されています。コンパイルには DirectX9 SDK が必要です。
+
+  ※DirectX9 が使えない場合は drawdevice 設定時に例外がおこります
 
 ・Irrlicht からのファイルアクセスは吉里吉里のファイル空間に対して行われます
-　＜まだ未実装
 
 ●使い方
 
-  manual.tjs 参照
+Window の drawDevice に対して指定します。
+
+-------------------------------------------
+Plugins.link("drawdeviceIrrlicht.dll");
+
+class MyWindow extends Window {
+
+	function MyWindow() {
+		super.Window();
+		setInnerSize(800, 600);
+		// drawdevice を差し替える
+		drawDevice = new Irrlicht();
+		add(new Layer(this, null); // プライマリレイヤ指定
+	}
+};
+-------------------------------------------
+
+デバイスの機能については manual.tjs を参照してください
 
 ●今後の予定
 
