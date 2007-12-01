@@ -55,8 +55,8 @@ namespace scene
 		virtual bool useAnimationFrom(const ISkinnedMesh *mesh) = 0;
 
 		//!Update Normals when Animating
-		//!False= Don't (default)
-		//!True= Update normals, slower
+		//!False= Don't animate, faster
+		//!True= Update normals
 		virtual void updateNormalsWhenAnimating(bool on) = 0;
 
 		//!Sets Interpolation Mode
@@ -67,16 +67,6 @@ namespace scene
 
 		//! Preforms a software skin on this mesh based of joint positions
 		virtual void skinMesh() = 0;
-
-		//!Recovers the joints from the mesh
-		virtual void recoverJointsFromMesh(core::array<IBoneSceneNode*> &JointChildSceneNodes) = 0;
-
-		//!Tranfers the joint data to the mesh
-		virtual void transferJointsToMesh(const core::array<IBoneSceneNode*> &JointChildSceneNodes) = 0;
-
-		//!Creates an array of joints from this mesh
-		virtual void createJoints(core::array<IBoneSceneNode*> &JointChildSceneNodes,
-			IAnimatedMeshSceneNode* AnimatedMeshSceneNode, ISceneManager* SceneManager) = 0;
 
 		virtual void convertMeshToTangents() = 0;
 
@@ -123,7 +113,7 @@ namespace scene
 		//! Joints
 	  	struct SJoint
 		{
-			SJoint() : UseAnimationFrom(0), LocalAnimatedMatrix_Animated(false),
+			SJoint() : UseAnimationFrom(0), LocalAnimatedMatrix_Animated(false), GlobalSkinningSpace(false),
 				   positionHint(-1),scaleHint(-1),rotationHint(-1)
 			{
 			}
@@ -160,6 +150,8 @@ namespace scene
 			core::vector3df Animatedscale;
 			core::quaternion Animatedrotation;
 
+
+
 			core::matrix4 GlobalInversedMatrix; //the x format pre-calculates this
 
 		private:
@@ -168,6 +160,8 @@ namespace scene
 
 			SJoint *UseAnimationFrom;
 			bool LocalAnimatedMatrix_Animated;
+
+			bool GlobalSkinningSpace;
 
 			s32 positionHint;
 			s32 scaleHint;

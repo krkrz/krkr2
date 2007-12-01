@@ -1,4 +1,4 @@
-Changes in version 1.4 (... 2007)
+Changes in version 1.4 (30.11.2007)
 
  - Major API change: All material properties which are available per texture layer (curently texture, texture matrix, texture filters, and texture wrap mode) are separated into a new struct SMaterialLayer. You can access them via the array TextureLayer[] in SMaterial. The texture matrix methods in SMaterial are still alive, and also textures can be accessed via methods in SMaterial now. But still, many places in user code need some update (usually changing material.Textures[i] to material.TextureLayer[i].Texture etc.)
 
@@ -6,7 +6,7 @@ Changes in version 1.4 (... 2007)
 
  - the base class for nearly all Irrlicht classes has been renamed from IUnknown to IReferenceCounted
 
- - Fixed Skybox texture orientations. They are now displayed non-flipped. Existing skyboxes have to be changed, though. Echange left and right texture and rotate up-texture 270 degrees clockwise, and down-texture 90 degrees clockwise. Textures from Terragen and other tools can be used directly, now.
+ - Fixed Skybox texture orientations. They are now displayed non-flipped. Existing skyboxes have to be changed, though: Exchange left and right texture. Textures from Terragen and other tools can be used directly, now. Quake maps will also need the right/left exchange.
 
  - Added ITexture::isRenderTarget()
 
