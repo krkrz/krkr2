@@ -108,7 +108,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 	case WM_SETCURSOR:
 		envm = getEnvMapperFromHWnd(hWnd);
-		if (envm &&	!envm->irrDev->getWin32CursorControl()->isVisible())
+		if (envm && !envm->irrDev->getWin32CursorControl()->isVisible())
 		{
 			SetCursor(NULL);
 			return 0;
@@ -658,10 +658,11 @@ void CIrrDeviceWin32::present(video::IImage* image, s32 windowId, core::rect<s32
 //! notifies the device that it should close itself
 void CIrrDeviceWin32::closeDevice()
 {
-	DestroyWindow(HWnd);
-	PostQuitMessage(0);
 	MSG msg;
-	GetMessage(&msg, NULL, WM_QUIT, WM_QUIT);
+	PeekMessage(&msg, NULL, WM_QUIT, WM_QUIT, PM_REMOVE);
+	PostQuitMessage(0);
+	PeekMessage(&msg, NULL, WM_QUIT, WM_QUIT, PM_REMOVE);
+	DestroyWindow(HWnd);
 }
 
 
@@ -782,6 +783,8 @@ void CIrrDeviceWin32::getWindowsVersion(core::stringc& out)
 			out.append("Microsoft Windows 2000 ");
 		if ( osvi.dwMajorVersion == 5 && osvi.dwMinorVersion == 1 )
 			out.append("Microsoft Windows XP ");
+		if ( osvi.dwMajorVersion == 6 && osvi.dwMinorVersion == 0 )
+			out.append("Microsoft Windows Vista ");
 
 		if( bOsVersionInfoEx )
 		{
