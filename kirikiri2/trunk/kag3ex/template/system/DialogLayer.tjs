@@ -176,6 +176,12 @@ class DialogEditLayer extends EditLayer
 			if(key == VK_LEFT) key = VK_RIGHT;
 			else if(key == VK_RIGHT) key = VK_LEFT;
 		}
+		// 移動時にkeyLinkを補正
+		switch (key) {
+		case VK_LEFT: case VK_RIGHT: case VK_UP: case VK_DOWN: case VK_RETURN: case VK_TAB:
+			parent.keyLink = linkNum;
+			break;
+		}
 		super.onKeyDown(key, shift, process);
 	}
 
@@ -297,6 +303,7 @@ class DialogLayer extends KAGLayer
 
     var vertical = false;
 	var coverParent = true; // 親ウインドウを多い尽くすかどうかのフラグ
+	var isSetMode = false;  // モーダル状態かどうか
     
     /**
      * コンストラクタ
@@ -850,6 +857,9 @@ class DialogLayer extends KAGLayer
     
 	function onKeyDown(key, shift)
 	{
+		// モーダル状態ではキーを全て集めてしまうため，keyDownHook が無効になってしまう
+		if (isSetMode && window.preProcessKeys(key, shift)) return;
+
         if(!focusable || !numLinks) { return super.onKeyDown(...); }
 
         var l, r;
@@ -888,6 +898,9 @@ class DialogLayer extends KAGLayer
 		}
     }
 
+	// setMode/removeMode をフックしてモーダル状態のフラグを保持
+	function setMode()    { isSetMode = true;  super.setMode(...);    }
+	function removeMode() { isSetMode = false; super.removeMode(...); }
 
 	function findPrevFocusable(control, layer)
 	{

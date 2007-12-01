@@ -767,7 +767,6 @@ class KAGWindow extends Window
 			scWidth = width;
 			scHeight = height;
 		}
-		setInnerSize(scWidth, scHeight);
 
 		// quake 用タイマの作成
 		quakeTimer = new Timer(onQuakeTimerInterval, '');
@@ -914,6 +913,13 @@ class KAGWindow extends Window
 		// メッセージレイヤのクリア
 		clearMessageLayers(false);
 
+		// ズーム状態補正
+		if (ismain && scflags.zoomNumer != 0 && scflags.zoomDenom != 0) {
+			setZoom(scflags.zoomNumer, scflags.zoomDenom);
+		} else {
+			setZoom(1,1);
+		}
+
 		// ウィンドウ位置の調節
 		if(this.width + this.left > System.desktopLeft + System.desktopWidth)
 			left = ((System.desktopWidth - this.width) >>1) + System.desktopLeft;
@@ -923,25 +929,20 @@ class KAGWindow extends Window
 		// パッドボタンハンドラの作成
 		createPadKeyMap();
 
-
 		// ウィンドウを表示
 		if(ismain) visible = !invisible;
 
 		// 画面サイズがウィンドウサイズよりも小さい場合は
 		// フルスクリーンにしてみる
-		if(ismain)
+		if(ismain && visible)
 		{
-			if(System.screenWidth <= scWidth && System.screenHeight <= scHeight)
+			// 実サイズ
+			var w = scWidth  * zoomNumer / zoomDenom;
+			var h = scHeight * zoomNumer / zoomDenom;
+			if(System.screenWidth <= w && System.screenHeight <= h)
 				onFullScreenMenuItemClick(this);
 		}
 
-		// ズーム状態補正
-		if(ismain) {
-			if (scflags.zoomNumer != 0 && scflags.zoomDenom != 0) {
-				setZoom(scflags.zoomNumer, scflags.zoomDenom);
-			}
-		}
-		
 		// 前回起動時にフルスクリーンだった場合はフルスクリーンにしてみる
 		if(ismain && visible)
 		{
@@ -1398,10 +1399,12 @@ class KAGWindow extends Window
 	}
 
 	function setZoom(numer, denom) {
-		super.setZoom(numer, denom);
-		setInnerSize(scWidth * zoomNumer / zoomDenom,
-					 scHeight * zoomNumer / zoomDenom);
-		top++, top--; // VCRなムービーが追従するようにおまじない XXX
+		if (!fullScreen) {
+			super.setZoom(numer, denom);
+			setInnerSize(scWidth * zoomNumer / zoomDenom,
+						 scHeight * zoomNumer / zoomDenom);
+			top++, top--; // VCRなムービーが追従するようにおまじない XXX
+		}
 	}
 	
 	function onWindowedMenuItemClick(sender)
@@ -1560,6 +1563,9 @@ class KAGWindow extends Window
 
 		if(typeof this.goToStartMenuItem != "undefined")
 			goToStartMenuItem.enabled = state && startAnchorEnabled;
+
+		if(typeof this.exitMenuItem != "undefined")
+			exitMenuItem.enabled = !currentDialog;
 
 		if(typeof this.storeMenu != "undefined")
 		{
@@ -5280,6 +5286,7 @@ class KAGWindow extends Window
 	function skipToStop2()
 	{
 		// 次の停止までスキップ(早送りモード)
+		showMessageLayerByUser() if(messageLayerHiding);
 		onPrimaryClick();
 		skipMode = SKIP_FAST;
 		actualChSpeed = 0;
@@ -5672,9 +5679,11 @@ class KAGWindow extends Window
 		conductor.wait(%[
 			click : function
 			{
+				inSleep = false;
 				notifyRun();
 			} incontextof this]);
-        notifyStable();
+		inSleep = true;
+		notifyStable();
 		return -2;
 	}
 
@@ -5971,10 +5980,9 @@ class KAGWindow extends Window
 				clickWaiting = false;
 				fore.base.cursor = cursorDefault;
 				cancelAutoMode();
+				hideClickGlyphs();
 				if (tag !== void) {
 					insertTag(tag);
-				} else {
-					hideClickGlyphs();
 				}
             } incontextof this,
             click_arg : tag,
