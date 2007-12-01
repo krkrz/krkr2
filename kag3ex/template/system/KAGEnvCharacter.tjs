@@ -455,6 +455,7 @@ class KAGEnvCharacter extends KAGEnvLevelLayer, KAGEnvImage {
     nextvoice : this.setNextVoice incontextof this,
     clearvoice : this.clearVoice incontextof this,
     playvoice : this.playVoice2 incontextof this,
+	stopvoice : this.stopVoice incontextof this,
     waitvoice : this.waitVoice incontextof this,
 	facewin : function(param, elm) { disp = FACE; redraw = true; } incontextof this,
 	faceon : null,
