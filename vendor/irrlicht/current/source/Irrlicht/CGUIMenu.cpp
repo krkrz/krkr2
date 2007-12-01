@@ -40,6 +40,17 @@ void CGUIMenu::draw()
 
 	IGUISkin* skin = Environment->getSkin();
 	IGUIFont* font = skin->getFont(EGDF_MENU);
+	
+	if (font != LastFont)
+	{
+		if (LastFont)
+			LastFont->drop();
+		LastFont = font;
+		if (LastFont)
+			LastFont->grab();
+
+		recalculateSize();
+	}
 
 	core::rect<s32> rect = AbsoluteRect;
 
@@ -119,9 +130,10 @@ bool CGUIMenu::OnEvent(const SEvent& event)
 			if (!Environment->hasFocus(this))
 			{
 				Environment->setFocus(this);
-				if (Parent)
-					Parent->bringToFront(this);
 			}
+
+			if (Parent)
+				Parent->bringToFront(this); 
 
 			core::position2d<s32> p(event.MouseInput.X, event.MouseInput.Y);
 			bool shouldCloseSubMenu = hasOpenSubMenu();
