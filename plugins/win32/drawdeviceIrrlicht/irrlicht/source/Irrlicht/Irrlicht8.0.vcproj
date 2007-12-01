@@ -136,6 +136,7 @@
 				RuntimeLibrary="0"
 				BufferSecurityCheck="false"
 				EnableFunctionLevelLinking="true"
+				RuntimeTypeInfo="false"
 				PrecompiledHeaderFile=".\..\obj\IrrRelease/Irrlicht.pch"
 				AssemblerListingLocation=".\..\obj\IrrRelease/"
 				ObjectFile=".\..\obj\IrrRelease/"
@@ -143,7 +144,7 @@
 				WarningLevel="3"
 				SuppressStartupBanner="true"
 				DebugInformationFormat="0"
-				CompileAs="2"
+				CompileAs="0"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -230,7 +231,7 @@
 				SuppressStartupBanner="true"
 				DebugInformationFormat="0"
 				CallingConvention="1"
-				CompileAs="2"
+				CompileAs="0"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
