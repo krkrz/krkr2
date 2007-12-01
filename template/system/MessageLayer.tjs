@@ -283,6 +283,12 @@ class LinkEditLayer extends EditLayer
 			if(key == VK_LEFT) key = VK_RIGHT;
 			else if(key == VK_RIGHT) key = VK_LEFT;
 		}
+		// 移動時にkeyLinkを補正
+		switch (key) {
+		case VK_LEFT: case VK_RIGHT: case VK_UP: case VK_DOWN: case VK_RETURN: case VK_TAB:
+			parent.keyLink = linkNum;
+			break;
+		}
 		super.onKeyDown(key, shift, process);
 	}
 
@@ -897,6 +903,7 @@ class MessageLayer extends AnimKAGLayer
 	/*CS*/var marginR = 8; // 右マージン
 	/*CS*/var marginB = 8; // 下マージン
 	/*CS*/var marginRCh = 2; // 右端(縦書きの場合は下端)に確保する禁則処理用余白
+	var kinsokuCount;
 	/*C*/var x;
 	/*C*/var y; // 現在の表示位置
 	/*C*/var relinexpos; // 改行すべき最終右(縦書きの場合は下)位置
@@ -1439,7 +1446,8 @@ class MessageLayer extends AnimKAGLayer
 			x = marginL;
 			y = marginT;
 		}
-
+		kinsokuCount = marginRCh;
+		
 		// その他リセット
 		indentxpos = 0;
 		resetFont();
@@ -1473,6 +1481,7 @@ class MessageLayer extends AnimKAGLayer
 			y = marginT;
 			x = marginL + indentxpos;
 		}
+		kinsokuCount = marginRCh;
 		initLineLayer();
 	}
 
@@ -2023,6 +2032,7 @@ class MessageLayer extends AnimKAGLayer
 				y += lineSize + lineSpacing;
 				x = marginL + indentxpos;
 			}
+			kinsokuCount = marginRCh;
 
 			var condition;
 			if(vertical)
@@ -2052,7 +2062,9 @@ class MessageLayer extends AnimKAGLayer
 
 		if((vert ?  y >= relinexpos  : x >= relinexpos ) && autoReturn)
 		{
-			if(((lastDrawnCh=="" || wwLeading.indexOf(lastDrawnCh)==-1) &&
+			if (kinsokuCount <= 0) {
+				if(reline()) return autoReturn;
+			} else if(((lastDrawnCh=="" || wwLeading.indexOf(lastDrawnCh)==-1) &&
 				wwFollowing.indexOf(ch)==-1) ||
 				(lastDrawnCh!="" && wwFollowingWeak.indexOf(lastDrawnCh)!=-1 &&
 					wwFollowingWeak.indexOf(ch)!=-1))
@@ -2069,6 +2081,8 @@ class MessageLayer extends AnimKAGLayer
 				// 確実に 右端を越える場合
 				// ( この場合は余白は考えない )
 				if(reline()) return autoReturn;
+			} else {
+				kinsokuCount--;
 			}
 		}
 
