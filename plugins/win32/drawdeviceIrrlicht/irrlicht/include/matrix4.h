@@ -252,12 +252,12 @@ namespace core
 				construct 2D Texture transformations
 				rotate about center, scale, and transform.
 			*/
-			void setTextureScale ( f32 sx, f32 sy );
+			void setTextureScale( f32 sx, f32 sy );
 
 			void setTextureRotationCenter( f32 radAngle );
 			void setTextureScaleCenter( f32 sx, f32 sy );
 
-			void setTextureTranslate ( f32 x, f32 y );
+			void setTextureTranslate( f32 x, f32 y );
 
 			void buildTextureTransform( f32 rotateRad,
 					const core::vector2df &rotatecenter,
@@ -271,12 +271,12 @@ namespace core
 			void setDefinitelyIdentityMatrix( bool isDefinitelyIdentityMatrix);
 
 			//! gets if the matrix is definitely identity matrix
-			bool getDefinitelyIdentityMatrix() const; 
+			bool getDefinitelyIdentityMatrix() const;
 
 		private:
 			//! Matrix data, stored in row-major order
 			T M[16];
-			bool definitelyIdentityMatrix;
+			mutable bool definitelyIdentityMatrix;
 	};
 
 	template <class T>
@@ -550,7 +550,7 @@ namespace core
 	template <class T>
 	inline CMatrix4<T> CMatrix4<T>::operator*(const CMatrix4<T>& m2) const
 	{
-		// Testing purpose.. 
+		// Testing purpose..
 		if ( this->isIdentity() )
 			return m2;
 		if ( m2.isIdentity() )
@@ -765,6 +765,8 @@ namespace core
 				if (j != i)
 					if (!iszero((*this)(i,j)))
 						return false;
+
+		definitelyIdentityMatrix=true;
 		return true;
 	}
 
@@ -798,6 +800,7 @@ namespace core
 		if(IR(M[13])!=0)		return false;
 		if(IR(M[13])!=0)		return false;
 		if(IR(M[15])!=F32_VALUE_1)	return false;
+		definitelyIdentityMatrix=true;
 		return true;
 	}
 
@@ -932,7 +935,7 @@ namespace core
 		f32 Amax[3];
 		f32 Bmin[3];
 		f32 Bmax[3];
- 
+
 		Amin[0] = box.MinEdge.X;
 		Amin[1] = box.MinEdge.Y;
 		Amin[2] = box.MinEdge.Z;
@@ -948,9 +951,9 @@ namespace core
 		u32 i, j;
 		const CMatrix4<T> &m = *this;
 
-		for (i = 0; i < 3; ++i) 
+		for (i = 0; i < 3; ++i)
 		{
-			for (j = 0; j < 3; ++j) 
+			for (j = 0; j < 3; ++j)
 			{
 				f32 a = m(j,i) * Amin[j];
 				f32 b = m(j,i) * Amax[j];
@@ -1025,6 +1028,12 @@ namespace core
 		/// The inverse is calculated using Cramers rule.
 		/// If no inverse exists then 'false' is returned.
 
+		if ( this->isIdentity() )
+		{
+			out=*this;
+			return true;
+		}
+
 		const CMatrix4<T> &m = *this;
 
 		f32 d = (m(0, 0) * m(1, 1) - m(0, 1) * m(1, 0)) * (m(2, 2) * m(3, 3) - m(2, 3) * m(3, 2)) -
@@ -1093,6 +1102,9 @@ namespace core
 	template <class T>
 	inline bool CMatrix4<T>::makeInverse()
 	{
+		if (definitelyIdentityMatrix)
+			return true;
+
 		CMatrix4<T> temp ( EM4CONST_NOTHING );
 
 		if (getInverse(temp))
@@ -1349,7 +1361,7 @@ namespace core
 		M[12] = (T)(-plane.D * light.X);
 		M[13] = (T)(-plane.D * light.Y);
 		M[14] = (T)(-plane.D * light.Z);
-		M[15] = (T)(-plane.D * point + d); 
+		M[15] = (T)(-plane.D * point + d);
 		definitelyIdentityMatrix=false;
 	}
 
@@ -1504,13 +1516,13 @@ namespace core
 
 	/*!
 		Generate texture coordinates as linear functions so that:
-			u = Ux*x + Uy*y + Uz*z + Uw 
+			u = Ux*x + Uy*y + Uz*z + Uw
 			v = Vx*x + Vy*y + Vz*z + Vw
 		The matrix M for this case is:
-			Ux  Vx  0  0 
-			Uy  Vy  0  0 
-			Uz  Vz  0  0 
-			Uw  Vw  0  0 
+			Ux  Vx  0  0
+			Uy  Vy  0  0
+			Uz  Vz  0  0
+			Uw  Vw  0  0
 	*/
 
 	template <class T>
@@ -1519,8 +1531,8 @@ namespace core
 					const core::vector2df &translate,
 					const core::vector2df &scale)
 	{
-		f32 c = cosf(rotateRad);
-		f32 s = sinf(rotateRad);
+		const f32 c = cosf(rotateRad);
+		const f32 s = sinf(rotateRad);
 
 		M[0] = (T)(c * scale.X);
 		M[1] = (T)(s * scale.Y);
@@ -1548,8 +1560,8 @@ namespace core
 	template <class T>
 	inline void CMatrix4<T>::setTextureRotationCenter( f32 rotateRad )
 	{
-		f32 c = cosf(rotateRad);
-		f32 s = sinf(rotateRad);
+		const f32 c = cosf(rotateRad);
+		const f32 s = sinf(rotateRad);
 		M[0] = (T)c;
 		M[1] = (T)s;
 		M[2] = (T)(-0.5f * ( c + s) + 0.5f);
@@ -1563,9 +1575,9 @@ namespace core
 	template <class T>
 	inline void CMatrix4<T>::setTextureTranslate ( f32 x, f32 y )
 	{
-		M[2] = (T)x;
-		M[6] = (T)y;
-		definitelyIdentityMatrix=false;
+		M[8] = (T)x;
+		M[9] = (T)y;
+		definitelyIdentityMatrix = definitelyIdentityMatrix && (x==0.0f) && (y==0.0f) ;
 	}
 
 	template <class T>
@@ -1583,14 +1595,14 @@ namespace core
 		M[2] = (T)(-0.5f * sx + 0.5f);
 		M[5] = (T)sy;
 		M[6] = (T)(-0.5f * sy + 0.5f);
-		definitelyIdentityMatrix=false;
+		definitelyIdentityMatrix = definitelyIdentityMatrix && (sx==1.0f) && (sy==1.0f) ;
 	}
 
 	//! sets all matrix data members at once
 	template <class T>
 	inline void CMatrix4<T>::setM(const T* data)
 	{
-		for (u32 i = 0; i < 16; ++i) 
+		for (u32 i = 0; i < 16; ++i)
 			M[i] = data[i];
 
 		definitelyIdentityMatrix = false;

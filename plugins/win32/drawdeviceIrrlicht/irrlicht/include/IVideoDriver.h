@@ -280,7 +280,7 @@ namespace video
 		results of this operation are not defined.
 		\param vertices: Pointer to array of vertices.
 		\param vertexCount: Amount of vertices in the array.
-		\param indexList: Pointer to array of indizes.
+		\param indexList: Pointer to array of indices.
 		\param triangleCount: amount of Triangles.
 		\param vType: Vertex type, e.g. EVT_STANDARD for S3DVertex.
 		\param pType: Primitive type, e.g. EPT_TRIANGLE_FAN for a triangle fan. */
@@ -293,8 +293,8 @@ namespace video
 		results of this operation are not defined.
 		\param vertices: Pointer to array of vertices.
 		\param vertexCount: Amount of vertices in the array.
-		\param indexList: Pointer to array of indizes.
-		\param triangleCount: amount of Triangles. Usually amount of indizes / 3. */
+		\param indexList: Pointer to array of indices.
+		\param triangleCount: amount of Triangles. Usually amount of indices / 3. */
 		virtual void drawIndexedTriangleList(const S3DVertex* vertices,
 			u32 vertexCount, const u16* indexList, u32 triangleCount) = 0;
 
@@ -305,8 +305,8 @@ namespace video
 		results of this operation are not defined.
 		\param vertices: Pointer to array of vertices.
 		\param vertexCount: Amount of vertices in the array.
-		\param indexList: Pointer to array of indizes.
-		\param triangleCount: amount of Triangles. Usually amount of indizes / 3.*/
+		\param indexList: Pointer to array of indices.
+		\param triangleCount: amount of Triangles. Usually amount of indices / 3.*/
 		virtual void drawIndexedTriangleList(const S3DVertex2TCoords* vertices,
 			u32 vertexCount, const u16* indexList, u32 triangleCount) = 0;
 
@@ -317,8 +317,8 @@ namespace video
 		results of this operation are not defined.
 		\param vertices: Pointer to array of vertices.
 		\param vertexCount: Amount of vertices in the array.
-		\param indexList: Pointer to array of indizes.
-		\param triangleCount: amount of Triangles. Usually amount of indizes / 3. */
+		\param indexList: Pointer to array of indices.
+		\param triangleCount: amount of Triangles. Usually amount of indices / 3. */
 		virtual void drawIndexedTriangleList(const S3DVertexTangents* vertices,
 			u32 vertexCount, const u16* indexList, u32 triangleCount) = 0;
 
@@ -331,8 +331,8 @@ namespace video
 		free code sent in by Mario Gruber, lots of thanks go to him!
 		\param vertices: Pointer to array of vertices.
 		\param vertexCount: Amount of vertices in the array.
-		\param indexList: Pointer to array of indizes.
-		\param triangleCount: amount of Triangles. Usually amount of indizes - 2. */
+		\param indexList: Pointer to array of indices.
+		\param triangleCount: amount of Triangles. Usually amount of indices - 2. */
 		virtual void drawIndexedTriangleFan(const S3DVertex* vertices,
 			u32 vertexCount, const u16* indexList, u32 triangleCount) = 0;
 
@@ -345,20 +345,22 @@ namespace video
 		free code sent in by Mario Gruber, lots of thanks go to him!
 		\param vertices: Pointer to array of vertices.
 		\param vertexCount: Amount of vertices in the array.
-		\param indexList: Pointer to array of indizes.
-		\param triangleCount: amount of Triangles. Usually amount of indizes - 2. */
+		\param indexList: Pointer to array of indices.
+		\param triangleCount: amount of Triangles. Usually amount of indices - 2. */
 		virtual void drawIndexedTriangleFan(const S3DVertex2TCoords* vertices,
 			u32 vertexCount, const u16* indexList, u32 triangleCount) = 0;
 
 		//! Draws a 3d line.
-		/** For some implementations, this method simply calls drawIndexedTriangles for some
-		triangles. Note that the line is drawn using the current transformation
-		matrix and material. So if you need to draw the 3D line independently of the
-		current transformation, use
+		/** For some implementations, this method simply calls
+		drawIndexedTriangles for some triangles.
+		Note that the line is drawn using the current transformation
+		matrix and material. So if you need to draw the 3D line
+		independently of the current transformation, use
 		\code
+		driver->setMaterial(unlitMaterial);
 		driver->setTransform(video::ETS_WORLD, core::matrix4());
 		\endcode
-		before drawing the line.
+		for some properly set up material before drawing the line.
 		\param start: Start of the 3d line.
 		\param end: End of the 3d line.
 		\param color: Color of the line.  */
@@ -367,19 +369,34 @@ namespace video
 
 		//! Draws a 3d triangle.
 		/** This method calls drawIndexedTriangles for some triangles.
-		Note that the line is drawn using the current transformation matrix and material.
-		This method works with all drivers because it simply calls drawIndexedTriangleList but
-		is hence not very fast.
+		This method works with all drivers because it simply calls
+		drawIndexedTriangleList but is hence not very fast.
+		Note that the triangle is drawn using the current
+		transformation matrix and material. So if you need to draw it
+		independently of the current transformation, use
+		\code
+		driver->setMaterial(unlitMaterial);
+		driver->setTransform(video::ETS_WORLD, core::matrix4());
+		\endcode
+		for some properly set up material before drawing the triangle.
 		\param triangle: The triangle to draw.
 		\param color: Color of the line. */
 		virtual void draw3DTriangle(const core::triangle3df& triangle,
 			SColor color = SColor(255,255,255,255)) = 0;
 
 		//! Draws a 3d axis aligned box.
-		/** This method simply calls drawIndexedTriangles for some triangles.
-		Note that the line is drawn using the current transformation matrix and material.
-		This method works with all drivers because it simply calls drawIndexedTriangleList but
-		is hence not very fast.
+		/** This method simply calls drawIndexedTriangles for some
+		triangles. This method works with all drivers because it
+		simply calls drawIndexedTriangleList but is hence not very
+		fast.
+		Note that the box is drawn using the current transformation
+		matrix and material. So if you need to draw it independently of
+		the current transformation, use
+		\code
+		driver->setMaterial(unlitMaterial);
+		driver->setTransform(video::ETS_WORLD, core::matrix4());
+		\endcode
+		for some properly set up material before drawing the box.
 		\param box: The axis aligned box to draw
 		\param color: Color to use while drawing the box. */
 		virtual void draw3DBox(const core::aabbox3d<f32>& box,
@@ -578,7 +595,7 @@ namespace video
 		virtual u32 getDynamicLightCount() const = 0;
 
 		//! Returns light data which was previously set by IVideoDriver::addDynamicLight().
-		/** \param idx: Zero based index of the light. Must be greater than 0 and smaller
+		/** \param idx: Zero based index of the light. Must be 0 or greater and smaller
 		than IVideoDriver()::getDynamicLightCount.
 		\return Light data. */
 		virtual const SLight& getDynamicLight(u32 idx) const = 0;
