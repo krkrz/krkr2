@@ -7156,8 +7156,6 @@ class KAGWindow extends Window
 		// ‰üsŒø‰Ê‚ğˆê“x‚¾‚¯–³‹‚³‚¹‚é
         if (noCrOnce) {
             noCrOnce = false;
-            prevEmptyLine = emptyLine;
-            emptyLine = true;
             return 0;
         }
 
