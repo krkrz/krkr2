@@ -265,7 +265,7 @@ public:
 				if ((int)param[1] != TJS_HIDDENMEMBER) {
 					ttstr name  = *param[0];
 					ttstr value = *param[2];
-					*store += ttstr(name.GetLen()) + ":" + name + "=" +	ttstr(value.GetLen()) + ":" + value + ",";
+					*store += ttstr(name.GetNarrowStrLen()) + ":" + name + "=" +	ttstr(value.GetNarrowStrLen()) + ":" + value + ",";
 				}
 			}
 			if (result) {

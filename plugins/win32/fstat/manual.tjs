@@ -44,4 +44,51 @@ class Storages {
 	 * 中にファイルが無い場合のみ削除されます
 	 */
 	function removeDirectory(dir);
+
+	/**
+	 * ディレクトリを作成する
+	 * @param dir ディレクトリ名
+	 * @return 実際に作成できたら true
+	 */
+	function createDirectory(dir);	// by Kiyobee
+
+	/**
+	 * ファイルの属性を設定する
+	 * @param fliename ファイル/ディレクトリ名
+	 * @param attr 設定する属性(FILE_ATTRIBUTE_READONLY,FILE_ATTRIBUTE_HIDDEN,...)
+	 */
+	function setFileAttributes(filename, attr);	// by Kiyobee
+
+	/**
+	 * ファイルの属性を解除する
+	 * @param fliename ファイル/ディレクトリ名
+	 * @param attr 解除する属性(FILE_ATTRIBUTE_READONLY,FILE_ATTRIBUTE_HIDDEN,...)
+	 */
+	function resetFileAttributes(filename, attr);	// by Kiyobee
+
+	/**
+	 * ファイルの属性を取得する
+	 * @param filename ファイル/ディレクトリ名
+	 * @return 取得した属性(FILE_ATTRIBUTE_READONLY,FILE_ATTRIBUTE_HIDDEN,...)
+	 */
+	function getFileAttributes(filename);	// by Kiyobee
+
+	/**
+	 * フォルダ選択ダイアログを開く
+	 * @param params selectFile と同様のパラメータを設定する
+	 * @return フォルダを選択してOKボタンを押せば真、キャンセルボタンを押せば偽
+	 * params.name フォルダ名を指定します。OKボタンを押した場合、選択されたフォルダがこのメンバに設定されます
+	 * params.title ダイアログボックスのタイトルを表示します
+	 * params.window ダイアログを開くWindowオブジェクトを指定します
+	 * params.rootDir フォルダ選択のルートを指定します(このフォルダ以下のみ表示されます)
+	 */
+	function selectDirectory(params = %[name:"", title:"", window:void, rootDir:""]);	// by Kiyobee
+
+	/**
+	 * ディレクトリの存在チェック
+	 * @param dir ディレクトリ名
+	 * @return ディレクトリが存在すれば true/存在しなければ -1/ディレクトリでなければ false
+	 */
+	function isExistentDirectory(dir);	// by Kiyobee
+
 };
