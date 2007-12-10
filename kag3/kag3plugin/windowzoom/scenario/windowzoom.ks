@@ -120,6 +120,7 @@ class WindowZoomPlugin extends KAGPlugin
 	function onWindowedMenuItemClick_new()
 	{
 		// ウィンドウモードに移行する際に呼ばれる
+		if(!kag.fullScreened) return;
 		with(global.windowzoom_object)
 		{
 			.onWindowedMenuItemClick_org(...); // 元のメソッドを呼び出す
@@ -131,6 +132,7 @@ class WindowZoomPlugin extends KAGPlugin
 	function onFullScreenMenuItemClick_new()
 	{
 		// フルスクリーンに移行する際に呼ばれる
+		if(kag.fullScreened) return;
 		with(global.windowzoom_object)
 		{
 			.trySetZoom(1, 1); // 100% 倍率に設定を戻す
