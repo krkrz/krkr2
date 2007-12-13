@@ -988,23 +988,25 @@ void SaveTLG6(Graphics::TBitmap *bmp, TStream *out)
 					int dbofs = (p+1) * (H_BLOCK_SIZE * W_BLOCK_SIZE);
 					// detect color filter
 					int size = 0;
+					int ft_;
 					if(colors >= 3)
-						ft = DetectColorFilter(
+						ft_ = DetectColorFilter(
 							buf[0] + dbofs,
 							buf[1] + dbofs,
 							buf[2] + dbofs, wp, size);
 					else
-						ft = 0;
+						ft_ = 0;
 
 					// select efficient mode of p (MED or average)
 					if(p == 0)
 					{
 						p0size = size;
+						ft = ft_;
 					}
 					else
 					{
 						if(p0size >= size)
-							minp = 1;
+							minp = 1, ft = ft_;
 					}
 				}
 
