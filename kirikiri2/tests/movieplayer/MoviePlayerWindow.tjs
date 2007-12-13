@@ -35,7 +35,9 @@ class MoviePlayerWindow extends Window
 		playOverlayMenuItem.radio = true;
 		playMenu.add(this.playLayeredMenuItem = new CommandMenuItem(this, "レイヤ再生(&L)", playLayered));
 		playLayeredMenuItem.radio = true;
-		playOverlayMenuItem.group = playLayeredMenuItem.group = 1;
+		playMenu.add(this.playMixerMenuItem = new CommandMenuItem(this, "ミキサ再生(&M)", playMixer));
+		playMixerMenuItem.radio = true;
+		playOverlayMenuItem.group = playLayeredMenuItem.group = playMixerMenuItem.group = 1;
 
 		menu.visible = true;
 
@@ -155,9 +157,9 @@ class MoviePlayerWindow extends Window
 		}
 		adjustWindowSize();
 		video.visible = true;
-		if(video.mode == vomOverlay)
+		if(video.mode != vomLayer)
 		{
-			// オーバーレイモードの時はビデオ表示領域のサイズを
+			// オーバーレイモードやMixerモードの時はビデオ表示領域のサイズを
 			// 指定
 			video.setSize(video.originalWidth, video.originalHeight);
 		}
@@ -239,6 +241,17 @@ class MoviePlayerWindow extends Window
 		video.mode = vomOverlay;
 		videoLayer.visible = false;
 		playOverlayMenuItem.checked = true;
+	}
+
+	function playMixer()
+	{
+		// Mixer再生に切り替える
+		video.stop(); // 再生は停止する
+		video.close(); // クローズもする
+
+		video.mode = vomMixer;
+		videoLayer.visible = false;
+		playMixerMenuItem.checked = true;
 	}
 
 	function action(ev)
