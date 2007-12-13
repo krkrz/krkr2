@@ -41,6 +41,7 @@ class CVMRCustomAllocatorPresenter9 : public CUnknown, public IVMRSurfaceAllocat
 	std::vector<CComPtr<IDirect3DSurface9> >     m_Surfaces;
 	CDLLLoader					m_D3DDll;
 	SIZE						m_VideoSize;
+	SIZE						m_BackBufferSize;
 
 	DWORD_PTR	m_dwUserID;
 	
