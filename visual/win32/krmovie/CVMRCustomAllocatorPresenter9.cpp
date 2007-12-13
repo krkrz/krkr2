@@ -40,6 +40,7 @@ CVMRCustomAllocatorPresenter9::CVMRCustomAllocatorPresenter9( tTVPDSMixerVideoOv
 	m_Rect.bottom = 0;
 	m_VideoSize.cx = 0;
 	m_VideoSize.cy = 0;
+	m_BackBufferSize.cx = m_BackBufferSize.cy = 0;
 	m_Vtx[0].z = m_Vtx[1].z = m_Vtx[2].z = m_Vtx[3].z = 1.0f;
 	m_Vtx[0].w = m_Vtx[1].w = m_Vtx[2].w = m_Vtx[3].w = 1.0f;
 	m_SrcRect.left = m_SrcRect.top = m_SrcRect.right = m_SrcRect.bottom = 0;
@@ -586,6 +587,9 @@ HRESULT CVMRCustomAllocatorPresenter9::DecideD3DPresentParameters( D3DPRESENT_PA
 	d3dpp.BackBufferWidth = width;
 	d3dpp.hDeviceWindow = m_ChildWnd;
 
+	m_BackBufferSize.cx = width;
+	m_BackBufferSize.cy = height;
+
 	return S_OK;
 }
 //----------------------------------------------------------------------------
@@ -863,16 +867,20 @@ void CVMRCustomAllocatorPresenter9::SetRect( RECT *rect )
 		int		width = m_Rect.right - m_Rect.left;
 		int		height = m_Rect.bottom - m_Rect.top;
 
-		if( MoveWindow( m_ChildWnd, m_Rect.left, m_Rect.top, width, height, TRUE ) == 0 )
-			ThrowDShowException(L"Failed to call MoveWindow.", HRESULT_FROM_WIN32(GetLastError()));
+		if( width > m_BackBufferSize.cx || height > m_BackBufferSize.cy ) {
+			Reset();
+		} else {
+			if( MoveWindow( m_ChildWnd, m_Rect.left, m_Rect.top, width, height, TRUE ) == 0 )
+				ThrowDShowException(L"Failed to call MoveWindow.", HRESULT_FROM_WIN32(GetLastError()));
 
-		if( (m_SrcRect.right - m_SrcRect.left) != width || (m_SrcRect.bottom - m_SrcRect.top) != height ) {
-			m_SrcRect.left = m_SrcRect.top = 0;
-			m_SrcRect.right = width;
-			m_SrcRect.bottom = height;
-			HRESULT	hr;
-			if( FAILED(hr = UpdateVertex()) )
-				ThrowDShowException(L"Failed to Update Vertex.", hr );
+			if( (m_SrcRect.right - m_SrcRect.left) != width || (m_SrcRect.bottom - m_SrcRect.top) != height ) {
+				m_SrcRect.left = m_SrcRect.top = 0;
+				m_SrcRect.right = width;
+				m_SrcRect.bottom = height;
+				HRESULT	hr;
+				if( FAILED(hr = UpdateVertex()) )
+					ThrowDShowException(L"Failed to Update Vertex.", hr );
+			}
 		}
 	}
 }
