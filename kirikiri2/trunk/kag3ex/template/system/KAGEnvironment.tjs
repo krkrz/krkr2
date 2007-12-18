@@ -1037,7 +1037,9 @@ class KAGEnvironment extends KAGEnvImage {
 					ret = ch.tagfunc(elm);
 				}
 			} else {
-				ret = ch.tagfunc(elm);
+				if (ch.isShowBU()) {
+					ret = ch.tagfunc(elm);
+				}
 			}
         }
         return ret;
