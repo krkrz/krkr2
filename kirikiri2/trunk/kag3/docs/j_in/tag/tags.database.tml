@@ -2755,6 +2755,244 @@
 	</remarks>
 </tag>
 
+<tag name="timeout">
+	<shortinfo> タイムアウト待ちジャンプ </shortinfo>
+	<group> ラベル・ジャンプ操作 </group>
+	<attribs>
+	
+		<attrib name="time">
+			<shortinfo> タイムアウト時間 </shortinfo>
+			<required> yes </required>
+			<format> タイムアウト時間 </format>
+			<info>
+				　タイムアウトまでの時間を ms で指定します。
+			</info>
+		</attrib>
+
+		<attrib name="storage">
+			<shortinfo> シナリオファイル名 </shortinfo>
+			<required> no </required>
+			<format> シナリオファイル名 </format>
+			<info>
+				　ジャンプ先のシナリオファイルを指定します。省略すると、現在
+				のシナリオファイル内であると見なされます。
+			</info>
+		</attrib>
+
+		<attrib name="target">
+			<shortinfo> ラベル名 </shortinfo>
+			<required> no </required>
+			<format> ラベル名 </format>
+			<info>
+				　ジャンプ先のラベルを指定します。<BR>
+				　省略すると、ファイルの先頭から実行されます。<BR>
+			</info>
+		</attrib>
+
+		<attrib name="exp">
+			<shortinfo> TJS 式 </shortinfo>
+			<required> no </required>
+			<format> TJS 式 </format>
+			<info>
+				　タイムアウト時に実行される TJS 式を指定します。省略すれば
+				式は実行されません。storage や target が指定されていた場合、この式
+				が実行されてからジャンプ先に移動します。
+			</info>
+		</attrib>
+
+		<attrib name="se">
+			<shortinfo> タイムアウト時の効果音 </shortinfo>
+			<required> no </required>
+			<format> 効果音ファイル名 </format>
+			<info>
+				　タイムアウト時に再生する効果音を指定します。指定しなければ
+				効果音は再生されません。
+			</info>
+		</attrib>
+
+		<attrib name="sebuf">
+			<shortinfo> タイムアウト時の効果音のバッファ番号 </shortinfo>
+			<required> no </required>
+			<format> 効果音バッファ番号 </format>
+			<info>
+				　clickse で指定した効果音を鳴らす効果音バッファを指定します。
+				省略すると 0 であると見なされます。
+			</info>
+		</attrib>
+
+	</attribs>
+
+	<remarks>
+		　現在のメッセージレイヤに対してタイムアウトを登録します。
+		タイムアウト待ちは s タグが実行された時点からになります。
+		　このタグを使う場合は、なるべく s タグですぐに選択肢待ちにしてください。
+	</remarks>
+</tag>
+
+<tag name="ctimeout">
+	<shortinfo> タイムアウト待ち解除 </shortinfo>
+	<group> ラベル・ジャンプ操作 </group>
+	<remarks>
+		　timeout で現在のメッセージレイヤに対して登録されたタイムアウトを解除します。
+	</remarks>
+</tag>
+
+<tag name="click">
+	<shortinfo> クリック待ちジャンプ </shortinfo>
+	<group> ラベル・ジャンプ操作 </group>
+	<attribs>
+	
+		<attrib name="storage">
+			<shortinfo> シナリオファイル名 </shortinfo>
+			<required> no </required>
+			<format> シナリオファイル名 </format>
+			<info>
+				　ジャンプ先のシナリオファイルを指定します。省略すると、現在
+				のシナリオファイル内であると見なされます。
+			</info>
+		</attrib>
+
+		<attrib name="target">
+			<shortinfo> ラベル名 </shortinfo>
+			<required> no </required>
+			<format> ラベル名 </format>
+			<info>
+				　ジャンプ先のラベルを指定します。<BR>
+				　省略すると、ファイルの先頭から実行されます。<BR>
+			</info>
+		</attrib>
+
+		<attrib name="exp">
+			<shortinfo> TJS 式 </shortinfo>
+			<required> no </required>
+			<format> TJS 式 </format>
+			<info>
+				　クリック時に実行される TJS 式を指定します。省略すれば
+				式は実行されません。storage や target が指定されていた場合、この式
+				が実行されてからジャンプ先に移動します。
+			</info>
+		</attrib>
+
+		<attrib name="se">
+			<shortinfo> クリック時の効果音 </shortinfo>
+			<required> no </required>
+			<format> 効果音ファイル名 </format>
+			<info>
+				　クリック時に再生する効果音を指定します。指定しなければ
+				効果音は再生されません。
+			</info>
+		</attrib>
+
+		<attrib name="sebuf">
+			<shortinfo> クリック時の効果音のバッファ番号 </shortinfo>
+			<required> no </required>
+			<format> 効果音バッファ番号 </format>
+			<info>
+				　clickse で指定した効果音を鳴らす効果音バッファを指定します。
+				省略すると 0 であると見なされます。
+			</info>
+		</attrib>
+
+	</attribs>
+
+	<remarks>
+		　現在のメッセージレイヤに対してクリック待ちを登録します。
+		リンクやボタンが無い場所をクリックした場合に反応します。
+		　このタグを使う場合は、なるべく s タグですぐに選択肢待ちにしてください。
+	</remarks>
+</tag>
+
+<tag name="cclick">
+	<shortinfo> クリック待ち解除 </shortinfo>
+	<group> ラベル・ジャンプ操作 </group>
+	<remarks>
+		　click で現在のメッセージレイヤに対して登録されたクリック待ちを解除します。
+	</remarks>
+</tag>
+
+<tag name="wheel">
+	<shortinfo> ホイール待ちジャンプ </shortinfo>
+	<group> ラベル・ジャンプ操作 </group>
+	<attribs>
+	
+		<attrib name="storage">
+			<shortinfo> シナリオファイル名 </shortinfo>
+			<required> no </required>
+			<format> シナリオファイル名 </format>
+			<info>
+				　ジャンプ先のシナリオファイルを指定します。省略すると、現在
+				のシナリオファイル内であると見なされます。
+			</info>
+		</attrib>
+
+		<attrib name="target">
+			<shortinfo> ラベル名 </shortinfo>
+			<required> no </required>
+			<format> ラベル名 </format>
+			<info>
+				　ジャンプ先のラベルを指定します。<BR>
+				　省略すると、ファイルの先頭から実行されます。<BR>
+			</info>
+		</attrib>
+
+		<attrib name="func">
+			<shortinfo> TJS 式 </shortinfo>
+			<required> no </required>
+			<format> TJS 式 </format>
+			<info>
+				　ホイール時に実行されるメソッド名を指定します。func(shift, delta, x, y) の形で呼び出されます。
+				省略すれば呼び出しは実行されません。storage や target が指定されていた場合、このメソッド呼び出しが
+				が実行されてからジャンプ先に移動します。
+			</info>
+		</attrib>
+
+		<attrib name="exp">
+			<shortinfo> TJS 式 </shortinfo>
+			<required> no </required>
+			<format> TJS 式 </format>
+			<info>
+				　ホイール時に実行される TJS 式を指定します。省略すれば
+				式は実行されません。storage や target が指定されていた場合、この式
+				が実行されてからジャンプ先に移動します。
+			</info>
+		</attrib>
+
+		<attrib name="se">
+			<shortinfo> ホイール時の効果音 </shortinfo>
+			<required> no </required>
+			<format> 効果音ファイル名 </format>
+			<info>
+				　ホイール時に再生する効果音を指定します。指定しなければ
+				効果音は再生されません。
+			</info>
+		</attrib>
+
+		<attrib name="sebuf">
+			<shortinfo> ホイール時の効果音のバッファ番号 </shortinfo>
+			<required> no </required>
+			<format> 効果音バッファ番号 </format>
+			<info>
+				　clickse で指定した効果音を鳴らす効果音バッファを指定します。
+				省略すると 0 であると見なされます。
+			</info>
+		</attrib>
+
+	</attribs>
+
+	<remarks>
+		　現在のメッセージレイヤに対してクリック待ちを登録します。
+		リンクやボタンが無い場所をクリックした場合に反応します。
+		　このタグを使う場合は、なるべく s タグですぐに選択肢待ちにしてください。
+	</remarks>
+</tag>
+
+<tag name="cwheel">
+	<shortinfo> ホイール待ち解除 </shortinfo>
+	<group> ラベル・ジャンプ操作 </group>
+	<remarks>
+		　wheel で現在のメッセージレイヤに対して登録されたホイール待ちを解除します。
+	</remarks>
+</tag>
 
 <tag name="locate">
 	<shortinfo> 文字表示位置の指定 </shortinfo>
@@ -2854,6 +3092,15 @@
 			</info>
 		</attrib>
 
+		<attrib name="start">
+			<shortinfo> BGM 開始位置指定 </shortinfo>
+			<required> no </required>
+			<format> BGM 開始位置指定 </format>
+			<info>
+				　ループチューナで指定したラベルで BGM の再生開始位置を指定します。
+			</info>
+		</attrib>
+
 		<attrib name="loop">
 			<shortinfo> ループするか </shortinfo>
 			<required> no </required>
@@ -2884,6 +3131,15 @@
 			<format> BGM ファイル名 または CD トラック番号 </format>
 			<info>
 				　演奏する BGM ファイル名または CD トラック番号を指定します。
+			</info>
+		</attrib>
+
+		<attrib name="start">
+			<shortinfo> BGM 開始位置指定 </shortinfo>
+			<required> no </required>
+			<format> BGM 開始位置指定 </format>
+			<info>
+				　ループチューナで指定したラベルで BGM の再生開始位置を指定します。
 			</info>
 		</attrib>
 
@@ -3192,6 +3448,30 @@
 	</remarks>
 </tag>
 
+<tag name="fadepausebgm">
+	<shortinfo> BGM 演奏のフェードアウトしながらの一時停止 </shortinfo>
+	<group> 効果音・BGM・ビデオ操作 </group>
+	<attribs>
+		<attrib name="time">
+			<shortinfo> フェード時間 </shortinfo>
+			<required> yes </required>
+			<format> 時間(ms単位) </format>
+			<info>
+				　フェードアウトを行っている時間を ms 単位で指定します。
+				3000 と指定すれば 3 秒間の間、フェードアウトを行っています。
+			</info>
+		</attrib>
+	</attribs>
+	<remarks>
+		　BGM 演奏をフェードアウトしながら一時停止します。Config.tjs で BGM 再生メディアに "Wave" を指定
+		した場合のみに有効です。<BR>
+		　BGM の一時停止状態は栞に保存されますが、一時停止していた場合の BGM の
+		再生位置の情報は保存されないので注意してください。<BR>
+		　一時停止した BGM を再開するには <ref tag="resumebgm">resumebgm</ref> タグ
+		を使用してください。
+	</remarks>
+</tag>
+
 <tag name="resumebgm">
 	<shortinfo> BGM 演奏の再開 </shortinfo>
 	<group> 効果音・BGM・ビデオ操作 </group>
@@ -3225,7 +3505,106 @@
 	</remarks>
 </tag>
 
+<tag name="setbgmstop">
+	<shortinfo> BGM の停止処理の登録 </shortinfo>
+	<group> 効果音・BGM・ビデオ操作 </group>
+	<attribs>
+		<attrib name="storage">
+			<shortinfo> シナリオファイル名 </shortinfo>
+			<required> no </required>
+			<format> シナリオファイル名 </format>
+			<info>
+				　BGM停止時の遷移先シナリオファイル名を指定します。
+			</info>
+		</attrib>
 
+		<attrib name="target">
+			<shortinfo> ラベル名 </shortinfo>
+			<required> no </required>
+			<format> ラベル名 </format>
+			<info>
+				　BGM停止時の遷移先ラベル名を指定します。
+			</info>
+		</attrib>
+
+		<attrib name="exp">
+			<shortinfo> TJS 式 </shortinfo>
+			<required> no </required>
+			<format> TJS 式 </format>
+			<info>
+				　BGM停止時に実行される TJS 式を指定します。省略すれば
+				式は実行されません。storage や target が指定されていた場合、この式
+				が実行されてからジャンプ先に移動します。
+			</info>
+		</attrib>
+	</attribs>
+	<remarks>
+		　BGM が停止した際に行う処理を登録します。BGM が変更された場合はこの指定は自動的に消去されます。
+	</remarks>
+</tag>
+
+<tag name="clearbgmstop">
+	<shortinfo> BGM の停止処理の解除 </shortinfo>
+	<group> 効果音・BGM・ビデオ操作 </group>
+	<remarks>
+		　setbgmstopの指定をクリアします
+	</remarks>
+</tag>
+
+<tag name="setbgmlabel">
+	<shortinfo> BGM のラベル通過処理の登録 </shortinfo>
+	<group> 効果音・BGM・ビデオ操作 </group>
+	<attribs>
+		<attrib name="name">
+			<shortinfo> ラベル名 </shortinfo>
+			<required> yes </required>
+			<format> ラベル名 </format>
+			<info>
+				　BGM 中のループチューナで指定したラベル名を指定します。
+			</info>
+		</attrib>
+
+		<attrib name="storage">
+			<shortinfo> シナリオファイル名 </shortinfo>
+			<required> no </required>
+			<format> シナリオファイル名 </format>
+			<info>
+				　ラベル通過時の遷移先シナリオファイル名を指定します。
+			</info>
+		</attrib>
+
+		<attrib name="target">
+			<shortinfo> ラベル名 </shortinfo>
+			<required> no </required>
+			<format> ラベル名 </format>
+			<info>
+				　ラベル通過時の遷移先ラベル名を指定します。
+			</info>
+		</attrib>
+
+		<attrib name="exp">
+			<shortinfo> TJS 式 </shortinfo>
+			<required> no </required>
+			<format> TJS 式 </format>
+			<info>
+				　ラベル通過時に実行される TJS 式を指定します。省略すれば
+				式は実行されません。storage や target が指定されていた場合、この式
+				が実行されてからジャンプ先に移動します。
+			</info>
+		</attrib>
+	</attribs>
+	<remarks>
+		　BGM のラベルを通過した際に行う処理を登録します。複数登録可能です。BGM が変更された場合はこの指定は自動的に消去されます。
+	</remarks>
+</tag>
+
+<tag name="clearbgmlabel">
+	<shortinfo> BGM のラベル通過処理の解除 </shortinfo>
+	<group> 効果音・BGM・ビデオ操作 </group>
+	<remarks>
+		　setbgmlabelの指定をクリアします
+	</remarks>
+</tag>
 
 <tag name="playse">
 	<shortinfo> 効果音の再生 </shortinfo>
@@ -3254,6 +3633,15 @@
 				( ただし ogg と mp3 の 再生には SDK 付属のプラグインが必要 )<BR>
 				そのほかのプラグインで使用可能になるそのほかの
 				ファイル形式を指定する場合は拡張子も指定してください。
+			</info>
+		</attrib>
+
+		<attrib name="start">
+			<shortinfo> SE 開始位置指定 </shortinfo>
+			<required> no </required>
+			<format> SE 開始位置指定 </format>
+			<info>
+				　ループチューナで指定したラベルで SE の再生開始位置を指定します。
 			</info>
 		</attrib>
 
@@ -3311,6 +3699,14 @@
 			</info>
 		</attrib>
 
+		<attrib name="start">
+			<shortinfo> SE 開始位置指定 </shortinfo>
+			<required> no </required>
+			<format> SE 開始位置指定 </format>
+			<info>
+				　ループチューナで指定したラベルで SE の再生開始位置を指定します。
+			</info>
+		</attrib>
 
 		<attrib name="time">
 			<shortinfo> フェードイン時間 </shortinfo>

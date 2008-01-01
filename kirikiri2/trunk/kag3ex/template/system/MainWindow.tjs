@@ -6169,7 +6169,7 @@ class KAGWindow extends Window
             Scripts.eval(exp);
         }
         if (storage !== void || target !== void) {
-            window.process(storage, target);
+            process(storage, target);
         }
     }
     
@@ -6215,7 +6215,7 @@ class KAGWindow extends Window
                 Scripts.eval(bgmLabelInfo.exp);
             }
             if (bgmLabelInfo.storage !== void || bgmLabelInfo.target !== void) {
-                window.process(bgmLabelInfo.storage, bgmLabelInfo.target);
+                process(bgmLabelInfo.storage, bgmLabelInfo.target);
             }
         }
     }

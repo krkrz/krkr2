@@ -1063,9 +1063,7 @@ class MessageLayer extends AnimKAGLayer
         timeoutTime    = elm.time;
         timeoutStorage = elm.storage;
         timeoutTarget  = elm.target;
-        if (elm.exp !== void) {
-            timeoutExp = createSoundExpression(elm.exp, elm.clickse, elm.clicksebuf);
-        }
+        timeoutExp = createSoundExpression(elm.exp, elm.se, elm.sebuf);
         setSelProcessLock(false); // 選択ロック解除
         //comp.setSelProcessLock(false); // 選択ロック解除
     }
@@ -1099,9 +1097,7 @@ class MessageLayer extends AnimKAGLayer
     function addClick(elm) {
         clickStorage = elm.storage;
         clickTarget  = elm.target;
-        if (elm.exp !== void) {
-            clickExp = createSoundExpression(elm.exp, elm.clickse, elm.clicksebuf);
-        }
+        clickExp = createSoundExpression(elm.exp, elm.se, elm.sebuf);
         focusable = true; // フォーカスを受け取れるように
         setSelProcessLock(false); // 選択ロック解除
         //comp.setSelProcessLock(false); // 選択ロック解除
@@ -1141,9 +1137,7 @@ class MessageLayer extends AnimKAGLayer
         wheelStorage = elm.storage;
         wheelTarget  = elm.target;
         wheelFunc    = elm.func;
-        if (elm.exp !== void) {
-            wheelExp = createSoundExpression(elm.exp, elm.wheelse, elm.wheelsebuf);
-        }
+        wheelExp = createSoundExpression(elm.exp, elm.se, elm.sebuf);
         focusable = true; // フォーカスを受け取れるように
         setSelProcessLock(false); // 選択ロック解除
         //comp.setSelProcessLock(false); // 選択ロック解除

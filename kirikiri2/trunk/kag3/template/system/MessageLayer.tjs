@@ -349,6 +349,132 @@ class MessageLayer extends KAGLayer
 	var ltEdit = 3;
 	var ltCheckBox = 4;
 
+    // タイムアウト処理用
+    var timeoutTimer;
+    var timeoutTime;
+    var timeoutStorage;
+    var timeoutTarget;
+    var timeoutExp;
+    
+    function clearTimeout() {
+        stopTimeout();
+        timeoutTime    = void;
+        timeoutStorage = void;
+        timeoutTarget  = void;
+        timeoutExp     = void;
+    }
+
+    function timeoutHandler() {
+        if (!selProcessLock) {
+            Scripts.eval(timeoutExp) if timeoutExp != '';
+            if (timeoutStorage != '' || timeoutTarget != '') {
+                window.lockMessageLayerSelProcess(); // 選択をロック
+                window.process(timeoutStorage, timeoutTarget);
+                clearTimeout();
+            }
+        }
+    }
+
+    function addTimeout(elm) {
+        timeoutTime    = elm.time;
+        timeoutStorage = elm.storage;
+        timeoutTarget  = elm.target;
+        timeoutExp = createSoundExpression(elm.exp, elm.se, elm.sebuf);
+        setSelProcessLock(false); // 選択ロック解除
+        //comp.setSelProcessLock(false); // 選択ロック解除
+    }
+
+    function stopTimeout() {
+        if (timeoutTimer !== void) {
+            invalidate timeoutTimer;
+            timeoutTimer = void;
+        }
+    }
+    
+    function startTimeout() {
+        if (timeoutTime > 0 && (timeoutStorage !== void || timeoutTarget !== void || timeoutExp !== void)) {
+            timeoutTimer = new Timer(timeoutHandler, '');
+            timeoutTimer.capacity = 1;
+            timeoutTimer.interval = timeoutTime;
+            timeoutTimer.enabled  = true;
+        }
+    }
+
+    var clickExp;
+    var clickStorage;
+    var clickTarget;
+
+    function clearClick() {
+        clickStorage = void;
+        clickTarget  = void;
+        clickExp     = void;
+    }
+
+    function addClick(elm) {
+        clickStorage = elm.storage;
+        clickTarget  = elm.target;
+        clickExp = createSoundExpression(elm.exp, elm.se, elm.sebuf);
+        focusable = true; // フォーカスを受け取れるように
+        setSelProcessLock(false); // 選択ロック解除
+        //comp.setSelProcessLock(false); // 選択ロック解除
+        selClickLock = false;
+    }
+
+    function hasClick() {
+        return clickExp !== void || clickStorage !== void || clickTarget !== void;
+    }
+    
+    function processClick() {
+        Scripts.eval(clickExp) if clickExp != '';
+        if(clickStorage != '' || clickTarget != '') {
+            window.lockMessageLayerSelProcess(); // 選択をロック
+            if (window.getKeyState(VK_RETURN) || window.getKeyState(VK_SPACE) || window.getKeyState(VK_CONTROL))
+                window.hideMouseCursor();
+            // キーボードによる操作の場合はマウスカーソルを隠す
+            window.process(clickStorage, clickTarget);
+            clearClick();
+        }
+        selClickLock = false;
+    }
+    
+    var wheelExp;
+    var wheelFunc;
+    var wheelStorage;
+    var wheelTarget;
+
+    function clearWheel() {
+        wheelStorage = void;
+        wheelTarget  = void;
+        wheelExp     = void;
+        wheelFunc    = void;
+    }
+
+    function addWheel(elm) {
+        wheelStorage = elm.storage;
+        wheelTarget  = elm.target;
+        wheelFunc    = elm.func;
+        wheelExp = createSoundExpression(elm.exp, elm.se, elm.sebuf);
+        focusable = true; // フォーカスを受け取れるように
+        setSelProcessLock(false); // 選択ロック解除
+        //comp.setSelProcessLock(false); // 選択ロック解除
+    }
+
+    function hasWheel() {
+        return wheelFunc !== void || wheelExp !== void || wheelStorage !== void || wheelTarget !== void;
+    }
+    
+    function processWheel(shift, delta, x, y) {
+        if (!selProcessLock) {
+            Scripts.eval(wheelFunc)(shift, delta, x, y) if wheelFunc != void;
+            Scripts.eval(wheelExp) if wheelExp != '';
+            if(wheelStorage != '' || wheelTarget != '') {
+                window.lockMessageLayerSelProcess(); // 選択をロック
+                window.process(wheelStorage, wheelTarget);
+                clearWheel();
+            }
+        }
+    }
+    
 	function MessageLayer(owner, parent, name, id, do_config)
 	{
 		// MessageLayer コンストラクタ
@@ -534,6 +660,10 @@ class MessageLayer extends KAGLayer
 		decideSizeChange();
 		initLineLayer();
 		currentRuby = "";
+
+        clearTimeout();
+        clearClick();
+        clearWheel();
 	}
 
 	function clear2()
@@ -1860,6 +1990,9 @@ class MessageLayer extends KAGLayer
 
 	function processLink(n)
 	{
+        // タイムアウト処理は停止
+        stopTimeout();
+
 		// リンク番号 n を処理する
 		var ln = links[n];
 		if(ln === void) return;
@@ -1904,6 +2037,13 @@ class MessageLayer extends KAGLayer
 				else if(type == ltEdit || type == ltCheckBox) item.object.enabled = !b;
 			}
 		}
+        if (selProcessLock) {
+            focusable = false;
+        } else {
+            if (numLinks > 0 || hasWheel() || hasClick()) {
+                focusable = true;
+            }
+        }
 	}
 
 	function storeSelProcessLock()
@@ -1972,7 +2112,7 @@ class MessageLayer extends KAGLayer
 		n = findLink(x, y);
 		if(n == -1)
 		{
-			return false; // とりあえず透過
+			return hasClick(); // クリック処理がなければ透過
 		}
 		else
 		{
@@ -2001,6 +2141,9 @@ class MessageLayer extends KAGLayer
 				{
 					processLink(n);
 					return;
+                } else if (hasClick()) {
+                    processClick();
+                    return;
 				}
 			}
 		}
@@ -2170,7 +2313,7 @@ class MessageLayer extends KAGLayer
 		// キーが押された
 		if(window.preProcessKeys(key, shift)) return;
 
-		if(!focusable || !numLinks) { return super.onKeyDown(...); }
+		if(!focusable || (!numLinks && !hasClick())) { return super.onKeyDown(...); }
 
 		var l, r;
 		if(vertical)
@@ -2219,9 +2362,13 @@ class MessageLayer extends KAGLayer
 		}
 		else if(key == VK_SPACE || key == VK_RETURN)
 		{
-			if(selProcessLock || keyLink == -1)
-				window.checkProceedingKey(key, shift);
-			else
+			if(selProcessLock || keyLink == -1) {
+                if (hasClick()) {
+                    processClick();
+				} else {
+					window.checkProceedingKey(key, shift);
+				}
+			} else
 				processLink(keyLink);
 		}
 		else
