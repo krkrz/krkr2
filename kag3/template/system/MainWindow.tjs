@@ -469,6 +469,8 @@ class KAGWindow extends Window
 	function finalize()
 	{
 		// finalize メソッド
+        clearBgmStop();
+        clearBgmLabel();
 
 		// プラグインの無効化
 		for(var i = 0; i < kagPlugins.count; i++) invalidate kagPlugins[i];
@@ -3963,6 +3965,11 @@ class KAGWindow extends Window
 	{
 		// ホイールが回転した
 		super.onMouseWheel(...);
+        // メッセージ窓のホイール処理
+        if (inSleep && current.hasWheel()) {
+            current.processWheel(shift, delta, x, y);
+            return;
+        }
 		if(!historyLayer.visible)
 		{
 			if(delta > 0)
@@ -4185,12 +4192,104 @@ class KAGWindow extends Window
 		conductor.trigger('bgmfade');
 	}
 
+    // BGM停止処理
+    var bgmStopExp;
+    var bgmStopStorage;
+    var bgmStopTarget;
+
+    function handleBgmStop() {
+        // BGM停止ハンドラ
+
+        // パラメータを保持して破棄
+        var exp     = bgmStopExp;
+        var storage = bgmStopStorage;
+        var target  = bgmStopTarget;
+        clearBgmStop();
+        
+        // 処理実行
+        if (exp !== void) {
+            Scripts.eval(exp);
+        }
+        if (storage !== void || target !== void) {
+            process(storage, target);
+        }
+    }
+	
+    function setBgmStop(elm) {
+        // BGM停止時処理の登録
+        bgmStopExp     = elm.exp;
+        bgmStopStorage = elm.storage;
+        bgmStopTarget  = elm.target;
+    }
+    
+    function clearBgmStop() {
+        // BGM停止時処理の解除
+        bgmStopExp     = void;
+        bgmStopStorage = void;
+        bgmStopTarget  = void;
+    }
+    
 	function onBGMStop()
 	{
 		// BGM が停止した
 		conductor.trigger('bgmstop');
+        if (bgmStopExp !== void || bgmStopStorage !== void || bgmStopTarget !== void) {
+            global.stopBgmTrigger = new AsyncTrigger(handleBgmStop, '');
+            global.stopBgmTrigger.cached = true;
+            global.stopBgmTrigger.trigger();
+        }
 	}
+    // ------------------------------------------
+    
+    var bgmLabelInfos = %[];
+    var bgmLabelInfo;
 
+    function handleBgmLabel() {
+        if (bgmLabelInfo !== void) {
+            if (bgmLabelInfo.exp !== void) {
+                Scripts.eval(bgmLabelInfo.exp);
+            }
+            if (bgmLabelInfo.storage !== void || bgmLabelInfo.target !== void) {
+                process(bgmLabelInfo.storage, bgmLabelInfo.target);
+            }
+        }
+    }
+
+    function onBGMLabel(label) {
+        // BGM のラベル通過処理
+        conductor.trigger('bgmlabel_' + label);
+        var obj = bgmLabelInfos[label];
+        if (obj !== void) {
+            bgmLabelInfo = obj;
+            global.labelBgmTrigger = new AsyncTrigger(handleBgmLabel, '');
+            global.labelBgmTrigger.cached = true;
+            global.labelBgmTrigger.trigger();
+        }
+    }
+
+    /**
+     * BGM ラベル処理の登録
+     */
+    function setBgmLabel(elm) {
+        if (elm.name !== void) {
+            var obj = %[];
+            obj.storage = elm.storage;
+            obj.target  = elm.target;
+            obj.exp     = elm.exp;
+            bgmLabelInfos[elm.name] = obj;
+        }
+    }
+
+    /**
+     * BGM ラベル処理の解除
+     */
+    function clearBgmLabel() {
+        bgmLabelInfos = %[];
+        bgmLabelInfo = void;
+    }
+
+    // ----------------------------------------------------------------------
+    
 	function waitBGMFade(elm)
 	{
 		// BGM のフェード終了を待つ
@@ -4753,6 +4852,48 @@ class KAGWindow extends Window
 		return 0;
 	} incontextof this,
 
+    timeout : function(elm)
+    {
+        // タイムアウト処理の登録(カレントのみ)
+        current.addTimeout(elm);
+        return 0;
+    } incontextof this,
+
+    ctimeout : function(elm)
+    {
+        // タイムアウト処理の解除（カレントのみ）
+        current.clearTimeout();
+        return 0;
+    } incontextof this,
+
+    wheel : function(elm)
+    {
+        // ホイール処理の登録(カレントのみ)
+        current.addWheel(elm);
+        return 0;
+    } incontextof this,
+
+    cwheel : function(elm)
+    {
+        // ホイール処理の解除（カレントのみ）
+        current.clearWheel();
+        return 0;
+    } incontextof this,
+                  
+    click : function(elm)
+    {
+        // クリック処理の登録(カレントのみ)
+        current.addClick(elm);
+        return 0;
+    } incontextof this,
+
+    cclick : function(elm)
+    {
+        // クリック処理の登録(カレントのみ)
+        current.clearClick(elm);
+        return 0;
+    } incontextof this,
+
 	l : function(elm)
 	{
 		// 行クリック待ち
@@ -4902,6 +5043,10 @@ class KAGWindow extends Window
 		if(recordHistoryOfStore == 2) // 2 : 選択肢 ( @s タグ ) ごと
 			setToRecordHistory();
 		notifyStable();
+
+        // メッセージレイヤタイムアウト呼び出し開始
+        current.startTimeout();
+
 		return -1;
 	} incontextof this,
 
@@ -5346,6 +5491,8 @@ class KAGWindow extends Window
 	{
 		// BGM の演奏
 		bgm.play(elm);
+        clearBgmStop();
+        clearBgmLabel();
 		return 0;
 	} incontextof this,
 
@@ -5384,6 +5531,13 @@ class KAGWindow extends Window
 		return 0;
 	} incontextof this,
 
+	fadepausebgm : function(elm)
+	{
+		// BGM のフェードポーズ
+		bgm.fadePause(elm);
+		return 0;
+	} incontextof this,
+
 	fadebgm : function(elm)
 	{
 		// BGM の指定音量までのフェード
@@ -5395,6 +5549,8 @@ class KAGWindow extends Window
 	{
 		// BGM の入れ替え/クロスフェード
 		bgm.exchange(elm);
+        clearBgmStop();
+        clearBgmLabel();
 		return 0;
 	} incontextof this,
 
@@ -5403,6 +5559,32 @@ class KAGWindow extends Window
 		// BGM のオプション設定
 		bgm.setOptions(elm);
 		return 0;
+	} incontextof this,
+    setbgmstop : function(elm)
+	{
+		// BGM の終了時コールバックの登録
+        setBgmStop(elm);
+        return 0;
+	} incontextof this,
+
+    clearbgmstop : function(elm)
+	{
+		// BGM の終了時コールバックの削除
+        clearBgmStop();
+        return 0;
+	} incontextof this,
+
+    setbgmlabel : function(elm) {
+        // BGM のラベル時コールバックの登録
+        setBgmLabel(elm);
+        return 0;
+    } incontextof this,
+
+    clearbgmlabel : function(elm)
+	{
+        // BGM のラベル時コールバックの削除
+        clearBgmLabel();
+        return 0;
 	} incontextof this,
 
 	wb : function(elm)
