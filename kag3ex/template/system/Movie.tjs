@@ -176,19 +176,31 @@ class Movie extends VideoOverlay
 
 	function open(storage)
 	{
-		this.storageName = storage;
 		// open オーバーライド
-		try
-		{
-			super.open(storage);
-			opened = true;
-		}
-		catch(e)
-		{
-			if(e.message.indexOf(".dll") != -1) throw e;
-			dm("ムービー " + storage + " を再生できません : " +
-				e.message);
-			return;
+		this.storageName = storage;
+		opened = false;
+		var errmes, looped;
+		do {
+			try {
+				super.open(storage);
+				opened = true;
+			} catch(e) {
+				if(e.message.indexOf(".dll") != -1) throw e;
+				errmes = e.message;
+			}
+			looped = false;
+			if (!opened && mode == vomMixer) {
+				try {
+					mode = vomOverlay;
+					Debug.notice(storage + ": VideoMixerからOverlayへフォールバックします: " + errmes);
+					looped = true;
+				} catch(e) {
+					errmes = e.message;
+				}
+			}
+		} while (looped);
+		if (!opened) {
+			dm("ムービー " + storage + " を再生できません : " + errmes);
 		}
 	}
 
@@ -197,7 +209,10 @@ class Movie extends VideoOverlay
 		// play オーバーライド
 		try
 		{
-			if(!opened) super.open(storage);
+			if (!opened) {
+				open(storage != "" ? storage : this.storageName);
+				if (!opened) return;
+			}
 			super.play();
 			opened = false;
 		}
