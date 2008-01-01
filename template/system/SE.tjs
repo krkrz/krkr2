@@ -12,7 +12,7 @@ class SESoundBuffer extends WaveSoundBuffer
 	var currentStorage = ""; // 見かけの演奏中のストレージ
 	var currentVolume = 100; // 見かけのボリューム
 	var inFadeAndStop = false; // フェード終了時に停止するか
-
+    
 	function SESoundBuffer(owner, id)
 	{
 		// コンストラクタ
@@ -34,7 +34,8 @@ class SESoundBuffer extends WaveSoundBuffer
 		super.stop();
 		stopFade();
 		var storage = elm.storage;
-		var found = true;
+        var start = elm.start;
+        var found = true;
 		if(!Storages.isExistentStorage(storage))
 		{
 			var test;
@@ -57,9 +58,9 @@ class SESoundBuffer extends WaveSoundBuffer
 			currentStorage = "";
 		try
 		{
-			super.open(storage);
-			if(resetvolume) super.volume = currentVolume * 1000;
-			super.play();
+            super.open(storage);
+            if(resetvolume) super.volume = currentVolume * 1000;
+            super.play();
 		}
 		catch(e)
 		{
@@ -134,7 +135,8 @@ class SESoundBuffer extends WaveSoundBuffer
 	function fadeOut(elm)
 	{
 		// フェードアウト後停止
-		inFading = true;
+		currentStorage = ""; // 状態としては停止扱い
+        inFading = true;
 		inFadeAndStop = true;
 		var time = elm.time === void ? 5000 : +elm.time;
 		try
@@ -163,7 +165,7 @@ class SESoundBuffer extends WaveSoundBuffer
 			}
 			inFadeAndStop = false;
 		}
-		super.onFadeCompleted(...);
+        super.onFadeCompleted(...);
 		owner.onSESoundBufferFadeCompleted(id); // フェード終了
 	}
 
@@ -227,7 +229,11 @@ class SESoundBuffer extends WaveSoundBuffer
 			var v2 = +elm.gvolume;
 			v2 = int(v2 * 1000);
 			sysvar.globalVolume = v2;
-			volume2 = v2;
+            if (sysvar.enable === void || sysvar.enable) {
+                volume2 = v2;
+            } else {
+                volume2 = 0;
+            }
 		}
 		if(elm.pan !== void)
 		{
@@ -266,12 +272,15 @@ class SESoundBuffer extends WaveSoundBuffer
 			sysvar = sysvar[id];
 			if(sysvar !== void)
 			{
-				var v2 = sysvar.globalVolume;
-				if(v2 !== void)
-				{
-					volume2 = +v2;
-				}
-			}
+                if (sysvar.enable === void || sysvar.enable) {
+                    var v2 = sysvar.globalVolume;
+                    if(v2 !== void) {
+                        volume2 = +v2;
+                    }
+                } else {
+                    volume2 = 0;
+                }
+            }
 		}
 	}
 }
