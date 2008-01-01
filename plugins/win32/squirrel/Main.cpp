@@ -17,7 +17,7 @@
 // コピーライト表記
 static const char *copyright =
 "\n------ Squirrel Copyright START ------\n"
-"Copyright (c) 2003-2007 Alberto Demichelis\n"
+"Copyright (c) 2003-2008 Alberto Demichelis\n"
 "------ Squirrel Copyright END ------";
 
 /**
