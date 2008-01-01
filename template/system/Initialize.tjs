@@ -1,10 +1,6 @@
 // Initialize.tjs - システムの初期化
 // Copyright (C)2001-2008, W.Dee and contributors  改変・配布は自由です
 
-//try {
-//	Plugins.link("fpslimit.dll");
-//} catch(e) {
-//}
 try {
 	Plugins.link("layerExMovie.dll");
 } catch(e) {
