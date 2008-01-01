@@ -1,7 +1,7 @@
 /**
  * 擬似コードによるマニュアル
  *
- * Copyright 2005-2007 GoWatanabe
+ * Copyright 2005-2008 GoWatanabe
  *
  * expat による処理がおこなわれて自動的にメソッド呼び返し処理が行われます
  * 具体的な DOM の実装例は XML.tjs 参照

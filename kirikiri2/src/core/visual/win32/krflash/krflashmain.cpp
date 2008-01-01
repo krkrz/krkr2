@@ -1,6 +1,6 @@
 //---------------------------------------------------------------------------
 // krflashmain.cpp ( part of KRFLASH.DLL )
-// (c)2001-2007, W.Dee <dee@kikyou.info> and contributors
+// (c)2001-2008, W.Dee <dee@kikyou.info> and contributors
 //---------------------------------------------------------------------------
 /*
 	We separated this module because VCL's ActiveX support is too large (in size)

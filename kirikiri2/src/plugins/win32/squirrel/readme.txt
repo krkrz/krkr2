@@ -67,7 +67,7 @@ TJS2 ラッピングによる余分な負荷なしに呼び出し処理を行うことができます。
 
 Squirrel は いわゆる zlib/libpngスタイルライセンスです。
 
-Copyright (c) 2003-2007 Alberto Demichelis
+Copyright (c) 2003-2008 Alberto Demichelis
 
 This software is provided 'as-is', without any 
 express or implied warranty. In no event will the 
