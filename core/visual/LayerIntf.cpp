@@ -2155,6 +2155,7 @@ void tTJSNI_BaseLayer::SetHasImage(bool b)
 	if(!CanHaveImage && b)
 		TVPThrowExceptionMessage(TVPLayerCannotHaveImage);
 	if(b) AllocateImage(); else DeallocateImage();
+	NotifyChildrenVisualStateChanged();
 }
 //---------------------------------------------------------------------------
 bool tTJSNI_BaseLayer::GetHasImage() const
