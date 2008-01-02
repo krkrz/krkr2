@@ -1,0 +1,72 @@
+<html>
+<head>
+<meta HTTP-EQUIV="CONTENT-TYPE" CONTENT="TEXT/HTML; CHARSET=SHIFT_JIS">
+<title>吉里吉里2/KAG3 機能仕様書 / 画像処理機能</title>
+<link rel="stylesheet" href="styles-site.css" type="text/css" />
+</head>
+<body>
+<a name="top"></a>
+<div id="top_link"><a href="./index.html">Topへ</a></div>
+<div id="container">
+<div id="title-banner">
+<h1>画像処理機能</h1>
+</div>
+
+<div class="content">
+<p>吉里吉里2/KAG3がサポートする画像処理機能ついて記載。</p>
+<h3>目次</h3>
+<p><a href="#blend_mode">合成演算</a><br />
+<a href="#layer_mode">レイヤーモード</a><br />
+<a href="#affine">アフィン変換</a><br />
+<a href="#gamma">ガンマ補正</a><br />
+<a href="#glayscale">グレースケール化</a><br />
+
+</p>
+<br />
+<div class="title_bar"><a name="blend_mode">合成演算</a></div>
+<br />
+<table frame="box" rules="all">
+	<thead><tr><td>種類</td><td>式</td><td>説明</td></tr></thead>
+	<tbody>
+		<tr>
+			<td>不透明</td>
+			<td>result = src</td>
+			<td>アルファチャンネルを参照せずに合成を行います</td>
+		</tr>
+		<tr>
+			<td>アルファ合成</td>
+			<td>result = blend(dest, src, α)</td>
+			<td>アルファ合成を行います。<br />
+			透過を行う際のもっとも基本的なタイプです。</td>
+		</tr>
+		<tr>
+			<td>加算アルファ合成</td>
+			<td>result = min(1.0, dest × ( 1.0 - α ) + src)</td>
+			<td>加算アルファ合成を行います。</td>
+		</tr>
+		<tr>
+			<td>加算合成</td>
+			<td>result = min(1.0, dest × ( 1.0 - α ) + src)</td>
+			<td>加算合成を行います。光彩の表現に適しています。<br />
+			Photoshopにおける「覆い焼き(リニア)」に相当しますが、本合成ではアルファは無視されます。<br />
+			中性色 (重ね合わせても変化のない色) は黒です。</td>
+		</tr>
+		<tr>
+			<td>減算合成</td>
+			<td>result = max(0.0, dest + src - 1.0)</td>
+			<td>減算合成を行います。<br />
+			アルファは無視されます。<br />
+			中性色は白です。</td>
+		</tr>
+	</tbody>
+</table>
+
+<br />
+<br />
+
+</div>
+</div>
+
+</body>
+</html>
+
