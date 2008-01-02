@@ -60,6 +60,13 @@ class SESoundBuffer extends WaveSoundBuffer
 		{
             super.open(storage);
             if(resetvolume) super.volume = currentVolume * 1000;
+            // Ä¶ˆÊ’uw’è
+            if (start !== void &&
+                super.labels !== void &&
+                (start = super.labels[start]) !== void &&
+                (start = start.samplePosition) !== void) {
+                super.samplePosition = start;
+            }
             super.play();
 		}
 		catch(e)
