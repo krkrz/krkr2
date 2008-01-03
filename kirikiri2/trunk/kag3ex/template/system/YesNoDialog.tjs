@@ -24,6 +24,7 @@ class YesNoDialogWindow extends Window
 		borderStyle = bsDialog;
 		innerSunken = false;
 		caption = cap;
+		showScrollBars = false;
 
 		// プライマリレイヤの作成
 		add(new Layer(this, null));
@@ -40,8 +41,21 @@ class YesNoDialogWindow extends Window
 		if(w<200) w = 200;
 		var h = th*2 + 60;
 
-		setInnerSize(w, h);
+		// 拡大率の設定
+		if (kag.fullScreen) {
+			if (kag.innerWidth / kag.scWidth
+				< kag.innerHeight / kag.scHeight)
+				setZoom(kag.innerWidth, kag.scWidth);
+			else
+				setZoom(kag.innerHeight, kag.scHeight);
+		} else {
+		  setZoom(kag.zoomNumer, kag.zoomDenom);
+		}
+		// サイズを決定
+		setInnerSize(w * zoomNumer / zoomDenom,
+			 h * zoomNumer / zoomDenom);
 
+		// プライマリレイヤのサイズを設定
 		primaryLayer.width = w;
 		primaryLayer.height = h;
 		primaryLayer.colorRect(0, 0, w, h, clBtnFace, 255);
@@ -157,10 +171,10 @@ class YesNoDialogWindow extends Window
 // Yes か No かはっきりさせる関数
 function askYesNo(message, caption = "確認", yesFunc=void, noFunc=void, param=void, doneFunc=void)
 {
-    var win = new YesNoDialogWindow(message, caption);
+	var win = new YesNoDialogWindow(message, caption);
 	win.showModal();
-    var res = win.result;
-    invalidate win;
+	var res = win.result;
+	invalidate win;
 
     if (res) {
         if (yesFunc !== void) {
