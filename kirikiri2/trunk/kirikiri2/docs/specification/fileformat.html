@@ -152,11 +152,18 @@
 		</tr>
 
 		<tr>
-			<td rowspan="1">フォント</td>
+			<td rowspan="2">フォント</td>
 			<td>レンダリング済みフォント</td>
 			<td>.tft</td>
 			<td>吉里吉里独自形式。<br />
 			<a href="http://devdoc.kikyou.info/tvp/docs/kr2doc/contents/FontMaker.html">レンダリング済みフォントデータ作成ツール</a>にて生成する</td>
+		</tr>
+		<tr>
+			<td>TrueType/OpenType フォント</td>
+			<td>.ttf<br />.otf</td>
+			<td>非公式サポート。<br />
+			システムにフォントをインストールすることなく使える。<br />
+			要<a href="../../src/plugins/win32/addFont/">addFont.dll</a>。Windows2000/XP/Vista のみ対応。</td>
 		</tr>
 
 	</tbody>
