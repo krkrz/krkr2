@@ -2156,6 +2156,7 @@ void tTJSNI_BaseLayer::SetHasImage(bool b)
 		TVPThrowExceptionMessage(TVPLayerCannotHaveImage);
 	if(b) AllocateImage(); else DeallocateImage();
 	NotifyChildrenVisualStateChanged();
+	Update();
 }
 //---------------------------------------------------------------------------
 bool tTJSNI_BaseLayer::GetHasImage() const
@@ -3136,17 +3137,9 @@ void tTJSNI_BaseLayer::SetFocusable(bool b)
 		bool astate = GetNodeFocusable();
 		if(bstate != astate)
 		{
-			if(astate)
+			if(!astate)
 			{
-				// check primary focusable stateus
-				if(Manager)
-				{
-					if(!Manager->GetFocusedLayer())
-						Manager->SetFocusTo(this, true); // newly focused
-				}
-			}
-			else
-			{
+				// remove focus from this layer
 				if(Manager)
 				{
 					if(Manager->GetFocusedLayer() == this)
