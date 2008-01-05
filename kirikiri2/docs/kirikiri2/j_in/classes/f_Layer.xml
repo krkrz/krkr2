@@ -692,7 +692,12 @@
 	<result></result>
 	<desc>
 		　重ね合わせ順において、兄弟レイヤ ( 同じ親を持つレイヤ ) の中でもっとも奥に移動します。<r/>
+		　このメソッドを実行すると親レイヤの <ref>Layer.absoluteOrderMode</ref> プロパティが偽に設定されます。<r/>
 	</desc>
+	<ref>Layer.order</ref>
+	<ref>Layer.absolute</ref>
+	<ref>Layer.absoluteOrderMode</ref>
+	<ref>Layer.bringToFront</ref>
 </member>
 
 <member>
@@ -704,7 +709,12 @@
 	<result></result>
 	<desc>
 		　重ね合わせ順において、兄弟レイヤ ( 同じ親を持つレイヤ ) の中でもっとも手前に移動します。<r/>
+		　このメソッドを実行すると親レイヤの <ref>Layer.absoluteOrderMode</ref> プロパティが偽に設定されます。<r/>
 	</desc>
+	<ref>Layer.order</ref>
+	<ref>Layer.absolute</ref>
+	<ref>Layer.absoluteOrderMode</ref>
+	<ref>Layer.bringToBack</ref>
 </member>
 
 <member>
@@ -3563,6 +3573,10 @@
 		　値を設定すると兄弟レイヤ間での順位を変えることができます。値を設定すると
 		親レイヤの <ref>Layer.absoluteOrderMode</ref> プロパティが偽に設定されます。<r/>
 	</desc>
+	<ref>Layer.absolute</ref>
+	<ref>Layer.absoluteOrderMode</ref>
+	<ref>Layer.bringToBack</ref>
+	<ref>Layer.bringToFront</ref>
 </member>
 
 <member>
@@ -3576,6 +3590,10 @@
 		　値を設定すると兄弟レイヤ間での順位を変えることができます。値を設定すると
 		親レイヤの <ref>Layer.absoluteOrderMode</ref> プロパティが真に設定されます。<r/>
 	</desc>
+	<ref>Layer.order</ref>
+	<ref>Layer.absoluteOrderMode</ref>
+	<ref>Layer.bringToBack</ref>
+	<ref>Layer.bringToFront</ref>
 </member>
 
 <member>
@@ -3590,6 +3608,10 @@
 		　真を指定すると絶対位置指定となり、<ref>Layer.absolute</ref> プロパティが
 		その順位を表すようになります。<r/>
 	</desc>
+	<ref>Layer.order</ref>
+	<ref>Layer.absolute</ref>
+	<ref>Layer.bringToBack</ref>
+	<ref>Layer.bringToFront</ref>
 </member>
 
 <member>
