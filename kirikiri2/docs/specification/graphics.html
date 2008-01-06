@@ -16,7 +16,6 @@
 <p>吉里吉里2/KAG3がサポートする画像処理機能ついて記載。</p>
 <h3>目次</h3>
 <p><a href="#blend_mode">合成演算</a><br />
-<a href="#layer_mode">レイヤーモード</a><br />
 <a href="#affine">アフィン変換</a><br />
 <a href="#gamma">ガンマ補正</a><br />
 <a href="#glayscale">グレースケール化</a><br />
@@ -26,37 +25,205 @@
 <div class="title_bar"><a name="blend_mode">合成演算</a></div>
 <br />
 <table frame="box" rules="all">
-	<thead><tr><td>種類</td><td>式</td><td>説明</td></tr></thead>
+	<thead><tr><td>No.</td><td>種類</td><td>式</td><td>説明</td></tr></thead>
 	<tbody>
 		<tr>
+			<td>1</td>
 			<td>不透明</td>
 			<td>result = src</td>
 			<td>アルファチャンネルを参照せずに合成を行います</td>
 		</tr>
 		<tr>
+			<td>2</td>
 			<td>アルファ合成</td>
 			<td>result = blend(dest, src, α)</td>
 			<td>アルファ合成を行います。<br />
 			透過を行う際のもっとも基本的なタイプです。</td>
 		</tr>
 		<tr>
+			<td>3</td>
 			<td>加算アルファ合成</td>
 			<td>result = min(1.0, dest × ( 1.0 - α ) + src)</td>
 			<td>加算アルファ合成を行います。</td>
 		</tr>
 		<tr>
+			<td>4</td>
 			<td>加算合成</td>
 			<td>result = min(1.0, dest × ( 1.0 - α ) + src)</td>
 			<td>加算合成を行います。光彩の表現に適しています。<br />
-			Photoshopにおける「覆い焼き(リニア)」に相当しますが、本合成ではアルファは無視されます。<br />
+			11.Photoshopにおける「覆い焼き(リニア)」に相当しますが、本合成ではアルファは無視されます。<br />
 			中性色 (重ね合わせても変化のない色) は黒です。</td>
 		</tr>
 		<tr>
+			<td>5</td>
 			<td>減算合成</td>
-			<td>result = max(0.0, dest + src - 1.0)</td>
-			<td>減算合成を行います。<br />
-			アルファは無視されます。<br />
+			<td>result = max(0.0, dest + src - 1.0)<br />
+			※ result = dest - src と違うのは src が反転しないかするかの違いだけです。</td>
+			<td>減算合成を行います。αは無視されます。<br />
 			中性色は白です。</td>
+		</tr>
+		<tr>
+			<td>6</td>
+			<td>乗算合成</td>
+			<td>result = dest × src</td>
+			<td>乗算合成を行います。<br />
+			αは無視されます。<br />
+			中性色は白です。</td>
+		</tr>
+		<tr>
+			<td>7</td>
+			<td>覆い焼き合成</td>
+			<td>result = min(1.0, dest ÷ ( 1.0 - src ) )</td>
+			<td>覆い焼き合成を行います。<br />
+			光に照らされたものの表現に適しています。<br />
+			αは無視されます。<br />
+			中性色は黒です。</td>
+		</tr>
+		<tr>
+			<td>8</td>
+			<td>比較(明)合成</td>
+			<td>result = max(dest, src)</td>
+			<td>「比較(明)」合成を行います。<br />
+			αは無視されます。<br />
+			中性色は黒です。</td>
+		</tr>
+		<tr>
+			<td>9</td>
+			<td>比較(暗)合成</td>
+			<td>result = min(dest, src)</td>
+			<td>「比較(暗)」合成を行います。<br />
+			αは無視されます。<br />
+			中性色は白です。</td>
+		</tr>
+		<tr>
+			<td>10</td>
+			<td>スクリーン乗算合成</td>
+			<td>result = 1.0 - ( 1.0 - dest ) × ( 1.0 - src )</td>
+			<td>「スクリーン乗算」合成を行います。<br />
+			αは無視されます。<br />
+			中性色は黒です。</td>
+		</tr>
+		<tr>
+			<td>11</td>
+			<td>Photoshop互換<br />覆い焼き(リニア)合成<br />(加算合成)</td>
+			<td>result = blend(dest, min(1.0, dest + src), α)</td>
+			<td>Photoshop互換の「覆い焼き(リニア)」合成(加算合成)を行います。<br />
+			4.加算合成と違い、αは無視されません。<br />
+			中性色は黒です。</td>
+		</tr>
+		<tr>
+			<td>12</td>
+			<td>Photoshop互換<br />焼き込み(リニア)合成<br />(減算合成)</td>
+			<td>result = blend(dest, max(0.0, dest + src - 1.0), α)</td>
+			<td>Photoshop互換の「焼き込み(リニア)」合成(減算合成)を行います。<br />
+			5.減算合成と違い、αは無視されません。<br />
+			中性色は白です。</td>
+		</tr>
+		<tr>
+			<td>13</td>
+			<td>Photoshop互換<br />乗算合成</td>
+			<td>result = blend(dest, dest × src, α)</td>
+			<td>Photoshop互換の「乗算」合成を行います。<br />
+			6.乗算合成と違い、αは無視されません。<br />
+			中性色は白です。</td>
+		</tr>
+		<tr>
+			<td>14</td>
+			<td>Photoshop互換<br />スクリーン合成</td>
+			<td>result = blend(dest, 1.0 - (1.0 - dest) × (1.0 - src), α)</td>
+			<td>Photoshop互換の「スクリーン」合成を行います。<br />
+			10.スクリーン乗算合成と違い、αは無視されません。<br />
+			中性色は黒です。</td>
+		</tr>
+		<tr>
+			<td>15</td>
+			<td>Photoshop互換<br />オーバーレイ合成</td>
+			<td>result = blend(dest, overlay(dest, src), α)<br />
+			ここで overlay(a, b) =<br />
+			a × b × 2.0 ( a < 0.5 のとき)<br />
+			1.0 - (1.0 - a) × (1.0 - b) × 2.0 (それ以外のとき)</td>
+			<td>Photoshop互換の「オーバーレイ」合成を行います。<br />
+			中性色は50%灰色です。</td>
+		</tr>
+		<tr>
+			<td>16</td>
+			<td>Photoshop互換<br />ハードライト合成</td>
+			<td>result = blend(dest, hardlight(dest, src), α)<br />
+			ここで hardlight(a, b) =<br />
+			a × b × 2.0 (b < 0.5 のとき)<br />
+			1.0 - (1.0 - a) × (1.0 - b) × 2.0 (それ以外のとき)</td>
+			<td>Photoshop互換の「ハードライト」合成を行います。<br />
+			中性色は50%灰色です。</td>
+		</tr>
+		<tr>
+			<td>17</td>
+			<td>Photoshop互換<br />ソフトライト合成</td>
+			<td>result = blend(dest, softlight(dest, src), α)<br />
+			ここで softlight(a, b) = <br />
+			後でLatexで書いた式を貼り付ける</td>
+			<td>Photoshop互換の「ソフトライト」合成を行います。<br />
+			中性色は50%灰色です。</td>
+		</tr>
+		<tr>
+			<td>18</td>
+			<td>Photoshop互換<br />覆い焼きカラー合成</td>
+			<td>result = blend(dest, min(1.0, dest ÷ ( 1.0 - src ) ), α)</td>
+			<td>Photoshop互換の「覆い焼きカラー」合成を行います。<br />
+			ltDodge と違い、αは無視されません。<br />
+			中性色は黒です。</td>
+		</tr>
+		<tr>
+			<td>19</td>
+			<td>Photoshop Ver 5.x 以下互換<br />覆い焼きカラー合成</td>
+			<td>result = min(1.0, dest ÷ ( 1.0 - src × α) )</td>
+			<td>Photoshopのバージョン 5.x 以下と互換の「覆い焼きカラー」合成を行います。<br />
+			18.Photoshop互換覆い焼きカラー合成とは式が若干異なります。<br />
+			中性色は黒です。</td>
+		</tr>
+		<tr>
+			<td>20</td>
+			<td>Photoshop互換<br />焼き込みカラー合成</td>
+			<td>result = blend(dest, max(0.0, 1.0 - (1.0 - dest) ÷ src), α)</td>
+			<td>Photoshop互換の「焼き込みカラー」合成を行います。<br />
+			中性色は白です。</td>
+		</tr>
+		<tr>
+			<td>21</td>
+			<td>Photoshop互換<br />比較(明)合成</td>
+			<td>result = blend(dest, max(dest, src), α)</td>
+			<td>Photoshop互換の「比較(明)」合成を行います。<br />
+			8.比較(明)合成と違い、αは無視されません。<br />
+			中性色は黒です。</td>
+		</tr>
+		<tr>
+			<td>22</td>
+			<td>Photoshop互換<br />比較(暗)合成</td>
+			<td>result = blend(dest, min(dest, src), α)</td>
+			<td>Photoshop互換の「比較(暗)」合成を行います。<br />
+			9.比較(暗)合成と違い、αは無視されません。<br />
+			中性色は白です。</td>
+		</tr>
+		<tr>
+			<td>23</td>
+			<td>Photoshop互換<br />差の絶対値合成</td>
+			<td>result = blend(dest, abs(dest - src), α)</td>
+			<td>Photoshop互換の「差の絶対値」合成を行います。<br />
+			中性色は黒です。</td>
+		</tr>
+		<tr>
+			<td>24</td>
+			<td>Photoshop Ver 5.x 以下互換<br />差の絶対値合成</td>
+			<td>result = abs(dest - src × α)</td>
+			<td>Photoshopのバージョン 5.x 以下と互換の「差の絶対値」合成を行います。<br />
+			23.Photoshop互換差の絶対値合成とは式が若干異なります。<br />
+			中性色は黒です。</td>
+		</tr>
+		<tr>
+			<td>25</td>
+			<td>Photoshop互換<br />除外合成</td>
+			<td>result = blend(dest, dest + src - 2.0 × src × dest, α)</td>
+			<td>Photoshop互換の「除外」合成を行います。<br />
+			中性色は黒です。</td>
 		</tr>
 	</tbody>
 </table>
