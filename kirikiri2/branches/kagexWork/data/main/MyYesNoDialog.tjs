@@ -49,6 +49,7 @@ class MyYesNoDialogWindow extends Window
 		// 外見の調整
         borderStyle = bsNone;
         innerSunken = false;
+		showScrollBars = false;
 
 		// プライマリレイヤの作成
         add(new Layer(this, null));
@@ -57,9 +58,20 @@ class MyYesNoDialogWindow extends Window
 		if(typeof this.cursorDefault !== "undefined")
 			primaryLayer.cursor = cursorDefault;
 
-        primaryLayer.loadImages(baseStorage);
-        primaryLayer.setSizeToImageSize();
-		setInnerSize(primaryLayer.width, primaryLayer.height);
+		// 拡大率の設定
+		if (kag.fullScreen) {
+			if (kag.innerWidth / kag.scWidth < kag.innerHeight / kag.scHeight)
+				setZoom(kag.innerWidth, kag.scWidth);
+			else
+				setZoom(kag.innerHeight, kag.scHeight);
+		} else {
+			setZoom(kag.zoomNumer, kag.zoomDenom);
+		}
+		
+		primaryLayer.loadImages(baseStorage);
+		primaryLayer.setSizeToImageSize();
+		setInnerSize(primaryLayer.width * zoomNumer / zoomDenom,
+					 primaryLayer.height * zoomNumer / zoomDenom);
         setMaskRegion();
         
 		// ウィンドウ位置の調整
@@ -82,16 +94,16 @@ class MyYesNoDialogWindow extends Window
 
 		// Yesボタン
         add(yesButton = new ButtonLayer(this, primaryLayer));
-        yesButton.loadButtons("dialog_yes_normal", "dialog_yes_over", "dialog_yes_over");
-        yesButton.top  = 41;
-		yesButton.left = 30;
+		yesButton.loadButtons("dialog_yes_normal", "dialog_yes_over", "dialog_yes_over");
+		yesButton.top  = 305;
+		yesButton.left = 325;
 		yesButton.visible = true;
 
 		// Noボタン
 		add(noButton = new ButtonLayer(this, primaryLayer));
         noButton.loadButtons("dialog_no_normal", "dialog_no_over", "dialog_no_over");
-        noButton.top  = 41;
-		noButton.left = 108;
+        noButton.top  = 305;
+		noButton.left = 411;
 		noButton.visible = true;
 
 	}
