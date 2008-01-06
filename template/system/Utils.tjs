@@ -1,5 +1,5 @@
 // Utils.tjs - ユーティリティ関数
-// Copyright (C)2001-2007, W.Dee and contributors  改変・配布は自由です
+// Copyright (C)2001-2008, W.Dee and contributors  改変・配布は自由です
 
 
 property random
@@ -50,7 +50,8 @@ function str2num(str)
 
 function han2zen(str)
 {
-	// 半角→全角 ( 英数のみ )
+	// 半角→全角 ( 英数・半角カナ対応 )
+	var zenkana = "。「」、・ヲァィゥェォャュョッーアイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワン゛゜";
 	var res;
 	var i;
 	for(i=0;i<str.length;i++)
@@ -58,6 +59,8 @@ function han2zen(str)
 		var num=#str[i];
 		if(num>=0x0020 && num<=0x7e)
 			res+=$(0xff00+num-0x20); // UNICODE
+		else if (num>=0xff61 && num<=0xff9f)
+			res+=zenkana[num-0xff61]; // 半角カナ⇒全角
 		else res+=str[i];
 	}
 	return res;

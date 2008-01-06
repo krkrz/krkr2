@@ -1,5 +1,5 @@
 // SelectLayer.tjs - 選択肢レイヤ
-// Copyright (C)2001-2007, W.Dee and contributors  改変・配布は自由です
+// Copyright (C)2001-2008, W.Dee and contributors  改変・配布は自由です
 
 /**
  * 選択肢処理用ボタン
@@ -82,10 +82,12 @@ class SelectButtonLayer extends ButtonLayer
 	{
         if(onleave !== void) Scripts.eval(onleave);
         super.onMouseLeave(...);
+		window.focusedLayer = null if (focused);
 	}
 
 	function onMouseDown(x, y, button, shift)	{
         if (button == mbRight) {
+			releaseCapture();
             window.onPrimaryRightClick();
         }
         if (this isvalid) super.onMouseDown(...);
@@ -100,13 +102,17 @@ class SelectButtonLayer extends ButtonLayer
 
 	function onKeyDown(key, shift, process)
 	{
-        // キーが押された
-        if(window.preProcessKeys(key, shift)) return;
-        if (enabled && (key == VK_SPACE || key == VK_RETURN)) {
-            owner.onButtonClick(this);
-        }
-        if (this isvalid) super.onKeyDown(...);
-    }
+		// キーが押された
+		if (window.preProcessKeys(key, shift)) return;
+		switch (key) {
+		case VK_SPACE: case VK_RETURN:
+			owner.onButtonClick(this) if (enabled);
+			break;
+		case VK_ESCAPE:
+			return window.processKeys(key, shift);
+		}
+		if (this isvalid) super.onKeyDown(...);
+	}
 
 	function onFocus(prevfocused, direction)
 	{
@@ -117,6 +123,7 @@ class SelectButtonLayer extends ButtonLayer
         if(process) {
             cursorX = (width>>1);
             cursorY = (height>>1);
+			releaseCapture();
         }
     }
 }

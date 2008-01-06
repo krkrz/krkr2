@@ -43,7 +43,7 @@ class PropActionInfo {
      * @param handler アクションハンドラ
      * @param elm 初期化パラメータ
      */
-    function addAction(target, handler, elm) {
+	function addAction(target, handler, elm) {
 		//dm("アクション追加:" + propName);
 		if (typeof handler == "Object" && handler != null) {
 			if (typeof handler.AbsoluteActionHandler != "undefined") {
@@ -62,6 +62,9 @@ class PropActionInfo {
 			}
 		} else {
 			dm("ハンドラ異常:" + handler);
+		}
+		if (elm.starttime !== void) {
+			startTime = +elm.starttime;
 		}
     }
 
@@ -87,7 +90,9 @@ class PropActionInfo {
     function doAction(target, now, stopFlag) {
 		if (first) {
 			//dm("アクション初回");
-			startTime = now;
+			if (startTime === void) {
+				startTime = now;
+			}
 			if (absolute !== void) {
 				absolute.init(target, propName);
 			}
@@ -212,9 +217,11 @@ class ActionInfo {
 		if (!isvalid target) return true; // 対象が無効なら終了
         var done = true;
         for (var i=0; i<actionList.count; i++) {
-            if (!actionList[i].doAction(target, now, stopFlag)) {
-                done = false;
-            }
+			try {
+				done = false if (!actionList[i].doAction(target, now, stopFlag));
+			} catch {
+				return true; // エラーが出たら強制終了する
+			}
         }
         return done;
     }
@@ -292,22 +299,50 @@ class ActionSequense {
      * @param dict アクション情報の入った辞書
      */
     function addActions(dict) {
+		var time  = dict.time;
+		var delay = dict.delay;
+		var accel = dict.accel;
+		var starttime = dict.starttime;
+
 		var names = [];
 		names.assign(dict);
 		for (var i=0; i<names.count; i+= 2) {
 			var name = names[i];
 			var elm  = names[i+1];
+			if (name == "time" || name == "delay" || name == "accel" || name == "starttime") {
+				continue;
+			}
+			// 評価処理
+			if (typeof elm == "String") {
+				//dm("name:" + name + " elm:"  +elm);
+				elm = Scripts.eval(elm);
+			}
 			if (typeof elm == "Object") {
 				if (elm === null) {
 					delAction(name);
 				} else if (elm instanceof "Dictionary") {
-					if (typeof elm.handler == "String") {
-						var handler = Scripts.eval(elm.handler);
-						addAction(name, handler, elm);
-					} else if (typeof elm.handler == "Object") {
-						addAction(name, elm.handler, elm);
+					var e = %[];
+					(Dictionary.assign incontextof e)(elm, false);
+					// 共通パラメータ反映
+					if (time !== void) {
+						e.time = +time;
+					}
+					if (delay !== void) {
+						e.delay = +delay;
+					}
+					if (accel !== void) {
+						e.accel = accel;
+					}
+					if (starttime !== void) {
+						e.starttime = +starttime;
+					}
+					if (typeof e.handler == "String") {
+						var handler = Scripts.eval(e.handler);
+						addAction(name, handler, e);
+					} else if (typeof e.handler == "Object") {
+						addAction(name, e.handler, e);
 					} else {
-						dm("無効なアクションハンドラ指定:" + elm.handler);
+						dm("無効なアクションハンドラ指定:" + e.handler);
 					}
                 }
             }
@@ -337,6 +372,7 @@ class ActionSequense {
     function doAction(now, stopFlag) {
 		if (actions.count > 0) {
 			if (actions[0].doAction(target, now, stopFlag)) {
+				invalidate actions[0] if (isvalid actions[0]);
 				actions.erase(0);
 			}
 		}
@@ -349,7 +385,8 @@ class ActionSequense {
 	function stopAction() {
 		while (actions.count > 0) {
 			//dm("アクション停止:" + actions.count);
-			actions[0].doAction(target, 0, true);
+			try { actions[0].doAction(target, 0, true); } catch {} // エラーが発生しても無視する
+			invalidate actions[0] if (isvalid actions[0]);
 			actions.erase(0);
         }
     }

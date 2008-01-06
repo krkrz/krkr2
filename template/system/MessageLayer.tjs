@@ -1,5 +1,5 @@
 //;# MessageLayer.tjs - メッセージレイヤ
-//;# Copyright (C)2001-2007, W.Dee and contributors  改変・配布は自由です
+//;# Copyright (C)2001-2008, W.Dee and contributors  改変・配布は自由です
 //;<<'END_OF_TJS_SCRIPT';
 
 // このスクリプトは有効な perl5 スクリプトでもあって、
@@ -18,12 +18,14 @@ class LinkButtonLayer extends ButtonLayer
 
     var _eventTransparent;
     var _focusable;
+	var _enabled;
     
 	function LinkButtonLayer(win, par)
 	{
 		// コンストラクタ
         super.ButtonLayer(...);
-        focusable = false; // フォーカスは受け取らない
+		focusable = false; // フォーカスは受け取らない
+		enabled  = true;
         eventTransparent = false;
         hint = "";
 	}
@@ -48,6 +50,7 @@ class LinkButtonLayer extends ButtonLayer
 	{
 		super.onMouseDown(...);
         if (button == mbRight) {
+			releaseCapture();
             window.onPrimaryRightClick();
         }
 	}
@@ -55,12 +58,14 @@ class LinkButtonLayer extends ButtonLayer
 	function onMouseEnter()
 	{
 		parent.keyLink = linkNum;
+		parent.focus() if (window.focusedLayer === null);
 		if(!parent.selProcessLock && onenter !== void) Scripts.eval(onenter);
 		super.onMouseEnter(...);
 	}
 
 	function onMouseLeave()
 	{
+		parent.keyLink = -1 if (parent.keyLink == linkNum);
 		if(!parent.selProcessLock && onleave !== void) Scripts.eval(onleave);
 		super.onMouseLeave(...);
 	}
@@ -80,8 +85,9 @@ class LinkButtonLayer extends ButtonLayer
         // 有効かどうか
         // 無効な場合はイベントを透過させる
         setter(x) {
-            super.enabled = x;
-            if (x) {
+			_enabled = x;
+			var en = super.enabled = getEnabled(x);
+            if (en) {
                 hitType = _eventTransparent ? htProvince : htMask; 
                 super.focusable = _focusable;
             } else {
@@ -90,7 +96,7 @@ class LinkButtonLayer extends ButtonLayer
             }
         }
         getter() {
-            return super.enabled;
+            return _enabled;
         }
     }
     
@@ -120,7 +126,7 @@ class LinkButtonLayer extends ButtonLayer
 		setter(x)
 		{
             _focusable = x;
-            super.focusable = x && enabled;
+            super.focusable = x && getEnabled(enabled);
         }
         getter()
 		{
@@ -134,11 +140,15 @@ class LinkButtonLayer extends ButtonLayer
         }
         setter(v) {
             super.toggle = v;
-            if (v && groupName != "") {
-                parent.updateRadio(this);
+			if (radio) {
+				parent.updateRadio(this) if (v);
+				enabled   = _enabled;
+				focusable = _focusable;
             }
         }
     }
+	property radio { getter { return groupName != ""; } }
+	function getEnabled(en) { return en && !(radio && toggle); }
 }
 
 class LinkCheckBoxLayer extends CheckBoxLayer
@@ -230,6 +240,7 @@ class LinkCheckBoxLayer extends CheckBoxLayer
 	{
 		super.onMouseDown(...);
         if(button == mbRight) {
+			releaseCapture();
             window.onPrimaryRightClick();
         }
 	}
@@ -272,6 +283,12 @@ class LinkEditLayer extends EditLayer
 			if(key == VK_LEFT) key = VK_RIGHT;
 			else if(key == VK_RIGHT) key = VK_LEFT;
 		}
+		// 移動時にkeyLinkを補正
+		switch (key) {
+		case VK_LEFT: case VK_RIGHT: case VK_UP: case VK_DOWN: case VK_RETURN: case VK_TAB:
+			parent.keyLink = linkNum;
+			break;
+		}
 		super.onKeyDown(key, shift, process);
 	}
 
@@ -301,6 +318,7 @@ class LinkEditLayer extends EditLayer
 	{
 		super.onMouseDown(...);
         if(button == mbRight) {
+			releaseCapture();
             window.onPrimaryRightClick();
         }
 	}
@@ -398,6 +416,7 @@ class LinkSliderLayer extends SliderLayer
 	{
 		super.onMouseDown(...);
         if(button == mbRight) {
+			releaseCapture();
             window.onPrimaryRightClick();
         }
 	}
@@ -464,6 +483,7 @@ class SystemButtonLayer extends ButtonLayer
 	{
 		super.onMouseDown(...);
         if(button == mbRight) {
+			releaseCapture();
             window.onPrimaryRightClick();
         }
 	}
@@ -883,6 +903,7 @@ class MessageLayer extends AnimKAGLayer
 	/*CS*/var marginR = 8; // 右マージン
 	/*CS*/var marginB = 8; // 下マージン
 	/*CS*/var marginRCh = 2; // 右端(縦書きの場合は下端)に確保する禁則処理用余白
+	var kinsokuCount;
 	/*C*/var x;
 	/*C*/var y; // 現在の表示位置
 	/*C*/var relinexpos; // 改行すべき最終右(縦書きの場合は下)位置
@@ -1000,6 +1021,7 @@ class MessageLayer extends AnimKAGLayer
     var ltEdit     = 3;
     var ltCheckBox = 4;
     var ltSlider   = 5;
+    var ltLayer    = 6;
     
     // 名前描画用レイヤ
     var nameLayer;
@@ -1041,9 +1063,7 @@ class MessageLayer extends AnimKAGLayer
         timeoutTime    = elm.time;
         timeoutStorage = elm.storage;
         timeoutTarget  = elm.target;
-        if (elm.exp !== void) {
-            timeoutExp = createSoundExpression(elm.exp, elm.clickse, elm.clicksebuf);
-        }
+        timeoutExp = createSoundExpression(elm.exp, elm.se, elm.sebuf);
         setSelProcessLock(false); // 選択ロック解除
         //comp.setSelProcessLock(false); // 選択ロック解除
     }
@@ -1077,9 +1097,7 @@ class MessageLayer extends AnimKAGLayer
     function addClick(elm) {
         clickStorage = elm.storage;
         clickTarget  = elm.target;
-        if (elm.exp !== void) {
-            clickExp = createSoundExpression(elm.exp, elm.clickse, elm.clicksebuf);
-        }
+        clickExp = createSoundExpression(elm.exp, elm.se, elm.sebuf);
         focusable = true; // フォーカスを受け取れるように
         setSelProcessLock(false); // 選択ロック解除
         //comp.setSelProcessLock(false); // 選択ロック解除
@@ -1119,9 +1137,7 @@ class MessageLayer extends AnimKAGLayer
         wheelStorage = elm.storage;
         wheelTarget  = elm.target;
         wheelFunc    = elm.func;
-        if (elm.exp !== void) {
-            wheelExp = createSoundExpression(elm.exp, elm.wheelse, elm.wheelsebuf);
-        }
+        wheelExp = createSoundExpression(elm.exp, elm.se, elm.sebuf);
         focusable = true; // フォーカスを受け取れるように
         setSelProcessLock(false); // 選択ロック解除
         //comp.setSelProcessLock(false); // 選択ロック解除
@@ -1424,7 +1440,8 @@ class MessageLayer extends AnimKAGLayer
 			x = marginL;
 			y = marginT;
 		}
-
+		kinsokuCount = marginRCh;
+		
 		// その他リセット
 		indentxpos = 0;
 		resetFont();
@@ -1458,6 +1475,7 @@ class MessageLayer extends AnimKAGLayer
 			y = marginT;
 			x = marginL + indentxpos;
 		}
+		kinsokuCount = marginRCh;
 		initLineLayer();
 	}
 
@@ -2008,6 +2026,7 @@ class MessageLayer extends AnimKAGLayer
 				y += lineSize + lineSpacing;
 				x = marginL + indentxpos;
 			}
+			kinsokuCount = marginRCh;
 
 			var condition;
 			if(vertical)
@@ -2037,7 +2056,9 @@ class MessageLayer extends AnimKAGLayer
 
 		if((vert ?  y >= relinexpos  : x >= relinexpos ) && autoReturn)
 		{
-			if(((lastDrawnCh=="" || wwLeading.indexOf(lastDrawnCh)==-1) &&
+			if (kinsokuCount <= 0) {
+				if(reline()) return autoReturn;
+			} else if(((lastDrawnCh=="" || wwLeading.indexOf(lastDrawnCh)==-1) &&
 				wwFollowing.indexOf(ch)==-1) ||
 				(lastDrawnCh!="" && wwFollowingWeak.indexOf(lastDrawnCh)!=-1 &&
 					wwFollowingWeak.indexOf(ch)!=-1))
@@ -2054,6 +2075,8 @@ class MessageLayer extends AnimKAGLayer
 				// 確実に 右端を越える場合
 				// ( この場合は余白は考えない )
 				if(reline()) return autoReturn;
+			} else {
+				kinsokuCount--;
 			}
 		}
 
@@ -2612,20 +2635,26 @@ class MessageLayer extends AnimKAGLayer
         object.name = elm.name !== void ? elm.name : "edit" + numLinks;
 		var of = object.font;
 		var lf = lineLayer.font;
-		of.face = lf.face;
-		of.angle = lf.angle;
-		of.bold = lf.bold;
-		of.italic = lf.italic;
-		of.height = lf.height;
+		of.face   = (elm.fontface   !== void) ? elm.fontface   : lf.face;
+		of.angle  = (elm.fontangle  !== void) ? elm.fontangle  : lf.angle;
+		of.bold   = (elm.fontbold   !== void) ? elm.fontbold   : lf.bold;
+		of.italic = (elm.fontitalic !== void) ? elm.fontitalic : lf.italic;
+		of.height = (elm.fontheight !== void) ? elm.fontheight : lf.height;
 		object.linkNum = numLinks;
 		object.text = Scripts.eval(elm.name);
-        object.exp = elm.name;
+		var exp = (elm.exp != "") ? elm.exp : elm.name;
+		object.exp     = exp;
         object.antialiased = antialiased;
 		object.color = elm.bgcolor if elm.bgcolor !== void; // color でない事に注意
 		object.textColor = elm.color if elm.color !== void; // textColor でないことに注意
 		object.maxChars = elm.maxchars if elm.maxchars !== void;
 		object.bgOpacity = elm.opacity if elm.opacity !== void;
 		object.noborder = elm.noborder if elm.noborder !== void;
+
+		var ox = 0, oy = 0;
+		ox = +elm.textox if (elm.textox !== void);
+		oy = +elm.textoy if (elm.textoy !== void);
+		object.setDrawTextOffset(ox, oy) if (ox != 0 || oy != 0);
 
 		var len = elm.length === void ? 200: +elm.length;
 		if(vertical)
@@ -2651,7 +2680,7 @@ class MessageLayer extends AnimKAGLayer
 
 		links[numLinks] = %[
 			type :			ltEdit,
-			exp :			elm.name,
+			exp :			exp,
 			object :		object,
 			x :				[object.left],
 			y :				[object.top],
@@ -2742,16 +2771,19 @@ class MessageLayer extends AnimKAGLayer
 
 	function addSlider(elm)
 	{
-        var object = new LinkSliderLayer(window, this, vertical);
+		var vert = elm.vertical !== void ? +elm.vertical : vertical;
+        var object = new LinkSliderLayer(window, this, vert);
         object.name = elm.name !== void ? elm.name : "slider" + numLinks;
         object.linkNum = numLinks;
 		object.onenter = createSoundExpression(elm.onenter, elm.enterse, elm.entersebuf);
 		object.onleave = createSoundExpression(elm.onleave, elm.leavese, elm.leavesebuf);
-        object.exp     = elm.name;
+		var exp = (elm.exp != "") ? elm.exp : elm.name;
+		object.exp     = exp;
         object.color = elm.bgcolor if elm.bgcolor !== void; // color でない事に注意
         object.bgOpacity = elm.opacity if elm.opacity !== void;
-        object.min = +elm.min if elm.min !== void;
-        object.max = +elm.max if elm.max !== void;
+		object.min  = +elm.min  if elm.min  !== void;
+		object.max  = +elm.max  if elm.max  !== void;
+		object.step = +elm.step if elm.step !== void;
         object.nohilight = elm.nohilight if elm.nohilight !== void;
         object.jumpMode = elm.jumpmode if elm.jumpmode !== void;
         if (elm.value !== void) {
@@ -2783,50 +2815,50 @@ class MessageLayer extends AnimKAGLayer
                 object.loadTab(elm.tab);
             }
         }
-        
-        var cw;
-        var lw = object.width;
-		var lh = object.height;
-		if(vertical)
-		{
-			if(lw > lineSize) lineSize = lw; else lw = object.width = lineSize; // 拡張
-			cw = lh;
+
+		// 位置補正をしないオプションを追加
+		if (elm.nofixpos) {
+			object.setPos(x, y);
+		} else {
+			var cw;
+			var lw = object.width;
+			var lh = object.height;
+			if(vertical) {
+				if (lw > lineSize) lineSize = lw;
+				else lw = object.width = lineSize; // 拡張
+				cw = lh;
+			} else {
+				if (lh > lineSize) lineSize = lh;
+				else lh = object.height = lineSize; // 拡張
+				cw = lw;
+			}
+			changeLineSize();
+
+			var cx,cy;
+			if(vertical) {
+				cx = lineLayerBase - (lw>>1);
+				cy = lineLayerPos;
+			} else {
+				cx = lineLayerPos;
+				cy = lineLayerBase - lh;
+			}
+
+			cx += +elm.ox if elm.ox !== void;
+			cy += +elm.oy if elm.oy !== void;
+
+			object.setPos(cx + lineLayerOriginX + getLineLayerLeftOffset(),
+						  cy + lineLayerOriginY + getLineLayerTopOffset());
+
+			if(vertical) y+=cw; else x+=cw;
+			lineLayerPos += cw;
+			lineLayerLength += cw;
 		}
-		else
-		{
-			if(lh > lineSize) lineSize = lh; else lh = object.height = lineSize; // 拡張
-			cw = lw;
-		}
-
-		changeLineSize();
-
-		var cx,cy;
-		if(vertical)
-		{
-			cx = lineLayerBase - (lw>>1);
-			cy = lineLayerPos;
-		}
-		else
-		{
-			cx = lineLayerPos;
-			cy = lineLayerBase - lh;
-		}
-
-		cx += +elm.ox if elm.ox !== void;
-		cy += +elm.oy if elm.oy !== void;
-
-        object.setPos(cx + lineLayerOriginX + getLineLayerLeftOffset(),
-                      cy + lineLayerOriginY + getLineLayerTopOffset());
-
-        if(vertical) y+=cw; else x+=cw;
-        lineLayerPos += cw;
-        lineLayerLength += cw;
 
         object.visible = (elm.visible !== void) ? elm.visible : true;
 
         links[numLinks] = %[
 			type :			ltSlider,
-			exp :			elm.name,
+			exp :			exp,
 			object :		object,
 			onenter :		object.onenter,
 			onleave :		object.onleave,
@@ -2877,6 +2909,7 @@ class MessageLayer extends AnimKAGLayer
 		object.onenter = createSoundExpression(elm.onenter, elm.enterse, elm.entersebuf);
         object.onleave = createSoundExpression(elm.onleave, elm.leavese, elm.leavesebuf);
         object.hitThreshold = (elm.recthit === void || +elm.recthit) ? 0 : 64;
+		object.absolute = +elm.absolute if (elm.absolute !== void);
         if (elm.enabled !== void) {
             object.enabled = (elm.enabled != 0);
         } else if (elm.disabled !== void && elm.disabled) {
@@ -3225,6 +3258,7 @@ class MessageLayer extends AnimKAGLayer
 
         // 右クリックは素通しする
         if (button == mbRight) {
+			releaseCapture();
             window.onPrimaryRightClick();
         }
         
@@ -3451,10 +3485,12 @@ class MessageLayer extends AnimKAGLayer
 
 		if(!selProcessLock && ((key == VK_UP && !(shift & ssShift)) || key == l || (key == VK_TAB && (shift & ssShift))))
 		{
+			releaseCapture();
             tabPrev();
         }
 		else if(!selProcessLock && (key == VK_DOWN || key == r || (key == VK_TAB && !(shift & ssShift))))
 		{
+			releaseCapture();
             tabNext();
 		}
 		else if(key == VK_SPACE || key == VK_RETURN)
@@ -3738,7 +3774,7 @@ class MessageLayer extends AnimKAGLayer
 
 				// タイプに従って
 				var type = tl_d.type;
-				if(type == ltButton)
+				if(type == ltButton || type == ltLayer)
 				{
 					// ボタン
 					var sl_d_object = sl_d.object;
@@ -3747,6 +3783,7 @@ class MessageLayer extends AnimKAGLayer
 					object.assign(sl_d_object);
 					tl_d.object = object;
                     names[object.name] = object;
+					if (type == ltLayer) with (object) .enabled = .focusable = false;
 				}
 				else if(type == ltEdit)
 				{

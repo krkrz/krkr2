@@ -1,5 +1,5 @@
 // GraphicLayer.tjs - グラフィック系レイヤ(背景,キャラクタ)
-// Copyright (C)2001-2007, W.Dee and contributors  改変・配布は自由です
+// Copyright (C)2001-2008, W.Dee and contributors  改変・配布は自由です
 
 class ProvinceContext
 {
@@ -559,8 +559,8 @@ class GraphicLayerEx extends GraphicLayer {
 
 	
     function setOptions(elm) {
-        super.setOptions(elm);
-        type   = global[elm.type] if elm.type   !== void;
+		super.setOptions(elm);
+		type   = global[elm.type] if elm.type   !== void;
         rotate = +elm.rotate if elm.rotate !== void;
         zoomx  = +elm.zoomx  if elm.zoomx  !== void;
 		zoomy  = +elm.zoomy  if elm.zoomy  !== void;
@@ -570,8 +570,34 @@ class GraphicLayerEx extends GraphicLayer {
         if (elm.reset !== void && elm.reset) {
             reset();
         }
+		visvalue = +elm.visvalue if elm.visvalue !== void;
+		if (elm.tile !== void) {
+			setTileImage(elm.tile);
+		}
+		tilex = +elm.tilex if elm.tilex !== void;
+		tiley = +elm.tiley if elm.tiley !== void;
 	}
 
+	function loadImages(elm)
+	{
+		super.loadImages(elm);
+		if (elm !== void) {
+			type   = global[elm.type] if elm.type   !== void;
+			rotate = +elm.rotate if elm.rotate !== void;
+			zoomx  = +elm.zoomx  if elm.zoomx  !== void;
+			zoomy  = +elm.zoomy  if elm.zoomy  !== void;
+			zoom   = +elm.zoom   if elm.zoom   !== void;
+			afx    = elm.afx    if elm.afx    !== void;
+			afy    = elm.afy    if elm.afy    !== void;
+			visvalue = +elm.visvalue if elm.visvalue !== void;
+			if (elm.tile !== void) {
+				setTileImage(elm.tile);
+			}
+			tilex = +elm.tilex if elm.tilex !== void;
+			tiley = +elm.tiley if elm.tiley !== void;
+		}
+	}
+	
     /**
      * 継承して拡張。reset() させる
      */
@@ -669,7 +695,7 @@ class GraphicLayerEx extends GraphicLayer {
 		// アクションもコピー
 		window.copyAction(src, this, onActionCompleted);
 	}
-	
+
     // --------------------------------------------
     // アクション系拡張
     // --------------------------------------------
@@ -928,7 +954,7 @@ class CharacterLayer extends GraphicLayerEx
 	{
 		// setOptions オーバーライド
         super.setOptions(elm);
-        autoHide = +elm.autohide if elm.autohide !== void;
+		autoHide = +elm.autohide if elm.autohide !== void;
 	}
 
 	function atEndOfTransition(src, withchildren, exchange)

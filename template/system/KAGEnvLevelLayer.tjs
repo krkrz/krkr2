@@ -94,7 +94,6 @@ class KAGEnvLevelLayer {
     function setFront() {
 		front = true;
 		updateFlag = true;
-		updateFlag = true;
     }
 
     /**

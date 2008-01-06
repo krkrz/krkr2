@@ -99,7 +99,7 @@ class KAGEnvBase extends KAGEnvObject {
 				}
 			}, tr);
 			return tr;
-		} else if (elm != null && (transitionName[name] !== void || name.substring(0,5) == "trans")) {
+		} else if (elm != null && (transitionName[name] !== void)) {
 			//dm("規定のシステムトランジション:" + name);
 			var tr = %[];
 			// 規定のトランジション
@@ -262,7 +262,10 @@ class KAGEnvBase extends KAGEnvObject {
 		if (trans === void) {
 			if (elm.fade) {
 				var fadeTime = elm.fade;
-				trans = %[ "time" => fadeTime > 1 ? fadeTime : fadeValue];
+				trans = %[
+					"time" => fadeTime > 1 ? fadeTime : fadeValue,
+					"method" => "crossfade"
+					];
 			} else {
 				trans = autoTrans;
 			}

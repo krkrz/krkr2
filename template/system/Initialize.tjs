@@ -1,10 +1,6 @@
 // Initialize.tjs - システムの初期化
-// Copyright (C)2001-2007, W.Dee and contributors  改変・配布は自由です
+// Copyright (C)2001-2008, W.Dee and contributors  改変・配布は自由です
 
-try {
-	Plugins.link("fpslimit.dll");
-} catch(e) {
-}
 try {
 	Plugins.link("layerExMovie.dll");
 } catch(e) {
@@ -13,6 +9,9 @@ try {
     Plugins.link("tools/msgreceiver.dll");
 } catch(e) {
 }
+
+// ロック区分用
+var lockKey = "";
 
 // システムバージョン
 var kagVersion = "EX 3.27-dev.20070519";
@@ -27,6 +26,7 @@ var dm = Debug.message; // これで dm("message"); でコンソールに message を表示で
 /*
 	デフォルトの「捕捉されない例外」ハンドラ
 */
+if (System.getArgument("-debugwin") != "no") {
 
 System.exceptionHandler = function (e)
 {
@@ -51,6 +51,17 @@ System.exceptionHandler = function (e)
 	}
 };
 
+} else {
+	// リリース時処理
+	System.exceptionHandler = function (e) {
+		Debug.logAsError(); // ログのファイルへの書き出し動作の開始など
+		var event_disabled = System.eventDisabled;
+		System.eventDisabled = true;
+		System.inform(e.message);
+		System.terminate();
+		return true;
+	};
+};
 
 /*
 	パスの設定
@@ -58,30 +69,42 @@ System.exceptionHandler = function (e)
 */
 
 
+var archive_exists = %[]; // アーカイブが存在するかキャッシュ
+
 function useArchiveIfExists(name)
 {
+	// name を正規化
+	with (Storages) name = .chopStorageExt(.extractStorageName(name));
 	// name が存在していたらそのアーカイブを使う
-	var arcname;
-	if(Storages.isExistentStorage(arcname = System.exePath + name))
+	var arcname = System.exePath + name + ".xp3";
+	if(Storages.isExistentStorage(arcname)) {
+		archive_exists[name.toLowerCase()] = true;
 		Storages.addAutoPath(arcname + ">");
+	}
 }
 
 function addArchive(name)
 {
-	// name が存在していたらそのアーカイブを使う
+	// 検索パスを設定しつつ，name.xp3 が存在していたらそのアーカイブを使う
 	Storages.addAutoPath(name + "/");
-	var arcname;
-	if(Storages.isExistentStorage(arcname = System.exePath + name + ".xp3"))
-		Storages.addAutoPath(arcname + ">");
+	useArchiveIfExists(name);
 }
 
-function addVoiceArchive(name) {
-	Storages.addAutoPath("voice/" + name + "/");
-	// voice.xp3 の中をさがさせる
-	var arcname;
-	if(Storages.isExistentStorage(arcname = System.exePath + "voice.xp3")) {
-		Storages.addAutoPath(arcname + ">" + name + "/");
+// サブフォルダつき検索パス登録
+function addArchiveWithSubFolder(name, arr*)
+{
+	var arcname = System.exePath + name + ".xp3";
+	var isexist = archive_exists[name.toLowerCase()];
+	for (var i = 0; i < arr.count; i++) {
+		var sub = arr[i];
+		if (sub == "") continue;
+		Storages.addAutoPath(name    + "/" + sub + "/");
+		Storages.addAutoPath(arcname + ">" + sub + "/") if (isexist);
 	}
+}
+// (obsolete) 旧互換用
+function addVoiceArchive(name) {
+	addArchiveWithSubFolder("voice", name);
 }
 
 if (System.getArgument("-debugwin") != "no") {
@@ -227,7 +250,7 @@ if(typeof global.config_version == "undefined" || config_version != kagVersion)
 */
 
 // 実行可能ファイルのパスをキーにしてロックを行う
-if(typeof global.restart == "undefined" && !System.createAppLock(System.exePath.replace(/[^A-Za-z]/g, '_')))
+if(!System.createAppLock((System.exePath + lockKey).replace(/[^A-Za-z]/g, '_')) && typeof global.restart == "undefined")
 {
 	// すでに起動している
 	System.inform(System.title + "はすでに起動しています");

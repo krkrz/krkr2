@@ -1,5 +1,5 @@
 // AnimationLayer.tjs - アニメーションを行うレイヤ
-// Copyright (C)2001-2007, W.Dee and contributors  改変・配布は自由です
+// Copyright (C)2001-2008, W.Dee and contributors  改変・配布は自由です
 
 
 /*
@@ -469,6 +469,24 @@ class AnimationLayer extends AffineLayer
 			return;
 		}
 
+		// asdファイルが存在するか
+		Anim_storageName =
+			Storages.getPlacedPath(
+				Storages.chopStorageExt(elm.storage) + ".asd");
+
+		// asdの行頭が ;! であれば elm 上書き
+		if(Anim_storageName != '') {
+			var tmp = [];
+			var exp = tmp.load(Anim_storageName)[0];
+			if (exp !== void && exp.charAt(0) == ';' && exp.charAt(1) == '!') {
+				tmp = exp.substr(2).split(" ",, true);
+				for (var i = 0; i < tmp.count; i++)
+					tmp[i] = "." + tmp[i] + (tmp[i].indexOf("=") < 0 ? "=true" : "");
+				exp = "with (this) " + tmp.join(",") + ";";
+				(function(e) { e!; } incontextof elm)(exp);
+			}
+		}
+
 		Anim_loadParams = %[];
 		(Dictionary.assign incontextof Anim_loadParams)(elm);
 			// パラメータを待避
@@ -479,14 +497,19 @@ class AnimationLayer extends AffineLayer
 		// 追加画像読み込みの情報をクリア
 		Anim_partialImageInfo = void;
 
-		// 画像を読み込む
-		var taginfo = super.loadImages(elm.storage, elm.key);
+		if (elm.color !== void) {
+			// 塗りつぶし指定
+			setSize(+elm.width, +elm.height);
+			fillRect(0, 0, +elm.width, +elm.height, 0xff000000 | +elm.color);
+		} else {
+			// 画像を読み込む
+			var taginfo = super.loadImages(elm.storage, elm.key);
 
-		// 画像のタグ情報をデフォルト値として採用
-		if(taginfo)
-		{
-			(Dictionary.assign incontextof taginfo)(elm, false);
-			elm = taginfo;
+			// 画像のタグ情報をデフォルト値として採用
+			if(taginfo)	{
+				(Dictionary.assign incontextof taginfo)(elm, false);
+				elm = taginfo;
+			}
 		}
 
 		// フリップ
@@ -552,8 +575,12 @@ class AnimationLayer extends AffineLayer
 		// 可視不可視、位置、不透明度、インデックス
 		if ( elm !== void && elm.pos !== void ) {
 			// ポジションに従って位置を決定
-			left= window.scPositionX[elm.pos] - width \ 2;
-			top = window.scHeight - height;
+			if (window.scPositionX[elm.pos] !== void) {
+				left= window.scPositionX[elm.pos] - width \ 2;
+			} else {
+				left= +elm.pos - width \ 2;
+			}
+			top = window.scHeight - height + (elm.yoff !== void ? +elm.yoff : 0);
 		}
 		else
 		{
@@ -565,9 +592,6 @@ class AnimationLayer extends AffineLayer
 		absolute = +elm.index if elm.index !== void;
 
 		// アニメーション情報があれば、読み込む
-		Anim_storageName =
-			Storages.getPlacedPath(
-				Storages.chopStorageExt(elm.storage) + ".asd");
 		if(Anim_storageName != '')
 		{
 			// アニメーション情報があった!
@@ -1138,7 +1162,13 @@ class AnimationLayer extends AffineLayer
 	/*タグハンドラ*/function clip(elm)
 	{
 		// cliprect の変更
-		setImagePos(-elm.left, -elm.top);
+		with (elm) {
+			if (.left !== void && .top !== void) setImagePos(-.left, -.top);
+			else {
+				imageLeft = -.left if (.left !== void);
+				imageTop  = -.top  if (.top  !== void);
+			}
+		}
 		return 0;
 	}
 
