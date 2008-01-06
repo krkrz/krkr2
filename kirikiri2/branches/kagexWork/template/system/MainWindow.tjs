@@ -1,5 +1,5 @@
 //;# MainWindow.tjs - KAG メインウィンドウ
-//;# Copyright (C)2001-2007, W.Dee and contributors  改変・配布は自由です
+//;# Copyright (C)2001-2008, W.Dee and contributors  改変・配布は自由です
 //;<<'END_OF_TJS_SCRIPT';
 
 // このスクリプトは有効な perl5 スクリプトでもある
@@ -26,6 +26,7 @@ class KAGWindow extends Window
 
 	var aboutWidth = 320; // 「このソフトについて」ウィンドウの横幅
 	var aboutHeight = 200; // 同縦幅
+	var aboutStorage = "about.ks";
 
     var defaultName   = "名前"; // 標準名    ワールド拡張がボイス切り替えに利用
     var defaultFamily = "苗字"; // 標準苗字  ワールド拡張がボイス切り替えに利用
@@ -149,16 +150,20 @@ class KAGWindow extends Window
     var sysbase;  // ベースレイヤ
     var _debugwin; // デバッグ表示用レイヤ
 
-    property debugwin {
-        getter() {
-            if (_debugwin === void) {
-                // デバッグ表示用
+	property debugwin {
+		getter() {
+			if (_debugwin === void) {
+				// デバッグ表示用
 				_debugwin = new Layer(this, primaryLayer);
-                _debugwin.name = "デバッグ情報レイヤ";
-                _debugwin.setSize(scWidth, 50);
-                _debugwin.setPos(0, scHeight - 50);
-                _debugwin.visible = false;
-                _debugwin.hitThreshold = 256;
+				_debugwin.name = "デバッグ情報レイヤ";
+				_debugwin.setSize(scWidth, 50);
+				if (typeof global.debugwintop !== "undefined" && global.debugwintop) {
+					_debugwin.setPos(0, 0);
+				} else {
+					_debugwin.setPos(0, scHeight - _debugwin.height);
+				}
+				_debugwin.visible = false;
+				_debugwin.hitThreshold = 256;
             }
             return _debugwin;
         }
@@ -341,9 +346,9 @@ class KAGWindow extends Window
     function calcAutoModePageWait() {
         if (autoModeAddWait !== void) {
             var waittime = autoModeAddWait - System.getTickCount();
-            autoModeAddWait = void;
-            if (waittime > 0) {
-                return autoModePageWait + waittime;
+			if (waittime > 0) {
+				waittime += autoModeLineWait*2; // 2ライン分を足す
+				return autoModePageWait > waittime ? autoModePageWait : waittime; // 大きいほうを返す
             }
         }
         return autoModePageWait;
@@ -355,9 +360,8 @@ class KAGWindow extends Window
     function calcAutoModeLineWait() {
         if (autoModeAddWait !== void) {
             var waittime = autoModeAddWait - System.getTickCount();
-            autoModeAddWait = void;
             if (waittime > 0) {
-                return autoModeLineWait + waittime;
+                return autoModeLineWait > waittime ? autoModeLineWait : waittime; // 大きいほうを返す
             }
         }
         return autoModeLineWait;
@@ -683,7 +687,7 @@ class KAGWindow extends Window
 	
 	//------------------------------------------------------ コンストラクタ --
 
-	function KAGWindow(ismain = true, width = 0, height = 0)
+	function KAGWindow(ismain = true, width = 0, height = 0, invisible = false)
 	{
 		// コンストラクタ
 		// 引数 : ismain : メインウィンドウとして作成されるのかどうか
@@ -762,7 +766,6 @@ class KAGWindow extends Window
 			scWidth = width;
 			scHeight = height;
 		}
-		setInnerSize(scWidth, scHeight);
 
 		// quake 用タイマの作成
 		quakeTimer = new Timer(onQuakeTimerInterval, '');
@@ -877,6 +880,13 @@ class KAGWindow extends Window
 		// メッセージレイヤのクリア
 		clearMessageLayers(false);
 
+		// ズーム状態補正
+		if (ismain && scflags.zoomNumer != 0 && scflags.zoomDenom != 0) {
+			setZoom(scflags.zoomNumer, scflags.zoomDenom);
+		} else {
+			setZoom(1,1);
+		}
+
 		// ウィンドウ位置の調節
 		if(this.width + this.left > System.desktopLeft + System.desktopWidth)
 			left = ((System.desktopWidth - this.width) >>1) + System.desktopLeft;
@@ -886,27 +896,37 @@ class KAGWindow extends Window
 		// パッドボタンハンドラの作成
 		createPadKeyMap();
 
-
 		// ウィンドウを表示
-		if(ismain) visible = true;
+		if(ismain) visible = !invisible;
 
 		// 画面サイズがウィンドウサイズよりも小さい場合は
 		// フルスクリーンにしてみる
-		if(ismain)
+		if(ismain && visible)
 		{
-			if(System.screenWidth <= scWidth && System.screenHeight <= scHeight)
+			// 実サイズ
+			var w = scWidth  * zoomNumer / zoomDenom;
+			var h = scHeight * zoomNumer / zoomDenom;
+			if(System.screenWidth <= w && System.screenHeight <= h)
 				onFullScreenMenuItemClick(this);
 		}
 
 		// 前回起動時にフルスクリーンだった場合はフルスクリーンにしてみる
-		if(ismain)
+		if(ismain && visible)
 		{
 			if(scflags.fullScreen !== void && +scflags.fullScreen)
 				onFullScreenMenuItemClick(this);
 		}
 
 		// いったんシステム変数を書き出す
-		if(ismain) saveSystemVariables();
+		if(ismain) {
+			// scflags.fullScreen が破棄されてしまうため保存
+			var origfs = scflags.fullScreen;
+
+			saveSystemVariables();
+
+			// !visible 時は scflags.fullScreen を復帰
+			scflags.fullScreen = origfs if (!visible);
+		}
 	}
 
 	//------------------------------------------------------------- finalize --
@@ -1249,16 +1269,7 @@ class KAGWindow extends Window
 	function onAutoModeMenuItemClick(sender)
 	{
         if(autoMode) {
-            autoMode = false;
-            if (typeof this.autoModeMenuItem !== "undefined")
-                autoModeMenuItem.checked = false;
-            var t = conductor.lastTagName;
-            if (t == 'p'){
-                insertTag("p");
-            }
-            else if(t == 'l'){
-                insertTag("l");
-            }
+			cancelAutoMode();
         } else {
             enterAutoMode();
         }
@@ -1348,6 +1359,15 @@ class KAGWindow extends Window
 		saveBookMarkToFileWithAsk();
 	}
 
+	function setZoom(numer, denom) {
+		if (!fullScreen) {
+			super.setZoom(numer, denom);
+			setInnerSize(scWidth * zoomNumer / zoomDenom,
+						 scHeight * zoomNumer / zoomDenom);
+			top++, top--; // VCRなムービーが追従するようにおまじない XXX
+		}
+	}
+	
 	function onWindowedMenuItemClick(sender)
 	{
 		if(fullScreened)
@@ -1355,6 +1375,7 @@ class KAGWindow extends Window
 			try
 			{
 				fullScreen = false;
+				setZoom(zoomNumer, zoomDenom);
 			}
 			catch(e)
 			{
@@ -1375,6 +1396,7 @@ class KAGWindow extends Window
 		{
 			try
 			{
+				setInnerSize(scWidth, scHeight);
 				fullScreen = true;
 			}
 			catch(e)
@@ -1399,16 +1421,17 @@ class KAGWindow extends Window
 	function onHelpAboutMenuItemClick(sender)
 	{
 		// 「このソフトについて」ウィンドウを表示
-        var win = new global.KAGWindow(false, aboutWidth, aboutHeight);
-        win.debugLevel = tkdlNone;
+		var win = this.helpAboutWindow = new global.KAGWindow(false, aboutWidth, aboutHeight);
+		win.debugLevel = tkdlNone;
 		win.borderStyle = bsToolWindow;
 		win.setInnerSize(aboutWidth, aboutHeight);
-        win.setPos(left + ((width - win.width)>>1), top + ((height - win.height)>>1));
+		win.setPos(left + ((width - win.width)>>1), top + ((height - win.height)>>1));
 		win.rightClickMenuItem = new KAGMenuItem(this, "RightClick", 0, win.onRightClickMenuItemClick, false); // ESCで消せるように
-        win.process('about.ks' ,,, true); // about.ks を immediate で表示
+		win.process(aboutStorage ,,, true); // about.ks を immediate で表示
 		win.showModal(); // モード付きで表示
 		invalidate win.rightClickMenuItem;
 		invalidate win;
+		delete this.helpAboutWindow;
 	}
 
     // シナリオ実行ダイアログ呼び出し
@@ -1475,12 +1498,12 @@ class KAGWindow extends Window
 
 		// autoEnable が true のすべてのメニュー項目の accessible の
 		// 値を設定する
-        var modal = historyLayer.visible || messageLayerHiding || currentDialog;
+        var modal = historyLayer.visible || messageLayerHiding || currentDialog || panelModal;
         var state = inStable && !modal;
         internalSetMenuAccessibleAll(menu, state);
 
         // その他のメニューの使用可/不可
-        var canSkip = !modal && (inStable || skipMode) && !inSleep && nextSkipEnabled && (allskip || getCurrentRead()) && !selectShowing && !mapSelectShowing && !transShowing;
+        var canSkip = !modal && (inStable || skipMode) && !inSleep && nextSkipEnabled && (allskip || getCurrentRead()) && !selectShowing && !mapSelectShowing && !transShowing && !panelShowing;
         //dm("canSkip:" + canSkip);
         if(typeof this.skipToNextStopMenuItem != "undefined")
             skipToNextStopMenuItem.enabled = canSkip;
@@ -1489,10 +1512,10 @@ class KAGWindow extends Window
             rightClickMenuItem.enabled = inStable && !historyLayer.visible && !currentDialog;
 
 		if(typeof this.showHistoryMenuItem != "undefined")
-            showHistoryMenuItem.enabled = inStable && !messageLayerHiding && !mapSelectShowing && !transShowing && currentDialog===void &&
+            showHistoryMenuItem.enabled = inStable && !messageLayerHiding && !mapSelectShowing && !transShowing && !currentDialog && !panelModal &&
 				historyEnabled;
 
-        var canAuto = !modal && (inStable || autoMode) && !inSleep && !skipMode && !selectShowing && !mapSelectShowing && !transShowing;
+        var canAuto = !modal && (inStable || autoMode) && !inSleep && !skipMode && !selectShowing && !mapSelectShowing && !transShowing && !panelShowing;
         if(typeof this.autoModeMenuItem != "undefined")
             autoModeMenuItem.enabled = canAuto;
 
@@ -1501,6 +1524,9 @@ class KAGWindow extends Window
 
 		if(typeof this.goToStartMenuItem != "undefined")
 			goToStartMenuItem.enabled = state && startAnchorEnabled;
+
+		if(typeof this.exitMenuItem != "undefined")
+			exitMenuItem.enabled = !currentDialog;
 
 		if(typeof this.storeMenu != "undefined")
 		{
@@ -1528,7 +1554,7 @@ class KAGWindow extends Window
 
         // 全制御
 		if (this == global.Window.mainWindow && typeof global.onModeChange !== "undefined") {
-			global.onModeChange(this, autoMode, skipMode, canAuto, canSkip, selectShowing || mapSelectShowing || transShowing, modal);
+			global.onModeChange(this, autoMode, skipMode, canAuto, canSkip, selectShowing || mapSelectShowing || transShowing || panelShowing, modal);
 		}
     }
 
@@ -1586,11 +1612,11 @@ class KAGWindow extends Window
 				(Array.saveStruct incontextof dummy)(fn);
 			} catch(e) {
 				if (System.personalPath != System.exePath) {
-					System.inform("書き込み権限がなくファイル保存できません。MyDocument以下にデータを保存します");
+					errorInform("savemydoc");
 					saveDataLocation = System.personalPath + appName;
 				} else {
-					System.inform("書き込み権限がなくファイル保存できません。ReadOnlyMode で動作します");
 					readOnlyMode = true;
+					errorInform("readonly");
 				}
 			}
 
@@ -1824,6 +1850,8 @@ class KAGWindow extends Window
 
 		// フルスクリーン
 		scflags.fullScreen = fullScreened;
+		scflags.zoomNumer = zoomNumer;
+		scflags.zoomDenom = zoomDenom;
 
 		// 文字表示速度
 		scflags.autoModePageWait = autoModePageWait;
@@ -2259,8 +2287,9 @@ class KAGWindow extends Window
 
         // 選択肢を隠す
         hideSelect();
-        hideMapSelect();
-        hideTransLayer();
+		hideMapSelect();
+		hideTransLayer();
+		hidePanel();
         
 		// スキップのキャンセル
         if (skipMode < SKIP_FORCE) {
@@ -2670,9 +2699,8 @@ class KAGWindow extends Window
 					{
 						invalidate tmp;
 						unlockSnapshot();
-						System.inform("ファイルに保存できません (ファイルを開けないか、"
-							"書き込み禁止です)");
-                        readOnlyMode = true;
+						readOnlyMode = true;
+						errorInform("savefail");
 						return false;
 					}
 				}
@@ -2699,15 +2727,15 @@ class KAGWindow extends Window
 			}
 			catch(e)
 			{
-				System.inform("ファイルに保存できません (ファイルを開けないか、"
-					"書き込み禁止です)");
-                readOnlyMode = true;
-                return false;
+				readOnlyMode = true;
+				errorInform("savefail");
+				return false;
 			}
 		}
 
 		return true;
 	}
+	
 
 	function saveBookMark(num, savehist = true)
 	{
@@ -2792,7 +2820,7 @@ class KAGWindow extends Window
 
 			if(data.id != saveDataID)
 			{
-				System.inform("他のシステムのデータを読み込もうとしました", "エラー");
+				errorInform("loadfail");
 				return false;
 			}
 
@@ -2812,9 +2840,7 @@ class KAGWindow extends Window
 		}
 		catch(e)
 		{
-			System.inform("栞を読み込めないか、栞が"
-				"壊れているか、あるいは他の形式の栞データ"
-				"です(" + e.message + ")", "エラー");
+			errorInform("loadexception", e.message);
 			return false;
 		}
 		restoreFlags();
@@ -3277,7 +3303,7 @@ class KAGWindow extends Window
 			selectLayer.addSelect(f.selectInfos[i]);
 		}
 		selectLayer.start(fore.base, 1000000);
-        selectShowing = true;
+		selectShowing = true;
         setMenuAccessibleAll();
 	}
 
@@ -3285,7 +3311,6 @@ class KAGWindow extends Window
         if (_selectLayer !== void) {
             selectLayer.done();
             selectShowing = false;
-            setMenuAccessibleAll();
         }
     }
     
@@ -3365,7 +3390,6 @@ class KAGWindow extends Window
         if (_mapSelectLayer !== void) {
             mapSelectLayer.done();
             mapSelectShowing = false;
-            setMenuAccessibleAll();
         }
     }
 
@@ -3472,7 +3496,23 @@ class KAGWindow extends Window
         conductor.wait(waitParam);
         return -2;
     }
-    
+
+	//------------------------------------------------------- パネル処理 --
+
+	// パネル用
+	var panelLayer;
+	var panelShowing = false;
+	var panelModal   = false; // modal表示モードかどうか
+	function hidePanel() {
+		if (panelLayer !== void) {
+			panelLayer.removeMode();
+			panelLayer.visible = false;
+			invalidate panelLayer;
+			panelLayer = void;
+			panelModal = panelShowing = false;
+        }
+	}
+
 	//-------------------------------------------------------------- process --
 
 	function process(file, label, countpage = true, immediate = false)
@@ -3833,14 +3873,11 @@ class KAGWindow extends Window
 		// extraConductor を使ってサブルーチンを呼び出す
 		onExtraConductorReturn = onreturn;
 		inSleepBeforeExtraConductor = inSleep; // inSleep 保存
+
 		storeMessageLayerSelProcessLock(); // メッセージレイヤの storeSelProcessLock を呼ぶ
-        if (_selectLayer !== void) {
-            selectLayer.lockFocus();
-        }
-        if (_mapSelectLayer !== void) {
-            mapSelectLayer.lockFocus();
-        }
-        conductor = extraConductor; // コンダクタを切り替える
+		lockSelectLayerFocus(true);
+
+		conductor = extraConductor; // コンダクタを切り替える
 		(Dictionary.assign incontextof extraConductor.macros)(mainConductor.macros);
 			// マクロはコピー
 		usingExtraConductor = true;
@@ -3873,17 +3910,21 @@ class KAGWindow extends Window
 			inSleep = inSleepBeforeExtraConductor; // inSleep 復帰
 			notifyStable();
 		}
-        if (_mapSelectLayer !== void) {
-            mapSelectLayer.unlockFocus();
-        }
-        if (_selectLayer !== void) {
-            selectLayer.unlockFocus();
-        }
-        restoreMessageLayerSelProcessLock(); // メッセージレイヤの restoreSelProcessLock を呼ぶ
+
+		lockSelectLayerFocus(false);
+		restoreMessageLayerSelProcessLock(); // メッセージレイヤの restoreSelProcessLock を呼ぶ
+
 		setMenuAccessibleAll();
 		cancelSkip();
 
 		if(onExtraConductorReturn !== void) onExtraConductorReturn();
+	}
+
+	// 選択肢をロック・アンロックする
+	function lockSelectLayerFocus(lock) {
+		var sel = lock ? "lockFocus" : "unlockFocus";
+		selectLayer   [sel]() if (_selectLayer    !== void);
+		mapSelectLayer[sel]() if (_mapSelectLayer !== void);
 	}
 
 	//------------------------------------------------------- 右クリック処理 --
@@ -4602,7 +4643,7 @@ class KAGWindow extends Window
 
 	function waitTransition(elm)
 	{
-        // トランジションを待つ
+		// トランジションを待つ
 		if(transCount == 0) return 0; // トランジションを待てない
 		if((elm.canskip === void || +elm.canskip) && clickSkipEnabled)
 		{
@@ -4947,12 +4988,12 @@ class KAGWindow extends Window
         var names = [];
         names.assign(allActions);
         (Dictionary.clear incontextof allActions)();
+		actionCount = 0;
         for (var i=0;i<names.count;i+=2) {
             var target = names[i];
             var info   = names[i+1];
             if (info.doAction(now, false)) {
 				//dm("アクション終了:" + info.target);
-                actionCount--;
                 if (typeof info.onActionCompleted != "undefined") {
                     info.onActionCompleted(info.target);
                 }
@@ -4960,6 +5001,7 @@ class KAGWindow extends Window
             } else {
                 // 再登録
                 allActions[target] = info;
+				actionCount++;
             }
         }
     }
@@ -5150,6 +5192,7 @@ class KAGWindow extends Window
 	function skipToStop2()
 	{
 		// 次の停止までスキップ(早送りモード)
+		showMessageLayerByUser() if(messageLayerHiding);
 		onPrimaryClick();
 		skipMode = SKIP_FAST;
 		actualChSpeed = 0;
@@ -5169,8 +5212,8 @@ class KAGWindow extends Window
 	function cancelSkip()
 	{
 		// スキップ動作をキャンセル
+		if (skipMode == SKIP_FAST) skipKeyRepressed = false;
 		skipMode = SKIP_NONE;
-		skipKeyRepressed = false;
 		actualChSpeed = chSpeed;
 	}
 
@@ -5201,11 +5244,14 @@ class KAGWindow extends Window
 	{
         // 自動読みすすみモードのキャンセル
         if (autoMode) {
-            if (typeof this.autoModeMenuItem !== "undefined") {
+			if (typeof this.autoModeMenuItem !== "undefined") {
                 autoModeMenuItem.checked = false;
             }
-            autoMode = false;
-        }
+			if (clickWaiting) {
+				conductor.trigger('click');
+			}
+			autoMode = false;
+		}
 	}
 
 	function enterAutoMode()
@@ -5214,20 +5260,19 @@ class KAGWindow extends Window
         if(typeof this.autoModeMenuItem !== "undefined")
             autoModeMenuItem.checked = true;
         // クリック待ちの場合の挙動
-        if (clickWaiting) {
-            onPrimaryClick();
-            // ボイス待ちが残ってるばあいはもうすこしまつ
-            if (autoModeAddWait !== void && autoModeAddWait - System.getTickCount() > 0) {
-                var t = conductor.lastTagName;
-                if (t == 'p'){
-                    insertTag("p");
-                }
-                else if(t == 'l'){
-                    insertTag("l");
-                }
-            }
-        }
-        autoMode = true;
+		if (clickWaiting) {
+			conductor.trigger('click');
+			if (autoModeAddWait !== void && autoModeAddWait - System.getTickCount() > 0) {
+				var t = conductor.lastTagName;
+				if (t == 'p' || t == 'p2'){
+					insertTag("p2");
+				}
+				else if(t == 'l'){
+					insertTag("l");
+				}
+			}
+		}
+		autoMode = true;
     }
         
 	//--------------------------------------------------------- ウェイト関連 --
@@ -5253,6 +5298,8 @@ class KAGWindow extends Window
 			if(skipMode)
 			{
 				// スキップ中の場合
+				if ((arg & 0x01)) {stopAllTransitions();} // すべてのトランジションは停止
+				if ((arg & 0x02)) {stopAllActions(false);} // すべてのアクションは停止
 				return 0; // スキップ中の場合はなにもせずに返る
 			}
 
@@ -5395,7 +5442,7 @@ class KAGWindow extends Window
 	{
 		// quakeTimer により呼ばれる
 		if(quakeEndTick != -1 && System.getTickCount() > quakeEndTick) { stopQuake(); return; }
-        if(historyShowing || selectShowing || mapSelectShowing || currentDialog !== void)
+		if(historyShowing || selectShowing || mapSelectShowing || panelShowing || currentDialog !== void)
 		{
 			// メッセージ履歴レイヤ表示中はさすがに揺れていられない
 			setLayerPos(0, 0);
@@ -5531,20 +5578,32 @@ class KAGWindow extends Window
 
 	function waitClick(elm)
 	{
+		// beginskip/endskip中は強制で飛ばす
+		if (skipMode >= SKIP_CANCEL) return  0;
+
 		// クリックを待つ
 		conductor.wait(%[
 			click : function
 			{
+				inSleep = false;
+				notifyRun();
 			} incontextof this]);
-        notifyStable();
+		inSleep = true;
+		notifyStable();
 		return -2;
 	}
 
 	function onMouseDown(x, y)
 	{
-        lastMouseDownX = x;
+		lastMouseDownX = x;
 		lastMouseDownY = y;
 		super.onMouseDown(...);
+	}
+
+	function onMouseUp(x, y, btn)
+	{
+		conductor.trigger("mouseup" + btn);
+		super.onMouseUp(...);
 	}
 
 	//------------------------------------------------------- キーボード操作 --
@@ -5611,7 +5670,7 @@ class KAGWindow extends Window
 			}
 		}
 
-		if(key == #'R' || (key == VK_UP && (shift & ssShift)))
+		if(key == #'R' || (shift == ssShift && key == VK_UP))
 		{
 			// メッセージ履歴を表示
 			showHistoryByKey();
@@ -5688,8 +5747,14 @@ class KAGWindow extends Window
 		return sg(VK_RETURN) || sg(VK_SPACE) || sg(VK_CONTROL);
 	}
 
+	function releaseCapture() {
+		// releaseCaptureのレイヤは何でも良い
+		primaryLayer.releaseCapture();
+	}
+
 	function goBackByKey()
 	{
+		releaseCapture();
 		if(typeof this.goBackMenuItem != "undefined" &&
 			goBackMenuItem.enabled)
 			goBackMenuItem.click(); // クリックをエミュレート
@@ -5697,6 +5762,7 @@ class KAGWindow extends Window
 
 	function skipToNextStopByKey()
 	{
+		releaseCapture();
 		if(typeof this.skipToNextStopMenuItem != "undefined" &&
 			skipToNextStopMenuItem.enabled)
 			skipToNextStopMenuItem.click(); // クリックをエミュレート
@@ -5704,6 +5770,7 @@ class KAGWindow extends Window
 
 	function showHistoryByKey()
 	{
+		releaseCapture();
 		if(typeof this.showHistoryMenuItem != "undefined" &&
 			showHistoryMenuItem.enabled)
 			showHistoryMenuItem.click(); // クリックをエミュレート
@@ -5711,6 +5778,7 @@ class KAGWindow extends Window
 
 	function switchAutoModeByKey()
 	{
+		releaseCapture();
 		if(typeof this.autoModeMenuItem != "undefined" &&
 			autoModeMenuItem.enabled)
 			autoModeMenuItem.click(); // クリックをエミュレート
@@ -5815,13 +5883,13 @@ class KAGWindow extends Window
         conductor.waitWithTimeOut(%[
             click : function (tag)
             {
-                clickWaiting = false;
-                fore.base.cursor = cursorDefault;
-                hideClickGlyphs();
-                cancelAutoMode();
-                if (tag !== void) {
-                    insertTag(tag);
-                }
+				clickWaiting = false;
+				fore.base.cursor = cursorDefault;
+				cancelAutoMode();
+				hideClickGlyphs();
+				if (tag !== void) {
+					insertTag(tag);
+				}
             } incontextof this,
             click_arg : tag,
             timeout : function
@@ -5831,7 +5899,8 @@ class KAGWindow extends Window
                 hideClickGlyphs();
             } incontextof this
                 ], waittime);
-        return -2; // break
+		clickWaiting = true;
+		return -2; // break
 	}
     
 	function showLineBreak(elm)
@@ -5895,7 +5964,7 @@ class KAGWindow extends Window
 		storeClickGlyphState("page");
         
         if(autoMode) {
-            return waitAuto(calcAutoModePageWait(), "p");
+			return waitAuto(calcAutoModePageWait(), "p2");
         }
 
 		if(!current.nodeVisible)
@@ -6006,7 +6075,7 @@ class KAGWindow extends Window
             Scripts.eval(exp);
         }
         if (storage !== void || target !== void) {
-            window.process(storage, target);
+            process(storage, target);
         }
     }
     
@@ -6052,7 +6121,7 @@ class KAGWindow extends Window
                 Scripts.eval(bgmLabelInfo.exp);
             }
             if (bgmLabelInfo.storage !== void || bgmLabelInfo.target !== void) {
-                window.process(bgmLabelInfo.storage, bgmLabelInfo.target);
+                process(bgmLabelInfo.storage, bgmLabelInfo.target);
             }
         }
     }
@@ -6412,10 +6481,20 @@ class KAGWindow extends Window
 		return -2;
 	}
 	
+	function onMovieStatusChanged(state, id)
+	{
+		// 拡張用スタブ（何もしない）
+	}
+	function onMoviePlay(id)
+	{
+		// ムービーの再生を開始した
+		onMovieStatusChanged("play", id);
+	}
 	function onMovieStop(id)
 	{
 		// ムービーの再生が終了した
 		conductor.trigger('moviestop'+id);
+		onMovieStatusChanged("stop", id);
 	}
 
 	function waitMovieStop(elm)
@@ -6601,9 +6680,11 @@ class KAGWindow extends Window
             base.messages[i].visible = false;
         }
         // 選択肢窓消去
-        hideSelect();
+		hideSelect();
 		hideMapSelect();
 		hideTransLayer();
+		hidePanel();
+		setMenuAccessibleAll();
 	}
 	
     // ------------------------------------------------------ 改行特殊制御モード
@@ -6745,19 +6826,19 @@ class KAGWindow extends Window
 	}
 
 	/**
-	 * タグの追加
+	 * 指定したタグを実行キューに追加する
 	 */
-	function addTag(cd, name, elm) {
-        var e = %[];
-        if (elm !== void) {
-            (Dictionary.assign incontextof e)(elm, false);
-        }
-        e.tagname = name if name !== void;
-		cd.pendings.add(e);
+	function addTag(name, elm) {
+		var e = %[];
+		if (elm !== void) {
+			(Dictionary.assign incontextof e)(elm, false);
+		}
+		e.tagname = name if name !== void;
+		conductor.pendings.add(e);
     }
-	
+
     /**
-     * 指定したタグを次回に割り込み実行させる
+	 * 指定したタグを次回に割り込み実行させる
      */
     function insertTag(name, elm) {
         var e = %[];
@@ -6773,12 +6854,24 @@ class KAGWindow extends Window
 	var voiceDefault;
 
 	/**
+	 * タグの追加（パース処理用）
+	 */
+	function addParseTag(cd, name, elm) {
+        var e = %[];
+        if (elm !== void) {
+            (Dictionary.assign incontextof e)(elm, false);
+        }
+        e.tagname = name if name !== void;
+		cd.pendings.add(e);
+    }
+	
+	/**
 	 * パースコマンドのパース
 	 */
 	function parseParse(cd, elm) {
 		voiceMap = %[];
 		voiceDefault = +elm.voice;
-		addTag(cd, "parse");
+		addParseTag(cd, "parse");
     }
 
 	var reNumber = new RegExp("^[0-9][0-9]*$");
@@ -6809,6 +6902,37 @@ class KAGWindow extends Window
 		info.incVoice = elm.incvoice || elm.replace;
 	}
 
+	function emptyCheck(cd) {
+		// 行頭での処理
+		// ラインモード処理
+		var erflag;
+		// テキストクリア処理
+		switch (lineMode) {
+		case 1:
+			erflag = true;
+			break;
+		case 2:
+		case 3:
+		case 5:
+			if (afterPage) {
+				erflag = true;
+			} else {
+				if (!afterName && !skipNoDisp) {
+					addParseTag(cd, "r");
+				}
+			}
+			break;
+		case 4:
+			if (afterPage) {
+				erflag = true;
+			}
+			break;
+		}
+		if (erflag && !erAfterPage && !skipNoDisp) {
+			addParseTag(cd, "er");
+		}
+	}
+	
 	/**
 	 * テキストのパース処理
 	 */
@@ -6847,13 +6971,13 @@ class KAGWindow extends Window
 					}
 					//dm("ボイス展開:" + nameStr + ":" + voice);
 					if (voice !== void) {
-						addTag(cd, "dispname", %[ name:nameStr, disp:nameDisp, voice:voice]);
+						addParseTag(cd, "dispname", %[ name:nameStr, disp:nameDisp, voice:voice]);
 					} else {
-						addTag(cd, "dispname", %[ name:nameStr, disp:nameDisp]);
+						addParseTag(cd, "dispname", %[ name:nameStr, disp:nameDisp]);
                     }
                 } else {
 					//dm("名前展開:" + nameStr + " / " + nameDisp);
-					addTag(cd, "dispname", %[ name:nameStr, disp:nameDisp]);
+					addParseTag(cd, "dispname", %[ name:nameStr, disp:nameDisp]);
                 }
                 afterName = true;
                 return;
@@ -6871,35 +6995,8 @@ class KAGWindow extends Window
             }
             return;
         } else if (emptyLine) {
-            // 行頭での処理
-			// ラインモード処理
-			var erflag;
-			// テキストクリア処理
-			switch (lineMode) {
-			case 1:
-				erflag = true;
-				break;
-			case 2:
-			case 3:
-			case 5:
-				if (afterPage) {
-					erflag = true;
-				} else {
-					if (!afterName && !skipNoDisp) {
-						addTag(cd, "r");
-					}
-				}
-				break;
-			case 4:
-				if (afterPage) {
-					erflag = true;
-				}
-				break;
-			}
-			if (erflag && !erAfterPage && !skipNoDisp) {
-				addTag(cd, "er");
-			}
-            if (elm.text == "【") {
+			emptyCheck(cd);
+			if (elm.text == "【") {
 				nameMode = 1;
 				nameStr  = "";
 				nameDisp = "";
@@ -6909,7 +7006,7 @@ class KAGWindow extends Window
 				nameMode = 0;
                 // 名前指定がない場合はパラメータなしで名前処理を呼び出す
                 if (!afterName && (lineMode < 3 || prevEmptyLine)) {
-					addTag(cd, "dispname");
+					addParseTag(cd, "dispname");
 					afterName = true;
                 }
             }
@@ -6917,14 +7014,14 @@ class KAGWindow extends Window
         
         // 文字登録
 		if (!skipNoDisp) {
-			addTag(cd, "ch", elm);
+			addParseTag(cd, "ch", elm);
 		}
         emptyLine = false;
 		afterPage = false;
 
         // 自動インデント処理
 		if (!skipNoDisp && autoIndent && afterName && (elm.text == "「" || elm.text == "『")) {
-			addTag(cd, "indent");
+			addParseTag(cd, "indent");
         }
         afterName = false;
 
@@ -6938,7 +7035,7 @@ class KAGWindow extends Window
 	{
 		if (!elm.eol) {
 			if (!skipNoDisp) {
-				addTag(cd, "r", elm);
+				addParseTag(cd, "r", elm);
 			}
 			return;
 		}
@@ -6946,8 +7043,6 @@ class KAGWindow extends Window
 		// 改行効果を一度だけ無視させる
         if (noCrOnce) {
             noCrOnce = false;
-            prevEmptyLine = emptyLine;
-            emptyLine = true;
             return 0;
         }
 
@@ -6964,10 +7059,10 @@ class KAGWindow extends Window
 					prevEmptyLine = emptyLine;
                     emptyLine = true;
 					if (!skipNoDisp) {
-						addTag(cd, "p", elm);
+						addParseTag(cd, "p", elm);
 					} else {
 						checkAutoSkip();
-						addTag(cd, "afterpage", elm);
+						addParseTag(cd, "afterpage", elm);
 					}
                     return 0;
                 }
@@ -6988,8 +7083,8 @@ class KAGWindow extends Window
                     // ボイス待ちする [l] + 行終了後処理呼び出し
                     elm.voicewait = true;
 					if (!skipNoDisp) {
-						addTag(cd, "l", elm) ;
-						addTag(cd, "afterline");
+						addParseTag(cd, "l", elm) ;
+						addParseTag(cd, "afterline");
 					}
                     return 0;
                 }
@@ -7016,8 +7111,8 @@ class KAGWindow extends Window
                     emptyLine = true;
                     elm.voicewait = true;
 					if (!skipNoDisp) {
-						addTag(cd, "l", elm);
-						addTag(cd, "afterline");
+						addParseTag(cd, "l", elm);
+						addParseTag(cd, "afterline");
 					}
                     return 0;
                 }
@@ -7056,21 +7151,40 @@ class KAGWindow extends Window
 	 */
     function parseP(cd, elm) {
 		if (!skipNoDisp) {
-			addTag(cd, "p", elm);
+			addParseTag(cd, "p", elm);
 		} else {
 			checkAutoSkip();
-			addTag(cd, "afterpage", elm);
+			addParseTag(cd, "afterpage", elm);
 		}
 		afterPage = true;
 		emptyLine = true;
     }
 
+	function parseRuby(cd, elm) {
+		if (emptyLine) {
+			emptyCheck(cd);
+			// 名前指定がない場合はパラメータなしで名前処理を呼び出す
+			nameMode = 0;
+			if (!afterName && (lineMode < 3 || prevEmptyLine)) {
+				addParseTag(cd, "dispname");
+				afterName = true;
+			}
+		}
+		emptyLine = false;
+		afterPage = false;
+		afterName = false;
+		if (!skipNoDisp) {
+			addParseTag(cd, "ruby",elm);
+		}
+	}
+	
 	var extractTags = %[
 	parse:parseParse incontextof this,
 	ch:parseCh incontextof this,
 	r:parseR incontextof this,
 	voice:parseVoice incontextof this,
-	p:parseP incontextof this
+	p:parseP incontextof this,
+	ruby:parseRuby incontextof this
 		];
 	
     /*
@@ -7496,6 +7610,11 @@ class KAGWindow extends Window
 
 	} incontextof this,
 
+	p2 : function(elm)
+	{
+		return showPageBreak(elm);
+	} incontextof this,
+				  
 	current : function(elm)
 	{
 		// 操作対象のメッセージレイヤの指定
@@ -7998,7 +8117,7 @@ class KAGWindow extends Window
 		clearLayers(base);
 		
 		// レイヤ全消去
-		if (typeof clearLayersHandler != "undefined") {
+		if (typeof this.clearLayersHandler != "undefined") {
 			clearLayersHandler(base);
 		}
 		return 0;
@@ -8099,7 +8218,10 @@ class KAGWindow extends Window
     {
         updateBeforeCh = 1;
         var base = (elm.page == 'back') ? back : fore;
-        toLevel(elm.layer, elm.level, base);
+		toLevel(elm.layer, elm.level, base);
+		if (elm.front) {
+			toFront(elm.layer, base);
+		}
         return 0;
 	} incontextof this,
 
@@ -8121,7 +8243,7 @@ class KAGWindow extends Window
                   
 	trans : function(elm)
 	{
-        // トランジションの開始
+		// トランジションの開始
 		var layer = getLayerPageFromElm(elm, false);
 		if (layer == fore.base)  {
 			if (selectShowing) {
@@ -8631,12 +8753,12 @@ class KAGWindow extends Window
 		}
 		
 		if (recordHistoryOfStore == 3) { // 2 : 選択肢 ( @s タグ ) ごと
-			if (autoLabelMode) {
-				// 状態保存処理（行指定モード保存を使う)
-				pushHistoryOfStore();
-				storeFlags(true);
-				storeLabelPassed = true;
-			}
+//			if (autoLabelMode) {
+//				// 状態保存処理（行指定モード保存を使う)
+//				pushHistoryOfStore();
+//				storeFlags(true);
+//				storeLabelPassed = true;
+//			}
 			// 記録指定
 			setToRecordHistory();
 		}
@@ -8654,6 +8776,9 @@ class KAGWindow extends Window
         f.selDoneStorage = elm.storage if elm.storage !== void;
         f.selDoneTarget  = elm.target  if elm.target  !== void;
 
+		// ページ後処理
+		tagHandlers.afterpage(%[]);
+		
         showSelect();
 
         conductor.sleep();
@@ -8680,9 +8805,9 @@ class KAGWindow extends Window
 
 	doneselect : function(elm)
 	{
-        hideSelect();
-        afterSelect();
-        setMenuAccessibleAll();
+		hideSelect();
+		afterSelect();
+		setMenuAccessibleAll();
 		return 0;
 	} incontextof this,
 
@@ -8859,7 +8984,46 @@ class KAGWindow extends Window
 	{
 		return layerTransEnd(elm);
 	} incontextof this,
-                  
+
+
+	//----------------------------------------- タグハンドラ群(選択肢) --
+
+    panel : function(elm)
+    {
+		hidePanel();
+		if (elm.class !== void) {
+			var clobj = Scripts.eval(elm.class);
+			panelLayer = new clobj(this, elm.name !== void ? elm.name : "panel", elm);
+			dm("パネルレイヤ表示");
+			panelLayer.absolute = (elm.absolute !== void) ? +elm.absolute : 8000000;
+			panelLayer.visible = true;
+			panelLayer.setMode();
+			panelLayer.focus();
+			panelShowing = true;
+			panelModal   = panelLayer.modal;
+
+			if (elm.nostop) {
+				return 0;
+			}
+
+			stablePosibility = true;
+			notifyStable();
+			conductor.sleep();
+			conductor.interrupt();
+			setMenuAccessibleAll();
+			return -1;
+		} else {
+			return 0;
+		}
+	} incontextof this,
+
+	donepanel : function(elm)
+	{
+		hidePanel();
+		setMenuAccessibleAll();
+		return 0;
+	} incontextof this,
+				  
 	//----------------------------------------------- タグハンドラ群の終わり --
 
 		interrupt : function(elm) { return -2; } incontextof this ];
@@ -9302,6 +9466,28 @@ class KAGWindow extends Window
             initLog();
         }
     }
+
+    /**
+     * ダイアログを表示する
+     */
+	var _errorInformMessageMap = %[
+	savefail: "ファイルに保存できません (ファイルを開けないか、書き込み禁止です)",
+	loadfail:  "他のシステムのデータを読み込もうとしました",
+	loadexception: %[ exp:function(mes) { return @"栞を読み込めないか、栞が壊れているか、あるいは他の形式の栞データです(${mes})"; } ],
+	savemydoc: %[ message:"書き込み権限がなくファイル保存できません。MyDocument以下にデータを保存します", caption:"Information" ],
+	readonly:  %[ message:"書き込み権限がなくファイル保存できません。ReadOnlyMode で動作します",          caption:"Warning" ],
+		];
+	function errorInform(tag, *) {
+		if (tag == "" || _errorInformMessageMap[tag] == "") return;
+		var msg = _errorInformMessageMap[tag];
+		var cap = "Error";
+		if (typeof msg == "Object") with (msg) {
+			cap = .caption if (typeof .caption != "undefined");
+			msg = .exp(*)  if (typeof .exp     != "undefined");
+			msg = .message if (typeof .message != "undefined");
+		}
+		System.inform(msg, cap);
+	}
 
     // -------------------------------------------------------------
     

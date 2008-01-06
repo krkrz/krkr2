@@ -1,5 +1,5 @@
 // SliderLayer.tjs - スライダーレイヤ
-// Copyright (C)2001-2007, W.Dee  改変・配布は自由です
+// Copyright (C)2001-2008, W.Dee  改変・配布は自由です
 
 /**
  * スライダとして動作するレイヤです
@@ -18,6 +18,7 @@ class SliderLayer extends KAGLayer
     var Slider_min = 0;   // 最小値
     var Slider_max = 100; // 最大値
     var Slider_position = 0; // 位置
+	var Slider_step = 0; // １ステップの移動量（0の場合は自動計算）
 	var Slider_tabWidth = 10; // つまみサイズ
     var Slider_tabHeight = 10; // つまみサイズ（縦用)
     var Slider_dragging = false; // ドラッグ中かどうか
@@ -58,6 +59,7 @@ class SliderLayer extends KAGLayer
 		Slider_min = src.Slider_min;
 		Slider_max = src.Slider_max;
         Slider_position = src.Slider_position;
+		Slider_step     = src.Slider_step;
         Slider_color    = src.Slider_color;
     }
 
@@ -198,22 +200,20 @@ class SliderLayer extends KAGLayer
     function checkOne(value) {
         return value < 1 ? 1 : value;
     }
-    
-    function toLeft() {
-        if (vertical) {
-            position = Slider_position - checkOne(int((Slider_max - Slider_min)/ (Slider_tabHeight-2) ));
-        } else {
-            position = Slider_position - checkOne(int((Slider_max - Slider_min)/ (Slider_tabWidth-2)));
-        }
-    }
+	function getMoveTick() {
+		if (Slider_step >= 1) return Slider_step;
+		return checkOne((int)(vertical ?
+							  (Slider_tabHeight * (Slider_max - Slider_min) / (imageHeight - Slider_tabHeight - 2)) : 
+							  (Slider_tabWidth  * (Slider_max - Slider_min) / (imageWidth  - Slider_tabWidth  - 2))));
+	}
 
-    function toRight() {
-        if (vertical) {
-            position = Slider_position + checkOne(int((Slider_max - Slider_min) / (Slider_tabHeight-2)));
-        } else {
-            position = Slider_position + checkOne(int((Slider_max - Slider_min) / (Slider_tabWidth-2)));
-        }
-    }
+	function toLeft()  {
+		position = Slider_position - getMoveTick();
+	}
+
+	function toRight() {
+		position = Slider_position + getMoveTick();
+	}
 
     function toPosition(x, y) {
         if (vertical) {
@@ -489,6 +489,10 @@ class SliderLayer extends KAGLayer
 			return Slider_position;
 		}
 	}
+	property step {
+		getter    { return Slider_step; }
+		setter(x) {        Slider_step = x; }
+	}
 
 	function onChange(pos, dragging)
 	{
@@ -510,7 +514,8 @@ class SliderLayer extends KAGLayer
 		base = states.rail if (base === void);
         if (base !== void) {
             temp.loadImages(base.storage);
-            baseImage = new global.Layer(window, parent);
+            baseImage = new global.Layer(window, this);
+			baseImage.name = "baseImage";
             baseImage.setSize(uiinfo.width, uiinfo.height);
             baseImage.copyRect(base.ox, base.oy, temp, 0, 0, temp.imageWidth, temp.imageHeight);
         }
@@ -530,7 +535,8 @@ class SliderLayer extends KAGLayer
     function loadBase(storage, key)
 	{
         if (baseImage === void) {
-            baseImage = new global.Layer(window, parent);
+            baseImage = new global.Layer(window, this);
+			baseImage.name = "baseImage";
         }
         baseImage.loadImages(storage, key);
         baseImage.setSizeToImageSize();
@@ -544,10 +550,11 @@ class SliderLayer extends KAGLayer
      */
     function loadTab(storage, key) {
         if (tabImage === void) {
-            tabImage = new global.Layer(window, parent);
+            tabImage = new global.Layer(window, this);
+			tabImage.name = "tabImage";
         }
         tabImage.loadImages(storage, key);
-        tabImage.setSizeTOImageSize();
+        tabImage.setSizeToImageSize();
         Slider_tabWidth  = tabImage.imageWidth / 3;
         Slider_tabHeight = tabImage.imageHeight;
     }
@@ -560,7 +567,8 @@ class SliderLayer extends KAGLayer
      */
     function loadTabs(normal, over, on) {
         if (tabImage === void) {
-            tabImage = new global.Layer(window, parent);
+            tabImage = new global.Layer(window, this);
+			tabImage.name = "tabImage";
         }
         var temp = window.temporaryLayer;
         temp.loadImages(normal);
@@ -568,6 +576,7 @@ class SliderLayer extends KAGLayer
         var h = temp.imageHeight;
         tabImage.imageWidth  = w * 3;
         tabImage.imageHeight = h;
+        tabImage.setSize(w, h);
         tabImage.copyRect(0, 0, temp, 0, 0, w, h);
         if (over !== void) {
             temp.loadImages(over);
