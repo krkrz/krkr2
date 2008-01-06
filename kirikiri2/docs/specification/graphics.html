@@ -15,13 +15,63 @@
 <div class="content">
 <p>吉里吉里2/KAG3がサポートする画像処理機能ついて記載。</p>
 <h3>目次</h3>
-<p><a href="#blend_mode">合成演算</a><br />
+<p><a href="#spec">諸元</a><br />
+<a href="#blend_mode">合成演算</a><br />
 <a href="#affine">アフィン変換</a><br />
 <a href="#gamma">ガンマ補正</a><br />
 <a href="#glayscale">グレースケール化</a><br />
 
 </p>
 <br />
+
+
+<div class="title_bar"><a name="spec">諸元</a></div>
+<br />
+<table frame="box" rules="all">
+	<tbody>
+		<tr>
+			<td rowspan="5">合成<br />演算</td>
+			<td>不透明</td>
+			<td>乗算合成</td>
+			<td>Photoshop互換<br />覆い焼き(リニア)合成(加算合成)</td>
+			<td>Photoshop互換<br />ハードライト合成</td>
+			<td>Photoshop互換<br />比較(明)合成</td>
+		</tr>
+		<tr>
+			<td>アルファ合成</td>
+			<td>覆い焼き合成</td>
+			<td>Photoshop互換<br />焼き込み(リニア)合成(減算合成)</td>
+			<td>Photoshop互換<br />ソフトライト合成</td>
+			<td>Photoshop互換<br />比較(暗)合成</td>
+		</tr>
+		<tr>
+			<td>加算アルファ合成</td>
+			<td>比較(明)合成</td>
+			<td>Photoshop互換<br />乗算合成</td>
+			<td>Photoshop互換<br />覆い焼きカラー合成</td>
+			<td>Photoshop互換<br />差の絶対値合成 	</td>
+		</tr>
+		<tr>
+			<td>加算合成</td>
+			<td>比較(暗)合成</td>
+			<td>Photoshop互換<br />スクリーン合成</td>
+			<td>Photoshop V.5.x以下互換<br />覆い焼きカラー合成</td>
+			<td>Photoshop V.5.x以下互換<br />差の絶対値合成</td>
+		</tr>
+		<tr>
+			<td>減算合成</td>
+			<td>スクリーン乗算合成</td>
+			<td>Photoshop互換<br />オーバーレイ合成</td>
+			<td>Photoshop互換<br />焼き込みカラー合成</td>
+			<td>Photoshop互換<br />除外合成</td>
+		</tr>
+	</tbody>
+</table>
+
+<br />
+<br />
+
+
 <div class="title_bar"><a name="blend_mode">合成演算</a></div>
 <br />
 <table frame="box" rules="all">
@@ -174,7 +224,7 @@
 		</tr>
 		<tr>
 			<td>19</td>
-			<td>Photoshop Ver 5.x 以下互換<br />覆い焼きカラー合成</td>
+			<td>Photoshop Ver.5.x以下互換<br />覆い焼きカラー合成</td>
 			<td>result = min(1.0, dest ÷ ( 1.0 - src × α) )</td>
 			<td>Photoshopのバージョン 5.x 以下と互換の「覆い焼きカラー」合成を行います。<br />
 			18.Photoshop互換覆い焼きカラー合成とは式が若干異なります。<br />
@@ -212,7 +262,7 @@
 		</tr>
 		<tr>
 			<td>24</td>
-			<td>Photoshop Ver 5.x 以下互換<br />差の絶対値合成</td>
+			<td>Photoshop Ver.5.x以下互換<br />差の絶対値合成</td>
 			<td>result = abs(dest - src × α)</td>
 			<td>Photoshopのバージョン 5.x 以下と互換の「差の絶対値」合成を行います。<br />
 			23.Photoshop互換差の絶対値合成とは式が若干異なります。<br />
