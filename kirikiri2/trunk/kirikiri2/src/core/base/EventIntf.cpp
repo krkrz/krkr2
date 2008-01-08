@@ -607,8 +607,16 @@ void TVPDeliverAllEvents()
 
 	if(!TVPExclusiveEventPosted && !TVPEventInterrupting)
 	{
-		// process idle event queue
-		_TVPDeliverEventByPrio(TVP_EPT_IDLE);
+		try
+		{
+			try
+			{
+				// process idle event queue
+				_TVPDeliverEventByPrio(TVP_EPT_IDLE);
+			}
+			TJS_CONVERT_TO_TJS_EXCEPTION
+		}
+		TVP_CATCH_AND_SHOW_SCRIPT_EXCEPTION(TJS_W("idle event"));
 
 		// process continuous events
 		if(TVPProcessContinuousHandlerEventFlag)
