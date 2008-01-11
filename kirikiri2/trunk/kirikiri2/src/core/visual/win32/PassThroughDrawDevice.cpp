@@ -540,7 +540,6 @@ class tTVPDrawer_DDDoubleBuffering : public tTVPDrawer
 
 	HDC OffScreenDC;
 	IDirectDrawSurface * Surface;
-	IDirectDrawClipper * Clipper;
 
 	bool LastOffScreenDCGot;
 	bool ShouldShow; //!< show で実際に画面に画像を転送すべきか
@@ -552,7 +551,6 @@ public:
 		TVPEnsureDirectDrawObject();
 		OffScreenDC = NULL;
 		Surface = NULL;
-		Clipper = NULL;
 		LastOffScreenDCGot = true;
 		ShouldShow = false;
 	}
@@ -569,7 +567,6 @@ public:
 	{
 		if(OffScreenDC && Surface) Surface->ReleaseDC(OffScreenDC);
 		if(Surface) Surface->Release(), Surface = NULL;
-		if(Clipper) Clipper->Release(), Clipper = NULL;
 		TVPReleaseDDPrimarySurface();
 	}
 
@@ -631,18 +628,25 @@ public:
 
 
 			// create clipper object
-			hr = object->CreateClipper(0, &Clipper, NULL);
+			IDirectDrawClipper * clipper;
+			hr = object->CreateClipper(0, &clipper, NULL);
 			if(hr != DD_OK)
 			{
 				TVPThrowExceptionMessage(TJS_W("Cannot create a clipper object/HR=%1"),
 					TJSInt32ToHex(hr, 8));
 			}
-			hr = Clipper->SetHWnd(0, TargetWindow);
+			hr = clipper->SetHWnd(0, TargetWindow);
 			if(hr != DD_OK)
 			{
 				TVPThrowExceptionMessage(TJS_W("Cannot set the window handle to the clipper object/HR=%1"),
 					TJSInt32ToHex(hr, 8));
 			}
+
+			// set clipper
+			TVPSetDDPrimaryClipper(clipper);
+
+			// release clipper once because the surface is holding it. we no longer need to refer.
+			clipper->Release();
 		}
 	}
 
@@ -762,9 +766,6 @@ public:
 		IDirectDrawSurface *pri = TVPGetDDPrimarySurfaceNoAddRef();
 		if(!pri)
 			TVPThrowExceptionMessage(TJS_W("Cannot retrieve primary surface object"));
-
-		// set clipper
-		TVPSetDDPrimaryClipper(Clipper);
 
 		// get PaintBox's origin
 		POINT origin; origin.x = DestLeft, origin.y = DestTop;
@@ -1003,7 +1004,6 @@ class tTVPDrawer_D3DDoubleBuffering : public tTVPDrawer
 	IDirect3D7 * Direct3D7;
 	IDirect3DDevice7 * Direct3DDevice7;
 	IDirectDrawSurface7 * Surface;
-	IDirectDrawClipper * Clipper;
 	IDirectDrawSurface7 * Texture;
 
 	void * TextureBuffer; //!< テクスチャのサーフェースへのメモリポインタ
@@ -1026,7 +1026,6 @@ public:
 		Direct3D7 = NULL;
 		Direct3DDevice7 = NULL;
 		Surface = NULL;
-		Clipper = NULL;
 		Texture = NULL;
 		LastOffScreenDCGot = true;
 		ShouldShow = false;
@@ -1046,13 +1045,12 @@ public:
 	void DestroyOffScreenSurface()
 	{
 		if(TextureBuffer && Texture) Texture->Unlock(NULL), TextureBuffer = NULL;
-		if(OffScreenDC && Surface) Surface->ReleaseDC(OffScreenDC);
-		if(Surface) Surface->Release(), Surface = NULL;
-		if(Clipper) Clipper->Release(), Clipper = NULL;
+		if(OffScreenDC && Surface) Surface->ReleaseDC(OffScreenDC), OffScreenDC = NULL;
 		if(Texture) Texture->Release(), Texture = NULL;
-		if(DirectDraw7) DirectDraw7->Release(), DirectDraw7 = NULL;
 		if(Direct3DDevice7) Direct3DDevice7->Release(), Direct3DDevice7 = NULL;
+		if(Surface) Surface->Release(), Surface = NULL;
 		if(Direct3D7) Direct3D7->Release(), Direct3D7 = NULL;
+		if(DirectDraw7) DirectDraw7->Release(), DirectDraw7 = NULL;
 		TVPReleaseDDPrimarySurface();
 	}
 
@@ -1098,18 +1096,26 @@ public:
 				TVPThrowExceptionMessage(TJS_W("Too less display color depth"));
 
 			// create clipper object
-			hr = DirectDraw7->CreateClipper(0, &Clipper, NULL);
+			IDirectDrawClipper * clipper;
+
+			hr = DirectDraw7->CreateClipper(0, &clipper, NULL);
 			if(hr != DD_OK)
 			{
 				TVPThrowExceptionMessage(TJS_W("Cannot create a clipper object/HR=%1"),
 					TJSInt32ToHex(hr, 8));
 			}
-			hr = Clipper->SetHWnd(0, TargetWindow);
+			hr = clipper->SetHWnd(0, TargetWindow);
 			if(hr != DD_OK)
 			{
 				TVPThrowExceptionMessage(TJS_W("Cannot set the window handle to the clipper object/HR=%1"),
 					TJSInt32ToHex(hr, 8));
 			}
+
+			// set clipper
+			TVPSetDDPrimaryClipper(clipper);
+
+			// release clipper once because the surface is holding it. we no longer need to refer.
+			clipper->Release();
 
 			// allocate secondary off-screen buffer
 			ZeroMemory(&ddsd, sizeof(ddsd));
@@ -1648,9 +1654,6 @@ DrawPrimitiveTime += timeGetTime() - StartTick;
 #ifdef TVPD3DTIMING
 StartTick = timeGetTime();
 #endif
-		// set clipper
-		TVPSetDDPrimaryClipper(Clipper);
-
 		// get PaintBox's origin
 		POINT origin; origin.x = DestLeft, origin.y = DestTop;
 		ClientToScreen(TargetWindow, &origin);
@@ -1763,7 +1766,7 @@ void tTVPPassThroughDrawDevice::DestroyDrawer()
 //---------------------------------------------------------------------------
 void tTVPPassThroughDrawDevice::CreateDrawer(tDrawerType type)
 {
-	Drawer = NULL;
+	if(Drawer) delete Drawer, Drawer = NULL;
 
 	switch(type)
 	{
@@ -1845,16 +1848,16 @@ void tTVPPassThroughDrawDevice::CreateDrawer(bool zoom_required, bool should_ben
 
 	// should_benchmark が偽で、前回 Drawer を作成していれば、それと同じタイプの
 	// Drawer を用いる
-	if(!should_benchmark && last_type != dtNone)
+	if(!Drawer && !should_benchmark && last_type != dtNone)
 		CreateDrawer(last_type);
 
 	// TVPPreferredDrawType が指定されていればそれを使う
-	if(TVPPreferredDrawType != dtNone)
+	if(!Drawer && TVPPreferredDrawType != dtNone)
 		CreateDrawer(TVPPreferredDrawType);
 
 	// もしズームが必要なく、ダブルバッファリングも必要ないならば
 	// 一番基本的な DrawDib のやつを使う
-	if(!zoom_required && !TVPForceDoublebuffer)
+	if(!Drawer && !zoom_required && !TVPForceDoublebuffer)
 		CreateDrawer(dtDrawDib);
 
 	if(!Drawer)
