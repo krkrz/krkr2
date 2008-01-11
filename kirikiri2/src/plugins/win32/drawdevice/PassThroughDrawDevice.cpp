@@ -514,6 +514,7 @@ class tTVPDrawer_DDDoubleBuffering : public tTVPDrawer
 
 	HDC OffScreenDC;
 	IDirectDrawSurface * Surface;
+	IDirectDrawClipper * Clipper;
 
 	bool LastOffScreenDCGot;
 	bool ShouldShow; //!< show で実際に画面に画像を転送すべきか
@@ -525,6 +526,7 @@ public:
 		TVPEnsureDirectDrawObject();
 		OffScreenDC = NULL;
 		Surface = NULL;
+		Clipper = NULL;
 		LastOffScreenDCGot = true;
 		ShouldShow = false;
 	}
@@ -540,6 +542,7 @@ public:
 	void DestroyOffScreenSurface()
 	{
 		if(OffScreenDC && Surface) Surface->ReleaseDC(OffScreenDC);
+		if(Clipper) Clipper->Release(), Clipper = NULL;
 		if(Surface) Surface->Release(), Surface = NULL;
 		TVPReleaseDDPrimarySurface();
 	}
@@ -602,25 +605,18 @@ public:
 
 
 			// create clipper object
-			IDirectDrawClipper * clipper;
-			hr = object->CreateClipper(0, &clipper, NULL);
+			hr = object->CreateClipper(0, &Clipper, NULL);
 			if(hr != DD_OK)
 			{
 				TVPThrowExceptionMessage(TJS_W("Cannot create a clipper object/HR=%1"),
 					TJSInt32ToHex(hr, 8));
 			}
-			hr = clipper->SetHWnd(0, TargetWindow);
+			hr = Clipper->SetHWnd(0, TargetWindow);
 			if(hr != DD_OK)
 			{
 				TVPThrowExceptionMessage(TJS_W("Cannot set the window handle to the clipper object/HR=%1"),
 					TJSInt32ToHex(hr, 8));
 			}
-
-			// set clipper
-			TVPSetDDPrimaryClipper(clipper);
-
-			// release clipper once because the surface is holding it. we no longer need to refer.
-			clipper->Release();
 		}
 	}
 
@@ -740,6 +736,9 @@ public:
 		IDirectDrawSurface *pri = TVPGetDDPrimarySurfaceNoAddRef();
 		if(!pri)
 			TVPThrowExceptionMessage(TJS_W("Cannot retrieve primary surface object"));
+
+		// set clipper
+		TVPSetDDPrimaryClipper(Clipper);
 
 		// get PaintBox's origin
 		POINT origin; origin.x = DestLeft, origin.y = DestTop;
@@ -979,6 +978,7 @@ class tTVPDrawer_D3DDoubleBuffering : public tTVPDrawer
 	IDirect3DDevice7 * Direct3DDevice7;
 	IDirectDrawSurface7 * Surface;
 	IDirectDrawSurface7 * Texture;
+	IDirectDrawClipper * Clipper;
 
 	void * TextureBuffer; //!< テクスチャのサーフェースへのメモリポインタ
 	long TexturePitch; //!< テクスチャのピッチ
@@ -1001,6 +1001,7 @@ public:
 		Direct3DDevice7 = NULL;
 		Surface = NULL;
 		Texture = NULL;
+		Clipper = NULL;
 		LastOffScreenDCGot = true;
 		ShouldShow = false;
 		UseDirectTransfer = false;
@@ -1026,6 +1027,7 @@ public:
 		if(Direct3D7) Direct3D7->Release(), Direct3D7 = NULL;
 		if(DirectDraw7) DirectDraw7->Release(), DirectDraw7 = NULL;
 		TVPReleaseDDPrimarySurface();
+		if(Clipper) Clipper->Release(), Clipper = NULL;
 	}
 
 	void InvalidateAll()
@@ -1070,26 +1072,18 @@ public:
 				TVPThrowExceptionMessage(TJS_W("Too less display color depth"));
 
 			// create clipper object
-			IDirectDrawClipper * clipper;
-
-			hr = DirectDraw7->CreateClipper(0, &clipper, NULL);
+			hr = DirectDraw7->CreateClipper(0, &Clipper, NULL);
 			if(hr != DD_OK)
 			{
 				TVPThrowExceptionMessage(TJS_W("Cannot create a clipper object/HR=%1"),
 					TJSInt32ToHex(hr, 8));
 			}
-			hr = clipper->SetHWnd(0, TargetWindow);
+			hr = Clipper->SetHWnd(0, TargetWindow);
 			if(hr != DD_OK)
 			{
 				TVPThrowExceptionMessage(TJS_W("Cannot set the window handle to the clipper object/HR=%1"),
 					TJSInt32ToHex(hr, 8));
 			}
-
-			// set clipper
-			TVPSetDDPrimaryClipper(clipper);
-
-			// release clipper once because the surface is holding it. we no longer need to refer.
-			clipper->Release();
 
 			// allocate secondary off-screen buffer
 			ZeroMemory(&ddsd, sizeof(ddsd));
@@ -1624,6 +1618,9 @@ DrawPrimitiveTime += timeGetTime() - StartTick;
 		IDirectDrawSurface *pri = TVPGetDDPrimarySurfaceNoAddRef();
 		if(!pri)
 			TVPThrowExceptionMessage(TJS_W("Cannot retrieve primary surface object"));
+
+		// set clipper
+		TVPSetDDPrimaryClipper(Clipper);
 
 #ifdef TVPD3DTIMING
 StartTick = timeGetTime();
