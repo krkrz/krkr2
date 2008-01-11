@@ -1844,6 +1844,7 @@ void tTJSNI_BaseLayer::InternalSetSize(tjs_uint width, tjs_uint height)
 		SetToCreateExposedRegion();
 		ImageLayerSizeChanged();
 		Update(false);
+		if(IsPrimary() && Manager) Manager->NotifyLayerResize();
 	}
 }
 //---------------------------------------------------------------------------
@@ -1951,14 +1952,12 @@ void tTJSNI_BaseLayer::SetHeight(tjs_uint height)
 void tTJSNI_BaseLayer::SetSize(tjs_uint width, tjs_uint height)
 {
 	InternalSetSize(width, height);
-	if(IsPrimary() && Manager) Manager->NotifyLayerResize();
 }
 //---------------------------------------------------------------------------
 void tTJSNI_BaseLayer::SetBounds(const tTVPRect &rect)
 {
 	// TODO: SetBounds
 	InternalSetBounds(rect);
-	if(IsPrimary() && Manager) Manager->NotifyLayerResize();
 }
 //---------------------------------------------------------------------------
 void tTJSNI_BaseLayer::ParentRectToChildRect(tTVPRect &rect)
