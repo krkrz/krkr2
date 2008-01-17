@@ -25,16 +25,31 @@
 
 /*
 	PassThroughDrawDevice クラスには、Window.PassThroughDrawDevice として
-	アクセスでききる。通常、Window クラスを生成すると、その drawDevice プロパ
+	アクセスできる。通常、Window クラスを生成すると、その drawDevice プロパ
 	ティには自動的にこのクラスのインスタンスが設定されるので、(ほかのDrawDevice
 	を使わない限りは) 特に意識する必要はない。
 
 	PassThroughDrawDevice は以下のメソッドとプロパティを持つ。
 
 	recreate()
-		Drawer (内部で使用している描画方式) を切り替える。コマンドライン
-		オプションで設定された内容に再設定される。(ちなみにコマンドラインオプ
-		ションは System.setArgument() で設定可能である)
+		Drawer (内部で使用している描画方式) を切り替える。preferredDrawer プロパティ
+		が dtNone 以外であればそれに従うが、必ず指定された drawer が使用される保証はない。
+
+	preferredDrawer
+		使用したい drawer を表すプロパティ。以下のいずれかの値をとる。
+		値を設定することも可能。new 直後の値は コマンドラインオプションの dbstyle で
+		設定した値になる。
+		drawerがこの値になる保証はない (たとえば dtDBD3D を指定していても何らかの
+		原因で Direct3D の初期化に失敗した場合は DirectDraw が使用される可能性がある)。
+		ウィンドウ作成直後、最初にプライマリレイヤを作成するよりも前にこのプロパティを
+		設定する事により、recreate() をわざわざ実行しなくても指定の drawer を使用
+		させることができる。
+		Window.PassThroughDrawDevice.dtNone			指定しない
+		Window.PassThroughDrawDevice.dtDrawDib		拡大縮小が必要な場合はGDI、
+													そうでなければDBなし
+		Window.PassThroughDrawDevice.dtDBGDI		GDIによるDB
+		Window.PassThroughDrawDevice.dtDBDD			DirectDrawによるDB
+		Window.PassThroughDrawDevice.dtDBD3D		Direct3DによるDB
 
 	drawer
 		現在使用されている drawer を表すプロパティ。以下のいずれかの値をとる。
@@ -1734,6 +1749,7 @@ BltTime += timeGetTime() - StartTick;
 tTVPPassThroughDrawDevice::tTVPPassThroughDrawDevice()
 {
 	TVPInitPassThroughOptions(); // read and initialize options
+	PreferredDrawerType = TVPPreferredDrawType;
 	TargetWindow = NULL;
 	Drawer = NULL;
 	DrawerType = dtNone;
@@ -1848,9 +1864,16 @@ void tTVPPassThroughDrawDevice::CreateDrawer(bool zoom_required, bool should_ben
 	if(!Drawer && !should_benchmark && last_type != dtNone)
 		CreateDrawer(last_type);
 
-	// TVPPreferredDrawType が指定されていればそれを使う
-	if(!Drawer && TVPPreferredDrawType != dtNone)
-		CreateDrawer(TVPPreferredDrawType);
+	// PreferredDrawerType が指定されていればそれを使う
+	if(!Drawer)
+	{
+		// PreferredDrawerType が dtDrawDib の場合は、ズームが必要な場合は
+		// dtGDI を用いる
+		if (PreferredDrawerType == dtDrawDib)
+			CreateDrawer(zoom_required ? dtDBGDI : dtDrawDib);
+		else if(PreferredDrawerType != dtNone)
+			CreateDrawer(PreferredDrawerType);
+	}
 
 	// もしズームが必要なく、ダブルバッファリングも必要ないならば
 	// 一番基本的な DrawDib のやつを使う
@@ -2263,6 +2286,26 @@ TVP_REGISTER_PTDD_ENUM(dtDrawDib)
 TVP_REGISTER_PTDD_ENUM(dtDBGDI)
 TVP_REGISTER_PTDD_ENUM(dtDBDD)
 TVP_REGISTER_PTDD_ENUM(dtDBD3D)
+//----------------------------------------------------------------------
+TJS_BEGIN_NATIVE_PROP_DECL(preferredDrawer)
+{
+	TJS_BEGIN_NATIVE_PROP_GETTER
+	{
+		TJS_GET_NATIVE_INSTANCE(/*var. name*/_this, /*var. type*/tTJSNI_PassThroughDrawDevice);
+		*result = (tjs_int64)(_this->GetDevice()->GetPreferredDrawerType());
+		return TJS_S_OK;
+	}
+	TJS_END_NATIVE_PROP_GETTER
+
+	TJS_BEGIN_NATIVE_PROP_SETTER
+	{
+		TJS_GET_NATIVE_INSTANCE(/*var. name*/_this, /*var. type*/tTJSNI_PassThroughDrawDevice);
+		_this->GetDevice()->SetPreferredDrawerType((tTVPPassThroughDrawDevice::tDrawerType)(tjs_int)*param);
+		return TJS_S_OK;
+	}
+	TJS_END_NATIVE_PROP_SETTER
+}
+TJS_END_NATIVE_PROP_DECL(preferredDrawer)
 //----------------------------------------------------------------------
 TJS_BEGIN_NATIVE_PROP_DECL(drawer)
 {
