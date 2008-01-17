@@ -38,6 +38,7 @@ public:
 
 private:
 	tDrawerType DrawerType; //!< drawer のタイプ
+	tDrawerType PreferredDrawerType; //!< 使って欲しい drawer のタイプ
 
 	bool DestSizeChanged; //!< DestRect のサイズに変更があったか
 	bool SrcSizeChanged; //!< SrcSize に変更があったか
@@ -58,6 +59,8 @@ public:
 	void EnsureDrawer();
 
 	tDrawerType GetDrawerType() const { return DrawerType; }
+	void SetPreferredDrawerType(tDrawerType type) { PreferredDrawerType = type; }
+	tDrawerType GetPreferredDrawerType() const { return PreferredDrawerType; }
 
 //---- LayerManager の管理関連
 	virtual void TJS_INTF_METHOD AddLayerManager(iTVPLayerManager * manager);
