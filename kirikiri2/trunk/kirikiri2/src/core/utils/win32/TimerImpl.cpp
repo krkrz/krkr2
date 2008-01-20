@@ -222,7 +222,8 @@ void tTVPTimerThread::AddItem(tTJSNI_Timer * item)
 {
 	tTJSCriticalSectionHolder holder(TVPTimerCS);
 
-	List.push_back(item);
+	if(std::find(List.begin(), List.end(), item) == List.end())
+		List.push_back(item);
 }
 //---------------------------------------------------------------------------
 bool tTVPTimerThread::RemoveItem(tTJSNI_Timer *item)
@@ -232,8 +233,10 @@ bool tTVPTimerThread::RemoveItem(tTJSNI_Timer *item)
 	std::vector<tTJSNI_Timer *>::iterator i;
 
 	// remove from the List
-	i = std::find(List.begin(), List.end(), item);
-	if(i != List.end()) List.erase(i);
+	for(i = List.begin(); i != List.end(); /**/)
+	{
+		if(*i == item) i = List.erase(i); else i++;
+	}
 
 	// also remove from the Pending list
 	RemoveFromPendingItem(item);
@@ -245,8 +248,11 @@ void tTVPTimerThread::RemoveFromPendingItem(tTJSNI_Timer *item)
 {
 	// remove item from pending list
  	std::vector<tTJSNI_Timer *>::iterator i;
-	i = std::find(Pending.begin(), Pending.end(), item);
-	if(i != Pending.end()) Pending.erase(i);
+	for(i = Pending.begin(); i != Pending.end(); /**/)
+	{
+		if(*i == item) i = Pending.erase(i); else i++;
+	}
+
 	item->ZeroPendingCount();
 }
 //---------------------------------------------------------------------------
