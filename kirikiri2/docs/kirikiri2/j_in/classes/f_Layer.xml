@@ -336,6 +336,14 @@
 				<tt><kw>ssRepeat</kw>  : </tt>キーリピートが発生した<r/>
 			</desc>
 		</argitem>
+		<argitem>
+			<name>process</name>
+			<default>true</default>
+			<desc>
+				　親クラスのonKeyDownを呼ぶ際、この引数に偽を渡すと、親クラスでは
+				そのキーに対するデフォルトの処理(フォーカスの移動など)を行わなくなります。<r/>
+			</desc>
+		</argitem>
 	</arg>
 	<result></result>
 	<desc>
@@ -369,6 +377,14 @@
 				<tt><kw>ssRight</kw>   : </tt>マウスの右ボタンが押されていた<r/>
 			</desc>
 		</argitem>
+		<argitem>
+			<name>process</name>
+			<default>true</default>
+			<desc>
+				　親クラスのonKeyUpを呼ぶ際、この引数に偽を渡すと、親クラスでは
+				そのキーに対するデフォルトの処理(フォーカスの移動など)を行わなくなります。<r/>
+			</desc>
+		</argitem>
 	</arg>
 	<result></result>
 	<desc>
@@ -386,6 +402,14 @@
 			<default></default>
 			<desc>
 				　入力された文字です。<r/>
+			</desc>
+		</argitem>
+		<argitem>
+			<name>process</name>
+			<default>true</default>
+			<desc>
+				　親クラスのonKeyPressを呼ぶ際、この引数に偽を渡すと、親クラスでは
+				そのキーに対するデフォルトの処理(フォーカスの移動など)を行わなくなります。<r/>
 			</desc>
 		</argitem>
 	</arg>
