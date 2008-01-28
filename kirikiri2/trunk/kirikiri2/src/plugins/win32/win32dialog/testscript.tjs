@@ -1,0 +1,43 @@
+Scripts.execStorage("win32dialog.tjs");
+
+
+class MyDialog extends WIN32DialogEX {
+	var template = %[
+	helpID:0,
+	exStyle:0, //.WS_EX_TOOLWINDOW,
+	style: DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU,
+	x:0,
+	y:0,
+	cx:100,
+	cy:100,
+	//menu:"",
+	//windowClass:"",
+	title:"テストダイアログ",
+	items :
+		[
+			GroupBox("グループ",,  0, 0, 100, 100),
+			PushButton("ボタン１", 1000, 10, 20, 80, 10),
+			EditText(              1001, 10, 30, 80, 10),
+			ComboBox(              1002, 10, 40, 80, 10),
+			ListBox(               1003, 10, 50, 80, 40),
+		]
+	];
+		
+	function MyDialog() {
+		super.WIN32DialogEX();
+		store(template);
+	}
+
+	// デバグ用
+	function onCommand(msg, wp, lp) {
+		dm("onCommand", *);
+		return super.onCommand(...);
+	}
+}
+
+//Debug.controller.visible=true;
+Debug.console.visible=true;
+
+var dlg = new MyDialog();
+dlg.open();
+
