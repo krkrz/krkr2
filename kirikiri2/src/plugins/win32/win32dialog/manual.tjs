@@ -1,0 +1,227 @@
+/**
+ * 擬似記述マニュアル
+ */
+
+/**
+ * Windows ネイティブダイアログを操作するためのクラスです。
+ * APIのラッパ程度の機能しかないので非常に使いにくいですが，
+ * 後述のtjsで記述された WIN32DialogEX を使うと幸せになれます。
+ */
+class WIN32Dialog {
+	/**
+	 * ダイアログテンプレートデータ保持クラス
+	 */
+	class Header {
+		/**
+		 * 内容を設定する
+		 * @param elm 辞書配列
+		 * elm = %[ helpID, exStyle, style, x, y, cx, cy, menu, windowClass, title, pointSize, weight, italic, charset, typeFace ];
+		 * 詳細は DLGTEMPLATEEX の定義を参照のこと
+		 */
+		function store(elm);
+
+		/**
+		 * ダイアログアイテムの個数
+		 */
+		property dlgItems { getter; setter; }
+	}
+	/**
+	 * ダイアログテンプレートアイテムデータ保持クラス
+	 */
+	class Items {
+		/**
+		 * 内容を設定する
+		 * @param elm 辞書配列
+		 * elm = %[ helpID, exStyle, style, x, y, cx, cy, id, windowClass, title ];
+		 * 詳細は DLGITEMTEMPLATEEX の定義を参照のこと
+		 * extraCount と付属データは未実装につき定義できません。
+		 */
+		function store(elm);
+	}
+
+	/**
+	 * コンストラクタ
+	 * @param owner イベントコールバック用のオーナーを設定。nullかthisで自分自身へ送る。
+	 */
+	function WIN32Dialog(owner);
+
+	/**
+	 * ダイアログテンプレートを生成する
+	 * @param header ダイアログテンプレートヘッダ  （WIN32Dialog.Headerクラスのインスタンスであること）
+	 * @param items* ダイアログテンプレートアイテム（WIN32Dialog.Items クラスのインスタンスであること）
+	 */
+	function makeTemplate(header, items*);
+
+	/**
+	 * ダイアログを開く
+	 * @param window 親ウィンドウ(吉里吉里の Window クラス)，省略時またはvoid時は親なし
+	 * あらかじめ makeTemplate を呼び出してダイアログテンプレートを生成していなければなりません。
+	 */
+	function open(window);
+	
+	/**
+	 * ダイアログを閉じる
+	 * @param result EndDialog APIに渡す結果値
+	 */
+	function close(result);
+
+	/**
+	 * GetDlgItem のラッパー
+	 * @param id ダイアログアイテムのID
+	 * @return ダイアログアイテムのHWND
+	 */
+	function getItem(id);
+
+	/**
+	 * Get/SetDlgItemInt/Text のラッパー
+	 * @param id    ダイアログアイテムのID
+	 * @param value 設定する値（setの場合のみ）
+	 * @return      取得結果（getの場合のみ）
+	 */
+	function setItemInt(id, value);
+	function getItemInt(id);
+	function setItemText(id, value);
+	function getItemText(id);
+
+	/**
+	 * SendDlgItemMessage のラッパー
+	 * @param id     ダイアログアイテムのID
+	 * @param msg    送るメッセージ
+	 * @param wparam 送るwparam
+	 * @param lparam 送るlparam
+	 * @return LRESULT
+	 */
+	function sendItemMessage(id, msg, wparam, lparam);
+
+	/**
+	 * GetDialogBaseUnit のラッパー
+	 * @return 結果辞書(%[ h:水平単位, v:垂直単位 ])
+	 */
+	function getBaseUnits();
+
+	/**
+	 * MapDialogRect のラッパー
+	 * @param rect 矩形領域辞書配列(%[ left, top, right, bottom ])
+	 * @return 結果辞書配列(%[ left, top, right, bottom ])
+	 */
+	function mapRect(rect);
+
+	/**
+	 * WM_INITDIALOG のコールバック
+	 * @param msg    DlgProc のメッセージ
+	 * @param wparam DlgProc のWPARAM
+	 * @param lparam DlgProc のLPARAM
+	 * コールバックはownerに対して呼ばれるので注意してください
+	 * owner.onInitが未定義なら何もしません。
+	 */
+	function onInit(msg, wparam, lparam);
+
+	/**
+	 * WM_COMMAND のコールバック
+	 * @param msg    DlgProc のメッセージ
+	 * @param wparam DlgProc のWPARAM
+	 * @param lparam DlgProc のLPARAM
+	 * コールバックはownerに対して呼ばれるので注意してください。
+	 * owner.onCommandが未定義なら何もしません。
+	 */
+	function onCommand(msg, wparam, lparam);
+
+	/**
+	 * ウィンドウスタイル等の定数
+	 * 詳細は API マニュアルなどを参照のこと
+	 */
+	// Window Styles
+	var WS_*;
+	var WS_EX_*;
+	// Dialog Box Command IDs
+	var ID*
+	// Edit Control Styles
+	var ES_*;
+	// Edit Control Notification Codes
+	var EN_*;
+	// Edit control EM_SETMARGIN parameters
+	var EC_*;
+	// Edit Control Messages
+	var EM_*;
+	// EDITWORDBREAKPROC code values
+	var WB_*;
+	// Button Control Styles
+	var BS_*;
+	// User Button Notification Codes
+	var BN_*;
+	// Button Control Messages
+	var BM_*;
+	// Static Control Constants
+	var SS_*;
+	// Static Control Mesages
+	var STM_*;
+	// Dialog Styles
+	var DS_*;
+	// Dialog Control Messages
+	var DM_*;
+	// Dialog Codes
+	var DLG_*;
+	// Listbox Return Values
+	var LB_*;
+	// Listbox Notification Codes
+	var LBN_*;
+	// Listbox Styles
+	var LBS_*;
+	// Combo Box return Values
+	var CB_*;
+	// Combo Box Notification Codes
+	var CBN_*;
+	// Combo Box styles
+	var CBS_*;
+	// Combo Box messages
+	var CB_*;
+	// Scroll Bar Styles
+	var SBS_*;
+	// Scroll bar messages
+	var SBM_*;
+	// Font Weights
+	var FW_*;
+}
+
+/**
+ * WIN32Dialog を吉里吉里向けにもう少し使いやすくしたクラス
+ * Scripts.execStorage("win32dialog.tjs")として使います。
+ * 詳細は当該ソースやサンプルなどを参照してください。
+ */
+class WIN32DialogEX extends WIN32Dialog {
+	/**
+	 * テンプレートを流し込む
+	 * @param elm テンプレート用辞書配列
+	 * elm = %[ helpID, exStyle, style, x, y, cx, cy, menu, windowClass, title, pointSize, weight, italic, charset, typeFace,
+	 *          items: [ コントロール1, コントロール2, ... ] ];
+	 * コントロールは，コントロール生成用の関数を呼びます。
+	 */
+	function store(elm);
+
+	/**
+	 * 各種コントロールを生成するための関数
+	 * @param  text テキスト
+	 * @param    id コントロールID
+	 * @param     x x座標（ダイアログ座標単位）
+	 * @param     y y座標（ダイアログ座標単位）
+	 * @param     w 横幅 （ダイアログ座標単位）
+	 * @param     h 高さ （ダイアログ座標単位）
+	 * @param style スタイル
+	 * @param    ex 拡張スタイル
+	 */
+	function DefPushButton(  text, id, x, y, w, h, style, ex);
+	function    PushButton(  text, id, x, y, w, h, style, ex);
+	function AutoCheckBox(   text, id, x, y, w, h, style, ex);
+	function     CheckBox(   text, id, x, y, w, h, style, ex);
+	function AutoRadioButton(text, id, x, y, w, h, style, ex);
+	function     RadioButton(text, id, x, y, w, h, style, ex);
+	function GroupBox(       text, id, x, y, w, h, style, ex);
+	function LText(          text, id, x, y, w, h, style, ex);
+	function CText(          text, id, x, y, w, h, style, ex);
+	function RText(          text, id, x, y, w, h, style, ex);
+	function Icon(           text, id, x, y, w, h, style, ex);
+	function EditText(             id, x, y, w, h, style, ex);
+	function ListBox(              id, x, y, w, h, style, ex);
+	function ComboBox(             id, x, y, w, h, style, ex);
+}
+
