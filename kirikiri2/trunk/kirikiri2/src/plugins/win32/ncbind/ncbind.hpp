@@ -616,6 +616,9 @@ struct ncbPropAccessor {
 	ncbPropAccessor(iTJSDispatch2 *obj, bool addref = true) : _obj(obj) {
 		if (addref) _obj->AddRef();
 	}
+	ncbPropAccessor(tTJSVariant var) : _obj(var.AsObject()) {
+		_obj->AddRef();
+	}
 	virtual ~ncbPropAccessor() {
 		_obj->Release();
 	}
@@ -636,13 +639,17 @@ struct ncbPropAccessor {
 		_obj->PropGet(f, key, hint, &var, _obj);
 		return _toTarget(var, tag);
 	}
-	bool HasValue(IndexT ofs) {
+	bool HasValue(IndexT ofs, tTJSVariantType *type = 0) {
 		VariantT var;
-		return TJS_SUCCEEDED(_obj->PropGetByNum(TJS_MEMBERMUSTEXIST, ofs, &var, _obj));
+		bool ret = TJS_SUCCEEDED(_obj->PropGetByNum(TJS_MEMBERMUSTEXIST, ofs, &var, _obj));
+		if (ret && type) *type = var.Type();
+		return ret;
 	}
-	bool HasValue(KeyT key, HintT hint = 0) {
+	bool HasValue(KeyT key, HintT hint = 0, tTJSVariantType *type = 0) {
 		VariantT var;
-		return TJS_SUCCEEDED(_obj->PropGet(TJS_MEMBERMUSTEXIST, key, hint, &var, _obj));
+		bool ret = TJS_SUCCEEDED(_obj->PropGet(TJS_MEMBERMUSTEXIST, key, hint, &var, _obj));
+		if (ret && type) *type = var.Type();
+		return ret;
 	}
 	template <typename TargetT>
 	bool SetValue(IndexT ofs, TargetT const &val, FlagsT f = TJS_MEMBERENSURE) {
@@ -664,7 +671,7 @@ protected:
 
 	template <typename TargetT>
 	TargetT _toTarget(VariantT &v, DefsT::Tag<TargetT> const&) {
-		typedef typename ncbTypeConvertor::SelectConvertorType<TargetT, VariantT>::Type ToTargetT;
+		typedef typename ncbTypeConvertor::SelectConvertorType<VariantT, TargetT>::Type ToTargetT;
 		TargetT r;
 		ToTargetT conv;
 		conv(r, v);
@@ -672,7 +679,7 @@ protected:
 	}
 	template <typename TargetT>
 	void _toVariant(VariantT &v, TargetT const &r) {
-		typedef typename ncbTypeConvertor::SelectConvertorType<VariantT, TargetT>::Type ToVariantT;
+		typedef typename ncbTypeConvertor::SelectConvertorType<TargetT, VariantT>::Type ToVariantT;
 		ToVariantT conv;
 		conv(v, r);
 	}
@@ -1399,7 +1406,8 @@ struct ncbRawCallbackProperty : public ncbNativeClassMethodBase {
 		// 自分自身が呼ばれたのではない場合は丸投げ
 		if (membername) return BaseT::PropSet(flag, membername, hint, param, objthis);
 		// メソッド呼び出し
-		return _setter.FuncCall(flag, membername, hint, 0, 1, &param, objthis);
+		tTJSVariant *params[1] = { const_cast<tTJSVariant *>(param) };
+		return _setter.FuncCall(flag, membername, hint, 0, 1, params, objthis);
 	}
 
 	/// TJSNativeClassRegisterNCMフラグ
