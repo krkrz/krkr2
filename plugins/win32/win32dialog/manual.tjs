@@ -84,6 +84,15 @@ class WIN32Dialog {
 	function getItemText(id);
 
 	/**
+	 * アイテムの有効・無効を設定・取得する
+	 * @param id    ダイアログアイテムのID
+	 * @param value 有効・無効の設定（setの場合のみ）
+	 * @return      取得結果（getの場合のみ）
+	 */
+	function setItemEnabled(id, value);
+	function getItemEnabled(id);
+
+	/**
 	 * SendDlgItemMessage のラッパー
 	 * @param id     ダイアログアイテムのID
 	 * @param msg    送るメッセージ
@@ -105,6 +114,21 @@ class WIN32Dialog {
 	 * @return 結果辞書配列(%[ left, top, right, bottom ])
 	 */
 	function mapRect(rect);
+
+	/**
+	 * ダイアログ座標を設定
+	 * @param x x座標
+	 * @param y y座標
+	 * ダイアログ表示中以外はエラーになるので注意。onInitなどにて座標を変更すること
+	 */
+	function setPos(x, y);
+
+	/**
+	 * ダイアログサイズの取得
+	 * 読み取り専用。サイズの変更はできないので注意
+	 */
+	property width  { getter; }
+	property height { getter; }
 
 	/**
 	 * WM_INITDIALOG のコールバック
@@ -197,6 +221,29 @@ class WIN32DialogEX extends WIN32Dialog {
 	 * コントロールは，コントロール生成用の関数を呼びます。
 	 */
 	function store(elm);
+
+	/**
+	 * アイテムの初期化パラメータを設定する
+	 * @param elm パラメータ辞書
+	 * 必ず store() の後で呼ぶこと。パラメータ詳細は win32dialog.tjs や testscript.tjs を参照
+	 */
+	function setInitParams(elm);
+
+	/**
+	 * ダイアログを表示する
+	 * @return %[ result:EndDialogのnResult値, items:アイテムの状態辞書 ];
+	 * WIN32Dialog.open と返り値が異なるので注意のこと
+	 */
+	function open(parent);
+
+	/**
+	 * 指定ウィンドウの中央位置にダイアログを移動
+	 * @param win ウィンドウ（省略時はopen時の引数ウィンドウに対して）
+	 * nullを渡すと画面に対して中央になる
+	 */
+	function setCenterPosition(win = parent);
+
+
 
 	/**
 	 * 各種コントロールを生成するための関数
