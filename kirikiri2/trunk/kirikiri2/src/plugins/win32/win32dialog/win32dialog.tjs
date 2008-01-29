@@ -101,6 +101,7 @@ class WIN32DialogEX extends WIN32Dialog {
 	function getItemText(id)           { return super.getItemText(    getNumberdId(id)); }
 	function setItemEnabled(id, value) { return super.setItemEnabled( getNumberdId(id), value); }
 	function getItemEnabled(id)        { return super.getItemEnabled( getNumberdId(id)); }
+	function setItemFocus(id)          { return super.setItemFocus(   getNumberdId(id)); }
 	function sendItemMessage(id, *)    { return super.sendItemMessage(getNumberdId(id), *); }
 
 	var parent;

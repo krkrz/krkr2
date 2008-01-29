@@ -124,6 +124,10 @@ public:
 		HWND wnd = GetItemHWND(id);
 		return IsWindowEnabled(wnd) != 0;
 	}
+	void SetItemFocus(int id) {
+		HWND wnd = GetItemHWND(id);
+		SetFocus(wnd);
+	}
 
 	void SetPos(int x, int y) {
 		if (dialogHWnd) SetWindowPos(dialogHWnd, 0, x, y, 0, 0, SWP_NOSIZE|SWP_NOZORDER);
@@ -393,6 +397,7 @@ NCB_REGISTER_CLASS(WIN32Dialog) {
 	Method(TJS_W("getItemText"),     &Class::GetItemText);
 	Method(TJS_W("setItemEnabled"),  &Class::SetItemEnabled);
 	Method(TJS_W("getItemEnabled"),  &Class::GetItemEnabled);
+	Method(TJS_W("setItemFocus"),    &Class::SetItemFocus);
 
 	RawCallback(TJS_W("sendItemMessage"), &Class::sendItemMessage, 0);
 
