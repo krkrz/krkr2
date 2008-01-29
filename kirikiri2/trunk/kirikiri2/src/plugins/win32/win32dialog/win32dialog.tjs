@@ -2,7 +2,12 @@ Plugins.link("win32dialog.dll");
 
 class WIN32DialogEX extends WIN32Dialog {
 	// コンストラクタ
-	function WIN32DialogEX(owner) { super.WIN32Dialog((typeof owner == "Object") ? owner : null); }
+	function WIN32DialogEX(owner) {
+		this.owner = owner if (typeof owner == "Object");
+		super.WIN32Dialog(null); // 必ず自分自身にイベントを投げる
+	}
+	// オーナーへのイベント投げは自分
+	var owner;
 
 	// テンプレート情報保持用クラス
 	var Header = global.WIN32Dialog.Header;
@@ -11,7 +16,15 @@ class WIN32DialogEX extends WIN32Dialog {
 	var itemMap   = %[];
 	var itemNames = [];
 
+	// 各コントロールの結果保持用
+	var itemResults;
+
+	// 文字列ID割り当てる番号
+	var namedIDnumber = 10000;
+
 	property dm { getter { return global.Debug.message; } }
+
+	property results { getter { return itemResults; } }
 
 	// テンプレートを流し込む
 	function store(elm) {
@@ -36,7 +49,10 @@ class WIN32DialogEX extends WIN32Dialog {
 			var origID;
 			switch (typeof tmp.id) {
 			case "String":
-				tmp.id = bindNewID(origID = tmp.id); // 文字列のIDは数値に置き換える
+				if (tmp.id != "") {
+					origID = tmp.id;
+					tmp.id = namedIDnumber++; // 文字列のIDは数値に置き換える
+				}
 				break;
 			case "Integer":
 				origID = tmp.id;
@@ -45,15 +61,14 @@ class WIN32DialogEX extends WIN32Dialog {
 				tmp.id = -1;
 				break;
 			}
+
+			// itemMap / itemNames を設定
 			dm(i, origID);
-			if (origID != '') {
+			if (origID != "" && origID != -1) {
 				if (typeof itemMap[origID] == "undefined") itemNames.add(origID);
-				else if (!tmp.multipleid) throw new Exception(@"IDが重複しています: ${origID}");
+				else if (!tmp.multipleid) throw new Exception(@"IDが重複しています: ${i}, ${origID}, ${tmp.id}");
 				itemMap[origID] = tmp;
 			}
-
-//			switch (tmp.windowClass) {
-//			}
 
 			var item = new Items();
 			items.add(item);
@@ -62,6 +77,7 @@ class WIN32DialogEX extends WIN32Dialog {
 		}
 		head.dlgItems = cnt;
 
+		// プラグインにテンプレ情報を渡す
 		makeTemplate(head, items*);
 
 		invalidate head;
@@ -76,18 +92,80 @@ class WIN32DialogEX extends WIN32Dialog {
 		}
 	}
 
-	// 初期パラメータを設定する
-	function onInit() {
-		super.onInit(...);
+	// 文字列IDを渡せるように
+	function getNumberdId(id)          { return (itemMap[id] !== void) ? itemMap[id].id : id; }
+	function getItem(id)               { return super.getItem(        getNumberdId(id)); }
+	function setItemInt(id, value)     { return super.setItemInt(     getNumberdId(id), value); }
+	function getItemInt(id)            { return super.getItemInt(     getNumberdId(id)); }
+	function setItemText(id, value)    { return super.setItemText(    getNumberdId(id), value); }
+	function getItemText(id)           { return super.getItemText(    getNumberdId(id)); }
+	function setItemEnabled(id, value) { return super.setItemEnabled( getNumberdId(id), value); }
+	function getItemEnabled(id)        { return super.getItemEnabled( getNumberdId(id)); }
+	function sendItemMessage(id, *)    { return super.sendItemMessage(getNumberdId(id), *); }
+
+	var parent;
+
+	// オープン処理上書き
+	function open(win) {
+		parent = win;
+		var r = super.open(...);
+		//結果辞書を返す
+		return %[ result:r, items:itemResults ];
+	}
+
+	// クローズ処理上書き
+	function close() {
+		// 結果を保持する
+		itemResults = %[];
 		for (var i = 0; i < itemNames.count; i++) {
 			var name = itemNames[i];
-			var item = itemMap[i];
-//			switch ()
+			itemResults[name] = getResult(name);
+		}
+		return super.close(...);
+	}
+
+	// イベントフック
+	function onInit(*) {
+		super.onInit(...);
+		initItems();
+		throwEvent("onInit", *);
+		return true;
+	}
+	function onCommand(*) {
+		super.onCommand(...);
+		throwEvent("onCommand", *);
+		return defaultCommand(...);
+	}
+	function throwEvent(tag, *) {
+		if (typeof owner == "Object" && typeof owner[tag] != "undefined") owner[tag](*);
+	}
+
+	// 指定ウィンドウの中央に配置（ただし画面外にならないこと）
+	function setCenterPosition(win = parent) {
+		var scrw = System.screenWidth, scrh = System.screenHeight;
+		var x = (scrw - width)\2, y = (scrh - height)\2;
+		if (typeof win == "Object" && win != null && win instanceof "Window" && isvalid win) with (win) {
+			x = ((.width  - width )\2) + .left;
+			y = ((.height - height)\2) + .top;
+			x = 0 if (x < 0);
+			y = 0 if (y < 0);
+			x = scrw - width  if (x + width  > scrw);
+			y = scrh - height if (y + height > scrh);
+		}
+		setPos(x, y);
+	}
+
+	// 初期パラメータを設定する
+	function initItems() {
+		for (var i = 0; i < itemNames.count; i++) {
+			var name = itemNames[i];
+			var item = itemMap[name];
+			setParams(name, item.init) if (item.init != void);
 		}
 	}
 
-	function onCommand(msg, wp, lp) {
-		super.onCommand(...);
+	// デフォルトコマンドイベント
+	function defaultCommand(msg, wp, lp) {
 		switch (wp) {
 		case IDOK:
 		case IDCANCEL:
@@ -95,13 +173,107 @@ class WIN32DialogEX extends WIN32Dialog {
 			close(wp);
 			return true;
 		}
+		return false;
+	}
+
+	function setParams(id, elm) {
+		if (typeof elm != "Object") return;
+		if (elm instanceof "Array") {
+			for (var i = 0; i < elm.count; i++) setParams(id, elm[i]);
+		} else {
+			var ext = [];
+			ext.assign(elm);
+			for (var i = 0; i < ext.count; i+=2) {
+				var key = ext[i], value = ext[i+1];
+				switch (key) {
+				case "integer": setItemInt( id, value); break;
+				case "text":    setItemText(id, value); break;
+				case "message": sendItemMessage(id, value.message, value.wparam, value.lparam); break;
+				case "list":
+					var cls = getItemClass(id);
+					var msg = (cls == LISTBOX) ? LB_ADDSTRING : (cls == COMBOBOX) ? CB_ADDSTRING : void;
+					if (msg !== void)
+						for (var i = 0; i < value.count; i++)
+							sendItemMessage(id, msg, 0, value[i]);
+					break;
+				case "select":
+					var cls = getItemClass(id);
+					var msg = (cls == LISTBOX) ? LB_SETCURSEL : (cls == COMBOBOX) ? CB_SETCURSEL : void;
+					dm("select %x".sprintf(msg), id, value);
+					dm(sendItemMessage(id, msg, +value, 0)) if (msg !== void);
+					break;
+				}
+				
+			}
+		}
+	}
+	function setInitParams(elm) {
+		var ext = [];
+		ext.assign(elm);
+		for (var i = 0; i < ext.count; i+=2) {
+			var key = ext[i], value = ext[i+1];
+			var item = (key != "") ? itemMap[key] : void;
+			if (item !== void) item.init = value;
+		}
+	}
+	function getItemClass(itemOrId) {
+		var item = itemOrId;
+		item = itemMap[itemOrId] if (typeof itemOrId != "Object" && itemOrId != "");
+		if (typeof item == "Object") {
+			var cls = item.windowClass;
+			cls = cls.toLowerCase() if (typeof cls == "String");
+			switch (cls) {
+			case 0x80: case "button":    return BUTTON;
+			case 0x81: case "edit":      return EDIT;
+			case 0x82: case "static":    return STATIC;
+			case 0x83: case "listbox":   return LISTBOX;
+			case 0x85: case "combobox":  return COMBOBOX;
+			case 0x84: case "scrollbar": return SCROLLBAR;
+			}
+		}
+	}
+	function getResult(id) {
+		var item = (id != "") ? itemMap[id] : void;
+		if (item === void) return;
+		var style = item.style;
+
+		switch (getItemClass(item)) {
+
+		case BUTTON:
+			return sendItemMessage(id, BM_GETSTATE, 0, 0);
+
+		case EDIT:
+		case STATIC:
+			return getItemText(id);
+
+		case LISTBOX:
+			// 複数選択できるか
+			if (style & LBS_MULTIPLESEL) {
+				var cnt = sendItemMessage(id, LB_GETCOUNT, 0, 0);
+				var rslt = [];
+				for (var i = 0; i < cnt; i++)
+					rslt.add(sendItemMessage(id, LB_GETSEL, i, 0));
+				return rslt;
+			}
+			// それ以外は選択インデックス
+			return sendItemMessage(id, LB_GETCURSEL, 0, 0);
+
+		case COMBOBOX:
+			// ドロップダウンリストでは選択インデックスを返す
+			if (style & CBS_DROPDOWNLIST)
+				return sendItemMessage(id, CB_GETCURSEL, 0, 0);
+
+			// それ以外はテキスト
+			return getItemText(id);
+
+		case SCROLLBAR:
+			return sendItemMessage(id, SBM_GETPOS, 0, 0);
+		}
 	}
 
 	function Control(text, id, wndcls, style, x, y, width, height, exStyle = 0) {
 		return %[ windowClass:wndcls, x:x, y:y, cx:width, cy:height, title:text, style:style|WS_VISIBLE, exStyle:exStyle, id:id ];
 	}
-
-	var BUTTON = 0x80, STATIC = 0x82, EDIT = "EDIT", LISTBOX = "LISTBOX", COMBOBOX = "COMBOBOX", SCROLLBAR = "SCROLLBAR";
 
 	// 各種テンプレートを生成する関数
 

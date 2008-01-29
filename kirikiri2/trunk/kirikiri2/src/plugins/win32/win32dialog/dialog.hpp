@@ -146,8 +146,6 @@ struct DialogHeader : public DialogTemplate {
 			WriteByte( p, c, (BYTE)charset);
 			WriteString(p, c, typeFace.c_str());
 		}
-
-		Alignment( p, c, 4);
 	}
 };
 
@@ -182,6 +180,8 @@ struct DialogItems : public DialogTemplate {
 
 	// èëÇ´èoÇµ
 	void Write(BYTE* &p, SizeT &c) {
+		Alignment( p, c, 4);
+
 		WriteDWord(p, c, helpID);
 		WriteDWord(p, c, exStyle);
 		WriteDWord(p, c, style);

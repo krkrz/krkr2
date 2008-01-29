@@ -75,7 +75,7 @@ public:
 	}
 
 	// テンプレート作成
-	static tjs_error TJS_INTF_METHOD makeTemplate(VarT *result, tjs_int numparams, VarT **param, DspT *objthis);
+	static tjs_error TJS_INTF_METHOD makeTemplate(VarT *result, tjs_int numparams, VarT **param, WIN32Dialog *self);
 
 	bool IsValid() const { return dialogHWnd != 0; }
 	void checkDialogValid() const {
@@ -115,10 +115,48 @@ public:
 		checkDialogValid();
 		if (!SetDlgItemTextW(dialogHWnd, id, string)) ThrowLastError();
 	}
-	LRESULT SendItemMessage(int id, UINT msg, WPARAM wparam, LPARAM lparam) {
+
+	void SetItemEnabled(int id, bool en) {
+		HWND wnd = GetItemHWND(id);
+		EnableWindow(wnd, en ? TRUE : FALSE);
+	}
+	bool GetItemEnabled(int id) {
+		HWND wnd = GetItemHWND(id);
+		return IsWindowEnabled(wnd) != 0;
+	}
+
+	void SetPos(int x, int y) {
+		if (dialogHWnd) SetWindowPos(dialogHWnd, 0, x, y, 0, 0, SWP_NOSIZE|SWP_NOZORDER);
+	}
+	long GetWidth() const {
+		if (!dialogHWnd) return 0;
+		RECT r;
+		GetWindowRect(dialogHWnd, &r);
+		return r.right - r.left;
+	}
+	long GetHeight() const {
+		if (!dialogHWnd) return 0;
+		RECT r;
+		GetWindowRect(dialogHWnd, &r);
+		return r.bottom - r.top;
+	}
+
+	static tjs_error TJS_INTF_METHOD sendItemMessage(VarT *result, tjs_int numparams, VarT **param, WIN32Dialog *self) {
+		if (numparams < 2) return TJS_E_BADPARAMCOUNT;
+		int id   = (int)param[0]->AsInteger();
+		UINT msg = (UINT)param[1]->AsInteger();
+		WPARAM wp = (numparams > 2) ? (WPARAM)param[2]->AsInteger() : 0;
+		LPARAM lp = (numparams > 3) ? ((param[3]->Type() == tvtString) ? (LPARAM)param[3]->GetString() : (LPARAM)param[3]->AsInteger()) : 0;
+		*result = self->_sendItemMessage(id, msg, wp, lp);
+		return  TJS_S_OK;
+	}
+protected:
+	LRESULT _sendItemMessage(int id, UINT msg, WPARAM wparam, LPARAM lparam) {
 		checkDialogValid();
 		return SendDlgItemMessage(dialogHWnd, id, msg, wparam, lparam);
 	}
+
+public:
 	VarT GetBaseUnits() const {
 		VarT var;
 		DictT dict;
@@ -158,7 +196,7 @@ public:
 		WIN32Dialog *self = SelfAdaptorT::GetNativeInstance(objthis); 
 		if (!self) return TJS_E_NATIVECLASSCRASH;
 		self->objthis = objthis;
-		self->_open(numparams > 0 ? *(param[0]) : VarT());
+		*result = self->_open(numparams > 0 ? *(param[0]) : VarT());
 		return TJS_S_OK;
 	}
 
@@ -173,7 +211,7 @@ public:
 
 protected:
 	// ダイアログを開く
-	void _open(VarT win) {
+	int _open(VarT win) {
 		HWND hwnd = 0;
 		if (win.Type() == tvtObject) {
 			DspT *obj = win.AsObjectNoAddRef();
@@ -183,8 +221,9 @@ protected:
 			HINSTANCE hinst = GetModuleHandle(0);
 			icon = LoadIcon(hinst, IDI_APPLICATION);
 		}
-		if (DialogBoxIndirectParam(GetModuleHandle(0), (LPCDLGTEMPLATE)ref, hwnd, (DLGPROC)DlgProc, (LPARAM)this) == -1)
-			ThrowLastError();
+		int ret = DialogBoxIndirectParam(GetModuleHandle(0), (LPCDLGTEMPLATE)ref, hwnd, (DLGPROC)DlgProc, (LPARAM)this);
+		if (ret == -1) ThrowLastError();
+		return ret;
 	}
 	// GetLastErrorのエラーメッセージを取得して投げる
 	static inline void ThrowLastError() {
@@ -297,10 +336,8 @@ struct Items : public DialogItems {
 };
 
 // テンプレート作成
-tjs_error TJS_INTF_METHOD WIN32Dialog::makeTemplate(VarT *result, tjs_int numparams, VarT **param, DspT *objthis)
+tjs_error TJS_INTF_METHOD WIN32Dialog::makeTemplate(VarT *result, tjs_int numparams, VarT **param, WIN32Dialog *self)
 {
-	WIN32Dialog *self = SelfAdaptorT::GetNativeInstance(objthis);
-	if (!self) return TJS_E_NATIVECLASSCRASH;
 	if (numparams < 1) return TJS_E_BADPARAMCOUNT;
 
 	// Header/Itemsインスタンスの取得とサイズの計算
@@ -354,10 +391,17 @@ NCB_REGISTER_CLASS(WIN32Dialog) {
 	Method(TJS_W("getItemInt"),      &Class::GetItemInt);
 	Method(TJS_W("setItemText"),     &Class::SetItemText);
 	Method(TJS_W("getItemText"),     &Class::GetItemText);
+	Method(TJS_W("setItemEnabled"),  &Class::SetItemEnabled);
+	Method(TJS_W("getItemEnabled"),  &Class::GetItemEnabled);
 
-	Method(TJS_W("sendItemMessage"), &Class::SendItemMessage);
+	RawCallback(TJS_W("sendItemMessage"), &Class::sendItemMessage, 0);
+
 	Method(TJS_W("getBaseUnits"),    &Class::GetBaseUnits);
 	Method(TJS_W("mapRect"),         &Class::MapRect);
+
+	Method(TJS_W("setPos"),          &Class::SetPos);
+	Property(TJS_W("width"),         &Class::GetWidth,  (int)0);
+	Property(TJS_W("height"),        &Class::GetHeight, (int)0);
 
 	Method(TJS_W("onInit"),    &Class::onInit);
 	Method(TJS_W("onCommand"), &Class::onCommand);
@@ -910,5 +954,13 @@ NCB_REGISTER_CLASS(WIN32Dialog) {
 	ENUM(FW_BOLD);
 	ENUM(FW_EXTRABOLD);
 	ENUM(FW_HEAVY);
+
+	// Control classes
+	Variant(TJS_W("BUTTON"),    0x0080, 0);
+	Variant(TJS_W("EDIT"),      0x0081, 0);
+	Variant(TJS_W("STATIC"),    0x0082, 0);
+	Variant(TJS_W("LISTBOX"),   0x0083, 0);
+	Variant(TJS_W("SCROLLBAR"), 0x0084, 0);
+	Variant(TJS_W("COMBOBOX"),  0x0085, 0);
 }
 

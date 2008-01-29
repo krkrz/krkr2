@@ -5,7 +5,7 @@ class MyDialog extends WIN32DialogEX {
 	var template = %[
 	helpID:0,
 	exStyle:0, //.WS_EX_TOOLWINDOW,
-	style: DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU,
+	style: DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU | DS_SETFONT,
 	x:0,
 	y:0,
 	cx:100,
@@ -13,19 +13,59 @@ class MyDialog extends WIN32DialogEX {
 	//menu:"",
 	//windowClass:"",
 	title:"テストダイアログ",
+	pointSize: 12,
+	weight: FW_NORMAL,
+	italic: false,
+	typeFace:"ＭＳ Ｐゴシック",
 	items :
 		[
 			GroupBox("グループ",,  0, 0, 100, 100),
-			PushButton("ボタン１", 1000, 10, 20, 80, 10),
-			EditText(              1001, 10, 30, 80, 10),
-			ComboBox(              1002, 10, 40, 80, 10),
-			ListBox(               1003, 10, 50, 80, 40),
+			PushButton("ボタン１", "btn", 10, 20, 80, 10),
+			EditText(              "edt", 10, 30, 80, 10),
+			ListBox(               "lst", 10, 40, 80, 40),
+			ComboBox(              "cmb", 10, 80, 80, 80, CBS_DROPDOWNLIST|WS_VSCROLL|WS_TABSTOP),
 		]
 	];
-		
+
+	// 初期化パラメータ辞書
+	// id : %[ params ]（単指定） または id:[ %[ params1 ], ... %[ paramsN ] ]（順序指定） の形式
+	var initParams = %[
+
+		"cmb" => [ // list -> select の順に設定するので配列で順序を規定して渡す
+			%[  list:
+				[
+					"そのいち",
+					"そのに",
+					"そのさん",
+					"そのよん"
+					]
+				],
+			%[  select: 0 ],
+			],
+
+		"lst" => %[
+		list:
+			[
+				"そのいち",
+				"そのに",
+				"そのさん",
+				"そのよん"
+				],
+			],
+		];
+	
 	function MyDialog() {
 		super.WIN32DialogEX();
+
+		// テンプレート生成
 		store(template);
+
+		// 初期化パラメータを設定
+		setInitParams(initParams);
+	}
+	function onInit() {
+		super.onInit(...);
+		setCenterPosition();
 	}
 
 	// デバグ用
@@ -38,6 +78,24 @@ class MyDialog extends WIN32DialogEX {
 //Debug.controller.visible=true;
 Debug.console.visible=true;
 
+var win = new Window();
+with (win) {
+	._onCloseQuery = .onCloseQuery;
+	.onCloseQuery = function() { _onCloseQuery(true); } incontextof win;
+	.innerSunken = false;
+	.setSize(640, 480);
+	.visible = true;
+}
+
 var dlg = new MyDialog();
-dlg.open();
+var rslt = dlg.open(win);
+
+var dm = Debug.message;
+
+dm("Result", rslt.result);
+
+var ext = [];
+ext.assign(rslt.items);
+for (var i = 0; i < ext.count; i+=2)
+	dm(ext[i], ext[i+1]);
 
