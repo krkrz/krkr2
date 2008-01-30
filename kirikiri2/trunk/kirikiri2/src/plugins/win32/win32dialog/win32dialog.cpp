@@ -25,15 +25,18 @@ private:
 
 	HWND dialogHWnd;
 	HICON icon;
+	HMODULE resource;
 	DspT *owner, *objthis, *callbacks;
 	bool getCallbacks;
 	BYTE *buf;
 	BYTE *ref;
+	VarT resid;
 public:
 	// constructor
 	WIN32Dialog(DspT *_owner = 0)
 		:	dialogHWnd(0),
 			icon(0),
+			resource(0),
 			owner(_owner),
 			objthis(0),
 			callbacks(0),
@@ -45,7 +48,13 @@ public:
 	virtual ~WIN32Dialog() {
 		//TVPAddLog(TJS_W("# WIN32Dialog.finalize()"));
 		if (callbacks) callbacks->Release();
+		callbacks = 0;
+
 		if (buf) TVP_free(buf);
+		buf = 0;
+
+		if (resource) FreeLibrary(resource);
+		resource = 0;
 	}
 	BYTE* CreateBuffer(SizeT sz) {
 		// 領域確保
@@ -74,6 +83,27 @@ public:
 		return (rslt.AsInteger() != 0) ? TRUE : FALSE;
 	}
 
+	// リソース読み込み
+	static tjs_error TJS_INTF_METHOD loadResource(VarT *result, tjs_int numparams, VarT **param, WIN32Dialog *self) {
+		if (numparams < 1) return TJS_E_BADPARAMCOUNT;
+		if (param[0]->Type() == tvtString) self->_loadResource(param[0]->GetString());
+		if (numparams >= 2) self->_setResource(param[1]);
+		return TJS_S_OK;
+	}
+protected:
+	void _loadResource(NameT module) {
+		if (!module) return;
+		HMODULE oldres = resource;
+		resource = LoadLibrary(module);
+		if (oldres) FreeLibrary(oldres);
+		if (!resource) ThrowLastError();
+	}
+	void _setResource(VarT *id) {
+		resid.Clear();
+		resid = *id;
+	}
+
+public:
 	// テンプレート作成
 	static tjs_error TJS_INTF_METHOD makeTemplate(VarT *result, tjs_int numparams, VarT **param, WIN32Dialog *self);
 
@@ -200,7 +230,7 @@ public:
 		WIN32Dialog *self = SelfAdaptorT::GetNativeInstance(objthis); 
 		if (!self) return TJS_E_NATIVECLASSCRASH;
 		self->objthis = objthis;
-		*result = self->_open(numparams > 0 ? *(param[0]) : VarT());
+		*result = (tjs_int32)self->_open(numparams > 0 ? *(param[0]) : VarT());
 		return TJS_S_OK;
 	}
 
@@ -217,15 +247,24 @@ protected:
 	// ダイアログを開く
 	int _open(VarT win) {
 		HWND hwnd = 0;
+		HINSTANCE hinst = GetModuleHandle(0);
 		if (win.Type() == tvtObject) {
 			DspT *obj = win.AsObjectNoAddRef();
 			VarT val;
 			obj->PropGet(0, TJS_W("HWND"), NULL, &val, obj);
 			hwnd = (HWND)((tjs_int)(val));
-			HINSTANCE hinst = GetModuleHandle(0);
-			icon = LoadIcon(hinst, IDI_APPLICATION);
+			if (!icon) icon = LoadIcon(hinst, IDI_APPLICATION);
 		}
-		int ret = DialogBoxIndirectParam(GetModuleHandle(0), (LPCDLGTEMPLATE)ref, hwnd, (DLGPROC)DlgProc, (LPARAM)this);
+		int ret;
+		if (!resource) {
+			ret = DialogBoxIndirectParam(hinst, (LPCDLGTEMPLATE)ref, hwnd, (DLGPROC)DlgProc, (LPARAM)this);
+		} else {
+			ret = DialogBoxParamW(  resource,
+									(resid.Type() == tvtString)
+									? (LPWSTR)resid.GetString()
+									: MAKEINTRESOURCE(resid.AsInteger()),
+									hwnd, (DLGPROC)DlgProc, (LPARAM)this);
+		}
 		if (ret == -1) ThrowLastError();
 		return ret;
 	}
@@ -386,6 +425,7 @@ NCB_REGISTER_CLASS(WIN32Dialog) {
 
 	Constructor<iTJSDispatch2*>(0);
 
+	RawCallback(TJS_W("loadResource"), &Class::loadResource, 0);
 	RawCallback(TJS_W("makeTemplate"), &Class::makeTemplate, 0);
 	RawCallback(TJS_W("open"), &Class::open, 0);
 	Method(TJS_W("close"),     &Class::close);

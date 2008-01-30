@@ -1,18 +1,23 @@
 Scripts.execStorage("win32dialog.tjs");
 
-
 class MyDialog extends WIN32DialogEX {
+	// ids
+	var ID_BTN = 1000;
+	var ID_EDT = 1001;
+	var ID_LST = 1002;
+	var ID_CMB = 1003;
+
 	var template = %[
 	helpID:0,
 	exStyle:0, //.WS_EX_TOOLWINDOW,
-	style: DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU | DS_SETFONT,
+	style: DS_MODALFRAME | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU | DS_SETFONT,
 	x:0,
 	y:0,
 	cx:100,
 	cy:100,
 	//menu:"",
 	//windowClass:"",
-	title:"テストダイアログ",
+	title:"テストダイアログ（テンプレート版）",
 	pointSize: 12,
 	weight: FW_NORMAL,
 	italic: false,
@@ -20,10 +25,10 @@ class MyDialog extends WIN32DialogEX {
 	items :
 		[
 			GroupBox("グループ",,  0, 0, 100, 100),
-			PushButton("ボタン１", "btn", 10, 20, 80, 10),
-			EditText(              "edt", 10, 30, 80, 10),
-			ListBox(               "lst", 10, 40, 80, 40),
-			ComboBox(              "cmb", 10, 80, 80, 80, CBS_DROPDOWNLIST|WS_VSCROLL|WS_TABSTOP),
+			PushButton("ボタン１", ID_BTN, 10, 20, 80, 10),
+			EditText(              ID_EDT, 10, 30, 80, 10),
+			ListBox(               ID_LST, 10, 40, 80, 40),
+			ComboBox(              ID_CMB, 10, 80, 80, 80, CBS_DROPDOWNLIST|WS_VSCROLL|WS_TABSTOP),
 		]
 	];
 
@@ -31,41 +36,44 @@ class MyDialog extends WIN32DialogEX {
 	// id : %[ params ]（単指定） または id:[ %[ params1 ], ... %[ paramsN ] ]（順序指定） の形式
 	var initParams = %[
 
-		"cmb" => [ // list -> select の順に設定するので配列で順序を規定して渡す
-			%[  list:
-				[
-					"そのいち",
-					"そのに",
-					"そのさん",
-					"そのよん"
-					]
-				],
-			%[  select: 0 ],
-			],
-
-		"lst" => %[
-		list:
-			[
+		ID_CMB => [ // list -> select の順に設定するので配列で順序を規定して渡す
+			%[  setComboBoxTexts: [
 				"そのいち",
 				"そのに",
 				"そのさん",
-				"そのよん"
+				"そのよん" ]
 				],
+			%[  selectComboBox: 0 ],
+			],
+
+		ID_LST =>
+		%[  setListBoxTexts: [
+			"そのいち",
+			"そのに",
+			"そのさん",
+			"そのよん" ],
 			],
 		];
 	
-	function MyDialog() {
+	function MyDialog(isRes) {
 		super.WIN32DialogEX();
 
-		// テンプレート生成
-		store(template);
-
-		// 初期化パラメータを設定
-		setInitParams(initParams);
+		if (isRes) {
+			// リソース読み込み
+			loadResource("testres.dll", "TEST_DIALOG");
+			// 初期化パラメータを設定（itemMap強制設定）
+			setInitParams(initParams, true);
+		} else {
+			// テンプレート生成
+			store(template);
+			// 初期化パラメータを設定
+			setInitParams(initParams);
+		}
 	}
 	function onInit() {
 		super.onInit(...);
 		setCenterPosition();
+		setItemFocus(ID_BTN);
 	}
 
 	// デバグ用
@@ -75,27 +83,37 @@ class MyDialog extends WIN32DialogEX {
 	}
 }
 
+function createMenuItem(win, caption, onclick) {
+	var menuItem = new MenuItem(win, caption);
+	with (menuItem) {
+		.visible = true;
+		.onClick = onclick incontextof win;
+	}
+	return menuItem;
+}
+function testMyDialog(win, flg) {
+	var dlg = new MyDialog(flg);
+	var rslt = dlg.open(win);
+
+	var ext = [];
+	ext.assign(rslt.items);
+	dm("MyDialog:", rslt.result, ext*);
+}
+
 //Debug.controller.visible=true;
 Debug.console.visible=true;
 
+var dm = Debug.message;
 var win = new Window();
 with (win) {
 	._onCloseQuery = .onCloseQuery;
 	.onCloseQuery = function() { _onCloseQuery(true); } incontextof win;
 	.innerSunken = false;
+	.caption = "WIN32Dialog test script";
 	.setSize(640, 480);
+	.menu.add(createMenuItem(win, "MyDialogTest",     function{ testMyDialog(win, 0); }));
+	.menu.add(createMenuItem(win, "LoadResourceTest", function{ testMyDialog(win, 1); }));
 	.visible = true;
 }
 
-var dlg = new MyDialog();
-var rslt = dlg.open(win);
-
-var dm = Debug.message;
-
-dm("Result", rslt.result);
-
-var ext = [];
-ext.assign(rslt.items);
-for (var i = 0; i < ext.count; i+=2)
-	dm(ext[i], ext[i+1]);
 
