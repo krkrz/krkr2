@@ -46,6 +46,13 @@ class WIN32Dialog {
 	function WIN32Dialog(owner);
 
 	/**
+	 * ダイアログリソースを読み込む
+	 * @param dllfile  dllファイル（ローカルストレージ形式）
+	 * @param resource ダイアログリソース名
+	 */
+	function loadResource(dllfile, resource);
+
+	/**
 	 * ダイアログテンプレートを生成する
 	 * @param header ダイアログテンプレートヘッダ  （WIN32Dialog.Headerクラスのインスタンスであること）
 	 * @param items* ダイアログテンプレートアイテム（WIN32Dialog.Items クラスのインスタンスであること）
@@ -55,7 +62,9 @@ class WIN32Dialog {
 	/**
 	 * ダイアログを開く
 	 * @param window 親ウィンドウ(吉里吉里の Window クラス)，省略時またはvoid時は親なし
-	 * あらかじめ makeTemplate を呼び出してダイアログテンプレートを生成していなければなりません。
+	 * あらかじめ makeTemplate でダイアログテンプレートが生成されているか
+	 * または loadResource でダイアログリソースの読み込んでいること
+	 * makeTemplate より loadResource のデータ優先されるので注意
 	 */
 	function open(window);
 	
@@ -249,7 +258,12 @@ class WIN32DialogEX extends WIN32Dialog {
 	 */
 	function setCenterPosition(win = parent);
 
-
+	/**
+	 * ダイアログリソースを読み込む（オーバーライド）
+	 * @param dllfile  dllファイル（自動的にStorages.getPlacedPath/getLocalName処理される）
+	 * @param resource ダイアログリソース名
+	 */
+	function loadResource(dllfile, resource);
 
 	/**
 	 * 各種コントロールを生成するための関数

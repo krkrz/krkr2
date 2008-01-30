@@ -63,7 +63,7 @@ class WIN32DialogEX extends WIN32Dialog {
 			}
 
 			// itemMap / itemNames を設定
-			dm(i, origID);
+			//dm(i, origID);
 			if (origID != "" && origID != -1) {
 				if (typeof itemMap[origID] == "undefined") itemNames.add(origID);
 				else if (!tmp.multipleid) throw new Exception(@"IDが重複しています: ${i}, ${origID}, ${tmp.id}");
@@ -93,7 +93,10 @@ class WIN32DialogEX extends WIN32Dialog {
 	}
 
 	// 文字列IDを渡せるように
-	function getNumberdId(id)          { return (itemMap[id] !== void) ? itemMap[id].id : id; }
+	function getNumberdId(id) {
+		var item = itemMap[id];
+		return (typeof item == "Object" && typeof item.id != "undefined") ? item.id : id;
+	}
 	function getItem(id)               { return super.getItem(        getNumberdId(id)); }
 	function setItemInt(id, value)     { return super.setItemInt(     getNumberdId(id), value); }
 	function getItemInt(id)            { return super.getItemInt(     getNumberdId(id)); }
@@ -102,9 +105,42 @@ class WIN32DialogEX extends WIN32Dialog {
 	function setItemEnabled(id, value) { return super.setItemEnabled( getNumberdId(id), value); }
 	function getItemEnabled(id)        { return super.getItemEnabled( getNumberdId(id)); }
 	function setItemFocus(id)          { return super.setItemFocus(   getNumberdId(id)); }
-	function sendItemMessage(id, *)    { return super.sendItemMessage(getNumberdId(id), *); }
+	function sendItemMessage(id, msg, *) {
+		id = getNumberdId(id);
+		var sim = super.sendItemMessage;
+		switch (typeof msg) {
+		case "Integer": return sim(id, msg, *);
+		case "String":  return sim(id, this[msg], *);
+		case "Object":  return sim(id, msg.message, msg.wparam, msg.lparam);
+		}
+	}
+
+	// 初期化処理用
+	function setListBoxTexts( *) { return addItemStrings(LB_ADDSTRING, *); }
+	function setComboBoxTexts(*) { return addItemStrings(CB_ADDSTRING, *); }
+	function selectListBox( *)   { return selectItem(LB_SETCURSEL, *); }
+	function selectComboBox(*)   { return selectItem(CB_SETCURSEL, *); }
+
+	function addItemStrings(msg, id, list) {
+		for (var i = 0; i < list.count; i++) sendItemMessage(id, msg, 0, list[i]);
+	}
+	function selectItem(msg, id, value) {
+		sendItemMessage(id, msg, +value, 0) if (msg !== void);
+	}
+
 
 	var parent;
+
+	// リソース読み込み上書き
+	function loadResource(dll, res) {
+		if (dll != "")  with (Storages) {
+			var path = .getPlacedPath(dll);
+			if (path == "") throw new Exception(@"${dll} が見つかりません");
+			dll = .getLocalName(path);
+		} else dll = void;
+		//dm("loadResource", dll, res);
+		super.loadResource(dll, res);
+	}
 
 	// オープン処理上書き
 	function open(win) {
@@ -186,34 +222,23 @@ class WIN32DialogEX extends WIN32Dialog {
 			ext.assign(elm);
 			for (var i = 0; i < ext.count; i+=2) {
 				var key = ext[i], value = ext[i+1];
-				switch (key) {
-				case "integer": setItemInt( id, value); break;
-				case "text":    setItemText(id, value); break;
-				case "message": sendItemMessage(id, value.message, value.wparam, value.lparam); break;
-				case "list":
-					var cls = getItemClass(id);
-					var msg = (cls == LISTBOX) ? LB_ADDSTRING : (cls == COMBOBOX) ? CB_ADDSTRING : void;
-					if (msg !== void)
-						for (var i = 0; i < value.count; i++)
-							sendItemMessage(id, msg, 0, value[i]);
-					break;
-				case "select":
-					var cls = getItemClass(id);
-					var msg = (cls == LISTBOX) ? LB_SETCURSEL : (cls == COMBOBOX) ? CB_SETCURSEL : void;
-					dm("select %x".sprintf(msg), id, value);
-					dm(sendItemMessage(id, msg, +value, 0)) if (msg !== void);
-					break;
-				}
-				
+				//dm("setParams", key, value);
+				if (typeof this[key] == "Object" && this[key] instanceof "Function") this[key](id, value);
+				else throw new Exception(@"不明な initParam: ${key}");
 			}
 		}
 	}
-	function setInitParams(elm) {
+	function setInitParams(elm, forced = false) {
 		var ext = [];
 		ext.assign(elm);
 		for (var i = 0; i < ext.count; i+=2) {
-			var key = ext[i], value = ext[i+1];
-			var item = (key != "") ? itemMap[key] : void;
+			var item, key = ext[i], value = ext[i+1];
+			if (key == "") continue;
+			if (forced && typeof itemMap[key] == "undefined") {
+				itemNames.add(key);
+				itemMap[key] = %[];
+			}
+			var item = itemMap[key];
 			if (item !== void) item.init = value;
 		}
 	}
