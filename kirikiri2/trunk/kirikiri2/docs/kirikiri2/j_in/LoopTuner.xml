@@ -60,7 +60,7 @@
 <ul>
 <li>無圧縮 Wave ( 拡張子は .wav )</li>
 <li>MS-ADPCM ( 拡張子は .wav )</li>
-<li>TCWF ( 拡張子は .tcw )</li>
+<!-- <li>TCWF ( 拡張子は .tcw )</li> -->
 <li>Ogg Vorbis ( 拡張子は .ogg )</li>
 </ul>
 <r/>
