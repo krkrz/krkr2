@@ -885,7 +885,11 @@ void tTJSNI_VideoOverlay::SetLayer2( tTJSNI_BaseLayer *l )
 }
 void tTJSNI_VideoOverlay::SetMode( tTVPVideoOverlayMode m )
 {
-	Mode = m;
+	// ビデオオープン後のモード変更は禁止
+	if( !VideoOverlay )
+	{
+		Mode = m;
+	}
 }
 
 tjs_real tTJSNI_VideoOverlay::GetPlayRate()
