@@ -31,8 +31,6 @@
 
   https://sv.kikyou.info/svn/kirikiri2/
 
-  (サーバの証明書はこちら: http://kikyou.info/sv.kikyou.info.cer.php )
-
 　コミットなどにはユーザ名とパスワードが必要です。どうしても俺はコミットしたい
 んじゃ！という方はご連絡ください。
 
