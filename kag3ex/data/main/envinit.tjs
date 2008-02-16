@@ -145,17 +145,17 @@
     
     "actions" => %[
         "‚¨‚¶‚¬" => %[
-            "module" => LayerJumpOnceActionModule,
+            "module" => "LayerJumpOnceActionModule",
             "vibration" => -50,
             "cycle" => 3000,
             ],
         "‚Ç‚Á‚«‚è" => %[
-            "module" => LayerHeartBeatZoomModule,
+            "module" => "LayerHeartBeatZoomModule",
             "time" => 200,
             "zoom" => 120,
             ],
         "‚Ñ‚å‚ñ‚Ñ‚å‚ñ" => %[
-            "module" => LayerJumpActionModule,
+            "module" => "LayerJumpActionModule",
             "vibration" => 30,
             "cycle" => 1000,
             ],
@@ -166,7 +166,7 @@
 			"nowait" => true,
             ],
         "ƒKƒNƒKƒN" => %[
-            "module" => LayerVibrateActionModule,
+            "module" => "LayerVibrateActionModule",
             "vibration" => 3,
             "waitTime" => 40
             ],
