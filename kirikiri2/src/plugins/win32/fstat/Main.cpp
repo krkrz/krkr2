@@ -498,16 +498,17 @@ private:
 };
 
 NCB_ATTACH_CLASS(StoragesFstat, Storages) {
-	RawCallback("fstat", &StoragesFstat::fstat, TJS_STATICMEMBER);
+	RawCallback("fstat",               &Class::fstat,               TJS_STATICMEMBER);
 	NCB_METHOD(exportFile);
 	NCB_METHOD(deleteFile);
 	NCB_METHOD(dirlist);
 	NCB_METHOD(removeDirectory);
+	NCB_METHOD(createDirectory);
 	NCB_METHOD(setFileAttributes);
 	NCB_METHOD(resetFileAttributes);
 	NCB_METHOD(getFileAttributes);
-	RawCallback("selectDirectory", &Class::selectDirectory, 0);
-	RawCallback("isExistentDirectory", &Class::isExistentDirectory, 0);
+	RawCallback("selectDirectory",     &Class::selectDirectory,     TJS_STATICMEMBER);
+	RawCallback("isExistentDirectory", &Class::isExistentDirectory, TJS_STATICMEMBER);
 };
 
 /**
