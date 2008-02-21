@@ -259,6 +259,19 @@
 </member>
 
 <member>
+	<name>processSpecialTags</name>
+	<type>property</type>
+	<shortdesc>特殊タグを処理するかどうか</shortdesc>
+	<access>r/w</access>
+	<desc>
+		　特殊タグを処理するかどうかを表わします。<r/>
+		　真ならば改行を特殊タグを処理します。デフォルトは真です。<r/>
+		　特殊タグとは  if ignore endif endignore else elsif emb macro endmacro macropop erasemacro jump call return の各タグです。このプロパティが偽の場合、これらのタグはそのまま getNextTag で取得することができます。<r/>
+		　ただし、iscript ～ endscript は常に処理されます。<r/>
+	</desc>
+</member>
+
+<member>
 	<name>debugLevel</name>
 	<type>property</type>
 	<shortdesc>デバッグレベル</shortdesc>
