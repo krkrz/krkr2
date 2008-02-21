@@ -327,6 +327,7 @@ tTJSNI_KAGParser::tTJSNI_KAGParser()
 	Scenario = NULL;
 	Lines = NULL;
 	CurLineStr = NULL;
+	ProcessSpecialTags = true;
 	IgnoreCR = false;
 	DicClear = NULL;
 	DicAssign = NULL;
@@ -1606,7 +1607,10 @@ parse_start:
 
 
 		tjs_int * tag = special_tags_hash.Find(tagname);
-		tagkind = tag?(tSpecialTags)*tag:tag_other;
+		if(ProcessSpecialTags)
+			tagkind = tag?(tSpecialTags)*tag:tag_other;
+		else
+			tagkind = tag_other;
 
 		if(tagkind == tag_macro) RecordingMacroName.Clear();
 
@@ -2459,6 +2463,26 @@ TJS_BEGIN_NATIVE_PROP_DECL(curLineStr)
 	TJS_DENY_NATIVE_PROP_SETTER
 }
 TJS_END_NATIVE_PROP_DECL(curLineStr)
+//----------------------------------------------------------------------
+TJS_BEGIN_NATIVE_PROP_DECL(processSpecialTags)
+{
+	TJS_BEGIN_NATIVE_PROP_GETTER
+	{
+		TJS_GET_NATIVE_INSTANCE(/*var. name*/_this, /*var. type*/tTJSNI_KAGParser);
+		*result = (tjs_int)_this->GetProcessSpecialTags();
+		return TJS_S_OK;
+	}
+	TJS_END_NATIVE_PROP_GETTER
+
+	TJS_BEGIN_NATIVE_PROP_SETTER
+	{
+		TJS_GET_NATIVE_INSTANCE(/*var. name*/_this, /*var. type*/tTJSNI_KAGParser);
+		_this->SetProcessSpecialTags(param->operator bool());
+		return TJS_S_OK;
+	}
+	TJS_END_NATIVE_PROP_SETTER
+}
+TJS_END_NATIVE_PROP_DECL(processSpecialTags)
 //----------------------------------------------------------------------
 TJS_BEGIN_NATIVE_PROP_DECL(ignoreCR)
 {

@@ -224,6 +224,7 @@ private:
 	tjs_int TagLine; // line number of previous tag
 
 	tTVPKAGDebugLevel DebugLevel; // debugging log level
+	bool ProcessSpecialTags; // whether to process special tags
 	bool IgnoreCR; // CR is not interpreted as [r] tag when this is true
 	bool RecordingMacro; // recording a macro
 	ttstr RecordingMacroStr; // recording macro content
@@ -292,6 +293,9 @@ public:
 	tjs_int GetCurLine() const { return CurLine; }
 	tjs_int GetCurPos() const { return CurPos; }
 	const tjs_char* GetCurLineStr() const { return CurLineStr; }
+
+	void SetProcessSpecialTags(bool b) { ProcessSpecialTags = b; }
+	bool GetProcessSpecialTags() const { return ProcessSpecialTags; }
 
 	void SetIgnoreCR(bool b) { IgnoreCR = b; }
 	bool GetIgnoreCR() const { return IgnoreCR; }
