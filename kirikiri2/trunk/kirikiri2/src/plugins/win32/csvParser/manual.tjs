@@ -7,10 +7,12 @@
 class CSVParser {
 
     /**
-     * コンストラクタ
-     * @param target イベントを転送するターゲット。未指定時は自分に送る
+	 * コンストラクタ
+	 * @param target イベントを転送するターゲット。未指定時は自分に送る
+	 * @param separator 区切り文字。デフォルトは ","
+	 * @param newline 中途で区切られた場合のデータでの改行文字。デフォルトは "\r\n"
      */
-    function CSVParser(target);
+	function CSVParser(target, separator, newline);
 
     /**
      * 処理対象テキストの初期化
