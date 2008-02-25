@@ -113,7 +113,9 @@ with (win) {
 	.setSize(640, 480);
 	.menu.add(createMenuItem(win, "MyDialogTest",     function{ testMyDialog(win, 0); }));
 	.menu.add(createMenuItem(win, "LoadResourceTest", function{ testMyDialog(win, 1); }));
+	.menu.add(createMenuItem(win, "MessageBoxTest",   function{
+		with (WIN32Dialog) dm(.messageBox(global.win, "テキスト", "キャプション", .MB_OKCANCEL|.MB_ICONEXCLAMATION|.MB_OWNER_CENTER) == .IDOK);
+	}));
 	.visible = true;
 }
-
 

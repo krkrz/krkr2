@@ -166,6 +166,18 @@ class WIN32Dialog {
 	function onCommand(msg, wparam, lparam);
 
 	/**
+	 * MessageBox のラッパー
+	 * @param window  オーナーwindow（指定しない場合はnullを渡すこと）
+	 * @param text    メッセージテキスト
+	 * @param caption ダイアログボックスのキャプション
+	 * @param type    表示するボタンやアイコンのフラグの組み合わせ
+	 * @return        押されたボタンのID
+	 * type に独自フラグ MB_OWNER_CENTER を設定するとオーナーウィンドウの中央に表示しようとする
+	 * （ただしダイアログが画面外になる場合はデスクトップの中央になる）
+	 */
+	/*static*/function MessageBox(window, text, caption, type);
+
+	/**
 	 * ウィンドウスタイル等の定数
 	 * 詳細は API マニュアルなどを参照のこと
 	 */
@@ -220,6 +232,8 @@ class WIN32Dialog {
 	var SBM_*;
 	// Font Weights
 	var FW_*;
+	// MessageBox arguments
+	var MB_*
 }
 
 /**
