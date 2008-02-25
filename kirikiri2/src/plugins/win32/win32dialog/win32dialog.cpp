@@ -3,6 +3,9 @@
 // CreateDialogIndirect のテーブル書き出し用クラス
 #include "dialog.hpp"
 
+// MessageBoxでダイアログをオーナーセンター表示にする独自フラグ
+#define MB_OWNER_CENTER 0x40000000L
+
 struct Header;
 struct Items;
 
@@ -322,8 +325,57 @@ public:
 		if (prop->HasValue(name, &hint))
 			*out = prop->GetValue(name, PropT::DefsT::Tag<NameT>(), 0, &hint);
 	}
-};
 
+	// メッセージボックス表示
+	static int MessageBox(iTJSDispatch2* obj, NameT text, NameT caption, UINT type) {
+		bool useHook = false;
+		HWND hwnd = 0;
+		if (obj) {
+			VarT val;
+			obj->PropGet(0, TJS_W("HWND"), NULL, &val, obj);
+			hwnd = (HWND)((tjs_int)(val));
+			if (!hwnd) hwnd = TVPGetApplicationWindowHandle();
+		}
+		if (hwnd && MessageBoxHook == 0 && (type & MB_OWNER_CENTER)) {
+			MessageBoxOwnerHWND = hwnd;
+			MessageBoxHook = SetWindowsHookEx(WH_CBT, MessageBoxHookProc,
+											  (HINSTANCE)GetModuleHandle(0),
+											  (DWORD)GetWindowThreadProcessId(TVPGetApplicationWindowHandle(), 0));
+			useHook = true;
+		}
+		int ret = ::MessageBoxW(hwnd, text, caption, (type & ~MB_OWNER_CENTER));
+		if (useHook) {
+			UnhookWindowsHookEx(MessageBoxHook);
+			MessageBoxOwnerHWND = 0;
+			MessageBoxHook = 0;
+		}
+		return ret;
+	}
+	static HHOOK MessageBoxHook;
+	static HWND  MessageBoxOwnerHWND;
+	static LRESULT CALLBACK MessageBoxHookProc(int nCode, WPARAM wParam, LPARAM lParam) {
+		if (nCode == HCBT_ACTIVATE && MessageBoxOwnerHWND != 0) {
+			RECT win, box;
+			GetWindowRect(MessageBoxOwnerHWND, &win);
+			GetWindowRect((HWND)wParam,        &box);
+			int sw = GetSystemMetrics(SM_CXSCREEN), sh = GetSystemMetrics(SM_CYSCREEN);
+			int w = (box.right - box.left), h = (box.bottom - box.top);
+			int x = (win.left + (win.right  - win.left) / 2) - (w / 2);
+			int y = (win.top  + (win.bottom - win.top)  / 2) - (h / 2);
+			if ((x > -w) && (y > -h) && (x < sw) && (y < sh)) {
+				if (x < 0) x = 0;
+				if (y < 0) y = 0;
+				if ((x+w) > sw) x = sw-w;
+				if ((y+h) > sh) y = sh-h;
+				SetWindowPos((HWND)wParam, 0, x, y, 0, 0, SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE);
+			}
+			MessageBoxOwnerHWND = 0;
+		}
+		return CallNextHookEx(MessageBoxHook, nCode, wParam, lParam);
+	}
+};
+HHOOK WIN32Dialog::MessageBoxHook = 0;
+HWND  WIN32Dialog::MessageBoxOwnerHWND = 0;
 
 // ダイアログヘッダ設定クラス
 struct Header : public DialogHeader {
@@ -1007,5 +1059,41 @@ NCB_REGISTER_CLASS(WIN32Dialog) {
 	Variant(TJS_W("LISTBOX"),   0x0083, 0);
 	Variant(TJS_W("SCROLLBAR"), 0x0084, 0);
 	Variant(TJS_W("COMBOBOX"),  0x0085, 0);
+
+	// for MessageBox
+	ENUM(MB_ABORTRETRYIGNORE);
+	ENUM(MB_CANCELTRYCONTINUE);
+	ENUM(MB_HELP);
+	ENUM(MB_OK);
+	ENUM(MB_OKCANCEL);
+	ENUM(MB_RETRYCANCEL);
+	ENUM(MB_YESNO);
+	ENUM(MB_YESNOCANCEL);
+	ENUM(MB_ICONEXCLAMATION);
+	ENUM(MB_ICONWARNING);
+	ENUM(MB_ICONINFORMATION);
+	ENUM(MB_ICONASTERISK);
+	ENUM(MB_ICONQUESTION);
+	ENUM(MB_ICONSTOP);
+	ENUM(MB_ICONERROR);
+	ENUM(MB_ICONHAND);
+	ENUM(MB_DEFBUTTON1);
+	ENUM(MB_DEFBUTTON2);
+	ENUM(MB_DEFBUTTON3);
+	ENUM(MB_DEFBUTTON4);
+	ENUM(MB_APPLMODAL);
+	ENUM(MB_SYSTEMMODAL);
+	ENUM(MB_TASKMODAL);
+	ENUM(MB_DEFAULT_DESKTOP_ONLY);
+	ENUM(MB_RIGHT);
+	ENUM(MB_RTLREADING);
+	ENUM(MB_SETFOREGROUND);
+	ENUM(MB_TOPMOST);
+	ENUM(MB_SERVICE_NOTIFICATION);
+	ENUM(MB_SERVICE_NOTIFICATION_NT3X);
+
+	ENUM(MB_OWNER_CENTER);
+
+	Method(TJS_W("messageBox"), &Class::MessageBox);
 }
 
