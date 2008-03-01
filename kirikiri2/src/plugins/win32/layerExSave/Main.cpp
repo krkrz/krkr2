@@ -1,11 +1,16 @@
 #include "ncbind/ncbind.hpp"
 #include <vector>
 using namespace std;
+#include <process.h>
+
+#define WM_SAVE_TLG_PROGRESS (WM_APP+4)
+#define WM_SAVE_TLG_DONE     (WM_APP+5)
 
 #include <tlg5/slide.h>
-
 #define BLOCK_HEIGHT 4
 //---------------------------------------------------------------------------
+
+typedef bool ProgressFunc(int percent, void *userdata);
 
 // 圧縮処理用
 
@@ -18,7 +23,6 @@ protected:
 	ULONG dataSize;             //< データ領域確保サイズ
 
 public:
-
 	/**
 	 * コンストラクタ
 	 */
@@ -96,8 +100,10 @@ public:
 	 * @param buffer 画像バッファ
 	 * @param pitch 画像データのピッチ
 	 */
-	void compress(int width, int height, const unsigned char *buffer, int pitch) {
+	bool compress(int width, int height, const unsigned char *buffer, int pitch, ProgressFunc *progress=NULL, void *progressData = NULL) {
 
+		bool canceled = false;
+		
 		// ARGB 固定
 		int colors = 4;
 	
@@ -140,6 +146,12 @@ public:
 			//
 			int block = 0;
 			for(int blk_y = 0; blk_y < height; blk_y += BLOCK_HEIGHT, block++) {
+				if (progress) {
+					if (progress(blk_y * 100 / height, progressData)) {
+						canceled = true;
+						break;
+					}
+				}
 				int ylim = blk_y + BLOCK_HEIGHT;
 				if(ylim > height) ylim = height;
 				
@@ -221,10 +233,12 @@ public:
 				blocksizes[block] = blocksize;
 			}
 
-			// ブロックサイズ格納
-			for (int i = 0; i < blockcount; i++) {
-				writeInt32(blocksizes[i], blocksizepos);
-				blocksizepos += 4;
+			if (!canceled) {
+				// ブロックサイズ格納
+				for (int i = 0; i < blockcount; i++) {
+					writeInt32(blocksizes[i], blocksizepos);
+					blocksizepos += 4;
+				}
 			}
 
 		} catch(...) {
@@ -242,6 +256,12 @@ public:
 		}
 		if(compressor) delete compressor;
 		if(blocksizes) delete [] blocksizes;
+
+		if (progress) {
+			progress(100, progressData);
+		}
+		
+		return canceled;
 	}
 
 	/**
@@ -283,14 +303,19 @@ public:
 	 * @param buffer 画像バッファ
 	 * @param pitch 画像データのピッチ
 	 * @param tagsDict タグ情報
+	 * @return キャンセルされたら true
 	 */
-	void compress(int width, int height, const unsigned char *buffer, int pitch, iTJSDispatch2 *tagsDict) {
+	bool compress(int width, int height, const unsigned char *buffer, int pitch, iTJSDispatch2 *tagsDict, ProgressFunc *progress=NULL, void *progressData=NULL) {
 
+		bool canceled = false;
+		
 		// 取得
 		ttstr tags;
-		TagsCaller caller(&tags);
-		tTJSVariantClosure closure(&caller);
-		tagsDict->EnumMembers(TJS_IGNOREPROP, &closure, tagsDict);
+		if (tagsDict) {
+			TagsCaller caller(&tags);
+			tTJSVariantClosure closure(&caller);
+			tagsDict->EnumMembers(TJS_IGNOREPROP, &closure, tagsDict);
+		}
 		
 		ULONG tagslen = tags.GetNarrowStrLen(); 
 		if (tagslen > 0) {
@@ -299,22 +324,23 @@ public:
 			ULONG rawlenpos = cur;
 			cur += 4;
 			// write raw TLG stream
-			compress(width, height, buffer, pitch);
-			// write raw data size
-			writeInt32(cur - rawlenpos - 4, rawlenpos);
-			
-			// write "tags" chunk name
-			writeBuffer("tags", 4);
-			// write chunk size
-			writeInt32(tagslen);
-			// write chunk data
-			resize(cur + tagslen);
-			tags.ToNarrowStr((tjs_nchar*)&data[cur], tagslen);
-			cur += tagslen;
+			if (!(canceled = compress(width, height, buffer, pitch, progress, progressData))) {
+				// write raw data size
+				writeInt32(cur - rawlenpos - 4, rawlenpos);
+				// write "tags" chunk name
+				writeBuffer("tags", 4);
+				// write chunk size
+				writeInt32(tagslen);
+				// write chunk data
+				resize(cur + tagslen);
+				tags.ToNarrowStr((tjs_nchar*)&data[cur], tagslen);
+				cur += tagslen;
+			}
 		} else {
 			// write raw TLG stream
-			compress(width, height, buffer, pitch);
+			canceled = compress(width, height, buffer, pitch, progress, progressData);
 		}
+		return canceled;
 	}
 
 	/**
@@ -330,47 +356,43 @@ public:
 
 //---------------------------------------------------------------------------
 
-#include "ncbind/ncbind.hpp"
+/**
+ * レイヤの内容を TLG5で保存する
+ * @param layer レイヤ
+ * @param filename ファイル名
+ * @return キャンセルされたら true
+ */
+static bool
+saveLayerImageTlg5(iTJSDispatch2 *layer, const tjs_char *filename, iTJSDispatch2 *info, ProgressFunc *progress=NULL, void *progressData=NULL)
+{
+	// レイヤ画像情報
+	tjs_int width, height, pitch;
+	unsigned char* buffer;
+	{
+		tTJSVariant var;
+		layer->PropGet(0, L"imageWidth", NULL, &var, layer);
+		width = (tjs_int)var;
+		layer->PropGet(0, L"imageHeight", NULL, &var, layer);
+		height = (tjs_int)var;
+		layer->PropGet(0, L"mainImageBufferPitch", NULL, &var, layer);
+		pitch = (tjs_int)var;
+		layer->PropGet(0, L"mainImageBuffer", NULL, &var, layer);
+		buffer = (unsigned char*)(tjs_int)var;
+	}
 
-struct layerExSave {
-	static tjs_error TJS_INTF_METHOD saveLayerImageTlg5(tTJSVariant *result,
-														tjs_int numparams,
-														tTJSVariant **param,
-														iTJSDispatch2 *objthis) {
-		if (numparams < 1) return TJS_E_BADPARAMCOUNT;
+	// 圧縮処理実行
+	Compress compress;
+	bool canceled = compress.compress(width, height, buffer, pitch, info, progress, progressData);
 
-		const tjs_char *filename = param[0]->GetString();
+	// 圧縮がキャンセルされていなければファイル保存
+	if (!canceled) {
 		IStream *out = TVPCreateIStream(filename, TJS_BS_WRITE);
 		if (!out) {
 			ttstr msg = filename;
 			msg += L":can't open";
 			TVPThrowExceptionMessage(msg.c_str());
 		}
-
-		// レイヤ画像情報
-		tjs_int width, height, pitch;
-		unsigned char* buffer;
-		{
-			tTJSVariant var;
-			objthis->PropGet(0, L"imageWidth", NULL, &var, objthis);
-			width = (tjs_int)var;
-			objthis->PropGet(0, L"imageHeight", NULL, &var, objthis);
-			height = (tjs_int)var;
-			objthis->PropGet(0, L"mainImageBufferPitch", NULL, &var, objthis);
-			pitch = (tjs_int)var;
-			objthis->PropGet(0, L"mainImageBuffer", NULL, &var, objthis);
-			buffer = (unsigned char*)(tjs_int)var;
-		}
-
-		// 圧縮処理実行
 		try {
-			Compress compress;
-			if (numparams > 1) {
-				// タグ情報つき
-				compress.compress(width, height, buffer, pitch, *param[1]);
-			} else {
-				compress.compress(width, height, buffer, pitch);
-			}
 			// 格納
 			compress.store(out);
 		} catch (...) {
@@ -378,13 +400,313 @@ struct layerExSave {
 			throw;
 		}
 		out->Release();
-		return TJS_S_OK;		
+	}
+	
+	return canceled;
+}
+
+//---------------------------------------------------------------------------
+// ウインドウ拡張
+//---------------------------------------------------------------------------
+
+class WindowSaveImage;
+
+/**
+ * セーブ処理スレッド用情報
+ */
+class SaveInfo {
+
+	friend class WindowSaveImage;
+	
+protected:
+
+	// 初期化変数
+	WindowSaveImage *notify; //< 情報通知先
+	tTJSVariant layer; //< レイヤ
+	tTJSVariant filename; //< ファイル名
+	tTJSVariant info;  //< 保存用タグ情報
+	bool canceled;        //< キャンセル指示
+	tTJSVariant handler;  //< ハンドラ値
+	tTJSVariant progressPercent; //< 進行度合い
+	
+protected:
+	/**
+	 * 現在の状態の通知
+	 * @param percent パーセント
+	 */
+	bool progress(int percent);
+
+	/**
+	 * 呼び出し用
+	 */
+	static bool progressFunc(int percent, void *userData) {
+		SaveInfo *self = (SaveInfo*)userData;
+		return self->progress(percent);
+	}
+	
+	// 経過イベント送信
+	void eventProgress(iTJSDispatch2 *objthis) {
+		tTJSVariant *vars[] = {&handler, &progressPercent, &layer, &filename};
+		objthis->FuncCall(0, L"onSaveLayerImageProgress", NULL, NULL, 4, vars, objthis);
 	}
 
+	// 終了イベント送信
+	void eventDone(iTJSDispatch2 *objthis) {
+		tTJSVariant result = canceled ? 1 : 0;
+		tTJSVariant *vars[] = {&handler, &result, &layer, &filename};
+		objthis->FuncCall(0, L"onSaveLayerImageDone", NULL, NULL, 4, vars, objthis);
+	}
+	
+public:
+	// コンストラクタ
+	SaveInfo(int handler, WindowSaveImage *notify, tTJSVariant layer, const tjs_char *filename, tTJSVariant info)
+		: handler(handler), notify(notify), layer(layer), filename(filename), canceled(false) {}
+	
+	// デストラクタ
+	~SaveInfo() {}
 
+	// ハンドラ取得
+	int getHandler() {
+		return (int)handler;
+	}
+	
+ 	// 処理開始
+	void start();
 
+	// 処理キャンセル
+	void cancel() {
+		canceled = true;
+	}
+
+	// 強制終了
+	void stop() {
+		canceled = true;
+		notify = NULL;
+	}
 };
 
-NCB_ATTACH_CLASS(layerExSave, Layer) {
-	RawCallback("saveLayerImageTlg5", &layerExSave::saveLayerImageTlg5, 0);
+/**
+ * ウインドウにレイヤセーブ機能を拡張
+ */
+class WindowSaveImage {
+
+protected:
+	iTJSDispatch2 *objthis; //< オブジェクト情報の参照
+
+	vector<SaveInfo*> saveinfos; //< セーブ中情報保持用
+
+	// 実行スレッド
+	static void checkThread(void *data) {
+		((SaveInfo*)data)->start();
+	}
+
+	// 経過通知
+	void eventProgress(SaveInfo *sender) {
+		int handler = sender->getHandler();
+		if (saveinfos[handler] == sender) {
+			sender->eventProgress(objthis);
+		}
+	}
+
+	// 終了通知
+	void eventDone(SaveInfo *sender) {
+		int handler = sender->getHandler();
+		if (saveinfos[handler] == sender) {
+			saveinfos[handler] = NULL;
+			sender->eventDone(objthis);
+		}
+		delete sender;
+	}
+
+	/*
+	 * ウインドウイベント処理レシーバ
+	 */
+	static bool __stdcall receiver(void *userdata, tTVPWindowMessage *Message) {
+		if (Message->Msg == WM_SAVE_TLG_PROGRESS) {
+			iTJSDispatch2 *obj = (iTJSDispatch2*)userdata;
+			WindowSaveImage *self = ncbInstanceAdaptor<WindowSaveImage>::GetNativeInstance(obj);
+			if (self) {
+				self->eventProgress((SaveInfo*)Message->WParam);
+			}
+			return true;
+		} else if (Message->Msg == WM_SAVE_TLG_DONE) {
+			iTJSDispatch2 *obj = (iTJSDispatch2*)userdata;
+			WindowSaveImage *self = ncbInstanceAdaptor<WindowSaveImage>::GetNativeInstance(obj);
+			if (self) {
+				self->eventDone((SaveInfo*)Message->WParam);
+			}
+			return true;
+		}
+		return false;
+	}
+
+	// ユーザメッセージレシーバの登録/解除
+	void setReceiver(tTVPWindowMessageReceiver receiver, bool enable) {
+		tTJSVariant mode     = enable ? (tTVInteger)(tjs_int)wrmRegister : (tTVInteger)(tjs_int)wrmUnregister;
+		tTJSVariant proc     = (tTVInteger)(tjs_int)receiver;
+		tTJSVariant userdata = (tTVInteger)(tjs_int)objthis;
+		tTJSVariant *p[] = {&mode, &proc, &userdata};
+		if (objthis->FuncCall(0, L"registerMessageReceiver", NULL, NULL, 4, p, objthis) != TJS_S_OK) {
+			TVPThrowExceptionMessage(L"can't regist user message receiver");
+		}
+	}
+
+public:
+
+	/**
+	 * コンストラクタ
+	 */
+	WindowSaveImage(iTJSDispatch2 *objthis) : objthis(objthis) {
+		setReceiver(receiver, true);
+	}
+
+	/**
+	 * デストラクタ
+	 */
+	~WindowSaveImage() {
+		setReceiver(receiver, false);
+		for (int i=0;i<(int)saveinfos.size();i++) {
+			SaveInfo *saveinfo = saveinfos[i];
+			if (saveinfo) {
+				saveinfo->stop();
+				saveinfos[i] = NULL;
+			}
+		}
+	}
+
+	/**
+	 * メッセージ送信
+	 * @param msg メッセージ
+	 * @param wparam WPARAM
+	 * @param lparam LPARAM
+	 */
+	void postMessage(UINT msg, WPARAM wparam=NULL, LPARAM lparam=NULL) {
+		// ウィンドウハンドルを取得して通知
+		tTJSVariant val;
+		objthis->PropGet(0, TJS_W("HWND"), NULL, &val, objthis);
+		HWND hwnd = reinterpret_cast<HWND>((tjs_int)(val));
+		::PostMessage(hwnd, msg, wparam, lparam);
+	}
+
+	/**
+	 * レイヤセーブ開始
+	 * @param layer レイヤ
+	 * @param filename ファイル名
+	 * @param info タグ情報
+	 */
+	int startSaveLayerImage(tTJSVariant layer, const tjs_char *filename, tTJSVariant info) {
+		int handler = saveinfos.size();
+		for (int i=0;i<(int)saveinfos.size();i++) {
+			if (saveinfos[i] == NULL) {
+				handler = i;
+				break;
+			}
+		}
+		if (handler >= (int)saveinfos.size()) {
+			saveinfos.resize(handler + 1);
+		}
+		SaveInfo *saveInfo = new SaveInfo(handler, this, layer, filename, info);
+		saveinfos[handler] = saveInfo;
+		_beginthread(checkThread, 0, saveInfo);
+		return handler;
+	}
+	
+	/**
+	 * レイヤセーブのキャンセル
+	 */
+	void cancelSaveLayerImage(int handler) {
+		if (handler < (int)saveinfos.size() && saveinfos[handler] != NULL) {
+			saveinfos[handler]->cancel();
+		}
+	}
+
+	/**
+	 * レイヤセーブの中止
+	 */
+	void stopSaveLayerImage(int handler) {
+		if (handler < (int)saveinfos.size() && saveinfos[handler] != NULL) {
+			saveinfos[handler]->stop();
+			saveinfos[handler] = NULL;
+		}
+	}
+};
+
+
+/**
+ * 現在の状態の通知
+ * @param percent パーセント
+ */
+bool
+SaveInfo::progress(int percent)
+{
+	if ((int)progressPercent != percent) {
+		progressPercent = percent;
+		if (notify) {
+			notify->postMessage(WM_SAVE_TLG_PROGRESS, (WPARAM)this);
+			Sleep(0);
+		}
+	}
+	return canceled;
 }
+
+/*
+ * 保存処理開始
+ */
+void
+SaveInfo::start()
+{
+	// 画像をセーブ
+	saveLayerImageTlg5(layer.AsObjectNoAddRef(), // layer
+					   filename.GetString(),
+					   info.Type() == tvtObject ? info.AsObjectNoAddRef() : NULL, // info
+					   progressFunc, this);
+	// 完了通知
+	if (notify) {
+		notify->postMessage(WM_SAVE_TLG_DONE, (WPARAM)this);
+		Sleep(0);
+	} else {
+		delete this;
+	}
+}
+
+//---------------------------------------------------------------------------
+
+// インスタンスゲッタ
+NCB_GET_INSTANCE_HOOK(WindowSaveImage)
+{
+	NCB_INSTANCE_GETTER(objthis) { // objthis を iTJSDispatch2* 型の引数とする
+		ClassT* obj = GetNativeInstance(objthis);	// ネイティブインスタンスポインタ取得
+		if (!obj) {
+			obj = new ClassT(objthis);				// ない場合は生成する
+			SetNativeInstance(objthis, obj);		// objthis に obj をネイティブインスタンスとして登録する
+		}
+		return obj;
+	}
+};
+
+NCB_ATTACH_CLASS_WITH_HOOK(WindowSaveImage, Window) {
+	NCB_METHOD(startSaveLayerImage);
+	NCB_METHOD(cancelSaveLayerImage);
+	NCB_METHOD(stopSaveLayerImage);
+};
+
+//---------------------------------------------------------------------------
+// レイヤ拡張
+//---------------------------------------------------------------------------
+
+/**
+ * TLG画像保存
+ */
+static tjs_error TJS_INTF_METHOD saveLayerImageTlg5Func(tTJSVariant *result,
+														tjs_int numparams,
+														tTJSVariant **param,
+														iTJSDispatch2 *objthis) {
+	if (numparams < 1) return TJS_E_BADPARAMCOUNT;
+	saveLayerImageTlg5(objthis, // layer
+					   param[0]->GetString(),  // filename
+					   numparams > 1 ? param[1]->AsObjectNoAddRef() : NULL // info
+					   );
+	return TJS_S_OK;
+};
+
+NCB_ATTACH_FUNCTION(saveLayerImageTlg5, Layer, saveLayerImageTlg5Func);
