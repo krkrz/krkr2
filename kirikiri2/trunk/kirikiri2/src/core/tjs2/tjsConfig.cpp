@@ -253,11 +253,12 @@ size_t TJS_wcstombs(tjs_nchar *s, const tjs_char *pwcs, size_t n)
 	{
 		// Try converting to multibyte. Here assumes s is large enough to
 		// store the result.
-		size_t count = WideCharToMultiByte(CP_ACP, WC_COMPOSITECHECK|WC_SEPCHARS,
-			pwcs, -1, s, n, NULL, &useddefault);
+		size_t pwcs_len = TJS_strlen(pwcs);
+		size_t count = WideCharToMultiByte(CP_ACP, 0,
+			pwcs, pwcs_len, s, n, NULL, &useddefault);
 
 		if(count != 0/* && !useddefault*/)
-			return count - 1;
+			return count;
 
 		if(/*useddefault || */GetLastError () != ERROR_INSUFFICIENT_BUFFER)
 			return (size_t) -1; // may a conversion error
@@ -287,7 +288,7 @@ size_t TJS_wcstombs(tjs_nchar *s, const tjs_char *pwcs, size_t n)
 	else
 	{
 		// Returns the buffer size to store the result
-		int count = WideCharToMultiByte(CP_ACP, WC_COMPOSITECHECK|WC_SEPCHARS,
+		int count = WideCharToMultiByte(CP_ACP, 0,
 			pwcs, -1, NULL, 0, NULL, &useddefault);
 		if(count == 0/* || useddefault*/) return (size_t) -1;
 		return count - 1;
@@ -331,7 +332,7 @@ int TJS_wctomb(tjs_nchar *s, tjs_char wc)
 {
 	if(!s) return 0;
 	BOOL useddefault = FALSE;
-	int size = WideCharToMultiByte(CP_ACP, WC_COMPOSITECHECK|WC_SEPCHARS, &wc, 1, s,
+	int size = WideCharToMultiByte(CP_ACP, 0, &wc, 1, s,
 		TJS_MB_MAX_CHARLEN, NULL, &useddefault);
 //	if(useddefault) return -1;
 	if(size == 0) return -1;
