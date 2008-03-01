@@ -6,6 +6,11 @@ using namespace std;
 #define WM_SAVE_TLG_PROGRESS (WM_APP+4)
 #define WM_SAVE_TLG_DONE     (WM_APP+5)
 
+// Layer クラスメンバ
+static iTJSDispatch2 *layerClass = NULL;         // Layer のクラスオブジェクト
+static iTJSDispatch2 *layerAssignImages = NULL;  // Layer.setTime メソッド
+
+
 #include <tlg5/slide.h>
 #define BLOCK_HEIGHT 4
 //---------------------------------------------------------------------------
@@ -605,7 +610,37 @@ public:
 		if (handler >= (int)saveinfos.size()) {
 			saveinfos.resize(handler + 1);
 		}
-		SaveInfo *saveInfo = new SaveInfo(handler, this, layer, filename, info);
+
+		// 保存用にレイヤを複製する
+		tTJSVariant newLayer;
+		{
+			// 新しいレイヤを生成
+			tTJSVariant window(objthis, objthis);
+			tTJSVariant primaryLayer;
+			objthis->PropGet(0, L"primaryLayer", NULL, &primaryLayer, objthis);
+			tTJSVariant *vars[] = {&window, &primaryLayer};
+			iTJSDispatch2 *obj;
+			if (TJS_SUCCEEDED(layerClass->CreateNew(0, NULL, NULL, &obj, 2, vars, objthis))) {
+
+				// 名前づけ
+				tTJSVariant name = "saveLayer:";
+				name +=filename;
+				obj->PropSet(0, L"name", NULL, &name, obj);
+
+				// 元レイヤの画像を複製
+				tTJSVariant *param[] = {&layer};
+				if (TJS_SUCCEEDED(layerAssignImages->FuncCall(0, NULL, NULL, NULL, 1, param, obj))) {
+					newLayer = tTJSVariant(obj, obj);
+					obj->Release();
+				} else {
+					obj->Release();
+					TVPThrowExceptionMessage(L"保存処理用レイヤへの画像の複製に失敗しました");
+				}
+			} else {
+				TVPThrowExceptionMessage(L"保存処理用レイヤの生成に失敗しました");
+			}
+		}
+		SaveInfo *saveInfo = new SaveInfo(handler, this, newLayer, filename, info);
 		saveinfos[handler] = saveInfo;
 		_beginthread(checkThread, 0, saveInfo);
 		return handler;
@@ -710,3 +745,30 @@ static tjs_error TJS_INTF_METHOD saveLayerImageTlg5Func(tTJSVariant *result,
 };
 
 NCB_ATTACH_FUNCTION(saveLayerImageTlg5, Layer, saveLayerImageTlg5Func);
+
+
+/**
+ * 登録処理後
+ */
+static void PostRegistCallback()
+{
+	tTJSVariant var;
+	TVPExecuteExpression(TJS_W("Layer"), &var);
+	layerClass = var.AsObject();
+	TVPExecuteExpression(TJS_W("Layer.assignImages"), &var);
+	layerAssignImages = var.AsObject();
+}
+
+#define RELEASE(name) name->Release();name= NULL
+
+/**
+ * 開放処理前
+ */
+static void PreUnregistCallback()
+{
+	RELEASE(layerClass);
+	RELEASE(layerAssignImages);
+}
+
+NCB_POST_REGIST_CALLBACK(PostRegistCallback);
+NCB_PRE_UNREGIST_CALLBACK(PreUnregistCallback);
