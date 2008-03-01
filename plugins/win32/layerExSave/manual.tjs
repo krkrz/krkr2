@@ -2,12 +2,60 @@
  * 擬似コードによるマニュアル
  */
 
+/**
+ * ウインドウ拡張
+ */
+class Window {
+
+	/**
+	 * TLG5 形式での画像の保存の開始
+	 * @param layer 保存対象レイヤ
+	 * @param filename ファイル名
+	 * @param tags タグ情報
+	 * @return ハンドラ
+	 * 注意事項：処理中にレイヤのサイズを変更しないでください
+	 */
+	function startSaveLayerImage(layer, filename, tags);
+
+	/**
+	 * 画像保存キャンセル
+	 * @param handler ハンドラ
+	 */
+	function cancelSaveLayerImage(handler);
+
+	/**
+	 * 画像保存中止（中止した場合は終了イベントが来ません）
+	 * @param handler ハンドラ
+	 */
+	function stopSaveLayerImage(handler);
+
+	/**
+	 * 保存処理実行中イベント
+	 * @param handler ハンドラ
+	 * @param progress 進行度合い(%表記)
+	 * @param layer レイヤ
+	 * @param filename ファイル名
+	 */
+	function onSaveLayerImageProgress(handler, progress, layer, filename);
+
+	/**
+	 * 保存処理実行完了イベント
+	 * @param handler ハンドラ
+	 * @param canceled キャンセルされたら1
+	 * @param layer
+	 * @param filename ファイル名
+	 */
+	function onSaveLayerImageDone(handler, canceled, layer, filename);
+}
+
+/**
+ * レイヤ拡張
+ */
 class Layer {
 	/**
-	 * TLG5 形式での画像の保存
+	 * TLG5 形式での画像の保存。注意点:データの保存が終わるまで処理が帰りません。
 	 * @param filename ファイル名
 	 * @param tags タグ情報
 	 */
-	void saveLayerImageTlg5(filename, tags=void);
+	function saveLayerImageTlg5(filename, tags=void);
 };
-
