@@ -207,6 +207,8 @@ class KAGWindow extends Window
 	/*C*/var cursorWaitingClick = crArrow;  // クリック待ちのマウスカーソル
 	/*C*/var cursorDraggable = crSizeAll; // ドラッグ可能な場所用のマウスカーソル
 
+	/*C*/var supportReadingKey = VK_SPACE; // 追加の読み進みキー
+
 	/*C*/var startAnchorEnabled = false; // 「最初に戻る」が使用可能かどうか
 
 	/*C*/var storeEnabled = true; // ユーザが「栞をはさむ」メニューにアクセス可能かどうか
@@ -1228,6 +1230,7 @@ class KAGWindow extends Window
 		f.cursorPointed = cursorPointed;
 		f.cursorWaitingClick = cursorWaitingClick;
 		f.cursorDraggable = cursorDraggable;
+		f.supportReadingKey = supportReadingKey;
 		f.startAnchorEnabled = startAnchorEnabled;
 		f.storeEnabled = storeEnabled;
 		f.restoreEnabled = restoreEnabled;
@@ -1356,6 +1359,7 @@ class KAGWindow extends Window
 		cursorPointed = f.cursorPointed if f.cursorPointed !== void;
 		cursorWaitingClick = f.cursorWaitingClick if f.cursorWaitingClick !== void;
 		cursorDraggable = f.cursorDraggable if f.cursorDraggable !== void;
+		supportReadingKey = f.supportReadingKey if f.supportReadingKey !== void;
 		startAnchorEnabled = f.startAnchorEnabled if f.startAnchorEnabled !== void;
 		storeEnabled = f.storeEnabled if f.storeEnabled !== void;
 		restoreEnabled = f.restoreEnabled if f.restoreEnabled !== void;
@@ -3882,13 +3886,13 @@ class KAGWindow extends Window
 	{
 		// key が読みすすみのキー ( スペースキーかReturnキー ) の場合は
 		// キーを処理し、true を返す。そうでなければ false を返す
-		if(key == VK_RETURN || key == VK_SPACE)
+		if(key == VK_RETURN || key == supportReadingKey)
 		{
 			// キーがメッセージキューに溜まってる場合があるので
 			// 実際にそのキーが押されているのかどうかを
 			// getKeyState を用いて調べる
 			var sg = getKeyState;
-			if(sg(VK_RETURN) || sg(VK_SPACE))
+			if(sg(VK_RETURN) || sg(supportReadingKey))
 			{
 				// キーが押されてた
 				if((shift & ssRepeat) && clickSkipEnabled)
@@ -3916,14 +3920,14 @@ class KAGWindow extends Window
 	{
 		// スキップを解除する要因となるキーあるいはマウスボタンが押されているか
 		var sg = getKeyState;
-		return sg(VK_RETURN) || sg(VK_SPACE) || sg(VK_LBUTTON);
+		return sg(VK_RETURN) || sg(supportReadingKey) || sg(VK_LBUTTON);
 	}
 
 	function skipKeyPressing()
 	{
-		// VK_RETURN あるいは VK_SPACE が押されているかどうか
+		// VK_RETURN あるいは supportReadingKey が押されているかどうか
 		var sg = getKeyState;
-		return sg(VK_RETURN) || sg(VK_SPACE);
+		return sg(VK_RETURN) || sg(supportReadingKey);
 	}
 
 	function goBackByKey()
