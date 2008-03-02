@@ -125,7 +125,7 @@
 <dd>
 　ActiveX コントロール吉里吉里のウィンドウに貼り付けたり、OLE オートメーション可能なオブジェクトを吉里吉里から操作するためのプラグインです。<r/>
 　これを使用すると、たとえば吉里吉里のウィンドウに Web ブラウザ (Internet Explorer) や メディアプレーヤを貼り付けたり、Excel を吉里吉里から操作したりすることができます。<r/>
-　使用方法については 吉里吉里ソースの <a href="https://sv.kikyou.info/trac/kirikiri/browser/kirikiri2/trunk/kirikiri2/src/plugins/win32/krkr_win32ole/manual.tjs">kirikiri2/src/plugins/win32/krkr_win32ole/manual.tjs</a> および <a href="https://sv.kikyou.info/trac/kirikiri/browser/kirikiri2/trunk/kirikiri2/tests/win32ole">kirikiri2/trunk/kirikiri2/tests/win32ole</a> ディレクトリを参照してください。<r/>
+　使用方法については 吉里吉里ソースの <a href="https://sv.kikyou.info/trac/kirikiri/browser/kirikiri2/trunk/kirikiri2/src/plugins/win32/win32ole/manual.tjs">kirikiri2/trunk/kirikiri2/src/plugins/win32/win32ole/manual.tjs</a> および <a href="https://sv.kikyou.info/trac/kirikiri/browser/kirikiri2/trunk/kirikiri2/tests/win32ole">kirikiri2/trunk/kirikiri2/tests/win32ole</a> ディレクトリを参照してください。<r/>
 </dd>
 
 <dt><kw>wsh.dll</kw> (experimental)</dt>
