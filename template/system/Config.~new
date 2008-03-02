@@ -186,6 +186,15 @@ function KAGWindow_config()
 ;cursorDraggable = crSizeAll; // メッセージレイヤをドラッグ可能なとき
 
 
+// ◆ 追加の読み進みキーコード
+// VK_RETURN は指定しても意味がありません。
+// このキーは常に読み進みのキーとして処理します。
+// ここに指定できる値の一覧は以下のＵＲＬを参照してください。
+// http://devdoc.kikyou.info/tvp/docs/kr2doc/contents/KeyCodes.html
+// デフォルトは VK_SPACE です。
+;supportReadingKey = VK_SPACE;
+
+
 // ◆ ラベル記録
 // 自動的に「読んだ」ラベルを記録するかどうかを指定します。
 // この設定が false でなく true になっていると、ラベルを読むごとにシステム
