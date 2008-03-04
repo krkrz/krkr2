@@ -178,6 +178,21 @@ class WIN32Dialog {
 	/*static*/function MessageBox(window, text, caption, type);
 
 	/**
+	 * モードレスダイアログ用のフラグ
+	 * trueならばモードレス状態でダイアログを開きます。
+	 * モードレスではダイアログのstyleにWS_VISIBLEを指定しない場合は
+	 * open()時に自動で表示されないので注意してください。
+	 */
+	property modeless { getter; setter; }
+
+	/**
+	 * ShowWindow のラッパー
+	 * @param nCmdShow SW_*フラグ
+	 * 主にモードレスダイアログ用です。
+	 */
+	function show(nCmdShow);
+
+	/**
 	 * ウィンドウスタイル等の定数
 	 * 詳細は API マニュアルなどを参照のこと
 	 */
@@ -232,8 +247,10 @@ class WIN32Dialog {
 	var SBM_*;
 	// Font Weights
 	var FW_*;
+	// ShowWindow options
+	var SW_*;
 	// MessageBox arguments
-	var MB_*
+	var MB_*;
 }
 
 /**
