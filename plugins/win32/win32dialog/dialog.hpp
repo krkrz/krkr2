@@ -26,18 +26,18 @@ struct DialogTemplate {
 	static inline void WriteWord(BYTE* &p, SizeT &c, WORD v) {
 		c += 2;
 		if (p) {
-			*p++ =  v     & 0xFF;
-			*p++ = (v>>8) & 0xFF;
+			*p++ = (BYTE)( v     & 0xFF);
+			*p++ = (BYTE)((v>>8) & 0xFF);
 		}
 	}
 	// 4バイト書き出し
 	static inline void WriteDWord(BYTE* &p, SizeT &c, DWORD v) {
 		c += 4;
 		if (p) {
-			*p++ =  v      & 0xFF;
-			*p++ = (v>> 8) & 0xFF;
-			*p++ = (v>>16) & 0xFF;
-			*p++ = (v>>24) & 0xFF;
+			*p++ = (BYTE)( v      & 0xFF);
+			*p++ = (BYTE)((v>> 8) & 0xFF);
+			*p++ = (BYTE)((v>>16) & 0xFF);
+			*p++ = (BYTE)((v>>24) & 0xFF);
 		}
 	}
 
