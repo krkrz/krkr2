@@ -30,7 +30,7 @@ private:
 	HICON icon;
 	HMODULE resource;
 	DspT *owner, *objthis, *callbacks;
-	bool getCallbacks;
+	bool modeless;
 	BYTE *buf;
 	BYTE *ref;
 	VarT resid;
@@ -43,7 +43,7 @@ public:
 			owner(_owner),
 			objthis(0),
 			callbacks(0),
-			getCallbacks(false),
+			modeless(false),
 			buf(0)
 	{}
 
@@ -238,8 +238,21 @@ public:
 	}
 
 	void close(DWORD id) {
-		if (dialogHWnd) EndDialog(dialogHWnd, id);
+		if (dialogHWnd) {
+			if (!modeless) EndDialog(dialogHWnd, id);
+			else DestroyWindow(dialogHWnd);
+		}
 		dialogHWnd = 0;
+	}
+
+	bool getModeless() const { return modeless; }
+	void setModeless(bool b) {
+		if (IsValid()) TVPThrowExceptionMessage(TJS_W("Dialog is opened."));
+		modeless = b;
+	}
+	void show(int nCmdShow) {
+		if (!IsValid()) TVPThrowExceptionMessage(TJS_W("Dialog is not opened."));
+		ShowWindow(dialogHWnd, nCmdShow);
 	}
 
 	// stubs
@@ -259,14 +272,18 @@ protected:
 			if (!icon) icon = LoadIcon(hinst, IDI_APPLICATION);
 		}
 		int ret;
-		if (!resource) {
-			ret = DialogBoxIndirectParam(hinst, (LPCDLGTEMPLATE)ref, hwnd, (DLGPROC)DlgProc, (LPARAM)this);
+		LPCTSTR resname = 0;
+		if (resource) resname = (resid.Type() == tvtString) ? (LPWSTR)resid.GetString() : MAKEINTRESOURCE(resid.AsInteger());
+
+		if (!modeless) {
+			ret = resource ?
+				DialogBoxParamW(resource, resname, hwnd, (DLGPROC)DlgProc, (LPARAM)this) :
+			/**/DialogBoxIndirectParam(hinst, (LPCDLGTEMPLATE)ref, hwnd, (DLGPROC)DlgProc, (LPARAM)this);
 		} else {
-			ret = DialogBoxParamW(  resource,
-									(resid.Type() == tvtString)
-									? (LPWSTR)resid.GetString()
-									: MAKEINTRESOURCE(resid.AsInteger()),
-									hwnd, (DLGPROC)DlgProc, (LPARAM)this);
+			dialogHWnd = resource ?
+				CreateDialogParam(resource, resname, hwnd, (DLGPROC)DlgProc, (LPARAM)this) :
+			/**/CreateDialogIndirectParam(hinst, (LPCDLGTEMPLATE)ref, hwnd, (DLGPROC)DlgProc, (LPARAM)this);
+			ret = dialogHWnd ? 0 : -1;
 		}
 		if (ret == -1) ThrowLastError();
 		return ret;
@@ -502,6 +519,9 @@ NCB_REGISTER_CLASS(WIN32Dialog) {
 
 	Method(TJS_W("onInit"),    &Class::onInit);
 	Method(TJS_W("onCommand"), &Class::onCommand);
+
+	Method(TJS_W("show"),            &Class::show);
+	Property(TJS_W("modeless"),      &Class::getModeless, &Class::setModeless);
 
 	// íËêîíËã`
 
@@ -1052,6 +1072,22 @@ NCB_REGISTER_CLASS(WIN32Dialog) {
 	ENUM(FW_EXTRABOLD);
 	ENUM(FW_HEAVY);
 
+	// ShowWindow options
+	ENUM(SW_HIDE);
+	ENUM(SW_SHOWNORMAL);
+	ENUM(SW_NORMAL);
+	ENUM(SW_SHOWMINIMIZED);
+	ENUM(SW_SHOWMAXIMIZED);
+	ENUM(SW_MAXIMIZE);
+	ENUM(SW_SHOWNOACTIVATE);
+	ENUM(SW_SHOW);
+	ENUM(SW_MINIMIZE);
+	ENUM(SW_SHOWMINNOACTIVE);
+	ENUM(SW_SHOWNA);
+	ENUM(SW_RESTORE);
+	ENUM(SW_SHOWDEFAULT);
+	ENUM(SW_FORCEMINIMIZE);
+
 	// Control classes
 	Variant(TJS_W("BUTTON"),    0x0080, 0);
 	Variant(TJS_W("EDIT"),      0x0081, 0);
@@ -1089,8 +1125,12 @@ NCB_REGISTER_CLASS(WIN32Dialog) {
 	ENUM(MB_RTLREADING);
 	ENUM(MB_SETFOREGROUND);
 	ENUM(MB_TOPMOST);
+#ifdef   MB_SERVICE_NOTIFICATION
 	ENUM(MB_SERVICE_NOTIFICATION);
+#endif
+#ifdef   MB_SERVICE_NOTIFICATION_NT3X
 	ENUM(MB_SERVICE_NOTIFICATION_NT3X);
+#endif
 
 	ENUM(MB_OWNER_CENTER);
 

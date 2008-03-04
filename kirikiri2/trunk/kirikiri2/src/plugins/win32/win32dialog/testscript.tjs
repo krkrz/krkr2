@@ -99,6 +99,14 @@ function testMyDialog(win, flg) {
 	ext.assign(rslt.items);
 	dm("MyDialog:", rslt.result, ext*);
 }
+var modelessDialogs = %[];
+function testModeless(win, flg) {
+	var dlg = new MyDialog(flg);
+	modelessDialogs[dlg] = dlg;
+	dlg.modeless = true;
+	dlg.open(win);
+	dlg.show(WIN32Dialog.SW_SHOW); // style に WS_VISIBLE がない場合は自動で表示されない
+}
 
 //Debug.controller.visible=true;
 Debug.console.visible=true;
@@ -111,9 +119,13 @@ with (win) {
 	.innerSunken = false;
 	.caption = "WIN32Dialog test script";
 	.setSize(640, 480);
-	.menu.add(createMenuItem(win, "MyDialogTest",     function{ testMyDialog(win, 0); }));
-	.menu.add(createMenuItem(win, "LoadResourceTest", function{ testMyDialog(win, 1); }));
-	.menu.add(createMenuItem(win, "MessageBoxTest",   function{
+	.menu.add((.testMenus = new MenuItem(win, "Tests")));
+	var add = .testMenus.add;
+	add(createMenuItem(win, "MyDialogTest",       function{ testMyDialog(win, 0); }));
+	add(createMenuItem(win, "LoadResourceTest",   function{ testMyDialog(win, 1); }));
+	add(createMenuItem(win, "ModeLess::MyDialog", function{ testModeless(win, 0); }));
+	add(createMenuItem(win, "ModeLess::LoadRes",  function{ testModeless(win, 1); }));
+	add(createMenuItem(win, "MessageBoxTest",     function{
 		with (WIN32Dialog) dm(.messageBox(global.win, "テキスト", "キャプション", .MB_OKCANCEL|.MB_ICONEXCLAMATION|.MB_OWNER_CENTER) == .IDOK);
 	}));
 	.visible = true;
