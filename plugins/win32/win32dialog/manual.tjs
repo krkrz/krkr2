@@ -147,7 +147,7 @@ class WIN32Dialog {
 
 	/**
 	 * WM_INITDIALOG のコールバック
-	 * @param msg    DlgProc のメッセージ
+	 * @param msg    DlgProc のメッセージ == WM_INITDIALOG
 	 * @param wparam DlgProc のWPARAM
 	 * @param lparam DlgProc のLPARAM
 	 * コールバックはownerに対して呼ばれるので注意してください
@@ -157,13 +157,36 @@ class WIN32Dialog {
 
 	/**
 	 * WM_COMMAND のコールバック
-	 * @param msg    DlgProc のメッセージ
+	 * @param msg    DlgProc のメッセージ == WM_COMMAND
 	 * @param wparam DlgProc のWPARAM
 	 * @param lparam DlgProc のLPARAM
 	 * コールバックはownerに対して呼ばれるので注意してください。
 	 * owner.onCommandが未定義なら何もしません。
 	 */
 	function onCommand(msg, wparam, lparam);
+
+	/**
+	 * WM_HSCROLL のコールバック
+	 * @param msg    DlgProc のメッセージ == WM_HSCROLL
+	 * @param wparam DlgProc のWPARAM
+	 * @param lparam DlgProc のLPARAM
+	 */
+	function onHScroll(msg, wparam, lparam);
+
+	/**
+	 * WM_VSCROLL のコールバック
+	 * @param msg    DlgProc のメッセージ == WM_VSCROLL
+	 * @param wparam DlgProc のWPARAM
+	 * @param lparam DlgProc のLPARAM
+	 */
+	function onHScroll(msg, wparam, lparam);
+
+	/**
+	 * WM_NOTIFY のコールバック
+	 * @param wparam DlgProc のWPARAM
+	 * @param notify HMHDRアクセス用クラス
+	 */
+	function onNotify(msg, wparam, lparam);
 
 	/**
 	 * MessageBox のラッパー
@@ -191,6 +214,14 @@ class WIN32Dialog {
 	 * 主にモードレスダイアログ用です。
 	 */
 	function show(nCmdShow);
+
+	/**
+	 * InitCommonControls, InitCommonControlsEx のラッパー
+	 * @param icc 初期化フラグ ICC_*(～Exのみ)
+	 * @return    成功したか(～Exのみ)
+	 */
+	function InitCommonControls();
+	function InitCommonControlsEx(icc);
 
 	/**
 	 * ウィンドウスタイル等の定数
@@ -251,6 +282,8 @@ class WIN32Dialog {
 	var SW_*;
 	// MessageBox arguments
 	var MB_*;
+	// InitCommonControlsEx parameters
+	var ICC_*;
 }
 
 /**

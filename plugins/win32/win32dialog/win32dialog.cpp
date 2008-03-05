@@ -1,4 +1,5 @@
 #include "ncbind.hpp"
+#include <commctrl.h>
 
 // CreateDialogIndirect のテーブル書き出し用クラス
 #include "dialog.hpp"
@@ -8,6 +9,21 @@
 
 struct Header;
 struct Items;
+
+// NMHDR アクセス用クラス
+struct NotifyAccessor {
+	NotifyAccessor() : ptr(0), ref(0) {}
+	NotifyAccessor(NMHDR const *p) : ptr((BYTE const *)p), ref(p) {}
+	tjs_int64 GetHWndFrom() const { return (tjs_int64)(ref->hwndFrom); }
+	UINT      GetIdFrom()   const { return ref->idFrom; }
+	UINT      GetCode()     const { return ref->code; }
+	inline BYTE  GetByte( int ofs) const { return ptr[ofs]; }
+	inline WORD  GetWord( int ofs) const { return ( WORD)GetByte(ofs) | ((( WORD)GetByte(ofs+1))<<8);  }
+	inline DWORD GetDWord(int ofs) const { return (DWORD)GetWord(ofs) | (((DWORD)GetWord(ofs+2))<<16); }
+private:
+	BYTE const *ptr;
+	NMHDR const* ref;
+};
 
 class WIN32Dialog {
 public:
@@ -29,7 +45,7 @@ private:
 	HWND dialogHWnd;
 	HICON icon;
 	HMODULE resource;
-	DspT *owner, *objthis, *callbacks;
+	DspT *owner, *objthis;
 	bool modeless;
 	BYTE *buf;
 	BYTE *ref;
@@ -42,7 +58,6 @@ public:
 			resource(0),
 			owner(_owner),
 			objthis(0),
-			callbacks(0),
 			modeless(false),
 			buf(0)
 	{}
@@ -50,9 +65,6 @@ public:
 	// destructor
 	virtual ~WIN32Dialog() {
 		//TVPAddLog(TJS_W("# WIN32Dialog.finalize()"));
-		if (callbacks) callbacks->Release();
-		callbacks = 0;
-
 		if (buf) TVP_free(buf);
 		buf = 0;
 
@@ -68,7 +80,7 @@ public:
 	}
 
 	// コールバック呼び出し
-	LRESULT callback(tjs_char const *event, UINT msg, WPARAM wparam, LPARAM lparam) {
+	LRESULT callback(NameT event, tjs_int numparams, tTJSVariant **params) {
 		DspT *obj = owner ? owner : objthis;
 		if (!obj) return FALSE;
 
@@ -77,13 +89,27 @@ public:
 		tTJSVariant rslt;
 		if (TJS_FAILED(obj->PropGet(TJS_MEMBERMUSTEXIST, event, &hint, &rslt, obj))) return FALSE;
 
-		// 引数を生成してコールバックを呼ぶ
+		// 引数を渡してコールバックを呼ぶ
 		rslt.Clear();
+		obj->FuncCall(0, event, 0, &rslt, numparams, params, obj);
+		return (rslt.AsInteger() != 0) ? TRUE : FALSE;
+	}
+	// 通常コールバック
+	LRESULT callback(NameT event, UINT msg, WPARAM wparam, LPARAM lparam) {
 		tTJSVariant vmsg((tjs_int32)msg), vwp((tjs_int32)wparam), vlp((tjs_int64)lparam);
 		tTJSVariant *params[] = { &vmsg, &vwp, &vlp };
-		obj->FuncCall(0, event, 0, &rslt, 3, params, obj);
+		return callback(event, 3, params);
+	}
+	// WM_NOTIFY用コールバック
+	LRESULT callback(NameT event, WPARAM wparam, NMHDR const *nmhdr) {
+		NotifyAccessor acc(nmhdr);
+		tTJSVariant vwp((tjs_int32)wparam), vnm;
+		// ボックス化
+		ncbNativeObjectBoxing::Boxing box;
+		box.operator()<NotifyAccessor&> (vnm, acc, ncbTypedefs::Tag<NotifyAccessor&>());
 
-		return (rslt.AsInteger() != 0) ? TRUE : FALSE;
+		tTJSVariant *params[] = { &vwp, &vnm };
+		return callback(event, 2, params);
 	}
 
 	// リソース読み込み
@@ -122,7 +148,7 @@ public:
 		return ret;
 	}
 	// for tjs
-	ULONG GetItem(int id) const { return (ULONG)GetItemHWND(id); }
+	tjs_int64 GetItem(int id) const { return (tjs_int64)GetItemHWND(id); }
 
 	int GetItemInt(int id) const {
 		checkDialogValid();
@@ -256,8 +282,11 @@ public:
 	}
 
 	// stubs
-	virtual bool onInit(   long msg, long wp, long lp) { return false; }
-	virtual bool onCommand(long msg, long wp, long lp) { return false; }
+	virtual bool onInit(   long msg, long wp, long lp)   { return false; }
+	virtual bool onCommand(long msg, long wp, long lp)   { return false; }
+	virtual bool onNotify( long wp, NotifyAccessor *acc) { return false; }
+	virtual bool onHScroll(long msg, long wp, long lp)   { return false; }
+	virtual bool onVScroll(long msg, long wp, long lp)   { return false; }
 
 protected:
 	// ダイアログを開く
@@ -314,12 +343,19 @@ public:
 				return inst->callback(TJS_W("onInit"),    msg, wparam, lparam);
 			}
 			break;
-		case WM_COMMAND:
+		case WM_HSCROLL: return NormalCallback(TJS_W("onHScroll"), hwnd, msg, wparam, lparam);
+		case WM_VSCROLL: return NormalCallback(TJS_W("onVScroll"), hwnd, msg, wparam, lparam);
+		case WM_COMMAND: return NormalCallback(TJS_W("onCommand"), hwnd, msg, wparam, lparam);
+		case WM_NOTIFY:
 			if ((inst = (WIN32Dialog *)GetWindowLong(hwnd, DWL_USER)) != 0)
-				return inst->callback(TJS_W("onCommand"), msg, wparam, lparam);
+				return inst->callback(TJS_W("onNotify"), wparam, (NMHDR*)lparam);
 			break;
 		}
 		return FALSE;
+	}
+	static LRESULT NormalCallback(NameT cbn, HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
+		WIN32Dialog *inst = (WIN32Dialog *)GetWindowLong(hwnd, DWL_USER);
+		return (inst != 0) ? inst->callback(cbn, msg, wparam, lparam) : FALSE;
 	}
 
 	// テンプレート値書き出し用
@@ -389,6 +425,18 @@ public:
 			MessageBoxOwnerHWND = 0;
 		}
 		return CallNextHookEx(MessageBoxHook, nCode, wParam, lParam);
+	}
+
+	// コモンコントロール初期化
+	static void InitCommonControls() {
+		::InitCommonControls();
+	}
+	static bool InitCommonControlsEx(DWORD icc) {
+		INITCOMMONCONTROLSEX init;
+		ZeroMemory(&init, sizeof(init));
+		init.dwSize = sizeof(init);
+		init.dwICC = icc;
+		return ::InitCommonControlsEx(&init) ? true : false;
 	}
 };
 HHOOK WIN32Dialog::MessageBoxHook = 0;
@@ -486,11 +534,22 @@ NCB_REGISTER_SUBCLASS(Items) {
 	Method(TJS_W("store"), &Class::store);
 }
 
+NCB_REGISTER_SUBCLASS(NotifyAccessor) {
+	Constructor();
+	Property(TJS_W("hwndFrom"), &Class::GetHWndFrom, (int)0);
+	Property(TJS_W("idFrom"),   &Class::GetIdFrom,   (int)0);
+	Property(TJS_W("code"),     &Class::GetCode,     (int)0);
+	Method(TJS_W("getByte"),  &Class::GetByte);
+	Method(TJS_W("getWord"),  &Class::GetWord);
+	Method(TJS_W("getDWord"), &Class::GetDWord);
+}
+
 #define ENUM(n) Variant(#n, (long)n, 0)
 
 NCB_REGISTER_CLASS(WIN32Dialog) {
 	NCB_SUBCLASS(Header, Header);
 	NCB_SUBCLASS(Items,  Items);
+	NCB_SUBCLASS(Notify, NotifyAccessor);
 
 	Constructor<iTJSDispatch2*>(0);
 
@@ -519,6 +578,9 @@ NCB_REGISTER_CLASS(WIN32Dialog) {
 
 	Method(TJS_W("onInit"),    &Class::onInit);
 	Method(TJS_W("onCommand"), &Class::onCommand);
+	Method(TJS_W("onNotify"),  &Class::onNotify);
+	Method(TJS_W("onHScroll"), &Class::onHScroll);
+	Method(TJS_W("onVScroll"), &Class::onVScroll);
 
 	Method(TJS_W("show"),            &Class::show);
 	Property(TJS_W("modeless"),      &Class::getModeless, &Class::setModeless);
@@ -1135,5 +1197,149 @@ NCB_REGISTER_CLASS(WIN32Dialog) {
 	ENUM(MB_OWNER_CENTER);
 
 	Method(TJS_W("messageBox"), &Class::MessageBox);
+
+
+	// InitCommonControlsEx parameters
+	ENUM(ICC_LISTVIEW_CLASSES);
+	ENUM(ICC_TREEVIEW_CLASSES);
+	ENUM(ICC_BAR_CLASSES);
+	ENUM(ICC_TAB_CLASSES);
+	ENUM(ICC_UPDOWN_CLASS);
+	ENUM(ICC_PROGRESS_CLASS);
+	ENUM(ICC_HOTKEY_CLASS);
+	ENUM(ICC_ANIMATE_CLASS);
+	ENUM(ICC_WIN95_CLASSES);
+	ENUM(ICC_DATE_CLASSES);
+	ENUM(ICC_USEREX_CLASSES);
+	ENUM(ICC_COOL_CLASSES);
+#ifdef   ICC_INTERNET_CLASSES
+	ENUM(ICC_INTERNET_CLASSES);
+	ENUM(ICC_PAGESCROLLER_CLASS);
+	ENUM(ICC_NATIVEFNTCTL_CLASS);
+#endif
+#ifdef   ICC_STANDARD_CLASSES
+	ENUM(ICC_STANDARD_CLASSES);
+	ENUM(ICC_LINK_CLASS);
+#endif
+
+	Variant(TJS_W("HEADER"),         WC_HEADERW, 0);			// "SysHeader32"
+	Variant(TJS_W("LINK"),           WC_LINK, 0);				// "SysLink"
+	Variant(TJS_W("LISTVIEW"),       WC_LISTVIEWW, 0);			// "SysListView32"
+	Variant(TJS_W("TREEVIEW"),       WC_TREEVIEWW, 0);			// "SysTreeView32"
+	Variant(TJS_W("TABCONTROL"),     WC_TABCONTROLW, 0);		// "SysTabControl32"
+	Variant(TJS_W("IPADDRESS"),      WC_IPADDRESSW, 0);			// "SysIPAddress32"
+	Variant(TJS_W("PAGESCROLLER"),   WC_PAGESCROLLERW, 0);		// "SysPager"
+	Variant(TJS_W("ANIMATE"),        ANIMATE_CLASSW, 0);		// "SysAnimate32"
+	Variant(TJS_W("MONTHCAL"),       MONTHCAL_CLASSW, 0);		// "SysMonthCal32"
+	Variant(TJS_W("DATETIMEPICK"),   DATETIMEPICK_CLASSW, 0);	// "SysDateTimePick32"
+
+	Variant(TJS_W("COMBOBOXEX"),     WC_COMBOBOXEXW, 0);		// "ComboBoxEx32"
+	Variant(TJS_W("NATIVEFONTCTL"),  WC_NATIVEFONTCTLW, 0);		// "NativeFontCtl"
+	Variant(TJS_W("TOOLBAR"),        TOOLBARCLASSNAMEW, 0);		// "ToolbarWindow32"
+	Variant(TJS_W("REBAR"),          REBARCLASSNAMEW, 0);		// "ReBarWindow32"
+	Variant(TJS_W("TOOLTIPS"),       TOOLTIPS_CLASSW, 0);		// "tooltips_class32"
+
+	Variant(TJS_W("STATUS"),         STATUSCLASSNAMEW, 0);		// "msctls_statusbar32"
+	Variant(TJS_W("TRACKBAR"),       TRACKBAR_CLASSW, 0);		// "msctls_trackbar32"
+	Variant(TJS_W("UPDOWN"),         UPDOWN_CLASSW, 0);			// "msctls_updown32"
+	Variant(TJS_W("PROGRESS"),       PROGRESS_CLASSW, 0);		// "msctls_progress32"
+	Variant(TJS_W("HOTKEY"),         HOTKEY_CLASSW, 0);			// "msctls_hotkey32"
+
+	// [XXX] コモンコントロールのメッセージ用ENUMが必要
+
+	// 取り急ぎトラックバーのみ
+	ENUM(TBS_AUTOTICKS);
+	ENUM(TBS_VERT);
+	ENUM(TBS_HORZ);
+	ENUM(TBS_TOP);
+	ENUM(TBS_BOTTOM);
+	ENUM(TBS_LEFT);
+	ENUM(TBS_RIGHT);
+	ENUM(TBS_BOTH);
+	ENUM(TBS_NOTICKS);
+	ENUM(TBS_ENABLESELRANGE);
+	ENUM(TBS_FIXEDLENGTH);
+	ENUM(TBS_NOTHUMB);
+#ifdef   TBS_TOOLTIPS
+	ENUM(TBS_TOOLTIPS);
+#endif
+#ifdef   TBS_REVERSED
+	ENUM(TBS_REVERSED);
+#endif
+#ifdef   TBS_DOWNISLEFT
+	ENUM(TBS_DOWNISLEFT);
+#endif
+
+#ifdef   TBS_NOTIFYBEFOREMOVE
+	ENUM(TBS_NOTIFYBEFOREMOVE);
+#endif
+#ifdef   TBS_TRANSPARENTBKGND
+	ENUM(TBS_TRANSPARENTBKGND);
+#endif
+	ENUM(TBM_GETPOS);
+	ENUM(TBM_GETRANGEMIN);
+	ENUM(TBM_GETRANGEMAX);
+	ENUM(TBM_GETTIC);
+	ENUM(TBM_SETTIC);
+	ENUM(TBM_SETPOS);
+	ENUM(TBM_SETRANGE);
+	ENUM(TBM_SETRANGEMIN);
+	ENUM(TBM_SETRANGEMAX);
+	ENUM(TBM_CLEARTICS);
+	ENUM(TBM_SETSEL);
+	ENUM(TBM_SETSELSTART);
+	ENUM(TBM_SETSELEND);
+	ENUM(TBM_GETPTICS);
+	ENUM(TBM_GETTICPOS);
+	ENUM(TBM_GETNUMTICS);
+	ENUM(TBM_GETSELSTART);
+	ENUM(TBM_GETSELEND);
+	ENUM(TBM_CLEARSEL);
+	ENUM(TBM_SETTICFREQ);
+	ENUM(TBM_SETPAGESIZE);
+	ENUM(TBM_GETPAGESIZE);
+	ENUM(TBM_SETLINESIZE);
+	ENUM(TBM_GETLINESIZE);
+	ENUM(TBM_GETTHUMBRECT);
+	ENUM(TBM_GETCHANNELRECT);
+	ENUM(TBM_SETTHUMBLENGTH);
+	ENUM(TBM_GETTHUMBLENGTH);
+#ifdef   TBM_SETTOOLTIPS
+	ENUM(TBM_SETTOOLTIPS);
+	ENUM(TBM_GETTOOLTIPS);
+	ENUM(TBM_SETTIPSIDE);
+	// TrackBar Tip Side flags
+	ENUM(TBTS_TOP);
+	ENUM(TBTS_LEFT);
+	ENUM(TBTS_BOTTOM);
+	ENUM(TBTS_RIGHT);
+
+	ENUM(TBM_SETBUDDY);
+	ENUM(TBM_GETBUDDY);
+#endif
+#ifdef   TBM_SETUNICODEFORMAT
+	ENUM(TBM_SETUNICODEFORMAT);
+	ENUM(TBM_GETUNICODEFORMAT);
+#endif
+	ENUM(TB_LINEUP);
+	ENUM(TB_LINEDOWN);
+	ENUM(TB_PAGEUP);
+	ENUM(TB_PAGEDOWN);
+	ENUM(TB_THUMBPOSITION);
+	ENUM(TB_THUMBTRACK);
+	ENUM(TB_TOP);
+	ENUM(TB_BOTTOM);
+	ENUM(TB_ENDTRACK);
+#ifdef   TBCD_TICS
+	ENUM(TBCD_TICS);
+	ENUM(TBCD_THUMB);
+	ENUM(TBCD_CHANNEL);
+#endif
+#ifdef   TRBN_THUMBPOSCHANGING
+	ENUM(TRBN_THUMBPOSCHANGING);
+#endif
+
+	Method(TJS_W("initCommonControls"),   &Class::InitCommonControls);
+	Method(TJS_W("initCommonControlsEx"), &Class::InitCommonControlsEx);
 }
 
