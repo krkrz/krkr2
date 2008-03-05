@@ -6,6 +6,7 @@ class MyDialog extends WIN32DialogEX {
 	var ID_EDT = 1001;
 	var ID_LST = 1002;
 	var ID_CMB = 1003;
+	var ID_COMCTL = 1004;
 
 	var template = %[
 	helpID:0,
@@ -25,6 +26,7 @@ class MyDialog extends WIN32DialogEX {
 	items :
 		[
 			GroupBox("グループ",,  0, 0, 100, 100),
+			Control("text", ID_COMCTL, TRACKBAR, WS_VISIBLE, 10, 8, 80, 10),
 			PushButton("ボタン１", ID_BTN, 10, 20, 80, 10),
 			EditText(              ID_EDT, 10, 30, 80, 10),
 			ListBox(               ID_LST, 10, 40, 80, 40),
@@ -81,6 +83,18 @@ class MyDialog extends WIN32DialogEX {
 		dm("onCommand", *);
 		return super.onCommand(...);
 	}
+	function onNotify(id, notify) {
+		with (notify) dm("onNotify", id, "%08x".sprintf(.hwndFrom), .idFrom, "%08x".sprintf(.code));
+		return super.onNotify(...);
+	}
+	function onVScroll(msg, wp, lp) {
+		dm( "onVScroll", *);
+		return super.onVScroll(...);
+	}
+	function onHScroll(msg, wp, lp) {
+		dm( "onHScroll", *);
+		return super.onHScroll(...);
+	}
 }
 
 function createMenuItem(win, caption, onclick) {
@@ -110,6 +124,9 @@ function testModeless(win, flg) {
 
 //Debug.controller.visible=true;
 Debug.console.visible=true;
+
+// コモンコントロール初期化
+WIN32Dialog.initCommonControls();
 
 var dm = Debug.message;
 var win = new Window();
