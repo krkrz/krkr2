@@ -114,6 +114,8 @@ class WIN32DialogEX extends WIN32Dialog {
 		case "Object":  return sim(id, msg.message, msg.wparam, msg.lparam);
 		}
 	}
+	function getCheckBox(id)        { return sendItemMessage(id, BM_GETCHECK, 0, 0); }
+	function setCheckBox(id, value) { return sendItemMessage(id, BM_SETCHECK, +value, 0); }
 
 	// 初期化処理用
 	function setListBoxTexts( *) { return addItemStrings(LB_ADDSTRING, *); }
@@ -266,6 +268,12 @@ class WIN32DialogEX extends WIN32Dialog {
 		switch (getItemClass(item)) {
 
 		case BUTTON:
+			// ラジオボタンの場合はその状態
+			if (style & BS_AUTOCHECKBOX ||
+				style & BS_CHECKBOX ||
+				style & BS_AUTORADIOBUTTON ||
+				style & BS_RADIOBUTTON) return getCheckBox(id);
+			// それ以外はステート
 			return sendItemMessage(id, BM_GETSTATE, 0, 0);
 
 		case EDIT:
