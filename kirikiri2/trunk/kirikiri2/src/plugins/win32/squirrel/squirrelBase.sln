@@ -7,15 +7,9 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "squirrelBase", "squirrelBas
 		{A79653F2-73F4-4F57-AE86-4AEBDE795232} = {A79653F2-73F4-4F57-AE86-4AEBDE795232}
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "squirrel", "sqplus\squirrel\squirrel.vcproj", "{A79653F2-73F4-4F57-AE86-4AEBDE795232}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "squirrel", "squirrel\squirrel\squirrel.vcproj", "{A79653F2-73F4-4F57-AE86-4AEBDE795232}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "sqstdlib", "sqplus\sqstdlib\sqstdlib.vcproj", "{B6DA293C-F1BB-4800-8134-70CBE80F70A0}"
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "sqplus", "sqplus\sqplus\sqplus.vcproj", "{F9811314-C694-49A4-BD87-BA2E7F30D358}"
-	ProjectSection(ProjectDependencies) = postProject
-		{A79653F2-73F4-4F57-AE86-4AEBDE795232} = {A79653F2-73F4-4F57-AE86-4AEBDE795232}
-		{B6DA293C-F1BB-4800-8134-70CBE80F70A0} = {B6DA293C-F1BB-4800-8134-70CBE80F70A0}
-	EndProjectSection
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "sqstdlib", "squirrel\sqstdlib\sqstdlib.vcproj", "{B6DA293C-F1BB-4800-8134-70CBE80F70A0}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
