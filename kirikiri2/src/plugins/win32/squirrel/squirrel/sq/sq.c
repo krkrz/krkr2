@@ -143,8 +143,8 @@ int getargs(HSQUIRRELVM v,int argc, char* argv[])
 			{
 				const SQChar *a;
 #ifdef SQUNICODE
-				int alen=strlen(argv[i]);
-				a=sq_getscratchpad(v,alen*sizeof(SQChar));
+				int alen=(int)strlen(argv[i]);
+				a=sq_getscratchpad(v,(int)(alen*sizeof(SQChar)));
 				mbstowcs(sq_getscratchpad(v,-1),argv[i],alen);
 				sq_getscratchpad(v,-1)[alen] = _SC('\0');
 #else
@@ -161,7 +161,7 @@ int getargs(HSQUIRRELVM v,int argc, char* argv[])
 					SQChar *outfile = _SC("out.cnut");
 					if(output) {
 #ifdef SQUNICODE
-						int len = strlen(output)+1;
+						int len = (int)(strlen(output)+1);
 						mbstowcs(sq_getscratchpad(v,len*sizeof(SQChar)),output,len);
 						outfile = sq_getscratchpad(v,-1);
 #else
