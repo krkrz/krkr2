@@ -3,7 +3,7 @@ TARGET = Magick++.dll
 STUB   = ../tp_stub
 NCBIND = ../ncbind/ncbind
 RES    = xmlres
-MGOBJS = magickpp.o image.o color.o misc.o enums.o
+MGOBJS = magickpp.o image.o color.o drawable.o misc.o enums.o
 OBJS   = $(STUB).o $(NCBIND).o $(RES).o $(MGOBJS)
 
 EXPORTS = exports_for_gcc.def
@@ -15,7 +15,8 @@ MGPREFIX  = `$(MGCONF) --prefix`
 MGVER     = `$(MGCONF) --version`
 MGCXXFLGS = `$(MGCONF) --cxxflags` 
 
-CXXFLAGS += -O2 -I.. -I../ncbind -DDEBUG -Wall -Wno-unused-parameter
+#CXXFLAGS += -DDEBUG
+CXXFLAGS += -O2 -I.. -I../ncbind -Wall -Wno-unused-parameter
 LDFLAGS  += `$(MGCONF) --ldflags` `$(MGCONF) --libs`
 
 DLLWRAP = dllwrap
