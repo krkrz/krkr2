@@ -1,4 +1,4 @@
-Plugins.link("win32dialog.dll");
+Plugins.link("win32dialog.dll") if (typeof global.WIN32Dialog == "undefined");
 
 class WIN32DialogEX extends WIN32Dialog {
 	// コンストラクタ
