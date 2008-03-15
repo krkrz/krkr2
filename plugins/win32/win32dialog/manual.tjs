@@ -179,7 +179,7 @@ class WIN32Dialog {
 	 * @param wparam DlgProc のWPARAM
 	 * @param lparam DlgProc のLPARAM
 	 */
-	function onHScroll(msg, wparam, lparam);
+	function onVScroll(msg, wparam, lparam);
 
 	/**
 	 * WM_NOTIFY のコールバック
@@ -198,7 +198,7 @@ class WIN32Dialog {
 	 * type に独自フラグ MB_OWNER_CENTER を設定するとオーナーウィンドウの中央に表示しようとする
 	 * （ただしダイアログが画面外になる場合はデスクトップの中央になる）
 	 */
-	/*static*/function MessageBox(window, text, caption, type);
+	/*static*/function messageBox(window, text, caption, type);
 
 	/**
 	 * モードレスダイアログ用のフラグ
