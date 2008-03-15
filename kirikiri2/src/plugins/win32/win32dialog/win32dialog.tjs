@@ -175,8 +175,12 @@ class WIN32DialogEX extends WIN32Dialog {
 		throwEvent("onCommand", *);
 		return defaultCommand(...);
 	}
+	function onHScroll(*) { super.onHScroll(...); return throwEvent("onHScroll", *); }
+	function onVScroll(*) { super.onVScroll(...); return throwEvent("onVScroll", *); }
+	function onNotify( *) { super.onNotify( ...); return throwEvent("onNotify",  *); }
 	function throwEvent(tag, *) {
-		if (typeof owner == "Object" && typeof owner[tag] != "undefined") owner[tag](*);
+		if (typeof owner == "Object" && typeof owner[tag] != "undefined") return owner[tag](*);
+		return false;
 	}
 
 	// 指定ウィンドウの中央に配置（ただし画面外にならないこと）

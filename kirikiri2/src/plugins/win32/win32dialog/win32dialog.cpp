@@ -65,6 +65,9 @@ public:
 	// destructor
 	virtual ~WIN32Dialog() {
 		//TVPAddLog(TJS_W("# WIN32Dialog.finalize()"));
+
+		if (modeless) close(IDCANCEL);
+
 		if (buf) TVP_free(buf);
 		buf = 0;
 
@@ -1223,7 +1226,9 @@ NCB_REGISTER_CLASS(WIN32Dialog) {
 #endif
 
 	Variant(TJS_W("HEADER"),         WC_HEADERW, 0);			// "SysHeader32"
+#ifdef WC_LINK
 	Variant(TJS_W("LINK"),           WC_LINK, 0);				// "SysLink"
+#endif
 	Variant(TJS_W("LISTVIEW"),       WC_LISTVIEWW, 0);			// "SysListView32"
 	Variant(TJS_W("TREEVIEW"),       WC_TREEVIEWW, 0);			// "SysTreeView32"
 	Variant(TJS_W("TABCONTROL"),     WC_TABCONTROLW, 0);		// "SysTabControl32"
