@@ -14,7 +14,7 @@ static void Image_display(Magick::Image const *image, iTJSDispatch2* lay) {
 	if (TJS_FAILED(lay->PropSet(0, TJS_W("hasImage"), 0, tmp, lay))) goto error;
 	tmp[0] = tTVInteger((w = image->columns()));
 	tmp[1] = tTVInteger((h = image->rows()));
-	if (TJS_FAILED(lay->FuncCall(0, TJS_W("setSize"),      0, 0, 2, args, lay))) goto error;
+//	if (TJS_FAILED(lay->FuncCall(0, TJS_W("setSize"),      0, 0, 2, args, lay))) goto error;
 	if (TJS_FAILED(lay->FuncCall(0, TJS_W("setImageSize"), 0, 0, 2, args, lay))) goto error;
 
 	// バッファ取得
@@ -31,10 +31,10 @@ static void Image_display(Magick::Image const *image, iTJSDispatch2* lay) {
 			PixelT const *px = image->getConstPixels(0, y, w, 1);
 			unsigned char *cp = p;
 			for (int i = w; i > 0; i--, px++) {
-				*cp++ = static_cast<unsigned char>(px->blue);		// B
-				*cp++ = static_cast<unsigned char>(px->green);		// G
-				*cp++ = static_cast<unsigned char>(px->red);		// R
-				*cp++ = static_cast<unsigned char>(px->opacity);	// A
+				*cp++ =  static_cast<unsigned char>(px->blue);		// B
+				*cp++ =  static_cast<unsigned char>(px->green);		// G
+				*cp++ =  static_cast<unsigned char>(px->red);		// R
+				*cp++ = ~static_cast<unsigned char>(px->opacity);	// A
 			}
 		}
 	} else {
@@ -61,10 +61,71 @@ error:
 	TVPThrowExceptionMessage(TJS_W("MagickPP_Image.display failed."));
 }
 
+static Magick::Image* ImageCtor_layer(iTJSDispatch2* lay) {
+	unsigned int w, h;
+	unsigned char *p;
+	long s;
+	if (!lay || TJS_FAILED(lay->IsInstanceOf(0, 0, 0, TJS_W("Layer"), lay)))
+		TVPThrowExceptionMessage(TJS_W("Magick::Image: _layer method needs Layer-instance param."));
+
+	// レイヤサイズ取得
+	tTJSVariant tmp[2];
+	lay->PropGet(0, TJS_W("imageWidth"),  0, &tmp[0], lay);
+	lay->PropGet(0, TJS_W("imageHeight"), 0, &tmp[1], lay);
+	w = static_cast<unsigned int>((tTVInteger)tmp[0]);
+	h = static_cast<unsigned int>((tTVInteger)tmp[1]);
+
+	// バッファ取得
+	lay->PropGet(0, TJS_W("mainImageBuffer"),         0, &tmp[0], lay);
+	lay->PropGet(0, TJS_W("mainImageBufferPitch"),    0, &tmp[1], lay);
+	p = reinterpret_cast<unsigned char*>((tTVInteger)tmp[0]);
+	s = static_cast<long               >((tTVInteger)tmp[1]);
+
+	typedef Magick::PixelPacket PixelT;
+	typedef Magick::Color ColorT;
+	Magick::Image *image = new Magick::Image(Magick::Geometry(w, h), ColorT());
+	image->modifyImage();
+	image->type(Magick::TrueColorMatteType);
+	// コピー
+	if (sizeof(Magick::Quantum) == 1) {
+		// 8bit quantum 専用
+		for (unsigned int y = 0; y < h; y++, p+=s) {
+			unsigned char *cp = p;
+			PixelT *q = image->getPixels(0, y, w, 1); 
+			for (int i = w; i > 0; i--, cp+=4) {
+				*q++ = ColorT(static_cast<Magick::Quantum>(cp[2]),
+							  static_cast<Magick::Quantum>(cp[1]),
+							  static_cast<Magick::Quantum>(cp[0]),
+							  ~static_cast<Magick::Quantum>(cp[3]));
+			}
+			image->syncPixels();
+		}
+	} else {
+		// それ以外はdouble経由なので重い
+		for (unsigned int y = 0; y < h; y++, p+=s) {
+			unsigned char *cp = p;
+			PixelT *q = image->getPixels(0, y, w, 1); 
+			for (int i = w; i > 0; i--, cp+=4) {
+				Magick::ColorRGB col(cp[2]/255.0, cp[1]/255.0, cp[0]/255.0);
+				col.alpha(cp[3]/255.0);
+				*q++ = col;
+			}
+			image->syncPixels();
+		}
+	}
+	return image;
+}
+
+static Magick::Image* ImageCtor_copy(Magick::Image const &cp) { return new Magick::Image(cp); }
+static Magick::Image* ImageCtor_geom_col(const Geometry &size_, const Color &color_) { return new Magick::Image(size_, color_); }
 
 // Image
 MAGICK_SUBCLASS(Image) {
 	NCB_CONSTRUCTOR(());
+
+	Method(TJS_W("_copy"),  ImageCtor_copy);
+	Method(TJS_W("_ctor"),  ImageCtor_geom_col);
+	Method(TJS_W("_layer"), ImageCtor_layer);
 
 	//////////////////////////////////////////////////////////////////////
 	// Image operations
@@ -166,9 +227,14 @@ MAGICK_SUBCLASS(Image) {
 	// in the current image. False is returned if the images are identical.
 	NCB_METHOD(compare);
 
+	// Compose an image onto another at specified offset and using
+	// specified algorithm
+	NCB_METHOD_DETAIL(composite, Class, void, Class::composite, (
+		const Image &compositeImage_,
+		const int xOffset_,
+		const int yOffset_,
+		const CompositeOperator compose_));
 #if 0
-    // Compose an image onto another at specified offset and using
-    // specified algorithm
     void            composite ( const Image &compositeImage_,
         const int xOffset_,
         const int yOffset_,
@@ -224,6 +290,9 @@ MAGICK_SUBCLASS(Image) {
 
 	// Equalize image (histogram equalization)
 	NCB_METHOD(equalize);
+
+	// Extend the image as defined by the geometry.
+	NCB_METHOD(extent);
 
 	// Erase image to current "background color"
 	NCB_METHOD(erase);
@@ -622,23 +691,35 @@ MAGICK_SUBCLASS(Image) {
 	// disk.  This setting is shared by all Image objects.
 	NCB_PROPERTY_DETAIL_WO(cacheThreshold, Static, void, Class::cacheThreshold, (unsigned int));
 
-#if 0
-    // Chromaticity blue primary point (e.g. x=0.15, y=0.06)
-    void            chromaBluePrimary ( const double x_, const double y_ );
-    void            chromaBluePrimary ( double *x_, double *y_ ) const;
-    
-    // Chromaticity green primary point (e.g. x=0.3, y=0.6)
-    void            chromaGreenPrimary ( const double x_, const double y_ );
-    void            chromaGreenPrimary ( double *x_, double *y_ ) const;
-    
-    // Chromaticity red primary point (e.g. x=0.64, y=0.33)
-    void            chromaRedPrimary ( const double x_, const double y_ );
-    void            chromaRedPrimary ( double *x_, double *y_ ) const;
-    
-    // Chromaticity white point (e.g. x=0.3127, y=0.329)
-    void            chromaWhitePoint ( const double x_, const double y_ );
-    void            chromaWhitePoint ( double *x_, double *y_ ) const;
-#endif
+	struct Proxy_chroma {
+		static iTJSDispatch2* toDictionary(double x, double y) {
+			iTJSDispatch2 *dic = TJSCreateDictionaryObject();
+			tTJSVariant var_x(static_cast<tTVReal>(x)), var_y(static_cast<tTVReal>(y));
+			dic->PropSet(TJS_MEMBERENSURE, TJS_W("x"), 0, &var_x, dic);
+			dic->PropSet(TJS_MEMBERENSURE, TJS_W("y"), 0, &var_y, dic);
+			return dic;
+		}
+		static iTJSDispatch2* getBlue( Image *image) { double x, y; image->chromaBluePrimary( &x, &y); return toDictionary(x, y); }
+		static iTJSDispatch2* getGreen(Image *image) { double x, y; image->chromaGreenPrimary(&x, &y); return toDictionary(x, y); }
+		static iTJSDispatch2* getRed(  Image *image) { double x, y; image->chromaRedPrimary(  &x, &y); return toDictionary(x, y); }
+		static iTJSDispatch2* getWhite(Image *image) { double x, y; image->chromaWhitePoint(  &x, &y); return toDictionary(x, y); }
+	};
+	// Chromaticity blue primary point (e.g. x=0.15, y=0.06)
+	NCB_METHOD_DETAIL(setChromaBluePrimary, Class, void, Class::chromaBluePrimary, ( const double x_, const double y_ ));
+	NCB_METHOD_PROXY( getChromaBluePrimary, Proxy_chroma::getBlue);
+
+	// Chromaticity green primary point (e.g. x=0.3, y=0.6)
+	NCB_METHOD_DETAIL(setChromaGreenPrimary, Class, void, Class::chromaGreenPrimary, ( const double x_, const double y_ ));
+	NCB_METHOD_PROXY( getChromaGreenPrimary, Proxy_chroma::getGreen);
+
+	// Chromaticity red primary point (e.g. x=0.64, y=0.33)
+	NCB_METHOD_DETAIL(setChromaRedPrimary, Class, void, Class::chromaRedPrimary, ( const double x_, const double y_ ));
+	NCB_METHOD_PROXY( getChromaRedPrimary, Proxy_chroma::getRed);
+
+	// Chromaticity white point (e.g. x=0.3127, y=0.329)
+	NCB_METHOD_DETAIL(setChromaWhitePoint, Class, void, Class::chromaWhitePoint, ( const double x_, const double y_ ));
+	NCB_METHOD_PROXY( getChromaWhitePoint, Proxy_chroma::getWhite);
+
 	// Image class (DirectClass or PseudoClass)
 	// NOTE: setting a DirectClass image to PseudoClass will result in
 	// the loss of color information if the number of colors in the
@@ -664,6 +745,7 @@ MAGICK_SUBCLASS(Image) {
 
 	// Image Color Space
 	PROP_RW(Magick::ColorspaceType, colorSpace);
+	PROP_RW(Magick::ColorspaceType, colorspaceType);
 
 	// Image width
 	PROP_RO(columns);

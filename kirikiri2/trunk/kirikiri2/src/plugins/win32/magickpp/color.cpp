@@ -6,6 +6,7 @@ struct ColorProxy {
 	typedef Magick::ColorYUV  ColorYUV;
 	typedef Magick::ColorGray ColorGray;
 	typedef Magick::ColorMono ColorMono;
+	typedef Magick::Quantum   Quantum;
 
 #define PROP_PROXY(type, base, tag, method) \
 	static type Get ## tag(Color const *c)   { return base(*c).method(); } \
@@ -26,12 +27,33 @@ struct ColorProxy {
 
 	PROP_PROXY(double, ColorGray, Gray, shade);
 	PROP_PROXY(bool,   ColorMono, Mono, mono);
+
+	static Color _QRGBA(Quantum r, Quantum g, Quantum b, Quantum a) { return Color(r, g, b, a); }
+	static Color _QRGB( Quantum r, Quantum g, Quantum b)            { return Color(r, g, b); }
+	static Color _RGBA(double r, double g, double b, double a) { ColorRGB c(r, g, b); c.alpha(a); return c; }
+
+	static Color _RGB( double r, double g, double b) { return ColorRGB(r, g, b); }
+	static Color _HSL( double h, double s, double l) { return ColorHSL(h, s, l); }
+	static Color _YUV( double y, double u, double v) { return ColorYUV(y, u, v); }
+	static Color _Gray(double s)                     { return ColorGray(s);      }
+	static Color _Mono(bool   m)                     { return ColorMono(m);      }
 };
 
 
 // Color
 MAGICK_SUBCLASS(Color) {
 	NCB_CONSTRUCTOR(());
+
+	// quick
+	Method(TJS_W("QRGBA"), ColorProxy::_QRGBA);
+	Method(TJS_W("QRGB" ), ColorProxy::_QRGB);
+	Method(TJS_W("RGBA"),  ColorProxy::_RGBA);
+	Method(TJS_W("RGB"),   ColorProxy::_RGB);
+	Method(TJS_W("HSL"),   ColorProxy::_HSL);
+	Method(TJS_W("YUV"),   ColorProxy::_YUV);
+	Method(TJS_W("GRAY"),  ColorProxy::_Gray);
+	Method(TJS_W("MONO"),  ColorProxy::_Mono);
+
 	typedef Magick::Quantum Quantum;
 	PROP_RW(Quantum, redQuantum);
 	PROP_RW(Quantum, greenQuantum);

@@ -18,12 +18,6 @@ MAGICK_SUBCLASS(CoderInfo) {
 	PROP_RO(isMultiFrame);
 }
 
-// Drawable
-MAGICK_SUBCLASS(Drawable) {
-	NCB_CONSTRUCTOR(());
-	// ...
-}
-
 // Geometry
 MAGICK_SUBCLASS(Geometry) {
 	NCB_CONSTRUCTOR((StringT const&));
