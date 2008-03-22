@@ -123,6 +123,7 @@ public:
 		return TJS_S_OK;
 	}
 protected:
+	// DLLのリソースを読み込む
 	void _loadResource(NameT module) {
 		if (!module) return;
 		HMODULE oldres = resource;
@@ -143,6 +144,8 @@ public:
 	void checkDialogValid() const {
 		if (!IsValid()) TVPThrowExceptionMessage(TJS_W("Dialog not opened."));
 	}
+
+	// -------------------------------------------------------------
 	// 各種 Item 操作関数
 	HWND GetItemHWND(int id) const {
 		checkDialogValid();
@@ -179,21 +182,23 @@ public:
 	}
 
 	void SetItemEnabled(int id, bool en) {
-		HWND wnd = GetItemHWND(id);
-		EnableWindow(wnd, en ? TRUE : FALSE);
+		EnableWindow(GetItemHWND(id), en ? TRUE : FALSE);
 	}
 	bool GetItemEnabled(int id) {
-		HWND wnd = GetItemHWND(id);
-		return IsWindowEnabled(wnd) != 0;
+		return IsWindowEnabled(GetItemHWND(id)) != 0;
 	}
 	void SetItemFocus(int id) {
-		HWND wnd = GetItemHWND(id);
-		SetFocus(wnd);
+		SetFocus(GetItemHWND(id));
+	}
+	void SetItemPos(int id, int x, int y) {
+		SetWindowPos(GetItemHWND(id), 0, x, y, 0, 0, SWP_NOSIZE|SWP_NOZORDER);
+	}
+	void SetItemSize(int id, int w, int h) {
+		SetWindowPos(GetItemHWND(id), 0, 0, 0, w, h, SWP_NOMOVE|SWP_NOZORDER);
 	}
 
-	void SetPos(int x, int y) {
-		if (dialogHWnd) SetWindowPos(dialogHWnd, 0, x, y, 0, 0, SWP_NOSIZE|SWP_NOZORDER);
-	}
+	void SetPos(int x,  int y) { if (dialogHWnd) SetWindowPos(dialogHWnd, 0, x, y, 0, 0, SWP_NOSIZE|SWP_NOZORDER); }
+	void SetSize(int w, int h) { if (dialogHWnd) SetWindowPos(dialogHWnd, 0, 0, 0, w, h, SWP_NOMOVE|SWP_NOZORDER); }
 	long GetWidth() const {
 		if (!dialogHWnd) return 0;
 		RECT r;
@@ -222,6 +227,17 @@ protected:
 		return SendDlgItemMessage(dialogHWnd, id, msg, wparam, lparam);
 	}
 
+	// TJS辞書⇒RECTへ値をコピー
+	static inline bool _getRect(RECT &rect, PropT &prop) {
+		if (!prop.IsValid()) return false;
+		PropT::DefsT::Tag<LONG> tagInt;
+		rect.left   = prop.GetValue(TJS_W("left"),   tagInt);
+		rect.top    = prop.GetValue(TJS_W("top"),    tagInt);
+		rect.right  = prop.GetValue(TJS_W("right"),  tagInt);
+		rect.bottom = prop.GetValue(TJS_W("bottom"), tagInt);
+		return true;
+	}
+
 public:
 	VarT GetBaseUnits() const {
 		VarT var;
@@ -237,16 +253,10 @@ public:
 	VarT MapRect(VarT in) const {
 		checkDialogValid();
 		VarT var;
-		PropT::DefsT::Tag<LONG> tagInt;
 		PropT from(in);
 		DictT to;
-		if (from.IsValid() && to.IsValid()) {
-			RECT rect;
-			rect.left   = from.GetValue(TJS_W("left"),   tagInt);
-			rect.top    = from.GetValue(TJS_W("top"),    tagInt);
-			rect.right  = from.GetValue(TJS_W("right"),  tagInt);
-			rect.bottom = from.GetValue(TJS_W("bottom"), tagInt);
-
+		RECT rect;
+		if (_getRect(rect, from) && to.IsValid()) {
 			if (!MapDialogRect(dialogHWnd, &rect)) ThrowLastError();
 			to.SetValue(TJS_W("left"),   rect.left);
 			to.SetValue(TJS_W("top"),    rect.top);
@@ -256,7 +266,14 @@ public:
 		}
 		return var;
 	}
+	bool InvalidateRect(VarT vrect, bool erase) {
+		checkDialogValid();
+		PropT prop(vrect);
+		RECT rect;
+		return (_getRect(rect, prop)) ? !!::InvalidateRect(dialogHWnd, &rect, erase) : false;
+	}
 
+	// -------------------------------------------------------------
 	// open (tjs raw callback)
 	static tjs_error TJS_INTF_METHOD open(VarT *result, tjs_int numparams, VarT **param, DspT *objthis) {
 		WIN32Dialog *self = SelfAdaptorT::GetNativeInstance(objthis); 
@@ -284,14 +301,17 @@ public:
 		ShowWindow(dialogHWnd, nCmdShow);
 	}
 
+	// -------------------------------------------------------------
 	// stubs
 	virtual bool onInit(   long msg, long wp, long lp)   { return false; }
 	virtual bool onCommand(long msg, long wp, long lp)   { return false; }
 	virtual bool onNotify( long wp, NotifyAccessor *acc) { return false; }
 	virtual bool onHScroll(long msg, long wp, long lp)   { return false; }
 	virtual bool onVScroll(long msg, long wp, long lp)   { return false; }
+	virtual bool onSize(   long msg, long wp, long lp)   { return false; }
 
 protected:
+	// -------------------------------------------------------------
 	// ダイアログを開く
 	int _open(VarT win) {
 		HWND hwnd = 0;
@@ -300,7 +320,7 @@ protected:
 			DspT *obj = win.AsObjectNoAddRef();
 			VarT val;
 			obj->PropGet(0, TJS_W("HWND"), NULL, &val, obj);
-			hwnd = (HWND)((tjs_int)(val));
+			hwnd = (HWND)((tjs_int64)(val));
 			if (!icon) icon = LoadIcon(hinst, IDI_APPLICATION);
 		}
 		int ret;
@@ -346,6 +366,7 @@ public:
 				return inst->callback(TJS_W("onInit"),    msg, wparam, lparam);
 			}
 			break;
+		case WM_SIZE:    return NormalCallback(TJS_W("onSize"   ), hwnd, msg, wparam, lparam);
 		case WM_HSCROLL: return NormalCallback(TJS_W("onHScroll"), hwnd, msg, wparam, lparam);
 		case WM_VSCROLL: return NormalCallback(TJS_W("onVScroll"), hwnd, msg, wparam, lparam);
 		case WM_COMMAND: return NormalCallback(TJS_W("onCommand"), hwnd, msg, wparam, lparam);
@@ -361,6 +382,7 @@ public:
 		return (inst != 0) ? inst->callback(cbn, msg, wparam, lparam) : FALSE;
 	}
 
+	// -------------------------------------------------------------
 	// テンプレート値書き出し用
 	template <typename T>
 	static void SetValue(PropT *prop, NameT name, T *out) {
@@ -382,6 +404,7 @@ public:
 			*out = prop->GetValue(name, PropT::DefsT::Tag<NameT>(), 0, &hint);
 	}
 
+	// -------------------------------------------------------------
 	// メッセージボックス表示
 	static int MessageBox(iTJSDispatch2* obj, NameT text, NameT caption, UINT type) {
 		bool useHook = false;
@@ -389,7 +412,7 @@ public:
 		if (obj) {
 			VarT val;
 			obj->PropGet(0, TJS_W("HWND"), NULL, &val, obj);
-			hwnd = (HWND)((tjs_int)(val));
+			hwnd = (HWND)((tjs_int64)(val));
 			if (!hwnd) hwnd = TVPGetApplicationWindowHandle();
 		}
 		if (hwnd && MessageBoxHook == 0 && (type & MB_OWNER_CENTER)) {
@@ -412,8 +435,9 @@ public:
 	static LRESULT CALLBACK MessageBoxHookProc(int nCode, WPARAM wParam, LPARAM lParam) {
 		if (nCode == HCBT_ACTIVATE && MessageBoxOwnerHWND != 0) {
 			RECT win, box;
+			HWND hwnd = (HWND)wParam;
 			GetWindowRect(MessageBoxOwnerHWND, &win);
-			GetWindowRect((HWND)wParam,        &box);
+			GetWindowRect(hwnd,                &box);
 			int sw = GetSystemMetrics(SM_CXSCREEN), sh = GetSystemMetrics(SM_CYSCREEN);
 			int w = (box.right - box.left), h = (box.bottom - box.top);
 			int x = (win.left + (win.right  - win.left) / 2) - (w / 2);
@@ -423,13 +447,14 @@ public:
 				if (y < 0) y = 0;
 				if ((x+w) > sw) x = sw-w;
 				if ((y+h) > sh) y = sh-h;
-				SetWindowPos((HWND)wParam, 0, x, y, 0, 0, SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE);
+				SetWindowPos(hwnd, 0, x, y, 0, 0, SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE);
 			}
 			MessageBoxOwnerHWND = 0;
 		}
 		return CallNextHookEx(MessageBoxHook, nCode, wParam, lParam);
 	}
 
+	// -------------------------------------------------------------
 	// コモンコントロール初期化
 	static void InitCommonControls() {
 		::InitCommonControls();
@@ -569,13 +594,17 @@ NCB_REGISTER_CLASS(WIN32Dialog) {
 	Method(TJS_W("setItemEnabled"),  &Class::SetItemEnabled);
 	Method(TJS_W("getItemEnabled"),  &Class::GetItemEnabled);
 	Method(TJS_W("setItemFocus"),    &Class::SetItemFocus);
+	Method(TJS_W("setItemPos"),      &Class::SetItemPos);
+	Method(TJS_W("setItemSize"),     &Class::SetItemSize);
 
 	RawCallback(TJS_W("sendItemMessage"), &Class::sendItemMessage, 0);
 
 	Method(TJS_W("getBaseUnits"),    &Class::GetBaseUnits);
 	Method(TJS_W("mapRect"),         &Class::MapRect);
+	Method(TJS_W("invalidateRect"),  &Class::InvalidateRect);
 
 	Method(TJS_W("setPos"),          &Class::SetPos);
+	Method(TJS_W("setSize"),         &Class::SetSize);
 	Property(TJS_W("width"),         &Class::GetWidth,  (int)0);
 	Property(TJS_W("height"),        &Class::GetHeight, (int)0);
 
@@ -584,6 +613,7 @@ NCB_REGISTER_CLASS(WIN32Dialog) {
 	Method(TJS_W("onNotify"),  &Class::onNotify);
 	Method(TJS_W("onHScroll"), &Class::onHScroll);
 	Method(TJS_W("onVScroll"), &Class::onVScroll);
+	Method(TJS_W("onSize"),    &Class::onSize);
 
 	Method(TJS_W("show"),            &Class::show);
 	Property(TJS_W("modeless"),      &Class::getModeless, &Class::setModeless);
