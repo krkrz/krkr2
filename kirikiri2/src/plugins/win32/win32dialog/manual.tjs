@@ -108,6 +108,17 @@ class WIN32Dialog {
 	function setItemFocus(id);
 
 	/**
+	 * アイテムの位置・大きさを変更する
+	 * @param id    ダイアログアイテムのID
+	 * @param x     ダイアログアイテムのX座標
+	 * @param y     ダイアログアイテムのY座標
+	 * @param w     ダイアログアイテムの幅
+	 * @param h     ダイアログアイテムの高さ
+	 */
+	function setItemPos( id, x, y);
+	function setItemSize(id, w, h);
+
+	/**
 	 * SendDlgItemMessage のラッパー
 	 * @param id     ダイアログアイテムのID
 	 * @param msg    送るメッセージ
@@ -131,12 +142,28 @@ class WIN32Dialog {
 	function mapRect(rect);
 
 	/**
+	 * InvalidateRect のラッパー
+	 * @param rect 矩形領域辞書配列(%[ left, top, right, bottom ])
+	 * @param erase 消去するかどうかフラグ
+	 * @return 成功ならtrue
+	 */
+	function invalidateRect(rect, erase);
+
+	/**
 	 * ダイアログ座標を設定
 	 * @param x x座標
 	 * @param y y座標
 	 * ダイアログ表示中以外はエラーになるので注意。onInitなどにて座標を変更すること
 	 */
 	function setPos(x, y);
+
+	/**
+	 * ダイアログの大きさを設定
+	 * @param w width
+	 * @param h height
+	 * ダイアログ表示中以外はエラーになるので注意。
+	 */
+	function setSize(w, h);
 
 	/**
 	 * ダイアログサイズの取得
