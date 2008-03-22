@@ -105,6 +105,8 @@ class WIN32DialogEX extends WIN32Dialog {
 	function setItemEnabled(id, value) { return super.setItemEnabled( getNumberdId(id), value); }
 	function getItemEnabled(id)        { return super.getItemEnabled( getNumberdId(id)); }
 	function setItemFocus(id)          { return super.setItemFocus(   getNumberdId(id)); }
+	function setItemPos(id, x, y)      { return super.setItemPos(     getNumberdId(id), x, y); }
+	function setItemSize(id, w, h)     { return super.setItemSize(    getNumberdId(id), w, h); }
 	function sendItemMessage(id, msg, *) {
 		id = getNumberdId(id);
 		var sim = super.sendItemMessage;
@@ -154,13 +156,16 @@ class WIN32DialogEX extends WIN32Dialog {
 
 	// クローズ処理上書き
 	function close() {
-		// 結果を保持する
+		if (!modeless) makeResults();
+		return super.close(...);
+	}
+	// 結果を保持する
+	function makeResults() {
 		itemResults = %[];
 		for (var i = 0; i < itemNames.count; i++) {
 			var name = itemNames[i];
 			itemResults[name] = getResult(name);
 		}
-		return super.close(...);
 	}
 
 	// イベントフック
@@ -175,6 +180,7 @@ class WIN32DialogEX extends WIN32Dialog {
 		throwEvent("onCommand", *);
 		return defaultCommand(...);
 	}
+	function onSize(*)    { super.onSize(   ...); return throwEvent("onSize",    *); }
 	function onHScroll(*) { super.onHScroll(...); return throwEvent("onHScroll", *); }
 	function onVScroll(*) { super.onVScroll(...); return throwEvent("onVScroll", *); }
 	function onNotify( *) { super.onNotify( ...); return throwEvent("onNotify",  *); }
