@@ -41,7 +41,7 @@ static bool __stdcall MyReceiver(void *userdata, tTVPWindowMessage *Message)
 			HWND             hwndFrom = (HWND)Message->WParam;
 			COPYDATASTRUCT*  pcds     = (COPYDATASTRUCT*)Message->LParam;
 			std::string str((const char*)pcds->lpData, pcds->cbData);
-			tTJSVariant msg = str.data();
+			tTJSVariant msg = str.c_str();
 			tTJSVariant *p[] = {&msg};
 			obj->FuncCall(0, TJS_W("onCopyData"), NULL, NULL, 1, p, obj);
 		}

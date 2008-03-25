@@ -344,7 +344,7 @@ SigChecker::CheckSignatureOfFile(int ignorestart, int ignoreend, int ofs)
 	unsigned char pubbuf[10240];
 	unsigned long pubbuf_len;
 	{
-		const char *inkey = publickey.data();
+		const char *inkey = publickey.c_str();
 		const char *startline = "-----BEGIN PUBLIC KEY----";
 		const char *endline   = "-----END PUBLIC KEY-----";
 		
