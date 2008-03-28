@@ -560,7 +560,13 @@ class GraphicLayerEx extends GraphicLayer {
 	
     function setOptions(elm) {
 		super.setOptions(elm);
-		type   = global[elm.type] if elm.type   !== void;
+        if(elm.type !== void)
+        {
+        	if(/^[0-9]+$/.test(elm.type))
+        		type	= +elm.type;
+        	else
+        		type	= global[elm.type];
+        }
         rotate = +elm.rotate if elm.rotate !== void;
         zoomx  = +elm.zoomx  if elm.zoomx  !== void;
 		zoomy  = +elm.zoomy  if elm.zoomy  !== void;
@@ -582,7 +588,13 @@ class GraphicLayerEx extends GraphicLayer {
 	{
 		super.loadImages(elm);
 		if (elm !== void) {
-			type   = global[elm.type] if elm.type   !== void;
+	        if(elm.type !== void)
+	        {
+	        	if(/^[0-9]+$/.test(elm.type))
+	        		type	= +elm.type;
+	        	else
+	        		type	= global[elm.type];
+	        }
 			rotate = +elm.rotate if elm.rotate !== void;
 			zoomx  = +elm.zoomx  if elm.zoomx  !== void;
 			zoomy  = +elm.zoomy  if elm.zoomy  !== void;
