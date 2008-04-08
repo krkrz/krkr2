@@ -130,6 +130,10 @@ public:
 	tTJSVariant & GetValue() { if(!Val) return *(tTJSVariant*)NULL; else return *Val; }
 	tTJSExprNode * operator [] (tjs_int i) const { if(!Nodes) return NULL; else return (*Nodes)[i]; }
 	unsigned int GetSize() const { if(Nodes) return Nodes->size(); else return 0;}
+
+	// for array and dictionary constant value
+	void AddArrayElement(const tTJSVariant & val);
+	void AddDictionaryElement(const tTJSString & name, const tTJSVariant & val);
 };
 //---------------------------------------------------------------------------
 // tTJSInterCodeContext - Intermediate Code Context

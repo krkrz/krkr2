@@ -1,8 +1,11 @@
 namespace TJS {
-/* A Bison parser, made by GNU Bison 2.1.  */
+namespace TJS {
+/* A Bison parser, made by GNU Bison 2.3.  */
 
-/* Skeleton parser for Yacc-like parsing with Bison,
-   Copyright (C) 1984, 1989, 1990, 2000, 2001, 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
+/* Skeleton interface for Bison's Yacc-like parsers in C
+
+   Copyright (C) 1984, 1989, 1990, 2000, 2001, 2002, 2003, 2004, 2005, 2006
+   Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -19,10 +22,18 @@ namespace TJS {
    Foundation, Inc., 51 Franklin Street, Fifth Floor,
    Boston, MA 02110-1301, USA.  */
 
-/* As a special exception, when this file is copied by Bison into a
-   Bison output file, you may use that output file without restriction.
-   This special exception was added by the Free Software Foundation
-   in version 1.24 of Bison.  */
+/* As a special exception, you may create a larger work that contains
+   part or all of the Bison parser skeleton and distribute that work
+   under terms of your choice, so long as that work isn't itself a
+   parser generator using the skeleton or a modified version thereof
+   as a parser skeleton.  Alternatively, if you modify or redistribute
+   the parser skeleton itself, you may (at your option) remove this
+   special exception, which will cause the skeleton and the resulting
+   Bison output files to be licensed under the GNU General Public
+   License without this special exception.
+
+   This special exception was added by the Free Software Foundation in
+   version 2.2 of Bison.  */
 
 /* Tokens.  */
 #ifndef YYTOKENTYPE
@@ -144,22 +155,22 @@ namespace TJS {
      T_UPLUS = 369,
      T_UMINUS = 370,
      T_EVAL = 371,
-     T_SYMBOL = 372,
-     T_POSTDECREMENT = 373,
-     T_POSTINCREMENT = 374,
-     T_IGNOREPROP = 375,
-     T_PROPACCESS = 376,
-     T_ARG = 377,
-     T_EXPANDARG = 378,
-     T_INLINEARRAY = 379,
-     T_ARRAYARG = 380,
-     T_INLINEDIC = 381,
-     T_DICELM = 382,
-     T_REGEXP = 383,
-     T_WITHDOT = 384,
-     T_THIS_PROXY = 385,
-     T_WITHDOT_PROXY = 386,
-     T_CONSTVAL = 387
+     T_POSTDECREMENT = 372,
+     T_POSTINCREMENT = 373,
+     T_IGNOREPROP = 374,
+     T_PROPACCESS = 375,
+     T_ARG = 376,
+     T_EXPANDARG = 377,
+     T_INLINEARRAY = 378,
+     T_ARRAYARG = 379,
+     T_INLINEDIC = 380,
+     T_DICELM = 381,
+     T_WITHDOT = 382,
+     T_THIS_PROXY = 383,
+     T_WITHDOT_PROXY = 384,
+     T_CONSTVAL = 385,
+     T_SYMBOL = 386,
+     T_REGEXP = 387
    };
 #endif
 /* Tokens.  */
@@ -277,34 +288,36 @@ namespace TJS {
 #define T_UPLUS 369
 #define T_UMINUS 370
 #define T_EVAL 371
-#define T_SYMBOL 372
-#define T_POSTDECREMENT 373
-#define T_POSTINCREMENT 374
-#define T_IGNOREPROP 375
-#define T_PROPACCESS 376
-#define T_ARG 377
-#define T_EXPANDARG 378
-#define T_INLINEARRAY 379
-#define T_ARRAYARG 380
-#define T_INLINEDIC 381
-#define T_DICELM 382
-#define T_REGEXP 383
-#define T_WITHDOT 384
-#define T_THIS_PROXY 385
-#define T_WITHDOT_PROXY 386
-#define T_CONSTVAL 387
+#define T_POSTDECREMENT 372
+#define T_POSTINCREMENT 373
+#define T_IGNOREPROP 374
+#define T_PROPACCESS 375
+#define T_ARG 376
+#define T_EXPANDARG 377
+#define T_INLINEARRAY 378
+#define T_ARRAYARG 379
+#define T_INLINEDIC 380
+#define T_DICELM 381
+#define T_WITHDOT 382
+#define T_THIS_PROXY 383
+#define T_WITHDOT_PROXY 384
+#define T_CONSTVAL 385
+#define T_SYMBOL 386
+#define T_REGEXP 387
 
 
 
 
-#if ! defined (YYSTYPE) && ! defined (YYSTYPE_IS_DECLARED)
-#line 59 "tjs.y"
-typedef union YYSTYPE {
+#if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
+typedef union YYSTYPE
+#line 60 "tjs.y"
+{
 	tjs_int			num;
 	tTJSExprNode *		np;
-} YYSTYPE;
-/* Line 1447 of yacc.c.  */
-#line 307 "tjs.tab.h"
+}
+/* Line 1489 of yacc.c.  */
+#line 318 "tjs.tab.h"
+	YYSTYPE;
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */
 # define YYSTYPE_IS_DECLARED 1
 # define YYSTYPE_IS_TRIVIAL 1
@@ -313,6 +326,6 @@ typedef union YYSTYPE {
 
 
 
-
+}
 
 }

@@ -132,19 +132,19 @@ tTJSString TJSVariantToExpressionString(const tTJSVariant &val)
 	{
 	case tvtVoid:
 	  {
-	  	return TJS_W("void");
+		return TJS_W("void");
 	  }
 	case tvtInteger:
 	  {
-		return TJS_W("int ") + ttstr(val);
+		return ttstr(val);
 	  }
 	case tvtReal:
 	  {
-		tTJSString str(TJS_W("real "));
+		tTJSString str;
 		tTJSVariantString *s = TJSRealToHexString(val.AsReal());
 		try
 		{
-			str += s;
+			str = s;
 		}
 		catch(...)
 		{
@@ -156,14 +156,14 @@ tTJSString TJSVariantToExpressionString(const tTJSVariant &val)
 	  }
 	case tvtString:
 	  {
-		tTJSString str(TJS_W("string \""));
+		tTJSString str(TJS_W("\""));
 		str += ttstr(val).EscapeC();
 		str += TJS_W("\"");
 		return str;
 	  }
 	case tvtOctet:
 	  {
-		tTJSString str(TJS_W("/*octet*/ <% "));
+		tTJSString str(TJS_W("<% "));
 		tTJSVariantString * s = TJSOctetToListString(val.AsOctetNoAddRef());
 		try
 		{
