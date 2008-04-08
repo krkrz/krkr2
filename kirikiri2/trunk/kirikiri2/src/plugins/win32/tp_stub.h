@@ -6998,12 +6998,6 @@ inline iTJSTextWriteStream * TVPCreateTextStreamForWrite(const ttstr & name , co
 	typedef iTJSTextWriteStream * (__stdcall * __functype)(const ttstr &, const ttstr &);
 	return ((__functype)(TVPImportFuncPtr0c99a79e866f08b4df3914e83fc203dc))(name, modestr);
 }
-//----------------------------------------------------------------------------
-//! @brief	ワイド文字列を UTF-8 文字列に変換する
-//! @param	int : 入力文字列
-//! @param	out : 出力文字列, ここにNULL を渡すと必要な文字数が返る
-//! @return	書き込まれた文字数。out が NULL の時は必要な文字数
-//----------------------------------------------------------------------------
 inline tjs_int TVPWideCharToUtf8String(const tjs_char * in , char * out)
 {
 	if(!TVPImportFuncPtr900476efbc2031e643c042ca8e63a3d7)
@@ -7014,12 +7008,6 @@ inline tjs_int TVPWideCharToUtf8String(const tjs_char * in , char * out)
 	typedef tjs_int (__stdcall * __functype)(const tjs_char *, char *);
 	return ((__functype)(TVPImportFuncPtr900476efbc2031e643c042ca8e63a3d7))(in, out);
 }
-//----------------------------------------------------------------------------
-//! @brief	UTF-8 文字列をワイド文字列に変換する
-//! @param	int : 入力文字列
-//! @param	out : 出力文字列, ここにNULL を渡すと必要な文字数が返る
-//! @return	書き込まれた文字数。out が NULL の時は必要な文字数
-//----------------------------------------------------------------------------
 inline tjs_int TVPUtf8ToWideCharString(const char * in , tjs_char * out)
 {
 	if(!TVPImportFuncPtr07dfce61d490cf671a2d5359d713d64a)
@@ -7330,17 +7318,6 @@ inline bool TVPCreateFolders(const ttstr & folder)
 	typedef bool (__stdcall * __functype)(const ttstr &);
 	return ((__functype)(TVPImportFuncPtrb246b17b62d273bdc04e9d9e827f5c74))(folder);
 }
-//----------------------------------------------------------------------------
-//! @brief	吉里吉里のストレージからファイルを開き、ストリームを取得します
-//! @param	name : 開くファイル名
-//! @param	flags : オープンフラグ
-//! @return	ストリーム
-//! @note フラグは次の通り
-//! TJS_BS_READ : 読込
-//! TJS_BS_WRITE : 書込
-//! TJS_BS_APPEND : 追加
-//! TJS_BS_UPDATE : 更新
-//----------------------------------------------------------------------------
 inline IStream * TVPCreateIStream(const ttstr & name , tjs_uint32 flags)
 {
 	if(!TVPImportFuncPtr9974ebc6296f925cff55d8bcb2d52ce9)
@@ -7591,10 +7568,6 @@ inline tjs_uint32 TVPGetCPUType()
 	typedef tjs_uint32 (__stdcall * __functype)();
 	return ((__functype)(TVPImportFuncPtrba40ffbca76695b54a02aa8c1f1e047b))();
 }
-//----------------------------------------------------------------------------
-//! @brief	吉里吉里本体側のログへメッセージを出力します
-//! @param	line : 出力する文字列
-//----------------------------------------------------------------------------
 inline void TVPAddLog(const ttstr & line)
 {
 	if(!TVPImportFuncPtrcdefadd0c3bf15b4639b2f0338a40585)
@@ -7695,10 +7668,6 @@ inline ttstr TVPFormatMessage(const tjs_char * msg , const ttstr & p1 , const tt
 	typedef ttstr (__stdcall * __functype)(const tjs_char *, const ttstr &, const ttstr &);
 	return ((__functype)(TVPImportFuncPtrad40567a051208757642e5e087f3e741))(msg, p1, p2);
 }
-//----------------------------------------------------------------------------
-//! @brief	吉里吉里本体側で捕縛される例外を送出します
-//! @param	msg : 例外に渡す文字列
-//----------------------------------------------------------------------------
 inline void TVPThrowExceptionMessage(const tjs_char * msg)
 {
 	if(!TVPImportFuncPtr6a15185daab9b274963fe5ef46305775)
@@ -7709,12 +7678,6 @@ inline void TVPThrowExceptionMessage(const tjs_char * msg)
 	typedef void (__stdcall * __functype)(const tjs_char *);
 	((__functype)(TVPImportFuncPtr6a15185daab9b274963fe5ef46305775))(msg);
 }
-//----------------------------------------------------------------------------
-//! @brief	吉里吉里本体側で捕縛される例外を送出します
-//! @param	msg : 例外に渡す文字列
-//! @param	p1 : 
-//! @param	num : 
-//----------------------------------------------------------------------------
 inline void TVPThrowExceptionMessage(const tjs_char * msg , const ttstr & p1 , tjs_int num)
 {
 	if(!TVPImportFuncPtr073a2332a8ab3ed31ab81daea3d3f2c4)
@@ -7725,11 +7688,6 @@ inline void TVPThrowExceptionMessage(const tjs_char * msg , const ttstr & p1 , t
 	typedef void (__stdcall * __functype)(const tjs_char *, const ttstr &, tjs_int);
 	((__functype)(TVPImportFuncPtr073a2332a8ab3ed31ab81daea3d3f2c4))(msg, p1, num);
 }
-//----------------------------------------------------------------------------
-//! @brief	吉里吉里本体側で捕縛される例外を送出します
-//! @param	msg : 例外に渡す文字列
-//! @param	p1 : 
-//----------------------------------------------------------------------------
 inline void TVPThrowExceptionMessage(const tjs_char * msg , const ttstr & p1)
 {
 	if(!TVPImportFuncPtr01216e91225e06c7422bef0c2febc0cc)
@@ -7740,12 +7698,6 @@ inline void TVPThrowExceptionMessage(const tjs_char * msg , const ttstr & p1)
 	typedef void (__stdcall * __functype)(const tjs_char *, const ttstr &);
 	((__functype)(TVPImportFuncPtr01216e91225e06c7422bef0c2febc0cc))(msg, p1);
 }
-//----------------------------------------------------------------------------
-//! @brief	吉里吉里本体側で捕縛される例外を送出します
-//! @param	msg : 例外に渡す文字列
-//! @param	p1 : 
-//! @param	p2 : 
-//----------------------------------------------------------------------------
 inline void TVPThrowExceptionMessage(const tjs_char * msg , const ttstr & p1 , const ttstr & p2)
 {
 	if(!TVPImportFuncPtr16ce22ad500a5bdfd5d5743c847a28b6)
