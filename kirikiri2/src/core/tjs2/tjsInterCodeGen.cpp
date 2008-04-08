@@ -148,6 +148,22 @@ void tTJSExprNode::Add(tTJSExprNode *n)
 	Nodes->push_back(n);
 }
 //---------------------------------------------------------------------------
+void tTJSExprNode::AddArrayElement(const tTJSVariant & val)
+{
+	static tTJSString ss_add(TJS_W("add"));
+	tTJSVariant arg(val);
+	tTJSVariant *args[1] = {&arg};
+	Val->AsObjectClosureNoAddRef().FuncCall(0, ss_add.c_str(), ss_add.GetHint(),
+		NULL, 1, args, NULL);
+}
+//---------------------------------------------------------------------------
+void tTJSExprNode::AddDictionaryElement(const tTJSString & name, const tTJSVariant & val)
+{
+	tTJSString membername(name);
+	Val->AsObjectClosureNoAddRef().PropSet(TJS_MEMBERENSURE, membername.c_str(),
+		membername.GetHint(), &val, NULL);
+}
+//---------------------------------------------------------------------------
 
 
 
