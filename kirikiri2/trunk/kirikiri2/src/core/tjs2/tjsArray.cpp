@@ -1046,9 +1046,9 @@ void tTJSArrayNI::SaveStructuredData(std::vector<iTJSDispatch2 *> &stack,
 	tTJSStringAppender & string, const ttstr &indentstr)
 {
 #ifdef TJS_TEXT_OUT_CRLF
-	string += TJS_W("[\r\n");
+	string += TJS_W("(const) [\r\n");
 #else
-	string += TJS_W("[\n");
+	string += TJS_W("(const) [\n");
 #endif
 
 	ttstr indentstr2 = indentstr + TJS_W(" ");
