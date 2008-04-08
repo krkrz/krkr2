@@ -17,7 +17,8 @@
 #include "tjsInterCodeGen.h"
 #include "tjsScriptBlock.h"
 #include "tjsError.h"
-
+#include "tjsArray.h"
+#include "tjsDictionary.h"
 
 #define YYMALLOC	::malloc
 #define YYREALLOC	::realloc
@@ -179,7 +180,6 @@ int __yyerror(char * msg, void *pm);
 	T_UPLUS
 	T_UMINUS
 	T_EVAL
-	T_SYMBOL
 	T_POSTDECREMENT
 	T_POSTINCREMENT
 	T_IGNOREPROP
@@ -190,7 +190,6 @@ int __yyerror(char * msg, void *pm);
 	T_ARRAYARG
 	T_INLINEDIC
 	T_DICELM
-	T_REGEXP
 	T_WITHDOT
 
 	T_THIS_PROXY
@@ -207,6 +206,7 @@ int __yyerror(char * msg, void *pm);
 	compare_expr shift_expr add_sub_expr mul_div_expr mul_div_expr_and_asterisk
 	unary_expr incontextof_expr priority_expr factor_expr call_arg call_arg_list
 	func_expr_def func_call_expr expr_no_comma inline_array array_elm inline_dic dic_elm
+	const_inline_array const_inline_dic
 
 %%
 
@@ -712,6 +712,8 @@ factor_expr
 	| "void"									{ $$ = cc->MakeNP0(T_VOID); }
 	| inline_array								{ $$ = $1; }
 	| inline_dic								{ $$ = $1; }
+	| const_inline_array						{ $$ = $1; }
+	| const_inline_dic							{ $$ = $1; }
 	| "/="										{ lx->SetStartOfRegExp(); }
 	  T_REGEXP									{ $$ = cc->MakeNP0(T_REGEXP);
 												  $$->SetValue(lx->GetValue($3)); }
@@ -794,6 +796,72 @@ dic_dummy_elm_opt
 	: /* empty */
 	| ","
 ;
+
+
+
+/* a constant inline array object */
+const_inline_array
+	: "(" "const" ")" "[" 				{ tTJSExprNode *node =
+										  cc->MakeNP0(T_CONSTVAL);
+										  iTJSDispatch2 * dsp = TJSCreateArrayObject();
+										  node->SetValue(tTJSVariant(dsp, dsp));
+										  dsp->Release();
+										  cc->PushCurrentNode(node); }
+	  const_array_elm_list_opt
+	  "]"								{ $$ = cn; cc->PopCurrentNode(); }
+;
+
+const_array_elm_list_opt
+	: /* empty */
+	| const_array_elm_list
+;
+
+
+/* a constant inline array's element list */
+const_array_elm_list
+	: const_array_elm
+	| const_array_elm_list ","
+	  const_array_elm
+;
+
+/* a constant inline array's element */
+const_array_elm
+	: "-" T_CONSTVAL					{ cn->AddArrayElement(- lx->GetValue($2)); }
+	| T_CONSTVAL						{ cn->AddArrayElement(lx->GetValue($1)); }
+	| "void"							{ cn->AddArrayElement(tTJSVariant());  }
+	| const_inline_array				{ cn->AddArrayElement($1->GetValue()); }
+	| const_inline_dic					{ cn->AddArrayElement($1->GetValue()); }
+;
+
+/* a constant inline dictionary */
+const_inline_dic
+	: "(" "const" ")" "%" "["			{ tTJSExprNode *node =
+										  cc->MakeNP0(T_CONSTVAL);
+										  iTJSDispatch2 * dsp = TJSCreateDictionaryObject();
+										  node->SetValue(tTJSVariant(dsp, dsp));
+										  dsp->Release();
+										  cc->PushCurrentNode(node); }
+	  const_dic_elm_list
+	  "]"								{ $$ = cn; cc->PopCurrentNode(); }
+;
+
+
+/* a constant inline dictionary's element list */
+const_dic_elm_list
+    : /* empty */
+	| const_dic_elm
+	| const_dic_elm_list "," const_dic_elm
+;
+
+/* a constant inline dictionary's element */
+const_dic_elm
+	: T_CONSTVAL "," "-" T_CONSTVAL		{ cn->AddDictionaryElement(lx->GetValue($1), - lx->GetValue($4)); }
+	| T_CONSTVAL "," T_CONSTVAL			{ cn->AddDictionaryElement(lx->GetValue($1), lx->GetValue($3)); }
+	| T_CONSTVAL "," "void"				{ cn->AddDictionaryElement(lx->GetValue($1), tTJSVariant()); }
+	| T_CONSTVAL "," const_inline_array	{ cn->AddDictionaryElement(lx->GetValue($1), $3->GetValue()); }
+	| T_CONSTVAL "," const_inline_dic	{ cn->AddDictionaryElement(lx->GetValue($1), $3->GetValue()); }
+;
+
 
 
 %%
