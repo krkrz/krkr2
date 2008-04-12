@@ -343,7 +343,8 @@ HRESULT STDMETHODCALLTYPE CVMRCustomAllocatorPresenter9::AdviseNotify( IVMRSurfa
 {
 	CAutoLock Lock(m_Lock);
 	m_VMR9SurfAllocNotify = lpIVMRSurfAllocNotify;
-    HMONITOR hMonitor = D3D()->GetAdapterMonitor( D3DADAPTER_DEFAULT );
+//	HMONITOR hMonitor = D3D()->GetAdapterMonitor( D3DADAPTER_DEFAULT );
+	HMONITOR hMonitor = D3D()->GetAdapterMonitor( GetMonitorNumber() );
 	HRESULT	hr;
     if( FAILED(hr = AllocatorNotify()->SetD3DDevice( D3DDevice(), hMonitor ) ) )
 		return hr;
@@ -532,11 +533,11 @@ void CVMRCustomAllocatorPresenter9::PresentVideoImage()
 UINT CVMRCustomAllocatorPresenter9::GetMonitorNumber()
 {
 	CAutoLock Lock(m_Lock);
-	if( m_D3D.p == NULL || m_ChildWnd == NULL ) return 0;
+	if( m_D3D.p == NULL || m_ChildWnd == NULL ) return D3DADAPTER_DEFAULT;
 	HMONITOR windowMonitor = MonitorFromWindow( m_ChildWnd, MONITOR_DEFAULTTOPRIMARY );
 	UINT iCurrentMonitor = 0;
 	UINT numOfMonitor = D3D()->GetAdapterCount();
-	for( ; iCurrentMonitor < numOfMonitor; ++numOfMonitor )
+	for( ; iCurrentMonitor < numOfMonitor; ++iCurrentMonitor )
 	{
 		if( D3D()->GetAdapterMonitor(iCurrentMonitor) == windowMonitor )
 			break;
