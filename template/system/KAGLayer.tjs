@@ -298,6 +298,31 @@ class KAGLayer extends Layer
 		if(moveObject !== void) invalidate moveObject, moveObject = void;
 	}
 
+	// フレーム番号を指定したmove
+	function beginFrameMove(elm)
+	{
+		// elm に従い自動移動を開始する
+		stopMove();
+
+		var ox = elm.ox === void ? 0 : +elm.ox;
+		var oy = elm.oy === void ? 0 : +elm.oy;
+		var fps = elm.fps === void ? 30 : +elm.fps;
+
+		// path の分解
+		var array = [].split("(), ", elm.path, , true);
+		for(var i = array.count-1; i>=0; i--) array[i+4] = +array[i];
+		array[0] = 0;
+		array[1] = left - ox;
+		array[2] = top - oy;
+		array[3] = opacity;
+
+		// 移動用オブジェクトの作成
+		moveObject = new LinearFrameMover(this, array, fps, moveFinalFunction, ox, oy );
+
+		window.moveCount++;
+		moveObject.startMove();
+	}
+
 	function store()
 	{
 		// 辞書配列に現在の状態を保存する

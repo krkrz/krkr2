@@ -223,3 +223,111 @@ class SplineMover extends LinearMover
 }
 
 
+class LinearFrameMover
+{
+	// 直線補間
+	var layer;				// レイヤ
+	var path;				// フレーム配列 -> フレーム番号, x, y, opacity が入っている
+	var fps;				// フレームレート
+	var pointCount;			// path.count -1
+	var finalFunction;		// 移動終了時に呼ぶ関数
+	var startTick;			// 移動開始をしたティック
+	var totalTime;			// 全体の時間
+	var moving = false;		// 移動中か
+	var first = true;		// 初回のハンドラ呼び出しか
+	var nextStop = false;	// 次のハンドラ呼び出しで停止するか
+
+	var offset_x = 0;
+	var offset_y = 0;
+	var curPoint;
+
+	function LinearFrameMover(layer, path, fps, finalfunction, offset_x, offset_y)
+	{
+		this.layer = layer;
+		this.path = path;
+		this.fps = fps;
+		this.finalFunction = finalfunction;
+		this.offset_x = offset_x;
+		this.offset_y = offset_y;
+		pointCount = (path.count \ 4 - 1);
+		totalTime = (path[int(pointCount*4)] * 1000) \ fps;
+	}
+
+	function finalize() {
+		stopMove();
+	}
+
+	function startMove() {
+		first = true;
+		System.addContinuousHandler(handler); // ContinuousHandlers に追加
+		moving = true;
+	}
+
+	function stopMove() {
+		// 移動を終わる
+		if( moving ) {
+			// 最終位置に移動
+			if(layer isvalid) {
+				var idx = int(pointCount*4);
+				var p = path;
+				layer.setPos(offset_x+p[idx+1], offset_y+p[idx+2]);
+				layer.opacity = p[idx+3];
+			}
+			System.removeContinuousHandler(handler);
+			moving = false;
+			finalFunction();
+		}
+	}
+
+	function handler(tick) {
+		// 移動中に呼ばれる
+		if(nextStop || !(layer isvalid)) { stopMove();  return; }
+		if(first) startTick = tick, first = false, curPoint = 0;
+		tick -= startTick;
+		if( tick >= totalTime ) {
+			nextStop = true;
+			var idx = int(pointCount*4);
+			var p = path;
+			layer.setPos(offset_x+p[idx+1], offset_y+p[idx+2]);
+			layer.opacity = p[idx+3];
+			return;
+		}
+		move(tick);
+	}
+
+	function move(tick) {
+		var idx = int(curPoint*4);
+		var p = path;
+		var curTime = (p[idx] * 1000) \ fps;
+		var nextIdx = idx + 4;
+		var nextTime = (p[nextIdx] * 1000) \ fps;
+		if( tick > nextTime ) {
+			curPoint++;
+			idx = int(curPoint*4);
+			curTime = (p[idx] * 1000) \ fps;
+			nextIdx = idx + 4;
+			nextTime = (p[nextIdx] * 1000) \ fps;
+		}
+
+		var duration = nextTime - curTime;
+		var diff = (tick - curTime);
+
+		var ratio = diff / duration;
+		var p = path;
+		var sx = p[idx+1];
+		var sy = p[idx+2];
+		var so = p[idx+3];
+
+		var ex = p[nextIdx+1];
+		var ey = p[nextIdx+2];
+		var eo = p[nextIdx+3];
+
+		var l = int((ex-sx)*ratio + sx);
+		var t = int((ey-sy)*ratio + sy);
+		var o = eo >= 256 ? so : int((eo-so)*ratio + so);
+
+		layer.setPos(offset_x+l, offset_y+t);
+		layer.opacity = o;
+	}
+}
+
