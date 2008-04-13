@@ -5468,6 +5468,14 @@ class KAGWindow extends Window
 		return 0;
 	} incontextof this,
 
+	// layer, page, fps, ox, oy
+	framemove : function(elm)
+	{
+		// フレーム指定自動移動の開始
+		getLayerFromElm(elm).beginFrameMove(elm);
+		return 0;
+	} incontextof this,
+
 	wm : function(elm)
 	{
 		//  自動移動を待つ
