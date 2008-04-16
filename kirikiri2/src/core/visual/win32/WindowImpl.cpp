@@ -196,7 +196,13 @@ bool TVPDDPrimarySurfaceFailed = false;
 
 static tjs_int TVPPreferredFullScreenBPP = 0;
 static tTVPFullScreenResolutionMode TVPPreferredFullScreenResolutionMode = fsrAuto;
-static bool TVPPreferredFullScreenUsingEngineZoom = true;
+enum tTVPFullScreenUsingEngineZoomMode
+{
+	fszmNone, //!< no zoom by the engine
+	fszmInner, //!< inner fit on the monitor (uncovered areas may be filled with black)
+	fszmOuter //!< outer fit on the monitor (primary layer may jut out of the monitor)
+};
+static tTVPFullScreenUsingEngineZoomMode TVPPreferredFullScreenUsingEngineZoomMode = fszmInner;
 
 
 //---------------------------------------------------------------------------
@@ -233,10 +239,12 @@ static void TVPInitFullScreenOptions()
 	if(TVPGetCommandLine(TJS_W("-fszoom"), &val) )
 	{
 		ttstr str(val);
-		if(str == TJS_W("yes"))
-			TVPPreferredFullScreenUsingEngineZoom = true;
+		if(str == TJS_W("yes") || str == TJS_W("inner"))
+			TVPPreferredFullScreenUsingEngineZoomMode = fszmInner;
+		if(str == TJS_W("outer"))
+			TVPPreferredFullScreenUsingEngineZoomMode = fszmOuter;
 		else if(str == TJS_W("no"))
-			TVPPreferredFullScreenUsingEngineZoom = false;
+			TVPPreferredFullScreenUsingEngineZoomMode = fszmNone;
 	}
 
 	if(TVPGetCommandLine(TJS_W("-fsmethod"), &val) )
@@ -716,18 +724,21 @@ void TVPEnumerateAllDisplayModes(std::vector<tTVPScreenMode> & modes)
 void TVPMakeFullScreenModeCandidates(
 	const tTVPScreenMode & preferred,
 	tTVPFullScreenResolutionMode mode,
-	bool use_zoom,
+	tTVPFullScreenUsingEngineZoomMode zoom_mode,
 	std::vector<tTVPScreenModeCandidate> & candidates)
 {
 	// adjust give parameter
-	if(mode == fsrAuto) use_zoom = true;
-		// use_zoom is ignored (as always be true) if mode == fsrAuto
+	if(mode == fsrAuto && zoom_mode == fszmNone) zoom_mode = fszmInner;
+		// fszmInner is ignored (as always be fszmInner) if mode == fsrAuto && zoom_mode == fszmNone
 
 	// print debug information
 	TVPAddLog(TJS_W("(info) Searching best fullscreen resolution ..."));
 	TVPAddLog(TJS_W("(info) condition: preferred screen mode: ") + preferred.Dump());
 	TVPAddLog(TJS_W("(info) condition: mode: " ) + TVPGetGetFullScreenResolutionModeString(mode));
-	TVPAddLog(TJS_W("(info) condition: use zoom: ") + (use_zoom?ttstr(TJS_W("true")):ttstr(TJS_W("false"))));
+	TVPAddLog(TJS_W("(info) condition: zoom mode: ") + ttstr(
+		zoom_mode == fszmInner ? TJS_W("inner") :
+		zoom_mode == fszmOuter ? TJS_W("outer") :
+			TJS_W("none")));
 
 	// get original screen metrics
 	TVPGetOriginalScreenMetrics();
@@ -797,7 +808,7 @@ void TVPMakeFullScreenModeCandidates(
 			}
 		}
 
-		if(!use_zoom)
+		if(zoom_mode == fszmNone)
 		{
 			// we cannot use resolution less than preferred resotution when
 			// we do not use zooming, so reject them.
@@ -853,13 +864,13 @@ void TVPMakeFullScreenModeCandidates(
 		candidate.Width = i->Width;
 		candidate.Height = i->Height;
 		candidate.BitsPerPixel = i->BitsPerPixel;
-		if(use_zoom)
+		if(zoom_mode != fszmNone)
 		{
 			double width_r  = (double)candidate.Width /  (double)preferred.Width;
 			double height_r = (double)candidate.Height / (double)preferred.Height;
 
 			// select width or height, to fit to target screen from preferred size
-			if(width_r < height_r)
+			if(zoom_mode == fszmInner ? (width_r < height_r) : (width_r > height_r))
 			{
 				candidate.ZoomNumer = candidate.Width;
 				candidate.ZoomDenom = preferred.Width;
@@ -985,7 +996,7 @@ void TVPSwitchToFullScreen(HWND window, tjs_int w, tjs_int h)
 	TVPMakeFullScreenModeCandidates(
 		preferred,
 		TVPPreferredFullScreenResolutionMode,
-		TVPPreferredFullScreenUsingEngineZoom,
+		TVPPreferredFullScreenUsingEngineZoomMode,
 		candidates);
 
 	// try changing display mode
@@ -2047,9 +2058,10 @@ TJS_BEGIN_NATIVE_METHOD_DECL(findFullScreenCandidates)
 	preferred.Height = *param[1];
 	preferred.BitsPerPixel = *param[2];
 	tjs_int mode = *param[3];
-	bool use_zoom = *param[4];
+	tjs_int zoom_mode = *param[4];
 
-	TVPMakeFullScreenModeCandidates(preferred, (tTVPFullScreenResolutionMode)mode, use_zoom, candidates);
+	TVPMakeFullScreenModeCandidates(preferred, (tTVPFullScreenResolutionMode)mode,
+		(tTVPFullScreenUsingEngineZoomMode)zoom_mode, candidates);
 
 
 	return TJS_S_OK;
