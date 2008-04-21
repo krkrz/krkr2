@@ -736,7 +736,7 @@ typedef unsigned char const *BufRefT;
  * レイヤのサイズとバッファを取得する
  */
 static bool
-GetLayerBufferAndSize(iTJSDispatch2 *lay, long &w, long &h, BufRefT &ptr, long &pitch)
+GetLayerBufferAndSize(iTJSDispatch2 *lay, long &w, long &h, BufRefT &ptr, long &pitch, bool forwrite=false)
 {
 	// レイヤインスタンス以外ではエラー
 	if (!lay || TJS_FAILED(lay->IsInstanceOf(0, 0, 0, TJS_W("Layer"), lay))) return false;
@@ -759,7 +759,7 @@ GetLayerBufferAndSize(iTJSDispatch2 *lay, long &w, long &h, BufRefT &ptr, long &
 
 	// バッファ取得
 	val.Clear();
-	if (TJS_FAILED(lay->PropGet(0, TJS_W("mainImageBuffer"),      0, &val, lay))) return false;
+	if (TJS_FAILED(lay->PropGet(0, forwrite ? TJS_W("mainImageBufferForWrite") : TJS_W("mainImageBuffer"),      0, &val, lay))) return false;
 	ptr = reinterpret_cast<BufRefT>(val.AsInteger());
 
 	// ピッチ取得
@@ -905,6 +905,50 @@ static tjs_error TJS_INTF_METHOD saveLayerImageTlg5Func(tTJSVariant *result,
 };
 
 NCB_ATTACH_FUNCTION(saveLayerImageTlg5, Layer, saveLayerImageTlg5Func);
+
+/**
+ * Layer.copyAlpha = function(src);
+ * src の B値を α領域にコピーする
+ */
+static tjs_error TJS_INTF_METHOD
+CopyBlueToAlpha(tTJSVariant *result, tjs_int numparams, tTJSVariant **param, iTJSDispatch2 *lay)
+{
+	if (numparams < 0) {
+		return TJS_E_BADPARAMCOUNT;
+	}
+
+	// 読み込みもと
+	BufRefT sbuf = 0;
+	long sw, sh, spitch;
+	if (!GetLayerBufferAndSize(param[0]->AsObjectNoAddRef(), sw, sh, sbuf, spitch)) {
+		TVPThrowExceptionMessage(TJS_W("src must be Layer."));
+	}
+	// 書き込み先
+	BufRefT dbuf = 0;
+	long dw, dh, dpitch;
+	if (!GetLayerBufferAndSize(lay, dw, dh, dbuf, dpitch, true)) {
+		TVPThrowExceptionMessage(TJS_W("dest must be Layer."));
+	}
+
+	// 小さい領域分
+	int w = (sw < dw ? sw : dw);
+	int h = sh < dh ? sh : dh;
+	// コピー
+	for (int i=0;i<h;i++) {
+		BufRefT p = sbuf;     // B領域
+		unsigned char *q = (unsigned char*)dbuf+3;   // A領域
+		for (int j=0;j<w;j++) {
+			*q = *p;
+			p += 4;
+			q += 4;
+		}
+		sbuf += spitch;
+		dbuf += dpitch;
+	}
+	return TJS_S_OK;
+}
+
+NCB_ATTACH_FUNCTION(copyBlueToAlpha, Layer, CopyBlueToAlpha);
 
 /**
  * 登録処理後
