@@ -72,4 +72,10 @@ class Layer {
 	 *（baseはインスタンス自身と同じサイズでないと例外を投げます）
 	 */
 	function getDiffRect(base);
+
+	/**
+	 * レイヤの Blue CHANNEL を Alpha 領域に複製する
+	 * @param src コピー元レイヤ
+	 */
+	function copyBlueToAlpha(src);
 };
