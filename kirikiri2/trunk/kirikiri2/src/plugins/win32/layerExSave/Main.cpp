@@ -729,6 +729,166 @@ NCB_ATTACH_CLASS_WITH_HOOK(WindowSaveImage, Window) {
 // レイヤ拡張
 //---------------------------------------------------------------------------
 
+// バッファ参照用の型
+typedef unsigned char const *BufRefT;
+
+/**
+ * レイヤのサイズとバッファを取得する
+ */
+static bool
+GetLayerBufferAndSize(iTJSDispatch2 *lay, long &w, long &h, BufRefT &ptr, long &pitch)
+{
+	// レイヤインスタンス以外ではエラー
+	if (!lay || TJS_FAILED(lay->IsInstanceOf(0, 0, 0, TJS_W("Layer"), lay))) return false;
+
+	// レイヤイメージは在るか？
+	tTJSVariant val;
+	if (TJS_FAILED(lay->PropGet(0, TJS_W("hasImage"), 0, &val, lay)) || (val.AsInteger() == 0)) return false;
+
+	// レイヤサイズを取得
+	val.Clear();
+	if (TJS_FAILED(lay->PropGet(0, TJS_W("imageWidth"), 0, &val, lay))) return false;
+	w = (long)val.AsInteger();
+
+	val.Clear();
+	if (TJS_FAILED(lay->PropGet(0, TJS_W("imageHeight"), 0, &val, lay))) return false;
+	h = (long)val.AsInteger();
+
+	// サイズが不正
+	if (w <= 0 || h <= 0) return false;
+
+	// バッファ取得
+	val.Clear();
+	if (TJS_FAILED(lay->PropGet(0, TJS_W("mainImageBuffer"),      0, &val, lay))) return false;
+	ptr = reinterpret_cast<BufRefT>(val.AsInteger());
+
+	// ピッチ取得
+	val.Clear();
+	if (TJS_FAILED(lay->PropGet(0, TJS_W("mainImageBufferPitch"), 0, &val, lay))) return false;
+	pitch = (long)val.AsInteger();
+
+	// 取得失敗
+	if (ptr == 0 || pitch == 0) return false;
+
+	return true;
+}
+
+/**
+ * 矩形領域の辞書を生成
+ */
+static void
+MakeResult(tTJSVariant *result, long x, long y, long w, long h)
+{
+	ncbDictionaryAccessor dict;
+	dict.SetValue(TJS_W("x"), x);
+	dict.SetValue(TJS_W("y"), y);
+	dict.SetValue(TJS_W("w"), w);
+	dict.SetValue(TJS_W("h"), h);
+	*result = dict;
+}
+
+/**
+ * 不透明チェック関数
+ */
+static bool
+CheckTransp(BufRefT p, long next, long count)
+{
+	for (; count > 0; count--, p+=next) if (p[3] != 0) return true;
+	return false;
+}
+
+/**
+ * レイヤイメージをクロップ（上下左右の余白透明部分を切り取る）したときのサイズを取得する
+ *
+ * Layer.getCropRect = function();
+ * @return %[ x, y, w, h] 形式の辞書，またはvoid（全部透明のとき）
+ */
+static tjs_error TJS_INTF_METHOD
+GetCropRect(tTJSVariant *result, tjs_int numparams, tTJSVariant **param, iTJSDispatch2 *lay)
+{
+	// レイヤバッファの取得
+	BufRefT p, r = 0;
+	long w, h, nl, nc = 4;
+	if (!GetLayerBufferAndSize(lay, w, h, r, nl))
+		TVPThrowExceptionMessage(TJS_W("Invalid layer image."));
+
+	// 結果領域
+	long x1=0, y1=0, x2=w-1, y2=h-1;
+	result->Clear();
+
+	for (p=r;             x1 <  w; x1++,p+=nc) if (CheckTransp(p, nl,  h)) break; // 左から透明領域を調べる
+	/*                                      */ if (x1 >= w) return TJS_S_OK;      // 全部透明なら void を返す
+	for (p=r+x2*nc;       x2 >= 0; x2--,p-=nc) if (CheckTransp(p, nl,  h)) break; // 右から透明領域を調べる
+	/*                                      */ long rw = x2 - x1 + 1;             // 左右に挟まれた残りの幅
+	for (p=r+x1*nc;       y1 <  h; y1++,p+=nl) if (CheckTransp(p, nc, rw)) break; // 上から透明領域を調べる
+	for (p=r+x1*nc+y2*nl; y2 >= 0; y2--,p-=nl) if (CheckTransp(p, nc, rw)) break; // 下から透明領域を調べる
+
+	// 結果を辞書に返す
+	MakeResult(result, x1, y1, rw, y2 - y1 + 1);
+
+	return TJS_S_OK;
+}
+
+NCB_ATTACH_FUNCTION(getCropRect, Layer, GetCropRect);
+
+/**
+ * 色比較関数
+ */
+static bool
+CheckDiff(BufRefT p1, long p1n, BufRefT p2, long p2n, long count)
+{
+	for (; count > 0; count--, p1+=p1n, p2+=p2n)
+		if ((p1[3] != p2[3]) || (p1[3] != 0 && (p1[0] != p2[0] || p1[1] != p2[1] || p1[2] != p2[2]))) return true;
+	// ↑αが0の場合は色がどんなものでも同じとみなす
+	return false;
+}
+
+/**
+ * レイヤの差分領域を取得する（
+ * 
+ * Layer.getDiffRegion = function(base);
+ * @param base 差分元となるベース用の画像（インスタンス自身と同じ画像サイズであること）
+ * @return %[ x, y, w, h ] 形式の辞書，またはvoid（完全に同じ画像のとき）
+ */
+
+static tjs_error TJS_INTF_METHOD
+GetDiffRect(tTJSVariant *result, tjs_int numparams, tTJSVariant **param, iTJSDispatch2 *lay)
+{
+	// 引数の数チェック
+	if (numparams < 1) return TJS_E_BADPARAMCOUNT;
+
+	iTJSDispatch2 *base = param[0]->AsObjectNoAddRef();
+
+	// レイヤバッファの取得
+	BufRefT fp, tp, fr = 0, tr = 0;
+	long w, h, tnl, fw, fh, fnl, nc = 4;
+	if (!GetLayerBufferAndSize(lay,   w,  h, tr, tnl) || 
+		!GetLayerBufferAndSize(base, fw, fh, fr, fnl))
+		TVPThrowExceptionMessage(TJS_W("Invalid layer image."));
+
+	// レイヤのサイズは同じか
+	if (w != fw || h != fh)
+		TVPThrowExceptionMessage(TJS_W("Different layer size."));
+
+	// 結果領域
+	long x1=0, y1=0, x2=w-1, y2=h-1;
+	result->Clear();
+
+	for (fp=fr,             tp=tr;              x1 <  w; x1++,fp+=nc, tp+=nc ) if (CheckDiff(fp, fnl, tp, tnl,  h)) break; // 左から透明領域を調べる
+	/*                                                                      */ if (x1 >= w) return TJS_S_OK;               // 全部透明なら void を返す
+	for (fp=fr+x2*nc,       tp=tr+x2*nc;        x2 >= 0; x2--,fp-=nc, tp-=nc ) if (CheckDiff(fp, fnl, tp, tnl,  h)) break; // 右から透明領域を調べる
+	/*                                                                      */ long rw = x2 - x1 + 1;                      // 左右に挟まれた残りの幅
+	for (fp=fr+x1*nc,       tp=tr+x1*nc;        y1 <  h; y1++,fp+=fnl,tp+=tnl) if (CheckDiff(fp, nc,  tp, nc,  rw)) break; // 上から透明領域を調べる
+	for (fp=fr+x1*nc+y2*fnl,tp=tr+x1*nc+y2*tnl; y2 >= 0; y2--,fp-=fnl,tp-=tnl) if (CheckDiff(fp, nc,  tp, nc,  rw)) break; // 下から透明領域を調べる
+
+	// 結果を辞書に返す
+	MakeResult(result, x1, y1, rw, y2 - y1 + 1);
+
+	return TJS_S_OK;
+}
+
+NCB_ATTACH_FUNCTION(getDiffRect, Layer, GetDiffRect);
+
 /**
  * TLG画像保存
  */
@@ -745,7 +905,6 @@ static tjs_error TJS_INTF_METHOD saveLayerImageTlg5Func(tTJSVariant *result,
 };
 
 NCB_ATTACH_FUNCTION(saveLayerImageTlg5, Layer, saveLayerImageTlg5Func);
-
 
 /**
  * 登録処理後

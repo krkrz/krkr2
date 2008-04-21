@@ -57,4 +57,19 @@ class Layer {
 	 * @param tags タグ情報
 	 */
 	function saveLayerImageTlg5(filename, tags=void);
+
+	/**
+	 * レイヤイメージをクロップ（上下左右の余白透明部分を切り取る）したときの
+	 * サイズを取得します。
+	 * @return %[ x, y, w, h] 形式の辞書，またはvoid（全部透明のとき）
+	 */
+	function getCropRect();
+
+	/**
+	 * レイヤの差分領域を取得します。
+	 * @param base 差分元となるベース用の画像
+	 * @return %[ x, y, w, h ] 形式の辞書，またはvoid（完全に同じ画像のとき）
+	 *（baseはインスタンス自身と同じサイズでないと例外を投げます）
+	 */
+	function getDiffRect(base);
 };
