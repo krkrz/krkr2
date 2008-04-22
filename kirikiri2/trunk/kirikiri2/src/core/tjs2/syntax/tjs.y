@@ -827,6 +827,7 @@ const_array_elm_list
 /* a constant inline array's element */
 const_array_elm
 	: "-" T_CONSTVAL					{ cn->AddArrayElement(- lx->GetValue($2)); }
+	| "+" T_CONSTVAL					{ cn->AddArrayElement(+ lx->GetValue($2)); }
 	| T_CONSTVAL						{ cn->AddArrayElement(lx->GetValue($1)); }
 	| "void"							{ cn->AddArrayElement(tTJSVariant());  }
 	| const_inline_array				{ cn->AddArrayElement($1->GetValue()); }
@@ -856,6 +857,7 @@ const_dic_elm_list
 /* a constant inline dictionary's element */
 const_dic_elm
 	: T_CONSTVAL "," "-" T_CONSTVAL		{ cn->AddDictionaryElement(lx->GetValue($1), - lx->GetValue($4)); }
+	| T_CONSTVAL "," "+" T_CONSTVAL		{ cn->AddDictionaryElement(lx->GetValue($1), + lx->GetValue($4)); }
 	| T_CONSTVAL "," T_CONSTVAL			{ cn->AddDictionaryElement(lx->GetValue($1), lx->GetValue($3)); }
 	| T_CONSTVAL "," "void"				{ cn->AddDictionaryElement(lx->GetValue($1), tTJSVariant()); }
 	| T_CONSTVAL "," const_inline_array	{ cn->AddDictionaryElement(lx->GetValue($1), $3->GetValue()); }
