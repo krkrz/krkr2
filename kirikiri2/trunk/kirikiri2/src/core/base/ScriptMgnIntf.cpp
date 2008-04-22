@@ -1123,7 +1123,7 @@ TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/getClassNames) /* UNDOCUMENTED: subje
 				array->PropSetByNum(TJS_MEMBERENSURE, num, &val, array);
 				num ++;
 			}
-			if(result) *result = array;
+			if(result) *result = tTJSVariant(array, array);
 		}
 		catch(...)
 		{
