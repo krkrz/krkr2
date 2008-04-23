@@ -7,6 +7,7 @@ class Storages {
 
 	/**
 	 * ファイル属性の取得
+	 * @param file 対象ファイル
 	 * @return 属性情報の入った辞書
 	 * size: ファイルサイズ
 	 * mtime: 更新日時 (Date オブジェクト)
@@ -91,4 +92,40 @@ class Storages {
 	 */
 	function isExistentDirectory(dir);	// by Kiyobee
 
+	/**
+	 * タイムスタンプ取得
+	 * @param target 対象ファイルまたはディレクトリ
+	 * @return タイムスタンプ情報の入った辞書
+	 * mtime: 更新日時 (Date オブジェクト)
+	 * atime: アクセス日時 (Date オブジェクト)
+	 * ctime: 作成日時 (Date オブジェクト)
+	 * ⇒fstatとの違いは非アーカイブファイル限定で，sizeを返さないこと
+	 */
+	function getTime(target);
+
+	/**
+	 * タイムスタンプ設定
+	 * @param target 対象ファイルまたはディレクトリ
+	 * @param times タイムスタンプ情報の入った辞書
+	 * mtime: 更新日時 (Date オブジェクト)
+	 * atime: アクセス日時 (Date オブジェクト)
+	 * ctime: 作成日時 (Date オブジェクト)
+	 * @return 成功したかどうか
+	 */
+	function setTime(target, times);
+
+
+	/**
+	 * 更新日取得（高速版）
+	 * @param target 対象ファイルまたはディレクトリ
+	 * @return 時間（WINDOWSのFILETIME 64bit値）
+	 */
+	function getLastModifiedFileTime(target);
+	/**
+	 * 更新日設定（高速版）
+	 * @param target 対象ファイルまたはディレクトリ
+	 * @param time   時間（WINDOWSのFILETIME 64bit値）
+	 * @return 成功したかどうか
+	 */
+	function setLastModifiedFileTime(target, time);
 };
