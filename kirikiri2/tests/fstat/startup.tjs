@@ -1,16 +1,62 @@
 Plugins.link("fstat.dll");
 
-function showDate(date) {
-	if (date !== void && date !== null) {
-		Debug.message("%04d/%02d/%02d %02d:%02d:%02d".sprintf(date.getYear(), date.getMonth()+1, date.getDate(), date.getHours(), date.getMinutes(), date.getSeconds()));
-	}
-}
-var win = new Window();
-win.visible = true;
-
+Debug.controller.visible = true;
 Debug.console.visible = true;
-var stat = Storages.fstat("startup.tjs");
-Debug.message("mtime:"); showDate(stat.mtime);
-Debug.message("atime:"); showDate(stat.atime);
-Debug.message("ctime:"); showDate(stat.ctime);
+var dm = Debug.message;
 
+function showDate(date, mes*) {
+	if (date === void || date === null) return;
+	with (date) dm(mes.join(" ")+" %04d/%02d/%02d %02d:%02d:%02d".sprintf(
+		.getYear(), .getMonth()+1, .getDate(), .getHours(), .getMinutes(), .getSeconds()));
+}
+function showStat(stat, showsize = true) {
+	if (stat === void) return;
+	showDate(stat.mtime, "mtime:");
+	showDate(stat.atime, "atime:");
+	showDate(stat.ctime, "ctime:");
+	if (showsize) dm("size: "+stat.size);
+}
+
+function testStat(name) {
+	var stat;
+	dm("\n\ntestStat: " + name);
+	try { stat = Storages.fstat(name); } catch (e) { return dm("error: "+e.message); }
+	showStat(stat);
+}
+
+function testTime(name) {
+	dm("\n\ntestTime: " + name);
+	var orig = Storages.getTime(name);
+
+	dm("set: "+Storages.setTime(name, %[ mtime:new Date("2000/01/01 00:00:00"), atime:new Date("2001/12/31 23:59:59"), ctime:new Date("1999/09/09 09:09:09") ]));
+	showStat(Storages.getTime(name), false);
+
+	dm("set: "+Storages.setTime(name, orig));
+	showStat(Storages.getTime(name), false);
+}
+
+function testExistDir(name) {
+	dm("\n\ntestExistDir: " + name + ":"+Storages.isExistentDirectory(name));
+}
+
+
+
+// fstat test...
+testStat("startup.tjs");
+testStat(System.exePath);
+testStat("test.xp3>startup.tjs");
+//testStat("aaa"); // error: cannot open
+//testStat(""); // error: 対応していないメディアタイプ
+
+
+// settime test
+testTime("startup.tjs");
+testTime(System.exePath);
+
+// test isExistentDirectory
+testExistDir("startup.tjs");
+testExistDir(System.exePath);
+testExistDir(System.exePath.substr(0,System.exePath.length-1));
+testExistDir(System.exePath+"///");
+testExistDir("aaa");
+testExistDir("");
