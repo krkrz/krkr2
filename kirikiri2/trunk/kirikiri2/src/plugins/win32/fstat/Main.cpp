@@ -5,31 +5,9 @@ using namespace std;
 #include <shlobj.h>
 
 // Date クラスメンバ
-static iTJSDispatch2 *dateClass = NULL;    // Date のクラスオブジェクト
+static iTJSDispatch2 *dateClass   = NULL;  // Date のクラスオブジェクト
 static iTJSDispatch2 *dateSetTime = NULL;  // Date.setTime メソッド
-
-/**
- * ファイル時刻を Date クラスにして保存
- * @param store 格納先
- * @param filetime ファイル時刻
- */
-static void storeDate(tTJSVariant &store, FILETIME &filetime, iTJSDispatch2 *objthis)
-{
-	// ファイル生成時
-	tjs_uint64 ft = filetime.dwHighDateTime * 0x100000000 | filetime.dwLowDateTime;
-	if (ft > 0) {
-		iTJSDispatch2 *obj;
-		if (TJS_SUCCEEDED(dateClass->CreateNew(0, NULL, NULL, &obj, 0, NULL, objthis))) {
-			// UNIX TIME に変換
-			tjs_int64 unixtime = (ft - 0x19DB1DED53E8000 ) / 10000;
-			tTJSVariant time(unixtime);
-			tTJSVariant *param[] = { &time };
-			dateSetTime->FuncCall(0, NULL, NULL, NULL, 1, param, obj);
-			store = tTJSVariant(obj, obj);
-			obj->Release();
-		}
-	}
-}
+static iTJSDispatch2 *dateGetTime = NULL;  // Date.getTime メソッド
 
 static const tjs_nchar * StoragesFstatPreScript	= TJS_N("\
 global.FILE_ATTRIBUTE_READONLY = 0x00000001,\
@@ -40,18 +18,198 @@ global.FILE_ATTRIBUTE_ARCHIVE = 0x00000020,\
 global.FILE_ATTRIBUTE_NORMAL = 0x00000080,\
 global.FILE_ATTRIBUTE_TEMPORARY = 0x00000100;");
 
+NCB_TYPECONV_CAST_INTEGER(tjs_uint64);
+
+
 /**
  * メソッド追加用
  */
 class StoragesFstat {
+	/**
+	 * Win32APIの GetLastErrorのエラーメッセージを返す
+	 * @param message メッセージ格納先
+	 */
+	static void getLastError(ttstr &message) {
+		LPVOID lpMessageBuffer;
+		FormatMessageW(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM,
+					   NULL, GetLastError(),
+					   MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+					   (LPWSTR)&lpMessageBuffer, 0, NULL);
+		message = ((tjs_char*)lpMessageBuffer);
+		LocalFree(lpMessageBuffer);
+	}
 
+	/**
+	 * ファイル時刻を Date クラスにして保存
+	 * @param store 格納先
+	 * @param filetime ファイル時刻
+	 */
+	static void storeDate(tTJSVariant &store, FILETIME &filetime, iTJSDispatch2 *objthis)
+	{
+		// ファイル生成時
+		tjs_uint64 ft = filetime.dwHighDateTime;
+		ft *= 0x100000000;
+		ft |= filetime.dwLowDateTime;
+		if (ft > 0) {
+			iTJSDispatch2 *obj;
+			if (TJS_SUCCEEDED(dateClass->CreateNew(0, NULL, NULL, &obj, 0, NULL, objthis))) {
+				// UNIX TIME に変換
+				tjs_int64 unixtime = (ft - 0x19DB1DED53E8000 ) / 10000;
+				tTJSVariant time(unixtime);
+				tTJSVariant *param[] = { &time };
+				dateSetTime->FuncCall(0, NULL, NULL, NULL, 1, param, obj);
+				store = tTJSVariant(obj, obj);
+				obj->Release();
+			}
+		}
+	}
+	/**
+	 * Date クラスの時刻をファイル時刻に変換
+	 * @param restore  参照先（Dateクラスインスタンス）
+	 * @param filetime ファイル時刻結果格納先
+	 * @return 取得できたかどうか
+	 */
+	static bool restoreDate(tTJSVariant &restore, FILETIME &filetime)
+	{
+		if (restore.Type() != tvtObject) return false;
+		iTJSDispatch2 *date = restore.AsObjectNoAddRef();
+		if (!date) return false;
+		tTJSVariant result;
+		if (dateGetTime->FuncCall(0, NULL, NULL, &result, 0, NULL, date) != TJS_S_OK) return false;
+		tjs_uint64 ft = result.AsInteger();
+		ft *= 10000;
+		ft += 0x19DB1DED53E8000;
+		filetime.dwLowDateTime  = (DWORD)( ft        & 0xFFFFFFFF);
+		filetime.dwHighDateTime = (DWORD)((ft >> 32) & 0xFFFFFFFF);
+		return true;
+	}
+
+	/**
+	 * パスをローカル化する＆末尾の\を削除
+	 * @param path パス名
+	 */
+	static void getLocalName(ttstr &path) {
+		TVPGetLocalName(path);
+		if (path.GetLastChar() == TJS_W('\\')) {
+			tjs_int i,len = path.length();
+			tjs_char* tmp = new tjs_char[len];
+			const tjs_char* dp = path.c_str();
+			for (i=0,len--; i<len; i++) tmp[i] = dp[i];
+			tmp[i] = 0;
+			path = tmp;
+			delete[] tmp;
+		}
+	}
+
+	/**
+	 * ファイルハンドルを取得
+	 * @param filename ファイル名（ローカル名であること）
+	 * @param iswrite 読み書き選択
+	 * @param out out_isdir ディレクトリかどうか
+	 * @return ファイルハンドル
+	 */
+	static HANDLE _getFileHandle(ttstr const &filename, bool iswrite, bool *out_isdir = 0) {
+		DWORD attr = GetFileAttributes(filename.c_str());
+		bool isdir = (attr != 0xFFFFFFFF && (attr & FILE_ATTRIBUTE_DIRECTORY));
+		if (out_isdir) *out_isdir = isdir;
+		HANDLE hFile;
+		if (iswrite) {
+			hFile = CreateFile(filename.c_str(), GENERIC_WRITE, FILE_SHARE_READ, NULL ,
+							   OPEN_EXISTING,    isdir ? FILE_FLAG_BACKUP_SEMANTICS : FILE_ATTRIBUTE_NORMAL , NULL);
+		} else {
+			hFile = CreateFile(filename.c_str(), isdir ? READ_CONTROL               : GENERIC_READ, 0, NULL ,
+							   OPEN_EXISTING,    isdir ? FILE_FLAG_BACKUP_SEMANTICS : FILE_ATTRIBUTE_NORMAL , NULL);
+		}
+		return hFile;
+	}
+	/**
+	 * ファイルのタイムスタンプを取得する
+	 * @param filename ファイル名（ローカル名であること）
+	 * @param ctime 作成時刻
+	 * @param atime アクセス時刻
+	 * @param mtime 変更時刻
+	 * @param size  ファイルサイズ
+	 * @return 0:失敗 1:ファイル 2:フォルダ
+	 */
+	static int getFileTime(ttstr const &filename, tTJSVariant &ctime, tTJSVariant &atime, tTJSVariant &mtime, tTJSVariant *size = 0)
+	{
+		bool isdir = false;
+		HANDLE hFile = _getFileHandle(filename, false, &isdir);
+		if (hFile == INVALID_HANDLE_VALUE) return 0;
+
+		if (!isdir && size != 0) {
+			LARGE_INTEGER fsize;
+			if (GetFileSizeEx(hFile, &fsize))
+				*size = (tjs_int64)fsize.QuadPart;
+		}
+		FILETIME ftc, fta, ftm;
+		if (GetFileTime(hFile , &ftc, &fta, &ftm)) {
+			storeDate(ctime, ftc, NULL);
+			storeDate(atime, fta, NULL);
+			storeDate(mtime, ftm, NULL);
+		}
+		CloseHandle(hFile);
+		return isdir ? 2 : 1;
+	}
+	/**
+	 * ファイルのタイムスタンプを設定する
+	 * @param filename ファイル名（ローカル名であること）
+	 * @param ctime 作成時刻
+	 * @param mtime 変更時刻
+	 * @param atime アクセス時刻
+	 * @return 0:失敗 1:ファイル 2:フォルダ
+	 */
+	static int setFileTime(ttstr const &filename, tTJSVariant &ctime, tTJSVariant &atime, tTJSVariant &mtime)
+	{
+		bool isdir = false;
+		HANDLE hFile = _getFileHandle(filename, true, &isdir);
+		if (hFile == INVALID_HANDLE_VALUE) return 0;
+
+		FILETIME c, a, m;
+		bool hasC = restoreDate(ctime, c);
+		bool hasA = restoreDate(atime, a);
+		bool hasM = restoreDate(mtime, m);
+
+		BOOL r = SetFileTime(hFile, hasC?&c:0, hasA?&a:0, hasM?&m:0);
+		if (r == 0) {
+			ttstr mes;
+			getLastError(mes);
+			TVPAddLog(ttstr(TJS_W("setFileTime : ")) + filename + TJS_W(":") + mes);
+		}
+		CloseHandle(hFile);
+		return (r == 0) ? 0 : isdir ? 2 : 1;
+	}
+	static tjs_error _getTime(tTJSVariant *result, tTJSVariant const *param, bool chksize) {
+		// 実ファイルでチェック
+		ttstr filename = TVPNormalizeStorageName(param->AsStringNoAddRef());
+		getLocalName(filename);
+		tTJSVariant size, ctime, atime, mtime;
+		int sel = getFileTime(filename, ctime, atime, mtime, chksize ? &size : 0);
+		if (sel > 0) {
+			if (result) {
+				iTJSDispatch2 *dict = TJSCreateDictionaryObject();
+				if (dict != NULL) {
+					if (chksize && sel == 1) dict->PropSet(TJS_MEMBERENSURE, L"size",  NULL, &size, dict);
+					dict->PropSet(TJS_MEMBERENSURE, L"mtime", NULL, &mtime, dict);
+					dict->PropSet(TJS_MEMBERENSURE, L"ctime", NULL, &ctime, dict);
+					dict->PropSet(TJS_MEMBERENSURE, L"atime", NULL, &atime, dict);
+					*result = dict;
+					dict->Release();
+				}
+			}
+			return TJS_S_OK;
+		}
+
+		TVPThrowExceptionMessage((ttstr(TJS_W("cannot open : ")) + param->GetString()).c_str());
+		return TJS_S_OK;
+	}
 public:
 	StoragesFstat(){};
 
 	/**
 	 * 指定されたファイルの情報を取得する
 	 * @param filename ファイル名
-	 * @return 
+	 * @return サイズ・時刻辞書
 	 */
 	static tjs_error TJS_INTF_METHOD fstat(tTJSVariant *result,
 										   tjs_int numparams,
@@ -60,65 +218,92 @@ public:
 		if (numparams < 1) return TJS_E_BADPARAMCOUNT;
 
 		ttstr filename = TVPGetPlacedPath(*param[0]);
-		if (filename.length()) {
-			if (!wcschr(filename.c_str(), '>')) {
-				// 実ファイルが存在する場合
-				TVPGetLocalName(filename);
-				HANDLE hFile;
-				if ((hFile = CreateFile(filename.c_str(), GENERIC_READ, 0, NULL ,
-										OPEN_EXISTING , FILE_ATTRIBUTE_NORMAL , NULL)) != INVALID_HANDLE_VALUE) {
-					tTJSVariant size;
-					tTJSVariant mtime;
-					tTJSVariant ctime;
-					tTJSVariant atime;
-
-					LARGE_INTEGER fsize;
-					if (GetFileSizeEx(hFile, &fsize)) {
-						size = (tjs_int64)fsize.QuadPart;
+		if (filename.length() > 0 && wcschr(filename.c_str(), '>')) {
+			// アーカイブ内ファイル
+			IStream *in = TVPCreateIStream(filename, TJS_BS_READ);
+			if (in) {
+				STATSTG stat;
+				in->Stat(&stat, STATFLAG_NONAME);
+				tTJSVariant size((tjs_int64)stat.cbSize.QuadPart);
+				if (result) {
+					iTJSDispatch2 *dict;
+					if ((dict = TJSCreateDictionaryObject()) != NULL) {
+						dict->PropSet(TJS_MEMBERENSURE, L"size",  NULL, &size, dict);
+						*result = dict;
+						dict->Release();
 					}
-					FILETIME c, a, m;
-					if (GetFileTime(hFile , &c, &a, &m)) {
-						storeDate(atime, a, objthis);
-						storeDate(ctime, c, objthis);
-						storeDate(mtime, m, objthis);
-					}
-
-					if (result) {
-						iTJSDispatch2 *dict;
-						if ((dict = TJSCreateDictionaryObject()) != NULL) {
-							dict->PropSet(TJS_MEMBERENSURE, L"size",  NULL, &size, dict);
-							dict->PropSet(TJS_MEMBERENSURE, L"mtime", NULL, &mtime, dict);
-							dict->PropSet(TJS_MEMBERENSURE, L"ctime", NULL, &ctime, dict);
-							dict->PropSet(TJS_MEMBERENSURE, L"atime", NULL, &atime, dict);
-							*result = dict;
-							dict->Release();
-						}
-					}
-					CloseHandle(hFile);
-					return TJS_S_OK;
 				}
-			} else {
-				IStream *in = TVPCreateIStream(filename, TJS_BS_READ);
-				if (in) {
-					STATSTG stat;
-					in->Stat(&stat, STATFLAG_NONAME);
-					tTJSVariant size((tjs_int64)stat.cbSize.QuadPart);
-					if (result) {
-						iTJSDispatch2 *dict;
-						if ((dict = TJSCreateDictionaryObject()) != NULL) {
-							dict->PropSet(TJS_MEMBERENSURE, L"size",  NULL, &size, dict);
-							*result = dict;
-							dict->Release();
-						}
-					}
-					in->Release();
-					return TJS_S_OK;
-				}
+				in->Release();
+				return TJS_S_OK;
 			}
 		}
+		return _getTime(result, param[0], true);
+	}
+	/**
+	 * 指定されたファイルのタイムスタンプ情報を取得する（アーカイブ内不可）
+	 * @param filename ファイル名
+	 * @param dict     時刻辞書
+	 * @return 成功したかどうか
+	 */
+	static tjs_error TJS_INTF_METHOD getTime(tTJSVariant *result,
+											 tjs_int numparams,
+											 tTJSVariant **param,
+											 iTJSDispatch2 *objthis) {
+		if (numparams < 1) return TJS_E_BADPARAMCOUNT;
+		return _getTime(result, param[0], false);
+	}
+	/**
+	 * 指定されたファイルのタイムスタンプ情報を設定する
+	 * @param filename ファイル名
+	 * @param dict     時刻辞書
+	 * @return 成功したかどうか
+	 */
+	static tjs_error TJS_INTF_METHOD setTime(tTJSVariant *result,
+											 tjs_int numparams,
+											 tTJSVariant **param,
+											 iTJSDispatch2 *objthis) {
+		if (numparams < 2) return TJS_E_BADPARAMCOUNT;
 
-		TVPThrowExceptionMessage((ttstr(TJS_W("cannot open : ")) + param[0]->GetString()).c_str());
+		ttstr filename = TVPNormalizeStorageName(param[0]->AsStringNoAddRef());
+		getLocalName(filename);
+		tTJSVariant size, ctime, atime, mtime;
+		iTJSDispatch2 *dict = param[1]->AsObjectNoAddRef();
+		if (dict != NULL) {
+			dict->PropGet(0, L"ctime", NULL, &ctime, dict);
+			dict->PropGet(0, L"atime", NULL, &atime, dict);
+			dict->PropGet(0, L"mtime", NULL, &mtime, dict);
+		}
+		int sel = setFileTime(filename, ctime, atime, mtime);
+		if (result) *result = (sel > 0);
+
 		return TJS_S_OK;
+	}
+
+	/**
+	 * 更新日時取得・設定（Dateを経由しない高速版）
+	 * @param target 対象
+	 * @param time 時間（64bit FILETIME数）
+	 */
+	static tjs_uint64 getLastModifiedFileTime(ttstr target) {
+		ttstr filename = TVPNormalizeStorageName(target);
+		getLocalName(filename);
+		HANDLE hFile = _getFileHandle(filename, false);
+		FILETIME ft;
+		if (hFile == INVALID_HANDLE_VALUE ||
+			!GetFileTime(hFile, 0, 0, &ft)) return 0;
+		tjs_uint64 ret = ft.dwHighDateTime;
+		ret <<= 32;
+		ret |= ft.dwLowDateTime;
+		return ret;
+	}
+	static bool setLastModifiedFileTime(ttstr target, tjs_uint64 time) {
+		ttstr filename = TVPNormalizeStorageName(target);
+		getLocalName(filename);
+		HANDLE hFile = _getFileHandle(filename, true);
+		FILETIME ft;
+		ft.dwHighDateTime = (time >> 32) & 0xFFFFFFFF;
+		ft.dwLowDateTime  =  time        & 0xFFFFFFFF;
+		return (hFile != INVALID_HANDLE_VALUE && SetFileTime(hFile, 0, 0, &ft));
 	}
 
 	/**
@@ -423,23 +608,8 @@ public:
 		}
 
 		ttstr	dir = TVPNormalizeStorageName(param[0]->AsStringNoAddRef());
-		TVPGetLocalName(dir);
-		DWORD	attr;
-		if(dir[dir.length()-1] != TJS_W('\\'))
-		{
-			attr	= GetFileAttributes(dir.c_str());
-		}
-		else
-		{	// 最後尾に\が付いていると正しく判定できないので取り除く
-			tjs_int len = dir.length(), i;
-			tjs_char* path = new tjs_char[len];
-			const tjs_char* dp = dir.c_str();
-			len--;
-			for(i=0; i<len; i++)
-				path[i]	= dp[i];
-			path[i]	= 0;
-			attr	= GetFileAttributes(path);
-		}
+		getLocalName(dir);
+		DWORD	attr = GetFileAttributes(dir.c_str());
 		if(attr == 0xFFFFFFFF)
 			*result	= (tTVInteger)-1;	//	存在しない
 		else if((attr & FILE_ATTRIBUTE_DIRECTORY) == FILE_ATTRIBUTE_DIRECTORY)
@@ -499,6 +669,10 @@ private:
 
 NCB_ATTACH_CLASS(StoragesFstat, Storages) {
 	RawCallback("fstat",               &Class::fstat,               TJS_STATICMEMBER);
+	RawCallback("getTime",             &Class::getTime,             TJS_STATICMEMBER);
+	RawCallback("setTime",             &Class::setTime,             TJS_STATICMEMBER);
+	NCB_METHOD(getLastModifiedFileTime);
+	NCB_METHOD(setLastModifiedFileTime);
 	NCB_METHOD(exportFile);
 	NCB_METHOD(deleteFile);
 	NCB_METHOD(dirlist);
@@ -519,8 +693,13 @@ static void PostRegistCallback()
 	tTJSVariant var;
 	TVPExecuteExpression(TJS_W("Date"), &var);
 	dateClass = var.AsObject();
+	var.Clear();
 	TVPExecuteExpression(TJS_W("Date.setTime"), &var);
 	dateSetTime = var.AsObject();
+	var.Clear();
+	TVPExecuteExpression(TJS_W("Date.getTime"), &var);
+	dateGetTime = var.AsObject();
+	var.Clear();
 	TVPExecuteExpression(StoragesFstatPreScript);
 }
 
