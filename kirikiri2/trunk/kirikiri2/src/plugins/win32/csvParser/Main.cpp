@@ -331,6 +331,10 @@ public:
 		newline = L"\r\n";
 	}
 
+	~NI_CSVParser() {
+		clear();
+	}
+
 	/**
 	 * TJS コンストラクタ
 	 * @param numparams パラメータ数
