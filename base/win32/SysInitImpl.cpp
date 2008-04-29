@@ -897,7 +897,8 @@ void TVPBeforeSystemInit()
 				if(_argv[i][0] != '-')
 				{
 					// TODO: set the current directory
-					strcpy(buf, _argv[i]);
+					strncpy(buf, _argv[i], MAX_PATH-1);
+					buf[MAX_PATH-1] = '\0';
 					if(DirectoryExists(buf)) // is directory?
 						strcat(buf, "\\");
 
