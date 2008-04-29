@@ -44,6 +44,7 @@ CVMRCustomAllocatorPresenter9::CVMRCustomAllocatorPresenter9( tTVPDSMixerVideoOv
 	m_Vtx[0].z = m_Vtx[1].z = m_Vtx[2].z = m_Vtx[3].z = 1.0f;
 	m_Vtx[0].w = m_Vtx[1].w = m_Vtx[2].w = m_Vtx[3].w = 1.0f;
 	m_SrcRect.left = m_SrcRect.top = m_SrcRect.right = m_SrcRect.bottom = 0;
+	m_ChildRect.left = m_ChildRect.top = m_ChildRect.right = m_ChildRect.bottom = 0;
 }
 //----------------------------------------------------------------------------
 //! @brief	  	CDemuxSource destructor
@@ -193,43 +194,42 @@ HRESULT CVMRCustomAllocatorPresenter9::CreateVertexBuffer( int texWidth, int tex
 	if( FAILED(hr = D3D()->GetAdapterDisplayMode( iCurrentMonitor, &dm )) )
 		return hr;
 
-	float	vtx_w = 0.0f;
-	float	vtx_h = 0.0f;
-	RECT	clientRect;
-	if( ::GetClientRect( m_ChildWnd, &clientRect ) ) {
-		vtx_w = static_cast<float>(clientRect.right - clientRect.left);
-		vtx_h = static_cast<float>(clientRect.bottom - clientRect.top);
-	}
+	float	vtx_l = 0.0f;
+	float	vtx_r = 0.0f;
+	float	vtx_t = 0.0f;
+	float	vtx_b = 0.0f;
+
+	vtx_l = static_cast<float>(m_Rect.left - m_ChildRect.left);
+	vtx_t = static_cast<float>(m_Rect.top - m_ChildRect.top);
+	vtx_r = vtx_l + static_cast<float>(m_Rect.right-m_Rect.left);
+	vtx_b = vtx_t + static_cast<float>(m_Rect.bottom-m_Rect.top);
 
 	float	tex_w = static_cast<float>(texWidth);
 	float	tex_h = static_cast<float>(texHeight);
 	float	video_w = static_cast<float>(m_VideoSize.cx);
 	float	video_h = static_cast<float>(m_VideoSize.cy);
-	if( vtx_w == 0.0f || vtx_h == 0.0f ) {
-		vtx_w = static_cast<float>(dm.Width);
-		vtx_h = static_cast<float>(dm.Height);
+	if( vtx_r == 0.0f || vtx_b == 0.0f ) {
+		vtx_r = static_cast<float>(dm.Width);
+		vtx_b = static_cast<float>(dm.Height);
 	}
-	m_SrcRect.left = m_SrcRect.top = 0;
-	m_SrcRect.right = static_cast<int>(vtx_w);
-	m_SrcRect.bottom = static_cast<int>(vtx_h);
 
-	m_Vtx[0].x =  -0.5f;	// TL
-	m_Vtx[0].y =  -0.5f;
+	m_Vtx[0].x = vtx_l - 0.5f;	// TL
+	m_Vtx[0].y = vtx_t - 0.5f;
 	m_Vtx[0].tu = 0.0f;
 	m_Vtx[0].tv = 0.0f;
 
-	m_Vtx[1].x =  vtx_w - 0.5f;	// TR
-	m_Vtx[1].y =  -0.5f;
+	m_Vtx[1].x = vtx_r - 0.5f;	// TR
+	m_Vtx[1].y = vtx_t - 0.5f;
 	m_Vtx[1].tu = video_w / tex_w;
 	m_Vtx[1].tv = 0.0f;
 
-	m_Vtx[2].x =  vtx_w - 0.5f;	// BR
-	m_Vtx[2].y =  vtx_h - 0.5f;
+	m_Vtx[2].x = vtx_r - 0.5f;	// BR
+	m_Vtx[2].y = vtx_b - 0.5f;
 	m_Vtx[2].tu = video_w / tex_w;
 	m_Vtx[2].tv = video_h / tex_h;
 
-	m_Vtx[3].x =  -0.5f;	// BL
-	m_Vtx[3].y =  vtx_h - 0.5f;
+	m_Vtx[3].x = vtx_l - 0.5f;	// BL
+	m_Vtx[3].y = vtx_b - 0.5f;
 	m_Vtx[3].tu = 0.0f;
 	m_Vtx[3].tv = video_h / tex_h;
 
@@ -261,20 +261,27 @@ HRESULT CVMRCustomAllocatorPresenter9::UpdateVertex()
 	if( m_VertexBuffer == NULL )
 		return S_OK;
 
-	float	vtx_w = static_cast<float>(m_SrcRect.right - m_SrcRect.left);
-	float	vtx_h = static_cast<float>(m_SrcRect.bottom - m_SrcRect.top);
+	float	vtx_l = 0.0f;
+	float	vtx_r = 0.0f;
+	float	vtx_t = 0.0f;
+	float	vtx_b = 0.0f;
 
-	m_Vtx[0].x =  -0.5f;	// TL
-	m_Vtx[0].y =  -0.5f;
+	vtx_l = static_cast<float>(m_Rect.left - m_ChildRect.left);
+	vtx_t = static_cast<float>(m_Rect.top - m_ChildRect.top);
+	vtx_r = vtx_l + static_cast<float>(m_Rect.right-m_Rect.left);
+	vtx_b = vtx_t + static_cast<float>(m_Rect.bottom-m_Rect.top);
 
-	m_Vtx[1].x =  vtx_w - 0.5f;	// TR
-	m_Vtx[1].y =  -0.5f;
+	m_Vtx[0].x = vtx_l - 0.5f;	// TL
+	m_Vtx[0].y = vtx_t - 0.5f;
 
-	m_Vtx[2].x =  vtx_w - 0.5f;	// BR
-	m_Vtx[2].y =  vtx_h - 0.5f;
+	m_Vtx[1].x = vtx_r - 0.5f;	// TR
+	m_Vtx[1].y = vtx_t - 0.5f;
 
-	m_Vtx[3].x =  -0.5f;	// BL
-	m_Vtx[3].y =  vtx_h - 0.5f;
+	m_Vtx[2].x = vtx_r - 0.5f;	// BR
+	m_Vtx[2].y = vtx_b - 0.5f;
+
+	m_Vtx[3].x = vtx_l - 0.5f;	// BL
+	m_Vtx[3].y = vtx_b - 0.5f;
 
 	void* pData;
 	if( FAILED( hr = m_VertexBuffer->Lock( 0, sizeof(pData), &pData, 0 ) ) )
@@ -784,7 +791,9 @@ HRESULT CVMRCustomAllocatorPresenter9::CreateChildWindow()
 	}
 	DWORD	atom = (DWORD)(0xFFFF & m_ChildAtom);
 	if( (m_Rect.right - m_Rect.left) != 0 && (m_Rect.bottom - m_Rect.top) != 0 ) {
-		m_ChildWnd = CreateWindow( _T("krmovie VMR9 Child Window Class"), "VMR9 child", WS_CHILDWINDOW, m_Rect.left, m_Rect.top, m_Rect.right - m_Rect.left, m_Rect.bottom - m_Rect.top, Owner()->OwnerWindow, NULL, Owner()->m_OwnerInst, NULL );
+		RECT clientRect;
+		CalcChildWindowSize( clientRect );
+		m_ChildWnd = CreateWindow( _T("krmovie VMR9 Child Window Class"), "VMR9 child", WS_CHILDWINDOW, clientRect.left, clientRect.top, clientRect.right - clientRect.left, clientRect.bottom - clientRect.top, Owner()->OwnerWindow, NULL, Owner()->m_OwnerInst, NULL );
 	} else {
 		m_ChildWnd = CreateWindow( _T("krmovie VMR9 Child Window Class"), "VMR9 child", WS_CHILDWINDOW, 0, 0, 320, 240, Owner()->OwnerWindow, NULL, Owner()->m_OwnerInst, NULL );
 	}
@@ -796,6 +805,39 @@ HRESULT CVMRCustomAllocatorPresenter9::CreateChildWindow()
 	if( UpdateWindow(m_ChildWnd) == 0 )
 		return HRESULT_FROM_WIN32(GetLastError());
 	return S_OK;
+}
+//----------------------------------------------------------------------------
+//! @brief	  	子ウィンドウの位置を計算する
+//!
+//! 親ウィンドウのサイズを超えないような子ウィンドウの位置と大きさを求める
+//! @param		childRect : 子ウィンドウの領域
+//----------------------------------------------------------------------------
+void CVMRCustomAllocatorPresenter9::CalcChildWindowSize( RECT& childRect )
+{
+	childRect = m_Rect;
+	RECT	ownerRect;
+	if( ::GetClientRect( Owner()->OwnerWindow, &ownerRect ) ) {
+		int width = ownerRect.right - ownerRect.left;
+		int height = ownerRect.bottom - ownerRect.top;
+
+		if( (childRect.right - childRect.left) > width ) {
+			if( childRect.left < 0 ) {
+				childRect.left = 0;
+			}
+			if( (childRect.right - childRect.left) > width ) {
+				childRect.right = childRect.left + width;
+			}
+		}
+		if( (childRect.bottom - childRect.top) > height ) {
+			if( childRect.top < 0 ) {
+				childRect.top = 0;
+			}
+			if( (childRect.bottom - childRect.top) > height ) {
+				childRect.bottom = childRect.top + height;
+			}
+		}
+	}
+	m_ChildRect = childRect;
 }
 //----------------------------------------------------------------------------
 //! @brief	  	子ウィンドウを破棄する
@@ -865,23 +907,25 @@ void CVMRCustomAllocatorPresenter9::SetRect( RECT *rect )
 	m_Rect = *rect;
 	if( m_ChildWnd != NULL )
 	{
-		int		width = m_Rect.right - m_Rect.left;
-		int		height = m_Rect.bottom - m_Rect.top;
+//		int		width = m_Rect.right - m_Rect.left;
+//		int		height = m_Rect.bottom - m_Rect.top;
+		RECT clientRect;
+		CalcChildWindowSize( clientRect );
+		int		width = clientRect.right - clientRect.left;
+		int		height = clientRect.bottom - clientRect.top;
 
 		if( width > m_BackBufferSize.cx || height > m_BackBufferSize.cy ) {
 			Reset();
 		} else {
-			if( MoveWindow( m_ChildWnd, m_Rect.left, m_Rect.top, width, height, TRUE ) == 0 )
+			if( MoveWindow( m_ChildWnd, clientRect.left, clientRect.top, clientRect.right - clientRect.left, clientRect.bottom - clientRect.top, TRUE ) == 0 )
 				ThrowDShowException(L"Failed to call MoveWindow.", HRESULT_FROM_WIN32(GetLastError()));
 
-			if( (m_SrcRect.right - m_SrcRect.left) != width || (m_SrcRect.bottom - m_SrcRect.top) != height ) {
-				m_SrcRect.left = m_SrcRect.top = 0;
-				m_SrcRect.right = width;
-				m_SrcRect.bottom = height;
-				HRESULT	hr;
-				if( FAILED(hr = UpdateVertex()) )
-					ThrowDShowException(L"Failed to Update Vertex.", hr );
-			}
+			m_SrcRect.left = m_SrcRect.top = 0;
+			m_SrcRect.right = width;
+			m_SrcRect.bottom = height;
+			HRESULT	hr;
+			if( FAILED(hr = UpdateVertex()) )
+				ThrowDShowException(L"Failed to Update Vertex.", hr );
 		}
 	}
 }
@@ -903,7 +947,9 @@ void CVMRCustomAllocatorPresenter9::SetVisible( bool b )
 				ThrowDShowException(L"Failed to call ShowWindow.", HRESULT_FROM_WIN32(GetLastError()));
 		}
 
-		if( MoveWindow( m_ChildWnd, m_Rect.left, m_Rect.top, m_Rect.right - m_Rect.left, m_Rect.bottom - m_Rect.top, TRUE ) == 0 )
+		RECT clientRect;
+		CalcChildWindowSize( clientRect );
+		if( MoveWindow( m_ChildWnd, clientRect.left, clientRect.top, clientRect.right - clientRect.left, clientRect.bottom - clientRect.top, TRUE ) == 0 )
 			ThrowDShowException(L"Failed to call MoveWindow.", HRESULT_FROM_WIN32(GetLastError()));
 	}
 }

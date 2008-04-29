@@ -33,7 +33,7 @@ class CVMRCustomAllocatorPresenter9 : public CUnknown, public IVMRSurfaceAllocat
 	static ATOM		m_ChildAtom;
 
 	bool		m_Visible;
-	RECT		m_Rect;
+	RECT		m_Rect;			//!< 指定されたムービーの表示矩形領域を保持
 
 	CComPtr<IDirect3D9>			m_D3D;
 	CComPtr<IDirect3DDevice9>	m_D3DDevice;
@@ -52,7 +52,8 @@ class CVMRCustomAllocatorPresenter9 : public CUnknown, public IVMRSurfaceAllocat
 	CComPtr<IDirect3DTexture9>	m_Texture;
     CComPtr<IDirect3DSurface9>	m_RenderTarget;
     CComPtr<IDirect3DVertexBuffer9> m_VertexBuffer;
-	RECT						m_SrcRect;
+	RECT						m_SrcRect;		//!< 実際に描画される領域の大きさを保持、m_ChildRect から割り出せるけど…
+	RECT						m_ChildRect;	//!< 実際に描画される矩形領域を保持
 
 	DWORD	m_ThreadID;
 
@@ -133,6 +134,8 @@ protected:
 	HRESULT InitializeDirect3DState();
 	HRESULT UpdateVertex();
 	HRESULT CreateVertexBuffer( int texWidth, int texHeight );
+
+	void CalcChildWindowSize( RECT& childRect );
 };
 
 
