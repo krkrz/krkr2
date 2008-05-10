@@ -1985,6 +1985,21 @@ void tTVPPassThroughDrawDevice::CreateDrawer(bool zoom_required, bool should_ben
 				if(results[i].type == dtDBGDI)
 					results[i].score = 0.0f;
 
+				// DirectDraw + Vista チェック
+				// これも結果だけは測っておくが、これが候補になるのは
+				// ほかの drawer に失敗したときのみ
+				if(results[i].type == dtDBDD)
+				{
+					OSVERSIONINFO osinfo;
+					osinfo.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
+					GetVersionEx(&osinfo);
+					if(osinfo.dwMajorVersion >= 6) // vista or later
+					{
+						results[i].score = 0.0f;
+						TVPAddImportantLog(TJS_W("Passthrough: Windows Vista (or later) detected, DirectDraw is not preferred"));
+					}
+				}
+
 			}
 			catch(...)
 			{
