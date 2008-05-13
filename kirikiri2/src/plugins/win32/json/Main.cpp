@@ -7,6 +7,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string>
+#include <algorithm>
 
 using namespace std;
 
@@ -22,6 +23,145 @@ static void log(const tjs_char *format, ...)
 	TVPAddLog(msg);
 	va_end(args);
 }
+
+// ----------------------------------------------------------------------
+
+class IFileStorage  {
+
+	IStream *in;
+	char buf[8192];
+	ULONG pos;
+	ULONG len;
+	bool eofFlag;
+	int codepage;
+	
+public:
+	IFileStorage(tTJSVariantString *filename, int codepage) : codepage(codepage) {
+		in = TVPCreateIStream(filename, TJS_BS_READ);
+		if(!in) {
+			TVPThrowExceptionMessage((ttstr(TJS_W("cannot open : ")) + *filename).c_str());
+		}
+		pos = 0;
+		len = 0;
+		eofFlag = false;
+	}
+
+	~IFileStorage() {
+		if (in) {
+			in->Release();
+			in = NULL;
+		}
+	}
+	
+	int getc() {
+		if (pos < len) {
+			return buf[pos++];
+		} else {
+			if (!in || eofFlag) {
+				return EOF;
+			} else {
+				pos = 0;
+				if (in->Read(buf, sizeof buf, &len) == S_OK) {
+					eofFlag = len < sizeof buf;
+				} else {
+					eofFlag = true;
+					len = 0;
+				}
+				return getc();
+			}
+		}
+	}
+
+	void ungetc() {
+		if (pos > 0) {
+			pos--;
+		}
+	}
+
+	bool eof() {
+		return pos >= len && eofFlag;
+	}
+
+	/**
+	 * 改行チェック
+	 */
+	bool endOfLine(int c) {
+		bool eol = (c =='\r' || c == '\n');
+		if (c == '\r'){
+			c = getc();
+			if (!eof() && c != '\n') {
+				ungetc();
+			}
+		}
+		return eol;
+	}
+	
+	bool addNextLine(ttstr &str) {
+		int c;
+		string mbline;
+		while ((c = getc()) != EOF && !endOfLine(c)) {
+			mbline += c;
+		}
+		int l = (int)mbline.length();
+		if (l > 0 || c != EOF) {
+			wchar_t *buf = new wchar_t[l + 1];
+			l = MultiByteToWideChar(codepage, 0,
+									mbline.data(),
+									(int)mbline.length(),
+									buf, l);
+			buf[l] = '\0';
+			str += buf;
+			delete buf;
+			return true;
+		} else {
+			return false;
+		}
+	}
+};
+
+
+// -----------------------------------------------------------------
+class JSONTextReadStream : public iTJSTextReadStream
+{
+public:
+  IFileStorage *Storage;
+  tjs_int codepage;
+  ttstr buf;
+  tjs_int pos;
+
+  JSONTextReadStream(tTJSVariantString *filename, tjs_int codepage) {
+    Storage = new IFileStorage(filename, codepage);
+    pos = 0;
+  }
+
+  ~JSONTextReadStream(void) {
+    delete Storage;
+  }
+
+  virtual tjs_uint TJS_INTF_METHOD Read(tTJSString & targ, tjs_uint size) {
+    tjs_uint readSize = 0;
+    while (readSize < size) {
+      if (pos >= buf.length()) {
+	buf.Clear();
+	pos = 0;
+	if (! Storage->addNextLine(buf))
+	  break;
+      }
+      tjs_uint n = min(tjs_uint(buf.length() - pos), size - readSize);
+      readSize += n;
+      while (n > 0) {
+	targ += buf[pos];
+	pos++;
+	n--;
+      }
+    }
+    return readSize;
+  }
+
+  virtual void TJS_INTF_METHOD Destruct() {
+    delete this;
+  }
+};
 
 // -----------------------------------------------------------------
 
@@ -404,8 +544,8 @@ class IFileReader : public IReader {
 	bool eofFlag;
 	
 public:
-	IFileReader(const tjs_char *filename) {
-		stream = TVPCreateTextStreamForRead(filename, TJS_W(""));
+	IFileReader(tTJSVariantString *filename, tjs_int codepage) {
+		stream = new JSONTextReadStream(filename, codepage);
 		pos = 0;
 		eofFlag = false;
 	}
@@ -580,9 +720,11 @@ public:
 		if (membername) return TJS_E_MEMBERNOTFOUND;
 		if (numparams < 1) return TJS_E_BADPARAMCOUNT;
 
-		const tjs_char *filename = param[0]->GetString();
-		
-		eval(IFileReader(filename), result);
+		tTJSVariantString *filename = param[0]->AsStringNoAddRef();
+		bool utf8 = numparams >= 2 ? (int*)param[1] != 0 : false;
+		tjs_int codepage = utf8 ? CP_UTF8 : CP_ACP;
+
+		eval(IFileReader(filename, codepage), result);
 		return TJS_S_OK;
 	}
 };
