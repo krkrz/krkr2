@@ -595,6 +595,22 @@ quoteString(const tjs_char *str, IWriter *writer)
 		while ((ch = *p++)) {
 			if (ch == '"') {
 				writer->write(L"\\\"");
+			} else if (ch == '\\') {
+			  writer->write(L"\\\\");
+			} else if (ch == 0x08) {
+			  writer->write(L"\\b");
+			} else if (ch == 0x0c) {
+			  writer->write(L"\\f");
+			} else if (ch == 0x0a) {
+			  writer->write(L"\\n");
+			} else if (ch == 0x0d) {
+			  writer->write(L"\\r");
+			} else if (ch == 0x09) {
+			  writer->write(L"\\t");
+			} else if (ch < 0x20) {
+			  wchar_t buf[256];
+			  swprintf(buf, 255, L"\\u%04x", ch);
+			  writer->write(buf);
 			} else {
 				writer->write((tjs_char)ch);
 			}
@@ -735,8 +751,8 @@ public:
 		tjs_int numparams, tTJSVariant **param, iTJSDispatch2 *objthis) {
 		if (numparams < 2) return TJS_E_BADPARAMCOUNT;
 		IFileWriter writer(param[0]->GetString(), 
-			numparams > 1 ? (int)*param[1] != 0 : false, 
-			numparams > 2 ? (int)*param[2] : 0);
+			numparams > 2 ? (int)*param[2] != 0 : false, 
+			numparams > 3 ? (int)*param[3] : 0);
 		getVariantString(*param[1], &writer);
 		return TJS_S_OK;
 	}
@@ -774,7 +790,7 @@ int WINAPI DllEntryPoint(HINSTANCE hinst, unsigned long reason,
 
 //---------------------------------------------------------------------------
 static tjs_int GlobalRefCountAtInit = 0;
-extern "C" HRESULT _stdcall _export V2Link(iTVPFunctionExporter *exporter)
+extern "C" HRESULT _stdcall V2Link(iTVPFunctionExporter *exporter)
 {
 	// スタブの初期化(必ず記述する)
 	TVPInitImportStub(exporter);
@@ -812,7 +828,7 @@ extern "C" HRESULT _stdcall _export V2Link(iTVPFunctionExporter *exporter)
 	return S_OK;
 }
 //---------------------------------------------------------------------------
-extern "C" HRESULT _stdcall _export V2Unlink()
+extern "C" HRESULT _stdcall V2Unlink()
 {
 	// 吉里吉里側から、プラグインを解放しようとするときに呼ばれる関数。
 
