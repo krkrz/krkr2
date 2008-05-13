@@ -13,9 +13,10 @@ class Scripts {
     /**
      * JSON のファイルを解析して Array または Dictionary を返す
      * @param jsonFile JSON が格納されたテキストファイルのファイル名
+     * @param utf8 入力エンコーディング指定。true なら UTF-8、falseなら現在のコードページ
      * @return Array または Dictionary
      */
-    function evalJSONStorage(jsonFile);
+    function evalJSONStorage(jsonFile, utf8=false);
 
     /**
 	 * データを JSON 形式で保存する
