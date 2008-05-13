@@ -120,8 +120,9 @@ public:
 
         // Ž«‘‚ð¶¬
         iTJSDispatch2 *dict = TJSCreateDictionaryObject();
-        var = dict;
-        
+        var = tTJSVariant(dict, dict);
+	dict->Release();
+
         int c;
 
         for (;;) {
@@ -175,8 +176,9 @@ public:
         
         // ”z—ñ‚ð¶¬
 		iTJSDispatch2 *array = TJSCreateArrayObject();
-		var = array;
-        
+		var = tTJSVariant(array, array);
+		array->Release();
+
         tjs_int cnt = 0;
 
         for (;;) {
