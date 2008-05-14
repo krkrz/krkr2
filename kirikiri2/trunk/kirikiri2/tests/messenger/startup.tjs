@@ -31,6 +31,8 @@ class MyWindow extends Window
 		ypos = 0;
 
 		registerUserMessageReceiver(0, 0x100, onMyKeyDown, 0);
+		registerUserMessageReceiver(0, 0x104, onMySysKeyDown, 0);
+		registerUserMessageReceiver(0, 0x106, onMySysCharDown, 0);
 	}
 	
 	function onMyKeyDown(userdata, wparam, lparam) {
@@ -39,6 +41,16 @@ class MyWindow extends Window
 		return false;
 	}
 
+	function onMySysKeyDown(userdata, wparam, lparam) {
+		Debug.message("システムキーがおされた:" + wparam + ":" + lparam);
+		return true;
+	}
+
+	function onMySysCharDown(userdata, wparam, lparam) {
+		Debug.message("WM_SYSCHAR:" + wparam + ":" + lparam);
+		return true;
+	}
+	
 	function onKeyDown(key, shift, process) {
 		Debug.message("MAINキーがおされた:" + key + ":" + shift + ":" + process);
 	}
