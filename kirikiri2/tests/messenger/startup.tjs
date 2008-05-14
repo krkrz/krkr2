@@ -29,8 +29,20 @@ class MyWindow extends Window
         add(base);
 		messageEnable = true;
 		ypos = 0;
+
+		registerUserMessageReceiver(0, 0x100, onMyKeyDown, 0);
+	}
+	
+	function onMyKeyDown(userdata, wparam, lparam) {
+		Debug.message("HOOKキーがおされた:" + wparam + ":" + lparam);
+		// return true; にすると、onKeyDown にイベントが通らなくなる
+		return false;
 	}
 
+	function onKeyDown(key, shift, process) {
+		Debug.message("MAINキーがおされた:" + key + ":" + shift + ":" + process);
+	}
+	
 	var ypos;
 
 	// メッセージ受信イベント
