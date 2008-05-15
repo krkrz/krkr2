@@ -71,6 +71,7 @@ protected:
 				switch (receiver.Type()) {
 				case tvtObject:
 					receiverFunc = receiver.AsObject();
+					receiverFunc->AddRef();
 					break;
 				case tvtString:
 					receiverStr = receiver.GetString();
