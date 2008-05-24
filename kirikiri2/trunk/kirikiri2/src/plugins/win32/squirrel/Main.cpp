@@ -33,6 +33,22 @@ static void PrintFunc(HSQUIRRELVM v, const SQChar* format, ...)
 	va_end(args);
 }
 
+/**
+ * スレッド判定
+ * @param th スレッド
+ * @return th が現在実行中のスレッドなら true
+ */
+static SQInteger isCurrentThread(HSQUIRRELVM vm)
+{
+	SQInteger nargs = sq_gettop(vm);
+	HSQUIRRELVM v;
+	if (nargs >= 2 && sq_gettype(vm,2) == OT_THREAD && SQ_SUCCEEDED(sq_getthread(vm,2,&v))) {
+		sq_pushbool(vm, vm == v ? 1 : 0);
+		return 1;
+	}
+	return sq_throwerror(vm, _SC("invalid param"));
+}
+
 static HSQUIRRELVM vm = NULL;
 
 //---------------------------------------------------------------------------
@@ -58,10 +74,12 @@ static const char *reservedKeys[] =
 	"class",
 	"clone",
 	"continue",
+	"const",
 	"default",
 	"delegate",
 	"delete",
 	"else",
+	"enum",
 	"extends",
 	"for",
 	"function",
@@ -670,7 +688,13 @@ static void PreRegistCallback()
 	sqstd_register_mathlib(vm);
 	sqstd_register_stringlib(vm);
 	sqstd_seterrorhandlers(vm);
+
+	// スレッド判定用メソッドをグローバル登録
+	sq_pushstring(vm, _SC("isCurrentThread"), -1);
+	sq_newclosure(vm, isCurrentThread, 0);
+	sq_createslot(vm, -3); 
 	sq_pop(vm, 1);
+
 	
 	// 例外通知を有効に
 	sq_notifyallexceptions(vm, SQTrue);
