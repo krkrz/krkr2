@@ -44,6 +44,12 @@ Squirrel は、協調スレッド（コルーチン）をサポートしており、
 　また、ファイル名も TJS のストレージ名になります。
 　stdin/stdout/stderr は利用できません
 
+・スレッド処理の補助用にグローバル関数 isCurrentThread(th) が
+  定義されています。
+
+  パラメータ th スレッドオブジェクト
+  返り値 thが現在実行中のスレッドなら true
+
 ◇Scripts 拡張
 
 Squirrel スクリプトの実行機能や、オブジェクトを Squirrel の書式で
