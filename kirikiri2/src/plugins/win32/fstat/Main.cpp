@@ -352,6 +352,25 @@ public:
 	}
 
 	/**
+	 * 指定ファイルを移動する。
+	 * @param fromFile 移動対象ファイル
+	 * @param toFile 移動先パス
+	 * @return 実際に移動されたら true
+	 * 移動対象ファイルが実在し、移動先パスにファイルが無い場合のみ移動されます
+	 */
+	static bool moveFile(ttstr fromFile, ttstr toFile) {
+		if (fromFile.length() && !wcschr(fromFile.c_str(), '>')
+                    && toFile.length() && !wcschr(toFile.c_str(), '>')) {
+			TVPGetLocalName(fromFile);
+			TVPGetLocalName(toFile);
+			if (MoveFile(fromFile.c_str(), toFile.c_str())) {
+				return true;
+			}
+                    }
+		return false;
+	}
+  
+	/**
 	 * 指定ディレクトリのファイル一覧を取得する
 	 * @param dir ディレクトリ名
 	 * @return ファイル名一覧が格納された配列
@@ -675,6 +694,7 @@ NCB_ATTACH_CLASS(StoragesFstat, Storages) {
 	NCB_METHOD(setLastModifiedFileTime);
 	NCB_METHOD(exportFile);
 	NCB_METHOD(deleteFile);
+	NCB_METHOD(moveFile);
 	NCB_METHOD(dirlist);
 	NCB_METHOD(removeDirectory);
 	NCB_METHOD(createDirectory);
