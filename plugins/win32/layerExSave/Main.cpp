@@ -321,7 +321,7 @@ public:
 			tTJSVariantClosure closure(&caller);
 			tagsDict->EnumMembers(TJS_IGNOREPROP, &closure, tagsDict);
 		}
-		
+
 		ULONG tagslen = tags.GetNarrowStrLen(); 
 		if (tagslen > 0) {
 			// write TLG0.0 Structured Data Stream header
@@ -465,7 +465,7 @@ protected:
 public:
 	// コンストラクタ
 	SaveInfo(int handler, WindowSaveImage *notify, tTJSVariant layer, const tjs_char *filename, tTJSVariant info)
-		: handler(handler), notify(notify), layer(layer), filename(filename), canceled(false) {}
+		: handler(handler), notify(notify), layer(layer), filename(filename), info(info), canceled(false) {}
 	
 	// デストラクタ
 	~SaveInfo() {}
