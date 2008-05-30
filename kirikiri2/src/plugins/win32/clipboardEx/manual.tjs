@@ -1,0 +1,61 @@
+/**
+ * 疑似コードによるマニュアル
+ */
+
+/// 拡張されたクリップボードフォーマット定数
+global.cfbText = 1;           //> テキスト
+global.cfbBitmap = 2;         //> ビットマップ
+global.cfbTJSExpression = 3;  //> TJS式
+
+
+class Clipboard
+{
+  /**
+   * 指定のフォーマットがクリップボードに格納されているかチェックする
+   * @param format フォーマット定数
+   * @return 格納されていればtrue
+   */
+  function hasFormat(format);
+
+  /**
+   * クリップボードにテキストを登録する、もしくは取り出す
+   * 取得に失敗したらvoidを返す。
+   * @param text 登録するテキスト
+   * @return 取り出したテキスト
+   */
+  property asText;
+
+  /**
+   * クリップボードにTJS式を登録する、もしくは取り出す
+   * 取得に失敗したらvoidを返す。
+   * @param text 登録するTJS式
+   * @return 取り出したTJS式
+   */
+  property asTJSExpression;
+
+  /**
+   * レイヤの内容をビットマップとしてクリップボードにセットする。
+   * α値は255にクリアされる。(事前にレイヤを合成してαを無くしておくことを推奨)
+   * @param layer レイヤ
+   */
+  function setAsBitmap(layer);
+
+  /**
+   * クリップボードの内容をビットマップとしてレイヤから取得する
+   * @param layer レイヤ
+   * @return 取得に成功したらtrueを返す
+   */
+  function getAsBitmap(layer);
+
+  /**
+   * クリップボードが更新された時に呼び出されるハンドラを登録する
+   * @param ハンドラ関数
+   */
+  function addContentChangeHandler(func);
+
+  /**
+   * クリップボードが更新された時に呼び出されるハンドラを解放する
+   * @param ハンドラ関数
+   */
+  function removeContentChangeHandler(func);
+}
