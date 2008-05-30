@@ -206,7 +206,7 @@ Storages ƒNƒ‰ƒX‚ÉAƒtƒ@ƒCƒ‹‚ÌƒTƒCƒY‚âXV“ú‚È‚Ç‚Ìî•ñ‚ğæ“¾‚µ‚½‚èAƒtƒ@ƒCƒ‹‚ğƒ
 </dd>
 
 
-<dt><kw>clipboardEx.dll</kw></dt>
+<dt><kw>clipboardEx.dll</kw>(experimental)</dt>
 <dd>
 Clipboard ƒNƒ‰ƒX‚ÉA‰æ‘œ‚âTJS®‚ğƒNƒŠƒbƒ|ƒ{[ƒh‚ğ‰î‚µ‚Ä‚â‚è‚Æ‚è‚·‚é‹@”\‚âAƒNƒŠƒbƒvƒ{[ƒh‚ÌXV‚ğ©“®ŒŸ’m‚·‚éƒnƒ“ƒhƒ‰‚ğ“o˜^‚·‚éƒƒ\ƒbƒh‚ğ’Ç‰Á‚µ‚Ü‚·B
 @Ú‚µ‚­‚Í ‹g—¢‹g—¢ƒ\[ƒX‚Ì <a href="https://sv.kikyou.info/trac/kirikiri/browser/kirikiri2/trunk/kirikiri2/src/plugins/win32/clipboardEx/">kirikiri2/trunk/kirikiri2/src/plugins/win32/clipboardEx</a> ƒfƒBƒŒƒNƒgƒŠ‚ğQÆ‚µ‚Ä‚­‚¾‚³‚¢B<r/>
