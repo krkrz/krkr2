@@ -3,9 +3,9 @@
  */
 
 /// 拡張されたクリップボードフォーマット定数
-global.cfbText = 1;           //> テキスト
-global.cfbBitmap = 2;         //> ビットマップ
-global.cfbTJSExpression = 3;  //> TJS式
+global.cbfText = 1;           //> テキスト
+global.cbfBitmap = 2;         //> ビットマップ
+global.cbfTJSExpression = 3;  //> TJS式
 
 
 class Clipboard
@@ -49,13 +49,13 @@ class Clipboard
 
   /**
    * クリップボードが更新された時に呼び出されるハンドラを登録する
-   * @param ハンドラ関数
+   * @param func ハンドラ関数
    */
   function addContentChangeHandler(func);
 
   /**
    * クリップボードが更新された時に呼び出されるハンドラを解放する
-   * @param ハンドラ関数
+   * @param func ハンドラ関数
    */
   function removeContentChangeHandler(func);
 }
