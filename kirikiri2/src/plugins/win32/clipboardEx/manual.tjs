@@ -8,6 +8,7 @@ global.cbfBitmap = 2;         //> ビットマップ
 global.cbfTJSExpression = 3;  //> TJS式
 
 
+/// クリップボードクラスの拡張
 class Clipboard
 {
   /**
@@ -46,16 +47,21 @@ class Clipboard
    * @return 取得に成功したらtrueを返す
    */
   function getAsBitmap(layer);
+}
+
+
+/// Windowクラスの拡張
+class Window
+{
+  /**
+   * クリップ更新の監視するかどうか設定する(デフォルトはオフ)
+   * @param s 監視する？
+   * @return 監視する？
+   */
+  property clipboardWatchEnabled;
 
   /**
-   * クリップボードが更新された時に呼び出されるハンドラを登録する
-   * @param func ハンドラ関数
+   * クリップボードが更新された時に呼び出されるフック関数
    */
-  function addContentChangeHandler(func);
-
-  /**
-   * クリップボードが更新された時に呼び出されるハンドラを解放する
-   * @param func ハンドラ関数
-   */
-  function removeContentChangeHandler(func);
+  function onDrwaClipboard();
 }

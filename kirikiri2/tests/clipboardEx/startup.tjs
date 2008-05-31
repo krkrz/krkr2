@@ -1,3 +1,4 @@
+// プラグインをリンク
 Plugins.link("clipboardEx.dll");
 
 //----------------------------------------------------------------------
@@ -48,10 +49,12 @@ class AppWindow extends Window
   var editMenuItem;
   var copyMenuItem;
   var pasteMenuItem;
-  var toggleAutoPasteMenuItem;
+  var toggleClipboardWatchMenuItem;
   var canvas;
 
+  //------------------------------
   // コンストラクタ
+  //------------------------------
   function AppWindow {
     super.Window();
 
@@ -77,34 +80,52 @@ class AppWindow extends Window
     pasteMenuItem.shortcut = "Ctrl+V";
     editMenuItem.add(pasteMenuItem);
     editMenuItem.add(new MenuItem(this, "-"));
-    toggleAutoPasteMenuItem = new MenuItem(this, "自動更新");
-    toggleAutoPasteMenuItem.onClick = this.onToggleAutoPaste;
-    editMenuItem.add(toggleAutoPasteMenuItem);
+    toggleClipboardWatchMenuItem = new MenuItem(this, "クリップボード監視");
+    toggleClipboardWatchMenuItem.onClick = this.onToggleClipboardWatch;
+    editMenuItem.add(toggleClipboardWatchMenuItem);
 
+    // 最初に一回とりあえずペーストしておく
+    onPaste();
+
+    // ウィンドウの表示開始
     visible = true;
   }
 
+  //------------------------------
   // キャンバスの内容をクリップボードへコピー
+  //------------------------------
   function onCopy {
     Clipboard.setAsBitmap(canvas);
   }
 
+  //------------------------------
   // キャンバスの内容をクリップボードからペースト
+  //------------------------------
   function onPaste {
     if (Clipboard.getAsBitmap(canvas)) {
       setInnerSize(canvas.width, canvas.height);
     }
   }
 
-  // 自動更新のトグル
-  function onToggleAutoPaste {
-    toggleAutoPasteMenuItem.checked = ! toggleAutoPasteMenuItem.checked;
-    if (toggleAutoPasteMenuItem.checked)
-      // クリップボードが更新されたら自動的にペーストを試みる
-      Clipboard.addContentChangeHandler(this.onPaste);
-    else
-      // 自動更新を解除
-      Clipboard.removeContentChangeHandler(this.onPaste);
+  //------------------------------
+  // クリップボードの更新を検知
+  //------------------------------
+  function onDrawClipboard {
+    // 自動的にペースト
+    onPaste();
+  }
+
+  //------------------------------
+  // クリップボード検知のトグル
+  //------------------------------
+  function onToggleClipboardWatch {
+    // トグル反転
+    toggleClipboardWatchMenuItem.checked = ! toggleClipboardWatchMenuItem.checked;
+    // クリップボード監視状態切り替え
+    clipboardWatchEnabled = toggleClipboardWatchMenuItem.checked;
+    // 監視を開始したらとりあえずペーストしておく
+    if (clipboardWatchEnabled)
+      onPaste();
   }
 }
 
