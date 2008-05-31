@@ -154,37 +154,16 @@ getVariantString(tTJSVariant &var, IWriter *writer)
 
 
 
-
 //----------------------------------------------------------------------
 // クリップボード拡張
 //----------------------------------------------------------------------
-// クリップボードビューアーハンドラ
-static std::vector<tTJSVariant> sChangeHandlers;
-// 「次」のクリップボードビューアー
-static HWND sNextHWND;
-// クリップボードビューアーチェインに参加しているか？
-bool sJoined;
 // TJS式のクリップボードフォーマット
 static const wchar_t *TJS_EXPRESSION_FORMAT = L"application/x-kirikiri-tjsexpression";
 // TJS式のクリップボードID
 tjs_uint CF_TJS_EXPRESSION;
 
 
-// tTJSVariant比較用ファンクタ
-class VariantCompare
-{
-public:
-  tTJSVariant &var;
-
-  VariantCompare(tTJSVariant &_var) : var(_var) {}
-  bool operator()(tTJSVariant &var2) {
-    return var.DiscernCompare(var2);
-  }
-};
-
-//----------------------------------------------------------------------
-// クリップボード拡張クラス
-//----------------------------------------------------------------------
+// 拡張クラス
 class ClipboardEx
 {
 public:
@@ -413,122 +392,152 @@ public:
     CloseClipboard();
     return result;
   }
+};
 
-  // クリップボードチェーンに参加
-  static void joinClipboardChain(void) {
-    if (sJoined)
-      return;
-    sJoined = true;
-    // メインウィンドウを参照
-    tTJSVariant mainWindow;
-    TVPExecuteExpression("Window.mainWindow", &mainWindow);
-    iTJSDispatch2 *mainWindowRef = mainWindow.AsObjectNoAddRef();
-    // レシーバ更新
-    tTJSVariant mode = (tTVInteger)(tjs_int)wrmRegister;
-    tTJSVariant proc = (tTVInteger)(tjs_int)MyReceiver;
-    tTJSVariant userdata = (tTVInteger)0;
-    tTJSVariant *p[3] = {&mode, &proc, &userdata};
-    (void)mainWindowRef->FuncCall(0, L"registerMessageReceiver", NULL, NULL, 3, p, mainWindowRef);
-    // メッセージチェインに参加
-    tTJSVariant hwndValue;
-    mainWindowRef->PropGet(0, TJS_W("HWND"), NULL, &hwndValue, mainWindowRef);
-    sNextHWND = SetClipboardViewer(reinterpret_cast<HWND>((tjs_int)(hwndValue)));
+// アタッチ
+NCB_ATTACH_CLASS(ClipboardEx, Clipboard)
+{
+  NCB_METHOD(hasFormat);
+  NCB_PROPERTY(asTJSExpression, getTJSExpression, setTJSExpression);
+  NCB_METHOD(setAsBitmap);
+  NCB_METHOD(getAsBitmap);
+}
+
+//----------------------------------------------------------------------
+// Window追加関数
+//----------------------------------------------------------------------
+class WindowClipboardEx
+{
+private:
+  iTJSDispatch2 *objthis; //< オブジェクト情報の参照
+  bool clipboardWatchEnabled;
+  HWND curHWND, nextHWND;
+
+public:
+  // コンストラクタ
+  WindowClipboardEx(iTJSDispatch2 *objthis)
+    : objthis(objthis)
+    , clipboardWatchEnabled(false)
+    , curHWND(NULL)
+    , nextHWND(NULL) {
   }
 
-  // クリップボードチェーンから外れる
-  static void disjoinClipboardChain(void) {
-    if (! sJoined)
+  // デストラクタ
+  virtual ~WindowClipboardEx(void) {
+    if (clipboardWatchEnabled)
+      disjoinClipboardViewerChain();
+  }
+
+  // クリップボード監視をオンオフする
+  void setClipboardWatchEnabled(bool state) {
+    if (clipboardWatchEnabled == state)
       return;
-    sJoined = false;
-    // メインウィンドウを参照
-    tTJSVariant mainWindow;
-    TVPExecuteExpression("Window.mainWindow", &mainWindow);
-    iTJSDispatch2 *mainWindowRef = mainWindow.AsObjectNoAddRef();
+    clipboardWatchEnabled = state;
+    if (clipboardWatchEnabled) 
+      joinClipboardViewerChain();
+    else
+      disjoinClipboardViewerChain();
+  }
+
+  // クリップボード監視の状態を取得
+  bool getClipboardWatchEnabled(void) const {
+    return clipboardWatchEnabled;
+  }
+
+  void registerReceiver(bool enable) {
     // レシーバ更新
-    tTJSVariant mode = (tTVInteger)(tjs_int)wrmUnregister;
-    tTJSVariant proc = (tTVInteger)(tjs_int)MyReceiver;
-    tTJSVariant userdata = (tTVInteger)0;
+    tTJSVariant mode    = enable ? (tTVInteger)(tjs_int)wrmRegister : (tTVInteger)(tjs_int)wrmUnregister;
+    tTJSVariant proc     = (tTVInteger)(tjs_int)MyReceiverHook;
+    tTJSVariant userdata = (tTVInteger)(tjs_int)objthis;
     tTJSVariant *p[3] = {&mode, &proc, &userdata};
-    (void)mainWindowRef->FuncCall(0, L"registerMessageReceiver", NULL, NULL, 3, p, mainWindowRef);
-    // メッセージチェインから外れる
+    objthis->FuncCall(0, L"registerMessageReceiver", NULL, NULL, 3, p, objthis);
+  }
+
+  // クリップボードビューアーチェーンに参加
+  void joinClipboardViewerChain(void) {
+    // メッセージチェインに参加
     tTJSVariant hwndValue;
-    mainWindowRef->PropGet(0, TJS_W("HWND"), NULL, &hwndValue, mainWindowRef);
-    ChangeClipboardChain(reinterpret_cast<HWND>((tjs_int)(hwndValue)), sNextHWND);
-    sNextHWND = NULL;
+    objthis->PropGet(0, TJS_W("HWND"), NULL, &hwndValue, objthis);
+    curHWND = reinterpret_cast<HWND>(tjs_int(hwndValue));
+    nextHWND = SetClipboardViewer(curHWND);
+    // レシーバーをオンにする
+    registerReceiver(true);
+  }
+
+  // クリップボードビューアーチェーンから外れる
+  void disjoinClipboardViewerChain(void) {
+    ChangeClipboardChain(curHWND, nextHWND);
+    curHWND = nextHWND = NULL;
+    // レシーバーをオフにする
+    registerReceiver(false);
+  }
+
+  // コールバックを呼び出す
+  void exexDrawClipboardCallback(void) {
+    objthis->FuncCall(0, L"onDrawClipboard", NULL, NULL, 0, NULL, objthis);
   }
 
   // メッセージ処理
-  static bool __stdcall MyReceiver(void *userdata, tTVPWindowMessage *Message) {
+  static bool __stdcall MyReceiverHook(void *userdata, tTVPWindowMessage *Message) {
+    iTJSDispatch2 *obj = (iTJSDispatch2*)userdata; // Window のオブジェクト
+    // 吉里吉里の内部処理の関係でイベント処理中は登録破棄後でも呼ばれることがあるので
+    // Window の本体オブジェクトからネイティブオブジェクトを取り直す
+    WindowClipboardEx *self = ncbInstanceAdaptor<WindowClipboardEx>::GetNativeInstance(obj);
+    return self->MyReceiver(Message);
+  }
+
+  bool MyReceiver(tTVPWindowMessage *Message) {
     switch (Message->Msg) {
       // ウィンドウのDETACHに合わせて、一旦チェインから外れる
     case TVP_WM_DETACH:
-      if (! sChangeHandlers.empty())
-        disjoinClipboardChain();
+      if (clipboardWatchEnabled)
+	disjoinClipboardViewerChain();
       break;
       // ウィンドウのATTACHに合わせて、チェインに再び参加する
     case TVP_WM_ATTACH:
-      if (! sChangeHandlers.empty())
-        joinClipboardChain();
+      if (clipboardWatchEnabled)
+	joinClipboardViewerChain();
       break;
       // クリップボード更新メッセージの処理
     case WM_DRAWCLIPBOARD:
-      if (sNextHWND) SendMessage(sNextHWND , Message->Msg , Message->WParam, Message->LParam);
-      executeContentChangeHandlers();
+      if (nextHWND) SendMessage(nextHWND , Message->Msg , Message->WParam, Message->LParam);
+      exexDrawClipboardCallback();
       return true;
       // クリップボードチェイン変更メッセージの処理
     case WM_CHANGECBCHAIN:
-      if ((HWND)(Message->WParam) == sNextHWND) sNextHWND = (HWND)(Message->LParam);
-      else if (sNextHWND) SendMessage(sNextHWND , Message->Msg , Message->WParam, Message->LParam);
+      if ((HWND)(Message->WParam) == nextHWND) nextHWND = (HWND)(Message->LParam);
+      else if (nextHWND) SendMessage(nextHWND , Message->Msg , Message->WParam, Message->LParam);
       return true;
     }
     return false;
   }
+};
 
-  // ハンドラを登録
-  static void addContentChangeHandler(tTJSVariant receiver) {
-    if (std::find_if(sChangeHandlers.begin(), sChangeHandlers.end(), VariantCompare(receiver))
-        == sChangeHandlers.end()) {
-      if (sChangeHandlers.empty()) {
-        joinClipboardChain();
-      }
-      sChangeHandlers.push_back(receiver);
-    }
-  }      
 
-  // ハンドラを解放
-  static void removeContentChangeHandler(tTJSVariant receiver) {
-    std::vector<tTJSVariant>::iterator n = 
-      std::find_if(sChangeHandlers.begin(), sChangeHandlers.end(), VariantCompare(receiver));
-    if (n != sChangeHandlers.end()) {
-      sChangeHandlers.erase(n);
-      if (sChangeHandlers.empty())
-        disjoinClipboardChain();
+// インスタンスゲッタ
+NCB_GET_INSTANCE_HOOK(WindowClipboardEx)
+{
+  NCB_INSTANCE_GETTER(objthis) { // objthis を iTJSDispatch2* 型の引数とする
+    ClassT* obj = GetNativeInstance(objthis);	// ネイティブインスタンスポインタ取得
+    if (!obj) {
+      obj = new ClassT(objthis);				// ない場合は生成する
+      SetNativeInstance(objthis, obj);		// objthis に obj をネイティブインスタンスとして登録する
     }
-  }    
-
-  // 全てのハンドラの登録を解除
-  static void releaseAllContentChangeHandlers(void) {
-    if (! sChangeHandlers.empty()) {
-      sChangeHandlers.clear();
-      disjoinClipboardChain();
-    }
-  }    
-
-  // ハンドラを実行
-  static void executeContentChangeHandlers(void) {
-    for (std::vector<tTJSVariant>::iterator i = sChangeHandlers.begin();
-         i != sChangeHandlers.end();
-         i++) {
-      tTJSVariantClosure &closure = i->AsObjectClosureNoAddRef();
-      closure.FuncCall(0, NULL, NULL, NULL, 0, NULL, NULL);
-    }
+    return obj;
   }
 };
+
+
+// フック付きアタッチ
+NCB_ATTACH_CLASS_WITH_HOOK(WindowClipboardEx, Window) {
+  Property(L"clipboardWatchEnabled", &WindowClipboardEx::getClipboardWatchEnabled, &WindowClipboardEx::setClipboardWatchEnabled);
+}
+
 
 //----------------------------------------------------------------------
 // DLL登録時に呼び出すファンクション
 //----------------------------------------------------------------------
-static void ClipboardRegistCallback(void)
+static void RegistCallback(void)
 {
   // 定数を登録
   TVPExecuteExpression(L"global.cbfBitmap = 2");
@@ -553,14 +562,16 @@ static void ClipboardRegistCallback(void)
   }
 }
 
+
+// 登録
+NCB_PRE_REGIST_CALLBACK(RegistCallback);
+
+
 //----------------------------------------------------------------------
 // DLL解放時に呼び出すファンクション
 //----------------------------------------------------------------------
-static void ClipboardUnregistCallback(void)
+static void UnregistCallback(void)
 {
-  // ハンドラを解放
-  ClipboardEx::releaseAllContentChangeHandlers();
-
   // 定数を削除
   TVPExecuteScript(L"delete global[\"cbfBitmap\"]");
   TVPExecuteScript(L"delete global[\"cbfTJSExpression\"]");
@@ -572,19 +583,7 @@ static void ClipboardUnregistCallback(void)
   }
 }
 
-//----------------------------------------------------------------------
-// 関数登録
-//----------------------------------------------------------------------
-NCB_ATTACH_CLASS(ClipboardEx, Clipboard)
-{
-  NCB_METHOD(hasFormat);
-  NCB_PROPERTY(asTJSExpression, getTJSExpression, setTJSExpression);
-  NCB_METHOD(setAsBitmap);
-  NCB_METHOD(getAsBitmap);
-  NCB_METHOD(addContentChangeHandler);
-  NCB_METHOD(removeContentChangeHandler);
-}
 
-NCB_PRE_REGIST_CALLBACK(ClipboardRegistCallback);
-NCB_POST_UNREGIST_CALLBACK(ClipboardUnregistCallback);
+// 登録
+NCB_POST_UNREGIST_CALLBACK(UnregistCallback);
 
