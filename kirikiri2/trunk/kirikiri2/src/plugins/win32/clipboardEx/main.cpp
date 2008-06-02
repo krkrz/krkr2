@@ -424,8 +424,10 @@ public:
 
   // デストラクタ
   virtual ~WindowClipboardEx(void) {
-    if (clipboardWatchEnabled)
+    if (clipboardWatchEnabled) {
       disjoinClipboardViewerChain();
+      registerReceiver(false);
+    }
   }
 
   // クリップボード監視をオンオフする
@@ -433,10 +435,13 @@ public:
     if (clipboardWatchEnabled == state)
       return;
     clipboardWatchEnabled = state;
-    if (clipboardWatchEnabled) 
+    if (clipboardWatchEnabled) {
       joinClipboardViewerChain();
-    else
+      registerReceiver(true);
+    } else {
       disjoinClipboardViewerChain();
+      registerReceiver(false);
+    }
   }
 
   // クリップボード監視の状態を取得
@@ -460,16 +465,12 @@ public:
     objthis->PropGet(0, TJS_W("HWND"), NULL, &hwndValue, objthis);
     curHWND = reinterpret_cast<HWND>(tjs_int(hwndValue));
     nextHWND = SetClipboardViewer(curHWND);
-    // レシーバーをオンにする
-    registerReceiver(true);
   }
 
   // クリップボードビューアーチェーンから外れる
   void disjoinClipboardViewerChain(void) {
     ChangeClipboardChain(curHWND, nextHWND);
     curHWND = nextHWND = NULL;
-    // レシーバーをオフにする
-    registerReceiver(false);
   }
 
   // コールバックを呼び出す
