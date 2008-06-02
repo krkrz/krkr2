@@ -54,7 +54,7 @@ class Clipboard
 class Window
 {
   /**
-   * クリップ更新の監視するかどうか設定する(デフォルトはオフ)
+   * クリップボード更新の監視をするかどうか設定する(デフォルトはオフ)
    * @param s 監視する？
    * @return 監視する？
    */
@@ -63,5 +63,5 @@ class Window
   /**
    * クリップボードが更新された時に呼び出されるフック関数
    */
-  function onDrwaClipboard();
+  function onDrawClipboard();
 }
