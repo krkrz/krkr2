@@ -150,8 +150,8 @@ class AffineLayer extends KAGLayer {
                     stepy = _zoomy/100.0;
                     
                     var dxh = stepx*cs;
-                    var dxv = stepx*sn;
-                    var dyh = -stepy*sn;
+                    var dxv = stepy*sn;
+					var dyh = -stepx*sn;
                     var dyv = stepy*cs;
                     
 					var w = afx;
