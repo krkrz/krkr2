@@ -74,6 +74,21 @@ class Layer {
 	function getDiffRect(base);
 
 	/**
+	 * レイヤのピクセル比較を行います。
+	 * @param base 差分元となるベース用の画像
+	 * @param samecol 同じ場合に塗りつぶす色(0xAARRGGBB)（voidまたは省略なら塗りつぶさない）
+	 * @param diffcol 違う場合に塗りつぶす色(0xAARRGGBB)（voidまたは省略なら塗りつぶさない）
+	 *（baseはインスタンス自身と同じサイズでないと例外を投げます）
+	 */
+	function getDiffPixel(base, samecol, diffcol);
+
+	/**
+	 * レイヤの淵の色を透明部分まで引き伸ばします（縮小時に偽色が出るのを防ぐ）
+	 * @param level 処理を行う回数。大きいほど引き伸ばし領域が増える
+	 */
+	function oozeColor(level);
+
+	/**
 	 * レイヤの Blue CHANNEL を Alpha 領域に複製する
 	 * @param src コピー元レイヤ
 	 */
