@@ -8097,35 +8097,35 @@ TVP_GL_FUNC_DECL(void, TVPCopyMask_c, (tjs_uint32 *dest, const tjs_uint32 *src, 
 	{
 		{
 			dest[(len-0)] = (dest[(len-0)] & 0xffffff) +
-				(src[(len-0)] & 0xff0000);
+				(src[(len-0)] & 0xff000000);
 		}
 		{
 			dest[(len-1)] = (dest[(len-1)] & 0xffffff) +
-				(src[(len-1)] & 0xff0000);
+				(src[(len-1)] & 0xff000000);
 		}
 		{
 			dest[(len-2)] = (dest[(len-2)] & 0xffffff) +
-				(src[(len-2)] & 0xff0000);
+				(src[(len-2)] & 0xff000000);
 		}
 		{
 			dest[(len-3)] = (dest[(len-3)] & 0xffffff) +
-				(src[(len-3)] & 0xff0000);
+				(src[(len-3)] & 0xff000000);
 		}
 		{
 			dest[(len-4)] = (dest[(len-4)] & 0xffffff) +
-				(src[(len-4)] & 0xff0000);
+				(src[(len-4)] & 0xff000000);
 		}
 		{
 			dest[(len-5)] = (dest[(len-5)] & 0xffffff) +
-				(src[(len-5)] & 0xff0000);
+				(src[(len-5)] & 0xff000000);
 		}
 		{
 			dest[(len-6)] = (dest[(len-6)] & 0xffffff) +
-				(src[(len-6)] & 0xff0000);
+				(src[(len-6)] & 0xff000000);
 		}
 		{
 			dest[(len-7)] = (dest[(len-7)] & 0xffffff) +
-				(src[(len-7)] & 0xff0000);
+				(src[(len-7)] & 0xff000000);
 		}
 		len -= 8;
 	}
@@ -8134,7 +8134,7 @@ TVP_GL_FUNC_DECL(void, TVPCopyMask_c, (tjs_uint32 *dest, const tjs_uint32 *src, 
 	{
 		{
 			dest[len] = (dest[len] & 0xffffff) +
-				(src[len] & 0xff0000);
+				(src[len] & 0xff000000);
 		}
 		len --;
 	}
@@ -8150,35 +8150,35 @@ TVP_GL_FUNC_DECL(void, TVPCopyMask_c, (tjs_uint32 *dest, const tjs_uint32 *src, 
 		{
 		{
 			dest[(___index+0)] = (dest[(___index+0)] & 0xffffff) +
-				(src[(___index+0)] & 0xff0000);
+				(src[(___index+0)] & 0xff000000);
 		}
 		{
 			dest[(___index+1)] = (dest[(___index+1)] & 0xffffff) +
-				(src[(___index+1)] & 0xff0000);
+				(src[(___index+1)] & 0xff000000);
 		}
 		{
 			dest[(___index+2)] = (dest[(___index+2)] & 0xffffff) +
-				(src[(___index+2)] & 0xff0000);
+				(src[(___index+2)] & 0xff000000);
 		}
 		{
 			dest[(___index+3)] = (dest[(___index+3)] & 0xffffff) +
-				(src[(___index+3)] & 0xff0000);
+				(src[(___index+3)] & 0xff000000);
 		}
 		{
 			dest[(___index+4)] = (dest[(___index+4)] & 0xffffff) +
-				(src[(___index+4)] & 0xff0000);
+				(src[(___index+4)] & 0xff000000);
 		}
 		{
 			dest[(___index+5)] = (dest[(___index+5)] & 0xffffff) +
-				(src[(___index+5)] & 0xff0000);
+				(src[(___index+5)] & 0xff000000);
 		}
 		{
 			dest[(___index+6)] = (dest[(___index+6)] & 0xffffff) +
-				(src[(___index+6)] & 0xff0000);
+				(src[(___index+6)] & 0xff000000);
 		}
 		{
 			dest[(___index+7)] = (dest[(___index+7)] & 0xffffff) +
-				(src[(___index+7)] & 0xff0000);
+				(src[(___index+7)] & 0xff000000);
 		}
 			___index += 8;
 		}
@@ -8189,7 +8189,7 @@ TVP_GL_FUNC_DECL(void, TVPCopyMask_c, (tjs_uint32 *dest, const tjs_uint32 *src, 
 		{
 		{
 			dest[___index] = (dest[___index] & 0xffffff) +
-				(src[___index] & 0xff0000);
+				(src[___index] & 0xff000000);
 		}
 			___index ++;
 		}
