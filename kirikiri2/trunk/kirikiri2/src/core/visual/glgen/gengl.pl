@@ -5146,7 +5146,7 @@ EOF
 $content = <<EOF;
 		{
 			dest[{ofs}] = (dest[{ofs}] & 0xffffff) +
-				(src[{ofs}] & 0xff0000);
+				(src[{ofs}] & 0xff000000);
 		}
 EOF
 
