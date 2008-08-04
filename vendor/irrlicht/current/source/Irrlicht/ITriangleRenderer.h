@@ -1,4 +1,4 @@
-// Copyright (C) 2002-2007 Nikolaus Gebhardt
+// Copyright (C) 2002-2008 Nikolaus Gebhardt
 // This file is part of the "Irrlicht Engine".
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
@@ -6,7 +6,6 @@
 #define __I_TRIANGLE_RENDERER_H_INCLUDED__
 
 #include "IReferenceCounted.h"
-#include "IImage.h"
 #include "S2DVertex.h"
 #include "rect.h"
 #include "IZBuffer.h"
@@ -15,6 +14,7 @@ namespace irr
 {
 namespace video
 {
+	class IImage;
 
 	enum ETriangleRenderer
 	{
@@ -35,9 +35,6 @@ namespace video
 	{
 	public:
 	
-		//! destructor
-		virtual ~ITriangleRenderer() {};
-
 		//! sets a render target
 		virtual void setRenderTarget(video::IImage* surface, const core::rect<s32>& viewPort) = 0;
 

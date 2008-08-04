@@ -1,4 +1,4 @@
-// Copyright (C) 2002-2007 Nikolaus Gebhardt
+// Copyright (C) 2002-2008 Nikolaus Gebhardt
 // This file is part of the "Irrlicht Engine".
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
@@ -187,7 +187,7 @@ const c8* CFileSystem::getWorkingDirectory()
 	_getcwd(WorkingDirectory, FILE_SYSTEM_MAX_PATH);
 #endif
 
-#if (defined(_IRR_POSIX_API_) || defined(MACOSX))
+#if (defined(_IRR_POSIX_API_) || defined(_IRR_OSX_PLATFORM_))
 	getcwd(WorkingDirectory, (size_t)FILE_SYSTEM_MAX_PATH);
 #endif
 	return WorkingDirectory;
@@ -220,7 +220,7 @@ core::stringc CFileSystem::getAbsolutePath(const core::stringc& filename) const
 	p = _fullpath( fpath, filename.c_str(), _MAX_PATH);
 	ret = p;
 
-#elif (defined(_IRR_POSIX_API_) || defined(MACOSX))
+#elif (defined(_IRR_POSIX_API_) || defined(_IRR_OSX_PLATFORM_))
 
 	c8 fpath[4096];
 	p = realpath(filename.c_str(), fpath);

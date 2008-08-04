@@ -1,4 +1,4 @@
-// Copyright (C) 2005 Etienne Petitjean
+// Copyright (C) 2005-2008 Etienne Petitjean
 // This file is part of the "Irrlicht Engine".
 // For conditions of distribution and use, see copyright notice in Irrlicht.h
 
@@ -7,7 +7,7 @@
 
 #include "IrrCompileConfig.h"
 
-#ifdef MACOSX
+#ifdef _IRR_USE_OSX_DEVICE_
 
 #include "CIrrDeviceStub.h"
 #include "IrrlichtDevice.h"
@@ -209,6 +209,6 @@ namespace irr
 
 } // end namespace irr
 
-#endif // MACOSX
+#endif // _IRR_USE_OSX_DEVICE_
 #endif // __C_IRR_DEVICE_MACOSX_H_INCLUDED__
 

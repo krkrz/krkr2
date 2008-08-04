@@ -1,4 +1,4 @@
-// Copyright (C) 2002-2007 Nikolaus Gebhardt
+// Copyright (C) 2002-2008 Nikolaus Gebhardt
 // This file is part of the "Irrlicht Engine".
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
@@ -96,7 +96,9 @@ bool CSTLMeshWriter::writeMeshBinary(io::IWriteFile* file, scene::IMesh* mesh, s
 					const u16 attributes = 0;
 					for (u32 j=0; j<indexCount; j+=3)
 					{
-						const core::plane3df tmpplane(vtx[buffer->getIndices()[j]].Pos,vtx[buffer->getIndices()[j+1]].Pos,vtx[buffer->getIndices()[j+2]].Pos);
+						const core::plane3df tmpplane(vtx[buffer->getIndices()[j]].Pos,
+								vtx[buffer->getIndices()[j+1]].Pos,
+								vtx[buffer->getIndices()[j+2]].Pos);
 						file->write(&tmpplane.Normal, 12);
 						file->write(&vtx[buffer->getIndices()[j]].Pos, 12);
 						file->write(&vtx[buffer->getIndices()[j+1]].Pos, 12);
@@ -111,7 +113,9 @@ bool CSTLMeshWriter::writeMeshBinary(io::IWriteFile* file, scene::IMesh* mesh, s
 					const u16 attributes = 0;
 					for (u32 j=0; j<indexCount; j+=3)
 					{
-						const core::plane3df tmpplane(vtx[buffer->getIndices()[j]].Pos,vtx[buffer->getIndices()[j+1]].Pos,vtx[buffer->getIndices()[j+2]].Pos);
+						const core::plane3df tmpplane(vtx[buffer->getIndices()[j]].Pos,
+								vtx[buffer->getIndices()[j+1]].Pos,
+								vtx[buffer->getIndices()[j+2]].Pos);
 						file->write(&tmpplane.Normal, 12);
 						file->write(&vtx[buffer->getIndices()[j]].Pos, 12);
 						file->write(&vtx[buffer->getIndices()[j+1]].Pos, 12);
@@ -126,7 +130,9 @@ bool CSTLMeshWriter::writeMeshBinary(io::IWriteFile* file, scene::IMesh* mesh, s
 					const u16 attributes = 0;
 					for (u32 j=0; j<indexCount; j+=3)
 					{
-						const core::plane3df tmpplane(vtx[buffer->getIndices()[j]].Pos,vtx[buffer->getIndices()[j+1]].Pos,vtx[buffer->getIndices()[j+2]].Pos);
+						const core::plane3df tmpplane(vtx[buffer->getIndices()[j]].Pos,
+								vtx[buffer->getIndices()[j+1]].Pos,
+								vtx[buffer->getIndices()[j+2]].Pos);
 						file->write(&tmpplane.Normal, 12);
 						file->write(&vtx[buffer->getIndices()[j]].Pos, 12);
 						file->write(&vtx[buffer->getIndices()[j+1]].Pos, 12);

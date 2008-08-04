@@ -1,4 +1,4 @@
-// Copyright (C) 2002-2007 Nikolaus Gebhardt
+// Copyright (C) 2002-2008 Nikolaus Gebhardt
 // This file is part of the "Irrlicht Engine".
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 //
@@ -59,7 +59,10 @@ namespace scene
 	class COCTLoader : public IMeshLoader
 	{
 	public:
-		void OCTLoadLights(io::IReadFile* file, ISceneManager * scene, ISceneNode * parent = 0, f32 radius = 500.0f, f32 intensityScale = 0.0000001f*2.5, bool rewind = true);
+		void OCTLoadLights(io::IReadFile* file, ISceneManager * scene,
+				ISceneNode * parent = 0, f32 radius = 500.0f,
+				f32 intensityScale = 0.0000001f*2.5,
+				bool rewind = true);
 
 		//! constructor
 		COCTLoader(video::IVideoDriver* driver);

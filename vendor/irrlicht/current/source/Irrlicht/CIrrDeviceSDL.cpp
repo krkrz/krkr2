@@ -1,4 +1,4 @@
-// Copyright (C) 2002-2007 Nikolaus Gebhardt
+// Copyright (C) 2002-2008 Nikolaus Gebhardt
 // This file is part of the "Irrlicht Engine".
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
@@ -319,7 +319,10 @@ void CIrrDeviceSDL::setWindowCaption(const wchar_t* text)
 void CIrrDeviceSDL::present(video::IImage* surface, s32 windowId, core::rect<s32>* src)
 {
 	SDL_Rect srcClip;
-	SDL_Surface *sdlSurface = SDL_CreateRGBSurfaceFrom (surface->lock(), surface->getDimension().Width, surface->getDimension().Height, surface->getBitsPerPixel(), surface->getPitch(), surface->getRedMask(), surface->getGreenMask(), surface->getBlueMask(), 0);
+	SDL_Surface *sdlSurface = SDL_CreateRGBSurfaceFrom(
+			surface->lock(), surface->getDimension().Width, surface->getDimension().Height,
+			surface->getBitsPerPixel(), surface->getPitch(),
+			surface->getRedMask(), surface->getGreenMask(), surface->getBlueMask(), 0);
 	if (src)
 	{
 		srcClip.x = src->UpperLeftCorner.X;

@@ -1,4 +1,4 @@
-// Copyright (C) 2002-2007 Nikolaus Gebhardt
+// Copyright (C) 2002-2008 Nikolaus Gebhardt
 // This file is part of the "Irrlicht Engine".
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
@@ -11,17 +11,18 @@
 
 #include "ITerrainSceneNode.h"
 #include "SMesh.h"
-#include "IReadFile.h"
-#include "ITextSceneNode.h"
 
 namespace irr
 {
 namespace io
 {
 	class IFileSystem;
+	class IReadFile;
 }
 namespace scene
 {
+	class ITextSceneNode;
+
 	//! A scene node for displaying terrain using the geo mip map algorithm.
 	/** The code for the TerrainSceneNode is based on the GeoMipMapSceneNode
 	 * developed by Spintz. He made it available for Irrlicht and allowed it to be 
@@ -102,8 +103,7 @@ namespace scene
 		//! \param rotation: New rotation of the node in degrees.
 		virtual void setRotation(const core::vector3df& rotation);
 
-		//! Sets the pivot point for rotation of this node.  This is useful for the TiledTerrainManager to
-		//! rotate all terrain tiles around a global world point.
+		//! Sets the pivot point for rotation of this node.
 		//! NOTE: The default for the RotationPivot will be the center of the individual tile.
 		virtual void setRotationPivot( const core::vector3df& pivot );
 
@@ -152,7 +152,7 @@ namespace scene
 		//! \param LOD: The level of detail to get for that patch.  If -1, then get 
 		//! the CurrentLOD.  If the CurrentLOD is set to -1, meaning it's not shown,
 		//! then it will retrieve the triangles at the highest LOD ( 0 ).
-		//! \return: Number if indices put into the buffer.
+		//! \return: Number of indices put into the buffer.
 		virtual s32 getIndicesForPatch(core::array<u32>& indices,
 			s32 patchX, s32 patchZ, s32 LOD = 0 );
 
@@ -198,8 +198,8 @@ namespace scene
 		//virtual void setDynamicSelectorUpdate ( bool bVal ) { DynamicSelectorUpdate = bVal; }
 
 		//! Override the default generation of distance thresholds for determining the LOD a patch
-		//! is rendered at.  If any LOD is overridden, then the scene node will no longer apply
-		//! scaling factors to these values.  If you override these distances, and then apply
+		//! is rendered at. If any LOD is overridden, then the scene node will no longer apply
+		//! scaling factors to these values. If you override these distances, and then apply
 		//! a scale to the scene node, it is your responsibility to update the new distances to
 		//! work best with your new terrain size.
 		virtual bool overrideLODDistance( s32 LOD, f64 newDistance );
@@ -225,20 +225,17 @@ namespace scene
 	private:
 
 		friend class CTerrainTriangleSelector;
-		friend class CTiledTerrainSceneNodeManager;
 
 		struct SPatch
 		{
 			SPatch()
-			: CurrentLOD(-1), DebugText(0),
-			Top(0), Bottom(0), Right(0), Left(0)
+			: CurrentLOD(-1), Top(0), Bottom(0), Right(0), Left(0)
 			{
 			}
 
 			s32			CurrentLOD;
 			core::aabbox3df		BoundingBox;
 			core::vector3df		Center;
-			scene::ITextSceneNode*	DebugText;
 			SPatch*			Top;
 			SPatch*			Bottom;
 			SPatch*			Right;
@@ -280,11 +277,10 @@ namespace scene
 		};
 
 		virtual void preRenderLODCalculations();
-		virtual void preRenderLODCalculations_old();
 		virtual void preRenderIndicesCalculations();
 
 		//! get indices when generating index data for patches at varying levels of detail.
-		u32 getIndex(const s32& PatchX, const s32& PatchZ, const s32& PatchIndex, u32 vX, u32 vZ) const;
+		u32 getIndex(const s32 PatchX, const s32 PatchZ, const s32 PatchIndex, u32 vX, u32 vZ) const;
 
 		//! calculate smooth normals 
 		void calculateNormals(SMeshBufferLightMap* pMeshBuffer );
@@ -302,7 +298,7 @@ namespace scene
 		void setCurrentLODOfPatches(s32 i);
 
 		//! sets the CurrentLOD of TerrainData patches to the LODs specified in the array
-		void setCurrentLODOfPatches(core::array<s32>& lodarray);
+		void setCurrentLODOfPatches(const core::array<s32>& lodarray);
 
 		//! Apply transformation changes( scale, position, rotation )
 		void applyTransformation();

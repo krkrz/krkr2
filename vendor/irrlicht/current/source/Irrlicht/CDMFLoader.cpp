@@ -1,4 +1,4 @@
-// Copyright (C) 2002-2007 Nikolaus Gebhardt
+// Copyright (C) 2002-2008 Nikolaus Gebhardt
 // This file is part of the "Irrlicht Engine".
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 //
@@ -214,11 +214,11 @@ IAnimatedMesh* CDMFLoader::createMesh(io::IReadFile* file)
 				}
 
 				for (u32 j=0; j<filepath.size()-1; ++j)
-					path = path + filepath[j] + String("\\");
+					path = path + filepath[j] + String("/");
 			}
 			else
 				path = path +
-						String( SceneMgr->getParameters()->getAttributeAsString(DMF_TEXTURE_PATH)) + String("\\");
+						String( SceneMgr->getParameters()->getAttributeAsString(DMF_TEXTURE_PATH)) + String("/");
 
 			//texture and lightmap
 			ITexture *tex = 0;

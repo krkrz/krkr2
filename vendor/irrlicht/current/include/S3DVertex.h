@@ -1,4 +1,4 @@
-// Copyright (C) 2002-2007 Nikolaus Gebhardt
+// Copyright (C) 2002-2008 Nikolaus Gebhardt
 // This file is part of the "Irrlicht Engine".
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
@@ -20,12 +20,12 @@ enum E_VERTEX_TYPE
 	//! Standard vertex type used by the Irrlicht engine, video::S3DVertex.
 	EVT_STANDARD = 0,
 
-	//! Vertex with two texture coordinates, video::S3DVertex2TCoords. Usually used
-	//! for geometry with lightmaps or other special materials.
+	//! Vertex with two texture coordinates, video::S3DVertex2TCoords.
+	/** Usually used for geometry with lightmaps or other special materials. */
 	EVT_2TCOORDS,
 
-	//! Vertex with a tangent and binormal vector, video::S3DVertexTangents. Usually
-	//! used for tangent space normal mapping.
+	//! Vertex with a tangent and binormal vector, video::S3DVertexTangents.
+	/** Usually used for tangent space normal mapping. */
 	EVT_TANGENTS
 };
 
@@ -65,16 +65,24 @@ struct S3DVertex
 	//! Texture coordinates
 	core::vector2d<f32> TCoords;
 
-	bool operator == (const S3DVertex& other) const
+	bool operator==(const S3DVertex& other) const
 	{
-		return (Pos == other.Pos && Normal == other.Normal &&
-			Color == other.Color && TCoords == other.TCoords);
+		return ((Pos == other.Pos) && (Normal == other.Normal) &&
+			(Color == other.Color) && (TCoords == other.TCoords));
 	}
 
-	bool operator != (const S3DVertex& other) const
+	bool operator!=(const S3DVertex& other) const
 	{
-		return (Pos != other.Pos || Normal != other.Normal ||
-			Color != other.Color || TCoords != other.TCoords);
+		return ((Pos != other.Pos) || (Normal != other.Normal) ||
+			(Color != other.Color) || (TCoords != other.TCoords));
+	}
+
+	bool operator<(const S3DVertex& other) const
+	{
+		return ((Pos < other.Pos) ||
+				((Pos == other.Pos) && (Normal < other.Normal)) ||
+				((Pos == other.Pos) && (Normal == other.Normal) && (Color < other.Color)) ||
+				((Pos == other.Pos) && (Normal == other.Normal) && (Color == other.Color) && (TCoords < other.TCoords)));
 	}
 
 	E_VERTEX_TYPE getType() const
@@ -127,17 +135,23 @@ struct S3DVertex2TCoords : public S3DVertex
 	core::vector2d<f32> TCoords2;
 
 	//! Equality operator
-	bool operator == (const S3DVertex2TCoords& other) const
+	bool operator==(const S3DVertex2TCoords& other) const
 	{
-		return (static_cast<S3DVertex>(*this)==other &&
-			TCoords2 == other.TCoords2);
+		return ((static_cast<S3DVertex>(*this)==other) &&
+			(TCoords2 == other.TCoords2));
 	}
 
 	//! Inequality operator
-	bool operator != (const S3DVertex2TCoords& other) const
+	bool operator!=(const S3DVertex2TCoords& other) const
 	{
-		return (static_cast<S3DVertex>(*this)!=other &&
-			TCoords2 != other.TCoords2);
+		return ((static_cast<S3DVertex>(*this)!=other) ||
+			(TCoords2 != other.TCoords2));
+	}
+
+	bool operator<(const S3DVertex2TCoords& other) const
+	{
+		return ((static_cast<S3DVertex>(*this) < other) ||
+				((static_cast<S3DVertex>(*this) == other) && (TCoords2 < other.TCoords2)));
 	}
 
 	E_VERTEX_TYPE getType() const
@@ -148,15 +162,17 @@ struct S3DVertex2TCoords : public S3DVertex
 
 
 //! Vertex with a tangent and binormal vector.
-/**  Usually used for tangent space normal mapping.
-*/
+/** Usually used for tangent space normal mapping. */
 struct S3DVertexTangents : public S3DVertex
 {
 	//! default constructor
 	S3DVertexTangents() : S3DVertex() { }
 
 	//! constructor
-	S3DVertexTangents(f32 x, f32 y, f32 z, f32 nx=0.0f, f32 ny=0.0f, f32 nz=0.0f, SColor c = 0xFFFFFFFF, f32 tu=0.0f, f32 tv=0.0f, f32 tanx=0.0f, f32 tany=0.0f, f32 tanz=0.0f, f32 bx=0.0f, f32 by=0.0f, f32 bz=0.0f)
+	S3DVertexTangents(f32 x, f32 y, f32 z, f32 nx=0.0f, f32 ny=0.0f, f32 nz=0.0f,
+			SColor c = 0xFFFFFFFF, f32 tu=0.0f, f32 tv=0.0f,
+			f32 tanx=0.0f, f32 tany=0.0f, f32 tanz=0.0f,
+			f32 bx=0.0f, f32 by=0.0f, f32 bz=0.0f)
 		: S3DVertex(x,y,z, nx,ny,nz, c, tu,tv), Tangent(tanx,tany,tanz), Binormal(bx,by,bz) { }
 
 	//! constructor
@@ -178,16 +194,25 @@ struct S3DVertexTangents : public S3DVertex
 	//! Binormal vector (tangent x normal)
 	core::vector3df Binormal;
 
-	bool operator == (const S3DVertexTangents& other) const
+	bool operator==(const S3DVertexTangents& other) const
 	{
-		return (static_cast<S3DVertex>(*this)==other &&
-			Tangent == other.Tangent && Binormal == other.Binormal);
+		return ((static_cast<S3DVertex>(*this)==other) &&
+			(Tangent == other.Tangent) &&
+			(Binormal == other.Binormal));
 	}
 
-	bool operator != (const S3DVertexTangents& other) const
+	bool operator!=(const S3DVertexTangents& other) const
 	{
-		return (static_cast<S3DVertex>(*this)!=other &&
-			Tangent != other.Tangent || Binormal != other.Binormal);
+		return ((static_cast<S3DVertex>(*this)!=other) ||
+			(Tangent != other.Tangent) ||
+			(Binormal != other.Binormal));
+	}
+
+	bool operator<(const S3DVertexTangents& other) const
+	{
+		return ((static_cast<S3DVertex>(*this) < other) ||
+				((static_cast<S3DVertex>(*this) == other) && (Tangent < other.Tangent)) ||
+				((static_cast<S3DVertex>(*this) == other) && (Tangent == other.Tangent) && (Binormal < other.Binormal)));
 	}
 
 	E_VERTEX_TYPE getType() const

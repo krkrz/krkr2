@@ -1,4 +1,4 @@
-// Copyright (C) 2002-2007 Nikolaus Gebhardt
+// Copyright (C) 2002-2008 Nikolaus Gebhardt
 // This file is part of the "Irrlicht Engine".
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 // Code contributed by skreamz
@@ -174,12 +174,10 @@ void CPakReader::deletePathFromFilename(core::stringc& filename)
 	// delete path from filename
 	const c8* p = filename.c_str() + filename.size();
 
-	// suche ein slash oder den anfang.
+	// search for path separator or beginning
 
 	while (*p!='/' && *p!='\\' && p!=filename.c_str())
 		--p;
-
-	core::stringc newName;
 
 	if (p != filename.c_str())
 	{

@@ -1,4 +1,4 @@
-// Copyright (C) 2002-2007 Nikolaus Gebhardt / Thomas Alten
+// Copyright (C) 2006-2008 Nikolaus Gebhardt / Thomas Alten
 // This file is part of the "Irrlicht Engine".
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
@@ -132,6 +132,7 @@ namespace quake3
 
 	}
 
+	//! A blend function for a q3 shader.
 	struct SBlendFunc
 	{
 		SBlendFunc () : type ( video::EMT_SOLID ), param ( 0.f ) {}
@@ -168,7 +169,7 @@ namespace quake3
 			return 1;
 
 		u32 ret = 1;
-		static const c8 * funclist[] = { "lequal","equal"  };
+		static const c8 * funclist[] = { "lequal","equal" };
 
 		u32 pos = 0;
 		switch ( isEqual ( string, pos, funclist, 2 ) )
@@ -442,6 +443,7 @@ namespace quake3
 		core::array < SVarGroup > VariableGroup;
 	};
 
+
 	//! A Parsed Shader Holding Variables ordered in Groups
 	class SShader
 	{
@@ -470,7 +472,7 @@ namespace quake3
 			// Shader: shader name ( also first variable in first Vargroup )
 			// Entity: classname ( variable in Group(1) )
 			core::stringc name;
-			SVarGroupList *VarGroup;	// reference
+			SVarGroupList *VarGroup; // reference
 	};
 
 	typedef SShader SEntity;
@@ -554,13 +556,12 @@ namespace quake3
 		load one or multiple files stored in name started at startPos to the texture array textures
 		if texture is not loaded 0 will be added ( to find missing textures easier)
 	*/
-	inline void getTextures (	tTexArray &textures ,
-						const core::stringc &name, u32 &startPos,
-						io::IFileSystem *fileSystem,
-						video::IVideoDriver* driver
-					)
+	inline void getTextures(tTexArray &textures,
+				const core::stringc &name, u32 &startPos,
+				io::IFileSystem *fileSystem,
+				video::IVideoDriver* driver)
 	{
-		static const char * extension[2] = 
+		static const char * extension[2] =
 		{
 			".jpg",
 			".tga"
@@ -594,9 +595,7 @@ namespace quake3
 	}
 
 
-	/*!
-		Manages various Quake3 Shader Styles
-	*/
+	//! Manages various Quake3 Shader Styles
 	class IShaderManager : public IReferenceCounted
 	{
 	};

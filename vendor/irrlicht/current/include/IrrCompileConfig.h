@@ -1,4 +1,4 @@
-// Copyright (C) 2002-2007 Nikolaus Gebhardt
+// Copyright (C) 2002-2008 Nikolaus Gebhardt
 // This file is part of the "Irrlicht Engine".
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
@@ -6,7 +6,7 @@
 #define __IRR_COMPILE_CONFIG_H_INCLUDED__
 
 //! Irrlicht SDK Version
-#define IRRLICHT_SDK_VERSION "1.4"
+#define IRRLICHT_SDK_VERSION "1.4.1"
 
 //! The defines for different operating system are:
 //! _IRR_XBOX_PLATFORM_ for XBox
@@ -14,17 +14,22 @@
 //! _IRR_WINDOWS_API_ for Windows or XBox
 //! _IRR_LINUX_PLATFORM_ for Linux (it is defined here if no other os is defined)
 //! _IRR_SOLARIS_PLATFORM_ for Solaris
+//! _IRR_OSX_PLATFORM_ for Apple systems running OSX
 //! _IRR_POSIX_API_ for Posix compatible systems
 //! _IRR_USE_SDL_DEVICE_ for platform independent SDL framework
 //! _IRR_USE_WINDOWS_DEVICE_ for Windows API based device
 //! _IRR_USE_LINUX_DEVICE_ for X11 based device
-//! MACOSX for Mac OS X
+//! _IRR_USE_OSX_DEVICE_ for Cocoa native windowing on OSX
+//! Note: PLATFORM defines the OS specific layer, API can groups several platforms
+//! DEVICE is the windowing system used, several PLATFORMs support more than one DEVICE
+//! Moreover, the DEVICE defined here is not directly related to the Irrlicht devices created in the app (but may depend on each other).
 
 //#define _IRR_USE_SDL_DEVICE_ 1
 
 //! WIN32 for Windows32
 //! WIN64 for Windows64
-#if defined(WIN32) || defined(WIN64)
+// The windows platform and API support SDL and WINDOW device
+#if defined(_WIN32) || defined(_WIN64) || defined(WIN32) || defined(WIN64)
 #define _IRR_WINDOWS_
 #define _IRR_WINDOWS_API_
 #ifndef _IRR_USE_SDL_DEVICE_
@@ -32,12 +37,24 @@
 #endif
 #endif
 
+// XBox only suppots the native Window stuff
 #if defined(_XBOX)
 #define _IRR_XBOX_PLATFORM_
 #define _IRR_WINDOWS_API_
+#define _IRR_USE_WINDOWS_DEVICE_
 #endif
 
-#if !defined(_IRR_WINDOWS_API_) && !defined(MACOSX)
+#if defined(__APPLE__) || defined(MACOSX)
+#if !defined(MACOSX)
+#define MACOSX // legacy support
+#endif
+#define _IRR_OSX_PLATFORM_
+#if !defined(_IRR_USE_LINUX_DEVICE_) // for X11 windowing declare this
+#define _IRR_USE_OSX_DEVICE_
+#endif
+#endif
+
+#if !defined(_IRR_WINDOWS_API_) && !defined(_IRR_OSX_PLATFORM_)
 #if defined(__sparc__) || defined(__sun__)
 #define __BIG_ENDIAN__
 #define _IRR_SOLARIS_PLATFORM_
@@ -64,7 +81,7 @@ to the compiler settings: -DIRR_COMPILE_WITH_DX9_DEV_PACK
 and this to the linker settings: -ld3dx9 -ld3dx8 **/
 #if defined(_IRR_WINDOWS_API_) && (!defined(__GNUC__) || defined(IRR_COMPILE_WITH_DX9_DEV_PACK))
 
-#define _IRR_COMPILE_WITH_DIRECT3D_8_
+//#define _IRR_COMPILE_WITH_DIRECT3D_8_
 #define _IRR_COMPILE_WITH_DIRECT3D_9_
 
 #endif
@@ -92,7 +109,7 @@ define out. */
 //! Define _IRR_OPENGL_USE_EXTPOINTER_ if the OpenGL renderer should use OpenGL extensions via function pointers.
 /** On some systems there is no support for the dynamic extension of OpenGL
 	via function pointers such that this has to be undef'ed. */
-#if !defined(MACOSX) && !defined(_IRR_SOLARIS_PLATFORM_)
+#if !defined(_IRR_OSX_PLATFORM_) && !defined(_IRR_SOLARIS_PLATFORM_)
 #define _IRR_OPENGL_USE_EXTPOINTER_
 #endif
 
@@ -299,7 +316,7 @@ B3D, MS3D or X meshes */
 /** Irrlicht should use approximate float and integer fpu techniques
 precision will be lower but speed higher. currently X86 only
 */
-#if !defined(MACOSX) && !defined(_IRR_SOLARIS_PLATFORM_)
+#if !defined(_IRR_OSX_PLATFORM_) && !defined(_IRR_SOLARIS_PLATFORM_)
 	//#define IRRLICHT_FAST_MATH
 #endif
 

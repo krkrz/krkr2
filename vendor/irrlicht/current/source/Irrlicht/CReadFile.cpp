@@ -1,4 +1,4 @@
-// Copyright (C) 2002-2007 Nikolaus Gebhardt
+// Copyright (C) 2002-2008 Nikolaus Gebhardt
 // This file is part of the "Irrlicht Engine".
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
@@ -37,7 +37,7 @@ s32 CReadFile::read(void* buffer, u32 sizeToRead)
 	if (!isOpen())
 		return 0;
 
-	return fread(buffer, 1, sizeToRead, File);
+	return (s32)fread(buffer, 1, sizeToRead, File);
 }
 
 

@@ -1,10 +1,8 @@
-// Copyright (C) 2002-2007 Nikolaus Gebhardt
+// Copyright (C) 2002-2008 Nikolaus Gebhardt
 // This file is part of the "Irrlicht Engine".
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
-#include "IrrCompileConfig.h"
 #include "CTRTextureGouraud.h"
-#include "os.h"
 
 #ifdef _IRR_COMPILE_WITH_SOFTWARE_
 
@@ -176,8 +174,7 @@ void CTRTextureGouraud::drawIndexedTriangleList(S2DVertex* vertices, s32 vertexC
 		if (!TriangleRect.isRectCollided(ViewPortRect))
 			continue;
 
-
-		// höhe des dreiecks berechnen
+		// calculate height of triangle
 		height = v3->Pos.Y - v1->Pos.Y;
 		if (!height)
 			continue;
@@ -342,7 +339,9 @@ void CTRTextureGouraud::drawIndexedTriangleList(S2DVertex* vertices, s32 vertexC
 						{
 							*spanZTarget = spanZValue;
 							u16 color = lockedTexture[((spanTy>>8)&textureYMask) * lockedTextureWidth + ((spanTx>>8)&textureXMask)];
-							*hSpanBegin = video::RGB16(video::getRedSigned(color) * (spanR>>8) >>2, video::getGreenSigned(color) * (spanG>>8) >>2, video::getBlueSigned(color) * (spanB>>8) >>2);
+							*hSpanBegin = video::RGB16(video::getRedSigned(color) * (spanR>>8) >>2,
+									video::getGreenSigned(color) * (spanG>>8) >>2,
+									video::getBlueSigned(color) * (spanB>>8) >>2);
 						}
 
 						spanR += spanStepR;

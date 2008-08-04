@@ -1,4 +1,4 @@
-// Copyright (C) 2002-2007 Nikolaus Gebhardt
+// Copyright (C) 2002-2008 Nikolaus Gebhardt
 // This file is part of the "Irrlicht Engine".
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
@@ -77,7 +77,8 @@ s32 CParticleMeshEmitter::emitt(u32 now, u32 timeSinceLastCall, SParticle*& outA
 						case video::EVT_TANGENTS:
 							p.pos = ((video::S3DVertexTangents*)Mesh->getMeshBuffer(j)->getVertices())[k].Pos;
 							if( UseNormalDirection )
-								p.vector = ((video::S3DVertexTangents*)Mesh->getMeshBuffer(j)->getVertices())[k].Normal / NormalDirectionModifier;
+								p.vector = ((video::S3DVertexTangents*)Mesh->getMeshBuffer(j)->getVertices())[k].Normal /
+									NormalDirectionModifier;
 							else
 								p.vector = Direction;
 							break;
@@ -129,14 +130,16 @@ s32 CParticleMeshEmitter::emitt(u32 now, u32 timeSinceLastCall, SParticle*& outA
 				case video::EVT_STANDARD:
 					p.pos = ((video::S3DVertex*)Mesh->getMeshBuffer(randomMB)->getVertices())[vertexNumber].Pos;
 					if( UseNormalDirection )
-						p.vector = ((video::S3DVertex*)Mesh->getMeshBuffer(randomMB)->getVertices())[vertexNumber].Normal / NormalDirectionModifier;
+						p.vector = ((video::S3DVertex*)Mesh->getMeshBuffer(randomMB)->getVertices())[vertexNumber].Normal /
+							NormalDirectionModifier;
 					else
 						p.vector = Direction;
 					break;
 				case video::EVT_TANGENTS:
 					p.pos = ((video::S3DVertexTangents*)Mesh->getMeshBuffer(randomMB)->getVertices())[vertexNumber].Pos;
 					if( UseNormalDirection )
-						p.vector = ((video::S3DVertexTangents*)Mesh->getMeshBuffer(randomMB)->getVertices())[vertexNumber].Normal / NormalDirectionModifier;
+						p.vector = ((video::S3DVertexTangents*)Mesh->getMeshBuffer(randomMB)->getVertices())[vertexNumber].Normal /
+							NormalDirectionModifier;
 					else
 						p.vector = Direction;
 					break;
