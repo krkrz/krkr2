@@ -1,4 +1,4 @@
-// Copyright (C) 2002-2007 Nikolaus Gebhardt
+// Copyright (C) 2002-2008 Nikolaus Gebhardt
 // This file is part of the "Irrlicht Engine".
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
@@ -422,7 +422,7 @@ void CParticleSystemSceneNode::doParticleSystem(u32 time)
 	// animate all particles
 	f32 scale = (f32)timediff;
 
-	for (s32 i=0; i<(s32)Particles.size();)
+	for (u32 i=0; i<Particles.size();)
 	{
 		if (now > Particles[i].endTime)
 			Particles.erase(i);
@@ -533,7 +533,7 @@ void CParticleSystemSceneNode::serializeAttributes(io::IAttributes* out, io::SAt
 	E_PARTICLE_AFFECTOR_TYPE atype = EPAT_NONE;
 
 	for (core::list<IParticleAffector*>::ConstIterator it = AffectorList.begin();
-		 it != AffectorList.end(); ++it)
+		it != AffectorList.end(); ++it)
 	{
 		atype = (*it)->getType();
 

@@ -1,8 +1,13 @@
-// Copyright (C) 2002-2007 Nikolaus Gebhardt / Thomas Alten
+// Copyright (C) 2002-2008 Nikolaus Gebhardt / Thomas Alten
 // This file is part of the "Irrlicht Engine".
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
+#include "IrrCompileConfig.h"
+
+#ifdef _IRR_COMPILE_WITH_BSP_LOADER_
+
 #include "CQuake3ShaderSceneNode.h"
+#include "ISceneManager.h"
 #include "IVideoDriver.h"
 #include "ICameraSceneNode.h"
 #include "SViewFrustum.h"
@@ -36,11 +41,6 @@ CQuake3ShaderSceneNode::CQuake3ShaderSceneNode(
 	loadTextures ( fileSystem );
 }
 
-/*
-*/
-CQuake3ShaderSceneNode::~CQuake3ShaderSceneNode ()
-{
-}
 
 /*
 	create single copies
@@ -701,4 +701,6 @@ video::SMaterial& CQuake3ShaderSceneNode::getMaterial(u32 i)
 
 } // end namespace scene
 } // end namespace irr
+
+#endif
 

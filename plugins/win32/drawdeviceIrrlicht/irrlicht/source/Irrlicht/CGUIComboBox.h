@@ -1,4 +1,4 @@
-// Copyright (C) 2002-2007 Nikolaus Gebhardt
+// Copyright (C) 2002-2008 Nikolaus Gebhardt
 // This file is part of the "Irrlicht Engine".
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
@@ -50,7 +50,7 @@ namespace gui
 		virtual s32 getSelected() const;
 
 		//! sets the selected item. Set this to -1 if no item should be selected
-		virtual void setSelected(s32 id);
+		virtual void setSelected(s32 idx);
 
 		//! update the position
 		virtual void updateAbsolutePosition();

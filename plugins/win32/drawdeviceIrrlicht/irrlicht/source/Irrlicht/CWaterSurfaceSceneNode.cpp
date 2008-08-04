@@ -1,4 +1,4 @@
-// Copyright (C) 2002-2007 Nikolaus Gebhardt
+// Copyright (C) 2002-2008 Nikolaus Gebhardt
 // This file is part of the "Irrlicht Engine".
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
@@ -20,7 +20,8 @@ CWaterSurfaceSceneNode::CWaterSurfaceSceneNode(f32 waveHeight, f32 waveSpeed, f3
 		IMesh* mesh, ISceneNode* parent, ISceneManager* mgr, s32 id,
 		const core::vector3df& position, const core::vector3df& rotation,
 		const core::vector3df& scale)
-: CMeshSceneNode(mesh, parent, mgr, id, position, rotation, scale), WaveLength(waveLength),
+: CMeshSceneNode(mesh, parent, mgr, id, position, rotation, scale),
+	WaveLength(waveLength), OneByWaveLength(1.0f/waveLength),
 	WaveSpeed(waveSpeed), WaveHeight(waveHeight), OriginalMesh(0)
 {
 	#ifdef _DEBUG
@@ -146,6 +147,7 @@ void CWaterSurfaceSceneNode::serializeAttributes(io::IAttributes* out, io::SAttr
 void CWaterSurfaceSceneNode::deserializeAttributes(io::IAttributes* in, io::SAttributeReadWriteOptions* options)
 {
 	WaveLength = in->getAttributeAsFloat("WaveLength");
+	OneByWaveLength = 1.0f/WaveLength;
 	WaveSpeed  = in->getAttributeAsFloat("WaveSpeed");
 	WaveHeight = in->getAttributeAsFloat("WaveHeight");
 	

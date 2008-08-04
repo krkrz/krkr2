@@ -1,4 +1,4 @@
-// Copyright (C) 2002-2007 Nikolaus Gebhardt
+// Copyright (C) 2002-2008 Nikolaus Gebhardt
 // This file is part of the "Irrlicht Engine".
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
@@ -10,8 +10,10 @@
 #else
 #include <string.h>
 #include <unistd.h>
-#ifdef MACOSX
+#ifdef _IRR_USE_OSX_DEVICE_
 #include "OSXClipboard.h"
+#endif
+#ifdef _IRR_OSX_PLATFORM_
 #include <sys/types.h>
 #include <sys/sysctl.h>
 #endif
@@ -59,9 +61,10 @@ void COSOperator::copyToClipboard(const c8* text) const
 	CloseClipboard();
 
 // MacOSX version
-#elif defined(MACOSX)
+#elif defined(_IRR_USE_OSX_DEVICE_)
 
 	OSXCopyToClipboard(text);
+#else
 
 // todo: Linux version
 #endif
@@ -84,7 +87,7 @@ c8* COSOperator::getTextFromClipboard() const
 	CloseClipboard();
 	return buffer;
 
-#elif defined(MACOSX)
+#elif defined(_IRR_USE_OSX_DEVICE_)
 	return (OSXCopyFromClipboard());
 #else
 
@@ -121,7 +124,7 @@ bool COSOperator::getProcessorSpeedMHz(u32* MHz) const
 	_IRR_IMPLEMENT_MANAGED_MARSHALLING_BUGFIX;
 	return true;
 
-#elif defined(MACOSX)
+#elif defined(_IRR_OSX_PLATFORM_)
 	struct clockinfo CpuClock;
 	size_t Size = sizeof(clockinfo);
 
