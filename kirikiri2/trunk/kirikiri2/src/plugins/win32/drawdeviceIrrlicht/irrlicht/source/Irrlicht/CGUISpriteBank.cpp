@@ -1,3 +1,6 @@
+// Copyright (C) 2002-2008 Nikolaus Gebhardt
+// This file is part of the "Irrlicht Engine".
+// For conditions of distribution and use, see copyright notice in irrlicht.h
 
 #include "CGUISpriteBank.h"
 #ifdef _IRR_COMPILE_WITH_GUI_
@@ -103,7 +106,7 @@ void CGUISpriteBank::draw2DSprite(u32 index, const core::position2di& pos,
 		if (loop)
 			frame = f % Sprites[index].Frames.size();
 		else
-			frame = (f >= Sprites[index].Frames.size()) ? Sprites[index].Frames.size() : f;
+			frame = (f >= Sprites[index].Frames.size()) ? Sprites[index].Frames.size()-1 : f;
 	}
 
 	const video::ITexture* tex = Textures[Sprites[index].Frames[frame].textureNumber];

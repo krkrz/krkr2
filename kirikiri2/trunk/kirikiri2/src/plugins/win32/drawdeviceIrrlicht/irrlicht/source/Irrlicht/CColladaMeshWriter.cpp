@@ -1,3 +1,11 @@
+// Copyright (C) 2002-2008 Nikolaus Gebhardt
+// This file is part of the "Irrlicht Engine".
+// For conditions of distribution and use, see copyright notice in irrlicht.h
+
+#include "IrrCompileConfig.h"
+
+#ifdef _IRR_COMPILE_WITH_COLLADA_WRITER_
+
 #include "CColladaMeshWriter.h"
 #include "os.h"
 #include "IFileSystem.h"
@@ -688,3 +696,6 @@ bool CColladaMeshWriter::hasSecondTextureCoordinates(video::E_VERTEX_TYPE type) 
 
 } // end namespace
 } // end namespace
+
+#endif
+

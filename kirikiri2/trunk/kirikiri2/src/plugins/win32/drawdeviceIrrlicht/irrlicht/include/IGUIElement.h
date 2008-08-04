@@ -1,4 +1,4 @@
- // Copyright (C) 2002-2007 Nikolaus Gebhardt
+// Copyright (C) 2002-2008 Nikolaus Gebhardt
 // This file is part of the "Irrlicht Engine".
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
@@ -132,13 +132,13 @@ public:
 	{
 		if (!Parent)
 			return;
-		
+
 		const core::dimension2di& d = Parent->getAbsolutePosition().getSize();
-		
-		DesiredRect = core::rect<s32>( 
-					core::floor32((f32)d.Width  * r.UpperLeftCorner.X),
+
+		DesiredRect = core::rect<s32>(
+					core::floor32((f32)d.Width * r.UpperLeftCorner.X),
 					core::floor32((f32)d.Height * r.UpperLeftCorner.Y),
-					core::floor32((f32)d.Width  * r.LowerRightCorner.X),
+					core::floor32((f32)d.Width * r.LowerRightCorner.X),
 					core::floor32((f32)d.Height * r.LowerRightCorner.Y));
 
 		ScaleRect = r;
@@ -206,7 +206,7 @@ public:
 		if (Parent)
 		{
 			core::rect<s32> r(Parent->getAbsolutePosition());
-		
+
 			core::dimension2df d((f32)r.getSize().Width, (f32)r.getSize().Height);
 
 			if (AlignLeft   == EGUIA_SCALE)
@@ -236,12 +236,9 @@ public:
 			if (NoClip)
 			{
 				IGUIElement* p=this;
-				while (p && p->NoClip && p->Parent)
-						p = p->Parent;
-				if (p->Parent)
-					parentAbsoluteClip = p->Parent->AbsoluteClippingRect;
-				else
-					parentAbsoluteClip = p->AbsoluteClippingRect;
+				while (p && p->Parent)
+					p = p->Parent;
+				parentAbsoluteClip = p->AbsoluteClippingRect;
 			}
 			else
 				parentAbsoluteClip = Parent->AbsoluteClippingRect;
@@ -250,7 +247,7 @@ public:
 
 		diffx = parentAbsolute.getWidth() - LastParentRect.getWidth();
 		diffy = parentAbsolute.getHeight() - LastParentRect.getHeight();
-		
+
 		if (AlignLeft == EGUIA_SCALE || AlignRight == EGUIA_SCALE)
 			fw = (f32)parentAbsolute.getWidth();
 
@@ -334,7 +331,7 @@ public:
 			RelativeRect.LowerRightCorner.Y = RelativeRect.UpperLeftCorner.Y + MaxSize.Height;
 
 		RelativeRect.repair();
-		
+
 		AbsoluteRect = RelativeRect + parentAbsolute.UpperLeftCorner;
 
 		if (!Parent)
@@ -376,7 +373,7 @@ public:
 
 		if (IsVisible && isPointInside(point))
 			target = this;
-		
+
 		return target;
 	}
 
@@ -395,10 +392,10 @@ public:
 		if (child)
 		{
 			child->grab();
-			child->remove();  // remove from old parent
+			child->remove(); // remove from old parent
 			child->LastParentRect = getAbsolutePosition();
 			child->Parent = this;
-			Children.push_back(child);			
+			Children.push_back(child);
 		}
 	}
 
@@ -480,8 +477,8 @@ public:
 	}
 
 
-	//! Sets whether this control was created as part of its parent, 
-	//! for example when a scrollbar is part of a listbox. 
+	//! Sets whether this control was created as part of its parent,
+	//! for example when a scrollbar is part of a listbox.
 	//! SubElements are not saved to disk when calling guiEnvironment->saveGUI()
 	virtual void setSubElement(bool subElement)
 	{
@@ -489,7 +486,7 @@ public:
 	}
 
 
-	//! If set to true, the focus will visit this element when using 
+	//! If set to true, the focus will visit this element when using
 	//! the tab key to cycle through elements.
 	//! If this element is a tab group (see isTabGroup/setTabGroup) then
 	//! ctrl+tab will be used instead.
@@ -507,7 +504,7 @@ public:
 	}
 
 
-	//! Sets the priority of focus when using the tab key to navigate between a group 
+	//! Sets the priority of focus when using the tab key to navigate between a group
 	//! of elements. See setTabGroup, isTabGroup and getTabGroup for information on tab groups.
 	//! Elements with a lower number are focused first
 	void setTabOrder(s32 index)
@@ -519,7 +516,7 @@ public:
 			IGUIElement *el = getTabGroup();
 			while (IsTabGroup && el && el->Parent)
 				el = el->Parent;
-				
+
 			IGUIElement *first=0, *closest=0;
 			if (el)
 			{
@@ -562,11 +559,11 @@ public:
 
 
 	//! Returns the container element which holds all elements in this element's
-	//! tab group. 
+	//! tab group.
 	IGUIElement* getTabGroup()
 	{
 		IGUIElement *ret=this;
-		
+
 		while (ret && !ret->isTabGroup())
 			ret = ret->getParent();
 
@@ -667,11 +664,11 @@ public:
 
 	//! Finds the first element with the given id.
 	/** \param id: Id to search for.
-	 \param searchchildren: Set this to true, if also children of this 
-	 element may contain the element with the searched id and they 
-	 should be searched too.
-	 \return Returns the first element with the given id. If no element
-	 with this id was found, 0 is returned. */
+	\param searchchildren: Set this to true, if also children of this
+	element may contain the element with the searched id and they
+	should be searched too.
+	\return Returns the first element with the given id. If no element
+	with this id was found, 0 is returned. */
 	virtual IGUIElement* getElementFromId(s32 id, bool searchchildren=false) const
 	{
 		IGUIElement* e = 0;
@@ -687,7 +684,7 @@ public:
 
 			if (e)
 				return e;
-		}		
+		}
 
 		return e;
 	}
@@ -699,7 +696,7 @@ public:
 	{
 		if (!child)
 			return false;
-		do 
+		do
 		{
 			if (child->Parent)
 				child = child->Parent;
@@ -719,7 +716,7 @@ public:
 	//! \param closest: the closest match, depending on tab order and direction
 	//! \param includeInvisible: includes invisible elements in the search (default=false)
 	//! \return true if successfully found an element, false to continue searching/fail
-	bool getNextElement(s32 startOrder, bool reverse, bool group, 
+	bool getNextElement(s32 startOrder, bool reverse, bool group,
 		IGUIElement*& first, IGUIElement*& closest, bool includeInvisible=false) const
 	{
 		// we'll stop searching if we find this number
@@ -748,18 +745,18 @@ public:
 						closest = *it;
 						return true;
 					}
-					
+
 					// is it closer than the current closest?
 					if (closest)
 					{
 						closestOrder = closest->getTabOrder();
-						if (  ( reverse && currentOrder > closestOrder && currentOrder < startOrder) 
+						if ( ( reverse && currentOrder > closestOrder && currentOrder < startOrder)
 							||(!reverse && currentOrder < closestOrder && currentOrder > startOrder))
 						{
 							closest = *it;
 						}
 					}
-					else 
+					else
 					if ( (reverse && currentOrder < startOrder) || (!reverse && currentOrder > startOrder) )
 					{
 						closest = *it;
@@ -794,7 +791,7 @@ public:
 	}
 
 
-	//! Returns the type of the gui element. 
+	//! Returns the type of the gui element.
 	/** This is needed for the .NET wrapper but will be used
 	later for serializing and deserializing.
 	If you wrote your own GUIElements, you need to set the type for your element as first parameter
@@ -805,8 +802,8 @@ public:
 	}
 
 
-	//! Returns the type name of the gui element. 
-	/** This is needed serializing elements. For serializing your own elements, override this function 
+	//! Returns the type name of the gui element.
+	/** This is needed serializing elements. For serializing your own elements, override this function
 	and return your own type name which is created by your IGUIElementFactory */
 	virtual const c8* getTypeName() const
 	{
@@ -882,7 +879,7 @@ protected:
 	//! absolute clipping rect of element
 	core::rect<s32> AbsoluteClippingRect;
 
-	//! the rectangle the element would prefer to be, 
+	//! the rectangle the element would prefer to be,
 	//! if it was not constrained by parent or max/min size
 	core::rect<s32> DesiredRect;
 

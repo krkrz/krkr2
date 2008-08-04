@@ -1,4 +1,4 @@
-// Copyright (C) 2002-2007 Nikolaus Gebhardt
+// Copyright (C) 2002-2008 Nikolaus Gebhardt
 // This file is part of the "Irrlicht Engine" and the "irrXML" project.
 // For conditions of distribution and use, see copyright notice in irrlicht.h and irrXML.h
 
@@ -17,8 +17,8 @@ namespace irr
 namespace core
 {
 
-//!	Very simple string class with some useful features.
-/**	string<c8> and string<wchar_t> work both with unicode AND ascii,
+//! Very simple string class with some useful features.
+/** string<c8> and string<wchar_t> work both with unicode AND ascii,
 so you can assign unicode to string<c8> and ascii to string<wchar_t>
 (and the other way round) if your ever would want to.
 Note that the conversation between both is not done using an encoding.
@@ -418,32 +418,32 @@ public:
 
 
 	//! compares the first n characters of the strings
-	bool equalsn(const string<T>& other, int len) const
+	bool equalsn(const string<T>& other, u32 n) const
 	{
 		u32 i;
-		for(i=0; array[i] && other[i] && i < len; ++i)
+		for(i=0; array[i] && other[i] && i < n; ++i)
 			if (array[i] != other[i])
 				return false;
 
 		// if one (or both) of the strings was smaller then they
 		// are only equal if they have the same length
-		return (i == len) || (used == other.used);
+		return (i == n) || (used == other.used);
 	}
 
 
 	//! compares the first n characters of the strings
-	bool equalsn(const T* const str, int len) const
+	bool equalsn(const T* const str, u32 n) const
 	{
 		if (!str)
 			return false;
 		u32 i;
-		for(i=0; array[i] && str[i] && i < len; ++i)
+		for(i=0; array[i] && str[i] && i < n; ++i)
 			if (array[i] != str[i])
 				return false;
 
 		// if one (or both) of the strings was smaller then they
 		// are only equal if they have the same length
-		return (i == len) || (array[i] == 0 && str[i] == 0);
+		return (i == n) || (array[i] == 0 && str[i] == 0);
 	}
 
 
@@ -507,7 +507,7 @@ public:
 
 	//! Appends a string of the length l to this string.
 	/** \param other: other String to append to this string.
-	 \param length: How much characters of the other string to add to this one. */
+	\param length: How much characters of the other string to add to this one. */
 	void append(const string<T>& other, u32 length)
 	{
 		if (other.size() < length)
@@ -556,11 +556,11 @@ public:
 	}
 
 	//! finds first occurrence of a character of a list in string
-	/** \param c: List of strings to find. For example if the method
+	/** \param c: List of characters to find. For example if the method
 	should find the first occurrence of 'a' or 'b', this parameter should be "ab".
-	\param count: Amount of characters in the list. Ususally,
-	this should be strlen(ofParameter1)
-	\return Returns position where one of the character has been found,
+	\param count: Amount of characters in the list. Usually,
+	this should be strlen(c)
+	\return Returns position where one of the characters has been found,
 	or -1 if not found. */
 	s32 findFirstChar(const T* const c, u32 count) const
 	{
@@ -578,9 +578,9 @@ public:
 
 	//! Finds first position of a character not in a given list.
 	/** \param c: List of characters not to find. For example if the method
-	 should find the first occurrence of a character not 'a' or 'b', this parameter should be "ab".
-	\param count: Amount of characters in the list. Ususally,
-	this should be strlen(ofParameter1)
+	should find the first occurrence of a character not 'a' or 'b', this parameter should be "ab".
+	\param count: Amount of characters in the list. Usually,
+	this should be strlen(c)
 	\return Returns position where the character has been found,
 	or -1 if not found. */
 	template <class B>
@@ -602,9 +602,9 @@ public:
 
 	//! Finds last position of a character not in a given list.
 	/** \param c: List of characters not to find. For example if the method
-	 should find the first occurrence of a character not 'a' or 'b', this parameter should be "ab".
-	\param count: Amount of characters in the list. Ususally,
-	this should be strlen(ofParameter1)
+	should find the first occurrence of a character not 'a' or 'b', this parameter should be "ab".
+	\param count: Amount of characters in the list. Usually,
+	this should be strlen(c)
 	\return Returns position where the character has been found,
 	or -1 if not found. */
 	template <class B>
@@ -654,9 +654,30 @@ public:
 		return -1;
 	}
 
+	//! finds last occurrence of a character of a list in string
+	/** \param c: List of strings to find. For example if the method
+	should find the last occurrence of 'a' or 'b', this parameter should be "ab".
+	\param count: Amount of characters in the list. Usually,
+	this should be strlen(c)
+	\return Returns position where one of the characters has been found,
+	or -1 if not found. */
+	s32 findLastChar(const T* const c, u32 count) const
+	{
+		if (!c)
+			return -1;
+
+		for (s32 i=used-1; i>=0; --i)
+			for (u32 j=0; j<count; ++j)
+				if (array[i] == c[j])
+					return i;
+
+		return -1;
+	}
+
+
 	//! finds another string in this string
 	//! \param str: Another string
-	//! \return Returns positions where the string has been found, 
+	//! \return Returns positions where the string has been found,
 	//! or -1 if not found.
 	template <class B>
 	s32 find(const B* const str) const
@@ -671,7 +692,7 @@ public:
 			if (len > used-1)
 				return -1;
 
-			for (u32 i=0; i<used-len; ++i)
+			for (s32 i=0; i<used-len; ++i)
 			{
 				u32 j=0;
 
@@ -783,7 +804,7 @@ public:
 
 	//! trims the string.
 	/** Removes whitespace from begin and end of the string. */
-	void trim()
+	string<T>& trim()
 	{
 		const c8 whitespace[] = " \t\n\r";
 		const u32 whitespacecount = 4;
@@ -791,14 +812,11 @@ public:
 		// find start and end of real string without whitespace
 		s32 begin = findFirstCharNotInList(whitespace, whitespacecount);
 		if (begin == -1)
-		{
-			*this="";
-			return;
-		}
+			return (*this="");
 
 		s32 end = findLastCharNotInList(whitespace, whitespacecount);
 
-		*this = subString(begin, (end +1) - begin);
+		return (*this = subString(begin, (end +1) - begin));
 	}
 
 

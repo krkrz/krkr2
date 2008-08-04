@@ -1,4 +1,4 @@
-// Copyright (C) 2002-2007 Nikolaus Gebhardt
+// Copyright (C) 2002-2008 Nikolaus Gebhardt
 // This file is part of the "Irrlicht Engine".
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
@@ -60,7 +60,9 @@ namespace video
 		virtual const core::rect<s32>& getViewPort() const;
 
 		//! draws a vertex primitive list
-		virtual void drawVertexPrimitiveList(const void* vertices, u32 vertexCount, const u16* indexList, u32 primitiveCount, E_VERTEX_TYPE vType, scene::E_PRIMITIVE_TYPE pType);
+		virtual void drawVertexPrimitiveList(const void* vertices, u32 vertexCount,
+				const u16* indexList, u32 primitiveCount,
+				E_VERTEX_TYPE vType, scene::E_PRIMITIVE_TYPE pType);
 
 		//! draws an 2d image, using a color (if color is other then Color(255,255,255,255)) and the alpha channel of the texture if wanted.
 		virtual void draw2DImage(const video::ITexture* texture, const core::position2d<s32>& destPos,
@@ -229,7 +231,7 @@ namespace video
 		virtual video::ITexture* createDeviceDependentTexture(IImage* surface, const char* name);
 
 		// returns the current size of the screen or rendertarget
-		core::dimension2d<s32> getCurrentRenderTargetSize();
+		virtual const core::dimension2d<s32>& getCurrentRenderTargetSize() const;
 
 		//! Adds a new material renderer to the VideoDriver, using pixel and/or
 		//! vertex shaders to render geometry.

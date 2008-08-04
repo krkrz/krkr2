@@ -1,9 +1,13 @@
-// Copyright (C) 2002-2007 Nikolaus Gebhardt
+// Copyright (C) 2002-2008 Nikolaus Gebhardt
 // This file is part of the "Irrlicht Engine".
 // For conditions of distribution and use, see copyright notice in Irrlicht.h
 
 #ifndef __C_OPEN_GL_FEATURE_MAP_H_INCLUDED__
 #define __C_OPEN_GL_FEATURE_MAP_H_INCLUDED__
+
+#include "IrrCompileConfig.h"
+
+#ifdef _IRR_COMPILE_WITH_OPENGL_
 
 #include "EDriverFeatures.h"
 #include "irrTypes.h"
@@ -18,7 +22,7 @@
 #ifdef _MSC_VER
 	#pragma comment(lib, "OpenGL32.lib")
 #endif
-#elif defined(MACOSX)
+#elif defined(_IRR_USE_OSX_DEVICE_)
 	#include "CIrrDeviceMacOSX.h"
 	#if defined(_IRR_OPENGL_USE_EXTPOINTER_)
 		#define GL_GLEXT_LEGACY 1
@@ -1106,7 +1110,9 @@ inline void COpenGLExtensionHandler::extGlUniformMatrix4fv(GLint loc, GLsizei co
 #endif
 }
 
-inline void COpenGLExtensionHandler::extGlGetActiveUniform(GLhandleARB program, GLuint index, GLsizei maxlength, GLsizei *length, GLint *size, GLenum *type, GLcharARB *name)
+inline void COpenGLExtensionHandler::extGlGetActiveUniform(GLhandleARB program,
+		GLuint index, GLsizei maxlength, GLsizei *length,
+		GLint *size, GLenum *type, GLcharARB *name)
 {
 #ifdef _IRR_OPENGL_USE_EXTPOINTER_
 	if (pGlGetActiveUniformARB)
@@ -1325,6 +1331,8 @@ inline void COpenGLExtensionHandler::extGlActiveStencilFace(GLenum face)
 
 }
 }
+
+#endif
 
 #endif
 

@@ -1,4 +1,4 @@
-// Copyright (C) 2002-2007 Nikolaus Gebhardt
+// Copyright (C) 2002-2008 Nikolaus Gebhardt
 // This file is part of the "Irrlicht Engine".
 // For conditions of distribution and use, see copyright notice in Irrlicht.h
 
@@ -6,11 +6,12 @@
 #define __C_VIDEO_OPEN_GL_H_INCLUDED__
 
 #include "IrrCompileConfig.h"
+
+#ifdef _IRR_COMPILE_WITH_OPENGL_
+
 #include "CNullDriver.h"
 #include "IMaterialRendererServices.h"
 #include "COpenGLExtensionHandler.h"
-
-#ifdef _IRR_COMPILE_WITH_OPENGL_
 
 #if defined(_IRR_WINDOWS_API_)
 	// include windows headers for HWND
@@ -22,7 +23,7 @@
 	#pragma comment(lib, "OpenGL32.lib")
 	#pragma comment(lib, "GLu32.lib")
 #endif
-#elif defined(MACOSX)
+#elif defined(_IRR_USE_OSX_DEVICE_)
 	#include "CIrrDeviceMacOSX.h"
 	#if defined(_IRR_OPENGL_USE_EXTPOINTER_)
 		#define GL_GLEXT_LEGACY 1
@@ -84,7 +85,7 @@ namespace video
 			bool stencilBuffer, io::IFileSystem* io, bool vsync, bool antiAlias);
 		#endif
 
-		#ifdef MACOSX
+		#ifdef _IRR_USE_OSX_DEVICE_
 		COpenGLDriver(const core::dimension2d<s32>& screenSize, bool fullscreen,
 			bool stencilBuffer, CIrrDeviceMacOSX *device,io::IFileSystem* io, bool vsync, bool antiAlias);
 		#endif
@@ -107,7 +108,9 @@ namespace video
 		virtual void setTransform(E_TRANSFORMATION_STATE state, const core::matrix4& mat);
 
 		//! draws a vertex primitive list
-		virtual void drawVertexPrimitiveList(const void* vertices, u32 vertexCount, const u16* indexList, u32 primitiveCount, E_VERTEX_TYPE vType, scene::E_PRIMITIVE_TYPE pType);
+		virtual void drawVertexPrimitiveList(const void* vertices, u32 vertexCount,
+				const u16* indexList, u32 primitiveCount,
+				E_VERTEX_TYPE vType, scene::E_PRIMITIVE_TYPE pType);
 
 		//! queries the features of the driver, returns true if feature is available
 		virtual bool queryFeature(E_VIDEO_DRIVER_FEATURE feature) const
@@ -246,8 +249,9 @@ namespace video
 		//! Returns whether disabling was successful or not.
 		bool disableTextures(u32 fromStage=0);
 
-		//! Adds a new material renderer to the VideoDriver, using extGLGetObjectParameteriv(shaderHandle, GL_OBJECT_COMPILE_STATUS_ARB, &status) pixel and/or
-		//! vertex shaders to render geometry.
+		//! Adds a new material renderer to the VideoDriver, using
+		//! extGLGetObjectParameteriv(shaderHandle, GL_OBJECT_COMPILE_STATUS_ARB, &status)
+		//! pixel and/or vertex shaders to render geometry.
 		virtual s32 addShaderMaterial(const c8* vertexShaderProgram, const c8* pixelShaderProgram,
 			IShaderConstantSetCallBack* callback, E_MATERIAL_TYPE baseMaterial, s32 userData);
 
@@ -355,7 +359,7 @@ namespace video
 		#elif defined(_IRR_USE_LINUX_DEVICE_)
 			GLXDrawable XWindow;
 			Display* XDisplay;
-		#elif defined(MACOSX)
+		#elif defined(_IRR_USE_OSX_DEVICE_)
 			CIrrDeviceMacOSX *_device;
 		#endif
 	};

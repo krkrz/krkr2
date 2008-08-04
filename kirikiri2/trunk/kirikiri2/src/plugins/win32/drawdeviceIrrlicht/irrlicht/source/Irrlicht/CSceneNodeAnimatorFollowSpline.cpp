@@ -1,4 +1,4 @@
-// Copyright (C) 2002-2007 Nikolaus Gebhardt
+// Copyright (C) 2002-2008 Nikolaus Gebhardt
 // This file is part of the "Irrlicht Engine".
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
@@ -21,7 +21,6 @@ CSceneNodeAnimatorFollowSpline::CSceneNodeAnimatorFollowSpline(u32 time,
 }
 
 
-
 inline s32 CSceneNodeAnimatorFollowSpline::clamp(s32 idx, s32 size)
 {
 	return ( idx<0 ? size+idx : ( idx>=size ? idx-size : idx ) );
@@ -34,6 +33,11 @@ void CSceneNodeAnimatorFollowSpline::animateNode(ISceneNode* node, u32 timeMs)
 	const u32 pSize = Points.size();
 	if (pSize==0)
 		return;
+	if (pSize==1)
+	{
+		node->setPosition(Points[0]);
+		return;
+	}
 
 	const f32 dt = ( (timeMs-StartTime) * Speed * 0.001f );
 	const f32 u = core::fract ( dt );
@@ -41,8 +45,8 @@ void CSceneNodeAnimatorFollowSpline::animateNode(ISceneNode* node, u32 timeMs)
 	//const f32 u = 0.001f * fmodf( dt, 1000.0f );
 	
 	const core::vector3df& p0 = Points[ clamp( idx - 1, pSize ) ];
-	const core::vector3df& p1 = Points[ clamp( idx + 0, pSize ) ];
-	const core::vector3df& p2 = Points[ clamp( idx + 1, pSize ) ];
+	const core::vector3df& p1 = Points[ clamp( idx + 0, pSize ) ]; // starting point
+	const core::vector3df& p2 = Points[ clamp( idx + 1, pSize ) ]; // end point
 	const core::vector3df& p3 = Points[ clamp( idx + 2, pSize ) ];
 
 	// hermite polynomials

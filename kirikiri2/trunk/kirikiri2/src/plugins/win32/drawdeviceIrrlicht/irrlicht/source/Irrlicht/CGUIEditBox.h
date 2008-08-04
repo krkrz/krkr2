@@ -1,4 +1,4 @@
-// Copyright (C) 2002-2007 Nikolaus Gebhardt
+// Copyright (C) 2002-2008 Nikolaus Gebhardt
 // This file is part of the "Irrlicht Engine".
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
@@ -144,7 +144,7 @@ namespace gui
 		core::array< core::stringw > BrokenText;
 		core::array< s32 > BrokenTextPositions;
 
-		core::rect<s32> CurrentTextRect, frameRect; // temporary values
+		core::rect<s32> CurrentTextRect, FrameRect; // temporary values
 	};
 
 

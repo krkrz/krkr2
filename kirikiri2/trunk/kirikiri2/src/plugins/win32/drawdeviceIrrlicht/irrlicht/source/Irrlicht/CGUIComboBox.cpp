@@ -1,4 +1,4 @@
-// Copyright (C) 2002-2007 Nikolaus Gebhardt
+// Copyright (C) 2002-2008 Nikolaus Gebhardt
 // This file is part of the "Irrlicht Engine".
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
@@ -51,8 +51,6 @@ CGUIComboBox::CGUIComboBox(IGUIEnvironment* environment, IGUIElement* parent,
 	}
 	ListButton->setSubElement(true);
 	ListButton->setTabStop(false);
-
-	setNotClipped(true);
 
 	// this element can be tabbed to
 	setTabStop(true);
@@ -127,12 +125,12 @@ s32 CGUIComboBox::getSelected() const
 
 
 //! sets the selected item. Set this to -1 if no item should be selected
-void CGUIComboBox::setSelected(s32 id)
+void CGUIComboBox::setSelected(s32 idx)
 {
-	if (id < -1 || id >= (s32)Items.size())
+	if (idx < -1 || idx >= (s32)Items.size())
 		return;
 
-	Selected = id;
+	Selected = idx;
 }
 
 void CGUIComboBox::updateAbsolutePosition()

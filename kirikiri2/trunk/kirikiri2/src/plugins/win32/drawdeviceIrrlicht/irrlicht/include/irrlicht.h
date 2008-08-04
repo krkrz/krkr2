@@ -1,6 +1,6 @@
 /* irrlicht.h -- interface of the 'Irrlicht Engine'
 
-  Copyright (C) 2002-2007 Nikolaus Gebhardt
+  Copyright (C) 2002-2008 Nikolaus Gebhardt
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -104,6 +104,7 @@
 #include "ISceneNodeAnimatorFactory.h"
 #include "ISceneNodeAnimatorCollisionResponse.h"
 #include "IShaderConstantSetCallBack.h"
+#include "IShadowVolumeSceneNode.h"
 #include "IParticleSystemSceneNode.h" // also includes all emitters and attractors
 #include "ISkinnedMesh.h"
 #include "ITerrainSceneNode.h"
@@ -138,7 +139,7 @@
 #include "SMeshBufferTangents.h"
 #include "SViewFrustum.h"
 
-/*! \mainpage Irrlicht Engine 1.4 API documentation
+/*! \mainpage Irrlicht Engine 1.4.1 API documentation
  *
  * <div align="center"><img src="logobig.png" ></div>
  *
@@ -264,10 +265,10 @@ namespace irr
 	\param fullscreen: Should be set to true if the device should run in fullscreen. Otherwise
 		the device runs in windowed mode.
 	\param stencilbuffer: Specifies if the stencil buffer should be enabled. Set this to true,
-	    if you want the engine be able to draw stencil buffer shadows. Note that not all
-		devices are able to use the stencil buffer. If they don't no shadows will be drawn.
+	if you want the engine be able to draw stencil buffer shadows. Note that not all
+	devices are able to use the stencil buffer. If they don't no shadows will be drawn.
 	\param vsync: Specifies vertical syncronisation: If set to true, the driver will wait
-		for the vertical retrace period, otherwise not.
+	for the vertical retrace period, otherwise not.
 	\param receiver: A user created event receiver.
 	\param sdk_version_do_not_use: Don't use or change this parameter. Always set it to
 	IRRLICHT_SDK_VERSION, which is done by default. This is needed for sdk version checks.
@@ -276,7 +277,8 @@ namespace irr
 	*/
 	IRRLICHT_API IrrlichtDevice* IRRCALLCONV createDevice(
 		video::E_DRIVER_TYPE deviceType = video::EDT_SOFTWARE,
-		const core::dimension2d<s32>& windowSize = (core::dimension2d<s32>(640,480)), // paranthese are necessary for some compilers
+		// parantheses are necessary for some compilers
+		const core::dimension2d<s32>& windowSize = (core::dimension2d<s32>(640,480)),
 		u32 bits = 16,
 		bool fullscreen = false,
 		bool stencilbuffer = false,
@@ -309,12 +311,14 @@ namespace irr
 	{
 	}
 
-	//! This namespace provides interfaces for input/output: Reading and writing files, accessing zip archives, xml files, ...
+	//! This namespace provides interfaces for input/output: Reading and
+	//! writing files, accessing zip archives, xml files, ...
 	namespace io
 	{
 	}
 
-	//! All scene management can be found in this namespace: Mesh loading, special scene nodes like octrees and billboards, ...
+	//! All scene management can be found in this namespace: Mesh loading,
+	//! special scene nodes like octrees and billboards, ...
 	namespace scene
 	{
 	}
@@ -326,7 +330,7 @@ namespace irr
 }
 
 /*! \file irrlicht.h
-    \brief Main header file of the irrlicht, the only file needed to include.
+	\brief Main header file of the irrlicht, the only file needed to include.
 */
 
 #endif

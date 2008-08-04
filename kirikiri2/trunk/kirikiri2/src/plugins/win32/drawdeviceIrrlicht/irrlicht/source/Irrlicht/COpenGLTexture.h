@@ -1,4 +1,4 @@
-// Copyright (C) 2002-2007 Nikolaus Gebhardt
+// Copyright (C) 2002-2008 Nikolaus Gebhardt
 // This file is part of the "Irrlicht Engine".
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
@@ -25,7 +25,7 @@
 	#if defined(_IRR_OPENGL_USE_EXTPOINTER_)
 		#define GL_GLEXT_LEGACY 1
 	#endif
-	#if defined(MACOSX)
+	#if defined(_IRR_USE_OSX_DEVICE_)
 		#include <OpenGL/gl.h>
 	#else
 		#include <GL/gl.h>

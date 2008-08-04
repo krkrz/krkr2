@@ -1,4 +1,4 @@
-// Copyright (C) 2002-2007 Nikolaus Gebhardt
+// Copyright (C) 2002-2008 Nikolaus Gebhardt
 // This file is part of the "Irrlicht Engine".
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
@@ -94,7 +94,9 @@ public:
 	void copyTo(IImage* target, const core::position2d<s32>& pos, const core::rect<s32>& sourceRect, const core::rect<s32>* clipRect=0);
 
 	//! copies this surface into another, using the alpha mask, an cliprect and a color to add with
-	void copyToWithAlpha(IImage* target, const core::position2d<s32>& pos, const core::rect<s32>& sourceRect, const SColor &color, const core::rect<s32>* clipRect = 0);
+	void copyToWithAlpha(IImage* target, const core::position2d<s32>& pos,
+			const core::rect<s32>& sourceRect, const SColor &color,
+			const core::rect<s32>* clipRect = 0);
 
 	//! copies this surface into another, scaling it to fit.
 	void copyToScaling(void* target, s32 width, s32 height, ECOLOR_FORMAT format, u32 pitch=0);

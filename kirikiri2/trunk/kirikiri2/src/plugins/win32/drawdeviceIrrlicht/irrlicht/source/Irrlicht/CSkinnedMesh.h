@@ -1,20 +1,18 @@
-// Copyright (C) 2002-2006 Nikolaus Gebhardt
+// Copyright (C) 2002-2008 Nikolaus Gebhardt
 // This file is part of the "Irrlicht Engine".
 // For conditions of distribution and use, see copyright notice in irrlicht.h
-
 
 //New skinned mesh
 
 #ifndef __C_SKINNED_MESH_H_INCLUDED__
 #define __C_SKINNED_MESH_H_INCLUDED__
 
+#include "ISkinnedMesh.h"
+#include "SMeshBuffer.h"
 #include "S3DVertex.h"
 #include "irrString.h"
 #include "matrix4.h"
-#include "SMeshBuffer.h"
-#include <quaternion.h>
-
-#include "ISkinnedMesh.h"
+#include "quaternion.h"
 
 namespace irr
 {
@@ -98,14 +96,12 @@ namespace scene
 		virtual void transferJointsToMesh(const core::array<IBoneSceneNode*> &JointChildSceneNodes);
 
 		//! Creates an array of joints from this mesh
-		virtual void createJoints(core::array<IBoneSceneNode*> &JointChildSceneNodes, IAnimatedMeshSceneNode* AnimatedMeshSceneNode, ISceneManager* SceneManager);
+		virtual void createJoints(core::array<IBoneSceneNode*> &JointChildSceneNodes,
+				IAnimatedMeshSceneNode* AnimatedMeshSceneNode,
+				ISceneManager* SceneManager);
 
-
+		//! Convertes the mesh to contain tangent information
 		virtual void convertMeshToTangents();
-
-
-
-
 
 		//Interface for the mesh loaders (finalize should lock these functions, and they should have some prefix like loader_
 
@@ -150,7 +146,10 @@ private:
 
 		void buildAll_GlobalAnimatedMatrices(SJoint *Joint=0, SJoint *ParentJoint=0);
 
-		void getFrameData(f32 frame,SJoint *Node,core::vector3df &position, s32 &positionHint, core::vector3df &scale, s32 &scaleHint, core::quaternion &rotation, s32 &rotationHint);
+		void getFrameData(f32 frame, SJoint *Node,
+				core::vector3df &position, s32 &positionHint,
+				core::vector3df &scale, s32 &scaleHint,
+				core::quaternion &rotation, s32 &rotationHint);
 
 		void CalculateGlobalMatrixes(SJoint *Joint,SJoint *ParentJoint);
 
@@ -160,8 +159,6 @@ private:
 			core::vector3df& tangent, core::vector3df& binormal,
 			core::vector3df& vt1, core::vector3df& vt2, core::vector3df& vt3,
 			core::vector2df& tc1, core::vector2df& tc2, core::vector2df& tc3);
-
-		//void createSkelton_Helper(ISceneManager* SceneManager, core::array<IBoneSceneNode*> &JointChildSceneNodes, IAnimatedMeshSceneNode *AnimatedMeshSceneNode, ISceneNode* ParentNode, SJoint *ParentNode, SJoint *Node);
 
 
 		core::array<SSkinMeshBuffer*> *SkinningBuffers; //Meshbuffer to skin, default is to skin localBuffers

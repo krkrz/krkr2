@@ -1,9 +1,10 @@
-// Copyright (C) 2002-2007 Nikolaus Gebhardt
+// Copyright (C) 2002-2008 Nikolaus Gebhardt
 // This file is part of the "Irrlicht Engine".
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
-#include "IrrCompileConfig.h"
 #include "COpenGLDriver.h"
+// needed here also because of the create methods' parameters
+#include "CNullDriver.h"
 
 #ifdef _IRR_COMPILE_WITH_OPENGL_
 
@@ -30,7 +31,9 @@ namespace video
 // -----------------------------------------------------------------------
 #ifdef _IRR_USE_WINDOWS_DEVICE_
 //! Windows constructor and init code
-COpenGLDriver::COpenGLDriver(const core::dimension2d<s32>& screenSize, HWND window, bool fullscreen, bool stencilBuffer, io::IFileSystem* io, bool antiAlias)
+COpenGLDriver::COpenGLDriver(const core::dimension2d<s32>& screenSize,
+		HWND window, bool fullscreen, bool stencilBuffer,
+		io::IFileSystem* io, bool antiAlias)
 : CNullDriver(io, screenSize), COpenGLExtensionHandler(),
 	CurrentRenderMode(ERM_NONE), ResetRenderStates(true), Transformation3DChanged(true),
 	AntiAlias(antiAlias), RenderTargetTexture(0), LastSetLight(-1),
@@ -156,11 +159,13 @@ bool COpenGLDriver::initDriver(const core::dimension2d<s32>& screenSize,
 #endif //IRR_USE_WINDOWS_DEVICE_
 
 // -----------------------------------------------------------------------
-// MACOSX CONSTRUCTOR
+// MacOSX CONSTRUCTOR
 // -----------------------------------------------------------------------
-#ifdef MACOSX
+#ifdef _IRR_USE_OSX_DEVICE_
 //! Windows constructor and init code
-COpenGLDriver::COpenGLDriver(const core::dimension2d<s32>& screenSize, bool fullscreen, bool stencilBuffer, CIrrDeviceMacOSX *device, io::IFileSystem* io, bool vsync, bool antiAlias)
+COpenGLDriver::COpenGLDriver(const core::dimension2d<s32>& screenSize,
+		bool fullscreen, bool stencilBuffer, CIrrDeviceMacOSX *device,
+		io::IFileSystem* io, bool vsync, bool antiAlias)
 : CNullDriver(io, screenSize), COpenGLExtensionHandler(),
 	CurrentRenderMode(ERM_NONE), ResetRenderStates(true), Transformation3DChanged(true),
 	AntiAlias(antiAlias), RenderTargetTexture(0), LastSetLight(-1),
@@ -179,7 +184,9 @@ COpenGLDriver::COpenGLDriver(const core::dimension2d<s32>& screenSize, bool full
 // -----------------------------------------------------------------------
 #ifdef _IRR_USE_LINUX_DEVICE_
 //! Linux constructor and init code
-COpenGLDriver::COpenGLDriver(const core::dimension2d<s32>& screenSize, bool fullscreen, bool stencilBuffer, io::IFileSystem* io, bool vsync, bool antiAlias)
+COpenGLDriver::COpenGLDriver(const core::dimension2d<s32>& screenSize,
+		bool fullscreen, bool stencilBuffer, io::IFileSystem* io,
+		bool vsync, bool antiAlias)
 : CNullDriver(io, screenSize), COpenGLExtensionHandler(),
 	CurrentRenderMode(ERM_NONE), ResetRenderStates(true),
 	Transformation3DChanged(true), AntiAlias(antiAlias),
@@ -214,7 +221,9 @@ COpenGLDriver::COpenGLDriver(const core::dimension2d<s32>& screenSize, bool full
 // -----------------------------------------------------------------------
 #ifdef _IRR_USE_SDL_DEVICE_
 //! SDL constructor and init code
-COpenGLDriver::COpenGLDriver(const core::dimension2d<s32>& screenSize, bool fullscreen, bool stencilBuffer, io::IFileSystem* io, bool vsync, bool antiAlias)
+COpenGLDriver::COpenGLDriver(const core::dimension2d<s32>& screenSize,
+		bool fullscreen, bool stencilBuffer, io::IFileSystem* io,
+		bool vsync, bool antiAlias)
 : CNullDriver(io, screenSize), COpenGLExtensionHandler(),
 	CurrentRenderMode(ERM_NONE), ResetRenderStates(true),
 	Transformation3DChanged(true), AntiAlias(antiAlias),
@@ -388,7 +397,7 @@ void COpenGLDriver::createMaterialRenderers()
 //! presents the rendered scene on the screen, returns false if failed
 bool COpenGLDriver::endScene( s32 windowId, core::rect<s32>* sourceRect )
 {
-	CNullDriver::endScene( windowId );
+	CNullDriver::endScene();
 
 	glFlush();
 
@@ -397,7 +406,7 @@ bool COpenGLDriver::endScene( s32 windowId, core::rect<s32>* sourceRect )
 #elif defined(_IRR_USE_LINUX_DEVICE_)
 	glXSwapBuffers(XDisplay, XWindow);
 	return true;
-#elif defined(MACOSX)
+#elif defined(_IRR_USE_OSX_DEVICE_)
 	_device->flush();
 	return true;
 #elif defined(_IRR_USE_SDL_DEVICE_)
@@ -506,7 +515,9 @@ void COpenGLDriver::setTransform(E_TRANSFORMATION_STATE state, const core::matri
 
 
 //! draws a vertex primitive list
-void COpenGLDriver::drawVertexPrimitiveList(const void* vertices, u32 vertexCount, const u16* indexList, u32 primitiveCount, E_VERTEX_TYPE vType, scene::E_PRIMITIVE_TYPE pType)
+void COpenGLDriver::drawVertexPrimitiveList(const void* vertices, u32 vertexCount,
+		const u16* indexList, u32 primitiveCount,
+		E_VERTEX_TYPE vType, scene::E_PRIMITIVE_TYPE pType)
 {
 	if (!primitiveCount || !vertexCount)
 		return;
@@ -852,7 +863,9 @@ void COpenGLDriver::draw2DImage(const video::ITexture* texture, const core::rect
 
 	video::SColor* useColor = colors ? colors : temp;
 
-	setRenderStates2DMode(useColor[0].getAlpha()<255 || useColor[1].getAlpha()<255 || useColor[2].getAlpha()<255 || useColor[3].getAlpha()<255, true, useAlphaChannelOfTexture);
+	setRenderStates2DMode(useColor[0].getAlpha()<255 || useColor[1].getAlpha()<255 ||
+			useColor[2].getAlpha()<255 || useColor[3].getAlpha()<255,
+			true, useAlphaChannelOfTexture);
 
 	disableTextures(1);
 	setTexture(0, texture);
@@ -861,10 +874,10 @@ void COpenGLDriver::draw2DImage(const video::ITexture* texture, const core::rect
 	{
 		if (!clipRect->isValid())
 			return;
- 
+
 		glEnable(GL_SCISSOR_TEST);
 		const core::dimension2d<s32>& renderTargetSize = getCurrentRenderTargetSize();
-		glScissor(clipRect->UpperLeftCorner.X, renderTargetSize.Height-clipRect->LowerRightCorner.Y, 
+		glScissor(clipRect->UpperLeftCorner.X, renderTargetSize.Height-clipRect->LowerRightCorner.Y,
 			clipRect->getWidth(), clipRect->getHeight());
 	}
 
@@ -956,7 +969,7 @@ void COpenGLDriver::draw2DImage(const video::ITexture* texture,
 		glVertex2f(GLfloat(poss.LowerRightCorner.X), GLfloat(poss.UpperLeftCorner.Y));
 
 		glTexCoord2f(tcoords.LowerRightCorner.X, tcoords.LowerRightCorner.Y);
-		glVertex2f(GLfloat(poss.LowerRightCorner.X), GLfloat(poss.LowerRightCorner.Y)); 
+		glVertex2f(GLfloat(poss.LowerRightCorner.X), GLfloat(poss.LowerRightCorner.Y));
 
 		glTexCoord2f(tcoords.UpperLeftCorner.X, tcoords.LowerRightCorner.Y);
 		glVertex2f(GLfloat(poss.UpperLeftCorner.X), GLfloat(poss.LowerRightCorner.Y));
@@ -1137,6 +1150,7 @@ video::ITexture* COpenGLDriver::createDeviceDependentTexture(IImage* surface, co
 	return new COpenGLTexture(surface, name, this);
 }
 
+
 //! Sets a material. All 3d drawing functions draw geometry now
 //! using this material.
 //! \param material: Material to be used from now on.
@@ -1150,7 +1164,6 @@ void COpenGLDriver::setMaterial(const SMaterial& material)
 				material.getTextureMatrix(i));
 	}
 }
-
 
 
 //! prints error if an error happened.
@@ -1182,7 +1195,6 @@ bool COpenGLDriver::testGLError()
 	return false;
 #endif
 }
-
 
 
 //! sets the needed renderstates
@@ -1217,11 +1229,11 @@ void COpenGLDriver::setRenderStates3DMode()
 		// unset old material
 
 		if (LastMaterial.MaterialType != Material.MaterialType &&
-			LastMaterial.MaterialType >= 0 && LastMaterial.MaterialType < static_cast<s32>(MaterialRenderers.size()))
+			static_cast<u32>(LastMaterial.MaterialType) < MaterialRenderers.size())
 			MaterialRenderers[LastMaterial.MaterialType].Renderer->OnUnsetMaterial();
 
 		// set new material.
-		if (Material.MaterialType >= 0 && Material.MaterialType < static_cast<s32>(MaterialRenderers.size()))
+		if (static_cast<u32>(Material.MaterialType) < MaterialRenderers.size())
 			MaterialRenderers[Material.MaterialType].Renderer->OnSetMaterial(
 				Material, LastMaterial, ResetRenderStates, this);
 
@@ -1229,7 +1241,7 @@ void COpenGLDriver::setRenderStates3DMode()
 		ResetRenderStates = false;
 	}
 
-	if (Material.MaterialType >= 0 && Material.MaterialType < static_cast<s32>(MaterialRenderers.size()))
+	if (static_cast<u32>(Material.MaterialType) < MaterialRenderers.size())
 		MaterialRenderers[Material.MaterialType].Renderer->OnRender(this, video::EVT_STANDARD);
 
 	CurrentRenderMode = ERM_3D;
@@ -1307,7 +1319,9 @@ void COpenGLDriver::setBasicRenderStates(const SMaterial& material, const SMater
 
 		if (material.getTexture(i) && material.getTexture(i)->hasMipMaps())
 			glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,
-				material.TextureLayer[i].TrilinearFilter ? GL_LINEAR_MIPMAP_LINEAR : material.TextureLayer[i].BilinearFilter ? GL_LINEAR_MIPMAP_NEAREST : GL_NEAREST_MIPMAP_NEAREST );
+				material.TextureLayer[i].TrilinearFilter ? GL_LINEAR_MIPMAP_LINEAR :
+				material.TextureLayer[i].BilinearFilter ? GL_LINEAR_MIPMAP_NEAREST :
+				GL_NEAREST_MIPMAP_NEAREST );
 		else
 			glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,
 				(material.TextureLayer[i].BilinearFilter || material.TextureLayer[i].TrilinearFilter) ? GL_LINEAR : GL_NEAREST);
@@ -1320,12 +1334,11 @@ void COpenGLDriver::setBasicRenderStates(const SMaterial& material, const SMater
 	}
 
 	// fillmode
-	if (resetAllRenderStates || lastmaterial.Wireframe != material.Wireframe || lastmaterial.PointCloud != material.PointCloud)
+	if (resetAllRenderStates || (lastmaterial.Wireframe != material.Wireframe) || (lastmaterial.PointCloud != material.PointCloud))
 		glPolygonMode(GL_FRONT_AND_BACK, material.Wireframe ? GL_LINE : material.PointCloud? GL_POINT : GL_FILL);
 
 	// shademode
-
-	if (resetAllRenderStates || lastmaterial.GouraudShading != material.GouraudShading)
+	if (resetAllRenderStates || (lastmaterial.GouraudShading != material.GouraudShading))
 	{
 		if (material.GouraudShading)
 			glShadeModel(GL_SMOOTH);
@@ -1334,8 +1347,7 @@ void COpenGLDriver::setBasicRenderStates(const SMaterial& material, const SMater
 	}
 
 	// lighting
-
-	if (resetAllRenderStates || lastmaterial.Lighting != material.Lighting)
+	if (resetAllRenderStates || (lastmaterial.Lighting != material.Lighting))
 	{
 		if (material.Lighting)
 			glEnable(GL_LIGHTING);
@@ -1374,7 +1386,6 @@ void COpenGLDriver::setBasicRenderStates(const SMaterial& material, const SMater
 	}
 
 	// back face culling
-
 	if (resetAllRenderStates || lastmaterial.BackfaceCulling != material.BackfaceCulling)
 	{
 		if (material.BackfaceCulling)
@@ -1489,16 +1500,21 @@ void COpenGLDriver::setBasicRenderStates(const SMaterial& material, const SMater
 }
 
 
-
 //! sets the needed renderstates
 void COpenGLDriver::setRenderStates2DMode(bool alpha, bool texture, bool alphaChannel)
 {
 	if (CurrentRenderMode != ERM_2D || Transformation3DChanged)
 	{
 		// unset last 3d material
-		if (CurrentRenderMode == ERM_3D && Material.MaterialType >= 0 &&
-				Material.MaterialType < static_cast<s32>(MaterialRenderers.size()))
-			MaterialRenderers[Material.MaterialType].Renderer->OnUnsetMaterial();
+		if (CurrentRenderMode == ERM_3D)
+		{
+			if (static_cast<u32>(Material.MaterialType) < MaterialRenderers.size())
+				MaterialRenderers[Material.MaterialType].Renderer->OnUnsetMaterial();
+			setBasicRenderStates(SMaterial(), SMaterial(), true);
+			// everything that is wrongly set by SMaterial default
+			glDisable(GL_DEPTH_TEST);
+			glDisable(GL_LIGHTING);
+		}
 
 		GLfloat glmat[16];
 		core::matrix4 m;
@@ -1506,7 +1522,7 @@ void COpenGLDriver::setRenderStates2DMode(bool alpha, bool texture, bool alphaCh
 		glMatrixMode(GL_PROJECTION);
 
 		const core::dimension2d<s32>& renderTargetSize = getCurrentRenderTargetSize();
-		m.buildProjectionMatrixOrthoLH(f32(renderTargetSize.Width), f32(-renderTargetSize.Height), -1.0, 1.0); 
+		m.buildProjectionMatrixOrthoLH(f32(renderTargetSize.Width), f32(-renderTargetSize.Height), -1.0, 1.0);
 		m.setTranslation(core::vector3df(-1,1,0));
 
 		createGLMatrix(glmat, m);
@@ -1514,23 +1530,12 @@ void COpenGLDriver::setRenderStates2DMode(bool alpha, bool texture, bool alphaCh
 
 		glMatrixMode(GL_MODELVIEW);
 		glLoadIdentity();
-		glTranslatef (0.375, 0.375, 0.0); 
+		glTranslatef (0.375, 0.375, 0.0);
 
 		glMatrixMode(GL_TEXTURE);
 		glLoadIdentity();
 
 		Transformation3DChanged = false;
-
-		glDisable(GL_DEPTH_TEST);
-		glDisable(GL_FOG);
-		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-		glDisable(GL_LIGHTING);
-
-		glDisable(GL_TEXTURE_GEN_S);
-		glDisable(GL_TEXTURE_GEN_T);
-
-		glDisable(GL_ALPHA_TEST);
-		glCullFace(GL_BACK);
 	}
 
 	if (texture)
@@ -1741,8 +1746,8 @@ void COpenGLDriver::setViewPort(const core::rect<s32>& area)
 
 	if (vp.getHeight()>0 && vp.getWidth()>0)
 		glViewport(vp.UpperLeftCorner.X,
-		           getCurrentRenderTargetSize().Height - vp.UpperLeftCorner.Y - vp.getHeight(),
-			   vp.getWidth(), vp.getHeight());
+				getCurrentRenderTargetSize().Height - vp.UpperLeftCorner.Y - vp.getHeight(),
+				vp.getWidth(), vp.getHeight());
 
 	ViewPort = vp;
 }
@@ -1757,7 +1762,7 @@ void COpenGLDriver::drawStencilShadowVolume(const core::vector3df* triangles, s3
 
 	// unset last 3d material
 	if (CurrentRenderMode == ERM_3D &&
-	Material.MaterialType >= 0 && Material.MaterialType < static_cast<s32>(MaterialRenderers.size()))
+		static_cast<u32>(Material.MaterialType) < MaterialRenderers.size())
 	{
 		MaterialRenderers[Material.MaterialType].Renderer->OnUnsetMaterial();
 		ResetRenderStates = true;
@@ -1773,6 +1778,8 @@ void COpenGLDriver::drawStencilShadowVolume(const core::vector3df* triangles, s3
 	glDepthMask(GL_FALSE); // no depth buffer writing
 	glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE ); // no color buffer drawing
 	glEnable(GL_STENCIL_TEST);
+	glEnable(GL_POLYGON_OFFSET_FILL);
+	glPolygonOffset(0.0f, 1.0f);
 
 	glEnableClientState(GL_VERTEX_ARRAY);
 	glVertexPointer(3,GL_FLOAT,sizeof(core::vector3df),&triangles[0]);
@@ -1959,7 +1966,7 @@ void COpenGLDriver::setFog(SColor c, bool linearFog, f32 start,
 {
 	CNullDriver::setFog(c, linearFog, start, end, density, pixelFog, rangeFog);
 
-	glFogi(GL_FOG_MODE, linearFog ? GL_LINEAR : GL_EXP);
+	glFogf(GL_FOG_MODE, GLfloat(linearFog ? GL_LINEAR : GL_EXP));
 #ifdef GL_EXT_fog_coord
 	if (FeatureAvailable[IRR_EXT_fog_coord])
 		glFogi(GL_FOG_COORDINATE_SOURCE, GL_FRAGMENT_DEPTH);
@@ -2068,6 +2075,7 @@ s32 COpenGLDriver::addShaderMaterial(const c8* vertexShaderProgram,
 	return nr;
 }
 
+
 //! Adds a new material renderer to the VideoDriver, using GLSL to render geometry.
 s32 COpenGLDriver::addHighLevelShaderMaterial(
 	const c8* vertexShaderProgram,
@@ -2118,7 +2126,7 @@ ITexture* COpenGLDriver::createRenderTargetTexture(const core::dimension2d<s32>&
 #if defined(GL_EXT_framebuffer_object)
 	// if driver supports FrameBufferObjects, use them
 	if (queryFeature(EVDF_FRAMEBUFFER_OBJECT))
-        	rtt = new COpenGLTexture(size, PackedDepthStencilExtension, name, this);
+		rtt = new COpenGLTexture(size, PackedDepthStencilExtension, name, this);
 	else
 #endif
 	{
@@ -2148,7 +2156,7 @@ u32 COpenGLDriver::getMaximalPrimitiveCount() const
 
 //! checks triangle count and print warning if wrong
 bool COpenGLDriver::setRenderTarget(video::ITexture* texture, bool clearBackBuffer,
-								 bool clearZBuffer, SColor color)
+					bool clearZBuffer, SColor color)
 {
 	// check for right driver type
 
@@ -2229,17 +2237,19 @@ const core::dimension2d<s32>& COpenGLDriver::getCurrentRenderTargetSize() const
 		return CurrentRendertargetSize;
 }
 
+
 //! Clears the ZBuffer.
 void COpenGLDriver::clearZBuffer()
 {
-   GLboolean enabled = GL_TRUE;
-   glGetBooleanv(GL_DEPTH_WRITEMASK, &enabled);
+	GLboolean enabled = GL_TRUE;
+	glGetBooleanv(GL_DEPTH_WRITEMASK, &enabled);
 
-   glDepthMask(GL_TRUE);
-   glClear(GL_DEPTH_BUFFER_BIT);
+	glDepthMask(GL_TRUE);
+	glClear(GL_DEPTH_BUFFER_BIT);
 
-   glDepthMask(enabled);
-} 
+	glDepthMask(enabled);
+}
+
 
 //! Returns an image created from the last rendered frame.
 IImage* COpenGLDriver::createScreenShot()
@@ -2255,7 +2265,7 @@ IImage* COpenGLDriver::createScreenShot()
 
 	glReadPixels(0, 0, ScreenSize.Width, ScreenSize.Height, GL_RGB, GL_UNSIGNED_BYTE, pPixels);
 
-	// opengl images are inverted, so we have to fix that here.
+	// opengl images are horizontally flipped, so we have to fix that here.
 	s32 pitch=newImage->getPitch();
 	u8* p2 = pPixels + (ScreenSize.Height - 1) * pitch;
 	u8* tmpBuffer = new u8[pitch];
@@ -2296,6 +2306,7 @@ bool COpenGLDriver::setClipPlane(u32 index, const core::plane3df& plane, bool en
 	return true;
 }
 
+
 void COpenGLDriver::uploadClipPlane(u32 index)
 {
 	// opengl needs an array of doubles for the plane equation
@@ -2306,6 +2317,7 @@ void COpenGLDriver::uploadClipPlane(u32 index)
 	clip_plane[3] = UserClipPlane[index].D;
 	glClipPlane(GL_CLIP_PLANE0 + index, clip_plane);
 }
+
 
 //! Enable/disable a clipping plane.
 //! There are at least 6 clipping planes available for the user to set at will.
@@ -2364,7 +2376,7 @@ IVideoDriver* createOpenGLDriver(const core::dimension2d<s32>& screenSize,
 // -----------------------------------
 // MACOSX VERSION
 // -----------------------------------
-#ifdef MACOSX
+#if defined(_IRR_USE_OSX_DEVICE_)
 IVideoDriver* createOpenGLDriver(const core::dimension2d<s32>& screenSize,
 	CIrrDeviceMacOSX *device, bool fullscreen, bool stencilBuffer,
 	io::IFileSystem* io, bool vsync, bool antiAlias)
@@ -2376,7 +2388,7 @@ IVideoDriver* createOpenGLDriver(const core::dimension2d<s32>& screenSize,
 	return 0;
 #endif //  _IRR_COMPILE_WITH_OPENGL_
 }
-#endif // MACOSX
+#endif // _IRR_USE_OSX_DEVICE_
 
 // -----------------------------------
 // LINUX VERSION
@@ -2415,4 +2427,3 @@ IVideoDriver* createOpenGLDriver(const core::dimension2d<s32>& screenSize,
 } // end namespace
 
 #endif // _IRR_COMPILE_WITH_OPENGL_
-

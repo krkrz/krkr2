@@ -1,4 +1,4 @@
-// Copyright (C) 2002-2007 Nikolaus Gebhardt
+// Copyright (C) 2002-2008 Nikolaus Gebhardt
 // This file is part of the "Irrlicht Engine".
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
@@ -208,7 +208,11 @@ bool CIrrDeviceLinux::createWindow(const core::dimension2d<s32>& windowSize,
 			{
 				if (bestMode==-1 && modes[i]->hdisplay >= Width && modes[i]->vdisplay >= Height)
 					bestMode = i;
-				else if (bestMode!=-1 && modes[i]->hdisplay >= Width && modes[i]->vdisplay >= Height && modes[i]->hdisplay < modes[bestMode]->hdisplay && modes[i]->vdisplay < modes[bestMode]->vdisplay)
+				else if (bestMode!=-1 &&
+						modes[i]->hdisplay >= Width &&
+						modes[i]->vdisplay >= Height &&
+						modes[i]->hdisplay < modes[bestMode]->hdisplay &&
+						modes[i]->vdisplay < modes[bestMode]->vdisplay)
 					bestMode = i;
 				VideoModeList.addMode(core::dimension2d<s32>(
 					modes[i]->hdisplay, modes[i]->vdisplay), defaultDepth);
@@ -243,7 +247,11 @@ bool CIrrDeviceLinux::createWindow(const core::dimension2d<s32>& windowSize,
 			{
 				if (bestMode==-1 && (u32)modes[i].width >= Width && (u32)modes[i].height >= Height)
 					bestMode = i;
-				else if (bestMode!=-1 && (u32)modes[i].width >= Width && (u32)modes[i].height >= Height && modes[i].width < modes[bestMode].width && modes[i].height < modes[bestMode].height)
+				else if (bestMode!=-1 &&
+						(u32)modes[i].width >= Width &&
+						(u32)modes[i].height >= Height &&
+						modes[i].width < modes[bestMode].width &&
+						modes[i].height < modes[bestMode].height)
 					bestMode = i;
 				VideoModeList.addMode(core::dimension2d<s32>(
 					modes[i].width, modes[i].height), defaultDepth);
@@ -665,7 +673,7 @@ bool CIrrDeviceLinux::run()
 	os::Timer::tick();
 
 #ifdef _IRR_COMPILE_WITH_X11_
-	if (DriverType != video::EDT_NULL)
+	if ((DriverType != video::EDT_NULL) && display)
 	{
 		SEvent irrevent;
 
@@ -1039,7 +1047,7 @@ void CIrrDeviceLinux::setResizeAble(bool resize)
 //! by the gfx adapter.
 video::IVideoModeList* CIrrDeviceLinux::getVideoModeList()
 {
-
+#ifdef _IRR_COMPILE_WITH_X11_
 	if (!VideoModeList.getVideoModeCount())
 	{
 		bool temporaryDisplay = false;
@@ -1106,6 +1114,7 @@ video::IVideoModeList* CIrrDeviceLinux::getVideoModeList()
 			XCloseDisplay(display);
 		}
 	}
+#endif
 
 	return &VideoModeList;
 }

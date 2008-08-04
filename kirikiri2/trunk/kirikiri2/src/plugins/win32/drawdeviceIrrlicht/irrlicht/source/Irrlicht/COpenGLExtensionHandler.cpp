@@ -1,11 +1,15 @@
-#include "COpenGLExtensionHandler.h"
-#include "irrString.h"
-#include "SMaterial.h" // for MATERIAL_MAX_TEXTURES
-#include "fast_atof.h"
+// Copyright (C) 2002-2008 Nikolaus Gebhardt
+// This file is part of the "Irrlicht Engine".
+// For conditions of distribution and use, see copyright notice in irrlicht.h
 
 #include "IrrCompileConfig.h"
 
 #ifdef _IRR_COMPILE_WITH_OPENGL_
+
+#include "COpenGLExtensionHandler.h"
+#include "irrString.h"
+#include "SMaterial.h" // for MATERIAL_MAX_TEXTURES
+#include "fast_atof.h"
 
 namespace irr
 {
@@ -412,9 +416,9 @@ bool COpenGLExtensionHandler::queryFeature(E_VIDEO_DRIVER_FEATURE feature) const
 	case EVDF_ARB_FRAGMENT_PROGRAM_1:
 		return FeatureAvailable[IRR_ARB_fragment_program];
 	case EVDF_ARB_GLSL:
-		return FeatureAvailable[IRR_ARB_shading_language_100];
+		return (FeatureAvailable[IRR_ARB_shading_language_100]||Version>=200);
 	case EVDF_TEXTURE_NPOT:
-		return FeatureAvailable[IRR_ARB_texture_non_power_of_two];
+		return (FeatureAvailable[IRR_ARB_texture_non_power_of_two]||Version>=200);
 	case EVDF_FRAMEBUFFER_OBJECT:
 		return FeatureAvailable[IRR_EXT_framebuffer_object];
 	default:

@@ -1,4 +1,4 @@
-// Copyright (C) 2002-2007 Nikolaus Gebhardt / Thomas Alten
+// Copyright (C) 2002-2008 Nikolaus Gebhardt / Thomas Alten
 // This file is part of the "Irrlicht Engine".
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
@@ -143,12 +143,6 @@ REALINLINE u32 if_mask_a_else_b ( const u32 mask, const u32 a, const u32 b )
 {
 	return ( mask & ( a ^ b ) ) ^ b;
 }
-
-inline void setbits ( u32 &state, s32 condition, u32 mask )
-{
-	state ^= ( ( -condition >> 31 ) ^ state ) & mask;
-}
-
 
 // ------------------ Video---------------------------------------
 /*!
