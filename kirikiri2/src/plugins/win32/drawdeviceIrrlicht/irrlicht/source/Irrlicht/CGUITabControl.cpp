@@ -1,4 +1,4 @@
-// Copyright (C) 2002-2007 Nikolaus Gebhardt
+// Copyright (C) 2002-2008 Nikolaus Gebhardt
 // This file is part of the "Irrlicht Engine".
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
@@ -143,9 +143,11 @@ CGUITabControl::CGUITabControl(IGUIEnvironment* environment,
 //! destructor
 CGUITabControl::~CGUITabControl()
 {
-	for (s32 i=0; i<(s32)Tabs.size(); ++i)
+	for (u32 i=0; i<Tabs.size(); ++i)
+	{
 		if (Tabs[i])
 			Tabs[i]->drop();
+	}
 }
 
 
@@ -161,8 +163,7 @@ IGUITab* CGUITabControl::addTab(const wchar_t* caption, s32 id)
 		AbsoluteRect.getWidth()-1,
 		AbsoluteRect.getHeight()-1);
 
-	CGUITab* tab = new CGUITab(Tabs.size(), Environment, this, 
-		r, id);
+	CGUITab* tab = new CGUITab(Tabs.size(), Environment, this, r, id);
 	tab->setAlignment(EGUIA_UPPERLEFT, EGUIA_LOWERRIGHT, EGUIA_UPPERLEFT, EGUIA_LOWERRIGHT);
 
 	tab->setText(caption);
@@ -186,9 +187,11 @@ void CGUITabControl::addTab(CGUITab* tab)
 		return;
 
 	// check if its already added
-	for (s32 i=0; i < (s32)Tabs.size(); ++i)
+	for (u32 i=0; i < Tabs.size(); ++i)
+	{
 		if (Tabs[i] == tab)
 			return;
+	}
 
 	tab->grab();
 
@@ -226,7 +229,7 @@ s32 CGUITabControl::getTabCount() const
 //! Returns a tab based on zero based index
 IGUITab* CGUITabControl::getTab(s32 idx) const
 {
-	if (idx < 0 || idx >= (s32)Tabs.size())
+	if ((u32)idx >= Tabs.size())
 		return 0;
 
 	return Tabs[idx];
@@ -332,7 +335,7 @@ void CGUITabControl::draw()
 	s32 right = 0;
 	const wchar_t* activetext = 0;
 	
-	for (s32 i=0; i<(s32)Tabs.size(); ++i)
+	for (u32 i=0; i<Tabs.size(); ++i)
 	{
 		// get Text
 		const wchar_t* text = 0;
@@ -345,7 +348,7 @@ void CGUITabControl::draw()
 		frameRect.LowerRightCorner.X = frameRect.UpperLeftCorner.X + len;
 		pos += len;
 
-		if (i == ActiveTab)
+		if ((s32)i == ActiveTab)
 		{
 			left = frameRect.UpperLeftCorner.X;
 			right = frameRect.LowerRightCorner.X;

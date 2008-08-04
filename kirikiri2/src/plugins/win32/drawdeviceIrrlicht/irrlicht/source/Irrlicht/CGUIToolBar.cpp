@@ -1,4 +1,4 @@
-// Copyright (C) 2002-2007 Nikolaus Gebhardt
+// Copyright (C) 2002-2008 Nikolaus Gebhardt
 // This file is part of the "Irrlicht Engine".
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
@@ -89,7 +89,7 @@ void CGUIToolBar::draw()
 		return;
 
 	core::rect<s32> rect = AbsoluteRect;
-	core::rect<s32>* clip = 0;
+	core::rect<s32>* clip = &AbsoluteClippingRect;
 
 	// draw frame
 	skin->draw3DToolBar(this, rect, clip);

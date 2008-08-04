@@ -410,6 +410,9 @@
 					RelativePath="..\..\include\EDebugSceneTypes.h">
 				</File>
 				<File
+					RelativePath="..\..\include\EMeshWriterEnums.h">
+				</File>
+				<File
 					RelativePath=".\..\..\include\ESceneNodeAnimatorTypes.h">
 				</File>
 				<File
@@ -462,9 +465,6 @@
 				</File>
 				<File
 					RelativePath="..\..\include\IMeshWriter.h">
-				</File>
-				<File
-					RelativePath="..\..\include\EMeshWriterEnums.h">
 				</File>
 				<File
 					RelativePath=".\..\..\include\IMetaTriangleSelector.h">
@@ -1358,16 +1358,16 @@
 					RelativePath=".\CSkinnedMesh.h">
 				</File>
 				<File
-					RelativePath="CXMeshFileLoader.cpp">
-				</File>
-				<File
-					RelativePath="CXMeshFileLoader.h">
-				</File>
-				<File
 					RelativePath="CSTLMeshFileLoader.cpp">
 				</File>
 				<File
 					RelativePath="CSTLMeshFileLoader.h">
+				</File>
+				<File
+					RelativePath="CXMeshFileLoader.cpp">
+				</File>
+				<File
+					RelativePath="CXMeshFileLoader.h">
 				</File>
 				<File
 					RelativePath=".\dmfsupport.h">

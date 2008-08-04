@@ -1,4 +1,4 @@
-// Copyright (C) 2002-2007 Nikolaus Gebhardt
+// Copyright (C) 2002-2008 Nikolaus Gebhardt
 // This file is part of the "Irrlicht Engine".
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
@@ -306,7 +306,6 @@ ITexture* CNullDriver::getTexture(const c8* filename)
 		return texture;
 
 	io::IReadFile* file = FileSystem->createAndOpenFile(filename);
-	bool errorReported = false;
 
 	if (file)
 	{
@@ -318,19 +317,16 @@ ITexture* CNullDriver::getTexture(const c8* filename)
 			addTexture(texture);
 			texture->drop(); // drop it because we created it, one grab too much
 		}
+		else
+			os::Printer::log("Could not load texture", filename, ELL_ERROR);
+		return texture;
 	}
 	else
 	{
-		errorReported = true;
 		os::Printer::log("Could not open file of texture", filename, ELL_ERROR);
+		return 0;
 	}
-
-	if (!texture && !errorReported)
-		os::Printer::log("Could not load texture", filename, ELL_ERROR);
-
-	return texture;
 }
-
 
 
 //! loads a Texture
@@ -359,7 +355,6 @@ ITexture* CNullDriver::getTexture(io::IReadFile* file)
 
 	return texture;
 }
-
 
 
 //! opens the file and loads it into the surface

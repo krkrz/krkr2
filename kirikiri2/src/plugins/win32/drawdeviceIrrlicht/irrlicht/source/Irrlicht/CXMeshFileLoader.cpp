@@ -1,4 +1,4 @@
-// Copyright (C) 2002-2007 Nikolaus Gebhardt
+// Copyright (C) 2002-2008 Nikolaus Gebhardt
 // This file is part of the "Irrlicht Engine".
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
@@ -11,6 +11,7 @@
 
 #include "fast_atof.h"
 #include "coreutil.h"
+#include "ISceneManager.h"
 #include "IVideoDriver.h"
 #include "IReadFile.h"
 
@@ -161,7 +162,7 @@ bool CXMeshFileLoader::load(io::IReadFile* file)
 			{
 				for (u32 id=i*3+0;id<=i*3+2;++id)
 				{
-					core::array< u32 > &Array=verticesLinkBuffer[ mesh->Indices[id] ];
+					core::array< u16 > &Array=verticesLinkBuffer[ mesh->Indices[id] ];
 					bool found=false;
 
 					for (u32 j=0; j < Array.size(); ++j)
@@ -212,29 +213,30 @@ bool CXMeshFileLoader::load(io::IReadFile* file)
 				}
 			}
 
-			for (u32 j=0;j<mesh->Weights.size();++j)
+			for (u32 j=0;j<mesh->WeightJoint.size();++j)
 			{
-				ISkinnedMesh::SWeight& Weight = (*mesh->Weights[j]);
+				ISkinnedMesh::SWeight& weight = (AnimatedMesh->getAllJoints()[mesh->WeightJoint[j]]->Weights[mesh->WeightNum[j]]);
 
-				u32 id = Weight.vertex_id;
+				u32 id = weight.vertex_id;
 
 				if (id>=verticesLinkIndex.size())
 				{
 					os::Printer::log("X loader: Weight id out of range", ELL_WARNING);
 					id=0;
+					weight.strength=0.f;
 				}
 
 				if (verticesLinkBuffer[id].size()==1)
 				{
-					Weight.vertex_id=verticesLinkIndex[id][0];
-					Weight.buffer_id=verticesLinkBuffer[id][0];
+					weight.vertex_id=verticesLinkIndex[id][0];
+					weight.buffer_id=verticesLinkBuffer[id][0];
 				}
 				else if (verticesLinkBuffer[id].size() != 0)
 				{
 					for (u32 k=1; k < verticesLinkBuffer[id].size(); ++k)
 					{
-						ISkinnedMesh::SWeight* WeightClone = AnimatedMesh->createWeight(Joint);
-						WeightClone->strength = Weight.strength;
+						ISkinnedMesh::SWeight* WeightClone = AnimatedMesh->createWeight(joint);
+						WeightClone->strength = weight.strength;
 						WeightClone->vertex_id = verticesLinkIndex[id][k];
 						WeightClone->buffer_id = verticesLinkBuffer[id][k];
 					}
@@ -264,54 +266,58 @@ bool CXMeshFileLoader::load(io::IReadFile* file)
 				}
 			}
 
-			// store vertices in buffers and remember relation in verticesLinkIndex
-			u32* vCountArray = new u32[mesh->Buffers.size()];
-			memset(vCountArray, 0, mesh->Buffers.size()*sizeof(u32));
-			// count vertices in each buffer and reallocate
-			for (i=0;i<mesh->Vertices.size();++i)
-				++vCountArray[verticesLinkBuffer[i]];
-			for (i=0; i!=mesh->Buffers.size(); ++i)
-				mesh->Buffers[i]->Vertices_Standard.reallocate(vCountArray[i]);
-
-			// actually store vertices
-			for (i=0;i<mesh->Vertices.size();++i)
+			if (mesh->FaceMaterialIndices.size() != 0)
 			{
-				scene::SSkinMeshBuffer *buffer = mesh->Buffers[ verticesLinkBuffer[i] ];
+				// store vertices in buffers and remember relation in verticesLinkIndex
+				u32* vCountArray = new u32[mesh->Buffers.size()];
+				memset(vCountArray, 0, mesh->Buffers.size()*sizeof(u32));
+				// count vertices in each buffer and reallocate
+				for (i=0;i<mesh->Vertices.size();++i)
+					++vCountArray[verticesLinkBuffer[i]];
+				for (i=0; i!=mesh->Buffers.size(); ++i)
+					mesh->Buffers[i]->Vertices_Standard.reallocate(vCountArray[i]);
 
-				verticesLinkIndex[i] = buffer->Vertices_Standard.size();
-				buffer->Vertices_Standard.push_back( mesh->Vertices[i] );
+				// actually store vertices
+				for (i=0;i<mesh->Vertices.size();++i)
+				{
+					scene::SSkinMeshBuffer *buffer = mesh->Buffers[ verticesLinkBuffer[i] ];
+
+					verticesLinkIndex[i] = buffer->Vertices_Standard.size();
+					buffer->Vertices_Standard.push_back( mesh->Vertices[i] );
+				}
+
+				// count indices per buffer and reallocate
+				memset(vCountArray, 0, mesh->Buffers.size()*sizeof(u32));
+				for (i=0;i<mesh->FaceMaterialIndices.size();++i)
+					++vCountArray[ mesh->FaceMaterialIndices[i] ];
+				for (i=0; i!=mesh->Buffers.size(); ++i)
+					mesh->Buffers[i]->Indices.reallocate(vCountArray[i]);
+				delete [] vCountArray;
+				// create indices per buffer
+				for (i=0;i<mesh->FaceMaterialIndices.size();++i)
+				{
+					scene::SSkinMeshBuffer *buffer = mesh->Buffers[ mesh->FaceMaterialIndices[i] ];
+					for (u32 id=i*3+0;id!=i*3+3;++id)
+						buffer->Indices.push_back( verticesLinkIndex[ mesh->Indices[id] ] );
+				}
 			}
 
-			// count indices per buffer and reallocate
-			memset(vCountArray, 0, mesh->Buffers.size()*sizeof(u32));
-			for (i=0;i<mesh->FaceMaterialIndices.size();++i)
-				++vCountArray[ mesh->FaceMaterialIndices[i] ];
-			for (i=0; i!=mesh->Buffers.size(); ++i)
-				mesh->Buffers[i]->Indices.reallocate(vCountArray[i]);
-			delete [] vCountArray;
-			// create indices per buffer
-			for (i=0;i<mesh->FaceMaterialIndices.size();++i)
+
+			for (u32 j=0;j<mesh->WeightJoint.size();++j)
 			{
-				scene::SSkinMeshBuffer *buffer = mesh->Buffers[ mesh->FaceMaterialIndices[i] ];
-				for (u32 id=i*3+0;id!=i*3+3;++id)
-					buffer->Indices.push_back( verticesLinkIndex[ mesh->Indices[id] ] );
-			}
+				ISkinnedMesh::SWeight& weight = (AnimatedMesh->getAllJoints()[mesh->WeightJoint[j]]->Weights[mesh->WeightNum[j]]);
 
-
-			for (u32 j=0;j<mesh->Weights.size();++j)
-			{
-				ISkinnedMesh::SWeight* weight = mesh->Weights[j];
-
-				u32 id = weight->vertex_id;
+				u32 id = weight.vertex_id;
 
 				if (id>=verticesLinkIndex.size())
 				{
 					os::Printer::log("X loader: Weight id out of range", ELL_WARNING);
 					id=0;
+					weight.strength=0.f;
 				}
 
-				weight->vertex_id=verticesLinkIndex[id];
-				weight->buffer_id=verticesLinkBuffer[id] + bufferOffset;;
+				weight.vertex_id=verticesLinkIndex[id];
+				weight.buffer_id=verticesLinkBuffer[id] + bufferOffset;;
 			}
 		}
 		#endif
@@ -852,7 +858,8 @@ bool CXMeshFileLoader::parseDataObjectSkinWeights(SXMesh &mesh)
 
 	CSkinnedMesh::SJoint *joint=0;
 
-	for (u32 n=0; n < AnimatedMesh->getAllJoints().size(); ++n)
+	u32 n;
+	for (n=0; n < AnimatedMesh->getAllJoints().size(); ++n)
 	{
 		if (AnimatedMesh->getAllJoints()[n]->Name==TransformNodeName)
 		{
@@ -866,6 +873,7 @@ bool CXMeshFileLoader::parseDataObjectSkinWeights(SXMesh &mesh)
 #ifdef _XREADER_DEBUG
 		os::Printer::log("creating joint for skinning ", TransformNodeName.c_str());
 #endif
+		n = AnimatedMesh->getAllJoints().size();
 		joint=AnimatedMesh->createJoint(0);
 		joint->Name=TransformNodeName;
 	}
@@ -879,16 +887,18 @@ bool CXMeshFileLoader::parseDataObjectSkinWeights(SXMesh &mesh)
 	const u32 jointStart = joint->Weights.size();
 	joint->Weights.reallocate(jointStart+nWeights);
 
-	mesh.Weights.reallocate( mesh.Weights.size() + nWeights );
+	mesh.WeightJoint.reallocate( mesh.WeightJoint.size() + nWeights );
+	mesh.WeightNum.reallocate( mesh.WeightNum.size() + nWeights );
 
 	for (i=0; i<nWeights; ++i)
 	{
+		mesh.WeightJoint.push_back(n);
+		mesh.WeightNum.push_back(joint->Weights.size());
+
 		CSkinnedMesh::SWeight *weight=AnimatedMesh->createWeight(joint);
 
 		weight->buffer_id=0;
 		weight->vertex_id=readInt();
-
-		mesh.Weights.push_back(weight);
 	}
 
 	// read vertex weights
@@ -1256,7 +1266,7 @@ bool CXMeshFileLoader::parseDataObjectMaterial(video::SMaterial& material)
 				return false;
 
 			// original name
-			SceneManager->getVideoDriver()->getTexture ( TextureFileName.c_str() );
+			material.setTexture(0, SceneManager->getVideoDriver()->getTexture ( TextureFileName.c_str() ));
 			// mesh path
 			if (!material.getTexture(0))
 			{
@@ -1265,7 +1275,7 @@ bool CXMeshFileLoader::parseDataObjectMaterial(video::SMaterial& material)
 			}
 			// working directory
 			if (!material.getTexture(0))
-				SceneManager->getVideoDriver()->getTexture ( stripPathFromString(TextureFileName,false).c_str() );
+				material.setTexture(0, SceneManager->getVideoDriver()->getTexture ( stripPathFromString(TextureFileName,false).c_str() ));
 		}
 		else
 		{
@@ -2113,10 +2123,12 @@ core::stringc CXMeshFileLoader::stripPathFromString(core::stringc string, bool r
 	if (backSlash>slashIndex) slashIndex=backSlash;
 
 	if (slashIndex==-1)//no slashes found
+	{
 		if (returnPath)
 			return core::stringc(); //no path to return
 		else
 			return string;
+	}
 
 	if (returnPath)
 		return string.subString(0, slashIndex + 1);

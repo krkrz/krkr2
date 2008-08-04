@@ -1,10 +1,9 @@
-// Copyright (C) 2002-2007 Nikolaus Gebhardt
+// Copyright (C) 2002-2008 Nikolaus Gebhardt
 // This file is part of the "Irrlicht Engine".
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
 #include "IrrCompileConfig.h"
 #include "CTRTextureGouraud.h"
-#include "os.h"
 
 #ifdef _IRR_COMPILE_WITH_SOFTWARE_
 
@@ -121,8 +120,7 @@ void CTRTextureGouraudAdd::drawIndexedTriangleList(S2DVertex* vertices, s32 vert
 		if (!TriangleRect.isRectCollided(ViewPortRect))
 			continue;
 
-
-		// höhe des dreiecks berechnen
+		// calculate height of triangle
 		height = v3->Pos.Y - v1->Pos.Y;
 		if (!height)
 			continue;

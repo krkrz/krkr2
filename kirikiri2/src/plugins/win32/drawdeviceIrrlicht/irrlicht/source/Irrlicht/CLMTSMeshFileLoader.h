@@ -1,4 +1,4 @@
-// Copyright (C) 2002-2007 Nikolaus Gebhardt
+// Copyright (C) 2002-2008 Nikolaus Gebhardt
 // This file is part of the "Irrlicht Engine".
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 // 
@@ -59,10 +59,6 @@ private:
 #else
 #	error compiler not supported
 #endif
-
-	struct SLMTSMagigID {
-		u32 ID;
-	} PACK_STRUCT;
 
 	struct SLMTSHeader
 	{

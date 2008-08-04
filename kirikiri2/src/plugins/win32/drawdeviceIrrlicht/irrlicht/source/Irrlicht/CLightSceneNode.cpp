@@ -1,4 +1,4 @@
-// Copyright (C) 2002-2007 Nikolaus Gebhardt
+// Copyright (C) 2002-2008 Nikolaus Gebhardt
 // This file is part of the "Irrlicht Engine".
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
@@ -15,8 +15,8 @@ namespace scene
 {
 
 //! constructor
-CLightSceneNode::CLightSceneNode(ISceneNode* parent, ISceneManager* mgr, s32 id,	
-	const core::vector3df& position, video::SColorf color,f32 radius)
+CLightSceneNode::CLightSceneNode(ISceneNode* parent, ISceneManager* mgr, s32 id,
+		const core::vector3df& position, video::SColorf color, f32 radius)
 : ILightSceneNode(parent, mgr, id, position)
 {
 	#ifdef _DEBUG
@@ -176,7 +176,7 @@ ISceneNode* CLightSceneNode::clone(ISceneNode* newParent, ISceneManager* newMana
 	if (!newManager)
 		newManager = SceneManager;
 
-	CLightSceneNode* nb = new CLightSceneNode(newParent, 
+	CLightSceneNode* nb = new CLightSceneNode(newParent,
 		newManager, ID, RelativeTranslation, LightData.DiffuseColor, LightData.Radius);
 
 	nb->cloneMembers(this, newManager);

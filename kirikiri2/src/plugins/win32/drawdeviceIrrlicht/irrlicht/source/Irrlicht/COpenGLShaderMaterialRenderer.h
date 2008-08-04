@@ -1,4 +1,4 @@
-// Copyright (C) 2002-2007 Nikolaus Gebhardt
+// Copyright (C) 2002-2008 Nikolaus Gebhardt
 // This file is part of the "Irrlicht Engine".
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
@@ -16,7 +16,7 @@
 #if defined(_IRR_OPENGL_USE_EXTPOINTER_)
 	#define GL_GLEXT_LEGACY 1
 #endif
-#if defined(MACOSX)
+#if defined(_IRR_USE_OSX_DEVICE_)
 	#include <OpenGL/gl.h>
 #else
 	#include <GL/gl.h>
@@ -43,15 +43,15 @@ class COpenGLShaderMaterialRenderer : public IMaterialRenderer
 public:
 
 	//! Constructor
-	COpenGLShaderMaterialRenderer(video::COpenGLDriver* driver,
+	COpenGLShaderMaterialRenderer(COpenGLDriver* driver,
 		s32& outMaterialTypeNr, const c8* vertexShaderProgram, const c8* pixelShaderProgram,
 		IShaderConstantSetCallBack* callback, IMaterialRenderer* baseMaterial, s32 userData);
 
 	//! Destructor
 	virtual ~COpenGLShaderMaterialRenderer();
 
-	virtual void OnSetMaterial(const video::SMaterial& material, const video::SMaterial& lastMaterial,
-		bool resetAllRenderstates, video::IMaterialRendererServices* services);
+	virtual void OnSetMaterial(const SMaterial& material, const SMaterial& lastMaterial,
+		bool resetAllRenderstates, IMaterialRendererServices* services);
 
 	virtual bool OnRender(IMaterialRendererServices* service, E_VERTEX_TYPE vtxtype);
 
@@ -74,7 +74,7 @@ protected:
 	bool createPixelShader(const c8* pxsh);
 	bool createVertexShader(const char* vtxsh);
 
-	video::COpenGLDriver* Driver;
+	COpenGLDriver* Driver;
 	IShaderConstantSetCallBack* CallBack;
 	IMaterialRenderer* BaseMaterial;
 

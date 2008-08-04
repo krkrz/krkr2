@@ -1,4 +1,4 @@
-// Copyright (C) 2002-2007 Nikolaus Gebhardt
+// Copyright (C) 2002-2008 Nikolaus Gebhardt
 // This file is part of the "Irrlicht Engine".
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
@@ -42,6 +42,9 @@ namespace scene
 		//! gets an animateable mesh. loads it if needed. returned pointer must not be dropped.
 		virtual IAnimatedMesh* getMesh(const c8* filename);
 
+		//! gets an animateable mesh. loads it if needed. returned pointer must not be dropped.
+		virtual IAnimatedMesh* getMesh(io::IReadFile* file);
+
 		//! Returns an interface to the mesh cache which is shared beween all existing scene managers.
 		virtual IMeshCache* getMeshCache();
 
@@ -53,7 +56,9 @@ namespace scene
 		//! adds a cube scene node to the scene. It is a simple cube of (1,1,1) size. 
 		//! the returned pointer must not be dropped.
 		virtual ISceneNode* addCubeSceneNode(f32 size=10.0f, ISceneNode* parent=0, s32 id=-1,
-			const core::vector3df& position = core::vector3df(0,0,0),	const core::vector3df& rotation = core::vector3df(0,0,0),	const core::vector3df& scale = core::vector3df(1.0f, 1.0f, 1.0f));
+			const core::vector3df& position = core::vector3df(0,0,0),
+			const core::vector3df& rotation = core::vector3df(0,0,0),
+			const core::vector3df& scale = core::vector3df(1.0f, 1.0f, 1.0f));
 
 		//! Adds a sphere scene node to the scene.
 		virtual ISceneNode* addSphereSceneNode(f32 radius=5.0f, s32 polyCount=16, ISceneNode* parent=0, s32 id=-1,
@@ -296,7 +301,7 @@ namespace scene
 			f32 slidingValue = 0.0005f);
 
 		//! Creates a follow spline animator.
-        virtual ISceneNodeAnimator* createFollowSplineAnimator(s32 startTime,
+		virtual ISceneNodeAnimator* createFollowSplineAnimator(s32 startTime,
 			const core::array< core::vector3df >& points,
 			f32 speed = 1.0f, f32 tightness = 0.5f);
 
@@ -391,7 +396,7 @@ namespace scene
 		virtual const c8* getSceneNodeTypeName(ESCENE_NODE_TYPE type);
 
 		//! Adds a scene node to the scene by name
-		virtual ISceneNode* addSceneNode(const char* sceneNodeTypeName, ISceneNode* parent);
+		virtual ISceneNode* addSceneNode(const char* sceneNodeTypeName, ISceneNode* parent=0);
 
 		//! Returns the default scene node animator factory which can create all built-in scene node animators
 		virtual ISceneNodeAnimatorFactory* getDefaultSceneNodeAnimatorFactory();

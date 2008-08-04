@@ -1,4 +1,4 @@
-// Copyright (C) 2002-2007 Nikolaus Gebhardt
+// Copyright (C) 2002-2008 Nikolaus Gebhardt
 // This file is part of the "Irrlicht Engine".
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
@@ -45,12 +45,13 @@ namespace scene
 		void animateWaterSurface();
 		void addWave(core::vector3df& dest, const core::vector3df source, f32 time)
 		{
-			dest.Y = source.Y +
-			(sinf(((source.X/WaveLength) + time)) * WaveHeight) +
-			(cosf(((source.Z/WaveLength) + time)) * WaveHeight);
+			dest.Y = source.Y + WaveHeight*(
+				sinf(((source.X*OneByWaveLength) + time)) +
+				cosf(((source.Z*OneByWaveLength) + time)));
 		}
 
 		f32 WaveLength;
+		f32 OneByWaveLength;
 		f32 WaveSpeed;
 		f32 WaveHeight;
 		IMesh* OriginalMesh;

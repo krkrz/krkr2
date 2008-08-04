@@ -1,4 +1,4 @@
-// Copyright (C) 2002-2007 Nikolaus Gebhardt
+// Copyright (C) 2002-2008 Nikolaus Gebhardt
 // This file is part of the "Irrlicht Engine".
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
@@ -329,13 +329,13 @@ u32 CAnimatedMeshMD2::getFrameCount() const
 //! returns the animated mesh based on a detail level. 0 is the lowest, 255 the highest detail. Note, that some Meshes will ignore the detail level.
 IMesh* CAnimatedMeshMD2::getMesh(s32 frame, s32 detailLevel, s32 startFrameLoop, s32 endFrameLoop)
 {
-	if ((u32)frame > (FrameCount<<MD2_FRAME_SHIFT))
-		frame = (frame % (FrameCount<<MD2_FRAME_SHIFT));
+	if ((u32)frame > getFrameCount())
+		frame = (frame % getFrameCount());
 
 	if (startFrameLoop == -1 && endFrameLoop == -1)
 	{
 		startFrameLoop = 0;
-		endFrameLoop = FrameCount<<MD2_FRAME_SHIFT;
+		endFrameLoop = getFrameCount();
 	}
 
 	updateInterpolationBuffer(frame, startFrameLoop, endFrameLoop);
@@ -402,10 +402,9 @@ void CAnimatedMeshMD2::updateInterpolationBuffer(s32 frame, s32 startFrameLoop, 
 	video::S3DVertex* first = FrameList[firstFrame].pointer();
 	video::S3DVertex* second = FrameList[secondFrame].pointer();
 
-	s32 count = FrameList[firstFrame].size();
-
 	// interpolate both frames
-	for (s32 i=0; i<count; ++i)
+	const u32 count = FrameList[firstFrame].size();
+	for (u32 i=0; i<count; ++i)
 	{
 		target->Pos = (second->Pos - first->Pos) * div + first->Pos;
 		target->Normal = (second->Normal - first->Normal) * div + first->Normal;
@@ -721,7 +720,8 @@ void CAnimatedMeshMD2::getFrameLoop(EMD2_ANIMATION_TYPE l,
 bool CAnimatedMeshMD2::getFrameLoop(const c8* name,
 	s32& outBegin, s32&outEnd, s32& outFPS) const
 {
-	for (s32 i=0; i<(s32)FrameData.size(); ++i)
+	for (u32 i=0; i<FrameData.size(); ++i)
+	{
 		if (FrameData[i].name == name)
 		{
 			outBegin = FrameData[i].begin << MD2_FRAME_SHIFT;
@@ -730,6 +730,7 @@ bool CAnimatedMeshMD2::getFrameLoop(const c8* name,
 			outFPS = FrameData[i].fps << MD2_FRAME_SHIFT;
 			return true;
 		}
+	}
 
 	return false;
 }
@@ -745,7 +746,7 @@ s32 CAnimatedMeshMD2::getAnimationCount() const
 //! Returns name of md2 animation.
 const c8* CAnimatedMeshMD2::getAnimationName(s32 nr) const
 {
-	if (nr < 0 || nr >= (s32)FrameData.size())
+	if ((u32)nr >= FrameData.size())
 		return 0;
 
 	return FrameData[nr].name.c_str();
