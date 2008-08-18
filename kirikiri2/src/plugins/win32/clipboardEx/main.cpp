@@ -157,11 +157,27 @@ getVariantString(tTJSVariant &var, IWriter *writer)
 //----------------------------------------------------------------------
 // クリップボード拡張
 //----------------------------------------------------------------------
-// TJS式のクリップボードフォーマット
-static const wchar_t *TJS_EXPRESSION_FORMAT = L"application/x-kirikiri-tjsexpression";
-// TJS式のクリップボードID
-tjs_uint CF_TJS_EXPRESSION;
+// クリップボードフォーマット
+static const wchar_t *TJS_FORMAT = L"application/x-kirikiri-tjs";
+static const wchar_t *LAYER_FORMAT = L"application/x-kirikiri-layer";
+// クリップボードID
+tjs_uint CF_TJS;
+tjs_uint CF_LAYER;
 
+// 構造体
+struct ClipboardData
+{
+  ClipboardData(UINT _format, HGLOBAL _hData) : format(_format), hData(_hData) {};
+
+  UINT format;
+  HGLOBAL hData;
+};
+
+struct LAYERINFOHEADER {
+  tjs_int width, height;
+};
+
+typedef std::vector<ClipboardData> clipboard_data_array;
 
 // 拡張クラス
 class ClipboardEx
@@ -169,7 +185,7 @@ class ClipboardEx
 public:
   static const tjs_uint cbfText = 1;
   static const tjs_uint cbfBitmap = 2;
-  static const tjs_uint cbfTJSExpression = 3;
+  static const tjs_uint cbfTJS = 3;
 
   // 特定のフォーマットがクリップボードに存在するか調べる
   static bool hasFormat(tjs_uint format) 
@@ -177,62 +193,194 @@ public:
     switch(format)
       {
       case cbfText:
-        return IsClipboardFormatAvailable(CF_TEXT) == TRUE ||
-          IsClipboardFormatAvailable(CF_UNICODETEXT) == TRUE; // ANSI text or UNICODE text
+        return IsClipboardFormatAvailable(CF_TEXT) == TRUE
+	  || IsClipboardFormatAvailable(CF_UNICODETEXT) == TRUE; // ANSI text or UNICODE text
       case cbfBitmap:
-        return IsClipboardFormatAvailable(CF_DIB) == TRUE;
-      case cbfTJSExpression:
-        return IsClipboardFormatAvailable(CF_TJS_EXPRESSION) == TRUE;
+        return IsClipboardFormatAvailable(CF_DIB) == TRUE 
+	  || IsClipboardFormatAvailable(CF_LAYER) == TRUE;
+      case cbfTJS:
+        return IsClipboardFormatAvailable(CF_TJS) == TRUE;
       default:
         return false;
       }
     return true;
   }
 
-  // クリップボードにTJS式を設定する
-  static void setTJSExpression(tTJSVariant data) {
-    HGLOBAL unicodehandle = NULL;
-    
+  // クリップボードにデータを設定する
+  static void setDatum(const clipboard_data_array &datum) {
     if (! OpenClipboard(NULL))
       TVPThrowExceptionMessage(L"copying to clipboard failed.");
 
-    try {
-      IStringWriter writer(0);
-      getVariantString(data, &writer);
-      ttstr &unicode = writer.buf;
+    EmptyClipboard();
+    for (clipboard_data_array::const_iterator i = datum.begin();
+	 i != datum.end();
+	 i++)
+    SetClipboardData(i->format, i->hData);
 
-      // store UNICODE string
-      unicodehandle = GlobalAlloc(GMEM_DDESHARE | GMEM_MOVEABLE,
-                                  (unicode.GetLen() + 1) * sizeof(tjs_char));
-      if(!unicodehandle)
-        TVPThrowExceptionMessage(L"copying to clipboard failed.");
-      
-      tjs_char *unimem = (tjs_char*)GlobalLock(unicodehandle);
-      if(unimem) TJS_strcpy(unimem, unicode.c_str());
-      GlobalUnlock(unicodehandle);
-
-      EmptyClipboard();
-      SetClipboardData(CF_TJS_EXPRESSION, unicodehandle);
-      unicodehandle = NULL;
-    } 
-    catch (...) {
-      if(unicodehandle) 
-        GlobalFree(unicodehandle);
-      CloseClipboard();
-      throw;
-    }
     CloseClipboard();
   }
 
+  // ANSIテキストのデータを作成する
+  static HGLOBAL createAnsiTextData(ttstr &unicode) {
+    HGLOBAL ansihandle = NULL;
+
+    tjs_int len = unicode.GetNarrowStrLen();
+    ansihandle = GlobalAlloc(GMEM_DDESHARE | GMEM_MOVEABLE,
+			     len + 1);
+    if (! ansihandle) 
+      TVPThrowExceptionMessage(L"copying to clipboard failed.");
+
+    char *mem = (char*)GlobalLock(ansihandle);
+    if (mem)
+      unicode.ToNarrowStr(mem, len);
+    GlobalUnlock(ansihandle);
+
+    return ansihandle;
+  }
+
+  // UNICODEテキストのデータを作成する
+  static HGLOBAL createUnicodeTextData(ttstr &unicode) {
+    HGLOBAL unicodehandle = NULL;
+
+    // store UNICODE string
+    unicodehandle = GlobalAlloc(GMEM_DDESHARE | GMEM_MOVEABLE,
+				(unicode.GetLen() + 1) * sizeof(tjs_char));
+    if (! unicodehandle)
+      TVPThrowExceptionMessage(L"copying to clipboard failed.");
+    
+    tjs_char *unimem = (tjs_char*)GlobalLock(unicodehandle);
+    if (unimem) 
+      TJS_strcpy(unimem, unicode.c_str());
+    GlobalUnlock(unicodehandle);
+
+    return unicodehandle;
+  }
+
+  // TJS式のデータを作成する
+  static HGLOBAL createTJSData(tTJSVariant data) {
+    // data validation;
+    ncbPropAccessor obj(data);
+    if (! obj.HasValue(L"type"))
+      TVPThrowExceptionMessage(L"TJS expression to copy clipboard must have a field named 'type'.");
+    if (! obj.HasValue(L"body"))
+      TVPThrowExceptionMessage(L"TJS expression to copy clipboard must have a field named 'body'.");
+
+    HGLOBAL unicodehandle = NULL;
+    IStringWriter writer(0);
+    getVariantString(data, &writer);
+    ttstr &unicode = writer.buf;
+    
+    // store UNICODE string
+    unicodehandle = GlobalAlloc(GMEM_DDESHARE | GMEM_MOVEABLE,
+				(unicode.GetLen() + 1) * sizeof(tjs_char));
+    if (! unicodehandle)
+      TVPThrowExceptionMessage(L"copying to clipboard failed.");
+      
+    tjs_char *unimem = (tjs_char*)GlobalLock(unicodehandle);
+    if (unimem)
+      TJS_strcpy(unimem, unicode.c_str());
+    GlobalUnlock(unicodehandle);
+
+    return unicodehandle;
+  }    
+
+  // DIB形式でレイヤ内容のクリップボードデータを作成する
+  static HGLOBAL createBitmapData(tTJSVariant layer) {
+    HGLOBAL dibhandle = NULL;
+
+    ncbPropAccessor obj(layer);
+    tjs_int width, height;
+    width = obj.GetValue(L"imageWidth",  ncbTypedefs::Tag<tjs_int>());
+    height = obj.GetValue(L"imageHeight",  ncbTypedefs::Tag<tjs_int>());
+    const tjs_uint8 *imageBuffer = (tjs_uint8*)obj.GetValue(L"mainImageBuffer", ncbTypedefs::Tag<tjs_int>());
+    tjs_int imagePitch = obj.GetValue(L"mainImageBufferPitch", ncbTypedefs::Tag<tjs_int>());
+    tjs_int pixelWidth = (width * 3 + 4 - 1) / 4 * 4;
+    tjs_int pixelSize = pixelWidth * height;
+
+    // store UNICODE string
+    dibhandle = GlobalAlloc(GMEM_DDESHARE | GMEM_MOVEABLE | GMEM_ZEROINIT,
+			    sizeof(BITMAPINFOHEADER) + pixelSize);
+    if(! dibhandle)
+      TVPThrowExceptionMessage(L"copying to clipboard failed.");
+      
+    BITMAPINFOHEADER *bmpinfo = (BITMAPINFOHEADER*)GlobalLock(dibhandle);
+    if (bmpinfo) {
+      bmpinfo->biSize = sizeof(BITMAPINFOHEADER);
+      bmpinfo->biWidth = width;
+      bmpinfo->biHeight = height;
+      bmpinfo->biPlanes = 1;
+      bmpinfo->biBitCount = 24;
+      for (tjs_int y = 0; y < height; y++) {
+	tjs_uint8 *dst = (tjs_uint8*)(bmpinfo) + sizeof(BITMAPINFOHEADER) + pixelWidth * (height - y - 1);
+	const tjs_uint8 *src = imageBuffer + imagePitch * y;
+	for (tjs_int x = 0; x < width; x++, src += 4, dst += 3) 
+	  CopyMemory(dst, src, 3);
+      }
+    }
+    GlobalUnlock(dibhandle);
+
+    return dibhandle;
+  }
+
+  // 吉里吉里レイヤの内部形式でレイヤ内容のクリップボードデータを作成する
+  static HGLOBAL createLayerData(tTJSVariant layer) {
+    HGLOBAL dibhandle = NULL;
+
+    ncbPropAccessor obj(layer);
+    tjs_int width, height;
+    width = obj.GetValue(L"imageWidth",  ncbTypedefs::Tag<tjs_int>());
+    height = obj.GetValue(L"imageHeight",  ncbTypedefs::Tag<tjs_int>());
+    const tjs_uint8 *imageBuffer = (tjs_uint8*)obj.GetValue(L"mainImageBuffer", ncbTypedefs::Tag<tjs_int>());
+    tjs_int imagePitch = obj.GetValue(L"mainImageBufferPitch", ncbTypedefs::Tag<tjs_int>());
+    tjs_int pixelSize = width * height * 4;
+
+    // store UNICODE string
+    dibhandle = GlobalAlloc(GMEM_DDESHARE | GMEM_MOVEABLE | GMEM_ZEROINIT,
+			    sizeof(LAYERINFOHEADER) + pixelSize);
+    if(! dibhandle)
+      TVPThrowExceptionMessage(L"copying to clipboard failed.");
+      
+    LAYERINFOHEADER *layerinfo = (LAYERINFOHEADER*)GlobalLock(dibhandle);
+    if (layerinfo) {
+      layerinfo->width = width;
+      layerinfo->height = height;
+      for (tjs_int y = 0; y < height; y++) {
+	tjs_uint8 *dst = (tjs_uint8*)(layerinfo) + sizeof(LAYERINFOHEADER) + width * 4 * y;
+	const tjs_uint8 *src = imageBuffer + imagePitch * y;
+	CopyMemory(dst, src, width * 4);
+      }
+    }
+    GlobalUnlock(dibhandle);
+
+    return dibhandle;
+  }
+
+  // クリップボードにTJS式を設定する
+  static void setTJS(tTJSVariant data) {
+    clipboard_data_array datum;
+
+    try {
+      datum.push_back(ClipboardData(CF_TJS, createTJSData(data)));
+      setDatum(datum);
+    }
+    catch (...) {
+      for (clipboard_data_array::iterator i = datum.begin();
+	   i != datum.end();
+	   i++)
+	GlobalFree(i->hData);
+      throw;
+    }
+  }
+
   // クリップボードからTJS式を取得する
-  static tTJSVariant getTJSExpression(void) {
+  static tTJSVariant getTJS(void) {
     tTJSVariant result;
 
     if (! OpenClipboard(NULL))
       return result;
     try {
-      if (IsClipboardFormatAvailable(CF_TJS_EXPRESSION)) {
-        HGLOBAL hglb = (HGLOBAL)GetClipboardData(CF_TJS_EXPRESSION);
+      if (IsClipboardFormatAvailable(CF_TJS)) {
+        HGLOBAL hglb = (HGLOBAL)GetClipboardData(CF_TJS);
         if (hglb != NULL) {
           const tjs_char *p = (const tjs_char *)GlobalLock(hglb);
           if(p)
@@ -261,54 +409,20 @@ public:
 
   // クリップボードにレイヤの内容を設定する
   static void setAsBitmap(tTJSVariant layer) {
-    if (! OpenClipboard(NULL))
-      TVPThrowExceptionMessage(L"copying to clipboard failed.");
-
-    HGLOBAL dibhandle = NULL;
+    clipboard_data_array datum;
 
     try {
-      ncbPropAccessor obj(layer);
-      tjs_int width, height;
-      width = obj.GetValue(L"imageWidth",  ncbTypedefs::Tag<tjs_int>());
-      height = obj.GetValue(L"imageHeight",  ncbTypedefs::Tag<tjs_int>());
-      const tjs_uint8 *imageBuffer = (tjs_uint8*)obj.GetValue(L"mainImageBuffer", ncbTypedefs::Tag<tjs_int>());
-      tjs_int imagePitch = obj.GetValue(L"mainImageBufferPitch", ncbTypedefs::Tag<tjs_int>());
-      tjs_int pixelWidth = (width * 3 + 4 - 1) / 4 * 4;
-      tjs_int pixelSize = pixelWidth * height;
-
-      // store UNICODE string
-      dibhandle = GlobalAlloc(GMEM_DDESHARE | GMEM_MOVEABLE | GMEM_ZEROINIT,
-                              sizeof(BITMAPINFOHEADER) + pixelSize);
-      if(! dibhandle)
-        TVPThrowExceptionMessage(L"copying to clipboard failed.");
-      
-      BITMAPINFOHEADER *bmpinfo = (BITMAPINFOHEADER*)GlobalLock(dibhandle);
-      if (bmpinfo) {
-        bmpinfo->biSize = sizeof(BITMAPINFOHEADER);
-        bmpinfo->biWidth = width;
-        bmpinfo->biHeight = height;
-        bmpinfo->biPlanes = 1;
-        bmpinfo->biBitCount = 24;
-        for (tjs_int y = 0; y < height; y++) {
-          tjs_uint8 *dst = (tjs_uint8*)(bmpinfo) + sizeof(BITMAPINFOHEADER) + pixelWidth * (height - y - 1);
-          const tjs_uint8 *src = imageBuffer + imagePitch * y;
-          for (tjs_int x = 0; x < width; x++, src += 4, dst += 3) 
-            CopyMemory(dst, src, 3);
-        }
-      }
-      GlobalUnlock(dibhandle);
-
-      EmptyClipboard();
-      SetClipboardData(CF_DIB, dibhandle);
-      dibhandle = NULL;
-    } 
+      datum.push_back(ClipboardData(CF_DIB, createBitmapData(layer)));
+      datum.push_back(ClipboardData(CF_LAYER, createLayerData(layer)));
+      setDatum(datum);
+    }
     catch (...) {
-      if(dibhandle)
-        GlobalFree(dibhandle);
-      CloseClipboard();
+      for (clipboard_data_array::iterator i = datum.begin();
+	   i != datum.end();
+	   i++)
+	GlobalFree(i->hData);
       throw;
     }
-    CloseClipboard();
   }
     
   // クリップボードからレイヤの内容を取得する
@@ -320,7 +434,32 @@ public:
     HGLOBAL hglb = NULL;
     bool result = false;
     try {
-      if (IsClipboardFormatAvailable(CF_DIB)) {
+      if (IsClipboardFormatAvailable(CF_LAYER)) {
+        HGLOBAL hglb = (HGLOBAL)GetClipboardData(CF_LAYER);
+        if (hglb != NULL) {
+          LAYERINFOHEADER *layerinfo = (LAYERINFOHEADER*)GlobalLock(hglb);
+	  if (layerinfo) {
+	    tjs_int width = layerinfo->width;
+	    tjs_int height = layerinfo->height;
+	    const tjs_uint8 *pixels = (const tjs_uint8*)(layerinfo) + sizeof(LAYERINFOHEADER);
+
+	    ncbPropAccessor obj(layer);
+	    obj.SetValue(L"imageWidth", width);
+	    obj.SetValue(L"imageHeight", height);
+	    obj.SetValue(L"width", width);
+	    obj.SetValue(L"height", height);
+	    unsigned char *imageBuffer = (unsigned char*)obj.GetValue(L"mainImageBufferForWrite", ncbTypedefs::Tag<tjs_int>());
+	    tjs_int imagePitch = obj.GetValue(L"mainImageBufferPitch", ncbTypedefs::Tag<tjs_int>());
+
+	    for (tjs_int y = 0; y < height; y++) {
+	      const tjs_uint8 *src = (tjs_uint8*)(pixels) + y * width * 4;
+	      tjs_uint8 *dst = imageBuffer + imagePitch * y;
+	      CopyMemory(dst, src, width * 4);
+	      result = true;
+	    }
+	  }
+	}
+      } else if (IsClipboardFormatAvailable(CF_DIB)) {
         HGLOBAL hglb = (HGLOBAL)GetClipboardData(CF_DIB);
         if (hglb != NULL) {
           BITMAPINFOHEADER *srcbmpinfo = (BITMAPINFOHEADER*)GlobalLock(hglb);
@@ -383,14 +522,47 @@ public:
       CloseClipboard();
       throw;
     }
-        if (hglb)
-          GlobalUnlock(hglb);
-        if (dstBitmap)
-        DeleteObject(dstBitmap);
-      if (dstDC)
-        ReleaseDC(NULL, dstDC);
+    if (hglb)
+      GlobalUnlock(hglb);
+    if (dstBitmap)
+      DeleteObject(dstBitmap);
+    if (dstDC)
+      ReleaseDC(NULL, dstDC);
     CloseClipboard();
     return result;
+  }
+
+  // 複数形式のデータをまとめてセットする
+  static void setMultipleData(tTJSVariant data) {
+    ncbPropAccessor obj(data);
+    clipboard_data_array datum;
+
+    try {
+      if (obj.HasValue(L"text")) {
+	ttstr text = obj.GetValue(L"text", ncbTypedefs::Tag<ttstr>());
+	datum.push_back(ClipboardData(CF_TEXT, createAnsiTextData(text)));
+	datum.push_back(ClipboardData(CF_UNICODETEXT, createUnicodeTextData(text)));
+      }
+      if (obj.HasValue(L"layer")) {
+	tTJSVariant layer = obj.GetValue(L"layer", ncbTypedefs::Tag<tTJSVariant>());
+	datum.push_back(ClipboardData(CF_BITMAP, createBitmapData(layer)));
+	datum.push_back(ClipboardData(CF_LAYER, createLayerData(layer)));
+      }	
+      if (obj.HasValue(L"tjs")) {
+	tTJSVariant tjs = obj.GetValue(L"tjs", ncbTypedefs::Tag<tTJSVariant>());
+	datum.push_back(ClipboardData(CF_TJS, createTJSData(tjs)));
+      }
+      if (datum.empty())
+	TVPThrowExceptionMessage(L"multiple clipboard data has supported format.");
+      setDatum(datum);
+    }
+    catch (...) {
+      for (clipboard_data_array::iterator i = datum.begin();
+	   i != datum.end();
+	   i++)
+	GlobalFree(i->hData);
+      throw;
+    }
   }
 };
 
@@ -398,9 +570,10 @@ public:
 NCB_ATTACH_CLASS(ClipboardEx, Clipboard)
 {
   NCB_METHOD(hasFormat);
-  NCB_PROPERTY(asTJSExpression, getTJSExpression, setTJSExpression);
+  NCB_PROPERTY(asTJS, getTJS, setTJS);
   NCB_METHOD(setAsBitmap);
   NCB_METHOD(getAsBitmap);
+  NCB_METHOD(setMultipleData);
 }
 
 //----------------------------------------------------------------------
@@ -542,9 +715,10 @@ static void RegistCallback(void)
 {
   // 定数を登録
   TVPExecuteExpression(L"global.cbfBitmap = 2");
-  TVPExecuteExpression(L"global.cbfTJSExpression = 3");
+  TVPExecuteExpression(L"global.cbfTJS = 3");
   // TJS式をクリップボードのフォーマットとして登録
-  CF_TJS_EXPRESSION = RegisterClipboardFormat(TJS_EXPRESSION_FORMAT);
+  CF_TJS = RegisterClipboardFormat(TJS_FORMAT);
+  CF_LAYER = RegisterClipboardFormat(LAYER_FORMAT);
 
   // Array.count を取得
   {
@@ -575,7 +749,7 @@ static void UnregistCallback(void)
 {
   // 定数を削除
   TVPExecuteScript(L"delete global[\"cbfBitmap\"]");
-  TVPExecuteScript(L"delete global[\"cbfTJSExpression\"]");
+  TVPExecuteScript(L"delete global[\"cbfTJS\"]");
 
   // Array.countを解放
   if (ArrayCountProp) {
