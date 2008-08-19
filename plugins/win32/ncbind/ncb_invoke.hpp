@@ -92,7 +92,7 @@ public:
 		return MCIMPL_TEMPL::Invoke(io, m);
 	}
 private:
-	template <class FncT, typename MethodT>               static inline bool invokeSelect(FncT io, MethodT const &m, void*)        { return Invoke(io, m); } // for static method
+//	template <class FncT, typename MethodT>               static inline bool invokeSelect(FncT io, MethodT const &m, void*)        { return Invoke(io, m); } // for static method
 	template <class FncT, typename MethodT>               static inline bool invokeSelect(FncT io, MethodT const &m, void*&)       { return Invoke(io, m); } // for static method
 	template <class FncT, typename MethodT, class ClassT> static inline bool invokeSelect(FncT io, MethodT const &m, ClassT *inst) { return (inst != 0) && MCIMPL_TEMPL::Invoke(io, m, inst); } // for class method
 public:
