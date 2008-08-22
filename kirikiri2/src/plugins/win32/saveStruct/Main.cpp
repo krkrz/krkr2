@@ -20,7 +20,7 @@ quoteString(const tjs_char *str, IWriter *writer)
 		}
 		writer->write((tjs_char)'"');
 	} else {
-		writer->write(L"null");
+		writer->write(L"\"\"");
 	}
 }
 
