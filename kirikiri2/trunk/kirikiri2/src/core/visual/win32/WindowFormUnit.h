@@ -196,6 +196,7 @@ public:
 private:
 	void UnacquireImeControl();
 	void AcquireImeControl();
+	TTVPWindowForm * GetKeyTrapperWindow();
 	static bool FindKeyTrapper(LRESULT &result, UINT msg, WPARAM wparam,
 		LPARAM lparam);
 	bool ProcessTrappedKeyMessage(LRESULT &result, UINT msg, WPARAM wparam,
