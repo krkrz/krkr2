@@ -1023,32 +1023,83 @@ void TTVPWindowForm::UnacquireImeControl()
 //---------------------------------------------------------------------------
 void TTVPWindowForm::AcquireImeControl()
 {
+
 	if(PaintBox && Focused())
 	{
+		// find key trapper window ...
+		TTVPWindowForm * trapper = GetKeyTrapperWindow();
+
 		// force to access protected some methods.
 		// much nasty way ...
 		if(TVPControlImeState)
 		{
 			ResetIme();
-			ImeMode = LastSetImeMode;
+			TImeMode newmode = trapper->LastSetImeMode;
+			ImeMode = newmode;
 			if(SysLocale.FarEast && ImeMode == Controls::imDontCare)
 				Win32NLSEnableIME(Handle, TRUE);
 			SetIme();
 
 			((TWinControlEx*)(PaintBox->Parent))->ResetIme();
-			((TWinControlEx*)(PaintBox->Parent))->_SetImeMode(LastSetImeMode);
+			((TWinControlEx*)(PaintBox->Parent))->_SetImeMode(newmode);
 			((TWinControlEx*)(PaintBox->Parent))->SetIme();
 		}
 
-		if(AttentionPointEnabled)
+		if(trapper->AttentionPointEnabled)
 		{
-			SetCaretPos(AttentionPoint.x, AttentionPoint.y);
-			((TWinControlEx*)(PaintBox->Parent))->SetImeCompositionWindow(
-				AttentionFont, AttentionPoint.x, AttentionPoint.y);
-			SetImeCompositionWindow(
-				AttentionFont, AttentionPoint.x, AttentionPoint.y);
+			SetCaretPos(trapper->AttentionPoint.x, trapper->AttentionPoint.y);
+
+			if(trapper == this)
+			{
+				((TWinControlEx*)(PaintBox->Parent))->SetImeCompositionWindow(
+					AttentionFont, AttentionPoint.x, AttentionPoint.y);
+				SetImeCompositionWindow(
+					AttentionFont, AttentionPoint.x, AttentionPoint.y);
+			}
+			else
+			{
+				// disable IMM composition window
+				COMPOSITIONFORM form;
+				memset(&form, 0, sizeof(form));
+				form.dwStyle = CFS_DEFAULT;
+				HIMC imc;
+				imc = ImmGetContext(Handle);
+				ImmSetCompositionWindow(imc, &form);
+				ImmReleaseContext(Handle, imc);
+				imc = ImmGetContext(PaintBox->Parent->Handle);
+				ImmSetCompositionWindow(imc, &form);
+				ImmReleaseContext(PaintBox->Parent->Handle, imc);
+			}
 		}
 	}
+
+
+}
+//---------------------------------------------------------------------------
+TTVPWindowForm * TTVPWindowForm::GetKeyTrapperWindow()
+{
+	// find most recent "trapKeys = true" window and return it.
+	// returnts "this" window if there is no trapping window.
+
+	tjs_int count = TVPGetWindowCount();
+	for(tjs_int i = count - 1; i >= 0; i--)
+	{
+		tTJSNI_Window * win = TVPGetWindowListAt(i);
+		if(win)
+		{
+			TTVPWindowForm * form = win->GetForm();
+			if(form && form != this)
+			{
+				if(form->TrapKeys && form->GetVisible())
+				{
+					// found
+					return form;
+				}
+			}
+		}
+	}
+
+	return this;
 }
 //---------------------------------------------------------------------------
 bool TTVPWindowForm::FindKeyTrapper(LRESULT &result, UINT msg,
