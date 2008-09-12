@@ -970,11 +970,15 @@ void TVPLoadJPEG(void* formatdata, void *callbackdata, tTVPGraphicSizeCallback s
 static ttstr PNG_tag_offs_x(TJS_W("offs_x"));
 static ttstr PNG_tag_offs_y(TJS_W("offs_y"));
 static ttstr PNG_tag_offs_unit(TJS_W("offs_unit"));
+static ttstr PNG_tag_reso_x(TJS_W("reso_x"));
+static ttstr PNG_tag_reso_y(TJS_W("reso_y"));
+static ttstr PNG_tag_reso_unit(TJS_W("reso_unit"));
 static ttstr PNG_tag_vpag_w(TJS_W("vpag_w"));
 static ttstr PNG_tag_vpag_h(TJS_W("vpag_h"));
 static ttstr PNG_tag_vpag_unit(TJS_W("vpag_unit"));
 static ttstr PNG_tag_pixel(TJS_W("pixel"));
 static ttstr PNG_tag_micrometer(TJS_W("micrometer"));
+static ttstr PNG_tag_meter(TJS_W("meter"));
 static ttstr PNG_tag_unknown(TJS_W("unknown"));
 //---------------------------------------------------------------------------
 // meta callback information structure used by  PNG_read_chunk_callback
@@ -1140,6 +1144,25 @@ void TVPLoadPNG(void* formatdata, void *callbackdata, tTVPGraphicSizeCallback si
 				break;
 			default:
 				metainfopushcallback(callbackdata, PNG_tag_offs_unit, PNG_tag_unknown);
+				break;
+			}
+		}
+		
+		png_uint_32 reso_x, reso_y;
+		int reso_unit_type;
+		if(metainfopushcallback &&
+			png_get_pHYs(png_ptr, info_ptr, &reso_x, &reso_y, &reso_unit_type))
+		{
+			// push offset information into metainfo data
+			metainfopushcallback(callbackdata, PNG_tag_reso_x, ttstr((tjs_int)reso_x));
+			metainfopushcallback(callbackdata, PNG_tag_reso_y, ttstr((tjs_int)reso_y));
+			switch(reso_unit_type)
+			{
+			case PNG_RESOLUTION_METER:
+				metainfopushcallback(callbackdata, PNG_tag_reso_unit, PNG_tag_meter);
+				break;
+			default:
+				metainfopushcallback(callbackdata, PNG_tag_reso_unit, PNG_tag_unknown);
 				break;
 			}
 		}
