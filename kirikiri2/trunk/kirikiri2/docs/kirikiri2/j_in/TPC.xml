@@ -195,6 +195,13 @@ global.imageTagLayerType = %[<r/>
 　この情報を PNG に出力するソフトウェアとして <at target="_top"  href="http://www.imagemagick.org/">ImageMagick</at>ユーティリティがありますが、この <kw>ImageMagick</kw> で trim (トリム)を行った際に、トリム前の画像サイズとしてこの情報が出力されます。<r/>
 　vpag_w は画像全体の横のサイズ、vpag_h は画像全体の縦のサイズ、offs_unit は <kw>pixel</kw> か <kw>micrometer</kw> のどちらかになり、サイズの単位を示します。<r/>
 </dd>
+
+<dt><kw>reso_x</kw> <kw>reso_y</kw> <kw>reso_unit</kw> (TLG, PNG)</dt>
+<dd>
+　これらは、変換元がPNGで、そのPNGがその画像の解像度(pHYsチャンク)の情報を含んでいる場合のみに出力されます。<r/>
+　reso_x は横方向の解像度、reso_y は縦方向の解像度です。reso_unit は <kw>meter</kw> になり、解像度の単位を示します。<r/>
+</dd>
+
 </dl>
 
 </para>
