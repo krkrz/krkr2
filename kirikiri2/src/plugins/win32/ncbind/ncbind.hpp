@@ -1897,10 +1897,10 @@ private:
 template <class T>
 struct  ncbNativeClassAutoRegister : public ncbAutoRegister {
 	/**/ncbNativeClassAutoRegister(NameT n) : ncbAutoRegister(ClassRegist), _name(n) {}
-private:
+
 	typedef ncbRegistNativeClass<T> DelegateT;
 	typedef ncbRegistClass<DelegateT> RegistT;
-
+private:
 	NameT const _name;
 protected:
 	void Regist()   const { DelegateT d(_name); { RegistT r(d, true);  r.Regist(); } }
@@ -1911,7 +1911,7 @@ protected:
 	template    struct ncbClassInfo<cls>; \
 	template <>        ncbClassInfo<cls>::InfoT ncbClassInfo<cls>::_info; \
 	static tmpl<cls> tmpl ## _ ## cls init; \
-	void   tmpl<cls>::RegistT::Regist()
+	template <> void   tmpl<cls>::RegistT::Regist()
 
 #define NCB_REGISTER_CLASS_DELAY(name, cls) \
 	NCB_REGISTER_CLASS_COMMON(cls, ncbNativeClassAutoRegister, (TJS_W(# name)))
@@ -1925,7 +1925,7 @@ protected:
 	template <> struct ncbSubClassCheck<cls> { enum { IsSubClass = true }; }; \
 	template    struct ncbClassInfo<cls>; \
 	template <>        ncbClassInfo<cls>::InfoT ncbClassInfo<cls>::_info; \
-	void   ncbRegistClass<ncbRegistSubClass<cls> >::Regist()
+	template <> void   ncbRegistClass<ncbRegistSubClass<cls> >::Regist()
 
 #define NCB_REGISTER_SUBCLASS(cls) \
 	NCB_TYPECONV_BOXING(cls); \
@@ -1935,10 +1935,10 @@ protected:
 template <class T>
 struct  ncbAttachTJS2ClassAutoRegister : public ncbAutoRegister {
 	/**/ncbAttachTJS2ClassAutoRegister(NameT ncn, NameT tjscn) : ncbAutoRegister(ClassRegist), _nativeClassName(ncn), _tjs2ClassName(tjscn) {}
-protected:
+
 	typedef ncbAttachTJS2Class<T>     DelegateT;
 	typedef ncbRegistClass<DelegateT> RegistT;
-
+protected:
 	void Regist()   const { DelegateT d(_nativeClassName, _tjs2ClassName); { RegistT r(d, true);  r.Regist(); } }
 	void Unregist() const { DelegateT d(_nativeClassName, _tjs2ClassName); { RegistT r(d, false); r.Regist(); } }
 private:
