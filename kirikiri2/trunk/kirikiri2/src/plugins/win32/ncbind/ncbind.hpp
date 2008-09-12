@@ -112,6 +112,7 @@ private:
 	static InfoT _info;
 };
 template <> struct ncbClassInfo<void> {};
+template <class T> typename ncbClassInfo<T>::InfoT ncbClassInfo<T>::_info;
 
 
 ////////////////////////////////////////
@@ -1909,7 +1910,7 @@ protected:
 
 #define NCB_REGISTER_CLASS_COMMON(cls, tmpl, init) \
 	template    struct ncbClassInfo<cls>; \
-	template <>        ncbClassInfo<cls>::InfoT ncbClassInfo<cls>::_info; \
+/*	template <>        ncbClassInfo<cls>::InfoT ncbClassInfo<cls>::_info;*/ \
 	static tmpl<cls> tmpl ## _ ## cls init; \
 	template <> void   tmpl<cls>::RegistT::Regist()
 
@@ -1924,7 +1925,7 @@ protected:
 #define NCB_REGISTER_SUBCLASS_DELAY(cls) \
 	template <> struct ncbSubClassCheck<cls> { enum { IsSubClass = true }; }; \
 	template    struct ncbClassInfo<cls>; \
-	template <>        ncbClassInfo<cls>::InfoT ncbClassInfo<cls>::_info; \
+/*	template <>        ncbClassInfo<cls>::InfoT ncbClassInfo<cls>::_info;*/ \
 	template <> void   ncbRegistClass<ncbRegistSubClass<cls> >::Regist()
 
 #define NCB_REGISTER_SUBCLASS(cls) \
