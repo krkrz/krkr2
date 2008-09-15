@@ -586,7 +586,7 @@
 			<dd><tt>C:\Windows\Profiles\&lt;ユーザ名&gt;\Application Data\</tt> ( C:\Windows の部分は Windows をインストールした場所です )</dd>
 			<dt>Windows NT 4.0 の場合</dt>
 			<dd><tt>C:\WINNT\Profiles\&lt;ユーザ名&gt;\Application Data\</tt> ( C:\WINNT の部分は Windows をインストールした場所です )</dd>
-			<dt>Windows 2000, Xp の場合</dt>
+			<dt>Windows 2000, XP 以降 の場合</dt>
 			<dd><tt>C:\Documents and Settings\&lt;ユーザ名&gt;\Application Data\</tt> ( C: の部分は環境によって異なります )</dd>
 			<dt>何らかの理由で レジストリキー ( 上記参照 ) を読み出せなかった場合か、初期の Windows 95</dt>
 			<dd>吉里吉里の実行可能ファイルのあるフォルダ (<ref>System.exePath</ref>)になります</dd>
