@@ -117,6 +117,7 @@ bool SQDelegable::GetMetaMethod(SQVM *v,SQMetaMethod mm,SQObjectPtr &res) {
 bool SQDelegable::SetDelegate(SQTable *mt)
 {
 	SQTable *temp = mt;
+	if(temp == this) return false;
 	while (temp) {
 		if (temp->_delegate == this) return false; //cycle detected
 		temp = temp->_delegate;

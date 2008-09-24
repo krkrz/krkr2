@@ -1110,7 +1110,7 @@ bool SQVM::CallNative(SQNativeClosure *nclosure,SQInteger nargs,SQInteger stackb
 		return false;
 	}
 	
-	if (ret != 0){ retval = TOP(); }
+	if (ret != 0){ retval = TOP(); TOP().Null(); }
 	else { retval = _null_; }
 	_stackbase = oldstackbase;
 	_top = oldtop;
