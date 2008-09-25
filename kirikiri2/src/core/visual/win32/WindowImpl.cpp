@@ -856,6 +856,21 @@ void TVPMakeFullScreenModeCandidates(
 			i++;
 	}
 
+	// check there is at least one candidate mode
+	if(modes.size() == 0)
+	{
+		// panic! no candidates
+		// this could be if the driver does not provide the screen
+		// mode which is the same size as the default screen...
+		// push the default screen mode
+		TVPAddImportantLog(TJS_W("(info) Panic! There is no reasonable candidate screen mode provided from the driver ... trying to use the default screen size and color depth ..."));
+		tTVPScreenMode mode;
+		mode.Width  = TVPDefaultScreenMode.Width;
+		mode.Height = TVPDefaultScreenMode.Height;
+		mode.BitsPerPixel = TVPDefaultScreenMode.BitsPerPixel;
+		modes.push_back(mode);
+	}
+
 	// copy modes to candidation, with making zoom ratio and resolution rank
 	for(std::vector<tTVPScreenMode>::iterator i = modes.begin();
 		i != modes.end(); i++)
