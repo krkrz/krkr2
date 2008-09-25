@@ -37,17 +37,24 @@ NCB_REGISTER_SUBCLASS(vector3df) {
 	NCB_CONSTRUCTOR(());
 };
 
+NCB_REGISTER_SUBCLASS(tTVPIrrlichtDrawDevice) {
+	NCB_CONSTRUCTOR(());
+	NCB_PROPERTY_RO(interface, GetDevice);
+};
+
+/**
+ * 名前空間用ダミー
+ */
+struct Irrlicht {
+};
+
 #define ENUM(n) Variant(#n, (int)n)
 
-NCB_REGISTER_CLASS_DIFFER(Irrlicht, tTVPIrrlichtDrawDevice) {
+NCB_REGISTER_CLASS(Irrlicht) {
 
 	//enums
-
 	//static
 
 	//classes
-	NCB_SUBCLASS(vector3df, vector3df);
-	
-	NCB_CONSTRUCTOR(());
-	NCB_PROPERTY_RO(interface, GetDevice);
+	NCB_SUBCLASS(DrawDevice, tTVPIrrlichtDrawDevice);
 }

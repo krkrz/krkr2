@@ -1,6 +1,8 @@
 ●これはなに？
 
-Irrlicht ベースの drawdevice 実装のテストコードです
+吉里吉里から Irrlicht を取り扱うライブラリです。
+
+・Irrlicht ベースの drawdevice の提供
 
 ●動作上の特記事項
 
@@ -12,10 +14,10 @@ Irrlicht ベースの drawdevice 実装のテストコードです
 
 ●使い方
 
-Window の drawDevice に対して指定します。
+1. Window の drawDevice に対して指定可能です
 
 -------------------------------------------
-Plugins.link("drawdeviceIrrlicht.dll");
+Plugins.link("krrlicht.dll");
 
 class MyWindow extends Window {
 
@@ -23,7 +25,7 @@ class MyWindow extends Window {
 		super.Window();
 		setInnerSize(800, 600);
 		// drawdevice を差し替える
-		drawDevice = new Irrlicht();
+		drawDevice = new Irrlicht.DrawDevice();
 		add(new Layer(this, null); // プライマリレイヤ指定
 	}
 };
@@ -33,8 +35,8 @@ class MyWindow extends Window {
 
 ●今後の予定
 
+・Irrlicht のウインドウを直接ドライブする機能の提供
 ・シーン処理系の実装
-
 ・ムービー再生処理の実装
 　※できれば krmovie とうまく連携できるような方向で…
 

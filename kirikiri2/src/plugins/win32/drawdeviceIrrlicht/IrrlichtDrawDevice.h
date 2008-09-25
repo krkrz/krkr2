@@ -105,20 +105,6 @@ public:
 	 * @return 処理したら true
 	 */
 	virtual bool OnEvent(const irr::SEvent &event);
-
-	// ------------------------------------------------------------
-	// シーン制御
-	// ------------------------------------------------------------
-
-	/**
-	 * シーンの読み込み
-	 */
-	//void loadScene(const char *name);
-
-	/**
-	 * カメラシーンの設定
-	 */
-	//void addCameraSceneNode(int no, irr::core::vector3df *a, irr::core::vector3df *b);
 };
 
 #endif

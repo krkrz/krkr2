@@ -2,7 +2,7 @@
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="8.00"
-	Name="drawdeviceIrrlicht"
+	Name="krrlicht"
 	ProjectGUID="{66A592D0-C3F4-487F-9ED6-8165E8A04A1D}"
 	RootNamespace="krrlicht"
 	>
