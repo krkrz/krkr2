@@ -3,7 +3,21 @@
  */
 class Irrlicht {
 
-	// drawdevice 情報を返します（内部参照用）
-	property interface;
+	/**
+	 * 吉里吉里用 drawdevice クラス
+	 */
+	class DrawDevice {
 
+		/**
+		 * コンストラクタ
+		 */
+		function DrawDevice();
+		
+		// drawdevice 情報を返します（内部参照用）
+		property interface;
+
+		/**
+		 *
+		 */
+	};
 };
