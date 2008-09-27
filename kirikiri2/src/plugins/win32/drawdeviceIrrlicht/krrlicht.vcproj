@@ -219,11 +219,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\IrrlichtDrawDevice.cpp"
+				RelativePath=".\IrrlichtBase.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\IrrlichtDrawDeviceMain.cpp"
+				RelativePath=".\IrrlichtDrawDevice.cpp"
 				>
 			</File>
 			<File
@@ -285,6 +285,10 @@
 			>
 			<File
 				RelativePath="..\drawdevice\BasicDrawDevice.h"
+				>
+			</File>
+			<File
+				RelativePath=".\IrrlichtBase.h"
 				>
 			</File>
 			<File

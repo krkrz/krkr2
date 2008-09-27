@@ -1,5 +1,7 @@
-#include "IrrlichtDrawDevice.h"
-#include "LayerManagerInfo.h"
+#include "IrrlichtBase.h"
+
+extern void message_log(const char* format, ...);
+extern void error_log(const char *format, ...);
 
 using namespace irr;
 using namespace core;
@@ -8,13 +10,57 @@ using namespace scene;
 using namespace io;
 using namespace gui;
 
-extern void message_log(const char* format, ...);
+/**
+ * コンストラクタ
+ */
+IrrlichtBase::IrrlichtBase()
+{
+	device = NULL;
+	driver = NULL;
+}
+
+/**
+ * デストラクタ
+ */
+IrrlichtBase::~IrrlichtBase()
+{
+	detach();
+}
+
+/**
+ * ドライバの情報表示
+ */
+void
+IrrlichtBase::showDriverInfo()
+{
+	if (driver) {
+		dimension2d<s32> size = driver->getScreenSize();
+		message_log("デバイス生成後のスクリーンサイズ:%d, %d", size.Width, size.Height);
+		size = driver->getCurrentRenderTargetSize();
+		message_log("デバイス生成後のRenderTargetの:%d, %d", size.Width, size.Height);
+	}
+}
+
+/**
+ * ウインドウの解除
+ */
+void
+IrrlichtBase::detach()
+{
+	if (device) {
+		device->closeDevice();
+		device->drop();
+		device = NULL;
+		driver = NULL;
+	}
+	stop();
+}
 
 /**
  * Irrlicht 呼び出し処理開始
  */
 void
-tTVPIrrlichtDrawDevice::start()
+IrrlichtBase::start()
 {
 	stop();
 	TVPAddContinuousEventHook(this);
@@ -24,7 +70,7 @@ tTVPIrrlichtDrawDevice::start()
  * Irrlicht 呼び出し処理停止
  */
 void
-tTVPIrrlichtDrawDevice::stop()
+IrrlichtBase::stop()
 {
 	TVPRemoveContinuousEventHook(this);
 }
@@ -35,36 +81,24 @@ tTVPIrrlichtDrawDevice::stop()
  * これが事実上のメインループになる
  */
 void TJS_INTF_METHOD
-tTVPIrrlichtDrawDevice::OnContinuousCallback(tjs_uint64 tick)
+IrrlichtBase::OnContinuousCallback(tjs_uint64 tick)
 {
 	if (device) {
+		// 時間を進める XXX tick を外部から与えられないか？
 		device->getTimer()->tick();
-
-		/// ドライバ
-		video::IVideoDriver* driver = device->getVideoDriver();
-
-		dimension2d<s32> screenSize = driver->getScreenSize();
 		
 		// 描画開始
 		driver->beginScene(true, true, irr::video::SColor(255,0,0,0));
-
+		
 		/// シーンマネージャの描画
-		ISceneManager* smgr = device->getSceneManager();
-		smgr->drawAll();
-
-		// 個別レイヤマネージャの描画
-		for (std::vector<iTVPLayerManager *>::iterator i = Managers.begin(); i != Managers.end(); i++) {
-			LayerManagerInfo *info = (LayerManagerInfo*)(*i)->GetDrawDeviceData();
-			if (info && info->texture) {
-				driver->draw2DImage(info->texture, core::position2d<s32>(0,0),
-									core::rect<s32>(0,0,screenSize.Width,screenSize.Height), 0, 
-									video::SColor(255,255,255,255), true);
-			}
-		}
-
+		device->getSceneManager()->drawAll();
+		
+		// 固有処理
+		update(tick);
+		
 		// GUIの描画
 		device->getGUIEnvironment()->drawAll();
-
+		
 		// 描画完了
 		driver->endScene();
 	}
@@ -79,7 +113,7 @@ tTVPIrrlichtDrawDevice::OnContinuousCallback(tjs_uint64 tick)
  * @return 処理したら true
  */
 bool
-tTVPIrrlichtDrawDevice::OnEvent(const irr::SEvent &event)
+IrrlichtBase::OnEvent(const irr::SEvent &event)
 {
 	switch (event.EventType) {
 	case EET_GUI_EVENT:

@@ -14,18 +14,15 @@ using namespace gui;
 /**
  * コンストラクタ
  */
-tTVPIrrlichtDrawDevice::tTVPIrrlichtDrawDevice()
+IrrlichtDrawDevice::IrrlichtDrawDevice() : IrrlichtBase()
 {
-	device = NULL;
-	driver = NULL;
 }
 
 /**
  * デストラクタ
  */
-tTVPIrrlichtDrawDevice::~tTVPIrrlichtDrawDevice()
+IrrlichtDrawDevice::~IrrlichtDrawDevice()
 {
-	detach();
 }
 
 /**
@@ -33,7 +30,7 @@ tTVPIrrlichtDrawDevice::~tTVPIrrlichtDrawDevice()
  * @param manager レイヤマネージャ
  */
 void 
-tTVPIrrlichtDrawDevice::allocInfo(iTVPLayerManager * manager)
+IrrlichtDrawDevice::allocInfo(iTVPLayerManager * manager)
 {
 	if (driver) {
 
@@ -58,7 +55,7 @@ tTVPIrrlichtDrawDevice::allocInfo(iTVPLayerManager * manager)
  * @param manager レイヤマネージャ
  */
 void
-tTVPIrrlichtDrawDevice::freeInfo(iTVPLayerManager * manager)
+IrrlichtDrawDevice::freeInfo(iTVPLayerManager * manager)
 {
 	if (driver) {
 		LayerManagerInfo *info = (LayerManagerInfo*)manager->GetDrawDeviceData();
@@ -75,7 +72,7 @@ tTVPIrrlichtDrawDevice::freeInfo(iTVPLayerManager * manager)
  * @param hwnd ハンドル
  */
 void
-tTVPIrrlichtDrawDevice::attach(HWND hwnd)
+IrrlichtDrawDevice::attach(HWND hwnd)
 {
 	// デバイス生成
 
@@ -94,12 +91,8 @@ tTVPIrrlichtDrawDevice::attach(HWND hwnd)
 		TVPThrowExceptionMessage(L"Irrlicht デバイスの初期化に失敗しました");
 	}
 	driver = device->getVideoDriver();
-	
-	dimension2d<s32> size = driver->getScreenSize();
-	message_log("デバイス生成後のスクリーンサイズ:%d, %d", size.Width, size.Height);
 
-	size = driver->getCurrentRenderTargetSize();
-	message_log("デバイス生成後のRenderTargetの:%d, %d", size.Width, size.Height);
+	showDriverInfo();
 
 	// マネージャに対するテクスチャの割り当て
 	for (std::vector<iTVPLayerManager *>::iterator i = Managers.begin(); i != Managers.end(); i++) {
@@ -114,17 +107,27 @@ tTVPIrrlichtDrawDevice::attach(HWND hwnd)
  * ウインドウの解除
  */
 void
-tTVPIrrlichtDrawDevice::detach()
+IrrlichtDrawDevice::detach()
+{
+	for (std::vector<iTVPLayerManager *>::iterator i = Managers.begin(); i != Managers.end(); i++) {
+		freeInfo(*i);
+	}
+	IrrlichtBase::detach();
+}
+
+/**
+ * Irrlicht へのイベント送信
+ */
+bool
+IrrlichtDrawDevice::postEvent(SEvent &ev)
 {
 	if (device) {
-		stop();
-		for (std::vector<iTVPLayerManager *>::iterator i = Managers.begin(); i != Managers.end(); i++) {
-			freeInfo(*i);
+		if (device->getGUIEnvironment()->postEventFromUser(ev) ||
+			device->getSceneManager()->postEventFromUser(ev)) {
+			return true;
 		}
-		device->drop();
-		device = NULL;
-		driver = NULL;
 	}
+	return false;
 }
 
 /**
@@ -132,7 +135,7 @@ tTVPIrrlichtDrawDevice::detach()
  * @param manager レイヤマネージャ
  */
 void TJS_INTF_METHOD
-tTVPIrrlichtDrawDevice::AddLayerManager(iTVPLayerManager * manager)
+IrrlichtDrawDevice::AddLayerManager(iTVPLayerManager * manager)
 {
 	allocInfo(manager);
 	tTVPDrawDevice::AddLayerManager(manager);
@@ -143,7 +146,7 @@ tTVPIrrlichtDrawDevice::AddLayerManager(iTVPLayerManager * manager)
  * @param manager レイヤマネージャ
  */
 void TJS_INTF_METHOD
-tTVPIrrlichtDrawDevice::RemoveLayerManager(iTVPLayerManager * manager)
+IrrlichtDrawDevice::RemoveLayerManager(iTVPLayerManager * manager)
 {
 	freeInfo(manager);
 	tTVPDrawDevice::RemoveLayerManager(manager);
@@ -155,7 +158,7 @@ tTVPIrrlichtDrawDevice::RemoveLayerManager(iTVPLayerManager * manager)
  * @param wnd ウインドウハンドラ
  */
 void TJS_INTF_METHOD
-tTVPIrrlichtDrawDevice::SetTargetWindow(HWND wnd, bool is_main)
+IrrlichtDrawDevice::SetTargetWindow(HWND wnd, bool is_main)
 {
 	detach();
 	if (wnd != NULL) {
@@ -164,20 +167,8 @@ tTVPIrrlichtDrawDevice::SetTargetWindow(HWND wnd, bool is_main)
 }
 
 void
-tTVPIrrlichtDrawDevice::Show()
+IrrlichtDrawDevice::Show()
 {
-}
-
-bool
-tTVPIrrlichtDrawDevice::postEvent(SEvent &ev)
-{
-	if (device) {
-		if (device->getGUIEnvironment()->postEventFromUser(ev) ||
-			device->getSceneManager()->postEventFromUser(ev)) {
-			return true;
-		}
-	}
-	return false;
 }
 
 // -------------------------------------------------------------------------------------
@@ -185,7 +176,7 @@ tTVPIrrlichtDrawDevice::postEvent(SEvent &ev)
 // -------------------------------------------------------------------------------------
 
 void TJS_INTF_METHOD
-tTVPIrrlichtDrawDevice::OnMouseDown(tjs_int x, tjs_int y, tTVPMouseButton mb, tjs_uint32 flags)
+IrrlichtDrawDevice::OnMouseDown(tjs_int x, tjs_int y, tTVPMouseButton mb, tjs_uint32 flags)
 {
 	if (driver) {
 		SEvent ev;
@@ -213,7 +204,7 @@ tTVPIrrlichtDrawDevice::OnMouseDown(tjs_int x, tjs_int y, tTVPMouseButton mb, tj
 }
 
 void TJS_INTF_METHOD
-tTVPIrrlichtDrawDevice::OnMouseUp(tjs_int x, tjs_int y, tTVPMouseButton mb, tjs_uint32 flags)
+IrrlichtDrawDevice::OnMouseUp(tjs_int x, tjs_int y, tTVPMouseButton mb, tjs_uint32 flags)
 {
 	if (driver) {
 		SEvent ev;
@@ -241,7 +232,7 @@ tTVPIrrlichtDrawDevice::OnMouseUp(tjs_int x, tjs_int y, tTVPMouseButton mb, tjs_
 }
 
 void TJS_INTF_METHOD
-tTVPIrrlichtDrawDevice::OnMouseMove(tjs_int x, tjs_int y, tjs_uint32 flags)
+IrrlichtDrawDevice::OnMouseMove(tjs_int x, tjs_int y, tjs_uint32 flags)
 {
 	if (driver) {
 		SEvent ev;
@@ -259,25 +250,25 @@ tTVPIrrlichtDrawDevice::OnMouseMove(tjs_int x, tjs_int y, tjs_uint32 flags)
 }
 
 void TJS_INTF_METHOD
-tTVPIrrlichtDrawDevice::OnKeyDown(tjs_uint key, tjs_uint32 shift)
+IrrlichtDrawDevice::OnKeyDown(tjs_uint key, tjs_uint32 shift)
 {
 	tTVPDrawDevice::OnKeyDown(key, shift);
 }
 
 void TJS_INTF_METHOD
-tTVPIrrlichtDrawDevice::OnKeyUp(tjs_uint key, tjs_uint32 shift)
+IrrlichtDrawDevice::OnKeyUp(tjs_uint key, tjs_uint32 shift)
 {
 	tTVPDrawDevice::OnKeyUp(key, shift);
 }
 
 void TJS_INTF_METHOD
-tTVPIrrlichtDrawDevice::OnKeyPress(tjs_char key)
+IrrlichtDrawDevice::OnKeyPress(tjs_char key)
 {
 	tTVPDrawDevice::OnKeyPress(key);
 }
 
 void TJS_INTF_METHOD
-tTVPIrrlichtDrawDevice::OnMouseWheel(tjs_uint32 shift, tjs_int delta, tjs_int x, tjs_int y)
+IrrlichtDrawDevice::OnMouseWheel(tjs_uint32 shift, tjs_int delta, tjs_int x, tjs_int y)
 {
 	tTVPDrawDevice::OnMouseWheel(shift, delta, x, y);
 }
@@ -290,7 +281,7 @@ tTVPIrrlichtDrawDevice::OnMouseWheel(tjs_uint32 shift, tjs_int delta, tjs_int x,
  * ビットマップコピー処理開始
  */
 void TJS_INTF_METHOD
-tTVPIrrlichtDrawDevice::StartBitmapCompletion(iTVPLayerManager * manager)
+IrrlichtDrawDevice::StartBitmapCompletion(iTVPLayerManager * manager)
 {
 	LayerManagerInfo *info = (LayerManagerInfo*)manager->GetDrawDeviceData();
 	if (info) {
@@ -302,7 +293,7 @@ tTVPIrrlichtDrawDevice::StartBitmapCompletion(iTVPLayerManager * manager)
  * ビットマップコピー処理
  */
 void TJS_INTF_METHOD
-tTVPIrrlichtDrawDevice::NotifyBitmapCompleted(iTVPLayerManager * manager,
+IrrlichtDrawDevice::NotifyBitmapCompleted(iTVPLayerManager * manager,
 	tjs_int x, tjs_int y, const void * bits, const BITMAPINFO * bitmapinfo,
 	const tTVPRect &cliprect, tTVPLayerType type, tjs_int opacity)
 {
@@ -316,10 +307,31 @@ tTVPIrrlichtDrawDevice::NotifyBitmapCompleted(iTVPLayerManager * manager,
  * ビットマップコピー処理終了
  */
 void TJS_INTF_METHOD
-tTVPIrrlichtDrawDevice::EndBitmapCompletion(iTVPLayerManager * manager)
+IrrlichtDrawDevice::EndBitmapCompletion(iTVPLayerManager * manager)
 {
 	LayerManagerInfo *info = (LayerManagerInfo*)manager->GetDrawDeviceData();
 	if (info) {
 		info->unlock();
+	}
+}
+
+// -------------------------------------------------------------------------------------
+// 画面更新処理
+// -------------------------------------------------------------------------------------
+
+void
+IrrlichtDrawDevice::update(tjs_uint64 tick)
+{
+	dimension2d<s32> screenSize = driver->getScreenSize();
+
+	// 個別レイヤマネージャの描画
+	for (std::vector<iTVPLayerManager *>::iterator i = Managers.begin(); i != Managers.end(); i++) {
+		LayerManagerInfo *info = (LayerManagerInfo*)(*i)->GetDrawDeviceData();
+		if (info && info->texture) {
+			// XXX レイヤを3D空間配置？
+			driver->draw2DImage(info->texture, core::position2d<s32>(0,0),
+								core::rect<s32>(0,0,screenSize.Width,screenSize.Height), 0, 
+								video::SColor(255,255,255,255), true);
+		}
 	}
 }

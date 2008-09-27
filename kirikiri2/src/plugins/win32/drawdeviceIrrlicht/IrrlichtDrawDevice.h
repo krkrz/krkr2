@@ -1,39 +1,33 @@
 #ifndef IRRLICHTDRAWDEVICE_H
 #define IRRLICHTDRAWDEVICE_H
 
-#include <windows.h>
-#include "tp_stub.h"
-#include <irrlicht.h>
-
+#include "IrrlichtBase.h"
 #include "BasicDrawDevice.h"
 
 /**
  * Irrlicht ベースの DrawDevice
  */
-class tTVPIrrlichtDrawDevice : public tTVPDrawDevice,
-							   public tTVPContinuousEventCallbackIntf,
-							   public irr::IEventReceiver
+class IrrlichtDrawDevice : public tTVPDrawDevice,
+						   public IrrlichtBase
 {
 	typedef tTVPDrawDevice inherited;
-
-protected:
-	/// デバイス
-	irr::IrrlichtDevice *device;
-	// ドライバ
-	irr::video::IVideoDriver *driver;
 	
 public:
-	tTVPIrrlichtDrawDevice(); //!< コンストラクタ
-	virtual ~tTVPIrrlichtDrawDevice(); //!< デストラクタ
+	// コンストラクタ
+	IrrlichtDrawDevice();
+	// デストラクタ
+	virtual ~IrrlichtDrawDevice();
 
 private:
 	// テクスチャの割り当て
 	void allocInfo(iTVPLayerManager * manager);
 	// テクスチャの解放
 	void freeInfo(iTVPLayerManager * manager);
-	
+
+	// 割り当て処理
 	void attach(HWND hwnd);
-	void detach();
+	// 解放処理
+	virtual void detach();
 
 	// Irrlicht にイベントを送る
 	bool postEvent(irr::SEvent &ev);
@@ -69,42 +63,20 @@ public:
 	// ------------------------------------------------------------
 	// 吉里吉里からの呼び出し制御用
 	// ------------------------------------------------------------
+protected:
+	/**
+	 * クラス固有更新処理
+	 * シーンマネージャの処理後、GUIの処理前に呼ばれる
+	 */
+	void update(tjs_uint64 tick);
+
 public:
-	/**
-	 * Irrlicht 呼び出し処理開始
-	 */
-	void start();
-
-	/**
-	 * Irrlicht 呼び出し処理中断
-	 */
-	void stop();
-
-	/**
-	 * Continuous コールバック
-	 * 吉里吉里が暇なときに常に呼ばれる
-	 * 塗り直し処理
-	 */
-	virtual void TJS_INTF_METHOD OnContinuousCallback(tjs_uint64 tick);
-
 	/**
 	 * @return デバイス情報
 	 */
 	tjs_int64 GetDevice() {
 		return reinterpret_cast<tjs_int64>((tTVPDrawDevice*)this);
 	}
-	
-	// ------------------------------------------------------------
-	// Irrlicht イベント処理用
-	// ------------------------------------------------------------
-public:
-	/**
-	 * イベント受理
-	 * GUI Environment からのイベントがここに送られてくる
-	 * @param event イベント情報
-	 * @return 処理したら true
-	 */
-	virtual bool OnEvent(const irr::SEvent &event);
 };
 
 #endif
