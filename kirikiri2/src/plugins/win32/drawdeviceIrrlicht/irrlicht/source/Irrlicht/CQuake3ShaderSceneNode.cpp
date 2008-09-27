@@ -492,7 +492,7 @@ void CQuake3ShaderSceneNode::transformtex ( const core::matrix4 &m, const u32 ad
 	Vertex transformation are called if found
 
 */
-u32 CQuake3ShaderSceneNode::animate( u32 stage,core::matrix4 &texture )
+void CQuake3ShaderSceneNode::animate( u32 stage,core::matrix4 &texture )
 {
 	const f32 dt = TimeAbs;
 
@@ -662,14 +662,7 @@ u32 CQuake3ShaderSceneNode::animate( u32 stage,core::matrix4 &texture )
 	} // group
 
 	// texture coordinate modifier
-	textureMatrixFound += tcgen ( dt, function, texturem );
-
-	if ( textureMatrixFound )
-	{
-		texturem.getTransposed ( texture );
-	}
-
-	return textureMatrixFound;
+	tcgen( dt, function, texturem );
 }
 
 

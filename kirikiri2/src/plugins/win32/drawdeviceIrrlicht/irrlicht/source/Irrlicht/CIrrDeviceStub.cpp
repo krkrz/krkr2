@@ -162,6 +162,7 @@ bool CIrrDeviceStub::checkVersion(const char* version)
 		w += version;
 		w += "). This may cause problems.";
 		os::Printer::log(w.c_str(), ELL_WARNING);
+		_IRR_IMPLEMENT_MANAGED_MARSHALLING_BUGFIX;
 		return false;
 	}
 
@@ -170,7 +171,7 @@ bool CIrrDeviceStub::checkVersion(const char* version)
 
 
 //! send the event to the right receiver
-void CIrrDeviceStub::postEventFromUser(const SEvent& event)
+bool CIrrDeviceStub::postEventFromUser(const SEvent& event)
 {
 	bool absorbed = false;
 
@@ -186,6 +187,9 @@ void CIrrDeviceStub::postEventFromUser(const SEvent& event)
 
 	if (!absorbed && inputReceiver)
 		absorbed = inputReceiver->postEventFromUser(event);
+
+	_IRR_IMPLEMENT_MANAGED_MARSHALLING_BUGFIX;
+	return absorbed;
 }
 
 

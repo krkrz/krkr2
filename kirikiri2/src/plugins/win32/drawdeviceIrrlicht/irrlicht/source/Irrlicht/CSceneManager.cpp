@@ -120,7 +120,6 @@
 #include "CDefaultSceneNodeFactory.h"
 
 #include "CSceneCollisionManager.h"
-#include "CMeshManipulator.h"
 #include "CTriangleSelector.h"
 #include "COctTreeTriangleSelector.h"
 #include "CTriangleBBSelector.h"
@@ -151,7 +150,7 @@ CSceneManager::CSceneManager(video::IVideoDriver* driver, io::IFileSystem* fs,
 		gui::ICursorControl* cursorControl, IMeshCache* cache,
 		gui::IGUIEnvironment* gui)
 : ISceneNode(0, 0), Driver(driver), FileSystem(fs), GUIEnvironment(gui),
-	CursorControl(cursorControl), CollisionManager(0), MeshManipulator(0),
+	CursorControl(cursorControl), CollisionManager(0),
 	ActiveCamera(0), ShadowColor(150,0,0,0), AmbientLight(0,0,0,0),
 	MeshCache(cache), CurrentRendertime(ESNRP_COUNT),
 	IRR_XML_FORMAT_SCENE(L"irr_scene"), IRR_XML_FORMAT_NODE(L"node"), IRR_XML_FORMAT_NODE_ATTR_TYPE(L"type")
@@ -182,9 +181,6 @@ CSceneManager::CSceneManager(video::IVideoDriver* driver, io::IFileSystem* fs,
 	// create collision manager
 	CollisionManager = new CSceneCollisionManager(this, Driver);
 
-	// create manipulator
-	MeshManipulator = new CMeshManipulator();
-
 	// add file format loaders
 
 	#ifdef _IRR_COMPILE_WITH_IRR_MESH_LOADER_
@@ -200,7 +196,7 @@ CSceneManager::CSceneManager(video::IVideoDriver* driver, io::IFileSystem* fs,
 	MeshLoaderList.push_back(new CMS3DMeshFileLoader(Driver));
 	#endif
 	#ifdef _IRR_COMPILE_WITH_3DS_LOADER_
-	MeshLoaderList.push_back(new C3DSMeshFileLoader(MeshManipulator,FileSystem, Driver));
+	MeshLoaderList.push_back(new C3DSMeshFileLoader(FileSystem, Driver));
 	#endif
 	#ifdef _IRR_COMPILE_WITH_X_LOADER_
 	MeshLoaderList.push_back(new CXMeshFileLoader(this));
@@ -224,7 +220,7 @@ CSceneManager::CSceneManager(video::IVideoDriver* driver, io::IFileSystem* fs,
 	MeshLoaderList.push_back(new CDMFLoader(Driver, this));
 	#endif
 	#ifdef _IRR_COMPILE_WITH_OGRE_LOADER_
-	MeshLoaderList.push_back(new COgreMeshFileLoader(MeshManipulator, FileSystem, Driver));
+	MeshLoaderList.push_back(new COgreMeshFileLoader(FileSystem, Driver));
 	#endif
 	#ifdef _IRR_COMPILE_WITH_OBJ_LOADER_
 	MeshLoaderList.push_back(new COBJMeshFileLoader(FileSystem, Driver));
@@ -267,9 +263,6 @@ CSceneManager::~CSceneManager()
 
 	if (CollisionManager)
 		CollisionManager->drop();
-
-	if (MeshManipulator)
-		MeshManipulator->drop();
 
 	if (GUIEnvironment)
 		GUIEnvironment->drop();
@@ -1028,7 +1021,10 @@ bool CSceneManager::isCulled(const ISceneNode* node)
 {
 	const ICameraSceneNode* cam = getActiveCamera();
 	if (!cam)
+	{
+		_IRR_IMPLEMENT_MANAGED_MARSHALLING_BUGFIX;
 		return false;
+	}
 
 	switch ( node->getAutomaticCulling() )
 	{
@@ -1037,6 +1033,7 @@ bool CSceneManager::isCulled(const ISceneNode* node)
 		{
 			core::aabbox3d<f32> tbox = node->getBoundingBox();
 			node->getAbsoluteTransformation().transformBox(tbox);
+			_IRR_IMPLEMENT_MANAGED_MARSHALLING_BUGFIX;
 			return !(tbox.intersectsWithBox(cam->getViewFrustum()->getBoundingBox() ));
 		}
 
@@ -1074,14 +1071,14 @@ bool CSceneManager::isCulled(const ISceneNode* node)
 				if (!boxInFrustum)
 					return true;
 			}
-
-			return false;
 		}
+		break;
 
 		case scene::EAC_OFF:
 		break;
 	}
 
+	_IRR_IMPLEMENT_MANAGED_MARSHALLING_BUGFIX;
 	return false;
 }
 
@@ -1235,6 +1232,8 @@ void CSceneManager::drawAll()
 		driver->setTransform ( video::ETS_TEXTURE_3, identity );
 	}
 
+	driver->setAllowZWriteOnTransparent(Parameters.getAttributeAsBool( ALLOW_ZWRITE_ON_TRANSPARENT) );
+
 	// do animations and other stuff.
 	OnAnimate(os::Timer::getTime());
 
@@ -1380,10 +1379,11 @@ ISceneNodeAnimator* CSceneManager::createRotationAnimator(const core::vector3df&
 
 //! creates a fly circle animator, which lets the attached scene node fly around a center.
 ISceneNodeAnimator* CSceneManager::createFlyCircleAnimator(
-		const core::vector3df& normal, f32 radius, f32 speed,
+		const core::vector3df& center, f32 radius, f32 speed,
 		const core::vector3df& direction)
 {
-	ISceneNodeAnimator* anim = new CSceneNodeAnimatorFlyCircle(os::Timer::getTime(), normal,
+	ISceneNodeAnimator* anim = new CSceneNodeAnimatorFlyCircle(
+			os::Timer::getTime(), center,
 			radius, speed, direction);
 	return anim;
 }
@@ -1462,7 +1462,6 @@ void CSceneManager::addExternalMeshLoader(IMeshLoader* externalLoader)
 }
 
 
-
 //! Returns a pointer to the scene collision manager.
 ISceneCollisionManager* CSceneManager::getSceneCollisionManager()
 {
@@ -1473,7 +1472,7 @@ ISceneCollisionManager* CSceneManager::getSceneCollisionManager()
 //! Returns a pointer to the mesh manipulator.
 IMeshManipulator* CSceneManager::getMeshManipulator()
 {
-	return MeshManipulator;
+	return Driver->getMeshManipulator();
 }
 
 
@@ -1780,12 +1779,14 @@ ISceneNodeAnimatorFactory* CSceneManager::getSceneNodeAnimatorFactory(u32 index)
 //! \param filename: Name of the file .
 bool CSceneManager::saveScene(const c8* filename, ISceneUserDataSerializer* userDataSerializer)
 {
+	bool ret = false;
 	io::IWriteFile* file = FileSystem->createAndWriteFile(filename);
-	if (!file)
-		return false;
-
-	bool ret = saveScene(file, userDataSerializer);
-	file->drop();
+	if (file)
+	{
+		ret = saveScene(file, userDataSerializer);
+		file->drop();
+	}
+	_IRR_IMPLEMENT_MANAGED_MARSHALLING_BUGFIX;
 	return ret;
 }
 
@@ -1794,11 +1795,17 @@ bool CSceneManager::saveScene(const c8* filename, ISceneUserDataSerializer* user
 bool CSceneManager::saveScene(io::IWriteFile* file, ISceneUserDataSerializer* userDataSerializer)
 {
 	if (!file)
+	{
+		_IRR_IMPLEMENT_MANAGED_MARSHALLING_BUGFIX;
 		return false;
+	}
 
 	io::IXMLWriter* writer = FileSystem->createXMLWriter(file);
 	if (!writer)
+	{
+		_IRR_IMPLEMENT_MANAGED_MARSHALLING_BUGFIX;
 		return false;
+	}
 
 	writer->writeXMLHeader();
 	writeSceneNode(writer, this, userDataSerializer);
@@ -1812,16 +1819,19 @@ bool CSceneManager::saveScene(io::IWriteFile* file, ISceneUserDataSerializer* us
 //! \param filename: Name of the file .
 bool CSceneManager::loadScene(const c8* filename, ISceneUserDataSerializer* userDataSerializer)
 {
+	bool ret = false;
 	io::IReadFile* read = FileSystem->createAndOpenFile(filename);
 	if (!read)
 	{
 		os::Printer::log("Unable to open scene file", filename, ELL_ERROR);
-		return false;
+	}
+	else
+	{
+		ret = loadScene(read, userDataSerializer);
+		read->drop();
 	}
 
-	bool ret = loadScene(read, userDataSerializer);
-	read->drop();
-
+	_IRR_IMPLEMENT_MANAGED_MARSHALLING_BUGFIX;
 	return ret;
 }
 
@@ -1832,6 +1842,7 @@ bool CSceneManager::loadScene(io::IReadFile* file, ISceneUserDataSerializer* use
 	if (!file)
 	{
 		os::Printer::log("Unable to open scene file", ELL_ERROR);
+		_IRR_IMPLEMENT_MANAGED_MARSHALLING_BUGFIX;
 		return false;
 	}
 
@@ -1839,6 +1850,7 @@ bool CSceneManager::loadScene(io::IReadFile* file, ISceneUserDataSerializer* use
 	if (!reader)
 	{
 		os::Printer::log("Scene is not a valid XML file", file->getFileName(), ELL_ERROR);
+		_IRR_IMPLEMENT_MANAGED_MARSHALLING_BUGFIX;
 		return false;
 	}
 
@@ -1862,7 +1874,6 @@ bool CSceneManager::loadScene(io::IReadFile* file, ISceneUserDataSerializer* use
 
 	reader->drop();
 	return true;
-
 }
 
 

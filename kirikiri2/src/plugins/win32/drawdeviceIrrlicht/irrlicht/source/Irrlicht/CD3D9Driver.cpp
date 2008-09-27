@@ -870,7 +870,6 @@ void CD3D9Driver::drawVertexPrimitiveList(const void* vertices, u32 vertexCount,
 }
 
 
-
 void CD3D9Driver::draw2DImage(const video::ITexture* texture, const core::rect<s32>& destRect,
 		const core::rect<s32>& sourceRect, const core::rect<s32>* clipRect,
 		video::SColor* colors, bool useAlphaChannelOfTexture)
@@ -928,11 +927,23 @@ void CD3D9Driver::draw2DImage(const video::ITexture* texture, const core::rect<s
 
 	setVertexShader(EVT_STANDARD);
 
+	if (clipRect)
+	{
+		pID3DDevice->SetRenderState(D3DRS_SCISSORTESTENABLE, TRUE);
+		RECT scissor;
+		scissor.left = clipRect->UpperLeftCorner.X;
+		scissor.top = clipRect->UpperLeftCorner.Y;
+		scissor.right = clipRect->LowerRightCorner.X;
+		scissor.bottom = clipRect->LowerRightCorner.Y;
+		pID3DDevice->SetScissorRect(&scissor);
+	}
+
 	pID3DDevice->DrawIndexedPrimitiveUP(D3DPT_TRIANGLELIST, 0, 4, 2, &indices[0],
 				D3DFMT_INDEX16,&vtx[0], sizeof(S3DVertex));
 
+	if (clipRect)
+		pID3DDevice->SetRenderState(D3DRS_SCISSORTESTENABLE, FALSE);
 }
-
 
 
 //! draws a 2d image, using a color and the alpha channel of the texture if
@@ -1320,9 +1331,9 @@ void CD3D9Driver::setBasicRenderStates(const SMaterial& material, const SMateria
 	}
 
 	// zwrite
-	if (resetAllRenderstates || lastmaterial.ZWriteEnable != material.ZWriteEnable)
+//	if (resetAllRenderstates || (lastmaterial.ZWriteEnable != material.ZWriteEnable))
 	{
-		if ( material.ZWriteEnable )
+		if ( material.ZWriteEnable && (AllowZWriteOnTransparent || !material.isTransparent()))
 			pID3DDevice->SetRenderState( D3DRS_ZWRITEENABLE, TRUE);
 		else
 			pID3DDevice->SetRenderState( D3DRS_ZWRITEENABLE, FALSE);
@@ -2226,4 +2237,5 @@ IVideoDriver* createDirectX9Driver(const core::dimension2d<s32>& screenSize, HWN
 
 } // end namespace video
 } // end namespace irr
+
 

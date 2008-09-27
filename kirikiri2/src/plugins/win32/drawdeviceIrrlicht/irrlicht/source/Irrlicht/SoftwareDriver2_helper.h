@@ -107,7 +107,7 @@ REALINLINE void memcpy32_small ( void * dest, const void *source, u32 bytesize )
 
 	do
 	{
-		((u32*) dest ) [ c + -1 ] = ((u32*) source) [ c + -1 ];
+		((u32*) dest ) [ c-1 ] = ((u32*) source) [ c-1 ];
 	} while ( --c );
 
 }

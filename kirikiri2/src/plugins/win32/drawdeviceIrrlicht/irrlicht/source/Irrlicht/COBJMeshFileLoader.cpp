@@ -12,7 +12,6 @@
 #include "IReadFile.h"
 #include "fast_atof.h"
 #include "coreutil.h"
-#include "irrMap.h"
 
 namespace irr
 {
@@ -74,7 +73,6 @@ IAnimatedMesh* COBJMeshFileLoader::createMesh(io::IReadFile* file)
 	currMtl->Name="";
 	Materials.push_back(currMtl);
 	u32 smoothingGroup=0;
-	core::map<video::S3DVertex, int> vertMap;
 
 	// ********************************************************************
 	// Patch to locate the file in the same folder as the .obj.
@@ -213,7 +211,7 @@ IAnimatedMesh* COBJMeshFileLoader::createMesh(io::IReadFile* file)
 					v.Normal.set(0.0f,0.0f,0.0f);
 
 				int vertLocation;
-				core::map<video::S3DVertex, int>::Node* n = vertMap.find(v);
+				core::map<video::S3DVertex, int>::Node* n = currMtl->VertMap.find(v);
 				if (n)
 				{
 					vertLocation = n->getValue();
@@ -222,7 +220,7 @@ IAnimatedMesh* COBJMeshFileLoader::createMesh(io::IReadFile* file)
 				{
 					currMtl->Meshbuffer->Vertices.push_back(v);
 					vertLocation = currMtl->Meshbuffer->Vertices.size() -1;
-					vertMap.insert(v, vertLocation);
+					currMtl->VertMap.insert(v, vertLocation);
 				}
 				
 				faceCorners.push_back(vertLocation);

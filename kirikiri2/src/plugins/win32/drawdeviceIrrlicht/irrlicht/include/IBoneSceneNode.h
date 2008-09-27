@@ -89,7 +89,7 @@ namespace scene
 		virtual void setSkinningSpace( E_BONE_SKINNING_SPACE space ) =0;
 
 		//! How the relative transformation of the bone is used
-		virtual E_BONE_SKINNING_SPACE getSkinningSpace() =0;
+		virtual E_BONE_SKINNING_SPACE getSkinningSpace() const=0;
 
 		//! Updates the absolute position based on the relative and the parents position
 		virtual void updateAbsolutePositionOfAllChildren()=0;

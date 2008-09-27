@@ -24,7 +24,7 @@ class C3DSMeshFileLoader : public IMeshLoader
 public:
 
 	//! Constructor
-	C3DSMeshFileLoader(IMeshManipulator* manip,io::IFileSystem* fs, video::IVideoDriver* driver);
+	C3DSMeshFileLoader(io::IFileSystem* fs, video::IVideoDriver* driver);
 
 	//! destructor
 	virtual ~C3DSMeshFileLoader();
@@ -166,8 +166,6 @@ private:
 	core::matrix4 TransformationMatrix;
 
 	SMesh* Mesh;
-
-	IMeshManipulator* Manipulator;
 };
 
 } // end namespace scene
