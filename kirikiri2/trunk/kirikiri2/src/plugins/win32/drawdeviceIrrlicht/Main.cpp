@@ -10,7 +10,7 @@ message_log(const char* format, ...)
 	va_list args;
 	va_start(args, format);
 	char msg[1024];
-	_vsnprintf(msg, 1024, format, args);
+	_vsnprintf_s(msg, 1024, _TRUNCATE, format, args);
 	TVPAddLog(ttstr(msg));
 	va_end(args);
 }
@@ -24,7 +24,7 @@ error_log(const char* format, ...)
 	va_list args;
 	va_start(args, format);
 	char msg[1024];
-	_vsnprintf(msg, 1024, format, args);
+	_vsnprintf_s(msg, 1024, _TRUNCATE, format, args);
 	TVPAddImportantLog(ttstr(msg));
 	va_end(args);
 }
@@ -37,7 +37,7 @@ NCB_REGISTER_SUBCLASS(vector3df) {
 	NCB_CONSTRUCTOR(());
 };
 
-NCB_REGISTER_SUBCLASS(tTVPIrrlichtDrawDevice) {
+NCB_REGISTER_SUBCLASS(IrrlichtDrawDevice) {
 	NCB_CONSTRUCTOR(());
 	NCB_PROPERTY_RO(interface, GetDevice);
 };
@@ -51,10 +51,8 @@ struct Irrlicht {
 #define ENUM(n) Variant(#n, (int)n)
 
 NCB_REGISTER_CLASS(Irrlicht) {
-
 	//enums
 	//static
-
 	//classes
-	NCB_SUBCLASS(DrawDevice, tTVPIrrlichtDrawDevice);
+	NCB_SUBCLASS(DrawDevice, IrrlichtDrawDevice);
 }
