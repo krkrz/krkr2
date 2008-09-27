@@ -2,8 +2,6 @@
 
 吉里吉里から Irrlicht を取り扱うライブラリです。
 
-・Irrlicht ベースの drawdevice の提供
-
 ●動作上の特記事項
 
 ・DirectX9 専用で構築されています。コンパイルには DirectX9 SDK が必要です。
@@ -20,7 +18,6 @@
 Plugins.link("krrlicht.dll");
 
 class MyWindow extends Window {
-
 	function MyWindow() {
 		super.Window();
 		setInnerSize(800, 600);
@@ -35,10 +32,12 @@ class MyWindow extends Window {
 
 ●今後の予定
 
-・Irrlicht のウインドウを直接ドライブする機能の提供
 ・シーン処理系の実装
+・もろもろシーン制御処理
+・各種プリミティブ操作の実装
+
 ・ムービー再生処理の実装
-　※できれば krmovie とうまく連携できるような方向で…
+　※できれば krmovie とうまく連携できるような方向ができると理想だけど…
 
 ●ライセンス
 
