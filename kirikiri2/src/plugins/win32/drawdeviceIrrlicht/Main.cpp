@@ -1,5 +1,6 @@
 #include "ncbind/ncbind.hpp"
 #include "IrrlichtDrawDevice.h"
+#include "IrrlichtWindow.h"
 
 /**
  * ログ出力用
@@ -42,6 +43,17 @@ NCB_REGISTER_SUBCLASS(IrrlichtDrawDevice) {
 	NCB_PROPERTY_RO(interface, GetDevice);
 };
 
+NCB_REGISTER_SUBCLASS(IrrlichtWindow) {
+	NCB_CONSTRUCTOR((iTJSDispatch2 *, int, int, int, int));
+	NCB_PROPERTY(left, getLeft, setLeft);
+	NCB_PROPERTY(top, getTop, setTop);
+	NCB_PROPERTY(width, getWidth, setWidth);
+	NCB_PROPERTY(height, getHeight, setHeight);
+	NCB_PROPERTY(visible, getVisible, setVisible);
+	NCB_METHOD(setPos);
+	NCB_METHOD(setSize);
+};
+
 /**
  * 名前空間用ダミー
  */
@@ -55,4 +67,24 @@ NCB_REGISTER_CLASS(Irrlicht) {
 	//static
 	//classes
 	NCB_SUBCLASS(DrawDevice, IrrlichtDrawDevice);
+	NCB_SUBCLASS(Window, IrrlichtWindow);
 }
+
+/**
+ * 登録処理前
+ */
+void PreRegistCallback()
+{
+	registerWindowClass();
+}
+
+/**
+ * 開放処理後
+ */
+void PostUnregistCallback()
+{
+	unregisterWindowClass();
+}
+
+NCB_PRE_REGIST_CALLBACK(PreRegistCallback);
+NCB_POST_UNREGIST_CALLBACK(PostUnregistCallback);

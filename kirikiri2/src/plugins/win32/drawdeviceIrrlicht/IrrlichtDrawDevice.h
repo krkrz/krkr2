@@ -19,15 +19,13 @@ public:
 	virtual ~IrrlichtDrawDevice();
 
 private:
+	// デバイス解放処理
+	virtual void detach();
+
 	// テクスチャの割り当て
 	void allocInfo(iTVPLayerManager * manager);
 	// テクスチャの解放
 	void freeInfo(iTVPLayerManager * manager);
-
-	// 割り当て処理
-	void attach(HWND hwnd);
-	// 解放処理
-	virtual void detach();
 
 	// Irrlicht にイベントを送る
 	bool postEvent(irr::SEvent &ev);

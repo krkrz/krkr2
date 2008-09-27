@@ -227,6 +227,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\IrrlichtWindow.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\LayerManagerInfo.cpp"
 				>
 			</File>
@@ -293,6 +297,10 @@
 			</File>
 			<File
 				RelativePath=".\IrrlichtDrawDevice.h"
+				>
+			</File>
+			<File
+				RelativePath=".\IrrlichtWindow.h"
 				>
 			</File>
 			<File

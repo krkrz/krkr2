@@ -4,16 +4,59 @@
 class Irrlicht {
 
 	/**
+	 * 共通機能 ※クラスとしては存在しません
+	 */
+	class Base {
+	}
+	
+	/**
 	 * 吉里吉里用 drawdevice クラス
 	 */
 	class DrawDevice extends Base {
-
 		/**
 		 * コンストラクタ
 		 */
 		function DrawDevice();
-		
-		// drawdevice 情報を返します（内部参照用）
-		property interface;
+
+		property interface {
+			/*
+			 * @return drawdevice 情報（内部参照用）
+			 */
+			getter();
+		}
 	};
+
+	/**
+	 * 吉里吉里の子ウインドウとして機能するIrrlicht
+	 */
+	class Window extends Base {
+		/**
+		 * コンストラクタ
+		 * @param parent 親になるウインドウ
+		 * @param left 配置位置X
+		 * @param top 配置位置Y
+		 * @param width 配置サイズ
+		 * @param height 配置サイズ
+		 */
+		function Window(parent, left, top, width, height);
+
+		property left; //< 配置位置X
+		property top;  //< 配置位置Y
+		property width; //< 横幅
+		property height; //< 縦幅
+
+		/**
+		 * 配置位置指定
+		 * @param left 配置位置X
+		 * @param top 配置位置Y
+		 */
+		function setPos(left, top);
+
+		/**
+		 * 配置サイズ指定
+		 * @param width 配置サイズ
+		 * @param height 配置サイズ
+		 */
+		function setSize(width, height);
+	}	
 };
