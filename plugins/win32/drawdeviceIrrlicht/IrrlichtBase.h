@@ -25,7 +25,10 @@ public:
 	virtual ~IrrlichtBase(); //!< デストラクタ
 
 protected:
-	// 情報の破棄
+	// デバイス割り当て
+	virtual void attach(HWND hwnd);
+	
+	// デバイスの破棄
 	virtual void detach();
 
 	// ------------------------------------------------------------

@@ -372,7 +372,7 @@ CIrrDeviceWin32::CIrrDeviceWin32(video::E_DRIVER_TYPE driverType,
 	{
 		HWnd = externalWindow;
 		RECT r;
-		GetWindowRect(HWnd, &r);
+		GetClientRect(HWnd, &r);
 		windowSize.Width = r.right - r.left;
 		windowSize.Height = r.bottom - r.top;
 		fullscreen = false;

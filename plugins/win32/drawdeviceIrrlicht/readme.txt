@@ -2,6 +2,11 @@
 
 吉里吉里から Irrlicht を取り扱うライブラリです。
 
+・Irrlichtベースの drawDevice (吉里吉里の描画系のIrrlichtによる置き換え)
+・吉里吉里の子ウインドウとしてのIrrlicht
+
+を扱うことができます。
+
 ●動作上の特記事項
 
 ・DirectX9 専用で構築されています。コンパイルには DirectX9 SDK が必要です。
@@ -28,7 +33,16 @@ class MyWindow extends Window {
 };
 -------------------------------------------
 
-デバイスの機能については manual.tjs を参照してください
+2. 子ウインドウとして Irrlicht を配置できます
+
+-------------------------------------------
+var win = new Window();
+win.visible = true;
+var irr = new Irrlicht.Window(win, 10, 10, 100, 100);
+irr.visible = true;
+-------------------------------------------
+
+それぞれの機能については manual.tjs を参照してください
 
 ●今後の予定
 
