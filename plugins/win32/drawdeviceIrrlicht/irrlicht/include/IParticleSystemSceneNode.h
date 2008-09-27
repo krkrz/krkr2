@@ -64,6 +64,10 @@ public:
 	Default is true. */
 	virtual void setParticlesAreGlobal(bool global) = 0;
 
+	//! Gets the particle emitter, which creates the particles.
+	/** \return The particle emitter. Can be 0 if none is set. */
+	virtual IParticleEmitter* getEmitter() =0;
+
 	//! Sets the particle emitter, which creates the particles.
 	/** A particle emitter can be created using one of the methods. For
 	example to create and use a simple PointEmitter, call
@@ -130,7 +134,7 @@ public:
 	it any more, see IReferenceCounted::drop() for more informations. */
 	virtual IParticleAnimatedMeshSceneNodeEmitter* createAnimatedMeshSceneNodeEmitter(
 		scene::IAnimatedMeshSceneNode* node, bool useNormalDirection = true,
-		const core::vector3df& direction = core::vector3df(0.0f,0.0f,0.0f),
+		const core::vector3df& direction = core::vector3df(0.0f,0.03f,0.0f),
 		f32 normalDirectionModifier = 100.0f, s32 mbNumber = -1,
 		bool everyMeshVertex = false,
 		u32 minParticlesPerSecond = 5, u32 maxParticlesPerSecond = 10,
@@ -200,7 +204,7 @@ public:
 		const core::vector3df& center, f32 radius,
 		const core::vector3df& normal, f32 length,
 		bool outlineOnly = false,
-		const core::vector3df& direction = core::vector3df(0.0f,0.0f,0.0f),
+		const core::vector3df& direction = core::vector3df(0.0f,0.03f,0.0f),
 		u32 minParticlesPerSecond = 5, u32 maxParticlesPerSecond = 10,
 		const video::SColor& minStartColor = video::SColor(255,0,0,0),
 		const video::SColor& maxStartColor = video::SColor(255,255,255,255),
@@ -246,7 +250,7 @@ public:
 	it any more, see IReferenceCounted::drop() for more informations. */
 	virtual IParticleMeshEmitter* createMeshEmitter(
 		scene::IMesh* mesh, bool useNormalDirection = true,
-		const core::vector3df& direction = core::vector3df(0.0f,0.0f,0.0f),
+		const core::vector3df& direction = core::vector3df(0.0f,0.03f,0.0f),
 		f32 normalDirectionModifier = 100.0f, s32 mbNumber = -1,
 		bool everyMeshVertex = false,
 		u32 minParticlesPerSecond = 5, u32 maxParticlesPerSecond = 10,

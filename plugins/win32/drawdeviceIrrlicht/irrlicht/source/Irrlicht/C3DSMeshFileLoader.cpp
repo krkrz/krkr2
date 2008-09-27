@@ -102,9 +102,9 @@ const u16 C3DS_PERCENTAGE_F = 0x0031;
 
 
 //! Constructor
-C3DSMeshFileLoader::C3DSMeshFileLoader(IMeshManipulator* manip,io::IFileSystem* fs, video::IVideoDriver* driver)
+C3DSMeshFileLoader::C3DSMeshFileLoader(io::IFileSystem* fs, video::IVideoDriver* driver)
 : FileSystem(fs), Driver(driver), Vertices(0), Indices(0), SmoothingGroups(0), TCoords(0),
-	CountVertices(0), CountFaces(0), CountTCoords(0), Mesh(0), Manipulator(manip)
+	CountVertices(0), CountFaces(0), CountTCoords(0), Mesh(0)
 {
 	TransformationMatrix.makeIdentity();
 	if (FileSystem)
@@ -113,7 +113,6 @@ C3DSMeshFileLoader::C3DSMeshFileLoader(IMeshManipulator* manip,io::IFileSystem* 
 	if (Driver)
 		Driver->grab();
 }
-
 
 
 //! destructor

@@ -77,7 +77,10 @@ namespace video
 		EVDF_TEXTURE_NPOT,
 
 		//! Are framebuffer objects supported?
-		EVDF_FRAMEBUFFER_OBJECT
+		EVDF_FRAMEBUFFER_OBJECT,
+
+		//! Only used for counting the elements of this enum
+		EVDF_COUNT
 	};
 
 } // end namespace video

@@ -29,6 +29,7 @@ namespace io
 namespace scene
 {
 	class IMeshBuffer;
+	class IMeshManipulator;
 } // end namespace scene
 
 namespace video
@@ -318,11 +319,11 @@ namespace video
 		\param vertices Pointer to array of vertices.
 		\param vertexCount Amount of vertices in the array.
 		\param indexList Pointer to array of indices.
-		\param triangleCount Amount of Triangles.
+		\param primCount Amount of Primitives
 		\param vType Vertex type, e.g. EVT_STANDARD for S3DVertex.
 		\param pType Primitive type, e.g. EPT_TRIANGLE_FAN for a triangle fan. */
 		virtual void drawVertexPrimitiveList(const void* vertices, u32 vertexCount,
-				const u16* indexList, u32 triangleCount,
+				const u16* indexList, u32 primCount,
 				E_VERTEX_TYPE vType, scene::E_PRIMITIVE_TYPE pType) = 0;
 
 		//! Draws an indexed triangle list.
@@ -774,6 +775,35 @@ namespace video
 			bool ownForeignMemory=false,
 			bool deleteMemory = true) = 0;
 
+		//! Creates an empty software image.
+		/**
+		\param format Desired color format of the image.
+		\param size Size of the image to create.
+		\return The created image.
+		If you no longer need the image, you should call IImage::drop().
+		See IReferenceCounted::drop() for more information. */
+		virtual IImage* createImage(ECOLOR_FORMAT format, const core::dimension2d<s32>& size) =0;
+
+		//! Creates a software image by converting it to given format from another image.
+		/**
+		\param format Desired color format of the image.
+		\param imageToCopy Image to copy to the new image.
+		\return The created image.
+		If you no longer need the image, you should call IImage::drop().
+		See IReferenceCounted::drop() for more information. */
+		virtual IImage* createImage(ECOLOR_FORMAT format, IImage *imageToCopy) =0;
+
+		//! Creates a software image from a part of another image.
+		/**
+		\param imageToCopy Image to copy the the new image in part.
+		\param pos Position of rectangle to copy.
+		\param size Extents of rectangle to copy.
+		\return The created image.
+		If you no longer need the image, you should call IImage::drop().
+		See IReferenceCounted::drop() for more information. */
+                virtual IImage* createImage(IImage* imageToCopy,
+		    const core::position2d<s32>& pos, const core::dimension2d<s32>& size) =0;
+
 		//! Event handler for resize events. Only used by the engine internally.
 		/** Used to notify the driver that the window was resized.
 		Usually, there is no need to call this method. */
@@ -868,6 +898,9 @@ namespace video
 		Software driver and the Null driver will always return 0. */
 		virtual IGPUProgrammingServices* getGPUProgrammingServices() = 0;
 
+		//! Returns a pointer to the mesh manipulator.
+		virtual scene::IMeshManipulator* getMeshManipulator() = 0;
+
 		//! Clears the ZBuffer.
 		/** Note that you usually need not to call this method, as it
 		is automatically done in IVideoDriver::beginScene() or
@@ -908,12 +941,17 @@ namespace video
 		it. */
 		virtual void enableClipPlane(u32 index, bool enable) = 0;
 
-		//! Sets the driver's ambient light color. Only used by the engine internally.
-		/** This color is set in the scene manager, see
+		//! Only used by the engine internally.
+		/** The ambient color is set in the scene manager, see
 		scene::ISceneManager::setAmbientLight().
 		\param color New color of the ambient light. */
 		virtual void setAmbientLight(const SColorf& color) = 0;
 
+		//! Only used by the engine internally.
+		/** Passes the global material flag DisableZWriteOnTransparent.
+		Use the SceneManager attribute to set this value from the app.
+		\param flag Default behavior is to disable ZWrite, i.e. false. */
+		virtual void setAllowZWriteOnTransparent(bool flag) = 0;
 	};
 
 } // end namespace video

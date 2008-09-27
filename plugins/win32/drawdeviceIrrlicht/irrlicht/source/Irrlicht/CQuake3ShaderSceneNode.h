@@ -41,10 +41,10 @@ private:
 
 	struct SQ3Texture
 	{
-		SQ3Texture () :
-			TextureIndex ( 0 ),
+		SQ3Texture() :
+			TextureIndex(0),
 			TextureFrequency(0.f),
-			TextureAddressMode( video::ETC_REPEAT ) {}
+			TextureAddressMode(video::ETC_REPEAT) {}
 
 		quake3::tTexArray Texture;
 
@@ -55,20 +55,20 @@ private:
 
 	core::array< SQ3Texture > Q3Texture;
 
-	void loadTextures ( io::IFileSystem * fileSystem );
-	void cloneBuffer ( scene::SMeshBufferLightMap * buffer );
+	void loadTextures( io::IFileSystem * fileSystem );
+	void cloneBuffer( scene::SMeshBufferLightMap * buffer );
 
-	void vertextransform_wave ( f32 dt, quake3::SModifierFunction &function );
+	void vertextransform_wave( f32 dt, quake3::SModifierFunction &function );
 	void vertextransform_bulge( f32 dt, quake3::SModifierFunction &function );
 	void vertextransform_autosprite( f32 dt, quake3::SModifierFunction &function );
 
-	void rgbgen ( f32 dt, quake3::SModifierFunction &function );
-	u32 tcgen ( f32 dt, quake3::SModifierFunction &function, core::matrix4 &texture );
+	void rgbgen( f32 dt, quake3::SModifierFunction &function );
+	u32 tcgen( f32 dt, quake3::SModifierFunction &function, core::matrix4 &texture );
 
-	void transformtex ( const core::matrix4 &m, const u32 clamp );
+	void transformtex( const core::matrix4 &m, const u32 clamp );
 
 	f32 TimeAbs;
-	u32 animate( u32 stage, core::matrix4 &texture );
+	void animate( u32 stage, core::matrix4 &texture );
 
 
 	s32 PassedCulling;

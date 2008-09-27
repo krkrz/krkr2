@@ -49,7 +49,6 @@ CParticleSystemSceneNode::CParticleSystemSceneNode(bool createDefaultEmitter,
 }
 
 
-
 //! destructor
 CParticleSystemSceneNode::~CParticleSystemSceneNode()
 {
@@ -59,6 +58,12 @@ CParticleSystemSceneNode::~CParticleSystemSceneNode()
 	removeAllAffectors();
 }
 
+
+//! Gets the particle emitter, which creates the particles.
+IParticleEmitter* CParticleSystemSceneNode::getEmitter()
+{
+	return Emitter;
+}
 
 
 //! Sets the particle emitter, which creates the particles.
@@ -74,14 +79,12 @@ void CParticleSystemSceneNode::setEmitter(IParticleEmitter* emitter)
 }
 
 
-
 //! Adds new particle effector to the particle system.
 void CParticleSystemSceneNode::addAffector(IParticleAffector* affector)
 {
 	affector->grab();
 	AffectorList.push_back(affector);
 }
-
 
 
 //! Removes all particle affectors in the particle system.
@@ -101,7 +104,6 @@ video::SMaterial& CParticleSystemSceneNode::getMaterial(u32 i)
 {
 	return Buffer.Material;
 }
-
 
 
 //! Returns amount of materials used by this scene node.
@@ -128,7 +130,6 @@ CParticleSystemSceneNode::createAnimatedMeshSceneNodeEmitter(
 			minStartColor, maxStartColor,
 			lifeTimeMin, lifeTimeMax, maxAngleDegrees );
 }
-
 
 
 //! Creates a box particle emitter.
@@ -179,7 +180,6 @@ IParticleMeshEmitter* CParticleSystemSceneNode::createMeshEmitter(
 }
 
 
-
 //! Creates a point particle emitter.
 IParticlePointEmitter* CParticleSystemSceneNode::createPointEmitter(
 	const core::vector3df& direction, u32 minParticlesPerSecond,
@@ -222,7 +222,6 @@ IParticleSphereEmitter* CParticleSystemSceneNode::createSphereEmitter(
 }
 
 
-
 //! Creates a point attraction affector. This affector modifies the positions of the
 //! particles and attracts them to a specified point at a specified speed per second.
 IParticleAttractionAffector* CParticleSystemSceneNode::createAttractionAffector(
@@ -258,7 +257,6 @@ IParticleRotationAffector* CParticleSystemSceneNode::createRotationAffector(
 }
 
 
-
 //! pre render event
 void CParticleSystemSceneNode::OnRegisterSceneNode()
 {
@@ -270,7 +268,6 @@ void CParticleSystemSceneNode::OnRegisterSceneNode()
 		ISceneNode::OnRegisterSceneNode();
 	}
 }
-
 
 
 //! render
@@ -365,13 +362,11 @@ void CParticleSystemSceneNode::render()
 }
 
 
-
 //! returns the axis aligned bounding box of this node
 const core::aabbox3d<f32>& CParticleSystemSceneNode::getBoundingBox() const
 {
 	return Buffer.getBoundingBox();
 }
-
 
 
 void CParticleSystemSceneNode::doParticleSystem(u32 time)
@@ -460,7 +455,6 @@ void CParticleSystemSceneNode::setParticlesAreGlobal(bool global)
 {
 	ParticlesAreGlobal = global;
 }
-
 
 
 //! Sets the size of all particles.

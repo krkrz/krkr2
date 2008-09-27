@@ -151,7 +151,7 @@ private:
 				core::vector3df &scale, s32 &scaleHint,
 				core::quaternion &rotation, s32 &rotationHint);
 
-		void CalculateGlobalMatrixes(SJoint *Joint,SJoint *ParentJoint);
+		void CalculateGlobalMatrices(SJoint *Joint,SJoint *ParentJoint);
 
 		void SkinJoint(SJoint *Joint, SJoint *ParentJoint);
 
@@ -174,8 +174,8 @@ private:
 
 		f32 AnimationFrames;
 
-		f32 lastAnimatedFrame;
-		f32 lastSkinnedFrame;
+		f32 LastAnimatedFrame;
+		f32 LastSkinnedFrame;
 		bool BoneControlUsed;
 
 		bool AnimateNormals;

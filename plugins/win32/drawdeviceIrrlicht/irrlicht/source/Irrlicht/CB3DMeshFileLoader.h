@@ -30,9 +30,6 @@ public:
 	//! Constructor
 	CB3DMeshFileLoader(scene::ISceneManager* smgr);
 
-	//! destructor
-	virtual ~CB3DMeshFileLoader();
-
 	//! returns true if the file maybe is able to be loaded by this class
 	//! based on the file extension (e.g. ".bsp")
 	virtual bool isALoadableFileExtension(const c8* fileName) const;
@@ -72,7 +69,7 @@ private:
 
 	struct SB3dMaterial
 	{
-		video::SMaterial* Material;
+		video::SMaterial Material;
 		f32 red, green, blue, alpha;
 		f32 shininess;
 		s32 blend,fx;

@@ -1,4 +1,41 @@
-Changes in version 1.4.1 (05.06.2008)
+Changes in version 1.4.2 (x.x.2008)
+
+ - Unified the handling of zwrite enable with transparent materials on all hw accelerated drivers. This means that all transparent materials will now disable ZWrite, ignoring the material flag.
+   There is a scene manager attribute, though, which will revert this behavior to the usual SMaterial driven way. Simply call
+   SceneManager->getParameters()->setAttribute(scene::ALLOW_ZWRITE_ON_TRANSPARENT, true) and set the SMaterial flag as desired.
+
+ - Some changes for texture matrices in q3 shaders.
+
+ - Added BlindSide's irrAllocator patch for proper TextureMatrix release under Win32 with any CRT library.
+
+ - Added VC9 project files.
+
+ - Added getEmitter for particle system scene nodes.
+
+ - Fixed rounding problem in getScreenCoordinatesFrom3DPosition
+
+ - Fixed Software renderer color flicker, was a shift bug I believe.
+
+ - irrMap fix to make root node always black, by rogerborg.
+
+ - Possible core dump fixed in particle system node, by CuteAlien.
+
+ - Mem leak fixed in b3d loader.
+
+ - Avoid double rendering of child nodes of joints.
+
+ - Support for d3d draw2dimage clipping by CuteAlien.
+
+ - Fixed an animation transition bug, pointed out by wuallen.
+
+ - Fixed the major problem with OpenGL drivers, that claim to be 2.x compatible, but don't offer NPOT support (well, they do, but only in sw rendering...). Now we check for the extension string only.
+
+ - Fixed .obj loader bug which inserted vertices in wrong buffers.
+
+ - Fixed minor mem leak in Linux device.
+
+-------------------------------------------
+Changes in version 1.4.1 (04 Jun 2008)
 
  - MD3 meshes are movable again.
 
@@ -86,7 +123,7 @@ Changes in version 1.4.1 (05.06.2008)
  - Bugfix getCurrentRenderTargetSize in D3D drivers. Due to signature differences a wrong virtual method was chosen. Thanks to Jiang for finding it.
 
 -------------------------------------------
-Changes in version 1.4 (30.11.2007)
+Changes in version 1.4 (30 Nov 2007)
 
  - Major API change: All material properties which are available per texture layer (curently texture, texture matrix, texture filters, and texture wrap mode) are separated into a new struct SMaterialLayer. You can access them via the array TextureLayer[] in SMaterial. The texture matrix methods in SMaterial are still alive, and also textures can be accessed via methods in SMaterial now. But still, many places in user code need some update (usually changing material.Textures[i] to material.TextureLayer[i].Texture etc.)
 
