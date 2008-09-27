@@ -42,13 +42,40 @@ IrrlichtBase::showDriverInfo()
 }
 
 /**
+ * ウインドウの再設定
+ * @param hwnd ハンドル
+ */
+void
+IrrlichtBase::attach(HWND hwnd)
+{
+	// デバイス生成
+	SIrrlichtCreationParameters params;
+	params.WindowId     = reinterpret_cast<void*>(hwnd);
+	params.DriverType    = video::EDT_DIRECT3D9;
+	params.Bits          = 32;
+	params.Stencilbuffer = true;
+	params.Vsync = true;
+	params.EventReceiver = this;
+	params.AntiAlias = true;
+
+	if ((device = irr::createDeviceEx(params))) {
+		TVPAddLog(L"DirectX9で初期化");
+	} else {
+		TVPThrowExceptionMessage(L"Irrlicht デバイスの初期化に失敗しました");
+	}
+	driver = device->getVideoDriver();
+	
+	showDriverInfo();
+	start();
+}
+
+/**
  * ウインドウの解除
  */
 void
 IrrlichtBase::detach()
 {
 	if (device) {
-		device->closeDevice();
 		device->drop();
 		device = NULL;
 		driver = NULL;

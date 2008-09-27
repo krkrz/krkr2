@@ -33,20 +33,20 @@ void
 IrrlichtDrawDevice::allocInfo(iTVPLayerManager * manager)
 {
 	if (driver) {
-
+	
 		// テクスチャ割り当てXXX サイズ判定が必要…
 		ITexture *texture = driver->addTexture(core::dimension2d<s32>(1024, 1024), "layer", ECF_A8R8G8B8);
 		if (texture == NULL) {
 			TVPThrowExceptionMessage(L"テクスチャの割り当てに失敗しました");
 		}
 
-		manager->SetDrawDeviceData((void*)new LayerManagerInfo(texture));
-
-		// 更新要求
+		// 設定
 		tjs_int w, h;
-		if (manager->GetPrimaryLayerSize(w, h)) {
-			manager->RequestInvalidation(tTVPRect(0,0,w,h));
-		}
+		manager->GetPrimaryLayerSize(w, h);
+		manager->SetDrawDeviceData((void*)new LayerManagerInfo(texture, w, h));
+		
+		// 更新要求
+		manager->RequestInvalidation(tTVPRect(0,0,w,h));
 	}
 }
 
@@ -65,42 +65,6 @@ IrrlichtDrawDevice::freeInfo(iTVPLayerManager * manager)
 			delete info;
 		}
 	}
-}
-
-/**
- * ウインドウの再設定
- * @param hwnd ハンドル
- */
-void
-IrrlichtDrawDevice::attach(HWND hwnd)
-{
-	// デバイス生成
-
-	SIrrlichtCreationParameters params;
-	params.WindowId     = reinterpret_cast<void*>(hwnd);
-	params.DriverType    = video::EDT_DIRECT3D9;
-	params.Bits          = 32;
-	params.Stencilbuffer = true;
-	params.Vsync = true;
-	params.EventReceiver = this;
-	params.AntiAlias = true;
-
-	if ((device = irr::createDeviceEx(params))) {
-		TVPAddLog(L"DirectX9で初期化");
-	} else {
-		TVPThrowExceptionMessage(L"Irrlicht デバイスの初期化に失敗しました");
-	}
-	driver = device->getVideoDriver();
-
-	showDriverInfo();
-
-	// マネージャに対するテクスチャの割り当て
-	for (std::vector<iTVPLayerManager *>::iterator i = Managers.begin(); i != Managers.end(); i++) {
-		allocInfo(*i);
-	}
-
-	// 駆動開始
-	start();
 }
 
 /**
@@ -163,6 +127,12 @@ IrrlichtDrawDevice::SetTargetWindow(HWND wnd, bool is_main)
 	detach();
 	if (wnd != NULL) {
 		attach(wnd);
+		// マネージャに対するテクスチャの割り当て
+		for (std::vector<iTVPLayerManager *>::iterator i = Managers.begin(); i != Managers.end(); i++) {
+			allocInfo(*i);
+		}
+		// 駆動開始
+		start();
 	}
 }
 
@@ -330,7 +300,8 @@ IrrlichtDrawDevice::update(tjs_uint64 tick)
 		if (info && info->texture) {
 			// XXX レイヤを3D空間配置？
 			driver->draw2DImage(info->texture, core::position2d<s32>(0,0),
-								core::rect<s32>(0,0,screenSize.Width,screenSize.Height), 0, 
+								//core::rect<s32>(0,0,screenSize.Width,screenSize.Height), 0, 
+								core::rect<s32>(0,0,info->layerWidth,info->layerHeight), 0, 
 								video::SColor(255,255,255,255), true);
 		}
 	}

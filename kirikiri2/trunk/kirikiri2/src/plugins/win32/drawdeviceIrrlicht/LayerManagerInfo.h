@@ -7,7 +7,7 @@
 class LayerManagerInfo {
 	
 public:
-	LayerManagerInfo(irr::video::ITexture *texture);
+	LayerManagerInfo(irr::video::ITexture *texture, int layerWidth, int layerHeight);
 	virtual ~LayerManagerInfo();
 	
 private:
@@ -20,6 +20,9 @@ private:
 public:
 	// 割り当てテクスチャ
 	irr::video::ITexture *texture;
+	// 元レイヤサイズ
+	int layerWidth;
+	int layerHeight;
 
 	// テクスチャ描画操作用
 	void lock();

@@ -5,7 +5,8 @@
 /**
  * コンストラクタ
  */
-LayerManagerInfo::LayerManagerInfo(irr::video::ITexture *texture) : texture(texture)
+LayerManagerInfo::LayerManagerInfo(irr::video::ITexture *texture, int layerWidth, int layerHeight)
+	: texture(texture), layerWidth(layerWidth), layerHeight(layerHeight)
 {
 	destBuffer = NULL;
 };
