@@ -2408,11 +2408,12 @@ bool tTVPBaseBitmap::AffineBlt(tTVPRect destrect, const tTVPBaseBitmap *ref,
 		// round l and r to integer
 		tjs_int l, r;
 
-		l = ((ll-1) / 65536) + 1; // ceil
-		sxl += mul_16(65535 - ((ll-1) % 65536), sxs); // adjust source start point x
-		syl += mul_16(65535 - ((ll-1) % 65536), sys); // adjust source start point y
+		// 0x8000000 were choosed to avoid special divition behavior around zero
+		l = ((tjs_uint32)(ll + 0x80000000ul-1)/65536)-(0x80000000ul/65536)+1;
+		sxl += mul_16(65535 - ((tjs_uint32)(ll+0x80000000ul-1) % 65536), sxs); // adjust source start point x
+		syl += mul_16(65535 - ((tjs_uint32)(ll+0x80000000ul-1) % 65536), sys); // adjust source start point y
 
-		r = ((rr-1) / 65536) + 1; // ceil, note that at this point r is *NOT* inclusive
+		r = ((tjs_uint32)(rr + 0x80000000ul-1)/65536)-(0x80000000ul/65536)+1; // note that at this point r is *NOT* inclusive
 
 		// - clip widh destrect.left and destrect.right
 		if(l < destrect.left)
