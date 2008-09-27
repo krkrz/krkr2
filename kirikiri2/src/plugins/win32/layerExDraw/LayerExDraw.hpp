@@ -1,5 +1,5 @@
-#ifndef _layExText_hpp_
-#define _layExText_hpp_
+#ifndef _layerExText_hpp_
+#define _layerExText_hpp_
 
 #include <windows.h>
 #include <gdiplus.h>
@@ -30,7 +30,7 @@ struct GdiPlus {
  * フォント情報
  */
 class FontInfo {
-	friend class LayerExText;
+	friend class LayerExDraw;
 
 protected:
 	FontFamily *fontFamily; //< フォントファミリー
@@ -72,7 +72,7 @@ public:
  * 描画外観情報
  */
 class Appearance {
-	friend class LayerExText;
+	friend class LayerExDraw;
 public:
 	// 描画情報
 	struct DrawInfo{
@@ -158,7 +158,7 @@ public:
 /*
  * アウトラインベースのテキスト描画メソッドの追加
  */
-class LayerExText : public layerExBase
+class LayerExDraw : public layerExBase
 {
 protected:
 	// 情報保持用
@@ -171,22 +171,124 @@ protected:
 	/// レイヤに対して描画するコンテキスト
 	Graphics *graphics;
 
+	bool updateWhenDraw;
+
+public:
+	void setUpdateWhenDraw(int updateWhenDraw) {
+		this->updateWhenDraw = updateWhenDraw != 0;
+	}
+	int getUpdateWhenDraw() { return updateWhenDraw ? 1 : 0; }
+	
 public:	
-	LayerExText(DispatchT obj);
-	~LayerExText();
+	LayerExDraw(DispatchT obj);
+	~LayerExDraw();
 	virtual void reset();
+
+	// ------------------------------------------------------------------
+	// 描画メソッド群
+	// ------------------------------------------------------------------
+
+protected:
+	/**
+	 * パスの描画
+	 * @param app アピアランス
+	 * @param path 描画するパス
+	 */
+	void drawPath(const Appearance *app, const GraphicsPath *path);
+
 
 public:
 	/**
-	 * 登録済みブラシ/ペンによる文字列の描画
+	 * 画面の消去
+	 * @param argb 消去色
+	 */
+	void clear(ARGB argb);
+
+	/**
+	 * 円弧の描画
+	 * @param app アピアランス
+	 * @param x 左上座標
+	 * @param y 左上座標
+	 * @param width 横幅
+	 * @param height 縦幅
+	 * @param startAngle 時計方向円弧開始位置
+	 * @param sweepAngle 描画角度
+	 */
+	void drawArc(const Appearance *app, REAL x, REAL y, REAL width, REAL height, REAL startAngle, REAL sweepAngle);
+
+	/**
+	 * 円錐の描画
+	 * @param app アピアランス
+	 * @param x 左上座標
+	 * @param y 左上座標
+	 * @param width 横幅
+	 * @param height 縦幅
+	 * @param startAngle 時計方向円弧開始位置
+	 * @param sweepAngle 描画角度
+	 */
+	void drawPie(const Appearance *app, REAL x, REAL y, REAL width, REAL height, REAL startAngle, REAL sweepAngle);
+	
+	/**
+	 * ベジェ曲線の描画
+	 * @param app アピアランス
+	 * @param x1
+	 * @param y1
+	 * @param x2
+	 * @param y2
+	 * @param x3
+	 * @param y3
+	 * @param x4
+	 * @param y4
+	 */
+	void drawBezier(const Appearance *app, REAL x1, REAL y1, REAL x2, REAL y2, REAL x3, REAL y3, REAL x4, REAL y4);
+	
+	/**
+	 * 楕円の描画
+	 * @param app アピアランス
+	 * @param x
+	 * @param y
+	 * @param width
+	 * @param height
+	 */
+	void drawEllipse(const Appearance *app, REAL x, REAL y, REAL width, REAL height);
+
+	/**
+	 * 線分の描画
+	 * @param app アピアランス
+	 * @param x1 始点X座標
+	 * @param y1 始点Y座標
+	 * @param x2 終点X座標
+	 * @param y2 終点Y座標
+	 */
+	void drawLine(const Appearance *app, REAL x1, REAL y1, REAL x2, REAL y2);
+
+	/**
+	 * 矩形の描画
+	 * @param app アピアランス
+	 * @param x
+	 * @param y
+	 * @param width
+	 * @param height
+	 */
+	void drawRectangle(const Appearance *app, REAL x, REAL y, REAL width, REAL height);
+	
+	/**
+	 * 文字列の描画
 	 * @param font フォント
 	 * @param app アピアランス
 	 * @param x 描画位置X
 	 * @param y 描画位置Y
 	 * @param text 描画テキスト
-	 * @param noupdate 画面更新処理を行わない
 	 */
-	void drawString(FontInfo *font, Appearance *app, REAL x, REAL y, const tjs_char *text, bool noupdate=false);
+	void drawString(const FontInfo *font, const Appearance *app, REAL x, REAL y, const tjs_char *text);
+
+	/**
+	 * 画像の描画
+	 * @param x 表示位置X
+	 * @param y 表示位置Y
+	 * @param name 画像名
+	 */
+	void drawImage(REAL x, REAL y, const tjs_char *name);
 };
 
 #endif

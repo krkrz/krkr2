@@ -1,0 +1,197 @@
+/**
+ * 擬似コードによるマニュアル
+ */
+class GdiPlus {
+
+	// FontStyle 定義
+	FontStyleRegular = 0;
+	FontStyleBold = 1;
+	FontStyleItalic = 2;
+	FontStyleBoldItalic = 3;
+	FontStyleUnderline = 4;
+	FontStyleStrikeout = 8;
+
+	/**
+	 * プライベートフォントの追加(static)
+	 * @param fontFileName フォントファイル名
+	 * アプリケーション固有のフォントを追加します。
+	 * 吉里吉里アーカイブ中にあるフォントも登録できます。
+	 */
+	function addPrivateFont(fontFileName);
+
+	/**
+	 * プライベートフォント一覧をログに出力(static)
+	 * 情報参照用です。これで出力される名前をファミリーに指定できます。
+	 */
+	function showPrivateFontList();
+	
+	/**
+	 * フォント情報
+	 */
+	class Font {
+		/**
+		 * コンストラクタ
+		 * @param familyName フォントファミリー
+		 * @param emSize フォントのサイズ
+		 * @param style フォントスタイル
+		 */
+		function Font(familyName, emSize, style);
+		
+		property familyName; //< フォントファミリー
+		property emSize;     //< フォントのサイズ
+		property style;      //< フォントのスタイル
+	};
+
+	/**
+	 * 描画外観情報
+	 * Illustrator のアピアランスをイメージしてください。
+	 * 描画に対して、複数のブラシ（塗り）とペン（線）を指定できます。
+	 * 先に追加した方が下に入ります
+	 */
+	class Appearance {
+
+		/**
+		 * コンストラクタ
+		 */
+		function Appearance();
+
+		/**
+		 * 情報のクリア
+		 */
+		function clear();
+	
+		/**
+		 * 固定色ブラシの追加
+		 * @param argb 色指定
+		 * @param ox 表示オフセットX
+		 * @param oy 表示オフセットY
+		 */
+		function addSolidBrush(argb, ox, oy);
+
+		/**
+		 * グラデーションブラシの追加
+		 * @param x1 色指定その1ポイント座標X
+		 * @param y1 色指定その1ポイント座標Y
+		 * @param argb1 色指定その１
+		 * @param x1 色指定その1ポイント座標X
+		 * @param y1 色指定その1ポイント座標Y
+		 * @param argb1 色指定その２
+		 * @param ox 表示オフセットX
+		 * @param oy 表示オフセットY
+		 */
+		function addLinearGradientBrush(x1, y1, argb1, x2, y2, argb2, ox, oy);
+		
+		/**
+		 * 固定色ペンの追加
+		 * @param argb 色指定
+		 * @param width ペン幅
+		 * @param ox 表示オフセットX
+		 * @param oy 表示オフセットY
+		 */
+		function addColorPen(argb, width, ox, oy);
+	};
+}
+
+/**
+ * レイヤにベクタ描画メソッドが拡張されます
+ */
+class Layer {
+
+	/**
+	 * 描画時にその領域に対する update() 呼び出しを行うかどうか
+	 */
+	property updateWhenDraw;
+
+	/**
+	 * 画面の消去
+	 * @param argb 消去色
+	 */
+	function clear(argb);
+
+	/**
+	 * 円弧の描画
+	 * @param app アピアランス GdiPlus.Appearance で描画スタイルを指定します
+	 * @param x 左上座標
+	 * @param y 左上座標
+	 * @param width 横幅
+	 * @param height 縦幅
+	 * @param startAngle 時計方向円弧開始位置
+	 * @param sweepAngle 描画角度
+	 */
+	function drawArc(app, x, y, width, height, startAngle, sweepAngle);
+
+	/**
+	 * 円錐の描画
+	 * @param app アピアランス GdiPlus.Appearance で描画スタイルを指定します
+	 * @param x 左上座標
+	 * @param y 左上座標
+	 * @param width 横幅
+	 * @param height 縦幅
+	 * @param startAngle 時計方向円弧開始位置
+	 * @param sweepAngle 描画角度
+	 */
+	function drawPie(app, x, y, width, height, startAngle, sweepAngle);
+	
+	/**
+	 * ベジェ曲線の描画
+	 * @param app アピアランス GdiPlus.Appearance で描画スタイルを指定します
+	 * @param x1
+	 * @param y1
+	 * @param x2
+	 * @param y2
+	 * @param x3
+	 * @param y3
+	 * @param x4
+	 * @param y4
+	 */
+	function drawBezier(app, x1, y1, x2, y2, x3, y3, x4, y4);
+	
+	/**
+	 * 楕円の描画
+	 * @param app アピアランス GdiPlus.Appearance で描画スタイルを指定します
+	 * @param x
+	 * @param y
+	 * @param width
+	 * @param height
+	 */
+	function drawEllipse(app, x, y, width, height);
+
+	/**
+	 * 線分の描画
+	 * @param app アピアランス GdiPlus.Appearance で描画スタイルを指定します
+	 * @param x1 始点X座標
+	 * @param y1 始点Y座標
+	 * @param x2 終点X座標
+	 * @param y2 終点Y座標
+	 */
+	function drawLine(app, x1, y1, x2, y2);
+
+	/**
+	 * 矩形の描画
+	 * @param app アピアランス GdiPlus.Appearance で描画スタイルを指定します
+	 * @param x
+	 * @param y
+	 * @param width
+	 * @param height
+	 */
+	function drawRectangle(app, x, y, width, height);
+	
+	/**
+	 * 文字列の描画
+	 * @param font フォント GdiPlus.Font でフォントを指定します
+	 * @param app アピアランス GdiPlus.Appearance で描画スタイルを指定します
+	 * @param x 描画位置X
+	 * @param y 描画位置Y
+	 * @param text 描画テキスト
+	 */
+	function drawString(font, app, x, y, text);
+
+	/**
+	 * 画像の描画
+	 * @param x 表示位置X
+	 * @param y 表示位置Y
+	 * @param name 画像名
+	 */
+	function drawImage(x, y, name);
+};
+

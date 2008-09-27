@@ -1,5 +1,5 @@
 #pragma comment(lib, "gdiplus.lib")
-#include "LayerExText.hpp"
+#include "LayerExDraw.hpp"
 
 #include <stdio.h>
 /**
@@ -10,7 +10,7 @@ static void log(const tjs_char *format, ...)
 	va_list args;
 	va_start(args, format);
 	tjs_char msg[1024];
-	_vsnwprintf(msg, 1024, format, args);
+	_vsnwprintf_s(msg, 1024, _TRUNCATE, format, args);
 	TVPAddLog(msg);
 	va_end(args);
 }
@@ -72,7 +72,7 @@ GdiPlus::addPrivateFont(const tjs_char *fontFileName)
 				STATSTG stat;
 				in->Stat(&stat, STATFLAG_NONAME);
 				// サイズあふれ無視注意
-				ULONG size = stat.cbSize.QuadPart;
+				ULONG size = (ULONG)stat.cbSize.QuadPart;
 				char *data = new char[size];
 				if (in->Read(data, size, &size) == S_OK) {
 					privateFontCollection->AddMemoryFont(data, size);
@@ -110,6 +110,10 @@ GdiPlus::showPrivateFontList()
 		}
 	}
 }
+
+// --------------------------------------------------------
+// フォント情報
+// --------------------------------------------------------
 
 /**
  * コンストラクタ
@@ -260,22 +264,22 @@ Appearance::addColorPen(ARGB argb, REAL width, REAL ox, REAL oy)
 /**
  * コンストラクタ
  */
-LayerExText::LayerExText(DispatchT obj)
-	: layerExBase(obj), width(-1), height(-1), pitch(0), buffer(NULL), bitmap(NULL), graphics(NULL)
+LayerExDraw::LayerExDraw(DispatchT obj)
+	: layerExBase(obj), width(-1), height(-1), pitch(0), buffer(NULL), bitmap(NULL), graphics(NULL), updateWhenDraw(true)
 {
 }
 
 /**
  * デストラクタ
  */
-LayerExText::~LayerExText()
+LayerExDraw::~LayerExDraw()
 {
 	delete graphics;
 	delete bitmap;
 }
 
 void
-LayerExText::reset()
+LayerExDraw::reset()
 {
 	layerExBase::reset();
 	// 変更されている場合はつくりなおし
@@ -299,18 +303,23 @@ LayerExText::reset()
 }
 
 /**
- * パスでの文字列の描画（ブラシ＋ペン）
- * @param text 描画テキスト
- * @param x 原点X
- * @param y 原点Y
+ * 画面の消去
+ * @param argb 消去色
  */
 void
-LayerExText::drawString(FontInfo *font, Appearance *app, REAL x, REAL y, const tjs_char *text, bool noupdate)
+LayerExDraw::clear(ARGB argb)
 {
-	// 文字列のパスを準備
-	GraphicsPath path;
-	path.AddString(text, -1, font->fontFamily, font->style, font->emSize, PointF(x, y), NULL);
+	graphics->Clear(Color(argb));
+}
 
+/**
+ * パスを描画する
+ * @param app 表示表現
+ * @param path 描画するパス
+ */
+void
+LayerExDraw::drawPath(const Appearance *app, const GraphicsPath *path)
+{
 	// 領域記録用
 	Rect unionRect;
 	Rect rect;
@@ -325,17 +334,17 @@ LayerExText::drawString(FontInfo *font, Appearance *app, REAL x, REAL y, const t
 			case 0:
 				{
 					Pen *pen = (Pen*)i->info;
-					graphics->DrawPath(pen, &path);
-					if (!noupdate) {
-						path.GetBounds(&rect, &matrix, pen);
+					graphics->DrawPath(pen, path);
+					if (updateWhenDraw) {
+						path->GetBounds(&rect, &matrix, pen);
 						unionRect.Union(unionRect, unionRect, rect);
 					}
 				}
 				break;
 			case 1:
-				graphics->FillPath((Brush*)i->info, &path);
-				if (!noupdate) {
-					path.GetBounds(&rect, &matrix, NULL);
+				graphics->FillPath((Brush*)i->info, path);
+				if (updateWhenDraw) {
+					path->GetBounds(&rect, &matrix, NULL);
 					unionRect.Union(unionRect, unionRect, rect);
 				}
 				break;
@@ -344,10 +353,161 @@ LayerExText::drawString(FontInfo *font, Appearance *app, REAL x, REAL y, const t
 		i++;
 	}
 
-	if (!noupdate) {
+	if (updateWhenDraw) {
 		// 更新処理
 		tTJSVariant  vars [4] = { unionRect.X, unionRect.Y, unionRect.Width, unionRect.Height };
 		tTJSVariant *varsp[4] = { vars, vars+1, vars+2, vars+3 };
 		_pUpdate(4, varsp);
 	}
+}
+
+/**
+ * 円弧の描画
+ * @param x 左上座標
+ * @param y 左上座標
+ * @param width 横幅
+ * @param height 縦幅
+ * @param startAngle 時計方向円弧開始位置
+ * @param sweepAngle 描画角度
+ */
+void
+LayerExDraw::drawArc(const Appearance *app, REAL x, REAL y, REAL width, REAL height, REAL startAngle, REAL sweepAngle)
+{
+	GraphicsPath path;
+	path.AddArc(x, y, width, height, startAngle, sweepAngle);
+	drawPath(app, &path);
+}
+
+/**
+ * ベジェ曲線の描画
+ * @param app アピアランス
+ * @param x1
+ * @param y1
+ * @param x2
+ * @param y2
+ * @param x3
+ * @param y3
+ * @param x4
+ * @param y4
+ */
+void
+LayerExDraw::drawBezier(const Appearance *app, REAL x1, REAL y1, REAL x2, REAL y2, REAL x3, REAL y3, REAL x4, REAL y4)
+{
+	GraphicsPath path;
+	path.AddBezier(x1, y1, x2, y2, x3, y3, x4, y4);
+	drawPath(app, &path);
+}
+
+/**
+ * 円錐の描画
+ * @param x 左上座標
+ * @param y 左上座標
+ * @param width 横幅
+ * @param height 縦幅
+ * @param startAngle 時計方向円弧開始位置
+ * @param sweepAngle 描画角度
+ */
+void
+LayerExDraw::drawPie(const Appearance *app, REAL x, REAL y, REAL width, REAL height, REAL startAngle, REAL sweepAngle)
+{
+	GraphicsPath path;
+	path.AddPie(x, y, width, height, startAngle, sweepAngle);
+	drawPath(app, &path);
+}
+
+/**
+ * 楕円の描画
+ * @param app アピアランス
+ * @param x
+ * @param y
+ * @param width
+ * @param height
+ */
+void
+LayerExDraw::drawEllipse(const Appearance *app, REAL x, REAL y, REAL width, REAL height)
+{
+	GraphicsPath path;
+	path.AddEllipse(x, y, width, height);
+	drawPath(app, &path);
+}
+
+/**
+ * 線分の描画
+ * @param app アピアランス
+ * @param x1 始点X座標
+ * @param y1 始点Y座標
+ * @param x2 終点X座標
+ * @param y2 終点Y座標
+ */
+void
+LayerExDraw::drawLine(const Appearance *app, REAL x1, REAL y1, REAL x2, REAL y2)
+{
+	GraphicsPath path;
+	path.AddLine(x1, y1, x2, y2);
+	drawPath(app, &path);
+}
+
+/**
+ * 矩形の描画
+ * @param app アピアランス
+ * @param x
+ * @param y
+ * @param width
+ * @param height
+ */
+void
+LayerExDraw::drawRectangle(const Appearance *app, REAL x, REAL y, REAL width, REAL height)
+{
+	GraphicsPath path;
+	RectF rect(x, y, width, height);
+	path.AddRectangle(rect);
+	drawPath(app, &path);
+}
+
+/**
+ * 文字列の描画
+ * @param font フォント
+ * @param app アピアランス
+ * @param x 描画位置X
+ * @param y 描画位置Y
+ * @param text 描画テキスト
+ */
+void
+LayerExDraw::drawString(const FontInfo *font, const Appearance *app, REAL x, REAL y, const tjs_char *text)
+{
+	// 文字列のパスを準備
+	GraphicsPath path;
+	path.AddString(text, -1, font->fontFamily, font->style, font->emSize, PointF(x, y), NULL);
+	drawPath(app, &path);
+}
+
+/**
+ * 画像の描画
+ * @param name 画像名
+ * @param x 表示位置X
+ * @param y 表示位置Y
+ */
+void
+LayerExDraw::drawImage(REAL x, REAL y, const tjs_char *name)
+{
+	// 画像読み込み
+	IStream *in = TVPCreateIStream(name, TJS_BS_READ);
+	if(!in) {
+		TVPThrowExceptionMessage((ttstr(TJS_W("cannot open : ")) + ttstr(name)).c_str());
+	}
+	
+	try {
+		// 画像生成
+		Image image(in);
+		int ret;
+		if ((ret = image.GetLastStatus()) != Ok) {
+			TVPThrowExceptionMessage((ttstr(TJS_W("cannot load : ")) + ttstr(name) + ttstr(L" : ") + ttstr(ret)).c_str());
+		}
+		// 描画処理
+		graphics->DrawImage(&image, x, y);
+	} catch (...) {
+		in->Release();
+		throw;
+	}
+	in->Release();
 }
