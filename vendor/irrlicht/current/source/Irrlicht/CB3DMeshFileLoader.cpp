@@ -30,14 +30,6 @@ CB3DMeshFileLoader::CB3DMeshFileLoader(scene::ISceneManager* smgr)
 }
 
 
-//! destructor
-CB3DMeshFileLoader::~CB3DMeshFileLoader()
-{
-	for (s32 n=Materials.size()-1; n>=0; --n)
-		delete Materials[n].Material;
-}
-
-
 //! returns true if the file maybe is able to be loaded by this class
 //! based on the file extension (e.g. ".bsp")
 bool CB3DMeshFileLoader::isALoadableFileExtension(const c8* fileName) const
@@ -336,7 +328,7 @@ bool CB3DMeshFileLoader::readChunkMESH(CSkinnedMesh::SJoint *InJoint)
 			scene::SSkinMeshBuffer *MeshBuffer = AnimatedMesh->createBuffer();
 
 			if (brush_id!=-1)
-				MeshBuffer->Material=(*Materials[brush_id].Material);
+				MeshBuffer->Material=Materials[brush_id].Material;
 
 			if(readChunkTRIS(InJoint, MeshBuffer,AnimatedMesh->getMeshBuffers().size()-1, vertices_Start)==false)
 				return false;
@@ -543,7 +535,7 @@ bool CB3DMeshFileLoader::readChunkTRIS(CSkinnedMesh::SJoint *InJoint, scene::SSk
 		B3dMaterial = 0;
 
 	if (B3dMaterial)
-		MeshBuffer->Material = (*B3dMaterial->Material);
+		MeshBuffer->Material = B3dMaterial->Material;
 
 	s32 MemoryNeeded = B3dStack.getLast().length / sizeof(s32);
 	MeshBuffer->Indices.reallocate(MemoryNeeded + MeshBuffer->Indices.size() + 1);
@@ -813,9 +805,9 @@ bool CB3DMeshFileLoader::readChunkBRUS()
 
 		core::stringc MaterialName=readString(); //Not used but we still need the read it
 
-		SB3dMaterial B3dMaterial;
+		Materials.push_back(SB3dMaterial());
+		SB3dMaterial& B3dMaterial=Materials.getLast();
 
-		B3dMaterial.Material = new video::SMaterial();
 		B3dMaterial.Textures[0]=0;
 		B3dMaterial.Textures[1]=0;
 
@@ -867,9 +859,9 @@ bool CB3DMeshFileLoader::readChunkBRUS()
 		}
 
 		if (B3dMaterial.Textures[0] != 0)
-			B3dMaterial.Material->setTexture(0, B3dMaterial.Textures[0]->Texture);
+			B3dMaterial.Material.setTexture(0, B3dMaterial.Textures[0]->Texture);
 		if (B3dMaterial.Textures[1] != 0)
-			B3dMaterial.Material->setTexture(1, B3dMaterial.Textures[1]->Texture);
+			B3dMaterial.Material.setTexture(1, B3dMaterial.Textures[1]->Texture);
 
 		//If the first texture is empty:
 		if (B3dMaterial.Textures[1] != 0 && B3dMaterial.Textures[0] == 0)
@@ -886,59 +878,57 @@ bool CB3DMeshFileLoader::readChunkBRUS()
 			if (B3dMaterial.alpha==1)
 			{
 				if (B3dMaterial.Textures[1]->Blend & 5) //(Multiply 2)
-					B3dMaterial.Material->MaterialType = video::EMT_LIGHTMAP_M2;
+					B3dMaterial.Material.MaterialType = video::EMT_LIGHTMAP_M2;
 				else
-					B3dMaterial.Material->MaterialType = video::EMT_LIGHTMAP;
+					B3dMaterial.Material.MaterialType = video::EMT_LIGHTMAP;
 			}
 			else
-				B3dMaterial.Material->MaterialType = video::EMT_TRANSPARENT_VERTEX_ALPHA;
+				B3dMaterial.Material.MaterialType = video::EMT_TRANSPARENT_VERTEX_ALPHA;
 		}
 		else if (B3dMaterial.Textures[0]) //One texture:
 		{
 			if (B3dMaterial.Textures[0]->Flags & 2) //(Alpha mapped)
-				B3dMaterial.Material->MaterialType = video::EMT_TRANSPARENT_ALPHA_CHANNEL;
+				B3dMaterial.Material.MaterialType = video::EMT_TRANSPARENT_ALPHA_CHANNEL;
 			else if (B3dMaterial.Textures[0]->Flags & 4) //(Masked)
-				B3dMaterial.Material->MaterialType = video::EMT_TRANSPARENT_ALPHA_CHANNEL_REF; // Todo: create color key texture
+				B3dMaterial.Material.MaterialType = video::EMT_TRANSPARENT_ALPHA_CHANNEL_REF; // Todo: create color key texture
 			else if (B3dMaterial.alpha == 1)
-				B3dMaterial.Material->MaterialType = video::EMT_SOLID;
+				B3dMaterial.Material.MaterialType = video::EMT_SOLID;
 			else
-				B3dMaterial.Material->MaterialType = video::EMT_TRANSPARENT_VERTEX_ALPHA;
+				B3dMaterial.Material.MaterialType = video::EMT_TRANSPARENT_VERTEX_ALPHA;
 		}
 		else //No texture:
 		{
 			if (B3dMaterial.alpha == 1)
-				B3dMaterial.Material->MaterialType = video::EMT_SOLID;
+				B3dMaterial.Material.MaterialType = video::EMT_SOLID;
 			else
-				B3dMaterial.Material->MaterialType = video::EMT_TRANSPARENT_VERTEX_ALPHA;
+				B3dMaterial.Material.MaterialType = video::EMT_TRANSPARENT_VERTEX_ALPHA;
 		}
 
-		B3dMaterial.Material->AmbientColor = video::SColorf(B3dMaterial.red, B3dMaterial.green, B3dMaterial.blue, B3dMaterial.alpha).toSColor ();
+		B3dMaterial.Material.AmbientColor = video::SColorf(B3dMaterial.red, B3dMaterial.green, B3dMaterial.blue, B3dMaterial.alpha).toSColor ();
 
 		//------ Material fx ------
 
 		if (B3dMaterial.fx & 1) //full-bright
 		{
-			B3dMaterial.Material->AmbientColor = video::SColor(255, 255, 255, 255);
-			B3dMaterial.Material->Lighting = false;
+			B3dMaterial.Material.AmbientColor = video::SColor(255, 255, 255, 255);
+			B3dMaterial.Material.Lighting = false;
 		}
 
 		//if (B3dMaterial.fx & 2) //use vertex colors instead of brush color
 
 		if (B3dMaterial.fx & 4) //flatshaded
-			B3dMaterial.Material->GouraudShading = false;
+			B3dMaterial.Material.GouraudShading = false;
 
 		if (B3dMaterial.fx & 16) //disable backface culling
-			B3dMaterial.Material->BackfaceCulling = false;
+			B3dMaterial.Material.BackfaceCulling = false;
 
 		if (B3dMaterial.fx & 32) //force vertex alpha-blending
-			B3dMaterial.Material->MaterialType = video::EMT_TRANSPARENT_VERTEX_ALPHA;
+			B3dMaterial.Material.MaterialType = video::EMT_TRANSPARENT_VERTEX_ALPHA;
 
-		B3dMaterial.Material->DiffuseColor = video::SColorf(B3dMaterial.red, B3dMaterial.green, B3dMaterial.blue, B3dMaterial.alpha).toSColor ();
-		B3dMaterial.Material->EmissiveColor = video::SColorf(0.5, 0.5, 0.5, 0).toSColor ();
-		B3dMaterial.Material->SpecularColor = video::SColorf(0, 0, 0, 0).toSColor ();
-		B3dMaterial.Material->Shininess = B3dMaterial.shininess;
-
-		Materials.push_back(B3dMaterial);
+		B3dMaterial.Material.DiffuseColor = video::SColorf(B3dMaterial.red, B3dMaterial.green, B3dMaterial.blue, B3dMaterial.alpha).toSColor ();
+		B3dMaterial.Material.EmissiveColor = video::SColorf(0.5, 0.5, 0.5, 0).toSColor ();
+		B3dMaterial.Material.SpecularColor = video::SColorf(0, 0, 0, 0).toSColor ();
+		B3dMaterial.Material.Shininess = B3dMaterial.shininess;
 	}
 
 	B3dStack.erase(B3dStack.size()-1);

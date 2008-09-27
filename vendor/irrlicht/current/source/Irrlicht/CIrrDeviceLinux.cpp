@@ -47,9 +47,15 @@ CIrrDeviceLinux::CIrrDeviceLinux(video::E_DRIVER_TYPE driverType,
 #ifdef _IRR_COMPILE_WITH_X11_
 	display(0), visual(0), screennr(0), window(0), StdHints(0), SoftwareImage(0),
 #endif
-	Fullscreen(fullscreen), StencilBuffer(sbuffer), AntiAlias(antiAlias), DriverType(driverType),
+#ifdef _IRR_COMPILE_WITH_OPENGL_
+	Context(0),
+#endif
+	Fullscreen(fullscreen), StencilBuffer(sbuffer),
+	AntiAlias(antiAlias), DriverType(driverType),
 	Width(windowSize.Width), Height(windowSize.Height), Depth(24), 
-	Close(false), WindowActive(false), WindowMinimized(false), UseXVidMode(false), UseXRandR(false), UseGLXWindow(false), AutorepeatSupport(0)
+	Close(false), WindowActive(false), WindowMinimized(false),
+	UseXVidMode(false), UseXRandR(false), UseGLXWindow(false),
+	AutorepeatSupport(0)
 {
 	#ifdef _DEBUG
 	setDebugName("CIrrDeviceLinux");
@@ -96,7 +102,6 @@ CIrrDeviceLinux::CIrrDeviceLinux(video::E_DRIVER_TYPE driverType,
 }
 
 
-
 //! destructor
 CIrrDeviceLinux::~CIrrDeviceLinux()
 {
@@ -113,7 +118,6 @@ CIrrDeviceLinux::~CIrrDeviceLinux()
 			glXDestroyContext(display, Context);
 			if (UseGLXWindow)
 				glXDestroyWindow(display, glxWin);
-			Context = 0;
 		}
 		#endif // #ifdef _IRR_COMPILE_WITH_OPENGL_
 
@@ -156,7 +160,6 @@ int IrrPrintXError(Display *display, XErrorEvent *event)
 	return 0;
 }
 #endif
-
 
 
 bool CIrrDeviceLinux::createWindow(const core::dimension2d<s32>& windowSize,
@@ -803,7 +806,7 @@ bool CIrrDeviceLinux::run()
 					SKeyMap mp;
 					//mp.X11Key = XLookupKeysym(&event.xkey, 0);
 					char buf[5]="\0\0\0\0";
-					XLookupString (&event.xkey, buf, 4, &mp.X11Key, NULL) ;
+					XLookupString(&event.xkey, buf, 4, &mp.X11Key, NULL);
 
 					s32 idx = KeyMap.binary_search(mp);
 
@@ -883,6 +886,7 @@ void CIrrDeviceLinux::setWindowCaption(const wchar_t* text)
 	XwcTextListToTextProperty(display, const_cast<wchar_t**>(&text), 1, XStdICCTextStyle, &txt);
 	XSetWMName(display, window, &txt);
 	XSetWMIconName(display, window, &txt);
+	XFree(txt.value);
 #endif
 }
 
@@ -1112,6 +1116,7 @@ video::IVideoModeList* CIrrDeviceLinux::getVideoModeList()
 		if (display && temporaryDisplay)
 		{
 			XCloseDisplay(display);
+			display=0;
 		}
 	}
 #endif
@@ -1137,6 +1142,7 @@ void CIrrDeviceLinux::createKeyMap()
 	KeyMap.push_back(SKeyMap(XK_Scroll_Lock, KEY_SCROLL));
 	KeyMap.push_back(SKeyMap(XK_Sys_Req, 0)); // ???
 	KeyMap.push_back(SKeyMap(XK_Escape, KEY_ESCAPE));
+	KeyMap.push_back(SKeyMap(XK_Insert, KEY_INSERT));
 	KeyMap.push_back(SKeyMap(XK_Delete, KEY_DELETE));
 	KeyMap.push_back(SKeyMap(XK_Home, KEY_HOME));
 	KeyMap.push_back(SKeyMap(XK_Left, KEY_LEFT));
