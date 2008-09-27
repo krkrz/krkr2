@@ -10,6 +10,7 @@
 #include "IVideoDriver.h"
 #include "irrString.h"
 #include "SMeshBuffer.h"
+#include "irrMap.h"
 
 namespace irr
 {
@@ -51,6 +52,7 @@ private:
 
 		SObjMtl(SObjMtl& o) : Meshbuffer(o.Meshbuffer), Name(o.Name), Illumination(o.Illumination) { o.Meshbuffer->grab(); }
 
+		core::map<video::S3DVertex, int> VertMap;
 		scene::SMeshBuffer *Meshbuffer;
 		core::stringc Name;
 		c8 Illumination;

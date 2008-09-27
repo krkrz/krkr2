@@ -347,11 +347,11 @@ void COpenGLDriver::createMaterialRenderers()
 {
 	// create OpenGL material renderers
 
-	addAndDropMaterialRenderer(new COpenGLMaterialRenderer_SOLID( this));
-	addAndDropMaterialRenderer(new COpenGLMaterialRenderer_SOLID_2_LAYER( this));
+	addAndDropMaterialRenderer(new COpenGLMaterialRenderer_SOLID(this));
+	addAndDropMaterialRenderer(new COpenGLMaterialRenderer_SOLID_2_LAYER(this));
 
 	// add the same renderer for all lightmap types
-	COpenGLMaterialRenderer_LIGHTMAP* lmr = new COpenGLMaterialRenderer_LIGHTMAP( this);
+	COpenGLMaterialRenderer_LIGHTMAP* lmr = new COpenGLMaterialRenderer_LIGHTMAP(this);
 	addMaterialRenderer(lmr); // for EMT_LIGHTMAP:
 	addMaterialRenderer(lmr); // for EMT_LIGHTMAP_ADD:
 	addMaterialRenderer(lmr); // for EMT_LIGHTMAP_M2:
@@ -362,14 +362,14 @@ void COpenGLDriver::createMaterialRenderers()
 	lmr->drop();
 
 	// add remaining material renderer
-	addAndDropMaterialRenderer(new COpenGLMaterialRenderer_DETAIL_MAP( this));
-	addAndDropMaterialRenderer(new COpenGLMaterialRenderer_SPHERE_MAP( this));
-	addAndDropMaterialRenderer(new COpenGLMaterialRenderer_REFLECTION_2_LAYER( this));
-	addAndDropMaterialRenderer(new COpenGLMaterialRenderer_TRANSPARENT_ADD_COLOR( this));
-	addAndDropMaterialRenderer(new COpenGLMaterialRenderer_TRANSPARENT_ALPHA_CHANNEL( this));
-	addAndDropMaterialRenderer(new COpenGLMaterialRenderer_TRANSPARENT_ALPHA_CHANNEL_REF( this));
-	addAndDropMaterialRenderer(new COpenGLMaterialRenderer_TRANSPARENT_VERTEX_ALPHA( this));
-	addAndDropMaterialRenderer(new COpenGLMaterialRenderer_TRANSPARENT_REFLECTION_2_LAYER( this));
+	addAndDropMaterialRenderer(new COpenGLMaterialRenderer_DETAIL_MAP(this));
+	addAndDropMaterialRenderer(new COpenGLMaterialRenderer_SPHERE_MAP(this));
+	addAndDropMaterialRenderer(new COpenGLMaterialRenderer_REFLECTION_2_LAYER(this));
+	addAndDropMaterialRenderer(new COpenGLMaterialRenderer_TRANSPARENT_ADD_COLOR(this));
+	addAndDropMaterialRenderer(new COpenGLMaterialRenderer_TRANSPARENT_ALPHA_CHANNEL(this));
+	addAndDropMaterialRenderer(new COpenGLMaterialRenderer_TRANSPARENT_ALPHA_CHANNEL_REF(this));
+	addAndDropMaterialRenderer(new COpenGLMaterialRenderer_TRANSPARENT_VERTEX_ALPHA(this));
+	addAndDropMaterialRenderer(new COpenGLMaterialRenderer_TRANSPARENT_REFLECTION_2_LAYER(this));
 
 	// add normal map renderers
 	s32 tmp = 0;
@@ -418,7 +418,6 @@ bool COpenGLDriver::endScene( s32 windowId, core::rect<s32>* sourceRect )
 }
 
 
-
 //! clears the zbuffer
 bool COpenGLDriver::beginScene(bool backBuffer, bool zBuffer, SColor color)
 {
@@ -438,6 +437,7 @@ bool COpenGLDriver::beginScene(bool backBuffer, bool zBuffer, SColor color)
 	if (zBuffer)
 	{
 		glDepthMask(GL_TRUE);
+		LastMaterial.ZWriteEnable=true;
 		mask |= GL_DEPTH_BUFFER_BIT;
 	}
 
@@ -446,13 +446,11 @@ bool COpenGLDriver::beginScene(bool backBuffer, bool zBuffer, SColor color)
 }
 
 
-
 //! Returns the transformation set by setTransform
 const core::matrix4& COpenGLDriver::getTransform(E_TRANSFORMATION_STATE state) const
 {
 	return Matrices[state];
 }
-
 
 
 //! sets transformation
@@ -511,7 +509,6 @@ void COpenGLDriver::setTransform(E_TRANSFORMATION_STATE state, const core::matri
 		break;
 	}
 }
-
 
 
 //! draws a vertex primitive list
@@ -1229,7 +1226,7 @@ void COpenGLDriver::setRenderStates3DMode()
 		// unset old material
 
 		if (LastMaterial.MaterialType != Material.MaterialType &&
-			static_cast<u32>(LastMaterial.MaterialType) < MaterialRenderers.size())
+				static_cast<u32>(LastMaterial.MaterialType) < MaterialRenderers.size())
 			MaterialRenderers[LastMaterial.MaterialType].Renderer->OnUnsetMaterial();
 
 		// set new material.
@@ -1375,9 +1372,9 @@ void COpenGLDriver::setBasicRenderStates(const SMaterial& material, const SMater
 	}
 
 	// zwrite
-	if (resetAllRenderStates || lastmaterial.ZWriteEnable != material.ZWriteEnable)
+//	if (resetAllRenderStates || lastmaterial.ZWriteEnable != material.ZWriteEnable)
 	{
-		if (material.ZWriteEnable)
+		if (material.ZWriteEnable && (AllowZWriteOnTransparent || !material.isTransparent()))
 		{
 			glDepthMask(GL_TRUE);
 		}
@@ -1424,6 +1421,11 @@ void COpenGLDriver::setBasicRenderStates(const SMaterial& material, const SMater
 	{
 		if (resetAllRenderStates || lastmaterial.TextureLayer[u].TextureWrap != material.TextureLayer[u].TextureWrap)
 		{
+			if (MultiTextureExtension)
+				extGlActiveTexture(GL_TEXTURE0_ARB + u);
+			else if (u>0)
+				break; // stop loop
+
 			GLint mode=GL_REPEAT;
 			switch (material.TextureLayer[u].TextureWrap)
 			{
@@ -1464,7 +1466,7 @@ void COpenGLDriver::setBasicRenderStates(const SMaterial& material, const SMater
 					else
 #endif
 						// fallback
-						mode=GL_CLAMP_TO_EDGE;
+						mode=GL_CLAMP;
 					break;
 				case ETC_MIRROR:
 #ifdef GL_VERSION_1_4
@@ -1486,10 +1488,6 @@ void COpenGLDriver::setBasicRenderStates(const SMaterial& material, const SMater
 					break;
 			}
 
-			if (MultiTextureExtension)
-				extGlActiveTexture(GL_TEXTURE0_ARB + u);
-			else if (u>0)
-				break;
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, mode);
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, mode);
 		}
@@ -1510,10 +1508,10 @@ void COpenGLDriver::setRenderStates2DMode(bool alpha, bool texture, bool alphaCh
 		{
 			if (static_cast<u32>(Material.MaterialType) < MaterialRenderers.size())
 				MaterialRenderers[Material.MaterialType].Renderer->OnUnsetMaterial();
-			setBasicRenderStates(SMaterial(), SMaterial(), true);
-			// everything that is wrongly set by SMaterial default
-			glDisable(GL_DEPTH_TEST);
-			glDisable(GL_LIGHTING);
+			SMaterial mat;
+			mat.Lighting=false;
+			mat.ZBuffer=false;
+			setBasicRenderStates(mat, SMaterial(), true);
 		}
 
 		GLfloat glmat[16];
@@ -2219,6 +2217,7 @@ bool COpenGLDriver::setRenderTarget(video::ITexture* texture, bool clearBackBuff
 	if (clearZBuffer)
 	{
 		glDepthMask(GL_TRUE);
+		LastMaterial.ZWriteEnable=true;
 		mask |= GL_DEPTH_BUFFER_BIT;
 	}
 

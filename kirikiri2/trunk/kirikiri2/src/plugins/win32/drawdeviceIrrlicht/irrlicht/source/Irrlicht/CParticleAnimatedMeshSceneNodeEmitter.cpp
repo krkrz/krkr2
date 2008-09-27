@@ -130,7 +130,10 @@ s32 CParticleAnimatedMeshSceneNodeEmitter::emitt(u32 now, u32 timeSinceLastCall,
 					randomMB = MBNumber;
 				}
 
-				u32 vertexNumber = os::Randomizer::rand() % frameMesh->getMeshBuffer(randomMB)->getVertexCount();
+				u32 vertexNumber = frameMesh->getMeshBuffer(randomMB)->getVertexCount();
+				if (!vertexNumber)
+					continue;
+				vertexNumber = os::Randomizer::rand() % vertexNumber;
 
 				switch( frameMesh->getMeshBuffer(randomMB)->getVertexType() )
 				{

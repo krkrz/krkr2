@@ -1,5 +1,5 @@
-VERSION = 1.4
-# Irrlicht Engine 1.4
+VERSION = 1.4.2
+# Irrlicht Engine 1.4.2
 # Makefile for Linux
 #
 # To use, just run:
@@ -60,6 +60,14 @@ CXXFLAGS += -pg
 endif
 CFLAGS := -fexpensive-optimizations -O3 -DPNG_NO_MMX_CODE -DPNG_NO_MNG_FEATURES
 
+sharedlib : CXXFLAGS += -fpic
+sharedlib : CFLAGS += -fpic
+
+#multilib handling
+ifeq ($(HOSTTYPE), x86_64)
+LIBSELECT=64
+endif
+
 #Linux specific options
 STATIC_LIB = libIrrlicht.a
 SHARED_LIB = libIrrlicht.so
@@ -68,12 +76,12 @@ LIB_PATH = ../../lib/$(SYSTEM)
 INSTALL_DIR = /usr/local/lib
 staticlib sharedlib install: SYSTEM = Linux
 staticlib sharedlib : LDFLAGS = --no-export-all-symbols --add-stdcall-alias
-sharedlib : LDFLAGS += -L/usr/X11R6/lib -lGL -lXxf86vm
+sharedlib : LDFLAGS += -L/usr/X11R6/lib$(LIBSELECT) -lGL -lXxf86vm
 staticlib sharedlib : CXXINCS += -I/usr/X11R6/include
 
 #Windows specific options
 sharedlib_win32 staticlib_win32: SYSTEM = Win32-gcc
-sharedlib_win32: LDFLAGS = -lgdi32 -lopengl32 -ld3dx9d -lSDL
+sharedlib_win32: LDFLAGS = -lgdi32 -lopengl32 -ld3dx9d
 sharedlib_win32 staticlib_win32: CPPFLAGS += -DIRR_COMPILE_WITH_DX9_DEV_PACK -D__GNUWIN32__ -D_WIN32 -DWIN32 -D_WINDOWS -D_MBCS -D_USRDLL
 staticlib_win32: CPPFLAGS += -D_IRR_STATIC_LIB_
 

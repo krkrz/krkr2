@@ -60,7 +60,7 @@ namespace scene
 			SkinningSpace=space;
 		}
 
-		virtual E_BONE_SKINNING_SPACE getSkinningSpace()
+		virtual E_BONE_SKINNING_SPACE getSkinningSpace() const
 		{
 			return SkinningSpace;
 		}

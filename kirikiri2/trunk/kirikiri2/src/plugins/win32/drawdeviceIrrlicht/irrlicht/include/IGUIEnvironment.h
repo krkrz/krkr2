@@ -61,9 +61,6 @@ class IGUIEnvironment : public virtual IReferenceCounted
 {
 public:
 
-	//! destructor
-	virtual ~IGUIEnvironment() {};
-
 	//! Draws all gui elements by traversing the GUI environment starting
 	//! at the root node.
 	virtual void drawAll() = 0;
@@ -522,7 +519,6 @@ public:
 
 	//! reads an element
 	virtual void readGUIElement(io::IXMLReader* reader, IGUIElement* parent) =0;
-
 };
 
 

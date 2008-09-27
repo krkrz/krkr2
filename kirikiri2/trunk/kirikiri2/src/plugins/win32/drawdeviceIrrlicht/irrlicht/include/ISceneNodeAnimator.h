@@ -53,6 +53,8 @@ namespace scene
 			return ESNAT_UNKNOWN;
 		}
 	};
+
+
 } // end namespace scene
 } // end namespace irr
 
