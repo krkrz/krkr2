@@ -1,4 +1,4 @@
-Plugins.link("layerExText.dll");
+Plugins.link("layerExDraw.dll");
 
 var WIDTH=800;
 var HEIGHT=600;
@@ -28,13 +28,17 @@ class MyWindow extends Window
 		var app = new GdiPlus.Appearance();
 		app.addColorPen(0xffffffff, 10, 0, 0);
 		app.addSolidBrush(0xff000000, 0, 0);
-		var font = new GdiPlus.FontInfo("Arial", 40, GdiPlus.FontStyleBold);
-		layer.drawString(font, app, 10, 10, "これはテストのテキストABC", false);
+		var font = new GdiPlus.Font("Arial", 40, GdiPlus.FontStyleBold);
+		layer.drawString(font, app, 10, 10, "これはテストのテキストABC");
+
+		layer.drawLine(app, 400, 100, 700, 300);
+		layer.drawEllipse(app, 10, 100, 300, 100);
+		layer.drawRectangle(app, 10, 220, 300, 100);
 
 		app.clear();
 		app.addLinearGradientBrush(0, 0, 0xffff0000, 0, 50, 0xff0000ff, 0, 0);
 		app.addColorPen(0xffffffff, 1, 0, 0);
-		layer.drawString(font, app, 10, 150, "別のブラシにしてみるテスト", false);
+		layer.drawString(font, app, 10, 350, "別のブラシにしてみるテスト");
 	}
 
 	function onKeyDown(key, shift)
