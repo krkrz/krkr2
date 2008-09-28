@@ -38,13 +38,18 @@ NCB_REGISTER_SUBCLASS(vector3df) {
 	NCB_CONSTRUCTOR(());
 };
 
+#define BASE_METHOD \
+	NCB_METHOD(captureScreenShot)
+
 NCB_REGISTER_SUBCLASS(IrrlichtDrawDevice) {
 	NCB_CONSTRUCTOR(());
+	BASE_METHOD;
 	NCB_PROPERTY_RO(interface, GetDevice);
 };
 
 NCB_REGISTER_SUBCLASS(IrrlichtWindow) {
 	NCB_CONSTRUCTOR((iTJSDispatch2 *, int, int, int, int));
+	BASE_METHOD;
 	NCB_PROPERTY(left, getLeft, setLeft);
 	NCB_PROPERTY(top, getTop, setTop);
 	NCB_PROPERTY(width, getWidth, setWidth);

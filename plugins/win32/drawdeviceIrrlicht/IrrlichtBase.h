@@ -8,8 +8,9 @@
 /**
  * Irrlicht 処理のベース
  */
-class IrrlichtBase : public tTVPContinuousEventCallbackIntf,
-					   public irr::IEventReceiver
+class IrrlichtBase :
+	public tTVPContinuousEventCallbackIntf,
+	public irr::IEventReceiver
 {
 
 protected:
@@ -76,9 +77,15 @@ public:
 	// ------------------------------------------------------------
 public:
 	/**
-	 * シーンの読み込み
+	 * 画像のキャプチャ
+	 * @param dest 格納先レイヤ
 	 */
-	//void loadScene(const char *name);
+	void captureScreenShot(iTJSDispatch2 *layer);
+
+	/**
+	 * シーンデータファイルの読み込み
+	 */
+	void loadScene(const char *name);
 
 	/**
 	 * カメラシーンの設定

@@ -1,4 +1,5 @@
 #include "IrrlichtBase.h"
+#include "ncbind/ncbind.hpp"
 
 extern void message_log(const char* format, ...);
 extern void error_log(const char *format, ...);
@@ -115,19 +116,16 @@ IrrlichtBase::OnContinuousCallback(tjs_uint64 tick)
 		device->getTimer()->tick();
 		
 		// 描画開始
-		driver->beginScene(true, true, irr::video::SColor(255,0,0,0));
-		
-		/// シーンマネージャの描画
-		device->getSceneManager()->drawAll();
-		
-		// 固有処理
-		update(tick);
-		
-		// GUIの描画
-		device->getGUIEnvironment()->drawAll();
-		
-		// 描画完了
-		driver->endScene();
+		if (driver->beginScene(true, true, irr::video::SColor(255,0,0,0))) {
+			/// シーンマネージャの描画
+			device->getSceneManager()->drawAll();
+			// 固有処理
+			update(tick);
+			// GUIの描画
+			device->getGUIEnvironment()->drawAll();
+			// 描画完了
+			driver->endScene();
+		}
 	}
 };
 
@@ -182,4 +180,62 @@ IrrlichtBase::OnEvent(const irr::SEvent &event)
 		break;
 	}
 	return false;
+}
+
+/**
+ * 画像のキャプチャ
+ * @param dest 格納先レイヤ
+ */
+void
+IrrlichtBase::captureScreenShot(iTJSDispatch2 *dest)
+{
+	// レイヤインスタンス以外ではエラー
+
+	if (dest->IsInstanceOf(TJS_IGNOREPROP,NULL,NULL,L"Layer",dest) != TJS_S_TRUE) {
+		TVPThrowExceptionMessage(L"dest is not layer");
+	}
+	// 画像をキャプチャ
+	IImage *screen;
+	if (driver == NULL || (screen = driver->createScreenShot()) == NULL) {
+		TVPThrowExceptionMessage(L"can't get screenshot");
+	}
+
+	dimension2d<s32> size = screen->getDimension();
+	int width  = size.Width;
+	int height = size.Height;
+
+	ncbPropAccessor layer(dest);
+	layer.SetValue(L"width",  width);
+	layer.SetValue(L"height", height);
+	layer.SetValue(L"imageLeft",  0);
+	layer.SetValue(L"imageTop",   0);
+	layer.SetValue(L"imageWidth",  width);
+	layer.SetValue(L"imageHeight", height);
+
+	unsigned char *buffer = (unsigned char*)layer.GetValue(L"mainImageBufferForWrite", ncbTypedefs::Tag<tjs_int>());
+	int pitch = layer.GetValue(L"mainImageBufferPitch", ncbTypedefs::Tag<tjs_int>());
+
+	// 画像データのコピー
+	if (screen->getColorFormat() == ECF_A8R8G8B8) {
+		unsigned char *src = (unsigned char*)screen->lock();
+		int slen   = width * 4;
+		int spitch = screen->getPitch();
+		for (int y=0;y<height;y++) {
+			memcpy(buffer, src, slen);
+			src    += spitch;
+			buffer += pitch;
+		}
+		screen->unlock();
+	} else {
+		for (int y=0;y<height;y++) {
+			u32 *line = (u32 *)buffer;
+			for (int x=0;x<width;x++) {
+				*line++ = screen->getPixel(x, y).color;
+				buffer += pitch;
+			}
+		}
+	}
+
+	dest->FuncCall(0, L"update", NULL, NULL, 0, NULL, dest);
+	screen->drop();
 }
