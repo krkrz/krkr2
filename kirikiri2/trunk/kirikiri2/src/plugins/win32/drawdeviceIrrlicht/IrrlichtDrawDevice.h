@@ -7,8 +7,9 @@
 /**
  * Irrlicht ベースの DrawDevice
  */
-class IrrlichtDrawDevice : public tTVPDrawDevice,
-						   public IrrlichtBase
+class IrrlichtDrawDevice :
+	public IrrlichtBase,
+	public tTVPDrawDevice
 {
 	typedef tTVPDrawDevice inherited;
 	
@@ -58,9 +59,6 @@ public:
 		const tTVPRect &cliprect, tTVPLayerType type, tjs_int opacity);
 	virtual void TJS_INTF_METHOD EndBitmapCompletion(iTVPLayerManager * manager);
 
-	// ------------------------------------------------------------
-	// 吉里吉里からの呼び出し制御用
-	// ------------------------------------------------------------
 protected:
 	/**
 	 * クラス固有更新処理
@@ -68,6 +66,19 @@ protected:
 	 */
 	void update(tjs_uint64 tick);
 
+	// -----------------------------------------------------------------------
+	// 共通メソッド呼び出し用
+	// -----------------------------------------------------------------------
+
+public:
+	void captureScreenShot(iTJSDispatch2 *dest) {
+		IrrlichtBase::captureScreenShot(dest);
+	}
+
+	// -----------------------------------------------------------------------
+	// 固有メソッド
+	// -----------------------------------------------------------------------
+	
 public:
 	/**
 	 * @return デバイス情報

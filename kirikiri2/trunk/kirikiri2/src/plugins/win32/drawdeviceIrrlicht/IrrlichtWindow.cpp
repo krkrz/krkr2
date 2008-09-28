@@ -163,7 +163,7 @@ IrrlichtWindow::~IrrlichtWindow()
 	if (window) {
 		setReceiver(messageHandler, false);
 		window->Release();
-			window = NULL;
+		window = NULL;
 	}
 }
 
