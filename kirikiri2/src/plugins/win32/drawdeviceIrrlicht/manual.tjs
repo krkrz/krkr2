@@ -7,6 +7,13 @@ class Irrlicht {
 	 * 共通機能 ※クラスとしては存在しません
 	 */
 	class Base {
+		/**
+		 * 描画画像のキャプチャ
+		 * @param dest 格納先レイヤ
+		 * ※ウインドウの領域からキャプチャーしてるようなので上に別のものがのってると
+		 * そちらの画面がキャプチャーされてしまいます
+		 */
+		function captureScreenShot(dest);
 	}
 	
 	/**
