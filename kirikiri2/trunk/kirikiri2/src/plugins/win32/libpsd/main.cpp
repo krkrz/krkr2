@@ -230,7 +230,7 @@ public:
 			return;
 		}
 
-		ncbPropAccessor obj(layer.AsObject());
+		ncbPropAccessor obj(layer);
 		SETPROP(obj, lay, left);
 		SETPROP(obj, lay, top);
 		obj.SetValue(L"width",  width);
