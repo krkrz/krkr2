@@ -8,51 +8,6 @@ extern void deInitGdiPlus();
 // 配列操作用
 // ------------------------------------------------------
 
-// Array クラスメンバ
-static iTJSDispatch2 *ArrayCountProp   = NULL;   // Array.count
-
-tjs_int64 getArrayCount(iTJSDispatch2 *array)
-{
-	tTJSVariant result;
-	if (TJS_SUCCEEDED(ArrayCountProp->PropGet(0, NULL, NULL, &result, array))) {
-		return result.AsInteger();
-	}
-	return 0;
-}
-
-iTJSDispatch2*
-getMember(iTJSDispatch2 *dispatch, int num)
-{
-	tTJSVariant val;
-	if (TJS_FAILED(dispatch->PropGetByNum(TJS_IGNOREPROP,
-										  num,
-										  &val,
-										  dispatch))) {
-		ttstr msg = TJS_W("can't get array index:");
-		msg += num;
-		TVPThrowExceptionMessage(msg.c_str());
-	}
-	return val.AsObject();
-}
-
-REAL 
-getRealValue(iTJSDispatch2 *obj, const tjs_char *name)
-{
-	tTJSVariant val;
-	if (TJS_FAILED(obj->PropGet(0,
-								name,
-								NULL,
-								&val,
-								obj))) {
-		ttstr msg = TJS_W("can't get member:");
-		msg += name;
-		TVPThrowExceptionMessage(msg.c_str());
-	}
-	return (REAL)val.AsReal();
-}
-
-// ----------------------------------- クラスの登録
-
 NCB_REGISTER_SUBCLASS(FontInfo) {
 	NCB_CONSTRUCTOR((const tjs_char *, REAL, INT));
 	NCB_PROPERTY_WO(familyName, setFamilyName);
@@ -63,9 +18,8 @@ NCB_REGISTER_SUBCLASS(FontInfo) {
 NCB_REGISTER_SUBCLASS(Appearance) {
 	NCB_CONSTRUCTOR(());
 	NCB_METHOD(clear);
-	NCB_METHOD(addSolidBrush);
-	NCB_METHOD(addLinearGradientBrush);
-	NCB_METHOD(addColorPen);
+	NCB_METHOD(addBrush);
+	NCB_METHOD(addPen);
 };
 
 #define ENUM(n) Variant(#n, (int)n)
@@ -80,6 +34,12 @@ NCB_REGISTER_CLASS(GdiPlus)
 	ENUM(FontStyleUnderline);
 	ENUM(FontStyleStrikeout);
 
+	ENUM(BrushTypeSolidColor);
+	ENUM(BrushTypeHatchFill);
+	ENUM(BrushTypeTextureFill);
+	ENUM(BrushTypePathGradient);
+	ENUM(BrushTypeLinearGradient);
+	
 // statics
 	NCB_METHOD(addPrivateFont);
 	NCB_METHOD(showPrivateFontList);
@@ -123,41 +83,5 @@ NCB_ATTACH_CLASS_WITH_HOOK(LayerExDraw, Layer) {
 
 // ----------------------------------- 起動・開放処理
 
-/**
- * 登録処理前
- */
-void PreRegistCallback()
-{
-	initGdiPlus();
-
-	// Array.count を取得
-	{
-		tTJSVariant varScripts;
-		TVPExecuteExpression(TJS_W("Array"), &varScripts);
-		iTJSDispatch2 *dispatch = varScripts.AsObjectNoAddRef();
-		tTJSVariant val;
-		if (TJS_FAILED(dispatch->PropGet(TJS_IGNOREPROP,
-										 TJS_W("count"),
-										 NULL,
-										 &val,
-										 dispatch))) {
-			TVPThrowExceptionMessage(L"can't get Array.count");
-		}
-		ArrayCountProp = val.AsObject();
-	}
-}
-
-/**
- * 開放処理後
- */
-void PostUnregistCallback()
-{
-	if (ArrayCountProp) {
-		ArrayCountProp->Release();
-		ArrayCountProp = NULL;
-	}
-	deInitGdiPlus();
-}
-
-NCB_PRE_REGIST_CALLBACK(PreRegistCallback);
-NCB_POST_UNREGIST_CALLBACK(PostUnregistCallback);
+NCB_PRE_REGIST_CALLBACK(initGdiPlus);
+NCB_POST_UNREGIST_CALLBACK(deInitGdiPlus);
