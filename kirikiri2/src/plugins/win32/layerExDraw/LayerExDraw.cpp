@@ -1,5 +1,6 @@
 #pragma comment(lib, "gdiplus.lib")
 #include "LayerExDraw.hpp"
+#include "ncbind/ncbind.hpp"
 
 #include <stdio.h>
 /**
@@ -209,51 +210,454 @@ Appearance::clear()
 	drawInfos.clear();
 }
 
+/**
+ * 画像の生成
+ */
+static Image *loadImage(const tjs_char *name)
+{
+	// 画像読み込み
+	Image *image = NULL;
+	IStream *in = TVPCreateIStream(name, TJS_BS_READ);
+	if (in == NULL) {
+		TVPThrowExceptionMessage((ttstr(L"cannot open : ") + name).c_str());
+	} else {
+		// 画像生成
+		try {
+			image = new Image(in);
+			in->Release();
+			if (image->GetLastStatus() != Ok) {
+				delete image;
+				TVPThrowExceptionMessage((ttstr(L"cannot load : ") + name).c_str());
+			}
+		} catch(...) {
+			delete image;
+			in->Release();
+			throw;
+		}
+	}
+	return image;
+}
+
+static bool IsArray(tTJSVariant &var)
+{
+	if (var.Type() == tvtObject) {
+		iTJSDispatch2 *obj = var.AsObjectNoAddRef();
+		return obj->IsInstanceOf(0, NULL, NULL, L"Array", obj) == TJS_S_TRUE;
+	}
+	return false;
+}
 
 /**
- * 固定色ブラシの追加
- * @param argb 色指定
+ * 座標情報の生成
+ */
+static PointF getPoint(tTJSVariant &var)
+{
+	ncbPropAccessor info(var);
+	if (IsArray(var)) {
+		return PointF((REAL)info.getRealValue(0),
+					  (REAL)info.getRealValue(1));
+	} else {
+		return PointF((REAL)info.getRealValue(L"x"),
+					  (REAL)info.getRealValue(L"y"));
+	}
+}
+
+/**
+ * 色の配列を取得
+ */
+static void getPoints(tTJSVariant &var, vector<PointF> &points)
+{
+	ncbPropAccessor info(var);
+	int c = info.GetArrayCount();
+	for (int i=0;i<c;i++) {
+		tTJSVariant p;
+		if (info.checkVariant(i, p)) {
+			points.push_back(getPoint(p));
+		}
+	}
+}
+
+static void getPoints(ncbPropAccessor &info, int n, vector<PointF> &points)
+{
+	tTJSVariant var;
+	if (info.checkVariant(n, var)) {
+		getPoints(var, points);
+	}
+}
+
+static void getPoints(ncbPropAccessor &info, const tjs_char *n, vector<PointF> &points)
+{
+	tTJSVariant var;
+	if (info.checkVariant(n, var)) {
+		getPoints(var, points);
+	}
+}
+
+/**
+ * 矩形情報の生成
+ */
+static RectF getRect(tTJSVariant &var)
+{
+	ncbPropAccessor info(var);
+	if (IsArray(var)) {
+		return RectF((REAL)info.getRealValue(0),
+					 (REAL)info.getRealValue(1),
+					 (REAL)info.getRealValue(2),
+					 (REAL)info.getRealValue(3));
+	} else {
+		return RectF((REAL)info.getRealValue(L"x"),
+					 (REAL)info.getRealValue(L"y"),
+					 (REAL)info.getRealValue(L"width"),
+					 (REAL)info.getRealValue(L"height"));
+	}
+}
+
+/**
+ * 実数の配列を取得
+ */
+static void getReals(tTJSVariant &var, vector<REAL> &points)
+{
+	ncbPropAccessor info(var);
+	int c = info.GetArrayCount();
+	for (int i=0;i<c;i++) {
+		points.push_back((REAL)info.getRealValue(i));
+	}
+}
+
+static void getReals(ncbPropAccessor &info, int n, vector<REAL> &points)
+{
+	tTJSVariant var;
+	if (info.checkVariant(n, var)) {
+		getReals(var, points);
+	}
+}
+
+static void getReals(ncbPropAccessor &info, const tjs_char *n, vector<REAL> &points)
+{
+	tTJSVariant var;
+	if (info.checkVariant(n, var)) {
+		getReals(var, points);
+	}
+}
+
+/**
+ * 色の配列を取得
+ */
+static void getColors(tTJSVariant &var, vector<Color> &colors)
+{
+	ncbPropAccessor info(var);
+	int c = info.GetArrayCount();
+	for (int i=0;i<c;i++) {
+		colors.push_back(Color((ARGB)info.getIntValue(i)));
+	}
+}
+
+static void getColors(ncbPropAccessor &info, int n, vector<Color> &colors)
+{
+	tTJSVariant var;
+	if (info.checkVariant(n, var)) {
+		getColors(var, colors);
+	}
+}
+
+static void getColors(ncbPropAccessor &info, const tjs_char *n, vector<Color> &colors)
+{
+	tTJSVariant var;
+	if (info.checkVariant(n, var)) {
+		getColors(var, colors);
+	}
+}
+
+template <class T>
+void commonBrushParameter(ncbPropAccessor &info, T *brush)
+{
+	tTJSVariant var;
+	// SetBlend
+	if (info.checkVariant(L"blend", var)) {
+		vector<REAL> factors;
+		vector<REAL> positions;
+		ncbPropAccessor binfo(var);
+		if (IsArray(var)) {
+			getReals(binfo, 0, factors);
+			getReals(binfo, 1, positions);
+		} else {
+			getReals(binfo, L"blendFactors", factors);
+			getReals(binfo, L"blendPositions", positions);
+		}
+		int count = (int)factors.size();
+		if ((int)positions.size() > count) {
+			count = (int)positions.size();
+		}
+		if (count > 0) {
+			brush->SetBlend(&factors[0], &positions[0], count);
+		}
+	}
+	// SetBlendBellShape
+	if (info.checkVariant(L"blendBellShape", var)) {
+		ncbPropAccessor sinfo(var);
+		if (IsArray(var)) {
+			brush->SetBlendBellShape((REAL)sinfo.getRealValue(0),
+									 (REAL)sinfo.getRealValue(1));
+		} else {
+			brush->SetBlendBellShape((REAL)info.getRealValue(L"focus"),
+									 (REAL)info.getRealValue(L"scale"));
+		}
+	}
+	// SetBlendTriangularShape
+	if (info.checkVariant(L"blendTriangularShape", var)) {
+		ncbPropAccessor sinfo(var);
+		if (IsArray(var)) {
+			brush->SetBlendTriangularShape((REAL)sinfo.getRealValue(0),
+										   (REAL)sinfo.getRealValue(1));
+		} else {
+			brush->SetBlendTriangularShape((REAL)info.getRealValue(L"focus"),
+										   (REAL)info.getRealValue(L"scale"));
+		}
+	}
+	// SetGammaCorrection
+	if (info.checkVariant(L"useGammaCorrection", var)) {
+		brush->SetGammaCorrection((BOOL)var);
+	}
+	// SetInterpolationColors
+	if (info.checkVariant(L"interpolationColors", var)) {
+		vector<Color> colors;
+		vector<REAL> positions;
+		ncbPropAccessor binfo(var);
+		if (IsArray(var)) {
+			getColors(binfo, 0, colors);
+			getReals(binfo, 1, positions);
+		} else {
+			getColors(binfo, L"presetColors", colors);
+			getReals(binfo, L"blendPositions", positions);
+		}
+		int count = (int)colors.size();
+		if ((int)positions.size() > count) {
+			count = (int)positions.size();
+		}
+		if (count > 0) {
+			brush->SetInterpolationColors(&colors[0], &positions[0], count);
+		}
+	}
+}
+
+/**
+ * ブラシの生成
+ */
+Brush* createBrush(tTJSVariant colorOrBrush)
+{
+	Brush *brush;
+	if (colorOrBrush.Type() != tvtObject) {
+		brush = new SolidBrush(Color((tjs_int)colorOrBrush));
+	} else {
+		// 種別ごとに作り分ける
+		ncbPropAccessor info(colorOrBrush);
+		BrushType type = (BrushType)info.getIntValue(L"type", BrushTypeSolidColor);
+		switch (type) {
+		case BrushTypeSolidColor:
+			brush = new SolidBrush(Color((ARGB)info.getIntValue(L"color", 0x000000)));
+			break;
+		case BrushTypeHatchFill:
+			brush = new HatchBrush((HatchStyle)info.getIntValue(L"hatchStyle", HatchStyleHorizontal),
+								   Color((ARGB)info.getIntValue(L"foreColor", 0x000000)),
+								   Color((ARGB)info.getIntValue(L"backColor", 0xffffff)));
+			break;
+		case BrushTypeTextureFill:
+			{
+				ttstr imgname = info.GetValue(L"image", ncbTypedefs::Tag<ttstr>());
+				Image *image = loadImage(imgname.c_str());
+				WrapMode wrapMode = (WrapMode)info.getIntValue(L"wrapMode", WrapModeTile);
+				tTJSVariant dstRect;
+				if (info.checkVariant(L"dstRect", dstRect)) {
+					brush = new TextureBrush(image, wrapMode, getRect(dstRect));
+				} else if (info.HasValue(L"dstX")) {
+					brush = new TextureBrush(image, wrapMode,
+											 (REAL)info.getRealValue(L"dstX"),
+											 (REAL)info.getRealValue(L"dstY"),
+											 (REAL)info.getRealValue(L"dstWidth"),
+											 (REAL)info.getRealValue(L"dstHeight"));
+				} else {
+					brush = new TextureBrush(image, wrapMode);
+				}
+				delete image;
+				break;
+			}
+		case BrushTypePathGradient:
+			{
+				PathGradientBrush *pbrush;
+				vector<PointF> points;
+				getPoints(info, L"points", points);
+				WrapMode wrapMode = (WrapMode)info.getIntValue(L"wrapMode", WrapModeTile);
+				pbrush = new PathGradientBrush(&points[0], (int)points.size(), wrapMode);
+
+				// 共通パラメータ
+				commonBrushParameter(info, pbrush);
+
+				tTJSVariant var;
+				//SetCenterColor
+				if (info.checkVariant(L"centerColor", var)) {
+					pbrush->SetCenterColor(Color((ARGB)(tjs_int)var));
+				}
+				//SetCenterPoint
+				if (info.checkVariant(L"centerPoint", var)) {
+					pbrush->SetCenterPoint(getPoint(var));
+				}
+				//SetFocusScales
+				if (info.checkVariant(L"focusScales", var)) {
+					ncbPropAccessor sinfo(var);
+					if (IsArray(var)) {
+						pbrush->SetFocusScales((REAL)sinfo.getRealValue(0),
+											   (REAL)sinfo.getRealValue(1));
+					} else {
+						pbrush->SetFocusScales((REAL)info.getRealValue(L"xScale"),
+											   (REAL)info.getRealValue(L"yScale"));
+					}
+				}
+				//SetSurroundColors
+				if (info.checkVariant(L"interpolationColors", var)) {
+					vector<Color> colors;
+					getColors(var, colors);
+					int size = (int)colors.size();
+					pbrush->SetSurroundColors(&colors[0], &size);
+				}
+				brush = pbrush;
+			}
+			break;
+		case BrushTypeLinearGradient:
+			{
+				LinearGradientBrush *lbrush;
+				Color color1((ARGB)info.getIntValue(L"color1", 0));
+				Color color2((ARGB)info.getIntValue(L"color2", 0));
+
+				tTJSVariant var;
+				if (info.checkVariant(L"point1", var)) {
+					PointF point1 = getPoint(var);
+					info.checkVariant(L"point2", var);
+					PointF point2 = getPoint(var);
+					lbrush = new LinearGradientBrush(point1, point2, color1, color2);
+				} else if (info.checkVariant(L"rect", var)) {
+					RectF rect = getRect(var);
+					if (info.HasValue(L"angle")) {
+						// アングル指定がある場合
+						lbrush = new LinearGradientBrush(rect, color1, color2,
+														 (REAL)info.getRealValue(L"angle", 0),
+														 (BOOL)info.getIntValue(L"isAngleScalable", 0));
+					} else {
+						// 無い場合はモードを参照
+						lbrush = new LinearGradientBrush(rect, color1, color2,
+														 (LinearGradientMode)info.getIntValue(L"mode", LinearGradientModeHorizontal));
+					}
+				} else {
+					TVPThrowExceptionMessage(L"must set point1,2 or rect");
+				}
+
+				// 共通パラメータ
+				commonBrushParameter(info, lbrush);
+
+				// SetWrapMode
+				if (info.checkVariant(L"wrapMode", var)) {
+					lbrush->SetWrapMode((WrapMode)(tjs_int)var);
+				}
+				brush = lbrush;
+			}
+			break;
+		default:
+			TVPThrowExceptionMessage(L"invalid brush type");
+			break;
+		}
+	}
+	return brush;
+}
+
+/**
+ * ブラシの追加
+ * @param colorOrBrush ARGB色指定またはブラシ情報（辞書）
  * @param ox 表示オフセットX
  * @param oy 表示オフセットY
  */
 void
-Appearance::addSolidBrush(ARGB argb, REAL ox, REAL oy)
+Appearance::addBrush(tTJSVariant colorOrBrush, REAL ox, REAL oy)
 {
-	drawInfos.push_back(DrawInfo(ox, oy, new SolidBrush(Color(argb))));
-}
-
-
-/**
- * グラデーションブラシの追加
- * @param x1
- * @param y1
- * @param argb1 色指定その１
- * @param x1
- * @param y1
- * @param argb1 色指定その２
- * @param ox 表示オフセットX
- * @param oy 表示オフセットY
- */
-void 
-Appearance::addLinearGradientBrush(REAL x1, REAL y1, ARGB argb1, REAL x2, REAL y2, ARGB argb2, REAL ox, REAL oy)
-{
-	drawInfos.push_back(DrawInfo(ox, oy, new LinearGradientBrush(PointF(x1,y1), PointF(x2,y2), Color(argb1), Color(argb2))));
+	drawInfos.push_back(DrawInfo(ox, oy, createBrush(colorOrBrush)));
 }
 
 /**
- * 固定色ペンの追加
+ * ペンの追加
+ * @param colorOrBrush ARGB色指定またはブラシ情報（辞書）
+ * @param widthOrOption ペン幅またはペン情報（辞書）
  * @param ox 表示オフセットX
  * @param oy 表示オフセットY
- * @param argb 色指定
- * @param width ペン幅
  */
-void 
-Appearance::addColorPen(ARGB argb, REAL width, REAL ox, REAL oy)
+void
+Appearance::addPen(tTJSVariant colorOrBrush, tTJSVariant widthOrOption, REAL ox, REAL oy)
 {
-	Pen *pen = new Pen(Color(argb), width);
-	// とりあえずまるく接続
-	pen->SetLineCap(LineCapRound, LineCapRound, DashCapRound);
-	pen->SetLineJoin(LineJoinRound);
+	Pen *pen;
+	REAL width = 1.0;
+	if (colorOrBrush.Type() == tvtObject) {
+		Brush *brush = createBrush(colorOrBrush);
+		pen = new Pen(brush, width);
+		delete brush;
+	} else {
+		pen = new Pen(Color((ARGB)(tjs_int)colorOrBrush), width);
+	}
+	if (widthOrOption.Type() != tvtObject) {
+		pen->SetWidth((REAL)(tjs_real)widthOrOption);
+	} else {
+		ncbPropAccessor info(widthOrOption);
+		
+		tTJSVariant var;
+
+		// SetAlignment
+		if (info.checkVariant(L"alignment", var)) {
+			pen->SetAlignment((PenAlignment)(tjs_int)var);
+		}
+		// SetCompoundArray
+		if (info.checkVariant(L"compoundArray", var)) {
+			vector<REAL> reals;
+			getReals(var, reals);
+			pen->SetCompoundArray(&reals[0], (int)reals.size());
+		}
+
+		// SetDashStyle
+		if (info.checkVariant(L"dashStyle", var)) {
+			pen->SetDashStyle((DashStyle)(tjs_int)var);
+		}
+		// SetDashCap
+		if (info.checkVariant(L"dashCap", var)) {
+			pen->SetDashCap((DashCap)(tjs_int)var);
+		}
+		// SetDashOffset
+		if (info.checkVariant(L"dashOffset", var)) {
+			pen->SetDashOffset((REAL)(tjs_real)var);
+		}
+		// SetDashPattern
+		if (info.checkVariant(L"dashPattern", var)) {
+			vector<REAL> reals;
+			getReals(var, reals);
+			pen->SetDashPattern(&reals[0], (int)reals.size());
+		}
+
+		// SetStartCap
+		// SetCustomStartCap XXX
+		if (info.checkVariant(L"startCap", var)) {
+			pen->SetStartCap((LineCap)(tjs_int)var);
+		}
+
+		// SetEndCap
+		// SetCustomEndCap XXX
+		if (info.checkVariant(L"endCap", var)) {
+			pen->SetEndCap((LineCap)(tjs_int)var);
+		}
+
+		// SetLineJoin
+		if (info.checkVariant(L"lineJoin", var)) {
+			pen->SetLineJoin((LineJoin)(tjs_int)var);
+		}
+		
+		// SetMiterLimit
+		if (info.checkVariant(L"miterLimit", var)) {
+			pen->SetMiterLimit((REAL)(tjs_real)var);
+		}
+	}
 	drawInfos.push_back(DrawInfo(ox, oy, pen));
 }
 
@@ -490,24 +894,7 @@ LayerExDraw::drawString(const FontInfo *font, const Appearance *app, REAL x, REA
 void
 LayerExDraw::drawImage(REAL x, REAL y, const tjs_char *name)
 {
-	// 画像読み込み
-	IStream *in = TVPCreateIStream(name, TJS_BS_READ);
-	if(!in) {
-		TVPThrowExceptionMessage((ttstr(TJS_W("cannot open : ")) + ttstr(name)).c_str());
-	}
-	
-	try {
-		// 画像生成
-		Image image(in);
-		int ret;
-		if ((ret = image.GetLastStatus()) != Ok) {
-			TVPThrowExceptionMessage((ttstr(TJS_W("cannot load : ")) + ttstr(name) + ttstr(L" : ") + ttstr(ret)).c_str());
-		}
-		// 描画処理
-		graphics->DrawImage(&image, x, y);
-	} catch (...) {
-		in->Release();
-		throw;
-	}
-	in->Release();
+	Image *image = loadImage(name);
+	graphics->DrawImage(image, x, y);
+	delete image;
 }
