@@ -39,6 +39,103 @@ NCB_REGISTER_CLASS(GdiPlus)
 	ENUM(BrushTypeTextureFill);
 	ENUM(BrushTypePathGradient);
 	ENUM(BrushTypeLinearGradient);
+
+	ENUM(DashCapFlat);
+	ENUM(DashCapRound);
+	ENUM(DashCapTriangle);
+	
+	ENUM(DashStyleSolid);
+	ENUM(DashStyleDash);
+	ENUM(DashStyleDot);
+	ENUM(DashStyleDashDot);
+	ENUM(DashStyleDashDotDot);
+
+	ENUM(HatchStyleHorizontal);
+	ENUM(HatchStyleVertical);
+	ENUM(HatchStyleForwardDiagonal);
+	ENUM(HatchStyleBackwardDiagonal);
+	ENUM(HatchStyleCross);
+	ENUM(HatchStyleDiagonalCross);
+	ENUM(HatchStyle05Percent);
+	ENUM(HatchStyle10Percent);
+	ENUM(HatchStyle20Percent);
+	ENUM(HatchStyle25Percent);
+	ENUM(HatchStyle30Percent);
+	ENUM(HatchStyle40Percent);
+	ENUM(HatchStyle50Percent);
+	ENUM(HatchStyle60Percent);
+	ENUM(HatchStyle70Percent);
+	ENUM(HatchStyle75Percent);
+	ENUM(HatchStyle80Percent);
+	ENUM(HatchStyle90Percent);
+	ENUM(HatchStyleLightDownwardDiagonal);
+	ENUM(HatchStyleLightUpwardDiagonal);
+	ENUM(HatchStyleDarkDownwardDiagonal);
+	ENUM(HatchStyleDarkUpwardDiagonal);
+	ENUM(HatchStyleWideDownwardDiagonal);
+	ENUM(HatchStyleWideUpwardDiagonal);
+	ENUM(HatchStyleLightVertical);
+	ENUM(HatchStyleLightHorizontal);
+	ENUM(HatchStyleNarrowVertical);
+	ENUM(HatchStyleNarrowHorizontal);
+	ENUM(HatchStyleDarkVertical);
+	ENUM(HatchStyleDarkHorizontal);
+	ENUM(HatchStyleDashedDownwardDiagonal);
+	ENUM(HatchStyleDashedUpwardDiagonal);
+	ENUM(HatchStyleDashedHorizontal);
+	ENUM(HatchStyleDashedVertical);
+	ENUM(HatchStyleSmallConfetti);
+	ENUM(HatchStyleLargeConfetti);
+	ENUM(HatchStyleZigZag);
+	ENUM(HatchStyleWave);
+	ENUM(HatchStyleDiagonalBrick);
+	ENUM(HatchStyleHorizontalBrick);
+	ENUM(HatchStyleWeave);
+	ENUM(HatchStylePlaid);
+	ENUM(HatchStyleDivot);
+	ENUM(HatchStyleDottedGrid);
+	ENUM(HatchStyleDottedDiamond);
+	ENUM(HatchStyleShingle);
+	ENUM(HatchStyleTrellis);
+	ENUM(HatchStyleSphere);
+	ENUM(HatchStyleSmallGrid);
+	ENUM(HatchStyleSmallCheckerBoard);
+	ENUM(HatchStyleLargeCheckerBoard);
+	ENUM(HatchStyleOutlinedDiamond);
+	ENUM(HatchStyleSolidDiamond);
+	ENUM(HatchStyleTotal);
+	ENUM(HatchStyleLargeGrid);
+	ENUM(HatchStyleMin);
+	ENUM(HatchStyleMax);
+
+	ENUM(LinearGradientModeHorizontal);
+	ENUM(LinearGradientModeVertical);
+	ENUM(LinearGradientModeForwardDiagonal);
+	ENUM(LinearGradientModeBackwardDiagonal);
+
+	ENUM(LineCapFlat);
+	ENUM(LineCapSquare);
+	ENUM(LineCapRound);
+	ENUM(LineCapTriangle);
+	ENUM(LineCapNoAnchor);
+	ENUM(LineCapSquareAnchor);
+	ENUM(LineCapRoundAnchor);
+	ENUM(LineCapDiamondAnchor);
+	ENUM(LineCapArrowAnchor);
+
+	ENUM(LineJoinMiter);
+	ENUM(LineJoinBevel);
+	ENUM(LineJoinRound);
+	ENUM(LineJoinMiterClipped);
+	
+	ENUM(PenAlignmentCenter);
+	ENUM(PenAlignmentInset);
+
+	ENUM(WrapModeTile);
+	ENUM(WrapModeTileFlipX);
+	ENUM(WrapModeTileFlipY);
+	ENUM(WrapModeTileFlipXY);
+	ENUM(WrapModeClamp);
 	
 // statics
 	NCB_METHOD(addPrivateFont);

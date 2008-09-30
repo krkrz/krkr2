@@ -454,12 +454,12 @@ Brush* createBrush(tTJSVariant colorOrBrush)
 		BrushType type = (BrushType)info.getIntValue(L"type", BrushTypeSolidColor);
 		switch (type) {
 		case BrushTypeSolidColor:
-			brush = new SolidBrush(Color((ARGB)info.getIntValue(L"color", 0x000000)));
+			brush = new SolidBrush(Color((ARGB)info.getIntValue(L"color", 0xffffffff)));
 			break;
 		case BrushTypeHatchFill:
 			brush = new HatchBrush((HatchStyle)info.getIntValue(L"hatchStyle", HatchStyleHorizontal),
-								   Color((ARGB)info.getIntValue(L"foreColor", 0x000000)),
-								   Color((ARGB)info.getIntValue(L"backColor", 0xffffff)));
+								   Color((ARGB)info.getIntValue(L"foreColor", 0xffffffff)),
+								   Color((ARGB)info.getIntValue(L"backColor", 0xff000000)));
 			break;
 		case BrushTypeTextureFill:
 			{
@@ -469,12 +469,6 @@ Brush* createBrush(tTJSVariant colorOrBrush)
 				tTJSVariant dstRect;
 				if (info.checkVariant(L"dstRect", dstRect)) {
 					brush = new TextureBrush(image, wrapMode, getRect(dstRect));
-				} else if (info.HasValue(L"dstX")) {
-					brush = new TextureBrush(image, wrapMode,
-											 (REAL)info.getRealValue(L"dstX"),
-											 (REAL)info.getRealValue(L"dstY"),
-											 (REAL)info.getRealValue(L"dstWidth"),
-											 (REAL)info.getRealValue(L"dstHeight"));
 				} else {
 					brush = new TextureBrush(image, wrapMode);
 				}
@@ -606,6 +600,11 @@ Appearance::addPen(tTJSVariant colorOrBrush, tTJSVariant widthOrOption, REAL ox,
 		
 		tTJSVariant var;
 
+		// SetWidth
+		if (info.checkVariant(L"width", var)) {
+			pen->SetWidth((REAL)(tjs_real)var);
+		}
+		
 		// SetAlignment
 		if (info.checkVariant(L"alignment", var)) {
 			pen->SetAlignment((PenAlignment)(tjs_int)var);
@@ -617,10 +616,6 @@ Appearance::addPen(tTJSVariant colorOrBrush, tTJSVariant widthOrOption, REAL ox,
 			pen->SetCompoundArray(&reals[0], (int)reals.size());
 		}
 
-		// SetDashStyle
-		if (info.checkVariant(L"dashStyle", var)) {
-			pen->SetDashStyle((DashStyle)(tjs_int)var);
-		}
 		// SetDashCap
 		if (info.checkVariant(L"dashCap", var)) {
 			pen->SetDashCap((DashCap)(tjs_int)var);
@@ -629,11 +624,18 @@ Appearance::addPen(tTJSVariant colorOrBrush, tTJSVariant widthOrOption, REAL ox,
 		if (info.checkVariant(L"dashOffset", var)) {
 			pen->SetDashOffset((REAL)(tjs_real)var);
 		}
+
+		// SetDashStyle
 		// SetDashPattern
-		if (info.checkVariant(L"dashPattern", var)) {
-			vector<REAL> reals;
-			getReals(var, reals);
-			pen->SetDashPattern(&reals[0], (int)reals.size());
+		if (info.checkVariant(L"dashStyle", var)) {
+			if (IsArray(var)) {
+				vector<REAL> reals;
+				getReals(var, reals);
+				pen->SetDashStyle(DashStyleCustom);
+				pen->SetDashPattern(&reals[0], (int)reals.size());
+			} else {
+				pen->SetDashStyle((DashStyle)(tjs_int)var);
+			}
 		}
 
 		// SetStartCap

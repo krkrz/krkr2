@@ -11,6 +11,118 @@ class GdiPlus {
 	FontStyleUnderline = 4;
 	FontStyleStrikeout = 8;
 
+	// BrushType定義
+	BrushTypeSolidColor = 0;
+    BrushTypeHatchFill = 1;
+    BrushTypeTextureFill = 2;
+    BrushTypePathGradient = 3;
+    BrushTypeLinearGradient = 4;
+
+	// DashCap定義
+	DashCapFlat = 0;
+    DashCapRound = 2;
+    DashCapTriangle = 3;
+
+	// DashStyle定義
+	DashStyleSolid = 0;
+    DashStyleDash = 1;
+    DashStyleDot = 2;
+    DashStyleDashDot = 3;
+    DashStyleDashDotDot = 4;
+
+	// HatchStyle定義
+	HatchStyleHorizontal = 0;
+    HatchStyleVertical = 1;
+    HatchStyleForwardDiagonal = 2;
+    HatchStyleBackwardDiagonal = 3;
+    HatchStyleCross = 4;
+    HatchStyleDiagonalCross = 5;
+    HatchStyle05Percent = 6;
+    HatchStyle10Percent = 7;
+    HatchStyle20Percent = 8;
+    HatchStyle25Percent = 9;
+    HatchStyle30Percent = 10;
+    HatchStyle40Percent = 11;
+    HatchStyle50Percent = 12;
+    HatchStyle60Percent = 13;
+    HatchStyle70Percent = 14;
+    HatchStyle75Percent = 15;
+    HatchStyle80Percent = 16;
+    HatchStyle90Percent = 17;
+    HatchStyleLightDownwardDiagonal = 18;
+    HatchStyleLightUpwardDiagonal = 19;
+    HatchStyleDarkDownwardDiagonal = 20;
+    HatchStyleDarkUpwardDiagonal = 21;
+    HatchStyleWideDownwardDiagonal = 22;
+    HatchStyleWideUpwardDiagonal = 23;
+    HatchStyleLightVertical = 24;
+    HatchStyleLightHorizontal = 25;
+    HatchStyleNarrowVertical = 26;
+    HatchStyleNarrowHorizontal = 27;
+    HatchStyleDarkVertical = 28;
+    HatchStyleDarkHorizontal = 29;
+    HatchStyleDashedDownwardDiagonal = 30;
+    HatchStyleDashedUpwardDiagonal = 311;
+    HatchStyleDashedHorizontal = 32;
+    HatchStyleDashedVertical = 33;
+    HatchStyleSmallConfetti = 34;
+    HatchStyleLargeConfetti = 35;
+    HatchStyleZigZag = 36;
+    HatchStyleWave = 37;
+    HatchStyleDiagonalBrick = 38;
+    HatchStyleHorizontalBrick = 39;
+    HatchStyleWeave = 40;
+    HatchStylePlaid = 41;
+    HatchStyleDivot = 42;
+    HatchStyleDottedGrid = 43;
+    HatchStyleDottedDiamond = 44;
+    HatchStyleShingle = 45;
+    HatchStyleTrellis = 46;
+    HatchStyleSphere = 47;
+    HatchStyleSmallGrid = 48;
+    HatchStyleSmallCheckerBoard = 49;
+    HatchStyleLargeCheckerBoard = 50;
+    HatchStyleOutlinedDiamond = 51;
+    HatchStyleSolidDiamond = 52;
+    HatchStyleTotal = 53;
+    HatchStyleLargeGrid = HatchStyleCross;
+    HatchStyleMin = HatchStyleHorizontal;
+    HatchStyleMax = HatchStyleTotal - 1;
+
+	// LinearGradientMode 定義
+	LinearGradientModeHorizontal = 0;
+    LinearGradientModeVertical = 1;
+    LinearGradientModeForwardDiagonal = 2;
+    LinearGradientModeBackwardDiagonal = 3;
+	
+	// LineCap 定義
+    LineCapFlat = 0;
+    LineCapSquare = 1;
+    LineCapRound = 2;
+    LineCapTriangle = 3;
+    LineCapNoAnchor = 0x10;
+    LineCapSquareAnchor = 0x11;
+    LineCapRoundAnchor = 0x12;
+    LineCapDiamondAnchor = 0x13;
+    LineCapArrowAnchor = 0x14;
+
+	// LineJoin 定義
+	LineJoinMiter = 0;
+    LineJoinBevel = 1;
+    LineJoinRound = 2;
+    LineJoinMiterClipped = 3;
+
+	// PenAligntment 定義
+	PenAlignmentCenter = 0;
+    PenAlignmentInset = 1;
+
+	// WrapMode 定義
+	WrapModeTile = 0;
+    WrapModeTileFlipX = 1;
+    WrapModeTileFlipY = 2;
+    WrapModeTileFlipXY = 3;
+    WrapModeClamp = 4;
+	
 	/**
 	 * プライベートフォントの追加(static)
 	 * @param fontFileName フォントファイル名
@@ -61,34 +173,84 @@ class GdiPlus {
 		function clear();
 	
 		/**
-		 * 固定色ブラシの追加
-		 * @param argb 色指定
+		 * ブラシの追加
+		 * @param colorOrBrush ARGB色指定またはブラシ情報（辞書）
 		 * @param ox 表示オフセットX
 		 * @param oy 表示オフセットY
+		 *
+		 * ブラシ情報定義
+		 * 基本  点指定は [x,y] の配列または %[x:x, y:y] の辞書
+		 *       矩形指定は [x,y,width,height] の配列または %[x:x, y:y, width:w, height:h] の辞書
+		 *       色指定は ARGB 32bit整数値
+		 *       パラメータについては GDI+ のドキュメントを見て研究してください
+		 *
+		 * type: ブラシ種別 BrushType で指定
+		 *
+		 *  BrushTypeSolidColor の場合 ※直接ARGBで色指定した場合と同じです
+		 *    color: 色指定(未指定時は白)
+		 *   
+		 *  BrushTypeHatchFill の場合
+		 *    hatchStyle: ハッチの種類(未指定時は HatchStyleHorizontal)
+		 *    foreColor: 前景色(未指定時は白)
+		 *    backColor: 背景色(未指定時は黒)
+		 *
+		 *  BrushTypeTextureFill の場合
+		 *   image: 画像指定
+		 *   wrapMode: 繰り返しパターン指定(未指定時は WrapModeTile)
+		 *   dstRect: テクスチャ領域矩形指定(未指定時は画像全部)
+		 *
+		 *  BrushTypePathGradient の場合
+		 *   points: 点指定の配列
+		 *   centerColor: 中心色
+		 *   centerPoint: 中心点
+		 *   focusScale: focus scales指定 [xScale,yScale] または %[xScale:, yScale:]
+		 *   surroundColors: 周囲色指定。色の配列
+		 *   ---- 以下は BrushTypeLinearGradientでも共通
+		 *   blend: ブレンドファクター指定。数値配列で [blendFactors, blendPositions] または辞書
+		 *   blendBellShape: ブレンド形状指定(bell形状) [focus, scale]
+		 *   blendTriangularShape: ブレンド形状指定(三角形状) [focus, scale]
+		 *   gammaCorrection: ガンマ補正を有効にするかどうか true/false
+		 *   interpolationColors: [presetColors(色配列), blendPositions(数値配列)]
+		 *
+		 *  BrushTypeLinearGradient の場合
+		 *   共通
+		 *     color1: 開始色指定
+		 *     color2: 終了色指定
+		 *     wrapMode: 繰り返しパターン指定(未指定時は WrapModeTile)
+		 *   ポイント指定
+		 *     point1: 開始点
+		 *     point2: 終了点
+		 *     ※角度は自動で決まる模様
+		 *   矩形指定
+		 *    rect: ポイント指定。左上が開始、右下が終了
+		 *    angle: 角度指定 (rect指定の場合だけ有効)
+		 *    isAngleScalable (角度指定がスケーラブルかどうか)
+		 *    mode: モード指定(省略時は LinearGradientModeHorizontal) angle 指定が無い場合に有効
 		 */
-		function addSolidBrush(argb, ox, oy);
-
-		/**
-		 * グラデーションブラシの追加
-		 * @param x1 色指定その1ポイント座標X
-		 * @param y1 色指定その1ポイント座標Y
-		 * @param argb1 色指定その１
-		 * @param x1 色指定その1ポイント座標X
-		 * @param y1 色指定その1ポイント座標Y
-		 * @param argb1 色指定その２
-		 * @param ox 表示オフセットX
-		 * @param oy 表示オフセットY
-		 */
-		function addLinearGradientBrush(x1, y1, argb1, x2, y2, argb2, ox, oy);
+		function addBrush(option, ox, oy);
 		
 		/**
-		 * 固定色ペンの追加
-		 * @param argb 色指定
-		 * @param width ペン幅
+		 * ペンの追加
+		 * @param colorOrBrush ARGB色指定またはブラシ情報（辞書）
+		 * @param widthOrOption ペン幅またはペン情報（辞書）
 		 * @param ox 表示オフセットX
 		 * @param oy 表示オフセットY
+		 *
+		 * ペン情報定義: widthOrOption が辞書の場合は詳細情報定義になります
+		 * パラメータについては GDI+ のドキュメントを見て研究してください
+		 *
+		 *  width: ペン幅指定
+		 *  alighment: アラインメント：省略時は PenAlignmentCenter
+		 *  compoundArray: compound array 指定。数値配列
+		 *  dashCap: ダッシュの cap style の指定。省略時は DashCapFlat
+		 *  dashOffset: ダッシュのオフセット指定。省略時は0
+		 *  dashStyle: ダッシュスタイル。配列にするとユーザ定義(数値配列)。デフォルトは DasyStyleSolid
+		 *  startCap: 開始位置の cap style の指定。省略時は LineCapFlat
+		 *  endCap: 終了位置の cap style の指定。省略時は LineCapFlat
+		 *  lineJoin: 結合形状指定。 省略時は LineJoinMiter
+		 *  miterLimit: miter limit 指定（数値)
 		 */
-		function addColorPen(argb, width, ox, oy);
+		function addPen(colorOrBrush, width, option, ox, oy);
 	};
 }
 

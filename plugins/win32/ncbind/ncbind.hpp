@@ -618,7 +618,7 @@ struct ncbPropAccessor {
 		if (addref) _obj->AddRef();
 	}
 	ncbPropAccessor(tTJSVariant var) : _obj(var.AsObject()) {
-		_obj->AddRef();
+		//_obj->AddRef();
 	}
 	virtual ~ncbPropAccessor() {
 		_obj->Release();
@@ -628,17 +628,56 @@ struct ncbPropAccessor {
 		ErrorT r = _obj->GetCount(&sz, 0, 0, _obj);
 		return (r == TJS_S_OK) ? sz : 0;
 	}
+	CountT GetArrayCount() const {
+		VariantT var;
+		_obj->PropGet(0, L"count", 0, &var, _obj);
+		return (CountT)var;
+	}
 	template <typename TargetT>
 	TargetT GetValue(IndexT ofs, DefsT::Tag<TargetT> const &tag, FlagsT f = 0) {
 		VariantT var;
 		_obj->PropGetByNum(f, ofs, &var, _obj);
 		return _toTarget(var, tag);
 	}
+	tjs_int getIntValue(IndexT ofs, tjs_int defaultValue=0) {
+		if (HasValue(ofs)) {
+			return GetValue(ofs, DefsT::Tag<tjs_int>());
+		} else {
+			return defaultValue;
+		}
+	}
+	tjs_real getRealValue(IndexT ofs, tjs_real defaultValue=0) {
+		if (HasValue(ofs)) {
+			return GetValue(ofs, DefsT::Tag<tjs_real>());
+		} else {
+			return defaultValue;
+		}
+	}
 	template <typename TargetT>
 	TargetT GetValue(KeyT key, DefsT::Tag<TargetT> const &tag, FlagsT f = 0, HintT hint = 0) {
 		VariantT var;
 		_obj->PropGet(f, key, hint, &var, _obj);
 		return _toTarget(var, tag);
+	}
+	tjs_int getIntValue(KeyT key, tjs_int defaultValue=0) {
+		if (HasValue(key)) {
+			return GetValue(key, DefsT::Tag<tjs_int>());
+		} else {
+			return defaultValue;
+		}
+	}
+	tjs_real getRealValue(KeyT key, tjs_real defaultValue=0) {
+		if (HasValue(key)) {
+			return GetValue(key, DefsT::Tag<tjs_real>());
+		} else {
+			return defaultValue;
+		}
+	}
+	bool checkVariant(IndexT ofs, VariantT &var) {
+		return TJS_SUCCEEDED(_obj->PropGetByNum(TJS_MEMBERMUSTEXIST, ofs, &var, _obj));
+	}
+	bool checkVariant(KeyT key, VariantT &var) {
+		return TJS_SUCCEEDED(_obj->PropGet(TJS_MEMBERMUSTEXIST, key, 0, &var, _obj));
 	}
 	bool HasValue(IndexT ofs, tTJSVariantType *type = 0) {
 		VariantT var;
