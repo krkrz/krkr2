@@ -125,34 +125,21 @@ public:
 	void clear();
 	
 	/**
-	 * 固定色ブラシの追加
-	 * @param argb 色指定
+	 * ブラシの追加
+	 * @param colorOrBrush ARGB色指定またはブラシ情報（辞書）
 	 * @param ox 表示オフセットX
 	 * @param oy 表示オフセットY
 	 */
-	void addSolidBrush(ARGB argb, REAL ox=0, REAL oy=0);
-
-	/**
-	 * グラデーションブラシの追加
-	 * @param x1
-	 * @param y1
-	 * @param argb1 色指定その１
-	 * @param x1
-	 * @param y1
-	 * @param argb1 色指定その２
-	 * @param ox 表示オフセットX
-	 * @param oy 表示オフセットY
-	 */
-	void addLinearGradientBrush(REAL x1, REAL y1, ARGB argb1, REAL x2, REAL y2, ARGB argb2, REAL ox=0, REAL oy=0);
+	void addBrush(tTJSVariant colorOrBrush, REAL ox=0, REAL oy=0);
 	
 	/**
-	 * 固定色ペンの追加
-	 * @param argb 色指定
-	 * @param width ペン幅
+	 * ペンの追加
+	 * @param colorOrBrush ARGB色指定またはブラシ情報（辞書）
+	 * @param widthOrOption ペン幅またはペン情報（辞書）
 	 * @param ox 表示オフセットX
 	 * @param oy 表示オフセットY
 	 */
-	void addColorPen(ARGB argb, REAL width=1.0, REAL ox=0, REAL oy=0);
+	void addPen(tTJSVariant colorOrBrush, tTJSVariant widthOrOption, REAL ox=0, REAL oy=0);
 };
 
 /*
