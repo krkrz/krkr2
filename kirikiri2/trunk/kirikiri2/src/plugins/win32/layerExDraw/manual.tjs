@@ -152,6 +152,10 @@ class GdiPlus {
 		property familyName; //< フォントファミリー
 		property emSize;     //< フォントのサイズ
 		property style;      //< フォントのスタイル
+
+		property ascent;      //< ascent (読み出し専用)
+		property descent;     //< descent (読み出し専用)
+		property lineSpacing; //< 行間の長さ (読み出し専用)
 	};
 
 	/**
@@ -355,5 +359,15 @@ class Layer {
 	 * @param name 画像名
 	 */
 	function drawImage(x, y, name);
+
+	// -------------------------------------------------------------
+	
+	/**
+	 * 文字列の描画領域情報の取得
+	 * @param font フォント
+	 * @param text 描画テキスト
+	 * @return 領域情報の辞書 left, top, width, height
+	 */
+	function measureString(font, text);
 };
 
