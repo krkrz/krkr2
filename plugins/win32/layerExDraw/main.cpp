@@ -13,6 +13,9 @@ NCB_REGISTER_SUBCLASS(FontInfo) {
 	NCB_PROPERTY_WO(familyName, setFamilyName);
 	NCB_PROPERTY(emSize, getEmSize, setEmSize);
 	NCB_PROPERTY(style, getStyle, setStyle);
+	NCB_PROPERTY_RO(ascent, getAscent);
+	NCB_PROPERTY_RO(descent, getDescent);
+	NCB_PROPERTY_RO(lineSpacing, getLineSpacing);
 };
 
 NCB_REGISTER_SUBCLASS(Appearance) {
@@ -176,6 +179,7 @@ NCB_ATTACH_CLASS_WITH_HOOK(LayerExDraw, Layer) {
 	NCB_METHOD(drawRectangle);
 	NCB_METHOD(drawString);
 	NCB_METHOD(drawImage);
+	NCB_METHOD(measureString);
 }
 
 // ----------------------------------- ãNìÆÅEäJï˙èàóù

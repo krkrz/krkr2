@@ -66,6 +66,30 @@ public:
 	REAL getEmSize() {  return emSize; }
 	void setStyle(INT style) { this->style = style; }
 	INT getStyle() { return style; }
+
+	REAL getAscent() {
+		if (fontFamily) {
+			return fontFamily->GetCellAscent(style) * emSize / fontFamily->GetEmHeight(style);
+		} else {
+			return 0;
+		}
+	}
+
+	REAL getDescent() {
+		if (fontFamily) {
+			return fontFamily->GetCellDescent(style) * emSize / fontFamily->GetEmHeight(style);
+		} else {
+			return 0;
+		}
+	}
+
+	REAL getLineSpacing() {
+		if (fontFamily) {
+			return fontFamily->GetLineSpacing(style) * emSize / fontFamily->GetEmHeight(style);
+		} else {
+			return 0;
+		}
+	}
 };
 
 /**
@@ -176,12 +200,22 @@ public:
 	// ------------------------------------------------------------------
 
 protected:
+
+	/**
+	 * パスの領域情報を取得
+	 * @param app 表示表現
+	 * @param path 描画するパス
+	 * @return 領域情報の辞書 left, top, width, height
+	 */
+	tTJSVariant getPathExtents(const Appearance *app, const GraphicsPath *path);
+
 	/**
 	 * パスの描画
 	 * @param app アピアランス
 	 * @param path 描画するパス
+	 * @return 領域情報の辞書 left, top, width, height
 	 */
-	void drawPath(const Appearance *app, const GraphicsPath *path);
+	tTJSVariant drawPath(const Appearance *app, const GraphicsPath *path);
 
 
 public:
@@ -200,8 +234,9 @@ public:
 	 * @param height 縦幅
 	 * @param startAngle 時計方向円弧開始位置
 	 * @param sweepAngle 描画角度
+	 * @return 領域情報の辞書 left, top, width, height
 	 */
-	void drawArc(const Appearance *app, REAL x, REAL y, REAL width, REAL height, REAL startAngle, REAL sweepAngle);
+	tTJSVariant drawArc(const Appearance *app, REAL x, REAL y, REAL width, REAL height, REAL startAngle, REAL sweepAngle);
 
 	/**
 	 * 円錐の描画
@@ -212,8 +247,9 @@ public:
 	 * @param height 縦幅
 	 * @param startAngle 時計方向円弧開始位置
 	 * @param sweepAngle 描画角度
+	 * @return 領域情報の辞書 left, top, width, height
 	 */
-	void drawPie(const Appearance *app, REAL x, REAL y, REAL width, REAL height, REAL startAngle, REAL sweepAngle);
+	tTJSVariant drawPie(const Appearance *app, REAL x, REAL y, REAL width, REAL height, REAL startAngle, REAL sweepAngle);
 	
 	/**
 	 * ベジェ曲線の描画
@@ -226,8 +262,9 @@ public:
 	 * @param y3
 	 * @param x4
 	 * @param y4
+	 * @return 領域情報の辞書 left, top, width, height
 	 */
-	void drawBezier(const Appearance *app, REAL x1, REAL y1, REAL x2, REAL y2, REAL x3, REAL y3, REAL x4, REAL y4);
+	tTJSVariant drawBezier(const Appearance *app, REAL x1, REAL y1, REAL x2, REAL y2, REAL x3, REAL y3, REAL x4, REAL y4);
 	
 	/**
 	 * 楕円の描画
@@ -236,8 +273,9 @@ public:
 	 * @param y
 	 * @param width
 	 * @param height
+	 * @return 領域情報の辞書 left, top, width, height
 	 */
-	void drawEllipse(const Appearance *app, REAL x, REAL y, REAL width, REAL height);
+	tTJSVariant drawEllipse(const Appearance *app, REAL x, REAL y, REAL width, REAL height);
 
 	/**
 	 * 線分の描画
@@ -246,8 +284,9 @@ public:
 	 * @param y1 始点Y座標
 	 * @param x2 終点X座標
 	 * @param y2 終点Y座標
+	 * @return 領域情報の辞書 left, top, width, height
 	 */
-	void drawLine(const Appearance *app, REAL x1, REAL y1, REAL x2, REAL y2);
+	tTJSVariant drawLine(const Appearance *app, REAL x1, REAL y1, REAL x2, REAL y2);
 
 	/**
 	 * 矩形の描画
@@ -256,8 +295,9 @@ public:
 	 * @param y
 	 * @param width
 	 * @param height
+	 * @return 領域情報の辞書 left, top, width, height
 	 */
-	void drawRectangle(const Appearance *app, REAL x, REAL y, REAL width, REAL height);
+	tTJSVariant drawRectangle(const Appearance *app, REAL x, REAL y, REAL width, REAL height);
 	
 	/**
 	 * 文字列の描画
@@ -266,8 +306,9 @@ public:
 	 * @param x 描画位置X
 	 * @param y 描画位置Y
 	 * @param text 描画テキスト
+	 * @return 領域情報の辞書 left, top, width, height
 	 */
-	void drawString(const FontInfo *font, const Appearance *app, REAL x, REAL y, const tjs_char *text);
+	tTJSVariant drawString(const FontInfo *font, const Appearance *app, REAL x, REAL y, const tjs_char *text);
 
 	/**
 	 * 画像の描画
@@ -276,6 +317,16 @@ public:
 	 * @param name 画像名
 	 */
 	void drawImage(REAL x, REAL y, const tjs_char *name);
+
+	// -----------------------------------------------------------------------------
+
+	/**
+	 * 文字列の描画領域情報の取得
+	 * @param font フォント
+	 * @param text 描画テキスト
+	 * @return 領域情報の辞書 left, top, width, height
+	 */
+	tTJSVariant measureString(const FontInfo *font, const tjs_char *text);
 };
 
 #endif
