@@ -2,6 +2,7 @@ Plugins.link("layerExDraw.dll");
 
 var WIDTH=800;
 var HEIGHT=600;
+var dm = Debug.message; // これで dm("message"); でコンソールに message を表示できる
 
 class MyWindow extends Window
 {
@@ -94,15 +95,37 @@ class MyWindow extends Window
 		y += 50;
 		
 		var app = new GdiPlus.Appearance();
-		app.addBrush(0xff333333, 0, 0);
 		app.addPen(0xffffffff,
-				   %[width:2,
+				   %[width:15,
 				 startCap:GdiPlus.LineCapRound,
 				 endCap:GdiPlus.LineCapRound,
 				 dashCap:GdiPlus.LineCapRound,
 				 lineJoin:GdiPlus.LineJoinRound], 0, 0);
-		var font = new GdiPlus.Font("Arial", 40, GdiPlus.FontStyleBold);
-		layer.drawString(font, app, x, y, "テキストを描画するテストABC");
+		app.addBrush(0xff333333, 0, 0);
+		app.addPen(0xffff0000, 1, 0, 0);
+		var font = new GdiPlus.Font("ＭＳ ゴシック", 40, GdiPlus.FontStyleBold);
+		dm("フォント情報 ascent:" + font.ascent + " descent:" + font.descent + " linespacing:" + font.lineSpacing);
+
+		var text = "■テキスト描画テストABCghijklpq■";
+		
+		var frect = layer.measureString(font, text);
+		dm("measureString領域" + frect.left + "," + frect.top + "," + frect.width + "," + frect.height);
+		
+		var trect = layer.drawString(font, app, x, y-font.ascent, text);
+		dm("テキスト描画位置" + x + "," + y);
+		dm("drawString領域" + trect.left + "," + trect.top + "," + trect.width + "," + trect.height);
+
+		app.clear();
+		app.addPen(0xff0000ff, 1, 0, 0);
+		layer.drawLine(app, x, y, x+frect.width, y);
+		
+		app.clear();
+		app.addPen(0xff00ff00, 1, 0, 0);
+		layer.drawRectangle(app, x, y-font.ascent, frect.width, font.ascent + font.descent);
+
+		app.clear();
+		app.addPen(0xffff0000, 1, 0, 0);
+		layer.drawRectangle(app, trect.left, trect.top, trect.width, trect.height);
 	}
 
 	function onKeyDown(key, shift)

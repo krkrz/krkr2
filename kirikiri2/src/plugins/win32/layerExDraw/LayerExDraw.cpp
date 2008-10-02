@@ -718,19 +718,88 @@ LayerExDraw::clear(ARGB argb)
 	graphics->Clear(Color(argb));
 }
 
+static tTJSVariant getRectDictionary(RectF &rect)
+{
+	tTJSVariant ret;
+	iTJSDispatch2 *dict = TJSCreateDictionaryObject();
+	if (dict != NULL) {
+		tTJSVariant left(rect.X);
+		tTJSVariant top(rect.Y);
+		tTJSVariant width(rect.Width);
+		tTJSVariant height(rect.Height);
+		dict->PropSet(TJS_MEMBERENSURE, L"left",   NULL, &left, dict);
+		dict->PropSet(TJS_MEMBERENSURE, L"top",    NULL, &top, dict);
+		dict->PropSet(TJS_MEMBERENSURE, L"width",  NULL, &width, dict);
+		dict->PropSet(TJS_MEMBERENSURE, L"height", NULL, &height, dict);
+		ret = dict;
+		dict->Release();
+	}
+	return ret;
+}
+
+/**
+ * パスの領域情報を取得
+ * @param app 表示表現
+ * @param path 描画するパス
+ */
+tTJSVariant
+LayerExDraw::getPathExtents(const Appearance *app, const GraphicsPath *path)
+{
+	// 領域記録用
+	RectF rect;
+
+	// 描画情報を使って次々描画
+	bool first = true;
+	vector<Appearance::DrawInfo>::const_iterator i = app->drawInfos.begin();
+	while (i != app->drawInfos.end()) {
+		if (i->info) {
+			Matrix matrix(1,0,0,1,i->ox,i->oy);
+			graphics->SetTransform(&matrix);
+			switch (i->type) {
+			case 0:
+				{
+					Pen *pen = (Pen*)i->info;
+					if (first) {
+						path->GetBounds(&rect, &matrix, pen);
+						first = false;
+					} else {
+						RectF r;
+						path->GetBounds(&r, &matrix, pen);
+						rect.Union(rect, rect, r);
+					}
+				}
+				break;
+			case 1:
+				if (first) {
+					path->GetBounds(&rect, &matrix, NULL);
+					first = false;
+				} else {
+					RectF r;
+					path->GetBounds(&r, &matrix, NULL);
+					rect.Union(rect, rect, r);
+				}
+				break;
+			}
+		}
+		i++;
+	}
+	return getRectDictionary(rect);
+}
+
 /**
  * パスを描画する
  * @param app 表示表現
  * @param path 描画するパス
+ * @return 領域情報の辞書 left, top, width, height
  */
-void
+tTJSVariant
 LayerExDraw::drawPath(const Appearance *app, const GraphicsPath *path)
 {
 	// 領域記録用
-	Rect unionRect;
-	Rect rect;
+	RectF rect;
 
 	// 描画情報を使って次々描画
+	bool first = true;
 	vector<Appearance::DrawInfo>::const_iterator i = app->drawInfos.begin();
 	while (i != app->drawInfos.end()) {
 		if (i->info) {
@@ -741,30 +810,38 @@ LayerExDraw::drawPath(const Appearance *app, const GraphicsPath *path)
 				{
 					Pen *pen = (Pen*)i->info;
 					graphics->DrawPath(pen, path);
-					if (updateWhenDraw) {
+					if (first) {
 						path->GetBounds(&rect, &matrix, pen);
-						unionRect.Union(unionRect, unionRect, rect);
+						first = false;
+					} else {
+						RectF r;
+						path->GetBounds(&r, &matrix, pen);
+						rect.Union(rect, rect, r);
 					}
 				}
 				break;
 			case 1:
 				graphics->FillPath((Brush*)i->info, path);
-				if (updateWhenDraw) {
+				if (first) {
 					path->GetBounds(&rect, &matrix, NULL);
-					unionRect.Union(unionRect, unionRect, rect);
+					first = false;
+				} else {
+					RectF r;
+					path->GetBounds(&r, &matrix, NULL);
+					rect.Union(rect, rect, r);
 				}
 				break;
 			}
 		}
 		i++;
 	}
-
 	if (updateWhenDraw) {
 		// 更新処理
-		tTJSVariant  vars [4] = { unionRect.X, unionRect.Y, unionRect.Width, unionRect.Height };
+		tTJSVariant  vars [4] = { rect.X, rect.Y, rect.Width, rect.Height };
 		tTJSVariant *varsp[4] = { vars, vars+1, vars+2, vars+3 };
 		_pUpdate(4, varsp);
 	}
+	return getRectDictionary(rect);
 }
 
 /**
@@ -775,13 +852,14 @@ LayerExDraw::drawPath(const Appearance *app, const GraphicsPath *path)
  * @param height 縦幅
  * @param startAngle 時計方向円弧開始位置
  * @param sweepAngle 描画角度
+ * @return 領域情報の辞書 left, top, width, height
  */
-void
+tTJSVariant
 LayerExDraw::drawArc(const Appearance *app, REAL x, REAL y, REAL width, REAL height, REAL startAngle, REAL sweepAngle)
 {
 	GraphicsPath path;
 	path.AddArc(x, y, width, height, startAngle, sweepAngle);
-	drawPath(app, &path);
+	return drawPath(app, &path);
 }
 
 /**
@@ -795,13 +873,14 @@ LayerExDraw::drawArc(const Appearance *app, REAL x, REAL y, REAL width, REAL hei
  * @param y3
  * @param x4
  * @param y4
+ * @return 領域情報の辞書 left, top, width, height
  */
-void
+tTJSVariant
 LayerExDraw::drawBezier(const Appearance *app, REAL x1, REAL y1, REAL x2, REAL y2, REAL x3, REAL y3, REAL x4, REAL y4)
 {
 	GraphicsPath path;
 	path.AddBezier(x1, y1, x2, y2, x3, y3, x4, y4);
-	drawPath(app, &path);
+	return drawPath(app, &path);
 }
 
 /**
@@ -812,13 +891,14 @@ LayerExDraw::drawBezier(const Appearance *app, REAL x1, REAL y1, REAL x2, REAL y
  * @param height 縦幅
  * @param startAngle 時計方向円弧開始位置
  * @param sweepAngle 描画角度
+ * @return 領域情報の辞書 left, top, width, height
  */
-void
+tTJSVariant
 LayerExDraw::drawPie(const Appearance *app, REAL x, REAL y, REAL width, REAL height, REAL startAngle, REAL sweepAngle)
 {
 	GraphicsPath path;
 	path.AddPie(x, y, width, height, startAngle, sweepAngle);
-	drawPath(app, &path);
+	return drawPath(app, &path);
 }
 
 /**
@@ -828,13 +908,14 @@ LayerExDraw::drawPie(const Appearance *app, REAL x, REAL y, REAL width, REAL hei
  * @param y
  * @param width
  * @param height
+ * @return 領域情報の辞書 left, top, width, height
  */
-void
+tTJSVariant
 LayerExDraw::drawEllipse(const Appearance *app, REAL x, REAL y, REAL width, REAL height)
 {
 	GraphicsPath path;
 	path.AddEllipse(x, y, width, height);
-	drawPath(app, &path);
+	return drawPath(app, &path);
 }
 
 /**
@@ -844,13 +925,14 @@ LayerExDraw::drawEllipse(const Appearance *app, REAL x, REAL y, REAL width, REAL
  * @param y1 始点Y座標
  * @param x2 終点X座標
  * @param y2 終点Y座標
+ * @return 領域情報の辞書 left, top, width, height
  */
-void
+tTJSVariant
 LayerExDraw::drawLine(const Appearance *app, REAL x1, REAL y1, REAL x2, REAL y2)
 {
 	GraphicsPath path;
 	path.AddLine(x1, y1, x2, y2);
-	drawPath(app, &path);
+	return drawPath(app, &path);
 }
 
 /**
@@ -860,14 +942,15 @@ LayerExDraw::drawLine(const Appearance *app, REAL x1, REAL y1, REAL x2, REAL y2)
  * @param y
  * @param width
  * @param height
+ * @return 領域情報の辞書 left, top, width, height
  */
-void
+tTJSVariant
 LayerExDraw::drawRectangle(const Appearance *app, REAL x, REAL y, REAL width, REAL height)
 {
 	GraphicsPath path;
 	RectF rect(x, y, width, height);
 	path.AddRectangle(rect);
-	drawPath(app, &path);
+	return drawPath(app, &path);
 }
 
 /**
@@ -877,15 +960,17 @@ LayerExDraw::drawRectangle(const Appearance *app, REAL x, REAL y, REAL width, RE
  * @param x 描画位置X
  * @param y 描画位置Y
  * @param text 描画テキスト
+ * @return 領域情報の辞書 left, top, width, height
  */
-void
+tTJSVariant
 LayerExDraw::drawString(const FontInfo *font, const Appearance *app, REAL x, REAL y, const tjs_char *text)
 {
 	// 文字列のパスを準備
 	GraphicsPath path;
-	path.AddString(text, -1, font->fontFamily, font->style, font->emSize, PointF(x, y), NULL);
-	drawPath(app, &path);
+	path.AddString(text, -1, font->fontFamily, font->style, font->emSize, PointF(x, y), StringFormat::GenericDefault());
+	return drawPath(app, &path);
 }
+
 
 /**
  * 画像の描画
@@ -899,4 +984,21 @@ LayerExDraw::drawImage(REAL x, REAL y, const tjs_char *name)
 	Image *image = loadImage(name);
 	graphics->DrawImage(image, x, y);
 	delete image;
+}
+
+
+/**
+ * 文字列の描画領域情報の取得
+ * @param font フォント
+ * @param app アピアランス
+ * @param text 描画テキスト
+ * @return 領域情報の辞書 left, top, width, height
+ */
+tTJSVariant
+LayerExDraw::measureString(const FontInfo *font, const tjs_char *text)
+{
+	RectF rect;
+	Font f(font->fontFamily, font->emSize, font->style, UnitPixel);
+	graphics->MeasureString(text, -1, &f, PointF(0,0), StringFormat::GenericDefault(), &rect);
+	return getRectDictionary(rect);
 }
