@@ -290,6 +290,7 @@ public:
 	TMenuItem *  GetRootMenuItem();
 	void SetMenuBarVisible(bool b);
 	bool GetMenuBarVisible() const;
+	HWND GetMenuOwnerWindowHandle();
 
 //-- interface to VideoOverlay object
 public:

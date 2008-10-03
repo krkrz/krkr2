@@ -449,6 +449,8 @@ protected:
 	DYNAMIC bool __fastcall IsShortCut(Messages::TWMKey &Message);
 
 public:
+	HWND __fastcall GetMenuOwnerWindowHandle();
+
 	HWND __fastcall GetSurfaceWindowHandle();
 
 	HWND __fastcall GetWindowHandle(tjs_int &ofsx, tjs_int &ofsy);

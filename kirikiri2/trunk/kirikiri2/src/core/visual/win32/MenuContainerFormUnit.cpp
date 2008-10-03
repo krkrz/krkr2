@@ -61,6 +61,7 @@ void __fastcall TTVPMenuContainerForm::Popup()
 void __fastcall TTVPMenuContainerForm::Conceal()
 {
 	Visible = false;
+	Top = -Height-100; // bring this to out of the screen
 	PostMessage(OwnerForm->Handle, TVP_WM_RETRIEVEFOCUS, 0, 0);
 }
 //---------------------------------------------------------------------------
@@ -83,6 +84,14 @@ void __fastcall TTVPMenuContainerForm::DropByKey()
 {
 	DroppedByKey = true;
 	Popup();
+}
+//---------------------------------------------------------------------------
+void __fastcall TTVPMenuContainerForm::PrepareToReceiveMenuCommand()
+{
+	// to receive menu command, this form must be shown
+	// (no matter if the window is within the screen)
+	Top = -Height - 100;
+	Visible = true;
 }
 //---------------------------------------------------------------------------
 void __fastcall TTVPMenuContainerForm::TimerTimer(TObject *Sender)

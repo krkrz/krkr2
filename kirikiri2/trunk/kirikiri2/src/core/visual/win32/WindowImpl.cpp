@@ -1529,6 +1529,12 @@ bool tTJSNI_Window::GetMenuBarVisible() const
 	return Form->GetMenuBarVisible();
 }
 //---------------------------------------------------------------------------
+HWND tTJSNI_Window::GetMenuOwnerWindowHandle()
+{
+	if(!Form) return NULL;
+	return Form->GetMenuOwnerWindowHandle();
+}
+//---------------------------------------------------------------------------
 HWND tTJSNI_Window::GetSurfaceWindowHandle()
 {
 	if(!Form) return NULL;
