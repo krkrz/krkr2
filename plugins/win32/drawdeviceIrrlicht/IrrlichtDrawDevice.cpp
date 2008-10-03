@@ -14,7 +14,7 @@ using namespace gui;
 /**
  * コンストラクタ
  */
-IrrlichtDrawDevice::IrrlichtDrawDevice() : IrrlichtBase()
+IrrlichtDrawDevice::IrrlichtDrawDevice(int driverType) : IrrlichtBase((E_DRIVER_TYPE)driverType)
 {
 }
 

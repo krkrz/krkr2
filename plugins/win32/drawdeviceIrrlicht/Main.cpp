@@ -33,6 +33,7 @@ error_log(const char* format, ...)
 // ----------------------------------- ƒNƒ‰ƒX‚Ì“o˜^
 
 using namespace irr::core;
+using namespace irr::video;
 
 NCB_REGISTER_SUBCLASS(vector3df) {
 	NCB_CONSTRUCTOR(());
@@ -42,13 +43,13 @@ NCB_REGISTER_SUBCLASS(vector3df) {
 	NCB_METHOD(captureScreenShot)
 
 NCB_REGISTER_SUBCLASS(IrrlichtDrawDevice) {
-	NCB_CONSTRUCTOR(());
+	NCB_CONSTRUCTOR((int));
 	BASE_METHOD;
 	NCB_PROPERTY_RO(interface, GetDevice);
 };
 
 NCB_REGISTER_SUBCLASS(IrrlichtWindow) {
-	NCB_CONSTRUCTOR((iTJSDispatch2 *, int, int, int, int));
+	NCB_CONSTRUCTOR((int, iTJSDispatch2 *, int, int, int, int));
 	BASE_METHOD;
 	NCB_PROPERTY(left, getLeft, setLeft);
 	NCB_PROPERTY(top, getTop, setTop);
@@ -69,6 +70,10 @@ struct Irrlicht {
 
 NCB_REGISTER_CLASS(Irrlicht) {
 	//enums
+	ENUM(EDT_SOFTWARE);
+	ENUM(EDT_BURNINGSVIDEO);
+	ENUM(EDT_DIRECT3D9);
+	ENUM(EDT_OPENGL);
 	//static
 	//classes
 	NCB_SUBCLASS(DrawDevice, IrrlichtDrawDevice);

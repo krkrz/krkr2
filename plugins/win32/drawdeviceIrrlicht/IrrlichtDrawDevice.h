@@ -15,7 +15,7 @@ class IrrlichtDrawDevice :
 	
 public:
 	// コンストラクタ
-	IrrlichtDrawDevice();
+	IrrlichtDrawDevice(int driverType);
 	// デストラクタ
 	virtual ~IrrlichtDrawDevice();
 
