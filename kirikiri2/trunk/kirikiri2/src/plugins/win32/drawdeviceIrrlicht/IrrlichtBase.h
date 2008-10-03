@@ -14,6 +14,8 @@ class IrrlichtBase :
 {
 
 protected:
+	// ドライバ種別
+	irr::video::E_DRIVER_TYPE  driverType;
 	/// デバイス
 	irr::IrrlichtDevice *device;
 	/// ドライバ
@@ -22,7 +24,7 @@ protected:
 	void showDriverInfo();
 	
 public:
-	IrrlichtBase(); //!< コンストラクタ
+	IrrlichtBase(irr::video::E_DRIVER_TYPE driverType); //!< コンストラクタ
 	virtual ~IrrlichtBase(); //!< デストラクタ
 
 protected:

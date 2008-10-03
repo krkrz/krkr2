@@ -39,7 +39,7 @@ public:
 	/**
 	 * コンストラクタ
 	 */
-	IrrlichtWindow(iTJSDispatch2 *win, int left, int top, int width, int height);
+	IrrlichtWindow(int driverType, iTJSDispatch2 *win, int left, int top, int width, int height);
 		
 	/**
 	 * デストラクタ
