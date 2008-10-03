@@ -2426,6 +2426,18 @@ bool __fastcall TTVPWindowForm::IsShortCut(Messages::TWMKey &Message)
 	return TForm::IsShortCut(Message);
 }
 //---------------------------------------------------------------------------
+HWND __fastcall TTVPWindowForm::GetMenuOwnerWindowHandle()
+{
+	if(MenuContainer)
+	{
+		// this is a quick hack which let MenuContainer be visible,
+		// because the menu owner window must be visible to receive menu command.
+		MenuContainer->PrepareToReceiveMenuCommand();
+		return MenuContainer->Handle;
+	}
+	return Handle;
+}
+//---------------------------------------------------------------------------
 HWND __fastcall TTVPWindowForm::GetSurfaceWindowHandle()
 {
 	if(ScrollBox)
