@@ -14,10 +14,8 @@ using namespace gui;
 /**
  * コンストラクタ
  */
-IrrlichtBase::IrrlichtBase()
+IrrlichtBase::IrrlichtBase(video::E_DRIVER_TYPE driverType) : driverType(driverType), device(NULL), driver(NULL)
 {
-	device = NULL;
-	driver = NULL;
 }
 
 /**
@@ -52,7 +50,7 @@ IrrlichtBase::attach(HWND hwnd)
 	// デバイス生成
 	SIrrlichtCreationParameters params;
 	params.WindowId     = reinterpret_cast<void*>(hwnd);
-	params.DriverType    = video::EDT_DIRECT3D9;
+	params.DriverType    = driverType;
 	params.Bits          = 32;
 	params.Stencilbuffer = true;
 	params.Vsync = true;

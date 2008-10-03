@@ -85,7 +85,9 @@ IrrlichtWindow::setReceiver(tTVPWindowMessageReceiver receiver, bool enable)
 	tTJSVariant userdata = (tTVInteger)(tjs_int)this;
 	tTJSVariant *p[] = {&mode, &proc, &userdata};
 	if (window->FuncCall(0, L"registerMessageReceiver", NULL, NULL, 4, p, window) != TJS_S_OK) {
-		TVPThrowExceptionMessage(L"can't regist user message receiver");
+		if (enable) {
+			TVPThrowExceptionMessage(L"can't regist user message receiver");
+		}
 	}
 }
 
@@ -124,8 +126,8 @@ IrrlichtWindow::destroyWindow()
 /**
  * コンストラクタ
  */
-IrrlichtWindow::IrrlichtWindow(iTJSDispatch2 *win, int left, int top, int width, int height)
-	: IrrlichtBase(), window(NULL), parent(0), hwnd(0), visible(false)
+IrrlichtWindow::IrrlichtWindow(int driverType, iTJSDispatch2 *win, int left, int top, int width, int height)
+	: IrrlichtBase((E_DRIVER_TYPE)driverType), window(NULL), parent(0), hwnd(0), visible(false)
 {
 	window = win;
 	window->AddRef();
