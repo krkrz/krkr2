@@ -47,6 +47,8 @@ public:
 
 	bool __fastcall GetShowingMenu() const { return ShowingMenu; }
 
+	void __fastcall PrepareToReceiveMenuCommand();
+
 protected:
 
 BEGIN_MESSAGE_MAP

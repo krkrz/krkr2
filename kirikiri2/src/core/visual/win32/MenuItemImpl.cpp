@@ -224,7 +224,7 @@ tjs_int tTJSNI_MenuItem::TrackPopup(tjs_uint32 flags, tjs_int x, tjs_int y) cons
 
 	HWND  hWindow;
 	if (GetRootMenuItem() && GetRootMenuItem()->GetWindow()) {
-		hWindow = GetRootMenuItem()->GetWindow()->GetWindowHandleForPlugin();
+		hWindow = GetRootMenuItem()->GetWindow()->GetMenuOwnerWindowHandle();
 	} else {
 		return 0;
 	}
