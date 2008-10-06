@@ -2,6 +2,13 @@
 #include "IrrlichtDrawDevice.h"
 #include "IrrlichtWindow.h"
 
+using namespace irr;
+using namespace core;
+using namespace video;
+using namespace scene;
+using namespace io;
+using namespace gui;
+
 /**
  * ログ出力用
  */
@@ -30,14 +37,104 @@ error_log(const char* format, ...)
 	va_end(args);
 }
 
-// ----------------------------------- クラスの登録
+// ----------------------------------- コンバータの登録
 
-using namespace irr::core;
-using namespace irr::video;
+static bool IsArray(const tTJSVariant &var)
+{
+	if (var.Type() == tvtObject) {
+		iTJSDispatch2 *obj = var.AsObjectNoAddRef();
+		return obj->IsInstanceOf(0, NULL, NULL, L"Array", obj) == TJS_S_TRUE;
+	}
+	return false;
+}
 
-NCB_REGISTER_SUBCLASS(vector3df) {
-	NCB_CONSTRUCTOR(());
+struct DimensionConvertor { // コンバータ
+	void operator ()(dimension2df &dst, const tTJSVariant &src) {
+		ncbPropAccessor info(src);
+		if (IsArray(src)) {
+			dst.Width  = (f32)info.getRealValue(0);
+			dst.Height = (f32)info.getRealValue(1);
+		} else {
+			dst.Width  = (f32)info.getRealValue(L"width");
+			dst.Height = (f32)info.getRealValue(L"height");
+		}
+	}
 };
+NCB_SET_TOVALUE_CONVERTOR(dimension2df, DimensionConvertor);
+
+struct PositionConvertor {
+	void operator ()(position2df &dst, const tTJSVariant &src) {
+		ncbPropAccessor info(src);
+		if (IsArray(src)) {
+			dst.X = (f32)info.getRealValue(0);
+			dst.Y = (f32)info.getRealValue(1);
+		} else {
+			dst.X = (f32)info.getRealValue(L"x");
+			dst.Y = (f32)info.getRealValue(L"y");
+		}
+	}
+};
+NCB_SET_TOVALUE_CONVERTOR(position2df, PositionConvertor);
+
+struct Vector2DConvertor {
+	void operator ()(vector2df &dst, const tTJSVariant &src) {
+		ncbPropAccessor info(src);
+		if (IsArray(src)) {
+			dst.X = (f32)info.getRealValue(0);
+			dst.Y = (f32)info.getRealValue(1);
+		} else {
+			dst.X = (f32)info.getRealValue(L"x");
+			dst.Y = (f32)info.getRealValue(L"y");
+		}
+	}
+};
+NCB_SET_TOVALUE_CONVERTOR(vector2df, Vector2DConvertor);
+
+struct Vector3DConvertor {
+	void operator ()(vector3df &dst, const tTJSVariant &src) {
+		ncbPropAccessor info(src);
+		if (IsArray(src)) {
+			dst.X = (f32)info.getRealValue(0);
+			dst.Y = (f32)info.getRealValue(1);
+			dst.Z = (f32)info.getRealValue(2);
+		} else {
+			dst.X = (f32)info.getRealValue(L"x");
+			dst.Y = (f32)info.getRealValue(L"y");
+			dst.Z = (f32)info.getRealValue(L"z");
+		}
+	}
+};
+NCB_SET_TOVALUE_CONVERTOR(vector3df, Vector3DConvertor);
+
+struct RectConvertor {
+	void operator ()(rect<s32> &dst, const tTJSVariant &src) {
+		ncbPropAccessor info(src);
+		if (IsArray(src)) {
+			dst.UpperLeftCorner.X  = info.getIntValue(0);
+			dst.UpperLeftCorner.Y  = info.getIntValue(1);
+			dst.LowerRightCorner.X = info.getIntValue(2);
+			dst.LowerRightCorner.Y = info.getIntValue(3);
+		} else {
+			int x = info.getIntValue(L"x");
+			int y = info.getIntValue(L"y");
+			int x2, y2;
+			if (info.HasValue(L"width")) {
+				x2 = x + info.getIntValue(L"width") - 1;
+				y2 = x + info.getIntValue(L"height") - 1;
+			} else {
+				x2 = info.getIntValue(L"x2");
+				y2 = info.getIntValue(L"y2");
+			}
+			dst.UpperLeftCorner.X  = x;
+			dst.UpperLeftCorner.Y  = y;
+			dst.LowerRightCorner.X = x2;
+			dst.LowerRightCorner.Y = y2;
+		}
+	}
+};
+NCB_SET_CONVERTOR(rect<s32>, RectConvertor);
+
+// ----------------------------------- クラスの登録
 
 NCB_REGISTER_SUBCLASS(IrrlichtDriver) {
 	NCB_CONSTRUCTOR(());
@@ -95,6 +192,7 @@ NCB_REGISTER_CLASS(Irrlicht) {
 	//classes
 	NCB_SUBCLASS(Driver, IrrlichtDriver);
 	NCB_SUBCLASS(SceneManager, IrrlichtSceneManager);
+	NCB_SUBCLASS(GUIEnvironment, IrrlichtGUIEnvironment);
 	NCB_SUBCLASS(DrawDevice, IrrlichtDrawDevice);
 	NCB_SUBCLASS(Window, IrrlichtWindow);
 }
