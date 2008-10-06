@@ -8,12 +8,11 @@ class Irrlicht {
 	EDT_BURNINGSVIDEO = 2; //< ソフトウェアレンダラその2 (3D機能もいろいろ実装)
 	EDT_DIRECT3D9     = 4; //< Direct3Dベース
 	EDT_OPENGL        = 5; //< OpenGLベース
-	
-	/**
-	 * 共通機能 ※クラスとしては存在しません
-	 */
-	class Base {
 
+	/**
+	 * ドライバ機能クラス。DrawDevice または Window のプロパティから参照できるだけで new はできません
+	 */
+	class Driver {
 		/**
 		 * 描画画像のキャプチャ
 		 * @param dest 格納先レイヤ
@@ -21,7 +20,41 @@ class Irrlicht {
 		 * そちらの画面がキャプチャーされてしまいます
 		 */
 		function captureScreenShot(dest);
+	};
+
+	/**
+	 * シーンマネージャ機能クラス。DrawDevice または Window のプロパティから参照できるだけで new はできません
+	 */
+	class SceneManager {
+		/**
+		 * シーンファイルの読み込み
+		 * @param scene シーンファイル
+		 */
+		function loadScene(scene);
 	}
+
+	/**
+	 * GUI環境機能クラス。DrawDevice または Window のプロパティから参照できるだけで new はできません
+	 */
+	class GUIEnvironment {
+	};
+
+
+	/**
+	 * 共通機能分（実際にはこのクラスはありません）
+	 */
+	class Base {
+		property driver; //< ドライバ(Driverクラス)。読み出し専用
+		property sceneManager; //< シーンマネージャ(SceneManagerクラス)。読み出し専用
+		property guiEnvironment; //< GUI環境（GUIEnvironmentクラス）。読み出し専用
+
+		/**
+		 * @param type
+		 * @param driver
+		 */
+		//function onUpdate(type, driver);
+	};
+	
 	
 	/**
 	 * 吉里吉里用 drawdevice クラス
@@ -34,12 +67,7 @@ class Irrlicht {
 		 */
 		function DrawDevice(driverType);
 
-		property interface {
-			/*
-			 * @return drawdevice 情報（内部参照用）
-			 */
-			getter();
-		}
+		property interface; //< drawdevice 情報（内部参照用）。読み出し専用
 	};
 
 	/**

@@ -1,6 +1,10 @@
 #ifndef IRRLICHTBASE_H
 #define IRRLICHTBASE_H
 
+#include "IrrlichtDriver.h"
+#include "IrrlichtSceneManager.h"
+#include "IrrlichtGUIEnvironment.h"
+
 #include <windows.h>
 #include "tp_stub.h"
 #include <irrlicht.h>
@@ -18,8 +22,6 @@ protected:
 	irr::video::E_DRIVER_TYPE  driverType;
 	/// デバイス
 	irr::IrrlichtDevice *device;
-	/// ドライバ
-	irr::video::IVideoDriver *driver;
 
 	void showDriverInfo();
 	
@@ -42,7 +44,7 @@ protected:
 	 * クラス固有更新処理
 	 * シーンマネージャの処理後、GUIの処理前に呼ばれる
 	 */
-	virtual void update(tjs_uint64 tick) {};
+	virtual void update(irr::video::IVideoDriver *driver, tjs_uint64 tick) {};
 
 public:
 	/**
@@ -74,25 +76,21 @@ public:
 	 */
 	virtual bool OnEvent(const irr::SEvent &event);
 
-	// ------------------------------------------------------------
-	// シーン制御
-	// ------------------------------------------------------------
 public:
 	/**
-	 * 画像のキャプチャ
-	 * @param dest 格納先レイヤ
+	 * @return ドライバ情報の取得
 	 */
-	void captureScreenShot(iTJSDispatch2 *layer);
+	IrrlichtDriver getDriver();
+	
+	/**
+	 * @return シーンマネージャ情報の取得
+	 */
+	IrrlichtSceneManager getSceneManager();
 
 	/**
-	 * シーンデータファイルの読み込み
+	 * @return GUI環境情報の取得
 	 */
-	void loadScene(const char *name);
-
-	/**
-	 * カメラシーンの設定
-	 */
-	//void addCameraSceneNode(int no, irr::core::vector3df *a, irr::core::vector3df *b);
+	IrrlichtGUIEnvironment getGUIEnvironment();
 };
 
 #endif

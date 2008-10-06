@@ -51,8 +51,16 @@ public:
 	// -----------------------------------------------------------------------
 
 public:
-	void captureScreenShot(iTJSDispatch2 *dest) {
-		IrrlichtBase::captureScreenShot(dest);
+	IrrlichtDriver getDriver() {
+		return IrrlichtBase::getDriver();
+	}
+
+	IrrlichtSceneManager getSceneManager() {
+		return IrrlichtBase::getSceneManager();
+	}
+
+	IrrlichtGUIEnvironment getGUIEnvironment() {
+		return IrrlichtBase::getGUIEnvironment();
 	}
 	
 	// -----------------------------------------------------------------------

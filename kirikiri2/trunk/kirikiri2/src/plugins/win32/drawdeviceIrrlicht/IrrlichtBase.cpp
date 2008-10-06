@@ -11,10 +11,98 @@ using namespace scene;
 using namespace io;
 using namespace gui;
 
+// -----------------------------------
+// 各種オブジェクト参照用
+// -----------------------------------
+
+bool IsArray(tTJSVariant &var)
+{
+	if (var.Type() == tvtObject) {
+		iTJSDispatch2 *obj = var.AsObjectNoAddRef();
+		return obj->IsInstanceOf(0, NULL, NULL, L"Array", obj) == TJS_S_TRUE;
+	}
+	return false;
+}
+
+dimension2df getDimension2D(tTJSVariant &var)
+{
+	ncbPropAccessor info(var);
+	if (IsArray(var)) {
+		return dimension2df((f32)info.getRealValue(0),
+							(f32)info.getRealValue(1));
+	} else {
+		return dimension2df((f32)info.getRealValue(L"width"),
+							(f32)info.getRealValue(L"height"));
+	}
+}
+
+position2df getPosition2D(tTJSVariant &var)
+{
+	ncbPropAccessor info(var);
+	if (IsArray(var)) {
+		return position2df((f32)info.getRealValue(0),
+						   (f32)info.getRealValue(1));
+	} else {
+		return position2df((f32)info.getRealValue(L"x"),
+						   (f32)info.getRealValue(L"y"));
+	}
+}
+
+vector2df getVector2D(tTJSVariant &var)
+{
+	ncbPropAccessor info(var);
+	if (IsArray(var)) {
+		return vector2df((f32)info.getRealValue(0),
+						 (f32)info.getRealValue(1));
+	} else {
+		return vector2df((f32)info.getRealValue(L"x"),
+						 (f32)info.getRealValue(L"y"));
+	}
+}
+
+vector3df getVector3D(tTJSVariant &var)
+{
+	ncbPropAccessor info(var);
+	if (IsArray(var)) {
+		return vector3df((f32)info.getRealValue(0),
+						 (f32)info.getRealValue(1),
+						 (f32)info.getRealValue(2));
+	} else {
+		return vector3df((f32)info.getRealValue(L"x"),
+						 (f32)info.getRealValue(L"y"),
+						 (f32)info.getRealValue(L"z"));
+	}
+}
+
+rect<s32> getRect(tTJSVariant &var)
+{
+	ncbPropAccessor info(var);
+	if (IsArray(var)) {
+		return rect<s32>(info.getIntValue(0),
+						 info.getIntValue(1),
+						 info.getIntValue(2),
+						 info.getIntValue(3));
+	} else {
+		int x = info.getIntValue(L"x");
+		int y = info.getIntValue(L"y");
+		int x2, y2;
+		if (info.HasValue(L"width")) {
+			x2 = x + info.getIntValue(L"width") - 1;
+			y2 = x + info.getIntValue(L"height") - 1;
+		} else {
+			x2 = info.getIntValue(L"x2");
+			y2 = info.getIntValue(L"y2");
+		}
+		return rect<s32>(x, y, x2, y2);
+	}
+}
+
+// ----------------------------------- 
+
 /**
  * コンストラクタ
  */
-IrrlichtBase::IrrlichtBase(video::E_DRIVER_TYPE driverType) : driverType(driverType), device(NULL), driver(NULL)
+IrrlichtBase::IrrlichtBase(video::E_DRIVER_TYPE driverType) : driverType(driverType), device(NULL)
 {
 }
 
@@ -32,6 +120,7 @@ IrrlichtBase::~IrrlichtBase()
 void
 IrrlichtBase::showDriverInfo()
 {
+	IVideoDriver *driver = device->getVideoDriver();
 	if (driver) {
 		dimension2d<s32> size = driver->getScreenSize();
 		message_log("デバイス生成後のスクリーンサイズ:%d, %d", size.Width, size.Height);
@@ -58,11 +147,10 @@ IrrlichtBase::attach(HWND hwnd)
 	params.AntiAlias = true;
 
 	if ((device = irr::createDeviceEx(params))) {
-		TVPAddLog(L"DirectX9で初期化");
+		TVPAddLog(L"Irrlichtデバイス初期化");
 	} else {
 		TVPThrowExceptionMessage(L"Irrlicht デバイスの初期化に失敗しました");
 	}
-	driver = device->getVideoDriver();
 	
 	showDriverInfo();
 	start();
@@ -77,7 +165,6 @@ IrrlichtBase::detach()
 	if (device) {
 		device->drop();
 		device = NULL;
-		driver = NULL;
 	}
 	stop();
 }
@@ -112,15 +199,26 @@ IrrlichtBase::OnContinuousCallback(tjs_uint64 tick)
 	if (device) {
 		// 時間を進める XXX tick を外部から与えられないか？
 		device->getTimer()->tick();
-		
+
+		IVideoDriver *driver = device->getVideoDriver();
 		// 描画開始
-		if (driver->beginScene(true, true, irr::video::SColor(255,0,0,0))) {
+		if (driver && driver->beginScene(true, true, irr::video::SColor(255,0,0,0))) {
+
 			/// シーンマネージャの描画
-			device->getSceneManager()->drawAll();
+			ISceneManager *smgr = device->getSceneManager();
+			if (smgr) {
+				smgr->drawAll();
+			}
+
 			// 固有処理
-			update(tick);
+			update(driver, tick);
+
 			// GUIの描画
-			device->getGUIEnvironment()->drawAll();
+			IGUIEnvironment *gui = device->getGUIEnvironment();
+			if (gui) {
+				gui->drawAll();
+			}
+
 			// 描画完了
 			driver->endScene();
 		}
@@ -180,60 +278,31 @@ IrrlichtBase::OnEvent(const irr::SEvent &event)
 	return false;
 }
 
+
 /**
- * 画像のキャプチャ
- * @param dest 格納先レイヤ
+ * @return ドライバ情報の取得
  */
-void
-IrrlichtBase::captureScreenShot(iTJSDispatch2 *dest)
+IrrlichtDriver
+IrrlichtBase::getDriver()
 {
-	// レイヤインスタンス以外ではエラー
+	return device ? IrrlichtDriver(device->getVideoDriver()) : IrrlichtDriver();
+}
+	
+/**
+ * @return シーンマネージャ情報の取得
+ */
+IrrlichtSceneManager
+IrrlichtBase::getSceneManager()
+{
+	return device ? IrrlichtSceneManager(device->getSceneManager()) : IrrlichtSceneManager();
+}
 
-	if (dest->IsInstanceOf(TJS_IGNOREPROP,NULL,NULL,L"Layer",dest) != TJS_S_TRUE) {
-		TVPThrowExceptionMessage(L"dest is not layer");
-	}
-	// 画像をキャプチャ
-	IImage *screen;
-	if (driver == NULL || (screen = driver->createScreenShot()) == NULL) {
-		TVPThrowExceptionMessage(L"can't get screenshot");
-	}
 
-	dimension2d<s32> size = screen->getDimension();
-	int width  = size.Width;
-	int height = size.Height;
-
-	ncbPropAccessor layer(dest);
-	layer.SetValue(L"width",  width);
-	layer.SetValue(L"height", height);
-	layer.SetValue(L"imageLeft",  0);
-	layer.SetValue(L"imageTop",   0);
-	layer.SetValue(L"imageWidth",  width);
-	layer.SetValue(L"imageHeight", height);
-
-	unsigned char *buffer = (unsigned char*)layer.GetValue(L"mainImageBufferForWrite", ncbTypedefs::Tag<tjs_int>());
-	int pitch = layer.GetValue(L"mainImageBufferPitch", ncbTypedefs::Tag<tjs_int>());
-
-	// 画像データのコピー
-	if (screen->getColorFormat() == ECF_A8R8G8B8) {
-		unsigned char *src = (unsigned char*)screen->lock();
-		int slen   = width * 4;
-		int spitch = screen->getPitch();
-		for (int y=0;y<height;y++) {
-			memcpy(buffer, src, slen);
-			src    += spitch;
-			buffer += pitch;
-		}
-		screen->unlock();
-	} else {
-		for (int y=0;y<height;y++) {
-			u32 *line = (u32 *)buffer;
-			for (int x=0;x<width;x++) {
-				*line++ = screen->getPixel(x, y).color;
-				buffer += pitch;
-			}
-		}
-	}
-
-	dest->FuncCall(0, L"update", NULL, NULL, 0, NULL, dest);
-	screen->drop();
+/**
+ * @return GUI環境情報の取得
+ */
+IrrlichtGUIEnvironment
+IrrlichtBase::getGUIEnvironment()
+{
+	return device ? IrrlichtGUIEnvironment(device->getGUIEnvironment()) : IrrlichtGUIEnvironment();
 }
