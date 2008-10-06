@@ -1,8 +1,6 @@
 #ifndef IRRLICHTSCENEMANAGER_H
 #define IRRLICHTSCENEMANAGER_H
 
-#include <windows.h>
-#include "tp_stub.h"
 #include <irrlicht.h>
 
 /**
@@ -33,7 +31,7 @@ public:
 	/**
 	 * ÉJÉÅÉâÇÃê›íË
 	 */
-	void addCameraSceneNode(tTJSVariant position, tTJSVariant lookat, int id);
+	void addCameraSceneNode(irr::core::vector3df position, irr::core::vector3df lookat, int id);
 };
 
 #endif

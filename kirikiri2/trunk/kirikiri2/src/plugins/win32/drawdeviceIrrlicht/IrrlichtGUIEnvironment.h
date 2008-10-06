@@ -1,8 +1,6 @@
 #ifndef IRRLICHTGUIENVIRONMENT_H
 #define IRRLICHTGUIENVIRONMENT_H
 
-#include <windows.h>
-#include "tp_stub.h"
 #include <irrlicht.h>
 
 /**

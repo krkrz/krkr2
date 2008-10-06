@@ -1,5 +1,12 @@
 #include "IrrlichtGUIEnvironment.h"
 
+using namespace irr;
+using namespace core;
+using namespace video;
+using namespace scene;
+using namespace io;
+using namespace gui;
+ 
 IrrlichtGUIEnvironment::IrrlichtGUIEnvironment() : gui(NULL)
 {
 }

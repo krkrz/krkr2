@@ -1,13 +1,13 @@
 #ifndef IRRLICHTBASE_H
 #define IRRLICHTBASE_H
 
-#include "IrrlichtDriver.h"
-#include "IrrlichtSceneManager.h"
-#include "IrrlichtGUIEnvironment.h"
-
 #include <windows.h>
 #include "tp_stub.h"
 #include <irrlicht.h>
+
+#include "IrrlichtDriver.h"
+#include "IrrlichtSceneManager.h"
+#include "IrrlichtGUIEnvironment.h"
 
 /**
  * Irrlicht ˆ—‚Ìƒx[ƒX
