@@ -39,8 +39,25 @@ NCB_REGISTER_SUBCLASS(vector3df) {
 	NCB_CONSTRUCTOR(());
 };
 
+NCB_REGISTER_SUBCLASS(IrrlichtDriver) {
+	NCB_CONSTRUCTOR(());
+	NCB_METHOD(captureScreenShot);
+};
+
+NCB_REGISTER_SUBCLASS(IrrlichtSceneManager) {
+	NCB_CONSTRUCTOR(());
+	NCB_METHOD(loadScene);
+	NCB_METHOD(addCameraSceneNode);
+};
+
+NCB_REGISTER_SUBCLASS(IrrlichtGUIEnvironment) {
+	NCB_CONSTRUCTOR(());
+};
+
 #define BASE_METHOD \
-	NCB_METHOD(captureScreenShot)
+	NCB_PROPERTY_RO(driver, getDriver);\
+	NCB_PROPERTY_RO(sceneManager, getSceneManager);\
+	NCB_PROPERTY_RO(guiEnvironment, getGUIEnvironment)
 
 NCB_REGISTER_SUBCLASS(IrrlichtDrawDevice) {
 	NCB_CONSTRUCTOR((int));
@@ -76,6 +93,8 @@ NCB_REGISTER_CLASS(Irrlicht) {
 	ENUM(EDT_OPENGL);
 	//static
 	//classes
+	NCB_SUBCLASS(Driver, IrrlichtDriver);
+	NCB_SUBCLASS(SceneManager, IrrlichtSceneManager);
 	NCB_SUBCLASS(DrawDevice, IrrlichtDrawDevice);
 	NCB_SUBCLASS(Window, IrrlichtWindow);
 }

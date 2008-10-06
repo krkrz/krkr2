@@ -32,19 +32,17 @@ IrrlichtDrawDevice::~IrrlichtDrawDevice()
 void 
 IrrlichtDrawDevice::allocInfo(iTVPLayerManager * manager)
 {
+	IVideoDriver *driver = device->getVideoDriver();
 	if (driver) {
-	
 		// テクスチャ割り当てXXX サイズ判定が必要…
 		ITexture *texture = driver->addTexture(core::dimension2d<s32>(1024, 1024), "layer", ECF_A8R8G8B8);
 		if (texture == NULL) {
 			TVPThrowExceptionMessage(L"テクスチャの割り当てに失敗しました");
 		}
-
 		// 設定
 		tjs_int w, h;
 		manager->GetPrimaryLayerSize(w, h);
 		manager->SetDrawDeviceData((void*)new LayerManagerInfo(texture, w, h));
-		
 		// 更新要求
 		manager->RequestInvalidation(tTVPRect(0,0,w,h));
 	}
@@ -57,6 +55,7 @@ IrrlichtDrawDevice::allocInfo(iTVPLayerManager * manager)
 void
 IrrlichtDrawDevice::freeInfo(iTVPLayerManager * manager)
 {
+	IVideoDriver *driver = device->getVideoDriver();
 	if (driver) {
 		LayerManagerInfo *info = (LayerManagerInfo*)manager->GetDrawDeviceData();
 		if (info != NULL) {
@@ -73,8 +72,10 @@ IrrlichtDrawDevice::freeInfo(iTVPLayerManager * manager)
 void
 IrrlichtDrawDevice::detach()
 {
-	for (std::vector<iTVPLayerManager *>::iterator i = Managers.begin(); i != Managers.end(); i++) {
-		freeInfo(*i);
+	if (device) {
+		for (std::vector<iTVPLayerManager *>::iterator i = Managers.begin(); i != Managers.end(); i++) {
+			freeInfo(*i);
+		}
 	}
 	IrrlichtBase::detach();
 }
@@ -101,7 +102,9 @@ IrrlichtDrawDevice::postEvent(SEvent &ev)
 void TJS_INTF_METHOD
 IrrlichtDrawDevice::AddLayerManager(iTVPLayerManager * manager)
 {
-	allocInfo(manager);
+	if (device) {
+		allocInfo(manager);
+	}
 	tTVPDrawDevice::AddLayerManager(manager);
 }
 
@@ -112,7 +115,9 @@ IrrlichtDrawDevice::AddLayerManager(iTVPLayerManager * manager)
 void TJS_INTF_METHOD
 IrrlichtDrawDevice::RemoveLayerManager(iTVPLayerManager * manager)
 {
-	freeInfo(manager);
+	if (device) {
+		freeInfo(manager);
+	}
 	tTVPDrawDevice::RemoveLayerManager(manager);
 }
 
@@ -128,8 +133,10 @@ IrrlichtDrawDevice::SetTargetWindow(HWND wnd, bool is_main)
 	if (wnd != NULL) {
 		attach(wnd);
 		// マネージャに対するテクスチャの割り当て
-		for (std::vector<iTVPLayerManager *>::iterator i = Managers.begin(); i != Managers.end(); i++) {
-			allocInfo(*i);
+		if (device) {
+			for (std::vector<iTVPLayerManager *>::iterator i = Managers.begin(); i != Managers.end(); i++) {
+				allocInfo(*i);
+			}
 		}
 		// 駆動開始
 		start();
@@ -148,7 +155,7 @@ IrrlichtDrawDevice::Show()
 void TJS_INTF_METHOD
 IrrlichtDrawDevice::OnMouseDown(tjs_int x, tjs_int y, tTVPMouseButton mb, tjs_uint32 flags)
 {
-	if (driver) {
+	if (device) {
 		SEvent ev;
 		ev.EventType = EET_MOUSE_INPUT_EVENT;
 		ev.MouseInput.X = x;
@@ -176,7 +183,7 @@ IrrlichtDrawDevice::OnMouseDown(tjs_int x, tjs_int y, tTVPMouseButton mb, tjs_ui
 void TJS_INTF_METHOD
 IrrlichtDrawDevice::OnMouseUp(tjs_int x, tjs_int y, tTVPMouseButton mb, tjs_uint32 flags)
 {
-	if (driver) {
+	if (device) {
 		SEvent ev;
 		ev.EventType = EET_MOUSE_INPUT_EVENT;
 		ev.MouseInput.X = x;
@@ -204,7 +211,7 @@ IrrlichtDrawDevice::OnMouseUp(tjs_int x, tjs_int y, tTVPMouseButton mb, tjs_uint
 void TJS_INTF_METHOD
 IrrlichtDrawDevice::OnMouseMove(tjs_int x, tjs_int y, tjs_uint32 flags)
 {
-	if (driver) {
+	if (device) {
 		SEvent ev;
 		ev.EventType = EET_MOUSE_INPUT_EVENT;
 		ev.MouseInput.X = x;
@@ -290,7 +297,7 @@ IrrlichtDrawDevice::EndBitmapCompletion(iTVPLayerManager * manager)
 // -------------------------------------------------------------------------------------
 
 void
-IrrlichtDrawDevice::update(tjs_uint64 tick)
+IrrlichtDrawDevice::update(irr::video::IVideoDriver *driver, tjs_uint64 tick)
 {
 	dimension2d<s32> screenSize = driver->getScreenSize();
 

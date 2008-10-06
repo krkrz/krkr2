@@ -64,15 +64,23 @@ protected:
 	 * クラス固有更新処理
 	 * シーンマネージャの処理後、GUIの処理前に呼ばれる
 	 */
-	void update(tjs_uint64 tick);
+	void update(irr::video::IVideoDriver *driver, tjs_uint64 tick);
 
 	// -----------------------------------------------------------------------
 	// 共通メソッド呼び出し用
 	// -----------------------------------------------------------------------
 
 public:
-	void captureScreenShot(iTJSDispatch2 *dest) {
-		IrrlichtBase::captureScreenShot(dest);
+	IrrlichtDriver getDriver() {
+		return IrrlichtBase::getDriver();
+	}
+
+	IrrlichtSceneManager getSceneManager() {
+		return IrrlichtBase::getSceneManager();
+	}
+
+	IrrlichtGUIEnvironment getGUIEnvironment() {
+		return IrrlichtBase::getGUIEnvironment();
 	}
 
 	// -----------------------------------------------------------------------
