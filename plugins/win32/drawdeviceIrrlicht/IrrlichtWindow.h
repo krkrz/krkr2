@@ -3,8 +3,6 @@
 
 #include "IrrlichtBase.h"
 
-#define CLASSNAME "IrrlichtWindow"
-
 extern void registerWindowClass();
 extern void unregisterWindowClass();
 

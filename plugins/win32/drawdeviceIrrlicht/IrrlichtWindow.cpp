@@ -1,5 +1,6 @@
 #include "IrrlichtWindow.h"
 
+#define CLASSNAME "IrrlichtWindow"
 #define KRKRDISPWINDOWCLASS "TScrollBox"
 
 extern void message_log(const char* format, ...);
