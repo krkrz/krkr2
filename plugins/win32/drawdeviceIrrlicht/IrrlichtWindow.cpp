@@ -129,6 +129,10 @@ IrrlichtWindow::destroyWindow()
 IrrlichtWindow::IrrlichtWindow(int driverType, iTJSDispatch2 *win, int left, int top, int width, int height)
 	: IrrlichtBase((E_DRIVER_TYPE)driverType), window(NULL), parent(0), hwnd(0), visible(false)
 {
+	if (win->IsInstanceOf(0, NULL, NULL, L"Window", win) != TJS_S_TRUE) {
+		TVPThrowExceptionMessage(L"must set window object");
+	}
+
 	window = win;
 	window->AddRef();
 	

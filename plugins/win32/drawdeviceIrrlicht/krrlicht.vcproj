@@ -227,6 +227,18 @@
 				>
 			</File>
 			<File
+				RelativePath=".\IrrlichtDriver.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\IrrlichtGUIEnvironment.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\IrrlichtSceneManager.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\IrrlichtWindow.cpp"
 				>
 			</File>
@@ -297,6 +309,18 @@
 			</File>
 			<File
 				RelativePath=".\IrrlichtDrawDevice.h"
+				>
+			</File>
+			<File
+				RelativePath=".\IrrlichtDriver.h"
+				>
+			</File>
+			<File
+				RelativePath=".\IrrlichtGUIEnvironment.h"
+				>
+			</File>
+			<File
+				RelativePath=".\IrrlichtSceneManager.h"
 				>
 			</File>
 			<File
