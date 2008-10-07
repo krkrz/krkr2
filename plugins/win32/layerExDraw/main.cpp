@@ -5,7 +5,30 @@ extern void initGdiPlus();
 extern void deInitGdiPlus();
 
 // ------------------------------------------------------
-// 配列操作用
+// 型コンバータ登録
+// ------------------------------------------------------
+
+struct RectConvertor { // コンバータ
+	void operator ()(tTJSVariant &dst, const RectF &src) {
+		iTJSDispatch2 *dict = TJSCreateDictionaryObject();
+		if (dict != NULL) {
+			tTJSVariant left(src.X);
+			tTJSVariant top(src.Y);
+			tTJSVariant width(src.Width);
+			tTJSVariant height(src.Height);
+			dict->PropSet(TJS_MEMBERENSURE, L"left",   NULL, &left, dict);
+			dict->PropSet(TJS_MEMBERENSURE, L"top",    NULL, &top, dict);
+			dict->PropSet(TJS_MEMBERENSURE, L"width",  NULL, &width, dict);
+			dict->PropSet(TJS_MEMBERENSURE, L"height", NULL, &height, dict);
+			dst = tTJSVariant(dict, dict);
+			dict->Release();
+		}
+	}
+};
+NCB_SET_TOVARIANT_CONVERTOR(RectF, RectConvertor);
+
+// ------------------------------------------------------
+// クラス登録
 // ------------------------------------------------------
 
 NCB_REGISTER_SUBCLASS(FontInfo) {
@@ -174,9 +197,18 @@ NCB_ATTACH_CLASS_WITH_HOOK(LayerExDraw, Layer) {
 	NCB_METHOD(drawArc);
 	NCB_METHOD(drawPie);
 	NCB_METHOD(drawBezier);
+	NCB_METHOD(drawBeziers);
+	NCB_METHOD(drawClosedCurve);
+	NCB_METHOD(drawClosedCurve2);
+	NCB_METHOD(drawCurve);
+	NCB_METHOD(drawCurve2);
+	NCB_METHOD(drawCurve3);
 	NCB_METHOD(drawEllipse);
 	NCB_METHOD(drawLine);
+	NCB_METHOD(drawLines);
+	NCB_METHOD(drawPolygon);
 	NCB_METHOD(drawRectangle);
+	NCB_METHOD(drawRectangles);
 	NCB_METHOD(drawString);
 	NCB_METHOD(drawImage);
 	NCB_METHOD(measureString);

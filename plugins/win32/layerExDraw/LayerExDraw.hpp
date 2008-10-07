@@ -202,20 +202,20 @@ public:
 protected:
 
 	/**
-	 * パスの領域情報を取得
+	 * パスの更新領域情報を取得
 	 * @param app 表示表現
 	 * @param path 描画するパス
-	 * @return 領域情報の辞書 left, top, width, height
+	 * @return 更新領域情報
 	 */
-	tTJSVariant getPathExtents(const Appearance *app, const GraphicsPath *path);
+	RectF getPathExtents(const Appearance *app, const GraphicsPath *path);
 
 	/**
 	 * パスの描画
 	 * @param app アピアランス
 	 * @param path 描画するパス
-	 * @return 領域情報の辞書 left, top, width, height
+	 * @return 更新領域情報
 	 */
-	tTJSVariant drawPath(const Appearance *app, const GraphicsPath *path);
+	RectF drawPath(const Appearance *app, const GraphicsPath *path);
 
 
 public:
@@ -234,9 +234,9 @@ public:
 	 * @param height 縦幅
 	 * @param startAngle 時計方向円弧開始位置
 	 * @param sweepAngle 描画角度
-	 * @return 領域情報の辞書 left, top, width, height
+	 * @return 更新領域情報
 	 */
-	tTJSVariant drawArc(const Appearance *app, REAL x, REAL y, REAL width, REAL height, REAL startAngle, REAL sweepAngle);
+	RectF drawArc(const Appearance *app, REAL x, REAL y, REAL width, REAL height, REAL startAngle, REAL sweepAngle);
 
 	/**
 	 * 円錐の描画
@@ -247,9 +247,9 @@ public:
 	 * @param height 縦幅
 	 * @param startAngle 時計方向円弧開始位置
 	 * @param sweepAngle 描画角度
-	 * @return 領域情報の辞書 left, top, width, height
+	 * @return 更新領域情報
 	 */
-	tTJSVariant drawPie(const Appearance *app, REAL x, REAL y, REAL width, REAL height, REAL startAngle, REAL sweepAngle);
+	RectF drawPie(const Appearance *app, REAL x, REAL y, REAL width, REAL height, REAL startAngle, REAL sweepAngle);
 	
 	/**
 	 * ベジェ曲線の描画
@@ -262,9 +262,62 @@ public:
 	 * @param y3
 	 * @param x4
 	 * @param y4
-	 * @return 領域情報の辞書 left, top, width, height
+	 * @return 更新領域情報
 	 */
-	tTJSVariant drawBezier(const Appearance *app, REAL x1, REAL y1, REAL x2, REAL y2, REAL x3, REAL y3, REAL x4, REAL y4);
+	RectF drawBezier(const Appearance *app, REAL x1, REAL y1, REAL x2, REAL y2, REAL x3, REAL y3, REAL x4, REAL y4);
+
+	/**
+	 * 連続ベジェ曲線の描画
+	 * @param app アピアランス
+	 * @param points 点の配列
+	 * @return 更新領域情報
+	 */
+	RectF drawBeziers(const Appearance *app, tTJSVariant points);
+
+	/**
+	 * Closed cardinal spline の描画
+	 * @param app アピアランス
+	 * @param points 点の配列
+	 * @return 更新領域情報
+	 */
+	RectF drawClosedCurve(const Appearance *app, tTJSVariant points);
+
+	/**
+	 * Closed cardinal spline の描画
+	 * @param app アピアランス
+	 * @param points 点の配列
+	 * @pram tension tension
+	 * @return 更新領域情報
+	 */
+	RectF drawClosedCurve2(const Appearance *app, tTJSVariant points, REAL tension);
+
+	/**
+	 * cardinal spline の描画
+	 * @param app アピアランス
+	 * @param points 点の配列
+	 * @return 更新領域情報
+	 */
+	RectF drawCurve(const Appearance *app, tTJSVariant points);
+
+	/**
+	 * cardinal spline の描画
+	 * @param app アピアランス
+	 * @param points 点の配列
+	 * @parma tension tension
+	 * @return 更新領域情報
+	 */
+	RectF drawCurve2(const Appearance *app, tTJSVariant points, REAL tension);
+
+	/**
+	 * cardinal spline の描画
+	 * @param app アピアランス
+	 * @param points 点の配列
+	 * @param offset
+	 * @param numberOfSegment
+	 * @param tension tension
+	 * @return 更新領域情報
+	 */
+	RectF drawCurve3(const Appearance *app, tTJSVariant points, int offset, int numberOfSegments, REAL tension);
 	
 	/**
 	 * 楕円の描画
@@ -273,9 +326,9 @@ public:
 	 * @param y
 	 * @param width
 	 * @param height
-	 * @return 領域情報の辞書 left, top, width, height
+	 * @return 更新領域情報
 	 */
-	tTJSVariant drawEllipse(const Appearance *app, REAL x, REAL y, REAL width, REAL height);
+	RectF drawEllipse(const Appearance *app, REAL x, REAL y, REAL width, REAL height);
 
 	/**
 	 * 線分の描画
@@ -284,10 +337,26 @@ public:
 	 * @param y1 始点Y座標
 	 * @param x2 終点X座標
 	 * @param y2 終点Y座標
-	 * @return 領域情報の辞書 left, top, width, height
+	 * @return 更新領域情報
 	 */
-	tTJSVariant drawLine(const Appearance *app, REAL x1, REAL y1, REAL x2, REAL y2);
+	RectF drawLine(const Appearance *app, REAL x1, REAL y1, REAL x2, REAL y2);
 
+	/**
+	 * 連続線分の描画
+	 * @param app アピアランス
+	 * @param points 点の配列
+	 * @return 更新領域情報
+	 */
+	RectF drawLines(const Appearance *app, tTJSVariant points);
+
+	/**
+	 * 多角形の描画
+	 * @param app アピアランス
+	 * @param points 点の配列
+	 * @return 更新領域情報
+	 */
+	RectF drawPolygon(const Appearance *app, tTJSVariant points);
+	
 	/**
 	 * 矩形の描画
 	 * @param app アピアランス
@@ -295,9 +364,17 @@ public:
 	 * @param y
 	 * @param width
 	 * @param height
-	 * @return 領域情報の辞書 left, top, width, height
+	 * @return 更新領域情報
 	 */
-	tTJSVariant drawRectangle(const Appearance *app, REAL x, REAL y, REAL width, REAL height);
+	RectF drawRectangle(const Appearance *app, REAL x, REAL y, REAL width, REAL height);
+
+	/**
+	 * 複数矩形の描画
+	 * @param app アピアランス
+	 * @param rects 矩形情報の配列
+	 * @return 更新領域情報
+	 */
+	RectF drawRectangles(const Appearance *app, tTJSVariant rects);
 	
 	/**
 	 * 文字列の描画
@@ -306,9 +383,9 @@ public:
 	 * @param x 描画位置X
 	 * @param y 描画位置Y
 	 * @param text 描画テキスト
-	 * @return 領域情報の辞書 left, top, width, height
+	 * @return 更新領域情報
 	 */
-	tTJSVariant drawString(const FontInfo *font, const Appearance *app, REAL x, REAL y, const tjs_char *text);
+	RectF drawString(const FontInfo *font, const Appearance *app, REAL x, REAL y, const tjs_char *text);
 
 	/**
 	 * 画像の描画
@@ -321,12 +398,12 @@ public:
 	// -----------------------------------------------------------------------------
 
 	/**
-	 * 文字列の描画領域情報の取得
+	 * 文字列の描画更新領域情報の取得
 	 * @param font フォント
 	 * @param text 描画テキスト
-	 * @return 領域情報の辞書 left, top, width, height
+	 * @return 更新領域情報の辞書 left, top, width, height
 	 */
-	tTJSVariant measureString(const FontInfo *font, const tjs_char *text);
+	RectF measureString(const FontInfo *font, const tjs_char *text);
 };
 
 #endif
