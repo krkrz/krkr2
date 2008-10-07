@@ -283,6 +283,7 @@ class Layer {
 	 * @param height 縦幅
 	 * @param startAngle 時計方向円弧開始位置
 	 * @param sweepAngle 描画角度
+	 * @return 更新領域情報の辞書 left, top, width, height
 	 */
 	function drawArc(app, x, y, width, height, startAngle, sweepAngle);
 
@@ -295,6 +296,7 @@ class Layer {
 	 * @param height 縦幅
 	 * @param startAngle 時計方向円弧開始位置
 	 * @param sweepAngle 描画角度
+	 * @return 更新領域情報の辞書 left, top, width, height
 	 */
 	function drawPie(app, x, y, width, height, startAngle, sweepAngle);
 	
@@ -309,8 +311,62 @@ class Layer {
 	 * @param y3
 	 * @param x4
 	 * @param y4
+	 * @return 更新領域情報の辞書 left, top, width, height
 	 */
 	function drawBezier(app, x1, y1, x2, y2, x3, y3, x4, y4);
+
+	/**
+	 * 連続ベジェ曲線の描画
+	 * @param app アピアランス
+	 * @param points 点の配列 [ [x1, y1], [x2, y2] .... ]
+	 * @return 更新領域情報の辞書 left, top, width, height
+	 */
+	function drawBeziers(app, points);
+
+	/**
+	 * Closed cardinal spline の描画
+	 * @param app アピアランス
+	 * @param points 点の配列 [ [x1, y1], [x2, y2] .... ]
+	 * @return 更新領域情報の辞書 left, top, width, height
+	 */
+	function drawClosedCurve(app, points);
+
+	/**
+	 * Closed cardinal spline の描画
+	 * @param app アピアランス
+	 * @param points 点の配列 [ [x1, y1], [x2, y2] .... ]
+	 * @param tension テンション
+	 * @return 更新領域情報の辞書 left, top, width, height
+	 */
+	function drawClosedCurve2(app, points, tension);
+
+	/**
+	 * cardinal spline の描画
+	 * @param app アピアランス
+	 * @param points 点の配列 [ [x1, y1], [x2, y2] .... ]
+	 * @return 更新領域情報の辞書 left, top, width, height
+	 */
+	function drawCurve(app, points);
+
+	/**
+	 * cardinal spline の描画
+	 * @param app アピアランス
+	 * @param points 点の配列 [ [x1, y1], [x2, y2] .... ]
+	 * @param tension テンション
+	 * @return 更新領域情報の辞書 left, top, width, height
+	 */
+	function drawCurve2(app, points, tension);
+
+	/**
+	 * cardinal spline の描画
+	 * @param app アピアランス
+	 * @param points 点の配列 [ [x1, y1], [x2, y2] .... ]
+	 * @param offset
+	 * @param numberOfSegments
+	 * @param tension テンション
+	 * @return 更新領域情報の辞書 left, top, width, height
+	 */
+	function drawCurve3(app, points, offset, numberOfSegments, tension);
 	
 	/**
 	 * 楕円の描画
@@ -319,6 +375,7 @@ class Layer {
 	 * @param y
 	 * @param width
 	 * @param height
+	 * @return 更新領域情報の辞書 left, top, width, height
 	 */
 	function drawEllipse(app, x, y, width, height);
 
@@ -329,9 +386,26 @@ class Layer {
 	 * @param y1 始点Y座標
 	 * @param x2 終点X座標
 	 * @param y2 終点Y座標
+	 * @return 更新領域情報の辞書 left, top, width, height
 	 */
 	function drawLine(app, x1, y1, x2, y2);
 
+	/**
+	 * 連続線分の描画
+	 * @param app アピアランス
+	 * @param points 点の配列 [ [x1, y1], [x2, y2] .... ]
+	 * @return 更新領域情報の辞書 left, top, width, height
+	 */
+	function drawLines(app, points)
+
+	/**
+	 * 多角形の描画
+	 * @param app アピアランス
+	 * @param points 点の配列 [ [x1, y1], [x2, y2] .... ]
+	 * @return 更新領域情報の辞書 left, top, width, height
+	 */
+	function drawPolygon(app, points)
+		
 	/**
 	 * 矩形の描画
 	 * @param app アピアランス GdiPlus.Appearance で描画スタイルを指定します
@@ -339,8 +413,17 @@ class Layer {
 	 * @param y
 	 * @param width
 	 * @param height
+	 * @return 更新領域情報の辞書 left, top, width, height
 	 */
 	function drawRectangle(app, x, y, width, height);
+
+	/**
+	 * 複数矩形の描画
+	 * @param app アピアランス
+	 * @param rects 矩形の配列 [ [x1, y1, width1, height1], [x2, y2, width2, height2] .... ]
+	 * @return 更新領域情報の辞書 left, top, width, height
+	 */
+	function drawRectangles(app, rects)
 	
 	/**
 	 * 文字列の描画
@@ -349,6 +432,7 @@ class Layer {
 	 * @param x 描画位置X
 	 * @param y 描画位置Y
 	 * @param text 描画テキスト
+	 * @return 更新領域情報の辞書 left, top, width, height
 	 */
 	function drawString(font, app, x, y, text);
 
@@ -357,6 +441,7 @@ class Layer {
 	 * @param x 表示位置X
 	 * @param y 表示位置Y
 	 * @param name 画像名
+	 * @return 更新領域情報の辞書 left, top, width, height
 	 */
 	function drawImage(x, y, name);
 
@@ -366,7 +451,7 @@ class Layer {
 	 * 文字列の描画領域情報の取得
 	 * @param font フォント
 	 * @param text 描画テキスト
-	 * @return 領域情報の辞書 left, top, width, height
+	 * @return 描画領域情報の辞書 left, top, width, height
 	 */
 	function measureString(font, text);
 };
