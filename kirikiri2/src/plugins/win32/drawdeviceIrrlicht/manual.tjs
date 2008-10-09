@@ -31,6 +31,25 @@ class Irrlicht {
 		 * @param scene シーンファイル
 		 */
 		function loadScene(scene);
+
+		property ambientLight; //< 環境光指定
+
+		/**
+		 * 光源の設定
+		 * @param position 位置指定
+		 * @param color 色指定
+		 * @param radius 範囲指定
+		 * @param id ID指定
+		 */
+		function addLightSceneNode(position, color, radius, id);
+		
+		/**
+		 * カメラの設定
+		 * @param position 位置指定
+		 * @param lookat 参照位置
+		 * @param id ID指定
+		 */
+		function addCameraSceneNode(irr::core::vector3df position, irr::core::vector3df lookat, int id);
 	}
 
 	/**
@@ -47,12 +66,6 @@ class Irrlicht {
 		property driver; //< ドライバ(Driverクラス)。読み出し専用
 		property sceneManager; //< シーンマネージャ(SceneManagerクラス)。読み出し専用
 		property guiEnvironment; //< GUI環境（GUIEnvironmentクラス）。読み出し専用
-
-		/**
-		 * @param type
-		 * @param driver
-		 */
-		//function onUpdate(type, driver);
 	};
 	
 	

@@ -48,6 +48,43 @@ static bool IsArray(const tTJSVariant &var)
 	return false;
 }
 
+struct ColorConvertor { // コンバータ
+	void operator ()(SColorf &dst, const tTJSVariant &src) {
+		if (src.Type() == tvtInteger) {
+			dst = SColorf(SColor((u32)(tjs_int)src));
+		} else {
+			ncbPropAccessor info(src);
+			if (IsArray(src)) {
+				dst.r = (f32)info.getRealValue(0, 0);
+				dst.g = (f32)info.getRealValue(1, 0);
+				dst.b = (f32)info.getRealValue(2, 0);
+				dst.a = (f32)info.getRealValue(3, 1.0);
+			} else {
+				dst.r = (f32)info.getRealValue(L"r", 0);
+				dst.g = (f32)info.getRealValue(L"g", 0);
+				dst.b = (f32)info.getRealValue(L"b", 0);
+				dst.a = (f32)info.getRealValue(L"a", 1.0);
+			}
+		}
+	}
+	void operator ()(tTJSVariant &dst, const SColorf &src) {
+		iTJSDispatch2 *dict = TJSCreateDictionaryObject();
+		if (dict != NULL) {
+			tTJSVariant a(src.a);
+			tTJSVariant r(src.r);
+			tTJSVariant g(src.g);
+			tTJSVariant b(src.b);
+			dict->PropSet(TJS_MEMBERENSURE, L"a", NULL, &a, dict);
+			dict->PropSet(TJS_MEMBERENSURE, L"r", NULL, &r, dict);
+			dict->PropSet(TJS_MEMBERENSURE, L"g", NULL, &g, dict);
+			dict->PropSet(TJS_MEMBERENSURE, L"b", NULL, &b, dict);
+			dst = tTJSVariant(dict, dict);
+			dict->Release();
+		}
+	}
+};
+NCB_SET_CONVERTOR(SColorf, ColorConvertor);
+
 struct DimensionConvertor { // コンバータ
 	void operator ()(dimension2df &dst, const tTJSVariant &src) {
 		ncbPropAccessor info(src);
@@ -144,6 +181,8 @@ NCB_REGISTER_SUBCLASS(IrrlichtDriver) {
 NCB_REGISTER_SUBCLASS(IrrlichtSceneManager) {
 	NCB_CONSTRUCTOR(());
 	NCB_METHOD(loadScene);
+	NCB_PROPERTY(ambientLight, getAmbientLight, setAmbientLight);
+	NCB_METHOD(addLightSceneNode);
 	NCB_METHOD(addCameraSceneNode);
 };
 
