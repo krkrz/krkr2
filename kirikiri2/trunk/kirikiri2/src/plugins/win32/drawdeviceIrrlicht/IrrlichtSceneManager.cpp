@@ -48,6 +48,40 @@ IrrlichtSceneManager::loadScene(const char *filename)
 	return smgr ? smgr->loadScene(filename) : false;
 }
 
+/**
+ * ŠÂ‹«Œõ‚Ìİ’è
+ */
+void 
+IrrlichtSceneManager::setAmbientLight(irr::video::SColorf ambientColor)
+{
+	if (smgr) {
+		return smgr->setAmbientLight(ambientColor);
+	}
+}
+
+/**
+ * ŠÂ‹«Œõ‚Ìæ“¾
+ */
+irr::video::SColorf
+IrrlichtSceneManager::getAmbientLight()
+{
+	return smgr ? smgr->getAmbientLight() : SColorf();
+}
+
+/**
+ * ŒõŒ¹‚Ìİ’è
+ */
+void
+IrrlichtSceneManager::addLightSceneNode(irr::core::vector3df position, irr::video::SColorf color, float radius, int id)
+{
+	if (smgr) {
+		smgr->addLightSceneNode(NULL, position, color, radius, id);
+	}
+}
+
+/**
+ * ƒJƒƒ‰‚Ìİ’è
+ */
 void
 IrrlichtSceneManager::addCameraSceneNode(vector3df position, vector3df lookat, int id)
 {
