@@ -5,6 +5,8 @@
 
 #define WM_SHELLEXECUTED (WM_APP+1)
 
+#define WSO_LOOPTIMEOUT 100
+
 /**
  * メソッド追加用クラス
  */
@@ -131,3 +133,139 @@ NCB_ATTACH_CLASS_WITH_HOOK(WindowShell, Window) {
 	Method(L"shellExecute", &WindowShell::shellExecute);
 	Method(L"terminateProcess", &WindowShell::terminateProcess);
 }
+
+/**
+ * コマンドライン呼び出し
+ */
+tjs_error TJS_INTF_METHOD commandExecute(
+	tTJSVariant *result, tjs_int numparams, tTJSVariant **param, iTJSDispatch2 *objthis)
+{
+	// パラメータチェック
+	if (numparams == 0) return TJS_E_BADPARAMCOUNT;
+	if (param[0]->Type() != tvtString) return TJS_E_INVALIDPARAM;
+
+	// コマンドライン/タイムアウト取得
+	int timeout = 0;
+	ttstr output, cmd(L"\""), target(param[0]->GetString());
+	TVPGetPlacedPath(target);
+	TVPGetLocalName(target);
+	cmd += target + L"\"";
+	if (numparams > 1) cmd += L" " + ttstr(param[1]->GetString());
+	if (numparams > 2) timeout = (tjs_int)*param[2];
+
+	LPWSTR cmdline = (LPWSTR)cmd.c_str();
+	tjs_char const *errmes = 0;
+	bool timeouted = false;
+
+	// セキュリティ属性
+	SECURITY_ATTRIBUTES sa;
+	SECURITY_DESCRIPTOR sd;
+	ZeroMemory(&sa, sizeof(sa));
+	sa.nLength= sizeof(sa);
+	sa.lpSecurityDescriptor = NULL;
+	sa.bInheritHandle = TRUE;
+
+	// NT系の場合はセキュリティ記述子も
+	OSVERSIONINFO osv;
+	ZeroMemory(&osv, sizeof(osv));
+	osv.dwOSVersionInfoSize = sizeof(osv);
+	GetVersionEx(&osv);
+	if (osv.dwPlatformId == VER_PLATFORM_WIN32_NT) {
+		ZeroMemory(&sd, sizeof(sd));
+		InitializeSecurityDescriptor(&sd, SECURITY_DESCRIPTOR_REVISION);
+		SetSecurityDescriptorDacl(&sd, true, NULL, false);
+		sa.lpSecurityDescriptor = &sd;
+	}
+
+	// パイプを作成
+	HANDLE hOR=0, hOW=0, hIR=0, hIW=0, hEW=0;
+	HANDLE hOT=0, hIT=0;
+	HANDLE hPID = GetCurrentProcess();
+	if (!(CreatePipe(&hOT, &hOW, &sa,0) &&
+		  CreatePipe(&hIR, &hIT, &sa,0) &&
+		  DuplicateHandle(hPID, hOW, hPID, &hEW, 0,  TRUE, DUPLICATE_SAME_ACCESS) &&
+		  DuplicateHandle(hPID, hOT, hPID, &hOR, 0, FALSE, DUPLICATE_SAME_ACCESS) &&
+		  DuplicateHandle(hPID, hIT, hPID, &hIW, 0, FALSE, DUPLICATE_SAME_ACCESS)
+		  )) {
+		errmes = L"can't create/duplicate pipe";
+	}
+	CloseHandle(hOT);
+	CloseHandle(hIT);
+	if (errmes) goto error;
+
+	// 子プロセス作成
+	PROCESS_INFORMATION pi;
+	STARTUPINFO si;
+	ZeroMemory(&si, sizeof(si));
+	si.cb = sizeof(si);
+	si.dwFlags = STARTF_USESTDHANDLES | STARTF_USESHOWWINDOW;
+	si.hStdOutput = hOW;
+	si.hStdInput  = hIR;
+	si.hStdError  = hEW;
+	si.wShowWindow = SW_HIDE;
+	if (!CreateProcessW(0, cmdline, 0, 0, TRUE, CREATE_NEW_CONSOLE, 0, 0, &si, &pi)) {
+		errmes = L"can't create child process";
+		goto error;
+	}
+
+	// パイプから出力を読み込み
+	DWORD cnt, exit=~0L, last = GetTickCount();
+	PeekNamedPipe(hOR, 0, 0, 0, &cnt, NULL);
+	char buf[1024];
+	while (true) {
+		if (cnt > 0) {
+			last = GetTickCount();
+			ReadFile(hOR, buf, sizeof(buf)-1, &cnt, NULL);
+			buf[cnt] = 0;
+			ttstr append(buf);
+			output += append;
+			if ((int)cnt == sizeof(buf)-1) {
+				PeekNamedPipe(hOR, 0, 0, 0, &cnt, NULL);
+				if (cnt > 0) continue;
+			}
+		} else {
+			if (timeout > 0 && GetTickCount() > last+timeout) {
+				TerminateProcess(pi.hProcess, -1);
+				errmes = L"child process timeout";
+				timeouted = true;
+			}
+		}
+		DWORD wait = WaitForSingleObject(pi.hProcess, WSO_LOOPTIMEOUT);
+		if (wait == WAIT_FAILED) {
+			errmes = L"child process wait failed";
+			break;
+		}
+		PeekNamedPipe(hOR, 0, 0, 0, &cnt, NULL);
+		if (cnt == 0 && wait == WAIT_OBJECT_0) {
+			GetExitCodeProcess(pi.hProcess, &exit);
+			break;
+		}
+	}
+	CloseHandle(pi.hThread);
+	CloseHandle(pi.hProcess);
+
+error:
+	CloseHandle(hOR);
+	CloseHandle(hOW);
+	CloseHandle(hIR);
+	CloseHandle(hIW);
+	CloseHandle(hEW);
+
+	ncbDictionaryAccessor ret;
+	if (ret.IsValid()) {
+		ret.SetValue(L"stdout", output);
+		if (errmes != 0) {
+			ret.SetValue(L"status", ttstr(timeouted ? L"timeout" : L"error"));
+			ret.SetValue(L"message", ttstr(errmes));
+		} else {
+			ret.SetValue(L"status", ttstr(L"ok"));
+			ret.SetValue(L"exitcode", (tjs_int)exit);
+		}
+	}
+	*result = ret;
+	return TJS_S_OK;
+}
+
+
+NCB_ATTACH_FUNCTION(commandExecute, System, commandExecute);
+
