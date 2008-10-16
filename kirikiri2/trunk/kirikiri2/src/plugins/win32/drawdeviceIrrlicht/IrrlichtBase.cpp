@@ -189,32 +189,3 @@ IrrlichtBase::OnEvent(const irr::SEvent &event)
 	}
 	return false;
 }
-
-
-/**
- * @return ドライバ情報の取得
- */
-IrrlichtDriver
-IrrlichtBase::getDriver()
-{
-	return device ? IrrlichtDriver(device->getVideoDriver()) : IrrlichtDriver();
-}
-	
-/**
- * @return シーンマネージャ情報の取得
- */
-IrrlichtSceneManager
-IrrlichtBase::getSceneManager()
-{
-	return device ? IrrlichtSceneManager(device->getSceneManager()) : IrrlichtSceneManager();
-}
-
-
-/**
- * @return GUI環境情報の取得
- */
-IrrlichtGUIEnvironment
-IrrlichtBase::getGUIEnvironment()
-{
-	return device ? IrrlichtGUIEnvironment(device->getGUIEnvironment()) : IrrlichtGUIEnvironment();
-}
