@@ -247,7 +247,6 @@ template <class T>
 struct Point3DConvertor {
 	template <typename ANYT>
 	void operator ()(ANYT &adst, const tTJSVariant &src) {
-		T dst;
 		ncbPropAccessor info(src);
 		if (IsArray(src)) {
 			dst.X = (f32)info.getRealValue(0);
@@ -275,6 +274,8 @@ struct Point3DConvertor {
 			dict->Release();
 		}
 	}
+private:
+	T dst;
 };
 NCB_SET_CONVERTOR_BOTH(vector3df, Point3DConvertor);
 
