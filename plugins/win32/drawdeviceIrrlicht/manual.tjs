@@ -25,6 +25,11 @@ class Irrlicht {
 	class ICameraSceneNode;
 	class ILightSceneNode;
 
+	/**
+	 * 画像情報クラス
+	 */
+	class IImage {
+	};
 	
 	/**
 	 * ドライバ機能インターフェース
@@ -32,13 +37,14 @@ class Irrlicht {
 	 * ※ new しても正常動作しません。
 	 */
 	class IVideoDriver {
+
 		/**
-		 * 描画画像のキャプチャ
-		 * @param dest 格納先レイヤ
+		 * スクリーンショットの生成
+		 * @return スクリーンショット画像(IImage)
 		 * ※ウインドウの領域からキャプチャーしてるようなので上に別のものがのってると
 		 * そちらの画面がキャプチャーされてしまいます
 		 */
-		//function captureScreenShot(dest);
+		function createScreenShot();
 	};
 
 	/**
@@ -142,3 +148,15 @@ class Irrlicht {
 		function setSize(width, height);
 	}	
 };
+
+
+/**
+ * レイヤに対して機能拡張
+ */
+class Layer {
+	/**
+	 * Irrlicht.IImage から画像をコピー。レイヤのサイズは元のIImageのサイズになります
+	 * @param src Irrlicht.IImage 画像
+	 */
+	function copyIImage(src);
+}

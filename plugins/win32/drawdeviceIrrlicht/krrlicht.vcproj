@@ -227,10 +227,6 @@
 				>
 			</File>
 			<File
-				RelativePath=".\IrrlichtDriver.cpp"
-				>
-			</File>
-			<File
 				RelativePath=".\IrrlichtWindow.cpp"
 				>
 			</File>
@@ -301,10 +297,6 @@
 			</File>
 			<File
 				RelativePath=".\IrrlichtDrawDevice.h"
-				>
-			</File>
-			<File
-				RelativePath=".\IrrlichtDriver.h"
 				>
 			</File>
 			<File
