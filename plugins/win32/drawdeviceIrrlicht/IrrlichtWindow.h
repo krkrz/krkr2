@@ -49,8 +49,8 @@ public:
 	// -----------------------------------------------------------------------
 
 public:
-	irr::video::IVideoDriver *getDriver() {
-		return IrrlichtBase::getDriver();
+	irr::video::IVideoDriver *getVideoDriver() {
+		return IrrlichtBase::getVideoDriver();
 	}
 
 	irr::scene::ISceneManager *getSceneManager() {

@@ -378,6 +378,11 @@ NCB_REGISTER_SUBCLASS(IrrWrapper<ILightSceneNode>) {
 	NCB_CONSTRUCTOR(());
 };
 
+NCB_IRR_CONVERTOR(IVideoDriver);
+NCB_REGISTER_SUBCLASS(IrrWrapper<IVideoDriver>) {
+	NCB_CONSTRUCTOR(());
+};
+
 static bool ISceneManagerLoadScene(IrrWrapper<ISceneManager> *obj, const char *filename)
 {
 	return obj->getIrrObject()->loadScene(filename);
@@ -399,6 +404,7 @@ NCB_REGISTER_SUBCLASS(IrrWrapper<IGUIEnvironment>) {
 };
 
 #define BASE_METHOD \
+	NCB_PROPERTY_RO(videoDriver, getVideoDriver);\
 	NCB_PROPERTY_RO(sceneManager, getSceneManager);\
 	NCB_PROPERTY_RO(guiEnvironment, getGUIEnvironment)
 
@@ -410,7 +416,7 @@ NCB_REGISTER_SUBCLASS(IrrlichtDrawDevice) {
 
 NCB_REGISTER_SUBCLASS(IrrlichtWindow) {
 	NCB_CONSTRUCTOR((int, iTJSDispatch2 *, int, int, int, int));
-	BASE_METHOD;
+//	BASE_METHOD;
 	NCB_PROPERTY(left, getLeft, setLeft);
 	NCB_PROPERTY(top, getTop, setTop);
 	NCB_PROPERTY(width, getWidth, setWidth);
@@ -436,6 +442,7 @@ NCB_REGISTER_CLASS(Irrlicht) {
 	ENUM(EDT_OPENGL);
 	//static
 	//classes
+	NCB_SUBCLASS(VideoDriver, IrrWrapper<IVideoDriver>);
 	NCB_SUBCLASS(SceneManager, IrrWrapper<ISceneManager>);
 	NCB_SUBCLASS(GUIEnvironment, IrrWrapper<IGUIEnvironment>);
 	NCB_SUBCLASS(DrawDevice, IrrlichtDrawDevice);
