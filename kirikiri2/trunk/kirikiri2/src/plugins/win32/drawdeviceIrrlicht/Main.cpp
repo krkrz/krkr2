@@ -408,12 +408,12 @@ NCB_SET_CONVERTOR(type*, IrrTypeConvertor<type>);\
 NCB_SET_CONVERTOR(const type*, IrrTypeConvertor<const type>)
 
 // ラッピング処理用
+#define NCB_REGISTER_IRR_SUBCLASS(Class) NCB_IRR_CONVERTOR(Class);NCB_REGISTER_SUBCLASS(IrrWrapper<Class>)
+#define NCB_IRR_SUBCLASS(Class) NCB_SUBCLASS(Class, IrrWrapper<Class>)
 #define NCB_IRR_METHOD(Class, name)  Method(TJS_W(# name), &Class::name, Bridge<IrrWrapper<Class>::BridgeFunctor>())
 #define NCB_IRR_PROPERTY(Class, name,get,set)  Property(TJS_W(# name), &Class::get, &Class::set, Bridge<IrrWrapper<Class>::BridgeFunctor>())
 #define NCB_IRR_PROPERTY_RO(Class, name,get)   Property(TJS_W(# name), &Class::get, (int)0, Bridge<IrrWrapper<Class>::BridgeFunctor>())
 #define NCB_IRR_PROPERTY_WO(Class, name,set)   Property(TJS_W(# name), (int)0, &Class::set, Bridge<IrrWrapper<Class>::BridgeFunctor>())
-#define NCB_REGISTER_IRR_SUBCLASS(Class) NCB_IRR_CONVERTOR(Class);NCB_REGISTER_SUBCLASS(IrrWrapper<Class>)
-#define NCB_IRR_SUBCLASS(Class) NCB_SUBCLASS(Class, IrrWrapper<Class>)
 
 // XXX 多態化が必要
 NCB_REGISTER_IRR_SUBCLASS(ISceneNode) {
@@ -428,8 +428,13 @@ NCB_REGISTER_IRR_SUBCLASS(ILightSceneNode) {
 	NCB_CONSTRUCTOR(());
 };
 
+NCB_REGISTER_IRR_SUBCLASS(IImage) {
+	NCB_CONSTRUCTOR(());
+};
+
 NCB_REGISTER_IRR_SUBCLASS(IVideoDriver) {
 	NCB_CONSTRUCTOR(());
+	NCB_IRR_METHOD(IVideoDriver, createScreenShot);
 };
 
 static bool ISceneManagerLoadScene(IrrWrapper<ISceneManager> *obj, const char *filename)
@@ -503,6 +508,7 @@ NCB_REGISTER_CLASS(Irrlicht) {
 	// Irrlicht 参照用クラス
 	NCB_IRR_SUBCLASS(ICameraSceneNode);
 	NCB_IRR_SUBCLASS(ILightSceneNode);
+	NCB_IRR_SUBCLASS(IImage);
 
 	NCB_IRR_SUBCLASS(IVideoDriver);
 	NCB_IRR_SUBCLASS(ISceneManager);
@@ -512,6 +518,68 @@ NCB_REGISTER_CLASS(Irrlicht) {
 	NCB_SUBCLASS(DrawDevice, IrrlichtDrawDevice);
 	NCB_SUBCLASS(Window, IrrlichtWindow);
 }
+
+/**
+ * レイヤに IImage からの吸い出し処理を拡張
+ */
+static tjs_error TJS_INTF_METHOD
+copyIImage(tTJSVariant *result, tjs_int numparams, tTJSVariant **param, iTJSDispatch2 *objthis)
+{
+	if (numparams < 1) return TJS_E_BADPARAMCOUNT;
+
+	typedef IrrWrapper<IImage> WrapperT;
+	typedef ncbInstanceAdaptor<WrapperT> AdaptorT;
+	WrapperT *obj;
+	IImage *image;
+	if (param[0]->Type() != tvtObject ||
+		(obj = AdaptorT::GetNativeInstance(param[0]->AsObjectNoAddRef())) == NULL ||
+		(image = obj->getIrrObject()) == NULL) {
+		TVPThrowExceptionMessage(TJS_W("src must be IImage."));
+	}
+	
+	dimension2d<s32> size = image->getDimension();
+	int width  = size.Width;
+	int height = size.Height;
+
+	// レイヤのサイズを調整
+	ncbPropAccessor layer(objthis);
+	layer.SetValue(L"width",  width);
+	layer.SetValue(L"height", height);
+	layer.SetValue(L"imageLeft",  0);
+	layer.SetValue(L"imageTop",   0);
+	layer.SetValue(L"imageWidth",  width);
+	layer.SetValue(L"imageHeight", height);
+	
+	unsigned char *buffer = (unsigned char*)layer.GetValue(L"mainImageBufferForWrite", ncbTypedefs::Tag<tjs_int>());
+	int pitch = layer.GetValue(L"mainImageBufferPitch", ncbTypedefs::Tag<tjs_int>());
+	
+	// 画像データのコピー
+	if (image->getColorFormat() == ECF_A8R8G8B8) {
+		unsigned char *src = (unsigned char*)image->lock();
+		int slen   = width * 4;
+		int spitch = image->getPitch();
+		for (int y=0;y<height;y++) {
+			memcpy(buffer, src, slen);
+			src    += spitch;
+			buffer += pitch;
+		}
+		image->unlock();
+	} else {
+		for (int y=0;y<height;y++) {
+			u32 *line = (u32 *)buffer;
+			for (int x=0;x<width;x++) {
+				*line++ = image->getPixel(x, y).color;
+				buffer += pitch;
+			}
+		}
+	}
+
+	// レイヤを更新
+	objthis->FuncCall(0, L"update", NULL, NULL, 0, NULL, objthis);
+
+	return TJS_S_OK;
+}
+NCB_ATTACH_FUNCTION(copyIImage, Layer, copyIImage);
 
 /**
  * 登録処理前
