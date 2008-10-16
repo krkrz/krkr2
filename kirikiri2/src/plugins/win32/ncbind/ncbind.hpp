@@ -525,7 +525,7 @@ struct ncbNativeObjectBoxing {
 			ClassT *p = box<TargetT>::Get(src);						//< コピー/参照/ポインタ場合分け
 			bool const s = box<TargetT>::Sticky;					//< sticky フラグ
 			iTJSDispatch2 *adpobj = AdaptorT::CreateAdaptor(p, s);	//< アダプタTJSオブジェクト生成
-			dst = adpobj;											//< Variantにコピー
+			dst = tTJSVariant(adpobj, adpobj);						//< Variantにコピー
 			adpobj->Release();										//< コピー済みなのでadaptorは不要
 		}
 
