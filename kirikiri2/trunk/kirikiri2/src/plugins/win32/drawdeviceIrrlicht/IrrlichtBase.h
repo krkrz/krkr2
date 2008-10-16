@@ -76,7 +76,7 @@ public:
 	/**
 	 * @return ƒhƒ‰ƒCƒoî•ñ‚ÌŽæ“¾
 	 */
-	irr::video::IVideoDriver *getDriver() {
+	irr::video::IVideoDriver *getVideoDriver() {
 		return device ? device->getVideoDriver() : NULL;
 	}
 	
