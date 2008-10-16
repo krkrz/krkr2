@@ -49,15 +49,15 @@ public:
 	// -----------------------------------------------------------------------
 
 public:
-	IrrlichtDriver getDriver() {
+	irr::video::IVideoDriver *getDriver() {
 		return IrrlichtBase::getDriver();
 	}
 
-	IrrlichtSceneManager getSceneManager() {
+	irr::scene::ISceneManager *getSceneManager() {
 		return IrrlichtBase::getSceneManager();
 	}
 
-	IrrlichtGUIEnvironment getGUIEnvironment() {
+	irr::gui::IGUIEnvironment *getGUIEnvironment() {
 		return IrrlichtBase::getGUIEnvironment();
 	}
 	
