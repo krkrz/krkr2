@@ -5,10 +5,6 @@
 #include "tp_stub.h"
 #include <irrlicht.h>
 
-#include "IrrlichtDriver.h"
-#include "IrrlichtSceneManager.h"
-#include "IrrlichtGUIEnvironment.h"
-
 /**
  * Irrlicht 処理のベース
  */
@@ -80,17 +76,23 @@ public:
 	/**
 	 * @return ドライバ情報の取得
 	 */
-	IrrlichtDriver getDriver();
+	irr::video::IVideoDriver *getDriver() {
+		return device ? device->getVideoDriver() : NULL;
+	}
 	
 	/**
 	 * @return シーンマネージャ情報の取得
 	 */
-	IrrlichtSceneManager getSceneManager();
+	irr::scene::ISceneManager *getSceneManager() {
+		return device ? device->getSceneManager() : NULL;
+	}
 
 	/**
 	 * @return GUI環境情報の取得
 	 */
-	IrrlichtGUIEnvironment getGUIEnvironment();
+	irr::gui::IGUIEnvironment *getGUIEnvironment() {
+		return device ? device->getGUIEnvironment() : NULL;
+	}
 };
 
 #endif

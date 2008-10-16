@@ -231,14 +231,6 @@
 				>
 			</File>
 			<File
-				RelativePath=".\IrrlichtGUIEnvironment.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\IrrlichtSceneManager.cpp"
-				>
-			</File>
-			<File
 				RelativePath=".\IrrlichtWindow.cpp"
 				>
 			</File>
@@ -316,19 +308,23 @@
 				>
 			</File>
 			<File
-				RelativePath=".\IrrlichtGUIEnvironment.h"
-				>
-			</File>
-			<File
-				RelativePath=".\IrrlichtSceneManager.h"
-				>
-			</File>
-			<File
 				RelativePath=".\IrrlichtWindow.h"
 				>
 			</File>
 			<File
 				RelativePath=".\LayerManagerInfo.h"
+				>
+			</File>
+			<File
+				RelativePath="..\ncbind\ncb_foreach.h"
+				>
+			</File>
+			<File
+				RelativePath="..\ncbind\ncb_invoke.hpp"
+				>
+			</File>
+			<File
+				RelativePath="..\ncbind\ncbind.hpp"
 				>
 			</File>
 			<File
