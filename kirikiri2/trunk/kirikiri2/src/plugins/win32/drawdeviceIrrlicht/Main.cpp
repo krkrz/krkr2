@@ -128,7 +128,8 @@ static bool IsArray(const tTJSVariant &var)
 
 template <class T>
 struct ColorConvertor { // 色用コンバータ
-	void operator ()(T &dst, const tTJSVariant &src) {
+	template <typename ANYT>
+	void operator ()(ANYT &adst, const tTJSVariant &src) {
 		if (src.Type() == tvtInteger) {
 			dst = T((u32)(tjs_int)src);
 		} else {
@@ -145,16 +146,22 @@ struct ColorConvertor { // 色用コンバータ
 				dst.setAlpha((u32)info.getIntValue(L"a", 255));
 			}
 		}
+		adst = ncbTypeConvertor::ToTarget<ANYT>::Get(&dst);
 	}
-	void operator ()(tTJSVariant &dst, const T &src) {
-		dst = (tjs_int64)(tjs_uint64)src.color;
+	template <typename ANYT>
+	void operator ()(tTJSVariant &dst, const ANYT &asrc) {
+		T const* src = ncbTypeConvertor::ToPointer<const ANYT&>::Get(asrc);
+		dst = (tjs_int64)(tjs_uint64)src->color;
 	}
+private:
+	T dst;
 };
 NCB_SET_CONVERTOR_BOTH(SColor, ColorConvertor);
 
 template <class T>
 struct ColorfConvertor { // 色用コンバータ
-	void operator ()(T &dst, const tTJSVariant &src) {
+	template <typename ANYT>
+	void operator ()(ANYT &adst, const tTJSVariant &src) {
 		if (src.Type() == tvtInteger) {
 			dst = T(SColor((u32)(tjs_int)src));
 		} else {
@@ -171,14 +178,17 @@ struct ColorfConvertor { // 色用コンバータ
 				dst.a = (f32)info.getRealValue(L"a", 1.0);
 			}
 		}
+		adst = ncbTypeConvertor::ToTarget<ANYT>::Get(&dst);
 	}
-	void operator ()(tTJSVariant &dst, const T &src) {
+	template <typename ANYT>
+	void operator ()(tTJSVariant &dst, const ANYT &asrc) {
 		iTJSDispatch2 *dict = TJSCreateDictionaryObject();
 		if (dict != NULL) {
-			tTJSVariant a(src.a);
-			tTJSVariant r(src.r);
-			tTJSVariant g(src.g);
-			tTJSVariant b(src.b);
+			T const* src = ncbTypeConvertor::ToPointer<const ANYT&>::Get(asrc);
+			tTJSVariant a(src->a);
+			tTJSVariant r(src->r);
+			tTJSVariant g(src->g);
+			tTJSVariant b(src->b);
 			dict->PropSet(TJS_MEMBERENSURE, L"a", NULL, &a, dict);
 			dict->PropSet(TJS_MEMBERENSURE, L"r", NULL, &r, dict);
 			dict->PropSet(TJS_MEMBERENSURE, L"g", NULL, &g, dict);
@@ -187,12 +197,15 @@ struct ColorfConvertor { // 色用コンバータ
 			dict->Release();
 		}
 	}
+private:
+	T dst;
 };
 NCB_SET_CONVERTOR_BOTH(SColorf, ColorfConvertor);
 
 template <class T>
 struct DimensionConvertor { // コンバータ
-	void operator ()(T &dst, const tTJSVariant &src) {
+	template <typename ANYT>
+	void operator ()(ANYT &dst, const tTJSVariant &src) {
 		ncbPropAccessor info(src);
 		if (IsArray(src)) {
 			dst.Width  = (f32)info.getRealValue(0);
@@ -201,24 +214,30 @@ struct DimensionConvertor { // コンバータ
 			dst.Width  = (f32)info.getRealValue(L"width");
 			dst.Height = (f32)info.getRealValue(L"height");
 		}
+		adst = ncbTypeConvertor::ToTarget<ANYT>::Get(&dst);
 	}
-	void operator ()(const tTJSVariant &dst, const T &src) {
+	template <typename ANYT>
+	void operator ()(const tTJSVariant &dst, const ANYT &asrc) {
 		iTJSDispatch2 *dict = TJSCreateDictionaryObject();
 		if (dict != NULL) {
-			tTJSVariant width(src.Width);
-			tTJSVariant height(src.Height);
+			T const* src = ncbTypeConvertor::ToPointer<const ANYT&>::Get(asrc);
+			tTJSVariant width(src->Width);
+			tTJSVariant height(src->Height);
 			dict->PropSet(TJS_MEMBERENSURE, L"width", NULL, &width, dict);
 			dict->PropSet(TJS_MEMBERENSURE, L"height", NULL, &height, dict);
 			dst = tTJSVariant(dict, dict);
 			dict->Release();
 		}
 	}
+private:
+	T dst;
 };
 NCB_SET_CONVERTOR_BOTH(dimension2df, DimensionConvertor);
 
 template <class T>
 struct PointConvertor {
-	void operator ()(T &dst, const tTJSVariant &src) {
+	template <typename ANYT>
+	void operator ()(ANYT &adst, const tTJSVariant &src) {
 		ncbPropAccessor info(src);
 		if (IsArray(src)) {
 			dst.X = (f32)info.getRealValue(0);
@@ -227,18 +246,23 @@ struct PointConvertor {
 			dst.X = (f32)info.getRealValue(L"x");
 			dst.Y = (f32)info.getRealValue(L"y");
 		}
+		adst = ncbTypeConvertor::ToTarget<ANYT>::Get(&dst);
 	}
-	void operator ()(const tTJSVariant &dst, const T &src) {
+	template <typename ANYT>
+	void operator ()(const tTJSVariant &dst, const ANYT &asrc) {
 		iTJSDispatch2 *dict = TJSCreateDictionaryObject();
 		if (dict != NULL) {
-			tTJSVariant x(src.X);
-			tTJSVariant y(src.Y);
+			T const* src = ncbTypeConvertor::ToPointer<const ANYT&>::Get(asrc);
+			tTJSVariant x(src->X);
+			tTJSVariant y(src->Y);
 			dict->PropSet(TJS_MEMBERENSURE, L"x", NULL, &x, dict);
 			dict->PropSet(TJS_MEMBERENSURE, L"y", NULL, &y, dict);
 			dst = tTJSVariant(dict, dict);
 			dict->Release();
 		}
 	}
+private:
+	T dst;
 };
 NCB_SET_CONVERTOR_BOTH(position2df, PointConvertor);
 NCB_SET_CONVERTOR_BOTH(vector2df, PointConvertor);
@@ -281,7 +305,8 @@ NCB_SET_CONVERTOR_BOTH(vector3df, Point3DConvertor);
 
 template <class T>
 struct RectConvertor {
-	void operator ()(T &dst, const tTJSVariant &src) {
+	template <typename ANYT>
+	void operator ()(ANYT &adst, const tTJSVariant &src) {
 		ncbPropAccessor info(src);
 		if (IsArray(src)) {
 			dst.UpperLeftCorner.X  = info.getIntValue(0);
@@ -304,16 +329,19 @@ struct RectConvertor {
 			dst.LowerRightCorner.X = x2;
 			dst.LowerRightCorner.Y = y2;
 		}
+		adst = ncbTypeConvertor::ToTarget<ANYT>::Get(&dst);
 	}
-	void operator ()(tTJSVariant &dst, const T &src) {
+	template <typename ANYT>
+	void operator ()(tTJSVariant &dst, const ANYT &asrc) {
 		iTJSDispatch2 *dict = TJSCreateDictionaryObject();
 		if (dict != NULL) {
-			int x1 = src.UpperLeftCorner.X;
-			int y1 = src.UpperLeftCorner.Y;
+			T const* src = ncbTypeConvertor::ToPointer<const ANYT&>::Get(asrc);
+			int x1 = src->UpperLeftCorner.X;
+			int y1 = src->UpperLeftCorner.Y;
 			tTJSVariant x(x1);
 			tTJSVariant y(y1);
-			tTJSVariant width(src.LowerRightCorner.X - x1 + 1);
-			tTJSVariant height(src.LowerRightCorner.Y - y1 + 1);
+			tTJSVariant width(src->LowerRightCorner.X - x1 + 1);
+			tTJSVariant height(src->LowerRightCorner.Y - y1 + 1);
 			dict->PropSet(TJS_MEMBERENSURE, L"x", NULL, &x, dict);
 			dict->PropSet(TJS_MEMBERENSURE, L"y", NULL, &y, dict);
 			dict->PropSet(TJS_MEMBERENSURE, L"width", NULL, &width, dict);
@@ -322,6 +350,8 @@ struct RectConvertor {
 			dict->Release();
 		}
 	}
+private:
+	T dst;
 };
 NCB_SET_CONVERTOR_BOTH(rect<s32>, RectConvertor);
 
@@ -353,24 +383,13 @@ static bool ISceneManagerLoadScene(IrrWrapper<ISceneManager> *obj, const char *f
 	return obj->getIrrObject()->loadScene(filename);
 }
 
-static ILightSceneNode *ISceneManagerAddLightSceneNode(IrrWrapper<ISceneManager> *obj, ISceneNode *parent, const vector3df position, SColorf color, f32 radius, s32 id)
-{
-	return obj->getIrrObject()->addLightSceneNode(parent, position, color, radius, id);
-}
-
-static ICameraSceneNode *ISceneManagerAddCameraSceneNode(IrrWrapper<ISceneManager> *obj, ISceneNode *parent, const vector3df position, const vector3df lookat, s32 id)
-{
-	return obj->getIrrObject()->addCameraSceneNode(parent, position, lookat, id);
-}
-
 NCB_IRR_CONVERTOR(ISceneManager);
 NCB_REGISTER_SUBCLASS(IrrWrapper<ISceneManager>) {
 	NCB_CONSTRUCTOR(());
 	NCB_METHOD_PROXY(loadScene, ISceneManagerLoadScene);
-	NCB_METHOD_PROXY(addLightSceneNode, ISceneManagerAddLightSceneNode);
-//	NCB_METHOD_PROXY(addCameraSceneNode, ISceneManagerAddCameraSceneNode);
 	NCB_IRR_METHOD(ISceneManager, addCameraSceneNode);
-//	NCB_IRR_PROPERTY(ISceneManager, ambientLight, getAmbientLight, setAmbientLight);
+	NCB_IRR_METHOD(ISceneManager, addLightSceneNode);
+	NCB_IRR_PROPERTY(ISceneManager, ambientLight, getAmbientLight, setAmbientLight);
 	NCB_IRR_PROPERTY(ISceneManager, shadowColor, getShadowColor, setShadowColor);
 };
 
