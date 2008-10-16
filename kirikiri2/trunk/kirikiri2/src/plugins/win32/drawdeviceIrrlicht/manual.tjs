@@ -9,23 +9,44 @@ class Irrlicht {
 	EDT_DIRECT3D9     = 4; //< Direct3Dベース
 	EDT_OPENGL        = 5; //< OpenGLベース
 
+	// -----------------------------------------------------------------------------
+	//
+	// -----------------------------------------------------------------------------
+	
+	class SColor;
+	class SColorf;
+	class dimension2df;
+	class vector3df;
+
+	// -----------------------------------------------------------------------------
+	//
+	// -----------------------------------------------------------------------------
+	
+	class ICameraSceneNode;
+	class ILightSceneNode;
+
+	
 	/**
-	 * ドライバ機能クラス。DrawDevice または Window のプロパティから参照できるだけで new はできません
+	 * ドライバ機能インターフェース
+	 * DrawDevice または Window のプロパティから参照する必要があります
+	 * ※ new しても正常動作しません。
 	 */
-	class Driver {
+	class IVideoDriver {
 		/**
 		 * 描画画像のキャプチャ
 		 * @param dest 格納先レイヤ
 		 * ※ウインドウの領域からキャプチャーしてるようなので上に別のものがのってると
 		 * そちらの画面がキャプチャーされてしまいます
 		 */
-		function captureScreenShot(dest);
+		//function captureScreenShot(dest);
 	};
 
 	/**
-	 * シーンマネージャ機能クラス。DrawDevice または Window のプロパティから参照できるだけで new はできません
+	 * シーンマネージャ機能インターフェース
+	 * DrawDevice または Window のプロパティから参照する必要があります
+	 * ※ new しても正常動作しません。
 	 */
-	class SceneManager {
+	class ISceneManager {
 		/**
 		 * シーンファイルの読み込み
 		 * @param scene シーンファイル
@@ -53,9 +74,11 @@ class Irrlicht {
 	}
 
 	/**
-	 * GUI環境機能クラス。DrawDevice または Window のプロパティから参照できるだけで new はできません
+	 * GUI環境機能インターフェース
+	 * DrawDevice または Window のプロパティから参照する必要があります
+	 * ※ new しても正常動作しません。
 	 */
-	class GUIEnvironment {
+	class IGUIEnvironment {
 	};
 
 
@@ -63,9 +86,9 @@ class Irrlicht {
 	 * 共通機能分（実際にはこのクラスはありません）
 	 */
 	class Base {
-		property driver; //< ドライバ(Driverクラス)。読み出し専用
-		property sceneManager; //< シーンマネージャ(SceneManagerクラス)。読み出し専用
-		property guiEnvironment; //< GUI環境（GUIEnvironmentクラス）。読み出し専用
+		property videoDriver; //< ドライバ(IVideoDriverクラス)。読み出し専用
+		property sceneManager; //< シーンマネージャ(ISceneManagerクラス)。読み出し専用
+		property guiEnvironment; //< GUI環境（IGUIEnvironmentクラス）。読み出し専用
 	};
 	
 	

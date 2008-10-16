@@ -37,86 +37,31 @@ error_log(const char* format, ...)
 	va_end(args);
 }
 
-/**
- * Irrlicht オブジェクトのラッピング用テンプレートクラス
- */
-template <class T>
-class IrrWrapper {
-	typedef T IrrClassT;
-	typedef IrrWrapper<IrrClassT> WrapperT;
-protected:
-	IrrClassT *obj;
-public:
-	IrrWrapper() : obj(NULL) {}
-	IrrWrapper(IrrClassT *obj) : obj(obj) {
-		if (obj) {
-			obj->grab();
-		}
-	}
-	IrrWrapper(const IrrWrapper &orig) : obj(orig.obj) {
-		if (obj) {
-			obj->grab();
-		}
-	}
-	~IrrWrapper() {
-		if (obj) {
-			obj->drop();
-			obj=NULL;
-		}
-	}
-	IrrClassT *getIrrObject() { return obj; }
+// ----------------------------------------------------------------
+// 実体型の登録
+// 数値パラメータ系は配列か辞書を使えるような特殊コンバータを構築
+// ----------------------------------------------------------------
 
-	struct BridgeFunctor {
-		IrrClassT* operator()(WrapperT *p) const {
-			return p->getIrrObject();
-		}
-	};
-};
-/**
- * Irrlicht オブジェクトをラッピングしたクラス用のコンバータ
- */
-template <class T>
-struct IrrTypeConvertor {
-	typedef typename ncbTypeConvertor::Stripper<T>::Type IrrClassT;
-	typedef T *IrrClassP;
-	typedef IrrWrapper<IrrClassT> WrapperT;
-	typedef ncbInstanceAdaptor<WrapperT> AdaptorT;
-	void operator ()(IrrClassP &dst, const tTJSVariant &src) {
-		WrapperT *obj;
-		if (src.Type() == tvtObject && (obj = AdaptorT::GetNativeInstance(src.AsObjectNoAddRef()))) {
-			dst = obj->getIrrObject();
-		} else {
-			dst = NULL;
-		}
-	}
-	void operator ()(tTJSVariant &dst, const IrrClassP &src) {
-		if (src != NULL) {
-			iTJSDispatch2 *adpobj = AdaptorT::CreateAdaptor(new WrapperT(src));
-			if (adpobj) {
-				dst = tTJSVariant(adpobj, adpobj);
-				adpobj->Release();			
-			} else {
-				TVPThrowExceptionMessage(L"コンバータが型の初期化に失敗");
-			}
-		} else {
-			dst.Clear();
-		}
-	}
-};
-
-#define NCB_IRR_CONVERTOR(type) \
-NCB_SET_CONVERTOR(type*, IrrTypeConvertor<type>);\
-NCB_SET_CONVERTOR(const type*, IrrTypeConvertor<const type>)
-
-// ----------------------------------------------------
-// その他特殊なコンバータ
-// 数値パラメータ系は辞書を使えるようにしてある
-// ----------------------------------------------------
-
+// 両方自前コンバータ
 #define NCB_SET_CONVERTOR_BOTH(type, convertor)\
 NCB_TYPECONV_SRCMAP_SET(type, convertor<type>, true);\
 NCB_TYPECONV_DSTMAP_SET(type, convertor<type>, true)
 
+// SRCだけ自前コンバータ
+#define NCB_SET_CONVERTOR_SRC(type, convertor)\
+NCB_TYPECONV_SRCMAP_SET(type, convertor<type>, true);\
+NCB_TYPECONV_DSTMAP_SET(type, ncbNativeObjectBoxing::Unboxing, true)
+
+// DSTだけ自前コンバータ
+#define NCB_SET_CONVERTOR_DST(type, convertor)\
+NCB_TYPECONV_SRCMAP_SET(type, ncbNativeObjectBoxing::Boxing,   true); \
+NCB_TYPECONV_DSTMAP_SET(type, convertor<type>, true)
+
+/**
+ * 配列かどうかの判定
+ * @param var VARIANT
+ * @return 配列なら true
+ */
 static bool IsArray(const tTJSVariant &var)
 {
 	if (var.Type() == tvtObject) {
@@ -128,111 +73,134 @@ static bool IsArray(const tTJSVariant &var)
 
 template <class T>
 struct ColorConvertor { // 色用コンバータ
+	typedef ncbInstanceAdaptor<T> AdaptorT;
 	template <typename ANYT>
 	void operator ()(ANYT &adst, const tTJSVariant &src) {
-		if (src.Type() == tvtInteger) {
-			dst = T((u32)(tjs_int)src);
-		} else {
-			ncbPropAccessor info(src);
-			if (IsArray(src)) {
-				dst.setRed((u32)info.getIntValue(0, 0));
-				dst.setGreen((u32)info.getIntValue(1, 0));
-				dst.setBlue((u32)info.getIntValue(2, 0));
-				dst.setAlpha((u32)info.getIntValue(3, 255));
+		if (src.Type() == tvtObject) {
+			T *obj = AdaptorT::GetNativeInstance(src.AsObjectNoAddRef());
+			if (obj) {
+				dst = *obj;
 			} else {
-				dst.setRed((u32)info.getIntValue(L"r", 0));
-				dst.setGreen((u32)info.getIntValue(L"g", 0));
-				dst.setBlue((u32)info.getIntValue(L"b", 0));
-				dst.setAlpha((u32)info.getIntValue(L"a", 255));
+				ncbPropAccessor info(src);
+				if (IsArray(src)) { // 配列から変換
+					dst.setRed((u32)info.getIntValue(0, 0));
+					dst.setGreen((u32)info.getIntValue(1, 0));
+					dst.setBlue((u32)info.getIntValue(2, 0));
+					dst.setAlpha((u32)info.getIntValue(3, 255));
+				} else { // 辞書から変換
+					dst.setRed((u32)info.getIntValue(L"r", 0));
+					dst.setGreen((u32)info.getIntValue(L"g", 0));
+					dst.setBlue((u32)info.getIntValue(L"b", 0));
+					dst.setAlpha((u32)info.getIntValue(L"a", 255));
+				}
 			}
+		} else {
+			dst = T((u32)(tjs_int)src);
 		}
 		adst = ncbTypeConvertor::ToTarget<ANYT>::Get(&dst);
 	}
-	template <typename ANYT>
-	void operator ()(tTJSVariant &dst, const ANYT &asrc) {
-		T const* src = ncbTypeConvertor::ToPointer<const ANYT&>::Get(asrc);
-		dst = (tjs_int64)(tjs_uint64)src->color;
-	}
+// XXX 自前登録サンプル
+//	template <typename ANYT>
+//	void operator ()(const tTJSVariant &dst, const ANYT &asrc) {
+//		iTJSDispatch2 *dict = TJSCreateDictionaryObject();
+//		if (dict != NULL) {
+//			T const* src = ncbTypeConvertor::ToPointer<const ANYT&>::Get(asrc);
+//			tTJSVariant r(src->getRed());
+//			dict->PropSet(TJS_MEMBERENSURE, L"r", NULL, &r, dict);
+//			dst = tTJSVariant(dict, dict);
+//			dict->Release();
+//		}
+//	}
 private:
 	T dst;
 };
-NCB_SET_CONVERTOR_BOTH(SColor, ColorConvertor);
+NCB_SET_CONVERTOR_DST(SColor, ColorConvertor);
+NCB_REGISTER_SUBCLASS_DELAY(SColor) {
+	NCB_CONSTRUCTOR((u32));
+	NCB_PROPERTY(red, getRed, setRed);
+	NCB_PROPERTY(blue, getBlue, setBlue);
+	NCB_PROPERTY(green, getGreen, setGreen);
+	NCB_PROPERTY(alpha, getAlpha, setAlpha);
+};
 
 template <class T>
 struct ColorfConvertor { // 色用コンバータ
+	typedef ncbInstanceAdaptor<T> AdaptorT;
 	template <typename ANYT>
 	void operator ()(ANYT &adst, const tTJSVariant &src) {
-		if (src.Type() == tvtInteger) {
-			dst = T(SColor((u32)(tjs_int)src));
-		} else {
-			ncbPropAccessor info(src);
-			if (IsArray(src)) {
-				dst.r = (f32)info.getRealValue(0, 0);
-				dst.g = (f32)info.getRealValue(1, 0);
-				dst.b = (f32)info.getRealValue(2, 0);
-				dst.a = (f32)info.getRealValue(3, 1.0);
+		if (src.Type() == tvtObject) {
+			T *obj = AdaptorT::GetNativeInstance(src.AsObjectNoAddRef());
+			if (obj) {
+				dst = *obj;
 			} else {
-				dst.r = (f32)info.getRealValue(L"r", 0);
-				dst.g = (f32)info.getRealValue(L"g", 0);
-				dst.b = (f32)info.getRealValue(L"b", 0);
-				dst.a = (f32)info.getRealValue(L"a", 1.0);
+				ncbPropAccessor info(src);
+				if (IsArray(src)) { // 配列から変換
+					dst.r = (f32)info.getRealValue(0, 0);
+					dst.g = (f32)info.getRealValue(1, 0);
+					dst.b = (f32)info.getRealValue(2, 0);
+					dst.a = (f32)info.getRealValue(3, 1.0);
+				} else { // 辞書から変換
+					dst.r = (f32)info.getRealValue(L"r", 0);
+					dst.g = (f32)info.getRealValue(L"g", 0);
+					dst.b = (f32)info.getRealValue(L"b", 0);
+					dst.a = (f32)info.getRealValue(L"a", 1.0);
+				}
 			}
+		} else {
+			dst = T(SColor((u32)(tjs_int)src));
 		}
 		adst = ncbTypeConvertor::ToTarget<ANYT>::Get(&dst);
-	}
-	template <typename ANYT>
-	void operator ()(tTJSVariant &dst, const ANYT &asrc) {
-		iTJSDispatch2 *dict = TJSCreateDictionaryObject();
-		if (dict != NULL) {
-			T const* src = ncbTypeConvertor::ToPointer<const ANYT&>::Get(asrc);
-			tTJSVariant a(src->a);
-			tTJSVariant r(src->r);
-			tTJSVariant g(src->g);
-			tTJSVariant b(src->b);
-			dict->PropSet(TJS_MEMBERENSURE, L"a", NULL, &a, dict);
-			dict->PropSet(TJS_MEMBERENSURE, L"r", NULL, &r, dict);
-			dict->PropSet(TJS_MEMBERENSURE, L"g", NULL, &g, dict);
-			dict->PropSet(TJS_MEMBERENSURE, L"b", NULL, &b, dict);
-			dst = tTJSVariant(dict, dict);
-			dict->Release();
-		}
 	}
 private:
 	T dst;
 };
-NCB_SET_CONVERTOR_BOTH(SColorf, ColorfConvertor);
+NCB_SET_CONVERTOR_DST(SColorf, ColorfConvertor);
+NCB_REGISTER_SUBCLASS_DELAY(SColorf) {
+	NCB_CONSTRUCTOR((SColor));
+//	NCB_PROPERTY(red, getRed, setRed);
+//	NCB_PROPERTY(blue, getBlue, setBlue);
+//	NCB_PROPERTY(green, getGreen, setGreen);
+//	NCB_PROPERTY(alpha, getAlpha, setAlpha);
+	NCB_METHOD(getInterpolated);
+	NCB_METHOD(getInterpolated_quadratic);
+	NCB_METHOD(setColorComponentValue);
+	NCB_METHOD(toSColor);
+};
+
 
 template <class T>
 struct DimensionConvertor { // コンバータ
+	typedef ncbInstanceAdaptor<T> AdaptorT;
 	template <typename ANYT>
 	void operator ()(ANYT &dst, const tTJSVariant &src) {
-		ncbPropAccessor info(src);
-		if (IsArray(src)) {
-			dst.Width  = (f32)info.getRealValue(0);
-			dst.Height = (f32)info.getRealValue(1);
+		if (src.Type() == tvtObject) {
+			T *obj = AdaptorT::GetNativeInstance(src.AsObjectNoAddRef());
+			if (obj) {
+				dst = *obj;
+			} else {
+				ncbPropAccessor info(src);
+				if (IsArray(src)) { // 配列から変換
+					dst.Width  = (f32)info.getRealValue(0);
+					dst.Height = (f32)info.getRealValue(1);
+				} else { // 辞書から変換
+					dst.Width  = (f32)info.getRealValue(L"width");
+					dst.Height = (f32)info.getRealValue(L"height");
+				}
+			}
 		} else {
-			dst.Width  = (f32)info.getRealValue(L"width");
-			dst.Height = (f32)info.getRealValue(L"height");
+			dst = T();
 		}
 		adst = ncbTypeConvertor::ToTarget<ANYT>::Get(&dst);
-	}
-	template <typename ANYT>
-	void operator ()(const tTJSVariant &dst, const ANYT &asrc) {
-		iTJSDispatch2 *dict = TJSCreateDictionaryObject();
-		if (dict != NULL) {
-			T const* src = ncbTypeConvertor::ToPointer<const ANYT&>::Get(asrc);
-			tTJSVariant width(src->Width);
-			tTJSVariant height(src->Height);
-			dict->PropSet(TJS_MEMBERENSURE, L"width", NULL, &width, dict);
-			dict->PropSet(TJS_MEMBERENSURE, L"height", NULL, &height, dict);
-			dst = tTJSVariant(dict, dict);
-			dict->Release();
-		}
 	}
 private:
 	T dst;
 };
-NCB_SET_CONVERTOR_BOTH(dimension2df, DimensionConvertor);
+NCB_SET_CONVERTOR_DST(dimension2df, DimensionConvertor);
+NCB_REGISTER_SUBCLASS_DELAY(dimension2df) {
+	NCB_CONSTRUCTOR(());
+//	NCB_PROPERTY(width, getWidth, setWidth);
+//	NCB_PROPERTY(height, getHeight, setHeight);
+}
 
 template <class T>
 struct PointConvertor {
@@ -301,7 +269,13 @@ struct Point3DConvertor {
 private:
 	T dst;
 };
-NCB_SET_CONVERTOR_BOTH(vector3df, Point3DConvertor);
+
+NCB_SET_CONVERTOR_DST(vector3df, Point3DConvertor);
+NCB_REGISTER_SUBCLASS_DELAY(vector3df) {
+	NCB_CONSTRUCTOR((f32,f32,f32));
+	NCB_METHOD(crossProduct);
+	NCB_METHOD(dotProduct);
+};
 
 template <class T>
 struct RectConvertor {
@@ -355,31 +329,106 @@ private:
 };
 NCB_SET_CONVERTOR_BOTH(rect<s32>, RectConvertor);
 
-// ----------------------------------- クラスの登録
+// --------------------------------------------------------------------
+// Irrlicht の参照オブジェクトの型の登録
+// Irrlicht のインターフェースをそのまま保持できるように工夫
+// --------------------------------------------------------------------
+
+/**
+ * Irrlichtの参照オブジェクトのラッピング用テンプレートクラス
+ */
+template <class T>
+class IrrWrapper {
+	typedef T IrrClassT;
+	typedef IrrWrapper<IrrClassT> WrapperT;
+protected:
+	IrrClassT *obj;
+public:
+	IrrWrapper() : obj(NULL) {}
+	IrrWrapper(IrrClassT *obj) : obj(obj) {
+		if (obj) {
+			obj->grab();
+		}
+	}
+	IrrWrapper(const IrrWrapper &orig) : obj(orig.obj) {
+		if (obj) {
+			obj->grab();
+		}
+	}
+	~IrrWrapper() {
+		if (obj) {
+			obj->drop();
+			obj=NULL;
+		}
+	}
+	IrrClassT *getIrrObject() { return obj; }
+
+	struct BridgeFunctor {
+		IrrClassT* operator()(WrapperT *p) const {
+			return p->getIrrObject();
+		}
+	};
+};
+
+/**
+ * Irrlichtの参照オブジェクトをラッピングしたクラス用のコンバータ（汎用）
+ */
+template <class T>
+struct IrrTypeConvertor {
+	typedef typename ncbTypeConvertor::Stripper<T>::Type IrrClassT;
+	typedef T *IrrClassP;
+	typedef IrrWrapper<IrrClassT> WrapperT;
+	typedef ncbInstanceAdaptor<WrapperT> AdaptorT;
+	void operator ()(IrrClassP &dst, const tTJSVariant &src) {
+		WrapperT *obj;
+		if (src.Type() == tvtObject && (obj = AdaptorT::GetNativeInstance(src.AsObjectNoAddRef()))) {
+			dst = obj->getIrrObject();
+		} else {
+			dst = NULL;
+		}
+	}
+	void operator ()(tTJSVariant &dst, const IrrClassP &src) {
+		if (src != NULL) {
+			iTJSDispatch2 *adpobj = AdaptorT::CreateAdaptor(new WrapperT(src));
+			if (adpobj) {
+				dst = tTJSVariant(adpobj, adpobj);
+				adpobj->Release();			
+			} else {
+				TVPThrowExceptionMessage(L"コンバータが型の初期化に失敗");
+			}
+		} else {
+			dst.Clear();
+		}
+	}
+};
+
+// Irrlicht参照オブジェクト用のコンバータの登録マクロ
+#define NCB_IRR_CONVERTOR(type) \
+NCB_SET_CONVERTOR(type*, IrrTypeConvertor<type>);\
+NCB_SET_CONVERTOR(const type*, IrrTypeConvertor<const type>)
 
 // ラッピング処理用
 #define NCB_IRR_METHOD(Class, name)  Method(TJS_W(# name), &Class::name, Bridge<IrrWrapper<Class>::BridgeFunctor>())
 #define NCB_IRR_PROPERTY(Class, name,get,set)  Property(TJS_W(# name), &Class::get, &Class::set, Bridge<IrrWrapper<Class>::BridgeFunctor>())
 #define NCB_IRR_PROPERTY_RO(Class, name,get)   Property(TJS_W(# name), &Class::get, (int)0, Bridge<IrrWrapper<Class>::BridgeFunctor>())
 #define NCB_IRR_PROPERTY_WO(Class, name,set)   Property(TJS_W(# name), (int)0, &Class::set, Bridge<IrrWrapper<Class>::BridgeFunctor>())
+#define NCB_REGISTER_IRR_SUBCLASS(Class) NCB_IRR_CONVERTOR(Class);NCB_REGISTER_SUBCLASS(IrrWrapper<Class>)
+#define NCB_IRR_SUBCLASS(Class) NCB_SUBCLASS(Class, IrrWrapper<Class>)
 
-NCB_IRR_CONVERTOR(ISceneNode);
-NCB_REGISTER_SUBCLASS(IrrWrapper<ISceneNode>) {
+// XXX 多態化が必要
+NCB_REGISTER_IRR_SUBCLASS(ISceneNode) {
 	NCB_CONSTRUCTOR(());
 };
 
-NCB_IRR_CONVERTOR(ICameraSceneNode);
-NCB_REGISTER_SUBCLASS(IrrWrapper<ICameraSceneNode>) {
+NCB_REGISTER_IRR_SUBCLASS(ICameraSceneNode) {
 	NCB_CONSTRUCTOR(());
 };
 
-NCB_IRR_CONVERTOR(ILightSceneNode);
-NCB_REGISTER_SUBCLASS(IrrWrapper<ILightSceneNode>) {
+NCB_REGISTER_IRR_SUBCLASS(ILightSceneNode) {
 	NCB_CONSTRUCTOR(());
 };
 
-NCB_IRR_CONVERTOR(IVideoDriver);
-NCB_REGISTER_SUBCLASS(IrrWrapper<IVideoDriver>) {
+NCB_REGISTER_IRR_SUBCLASS(IVideoDriver) {
 	NCB_CONSTRUCTOR(());
 };
 
@@ -388,8 +437,7 @@ static bool ISceneManagerLoadScene(IrrWrapper<ISceneManager> *obj, const char *f
 	return obj->getIrrObject()->loadScene(filename);
 }
 
-NCB_IRR_CONVERTOR(ISceneManager);
-NCB_REGISTER_SUBCLASS(IrrWrapper<ISceneManager>) {
+NCB_REGISTER_IRR_SUBCLASS(ISceneManager) {
 	NCB_CONSTRUCTOR(());
 	NCB_METHOD_PROXY(loadScene, ISceneManagerLoadScene);
 	NCB_IRR_METHOD(ISceneManager, addCameraSceneNode);
@@ -398,10 +446,13 @@ NCB_REGISTER_SUBCLASS(IrrWrapper<ISceneManager>) {
 	NCB_IRR_PROPERTY(ISceneManager, shadowColor, getShadowColor, setShadowColor);
 };
 
-NCB_IRR_CONVERTOR(IGUIEnvironment);
-NCB_REGISTER_SUBCLASS(IrrWrapper<IGUIEnvironment>) {
+NCB_REGISTER_IRR_SUBCLASS(IGUIEnvironment) {
 	NCB_CONSTRUCTOR(());
 };
+
+// --------------------------------------------------------------------
+// Irrlicht 操作用の基本オブジェクトの登録
+// --------------------------------------------------------------------
 
 #define BASE_METHOD \
 	NCB_PROPERTY_RO(videoDriver, getVideoDriver);\
@@ -433,6 +484,7 @@ struct Irrlicht {
 };
 
 #define ENUM(n) Variant(#n, (int)n)
+#define NCB_SUBCLASS_NAME(name) NCB_SUBCLASS(name, name)
 
 NCB_REGISTER_CLASS(Irrlicht) {
 	//enums
@@ -441,10 +493,22 @@ NCB_REGISTER_CLASS(Irrlicht) {
 	ENUM(EDT_DIRECT3D9);
 	ENUM(EDT_OPENGL);
 	//static
-	//classes
-	NCB_SUBCLASS(VideoDriver, IrrWrapper<IVideoDriver>);
-	NCB_SUBCLASS(SceneManager, IrrWrapper<ISceneManager>);
-	NCB_SUBCLASS(GUIEnvironment, IrrWrapper<IGUIEnvironment>);
+
+	// Irrlicht データ型クラス
+	NCB_SUBCLASS_NAME(SColor);
+	NCB_SUBCLASS_NAME(SColorf);
+	NCB_SUBCLASS_NAME(dimension2df);
+	NCB_SUBCLASS_NAME(vector3df);
+
+	// Irrlicht 参照用クラス
+	NCB_IRR_SUBCLASS(ICameraSceneNode);
+	NCB_IRR_SUBCLASS(ILightSceneNode);
+
+	NCB_IRR_SUBCLASS(IVideoDriver);
+	NCB_IRR_SUBCLASS(ISceneManager);
+	NCB_IRR_SUBCLASS(IGUIEnvironment);
+
+	// Irrlicht 操作ベースクラス
 	NCB_SUBCLASS(DrawDevice, IrrlichtDrawDevice);
 	NCB_SUBCLASS(Window, IrrlichtWindow);
 }
