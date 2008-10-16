@@ -114,8 +114,8 @@ NCB_SET_CONVERTOR(const type*, IrrTypeConvertor<const type>)
 // ----------------------------------------------------
 
 #define NCB_SET_CONVERTOR_BOTH(type, convertor)\
-NCB_SET_CONVERTOR(type, convertor<type>);\
-NCB_SET_CONVERTOR(const type, convertor<const type>)
+NCB_TYPECONV_SRCMAP_SET(type, convertor<type>, true);\
+NCB_TYPECONV_DSTMAP_SET(type, convertor<type>, true)
 
 static bool IsArray(const tTJSVariant &var)
 {
@@ -245,7 +245,9 @@ NCB_SET_CONVERTOR_BOTH(vector2df, PointConvertor);
 
 template <class T>
 struct Point3DConvertor {
-	void operator ()(T &dst, const tTJSVariant &src) {
+	template <typename ANYT>
+	void operator ()(ANYT &adst, const tTJSVariant &src) {
+		T dst;
 		ncbPropAccessor info(src);
 		if (IsArray(src)) {
 			dst.X = (f32)info.getRealValue(0);
@@ -256,13 +258,16 @@ struct Point3DConvertor {
 			dst.Y = (f32)info.getRealValue(L"y");
 			dst.Z = (f32)info.getRealValue(L"z");
 		}
+		adst = ncbTypeConvertor::ToTarget<ANYT>::Get(&dst);
 	}
-	void operator ()(tTJSVariant &dst, const T &src) {
+	template <typename ANYT>
+	void operator ()(tTJSVariant &dst, const ANYT &asrc) {
 		iTJSDispatch2 *dict = TJSCreateDictionaryObject();
 		if (dict != NULL) {
-			tTJSVariant x(src.X);
-			tTJSVariant y(src.Y);
-			tTJSVariant z(src.Z);
+			T const* src = ncbTypeConvertor::ToPointer<const ANYT&>::Get(asrc);
+			tTJSVariant x(src->X);
+			tTJSVariant y(src->Y);
+			tTJSVariant z(src->Z);
 			dict->PropSet(TJS_MEMBERENSURE, L"x", NULL, &x, dict);
 			dict->PropSet(TJS_MEMBERENSURE, L"y", NULL, &y, dict);
 			dict->PropSet(TJS_MEMBERENSURE, L"z", NULL, &z, dict);
@@ -362,8 +367,8 @@ NCB_REGISTER_SUBCLASS(IrrWrapper<ISceneManager>) {
 	NCB_CONSTRUCTOR(());
 	NCB_METHOD_PROXY(loadScene, ISceneManagerLoadScene);
 	NCB_METHOD_PROXY(addLightSceneNode, ISceneManagerAddLightSceneNode);
-	NCB_METHOD_PROXY(addCameraSceneNode, ISceneManagerAddCameraSceneNode);
-//	NCB_IRR_METHOD(ISceneManager, addCameraSceneNode);
+//	NCB_METHOD_PROXY(addCameraSceneNode, ISceneManagerAddCameraSceneNode);
+	NCB_IRR_METHOD(ISceneManager, addCameraSceneNode);
 //	NCB_IRR_PROPERTY(ISceneManager, ambientLight, getAmbientLight, setAmbientLight);
 	NCB_IRR_PROPERTY(ISceneManager, shadowColor, getShadowColor, setShadowColor);
 };
