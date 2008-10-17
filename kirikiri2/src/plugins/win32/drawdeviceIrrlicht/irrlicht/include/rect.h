@@ -247,6 +247,50 @@ namespace core
 
 		position2d<T> UpperLeftCorner;
 		position2d<T> LowerRightCorner;
+
+		// add new methods
+
+		//! Returns left of rectangle.
+		T getLeft() const
+		{
+			return UpperLeftCorner.X;
+		}
+
+		//! set width of rectangle
+		void setLeft(T value)
+		{
+			T diff = getWidth();
+			UpperLeftCorner.X  = value;
+			LowerRightCorner.X = value + diff;
+		}
+
+		//! Returns top of rectangle.
+		T getTop() const
+		{
+			return UpperLeftCorner.Y;
+		}
+		
+		//! set width of rectangle
+		void setTop(T value)
+		{
+			T diff = getHeight();
+			UpperLeftCorner.Y  = value;
+			LowerRightCorner.Y = value + diff;
+		}
+
+		//! set width of rectangle
+		void setWidth(T value)
+		{
+			LowerRightCorner.X = UpperLeftCorner.X + value;
+		}
+
+		//! set width of rectangle
+		void setHeight(T value)
+		{
+			LowerRightCorner.Y = UpperLeftCorner.X + value;
+		}
+
+
 	};
 
 
