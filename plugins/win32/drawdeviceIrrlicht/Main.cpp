@@ -128,7 +128,11 @@ NCB_REGISTER_SUBCLASS_DELAY(SColor) {
 	NCB_PROPERTY(blue, getBlue, setBlue);
 	NCB_PROPERTY(green, getGreen, setGreen);
 	NCB_PROPERTY(alpha, getAlpha, setAlpha);
-	//NCB_PROPERTY(color, getColor, setColor);
+	NCB_PROPERTY_RO(average, getAverage);
+	NCB_METHOD(getInterpolated);
+	NCB_METHOD(getInterpolated_quadratic);
+	NCB_PROPERTY_RO(luminance, getLuminance);
+	NCB_METHOD(toA1R5G5B5);
 	NCB_MEMBER_PROPERTY(color, u32, color);
 };
 
@@ -167,19 +171,53 @@ private:
 NCB_SET_CONVERTOR_DST(SColorf, ColorfConvertor);
 NCB_REGISTER_SUBCLASS_DELAY(SColorf) {
 	NCB_CONSTRUCTOR((SColor));
-//	NCB_PROPERTY(red, getRed, setRed);
-//	NCB_PROPERTY(blue, getBlue, setBlue);
-//	NCB_PROPERTY(green, getGreen, setGreen);
-//	NCB_PROPERTY(alpha, getAlpha, setAlpha);
+	NCB_MEMBER_PROPERTY(red, f32, r);
+	NCB_MEMBER_PROPERTY(blue, f32, b);
+	NCB_MEMBER_PROPERTY(green, f32, g);
+	NCB_MEMBER_PROPERTY(alpha, f32, a);
 	NCB_METHOD(getInterpolated);
 	NCB_METHOD(getInterpolated_quadratic);
 	NCB_METHOD(setColorComponentValue);
 	NCB_METHOD(toSColor);
 };
 
-
 template <class T>
 struct DimensionConvertor { // コンバータ
+	typedef ncbInstanceAdaptor<T> AdaptorT;
+	template <typename ANYT>
+	void operator ()(ANYT &dst, const tTJSVariant &src) {
+		if (src.Type() == tvtObject) {
+			T *obj = AdaptorT::GetNativeInstance(src.AsObjectNoAddRef());
+			if (obj) {
+				dst = *obj;
+			} else {
+				ncbPropAccessor info(src);
+				if (IsArray(src)) { // 配列から変換
+					dst.Width  = (s32)info.getIntValue(0);
+					dst.Height = (s32)info.getIntValue(1);
+				} else { // 辞書から変換
+					dst.Width  = (s32)info.getIntValue(L"width");
+					dst.Height = (s32)info.getIntValue(L"height");
+				}
+			}
+		} else {
+			dst = T();
+		}
+		adst = ncbTypeConvertor::ToTarget<ANYT>::Get(&dst);
+	}
+private:
+	T dst;
+};
+NCB_SET_CONVERTOR_DST(dimension2di, DimensionConvertor);
+NCB_REGISTER_SUBCLASS_DELAY(dimension2di) {
+	NCB_CONSTRUCTOR(()); // XXX
+	NCB_PROPERTY_RO(area, getArea);
+	NCB_MEMBER_PROPERTY(height, s32, Height);
+	NCB_MEMBER_PROPERTY(width, s32, Width);
+}
+
+template <class T>
+struct DimensionfConvertor { // コンバータ
 	typedef ncbInstanceAdaptor<T> AdaptorT;
 	template <typename ANYT>
 	void operator ()(ANYT &dst, const tTJSVariant &src) {
@@ -205,15 +243,50 @@ struct DimensionConvertor { // コンバータ
 private:
 	T dst;
 };
-NCB_SET_CONVERTOR_DST(dimension2df, DimensionConvertor);
+NCB_SET_CONVERTOR_DST(dimension2df, DimensionfConvertor);
 NCB_REGISTER_SUBCLASS_DELAY(dimension2df) {
-	NCB_CONSTRUCTOR(());
-//	NCB_PROPERTY(width, getWidth, setWidth);
-//	NCB_PROPERTY(height, getHeight, setHeight);
+	NCB_CONSTRUCTOR(()); // XXX
+	NCB_PROPERTY_RO(area, getArea);
+	NCB_MEMBER_PROPERTY(height, f32, Height);
+	NCB_MEMBER_PROPERTY(width, f32, Width);
 }
 
 template <class T>
 struct PointConvertor {
+	typedef ncbInstanceAdaptor<T> AdaptorT;
+	template <typename ANYT>
+	void operator ()(ANYT &adst, const tTJSVariant &src) {
+		if (src.Type() == tvtObject) {
+			T *obj = AdaptorT::GetNativeInstance(src.AsObjectNoAddRef());
+			if (obj) {
+				dst = *obj;
+			} else {
+				ncbPropAccessor info(src);
+				if (IsArray(src)) {
+					dst.X = (s32)info.getIntValue(0);
+					dst.Y = (s32)info.getIntValue(1);
+				} else {
+					dst.X = (s32)info.getIntValue(L"x");
+					dst.Y = (s32)info.getIntValue(L"y");
+				}
+			}
+		} else {
+			dst = T();
+		}
+		adst = ncbTypeConvertor::ToTarget<ANYT>::Get(&dst);
+	}
+private:
+	T dst;
+};
+NCB_SET_CONVERTOR_DST(position2di, PointConvertor);
+NCB_REGISTER_SUBCLASS_DELAY(position2di) {
+	NCB_CONSTRUCTOR((s32, s32));
+	NCB_MEMBER_PROPERTY(x, s32, X);
+	NCB_MEMBER_PROPERTY(y, s32, Y);
+};
+
+template <class T>
+struct PointfConvertor {
 	typedef ncbInstanceAdaptor<T> AdaptorT;
 	template <typename ANYT>
 	void operator ()(ANYT &adst, const tTJSVariant &src) {
@@ -230,22 +303,38 @@ struct PointConvertor {
 					dst.X = (f32)info.getRealValue(L"x");
 					dst.Y = (f32)info.getRealValue(L"y");
 				}
-			} else {
-				dst = T();
 			}
+		} else {
+			dst = T();
 		}
 		adst = ncbTypeConvertor::ToTarget<ANYT>::Get(&dst);
 	}
 private:
 	T dst;
 };
-NCB_SET_CONVERTOR_DST(position2df, PointConvertor);
+NCB_SET_CONVERTOR_DST(position2df, PointfConvertor);
 NCB_REGISTER_SUBCLASS_DELAY(position2df) {
-	NCB_CONSTRUCTOR(());
+	NCB_CONSTRUCTOR((f32, f32));
+	NCB_MEMBER_PROPERTY(x, f32, X);
+	NCB_MEMBER_PROPERTY(y, f32, Y);
 };
-NCB_SET_CONVERTOR_DST(vector2df, PointConvertor);
+NCB_SET_CONVERTOR_DST(vector2df, PointfConvertor);
 NCB_REGISTER_SUBCLASS_DELAY(vector2df) {
-	NCB_CONSTRUCTOR(());
+	NCB_CONSTRUCTOR((f32, f32));
+	NCB_MEMBER_PROPERTY(x, f32, X);
+	NCB_MEMBER_PROPERTY(y, f32, Y);
+	NCB_METHOD(equals);
+	NCB_PROPERTY_RO(angle, getAngle);
+	NCB_PROPERTY_RO(angleTrig, getAngleTrig);
+	NCB_METHOD(getAngleWith);
+	NCB_METHOD(getDistanceFrom);
+	NCB_METHOD(getDistanceFromSQ);
+	NCB_METHOD(getInterpolated);
+	NCB_METHOD(getInterpolated_quadratic);
+	NCB_PROPERTY_RO(length, getLength);
+	NCB_PROPERTY_RO(lengthSQ, getLengthSQ);
+	NCB_METHOD(interpolate);
+	NCB_METHOD(isBetweenPoints);
 };
 
 template <class T>
@@ -283,6 +372,20 @@ NCB_REGISTER_SUBCLASS_DELAY(vector3df) {
 	NCB_CONSTRUCTOR((f32,f32,f32));
 	NCB_METHOD(crossProduct);
 	NCB_METHOD(dotProduct);
+	NCB_METHOD(equals);
+	NCB_METHOD(getDistanceFrom);
+	NCB_METHOD(getDistanceFromSQ);
+	NCB_PROPERTY_RO(horizontalAngle, getHorizontalAngle);
+	NCB_METHOD(getInterpolated);
+	NCB_METHOD(getInterpolated_quadratic);
+	NCB_PROPERTY(length, getLength, setLength);
+	NCB_PROPERTY_RO(lengthSQ, getLengthSQ);
+	NCB_METHOD(invert);
+	NCB_METHOD(isBetweenPoints);
+	NCB_METHOD(normalize);
+	NCB_METHOD(rotateXYBy);
+	NCB_METHOD(rotateXZBy);
+	NCB_METHOD(rotateYZBy);
 };
 
 template <class T>
@@ -328,7 +431,21 @@ private:
 };
 NCB_SET_CONVERTOR_DST(rect<s32>, RectConvertor);
 NCB_REGISTER_SUBCLASS_DELAY(rect<s32>) {
-	NCB_CONSTRUCTOR(());
+	NCB_CONSTRUCTOR((s32, s32, s32, s32));
+//	NCB_METHOD(addInternalPoint);
+	NCB_METHOD(clipAgainst);
+	NCB_METHOD(constrainTo);
+	NCB_PROPERTY_RO(area, getArea);
+	NCB_PROPERTY_RO(center, getCenter);
+	NCB_PROPERTY_RO(size, getSize);
+	NCB_METHOD(isPointInside);
+	NCB_METHOD(isRectCollided);
+	NCB_METHOD(isValid);
+	NCB_METHOD(repair);
+	NCB_PROPERTY(width, getWidth, setWidth);
+	NCB_PROPERTY(height, getHeight, setHeight);
+	NCB_PROPERTY(left, getLeft, setLeft);
+	NCB_PROPERTY(top, getTop, setTop);
 };
 
 // --------------------------------------------------------------------
@@ -605,6 +722,9 @@ NCB_REGISTER_CLASS(Irrlicht) {
 	// Irrlicht データ型クラス
 	NCB_SUBCLASS_NAME(SColor);
 	NCB_SUBCLASS_NAME(SColorf);
+	NCB_SUBCLASS_NAME(position2di);
+	NCB_SUBCLASS_NAME(position2df);
+	NCB_SUBCLASS_NAME(dimension2di);
 	NCB_SUBCLASS_NAME(dimension2df);
 	NCB_SUBCLASS_NAME(vector3df);
 
