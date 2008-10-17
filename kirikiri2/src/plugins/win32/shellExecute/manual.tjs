@@ -39,7 +39,7 @@ class System {
 	 * @param timeout タイムアウト時間(ms)
 	 * @return %[
 	 *   status:   ok/error/timeoutのいずれかの文字列, 
-	 *   stdout:   コンソール出力文字列(改行も全部つなげて返す),
+	 *   stdout:   コンソール出力文字列配列(改行で分離)
 	 *   exitcode: 終了コード(status=="ok"時のみ),
 	 *   message:  エラーメッセージ(status!="ok"時のみ)
 	 *   ];
