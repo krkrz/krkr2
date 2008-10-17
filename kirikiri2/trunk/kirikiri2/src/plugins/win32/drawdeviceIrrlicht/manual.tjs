@@ -10,12 +10,16 @@ class Irrlicht {
 	EDT_OPENGL        = 5; //< OpenGLベース
 
 	// -----------------------------------------------------------------------------
-	//
+	// データ保持用クラス
 	// -----------------------------------------------------------------------------
 	
 	class SColor;
 	class SColorf;
+	class position2di;
+	class position2df;
+	class dimension2di;
 	class dimension2df;
+	class vector2df;
 	class vector3df;
 
 	// -----------------------------------------------------------------------------
