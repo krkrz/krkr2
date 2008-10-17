@@ -21,15 +21,27 @@ class Irrlicht {
 	// -----------------------------------------------------------------------------
 	//
 	// -----------------------------------------------------------------------------
-	
+
+	class ISceneNode;
+	class IAnimatedMeshSceneNode;
+	class IBoneSceneNode;
 	class ICameraSceneNode;
+	class IDummyTransformationSceneNode;
 	class ILightSceneNode;
+	class IMeshSceneNode;
+	class IParticleSystemSceneNode;
+	class ITerreinSceneNode;
+	class ITextSceneNode;
 
 	/**
 	 * 画像情報クラス
 	 */
 	class IImage {
 	};
+
+	// -----------------------------------------------------------------------------
+	//
+	// -----------------------------------------------------------------------------
 	
 	/**
 	 * ドライバ機能インターフェース
@@ -37,12 +49,11 @@ class Irrlicht {
 	 * ※ new しても正常動作しません。
 	 */
 	class IVideoDriver {
-
 		/**
 		 * スクリーンショットの生成
 		 * @return スクリーンショット画像(IImage)
-		 * ※ウインドウの領域からキャプチャーしてるようなので上に別のものがのってると
-		 * そちらの画面がキャプチャーされてしまいます
+		 * ※ウインドウの領域からキャプチャーしてるようなので上に
+		 * 別のウインドウが乗っているとそのままキャプチャーされます
 		 */
 		function createScreenShot();
 	};
@@ -63,20 +74,24 @@ class Irrlicht {
 
 		/**
 		 * 光源の設定
+		 * @param parent 親ノード(nullだとルート)
 		 * @param position 位置指定
 		 * @param color 色指定
 		 * @param radius 範囲指定
 		 * @param id ID指定
+		 * @return 光源情報(ILightSceneNode)
 		 */
-		function addLightSceneNode(position, color, radius, id);
+		function addLightSceneNode(parent, position, color, radius, id);
 		
 		/**
 		 * カメラの設定
+		 * @param parent 親ノード(nullだとルート)
 		 * @param position 位置指定
 		 * @param lookat 参照位置
 		 * @param id ID指定
+		 * @return カメラ情報(ICameraSceneNode)
 		 */
-		function addCameraSceneNode(irr::core::vector3df position, irr::core::vector3df lookat, int id);
+		function addCameraSceneNode(parent, position, lookat, id);
 	}
 
 	/**
@@ -102,7 +117,6 @@ class Irrlicht {
 	 * 吉里吉里用 drawdevice クラス
 	 */
 	class DrawDevice extends Base {
-
 		/**
 		 * コンストラクタ
 		 * @param driverType ドライバ種別
