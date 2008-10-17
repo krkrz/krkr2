@@ -121,6 +121,7 @@ NCB_REGISTER_SUBCLASS_DELAY(SColor) {
 	NCB_PROPERTY(blue, getBlue, setBlue);
 	NCB_PROPERTY(green, getGreen, setGreen);
 	NCB_PROPERTY(alpha, getAlpha, setAlpha);
+	//NCB_PROPERTY(color, getColor, setColor);
 };
 
 template <class T>
@@ -204,67 +205,65 @@ NCB_REGISTER_SUBCLASS_DELAY(dimension2df) {
 
 template <class T>
 struct PointConvertor {
+	typedef ncbInstanceAdaptor<T> AdaptorT;
 	template <typename ANYT>
 	void operator ()(ANYT &adst, const tTJSVariant &src) {
-		ncbPropAccessor info(src);
-		if (IsArray(src)) {
-			dst.X = (f32)info.getRealValue(0);
-			dst.Y = (f32)info.getRealValue(1);
-		} else {
-			dst.X = (f32)info.getRealValue(L"x");
-			dst.Y = (f32)info.getRealValue(L"y");
+		if (src.Type() == tvtObject) {
+			T *obj = AdaptorT::GetNativeInstance(src.AsObjectNoAddRef());
+			if (obj) {
+				dst = *obj;
+			} else {
+				ncbPropAccessor info(src);
+				if (IsArray(src)) {
+					dst.X = (f32)info.getRealValue(0);
+					dst.Y = (f32)info.getRealValue(1);
+				} else {
+					dst.X = (f32)info.getRealValue(L"x");
+					dst.Y = (f32)info.getRealValue(L"y");
+				}
+			} else {
+				dst = T();
+			}
 		}
 		adst = ncbTypeConvertor::ToTarget<ANYT>::Get(&dst);
-	}
-	template <typename ANYT>
-	void operator ()(const tTJSVariant &dst, const ANYT &asrc) {
-		iTJSDispatch2 *dict = TJSCreateDictionaryObject();
-		if (dict != NULL) {
-			T const* src = ncbTypeConvertor::ToPointer<const ANYT&>::Get(asrc);
-			tTJSVariant x(src->X);
-			tTJSVariant y(src->Y);
-			dict->PropSet(TJS_MEMBERENSURE, L"x", NULL, &x, dict);
-			dict->PropSet(TJS_MEMBERENSURE, L"y", NULL, &y, dict);
-			dst = tTJSVariant(dict, dict);
-			dict->Release();
-		}
 	}
 private:
 	T dst;
 };
-NCB_SET_CONVERTOR_BOTH(position2df, PointConvertor);
-NCB_SET_CONVERTOR_BOTH(vector2df, PointConvertor);
+NCB_SET_CONVERTOR_DST(position2df, PointConvertor);
+NCB_REGISTER_SUBCLASS_DELAY(position2df) {
+	NCB_CONSTRUCTOR(());
+};
+NCB_SET_CONVERTOR_DST(vector2df, PointConvertor);
+NCB_REGISTER_SUBCLASS_DELAY(vector2df) {
+	NCB_CONSTRUCTOR(());
+};
 
 template <class T>
 struct Point3DConvertor {
+	typedef ncbInstanceAdaptor<T> AdaptorT;
 	template <typename ANYT>
 	void operator ()(ANYT &adst, const tTJSVariant &src) {
-		ncbPropAccessor info(src);
-		if (IsArray(src)) {
-			dst.X = (f32)info.getRealValue(0);
-			dst.Y = (f32)info.getRealValue(1);
-			dst.Z = (f32)info.getRealValue(2);
+		if (src.Type() == tvtObject) {
+			T *obj = AdaptorT::GetNativeInstance(src.AsObjectNoAddRef());
+			if (obj) {
+				dst = *obj;
+			} else {
+				ncbPropAccessor info(src);
+				if (IsArray(src)) {
+					dst.X = (f32)info.getRealValue(0);
+					dst.Y = (f32)info.getRealValue(1);
+					dst.Z = (f32)info.getRealValue(2);
+				} else {
+					dst.X = (f32)info.getRealValue(L"x");
+					dst.Y = (f32)info.getRealValue(L"y");
+					dst.Z = (f32)info.getRealValue(L"z");
+				}
+			}
 		} else {
-			dst.X = (f32)info.getRealValue(L"x");
-			dst.Y = (f32)info.getRealValue(L"y");
-			dst.Z = (f32)info.getRealValue(L"z");
+			dst = T();
 		}
 		adst = ncbTypeConvertor::ToTarget<ANYT>::Get(&dst);
-	}
-	template <typename ANYT>
-	void operator ()(tTJSVariant &dst, const ANYT &asrc) {
-		iTJSDispatch2 *dict = TJSCreateDictionaryObject();
-		if (dict != NULL) {
-			T const* src = ncbTypeConvertor::ToPointer<const ANYT&>::Get(asrc);
-			tTJSVariant x(src->X);
-			tTJSVariant y(src->Y);
-			tTJSVariant z(src->Z);
-			dict->PropSet(TJS_MEMBERENSURE, L"x", NULL, &x, dict);
-			dict->PropSet(TJS_MEMBERENSURE, L"y", NULL, &y, dict);
-			dict->PropSet(TJS_MEMBERENSURE, L"z", NULL, &z, dict);
-			dst = tTJSVariant(dict, dict);
-			dict->Release();
-		}
 	}
 private:
 	T dst;
@@ -279,55 +278,49 @@ NCB_REGISTER_SUBCLASS_DELAY(vector3df) {
 
 template <class T>
 struct RectConvertor {
+	typedef ncbInstanceAdaptor<T> AdaptorT;
 	template <typename ANYT>
 	void operator ()(ANYT &adst, const tTJSVariant &src) {
-		ncbPropAccessor info(src);
-		if (IsArray(src)) {
-			dst.UpperLeftCorner.X  = info.getIntValue(0);
-			dst.UpperLeftCorner.Y  = info.getIntValue(1);
-			dst.LowerRightCorner.X = info.getIntValue(2);
-			dst.LowerRightCorner.Y = info.getIntValue(3);
-		} else {
-			int x = info.getIntValue(L"x");
-			int y = info.getIntValue(L"y");
-			int x2, y2;
-			if (info.HasValue(L"width")) {
-				x2 = x + info.getIntValue(L"width") - 1;
-				y2 = x + info.getIntValue(L"height") - 1;
+		if (src.Type() == tvtObject) {
+			T *obj = AdaptorT::GetNativeInstance(src.AsObjectNoAddRef());
+			if (obj) {
+				dst = *obj;
 			} else {
-				x2 = info.getIntValue(L"x2");
-				y2 = info.getIntValue(L"y2");
+				ncbPropAccessor info(src);
+				if (IsArray(src)) {
+					dst.UpperLeftCorner.X  = info.getIntValue(0);
+					dst.UpperLeftCorner.Y  = info.getIntValue(1);
+					dst.LowerRightCorner.X = info.getIntValue(2);
+					dst.LowerRightCorner.Y = info.getIntValue(3);
+				} else {
+					int x = info.getIntValue(L"x");
+					int y = info.getIntValue(L"y");
+					int x2, y2;
+					if (info.HasValue(L"width")) {
+						x2 = x + info.getIntValue(L"width") - 1;
+						y2 = x + info.getIntValue(L"height") - 1;
+					} else {
+						x2 = info.getIntValue(L"x2");
+						y2 = info.getIntValue(L"y2");
+					}
+					dst.UpperLeftCorner.X  = x;
+					dst.UpperLeftCorner.Y  = y;
+					dst.LowerRightCorner.X = x2;
+					dst.LowerRightCorner.Y = y2;
+				}
 			}
-			dst.UpperLeftCorner.X  = x;
-			dst.UpperLeftCorner.Y  = y;
-			dst.LowerRightCorner.X = x2;
-			dst.LowerRightCorner.Y = y2;
+		} else {
+			dst = T();
 		}
 		adst = ncbTypeConvertor::ToTarget<ANYT>::Get(&dst);
-	}
-	template <typename ANYT>
-	void operator ()(tTJSVariant &dst, const ANYT &asrc) {
-		iTJSDispatch2 *dict = TJSCreateDictionaryObject();
-		if (dict != NULL) {
-			T const* src = ncbTypeConvertor::ToPointer<const ANYT&>::Get(asrc);
-			int x1 = src->UpperLeftCorner.X;
-			int y1 = src->UpperLeftCorner.Y;
-			tTJSVariant x(x1);
-			tTJSVariant y(y1);
-			tTJSVariant width(src->LowerRightCorner.X - x1 + 1);
-			tTJSVariant height(src->LowerRightCorner.Y - y1 + 1);
-			dict->PropSet(TJS_MEMBERENSURE, L"x", NULL, &x, dict);
-			dict->PropSet(TJS_MEMBERENSURE, L"y", NULL, &y, dict);
-			dict->PropSet(TJS_MEMBERENSURE, L"width", NULL, &width, dict);
-			dict->PropSet(TJS_MEMBERENSURE, L"height", NULL, &height, dict);
-			dst = tTJSVariant(dict, dict);
-			dict->Release();
-		}
 	}
 private:
 	T dst;
 };
-NCB_SET_CONVERTOR_BOTH(rect<s32>, RectConvertor);
+NCB_SET_CONVERTOR_DST(rect<s32>, RectConvertor);
+NCB_REGISTER_SUBCLASS_DELAY(rect<s32>) {
+	NCB_CONSTRUCTOR(());
+};
 
 // --------------------------------------------------------------------
 // Irrlicht の参照オブジェクトの型の登録
@@ -379,13 +372,17 @@ struct IrrTypeConvertor {
 	typedef T *IrrClassP;
 	typedef IrrWrapper<IrrClassT> WrapperT;
 	typedef ncbInstanceAdaptor<WrapperT> AdaptorT;
-	void operator ()(IrrClassP &dst, const tTJSVariant &src) {
+
+	static IrrClassT *getIrrObject(const tTJSVariant &src) {
 		WrapperT *obj;
 		if (src.Type() == tvtObject && (obj = AdaptorT::GetNativeInstance(src.AsObjectNoAddRef()))) {
-			dst = obj->getIrrObject();
+			return obj->getIrrObject();
 		} else {
-			dst = NULL;
+			return NULL;
 		}
+	}
+	void operator ()(IrrClassP &dst, const tTJSVariant &src) {
+		dst = getIrrObject(src);
 	}
 	void operator ()(tTJSVariant &dst, const IrrClassP &src) {
 		if (src != NULL) {
@@ -415,8 +412,83 @@ NCB_SET_CONVERTOR(const type*, IrrTypeConvertor<const type>)
 #define NCB_IRR_PROPERTY_RO(Class, name,get)   Property(TJS_W(# name), &Class::get, (int)0, Bridge<IrrWrapper<Class>::BridgeFunctor>())
 #define NCB_IRR_PROPERTY_WO(Class, name,set)   Property(TJS_W(# name), (int)0, &Class::set, Bridge<IrrWrapper<Class>::BridgeFunctor>())
 
-// XXX 多態化が必要
-NCB_REGISTER_IRR_SUBCLASS(ISceneNode) {
+
+/**
+ * ISceneNode 専用コンバータ
+ */
+template <class T>
+struct ISceneNodeTypeConvertor {
+	typedef typename ncbTypeConvertor::Stripper<T>::Type IrrClassT;
+	typedef T *IrrClassP;
+	typedef IrrWrapper<IrrClassT> WrapperT;
+	typedef ncbInstanceAdaptor<WrapperT> AdaptorT;
+	
+	void operator ()(IrrClassP &dst, const tTJSVariant &src) {
+#define GET_IRR_NATIVEINSTANCE(src, type) (IrrClassP)IrrTypeConvertor<type>::getIrrObject(src)
+		IrrClassP node;
+		if ((node = GET_IRR_NATIVEINSTANCE(src, IAnimatedMeshSceneNode)) ||
+			(node = GET_IRR_NATIVEINSTANCE(src, IBillboardSceneNode)) ||
+			(node = GET_IRR_NATIVEINSTANCE(src, IBoneSceneNode)) ||
+			(node = GET_IRR_NATIVEINSTANCE(src, ICameraSceneNode)) ||
+			(node = GET_IRR_NATIVEINSTANCE(src, IDummyTransformationSceneNode)) ||
+			(node = GET_IRR_NATIVEINSTANCE(src, ILightSceneNode)) ||
+			(node = GET_IRR_NATIVEINSTANCE(src, IMeshSceneNode)) ||
+			(node = GET_IRR_NATIVEINSTANCE(src, IParticleSystemSceneNode)) ||
+			(node = GET_IRR_NATIVEINSTANCE(src, ITerrainSceneNode)) ||
+			(node = GET_IRR_NATIVEINSTANCE(src, ITextSceneNode)) ||
+			(node = GET_IRR_NATIVEINSTANCE(src, ISceneNode))
+			) {
+			dst = node;
+		} else {
+			dst = NULL;
+		}
+	}
+	void operator ()(tTJSVariant &dst, const IrrClassP &src) {
+		if (src != NULL) {
+#define GET_IRR_ADAPTOR(src, type) ncbInstanceAdaptor<IrrWrapper<type>>::CreateAdaptor(new IrrWrapper<type>((type*)src))
+			iTJSDispatch2 *adpobj;
+			switch (src->getType()) {
+			case ESNT_TEXT:	    adpobj = GET_IRR_ADAPTOR(src, ITextSceneNode); break;
+			case ESNT_TERRAIN:	adpobj = GET_IRR_ADAPTOR(src, ITerrainSceneNode); break;
+			case ESNT_MESH:		adpobj = GET_IRR_ADAPTOR(src, IMeshSceneNode); break;
+			case ESNT_LIGHT:    adpobj = GET_IRR_ADAPTOR(src, ILightSceneNode);	break;
+			case ESNT_DUMMY_TRANSFORMATION:	adpobj = GET_IRR_ADAPTOR(src, IDummyTransformationSceneNode);break;
+			case ESNT_CAMERA:
+			case ESNT_CAMERA_MAYA:
+			case ESNT_CAMERA_FPS: adpobj = GET_IRR_ADAPTOR(src, ICameraSceneNode); break;
+			case ESNT_BILLBOARD:  adpobj = GET_IRR_ADAPTOR(src, IBillboardSceneNode); break;
+			case ESNT_ANIMATED_MESH: adpobj = GET_IRR_ADAPTOR(src, IAnimatedMeshSceneNode); break;
+			case ESNT_PARTICLE_SYSTEM: adpobj = GET_IRR_ADAPTOR(src, IParticleSystemSceneNode); break;
+			default:
+				adpobj = AdaptorT::CreateAdaptor(new WrapperT(src));
+				break;
+			}
+			if (adpobj) {
+				dst = tTJSVariant(adpobj, adpobj);
+				adpobj->Release();			
+			} else {
+				TVPThrowExceptionMessage(L"コンバータが型の初期化に失敗");
+			}
+		} else {
+			dst.Clear();
+		}
+	}
+};
+NCB_SET_CONVERTOR(ISceneNode*, ISceneNodeTypeConvertor<ISceneNode>);
+NCB_SET_CONVERTOR(const ISceneNode*, ISceneNodeTypeConvertor<const ISceneNode>);
+NCB_REGISTER_SUBCLASS(IrrWrapper<ISceneNode>) {
+	NCB_CONSTRUCTOR(());
+};
+
+NCB_REGISTER_IRR_SUBCLASS(IAnimatedMeshSceneNode) {
+	NCB_CONSTRUCTOR(());
+};
+
+NCB_REGISTER_IRR_SUBCLASS(IBillboardSceneNode) {
+	NCB_CONSTRUCTOR(());
+};
+
+NCB_REGISTER_IRR_SUBCLASS(IBoneSceneNode) {
 	NCB_CONSTRUCTOR(());
 };
 
@@ -424,7 +496,27 @@ NCB_REGISTER_IRR_SUBCLASS(ICameraSceneNode) {
 	NCB_CONSTRUCTOR(());
 };
 
+NCB_REGISTER_IRR_SUBCLASS(IDummyTransformationSceneNode) {
+	NCB_CONSTRUCTOR(());
+};
+
 NCB_REGISTER_IRR_SUBCLASS(ILightSceneNode) {
+	NCB_CONSTRUCTOR(());
+};
+
+NCB_REGISTER_IRR_SUBCLASS(IMeshSceneNode) {
+	NCB_CONSTRUCTOR(());
+};
+
+NCB_REGISTER_IRR_SUBCLASS(IParticleSystemSceneNode) {
+	NCB_CONSTRUCTOR(());
+};
+
+NCB_REGISTER_IRR_SUBCLASS(ITerrainSceneNode) {
+	NCB_CONSTRUCTOR(());
+};
+
+NCB_REGISTER_IRR_SUBCLASS(ITextSceneNode) {
 	NCB_CONSTRUCTOR(());
 };
 
@@ -449,6 +541,8 @@ NCB_REGISTER_IRR_SUBCLASS(ISceneManager) {
 	NCB_IRR_METHOD(ISceneManager, addLightSceneNode);
 	NCB_IRR_PROPERTY(ISceneManager, ambientLight, getAmbientLight, setAmbientLight);
 	NCB_IRR_PROPERTY(ISceneManager, shadowColor, getShadowColor, setShadowColor);
+	NCB_IRR_METHOD(ISceneManager, getSceneNodeFromId);
+	NCB_IRR_METHOD(ISceneManager, getSceneNodeFromName);
 };
 
 NCB_REGISTER_IRR_SUBCLASS(IGUIEnvironment) {
