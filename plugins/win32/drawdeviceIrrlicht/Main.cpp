@@ -114,6 +114,13 @@ struct ColorConvertor { // 色用コンバータ
 private:
 	T dst;
 };
+#define NCB_MEMBER_PROPERTY(name, type, membername) \
+	struct AutoProp_ ## name { \
+		static void ProxySet(Class *inst, type value) { inst->membername = value; } \
+		static type ProxyGet(Class *inst) {      return inst->membername; } }; \
+	NCB_PROPERTY_PROXY(name,AutoProp_ ## name::ProxyGet, AutoProp_ ## name::ProxySet)
+
+
 NCB_SET_CONVERTOR_DST(SColor, ColorConvertor);
 NCB_REGISTER_SUBCLASS_DELAY(SColor) {
 	NCB_CONSTRUCTOR((u32));
@@ -122,6 +129,7 @@ NCB_REGISTER_SUBCLASS_DELAY(SColor) {
 	NCB_PROPERTY(green, getGreen, setGreen);
 	NCB_PROPERTY(alpha, getAlpha, setAlpha);
 	//NCB_PROPERTY(color, getColor, setColor);
+	NCB_MEMBER_PROPERTY(color, u32, color);
 };
 
 template <class T>
@@ -155,6 +163,7 @@ struct ColorfConvertor { // 色用コンバータ
 private:
 	T dst;
 };
+
 NCB_SET_CONVERTOR_DST(SColorf, ColorfConvertor);
 NCB_REGISTER_SUBCLASS_DELAY(SColorf) {
 	NCB_CONSTRUCTOR((SColor));
