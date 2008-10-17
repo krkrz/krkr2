@@ -140,6 +140,8 @@ NCB_ATTACH_CLASS_WITH_HOOK(WindowShell, Window) {
 tjs_error TJS_INTF_METHOD commandExecute(
 	tTJSVariant *result, tjs_int numparams, tTJSVariant **param, iTJSDispatch2 *objthis)
 {
+	tTJSVariant vStdOut;
+
 	// パラメータチェック
 	if (numparams == 0) return TJS_E_BADPARAMCOUNT;
 	if (param[0]->Type() != tvtString) return TJS_E_INVALIDPARAM;
@@ -209,16 +211,42 @@ tjs_error TJS_INTF_METHOD commandExecute(
 	}
 
 	// パイプから出力を読み込み
-	DWORD cnt, exit=~0L, last = GetTickCount();
+	DWORD cnt, exit=~0L, last=GetTickCount();
 	PeekNamedPipe(hOR, 0, 0, 0, &cnt, NULL);
-	char buf[1024];
+	char buf[1024], crlf=0;
+	bool rest = false;
+	tjs_int32 line = 0;
+	iTJSDispatch2 *array = TJSCreateArrayObject();
+
 	while (true) {
 		if (cnt > 0) {
 			last = GetTickCount();
 			ReadFile(hOR, buf, sizeof(buf)-1, &cnt, NULL);
 			buf[cnt] = 0;
-			ttstr append(buf);
-			output += append;
+			DWORD start = 0;
+			for (DWORD pos = 0; pos < cnt; pos++) {
+				char ch = buf[pos];
+				if (ch == '\r' || ch == '\n') {
+					if (crlf == 0 || crlf == ch) {
+						buf[pos] = 0;
+						ttstr append(buf+start);
+						output += append;
+						array->PropSetByNum(TJS_MEMBERENSURE, line++, &tTJSVariant(output), array);
+						output.Clear();
+						buf[pos] = ch;
+						crlf = 0;
+					}
+					if (crlf) crlf = 0;
+					else crlf = ch;
+					start = pos+1;
+				} else {
+					crlf = 0;
+				}
+			}
+			if ((rest = (start < cnt))) {
+				ttstr append(buf+start);
+				output += append;
+			}
 			if ((int)cnt == sizeof(buf)-1) {
 				PeekNamedPipe(hOR, 0, 0, 0, &cnt, NULL);
 				if (cnt > 0) continue;
@@ -241,6 +269,12 @@ tjs_error TJS_INTF_METHOD commandExecute(
 			break;
 		}
 	}
+	if (rest)
+		array->PropSetByNum(TJS_MEMBERENSURE, line++, &tTJSVariant(output), array);
+
+	vStdOut.SetObject(array, array);
+	array->Release();
+
 	CloseHandle(pi.hThread);
 	CloseHandle(pi.hProcess);
 
@@ -253,7 +287,7 @@ error:
 
 	ncbDictionaryAccessor ret;
 	if (ret.IsValid()) {
-		ret.SetValue(L"stdout", output);
+		ret.SetValue(L"stdout", vStdOut);
 		if (errmes != 0) {
 			ret.SetValue(L"status", ttstr(timeouted ? L"timeout" : L"error"));
 			ret.SetValue(L"message", ttstr(errmes));
