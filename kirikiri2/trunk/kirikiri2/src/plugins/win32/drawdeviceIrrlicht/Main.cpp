@@ -405,6 +405,9 @@ private:
 NCB_SET_CONVERTOR_DST(vector3df, Point3DConvertor);
 NCB_REGISTER_SUBCLASS_DELAY(vector3df) {
 	NCB_CONSTRUCTOR((f32,f32,f32));
+	NCB_MEMBER_PROPERTY(x, f32, X);
+	NCB_MEMBER_PROPERTY(y, f32, Y);
+	NCB_MEMBER_PROPERTY(z, f32, Z);
 	NCB_METHOD(crossProduct);
 	NCB_METHOD(dotProduct);
 	NCB_METHOD(equals);
@@ -551,6 +554,14 @@ public:
 			return p->getIrrObject();
 		}
 	};
+
+	template <class CastT>
+	struct CastBridgeFunctor {
+		CastT* operator()(WrapperT *p) const {
+			return (CastT*)p->getIrrObject();
+		}
+	};
+
 };
 
 /**
@@ -581,7 +592,7 @@ struct IrrTypeConvertor {
 				dst = tTJSVariant(adpobj, adpobj);
 				adpobj->Release();			
 			} else {
-				TVPThrowExceptionMessage(L"コンバータが型の初期化に失敗");
+				dst = NULL;
 			}
 		} else {
 			dst.Clear();
@@ -597,10 +608,7 @@ NCB_SET_CONVERTOR(const type*, IrrTypeConvertor<const type>)
 // ラッピング処理用
 #define NCB_REGISTER_IRR_SUBCLASS(Class) NCB_IRR_CONVERTOR(Class);NCB_REGISTER_SUBCLASS(IrrWrapper<Class>) { typedef Class IrrClass;
 #define NCB_IRR_METHOD(name)  Method(TJS_W(# name), &IrrClass::name, Bridge<IrrWrapper<IrrClass>::BridgeFunctor>())
-#define NCB_IRR_METHOD2(name,func)  Method(TJS_W(# name), &IrrClass::func, Bridge<IrrWrapper<IrrClass>::BridgeFunctor>())
 #define NCB_IRR_PROPERTY(name,get,set)  Property(TJS_W(# name), &IrrClass::get, &IrrClass::set, Bridge<IrrWrapper<IrrClass>::BridgeFunctor>())
-#define NCB_IRR_PROPERTY_RO(name,get)   Property(TJS_W(# name), &IrrClass::get, (int)0, Bridge<IrrWrapper<IrrClass>::BridgeFunctor>())
-#define NCB_IRR_PROPERTY_WO(name,set)   Property(TJS_W(# name), (int)0, &IrrClass::set, Bridge<IrrWrapper<IrrClass>::BridgeFunctor>())
 
 NCB_REGISTER_IRR_SUBCLASS(IAttributes)
 	NCB_CONSTRUCTOR(());
@@ -719,7 +727,7 @@ struct ISceneNodeTypeConvertor {
 				dst = tTJSVariant(adpobj, adpobj);
 				adpobj->Release();			
 			} else {
-				TVPThrowExceptionMessage(L"コンバータが型の初期化に失敗");
+				dst = NULL;
 			}
 		} else {
 			dst.Clear();
@@ -731,58 +739,64 @@ NCB_SET_CONVERTOR(const ISceneNode*, ISceneNodeTypeConvertor<const ISceneNode>);
 NCB_REGISTER_SUBCLASS(IrrWrapper<ISceneNode>) {
 	NCB_CONSTRUCTOR(());
 	typedef ISceneNode IrrClass;
-	NCB_IRR_PROPERTY(automaticCulling, getAutomaticCulling, setAutomaticCulling);
-	NCB_IRR_PROPERTY(id, getID, setID);
-	NCB_IRR_PROPERTY(name, getName, setName);
-	NCB_IRR_PROPERTY(parent, getParent, setParent);
-	NCB_IRR_PROPERTY(position, getPosition, setPosition);
-	NCB_IRR_PROPERTY(rotation, getRotation, setRotation);
-	NCB_IRR_PROPERTY(scale, getScale, setScale);
-	NCB_IRR_PROPERTY(triangleSelector, getTriangleSelector, setTriangleSelector);
-	NCB_IRR_PROPERTY(debugDataVisible, isDebugDataVisible, setDebugDataVisible);
-	NCB_IRR_PROPERTY(visible, isVisible, setVisible);
-	NCB_IRR_METHOD(addAnimator);
-	NCB_IRR_METHOD(addChild);
-	NCB_IRR_METHOD(clone);
-	NCB_IRR_METHOD(deserializeAttributes);
-	NCB_IRR_METHOD(getAbsolutePosition);
-	NCB_IRR_METHOD(getAbsoluteTransformation);
-	//NCB_IRR_METHOD(getAnimators); XXX リストを返してる
-	NCB_IRR_METHOD(getBoundingBox);
-	//NCB_IRR_METHOD(getChildren); XXX リストを返してる
-	NCB_IRR_METHOD(getMaterial);
-	NCB_IRR_METHOD(getMaterialCount);
-	NCB_IRR_METHOD(getRelativeTransformation);
-	NCB_IRR_METHOD(getTransformedBoundingBox);
-	NCB_IRR_METHOD(getType);
-	NCB_IRR_METHOD(isDebugObject);
-	NCB_IRR_METHOD(remove);
-	NCB_IRR_METHOD(removeAll);
-	NCB_IRR_METHOD(removeAnimator);
-	NCB_IRR_METHOD(removeAnimators);
-	NCB_IRR_METHOD(removeChild);
-	NCB_IRR_METHOD(render);
-	NCB_IRR_METHOD(serializeAttributes);
-	NCB_IRR_METHOD(setMaterialFlag);
-	NCB_IRR_METHOD(setMaterialTexture);
-	NCB_IRR_METHOD(setMaterialType);
-	NCB_IRR_METHOD(updateAbsolutePosition);
+#define ISCENENODE_METHOD \
+	NCB_IRR_PROPERTY(automaticCulling, getAutomaticCulling, setAutomaticCulling);\
+	NCB_IRR_PROPERTY(id, getID, setID);\
+	NCB_IRR_PROPERTY(name, getName, setName);\
+	NCB_IRR_PROPERTY(parent, getParent, setParent);\
+	NCB_IRR_PROPERTY(position, getPosition, setPosition);\
+	NCB_IRR_PROPERTY(rotation, getRotation, setRotation);\
+	NCB_IRR_PROPERTY(scale, getScale, setScale);\
+	NCB_IRR_PROPERTY(triangleSelector, getTriangleSelector, setTriangleSelector);\
+	NCB_IRR_PROPERTY(debugDataVisible, isDebugDataVisible, setDebugDataVisible);\
+	NCB_IRR_PROPERTY(visible, isVisible, setVisible);\
+	NCB_IRR_METHOD(addAnimator);\
+	NCB_IRR_METHOD(addChild);\
+	NCB_IRR_METHOD(clone);\
+	NCB_IRR_METHOD(deserializeAttributes);\
+	NCB_IRR_METHOD(getAbsolutePosition);\
+	NCB_IRR_METHOD(getAbsoluteTransformation);\
+	/**NCB_IRR_METHOD(getAnimators); XXX リストを返してる*/\
+	NCB_IRR_METHOD(getBoundingBox);\
+	/**NCB_IRR_METHOD(getChildren); XXX リストを返してる*/\
+	NCB_IRR_METHOD(getMaterial);\
+	NCB_IRR_METHOD(getMaterialCount);\
+	NCB_IRR_METHOD(getRelativeTransformation);\
+	NCB_IRR_METHOD(getTransformedBoundingBox);\
+	NCB_IRR_METHOD(getType);\
+	NCB_IRR_METHOD(isDebugObject);\
+	NCB_IRR_METHOD(remove);\
+	NCB_IRR_METHOD(removeAll);\
+	NCB_IRR_METHOD(removeAnimator);\
+	NCB_IRR_METHOD(removeAnimators);\
+	NCB_IRR_METHOD(removeChild);\
+	NCB_IRR_METHOD(render);\
+	NCB_IRR_METHOD(serializeAttributes);\
+	NCB_IRR_METHOD(setMaterialFlag);\
+	NCB_IRR_METHOD(setMaterialTexture);\
+	NCB_IRR_METHOD(setMaterialType);\
+	NCB_IRR_METHOD(updateAbsolutePosition)
+	ISCENENODE_METHOD;
 };
 
 NCB_REGISTER_IRR_SUBCLASS(IAnimatedMeshSceneNode)
 	NCB_CONSTRUCTOR(());
+	ISCENENODE_METHOD;
 };
 
 NCB_REGISTER_IRR_SUBCLASS(IBillboardSceneNode)
 	NCB_CONSTRUCTOR(());
+	ISCENENODE_METHOD;
 };
 
 NCB_REGISTER_IRR_SUBCLASS(IBoneSceneNode)
 	NCB_CONSTRUCTOR(());
+	ISCENENODE_METHOD;
 };
 
 NCB_REGISTER_IRR_SUBCLASS(ICameraSceneNode)
 	NCB_CONSTRUCTOR(());
+	ISCENENODE_METHOD;
 	NCB_IRR_PROPERTY(aspectRatio, getAspectRatio, setAspectRatio);
 	NCB_IRR_PROPERTY(farValue, getFarValue, setFarValue);
 	NCB_IRR_PROPERTY(fov, getFOV, setFOV);
@@ -798,18 +812,22 @@ NCB_REGISTER_IRR_SUBCLASS(ICameraSceneNode)
 
 NCB_REGISTER_IRR_SUBCLASS(IDummyTransformationSceneNode)
 	NCB_CONSTRUCTOR(());
+	ISCENENODE_METHOD;
 };
 
 NCB_REGISTER_IRR_SUBCLASS(ILightSceneNode)
 	NCB_CONSTRUCTOR(());
+	ISCENENODE_METHOD;
 };
 
 NCB_REGISTER_IRR_SUBCLASS(IMeshSceneNode)
 	NCB_CONSTRUCTOR(());
+	ISCENENODE_METHOD;
 };
 
 NCB_REGISTER_IRR_SUBCLASS(IParticleSystemSceneNode)
 	NCB_CONSTRUCTOR(());
+	ISCENENODE_METHOD;
 };
 
 NCB_REGISTER_IRR_SUBCLASS(ITerrainSceneNode)
@@ -866,8 +884,8 @@ NCB_REGISTER_IRR_SUBCLASS(ISceneManager)
 	NCB_IRR_METHOD(addHillPlaneMesh);
 	NCB_IRR_METHOD(addLightSceneNode);
 	NCB_IRR_METHOD(addMeshSceneNode);
-//	NCB_IRR_METHOD2(addOctTreeSceneNode, addOctTreeSceneNode(IMesh *, ISceneNode *, s32, s32, bool));
-//	NCB_IRR_METHOD2(addOctTreeSceneNode2, addOctTreeSceneNode(IAnimatedMesh *, ISceneNode *, s32, s32, bool));
+//	NCB_IRR_METHOD(addOctTreeSceneNode, addOctTreeSceneNode(IMesh *, ISceneNode *, s32, s32, bool));
+//	NCB_IRR_METHOD(addOctTreeSceneNode2, addOctTreeSceneNode(IAnimatedMesh *, ISceneNode *, s32, s32, bool));
 	NCB_IRR_METHOD(addParticleSystemSceneNode);
 	NCB_IRR_METHOD(addQuake3SceneNode);
 	NCB_IRR_METHOD(addSceneNode);
@@ -875,7 +893,7 @@ NCB_REGISTER_IRR_SUBCLASS(ISceneManager)
 	NCB_IRR_METHOD(addSphereMesh);
 	NCB_IRR_METHOD(addSphereSceneNode);
 	NCB_IRR_METHOD(addTerrainMesh);
-//  NCB_IRR_METHOD2(addTerrainSceneNode, addTerrainSceneNode(const c8*, ISceneNode*, s32, const vector3df&, const vector3df&, SColor, s32, E_TERRAIN_PATCH_SIZE, s32, bool));
+//  NCB_IRR_METHOD(addTerrainSceneNode, addTerrainSceneNode(const c8*, ISceneNode*, s32, const vector3df&, const vector3df&, SColor, s32, E_TERRAIN_PATCH_SIZE, s32, bool));
 	NCB_IRR_METHOD(addTextSceneNode);
 	NCB_IRR_METHOD(addToDeletionQueue);
 	NCB_IRR_METHOD(addWaterSurfaceSceneNode);
@@ -897,7 +915,7 @@ NCB_REGISTER_IRR_SUBCLASS(ISceneManager)
 
     NCB_IRR_METHOD(getDefaultSceneNodeFactory);
     NCB_IRR_METHOD(getGUIEnvironment);
-//    NCB_IRR_METHOD2(getMesh, getMesh(const c8 *));
+//    NCB_IRR_METHOD(getMesh, getMesh(const c8 *));
     NCB_IRR_METHOD(getMeshCache);
     NCB_IRR_METHOD(getMeshManipulator);
     NCB_IRR_METHOD(getParameters);
