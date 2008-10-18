@@ -109,7 +109,7 @@ namespace scene
 
 		//! Gets the last positioning vector applied to the scene node. 
 		//! \return Returns the last position vector applied to the scene node.
-		virtual const core::vector3df getPosition() const
+		virtual core::vector3df getPosition() const
 		{
 			return TerrainData.Position;
 		}
