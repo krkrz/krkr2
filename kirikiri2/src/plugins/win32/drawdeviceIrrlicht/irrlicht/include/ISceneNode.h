@@ -155,7 +155,7 @@ namespace scene
 
 		//! Get the axis aligned, transformed and animated absolute bounding box of this node.
 		/** \return The transformed bounding box. */
-		virtual const core::aabbox3d<f32> getTransformedBoundingBox() const
+		virtual core::aabbox3d<f32> getTransformedBoundingBox() const
 		{
 			core::aabbox3d<f32> box = getBoundingBox();
 			AbsoluteTransformation.transformBox(box);
@@ -431,7 +431,7 @@ namespace scene
 		//! Gets the position of the node.
 		/** Note that the position is relative to the parent.
 		\return The current position of the node relative to the parent. */
-		virtual const core::vector3df getPosition() const
+		virtual core::vector3df getPosition() const
 		{
 			return RelativeTranslation;
 		}
