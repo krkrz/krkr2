@@ -490,7 +490,19 @@ NCB_REGISTER_SUBCLASS(matrix4) {
 	NCB_CONSTRUCTOR(());
 }
 
+NCB_REGISTER_SUBCLASS(triangle3df) {
+	NCB_CONSTRUCTOR(());
+}
+
+NCB_REGISTER_SUBCLASS(plane3df) {
+	NCB_CONSTRUCTOR(());
+}
+
 NCB_REGISTER_SUBCLASS(aabbox3df) {
+	NCB_CONSTRUCTOR(());
+}
+
+NCB_REGISTER_SUBCLASS(SLight) {
 	NCB_CONSTRUCTOR(());
 }
 
@@ -608,7 +620,15 @@ NCB_SET_CONVERTOR(const type*, IrrTypeConvertor<const type>)
 // ラッピング処理用
 #define NCB_REGISTER_IRR_SUBCLASS(Class) NCB_IRR_CONVERTOR(Class);NCB_REGISTER_SUBCLASS(IrrWrapper<Class>) { typedef Class IrrClass;
 #define NCB_IRR_METHOD(name)  Method(TJS_W(# name), &IrrClass::name, Bridge<IrrWrapper<IrrClass>::BridgeFunctor>())
+#define NCB_IRR_MCAST(ret, method, args) static_cast<ret (IrrClass::*) args>(&IrrClass::method)
+#define NCB_IRR_METHOD2(name, ret, method, args) Method(TJS_W(# name), NCB_IRR_MCAST(ret, method, args), Bridge<IrrWrapper<IrrClass>::BridgeFunctor>())
 #define NCB_IRR_PROPERTY(name,get,set)  Property(TJS_W(# name), &IrrClass::get, &IrrClass::set, Bridge<IrrWrapper<IrrClass>::BridgeFunctor>())
+#define NCB_IRR_MEMBER_PROPERTY(name, type, membername) \
+	struct AutoProp_ ## name { \
+		static void ProxySet(IrrClass *inst, type value) { inst->membername = value; } \
+		static type ProxyGet(IrrClass *inst) {      return inst->membername; } }; \
+	Property(TJS_W(#name), AutoProp_ ## name::ProxyGet, AutoProp_ ## name::ProxySet, Bridge<IrrWrapper<IrrClass>::BridgeFunctor>())
+
 
 NCB_REGISTER_IRR_SUBCLASS(IAttributes)
 	NCB_CONSTRUCTOR(());
@@ -666,12 +686,25 @@ NCB_REGISTER_IRR_SUBCLASS(ISceneCollisionManager)
 	NCB_CONSTRUCTOR(());
 };
 
+NCB_REGISTER_IRR_SUBCLASS(IAnimationEndCallBack)
+	NCB_CONSTRUCTOR(());
+};
+
 NCB_TYPECONV_CAST_INTEGER(E_CULLING_TYPE);
 NCB_TYPECONV_CAST_INTEGER(E_MATERIAL_FLAG);
 NCB_TYPECONV_CAST_INTEGER(E_MATERIAL_TYPE);
 NCB_TYPECONV_CAST_INTEGER(ESCENE_NODE_TYPE);
 NCB_TYPECONV_CAST_INTEGER(E_SCENE_NODE_RENDER_PASS);
 NCB_TYPECONV_CAST_INTEGER(EMESH_WRITER_TYPE);
+NCB_TYPECONV_CAST_INTEGER(E_TRANSFORMATION_STATE);
+NCB_TYPECONV_CAST_INTEGER(E_TEXTURE_CREATION_FLAG);
+NCB_TYPECONV_CAST_INTEGER(E_VIDEO_DRIVER_FEATURE);
+NCB_TYPECONV_CAST_INTEGER(ECOLOR_FORMAT);
+NCB_TYPECONV_CAST_INTEGER(E_TERRAIN_PATCH_SIZE);
+NCB_TYPECONV_CAST_INTEGER(E_JOINT_UPDATE_ON_RENDER);
+NCB_TYPECONV_CAST_INTEGER(EMD2_ANIMATION_TYPE);
+NCB_TYPECONV_CAST_INTEGER(E_BONE_ANIMATION_MODE);
+NCB_TYPECONV_CAST_INTEGER(E_BONE_SKINNING_SPACE);
 
 /**
  * ISceneNode 専用コンバータ
@@ -696,6 +729,7 @@ struct ISceneNodeTypeConvertor {
 			(node = GET_IRR_NATIVEINSTANCE(src, IParticleSystemSceneNode)) ||
 			(node = GET_IRR_NATIVEINSTANCE(src, ITerrainSceneNode)) ||
 			(node = GET_IRR_NATIVEINSTANCE(src, ITextSceneNode)) ||
+			(node = GET_IRR_NATIVEINSTANCE(src, IShadowVolumeSceneNode)) ||
 			(node = GET_IRR_NATIVEINSTANCE(src, ISceneNode))
 			) {
 			dst = node;
@@ -779,50 +813,97 @@ NCB_REGISTER_SUBCLASS(IrrWrapper<ISceneNode>) {
 	ISCENENODE_METHOD;
 };
 
+NCB_REGISTER_IRR_SUBCLASS(IShadowVolumeSceneNode)
+NCB_CONSTRUCTOR(());
+NCB_IRR_METHOD(setMeshToRenderFrom);
+};
+
 NCB_REGISTER_IRR_SUBCLASS(IAnimatedMeshSceneNode)
-	NCB_CONSTRUCTOR(());
-	ISCENENODE_METHOD;
+NCB_CONSTRUCTOR(());
+ISCENENODE_METHOD;
+NCB_IRR_PROPERTY(mesh, getMesh, setMesh);
+NCB_IRR_PROPERTY(readOnlymaterials, isReadOnlyMaterials, setReadOnlyMaterials);
+NCB_IRR_METHOD(addShadowVolumeSceneNode);
+NCB_IRR_METHOD(animateJoints);
+NCB_IRR_METHOD(getEndFrame);
+NCB_IRR_METHOD(getFrameNr);
+NCB_IRR_METHOD2(getJointNode,  IBoneSceneNode*, getJointNode, (const c8*));
+NCB_IRR_METHOD2(getJointNode2, IBoneSceneNode*, getJointNode, (u32));
+//NCB_IRR_METHOD(getMD3TagTransformation)
+NCB_IRR_METHOD(getMS3DJointNode);
+NCB_IRR_METHOD(getStartFrame);
+NCB_IRR_METHOD(getXJointNode);
+NCB_IRR_METHOD(setAnimationEndCallback);
+NCB_IRR_METHOD(setAnimationSpeed);
+NCB_IRR_METHOD(setCurrentFrame);
+NCB_IRR_METHOD(setFrameLoop);
+NCB_IRR_METHOD(setJointMode);
+NCB_IRR_METHOD(setLoopMode);
+NCB_IRR_METHOD2(setMD2Animation, bool, setMD2Animation, (EMD2_ANIMATION_TYPE));
+NCB_IRR_METHOD2(setMD2Animation, bool, setMD2Animation, (const c8 *));
+NCB_IRR_METHOD(setRenderFromIdentity);
+NCB_IRR_METHOD(setTransitionTime);
 };
 
 NCB_REGISTER_IRR_SUBCLASS(IBillboardSceneNode)
-	NCB_CONSTRUCTOR(());
-	ISCENENODE_METHOD;
+NCB_CONSTRUCTOR(());
+ISCENENODE_METHOD;
+NCB_IRR_PROPERTY(size, getSize, setSize);
+NCB_IRR_METHOD(getColor);
+NCB_IRR_METHOD2(setColor,  void, setColor, (const SColor&, const SColor &));
+NCB_IRR_METHOD2(setColor2, void, setColor, (const SColor&));
 };
 
 NCB_REGISTER_IRR_SUBCLASS(IBoneSceneNode)
-	NCB_CONSTRUCTOR(());
-	ISCENENODE_METHOD;
+NCB_CONSTRUCTOR(());
+ISCENENODE_METHOD;
+NCB_IRR_MEMBER_PROPERTY(positionHint, s32, positionHint);
+NCB_IRR_MEMBER_PROPERTY(rotationHint, s32, rotationHint);
+NCB_IRR_MEMBER_PROPERTY(scaleHint, s32, scaleHint);
+NCB_IRR_PROPERTY(animationMode, getAnimationMode, setAnimationMode);
+NCB_IRR_PROPERTY(skinningSpace, getSkinningSpace, setSkinningSpace);
+NCB_IRR_METHOD(getBoneIndex);
+NCB_IRR_METHOD(getBoneName);
+//NCB_IRR_METHOD(getBoundingBox);
+//NCB_IRR_METHOD(render);
+NCB_IRR_METHOD(updateAbsolutePositionOfAllChildren);
 };
 
 NCB_REGISTER_IRR_SUBCLASS(ICameraSceneNode)
-	NCB_CONSTRUCTOR(());
-	ISCENENODE_METHOD;
-	NCB_IRR_PROPERTY(aspectRatio, getAspectRatio, setAspectRatio);
-	NCB_IRR_PROPERTY(farValue, getFarValue, setFarValue);
-	NCB_IRR_PROPERTY(fov, getFOV, setFOV);
-	NCB_IRR_PROPERTY(nearValue, getNearValue, setNearValue);
-	NCB_IRR_PROPERTY(projectionMatrix, getProjectionMatrix, setProjectionMatrix);
-	NCB_IRR_PROPERTY(target, getTarget, setTarget);
-	NCB_IRR_PROPERTY(upVector, getUpVector, setUpVector);
-	NCB_IRR_PROPERTY(inputReceiverEnabled, isInputReceiverEnabled, setInputReceiverEnabled);
-	NCB_IRR_PROPERTY(orthogonal, isOrthogonal, setIsOrthogonal);
-	NCB_IRR_METHOD(getViewFrustum);
-	NCB_IRR_METHOD(getViewMatrix);
+NCB_CONSTRUCTOR(());
+ISCENENODE_METHOD;
+NCB_IRR_PROPERTY(aspectRatio, getAspectRatio, setAspectRatio);
+NCB_IRR_PROPERTY(farValue, getFarValue, setFarValue);
+NCB_IRR_PROPERTY(fov, getFOV, setFOV);
+NCB_IRR_PROPERTY(nearValue, getNearValue, setNearValue);
+NCB_IRR_PROPERTY(projectionMatrix, getProjectionMatrix, setProjectionMatrix);
+NCB_IRR_PROPERTY(target, getTarget, setTarget);
+NCB_IRR_PROPERTY(upVector, getUpVector, setUpVector);
+NCB_IRR_PROPERTY(inputReceiverEnabled, isInputReceiverEnabled, setInputReceiverEnabled);
+NCB_IRR_PROPERTY(orthogonal, isOrthogonal, setIsOrthogonal);
+NCB_IRR_METHOD(getViewFrustum);
+NCB_IRR_METHOD(getViewMatrix);
 };
 
 NCB_REGISTER_IRR_SUBCLASS(IDummyTransformationSceneNode)
-	NCB_CONSTRUCTOR(());
-	ISCENENODE_METHOD;
+NCB_CONSTRUCTOR(());
+ISCENENODE_METHOD;
+NCB_IRR_METHOD(getRelativeTransformationMatrix);
 };
 
 NCB_REGISTER_IRR_SUBCLASS(ILightSceneNode)
-	NCB_CONSTRUCTOR(());
-	ISCENENODE_METHOD;
+NCB_CONSTRUCTOR(());
+ISCENENODE_METHOD;
+//NCB_IRR_PROPERTY(lightData, NCB_IRR_MCAST(SLight&,getLightData,(void)), setLightData);
+NCB_IRR_METHOD(setLightData);
+NCB_IRR_METHOD2(getLightData, SLight&, getLightData, (void));
 };
 
 NCB_REGISTER_IRR_SUBCLASS(IMeshSceneNode)
-	NCB_CONSTRUCTOR(());
-	ISCENENODE_METHOD;
+NCB_CONSTRUCTOR(());
+ISCENENODE_METHOD;
+NCB_IRR_PROPERTY(mesh, getMesh, setMesh);
+NCB_IRR_PROPERTY(readOnlymaterials, isReadOnlyMaterials, setReadOnlyMaterials);
 };
 
 NCB_REGISTER_IRR_SUBCLASS(IParticleSystemSceneNode)
@@ -835,7 +916,9 @@ NCB_REGISTER_IRR_SUBCLASS(ITerrainSceneNode)
 };
 
 NCB_REGISTER_IRR_SUBCLASS(ITextSceneNode)
-	NCB_CONSTRUCTOR(());
+NCB_CONSTRUCTOR(());
+NCB_IRR_METHOD(setText);
+NCB_IRR_METHOD(setTextColor);
 };
 
 NCB_REGISTER_IRR_SUBCLASS(IImage)
@@ -848,8 +931,95 @@ NCB_REGISTER_IRR_SUBCLASS(ITexture)
 
 
 NCB_REGISTER_IRR_SUBCLASS(IVideoDriver)
-	NCB_CONSTRUCTOR(());
-	NCB_IRR_METHOD(createScreenShot);
+NCB_CONSTRUCTOR(());
+NCB_IRR_PROPERTY(viewport, getViewPort, setViewPort);
+NCB_IRR_METHOD(addDynamicLight);
+NCB_IRR_METHOD2(addTexture, ITexture*, addTexture, (const dimension2d<s32>&, const c8*, ECOLOR_FORMAT));
+NCB_IRR_METHOD2(addTexture2, ITexture*, addTexture, (const c8*, IImage *));
+NCB_IRR_METHOD(beginScene);
+NCB_IRR_METHOD(clearZBuffer);
+NCB_IRR_METHOD(createAttributesFromMaterial);
+NCB_IRR_METHOD2(createImage, IImage*, createImage, (ECOLOR_FORMAT, const core::dimension2d<s32>&));
+NCB_IRR_METHOD2(createImage2, IImage*, createImage, (ECOLOR_FORMAT, IImage *));
+NCB_IRR_METHOD2(createImage3,  IImage*, createImage, (IImage*, const core::position2d<s32>&, const core::dimension2d<s32>&));
+NCB_IRR_METHOD2(createImageFromFile, IImage*, createImageFromFile, (const c8 *));
+NCB_IRR_METHOD(createRenderTargetTexture);
+NCB_IRR_METHOD(createScreenShot);
+NCB_IRR_METHOD(deleteAllDynamicLights);
+NCB_IRR_METHOD2(draw2DImage,  void, draw2DImage, (const ITexture*texture, const position2d<s32>&destPos));
+NCB_IRR_METHOD2(draw2DImage,  void, draw2DImage, (const ITexture*texture,
+												  const position2d<s32>&destPos,
+												  const core::rect<s32>&sourceRect,
+												  const core::rect<s32>*clipRect,
+												  SColor color,
+												  bool useAlphaChannelOfTexture));
+//NCB_IRR_METHOD2(draw2DImage,  void, draw2DImage, (const ITexture* texture, const core::position2d<s32>&,
+//												  const core::array<core::rect<s32> >&, const core::array<s32>&, s32,
+//												  const core::rect<s32>*, SColor,  bool)); XXX 配列
+//NCB_IRR_METHOD2(draw2DImage,  void, draw2DImage, (const ITexture*, const rect<s32>& destRect,
+//												  const rect<s32>& sourceRect,
+//												  const rect<s32>* clipRect,
+//												  SColor *color, bool);  XXX 配列
+NCB_IRR_METHOD(draw2DLine);
+NCB_IRR_METHOD(draw2DPolygon);
+//NCB_IRR_METHOD2(draw2DRectangle,  method_cast<void, Class, >(&IrrClass::draw2DRectangle)); XXX 配列
+//NCB_IRR_METHOD2(draw2DRectangle2, method_cast<void, Class, >(&IrrClass::draw2DRectangle)); XXX 配列
+NCB_IRR_METHOD(draw3DBox);
+NCB_IRR_METHOD(draw3DLine);
+NCB_IRR_METHOD(draw3DTriangle);
+//NCB_IRR_METHOD(drawIndexedTriangleFan); XXX 配列
+//NCB_IRR_METHOD(drawIndexedTriangleFan2); XXX 配列
+//NCB_IRR_METHOD(drawIndexedTriangleList); XXX 配列
+//NCB_IRR_METHOD(drawIndexedTriangleList2); XXX 配列
+//NCB_IRR_METHOD(drawIndexedTriangleList3); XXX 配列
+NCB_IRR_METHOD(drawMeshBuffer);
+NCB_IRR_METHOD(drawStencilShadow);
+NCB_IRR_METHOD(drawStencilShadowVolume);
+//NCB_IRR_METHOD(drawVertexPrimitiveList); XXX配列
+NCB_IRR_METHOD(enableClipPlane);
+NCB_IRR_METHOD(endScene);
+NCB_IRR_METHOD(fillMaterialStructureFromAttributes);
+NCB_IRR_METHOD(findTexture);
+NCB_IRR_METHOD(getCurrentRenderTargetSize);
+NCB_IRR_METHOD(getDriverType);
+NCB_IRR_METHOD(getDynamicLight);
+NCB_IRR_METHOD(getFPS);
+NCB_IRR_METHOD(getMaximalDynamicLightAmount);
+NCB_IRR_METHOD(getMaximalPrimitiveCount);
+NCB_IRR_METHOD(getMeshManipulator);
+NCB_IRR_METHOD(getName);
+NCB_IRR_METHOD(getPrimitiveCountDrawn);
+NCB_IRR_METHOD(getScreenSize);
+NCB_IRR_METHOD2(getTexture, ITexture*, getTexture, (const c8*));
+NCB_IRR_METHOD(getTextureByIndex);
+NCB_IRR_METHOD(getTextureCount);
+NCB_IRR_METHOD(getTransform);
+NCB_IRR_METHOD2(makeColorKeyTexture, void, makeColorKeyTexture, (video::ITexture* texture, video::SColor color) const);
+NCB_IRR_METHOD2(makeColorKeyTexture2, void, makeColorKeyTexture, (video::ITexture* texture, core::position2d<s32> colorKeyPixelPos) const);
+NCB_IRR_METHOD(makeNormalMapTexture);
+NCB_IRR_METHOD(queryFeature);
+NCB_IRR_METHOD(removeAllTextures);
+NCB_IRR_METHOD(removeTexture);
+NCB_IRR_METHOD(renameTexture);
+NCB_IRR_METHOD(setClipPlane);
+NCB_IRR_METHOD(setFog);
+NCB_IRR_METHOD(setMaterial);
+NCB_IRR_METHOD(setMaterialRendererName);
+NCB_IRR_METHOD(setRenderTarget);
+NCB_IRR_METHOD(setTextureCreationFlag);
+NCB_IRR_METHOD(setTransform);
+NCB_IRR_METHOD(writeImageToFile);
+
+//使わない
+//NCB_IRR_METHOD2(createImageFromData);
+//NCB_IRR_METHOD(addExternalImageLoader);
+//NCB_IRR_METHOD(addExternalImageWriter);
+//NCB_IRR_METHOD(addMaterialRenderer);
+//NCB_IRR_METHOD(getExposedVideoData);
+//NCB_IRR_METHOD(getGPUProgrammingServices);
+//NCB_IRR_METHOD(getMaterialRenderer);
+//NCB_IRR_METHOD(getMaterialRendererCount);
+//NCB_IRR_METHOD(getMaterialRendererName);
 };
 
 static bool ISceneManagerLoadScene(IrrWrapper<ISceneManager> *obj, const char *filename)
@@ -864,83 +1034,83 @@ static bool ISceneManagerSaveScene(IrrWrapper<ISceneManager> *obj, const char *f
 
 
 NCB_REGISTER_IRR_SUBCLASS(ISceneManager)
-	NCB_CONSTRUCTOR(());
+NCB_CONSTRUCTOR(());
+NCB_IRR_PROPERTY(activeCamera, getActiveCamera, setActiveCamera);
+NCB_IRR_PROPERTY(ambientLight, getAmbientLight, setAmbientLight);
+NCB_IRR_PROPERTY(shadowColor, getShadowColor, setShadowColor);
+NCB_IRR_METHOD(addAnimatedMeshSceneNode);
+NCB_IRR_METHOD(addArrowMesh);
+NCB_IRR_METHOD(addBillboardSceneNode);
+NCB_IRR_METHOD(addBillboardTextSceneNode);
+NCB_IRR_METHOD(addCameraSceneNode);
+//NCB_IRR_METHOD(addCameraSceneNodeFPS); XXX SKeyMap の配列が渡されてる
+NCB_IRR_METHOD(addCameraSceneNodeMaya);
+NCB_IRR_METHOD(addCubeSceneNode);
+NCB_IRR_METHOD(addDummyTransformationSceneNode);
+NCB_IRR_METHOD(addEmptySceneNode);
+NCB_IRR_METHOD(addHillPlaneMesh);
+NCB_IRR_METHOD(addLightSceneNode);
+NCB_IRR_METHOD(addMeshSceneNode);
+NCB_IRR_METHOD2(addOctTreeSceneNode,  ISceneNode*, addOctTreeSceneNode, (IAnimatedMesh *, ISceneNode *, s32, s32, bool));
+NCB_IRR_METHOD2(addOctTreeSceneNode2, ISceneNode*, addOctTreeSceneNode, (IMesh *, ISceneNode *, s32, s32, bool));
+NCB_IRR_METHOD(addParticleSystemSceneNode);
+NCB_IRR_METHOD(addQuake3SceneNode);
+NCB_IRR_METHOD(addSceneNode);
+NCB_IRR_METHOD(addSkyDomeSceneNode);
+NCB_IRR_METHOD(addSphereMesh);
+NCB_IRR_METHOD(addSphereSceneNode);
+NCB_IRR_METHOD(addTerrainMesh);
+NCB_IRR_METHOD2(addTerrainSceneNode, ITerrainSceneNode*, addTerrainSceneNode, (const c8*, ISceneNode*, s32,
+																			   const vector3df&, const vector3df&, const vector3df&, 
+																			   SColor, s32, E_TERRAIN_PATCH_SIZE, s32, bool));
+NCB_IRR_METHOD(addTextSceneNode);
+NCB_IRR_METHOD(addToDeletionQueue);
+NCB_IRR_METHOD(addWaterSurfaceSceneNode);
+NCB_IRR_METHOD(clear);
+NCB_IRR_METHOD(createCollisionResponseAnimator);
+NCB_IRR_METHOD(createDeleteAnimator);
+NCB_IRR_METHOD(createFlyCircleAnimator);
+NCB_IRR_METHOD(createFlyStraightAnimator);
+//NCB_IRR_METHOD(createFollowSplineAnimator); XXX 配列が渡されてる
+NCB_IRR_METHOD(createMeshWriter);
+NCB_IRR_METHOD(createNewSceneManager);
+NCB_IRR_METHOD(createOctTreeTriangleSelector);
+NCB_IRR_METHOD(createRotationAnimator);
+NCB_IRR_METHOD(createTerrainTriangleSelector);
+//NCB_IRR_METHOD(createTextureAnimator); XXX 配列が渡されてる
+NCB_IRR_METHOD(createTriangleSelector);
+NCB_IRR_METHOD(createTriangleSelectorFromBoundingBox);
+NCB_IRR_METHOD(drawAll);
+NCB_IRR_METHOD(getDefaultSceneNodeFactory);
+NCB_IRR_METHOD(getGUIEnvironment);
+NCB_IRR_METHOD2(getMesh, IAnimatedMesh*, getMesh, (const c8 *));
+NCB_IRR_METHOD(getMeshCache);
+NCB_IRR_METHOD(getMeshManipulator);
+NCB_IRR_METHOD(getParameters);
+NCB_IRR_METHOD(getRootSceneNode);
+NCB_IRR_METHOD(getSceneCollisionManager);
+NCB_IRR_METHOD(getSceneNodeAnimatorFactory);
+NCB_IRR_METHOD(getSceneNodeFactory);
+NCB_IRR_METHOD(getSceneNodeFromId);
+NCB_IRR_METHOD(getSceneNodeFromName);
+NCB_IRR_METHOD(getSceneNodeFromType);
+NCB_IRR_METHOD(getSceneNodeTypeName);
+NCB_IRR_METHOD(getVideoDriver);
+NCB_IRR_METHOD(postEventFromUser);
+NCB_IRR_METHOD(registerNodeForRendering);
+NCB_METHOD_PROXY(loadScene, ISceneManagerLoadScene);
+NCB_METHOD_PROXY(saveScene, ISceneManagerLoadScene);
 
-    NCB_IRR_PROPERTY(activeCamera, getActiveCamera, setActiveCamera);
-	NCB_IRR_PROPERTY(ambientLight, getAmbientLight, setAmbientLight);
-	NCB_IRR_PROPERTY(shadowColor, getShadowColor, setShadowColor);
-
-	NCB_IRR_METHOD(addAnimatedMeshSceneNode);
-	NCB_IRR_METHOD(addArrowMesh);
-	NCB_IRR_METHOD(addBillboardSceneNode);
-	NCB_IRR_METHOD(addBillboardTextSceneNode);
-	NCB_IRR_METHOD(addCameraSceneNode);
-//	NCB_IRR_METHOD(addCameraSceneNodeFPS); XXX SKeyMap の配列が渡されてる
-	NCB_IRR_METHOD(addCameraSceneNodeMaya);
-	NCB_IRR_METHOD(addCubeSceneNode);
-	NCB_IRR_METHOD(addDummyTransformationSceneNode);
-	NCB_IRR_METHOD(addEmptySceneNode);
-//	NCB_IRR_METHOD(addExternalMeshLoader);
-	NCB_IRR_METHOD(addHillPlaneMesh);
-	NCB_IRR_METHOD(addLightSceneNode);
-	NCB_IRR_METHOD(addMeshSceneNode);
-//	NCB_IRR_METHOD(addOctTreeSceneNode, addOctTreeSceneNode(IMesh *, ISceneNode *, s32, s32, bool));
-//	NCB_IRR_METHOD(addOctTreeSceneNode2, addOctTreeSceneNode(IAnimatedMesh *, ISceneNode *, s32, s32, bool));
-	NCB_IRR_METHOD(addParticleSystemSceneNode);
-	NCB_IRR_METHOD(addQuake3SceneNode);
-	NCB_IRR_METHOD(addSceneNode);
-	NCB_IRR_METHOD(addSkyDomeSceneNode);
-	NCB_IRR_METHOD(addSphereMesh);
-	NCB_IRR_METHOD(addSphereSceneNode);
-	NCB_IRR_METHOD(addTerrainMesh);
-//  NCB_IRR_METHOD(addTerrainSceneNode, addTerrainSceneNode(const c8*, ISceneNode*, s32, const vector3df&, const vector3df&, SColor, s32, E_TERRAIN_PATCH_SIZE, s32, bool));
-	NCB_IRR_METHOD(addTextSceneNode);
-	NCB_IRR_METHOD(addToDeletionQueue);
-	NCB_IRR_METHOD(addWaterSurfaceSceneNode);
-	NCB_IRR_METHOD(clear);
-	NCB_IRR_METHOD(createCollisionResponseAnimator);
-	NCB_IRR_METHOD(createDeleteAnimator);
-	NCB_IRR_METHOD(createFlyCircleAnimator);
-	NCB_IRR_METHOD(createFlyStraightAnimator);
-	//NCB_IRR_METHOD(createFollowSplineAnimator); XXX 配列が渡されてる
-	NCB_IRR_METHOD(createMeshWriter);
-	NCB_IRR_METHOD(createNewSceneManager);
-	NCB_IRR_METHOD(createOctTreeTriangleSelector);
-	NCB_IRR_METHOD(createRotationAnimator);
-	NCB_IRR_METHOD(createTerrainTriangleSelector);
-	//NCB_IRR_METHOD(createTextureAnimator); XXX 配列が渡されてる
-	NCB_IRR_METHOD(createTriangleSelector);
-	NCB_IRR_METHOD(createTriangleSelectorFromBoundingBox);
-	NCB_IRR_METHOD(drawAll);
-
-    NCB_IRR_METHOD(getDefaultSceneNodeFactory);
-    NCB_IRR_METHOD(getGUIEnvironment);
-//    NCB_IRR_METHOD(getMesh, getMesh(const c8 *));
-    NCB_IRR_METHOD(getMeshCache);
-    NCB_IRR_METHOD(getMeshManipulator);
-    NCB_IRR_METHOD(getParameters);
-    //NCB_IRR_METHOD(getRegisteredSceneNodeAnimatorFactoryCount);
-    //NCB_IRR_METHOD(getRegisteredSceneNodeFactoryCount);
-    NCB_IRR_METHOD(getRootSceneNode);
-    NCB_IRR_METHOD(getSceneCollisionManager);
-    NCB_IRR_METHOD(getSceneNodeAnimatorFactory);
-    NCB_IRR_METHOD(getSceneNodeFactory);
-	NCB_IRR_METHOD(getSceneNodeFromId);
-	NCB_IRR_METHOD(getSceneNodeFromName);
-	NCB_IRR_METHOD(getSceneNodeFromType);
-	NCB_IRR_METHOD(getSceneNodeTypeName);
-	NCB_IRR_METHOD(getVideoDriver);
-    NCB_IRR_METHOD(postEventFromUser);
-    NCB_IRR_METHOD(registerNodeForRendering);
-    //NCB_METHOD(registerSceneAnimatorFactory);
-    //NCB_METHOD(registerSceneFactory);
-
-    NCB_METHOD_PROXY(loadScene, ISceneManagerLoadScene);
-    NCB_METHOD_PROXY(saveScene, ISceneManagerLoadScene);
+//使わない
+//NCB_IRR_METHOD(addExternalMeshLoader);
+//NCB_METHOD(registerSceneAnimatorFactory);
+//NCB_METHOD(registerSceneFactory);
+//NCB_IRR_METHOD(getRegisteredSceneNodeAnimatorFactoryCount);
+//NCB_IRR_METHOD(getRegisteredSceneNodeFactoryCount);
 };
 
 NCB_REGISTER_IRR_SUBCLASS(IGUIEnvironment)
-	NCB_CONSTRUCTOR(());
+NCB_CONSTRUCTOR(());
 };
 
 // --------------------------------------------------------------------
@@ -998,9 +1168,20 @@ NCB_REGISTER_CLASS(Irrlicht) {
 	NCB_SUBCLASS_NAME(vector3df);
 
 	// Irrlicht 参照用クラス
+	NCB_IRR_SUBCLASS(ISceneNode);
+	NCB_IRR_SUBCLASS(IAnimatedMeshSceneNode);
+	NCB_IRR_SUBCLASS(IBillboardSceneNode);
+	NCB_IRR_SUBCLASS(IBoneSceneNode);
 	NCB_IRR_SUBCLASS(ICameraSceneNode);
+	NCB_IRR_SUBCLASS(IDummyTransformationSceneNode);
 	NCB_IRR_SUBCLASS(ILightSceneNode);
+	NCB_IRR_SUBCLASS(IMeshSceneNode);
+	NCB_IRR_SUBCLASS(IParticleSystemSceneNode);
+	NCB_IRR_SUBCLASS(ITerrainSceneNode);
+	NCB_IRR_SUBCLASS(ITextSceneNode);
+	NCB_IRR_SUBCLASS(IShadowVolumeSceneNode);
 	NCB_IRR_SUBCLASS(IImage);
+	NCB_IRR_SUBCLASS(ITexture);
 
 	NCB_IRR_SUBCLASS(IVideoDriver);
 	NCB_IRR_SUBCLASS(ISceneManager);
