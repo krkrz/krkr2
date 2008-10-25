@@ -21,9 +21,10 @@ struct GdiPlus {
 	static void addPrivateFont(const tjs_char *fontFileName);
 
 	/**
-	 * プライベートフォント一覧をログに出力
+	 * フォントファミリー名を取得
+	 * @param privateOnly true ならプライベートフォントのみ取得
 	 */
-	static void showPrivateFontList();
+	static tTJSVariant getFontList(bool privateOnly);
 };
 
 /**

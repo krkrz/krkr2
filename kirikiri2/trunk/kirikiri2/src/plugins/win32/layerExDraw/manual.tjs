@@ -132,10 +132,10 @@ class GdiPlus {
 	function addPrivateFont(fontFileName);
 
 	/**
-	 * プライベートフォント一覧をログに出力(static)
-	 * 情報参照用です。これで出力される名前をファミリーに指定できます。
+	 * フォント一覧の取得
+	 * @param privateOnly true ならプライベートフォントのみ取得
 	 */
-	function showPrivateFontList();
+	function getFontList(privateOnly);
 	
 	/**
 	 * フォント情報
