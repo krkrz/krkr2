@@ -90,26 +90,45 @@ GdiPlus::addPrivateFont(const tjs_char *fontFileName)
 }
 
 /**
- * プライベートフォント一覧をログに出力
+ * 配列にフォントのファミリー名を格納
+ * @param array 格納先配列
+ * @param fontCollection フォント名を取得する元の FontCollection
  */
-void
-GdiPlus::showPrivateFontList()
+static void addFontFamilyName(iTJSDispatch2 *array, FontCollection *fontCollection)
 {
-	if (!privateFontCollection)	return;
-	int count = privateFontCollection->GetFamilyCount();
-
-	// fontCollection.
+	int count = fontCollection->GetFamilyCount();
 	FontFamily *families = new FontFamily[count];
 	if (families) {
-		TVPAddLog("--- private font families ---");
-		privateFontCollection->GetFamilies(count, families, &count);
+		fontCollection->GetFamilies(count, families, &count);
 		for (int i=0;i<count;i++) {
 			WCHAR familyName[LF_FACESIZE];
 			if (families[i].GetFamilyName(familyName) == Ok) {
-				TVPAddLog(familyName);
+				tTJSVariant name(familyName), *param = &name;
+				array->FuncCall(0, TJS_W("add"), NULL, 0, 1, &param, array);
 			}
 		}
+		delete families;
 	}
+}
+
+/**
+ * フォント一覧の取得
+ * @param privateOnly true ならプライベートフォントのみ取得
+ */
+tTJSVariant
+GdiPlus::getFontList(bool privateOnly)
+{
+	iTJSDispatch2 *array = TJSCreateArrayObject();
+	if (privateFontCollection)	{
+		addFontFamilyName(array, privateFontCollection);
+	}
+	if (!privateOnly) {
+		InstalledFontCollection installedFontCollection;
+		addFontFamilyName(array, &installedFontCollection);
+	}
+	tTJSVariant ret(array,array);
+	array->Release();
+	return ret;
 }
 
 // --------------------------------------------------------
