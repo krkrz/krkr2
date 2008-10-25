@@ -165,7 +165,7 @@ NCB_REGISTER_CLASS(GdiPlus)
 	
 // statics
 	NCB_METHOD(addPrivateFont);
-	NCB_METHOD(showPrivateFontList);
+	NCB_METHOD(getFontList);
 
 // classes
 	NCB_SUBCLASS(Font,FontInfo);
