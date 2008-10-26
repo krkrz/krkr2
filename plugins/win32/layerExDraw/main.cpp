@@ -86,6 +86,8 @@ bool IsArray(const tTJSVariant &var)
 
 NCB_TYPECONV_CAST_INTEGER(Status);
 NCB_TYPECONV_CAST_INTEGER(MatrixOrder);
+NCB_TYPECONV_CAST_INTEGER(ImageType);
+NCB_TYPECONV_CAST_INTEGER(RotateFlipType);
 
 // ------------------------------------------------------- PointF
 template <class T>
@@ -271,6 +273,11 @@ struct GdipTypeConvertor {
 	typedef T *GdipClassP;
 	typedef GdipWrapper<GdipClassT> WrapperT;
 	typedef ncbInstanceAdaptor<WrapperT> AdaptorT;
+protected:
+	GdipClassT *result; // 結果の一時保持用
+public:
+	GdipTypeConvertor() : result(NULL) {}
+	~GdipTypeConvertor() {delete result;}
 	
 	void operator ()(GdipClassP &dst, const tTJSVariant &src) {
 		WrapperT *obj;
@@ -313,6 +320,7 @@ NCB_SET_CONVERTOR(const type*, convertor<const type>)
 #define NCB_GDIP_MCAST(ret, method, args) static_cast<ret (GdipClass::*) args>(&GdipClass::method)
 #define NCB_GDIP_METHOD2(name, ret, method, args) Method(TJS_W(# name), NCB_GDIP_MCAST(ret, method, args), Bridge<GdipWrapper<GdipClass>::BridgeFunctor>())
 #define NCB_GDIP_PROPERTY(name,get,set)  Property(TJS_W(# name), &GdipClass::get, &GdipClass::set, Bridge<GdipWrapper<GdipClass>::BridgeFunctor>())
+// XXX うまくうごかない
 #define NCB_GDIP_PROPERTY_RO(name,get)  Property(TJS_W(# name), &GdipClass::get, (int)0, Bridge<GdipWrapper<GdipClass>::BridgeFunctor>())
 #define NCB_GDIP_MEMBER_PROPERTY(name, type, membername) \
 	struct AutoProp_ ## name { \
@@ -324,17 +332,7 @@ NCB_SET_CONVERTOR(const type*, convertor<const type>)
 // ------------------------------------------------------- Matrix
 
 template <class T>
-struct MatrixConvertor {
-	typedef typename ncbTypeConvertor::Stripper<T>::Type GdipClassT;
-	typedef T *GdipClassP;
-	typedef GdipWrapper<GdipClassT> WrapperT;
-	typedef ncbInstanceAdaptor<WrapperT> AdaptorT;
-protected:
-	GdipClassT *result; // 結果の一時保持用
-public:
-	MatrixConvertor() : result(NULL) {}
-	~MatrixConvertor() {delete result;}
-	
+struct MatrixConvertor : public GdipTypeConvertor<T> {
 	void operator ()(GdipClassP &dst, const tTJSVariant &src) {
 		WrapperT *obj;
 		if (src.Type() == tvtObject) {
@@ -363,55 +361,97 @@ public:
 			dst = NULL;
 		}
 	}
+};
 
-	void operator ()(tTJSVariant &dst, const GdipClassP &src) {
-		if (src != NULL) {
-			iTJSDispatch2 *adpobj = AdaptorT::CreateAdaptor(new WrapperT(src));
-			if (adpobj) {
-				dst = tTJSVariant(adpobj, adpobj);
-				adpobj->Release();			
+NCB_REGISTER_GDIP_SUBCLASS2(Matrix, MatrixConvertor)
+NCB_CONSTRUCTOR(());
+NCB_GDIP_METHOD(OffsetX);
+NCB_GDIP_METHOD(OffsetY);
+NCB_GDIP_METHOD(Equals);
+// NCB_GDIP_METHOD(getElements); // 配列を返す
+NCB_GDIP_METHOD(SetElements);
+NCB_GDIP_METHOD(GetLastStatus);
+NCB_GDIP_METHOD(Invert);
+NCB_GDIP_METHOD(IsIdentity);
+NCB_GDIP_METHOD(IsInvertible);
+NCB_GDIP_METHOD(Multiply);
+NCB_GDIP_METHOD(Reset);
+NCB_GDIP_METHOD(Rotate);
+NCB_GDIP_METHOD(RotateAt);
+NCB_GDIP_METHOD(Scale);
+NCB_GDIP_METHOD(Rotate);
+NCB_GDIP_METHOD(Shear);
+//	NCB_GDIP_METHOD_DETAIL(TransformPoints, Class, Status, TransformPoints, (PointF*, INT)); XXX 引数が配列
+//	NCB_GDIP_METHOD_DETAIL(TransformVectors, Class, Status, TransformVectors, (PointF*, INT)); XXX 引数が配列
+NCB_GDIP_METHOD(Translate);
+};
+
+// ------------------------------------------------------- Image
+
+/**
+ * イメージ用コンバータ
+ * 文字列からも変更可能
+ */
+template <class T>
+struct ImageConvertor : public GdipTypeConvertor<T> {
+	void operator ()(GdipClassP &dst, const tTJSVariant &src) {
+		if (src.Type() == tvtObject) {
+			WrapperT *obj;
+			if ((obj = AdaptorT::GetNativeInstance(src.AsObjectNoAddRef()))) {
+				dst = obj->getGdipObject();
 			} else {
-				dst = NULL;
+				LayerExDraw *layer = ncbInstanceAdaptor<LayerExDraw>::GetNativeInstance(src.AsObjectNoAddRef());
+				if (layer) {
+					dst = layer->getImage();
+				} else {
+					dst = NULL;
+				}
 			}
+		} else if (src.Type() == tvtString) { // 文字列から生成
+			dst = result = loadImage(src.GetString());
 		} else {
-			dst.Clear();
+			dst = NULL;
 		}
 	}
 };
 
-NCB_REGISTER_GDIP_SUBCLASS2(Matrix, MatrixConvertor)
-	NCB_CONSTRUCTOR(());
-    //NCB_GDIP_PROPERTY_RO(offsetX, OffsetX); XXX うまく動かない？
-	//NCB_GDIP_PROPERTY_RO(offsetY, OffsetY);
-	NCB_GDIP_METHOD(Equals);
-	// NCB_GDIP_METHOD(getElements); // 配列を返す
-	NCB_GDIP_METHOD(SetElements);
-	NCB_GDIP_METHOD(GetLastStatus);
-	NCB_GDIP_METHOD(Invert);
-	NCB_GDIP_METHOD(IsIdentity);
-	NCB_GDIP_METHOD(IsInvertible);
-	NCB_GDIP_METHOD(Multiply);
-	NCB_GDIP_METHOD(Reset);
-	NCB_GDIP_METHOD(Rotate);
-	NCB_GDIP_METHOD(RotateAt);
-	NCB_GDIP_METHOD(Scale);
-	NCB_GDIP_METHOD(Rotate);
-	NCB_GDIP_METHOD(Shear);
-//	NCB_GDIP_METHOD_DETAIL(TransformPoints, Class, Status, TransformPoints, (PointF*, INT)); XXX 引数が配列
-//	NCB_GDIP_METHOD_DETAIL(TransformVectors, Class, Status, TransformVectors, (PointF*, INT)); XXX 引数が配列
-	NCB_GDIP_METHOD(Translate);
-};
-
-// --------------------------------------------------------------------------------
-
-static void ImageOpen(GdipWrapper<Image> *obj, const tjs_char *filename)
+static void ImageLoad(GdipWrapper<Image> *obj, const tjs_char *filename)
 {
 	obj->setGdipObject(loadImage(filename));
 }
 
-NCB_REGISTER_GDIP_SUBCLASS(Image)
-	NCB_CONSTRUCTOR(());
-	NCB_METHOD_PROXY(open, ImageOpen);
+NCB_REGISTER_GDIP_SUBCLASS2(Image, ImageConvertor)
+NCB_CONSTRUCTOR(());
+NCB_METHOD_PROXY(load, ImageLoad);
+//GetAllPropertyItems
+//NCB_GDIP_METHOD(GetBounds);
+//GetEncoderParameterList
+//GetEncoderParameterListSize
+NCB_GDIP_METHOD(GetFlags);
+//NCB_GDIP_METHOD(GetFrameCount);
+//NCB_GDIP_METHOD(GetFrameDimensionCount);
+//NCB_GDIP_METHOD(GetFrameDimensionList);
+NCB_GDIP_METHOD(GetHeight);
+NCB_GDIP_METHOD(GetHorizontalResolution);
+NCB_GDIP_METHOD(GetLastStatus);
+//NCB_GDIP_PROPERTY(palette, GetPalette, SetPalette);
+//NCB_GDIP_METHOD(GetPaletteSize);
+//GetPhysicalDimension
+NCB_GDIP_METHOD(GetPixelFormat);
+//NCB_GDIP_METHOD(GetPropertyCount);
+//GetPropertyItemList
+//GetPropertyItem
+//SetPropertyItem
+//GetPropertyItemSize
+//GetPropertySize
+//GetRawFormat
+//GetThumbnailImage
+NCB_GDIP_METHOD(GetType);
+NCB_GDIP_METHOD(GetVerticalResolution);
+NCB_GDIP_METHOD(GetWidth);
+//RemovePropertyItem
+NCB_GDIP_METHOD(RotateFlip);
+//SelectActiveFrame
 };
 
 // ------------------------------------------------------
@@ -441,7 +481,9 @@ NCB_REGISTER_SUBCLASS(Appearance) {
 
 NCB_REGISTER_CLASS(GdiPlus)
 {
-// enums
+	// enums
+
+	// Status
 	ENUM(Ok);
 	ENUM(GenericError);
 	ENUM(InvalidParameter);
@@ -577,6 +619,27 @@ NCB_REGISTER_CLASS(GdiPlus)
 
 	ENUM(MatrixOrderPrepend);
 	ENUM(MatrixOrderAppend);
+
+	ENUM(ImageTypeUnknown);
+    ENUM(ImageTypeBitmap);
+	ENUM(ImageTypeMetafile);
+
+	ENUM(RotateNoneFlipNone);
+	ENUM(Rotate90FlipNone);
+	ENUM(Rotate180FlipNone);
+	ENUM(Rotate270FlipNone);
+	ENUM(RotateNoneFlipX);
+	ENUM(Rotate90FlipX);
+	ENUM(Rotate180FlipX);
+	ENUM(Rotate270FlipX);
+	ENUM(RotateNoneFlipY);
+	ENUM(Rotate90FlipY);
+	ENUM(Rotate180FlipY);
+	ENUM(Rotate270FlipY);
+	ENUM(RotateNoneFlipXY);
+	ENUM(Rotate90FlipXY);
+	ENUM(Rotate180FlipXY);
+	ENUM(Rotate270FlipXY);
 	
 // statics
 	NCB_METHOD(addPrivateFont);
@@ -631,8 +694,12 @@ NCB_ATTACH_CLASS_WITH_HOOK(LayerExDraw, Layer) {
 	NCB_METHOD(drawRectangle);
 	NCB_METHOD(drawRectangles);
 	NCB_METHOD(drawString);
-	NCB_METHOD(drawImage);
 	NCB_METHOD(measureString);
+
+	NCB_METHOD(drawImage);
+	NCB_METHOD(drawImageRect);
+	NCB_METHOD(drawImageStretch);
+	NCB_METHOD(drawImageAffine);
 }
 
 // ----------------------------------- 起動・開放処理

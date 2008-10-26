@@ -190,6 +190,10 @@ public:
 		this->updateWhenDraw = updateWhenDraw != 0;
 	}
 	int getUpdateWhenDraw() { return updateWhenDraw ? 1 : 0; }
+
+	Image *getImage() {
+		return (Image*)bitmap;
+	}
 	
 public:	
 	LayerExDraw(DispatchT obj);
@@ -400,11 +404,48 @@ public:
 	
 	/**
 	 * 画像の描画
-	 * @param image 画像
-	 * @param x 表示位置X
-	 * @param y 表示位置Y
+	 * @param dleft コピー先左端
+	 * @param dtop  コピー先上端
+	 * @param image コピー元画像
 	 */
-	void drawImage(Image *image, REAL x, REAL y);
+	void drawImage(REAL dleft, REAL dtop, Image *src);
+
+	/**
+	 * 画像の矩形コピー
+	 * @param dleft コピー先左端
+	 * @param dtop  コピー先上端
+	 * @param src コピー元画像
+	 * @param sleft 元矩形の左端
+	 * @param stop  元矩形の上端
+	 * @param swidth 元矩形の横幅
+	 * @param sheight  元矩形の縦幅
+	 */
+	void drawImageRect(REAL dleft, REAL dtop, Image *src, REAL sleft, REAL stop, REAL swidth, REAL sheight);
+
+	/**
+	 * 画像の拡大縮小コピー
+	 * @param dleft コピー先左端
+	 * @param dtop  コピー先上端
+	 * @param dwidth コピー先の横幅
+	 * @param dheight  コピー先の縦幅
+	 * @param src コピー元画像
+	 * @param sleft 元矩形の左端
+	 * @param stop  元矩形の上端
+	 * @param swidth 元矩形の横幅
+	 * @param sheight  元矩形の縦幅
+	 */
+	void drawImageStretch(REAL dleft, REAL dtop, REAL dwidth, REAL dheight, Image *src, REAL sleft, REAL stop, REAL swidth, REAL sheight);
+
+	/**
+	 * 画像のアフィン変換コピー
+	 * @param src コピー元画像
+	 * @param sleft 元矩形の左端
+	 * @param stop  元矩形の上端
+	 * @param swidth 元矩形の横幅
+	 * @param sheight  元矩形の縦幅
+	 * @param affine アフィンパラメータの種類(true:変換行列, false:座標指定), 
+	 */
+	void drawImageAffine(Image *src, REAL sleft, REAL stop, REAL swidth, REAL sheight, bool affine, REAL A, REAL B, REAL C, REAL D, REAL E, REAL F);
 };
 
 #endif
