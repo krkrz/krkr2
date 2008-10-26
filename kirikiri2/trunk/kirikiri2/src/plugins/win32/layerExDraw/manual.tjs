@@ -148,8 +148,31 @@ class GdiPlus {
     WrapModeClamp = 4;
 
 	// MatrixOrder 定義
-	MatrixOrderPrepend = 0,
-    MatrixOrderAppend = 1
+	MatrixOrderPrepend = 0;
+	MatrixOrderAppend = 1;
+
+	// ImageType 定義
+	ImageTypeUnknown = 0;
+	ImageTypeBitmap = 1;
+    ImageTypeMetafile = 2;
+
+	// RotateFlip 定義
+    RotateNoneFlipNone = 0;
+    Rotate90FlipNone = 1;
+    Rotate180FlipNone = 2;
+    Rotate270FlipNone = 3;
+    RotateNoneFlipX = 4;
+    Rotate90FlipX = 5;
+    Rotate180FlipX = 6;
+    Rotate270FlipX = 7;
+    RotateNoneFlipY = Rotate180FlipX;
+    Rotate90FlipY = Rotate270FlipX;
+    Rotate180FlipY = RotateNoneFlipX;
+    Rotate270FlipY = Rotate90FlipX;
+    RotateNoneFlipXY = Rotate180FlipNone;
+    Rotate90FlipXY = Rotate270FlipNone;
+    Rotate180FlipXY = RotateNoneFlipNone;
+    Rotate270FlipXY = Rotate90FlipNone;
 	
 	/**
 	 * プライベートフォントの追加(static)
@@ -285,21 +308,40 @@ class GdiPlus {
 		function addPen(colorOrBrush, width, option, ox, oy);
 	};
 
+	/*
+	 * 位置情報を取り扱うクラス
+	 */
+	class PointF {
+		function PointF(x, y);
+	}
+
+	/**
+	 * 矩形情報を取り扱うクラス
+	 */
+	class RectF {
+		function RectF(x, y);
+	}
+
+	/**
+	 * マトリックス情報を取り扱うクラス
+	 */
+	class Matrix {
+		// コンストラクタ XXX 現時点では引数は処理できない
+		function Matrix();
+	}
+	
 	/**
 	 * 画像情報を取り扱うクラス
 	 */
 	class Image {
-
 		// コンストラクタ XXX 現時点では引数は処理できない
-		Image();
-
+		function Image();
 		/**
-		 * 画像を開く
+		 * 画像をロードする
 		 * @param filename 画像ファイル名
 		 */
-		funciton open(filename);
+		funciton load(filename);
 	};
-	
 }
 
 /**
@@ -340,7 +382,7 @@ class Layer {
 	 * @param height 縦幅
 	 * @param startAngle 時計方向円弧開始位置
 	 * @param sweepAngle 描画角度
-	 * @return 更新領域情報の辞書 left, top, width, height
+	 * @return 更新域情報(RectF)
 	 */
 	function drawPie(app, x, y, width, height, startAngle, sweepAngle);
 	
@@ -355,7 +397,7 @@ class Layer {
 	 * @param y3
 	 * @param x4
 	 * @param y4
-	 * @return 更新領域情報の辞書 left, top, width, height
+	 * @return 更新域情報(RectF)
 	 */
 	function drawBezier(app, x1, y1, x2, y2, x3, y3, x4, y4);
 
@@ -363,7 +405,7 @@ class Layer {
 	 * 連続ベジェ曲線の描画
 	 * @param app アピアランス
 	 * @param points 点の配列 [ [x1, y1], [x2, y2] .... ]
-	 * @return 更新領域情報の辞書 left, top, width, height
+	 * @return 更新域情報(RectF)
 	 */
 	function drawBeziers(app, points);
 
@@ -371,7 +413,7 @@ class Layer {
 	 * Closed cardinal spline の描画
 	 * @param app アピアランス
 	 * @param points 点の配列 [ [x1, y1], [x2, y2] .... ]
-	 * @return 更新領域情報の辞書 left, top, width, height
+	 * @return 更新域情報(RectF)
 	 */
 	function drawClosedCurve(app, points);
 
@@ -380,7 +422,7 @@ class Layer {
 	 * @param app アピアランス
 	 * @param points 点の配列 [ [x1, y1], [x2, y2] .... ]
 	 * @param tension テンション
-	 * @return 更新領域情報の辞書 left, top, width, height
+	 * @return 更新域情報(RectF)
 	 */
 	function drawClosedCurve2(app, points, tension);
 
@@ -388,7 +430,7 @@ class Layer {
 	 * cardinal spline の描画
 	 * @param app アピアランス
 	 * @param points 点の配列 [ [x1, y1], [x2, y2] .... ]
-	 * @return 更新領域情報の辞書 left, top, width, height
+	 * @return 更新域情報(RectF)
 	 */
 	function drawCurve(app, points);
 
@@ -397,7 +439,7 @@ class Layer {
 	 * @param app アピアランス
 	 * @param points 点の配列 [ [x1, y1], [x2, y2] .... ]
 	 * @param tension テンション
-	 * @return 更新領域情報の辞書 left, top, width, height
+	 * @return 更新域情報(RectF)
 	 */
 	function drawCurve2(app, points, tension);
 
@@ -408,7 +450,7 @@ class Layer {
 	 * @param offset
 	 * @param numberOfSegments
 	 * @param tension テンション
-	 * @return 更新領域情報の辞書 left, top, width, height
+	 * @return 更新域情報(RectF)
 	 */
 	function drawCurve3(app, points, offset, numberOfSegments, tension);
 	
@@ -419,7 +461,7 @@ class Layer {
 	 * @param y
 	 * @param width
 	 * @param height
-	 * @return 更新領域情報の辞書 left, top, width, height
+	 * @return 更新域情報(RectF)
 	 */
 	function drawEllipse(app, x, y, width, height);
 
@@ -430,7 +472,7 @@ class Layer {
 	 * @param y1 始点Y座標
 	 * @param x2 終点X座標
 	 * @param y2 終点Y座標
-	 * @return 更新領域情報の辞書 left, top, width, height
+	 * @return 更新域情報(RectF)
 	 */
 	function drawLine(app, x1, y1, x2, y2);
 
@@ -438,7 +480,7 @@ class Layer {
 	 * 連続線分の描画
 	 * @param app アピアランス
 	 * @param points 点の配列 [ [x1, y1], [x2, y2] .... ]
-	 * @return 更新領域情報の辞書 left, top, width, height
+	 * @return 更新域情報(RectF)
 	 */
 	function drawLines(app, points)
 
@@ -446,7 +488,7 @@ class Layer {
 	 * 多角形の描画
 	 * @param app アピアランス
 	 * @param points 点の配列 [ [x1, y1], [x2, y2] .... ]
-	 * @return 更新領域情報の辞書 left, top, width, height
+	 * @return 更新域情報(RectF)
 	 */
 	function drawPolygon(app, points)
 		
@@ -457,7 +499,7 @@ class Layer {
 	 * @param y
 	 * @param width
 	 * @param height
-	 * @return 更新領域情報の辞書 left, top, width, height
+	 * @return 更新域情報(RectF)
 	 */
 	function drawRectangle(app, x, y, width, height);
 
@@ -465,7 +507,7 @@ class Layer {
 	 * 複数矩形の描画
 	 * @param app アピアランス
 	 * @param rects 矩形の配列 [ [x1, y1, width1, height1], [x2, y2, width2, height2] .... ]
-	 * @return 更新領域情報の辞書 left, top, width, height
+	 * @return 更新域情報(RectF)
 	 */
 	function drawRectangles(app, rects)
 	
@@ -476,7 +518,7 @@ class Layer {
 	 * @param x 描画位置X
 	 * @param y 描画位置Y
 	 * @param text 描画テキスト
-	 * @return 更新領域情報の辞書 left, top, width, height
+	 * @return 更新域情報(RectF)
 	 */
 	function drawString(font, app, x, y, text);
 
@@ -484,18 +526,56 @@ class Layer {
 	 * 文字列の描画領域情報の取得
 	 * @param font フォント
 	 * @param text 描画テキスト
-	 * @return 描画領域情報の辞書 left, top, width, height
+	 * @return 描画領域情報(RectF)
 	 */
 	function measureString(font, text);
 
 	// -------------------------------------------------------------
-	
+
 	/**
 	 * 画像の描画
-	 * @param image 画像 (Image クラスのオブジェクト)
-	 * @param x 表示位置X
-	 * @param y 表示位置Y
+	 * @param dleft コピー先左端
+	 * @param dtop  コピー先上端
+	 * @param image コピー元画像(Image/Layer/ファイル名)
 	 */
-	function drawImage(x, y, name);
+	function drawImage(dleft, dtop, src);
+
+	/**
+	 * 画像の矩形コピー
+	 * @param dleft コピー先左端
+	 * @param dtop  コピー先上端
+	 * @param src コピー元画像(Image/Layer/ファイル名)
+	 * @param sleft 元矩形の左端
+	 * @param stop  元矩形の上端
+	 * @param swidth 元矩形の横幅
+	 * @param sheight  元矩形の縦幅
+	 */
+	function drawImageRect(dleft, dtop, src, sleft, stop, swidth, sheight);
+
+	/**
+	 * 画像の拡大縮小コピー
+	 * @param dleft コピー先左端
+	 * @param dtop  コピー先上端
+	 * @param dwidth コピー先の横幅
+	 * @param dheight  コピー先の縦幅
+	 * @param src コピー元画像(Image/Layer/ファイル名)
+	 * @param sleft 元矩形の左端
+	 * @param stop  元矩形の上端
+	 * @param swidth 元矩形の横幅
+	 * @param sheight  元矩形の縦幅
+	 */
+	function drawImageStretch(dleft, dtop, dwidth, dheight, src, sleft, stop, swidth, sheight);
+
+	/**
+	 * 画像のアフィン変換コピー
+	 * @param src コピー元画像(Image/Layer/ファイル名)
+	 * @param sleft 元矩形の左端
+	 * @param stop  元矩形の上端
+	 * @param swidth 元矩形の横幅
+	 * @param sheight  元矩形の縦幅
+	 * @param affine アフィンパラメータの種類(true:変換行列, false:座標指定), 
+	 */
+	function drawImageAffine(src, sleft, stop, swidth, sheight, affine, A, B, C, D, E, F);
+
 };
 
