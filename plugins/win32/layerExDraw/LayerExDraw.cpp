@@ -1,20 +1,7 @@
 #pragma comment(lib, "gdiplus.lib")
-#include "LayerExDraw.hpp"
 #include "ncbind/ncbind.hpp"
-
+#include "LayerExDraw.hpp"
 #include <stdio.h>
-/**
- * ログ出力用
- */
-static void log(const tjs_char *format, ...)
-{
-	va_list args;
-	va_start(args, format);
-	tjs_char msg[1024];
-	_vsnwprintf_s(msg, 1024, _TRUNCATE, format, args);
-	TVPAddLog(msg);
-	va_end(args);
-}
 
 // GDI+ 基本情報
 static GdiplusStartupInput gdiplusStartupInput;
@@ -43,6 +30,36 @@ void deInitGdiPlus()
 	}
 	fontDatas.clear();
 	GdiplusShutdown(gdiplusToken);
+}
+
+/**
+ * 画像読み込み処理
+ * @param name ファイル名
+ * @return 画像情報
+ */
+Image *loadImage(const tjs_char *name)
+{
+	// 画像読み込み
+	Image *image = NULL;
+	IStream *in = TVPCreateIStream(name, TJS_BS_READ);
+	if (in == NULL) {
+		TVPThrowExceptionMessage((ttstr(L"cannot open : ") + name).c_str());
+	} else {
+		// 画像生成
+		try {
+			image = new Image(in);
+			in->Release();
+			if (image->GetLastStatus() != Ok) {
+				delete image;
+				TVPThrowExceptionMessage((ttstr(L"cannot load : ") + name).c_str());
+			}
+		} catch(...) {
+			delete image;
+			in->Release();
+			throw;
+		}
+	}
+	return image;
 }
 
 // --------------------------------------------------------
@@ -229,64 +246,21 @@ Appearance::clear()
 	drawInfos.clear();
 }
 
-/**
- * 画像の生成
- */
-static Image *loadImage(const tjs_char *name)
-{
-	// 画像読み込み
-	Image *image = NULL;
-	IStream *in = TVPCreateIStream(name, TJS_BS_READ);
-	if (in == NULL) {
-		TVPThrowExceptionMessage((ttstr(L"cannot open : ") + name).c_str());
-	} else {
-		// 画像生成
-		try {
-			image = new Image(in);
-			in->Release();
-			if (image->GetLastStatus() != Ok) {
-				delete image;
-				TVPThrowExceptionMessage((ttstr(L"cannot load : ") + name).c_str());
-			}
-		} catch(...) {
-			delete image;
-			in->Release();
-			throw;
-		}
-	}
-	return image;
-}
+// --------------------------------------------------------
+// 各型変換処理
+// --------------------------------------------------------
 
-static bool IsArray(tTJSVariant &var)
-{
-	if (var.Type() == tvtObject) {
-		iTJSDispatch2 *obj = var.AsObjectNoAddRef();
-		return obj->IsInstanceOf(0, NULL, NULL, L"Array", obj) == TJS_S_TRUE;
-	}
-	return false;
-}
-
-// -----------------------------
+extern bool IsArray(const tTJSVariant &var);
 
 /**
  * 座標情報の生成
  */
-static PointF getPoint(tTJSVariant &var)
-{
-	ncbPropAccessor info(var);
-	if (IsArray(var)) {
-		return PointF((REAL)info.getRealValue(0),
-					  (REAL)info.getRealValue(1));
-	} else {
-		return PointF((REAL)info.getRealValue(L"x"),
-					  (REAL)info.getRealValue(L"y"));
-	}
-}
+extern PointF getPoint(const tTJSVariant &var);
 
 /**
  * 点の配列を取得
  */
-static void getPoints(tTJSVariant &var, vector<PointF> &points)
+static void getPoints(const tTJSVariant &var, vector<PointF> &points)
 {
 	ncbPropAccessor info(var);
 	int c = info.GetArrayCount();
@@ -319,26 +293,12 @@ static void getPoints(ncbPropAccessor &info, const tjs_char *n, vector<PointF> &
 /**
  * 矩形情報の生成
  */
-static RectF getRect(tTJSVariant &var)
-{
-	ncbPropAccessor info(var);
-	if (IsArray(var)) {
-		return RectF((REAL)info.getRealValue(0),
-					 (REAL)info.getRealValue(1),
-					 (REAL)info.getRealValue(2),
-					 (REAL)info.getRealValue(3));
-	} else {
-		return RectF((REAL)info.getRealValue(L"x"),
-					 (REAL)info.getRealValue(L"y"),
-					 (REAL)info.getRealValue(L"width"),
-					 (REAL)info.getRealValue(L"height"));
-	}
-}
+extern RectF getRect(const tTJSVariant &var);
 
 /**
  * 矩形の配列を取得
  */
-static void getRects(tTJSVariant &var, vector<RectF> &rects)
+static void getRects(const tTJSVariant &var, vector<RectF> &rects)
 {
 	ncbPropAccessor info(var);
 	int c = info.GetArrayCount();
@@ -355,7 +315,7 @@ static void getRects(tTJSVariant &var, vector<RectF> &rects)
 /**
  * 実数の配列を取得
  */
-static void getReals(tTJSVariant &var, vector<REAL> &points)
+static void getReals(const tTJSVariant &var, vector<REAL> &points)
 {
 	ncbPropAccessor info(var);
 	int c = info.GetArrayCount();
@@ -385,7 +345,7 @@ static void getReals(ncbPropAccessor &info, const tjs_char *n, vector<REAL> &poi
 /**
  * 色の配列を取得
  */
-static void getColors(tTJSVariant &var, vector<Color> &colors)
+static void getColors(const tTJSVariant &var, vector<Color> &colors)
 {
 	ncbPropAccessor info(var);
 	int c = info.GetArrayCount();
@@ -485,7 +445,7 @@ void commonBrushParameter(ncbPropAccessor &info, T *brush)
 /**
  * ブラシの生成
  */
-Brush* createBrush(tTJSVariant colorOrBrush)
+Brush* createBrush(const tTJSVariant colorOrBrush)
 {
 	Brush *brush;
 	if (colorOrBrush.Type() != tvtObject) {
@@ -1146,21 +1106,6 @@ LayerExDraw::drawString(const FontInfo *font, const Appearance *app, REAL x, REA
 
 
 /**
- * 画像の描画
- * @param name 画像名
- * @param x 表示位置X
- * @param y 表示位置Y
- */
-void
-LayerExDraw::drawImage(REAL x, REAL y, const tjs_char *name)
-{
-	Image *image = loadImage(name);
-	graphics->DrawImage(image, x, y);
-	delete image;
-}
-
-
-/**
  * 文字列の描画領域情報の取得
  * @param font フォント
  * @param app アピアランス
@@ -1175,3 +1120,16 @@ LayerExDraw::measureString(const FontInfo *font, const tjs_char *text)
 	graphics->MeasureString(text, -1, &f, PointF(0,0), StringFormat::GenericDefault(), &rect);
 	return rect;
 }
+/**
+ * 画像の描画
+ * @param name 画像名
+ * @param x 表示位置X
+ * @param y 表示位置Y
+ */
+void
+LayerExDraw::drawImage(Image *image, REAL x, REAL y)
+{
+	graphics->DrawImage(image, x, y);
+}
+
+

@@ -1,34 +1,399 @@
-#include "layerExDraw.hpp"
 #include "ncbind/ncbind.hpp"
+#include "layerExDraw.hpp"
+
+/**
+ * ログ出力用
+ */
+void
+message_log(const char* format, ...)
+{
+	va_list args;
+	va_start(args, format);
+	char msg[1024];
+	_vsnprintf_s(msg, 1024, _TRUNCATE, format, args);
+	TVPAddLog(ttstr(msg));
+	va_end(args);
+}
+
+/**
+ * エラーログ出力用
+ */
+void
+error_log(const char* format, ...)
+{
+	va_list args;
+	va_start(args, format);
+	char msg[1024];
+	_vsnprintf_s(msg, 1024, _TRUNCATE, format, args);
+	TVPAddImportantLog(ttstr(msg));
+	va_end(args);
+}
 
 extern void initGdiPlus();
 extern void deInitGdiPlus();
+extern Image *loadImage(const tjs_char *name);
+
+// ----------------------------------------------------------------
+// 実体型の登録
+// 数値パラメータ系は配列か辞書を使えるような特殊コンバータを構築
+// ----------------------------------------------------------------
+
+// 両方自前コンバータ
+#define NCB_SET_CONVERTOR_BOTH(type, convertor)\
+NCB_TYPECONV_SRCMAP_SET(type, convertor<type>, true);\
+NCB_TYPECONV_DSTMAP_SET(type, convertor<type>, true)
+
+// SRCだけ自前コンバータ
+#define NCB_SET_CONVERTOR_SRC(type, convertor)\
+NCB_TYPECONV_SRCMAP_SET(type, convertor<type>, true);\
+NCB_TYPECONV_DSTMAP_SET(type, ncbNativeObjectBoxing::Unboxing, true)
+
+// DSTだけ自前コンバータ
+#define NCB_SET_CONVERTOR_DST(type, convertor)\
+NCB_TYPECONV_SRCMAP_SET(type, ncbNativeObjectBoxing::Boxing,   true); \
+NCB_TYPECONV_DSTMAP_SET(type, convertor<type>, true)
+
+/**
+ * 配列かどうかの判定
+ * @param var VARIANT
+ * @return 配列なら true
+ */
+bool IsArray(const tTJSVariant &var)
+{
+	if (var.Type() == tvtObject) {
+		iTJSDispatch2 *obj = var.AsObjectNoAddRef();
+		return obj->IsInstanceOf(0, NULL, NULL, L"Array", obj) == TJS_S_TRUE;
+	}
+	return false;
+}
+
+// メンバ変数をプロパティとして登録
+#define NCB_MEMBER_PROPERTY(name, type, membername) \
+	struct AutoProp_ ## name { \
+		static void ProxySet(Class *inst, type value) { inst->membername = value; } \
+		static type ProxyGet(Class *inst) {      return inst->membername; } }; \
+	NCB_PROPERTY_PROXY(name,AutoProp_ ## name::ProxyGet, AutoProp_ ## name::ProxySet)
+
+// ポインタ引数型の getter を変換登録
+#define NCB_ARG_PROPERTY_RO(name, type, methodname) \
+	struct AutoProp_ ## name { \
+		static type ProxyGet(Class *inst) { type var; inst->methodname(&var); return var; } }; \
+	Property(TJS_W(# name), &AutoProp_ ## name::ProxyGet, (int)0, Proxy)
 
 // ------------------------------------------------------
 // 型コンバータ登録
 // ------------------------------------------------------
 
-struct RectConvertor { // コンバータ
-	void operator ()(tTJSVariant &dst, const RectF &src) {
-		iTJSDispatch2 *dict = TJSCreateDictionaryObject();
-		if (dict != NULL) {
-			tTJSVariant left(src.X);
-			tTJSVariant top(src.Y);
-			tTJSVariant width(src.Width);
-			tTJSVariant height(src.Height);
-			dict->PropSet(TJS_MEMBERENSURE, L"left",   NULL, &left, dict);
-			dict->PropSet(TJS_MEMBERENSURE, L"top",    NULL, &top, dict);
-			dict->PropSet(TJS_MEMBERENSURE, L"width",  NULL, &width, dict);
-			dict->PropSet(TJS_MEMBERENSURE, L"height", NULL, &height, dict);
-			dst = tTJSVariant(dict, dict);
-			dict->Release();
+NCB_TYPECONV_CAST_INTEGER(Status);
+NCB_TYPECONV_CAST_INTEGER(MatrixOrder);
+
+// ------------------------------------------------------- PointF
+template <class T>
+struct PointFConvertor {
+	typedef ncbInstanceAdaptor<T> AdaptorT;
+	template <typename ANYT>
+	void operator ()(ANYT &adst, const tTJSVariant &src) {
+		if (src.Type() == tvtObject) {
+			T *obj = AdaptorT::GetNativeInstance(src.AsObjectNoAddRef());
+			if (obj) {
+				dst = *obj;
+			} else {
+				ncbPropAccessor info(src);
+				if (IsArray(src)) {
+					dst = PointF((REAL)info.getRealValue(0),
+								 (REAL)info.getRealValue(1));
+				} else {
+					dst = PointF((REAL)info.getRealValue(L"x"),
+								 (REAL)info.getRealValue(L"y"));
+				}
+			}
+		} else {
+			dst = T();
+		}
+		adst = ncbTypeConvertor::ToTarget<ANYT>::Get(&dst);
+	}
+private:
+	T dst;
+};
+
+NCB_SET_CONVERTOR_DST(PointF, PointFConvertor);
+NCB_REGISTER_SUBCLASS_DELAY(PointF) {
+	NCB_CONSTRUCTOR((REAL,REAL));
+	NCB_MEMBER_PROPERTY(x, REAL, X);
+	NCB_MEMBER_PROPERTY(y, REAL, Y);
+	NCB_METHOD(Equals);
+};
+
+PointF getPoint(const tTJSVariant &var)
+{
+	PointFConvertor<PointF> conv;
+	PointF ret;
+	conv(ret, var);
+	return ret;
+}
+
+// ------------------------------------------------------- RectF
+template <class T>
+struct RectFConvertor {
+	typedef ncbInstanceAdaptor<T> AdaptorT;
+	template <typename ANYT>
+	void operator ()(ANYT &adst, const tTJSVariant &src) {
+		if (src.Type() == tvtObject) {
+			T *obj = AdaptorT::GetNativeInstance(src.AsObjectNoAddRef());
+			if (obj) {
+				dst = *obj;
+			} else {
+				ncbPropAccessor info(src);
+				if (IsArray(src)) {
+					dst = RectF((REAL)info.getRealValue(0),
+								(REAL)info.getRealValue(1),
+								(REAL)info.getRealValue(2),
+								(REAL)info.getRealValue(3));
+				} else {
+					dst = RectF((REAL)info.getRealValue(L"x"),
+								(REAL)info.getRealValue(L"y"),
+								(REAL)info.getRealValue(L"width"),
+								(REAL)info.getRealValue(L"height"));
+				}
+			}
+		} else {
+			dst = T();
+		}
+		adst = ncbTypeConvertor::ToTarget<ANYT>::Get(&dst);
+	}
+private:
+	T dst;
+};
+
+NCB_SET_CONVERTOR_DST(RectF, RectFConvertor);
+NCB_REGISTER_SUBCLASS_DELAY(RectF) {
+	NCB_CONSTRUCTOR((REAL,REAL,REAL,REAL));
+	NCB_MEMBER_PROPERTY(x, REAL, X);
+	NCB_MEMBER_PROPERTY(y, REAL, Y);
+	NCB_MEMBER_PROPERTY(width, REAL, Width);
+	NCB_MEMBER_PROPERTY(height, REAL, Height);
+	NCB_PROPERTY_RO(left, GetLeft);
+	NCB_PROPERTY_RO(top, GetTop);
+	NCB_PROPERTY_RO(right, GetRight);
+	NCB_PROPERTY_RO(bottom, GetBottom);
+	NCB_ARG_PROPERTY_RO(location, PointF, GetLocation);
+	NCB_ARG_PROPERTY_RO(bounds, RectF, GetBounds);
+	NCB_METHOD(Clone);
+// XXX	NCB_METHOD_DETAIL(Contains, Class, BOOL, Class::Contains, (REAL,REAL));
+//	NCB_METHOD_DETAIL(ContainsPoint, Class, BOOL, Class::Contains, (const PointF&) const);
+//	NCB_METHOD_DETAIL(ContainsRect, Class, BOOL, Class::Contains, (const RectF&));
+	NCB_METHOD(Equals);
+	NCB_METHOD_DETAIL(Inflate, Class, void, Class::Inflate, (REAL,REAL));
+	NCB_METHOD_DETAIL(InflatePoint, Class, void, Class::Inflate, (const PointF&));
+//XXX	NCB_METHOD_DETAIL(Intersect, Class, BOOL, Class::Intersect, (const Rect&));
+	NCB_METHOD(IntersectsWith);
+	NCB_METHOD(IsEmptyArea);
+	NCB_METHOD_DETAIL(Offset, Class, void, Class::Offset, (REAL,REAL));
+//XXX	NCB_METHOD_DETAIL(OffsetPoint, Class, void, Class::Offset, (const Point&));
+	NCB_METHOD(Union);
+};
+
+RectF getRect(const tTJSVariant &var)
+{
+	RectFConvertor<RectF> conv;
+	RectF ret;
+	conv(ret, var);
+	return ret;
+}
+
+#if 0
+// ------------------------------------------------------- Matrix
+template <class T>
+struct MatrixConvertor {
+	typedef ncbInstanceAdaptor<T> AdaptorT;
+	template <typename ANYT>
+	void operator ()(ANYT &adst, const tTJSVariant &src) {
+		if (src.Type() == tvtObject) {
+			T *obj = AdaptorT::GetNativeInstance(src.AsObjectNoAddRef());
+			if (obj) {
+				dst = *obj;
+			} else {
+				ncbPropAccessor info(src);
+				if (IsArray(src)) {
+					dst = Matrix((REAL)info.getRealValue(0),
+								 (REAL)info.getRealValue(1),
+								 (REAL)info.getRealValue(2),
+								 (REAL)info.getRealValue(3),
+								 (REAL)info.getRealValue(4),
+								 (REAL)info.getRealValue(5));
+				} else {
+					dst = Matrix((REAL)info.getRealValue(L"m11"),
+								 (REAL)info.getRealValue(L"m12"),
+								 (REAL)info.getRealValue(L"m21"),
+								 (REAL)info.getRealValue(L"m22"),
+								 (REAL)info.getRealValue(L"dx"),
+								 (REAL)info.getRealValue(L"dy"));
+				}
+			}
+		} else {
+			dst = T();
+		}
+		adst = ncbTypeConvertor::ToTarget<ANYT>::Get(&dst);
+	}
+private:
+	T dst;
+};
+
+NCB_SET_CONVERTOR_DST(Matrix, MatrixConvertor);
+NCB_REGISTER_SUBCLASS_DELAY(Matrix) {
+	NCB_CONSTRUCTOR((REAL,REAL,REAL,REAL,REAL,REAL));
+	NCB_PROPERTY_RO(offsetX, OffsetX);
+	NCB_PROPERTY_RO(offsetY, OffsetY);
+	NCB_METHOD(Clone);
+	NCB_METHOD(Equals);
+	// NCB_METHOD(getElements); // 配列を返す
+	// NCB_METHOD(setElements); // 配列を渡す
+	NCB_METHOD(GetLastStatus);
+	NCB_METHOD(Invert);
+	NCB_METHOD(IsIdentity);
+	NCB_METHOD(IsInvertible);
+	NCB_METHOD(Multiply);
+	NCB_METHOD(Reset);
+	NCB_METHOD(Rotate);
+	NCB_METHOD(RotateAt);
+	NCB_METHOD(Scale);
+	NCB_METHOD(Rotate);
+	NCB_METHOD(Shear);
+//	NCB_METHOD_DETAIL(TransformPoints, Class, Status, TransformPoints, (PointF*, INT)); XXX 引数が配列
+//	NCB_METHOD_DETAIL(TransformVectors, Class, Status, TransformVectors, (PointF*, INT)); XXX 引数が配列
+	NCB_METHOD(Translate);
+};
+
+#endif
+
+// --------------------------------------------------------------------
+// GDI+のデフォルトコンストラクタ/コピーコンストラクタを持たない型の登録
+// --------------------------------------------------------------------
+
+/**
+ * GDI+オブジェクトのラッピング用テンプレートクラス
+ */
+template <class T>
+class GdipWrapper {
+	typedef T GdipClassT;
+	typedef GdipWrapper<GdipClassT> WrapperT;
+protected:
+	GdipClassT *obj;
+public:
+	// デフォルトコンストラクタ
+	GdipWrapper() : obj(NULL) {}
+
+	// 関数の帰り値としてのオブジェクト生成時用。
+	// そのまま渡されたポインタを使う
+	GdipWrapper(GdipClassT *obj) : obj(obj) {
+	}
+
+	// コピーコンストラクタ
+	// 内蔵オブジェクトは Cloneする
+	GdipWrapper(const GdipWrapper &orig) : obj(NULL) {
+		if (orig.obj) {
+			obj = orig.obj->Clone();
+		}
+	}
+	
+	// デストラクタ
+	~GdipWrapper() {
+		if (obj) {
+			delete obj;
+		}
+	}
+	
+	GdipClassT *getGdipObject() { return obj; }
+
+	void setGdipObject(GdipClassT *src) {
+		if (obj) {
+			delete obj;
+		}
+		obj = src;
+	}
+
+	struct BridgeFunctor {
+		GdipClassT* operator()(WrapperT *p) const {
+			return p->getGdipObject();
+		}
+	};
+
+	template <class CastT>
+	struct CastBridgeFunctor {
+		CastT* operator()(WrapperT *p) const {
+			return (CastT*)p->getGdipObject();
+		}
+	};
+
+};
+
+/**
+ * GDI+オブジェクトをラッピングしたクラス用のコンバータ（汎用）
+ */
+template <class T>
+struct GdipTypeConvertor {
+	typedef typename ncbTypeConvertor::Stripper<T>::Type GdipClassT;
+	typedef T *GdipClassP;
+	typedef GdipWrapper<GdipClassT> WrapperT;
+	typedef ncbInstanceAdaptor<WrapperT> AdaptorT;
+	
+	void operator ()(GdipClassP &dst, const tTJSVariant &src) {
+		WrapperT *obj;
+		if (src.Type() == tvtObject && (obj = AdaptorT::GetNativeInstance(src.AsObjectNoAddRef()))) {
+			dst = obj->getGdipObject();
+		} else {
+			dst = NULL;
+		}
+	}
+
+	void operator ()(tTJSVariant &dst, const GdipClassP &src) {
+		if (src != NULL) {
+			iTJSDispatch2 *adpobj = AdaptorT::CreateAdaptor(new WrapperT(src));
+			if (adpobj) {
+				dst = tTJSVariant(adpobj, adpobj);
+				adpobj->Release();			
+			} else {
+				dst = NULL;
+			}
+		} else {
+			dst.Clear();
 		}
 	}
 };
-NCB_SET_TOVARIANT_CONVERTOR(RectF, RectConvertor);
+
+// コンバータ登録用登録用マクロ
+
+#define NCB_GDIP_CONVERTOR(type) \
+NCB_SET_CONVERTOR(type*, GdipTypeConvertor<type>);\
+NCB_SET_CONVERTOR(const type*, GdipTypeConvertor<const type>)
+
+
+// ラッピング処理用
+#define NCB_REGISTER_GDIP_SUBCLASS(Class) NCB_GDIP_CONVERTOR(Class);NCB_REGISTER_SUBCLASS(GdipWrapper<Class>) { typedef Class GdipClass;
+#define NCB_GDIP_METHOD(name)  Method(TJS_W(# name), &GdipClass::name, Bridge<GdipWrapper<GdipClass>::BridgeFunctor>())
+#define NCB_GDIP_MCAST(ret, method, args) static_cast<ret (GdipClass::*) args>(&GdipClass::method)
+#define NCB_GDIP_METHOD2(name, ret, method, args) Method(TJS_W(# name), NCB_GDIP_MCAST(ret, method, args), Bridge<GdipWrapper<GdipClass>::BridgeFunctor>())
+#define NCB_GDIP_PROPERTY(name,get,set)  Property(TJS_W(# name), &GdipClass::get, &GdipClass::set, Bridge<GdipWrapper<GdipClass>::BridgeFunctor>())
+#define NCB_GDIP_MEMBER_PROPERTY(name, type, membername) \
+	struct AutoProp_ ## name { \
+		static void ProxySet(GdipClass *inst, type value) { inst->membername = value; } \
+		static type ProxyGet(GdipClass *inst) {      return inst->membername; } }; \
+	Property(TJS_W(#name), AutoProp_ ## name::ProxyGet, AutoProp_ ## name::ProxySet, Bridge<GdipWrapper<GdipClass>::BridgeFunctor>())
+
+// --------------------------------------------------------------------------------
+
+static void ImageOpen(GdipWrapper<Image> *obj, const tjs_char *filename)
+{
+	obj->setGdipObject(loadImage(filename));
+}
+
+NCB_REGISTER_GDIP_SUBCLASS(Image)
+	NCB_CONSTRUCTOR(());
+	NCB_METHOD_PROXY(open, ImageOpen);
+};
 
 // ------------------------------------------------------
-// クラス登録
+// 自前記述クラス登録
 // ------------------------------------------------------
 
 NCB_REGISTER_SUBCLASS(FontInfo) {
@@ -49,10 +414,35 @@ NCB_REGISTER_SUBCLASS(Appearance) {
 };
 
 #define ENUM(n) Variant(#n, (int)n)
+#define NCB_SUBCLASS_NAME(name) NCB_SUBCLASS(name, name)
+#define NCB_GDIP_SUBCLASS(Class) NCB_SUBCLASS(Class, GdipWrapper<Class>)
 
 NCB_REGISTER_CLASS(GdiPlus)
 {
 // enums
+	ENUM(Ok);
+	ENUM(GenericError);
+	ENUM(InvalidParameter);
+	ENUM(OutOfMemory);
+	ENUM(ObjectBusy);
+	ENUM(InsufficientBuffer);
+	ENUM(NotImplemented);
+	ENUM(Win32Error);
+	ENUM(WrongState);
+	ENUM(Aborted);
+	ENUM(FileNotFound);
+	ENUM(ValueOverflow);
+	ENUM(AccessDenied);
+	ENUM(UnknownImageFormat);
+	ENUM(FontFamilyNotFound);
+	ENUM(FontStyleNotFound);
+	ENUM(NotTrueTypeFont);
+	ENUM(UnsupportedGdiplusVersion);
+	ENUM(GdiplusNotInitialized);
+	ENUM(PropertyNotFound);
+	ENUM(PropertyNotSupported);
+//	ENUM(ProfileNotFound);
+
 	ENUM(FontStyleRegular);
 	ENUM(FontStyleBold);
 	ENUM(FontStyleItalic);
@@ -162,12 +552,21 @@ NCB_REGISTER_CLASS(GdiPlus)
 	ENUM(WrapModeTileFlipY);
 	ENUM(WrapModeTileFlipXY);
 	ENUM(WrapModeClamp);
+
+	ENUM(MatrixOrderPrepend);
+	ENUM(MatrixOrderAppend);
 	
 // statics
 	NCB_METHOD(addPrivateFont);
 	NCB_METHOD(getFontList);
 
 // classes
+	NCB_SUBCLASS_NAME(PointF);
+	NCB_SUBCLASS_NAME(RectF);
+//	NCB_SUBCLASS_NAME(Matrix);
+
+	NCB_GDIP_SUBCLASS(Image);
+	
 	NCB_SUBCLASS(Font,FontInfo);
 	NCB_SUBCLASS(Appearance,Appearance);
 }
