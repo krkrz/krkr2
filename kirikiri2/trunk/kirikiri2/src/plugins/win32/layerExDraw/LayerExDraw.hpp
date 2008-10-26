@@ -389,22 +389,22 @@ public:
 	RectF drawString(const FontInfo *font, const Appearance *app, REAL x, REAL y, const tjs_char *text);
 
 	/**
-	 * 画像の描画
-	 * @param x 表示位置X
-	 * @param y 表示位置Y
-	 * @param name 画像名
-	 */
-	void drawImage(REAL x, REAL y, const tjs_char *name);
-
-	// -----------------------------------------------------------------------------
-
-	/**
 	 * 文字列の描画更新領域情報の取得
 	 * @param font フォント
 	 * @param text 描画テキスト
 	 * @return 更新領域情報の辞書 left, top, width, height
 	 */
 	RectF measureString(const FontInfo *font, const tjs_char *text);
+
+	// -----------------------------------------------------------------------------
+	
+	/**
+	 * 画像の描画
+	 * @param image 画像
+	 * @param x 表示位置X
+	 * @param y 表示位置Y
+	 */
+	void drawImage(Image *image, REAL x, REAL y);
 };
 
 #endif

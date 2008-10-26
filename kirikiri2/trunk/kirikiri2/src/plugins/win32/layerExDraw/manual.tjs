@@ -3,6 +3,30 @@
  */
 class GdiPlus {
 
+	// Status 定義
+	Ok = 0,
+    GenericError = 1,
+    InvalidParameter = 2,
+    OutOfMemory = 3,
+    ObjectBusy = 4,
+    InsufficientBuffer = 5,
+    NotImplemented = 6,
+    Win32Error = 7,
+    WrongState = 8,
+    Aborted = 9,
+    FileNotFound = 10,
+    ValueOverflow = 11,
+    AccessDenied = 12,
+    UnknownImageFormat = 13,
+    FontFamilyNotFound = 14,
+    FontStyleNotFound = 15,
+    NotTrueTypeFont = 16,
+    UnsupportedGdiplusVersion = 17,
+    GdiplusNotInitialized = 18,
+    PropertyNotFound = 19,
+    PropertyNotSupported = 20,
+    ProfileNotFound = 21
+	
 	// FontStyle 定義
 	FontStyleRegular = 0;
 	FontStyleBold = 1;
@@ -122,6 +146,10 @@ class GdiPlus {
     WrapModeTileFlipY = 2;
     WrapModeTileFlipXY = 3;
     WrapModeClamp = 4;
+
+	// MatrixOrder 定義
+	MatrixOrderPrepend = 0,
+    MatrixOrderAppend = 1
 	
 	/**
 	 * プライベートフォントの追加(static)
@@ -256,6 +284,22 @@ class GdiPlus {
 		 */
 		function addPen(colorOrBrush, width, option, ox, oy);
 	};
+
+	/**
+	 * 画像情報を取り扱うクラス
+	 */
+	class Image {
+
+		// コンストラクタ XXX 現時点では引数は処理できない
+		Image();
+
+		/**
+		 * 画像を開く
+		 * @param filename 画像ファイル名
+		 */
+		funciton open(filename);
+	};
+	
 }
 
 /**
@@ -437,22 +481,21 @@ class Layer {
 	function drawString(font, app, x, y, text);
 
 	/**
-	 * 画像の描画
-	 * @param x 表示位置X
-	 * @param y 表示位置Y
-	 * @param name 画像名
-	 * @return 更新領域情報の辞書 left, top, width, height
-	 */
-	function drawImage(x, y, name);
-
-	// -------------------------------------------------------------
-	
-	/**
 	 * 文字列の描画領域情報の取得
 	 * @param font フォント
 	 * @param text 描画テキスト
 	 * @return 描画領域情報の辞書 left, top, width, height
 	 */
 	function measureString(font, text);
+
+	// -------------------------------------------------------------
+	
+	/**
+	 * 画像の描画
+	 * @param image 画像 (Image クラスのオブジェクト)
+	 * @param x 表示位置X
+	 * @param y 表示位置Y
+	 */
+	function drawImage(x, y, name);
 };
 
