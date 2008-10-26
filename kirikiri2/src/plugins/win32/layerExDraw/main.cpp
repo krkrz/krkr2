@@ -201,71 +201,6 @@ RectF getRect(const tTJSVariant &var)
 	return ret;
 }
 
-#if 0
-// ------------------------------------------------------- Matrix
-template <class T>
-struct MatrixConvertor {
-	typedef ncbInstanceAdaptor<T> AdaptorT;
-	template <typename ANYT>
-	void operator ()(ANYT &adst, const tTJSVariant &src) {
-		if (src.Type() == tvtObject) {
-			T *obj = AdaptorT::GetNativeInstance(src.AsObjectNoAddRef());
-			if (obj) {
-				dst = *obj;
-			} else {
-				ncbPropAccessor info(src);
-				if (IsArray(src)) {
-					dst = Matrix((REAL)info.getRealValue(0),
-								 (REAL)info.getRealValue(1),
-								 (REAL)info.getRealValue(2),
-								 (REAL)info.getRealValue(3),
-								 (REAL)info.getRealValue(4),
-								 (REAL)info.getRealValue(5));
-				} else {
-					dst = Matrix((REAL)info.getRealValue(L"m11"),
-								 (REAL)info.getRealValue(L"m12"),
-								 (REAL)info.getRealValue(L"m21"),
-								 (REAL)info.getRealValue(L"m22"),
-								 (REAL)info.getRealValue(L"dx"),
-								 (REAL)info.getRealValue(L"dy"));
-				}
-			}
-		} else {
-			dst = T();
-		}
-		adst = ncbTypeConvertor::ToTarget<ANYT>::Get(&dst);
-	}
-private:
-	T dst;
-};
-
-NCB_SET_CONVERTOR_DST(Matrix, MatrixConvertor);
-NCB_REGISTER_SUBCLASS_DELAY(Matrix) {
-	NCB_CONSTRUCTOR((REAL,REAL,REAL,REAL,REAL,REAL));
-	NCB_PROPERTY_RO(offsetX, OffsetX);
-	NCB_PROPERTY_RO(offsetY, OffsetY);
-	NCB_METHOD(Clone);
-	NCB_METHOD(Equals);
-	// NCB_METHOD(getElements); // 配列を返す
-	// NCB_METHOD(setElements); // 配列を渡す
-	NCB_METHOD(GetLastStatus);
-	NCB_METHOD(Invert);
-	NCB_METHOD(IsIdentity);
-	NCB_METHOD(IsInvertible);
-	NCB_METHOD(Multiply);
-	NCB_METHOD(Reset);
-	NCB_METHOD(Rotate);
-	NCB_METHOD(RotateAt);
-	NCB_METHOD(Scale);
-	NCB_METHOD(Rotate);
-	NCB_METHOD(Shear);
-//	NCB_METHOD_DETAIL(TransformPoints, Class, Status, TransformPoints, (PointF*, INT)); XXX 引数が配列
-//	NCB_METHOD_DETAIL(TransformVectors, Class, Status, TransformVectors, (PointF*, INT)); XXX 引数が配列
-	NCB_METHOD(Translate);
-};
-
-#endif
-
 // --------------------------------------------------------------------
 // GDI+のデフォルトコンストラクタ/コピーコンストラクタを持たない型の登録
 // --------------------------------------------------------------------
@@ -367,18 +302,105 @@ struct GdipTypeConvertor {
 NCB_SET_CONVERTOR(type*, GdipTypeConvertor<type>);\
 NCB_SET_CONVERTOR(const type*, GdipTypeConvertor<const type>)
 
+#define NCB_GDIP_CONVERTOR2(type, convertor) \
+NCB_SET_CONVERTOR(type*, convertor<type>);\
+NCB_SET_CONVERTOR(const type*, convertor<const type>)
 
 // ラッピング処理用
 #define NCB_REGISTER_GDIP_SUBCLASS(Class) NCB_GDIP_CONVERTOR(Class);NCB_REGISTER_SUBCLASS(GdipWrapper<Class>) { typedef Class GdipClass;
+#define NCB_REGISTER_GDIP_SUBCLASS2(Class, Convertor) NCB_GDIP_CONVERTOR2(Class, Convertor);NCB_REGISTER_SUBCLASS(GdipWrapper<Class>) { typedef Class GdipClass;
 #define NCB_GDIP_METHOD(name)  Method(TJS_W(# name), &GdipClass::name, Bridge<GdipWrapper<GdipClass>::BridgeFunctor>())
 #define NCB_GDIP_MCAST(ret, method, args) static_cast<ret (GdipClass::*) args>(&GdipClass::method)
 #define NCB_GDIP_METHOD2(name, ret, method, args) Method(TJS_W(# name), NCB_GDIP_MCAST(ret, method, args), Bridge<GdipWrapper<GdipClass>::BridgeFunctor>())
 #define NCB_GDIP_PROPERTY(name,get,set)  Property(TJS_W(# name), &GdipClass::get, &GdipClass::set, Bridge<GdipWrapper<GdipClass>::BridgeFunctor>())
+#define NCB_GDIP_PROPERTY_RO(name,get)  Property(TJS_W(# name), &GdipClass::get, (int)0, Bridge<GdipWrapper<GdipClass>::BridgeFunctor>())
 #define NCB_GDIP_MEMBER_PROPERTY(name, type, membername) \
 	struct AutoProp_ ## name { \
 		static void ProxySet(GdipClass *inst, type value) { inst->membername = value; } \
 		static type ProxyGet(GdipClass *inst) {      return inst->membername; } }; \
 	Property(TJS_W(#name), AutoProp_ ## name::ProxyGet, AutoProp_ ## name::ProxySet, Bridge<GdipWrapper<GdipClass>::BridgeFunctor>())
+
+
+// ------------------------------------------------------- Matrix
+
+template <class T>
+struct MatrixConvertor {
+	typedef typename ncbTypeConvertor::Stripper<T>::Type GdipClassT;
+	typedef T *GdipClassP;
+	typedef GdipWrapper<GdipClassT> WrapperT;
+	typedef ncbInstanceAdaptor<WrapperT> AdaptorT;
+protected:
+	GdipClassT *result; // 結果の一時保持用
+public:
+	MatrixConvertor() : result(NULL) {}
+	~MatrixConvertor() {delete result;}
+	
+	void operator ()(GdipClassP &dst, const tTJSVariant &src) {
+		WrapperT *obj;
+		if (src.Type() == tvtObject) {
+			if ((obj = AdaptorT::GetNativeInstance(src.AsObjectNoAddRef()))) {
+				dst = obj->getGdipObject();
+			} else {
+				ncbPropAccessor info(src);
+				if (IsArray(src)) {
+					result = new Matrix((REAL)info.getRealValue(0),
+										(REAL)info.getRealValue(1),
+										(REAL)info.getRealValue(2),
+										(REAL)info.getRealValue(3),
+										(REAL)info.getRealValue(4),
+										(REAL)info.getRealValue(5));
+				} else {
+					result = new Matrix((REAL)info.getRealValue(L"m11"),
+										(REAL)info.getRealValue(L"m12"),
+										(REAL)info.getRealValue(L"m21"),
+										(REAL)info.getRealValue(L"m22"),
+										(REAL)info.getRealValue(L"dx"),
+										(REAL)info.getRealValue(L"dy"));
+				}
+				dst = result;
+			}
+		} else {
+			dst = NULL;
+		}
+	}
+
+	void operator ()(tTJSVariant &dst, const GdipClassP &src) {
+		if (src != NULL) {
+			iTJSDispatch2 *adpobj = AdaptorT::CreateAdaptor(new WrapperT(src));
+			if (adpobj) {
+				dst = tTJSVariant(adpobj, adpobj);
+				adpobj->Release();			
+			} else {
+				dst = NULL;
+			}
+		} else {
+			dst.Clear();
+		}
+	}
+};
+
+NCB_REGISTER_GDIP_SUBCLASS2(Matrix, MatrixConvertor)
+	NCB_CONSTRUCTOR(());
+    //NCB_GDIP_PROPERTY_RO(offsetX, OffsetX); XXX うまく動かない？
+	//NCB_GDIP_PROPERTY_RO(offsetY, OffsetY);
+	NCB_GDIP_METHOD(Equals);
+	// NCB_GDIP_METHOD(getElements); // 配列を返す
+	NCB_GDIP_METHOD(SetElements);
+	NCB_GDIP_METHOD(GetLastStatus);
+	NCB_GDIP_METHOD(Invert);
+	NCB_GDIP_METHOD(IsIdentity);
+	NCB_GDIP_METHOD(IsInvertible);
+	NCB_GDIP_METHOD(Multiply);
+	NCB_GDIP_METHOD(Reset);
+	NCB_GDIP_METHOD(Rotate);
+	NCB_GDIP_METHOD(RotateAt);
+	NCB_GDIP_METHOD(Scale);
+	NCB_GDIP_METHOD(Rotate);
+	NCB_GDIP_METHOD(Shear);
+//	NCB_GDIP_METHOD_DETAIL(TransformPoints, Class, Status, TransformPoints, (PointF*, INT)); XXX 引数が配列
+//	NCB_GDIP_METHOD_DETAIL(TransformVectors, Class, Status, TransformVectors, (PointF*, INT)); XXX 引数が配列
+	NCB_GDIP_METHOD(Translate);
+};
 
 // --------------------------------------------------------------------------------
 
