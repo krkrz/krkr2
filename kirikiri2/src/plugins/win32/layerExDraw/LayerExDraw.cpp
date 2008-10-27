@@ -39,25 +39,47 @@ void deInitGdiPlus()
  */
 Image *loadImage(const tjs_char *name)
 {
-	// 画像読み込み
 	Image *image = NULL;
-	IStream *in = TVPCreateIStream(name, TJS_BS_READ);
-	if (in == NULL) {
-		TVPThrowExceptionMessage((ttstr(L"cannot open : ") + name).c_str());
-	} else {
-		// 画像生成
-		try {
-			image = new Image(in);
-			in->Release();
-			if (image->GetLastStatus() != Ok) {
-				delete image;
-				TVPThrowExceptionMessage((ttstr(L"cannot load : ") + name).c_str());
+	ttstr filename = TVPGetPlacedPath(name);
+	if (filename.length()) {
+		if (!wcschr(filename.c_str(), '>')) {
+			// 実ファイルが存在
+			TVPGetLocalName(filename);
+			image = Image::FromFile(filename.c_str(),false);
+		} else {
+			// 直接吉里吉里からもらったストリームを使うとなぜかwmf/emfでOutOfMemory
+			// なる場合があるようなのでいったんメモリにメモリに展開してから使う
+			IStream *in = TVPCreateIStream(filename, TJS_BS_READ);
+			if (in) {
+				STATSTG stat;
+				in->Stat(&stat, STATFLAG_NONAME);
+				// サイズあふれ無視注意
+				ULONG size = (ULONG)stat.cbSize.QuadPart;
+				HGLOBAL hBuffer = ::GlobalAlloc(GMEM_MOVEABLE, size);
+				if (hBuffer)	{
+					void* pBuffer = ::GlobalLock(hBuffer);
+					if (pBuffer) {
+						if (in->Read(pBuffer, size, &size) == S_OK) {
+							IStream* pStream = NULL;
+							if(::CreateStreamOnHGlobal(hBuffer, FALSE, &pStream) == S_OK) 	{
+								image = Image::FromStream(pStream,false);
+								pStream->Release();
+							}
+						}
+						::GlobalUnlock(hBuffer);
+					}
+					::GlobalFree(hBuffer);
+				}
+				in->Release();
 			}
-		} catch(...) {
-			delete image;
-			in->Release();
-			throw;
 		}
+	}
+	if (image && image->GetLastStatus() != Ok) {
+		delete image;
+		image = NULL;
+	}
+	if (!image) {
+		TVPThrowExceptionMessage((ttstr(L"cannot load : ") + name).c_str());
 	}
 	return image;
 }
