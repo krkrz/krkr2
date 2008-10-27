@@ -420,9 +420,29 @@ static void ImageLoad(GdipWrapper<Image> *obj, const tjs_char *filename)
 	obj->setGdipObject(loadImage(filename));
 }
 
+static tTJSVariant ImageClone(GdipWrapper<Image> *obj)
+{
+	typedef GdipWrapper<Image> WrapperT;
+	typedef ncbInstanceAdaptor<WrapperT> AdaptorT;
+	tTJSVariant ret;
+	Image *src = obj->getGdipObject();
+	if (src) {
+		Image *newimage = src->Clone();
+		iTJSDispatch2 *adpobj = AdaptorT::CreateAdaptor(new WrapperT(newimage));
+		if (adpobj) {
+			ret = tTJSVariant(adpobj, adpobj);
+			adpobj->Release();			
+		} else {
+			delete newimage;
+		}
+	}
+	return ret;
+}
+
 NCB_REGISTER_GDIP_SUBCLASS2(Image, ImageConvertor)
 NCB_CONSTRUCTOR(());
 NCB_METHOD_PROXY(load, ImageLoad);
+NCB_METHOD_PROXY(clone, ImageClone);
 //GetAllPropertyItems
 //NCB_GDIP_METHOD(GetBounds);
 //GetEncoderParameterList
