@@ -184,7 +184,8 @@ protected:
 	Graphics *graphics;
 
 	bool updateWhenDraw;
-
+	void updateRect(RectF &rect);
+	
 public:
 	void setUpdateWhenDraw(int updateWhenDraw) {
 		this->updateWhenDraw = updateWhenDraw != 0;
@@ -403,12 +404,13 @@ public:
 	// -----------------------------------------------------------------------------
 	
 	/**
-	 * 画像の描画
-	 * @param dleft コピー先左端
-	 * @param dtop  コピー先上端
+	 * 画像の描画。コピー先は元画像の Bounds を配慮した位置、サイズは Pixel 指定になります。
+	 * @param x コピー先原点X
+	 * @param y コピー先原点Y
 	 * @param image コピー元画像
+	 * @return 更新領域情報
 	 */
-	void drawImage(REAL dleft, REAL dtop, Image *src);
+	RectF drawImage(REAL x, REAL y, Image *src);
 
 	/**
 	 * 画像の矩形コピー
@@ -419,8 +421,9 @@ public:
 	 * @param stop  元矩形の上端
 	 * @param swidth 元矩形の横幅
 	 * @param sheight  元矩形の縦幅
+	 * @return 更新領域情報
 	 */
-	void drawImageRect(REAL dleft, REAL dtop, Image *src, REAL sleft, REAL stop, REAL swidth, REAL sheight);
+	RectF drawImageRect(REAL dleft, REAL dtop, Image *src, REAL sleft, REAL stop, REAL swidth, REAL sheight);
 
 	/**
 	 * 画像の拡大縮小コピー
@@ -433,8 +436,9 @@ public:
 	 * @param stop  元矩形の上端
 	 * @param swidth 元矩形の横幅
 	 * @param sheight  元矩形の縦幅
+	 * @return 更新領域情報
 	 */
-	void drawImageStretch(REAL dleft, REAL dtop, REAL dwidth, REAL dheight, Image *src, REAL sleft, REAL stop, REAL swidth, REAL sheight);
+	RectF drawImageStretch(REAL dleft, REAL dtop, REAL dwidth, REAL dheight, Image *src, REAL sleft, REAL stop, REAL swidth, REAL sheight);
 
 	/**
 	 * 画像のアフィン変換コピー
@@ -444,8 +448,9 @@ public:
 	 * @param swidth 元矩形の横幅
 	 * @param sheight  元矩形の縦幅
 	 * @param affine アフィンパラメータの種類(true:変換行列, false:座標指定), 
+	 * @return 更新領域情報
 	 */
-	void drawImageAffine(Image *src, REAL sleft, REAL stop, REAL swidth, REAL sheight, bool affine, REAL A, REAL B, REAL C, REAL D, REAL E, REAL F);
+	RectF drawImageAffine(Image *src, REAL sleft, REAL stop, REAL swidth, REAL sheight, bool affine, REAL A, REAL B, REAL C, REAL D, REAL E, REAL F);
 };
 
 #endif
