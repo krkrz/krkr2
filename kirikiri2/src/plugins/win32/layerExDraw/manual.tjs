@@ -332,15 +332,49 @@ class GdiPlus {
 	
 	/**
 	 * 画像情報を取り扱うクラス
+	 * ※ベクトル画像データの領域は座標が負の領域にある場合もあります
 	 */
 	class Image {
+
 		// コンストラクタ XXX 現時点では引数は処理できない
 		function Image();
+		
 		/**
 		 * 画像をロードする
 		 * @param filename 画像ファイル名
 		 */
 		funciton load(filename);
+
+		/**
+		 * @return このオブジェクトの複製(Image)
+		 */
+		function Clone();
+
+		/**
+		 * Bounds情報の取得
+		 * @return Bounds情報(RectF) 単位 pixel
+		 */
+		function GetBounds();
+
+		/**
+		 * @return 水平方向解像度(dpi)
+		 */
+		function GetHorizontalResolution();
+
+		/**
+		 * @return 垂直方向解像度(dpi)
+		 */
+		function GetVerticalResolution();
+
+		/**
+		 * @return 横幅 (pixel値：整数)
+		 */
+		function GetWidth();
+
+		/**
+		 * @return 縦幅 (pixel値:整数)
+		 */
+		function GetHeight();
 	};
 }
 
@@ -533,10 +567,11 @@ class Layer {
 	// -------------------------------------------------------------
 
 	/**
-	 * 画像の描画
-	 * @param dleft コピー先左端
-	 * @param dtop  コピー先上端
+	 * 画像の描画。コピー先は元画像の Bounds を配慮した位置、サイズは Pixel 指定になります。
+	 * @param x コピー先原点X
+	 * @param y コピー先原点Y
 	 * @param image コピー元画像(Image/Layer/ファイル名)
+	 * @return 更新域情報(RectF)
 	 */
 	function drawImage(dleft, dtop, src);
 
@@ -549,6 +584,7 @@ class Layer {
 	 * @param stop  元矩形の上端
 	 * @param swidth 元矩形の横幅
 	 * @param sheight  元矩形の縦幅
+	 * @return 更新域情報(RectF)
 	 */
 	function drawImageRect(dleft, dtop, src, sleft, stop, swidth, sheight);
 
@@ -563,6 +599,7 @@ class Layer {
 	 * @param stop  元矩形の上端
 	 * @param swidth 元矩形の横幅
 	 * @param sheight  元矩形の縦幅
+	 * @return 更新域情報(RectF)
 	 */
 	function drawImageStretch(dleft, dtop, dwidth, dheight, src, sleft, stop, swidth, sheight);
 
@@ -574,8 +611,8 @@ class Layer {
 	 * @param swidth 元矩形の横幅
 	 * @param sheight  元矩形の縦幅
 	 * @param affine アフィンパラメータの種類(true:変換行列, false:座標指定), 
+	 * @return 更新域情報(RectF)
 	 */
 	function drawImageAffine(src, sleft, stop, swidth, sheight, affine, A, B, C, D, E, F);
-
 };
 
