@@ -32,6 +32,7 @@ error_log(const char* format, ...)
 extern void initGdiPlus();
 extern void deInitGdiPlus();
 extern Image *loadImage(const tjs_char *name);
+extern RectF *getBounds(Image *image);
 
 // ----------------------------------------------------------------
 // ŽÀ‘ÌŒ^‚Ì“o˜^
@@ -439,10 +440,29 @@ static tTJSVariant ImageClone(GdipWrapper<Image> *obj)
 	return ret;
 }
 
+static tTJSVariant ImageBounds(GdipWrapper<Image> *obj)
+{
+	typedef ncbInstanceAdaptor<RectF> AdaptorT;
+	tTJSVariant ret;
+	Image *src = obj->getGdipObject();
+	if (src) {
+		RectF *bounds = getBounds(src);
+		iTJSDispatch2 *adpobj = AdaptorT::CreateAdaptor(bounds);
+		if (adpobj) {
+			ret = tTJSVariant(adpobj, adpobj);
+			adpobj->Release();
+		} else {
+			delete bounds;
+		}
+	}
+	return ret;
+}
+
 NCB_REGISTER_GDIP_SUBCLASS2(Image, ImageConvertor)
 NCB_CONSTRUCTOR(());
 NCB_METHOD_PROXY(load, ImageLoad);
-NCB_METHOD_PROXY(clone, ImageClone);
+NCB_METHOD_PROXY(Clone, ImageClone);
+NCB_METHOD_PROXY(GetBounds, ImageBounds);
 //GetAllPropertyItems
 //NCB_GDIP_METHOD(GetBounds);
 //GetEncoderParameterList

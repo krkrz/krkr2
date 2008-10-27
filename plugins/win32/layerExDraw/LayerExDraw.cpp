@@ -84,6 +84,51 @@ Image *loadImage(const tjs_char *name)
 	return image;
 }
 
+RectF *getBounds(Image *image)
+{
+	RectF srcRect;
+	Unit srcUnit;
+	image->GetBounds(&srcRect, &srcUnit);
+	REAL dpix = image->GetHorizontalResolution();
+	REAL dpiy = image->GetVerticalResolution();
+
+	// ピクセルに変換
+	REAL x, y, width, height;
+	switch (srcUnit) {
+	case UnitPoint:		// 3 -- Each unit is a printer's point, or 1/72 inch.
+		x = srcRect.X * dpix / 72;
+		y = srcRect.Y * dpiy / 72;
+		width  = srcRect.Width * dpix / 72;
+		height = srcRect.Height * dpix / 72;
+		break;
+	case UnitInch:       // 4 -- Each unit is 1 inch.
+		x = srcRect.X * dpix;
+		y = srcRect.Y * dpiy;
+		width  = srcRect.Width * dpix;
+		height = srcRect.Height * dpix;
+		break;
+	case UnitDocument:   // 5 -- Each unit is 1/300 inch.
+		x = srcRect.X * dpix / 300;
+		y = srcRect.Y * dpiy / 300;
+		width  = srcRect.Width * dpix / 300;
+		height = srcRect.Height * dpix / 300;
+		break;
+	case UnitMillimeter: // 6 -- Each unit is 1 millimeter.
+		x = srcRect.X * dpix / 25.4F;
+		y = srcRect.Y * dpiy / 25.4F;
+		width  = srcRect.Width * dpix / 25.4F;
+		height = srcRect.Height * dpix / 25.4F;
+		break;
+	default:
+		x = srcRect.X;
+		y = srcRect.Y;
+		width  = srcRect.Width;
+		height = srcRect.Height;
+		break;
+	}
+	return new RectF(x, y, width, height);
+}
+
 // --------------------------------------------------------
 // フォント情報
 // --------------------------------------------------------
@@ -691,6 +736,17 @@ Appearance::addPen(tTJSVariant colorOrBrush, tTJSVariant widthOrOption, REAL ox,
 // フォント描画系
 // --------------------------------------------------------
 
+void
+LayerExDraw::updateRect(RectF &rect)
+{
+	if (updateWhenDraw) {
+		// 更新処理
+		tTJSVariant  vars [4] = { rect.X, rect.Y, rect.Width, rect.Height };
+		tTJSVariant *varsp[4] = { vars, vars+1, vars+2, vars+3 };
+		_pUpdate(4, varsp);
+	}
+}
+
 /**
  * コンストラクタ
  */
@@ -841,12 +897,7 @@ LayerExDraw::drawPath(const Appearance *app, const GraphicsPath *path)
 		}
 		i++;
 	}
-	if (updateWhenDraw) {
-		// 更新処理
-		tTJSVariant  vars [4] = { rect.X, rect.Y, rect.Width, rect.Height };
-		tTJSVariant *varsp[4] = { vars, vars+1, vars+2, vars+3 };
-		_pUpdate(4, varsp);
-	}
+	updateRect(rect);
 	return rect;
 }
 
@@ -1146,23 +1197,25 @@ LayerExDraw::measureString(const FontInfo *font, const tjs_char *text)
 
 
 /**
- * 画像の描画
- * @param dleft コピー先左端
- * @param dtop  コピー先上端
+ * 画像の描画。コピー先は元画像の Bounds を配慮した位置、サイズは Pixel 指定になります。
+ * @param x コピー先原点
+ * @param y  コピー先原点
  * @param src コピー元画像
+ * @return 更新領域情報
  */
-void
-LayerExDraw::drawImage(REAL dleft, REAL dtop, Image *src) 
+RectF
+LayerExDraw::drawImage(REAL x, REAL y, Image *src) 
 {
+	RectF rect;
 	if (src) {
-		graphics->DrawImage(src, dleft, dtop, (REAL)src->GetWidth(), (REAL)src->GetHeight());
-		if (updateWhenDraw) {
-			// 更新処理
-			tTJSVariant  vars [4] = { (int)dleft, (int)dtop, (int)src->GetWidth(), (int)src->GetHeight() };
-			tTJSVariant *varsp[4] = { vars, vars+1, vars+2, vars+3 };
-			_pUpdate(4, varsp);
-		}
+		RectF *bounds = getBounds(src);
+		graphics->DrawImage(src, (rect.X = x + bounds->X), (rect.Y = y + bounds->Y), bounds->Width, bounds->Height);
+		rect.Width  = bounds->Width;
+		rect.Height = bounds->Height;
+		updateRect(rect);
+		delete bounds;
 	}
+	return rect;
 }
 
 
@@ -1175,11 +1228,12 @@ LayerExDraw::drawImage(REAL dleft, REAL dtop, Image *src)
  * @param stop  元矩形の上端
  * @param swidth 元矩形の横幅
  * @param sheight  元矩形の縦幅
+ * @return 更新領域情報
  */
-void
+RectF
 LayerExDraw::drawImageRect(REAL dleft, REAL dtop, Image *src, REAL sleft, REAL stop, REAL swidth, REAL sheight)
 {
-	drawImageStretch(dleft, dtop, swidth , sheight, src, sleft, stop, swidth, sheight);
+	return drawImageStretch(dleft, dtop, swidth , sheight, src, sleft, stop, swidth, sheight);
 }
 
 /**
@@ -1193,20 +1247,17 @@ LayerExDraw::drawImageRect(REAL dleft, REAL dtop, Image *src, REAL sleft, REAL s
  * @param stop  元矩形の上端
  * @param swidth 元矩形の横幅
  * @param sheight  元矩形の縦幅
+ * @return 更新領域情報
  */
-void
+RectF
 LayerExDraw::drawImageStretch(REAL dleft, REAL dtop, REAL dwidth, REAL dheight, Image *src, REAL sleft, REAL stop, REAL swidth, REAL sheight)
 {
+	RectF destRect(dleft, dtop, dwidth, dheight);
 	if (src) {
-		RectF destRect(dleft, dtop, dwidth, dheight);
 		graphics->DrawImage(src, destRect, sleft, stop, swidth, sheight, UnitPixel);
-		if (updateWhenDraw) {
-			// 更新処理
-			tTJSVariant  vars [4] = { (int)dleft, (int)dtop, (int)dwidth+1, (int)dheight+1 };
-			tTJSVariant *varsp[4] = { vars, vars+1, vars+2, vars+3 };
-			_pUpdate(4, varsp);
-		}
 	}
+	updateRect(destRect);
+	return destRect;
 }
 
 static int compare_REAL(const REAL *a, const REAL *b)
@@ -1221,43 +1272,47 @@ static int compare_REAL(const REAL *a, const REAL *b)
  * @param swidth 元矩形の横幅
  * @param sheight  元矩形の縦幅
  * @param affine アフィンパラメータの種類(true:変換行列, false:座標指定), 
+ * @return 更新領域情報
  */
-void
+RectF
 LayerExDraw::drawImageAffine(Image *src, REAL sleft, REAL stop, REAL swidth, REAL sheight, bool affine, REAL A, REAL B, REAL C, REAL D, REAL E, REAL F)
 {
-	if (src) {
-		RectF srcRect(sleft, stop, swidth, sheight);
-		REAL x[4], y[4]; // 元座標値
-		if (affine) {
+	RectF rect;
+	RectF srcRect(sleft, stop, swidth, sheight);
+	REAL x[4], y[4]; // 元座標値
+	if (affine) {
+		REAL x2 = sleft+swidth;
+		REAL y2 = stop +sheight;
 #define AFFINEX(x,y) A*x+C*y+E
 #define AFFINEY(x,y) B*x+D*y+F
-			x[0] = AFFINEX(0,0);
-			y[0] = AFFINEY(0,0);
-			x[1] = AFFINEX(swidth,0);
-			y[1] = AFFINEY(swidth,0);
-			x[2] = AFFINEX(0,sheight);
-			y[2] = AFFINEY(0,sheight);
-			x[3] = AFFINEX(swidth,sheight);
-			y[3] = AFFINEY(sheight,sheight);
-		} else {
-			x[0] = A;
-			y[0] = B;
-			x[1] = C;
-			y[1] = D;
-			x[2] = E;
-			y[2] = F;
-			x[3] = C-A+E;
-			y[3] = D-B+F;
-		}
-		PointF dests[3] = { PointF(x[0],y[0]), PointF(x[1],y[1]), PointF(x[2],y[2]) };
-		graphics->DrawImage(src, dests, 3, sleft, stop, swidth, sheight, UnitPixel, NULL, NULL, NULL);
-		if (updateWhenDraw) {
-			qsort(x, 4, sizeof(REAL), (int (*)(const void*, const void*))compare_REAL);
-			qsort(y, 4, sizeof(REAL), (int (*)(const void*, const void*))compare_REAL);
-			// 更新処理
-			tTJSVariant  vars [4] = { (int)x[0], (int)y[0], (int)(x[3]-x[0]), (int)(y[3]-y[0]) };
-			tTJSVariant *varsp[4] = { vars, vars+1, vars+2, vars+3 };
-			_pUpdate(4, varsp);
-		}
+		x[0] = AFFINEX(sleft,stop);
+		y[0] = AFFINEY(sleft,stop);
+		x[1] = AFFINEX(x2,stop);
+		y[1] = AFFINEY(x2,stop);
+		x[2] = AFFINEX(sleft,y2);
+		y[2] = AFFINEY(sleft,y2);
+		x[3] = AFFINEX(x2,y2);
+		y[3] = AFFINEY(x2,y2);
+	} else {
+		x[0] = A;
+		y[0] = B;
+		x[1] = C;
+		y[1] = D;
+		x[2] = E;
+		y[2] = F;
+		x[3] = C-A+E;
+		y[3] = D-B+F;
 	}
+	PointF dests[3] = { PointF(x[0],y[0]), PointF(x[1],y[1]), PointF(x[2],y[2]) };
+	if (src) {
+		graphics->DrawImage(src, dests, 3, sleft, stop, swidth, sheight, UnitPixel, NULL, NULL, NULL);
+	}
+	qsort(x, 4, sizeof(REAL), (int (*)(const void*, const void*))compare_REAL);
+	qsort(y, 4, sizeof(REAL), (int (*)(const void*, const void*))compare_REAL);
+	rect.X = x[0];
+	rect.Y = y[0];
+	rect.Width = x[3]-x[0];
+	rect.Height = y[3]-y[0];
+	updateRect(rect);
+	return rect;
 }
