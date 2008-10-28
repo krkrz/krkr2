@@ -1,3 +1,4 @@
+System.setArgument("-contfreq", "30");
 Scripts.execStorage("UpdateRegion.tjs");
 Scripts.execStorage("AffineLayer.tjs");
 
@@ -12,6 +13,7 @@ class MyWindow extends Window
 	var base;
 	var layer;
 	var alayer;
+	var startTime;
 	
 	function drawRect(x, y, size, brush) {
 		var app = new GdiPlus.Appearance();
@@ -42,15 +44,6 @@ class MyWindow extends Window
 		layer.visible = true;
 		add(layer);
 
-		// アフィンレイヤのテスト
-		alayer = new AffineLayer(this, base);
-		alayer.setPos(WIDTH/2, HEIGHT/2);
-		alayer.visible = true;
-		add(alayer);
-		alayer.loadImages("test.emf");
-		alayer.rotate = 30;
-		alayer.zoom   = 150;
-		
 		var x=10;
 		var y=10;
 		var size=150;
@@ -139,6 +132,20 @@ class MyWindow extends Window
 		app.clear();
 		app.addPen(0xffff0000, 1, 0, 0);
 		layer.drawRectangle(app, trect.left, trect.top, trect.width, trect.height);
+
+
+
+		// アフィンレイヤのテスト用
+		alayer = new AffineLayer(this, base);
+		alayer.setPos(WIDTH/2, HEIGHT/2);
+		alayer.visible = true;
+		add(alayer);
+		alayer.loadImages("test.emf");
+		alayer.afx = "center";
+		alayer.afy = "center";
+		
+		startTime = System.getTickCount();
+		System.addContinuousHandler(actionHandler);
 	}
 
 	function onKeyDown(key, shift)
@@ -150,6 +157,18 @@ class MyWindow extends Window
 			fullScreen = !fullScreen;
 		}
 	}
+
+	function onCloseQuery() {
+		System.removeContinuousHandler(actionHandler);
+		super.onCloseQuery(true);
+	}
+
+	function actionHandler(tick) {
+		var now = tick - startTime;
+		alayer.zoom = 20 + 300 - 300 * Math.cos(2 * Math.PI * now / 5000);
+		alayer.rotate = (360 * now / 2000) % 360;
+	}
+
 };
 
 var win = new MyWindow();
