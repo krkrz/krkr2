@@ -1,3 +1,6 @@
+Scripts.execStorage("UpdateRegion.tjs");
+Scripts.execStorage("AffineLayer.tjs");
+
 Plugins.link("layerExDraw.dll");
 
 var WIDTH=800;
@@ -8,7 +11,8 @@ class MyWindow extends Window
 {
 	var base;
 	var layer;
-
+	var alayer;
+	
 	function drawRect(x, y, size, brush) {
 		var app = new GdiPlus.Appearance();
 		app.addBrush(brush, 0, 0);
@@ -38,6 +42,15 @@ class MyWindow extends Window
 		layer.visible = true;
 		add(layer);
 
+		// アフィンレイヤのテスト
+		alayer = new AffineLayer(this, base);
+		alayer.setPos(WIDTH/2, HEIGHT/2);
+		alayer.visible = true;
+		add(alayer);
+		alayer.loadImages("test.emf");
+		alayer.rotate = 30;
+		alayer.zoom   = 150;
+		
 		var x=10;
 		var y=10;
 		var size=150;
