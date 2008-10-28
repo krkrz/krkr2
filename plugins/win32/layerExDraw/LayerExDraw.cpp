@@ -42,7 +42,7 @@ Image *loadImage(const tjs_char *name)
 	Image *image = NULL;
 	ttstr filename = TVPGetPlacedPath(name);
 	if (filename.length()) {
-		if (!wcschr(filename.c_str(), '>')) {
+		if (false && !wcschr(filename.c_str(), '>')) {// ‚É‚¬‚è‚Á‚Ï‚É‚È‚é‚Ì‚Å‚â‚ß
 			// Àƒtƒ@ƒCƒ‹‚ª‘¶İ
 			TVPGetLocalName(filename);
 			image = Image::FromFile(filename.c_str(),false);
