@@ -1,0 +1,118 @@
+/**
+ * 擬似コードによるマニュアル
+ */
+
+/**
+ * Window拡張
+ */
+class Window {
+	/**
+	 * ウィンドウの最大化
+	 * 最大化ボタンを押した動作と同等
+	 * サイズ固定ウィンドウでは機能しない
+	 */
+	function maximize();
+
+	/**
+	 * ウィンドウの最小化（mainWindowではタスクバー収納，それ以外は画面左下に最小化）
+	 * 最小化ボタンを押した動作と同等
+	 */
+	function minimize();
+
+	/**
+	 * ウィンドウ最大化・最小化の復帰
+	 */
+	function showRestore();
+
+	/**
+	 * クライアント・ウィンドウ領域の取得
+	 * @return %[ x, y, w, h ]
+	 */
+	function getClientRect();
+	function getWindowRect();
+
+	/**
+	 * 拡張イベントを有効にする
+	 *  ※ onResizing, onMoving, onMove イベントはこの関数を実行した時点で
+	 *     そのインスタンスに存在しない場合には発生しない
+	 */
+	function registerExEvent();
+
+	/**
+	 * 最大化を許可するかどうか確認コールバック
+	 * @return true を返すと最大化を許可しない
+	 */
+	function onMaximizeQuery();
+
+	/**
+	 * ウィンドウ最大化拡張イベント
+	 * @return true を返すとこのイベントを無視（最大化させない）
+	 */
+	function onMaximize();
+
+	/**
+	 * ウィンドウ最小化拡張イベント
+	 * フルスクリーン中に別のタスクが選ばれた場合や，mainWindow以外が最小化されたときに呼ばれる
+	 * タスクバーに収納された場合は onHide イベントが呼ばれるので注意
+	 */
+	function onMinimize();
+
+	/**
+	 * ウィンドウ表示拡張イベント
+	 * タスクバーから復帰したときなどに呼ばれる
+	 */
+	function onShow();
+
+	/**
+	 * ウィンドウ非表示拡張イベント
+	 * タスクバーに収納された時などに呼ばれる
+	 */
+	function onHide();
+
+	/**
+	 * サイズ変更中の拡張イベント
+	 * @param rect %[ x, y, w, h, type:ウィンドウのどこをつかんでサイズを変更しているか ]
+	 * @return true を返すと rect の変更を反映（サイズを強制指定）
+	 */
+	function onResizing(rect);
+
+	// ドキュメント整備中...
+	function onMoving(rect);
+	function onMove(x, y);
+	function onMoveSizeBegin();
+	function onMoveSizeEnd();
+}
+
+/**
+ * System拡張
+ */
+class System
+{
+	/**
+	 * モニタの情報一覧を取得
+	 * @param x,y,w,h 範囲枠指定。交わるモニタのみを返す。全省略で全てのモニタを返す。
+	 * @return [ %[ name, primary, monitor:%[ x, y, w, h ], work:%[ x,y,w,h ], intersect:%[ x,y,w,h ] ], ... ];
+	 *         name:      モニタの名前('\\.\DISPLAY?' 等)
+	 *         primary:   プライマリモニタかどうか
+	 *         monitor:   モニタの範囲辞書
+	 *         work:      モニタのワークエリア範囲(ウィンドウを最大化したときなどの表示範囲)
+	 *         intersect: 指定範囲と交わる領域(指定しなかった場合は monitor と同じ)
+	 */
+	function getDisplayMonitors();            //< 全てのモニタを列挙する
+	function getDisplayMonitors(x, y, w, h);  //< 指定範囲に交わるモニタのみ列挙する
+
+	/**
+	 * モニタ情報を取得
+	 * @param near     trueなら対象モニタが無かった場合に最も近いモニタの情報を返す
+	 * @param x,y      座標指定
+	 * @param x,y,w,h  範囲指定
+	 * @param window   ウィンドウ指定（Window オブジェクトを渡す）
+	 * @return %[ name, primary, monitor:%[ x, y, w, h ], work:%[ x, y, w, h ] ];
+	 *         モニタの情報。辞書内容は getDisplayMonitors と同じ (ただし intersect 情報は無い)。
+	 *         near=false 時でモニタが無い場合は void を返す。
+	 */
+	function getMonitorInfo();                 //< プライマリモニタを返す
+	function getMonitorInfo(near, x, y);       //< 指定座標の位置のモニタを返す
+	function getMonitorInfo(near, x, y, w, h); //< 指定座標の範囲にもっとも多く交わるモニタを返す
+	function getMonitorInfo(near, window);     //< 指定ウィンドウの範囲にもっとも多く交わるモニタを返す
+}
