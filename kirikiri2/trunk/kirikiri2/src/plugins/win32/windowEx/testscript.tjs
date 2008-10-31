@@ -1,0 +1,110 @@
+Plugins.link("windowEx.dll");
+
+//Debug.controller.visible = true;
+Debug.console.visible = true;
+var dm = Debug.message;
+
+class TestWindow extends Window {
+	function finalize() { super.finalize(...); }
+	function TestWindow() {
+		super.Window();
+
+		add(new Layer(this, null));
+		setInnerSize(320, 240);
+		with (primaryLayer) {
+			.setImageSize(innerWidth, innerHeight);
+			.setSizeToImageSize();
+			.fillRect(0, 0, innerWidth, innerHeight, 0xFF000000);
+			.visible = true;
+		}
+		visible = true;
+		registerExEvent();
+	}
+	function onCloseQuery()    { return super.onCloseQuery(true); }
+	function onShow()          { System.inform(@"onShow"); }
+	function onHide()          { System.inform(@"onHide"); }
+	function onMinimize()      { dm(@"onMinimize"); }
+	function onMaximize()      { dm(@"onMaximize"); }
+	function onMaximizeQuery() { dm("onMaxQuery"); return true; }
+	function onResizing(rect) {
+		dm("onResizing", clientRect, windowRect, ltwh, iwh, @"WH:${rect.w-bw},${rect.h-bh}", rect.type);
+		rect.w = fixw;
+		return true;
+	}
+	function onResize() {
+		dm("onResize  ", clientRect, windowRect, ltwh, iwh);
+	}
+	function onMoving(rect) {
+		dm("onMoving  ", clientRect, windowRect, ltwh, @"RCXY:${rect.x},${rect.y}");
+	}
+	function onMove(x, y) {
+		dm("onMove    ", clientRect, windowRect, ltwh, @"XY:${x},${y}");
+	}
+	var bw, bh, fixw;
+	function updateBSize() {
+		var rect = getWindowRect();
+		bw = rect.w - innerWidth;
+		bh = rect.h - innerHeight;
+		fixw = rect.w;
+	}
+	function onMoveSizeBegin() { dm("onMoveSizeBegin"); updateBSize(); }
+	function onMoveSizeEnd()   { dm("onMoveSizeEnd");   }
+
+	property clientRect { getter { with (getClientRect()) return @"CLI:${.x},${.y}/${.w},${.h}"; } }
+	property windowRect { getter { with (getWindowRect()) return @"WIN:${.x},${.y}/${.w},${.h}"; } }
+	property ltwh       { getter {                        return @"TJS:${left},${top}/${width},${height}"; } }
+	property iwh        { getter {                        return @"IWH:${innerWidth},${innerHeight}"; } }
+}
+
+function RectToString(rect) {
+	if (rect !== void) with (rect) return @"%[ x:${.x}, y:${.y}, w:${.w}, h:${.h} ]";
+	return "void";
+}
+function MonitorToString(mon) {
+	if (mon !== void) with (mon) return (
+		@"%[ name:'${.name}', primary:${.primary?'true':'false'}, "+
+		@"monitor:${RectToString(.monitor)}, "+
+		@"work:${RectToString(.work)}"+
+		(.intersect !== void ? @", intersect:${RectToString(.intersect)}" : "")+
+		" ]");
+	return "void";
+}
+
+function TestGetDisplayMonitors(args*) {
+	dm(@"System.getDisplayMonitors(${args.join(', ')}) == [");
+	var mons = System.getDisplayMonitors(args*);
+	for (var i = 0; i < mons.count; i++) dm(MonitorToString(mons[i]));
+	dm("];");
+}
+
+function TestGetMonitorInfo(args*) {
+	dm(@"System.getMonitorInfo(${args.join(', ')}) == " + MonitorToString(System.getMonitorInfo(args*)));
+}
+
+dm("----------------");
+dm("モニタ一覧取得テスト");
+TestGetDisplayMonitors();
+
+dm("----------------");
+dm("範囲指定つきモニタ取得テスト");
+TestGetDisplayMonitors(-100, -100, 200, 200);
+
+dm("----------------");
+dm("プライマリモニタ取得テスト");
+TestGetMonitorInfo();
+
+dm("----------------");
+dm("座標指定モニタ取得テスト");
+TestGetMonitorInfo("true",   -1, -1);
+TestGetMonitorInfo("false",  -1, -1);
+
+dm("----------------");
+dm("矩形指定モニタ取得テスト");
+TestGetMonitorInfo("true",  -100, -100, 100, 100);
+TestGetMonitorInfo("false", -100, -100, 100, 100);
+
+dm("----------------");
+
+var testWin = new TestWindow();
+var testWin2 = new TestWindow();
+
