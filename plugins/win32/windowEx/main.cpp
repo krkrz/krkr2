@@ -56,9 +56,12 @@ struct WindowEx
 	// getWindowRect
 	static tjs_error TJS_INTF_METHOD getWindowRect(tTJSVariant *r, tjs_int n, tTJSVariant **p, iTJSDispatch2 *obj) {
 		RECT rect;
-		::GetWindowRect(GetHWND(obj), &rect);
-		ncbDictionaryAccessor dict;
-		if (SetRect(dict, &rect)) *r = tTJSVariant(dict, dict);
+		HWND hwnd = GetHWND(obj);
+		r->Clear();
+		if (hwnd != NULL && ::GetWindowRect(hwnd, &rect)) {
+			ncbDictionaryAccessor dict;
+			if (SetRect(dict, &rect)) *r = tTJSVariant(dict, dict);
+		}
 		return TJS_S_OK;
 	}
 
@@ -67,12 +70,14 @@ struct WindowEx
 		RECT rect;
 		POINT zero = { 0, 0 };
 		HWND hwnd = GetHWND(obj);
-		::GetClientRect(hwnd, &rect);
-		::ClientToScreen(hwnd, &zero);
-		rect.left   += zero.x; rect.top    += zero.y;
-		rect.right  += zero.x; rect.bottom += zero.y;
-		ncbDictionaryAccessor dict;
-		if (SetRect(dict, &rect)) *r = tTJSVariant(dict, dict);
+		r->Clear();
+		if (hwnd != NULL && ::GetClientRect(hwnd, &rect)) {
+			::ClientToScreen(hwnd, &zero);
+			rect.left   += zero.x; rect.top    += zero.y;
+			rect.right  += zero.x; rect.bottom += zero.y;
+			ncbDictionaryAccessor dict;
+			if (SetRect(dict, &rect)) *r = tTJSVariant(dict, dict);
+		}
 		return TJS_S_OK;
 	}
 

@@ -26,7 +26,7 @@ class Window {
 
 	/**
 	 * クライアント・ウィンドウ領域の取得
-	 * @return %[ x, y, w, h ]
+	 * @return %[ x, y, w, h ] または void(取得失敗時)
 	 * ※ innerSunken枠分はクライアント領域に含まれるので注意
 	 */
 	function getClientRect();
