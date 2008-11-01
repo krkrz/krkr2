@@ -1,6 +1,7 @@
 #include <windows.h>
 #include "ncbind.hpp"
 
+// イベント名一覧
 #define EXEV_MINIMIZE  TJS_W("onMinimize")
 #define EXEV_MAXIMIZE  TJS_W("onMaximize")
 #define EXEV_QUERYMAX  TJS_W("onMaximizeQuery")
@@ -12,8 +13,13 @@
 #define EXEV_MVSZBEGIN TJS_W("onMoveSizeBegin")
 #define EXEV_MVSZEND   TJS_W("onMoveSizeEnd")
 
+////////////////////////////////////////////////////////////////
+
 struct WindowEx
 {
+	//--------------------------------------------------------------
+	// ユーティリティ
+
 	// ウィンドウハンドルを取得
 	static HWND GetHWND(iTJSDispatch2 *obj) {
 		tTJSVariant val;
@@ -38,11 +44,16 @@ struct WindowEx
 		PostMessage(GetHWND(objthis), WM_SYSCOMMAND, param, 0);
 		return TJS_S_OK;
 	}
-	// 最小化・最大化・復帰
+
+	//--------------------------------------------------------------
+	// クラス追加メソッド(RawCallback形式)
+
+	// minimize, maximize, showRestore
 	static tjs_error TJS_INTF_METHOD minimize(   tTJSVariant *r, tjs_int n, tTJSVariant **p, iTJSDispatch2 *obj) { return postSysCommand(obj, SC_MINIMIZE); }
 	static tjs_error TJS_INTF_METHOD maximize(   tTJSVariant *r, tjs_int n, tTJSVariant **p, iTJSDispatch2 *obj) { return postSysCommand(obj, SC_MAXIMIZE); }
 	static tjs_error TJS_INTF_METHOD showRestore(tTJSVariant *r, tjs_int n, tTJSVariant **p, iTJSDispatch2 *obj) { return postSysCommand(obj, SC_RESTORE);  }
 
+	// getWindowRect
 	static tjs_error TJS_INTF_METHOD getWindowRect(tTJSVariant *r, tjs_int n, tTJSVariant **p, iTJSDispatch2 *obj) {
 		RECT rect;
 		::GetWindowRect(GetHWND(obj), &rect);
@@ -50,6 +61,8 @@ struct WindowEx
 		if (SetRect(dict, &rect)) *r = tTJSVariant(dict, dict);
 		return TJS_S_OK;
 	}
+
+	// getClientRect
 	static tjs_error TJS_INTF_METHOD getClientRect(tTJSVariant *r, tjs_int n, tTJSVariant **p, iTJSDispatch2 *obj) {
 		RECT rect;
 		POINT zero = { 0, 0 };
@@ -63,21 +76,21 @@ struct WindowEx
 		return TJS_S_OK;
 	}
 
-	// メッセージレシーバ
-	static bool __stdcall receiver(void *userdata, tTVPWindowMessage *mes) {
-		WindowEx *inst = (WindowEx*)userdata;
-		return inst ? inst->onMessage(mes) : false;
-	}
+	//--------------------------------------------------------------
+	// 拡張イベント用
 
+	// メンバが存在するか
 	bool hasMember(tjs_char const *name) const {
 		tTJSVariant func;
 		return TJS_SUCCEEDED(self->PropGet(TJS_MEMBERMUSTEXIST, name, 0, &func, self));
 	}
 
+	// TJSメソッド呼び出し
 	tjs_error funcCall(tjs_char const *name, tTJSVariant *result, tjs_int numparams = 0, tTJSVariant **params = 0) const {
 		return self->FuncCall(0, name, 0, result, numparams, params, self);
 	}
 
+	// 引数なしコールバック
 	bool callback(tjs_char const *name) const {
 		if (!hasMember(name)) return false;
 		tTJSVariant rslt;
@@ -85,14 +98,15 @@ struct WindowEx
 		return !!rslt.AsInteger();
 	}
 
+	// 座標渡しコールバック
 	bool callback(tjs_char const *name, int x, int y) const {
-//		if (!hasMember(name)) return false;
 		tTJSVariant vx(x), vy(y);
 		tTJSVariant rslt, *params[] = { &vx, &vy };
 		funcCall(name, &rslt, 2, params);
 		return !!rslt.AsInteger();
 	}
 
+	// 矩形渡しコールバック
 	bool callback(tjs_char const *name, RECT *rect, int type = 0) const {
 		ncbDictionaryAccessor dict;
 		if (SetRect(dict, rect)) {
@@ -140,7 +154,15 @@ struct WindowEx
 		}
 		return false;
 	}
-	void regist(iTJSDispatch2 *self, bool en) {
+
+	// メッセージレシーバ
+	static bool __stdcall receiver(void *userdata, tTVPWindowMessage *mes) {
+		WindowEx *inst = (WindowEx*)userdata;
+		return inst ? inst->onMessage(mes) : false;
+	}
+
+	// Message Receiver 登録・解除
+	void regist(bool en) {
 		tTJSVariant mode(en ? wrmRegister : wrmUnregister); 
 		tTJSVariant func((tTVInteger)(&receiver));
 		tTJSVariant data((tTVInteger)(this));
@@ -148,14 +170,15 @@ struct WindowEx
 		self->FuncCall(0, TJS_W("registerMessageReceiver"), 0, &rslt, 3, params, self);
 	}
 
+	// ネイティブインスタンスの生成・破棄にあわせてレシーバを登録・解除する
 	WindowEx(iTJSDispatch2 *obj)
 		:   self(obj),
 			hasResizing(false),
 			hasMoving(false),
 			hasMove(false)
-		{ regist(self, true); }
+		{ regist(true); }
 
-	~WindowEx() { regist(self, false); }
+	~WindowEx() { regist(false); }
 
 	void checkExEvents() {
 		hasResizing = hasMember(EXEV_RESIZING);
@@ -164,16 +187,17 @@ struct WindowEx
 	}
 private:
 	iTJSDispatch2 *self;
-	bool hasResizing, hasMoving, hasMove;
+	bool hasResizing, hasMoving, hasMove; //< メソッドが存在するかフラグ
 };
 
-// メソッド登録
+// Windowにメソッドを追加
 NCB_ATTACH_FUNCTION(minimize,      Window, WindowEx::minimize);
 NCB_ATTACH_FUNCTION(maximize,      Window, WindowEx::maximize);
 NCB_ATTACH_FUNCTION(showRestore,   Window, WindowEx::showRestore);
 NCB_ATTACH_FUNCTION(getWindowRect, Window, WindowEx::getWindowRect);
 NCB_ATTACH_FUNCTION(getClientRect, Window, WindowEx::getClientRect);
 
+// 拡張イベント用ネイティブインスタンスゲッタ
 NCB_GET_INSTANCE_HOOK(WindowEx)
 {
 	/**/  NCB_GET_INSTANCE_HOOK_CLASS () {}
@@ -184,12 +208,18 @@ NCB_GET_INSTANCE_HOOK(WindowEx)
 		return obj;
 	}
 };
+// メソッド追加
 NCB_ATTACH_CLASS_WITH_HOOK(WindowEx, Window) {
 	Method(TJS_W("registerExEvent"),  &Class::checkExEvents);
 }
 
+////////////////////////////////////////////////////////////////
+
 struct System
 {
+	//--------------------------------------------------------------
+	// ユーティリティ
+
 	// RECTを辞書に保存
 	static bool SetDictRect(ncbDictionaryAccessor &dict, tjs_char const *name, LPCRECT lprect) {
 		ncbDictionaryAccessor rdic;
@@ -226,7 +256,10 @@ struct System
 		return false;
 	}
 
-	// EnumDisplayMonitorsコールバック（配列にモニタ情報辞書を追加）
+	//--------------------------------------------------------------
+	// EnumDisplayMonitorsコールバック
+
+	// 配列にモニタ情報辞書を追加
 	static BOOL CALLBACK MonitorEnumProc(HMONITOR hMonitor, HDC hdcMonitor, LPRECT lprcMonitor, LPARAM dwData) {
 		ncbArrayAccessor *array = (ncbArrayAccessor*)dwData;
 		ncbDictionaryAccessor dict;
@@ -237,7 +270,7 @@ struct System
 		return TRUE;
 	}
 
-	// EnumDisplayMonitorsコールバック（プライマリモニタハンドルを取得）
+	// プライマリモニタハンドルを取得
 	static BOOL CALLBACK PrimaryGetProc(HMONITOR hMonitor, HDC hdcMonitor, LPRECT lprcMonitor, LPARAM dwData) {
 		MONITORINFO mi;
 		ZeroMemory(&mi, sizeof(mi));
@@ -248,6 +281,9 @@ struct System
 		}
 		return TRUE;
 	}
+
+	//--------------------------------------------------------------
+	// クラス追加メソッド
 
 	// System.getDisplayMonitors
 	static tjs_error TJS_INTF_METHOD getDisplayMonitors(
