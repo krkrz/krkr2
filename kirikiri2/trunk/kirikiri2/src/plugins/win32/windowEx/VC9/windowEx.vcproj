@@ -121,7 +121,7 @@
 				EnableFunctionLevelLinking="true"
 				UsePrecompiledHeader="0"
 				WarningLevel="3"
-				DebugInformationFormat="3"
+				DebugInformationFormat="0"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -135,7 +135,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				LinkIncremental="1"
-				GenerateDebugInformation="true"
+				GenerateDebugInformation="false"
 				SubSystem="2"
 				OptimizeReferences="2"
 				EnableCOMDATFolding="2"

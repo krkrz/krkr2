@@ -1,3 +1,6 @@
+System.setArgument("-usedb",   "no");
+System.setArgument("-dbstyle", "gdi");
+
 Plugins.link("windowEx.dll");
 
 //Debug.controller.visible = true;
@@ -6,39 +9,54 @@ var dm = Debug.message;
 
 class TestWindow extends Window {
 	function finalize() { super.finalize(...); }
-	function TestWindow() {
+	function TestWindow(title) {
 		super.Window();
 
+		caption = title;
 		add(new Layer(this, null));
 		setInnerSize(320, 240);
-		with (primaryLayer) {
-			.setImageSize(innerWidth, innerHeight);
-			.setSizeToImageSize();
-			.fillRect(0, 0, innerWidth, innerHeight, 0xFF000000);
-			.visible = true;
-		}
+		primaryLayer.visible = true;
 		visible = true;
 		registerExEvent();
 	}
 	function onCloseQuery()    { return super.onCloseQuery(true); }
-	function onShow()          { System.inform(@"onShow"); }
-	function onHide()          { System.inform(@"onHide"); }
-	function onMinimize()      { dm(@"onMinimize"); }
-	function onMaximize()      { dm(@"onMaximize"); }
-	function onMaximizeQuery() { dm("onMaxQuery"); return true; }
+	function onShow()          { System.inform(@"${caption}:onShow"); }
+	function onHide()          { System.inform(@"${caption}:onHide"); }
+	function onMinimize()      { System.inform(@"${caption}:onMinimize"); }
+	function onMaximize()      { System.inform(@"${caption}:onMaximize"); }
+	var enableMaximize = true;
+	function onMaximizeQuery() { dm(@"${caption}:onMaxQuery"); return !enableMaximize; }
 	function onResizing(rect) {
-		dm("onResizing", clientRect, windowRect, ltwh, iwh, @"WH:${rect.w-bw},${rect.h-bh}", rect.type);
-		rect.w = fixw;
+		dm(@"${caption}:onResizing", clientRect, windowRect, ltwh, iwh, @"WH:${rect.w-bw},${rect.h-bh}", rect.type);
+		return forceResizeRect(rect, fixw, void);
+	}
+	function forceResizeRect(rect, w, h) {
+		with (rect) {
+			w = .w if (w === void);
+			h = .h if (h === void);
+			var x = (.type   % 3 == 1) ? (.x+.w) - w : .x;
+			var y = (.type\3 % 3 == 1) ? (.y+.h) - h : .y;
+			if (.x == x && .y == y && .w == w && .h == h) return false;
+			.x = x;
+			.y = y;
+			.w = w;
+			.h = h;
+		}
 		return true;
 	}
 	function onResize() {
-		dm("onResize  ", clientRect, windowRect, ltwh, iwh);
+		dm(@"${caption}:onResize  ", clientRect, windowRect, ltwh, iwh);
+		with (primaryLayer) {
+			.setImageSize(innerWidth, innerHeight);
+			.setSizeToImageSize();
+			.fillRect(0, 0, innerWidth, innerHeight, 0xFF000000);
+		}
 	}
 	function onMoving(rect) {
-		dm("onMoving  ", clientRect, windowRect, ltwh, @"RCXY:${rect.x},${rect.y}");
+		dm(@"${caption}:onMoving  ", clientRect, windowRect, ltwh, @"RCXY:${rect.x},${rect.y}");
 	}
 	function onMove(x, y) {
-		dm("onMove    ", clientRect, windowRect, ltwh, @"XY:${x},${y}");
+		dm(@"${caption}:onMove    ", clientRect, windowRect, ltwh, @"XY:${x},${y}");
 	}
 	var bw, bh, fixw;
 	function updateBSize() {
@@ -47,8 +65,8 @@ class TestWindow extends Window {
 		bh = rect.h - innerHeight;
 		fixw = rect.w;
 	}
-	function onMoveSizeBegin() { dm("onMoveSizeBegin"); updateBSize(); }
-	function onMoveSizeEnd()   { dm("onMoveSizeEnd");   }
+	function onMoveSizeBegin() { dm(@"${caption}:onMoveSizeBegin"); updateBSize(); }
+	function onMoveSizeEnd()   { dm(@"${caption}:onMoveSizeEnd");   }
 
 	property clientRect { getter { with (getClientRect()) return @"CLI:${.x},${.y}/${.w},${.h}"; } }
 	property windowRect { getter { with (getWindowRect()) return @"WIN:${.x},${.y}/${.w},${.h}"; } }
@@ -105,6 +123,6 @@ TestGetMonitorInfo("false", -100, -100, 100, 100);
 
 dm("----------------");
 
-var testWin = new TestWindow();
-var testWin2 = new TestWindow();
+var testWin = new TestWindow("MainWindow");
+testWin.add(new TestWindow("SubWindow"));
 
