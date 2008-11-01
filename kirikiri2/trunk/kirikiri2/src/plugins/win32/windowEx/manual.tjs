@@ -27,60 +27,121 @@ class Window {
 	/**
 	 * クライアント・ウィンドウ領域の取得
 	 * @return %[ x, y, w, h ]
+	 * ※ innerSunken枠分はクライアント領域に含まれるので注意
 	 */
 	function getClientRect();
 	function getWindowRect();
 
 	/**
 	 * 拡張イベントを有効にする
-	 *  ※ onResizing, onMoving, onMove イベントはこの関数を実行した時点で
-	 *     そのインスタンスに存在しない場合には発生しない
+	 * 拡張イベントとして以下が発生：
+	 *  onMaximizeQuery  最大化許可確認
+	 *  onMaximize       最大化
+	 *  onMinimize       最小化（タスクバー収納時は除く）
+	 *  onShow           ウィンドウ表示（タスクバーから復帰時）
+	 *  onHide           ウィンドウ非表示（タスクバー収納時）
+	 *  onMoveSizeBegin  リサイズ・移動開始
+	 *  onMoveSizeEnd    リサイズ・移動終了
+	 *  onMoving   ※    移動中
+	 *  onMove     ※    移動
+	 *  onResizing ※    リサイズ中
+	 *   ※: この関数を実行した時点でインスタンスに存在しない場合には発生しない
 	 */
 	function registerExEvent();
 
 	/**
-	 * 最大化を許可するかどうか確認コールバック
+	 * 拡張イベント：最大化を許可するかどうか確認
 	 * @return true を返すと最大化を許可しない
 	 */
 	function onMaximizeQuery();
 
 	/**
-	 * ウィンドウ最大化拡張イベント
-	 * @return true を返すとこのイベントを無視（最大化させない）
+	 * 拡張イベント：ウィンドウ最大化
+	 * 呼ばれた時点でウィンドウサイズは既に最大化されている
 	 */
 	function onMaximize();
 
 	/**
-	 * ウィンドウ最小化拡張イベント
-	 * フルスクリーン中に別のタスクが選ばれた場合や，mainWindow以外が最小化されたときに呼ばれる
+	 * 拡張イベント：ウィンドウ最小化
+	 * フルスクリーン中にAlt+Tabなどで別のアプリを選んだ場合や，mainWindow以外が最小化されたときに呼ばれる
 	 * タスクバーに収納された場合は onHide イベントが呼ばれるので注意
 	 */
 	function onMinimize();
 
 	/**
-	 * ウィンドウ表示拡張イベント
+	 * 拡張イベント：ウィンドウ表示
 	 * タスクバーから復帰したときなどに呼ばれる
 	 */
 	function onShow();
 
 	/**
-	 * ウィンドウ非表示拡張イベント
+	 * 拡張イベント：ウィンドウ非表示
 	 * タスクバーに収納された時などに呼ばれる
 	 */
 	function onHide();
 
 	/**
-	 * サイズ変更中の拡張イベント
-	 * @param rect %[ x, y, w, h, type:ウィンドウのどこをつかんでサイズを変更しているか ]
-	 * @return true を返すと rect の変更を反映（サイズを強制指定）
+	 * 拡張イベント：リサイズ・移動開始通知/終了
+	 * フレームやタイトルバーをドラッグ開始した時やAlt+SpaceでSやMを選んだ時（開始通知），
+	 * および移動やリサイズが終了した時（終了通知）にそれぞれ呼ばれる
+	 * onMovingやonResizing中に元のウィンドウ位置やサイズを参照したい時はここで保存しておくとよい
+	 * リサイズか移動かは WM_ENTERSIZEMOVE/WM_EXITSIZEMOVE の都合で判定不可
+	 */
+	function onMoveSizeBegin(); //< 開始通知
+	function onMoveSizeEnd();   //< 終了通知
+
+	/**
+	 * 拡張イベント：ウィンドウ移動中
+	 * @param rect %[ x, y, w, h ] ウィンドウ座標
+	 * 
+	 * ※Windowsでウィンドウ内容を表示したまま移動する設定（移動枠表示なし）の場合，すぐにonMoveが呼ばれる
+	 */
+	function onMoving(rect);
+
+	/**
+	 * 拡張イベント：ウィンドウ移動（完了）
+	 * @param x,y クライアント領域左上のスクリーン座標
+	 *            ※ innerSunken枠分はクライアント領域に含まれるので注意
+	 */
+	function onMove(x, y);
+
+	/**
+	 * 拡張イベント：サイズ変更中
+	 * @param rect %[ x, y, w, h, type ] 変更中サイズ（ウィンドウ座標）
+	 * @param rect.type ウィンドウのどこをつかんでサイズを変更しているか 1～8
+	 *                  +1:左側, +2:右側, +3:上側, +6:下側  の組み合わせ（3進数的表現）
+	 *                         4 3 5
+	 *                  配置： 1   3
+	 *                         7 6 8
+	 * @return true を返すと rect の変更を反映（位置・サイズを強制指定）
+	 *         この場合，つかんだ位置(rect.type)に応じてうまく書き換え内容を調整しないと
+	 *         サイズ変更中にウィンドウが動いてしまうことがあるので注意（⇒forceResizeRect()参照）
+	 * 
+	 * ※Windowsでウィンドウ内容を表示したままリサイズする設定（サイズ枠表示なし）の場合，すぐにonResizeが呼ばれる
 	 */
 	function onResizing(rect);
 
-	// ドキュメント整備中...
-	function onMoving(rect);
-	function onMove(x, y);
-	function onMoveSizeBegin();
-	function onMoveSizeEnd();
+	/* 
+	 * onResizingでサイズを固定させるサンプル（※これはプラグインで拡張される関数ではありません！）
+	 * @param rect onResizingに渡された引数
+	 * @param w, h 固定したいサイズ(voidなら変更しない)
+	 * @return 変更されたらtrue
+	  /
+	function forceResizeRect(rect, w, h) {
+		with (rect) {
+			w = .w if (w === void);
+			h = .h if (h === void);
+			var x = (.type   % 3 == 1) ? (.x+.w) - w : .x;
+			var y = (.type\3 % 3 == 1) ? (.y+.h) - h : .y;
+			if (.x == x && .y == y && .w == w && .h == h) return false;
+			.x = x;
+			.y = y;
+			.w = w;
+			.h = h;
+		}
+		return true;
+	}
+	 */
 }
 
 /**
