@@ -162,7 +162,7 @@ struct WindowEx
 
 	// メッセージレシーバ
 	static bool __stdcall receiver(void *userdata, tTVPWindowMessage *mes) {
-		WindowEx *inst = (WindowEx*)userdata;
+		WindowEx *inst = ncbInstanceAdaptor<WindowEx>::GetNativeInstance((iTJSDispatch2*)userdata);
 		return inst ? inst->onMessage(mes) : false;
 	}
 
@@ -170,7 +170,7 @@ struct WindowEx
 	void regist(bool en) {
 		tTJSVariant mode(en ? wrmRegister : wrmUnregister); 
 		tTJSVariant func((tTVInteger)(&receiver));
-		tTJSVariant data((tTVInteger)(this));
+		tTJSVariant data((tTVInteger)(self));
 		tTJSVariant rslt, *params[] = { &mode, &func, &data };
 		self->FuncCall(0, TJS_W("registerMessageReceiver"), 0, &rslt, 3, params, self);
 	}
