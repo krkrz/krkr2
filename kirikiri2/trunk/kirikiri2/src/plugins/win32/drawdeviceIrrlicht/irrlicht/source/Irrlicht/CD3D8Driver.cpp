@@ -469,7 +469,7 @@ bool CD3D8Driver::reset()
 
 
 //! applications must call this method after performing any rendering. returns false if failed.
-bool CD3D8Driver::endScene( s32 windowId, core::rect<s32>* sourceRect )
+bool CD3D8Driver::endScene( s32 windowId, core::rect<s32>* sourceRect, core::rect<s32>* destRect=0 )
 {
 	CNullDriver::endScene();
 
@@ -491,7 +491,17 @@ bool CD3D8Driver::endScene( s32 windowId, core::rect<s32>* sourceRect )
 		sourceRectData.bottom = sourceRect->LowerRightCorner.Y;
 	}
 
-	hr = pID3DDevice->Present(srcRct, NULL, (HWND)windowId, NULL);
+	RECT* dstRct = 0;
+	RECT destRectData;
+	if ( destRect ) {
+		dstRct = &destRectData;
+		destRectData.left = destRect->UpperLeftCorner.X;
+		destRectData.top = destRect->UpperLeftCorner.Y;
+		destRectData.right = destRect->LowerRightCorner.X;
+		destRectData.bottom = destRect->LowerRightCorner.Y;
+	}
+	
+	hr = pID3DDevice->Present(srcRct, dstRct, (HWND)windowId, NULL);
 
 	if (hr == D3DERR_DEVICELOST)
 	{

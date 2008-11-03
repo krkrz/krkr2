@@ -316,7 +316,7 @@ void CIrrDeviceSDL::setWindowCaption(const wchar_t* text)
 
 
 //! presents a surface in the client area
-void CIrrDeviceSDL::present(video::IImage* surface, s32 windowId, core::rect<s32>* src)
+void CIrrDeviceSDL::present(video::IImage* surface, s32 windowId, core::rect<s32>* src, core::rect<s32>* dest)
 {
 	SDL_Rect srcClip;
 	SDL_Surface *sdlSurface = SDL_CreateRGBSurfaceFrom(

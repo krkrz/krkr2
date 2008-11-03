@@ -106,7 +106,7 @@ namespace video
 		virtual bool beginScene(bool backBuffer, bool zBuffer, SColor color);
 
 		//! presents the rendered scene on the screen, returns false if failed
-		virtual bool endScene( s32 windowId, core::rect<s32>* sourceRect=0 );
+		virtual bool endScene( s32 windowId, core::rect<s32>* sourceRect=0, core::rect<s32>* destRect=0 );
 
 		//! sets transformation
 		virtual void setTransform(E_TRANSFORMATION_STATE state, const core::matrix4& mat);
