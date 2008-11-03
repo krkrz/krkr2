@@ -19,7 +19,7 @@ public:
 	// デストラクタ
 	virtual ~IrrlichtDrawDevice();
 
-private:
+protected:
 	// デバイス解放処理
 	virtual void detach();
 
@@ -30,6 +30,12 @@ private:
 
 	// Irrlicht にイベントを送る
 	bool postEvent(irr::SEvent &ev);
+
+	/**
+	 * クラス固有更新処理
+	 * シーンマネージャの処理後、GUIの処理前に呼ばれる
+	 */
+	void update(irr::video::IVideoDriver *driver, tjs_uint64 tick);
 	
 public:
 	//---- LayerManager の管理関連
@@ -39,7 +45,7 @@ public:
 	//---- 描画位置・サイズ関連
 	virtual void TJS_INTF_METHOD SetTargetWindow(HWND wnd, bool is_main);
 
-//---- 再描画関連
+	//---- 再描画関連
 	virtual void TJS_INTF_METHOD Show();
 	
 	//---- ユーザーインターフェース関連
@@ -58,13 +64,6 @@ public:
 		tjs_int x, tjs_int y, const void * bits, const BITMAPINFO * bitmapinfo,
 		const tTVPRect &cliprect, tTVPLayerType type, tjs_int opacity);
 	virtual void TJS_INTF_METHOD EndBitmapCompletion(iTVPLayerManager * manager);
-
-protected:
-	/**
-	 * クラス固有更新処理
-	 * シーンマネージャの処理後、GUIの処理前に呼ばれる
-	 */
-	void update(irr::video::IVideoDriver *driver, tjs_uint64 tick);
 
 	// -----------------------------------------------------------------------
 	// 共通メソッド呼び出し用
