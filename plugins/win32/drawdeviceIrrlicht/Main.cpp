@@ -1123,13 +1123,17 @@ NCB_CONSTRUCTOR(());
 	NCB_PROPERTY_RO(guiEnvironment, getGUIEnvironment)
 
 NCB_REGISTER_SUBCLASS(IrrlichtDrawDevice) {
-	NCB_CONSTRUCTOR((int));
+	NCB_CONSTRUCTOR((int,int));
 	BASE_METHOD;
-	NCB_PROPERTY_RO(interface, GetDevice);
+	NCB_PROPERTY_RO(interface, getDevice);
+	NCB_PROPERTY(width, getWidth, setWidth);
+	NCB_PROPERTY(height, getHeight, setHeight);
+	NCB_METHOD(setSize);
+	NCB_PROPERTY(zoomMode, getZoomMode, setZoomMode);
 };
 
 NCB_REGISTER_SUBCLASS(IrrlichtWindow) {
-	NCB_CONSTRUCTOR((int, iTJSDispatch2 *, int, int, int, int));
+	NCB_CONSTRUCTOR((iTJSDispatch2 *, int, int, int, int));
 	BASE_METHOD;
 	NCB_PROPERTY(left, getLeft, setLeft);
 	NCB_PROPERTY(top, getTop, setTop);
@@ -1151,11 +1155,6 @@ struct Irrlicht {
 #define NCB_IRR_SUBCLASS(Class) NCB_SUBCLASS(Class, IrrWrapper<Class>)
 
 NCB_REGISTER_CLASS(Irrlicht) {
-	//enums
-	ENUM(EDT_SOFTWARE);
-	ENUM(EDT_BURNINGSVIDEO);
-	ENUM(EDT_DIRECT3D9);
-	ENUM(EDT_OPENGL);
 
 	//static
 

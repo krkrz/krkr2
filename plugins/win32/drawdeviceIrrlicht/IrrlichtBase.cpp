@@ -14,7 +14,7 @@ using namespace gui;
 /**
  * コンストラクタ
  */
-IrrlichtBase::IrrlichtBase(video::E_DRIVER_TYPE driverType) : driverType(driverType), device(NULL)
+IrrlichtBase::IrrlichtBase() : device(NULL)
 {
 }
 
@@ -42,6 +42,25 @@ IrrlichtBase::showDriverInfo()
 }
 
 /**
+ * Irrlicht 呼び出し処理開始
+ */
+void
+IrrlichtBase::start()
+{
+	stop();
+	TVPAddContinuousEventHook(this);
+}
+
+/**
+ * Irrlicht 呼び出し処理停止
+ */
+void
+IrrlichtBase::stop()
+{
+	TVPRemoveContinuousEventHook(this);
+}
+
+/**
  * ウインドウの再設定
  * @param hwnd ハンドル
  */
@@ -51,7 +70,7 @@ IrrlichtBase::attach(HWND hwnd)
 	// デバイス生成
 	SIrrlichtCreationParameters params;
 	params.WindowId     = reinterpret_cast<void*>(hwnd);
-	params.DriverType    = driverType;
+	params.DriverType    = EDT_DIRECT3D9;
 	params.Bits          = 32;
 	params.Stencilbuffer = true;
 	params.Vsync = true;
@@ -65,6 +84,7 @@ IrrlichtBase::attach(HWND hwnd)
 	}
 	
 	showDriverInfo();
+	start();
 }
 
 /**
@@ -73,6 +93,7 @@ IrrlichtBase::attach(HWND hwnd)
 void
 IrrlichtBase::detach()
 {
+	stop();
 	if (device) {
 		device->drop();
 		device = NULL;
@@ -80,7 +101,7 @@ IrrlichtBase::detach()
 }
 
 void
-IrrlichtBase::onUpdate(tjs_uint64 tick)
+IrrlichtBase::show(irr::core::rect<s32> *destRect)
 {
 	if (device) {
 		// 時間を進める XXX tick を外部から与えられないか？
@@ -97,7 +118,7 @@ IrrlichtBase::onUpdate(tjs_uint64 tick)
 			}
 			
 			// 固有処理
-			update(driver, tick);
+			update(driver);
 
 			// GUIの描画
 			IGUIEnvironment *gui = device->getGUIEnvironment();
@@ -106,7 +127,7 @@ IrrlichtBase::onUpdate(tjs_uint64 tick)
 			}
 			
 			// 描画完了
-			driver->endScene();
+			driver->endScene(0, NULL, destRect);
 		}
 	}
 };
