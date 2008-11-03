@@ -96,6 +96,25 @@ IrrlichtDrawDevice::postEvent(SEvent &ev)
 }
 
 /**
+ * 固有更新処理
+ */
+void
+IrrlichtDrawDevice::update(irr::video::IVideoDriver *driver, tjs_uint64 tick)
+{
+	// 個別レイヤマネージャの描画
+	for (std::vector<iTVPLayerManager *>::iterator i = Managers.begin(); i != Managers.end(); i++) {
+		LayerManagerInfo *info = (LayerManagerInfo*)(*i)->GetDrawDeviceData();
+		if (info && info->texture) {
+			// XXX レイヤを3D空間配置？
+			driver->draw2DImage(info->texture, core::position2d<s32>(0,0),
+								core::rect<s32>(0,0,info->layerWidth,info->layerHeight), 0, 
+								video::SColor(255,255,255,255), true);
+		}
+	}
+}
+
+
+/**
  * レイヤマネージャの登録
  * @param manager レイヤマネージャ
  */
@@ -132,20 +151,25 @@ IrrlichtDrawDevice::SetTargetWindow(HWND wnd, bool is_main)
 	detach();
 	if (wnd != NULL) {
 		attach(wnd);
-		// マネージャに対するテクスチャの割り当て
 		if (device) {
+			// dimension2d<s32> screenSize = driver->getScreenSize();
+			// 実画面サイズ
+
+			// viewport 指定 XXX
+			
+
+			// マネージャに対するテクスチャの割り当て
 			for (std::vector<iTVPLayerManager *>::iterator i = Managers.begin(); i != Managers.end(); i++) {
 				allocInfo(*i);
 			}
 		}
-		// 駆動開始
-		start();
 	}
 }
 
 void
 IrrlichtDrawDevice::Show()
 {
+	onUpdate(TVPGetTickCount());
 }
 
 // -------------------------------------------------------------------------------------
@@ -156,27 +180,30 @@ void TJS_INTF_METHOD
 IrrlichtDrawDevice::OnMouseDown(tjs_int x, tjs_int y, tTVPMouseButton mb, tjs_uint32 flags)
 {
 	if (device) {
-		SEvent ev;
-		ev.EventType = EET_MOUSE_INPUT_EVENT;
-		ev.MouseInput.X = x;
-		ev.MouseInput.Y = y;
-		ev.MouseInput.Wheel = 0;
-		switch ((mb & 0xff)) {
-		case mbLeft:
-			ev.MouseInput.Event = EMIE_LMOUSE_PRESSED_DOWN;
-			break;
-		case mbMiddle:
-			ev.MouseInput.Event = EMIE_MMOUSE_PRESSED_DOWN;
-			break;
-		case mbRight:
-			ev.MouseInput.Event = EMIE_RMOUSE_PRESSED_DOWN;
-			break;
-		}
-		if (postEvent(ev)) {
-			return;
+		tjs_int dx = x;
+		tjs_int dy = y;
+		if (TransformToPrimaryLayerManager(dx, dy)) {
+			SEvent ev;
+			ev.EventType = EET_MOUSE_INPUT_EVENT;
+			ev.MouseInput.X = dx;
+			ev.MouseInput.Y = dy;
+			ev.MouseInput.Wheel = 0;
+			switch ((mb & 0xff)) {
+			case mbLeft:
+				ev.MouseInput.Event = EMIE_LMOUSE_PRESSED_DOWN;
+				break;
+			case mbMiddle:
+				ev.MouseInput.Event = EMIE_MMOUSE_PRESSED_DOWN;
+				break;
+			case mbRight:
+				ev.MouseInput.Event = EMIE_RMOUSE_PRESSED_DOWN;
+				break;
+			}
+			if (postEvent(ev)) {
+				return;
+			}
 		}
 	}
-	// XXX 画面サイズに応じた補正が必要
 	tTVPDrawDevice::OnMouseDown(x, y, mb, flags);
 }
 
@@ -184,27 +211,30 @@ void TJS_INTF_METHOD
 IrrlichtDrawDevice::OnMouseUp(tjs_int x, tjs_int y, tTVPMouseButton mb, tjs_uint32 flags)
 {
 	if (device) {
-		SEvent ev;
-		ev.EventType = EET_MOUSE_INPUT_EVENT;
-		ev.MouseInput.X = x;
-		ev.MouseInput.Y = y;
-		ev.MouseInput.Wheel = 0;
-		switch ((mb & 0xff)) {
-		case mbLeft:
-			ev.MouseInput.Event = EMIE_LMOUSE_LEFT_UP;
+		tjs_int dx = x;
+		tjs_int dy = y;
+		if (TransformToPrimaryLayerManager(dx, dy)) {
+			SEvent ev;
+			ev.EventType = EET_MOUSE_INPUT_EVENT;
+			ev.MouseInput.X = dx;
+			ev.MouseInput.Y = dy;
+			ev.MouseInput.Wheel = 0;
+			switch ((mb & 0xff)) {
+			case mbLeft:
+				ev.MouseInput.Event = EMIE_LMOUSE_LEFT_UP;
 			break;
-		case mbMiddle:
-			ev.MouseInput.Event = EMIE_MMOUSE_LEFT_UP;
-			break;
-		case mbRight:
-			ev.MouseInput.Event = EMIE_RMOUSE_LEFT_UP;
-			break;
-		}
-		if (postEvent(ev)) {
-			return;
+			case mbMiddle:
+				ev.MouseInput.Event = EMIE_MMOUSE_LEFT_UP;
+				break;
+			case mbRight:
+				ev.MouseInput.Event = EMIE_RMOUSE_LEFT_UP;
+				break;
+			}
+			if (postEvent(ev)) {
+				return;
+			}
 		}
 	}
-	// XXX 画面サイズに応じた補正が必要
 	tTVPDrawDevice::OnMouseUp(x, y, mb, flags);
 }
 
@@ -212,17 +242,20 @@ void TJS_INTF_METHOD
 IrrlichtDrawDevice::OnMouseMove(tjs_int x, tjs_int y, tjs_uint32 flags)
 {
 	if (device) {
-		SEvent ev;
-		ev.EventType = EET_MOUSE_INPUT_EVENT;
-		ev.MouseInput.X = x;
-		ev.MouseInput.Y = y;
-		ev.MouseInput.Wheel = 0;
-		ev.MouseInput.Event = EMIE_MOUSE_MOVED;
-		if (postEvent(ev)) {
-			return;
+		tjs_int dx = x;
+		tjs_int dy = y;
+		if (TransformToPrimaryLayerManager(dx, dy)) {
+			SEvent ev;
+			ev.EventType = EET_MOUSE_INPUT_EVENT;
+			ev.MouseInput.X = dx;
+			ev.MouseInput.Y = dy;
+			ev.MouseInput.Wheel = 0;
+			ev.MouseInput.Event = EMIE_MOUSE_MOVED;
+			if (postEvent(ev)) {
+				return;
+			}
 		}
 	}
-	// XXX 画面サイズに応じた補正が必要
 	tTVPDrawDevice::OnMouseMove(x, y, flags);
 }
 
@@ -292,24 +325,3 @@ IrrlichtDrawDevice::EndBitmapCompletion(iTVPLayerManager * manager)
 	}
 }
 
-// -------------------------------------------------------------------------------------
-// 画面更新処理
-// -------------------------------------------------------------------------------------
-
-void
-IrrlichtDrawDevice::update(irr::video::IVideoDriver *driver, tjs_uint64 tick)
-{
-	dimension2d<s32> screenSize = driver->getScreenSize();
-
-	// 個別レイヤマネージャの描画
-	for (std::vector<iTVPLayerManager *>::iterator i = Managers.begin(); i != Managers.end(); i++) {
-		LayerManagerInfo *info = (LayerManagerInfo*)(*i)->GetDrawDeviceData();
-		if (info && info->texture) {
-			// XXX レイヤを3D空間配置？
-			driver->draw2DImage(info->texture, core::position2d<s32>(0,0),
-								//core::rect<s32>(0,0,screenSize.Width,screenSize.Height), 0, 
-								core::rect<s32>(0,0,info->layerWidth,info->layerHeight), 0, 
-								video::SColor(255,255,255,255), true);
-		}
-	}
-}

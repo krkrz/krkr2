@@ -107,6 +107,7 @@ IrrlichtWindow::createWindow(HWND krkr)
 		_setPos();
 		UpdateWindow(hwnd);
 		attach(hwnd);
+		start();
 	}
 }
 
@@ -118,6 +119,7 @@ IrrlichtWindow::destroyWindow()
 {
 	if (hwnd) {
 		detach();
+		stop();
 		DestroyWindow(hwnd);
 		hwnd = 0;
 	}
@@ -172,6 +174,40 @@ IrrlichtWindow::~IrrlichtWindow()
 		window->Release();
 		window = NULL;
 	}
+}
+
+// -----------------------------------------------------------------------
+// Continuous
+// -----------------------------------------------------------------------
+
+/**
+ * Irrlicht 呼び出し処理開始
+ */
+void
+IrrlichtWindow::start()
+{
+	stop();
+	TVPAddContinuousEventHook(this);
+}
+
+/**
+ * Irrlicht 呼び出し処理停止
+ */
+void
+IrrlichtWindow::stop()
+{
+	TVPRemoveContinuousEventHook(this);
+}
+
+/**
+ * Continuous コールバック
+ * 吉里吉里が暇なときに常に呼ばれる
+ * これが事実上のメインループになる
+ */
+void TJS_INTF_METHOD
+IrrlichtWindow::OnContinuousCallback(tjs_uint64 tick)
+{
+	onUpdate(tick);
 }
 
 // -----------------------------------------------------------------------
@@ -273,3 +309,4 @@ IrrlichtWindow::setSize(int w, int h)
 	height = h;
 	_setPos();
 }
+
