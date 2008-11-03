@@ -606,7 +606,7 @@ void CIrrDeviceWin32::setWindowCaption(const wchar_t* text)
 
 
 //! presents a surface in the client area
-void CIrrDeviceWin32::present(video::IImage* image, s32 windowId, core::rect<s32>* src )
+void CIrrDeviceWin32::present(video::IImage* image, s32 windowId, core::rect<s32>* src, core::rect<s32>* dest )
 {
 	HWND hwnd = HWnd;
 	if ( windowId )
@@ -617,7 +617,14 @@ void CIrrDeviceWin32::present(video::IImage* image, s32 windowId, core::rect<s32
 	if ( dc )
 	{
 		RECT rect;
-		GetClientRect(hwnd, &rect);
+		if (dest) {
+			rect.left   = dest->UpperLeftCorner.X;
+			rect.top    = dest->UpperLeftCorner.Y;
+			rect.right  = dest->LowerRightCorner.X;
+			rect.bottom = dest->LowerRightCorner.Y;
+		} else {
+			GetClientRect(hwnd, &rect);
+		}
 		const void* memory = (const void *)image->lock();
 
 		BITMAPV4HEADER bi;
@@ -635,14 +642,14 @@ void CIrrDeviceWin32::present(video::IImage* image, s32 windowId, core::rect<s32
 
 		if ( src )
 		{
-			StretchDIBits(dc, 0,0, rect.right, rect.bottom,
+			StretchDIBits(dc, rect.left, rect.top, rect.right, rect.bottom,
 					src->UpperLeftCorner.X, src->UpperLeftCorner.Y,
 					src->getWidth(), src->getHeight(),
 					memory, (const BITMAPINFO*)(&bi), DIB_RGB_COLORS, SRCCOPY);
 		}
 		else
 		{
-			StretchDIBits(dc, 0,0, rect.right, rect.bottom,
+			StretchDIBits(dc, rect.left, rect.top, rect.right, rect.bottom,
 					0, 0, image->getDimension().Width, image->getDimension().Height,
 					memory, (const BITMAPINFO*)(&bi), DIB_RGB_COLORS, SRCCOPY);
 		}

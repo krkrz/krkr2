@@ -287,7 +287,7 @@ namespace core
 		//! set width of rectangle
 		void setHeight(T value)
 		{
-			LowerRightCorner.Y = UpperLeftCorner.X + value;
+			LowerRightCorner.Y = UpperLeftCorner.Y + value;
 		}
 
 

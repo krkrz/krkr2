@@ -478,7 +478,7 @@ bool CD3D9Driver::beginScene(bool backBuffer, bool zBuffer, SColor color)
 
 
 //! applications must call this method after performing any rendering. returns false if failed.
-bool CD3D9Driver::endScene( s32 windowId, core::rect<s32>* sourceRect )
+bool CD3D9Driver::endScene( s32 windowId, core::rect<s32>* sourceRect, core::rect<s32>* destRect )
 {
 	if (DeviceLost)
 		return false;
@@ -503,8 +503,18 @@ bool CD3D9Driver::endScene( s32 windowId, core::rect<s32>* sourceRect )
 		sourceRectData.bottom = sourceRect->LowerRightCorner.Y;
 	}
 
-	hr = pID3DDevice->Present(srcRct, NULL, (HWND)windowId, NULL);
+	RECT* dstRct = 0;
+	RECT destRectData;
+	if ( destRect ) {
+		dstRct = &destRectData;
+		destRectData.left = destRect->UpperLeftCorner.X;
+		destRectData.top = destRect->UpperLeftCorner.Y;
+		destRectData.right = destRect->LowerRightCorner.X;
+		destRectData.bottom = destRect->LowerRightCorner.Y;
+	}
 
+	hr = pID3DDevice->Present(srcRct, dstRct, (HWND)windowId, NULL);
+	
 	if (hr == D3DERR_DEVICELOST)
 	{
 		DeviceLost = true;
@@ -1619,9 +1629,9 @@ void CD3D9Driver::setRenderStates2DMode(bool alpha, bool texture, bool alphaChan
 
 	if (texture)
 	{
-		pID3DDevice->SetSamplerState(0, D3DSAMP_MINFILTER, D3DTEXF_POINT);
+		pID3DDevice->SetSamplerState(0, D3DSAMP_MINFILTER, D3DTEXF_LINEAR);
 		pID3DDevice->SetSamplerState(0, D3DSAMP_MIPFILTER, D3DTEXF_NONE);
-		pID3DDevice->SetSamplerState(0, D3DSAMP_MAGFILTER, D3DTEXF_POINT);
+		pID3DDevice->SetSamplerState(0, D3DSAMP_MAGFILTER, D3DTEXF_LINEAR);
 
 		if (alphaChannel)
 		{

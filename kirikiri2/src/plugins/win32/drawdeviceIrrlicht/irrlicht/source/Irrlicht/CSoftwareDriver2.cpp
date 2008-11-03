@@ -427,11 +427,11 @@ bool CSoftwareDriver2::beginScene(bool backBuffer, bool zBuffer, SColor color)
 }
 
 //! presents the rendered scene on the screen, returns false if failed
-bool CSoftwareDriver2::endScene( s32 windowId, core::rect<s32>* sourceRect )
+bool CSoftwareDriver2::endScene( s32 windowId, core::rect<s32>* sourceRect, core::rect<s32>* destRect)
 {
 	CNullDriver::endScene();
 
-	Presenter->present(BackBuffer, windowId, sourceRect );
+	Presenter->present(BackBuffer, windowId, sourceRect, destRect );
 
 	return true;
 }
