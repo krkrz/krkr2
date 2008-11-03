@@ -65,7 +65,6 @@ IrrlichtBase::attach(HWND hwnd)
 	}
 	
 	showDriverInfo();
-	start();
 }
 
 /**
@@ -78,40 +77,15 @@ IrrlichtBase::detach()
 		device->drop();
 		device = NULL;
 	}
-	stop();
 }
 
-/**
- * Irrlicht 呼び出し処理開始
- */
 void
-IrrlichtBase::start()
-{
-	stop();
-	TVPAddContinuousEventHook(this);
-}
-
-/**
- * Irrlicht 呼び出し処理停止
- */
-void
-IrrlichtBase::stop()
-{
-	TVPRemoveContinuousEventHook(this);
-}
-
-/**
- * Continuous コールバック
- * 吉里吉里が暇なときに常に呼ばれる
- * これが事実上のメインループになる
- */
-void TJS_INTF_METHOD
-IrrlichtBase::OnContinuousCallback(tjs_uint64 tick)
+IrrlichtBase::onUpdate(tjs_uint64 tick)
 {
 	if (device) {
 		// 時間を進める XXX tick を外部から与えられないか？
 		device->getTimer()->tick();
-
+		
 		IVideoDriver *driver = device->getVideoDriver();
 		// 描画開始
 		if (driver && driver->beginScene(true, true, irr::video::SColor(255,0,0,0))) {
@@ -121,7 +95,7 @@ IrrlichtBase::OnContinuousCallback(tjs_uint64 tick)
 			if (smgr) {
 				smgr->drawAll();
 			}
-
+			
 			// 固有処理
 			update(driver, tick);
 
@@ -130,7 +104,7 @@ IrrlichtBase::OnContinuousCallback(tjs_uint64 tick)
 			if (gui) {
 				gui->drawAll();
 			}
-
+			
 			// 描画完了
 			driver->endScene();
 		}
@@ -141,7 +115,7 @@ IrrlichtBase::OnContinuousCallback(tjs_uint64 tick)
  * イベント受理
  * HWND を指定して生成している関係で Irrlicht 自身はウインドウから
  * イベントを取得することはない。ので GUI Environment からのイベント
- * だけがここにくることになる？
+ * だけがここにくることになる。自分の適当なメソッドを呼び出すように要修正 XXX
  * @param event イベント情報
  * @return 処理したら true
  */

@@ -8,9 +8,7 @@
 /**
  * Irrlicht 処理のベース
  */
-class IrrlichtBase :
-	public tTVPContinuousEventCallbackIntf,
-	public irr::IEventReceiver
+class IrrlichtBase : public irr::IEventReceiver
 {
 
 protected:
@@ -42,24 +40,14 @@ protected:
 	 */
 	virtual void update(irr::video::IVideoDriver *driver, tjs_uint64 tick) {};
 
-public:
-	/**
-	 * Irrlicht 呼び出し処理開始
-	 */
-	void start();
+protected:
 
 	/**
-	 * Irrlicht 呼び出し処理中断
+	 * 更新処理
+	 * @param tick tick値
 	 */
-	void stop();
-
-	/**
-	 * Continuous コールバック
-	 * 吉里吉里が暇なときに常に呼ばれる
-	 * 塗り直し処理
-	 */
-	virtual void TJS_INTF_METHOD OnContinuousCallback(tjs_uint64 tick);
-
+	void onUpdate(tjs_uint64 tick);
+	
 	// ------------------------------------------------------------
 	// Irrlicht イベント処理用
 	// ------------------------------------------------------------

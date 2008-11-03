@@ -1130,7 +1130,7 @@ NCB_REGISTER_SUBCLASS(IrrlichtDrawDevice) {
 
 NCB_REGISTER_SUBCLASS(IrrlichtWindow) {
 	NCB_CONSTRUCTOR((int, iTJSDispatch2 *, int, int, int, int));
-//	BASE_METHOD;
+	BASE_METHOD;
 	NCB_PROPERTY(left, getLeft, setLeft);
 	NCB_PROPERTY(top, getTop, setTop);
 	NCB_PROPERTY(width, getWidth, setWidth);
@@ -1156,6 +1156,7 @@ NCB_REGISTER_CLASS(Irrlicht) {
 	ENUM(EDT_BURNINGSVIDEO);
 	ENUM(EDT_DIRECT3D9);
 	ENUM(EDT_OPENGL);
+
 	//static
 
 	// Irrlicht データ型クラス
@@ -1183,6 +1184,7 @@ NCB_REGISTER_CLASS(Irrlicht) {
 	NCB_IRR_SUBCLASS(IImage);
 	NCB_IRR_SUBCLASS(ITexture);
 
+	// 
 	NCB_IRR_SUBCLASS(IVideoDriver);
 	NCB_IRR_SUBCLASS(ISceneManager);
 	NCB_IRR_SUBCLASS(IGUIEnvironment);
