@@ -8,45 +8,53 @@
 /**
  * Irrlicht 処理のベース
  */
-class IrrlichtBase : public irr::IEventReceiver
+class IrrlichtBase :
+	public irr::IEventReceiver,
+	public tTVPContinuousEventCallbackIntf
 {
 
 protected:
-	// ドライバ種別
-	irr::video::E_DRIVER_TYPE  driverType;
 	/// デバイス
 	irr::IrrlichtDevice *device;
 
 	void showDriverInfo();
-	
-public:
-	IrrlichtBase(irr::video::E_DRIVER_TYPE driverType); //!< コンストラクタ
-	virtual ~IrrlichtBase(); //!< デストラクタ
 
-protected:
+	/**
+	 * Irrlicht 呼び出し処理開始
+	 */
+	void start();
+
+	/**
+	 * Irrlicht 呼び出し処理中断
+	 */
+	void stop();
+	
 	// デバイス割り当て
 	virtual void attach(HWND hwnd);
 	
 	// デバイスの破棄
 	virtual void detach();
+	
+public:
+	IrrlichtBase(); //!< コンストラクタ
+	virtual ~IrrlichtBase(); //!< デストラクタ
 
 	// ------------------------------------------------------------
-	// 吉里吉里からの呼び出し制御用
+	// 更新処理
 	// ------------------------------------------------------------
 protected:
 	/**
 	 * クラス固有更新処理
 	 * シーンマネージャの処理後、GUIの処理前に呼ばれる
 	 */
-	virtual void update(irr::video::IVideoDriver *driver, tjs_uint64 tick) {};
+	virtual void update(irr::video::IVideoDriver *driver) {};
 
 protected:
-
 	/**
-	 * 更新処理
-	 * @param tick tick値
+	 * 再描画処理
+	 * @param destRect 描画先領域
 	 */
-	void onUpdate(tjs_uint64 tick);
+	void show(irr::core::rect<irr::s32> *destRect=NULL);
 	
 	// ------------------------------------------------------------
 	// Irrlicht イベント処理用

@@ -9,10 +9,12 @@ extern void unregisterWindowClass();
 /**
  * Irrlicht ベースの DrawDevice
  */
-class IrrlichtWindow :
-	public IrrlichtBase,
-	public tTVPContinuousEventCallbackIntf
+class IrrlichtWindow :	public IrrlichtBase
 {
+public:
+	// ウインドウプロシージャ
+	static LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
+
 protected:
 	HWND parent; //< 親のハンドル
 	HWND hwnd; //< 現在のハンドル
@@ -39,7 +41,7 @@ public:
 	/**
 	 * コンストラクタ
 	 */
-	IrrlichtWindow(int driverType, iTJSDispatch2 *win, int left, int top, int width, int height);
+	IrrlichtWindow(iTJSDispatch2 *win, int left, int top, int width, int height);
 		
 	/**
 	 * デストラクタ
@@ -49,22 +51,9 @@ public:
 	// -----------------------------------------------------------------------
 	// continuous handler
 	// -----------------------------------------------------------------------
-	
 public:
 	/**
-	 * Irrlicht 呼び出し処理開始
-	 */
-	void start();
-
-	/**
-	 * Irrlicht 呼び出し処理中断
-	 */
-	void stop();
-
-	/**
 	 * Continuous コールバック
-	 * 吉里吉里が暇なときに常に呼ばれる
-	 * 塗り直し処理
 	 */
 	virtual void TJS_INTF_METHOD OnContinuousCallback(tjs_uint64 tick);
 	
