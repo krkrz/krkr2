@@ -3,12 +3,6 @@
  */
 class Irrlicht {
 
-	// ドライバ種別指定
-	EDT_SOFTWARE      = 1; //< ソフトウェアレンダラその1 (2D機能＋3Dの基本のみ)
-	EDT_BURNINGSVIDEO = 2; //< ソフトウェアレンダラその2 (3D機能もいろいろ実装)
-	EDT_DIRECT3D9     = 4; //< Direct3Dベース
-	EDT_OPENGL        = 5; //< OpenGLベース
-
 	// -----------------------------------------------------------------------------
 	// データ保持用クラス
 	// -----------------------------------------------------------------------------
@@ -121,13 +115,32 @@ class Irrlicht {
 	 * 吉里吉里用 drawdevice クラス
 	 */
 	class DrawDevice extends Base {
+
 		/**
 		 * コンストラクタ
-		 * @param driverType ドライバ種別
+		 * @param width 描画領域横幅
+		 * @param width 描画領域縦幅
 		 */
-		function DrawDevice(driverType);
+		function DrawDevice(width, height);
 
 		property interface; //< drawdevice 情報（内部参照用）。読み出し専用
+		
+		property width;  //< 描画領域横幅
+		property height; //< 描画領域縦幅
+
+		/**
+		 * 描画領域の設定
+		 * @param width 描画領域横幅
+		 * @param width 描画領域縦幅
+		 */
+		function setSize(width, height);
+		
+		/**
+		 * 拡大モード: 初期値は true
+		 * true: 初期指定した描画領域で処理して画面への表示時に拡大縮小します
+		 * false: 実際の画面上の解像度で処理します
+		 */
+		property zoomMode;
 	};
 
 	/**
@@ -137,14 +150,13 @@ class Irrlicht {
 
 		/**
 		 * コンストラクタ
-		 * @param driverType ドライバ種別
 		 * @param parent 親になるウインドウ
 		 * @param left 配置位置X
 		 * @param top 配置位置Y
 		 * @param width 配置サイズ
 		 * @param height 配置サイズ
 		 */
-		function Window(driverType, parent, left, top, width, height);
+		function Window(parent, left, top, width, height);
 
 		property left; //< 配置位置X
 		property top;  //< 配置位置Y

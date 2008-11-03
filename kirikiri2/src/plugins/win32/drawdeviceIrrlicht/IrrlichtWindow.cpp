@@ -16,14 +16,21 @@ using namespace gui;
 /**
  * ウインドウプロシージャ
  */
-static LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
+LRESULT CALLBACK
+IrrlichtWindow::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
 	// 参考: irrlicht/source/Irrlicht/CIrrDeviceWin32.cpp
+	// ここに処理をいろいろ書く必要あり
+
+	IrrlichtWindow *self = (IrrlichtWindow*)GetWindowLongPtr(hWnd, GWLP_USERDATA);
 	switch (message) {
 	case WM_PAINT:
 		{
 			PAINTSTRUCT ps;
 			BeginPaint(hWnd, &ps);
+			if (self) {
+				self->show();
+			}
 			EndPaint(hWnd, &ps);
 		}
 		return 0;
@@ -39,7 +46,7 @@ void registerWindowClass()
 	ZeroMemory(&wcex, sizeof wcex);
 	wcex.cbSize		= sizeof(WNDCLASSEX);
 	wcex.style		= CS_HREDRAW | CS_VREDRAW;
-	wcex.lpfnWndProc	= (WNDPROC)WndProc;
+	wcex.lpfnWndProc	= (WNDPROC)IrrlichtWindow::WndProc;
 	wcex.cbClsExtra		= 0;
 	wcex.cbWndExtra		= 0;
 	wcex.hInstance		= GetModuleHandle(NULL);
@@ -104,10 +111,11 @@ IrrlichtWindow::createWindow(HWND krkr)
 							WS_CHILD|WS_CLIPCHILDREN,
 							left, top, width, height,
 							parent, NULL, GetModuleHandle(NULL), NULL);
-		_setPos();
-		UpdateWindow(hwnd);
-		attach(hwnd);
-		start();
+		if (hwnd) {
+			_setPos();
+			attach(hwnd);
+			SetWindowLongPtr(hwnd, GWLP_USERDATA, (LONG_PTR)this);
+		}
 	}
 }
 
@@ -119,7 +127,6 @@ IrrlichtWindow::destroyWindow()
 {
 	if (hwnd) {
 		detach();
-		stop();
 		DestroyWindow(hwnd);
 		hwnd = 0;
 	}
@@ -129,8 +136,8 @@ IrrlichtWindow::destroyWindow()
 /**
  * コンストラクタ
  */
-IrrlichtWindow::IrrlichtWindow(int driverType, iTJSDispatch2 *win, int left, int top, int width, int height)
-	: IrrlichtBase((E_DRIVER_TYPE)driverType), window(NULL), parent(0), hwnd(0), visible(false)
+IrrlichtWindow::IrrlichtWindow(iTJSDispatch2 *win, int left, int top, int width, int height)
+	: IrrlichtBase(), window(NULL), parent(0), hwnd(0), visible(false)
 {
 	if (win->IsInstanceOf(0, NULL, NULL, L"Window", win) != TJS_S_TRUE) {
 		TVPThrowExceptionMessage(L"must set window object");
@@ -181,25 +188,6 @@ IrrlichtWindow::~IrrlichtWindow()
 // -----------------------------------------------------------------------
 
 /**
- * Irrlicht 呼び出し処理開始
- */
-void
-IrrlichtWindow::start()
-{
-	stop();
-	TVPAddContinuousEventHook(this);
-}
-
-/**
- * Irrlicht 呼び出し処理停止
- */
-void
-IrrlichtWindow::stop()
-{
-	TVPRemoveContinuousEventHook(this);
-}
-
-/**
  * Continuous コールバック
  * 吉里吉里が暇なときに常に呼ばれる
  * これが事実上のメインループになる
@@ -207,7 +195,7 @@ IrrlichtWindow::stop()
 void TJS_INTF_METHOD
 IrrlichtWindow::OnContinuousCallback(tjs_uint64 tick)
 {
-	onUpdate(tick);
+	InvalidateRect(hwnd, NULL, false);
 }
 
 // -----------------------------------------------------------------------
