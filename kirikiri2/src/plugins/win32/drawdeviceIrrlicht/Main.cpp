@@ -635,19 +635,41 @@ NCB_REGISTER_IRR_SUBCLASS(IAttributes)
 };
 
 NCB_REGISTER_IRR_SUBCLASS(ISceneNodeAnimator)
-	NCB_CONSTRUCTOR(());
+NCB_CONSTRUCTOR(());
+NCB_IRR_METHOD(animateNode);
+NCB_IRR_METHOD(createClone);
+NCB_IRR_METHOD(getType);
 };
 
 NCB_REGISTER_IRR_SUBCLASS(ISceneNodeAnimatorCollisionResponse)
-	NCB_CONSTRUCTOR(());
+NCB_CONSTRUCTOR(());
+NCB_IRR_PROPERTY(ellipsoidRadius, getEllipsoidRadius, setEllipsoidRadius);
+NCB_IRR_PROPERTY(ellipsoidTranslation, getEllipsoidTranslation, setEllipsoidTranslation);
+NCB_IRR_PROPERTY(gravity, getGravity, setGravity);
+NCB_IRR_PROPERTY(world, getWorld, setWorld);
+NCB_IRR_METHOD(isFalling);
 };
 
 NCB_REGISTER_IRR_SUBCLASS(IMesh)
-	NCB_CONSTRUCTOR(());
+NCB_CONSTRUCTOR(());
+NCB_IRR_PROPERTY(boundingBox, getBoundingBox, setBoundingBox);
+NCB_IRR_METHOD2(getMeshBuffer, IMeshBuffer*, getMeshBuffer, (u32) const);
+NCB_IRR_METHOD2(getMeshBuffer2, IMeshBuffer*, getMeshBuffer, (const SMaterial &) const);
+NCB_IRR_METHOD(getMeshBufferCount);
+NCB_IRR_METHOD(setMaterialFlag);
 };
 
 NCB_REGISTER_IRR_SUBCLASS(IMeshBuffer)
-	NCB_CONSTRUCTOR(());
+NCB_CONSTRUCTOR(());
+NCB_IRR_PROPERTY(boundingBox, getBoundingBox, setBoundingBox);
+NCB_IRR_METHOD2(append, void, append, (const IMeshBuffer * const));
+//NCB_IRR_METHOD2(append2)
+NCB_IRR_METHOD(getIndexCount);
+//NCB_IRR_METHOD(getIndices) XXX 配列
+NCB_IRR_METHOD2(getMaterial, SMaterial&, getMaterial, (void));
+NCB_IRR_METHOD(getVertexCount);
+NCB_IRR_METHOD(getVertexType);
+//NCB_IRR_METHOD(getvertices) XXX 配列
 };
 
 NCB_REGISTER_IRR_SUBCLASS(IMeshCache)
@@ -705,6 +727,8 @@ NCB_TYPECONV_CAST_INTEGER(E_JOINT_UPDATE_ON_RENDER);
 NCB_TYPECONV_CAST_INTEGER(EMD2_ANIMATION_TYPE);
 NCB_TYPECONV_CAST_INTEGER(E_BONE_ANIMATION_MODE);
 NCB_TYPECONV_CAST_INTEGER(E_BONE_SKINNING_SPACE);
+NCB_TYPECONV_CAST_INTEGER(ESCENE_NODE_ANIMATOR_TYPE);
+NCB_TYPECONV_CAST_INTEGER(E_VERTEX_TYPE);
 
 /**
  * ISceneNode 専用コンバータ
