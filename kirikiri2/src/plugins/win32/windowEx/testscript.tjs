@@ -13,11 +13,39 @@ class TestWindow extends Window {
 		super.Window();
 
 		caption = title;
+//		borderStyle = bsNone;
+
 		add(new Layer(this, null));
 		setInnerSize(320, 240);
 		primaryLayer.visible = true;
 		visible = true;
+
+		createMenu();
 		registerExEvent();
+	}
+	function createMenu() {
+		var min = new MenuItem(this, "ç≈è¨");
+		var max = new MenuItem(this, "ç≈ëÂ");
+		var cls = new MenuItem(this, "ï¬Ç∂ÇÈ");
+
+		min.onClick = minimize;
+		max.onClick = maximize;
+		cls.onClick = close;
+
+		menu.add(min);
+		menu.add(max);
+		menu.add(cls);
+
+		min.rightJustify = true;
+		min.bmpItem = MenuItem.biPopupMinimize;
+		max.bmpItem = MenuItem.biPopupMaximize;
+		cls.bmpItem = MenuItem.biPopupClose;
+
+		// Windowíºâ∫ÇÃ HMENU Ç™éÊìæÇ≈Ç´ÇÈÇ©ÉeÉXÉg
+		var prop = &(MenuItem.HMENU);
+		dm("HMENU", *(prop incontextof menu));
+
+		menu.visible = true;
 	}
 	function onCloseQuery()    { return super.onCloseQuery(true); }
 	function onShow()          { System.inform(@"${caption}:onShow"); }
@@ -124,5 +152,5 @@ TestGetMonitorInfo("false", -100, -100, 100, 100);
 dm("----------------");
 
 var testWin = new TestWindow("MainWindow");
-testWin.add(new TestWindow("SubWindow"));
+//testWin.add(new TestWindow("SubWindow"));
 
