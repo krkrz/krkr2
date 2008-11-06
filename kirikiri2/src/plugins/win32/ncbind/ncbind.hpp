@@ -1384,6 +1384,14 @@ struct ncbRawCallbackMethod<tTJSNativeClassMethodCallback> : public ncbIMethodOb
 	TypesT    GetType()     const { return nitMethod; }
 	void      Release()     const { delete this; }
 
+	/// Property‚©‚çFuncCall‚ª’¼ÚŒÄ‚Î‚ê‚é‚Ì‚Åƒ‰ƒbƒv
+	tjs_error  TJS_INTF_METHOD FuncCall(
+		tjs_uint32 flag, const tjs_char * membername, tjs_uint32 *hint, 
+		tTJSVariant *result, tjs_int numparams, tTJSVariant **param, iTJSDispatch2 *objthis)
+	{
+		return _dispatch->FuncCall(flag, membername, hint, result, numparams, param, objthis);
+	}
+
 	/// factory
 	static iMethodT Create(CallbackT cb, FlagsT f, bool create = true) { return !create ? 0 : (new ThisClassT(cb, f)); }
 private:
