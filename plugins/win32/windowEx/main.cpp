@@ -41,7 +41,7 @@ struct WindowEx
 
 	// SYSCOMMAND‚ð‘—‚é
 	static tjs_error postSysCommand(iTJSDispatch2 *objthis, WPARAM param) {
-		PostMessage(GetHWND(objthis), WM_SYSCOMMAND, param, 0);
+		::PostMessage(GetHWND(objthis), WM_SYSCOMMAND, param, 0);
 		return TJS_S_OK;
 	}
 
@@ -52,6 +52,16 @@ struct WindowEx
 	static tjs_error TJS_INTF_METHOD minimize(   tTJSVariant *r, tjs_int n, tTJSVariant **p, iTJSDispatch2 *obj) { return postSysCommand(obj, SC_MINIMIZE); }
 	static tjs_error TJS_INTF_METHOD maximize(   tTJSVariant *r, tjs_int n, tTJSVariant **p, iTJSDispatch2 *obj) { return postSysCommand(obj, SC_MAXIMIZE); }
 	static tjs_error TJS_INTF_METHOD showRestore(tTJSVariant *r, tjs_int n, tTJSVariant **p, iTJSDispatch2 *obj) { return postSysCommand(obj, SC_RESTORE);  }
+
+	// resetWindowIcon
+	static tjs_error TJS_INTF_METHOD resetWindowIcon(tTJSVariant *r, tjs_int n, tTJSVariant **p, iTJSDispatch2 *obj) { 
+		HWND hwnd = GetHWND(obj);
+		if (hwnd != NULL) {
+			HICON icon = LoadIcon(GetModuleHandle(0), IDI_APPLICATION);
+			::PostMessage(hwnd, WM_SETICON, ICON_SMALL, (LPARAM)icon);
+		}
+		return TJS_S_OK;
+	}
 
 	// getWindowRect
 	static tjs_error TJS_INTF_METHOD getWindowRect(tTJSVariant *r, tjs_int n, tTJSVariant **p, iTJSDispatch2 *obj) {
@@ -213,6 +223,7 @@ private:
 NCB_ATTACH_FUNCTION(minimize,          Window, WindowEx::minimize);
 NCB_ATTACH_FUNCTION(maximize,          Window, WindowEx::maximize);
 NCB_ATTACH_FUNCTION(showRestore,       Window, WindowEx::showRestore);
+NCB_ATTACH_FUNCTION(resetWindowIcon,   Window, WindowEx::resetWindowIcon);
 NCB_ATTACH_FUNCTION(getWindowRect,     Window, WindowEx::getWindowRect);
 NCB_ATTACH_FUNCTION(getClientRect,     Window, WindowEx::getClientRect);
 NCB_ATTACH_FUNCTION(getMouseCursorPos, Window, WindowEx::getMouseCursorPos);
