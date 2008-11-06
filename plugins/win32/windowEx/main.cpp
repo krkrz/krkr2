@@ -219,6 +219,123 @@ NCB_ATTACH_CLASS_WITH_HOOK(WindowEx, Window) {
 }
 
 ////////////////////////////////////////////////////////////////
+struct MenuItemEx
+{
+	// メニューを取得
+	static HMENU GetHMENU(iTJSDispatch2 *obj) {
+		if (!obj) return NULL;
+		tTJSVariant val;
+		iTJSDispatch2 *global = TVPGetScriptDispatch(), *mi;
+		if (global) {
+			global->PropGet(0, TJS_W("MenuItem"), 0, &val, obj);
+			mi = val.AsObjectNoAddRef();
+			val.Clear();
+			global->Release();
+		} else mi = obj;
+		mi->PropGet(0, TJS_W("HMENU"), 0, &val, obj);
+		return (HMENU)(tjs_int)(val);
+	}
+	// 親メニューを取得
+	static iTJSDispatch2* GetParentMenu(iTJSDispatch2 *obj) {
+		tTJSVariant val;
+		obj->PropGet(0, TJS_W("parent"), 0, &val, obj);
+		return val.AsObjectNoAddRef();
+	}
+	
+	// インデックスを取得
+	static UINT GetIndex(iTJSDispatch2 *obj) {
+		tTJSVariant val;
+		obj->PropGet(0, TJS_W("index"), 0, &val, obj);
+		return (UINT)val.AsInteger();
+	}
+	// ウィンドウを取得
+	static HWND GetHWND(iTJSDispatch2 *obj) {
+		if (!obj) return NULL;
+		tTJSVariant val;
+		obj->PropGet(0, TJS_W("root"), 0, &val, obj);
+		obj = val.AsObjectNoAddRef();
+		if (!obj) return NULL;
+		val.Clear();
+		obj->PropGet(0, TJS_W("window"), 0, &val, obj);
+		obj = val.AsObjectNoAddRef();
+		return obj ? WindowEx::GetHWND(obj) : NULL;
+	}
+
+	static bool getMenuItemInfo(iTJSDispatch2 *obj, HMENU &hmenu, UINT &index, MENUITEMINFO &mi, UINT mask) {
+		hmenu = GetHMENU(GetParentMenu(obj));
+		if (hmenu == NULL) TVPThrowExceptionMessage(TJS_W("Cannot get parent menu."));
+		ZeroMemory(&mi, sizeof(mi));
+		mi.cbSize = sizeof(mi);
+		mi.fMask = mask;
+		index = GetIndex(obj);
+		return !!::GetMenuItemInfo(hmenu, index, TRUE, &mi);
+	}
+
+	// property rightJustify
+	static tjs_error TJS_INTF_METHOD getRightJustify(tTJSVariant *r, tjs_int n, tTJSVariant **p, iTJSDispatch2 *obj) {
+		HMENU hmenu;
+		UINT index;
+		MENUITEMINFO mi;
+		r->Clear();
+		if (getMenuItemInfo(obj, hmenu, index, mi, MIIM_FTYPE))
+			*r = !!(mi.fType & MFT_RIGHTJUSTIFY);
+		return TJS_S_OK;
+	}
+	static tjs_error TJS_INTF_METHOD setRightJustify(tTJSVariant *r, tjs_int n, tTJSVariant **p, iTJSDispatch2 *obj) {
+		HMENU hmenu;
+		UINT index;
+		MENUITEMINFO mi;
+		if (getMenuItemInfo(obj, hmenu, index, mi, MIIM_FTYPE)) {
+			if (p[0]->AsInteger()) mi.fType |= MFT_RIGHTJUSTIFY;
+			else                   mi.fType &= MFT_RIGHTJUSTIFY ^ (~0L);
+			::SetMenuItemInfo(hmenu, index, TRUE, &mi);
+			::DrawMenuBar(GetHWND(obj));
+		}
+		return TJS_S_OK;
+	}
+
+	// property bmpItem
+	static tjs_error TJS_INTF_METHOD getBmpItem(tTJSVariant *r, tjs_int n, tTJSVariant **p, iTJSDispatch2 *obj) {
+		HMENU hmenu;
+		UINT index;
+		MENUITEMINFO mi;
+		r->Clear();
+		if (getMenuItemInfo(obj, hmenu, index, mi, MIIM_BITMAP))
+			*r = (tjs_int)(mi.hbmpItem);
+		return TJS_S_OK;
+	}
+	static tjs_error TJS_INTF_METHOD setBmpItem(tTJSVariant *r, tjs_int n, tTJSVariant **p, iTJSDispatch2 *obj) {
+		HMENU hmenu;
+		UINT index;
+		MENUITEMINFO mi;
+		if (getMenuItemInfo(obj, hmenu, index, mi, MIIM_BITMAP)) {
+			mi.hbmpItem = (HBITMAP)(p[0]->AsInteger());
+			::SetMenuItemInfo(hmenu, index, TRUE, &mi);
+			::DrawMenuBar(GetHWND(obj));
+		}
+		return TJS_S_OK;
+	}
+
+};
+NCB_ATTACH_CLASS(MenuItemEx, MenuItem)
+{
+	Variant(TJS_W("biSystem"),           (tjs_int)HBMMENU_SYSTEM);
+	Variant(TJS_W("biRestore"),          (tjs_int)HBMMENU_MBAR_RESTORE);
+	Variant(TJS_W("biMinimize"),         (tjs_int)HBMMENU_MBAR_MINIMIZE);
+	Variant(TJS_W("biClose"),            (tjs_int)HBMMENU_MBAR_CLOSE);
+	Variant(TJS_W("biCloseDisabled"),    (tjs_int)HBMMENU_MBAR_CLOSE_D);
+	Variant(TJS_W("biMinimizeDisabled"), (tjs_int)HBMMENU_MBAR_MINIMIZE_D);
+	Variant(TJS_W("biPopupClose"),       (tjs_int)HBMMENU_POPUP_CLOSE);
+	Variant(TJS_W("biPopupRestore"),     (tjs_int)HBMMENU_POPUP_RESTORE);
+	Variant(TJS_W("biPopupMaximize"),    (tjs_int)HBMMENU_POPUP_MAXIMIZE);
+	Variant(TJS_W("biPopupMinimize"),    (tjs_int)HBMMENU_POPUP_MINIMIZE);
+
+	NCB_PROPRETY_RAW_CALLBACK(rightJustify, ClassT::getRightJustify, ClassT::setRightJustify, 0);
+	NCB_PROPRETY_RAW_CALLBACK(bmpItem,      ClassT::getBmpItem,      ClassT::setBmpItem,      0);
+}
+
+
+////////////////////////////////////////////////////////////////
 
 struct System
 {
