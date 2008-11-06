@@ -81,6 +81,20 @@ struct WindowEx
 		return TJS_S_OK;
 	}
 
+	// getMouseCursorPos
+	static tjs_error TJS_INTF_METHOD getMouseCursorPos(tTJSVariant *r, tjs_int n, tTJSVariant **p, iTJSDispatch2 *obj) {
+		POINT pt = { 0, 0 };
+		if (::GetCursorPos(&pt)) {
+			ncbDictionaryAccessor dict;
+			if (dict.IsValid()) {
+				dict.SetValue(TJS_W("x"), pt.x);
+				dict.SetValue(TJS_W("y"), pt.y);
+				*r = tTJSVariant(dict, dict);
+			}
+		}
+		return TJS_S_OK;
+	}
+
 	//--------------------------------------------------------------
 	// 拡張イベント用
 
@@ -196,11 +210,12 @@ private:
 };
 
 // Windowにメソッドを追加
-NCB_ATTACH_FUNCTION(minimize,      Window, WindowEx::minimize);
-NCB_ATTACH_FUNCTION(maximize,      Window, WindowEx::maximize);
-NCB_ATTACH_FUNCTION(showRestore,   Window, WindowEx::showRestore);
-NCB_ATTACH_FUNCTION(getWindowRect, Window, WindowEx::getWindowRect);
-NCB_ATTACH_FUNCTION(getClientRect, Window, WindowEx::getClientRect);
+NCB_ATTACH_FUNCTION(minimize,          Window, WindowEx::minimize);
+NCB_ATTACH_FUNCTION(maximize,          Window, WindowEx::maximize);
+NCB_ATTACH_FUNCTION(showRestore,       Window, WindowEx::showRestore);
+NCB_ATTACH_FUNCTION(getWindowRect,     Window, WindowEx::getWindowRect);
+NCB_ATTACH_FUNCTION(getClientRect,     Window, WindowEx::getClientRect);
+NCB_ATTACH_FUNCTION(getMouseCursorPos, Window, WindowEx::getMouseCursorPos);
 
 // 拡張イベント用ネイティブインスタンスゲッタ
 NCB_GET_INSTANCE_HOOK(WindowEx)
@@ -333,6 +348,75 @@ NCB_ATTACH_CLASS(MenuItemEx, MenuItem)
 	NCB_PROPRETY_RAW_CALLBACK(rightJustify, ClassT::getRightJustify, ClassT::setRightJustify, 0);
 	NCB_PROPRETY_RAW_CALLBACK(bmpItem,      ClassT::getBmpItem,      ClassT::setBmpItem,      0);
 }
+
+
+////////////////////////////////////////////////////////////////
+struct ConsoleEx
+{
+	struct SearchWork {
+		ttstr name;
+		HWND result;
+	};
+#define CLASSNAME_MAX 1024
+	static BOOL CALLBACK SearchWindowClass(HWND hwnd, LPARAM lp) {
+		SearchWork *wk = (SearchWork*)lp;
+		tjs_char name[CLASSNAME_MAX];
+		::GetClassNameW(hwnd, name, CLASSNAME_MAX);
+		name[CLASSNAME_MAX-1] = 0;
+		if (wk->name == ttstr(name)) {
+			wk->result = hwnd;
+			return FALSE;
+		}
+		return TRUE;
+	}
+	static HWND GetHWND() {
+		SearchWork wk = { TJS_W("TTVPConsoleForm"), NULL };
+		::EnumThreadWindows(GetCurrentThreadId(), SearchWindowClass, (LPARAM)&wk);
+		return wk.result;
+	}
+
+	// showRestore
+	static tjs_error TJS_INTF_METHOD showRestore(tTJSVariant *r, tjs_int n, tTJSVariant **p, iTJSDispatch2 *obj) {
+		HWND hwnd = GetHWND();
+		TVPExecuteExpression(ttstr(TJS_W("Debug.console.visible=1")));
+		if (hwnd != NULL) PostMessage(hwnd, WM_SYSCOMMAND, SC_RESTORE, 0);
+		return TJS_S_OK;
+	}
+	// getWindowRect
+	static tjs_error TJS_INTF_METHOD getWindowRect(tTJSVariant *r, tjs_int n, tTJSVariant **p, iTJSDispatch2 *obj) {
+		RECT rect;
+		HWND hwnd = GetHWND();
+		r->Clear();
+		if (hwnd != NULL && ::GetWindowRect(hwnd, &rect)) {
+			ncbDictionaryAccessor dict;
+			if (WindowEx::SetRect(dict, &rect)) *r = tTJSVariant(dict, dict);
+		}
+		return TJS_S_OK;
+	}
+	// setPos
+	static tjs_error TJS_INTF_METHOD setPos(tTJSVariant *r, tjs_int n, tTJSVariant **p, iTJSDispatch2 *obj) {
+		HWND hwnd = GetHWND();
+		if (hwnd != NULL) {
+			UINT flag = SWP_NOACTIVATE | SWP_NOZORDER | SWP_NOOWNERZORDER;
+			int x, y, w, h;
+			x = (int)p[0]->AsInteger();
+			y = (int)p[1]->AsInteger();
+			if (p[0]->Type() == tvtVoid &&
+				p[1]->Type() == tvtVoid) flag |= SWP_NOMOVE;
+			if (n >= 4) {
+				w = (int)p[2]->AsInteger();
+				h = (int)p[3]->AsInteger();
+				if (p[2]->Type() == tvtVoid &&
+					p[3]->Type() == tvtVoid) flag |= SWP_NOSIZE;
+			} else                           flag |= SWP_NOSIZE;
+			::SetWindowPos(hwnd, NULL, x, y, w, h, flag);
+		}
+		return TJS_S_OK;
+	}
+};
+NCB_ATTACH_FUNCTION_WITHTAG(showRestore,   Debug_console, Debug.console, ConsoleEx::showRestore);
+NCB_ATTACH_FUNCTION_WITHTAG(getWindowRect, Debug_console, Debug.console, ConsoleEx::getWindowRect);
+NCB_ATTACH_FUNCTION_WITHTAG(setPos,        Debug_console, Debug.console, ConsoleEx::setPos);
 
 
 ////////////////////////////////////////////////////////////////
