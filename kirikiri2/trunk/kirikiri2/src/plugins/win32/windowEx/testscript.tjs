@@ -24,22 +24,26 @@ class TestWindow extends Window {
 		registerExEvent();
 	}
 	function createMenu() {
-		var min = new MenuItem(this, "Å¬");
-		var max = new MenuItem(this, "Å‘å");
-		var cls = new MenuItem(this, "•Â‚¶‚é");
+		var tes = new MenuItem(this, "test");
+		
+		var min = new MenuItem(this, "");
+		var max = new MenuItem(this, "");
+		var cls = new MenuItem(this, "");
 
+		tes.onClick = Debug.console.showRestore;
 		min.onClick = minimize;
 		max.onClick = maximize;
 		cls.onClick = close;
 
+		menu.add(tes);
 		menu.add(min);
 		menu.add(max);
 		menu.add(cls);
 
-		min.rightJustify = true;
 		min.bmpItem = MenuItem.biPopupMinimize;
 		max.bmpItem = MenuItem.biPopupMaximize;
 		cls.bmpItem = MenuItem.biPopupClose;
+		min.rightJustify = true;
 
 		// Window’¼‰º‚Ì HMENU ‚ªæ“¾‚Å‚«‚é‚©ƒeƒXƒg
 		var prop = &(MenuItem.HMENU);
