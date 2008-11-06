@@ -145,6 +145,37 @@ class Window {
 }
 
 /**
+ * MenuItem拡張
+ */
+class MenuItem {
+	/**
+	 * メニューバーの右端分け表示
+	 *  true ならその Item 以降は右端に寄せられる
+	 * ※ Window.menu 直下で visible でない正しく動作しない
+	 */
+	property rightJustify { getter; setter };
+
+	/**
+	 * （チェックやラジオ以外の）アイコンの表示
+	 * 設定内容は MenuItem.bi* 定数を使用する
+	 * ※ Window.menu 子で visible でないと機能しないので注意
+	 */
+	property bmpItem { getter; setter };
+
+	/// bmpItem 定数
+	/* static */ var biSystem;					//< HBMMENU_SYSTEM
+	/* static */ var biRestore;					//< HBMMENU_MBAR_RESTORE
+	/* static */ var biMinimize;				//< HBMMENU_MBAR_MINIMIZE
+	/* static */ var biClose;					//< HBMMENU_MBAR_CLOSE
+	/* static */ var biCloseDisabled;			//< HBMMENU_MBAR_CLOSE_D
+	/* static */ var biMinimizeDisabled;		//< HBMMENU_MBAR_MINIMIZE_D
+	/* static */ var biPopupClose;				//< HBMMENU_POPUP_CLOSE
+	/* static */ var biPopupRestore;			//< HBMMENU_POPUP_RESTORE
+	/* static */ var biPopupMaximize;			//< HBMMENU_POPUP_MAXIMIZE
+	/* static */ var biPopupMinimize;			//< HBMMENU_POPUP_MINIMIZE
+}
+
+/**
  * System拡張
  */
 class System
