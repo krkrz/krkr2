@@ -33,6 +33,12 @@ class Window {
 	function getWindowRect();
 
 	/**
+	 * マウスカーソルのスクリーン座標を取得
+	 * @return %[ x, y ] または void(取得失敗時)
+	 */
+	function getMouseCursorPos();
+
+	/**
 	 * 拡張イベントを有効にする
 	 * 拡張イベントとして以下が発生：
 	 *  onMaximizeQuery  最大化許可確認
@@ -173,6 +179,18 @@ class MenuItem {
 	/* static */ var biPopupRestore;			//< HBMMENU_POPUP_RESTORE
 	/* static */ var biPopupMaximize;			//< HBMMENU_POPUP_MAXIMIZE
 	/* static */ var biPopupMinimize;			//< HBMMENU_POPUP_MINIMIZE
+}
+
+/**
+ * Debug.console拡張
+ */
+class Console {
+	/// ウィンドウ最大化・最小化の復帰
+	function showRestore();
+	/// ウィンドウ領域の取得
+	function getWindowRect();
+	/// 座標・サイズの設定
+	function setPos(x, y, w, h);
 }
 
 /**
