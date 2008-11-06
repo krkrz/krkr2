@@ -121,6 +121,8 @@ IrrlichtDrawDevice::detach()
 		freeInfo(*i);
 	}
 	IrrlichtBase::detach();
+	screenWidth = -1;
+	screenHeight = -1;
 }
 
 /**
