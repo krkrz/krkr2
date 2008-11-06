@@ -2096,9 +2096,18 @@ private:
 		if (!attach) ret = global;
 		else {
 			tTJSVariant val;
-			global->PropGet(0, attach, 0, &val, global);
-			global->Release();
+			NameT p = attach;
+			// ピリオド有無チェック
+			while (*p) if (*p++ == TJS_W('.')) break;
+			if (!*p) {
+				// global直下
+				global->PropGet(0, attach, 0, &val, global);
+			} else {
+				// 複数階層奥の場合は面倒なのでevalで誤魔化す
+				TVPExecuteExpression(ttstr(attach), &val);
+			}
 			ret = val.AsObject();
+			global->Release();
 		}
 		return ret;
 	}
@@ -2106,15 +2115,16 @@ private:
 template <typename DUMMY>
 struct ncbNativeFunctionAutoRegisterTempl;
 
-#define NCB_REGISTER_FUNCTION_COMMON(name, attach, function) \
-	struct ncbFunctionTag_ ## name {}; \
-	template <> struct ncbNativeFunctionAutoRegisterTempl<ncbFunctionTag_ ## name> : public ncbNativeFunctionAutoRegister \
+#define NCB_REGISTER_FUNCTION_COMMON(name, tag, attach, function) \
+	struct ncbFunctionTag_ ## tag {}; \
+	template <> struct ncbNativeFunctionAutoRegisterTempl<ncbFunctionTag_ ## tag> : public ncbNativeFunctionAutoRegister \
 	{	void Regist()   const { RegistFunction(TJS_W(# name), attach, &function); } \
 		void Unregist() const { UnregistFunction(TJS_W(# name), attach); } }; \
-	static ncbNativeFunctionAutoRegisterTempl<ncbFunctionTag_ ## name> ncbFunctionAutoRegister_ ## name
+	static ncbNativeFunctionAutoRegisterTempl<ncbFunctionTag_ ## tag> ncbFunctionAutoRegister_ ## tag
 
-#define NCB_REGISTER_FUNCTION(name, function)       NCB_REGISTER_FUNCTION_COMMON(name, 0, function)
-#define NCB_ATTACH_FUNCTION(name, attach, function) NCB_REGISTER_FUNCTION_COMMON(name, TJS_W(# attach), function)
+#define NCB_REGISTER_FUNCTION(name, function)                    NCB_REGISTER_FUNCTION_COMMON(name, name, 0, function)
+#define NCB_ATTACH_FUNCTION(name, attach, function)              NCB_REGISTER_FUNCTION_COMMON(name, attach ## _ ## name, TJS_W(# attach), function)
+#define NCB_ATTACH_FUNCTION_WITHTAG(name, tag, attach, function) NCB_REGISTER_FUNCTION_COMMON(name, tag ## _ ## name, TJS_W(# attach), function)
 
 
 
