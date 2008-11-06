@@ -25,6 +25,12 @@ class Window {
 	function showRestore();
 
 	/**
+	 * ウィンドウのタイトルバーアイコンを再設定する
+	 *  ※ Vista でフルスクリーンから復帰するとアイコンが消える問題（吉里吉里v2.30で確認）の消極的対処メソッド
+	 */
+	function resetWindowIcon();
+
+	/**
 	 * クライアント・ウィンドウ領域の取得
 	 * @return %[ x, y, w, h ] または void(取得失敗時)
 	 * ※ innerSunken枠分はクライアント領域に含まれるので注意
