@@ -541,9 +541,10 @@ struct System
 			::EnumDisplayMonitors(NULL, NULL, &PrimaryGetProc, (LPARAM)&mon);
 			break;
 		case 2: // windowŽw’è
-			if (param[1]->Type() == tvtObject && param[1]->IsInstanceOf(TJS_W("Window"))) {
-				iTJSDispatch2 *obj = param[1]->AsObjectNoAddRef();
-				if (!obj) return TJS_E_INVALIDPARAM;
+			iTJSDispatch2 *obj;
+			if (param[1]->Type() != tvtObject) return TJS_E_INVALIDPARAM;
+			obj = param[1]->AsObjectNoAddRef();
+			if (obj && obj->IsInstanceOf(0, 0, 0, TJS_W("Window"), obj)) {
 				HWND hwnd = WindowEx::GetHWND(obj);
 				mon = ::MonitorFromWindow(hwnd, flag);
 			} else return TJS_E_INVALIDPARAM;
