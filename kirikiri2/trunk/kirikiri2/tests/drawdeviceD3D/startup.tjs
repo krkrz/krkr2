@@ -1,0 +1,87 @@
+Plugins.link("drawdeviceD3D.dll");
+Storages.addAutoPath("../layerExDraw/");
+Storages.addAutoPath("../layerEx/");
+
+Scripts.execStorage("UpdateRegion.tjs");
+Scripts.execStorage("AffineLayer.tjs");
+
+var WIDTH=800;
+var HEIGHT=450;
+
+/**
+ * ベースレイヤ
+ */
+class BaseLayer extends Layer
+{
+	var layer;
+	
+	function BaseLayer(win, width, height) {
+		super.Layer(win, null);
+
+		setSize(width, height);
+		fillRect(0,0,width,height,0);
+		
+		// 表示レイヤ
+		layer = new AffineLayer(window, this);
+		layer.loadImages("test.png");
+		layer.setSizeToImageSize();
+		layer.visible = true;
+	}
+
+	function finalize() {
+		invalidate layer;
+	}
+
+/*
+	function onMouseDown(x, y, button, shift) {
+		Debug.message("レイヤ:マウス押し下げ:" + x + "," + y + "," + button + "," + shift);
+	}
+	
+	function onMouseMove(x, y, shift) {
+		Debug.message("レイヤ:マウス移動:" + x + "," + y + "," + shift);
+	}
+  */
+}
+
+class MyWindow extends Window
+{
+	var base;
+	var base2;
+
+	function MyWindow() {
+		super.Window();
+		drawDevice = new DrawDeviceD3D(WIDTH, HEIGHT);
+		
+		showScrollBars = false;
+		setInnerSize(WIDTH, HEIGHT);
+		
+		// 1枚目のプライマリレイヤ
+		base = new BaseLayer(this, WIDTH/2, HEIGHT/2);
+		add(base);
+		
+		// 2枚目のプライマリレイヤ
+		base2 = new BaseLayer(this, WIDTH, HEIGHT);
+		add(base2);
+	}
+
+	function onKeyDown(key, shift) {
+		Debug.message("キーがおされた:" + key);
+		if (key == VK_ESCAPE) {
+			close();
+		} else if(key == VK_TAB) {
+			fullScreen = !fullScreen;
+		}
+	}
+/*
+	function onMouseDown(x, y, button, shift) {
+		Debug.message("マウス押し下げ:" + x + "," + y + "," + button + "," + shift);
+	}
+	
+	function onMouseMove(x, y, shift) {
+		Debug.message("マウス移動:" + x + "," + y + "," + shift);
+	}
+  */
+};
+
+var win = new MyWindow();
+win.visible = true;
