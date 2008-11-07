@@ -14,6 +14,15 @@ class Window {
 	function maximize();
 
 	/**
+	 * ウィンドウが最大化かどうか取得
+	 * setterも一応あるが使わないことを推奨
+	 */
+	property maximized {
+		getter;
+		setter(v) { if (maximized != v) { if (v) maximize(); else showRestore(); } }
+	}
+
+	/**
 	 * ウィンドウの最小化（mainWindowではタスクバー収納，それ以外は画面左下に最小化）
 	 * 最小化ボタンを押した動作と同等
 	 */
@@ -31,12 +40,13 @@ class Window {
 	function resetWindowIcon();
 
 	/**
-	 * クライアント・ウィンドウ領域の取得
+	 * クライアント・ウィンドウ領域，非最大化通常表示の領域の取得
 	 * @return %[ x, y, w, h ] または void(取得失敗時)
 	 * ※ innerSunken枠分はクライアント領域に含まれるので注意
 	 */
-	function getClientRect();
-	function getWindowRect();
+	function getClientRect(); //< クライアント領域
+	function getWindowRect(); //< ウィンドウ領域
+	function getNormalRect(); //< 非最大化通常表示領域
 
 	/**
 	 * マウスカーソルのスクリーン座標を取得
