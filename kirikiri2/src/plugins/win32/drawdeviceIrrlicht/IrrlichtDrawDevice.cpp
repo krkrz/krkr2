@@ -15,8 +15,8 @@ using namespace gui;
  * コンストラクタ
  */
 IrrlichtDrawDevice::IrrlichtDrawDevice(int width, int height)
-	: IrrlichtBase(), width(width), height(height), zoomMode(true), screenWidth(-1), screenHeight(-1),
-	  defaultVisible(true)
+	: IrrlichtBase(), width(width), height(height), destWidth(0), destHeight(0), zoomMode(true), defaultVisible(true),
+	  screenWidth(-1), screenHeight(-1)
 {
 }
 
@@ -39,33 +39,6 @@ void TJS_INTF_METHOD
 IrrlichtDrawDevice::OnContinuousCallback(tjs_uint64 tick)
 {
 	Window->RequestUpdate();
-}
-
-/**
- * ズームモード用の補正
- */
-void
-IrrlichtDrawDevice::updateZoomMode()
-{
-	if (device) {
-		IVideoDriver *driver = device->getVideoDriver();
-		if (driver) {
-			tjs_int w, h;
-			if (zoomMode) {
-				w = width;
-				h = height;
-			} else {
-				w = destWidth;
-				h = destHeight;
-			}
-			if (screenWidth != w ||	screenHeight != h) {
-				screenWidth = w;
-				screenHeight = h;
-				screenRect = rect<s32>(0,0,screenWidth,screenHeight);
-				driver->OnResize(dimension2d<s32>(w, h));
-			}
-		}
-	}
 }
 
 /**
@@ -258,7 +231,25 @@ IrrlichtDrawDevice::SetDestRectangle(const tTVPRect &dest)
 	destRect.setTop(dest.top);
 	destRect.setWidth((destWidth = dest.get_width()));
 	destRect.setHeight((destHeight = dest.get_height()));
-	updateZoomMode();
+	if (device) {
+		IVideoDriver *driver = device->getVideoDriver();
+		if (driver) {
+			tjs_int w, h;
+			if (zoomMode) {
+				w = width;
+				h = height;
+			} else {
+				w = destWidth;
+				h = destHeight;
+			}
+			if (screenWidth != w ||	screenHeight != h) {
+				screenWidth = w;
+				screenHeight = h;
+				screenRect = rect<s32>(0,0,screenWidth,screenHeight);
+				driver->OnResize(dimension2d<s32>(w, h));
+			}
+		}
+	}
 }
 
 void TJS_INTF_METHOD

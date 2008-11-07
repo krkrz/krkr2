@@ -1150,10 +1150,12 @@ NCB_REGISTER_SUBCLASS(IrrlichtDrawDevice) {
 	NCB_CONSTRUCTOR((int,int));
 	BASE_METHOD;
 	NCB_PROPERTY_RO(interface, getDevice);
+	NCB_PROPERTY(zoomMode, getZoomMode, setZoomMode);
 	NCB_PROPERTY(width, getWidth, setWidth);
 	NCB_PROPERTY(height, getHeight, setHeight);
 	NCB_METHOD(setSize);
-	NCB_PROPERTY(zoomMode, getZoomMode, setZoomMode);
+	NCB_PROPERTY_RO(destWidth, getDestWidth);
+	NCB_PROPERTY_RO(destHeight, getDestHeight);
 	NCB_PROPERTY(defaultVisible, getDefaultVisible, setDefaultVisible);
 	NCB_METHOD(getVisible);
 	NCB_METHOD(setVisible);

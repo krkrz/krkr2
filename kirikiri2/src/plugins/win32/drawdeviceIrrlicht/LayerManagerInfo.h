@@ -10,6 +10,9 @@ protected:
 	// 識別用ID
 	int id;
 
+	// 元レイヤサイズ
+	irr::core::rect<irr::s32> srcRect;
+	
 	// コピー処理用一時変数
 	unsigned char *destBuffer;
 	int destWidth;
@@ -20,12 +23,7 @@ protected:
 	irr::video::IVideoDriver *driver;
 	// 割り当てテクスチャ
 	irr::video::ITexture *texture;
-
-	// 元レイヤサイズ
-	int layerWidth;
-	int layerHeight;
-	irr::core::rect<irr::s32> srcRect;
-
+	
 public:
 	// 表示対象かどうか
 	bool visible;

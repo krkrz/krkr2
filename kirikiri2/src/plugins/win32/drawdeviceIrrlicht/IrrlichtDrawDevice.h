@@ -17,11 +17,12 @@ protected:
 	bool zoomMode;
 	tjs_int width;        //< ユーザ指定の画面横幅
 	tjs_int height;       //< ユーザ指定の画面縦幅
+	tjs_int destWidth;    //< 実描画領域の横幅
+	tjs_int destHeight;   //< 実描画領域の縦幅
+
 	tjs_int screenWidth;  //< Irrlicht 実画面の画面横幅
 	tjs_int screenHeight; //< Irrlicht 実画面の画面縦幅
 	irr::core::rect<irr::s32> screenRect;
-	tjs_int destWidth;    //< 実描画領域の横幅
-	tjs_int destHeight;   //< 実描画領域の縦幅
 	irr::core::rect<irr::s32> destRect;
 
 public:
@@ -40,9 +41,6 @@ public:
 	virtual void TJS_INTF_METHOD OnContinuousCallback(tjs_uint64 tick);
 	
 protected:
-	// zoomMode 更新
-	void updateZoomMode();
-
 	// デバイス解放処理
 	virtual void detach();
 	
@@ -172,7 +170,7 @@ public:
 	
 	void setZoomMode(bool zoomMode) {
 		this->zoomMode = zoomMode;
-		updateZoomMode();
+		Window->NotifySrcResize();
 	}
 
 	tjs_int getWidth() {
@@ -199,6 +197,14 @@ public:
 		Window->NotifySrcResize();
 	}
 
+	tjs_int getDestWidth() {
+		return destWidth;
+	}
+
+	tjs_int getDestHeight() {
+		return destHeight;
+	}
+	
 protected:
 	/*
 	 * プライマリレイヤの標準の visible
