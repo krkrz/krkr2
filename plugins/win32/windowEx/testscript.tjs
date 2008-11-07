@@ -131,6 +131,9 @@ function TestGetMonitorInfo(args*) {
 	dm(@"System.getMonitorInfo(${args.join(', ')}) == " + MonitorToString(System.getMonitorInfo(args*)));
 }
 
+var testWin = new TestWindow("MainWindow");
+//testWin.add(new TestWindow("SubWindow"));
+
 dm("----------------");
 dm("モニタ一覧取得テスト");
 TestGetDisplayMonitors();
@@ -154,7 +157,7 @@ TestGetMonitorInfo("true",  -100, -100, 100, 100);
 TestGetMonitorInfo("false", -100, -100, 100, 100);
 
 dm("----------------");
-
-var testWin = new TestWindow("MainWindow");
-//testWin.add(new TestWindow("SubWindow"));
+dm("ウィンドウ指定モニタ取得テスト");
+TestGetMonitorInfo("true",   testWin);
+TestGetMonitorInfo("false",  testWin);
 
