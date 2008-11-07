@@ -104,6 +104,10 @@ class TestWindow extends Window {
 	property windowRect { getter { with (getWindowRect()) return @"WIN:${.x},${.y}/${.w},${.h}"; } }
 	property ltwh       { getter {                        return @"TJS:${left},${top}/${width},${height}"; } }
 	property iwh        { getter {                        return @"IWH:${innerWidth},${innerHeight}"; } }
+
+	function checkTimer() {
+		dm(@"${caption}.maximized: ${maximized}");
+	}
 }
 
 function RectToString(rect) {
@@ -133,6 +137,10 @@ function TestGetMonitorInfo(args*) {
 
 var testWin = new TestWindow("MainWindow");
 //testWin.add(new TestWindow("SubWindow"));
+
+var timer = new Timer(testWin, "checkTimer");
+timer.interval = 1000;
+timer.enabled = true;
 
 dm("----------------");
 dm("モニタ一覧取得テスト");

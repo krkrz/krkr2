@@ -91,6 +91,20 @@ struct WindowEx
 		return TJS_S_OK;
 	}
 
+	// getNormalRect
+	static tjs_error TJS_INTF_METHOD getNormalRect(tTJSVariant *r, tjs_int n, tTJSVariant **p, iTJSDispatch2 *obj) {
+		HWND hwnd = GetHWND(obj);
+		WINDOWPLACEMENT place;
+		ZeroMemory(&place, sizeof(place));
+		place.length = sizeof(place);
+		r->Clear();
+		if (hwnd != NULL && ::GetWindowPlacement(hwnd, &place)) {
+			ncbDictionaryAccessor dict;
+			if (SetRect(dict, &place.rcNormalPosition)) *r = tTJSVariant(dict, dict);
+		}
+		return TJS_S_OK;
+	}
+
 	// getMouseCursorPos
 	static tjs_error TJS_INTF_METHOD getMouseCursorPos(tTJSVariant *r, tjs_int n, tTJSVariant **p, iTJSDispatch2 *obj) {
 		POINT pt = { 0, 0 };
@@ -102,6 +116,25 @@ struct WindowEx
 				*r = tTJSVariant(dict, dict);
 			}
 		}
+		return TJS_S_OK;
+	}
+
+	// property maximized
+	static bool isMaximized(iTJSDispatch2 *obj) {
+		HWND hwnd = GetHWND(obj);
+		WINDOWPLACEMENT place;
+		ZeroMemory(&place, sizeof(place));
+		place.length = sizeof(place);
+		return (hwnd != NULL && ::GetWindowPlacement(hwnd, &place)) ? (place.showCmd == SW_MAXIMIZE) : false;
+	}
+	static tjs_error TJS_INTF_METHOD getMaximized(tTJSVariant *r, tjs_int n, tTJSVariant **p, iTJSDispatch2 *obj) {
+		r->Clear();
+		*r = isMaximized(obj);
+		return TJS_S_OK;
+	}
+	static tjs_error TJS_INTF_METHOD setMaximized(tTJSVariant *r, tjs_int n, tTJSVariant **p, iTJSDispatch2 *obj) {
+		bool m = !!p[0]->AsInteger();
+		if (m != isMaximized(obj)) postSysCommand(obj, m ? SC_MAXIMIZE : SC_RESTORE);
 		return TJS_S_OK;
 	}
 
@@ -219,15 +252,6 @@ private:
 	bool hasResizing, hasMoving, hasMove; //< メソッドが存在するかフラグ
 };
 
-// Windowにメソッドを追加
-NCB_ATTACH_FUNCTION(minimize,          Window, WindowEx::minimize);
-NCB_ATTACH_FUNCTION(maximize,          Window, WindowEx::maximize);
-NCB_ATTACH_FUNCTION(showRestore,       Window, WindowEx::showRestore);
-NCB_ATTACH_FUNCTION(resetWindowIcon,   Window, WindowEx::resetWindowIcon);
-NCB_ATTACH_FUNCTION(getWindowRect,     Window, WindowEx::getWindowRect);
-NCB_ATTACH_FUNCTION(getClientRect,     Window, WindowEx::getClientRect);
-NCB_ATTACH_FUNCTION(getMouseCursorPos, Window, WindowEx::getMouseCursorPos);
-
 // 拡張イベント用ネイティブインスタンスゲッタ
 NCB_GET_INSTANCE_HOOK(WindowEx)
 {
@@ -240,8 +264,19 @@ NCB_GET_INSTANCE_HOOK(WindowEx)
 	}
 };
 // メソッド追加
-NCB_ATTACH_CLASS_WITH_HOOK(WindowEx, Window) {
-	Method(TJS_W("registerExEvent"),  &Class::checkExEvents);
+NCB_ATTACH_CLASS_WITH_HOOK(WindowEx, Window)
+{
+	RawCallback(TJS_W("minimize"),          &Class::minimize,          0);
+	RawCallback(TJS_W("maximize"),          &Class::maximize,          0);
+	RawCallback(TJS_W("maximized"),         &Class::getMaximized,      &Class::setMaximized, 0);
+	RawCallback(TJS_W("showRestore"),       &Class::showRestore,       0);
+	RawCallback(TJS_W("resetWindowIcon"),   &Class::resetWindowIcon,   0);
+	RawCallback(TJS_W("getWindowRect"),     &Class::getWindowRect,     0);
+	RawCallback(TJS_W("getClientRect"),     &Class::getClientRect,     0);
+	RawCallback(TJS_W("getNormalRect"),     &Class::getNormalRect,     0);
+	RawCallback(TJS_W("getMouseCursorPos"), &Class::getMouseCursorPos, 0);
+
+	Method(TJS_W("registerExEvent"),        &Class::checkExEvents);
 }
 
 ////////////////////////////////////////////////////////////////
@@ -356,8 +391,8 @@ NCB_ATTACH_CLASS(MenuItemEx, MenuItem)
 	Variant(TJS_W("biPopupMaximize"),    (tjs_int)HBMMENU_POPUP_MAXIMIZE);
 	Variant(TJS_W("biPopupMinimize"),    (tjs_int)HBMMENU_POPUP_MINIMIZE);
 
-	NCB_PROPRETY_RAW_CALLBACK(rightJustify, ClassT::getRightJustify, ClassT::setRightJustify, 0);
-	NCB_PROPRETY_RAW_CALLBACK(bmpItem,      ClassT::getBmpItem,      ClassT::setBmpItem,      0);
+	RawCallback(TJS_W("rightJustify"), &Class::getRightJustify, &Class::setRightJustify, 0);
+	RawCallback(TJS_W("bmpItem"),      &Class::getBmpItem,      &Class::setBmpItem,      0);
 }
 
 
