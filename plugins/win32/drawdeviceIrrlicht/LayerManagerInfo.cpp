@@ -22,10 +22,10 @@ LayerManagerInfo::~LayerManagerInfo()
 void
 LayerManagerInfo::alloc(iTVPLayerManager *manager, irr::video::IVideoDriver *driver)
 {
+	free();
 	tjs_int w, h;
 	if (manager->GetPrimaryLayerSize(w, h) && w > 0 && h > 0) {
 		// テクスチャのサイズは2の階乗 Irrlicht がこのサイズに調整してからテクスチャをつくってるのであわせておく
-		free();
 		tjs_int tw = 1; while(tw < w) tw <<= 1;
 		tjs_int th = 1; while(th < h) th <<= 1;
 		char name[20];

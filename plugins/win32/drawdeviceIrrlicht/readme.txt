@@ -21,15 +21,20 @@
 
 -------------------------------------------
 Plugins.link("krrlicht.dll");
-
+var WIDTH=800;
+var HEIGHT=600;
 class MyWindow extends Window {
-	function MyWindow() {
-		super.Window();
-		setInnerSize(800, 600);
-		// drawdevice を差し替える
-		drawDevice = new Irrlicht.DrawDevice();
-		add(new Layer(this, null); // プライマリレイヤ指定
-	}
+  var base;
+  function MyWindow() {
+    super.Window();
+    setInnerSize(WIDTH, HEIGHT);
+    // drawdevice を差し替え
+    drawDevice = new Irrlicht.DrawDevice(WIDTH,HEIGHT);
+     // プライマリレイヤ生成
+    base = new Layer(this,null);
+    base.setSize(WIDTH,HEIGHT);
+    add(base);
+  }
 };
 -------------------------------------------
 
