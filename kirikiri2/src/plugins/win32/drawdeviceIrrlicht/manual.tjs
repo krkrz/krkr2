@@ -100,7 +100,10 @@ class Irrlicht {
 	class IGUIEnvironment {
 	};
 
-
+	// -----------------------------------------------------------------------------
+	//　Irrlicht 基本機能クラス
+	// -----------------------------------------------------------------------------
+	
 	/**
 	 * 共通機能分（実際にはこのクラスはありません）
 	 */
@@ -110,24 +113,39 @@ class Irrlicht {
 		property guiEnvironment; //< GUI環境（IGUIEnvironmentクラス）。読み出し専用
 	};
 	
-	
 	/**
 	 * 吉里吉里用 drawdevice クラス
+	 *
+	 * Irrlicht の画面上に吉里吉里プライマリレイヤ(複数)を配置可能な drawDevice です
+	 * Irrlicht シーン画面 → 吉里吉里プライマリレイヤ（生成順）→ Irrlicht GUI の
+	 * 順で描画が行われます。マウスイベントは、Irrlicht GUI および、最初につくった
+	 * プライマリレイヤに対して配信されます。
+	 *
+	 * プライマリレイヤは、Irrlicht から "krkr0", "krkr1", ... という名前のテクスチャ
+	 * として参照可能で、吉里吉里の描画内容が常時反映された状態になってます
 	 */
 	class DrawDevice extends Base {
 
+		property interface; //< drawdevice 情報（内部参照用）。読み出し専用
+		
 		/**
 		 * コンストラクタ
 		 * @param width 描画領域横幅
 		 * @param width 描画領域縦幅
+		 * 縦幅と横幅は従来的機構での primaryLayer の width/height に相当するものです。
+		 * 作成されたプライマリレイヤ(複数)はすべてここで指定した領域に対して
+		 * 引き延ばし表示されます。
+		 * 例:
+		 *     drawDevice = new Irrlicht.DrawDevice(800,400);
+		 *     base1 = new Layer(this, null); base1.setSize(800,400); // 画面と同じ解像度
+		 *     base2 = new Layer(this, null); base1.setSize(400,200); // 画面の半分の解像度
+		 *     base3 = new Layer(this, null); base1.setSize(800,200); // 縦だけ解像度半分
 		 */
 		function DrawDevice(width, height);
 
-		property interface; //< drawdevice 情報（内部参照用）。読み出し専用
-		
 		property width;  //< 描画領域横幅
 		property height; //< 描画領域縦幅
-
+		
 		/**
 		 * 描画領域の設定
 		 * @param width 描画領域横幅
@@ -137,10 +155,32 @@ class Irrlicht {
 		
 		/**
 		 * 拡大モード: 初期値は true
-		 * true: 初期指定した描画領域で処理して画面への表示時に拡大縮小します
-		 * false: 実際の画面上の解像度で処理します
+		 * true: Irrlichtを初期指定した描画領域で処理して画面への表示時に拡大縮小します
+		 * false: Irrlichtを実際の画面上の解像度で処理します
+		 * false にした場合、Irrlicht 側の座標系がフルスクリーン化した時や、
+		 * Window.setZoom した時に変化するので注意が必要です。
 		 */
 		property zoomMode;
+
+		/*
+		 * プライマリレイヤの標準の visible
+		 * プライマリレイヤを生成時に表示するかどうかを指定します。
+		 */
+		property defaultVisible;
+		
+		/**
+		 * プライマリレイヤの表示状態の指定
+		 * @param id プライマリレイヤの登録ID
+		 * @param visible 表示状態
+		 */
+		function setVisible(id, visible);
+		
+		/**
+		 * プライマリレイヤの表示状態の指定
+		 * @param id プライマリレイヤの登録ID
+		 * @return visible 表示状態
+		 */
+		function getVisible(id);
 	};
 
 	/**
@@ -181,7 +221,7 @@ class Irrlicht {
 
 
 /**
- * レイヤに対して機能拡張
+ * レイヤに対する機能拡張
  */
 class Layer {
 	/**

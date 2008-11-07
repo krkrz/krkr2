@@ -5,10 +5,9 @@
 /**
  * コンストラクタ
  */
-LayerManagerInfo::LayerManagerInfo(irr::video::ITexture *texture, int layerWidth, int layerHeight)
-	: texture(texture), layerWidth(layerWidth), layerHeight(layerHeight)
+LayerManagerInfo::LayerManagerInfo(int id, bool visible)
+	: id(id), visible(visible), driver(NULL), texture(NULL), destBuffer(NULL)
 {
-	destBuffer = NULL;
 };
 
 /**
@@ -16,8 +15,41 @@ LayerManagerInfo::LayerManagerInfo(irr::video::ITexture *texture, int layerWidth
  */
 LayerManagerInfo::~LayerManagerInfo()
 {
+	free();
 }
 
+// 割り当て処理
+void
+LayerManagerInfo::alloc(iTVPLayerManager *manager, irr::video::IVideoDriver *driver)
+{
+	tjs_int w, h;
+	if (manager->GetPrimaryLayerSize(w, h) && w > 0 && h > 0) {
+		// テクスチャのサイズは2の階乗 Irrlicht がこのサイズに調整してからテクスチャをつくってるのであわせておく
+		free();
+		tjs_int tw = 1; while(tw < w) tw <<= 1;
+		tjs_int th = 1; while(th < h) th <<= 1;
+		char name[20];
+		snprintf(name, sizeof name-1, "krkr%d", id);
+		texture = driver->addTexture(irr::core::dimension2d<irr::s32>(tw, th), name, irr::video::ECF_A8R8G8B8);
+		if (texture == NULL) {
+			TVPThrowExceptionMessage(L"テクスチャの割り当てに失敗しました");
+		} else {
+			this->driver = driver;
+			manager->RequestInvalidation(tTVPRect(0,0,w,h));
+			srcRect = irr::core::rect<irr::s32>(0,0,w,h);
+		}
+	}
+}
+
+void
+LayerManagerInfo::free()
+{
+	if (driver) {
+		driver->removeTexture(texture);
+		driver = NULL;
+		texture = NULL;
+	}
+}
 
 /**
  * テクスチャをロックして描画領域情報を取得する
@@ -88,5 +120,16 @@ LayerManagerInfo::unlock()
 	if (texture) {
 		texture->unlock();
 		destBuffer = NULL;
+	}
+}
+
+/**
+ * 画面への描画
+ */
+void
+LayerManagerInfo::draw(irr::video::IVideoDriver *driver, irr::core::rect<irr::s32> destRect)
+{
+	if (visible && texture) {
+		driver->draw2DImage(texture, destRect, srcRect, NULL, NULL, true);
 	}
 }
