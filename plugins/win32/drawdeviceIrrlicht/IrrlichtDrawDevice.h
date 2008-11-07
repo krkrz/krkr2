@@ -14,11 +14,14 @@ class IrrlichtDrawDevice :
 	typedef tTVPDrawDevice inherited;
 
 protected:
-	tjs_int screenWidth;
-	tjs_int screenHeight;
-	tjs_int width;
-	tjs_int height;
 	bool zoomMode;
+	tjs_int width;        //< ユーザ指定の画面横幅
+	tjs_int height;       //< ユーザ指定の画面縦幅
+	tjs_int screenWidth;  //< Irrlicht 実画面の画面横幅
+	tjs_int screenHeight; //< Irrlicht 実画面の画面縦幅
+	irr::core::rect<irr::s32> screenRect;
+	tjs_int destWidth;    //< 実描画領域の横幅
+	tjs_int destHeight;   //< 実描画領域の縦幅
 	irr::core::rect<irr::s32> destRect;
 
 public:
@@ -40,11 +43,6 @@ protected:
 	// zoomMode 更新
 	void updateZoomMode();
 
-	// テクスチャの割り当て
-	void allocInfo(iTVPLayerManager * manager);
-	// テクスチャの解放
-	void freeInfo(iTVPLayerManager * manager);
-
 	// デバイス解放処理
 	virtual void detach();
 	
@@ -57,15 +55,45 @@ protected:
 	 * @param		y		Y位置
 	 * @note		x, y は DestRectの (0,0) を原点とする座標として渡されると見なす
 	 */
-	void TransformTo(tjs_int &x, tjs_int &y);
+	void transformToIrrlicht(tjs_int &x, tjs_int &y);
 
 	/** Irrlicht→Device方向の座標の変換を行う
 	 * @param		x		X位置
 	 * @param		y		Y位置
 	 * @note		x, y は レイヤの (0,0) を原点とする座標として渡されると見なす
 	 */
-	void TransformFrom(tjs_int &x, tjs_int &y);
+	void transformFromIrrlicht(tjs_int &x, tjs_int &y);
 
+	/**
+	 * Device→レイヤマネージャの座標の変換を行う
+	 * @param		x		X位置
+	 * @param		y		Y位置
+	 * @note		x, y は DestRectの (0,0) を原点とする座標として渡されると見なす
+	 */
+	void transformToManager(iTVPLayerManager * manager, tjs_int &x, tjs_int &y);
+
+	/** レイヤマネージャ→Device方向の座標の変換を行う
+	 * @param		x		X位置
+	 * @param		y		Y位置
+	 * @note		x, y は レイヤの (0,0) を原点とする座標として渡されると見なす
+	 */
+	void transformFromManager(iTVPLayerManager * manager, tjs_int &x, tjs_int &y);
+
+	/**
+	 * Device→標準座標の変換を行う
+	 * @param		x		X位置
+	 * @param		y		Y位置
+	 * @note		x, y は DestRectの (0,0) を原点とする座標として渡されると見なす
+	 */
+	void transformTo(tjs_int &x, tjs_int &y);
+	
+	/** 標準座標→Device方向の座標の変換を行う
+	 * @param		x		X位置
+	 * @param		y		Y位置
+	 * @note		x, y は レイヤの (0,0) を原点とする座標として渡されると見なす
+	 */
+	void transformFrom(tjs_int &x, tjs_int &y);
+	
 	// ------------------------------------------------------------
 	// 更新処理
 	// ------------------------------------------------------------
@@ -93,11 +121,12 @@ public:
 	virtual void TJS_INTF_METHOD OnMouseDown(tjs_int x, tjs_int y, tTVPMouseButton mb, tjs_uint32 flags);
 	virtual void TJS_INTF_METHOD OnMouseUp(tjs_int x, tjs_int y, tTVPMouseButton mb, tjs_uint32 flags);
 	virtual void TJS_INTF_METHOD OnMouseMove(tjs_int x, tjs_int y, tjs_uint32 flags);
-	virtual void TJS_INTF_METHOD OnKeyDown(tjs_uint key, tjs_uint32 shift);
-	virtual void TJS_INTF_METHOD OnKeyUp(tjs_uint key, tjs_uint32 shift);
-	virtual void TJS_INTF_METHOD OnKeyPress(tjs_char key);
 	virtual void TJS_INTF_METHOD OnMouseWheel(tjs_uint32 shift, tjs_int delta, tjs_int x, tjs_int y);
 
+	virtual void TJS_INTF_METHOD GetCursorPos(iTVPLayerManager * manager, tjs_int &x, tjs_int &y);
+	virtual void TJS_INTF_METHOD SetCursorPos(iTVPLayerManager * manager, tjs_int x, tjs_int y);
+	virtual void TJS_INTF_METHOD RequestInvalidation(const tTVPRect & rect);
+	
 	//---- 再描画関連
 	virtual void TJS_INTF_METHOD Show();
 	
@@ -169,6 +198,36 @@ public:
 		this->height = height;
 		Window->NotifySrcResize();
 	}
+
+protected:
+	/*
+	 * プライマリレイヤの標準の visible
+	 */
+	bool defaultVisible;
+
+public:
+	void setDefaultVisible(bool visible) {
+		defaultVisible = visible;
+	}
+	
+	bool getDefaultVisible() {
+		return defaultVisible;
+	}
+
+	/**
+	 * プライマリレイヤの表示状態の指定
+	 * @param id プライマリレイヤの登録ID
+	 * @param visible 表示状態
+	 */
+	void setVisible(int id, bool visible);
+
+	/**
+	 * プライマリレイヤの表示状態の指定
+	 * @param id プライマリレイヤの登録ID
+	 * @return visible 表示状態
+	 */
+	bool getVisible(int id);
+	
 };
 
 #endif
