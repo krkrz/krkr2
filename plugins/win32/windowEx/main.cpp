@@ -333,52 +333,64 @@ struct MenuItemEx
 	}
 
 	// property rightJustify
-	static tjs_error TJS_INTF_METHOD getRightJustify(tTJSVariant *r, tjs_int n, tTJSVariant **p, iTJSDispatch2 *obj) {
-		HMENU hmenu;
-		UINT index;
-		MENUITEMINFO mi;
-		r->Clear();
-		if (getMenuItemInfo(obj, hmenu, index, mi, MIIM_FTYPE))
-			*r = !!(mi.fType & MFT_RIGHTJUSTIFY);
-		return TJS_S_OK;
+	tTJSVariant getRightJustify() const {
+		tTJSVariant r;
+		if (set_rj) r = rj;
+		return r;
 	}
-	static tjs_error TJS_INTF_METHOD setRightJustify(tTJSVariant *r, tjs_int n, tTJSVariant **p, iTJSDispatch2 *obj) {
+	void setRightJustify(tTJSVariant v) {
+		if (v.Type() == tvtVoid) return;
 		HMENU hmenu;
 		UINT index;
 		MENUITEMINFO mi;
+		rj = !!v.AsInteger();
+		set_rj = true;
 		if (getMenuItemInfo(obj, hmenu, index, mi, MIIM_FTYPE)) {
-			if (p[0]->AsInteger()) mi.fType |= MFT_RIGHTJUSTIFY;
-			else                   mi.fType &= MFT_RIGHTJUSTIFY ^ (~0L);
+			if (rj) mi.fType |= MFT_RIGHTJUSTIFY;
+			else    mi.fType &= MFT_RIGHTJUSTIFY ^ (~0L);
 			::SetMenuItemInfo(hmenu, index, TRUE, &mi);
 			::DrawMenuBar(GetHWND(obj));
 		}
-		return TJS_S_OK;
 	}
 
 	// property bmpItem
-	static tjs_error TJS_INTF_METHOD getBmpItem(tTJSVariant *r, tjs_int n, tTJSVariant **p, iTJSDispatch2 *obj) {
-		HMENU hmenu;
-		UINT index;
-		MENUITEMINFO mi;
-		r->Clear();
-		if (getMenuItemInfo(obj, hmenu, index, mi, MIIM_BITMAP))
-			*r = (tjs_int)(mi.hbmpItem);
-		return TJS_S_OK;
+	tTJSVariant getBmpItem() const {
+		tTJSVariant r;
+		if (set_bmp) r = bmp;
+		return r;
 	}
-	static tjs_error TJS_INTF_METHOD setBmpItem(tTJSVariant *r, tjs_int n, tTJSVariant **p, iTJSDispatch2 *obj) {
+	void setBmpItem(tTJSVariant v) {
+		if (v.Type() == tvtVoid) return;
 		HMENU hmenu;
 		UINT index;
 		MENUITEMINFO mi;
+		bmp = (tjs_int)v.AsInteger();
+		set_bmp = true;
 		if (getMenuItemInfo(obj, hmenu, index, mi, MIIM_BITMAP)) {
-			mi.hbmpItem = (HBITMAP)(p[0]->AsInteger());
+			mi.hbmpItem = (HBITMAP)(bmp);
 			::SetMenuItemInfo(hmenu, index, TRUE, &mi);
 			::DrawMenuBar(GetHWND(obj));
 		}
-		return TJS_S_OK;
 	}
 
+	MenuItemEx(iTJSDispatch2* _obj) : obj(_obj), set_rj(false), set_bmp(false), rj(0), bmp(0) {}
+	~MenuItemEx() {}
+private:
+	iTJSDispatch2 *obj;
+	bool set_rj, set_bmp;
+	tjs_int  rj,     bmp;
 };
-NCB_ATTACH_CLASS(MenuItemEx, MenuItem)
+NCB_GET_INSTANCE_HOOK(MenuItemEx)
+{
+	/**/  NCB_GET_INSTANCE_HOOK_CLASS () {}
+	/**/ ~NCB_GET_INSTANCE_HOOK_CLASS () {}
+	NCB_INSTANCE_GETTER(objthis) {
+		ClassT* obj = GetNativeInstance(objthis);
+		if (!obj) SetNativeInstance(objthis, (obj = new ClassT(objthis)));
+		return obj;
+	}
+};
+NCB_ATTACH_CLASS_WITH_HOOK(MenuItemEx, MenuItem)
 {
 	Variant(TJS_W("biSystem"),           (tjs_int)HBMMENU_SYSTEM);
 	Variant(TJS_W("biRestore"),          (tjs_int)HBMMENU_MBAR_RESTORE);
@@ -391,8 +403,8 @@ NCB_ATTACH_CLASS(MenuItemEx, MenuItem)
 	Variant(TJS_W("biPopupMaximize"),    (tjs_int)HBMMENU_POPUP_MAXIMIZE);
 	Variant(TJS_W("biPopupMinimize"),    (tjs_int)HBMMENU_POPUP_MINIMIZE);
 
-	RawCallback(TJS_W("rightJustify"), &Class::getRightJustify, &Class::setRightJustify, 0);
-	RawCallback(TJS_W("bmpItem"),      &Class::getBmpItem,      &Class::setBmpItem,      0);
+	Property(TJS_W("rightJustify"), &Class::getRightJustify, &Class::setRightJustify);
+	Property(TJS_W("bmpItem"),      &Class::getBmpItem,      &Class::setBmpItem     );
 }
 
 
