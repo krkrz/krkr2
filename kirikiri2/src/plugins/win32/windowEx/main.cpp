@@ -122,10 +122,13 @@ struct WindowEx
 	// property maximized
 	static bool isMaximized(iTJSDispatch2 *obj) {
 		HWND hwnd = GetHWND(obj);
+		/*
 		WINDOWPLACEMENT place;
 		ZeroMemory(&place, sizeof(place));
 		place.length = sizeof(place);
 		return (hwnd != NULL && ::GetWindowPlacement(hwnd, &place)) ? (place.showCmd == SW_MAXIMIZE) : false;
+		 */
+		return (hwnd != NULL && ::IsZoomed(hwnd));
 	}
 	static tjs_error TJS_INTF_METHOD getMaximized(tTJSVariant *r, tjs_int n, tTJSVariant **p, iTJSDispatch2 *obj) {
 		r->Clear();
@@ -135,6 +138,19 @@ struct WindowEx
 	static tjs_error TJS_INTF_METHOD setMaximized(tTJSVariant *r, tjs_int n, tTJSVariant **p, iTJSDispatch2 *obj) {
 		bool m = !!p[0]->AsInteger();
 		if (m != isMaximized(obj)) postSysCommand(obj, m ? SC_MAXIMIZE : SC_RESTORE);
+		return TJS_S_OK;
+	}
+
+	// property disableResize
+	static tjs_error TJS_INTF_METHOD getDisableResize(tTJSVariant *r, tjs_int n, tTJSVariant **p, iTJSDispatch2 *obj) {
+		WindowEx *self = ncbInstanceAdaptor<WindowEx>::GetNativeInstance(obj);
+		*r = (self != NULL && self->disableResize);
+		return TJS_S_OK;
+	}
+	static tjs_error TJS_INTF_METHOD setDisableResize(tTJSVariant *r, tjs_int n, tTJSVariant **p, iTJSDispatch2 *obj) {
+		WindowEx *self = ncbInstanceAdaptor<WindowEx>::GetNativeInstance(obj);
+		if (self == NULL) return TJS_E_ACCESSDENYED;
+		self->disableResize = !!p[0]->AsInteger();
 		return TJS_S_OK;
 	}
 
@@ -213,6 +229,33 @@ struct WindowEx
 		case WM_SIZING: if (hasResizing) callback(EXEV_RESIZING, (RECT*)mes->LParam, mes->WParam); break;
 		case WM_MOVING: if (hasMoving)   callback(EXEV_MOVING,   (RECT*)mes->LParam); break;
 		case WM_MOVE:   if (hasMove)     callback(EXEV_MOVE, (int)LOWORD(mes->LParam), (int)HIWORD(mes->LParam)); break;
+			// サイズ変更カーソルを抑制
+		case WM_NCHITTEST:
+			if (disableResize) {
+				HWND hwnd = GetHWND(self);
+				if (hwnd != NULL) {
+					LRESULT res = ::DefWindowProc(hwnd, mes->Msg, mes->WParam, mes->LParam);
+					switch (res) {
+						/**/             case HTLEFT:       case HTRIGHT:
+					case HTTOP:       case HTTOPLEFT:    case HTTOPRIGHT:
+					case HTBOTTOM: case HTBOTTOMLEFT: case HTBOTTOMRIGHT:
+						res = HTBORDER;
+						break;
+					}
+					mes->Result = res;
+					return true;
+				}
+			}
+			break;
+			// システムメニューサイズ変更抑制
+		case WM_INITMENUPOPUP:
+			if (disableResize && HIWORD(mes->LParam)) {
+				HWND hwnd = GetHWND(self);
+				if (hwnd != NULL) mes->Result = ::DefWindowProc(hwnd, mes->Msg, mes->WParam, mes->LParam);
+				::EnableMenuItem((HMENU)mes->WParam, SC_SIZE, MF_GRAYED | MF_BYCOMMAND);
+				return (hwnd != NULL);
+			}
+			break;
 		}
 		return false;
 	}
@@ -237,7 +280,8 @@ struct WindowEx
 		:   self(obj),
 			hasResizing(false),
 			hasMoving(false),
-			hasMove(false)
+			hasMove(false),
+			disableResize(false)
 		{ regist(true); }
 
 	~WindowEx() { regist(false); }
@@ -250,6 +294,7 @@ struct WindowEx
 private:
 	iTJSDispatch2 *self;
 	bool hasResizing, hasMoving, hasMove; //< メソッドが存在するかフラグ
+	bool disableResize; // サイズ変更禁止
 };
 
 // 拡張イベント用ネイティブインスタンスゲッタ
@@ -266,17 +311,18 @@ NCB_GET_INSTANCE_HOOK(WindowEx)
 // メソッド追加
 NCB_ATTACH_CLASS_WITH_HOOK(WindowEx, Window)
 {
-	RawCallback(TJS_W("minimize"),          &Class::minimize,          0);
-	RawCallback(TJS_W("maximize"),          &Class::maximize,          0);
-	RawCallback(TJS_W("maximized"),         &Class::getMaximized,      &Class::setMaximized, 0);
-	RawCallback(TJS_W("showRestore"),       &Class::showRestore,       0);
-	RawCallback(TJS_W("resetWindowIcon"),   &Class::resetWindowIcon,   0);
-	RawCallback(TJS_W("getWindowRect"),     &Class::getWindowRect,     0);
-	RawCallback(TJS_W("getClientRect"),     &Class::getClientRect,     0);
-	RawCallback(TJS_W("getNormalRect"),     &Class::getNormalRect,     0);
-	RawCallback(TJS_W("getMouseCursorPos"), &Class::getMouseCursorPos, 0);
+	RawCallback(TJS_W("minimize"),            &Class::minimize,          0);
+	RawCallback(TJS_W("maximize"),            &Class::maximize,          0);
+	RawCallback(TJS_W("maximized"),           &Class::getMaximized,      &Class::setMaximized, 0);
+	RawCallback(TJS_W("showRestore"),         &Class::showRestore,       0);
+	RawCallback(TJS_W("resetWindowIcon"),     &Class::resetWindowIcon,   0);
+	RawCallback(TJS_W("getWindowRect"),       &Class::getWindowRect,     0);
+	RawCallback(TJS_W("getClientRect"),       &Class::getClientRect,     0);
+	RawCallback(TJS_W("getNormalRect"),       &Class::getNormalRect,     0);
+	RawCallback(TJS_W("getMouseCursorPos"),   &Class::getMouseCursorPos, 0);
+	RawCallback(TJS_W("disableResize"),       &Class::setDisableResize,  &Class::setDisableResize, 0);
 
-	Method(TJS_W("registerExEvent"),        &Class::checkExEvents);
+	Method(     TJS_W("registerExEvent"),     &Class::checkExEvents);
 }
 
 ////////////////////////////////////////////////////////////////
