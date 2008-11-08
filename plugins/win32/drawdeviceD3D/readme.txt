@@ -21,7 +21,7 @@ class MyWindow extends Window {
     super.Window();
     setInnerSize(WIDTH, HEIGHT);
     // drawdevice を差し替え
-    drawDevice = new Irrlicht.DrawDevice(WIDTH,HEIGHT);
+    drawDevice = new DrawDeviceD3D(WIDTH,HEIGHT);
      // プライマリレイヤ生成
     base = new Layer(this,null);
     base.setSize(WIDTH,HEIGHT);
