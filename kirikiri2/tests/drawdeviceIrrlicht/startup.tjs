@@ -1,0 +1,146 @@
+Plugins.link("krrlicht.dll");
+Storages.addAutoPath("sample/");
+Storages.addAutoPath("../layerExDraw/");
+Storages.addAutoPath("../layerEx/");
+
+Scripts.execStorage("UpdateRegion.tjs");
+Scripts.execStorage("AffineLayer.tjs");
+
+var WIDTH=800;
+var HEIGHT=450;
+
+/**
+ * ベースレイヤ
+ * Irrlicht 的にテクスチャとして配置可能なレイヤとして機能する
+ */
+class BaseLayer extends Layer
+{
+	var layer;
+	
+	function BaseLayer(win, width, height) {
+		super.Layer(win, null);
+
+		setSize(width, height);
+		fillRect(0,0,width,height,0);
+		
+		// 表示レイヤ
+		layer = new AffineLayer(window, this);
+		layer.loadImages("test.png");
+		layer.setSizeToImageSize();
+		//layer.setZoom(width / WIDTH * 100, height / HEIGHT * 100);
+		//layer.setPos((width - layer.width)/2, (height-layer.height)/2);
+		layer.visible = true;
+	}
+
+	function finalize() {
+		invalidate layer;
+	}
+
+	function onMouseDown(x, y, button, shift) {
+		Debug.message("レイヤ:マウス押し下げ:" + x + "," + y + "," + button + "," + shift);
+	}
+	
+	function onMouseMove(x, y, shift) {
+		Debug.message("レイヤ:マウス移動:" + x + "," + y + "," + shift);
+	}
+
+}
+
+class MyWindow extends Window
+{
+	var initTrigger;
+	var base;
+	var base2;
+
+	function MyWindow() {
+		super.Window();
+		drawDevice = new Irrlicht.DrawDevice(WIDTH, HEIGHT);
+		//drawDevice.zoomMode = false;
+		
+		showScrollBars = false;
+		setInnerSize(WIDTH, HEIGHT);
+		
+		// 1枚目のプライマリレイヤ
+		base = new BaseLayer(this, WIDTH/2, HEIGHT/2);
+		add(base);
+		
+		// 2枚目のプライマリレイヤ
+		base2 = new BaseLayer(this, WIDTH, HEIGHT);
+		add(base2);
+
+		// 画面更新用トリガ
+		initTrigger = new AsyncTrigger(initScreen, "");
+		initTrigger.cached = true;
+		initTrigger.mode = atmExclusive;
+		
+		initTrigger.trigger();
+	}
+
+	function onKeyDown(key, shift)
+	{
+		Debug.message("キーがおされた:" + key);
+		if(key == VK_ESCAPE) {
+			close();
+		} else if(key == VK_TAB) {
+			fullScreen = !fullScreen;
+			initTrigger.trigger();
+		}
+	}
+
+	var wins = [];
+
+	function initData(smgr) {
+		smgr.ambientColor = 0xffffff;
+		smgr.loadScene("example.irr");
+		smgr.addLightSceneNode(null, [0,0,0], 0xffffff, 100, 1);
+		smgr.addCameraSceneNode(null, [0,0,-40], [0,0,0], 2);
+	}
+
+	function initScreen() {
+		initData(drawDevice.sceneManager);
+		if (0) {
+			var win = new Irrlicht.Window(this, 0, 0, 200, 150);
+			win.visible = true;
+			initData(win.sceneManager);
+			wins.add(win);
+		}
+	}
+	
+	function onMouseDown(x, y, button, shift) {
+		Debug.message("マウス押し下げ:" + x + "," + y + "," + button + "," + shift);
+	}
+	
+	function onMouseMove(x, y, shift) {
+		Debug.message("マウス移動:" + x + "," + y + "," + shift);
+	}
+};
+
+class CaptureWindow extends Window
+{
+	var base;
+	var target;
+	
+	function CaptureWindow(target) {
+		super.Window();
+		setInnerSize(WIDTH, HEIGHT);
+		base = new Layer(this, null);
+		base.setSize(WIDTH, HEIGHT);
+		add(base);
+		this.target = target;
+	}
+
+	function onKeyDown(key, shift) {
+		Debug.message("キーがおされた:" + key);
+		if(key == VK_ESCAPE) {
+			close();
+		} else if(key == VK_SPACE) {
+			base.copyIImage(target.videoDriver.createScreenShot());
+		}
+	}
+};
+
+var win = new MyWindow();
+win.visible = true;
+
+//var capwin = new CaptureWindow(win.drawDevice);
+//capwin.visible = true;
