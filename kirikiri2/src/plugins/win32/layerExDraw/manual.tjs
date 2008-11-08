@@ -313,13 +313,34 @@ class GdiPlus {
 	 */
 	class PointF {
 		function PointF(x, y);
+		property x;
+		property y;
+		function Equals(a);
 	}
 
 	/**
 	 * 矩形情報を取り扱うクラス
 	 */
 	class RectF {
-		function RectF(x, y);
+		function RectF(x, y, w, h);
+		property x;
+		property y;
+		property width;
+		property height;
+		property left; // read only
+		property top;  // read only
+		property right; // read only
+		property bottom; // read only
+		property location; // read only
+		property bounds; // read only
+		function Clone();
+		function Equals(a);
+		function Inflate(a,b);
+		function InflatePoint(p);
+		function IntersectsWith();
+		function IsEmptyArea();
+		function Offset(a,b);
+		function Union();
 	}
 
 	/**
@@ -328,6 +349,22 @@ class GdiPlus {
 	class Matrix {
 		// コンストラクタ XXX 現時点では引数は処理できない
 		function Matrix();
+
+		function OffsetX();
+		function OffsetY();
+		function Equals();
+		function SetElemetns();
+		function GetLastStatus();
+		function Invert();
+		function IsIdentity();
+		function IsInvertible();
+		function Multiply();
+		function Reset();
+		function Rotate();
+		function RotateAt();
+		function Scale();
+		function Share();
+		function Translate();
 	}
 	
 	/**
@@ -343,7 +380,7 @@ class GdiPlus {
 		 * 画像をロードする
 		 * @param filename 画像ファイル名
 		 */
-		funciton load(filename);
+		function load(filename);
 
 		/**
 		 * @return このオブジェクトの複製(Image)
@@ -375,6 +412,12 @@ class GdiPlus {
 		 * @return 縦幅 (pixel値:整数)
 		 */
 		function GetHeight();
+
+		function GetFlags();
+		function GetLastStatus();
+		function GetPixelFormat();
+		function GetType();
+		function RotateFlip();
 	};
 }
 
