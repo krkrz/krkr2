@@ -380,7 +380,6 @@ NCB_GDIP_METHOD(Reset);
 NCB_GDIP_METHOD(Rotate);
 NCB_GDIP_METHOD(RotateAt);
 NCB_GDIP_METHOD(Scale);
-NCB_GDIP_METHOD(Rotate);
 NCB_GDIP_METHOD(Shear);
 //	NCB_GDIP_METHOD_DETAIL(TransformPoints, Class, Status, TransformPoints, (PointF*, INT)); XXX ˆø”‚ª”z—ñ
 //	NCB_GDIP_METHOD_DETAIL(TransformVectors, Class, Status, TransformVectors, (PointF*, INT)); XXX ˆø”‚ª”z—ñ
