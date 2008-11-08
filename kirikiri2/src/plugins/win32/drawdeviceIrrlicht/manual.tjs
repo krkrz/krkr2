@@ -153,6 +153,9 @@ class Irrlicht {
 		 */
 		function setSize(width, height);
 		
+		property destWidth;  //< ŽÀ•`‰æ—Ìˆæ‰¡•
+		property destHeight; //< ŽÀ•`‰æ—Ìˆæc•
+
 		/**
 		 * Šg‘åƒ‚[ƒh: ‰Šú’l‚Í true
 		 * true: Irrlicht‚ð‰ŠúŽw’è‚µ‚½•`‰æ—Ìˆæ‚Åˆ—‚µ‚Ä‰æ–Ê‚Ö‚Ì•\Ž¦Žž‚ÉŠg‘åk¬‚µ‚Ü‚·
