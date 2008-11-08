@@ -24,18 +24,25 @@ class TestWindow extends Window {
 		registerExEvent();
 	}
 	function createMenu() {
-		var tes = new MenuItem(this, "test");
+		var tes1 = new MenuItem(this, "test1");
+		var tes2 = new MenuItem(this, "test2");
 		
 		var min = new MenuItem(this, "");
 		var max = new MenuItem(this, "");
 		var cls = new MenuItem(this, "");
 
-		tes.onClick = Debug.console.showRestore;
+		tes1.onClick = Debug.console.showRestore;
+		tes2.add(new MenuItem(this, "1"));
+		tes2.add(new MenuItem(this, "2"));
+		tes2.add(new MenuItem(this, "3"));
+		tes2.add(new MenuItem(this, "4"));
+
 		min.onClick = minimize;
 		max.onClick = maximize;
 		cls.onClick = close;
 
-		menu.add(tes);
+		menu.add(tes1);
+		menu.add(tes2);
 		menu.add(min);
 		menu.add(max);
 		menu.add(cls);
@@ -104,6 +111,10 @@ class TestWindow extends Window {
 	property windowRect { getter { with (getWindowRect()) return @"WIN:${.x},${.y}/${.w},${.h}"; } }
 	property ltwh       { getter {                        return @"TJS:${left},${top}/${width},${height}"; } }
 	property iwh        { getter {                        return @"IWH:${innerWidth},${innerHeight}"; } }
+
+	function onMouseUp(x, y) {
+		menu.children[1].popup(tpmTopAlign|tpmLeftAlign, x, y);
+	}
 
 	function checkTimer() {
 		dm(@"${caption}.maximized: ${maximized}");
