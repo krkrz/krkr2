@@ -68,10 +68,10 @@ struct WindowEx
 	static tjs_error TJS_INTF_METHOD getWindowRect(tTJSVariant *r, tjs_int n, tTJSVariant **p, iTJSDispatch2 *obj) {
 		RECT rect;
 		HWND hwnd = GetHWND(obj);
-		r->Clear();
+		if (r) r->Clear();
 		if (hwnd != NULL && ::GetWindowRect(hwnd, &rect)) {
 			ncbDictionaryAccessor dict;
-			if (SetRect(dict, &rect)) *r = tTJSVariant(dict, dict);
+			if (SetRect(dict, &rect) && r) *r = tTJSVariant(dict, dict);
 		}
 		return TJS_S_OK;
 	}
@@ -81,13 +81,13 @@ struct WindowEx
 		RECT rect;
 		POINT zero = { 0, 0 };
 		HWND hwnd = GetHWND(obj);
-		r->Clear();
+		if (r) r->Clear();
 		if (hwnd != NULL && ::GetClientRect(hwnd, &rect)) {
 			::ClientToScreen(hwnd, &zero);
 			rect.left   += zero.x; rect.top    += zero.y;
 			rect.right  += zero.x; rect.bottom += zero.y;
 			ncbDictionaryAccessor dict;
-			if (SetRect(dict, &rect)) *r = tTJSVariant(dict, dict);
+			if (SetRect(dict, &rect) && r) *r = tTJSVariant(dict, dict);
 		}
 		return TJS_S_OK;
 	}
@@ -98,10 +98,10 @@ struct WindowEx
 		WINDOWPLACEMENT place;
 		ZeroMemory(&place, sizeof(place));
 		place.length = sizeof(place);
-		r->Clear();
+		if (r) r->Clear();
 		if (hwnd != NULL && ::GetWindowPlacement(hwnd, &place)) {
 			ncbDictionaryAccessor dict;
-			if (SetRect(dict, &place.rcNormalPosition)) *r = tTJSVariant(dict, dict);
+			if (SetRect(dict, &place.rcNormalPosition) && r) *r = tTJSVariant(dict, dict);
 		}
 		return TJS_S_OK;
 	}
@@ -109,12 +109,13 @@ struct WindowEx
 	// getMouseCursorPos
 	static tjs_error TJS_INTF_METHOD getMouseCursorPos(tTJSVariant *r, tjs_int n, tTJSVariant **p, iTJSDispatch2 *obj) {
 		POINT pt = { 0, 0 };
+		if (r) r->Clear();
 		if (::GetCursorPos(&pt)) {
 			ncbDictionaryAccessor dict;
 			if (dict.IsValid()) {
 				dict.SetValue(TJS_W("x"), pt.x);
 				dict.SetValue(TJS_W("y"), pt.y);
-				*r = tTJSVariant(dict, dict);
+				if (r) *r = tTJSVariant(dict, dict);
 			}
 		}
 		return TJS_S_OK;
@@ -126,8 +127,7 @@ struct WindowEx
 		return (hwnd != NULL && ::IsZoomed(hwnd));
 	}
 	static tjs_error TJS_INTF_METHOD getMaximized(tTJSVariant *r, tjs_int n, tTJSVariant **p, iTJSDispatch2 *obj) {
-		r->Clear();
-		*r = isMaximized(obj);
+		if (r) *r = isMaximized(obj);
 		return TJS_S_OK;
 	}
 	static tjs_error TJS_INTF_METHOD setMaximized(tTJSVariant *r, tjs_int n, tTJSVariant **p, iTJSDispatch2 *obj) {
@@ -139,7 +139,7 @@ struct WindowEx
 	// property disableResize
 	static tjs_error TJS_INTF_METHOD getDisableResize(tTJSVariant *r, tjs_int n, tTJSVariant **p, iTJSDispatch2 *obj) {
 		WindowEx *self = ncbInstanceAdaptor<WindowEx>::GetNativeInstance(obj);
-		*r = (self != NULL && self->disableResize);
+		if (r) *r = (self != NULL && self->disableResize);
 		return TJS_S_OK;
 	}
 	static tjs_error TJS_INTF_METHOD setDisableResize(tTJSVariant *r, tjs_int n, tTJSVariant **p, iTJSDispatch2 *obj) {
@@ -479,11 +479,12 @@ struct ConsoleEx
 		return wk.result;
 	}
 
-	// showRestore
-	static tjs_error TJS_INTF_METHOD showRestore(tTJSVariant *r, tjs_int n, tTJSVariant **p, iTJSDispatch2 *obj) {
+	// restoreMaximize
+	static tjs_error TJS_INTF_METHOD restoreMaximize(tTJSVariant *r, tjs_int n, tTJSVariant **p, iTJSDispatch2 *obj) {
 		HWND hwnd = GetHWND();
-		TVPExecuteExpression(ttstr(TJS_W("Debug.console.visible=1")));
-		if (hwnd != NULL) PostMessage(hwnd, WM_SYSCOMMAND, SC_RESTORE, 0);
+		bool hasWin = (hwnd != NULL);
+		if ( hasWin) PostMessage(hwnd, WM_SYSCOMMAND, SC_RESTORE, 0);
+		if (r) *r = hasWin;
 		return TJS_S_OK;
 	}
 	// getPlacement
@@ -492,7 +493,7 @@ struct ConsoleEx
 		WINDOWPLACEMENT place;
 		ZeroMemory(&place, sizeof(place));
 		place.length = sizeof(place);
-		r->Clear();
+		if (r) r->Clear();
 		if (hwnd != NULL && ::GetWindowPlacement(hwnd, &place)) {
 			ncbDictionaryAccessor dict;
 			dict.SetValue(TJS_W("flags"       ), place.flags);
@@ -505,7 +506,7 @@ struct ConsoleEx
 			dict.SetValue(TJS_W("normalTop"   ), place.rcNormalPosition.top);
 			dict.SetValue(TJS_W("normalRight" ), place.rcNormalPosition.right);
 			dict.SetValue(TJS_W("normalBottom"), place.rcNormalPosition.bottom);
-			*r = tTJSVariant(dict, dict);
+			if (r) *r = tTJSVariant(dict, dict);
 		}
 		return TJS_S_OK;
 	}
@@ -515,8 +516,7 @@ struct ConsoleEx
 		if (p[0]->Type() != tvtObject) return TJS_E_INVALIDPARAM;
 
 		HWND hwnd = GetHWND();
-		if (hwnd != NULL) *r = false;
-		else {
+		if (hwnd != NULL) {
 			ncbPropAccessor dict(*p[0]);
 			WINDOWPLACEMENT place;
 			ZeroMemory(&place, sizeof(place));
@@ -531,8 +531,8 @@ struct ConsoleEx
 			place.rcNormalPosition.top    = dict.getIntValue(TJS_W("normalTop"   ));
 			place.rcNormalPosition.right  = dict.getIntValue(TJS_W("normalRight" ));
 			place.rcNormalPosition.bottom = dict.getIntValue(TJS_W("normalBottom"));
-			*r = !!::SetWindowPlacement(hwnd, &place);
-		}
+			if (r) *r = !!::SetWindowPlacement(hwnd, &place);
+		} else if (r) *r = false;
 		return TJS_S_OK;
 	}
 	// setPos
@@ -556,10 +556,10 @@ struct ConsoleEx
 		return TJS_S_OK;
 	}
 };
-NCB_ATTACH_FUNCTION_WITHTAG(showRestore,   Debug_console, Debug.console, ConsoleEx::showRestore);
-NCB_ATTACH_FUNCTION_WITHTAG(setPos,        Debug_console, Debug.console, ConsoleEx::setPos);
-NCB_ATTACH_FUNCTION_WITHTAG(getPlacement,  Debug_console, Debug.console, ConsoleEx::getPlacement);
-NCB_ATTACH_FUNCTION_WITHTAG(setPlacement,  Debug_console, Debug.console, ConsoleEx::setPlacement);
+NCB_ATTACH_FUNCTION_WITHTAG(restoreMaximize, Debug_console, Debug.console, ConsoleEx::restoreMaximize);
+NCB_ATTACH_FUNCTION_WITHTAG(setPos,          Debug_console, Debug.console, ConsoleEx::setPos);
+NCB_ATTACH_FUNCTION_WITHTAG(getPlacement,    Debug_console, Debug.console, ConsoleEx::getPlacement);
+NCB_ATTACH_FUNCTION_WITHTAG(setPlacement,    Debug_console, Debug.console, ConsoleEx::setPlacement);
 
 
 ////////////////////////////////////////////////////////////////
