@@ -35,7 +35,7 @@ class TestWindow extends Window {
 		var max = new MenuItem(this, "");
 		var cls = new MenuItem(this, "");
 
-		tes1.onClick = Debug.console.showRestore;
+		tes1.onClick = Debug.console.restoreMaximize;
 		tes2.add(new MenuItem(this, "1"));
 		tes2.add(new MenuItem(this, "2"));
 		tes2.add(new MenuItem(this, "3"));
