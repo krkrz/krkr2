@@ -143,12 +143,13 @@ class Window {
 	 */
 	function onResizing(rect);
 
-	/* 
-	 * onResizingでサイズを固定させるサンプル（※これはプラグインで拡張される関数ではありません！）
+@if 0
+	/* （※これはプラグインで拡張される関数ではありません！）
+	 * onResizingでサイズを固定させるサンプル
 	 * @param rect onResizingに渡された引数
 	 * @param w, h 固定したいサイズ(voidなら変更しない)
 	 * @return 変更されたらtrue
-	  /
+	 */
 	function forceResizeRect(rect, w, h) {
 		with (rect) {
 			w = .w if (w === void);
@@ -163,7 +164,13 @@ class Window {
 		}
 		return true;
 	}
+@endif
+
+	/**
+	 * 拡張イベント：ディスプレイ構成の変更通知
+	 * 解像度や色数、マルチモニタの構成（位置変更も含む）が変更されたときに呼ばれる
 	 */
+	function onDisplayChanged();
 
 	/**
 	 * リサイズの抑制
@@ -213,10 +220,12 @@ class MenuItem {
 class Console {
 	/// ウィンドウ最大化・最小化の復帰
 	function showRestore();
-	/// ウィンドウ領域の取得
-	function getWindowRect();
 	/// 座標・サイズの設定
 	function setPos(x, y, w, h);
+	/// WindowPlacementの取得，設定
+	function getPlacement();
+	function setPlacement(dict);
+	//※ 起動後１度はvisible=trueしてインスタンスを一度でも生成しないと失敗する
 }
 
 /**
