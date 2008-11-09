@@ -12,6 +12,7 @@
 #define EXEV_MOVE      TJS_W("onMove")
 #define EXEV_MVSZBEGIN TJS_W("onMoveSizeBegin")
 #define EXEV_MVSZEND   TJS_W("onMoveSizeEnd")
+#define EXEV_DISPCHG   TJS_W("onDisplayChanged")
 
 ////////////////////////////////////////////////////////////////
 
@@ -122,12 +123,6 @@ struct WindowEx
 	// property maximized
 	static bool isMaximized(iTJSDispatch2 *obj) {
 		HWND hwnd = GetHWND(obj);
-		/*
-		WINDOWPLACEMENT place;
-		ZeroMemory(&place, sizeof(place));
-		place.length = sizeof(place);
-		return (hwnd != NULL && ::GetWindowPlacement(hwnd, &place)) ? (place.showCmd == SW_MAXIMIZE) : false;
-		 */
 		return (hwnd != NULL && ::IsZoomed(hwnd));
 	}
 	static tjs_error TJS_INTF_METHOD getMaximized(tTJSVariant *r, tjs_int n, tTJSVariant **p, iTJSDispatch2 *obj) {
@@ -255,6 +250,11 @@ struct WindowEx
 				::EnableMenuItem((HMENU)mes->WParam, SC_SIZE, MF_GRAYED | MF_BYCOMMAND);
 				return (hwnd != NULL);
 			}
+			break;
+
+			// ディスプレイモード変更通知
+		case WM_DISPLAYCHANGE:
+			callback(EXEV_DISPCHG);
 			break;
 		}
 		return false;
@@ -486,14 +486,52 @@ struct ConsoleEx
 		if (hwnd != NULL) PostMessage(hwnd, WM_SYSCOMMAND, SC_RESTORE, 0);
 		return TJS_S_OK;
 	}
-	// getWindowRect
-	static tjs_error TJS_INTF_METHOD getWindowRect(tTJSVariant *r, tjs_int n, tTJSVariant **p, iTJSDispatch2 *obj) {
-		RECT rect;
+	// getPlacement
+	static tjs_error TJS_INTF_METHOD getPlacement(tTJSVariant *r, tjs_int n, tTJSVariant **p, iTJSDispatch2 *obj) {
 		HWND hwnd = GetHWND();
+		WINDOWPLACEMENT place;
+		ZeroMemory(&place, sizeof(place));
+		place.length = sizeof(place);
 		r->Clear();
-		if (hwnd != NULL && ::GetWindowRect(hwnd, &rect)) {
+		if (hwnd != NULL && ::GetWindowPlacement(hwnd, &place)) {
 			ncbDictionaryAccessor dict;
-			if (WindowEx::SetRect(dict, &rect)) *r = tTJSVariant(dict, dict);
+			dict.SetValue(TJS_W("flags"       ), place.flags);
+			dict.SetValue(TJS_W("showCmd"     ), place.showCmd);
+			dict.SetValue(TJS_W("minLeft"     ), place.ptMinPosition.x);
+			dict.SetValue(TJS_W("minTop"      ), place.ptMinPosition.y);
+			dict.SetValue(TJS_W("maxLeft"     ), place.ptMaxPosition.x);
+			dict.SetValue(TJS_W("maxTop"      ), place.ptMaxPosition.y);
+			dict.SetValue(TJS_W("normalLeft"  ), place.rcNormalPosition.left);
+			dict.SetValue(TJS_W("normalTop"   ), place.rcNormalPosition.top);
+			dict.SetValue(TJS_W("normalRight" ), place.rcNormalPosition.right);
+			dict.SetValue(TJS_W("normalBottom"), place.rcNormalPosition.bottom);
+			*r = tTJSVariant(dict, dict);
+		}
+		return TJS_S_OK;
+	}
+	// setPlacement
+	static tjs_error TJS_INTF_METHOD setPlacement(tTJSVariant *r, tjs_int n, tTJSVariant **p, iTJSDispatch2 *obj) {
+		if (n < 1)return TJS_E_BADPARAMCOUNT;
+		if (p[0]->Type() != tvtObject) return TJS_E_INVALIDPARAM;
+
+		HWND hwnd = GetHWND();
+		if (hwnd != NULL) *r = false;
+		else {
+			ncbPropAccessor dict(*p[0]);
+			WINDOWPLACEMENT place;
+			ZeroMemory(&place, sizeof(place));
+			place.length                  = sizeof(place);
+			place.flags                   = dict.getIntValue(TJS_W("flags"       ));
+			place.showCmd                 = dict.getIntValue(TJS_W("showCmd"     ));
+			place.ptMinPosition.x         = dict.getIntValue(TJS_W("minLeft"     ));
+			place.ptMinPosition.y         = dict.getIntValue(TJS_W("minTop"      ));
+			place.ptMaxPosition.x         = dict.getIntValue(TJS_W("maxLeft"     ));
+			place.ptMaxPosition.y         = dict.getIntValue(TJS_W("maxTop"      ));
+			place.rcNormalPosition.left   = dict.getIntValue(TJS_W("normalLeft"  ));
+			place.rcNormalPosition.top    = dict.getIntValue(TJS_W("normalTop"   ));
+			place.rcNormalPosition.right  = dict.getIntValue(TJS_W("normalRight" ));
+			place.rcNormalPosition.bottom = dict.getIntValue(TJS_W("normalBottom"));
+			*r = !!::SetWindowPlacement(hwnd, &place);
 		}
 		return TJS_S_OK;
 	}
@@ -519,8 +557,9 @@ struct ConsoleEx
 	}
 };
 NCB_ATTACH_FUNCTION_WITHTAG(showRestore,   Debug_console, Debug.console, ConsoleEx::showRestore);
-NCB_ATTACH_FUNCTION_WITHTAG(getWindowRect, Debug_console, Debug.console, ConsoleEx::getWindowRect);
 NCB_ATTACH_FUNCTION_WITHTAG(setPos,        Debug_console, Debug.console, ConsoleEx::setPos);
+NCB_ATTACH_FUNCTION_WITHTAG(getPlacement,  Debug_console, Debug.console, ConsoleEx::getPlacement);
+NCB_ATTACH_FUNCTION_WITHTAG(setPlacement,  Debug_console, Debug.console, ConsoleEx::setPlacement);
 
 
 ////////////////////////////////////////////////////////////////
