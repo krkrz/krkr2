@@ -218,14 +218,11 @@ class MenuItem {
  * Debug.console拡張
  */
 class Console {
-	/// ウィンドウ最大化・最小化の復帰
-	function showRestore();
-	/// 座標・サイズの設定
-	function setPos(x, y, w, h);
-	/// WindowPlacementの取得，設定
-	function getPlacement();
-	function setPlacement(dict);
-	//※ 起動後１度はvisible=trueしてインスタンスを一度でも生成しないと失敗する
+	function restoreMaxmimize(); //< ウィンドウ最大化の復帰（最大化のまま終了すると次回サイズが狂う問題解決用）
+	function setPos(x, y, w, h); //< 座標・サイズの設定
+	function getPlacement();     //< WindowPlacementの取得
+	function setPlacement(dict); //< WindowPlacementの設定
+	//※ 起動後１度はvisible=trueしてウィンドウを生成しないと失敗する
 }
 
 /**
