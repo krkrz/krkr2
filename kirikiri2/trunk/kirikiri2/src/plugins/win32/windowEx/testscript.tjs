@@ -7,6 +7,10 @@ Plugins.link("windowEx.dll");
 Debug.console.visible = true;
 var dm = Debug.message;
 
+with (Debug.console.getPlacement())
+	dm("console", .flags, .showCmd, "min", .minLeft, .minTop, "max", .maxLeft, .maxTop,
+	   "normal", .normalLeft, .normalTop, .normalRight, .normalBottom);
+
 class TestWindow extends Window {
 	function finalize() { super.finalize(...); }
 	function TestWindow(title) {
@@ -115,7 +119,10 @@ class TestWindow extends Window {
 	function onMouseUp(x, y) {
 		menu.children[1].popup(tpmTopAlign|tpmLeftAlign, x, y);
 	}
-
+	function onDisplayChanged() {
+		dm("DisplayChanged", System.screenWidth, System.screenHeight);
+	}
+	
 	function checkTimer() {
 		dm(@"${caption}.maximized: ${maximized}");
 	}
@@ -150,7 +157,7 @@ var testWin = new TestWindow("MainWindow");
 //testWin.add(new TestWindow("SubWindow"));
 
 var timer = new Timer(testWin, "checkTimer");
-timer.interval = 1000;
+timer.interval = 5000;
 timer.enabled = true;
 
 dm("----------------");
