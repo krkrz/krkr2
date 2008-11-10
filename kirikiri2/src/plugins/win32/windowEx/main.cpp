@@ -13,6 +13,8 @@
 #define EXEV_MVSZBEGIN TJS_W("onMoveSizeBegin")
 #define EXEV_MVSZEND   TJS_W("onMoveSizeEnd")
 #define EXEV_DISPCHG   TJS_W("onDisplayChanged")
+#define EXEV_ENTERMENU TJS_W("onEnterMenuLoop")
+#define EXEV_EXITMENU  TJS_W("onExitMenuLoop")
 
 ////////////////////////////////////////////////////////////////
 
@@ -250,6 +252,14 @@ struct WindowEx
 				::EnableMenuItem((HMENU)mes->WParam, SC_SIZE, MF_GRAYED | MF_BYCOMMAND);
 				return (hwnd != NULL);
 			}
+			break;
+
+			// メニュー開始終了
+		case WM_ENTERMENULOOP:
+			callback(EXEV_ENTERMENU);
+			break;
+		case WM_EXITMENULOOP:
+			callback(EXEV_EXITMENU);
 			break;
 
 			// ディスプレイモード変更通知
