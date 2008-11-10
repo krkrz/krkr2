@@ -122,7 +122,9 @@ class TestWindow extends Window {
 	function onDisplayChanged() {
 		dm("DisplayChanged", System.screenWidth, System.screenHeight);
 	}
-	
+	function onEnterMenuLoop() { dm("onEnterMenuLoop"); }
+	function onExitMenuLoop()  { dm("onExitMenuLoop");  }
+
 	function checkTimer() {
 		dm(@"${caption}.maximized: ${maximized}");
 	}
