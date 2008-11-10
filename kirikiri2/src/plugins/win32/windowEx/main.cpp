@@ -483,7 +483,7 @@ struct ConsoleEx
 	static tjs_error TJS_INTF_METHOD restoreMaximize(tTJSVariant *r, tjs_int n, tTJSVariant **p, iTJSDispatch2 *obj) {
 		HWND hwnd = GetHWND();
 		bool hasWin = (hwnd != NULL);
-		if ( hasWin) PostMessage(hwnd, WM_SYSCOMMAND, SC_RESTORE, 0);
+		if ( hasWin && ::IsZoomed(hwnd)) PostMessage(hwnd, WM_SYSCOMMAND, SC_RESTORE, 0);
 		if (r) *r = hasWin;
 		return TJS_S_OK;
 	}
