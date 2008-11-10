@@ -173,6 +173,14 @@ class Window {
 	function onDisplayChanged();
 
 	/**
+	 * 拡張イベント：メニュー処理の開始・終了通知
+	 * ウィンドウのメニュー処理（クリックやF10を押した場合など）の開始と終了の通知イベント
+	 * WM_ENTERMENULOOP / WM_EXITMENULOOP 通知のコールバック
+	 */
+	function onEnterMenuLoop(); //< メニュー処理開始
+	function onExitMenuLoop();  //< メニュー処理終了
+
+	/**
 	 * リサイズの抑制
 	 * setter は registerExEvent() で拡張イベントを登録していないと例外が発生する
 	 * true に設定すると，borderStyle == bsSizeable の場合でも
