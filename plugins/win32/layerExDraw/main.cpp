@@ -717,9 +717,18 @@ NCB_GET_INSTANCE_HOOK(LayerExDraw)
 // フックつきアタッチ
 NCB_ATTACH_CLASS_WITH_HOOK(LayerExDraw, Layer) {
 	NCB_PROPERTY(updateWhenDraw, getUpdateWhenDraw, setUpdateWhenDraw);
-	NCB_PROPERTY_WO(transform, setTransform);
 
-	NCB_METHOD(setResolution);
+	NCB_METHOD(setViewTransform);
+	NCB_METHOD(resetViewTransform);
+	NCB_METHOD(rotateViewTransform);
+	NCB_METHOD(scaleViewTransform);
+	NCB_METHOD(translateViewTransform);
+
+	NCB_METHOD(setTransform);
+	NCB_METHOD(resetTransform);
+	NCB_METHOD(rotateTransform);
+	NCB_METHOD(scaleTransform);
+	NCB_METHOD(translateTransform);
 
 	NCB_METHOD(clear);
 	NCB_METHOD(drawArc);
