@@ -434,8 +434,11 @@ class Layer {
 	/**
 	 * 描画時のトランスフォームを指定
 	 */
-	property transform;
-	
+	function setTransform(matrix);
+	function resetTransform();
+	function rotateTransform(angle);
+	function scaleTransform(sx, sy);
+	function translateTransform(dx, dy);
 
 	/**
 	 * 解像度指定
@@ -677,11 +680,22 @@ class Layer {
 
 	/**
 	 * このプラグインによる描画内容を記録するかどうか
+	 * record = true の状態の場合、viewTransform を指定すると
+	 * 描画内容そのままで再描画されます。
 	 */
 	property record;
 
 	/**
-	 * 記録内容の再描画
+	 * 記録内容の表示時のトランスフォームを指定
+	 */
+	function setViewTransform(matrix);
+	function resetViewTransform();
+	function rotateViewTransform(angle);
+	function scaleViewTransform(sx, sy);
+	function translateViewTransform(dx, dy);
+	
+	/**
+	 * 記録内容を再描画します
 	 */
 	void redrawRecord();
 

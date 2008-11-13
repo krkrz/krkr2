@@ -182,19 +182,21 @@ protected:
 	Bitmap *bitmap;
 	/// レイヤに対して描画するコンテキスト
 	Graphics *graphics;
+
 	// Transform 指定
 	Matrix transform;
+	Matrix viewTransform;
 	Matrix calcTransform;
-	// 解像度指定
-	REAL resx;
-	REAL resy;
+
+	// smootihngMode
+	SmoothingMode smoothingMode;
 	
 	/// 描画内容記録用メタファイル
-	Bitmap *metaBitmap;
-	Graphics *metaBaseGraphics;
 	HDC metaHDC;
+	HGLOBAL metaBuffer;
+	IStream *metaStream;
 	Metafile *metafile;
-	Graphics *metagraphics;
+	Graphics *metaGraphics;
 
 	bool updateWhenDraw;
 	void updateRect(RectF &rect);
@@ -218,19 +220,29 @@ public:
 	// 描画パラメータ指定
 	// ------------------------------------------------------------------
 
+protected:
+	void updateViewTransform();
+	void updateTransform();
+	
 public:
 	/**
-	 * 解像度指定
-	 * @param resx 横方向解像度指定 1.0 = 100%
-	 * @param resy 縦方向解像度指定 1.0 = 100%
+	 * 表示トランスフォームの指定
 	 */
-	void setResolution(REAL resx, REAL resy);
-
+	void setViewTransform(const Matrix *transform);
+	void resetViewTransform();
+	void rotateViewTransform(REAL angle);
+	void scaleViewTransform(REAL sx, REAL sy);
+	void translateViewTransform(REAL dx, REAL dy);
+	
 	/**
 	 * トランスフォームの指定
 	 * @param matrix トランスフォームマトリックス
 	 */
 	void setTransform(const Matrix *transform);
+	void resetTransform();
+	void rotateTransform(REAL angle);
+	void scaleTransform(REAL sx, REAL sy);
+	void translateTransform(REAL dx, REAL dy);
 
 	// ------------------------------------------------------------------
 	// 描画メソッド群
@@ -513,10 +525,20 @@ protected:
 	void createRecord();
 
 	/**
+	 * 記録情報の生成
+	 */
+	void recreateRecord();
+	
+	/**
 	 * 記録情報の破棄
 	 */
 	void destroyRecord();
 
+	/**
+	 * 再描画用
+	 */
+	bool redraw(Image *image);
+	
 public:
 	/**
 	 * @param record 描画内容を記録するかどうか
@@ -532,8 +554,9 @@ public:
 
 	/**
 	 * 記録内容の再描画
+	 * @return 再描画したら true
 	 */
-	void redrawRecord();
+	bool redrawRecord();
 
 	/**
 	 * 記録内容の保存
