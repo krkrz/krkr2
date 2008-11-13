@@ -219,7 +219,8 @@ protected:
 	GdipClassT *obj;
 public:
 	// デフォルトコンストラクタ
-	GdipWrapper() : obj(NULL) {}
+	GdipWrapper() : obj(NULL) {
+	}
 
 	// 関数の帰り値としてのオブジェクト生成時用。
 	// そのまま渡されたポインタを使う
@@ -687,9 +688,9 @@ NCB_REGISTER_CLASS(GdiPlus)
 // classes
 	NCB_SUBCLASS_NAME(PointF);
 	NCB_SUBCLASS_NAME(RectF);
-//	NCB_SUBCLASS_NAME(Matrix);
 
 	NCB_GDIP_SUBCLASS(Image);
+	NCB_GDIP_SUBCLASS(Matrix);
 	
 	NCB_SUBCLASS(Font,FontInfo);
 	NCB_SUBCLASS(Appearance,Appearance);
@@ -716,6 +717,10 @@ NCB_GET_INSTANCE_HOOK(LayerExDraw)
 // フックつきアタッチ
 NCB_ATTACH_CLASS_WITH_HOOK(LayerExDraw, Layer) {
 	NCB_PROPERTY(updateWhenDraw, getUpdateWhenDraw, setUpdateWhenDraw);
+	NCB_PROPERTY_WO(transform, setTransform);
+
+	NCB_METHOD(setResolution);
+
 	NCB_METHOD(clear);
 	NCB_METHOD(drawArc);
 	NCB_METHOD(drawPie);
@@ -739,6 +744,11 @@ NCB_ATTACH_CLASS_WITH_HOOK(LayerExDraw, Layer) {
 	NCB_METHOD(drawImageRect);
 	NCB_METHOD(drawImageStretch);
 	NCB_METHOD(drawImageAffine);
+
+	NCB_PROPERTY(record, getRecord, setRecord);
+	NCB_METHOD(redrawRecord);
+	NCB_METHOD(saveRecord);
+	NCB_METHOD(loadRecord);
 }
 
 // ----------------------------------- 起動・開放処理

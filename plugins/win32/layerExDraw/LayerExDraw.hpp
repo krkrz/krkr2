@@ -182,6 +182,19 @@ protected:
 	Bitmap *bitmap;
 	/// レイヤに対して描画するコンテキスト
 	Graphics *graphics;
+	// Transform 指定
+	Matrix transform;
+	Matrix calcTransform;
+	// 解像度指定
+	REAL resx;
+	REAL resy;
+	
+	/// 描画内容記録用メタファイル
+	Bitmap *metaBitmap;
+	Graphics *metaBaseGraphics;
+	HDC metaHDC;
+	Metafile *metafile;
+	Graphics *metagraphics;
 
 	bool updateWhenDraw;
 	void updateRect(RectF &rect);
@@ -202,6 +215,24 @@ public:
 	virtual void reset();
 
 	// ------------------------------------------------------------------
+	// 描画パラメータ指定
+	// ------------------------------------------------------------------
+
+public:
+	/**
+	 * 解像度指定
+	 * @param resx 横方向解像度指定 1.0 = 100%
+	 * @param resy 縦方向解像度指定 1.0 = 100%
+	 */
+	void setResolution(REAL resx, REAL resy);
+
+	/**
+	 * トランスフォームの指定
+	 * @param matrix トランスフォームマトリックス
+	 */
+	void setTransform(const Matrix *transform);
+
+	// ------------------------------------------------------------------
 	// 描画メソッド群
 	// ------------------------------------------------------------------
 
@@ -215,6 +246,24 @@ protected:
 	 */
 	RectF getPathExtents(const Appearance *app, const GraphicsPath *path);
 
+	/**
+	 * パスの描画用下請け処理
+	 * @param graphics 描画先
+	 * @param pen 描画用ペン
+	 * @param matrix 描画位置調整用matrix
+	 * @param path 描画内容
+	 */
+	void draw(Graphics *graphics, const Pen *pen, const Matrix *matrix, const GraphicsPath *path);
+
+	/**
+	 * 塗りの描画用下請け処理
+	 * @param graphics 描画先
+	 * @param brush 描画用ブラシ
+	 * @param matrix 描画位置調整用matrix
+	 * @param path 描画内容
+	 */
+	void fill(Graphics *graphics, const Brush *brush, const Matrix *matrix, const GraphicsPath *path);
+	
 	/**
 	 * パスの描画
 	 * @param app アピアランス
@@ -451,6 +500,54 @@ public:
 	 * @return 更新領域情報
 	 */
 	RectF drawImageAffine(Image *src, REAL sleft, REAL stop, REAL swidth, REAL sheight, bool affine, REAL A, REAL B, REAL C, REAL D, REAL E, REAL F);
+
+	// ------------------------------------------------
+	// メタファイル操作
+	// ------------------------------------------------
+
+protected:
+
+	/**
+	 * 記録情報の生成
+	 */
+	void createRecord();
+
+	/**
+	 * 記録情報の破棄
+	 */
+	void destroyRecord();
+
+public:
+	/**
+	 * @param record 描画内容を記録するかどうか
+	 */
+	void setRecord(bool record);
+
+	/**
+	 * @return record 描画内容を記録するかどうか
+	 */
+	bool getRecord() {
+		return metafile != NULL;
+	}
+
+	/**
+	 * 記録内容の再描画
+	 */
+	void redrawRecord();
+
+	/**
+	 * 記録内容の保存
+	 * @param filename 保存ファイル名
+	 * @return 成功したら true
+	 */
+	bool saveRecord(const tjs_char *filename);
+
+	/**
+	 * 記録内容の読み込み
+	 * @param filename 読み込みファイル名
+	 * @return 成功したら true
+	 */
+	bool loadRecord(const tjs_char *filename);
 };
 
 #endif
