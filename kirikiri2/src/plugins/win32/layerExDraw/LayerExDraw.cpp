@@ -751,7 +751,10 @@ LayerExDraw::updateRect(RectF &rect)
  * コンストラクタ
  */
 LayerExDraw::LayerExDraw(DispatchT obj)
-	: layerExBase(obj), width(-1), height(-1), pitch(0), buffer(NULL), bitmap(NULL), graphics(NULL), updateWhenDraw(true)
+	: layerExBase(obj), width(-1), height(-1), pitch(0), buffer(NULL), bitmap(NULL), graphics(NULL),
+	  resx(1.0), resy(1.0),
+	  metaBitmap(NULL), metaBaseGraphics(NULL), metaHDC(NULL), metafile(NULL), metagraphics(NULL),
+	  updateWhenDraw(true)
 {
 }
 
@@ -760,6 +763,7 @@ LayerExDraw::LayerExDraw(DispatchT obj)
  */
 LayerExDraw::~LayerExDraw()
 {
+	destroyRecord();
 	delete graphics;
 	delete bitmap;
 }
@@ -785,7 +789,49 @@ LayerExDraw::reset()
 		graphics->SetSmoothingMode(SmoothingModeAntiAlias);
 		graphics->SetCompositingMode(CompositingModeSourceOver);
 		graphics->SetTextRenderingHint(TextRenderingHintAntiAlias);
-		graphics->SetPageUnit(UnitPixel);
+		graphics->SetTransform(&calcTransform);
+	}
+}
+
+/**
+ * 解像度指定
+ * @param resx 横方向解像度指定 1.0 = 100%
+ * @param resy 縦方向解像度指定 1.0 = 100%
+ */
+void
+LayerExDraw::setResolution(REAL resx, REAL resy)
+{
+	if (this->resx != resx || this->resy != resy) {
+		this->resx = resx;
+		this->resy = resy;
+		REAL params[8];
+		transform.GetElements(params);
+		calcTransform.SetElements(params[0], params[1], params[2], params[3], params[4], params[5]);
+		calcTransform.Scale(resx, resy, MatrixOrderAppend);
+		graphics->SetTransform(&calcTransform);
+		if (metafile) {
+			redrawRecord();
+		}
+	}
+}
+
+/**
+ * トランスフォームの指定
+ * @param matrix トランスフォームマトリックス
+ */
+void
+LayerExDraw::setTransform(const Matrix *trans)
+{
+	if (!transform.Equals(trans)) {
+		REAL params[8];
+		trans->GetElements(params);
+		transform.SetElements(params[0], params[1], params[2], params[3], params[4], params[5]);
+		calcTransform.SetElements(params[0], params[1], params[2], params[3], params[4], params[5]);
+		calcTransform.Scale(resx, resy, MatrixOrderAppend);
+		graphics->SetTransform(&calcTransform);
+		if (metagraphics) {
+			metagraphics->SetTransform(&transform);
+		}
 	}
 }
 
@@ -797,6 +843,11 @@ void
 LayerExDraw::clear(ARGB argb)
 {
 	graphics->Clear(Color(argb));
+	if (metagraphics) {
+		createRecord();
+		metagraphics->Clear(Color(argb));
+	}
+	_pUpdate(0, NULL);
 }
 
 /**
@@ -816,7 +867,7 @@ LayerExDraw::getPathExtents(const Appearance *app, const GraphicsPath *path)
 	while (i != app->drawInfos.end()) {
 		if (i->info) {
 			Matrix matrix(1,0,0,1,i->ox,i->oy);
-			graphics->SetTransform(&matrix);
+			matrix.Multiply(&calcTransform, MatrixOrderAppend);
 			switch (i->type) {
 			case 0:
 				{
@@ -848,6 +899,24 @@ LayerExDraw::getPathExtents(const Appearance *app, const GraphicsPath *path)
 	return rect;
 }
 
+void
+LayerExDraw::draw(Graphics *graphics, const Pen *pen, const Matrix *matrix, const GraphicsPath *path)
+{
+	GraphicsContainer container = graphics->BeginContainer();
+	graphics->MultiplyTransform(matrix);
+	graphics->DrawPath(pen, path);
+	graphics->EndContainer(container);
+}
+
+void
+LayerExDraw::fill(Graphics *graphics, const Brush *brush, const Matrix *matrix, const GraphicsPath *path)
+{
+	GraphicsContainer container = graphics->BeginContainer();
+	graphics->MultiplyTransform(matrix);
+	graphics->FillPath(brush, path);
+	graphics->EndContainer(container);
+}
+
 /**
  * パスを描画する
  * @param app 表示表現
@@ -866,12 +935,15 @@ LayerExDraw::drawPath(const Appearance *app, const GraphicsPath *path)
 	while (i != app->drawInfos.end()) {
 		if (i->info) {
 			Matrix matrix(1,0,0,1,i->ox,i->oy);
-			graphics->SetTransform(&matrix);
 			switch (i->type) {
 			case 0:
 				{
 					Pen *pen = (Pen*)i->info;
-					graphics->DrawPath(pen, path);
+					draw(graphics, pen, &matrix, path);
+					if (metagraphics) {
+						draw(metagraphics, pen, &matrix, path);
+					}
+					matrix.Multiply(&calcTransform, MatrixOrderAppend);
 					if (first) {
 						path->GetBounds(&rect, &matrix, pen);
 						first = false;
@@ -883,7 +955,11 @@ LayerExDraw::drawPath(const Appearance *app, const GraphicsPath *path)
 				}
 				break;
 			case 1:
-				graphics->FillPath((Brush*)i->info, path);
+				fill(graphics, (Brush*)i->info, &matrix, path);
+				if (metagraphics) {
+					fill(metagraphics, (Brush*)i->info, &matrix, path);
+				}
+				matrix.Multiply(&calcTransform, MatrixOrderAppend);
 				if (first) {
 					path->GetBounds(&rect, &matrix, NULL);
 					first = false;
@@ -1209,15 +1285,11 @@ LayerExDraw::drawImage(REAL x, REAL y, Image *src)
 	RectF rect;
 	if (src) {
 		RectF *bounds = getBounds(src);
-		graphics->DrawImage(src, (rect.X = x + bounds->X), (rect.Y = y + bounds->Y), bounds->Width, bounds->Height);
-		rect.Width  = bounds->Width;
-		rect.Height = bounds->Height;
-		updateRect(rect);
+		rect = drawImageRect(x + bounds->X, y + bounds->Y, src, 0, 0, bounds->Width, bounds->Height);
 		delete bounds;
 	}
 	return rect;
 }
-
 
 /**
  * 画像の矩形コピー
@@ -1233,7 +1305,7 @@ LayerExDraw::drawImage(REAL x, REAL y, Image *src)
 RectF
 LayerExDraw::drawImageRect(REAL dleft, REAL dtop, Image *src, REAL sleft, REAL stop, REAL swidth, REAL sheight)
 {
-	return drawImageStretch(dleft, dtop, swidth , sheight, src, sleft, stop, swidth, sheight);
+	return drawImageAffine(src, sleft, stop, swidth, sheight, true, 1, 0, 0, 1, dleft, dtop);
 }
 
 /**
@@ -1252,17 +1324,7 @@ LayerExDraw::drawImageRect(REAL dleft, REAL dtop, Image *src, REAL sleft, REAL s
 RectF
 LayerExDraw::drawImageStretch(REAL dleft, REAL dtop, REAL dwidth, REAL dheight, Image *src, REAL sleft, REAL stop, REAL swidth, REAL sheight)
 {
-	RectF destRect(dleft, dtop, dwidth, dheight);
-	if (src) {
-		graphics->DrawImage(src, destRect, sleft, stop, swidth, sheight, UnitPixel);
-	}
-	updateRect(destRect);
-	return destRect;
-}
-
-static int compare_REAL(const REAL *a, const REAL *b)
-{
-	return (int)(*a - *b);
+	return drawImageAffine(src, sleft, stop, swidth, sheight, true, dwidth/swidth, 0, 0, dheight/sheight, dleft, dtop);
 }
 
 /**
@@ -1278,41 +1340,174 @@ RectF
 LayerExDraw::drawImageAffine(Image *src, REAL sleft, REAL stop, REAL swidth, REAL sheight, bool affine, REAL A, REAL B, REAL C, REAL D, REAL E, REAL F)
 {
 	RectF rect;
-	RectF srcRect(sleft, stop, swidth, sheight);
-	REAL x[4], y[4]; // 元座標値
-	if (affine) {
-		REAL x2 = sleft+swidth;
-		REAL y2 = stop +sheight;
+	if (src) {
+		RectF srcRect(sleft, stop, swidth, sheight);
+		PointF points[4]; // 元座標値
+		if (affine) {
+			REAL x2 = sleft+swidth;
+			REAL y2 = stop +sheight;
 #define AFFINEX(x,y) A*x+C*y+E
 #define AFFINEY(x,y) B*x+D*y+F
-		x[0] = AFFINEX(sleft,stop);
-		y[0] = AFFINEY(sleft,stop);
-		x[1] = AFFINEX(x2,stop);
-		y[1] = AFFINEY(x2,stop);
-		x[2] = AFFINEX(sleft,y2);
-		y[2] = AFFINEY(sleft,y2);
-		x[3] = AFFINEX(x2,y2);
-		y[3] = AFFINEY(x2,y2);
-	} else {
-		x[0] = A;
-		y[0] = B;
-		x[1] = C;
-		y[1] = D;
-		x[2] = E;
-		y[2] = F;
-		x[3] = C-A+E;
-		y[3] = D-B+F;
+			points[0].X = AFFINEX(sleft,stop);
+			points[0].Y = AFFINEY(sleft,stop);
+			points[1].X = AFFINEX(x2,stop);
+			points[1].Y = AFFINEY(x2,stop);
+			points[2].X = AFFINEX(sleft,y2);
+			points[2].Y = AFFINEY(sleft,y2);
+			points[3].X = AFFINEX(x2,y2);
+			points[3].Y = AFFINEY(x2,y2);
+		} else {
+			points[0].X = A;
+			points[0].Y = B;
+			points[1].X = C;
+			points[1].Y = D;
+			points[2].X = E;
+			points[2].Y = F;
+			points[3].X = C-A+E;
+			points[3].Y = D-B+F;
+		}
+		graphics->DrawImage(src, points, 3, sleft, stop, swidth, sheight, UnitPixel, NULL, NULL, NULL);
+		if (metagraphics) {
+			metagraphics->DrawImage(src, points, 3, sleft, stop, swidth, sheight, UnitPixel, NULL, NULL, NULL);
+		}
+
+		// 描画領域を取得
+		calcTransform.TransformPoints(points, 4);
+		REAL minx = points[0].X;
+		REAL maxx = points[0].X;
+		REAL miny = points[0].Y;
+		REAL maxy = points[0].Y;
+		for (int i=1;i<4;i++) {
+			if (points[i].X < minx) { minx = points[i].X; }
+			if (points[i].X > maxx) { maxx = points[i].X; }
+			if (points[i].Y < miny) { miny = points[i].Y; }
+			if (points[i].Y > maxy) { maxy = points[i].Y; }
+		}
+		rect.X = minx;
+		rect.Y = miny;
+		rect.Width = maxx - minx;
+		rect.Height = maxy - miny;
+
+		updateRect(rect);
 	}
-	PointF dests[3] = { PointF(x[0],y[0]), PointF(x[1],y[1]), PointF(x[2],y[2]) };
-	if (src) {
-		graphics->DrawImage(src, dests, 3, sleft, stop, swidth, sheight, UnitPixel, NULL, NULL, NULL);
-	}
-	qsort(x, 4, sizeof(REAL), (int (*)(const void*, const void*))compare_REAL);
-	qsort(y, 4, sizeof(REAL), (int (*)(const void*, const void*))compare_REAL);
-	rect.X = x[0];
-	rect.Y = y[0];
-	rect.Width = x[3]-x[0];
-	rect.Height = y[3]-y[0];
-	updateRect(rect);
 	return rect;
+}
+
+void
+LayerExDraw::createRecord()
+{
+	destroyRecord();
+	metaBitmap = new Bitmap(100,100,PixelFormat32bppARGB);
+	metaBaseGraphics = new Graphics(metaBitmap);
+	metaHDC = metaBaseGraphics->GetHDC();
+	metafile = new Metafile(L"metafile.emf", metaHDC, EmfTypeEmfPlusOnly);
+	metagraphics = new Graphics(metafile);
+	metagraphics->SetSmoothingMode(SmoothingModeAntiAlias);
+	metagraphics->SetCompositingMode(CompositingModeSourceOver);
+	metagraphics->SetTextRenderingHint(TextRenderingHintAntiAlias);
+	metagraphics->SetTransform(&transform);
+}
+
+
+/**
+ * 記録情報の破棄
+ */
+void
+LayerExDraw::destroyRecord()
+{
+	if (metagraphics) {
+		delete metagraphics;
+		metagraphics = NULL;
+	}
+	if (metafile) {
+		delete metafile;
+		metafile = NULL;
+	}
+	if (metaHDC) {
+		metaBaseGraphics->ReleaseHDC(metaHDC);
+		metaHDC = NULL;
+	}
+	if (metaBaseGraphics) {
+		delete metaBaseGraphics;
+		metaBaseGraphics = NULL;
+	}
+	if (metaBitmap) {
+		delete metaBitmap;
+		metaBitmap = NULL;
+	}
+}
+
+
+/**
+ * @param record 描画内容を記録するかどうか
+ */
+void
+LayerExDraw::setRecord(bool record)
+{
+	if (record) {
+		if (!metaBitmap) {
+			createRecord();
+		}
+	} else {
+		if (metaBitmap) {
+			destroyRecord();
+		}
+	}
+}
+
+/**
+ * 記録内容の現在の解像度での再描画
+ */
+void
+LayerExDraw::redrawRecord()
+{
+	if (metafile) {
+		graphics->Clear(Color(0));
+		graphics->DrawImage(metafile, 0, 0);
+		_pUpdate(0, NULL);
+	}
+}
+
+/**
+ * 記録内容の保存
+ * @param filename 保存ファイル名
+ * @return 成功したら true
+ */
+bool
+LayerExDraw::saveRecord(const tjs_char *filename)
+{
+	if (metafile) {
+		delete metagraphics;
+		metagraphics = NULL;
+		IStream *out = TVPCreateIStream(filename, TJS_BS_WRITE);
+		if (out) {
+			metafile->Save(out, NULL);
+			out->Release();
+			return true;
+		}
+	}
+	return false;
+}
+
+
+/**
+ * 記録内容の読み込み
+ * @param filename 読み込みファイル名
+ * @return 成功したら true
+ */
+bool
+LayerExDraw::loadRecord(const tjs_char *filename)
+{
+	Image *image;
+	if (filename && (image = loadImage(filename))) {
+		graphics->Clear(Color(0));
+		graphics->DrawImage(image, 0, 0);
+		createRecord();
+		metagraphics->Clear(Color(0));
+		metagraphics->DrawImage(image, 0, 0);
+		_pUpdate(0, NULL);
+		delete image;
+		return true;
+	}
+	return false;
 }

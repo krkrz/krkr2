@@ -432,6 +432,19 @@ class Layer {
 	property updateWhenDraw;
 
 	/**
+	 * 描画時のトランスフォームを指定
+	 */
+	property transform;
+	
+
+	/**
+	 * 解像度指定
+	 * @param resx 横方向解像度 %指定
+	 * @param resy 縦方向解像度 %指定
+	 */
+	function setResolution(resx, resy);
+	
+	/**
 	 * 画面の消去
 	 * @param argb 消去色
 	 */
@@ -657,5 +670,33 @@ class Layer {
 	 * @return 更新域情報(RectF)
 	 */
 	function drawImageAffine(src, sleft, stop, swidth, sheight, affine, A, B, C, D, E, F);
+
+	// ------------------------------------------------
+	// メタファイル操作
+	// ------------------------------------------------
+
+	/**
+	 * このプラグインによる描画内容を記録するかどうか
+	 */
+	property record;
+
+	/**
+	 * 記録内容の再描画
+	 */
+	void redrawRecord();
+
+	/**
+	 * 記録内容の保存
+	 * @param filename 保存ファイル名
+	 * @return 成功したら true
+	 */
+	function saveRecord(filename);
+
+	/**
+	 * 記録内容の読み込み
+	 * @param filename 読み込みファイル名
+	 * @return 成功したら true
+	 */
+	function loadRecord(filename);
 };
 
