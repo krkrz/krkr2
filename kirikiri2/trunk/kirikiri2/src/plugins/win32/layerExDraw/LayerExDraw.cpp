@@ -752,10 +752,11 @@ LayerExDraw::updateRect(RectF &rect)
  */
 LayerExDraw::LayerExDraw(DispatchT obj)
 	: layerExBase(obj), width(-1), height(-1), pitch(0), buffer(NULL), bitmap(NULL), graphics(NULL),
-	  resx(1.0), resy(1.0),
-	  metaBitmap(NULL), metaBaseGraphics(NULL), metaHDC(NULL), metafile(NULL), metagraphics(NULL),
+	  smoothingMode(SmoothingModeAntiAlias),
+	  metaHDC(NULL), metaBuffer(NULL), metaStream(NULL), metafile(NULL), metaGraphics(NULL),
 	  updateWhenDraw(true)
 {
+	metaHDC = ::CreateCompatibleDC(NULL);
 }
 
 /**
@@ -766,6 +767,10 @@ LayerExDraw::~LayerExDraw()
 	destroyRecord();
 	delete graphics;
 	delete bitmap;
+	if (metaHDC) {
+		DeleteObject(metaHDC);
+		metaHDC = NULL;
+	}
 }
 
 void
@@ -786,32 +791,74 @@ LayerExDraw::reset()
 		buffer = _buffer;
 		bitmap = new Bitmap(width, height, pitch, PixelFormat32bppARGB, (unsigned char*)buffer);
 		graphics = new Graphics(bitmap);
-		graphics->SetSmoothingMode(SmoothingModeAntiAlias);
+		graphics->SetSmoothingMode(smoothingMode);
 		graphics->SetCompositingMode(CompositingModeSourceOver);
 		graphics->SetTextRenderingHint(TextRenderingHintAntiAlias);
 		graphics->SetTransform(&calcTransform);
 	}
 }
 
+void
+LayerExDraw::updateViewTransform()
+{
+	calcTransform.Reset();
+	calcTransform.Multiply(&transform, MatrixOrderAppend);
+	calcTransform.Multiply(&viewTransform, MatrixOrderAppend);
+	graphics->SetTransform(&calcTransform);
+	redrawRecord();
+}
+
 /**
- * 解像度指定
- * @param resx 横方向解像度指定 1.0 = 100%
- * @param resy 縦方向解像度指定 1.0 = 100%
+ * 表示トランスフォームの指定
+ * @param matrix トランスフォームマトリックス
  */
 void
-LayerExDraw::setResolution(REAL resx, REAL resy)
+LayerExDraw::setViewTransform(const Matrix *trans)
 {
-	if (this->resx != resx || this->resy != resy) {
-		this->resx = resx;
-		this->resy = resy;
-		REAL params[8];
-		transform.GetElements(params);
-		calcTransform.SetElements(params[0], params[1], params[2], params[3], params[4], params[5]);
-		calcTransform.Scale(resx, resy, MatrixOrderAppend);
-		graphics->SetTransform(&calcTransform);
-		if (metafile) {
-			redrawRecord();
-		}
+	if (!viewTransform.Equals(trans)) {
+		viewTransform.Reset();
+		viewTransform.Multiply(trans);
+		updateViewTransform();
+	}
+}
+
+void
+LayerExDraw::resetViewTransform()
+{
+	viewTransform.Reset();
+	updateViewTransform();
+}
+
+void
+LayerExDraw::rotateViewTransform(REAL angle)
+{
+	viewTransform.Rotate(angle, MatrixOrderAppend);
+	updateViewTransform();
+}
+
+void
+LayerExDraw::scaleViewTransform(REAL sx, REAL sy)
+{
+	viewTransform.Scale(sx, sy, MatrixOrderAppend);
+	updateViewTransform();
+}
+
+void
+LayerExDraw::translateViewTransform(REAL dx, REAL dy)
+{
+	viewTransform.Scale(dx, dy, MatrixOrderAppend);
+	updateViewTransform();
+}
+
+void
+LayerExDraw::updateTransform()
+{
+	calcTransform.Reset();
+	calcTransform.Multiply(&transform, MatrixOrderAppend);
+	calcTransform.Multiply(&viewTransform, MatrixOrderAppend);
+	graphics->SetTransform(&calcTransform);
+	if (metaGraphics) {
+		metaGraphics->SetTransform(&transform);
 	}
 }
 
@@ -823,16 +870,38 @@ void
 LayerExDraw::setTransform(const Matrix *trans)
 {
 	if (!transform.Equals(trans)) {
-		REAL params[8];
-		trans->GetElements(params);
-		transform.SetElements(params[0], params[1], params[2], params[3], params[4], params[5]);
-		calcTransform.SetElements(params[0], params[1], params[2], params[3], params[4], params[5]);
-		calcTransform.Scale(resx, resy, MatrixOrderAppend);
-		graphics->SetTransform(&calcTransform);
-		if (metagraphics) {
-			metagraphics->SetTransform(&transform);
-		}
+		transform.Reset();
+		transform.Multiply(trans);
+		updateTransform();
 	}
+}
+
+void
+LayerExDraw::resetTransform()
+{
+	transform.Reset();
+	updateTransform();
+}
+
+void
+LayerExDraw::rotateTransform(REAL angle)
+{
+	transform.Rotate(angle, MatrixOrderAppend);
+	updateTransform();
+}
+
+void
+LayerExDraw::scaleTransform(REAL sx, REAL sy)
+{
+	transform.Scale(sx, sy, MatrixOrderAppend);
+	updateTransform();
+}
+
+void
+LayerExDraw::translateTransform(REAL dx, REAL dy)
+{
+	transform.Scale(dx, dy, MatrixOrderAppend);
+	updateTransform();
 }
 
 /**
@@ -843,9 +912,9 @@ void
 LayerExDraw::clear(ARGB argb)
 {
 	graphics->Clear(Color(argb));
-	if (metagraphics) {
+	if (metaGraphics) {
 		createRecord();
-		metagraphics->Clear(Color(argb));
+		metaGraphics->Clear(Color(argb));
 	}
 	_pUpdate(0, NULL);
 }
@@ -904,6 +973,7 @@ LayerExDraw::draw(Graphics *graphics, const Pen *pen, const Matrix *matrix, cons
 {
 	GraphicsContainer container = graphics->BeginContainer();
 	graphics->MultiplyTransform(matrix);
+	graphics->SetSmoothingMode(smoothingMode);
 	graphics->DrawPath(pen, path);
 	graphics->EndContainer(container);
 }
@@ -913,6 +983,7 @@ LayerExDraw::fill(Graphics *graphics, const Brush *brush, const Matrix *matrix, 
 {
 	GraphicsContainer container = graphics->BeginContainer();
 	graphics->MultiplyTransform(matrix);
+	graphics->SetSmoothingMode(smoothingMode);
 	graphics->FillPath(brush, path);
 	graphics->EndContainer(container);
 }
@@ -940,8 +1011,8 @@ LayerExDraw::drawPath(const Appearance *app, const GraphicsPath *path)
 				{
 					Pen *pen = (Pen*)i->info;
 					draw(graphics, pen, &matrix, path);
-					if (metagraphics) {
-						draw(metagraphics, pen, &matrix, path);
+					if (metaGraphics) {
+						draw(metaGraphics, pen, &matrix, path);
 					}
 					matrix.Multiply(&calcTransform, MatrixOrderAppend);
 					if (first) {
@@ -956,8 +1027,8 @@ LayerExDraw::drawPath(const Appearance *app, const GraphicsPath *path)
 				break;
 			case 1:
 				fill(graphics, (Brush*)i->info, &matrix, path);
-				if (metagraphics) {
-					fill(metagraphics, (Brush*)i->info, &matrix, path);
+				if (metaGraphics) {
+					fill(metaGraphics, (Brush*)i->info, &matrix, path);
 				}
 				matrix.Multiply(&calcTransform, MatrixOrderAppend);
 				if (first) {
@@ -1367,8 +1438,8 @@ LayerExDraw::drawImageAffine(Image *src, REAL sleft, REAL stop, REAL swidth, REA
 			points[3].Y = D-B+F;
 		}
 		graphics->DrawImage(src, points, 3, sleft, stop, swidth, sheight, UnitPixel, NULL, NULL, NULL);
-		if (metagraphics) {
-			metagraphics->DrawImage(src, points, 3, sleft, stop, swidth, sheight, UnitPixel, NULL, NULL, NULL);
+		if (metaGraphics) {
+			metaGraphics->DrawImage(src, points, 3, sleft, stop, swidth, sheight, UnitPixel, NULL, NULL, NULL);
 		}
 
 		// 描画領域を取得
@@ -1397,17 +1468,17 @@ void
 LayerExDraw::createRecord()
 {
 	destroyRecord();
-	metaBitmap = new Bitmap(100,100,PixelFormat32bppARGB);
-	metaBaseGraphics = new Graphics(metaBitmap);
-	metaHDC = metaBaseGraphics->GetHDC();
-	metafile = new Metafile(L"metafile.emf", metaHDC, EmfTypeEmfPlusOnly);
-	metagraphics = new Graphics(metafile);
-	metagraphics->SetSmoothingMode(SmoothingModeAntiAlias);
-	metagraphics->SetCompositingMode(CompositingModeSourceOver);
-	metagraphics->SetTextRenderingHint(TextRenderingHintAntiAlias);
-	metagraphics->SetTransform(&transform);
+	if ((metaBuffer = ::GlobalAlloc(GMEM_MOVEABLE, 0))){
+		if (::CreateStreamOnHGlobal(metaBuffer, FALSE, &metaStream) == S_OK) 	{
+			metafile = new Metafile(metaStream, metaHDC, EmfTypeEmfPlusOnly);
+			metaGraphics = new Graphics(metafile);
+			metaGraphics->SetSmoothingMode(smoothingMode);
+			metaGraphics->SetCompositingMode(CompositingModeSourceOver);
+			metaGraphics->SetTextRenderingHint(TextRenderingHintAntiAlias);
+			metaGraphics->SetTransform(&transform);
+		}
+	}
 }
-
 
 /**
  * 記録情報の破棄
@@ -1415,25 +1486,21 @@ LayerExDraw::createRecord()
 void
 LayerExDraw::destroyRecord()
 {
-	if (metagraphics) {
-		delete metagraphics;
-		metagraphics = NULL;
+	if (metaGraphics) {
+		delete metaGraphics;
+		metaGraphics = NULL;
 	}
 	if (metafile) {
 		delete metafile;
 		metafile = NULL;
 	}
-	if (metaHDC) {
-		metaBaseGraphics->ReleaseHDC(metaHDC);
-		metaHDC = NULL;
+	if (metaStream) {
+		metaStream->Release();
+		metaStream = NULL;
 	}
-	if (metaBaseGraphics) {
-		delete metaBaseGraphics;
-		metaBaseGraphics = NULL;
-	}
-	if (metaBitmap) {
-		delete metaBitmap;
-		metaBitmap = NULL;
+	if (metaBuffer) {
+		::GlobalFree(metaBuffer);
+		metaBuffer = NULL;
 	}
 }
 
@@ -1445,27 +1512,66 @@ void
 LayerExDraw::setRecord(bool record)
 {
 	if (record) {
-		if (!metaBitmap) {
+		if (!metafile) {
 			createRecord();
 		}
 	} else {
-		if (metaBitmap) {
+		if (metafile) {
 			destroyRecord();
 		}
 	}
 }
 
+bool
+LayerExDraw::redraw(Image *image)
+{
+	if (image) {
+		RectF *bounds = getBounds(image);
+		if (metaGraphics) {
+			metaGraphics->Clear(Color(0));
+			metaGraphics->ResetTransform();
+			metaGraphics->DrawImage(image, bounds->X, bounds->Y, bounds->Width, bounds->Height);
+			metaGraphics->SetTransform(&transform);
+		}
+		graphics->Clear(Color(0));
+		graphics->SetTransform(&viewTransform);
+		graphics->DrawImage(image, bounds->X, bounds->Y, bounds->Width, bounds->Height);
+		graphics->SetTransform(&calcTransform);
+		delete bounds;
+		delete image;
+		_pUpdate(0, NULL);
+		return true;
+	}
+	return false;
+}
+
+
 /**
  * 記録内容の現在の解像度での再描画
  */
-void
+bool
 LayerExDraw::redrawRecord()
 {
+	bool ret = false;
 	if (metafile) {
-		graphics->Clear(Color(0));
-		graphics->DrawImage(metafile, 0, 0);
-		_pUpdate(0, NULL);
+		delete metaGraphics;
+		metaGraphics = NULL;
+
+		HGLOBAL oldBuffer = metaBuffer;
+		metaBuffer = NULL;
+		createRecord();
+		
+		// 再描画
+		if (oldBuffer) {
+			IStream* pStream = NULL;
+			if(::CreateStreamOnHGlobal(oldBuffer, FALSE, &pStream) == S_OK) 	{
+				ret = redraw(Image::FromStream(pStream,false));
+				pStream->Release();
+			}
+			::GlobalFree(oldBuffer);
+		}
 	}
+	return ret;
 }
 
 /**
@@ -1476,17 +1582,47 @@ LayerExDraw::redrawRecord()
 bool
 LayerExDraw::saveRecord(const tjs_char *filename)
 {
-	if (metafile) {
-		delete metagraphics;
-		metagraphics = NULL;
-		IStream *out = TVPCreateIStream(filename, TJS_BS_WRITE);
-		if (out) {
-			metafile->Save(out, NULL);
-			out->Release();
-			return true;
+	bool ret = false;
+	if (metafile) {		
+		delete metaGraphics;
+		metaGraphics = NULL;
+
+		ULONG size;
+		if (metaBuffer && (size = (ULONG)::GlobalSize(metaBuffer)) > 0) {
+			IStream *out = TVPCreateIStream(filename, TJS_BS_WRITE);
+			if (out) {
+				void* pBuffer = ::GlobalLock(metaBuffer);
+				if (pBuffer) {
+					ret = (out->Write(pBuffer, size, &size) == S_OK);
+					::GlobalUnlock(metaBuffer);
+				}
+				out->Release();
+			}
 		}
+		
+		HGLOBAL oldBuffer = metaBuffer;
+		metaBuffer = NULL;
+		createRecord();
+
+		// メタ情報の再構築
+		IStream* pStream = NULL;
+		if(::CreateStreamOnHGlobal(oldBuffer, FALSE, &pStream) == S_OK) 	{
+			Image *image = Image::FromStream(pStream,false);
+			RectF *bounds = getBounds(image);
+			
+			Matrix matrix;
+			metaGraphics->Clear(Color(0));
+			metaGraphics->SetTransform(&matrix);
+			metaGraphics->DrawImage(image, bounds->X, bounds->Y, bounds->Width, bounds->Height);
+			metaGraphics->SetTransform(&transform);
+			
+			delete bounds;
+			delete image;
+			pStream->Release();
+		}
+		::GlobalFree(oldBuffer);
 	}
-	return false;
+	return ret;
 }
 
 
@@ -1500,14 +1636,8 @@ LayerExDraw::loadRecord(const tjs_char *filename)
 {
 	Image *image;
 	if (filename && (image = loadImage(filename))) {
-		graphics->Clear(Color(0));
-		graphics->DrawImage(image, 0, 0);
 		createRecord();
-		metagraphics->Clear(Color(0));
-		metagraphics->DrawImage(image, 0, 0);
-		_pUpdate(0, NULL);
-		delete image;
-		return true;
+		return redraw(image);
 	}
 	return false;
 }
