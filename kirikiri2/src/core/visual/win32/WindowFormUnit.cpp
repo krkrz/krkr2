@@ -27,6 +27,7 @@
 #include "MenuContainerFormUnit.h"
 #include "MainFormUnit.h"
 #include "SysInitIntf.h"
+#include "PluginImpl.h"
 #include "Random.h"
 #include "SystemImpl.h"
 #include "DInputMgn.h"
@@ -668,6 +669,8 @@ void TTVPWindowForm::RegisterWindowMessageReceiver(tTVPWMRRegMode mode,
 bool TTVPWindowForm::InternalDeliverMessageToReceiver(tTVPWindowMessage &msg)
 {
 	if(!TJSNativeInstance)
+		return false;
+	if(TVPPluginUnloadedAtSystemExit)
 		return false;
 
 	tObjectListSafeLockHolder<tTVPMessageReceiverRecord> holder(WindowMessageReceivers);

@@ -401,6 +401,7 @@ bool tTVPPlugin::Uninit()
 
 
 //---------------------------------------------------------------------------
+bool TVPPluginUnloadedAtSystemExit = false;
 typedef std::vector<tTVPPlugin*> tTVPPluginVectorType;
 struct tTVPPluginVectorStruc
 {
@@ -409,6 +410,9 @@ struct tTVPPluginVectorStruc
 } static TVPPluginVector;
 static void TVPDestroyPluginVector(void)
 {
+	// state all plugins are to be released
+	TVPPluginUnloadedAtSystemExit = true;
+
 	// delete all objects
 	tTVPPluginVectorType::iterator i;
 	while(TVPPluginVector.Vector.size())
