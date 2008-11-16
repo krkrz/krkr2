@@ -157,6 +157,14 @@ TJS_EXP_FUNC_DEF(tjs_uint32, TVPFromActualColor, (tjs_uint32 col));
 
 
 
+//---------------------------------------------------------------------------
+// Plugin service functions
+//---------------------------------------------------------------------------
+class tTJSNI_BaseLayer;
+TJS_EXP_FUNC_DEF(iTJSDispatch2 *, TVPGetObjectFrom_NI_BaseLayer,   (tTJSNI_BaseLayer * layer));
+//---------------------------------------------------------------------------
+
+
 
 
 //---------------------------------------------------------------------------
@@ -170,6 +178,7 @@ class tTJSNI_BaseLayer :
 	public tTVPCompactEventCallbackIntf
 {
 	friend class tTVPLayerManager;
+	friend iTJSDispatch2 * TVPGetObjectFrom_NI_BaseLayer(tTJSNI_BaseLayer * layer);
 
 	iTJSDispatch2 *Owner;
 	tTJSVariantClosure ActionOwner;

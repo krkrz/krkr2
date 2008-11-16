@@ -9980,3 +9980,13 @@ iTJSDispatch2 * TVPCreateFontObject(iTJSDispatch2 * layer)
 }
 //---------------------------------------------------------------------------
 
+
+//---------------------------------------------------------------------------
+iTJSDispatch2 * TVPGetObjectFrom_NI_BaseLayer(tTJSNI_BaseLayer * layer)
+{
+	iTJSDispatch2 * disp = layer->Owner;
+	if(disp) disp->AddRef();
+	return disp;
+}
+//---------------------------------------------------------------------------
+

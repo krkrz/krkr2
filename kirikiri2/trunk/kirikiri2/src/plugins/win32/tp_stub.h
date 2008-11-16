@@ -1899,6 +1899,7 @@ extern void * TVPImportFuncPtrdcd6ba3960e3e2cf6dbe585b1f67b0ac;
 extern void * TVPImportFuncPtr5b1fa785e397e643dd09cb43c2f2f4db;
 extern void * TVPImportFuncPtr29af78765c764c566e6adc77e0ea7041;
 extern void * TVPImportFuncPtr9e0df54e4c24ee28d5517c1743faa3a3;
+extern void * TVPImportFuncPtrd3aaa55d66777d7308ffa7a348c84841;
 extern void * TVPImportFuncPtrb426fbfb6ccb4e89c252b6af566995b8;
 extern void * TVPImportFuncPtr678c2b211f8d8f661f6fdd95c52fbaa8;
 extern void * TVPImportFuncPtr9ec5b02d14238454101dad083b5dfc3b;
@@ -7857,6 +7858,16 @@ inline tjs_uint32 TVPFromActualColor(tjs_uint32 col)
 	}
 	typedef tjs_uint32 (__stdcall * __functype)(tjs_uint32);
 	return ((__functype)(TVPImportFuncPtr9e0df54e4c24ee28d5517c1743faa3a3))(col);
+}
+inline iTJSDispatch2 * TVPGetObjectFrom_NI_BaseLayer(tTJSNI_BaseLayer * layer)
+{
+	if(!TVPImportFuncPtrd3aaa55d66777d7308ffa7a348c84841)
+	{
+		static char funcname[] = "iTJSDispatch2 * ::TVPGetObjectFrom_NI_BaseLayer(tTJSNI_BaseLayer *)";
+		TVPImportFuncPtrd3aaa55d66777d7308ffa7a348c84841 = TVPGetImportFuncPtr(funcname);
+	}
+	typedef iTJSDispatch2 * (__stdcall * __functype)(tTJSNI_BaseLayer *);
+	return ((__functype)(TVPImportFuncPtrd3aaa55d66777d7308ffa7a348c84841))(layer);
 }
 inline tjs_uint32 TVPGetCurrentShiftKeyState()
 {
