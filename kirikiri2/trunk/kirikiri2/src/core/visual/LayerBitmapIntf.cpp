@@ -1263,9 +1263,6 @@ bool tTVPBaseBitmap::StretchBlt(tTVPRect cliprect,
 	// any magnification, opa:255, method:bmCopy, hda:false
 	// no reverse, destination rectangle is within the image.
 
-	// extract stretch type
-	tTVPBBStretchType type = (tTVPBBStretchType)(mode & stTypeMask);
-
 	// source and destination check
 	tjs_int dw = destrect.get_width(), dh = destrect.get_height();
 	tjs_int rw = refrect.get_width(), rh = refrect.get_height();
@@ -1279,6 +1276,21 @@ bool tTVPBaseBitmap::StretchBlt(tTVPRect cliprect,
 	}
 
 	if(!Is32BPP()) TVPThrowExceptionMessage(TVPInvalidOperationFor8BPP);
+
+
+	tTVPPointD points[3];
+	points[0].x = (double)destrect.left - 0.5;
+	points[0].y = (double)destrect.top - 0.5;
+	points[1].x = (double)destrect.right - 0.5;
+	points[1].y = (double)destrect.top - 0.5;
+	points[2].x = (double)destrect.left - 0.5;
+	points[2].y = (double)destrect.bottom - 0.5;
+	return AffineBlt(cliprect, ref, refrect, points, method,
+					opa, NULL, hda, mode, false, 0);
+
+#if 0
+	// extract stretch type
+	tTVPBBStretchType type = (tTVPBBStretchType)(mode & stTypeMask);
 
 	// compute pitch, step, etc. needed for stretching copy/blt
 	tjs_int w = GetWidth();
@@ -1653,6 +1665,7 @@ bool tTVPBaseBitmap::StretchBlt(tTVPRect cliprect,
 	}
 
 	return true;
+#endif
 }
 
 //---------------------------------------------------------------------------
