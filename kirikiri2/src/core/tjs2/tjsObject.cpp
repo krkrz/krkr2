@@ -1685,7 +1685,7 @@ tjs_error TJSDefaultInvalidate(tjs_uint32 flag, tTJSVariant &targ, iTJSDispatch2
 		}
 	}
 
-	return TJS_E_INVALIDTYPE;
+	return TJS_S_FALSE;
 }
 //---------------------------------------------------------------------------
 tjs_error TJS_INTF_METHOD
