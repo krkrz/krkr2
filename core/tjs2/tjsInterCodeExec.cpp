@@ -1188,6 +1188,7 @@ tjs_int tTJSInterCodeContext::ExecuteCode(tTJSVariant *ra_org, tjs_int startip,
 
 			case VM_INV:
 				TJS_GET_VM_REG(ra, code[1]) =
+					TJS_GET_VM_REG(ra, code[1]).Type() != tvtObject ? false :
 					(TJS_GET_VM_REG(ra, code[1]).AsObjectClosureNoAddRef().Invalidate(0,
 					NULL, NULL, ra[-1].AsObjectNoAddRef()) == TJS_S_TRUE);
 				code += 2;
@@ -1195,6 +1196,7 @@ tjs_int tTJSInterCodeContext::ExecuteCode(tTJSVariant *ra_org, tjs_int startip,
 
 			case VM_CHKINV:
 				TJS_GET_VM_REG(ra, code[1]) =
+					TJS_GET_VM_REG(ra, code[1]).Type() != tvtObject ? true :
 					TJSIsObjectValid(TJS_GET_VM_REG(ra, code[1]).AsObjectClosureNoAddRef().IsValid(0,
 					NULL, NULL, ra[-1].AsObjectNoAddRef()));
 				code += 2;
