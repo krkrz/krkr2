@@ -89,7 +89,7 @@ class Storages {
 	 * @return フォルダを選択してOKボタンを押せば真、キャンセルボタンを押せば偽
 	 * params.name フォルダ名を指定します。OKボタンを押した場合、選択されたフォルダがこのメンバに設定されます
 	 * params.title ダイアログボックスのタイトルを表示します
-	 * params.window ダイアログを開くWindowオブジェクトを指定します
+	 * params.window ダイアログを開くWindowオブジェクトを指定します(void なら mainWindow が、未指定ならデスクトップがオーナーウィンドウとなります。デスクトップがオーナーの場合は、モードレス)
 	 * params.rootDir フォルダ選択のルートを指定します(このフォルダ以下のみ表示されます)
 	 */
 	function selectDirectory(params = %[name:"", title:"", window:void, rootDir:""]);	// by Kiyobee
@@ -137,4 +137,13 @@ class Storages {
 	 * @return 成功したかどうか
 	 */
 	function setLastModifiedFileTime(target, time);
+
+	/**
+	 * 吉里吉里のストレージ空間中の指定ファイルをコピーする
+	 * @param from コピー元ファイル
+	 * @param to コピー先ファイル
+	 * @param failIfExist ファイルが存在するときに失敗するなら ture、上書きするなら false
+	 * @return 実際にコピーできたら true
+	 */
+	function copyFile(from, to, failIfExist);	//	by Kiyobee
 };
