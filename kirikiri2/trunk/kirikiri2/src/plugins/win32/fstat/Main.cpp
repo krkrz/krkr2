@@ -535,17 +535,20 @@ public:
 		//	HWND
 		iTJSDispatch2*	elm	= param[0]->AsObjectNoAddRef();
 		if(elm->IsValid(0, L"window", NULL, elm) == TJS_S_TRUE &&
-			TJS_SUCCEEDED(elm->PropGet(0, L"window", NULL, &val, elm)) &&
-			val.IsInstanceOf(L"Window"))
+			TJS_SUCCEEDED(elm->PropGet(0, L"window", NULL, &val, elm)))
 		{
-			tmp	= val.AsObjectNoAddRef();
-			if(TJS_SUCCEEDED(tmp->PropGet(0, L"HWND", NULL, &val, tmp)))
-				bi.hwndOwner	= (HWND)val.AsInteger();
-			else
-				bi.hwndOwner	= TVPGetApplicationWindowHandle();
+			HWND	owner	= NULL;
+			if(val.Type() != tvtVoid)
+			{
+				tmp	= val.AsObjectNoAddRef();
+				if(TJS_SUCCEEDED(tmp->PropGet(0, L"HWND", NULL, &val, tmp)))
+					owner	= (HWND)val.AsInteger();
+			}
+			bi.hwndOwner	= owner != NULL ? owner : TVPGetApplicationWindowHandle();
 		}
 		else
 			bi.hwndOwner	= NULL;
+		TVPAddLog(L"bi.hwndOwner = "+ttstr((tjs_int)bi.hwndOwner));
 
 		//	title
 		if(elm->IsValid(0, L"title", NULL, elm) == TJS_S_TRUE &&
@@ -588,17 +591,17 @@ public:
 		if((pidl = ::SHBrowseForFolder(&bi)) != NULL)
 		{
 			if(::SHGetPathFromIDList(pidl, folder) != TRUE)
-				*result	= 0;
+				if(result) *result = 0;
 			else
 			{
-				*result	= TJS_S_TRUE;
+				if(result) *result = TJS_S_TRUE;
 				val	= folder;
 				elm->PropSet(0, L"name", NULL, &val, elm);
 			}
 			FreeITEMIDLIST(pidl);
 		}
 		else
-			*result	= 0;
+			if(result) *result	= 0;
 		FreeITEMIDLIST(rootidl);
 
 		return TJS_S_OK;
@@ -609,34 +612,51 @@ public:
 	 * @param directory ディレクトリ名
 	 * @return ディレクトリが存在すれば true/存在しなければ -1/ディレクトリでなければ false
 	 */
-	static tjs_error TJS_INTF_METHOD isExistentDirectory(
-		tTJSVariant	*result,
-		tjs_int numparams,
-		tTJSVariant **param,
-		iTJSDispatch2 *objthis)
+	static int isExistentDirectory(ttstr dir)
 	{
-		if(numparams < 1) return TJS_E_BADPARAMCOUNT;
-
-		if(result == NULL)
-			return TJS_S_OK;
-
-		if(param[0]->NormalCompare(ttstr(L"")))
+		if(dir.GetLastChar() != TJS_W('/'))
 		{
-			*result	= (tTVInteger)-1;
-			return TJS_S_OK;
+			TVPThrowExceptionMessage(TJS_W("'/' must be specified at the end of given directory name."));
 		}
-
-		ttstr	dir = TVPNormalizeStorageName(param[0]->AsStringNoAddRef());
-		getLocalName(dir);
+		dir	= TVPNormalizeStorageName(dir);
+		TVPGetLocalName(dir);
 		DWORD	attr = GetFileAttributes(dir.c_str());
+#if 0
 		if(attr == 0xFFFFFFFF)
-			*result	= (tTVInteger)-1;	//	存在しない
+			return -1;	//	存在しない
 		else if((attr & FILE_ATTRIBUTE_DIRECTORY) == FILE_ATTRIBUTE_DIRECTORY)
-			*result	= (tTVInteger)TJS_S_TRUE;	//	存在する
+			return true;	//	存在する
 		else
-			*result	= (tTVInteger)0;	//	ディレクトリではない
+			return false;	//	ディレクトリではない
+#else
+		if(attr == 0xFFFFFFFF)
+			return false;	//	存在しない
+		else if((attr & FILE_ATTRIBUTE_DIRECTORY) == FILE_ATTRIBUTE_DIRECTORY)
+			return true;	//	存在する
+		else
+			return false;	//	ディレクトリではない
+#endif
+	}
 
-		return TJS_S_OK;
+	/**
+	 * 吉里吉里のストレージ空間中の指定ファイルをコピーする
+	 * @param from コピー元ファイル
+	 * @param to コピー先ファイル
+	 * @param failIfExist ファイルが存在するときに失敗するなら ture、上書きするなら false
+	 * @return 実際に移動できたら true
+	 */
+	static bool copyFile(ttstr from, ttstr to, bool failIfExist)
+	{
+		from	= TVPGetPlacedPath(from);
+		to		= TVPGetPlacedPath(to);
+		if(from.length() && to.length() && !wcschr(from.c_str(), '>') && !wcschr(to.c_str(), '>'))
+		{
+			TVPGetLocalName(from);
+			TVPGetLocalName(to);
+			if(CopyFile(from.c_str(), to.c_str(), failIfExist))
+				return true;
+		}
+		return false;
 	}
 
 private:
@@ -702,7 +722,8 @@ NCB_ATTACH_CLASS(StoragesFstat, Storages) {
 	NCB_METHOD(resetFileAttributes);
 	NCB_METHOD(getFileAttributes);
 	RawCallback("selectDirectory",     &Class::selectDirectory,     TJS_STATICMEMBER);
-	RawCallback("isExistentDirectory", &Class::isExistentDirectory, TJS_STATICMEMBER);
+	NCB_METHOD(isExistentDirectory);
+	NCB_METHOD(copyFile);
 };
 
 /**
