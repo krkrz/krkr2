@@ -494,7 +494,7 @@ public:
 					double value = wcstod(s.c_str(), NULL);
 					var = value;
 				} else {
-					tjs_int32 value = wcstol(s.c_str(), NULL, 0);
+					tjs_int64 value = _wcstoi64(s.c_str(), NULL, 0);
 					var = value;
 				}
 			}
