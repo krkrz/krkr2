@@ -296,7 +296,7 @@ error:
 			ret.SetValue(L"exitcode", (tjs_int)exit);
 		}
 	}
-	*result = ret;
+	if (result != NULL) *result = ret;
 	return TJS_S_OK;
 }
 
