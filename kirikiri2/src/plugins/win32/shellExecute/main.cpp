@@ -149,8 +149,12 @@ tjs_error TJS_INTF_METHOD commandExecute(
 	// コマンドライン/タイムアウト取得
 	int timeout = 0;
 	ttstr output, cmd(L"\""), target(param[0]->GetString());
-	TVPGetPlacedPath(target);
-	TVPGetLocalName(target);
+
+	// 吉里吉里サーチパス上にある場合はそちらを優先
+	if (TVPIsExistentStorage(target)) {
+		target = TVPGetPlacedPath(target);
+		TVPGetLocalName(target);
+	}
 	cmd += target + L"\"";
 	if (numparams > 1) cmd += L" " + ttstr(param[1]->GetString());
 	if (numparams > 2) timeout = (tjs_int)*param[2];
