@@ -648,7 +648,7 @@ public:
 	static bool copyFile(ttstr from, ttstr to, bool failIfExist)
 	{
 		from	= TVPGetPlacedPath(from);
-		to		= TVPGetPlacedPath(to);
+                to = TVPNormalizeStorageName(to);
 		if(from.length() && to.length() && !wcschr(from.c_str(), '>') && !wcschr(to.c_str(), '>'))
 		{
 			TVPGetLocalName(from);
