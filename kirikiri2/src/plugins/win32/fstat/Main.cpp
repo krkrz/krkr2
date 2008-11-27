@@ -590,9 +590,9 @@ public:
 		ITEMIDLIST*	pidl;
 		if((pidl = ::SHBrowseForFolder(&bi)) != NULL)
 		{
-			if(::SHGetPathFromIDList(pidl, folder) != TRUE)
+                        if(::SHGetPathFromIDList(pidl, folder) != TRUE) {
 				if(result) *result = 0;
-			else
+                        } else
 			{
 				if(result) *result = TJS_S_TRUE;
 				val	= folder;
