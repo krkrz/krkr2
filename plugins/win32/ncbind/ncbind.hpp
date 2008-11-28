@@ -2018,9 +2018,9 @@ private:
 
 ////////////////////////////////////////
 #define NCB_METHOD_RAW_CALLBACK(name, cb, flag)         RawCallback(TJS_W(# name), cb,          flag)
-#define NCB_PROPRETY_RAW_CALLBACK(name, get, set, flag) RawCallback(TJS_W(# name), get,    set, flag)
-#define NCB_PROPRETY_RAW_CALLBACK_RO(name, get, flag)   RawCallback(TJS_W(# name), get, (int)0, flag)
-#define NCB_PROPRETY_RAW_CALLBACK_WO(name, set, flag)   RawCallback(TJS_W(# name), (int)0, set, flag)
+#define NCB_PROPERTY_RAW_CALLBACK(name, get, set, flag) RawCallback(TJS_W(# name), get,    set, flag)
+#define NCB_PROPERTY_RAW_CALLBACK_RO(name, get, flag)   RawCallback(TJS_W(# name), get, (int)0, flag)
+#define NCB_PROPERTY_RAW_CALLBACK_WO(name, set, flag)   RawCallback(TJS_W(# name), (int)0, set, flag)
 
 #define NCB_CONSTRUCTOR(cargs)                          Constructor(TypeWrap<void (Class::*) cargs >())
 
