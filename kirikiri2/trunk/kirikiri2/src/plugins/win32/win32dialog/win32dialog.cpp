@@ -169,7 +169,7 @@ public:
 	}
 	StringT GetItemText(int id) const {
 		checkDialogValid();
-		SizeT len = GetDlgItemTextW(dialogHWnd, id, 0, 0);
+		SizeT len = GetWindowTextLength(GetItemHWND(id));
 		tjs_char *p = new tjs_char[len+1];
 		GetDlgItemTextW(dialogHWnd, id, p, len+1);
 		StringT ret = p;
