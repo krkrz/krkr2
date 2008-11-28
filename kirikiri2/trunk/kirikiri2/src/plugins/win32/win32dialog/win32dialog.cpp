@@ -420,7 +420,8 @@ public:
 			MessageBoxHook = SetWindowsHookEx(WH_CBT, MessageBoxHookProc,
 											  (HINSTANCE)GetModuleHandle(0),
 											  (DWORD)GetWindowThreadProcessId(TVPGetApplicationWindowHandle(), 0));
-			useHook = true;
+			if (MessageBoxHook != NULL) useHook = true;
+			else MessageBoxOwnerHWND = 0;
 		}
 		int ret = ::MessageBoxW(hwnd, text, caption, (type & ~MB_OWNER_CENTER));
 		if (useHook) {
@@ -455,6 +456,43 @@ public:
 	}
 
 	// -------------------------------------------------------------
+	// HookEx系APIをオンデマンドで読み込み
+	static bool HookExAPILoaded, HookExAPIFailed;
+	typedef HHOOK   (WINAPI    *SetWindowsHookExT)(int idHook, HOOKPROC lpfn, HINSTANCE hMod, DWORD dwThreadId);
+	typedef BOOL    (WINAPI *UnhookWindowsHookExT)(HHOOK hhk);
+	typedef LRESULT (WINAPI      *CallNextHookExT)(HHOOK hhk, int nCode, WPARAM wParam, LPARAM lParam);
+	static    SetWindowsHookExT    _SetWindowsHookEx;
+	static UnhookWindowsHookExT _UnhookWindowsHookEx;
+	static      CallNextHookExT      _CallNextHookEx;
+	static bool LoadHookExAPI() {
+		if (HookExAPILoaded) return true;
+		HMODULE mod = LoadLibraryW(TJS_W("user32.dll"));
+		if (!mod || HookExAPIFailed) return false;
+		bool failed = false;
+		if (!(_SetWindowsHookEx    = (SetWindowsHookExT)   GetProcAddress(mod, GetHookAPIName("Set",   1, 1)))) failed = true;
+		if (!(_UnhookWindowsHookEx = (UnhookWindowsHookExT)GetProcAddress(mod, GetHookAPIName("Unhook",1, 0)))) failed = true;
+		if (!(_CallNextHookEx      = (CallNextHookExT)     GetProcAddress(mod, GetHookAPIName("Call",  0, 0)))) failed = true;
+		FreeLibrary(mod);
+		return (failed = HookExAPIFailed) ? false : (HookExAPILoaded = true);
+	}
+	static HHOOK SetWindowsHookEx(int idHook, HOOKPROC lpfn, HINSTANCE hMod, DWORD dwThreadId) {
+		return LoadHookExAPI() ? _SetWindowsHookEx(idHook, lpfn, hMod, dwThreadId) : NULL;
+	}
+	static BOOL UnhookWindowsHookEx(HHOOK hhk) {
+		return LoadHookExAPI() ? _UnhookWindowsHookEx(hhk) : FALSE;
+	}
+	static LRESULT CallNextHookEx(HHOOK hhk, int nCode, WPARAM wParam, LPARAM lParam) {
+		return LoadHookExAPI() ? _CallNextHookEx(hhk, nCode, wParam, lParam) : 0;
+	}
+	static char *GetHookAPIName(char const *name, bool win, bool wide) {
+		static char tmp[256];
+		strcpy_s(tmp, sizeof(tmp), name);
+		strcat_s(tmp, sizeof(tmp), win  ? "Windows" :"Next");
+		strcat_s(tmp, sizeof(tmp), wide ? "HookExW" :"HookEx");
+		return tmp;
+	}
+
+	// -------------------------------------------------------------
 	// コモンコントロール初期化
 	static void InitCommonControls() {
 		::InitCommonControls();
@@ -469,6 +507,13 @@ public:
 };
 HHOOK WIN32Dialog::MessageBoxHook = 0;
 HWND  WIN32Dialog::MessageBoxOwnerHWND = 0;
+
+bool  WIN32Dialog::HookExAPILoaded = false;
+bool  WIN32Dialog::HookExAPIFailed = false;
+WIN32Dialog::SetWindowsHookExT    WIN32Dialog::_SetWindowsHookEx;
+WIN32Dialog::UnhookWindowsHookExT WIN32Dialog::_UnhookWindowsHookEx;
+WIN32Dialog::CallNextHookExT      WIN32Dialog::_CallNextHookEx;
+
 
 // ダイアログヘッダ設定クラス
 struct Header : public DialogHeader {
