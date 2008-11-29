@@ -193,9 +193,10 @@ class BitmapAffineSourceLayer extends AffineSourceLayer {
 
 	/**
 	 * 複製を返す
+	 * @param newparent 新しい親(情報を移す必要があるため)
 	 */
-	function clone() {
-		var ret = new global.BitmapAffineSourceLayer(_image.parent);
+	function clone(newparent) {
+		var ret = new global.BitmapAffineSourceLayer(newparent);
 		ret.cloneInfo(this);
 		ret._image.width  = _image.width;
 		ret._image.height = _image.height;
@@ -750,7 +751,7 @@ class VectorAffineSourceLayer extends AffineSourceLayer {
 	/**
 	 * コンストラクタ
 	 */
-	function VectorAffineSourceLayer() {
+	function VectorAffineSourceLayer(parent) {
 		super.AffineSourceLayer();
 		_image = new global.GdiPlus.Image();
 	}
@@ -765,8 +766,8 @@ class VectorAffineSourceLayer extends AffineSourceLayer {
 	/**
 	 * 複製を返す
 	 */
-	function clone() {
-		var ret = new VectorAffineSourceLayer();
+	function clone(newparent) {
+		var ret = new global.VectorAffineSourceLayer(newparent);
 		ret.cloneInfo(this);
 		ret._imageX       = _imageX;
 		ret._imageY       = _imageY;
@@ -1028,7 +1029,6 @@ class AffineLayer extends Layer {
 	// ビットマップ画像用に初期化
 	function _initBitmap() {
 		if (!(_image instanceof "BitmapAffineSourceLayer")) {
-			Debug.message("ビットマップ初期化:" + Scripts.getTraceString());
 			invalidate _image;
 			_image = new global.BitmapAffineSourceLayer(this);
 		}
@@ -1037,9 +1037,8 @@ class AffineLayer extends Layer {
 	// ベクタ画像用に初期化
 	function _initVector() {
 		if (!(_image instanceof "VectorAffineSourceLayer")) {
-			Debug.message("ベクタ初期化");
 			invalidate _image;
-			_image = new global.VectorAffineSourceLayer();
+			_image = new global.VectorAffineSourceLayer(this);
 		}
 	}
 	
@@ -1453,7 +1452,7 @@ class AffineLayer extends Layer {
 	function assignImages(src) {
 		if (src instanceof "AffineLayer") {
 			stopRaster();
-			_image  = src._image.clone();
+			_image  = src._image.clone(this);
 			_rotate = src._rotate;
 			_zoomx  = src._zoomx;
 			_zoomy  = src._zoomy;
