@@ -1541,27 +1541,13 @@ class AffineLayer extends Layer {
     
 	function drawText(x, y, text, color, opa=255, aa=true, shadowlevel=0, shadowcolor=0x000000, shadowwidth=0, shadowofsx=0, shadowofsy=0) {
 		_initBitmap();
-		if (_resolutionx == 100 && _resolutiony == 100) {
-			_image.drawText(...);
-		} else {
-			_image.drawText(x * _resolutionx / 100,
-							y * _resolutiony / 100,
-							text, color, opa, aa, shadowlevel, shadowcolor, shadowwidth, shadowofsx, shadowofsy);
-		}
+		_image.drawText(...);
 		calcAffine();
     }
 
 	function fillRect(left, top, width, height, value) {
 		_initBitmap();
-		if (_resolutionx == 100 && _resolutiony == 100) {
-			_image.fillRect(...);
-		} else {
-			_image.fillRect(left * _resolutoinx / 100,
-							top  * _resolutiony / 100,
-							width * _resolutionx / 100,
-							height * _resolutiony / 100,
-							value);
-		}
+		_image.fillRect(...);
 		calcAffine();
     }
 
