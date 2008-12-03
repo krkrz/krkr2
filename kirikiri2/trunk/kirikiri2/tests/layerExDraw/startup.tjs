@@ -98,7 +98,8 @@ class MyWindow extends Window
 		drawLine(x, y, size, %[width:5, dashStyle:GdiPlus.DashStyleDashDotDot]);
 		y += 10;
 		drawLine(x, y, size, %[width:5, dashStyle:[10,10,20,20,30,30,40,40]]);
-		y += 50;
+
+		y += 80;
 		
 		var app = new GdiPlus.Appearance();
 		app.addPen(0xffffffff,
@@ -113,9 +114,28 @@ class MyWindow extends Window
 		dm("フォント情報 ascent:" + font.ascent + " descent:" + font.descent + " linespacing:" + font.lineSpacing);
 
 		var text = "■テキスト描画テストABCghijklpq■";
-		
+
 		var frect = layer.measureString(font, text);
 		dm("measureString領域" + frect.left + "," + frect.top + "," + frect.width + "," + frect.height);
+		
+		var trect = layer.drawPathString(font, app, x, y-font.ascent, text);
+		dm("テキスト描画位置" + x + "," + y);
+		dm("drawPathString領域" + trect.left + "," + trect.top + "," + trect.width + "," + trect.height);
+
+		app.clear();
+		app.addPen(0xff0000ff, 1, 0, 0);
+		layer.drawLine(app, x, y, x+frect.width, y);
+		app.clear();
+		app.addPen(0xff00ff00, 1, 0, 0);
+		layer.drawRectangle(app, x, y-font.ascent, frect.width, font.ascent + font.descent);
+		app.clear();
+		app.addPen(0xffff0000, 1, 0, 0);
+		layer.drawRectangle(app, trect.left, trect.top, trect.width, trect.height);
+		
+		y += 80;
+
+		app.clear();
+		app.addBrush(0xffffffff, 0, 0);
 		
 		var trect = layer.drawString(font, app, x, y-font.ascent, text);
 		dm("テキスト描画位置" + x + "," + y);
@@ -124,20 +144,16 @@ class MyWindow extends Window
 		app.clear();
 		app.addPen(0xff0000ff, 1, 0, 0);
 		layer.drawLine(app, x, y, x+frect.width, y);
-		
 		app.clear();
 		app.addPen(0xff00ff00, 1, 0, 0);
 		layer.drawRectangle(app, x, y-font.ascent, frect.width, font.ascent + font.descent);
-
 		app.clear();
 		app.addPen(0xffff0000, 1, 0, 0);
 		layer.drawRectangle(app, trect.left, trect.top, trect.width, trect.height);
 
-
-
 		// アフィンレイヤのテスト用
 		alayer = new AffineLayer(this, base);
-		alayer.setPos(WIDTH/2, HEIGHT/2);
+		alayer.setPos(WIDTH/2+WIDTH/4, HEIGHT/4);
 		alayer.visible = true;
 		add(alayer);
 		alayer.loadImages("test.emf");
@@ -165,7 +181,7 @@ class MyWindow extends Window
 
 	function actionHandler(tick) {
 		var now = tick - startTime;
-		alayer.zoom = 20 + 300 - 300 * Math.cos(2 * Math.PI * now / 5000);
+		alayer.zoom = 20 + 100 - 100 * Math.cos(2 * Math.PI * now / 5000);
 		alayer.rotate = (360 * now / 2000) % 360;
 	}
 

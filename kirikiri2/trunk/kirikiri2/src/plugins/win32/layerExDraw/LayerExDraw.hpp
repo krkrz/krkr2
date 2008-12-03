@@ -188,9 +188,28 @@ protected:
 	Matrix viewTransform;
 	Matrix calcTransform;
 
-	// smootihngMode
+protected:
+	// 描画スムージング指定
 	SmoothingMode smoothingMode;
-	
+	// drawString のアンチエイリアス指定
+	TextRenderingHint textRenderingHint;
+
+public:
+	int getSmoothingMode() {
+		return (int)smoothingMode;
+	}
+	void setSmoothingMode(int mode) {
+		smoothingMode = (SmoothingMode)mode;
+	}
+
+	int getTextRenderingHint() {
+		return (int)textRenderingHint;
+	}
+	void setTextRenderingHint(int hint) {
+		textRenderingHint = (TextRenderingHint)hint;
+	}
+
+protected:
 	/// 描画内容記録用メタファイル
 	HDC metaHDC;
 	HGLOBAL metaBuffer;
@@ -442,6 +461,19 @@ public:
 	 * @return 更新領域情報
 	 */
 	RectF drawRectangles(const Appearance *app, tTJSVariant rects);
+
+	/**
+	 * 文字列の描画
+	 * @param font フォント
+	 * @param app アピアランス
+	 * @param x 描画位置X
+	 * @param y 描画位置Y
+	 * @param text 描画テキスト
+	 * @return 更新領域情報
+	 */
+	RectF drawPathString(const FontInfo *font, const Appearance *app, REAL x, REAL y, const tjs_char *text);
+
+	// -------------------------------------------------------------------------------
 	
 	/**
 	 * 文字列の描画
