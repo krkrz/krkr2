@@ -89,6 +89,8 @@ NCB_TYPECONV_CAST_INTEGER(Status);
 NCB_TYPECONV_CAST_INTEGER(MatrixOrder);
 NCB_TYPECONV_CAST_INTEGER(ImageType);
 NCB_TYPECONV_CAST_INTEGER(RotateFlipType);
+NCB_TYPECONV_CAST_INTEGER(SmoothingMode);
+NCB_TYPECONV_CAST_INTEGER(TextRenderingHint);
 
 // ------------------------------------------------------- PointF
 template <class T>
@@ -680,6 +682,20 @@ NCB_REGISTER_CLASS(GdiPlus)
 	ENUM(Rotate90FlipXY);
 	ENUM(Rotate180FlipXY);
 	ENUM(Rotate270FlipXY);
+
+	ENUM(SmoothingModeInvalid);
+	ENUM(SmoothingModeDefault);
+	ENUM(SmoothingModeHighSpeed);
+	ENUM(SmoothingModeHighQuality);
+	ENUM(SmoothingModeNone);
+	ENUM(SmoothingModeAntiAlias);
+
+	ENUM(TextRenderingHintSystemDefault);
+	ENUM(TextRenderingHintSingleBitPerPixelGridFit);
+	ENUM(TextRenderingHintSingleBitPerPixel);
+	ENUM(TextRenderingHintAntiAliasGridFit);
+	ENUM(TextRenderingHintAntiAlias);
+	ENUM(TextRenderingHintClearTypeGridFit);
 	
 // statics
 	NCB_METHOD(addPrivateFont);
@@ -713,11 +729,12 @@ NCB_GET_INSTANCE_HOOK(LayerExDraw)
 	}
 };
 
-
 // フックつきアタッチ
 NCB_ATTACH_CLASS_WITH_HOOK(LayerExDraw, Layer) {
 	NCB_PROPERTY(updateWhenDraw, getUpdateWhenDraw, setUpdateWhenDraw);
-
+	NCB_PROPERTY(smoothingMode, getSmoothingMode, setSmoothingMode);
+	NCB_PROPERTY(textRenderingHint, getTextRenderingHint, setTextRenderingHint);
+	
 	NCB_METHOD(setViewTransform);
 	NCB_METHOD(resetViewTransform);
 	NCB_METHOD(rotateViewTransform);
@@ -746,6 +763,7 @@ NCB_ATTACH_CLASS_WITH_HOOK(LayerExDraw, Layer) {
 	NCB_METHOD(drawPolygon);
 	NCB_METHOD(drawRectangle);
 	NCB_METHOD(drawRectangles);
+	NCB_METHOD(drawPathString);
 	NCB_METHOD(drawString);
 	NCB_METHOD(measureString);
 

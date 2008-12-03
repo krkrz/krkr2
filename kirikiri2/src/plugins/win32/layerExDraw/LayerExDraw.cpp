@@ -752,7 +752,7 @@ LayerExDraw::updateRect(RectF &rect)
  */
 LayerExDraw::LayerExDraw(DispatchT obj)
 	: layerExBase(obj), width(-1), height(-1), pitch(0), buffer(NULL), bitmap(NULL), graphics(NULL),
-	  smoothingMode(SmoothingModeAntiAlias),
+	  smoothingMode(SmoothingModeAntiAlias), textRenderingHint(TextRenderingHintAntiAlias),
 	  metaHDC(NULL), metaBuffer(NULL), metaStream(NULL), metafile(NULL), metaGraphics(NULL),
 	  updateWhenDraw(true)
 {
@@ -791,9 +791,7 @@ LayerExDraw::reset()
 		buffer = _buffer;
 		bitmap = new Bitmap(width, height, pitch, PixelFormat32bppARGB, (unsigned char*)buffer);
 		graphics = new Graphics(bitmap);
-		graphics->SetSmoothingMode(smoothingMode);
 		graphics->SetCompositingMode(CompositingModeSourceOver);
-		graphics->SetTextRenderingHint(TextRenderingHintAntiAlias);
 		graphics->SetTransform(&calcTransform);
 	}
 }
@@ -1308,7 +1306,7 @@ LayerExDraw::drawRectangles(const Appearance *app, tTJSVariant rects)
 }
 
 /**
- * 文字列の描画
+ * 文字列のパスベースでの描画
  * @param font フォント
  * @param app アピアランス
  * @param x 描画位置X
@@ -1317,7 +1315,7 @@ LayerExDraw::drawRectangles(const Appearance *app, tTJSVariant rects)
  * @return 更新領域情報
  */
 RectF
-LayerExDraw::drawString(const FontInfo *font, const Appearance *app, REAL x, REAL y, const tjs_char *text)
+LayerExDraw::drawPathString(const FontInfo *font, const Appearance *app, REAL x, REAL y, const tjs_char *text)
 {
 	// 文字列のパスを準備
 	GraphicsPath path;
@@ -1325,11 +1323,92 @@ LayerExDraw::drawString(const FontInfo *font, const Appearance *app, REAL x, REA
 	return drawPath(app, &path);
 }
 
+static void transformRect(Matrix &calcTransform, RectF &rect)
+{
+	PointF points[4]; // 元座標値
+	points[0].X = rect.X;
+	points[0].Y = rect.Y;
+	points[1].X = rect.X + rect.Width;
+	points[1].Y = rect.Y;
+	points[2].X = rect.X;
+	points[2].Y = rect.Y + rect.Height;
+	points[3].X = rect.X + rect.Width;
+	points[3].Y = rect.Y + rect.Height;
+	// 描画領域を再計算
+	calcTransform.TransformPoints(points, 4);
+	REAL minx = points[0].X;
+	REAL maxx = points[0].X;
+	REAL miny = points[0].Y;
+	REAL maxy = points[0].Y;
+	for (int i=1;i<4;i++) {
+		if (points[i].X < minx) { minx = points[i].X; }
+		if (points[i].X > maxx) { maxx = points[i].X; }
+		if (points[i].Y < miny) { miny = points[i].Y; }
+		if (points[i].Y > maxy) { maxy = points[i].Y; }
+	}
+	rect.X = minx;
+	rect.Y = miny;
+	rect.Width = maxx - minx;
+	rect.Height = maxy - miny;
+}
+
+/**
+ * 文字列の描画
+ * @param font フォント
+ * @param app アピアランス（ブラシのみ参照されます）
+ * @param x 描画位置X
+ * @param y 描画位置Y
+ * @param text 描画テキスト
+ * @return 更新領域情報
+ */
+RectF
+LayerExDraw::drawString(const FontInfo *font, const Appearance *app, REAL x, REAL y, const tjs_char *text)
+{
+	graphics->SetTextRenderingHint(textRenderingHint);
+	if (metaGraphics) {
+		metaGraphics->SetTextRenderingHint(textRenderingHint);
+	}
+
+	// 領域記録用
+	RectF rect;
+	// 描画フォント
+	Font f(font->fontFamily, font->emSize, font->style, UnitPixel);
+
+	// 描画情報を使って次々描画
+	bool first = true;
+	vector<Appearance::DrawInfo>::const_iterator i = app->drawInfos.begin();
+	while (i != app->drawInfos.end()) {
+		if (i->info) {
+			if (i->type == 1) { // ブラシのみ
+				Brush *brush = (Brush*)i->info;
+				PointF p(x + i->ox, y + i->oy);
+				graphics->DrawString(text, -1, &f, p, StringFormat::GenericDefault(), brush);
+				if (metaGraphics) {
+					metaGraphics->DrawString(text, -1, &f, p, StringFormat::GenericDefault(), brush);
+				}
+				// 更新領域計算
+				if (first) {
+					graphics->MeasureString(text, -1, &f, p, StringFormat::GenericDefault(), &rect);
+					transformRect(calcTransform, rect);
+					first = false;
+				} else {
+					RectF r;
+					graphics->MeasureString(text, -1, &f, p, StringFormat::GenericDefault(), &r);
+					transformRect(calcTransform, r);
+					rect.Union(rect, rect, r);
+				}
+				break;
+			}
+		}
+		i++;
+	}
+	updateRect(rect);
+	return rect;
+}
 
 /**
  * 文字列の描画領域情報の取得
  * @param font フォント
- * @param app アピアランス
  * @param text 描画テキスト
  * @return 描画領域情報
  */
@@ -1337,11 +1416,11 @@ RectF
 LayerExDraw::measureString(const FontInfo *font, const tjs_char *text)
 {
 	RectF rect;
+	graphics->SetTextRenderingHint(textRenderingHint);
 	Font f(font->fontFamily, font->emSize, font->style, UnitPixel);
 	graphics->MeasureString(text, -1, &f, PointF(0,0), StringFormat::GenericDefault(), &rect);
 	return rect;
 }
-
 
 /**
  * 画像の描画。コピー先は元画像の Bounds を配慮した位置、サイズは Pixel 指定になります。
@@ -1358,6 +1437,7 @@ LayerExDraw::drawImage(REAL x, REAL y, Image *src)
 		RectF *bounds = getBounds(src);
 		rect = drawImageRect(x + bounds->X, y + bounds->Y, src, 0, 0, bounds->Width, bounds->Height);
 		delete bounds;
+		updateRect(rect);
 	}
 	return rect;
 }
@@ -1472,9 +1552,7 @@ LayerExDraw::createRecord()
 		if (::CreateStreamOnHGlobal(metaBuffer, FALSE, &metaStream) == S_OK) 	{
 			metafile = new Metafile(metaStream, metaHDC, EmfTypeEmfPlusOnly);
 			metaGraphics = new Graphics(metafile);
-			metaGraphics->SetSmoothingMode(smoothingMode);
 			metaGraphics->SetCompositingMode(CompositingModeSourceOver);
-			metaGraphics->SetTextRenderingHint(TextRenderingHintAntiAlias);
 			metaGraphics->SetTransform(&transform);
 		}
 	}
