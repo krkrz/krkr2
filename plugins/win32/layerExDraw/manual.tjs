@@ -173,6 +173,22 @@ class GdiPlus {
     Rotate90FlipXY = Rotate270FlipNone;
     Rotate180FlipXY = RotateNoneFlipNone;
     Rotate270FlipXY = Rotate90FlipNone;
+
+	// SmoothingMode 指定
+	SmoothingModeInvalid = -1;
+	SmoothingModeDefault = 0;
+	SmoothingModeHighSpeed = 1;
+	SmoothingModeHighQuality = 2;
+	SmoothingModeNone = 0;
+	SmoothingModeAntiAlias = 1;
+
+	// TextRenderingHint 指定
+	TextRenderingHintSystemDefault = 0;
+	TextRenderingHintSingleBitPerPixelGridFit = 1;
+    TextRenderingHintSingleBitPerPixel = 2;
+    TextRenderingHintAntiAliasGridFit = 3;
+    TextRenderingHintAntiAlias = 4;
+    TextRenderingHintClearTypeGridFit = 5;
 	
 	/**
 	 * プライベートフォントの追加(static)
@@ -431,6 +447,14 @@ class Layer {
 	 */
 	property updateWhenDraw;
 
+	// 描画のアンチエイリアス指定(SmoothingMode)
+	// デフォルト SmoothingModeAntiAlias
+	property smoothingMode;
+
+	// テキスト描画のレンダリング指定(TextRenderingHint)
+	// デフォルト TextRenderingHintAntiAlias
+	property textRenderingHint;
+
 	/**
 	 * 描画時のトランスフォームを指定
 	 */
@@ -602,12 +626,27 @@ class Layer {
 	 * @param rects 矩形の配列 [ [x1, y1, width1, height1], [x2, y2, width2, height2] .... ]
 	 * @return 更新域情報(RectF)
 	 */
-	function drawRectangles(app, rects)
+	function drawRectangles(app, rects);
 	
+
 	/**
-	 * 文字列の描画
+	 * 文字列のパスベースでの描画
 	 * @param font フォント GdiPlus.Font でフォントを指定します
 	 * @param app アピアランス GdiPlus.Appearance で描画スタイルを指定します
+	 * @param x 描画位置X
+	 * @param y 描画位置Y
+	 * @param text 描画テキスト
+	 * @return 更新域情報(RectF)
+	 */
+	function drawPathString(font, app, x, y, text);
+
+	
+	// -------------------------------------------------------------
+
+	/**
+	 * 文字列の描画。描画のクオリティは textRenderingHint に従います。
+	 * @param font フォント GdiPlus.Font でフォントを指定します
+	 * @param app アピアランス GdiPlus.Appearance で描画スタイルを指定します。※ブラシしか参照されません
 	 * @param x 描画位置X
 	 * @param y 描画位置Y
 	 * @param text 描画テキスト
@@ -616,7 +655,7 @@ class Layer {
 	function drawString(font, app, x, y, text);
 
 	/**
-	 * 文字列の描画領域情報の取得
+	 * 文字列の描画領域情報の取得。描画のクオリティは textRenderingHint に従います
 	 * @param font フォント
 	 * @param text 描画テキスト
 	 * @return 描画領域情報(RectF)
