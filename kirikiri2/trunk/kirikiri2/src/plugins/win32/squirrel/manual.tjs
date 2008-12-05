@@ -19,6 +19,15 @@ class Scripts {
 	function execStorageSQ(filename);
 
 	/**
+	 * Squirrel グローバルメソッドの呼び出し
+	 * @param name メソッド名
+	 * @param ... 引数
+	 * @return スクリプトの実行結果。プリミティブな値はそのまま変換されて、
+	 * また、クラスは TJS2 の iTJSDispatch にラッピングされた状態で返ります。
+	 */
+	function callSQ(name, ...);
+	
+	/**
 	 * Squirrel スクリプトのコンパイル処理
 	 * @param text スクリプトが格納された文字列
 	 * @store store バイナリクロージャ格納先ファイル

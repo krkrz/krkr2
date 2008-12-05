@@ -1,13 +1,17 @@
 #include <windows.h>
 #include "tp_stub.h"
+#include <stdio.h>
+
 #include <squirrel.h>
+#include <sqstdio.h>
+#include <sqstdmath.h>
+#include <sqstdstring.h>
+#include <sqstdaux.h>
+#include <sqstdblob.h>
 
-void store(HSQUIRRELVM v, iTJSDispatch2 *dispatch);
-void store(HSQUIRRELVM v, tTJSVariant &variant);
-void store(tTJSVariant &result, HSQUIRRELVM v, HSQOBJECT &obj);
-void store(tTJSVariant &result, HSQUIRRELVM v, int idx=-1);
-
-static const SQUserPointer TJSTYPETAG = (SQUserPointer)"TJSTYPETAG";
+// 格納・取得用
+void sq_pushvariant(HSQUIRRELVM v, tTJSVariant &variant);
+SQRESULT sq_getvariant(HSQUIRRELVM v, int idx, tTJSVariant *result);
 
 /**
  * エラー処理
@@ -21,6 +25,35 @@ SQEXCEPTION(HSQUIRRELVM v)
 	ttstr error = str;
 	sq_pop(v, 1);
 	TVPThrowExceptionMessage(error.c_str());
+}
+
+/**
+ * ログ出力用 for squirrel
+ */
+static void PrintFunc(HSQUIRRELVM v, const SQChar* format, ...)
+{
+	va_list args;
+	va_start(args, format);
+	tjs_char msg[1024];
+	_vsnwprintf(msg, sizeof msg, format, args);
+	TVPAddLog(msg);
+	va_end(args);
+}
+
+/**
+ * スレッド判定
+ * @param th スレッド
+ * @return th が現在実行中のスレッドなら true
+ */
+static SQInteger isCurrentThread(HSQUIRRELVM vm)
+{
+	SQInteger nargs = sq_gettop(vm);
+	HSQUIRRELVM v;
+	if (nargs >= 2 && sq_gettype(vm,2) == OT_THREAD && SQ_SUCCEEDED(sq_getthread(vm,2,&v))) {
+		sq_pushbool(vm, vm == v ? 1 : 0);
+		return 1;
+	}
+	return sq_throwerror(vm, _SC("invalid param"));
 }
 
 /**
@@ -52,7 +85,7 @@ public:
 	}
 
 public:
-
+	// オブジェクト生成
 	tjs_error TJS_INTF_METHOD CreateNew(
 		tjs_uint32 flag,
 		const tjs_char * membername,
@@ -60,9 +93,7 @@ public:
 		iTJSDispatch2 **result,
 		tjs_int numparams,
 		tTJSVariant **param,
-		iTJSDispatch2 *objthis
-		)
-	{
+		iTJSDispatch2 *objthis) {
 		if (membername) {
 			return TJS_E_MEMBERNOTFOUND;
 		}
@@ -73,23 +104,24 @@ public:
 		sq_pushobject(v, obj);
 		sq_pushroottable(v);			// this 相当部分
 		for (int i=0;i<numparams;i++) {	// パラメータ群
-			store(v, *param[i]);
+			sq_pushvariant(v, *param[i]);
 		}
-		if (!SQ_SUCCEEDED(sq_call(v, numparams + 1, result ? SQTrue:SQFalse, SQTrue))) {
+		if (SQ_SUCCEEDED(sq_call(v, numparams + 1, result ? SQTrue:SQFalse, SQTrue))) {
+			if (result) {
+				tTJSVariant var;
+				sq_getvariant(v, -1, &var);
+				sq_pop(v, 1);
+				*result = var.AsObject();
+			}
+			sq_pop(v, 1);
+		} else {
 			sq_pop(v, 1);
 			SQEXCEPTION(v);
 		}
-		if (result) {
-			HSQOBJECT x;
-			sq_resetobject(&x);
-			sq_getstackobj(v,-1,&x);
-			*result = new iTJSDispatch2Wrapper(v, x);
-		}
-		sq_pop(v, 1);
 		return TJS_S_OK;
 	}
 
-	
+	// オブジェクト機能呼び出し
 	tjs_error TJS_INTF_METHOD FuncCall(
 		tjs_uint32 flag,
 		const tjs_char * membername,
@@ -108,93 +140,100 @@ public:
 			sq_pushobject(v, obj);
 			sq_pushroottable(v);
 			for (int i=0;i<numparams;i++) {	// パラメータ群
-				store(v, *param[i]);
+				sq_pushvariant(v, *param[i]);
 			}
-			if (!SQ_SUCCEEDED(sq_call(v, numparams + 1, result ? SQTrue:SQFalse, SQTrue))) {
+			if (SQ_SUCCEEDED(sq_call(v, numparams + 1, result ? SQTrue:SQFalse, SQTrue))) {
+				if (result) {
+					sq_getvariant(v, -1, result);
+					sq_pop(v, 1);
+				}
+				sq_pop(v, 1);
+			} else {
 				sq_pop(v, 1);
 				SQEXCEPTION(v);
 			}
-			if (result) {
-				store(*result, v);
-				sq_pop(v, 1);
-			}
-			sq_pop(v, 1);
 			return TJS_S_OK;
 		} else {
 			sq_pushobject(v, obj);
 			sq_pushstring(v, membername,-1);
-			if (!SQ_SUCCEEDED(sq_get(v,-2))) {
+			if (SQ_SUCCEEDED(sq_get(v,-2))) {
+				sq_pushobject(v, obj); // this
+				for (int i=0;i<numparams;i++) {	// パラメータ群
+					sq_pushvariant(v, *param[i]);
+				}
+				// 帰り値がある場合
+				if (SQ_SUCCEEDED(sq_call(v, numparams + 1, result ? SQTrue:SQFalse, SQTrue))) {
+					if (result) {
+						sq_getvariant(v, -1, result);
+						sq_pop(v, 1);
+					}
+					sq_pop(v, 2);
+				} else {
+					sq_pop(v, 2);
+					SQEXCEPTION(v);
+				}
+			} else {
 				sq_pop(v, 1);
 				return TJS_E_MEMBERNOTFOUND;
 			}
-			sq_pushobject(v, obj); // this
-			for (int i=0;i<numparams;i++) {	// パラメータ群
-				store(v, *param[i]);
-			}
-			// 帰り値がある場合
-			if (!SQ_SUCCEEDED(sq_call(v, numparams + 1, result ? SQTrue:SQFalse, SQTrue))) {
-				sq_pop(v, 2);
-				SQEXCEPTION(v);
-			}
-			if (result) {
-				store(*result, v);
-				sq_pop(v, 1);
-			}
-			sq_pop(v, 2);
 			return TJS_S_OK;
 		}
 	}
 
+	// プロパティ取得
 	tjs_error TJS_INTF_METHOD PropGet(
 		tjs_uint32 flag,
 		const tjs_char * membername,
 		tjs_uint32 *hint,
 		tTJSVariant *result,
-		iTJSDispatch2 *objthis
-) {
+		iTJSDispatch2 *objthis) {
 		// プロパティはない
 		if (!membername) {
 			return TJS_E_NOTIMPL;
 		}
 		sq_pushobject(v, obj);
 		sq_pushstring(v, membername,-1);
-		if (!SQ_SUCCEEDED(sq_get(v,-2))) {
+		if (SQ_SUCCEEDED(sq_get(v,-2))) {
+			if (result) {
+				sq_getvariant(v, -1, result);
+			}
+			sq_pop(v,2);
+		} else {
 			sq_pop(v,1);
 			return TJS_E_MEMBERNOTFOUND;
 		}
-		if (result) {
-			store(*result, v);
-		}
-		sq_pop(v,2);
 		return TJS_S_OK;
 	}
 
+	// プロパティ設定
 	tjs_error TJS_INTF_METHOD PropSet(
 		tjs_uint32 flag,
 		const tjs_char *membername,
 		tjs_uint32 *hint,
 		const tTJSVariant *param,
-		iTJSDispatch2 *objthis
-		) {
+		iTJSDispatch2 *objthis) {
 		// プロパティはない
 		if (!membername) {
 			return TJS_E_NOTIMPL;
 		}
 		sq_pushobject(v, obj);
 		sq_pushstring(v, membername,-1);
-		store(v, (tTJSVariant&)*param);
+		sq_pushvariant(v, (tTJSVariant&)*param);
 		if ((flag & TJS_MEMBERENSURE)) {
-			if (!SQ_SUCCEEDED(sq_newslot(v,-3, SQFalse))) {
+			if (SQ_SUCCEEDED(sq_newslot(v,-3, SQFalse))) {
+				sq_pop(v,1);
+			} else {
 				sq_pop(v,1);
 				SQEXCEPTION(v);
 			}
 		} else {
-			if (!SQ_SUCCEEDED(sq_set(v,-3))) {
+			if (SQ_SUCCEEDED(sq_set(v,-3))) {
+				sq_pop(v,1);
+			} else {
 				sq_pop(v,1);
 				SQEXCEPTION(v);
 			}
 		}
-		sq_pop(v,1);
 		return TJS_S_OK;
 	}
 };
@@ -215,6 +254,7 @@ tjsDispatchRelease(SQUserPointer up, SQInteger size)
 	return 1;
 }
 
+// 文字列取得用
 static const SQChar *GetString(HSQUIRRELVM v, int idx)
 {
 	const SQChar *x = NULL;
@@ -222,15 +262,7 @@ static const SQChar *GetString(HSQUIRRELVM v, int idx)
 	return x;
 }
 
-static HSQOBJECT GetObjectHandle(HSQUIRRELVM v, int idx)
-{
-	HSQOBJECT x;
-	sq_resetobject(&x);
-	sq_getstackobj(v,idx,&x);
-    return x;
-}
-
-
+// ユーザデータ取得用
 static SQUserPointer GetUserData(HSQUIRRELVM v, int idx,SQUserPointer tag=0)
 {
 	SQUserPointer otag;
@@ -240,6 +272,9 @@ static SQUserPointer GetUserData(HSQUIRRELVM v, int idx,SQUserPointer tag=0)
 	}
 	return NULL;
 }
+
+
+static const SQUserPointer TJSTYPETAG = (SQUserPointer)"TJSTYPETAG";
 
 /**
  * iTJSDispatch2 用プロパティの取得
@@ -253,11 +288,11 @@ get(HSQUIRRELVM v)
 		iTJSDispatch2 *dispatch	= *((iTJSDispatch2**)up);
 		tTJSVariant result;
 		if (SUCCEEDED(dispatch->PropGet(0, GetString(v, 2), NULL, &result, dispatch))) {
-			store(v, result);
+			sq_pushvariant(v, result);
 			return 1;
 		}
 	}
-	return 0;
+	return sq_throwerror(v, _SC("no such member"));
 }
 
 /**
@@ -271,25 +306,25 @@ set(HSQUIRRELVM v)
 	if (up) {
 		iTJSDispatch2 *dispatch	= *((iTJSDispatch2**)up);
 		tTJSVariant result;
-		store(result, v, GetObjectHandle(v, 3));
+		sq_getvariant(v, 3, &result);
 		dispatch->PropSet(TJS_MEMBERENSURE, GetString(v, 2), NULL, &result, dispatch);
+		return SQ_OK;
 	}
-	return 0;
+	return sq_throwerror(v, _SC("no such member"));
 }
 
 /**
- * iTJSDispatch2 用メソッドまたはコンストラクタの呼び出し
+ * iTJSDispatch2 用コンストラクタの呼び出し
  * @param v squirrel VM
  */
 static SQInteger
-call(HSQUIRRELVM v)
+callConstructor(HSQUIRRELVM v)
 {
 	// param1 オブジェクト
 	// param2 オリジナルオブジェクト
 	// param3 ～ 本来の引数ぽ
 
 	SQUserPointer up = GetUserData(v, 1, TJSTYPETAG);
-	int ret = 0;
 	if (up) {
 		iTJSDispatch2 *dispatch	= *((iTJSDispatch2**)up);
 
@@ -306,25 +341,18 @@ call(HSQUIRRELVM v)
 		tTJSVariant **args = new tTJSVariant*[argc];
 		for (int i=0;i<argc;i++) {
 			args[i] = new tTJSVariant();
-			store(*args[i], v, GetObjectHandle(v, i+3));
+			sq_getvariant(v, i+3, args[i]);
 		}
 
-		if (dispatch->IsInstanceOf(0, NULL, NULL, L"Class", dispatch) == TJS_S_TRUE) {
-			// クラスオブジェクトの場合コンストラクタとみなす
-			iTJSDispatch2 *instance = NULL;
-			if (SUCCEEDED(dispatch->CreateNew(0, NULL, NULL, &instance, argc, args, thisobj))) {
-				store(v, instance);
-				ret = 1;
-			}
+		int ret = 0;
+		iTJSDispatch2 *instance = NULL;
+		if (SUCCEEDED(dispatch->CreateNew(0, NULL, NULL, &instance, argc, args, thisobj))) {
+			tTJSVariant var(instance, instance);
+			sq_pushvariant(v, var);
+			instance->Release();
+			ret = 1;
 		} else {
-			// メソッド呼び出し
-			tTJSVariant result;
-			if (SUCCEEDED(dispatch->FuncCall(0, NULL, NULL, &result, argc, args, thisobj))) {
-				if (result.Type() != tvtVoid) {
-					store(v, result);
-					ret = 1;
-				}
-			}
+			ret = sq_throwerror(v, _SC("invalid create"));
 		}
 			
 		// 引数破棄
@@ -332,49 +360,66 @@ call(HSQUIRRELVM v)
 			delete args[i];
 		}
 		delete[] args;
+
+		return ret;
 	}
-	return ret;
+	return sq_throwerror(v, _SC("invalid call"));
 }
 
 /**
- * iTJSDispatch2 を squirrel の空間に投入する
+ * iTJSDispatch2 用メソッドの呼び出し
  * @param v squirrel VM
- * @param dispatch iTJSDispatch2
  */
-void
-store(HSQUIRRELVM v, iTJSDispatch2 *dispatch)
+static SQInteger
+callMethod(HSQUIRRELVM v)
 {
-	if (dispatch) {
-		dispatch->AddRef();
-		SQUserPointer up = sq_newuserdata(v, sizeof(iTJSDispatch2*));
-		*((iTJSDispatch2**)up) = dispatch;
+	// param1 オブジェクト
+	// param2 オリジナルオブジェクト
+	// param3 ～ 本来の引数ぽ
 
-		// タグ登録
-		sq_settypetag(v, -1, TJSTYPETAG);
+	SQUserPointer up = GetUserData(v, 1, TJSTYPETAG);
+	if (up) {
+		iTJSDispatch2 *dispatch	= *((iTJSDispatch2**)up);
+
+		// this を取得
+		iTJSDispatch2 *thisobj = NULL;
+		up = GetUserData(v, 2, TJSTYPETAG);
+		if (up) {
+			thisobj = *((iTJSDispatch2**)up);
+		}
 		
-		// 開放ロジックを追加
-		sq_setreleasehook(v, -1, tjsDispatchRelease);
-
-		// メソッド群を追加
-		sq_newtable(v);
-
-		sq_pushstring(v, L"_get", -1);
-		sq_newclosure(v, get, 0);
-		sq_createslot(v, -3);
-
-		sq_pushstring(v, L"_set", -1);
-		sq_newclosure(v, set, 0);
-		sq_createslot(v, -3);
-
-		sq_pushstring(v, L"_call", -1);
-		sq_newclosure(v, call, 0);
-		sq_createslot(v, -3);
+		int argc = sq_gettop(v) - 2;
 		
-		sq_setdelegate(v, -2);
+		// 引数変換
+		tTJSVariant **args = new tTJSVariant*[argc];
+		for (int i=0;i<argc;i++) {
+			args[i] = new tTJSVariant();
+			sq_getvariant(v, i+3, args[i]);
+		}
 
-	} else {
-		sq_pushnull(v);
+		// メソッド呼び出し
+		int ret = 0;
+		tTJSVariant result;
+		if (SUCCEEDED(dispatch->FuncCall(0, NULL, NULL, &result, argc, args, thisobj))) {
+			if (result.Type() != tvtVoid) {
+				sq_pushvariant(v, result);
+				ret = 1;
+			} else {
+				ret = 0;
+			}
+		} else {
+			ret = sq_throwerror(v, _SC("invalid call"));
+		}
+			
+		// 引数破棄
+		for (int i=0;i<argc;i++) {
+			delete args[i];
+		}
+		delete[] args;
+
+		return ret;
 	}
+	return sq_throwerror(v, _SC("invalid call"));
 }
 
 /**
@@ -383,14 +428,50 @@ store(HSQUIRRELVM v, iTJSDispatch2 *dispatch)
  * @param variant tTJSVariant
  */
 void
-store(HSQUIRRELVM v, tTJSVariant &variant)
+sq_pushvariant(HSQUIRRELVM v, tTJSVariant &variant)
 {
 	switch (variant.Type()) {
 	case tvtVoid:
 		sq_pushnull(v);
 		break;
 	case tvtObject:
-		store(v, variant.AsObjectNoAddRef());
+		{
+			iTJSDispatch2 *dispatch = variant.AsObject();
+			if (dispatch) {
+				// UserData 確保
+				SQUserPointer up = sq_newuserdata(v, sizeof *dispatch);
+				*((iTJSDispatch2**)up) = dispatch;
+				
+				// タグ登録
+				sq_settypetag(v, -1, TJSTYPETAG);
+				
+				// 開放ロジックを追加
+				sq_setreleasehook(v, -1, tjsDispatchRelease);
+				
+				// メソッド群を追加
+				sq_newtable(v);
+				
+				sq_pushstring(v, L"_get", -1);
+				sq_newclosure(v, get, 0);
+				sq_createslot(v, -3);
+				
+				sq_pushstring(v, L"_set", -1);
+				sq_newclosure(v, set, 0);
+				sq_createslot(v, -3);
+				
+				sq_pushstring(v, L"_call", -1);
+				if (dispatch->IsInstanceOf(0, NULL, NULL, L"Class", dispatch) == TJS_S_TRUE) {
+					sq_newclosure(v, callConstructor, 0);
+				} else {
+					sq_newclosure(v, callMethod, 0);
+				}
+				sq_createslot(v, -3);
+				
+				sq_setdelegate(v, -2);
+			} else {
+				sq_pushnull(v);
+			}
+		}
 		break;
 	case tvtString:
 		sq_pushstring(v, variant.GetString(), -1);
@@ -407,91 +488,91 @@ store(HSQUIRRELVM v, tTJSVariant &variant)
 	}
 }
 
-
 /**
- * squirrel のオブジェクトを tTJSVariant に変換する(値渡し）
- * @param result 結果格納先
+ * tTJSVariant を squirrel の空間から取得する
+ * @param v squirrel VM
+ * @param idx スタックのインデックス
+ * @param result tTJSVariant を返す先
  */
-void
-store(tTJSVariant &result, HSQUIRRELVM v, HSQOBJECT &obj)
+SQRESULT
+sq_getvariant(HSQUIRRELVM v, int idx, tTJSVariant *result)
 {
-	result.Clear();
-	switch (obj._type) {
-	case OT_NULL:
-		break;
-	case OT_INTEGER:
-		result = sq_objtointeger(&obj);
-		break;
-	case OT_FLOAT:
-		result = (double)sq_objtofloat(&obj);
-		break;
-	case OT_BOOL:
-		result = sq_objtobool(&obj) ? 1 : 0;
-		break;
-	case OT_STRING:
-		result = sq_objtostring(&obj);
-		break;
-	case OT_USERDATA:
-		{
-			sq_pushobject(v, obj);
-			SQUserPointer data, typetag;
-			sq_getuserdata(v, -1, &data, &typetag);
-			if (data && typetag == TJSTYPETAG) {
-				result = *((iTJSDispatch2**)data);
+	if (result) {
+		switch (sq_gettype(v, idx)) {
+		case OT_NULL: result->Clear(); break;
+		case OT_INTEGER: { SQInteger i; sq_getinteger(v, idx, &i);	*result = (tjs_int64)i; } break;
+		case OT_FLOAT:   { SQFloat f; sq_getfloat(v, idx, &f); 	    *result = (double)f; } break;
+		case OT_BOOL:    { SQBool b; sq_getbool(v, idx, &b);        *result = b != SQFalse; } break;
+		case OT_STRING:  { const SQChar *c; sq_getstring(v, idx, &c); *result = c; } break;
+		case OT_USERDATA:
+			{
+				SQUserPointer data, typetag;
+				sq_getuserdata(v, idx, &data, &typetag);
+				if (data && typetag == TJSTYPETAG) {
+					// 元々吉里吉里側から渡されたデータ
+					iTJSDispatch2 *dispatch = *((iTJSDispatch2**)data);
+					*result = tTJSVariant(dispatch, dispatch);
+				} else {
+					result->Clear();
+				}
 			}
-			sq_pop(v, 1);
+			break;
+		case OT_TABLE:
+		case OT_ARRAY:
+		case OT_CLOSURE:
+		case OT_NATIVECLOSURE:
+		case OT_GENERATOR:
+		case OT_USERPOINTER:
+		case OT_THREAD:
+		case OT_CLASS:
+		case OT_INSTANCE:
+		case OT_WEAKREF:
+			// ラッピング
+			{
+				HSQOBJECT x;
+				sq_resetobject(&x);
+				sq_getstackobj(v,idx,&x);
+				iTJSDispatch2 *tjsobj = new iTJSDispatch2Wrapper(v, x);
+				if (tjsobj) {
+					*result = tTJSVariant(tjsobj, tjsobj);
+					tjsobj->Release();
+				}
+			}
+			break;
+		default:
+			result->Clear();
 		}
-		break;
-	case OT_TABLE:
-	case OT_ARRAY:
-	case OT_CLOSURE:
-	case OT_NATIVECLOSURE:
-	case OT_GENERATOR:
-	case OT_USERPOINTER:
-	case OT_THREAD:
-	case OT_CLASS:
-	case OT_INSTANCE:
-	case OT_WEAKREF:
-		// ラッピングが必要!
-		{
-			iTJSDispatch2 *tjsobj = new iTJSDispatch2Wrapper(v, obj);
-			result = tjsobj;
-			tjsobj->Release();
-		}
-		break;
+		return SQ_OK;
 	}
+	return SQ_ERROR;
 }
 
+// ----------------------------------------------------------------------------
+
+/**
+ * squirrel 初期化処理
+ */
 void
-store(tTJSVariant &result, HSQUIRRELVM v, int idx)
+squirrel_init(HSQUIRRELVM v)
 {
-	HSQOBJECT x;
-	sq_resetobject(&x);
-	sq_getstackobj(v,idx,&x);
-	store(result, v, x);
-}
+	// 出力用
+	sq_setprintfunc(v, PrintFunc);
 
-// -------------------------------------------------------
-
-/**
- * Squirrel の グローバル空間に登録処理を行う
- */
-void registglobal(HSQUIRRELVM v, const SQChar *name, iTJSDispatch2 *dispatch)
-{
+	// 各種基本ライブラリの登録
 	sq_pushroottable(v);
-	sq_pushstring(v, name, -1);
-	store(v, dispatch);
+	sqstd_register_iolib(v);
+	sqstd_register_bloblib(v);
+	sqstd_register_mathlib(v);
+	sqstd_register_stringlib(v);
+	sqstd_seterrorhandlers(v);
+
+	// スレッド判定用メソッドをグローバル登録
+	sq_pushstring(v, _SC("isCurrentThread"), -1);
+	sq_newclosure(v, isCurrentThread, 0);
 	sq_createslot(v, -3); 
-	sq_pop(v, 1);
-}
 
-/**
- * Squirrel の グローバル空間から削除処理を行う
- */
-void unregistglobal(HSQUIRRELVM v, const SQChar *name)
-{
-	sq_pushroottable(v);
-	sq_pushstring(v, name, -1);
-	sq_deleteslot(v, -2, SQFalse); 
 	sq_pop(v, 1);
+
+	// 例外通知を有効に
+	sq_notifyallexceptions(v, SQTrue);
 }
