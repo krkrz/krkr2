@@ -236,7 +236,14 @@ bool CD3D9Driver::initDriver(const core::dimension2d<s32>& screenSize, HWND hwnd
 	}
 	else
 	{
-		present.BackBufferFormat	= d3ddm.Format;
+		present.BackBufferWidth = screenSize.Width;
+		present.BackBufferHeight = screenSize.Height;
+		if (bits == -1) { // XXX ƒŒƒCƒ„—p
+			present.BackBufferFormat = D3DFMT_X8R8G8B8;
+			present.Flags = D3DPRESENTFLAG_LOCKABLE_BACKBUFFER;
+		} else {
+			present.BackBufferFormat	= d3ddm.Format;
+		}
 		present.SwapEffect		= D3DSWAPEFFECT_COPY;
 		present.Windowed		= TRUE;
 	}
@@ -478,7 +485,7 @@ bool CD3D9Driver::beginScene(bool backBuffer, bool zBuffer, SColor color)
 
 
 //! applications must call this method after performing any rendering. returns false if failed.
-bool CD3D9Driver::endScene( s32 windowId, core::rect<s32>* sourceRect, core::rect<s32>* destRect )
+bool CD3D9Driver::endScene( s32 windowId, core::rect<s32>* sourceRect, core::rect<s32>* destRect, void* destDC )
 {
 	if (DeviceLost)
 		return false;
@@ -492,28 +499,67 @@ bool CD3D9Driver::endScene( s32 windowId, core::rect<s32>* sourceRect, core::rec
 		return false;
 	}
 
-	RECT* srcRct = 0;
-	RECT sourceRectData;
-	if ( sourceRect )
-	{
-		srcRct = &sourceRectData;
-		sourceRectData.left = sourceRect->UpperLeftCorner.X;
-		sourceRectData.top = sourceRect->UpperLeftCorner.Y;
-		sourceRectData.right = sourceRect->LowerRightCorner.X;
-		sourceRectData.bottom = sourceRect->LowerRightCorner.Y;
-	}
+	if (destDC) {
+		// draw backbuffer to DC
+		LPDIRECT3DSURFACE9 backBuffer = NULL;
+		if (SUCCEEDED((hr = pID3DDevice->GetBackBuffer(0,0,D3DBACKBUFFER_TYPE_MONO, &backBuffer)))) {
+			HDC srcDC;
+			if (SUCCEEDED((hr = backBuffer->GetDC(&srcDC)))) {
+				int srcx, srcy, srcw,srch;
+				if (sourceRect) {
+					srcx = sourceRect->UpperLeftCorner.X;
+					srcy = sourceRect->UpperLeftCorner.Y;
+					srcw = sourceRect->getWidth();
+					srch = sourceRect->getHeight();
+				} else {
+					srcx = 0;
+					srcy = 0;
+					srcw = ScreenSize.Width;
+					srch = ScreenSize.Height;
+				}
+				int destx, desty, destw, desth;
+				if (destRect) {
+					destx = destRect->UpperLeftCorner.X;
+					desty = destRect->UpperLeftCorner.Y;
+					destw = destRect->getWidth();
+					desth = destRect->getHeight();
+				} else {
+					destx = srcx;
+					desty = srcy;
+					destw = srcw;
+					desth = srch;
+				}
+				//::SetStretchBltMode((HDC)destDC, STRETCH_HALFTONE); 
+				::StretchBlt((HDC)destDC, destx, desty, destw, desth, srcDC, srcx, srcy, srcw, srch, SRCCOPY);
+				backBuffer->ReleaseDC(srcDC);
+			}
+			backBuffer->Release();
+		}
+		
+	} else {
 
-	RECT* dstRct = 0;
-	RECT destRectData;
-	if ( destRect ) {
-		dstRct = &destRectData;
-		destRectData.left = destRect->UpperLeftCorner.X;
-		destRectData.top = destRect->UpperLeftCorner.Y;
-		destRectData.right = destRect->LowerRightCorner.X;
-		destRectData.bottom = destRect->LowerRightCorner.Y;
-	}
+		RECT* srcRct = 0;
+		RECT sourceRectData;
+		if ( sourceRect ) {
+			srcRct = &sourceRectData;
+			sourceRectData.left = sourceRect->UpperLeftCorner.X;
+			sourceRectData.top = sourceRect->UpperLeftCorner.Y;
+			sourceRectData.right = sourceRect->LowerRightCorner.X;
+			sourceRectData.bottom = sourceRect->LowerRightCorner.Y;
+		}
 
-	hr = pID3DDevice->Present(srcRct, dstRct, (HWND)windowId, NULL);
+		RECT* dstRct = 0;
+		RECT destRectData;
+		if ( destRect ) {
+			dstRct = &destRectData;
+			destRectData.left = destRect->UpperLeftCorner.X;
+			destRectData.top = destRect->UpperLeftCorner.Y;
+			destRectData.right = destRect->LowerRightCorner.X;
+			destRectData.bottom = destRect->LowerRightCorner.Y;
+		}
+
+		hr = pID3DDevice->Present(srcRct, dstRct, (HWND)windowId, NULL);
+	}
 	
 	if (hr == D3DERR_DEVICELOST)
 	{

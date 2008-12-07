@@ -228,6 +228,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\IrrlichtSimpleDevice.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\IrrlichtWindow.cpp"
 				>
 			</File>
@@ -298,6 +302,10 @@
 			</File>
 			<File
 				RelativePath=".\IrrlichtDrawDevice.h"
+				>
+			</File>
+			<File
+				RelativePath=".\IrrlichtSimpleDevice.h"
 				>
 			</File>
 			<File

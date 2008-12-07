@@ -15,9 +15,12 @@ using namespace gui;
  * コンストラクタ
  */
 IrrlichtDrawDevice::IrrlichtDrawDevice(int width, int height)
-	: IrrlichtBase(), width(width), height(height), destWidth(0), destHeight(0), zoomMode(true), defaultVisible(true),
-	  screenWidth(-1), screenHeight(-1)
+	: IrrlichtBaseUpdate(), width(width), height(height), destWidth(0), destHeight(0), zoomMode(true), defaultVisible(true)
 {
+	// Irrlicht的画面サイズ
+	screenWidth = width;
+	screenHeight = height;
+	screenRect = rect<s32>(0,0,screenWidth,screenHeight);
 }
 
 /**
@@ -25,6 +28,7 @@ IrrlichtDrawDevice::IrrlichtDrawDevice(int width, int height)
  */
 IrrlichtDrawDevice::~IrrlichtDrawDevice()
 {
+	freeInfo();
 }
 
 // -----------------------------------------------------------------------
@@ -41,11 +45,8 @@ IrrlichtDrawDevice::OnContinuousCallback(tjs_uint64 tick)
 	Window->RequestUpdate();
 }
 
-/**
- * ウインドウの解除
- */
 void
-IrrlichtDrawDevice::detach()
+IrrlichtDrawDevice::freeInfo()
 {
 	for (std::vector<iTVPLayerManager *>::iterator i = Managers.begin(); i != Managers.end(); i++) {
 		LayerManagerInfo *info = (LayerManagerInfo*)(*i)->GetDrawDeviceData();
@@ -53,9 +54,16 @@ IrrlichtDrawDevice::detach()
 			info->free();
 		}
 	}
-	IrrlichtBase::detach();
-	screenWidth = -1;
-	screenHeight = -1;
+}
+
+/**
+ * ウインドウの解除
+ */
+void
+IrrlichtDrawDevice::detach()
+{
+	freeInfo();
+	IrrlichtBaseUpdate::detach();
 }
 
 /**
@@ -208,7 +216,7 @@ IrrlichtDrawDevice::SetTargetWindow(HWND wnd, bool is_main)
 {
 	detach();
 	if (wnd != NULL) {
-		attach(wnd);
+		attach(wnd, screenWidth, screenHeight);
 		Window->NotifySrcResize(); // これを呼ぶことで GetSrcSize(), SetDestRectangle() の呼び返しが来る
 		// マネージャに対するテクスチャの割り当て
 		IVideoDriver *driver = device->getVideoDriver();

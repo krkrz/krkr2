@@ -395,7 +395,7 @@ void COpenGLDriver::createMaterialRenderers()
 
 
 //! presents the rendered scene on the screen, returns false if failed
-bool COpenGLDriver::endScene( s32 windowId, core::rect<s32>* sourceRect, core::rect<s32>* destRect)
+bool COpenGLDriver::endScene( s32 windowId, core::rect<s32>* sourceRect, core::rect<s32>* destRect, void* destDC)
 {
 	CNullDriver::endScene();
 
