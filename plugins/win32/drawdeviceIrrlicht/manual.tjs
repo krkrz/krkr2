@@ -1,10 +1,11 @@
 /**
- * Irrclicht DrawDevice Class
+ * 吉里吉里 Irrclicht プラグイン
+ *
  */
 class Irrlicht {
 
 	// -----------------------------------------------------------------------------
-	// データ保持用クラス
+	// データ保持用クラス(newできます)
 	// -----------------------------------------------------------------------------
 	
 	class SColor;
@@ -17,7 +18,7 @@ class Irrlicht {
 	class vector3df;
 
 	// -----------------------------------------------------------------------------
-	//
+	// インターフェースクラス(実体をnewできません)
 	// -----------------------------------------------------------------------------
 
 	class ISceneNode;
@@ -35,6 +36,12 @@ class Irrlicht {
 	 * 画像情報クラス
 	 */
 	class IImage {
+	};
+
+	/**
+	 * テクスチャクラス
+	 */
+	class ITexture {
 	};
 
 	// -----------------------------------------------------------------------------
@@ -112,6 +119,42 @@ class Irrlicht {
 		property sceneManager; //< シーンマネージャ(ISceneManagerクラス)。読み出し専用
 		property guiEnvironment; //< GUI環境（IGUIEnvironmentクラス）。読み出し専用
 	};
+
+	/**
+	 * レイヤへの描画機能を提供する Irrlicht Device
+	 */
+	class SimpleDevice extends Base {
+
+		/**
+		 * コンストラクタ
+		 * ※生成した時点では Irrlichtのデバイスが存在するとは限りません。
+		 * 親ウインドウが既に実体化していた場合は同時に生成されますが、
+		 * そうでない場合は実際に親ウインドウが実体化した時点ではじめて
+		 * デバイスが初期化され、ドライバ、シーンマネージャ、GUIが扱えるようになります。
+		 * @param window 親になるウインドウ
+		 * @param width 横幅
+		 * @param height 縦幅
+		 */
+		function Device(window, width, height);
+
+		property width; //< 横幅
+		property height; //< 縦幅
+
+		/**
+		 * 描画領域の設定
+		 * @param width 描画領域横幅
+		 * @param width 描画領域縦幅
+		 */
+		function setSize(width, height);
+
+		/**
+		 * レイヤに対して現在の状態を描画する。
+		 * 描画領域サイズのバックバッファから、現在のレイヤの imageWidth/imageHeight
+		 * に対して GDIで縮小 StretchBlt されます。
+		 * @param layer 描画先レイヤ
+		 */
+		function updateToLayer(layer);
+	};
 	
 	/**
 	 * 吉里吉里用 drawdevice クラス
@@ -140,6 +183,11 @@ class Irrlicht {
 		 *     base1 = new Layer(this, null); base1.setSize(800,400); // 画面と同じ解像度
 		 *     base2 = new Layer(this, null); base1.setSize(400,200); // 画面の半分の解像度
 		 *     base3 = new Layer(this, null); base1.setSize(800,200); // 縦だけ解像度半分
+		 *
+		 * 生成した時点では Irrlichtのデバイスが存在するとは限りません。
+		 * 親ウインドウが既に実体化していた場合は同時に生成されますが、
+		 * そうでない場合は実際に親ウインドウが実体化した時点ではじめて
+		 * デバイスが初期化され、ドライバ、シーンマネージャ、GUIが扱えるようになります。
 		 */
 		function DrawDevice(width, height);
 
@@ -187,19 +235,24 @@ class Irrlicht {
 	};
 
 	/**
-	 * 吉里吉里の子ウインドウとして機能するIrrlicht
+	 * 子ウインドウとして機能するIrrlicht Device
 	 */
 	class Window extends Base {
 
 		/**
 		 * コンストラクタ
-		 * @param parent 親になるウインドウ
+		 * @param window 親になるウインドウ
 		 * @param left 配置位置X
 		 * @param top 配置位置Y
 		 * @param width 配置サイズ
 		 * @param height 配置サイズ
+		 *
+		 * 生成した時点では Irrlichtのデバイスが存在するとは限りません。
+		 * 親ウインドウが既に実体化していた場合は同時に生成されますが、
+		 * そうでない場合は実際に親ウインドウが実体化した時点ではじめて
+		 * デバイスが初期化され、ドライバ、シーンマネージャ、GUIが扱えるようになります。
 		 */
-		function Window(parent, left, top, width, height);
+		function Window(window, left, top, width, height);
 
 		property left; //< 配置位置X
 		property top;  //< 配置位置Y
@@ -215,11 +268,12 @@ class Irrlicht {
 
 		/**
 		 * 配置サイズ指定
-		 * @param width 配置サイズ
-		 * @param height 配置サイズ
+		 * @param width 配置サイズ横幅
+		 * @param height 配置サイズ縦幅
 		 */
 		function setSize(width, height);
 	}	
+
 };
 
 
@@ -227,9 +281,17 @@ class Irrlicht {
  * レイヤに対する機能拡張
  */
 class Layer {
+
 	/**
 	 * Irrlicht.IImage から画像をコピー。レイヤのサイズは元のIImageのサイズになります
 	 * @param src Irrlicht.IImage 画像
 	 */
 	function copyIImage(src);
+
+	/**
+	 * Irrlicht.ITexture から画像をコピー。レイヤのサイズは元のITextureのサイズになります
+	 * ※テクスチャが ARGB32 bit でない場合はコピーできません
+	 * @param src Irrlicht.ITexture テクスチャ
+	 */
+	function copyITexture(src);
 }

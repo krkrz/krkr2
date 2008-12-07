@@ -1,5 +1,6 @@
 #include "ncbind/ncbind.hpp"
 #include "IrrlichtDrawDevice.h"
+#include "IrrlichtSimpleDevice.h"
 #include "IrrlichtWindow.h"
 
 using namespace irr;
@@ -960,7 +961,7 @@ NCB_IRR_PROPERTY(viewport, getViewPort, setViewPort);
 NCB_IRR_METHOD(addDynamicLight);
 NCB_IRR_METHOD2(addTexture, ITexture*, addTexture, (const dimension2d<s32>&, const c8*, ECOLOR_FORMAT));
 NCB_IRR_METHOD2(addTexture2, ITexture*, addTexture, (const c8*, IImage *));
-NCB_IRR_METHOD(beginScene);
+//NCB_IRR_METHOD(beginScene);
 NCB_IRR_METHOD(clearZBuffer);
 NCB_IRR_METHOD(createAttributesFromMaterial);
 NCB_IRR_METHOD2(createImage, IImage*, createImage, (ECOLOR_FORMAT, const core::dimension2d<s32>&));
@@ -1001,7 +1002,7 @@ NCB_IRR_METHOD(drawStencilShadow);
 NCB_IRR_METHOD(drawStencilShadowVolume);
 //NCB_IRR_METHOD(drawVertexPrimitiveList); XXX配列
 NCB_IRR_METHOD(enableClipPlane);
-NCB_IRR_METHOD(endScene);
+//NCB_IRR_METHOD(endScene);
 NCB_IRR_METHOD(fillMaterialStructureFromAttributes);
 NCB_IRR_METHOD(findTexture);
 NCB_IRR_METHOD(getCurrentRenderTargetSize);
@@ -1173,6 +1174,16 @@ NCB_REGISTER_SUBCLASS(IrrlichtWindow) {
 	NCB_METHOD(setSize);
 };
 
+NCB_REGISTER_SUBCLASS(IrrlichtSimpleDevice) {
+	NCB_CONSTRUCTOR((iTJSDispatch2 *, int, int));
+	BASE_METHOD;
+	NCB_PROPERTY(width, getWidth, setWidth);
+	NCB_PROPERTY(height, getHeight, setHeight);
+	NCB_METHOD(setSize);
+	NCB_METHOD(updateToLayer);
+};
+
+
 /**
  * 名前空間用ダミー
  */
@@ -1212,12 +1223,13 @@ NCB_REGISTER_CLASS(Irrlicht) {
 	NCB_IRR_SUBCLASS(IImage);
 	NCB_IRR_SUBCLASS(ITexture);
 
-	// 
+	// Irrlicht 操作用クラス
 	NCB_IRR_SUBCLASS(IVideoDriver);
 	NCB_IRR_SUBCLASS(ISceneManager);
 	NCB_IRR_SUBCLASS(IGUIEnvironment);
 
-	// Irrlicht 操作ベースクラス
+	// Irrlicht ベースクラス
+	NCB_SUBCLASS(SimpleDevice, IrrlichtSimpleDevice);
 	NCB_SUBCLASS(DrawDevice, IrrlichtDrawDevice);
 	NCB_SUBCLASS(Window, IrrlichtWindow);
 }
@@ -1282,7 +1294,66 @@ copyIImage(tTJSVariant *result, tjs_int numparams, tTJSVariant **param, iTJSDisp
 
 	return TJS_S_OK;
 }
+
+/**
+ * レイヤに ITexture からの吸い出し処理を拡張
+ * @param ただし ARGB に限る
+ */
+static tjs_error TJS_INTF_METHOD
+copyITexture(tTJSVariant *result, tjs_int numparams, tTJSVariant **param, iTJSDispatch2 *objthis)
+{
+	if (numparams < 1) return TJS_E_BADPARAMCOUNT;
+	
+	typedef IrrWrapper<ITexture> WrapperT;
+	typedef ncbInstanceAdaptor<WrapperT> AdaptorT;
+	WrapperT *obj;
+	ITexture *texture;
+	if (param[0]->Type() != tvtObject ||
+		(obj = AdaptorT::GetNativeInstance(param[0]->AsObjectNoAddRef())) == NULL ||
+		(texture = obj->getIrrObject()) == NULL) {
+		TVPThrowExceptionMessage(TJS_W("src must be ITexture."));
+	}
+	
+	dimension2d<s32> size = texture->getSize();
+	int width  = size.Width;
+	int height = size.Height;
+	
+	// レイヤのサイズを調整
+	ncbPropAccessor layer(objthis);
+	layer.SetValue(L"width",  width);
+	layer.SetValue(L"height", height);
+	layer.SetValue(L"imageLeft",  0);
+	layer.SetValue(L"imageTop",   0);
+	layer.SetValue(L"imageWidth",  width);
+	layer.SetValue(L"imageHeight", height);
+	
+	unsigned char *buffer = (unsigned char*)layer.GetValue(L"mainImageBufferForWrite", ncbTypedefs::Tag<tjs_int>());
+	int pitch = layer.GetValue(L"mainImageBufferPitch", ncbTypedefs::Tag<tjs_int>());
+	
+	// 画像データのコピー
+	if (texture->getColorFormat() == ECF_A8R8G8B8) {
+		unsigned char *src = (unsigned char*)texture->lock();
+		int slen   = width * 4;
+		int spitch = texture->getPitch();
+		for (int y=0;y<height;y++) {
+			memcpy(buffer, src, slen);
+			src    += spitch;
+			buffer += pitch;
+		}
+		texture->unlock();
+
+		// レイヤを更新
+		objthis->FuncCall(0, L"update", NULL, NULL, 0, NULL, objthis);
+
+	} else {
+		TVPThrowExceptionMessage(TJS_W("invalid format texture."));
+	}
+	return TJS_S_OK;
+}
+
+
 NCB_ATTACH_FUNCTION(copyIImage, Layer, copyIImage);
+NCB_ATTACH_FUNCTION(copyITexture, Layer, copyIImage);
 
 /**
  * 登録処理前

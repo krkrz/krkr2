@@ -137,7 +137,7 @@ IrrlichtWindow::destroyWindow()
  * コンストラクタ
  */
 IrrlichtWindow::IrrlichtWindow(iTJSDispatch2 *win, int left, int top, int width, int height)
-	: IrrlichtBase(), window(NULL), parent(0), hwnd(0), visible(false)
+	: IrrlichtBaseUpdate(), window(NULL), parent(0), hwnd(0), visible(false)
 {
 	if (win->IsInstanceOf(0, NULL, NULL, L"Window", win) != TJS_S_TRUE) {
 		TVPThrowExceptionMessage(L"must set window object");
@@ -145,6 +145,7 @@ IrrlichtWindow::IrrlichtWindow(iTJSDispatch2 *win, int left, int top, int width,
 
 	window = win;
 	window->AddRef();
+	setReceiver(messageHandler, true);
 	
 	tTJSVariant krkrHwnd; // 親のハンドル
 	if (window->PropGet(0, TJS_W("HWND"), NULL, &krkrHwnd, window) == TJS_S_OK) {
@@ -166,7 +167,6 @@ IrrlichtWindow::IrrlichtWindow(iTJSDispatch2 *win, int left, int top, int width,
 	if (height != 0) {
 		this->height = height;
 	}
-	setReceiver(messageHandler, true);
 	createWindow((HWND)(tjs_int)krkrHwnd);
 }
 

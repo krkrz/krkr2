@@ -8,7 +8,7 @@
  * Irrlicht ベースの DrawDevice
  */
 class IrrlichtDrawDevice :
-	public IrrlichtBase,
+	public IrrlichtBaseUpdate,
 	public tTVPDrawDevice
 {
 	typedef tTVPDrawDevice inherited;
@@ -41,6 +41,8 @@ public:
 	virtual void TJS_INTF_METHOD OnContinuousCallback(tjs_uint64 tick);
 	
 protected:
+	void freeInfo();
+
 	// デバイス解放処理
 	virtual void detach();
 	
