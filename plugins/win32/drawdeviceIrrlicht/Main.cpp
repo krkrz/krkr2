@@ -1205,9 +1205,37 @@ NCB_REGISTER_CLASS(Irrlicht) {
 	NCB_SUBCLASS_NAME(position2df);
 	NCB_SUBCLASS_NAME(dimension2di);
 	NCB_SUBCLASS_NAME(dimension2df);
+	NCB_SUBCLASS_NAME(vector2df);
 	NCB_SUBCLASS_NAME(vector3df);
+	NCB_SUBCLASS(recti, rect<s32>);
+//	NCB_SUBCLASS_MANE(matrix4);
+	NCB_SUBCLASS_NAME(triangle3df);
+	NCB_SUBCLASS_NAME(plane3df);
+	NCB_SUBCLASS_NAME(aabbox3df);
+	NCB_SUBCLASS_NAME(SLight);
+	NCB_SUBCLASS_NAME(SMaterial);
+	NCB_SUBCLASS(SShader, quake3::SShader);
+	NCB_SUBCLASS_NAME(SAttributeReadWriteOptions);
+	NCB_SUBCLASS_NAME(SEvent);
+	NCB_SUBCLASS_NAME(SViewFrustum);
 
 	// Irrlicht 参照用クラス
+	NCB_IRR_SUBCLASS(IAttributes);
+	NCB_IRR_SUBCLASS(ISceneNodeAnimator);
+	NCB_IRR_SUBCLASS(ISceneNodeAnimatorCollisionResponse);
+	NCB_IRR_SUBCLASS(IMesh);
+	NCB_IRR_SUBCLASS(IMeshBuffer);
+	NCB_IRR_SUBCLASS(IMeshCache);
+	NCB_IRR_SUBCLASS(IMeshManipulator);
+	NCB_IRR_SUBCLASS(IMeshWriter);
+	NCB_IRR_SUBCLASS(IAnimatedMesh);
+	NCB_IRR_SUBCLASS(IGUIFont);
+	NCB_IRR_SUBCLASS(ITriangleSelector);
+	NCB_IRR_SUBCLASS(ISceneNodeAnimatorFactory);
+	NCB_IRR_SUBCLASS(ISceneNodeFactory);
+	NCB_IRR_SUBCLASS(ISceneCollisionManager);
+	NCB_IRR_SUBCLASS(IAnimationEndCallBack);
+
 	NCB_IRR_SUBCLASS(ISceneNode);
 	NCB_IRR_SUBCLASS(IAnimatedMeshSceneNode);
 	NCB_IRR_SUBCLASS(IBillboardSceneNode);
