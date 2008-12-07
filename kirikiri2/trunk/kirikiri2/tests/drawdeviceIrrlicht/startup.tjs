@@ -9,13 +9,65 @@ Scripts.execStorage("AffineLayer.tjs");
 var WIDTH=800;
 var HEIGHT=450;
 
+function dm(msg) {
+	Debug.message(msg);
+}
+
+
 /**
  * 初期化処理サンプル
  */
-function initData(smgr) {
+function initData(device) {
+	var driver = device.videoDriver;
+	var smgr = device.sceneManager;
+	var gui = device.guiEnvironment;
+	
 	smgr.ambientColor = 0xffffff;
 	smgr.loadScene("example.irr");
 	smgr.addLightSceneNode(null, [0,0,0], 0xffffff, 100, 1);
+
+	// アニメーション追加してみる
+	var node = smgr.addSphereSceneNode(5, 16, 0, -1, [0,0,0], [0,0,0], [1,1,1]);
+	if (node) {
+		dm("sphere scene node を追加");
+		node.position = [0,0,30];
+		node.setMaterialTexture(0, driver.getTexture("wall.jpg"));
+		node.setMaterialFlag(3, false);
+	}
+
+	var n = smgr.addCubeSceneNode(10,0,-1,[0,0,0],[0,0,0],[1,1,1]);
+	if (n) {
+		dm("cube を追加");
+		n.setMaterialTexture(0, driver.getTexture("t351sml.jpg"));
+		n.setMaterialFlag(3, false);
+		var anim = smgr.createFlyCircleAnimator([0,0,30], 20, 0.001, [0,1,0]);
+		if (anim) {
+			dm("cube にあにめーたを追加");
+			n.addAnimator(anim);
+		} else {
+			dm("あにめーた取得失敗？:" + anim);
+		}
+	}
+
+	var anms = smgr.addAnimatedMeshSceneNode(smgr.getMesh("sydney.md2"),
+											 0, -1, [0,0,0], [0,0,0], [1,1,1], false);
+	if (anms) {
+		dm("AnimatedMesh を追加");
+		var anim = smgr.createFlyStraightAnimator([100,0,60], [-100,0,60], 2500, true);
+		if (anim){
+			dm("AnimatedMesh にあにめーたを追加");
+			anms.addAnimator(anim);
+		}
+		anms.setMaterialFlag(3, false);
+		anms.setFrameLoop(160, 183);
+		anms.setAnimationSpeed(40);
+		anms.setMD2Animation(1);
+		anms.rotation = [0,180,0];
+		anms.setMaterialTexture(0, driver.getTexture("sydney.bmp"));
+	}
+
+	//gui.addImage(driver.getTexture("irrlichtlogoalpha2.tga"), [10,10], true, 0, -1, null);
+	
 	smgr.addCameraSceneNode(null, [0,0,-40], [0,0,0], 2);
 }
 
@@ -66,13 +118,12 @@ class DrawDeviceWindow extends Window
 		
 		showScrollBars = false;
 		setInnerSize(WIDTH, HEIGHT);
-		caption = "drawdevice のテスト";
 		
 		// 1枚目のプライマリレイヤ
 		// 解像度半分
-		base = new BaseLayer(this, WIDTH/2, HEIGHT/2);
-		add(base);
-
+		//base = new BaseLayer(this, WIDTH/2, HEIGHT/2);
+		//add(base);
+		
 		// 2枚目のプライマリレイヤ
 		base2 = new BaseLayer(this, WIDTH, HEIGHT);
 		add(base2);
@@ -88,10 +139,25 @@ class DrawDeviceWindow extends Window
 		initTrigger.cached = true;
 		initTrigger.mode = atmExclusive;
 		initTrigger.trigger();
+
+		// 更新処理
+		System.addContinuousHandler(update);
+	}
+
+	function finalize() {
+		System.removeContinuousHandler(update);
+		invalidate initTrigger;
 	}
 
 	function init() {
-		initData(drawDevice.sceneManager);
+		initData(drawDevice);
+	}
+
+	// レイヤに対して描画更新する
+	function update(tick) {
+		if (drawDevice.videoDriver) {
+			caption = "drawdeviceのテスト:" + drawDevice.videoDriver.getFPS();
+		}
 	}
 	
 	function onKeyDown(key, shift) {
@@ -129,7 +195,6 @@ class IrrlichtLayer extends Layer{
 class SimpleDeviceWindow extends Window
 {
 	var base;
-	var device;
 	var initTrigger;
 
 	/**
@@ -140,7 +205,6 @@ class SimpleDeviceWindow extends Window
 
 		showScrollBars = false;
 		setInnerSize(WIDTH, HEIGHT);
-		caption = "レイヤ描画のテスト";
 		
 		// プライマリレイヤ
 		base = new IrrlichtLayer(this, null, WIDTH, HEIGHT);
@@ -158,17 +222,19 @@ class SimpleDeviceWindow extends Window
 
 	function finalize() {
 		System.removeContinuousHandler(update);
-		invalidate device;
 		invalidate initTrigger;
 	}
 
 	function init() {
-		initData(base.device.sceneManager);
+		initData(base.device);
 	}
 	
 	// レイヤに対して描画更新する
 	function update(tick) {
 		base.update();
+		if (base.device.videoDriver) {
+			caption = "レイヤ描画のテスト:" + base.device.videoDriver.getFPS();
+		}
 	}
 
 	function onKeyDown(key, shift) {
