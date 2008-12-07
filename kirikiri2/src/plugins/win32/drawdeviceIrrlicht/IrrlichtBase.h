@@ -8,9 +8,7 @@
 /**
  * Irrlicht 処理のベース
  */
-class IrrlichtBase :
-	public irr::IEventReceiver,
-	public tTVPContinuousEventCallbackIntf
+class IrrlichtBase : public irr::IEventReceiver
 {
 
 protected:
@@ -19,18 +17,8 @@ protected:
 
 	void showDriverInfo();
 
-	/**
-	 * Irrlicht 呼び出し処理開始
-	 */
-	void start();
-
-	/**
-	 * Irrlicht 呼び出し処理中断
-	 */
-	void stop();
-	
 	// デバイス割り当て
-	virtual void attach(HWND hwnd);
+	virtual void attach(HWND hwnd, int width=0, int height=0, int bits=0);
 	
 	// デバイスの破棄
 	virtual void detach();
@@ -89,6 +77,33 @@ public:
 	irr::gui::IGUIEnvironment *getGUIEnvironment() {
 		return device ? device->getGUIEnvironment() : NULL;
 	}
+};
+
+/**
+ * Irrlicht 処理のベース：自動更新つき
+ */
+class IrrlichtBaseUpdate : public IrrlichtBase, public tTVPContinuousEventCallbackIntf
+{
+protected:
+	/**
+	 * Irrlicht 呼び出し処理開始
+	 */
+	void start();
+
+	/**
+	 * Irrlicht 呼び出し処理中断
+	 */
+	void stop();
+	
+	// デバイス割り当て
+	virtual void attach(HWND hwnd, int width=0, int height=0, int bits=0);
+	
+	// デバイスの破棄
+	virtual void detach();
+	
+public:
+	IrrlichtBaseUpdate(); //!< コンストラクタ
+	virtual ~IrrlichtBaseUpdate(); //!< デストラクタ
 };
 
 #endif

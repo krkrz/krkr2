@@ -42,49 +42,32 @@ IrrlichtBase::showDriverInfo()
 }
 
 /**
- * Irrlicht 呼び出し処理開始
- */
-void
-IrrlichtBase::start()
-{
-	stop();
-	TVPAddContinuousEventHook(this);
-}
-
-/**
- * Irrlicht 呼び出し処理停止
- */
-void
-IrrlichtBase::stop()
-{
-	TVPRemoveContinuousEventHook(this);
-}
-
-/**
  * ウインドウの再設定
  * @param hwnd ハンドル
  */
 void
-IrrlichtBase::attach(HWND hwnd)
+IrrlichtBase::attach(HWND hwnd, int width, int height, int bits)
 {
 	// デバイス生成
 	SIrrlichtCreationParameters params;
 	params.WindowId     = reinterpret_cast<void*>(hwnd);
 	params.DriverType    = EDT_DIRECT3D9;
-	params.Bits          = 32;
+	if (bits) {
+		params.Bits          = bits;
+	}
 	params.Stencilbuffer = true;
 	params.Vsync = true;
 	params.EventReceiver = this;
 	params.AntiAlias = true;
-
+	if (width != 0 && height != 0) {
+		params.WindowSize = core::dimension2d<s32>(width, height);
+	}
 	if ((device = irr::createDeviceEx(params))) {
 		TVPAddLog(L"Irrlichtデバイス初期化");
 	} else {
 		TVPThrowExceptionMessage(L"Irrlicht デバイスの初期化に失敗しました");
 	}
-	
 	showDriverInfo();
-	start();
 }
 
 /**
@@ -93,7 +76,6 @@ IrrlichtBase::attach(HWND hwnd)
 void
 IrrlichtBase::detach()
 {
-	stop();
 	if (device) {
 		device->drop();
 		device = NULL;
@@ -183,4 +165,62 @@ IrrlichtBase::OnEvent(const irr::SEvent &event)
 		break;
 	}
 	return false;
+}
+
+// --------------------------------------------------------------------------------
+
+/**
+ * Irrlicht 呼び出し処理開始
+ */
+void
+IrrlichtBaseUpdate::start()
+{
+	stop();
+	TVPAddContinuousEventHook(this);
+}
+
+/**
+ * Irrlicht 呼び出し処理停止
+ */
+void
+IrrlichtBaseUpdate::stop()
+{
+	TVPRemoveContinuousEventHook(this);
+}
+
+/**
+ * ウインドウの再設定
+ * @param hwnd ハンドル
+ */
+void
+IrrlichtBaseUpdate::attach(HWND hwnd, int width, int height, int bits)
+{
+	IrrlichtBase::attach(hwnd, width, height, bits);
+	start();
+}
+
+/**
+ * ウインドウの解除
+ */
+void
+IrrlichtBaseUpdate::detach()
+{
+	stop();
+	IrrlichtBase::detach();
+}
+
+/**
+ * コンストラクタ
+ */
+IrrlichtBaseUpdate::IrrlichtBaseUpdate() : IrrlichtBase()
+{
+}
+
+
+/**
+ * デストラクタ
+ */
+IrrlichtBaseUpdate::~IrrlichtBaseUpdate()
+{
+	stop();
 }

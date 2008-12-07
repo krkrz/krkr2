@@ -7,9 +7,9 @@ extern void registerWindowClass();
 extern void unregisterWindowClass();
 
 /**
- * Irrlicht ベースの DrawDevice
+ * Irrlicht 描画が可能なウインドウ
  */
-class IrrlichtWindow :	public IrrlichtBase
+class IrrlichtWindow :	public IrrlichtBaseUpdate
 {
 public:
 	// ウインドウプロシージャ

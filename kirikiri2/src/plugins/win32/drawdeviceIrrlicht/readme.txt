@@ -1,11 +1,6 @@
 ●これはなに？
 
-吉里吉里から Irrlicht を取り扱うライブラリです。
-
-・Irrlichtベースの drawDevice (吉里吉里の描画系のIrrlichtによる置き換え)
-・吉里吉里の子ウインドウとしてのIrrlicht
-
-を扱うことができます。
+吉里吉里から Irrlicht を取り扱うためのプラグインです。
 
 ●動作上の特記事項
 
@@ -38,7 +33,19 @@ class MyWindow extends Window {
 };
 -------------------------------------------
 
-2. 子ウインドウとして Irrlicht を配置できます(動作実装中)
+2. レイヤに対して描画が実行できます
+
+-------------------------------------------
+var win = new Window();
+win.visible = true;
+var irr = new Irrlicht.SimpleDevice(win, 100, 100);
+var layer = new Layer(win, null);
+
+// XXX 一度イベントループに入ってデバイスが実体化してから実行する必要あり
+irr.updateToLayer(layer);
+-------------------------------------------
+
+3. 子ウインドウとして Irrlicht を配置できます
 
 -------------------------------------------
 var win = new Window();

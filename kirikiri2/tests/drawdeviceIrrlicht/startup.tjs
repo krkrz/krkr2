@@ -10,6 +10,16 @@ var WIDTH=800;
 var HEIGHT=450;
 
 /**
+ * 初期化処理サンプル
+ */
+function initData(smgr) {
+	smgr.ambientColor = 0xffffff;
+	smgr.loadScene("example.irr");
+	smgr.addLightSceneNode(null, [0,0,0], 0xffffff, 100, 1);
+	smgr.addCameraSceneNode(null, [0,0,-40], [0,0,0], 2);
+}
+
+/**
  * ベースレイヤ
  * Irrlicht 的にテクスチャとして配置可能なレイヤとして機能する
  */
@@ -27,58 +37,141 @@ class BaseLayer extends Layer
 		layer = new AffineLayer(window, this);
 		layer.loadImages("test.png");
 		layer.setSizeToImageSize();
-		//layer.setZoom(width / WIDTH * 100, height / HEIGHT * 100);
-		//layer.setPos((width - layer.width)/2, (height-layer.height)/2);
 		layer.visible = true;
 	}
 
 	function finalize() {
 		invalidate layer;
 	}
-
-	function onMouseDown(x, y, button, shift) {
-		Debug.message("レイヤ:マウス押し下げ:" + x + "," + y + "," + button + "," + shift);
-	}
-	
-	function onMouseMove(x, y, shift) {
-		Debug.message("レイヤ:マウス移動:" + x + "," + y + "," + shift);
-	}
-
 }
 
-class MyWindow extends Window
+/**
+ * DrawDevice用のテスト
+ * 吉里吉里の表示系そのものが Irrlicht ベースになる
+ */
+class DrawDeviceWindow extends Window
 {
 	var initTrigger;
 	var base;
 	var base2;
+	var base3;
 
-	function MyWindow() {
+	/**
+	 * コンストラクタ
+	 */
+	function DrawDeviceWindow() {
 		super.Window();
 		drawDevice = new Irrlicht.DrawDevice(WIDTH, HEIGHT);
 		//drawDevice.zoomMode = false;
 		
 		showScrollBars = false;
 		setInnerSize(WIDTH, HEIGHT);
+		caption = "drawdevice のテスト";
 		
 		// 1枚目のプライマリレイヤ
+		// 解像度半分
 		base = new BaseLayer(this, WIDTH/2, HEIGHT/2);
 		add(base);
-		
+
 		// 2枚目のプライマリレイヤ
 		base2 = new BaseLayer(this, WIDTH, HEIGHT);
 		add(base2);
 
+		// 3枚目のプライマリレイヤ
+		base3 = new BaseLayer(this, WIDTH*2, HEIGHT*2);
+		add(base3);
+
 		// 画面更新用トリガ
-		initTrigger = new AsyncTrigger(initScreen, "");
+		// コンストラクタの段階ではまだウインドウ実体が
+		// 存在してない場合ためトリガをつかって処理する必要がある
+		initTrigger = new AsyncTrigger(init, "");
 		initTrigger.cached = true;
 		initTrigger.mode = atmExclusive;
-		
 		initTrigger.trigger();
 	}
 
-	function onKeyDown(key, shift)
-	{
-		Debug.message("キーがおされた:" + key);
+	function init() {
+		initData(drawDevice.sceneManager);
+	}
+	
+	function onKeyDown(key, shift) {
+		if(key == VK_ESCAPE) {
+			close();
+		} else if(key == VK_TAB) {
+			fullScreen = !fullScreen;
+			// フルスクリーン切り替え後の復帰時も同様 XXX
+			// これは将来的には自動処理にしたい
+			initTrigger.trigger();
+		}
+	}
+};
+
+class IrrlichtLayer extends Layer{
+
+	var device;
+
+	function IrrlichtLayer(win, par, width, height) {
+		super.Layer(win, par);
+		device = new Irrlicht.SimpleDevice(win, width, height);
+		setSize(width, height);
+	}
+
+	function onPaint() {
+		super.onPaint(...);
+		device.updateToLayer(this);
+	}
+};
+
+/**
+ * レイヤ描画のテスト。
+ * device.updateToLayer() でレイヤに対して描画結果がコピーされる。
+ */
+class SimpleDeviceWindow extends Window
+{
+	var base;
+	var device;
+	var initTrigger;
+
+	/**
+	 * コンストラクタ
+	 */
+	function SimpleDeviceWindow() {
+		super.Window();
+
+		showScrollBars = false;
+		setInnerSize(WIDTH, HEIGHT);
+		caption = "レイヤ描画のテスト";
+		
+		// プライマリレイヤ
+		base = new IrrlichtLayer(this, null, WIDTH, HEIGHT);
+		add(base);
+		
+		// 画面更新用トリガ
+		initTrigger = new AsyncTrigger(init, "");
+		initTrigger.cached = true;
+		initTrigger.mode = atmExclusive;
+		initTrigger.trigger();
+
+		// 更新処理
+		System.addContinuousHandler(update);
+	}
+
+	function finalize() {
+		System.removeContinuousHandler(update);
+		invalidate device;
+		invalidate initTrigger;
+	}
+
+	function init() {
+		initData(base.device.sceneManager);
+	}
+	
+	// レイヤに対して描画更新する
+	function update(tick) {
+		base.update();
+	}
+
+	function onKeyDown(key, shift) {
 		if(key == VK_ESCAPE) {
 			close();
 		} else if(key == VK_TAB) {
@@ -86,34 +179,8 @@ class MyWindow extends Window
 			initTrigger.trigger();
 		}
 	}
-
-	var wins = [];
-
-	function initData(smgr) {
-		smgr.ambientColor = 0xffffff;
-		smgr.loadScene("example.irr");
-		smgr.addLightSceneNode(null, [0,0,0], 0xffffff, 100, 1);
-		smgr.addCameraSceneNode(null, [0,0,-40], [0,0,0], 2);
-	}
-
-	function initScreen() {
-		initData(drawDevice.sceneManager);
-		if (0) {
-			var win = new Irrlicht.Window(this, 0, 0, 200, 150);
-			win.visible = true;
-			initData(win.sceneManager);
-			wins.add(win);
-		}
-	}
-	
-	function onMouseDown(x, y, button, shift) {
-		Debug.message("マウス押し下げ:" + x + "," + y + "," + button + "," + shift);
-	}
-	
-	function onMouseMove(x, y, shift) {
-		Debug.message("マウス移動:" + x + "," + y + "," + shift);
-	}
 };
+
 
 class CaptureWindow extends Window
 {
@@ -130,7 +197,6 @@ class CaptureWindow extends Window
 	}
 
 	function onKeyDown(key, shift) {
-		Debug.message("キーがおされた:" + key);
 		if(key == VK_ESCAPE) {
 			close();
 		} else if(key == VK_SPACE) {
@@ -139,8 +205,11 @@ class CaptureWindow extends Window
 	}
 };
 
-var win = new MyWindow();
+var win = new DrawDeviceWindow();
 win.visible = true;
+
+var win2 = new SimpleDeviceWindow();
+win2.visible = true;
 
 //var capwin = new CaptureWindow(win.drawDevice);
 //capwin.visible = true;

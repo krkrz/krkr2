@@ -371,10 +371,12 @@ CIrrDeviceWin32::CIrrDeviceWin32(video::E_DRIVER_TYPE driverType,
 	if (externalWindow)
 	{
 		HWnd = externalWindow;
-		RECT r;
-		GetClientRect(HWnd, &r);
-		windowSize.Width = r.right - r.left;
-		windowSize.Height = r.bottom - r.top;
+		if (windowSize.Width == 0 || windowSize.Height== 0) {
+			RECT r;
+			GetClientRect(HWnd, &r);
+			windowSize.Width = r.right - r.left;
+			windowSize.Height = r.bottom - r.top;
+		}
 		fullscreen = false;
 		ExternalWindow = true;
 	}
