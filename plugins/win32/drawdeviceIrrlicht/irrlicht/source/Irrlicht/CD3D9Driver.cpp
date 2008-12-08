@@ -238,12 +238,7 @@ bool CD3D9Driver::initDriver(const core::dimension2d<s32>& screenSize, HWND hwnd
 	{
 		present.BackBufferWidth = screenSize.Width;
 		present.BackBufferHeight = screenSize.Height;
-		if (bits == -1) { // XXX ƒŒƒCƒ„—p
-			present.BackBufferFormat = D3DFMT_X8R8G8B8;
-			present.Flags = D3DPRESENTFLAG_LOCKABLE_BACKBUFFER;
-		} else {
-			present.BackBufferFormat	= d3ddm.Format;
-		}
+		present.BackBufferFormat = d3ddm.Format;
 		present.SwapEffect		= D3DSWAPEFFECT_COPY;
 		present.Windowed		= TRUE;
 	}
@@ -503,35 +498,43 @@ bool CD3D9Driver::endScene( s32 windowId, core::rect<s32>* sourceRect, core::rec
 		// draw backbuffer to DC
 		LPDIRECT3DSURFACE9 backBuffer = NULL;
 		if (SUCCEEDED((hr = pID3DDevice->GetBackBuffer(0,0,D3DBACKBUFFER_TYPE_MONO, &backBuffer)))) {
-			HDC srcDC;
-			if (SUCCEEDED((hr = backBuffer->GetDC(&srcDC)))) {
-				int srcx, srcy, srcw,srch;
-				if (sourceRect) {
-					srcx = sourceRect->UpperLeftCorner.X;
-					srcy = sourceRect->UpperLeftCorner.Y;
-					srcw = sourceRect->getWidth();
-					srch = sourceRect->getHeight();
-				} else {
-					srcx = 0;
-					srcy = 0;
-					srcw = ScreenSize.Width;
-					srch = ScreenSize.Height;
+			D3DSURFACE_DESC desc;
+			backBuffer->GetDesc(&desc);
+			IDirect3DSurface9* surface = NULL;
+			if (SUCCEEDED(hr = pID3DDevice->CreateOffscreenPlainSurface(desc.Width, desc.Height,desc.Format, D3DPOOL_SYSTEMMEM, &surface, NULL))) {
+				if (SUCCEEDED(hr = pID3DDevice->GetRenderTargetData(backBuffer,surface))) {
+					// copy to sysmem surface...
+					HDC srcDC;
+					if (SUCCEEDED((hr = surface->GetDC(&srcDC)))) {
+						int srcx, srcy, srcw, srch;
+						if (sourceRect) {
+							srcx = sourceRect->UpperLeftCorner.X;
+							srcy = sourceRect->UpperLeftCorner.Y;
+							srcw = sourceRect->getWidth();
+							srch = sourceRect->getHeight();
+						} else {
+							srcx = 0;
+							srcy = 0;
+							srcw = ScreenSize.Width;
+							srch = ScreenSize.Height;
+						}
+						int destx, desty, destw, desth;
+						if (destRect) {
+							destx = destRect->UpperLeftCorner.X;
+							desty = destRect->UpperLeftCorner.Y;
+							destw = destRect->getWidth();
+							desth = destRect->getHeight();
+						} else {
+							destx = srcx;
+							desty = srcy;
+							destw = srcw;
+							desth = srch;
+						}
+						::StretchBlt((HDC)destDC, destx, desty, destw, desth, srcDC, srcx, srcy, srcw, srch, SRCCOPY);
+						surface->ReleaseDC(srcDC);
+					}
 				}
-				int destx, desty, destw, desth;
-				if (destRect) {
-					destx = destRect->UpperLeftCorner.X;
-					desty = destRect->UpperLeftCorner.Y;
-					destw = destRect->getWidth();
-					desth = destRect->getHeight();
-				} else {
-					destx = srcx;
-					desty = srcy;
-					destw = srcw;
-					desth = srch;
-				}
-				//::SetStretchBltMode((HDC)destDC, STRETCH_HALFTONE); 
-				::StretchBlt((HDC)destDC, destx, desty, destw, desth, srcDC, srcx, srcy, srcw, srch, SRCCOPY);
-				backBuffer->ReleaseDC(srcDC);
+				surface->Release();
 			}
 			backBuffer->Release();
 		}

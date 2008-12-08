@@ -18,7 +18,7 @@ protected:
 	void showDriverInfo();
 
 	// デバイス割り当て
-	virtual void attach(HWND hwnd, int width=0, int height=0, int bits=0);
+	virtual void attach(HWND hwnd, int width=0, int height=0);
 	
 	// デバイスの破棄
 	virtual void detach();
@@ -96,7 +96,7 @@ protected:
 	void stop();
 	
 	// デバイス割り当て
-	virtual void attach(HWND hwnd, int width=0, int height=0, int bits=0);
+	virtual void attach(HWND hwnd, int width=0, int height=0);
 	
 	// デバイスの破棄
 	virtual void detach();

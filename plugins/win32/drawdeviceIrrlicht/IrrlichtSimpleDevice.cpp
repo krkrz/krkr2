@@ -51,7 +51,7 @@ IrrlichtSimpleDevice::setReceiver(tTVPWindowMessageReceiver receiver, bool enabl
 void
 IrrlichtSimpleDevice::createWindow(HWND krkr)
 {
-	attach(krkr, width, height, -1);
+	attach(krkr, width, height);
 }
 
 /**
