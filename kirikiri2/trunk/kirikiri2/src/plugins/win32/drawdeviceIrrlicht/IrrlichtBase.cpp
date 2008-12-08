@@ -46,15 +46,12 @@ IrrlichtBase::showDriverInfo()
  * @param hwnd ハンドル
  */
 void
-IrrlichtBase::attach(HWND hwnd, int width, int height, int bits)
+IrrlichtBase::attach(HWND hwnd, int width, int height)
 {
 	// デバイス生成
 	SIrrlichtCreationParameters params;
 	params.WindowId     = reinterpret_cast<void*>(hwnd);
 	params.DriverType    = EDT_DIRECT3D9;
-	if (bits) {
-		params.Bits          = bits;
-	}
 	params.Stencilbuffer = true;
 	params.Vsync = true;
 	params.EventReceiver = this;
@@ -193,9 +190,9 @@ IrrlichtBaseUpdate::stop()
  * @param hwnd ハンドル
  */
 void
-IrrlichtBaseUpdate::attach(HWND hwnd, int width, int height, int bits)
+IrrlichtBaseUpdate::attach(HWND hwnd, int width, int height)
 {
-	IrrlichtBase::attach(hwnd, width, height, bits);
+	IrrlichtBase::attach(hwnd, width, height);
 	start();
 }
 
