@@ -496,45 +496,71 @@ bool CD3D9Driver::endScene( s32 windowId, core::rect<s32>* sourceRect, core::rec
 
 	if (destDC) {
 		// draw backbuffer to DC
-		LPDIRECT3DSURFACE9 backBuffer = NULL;
+		IDirect3DSurface9* backBuffer = NULL;
 		if (SUCCEEDED((hr = pID3DDevice->GetBackBuffer(0,0,D3DBACKBUFFER_TYPE_MONO, &backBuffer)))) {
 			D3DSURFACE_DESC desc;
 			backBuffer->GetDesc(&desc);
-			IDirect3DSurface9* surface = NULL;
-			if (SUCCEEDED(hr = pID3DDevice->CreateOffscreenPlainSurface(desc.Width, desc.Height,desc.Format, D3DPOOL_SYSTEMMEM, &surface, NULL))) {
-				if (SUCCEEDED(hr = pID3DDevice->GetRenderTargetData(backBuffer,surface))) {
-					// copy to sysmem surface...
-					HDC srcDC;
-					if (SUCCEEDED((hr = surface->GetDC(&srcDC)))) {
-						int srcx, srcy, srcw, srch;
-						if (sourceRect) {
-							srcx = sourceRect->UpperLeftCorner.X;
-							srcy = sourceRect->UpperLeftCorner.Y;
-							srcw = sourceRect->getWidth();
-							srch = sourceRect->getHeight();
-						} else {
-							srcx = 0;
-							srcy = 0;
-							srcw = ScreenSize.Width;
-							srch = ScreenSize.Height;
-						}
-						int destx, desty, destw, desth;
-						if (destRect) {
-							destx = destRect->UpperLeftCorner.X;
-							desty = destRect->UpperLeftCorner.Y;
-							destw = destRect->getWidth();
-							desth = destRect->getHeight();
-						} else {
-							destx = srcx;
-							desty = srcy;
-							destw = srcw;
-							desth = srch;
-						}
-						::StretchBlt((HDC)destDC, destx, desty, destw, desth, srcDC, srcx, srcy, srcw, srch, SRCCOPY);
-						surface->ReleaseDC(srcDC);
+			// stretchRect to destSize
+			int destx, desty, destw, desth;
+			if (destRect) {
+				destx = destRect->UpperLeftCorner.X;
+				desty = destRect->UpperLeftCorner.Y;
+				destw = destRect->getWidth();
+				desth = destRect->getHeight();
+			} else if (sourceRect) {
+				destx = sourceRect->UpperLeftCorner.X;
+				desty = sourceRect->UpperLeftCorner.Y;
+				destw = sourceRect->getWidth();
+				desth = sourceRect->getHeight();
+			} else {
+				destx = 0;
+				desty = 0;
+				destw = ScreenSize.Width;
+				desth = ScreenSize.Height;
+			}
+			
+			if (desc.MultiSampleType != D3DMULTISAMPLE_NONE ||
+				desc.Width != destw ||
+				desc.Height != desth ||
+				sourceRect) {
+				IDirect3DSurface9 *stretchSurface;
+				if (SUCCEEDED(hr = pID3DDevice->CreateRenderTarget(destw, desth, desc.Format, D3DMULTISAMPLE_NONE, 0, FALSE, &stretchSurface, NULL))) {
+					RECT* srcRct = 0;
+					RECT sourceRectData;
+					if ( sourceRect ) {
+						srcRct = &sourceRectData;
+						sourceRectData.left = sourceRect->UpperLeftCorner.X;
+						sourceRectData.top = sourceRect->UpperLeftCorner.Y;
+						sourceRectData.right = sourceRect->LowerRightCorner.X;
+						sourceRectData.bottom = sourceRect->LowerRightCorner.Y;
 					}
+					if (SUCCEEDED(hr = pID3DDevice->StretchRect(backBuffer, srcRct, stretchSurface, NULL, D3DTEXF_NONE))) {
+						IDirect3DSurface9* surface = NULL;
+						if (SUCCEEDED(hr = pID3DDevice->CreateOffscreenPlainSurface(destw, desth, desc.Format, D3DPOOL_SYSTEMMEM, &surface, NULL))) {
+							if (SUCCEEDED(hr = pID3DDevice->GetRenderTargetData(stretchSurface,surface))) {
+								HDC srcDC;
+								if (SUCCEEDED((hr = surface->GetDC(&srcDC)))) {
+									::BitBlt((HDC)destDC, destx, desty, destw, desth, srcDC, 0, 0, SRCCOPY);
+									surface->ReleaseDC(srcDC);
+								}
+							}
+							surface->Release();
+						}
+					}
+					stretchSurface->Release();
 				}
-				surface->Release();
+			} else {
+				IDirect3DSurface9* surface = NULL;
+				if (SUCCEEDED(hr = pID3DDevice->CreateOffscreenPlainSurface(desc.Width, desc.Height, desc.Format, D3DPOOL_SYSTEMMEM, &surface, NULL))) {
+					if (SUCCEEDED(hr = pID3DDevice->GetRenderTargetData(backBuffer, surface))) {
+						HDC srcDC;
+						if (SUCCEEDED((hr = surface->GetDC(&srcDC)))) {
+							::BitBlt((HDC)destDC, destx, desty, destw, desth, srcDC, 0, 0, SRCCOPY);
+							surface->ReleaseDC(srcDC);
+						}
+					}
+					surface->Release();
+				}
 			}
 			backBuffer->Release();
 		}
