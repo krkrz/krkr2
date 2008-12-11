@@ -367,8 +367,14 @@ struct MatrixConvertor : public GdipTypeConvertor<T> {
 	}
 };
 
+static void MatrixInit(GdipWrapper<Matrix> *obj)
+{
+	obj->setGdipObject(new Matrix());
+}
+
 NCB_REGISTER_GDIP_SUBCLASS2(Matrix, MatrixConvertor)
 NCB_CONSTRUCTOR(());
+NCB_METHOD_PROXY(init, MatrixInit);
 NCB_GDIP_METHOD(OffsetX);
 NCB_GDIP_METHOD(OffsetY);
 NCB_GDIP_METHOD(Equals);
