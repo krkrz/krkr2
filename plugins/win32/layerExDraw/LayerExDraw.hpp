@@ -177,6 +177,10 @@ protected:
 	GeometryT width, height;
 	BufferT   buffer;
 	PitchT    pitch;
+
+	// クリップ情報
+	ObjectT   _pClipLeft, _pClipTop, _pClipWidth, _pClipHeight;
+	GeometryT clipLeft, clipTop, clipWidth, clipHeight;
 	
 	/// レイヤを参照するビットマップ
 	Bitmap *bitmap;

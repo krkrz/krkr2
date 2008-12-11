@@ -363,8 +363,9 @@ class GdiPlus {
 	 * マトリックス情報を取り扱うクラス
 	 */
 	class Matrix {
-		// コンストラクタ XXX 現時点では引数は処理できない
+		// コンストラクタ XXX 現時点では引数は処理できません。初期化後、必ず init() が必要です
 		function Matrix();
+		function init();
 
 		function OffsetX();
 		function OffsetY();
@@ -389,7 +390,7 @@ class GdiPlus {
 	 */
 	class Image {
 
-		// コンストラクタ XXX 現時点では引数は処理できない
+		// コンストラクタ XXX 現時点では引数は処理できません。初期化後、かならず load() が必要です。
 		function Image();
 		
 		/**
@@ -439,6 +440,7 @@ class GdiPlus {
 
 /**
  * レイヤにベクタ描画メソッドが拡張されます
+ * ・描画処理はレイヤに設定されたクリッピング領域でクリップされます。
  */
 class Layer {
 
