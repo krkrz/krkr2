@@ -1694,6 +1694,14 @@
 					>
 				</File>
 				<File
+					RelativePath=".\CLWOMeshFileLoader.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\CLWOMeshFileLoader.h"
+					>
+				</File>
+				<File
 					RelativePath=".\CMD2MeshFileLoader.cpp"
 					>
 				</File>
