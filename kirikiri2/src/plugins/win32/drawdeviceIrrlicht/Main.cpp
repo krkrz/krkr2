@@ -972,7 +972,7 @@ NCB_IRR_METHOD(createRenderTargetTexture);
 NCB_IRR_METHOD(createScreenShot);
 NCB_IRR_METHOD(deleteAllDynamicLights);
 NCB_IRR_METHOD2(draw2DImage,  void, draw2DImage, (const ITexture*texture, const position2d<s32>&destPos));
-NCB_IRR_METHOD2(draw2DImage,  void, draw2DImage, (const ITexture*texture,
+NCB_IRR_METHOD2(draw2DImage2,  void, draw2DImage, (const ITexture*texture,
 												  const position2d<s32>&destPos,
 												  const core::rect<s32>&sourceRect,
 												  const core::rect<s32>*clipRect,
