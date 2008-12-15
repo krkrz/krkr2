@@ -115,7 +115,6 @@ struct tLWOLayerInfo
 	core::vector3df Pivot;
 };
 
-
 //! Constructor
 CLWOMeshFileLoader::CLWOMeshFileLoader(scene::ISceneManager* smgr,
 		io::IFileSystem* fs)
@@ -152,6 +151,10 @@ IAnimatedMesh* CLWOMeshFileLoader::createMesh(io::IReadFile* file)
 {
 	File = file;
 
+  // レイヤ処理の状態変数をリセット
+  CurrentPolyIndexOffset = 0;
+  CurrentPolyNum = 0;
+
 	if (Mesh)
 		Mesh->drop();
 
@@ -173,6 +176,9 @@ IAnimatedMesh* CLWOMeshFileLoader::createMesh(io::IReadFile* file)
 		const s32 vertCount=mb->Vertices.size();
 		const core::array<u32>& poly = Indices[polyIndex];
 		const u32 polySize=poly.size();
+#ifdef LWO_READER_DEBUG
+					printf("XXX POLY: %d TAG: %d\n", polyIndex, tag);
+#endif
     const core::array<core::vector3df>& TargetPoints = Points[PolyMapping[polyIndex]];
     video::S3DVertex vertex;
 		for (u32 i=0; i<polySize; ++i)
@@ -284,6 +290,9 @@ bool CLWOMeshFileLoader::readChunks()
 #endif
 						layer.Parent = tmp16;
 					}
+          // 新規レイヤになったので、前までのポリオブジェクト数をオフセット値に加算し、現在のポリ数を初期化
+          CurrentPolyIndexOffset = CurrentPolyNum;
+          CurrentPolyNum = 0;
 				}
 				break;
 			case charsToUIntD('P','N','T','S'):
@@ -556,9 +565,12 @@ void CLWOMeshFileLoader::readTagMapping(u32 size)
 		tag=os::Byteswap::byteswap(tag);
 #endif
 		size -= 2;
-		MaterialMapping[polyIndex]=tag;
+#ifdef LWO_READER_DEBUG
+    printf("XXX readTagMapping: MaterialMapping: polyIndex %d + %d -> tag %d\n", polyIndex, CurrentPolyIndexOffset,tag);
+#endif
+		MaterialMapping[CurrentPolyIndexOffset+polyIndex]=tag;
 		Materials[tag]->TagType=1;
-	}
+	} 
 }
 
 void CLWOMeshFileLoader::readObj2(u32 size)
@@ -602,11 +614,11 @@ void CLWOMeshFileLoader::readObj2(u32 size)
     PolyMapping.push_back(Points.size()-1);  // 保証大丈夫なはず・・・
 	}
   // 読み込んだポリの分だけマテリアルマッピングのハコを用意する
-  for (u32 j=0; j<numPolys; ++j)
+  for (u32 j=0; j<numPolys; ++j) {
     MaterialMapping.push_back(0);
-#ifdef LWO_READER_DEBUG
-  printf("XXX numPolys: %d\n", numPolys);
-#endif
+  }
+
+  CurrentPolyNum += numPolys;
 }
 
 
@@ -1772,7 +1784,7 @@ bool CLWOMeshFileLoader::readFileHeader()
 }
 
 // XXX exist チェックは無駄コストなので決め打ちできるようにする
-//#define LWO_LOADER_USE_TEX_DIR = 1
+#define LWO_LOADER_USE_TEX_DIR = 1
 #ifdef LWO_LOADER_USE_TEX_DIR
 static const core::stringc TEX_DIR = "texture/";
 #endif
@@ -1787,7 +1799,9 @@ video::ITexture* CLWOMeshFileLoader::loadTexture(const core::stringc& file)
   if (stringPos != -1) {
     targetName = TEX_DIR + file.subString(stringPos+1, file.size()-stringPos);
     // TODO exit チェックいらないかな
-    printf("TARGET: %s\n", targetName.c_str());
+#ifdef LWO_READER_DEBUG
+    printf("XXX TARGET: %s\n", targetName.c_str());
+#endif
     if (FileSystem->existFile(targetName.c_str()))
       return driver->getTexture(targetName.c_str());
   }
