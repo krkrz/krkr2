@@ -75,6 +75,10 @@ private:
 	core::array<tLWOMaterial*> Materials;
 	core::array<core::stringc> Images;
 	u8 FormatVersion;
+
+  // パーサの状態変数
+  u32 CurrentPolyIndexOffset;  // 現在のレイヤのポリIDオフセット
+  u32 CurrentPolyNum;          // 現在のレイヤのポリ数
 };
 
 } // end namespace scene
