@@ -8,18 +8,183 @@ class Irrlicht {
 	// データ保持用クラス(newできます)
 	// -----------------------------------------------------------------------------
 	
-	class SColor;
-	class SColorf;
-	class position2di;
-	class position2df;
-	class dimension2di;
-	class dimension2df;
-	class vector2df;
-	class vector3df;
+	class SColor {
+		function SColor(color);
+		property red;
+		property blue;
+		property green;
+		property alpha;
+		property average; // RO
+		function getInterpolated();
+		function getInterpolated_quadratic();
+		property luminance; // RO
+		funciton toA1R5G5B5();
+		property color;
+	}
 
+	class SColorf {
+		function SColorf(scolor);
+		property red;
+		property blue;
+		property green;
+		property alpha;
+		function getInterpolated();
+		function getInterpolated_quadratic();
+		function setColorComponentValue();
+		function toSColor();
+	}
+
+	class position2di {
+		function position2di(x,y);
+		property x;
+		property y;
+	}
+
+	class position2df {
+		function position2df(x,y);
+		property x;
+		property y;
+	}
+
+	class dimension2di {
+		function dimension2di();
+		property area; // RO
+		property height;
+		property width;
+	}
+
+	class dimension2df {
+		function dimension2df();
+		property area; // RO
+		property height;
+		property width;
+	}
+
+	class vector2df {
+		function vector2df(x,y);
+		property x;
+		property y;
+		function equals();
+		property angle; // RO
+		property angleTrig; // RO
+		function getAngleWith();
+		function getDistanceFrom();
+		function getDistanceFromSQ();
+		function getInterpolated();
+		function getInterpolated_quadratic();
+		property length; // RO
+		property lengthSQ; // RO
+		function interpolate();
+		function isBetweenPoints();
+	}
+	class vector3df {
+		function vector3df(x,y,z);
+		property x;
+		property y;
+		property z;
+		function crossProduct();
+		function dotProduct();
+		function equals();
+		function getDistanceFrom();
+		function getDistanceFromSQ();
+		property horizontalAngle; // RO
+		function getInterpolated();
+		function getInterpolated_quadratic();
+		property length; // RO
+		property lengthSQ; // RO
+		function invert();
+		function isBetweenPoints();
+		function normalize();
+		function rotateXYBy();
+		function rotateXZBy();
+		function rotateYZBy();
+	};
+
+	class recti {
+		function recti(x,y,w,h);
+		function clipAgainst();
+		function constrainTo();
+		property area; // RO
+		property center; //RO
+		property size; // RO
+		function isPointInside();
+		function isRectCollided();
+		function isValid();
+		function repair();
+		property width;
+		property height;
+		property left;
+		property top;
+	};
+
+	class triangle3df {
+		function triangle3df();
+	};
+
+	class plane3df {
+		function plane3df();
+	};
+
+	class aabbox3df {
+		function aabbox3df();
+	};
+
+	class SLight {
+		function SLight();
+	};
+
+	class SMaterial {
+		function SMaterial();
+	};
+
+	class SShader {
+		function SShader();
+	};
+
+	class SAttributeReadWriteOptions {
+		function SAttributeReadWriteOptions();
+	};
+
+	class SEvent {
+		function SEvent();
+	};
+
+	class SViewFrustum {
+		function SViewFrustum();
+	}
+	
 	// -----------------------------------------------------------------------------
 	// インターフェースクラス(実体をnewできません)
 	// -----------------------------------------------------------------------------
+
+	class IAttributes {
+	}
+	
+	class ISceneNodeAnimator {
+		function animateNode();
+		function createClone();
+		function getType();
+	};
+	
+	class ISceneNodeAnimatorCollisionResponse {
+		property ellipsoidRadius;
+		property ellipsoidTranslation;
+		property gravity;
+		property world;
+		function isFalling();
+	};
+	class IMesh;
+	class IMeshBuffer;
+	class IMeshCache;
+	class IMeshManipulator;
+	class IMeshWriter;
+	class IAnimatedMesh;
+	class IGUIFont;
+	class ITriangleSelector;
+	class ISceneNodeAnimatorFactory;
+	class ISceneNodeFactory;
+	class ISceneCollisionManager;
+	class IAnimationEndCallBack;
 
 	class ISceneNode;
 	class IAnimatedMeshSceneNode;
@@ -54,6 +219,19 @@ class Irrlicht {
 	 * ※ new しても正常動作しません。
 	 */
 	class IVideoDriver {
+
+		property viewport;
+		function addDynamicLight();
+		function addTexture(size, filename, format);
+		function addTexture2(name, image);
+		function clearZBuffer();
+		function createAttributesFromMaterial();
+		function createImage(format, size);
+		function createImage2(format, image);
+		function createImage3(image, position, dimension);
+		function createImageFromFile(filename);
+		function createRenderTargetTexture();
+		
 		/**
 		 * スクリーンショットの生成
 		 * @return スクリーンショット画像(IImage)
@@ -61,6 +239,33 @@ class Irrlicht {
 		 * 別のウインドウが乗っているとそのままキャプチャーされます
 		 */
 		function createScreenShot();
+
+		function deleteAllDynamicLights();
+		function draw2DImage(texture, pos);
+		function draw2DImage2(texture, destPos, sourceRect, clipRect, color, useAlpha);
+		
+		function draw2DLine();
+		function draw2DPolygon();
+		function draw3DBox();
+		function draw3DLine();
+		function draw3DTriangle();
+
+		function drawMeshBuffer();
+		function drawStencilShadow();
+		function drawStencilShadowVolume();
+
+		function enableClipPlane();
+		function fillMaterialStructureFromAttributes();
+		function findTexture();
+		function getCurrentRenderTargetSize();
+		function getDriverType();
+		function getDynamicLight();
+		function getFPS();
+		function getMaximalDynamicLightAmount();
+		function getMaximalPrimitiveCount();
+		
+						 
+		
 	};
 
 	/**
@@ -132,25 +337,25 @@ class Irrlicht {
 		 * そうでない場合は実際に親ウインドウが実体化した時点ではじめて
 		 * デバイスが初期化され、ドライバ、シーンマネージャ、GUIが扱えるようになります。
 		 * @param window 親になるウインドウ
-		 * @param width 横幅
-		 * @param height 縦幅
+		 * @param width バックバッファ横幅
+		 * @param height バックバッファ縦幅
 		 */
-		function Device(window, width, height);
+		function SimpleDevice(window, width, height);
 
-		property width; //< 横幅
-		property height; //< 縦幅
+		property width; //< バックバッファ横幅
+		property height; //< バックバッファ縦幅
 
 		/**
-		 * 描画領域の設定
-		 * @param width 描画領域横幅
-		 * @param width 描画領域縦幅
+		 * バックバッファのサイズ設定
+		 * @param width バックバッファ横幅
+		 * @param width バックバッファ縦幅
 		 */
 		function setSize(width, height);
 
 		/**
 		 * レイヤに対して現在の状態を描画する。
-		 * 描画領域サイズのバックバッファから、現在のレイヤの imageWidth/imageHeight
-		 * に対して GDIで縮小 StretchBlt されます。
+		 * バックバッファから、指定されたレイヤの描画領域に対して拡縮コピーされます。
+		 * ※レイヤのクリッピング領域は無視されます。
 		 * @param layer 描画先レイヤ
 		 */
 		function updateToLayer(layer);
@@ -173,8 +378,8 @@ class Irrlicht {
 		
 		/**
 		 * コンストラクタ
-		 * @param width 描画領域横幅
-		 * @param width 描画領域縦幅
+		 * @param width バックバッファ横幅
+		 * @param width バックバッファ縦幅
 		 * 縦幅と横幅は従来的機構での primaryLayer の width/height に相当するものです。
 		 * 作成されたプライマリレイヤ(複数)はすべてここで指定した領域に対して
 		 * 引き延ばし表示されます。
@@ -191,28 +396,28 @@ class Irrlicht {
 		 */
 		function DrawDevice(width, height);
 
-		property width;  //< 描画領域横幅
-		property height; //< 描画領域縦幅
+		property width;  //< バックバッファ横幅
+		property height; //< バックバッファ縦幅
 		
 		/**
-		 * 描画領域の設定
-		 * @param width 描画領域横幅
-		 * @param width 描画領域縦幅
+		 * バックバッファのサイズ設定
+		 * @param width バックバッファ横幅
+		 * @param width バックバッファ縦幅
 		 */
 		function setSize(width, height);
 		
-		property destWidth;  //< 実描画領域横幅
-		property destHeight; //< 実描画領域縦幅
-
 		/**
 		 * 拡大モード: 初期値は true
-		 * true: Irrlichtを初期指定した描画領域で処理して画面への表示時に拡大縮小します
-		 * false: Irrlichtを実際の画面上の解像度で処理します
+		 * true: バックバッファから画面への転送時に拡大縮小します
+		 * false: バックバッファのサイズを実際の画面上の解像度に追従させます
 		 * false にした場合、Irrlicht 側の座標系がフルスクリーン化した時や、
 		 * Window.setZoom した時に変化するので注意が必要です。
 		 */
 		property zoomMode;
 
+		property destWidth;  //< 実描画領域横幅(読み取り専用)
+		property destHeight; //< 実描画領域縦幅(読み取り専用)
+		
 		/*
 		 * プライマリレイヤの標準の visible
 		 * プライマリレイヤを生成時に表示するかどうかを指定します。
@@ -290,7 +495,7 @@ class Layer {
 
 	/**
 	 * Irrlicht.ITexture から画像をコピー。レイヤのサイズは元のITextureのサイズになります
-	 * ※テクスチャが ARGB32 bit でない場合はコピーできません
+	 * ※テクスチャが ARGB32 でない場合はコピーできません
 	 * @param src Irrlicht.ITexture テクスチャ
 	 */
 	function copyITexture(src);
