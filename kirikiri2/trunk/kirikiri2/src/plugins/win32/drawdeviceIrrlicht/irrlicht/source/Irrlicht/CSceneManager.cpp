@@ -99,6 +99,10 @@
 #include "CSTLMeshWriter.h"
 #endif
 
+#ifdef _IRR_COMPILE_WITH_LWO_LOADER_
+#include "CLWOMeshFileLoader.h"
+#endif
+
 #include "CCubeSceneNode.h"
 #include "CSphereSceneNode.h"
 #include "CAnimatedMeshSceneNode.h"
@@ -183,6 +187,9 @@ CSceneManager::CSceneManager(video::IVideoDriver* driver, io::IFileSystem* fs,
 
 	// add file format loaders
 
+	#ifdef _IRR_COMPILE_WITH_LWO_LOADER_
+	MeshLoaderList.push_back(new CLWOMeshFileLoader(this, FileSystem));
+	#endif
 	#ifdef _IRR_COMPILE_WITH_IRR_MESH_LOADER_
 	MeshLoaderList.push_back(new CIrrMeshFileLoader(Driver, this, FileSystem));
 	#endif
