@@ -14,10 +14,10 @@ class Irrlicht {
 		property blue;
 		property green;
 		property alpha;
-		property average; // RO
+		function getAverage();
 		function getInterpolated();
 		function getInterpolated_quadratic();
-		property luminance; // RO
+		function getLuminance();
 		funciton toA1R5G5B5();
 		property color;
 	}
@@ -65,15 +65,15 @@ class Irrlicht {
 		property x;
 		property y;
 		function equals();
-		property angle; // RO
-		property angleTrig; // RO
+		function getAngle();
+		function getAngleTrig();
 		function getAngleWith();
 		function getDistanceFrom();
 		function getDistanceFromSQ();
 		function getInterpolated();
 		function getInterpolated_quadratic();
-		property length; // RO
-		property lengthSQ; // RO
+		function getLength();
+		function getLengthSQ;
 		function interpolate();
 		function isBetweenPoints();
 	}
@@ -87,11 +87,11 @@ class Irrlicht {
 		function equals();
 		function getDistanceFrom();
 		function getDistanceFromSQ();
-		property horizontalAngle; // RO
+		function getHorizontalAngle();
 		function getInterpolated();
 		function getInterpolated_quadratic();
-		property length; // RO
-		property lengthSQ; // RO
+		function getLength();
+		function getLengthSQ();
 		function invert();
 		function isBetweenPoints();
 		function normalize();
@@ -104,17 +104,21 @@ class Irrlicht {
 		function recti(x,y,w,h);
 		function clipAgainst();
 		function constrainTo();
-		property area; // RO
-		property center; //RO
-		property size; // RO
+		function getArea();
+		function getcenter();
+		function getSize();
 		function isPointInside();
 		function isRectCollided();
 		function isValid();
 		function repair();
-		property width;
-		property height;
-		property left;
-		property top;
+		function getWidth();
+		function setWidth(w);
+		function getHeight();
+		function setHeight(h);
+		function getLeft();
+		function setLeft(l);
+		function getTop();
+		function setTop(t);
 	};
 
 	class triangle3df {
@@ -167,10 +171,14 @@ class Irrlicht {
 	};
 	
 	class ISceneNodeAnimatorCollisionResponse {
-		property ellipsoidRadius;
-		property ellipsoidTranslation;
-		property gravity;
-		property world;
+		function getEllipsoidRadius();
+		function setEllipsoidRadius(e);
+		function getEllipsoidTranslation();
+		function setEllipsoidTranslation(e);
+		function getGravity();
+		function setGravity(g);
+		function getWorld();
+		function setWorld(w);
 		function isFalling();
 	};
 	class IMesh;
@@ -220,7 +228,8 @@ class Irrlicht {
 	 */
 	class IVideoDriver {
 
-		property viewport;
+		function getViewport();
+		function setViewport();
 		function addDynamicLight();
 		function addTexture(size, filename, format);
 		function addTexture2(name, image);
@@ -280,7 +289,8 @@ class Irrlicht {
 		 */
 		function loadScene(scene);
 
-		property ambientLight; //< ŠÂ‹«ŒõŽw’è
+		function getAmbientLight();
+		function setAmbientLight(light);
 
 		/**
 		 * ŒõŒ¹‚ÌÝ’è
