@@ -121,18 +121,20 @@ private:
 		static type ProxyGet(Class *inst) {      return inst->membername; } }; \
 	NCB_PROPERTY_PROXY(name,AutoProp_ ## name::ProxyGet, AutoProp_ ## name::ProxySet)
 
+#define NCB_PROPERTY2(name, getter, setter) NCB_PROPERTY(name,getter,setter);NCB_METHOD(getter);NCB_METHOD(setter)
+#define NCB_PROPERTY_RO2(name, getter) NCB_PROPERTY_RO(name,getter);NCB_METHOD(getter)
 
 NCB_SET_CONVERTOR_DST(SColor, ColorConvertor);
 NCB_REGISTER_SUBCLASS_DELAY(SColor) {
 	NCB_CONSTRUCTOR((u32));
-	NCB_PROPERTY(red, getRed, setRed);
-	NCB_PROPERTY(blue, getBlue, setBlue);
-	NCB_PROPERTY(green, getGreen, setGreen);
-	NCB_PROPERTY(alpha, getAlpha, setAlpha);
-	NCB_PROPERTY_RO(average, getAverage);
+	NCB_PROPERTY2(red, getRed, setRed);
+	NCB_PROPERTY2(blue, getBlue, setBlue);
+	NCB_PROPERTY2(green, getGreen, setGreen);
+	NCB_PROPERTY2(alpha, getAlpha, setAlpha);
+	NCB_PROPERTY_RO2(average, getAverage);
 	NCB_METHOD(getInterpolated);
 	NCB_METHOD(getInterpolated_quadratic);
-	NCB_PROPERTY_RO(luminance, getLuminance);
+	NCB_PROPERTY_RO2(luminance, getLuminance);
 	NCB_METHOD(toA1R5G5B5);
 	NCB_MEMBER_PROPERTY(color, u32, color);
 };
@@ -212,7 +214,7 @@ private:
 NCB_SET_CONVERTOR_DST(dimension2di, DimensionConvertor);
 NCB_REGISTER_SUBCLASS_DELAY(dimension2di) {
 	NCB_CONSTRUCTOR(()); // XXX
-	NCB_PROPERTY_RO(area, getArea);
+	NCB_PROPERTY_RO2(area, getArea);
 	NCB_MEMBER_PROPERTY(height, s32, Height);
 	NCB_MEMBER_PROPERTY(width, s32, Width);
 }
@@ -247,7 +249,7 @@ private:
 NCB_SET_CONVERTOR_DST(dimension2d<u32>, DimensionConvertor2);
 NCB_REGISTER_SUBCLASS_DELAY(dimension2d<u32>) {
 	NCB_CONSTRUCTOR(()); // XXX
-	NCB_PROPERTY_RO(area, getArea);
+	NCB_PROPERTY_RO2(area, getArea);
 	NCB_MEMBER_PROPERTY(height, u32, Height);
 	NCB_MEMBER_PROPERTY(width, u32, Width);
 }
@@ -282,7 +284,7 @@ private:
 NCB_SET_CONVERTOR_DST(dimension2df, DimensionfConvertor);
 NCB_REGISTER_SUBCLASS_DELAY(dimension2df) {
 	NCB_CONSTRUCTOR(()); // XXX
-	NCB_PROPERTY_RO(area, getArea);
+	NCB_PROPERTY_RO2(area, getArea);
 	NCB_MEMBER_PROPERTY(height, f32, Height);
 	NCB_MEMBER_PROPERTY(width, f32, Width);
 }
@@ -360,15 +362,15 @@ NCB_REGISTER_SUBCLASS_DELAY(vector2df) {
 	NCB_MEMBER_PROPERTY(x, f32, X);
 	NCB_MEMBER_PROPERTY(y, f32, Y);
 	NCB_METHOD(equals);
-	NCB_PROPERTY_RO(angle, getAngle);
-	NCB_PROPERTY_RO(angleTrig, getAngleTrig);
+	NCB_PROPERTY_RO2(angle, getAngle);
+	NCB_PROPERTY_RO2(angleTrig, getAngleTrig);
 	NCB_METHOD(getAngleWith);
 	NCB_METHOD(getDistanceFrom);
 	NCB_METHOD(getDistanceFromSQ);
 	NCB_METHOD(getInterpolated);
 	NCB_METHOD(getInterpolated_quadratic);
-	NCB_PROPERTY_RO(length, getLength);
-	NCB_PROPERTY_RO(lengthSQ, getLengthSQ);
+	NCB_PROPERTY_RO2(length, getLength);
+	NCB_PROPERTY_RO2(lengthSQ, getLengthSQ);
 	NCB_METHOD(interpolate);
 	NCB_METHOD(isBetweenPoints);
 };
@@ -414,11 +416,11 @@ NCB_REGISTER_SUBCLASS_DELAY(vector3df) {
 	NCB_METHOD(equals);
 	NCB_METHOD(getDistanceFrom);
 	NCB_METHOD(getDistanceFromSQ);
-	NCB_PROPERTY_RO(horizontalAngle, getHorizontalAngle);
+	NCB_PROPERTY_RO2(horizontalAngle, getHorizontalAngle);
 	NCB_METHOD(getInterpolated);
 	NCB_METHOD(getInterpolated_quadratic);
-	NCB_PROPERTY(length, getLength, setLength);
-	NCB_PROPERTY_RO(lengthSQ, getLengthSQ);
+	NCB_PROPERTY2(length, getLength, setLength);
+	NCB_PROPERTY_RO2(lengthSQ, getLengthSQ);
 	NCB_METHOD(invert);
 	NCB_METHOD(isBetweenPoints);
 	NCB_METHOD(normalize);
@@ -474,17 +476,17 @@ NCB_REGISTER_SUBCLASS_DELAY(rect<s32>) {
 //	NCB_METHOD(addInternalPoint);
 	NCB_METHOD(clipAgainst);
 	NCB_METHOD(constrainTo);
-	NCB_PROPERTY_RO(area, getArea);
-	NCB_PROPERTY_RO(center, getCenter);
-	NCB_PROPERTY_RO(size, getSize);
+	NCB_PROPERTY_RO2(area, getArea);
+	NCB_PROPERTY_RO2(center, getCenter);
+	NCB_PROPERTY_RO2(size, getSize);
 	NCB_METHOD(isPointInside);
 	NCB_METHOD(isRectCollided);
 	NCB_METHOD(isValid);
 	NCB_METHOD(repair);
-	NCB_PROPERTY(width, getWidth, setWidth);
-	NCB_PROPERTY(height, getHeight, setHeight);
-	NCB_PROPERTY(left, getLeft, setLeft);
-	NCB_PROPERTY(top, getTop, setTop);
+	NCB_PROPERTY2(width, getWidth, setWidth);
+	NCB_PROPERTY2(height, getHeight, setHeight);
+	NCB_PROPERTY2(left, getLeft, setLeft);
+	NCB_PROPERTY2(top, getTop, setTop);
 };
 
 NCB_REGISTER_SUBCLASS(matrix4) {
@@ -630,6 +632,7 @@ NCB_SET_CONVERTOR(const type*, IrrTypeConvertor<const type>)
 		static type ProxyGet(IrrClass *inst) {      return inst->membername; } }; \
 	Property(TJS_W(#name), AutoProp_ ## name::ProxyGet, AutoProp_ ## name::ProxySet, Bridge<IrrWrapper<IrrClass>::BridgeFunctor>())
 
+#define NCB_IRR_PROPERTY2(name,get,set)  NCB_IRR_PROPERTY(name,get,set);NCB_IRR_METHOD(get);NCB_IRR_METHOD(set)
 
 NCB_REGISTER_IRR_SUBCLASS(IAttributes)
 	NCB_CONSTRUCTOR(());
@@ -644,16 +647,16 @@ NCB_IRR_METHOD(getType);
 
 NCB_REGISTER_IRR_SUBCLASS(ISceneNodeAnimatorCollisionResponse)
 NCB_CONSTRUCTOR(());
-NCB_IRR_PROPERTY(ellipsoidRadius, getEllipsoidRadius, setEllipsoidRadius);
-NCB_IRR_PROPERTY(ellipsoidTranslation, getEllipsoidTranslation, setEllipsoidTranslation);
-NCB_IRR_PROPERTY(gravity, getGravity, setGravity);
-NCB_IRR_PROPERTY(world, getWorld, setWorld);
+NCB_IRR_PROPERTY2(ellipsoidRadius, getEllipsoidRadius, setEllipsoidRadius);
+NCB_IRR_PROPERTY2(ellipsoidTranslation, getEllipsoidTranslation, setEllipsoidTranslation);
+NCB_IRR_PROPERTY2(gravity, getGravity, setGravity);
+NCB_IRR_PROPERTY2(world, getWorld, setWorld);
 NCB_IRR_METHOD(isFalling);
 };
 
 NCB_REGISTER_IRR_SUBCLASS(IMesh)
 NCB_CONSTRUCTOR(());
-NCB_IRR_PROPERTY(boundingBox, getBoundingBox, setBoundingBox);
+NCB_IRR_PROPERTY2(boundingBox, getBoundingBox, setBoundingBox);
 NCB_IRR_METHOD2(getMeshBuffer, IMeshBuffer*, getMeshBuffer, (u32) const);
 NCB_IRR_METHOD2(getMeshBuffer2, IMeshBuffer*, getMeshBuffer, (const SMaterial &) const);
 NCB_IRR_METHOD(getMeshBufferCount);
@@ -662,7 +665,7 @@ NCB_IRR_METHOD(setMaterialFlag);
 
 NCB_REGISTER_IRR_SUBCLASS(IMeshBuffer)
 NCB_CONSTRUCTOR(());
-NCB_IRR_PROPERTY(boundingBox, getBoundingBox, setBoundingBox);
+NCB_IRR_PROPERTY2(boundingBox, getBoundingBox, setBoundingBox);
 NCB_IRR_METHOD2(append, void, append, (const IMeshBuffer * const));
 //NCB_IRR_METHOD2(append2)
 NCB_IRR_METHOD(getIndexCount);
@@ -799,16 +802,16 @@ NCB_REGISTER_SUBCLASS(IrrWrapper<ISceneNode>) {
 	NCB_CONSTRUCTOR(());
 	typedef ISceneNode IrrClass;
 #define ISCENENODE_METHOD \
-	NCB_IRR_PROPERTY(automaticCulling, getAutomaticCulling, setAutomaticCulling);\
-	NCB_IRR_PROPERTY(id, getID, setID);\
-	NCB_IRR_PROPERTY(name, getName, setName);\
-	NCB_IRR_PROPERTY(parent, getParent, setParent);\
-	NCB_IRR_PROPERTY(position, getPosition, setPosition);\
-	NCB_IRR_PROPERTY(rotation, getRotation, setRotation);\
-	NCB_IRR_PROPERTY(scale, getScale, setScale);\
-	NCB_IRR_PROPERTY(triangleSelector, getTriangleSelector, setTriangleSelector);\
-	NCB_IRR_PROPERTY(debugDataVisible, isDebugDataVisible, setDebugDataVisible);\
-	NCB_IRR_PROPERTY(visible, isVisible, setVisible);\
+	NCB_IRR_PROPERTY2(automaticCulling, getAutomaticCulling, setAutomaticCulling);\
+	NCB_IRR_PROPERTY2(id, getID, setID);\
+	NCB_IRR_PROPERTY2(name, getName, setName);\
+	NCB_IRR_PROPERTY2(parent, getParent, setParent);\
+	NCB_IRR_PROPERTY2(position, getPosition, setPosition);\
+	NCB_IRR_PROPERTY2(rotation, getRotation, setRotation);\
+	NCB_IRR_PROPERTY2(scale, getScale, setScale);\
+	NCB_IRR_PROPERTY2(triangleSelector, getTriangleSelector, setTriangleSelector);\
+	NCB_IRR_PROPERTY2(debugDataVisible, isDebugDataVisible, setDebugDataVisible);\
+	NCB_IRR_PROPERTY2(visible, isVisible, setVisible);\
 	NCB_IRR_METHOD(addAnimator);\
 	NCB_IRR_METHOD(addChild);\
 	NCB_IRR_METHOD(clone);\
@@ -846,8 +849,8 @@ NCB_IRR_METHOD(setMeshToRenderFrom);
 NCB_REGISTER_IRR_SUBCLASS(IAnimatedMeshSceneNode)
 NCB_CONSTRUCTOR(());
 ISCENENODE_METHOD;
-NCB_IRR_PROPERTY(mesh, getMesh, setMesh);
-NCB_IRR_PROPERTY(readOnlymaterials, isReadOnlyMaterials, setReadOnlyMaterials);
+NCB_IRR_PROPERTY2(mesh, getMesh, setMesh);
+NCB_IRR_PROPERTY2(readOnlymaterials, isReadOnlyMaterials, setReadOnlyMaterials);
 NCB_IRR_METHOD(addShadowVolumeSceneNode);
 NCB_IRR_METHOD(animateJoints);
 NCB_IRR_METHOD(getEndFrame);
@@ -873,7 +876,7 @@ NCB_IRR_METHOD(setTransitionTime);
 NCB_REGISTER_IRR_SUBCLASS(IBillboardSceneNode)
 NCB_CONSTRUCTOR(());
 ISCENENODE_METHOD;
-NCB_IRR_PROPERTY(size, getSize, setSize);
+NCB_IRR_PROPERTY2(size, getSize, setSize);
 NCB_IRR_METHOD(getColor);
 NCB_IRR_METHOD2(setColor,  void, setColor, (const SColor&, const SColor &));
 NCB_IRR_METHOD2(setColor2, void, setColor, (const SColor&));
@@ -885,8 +888,8 @@ ISCENENODE_METHOD;
 NCB_IRR_MEMBER_PROPERTY(positionHint, s32, positionHint);
 NCB_IRR_MEMBER_PROPERTY(rotationHint, s32, rotationHint);
 NCB_IRR_MEMBER_PROPERTY(scaleHint, s32, scaleHint);
-NCB_IRR_PROPERTY(animationMode, getAnimationMode, setAnimationMode);
-NCB_IRR_PROPERTY(skinningSpace, getSkinningSpace, setSkinningSpace);
+NCB_IRR_PROPERTY2(animationMode, getAnimationMode, setAnimationMode);
+NCB_IRR_PROPERTY2(skinningSpace, getSkinningSpace, setSkinningSpace);
 NCB_IRR_METHOD(getBoneIndex);
 NCB_IRR_METHOD(getBoneName);
 //NCB_IRR_METHOD(getBoundingBox);
@@ -897,15 +900,15 @@ NCB_IRR_METHOD(updateAbsolutePositionOfAllChildren);
 NCB_REGISTER_IRR_SUBCLASS(ICameraSceneNode)
 NCB_CONSTRUCTOR(());
 ISCENENODE_METHOD;
-NCB_IRR_PROPERTY(aspectRatio, getAspectRatio, setAspectRatio);
-NCB_IRR_PROPERTY(farValue, getFarValue, setFarValue);
-NCB_IRR_PROPERTY(fov, getFOV, setFOV);
-NCB_IRR_PROPERTY(nearValue, getNearValue, setNearValue);
-NCB_IRR_PROPERTY(projectionMatrix, getProjectionMatrix, setProjectionMatrix);
-NCB_IRR_PROPERTY(target, getTarget, setTarget);
-NCB_IRR_PROPERTY(upVector, getUpVector, setUpVector);
-NCB_IRR_PROPERTY(inputReceiverEnabled, isInputReceiverEnabled, setInputReceiverEnabled);
-NCB_IRR_PROPERTY(orthogonal, isOrthogonal, setIsOrthogonal);
+NCB_IRR_PROPERTY2(aspectRatio, getAspectRatio, setAspectRatio);
+NCB_IRR_PROPERTY2(farValue, getFarValue, setFarValue);
+NCB_IRR_PROPERTY2(fov, getFOV, setFOV);
+NCB_IRR_PROPERTY2(nearValue, getNearValue, setNearValue);
+NCB_IRR_PROPERTY2(projectionMatrix, getProjectionMatrix, setProjectionMatrix);
+NCB_IRR_PROPERTY2(target, getTarget, setTarget);
+NCB_IRR_PROPERTY2(upVector, getUpVector, setUpVector);
+NCB_IRR_PROPERTY2(inputReceiverEnabled, isInputReceiverEnabled, setInputReceiverEnabled);
+NCB_IRR_PROPERTY2(orthogonal, isOrthogonal, setIsOrthogonal);
 NCB_IRR_METHOD(getViewFrustum);
 NCB_IRR_METHOD(getViewMatrix);
 };
@@ -919,7 +922,7 @@ NCB_IRR_METHOD(getRelativeTransformationMatrix);
 NCB_REGISTER_IRR_SUBCLASS(ILightSceneNode)
 NCB_CONSTRUCTOR(());
 ISCENENODE_METHOD;
-//NCB_IRR_PROPERTY(lightData, NCB_IRR_MCAST(SLight&,getLightData,(void)), setLightData);
+//NCB_IRR_PROPERTY2(lightData, NCB_IRR_MCAST(SLight&,getLightData,(void)), setLightData);
 NCB_IRR_METHOD(setLightData);
 NCB_IRR_METHOD2(getLightData, SLight&, getLightData, (void));
 };
@@ -927,8 +930,8 @@ NCB_IRR_METHOD2(getLightData, SLight&, getLightData, (void));
 NCB_REGISTER_IRR_SUBCLASS(IMeshSceneNode)
 NCB_CONSTRUCTOR(());
 ISCENENODE_METHOD;
-NCB_IRR_PROPERTY(mesh, getMesh, setMesh);
-NCB_IRR_PROPERTY(readOnlymaterials, isReadOnlyMaterials, setReadOnlyMaterials);
+NCB_IRR_PROPERTY2(mesh, getMesh, setMesh);
+NCB_IRR_PROPERTY2(readOnlymaterials, isReadOnlyMaterials, setReadOnlyMaterials);
 };
 
 NCB_REGISTER_IRR_SUBCLASS(IParticleSystemSceneNode)
@@ -957,7 +960,7 @@ NCB_REGISTER_IRR_SUBCLASS(ITexture)
 
 NCB_REGISTER_IRR_SUBCLASS(IVideoDriver)
 NCB_CONSTRUCTOR(());
-NCB_IRR_PROPERTY(viewport, getViewPort, setViewPort);
+NCB_IRR_PROPERTY2(viewport, getViewPort, setViewPort);
 NCB_IRR_METHOD(addDynamicLight);
 NCB_IRR_METHOD2(addTexture, ITexture*, addTexture, (const dimension2d<s32>&, const c8*, ECOLOR_FORMAT));
 NCB_IRR_METHOD2(addTexture2, ITexture*, addTexture, (const c8*, IImage *));
@@ -1060,9 +1063,9 @@ static bool ISceneManagerSaveScene(IrrWrapper<ISceneManager> *obj, const char *f
 
 NCB_REGISTER_IRR_SUBCLASS(ISceneManager)
 NCB_CONSTRUCTOR(());
-NCB_IRR_PROPERTY(activeCamera, getActiveCamera, setActiveCamera);
-NCB_IRR_PROPERTY(ambientLight, getAmbientLight, setAmbientLight);
-NCB_IRR_PROPERTY(shadowColor, getShadowColor, setShadowColor);
+NCB_IRR_PROPERTY2(activeCamera, getActiveCamera, setActiveCamera);
+NCB_IRR_PROPERTY2(ambientLight, getAmbientLight, setAmbientLight);
+NCB_IRR_PROPERTY2(shadowColor, getShadowColor, setShadowColor);
 NCB_IRR_METHOD(addAnimatedMeshSceneNode);
 NCB_IRR_METHOD(addArrowMesh);
 NCB_IRR_METHOD(addBillboardSceneNode);
@@ -1143,21 +1146,21 @@ NCB_CONSTRUCTOR(());
 // --------------------------------------------------------------------
 
 #define BASE_METHOD \
-	NCB_PROPERTY_RO(videoDriver, getVideoDriver);\
-	NCB_PROPERTY_RO(sceneManager, getSceneManager);\
-	NCB_PROPERTY_RO(guiEnvironment, getGUIEnvironment)
+	NCB_PROPERTY_RO2(videoDriver, getVideoDriver);\
+	NCB_PROPERTY_RO2(sceneManager, getSceneManager);\
+	NCB_PROPERTY_RO2(guiEnvironment, getGUIEnvironment)
 
 NCB_REGISTER_SUBCLASS(IrrlichtDrawDevice) {
 	NCB_CONSTRUCTOR((int,int));
 	BASE_METHOD;
-	NCB_PROPERTY_RO(interface, getDevice);
-	NCB_PROPERTY(zoomMode, getZoomMode, setZoomMode);
-	NCB_PROPERTY(width, getWidth, setWidth);
-	NCB_PROPERTY(height, getHeight, setHeight);
+	NCB_PROPERTY_RO2(interface, getDevice);
+	NCB_PROPERTY2(zoomMode, getZoomMode, setZoomMode);
+	NCB_PROPERTY2(width, getWidth, setWidth);
+	NCB_PROPERTY2(height, getHeight, setHeight);
 	NCB_METHOD(setSize);
-	NCB_PROPERTY_RO(destWidth, getDestWidth);
-	NCB_PROPERTY_RO(destHeight, getDestHeight);
-	NCB_PROPERTY(defaultVisible, getDefaultVisible, setDefaultVisible);
+	NCB_PROPERTY_RO2(destWidth, getDestWidth);
+	NCB_PROPERTY_RO2(destHeight, getDestHeight);
+	NCB_PROPERTY2(defaultVisible, getDefaultVisible, setDefaultVisible);
 	NCB_METHOD(getVisible);
 	NCB_METHOD(setVisible);
 };
@@ -1165,11 +1168,11 @@ NCB_REGISTER_SUBCLASS(IrrlichtDrawDevice) {
 NCB_REGISTER_SUBCLASS(IrrlichtWindow) {
 	NCB_CONSTRUCTOR((iTJSDispatch2 *, int, int, int, int));
 	BASE_METHOD;
-	NCB_PROPERTY(left, getLeft, setLeft);
-	NCB_PROPERTY(top, getTop, setTop);
-	NCB_PROPERTY(width, getWidth, setWidth);
-	NCB_PROPERTY(height, getHeight, setHeight);
-	NCB_PROPERTY(visible, getVisible, setVisible);
+	NCB_PROPERTY2(left, getLeft, setLeft);
+	NCB_PROPERTY2(top, getTop, setTop);
+	NCB_PROPERTY2(width, getWidth, setWidth);
+	NCB_PROPERTY2(height, getHeight, setHeight);
+	NCB_PROPERTY2(visible, getVisible, setVisible);
 	NCB_METHOD(setPos);
 	NCB_METHOD(setSize);
 };
@@ -1177,8 +1180,8 @@ NCB_REGISTER_SUBCLASS(IrrlichtWindow) {
 NCB_REGISTER_SUBCLASS(IrrlichtSimpleDevice) {
 	NCB_CONSTRUCTOR((iTJSDispatch2 *, int, int));
 	BASE_METHOD;
-	NCB_PROPERTY(width, getWidth, setWidth);
-	NCB_PROPERTY(height, getHeight, setHeight);
+	NCB_PROPERTY2(width, getWidth, setWidth);
+	NCB_PROPERTY2(height, getHeight, setHeight);
 	NCB_METHOD(setSize);
 	NCB_METHOD(updateToLayer);
 };
