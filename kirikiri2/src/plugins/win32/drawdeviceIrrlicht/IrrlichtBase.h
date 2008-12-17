@@ -77,6 +77,13 @@ public:
 	irr::gui::IGUIEnvironment *getGUIEnvironment() {
 		return device ? device->getGUIEnvironment() : NULL;
 	}
+
+	/**
+	 * @return GUIŠÂ‹«î•ñ‚ÌŽæ“¾
+	 */
+	irr::ILogger *getLogger() {
+		return device ? device->getLogger() : NULL;
+	}
 };
 
 /**

@@ -18,13 +18,35 @@
 
 using namespace std;
 
+#ifdef _DEBUG
+#if defined(_IRR_WINDOWS_API_)
+#include <stdarg.h>
+#include <windows.h>
+static void
+LwoDebugPrint(const char* format, ...) {
+  va_list args;
+  va_start(args, format);
+  char str[1024];
+  vsnprintf_s(str, 1024, _TRUNCATE, format, args);
+  irr::os::Printer::log(str);
+  va_end(args);
+}
+#define LWO_DPRINT(...) LwoDebugPrint(__VA_ARGS__)
+#else
+#define LWO_DPRINT(...) {printf(__VA_ARGS__); printf("\n"); }
+#endif
+#else
+#define LWO_DPRINT(...) ((void)0)
+#endif
+
 namespace irr
 {
 namespace scene
 {
 
 #ifdef _DEBUG
-#define LWO_READER_DEBUG
+// #define LWO_READER_DEBUG
+  #define LWO_READER_DEBUG_2
 #endif
 
 #define charsToUIntD(a, b, c, d) ((a << 24) | (b << 16) | (c << 8) | d)
@@ -38,7 +60,7 @@ struct tLWOTextureInfo
 {
 	tLWOTextureInfo() : Flags(0), WidthWrap(2), HeightWrap(2), OpacType(0),
 			Color(0xffffffff), Value(0.0f), AntiAliasing(1.0f),
-			Opacity(1.0f), TCoords(0), Active(false) {};
+			Opacity(1.0f), Active(false) {};
 	core::stringc Type;
 	core::stringc Map;
 	core::stringc AlphaMap;
@@ -56,7 +78,7 @@ struct tLWOTextureInfo
 	f32 AntiAliasing;
 	f32 Opacity;
 	f32 FParam[3];
-	core::array<core::vector2df>* TCoords;
+  core::stringc VMapName;
 	bool Active;
 };
 
@@ -152,6 +174,7 @@ IAnimatedMesh* CLWOMeshFileLoader::createMesh(io::IReadFile* file)
 	File = file;
 
   // レイヤ処理の状態変数をリセット
+  CurrentLayerId = -1;
   CurrentPolyIndexOffset = 0;
   CurrentPolyNum = 0;
 
@@ -176,19 +199,37 @@ IAnimatedMesh* CLWOMeshFileLoader::createMesh(io::IReadFile* file)
 		const s32 vertCount=mb->Vertices.size();
 		const core::array<u32>& poly = Indices[polyIndex];
 		const u32 polySize=poly.size();
-#ifdef LWO_READER_DEBUG
-					printf("XXX POLY: %d TAG: %d\n", polyIndex, tag);
-#endif
     const core::array<core::vector3df>& TargetPoints = Points[PolyMapping[polyIndex]];
     video::S3DVertex vertex;
-		for (u32 i=0; i<polySize; ++i)
-		{
-			const s32 j=poly[i];
-			vertex.Pos=TargetPoints[j];
-			if (Materials[tag]->Texture[0].TCoords && (Materials[tag]->Texture[0].TCoords->size()>0))
-				vertex.TCoords=(*Materials[tag]->Texture[0].TCoords)[j];
-			mb->Vertices.push_back(vertex);
-		}
+
+    // VMapName に現在のレイヤIDを混ぜ込んでユニークにして、mapから検索する
+    u32 layerId = PolyMapping[polyIndex];
+    core::map<core::stringc, core::array<core::vector2df>*>::Node *node = 
+      TCoordsMap.find(getVMapNameByLayerId(layerId, Materials[tag]->Texture[0].VMapName));
+    if (node)
+    {
+      for (u32 i=0; i<polySize; ++i)
+      {
+        const s32 j=poly[i];
+        vertex.Pos=TargetPoints[j];
+        // LWO_DPRINT("j:%d layerId:%d vmapname:%s layeredVmapName:%s", j, layerId, Materials[tag]->Texture[0].VMapName.c_str(),
+        //      getVMapNameByLayerId(layerId, Materials[tag]->Texture[0].VMapName).c_str());
+        core::array<core::vector2df>* tCoords = node->getValue();
+        if (tCoords && tCoords->size() > 0) {
+          if (tCoords->size() <= j)
+            LWO_DPRINT("TAG:%d j:%d exeeds Tcoords->size():%d",tag, j, tCoords->size());
+          else
+            vertex.TCoords=(*tCoords)[j];
+        } else {
+          LWO_DPRINT("Fail to find tcoords j:%d vmapname:%s layeredVmapName:%s", 
+            j, Materials[tag]->Texture[0].VMapName.c_str(),
+            getVMapNameByLayerId(layerId, Materials[tag]->Texture[0].VMapName).c_str());
+        }
+        mb->Vertices.push_back(vertex);
+      }
+    } else {
+      LWO_DPRINT("XXXXXXXXXXXXXXXXXXXXXXXXXXXXX\n");
+    }
 		if (polySize>2)
 		{
 			for (u32 i=1; i<polySize-1; ++i)
@@ -230,8 +271,8 @@ IAnimatedMesh* CLWOMeshFileLoader::createMesh(io::IReadFile* file)
   PolyMapping.clear();
 	Indices.clear();
 	MaterialMapping.clear();
-	VMap.clear();
-	TCoords.clear();
+  // TODO ちゃんとdelete
+  TCoordsMap.clear();
 	Materials.clear();
 	Images.clear();
 
@@ -264,8 +305,8 @@ bool CLWOMeshFileLoader::readChunks()
 		{
 			case charsToUIntD('L','A','Y','R'):
 				{
-#ifdef LWO_READER_DEBUG
-					os::Printer::log("LWO loader: loading layer.");
+#ifdef LWO_READER_DEBUG_2
+					os::Printer::log("LWO loader: loading layer.----------------------");
 #endif
 					u16 tmp16;
 					File->read(&tmp16, 2); // number
@@ -274,7 +315,7 @@ bool CLWOMeshFileLoader::readChunks()
 #ifndef __BIG_ENDIAN__
 					tmp16=os::Byteswap::byteswap(tmp16);
 #endif
-					if (((FormatVersion==1)&&(tmp16!=1)) ||
+          if (((FormatVersion==1)&&(tmp16!=1)) ||
 						((FormatVersion==2)&&(tmp16&1)))
 						layer.Active=false;
 					else
@@ -291,8 +332,9 @@ bool CLWOMeshFileLoader::readChunks()
 						layer.Parent = tmp16;
 					}
           // 新規レイヤになったので、前までのポリオブジェクト数をオフセット値に加算し、現在のポリ数を初期化
-          CurrentPolyIndexOffset = CurrentPolyNum;
+          CurrentPolyIndexOffset += CurrentPolyNum;
           CurrentPolyNum = 0;
+          ++CurrentLayerId;
 				}
 				break;
 			case charsToUIntD('P','N','T','S'):
@@ -494,6 +536,12 @@ void CLWOMeshFileLoader::readObj1(u32 size)
 	}
 }
 
+// カレントレイヤIDに合わせた名前に変える
+core::stringc CLWOMeshFileLoader::getVMapNameByLayerId(u32 layerId, core::stringc& name)
+{
+  return core::stringc(layerId) + "_" + name;
+}
+
 void CLWOMeshFileLoader::readVertexMapping(u32 size)
 {
 	char type[5];
@@ -518,14 +566,19 @@ void CLWOMeshFileLoader::readVertexMapping(u32 size)
 		File->seek(size, true);
 		return;
 	}
-	VMap.insert(name,TCoords.size());
-	TCoords.push_back(core::array<core::vector2df>());
 
-	u32 index;
+  // 現在のレイヤのテクスチャ座標マップに、読み込んだTXUV情報を追加
+  // stringc("レイヤID_" + VMapName) → array(TXUV)   というマップになっている
+  // VMapName は、(おそらく…)レイヤ内でのみ一律なので、レイヤIDをつけてuniqueにしている
+  core::array<core::vector2df> *tCoords = new core::array<core::vector2df>();
+  TCoordsMap.insert(getVMapNameByLayerId(CurrentLayerId, name), tCoords);
+	
+  u32 index;
 	core::vector2df tcoord;
-	core::array<core::vector2df>& tcArray = TCoords.getLast();
+	// core::array<core::vector2df>& tcArray = TCoords.getLast();
   core::array<core::vector3df>& CurrentPoints = Points.getLast();
-	tcArray.set_used(CurrentPoints.size());
+  // tcArray.set_used(CurrentPoints.size());
+  tCoords->set_used(CurrentPoints.size());
 	while (size!=0)
 	{
 		size -= readVX(index);
@@ -537,8 +590,9 @@ void CLWOMeshFileLoader::readVertexMapping(u32 size)
 #ifndef __BIG_ENDIAN__
 		tcoord.Y=os::Byteswap::byteswap(tcoord.Y);
 #endif
-		tcoord.Y=tcoord.Y;
-		tcArray[index]=tcoord;
+		// tcoord.Y=tcoord.Y;
+		// tcArray[index]=tcoord;
+    (*tCoords)[index]=tcoord;
 		size -= 8;
 	}
 }
@@ -565,8 +619,8 @@ void CLWOMeshFileLoader::readTagMapping(u32 size)
 		tag=os::Byteswap::byteswap(tag);
 #endif
 		size -= 2;
-#ifdef LWO_READER_DEBUG
-    printf("XXX readTagMapping: MaterialMapping: polyIndex %d + %d -> tag %d\n", polyIndex, CurrentPolyIndexOffset,tag);
+#ifdef LWO_READER_DEBUG_2
+    // LWO_DPRINT("XXX readTagMapping: MaterialMapping: polyIndex %d + %d -> tag %d", polyIndex, CurrentPolyIndexOffset,tag);
 #endif
 		MaterialMapping[CurrentPolyIndexOffset+polyIndex]=tag;
 		Materials[tag]->TagType=1;
@@ -607,11 +661,11 @@ void CLWOMeshFileLoader::readObj2(u32 size)
 			polyArray.push_back(vertIndex);
 		}
     numPolys++;
-#ifdef LWO_READER_DEBUG
-    printf("XXX Idx:%d -> Pnt:%d\n",Indices.size()-1, Points.size()-1);
+#ifdef LWO_READER_DEBUG_2
+    // LWO_DPRINT("XXX Idx:%d -> Pnt:%d",Indices.size()-1, Points.size()-1);
+    LWO_DPRINT("XXX Idx:%d -> LayerId:%d", Indices.size()-1, CurrentLayerId);
 #endif
-    ///  PolyMapping[Indices.size()-1]=Points.size()-1;
-    PolyMapping.push_back(Points.size()-1);  // 保証大丈夫なはず・・・
+    PolyMapping.push_back(CurrentLayerId);
 	}
   // 読み込んだポリの分だけマテリアルマッピングのハコを用意する
   for (u32 j=0; j<numPolys; ++j) {
@@ -628,14 +682,16 @@ void CLWOMeshFileLoader::readMat(u32 size)
 
 	tLWOMaterial* mat=0;
 	size -= readString(name);
+  u32 matId;
 	for (u32 i=0; i<Materials.size(); ++i)
 	{
 		if ((Materials[i]->TagType==1) && (Materials[i]->Name==name))
 		{
-#ifdef LWO_READER_DEBUG
-      printf("XXX MATERIAL: id:%d -> %s\n", i, name.c_str());
+#ifdef LWO_READER_DEBUG_2
+      LWO_DPRINT("XXX MATERIAL: id:%d -> %s ---------------", i, name.c_str());
 #endif
 			mat=Materials[i];
+      matId = i;
 			break;
 		}
 	}
@@ -1547,10 +1603,10 @@ void CLWOMeshFileLoader::readMat(u32 size)
 				os::Printer::log("LWO loader: loading material vmap binding.");
 #endif
 				{
-					core::stringc tmpname;
-					size -= readString(tmpname);
-					if (VMap.find(tmpname) != 0)
-						mat->Texture[currTexture].TCoords = &TCoords[VMap.find(tmpname)->getValue()];
+					// core::stringc tmpname;
+					// size -= readString(tmpname);
+          size -= readString(mat->Texture[currTexture].VMapName);
+          LWO_DPRINT("VMAP: %s", mat->Texture[currTexture].VMapName.c_str()); 
 				}
 				break;
 			case charsToUIntD('B','L','O','K'):
@@ -1800,7 +1856,7 @@ video::ITexture* CLWOMeshFileLoader::loadTexture(const core::stringc& file)
     targetName = TEX_DIR + file.subString(stringPos+1, file.size()-stringPos);
     // TODO exit チェックいらないかな
 #ifdef LWO_READER_DEBUG
-    printf("XXX TARGET: %s\n", targetName.c_str());
+    LWO_DPRINT("XXX TARGET: %s", targetName.c_str());
 #endif
     if (FileSystem->existFile(targetName.c_str()))
       return driver->getTexture(targetName.c_str());

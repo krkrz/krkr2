@@ -62,6 +62,10 @@ public:
 		return IrrlichtBase::getGUIEnvironment();
 	}
 
+	irr::ILogger *getLogger() {
+		return IrrlichtBase::getLogger();
+	}
+
 	// -----------------------------------------------------------------------
 	// 固有メソッド
 	// -----------------------------------------------------------------------

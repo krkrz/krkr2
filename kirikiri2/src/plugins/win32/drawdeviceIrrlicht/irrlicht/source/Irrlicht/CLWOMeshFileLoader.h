@@ -9,6 +9,7 @@
 #include "SMeshBuffer.h"
 #include "irrString.h"
 #include "irrMap.h"
+#include "irrList.h"
 
 namespace irr
 {
@@ -61,22 +62,38 @@ private:
 	u32 readColor(video::SColor& color);
 	video::ITexture* loadTexture(const core::stringc& file);
 
+  core::stringc getVMapNameByLayerId(u32 layerId, core::stringc& name);
+
 	scene::ISceneManager* SceneManager;
 	io::IFileSystem* FileSystem;
 	io::IReadFile* File;
 	SMesh* Mesh;
 
+// メモ: 
+ /*
+ ・PolyMapping で ポリIDからレイヤIDを取得
+ ・レイヤIDから、そのレイヤのUV一覧を取得
+ ・現在のポリのマテリアルのテクスチャのVMapName でその一覧を検索
+ ・ヒットした UV を Tcoords として参照する
+ */
+
 	core::array<core::array<core::vector3df> > Points;
 	core::array<core::array<u32> > Indices;
   core::array<u16> PolyMapping;       // ポリID>レイヤIDマップ 
-	core::array<u16> MaterialMapping;
-	core::map<core::stringc, u32> VMap;
-	core::array<core::array<core::vector2df> > TCoords;
+	core::array<u16> MaterialMapping;   // ポリID>マテリアルID(tag)マップ
+	// core::map<core::stringc, u32> VMap;
+  // core::array<u16><core::map<core::stringc, core::array<u32> > > VMap;
+	// core::array<core::array<core::vector2df> > TCoords;
+  // レイヤID＞map(VMAP-name, array(TXUV))
+  // core::array<core::map<core::stringc, core::array<core::vector2df>* > > TCoordsMapArray;
+  // map("レイヤID_" + VMAP-name, array(TXUV))
+  core::map<core::stringc, core::array<core::vector2df>* > TCoordsMap;
 	core::array<tLWOMaterial*> Materials;
 	core::array<core::stringc> Images;
 	u8 FormatVersion;
 
   // パーサの状態変数
+  u16 CurrentLayerId;
   u32 CurrentPolyIndexOffset;  // 現在のレイヤのポリIDオフセット
   u32 CurrentPolyNum;          // 現在のレイヤのポリ数
 };
