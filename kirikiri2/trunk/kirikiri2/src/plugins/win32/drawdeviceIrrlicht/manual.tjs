@@ -121,6 +121,51 @@ class Irrlicht {
 		function setTop(t);
 	};
 
+	class matrix4 {
+		matrix4();
+		function buildCameraLookAtMatrixLH();
+		function buildCameraLookAtMatrixRH();
+		function buildNDCToDCMatrix();
+		function buildProjectionMatrixOrthoLH();
+		function buildProjectionMatrixOrthoRH();
+		function buildProjectionMatrixPerspectiveFovLH();
+		function buildProjectionMatrixPerspectiveFovRH();
+		function buildProjectionMatrixPerspectiveLH();
+		function buildProjectionMatrixPerspectiveRH();
+		function buildShadowMatrix();
+		function buildTextureTransform();
+		function getDefinitelyIdentityMatrix();
+		function getInverse();
+		function getInversePrimitive();
+		function getRotationDegrees();
+		function getScale();
+		function getTranslation();
+		function interpolate();
+		function inverseRotateVect();
+		function inverseTranslateVect();
+		function isIdentity();
+		function isIdentity_integer_base();
+		function makeIdentity();
+		function makeInverse();
+		function setbyproduct();
+		function setbyproduct_nocheck();
+		function setDefinitelyIdentityMatrix();
+		function setInverseRotationDegrees();
+		function setInverseRotationRadians();
+		function setInverseTranslation();
+		function setRotationDegrees();
+		function setRotationRadians();
+		function setTextureRotationCenter();
+		function setTextureScale();
+		function setTextureScaleCenter();
+		function setTextureTranslate();
+		function setTranslation();
+		function transformBox();
+		function transformBoxEx();
+		function transformPlane_new();
+		function translateVect();
+;	};
+
 	class triangle3df {
 		function triangle3df();
 	};
@@ -131,6 +176,18 @@ class Irrlicht {
 
 	class aabbox3df {
 		function aabbox3df();
+		function addInternalBox();
+		function getCenter();
+		function getExtent();
+		function getInterpolated();
+		function intersectsWithBox();
+		function isEmpty();
+		function isFullInside();
+		function isPointInside();
+		function isPointTotalInside();
+		function repair();
+		property maxEdge;
+		property minEdge;
 	};
 
 	class SLight {
@@ -181,12 +238,27 @@ class Irrlicht {
 		function setWorld(w);
 		function isFalling();
 	};
-	class IMesh;
+
+	class IMesh {
+		function getBoundingBox();
+		function setBoundingBox(box);
+		function getMeshBuffer(nr);
+		function getMeshBuffer2(material);
+		function getMeshBufferCount();
+		function setMaterialFlag(flag, newvalue);
+	}
+
 	class IMeshBuffer;
 	class IMeshCache;
 	class IMeshManipulator;
 	class IMeshWriter;
-	class IAnimatedMesh;
+
+	class IAnimatedMesh extends IMesh {
+		function getFrameCount();
+		function getMesh(frame, detailLevel, startFrameLoop, endFramLoop);
+		function getMeshType();
+	}
+
 	class IGUIFont;
 	class ITriangleSelector;
 	class ISceneNodeAnimatorFactory;
@@ -194,10 +266,79 @@ class Irrlicht {
 	class ISceneCollisionManager;
 	class IAnimationEndCallBack;
 
-	class ISceneNode;
+	class ISceneNode {
+		function getAutomaticCulling();
+		function setAutomaticCulling();
+		function getID();
+		function setID();
+		function getName();
+		function setName();
+		function getParent();
+		function setParent();
+		function getPosition();
+		function setPosition();
+		function getRotation();
+		function setRotation();
+		function getScale();
+		function setScale();
+		function getTriangleSelector();
+		function setTriangleSelector();
+		function isDebugDataVisible();
+		function setDebugDataVisible();
+		function isVisible();
+		function setVisible();
+		function addAnimator();
+		function addChild();
+		function clone();
+		function deserializeAttributes();
+		function getAbsolutePosition();
+		function getAbsoluteTransformation();
+		function getBoundingBox();
+		function getMaterial();
+		function getMaterialCount();
+		function getRelativeTransformation();
+		function getTransformedBoundingBox();
+		function getType();
+		function isDebugObject();
+		function remove();
+		function removeAll();
+		function removeAnimator();
+		function removeAnimators();
+		function removeChild();
+		function render();
+		function serializeAttributes();
+		function setMaterialFlag();
+		function setMaterialTexture();
+		function setMaterialType();
+		function updateAbsolutePosition();
+	}
+	
 	class IAnimatedMeshSceneNode;
 	class IBoneSceneNode;
-	class ICameraSceneNode;
+
+	class ICameraSceneNode extends ISceneNode {
+		function getAspectRatio();
+		function setAspectRatio();
+		function getFarValue();
+		function setFarValue();
+		function getFOV();
+		function setFOV();
+		function getNearValue();
+		function setNearValue();
+		function getProjectionMatrix();
+		function setProjectionMatrix();
+		function getTarget();
+		function setTarget();
+		function getUpVector();
+		function setUpVector();
+		function isInputReceiverEnabled();
+		function setInputReceiverEnabled();
+		function isOrthogonal();
+		function setIsOrthogonal();
+		function getViewFrustum();
+		function getViewMatrix();
+	}
+
 	class IDummyTransformationSceneNode;
 	class ILightSceneNode;
 	class IMeshSceneNode;
@@ -322,6 +463,25 @@ class Irrlicht {
 	class IGUIEnvironment {
 	};
 
+	// ELOG_LEVEL
+	ELL_INFORMATION = 0;
+	ELL_WARNING = 1;
+	ELL_ERROR = 2;
+	ELL_NONE = 3;
+	
+	/**
+	 * ログ出力機能
+	 * GUI環境機能インターフェース
+	 * DrawDevice または Window のプロパティから参照する必要があります
+	 * ※ new しても正常動作しません。
+	 */
+	class ILogger {
+		function getLogLevel();
+		function setLogLevel(level);
+		function log(text, level);
+		function logHint(text, hint, level);
+	};
+
 	// -----------------------------------------------------------------------------
 	//　Irrlicht 基本機能クラス
 	// -----------------------------------------------------------------------------
@@ -333,6 +493,7 @@ class Irrlicht {
 		property videoDriver; //< ドライバ(IVideoDriverクラス)。読み出し専用
 		property sceneManager; //< シーンマネージャ(ISceneManagerクラス)。読み出し専用
 		property guiEnvironment; //< GUI環境（IGUIEnvironmentクラス）。読み出し専用
+		property logger; //< ログ環境 (ILoggerクラス）。読み出し専用
 	};
 
 	/**

@@ -491,7 +491,62 @@ NCB_REGISTER_SUBCLASS_DELAY(rect<s32>) {
 
 NCB_REGISTER_SUBCLASS(matrix4) {
 	NCB_CONSTRUCTOR(());
-}
+	NCB_METHOD(buildCameraLookAtMatrixLH);
+	NCB_METHOD(buildCameraLookAtMatrixRH);
+	NCB_METHOD(buildNDCToDCMatrix);
+	NCB_METHOD(buildProjectionMatrixOrthoLH);
+	NCB_METHOD(buildProjectionMatrixOrthoRH);
+	NCB_METHOD(buildProjectionMatrixPerspectiveFovLH);
+	NCB_METHOD(buildProjectionMatrixPerspectiveFovRH);
+	NCB_METHOD(buildProjectionMatrixPerspectiveLH);
+	NCB_METHOD(buildProjectionMatrixPerspectiveRH);
+	NCB_METHOD(buildShadowMatrix);
+	NCB_METHOD(buildTextureTransform);
+	NCB_METHOD(getDefinitelyIdentityMatrix);
+	NCB_METHOD(getInverse);
+	NCB_METHOD(getInversePrimitive);
+	NCB_METHOD(getRotationDegrees);
+	NCB_METHOD(getScale);
+	NCB_METHOD(getTranslation);
+	//getTransposed (CMatrix4< T > &dest) const  
+	//getTransposed () const  
+	NCB_METHOD(interpolate);
+	NCB_METHOD(inverseRotateVect);
+	NCB_METHOD(inverseTranslateVect);
+	NCB_METHOD(isIdentity);
+	NCB_METHOD(isIdentity_integer_base);
+	NCB_METHOD(makeIdentity);
+	NCB_METHOD(makeInverse);
+//	NCB_METHOD(multiplyWith1x4Matrix);
+	//rotateVect (T *out, const core::vector3df &in) const  
+	//rotateVect (core::vector3df &out, const core::vector3df &in) const  
+	//rotateVect (vector3df &vect) const  
+	NCB_METHOD(setbyproduct);
+	NCB_METHOD(setbyproduct_nocheck);
+	NCB_METHOD(setDefinitelyIdentityMatrix);
+	NCB_METHOD(setInverseRotationDegrees);
+	NCB_METHOD(setInverseRotationRadians);
+	NCB_METHOD(setInverseTranslation);
+	//setM (const T *data) 
+	NCB_METHOD(setRotationDegrees);
+	NCB_METHOD(setRotationRadians);
+	//setScale (const T scale) 
+	//setScale (const vector3d< T > &scale) 
+	NCB_METHOD(setTextureRotationCenter);
+	NCB_METHOD(setTextureScale);
+	NCB_METHOD(setTextureScaleCenter);
+	NCB_METHOD(setTextureTranslate);
+	NCB_METHOD(setTranslation);
+	NCB_METHOD(transformBox);
+	NCB_METHOD(transformBoxEx);
+	//transformPlane (const core::plane3d< f32 > &in, core::plane3d< f32 > &out) const  
+	//transformPlane (core::plane3d< f32 > &plane) const  
+	NCB_METHOD(transformPlane_new);
+	//transformVect (T *out, const core::vector3df &in) const  
+	//transformVect (vector3df &out, const vector3df &in) const  
+	//transformVect (vector3df &vect) const  
+	NCB_METHOD(translateVect);
+};
 
 NCB_REGISTER_SUBCLASS(triangle3df) {
 	NCB_CONSTRUCTOR(());
@@ -503,6 +558,23 @@ NCB_REGISTER_SUBCLASS(plane3df) {
 
 NCB_REGISTER_SUBCLASS(aabbox3df) {
 	NCB_CONSTRUCTOR(());
+//	NCB_METHOD(addInternalPoint);
+	NCB_METHOD(addInternalBox);
+	//NCB_METHOD(classifyPlaneRelation);
+	NCB_METHOD(getCenter);
+	//NCB_METHOD(getEdges);
+	NCB_METHOD(getExtent);
+	NCB_METHOD(getInterpolated);
+	NCB_METHOD(intersectsWithBox);
+//	NCB_METHOD(intersectsWithLine);
+	NCB_METHOD(isEmpty);
+	NCB_METHOD(isFullInside);
+	NCB_METHOD(isPointInside);
+	NCB_METHOD(isPointTotalInside);
+	NCB_METHOD(repair);
+	//NCB_METHOD(reset);
+	NCB_MEMBER_PROPERTY(maxEdge, vector3df, MaxEdge);
+	NCB_MEMBER_PROPERTY(minEdge, vector3df, MinEdge);
 }
 
 NCB_REGISTER_SUBCLASS(SLight) {
@@ -654,13 +726,16 @@ NCB_IRR_PROPERTY2(world, getWorld, setWorld);
 NCB_IRR_METHOD(isFalling);
 };
 
+
 NCB_REGISTER_IRR_SUBCLASS(IMesh)
 NCB_CONSTRUCTOR(());
-NCB_IRR_PROPERTY2(boundingBox, getBoundingBox, setBoundingBox);
-NCB_IRR_METHOD2(getMeshBuffer, IMeshBuffer*, getMeshBuffer, (u32) const);
-NCB_IRR_METHOD2(getMeshBuffer2, IMeshBuffer*, getMeshBuffer, (const SMaterial &) const);
-NCB_IRR_METHOD(getMeshBufferCount);
-NCB_IRR_METHOD(setMaterialFlag);
+#define IMESH_METHOD \
+NCB_IRR_PROPERTY2(boundingBox, getBoundingBox, setBoundingBox);\
+NCB_IRR_METHOD2(getMeshBuffer, IMeshBuffer*, getMeshBuffer, (u32) const);\
+NCB_IRR_METHOD2(getMeshBuffer2, IMeshBuffer*, getMeshBuffer, (const SMaterial &) const);\
+NCB_IRR_METHOD(getMeshBufferCount);\
+NCB_IRR_METHOD(setMaterialFlag)
+IMESH_METHOD;
 };
 
 NCB_REGISTER_IRR_SUBCLASS(IMeshBuffer)
@@ -689,7 +764,11 @@ NCB_REGISTER_IRR_SUBCLASS(IMeshWriter)
 };
 
 NCB_REGISTER_IRR_SUBCLASS(IAnimatedMesh)
-	NCB_CONSTRUCTOR(());
+NCB_CONSTRUCTOR(());
+IMESH_METHOD;
+NCB_IRR_METHOD(getFrameCount);
+NCB_IRR_METHOD(getMesh);
+NCB_IRR_METHOD(getMeshType);
 };
 
 NCB_REGISTER_IRR_SUBCLASS(IGUIFont)
@@ -733,6 +812,8 @@ NCB_TYPECONV_CAST_INTEGER(E_BONE_ANIMATION_MODE);
 NCB_TYPECONV_CAST_INTEGER(E_BONE_SKINNING_SPACE);
 NCB_TYPECONV_CAST_INTEGER(ESCENE_NODE_ANIMATOR_TYPE);
 NCB_TYPECONV_CAST_INTEGER(E_VERTEX_TYPE);
+NCB_TYPECONV_CAST_INTEGER(ELOG_LEVEL);
+NCB_TYPECONV_CAST_INTEGER(E_ANIMATED_MESH_TYPE);
 
 /**
  * ISceneNode 専用コンバータ
@@ -1141,6 +1222,13 @@ NCB_REGISTER_IRR_SUBCLASS(IGUIEnvironment)
 NCB_CONSTRUCTOR(());
 };
 
+NCB_REGISTER_IRR_SUBCLASS(ILogger)
+NCB_CONSTRUCTOR(());
+NCB_IRR_PROPERTY2(logLevel, getLogLevel, setLogLevel);
+NCB_IRR_METHOD2(log, void, log, (const wchar_t*,ELOG_LEVEL));
+NCB_IRR_METHOD2(logHint, void, log, (const wchar_t*,const wchar_t*hint,ELOG_LEVEL));
+};
+
 // --------------------------------------------------------------------
 // Irrlicht 操作用の基本オブジェクトの登録
 // --------------------------------------------------------------------
@@ -1148,7 +1236,8 @@ NCB_CONSTRUCTOR(());
 #define BASE_METHOD \
 	NCB_PROPERTY_RO2(videoDriver, getVideoDriver);\
 	NCB_PROPERTY_RO2(sceneManager, getSceneManager);\
-	NCB_PROPERTY_RO2(guiEnvironment, getGUIEnvironment)
+	NCB_PROPERTY_RO2(guiEnvironment, getGUIEnvironment);\
+	NCB_PROPERTY_RO2(logger, getLogger)
 
 NCB_REGISTER_SUBCLASS(IrrlichtDrawDevice) {
 	NCB_CONSTRUCTOR((int,int));
@@ -1199,6 +1288,11 @@ struct Irrlicht {
 
 NCB_REGISTER_CLASS(Irrlicht) {
 
+	ENUM(ELL_INFORMATION);
+	ENUM(ELL_WARNING);
+	ENUM(ELL_ERROR);
+	ENUM(ELL_NONE);
+	
 	//static
 
 	// Irrlicht データ型クラス
@@ -1211,7 +1305,7 @@ NCB_REGISTER_CLASS(Irrlicht) {
 	NCB_SUBCLASS_NAME(vector2df);
 	NCB_SUBCLASS_NAME(vector3df);
 	NCB_SUBCLASS(recti, rect<s32>);
-//	NCB_SUBCLASS_MANE(matrix4);
+	NCB_SUBCLASS(matrix4, matrix4);
 	NCB_SUBCLASS_NAME(triangle3df);
 	NCB_SUBCLASS_NAME(plane3df);
 	NCB_SUBCLASS_NAME(aabbox3df);
@@ -1258,6 +1352,7 @@ NCB_REGISTER_CLASS(Irrlicht) {
 	NCB_IRR_SUBCLASS(IVideoDriver);
 	NCB_IRR_SUBCLASS(ISceneManager);
 	NCB_IRR_SUBCLASS(IGUIEnvironment);
+	NCB_IRR_SUBCLASS(ILogger);
 
 	// Irrlicht ベースクラス
 	NCB_SUBCLASS(SimpleDevice, IrrlichtSimpleDevice);
