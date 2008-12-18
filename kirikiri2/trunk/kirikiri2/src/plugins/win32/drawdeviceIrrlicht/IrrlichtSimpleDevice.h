@@ -66,6 +66,10 @@ public:
 		return IrrlichtBase::getLogger();
 	}
 
+	irr::io::IFileSystem *getFileSystem() {
+		return IrrlichtBase::getFileSystem();
+	}
+
 	// -----------------------------------------------------------------------
 	// 固有メソッド
 	// -----------------------------------------------------------------------

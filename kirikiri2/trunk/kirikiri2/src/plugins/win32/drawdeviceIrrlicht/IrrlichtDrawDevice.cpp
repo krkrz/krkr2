@@ -67,21 +67,6 @@ IrrlichtDrawDevice::detach()
 }
 
 /**
- * Irrlicht へのイベント送信
- */
-bool
-IrrlichtDrawDevice::postEvent(SEvent &ev)
-{
-	if (device) {
-		if (device->getGUIEnvironment()->postEventFromUser(ev) ||
-			device->getSceneManager()->postEventFromUser(ev)) {
-			return true;
-		}
-	}
-	return false;
-}
-
-/**
  * Device→Irrlicht方向の座標の変換を行う
  * @param		x		X位置
  * @param		y		Y位置

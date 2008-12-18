@@ -48,6 +48,9 @@ protected:
 	// Irrlicht イベント処理用
 	// ------------------------------------------------------------
 public:
+	// Irrlicht にイベントを送る
+	bool postEvent(irr::SEvent &ev);
+
 	/**
 	 * イベント受理
 	 * GUI Environment からのイベントがここに送られてくる
@@ -79,10 +82,17 @@ public:
 	}
 
 	/**
-	 * @return GUI環境情報の取得
+	 * @return ロガーの取得
 	 */
 	irr::ILogger *getLogger() {
 		return device ? device->getLogger() : NULL;
+	}
+
+	/**
+	 * @return ファイルシステムの取得
+	 */
+	irr::io::IFileSystem *getFileSystem() {
+		return device ? device->getFileSystem() : NULL;
 	}
 };
 

@@ -22,7 +22,23 @@ IrrlichtWindow::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	// 参考: irrlicht/source/Irrlicht/CIrrDeviceWin32.cpp
 	// ここに処理をいろいろ書く必要あり
 
+	#ifndef WM_MOUSEWHEEL
+	#define WM_MOUSEWHEEL 0x020A
+	#endif
+	#ifndef WHEEL_DELTA
+	#define WHEEL_DELTA 120
+	#endif
+
+	
 	IrrlichtWindow *self = (IrrlichtWindow*)GetWindowLongPtr(hWnd, GWLP_USERDATA);
+
+	irr::SEvent event;
+	static irr::s32 ClickCount=0;
+	if (GetCapture() != hWnd && ClickCount > 0) {
+		ClickCount = 0;
+	}
+
+	
 	switch (message) {
 	case WM_PAINT:
 		{
@@ -36,6 +52,178 @@ IrrlichtWindow::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		return 0;
 	case WM_ERASEBKGND:
 		return 0;
+
+		// キーイベントはフォーカスがあってないかどうかでこない模様
+	case WM_KEYDOWN:
+	case WM_KEYUP:
+		if (self) {
+			if (self->transparentEvent) {
+				self->sendMessage(message, wParam, lParam);
+			} else {
+
+				event.EventType = irr::EET_KEY_INPUT_EVENT;
+				event.KeyInput.Key = (irr::EKEY_CODE)wParam;
+				event.KeyInput.PressedDown = (message==WM_KEYDOWN);
+				
+				WORD KeyAsc=0;
+				BYTE allKeys[256];
+				GetKeyboardState(allKeys);
+				ToAscii((UINT)wParam,(UINT)lParam,allKeys,&KeyAsc,0);
+				
+				event.KeyInput.Shift = ((allKeys[VK_SHIFT] & 0x80)!=0);
+				event.KeyInput.Control = ((allKeys[VK_CONTROL] & 0x80)!=0);
+				event.KeyInput.Char = (KeyAsc & 0x00ff); //KeyAsc >= 0 ? KeyAsc : 0;
+				
+				self->postEvent(event);
+			}
+			return 0;
+		}
+		break;
+		
+	case WM_MOUSEWHEEL:
+		if (self) {
+			if (self->transparentEvent) {
+				self->sendMessage(message, wParam, lParam);
+			} else {
+				event.EventType = irr::EET_MOUSE_INPUT_EVENT;
+				event.MouseInput.Wheel = ((irr::f32)((short)HIWORD(wParam))) / (irr::f32)WHEEL_DELTA;
+				event.MouseInput.Event = irr::EMIE_MOUSE_WHEEL;
+				POINT p;
+				p.x = 0; p.y = 0;
+				ClientToScreen(hWnd, &p);
+				event.MouseInput.X = LOWORD(lParam) - p.x;
+				event.MouseInput.Y = HIWORD(lParam) - p.y;
+				self->postEvent(event);
+			}
+			return 0;
+		}
+		break;
+
+	case WM_LBUTTONDOWN:
+		if (self) {
+			if (self->transparentEvent) {
+				self->sendMessage(message, wParam, lParam, true);
+			} else {
+				ClickCount++;
+				SetCapture(hWnd);
+				event.EventType = irr::EET_MOUSE_INPUT_EVENT;
+				event.MouseInput.Event = irr::EMIE_LMOUSE_PRESSED_DOWN;
+				event.MouseInput.X = (short)LOWORD(lParam);
+				event.MouseInput.Y = (short)HIWORD(lParam);
+				self->postEvent(event);
+			}
+			return 0;
+		}
+		break;
+
+	case WM_LBUTTONUP:
+		if (self) {
+			if (self->transparentEvent) {
+				self->sendMessage(message, wParam, lParam, true);
+			} else {
+				ClickCount--;
+				if (ClickCount<1) {
+					ClickCount=0;
+					ReleaseCapture();
+				}
+				event.EventType = irr::EET_MOUSE_INPUT_EVENT;
+				event.MouseInput.Event = irr::EMIE_LMOUSE_LEFT_UP;
+				event.MouseInput.X = (short)LOWORD(lParam);
+				event.MouseInput.Y = (short)HIWORD(lParam);
+				self->postEvent(event);
+			}
+			return 0;
+		}
+		break;
+
+	case WM_RBUTTONDOWN:
+		if (self) {
+			if (self->transparentEvent) {
+				self->sendMessage(message, wParam, lParam, true);
+			} else {
+				ClickCount++;
+				SetCapture(hWnd);
+				event.EventType = irr::EET_MOUSE_INPUT_EVENT;
+				event.MouseInput.Event = irr::EMIE_RMOUSE_PRESSED_DOWN;
+				event.MouseInput.X = (short)LOWORD(lParam);
+				event.MouseInput.Y = (short)HIWORD(lParam);
+				self->postEvent(event);
+			}
+			return 0;
+		}
+		break;
+
+	case WM_RBUTTONUP:
+		if (self) {
+			if (self->transparentEvent) {
+				self->sendMessage(message, wParam, lParam, true);
+			} else {
+				ClickCount--;
+				if (ClickCount<1) {
+					ClickCount=0;
+					ReleaseCapture();
+				}
+				event.EventType = irr::EET_MOUSE_INPUT_EVENT;
+				event.MouseInput.Event = irr::EMIE_RMOUSE_LEFT_UP;
+				event.MouseInput.X = (short)LOWORD(lParam);
+				event.MouseInput.Y = (short)HIWORD(lParam);
+				self->postEvent(event);
+			}
+			return 0;
+		}
+		break;
+
+	case WM_MBUTTONDOWN:
+		if (self) {
+			if (self->transparentEvent) {
+				self->sendMessage(message, wParam, lParam, true);
+			} else {
+				ClickCount++;
+				SetCapture(hWnd);
+				event.EventType = irr::EET_MOUSE_INPUT_EVENT;
+				event.MouseInput.Event = irr::EMIE_MMOUSE_PRESSED_DOWN;
+				event.MouseInput.X = (short)LOWORD(lParam);
+				event.MouseInput.Y = (short)HIWORD(lParam);
+				self->postEvent(event);
+			}
+			return 0;
+		}
+		break;
+
+	case WM_MBUTTONUP:
+		if (self) {
+			if (self->transparentEvent) {
+				self->sendMessage(message, wParam, lParam, true);
+			} else {
+				ClickCount--;
+				if (ClickCount<1) {
+					ClickCount=0;
+					ReleaseCapture();
+				}
+				event.EventType = irr::EET_MOUSE_INPUT_EVENT;
+				event.MouseInput.Event = irr::EMIE_MMOUSE_LEFT_UP;
+				event.MouseInput.X = (short)LOWORD(lParam);
+				event.MouseInput.Y = (short)HIWORD(lParam);
+				self->postEvent(event);
+			}
+			return 0;
+		}
+		break;
+
+	case WM_MOUSEMOVE:
+		if (self) {
+			if (self->transparentEvent) {
+				self->sendMessage(message, wParam, lParam, true);
+			} else {
+				event.EventType = irr::EET_MOUSE_INPUT_EVENT;
+				event.MouseInput.Event = irr::EMIE_MOUSE_MOVED;
+				event.MouseInput.X = (short)LOWORD(lParam);
+				event.MouseInput.Y = (short)HIWORD(lParam);
+				self->postEvent(event);
+			}
+			return 0;
+		}
+		break;
 	}
 	return DefWindowProc(hWnd, message, wParam, lParam);
 }
@@ -134,10 +322,31 @@ IrrlichtWindow::destroyWindow()
 }
 
 /**
+ * 親窓にメッセージを送付
+ * @param message メッセージ
+ * @param wParam WPARAM
+ * @param lParam LPARAM
+ * @param convPosition lParam のマウス座標値を親のものに変換
+ */
+void
+IrrlichtWindow::sendMessage(UINT message, WPARAM wParam, LPARAM lParam, bool convPosition)
+{
+	if (convPosition) {
+		POINT ps = {0,0}, pp = {0,0};
+		ClientToScreen(hwnd, &ps);
+		ClientToScreen(parent, &pp);
+		DWORD x = LOWORD(lParam) + ps.x - pp.x;
+		DWORD y = HIWORD(lParam) + ps.y - pp.y;
+		lParam = (LPARAM)((DWORD)y << 16 | (DWORD)x);
+	}
+	SendMessage(parent, message, wParam, lParam);
+}
+
+/**
  * コンストラクタ
  */
 IrrlichtWindow::IrrlichtWindow(iTJSDispatch2 *win, int left, int top, int width, int height)
-	: IrrlichtBaseUpdate(), window(NULL), parent(0), hwnd(0), visible(false)
+	: IrrlichtBaseUpdate(), window(NULL), parent(0), hwnd(0), visible(false), transparentEvent(true)
 {
 	if (win->IsInstanceOf(0, NULL, NULL, L"Window", win) != TJS_S_TRUE) {
 		TVPThrowExceptionMessage(L"must set window object");

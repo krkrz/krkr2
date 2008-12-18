@@ -751,6 +751,27 @@ NCB_IRR_METHOD(getVertexType);
 //NCB_IRR_METHOD(getvertices) XXX 配列
 };
 
+NCB_REGISTER_IRR_SUBCLASS(IWriteFile)
+NCB_CONSTRUCTOR(());
+NCB_IRR_METHOD(getFileName);
+NCB_IRR_METHOD(getPos);
+NCB_IRR_METHOD(seek);
+//write (const void *buffer, u32 sizeToWrite)=0 
+};
+
+NCB_REGISTER_IRR_SUBCLASS(IReadFile)
+NCB_CONSTRUCTOR(());
+NCB_IRR_METHOD(getFileName);
+NCB_IRR_METHOD(getPos);
+NCB_IRR_METHOD(getSize);
+//read (void *buffer, u32 sizeToRead)=0 
+NCB_IRR_METHOD(seek);
+};
+
+NCB_REGISTER_IRR_SUBCLASS(IFileList)
+	NCB_CONSTRUCTOR(());
+};
+
 NCB_REGISTER_IRR_SUBCLASS(IMeshCache)
 	NCB_CONSTRUCTOR(());
 };
@@ -761,6 +782,7 @@ NCB_REGISTER_IRR_SUBCLASS(IMeshManipulator)
 
 NCB_REGISTER_IRR_SUBCLASS(IMeshWriter)
 	NCB_CONSTRUCTOR(());
+NCB_IRR_METHOD(writeMesh);
 };
 
 NCB_REGISTER_IRR_SUBCLASS(IAnimatedMesh)
@@ -1222,6 +1244,29 @@ NCB_REGISTER_IRR_SUBCLASS(IGUIEnvironment)
 NCB_CONSTRUCTOR(());
 };
 
+NCB_REGISTER_IRR_SUBCLASS(IFileSystem)
+NCB_CONSTRUCTOR(());
+NCB_IRR_METHOD(addFolderFileArchive);
+NCB_IRR_METHOD(addPakFileArchive);
+NCB_IRR_METHOD(addZipFileArchive);
+NCB_IRR_METHOD(changeWorkingDirectoryTo);
+NCB_IRR_METHOD(createAndOpenFile);
+NCB_IRR_METHOD(createAndWriteFile);
+NCB_IRR_METHOD(createEmptyAttributes);
+NCB_IRR_METHOD(createFileList);
+//NCB_IRR_METHOD(createMemoryReadFile);
+//NCB_IRR_METHOD(createXMLReader);
+//NCB_IRR_METHOD(createXMLReader);
+//NCB_IRR_METHOD(createXMLReaderUTF8);
+//NCB_IRR_METHOD(createXMLReaderUTF8);
+//NCB_IRR_METHOD(createXMLWriter);
+//NCB_IRR_METHOD(createXMLWriter);
+NCB_IRR_METHOD(existFile);
+// virtual core::stringc  getAbsolutePath (const core::stringc &filename) const =0 
+// virtual core::stringc  getFileDir (const core::stringc &filename) const =0 
+NCB_IRR_METHOD(getWorkingDirectory);
+};
+
 NCB_REGISTER_IRR_SUBCLASS(ILogger)
 NCB_CONSTRUCTOR(());
 NCB_IRR_PROPERTY2(logLevel, getLogLevel, setLogLevel);
@@ -1237,7 +1282,8 @@ NCB_IRR_METHOD2(logHint, void, log, (const wchar_t*,const wchar_t*hint,ELOG_LEVE
 	NCB_PROPERTY_RO2(videoDriver, getVideoDriver);\
 	NCB_PROPERTY_RO2(sceneManager, getSceneManager);\
 	NCB_PROPERTY_RO2(guiEnvironment, getGUIEnvironment);\
-	NCB_PROPERTY_RO2(logger, getLogger)
+	NCB_PROPERTY_RO2(logger, getLogger);\
+	NCB_PROPERTY_RO2(fileSystem, getFileSystem)
 
 NCB_REGISTER_SUBCLASS(IrrlichtDrawDevice) {
 	NCB_CONSTRUCTOR((int,int));
@@ -1264,6 +1310,7 @@ NCB_REGISTER_SUBCLASS(IrrlichtWindow) {
 	NCB_PROPERTY2(visible, getVisible, setVisible);
 	NCB_METHOD(setPos);
 	NCB_METHOD(setSize);
+	NCB_MEMBER_PROPERTY(transparentEvent, bool, transparentEvent);
 };
 
 NCB_REGISTER_SUBCLASS(IrrlichtSimpleDevice) {
@@ -1317,6 +1364,10 @@ NCB_REGISTER_CLASS(Irrlicht) {
 	NCB_SUBCLASS_NAME(SViewFrustum);
 
 	// Irrlicht 参照用クラス
+	NCB_IRR_SUBCLASS(IFileSystem);
+	NCB_IRR_SUBCLASS(IReadFile);
+	NCB_IRR_SUBCLASS(IWriteFile);
+	NCB_IRR_SUBCLASS(IFileList);
 	NCB_IRR_SUBCLASS(IAttributes);
 	NCB_IRR_SUBCLASS(ISceneNodeAnimator);
 	NCB_IRR_SUBCLASS(ISceneNodeAnimatorCollisionResponse);
