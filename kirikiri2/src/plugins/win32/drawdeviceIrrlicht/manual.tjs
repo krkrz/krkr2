@@ -450,10 +450,26 @@ class Irrlicht {
 	class ISceneManager {
 		/**
 		 * シーンファイルの読み込み
-		 * @param scene シーンファイル
+		 * @param filename ファイル名
 		 */
-		function loadScene(scene);
+		function loadScene(filename);
+		/**
+		 * シーンファイルの読み込み
+		 * @param file ファイル(IReadFile)
+		 */
+		function loadSceneFile(file);
 
+		/**
+		 * シーンファイルの書き出し
+		 * @param filename ファイル名
+		 */
+		function saveScene(filename);
+		/**
+		 * シーンファイルの読み込み
+		 * @param file ファイル(IWriteFile)
+		 */
+		function saveSceneFile(file);
+		
 		function getAmbientLight();
 		function setAmbientLight(light);
 
