@@ -251,8 +251,32 @@ class Irrlicht {
 	class IMeshBuffer;
 	class IMeshCache;
 	class IMeshManipulator;
-	class IMeshWriter;
 
+	//! Irrlicht Native mesh writer, for static .irrmesh files.
+	EMWT_IRR_MESH     = MAKE_IRR_ID('i','r','r','m');
+	//! COLLADA mesh writer for .dae and .xml files
+	EMWT_COLLADA      = MAKE_IRR_ID('c','o','l','l');
+	//! STL mesh writer for .stl files
+	EMWT_STL          = MAKE_IRR_ID('s','t','l',0);
+
+	class IMeshWriter {
+
+		/*
+		 * get the type of mesh writer
+		 * @return EMESH_WRITER_TYPE
+		 */
+		function getType();
+
+		/**
+		 * write static mesh
+		 * @param file (IWriteFile)
+		 * @param mesh (IMesh)
+		 * @param flags
+		 * @return succeeded
+		 */
+		function writeMesh(file, mesh, flags);
+	}
+			
 	class IAnimatedMesh extends IMesh {
 		function getFrameCount();
 		function getMesh(frame, detailLevel, startFrameLoop, endFramLoop);
