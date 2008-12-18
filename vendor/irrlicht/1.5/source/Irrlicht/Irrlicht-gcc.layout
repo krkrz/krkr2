@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<CodeBlocks_layout_file>
+	<ActiveTarget name="Win32 - Release - fast math - dll" />
+	<File name="..\..\include\IrrCompileConfig.h" open="1" top="0" tabpos="1">
+		<Cursor position="3455" topLine="72" />
+	</File>
+	<File name="CD3D9ShaderMaterialRenderer.h" open="1" top="1" tabpos="2">
+		<Cursor position="2904" topLine="70" />
+	</File>
+</CodeBlocks_layout_file>
