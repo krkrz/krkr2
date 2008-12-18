@@ -46,9 +46,6 @@ protected:
 	// デバイス解放処理
 	virtual void detach();
 	
-	// Irrlicht にイベントを送る
-	bool postEvent(irr::SEvent &ev);
-
 	/**
 	 * Device→Irrlicht方向の座標の変換を行う
 	 * @param		x		X位置
@@ -158,6 +155,10 @@ public:
 		return IrrlichtBase::getLogger();
 	}
 
+	irr::io::IFileSystem *getFileSystem() {
+		return IrrlichtBase::getFileSystem();
+	}
+	
 	// -----------------------------------------------------------------------
 	// 固有メソッド
 	// -----------------------------------------------------------------------

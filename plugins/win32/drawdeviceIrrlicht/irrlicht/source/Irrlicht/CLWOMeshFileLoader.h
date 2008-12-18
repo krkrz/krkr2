@@ -54,6 +54,7 @@ private:
 	void readObj1(u32 size);
 	void readTagMapping(u32 size);
 	void readVertexMapping(u32 size);
+	void readDiscontinuousVertexMapping(u32 size);
 	void readObj2(u32 size);
 	void readMat(u32 size);
 	u32 readString(core::stringc& name, u32 size=0);
@@ -76,18 +77,31 @@ private:
  ・現在のポリのマテリアルのテクスチャのVMapName でその一覧を検索
  ・ヒットした UV を Tcoords として参照する
  */
-
 	core::array<core::array<core::vector3df> > Points;
-	core::array<core::array<u32> > Indices;
-  core::array<u16> PolyMapping;       // ポリID>レイヤIDマップ 
-	core::array<u16> MaterialMapping;   // ポリID>マテリアルID(tag)マップ
-	// core::map<core::stringc, u32> VMap;
-  // core::array<u16><core::map<core::stringc, core::array<u32> > > VMap;
-	// core::array<core::array<core::vector2df> > TCoords;
-  // レイヤID＞map(VMAP-name, array(TXUV))
-  // core::array<core::map<core::stringc, core::array<core::vector2df>* > > TCoordsMapArray;
+	core::array<core::array<u32> > Indices;   // ポリID>Pointインデクス列
+  core::array<u16> PolyMapping;             // ポリID>レイヤIDマップ 
+	core::array<u16> MaterialMapping;         // ポリID>マテリアルID(tag)マップ
   // map("レイヤID_" + VMAP-name, array(TXUV))
-  core::map<core::stringc, core::array<core::vector2df>* > TCoordsMap;
+  core::map<core::stringc, core::array<core::vector2df>* > VMAPMap;
+	// map("レイヤID_" + VMAP-name, map((polyID<<16 | vtxId), TXUV))
+	struct VMADId {
+		u32 vtxId;
+		u32 polyId;
+		VMADId() : vtxId(0), polyId(0) {}
+		VMADId(u32 p, u32 v) : vtxId(v), polyId(p) {}
+		bool operator == (const VMADId& other) const { 
+			return (vtxId==other.vtxId && polyId==other.polyId);
+		}
+		bool operator < (const VMADId& other) const { 
+			if (polyId<other.polyId)
+				return true;
+			else if(polyId>other.polyId)
+				return false;
+			else
+				return (vtxId<other.vtxId);
+		}
+	};
+	core::map<core::stringc, core::map<VMADId, core::vector2df>* > VMADMap;
 	core::array<tLWOMaterial*> Materials;
 	core::array<core::stringc> Images;
 	u8 FormatVersion;

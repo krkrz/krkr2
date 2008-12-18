@@ -482,6 +482,24 @@ class Irrlicht {
 		function logHint(text, hint, level);
 	};
 
+	/**
+	 * ファイルシステム
+	 * DrawDevice または Window のプロパティから参照する必要があります
+	 * ※ new しても正常動作しません。
+	 */
+	class IFileSystem {
+		// @return IReadFile
+		function createAndOpenFile(filename);
+		// @return IWriteFile
+		function createAndWriteFile(filename, append);
+	};
+
+	class IReadFile {
+	};
+
+	class IWriteFile {
+	};
+	
 	// -----------------------------------------------------------------------------
 	//　Irrlicht 基本機能クラス
 	// -----------------------------------------------------------------------------
@@ -494,6 +512,7 @@ class Irrlicht {
 		property sceneManager; //< シーンマネージャ(ISceneManagerクラス)。読み出し専用
 		property guiEnvironment; //< GUI環境（IGUIEnvironmentクラス）。読み出し専用
 		property logger; //< ログ環境 (ILoggerクラス）。読み出し専用
+		property fileSystem; //< ファイルシステム(IFileSystemクラス)。読み出し専用
 	};
 
 	/**
@@ -634,6 +653,12 @@ class Irrlicht {
 		property top;  //< 配置位置Y
 		property width; //< 横幅
 		property height; //< 縦幅
+
+		
+		/**
+		 * マウスイベントを親窓に透過する:デフォルト true
+		 */
+		property transparentEvent;
 
 		/**
 		 * 配置位置指定

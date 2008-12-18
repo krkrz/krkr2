@@ -112,6 +112,21 @@ IrrlichtBase::show(irr::core::rect<s32> *destRect)
 };
 
 /**
+ * Irrlicht へのイベント送信
+ */
+bool
+IrrlichtBase::postEvent(SEvent &ev)
+{
+	if (device) {
+		if (device->getGUIEnvironment()->postEventFromUser(ev) ||
+			device->getSceneManager()->postEventFromUser(ev)) {
+			return true;
+		}
+	}
+	return false;
+}
+
+/**
  * イベント受理
  * HWND を指定して生成している関係で Irrlicht 自身はウインドウから
  * イベントを取得することはない。ので GUI Environment からのイベント
