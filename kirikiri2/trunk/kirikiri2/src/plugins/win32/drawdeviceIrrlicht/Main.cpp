@@ -710,11 +710,34 @@ NCB_REGISTER_IRR_SUBCLASS(IAttributes)
 	NCB_CONSTRUCTOR(());
 };
 
+// Create系の、参照が１つ余分にはいった帰り値の処理
+// tTJSVariant に置換後 drop() することで参照の値を調整する
+// @param name 吉里吉里に登録する名前
+// @param type 帰り値の型
+// @param func 呼び出すメソッド名
+// @param arg 登録する引数リスト。型も必要。第一引数に必ず IrrWrapper<IrrClass> *obj が必要
+// @param argto 処理呼び出し用の引数リスト。名前リストのみ
+//
+#define NCB_IRR_CREATE_NAME(name, type, func, arg, argto)\
+struct AutoCreate_ ## name {\
+	static tTJSVariant Func arg {\
+		type *ret = obj->getIrrObject()->func argto;\
+		tTJSVariant var;\
+		IrrTypeConvertor<type> conv;\
+		conv(var, ret);\
+		ret->drop();\
+		return var;\
+	}\
+};\
+NCB_METHOD_PROXY(name, AutoCreate_ ## name::Func)
+#define NCB_IRR_CREATE(name, type, arg, argto) NCB_IRR_CREATE_NAME(name, type, name, arg, argto)
+
+
 NCB_REGISTER_IRR_SUBCLASS(ISceneNodeAnimator)
 NCB_CONSTRUCTOR(());
 NCB_IRR_METHOD(animateNode);
-NCB_IRR_METHOD(createClone);
 NCB_IRR_METHOD(getType);
+NCB_IRR_CREATE(createClone, IrrClass, (IrrWrapper<IrrClass> *obj, ISceneNode *node, ISceneManager *newManager), (node, newManager));
 };
 
 NCB_REGISTER_IRR_SUBCLASS(ISceneNodeAnimatorCollisionResponse)
@@ -726,9 +749,49 @@ NCB_IRR_PROPERTY2(world, getWorld, setWorld);
 NCB_IRR_METHOD(isFalling);
 };
 
+/**
+ * IMesh 専用コンバータ
+ */
+template <class T>
+struct IMeshTypeConvertor {
+	typedef typename ncbTypeConvertor::Stripper<T>::Type IrrClassT;
+	typedef T *IrrClassP;
+	typedef IrrWrapper<IrrClassT> WrapperT;
+	typedef ncbInstanceAdaptor<WrapperT> AdaptorT;
+	
+	void operator ()(IrrClassP &dst, const tTJSVariant &src) {
+#define GET_IRR_NATIVEINSTANCE(src, type) (IrrClassP)IrrTypeConvertor<type>::getIrrObject(src)
+		IrrClassP node;
+		if ((node = GET_IRR_NATIVEINSTANCE(src, IAnimatedMesh)) ||
+			(node = GET_IRR_NATIVEINSTANCE(src, IMesh))
+			) {
+			dst = node;
+		} else {
+			dst = NULL;
+		}
+	}
+	void operator ()(tTJSVariant &dst, const IrrClassP &src) {
+		if (src != NULL) {
+#define GET_IRR_ADAPTOR(src, type) ncbInstanceAdaptor<IrrWrapper<type>>::CreateAdaptor(new IrrWrapper<type>((type*)src))
+			iTJSDispatch2 *adpobj;
+			adpobj = AdaptorT::CreateAdaptor(new WrapperT(src));
+			if (adpobj) {
+				dst = tTJSVariant(adpobj, adpobj);
+				adpobj->Release();			
+			} else {
+				dst = NULL;
+			}
+		} else {
+			dst.Clear();
+		}
+	}
+};
 
-NCB_REGISTER_IRR_SUBCLASS(IMesh)
+NCB_SET_CONVERTOR(IMesh*, IMeshTypeConvertor<IMesh>);
+NCB_SET_CONVERTOR(const IMesh*, IMeshTypeConvertor<const IMesh>);
+NCB_REGISTER_SUBCLASS(IrrWrapper<IMesh>) {
 NCB_CONSTRUCTOR(());
+	typedef IMesh IrrClass;
 #define IMESH_METHOD \
 NCB_IRR_PROPERTY2(boundingBox, getBoundingBox, setBoundingBox);\
 NCB_IRR_METHOD2(getMeshBuffer, IMeshBuffer*, getMeshBuffer, (u32) const);\
@@ -1061,7 +1124,6 @@ NCB_REGISTER_IRR_SUBCLASS(ITexture)
 	NCB_CONSTRUCTOR(());
 };
 
-
 NCB_REGISTER_IRR_SUBCLASS(IVideoDriver)
 NCB_CONSTRUCTOR(());
 NCB_IRR_PROPERTY2(viewport, getViewPort, setViewPort);
@@ -1070,13 +1132,13 @@ NCB_IRR_METHOD2(addTexture, ITexture*, addTexture, (const dimension2d<s32>&, con
 NCB_IRR_METHOD2(addTexture2, ITexture*, addTexture, (const c8*, IImage *));
 //NCB_IRR_METHOD(beginScene);
 NCB_IRR_METHOD(clearZBuffer);
-NCB_IRR_METHOD(createAttributesFromMaterial);
-NCB_IRR_METHOD2(createImage, IImage*, createImage, (ECOLOR_FORMAT, const core::dimension2d<s32>&));
-NCB_IRR_METHOD2(createImage2, IImage*, createImage, (ECOLOR_FORMAT, IImage *));
-NCB_IRR_METHOD2(createImage3,  IImage*, createImage, (IImage*, const core::position2d<s32>&, const core::dimension2d<s32>&));
-NCB_IRR_METHOD2(createImageFromFile, IImage*, createImageFromFile, (const c8 *));
-NCB_IRR_METHOD(createRenderTargetTexture);
-NCB_IRR_METHOD(createScreenShot);
+NCB_IRR_CREATE(createAttributesFromMaterial, IAttributes, (IrrWrapper<IrrClass> *obj, const video::SMaterial &material), (material));
+NCB_IRR_CREATE_NAME(createImage,  IImage, createImage, (IrrWrapper<IrrClass> *obj, ECOLOR_FORMAT format, const core::dimension2d<s32>&size), (format, size));
+NCB_IRR_CREATE_NAME(createImage2, IImage, createImage, (IrrWrapper<IrrClass> *obj, ECOLOR_FORMAT format, IImage *imageToCopy), (format, imageToCopy));
+NCB_IRR_CREATE_NAME(createImage3, IImage, createImage, (IrrWrapper<IrrClass> *obj, IImage *imageToCopy, const core::position2d< s32 > &pos, const core::dimension2d< s32 > &size),(imageToCopy, pos, size));
+NCB_IRR_CREATE(createImageFromFile, IImage, (IrrWrapper<IrrClass> *obj, const c8 *filename), (filename));
+NCB_IRR_CREATE(createRenderTargetTexture, ITexture, (IrrWrapper<IrrClass> *obj, const core::dimension2d< s32 > &size, const c8 *name), (size, name));
+NCB_IRR_CREATE(createScreenShot, IImage, (IrrWrapper<IrrClass> *obj), ());
 NCB_IRR_METHOD(deleteAllDynamicLights);
 NCB_IRR_METHOD2(draw2DImage,  void, draw2DImage, (const ITexture*texture, const position2d<s32>&destPos));
 NCB_IRR_METHOD2(draw2DImage2,  void, draw2DImage, (const ITexture*texture,
@@ -1164,6 +1226,15 @@ static bool ISceneManagerSaveScene(IrrWrapper<ISceneManager> *obj, const char *f
 	return obj->getIrrObject()->saveScene(filename);
 }
 
+static bool ISceneManagerLoadSceneFile(IrrWrapper<ISceneManager> *obj, IReadFile *file)
+{
+	return obj->getIrrObject()->loadScene(file);
+}
+
+static bool ISceneManagerSaveSceneFile(IrrWrapper<ISceneManager> *obj, IWriteFile *file)
+{
+	return obj->getIrrObject()->saveScene(file);
+}
 
 NCB_REGISTER_IRR_SUBCLASS(ISceneManager)
 NCB_CONSTRUCTOR(());
@@ -1199,19 +1270,22 @@ NCB_IRR_METHOD(addTextSceneNode);
 NCB_IRR_METHOD(addToDeletionQueue);
 NCB_IRR_METHOD(addWaterSurfaceSceneNode);
 NCB_IRR_METHOD(clear);
-NCB_IRR_METHOD(createCollisionResponseAnimator);
-NCB_IRR_METHOD(createDeleteAnimator);
-NCB_IRR_METHOD(createFlyCircleAnimator);
-NCB_IRR_METHOD(createFlyStraightAnimator);
-//NCB_IRR_METHOD(createFollowSplineAnimator); XXX 配列が渡されてる
-NCB_IRR_METHOD(createMeshWriter);
-NCB_IRR_METHOD(createNewSceneManager);
-NCB_IRR_METHOD(createOctTreeTriangleSelector);
-NCB_IRR_METHOD(createRotationAnimator);
-NCB_IRR_METHOD(createTerrainTriangleSelector);
-//NCB_IRR_METHOD(createTextureAnimator); XXX 配列が渡されてる
-NCB_IRR_METHOD(createTriangleSelector);
-NCB_IRR_METHOD(createTriangleSelectorFromBoundingBox);
+NCB_IRR_CREATE(createCollisionResponseAnimator, ISceneNodeAnimatorCollisionResponse, (IrrWrapper<IrrClass> *obj, ITriangleSelector *world, ISceneNode *sceneNode, const core::vector3df &ellipsoidRadius, const core::vector3df &gravityPerSecond, const core::vector3df &ellipsoidTranslation, f32 slidingValue),
+			   (world, sceneNode, ellipsoidRadius, gravityPerSecond, ellipsoidTranslation, slidingValue));
+NCB_IRR_CREATE(createDeleteAnimator, ISceneNodeAnimator, (IrrWrapper<IrrClass> *obj, u32 timeMs), (timeMs));
+NCB_IRR_CREATE(createFlyCircleAnimator, ISceneNodeAnimator, (IrrWrapper<IrrClass> *obj, const core::vector3df &center, f32 radius, f32 speed, const core::vector3df &direction), (center, radius, speed, direction));
+NCB_IRR_CREATE(createFlyStraightAnimator, ISceneNodeAnimator,
+			   (IrrWrapper<IrrClass> *obj, const core::vector3df &startPoint, const core::vector3df &endPoint, u32 timeForWay, bool loop), (startPoint, endPoint, timeForWay, loop));
+//NCB_IRR_CREATE(createFollowSplineAnimator); XXX 配列が渡されてる
+NCB_IRR_CREATE(createMeshWriter, IMeshWriter, (IrrWrapper<IrrClass> *obj, EMESH_WRITER_TYPE type), (type));
+//virtual IMetaTriangleSelector *  createMetaTriangleSelector ()=0 
+NCB_IRR_CREATE(createNewSceneManager, ISceneManager, (IrrWrapper<IrrClass> *obj, bool cloneContent), (cloneContent));
+NCB_IRR_CREATE(createOctTreeTriangleSelector, ITriangleSelector, (IrrWrapper<IrrClass> *obj, IMesh *mesh, ISceneNode *node, s32 minimalPolysPerNode=32), (mesh, node, minimalPolysPerNode));
+NCB_IRR_CREATE(createRotationAnimator, ISceneNodeAnimator, (IrrWrapper<IrrClass> *obj, const core::vector3df &rotationPerSecond), (rotationPerSecond));
+NCB_IRR_CREATE(createTerrainTriangleSelector, ITriangleSelector, (IrrWrapper<IrrClass> *obj, ITerrainSceneNode *node, s32 LOD), (node, LOD));
+//NCB_IRR_CREATE(createTextureAnimator); XXX 配列が渡されてる
+NCB_IRR_CREATE(createTriangleSelector, ITriangleSelector, (IrrWrapper<IrrClass> *obj, IMesh *mesh, ISceneNode *node), (mesh, node));
+NCB_IRR_CREATE(createTriangleSelectorFromBoundingBox, ITriangleSelector, (IrrWrapper<IrrClass> *obj, ISceneNode *node), (node));
 NCB_IRR_METHOD(drawAll);
 NCB_IRR_METHOD(getDefaultSceneNodeFactory);
 NCB_IRR_METHOD(getGUIEnvironment);
@@ -1232,6 +1306,8 @@ NCB_IRR_METHOD(postEventFromUser);
 NCB_IRR_METHOD(registerNodeForRendering);
 NCB_METHOD_PROXY(loadScene, ISceneManagerLoadScene);
 NCB_METHOD_PROXY(saveScene, ISceneManagerLoadScene);
+NCB_METHOD_PROXY(loadSceneFile, ISceneManagerLoadSceneFile);
+NCB_METHOD_PROXY(saveSceneFile, ISceneManagerSaveSceneFile);
 
 //使わない
 //NCB_IRR_METHOD(addExternalMeshLoader);
@@ -1245,23 +1321,27 @@ NCB_REGISTER_IRR_SUBCLASS(IGUIEnvironment)
 NCB_CONSTRUCTOR(());
 };
 
+static tTJSVariant IFileSystemCreateAndWriteFile(IrrWrapper<IFileSystem> *fsystem, const tjs_char *filename, bool append)
+{
+}
+
 NCB_REGISTER_IRR_SUBCLASS(IFileSystem)
 NCB_CONSTRUCTOR(());
 NCB_IRR_METHOD(addFolderFileArchive);
 NCB_IRR_METHOD(addPakFileArchive);
 NCB_IRR_METHOD(addZipFileArchive);
 NCB_IRR_METHOD(changeWorkingDirectoryTo);
-NCB_IRR_METHOD(createAndOpenFile);
-NCB_IRR_METHOD(createAndWriteFile);
-NCB_IRR_METHOD(createEmptyAttributes);
-NCB_IRR_METHOD(createFileList);
-//NCB_IRR_METHOD(createMemoryReadFile);
-//NCB_IRR_METHOD(createXMLReader);
-//NCB_IRR_METHOD(createXMLReader);
-//NCB_IRR_METHOD(createXMLReaderUTF8);
-//NCB_IRR_METHOD(createXMLReaderUTF8);
-//NCB_IRR_METHOD(createXMLWriter);
-//NCB_IRR_METHOD(createXMLWriter);
+NCB_IRR_CREATE(createAndOpenFile, IReadFile, (IrrWrapper<IrrClass> *obj, const c8 *filename), (filename));
+NCB_IRR_CREATE(createAndWriteFile, IWriteFile, (IrrWrapper<IrrClass> *obj, const c8 *filename, bool append), (filename, append));
+NCB_IRR_CREATE(createEmptyAttributes, IAttributes, (IrrWrapper<IrrClass> *obj, video::IVideoDriver *driver), (driver));
+NCB_IRR_CREATE(createFileList, IFileList, (IrrWrapper<IrrClass> *obj), ());
+//NCB_IRR_CREATE(createMemoryReadFile);
+//NCB_IRR_CREATE(createXMLReader);
+//NCB_IRR_CREATE(createXMLReader);
+//NCB_IRR_CREATE(createXMLReaderUTF8);
+//NCB_IRR_CREATE(createXMLReaderUTF8);
+//NCB_IRR_CREATE(createXMLWriter);
+//NCB_IRR_CREATE(createXMLWriter);
 NCB_IRR_METHOD(existFile);
 // virtual core::stringc  getAbsolutePath (const core::stringc &filename) const =0 
 // virtual core::stringc  getFileDir (const core::stringc &filename) const =0 
