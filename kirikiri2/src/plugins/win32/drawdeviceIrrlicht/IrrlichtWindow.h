@@ -16,10 +16,10 @@ public:
 	static LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 
 protected:
-	HWND parent; //< 親のハンドル
-	HWND hwnd; //< 現在のハンドル
+	HWND parent; //< 親窓(TScrollBox)のハンドル
+	HWND hwnd;   //< 現在のハンドル
 	iTJSDispatch2 *window; //< オブジェクト情報の参照
-	
+
 	// イベント処理
 	static bool __stdcall messageHandler(void *userdata, tTVPWindowMessage *Message);
 
@@ -36,8 +36,20 @@ protected:
 	 * ウインドウを破棄
 	 */
 	void destroyWindow();
+
+	/**
+	 * 吉里吉里窓にメッセージを送付
+	 * @param message メッセージ
+	 * @param wParam WPARAM
+	 * @param lParam LPARAM
+	 * @param convPosition lParam のマウス座標値を親のものに変換する
+	 */
+	void sendMessage(UINT message, WPARAM wParam, LPARAM lParam, bool convPosition=false);
 	
 public:
+	bool transparentEvent; //< イベント透過
+	
+
 	/**
 	 * コンストラクタ
 	 */
@@ -78,6 +90,10 @@ public:
 		return IrrlichtBase::getLogger();
 	}
 	
+	irr::io::IFileSystem *getFileSystem() {
+		return IrrlichtBase::getFileSystem();
+	}
+
 	// -----------------------------------------------------------------------
 	// 固有メソッド
 	// -----------------------------------------------------------------------

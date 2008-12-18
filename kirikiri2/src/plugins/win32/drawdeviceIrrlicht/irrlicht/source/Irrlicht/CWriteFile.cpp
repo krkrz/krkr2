@@ -100,7 +100,7 @@ void CWriteFile::openFile(bool append)
 		return; 
 	}
 
-	File = TVPCreateIStream(ttstr(Filename.c_str()), append ? TJS_BS_APPEND : TJS_BS_READ);
+	File = TVPCreateIStream(ttstr(Filename.c_str()), append ? TJS_BS_APPEND : TJS_BS_WRITE);
 
 	if (File)
 	{
