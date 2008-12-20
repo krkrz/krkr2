@@ -1369,7 +1369,7 @@ NCB_IRR_METHOD2(logHint, void, log, (const wchar_t*,const wchar_t*hint,ELOG_LEVE
 NCB_REGISTER_SUBCLASS(IrrlichtDrawDevice) {
 	NCB_CONSTRUCTOR((int,int));
 	BASE_METHOD;
-	NCB_PROPERTY_RO2(interface, getDevice);
+	NCB_PROPERTY_RO(interface, getDevice);
 	NCB_PROPERTY2(zoomMode, getZoomMode, setZoomMode);
 	NCB_PROPERTY2(width, getWidth, setWidth);
 	NCB_PROPERTY2(height, getHeight, setHeight);
