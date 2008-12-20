@@ -113,11 +113,12 @@ class DrawDeviceWindow extends Window
 	 */
 	function DrawDeviceWindow() {
 		super.Window();
-		drawDevice = new Irrlicht.DrawDevice(WIDTH, HEIGHT);
-		//drawDevice.zoomMode = false;
-		
 		showScrollBars = false;
 		setInnerSize(WIDTH, HEIGHT);
+
+		// Irrlicht
+		drawDevice = new Irrlicht.DrawDevice(WIDTH, HEIGHT);
+		//drawDevice.zoomMode = false;
 		
 		// 1枚目のプライマリレイヤ
 		// 解像度半分
@@ -172,21 +173,6 @@ class DrawDeviceWindow extends Window
 	}
 };
 
-class IrrlichtLayer extends Layer{
-
-	var device;
-
-	function IrrlichtLayer(win, par, width, height) {
-		super.Layer(win, par);
-		device = new Irrlicht.SimpleDevice(win, width, height);
-		setSize(width, height);
-	}
-
-	function onPaint() {
-		super.onPaint(...);
-		device.updateToLayer(this);
-	}
-};
 
 /**
  * レイヤ描画のテスト。
@@ -194,20 +180,25 @@ class IrrlichtLayer extends Layer{
  */
 class SimpleDeviceWindow extends Window
 {
-	var base;
 	var initTrigger;
+	var device;
+	var base;
 
 	/**
 	 * コンストラクタ
 	 */
 	function SimpleDeviceWindow() {
 		super.Window();
-
 		showScrollBars = false;
 		setInnerSize(WIDTH, HEIGHT);
-		
+
+		// Irrlicht
+		device = new Irrlicht.SimpleDevice(this, WIDTH, HEIGHT);
+		add(device);
+
 		// プライマリレイヤ
-		base = new IrrlichtLayer(this, null, WIDTH, HEIGHT);
+		base = new Layer(this, null);
+		base.setSize(WIDTH, HEIGHT);
 		add(base);
 		
 		// 画面更新用トリガ
@@ -226,14 +217,72 @@ class SimpleDeviceWindow extends Window
 	}
 
 	function init() {
-		initData(base.device);
+		initData(device);
 	}
 	
 	// レイヤに対して描画更新する
 	function update(tick) {
-		base.update();
-		if (base.device.videoDriver) {
-			caption = "レイヤ描画のテスト:" + base.device.videoDriver.getFPS();
+		device.updateToLayer(base);
+		if (device.videoDriver) {
+			caption = "レイヤ描画のテスト:" + device.videoDriver.getFPS();
+		}
+	}
+
+	function onKeyDown(key, shift) {
+		if(key == VK_ESCAPE) {
+			close();
+		} else if(key == VK_TAB) {
+			fullScreen = !fullScreen;
+			initTrigger.trigger();
+		}
+	}
+};
+
+/**
+ * レイヤ描画のテスト。
+ * device.updateToLayer() でレイヤに対して描画結果がコピーされる。
+ */
+class WindowWindow extends Window
+{
+	var initTrigger;
+	var device;
+
+	/**
+	 * コンストラクタ
+	 */
+	function WindowWindow() {
+		super.Window();
+		showScrollBars = false;
+		setInnerSize(WIDTH, HEIGHT);
+
+		// Irrlicht
+		device = new Irrlicht.Window(this, 0, 0, WIDTH, HEIGHT);
+		add(device);
+		device.visible = true;
+		
+		// 画面更新用トリガ
+		initTrigger = new AsyncTrigger(init, "");
+		initTrigger.cached = true;
+		initTrigger.mode = atmExclusive;
+		initTrigger.trigger();
+
+		// 更新処理
+		System.addContinuousHandler(update);
+	}
+
+	function finalize() {
+		System.removeContinuousHandler(update);
+		invalidate initTrigger;
+	}
+
+	function init() {
+		initData(device);
+	}
+	
+	// レイヤに対して描画更新する
+	function update(tick) {
+		if (device.videoDriver) {
+			caption = "ウインドウ描画のテスト:" + device.videoDriver.getFPS();
 		}
 	}
 
@@ -276,6 +325,9 @@ win.visible = true;
 
 var win2 = new SimpleDeviceWindow();
 win2.visible = true;
+
+//var win3 = new WindowWindow();
+//win3.visible = true;
 
 //var capwin = new CaptureWindow(win.drawDevice);
 //capwin.visible = true;
