@@ -948,7 +948,7 @@ postInputEvent('onKeyUp',   %[key: VK_UP, shift: ssShift]);<r/>
 				の形式である必要があり、このメソッドに渡す際にその関数ポインタを整数型にキャストして渡す
 				必要があります。<r/>
 				　構造体 tTVPWindowMessage は tp_stub.h に定義されています。<r/>
-				　この関数が false を返すと吉里吉里本体側はそのウィンドウメッセージに関知しなくなります。<r/>
+				　この関数が true を返すと吉里吉里本体側はそのウィンドウメッセージに関知しなくなります。<r/>
 			</desc>
 		</argitem>
 		<argitem>
@@ -970,7 +970,7 @@ postInputEvent('onKeyUp',   %[key: VK_UP, shift: ssShift]);<r/>
 		TVP_WM_DETACH と TVP_WM_ATTACH という２つの重要なメッセージもトラップすることができ、
 		ウィンドウが再構築や破棄されるタイミングにおいて、子ウィンドウを取り外すというような
 		用途に使用できます。<r/>
-		　吉里吉里ソース配布パッケージ中の base/win32/plugin_kit/wmrdump に簡単な使用法の説明があります。<r/>
+		　吉里吉里ソース配布パッケージ中の src/plugins/win32/wmrdump に簡単な使用法の説明があります。<r/>
 	</desc>
 	<ref>Window.HWND</ref>
 </member>
