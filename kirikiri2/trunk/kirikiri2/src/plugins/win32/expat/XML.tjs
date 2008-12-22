@@ -147,6 +147,13 @@ class DOMNodeList {
         }
     }
 
+    function find(name) {
+      for (var i = 0; i < _array.count; i++)
+        if (_array[i].nodeName == name)
+          return _array[i];
+      return null;
+    }
+
     function add(obj) {
         _array.add(obj);
     }
@@ -217,11 +224,11 @@ class DOMNamedNodeMap {
 DOMNode.ELEMENT_NODE                = 1;
 DOMNode.ATTRIBUTE_NODE              = 2;
 DOMNode.TEXT_NODE                   = 3;
-DOMNode.CDATA_SECTION_NOE           = 4;
-DOMNode.ENTITY_REFERENCE_NOE        = 5;
+DOMNode.CDATA_SECTION_NODE           = 4;
+DOMNode.ENTITY_REFERENCE_NODE        = 5;
 DOMNode.ENTITY_NODE                 = 6;
 DOMNode.PROCESSING_INSTRUCTION_NODE = 7;
-DOMNode.COMMENT_NOE                 = 8;
+DOMNode.COMMENT_NODE                 = 8;
 DOMNode.DOCUMENT_NODE               = 9;
 DOMNode.DOCUMENT_TYPE_NODE          = 10;
 DOMNode.DOCUMENT_FRAGMENT_NODE      = 11;
