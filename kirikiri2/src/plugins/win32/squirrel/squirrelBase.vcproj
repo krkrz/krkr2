@@ -246,6 +246,14 @@
 				>
 			</File>
 			<File
+				RelativePath=".\sqbasic.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\sqobject.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\sqwrapper.cpp"
 				>
 			</File>
