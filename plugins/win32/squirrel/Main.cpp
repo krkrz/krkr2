@@ -319,7 +319,8 @@ extern void sqobject_fork(const char *filename);
 // Continuous Handelr 用
 class SQThreadContinuous : public tTVPContinuousEventCallbackIntf {
 public:
-	SQThreadContinuous() {}
+	SQThreadContinuous() {
+	}
 	virtual void TJS_INTF_METHOD OnContinuousCallback(tjs_uint64 tick) {
 		sqobject_main((int)tick);
 	}
@@ -736,6 +737,9 @@ static void PreRegistCallback()
 	// squirrel 登録
 	vm = sq_open(1024);
 
+	// デバッグ情報の有効化
+	sq_enabledebuginfo(vm, SQTrue);
+	
 	// 出力用
 	sq_setprintfunc(vm, PrintFunc);
 	// 例外通知を有効に
