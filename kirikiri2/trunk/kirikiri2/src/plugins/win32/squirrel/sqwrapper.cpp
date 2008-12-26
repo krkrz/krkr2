@@ -1,13 +1,11 @@
+/**
+ * Squirrel ←→ 吉里吉里ブリッジ処理
+ * 吉里吉里のオブジェクトは UserData として管理する
+ */
+
 #include <windows.h>
 #include "tp_stub.h"
-#include <stdio.h>
-
 #include <squirrel.h>
-#include <sqstdio.h>
-#include <sqstdmath.h>
-#include <sqstdstring.h>
-#include <sqstdaux.h>
-#include <sqstdblob.h>
 
 // 格納・取得用
 void sq_pushvariant(HSQUIRRELVM v, tTJSVariant &variant);
@@ -28,36 +26,7 @@ SQEXCEPTION(HSQUIRRELVM v)
 }
 
 /**
- * ログ出力用 for squirrel
- */
-static void PrintFunc(HSQUIRRELVM v, const SQChar* format, ...)
-{
-	va_list args;
-	va_start(args, format);
-	tjs_char msg[1024];
-	_vsnwprintf(msg, sizeof msg, format, args);
-	TVPAddLog(msg);
-	va_end(args);
-}
-
-/**
- * スレッド判定
- * @param th スレッド
- * @return th が現在実行中のスレッドなら true
- */
-static SQInteger isCurrentThread(HSQUIRRELVM vm)
-{
-	SQInteger nargs = sq_gettop(vm);
-	HSQUIRRELVM v;
-	if (nargs >= 2 && sq_gettype(vm,2) == OT_THREAD && SQ_SUCCEEDED(sq_getthread(vm,2,&v))) {
-		sq_pushbool(vm, vm == v ? 1 : 0);
-		return 1;
-	}
-	return sq_throwerror(vm, _SC("invalid param"));
-}
-
-/**
- * IDispatch 用 iTJSDispatch2 ラッパー
+ * HSQOBJECT 用 iTJSDispatch2 ラッパー
  */
 class iTJSDispatch2Wrapper : public tTJSDispatch
 {
@@ -262,19 +231,18 @@ static const SQChar *GetString(HSQUIRRELVM v, int idx)
 	return x;
 }
 
-// ユーザデータ取得用
-static SQUserPointer GetUserData(HSQUIRRELVM v, int idx,SQUserPointer tag=0)
+static const SQUserPointer TJSTYPETAG = (SQUserPointer)"TJSTYPETAG";
+
+// iTJSDispatch2* 取得用
+static iTJSDispatch2* GetDispatch(HSQUIRRELVM v, int idx)
 {
 	SQUserPointer otag;
 	SQUserPointer up;
-	if (SQ_SUCCEEDED(sq_getuserdata(v,idx,&up,&otag)) && tag == otag) {
-		return up;
+	if (SQ_SUCCEEDED(sq_getuserdata(v,idx,&up,&otag)) && otag == TJSTYPETAG) {
+		return *((iTJSDispatch2**)up);
 	}
 	return NULL;
 }
-
-
-static const SQUserPointer TJSTYPETAG = (SQUserPointer)"TJSTYPETAG";
 
 /**
  * iTJSDispatch2 用プロパティの取得
@@ -283,9 +251,8 @@ static const SQUserPointer TJSTYPETAG = (SQUserPointer)"TJSTYPETAG";
 static SQInteger
 get(HSQUIRRELVM v)
 {
-	SQUserPointer up = GetUserData(v, 1, TJSTYPETAG);
-	if (up) {
-		iTJSDispatch2 *dispatch	= *((iTJSDispatch2**)up);
+	iTJSDispatch2 *dispatch = GetDispatch(v, 1);
+	if (dispatch) {
 		tTJSVariant result;
 		if (SUCCEEDED(dispatch->PropGet(0, GetString(v, 2), NULL, &result, dispatch))) {
 			sq_pushvariant(v, result);
@@ -302,9 +269,8 @@ get(HSQUIRRELVM v)
 static SQInteger
 set(HSQUIRRELVM v)
 {
-	SQUserPointer up = GetUserData(v, 1, TJSTYPETAG);
-	if (up) {
-		iTJSDispatch2 *dispatch	= *((iTJSDispatch2**)up);
+	iTJSDispatch2 *dispatch	= GetDispatch(v, 1);
+	if (dispatch) {
 		tTJSVariant result;
 		sq_getvariant(v, 3, &result);
 		dispatch->PropSet(TJS_MEMBERENSURE, GetString(v, 2), NULL, &result, dispatch);
@@ -324,17 +290,12 @@ callConstructor(HSQUIRRELVM v)
 	// param2 オリジナルオブジェクト
 	// param3 ～ 本来の引数ぽ
 
-	SQUserPointer up = GetUserData(v, 1, TJSTYPETAG);
-	if (up) {
-		iTJSDispatch2 *dispatch	= *((iTJSDispatch2**)up);
-
-		// this を取得
-		iTJSDispatch2 *thisobj = NULL;
-		up = GetUserData(v, 2, TJSTYPETAG);
-		if (up) {
-			thisobj = *((iTJSDispatch2**)up);
-		}
+	iTJSDispatch2 *dispatch	= GetDispatch(v, 1);
+	if (dispatch) {
 		
+		// this を取得
+		iTJSDispatch2 *thisobj = GetDispatch(v, 2);
+
 		int argc = sq_gettop(v) - 2;
 		
 		// 引数変換
@@ -377,16 +338,11 @@ callMethod(HSQUIRRELVM v)
 	// param2 オリジナルオブジェクト
 	// param3 ～ 本来の引数ぽ
 
-	SQUserPointer up = GetUserData(v, 1, TJSTYPETAG);
-	if (up) {
-		iTJSDispatch2 *dispatch	= *((iTJSDispatch2**)up);
+	iTJSDispatch2 *dispatch	= GetDispatch(v, 1);
+	if (dispatch) {
 
 		// this を取得
-		iTJSDispatch2 *thisobj = NULL;
-		up = GetUserData(v, 2, TJSTYPETAG);
-		if (up) {
-			thisobj = *((iTJSDispatch2**)up);
-		}
+		iTJSDispatch2 *thisobj = GetDispatch(v, 2);
 		
 		int argc = sq_gettop(v) - 2;
 		
@@ -506,11 +462,9 @@ sq_getvariant(HSQUIRRELVM v, int idx, tTJSVariant *result)
 		case OT_STRING:  { const SQChar *c; sq_getstring(v, idx, &c); *result = c; } break;
 		case OT_USERDATA:
 			{
-				SQUserPointer data, typetag;
-				sq_getuserdata(v, idx, &data, &typetag);
-				if (data && typetag == TJSTYPETAG) {
+				iTJSDispatch2 *dispatch = GetDispatch(v, idx);
+				if (dispatch) {
 					// 元々吉里吉里側から渡されたデータ
-					iTJSDispatch2 *dispatch = *((iTJSDispatch2**)data);
 					*result = tTJSVariant(dispatch, dispatch);
 				} else {
 					result->Clear();
@@ -545,34 +499,4 @@ sq_getvariant(HSQUIRRELVM v, int idx, tTJSVariant *result)
 		return SQ_OK;
 	}
 	return SQ_ERROR;
-}
-
-// ----------------------------------------------------------------------------
-
-/**
- * squirrel 初期化処理
- */
-void
-squirrel_init(HSQUIRRELVM v)
-{
-	// 出力用
-	sq_setprintfunc(v, PrintFunc);
-
-	// 各種基本ライブラリの登録
-	sq_pushroottable(v);
-	sqstd_register_iolib(v);
-	sqstd_register_bloblib(v);
-	sqstd_register_mathlib(v);
-	sqstd_register_stringlib(v);
-	sqstd_seterrorhandlers(v);
-
-	// スレッド判定用メソッドをグローバル登録
-	sq_pushstring(v, _SC("isCurrentThread"), -1);
-	sq_newclosure(v, isCurrentThread, 0);
-	sq_createslot(v, -3); 
-
-	sq_pop(v, 1);
-
-	// 例外通知を有効に
-	sq_notifyallexceptions(v, SQTrue);
 }

@@ -17,11 +17,23 @@ static const char *copyright =
 
 static HSQUIRRELVM vm = NULL;
 
+/**
+ * ログ出力用 for squirrel
+ */
+static void PrintFunc(HSQUIRRELVM v, const SQChar* format, ...)
+{
+	va_list args;
+	va_start(args, format);
+	tjs_char msg[1024];
+	_vsnwprintf(msg, sizeof msg, format, args);
+	TVPAddLog(msg);
+	va_end(args);
+}
+
 //---------------------------------------------------------------------------
 // squirrel -> TJS2 ブリッジ用
 //---------------------------------------------------------------------------
 
-extern void squirrel_init(HSQUIRRELVM v);
 extern void sq_pushvariant(HSQUIRRELVM v, tTJSVariant &variant);
 extern SQRESULT sq_getvariant(HSQUIRRELVM v, int idx, tTJSVariant *result);
 extern void SQEXCEPTION(HSQUIRRELVM v);
@@ -297,22 +309,35 @@ getVariantString(tTJSVariant &var, IWriter *writer)
 }
 
 //---------------------------------------------------------------------------
+// sqyurrel スレッド処理用インターフェース
+//---------------------------------------------------------------------------
 
-/**
- * バッファにデータを書き込む
- * バイトコードファイルの読み込みに使う
- */
-static SQInteger
-buffer_write(SQUserPointer file, SQUserPointer buf, SQInteger size)
-{
-	IStream *out = (IStream*)file;
-	DWORD len;
-	if (out->Write(buf, size, &len) == S_OK) {
-		return len;
-	} else {
-		return -1;
+extern void sqobject_init(HSQUIRRELVM v);
+extern void sqobject_main(int tick);
+extern void sqobject_fork(const char *filename);
+
+// Continuous Handelr 用
+class SQThreadContinuous : public tTVPContinuousEventCallbackIntf {
+public:
+	SQThreadContinuous() {}
+	virtual void TJS_INTF_METHOD OnContinuousCallback(tjs_uint64 tick) {
+		sqobject_main((int)tick);
 	}
+};
+
+SQThreadContinuous sqthreadcont;
+
+void sqobject_start()
+{
+	TVPAddContinuousEventHook(&sqthreadcont);
 }
+
+void sqobject_stop()
+{
+	TVPRemoveContinuousEventHook(&sqthreadcont);
+}
+
+//---------------------------------------------------------------------------
 
 /**
  * Scripts クラスへの Squirrel 実行メソッドの追加
@@ -697,6 +722,8 @@ NCB_REGISTER_CLASS(SQFunction) {
 
 //---------------------------------------------------------------------------
 
+extern void sqbasic_init(HSQUIRRELVM v);
+
 /**
  * 登録処理前
  */
@@ -708,7 +735,15 @@ static void PreRegistCallback()
 	initReserved();
 	// squirrel 登録
 	vm = sq_open(1024);
-	squirrel_init(vm);
+
+	// 出力用
+	sq_setprintfunc(vm, PrintFunc);
+	// 例外通知を有効に
+	sq_notifyallexceptions(vm, SQTrue);
+
+	// 基本初期化
+	sqbasic_init(vm);
+	sqobject_init(vm);
 }
 
 /**
