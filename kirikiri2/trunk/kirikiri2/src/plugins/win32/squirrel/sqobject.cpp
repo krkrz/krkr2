@@ -49,7 +49,7 @@ extern void sqobject_stop();
  */
 static int getParamCount(HSQUIRRELVM v)
 {
-	return sq_gettop(v) - 2;
+	return sq_gettop(v) - 1;
 }
 
 /**
@@ -113,6 +113,7 @@ public:
 		clear();
 		this->v = v;
 		sq_getstackobj(v, idx, &obj);
+		sq_addref(v, &obj);
 	}
 	
 	// コンストラクタ
@@ -124,11 +125,11 @@ public:
 	SQObjectInfo(HSQUIRRELVM v, int idx) : v(v) {
 		sq_resetobject(&obj);
 		sq_getstackobj(v, idx, &obj);
+		sq_addref(v, &obj);
 	}
 
 	// コピーコンストラクタ
 	SQObjectInfo(const SQObjectInfo &orig) {
-		clear();
 		v   = orig.v;
 		obj = orig.obj;
 		if (v) {
@@ -164,7 +165,8 @@ public:
 
 	// スレッドを取得
 	operator HSQUIRRELVM() const {
-		return sq_isthread(obj) ? obj._unVal.pThread : NULL;
+		HSQUIRRELVM vm = sq_isthread(obj) ? obj._unVal.pThread : NULL;
+		return vm;
 	}
 	
 	// インスタンスユーザポインタを取得
@@ -332,13 +334,19 @@ protected:
 	 */
 	static SQInteger release(SQUserPointer up, SQInteger size) {
 		MyObject *self = (MyObject*)up;
+#if 0
 		self->~MyObject();
+#else
+		delete self;
+#endif
+		return SQ_OK;
 	}
 	
 	/**
 	 * オブジェクトのコンストラクタ
 	 */
 	static SQInteger constructor(HSQUIRRELVM v) {
+#if 0
 		MyObject *self = getObject(v, 1);
 		if (self) {
 			new (self) MyObject();
@@ -346,6 +354,10 @@ protected:
 		} else {
 			return sq_throwerror(v, _SC("can't new object"));
 		}
+#else
+	sq_setinstanceup(v, 1, new MyObject());
+	sq_setreleasehook(v, 1, release);
+#endif
 		return SQ_OK;
 	}
 
@@ -496,7 +508,8 @@ public:
 		sq_pushstring(v, OBJECTNAME, -1);
 		sq_newclass(v, false);
 		sq_settypetag(v, -1, OBJTYPETAG);
-		sq_setclassudsize(v, -1, sizeof MyObject);
+		//sq_setclassudsize(v, -1, sizeof MyObject);
+		REGISTMETHOD(constructor);
 		REGISTMETHOD(_set);
 		REGISTMETHOD(_get);
 		REGISTMETHOD(hasSetProp);
@@ -630,7 +643,7 @@ protected:
 		_clearWait();
 		_waitResult.clear();
 		int max = sq_gettop(v);
-		for (int i=2;i<max;i++) {
+		for (int i=2;i<=max;i++) {
 			switch (sq_gettype(v, 2)) {
 			case OT_INTEGER:
 			case OT_FLOAT:
@@ -673,15 +686,16 @@ protected:
 	SQInteger _exec(HSQUIRRELVM v) {
 		_clear();
 
-		sq_newthread(v, 1024);
+		HSQUIRRELVM testVM = sq_newthread(v, 1024);
 		_thread.getStack(v, -1);
 		sq_pop(v, 1);
 		
 		// スレッド先頭にスクリプトをロード
 		if (sq_gettype(v, 2) == OT_STRING) {
-			if (!SQ_SUCCEEDED(sqstd_loadfile(_thread, getString(v, 2), SQTrue))) {
+			SQInteger ret;
+			if (!SQ_SUCCEEDED(ret = sqstd_loadfile(_thread, getString(v, 2), SQTrue))) {
 				_clear();
-				return sq_throwerror(v, _SC("can't start thread"));
+				return sq_throwerror(v, _SC("can't load to thread"));
 			}
 		} else {
 			sq_move(_thread, v, 2);
@@ -784,13 +798,19 @@ protected:
 	 */
 	static SQInteger release(SQUserPointer up, SQInteger size) {
 		MyThread *self = (MyThread*)up;
+#if 0
 		self->~MyThread();
+#else
+		delete self;
+#endif
+		return SQ_OK;
 	}
 	
 	/**
 	 * オブジェクトのコンストラクタ
 	 */
 	static SQInteger constructor(HSQUIRRELVM v) {
+#if 0
 		MyThread *self = getThread(v, 1);
 		if (self) {
 			new (self) MyThread();
@@ -798,6 +818,11 @@ protected:
 		} else {
 			return sq_throwerror(v, _SC("can't new object"));
 		}
+#else
+		MyThread *self = new MyThread();
+		sq_setinstanceup(v, 1, self);
+		sq_setreleasehook(v, 1, release);
+#endif
 		if (getParamCount(v) > 0) {
 			return self->_exec(v);
 		}
@@ -908,11 +933,12 @@ public:
 		sq_get(v,-3);
 		sq_newclass(v, true); // 継承する
 		sq_settypetag(v, -1, THREADTYPETAG);
-		sq_setclassudsize(v, -1, sizeof MyThread);
+		//sq_setclassudsize(v, -1, sizeof MyThread);
 		REGISTENUM(THREAD_STOP);
 		REGISTENUM(THREAD_RUN);
 		REGISTENUM(THREAD_WAIT);
 		REGISTENUM(THREAD_END);
+		REGISTMETHOD(constructor);
 		REGISTMETHOD(getCurrentTick);
 		REGISTMETHOD(getStatus);
 		REGISTMETHOD(exec);
@@ -989,6 +1015,7 @@ protected:
 		while (i != threadList.end()) {
 			i->push(v);
 			sq_arrayappend(v, -2);
+			i++;
 		}
 		return 1;
 	}
