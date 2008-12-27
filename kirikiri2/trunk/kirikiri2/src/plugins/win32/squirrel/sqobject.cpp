@@ -8,12 +8,17 @@
 #include <new>
 #include <vector>
 
+// ログ出力用
+extern void printFunc(HSQUIRRELVM v, const SQChar* format, ...);
+
 #include <tchar.h>
 #if _UNICODE
 typedef std::wstring tstring;
 #else
 typedef std::string tstring;
 #endif
+
+//#define USEUD
 
 // ループ実行開始
 extern void sqobject_start();
@@ -92,6 +97,9 @@ static const SQUserPointer THREADTYPETAG = (SQUserPointer)"THREADTYPETAG";
 class MyObject;
 class MyThread;
 
+/**
+ * squirrel オブジェクト保持用クラス
+ */
 class SQObjectInfo {
 
 protected:
@@ -322,10 +330,18 @@ protected:
 	 */
 	static MyObject *getObject(HSQUIRRELVM v, int idx) {
 		SQUserPointer up;
+#ifdef USEUD
+		SQUserPointer typetag;
+		if (SQ_SUCCEEDED(sq_getuserdata(v, idx, &up, &typetag)) &&
+			(typetag == THREADTYPETAG || typetag == OBJTYPETAG)) {
+			return (MyObject*)up;
+		}
+#else
 		if (SQ_SUCCEEDED(sq_getinstanceup(v, idx, &up, THREADTYPETAG)) ||
 			SQ_SUCCEEDED(sq_getinstanceup(v, idx, &up, OBJTYPETAG))) {
 			return (MyObject*)up;
 		}
+#endif
 		return NULL;
 	}
 
@@ -334,31 +350,37 @@ protected:
 	 */
 	static SQInteger release(SQUserPointer up, SQInteger size) {
 		MyObject *self = (MyObject*)up;
-#if 0
+#ifdef USEUD
 		self->~MyObject();
 #else
 		delete self;
 #endif
 		return SQ_OK;
 	}
+
+	static SQInteger ERROR_CREATE(HSQUIRRELVM v) {
+		return sq_throwerror(v, _SC("can't create native instance"));
+	}
 	
 	/**
 	 * オブジェクトのコンストラクタ
 	 */
 	static SQInteger constructor(HSQUIRRELVM v) {
-#if 0
+		SQInteger result = SQ_OK;
+#ifdef USEUD
 		MyObject *self = getObject(v, 1);
 		if (self) {
 			new (self) MyObject();
-			sq_setreleasehook(v, 1, release);
+			result = sq_setreleasehook(v, 1, release);
 		} else {
-			return sq_throwerror(v, _SC("can't new object"));
+			result = ERROR_CREATE(v);
 		}
 #else
-	sq_setinstanceup(v, 1, new MyObject());
-	sq_setreleasehook(v, 1, release);
+		if (SQ_SUCCEEDED(result = sq_setinstanceup(v, 1, new MyObject()))) {;
+			sq_setreleasehook(v, 1, release);
+		}
 #endif
-		return SQ_OK;
+		return result;
 	}
 
 	/**
@@ -367,6 +389,7 @@ protected:
 	 * @return setプロパティが存在したら true
 	 */
 	static SQInteger hasSetProp(HSQUIRRELVM v) {
+		SQInteger result = SQ_OK;
 		SQBool ret = SQFalse;
 		if (getParamCount(v) >= 2) {
 			const SQChar *name = getString(v, 2);
@@ -376,12 +399,12 @@ protected:
 				name2 += (name + 1);
 				sq_push(v, 1); // object
 				sq_pushstring(v, name2.c_str(), -1);
-				if (SQ_SUCCEEDED(sq_get(v,-2))) {
+				if (SQ_SUCCEEDED(result = sq_get(v,-2))) {
 					sq_pop(v,1);
 					ret = SQTrue;
 				} else {
 					sq_pushstring(v, name, -1);
-					if (SQ_SUCCEEDED(sq_get(v,-2))) {
+					if (SQ_SUCCEEDED(result = sq_get(v,-2))) {
 						sq_pop(v,1);
 						ret = SQTrue;
 					}
@@ -389,16 +412,25 @@ protected:
 				sq_pop(v,1); // object
 			}
 		}
-		sq_pushbool(v, ret);
-		return 1;
+		if (SQ_SUCCEEDED(result)) {
+			sq_pushbool(v, ret);
+			return 1;
+		} else {
+			return result;
+		}
 	}
 
+	static SQInteger ERROR_NOMEMBER(HSQUIRRELVM v) {
+		return sq_throwerror(v, _SC("no such member"));
+	}
+	
 	/**
 	 * プロパティから値を取得
 	 * @param name プロパティ名
 	 * @return プロパティ値
 	 */
 	static SQInteger _get(HSQUIRRELVM v) {
+		SQInteger result = SQ_OK;
 		const SQChar *name = getString(v, 2);
 		if (name && *name) {
 			tstring name2 = _SC("get");
@@ -406,9 +438,9 @@ protected:
 			name2 += (name + 1);
 			sq_push(v, 1); // self
 			sq_pushstring(v, name2.c_str(), -1);
-			if (SQ_SUCCEEDED(sq_get(v,-2))) {
+			if (SQ_SUCCEEDED(result = sq_get(v,-2))) {
 				sq_push(v, 1); //  self;
-				if (SQ_SUCCEEDED(sq_call(v,1,SQTrue,SQTrue))) {
+				if (SQ_SUCCEEDED(result = sq_call(v,1,SQTrue,SQTrue))) {
 					//printf("呼び出し成功:%s\n", name);
 					sq_remove(v, -2); // func
 					sq_remove(v, -2); // self
@@ -422,7 +454,7 @@ protected:
 				// グローバル変数の参照
 				sq_pushroottable(v);
 				sq_pushstring(v, name, -1);
-				if (SQ_SUCCEEDED(sq_get(v,-2))) {
+				if (SQ_SUCCEEDED(result = sq_get(v,-2))) {
 					sq_remove(v, -2); // root
 					return 1;
 				} else {
@@ -430,9 +462,8 @@ protected:
 				}
 			}
 		}
-		tstring msg = _SC("no such set property:");
-		msg += name;
-		return sq_throwerror(v, msg.c_str());
+		//return result;
+		return ERROR_NOMEMBER(v);
 	}
 	
 	/**
@@ -441,6 +472,7 @@ protected:
 	 * @param value プロパティ値
 	 */
 	static SQInteger _set(HSQUIRRELVM v) {
+		SQInteger result = SQ_OK;
 		const SQChar *name = getString(v, 2);
 		if (name && *name) {
 			//printf("_set呼び出し:%s\n", name);
@@ -450,10 +482,10 @@ protected:
 
 			sq_push(v, 1); // self
 			sq_pushstring(v, name2.c_str(), -1);
-			if (SQ_SUCCEEDED(sq_get(v,-2))) {
+			if (SQ_SUCCEEDED(result = sq_get(v,-2))) {
 				sq_push(v, 1); // self
 				sq_push(v, 3); // value
-				if (SQ_SUCCEEDED(sq_call(v,2,SQFalse,SQTrue))) {
+				if (SQ_SUCCEEDED(result = sq_call(v,2,SQFalse,SQTrue))) {
 					//printf("呼び出し成功:%s\n", name);
 					sq_pop(v,2); // func, self
 					return SQ_OK;
@@ -462,10 +494,8 @@ protected:
 				}
 			}
 		}
-		//printf("呼び出し失敗:%s\n", name);
-		tstring msg = _SC("no such set property:");
-		msg += name;
-		return sq_throwerror(v, msg.c_str());
+		//return result;
+		return ERROR_NOMEMBER(v);
 	}
 
 	static SQInteger ERROR_BADINSTANCE(HSQUIRRELVM v) {
@@ -508,7 +538,9 @@ public:
 		sq_pushstring(v, OBJECTNAME, -1);
 		sq_newclass(v, false);
 		sq_settypetag(v, -1, OBJTYPETAG);
-		//sq_setclassudsize(v, -1, sizeof MyObject);
+#ifdef USEUD
+		sq_setclassudsize(v, -1, sizeof MyObject);
+#endif
 		REGISTMETHOD(constructor);
 		REGISTMETHOD(_set);
 		REGISTMETHOD(_get);
@@ -639,7 +671,6 @@ protected:
 	 * 待ち登録
 	 */
 	SQInteger _wait(HSQUIRRELVM v) {
-		bool isWait = false;
 		_clearWait();
 		_waitResult.clear();
 		int max = sq_gettop(v);
@@ -655,7 +686,6 @@ protected:
 						if (_waitTimeout < 0  || _waitTimeout > timeout) {
 							_waitResult.getStack(v, i);
 							_waitTimeout = timeout;
-							isWait = true;
 						}
 					}
 				}
@@ -664,11 +694,10 @@ protected:
 			case OT_INSTANCE:
 				// 文字列またはインスタンスの場合は待ちリストに登録
 				_waitList.push_back(SQObjectInfo(v,i));
-				isWait = true;
 				break;
 			}
 		}
-		return isWait ? sq_suspendvm(v) : SQ_OK;
+		return sq_suspendvm(v);
 	}
 
 	/**
@@ -692,10 +721,10 @@ protected:
 		
 		// スレッド先頭にスクリプトをロード
 		if (sq_gettype(v, 2) == OT_STRING) {
-			SQInteger ret;
-			if (!SQ_SUCCEEDED(ret = sqstd_loadfile(_thread, getString(v, 2), SQTrue))) {
+			SQInteger result;
+			if (SQ_FAILED(result = sqstd_loadfile(_thread, getString(v, 2), SQTrue))) {
 				_clear();
-				return sq_throwerror(v, _SC("can't load to thread"));
+				return result;
 			}
 		} else {
 			sq_move(_thread, v, 2);
@@ -764,16 +793,26 @@ protected:
 
 		// スレッド実行
 		if (getStatus() == THREAD_RUN) {
-			SQInteger ret;
+			SQInteger result;
 			if (sq_getvmstate(_thread) == SQ_VMSTATE_SUSPENDED) {
 				_waitResult.push(_thread);
 				_waitResult.clear();
-				ret = sq_wakeupvm(_thread, SQTrue, SQFalse, SQTrue);
+				result = sq_wakeupvm(_thread, SQTrue, SQFalse, SQTrue);
 			} else {
 				sq_pushroottable(_thread);
-				ret = sq_call(_thread, 1, SQFalse, SQTrue);
+				result = sq_call(_thread, 1, SQFalse, SQTrue);
 			}
-			if (SQ_FAILED(ret) || sq_getvmstate(_thread) == SQ_VMSTATE_IDLE) {
+			if (SQ_FAILED(result)) {
+				sq_getlasterror(_thread);
+				const SQChar *str;
+				if (SQ_SUCCEEDED(sq_getstring(_thread, -1, &str))) {
+					printFunc(_thread, str);
+				} else {
+					printFunc(_thread, _SC("failed to run by unknown reason"));
+				}
+				sq_pop(_thread, 1);
+				_exit();
+			} else  if (sq_getvmstate(_thread) == SQ_VMSTATE_IDLE) {
 				_exit();
 			}
 		}
@@ -787,9 +826,17 @@ protected:
 	 */
 	static MyThread *getThread(HSQUIRRELVM v, int idx) {
 		SQUserPointer up;
+#ifdef USEUD
+		SQUserPointer typetag;
+		if (SQ_SUCCEEDED(sq_getuserdata(v, idx, &up, &typetag)) &&
+			(typetag == THREADTYPETAG))) {
+			return (MyObject*)up;
+		}
+#else
 		if (SQ_SUCCEEDED(sq_getinstanceup(v, idx, &up, THREADTYPETAG))) {
 			return (MyThread*)up;
 		}
+#endif
 		return NULL;
 	}
 
@@ -798,7 +845,7 @@ protected:
 	 */
 	static SQInteger release(SQUserPointer up, SQInteger size) {
 		MyThread *self = (MyThread*)up;
-#if 0
+#ifdef USEUD
 		self->~MyThread();
 #else
 		delete self;
@@ -810,23 +857,27 @@ protected:
 	 * オブジェクトのコンストラクタ
 	 */
 	static SQInteger constructor(HSQUIRRELVM v) {
-#if 0
+		SQInteger result = SQ_OK;
+#ifdef USEUD
 		MyThread *self = getThread(v, 1);
 		if (self) {
 			new (self) MyThread();
-			sq_setreleasehook(v, 1, release);
+			result = sq_setreleasehook(v, 1, release);
 		} else {
-			return sq_throwerror(v, _SC("can't new object"));
+			result = ERROR_CREATE(v);
 		}
 #else
 		MyThread *self = new MyThread();
-		sq_setinstanceup(v, 1, self);
-		sq_setreleasehook(v, 1, release);
-#endif
-		if (getParamCount(v) > 0) {
-			return self->_exec(v);
+		if (SQ_SUCCEEDED(result = sq_setinstanceup(v, 1, self))) {
+			sq_setreleasehook(v, 1, release);
 		}
-		return SQ_OK;
+#endif
+		if (SQ_SUCCEEDED(result)) {
+			if (getParamCount(v) > 0) {
+				result = self->_exec(v);
+			}
+		}
+		return result;
 	}
 
 	// ------------------------------------------------------
@@ -933,7 +984,9 @@ public:
 		sq_get(v,-3);
 		sq_newclass(v, true); // 継承する
 		sq_settypetag(v, -1, THREADTYPETAG);
-		//sq_setclassudsize(v, -1, sizeof MyThread);
+#ifdef USEUD
+		sq_setclassudsize(v, -1, sizeof MyThread);
+#endif
 		REGISTENUM(THREAD_STOP);
 		REGISTENUM(THREAD_RUN);
 		REGISTENUM(THREAD_WAIT);
@@ -1028,12 +1081,13 @@ protected:
 	 */
 	static SQInteger global_fork(HSQUIRRELVM v) {
 		//dm("スレッドを生成!");
+		SQInteger result;
 		sq_pushroottable(v); // root
 		sq_pushstring(v, THREADNAME, -1);
-		if (SQ_SUCCEEDED(sq_get(v,-2))) { // class
+		if (SQ_SUCCEEDED(result = sq_get(v,-2))) { // class
 			sq_pushroottable(v); // 引数:self
 			sq_push(v, 2);       // 引数:func
-			if (SQ_SUCCEEDED(sq_call(v, 2, SQTrue, SQTrue))) { // コンストラクタ呼び出し
+			if (SQ_SUCCEEDED(result = sq_call(v, 2, SQTrue, SQTrue))) { // コンストラクタ呼び出し
 				sq_remove(v, -2); // class, root
 				return 1;
 			} else {
@@ -1041,7 +1095,7 @@ protected:
 			}
 		}
 		sq_pop(v,1); // root
-		return sq_throwerror(v, _SC("fork failed"));
+		return result;
 	}
 
 	/**
