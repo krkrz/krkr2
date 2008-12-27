@@ -17,16 +17,18 @@ static const char *copyright =
 
 static HSQUIRRELVM vm = NULL;
 
+#include <tchar.h>
+
 /**
  * ログ出力用 for squirrel
  */
-static void PrintFunc(HSQUIRRELVM v, const SQChar* format, ...)
+void printFunc(HSQUIRRELVM v, const SQChar* format, ...)
 {
 	va_list args;
 	va_start(args, format);
-	tjs_char msg[1024];
-	_vsnwprintf(msg, sizeof msg, format, args);
-	TVPAddLog(msg);
+	TCHAR msg[1024];
+	_vsntprintf_s(msg, 1024, _TRUNCATE, format, args);
+	TVPAddLog(ttstr(msg));
 	va_end(args);
 }
 
@@ -741,7 +743,7 @@ static void PreRegistCallback()
 	sq_enabledebuginfo(vm, SQTrue);
 	
 	// 出力用
-	sq_setprintfunc(vm, PrintFunc);
+	sq_setprintfunc(vm, printFunc);
 	// 例外通知を有効に
 	sq_notifyallexceptions(vm, SQTrue);
 
