@@ -244,6 +244,11 @@ static iTJSDispatch2* GetDispatch(HSQUIRRELVM v, int idx)
 	return NULL;
 }
 
+static SQInteger ERROR_NOMEMBER(HSQUIRRELVM v)
+{
+	return sq_throwerror(v, _SC("no such member"));
+}
+
 /**
  * iTJSDispatch2 用プロパティの取得
  * @param v squirrel VM
@@ -259,7 +264,7 @@ get(HSQUIRRELVM v)
 			return 1;
 		}
 	}
-	return sq_throwerror(v, _SC("no such member"));
+	return ERROR_NOMEMBER(v);
 }
 
 /**
@@ -276,7 +281,12 @@ set(HSQUIRRELVM v)
 		dispatch->PropSet(TJS_MEMBERENSURE, GetString(v, 2), NULL, &result, dispatch);
 		return SQ_OK;
 	}
-	return sq_throwerror(v, _SC("no such member"));
+	return ERROR_NOMEMBER(v);
+}
+
+static SQInteger ERROR_CREATE(HSQUIRRELVM v)
+{
+	return sq_throwerror(v, _SC("invalid create"));
 }
 
 /**
@@ -313,7 +323,7 @@ callConstructor(HSQUIRRELVM v)
 			instance->Release();
 			ret = 1;
 		} else {
-			ret = sq_throwerror(v, _SC("invalid create"));
+			ret = ERROR_CREATE(v);
 		}
 			
 		// 引数破棄
@@ -324,6 +334,11 @@ callConstructor(HSQUIRRELVM v)
 
 		return ret;
 	}
+	return ERROR_CREATE(v);
+}
+
+static SQInteger ERROR_CALL(HSQUIRRELVM v)
+{
 	return sq_throwerror(v, _SC("invalid call"));
 }
 
@@ -364,7 +379,7 @@ callMethod(HSQUIRRELVM v)
 				ret = 0;
 			}
 		} else {
-			ret = sq_throwerror(v, _SC("invalid call"));
+			ret = ERROR_CALL(v);
 		}
 			
 		// 引数破棄
@@ -375,7 +390,7 @@ callMethod(HSQUIRRELVM v)
 
 		return ret;
 	}
-	return sq_throwerror(v, _SC("invalid call"));
+	return ERROR_CALL(v);
 }
 
 /**
