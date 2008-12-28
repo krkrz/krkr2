@@ -245,17 +245,29 @@ static void getDictString(iTJSDispatch2 *dict, IWriter *writer)
 // Array クラスメンバ
 static iTJSDispatch2 *ArrayCountProp   = NULL;   // Array.count
 
+// 配列の数を取得
+tjs_int getArrayCount(iTJSDispatch2 *array) {
+	tTJSVariant result;
+	if (TJS_SUCCEEDED(ArrayCountProp->PropGet(0, NULL, NULL, &result, array))) {
+		return (tjs_int)result.AsInteger();
+	}
+	return 0;
+}
+
+// 配列から文字列を取得
+void getArrayString(iTJSDispatch2 *array, int idx, ttstr &store)
+{
+	tTJSVariant result;
+	if (array->PropGetByNum(TJS_IGNOREPROP, idx, &result, array) == TJS_S_OK) {
+		store = result.GetString();
+	}
+}
+
 static void getArrayString(iTJSDispatch2 *array, IWriter *writer)
 {
 	writer->write((tjs_char)'[');
 	//writer->addIndent();
-	tjs_int count = 0;
-	{
-		tTJSVariant result;
-		if (TJS_SUCCEEDED(ArrayCountProp->PropGet(0, NULL, NULL, &result, array))) {
-			count = (tjs_int)result.AsInteger();
-		}
-	}
+	tjs_int count = getArrayCount(array);
 	for (tjs_int i=0; i<count; i++) {
 		if (i != 0) {
 			writer->write((tjs_char)',');
@@ -339,6 +351,13 @@ void sqobject_stop()
 {
 	TVPRemoveContinuousEventHook(&sqthreadcont);
 }
+
+//---------------------------------------------------------------------------
+// squirrel tjsクラス登録処理用
+//---------------------------------------------------------------------------
+
+extern void sqtjsobj_init();
+extern void sqtjsobj_regist(HSQUIRRELVM v, const tjs_char *className, const tjs_char *tjsClassName, iTJSDispatch2 *methods);
 
 //---------------------------------------------------------------------------
 
@@ -565,6 +584,25 @@ public:
 		unregistglobal(vm, param[0]->GetString());
 		return TJS_S_OK;
 	}
+
+	/**
+	 * Squirrel のグローバル空間に TJS2のクラスをクラスとして登録
+	 * @param className squirrel側のクラス名
+	 * @param tjsClassName TJS側のクラス名
+	 * @param methods メソッド/プロパティ情報の辞書 name=value
+	 * value=0:メソッド value=1:GETのみプロパティ value=2:SETのみプロパティ value=3:プロパティ
+	 */
+	static tjs_error TJS_INTF_METHOD registClass(tTJSVariant *result,
+												 tjs_int numparams,
+												 tTJSVariant **param,
+												 iTJSDispatch2 *objthis) {
+		if (numparams < 3) return TJS_E_BADPARAMCOUNT;
+		sqtjsobj_regist(vm,
+			param[0]->GetString(), // name
+			param[1]->GetString(), // classname
+			param[2]->AsObjectNoAddRef()); // methods
+		return TJS_S_OK;
+	}
 };
 
 NCB_ATTACH_CLASS(ScriptsSquirrel, Scripts) {
@@ -577,6 +615,7 @@ NCB_ATTACH_CLASS(ScriptsSquirrel, Scripts) {
 	RawCallback("unregistSQ",    &ScriptsSquirrel::unregist,    TJS_STATICMEMBER);
 	RawCallback("compileSQ",        &ScriptsSquirrel::compile,        TJS_STATICMEMBER);
 	RawCallback("compileStorageSQ", &ScriptsSquirrel::compileStorage, TJS_STATICMEMBER);
+	RawCallback("registClassSQ", &ScriptsSquirrel::registClass, TJS_STATICMEMBER);
 };
 
 /**
@@ -750,6 +789,7 @@ static void PreRegistCallback()
 	// 基本初期化
 	sqbasic_init(vm);
 	sqobject_init(vm);
+	sqtjsobj_init();
 }
 
 /**

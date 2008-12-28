@@ -7,6 +7,12 @@
 #include "tp_stub.h"
 #include <squirrel.h>
 
+// 外部参照
+extern const SQChar *getString(HSQUIRRELVM v, int idx);
+extern SQInteger ERROR_CREATE(HSQUIRRELVM v);
+extern SQInteger ERROR_NOMEMBER(HSQUIRRELVM v);
+extern SQInteger ERROR_CALL(HSQUIRRELVM v);
+
 // 格納・取得用
 void sq_pushvariant(HSQUIRRELVM v, tTJSVariant &variant);
 SQRESULT sq_getvariant(HSQUIRRELVM v, int idx, tTJSVariant *result);
@@ -223,14 +229,6 @@ tjsDispatchRelease(SQUserPointer up, SQInteger size)
 	return 1;
 }
 
-// 文字列取得用
-static const SQChar *GetString(HSQUIRRELVM v, int idx)
-{
-	const SQChar *x = NULL;
-	sq_getstring(v,idx,&x);
-	return x;
-}
-
 static const SQUserPointer TJSTYPETAG = (SQUserPointer)"TJSTYPETAG";
 
 // iTJSDispatch2* 取得用
@@ -244,11 +242,6 @@ static iTJSDispatch2* GetDispatch(HSQUIRRELVM v, int idx)
 	return NULL;
 }
 
-static SQInteger ERROR_NOMEMBER(HSQUIRRELVM v)
-{
-	return sq_throwerror(v, _SC("no such member"));
-}
-
 /**
  * iTJSDispatch2 用プロパティの取得
  * @param v squirrel VM
@@ -259,7 +252,7 @@ get(HSQUIRRELVM v)
 	iTJSDispatch2 *dispatch = GetDispatch(v, 1);
 	if (dispatch) {
 		tTJSVariant result;
-		if (SUCCEEDED(dispatch->PropGet(0, GetString(v, 2), NULL, &result, dispatch))) {
+		if (SUCCEEDED(dispatch->PropGet(0, getString(v, 2), NULL, &result, dispatch))) {
 			sq_pushvariant(v, result);
 			return 1;
 		}
@@ -278,15 +271,10 @@ set(HSQUIRRELVM v)
 	if (dispatch) {
 		tTJSVariant result;
 		sq_getvariant(v, 3, &result);
-		dispatch->PropSet(TJS_MEMBERENSURE, GetString(v, 2), NULL, &result, dispatch);
+		dispatch->PropSet(TJS_MEMBERENSURE, getString(v, 2), NULL, &result, dispatch);
 		return SQ_OK;
 	}
 	return ERROR_NOMEMBER(v);
-}
-
-static SQInteger ERROR_CREATE(HSQUIRRELVM v)
-{
-	return sq_throwerror(v, _SC("invalid create"));
 }
 
 /**
@@ -335,11 +323,6 @@ callConstructor(HSQUIRRELVM v)
 		return ret;
 	}
 	return ERROR_CREATE(v);
-}
-
-static SQInteger ERROR_CALL(HSQUIRRELVM v)
-{
-	return sq_throwerror(v, _SC("invalid call"));
 }
 
 /**
