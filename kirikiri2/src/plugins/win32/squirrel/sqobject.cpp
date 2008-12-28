@@ -196,6 +196,20 @@ public:
 	}
 
 	// ---------------------------------------------------
+	// delegate 処理用
+	// ---------------------------------------------------
+
+	// delegate として機能するかどうか
+	bool isDelegate() {
+		return v && (sq_isinstance(obj) || sq_istable(obj));
+	}
+
+	// bindenv させるかどうか
+	bool isBindDelegate() {
+		return v && (sq_isinstance(obj));
+	}
+
+	// ---------------------------------------------------
 	// オブジェクト取得
 	// ---------------------------------------------------
 
@@ -273,6 +287,8 @@ class MyObject {
 protected:
 	// このオブジェクトを待ってるスレッドの一覧
 	std::vector<MyThread*> _waitThreadList;
+	// delegate
+	SQObjectInfo delegate;
 
 public:
 	/**
@@ -376,11 +392,127 @@ protected:
 			result = ERROR_CREATE(v);
 		}
 #else
-		if (SQ_SUCCEEDED(result = sq_setinstanceup(v, 1, new MyObject()))) {;
+		MyObject *self = new MyObject();
+		if (SQ_SUCCEEDED(result = sq_setinstanceup(v, 1, self))) {;
 			sq_setreleasehook(v, 1, release);
 		}
 #endif
+		if (SQ_SUCCEEDED(result)) {
+			if (getParamCount(v) > 0) {
+				self->delegate.getStack(v, 2);
+			}
+		}
 		return result;
+	}
+
+	static SQInteger ERROR_NOMEMBER(HSQUIRRELVM v) {
+		return sq_throwerror(v, _SC("no such member"));
+	}
+
+	static bool isClosure(SQObjectType type) {
+		return type == OT_CLOSURE || type == OT_NATIVECLOSURE;
+	}
+	
+	/**
+	 * プロパティから値を取得
+	 * @param name プロパティ名
+	 * @return プロパティ値
+	 */
+	static SQInteger _get(HSQUIRRELVM v) {
+		SQInteger result = SQ_OK;
+		const SQChar *name = getString(v, 2);
+		if (name && *name) {
+
+			// delegateの参照
+			MyObject *self = getObject(v, 1);
+			if (self && self->delegate.isDelegate()) {
+				self->delegate.push(v);
+				sq_pushstring(v, name, -1);
+				if (SQ_SUCCEEDED(result = sq_get(v,-2))) {
+					// メソッドの場合は束縛処理
+					if (isClosure(sq_gettype(v,-1)) && self->delegate.isBindDelegate()) {
+						self->delegate.push(v);
+						if (SQ_SUCCEEDED(sq_bindenv(v, -2))) {
+							sq_remove(v, -2); // 元のクロージャ
+						}
+					}
+					sq_remove(v, -2);
+					return 1;
+				} else {
+					sq_pop(v,1); // delegate
+				}
+			}
+			
+			// getter を探してアクセス
+			tstring name2 = _SC("get");
+			name2 += toupper(*name);
+			name2 += (name + 1);
+			sq_push(v, 1); // self
+			sq_pushstring(v, name2.c_str(), -1);
+			if (SQ_SUCCEEDED(result = sq_get(v,-2))) {
+				sq_push(v, 1); //  self;
+				if (SQ_SUCCEEDED(result = sq_call(v,1,SQTrue,SQTrue))) {
+					//printf("呼び出し成功:%s\n", name);
+					sq_remove(v, -2); // func
+					sq_remove(v, -2); // self
+					return 1;
+				} else {
+					sq_pop(v,2); // func, self
+				}
+			} else {
+				sq_pop(v, 1); // self
+			}
+
+		}
+		//return result;
+		return ERROR_NOMEMBER(v);
+	}
+	
+	/**
+	 * プロパティに値を設定
+	 * @param name プロパティ名
+	 * @param value プロパティ値
+	 */
+	static SQInteger _set(HSQUIRRELVM v) {
+		SQInteger result = SQ_OK;
+		const SQChar *name = getString(v, 2);
+		if (name && *name) {
+
+			// delegateの参照
+			MyObject *self = getObject(v, 1);
+			if (self && self->delegate.isDelegate()) {
+				self->delegate.push(v);
+				sq_push(v, 2); // name
+				sq_push(v, 3); // value
+				if (SQ_SUCCEEDED(result = sq_set(v,-3))) {
+					sq_pop(v,1); // delegate
+					return SQ_OK;
+				} else {
+					sq_pop(v,1); // delegate
+				}
+			}
+
+			// setter を探してアクセス
+			tstring name2 = _SC("set");
+			name2 += toupper(*name);
+			name2 += (name + 1);
+			sq_push(v, 1); // self
+			sq_pushstring(v, name2.c_str(), -1);
+			if (SQ_SUCCEEDED(result = sq_get(v,-2))) {
+				sq_push(v, 1); // self
+				sq_push(v, 3); // value
+				if (SQ_SUCCEEDED(result = sq_call(v,2,SQFalse,SQTrue))) {
+					//printf("呼び出し成功:%s\n", name);
+					sq_pop(v,2); // func, self
+					return SQ_OK;
+				} else {
+					sq_pop(v,2); // func, self
+				}
+			}
+
+		}
+		//return result;
+		return ERROR_NOMEMBER(v);
 	}
 
 	/**
@@ -419,89 +551,28 @@ protected:
 			return result;
 		}
 	}
-
-	static SQInteger ERROR_NOMEMBER(HSQUIRRELVM v) {
-		return sq_throwerror(v, _SC("no such member"));
-	}
 	
-	/**
-	 * プロパティから値を取得
-	 * @param name プロパティ名
-	 * @return プロパティ値
-	 */
-	static SQInteger _get(HSQUIRRELVM v) {
-		SQInteger result = SQ_OK;
-		const SQChar *name = getString(v, 2);
-		if (name && *name) {
-			tstring name2 = _SC("get");
-			name2 += toupper(*name);
-			name2 += (name + 1);
-			sq_push(v, 1); // self
-			sq_pushstring(v, name2.c_str(), -1);
-			if (SQ_SUCCEEDED(result = sq_get(v,-2))) {
-				sq_push(v, 1); //  self;
-				if (SQ_SUCCEEDED(result = sq_call(v,1,SQTrue,SQTrue))) {
-					//printf("呼び出し成功:%s\n", name);
-					sq_remove(v, -2); // func
-					sq_remove(v, -2); // self
-					return 1;
-				} else {
-					sq_pop(v,2); // func, self
-				}
-			} else {
-				sq_pop(v, 1); // self
-
-				// グローバル変数の参照
-				sq_pushroottable(v);
-				sq_pushstring(v, name, -1);
-				if (SQ_SUCCEEDED(result = sq_get(v,-2))) {
-					sq_remove(v, -2); // root
-					return 1;
-				} else {
-					sq_pop(v,1); // root
-				}
-			}
-		}
-		//return result;
-		return ERROR_NOMEMBER(v);
-	}
-	
-	/**
-	 * プロパティに値を設定
-	 * @param name プロパティ名
-	 * @param value プロパティ値
-	 */
-	static SQInteger _set(HSQUIRRELVM v) {
-		SQInteger result = SQ_OK;
-		const SQChar *name = getString(v, 2);
-		if (name && *name) {
-			//printf("_set呼び出し:%s\n", name);
-			tstring name2 = _SC("set");
-			name2 += toupper(*name);
-			name2 += (name + 1);
-
-			sq_push(v, 1); // self
-			sq_pushstring(v, name2.c_str(), -1);
-			if (SQ_SUCCEEDED(result = sq_get(v,-2))) {
-				sq_push(v, 1); // self
-				sq_push(v, 3); // value
-				if (SQ_SUCCEEDED(result = sq_call(v,2,SQFalse,SQTrue))) {
-					//printf("呼び出し成功:%s\n", name);
-					sq_pop(v,2); // func, self
-					return SQ_OK;
-				} else {
-					sq_pop(v,2); // func, self
-				}
-			}
-		}
-		//return result;
-		return ERROR_NOMEMBER(v);
-	}
-
 	static SQInteger ERROR_BADINSTANCE(HSQUIRRELVM v) {
 		return sq_throwerror(v, _SC("bad instance"));
 	}
 
+	/**
+	 * 委譲の設定
+	 */
+	static SQInteger setDelegate(HSQUIRRELVM v) {
+		MyObject *self = getObject(v, 1);
+		if (self) {
+			if (getParamCount(v) > 0) {
+				self->delegate.getStack(v, 2);
+			} else {
+				self->delegate.clear();
+			}
+			return SQ_OK;
+		} else {
+			return ERROR_BADINSTANCE(v);
+		}
+	}
+	
 	/**
 	 * 単一スレッドへのオブジェクト待ちの終了通知用
 	 */
@@ -545,6 +616,7 @@ public:
 		REGISTMETHOD(_set);
 		REGISTMETHOD(_get);
 		REGISTMETHOD(hasSetProp);
+		REGISTMETHOD(setDelegate);
 		REGISTMETHOD(notify);
 		REGISTMETHOD(notifyAll);
 		sq_createslot(v, -3);
@@ -873,6 +945,9 @@ protected:
 		}
 #endif
 		if (SQ_SUCCEEDED(result)) {
+			if (getParamCount(v) > 1) {
+				self->delegate.getStack(v, 3);
+			}
 			if (getParamCount(v) > 0) {
 				result = self->_exec(v);
 			}
