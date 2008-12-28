@@ -9,9 +9,30 @@
 
 // 外部参照
 extern const SQChar *getString(HSQUIRRELVM v, int idx);
-extern SQInteger ERROR_CREATE(HSQUIRRELVM v);
-extern SQInteger ERROR_NOMEMBER(HSQUIRRELVM v);
-extern SQInteger ERROR_CALL(HSQUIRRELVM v);
+extern SQInteger ERROR_BADINSTANCE(HSQUIRRELVM v);
+
+SQInteger ERROR_KRKR(HSQUIRRELVM v, tjs_error error) {
+	switch (error) {
+	case TJS_E_MEMBERNOTFOUND:
+		return sq_throwerror(v, _SC("member not found"));
+	case TJS_E_NOTIMPL:
+		return sq_throwerror(v, _SC("not implemented"));
+	case TJS_E_INVALIDPARAM:
+		return sq_throwerror(v, _SC("invalid param"));
+	case TJS_E_BADPARAMCOUNT:
+		return sq_throwerror(v, _SC("bad param count"));
+	case TJS_E_INVALIDTYPE:
+		return sq_throwerror(v, _SC("invalid type"));
+	case TJS_E_INVALIDOBJECT:
+		return sq_throwerror(v, _SC("invalid object"));
+	case TJS_E_ACCESSDENYED:
+		return sq_throwerror(v, _SC("access denyed"));
+	case TJS_E_NATIVECLASSCRASH:
+		return sq_throwerror(v, _SC("navive class crash"));
+	default:
+		return sq_throwerror(v, _SC("failed"));
+	}
+}
 
 // 格納・取得用
 void sq_pushvariant(HSQUIRRELVM v, tTJSVariant &variant);
@@ -252,12 +273,15 @@ get(HSQUIRRELVM v)
 	iTJSDispatch2 *dispatch = GetDispatch(v, 1);
 	if (dispatch) {
 		tTJSVariant result;
-		if (SUCCEEDED(dispatch->PropGet(0, getString(v, 2), NULL, &result, dispatch))) {
+		tjs_error error;
+		if (SUCCEEDED(error = dispatch->PropGet(0, getString(v, 2), NULL, &result, dispatch))) {
 			sq_pushvariant(v, result);
 			return 1;
+		} else {
+			return ERROR_KRKR(v, error);
 		}
 	}
-	return ERROR_NOMEMBER(v);
+	return ERROR_BADINSTANCE(v);
 }
 
 /**
@@ -271,10 +295,14 @@ set(HSQUIRRELVM v)
 	if (dispatch) {
 		tTJSVariant result;
 		sq_getvariant(v, 3, &result);
-		dispatch->PropSet(TJS_MEMBERENSURE, getString(v, 2), NULL, &result, dispatch);
-		return SQ_OK;
+		tjs_error error;
+		if (SUCCEEDED(error = dispatch->PropSet(TJS_MEMBERENSURE, getString(v, 2), NULL, &result, dispatch))) {
+			return SQ_OK;
+		} else {
+			return ERROR_KRKR(v, error);
+		}
 	}
-	return ERROR_NOMEMBER(v);
+	return ERROR_BADINSTANCE(v);
 }
 
 /**
@@ -305,13 +333,14 @@ callConstructor(HSQUIRRELVM v)
 
 		int ret = 0;
 		iTJSDispatch2 *instance = NULL;
-		if (SUCCEEDED(dispatch->CreateNew(0, NULL, NULL, &instance, argc, args, thisobj))) {
+		tjs_error error;
+		if (SUCCEEDED(error = dispatch->CreateNew(0, NULL, NULL, &instance, argc, args, thisobj))) {
 			tTJSVariant var(instance, instance);
 			sq_pushvariant(v, var);
 			instance->Release();
 			ret = 1;
 		} else {
-			ret = ERROR_CREATE(v);
+			ret = ERROR_KRKR(v, error);
 		}
 			
 		// 引数破棄
@@ -322,7 +351,7 @@ callConstructor(HSQUIRRELVM v)
 
 		return ret;
 	}
-	return ERROR_CREATE(v);
+	return ERROR_BADINSTANCE(v);
 }
 
 /**
@@ -354,7 +383,8 @@ callMethod(HSQUIRRELVM v)
 		// メソッド呼び出し
 		int ret = 0;
 		tTJSVariant result;
-		if (SUCCEEDED(dispatch->FuncCall(0, NULL, NULL, &result, argc, args, thisobj))) {
+		tjs_error error;
+		if (SUCCEEDED(error = dispatch->FuncCall(0, NULL, NULL, &result, argc, args, thisobj))) {
 			if (result.Type() != tvtVoid) {
 				sq_pushvariant(v, result);
 				ret = 1;
@@ -362,7 +392,7 @@ callMethod(HSQUIRRELVM v)
 				ret = 0;
 			}
 		} else {
-			ret = ERROR_CALL(v);
+			ret = ERROR_KRKR(v, error);
 		}
 			
 		// 引数破棄
@@ -373,7 +403,7 @@ callMethod(HSQUIRRELVM v)
 
 		return ret;
 	}
-	return ERROR_CALL(v);
+	return ERROR_BADINSTANCE(v);
 }
 
 /**

@@ -23,7 +23,7 @@ extern void sqobject_stop();
  * @param v VM
  * @return パラメータ数
  */
-int getParamCount(HSQUIRRELVM v)
+static int getParamCount(HSQUIRRELVM v)
 {
 	return sq_gettop(v) - 1;
 }
@@ -72,11 +72,6 @@ SQInteger ERROR_NOMEMBER(HSQUIRRELVM v) {
 
 SQInteger ERROR_BADINSTANCE(HSQUIRRELVM v) {
 	return sq_throwerror(v, _SC("bad instance"));
-}
-
-SQInteger ERROR_CALL(HSQUIRRELVM v)
-{
-	return sq_throwerror(v, _SC("invalid call"));
 }
 
 const SQUserPointer OBJTYPETAG = (SQUserPointer)"OBJTYPETAG";
@@ -293,7 +288,7 @@ MyObject::removeWait(MyThread *thread) {
 		} else {
 			i++;	
 		}
-		}
+	}
 }
 
 /**
@@ -425,7 +420,7 @@ MyObject::_get(HSQUIRRELVM v) {
 		getGetterName(name2, name);
 		sq_push(v, 1); // self
 		sq_pushstring(v, name2.c_str(), -1);
-		if (SQ_SUCCEEDED(result = sq_get(v,-2))) {
+		if (SQ_SUCCEEDED(result = sq_rawget(v,-2))) {
 			sq_push(v, 1); //  self;
 			if (SQ_SUCCEEDED(result = sq_call(v,1,SQTrue,SQTrue))) {
 				//printf("呼び出し成功:%s\n", name);
@@ -475,7 +470,7 @@ MyObject::_set(HSQUIRRELVM v) {
 		
 		sq_push(v, 1); // self
 		sq_pushstring(v, name2.c_str(), -1);
-		if (SQ_SUCCEEDED(result = sq_get(v,-2))) {
+		if (SQ_SUCCEEDED(result = sq_rawget(v,-2))) {
 			sq_push(v, 1); // self
 			sq_push(v, 3); // value
 			if (SQ_SUCCEEDED(result = sq_call(v,2,SQFalse,SQTrue))) {
@@ -508,12 +503,12 @@ MyObject::hasSetProp(HSQUIRRELVM v) {
 			getSetterName(name2, name);
 			sq_push(v, 1); // object
 			sq_pushstring(v, name2.c_str(), -1);
-			if (SQ_SUCCEEDED(result = sq_get(v,-2))) {
+			if (SQ_SUCCEEDED(result = sq_rawget(v,-2))) {
 				sq_pop(v,1);
 				ret = SQTrue;
 			} else {
 				sq_pushstring(v, name, -1);
-				if (SQ_SUCCEEDED(result = sq_get(v,-2))) {
+				if (SQ_SUCCEEDED(result = sq_rawget(v,-2))) {
 					sq_pop(v,1);
 					ret = SQTrue;
 				}
@@ -723,7 +718,7 @@ protected:
 	/**
 	 * 待ち登録
 	 */
-	SQInteger _wait(HSQUIRRELVM v) {
+	void _wait(HSQUIRRELVM v) {
 		_clearWait();
 		_waitResult.clear();
 		int max = sq_gettop(v);
@@ -744,13 +739,22 @@ protected:
 				}
 				break;
 			case OT_STRING:
-			case OT_INSTANCE:
-				// 文字列またはインスタンスの場合は待ちリストに登録
+				// 待ちリストに登録
 				_waitList.push_back(SQObjectInfo(v,i));
+				break;
+			case OT_INSTANCE:
+				// オブジェクトに待ち登録してから待ちリストに登録
+				{
+					SQObjectInfo o(v,i);
+					MyObject *obj = o.getMyObject();
+					if (obj) {
+						obj->addWait(this);
+					}
+					_waitList.push_back(o);
+				}
 				break;
 			}
 		}
-		return sq_suspendvm(v);
 	}
 
 	/**
@@ -782,7 +786,6 @@ protected:
 		} else {
 			sq_move(_thread, v, 2);
 		}
-		_currentTick = 0;
 		_status = THREAD_RUN;
 		entryThread(v); // スタックの 1番に元のオブジェクトが入ってる
 		return SQ_OK;
@@ -833,7 +836,7 @@ protected:
 	 */
 	bool _main(long diff) {
 
-		//dm("スレッド実行:" + this);
+		//printFunc(NULL, L"スレッド実行:%p %d" ,this, getStatus());
 		_currentTick += diff;
 
 		// タイムアウト処理
@@ -1025,7 +1028,8 @@ protected:
 	static SQInteger wait(HSQUIRRELVM v) {
 		MyThread *self = getThread(v, 1);
 		if (self) {
-			return self->_wait(v);
+			self->_wait(v);
+			return SQ_OK;
 		} else {
 			return ERROR_BADINSTANCE(v);
 		}
@@ -1039,7 +1043,6 @@ public:
 	static void registClass(HSQUIRRELVM v) {
 
 		MyObject::pushTag(THREADTYPETAG);
-		MyThread::pushTag(THREADTYPETAG);
 
 		sq_pushroottable(v); // root
 		sq_pushstring(v, THREADNAME, -1);
@@ -1216,7 +1219,8 @@ protected:
 	static SQInteger global_wait(HSQUIRRELVM v) {
 		MyThread *th = getCurrentThread(v);
 		if (th) {
-			return th->_wait(v);
+			th->_wait(v);
+			return sq_suspendvm(v);
 		} else {
 			return ERROR_NOTHREAD(v);
 		}

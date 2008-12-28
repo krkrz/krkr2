@@ -5,7 +5,6 @@
 #include <vector>
 
 // パラメータ参照用
-extern int getParamCount(HSQUIRRELVM v);
 extern int getInt(HSQUIRRELVM v, int idx, int defValue);
 extern const SQChar *getString(HSQUIRRELVM v, int idx);
 
@@ -13,8 +12,6 @@ extern const SQChar *getString(HSQUIRRELVM v, int idx);
 extern SQInteger ERROR_CREATE(HSQUIRRELVM v);
 extern SQInteger ERROR_NOMEMBER(HSQUIRRELVM v);
 extern SQInteger ERROR_BADINSTANCE(HSQUIRRELVM v);
-extern SQInteger ERROR_NOMEMBER(HSQUIRRELVM v);
-extern SQInteger ERROR_CALL(HSQUIRRELVM v);
 
 // 型定義
 extern const SQUserPointer OBJTYPETAG;
