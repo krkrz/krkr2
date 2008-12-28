@@ -209,6 +209,11 @@ protected:
 	 * 委譲の設定
 	 */
 	static SQInteger setDelegate(HSQUIRRELVM v);
+
+	/**
+	 * 委譲の取得
+	 */
+	static SQInteger getDelegate(HSQUIRRELVM v);
 	
 	/**
 	 * 単一スレッドへのオブジェクト待ちの終了通知用

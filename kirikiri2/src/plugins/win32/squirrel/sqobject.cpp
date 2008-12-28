@@ -98,11 +98,9 @@ void getGetterName(tstring &store, const SQChar *name)
 // 内容消去
 void
 SQObjectInfo::clear() {
-	if (v) {
-		sq_release(v,&obj);
-		sq_resetobject(&obj);
-			v = NULL;
-	}
+	sq_release(v,&obj);
+	v = NULL;
+	sq_resetobject(&obj);
 }
 
 // スタックから取得
@@ -130,9 +128,7 @@ SQObjectInfo::SQObjectInfo(HSQUIRRELVM v, int idx) : v(v) {
 SQObjectInfo::SQObjectInfo(const SQObjectInfo &orig) {
 	v   = orig.v;
 	obj = orig.obj;
-	if (v) {
-		sq_addref(v, &obj);
-	}
+	sq_addref(v, &obj);
 }
 
 // 代入
@@ -140,9 +136,7 @@ SQObjectInfo & SQObjectInfo::operator=(const SQObjectInfo &orig) {
 	clear();
 	v = orig.v;
 	obj = orig.obj;
-	if (v) {
-		sq_addref(v, &obj);
-	}
+	sq_addref(v, &obj);
 	return *this;
 }
 
@@ -173,7 +167,7 @@ SQObjectInfo::operator HSQUIRRELVM() const {
 SQUserPointer
 SQObjectInfo::getInstanceUserPointer(const SQUserPointer tag) {
 	SQUserPointer up = NULL;
-	if (v && sq_isinstance(obj)) {
+	if (sq_isinstance(obj)) {
 		sq_pushobject(v, obj);
 		if (!SQ_SUCCEEDED(sq_getinstanceup(v, -1, &up, tag))) {
 			up = NULL;
@@ -212,7 +206,7 @@ SQObjectInfo::isBindDelegate() {
 // インスタンスユーザポインタを取得
 MyThread *
 SQObjectInfo::getMyThread() {
-	if (v && sq_isinstance(obj)) {
+	if (sq_isinstance(obj)) {
 		sq_pushobject(v, obj);
 		SQUserPointer up = NULL;
 		if (SQ_SUCCEEDED(sq_getinstanceup(v, -1, &up, THREADTYPETAG))) {
@@ -227,7 +221,7 @@ SQObjectInfo::getMyThread() {
 // インスタンスユーザポインタを取得
 MyObject *
 SQObjectInfo::getMyObject() {
-	if (v && sq_isinstance(obj)) {
+	if (sq_isinstance(obj)) {
 		sq_pushobject(v, obj);
 		MyObject *ret = MyObject::getObject(v, -1);
 		sq_pop(v, 1);
@@ -543,6 +537,20 @@ MyObject::setDelegate(HSQUIRRELVM v) {
 }
 
 /**
+ * 委譲の設定
+ */
+SQInteger
+MyObject::getDelegate(HSQUIRRELVM v) {
+	MyObject *self = getObject(v, 1);
+	if (self) {
+		self->delegate.push(v);
+		return 1;
+	} else {
+		return ERROR_BADINSTANCE(v);
+	}
+}
+
+/**
  * 単一スレッドへのオブジェクト待ちの終了通知用
  */
 SQInteger
@@ -592,6 +600,7 @@ MyObject::registClass(HSQUIRRELVM v) {
 	REGISTMETHOD(_get);
 	REGISTMETHOD(hasSetProp);
 	REGISTMETHOD(setDelegate);
+	REGISTMETHOD(getDelegate);
 	REGISTMETHOD(notify);
 	REGISTMETHOD(notifyAll);
 	sq_createslot(v, -3);
@@ -757,6 +766,14 @@ protected:
 		}
 	}
 
+	/**
+	 * waitのキャンセル
+	 */
+	void _cancelWait() {
+		_clearWait();
+		_waitResult.clear();
+	}
+	
 	/**
 	 * 情報破棄
 	 */
@@ -1035,6 +1052,19 @@ protected:
 		}
 	}
 
+	/**
+	 * 処理待ち
+	 */
+	static SQInteger cancelWait(HSQUIRRELVM v) {
+		MyThread *self = getThread(v, 1);
+		if (self) {
+			self->_cancelWait();
+			return SQ_OK;
+		} else {
+			return ERROR_BADINSTANCE(v);
+		}
+	}
+
 public:
 	/**
 	 * クラスの登録
@@ -1065,6 +1095,7 @@ public:
 		REGISTMETHOD(stop);
 		REGISTMETHOD(run);
 		REGISTMETHOD(wait);
+		REGISTMETHOD(cancelWait);
 		sq_createslot(v, -3);
 		sq_pop(v, 1); // root
 	};
