@@ -254,6 +254,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\sqtjsobj.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\sqwrapper.cpp"
 				>
 			</File>

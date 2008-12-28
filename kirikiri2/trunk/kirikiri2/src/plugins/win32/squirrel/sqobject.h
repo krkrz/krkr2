@@ -4,6 +4,32 @@
 #include <squirrel.h>
 #include <vector>
 
+// パラメータ参照用
+extern int getParamCount(HSQUIRRELVM v);
+extern int getInt(HSQUIRRELVM v, int idx, int defValue);
+extern const SQChar *getString(HSQUIRRELVM v, int idx);
+
+// エラー処理用
+extern SQInteger ERROR_CREATE(HSQUIRRELVM v);
+extern SQInteger ERROR_NOMEMBER(HSQUIRRELVM v);
+extern SQInteger ERROR_BADINSTANCE(HSQUIRRELVM v);
+extern SQInteger ERROR_NOMEMBER(HSQUIRRELVM v);
+extern SQInteger ERROR_CALL(HSQUIRRELVM v);
+
+// 型定義
+extern const SQUserPointer OBJTYPETAG;
+extern const SQUserPointer THREADTYPETAG;
+
+#include <tchar.h>
+#if _UNICODE
+typedef std::wstring tstring;
+#else
+typedef std::string tstring;
+#endif
+
+extern void getSetterName(tstring &store, const SQChar *name);
+extern void getGetterName(tstring &store, const SQChar *name);
+
 class MyObject;
 class MyThread;
 
@@ -77,9 +103,6 @@ public:
 	// wait処理用メソッド
 	// ---------------------------------------------------
 
-	// MyObjectか？
-	bool isMyObject();
-
 	bool isString() const;
 
 	bool isSameString(const SQChar *str) const;
@@ -91,6 +114,16 @@ public:
  * オブジェクト用
  */
 class MyObject {
+
+	// ------------------------------
+	// 継承情報
+	// ------------------------------
+protected:
+	static std::vector<SQUserPointer>tags;
+public:
+	static void pushTag(const SQUserPointer tag) {
+		tags.push_back(tag);
+	}
 
 protected:
 	// このオブジェクトを待ってるスレッドの一覧
@@ -135,24 +168,22 @@ protected:
 
 	// ------------------------------------------------------------------
 
+public:
 	/**
 	 * @return オブジェクト情報オブジェクト
 	 */
 	static MyObject *getObject(HSQUIRRELVM v, int idx);
 
+protected:
 	/**
 	 * オブジェクトのリリーサ
 	 */
 	static SQInteger release(SQUserPointer up, SQInteger size);
 
-	static SQInteger ERROR_CREATE(HSQUIRRELVM v);
-	
 	/**
 	 * オブジェクトのコンストラクタ
 	 */
 	static SQInteger constructor(HSQUIRRELVM v);
-
-	static SQInteger ERROR_NOMEMBER(HSQUIRRELVM v);
 
 	static bool isClosure(SQObjectType type);
 	
@@ -177,8 +208,6 @@ protected:
 	 */
 	static SQInteger hasSetProp(HSQUIRRELVM v);
 	
-	static SQInteger ERROR_BADINSTANCE(HSQUIRRELVM v);
-
 	/**
 	 * 委譲の設定
 	 */
@@ -201,5 +230,27 @@ public:
 	 */
 	static void registClass(HSQUIRRELVM v);
 };
+
+// 型名
+#define OBJECTNAME _SC("Object")
+#define THREADNAME _SC("Thread")
+
+// メソッド登録
+#define REGISTMETHOD(name) \
+	sq_pushstring(v, _SC(#name), -1);\
+	sq_newclosure(v, name, 0);\
+	sq_createslot(v, -3);
+
+// メソッド登録（名前つき）
+#define REGISTMETHODNAME(name, method) \
+	sq_pushstring(v, _SC(#name), -1);\
+	sq_newclosure(v, method, 0);\
+	sq_createslot(v, -3);
+
+// メソッド登録
+#define REGISTENUM(name) \
+	sq_pushstring(v, _SC(#name), -1);\
+	sq_pushinteger(v, name);\
+	sq_createslot(v, -3);
 
 #endif
