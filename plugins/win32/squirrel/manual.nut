@@ -10,9 +10,26 @@ class Object {
 
 	/**
 	 * コンストラクタ
+	 * @param delegate 処理を委譲するオブジェクトを指定します。オブジェクトには
+	 * インスタンスまたはテーブルが指定可能です。
+	 * クロージャを呼び出す場合、オブジェクトがインスタンスの場合は、そのインスタンスを
+	 * 環境として bindenv された状態で呼び出されます。
+	 * table の場合はこのオブジェクトの環境で実行されます。
 	 */
-	constructor();
+	constructor(delegate=null);
 
+	/**
+	 * このオブジェクトに対する委譲を設定します(コンストラクタ指定と同機能)
+	 * @param delegate 委譲先オブジェクト
+	 */
+	function setDelegate(delegate=null);
+
+	/**
+	 * @param name プロパティ名
+	 * @return 指定された名前のプロパティの setter があれば true
+	 */
+	function hasSetProp(name);
+	
 	/**
 	 * このオブジェクトを待っているスレッド1つに終了を通知する
 	 */
@@ -23,12 +40,6 @@ class Object {
 	 * ※このメソッドはオブジェクト廃棄時にも実行されます。
 	 */
 	function notifyAll();
-
-	/**
-	 * @param name プロパティ名
-	 * @return 指定された名前のプロパティの setter があれば true
-	 */
-	function hasSetProp(name);
 
 	/**
 	 * プロパティ機能について
@@ -56,8 +67,9 @@ class Thread extends Object {
 	/**
 	 * コンストラクタ
 	 * @param func スレッドを生成後実行するファンクションまたはファイル名
+	 * @param delegate 機能の委譲先の指定
 	 */
-	constructor(func=null);
+	constructor(func=null, delegate=null);
 
 	/**
 	 * @return このスレッドの実行時間
