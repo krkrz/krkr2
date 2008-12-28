@@ -1,12 +1,12 @@
 /**
  * squirrel 用基底オブジェクト＋疑似スレッド
  */
+#include "sqobject.h"
+
 #include <ctype.h>
-#include <squirrel.h>
 #include <sqstdio.h>
 #include <string>
 #include <new>
-#include <vector>
 
 // ログ出力用
 extern void printFunc(HSQUIRRELVM v, const SQChar* format, ...);
@@ -94,534 +94,532 @@ static const SQChar *getString(HSQUIRRELVM v, int idx) {
 static const SQUserPointer OBJTYPETAG = (SQUserPointer)"OBJTYPETAG";
 static const SQUserPointer THREADTYPETAG = (SQUserPointer)"THREADTYPETAG";
 
-class MyObject;
-class MyThread;
+// ---------------------------------------------------------
+// SQObjectInfo
+// ---------------------------------------------------------
+
+// 内容消去
+void
+SQObjectInfo::clear() {
+	if (v) {
+		sq_release(v,&obj);
+		sq_resetobject(&obj);
+			v = NULL;
+	}
+}
+
+// スタックから取得
+void
+SQObjectInfo::getStack(HSQUIRRELVM v, int idx) {
+	clear();
+	this->v = v;
+	sq_getstackobj(v, idx, &obj);
+	sq_addref(v, &obj);
+}
+	
+// コンストラクタ
+SQObjectInfo::SQObjectInfo() : v(NULL) {
+	sq_resetobject(&obj);
+}
+
+// コンストラクタ
+SQObjectInfo::SQObjectInfo(HSQUIRRELVM v, int idx) : v(v) {
+	sq_resetobject(&obj);
+	sq_getstackobj(v, idx, &obj);
+	sq_addref(v, &obj);
+}
+
+// コピーコンストラクタ
+SQObjectInfo::SQObjectInfo(const SQObjectInfo &orig) {
+	v   = orig.v;
+	obj = orig.obj;
+	if (v) {
+		sq_addref(v, &obj);
+	}
+}
+
+// 代入
+SQObjectInfo & SQObjectInfo::operator=(const SQObjectInfo &orig) {
+	clear();
+	v = orig.v;
+	obj = orig.obj;
+	if (v) {
+		sq_addref(v, &obj);
+	}
+	return *this;
+}
+
+// デストラクタ
+SQObjectInfo:: ~SQObjectInfo() {
+	clear();
+}
+
+// スレッドか？
+bool
+SQObjectInfo::isThread() const {
+	return sq_isthread(obj);
+}
+
+// 同じスレッドか？
+bool
+SQObjectInfo::isSameThread(const HSQUIRRELVM v) const {
+	return sq_isthread(obj) && obj._unVal.pThread == v;
+}
+
+// スレッドを取得
+SQObjectInfo::operator HSQUIRRELVM() const {
+	HSQUIRRELVM vm = sq_isthread(obj) ? obj._unVal.pThread : NULL;
+	return vm;
+}
+	
+// インスタンスユーザポインタを取得
+SQUserPointer
+SQObjectInfo::getInstanceUserPointer(const SQUserPointer tag) {
+	SQUserPointer up = NULL;
+	if (v && sq_isinstance(obj)) {
+		sq_pushobject(v, obj);
+		if (!SQ_SUCCEEDED(sq_getinstanceup(v, -1, &up, tag))) {
+			up = NULL;
+		}
+		sq_pop(v, 1);
+	}
+	return up;
+}
+
+// オブジェクトをPUSH
+void
+SQObjectInfo::push(HSQUIRRELVM v) const {
+	sq_pushobject(v, obj);
+}
+
+// ---------------------------------------------------
+// delegate 処理用
+// ---------------------------------------------------
+
+// delegate として機能するかどうか
+bool
+SQObjectInfo::isDelegate() {
+	return v && (sq_isinstance(obj) || sq_istable(obj));
+}
+
+// bindenv させるかどうか
+bool
+SQObjectInfo::isBindDelegate() {
+	return v && (sq_isinstance(obj));
+}
+
+// ---------------------------------------------------
+// オブジェクト取得
+// ---------------------------------------------------
+
+// インスタンスユーザポインタを取得
+MyThread *
+SQObjectInfo::getMyThread() {
+	SQUserPointer up = NULL;
+	if (v && sq_isinstance(obj)) {
+		sq_pushobject(v, obj);
+		if (!SQ_SUCCEEDED(sq_getinstanceup(v, -1, &up, THREADTYPETAG))) {
+			up = NULL;
+		}
+		sq_pop(v, 1);
+	}
+	return (MyThread*)up;
+}
+
+// インスタンスユーザポインタを取得
+MyObject *
+SQObjectInfo::getMyObject() {
+	SQUserPointer up = NULL;
+	if (v && sq_isinstance(obj)) {
+		sq_pushobject(v, obj);
+		if (!SQ_SUCCEEDED(sq_getinstanceup(v, -1, &up, OBJTYPETAG)) ||
+			!SQ_SUCCEEDED(sq_getinstanceup(v, -1, &up, THREADTYPETAG))) {
+			up = NULL;
+		}
+		sq_pop(v, 1);
+	}
+	return (MyObject*)up;
+}
+
+// ---------------------------------------------------
+// wait処理用メソッド
+// ---------------------------------------------------
+
+// MyObjectか？
+bool
+SQObjectInfo::isMyObject() {
+	bool ret = false;
+	if (sq_isinstance(obj)) {
+		SQUserPointer typetag;
+		sq_pushobject(v, obj);
+		if (SQ_SUCCEEDED(sq_gettypetag(v, -1, &typetag))) {
+			ret = (typetag == OBJTYPETAG ||
+				   typetag == THREADTYPETAG);
+		}
+		sq_pop(v, 1);
+	}
+	return ret;
+}
+
+bool
+SQObjectInfo::isString() const {
+	return sq_isstring(obj);
+}
+
+bool
+SQObjectInfo::isSameString(const SQChar *str) const {
+	if (str && sq_isstring(obj)) {
+		const SQChar *mystr;
+		sq_pushobject(v, obj);
+		sq_getstring(v, -1, &mystr);
+		sq_pop(v, 1);
+		return mystr && _tcscmp(str, mystr) == 0;
+	}
+	return false;
+}
+
+bool
+SQObjectInfo::isNumeric() const {
+	return sq_isnumeric(obj) != 0;
+}
+
+// ---------------------------------------------------------
+// MyObject
+// ---------------------------------------------------------
 
 /**
- * squirrel オブジェクト保持用クラス
+ * オブジェクト待ちの登録
+ * @param thread スレッド
  */
-class SQObjectInfo {
+void
+MyObject::addWait(MyThread *thread) {
+	_waitThreadList.push_back(thread);
+}
 
-protected:
-	HSQUIRRELVM v; // オブジェクトの属していたVM
-	HSQOBJECT obj; // オブジェクト参照情報
-
-public:
-	// 内容消去
-	void clear() {
-		if (v) {
-			sq_release(v,&obj);
-			sq_resetobject(&obj);
-			v = NULL;
+/**
+ * オブジェクト待ちの解除
+ * @param thread スレッド
+ */
+void
+MyObject::removeWait(MyThread *thread) {
+	std::vector<MyThread*>::iterator i = _waitThreadList.begin();
+	while (i != _waitThreadList.end()) {
+		if (*i == thread) {
+			i = _waitThreadList.erase(i);
+		} else {
+			i++;	
 		}
-	}
-
-	// スタックから取得
-	void getStack(HSQUIRRELVM v, int idx) {
-		clear();
-		this->v = v;
-		sq_getstackobj(v, idx, &obj);
-		sq_addref(v, &obj);
-	}
-	
-	// コンストラクタ
-	SQObjectInfo() : v(NULL) {
-		sq_resetobject(&obj);
-	}
-
-	// コンストラクタ
-	SQObjectInfo(HSQUIRRELVM v, int idx) : v(v) {
-		sq_resetobject(&obj);
-		sq_getstackobj(v, idx, &obj);
-		sq_addref(v, &obj);
-	}
-
-	// コピーコンストラクタ
-	SQObjectInfo(const SQObjectInfo &orig) {
-		v   = orig.v;
-		obj = orig.obj;
-		if (v) {
-			sq_addref(v, &obj);
 		}
-	}
+}
 
-	// 代入
-	SQObjectInfo & operator=(const SQObjectInfo &orig) {
-		clear();
-		v = orig.v;
-		obj = orig.obj;
-		if (v) {
-			sq_addref(v, &obj);
+/**
+ * コンストラクタ
+ */
+MyObject::MyObject() {
+}
+
+/**
+ * デストラクタ
+ */
+MyObject::~MyObject() {
+	_notifyAll();
+}
+
+// ------------------------------------------------------------------
+
+/**
+ * @return オブジェクト情報オブジェクト
+ */
+MyObject *
+MyObject::getObject(HSQUIRRELVM v, int idx) {
+	SQUserPointer up;
+#ifdef USEUD
+	SQUserPointer typetag;
+	if (SQ_SUCCEEDED(sq_getuserdata(v, idx, &up, &typetag)) &&
+		(typetag == THREADTYPETAG || typetag == OBJTYPETAG)) {
+		return (MyObject*)up;
 		}
-		return *this;
-	}
-	
-	// デストラクタ
-	virtual ~SQObjectInfo() {
-		clear();
-	}
-
-	// スレッドか？
-	bool isThread() const {
-		return sq_isthread(obj);
-	}
-
-	// 同じスレッドか？
-	bool isSameThread(const HSQUIRRELVM v) const {
-		return sq_isthread(obj) && obj._unVal.pThread == v;
-	}
-
-	// スレッドを取得
-	operator HSQUIRRELVM() const {
-		HSQUIRRELVM vm = sq_isthread(obj) ? obj._unVal.pThread : NULL;
-		return vm;
-	}
-	
-	// インスタンスユーザポインタを取得
-	SQUserPointer getInstanceUserPointer(const SQUserPointer tag) {
-		SQUserPointer up = NULL;
-		if (v && sq_isinstance(obj)) {
-			sq_pushobject(v, obj);
-			if (!SQ_SUCCEEDED(sq_getinstanceup(v, -1, &up, tag))) {
-				up = NULL;
-			}
-			sq_pop(v, 1);
-		}
-		return up;
-	}
-
-	// オブジェクトをPUSH
-	void push(HSQUIRRELVM v) const {
-		sq_pushobject(v, obj);
-	}
-
-	// ---------------------------------------------------
-	// delegate 処理用
-	// ---------------------------------------------------
-
-	// delegate として機能するかどうか
-	bool isDelegate() {
-		return v && (sq_isinstance(obj) || sq_istable(obj));
-	}
-
-	// bindenv させるかどうか
-	bool isBindDelegate() {
-		return v && (sq_isinstance(obj));
-	}
-
-	// ---------------------------------------------------
-	// オブジェクト取得
-	// ---------------------------------------------------
-
-	// インスタンスユーザポインタを取得
-	MyThread *getMyThread() {
-		SQUserPointer up = NULL;
-		if (v && sq_isinstance(obj)) {
-			sq_pushobject(v, obj);
-			if (!SQ_SUCCEEDED(sq_getinstanceup(v, -1, &up, THREADTYPETAG))) {
-				up = NULL;
-			}
-			sq_pop(v, 1);
-		}
-		return (MyThread*)up;
-	}
-
-	// インスタンスユーザポインタを取得
-	MyObject *getMyObject() {
-		SQUserPointer up = NULL;
-		if (v && sq_isinstance(obj)) {
-			sq_pushobject(v, obj);
-			if (!SQ_SUCCEEDED(sq_getinstanceup(v, -1, &up, OBJTYPETAG)) ||
-				!SQ_SUCCEEDED(sq_getinstanceup(v, -1, &up, THREADTYPETAG))) {
-				up = NULL;
-			}
-			sq_pop(v, 1);
-		}
+#else
+	if (SQ_SUCCEEDED(sq_getinstanceup(v, idx, &up, THREADTYPETAG)) ||
+		SQ_SUCCEEDED(sq_getinstanceup(v, idx, &up, OBJTYPETAG))) {
 		return (MyObject*)up;
 	}
-	
-	// ---------------------------------------------------
-	// wait処理用メソッド
-	// ---------------------------------------------------
-
-	// MyObjectか？
-	bool isMyObject() {
-		bool ret = false;
-		if (sq_isinstance(obj)) {
-			SQUserPointer typetag;
-			sq_pushobject(v, obj);
-			if (SQ_SUCCEEDED(sq_gettypetag(v, -1, &typetag))) {
-				ret = (typetag == OBJTYPETAG ||
-					   typetag == THREADTYPETAG);
-			}
-			sq_pop(v, 1);
-		}
-		return ret;
-	}
-
-	bool isString() const {
-		return sq_isstring(obj);
-	}
-
-	bool isSameString(const SQChar *str) const {
-		if (str && sq_isstring(obj)) {
-			const SQChar *mystr;
-			sq_pushobject(v, obj);
-			sq_getstring(v, -1, &mystr);
-			sq_pop(v, 1);
-			return mystr && _tcscmp(str, mystr) == 0;
-		}
-		return false;
-	}
-
-	bool isNumeric() const {
-		return sq_isnumeric(obj) != 0;
-	}
-};
+#endif
+	return NULL;
+}
 
 /**
- * オブジェクト用
+ * オブジェクトのリリーサ
  */
-class MyObject {
-
-protected:
-	// このオブジェクトを待ってるスレッドの一覧
-	std::vector<MyThread*> _waitThreadList;
-	// delegate
-	SQObjectInfo delegate;
-
-public:
-	/**
-	 * オブジェクト待ちの登録
-	 * @param thread スレッド
-	 */
-	void addWait(MyThread *thread) {
-		_waitThreadList.push_back(thread);
-	}
-
-	/**
-	 * オブジェクト待ちの解除
-	 * @param thread スレッド
-	 */
-	void removeWait(MyThread *thread) {
-		std::vector<MyThread*>::iterator i = _waitThreadList.begin();
-		while (i != _waitThreadList.end()) {
-			if (*i == thread) {
-				i = _waitThreadList.erase(i);
-			} else {
-				i++;	
-			}
-		}
-	}
-
-protected:
-
-	/**
-	 * コンストラクタ
-	 */
-	MyObject() {
-	}
-
-	/**
-	 * デストラクタ
-	 */
-	virtual ~MyObject() {
-		_notifyAll();
-	}
-
-	/**
-	 * このオブジェクトを待っている１スレッドの待ちを解除
-	 */
-	void _notify();
-	
-	/**
-	 * このオブジェクトを待っている全スレッドの待ちを解除
-	 */
-	void _notifyAll();
-
-	// ------------------------------------------------------------------
-
-	/**
-	 * @return オブジェクト情報オブジェクト
-	 */
-	static MyObject *getObject(HSQUIRRELVM v, int idx) {
-		SQUserPointer up;
+SQInteger
+MyObject::release(SQUserPointer up, SQInteger size) {
+	MyObject *self = (MyObject*)up;
 #ifdef USEUD
-		SQUserPointer typetag;
-		if (SQ_SUCCEEDED(sq_getuserdata(v, idx, &up, &typetag)) &&
-			(typetag == THREADTYPETAG || typetag == OBJTYPETAG)) {
-			return (MyObject*)up;
-		}
+	self->~MyObject();
 #else
-		if (SQ_SUCCEEDED(sq_getinstanceup(v, idx, &up, THREADTYPETAG)) ||
-			SQ_SUCCEEDED(sq_getinstanceup(v, idx, &up, OBJTYPETAG))) {
-			return (MyObject*)up;
-		}
+	delete self;
 #endif
-		return NULL;
-	}
+	return SQ_OK;
+}
 
-	/**
-	 * オブジェクトのリリーサ
-	 */
-	static SQInteger release(SQUserPointer up, SQInteger size) {
-		MyObject *self = (MyObject*)up;
+SQInteger
+MyObject::ERROR_CREATE(HSQUIRRELVM v) {
+	return sq_throwerror(v, _SC("can't create native instance"));
+}
+
+/**
+ * オブジェクトのコンストラクタ
+ */
+SQInteger
+MyObject::constructor(HSQUIRRELVM v) {
+	SQInteger result = SQ_OK;
 #ifdef USEUD
-		self->~MyObject();
+	MyObject *self = getObject(v, 1);
+	if (self) {
+		new (self) MyObject();
+		result = sq_setreleasehook(v, 1, release);
+	} else {
+		result = ERROR_CREATE(v);
+	}
 #else
-		delete self;
+	MyObject *self = new MyObject();
+	if (SQ_SUCCEEDED(result = sq_setinstanceup(v, 1, self))) {;
+		sq_setreleasehook(v, 1, release);
+	}
 #endif
-		return SQ_OK;
+	if (SQ_SUCCEEDED(result)) {
+		if (getParamCount(v) > 0) {
+			self->delegate.getStack(v, 2);
+		}
 	}
+	return result;
+}
 
-	static SQInteger ERROR_CREATE(HSQUIRRELVM v) {
-		return sq_throwerror(v, _SC("can't create native instance"));
-	}
+SQInteger
+MyObject::ERROR_NOMEMBER(HSQUIRRELVM v) {
+	return sq_throwerror(v, _SC("no such member"));
+}
+
+bool
+MyObject::isClosure(SQObjectType type) {
+	return type == OT_CLOSURE || type == OT_NATIVECLOSURE;
+}
 	
-	/**
-	 * オブジェクトのコンストラクタ
-	 */
-	static SQInteger constructor(HSQUIRRELVM v) {
-		SQInteger result = SQ_OK;
-#ifdef USEUD
+/**
+ * プロパティから値を取得
+ * @param name プロパティ名
+ * @return プロパティ値
+ */
+SQInteger
+MyObject::_get(HSQUIRRELVM v) {
+	SQInteger result = SQ_OK;
+	const SQChar *name = getString(v, 2);
+	if (name && *name) {
+		
+			// delegateの参照
 		MyObject *self = getObject(v, 1);
-		if (self) {
-			new (self) MyObject();
-			result = sq_setreleasehook(v, 1, release);
-		} else {
-			result = ERROR_CREATE(v);
-		}
-#else
-		MyObject *self = new MyObject();
-		if (SQ_SUCCEEDED(result = sq_setinstanceup(v, 1, self))) {;
-			sq_setreleasehook(v, 1, release);
-		}
-#endif
-		if (SQ_SUCCEEDED(result)) {
-			if (getParamCount(v) > 0) {
-				self->delegate.getStack(v, 2);
-			}
-		}
-		return result;
-	}
-
-	static SQInteger ERROR_NOMEMBER(HSQUIRRELVM v) {
-		return sq_throwerror(v, _SC("no such member"));
-	}
-
-	static bool isClosure(SQObjectType type) {
-		return type == OT_CLOSURE || type == OT_NATIVECLOSURE;
-	}
-	
-	/**
-	 * プロパティから値を取得
-	 * @param name プロパティ名
-	 * @return プロパティ値
-	 */
-	static SQInteger _get(HSQUIRRELVM v) {
-		SQInteger result = SQ_OK;
-		const SQChar *name = getString(v, 2);
-		if (name && *name) {
-
-			// delegateの参照
-			MyObject *self = getObject(v, 1);
-			if (self && self->delegate.isDelegate()) {
-				self->delegate.push(v);
-				sq_pushstring(v, name, -1);
-				if (SQ_SUCCEEDED(result = sq_get(v,-2))) {
-					// メソッドの場合は束縛処理
-					if (isClosure(sq_gettype(v,-1)) && self->delegate.isBindDelegate()) {
-						self->delegate.push(v);
-						if (SQ_SUCCEEDED(sq_bindenv(v, -2))) {
-							sq_remove(v, -2); // 元のクロージャ
-						}
-					}
-					sq_remove(v, -2);
-					return 1;
-				} else {
-					sq_pop(v,1); // delegate
-				}
-			}
-			
-			// getter を探してアクセス
-			tstring name2 = _SC("get");
-			name2 += toupper(*name);
-			name2 += (name + 1);
-			sq_push(v, 1); // self
-			sq_pushstring(v, name2.c_str(), -1);
+		if (self && self->delegate.isDelegate()) {
+			self->delegate.push(v);
+			sq_pushstring(v, name, -1);
 			if (SQ_SUCCEEDED(result = sq_get(v,-2))) {
-				sq_push(v, 1); //  self;
-				if (SQ_SUCCEEDED(result = sq_call(v,1,SQTrue,SQTrue))) {
-					//printf("呼び出し成功:%s\n", name);
-					sq_remove(v, -2); // func
-					sq_remove(v, -2); // self
-					return 1;
-				} else {
-					sq_pop(v,2); // func, self
+				// メソッドの場合は束縛処理
+				if (isClosure(sq_gettype(v,-1)) && self->delegate.isBindDelegate()) {
+					self->delegate.push(v);
+					if (SQ_SUCCEEDED(sq_bindenv(v, -2))) {
+						sq_remove(v, -2); // 元のクロージャ
+					}
 				}
+				sq_remove(v, -2);
+				return 1;
 			} else {
-				sq_pop(v, 1); // self
+				sq_pop(v,1); // delegate
 			}
-
 		}
-		//return result;
-		return ERROR_NOMEMBER(v);
+		
+		// getter を探してアクセス
+		tstring name2 = _SC("get");
+		name2 += toupper(*name);
+		name2 += (name + 1);
+		sq_push(v, 1); // self
+		sq_pushstring(v, name2.c_str(), -1);
+		if (SQ_SUCCEEDED(result = sq_get(v,-2))) {
+			sq_push(v, 1); //  self;
+			if (SQ_SUCCEEDED(result = sq_call(v,1,SQTrue,SQTrue))) {
+				//printf("呼び出し成功:%s\n", name);
+				sq_remove(v, -2); // func
+				sq_remove(v, -2); // self
+				return 1;
+			} else {
+				sq_pop(v,2); // func, self
+			}
+		} else {
+			sq_pop(v, 1); // self
+		}
+		
 	}
+	//return result;
+	return ERROR_NOMEMBER(v);
+}
 	
-	/**
-	 * プロパティに値を設定
-	 * @param name プロパティ名
-	 * @param value プロパティ値
-	 */
-	static SQInteger _set(HSQUIRRELVM v) {
-		SQInteger result = SQ_OK;
+/**
+ * プロパティに値を設定
+ * @param name プロパティ名
+ * @param value プロパティ値
+ */
+SQInteger
+MyObject::_set(HSQUIRRELVM v) {
+	SQInteger result = SQ_OK;
+	const SQChar *name = getString(v, 2);
+	if (name && *name) {
+		
+		// delegateの参照
+		MyObject *self = getObject(v, 1);
+		if (self && self->delegate.isDelegate()) {
+			self->delegate.push(v);
+			sq_push(v, 2); // name
+			sq_push(v, 3); // value
+			if (SQ_SUCCEEDED(result = sq_set(v,-3))) {
+				sq_pop(v,1); // delegate
+				return SQ_OK;
+			} else {
+				sq_pop(v,1); // delegate
+			}
+		}
+		
+		// setter を探してアクセス
+		tstring name2 = _SC("set");
+		name2 += toupper(*name);
+		name2 += (name + 1);
+		sq_push(v, 1); // self
+		sq_pushstring(v, name2.c_str(), -1);
+		if (SQ_SUCCEEDED(result = sq_get(v,-2))) {
+			sq_push(v, 1); // self
+			sq_push(v, 3); // value
+			if (SQ_SUCCEEDED(result = sq_call(v,2,SQFalse,SQTrue))) {
+				//printf("呼び出し成功:%s\n", name);
+				sq_pop(v,2); // func, self
+				return SQ_OK;
+			} else {
+				sq_pop(v,2); // func, self
+			}
+		}
+		
+	}
+	//return result;
+	return ERROR_NOMEMBER(v);
+}
+
+/**
+ * setプロパティの存在確認
+ * @param name プロパティ名
+ * @return setプロパティが存在したら true
+ */
+SQInteger
+MyObject::hasSetProp(HSQUIRRELVM v) {
+	SQInteger result = SQ_OK;
+	SQBool ret = SQFalse;
+	if (getParamCount(v) >= 2) {
 		const SQChar *name = getString(v, 2);
 		if (name && *name) {
-
-			// delegateの参照
-			MyObject *self = getObject(v, 1);
-			if (self && self->delegate.isDelegate()) {
-				self->delegate.push(v);
-				sq_push(v, 2); // name
-				sq_push(v, 3); // value
-				if (SQ_SUCCEEDED(result = sq_set(v,-3))) {
-					sq_pop(v,1); // delegate
-					return SQ_OK;
-				} else {
-					sq_pop(v,1); // delegate
-				}
-			}
-
-			// setter を探してアクセス
 			tstring name2 = _SC("set");
 			name2 += toupper(*name);
 			name2 += (name + 1);
-			sq_push(v, 1); // self
+			sq_push(v, 1); // object
 			sq_pushstring(v, name2.c_str(), -1);
 			if (SQ_SUCCEEDED(result = sq_get(v,-2))) {
-				sq_push(v, 1); // self
-				sq_push(v, 3); // value
-				if (SQ_SUCCEEDED(result = sq_call(v,2,SQFalse,SQTrue))) {
-					//printf("呼び出し成功:%s\n", name);
-					sq_pop(v,2); // func, self
-					return SQ_OK;
-				} else {
-					sq_pop(v,2); // func, self
-				}
-			}
-
-		}
-		//return result;
-		return ERROR_NOMEMBER(v);
-	}
-
-	/**
-	 * setプロパティの存在確認
-	 * @param name プロパティ名
-	 * @return setプロパティが存在したら true
-	 */
-	static SQInteger hasSetProp(HSQUIRRELVM v) {
-		SQInteger result = SQ_OK;
-		SQBool ret = SQFalse;
-		if (getParamCount(v) >= 2) {
-			const SQChar *name = getString(v, 2);
-			if (name && *name) {
-				tstring name2 = _SC("set");
-				name2 += toupper(*name);
-				name2 += (name + 1);
-				sq_push(v, 1); // object
-				sq_pushstring(v, name2.c_str(), -1);
+				sq_pop(v,1);
+				ret = SQTrue;
+			} else {
+				sq_pushstring(v, name, -1);
 				if (SQ_SUCCEEDED(result = sq_get(v,-2))) {
 					sq_pop(v,1);
 					ret = SQTrue;
-				} else {
-					sq_pushstring(v, name, -1);
-					if (SQ_SUCCEEDED(result = sq_get(v,-2))) {
-						sq_pop(v,1);
-						ret = SQTrue;
-					}
 				}
-				sq_pop(v,1); // object
 			}
-		}
-		if (SQ_SUCCEEDED(result)) {
-			sq_pushbool(v, ret);
-			return 1;
-		} else {
-			return result;
+			sq_pop(v,1); // object
 		}
 	}
-	
-	static SQInteger ERROR_BADINSTANCE(HSQUIRRELVM v) {
-		return sq_throwerror(v, _SC("bad instance"));
+	if (SQ_SUCCEEDED(result)) {
+		sq_pushbool(v, ret);
+		return 1;
+	} else {
+		return result;
 	}
+}
 
-	/**
-	 * 委譲の設定
-	 */
-	static SQInteger setDelegate(HSQUIRRELVM v) {
-		MyObject *self = getObject(v, 1);
-		if (self) {
-			if (getParamCount(v) > 0) {
-				self->delegate.getStack(v, 2);
-			} else {
-				self->delegate.clear();
-			}
-			return SQ_OK;
-		} else {
-			return ERROR_BADINSTANCE(v);
-		}
-	}
-	
-	/**
-	 * 単一スレッドへのオブジェクト待ちの終了通知用
-	 */
-	static SQInteger notify(HSQUIRRELVM v) {
-		MyObject *self = getObject(v, 1);
-		if (self) {
-			self->_notify();
-			return SQ_OK;
-		} else {
-			return ERROR_BADINSTANCE(v);
-		}
-	}
+SQInteger
+MyObject::ERROR_BADINSTANCE(HSQUIRRELVM v) {
+	return sq_throwerror(v, _SC("bad instance"));
+}
 
-	/**
-	 * 全スレッドへのオブジェクト待ちの終了通知
-	 */
-	static SQInteger notifyAll(HSQUIRRELVM v) {
-		MyObject *self = getObject(v, 1);
-		if (self) {
-			self->_notifyAll();
-			return SQ_OK;
+/**
+ * 委譲の設定
+ */
+SQInteger
+MyObject::setDelegate(HSQUIRRELVM v) {
+	MyObject *self = getObject(v, 1);
+	if (self) {
+		if (getParamCount(v) > 0) {
+			self->delegate.getStack(v, 2);
 		} else {
-			return ERROR_BADINSTANCE(v);
+			self->delegate.clear();
 		}
+		return SQ_OK;
+	} else {
+		return ERROR_BADINSTANCE(v);
 	}
+}
 
-public:
-	/**
-	 * クラスの登録
-	 * @param v squirrel VM
-	 */
-	static void registClass(HSQUIRRELVM v) {
-		sq_pushroottable(v); // root
-		sq_pushstring(v, OBJECTNAME, -1);
-		sq_newclass(v, false);
-		sq_settypetag(v, -1, OBJTYPETAG);
+/**
+ * 単一スレッドへのオブジェクト待ちの終了通知用
+ */
+SQInteger
+MyObject::notify(HSQUIRRELVM v) {
+	MyObject *self = getObject(v, 1);
+	if (self) {
+		self->_notify();
+		return SQ_OK;
+	} else {
+		return ERROR_BADINSTANCE(v);
+	}
+}
+
+/**
+ * 全スレッドへのオブジェクト待ちの終了通知
+ */
+SQInteger
+MyObject::notifyAll(HSQUIRRELVM v) {
+	MyObject *self = getObject(v, 1);
+	if (self) {
+		self->_notifyAll();
+		return SQ_OK;
+	} else {
+		return ERROR_BADINSTANCE(v);
+	}
+}
+
+/**
+ * クラスの登録
+ * @param v squirrel VM
+ */
+void
+MyObject::registClass(HSQUIRRELVM v) {
+	sq_pushroottable(v); // root
+	sq_pushstring(v, OBJECTNAME, -1);
+	sq_newclass(v, false);
+	sq_settypetag(v, -1, OBJTYPETAG);
 #ifdef USEUD
-		sq_setclassudsize(v, -1, sizeof MyObject);
+	sq_setclassudsize(v, -1, sizeof MyObject);
 #endif
-		REGISTMETHOD(constructor);
-		REGISTMETHOD(_set);
-		REGISTMETHOD(_get);
-		REGISTMETHOD(hasSetProp);
-		REGISTMETHOD(setDelegate);
-		REGISTMETHOD(notify);
-		REGISTMETHOD(notifyAll);
-		sq_createslot(v, -3);
-		sq_pop(v,1); // root
-	};
+	REGISTMETHOD(constructor);
+	REGISTMETHOD(_set);
+	REGISTMETHOD(_get);
+	REGISTMETHOD(hasSetProp);
+	REGISTMETHOD(setDelegate);
+	REGISTMETHOD(notify);
+	REGISTMETHOD(notifyAll);
+	sq_createslot(v, -3);
+	sq_pop(v,1); // root
 };
 
 class MyThread : public MyObject {

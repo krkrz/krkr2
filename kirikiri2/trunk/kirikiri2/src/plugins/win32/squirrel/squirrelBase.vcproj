@@ -285,6 +285,10 @@
 			Filter="h;hpp;hxx;hm;inl"
 			>
 			<File
+				RelativePath=".\sqobject.h"
+				>
+			</File>
+			<File
 				RelativePath="..\tp_stub.h"
 				>
 			</File>
