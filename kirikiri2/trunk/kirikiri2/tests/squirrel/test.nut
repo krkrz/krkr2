@@ -5,7 +5,6 @@ local c = ::krkr.b;
 
 test <- "てすとのテキスト";
 
-
 class Foo {
 
 	//constructor
@@ -53,7 +52,7 @@ print("rand():" + rand());
 print(format("%s %d 0x%02X","this is a test :",123,10));
 
 // 吉里吉里側のオブジェクト生成
-local layer2 = ::krkr.MyLayer(::krkr.win, ::krkr.base);
+local layer2 = ::krkr.MyLayer(::krkr.win, ::krkr.win.base);
 layer2.setSize(100,100);
 layer2.setPos(100,100);
 layer2.fillRect(0,0,100,100,0xff00ff00);

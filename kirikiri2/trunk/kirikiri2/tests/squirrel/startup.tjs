@@ -2,84 +2,139 @@ Plugins.link("squirrel.dll");
 
 Debug.console.visible = true;
 
+var WIDTH=400;
+var HEIGHT=300;
+
+function dm(msg) {
+	Debug.message(msg);
+}
+
 class MyLayer extends Layer {
-    function MyLayer() {
+	function MyLayer() {
         super.Layer(...);
-        Debug.message("レイヤ生成呼び出し!");
+		dm("レイヤ生成呼び出し!");
     }
 
     function setSize(w,h) {
         super.setSize(w,h);
-        Debug.message("サイズ指定:", w, h);
+        dm("サイズ指定:", w, h);
     }
 
     function setPos(x,y) {
         super.setPos(x,y);
-        Debug.message("場所指定:", x, y);
+        dm("場所指定:", x, y);
     }
 };
 
+class MyWindow extends Window
+{
+	var initTrigger;
+	var base;
 
-// 窓
-var win = new Window();
-win.visible=true;
-Debug.message("これはテストです");
-Debug.message(Scripts.execSQ("local a=10; return a;"));
+	function MyWindow() {
+		super.Window();
+		setInnerSize(WIDTH, HEIGHT);
 
-// ベースレイヤ
-var base = new Layer(win, null);
-base.visible=true;
-base.setSize(800,600);
-base.fillRect(0,0,800,600,0x000000);
+		// ベースレイヤ
+		base = new Layer(this, null);
+		base.visible=true;
+		base.setSize(WIDTH,HEIGHT);
+		base.fillRect(0,0,WIDTH,HEIGHT,0x000000);
+		add(base);
+
+		initTrigger = new AsyncTrigger(init, "");
+		initTrigger.cached = true;
+		initTrigger.mode = atmExclusive;
+		initTrigger.trigger();
+	}
+
+	function onKeyDown(key, shift) {
+		if(key == VK_ESCAPE) {
+			close();
+		}
+	}
+
+	var layer1;
+	var layer2;
+
+	function init() {
+
+		dm("これはテストです");
+		dm(Scripts.execSQ("local a=10; return a;"));
+		
+		layer1 = new MyLayer(this, base);
+		layer1.setSize(100,100);
+		layer1.setPos(0,0);
+		layer1.fillRect(0,0,100,100,0xffff0000);
+		layer1.visible = true;
+		
+		layer2 = Scripts.execStorageSQ("test.nut");
+		dm("設定された値:" + c);
+		
+		dm("Squirrel Global:" + sqglobal);
+		dm("Squirrel test:" + sqglobal.test);
+		
+		sqglobal.test = "値を変更";
+		dm("Squirrel test:" + sqglobal.test);
+		
+		// 関数呼び出し(直接参照)
+		sqglobal.hoge("test");
+		
+		// 関数呼び出し(ファンクションオブジェクト経由)
+		var sqhoge = new SQFunction("hoge");
+		sqhoge.call("test2");
+		
+		// 存在しない関数の呼び出し
+		try {
+			var sqhoge = new SQFunction("xxx");
+		} catch(e) {
+			dm("関数呼び出し生成に失敗:" + e.message);
+		}
+		
+		// Squirrel側クラス生成
+		var foo = new sqglobal.Foo();
+		foo.print();
+		dm(foo.data);
+		
+		var a = ["abc", 1, %[ test:"data", test2:1, "if" => "test" ]];
+		
+		dm("Squirrel convert:" + Scripts.toSQString(a));
+		Scripts.saveSQ("a.nut", a);
+		
+		dm("コンパイル処理実行");
+		Scripts.compileStorageSQ("test2.nut", "test2.nutb");
+		
+		dm("バイナリファイルから実行");
+		Scripts.execStorageSQ("test2.nutb");
+		
+		// Squirrel Continuous ハンドラ
+		//var cont = new SQContinuous("main");
+		//cont.start();
+
+		// property テスト
+		Scripts.execStorageSQ("property.nut");
+		
+		// delegate テスト
+		Scripts.execStorageSQ("delegate.nut");
+
+		// tjsobj テスト
+		Scripts.registClassSQ("Layer", "Layer",
+							  %[
+							  setSize:0,
+							  setPos:0,
+							  fillRect:0,
+							  visible:3,
+								  ]);
+		
+		Scripts.execStorageSQ("tjsobj.nut");
+
+		
+		// fork テスト
+		Scripts.execStorageSQ("forktest.nut");
+	}
+};
 
 var a = 10;
 var b = "test data";
-
-var layer1 = new MyLayer(win, base);
-layer1.setSize(100,100);
-layer1.setPos(0,0);
-layer1.fillRect(0,0,100,100,0xffff0000);
-layer1.visible = true;
-
-var layer2 = Scripts.execStorageSQ("test.nut");
-Debug.message("設定された値:" + c);
-
-Debug.message("Squirrel Global:" + sqglobal);
-Debug.message("Squirrel test:" + sqglobal.test);
-
-sqglobal.test = "値を変更";
-Debug.message("Squirrel test:" + sqglobal.test);
-
-// 関数呼び出し(直接参照)
-sqglobal.hoge("test");
-
-// 関数呼び出し(ファンクションオブジェクト経由)
-var sqhoge = new SQFunction("hoge");
-sqhoge.call("test2");
-
-// 存在しない関数の呼び出し
-try {
-	var sqhoge = new SQFunction("xxx");
-} catch(e) {
-	Debug.message("関数呼び出し生成に失敗");
-}
-
-// Squirrel側クラス生成
-var foo = new sqglobal.Foo();
-foo.print();
-Debug.message(foo.data);
-
-var a = ["abc", 1, %[ test:"data", test2:1, "if" => "test" ]];
-
-Debug.message("Squirrel convert:" + Scripts.toSQString(a));
-Scripts.saveSQ("a.nut", a);
-
-Debug.message("コンパイル処理実行");
-Scripts.compileStorageSQ("test2.nut", "test2.nutb");
-
-Debug.message("バイナリファイルから実行");
-Scripts.execStorageSQ("test2.nutb");
-
-// Squirrel Continuous ハンドラ
-//var cont = new SQContinuous("main");
-//cont.start();
+var win = new MyWindow();
+win.visible=true;
