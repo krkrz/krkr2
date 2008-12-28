@@ -11,13 +11,6 @@
 // ログ出力用
 extern void printFunc(HSQUIRRELVM v, const SQChar* format, ...);
 
-#include <tchar.h>
-#if _UNICODE
-typedef std::wstring tstring;
-#else
-typedef std::string tstring;
-#endif
-
 //#define USEUD
 
 // ループ実行開始
@@ -25,34 +18,12 @@ extern void sqobject_start();
 // ループ実行終了
 extern void sqobject_stop();
 
-// 型名
-#define OBJECTNAME _SC("Object")
-#define THREADNAME _SC("Thread")
-
-// メソッド登録
-#define REGISTMETHOD(name) \
-	sq_pushstring(v, _SC(#name), -1);\
-	sq_newclosure(v, name, 0);\
-	sq_createslot(v, -3);
-
-// メソッド登録（名前つき）
-#define REGISTMETHODNAME(name, method) \
-	sq_pushstring(v, _SC(#name), -1);\
-	sq_newclosure(v, method, 0);\
-	sq_createslot(v, -3);
-
-// メソッド登録
-#define REGISTENUM(name) \
-	sq_pushstring(v, _SC(#name), -1);\
-	sq_pushinteger(v, name);\
-	sq_createslot(v, -3);
-
 /**
  * パラメータ数の取得
  * @param v VM
  * @return パラメータ数
  */
-static int getParamCount(HSQUIRRELVM v)
+int getParamCount(HSQUIRRELVM v)
 {
 	return sq_gettop(v) - 1;
 }
@@ -64,7 +35,7 @@ static int getParamCount(HSQUIRRELVM v)
  * @param defValue デフォルト値
  * @return 整数値
  */
-static int getInt(HSQUIRRELVM v, int idx, int defValue) {
+int getInt(HSQUIRRELVM v, int idx, int defValue) {
 	if (sq_gettop(v) > idx) {
 		switch (sq_gettype(v, idx)) {
 		case OT_INTEGER:
@@ -85,14 +56,45 @@ static int getInt(HSQUIRRELVM v, int idx, int defValue) {
  * @param idx インデックス
  * @return 文字列
  */
-static const SQChar *getString(HSQUIRRELVM v, int idx) {
+const SQChar *getString(HSQUIRRELVM v, int idx) {
 	const SQChar *x = NULL;
 	sq_getstring(v, idx, &x);
 	return x;
 };
 
-static const SQUserPointer OBJTYPETAG = (SQUserPointer)"OBJTYPETAG";
-static const SQUserPointer THREADTYPETAG = (SQUserPointer)"THREADTYPETAG";
+SQInteger ERROR_CREATE(HSQUIRRELVM v) {
+	return sq_throwerror(v, _SC("can't create native instance"));
+}
+
+SQInteger ERROR_NOMEMBER(HSQUIRRELVM v) {
+	return sq_throwerror(v, _SC("no such member"));
+}
+
+SQInteger ERROR_BADINSTANCE(HSQUIRRELVM v) {
+	return sq_throwerror(v, _SC("bad instance"));
+}
+
+SQInteger ERROR_CALL(HSQUIRRELVM v)
+{
+	return sq_throwerror(v, _SC("invalid call"));
+}
+
+const SQUserPointer OBJTYPETAG = (SQUserPointer)"OBJTYPETAG";
+const SQUserPointer THREADTYPETAG = (SQUserPointer)"THREADTYPETAG";
+
+void getSetterName(tstring &store, const SQChar *name)
+{
+	store = _SC("set");
+	store += toupper(*name);
+	store += (name + 1);
+}
+
+void getGetterName(tstring &store, const SQChar *name)
+{
+	store = _SC("get");
+	store += toupper(*name);
+	store += (name + 1);
+}
 
 // ---------------------------------------------------------
 // SQObjectInfo
@@ -215,51 +217,33 @@ SQObjectInfo::isBindDelegate() {
 // インスタンスユーザポインタを取得
 MyThread *
 SQObjectInfo::getMyThread() {
-	SQUserPointer up = NULL;
 	if (v && sq_isinstance(obj)) {
 		sq_pushobject(v, obj);
-		if (!SQ_SUCCEEDED(sq_getinstanceup(v, -1, &up, THREADTYPETAG))) {
-			up = NULL;
+		SQUserPointer up = NULL;
+		if (SQ_SUCCEEDED(sq_getinstanceup(v, -1, &up, THREADTYPETAG))) {
+			sq_pop(v,1);
+			return (MyThread*)up;
 		}
 		sq_pop(v, 1);
 	}
-	return (MyThread*)up;
+	return NULL;
 }
 
 // インスタンスユーザポインタを取得
 MyObject *
 SQObjectInfo::getMyObject() {
-	SQUserPointer up = NULL;
 	if (v && sq_isinstance(obj)) {
 		sq_pushobject(v, obj);
-		if (!SQ_SUCCEEDED(sq_getinstanceup(v, -1, &up, OBJTYPETAG)) ||
-			!SQ_SUCCEEDED(sq_getinstanceup(v, -1, &up, THREADTYPETAG))) {
-			up = NULL;
-		}
+		MyObject *ret = MyObject::getObject(v, -1);
 		sq_pop(v, 1);
+		return ret;
 	}
-	return (MyObject*)up;
+	return NULL;
 }
 
 // ---------------------------------------------------
 // wait処理用メソッド
 // ---------------------------------------------------
-
-// MyObjectか？
-bool
-SQObjectInfo::isMyObject() {
-	bool ret = false;
-	if (sq_isinstance(obj)) {
-		SQUserPointer typetag;
-		sq_pushobject(v, obj);
-		if (SQ_SUCCEEDED(sq_gettypetag(v, -1, &typetag))) {
-			ret = (typetag == OBJTYPETAG ||
-				   typetag == THREADTYPETAG);
-		}
-		sq_pop(v, 1);
-	}
-	return ret;
-}
 
 bool
 SQObjectInfo::isString() const {
@@ -335,14 +319,22 @@ MyObject::getObject(HSQUIRRELVM v, int idx) {
 	SQUserPointer up;
 #ifdef USEUD
 	SQUserPointer typetag;
-	if (SQ_SUCCEEDED(sq_getuserdata(v, idx, &up, &typetag)) &&
-		(typetag == THREADTYPETAG || typetag == OBJTYPETAG)) {
-		return (MyObject*)up;
+	if (SQ_SUCCEEDED(sq_getuserdata(v, idx, &up, &typetag))) {
+		std::vector<SQUserPointer>::const_itrator i = tags.begin();
+		while (i != tags.end()) {
+			if (typetag == *i) {
+				return (MyObject*)up;
+			}
+			i++;
 		}
+	}
 #else
-	if (SQ_SUCCEEDED(sq_getinstanceup(v, idx, &up, THREADTYPETAG)) ||
-		SQ_SUCCEEDED(sq_getinstanceup(v, idx, &up, OBJTYPETAG))) {
-		return (MyObject*)up;
+	std::vector<SQUserPointer>::const_iterator i = tags.begin();
+	while (i != tags.end()) {
+		if (SQ_SUCCEEDED(sq_getinstanceup(v, idx, &up, *i))) {
+			return (MyObject*)up;
+		}
+		i++;
 	}
 #endif
 	return NULL;
@@ -360,11 +352,6 @@ MyObject::release(SQUserPointer up, SQInteger size) {
 	delete self;
 #endif
 	return SQ_OK;
-}
-
-SQInteger
-MyObject::ERROR_CREATE(HSQUIRRELVM v) {
-	return sq_throwerror(v, _SC("can't create native instance"));
 }
 
 /**
@@ -385,6 +372,8 @@ MyObject::constructor(HSQUIRRELVM v) {
 	MyObject *self = new MyObject();
 	if (SQ_SUCCEEDED(result = sq_setinstanceup(v, 1, self))) {;
 		sq_setreleasehook(v, 1, release);
+	} else {
+		delete self;
 	}
 #endif
 	if (SQ_SUCCEEDED(result)) {
@@ -393,11 +382,6 @@ MyObject::constructor(HSQUIRRELVM v) {
 		}
 	}
 	return result;
-}
-
-SQInteger
-MyObject::ERROR_NOMEMBER(HSQUIRRELVM v) {
-	return sq_throwerror(v, _SC("no such member"));
 }
 
 bool
@@ -437,9 +421,8 @@ MyObject::_get(HSQUIRRELVM v) {
 		}
 		
 		// getter を探してアクセス
-		tstring name2 = _SC("get");
-		name2 += toupper(*name);
-		name2 += (name + 1);
+		tstring name2;
+		getGetterName(name2, name);
 		sq_push(v, 1); // self
 		sq_pushstring(v, name2.c_str(), -1);
 		if (SQ_SUCCEEDED(result = sq_get(v,-2))) {
@@ -487,9 +470,9 @@ MyObject::_set(HSQUIRRELVM v) {
 		}
 		
 		// setter を探してアクセス
-		tstring name2 = _SC("set");
-		name2 += toupper(*name);
-		name2 += (name + 1);
+		tstring name2;
+		getSetterName(name2, name);
+		
 		sq_push(v, 1); // self
 		sq_pushstring(v, name2.c_str(), -1);
 		if (SQ_SUCCEEDED(result = sq_get(v,-2))) {
@@ -521,9 +504,8 @@ MyObject::hasSetProp(HSQUIRRELVM v) {
 	if (getParamCount(v) >= 2) {
 		const SQChar *name = getString(v, 2);
 		if (name && *name) {
-			tstring name2 = _SC("set");
-			name2 += toupper(*name);
-			name2 += (name + 1);
+			tstring name2;
+			getSetterName(name2, name);
 			sq_push(v, 1); // object
 			sq_pushstring(v, name2.c_str(), -1);
 			if (SQ_SUCCEEDED(result = sq_get(v,-2))) {
@@ -545,11 +527,6 @@ MyObject::hasSetProp(HSQUIRRELVM v) {
 	} else {
 		return result;
 	}
-}
-
-SQInteger
-MyObject::ERROR_BADINSTANCE(HSQUIRRELVM v) {
-	return sq_throwerror(v, _SC("bad instance"));
 }
 
 /**
@@ -604,10 +581,14 @@ MyObject::notifyAll(HSQUIRRELVM v) {
  */
 void
 MyObject::registClass(HSQUIRRELVM v) {
+
+	MyObject::pushTag(OBJTYPETAG);
+
 	sq_pushroottable(v); // root
 	sq_pushstring(v, OBJECTNAME, -1);
 	sq_newclass(v, false);
 	sq_settypetag(v, -1, OBJTYPETAG);
+	
 #ifdef USEUD
 	sq_setclassudsize(v, -1, sizeof MyObject);
 #endif
@@ -621,6 +602,8 @@ MyObject::registClass(HSQUIRRELVM v) {
 	sq_createslot(v, -3);
 	sq_pop(v,1); // root
 };
+
+std::vector<SQUserPointer> MyObject::tags;
 
 class MyThread : public MyObject {
 
@@ -899,8 +882,9 @@ protected:
 #ifdef USEUD
 		SQUserPointer typetag;
 		if (SQ_SUCCEEDED(sq_getuserdata(v, idx, &up, &typetag)) &&
-			(typetag == THREADTYPETAG))) {
-			return (MyObject*)up;
+			if (typetag == THREADTYPETAG) {
+				return (MyThread*)up;
+			}
 		}
 #else
 		if (SQ_SUCCEEDED(sq_getinstanceup(v, idx, &up, THREADTYPETAG))) {
@@ -940,6 +924,8 @@ protected:
 		MyThread *self = new MyThread();
 		if (SQ_SUCCEEDED(result = sq_setinstanceup(v, 1, self))) {
 			sq_setreleasehook(v, 1, release);
+		} else {
+			delete self;
 		}
 #endif
 		if (SQ_SUCCEEDED(result)) {
@@ -1051,6 +1037,10 @@ public:
 	 * @param v squirrel VM
 	 */
 	static void registClass(HSQUIRRELVM v) {
+
+		MyObject::pushTag(THREADTYPETAG);
+		MyThread::pushTag(THREADTYPETAG);
+
 		sq_pushroottable(v); // root
 		sq_pushstring(v, THREADNAME, -1);
 		sq_pushstring(v, OBJECTNAME, -1);

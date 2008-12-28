@@ -73,6 +73,15 @@ class Scripts {
 	 * @param name 登録名称
 	 */
 	function unregistSQ(name);
+
+	/**
+	 * Squirrel のグローバル空間に TJS2のクラスをクラスとして登録
+	 * @param className squirrel側のクラス名
+	 * @param tjsClassName TJS側のクラス名
+	 * @param methods メソッド/プロパティ情報の辞書 name=value
+	 * value=0:メソッド value=1:GETのみプロパティ value=2:SETのみプロパティ value=3:プロパティ
+	 */
+	function registClassSQ(className, tjsClassName, methods);
 }
 
 /**
