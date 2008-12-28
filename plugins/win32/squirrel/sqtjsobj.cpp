@@ -7,6 +7,7 @@ extern void printFunc(HSQUIRRELVM v, const SQChar* format, ...);
 
 extern void sq_pushvariant(HSQUIRRELVM v, tTJSVariant &variant);
 extern SQRESULT sq_getvariant(HSQUIRRELVM v, int idx, tTJSVariant *result);
+extern SQInteger ERROR_KRKR(HSQUIRRELVM v, tjs_error error);
 
 // 型情報
 static const SQUserPointer TJSOBJTYPETAG = (SQUserPointer)"TJSOBJTYPETAG";
@@ -24,7 +25,7 @@ protected:
 	void registMethod(const tjs_char *methodName) {
 		script += "function ";
 		script += methodName;
-		script += "(){local args=[];for(local i=0;i<vargc;i++){args.add(vargc[i]);};return tjsInvoker(\"";
+		script += "(...){local args=[];for(local i=0;i<vargc;i++){args.append(vargv[i]);};return tjsInvoker(\"";
 		script += methodName;
 		script += "\", args);}";
 	}
@@ -43,7 +44,7 @@ protected:
 	// ゲッターのコードを生成
 	void registGetter(const tjs_char *propertyName) {
 		tstring name;
-		getSetterName(name, propertyName);
+		getGetterName(name, propertyName);
 		script += "function ";
 		script += name.c_str();
 		script += "(){return tjsGetter(\"";
@@ -55,7 +56,7 @@ public:
 
 	// コンストラクタ
 	ScriptCreater(const tjs_char *className) {
-		script += "constructor(...){local args=[];for(local i=0;i<vargc;i++){args.add(vargv[i]);};return tjsConstructor(\"";
+		script += "function constructor(...){local args=[];for(local i=0;i<vargc;i++){args.append(vargv[i]);};return tjsConstructor(\"";
 		script += className;
 		script += "\", args);}";
 	};
@@ -196,10 +197,11 @@ protected:
 						sq_pop(v, 1);
 					}
 				}
-				if (SUCCEEDED(dispatch->CreateNew(0, NULL, NULL, &self->dispatch, argc, args, dispatch))) {
+				tjs_error error;
+				if (SUCCEEDED(error = dispatch->CreateNew(0, NULL, NULL, &self->dispatch, argc, args, dispatch))) {
 					result = SQ_OK;
 				} else {
-					result = ERROR_CREATE(v);
+					result = ERROR_KRKR(v, error);
 				}
 				// 引数破棄
 				for (int i=0;i<argc;i++) {
@@ -239,7 +241,9 @@ protected:
 			// メソッド呼び出し
 			int ret = 0;
 			tTJSVariant result;
-			if (SUCCEEDED(dispatch->FuncCall(0, getString(v,2), NULL, &result, argc, args, dispatch))) {
+			tjs_error error;
+			const tjs_char *methodName = getString(v,2);
+			if (SUCCEEDED(error = dispatch->FuncCall(0, getString(v,2), NULL, &result, argc, args, dispatch))) {
 				if (result.Type() != tvtVoid) {
 					sq_pushvariant(v, result);
 					result = 1;
@@ -247,7 +251,7 @@ protected:
 					result = 0;
 				}
 			} else {
-				result = ERROR_CALL(v);
+				result = ERROR_KRKR(v, error);
 			}
 			
 			// 引数破棄
@@ -270,11 +274,13 @@ protected:
 		if (self && self->dispatch) {
 			iTJSDispatch2 *dispatch = self->dispatch;
 			tTJSVariant result;
-			if (SUCCEEDED(dispatch->PropGet(0, getString(v,2), NULL, &result, dispatch))) {
+			tjs_error error;
+			if (SUCCEEDED(error = dispatch->PropGet(0, getString(v,2), NULL, &result, dispatch))) {
 				sq_pushvariant(v, result);
 				return 1;
+			} else {
+				return ERROR_KRKR(v, error);
 			}
-			return ERROR_NOMEMBER(v);
 		}
 		return ERROR_BADINSTANCE(v);
 	}
@@ -291,17 +297,15 @@ protected:
 			iTJSDispatch2 *dispatch = self->dispatch;
 			tTJSVariant result;
 			sq_getvariant(v, 3, &result);
-			if (SUCCEEDED(dispatch->PropSet(TJS_MEMBERENSURE, getString(v, 2), NULL, &result, dispatch))) {
+			tjs_error error;
+			if (SUCCEEDED(error = dispatch->PropSet(TJS_MEMBERENSURE, getString(v, 2), NULL, &result, dispatch))) {
 				return SQ_OK;
+			} else {
+				return ERROR_KRKR(v, error);
 			}
-			return ERROR_NOMEMBER(v);
 		}
 		return ERROR_BADINSTANCE(v);
 	}
-
-
-
-
 	
 public:
 	static void registClassInit() {
@@ -336,6 +340,8 @@ public:
 		}
 
 		// クラスのコンテキストで実行
+		const wchar_t *scr = script.getData();
+
 		if (SQ_SUCCEEDED(sq_compilebuffer(v, script.getData(), script.getLength(), className, SQTrue))) {
 			sq_push(v, -2); // class
 			if (SQ_FAILED(sq_call(v, 1, SQFalse, SQTrue))) {
