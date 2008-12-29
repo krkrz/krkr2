@@ -329,6 +329,7 @@ getVariantString(tTJSVariant &var, IWriter *writer)
 extern void sqobject_init(HSQUIRRELVM v);
 extern void sqobject_main(int tick);
 extern void sqobject_fork(const char *filename);
+extern void sqobject_done();
 
 // Continuous Handelr —p
 class SQThreadContinuous : public tTVPContinuousEventCallbackIntf {
@@ -836,6 +837,9 @@ static void PostRegistCallback()
  */
 static void PreUnregistCallback()
 {
+	sqobject_stop();
+	sqobject_done();
+
 	if (ArrayCountProp) {
 		ArrayCountProp->Release();
 		ArrayCountProp = NULL;
