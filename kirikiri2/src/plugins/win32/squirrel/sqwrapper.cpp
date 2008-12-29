@@ -9,9 +9,9 @@
 
 // 外部参照
 extern const SQChar *getString(HSQUIRRELVM v, int idx);
-extern SQInteger ERROR_BADINSTANCE(HSQUIRRELVM v);
+extern SQRESULT ERROR_BADINSTANCE(HSQUIRRELVM v);
 
-SQInteger ERROR_KRKR(HSQUIRRELVM v, tjs_error error) {
+SQRESULT ERROR_KRKR(HSQUIRRELVM v, tjs_error error) {
 	switch (error) {
 	case TJS_E_MEMBERNOTFOUND:
 		return sq_throwerror(v, _SC("member not found"));
@@ -242,7 +242,7 @@ public:
 /**
  * iTJSDispatch2 用オブジェクト開放処理
  */
-static SQInteger
+static SQRESULT
 tjsDispatchRelease(SQUserPointer up, SQInteger size)
 {
 	iTJSDispatch2 *dispatch	= *((iTJSDispatch2**)up);
@@ -267,7 +267,7 @@ static iTJSDispatch2* GetDispatch(HSQUIRRELVM v, int idx)
  * iTJSDispatch2 用プロパティの取得
  * @param v squirrel VM
  */
-static SQInteger
+static SQRESULT
 get(HSQUIRRELVM v)
 {
 	iTJSDispatch2 *dispatch = GetDispatch(v, 1);
@@ -288,7 +288,7 @@ get(HSQUIRRELVM v)
  * iTJSDispatch2 用プロパティの設定
  * @param v squirrel VM
  */
-static SQInteger
+static SQRESULT
 set(HSQUIRRELVM v)
 {
 	iTJSDispatch2 *dispatch	= GetDispatch(v, 1);
@@ -309,7 +309,7 @@ set(HSQUIRRELVM v)
  * iTJSDispatch2 用コンストラクタの呼び出し
  * @param v squirrel VM
  */
-static SQInteger
+static SQRESULT
 callConstructor(HSQUIRRELVM v)
 {
 	// param1 オブジェクト
@@ -358,7 +358,7 @@ callConstructor(HSQUIRRELVM v)
  * iTJSDispatch2 用メソッドの呼び出し
  * @param v squirrel VM
  */
-static SQInteger
+static SQRESULT
 callMethod(HSQUIRRELVM v)
 {
 	// param1 オブジェクト

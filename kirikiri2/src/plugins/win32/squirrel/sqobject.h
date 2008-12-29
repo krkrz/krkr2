@@ -5,17 +5,12 @@
 #include <vector>
 
 // パラメータ参照用
-extern int getInt(HSQUIRRELVM v, int idx, int defValue);
 extern const SQChar *getString(HSQUIRRELVM v, int idx);
 
 // エラー処理用
-extern SQInteger ERROR_CREATE(HSQUIRRELVM v);
-extern SQInteger ERROR_NOMEMBER(HSQUIRRELVM v);
-extern SQInteger ERROR_BADINSTANCE(HSQUIRRELVM v);
-
-// 型定義
-extern const SQUserPointer OBJTYPETAG;
-extern const SQUserPointer THREADTYPETAG;
+extern SQRESULT ERROR_CREATE(HSQUIRRELVM v);
+extern SQRESULT ERROR_NOMEMBER(HSQUIRRELVM v);
+extern SQRESULT ERROR_BADINSTANCE(HSQUIRRELVM v);
 
 #include <tchar.h>
 #if _UNICODE
@@ -175,12 +170,12 @@ protected:
 	/**
 	 * オブジェクトのリリーサ
 	 */
-	static SQInteger release(SQUserPointer up, SQInteger size);
+	static SQRESULT release(SQUserPointer up, SQInteger size);
 
 	/**
 	 * オブジェクトのコンストラクタ
 	 */
-	static SQInteger constructor(HSQUIRRELVM v);
+	static SQRESULT constructor(HSQUIRRELVM v);
 
 	static bool isClosure(SQObjectType type);
 	
@@ -189,41 +184,41 @@ protected:
 	 * @param name プロパティ名
 	 * @return プロパティ値
 	 */
-	static SQInteger _get(HSQUIRRELVM v);
+	static SQRESULT _get(HSQUIRRELVM v);
 
 	/**
 	 * プロパティに値を設定
 	 * @param name プロパティ名
 	 * @param value プロパティ値
 	 */
-	static SQInteger _set(HSQUIRRELVM v);
+	static SQRESULT _set(HSQUIRRELVM v);
 
 	/**
 	 * setプロパティの存在確認
 	 * @param name プロパティ名
 	 * @return setプロパティが存在したら true
 	 */
-	static SQInteger hasSetProp(HSQUIRRELVM v);
+	static SQRESULT hasSetProp(HSQUIRRELVM v);
 	
 	/**
 	 * 委譲の設定
 	 */
-	static SQInteger setDelegate(HSQUIRRELVM v);
+	static SQRESULT setDelegate(HSQUIRRELVM v);
 
 	/**
 	 * 委譲の取得
 	 */
-	static SQInteger getDelegate(HSQUIRRELVM v);
+	static SQRESULT getDelegate(HSQUIRRELVM v);
 	
 	/**
 	 * 単一スレッドへのオブジェクト待ちの終了通知用
 	 */
-	static SQInteger notify(HSQUIRRELVM v);
+	static SQRESULT notify(HSQUIRRELVM v);
 
 	/**
 	 * 全スレッドへのオブジェクト待ちの終了通知
 	 */
-	static SQInteger notifyAll(HSQUIRRELVM v);
+	static SQRESULT notifyAll(HSQUIRRELVM v);
 
 public:
 	/**
