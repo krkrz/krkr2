@@ -1304,6 +1304,10 @@ public:
 		prevTick = tick;
 	};
 
+
+	static void done() {
+		threadList.clear();
+	}
 };
 
 std::vector<SQObjectInfo> MyThread::threadList; //< ƒXƒŒƒbƒhˆê——
@@ -1359,4 +1363,10 @@ void
 sqobject_main(int tick)
 {
 	MyThread::main(tick);
+}
+
+void
+sqobject_done()
+{
+	MyThread::done();
 }
