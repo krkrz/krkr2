@@ -29,28 +29,6 @@ static int getParamCount(HSQUIRRELVM v)
 }
 
 /**
- * 数値取得用
- * @param v VM
- * @param idx インデックス
- * @param defValue デフォルト値
- * @return 整数値
- */
-int getInt(HSQUIRRELVM v, int idx, int defValue) {
-	if (sq_gettop(v) > idx) {
-		switch (sq_gettype(v, idx)) {
-		case OT_INTEGER:
-		case OT_FLOAT:
-			{
-				int ret;
-				sq_getinteger(v, idx, &ret);
-				return ret;
-			}
-		}
-	}
-	return defValue;
-};
-
-/**
  * 文字列取得用
  * @param v VM
  * @param idx インデックス
@@ -62,20 +40,17 @@ const SQChar *getString(HSQUIRRELVM v, int idx) {
 	return x;
 };
 
-SQInteger ERROR_CREATE(HSQUIRRELVM v) {
+SQRESULT ERROR_CREATE(HSQUIRRELVM v) {
 	return sq_throwerror(v, _SC("can't create native instance"));
 }
 
-SQInteger ERROR_NOMEMBER(HSQUIRRELVM v) {
+SQRESULT ERROR_NOMEMBER(HSQUIRRELVM v) {
 	return sq_throwerror(v, _SC("no such member"));
 }
 
-SQInteger ERROR_BADINSTANCE(HSQUIRRELVM v) {
+SQRESULT ERROR_BADINSTANCE(HSQUIRRELVM v) {
 	return sq_throwerror(v, _SC("bad instance"));
 }
-
-const SQUserPointer OBJTYPETAG = (SQUserPointer)"OBJTYPETAG";
-const SQUserPointer THREADTYPETAG = (SQUserPointer)"THREADTYPETAG";
 
 void getSetterName(tstring &store, const SQChar *name)
 {
@@ -90,6 +65,9 @@ void getGetterName(tstring &store, const SQChar *name)
 	store += toupper(*name);
 	store += (name + 1);
 }
+
+static const SQUserPointer OBJTYPETAG = (SQUserPointer)"OBJTYPETAG";
+static const SQUserPointer THREADTYPETAG = (SQUserPointer)"THREADTYPETAG";
 
 // ---------------------------------------------------------
 // SQObjectInfo
@@ -332,7 +310,7 @@ MyObject::getObject(HSQUIRRELVM v, int idx) {
 /**
  * オブジェクトのリリーサ
  */
-SQInteger
+SQRESULT
 MyObject::release(SQUserPointer up, SQInteger size) {
 	MyObject *self = (MyObject*)up;
 #ifdef USEUD
@@ -346,9 +324,9 @@ MyObject::release(SQUserPointer up, SQInteger size) {
 /**
  * オブジェクトのコンストラクタ
  */
-SQInteger
+SQRESULT
 MyObject::constructor(HSQUIRRELVM v) {
-	SQInteger result = SQ_OK;
+	SQRESULT result = SQ_OK;
 #ifdef USEUD
 	MyObject *self = getObject(v, 1);
 	if (self) {
@@ -383,9 +361,9 @@ MyObject::isClosure(SQObjectType type) {
  * @param name プロパティ名
  * @return プロパティ値
  */
-SQInteger
+SQRESULT
 MyObject::_get(HSQUIRRELVM v) {
-	SQInteger result = SQ_OK;
+	SQRESULT result = SQ_OK;
 	const SQChar *name = getString(v, 2);
 	if (name && *name) {
 		
@@ -438,9 +416,9 @@ MyObject::_get(HSQUIRRELVM v) {
  * @param name プロパティ名
  * @param value プロパティ値
  */
-SQInteger
+SQRESULT
 MyObject::_set(HSQUIRRELVM v) {
-	SQInteger result = SQ_OK;
+	SQRESULT result = SQ_OK;
 	const SQChar *name = getString(v, 2);
 	if (name && *name) {
 		
@@ -486,9 +464,9 @@ MyObject::_set(HSQUIRRELVM v) {
  * @param name プロパティ名
  * @return setプロパティが存在したら true
  */
-SQInteger
+SQRESULT
 MyObject::hasSetProp(HSQUIRRELVM v) {
-	SQInteger result = SQ_OK;
+	SQRESULT result = SQ_OK;
 	SQBool ret = SQFalse;
 	if (getParamCount(v) >= 2) {
 		const SQChar *name = getString(v, 2);
@@ -521,7 +499,7 @@ MyObject::hasSetProp(HSQUIRRELVM v) {
 /**
  * 委譲の設定
  */
-SQInteger
+SQRESULT
 MyObject::setDelegate(HSQUIRRELVM v) {
 	MyObject *self = getObject(v, 1);
 	if (self) {
@@ -539,7 +517,7 @@ MyObject::setDelegate(HSQUIRRELVM v) {
 /**
  * 委譲の設定
  */
-SQInteger
+SQRESULT
 MyObject::getDelegate(HSQUIRRELVM v) {
 	MyObject *self = getObject(v, 1);
 	if (self) {
@@ -553,7 +531,7 @@ MyObject::getDelegate(HSQUIRRELVM v) {
 /**
  * 単一スレッドへのオブジェクト待ちの終了通知用
  */
-SQInteger
+SQRESULT
 MyObject::notify(HSQUIRRELVM v) {
 	MyObject *self = getObject(v, 1);
 	if (self) {
@@ -567,7 +545,7 @@ MyObject::notify(HSQUIRRELVM v) {
 /**
  * 全スレッドへのオブジェクト待ちの終了通知
  */
-SQInteger
+SQRESULT
 MyObject::notifyAll(HSQUIRRELVM v) {
 	MyObject *self = getObject(v, 1);
 	if (self) {
@@ -786,7 +764,7 @@ protected:
 	 * 実行開始
 	 * @param func 実行対象ファンクション。文字列の場合該当スクリプトを読み込む
 	 */
-	SQInteger _exec(HSQUIRRELVM v) {
+	SQRESULT _exec(HSQUIRRELVM v) {
 		_clear();
 
 		HSQUIRRELVM testVM = sq_newthread(v, 1024);
@@ -795,7 +773,7 @@ protected:
 		
 		// スレッド先頭にスクリプトをロード
 		if (sq_gettype(v, 2) == OT_STRING) {
-			SQInteger result;
+			SQRESULT result;
 			if (SQ_FAILED(result = sqstd_loadfile(_thread, getString(v, 2), SQTrue))) {
 				_clear();
 				return result;
@@ -866,7 +844,7 @@ protected:
 
 		// スレッド実行
 		if (getStatus() == THREAD_RUN) {
-			SQInteger result;
+			SQRESULT result;
 			if (sq_getvmstate(_thread) == SQ_VMSTATE_SUSPENDED) {
 				_waitResult.push(_thread);
 				_waitResult.clear();
@@ -917,7 +895,7 @@ protected:
 	/**
 	 * オブジェクトのリリーサ
 	 */
-	static SQInteger release(SQUserPointer up, SQInteger size) {
+	static SQRESULT release(SQUserPointer up, SQInteger size) {
 		MyThread *self = (MyThread*)up;
 #ifdef USEUD
 		self->~MyThread();
@@ -930,8 +908,8 @@ protected:
 	/**
 	 * オブジェクトのコンストラクタ
 	 */
-	static SQInteger constructor(HSQUIRRELVM v) {
-		SQInteger result = SQ_OK;
+	static SQRESULT constructor(HSQUIRRELVM v) {
+		SQRESULT result = SQ_OK;
 #ifdef USEUD
 		MyThread *self = getThread(v, 1);
 		if (self) {
@@ -963,7 +941,7 @@ protected:
 	// プロパティ
 	// ------------------------------------------------------
 	
-	static SQInteger getCurrentTick(HSQUIRRELVM v) {
+	static SQRESULT getCurrentTick(HSQUIRRELVM v) {
 		MyThread *self = getThread(v, 1);
 		if (self) {
 			sq_pushinteger(v, self->_currentTick);
@@ -973,7 +951,7 @@ protected:
 		}
 	}
 
-	static SQInteger getStatus(HSQUIRRELVM v) {
+	static SQRESULT getStatus(HSQUIRRELVM v) {
 		MyThread *self = getThread(v, 1);
 		if (self) {
 			sq_pushinteger(v, self->getStatus());
@@ -991,7 +969,7 @@ protected:
 	 * 処理を開始する
 	 * @param func スレッドで実行するファンクション
 	 */
-	static SQInteger exec(HSQUIRRELVM v) {
+	static SQRESULT exec(HSQUIRRELVM v) {
 		MyThread *self = getThread(v, 1);
 		if (self) {
 			return self->_exec(v);
@@ -1003,7 +981,7 @@ protected:
 	/**
 	 * 処理を中断する
 	 */
-	static SQInteger exit(HSQUIRRELVM v) {
+	static SQRESULT exit(HSQUIRRELVM v) {
 		MyThread *self = getThread(v, 1);
 		if (self) {
 			self->_exit();
@@ -1016,7 +994,7 @@ protected:
 	/**
 	 * 処理を一時停止する
 	 */
-	static SQInteger stop(HSQUIRRELVM v) {
+	static SQRESULT stop(HSQUIRRELVM v) {
 		MyThread *self = getThread(v, 1);
 		if (self) {
 			self->_stop();
@@ -1029,7 +1007,7 @@ protected:
 	/**
 	 * 処理を再開する
 	 */
-	static SQInteger run(HSQUIRRELVM v) {
+	static SQRESULT run(HSQUIRRELVM v) {
 		MyThread *self = getThread(v, 1);
 		if (self) {
 			self->_run();
@@ -1042,7 +1020,7 @@ protected:
 	/**
 	 * 処理待ち
 	 */
-	static SQInteger wait(HSQUIRRELVM v) {
+	static SQRESULT wait(HSQUIRRELVM v) {
 		MyThread *self = getThread(v, 1);
 		if (self) {
 			self->_wait(v);
@@ -1055,7 +1033,7 @@ protected:
 	/**
 	 * 処理待ち
 	 */
-	static SQInteger cancelWait(HSQUIRRELVM v) {
+	static SQRESULT cancelWait(HSQUIRRELVM v) {
 		MyThread *self = getThread(v, 1);
 		if (self) {
 			self->_cancelWait();
@@ -1131,19 +1109,19 @@ protected:
 	/**
 	 * 現在時刻の取得
 	 */
-	static SQInteger global_getCurrentTick(HSQUIRRELVM v) {
+	static SQRESULT global_getCurrentTick(HSQUIRRELVM v) {
 		sq_pushinteger(v, currentTick);
 		return 1;
 	}
 
-	static SQInteger ERROR_NOTHREAD(HSQUIRRELVM v) {
+	static SQRESULT ERROR_NOTHREAD(HSQUIRRELVM v) {
 		return sq_throwerror(v, _SC("no thread"));
 	}
 	
 	/*
 	 * @return 現在のスレッドを返す
 	 */
-	static SQInteger global_getCurrentThread(HSQUIRRELVM v) {
+	static SQRESULT global_getCurrentThread(HSQUIRRELVM v) {
 		std::vector<SQObjectInfo>::iterator i = threadList.begin();
 		while (i != threadList.end()) {
 			MyThread *th = i->getMyThread();
@@ -1159,7 +1137,7 @@ protected:
 	/*
 	 * @return 現在のスレッド一覧を返す
 	 */
-	static SQInteger global_getThreadList(HSQUIRRELVM v) {
+	static SQRESULT global_getThreadList(HSQUIRRELVM v) {
 		sq_newarray(v, 0);
 		std::vector<SQObjectInfo>::const_iterator i = threadList.begin();
 		while (i != threadList.end()) {
@@ -1176,9 +1154,9 @@ protected:
 	 * @param func スレッドで実行するファンクション
 	 * @return 新スレッド
 	 */
-	static SQInteger global_fork(HSQUIRRELVM v) {
+	static SQRESULT global_fork(HSQUIRRELVM v) {
 		//dm("スレッドを生成!");
-		SQInteger result;
+		SQRESULT result;
 		sq_pushroottable(v); // root
 		sq_pushstring(v, THREADNAME, -1);
 		if (SQ_SUCCEEDED(result = sq_get(v,-2))) { // class
@@ -1214,12 +1192,12 @@ protected:
 	 * スクリプトを切り替える
 	 * @param func スレッドで実行するファンクション
 	 */
-	static SQInteger global_exec(HSQUIRRELVM v) {
+	static SQRESULT global_exec(HSQUIRRELVM v) {
 		MyThread *th = getCurrentThread(v);
 		if (th) {
-			SQInteger ret = th->_exec(v);
-			if (ret) {
-				return ret;
+			SQRESULT result;
+			if (SQ_FAILED(result = th->_exec(v))) {
+				return result;
 			} else {
 				return sq_suspendvm(v);
 			}
@@ -1231,7 +1209,7 @@ protected:
 	/**
 	 * 実行中スレッドの終了
 	 */
-	static SQInteger global_exit(HSQUIRRELVM v) {
+	static SQRESULT global_exit(HSQUIRRELVM v) {
 		MyThread *th = getCurrentThread(v);
 		if (th) {
 			th->_exit();
@@ -1247,7 +1225,7 @@ protected:
 	 * @param timeout タイムアウト(省略時は無限に待つ)
 	 * @return 待ちがキャンセルされたら true
 	 */
-	static SQInteger global_wait(HSQUIRRELVM v) {
+	static SQRESULT global_wait(HSQUIRRELVM v) {
 		MyThread *th = getCurrentThread(v);
 		if (th) {
 			th->_wait(v);
@@ -1261,7 +1239,7 @@ protected:
 	 * 全スレッドへのトリガ通知
 	 * @param name 処理待ちトリガ名
 	 */
-	static SQInteger global_trigger(HSQUIRRELVM v) {
+	static SQRESULT global_trigger(HSQUIRRELVM v) {
 		const SQChar *name = getString(v, 2);
 		std::vector<SQObjectInfo>::iterator i = threadList.begin();
 		while (i != threadList.end()) {
