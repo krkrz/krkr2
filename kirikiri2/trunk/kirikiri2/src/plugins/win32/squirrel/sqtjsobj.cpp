@@ -7,7 +7,7 @@ extern void printFunc(HSQUIRRELVM v, const SQChar* format, ...);
 
 extern void sq_pushvariant(HSQUIRRELVM v, tTJSVariant &variant);
 extern SQRESULT sq_getvariant(HSQUIRRELVM v, int idx, tTJSVariant *result);
-extern SQInteger ERROR_KRKR(HSQUIRRELVM v, tjs_error error);
+extern SQRESULT ERROR_KRKR(HSQUIRRELVM v, tjs_error error);
 
 // 型情報
 static const SQUserPointer TJSOBJTYPETAG = (SQUserPointer)"TJSOBJTYPETAG";
@@ -146,7 +146,7 @@ protected:
 	/**
 	 * オブジェクトのリリーサ
 	 */
-	static SQInteger release(SQUserPointer up, SQInteger size) {
+	static SQRESULT release(SQUserPointer up, SQInteger size) {
 		TJSObject *self = (TJSObject*)up;
 #ifdef USEUD
 		self->~TJSObject();
@@ -162,8 +162,8 @@ protected:
 	 * 引数2 クラス名
 	 * 引数3 引数
 	 */
-	static SQInteger tjsConstructor(HSQUIRRELVM v) {
-		SQInteger result = SQ_OK;
+	static SQRESULT tjsConstructor(HSQUIRRELVM v) {
+		SQRESULT result = SQ_OK;
 #ifdef USEUD
 		TJSObject *self = getTJSObject(v, 1);
 		if (self) {
@@ -221,7 +221,7 @@ protected:
 	 * 引数2 メンバ名
 	 * 引数3 引数の配列
 	 */
-	static SQInteger tjsInvoker(HSQUIRRELVM v) {
+	static SQRESULT tjsInvoker(HSQUIRRELVM v) {
 		TJSObject *self = getTJSObject(v, 1);
 		if (self && self->dispatch) {
 			iTJSDispatch2 *dispatch = self->dispatch;
@@ -269,7 +269,7 @@ protected:
 	 * 引数1 オブジェクト
 	 * 引数2 プロパティ名
 	 */
-	static SQInteger tjsGetter(HSQUIRRELVM v) {
+	static SQRESULT tjsGetter(HSQUIRRELVM v) {
 		TJSObject *self = getTJSObject(v, 1);
 		if (self && self->dispatch) {
 			iTJSDispatch2 *dispatch = self->dispatch;
@@ -291,7 +291,7 @@ protected:
 	 * 引数2 プロパティ名
 	 * 引数3 設定値
 	 */
-	static SQInteger tjsSetter(HSQUIRRELVM v) {
+	static SQRESULT tjsSetter(HSQUIRRELVM v) {
 		TJSObject *self = getTJSObject(v, 1);
 		if (self && self->dispatch) {
 			iTJSDispatch2 *dispatch = self->dispatch;
