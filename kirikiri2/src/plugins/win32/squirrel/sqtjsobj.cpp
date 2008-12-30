@@ -112,6 +112,11 @@ protected:
 	// 処理対象オブジェクト
 	iTJSDispatch2 *dispatch;
 
+public:
+	iTJSDispatch2 *getDispatch() {
+		return dispatch;
+	}
+
 protected:
 	// コンストラクタ
 	TJSObject() : dispatch(NULL) {
@@ -124,6 +129,7 @@ protected:
 		}
 	}
 	
+public:
 	/**
 	 * @return スレッド情報オブジェクト
 	 */
@@ -143,6 +149,7 @@ protected:
 		return NULL;
 	}
 
+protected:
 	/**
 	 * オブジェクトのリリーサ
 	 */
@@ -365,12 +372,20 @@ public:
 	}
 };
 
+// 初期化用
 void sqtjsobj_init()
 {
 	TJSObject::registClassInit();
 }
 
+// クラス登録
 void sqtjsobj_regist(HSQUIRRELVM v, const tjs_char *className, const tjs_char *tjsClassName, iTJSDispatch2 *methods)
 {
 	TJSObject::registClass(v, className, tjsClassName, methods);
 };
+
+// iTJSDispatch2* をスタックから取得
+iTJSDispatch2 *sqtjsobj_getDispatch(HSQUIRRELVM v, int idx) {
+	TJSObject *obj = TJSObject::getTJSObject(v, idx);
+	return obj ? obj->getDispatch() : NULL;
+}

@@ -472,6 +472,8 @@ sq_pushvariant(HSQUIRRELVM v, tTJSVariant &variant)
 	}
 }
 
+extern iTJSDispatch2 *sqtjsobj_getDispatch(HSQUIRRELVM v, int idx);
+
 /**
  * tTJSVariant を squirrel の空間から取得する
  * @param v squirrel VM
@@ -499,6 +501,16 @@ sq_getvariant(HSQUIRRELVM v, int idx, tTJSVariant *result)
 				}
 			}
 			break;
+		case OT_INSTANCE:
+			{
+				// TJSベースインスタンスだった場合
+				iTJSDispatch2 *dispatch = sqtjsobj_getDispatch(v, idx);
+				if (dispatch) {
+					*result = tTJSVariant(dispatch, dispatch);
+					break;
+				}
+			}
+			// through down
 		case OT_TABLE:
 		case OT_ARRAY:
 		case OT_CLOSURE:
@@ -507,7 +519,6 @@ sq_getvariant(HSQUIRRELVM v, int idx, tTJSVariant *result)
 		case OT_USERPOINTER:
 		case OT_THREAD:
 		case OT_CLASS:
-		case OT_INSTANCE:
 		case OT_WEAKREF:
 			// ラッピング
 			{
