@@ -358,7 +358,7 @@ void sqobject_stop()
 //---------------------------------------------------------------------------
 
 extern void sqtjsobj_init();
-extern void sqtjsobj_regist(HSQUIRRELVM v, const tjs_char *className, const tjs_char *tjsClassName, iTJSDispatch2 *methods);
+extern void sqtjsobj_regist(HSQUIRRELVM v, const tjs_char *className, tTJSVariant *tjsClassInfo);
 
 //---------------------------------------------------------------------------
 
@@ -597,11 +597,10 @@ public:
 												 tjs_int numparams,
 												 tTJSVariant **param,
 												 iTJSDispatch2 *objthis) {
-		if (numparams < 3) return TJS_E_BADPARAMCOUNT;
+		if (numparams < 1) return TJS_E_BADPARAMCOUNT;
 		sqtjsobj_regist(vm,
-			param[0]->GetString(), // name
-			param[1]->GetString(), // classname
-			param[2]->AsObjectNoAddRef()); // methods
+						param[0]->GetString(), // name
+						numparams > 1 ? param[1] : NULL);
 		return TJS_S_OK;
 	}
 };

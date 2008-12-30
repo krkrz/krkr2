@@ -274,7 +274,7 @@ get(HSQUIRRELVM v)
 	if (dispatch) {
 		tTJSVariant result;
 		tjs_error error;
-		if (SUCCEEDED(error = dispatch->PropGet(0, getString(v, 2), NULL, &result, dispatch))) {
+		if (TJS_SUCCEEDED(error = dispatch->PropGet(0, getString(v, 2), NULL, &result, dispatch))) {
 			sq_pushvariant(v, result);
 			return 1;
 		} else {
@@ -296,7 +296,7 @@ set(HSQUIRRELVM v)
 		tTJSVariant result;
 		sq_getvariant(v, 3, &result);
 		tjs_error error;
-		if (SUCCEEDED(error = dispatch->PropSet(TJS_MEMBERENSURE, getString(v, 2), NULL, &result, dispatch))) {
+		if (TJS_SUCCEEDED(error = dispatch->PropSet(TJS_MEMBERENSURE, getString(v, 2), NULL, &result, dispatch))) {
 			return SQ_OK;
 		} else {
 			return ERROR_KRKR(v, error);
@@ -334,7 +334,7 @@ callConstructor(HSQUIRRELVM v)
 		int ret = 0;
 		iTJSDispatch2 *instance = NULL;
 		tjs_error error;
-		if (SUCCEEDED(error = dispatch->CreateNew(0, NULL, NULL, &instance, argc, args, thisobj))) {
+		if (TJS_SUCCEEDED(error = dispatch->CreateNew(0, NULL, NULL, &instance, argc, args, thisobj))) {
 			tTJSVariant var(instance, instance);
 			sq_pushvariant(v, var);
 			instance->Release();
@@ -384,7 +384,7 @@ callMethod(HSQUIRRELVM v)
 		int ret = 0;
 		tTJSVariant result;
 		tjs_error error;
-		if (SUCCEEDED(error = dispatch->FuncCall(0, NULL, NULL, &result, argc, args, thisobj))) {
+		if (TJS_SUCCEEDED(error = dispatch->FuncCall(0, NULL, NULL, &result, argc, args, thisobj))) {
 			if (result.Type() != tvtVoid) {
 				sq_pushvariant(v, result);
 				ret = 1;

@@ -12,6 +12,9 @@ extern SQRESULT ERROR_KRKR(HSQUIRRELVM v, tjs_error error);
 // 型情報
 static const SQUserPointer TJSOBJTYPETAG = (SQUserPointer)"TJSOBJTYPETAG";
 
+tjs_int getArrayCount(iTJSDispatch2 *array);
+void getArrayString(iTJSDispatch2 *array, int idx, ttstr &store);
+
 /**
  * 辞書データからクラス登録用のスクリプトを生成するためのオブジェクト
  */
@@ -21,17 +24,17 @@ protected:
 	// スクリプト記録用
 	ttstr script;
 
-	// メソッドのコードを生成
-	void registMethod(const tjs_char *methodName) {
+	// ファンクションのコードを生成
+	void registFunction(const tjs_char *functionName) {
 		script += "function ";
-		script += methodName;
+		script += functionName;
 		script += "(...){local args=[];for(local i=0;i<vargc;i++){args.append(vargv[i]);};return tjsInvoker(\"";
-		script += methodName;
+		script += functionName;
 		script += "\", args);}";
 	}
 
-	// セッターのコードを生成
-	void registSetter(const tjs_char *propertyName) {
+	// プロパティのコードを生成
+	void registProperty(const tjs_char *propertyName) {
 		tstring name;
 		getSetterName(name, propertyName);
 		script += "function ";
@@ -39,11 +42,7 @@ protected:
 		script += "(arg){tjsSetter(\"";
 		script += propertyName;
 		script += "\", arg);}";
-	}
 
-	// ゲッターのコードを生成
-	void registGetter(const tjs_char *propertyName) {
-		tstring name;
 		getGetterName(name, propertyName);
 		script += "function ";
 		script += name.c_str();
@@ -52,6 +51,16 @@ protected:
 		script += "\");}";
 	}
 
+	// ファンクションかどうか
+	static bool isFunction(iTJSDispatch2 *member) {
+		return TJS_SUCCEEDED(member->IsInstanceOf(0, NULL, NULL, L"Function", member));
+	}
+
+	// プロパティかどうか
+	static bool isProperty(iTJSDispatch2 *member) {
+		return TJS_SUCCEEDED(member->IsInstanceOf(0, NULL, NULL, L"Property", member));
+	}
+	
 public:
 
 	// コンストラクタ
@@ -60,6 +69,8 @@ public:
 		script += className;
 		script += "\", args);}";
 	};
+
+	
 
 	// データの取得
 	const tjs_char *getData() {
@@ -71,6 +82,10 @@ public:
 		return script.GetLen();
 	}
 
+	// EnumMember用繰り返し実行部
+	// param[0] メンバ名
+	// param[1] フラグ
+	// param[2] メンバの値
 	virtual tjs_error TJS_INTF_METHOD FuncCall( // function invocation
 												tjs_uint32 flag,			// calling flag
 												const tjs_char * membername,// member name ( NULL for a default member )
@@ -81,18 +96,13 @@ public:
 												iTJSDispatch2 *objthis		// object as "this"
 												) {
 		if (numparams > 1) {
-			if ((int)param[1] != TJS_HIDDENMEMBER) {
+			if (/**(int)param[1] != TJS_HIDDENMEMBER &&*/ param[2]->Type() == tvtObject) {
 				const tjs_char *name = param[0]->GetString();
-				int type = (int)*param[2];
-				if (type == 0) {
-					registMethod(name);
-				} else {
-					if ((type & 0x01)) {
-						registGetter(name);
-					}
-					if ((type & 0x02)) {
-						registSetter(name);
-					}
+				iTJSDispatch2 *member = param[2]->AsObjectNoAddRef();
+				if (isFunction(member)) {
+					registFunction(name);
+				} else if (isProperty(member)) {
+					registProperty(name);
 				}
 			}
 		}
@@ -205,7 +215,7 @@ protected:
 					}
 				}
 				tjs_error error;
-				if (SUCCEEDED(error = dispatch->CreateNew(0, NULL, NULL, &self->dispatch, argc, args, dispatch))) {
+				if (TJS_SUCCEEDED(error = dispatch->CreateNew(0, NULL, NULL, &self->dispatch, argc, args, dispatch))) {
 					result = SQ_OK;
 				} else {
 					result = ERROR_KRKR(v, error);
@@ -250,7 +260,7 @@ protected:
 			tTJSVariant result;
 			tjs_error error;
 			const tjs_char *methodName = getString(v,2);
-			if (SUCCEEDED(error = dispatch->FuncCall(0, getString(v,2), NULL, &result, argc, args, dispatch))) {
+			if (TJS_SUCCEEDED(error = dispatch->FuncCall(0, getString(v,2), NULL, &result, argc, args, dispatch))) {
 				if (result.Type() != tvtVoid) {
 					sq_pushvariant(v, result);
 					result = 1;
@@ -282,7 +292,7 @@ protected:
 			iTJSDispatch2 *dispatch = self->dispatch;
 			tTJSVariant result;
 			tjs_error error;
-			if (SUCCEEDED(error = dispatch->PropGet(0, getString(v,2), NULL, &result, dispatch))) {
+			if (TJS_SUCCEEDED(error = dispatch->PropGet(0, getString(v,2), NULL, &result, dispatch))) {
 				sq_pushvariant(v, result);
 				return 1;
 			} else {
@@ -305,7 +315,7 @@ protected:
 			tTJSVariant result;
 			sq_getvariant(v, 3, &result);
 			tjs_error error;
-			if (SUCCEEDED(error = dispatch->PropSet(TJS_MEMBERENSURE, getString(v, 2), NULL, &result, dispatch))) {
+			if (TJS_SUCCEEDED(error = dispatch->PropSet(TJS_MEMBERENSURE, getString(v, 2), NULL, &result, dispatch))) {
 				return SQ_OK;
 			} else {
 				return ERROR_KRKR(v, error);
@@ -321,9 +331,59 @@ public:
 
 	/**
 	 * クラスの登録
+	 * @param HSQUIRRELVM v
+	 * @param className 登録クラス名
+	 * @param tjsClassInfo クラス定義情報(TJSのクラス名のリスト)
 	 */
-	static void registClass(HSQUIRRELVM v, const tjs_char *className, const tjs_char *tjsClassName, iTJSDispatch2 *methods) {
+	static void registClass(HSQUIRRELVM v, const tjs_char *className, tTJSVariant *tjsClassInfo) {
+		
+		ttstr tjsClassName;
+		iTJSDispatch2 *classArray;
+		
+		if (tjsClassInfo == NULL) {
+			classArray = NULL;
+			tjsClassName = className;
+		} else if (tjsClassInfo->Type() == tvtString) {
+			classArray = NULL;
+			tjsClassName = tjsClassInfo->GetString();
+		} else {
+			classArray = tjsClassInfo->AsObjectNoAddRef();
+			getArrayString(classArray, 0, tjsClassName);
+		}
 
+		// クラス生成用スクリプトを生成する
+		ScriptCreater script(tjsClassName.c_str());
+		tTJSVariantClosure closure(&script);
+
+		// 親クラスのメソッドを登録
+		if (classArray) {
+			int count = getArrayCount(classArray);
+			for (int i=count-1;i>0;i--) {
+				ttstr className;
+				getArrayString(classArray, i, className);
+				{			
+					tTJSVariant classObj;
+					TVPExecuteExpression(className, &classObj);
+					iTJSDispatch2 *dispatch = classObj.AsObjectNoAddRef();
+					if (!dispatch || TJS_FAILED(dispatch->IsInstanceOf(0, NULL, NULL, L"Class", dispatch))) {
+						TVPThrowExceptionMessage(L"not tjs class");
+					}
+					dispatch->EnumMembers(TJS_IGNOREPROP, &closure, dispatch);
+				}
+			}
+		}
+
+		// 指定クラスのメソッドを登録
+		{
+			tTJSVariant classObj;
+			TVPExecuteExpression(tjsClassName, &classObj);
+			iTJSDispatch2 *dispatch = classObj.AsObjectNoAddRef();
+			if (!dispatch || TJS_FAILED(dispatch->IsInstanceOf(0, NULL, NULL, L"Class", dispatch))) {
+				TVPThrowExceptionMessage(L"not tjs class");
+			}
+			dispatch->EnumMembers(TJS_IGNOREPROP, &closure, dispatch);
+		}
+		
 		sq_pushroottable(v); // root
 		sq_pushstring(v, className, -1);
 		sq_pushstring(v, OBJECTNAME, -1);
@@ -339,16 +399,7 @@ public:
 		REGISTMETHOD(tjsSetter);
 		REGISTMETHOD(tjsGetter);
 		
-		// クラス生成用スクリプトを生成する
-		ScriptCreater script(tjsClassName);
-		if (methods) {
-			tTJSVariantClosure closure(&script);
-			methods->EnumMembers(TJS_IGNOREPROP, &closure, methods);
-		}
-
-		// クラスのコンテキストで実行
-		const wchar_t *scr = script.getData();
-
+		// クラスのコンテキストで生成スクリプトを実行
 		if (SQ_SUCCEEDED(sq_compilebuffer(v, script.getData(), script.getLength(), className, SQTrue))) {
 			sq_push(v, -2); // class
 			if (SQ_FAILED(sq_call(v, 1, SQFalse, SQTrue))) {
@@ -366,7 +417,7 @@ public:
 			printFunc(v, str);
 			sq_pop(v, 1);
 		}
-	
+		
 		sq_createslot(v, -3);
 		sq_pop(v, 1); // root
 	}
@@ -379,9 +430,9 @@ void sqtjsobj_init()
 }
 
 // クラス登録
-void sqtjsobj_regist(HSQUIRRELVM v, const tjs_char *className, const tjs_char *tjsClassName, iTJSDispatch2 *methods)
+void sqtjsobj_regist(HSQUIRRELVM v, const tjs_char *className, tTJSVariant *tjsClassInfo)
 {
-	TJSObject::registClass(v, className, tjsClassName, methods);
+	TJSObject::registClass(v, className, tjsClassInfo);
 };
 
 // iTJSDispatch2* をスタックから取得
