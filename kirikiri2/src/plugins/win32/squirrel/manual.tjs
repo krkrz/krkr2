@@ -77,11 +77,9 @@ class Scripts {
 	/**
 	 * Squirrel のグローバル空間に TJS2のクラスをクラスとして登録
 	 * @param className squirrel側のクラス名
-	 * @param tjsClassName TJS側のクラス名
-	 * @param methods メソッド/プロパティ情報の辞書 name=value
-	 * value=0:メソッド value=1:GETのみプロパティ value=2:SETのみプロパティ value=3:プロパティ
+	 * @param tjsClassName TJS側のクラス名を継承関係と逆順に列挙した配列、またはクラス名。省略時は className と同じ
 	 */
-	function registClassSQ(className, tjsClassName, methods);
+	function registClassSQ(className, tjsClassName=null);
 }
 
 /**
