@@ -711,9 +711,8 @@ struct ncbPropAccessor {
 #define FOREACH_START 1
 #undef  FOREACH_END
 #define FOREACH_END   FOREACH_MAX
-#define FCALL_PRM_EXT(num) tTJSVariant      param ## num
-#define FCALL_ARG_EXT(num)                  param ## num
-#define FCALL_SET_EXT(num) params[ num ] = &param ## num;
+#define FCALL_PRM_EXT(num) tTJSVariant          param ## num
+#define FCALL_SET_EXT(num) params[ num - 1 ] = &param ## num;
 	// FuncCall‚ð”CˆÓŒÂ”‚ÌtTJSVariant‚ðˆø”‚ÅŽó‚¯‚é‚æ‚¤‚Èƒƒ\ƒbƒh‚ð“WŠJ
 #undef  FOREACH
 #define FOREACH \
@@ -723,7 +722,7 @@ struct ncbPropAccessor {
 	}
 #include FOREACH_INCLUDE
 #undef  FCALL_PRM_EXT
-#undef  FCALL_ARG_EXT
+#undef  FCALL_SET_EXT
 	// ˆø”‚È‚µ‚Ìê‡‚¾‚¯“ÁŽê
 	tjs_error TJS_INTF_METHOD FuncCall(tjs_uint32 flag, const tjs_char *membername, tjs_uint32 *hint, tTJSVariant *result) {
 		return _obj->FuncCall(flag, membername, hint, result, 0, NULL, _obj);
