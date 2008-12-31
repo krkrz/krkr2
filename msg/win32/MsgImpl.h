@@ -1,7 +1,7 @@
 //---------------------------------------------------------------------------
 /*
 	TVP2 ( T Visual Presenter 2 )  A script authoring tool
-	Copyright (C) 2000-2008 W.Dee <dee@kikyou.info> and contributors
+	Copyright (C) 2000-2009 W.Dee <dee@kikyou.info> and contributors
 
 	See details of license at "license.txt"
 */
@@ -22,141 +22,141 @@
 //---------------------------------------------------------------------------
 // Japanese localized messages
 TVP_MSG_DECL(TVPScriptExceptionRaised,
-	TJS_W("ƒXƒNƒŠƒvƒg‚Å—áŠO‚ª”­¶‚µ‚Ü‚µ‚½"));
+	TJS_W("ï¿½Xï¿½Nï¿½ï¿½ï¿½vï¿½gï¿½Å—ï¿½Oï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½"));
 
 TVP_MSG_DECL(TVPHardwareExceptionRaised,
-	TJS_W("ƒn[ƒhƒEƒFƒA—áŠO‚ª”­¶‚µ‚Ü‚µ‚½"));
+	TJS_W("ï¿½nï¿½[ï¿½hï¿½Eï¿½Fï¿½Aï¿½ï¿½Oï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½"));
 
 TVP_MSG_DECL(TVPMainCDPName,
-	TJS_W("ƒXƒNƒŠƒvƒgƒGƒfƒBƒ^ (ƒƒCƒ“)"));
+	TJS_W("ï¿½Xï¿½Nï¿½ï¿½ï¿½vï¿½gï¿½Gï¿½fï¿½Bï¿½^ (ï¿½ï¿½ï¿½Cï¿½ï¿½)"));
 
 TVP_MSG_DECL(TVPExceptionCDPName,
-	TJS_W("ƒXƒNƒŠƒvƒgƒGƒfƒBƒ^ (—áŠO’Ê’m)"));
+	TJS_W("ï¿½Xï¿½Nï¿½ï¿½ï¿½vï¿½gï¿½Gï¿½fï¿½Bï¿½^ (ï¿½ï¿½Oï¿½Ê’m)"));
 
 TVP_MSG_DECL(TVPCannnotLocateUIDLLForFolderSelection,
-	TJS_W("ƒtƒHƒ‹ƒ_/ƒA[ƒJƒCƒu‚Ì‘I‘ð‰æ–Ê‚ð•\Ž¦‚µ‚æ‚¤‚Æ‚µ‚Ü‚µ‚½‚ª ")
-		TJS_W("krdevui.dll ‚ªŒ©‚Â‚©‚ç‚È‚¢‚Ì‚Å•\Ž¦‚Å‚«‚Ü‚¹‚ñ.\n")
-		TJS_W("ŽÀs‚·‚éƒtƒHƒ‹ƒ_/ƒA[ƒJƒCƒu‚ÍƒRƒ}ƒ“ƒhƒ‰ƒCƒ“‚Ìˆø”‚Æ‚µ‚ÄŽw’è‚µ‚Ä‚­‚¾‚³‚¢"));
+	TJS_W("ï¿½tï¿½Hï¿½ï¿½ï¿½_/ï¿½Aï¿½[ï¿½Jï¿½Cï¿½uï¿½Ì‘Iï¿½ï¿½ï¿½ï¿½Ê‚ï¿½\ï¿½ï¿½ï¿½ï¿½ï¿½æ‚¤ï¿½Æ‚ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½ï¿½ï¿½ ")
+		TJS_W("krdevui.dll ï¿½ï¿½ï¿½ï¿½ï¿½Â‚ï¿½ï¿½ï¿½È‚ï¿½ï¿½Ì‚Å•\ï¿½ï¿½ï¿½Å‚ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½.\n")
+		TJS_W("ï¿½ï¿½ï¿½sï¿½ï¿½ï¿½ï¿½tï¿½Hï¿½ï¿½ï¿½_/ï¿½Aï¿½[ï¿½Jï¿½Cï¿½uï¿½ÍƒRï¿½}ï¿½ï¿½ï¿½hï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½Ìˆï¿½Æ‚ï¿½ï¿½ÄŽwï¿½è‚µï¿½Ä‚ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½"));
 
 TVP_MSG_DECL(TVPInvalidUIDLL,
-	TJS_W("krdevui.dll ‚ªˆÙí‚©Aƒo[ƒWƒ‡ƒ“‚ªˆê’v‚µ‚Ü‚¹‚ñ"));
+	TJS_W("krdevui.dll ï¿½ï¿½ï¿½Ùí‚©ï¿½Aï¿½oï¿½[ï¿½Wï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½vï¿½ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½"));
 
 TVP_MSG_DECL(TVPInvalidBPP,
-	TJS_W("–³Œø‚ÈF[“x‚Å‚·"));
+	TJS_W("ï¿½ï¿½ï¿½ï¿½ÈFï¿½[ï¿½xï¿½Å‚ï¿½"));
 
 TVP_MSG_DECL(TVPCannotLoadPlugin,
-	TJS_W("ƒvƒ‰ƒOƒCƒ“ %1 ‚ð“Ç‚Ýž‚ß‚Ü‚¹‚ñ"));
+	TJS_W("ï¿½vï¿½ï¿½ï¿½Oï¿½Cï¿½ï¿½ %1 ï¿½ï¿½Ç‚Ýï¿½ï¿½ß‚Ü‚ï¿½ï¿½ï¿½"));
 
 TVP_MSG_DECL(TVPNotValidPlugin,
-	TJS_W("%1 ‚Í—LŒø‚Èƒvƒ‰ƒOƒCƒ“‚Å‚Í‚ ‚è‚Ü‚¹‚ñ"));
+	TJS_W("%1 ï¿½Í—Lï¿½ï¿½Èƒvï¿½ï¿½ï¿½Oï¿½Cï¿½ï¿½ï¿½Å‚Í‚ï¿½ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½"));
 
 TVP_MSG_DECL(TVPPluginUninitFailed,
-	TJS_W("ƒvƒ‰ƒOƒCƒ“‚Ì‰ð•ú‚ÉŽ¸”s‚µ‚Ü‚µ‚½"));
+	TJS_W("ï¿½vï¿½ï¿½ï¿½Oï¿½Cï¿½ï¿½ï¿½Ì‰ï¿½ï¿½ÉŽï¿½ï¿½sï¿½ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½"));
 
 TVP_MSG_DECL(TVPCannnotLinkPluginWhilePluginLinking,
-	TJS_W("ƒvƒ‰ƒOƒCƒ“‚ÌÚ‘±’†‚É‘¼‚Ìƒvƒ‰ƒOƒCƒ“‚ðÚ‘±‚·‚é‚±‚Æ‚Í‚Å‚«‚Ü‚Ü‚¹‚ñ"));
+	TJS_W("ï¿½vï¿½ï¿½ï¿½Oï¿½Cï¿½ï¿½ï¿½ÌÚ‘ï¿½ï¿½ï¿½ï¿½É‘ï¿½ï¿½Ìƒvï¿½ï¿½ï¿½Oï¿½Cï¿½ï¿½ï¿½ï¿½Ú‘ï¿½ï¿½ï¿½ï¿½é‚±ï¿½Æ‚Í‚Å‚ï¿½ï¿½Ü‚Ü‚ï¿½ï¿½ï¿½"));
 
 TVP_MSG_DECL(TVPNotSusiePlugin,
-	TJS_W("ˆÙí‚È Susie ƒvƒ‰ƒOƒCƒ“‚Å‚·"));
+	TJS_W("ï¿½Ùï¿½ï¿½ Susie ï¿½vï¿½ï¿½ï¿½Oï¿½Cï¿½ï¿½ï¿½Å‚ï¿½"));
 
 TVP_MSG_DECL(TVPSusiePluginError,
-	TJS_W("Susie ƒvƒ‰ƒOƒCƒ“‚ÅƒGƒ‰[‚ª”­¶‚µ‚Ü‚µ‚½/ƒGƒ‰[ƒR[ƒh %1"));
+	TJS_W("Susie ï¿½vï¿½ï¿½ï¿½Oï¿½Cï¿½ï¿½ï¿½ÅƒGï¿½ï¿½ï¿½[ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½/ï¿½Gï¿½ï¿½ï¿½[ï¿½Rï¿½[ï¿½h %1"));
 
 TVP_MSG_DECL(TVPCannotReleasePlugin,
-	TJS_W("Žw’è‚³‚ê‚½ƒvƒ‰ƒOƒCƒ“‚ÍŽg—p’†‚Ì‚½‚ß‰ð•ú‚Å‚«‚Ü‚¹‚ñ"));
+	TJS_W("ï¿½wï¿½è‚³ï¿½ê‚½ï¿½vï¿½ï¿½ï¿½Oï¿½Cï¿½ï¿½ï¿½ÍŽgï¿½pï¿½ï¿½ï¿½Ì‚ï¿½ï¿½ß‰ï¿½ï¿½Å‚ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½"));
 
 TVP_MSG_DECL(TVPNotLoadedPlugin,
-	TJS_W("%1 ‚Í“Ç‚Ýž‚Ü‚ê‚Ä‚¢‚Ü‚¹‚ñ"));
+	TJS_W("%1 ï¿½Í“Ç‚Ýï¿½ï¿½Ü‚ï¿½Ä‚ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½"));
 
 TVP_MSG_DECL(TVPCannotAllocateBitmapBits,
-	TJS_W("ƒrƒbƒgƒ}ƒbƒv—pƒƒ‚ƒŠ‚ðŠm•Û‚Å‚«‚Ü‚¹‚ñ/%1(size=%2)"));
+	TJS_W("ï¿½rï¿½bï¿½gï¿½}ï¿½bï¿½vï¿½pï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½mï¿½Û‚Å‚ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½/%1(size=%2)"));
 
 TVP_MSG_DECL(TVPScanLineRangeOver,
-	TJS_W("ƒXƒLƒƒƒ“ƒ‰ƒCƒ“ %1 ‚Í”ÍˆÍ(0`%2)‚ð’´‚¦‚Ä‚¢‚Ü‚·"));
+	TJS_W("ï¿½Xï¿½Lï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Cï¿½ï¿½ %1 ï¿½Í”Íˆï¿½(0ï¿½`%2)ï¿½ð’´‚ï¿½ï¿½Ä‚ï¿½ï¿½Ü‚ï¿½"));
 
 TVP_MSG_DECL(TVPPluginError,
-	TJS_W("ƒvƒ‰ƒOƒCƒ“‚ÅƒGƒ‰[‚ª”­¶‚µ‚Ü‚µ‚½/%1"));
+	TJS_W("ï¿½vï¿½ï¿½ï¿½Oï¿½Cï¿½ï¿½ï¿½ÅƒGï¿½ï¿½ï¿½[ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½/%1"));
 
 TVP_MSG_DECL(TVPInvalidCDDADrive,
-	TJS_W("Žw’è‚³‚ê‚½ƒhƒ‰ƒCƒu‚Å‚Í CD-DA ‚ðÄ¶‚Å‚«‚Ü‚¹‚ñ"));
+	TJS_W("ï¿½wï¿½è‚³ï¿½ê‚½ï¿½hï¿½ï¿½ï¿½Cï¿½uï¿½Å‚ï¿½ CD-DA ï¿½ï¿½ï¿½Äï¿½ï¿½Å‚ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½"));
 
 TVP_MSG_DECL(TVPCDDADriveNotFound,
-	TJS_W("CD-DA ‚ðÄ¶‚Å‚«‚éƒhƒ‰ƒCƒu‚ªŒ©‚Â‚©‚è‚Ü‚¹‚ñ"));
+	TJS_W("CD-DA ï¿½ï¿½ï¿½Äï¿½ï¿½Å‚ï¿½ï¿½ï¿½hï¿½ï¿½ï¿½Cï¿½uï¿½ï¿½ï¿½ï¿½ï¿½Â‚ï¿½ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½"));
 
 TVP_MSG_DECL(TVPMCIError,
-	TJS_W("MCI ‚ÅƒGƒ‰[‚ª”­¶‚µ‚Ü‚µ‚½ : %1"));
+	TJS_W("MCI ï¿½ÅƒGï¿½ï¿½ï¿½[ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½ : %1"));
 
 TVP_MSG_DECL(TVPInvalidSMF,
-	TJS_W("—LŒø‚È SMF ƒtƒ@ƒCƒ‹‚Å‚Í‚ ‚è‚Ü‚¹‚ñ : %1"));
+	TJS_W("ï¿½Lï¿½ï¿½ï¿½ SMF ï¿½tï¿½@ï¿½Cï¿½ï¿½ï¿½Å‚Í‚ï¿½ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½ : %1"));
 
 TVP_MSG_DECL(TVPMalformedMIDIMessage,
-	TJS_W("Žw’è‚³‚ê‚½ƒƒbƒZ[ƒW‚Í MIDI ƒƒbƒZ[ƒW‚Æ‚µ‚Ä—LŒø‚ÈŒ`Ž®‚Å‚Í‚ ‚è‚Ü‚¹‚ñ"));
+	TJS_W("ï¿½wï¿½è‚³ï¿½ê‚½ï¿½ï¿½ï¿½bï¿½Zï¿½[ï¿½Wï¿½ï¿½ MIDI ï¿½ï¿½ï¿½bï¿½Zï¿½[ï¿½Wï¿½Æ‚ï¿½ï¿½Ä—Lï¿½ï¿½ÈŒ`ï¿½ï¿½ï¿½Å‚Í‚ï¿½ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½"));
 
 TVP_MSG_DECL(TVPCannotInitDirectSound,
-	TJS_W("DirectSound ‚ð‰Šú‰»‚Å‚«‚Ü‚¹‚ñ : %1"));
+	TJS_W("DirectSound ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Å‚ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½ : %1"));
 
 TVP_MSG_DECL(TVPCannotCreateDSSecondaryBuffer,
-	TJS_W("DirectSound ƒZƒJƒ“ƒ_ƒŠƒoƒbƒtƒ@‚ðì¬‚Å‚«‚Ü‚¹‚ñ : %1/%2"));
+	TJS_W("DirectSound ï¿½Zï¿½Jï¿½ï¿½ï¿½_ï¿½ï¿½ï¿½oï¿½bï¿½tï¿½@ï¿½ï¿½ï¿½ì¬ï¿½Å‚ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½ : %1/%2"));
 
 TVP_MSG_DECL(TVPInvalidLoopInformation,
-	TJS_W("ƒ‹[ƒvî•ñ %1 ‚ÍˆÙí‚Å‚·"));
+	TJS_W("ï¿½ï¿½ï¿½[ï¿½vï¿½ï¿½ï¿½ %1 ï¿½ÍˆÙï¿½Å‚ï¿½"));
 
 TVP_MSG_DECL(TVPNotChildMenuItem,
-	TJS_W("Žw’è‚³‚ê‚½ƒƒjƒ…[€–Ú‚Í‚±‚Ìƒƒjƒ…[€–Ú‚ÌŽq‚Å‚Í‚ ‚è‚Ü‚¹‚ñ"));
+	TJS_W("ï¿½wï¿½è‚³ï¿½ê‚½ï¿½ï¿½ï¿½jï¿½ï¿½ï¿½[ï¿½ï¿½ï¿½Ú‚Í‚ï¿½ï¿½Ìƒï¿½ï¿½jï¿½ï¿½ï¿½[ï¿½ï¿½ï¿½Ú‚ÌŽqï¿½Å‚Í‚ï¿½ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½"));
 
 TVP_MSG_DECL(TVPCannotInitDirectDraw,
-	TJS_W("DirectDraw ‚ð‰Šú‰»‚Å‚«‚Ü‚¹‚ñ : %1"));
+	TJS_W("DirectDraw ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Å‚ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½ : %1"));
 
 TVP_MSG_DECL(TVPCannotFindDisplayMode,
-	TJS_W("“K‡‚·‚é‰æ–Êƒ‚[ƒh‚ªŒ©‚Â‚©‚è‚Ü‚¹‚ñ : %1"));
+	TJS_W("ï¿½Kï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Êƒï¿½ï¿½[ï¿½hï¿½ï¿½ï¿½ï¿½ï¿½Â‚ï¿½ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½ : %1"));
 
 TVP_MSG_DECL(TVPCannotSwitchToFullScreen,
-	TJS_W("ƒtƒ‹ƒXƒNƒŠ[ƒ“‚ÉØ‚è‘Ö‚¦‚ç‚ê‚Ü‚¹‚ñ : %1"));
+	TJS_W("ï¿½tï¿½ï¿½ï¿½Xï¿½Nï¿½ï¿½ï¿½[ï¿½ï¿½ï¿½ÉØ‚ï¿½Ö‚ï¿½ï¿½ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½ : %1"));
 
 TVP_MSG_DECL(TVPInvalidPropertyInFullScreen,
-	TJS_W("ƒtƒ‹ƒXƒNƒŠ[ƒ“’†‚Å‚Í‘€ì‚Å‚«‚È‚¢ƒvƒƒpƒeƒB‚ðÝ’è‚µ‚æ‚¤‚Æ‚µ‚Ü‚µ‚½"));
+	TJS_W("ï¿½tï¿½ï¿½ï¿½Xï¿½Nï¿½ï¿½ï¿½[ï¿½ï¿½ï¿½ï¿½ï¿½Å‚Í‘ï¿½ï¿½ï¿½Å‚ï¿½ï¿½È‚ï¿½ï¿½vï¿½ï¿½ï¿½pï¿½eï¿½Bï¿½ï¿½Ý’è‚µï¿½æ‚¤ï¿½Æ‚ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½"));
 
 TVP_MSG_DECL(TVPInvalidMethodInFullScreen,
-	TJS_W("ƒtƒ‹ƒXƒNƒŠ[ƒ“’†‚Å‚Í‘€ì‚Å‚«‚È‚¢ƒƒ\ƒbƒh‚ðŒÄ‚Ño‚»‚¤‚Æ‚µ‚Ü‚µ‚½"));
+	TJS_W("ï¿½tï¿½ï¿½ï¿½Xï¿½Nï¿½ï¿½ï¿½[ï¿½ï¿½ï¿½ï¿½ï¿½Å‚Í‘ï¿½ï¿½ï¿½Å‚ï¿½ï¿½È‚ï¿½ï¿½ï¿½ï¿½\ï¿½bï¿½hï¿½ï¿½ï¿½Ä‚Ñoï¿½ï¿½ï¿½ï¿½ï¿½Æ‚ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½"));
 
 TVP_MSG_DECL(TVPCannotLoadCursor,
-	TJS_W("ƒ}ƒEƒXƒJ[ƒ\ƒ‹ %1 ‚Ì“Ç‚Ýž‚Ý‚ÉŽ¸”s‚µ‚Ü‚µ‚½"));
+	TJS_W("ï¿½}ï¿½Eï¿½Xï¿½Jï¿½[ï¿½\ï¿½ï¿½ %1 ï¿½Ì“Ç‚Ýï¿½ï¿½Ý‚ÉŽï¿½ï¿½sï¿½ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½"));
 
 TVP_MSG_DECL(TVPCannotLoadKrMovieDLL,
-	TJS_W("ƒrƒfƒI/Shockwave Flash ‚ðÄ¶‚·‚é‚½‚ß‚É‚Í krmovie.dll / krflash.dll ")
-		TJS_W("‚ª•K—v‚Å‚·‚ª “Ç‚Ýž‚Þ‚±‚Æ‚ª‚Å‚«‚Ü‚¹‚ñ"));
+	TJS_W("ï¿½rï¿½fï¿½I/Shockwave Flash ï¿½ï¿½ï¿½Äï¿½ï¿½ï¿½ï¿½é‚½ï¿½ß‚É‚ï¿½ krmovie.dll / krflash.dll ")
+		TJS_W("ï¿½ï¿½ï¿½Kï¿½vï¿½Å‚ï¿½ï¿½ï¿½ ï¿½Ç‚Ýï¿½ï¿½Þ‚ï¿½ï¿½Æ‚ï¿½ï¿½Å‚ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½"));
 
 TVP_MSG_DECL(TVPInvalidKrMovieDLL,
-	TJS_W("krmovie.dll/krflash.dll ‚ªˆÙí‚© ‘Î‰ž‚Å‚«‚È‚¢ƒo[ƒWƒ‡ƒ“‚Å‚·"));
+	TJS_W("krmovie.dll/krflash.dll ï¿½ï¿½ï¿½Ùí‚© ï¿½Î‰ï¿½ï¿½Å‚ï¿½ï¿½È‚ï¿½ï¿½oï¿½[ï¿½Wï¿½ï¿½ï¿½ï¿½ï¿½Å‚ï¿½"));
 
 TVP_MSG_DECL(TVPErrorInKrMovieDLL,
-	TJS_W("krmovie.dll/krflash.dll “à‚ÅƒGƒ‰[‚ª”­¶‚µ‚Ü‚µ‚½/%1"));
+	TJS_W("krmovie.dll/krflash.dll ï¿½ï¿½ï¿½ÅƒGï¿½ï¿½ï¿½[ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½/%1"));
 
 TVP_MSG_DECL(TVPWindowAlreadyMissing,
-	TJS_W("ƒEƒBƒ“ƒhƒE‚Í‚·‚Å‚É‘¶Ý‚µ‚Ä‚¢‚Ü‚¹‚ñ"));
+	TJS_W("ï¿½Eï¿½Bï¿½ï¿½ï¿½hï¿½Eï¿½Í‚ï¿½ï¿½Å‚É‘ï¿½ï¿½Ý‚ï¿½ï¿½Ä‚ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½"));
 
 TVP_MSG_DECL(TVPPrerenderedFontMappingFailed,
-	TJS_W("ƒŒƒ“ƒ_ƒŠƒ“ƒOÏ‚ÝƒtƒHƒ“ƒg‚Ìƒ}ƒbƒsƒ“ƒO‚ÉŽ¸”s‚µ‚Ü‚µ‚½ : %1"));
+	TJS_W("ï¿½ï¿½ï¿½ï¿½ï¿½_ï¿½ï¿½ï¿½ï¿½ï¿½Oï¿½Ï‚Ýƒtï¿½Hï¿½ï¿½ï¿½gï¿½Ìƒ}ï¿½bï¿½sï¿½ï¿½ï¿½Oï¿½ÉŽï¿½ï¿½sï¿½ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½ : %1"));
 
 TVP_MSG_DECL_CONST(TVPConfigFailOriginalFileCannotBeRewritten,
-	TJS_W("%1 ‚É‘‚«ž‚Ý‚Å‚«‚Ü‚¹‚ñBƒ\ƒtƒgƒEƒFƒA‚ªŽÀs’†‚Ì‚Ü‚Ü‚É‚È‚Á‚Ä‚¢‚È‚¢‚©A‚ ‚é‚¢‚Í")
-		TJS_W("‘‚«ž‚ÝŒ ŒÀ‚ª‚ ‚é‚©‚Ç‚¤‚©‚ðŠm”F‚µ‚Ä‚­‚¾‚³‚¢"));
+	TJS_W("%1 ï¿½Éï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ý‚Å‚ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½Bï¿½\ï¿½tï¿½gï¿½Eï¿½Fï¿½Aï¿½ï¿½ï¿½ï¿½ï¿½sï¿½ï¿½ï¿½Ì‚Ü‚Ü‚É‚È‚ï¿½ï¿½Ä‚ï¿½ï¿½È‚ï¿½ï¿½ï¿½ï¿½Aï¿½ï¿½ï¿½é‚¢ï¿½ï¿½")
+		TJS_W("ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ÝŒï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½é‚©ï¿½Ç‚ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½mï¿½Fï¿½ï¿½ï¿½Ä‚ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½"));
 
 TVP_MSG_DECL(TVPConfigFailTempExeNotErased,
-	TJS_W("%1 ‚ÌI—¹‚ðŠm”F‚Å‚«‚È‚¢‚½‚ßA‚±‚ê‚ðíœ‚Å‚«‚Ü‚¹‚ñ‚Å‚µ‚½(‚±‚Ìƒtƒ@ƒCƒ‹‚Ííœ‚µ‚ÄŒ‹\‚Å‚·)"));
+	TJS_W("%1 ï¿½ÌIï¿½ï¿½ï¿½ï¿½ï¿½mï¿½Fï¿½Å‚ï¿½ï¿½È‚ï¿½ï¿½ï¿½ï¿½ßAï¿½ï¿½ï¿½ï¿½ï¿½ï¿½íœï¿½Å‚ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½Å‚ï¿½ï¿½ï¿½(ï¿½ï¿½ï¿½Ìƒtï¿½@ï¿½Cï¿½ï¿½ï¿½Ííœï¿½ï¿½ï¿½ÄŒï¿½ï¿½\ï¿½Å‚ï¿½)"));
 
 TVP_MSG_DECL_CONST(TVPExecutionFail,
-	TJS_W("%1 ‚ðŽÀs‚Å‚«‚Ü‚¹‚ñ"));
+	TJS_W("%1 ï¿½ï¿½ï¿½ï¿½ï¿½sï¿½Å‚ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½"));
 
 TVP_MSG_DECL(TVPPluginUnboundFunctionError,
-	TJS_W("ƒvƒ‰ƒOƒCƒ“‚©‚çŠÖ” %1 ‚ð—v‹‚³‚ê‚Ü‚µ‚½‚ªA‚»‚ÌŠÖ”‚Í–{‘Ì“à‚É‘¶Ý‚µ‚Ü‚¹‚ñBƒvƒ‰ƒOƒCƒ“‚Æ")
-			TJS_W("–{‘Ì‚Ìƒo[ƒWƒ‡ƒ“‚ª³‚µ‚­‘Î‰ž‚µ‚Ä‚¢‚é‚©Šm”F‚µ‚Ä‚­‚¾‚³‚¢"));
+	TJS_W("ï¿½vï¿½ï¿½ï¿½Oï¿½Cï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Öï¿½ %1 ï¿½ï¿½vï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Aï¿½ï¿½ï¿½ÌŠÖï¿½ï¿½Í–{ï¿½Ì“ï¿½ï¿½É‘ï¿½ï¿½Ý‚ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½Bï¿½vï¿½ï¿½ï¿½Oï¿½Cï¿½ï¿½ï¿½ï¿½")
+			TJS_W("ï¿½{ï¿½Ì‚Ìƒoï¿½[ï¿½Wï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Î‰ï¿½ï¿½ï¿½ï¿½Ä‚ï¿½ï¿½é‚©ï¿½mï¿½Fï¿½ï¿½ï¿½Ä‚ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½"));
 
 TVP_MSG_DECL(TVPExceptionHadBeenOccured,
-	TJS_W(" = (—áŠO”­¶)"));
+	TJS_W(" = (ï¿½ï¿½Oï¿½ï¿½ï¿½ï¿½)"));
 
 TVP_MSG_DECL(TVPConsoleResult,
-	TJS_W("ƒRƒ“ƒ\[ƒ‹ : "));
+	TJS_W("ï¿½Rï¿½ï¿½ï¿½\ï¿½[ï¿½ï¿½ : "));
 
 
 //---------------------------------------------------------------------------

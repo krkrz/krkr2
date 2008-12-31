@@ -1,12 +1,12 @@
 //---------------------------------------------------------------------------
 /*
 	TVP2 ( T Visual Presenter 2 )  A script authoring tool
-	Copyright (C) 2000-2008 W.Dee <dee@kikyou.info> and contributors
+	Copyright (C) 2000-2009 W.Dee <dee@kikyou.info> and contributors
 
 	See details of license at "license.txt"
 */
 //---------------------------------------------------------------------------
-//!@file •`‰æƒfƒoƒCƒXŠÇ—
+//!@file ï¿½`ï¿½ï¿½fï¿½oï¿½Cï¿½Xï¿½Ç—ï¿½
 //---------------------------------------------------------------------------
 
 #include "tjsCommHead.h"
@@ -22,7 +22,7 @@
 //---------------------------------------------------------------------------
 tTVPDrawDevice::tTVPDrawDevice()
 {
-	// ƒRƒ“ƒXƒgƒ‰ƒNƒ^
+	// ï¿½Rï¿½ï¿½ï¿½Xï¿½gï¿½ï¿½ï¿½Nï¿½^
 	Window = NULL;
 	PrimaryLayerManagerIndex = 0;
 	DestRect.clear();
@@ -33,12 +33,12 @@ tTVPDrawDevice::tTVPDrawDevice()
 //---------------------------------------------------------------------------
 tTVPDrawDevice::~tTVPDrawDevice()
 {
-	// ‚·‚×‚Ä‚Ì managers ‚ğŠJ•ú‚·‚é
-	//TODO: ƒvƒ‰ƒCƒ}ƒŠƒŒƒCƒ„–³Œø‰»A‚ ‚é‚¢‚ÍƒEƒBƒ“ƒhƒE”jŠü‚ÌI—¹ˆ—‚ª³‚µ‚¢‚©H
-	// managers ‚Í ŠJ•ú‚³‚ê‚éÛA©g‚Ì“o˜^‰ğœ‚ğs‚¤‚½‚ß‚É
-	// RemoveLayerManager() ‚ğŒÄ‚Ô‚©‚à‚µ‚ê‚È‚¢‚Ì‚Å’ˆÓB
-	// ‚»‚Ì‚½‚ßA‚±‚±‚Å‚Í‚¢‚Á‚½‚ñ”z—ñ‚ğƒRƒs[‚µ‚Ä‚©‚ç‚»‚ê‚¼‚ê‚Ì
-	// Release() ‚ğŒÄ‚ÔB
+	// ï¿½ï¿½ï¿½×‚Ä‚ï¿½ managers ï¿½ï¿½ï¿½Jï¿½ï¿½ï¿½
+	//TODO: ï¿½vï¿½ï¿½ï¿½Cï¿½}ï¿½ï¿½ï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Aï¿½ï¿½ï¿½é‚¢ï¿½ÍƒEï¿½Bï¿½ï¿½ï¿½hï¿½Eï¿½jï¿½ï¿½ÌIï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½H
+	// managers ï¿½ï¿½ ï¿½Jï¿½ï¿½ï¿½ï¿½ÛAï¿½ï¿½ï¿½gï¿½Ì“oï¿½^ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½sï¿½ï¿½ï¿½ï¿½ï¿½ß‚ï¿½
+	// RemoveLayerManager() ï¿½ï¿½ï¿½Ä‚Ô‚ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½È‚ï¿½ï¿½Ì‚Å’ï¿½ï¿½ÓB
+	// ï¿½ï¿½ï¿½Ì‚ï¿½ï¿½ßAï¿½ï¿½ï¿½ï¿½ï¿½Å‚Í‚ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½zï¿½ï¿½ï¿½ï¿½Rï¿½sï¿½[ï¿½ï¿½ï¿½Ä‚ï¿½ï¿½ç‚»ï¿½ê‚¼ï¿½ï¿½ï¿½
+	// Release() ï¿½ï¿½ï¿½Ä‚ÔB
 	std::vector<iTVPLayerManager *> backup = Managers;
 	for(std::vector<iTVPLayerManager *>::iterator i = backup.begin(); i != backup.end(); i++)
 		(*i)->Release();
@@ -52,11 +52,11 @@ bool tTVPDrawDevice::TransformToPrimaryLayerManager(tjs_int &x, tjs_int &y)
 	iTVPLayerManager * manager = GetLayerManagerAt(PrimaryLayerManagerIndex);
 	if(!manager) return false;
 
-	// ƒvƒ‰ƒCƒ}ƒŠƒŒƒCƒ„ƒ}ƒl[ƒWƒƒ‚Ìƒvƒ‰ƒCƒ}ƒŠƒŒƒCƒ„‚ÌƒTƒCƒY‚ğ“¾‚é
+	// ï¿½vï¿½ï¿½ï¿½Cï¿½}ï¿½ï¿½ï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½}ï¿½lï¿½[ï¿½Wï¿½ï¿½ï¿½Ìƒvï¿½ï¿½ï¿½Cï¿½}ï¿½ï¿½ï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½ÌƒTï¿½Cï¿½Yï¿½ğ“¾‚ï¿½
 	tjs_int pl_w, pl_h;
 	if(!manager->GetPrimaryLayerSize(pl_w, pl_h)) return false;
 
-	// x , y ‚Í DestRect ‚Ì 0, 0 ‚ğŒ´“_‚Æ‚µ‚½À•W‚Æ‚µ‚Ä“n‚³‚ê‚Ä‚«‚Ä‚¢‚é
+	// x , y ï¿½ï¿½ DestRect ï¿½ï¿½ 0, 0 ï¿½ï¿½ï¿½ï¿½ï¿½_ï¿½Æ‚ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Wï¿½Æ‚ï¿½ï¿½Ä“nï¿½ï¿½ï¿½ï¿½Ä‚ï¿½ï¿½Ä‚ï¿½ï¿½ï¿½
 	tjs_int w = DestRect.get_width();
 	tjs_int h = DestRect.get_height();
 	x = w ? (x * pl_w / w) : 0;
@@ -73,11 +73,11 @@ bool tTVPDrawDevice::TransformFromPrimaryLayerManager(tjs_int &x, tjs_int &y)
 	iTVPLayerManager * manager = GetLayerManagerAt(PrimaryLayerManagerIndex);
 	if(!manager) return false;
 
-	// ƒvƒ‰ƒCƒ}ƒŠƒŒƒCƒ„ƒ}ƒl[ƒWƒƒ‚Ìƒvƒ‰ƒCƒ}ƒŠƒŒƒCƒ„‚ÌƒTƒCƒY‚ğ“¾‚é
+	// ï¿½vï¿½ï¿½ï¿½Cï¿½}ï¿½ï¿½ï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½}ï¿½lï¿½[ï¿½Wï¿½ï¿½ï¿½Ìƒvï¿½ï¿½ï¿½Cï¿½}ï¿½ï¿½ï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½ÌƒTï¿½Cï¿½Yï¿½ğ“¾‚ï¿½
 	tjs_int pl_w, pl_h;
 	if(!manager->GetPrimaryLayerSize(pl_w, pl_h)) return false;
 
-	// x , y ‚Í DestRect ‚Ì 0, 0 ‚ğŒ´“_‚Æ‚µ‚½À•W‚Æ‚µ‚Ä“n‚³‚ê‚Ä‚«‚Ä‚¢‚é
+	// x , y ï¿½ï¿½ DestRect ï¿½ï¿½ 0, 0 ï¿½ï¿½ï¿½ï¿½ï¿½_ï¿½Æ‚ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Wï¿½Æ‚ï¿½ï¿½Ä“nï¿½ï¿½ï¿½ï¿½Ä‚ï¿½ï¿½Ä‚ï¿½ï¿½ï¿½
 	x = pl_w ? (x * DestRect.get_width()  / pl_w) : 0;
 	y = pl_h ? (y * DestRect.get_height() / pl_h) : 0;
 
@@ -105,7 +105,7 @@ void TJS_INTF_METHOD tTVPDrawDevice::SetWindowInterface(iTVPWindow * window)
 //---------------------------------------------------------------------------
 void TJS_INTF_METHOD tTVPDrawDevice::AddLayerManager(iTVPLayerManager * manager)
 {
-	// Managers ‚É manager ‚ğ push ‚·‚éBAddRef‚·‚é‚Ì‚ğ–Y‚ê‚È‚¢‚±‚ÆB
+	// Managers ï¿½ï¿½ manager ï¿½ï¿½ push ï¿½ï¿½ï¿½ï¿½BAddRefï¿½ï¿½ï¿½ï¿½Ì‚ï¿½Yï¿½ï¿½È‚ï¿½ï¿½ï¿½ï¿½ÆB
 	Managers.push_back(manager);
 	manager->AddRef();
 }
@@ -115,7 +115,7 @@ void TJS_INTF_METHOD tTVPDrawDevice::AddLayerManager(iTVPLayerManager * manager)
 //---------------------------------------------------------------------------
 void TJS_INTF_METHOD tTVPDrawDevice::RemoveLayerManager(iTVPLayerManager * manager)
 {
-	// Managers ‚©‚ç manager ‚ğíœ‚·‚éBRelease‚·‚éB
+	// Managers ï¿½ï¿½ï¿½ï¿½ manager ï¿½ï¿½ï¿½íœï¿½ï¿½ï¿½ï¿½BReleaseï¿½ï¿½ï¿½ï¿½B
 	std::vector<iTVPLayerManager *>::iterator i = std::find(Managers.begin(), Managers.end(), manager);
 	if(i == Managers.end())
 		TVPThrowInternalError;
@@ -341,7 +341,7 @@ void TJS_INTF_METHOD tTVPDrawDevice::GetCursorPos(iTVPLayerManager * manager, tj
 	Window->GetCursorPos(x, y);
 	if(primary_manager != manager || !TransformToPrimaryLayerManager(x, y))
 	{
-		// ƒvƒ‰ƒCƒ}ƒŠƒŒƒCƒ„ƒ}ƒl[ƒWƒƒˆÈŠO‚É‚ÍÀ•W 0,0 ‚Å“n‚µ‚Ä‚¨‚­
+		// ï¿½vï¿½ï¿½ï¿½Cï¿½}ï¿½ï¿½ï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½}ï¿½lï¿½[ï¿½Wï¿½ï¿½ï¿½ÈŠOï¿½É‚Íï¿½ï¿½W 0,0 ï¿½Å“nï¿½ï¿½ï¿½Ä‚ï¿½ï¿½ï¿½
 		 x = 0;
 		 y = 0;
 	}
@@ -479,7 +479,7 @@ void TJS_INTF_METHOD tTVPDrawDevice::RequestInvalidation(const tTVPRect & rect)
 	tjs_int l = rect.left, t = rect.top, r = rect.right, b = rect.bottom;
 	if(!TransformToPrimaryLayerManager(l, t)) return;
 	if(!TransformToPrimaryLayerManager(r, b)) return;
-	r ++; // Œë·‚Ì‹zû(–{“–‚Í‚à‚¤‚¿‚å‚Á‚ÆŒµ–§‚É‚â‚ç‚È‚¢‚Æ‚È‚ç‚È‚¢‚ª‚»‚ê‚ª–â‘è‚É‚È‚é‚±‚Æ‚Í‚È‚¢)
+	r ++; // ï¿½ë·ï¿½Ì‹zï¿½ï¿½(ï¿½{ï¿½ï¿½ï¿½Í‚ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ÆŒï¿½ï¿½ï¿½ï¿½É‚ï¿½ï¿½È‚ï¿½ï¿½Æ‚È‚ï¿½È‚ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ê‚ªï¿½ï¿½ï¿½É‚È‚é‚±ï¿½Æ‚Í‚È‚ï¿½)
 	b ++;
 
 	iTVPLayerManager * manager = GetLayerManagerAt(PrimaryLayerManagerIndex);
@@ -492,7 +492,7 @@ void TJS_INTF_METHOD tTVPDrawDevice::RequestInvalidation(const tTVPRect & rect)
 //---------------------------------------------------------------------------
 void TJS_INTF_METHOD tTVPDrawDevice::Update()
 {
-	// ‚·‚×‚Ä‚Ì layer manager ‚Ì UpdateToDrawDevice ‚ğŒÄ‚Ô
+	// ï¿½ï¿½ï¿½×‚Ä‚ï¿½ layer manager ï¿½ï¿½ UpdateToDrawDevice ï¿½ï¿½ï¿½Ä‚ï¿½
 	for(std::vector<iTVPLayerManager *>::iterator i = Managers.begin(); i != Managers.end(); i++)
 	{
 		(*i)->UpdateToDrawDevice();
@@ -504,7 +504,7 @@ void TJS_INTF_METHOD tTVPDrawDevice::Update()
 //---------------------------------------------------------------------------
 void TJS_INTF_METHOD tTVPDrawDevice::Show()
 {
-	// ‚È‚É‚à‚µ‚È‚¢
+	// ï¿½È‚É‚ï¿½ï¿½ï¿½ï¿½È‚ï¿½
 }
 //---------------------------------------------------------------------------
 
@@ -512,7 +512,7 @@ void TJS_INTF_METHOD tTVPDrawDevice::Show()
 //---------------------------------------------------------------------------
 void TJS_INTF_METHOD tTVPDrawDevice::DumpLayerStructure()
 {
-	// ‚·‚×‚Ä‚Ì layer manager ‚Ì DumpLayerStructure ‚ğŒÄ‚Ô
+	// ï¿½ï¿½ï¿½×‚Ä‚ï¿½ layer manager ï¿½ï¿½ DumpLayerStructure ï¿½ï¿½ï¿½Ä‚ï¿½
 	for(std::vector<iTVPLayerManager *>::iterator i = Managers.begin(); i != Managers.end(); i++)
 	{
 		(*i)->DumpLayerStructure();
@@ -524,6 +524,6 @@ void TJS_INTF_METHOD tTVPDrawDevice::DumpLayerStructure()
 //---------------------------------------------------------------------------
 void TJS_INTF_METHOD tTVPDrawDevice::SetShowUpdateRect(bool b)
 {
-	// ‚È‚É‚à‚µ‚È‚¢
+	// ï¿½È‚É‚ï¿½ï¿½ï¿½ï¿½È‚ï¿½
 }
 //---------------------------------------------------------------------------

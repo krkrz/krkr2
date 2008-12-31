@@ -1,6 +1,6 @@
 //---------------------------------------------------------------------------
 // ( part of KRMOVIE.DLL )
-// (c)2001-2008, W.Dee <dee@kikyou.info> and contributors
+// (c)2001-2009, W.Dee <dee@kikyou.info> and contributors
 //---------------------------------------------------------------------------
 
 /*
@@ -18,7 +18,7 @@
 #define __CISTREM_H__
 
 #include <objidl.h>
-//#include <streams.h>	// –{—ˆ‚Í‚ ‚Á‚½•û‚ª‚¢‚¢‚¯‚ÇAƒ[ƒjƒ“ƒO‚ªo‚é‚Ì‚ÅƒRƒƒ“ƒgƒAƒEƒgBƒ\[ƒX‚ÌƒCƒ“ƒNƒ‹[ƒh‡‚Å‰ñ”ðH
+//#include <streams.h>	// ï¿½{ï¿½ï¿½ï¿½Í‚ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ÇAï¿½ï¿½ï¿½[ï¿½jï¿½ï¿½ï¿½Oï¿½ï¿½ï¿½oï¿½ï¿½Ì‚ÅƒRï¿½ï¿½ï¿½ï¿½ï¿½gï¿½Aï¿½Eï¿½gï¿½Bï¿½\ï¿½[ï¿½Xï¿½ÌƒCï¿½ï¿½ï¿½Nï¿½ï¿½ï¿½[ï¿½hï¿½ï¿½ï¿½Å‰ï¿½ï¿½ï¿½H
 #include "asyncio.h"
 #include "asyncrdr.h"
 

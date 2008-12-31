@@ -1,6 +1,6 @@
 //---------------------------------------------------------------------------
 // krflashmain.h ( part of KRFLASH.DLL )
-// (c)2001-2008, W.Dee <dee@kikyou.info> and contributors
+// (c)2001-2009, W.Dee <dee@kikyou.info> and contributors
 //---------------------------------------------------------------------------
 #ifndef FlashContainerFormUnitH
 #define FlashContainerFormUnitH
@@ -17,18 +17,18 @@
 //---------------------------------------------------------------------------
 class TFlashContainerForm : public TForm
 {
-__published:	// IDE ŠÇ—‚ÌƒRƒ“ƒ|[ƒlƒ“ƒg
+__published:	// IDE ï¿½Ç—ï¿½ï¿½ÌƒRï¿½ï¿½ï¿½|ï¿½[ï¿½lï¿½ï¿½ï¿½g
 	TShockwaveFlash *Flash;
 	TTimer *Timer;
 	void __fastcall TimerTimer(TObject *Sender);
 	void __fastcall FlashFSCommand(TObject *Sender, BSTR command, BSTR args);
-private:	// ƒ†[ƒU[éŒ¾
+private:	// ï¿½ï¿½ï¿½[ï¿½Uï¿½[ï¿½éŒ¾
 	RECT Rect;
 	tTVPFlashOverlay * Overlay;
 	bool Invisible;
 	bool VisibleState;
 	HWND OwnerWindow;
-public:		// ƒ†[ƒU[éŒ¾
+public:		// ï¿½ï¿½ï¿½[ï¿½Uï¿½[ï¿½éŒ¾
 	__fastcall TFlashContainerForm(TComponent* Owner, tTVPFlashOverlay *overlay,
 		HWND owner, const RECT &rect);
 	

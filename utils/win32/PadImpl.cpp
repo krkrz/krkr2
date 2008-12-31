@@ -1,7 +1,7 @@
 //---------------------------------------------------------------------------
 /*
 	TVP2 ( T Visual Presenter 2 )  A script authoring tool
-	Copyright (C) 2000-2008 W.Dee <dee@kikyou.info> and contributors
+	Copyright (C) 2000-2009 W.Dee <dee@kikyou.info> and contributors
 
 	See details of license at "license.txt"
 */
@@ -28,8 +28,8 @@ tTJSNI_Pad::Construct(tjs_int numparams, tTJSVariant **param,
 	Form = new TTVPPadForm(Application);
 	Form->SetExecButtonEnabled(false);
 
-	// ƒRƒ“ƒXƒgƒ‰ƒNƒ^‚ª‹N“®‚³‚ê‚½¨ƒXƒNƒŠƒvƒgƒGƒfƒBƒ^‚Å‚Í‚È‚¢A‚Æ”»’f‚µ‚ÄOKH
-// •Û—¯‚É‚µ‚Ü‚·B
+	// ï¿½Rï¿½ï¿½ï¿½Xï¿½gï¿½ï¿½ï¿½Nï¿½^ï¿½ï¿½ï¿½Nï¿½ï¿½ï¿½ï¿½ï¿½ê‚½ï¿½ï¿½ï¿½Xï¿½Nï¿½ï¿½ï¿½vï¿½gï¿½Gï¿½fï¿½Bï¿½^ï¿½Å‚Í‚È‚ï¿½ï¿½Aï¿½Æ”ï¿½ï¿½fï¿½ï¿½ï¿½ï¿½OKï¿½H
+// ï¿½Û—ï¿½ï¿½É‚ï¿½ï¿½Ü‚ï¿½ï¿½B
 //	SetUserCreationMode(true);
 
 	return S_OK;
